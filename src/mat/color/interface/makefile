@@ -1,14 +1,14 @@
 
-#requiresdefine   'PETSC_HAVE_FORTRAN'
 ALL: lib
+
 CFLAGS   =
 FFLAGS   =
-SOURCEC  =
+SOURCEC  = matcoloring.c matcoloringregi.c
 SOURCEF  =
 SOURCEH  =
-DIRS     =
 LIBBASE  = libpetscmat
-LOCDIR   = src/mat/color/ftn-custom/
+MANSEC   = MatColoring
+LOCDIR   = src/mat/color/interface
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

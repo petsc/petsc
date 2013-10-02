@@ -2309,6 +2309,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
       Mat            Bfd;
       MatStructure   mstruct;
       PetscViewer    vdraw,vstdout;
+      MatColoring    coloring;
       ISColoring     iscoloring;
       MatFDColoring  matfdcoloring;
       PetscErrorCode (*func)(SNES,Vec,Vec,void*);
@@ -2316,7 +2317,11 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
       PetscReal      norm1,norm2,normmax;
 
       ierr = MatDuplicate(*B,MAT_DO_NOT_COPY_VALUES,&Bfd);CHKERRQ(ierr);
-      ierr = MatGetColoring(Bfd,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
+      ierr = MatColoringCreate(Bfd,&coloring);CHKERRQ(ierr);
+      ierr = MatColoringSetType(coloring,MATCOLORINGSL);CHKERRQ(ierr);
+      ierr = MatColoringSetFromOptions(coloring);CHKERRQ(ierr);
+      ierr = MatColoringApply(coloring,&iscoloring);CHKERRQ(ierr);
+      ierr = MatColoringDestroy(&coloring);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(Bfd,iscoloring,&matfdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
 

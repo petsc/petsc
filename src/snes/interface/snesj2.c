@@ -42,6 +42,7 @@ PetscErrorCode  SNESComputeJacobianDefaultColor(SNES snes,Vec x1,Mat *J,Mat *B,M
   PetscErrorCode (*func)(SNES,Vec,Vec,void*);
   Vec            F;
   void           *funcctx;
+  MatColoring    mc;
   ISColoring     iscoloring;
   PetscBool      hascolor;
   PetscBool      solvec;
@@ -61,7 +62,12 @@ PetscErrorCode  SNESComputeJacobianDefaultColor(SNES snes,Vec x1,Mat *J,Mat *B,M
       ierr = MatFDColoringSetFunction(color,(PetscErrorCode (*)(void))func,funcctx);CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(color);CHKERRQ(ierr);
     } else {
-      ierr = MatGetColoring(*B,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
+      ierr = MatColoringCreate(*B,&mc);CHKERRQ(ierr);
+      ierr = MatColoringSetDistance(mc,2);CHKERRQ(ierr);
+      ierr = MatColoringSetType(mc,MATCOLORINGSL);CHKERRQ(ierr);
+      ierr = MatColoringSetFromOptions(mc);CHKERRQ(ierr);
+      ierr = MatColoringApply(mc,&iscoloring);CHKERRQ(ierr);
+      ierr = MatColoringDestroy(&mc);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(*B,iscoloring,&color);CHKERRQ(ierr);
       ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
       ierr = MatFDColoringSetFunction(color,(PetscErrorCode (*)(void))func,(void*)funcctx);CHKERRQ(ierr);

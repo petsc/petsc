@@ -13,9 +13,9 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = degr.c setr.c dsm.c ido.c numsrt.c seq.c slo.c color.c \
-           scolor.c
-SOURCEH  = color.h
+SOURCEC  =
+SOURCEH  =
+DIRS     = interface impls
 LIBBASE  = libpetscmat
 LOCDIR   = src/mat/color/
 MANSEC   = MatOrderings

@@ -8,6 +8,7 @@
 
 /* Logging support */
 PetscClassId MAT_CLASSID;
+PetscClassId MAT_COLORING_CLASSID;
 PetscClassId MAT_FDCOLORING_CLASSID;
 PetscClassId MAT_TRANSPOSECOLORING_CLASSID;
 

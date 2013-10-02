@@ -469,6 +469,22 @@ struct  _p_MatFDColoring{
   void           *ftn_func_pointer,*ftn_func_cntx; /* serve the same purpose as *fortran_func_pointers in PETSc objects */
 };
 
+typedef struct _MatColoringOps *MatColoringOps;
+struct _MatColoringOps {
+  PetscErrorCode (*destroy)(MatColoring);
+  PetscErrorCode (*setfromoptions)(MatColoring);
+  PetscErrorCode (*view)(MatColoring,PetscViewer);
+  PetscErrorCode (*apply)(MatColoring,ISColoring*);
+};
+
+struct _p_MatColoring {
+  PETSCHEADER(_MatColoringOps);
+  Mat        m;
+  PetscInt   dist;      /* distance of the coloring */
+  PetscInt   maxcolors; /* the maximum number of colors returned, maxcolors=1 for MIS */
+  void       *data;     /* inner context */
+};
+
 struct  _p_MatTransposeColoring{
   PETSCHEADER(int);
   PetscInt       M,N,m;            /* total rows, columns; local rows */

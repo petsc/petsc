@@ -89,6 +89,7 @@ PetscErrorCode  MatInitializePackage(void)
   /* Register Classes */
   ierr = PetscClassIdRegister("Matrix",&MAT_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Matrix FD Coloring",&MAT_FDCOLORING_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Matrix Coloring",&MAT_COLORING_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Matrix MatTranspose Coloring",&MAT_TRANSPOSECOLORING_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Matrix Partitioning",&MAT_PARTITIONING_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Matrix Coarsen",&MAT_COARSEN_CLASSID);CHKERRQ(ierr);
