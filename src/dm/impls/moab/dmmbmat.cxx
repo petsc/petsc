@@ -9,7 +9,7 @@ static PetscErrorCode DMMoab_MatFillMatrixEntries_Private(DM,Mat);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_Moab"
-PetscErrorCode DMCreateMatrix_Moab(DM dm, MatType mtype,Mat *J)
+PetscErrorCode DMCreateMatrix_Moab(DM dm,Mat *J)
 {
   PetscErrorCode  ierr;
   ISLocalToGlobalMapping ltogb;
@@ -17,7 +17,7 @@ PetscErrorCode DMCreateMatrix_Moab(DM dm, MatType mtype,Mat *J)
   DM_Moab         *dmmoab=(DM_Moab*)dm->data;
   PetscInt        *nnz=0,*onz=0;
   char            *tmp=0;
-  moab::ErrorCode merr;
+  MatType         mtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -30,9 +30,9 @@ PetscErrorCode DMCreateMatrix_Moab(DM dm, MatType mtype,Mat *J)
   ierr = MatSetFromOptions(*J);CHKERRQ(ierr);
   
   /* next, need to allocate the non-zero arrays to enable pre-allocation */
-  ierr = MatGetType(*J, &mltype);CHKERRQ(ierr); /* in case user overrode the default type from command-line, re-check the type */
-  ierr = PetscStrstr(mltype, "baij", &tmp);CHKERRQ(ierr);
-  nsize = (tmp ? dmmoab->nloc:dmmoab->nloc*dmmoab->bs);
+  mtype = dm->mattype;
+  ierr = PetscStrstr(mtype, "baij", &tmp);CHKERRQ(ierr);
+  nlsiz = (tmp ? dmmoab->nloc:dmmoab->nloc*dmmoab->bs);
 
   /* allocate the nnz, onz arrays based on block size and local nodes */
   ierr = PetscMalloc((nlsiz)*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
