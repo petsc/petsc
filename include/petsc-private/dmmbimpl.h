@@ -53,7 +53,7 @@ typedef struct {
 
 PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Moab(DM,Vec *);
 PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Moab(DM,Vec *);
-PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm, MatType mtype,Mat *J);
+PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm,Mat *J);
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalBegin_Moab(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalEnd_Moab(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMLocalToGlobalBegin_Moab(DM,Vec,InsertMode,Vec);
