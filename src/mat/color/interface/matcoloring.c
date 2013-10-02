@@ -54,6 +54,8 @@ PetscErrorCode MatColoringCreate(Mat m,MatColoring *mcptr)
 #endif
   ierr = PetscHeaderCreate(mc,_p_MatColoring, struct _MatColoringOps, MAT_COLORING_CLASSID,"MatColoring","Matrix coloring",
                            "MatColoring",PetscObjectComm((PetscObject)m),MatColoringDestroy, MatColoringView);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)m);CHKERRQ(ierr);
+  mc->mat       = m;
   mc->dist      = 1;
   mc->maxcolors = 0; /* no maximum */
   *mcptr        = mc;
@@ -65,7 +67,12 @@ PetscErrorCode MatColoringCreate(Mat m,MatColoring *mcptr)
 #define __FUNCT__ "MatColoringDestroy"
 PetscErrorCode MatColoringDestroy(MatColoring *mc)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  if (--((PetscObject)(*mc))->refct > 0) {*mc = 0; PetscFunctionReturn(0);}
+  ierr = MatDestroy(&(*mc)->mat);CHKERRQ(ierr);
+  ierr = PetscHeaderDestroy(mc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

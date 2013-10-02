@@ -479,7 +479,7 @@ struct _MatColoringOps {
 
 struct _p_MatColoring {
   PETSCHEADER(_MatColoringOps);
-  Mat        m;
+  Mat        mat;
   PetscInt   dist;      /* distance of the coloring */
   PetscInt   maxcolors; /* the maximum number of colors returned, maxcolors=1 for MIS */
   void       *data;     /* inner context */

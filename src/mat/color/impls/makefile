@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = minpack
+DIRS     = natural minpack
 LOCDIR   = src/snes/impls/
 
 include ${PETSC_DIR}/conf/variables

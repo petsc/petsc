@@ -26,13 +26,12 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring);
  @*/
 PetscErrorCode  MatColoringRegisterAll(void)
 {
-  /*
   PetscErrorCode ierr;
-   */
+
   PetscFunctionBegin;
   MatColoringRegisterAllCalled = PETSC_TRUE;
-  /*
   ierr = MatColoringRegister(MATCOLORINGNATURAL,MatColoringCreate_Natural);CHKERRQ(ierr);
+  /*
   ierr = MatColoringRegister(MATCOLORINGNATURAL,MatColoringCreate_SL);CHKERRQ(ierr);
   ierr = MatColoringRegister(MATCOLORINGNATURAL,MatColoringCreate_ID);CHKERRQ(ierr);
   ierr = MatColoringRegister(MATCOLORINGNATURAL,MatColoringCreate_LF);CHKERRQ(ierr);

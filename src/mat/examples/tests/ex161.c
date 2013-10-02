@@ -64,8 +64,10 @@ int main(int argc,char **argv)
   /* Create MatTransposeColoring from symbolic C=A*R^T */
   ierr = MatColoringCreate(C,&mc);CHKERRQ(ierr);
   ierr = MatColoringSetDistance(mc,2);CHKERRQ(ierr);
-  ierr = MatColoringSetType(mc,MATCOLORINGSL);CHKERRQ(ierr);
+  /* ierr = MatColoringSetType(mc,MATCOLORINGSL);CHKERRQ(ierr); */
   ierr = MatColoringSetFromOptions(mc);CHKERRQ(ierr);
+  ierr = MatColoringApply(mc,&iscoloring);CHKERRQ(ierr);
+  ierr = MatColoringDestroy(&mc);CHKERRQ(ierr);
   ierr = MatTransposeColoringCreate(C,iscoloring,&matcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
 
