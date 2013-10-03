@@ -31,7 +31,7 @@ PetscErrorCode KSPMonitorSAWsCreate(KSP ksp,void **ctx)
   KSPMonitor_SAWs *mon;
 
   PetscFunctionBegin;
-  ierr      = PetscNewLog(ksp,KSPMonitor_SAWs,&mon);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,KSPMonitor_SAWs,&mon);CHKERRQ(ierr);
   mon->viewer = PETSC_VIEWER_SAWS_(PetscObjectComm((PetscObject)ksp));
   if (!mon->viewer) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Cannot create SAWs default viewer");CHKERRQ(ierr);
   *ctx = (void*)mon;
@@ -58,15 +58,15 @@ PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr      = PetscFree2(mon->eigr,mon->eigi);CHKERRQ(ierr);
-  ierr      = PetscFree(*ctx);CHKERRQ(ierr);
+  ierr = PetscFree2(mon->eigr,mon->eigi);CHKERRQ(ierr);
+  ierr = PetscFree(*ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPMonitorSAWs"
 /*@C
-   KSPMonitorSAWs - monitor solution using AMS
+   KSPMonitorSAWs - monitor solution using SAWs
 
    Logically Collective on KSP
 
@@ -74,11 +74,11 @@ PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
 +  ksp   - iterative context
 .  n     - iteration number
 .  rnorm - 2-norm (preconditioned) residual value (may be estimated).
--  ctx -  PetscViewer of type AMS
+-  ctx -  PetscViewer of type SAWs
 
    Level: advanced
 
-.keywords: KSP, CG, monitor, AMS, singular values
+.keywords: KSP, CG, monitor, SAWs, singular values
 
 .seealso: KSPMonitorSingularValue(), KSPComputeExtremeSingularValues(), PetscViewerSAWsOpen()
 @*/
@@ -95,15 +95,13 @@ PetscErrorCode KSPMonitorSAWs(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
   ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin);CHKERRQ(ierr);
 
-  ierr      = PetscFree2(mon->eigr,mon->eigi);CHKERRQ(ierr);
-  ierr      = PetscMalloc2(n,PetscReal,&mon->eigr,n,PetscReal,&mon->eigi);CHKERRQ(ierr);
+  ierr = PetscFree2(mon->eigr,mon->eigi);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,PetscReal,&mon->eigr,n,PetscReal,&mon->eigi);CHKERRQ(ierr);
   if (n) {
     ierr = KSPComputeEigenvalues(ksp,n,mon->eigr,mon->eigi,&mon->neigs);CHKERRQ(ierr);
 
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     if (!rank) {
-      SAWs_Delete("/PETSc/ksp_monitor_saws/rnorm");
-      SAWs_Delete("/PETSc/ksp_monitor_saws/neigs");
       SAWs_Delete("/PETSc/ksp_monitor_saws/eigr");
       SAWs_Delete("/PETSc/ksp_monitor_saws/eigi");
 

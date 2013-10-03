@@ -850,10 +850,22 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   if (flg) {ierr = SNESSetPCSide(snes,pcside);CHKERRQ(ierr);}
 
 #if defined(PETSC_HAVE_SAWS)
+  /*
+    Publish convergence information using SAWs
+  */
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsBool("-snes_monitor_saws","Publish SNES progress using SAWs","SNESMonitorSet",flg,&flg,NULL);CHKERRQ(ierr);
+  if (flg) {
+    void *ctx;
+    ierr = SNESMonitorSAWsCreate(snes,&ctx);CHKERRQ(ierr);
+    ierr = SNESMonitorSet(snes,SNESMonitorSAWs,ctx,SNESMonitorSAWsDestroy);CHKERRQ(ierr);
+  }
+#endif
+#if defined(PETSC_HAVE_SAWS)
   {
   PetscBool set;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-snes_saws_block","Block for SAWs memory snooper at end of SNESSolve","PetscObjectSAWsBlock",((PetscObject)snes)->amspublishblock,&flg,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_saws_block","Block for SAWs at end of SNESSolve","PetscObjectSAWsBlock",((PetscObject)snes)->amspublishblock,&flg,&set);CHKERRQ(ierr);
   if (set) {
     ierr = PetscObjectSAWsSetBlock((PetscObject)snes,flg);CHKERRQ(ierr);
   }

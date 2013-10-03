@@ -4,12 +4,12 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = kspams.c
+SOURCEC  = kspsaws.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscksp
 DIRS     =
-LOCDIR   = src/ksp/ksp/interface/ams/
+LOCDIR   = src/ksp/ksp/interface/saws/
 MANSEC   = KSP
 
 include ${PETSC_DIR}/conf/variables
