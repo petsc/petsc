@@ -2,7 +2,7 @@
 /* fnroot.f -- translated by f2c (version 19931217).*/
 
 #include <petscsys.h>
-#include <../src/mat/order/order.h>
+#include <petsc-private/matorderimpl.h>
 
 /*****************************************************************/
 /********     FNROOT ..... FIND PSEUDO-PERIPHERAL NODE    ********/

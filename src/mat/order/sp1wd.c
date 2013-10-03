@@ -1,6 +1,6 @@
 
 #include <petscmat.h>
-#include <../src/mat/order/order.h>
+#include <petsc-private/matorderimpl.h>
 
 /*
     MatGetOrdering_1WD - Find the 1-way dissection ordering of a given matrix.

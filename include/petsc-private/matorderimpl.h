@@ -1,5 +1,9 @@
+#ifndef __MATORDERIMPL_H
+#define __MATORDERIMPL_H
+
 #include <petscmat.h>
 #include <petsc-private/petscimpl.h>
+
 /*
    Defines the interface to the SparsePack routines, translated into C.
 */
@@ -21,5 +25,4 @@ PETSC_EXTERN PetscErrorCode SPARSEPACKfndsep(PetscInt*,const PetscInt*,const Pet
 PETSC_EXTERN PetscErrorCode SPARSEPACKdegree(const PetscInt*,const PetscInt*,const PetscInt*, PetscInt*, PetscInt*, PetscInt*, PetscInt*);
 PETSC_EXTERN PetscErrorCode SPARSEPACKrcm(const PetscInt*,const PetscInt*,const PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 
-
-
+#endif
