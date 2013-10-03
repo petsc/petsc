@@ -2741,9 +2741,9 @@ PetscErrorCode MatGetColumnNorms_MPIBAIJ(Mat A,NormType type,PetscReal *norms)
   PetscInt       N,i,*garray = aij->garray;
   PetscInt       ib,jb,bs = A->rmap->bs;
   Mat_SeqBAIJ    *a_aij = (Mat_SeqBAIJ*) aij->A->data;
-  PetscScalar    *a_val = a_aij->a;
+  MatScalar      *a_val = a_aij->a;
   Mat_SeqBAIJ    *b_aij = (Mat_SeqBAIJ*) aij->B->data;
-  PetscScalar    *b_val = b_aij->a;
+  MatScalar      *b_val = b_aij->a;
   PetscReal      *work;
 
   PetscFunctionBegin;
