@@ -1639,5 +1639,6 @@ PETSC_EXTERN PetscErrorCode MatNestSetSubMats(Mat,PetscInt,const IS[],PetscInt,c
 PETSC_EXTERN PetscErrorCode MatNestSetSubMat(Mat,PetscInt,PetscInt,Mat);
 
 PETSC_EXTERN PetscErrorCode MatChop(Mat,PetscReal);
+PETSC_EXTERN PetscErrorCode MatCalcBandwidth(Mat,PetscReal,PetscInt*);
 
 #endif
