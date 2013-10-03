@@ -1,0 +1,8 @@
+Ordering method rcm reduced bandwidth from 27 to 15
+[0]Total space allocated 32 bytes
+[ 0]32 bytes CellRefinerSetCones() line 4729 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plex.c
+      [0]  CellRefinerSetCones() line 4729 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plex.c
+      [0]  DMPlexRefine_Uniform() line 5756 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plex.c
+      [0]  DMRefine_Plex() line 5884 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plex.c
+      [0]  DMRefine() line 1451 in /PETSc3/petsc/petsc-dev/src/dm/interface/dm.c
+      [0]  DMPlexCreateDoublet() line 56 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexcreate.c

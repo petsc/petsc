@@ -122,6 +122,18 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  # 3D Hex P_2 scalar tests
                                                                  # 3D Hex P_2 vector tests
                                                                  ],
+                        'src/dm/impls/plex/examples/tests/ex10': [# Two cell tests
+                                                                  {'numProcs': 1, 'args': '-dim 2 -interpolate 1 -cell_simplex 1 -num_dof 1,0,0 -mat_view'},
+                                                                  {'numProcs': 1, 'args': '-dim 2 -interpolate 1 -cell_simplex 0 -num_dof 1,0,0 -mat_view'},
+                                                                  {'numProcs': 1, 'args': '-dim 3 -interpolate 1 -cell_simplex 1 -num_dof 1,0,0,0 -mat_view'},
+                                                                  {'numProcs': 1, 'args': '-dim 3 -interpolate 1 -cell_simplex 0 -num_dof 1,0,0,0 -mat_view'},
+                                                                  # Refined tests
+                                                                  {'numProcs': 1, 'args': '-dim 2 -interpolate 1 -cell_simplex 1 -refinement_limit 0.00625 -num_dof 1,0,0'},
+                                                                  {'numProcs': 1, 'args': '-dim 2 -interpolate 1 -cell_simplex 0 -refinement_uniform       -num_dof 1,0,0'},
+                                                                  {'numProcs': 1, 'args': '-dim 3 -interpolate 1 -cell_simplex 1 -refinement_limit 0.00625 -num_dof 1,0,0,0'},
+                                                                  {'numProcs': 1, 'args': '-dim 3 -interpolate 1 -cell_simplex 0 -refinement_uniform       -num_dof 1,0,0,0'},
+                                                                  # Parallel tests
+                                                                  ],
                         'src/dm/impls/plex/examples/tests/ex1f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tests/ex2f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tutorials/ex1': [{'numProcs': 1, 'args': ''},
