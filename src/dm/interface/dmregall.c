@@ -13,6 +13,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Mesh(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Cartesian(DM);
 #endif
 PETSC_EXTERN PetscErrorCode  DMCreate_Moab(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Circuit(DM);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMRegisterAll"
@@ -51,6 +52,7 @@ PetscErrorCode  DMRegisterAll()
 #if defined(PETSC_HAVE_MOAB)
   ierr = DMRegister(DMMOAB,       DMCreate_Moab);CHKERRQ(ierr);
 #endif
+  ierr = DMRegister(DMCIRCUIT,    DMCreate_Circuit);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #include <petscfe.h>     /*I  "petscfe.h"  I*/
