@@ -195,7 +195,7 @@ PetscErrorCode MatColoringApply(MatColoring mc,ISColoring *coloring)
   PetscValidHeaderSpecific(mc,MAT_COLORING_CLASSID,1);
   ierr = (*mc->ops->apply)(mc,coloring);CHKERRQ(ierr);
   /* view */
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)mc),((PetscObject)mc)->prefix,"-mat_color_view",&viewer,&format,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)mc),((PetscObject)mc)->prefix,"-mat_coloring_view",&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = MatColoringView(mc,viewer);CHKERRQ(ierr);
