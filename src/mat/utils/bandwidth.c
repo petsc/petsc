@@ -1,9 +1,9 @@
 #include <petsc-private/matimpl.h>       /*I  "petscmat.h"  I*/
 
 #undef __FUNCT__
-#define __FUNCT__ "MatCalcBandwidth"
-/*@C
-  MatCalcBandwidth - Calculate the full bandwidth of the matrix, meaning the width 2k+1 where k diagonals on either side are sufficient to contain all the matrix nonzeros.
+#define __FUNCT__ "MatComputeBandwidth"
+/*@
+  MatComputeBandwidth - Calculate the full bandwidth of the matrix, meaning the width 2k+1 where k diagonals on either side are sufficient to contain all the matrix nonzeros.
 
   Collective on Mat
 
@@ -18,7 +18,7 @@
 
 .seealso: DMPlexCreate(), DMPlexSetConeSize(), DMPlexSetChart()
 @*/
-PetscErrorCode MatCalcBandwidth(Mat A, PetscReal fraction, PetscInt *bw)
+PetscErrorCode MatComputeBandwidth(Mat A, PetscReal fraction, PetscInt *bw)
 {
   PetscMPIInt    lbw[2] = {0, 0}, gbw[2];
   PetscInt       rStart, rEnd, r;
