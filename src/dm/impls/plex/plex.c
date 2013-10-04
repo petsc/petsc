@@ -275,8 +275,8 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer, "\\end{document}\n", name);CHKERRQ(ierr);
   } else {
     MPI_Comm    comm;
-    PetscInt   *sizes;
-    PetscInt    locDepth, depth, dim, d;
+    PetscInt   *sizes, *hybsizes;
+    PetscInt    locDepth, depth, dim, d, pMax[4];
     PetscInt    pStart, pEnd, p;
     PetscInt    numLabels, l;
     const char *name;
@@ -290,7 +290,8 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     else      {ierr = PetscViewerASCIIPrintf(viewer, "Mesh in %D dimensions:\n", dim);CHKERRQ(ierr);}
     ierr = DMPlexGetDepth(dm, &locDepth);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&locDepth, &depth, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
-    ierr = PetscMalloc(size * sizeof(PetscInt), &sizes);CHKERRQ(ierr);
+    ierr = DMPlexGetHybridBounds(dm, &pMax[depth], &pMax[depth-1], &pMax[1], &pMax[0]);CHKERRQ(ierr);
+    ierr = PetscMalloc2(size,PetscInt,&sizes,size,PetscInt,&hybsizes);CHKERRQ(ierr);
     if (depth == 1) {
       ierr = DMPlexGetDepthStratum(dm, 0, &pStart, &pEnd);CHKERRQ(ierr);
       pEnd = pEnd - pStart;
@@ -307,14 +308,19 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     } else {
       for (d = 0; d <= dim; d++) {
         ierr = DMPlexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
-        pEnd = pEnd - pStart;
+        pEnd    -= pStart;
+        pMax[d] -= pStart;
         ierr = MPI_Gather(&pEnd, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+        ierr = MPI_Gather(&pMax[d], 1, MPIU_INT, hybsizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer, "  %D-cells:", d);CHKERRQ(ierr);
-        for (p = 0; p < size; ++p) {ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]);CHKERRQ(ierr);}
+        for (p = 0; p < size; ++p) {
+          if (hybsizes[p] >= 0) {ierr = PetscViewerASCIIPrintf(viewer, " %D (%D)", sizes[p], sizes[p] - hybsizes[p]);CHKERRQ(ierr);}
+          else                  {ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]);CHKERRQ(ierr);}
+        }
         ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       }
     }
-    ierr = PetscFree(sizes);CHKERRQ(ierr);
+    ierr = PetscFree2(sizes,hybsizes);CHKERRQ(ierr);
     ierr = DMPlexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
     if (numLabels) {ierr = PetscViewerASCIIPrintf(viewer, "Labels:\n");CHKERRQ(ierr);}
     for (l = 0; l < numLabels; ++l) {
