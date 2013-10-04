@@ -20,7 +20,7 @@
 @*/
 PetscErrorCode MatComputeBandwidth(Mat A, PetscReal fraction, PetscInt *bw)
 {
-  PetscMPIInt    lbw[2] = {0, 0}, gbw[2];
+  PetscInt       lbw[2] = {0, 0}, gbw[2];
   PetscInt       rStart, rEnd, r;
   PetscErrorCode ierr;
 
@@ -41,7 +41,7 @@ PetscErrorCode MatComputeBandwidth(Mat A, PetscReal fraction, PetscInt *bw)
     }
     ierr = MatRestoreRow(A, r, &ncols, &cols, NULL);CHKERRQ(ierr);
   }
-  ierr = MPI_Allreduce(lbw, gbw, 1, MPI_2INT, MPI_MAX, PetscObjectComm((PetscObject) A));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(lbw, gbw, 2, MPIU_INT, MPIU_MAX, PetscObjectComm((PetscObject) A));CHKERRQ(ierr);
   *bw = 2*PetscMax(gbw[0], gbw[1]) + 1;
   PetscFunctionReturn(0);
 }
