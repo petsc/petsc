@@ -1171,10 +1171,3 @@ Process 0:
   (  58) dim  3 offset 126 1 0 0
   (  59) dim  3 offset 129 -0.5 0 0
   (  60) dim  3 offset 132 0.5 0 0
-[0]Total space allocated 48 bytes
-[ 0]48 bytes CellRefinerSetCones() line 2175 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexrefine.c
-      [0]  CellRefinerSetCones() line 2175 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexrefine.c
-      [0]  DMPlexRefineUniform_Internal() line 3472 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexrefine.c
-      [0]  DMRefine_Plex() line 4183 in /src/dm/impls/plexplex.c
-      [0]  DMRefine() line 1456 in /src/dm/interfacedm.c
-      [0]  CreateMesh() line 453 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/examples/tests/ex4.c

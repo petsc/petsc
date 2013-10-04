@@ -2458,7 +2458,6 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
     }
     /* Split edges have 2 vertices and the same faces as the parent */
     ierr = DMPlexGetMaxSizes(dm, NULL, &maxSupportSize);CHKERRQ(ierr);
-    ierr = PetscMalloc((2 + maxSupportSize*2) * sizeof(PetscInt), &supportRef);CHKERRQ(ierr);
     for (e = eStart; e < eEnd; ++e) {
       const PetscInt newv = vStartNew + (vEnd - vStart) + (e - eStart);
 

@@ -1587,17 +1587,3 @@ PetscSF Object: 2 MPI processes
   [0]    94 <- 78
   [0]    27 <- 19
   [1] Roots referenced by my leaves, by rank
-[0]Total space allocated 48 bytes
-[ 0]48 bytes CellRefinerSetCones() line 2175 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexrefine.c
-      [0]  CellRefinerSetCones() line 2175 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexrefine.c
-      [0]  DMPlexRefineUniform_Internal() line 3472 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexrefine.c
-      [0]  DMRefine_Plex() line 4183 in /src/dm/impls/plexplex.c
-      [0]  DMRefine() line 1456 in /src/dm/interfacedm.c
-      [0]  CreateMesh() line 453 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/examples/tests/ex4.c
-[1]Total space allocated 48 bytes
-[ 1]48 bytes CellRefinerSetCones() line 2175 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexrefine.c
-      [1]  CellRefinerSetCones() line 2175 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexrefine.c
-      [1]  DMPlexRefineUniform_Internal() line 3472 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/plexrefine.c
-      [1]  DMRefine_Plex() line 4183 in /src/dm/impls/plexplex.c
-      [1]  DMRefine() line 1456 in /src/dm/interfacedm.c
-      [1]  CreateMesh() line 453 in /PETSc3/petsc/petsc-dev/src/dm/impls/plex/examples/tests/ex4.c
