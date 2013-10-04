@@ -255,6 +255,14 @@ extern "C" {
       self.logPrint('Warning: tgamma() not found')
     return
 
+  def checkMathFenv(self):
+    '''Checks if <fenv.h> can be used with FE_DFL_ENV'''
+    if not self.math is None and self.check(self.math, ['fesetenv'], prototype = ['#include <fenv.h>'], call = ['fesetenv(FE_DFL_ENV);']):
+      self.addDefine('HAVE_FENV_H', 1)
+    else:
+      self.logPrint('Warning: <fenv.h> with FE_DFL_ENV not found')
+    return
+
   def checkCompression(self):
     '''Check for libz, the compression library'''
     self.compression = None
@@ -440,6 +448,7 @@ int checkInit(void) {
     self.executeTest(self.checkMath)
     self.executeTest(self.checkMathErf)
     self.executeTest(self.checkMathTgamma)
+    self.executeTest(self.checkMathFenv)
     self.executeTest(self.checkCompression)
     self.executeTest(self.checkRealtime)
     self.executeTest(self.checkDynamic)
