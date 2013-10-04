@@ -9,18 +9,18 @@
   Collective on DM
   
   Input Parameters:
-+  dm - the dm object
-.  nV - number of local vertices
-.  nE - number of local edges
-.  NV - number of global vertices (or PETSC_DETERMINE)
--  NE - number of global edges (or PETSC_DETERMINE)
++ dm - the dm object
+. nV - number of local vertices
+. nE - number of local edges
+. NV - number of global vertices (or PETSC_DETERMINE)
+- NE - number of global edges (or PETSC_DETERMINE)
 
    Notes
    If one processor calls this with NV (NE) of PETSC_DECIDE then all processors must, otherwise the prgram will hang.
 
    You cannot change the sizes once they have been set
 
-   Level: beginner
+   Level: intermediate
 
 .seealso: DMCircuitCreate
 @*/
@@ -58,13 +58,13 @@ PetscErrorCode DMCircuitSetSizes(DM dm, PetscInt nV, PetscInt nE, PetscInt NV, P
   Logically collective on DM
 
   Input Parameters:
--  edges - list of edges
+. edges - list of edges
 
   Notes:
   There is no copy involved in this operation, only the pointer is referenced. The edgelist should
   not be destroyed before the call to DMCircuitLayoutSetUp
 
-  Level: beginner
+  Level: intermediate
 
 .seealso: DMCircuitCreate, DMCircuitSetSizes
 @*/
@@ -85,7 +85,7 @@ PetscErrorCode DMCircuitSetEdgeList(DM dm, PetscInt *edgelist)
   Collective on DM
 
   Input Parameters
--  DM - the dmcircuit object
+. DM - the dmcircuit object
 
   Notes:
   This routine should be called after the circuit sizes and edgelists have been provided. It creates
@@ -146,17 +146,17 @@ PetscErrorCode DMCircuitLayoutSetUp(DM dm)
   Logically collective on DM
 
   Input Parameters
-+  dm   - the circuit object
-.  name - the component name
--  size - the storage size in bytes for this component data
++ dm   - the circuit object
+. name - the component name
+- size - the storage size in bytes for this component data
 
    Output Parameters
--   key - an integer key that defines the component
+.   key - an integer key that defines the component
 
    Notes
    This routine should be called by all processors before calling DMCircuitLayoutSetup().
 
-   Level: beginner
+   Level: intermediate
 
 .seealso: DMCircuitLayoutSetUp, DMCircuitCreate
 @*/
@@ -187,6 +187,22 @@ PetscErrorCode DMCircuitRegisterComponent(DM dm,const char *name,PetscInt size,P
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCircuitGetVertexRange"
+/*@
+  DMCircuitGetVertexRange - Get the bounds [start, end) for the vertices.
+
+  Not Collective
+
+  Input Parameters:
++ dm - The DMCircuit object
+
+  Output Paramters:
++ vStart - The first vertex point
+- vEnd   - One beyond the last vertex point
+
+  Level: intermediate
+
+.seealso: DMCircuitGetEdgeRange
+@*/
 PetscErrorCode DMCircuitGetVertexRange(DM dm,PetscInt *vStart,PetscInt *vEnd)
 {
   DM_Circuit     *circuit = (DM_Circuit*)dm->data;
@@ -199,6 +215,22 @@ PetscErrorCode DMCircuitGetVertexRange(DM dm,PetscInt *vStart,PetscInt *vEnd)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCircuitGetEdgeRange"
+/*@
+  DMCircuitGetEdgeRange - Get the bounds [start, end) for the edges.
+
+  Not Collective
+
+  Input Parameters:
++ dm - The DMCircuit object
+
+  Output Paramters:
++ eStart - The first edge point
+- eEnd   - One beyond the last edge point
+
+  Level: intermediate
+
+.seealso: DMCircuitGetVertexRange
+@*/
 PetscErrorCode DMCircuitGetEdgeRange(DM dm,PetscInt *eStart,PetscInt *eEnd)
 {
   DM_Circuit     *circuit = (DM_Circuit*)dm->data;
@@ -211,6 +243,21 @@ PetscErrorCode DMCircuitGetEdgeRange(DM dm,PetscInt *eStart,PetscInt *eEnd)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCircuitAddComponent"
+/*@
+  DMCircuitAddComponent - Adds a circuit component at the given point (vertex/edge)
+
+  Not Collective
+
+  Input Parameters:
++ dm           - The DMCircuit object
+. p            - vertex/edge point
+. componentkey - component key returned while registering the component
+- compvalue    - pointer to the data structure for the component
+
+  Level: intermediate
+
+.seealso: DMCircuitGetVertexRange, DMCircuitGetEdgeRange, DMCircuitRegisterComponent
+@*/
 PetscErrorCode DMCircuitAddComponent(DM dm, PetscInt p,PetscInt componentkey,void* compvalue)
 {
   DM_Circuit     *circuit = (DM_Circuit*)dm->data;
@@ -232,6 +279,22 @@ PetscErrorCode DMCircuitAddComponent(DM dm, PetscInt p,PetscInt componentkey,voi
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCircuitGetNumComponents"
+/*@
+  DMCircuitGetNumComponents - Get the number of components at a vertex/edge
+
+  Not Collective 
+
+  Input Parameters:
++ dm - The DMCircuit object
+. p  - vertex/edge point
+
+  Output Parameters:
+. numcomponents - Number of components at the vertex/edge
+
+  Level: intermediate
+
+.seealso: DMCircuitRegisterComponent, DMCircuitAddComponent
+@*/
 PetscErrorCode DMCircuitGetNumComponents(DM dm,PetscInt p,PetscInt *numcomponents)
 {
   PetscErrorCode ierr;
@@ -246,6 +309,36 @@ PetscErrorCode DMCircuitGetNumComponents(DM dm,PetscInt p,PetscInt *numcomponent
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCircuitGetComponentTypeOffset"
+/*@
+  DMCircuitGetComponentTypeOffset - Gets the type along with the offset for indexing the 
+                                    component value from the component data array
+
+  Not Collective
+
+  Input Parameters:
++ dm      - The DMCircuit object
+. p       - vertex/edge point
+- compnum - component number
+	
+  Output Parameters:
++ compkey - the key obtained when registering the component
+- offset  - offset into the component data array associated with the vertex/edge point
+
+  Notes:
+  Typical usage:
+
+  DMCircuitGetComponentDataArray(dm, &arr);
+  DMCircuitGetVertex/EdgeRange(dm,&Start,&End);
+  Loop over vertices or edges
+    DMCircuitGetNumComponents(dm,v,&numcomps);
+    Loop over numcomps
+      DMCircuitGetComponentTypeOffset(dm,v,compnum,&key,&offset);
+      compdata = (UserCompDataType)(arr+offset);
+  
+  Level: intermediate
+
+.seealso: DMCircuitGetNumComponents, DMCircuitGetComponentDataArray, 
+@*/
 PetscErrorCode DMCircuitGetComponentTypeOffset(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, PetscInt *offset)
 {
   PetscErrorCode ierr;
@@ -263,6 +356,22 @@ PetscErrorCode DMCircuitGetComponentTypeOffset(DM dm,PetscInt p, PetscInt compnu
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCircuitGetVariableOffset"
+/*@
+  DMCircuitGetVariableOffset - Get the offset for accessing the variable associated with the given vertex/edge from the local vector.
+
+  Not Collective
+
+  Input Parameters:
++ dm     - The DMCircuit object
+- p      - the edge/vertex point
+
+  Output Parameters:
+. offset - the offset
+
+  Level: intermediate
+
+.seealso: DMCircuitGetVariableGlobalOffset, DMGetLocalVector
+@*/
 PetscErrorCode DMCircuitGetVariableOffset(DM dm,PetscInt p,PetscInt *offset)
 {
   PetscErrorCode ierr;
@@ -275,6 +384,22 @@ PetscErrorCode DMCircuitGetVariableOffset(DM dm,PetscInt p,PetscInt *offset)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCircuitGetVariableGlobalOffset"
+/*@
+  DMCircuitGetVariableGlobalOffset - Get the global offset for the variable associated with the given vertex/edge from the global vector.
+
+  Not Collective
+
+  Input Parameters:
++ dm      - The DMCircuit object
+- p       - the edge/vertex point
+
+  Output Parameters:
+. offsetg - the offset
+
+  Level: intermediate
+
+.seealso: DMCircuitGetVariableOffset, DMGetLocalVector
+@*/
 PetscErrorCode DMCircuitGetVariableGlobalOffset(DM dm,PetscInt p,PetscInt *offsetg)
 {
   PetscErrorCode ierr;
@@ -287,6 +412,20 @@ PetscErrorCode DMCircuitGetVariableGlobalOffset(DM dm,PetscInt p,PetscInt *offse
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCircuitAddNumVariables"
+/*@ 
+  DMCircuitAddNumVariables - Add number of variables associated with a given point.
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DMCircuitObject
+. p    - the vertex/edge point
+- nvar - number of additional variables
+
+  Level: intermediate
+
+.seealso: DMCircuitSetNumVariables
+@*/
 PetscErrorCode DMCircuitAddNumVariables(DM dm,PetscInt p,PetscInt nvar)
 {
   PetscErrorCode ierr;
@@ -297,6 +436,34 @@ PetscErrorCode DMCircuitAddNumVariables(DM dm,PetscInt p,PetscInt nvar)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMCircuitAddNumVariables"
+/*@ 
+  DMCircuitSetNumVariables - Sets number of variables for a vertex/edge point.
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DMCircuitObject
+. p    - the vertex/edge point
+- nvar - number of variables
+
+  Level: intermediate
+
+.seealso: DMCircuitAddNumVariables
+@*/
+PetscErrorCode DMCircuitSetNumVariables(DM dm,PetscInt p,PetscInt nvar)
+{
+  PetscErrorCode ierr;
+  DM_Circuit     *circuit = (DM_Circuit*)dm->data;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionSetDof(circuit->DofSection,p,nvar);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* Sets up the array that holds the data for all components and its associated section. This
+   function is called during DMSetUp() */
 #undef __FUNCT__
 #define __FUNCT__ "DMCircuitComponentSetUp"
 PetscErrorCode DMCircuitComponentSetUp(DM dm)
@@ -329,6 +496,7 @@ PetscErrorCode DMCircuitComponentSetUp(DM dm)
   PetscFunctionReturn(0);
 }
 
+/* Sets up the section for dofs. This routine is called during DMSetUp() */
 #undef __FUNCT__
 #define __FUNCT__ "DMCircuitVariablesSetUp"
 PetscErrorCode DMCircuitVariablesSetUp(DM dm)
@@ -343,6 +511,21 @@ PetscErrorCode DMCircuitVariablesSetUp(DM dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCircuitGetComponentDataArray"
+/*@
+  DMCircuitComponentDataArray - Returns the component data array
+
+  Not Collective
+
+  Input Parameters:
+. dm - The DMCircuit Object
+
+  Output Parameters:
+. componentdataarray - array that holds data for all components
+
+  Level: intermediate
+
+.seealso: DMCircuitGetComponentTypeOffset, DMCircuitGetNumComponents
+@*/
 PetscErrorCode DMCircuitGetComponentDataArray(DM dm,DMCircuitComponentGenericDataType **componentdataarray)
 {
   DM_Circuit     *circuit = (DM_Circuit*)dm->data;
@@ -354,6 +537,26 @@ PetscErrorCode DMCircuitGetComponentDataArray(DM dm,DMCircuitComponentGenericDat
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCircuitDistribute"
+/*@
+  DMCircuitDistribute - Distributes the circuit and moves associated component data.
+
+  Collective
+
+  Input Parameter:
+. oldDM - the original DMCircuit object
+
+  Output Parameter:
+. distDM - the distributed DMCircuit object
+
+  Notes:
+  This routine should be called only when using multiple processors.
+
+  A non-overlapping partitioning of the edges is done.
+
+  Level: intermediate
+
+.seealso: DMCircuitCreate
+@*/
 PetscErrorCode DMCircuitDistribute(DM oldDM,DM *distDM)
 {
   PetscErrorCode ierr;
@@ -392,6 +595,27 @@ PetscErrorCode DMCircuitDistribute(DM oldDM,DM *distDM)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCircuitGetSupportingEdges"
+/*@ 
+  DMCircuitGetSupportingEdges - Return the supporting edges for this vertex point
+
+  Not Collective
+
+  Input Parameters:
++ dm - The DMCircuit object
+- p  - the vertex point
+
+  Output Paramters:
++ nedges - number of edges connected to this vertex point
+- edges  - List of edge points
+
+  Level: intermediate
+
+  Fortran Notes:
+  Since it returns an array, this routine is only available in Fortran 90, and you must
+  include petsc.h90 in your code.
+
+.seealso: DMCircuitCreate, DMCircuitGetConnectedNodes
+@*/
 PetscErrorCode DMCircuitGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedges,const PetscInt **edges)
 {
   PetscErrorCode ierr;
@@ -405,6 +629,26 @@ PetscErrorCode DMCircuitGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedge
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCircuitGetConnectedNodes"
+/*@ 
+  DMCircuitGetConnectedNodes - Return the connected edges for this edge point
+
+  Not Collective
+
+  Input Parameters:
++ dm - The DMCircuit object
+- p  - the edge point
+
+  Output Paramters:
+. vertices  - vertices connected to this edge
+
+  Level: intermediate
+
+  Fortran Notes:
+  Since it returns an array, this routine is only available in Fortran 90, and you must
+  include petsc.h90 in your code.
+
+.seealso: DMCircuitCreate, DMCircuitGetSupportingEdges
+@*/
 PetscErrorCode DMCircuitGetConnectedNodes(DM dm,PetscInt edge,const PetscInt **vertices)
 {
   PetscErrorCode ierr;
@@ -415,9 +659,24 @@ PetscErrorCode DMCircuitGetConnectedNodes(DM dm,PetscInt edge,const PetscInt **v
   PetscFunctionReturn(0);
 }
 
-/* Returns PETSC_TRUE if the vertex is a ghost point */
 #undef __FUNCT__
 #define __FUNCT__ "DMCircuitIsGhostVertex"
+/*@
+  DMCircuitIsGhostVertex - Returns TRUE if the vertex is a ghost vertex
+
+  Not Collective
+
+  Input Parameters:
++ dm - The DMCircuit object
+. p  - the vertex point
+
+  Output Parameter:
+. isghost - TRUE if the vertex is a ghost point 
+
+  Level: intermediate
+
+.seealso: DMCircuitCreate, DMCircuitGetConnectedNodes, DMCircuitGetVertexRange
+@*/
 PetscErrorCode DMCircuitIsGhostVertex(DM dm,PetscInt p,PetscBool *isghost)
 {
   PetscErrorCode ierr;

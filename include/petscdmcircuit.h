@@ -26,6 +26,7 @@ PETSC_EXTERN PetscErrorCode DMCircuitGetComponentTypeOffset(DM, PetscInt, PetscI
 PETSC_EXTERN PetscErrorCode DMCircuitGetVariableOffset(DM, PetscInt, PetscInt*);
 PETSC_EXTERN PetscErrorCode DMCircuitGetVariableGlobalOffset(DM, PetscInt, PetscInt*);
 PETSC_EXTERN PetscErrorCode DMCircuitAddNumVariables(DM, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode DMCircuitSetNumVariables(DM, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMCircuitGetComponentDataArray(DM, DMCircuitComponentGenericDataType**);
 PETSC_EXTERN PetscErrorCode DMCircuitDistribute(DM, DM*);
 PETSC_EXTERN PetscErrorCode DMCircuitGetSupportingEdges(DM, PetscInt, PetscInt*, const PetscInt**);
