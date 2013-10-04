@@ -82,8 +82,8 @@ PetscErrorCode TestReordering(DM dm, AppCtx *user)
   ierr = ISDestroy(&perm);CHKERRQ(ierr);
   ierr = DMCreateMatrix(dm, MATAIJ, &A);CHKERRQ(ierr);
   ierr = DMCreateMatrix(pdm, MATAIJ, &pA);CHKERRQ(ierr);
-  ierr = MatCalcBandwidth(A, 0.0, &bw);CHKERRQ(ierr);
-  ierr = MatCalcBandwidth(pA, 0.0, &pbw);CHKERRQ(ierr);
+  ierr = MatComputeBandwidth(A, 0.0, &bw);CHKERRQ(ierr);
+  ierr = MatComputeBandwidth(pA, 0.0, &pbw);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&pA);CHKERRQ(ierr);
   ierr = DMDestroy(&pdm);CHKERRQ(ierr);
