@@ -9,7 +9,7 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
   PetscErrorCode (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void*))coloring->f;
   PetscErrorCode ierr;
   PetscInt       k,cstart,cend,l,row,col,nz,spidx,i,j;
-  PetscScalar    dx=0.0,*y,*xx,*w3_array,*dy_i,*dy=coloring->dy;
+  PetscScalar    dx=0.0,*xx,*w3_array,*dy_i,*dy=coloring->dy;
   PetscScalar    *vscale_array;
   PetscReal      epsilon=coloring->error_rel,umin=coloring->umin,unorm;
   Vec            w1=coloring->w1,w2=coloring->w2,w3,vscale=coloring->vscale;
@@ -135,7 +135,6 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
      (3-3) Loop over rows of vector, putting results into Jacobian matrix 
     */
     nrows_k = nrows[k];
-    ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
     if (coloring->htype[0] == 'w') {
       for (l=0; l<nrows_k; l++) { 
         row     = bs*Jentry[nz].row;   /* local row index */
@@ -164,7 +163,6 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
         }
       }
     }
-    ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
   } 
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -251,6 +249,97 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
     ierr = VecGetArray(vscale,&vscale_array);CHKERRQ(ierr);
   }
   nz   = 0;
+
+  /*------------- reorder Jentry ----------------*/
+  PetscInt brows=coloring->brows;
+  if (brows && ctype == IS_COLORING_GHOSTED) { /* oly supported for seqaij matrix */
+    PetscInt    i,bcols=coloring->bcols,m=J->rmap->n,nbcols;
+    PetscScalar *dy=coloring->dy,*dy_k;
+
+    printf("      use block rows impl: brows %d, bcols %d\n",brows,bcols);
+    nbcols = 0;
+    for (k=0; k<ncolors; k+=bcols) {
+      coloring->currentcolor = k;
+
+      /*
+       (3-1) Loop over each column associated with color
+       adding the perturbation to the vector w3 = x1 + dx.
+       */
+
+      dy_k = dy;
+      if (k + bcols > ncolors) bcols = ncolors - k;
+      for (i=0; i<bcols; i++) {
+
+        ierr = VecCopy(x1,w3);CHKERRQ(ierr);
+        ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);
+        if (ctype == IS_COLORING_GLOBAL) w3_array -= cstart; /* shift pointer so global index can be used */
+        if (coloring->htype[0] == 'w') {
+          for (l=0; l<ncolumns[k+i]; l++) {
+            col = coloring->columns[k+i][l]; /* local column (in global index!) of the matrix we are probing for */ 
+            w3_array[col] += 1.0/dx;
+          } 
+        } else { /* htype == 'ds' */
+          vscale_array -= cstart; /* shift pointer so global index can be used */
+          for (l=0; l<ncolumns[k+i]; l++) {
+            col = coloring->columns[k+i][l]; /* local column (in global index!) of the matrix we are probing for */
+            w3_array[col] += 1.0/vscale_array[col];
+          }
+          vscale_array += cstart;
+        }
+        if (ctype == IS_COLORING_GLOBAL) w3_array += cstart;
+        ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
+
+        /*
+         (3-2) Evaluate function at w3 = x1 + dx (here dx is a vector of perturbations)
+                           w2 = F(x1 + dx) - F(x1)
+         */
+        ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
+        ierr = VecPlaceArray(w2,dy_k);CHKERRQ(ierr); /* place w2 to the array dy_i */
+        ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);   
+        ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
+        ierr = VecAXPY(w2,-1.0,w1);CHKERRQ(ierr);
+        ierr = VecResetArray(w2);CHKERRQ(ierr);
+        dy_k += m; /* points to dy+i*nxloc */
+
+      }
+
+      /* 
+       (3-3) Loop over block rows of vector, putting results into Jacobian matrix 
+       */
+
+      PetscInt *nrows_new=coloring->nrows_new;
+      MatEntry *Jentry_new=coloring->matentry_new;
+      
+      nrows_k = nrows_new[nbcols++];
+      ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
+      if (coloring->htype[0] == 'w') {
+        dy_k = dy;
+        for (l=0; l<nrows_k; l++) { 
+          row                     = Jentry_new[nz].row;   /* local row index */
+          col                     = Jentry_new[nz].col;   /* color index in this column block */
+          *(Jentry_new[nz++].valaddr) = dy_k[row+col*m]*dx;
+          //printf( "%d (%d, %d, %g)\n", nz-1,row,col,*(Jentry_new[nz-1].valaddr));
+        }
+      } else { /* htype == 'ds' */
+        for (l=0; l<nrows_k; l++) { 
+          row                   = Jentry[nz].row;   /* local row index */
+          *(Jentry[nz].valaddr) = y[row]*vscale_array[Jentry[nz].col];
+          nz++;
+        }
+      }
+      ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
+    } 
+  
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    if (vscale) {
+      ierr = VecRestoreArray(vscale,&vscale_array);CHKERRQ(ierr);
+    }
+
+    coloring->currentcolor = -1;
+    PetscFunctionReturn(0);
+  } /*------------------ endof reorder Jentry ----------------*/
+
   for (k=0; k<ncolors; k++) {
     coloring->currentcolor = k;
 
