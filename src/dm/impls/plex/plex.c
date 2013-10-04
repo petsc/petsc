@@ -2712,15 +2712,25 @@ PetscErrorCode DMPlexCreatePartitionClosure(DM dm, PetscSection pointSection, IS
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexDistributeField"
-/*
+/*@
+  DMPlexDistributeField - Distribute field data to match a given PetscSF, usually the SF from mesh distribution
+
+  Collective on DM
+
   Input Parameters:
-. originalSection
-, originalVec
++ dm - The DMPlex object
+. pointSF - The PetscSF describing the communication pattern
+. originalSection - The PetscSection for existing data layout
+- originalVec - The existing data
 
   Output Parameters:
-. newSection
-. newVec
-*/
++ newSection - The PetscSF describing the new data layout
+- newVec - The new data
+
+  Level: developer
+
+.seealso: DMPlexDistribute(), DMPlexDistributeData()
+@*/
 PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection originalSection, Vec originalVec, PetscSection newSection, Vec newVec)
 {
   PetscSF        fieldSF;
@@ -2747,6 +2757,49 @@ PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection origin
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexDistributeData"
+/*@
+  DMPlexDistributeData - Distribute field data to match a given PetscSF, usually the SF from mesh distribution
+
+  Collective on DM
+
+  Input Parameters:
++ dm - The DMPlex object
+. pointSF - The PetscSF describing the communication pattern
+. originalSection - The PetscSection for existing data layout
+. datatype - The type of data
+- originalData - The existing data
+
+  Output Parameters:
++ newSection - The PetscSF describing the new data layout
+- newData - The new data
+
+  Level: developer
+
+.seealso: DMPlexDistribute(), DMPlexDistributeField()
+@*/
+PetscErrorCode DMPlexDistributeData(DM dm, PetscSF pointSF, PetscSection originalSection, MPI_Datatype datatype, void *originalData, PetscSection newSection, void **newData)
+{
+  PetscSF        fieldSF;
+  PetscInt      *remoteOffsets, fieldSize;
+  PetscMPIInt    dataSize;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSFDistributeSection(pointSF, originalSection, &remoteOffsets, newSection);CHKERRQ(ierr);
+
+  ierr = PetscSectionGetStorageSize(newSection, &fieldSize);CHKERRQ(ierr);
+  ierr = MPI_Type_size(datatype, &dataSize);CHKERRQ(ierr);
+  ierr = PetscMalloc(fieldSize * dataSize, newData);CHKERRQ(ierr);
+
+  ierr = PetscSFCreateSectionSF(pointSF, originalSection, remoteOffsets, newSection, &fieldSF);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(fieldSF, datatype, originalData, *newData);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(fieldSF, datatype, originalData, *newData);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&fieldSF);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexDistribute"
 /*@C
   DMPlexDistribute - Distributes the mesh and any associated sections.
@@ -2759,7 +2812,8 @@ PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection origin
 - overlap - The overlap of partitions, 0 is the default
 
   Output Parameter:
-. parallelMesh - The distributed DMPlex object, or NULL
++ sf - The PetscSF used for point distribution
+- parallelMesh - The distributed DMPlex object, or NULL
 
   Note: If the mesh was not distributed, the return value is NULL
 
@@ -2768,7 +2822,7 @@ PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection origin
 .keywords: mesh, elements
 .seealso: DMPlexCreate(), DMPlexDistributeByFace()
 @*/
-PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overlap, DM *dmParallel)
+PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overlap, PetscSF *sf, DM *dmParallel)
 {
   DM_Plex               *mesh   = (DM_Plex*) dm->data, *pmesh;
   MPI_Comm               comm;
@@ -2788,7 +2842,8 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(dmParallel,4);
+  if (sf) PetscValidPointer(sf,4);
+  PetscValidPointer(dmParallel,5);
 
   ierr = PetscLogEventBegin(DMPLEX_Distribute,dm,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
@@ -3150,7 +3205,8 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   }
   ierr = PetscLogEventEnd(DMPLEX_DistributeSF,dm,0,0,0);CHKERRQ(ierr);
   /* Cleanup */
-  ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);
+  if (sf) {*sf = pointSF;}
+  else    {ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);}
   ierr = DMSetFromOptions(*dmParallel);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_Distribute,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

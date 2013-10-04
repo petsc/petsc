@@ -213,7 +213,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     DM distributedMesh = NULL;
 
     /* Distribute mesh over processes */
-    ierr = DMPlexDistribute(*dm, partitioner, 0, &distributedMesh);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, partitioner, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
       PetscInt cMax = PETSC_DETERMINE, fMax = PETSC_DETERMINE;
 

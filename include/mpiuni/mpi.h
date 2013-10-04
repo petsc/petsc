@@ -271,6 +271,8 @@ extern int    MPI_Comm_rank(MPI_Comm,int*);
 
 #define MPI_Comm_f2c(comm) (MPI_Comm)(comm)
 #define MPI_Comm_c2f(comm) (MPI_Fint)(comm)
+#define MPI_Type_f2c(type) (MPI_Datatype)(type)
+#define MPI_Type_c2f(type) (MPI_Fint)(type)
 
 #define MPI_Send(buf,count,datatype,dest,tag,comm)  \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (buf),\
