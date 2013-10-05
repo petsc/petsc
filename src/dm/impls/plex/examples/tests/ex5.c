@@ -93,7 +93,7 @@ should become four triangles separated by two zero-volume cells with 4 vertices
       /         \
      /           \
    10-----20------7
-    |     5      / \
+28  |     5    26/ \
    14----25----12   \
      \         /|   |\
       \       / |   | \
@@ -107,6 +107,7 @@ should become four triangles separated by two zero-volume cells with 4 vertices
               \ |   | /
                \|   |/
                13---8
+                 27
 
 Tetrahedron
 -----------
