@@ -530,65 +530,76 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexConstructCohesiveCells_Internal"
+/*
+  We are adding two kinds of points here:
+    Replicated: Copies of points which exist in the mesh, such as vertices identified across a fault
+    Hybrid:     Entirely new points, such as cohesive cells
+*/
 static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label, DM sdm)
 {
-  MPI_Comm        comm;
-  IS              valueIS, *pointIS;
-  const PetscInt *values, **splitPoints;
-  PetscSection    coordSection;
-  Vec             coordinates;
-  PetscScalar    *coords;
-  PetscInt       *depthShift, *depthOffset, *pMaxNew, *numSplitPoints, *coneNew, *coneONew, *supportNew;
-  PetscInt        shift = 100, depth = 0, dep, dim, d, numSP = 0, sp, maxConeSize, maxSupportSize, numLabels, vStart, vEnd, pEnd, p, v;
-  PetscErrorCode  ierr;
+  MPI_Comm         comm;
+  IS               valueIS;
+  PetscInt         numSP = 0;       /* The number of depths for which we have replicated points */
+  const PetscInt  *values;          /* List of depths for which we have replicated points */
+  IS              *pointIS;
+  PetscInt        *numSplitPoints;  /* The number of replicated points at each depth */
+  PetscInt        *numHybridPoints; /* The number of hybrid points at each depth */
+  const PetscInt **splitPoints;     /* Replicated points for each depth */
+  PetscSection     coordSection;
+  Vec              coordinates;
+  PetscScalar     *coords;
+  PetscInt         depths[4];       /* Depths in the order that plex points are numbered */
+  PetscInt        *depthShift;      /* Number of replicated+hybrid points at each depth */
+  PetscInt        *depthOffset;     /* Prefix sums of depthShift */
+  PetscInt        *pMaxNew;         /* The first replicated point at each depth in the new mesh, hybrids come after this */
+  PetscInt        *coneNew, *coneONew, *supportNew;
+  PetscInt         shift = 100, depth = 0, dep, dim, d, sp, maxConeSize, maxSupportSize, numLabels, vStart, vEnd, pEnd, p, v;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  depths[0] = depth;
+  depths[1] = 0;
+  depths[2] = depth-1;
+  depths[3] = 1;
   /* Count split points and add cohesive cells */
+  ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
+  ierr = PetscMalloc6(depth+1,PetscInt,&depthShift,depth+1,PetscInt,&depthOffset,depth+1,PetscInt,&pMaxNew,maxConeSize*3,PetscInt,&coneNew,maxConeSize*3,PetscInt,&coneONew,maxSupportSize,PetscInt,&supportNew);CHKERRQ(ierr);
+  ierr = PetscMalloc4(depth+1,IS,&pointIS,depth+1,PetscInt,&numSplitPoints,depth+1,PetscInt,&numHybridPoints,depth+1,const PetscInt*,&splitPoints);CHKERRQ(ierr);
+  ierr = PetscMemzero(depthShift,  (depth+1) * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(depthOffset, (depth+1) * sizeof(PetscInt));CHKERRQ(ierr);
+  for (d = 0; d <= depth; ++d) {
+    ierr               = DMPlexGetDepthStratum(dm, d, NULL, &pMaxNew[d]);CHKERRQ(ierr);
+    numSplitPoints[d]  = 0;
+    numHybridPoints[d] = 0;
+    splitPoints[d]     = NULL;
+    pointIS[d]         = NULL;
+  }
   if (label) {
     ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(valueIS, &numSP);CHKERRQ(ierr);
     ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
   }
-  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
-  ierr = PetscMalloc6(depth+1,PetscInt,&depthShift,depth+1,PetscInt,&depthOffset,depth+1,PetscInt,&pMaxNew,maxConeSize*3,PetscInt,&coneNew,maxConeSize*3,PetscInt,&coneONew,maxSupportSize,PetscInt,&supportNew);CHKERRQ(ierr);
-  ierr = PetscMalloc3(depth+1,IS,&pointIS,depth+1,PetscInt,&numSplitPoints,depth+1,const PetscInt*,&splitPoints);CHKERRQ(ierr);
-  ierr = PetscMemzero(depthShift, (depth+1) * sizeof(PetscInt));CHKERRQ(ierr);
-  for (d = 0; d <= depth; ++d) {
-    ierr              = DMPlexGetDepthStratum(dm, d, NULL, &pMaxNew[d]);CHKERRQ(ierr);
-    numSplitPoints[d] = 0;
-    splitPoints[d]    = NULL;
-    pointIS[d]        = NULL;
-  }
   for (sp = 0; sp < numSP; ++sp) {
     const PetscInt dep = values[sp];
 
     if ((dep < 0) || (dep > depth)) continue;
-    ierr = DMLabelGetStratumSize(label, dep, &depthShift[dep]);CHKERRQ(ierr);
+    /* TAKE OUT*/ ierr = DMLabelGetStratumSize(label, dep, &depthShift[dep]);CHKERRQ(ierr);
     ierr = DMLabelGetStratumIS(label, dep, &pointIS[dep]);CHKERRQ(ierr);
     if (pointIS[dep]) {
       ierr = ISGetLocalSize(pointIS[dep], &numSplitPoints[dep]);CHKERRQ(ierr);
       ierr = ISGetIndices(pointIS[dep], &splitPoints[dep]);CHKERRQ(ierr);
     }
   }
-  if (depth >= 0) {
-    /* Calculate number of additional points */
-    depthShift[depth] = depthShift[depth-1]; /* There is a cohesive cell for every split face   */
-    depthShift[1]    += depthShift[0];       /* There is a cohesive edge for every split vertex */
-    /* Calculate hybrid bound for each dimension */
-    pMaxNew[0] += depthShift[depth];
-    if (depth > 1) pMaxNew[dim-1] += depthShift[depth] + depthShift[0];
-    if (depth > 2) pMaxNew[1]     += depthShift[depth] + depthShift[0] + depthShift[dim-1];
-
-    /* Calculate point offset for each dimension */
-    depthOffset[depth] = 0;
-    depthOffset[0]     = depthOffset[depth] + depthShift[depth];
-    if (depth > 1) depthOffset[dim-1] = depthOffset[0]     + depthShift[0];
-    if (depth > 2) depthOffset[1]     = depthOffset[dim-1] + depthShift[dim-1];
-  }
+  /* Calculate number of hybrid points */
+  for (d = 1; d <= depth; ++d) numHybridPoints[d]     = numSplitPoints[d-1]; /* There is a hybrid cell/face/edge for every split face/edge/vertex   */
+  for (d = 0; d <= depth; ++d) depthShift[d]          = numSplitPoints[d] + numHybridPoints[d];
+  /* TAKE THIS OUT */ if (depth > 2) depthShift[2] = numSplitPoints[2];
+  for (d = 1; d <= depth; ++d) depthOffset[depths[d]] = depthOffset[depths[d-1]] + depthShift[depths[d-1]];
+  for (d = 0; d <= depth; ++d) pMaxNew[d]            += depthOffset[d];
   ierr = DMPlexShiftSizes_Internal(dm, depthShift, sdm);CHKERRQ(ierr);
   /* Step 3: Set cone/support sizes for new points */
   for (dep = 0; dep <= depth; ++dep) {
@@ -923,7 +934,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
   if (depth > 2) pMaxNew[2]  = -1;                   /* There are no hybrid faces */
   ierr = DMPlexSetHybridBounds(sdm, depth >= 0 ? pMaxNew[depth] : PETSC_DETERMINE, depth>1 ? pMaxNew[depth-1] : PETSC_DETERMINE, depth>2 ? pMaxNew[1] : PETSC_DETERMINE, depth >= 0 ? pMaxNew[0] : PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = PetscFree6(depthShift, depthOffset, pMaxNew, coneNew, coneONew, supportNew);CHKERRQ(ierr);
-  ierr = PetscFree3(pointIS, numSplitPoints, splitPoints);CHKERRQ(ierr);
+  ierr = PetscFree4(pointIS, numSplitPoints, numHybridPoints, splitPoints);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
