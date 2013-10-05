@@ -5879,3 +5879,126 @@ PetscErrorCode PetscSectionCreateGlobalSectionLabel(PetscSection s, PetscSF sf, 
   ierr = PetscFree(neg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexCheckSymmetry"
+/*@
+  DMPlexCheckSymmetry - Check that the adjacency information in the mesh is symmetric.
+
+  Input Parameters:
+  + dm - The DMPlex object
+
+  Note: This is a useful diagnostic when creating meshes programmatically.
+
+  Level: developer
+
+.seealso: DMCreate()
+@*/
+PetscErrorCode DMPlexCheckSymmetry(DM dm)
+{
+  PetscSection    coneSection, supportSection;
+  const PetscInt *cone, *support;
+  PetscInt        coneSize, c, supportSize, s;
+  PetscInt        pStart, pEnd, p, csize, ssize;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMPlexGetConeSection(dm, &coneSection);CHKERRQ(ierr);
+  ierr = DMPlexGetSupportSection(dm, &supportSection);CHKERRQ(ierr);
+  /* Check that point p is found in the support of its cone points, and vice versa */
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
+    for (c = 0; c < coneSize; ++c) {
+      ierr = DMPlexGetSupportSize(dm, cone[c], &supportSize);CHKERRQ(ierr);
+      ierr = DMPlexGetSupport(dm, cone[c], &support);CHKERRQ(ierr);
+      for (s = 0; s < supportSize; ++s) {
+        if (support[s] == p) break;
+      }
+      if (s >= supportSize) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d cone: ", p);
+        for (s = 0; s < coneSize; ++s) {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", cone[s]);
+        }
+        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
+        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d support: ", cone[c]);
+        for (s = 0; s < supportSize; ++s) {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", support[s]);
+        }
+        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
+        SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %d not found in support of cone point %d", p, cone[c]);
+      }
+    }
+    ierr = DMPlexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
+    ierr = DMPlexGetSupport(dm, p, &support);CHKERRQ(ierr);
+    for (s = 0; s < supportSize; ++s) {
+      ierr = DMPlexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
+      ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
+      for (c = 0; c < coneSize; ++c) {
+        if (cone[c] == p) break;
+      }
+      if (c >= coneSize) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d support: ", p);
+        for (c = 0; c < supportSize; ++c) {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", support[c]);
+        }
+        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
+        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d cone: ", support[s]);
+        for (c = 0; c < coneSize; ++c) {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", cone[c]);
+        }
+        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
+        SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %d not found in cone of support point %d", p, support[s]);
+      }
+    }
+  }
+  ierr = PetscSectionGetStorageSize(coneSection, &csize);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(supportSection, &ssize);CHKERRQ(ierr);
+  if (csize != ssize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Total cone size %d != Total support size %d", csize, ssize);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexCheckSkeleton"
+/*@
+  DMPlexCheckSkeleton - Check that each cell has the correct number of vertices
+
+  Input Parameters:
+  + dm - The DMPlex object
+
+  Note: This is a useful diagnostic when creating meshes programmatically.
+
+  Level: developer
+
+.seealso: DMCreate()
+@*/
+PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscBool isSimplex)
+{
+  DM             udm;
+  PetscInt       dim, numCorners, coneSize, cStart, cEnd, cMax, c;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  switch (dim) {
+  case 2: numCorners = isSimplex ? 3 : 4; break;
+  case 3: numCorners = isSimplex ? 4 : 8; break;
+  default:
+    SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle meshes of dimension %d", dim);
+  }
+  ierr = DMPlexUninterpolate(dm, &udm);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) udm, "un_");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(udm);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
+  cMax = cMax >= 0 ? cMax : cEnd;
+  for (c = cStart; c < cMax; ++c) {
+    ierr = DMPlexGetConeSize(udm, c, &coneSize);CHKERRQ(ierr);
+    if (coneSize != numCorners) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %d has  %d vertices != %d", c, coneSize, numCorners);
+  }
+  ierr = DMDestroy(&udm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
