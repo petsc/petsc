@@ -3,7 +3,6 @@ static char help[] = "Tests for uniform refinement\n\n";
 #include <petscdmplex.h>
 
 typedef struct {
-  DM        dm;
   PetscInt  debug;             /* The debugging level */
   PetscInt  dim;               /* The topological mesh dimension */
   PetscBool refinementUniform; /* Uniformly refine the mesh */
@@ -548,9 +547,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       }
     }
   }
-  ierr     = PetscObjectSetName((PetscObject) *dm, "Hybrid Mesh");CHKERRQ(ierr);
-  ierr     = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  user->dm = *dm;
+  ierr = PetscObjectSetName((PetscObject) *dm, "Hybrid Mesh");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -651,18 +649,19 @@ PetscErrorCode CheckOrientation(DM dm)
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
+  DM             dm;
   AppCtx         user;                 /* user-defined work context */
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &user.dm);CHKERRQ(ierr);
+  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
   ierr = DMPlexCheckSymmetry(dm);CHKERRQ(ierr);
   ierr = DMPlexCheckSkeleton(dm, user.cellSimplex);CHKERRQ(ierr);
 #if 0
-  ierr = CheckOrientation(user.dm);CHKERRQ(ierr);
+  ierr = CheckOrientation(dm);CHKERRQ(ierr);
 #endif
-  ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
+  ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
