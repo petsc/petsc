@@ -533,14 +533,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, partitioner, 0, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
-      PetscInt cMax = PETSC_DETERMINE, fMax = PETSC_DETERMINE;
-
-      /* Do not know how to preserve this after distribution */
-      if (rank) {
-        cMax = 1;
-        fMax = 11;
-      }
-      ierr = DMPlexSetHybridBounds(distributedMesh, cMax, PETSC_DETERMINE, fMax, PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
     }
