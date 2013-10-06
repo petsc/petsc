@@ -153,6 +153,11 @@ In parallel,
 Test 1:
 Four tets sharing two faces
 
+Cells:    0-3,4-5
+Vertices: 6-15
+Faces:    16-29,30-34
+Edges:    35-52,53-56
+
 Quadrilateral
 -------------
 Test 0:
@@ -553,6 +558,8 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
+  ierr = DMPlexCheckSymmetry(dm);CHKERRQ(ierr);
+  ierr = DMPlexCheckSkeleton(dm, user.cellSimplex);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
