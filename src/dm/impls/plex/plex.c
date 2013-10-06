@@ -3189,8 +3189,7 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
 
       if (pmax < 0) continue;
       ierr = DMPlexGetDepthStratum(dm, d > depth ? depth : d, &stratum[0], &stratum[1]);CHKERRQ(ierr);
-      /* This mesh is not interpolated, so there is still a problem here */
-      ierr = DMPlexGetDepthStratum(*dmParallel, d > 0 ? 1 : d, NULL, &pEnd);CHKERRQ(ierr);
+      ierr = DMPlexGetDepthStratum(*dmParallel, d, NULL, &pEnd);CHKERRQ(ierr);
       ierr = MPI_Bcast(stratum, 2, MPIU_INT, 0, comm);CHKERRQ(ierr);
       for (p = 0; p < n; ++p) {
         const PetscInt point = gpoints[p];
