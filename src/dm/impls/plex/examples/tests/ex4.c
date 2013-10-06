@@ -3,7 +3,6 @@ static char help[] = "Tests for uniform refinement\n\n";
 #include <petscdmplex.h>
 
 typedef struct {
-  DM        dm;
   PetscInt  debug;             /* The debugging level */
   PetscInt  dim;               /* The topological mesh dimension */
   PetscBool refinementUniform; /* Uniformly refine the mesh */
@@ -372,8 +371,9 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
         4----31----8------
          cell 2
 */
-PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, DM *dm)
+PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
+  DM             idm;
   PetscInt       depth = 3;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
@@ -381,19 +381,56 @@ PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, DM *dm)
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   if (!rank) {
-    PetscInt    numPoints[4]         = {4+4, 6+6+3, 4+4, 3};
-    PetscInt    coneSize[34]         = {4, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
-    PetscInt    cones[67]            = {11, 12, 13, 14,  15, 16, 17, 18,  14, 18, 31, 32, 33,  20, 22, 19,  21, 23, 20,  19, 24, 21,  22, 23, 24,  28, 26, 25,  29, 27, 26,  27, 30, 25,  28, 29, 30,  3, 4,  3, 5,  3, 6,  4, 5,  5, 6,  6, 4,  8, 7,  9, 7,  10, 7,  8, 9,  9, 10,  10, 8,  4, 8,  5, 9,  6, 10};
-    PetscInt    coneOrientations[67] = { 0,  0,  0,  0,   0,  0,  0, -3,   0,  0,  0,  0,  0,   0, -2, -2,   0, -2, -2,   0, -2, -2,   0,  0,  0,   0,  0, -2,   0,  0, -2,  -2,  0,  0,   0,  0,  0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,   0, 0,  0, 0,  0,  0,   0, 0,  0, 0,  0, 0,  0,  0};
-    PetscScalar vertexCoords[24]     = {0.0, 0.0, -0.5,  0.0, -0.5, 0.0,  1.0, 0.0, 0.0,  0.0, 0.5, 0.0,  0.0, 0.0, 0.5,  0.0, -0.5, 0.0,  1.0, 0.0, 0.0,  0.0, 0.5, 0.0};
-    PetscInt    cMax = 2, eMax = 31;
+    switch (testNum) {
+    case 0:
+    {
+      PetscInt    numPoints[4]         = {4+4, 6+6+3, 4+4, 3};
+      PetscInt    coneSize[34]         = {4, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+      PetscInt    cones[67]            = {11, 12, 13, 14,  15, 16, 17, 18,  14, 18, 31, 32, 33,  20, 22, 19,  21, 23, 20,  19, 24, 21,  22, 23, 24,  28, 26, 25,  29, 27, 26,  27, 30, 25,  28, 29, 30,  3, 4,  3, 5,  3, 6,  4, 5,  5, 6,  6, 4,  8, 7,  9, 7,  10, 7,  8, 9,  9, 10,  10, 8,  4, 8,  5, 9,  6, 10};
+      PetscInt    coneOrientations[67] = { 0,  0,  0,  0,   0,  0,  0, -3,   0,  0,  0,  0,  0,   0, -2, -2,   0, -2, -2,   0, -2, -2,   0,  0,  0,   0,  0, -2,   0,  0, -2,  -2,  0,  0,   0,  0,  0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,   0, 0,  0, 0,  0,  0,   0, 0,  0, 0,  0, 0,  0,  0};
+      PetscScalar vertexCoords[24]     = {0.0, 0.0, -0.5,  0.0, -0.5, 0.0,  1.0, 0.0, 0.0,  0.0, 0.5, 0.0,  0.0, 0.0, 0.5,  0.0, -0.5, 0.0,  1.0, 0.0, 0.0,  0.0, 0.5, 0.0};
+      PetscInt    cMax = 2, eMax = 31;
 
-    ierr = DMPlexCreateFromDAG(*dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-    ierr = DMPlexSetHybridBounds(*dm, cMax, PETSC_DETERMINE, eMax, PETSC_DETERMINE);CHKERRQ(ierr); /* Indicate a hybrid mesh */
+      ierr = DMPlexCreateFromDAG(*dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+      ierr = DMPlexSetHybridBounds(*dm, cMax, PETSC_DETERMINE, eMax, PETSC_DETERMINE);CHKERRQ(ierr); /* Indicate a hybrid mesh */
+    }
+    break;
+    case 1:
+    {
+      PetscInt    numPoints[2]         = {8, 3};
+      PetscInt    coneSize[11]         = {4, 4, 6, 0, 0, 0, 0, 0, 0, 0, 0};
+      PetscInt    cones[14]            = {4, 5, 6, 3,  8, 10, 9, 7,  4, 5, 6, 8, 9, 10};
+      PetscInt    coneOrientations[14] = {0, 0, 0, 0,  0,  0, 0, 0,  0, 0, 0, 0, 0,  0};
+      PetscScalar vertexCoords[24]     = {-1.0, 0.0, 0.0,  0.0, -1.0, 0.0,  0.0, 0.0, 1.0,  0.0, 1.0, 0.0,  1.0, 0.0, 0.0,  0.0, -1.0, 0.0,  0.0, 0.0, 1.0,  0.0, 1.0, 0.0};
+      PetscInt    cMax = 2;
+
+      depth = 1;
+      ierr = DMPlexCreateFromDAG(*dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+      ierr = DMPlexSetHybridBounds(*dm, cMax, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr); /* Indicate a hybrid mesh */
+      ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
+      ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
+      ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
+      ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
+      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      *dm  = idm;
+    }
+    break;
+    default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+    }
   } else {
     PetscInt numPoints[4] = {0, 0, 0, 0};
 
     ierr = DMPlexCreateFromDAG(*dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+    switch (testNum) {
+    case 1:
+      ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
+      ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
+      ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
+      ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
+      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      *dm  = idm;
+      break;
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -413,7 +450,7 @@ PetscErrorCode CreateTensorProduct_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
     PetscInt    numPoints[2]         = {12, 2};
     PetscInt    coneSize[14]         = {8, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     PetscInt    cones[16]            = {2, 3, 4, 5, 6, 7, 8, 9,  5, 4, 10, 11, 7, 12, 13, 8};
-    PetscInt    coneOrientations[96] = {0, 0, 0, 0, 0, 0, 0, 0,  0, 0,  0,  0, 0,  0,  0, 0};
+    PetscInt    coneOrientations[16] = {0, 0, 0, 0, 0, 0, 0, 0,  0, 0,  0,  0, 0,  0,  0, 0};
     PetscScalar vertexCoords[36]     = {-1.0, -0.5, -0.5,  -1.0,  0.5, -0.5,  0.0,  0.5, -0.5,   0.0, -0.5, -0.5,
                                         -1.0, -0.5,  0.5,   0.0, -0.5,  0.5,  0.0,  0.5,  0.5,  -1.0,  0.5,  0.5,
                                          1.0,  0.5, -0.5,   1.0, -0.5, -0.5,  1.0, -0.5,  0.5,   1.0,  0.5,  0.5};
@@ -474,7 +511,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   case 3:
     if (cellSimplex) {
       if (cellHybrid) {
-        ierr = CreateSimplexHybrid_3D(comm, dm);CHKERRQ(ierr);
+        ierr = CreateSimplexHybrid_3D(comm, user->testNum, dm);CHKERRQ(ierr);
       } else {
         ierr = CreateSimplex_3D(comm, user->testNum, dm);CHKERRQ(ierr);
       }
@@ -500,6 +537,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = distributedMesh;
     }
     if (refinementUniform) {
+      ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "orig_");CHKERRQ(ierr);
+      ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
       ierr = DMPlexSetRefinementUniform(*dm, refinementUniform);CHKERRQ(ierr);
       ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
       if (refinedMesh) {
@@ -508,76 +547,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       }
     }
   }
-  ierr     = PetscObjectSetName((PetscObject) *dm, "Hybrid Mesh");CHKERRQ(ierr);
-  ierr     = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  user->dm = *dm;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "CheckSymmetry"
-PetscErrorCode CheckSymmetry(DM dm)
-{
-  PetscSection    coneSection, supportSection;
-  const PetscInt *cone, *support;
-  PetscInt        coneSize, c, supportSize, s;
-  PetscInt        pStart, pEnd, p, csize, ssize;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  ierr = DMPlexGetConeSection(dm, &coneSection);CHKERRQ(ierr);
-  ierr = DMPlexGetSupportSection(dm, &supportSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetStorageSize(coneSection, &csize);CHKERRQ(ierr);
-  ierr = PetscSectionGetStorageSize(supportSection, &ssize);CHKERRQ(ierr);
-  if (csize != ssize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Total cone size %d != Total support size %d", csize, ssize);
-  /* Check that point p is found in the support of its cone points, and vice versa */
-  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; ++p) {
-    ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
-    ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
-    for (c = 0; c < coneSize; ++c) {
-      ierr = DMPlexGetSupportSize(dm, cone[c], &supportSize);CHKERRQ(ierr);
-      ierr = DMPlexGetSupport(dm, cone[c], &support);CHKERRQ(ierr);
-      for (s = 0; s < supportSize; ++s) {
-        if (support[s] == p) break;
-      }
-      if (s >= supportSize) {
-        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d cone: ", p);
-        for (s = 0; s < coneSize; ++s) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", cone[s]);
-        }
-        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
-        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d support: ", cone[c]);
-        for (s = 0; s < supportSize; ++s) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", support[s]);
-        }
-        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
-        SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %d not found in support of cone point %d", p, cone[c]);
-      }
-    }
-    ierr = DMPlexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
-    ierr = DMPlexGetSupport(dm, p, &support);CHKERRQ(ierr);
-    for (s = 0; s < supportSize; ++s) {
-      ierr = DMPlexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
-      ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
-      for (c = 0; c < coneSize; ++c) {
-        if (cone[c] == p) break;
-      }
-      if (c >= coneSize) {
-        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d support: ", p);
-        for (c = 0; c < supportSize; ++c) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", support[c]);
-        }
-        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
-        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d cone: ", support[s]);
-        for (c = 0; c < coneSize; ++c) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", cone[c]);
-        }
-        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
-        SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %d not found in cone of support point %d", p, support[s]);
-      }
-    }
-  }
+  ierr = PetscObjectSetName((PetscObject) *dm, "Hybrid Mesh");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -675,52 +646,22 @@ PetscErrorCode CheckOrientation(DM dm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "CheckSkeleton"
-PetscErrorCode CheckSkeleton(DM dm, AppCtx *user)
-{
-  DM             udm;
-  PetscInt       dim, numCorners, coneSize, cStart, cEnd, c;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (user->cellHybrid) PetscFunctionReturn(0);
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-  switch (dim) {
-  case 2: numCorners = user->cellSimplex ? 3 : 4; break;
-  case 3: numCorners = user->cellSimplex ? 4 : 8; break;
-  default:
-    SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle meshes of dimension %d", dim);
-  }
-  ierr = DMPlexUninterpolate(dm, &udm);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) udm, "un_");CHKERRQ(ierr);
-  ierr = DMSetFromOptions(udm);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  for (c = cStart; c < cEnd; ++c) {
-    ierr = DMPlexGetConeSize(udm, c, &coneSize);CHKERRQ(ierr);
-    if (coneSize != numCorners) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %d has  %d vertices != %d", c, coneSize, numCorners);
-  }
-  ierr = DMDestroy(&udm);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
+  DM             dm;
   AppCtx         user;                 /* user-defined work context */
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &user.dm);CHKERRQ(ierr);
-  if (!user.cellHybrid) {
-    ierr = CheckSymmetry(user.dm);CHKERRQ(ierr);
-  }
-  ierr = CheckSkeleton(user.dm, &user);CHKERRQ(ierr);
+  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
+  ierr = DMPlexCheckSymmetry(dm);CHKERRQ(ierr);
+  ierr = DMPlexCheckSkeleton(dm, user.cellSimplex);CHKERRQ(ierr);
 #if 0
-  ierr = CheckOrientation(user.dm);CHKERRQ(ierr);
+  ierr = CheckOrientation(dm);CHKERRQ(ierr);
 #endif
-  ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
+  ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

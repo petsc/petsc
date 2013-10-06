@@ -93,7 +93,7 @@ should become four triangles separated by two zero-volume cells with 4 vertices
       /         \
      /           \
    10-----20------7
-    |     5      / \
+28  |     5    26/ \
    14----25----12   \
      \         /|   |\
       \       / |   | \
@@ -107,6 +107,7 @@ should become four triangles separated by two zero-volume cells with 4 vertices
               \ |   | /
                \|   |/
                13---8
+                 27
 
 Tetrahedron
 -----------
@@ -123,34 +124,39 @@ Two tets sharing a face
       \ | /      /
         3-------
 
-should become two tetrahedrons separated by a zero-volume cell with 6 vertices
+should become two tetrahedrons separated by a zero-volume cell with 3 faces/3 edges/6 vertices
 
- cell   6 ___33___10______    cell
+ cell   6 ___36___10______    cell
  0    / | \        |\      \     1
-    21  |  23      | 29     27
-    /12 24 14\    30  \      \
-   3-20-|----5--32-|---9--26--7
+    24  |  26      | 32     30
+    /12 27 14\    33  \      \
+   3-23-|----5--35-|---9--29--7
     \ 13| 11/      |18 /      /
-    19  |  22      | 28     25
+    22  |  25      | 31     28
       \ | /        |/      /
-        4----31----8------
+        4----34----8------
          cell 2
 
 In parallel,
 
- cell   5 ___25____8      4______    cell
+ cell   5 ___28____8      4______    cell
  0    / | \        |\     |\      \     0
-    16  |   18     | 21   | 13  6  11
-    /10 19 12\    22  \   |8 \      \
-   2-15-|----4--24-|---7  14  3--10--1
+    19  |   21     | 24   | 13  6  11
+    /10 22 12\    25  \   |8 \      \
+   2-18-|----4--27-|---7  14  3--10--1
     \ 11| 9 /      |13 /  |  /      /
-    14  |  17      | 20   | 12  5  9
+    17  |  20      | 23   | 12  5  9
       \ | /        |/     |/      /
-        3----23----6      2------
+        3----26----6      2------
          cell 1
 
 Test 1:
 Four tets sharing two faces
+
+Cells:    0-3,4-5
+Vertices: 6-15
+Faces:    16-29,30-34
+Edges:    35-52,53-56
 
 Quadrilateral
 -------------
@@ -194,43 +200,42 @@ cell   9-----31------8-----42------13 cell
 should become two hexes separated by a zero-volume cell with 8 vertices
 
                          cell 2
-cell  10-----37------9-----58------18----48------14 cell
+cell  10-----41------9-----62------18----52------14 cell
 0     /|            /|            /|            /|     1
-    38 |   20      36|           52|   26      47|
+    42 |   20      40|  32       56|   26      51|
     /  |          /  |          /  |          /  |
-   7-----35------8-----57------17--|-46------13  |
+   7-----39------8-----61------17--|-50------13  |
    |   |     23  |   |         |   |     29  |   |
-   |  42         |  41         |   54        |   50
+   |  46         |  45         |   58        |   54
    |24 |         |22 |         |30 |         |28 |
-  39   |  21    40   |        53   |   27   49   |
-   |   6-----33--|---5-----56--|---16----45--|---12
+  43   |  21    44   |        57   |   27   53   |
+   |   6-----37--|---5-----60--|---16----49--|---12
    |  /          |  /          |  /          |  /
-   | 34   19     | 32          | 51    25    | 44
+   | 38   19     | 36   31     | 55    25    | 48
    |/            |/            |/            |/
-   3-----31------4-----55------15----43------11
+   3-----35------4-----59------15----47------11
 
 In parallel,
 
                          cell 2
-cell   9-----27------8-----40------13     8----20------4  cell
+cell   9-----31------8-----44------13     8----20------4  cell
 0     /|            /|            /|     /|           /|     1
-    28 |   15      26|           34|   24 |  10      19|
+    32 |   15      30|  22       38|   24 |  10      19|
     /  |          /  |          /  |   /  |         /  |
-   6-----25------7-----39------12  |  7----18------3   |
+   6-----29------7-----43------12  |  7----18------3   |
    |   |     18  |   |         |   |  |   |    13  |   |
-   |  32         |  31         |   36 |  26        |   22
+   |  36         |  35         |   40 |  26        |   22
    |19 |         |17 |         |20 |  |14 |        |12 |
-  29   |  16    30   |        35   |  25  |  11   21   |
-   |   5-----23--|---4-----38--|---11 |   6----17--|---2
+  33   |  16    34   |        39   |  25  |  11   21   |
+   |   5-----27--|---4-----42--|---11 |   6----17--|---2
    |  /          |  /          |  /   |  /         |  /
-   | 24   14     | 22          | 33   |23     9    | 16
+   | 28   14     | 26   21     | 37   |23     9    | 16
    |/            |/            |/     |/           |/
-   2-----21------3-----37------10     5----15------1
+   2-----25------3-----41------10     5----15------1
 
 */
 
 typedef struct {
-  DM        dm;
   PetscInt  debug;       /* The debugging level */
   PetscInt  dim;         /* The topological mesh dimension */
   PetscBool cellSimplex; /* Use simplices or hexes */
@@ -519,11 +524,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMLabelDuplicate(subpointMap, &label);CHKERRQ(ierr);
     ierr = DMLabelClearStratum(label, dim);CHKERRQ(ierr);
     ierr = DMPlexLabelCohesiveComplete(*dm, label, PETSC_FALSE, faultMesh);CHKERRQ(ierr);
+    ierr = DMDestroy(&faultMesh);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = DMPlexConstructCohesiveCells(*dm, label, &hybridMesh);CHKERRQ(ierr);
     ierr = DMLabelDestroy(&label);CHKERRQ(ierr);
-    ierr = DMDestroy(&faultMesh);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = hybridMesh;
   }
@@ -533,21 +538,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, partitioner, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
-      PetscInt cMax = PETSC_DETERMINE, fMax = PETSC_DETERMINE;
-
-      /* Do not know how to preserve this after distribution */
-      if (rank) {
-        cMax = 1;
-        fMax = 11;
-      }
-      ierr = DMPlexSetHybridBounds(distributedMesh, cMax, PETSC_DETERMINE, fMax, PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
     }
   }
-  ierr     = PetscObjectSetName((PetscObject) *dm, "Hybrid Mesh");CHKERRQ(ierr);
-  ierr     = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  user->dm = *dm;
+  ierr = PetscObjectSetName((PetscObject) *dm, "Hybrid Mesh");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -555,13 +551,16 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
+  DM             dm;
   AppCtx         user;                 /* user-defined work context */
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &user.dm);CHKERRQ(ierr);
-  ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
+  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
+  ierr = DMPlexCheckSymmetry(dm);CHKERRQ(ierr);
+  ierr = DMPlexCheckSkeleton(dm, user.cellSimplex);CHKERRQ(ierr);
+  ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

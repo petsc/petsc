@@ -113,10 +113,16 @@ PetscErrorCode CellRefinerGetSizes(CellRefiner refiner, DM dm, PetscInt depthSiz
     cMax = PetscMin(cEnd, cMax);
     if (eMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No edge maximum specified in hybrid mesh");
     eMax = PetscMin(eEnd, eMax);
-    depthSize[0] =    vEnd - vStart  +     eMax - eStart;  /* Add a vertex on every edge, but not hybrid edges */
-    depthSize[1] = 2*(eMax - eStart) + 13*(cMax - cStart) + (eEnd - eMax) + numHybridFaces; /* Every interior edge is split into 2 edges and 13 edges are added for each interior cell, each hybrid edge stays intact, and one new hybrid edge for each two interior edges (hybrid face) on a hybrid cell */
-    depthSize[2] = 4*(fEnd - fStart) +  8*(cEnd - cStart); /* Every face split into 4 faces and 8 faces are added for each cell */
-    depthSize[3] = 8*(cMax - cStart) +  4*(cEnd - cMax);   /* Every interior cell split into 8 cells, and every hybrid cell split into 4 cells */
+    /* Tetrahedra */
+    depthSize[0]  =    vEnd - vStart  +    eMax - eStart;                    /* Add a vertex on every interior edge */
+    depthSize[1]  = 2*(eMax - eStart) + 3*(fMax - fStart) + (cMax - cStart); /* Every interior edge split into 2 edges, 3 edges added for each interior face, 1 edge for each interior cell */
+    depthSize[2]  = 4*(fMax - fStart) + 8*(cMax - cStart);                   /* Every interior face split into 4 faces, 8 faces added for each interior cell */
+    depthSize[3]  = 8*(cMax - cStart);                                       /* Every interior cell split into 8 cells */
+    /* Triangular Prisms */
+    depthSize[0] += 0;                                                       /* No hybrid vertices */
+    depthSize[1] +=   (eEnd - eMax)   +   (fEnd - fMax);                     /* Every hybrid edge remains, 1 edge for every hybrid face */
+    depthSize[2] += 4*(fEnd - fMax)   + 3*(cEnd - cMax);                     /* Every hybrid face split into 2 faces and 3 faces are added for each hybrid cell */
+    depthSize[3] += 4*(cEnd - cMax);                                         /* Every hybrid cell split into 4 cells */
     break;
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
@@ -347,7 +353,7 @@ PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscInt dept
     /* All cells have 4 faces */
     for (c = cStart; c < cEnd; ++c) {
       for (r = 0; r < 8; ++r) {
-        const PetscInt newp = (c - cStart)*8 + r;
+        const PetscInt newp = cStartNew + (c - cStart)*8 + r;
 
         ierr = DMPlexSetConeSize(rdm, newp, 4);CHKERRQ(ierr);
       }
@@ -451,6 +457,132 @@ PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscInt dept
       }
       ierr = DMPlexRestoreTransitiveClosure(dm, e, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
       ierr = DMPlexSetSupportSize(rdm, newp, 2 + size*2 + cellSize);CHKERRQ(ierr);
+    }
+    break;
+  case 7:
+    /* Hybrid Simplicial 2D */
+    if (cMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No cell maximum specified in hybrid mesh");
+    cMax = PetscMin(cEnd, cMax);
+    if (fMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No face maximum specified in hybrid mesh");
+    fMax = PetscMin(fEnd, fMax);
+    ierr = DMPlexSetHybridBounds(rdm, cStartNew + (cMax-cStart)*8, PETSC_DETERMINE, eStartNew + (eMax-eStart)*2 + (cMax-cStart)*13, PETSC_DETERMINE);CHKERRQ(ierr);
+    /* Interior cells have 4 faces */
+    for (c = cStart; c < cMax; ++c) {
+      for (r = 0; r < 8; ++r) {
+        const PetscInt newp = cStartNew + (c - cStart)*8 + r;
+
+        ierr = DMPlexSetConeSize(rdm, newp, 4);CHKERRQ(ierr);
+      }
+    }
+    /* Hybrid cells have 5 faces */
+    for (c = cMax; c < cEnd; ++c) {
+      for (r = 0; r < 4; ++r) {
+        const PetscInt newp = cStartNew + (cMax - cStart)*8 + (c - cMax)*4 + r;
+
+        ierr = DMPlexSetConeSize(rdm, newp, 5);CHKERRQ(ierr);
+      }
+    }
+    /* Interior/Hybrid split faces have 3 edges and the same cells as the parent */
+    for (f = fStart; f < fMax; ++f) {
+      for (r = 0; r < 4; ++r) {
+        const PetscInt newp = fStartNew + (f - fStart)*4 + r;
+        PetscInt       size;
+
+        ierr = DMPlexSetConeSize(rdm, newp, 3);CHKERRQ(ierr);
+        ierr = DMPlexGetSupportSize(dm, f, &size);CHKERRQ(ierr);
+        ierr = DMPlexSetSupportSize(rdm, newp, size);CHKERRQ(ierr);
+      }
+    }
+    /* Interior cell faces have 3 edges and 2 cells */
+    for (c = cStart; c < cMax; ++c) {
+      for (r = 0; r < 8; ++r) {
+        const PetscInt newp = fStartNew + (fMax - fStart)*4 + (c - cStart)*8 + r;
+
+        ierr = DMPlexSetConeSize(rdm, newp, 3);CHKERRQ(ierr);
+        ierr = DMPlexSetSupportSize(rdm, newp, 2);CHKERRQ(ierr);
+      }
+    }
+    /* Split edges have 2 vertices and the same faces */
+    for (e = eStart; e < eMax; ++e) {
+      for (r = 0; r < 2; ++r) {
+        const PetscInt newp = eStartNew + (e - eStart)*2 + r;
+        PetscInt       size;
+
+        ierr = DMPlexSetConeSize(rdm, newp, 2);CHKERRQ(ierr);
+        ierr = DMPlexGetSupportSize(dm, e, &size);CHKERRQ(ierr);
+        ierr = DMPlexSetSupportSize(rdm, newp, size);CHKERRQ(ierr);
+      }
+    }
+    /* Face edges have 2 vertices and 2+cells*(1/2) faces */
+    for (f = fStart; f < fMax; ++f) {
+      for (r = 0; r < 3; ++r) {
+        const PetscInt  newp = eStartNew + (eMax - eStart)*2 + (f - fStart)*3 + r;
+        const PetscInt *cone, *ornt, *support, eint[4] = {1, 0, 2, 0};
+        PetscInt        coneSize, c, supportSize, s, er, intFaces = 0;
+
+        ierr = DMPlexSetConeSize(rdm, newp, 2);CHKERRQ(ierr);
+        ierr = DMPlexGetSupportSize(dm, f, &supportSize);CHKERRQ(ierr);
+        ierr = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
+        for (s = 0; s < supportSize; ++s) {
+          ierr = DMPlexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
+          ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
+          ierr = DMPlexGetConeOrientation(dm, support[s], &ornt);CHKERRQ(ierr);
+          for (c = 0; c < coneSize; ++c) {if (cone[c] == f) break;}
+          /* Here we want to determine whether edge newp contains a vertex which is part of the cross-tet edge */
+          er = ornt[c] < 0 ? (-(ornt[c]+1) + 2-r)%3 : (ornt[c] + r)%3;
+          if (er == eint[c]) {
+            intFaces += 1;
+          } else {
+            intFaces += 2;
+          }
+        }
+        ierr = DMPlexSetSupportSize(rdm, newp, 2+intFaces);CHKERRQ(ierr);
+      }
+    }
+    /* Interior edges have 2 vertices and 4 faces */
+    for (c = cStart; c < cMax; ++c) {
+      const PetscInt newp = eStartNew + (eMax - eStart)*2 + (fMax - fStart)*3 + (c - cStart);
+
+      ierr = DMPlexSetConeSize(rdm, newp, 2);CHKERRQ(ierr);
+      ierr = DMPlexSetSupportSize(rdm, newp, 4);CHKERRQ(ierr);
+    }
+    /* Hybrid edges have 2 vertices and the same cells */
+    for (e = eMax; e < eEnd; ++e) {
+      const PetscInt newp = eStartNew + (eMax - eStart)*2 + (fMax - fStart)*3 + (cMax - cStart) + (e - eEnd);
+      PetscInt       size;
+
+      ierr = DMPlexSetConeSize(rdm, newp, 2);CHKERRQ(ierr);
+      ierr = DMPlexGetSupportSize(dm, f, &size);CHKERRQ(ierr);
+      ierr = DMPlexSetSupportSize(rdm, newp, size);CHKERRQ(ierr);
+    }
+    /* Hybrid split edges have 2 vertices and 2 faces */
+    for (f = fMax; f < fEnd; ++f) {
+      const PetscInt newp = eStartNew + (eMax - eStart)*2 + (fMax - fStart)*3 + (cMax - cStart) + (eEnd - eMax) + (f - fMax);
+
+      ierr = DMPlexSetConeSize(rdm, newp, 2);CHKERRQ(ierr);
+      ierr = DMPlexSetSupportSize(rdm, newp, 2);CHKERRQ(ierr);
+    }
+    /* Old vertices have identical supports */
+    for (v = vStart; v < vEnd; ++v) {
+      const PetscInt newp = vStartNew + (v - vStart);
+      PetscInt       size;
+
+      ierr = DMPlexGetSupportSize(dm, v, &size);CHKERRQ(ierr);
+      ierr = DMPlexSetSupportSize(rdm, newp, size);CHKERRQ(ierr);
+    }
+    /* Face vertices have 2 + (2 interior, 1 hybrid) supports */
+    for (f = fStart; f < fMax; ++f) {
+      const PetscInt newp = vStartNew + (vEnd - vStart) + (f - fStart);
+      const PetscInt *support;
+      PetscInt       size, newSize = 2, s;
+
+      ierr = DMPlexGetSupportSize(dm, f, &size);CHKERRQ(ierr);
+      ierr = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
+      for (s = 0; s < size; ++s) {
+        if (support[s] >= cMax) newSize += 1;
+        else newSize += 2;
+      }
+      ierr = DMPlexSetSupportSize(rdm, newp, newSize);CHKERRQ(ierr);
     }
     break;
   case 6:
@@ -2458,7 +2590,6 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
     }
     /* Split edges have 2 vertices and the same faces as the parent */
     ierr = DMPlexGetMaxSizes(dm, NULL, &maxSupportSize);CHKERRQ(ierr);
-    ierr = PetscMalloc((2 + maxSupportSize*2) * sizeof(PetscInt), &supportRef);CHKERRQ(ierr);
     for (e = eStart; e < eEnd; ++e) {
       const PetscInt newv = vStartNew + (vEnd - vStart) + (e - eStart);
 

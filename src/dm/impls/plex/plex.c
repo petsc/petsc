@@ -275,8 +275,8 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer, "\\end{document}\n", name);CHKERRQ(ierr);
   } else {
     MPI_Comm    comm;
-    PetscInt   *sizes;
-    PetscInt    locDepth, depth, dim, d;
+    PetscInt   *sizes, *hybsizes;
+    PetscInt    locDepth, depth, dim, d, pMax[4];
     PetscInt    pStart, pEnd, p;
     PetscInt    numLabels, l;
     const char *name;
@@ -290,7 +290,8 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     else      {ierr = PetscViewerASCIIPrintf(viewer, "Mesh in %D dimensions:\n", dim);CHKERRQ(ierr);}
     ierr = DMPlexGetDepth(dm, &locDepth);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&locDepth, &depth, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
-    ierr = PetscMalloc(size * sizeof(PetscInt), &sizes);CHKERRQ(ierr);
+    ierr = DMPlexGetHybridBounds(dm, &pMax[depth], &pMax[depth-1], &pMax[1], &pMax[0]);CHKERRQ(ierr);
+    ierr = PetscMalloc2(size,PetscInt,&sizes,size,PetscInt,&hybsizes);CHKERRQ(ierr);
     if (depth == 1) {
       ierr = DMPlexGetDepthStratum(dm, 0, &pStart, &pEnd);CHKERRQ(ierr);
       pEnd = pEnd - pStart;
@@ -307,14 +308,19 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     } else {
       for (d = 0; d <= dim; d++) {
         ierr = DMPlexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
-        pEnd = pEnd - pStart;
+        pEnd    -= pStart;
+        pMax[d] -= pStart;
         ierr = MPI_Gather(&pEnd, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+        ierr = MPI_Gather(&pMax[d], 1, MPIU_INT, hybsizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer, "  %D-cells:", d);CHKERRQ(ierr);
-        for (p = 0; p < size; ++p) {ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]);CHKERRQ(ierr);}
+        for (p = 0; p < size; ++p) {
+          if (hybsizes[p] >= 0) {ierr = PetscViewerASCIIPrintf(viewer, " %D (%D)", sizes[p], sizes[p] - hybsizes[p]);CHKERRQ(ierr);}
+          else                  {ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]);CHKERRQ(ierr);}
+        }
         ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       }
     }
-    ierr = PetscFree(sizes);CHKERRQ(ierr);
+    ierr = PetscFree2(sizes,hybsizes);CHKERRQ(ierr);
     ierr = DMPlexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
     if (numLabels) {ierr = PetscViewerASCIIPrintf(viewer, "Labels:\n");CHKERRQ(ierr);}
     for (l = 0; l < numLabels; ++l) {
@@ -3186,8 +3192,7 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
 
       if (pmax < 0) continue;
       ierr = DMPlexGetDepthStratum(dm, d > depth ? depth : d, &stratum[0], &stratum[1]);CHKERRQ(ierr);
-      /* This mesh is not interpolated, so there is still a problem here */
-      ierr = DMPlexGetDepthStratum(*dmParallel, d > 0 ? 1 : d, NULL, &pEnd);CHKERRQ(ierr);
+      ierr = DMPlexGetDepthStratum(*dmParallel, d, NULL, &pEnd);CHKERRQ(ierr);
       ierr = MPI_Bcast(stratum, 2, MPIU_INT, 0, comm);CHKERRQ(ierr);
       for (p = 0; p < n; ++p) {
         const PetscInt point = gpoints[p];
@@ -4259,40 +4264,6 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
     break;
   default:
     SETERRQ1(PetscObjectComm((PetscObject)boundary), PETSC_ERR_SUP, "Mesh generation for a dimension %d boundary is not supported.", dim);
-  }
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetCellRefiner_Private"
-PetscErrorCode DMPlexGetCellRefiner_Private(DM dm, CellRefiner *cellRefiner)
-{
-  PetscInt       dim, cStart, coneSize, cMax;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, NULL);CHKERRQ(ierr);
-  ierr = DMPlexGetConeSize(dm, cStart, &coneSize);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
-  switch (dim) {
-  case 2:
-    switch (coneSize) {
-    case 3:
-      if (cMax >= 0) *cellRefiner = 3; /* Hybrid */
-      else *cellRefiner = 1; /* Triangular */
-      break;
-    case 4:
-      if (cMax >= 0) *cellRefiner = 4; /* Hybrid */
-      else *cellRefiner = 2; /* Quadrilateral */
-      break;
-    default:
-      SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown coneSize %d in dimension %d for cell refiner", coneSize, dim);
-    }
-    break;
-  default:
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown dimension %d for cell refiner", dim);
   }
   PetscFunctionReturn(0);
 }
@@ -6127,5 +6098,128 @@ PetscErrorCode PetscSectionCreateGlobalSectionLabel(PetscSection s, PetscSF sf, 
   }
   if (nroots >= 0 && nroots > pEnd-pStart) {ierr = PetscFree(tmpOff);CHKERRQ(ierr);}
   ierr = PetscFree(neg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexCheckSymmetry"
+/*@
+  DMPlexCheckSymmetry - Check that the adjacency information in the mesh is symmetric.
+
+  Input Parameters:
+  + dm - The DMPlex object
+
+  Note: This is a useful diagnostic when creating meshes programmatically.
+
+  Level: developer
+
+.seealso: DMCreate()
+@*/
+PetscErrorCode DMPlexCheckSymmetry(DM dm)
+{
+  PetscSection    coneSection, supportSection;
+  const PetscInt *cone, *support;
+  PetscInt        coneSize, c, supportSize, s;
+  PetscInt        pStart, pEnd, p, csize, ssize;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMPlexGetConeSection(dm, &coneSection);CHKERRQ(ierr);
+  ierr = DMPlexGetSupportSection(dm, &supportSection);CHKERRQ(ierr);
+  /* Check that point p is found in the support of its cone points, and vice versa */
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
+    for (c = 0; c < coneSize; ++c) {
+      ierr = DMPlexGetSupportSize(dm, cone[c], &supportSize);CHKERRQ(ierr);
+      ierr = DMPlexGetSupport(dm, cone[c], &support);CHKERRQ(ierr);
+      for (s = 0; s < supportSize; ++s) {
+        if (support[s] == p) break;
+      }
+      if (s >= supportSize) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d cone: ", p);
+        for (s = 0; s < coneSize; ++s) {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", cone[s]);
+        }
+        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
+        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d support: ", cone[c]);
+        for (s = 0; s < supportSize; ++s) {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", support[s]);
+        }
+        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
+        SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %d not found in support of cone point %d", p, cone[c]);
+      }
+    }
+    ierr = DMPlexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
+    ierr = DMPlexGetSupport(dm, p, &support);CHKERRQ(ierr);
+    for (s = 0; s < supportSize; ++s) {
+      ierr = DMPlexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
+      ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
+      for (c = 0; c < coneSize; ++c) {
+        if (cone[c] == p) break;
+      }
+      if (c >= coneSize) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d support: ", p);
+        for (c = 0; c < supportSize; ++c) {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", support[c]);
+        }
+        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
+        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d cone: ", support[s]);
+        for (c = 0; c < coneSize; ++c) {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", cone[c]);
+        }
+        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
+        SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %d not found in cone of support point %d", p, support[s]);
+      }
+    }
+  }
+  ierr = PetscSectionGetStorageSize(coneSection, &csize);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(supportSection, &ssize);CHKERRQ(ierr);
+  if (csize != ssize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Total cone size %d != Total support size %d", csize, ssize);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexCheckSkeleton"
+/*@
+  DMPlexCheckSkeleton - Check that each cell has the correct number of vertices
+
+  Input Parameters:
+  + dm - The DMPlex object
+
+  Note: This is a useful diagnostic when creating meshes programmatically.
+
+  Level: developer
+
+.seealso: DMCreate()
+@*/
+PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscBool isSimplex)
+{
+  DM             udm;
+  PetscInt       dim, numCorners, coneSize, cStart, cEnd, cMax, c;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  switch (dim) {
+  case 2: numCorners = isSimplex ? 3 : 4; break;
+  case 3: numCorners = isSimplex ? 4 : 8; break;
+  default:
+    SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle meshes of dimension %d", dim);
+  }
+  ierr = DMPlexUninterpolate(dm, &udm);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) udm, "un_");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(udm);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
+  cMax = cMax >= 0 ? cMax : cEnd;
+  for (c = cStart; c < cMax; ++c) {
+    ierr = DMPlexGetConeSize(udm, c, &coneSize);CHKERRQ(ierr);
+    if (coneSize != numCorners) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %d has  %d vertices != %d", c, coneSize, numCorners);
+  }
+  ierr = DMDestroy(&udm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
