@@ -115,7 +115,7 @@ PetscErrorCode  DMDASetBlockFills(DM da,const PetscInt *dfill,const PetscInt *of
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateColoring_DA"
-PetscErrorCode  DMCreateColoring_DA(DM da,ISColoringType ctype,MatType mtype,ISColoring *coloring)
+PetscErrorCode  DMCreateColoring_DA(DM da,ISColoringType ctype,ISColoring *coloring)
 {
   PetscErrorCode   ierr;
   PetscInt         dim,m,n,p,nc;
@@ -164,9 +164,9 @@ PetscErrorCode  DMCreateColoring_DA(DM da,ISColoringType ctype,MatType mtype,ISC
 
   /* Tell the DMDA it has 1 degree of freedom per grid point so that the coloring for BAIJ
      matrices is for the blocks, not the individual matrix elements  */
-  ierr = PetscStrcmp(mtype,MATBAIJ,&isBAIJ);CHKERRQ(ierr);
-  if (!isBAIJ) {ierr = PetscStrcmp(mtype,MATMPIBAIJ,&isBAIJ);CHKERRQ(ierr);}
-  if (!isBAIJ) {ierr = PetscStrcmp(mtype,MATSEQBAIJ,&isBAIJ);CHKERRQ(ierr);}
+  ierr = PetscStrcmp(da->mattype,MATBAIJ,&isBAIJ);CHKERRQ(ierr);
+  if (!isBAIJ) {ierr = PetscStrcmp(da->mattype,MATMPIBAIJ,&isBAIJ);CHKERRQ(ierr);}
+  if (!isBAIJ) {ierr = PetscStrcmp(da->mattype,MATSEQBAIJ,&isBAIJ);CHKERRQ(ierr);}
   if (isBAIJ) {
     dd->w  = 1;
     dd->xs = dd->xs/nc;
@@ -610,7 +610,7 @@ PetscErrorCode  MatLoad_MPI_DA(Mat A,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_DA"
-PetscErrorCode DMCreateMatrix_DA(DM da, MatType mtype,Mat *J)
+PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
 {
   PetscErrorCode ierr;
   PetscInt       dim,dof,nx,ny,nz,dims[3],starts[3],M,N,P;
@@ -619,20 +619,13 @@ PetscErrorCode DMCreateMatrix_DA(DM da, MatType mtype,Mat *J)
   MatType        Atype;
   PetscSection   section, sectionGlobal;
   void           (*aij)(void)=NULL,(*baij)(void)=NULL,(*sbaij)(void)=NULL;
-  MatType        ttype[256];
-  PetscBool      flg;
+  MatType        mtype;
   PetscMPIInt    size;
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage();CHKERRQ(ierr);
-#endif
-  if (!mtype) mtype = MATAIJ;
-  ierr = PetscStrcpy((char*)ttype,mtype);CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)da),((PetscObject)da)->prefix,"DMDA options","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsList("-dm_mat_type","Matrix type","MatSetType",MatList,mtype,(char*)ttype,256,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
+  mtype = da->mattype;
 
   ierr = DMGetDefaultSection(da, &section);CHKERRQ(ierr);
   if (section) {
@@ -721,7 +714,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, MatType mtype,Mat *J)
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MatCreate(comm,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,dof*nx*ny*nz,dof*nx*ny*nz,dof*M*N*P,dof*M*N*P);CHKERRQ(ierr);
-  ierr = MatSetType(A,(MatType)ttype);CHKERRQ(ierr);
+  ierr = MatSetType(A,mtype);CHKERRQ(ierr);
   ierr = MatSetDM(A,da);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatGetType(A,&Atype);CHKERRQ(ierr);

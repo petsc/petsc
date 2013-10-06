@@ -65,7 +65,7 @@ struct _p_TS {
   struct {
     PetscReal time;             /* The time at which the matrices were last evaluated */
     Vec X;                      /* Solution vector at which the Jacobian was last evaluated */
-    PetscInt Xstate;            /* State of the solution vector */
+    PetscObjectState Xstate;    /* State of the solution vector */
     MatStructure mstructure;    /* The structure returned */
     /* Flag to unshift Jacobian before calling the IJacobian or RHSJacobian functions.  This is useful
      * if the user would like to reuse (part of) the Jacobian from the last evaluation. */

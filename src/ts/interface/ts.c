@@ -337,7 +337,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat *A,Mat *B,MatStructure *flg)
 {
   PetscErrorCode ierr;
-  PetscInt       Ustate;
+  PetscObjectState Ustate;
   DM             dm;
   DMTS           tsdm;
   TSRHSJacobian  rhsjacobianfunc;
@@ -352,7 +352,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat *A,Mat *B,MatSt
   ierr = DMGetDMTS(dm,&tsdm);CHKERRQ(ierr);
   ierr = DMTSGetRHSJacobian(dm,&rhsjacobianfunc,&ctx);CHKERRQ(ierr);
   ierr = DMTSGetIJacobian(dm,&ijacobianfunc,NULL);CHKERRQ(ierr);
-  ierr = PetscObjectStateQuery((PetscObject)U,&Ustate);CHKERRQ(ierr);
+  ierr = PetscObjectStateGet((PetscObject)U,&Ustate);CHKERRQ(ierr);
   if (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->rhsjacobian.X == U && ts->rhsjacobian.Xstate == Ustate))) {
     *flg = ts->rhsjacobian.mstructure;
     PetscFunctionReturn(0);
@@ -388,7 +388,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat *A,Mat *B,MatSt
   }
   ts->rhsjacobian.time       = t;
   ts->rhsjacobian.X          = U;
-  ierr                       = PetscObjectStateQuery((PetscObject)U,&ts->rhsjacobian.Xstate);CHKERRQ(ierr);
+  ierr                       = PetscObjectStateGet((PetscObject)U,&ts->rhsjacobian.Xstate);CHKERRQ(ierr);
   ts->rhsjacobian.mstructure = *flg;
   PetscFunctionReturn(0);
 }

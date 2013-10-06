@@ -20,7 +20,9 @@ class Configure(config.base.Configure):
   def __str2__(self):
     desc = []
     desc.append('xxx=========================================================================xxx')
-    if self.getMakeMacro('PETSC_BUILD_USING_CMAKE'):
+    if self.make.getMakeMacro('MAKE_IS_GNUMAKE'):
+      build_type = 'gnumake build'
+    elif self.getMakeMacro('PETSC_BUILD_USING_CMAKE'):
       build_type = 'cmake build'
     else:
       build_type = 'legacy build'
@@ -54,6 +56,7 @@ class Configure(config.base.Configure):
     self.functions     = framework.require('config.functions',          self)
     self.libraries     = framework.require('config.libraries',          self)
     self.atomics       = framework.require('config.atomics',            self)
+    self.make          = framework.require('config.packages.make',      self)
     self.blasLapack    = framework.require('config.packages.BlasLapack',self)
     if os.path.isdir(os.path.join('config', 'PETSc')):
       for d in ['utilities', 'packages']:
@@ -91,7 +94,7 @@ class Configure(config.base.Configure):
                                             'unistd', 'sys/sysinfo', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib','memory',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
-                                            'WindowsX', 'cxxabi','float','ieeefp','stdint','fenv','sched','pthread','mathimf'])
+                                            'WindowsX', 'cxxabi','float','ieeefp','stdint','sched','pthread','mathimf'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'usleep', 'sleep', '_sleep', 'socket',
@@ -662,8 +665,19 @@ prepend-path PATH %s
   def configureDeprecated(self):
     '''Check if __attribute((deprecated)) is supported'''
     self.pushLanguage(self.languages.clanguage)
-    if self.checkCompile("""__attribute((deprecated("Why you shouldn't use myfunc"))) static int myfunc(void) { return 1;}""", ''):
-      self.addDefine('DEPRECATED(why)', '__attribute((deprecated(why)))')
+    ## Recent versions of gcc and clang support __attribute((deprecated("string argument"))), which is very useful, but
+    ## Intel has conspired to make a supremely environment-sensitive compiler.  The Intel compiler looks at the gcc
+    ## executable in the environment to determine the language compatibility that it should attempt to emulate.  Some
+    ## important Cray installations have built PETSc using the Intel compiler, but with a newer gcc module loaded (e.g.,
+    ## 4.7).  Thus at PETSc configure time, the Intel compiler decides to support the string argument, but the the gcc
+    ## found in the default user environment is older and does not support the argument.  If GCC and Intel were cool
+    ## like Clang and supported __has_attribute, we could avoid configure tests entirely, but they don't.  And that is
+    ## why we can't have nice things.
+    #
+    # if self.checkCompile("""__attribute((deprecated("Why you shouldn't use myfunc"))) static int myfunc(void) { return 1;}""", ''):
+    #   self.addDefine('DEPRECATED(why)', '__attribute((deprecated(why)))')
+    if self.checkCompile("""__attribute((deprecated)) static int myfunc(void) { return 1;}""", ''):
+      self.addDefine('DEPRECATED(why)', '__attribute((deprecated))')
     else:
       self.addDefine('DEPRECATED(why)', ' ')
     self.popLanguage()
@@ -818,6 +832,22 @@ prepend-path PATH %s
     return
 
 #-----------------------------------------------------------------------------------------------------
+  def configureCygwinBrokenPipe(self):
+    '''Cygwin version <= 1.7.18 had issues with pipes and long commands invoked from gnu-make
+    http://cygwin.com/ml/cygwin/2013-05/msg00340.html '''
+    if config.setCompilers.Configure.isCygwin():
+      import platform
+      import re
+      r=re.compile("([0-9]+).([0-9]+).([0-9]+)")
+      m=r.match(platform.release())
+      major=int(m.group(1))
+      minor=int(m.group(2))
+      subminor=int(m.group(3))
+      if ((major < 1) or (major == 1 and minor < 7) or (major == 1 and minor == 7 and subminor <= 18)):
+        self.addMakeMacro('PETSC_CYGWIN_BROKEN_PIPE','1')
+    return
+
+#-----------------------------------------------------------------------------------------------------
   def configureDefaultArch(self):
     conffile = os.path.join('conf', 'petscvariables')
     if self.framework.argDB['with-default-arch']:
@@ -931,6 +961,7 @@ prepend-path PATH %s
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)
     self.executeTest(self.configureWin32)
+    self.executeTest(self.configureCygwinBrokenPipe)
     self.executeTest(self.configureDefaultArch)
     self.executeTest(self.configureScript)
     self.executeTest(self.configureInstall)

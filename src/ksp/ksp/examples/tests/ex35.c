@@ -45,7 +45,8 @@ int main(int argc,char **argv)
 
   ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&b);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,MATAIJ,&A);CHKERRQ(ierr);
+  ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
   ierr = VecSet(b,zero);CHKERRQ(ierr);
 
   /* Test sbaij matrix */

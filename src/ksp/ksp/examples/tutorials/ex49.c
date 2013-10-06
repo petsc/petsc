@@ -1015,7 +1015,8 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   }
 
   /* Generate a matrix with the correct non-zero pattern of type AIJ. This will work in parallel and serial */
-  ierr = DMCreateMatrix(elas_da,MATAIJ,&A);CHKERRQ(ierr);
+  ierr = DMSetMatType(elas_da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(elas_da,&A);CHKERRQ(ierr);
   ierr = DMGetCoordinates(elas_da,&vel_coords);CHKERRQ(ierr);
   ierr = MatNullSpaceCreateRigidBody(vel_coords,&matnull);CHKERRQ(ierr);
   ierr = MatSetNearNullSpace(A,matnull);CHKERRQ(ierr);
@@ -1308,6 +1309,29 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
   ierr = VecScatterCreate(f,is,*ff,NULL,&scat);CHKERRQ(ierr);
   ierr = VecScatterBegin(scat,f,*ff,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scat,f,*ff,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+  {                             /* Constrain near-null space */
+    PetscInt nvecs;
+    const Vec *vecs;
+    Vec *uvecs;
+    PetscBool has_const;
+    MatNullSpace mnull,unull;
+    ierr = MatGetNearNullSpace(A,&mnull);CHKERRQ(ierr);
+    ierr = MatNullSpaceGetVecs(mnull,&has_const,&nvecs,&vecs);CHKERRQ(ierr);
+    ierr = VecDuplicateVecs(*ff,nvecs,&uvecs);CHKERRQ(ierr);
+    for (i=0; i<nvecs; i++) {
+      ierr = VecScatterBegin(scat,vecs[i],uvecs[i],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(scat,vecs[i],uvecs[i],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    }
+    ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)A),has_const,nvecs,uvecs,&unull);CHKERRQ(ierr);
+    ierr = MatSetNearNullSpace(*AA,unull);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&unull);CHKERRQ(ierr);
+    for (i=0; i<nvecs; i++) {
+      ierr = VecDestroy(&uvecs[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(uvecs);CHKERRQ(ierr);
+  }
+
   ierr = VecScatterDestroy(&scat);CHKERRQ(ierr);
 
   *dofs = is;

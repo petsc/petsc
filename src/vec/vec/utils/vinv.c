@@ -1361,11 +1361,10 @@ PetscErrorCode  VecPermute(Vec x, IS row, PetscBool inv)
 @*/
 PetscErrorCode  VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)
 {
-  PetscScalar    *v1,*v2;
-  PetscErrorCode ierr;
-  PetscInt       n1,n2,N1,N2;
-  PetscInt       state1,state2;
-  PetscBool      flg1;
+  const PetscScalar  *v1,*v2;
+  PetscErrorCode     ierr;
+  PetscInt           n1,n2,N1,N2;
+  PetscBool          flg1;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec1,VEC_CLASSID,1);
@@ -1381,28 +1380,11 @@ PetscErrorCode  VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)
       ierr = VecGetLocalSize(vec2,&n2);CHKERRQ(ierr);
       if (n1 != n2) flg1 = PETSC_FALSE;
       else {
-        ierr = PetscObjectStateQuery((PetscObject) vec1,&state1);CHKERRQ(ierr);
-        ierr = PetscObjectStateQuery((PetscObject) vec2,&state2);CHKERRQ(ierr);
-        ierr = VecGetArray(vec1,&v1);CHKERRQ(ierr);
-        ierr = VecGetArray(vec2,&v2);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-        {
-          PetscInt k;
-          flg1 = PETSC_TRUE;
-          for (k=0; k<n1; k++) {
-            if (PetscRealPart(v1[k]) != PetscRealPart(v2[k]) || PetscImaginaryPart(v1[k]) != PetscImaginaryPart(v2[k])) {
-              flg1 = PETSC_FALSE;
-              break;
-            }
-          }
-        }
-#else
+        ierr = VecGetArrayRead(vec1,&v1);CHKERRQ(ierr);
+        ierr = VecGetArrayRead(vec2,&v2);CHKERRQ(ierr);
         ierr = PetscMemcmp(v1,v2,n1*sizeof(PetscScalar),&flg1);CHKERRQ(ierr);
-#endif
-        ierr = VecRestoreArray(vec1,&v1);CHKERRQ(ierr);
-        ierr = VecRestoreArray(vec2,&v2);CHKERRQ(ierr);
-        ierr = PetscObjectSetState((PetscObject) vec1,state1);CHKERRQ(ierr);
-        ierr = PetscObjectSetState((PetscObject) vec2,state2);CHKERRQ(ierr);
+        ierr = VecRestoreArrayRead(vec1,&v1);CHKERRQ(ierr);
+        ierr = VecRestoreArrayRead(vec2,&v2);CHKERRQ(ierr);
       }
     }
     /* combine results from all processors */

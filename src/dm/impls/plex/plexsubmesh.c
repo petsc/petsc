@@ -214,7 +214,7 @@ static PetscErrorCode DMPlexShiftCoordinates_Internal(DM dm, PetscInt depthShift
   ierr = VecCreate(PetscObjectComm((PetscObject)dm), &newCoordinates);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) newCoordinates, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(newCoordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(newCoordinates);CHKERRQ(ierr);
+  ierr = VecSetType(newCoordinates,dm->vectype);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dmNew, newCoordinates);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
@@ -855,7 +855,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
       const PetscInt  newp = depthOffset[dep] + oldp;
       const PetscInt *cone;
       PetscInt        coneSize, c;
-      PetscBool       replaced = PETSC_FALSE;
+      /* PetscBool       replaced = PETSC_FALSE; */
 
       /* Negative edge: replace split vertex */
       /* Negative cell: replace split face */
@@ -871,7 +871,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
           if (cp < 0) SETERRQ2(comm, PETSC_ERR_ARG_WRONG, "Point %d is not a split point of dimension %d", oldp, dep-1);
           csplitp  = pMaxNew[dep-1] + cp;
           ierr     = DMPlexInsertCone(sdm, newp, c, csplitp);CHKERRQ(ierr);
-          replaced = PETSC_TRUE;
+          /* replaced = PETSC_TRUE; */
         }
       }
       /* Cells with only a vertex or edge on the submesh have no replacement */
@@ -2050,7 +2050,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, const char verte
     ierr = PetscSectionGetStorageSize(subCoordSection, &coordSize);CHKERRQ(ierr);
     ierr = VecCreate(comm, &subCoordinates);CHKERRQ(ierr);
     ierr = VecSetSizes(subCoordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(subCoordinates);CHKERRQ(ierr);
+    ierr = VecSetType(subCoordinates,dm->vectype);CHKERRQ(ierr);
     if (coordSize) {
       ierr = VecGetArray(coordinates,    &coords);CHKERRQ(ierr);
       ierr = VecGetArray(subCoordinates, &subCoords);CHKERRQ(ierr);
@@ -2197,7 +2197,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, const char vertexL
     ierr = PetscSectionGetStorageSize(subCoordSection, &coordSize);CHKERRQ(ierr);
     ierr = VecCreate(comm, &subCoordinates);CHKERRQ(ierr);
     ierr = VecSetSizes(subCoordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(subCoordinates);CHKERRQ(ierr);
+    ierr = VecSetType(subCoordinates,dm->vectype);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates,    &coords);CHKERRQ(ierr);
     ierr = VecGetArray(subCoordinates, &subCoords);CHKERRQ(ierr);
     for (v = 0; v < numSubPoints[0]; ++v) {
@@ -2380,7 +2380,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
     ierr = PetscSectionGetStorageSize(subCoordSection, &coordSize);CHKERRQ(ierr);
     ierr = VecCreate(comm, &subCoordinates);CHKERRQ(ierr);
     ierr = VecSetSizes(subCoordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(subCoordinates);CHKERRQ(ierr);
+    ierr = VecSetType(subCoordinates,dm->vectype);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates,    &coords);CHKERRQ(ierr);
     ierr = VecGetArray(subCoordinates, &subCoords);CHKERRQ(ierr);
     for (v = 0; v < numSubVertices; ++v) {
@@ -2587,7 +2587,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, PetscBool 
     ierr = PetscSectionGetStorageSize(subCoordSection, &coordSize);CHKERRQ(ierr);
     ierr = VecCreate(comm, &subCoordinates);CHKERRQ(ierr);
     ierr = VecSetSizes(subCoordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(subCoordinates);CHKERRQ(ierr);
+    ierr = VecSetType(subCoordinates,dm->vectype);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates,    &coords);CHKERRQ(ierr);
     ierr = VecGetArray(subCoordinates, &subCoords);CHKERRQ(ierr);
     for (v = 0; v < numSubPoints[0]; ++v) {

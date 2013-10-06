@@ -32,7 +32,7 @@ PetscLogEvent MAT_Applypapt, MAT_Applypapt_numeric, MAT_Applypapt_symbolic, MAT_
 PetscLogEvent MAT_GetMultiProcBlock;
 PetscLogEvent MAT_CUSPCopyToGPU, MAT_CUSPARSECopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
 PetscLogEvent MAT_ViennaCLCopyToGPU;
-PetscLogEvent MAT_Merge;
+PetscLogEvent MAT_Merge,MAT_Residual;
 
 const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT","MatFactorType","MAT_FACTOR_",0};
 
@@ -6824,6 +6824,49 @@ PetscErrorCode  MatSetBlockSizes(Mat mat,PetscInt rbs,PetscInt cbs)
   PetscValidLogicalCollectiveInt(mat,rbs,2);
   ierr = PetscLayoutSetBlockSize(mat->rmap,rbs);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(mat->cmap,cbs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatResidual"
+/*@
+   MatResidual - Default routine to calculate the residual.
+
+   Collective on Mat and Vec
+
+   Input Parameters:
++  mat - the matrix
+.  b   - the right-hand-side
+-  x   - the approximate solution
+
+   Output Parameter:
+.  r - location to store the residual
+
+   Level: developer
+
+.keywords: MG, default, multigrid, residual
+
+.seealso: PCMGSetResidual()
+@*/
+PetscErrorCode  MatResidual(Mat mat,Vec b,Vec x,Vec r)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(b,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(r,VEC_CLASSID,4);
+  PetscValidType(mat,1);
+  MatCheckPreallocated(mat,1);
+  ierr  = PetscLogEventBegin(MAT_Residual,mat,0,0,0);CHKERRQ(ierr);
+  if (!mat->ops->residual) {
+    ierr = MatMult(mat,x,r);CHKERRQ(ierr);
+    ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
+  } else {
+    ierr  = (*mat->ops->residual)(mat,b,x,r);CHKERRQ(ierr);
+  }
+  ierr  = PetscLogEventEnd(MAT_Residual,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

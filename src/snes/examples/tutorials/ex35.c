@@ -155,7 +155,8 @@ PetscErrorCode MyComputeFunction(SNES snes,Vec x,Vec F,void *ctx)
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dm,&J);CHKERRQ(ierr);
   if (!J) {
-    ierr = DMCreateMatrix(dm,MATAIJ,&J);CHKERRQ(ierr);
+    ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dm,&J);CHKERRQ(ierr);
     ierr = MatSetDM(J, NULL);CHKERRQ(ierr);
     ierr = FormMatrix(dm,J);CHKERRQ(ierr);
     ierr = DMSetApplicationContext(dm,J);CHKERRQ(ierr);

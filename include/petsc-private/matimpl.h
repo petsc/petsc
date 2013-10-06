@@ -186,6 +186,7 @@ struct _MatOps {
   /*139*/
   PetscErrorCode (*setblocksizes)(Mat,PetscInt,PetscInt);
   PetscErrorCode (*aypx)(Mat,PetscScalar,Mat,MatStructure);
+  PetscErrorCode (*residual)(Mat,Vec,Vec,Vec);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
@@ -290,13 +291,12 @@ typedef struct {
 
 /* Info about using compressed row format */
 typedef struct {
-  PetscBool  check;                         /* indicates that at MatAssembly() it should check if compressed rows will be efficient */
   PetscBool  use;                           /* indicates compressed rows have been checked and will be used */
   PetscInt   nrows;                         /* number of non-zero rows */
   PetscInt   *i;                            /* compressed row pointer  */
   PetscInt   *rindex;                       /* compressed row index               */
 } Mat_CompressedRow;
-PETSC_EXTERN PetscErrorCode MatCheckCompressedRow(Mat,Mat_CompressedRow*,PetscInt*,PetscInt,PetscReal);
+PETSC_EXTERN PetscErrorCode MatCheckCompressedRow(Mat,PetscInt,Mat_CompressedRow*,PetscInt*,PetscInt,PetscReal);
 
 struct _p_Mat {
   PETSCHEADER(struct _MatOps);
@@ -1505,6 +1505,6 @@ PETSC_EXTERN PetscLogEvent MATMFFD_Mult;
 PETSC_EXTERN PetscLogEvent MAT_GetMultiProcBlock;
 PETSC_EXTERN PetscLogEvent MAT_CUSPCopyToGPU, MAT_CUSPARSECopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
 PETSC_EXTERN PetscLogEvent MAT_ViennaCLCopyToGPU;
-PETSC_EXTERN PetscLogEvent MAT_Merge;
+PETSC_EXTERN PetscLogEvent MAT_Merge,MAT_Residual;
 
 #endif

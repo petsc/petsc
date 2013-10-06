@@ -40,9 +40,7 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
 
   PetscFunctionBegin;
   PetscValidPointer(s,2);
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = ISInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(*s,_p_PetscSection,int,PETSC_SECTION_CLASSID,"PetscSection","Section","IS",comm,PetscSectionDestroy,PetscSectionView);CHKERRQ(ierr);
 
@@ -59,6 +57,9 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
   (*s)->numFields          = 0;
   (*s)->fieldNames         = NULL;
   (*s)->field              = NULL;
+  (*s)->clObj              = NULL;
+  (*s)->clSection          = NULL;
+  (*s)->clIndices          = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1477,6 +1478,8 @@ PetscErrorCode PetscSectionReset(PetscSection s)
   ierr = PetscSectionDestroy(&s->bc);CHKERRQ(ierr);
   ierr = PetscFree(s->bcIndices);CHKERRQ(ierr);
   ierr = PetscFree2(s->atlasDof, s->atlasOff);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&s->clSection);CHKERRQ(ierr);
+  ierr = ISDestroy(&s->clIndices);CHKERRQ(ierr);
 
   s->atlasLayout.pStart = -1;
   s->atlasLayout.pEnd   = -1;
@@ -1484,6 +1487,7 @@ PetscErrorCode PetscSectionReset(PetscSection s)
   s->maxDof             = 0;
   s->setup              = PETSC_FALSE;
   s->numFields          = 0;
+  s->clObj              = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1900,5 +1904,35 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
   ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
   if (numIndices != ind) SETERRQ2(comm, PETSC_ERR_PLIB, "Inconsistency in indices, %d should be %d", ind, numIndices);
   ierr = PetscSFSetGraph(*sectionSF, numSectionRoots, numIndices, localIndices, PETSC_OWN_POINTER, remoteIndices, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionSetClosureIndex"
+PetscErrorCode PetscSectionSetClosureIndex(PetscSection section, PetscObject obj, PetscSection clSection, IS clIndices)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  section->clObj     = obj;
+  ierr = PetscSectionDestroy(&section->clSection);CHKERRQ(ierr);
+  ierr = ISDestroy(&section->clIndices);CHKERRQ(ierr);
+  section->clSection = clSection;
+  section->clIndices = clIndices;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetClosureIndex"
+PetscErrorCode PetscSectionGetClosureIndex(PetscSection section, PetscObject obj, PetscSection *clSection, IS *clIndices)
+{
+  PetscFunctionBegin;
+  if (section->clObj == obj) {
+    if (clSection) *clSection = section->clSection;
+    if (clIndices) *clIndices = section->clIndices;
+  } else {
+    if (clSection) *clSection = NULL;
+    if (clIndices) *clIndices = NULL;
+  }
   PetscFunctionReturn(0);
 }

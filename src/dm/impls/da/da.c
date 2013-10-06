@@ -808,7 +808,7 @@ PetscErrorCode  DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *ref
 
 .seealso: DMCreateMatrix(), DMDASetBlockFills()
 @*/
-PetscErrorCode  DMDASetGetMatrix(DM da,PetscErrorCode (*f)(DM, MatType,Mat*))
+PetscErrorCode  DMDASetGetMatrix(DM da,PetscErrorCode (*f)(DM, Mat*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -993,8 +993,7 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   dd2->coarsen_z = dd2->refine_z = dd->refine_z;
 
   /* copy vector type information */
-  ierr = PetscFree(da2->vectype);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(da->vectype,(char**)&da2->vectype);CHKERRQ(ierr);
+  ierr = DMSetVecType(da2,da->vectype);CHKERRQ(ierr);
 
   dd2->lf = dd->lf;
   dd2->lj = dd->lj;
@@ -1124,8 +1123,7 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   dd2->coarsen_z = dd2->refine_z = dd->coarsen_z;
 
   /* copy vector type information */
-  ierr = PetscFree(da2->vectype);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(da->vectype,(char**)&da2->vectype);CHKERRQ(ierr);
+  ierr = DMSetVecType(da2,da->vectype);CHKERRQ(ierr);
 
   dd2->lf = dd->lf;
   dd2->lj = dd->lj;

@@ -333,7 +333,7 @@ typedef enum {MAT_OPTION_MIN = -8,
               MAT_USE_INODES = 8,
               MAT_HERMITIAN = 9,
               MAT_SYMMETRY_ETERNAL = 10,
-              MAT_CHECK_COMPRESSED_ROW = 11,
+              MAT_DUMMY = 11,
               MAT_IGNORE_LOWER_TRIANGULAR = 12,
               MAT_ERROR_LOWER_TRIANGULAR = 13,
               MAT_GETROW_UPPERTRIANGULAR = 14,
@@ -375,6 +375,7 @@ PETSC_EXTERN PetscErrorCode MatMultHermitianTransposeAdd(Mat,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMultConstrained(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMultTransposeConstrained(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMatSolve(Mat,Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatResidual(Mat,Vec,Vec,Vec);
 
 /*E
     MatDuplicateOption - Indicates if a duplicated sparse matrix should have
@@ -1388,7 +1389,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_RART_SYMBOLIC=137,
                MATOP_RART_NUMERIC=138,
                MATOP_SET_BLOCK_SIZES=139,
-               MATOP_AYPX=140
+               MATOP_AYPX=140,
+               MATOP_RESIDUAL=141
              } MatOperation;
 PETSC_EXTERN PetscErrorCode MatHasOperation(Mat,MatOperation,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatShellSetOperation(Mat,MatOperation,void(*)(void));

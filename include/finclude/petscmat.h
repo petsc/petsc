@@ -47,7 +47,7 @@
       PetscEnum MAT_USE_INODES
       PetscEnum MAT_HERMITIAN
       PetscEnum MAT_SYMMETRY_ETERNAL
-      PetscEnum MAT_CHECK_COMPRESSED_ROW
+      PetscEnum MAT_DUMMY
       PetscEnum MAT_IGNORE_LOWER_TRIANGULAR
       PetscEnum MAT_ERROR_LOWER_TRIANGULAR
       PetscEnum MAT_GETROW_UPPERTRIANGULAR
@@ -84,7 +84,7 @@
       parameter (MAT_USE_INODES=8)
       parameter (MAT_HERMITIAN=9)
       parameter (MAT_SYMMETRY_ETERNAL=10)
-      parameter (MAT_CHECK_COMPRESSED_ROW=11)
+      parameter (MAT_DUMMY=11)
       parameter (MAT_IGNORE_LOWER_TRIANGULAR=12)
       parameter (MAT_ERROR_LOWER_TRIANGULAR=13)
       parameter (MAT_GETROW_UPPERTRIANGULAR=14)
@@ -351,6 +351,7 @@
       PetscEnum MATOP_SET_VALUES_BATCH
       PetscEnum MATOP_SET_BLOCK_SIZES
       PetscEnum MATOP_AYPX
+      PetscEnum MATOP_RESIDUAL
 
       parameter(MATOP_SET_VALUES=0)
       parameter(MATOP_GET_ROW=1)
@@ -481,6 +482,7 @@
       parameter(MATOP_SET_VALUES_BATCH=129)
       parameter(MATOP_SET_BLOCK_SIZES=139)
       parameter(MATOP_AYPX=140)
+      parameter(MATOP_RESIDUAL=141)
 !
 !
 !

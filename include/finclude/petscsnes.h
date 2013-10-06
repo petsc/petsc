@@ -66,7 +66,7 @@
       external SNESMONITORSOLUTIONUPDATE
 
       external SNESCONVERGEDDEFAULT
-      external SNESSKIPCONVERGED
+      external SNESCONVERGEDSKIP
 
 !
 ! SNESNGMRESRestartType
