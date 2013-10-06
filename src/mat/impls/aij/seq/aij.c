@@ -278,7 +278,7 @@ PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat A,PetscInt oshift,PetscBool symmetr
 /*
  MatGetColumnIJ_SeqAIJ_Color() and MatRestoreColumnIJ_SeqAIJ_Color() are customized from
  MatGetColumnIJ_SeqAIJ() and MatRestoreColumnIJ_SeqAIJ() by adding an output
- spidx[], index of a->a, to be used in MatTransposeColoringCreate_SeqAIJ() and MatFDColoringCreate_SeqAIJ()
+ spidx[], index of a->a, to be used in MatTransposeColoringCreate_SeqAIJ() and MatFDColoringCreate_SeqXAIJ()
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetColumnIJ_SeqAIJ_Color"
@@ -293,37 +293,33 @@ PetscErrorCode MatGetColumnIJ_SeqAIJ_Color(Mat A,PetscInt oshift,PetscBool symme
   PetscFunctionBegin;
   *nn = n;
   if (!ia) PetscFunctionReturn(0);
-  if (symmetric) {
-    SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatGetColumnIJ_SeqAIJ_Color() not supported for the case symmetric");
-    ierr = MatToSymmetricIJ_SeqAIJ(A->rmap->n,a->i,a->j,0,oshift,(PetscInt**)ia,(PetscInt**)ja);CHKERRQ(ierr);
-  } else {
-    ierr = PetscMalloc((n+1)*sizeof(PetscInt),&collengths);CHKERRQ(ierr);
-    ierr = PetscMemzero(collengths,n*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMalloc((n+1)*sizeof(PetscInt),&cia);CHKERRQ(ierr);
-    ierr = PetscMalloc((nz+1)*sizeof(PetscInt),&cja);CHKERRQ(ierr);
-    ierr = PetscMalloc((nz+1)*sizeof(PetscInt),&cspidx);CHKERRQ(ierr);
-    jj   = a->j;
-    for (i=0; i<nz; i++) {
-      collengths[jj[i]]++;
-    }
-    cia[0] = oshift;
-    for (i=0; i<n; i++) {
-      cia[i+1] = cia[i] + collengths[i];
-    }
-    ierr = PetscMemzero(collengths,n*sizeof(PetscInt));CHKERRQ(ierr);
-    jj   = a->j;
-    for (row=0; row<m; row++) {
-      mr = a->i[row+1] - a->i[row];
-      for (i=0; i<mr; i++) {
-        col = *jj++;
-        cspidx[cia[col] + collengths[col] - oshift] = a->i[row] + i; /* index of a->j */
-        cja[cia[col] + collengths[col]++ - oshift]  = row + oshift;
-      }
-    }
-    ierr   = PetscFree(collengths);CHKERRQ(ierr);
-    *ia    = cia; *ja = cja;
-    *spidx = cspidx;
+  
+  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&collengths);CHKERRQ(ierr);
+  ierr = PetscMemzero(collengths,n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&cia);CHKERRQ(ierr);
+  ierr = PetscMalloc((nz+1)*sizeof(PetscInt),&cja);CHKERRQ(ierr);
+  ierr = PetscMalloc((nz+1)*sizeof(PetscInt),&cspidx);CHKERRQ(ierr);
+  jj   = a->j;
+  for (i=0; i<nz; i++) {
+    collengths[jj[i]]++;
   }
+  cia[0] = oshift;
+  for (i=0; i<n; i++) {
+    cia[i+1] = cia[i] + collengths[i];
+  }
+  ierr = PetscMemzero(collengths,n*sizeof(PetscInt));CHKERRQ(ierr);
+  jj   = a->j;
+  for (row=0; row<m; row++) {
+    mr = a->i[row+1] - a->i[row];
+    for (i=0; i<mr; i++) {
+      col = *jj++;
+      cspidx[cia[col] + collengths[col] - oshift] = a->i[row] + i; /* index of a->j */
+      cja[cia[col] + collengths[col]++ - oshift]  = row + oshift;
+    }
+  }
+  ierr   = PetscFree(collengths);CHKERRQ(ierr);
+  *ia    = cia; *ja = cja;
+  *spidx = cspidx;
   PetscFunctionReturn(0);
 }
 
@@ -3102,7 +3098,6 @@ static PetscErrorCode  MatSetRandom_SeqAIJ(Mat x,PetscRandom rctx)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode  MatFDColoringApply_AIJ(Mat,MatFDColoring,Vec,MatStructure*,void*);
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         MatGetRow_SeqAIJ,
@@ -3158,7 +3153,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         MatRestoreRowIJ_SeqAIJ,
                                         MatGetColumnIJ_SeqAIJ,
                                         MatRestoreColumnIJ_SeqAIJ,
-                                /* 54*/ MatFDColoringCreate_SeqAIJ,
+                                /* 54*/ MatFDColoringCreate_SeqXAIJ,
                                         0,
                                         0,
                                         MatPermute_SeqAIJ,

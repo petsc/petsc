@@ -457,25 +457,21 @@ struct  _p_MatFDColoring{
   PetscInt       *ncolumns;        /* number of local columns for a color */
   PetscInt       **columns;        /* lists the local columns of each color (using global column numbering) */
   PetscInt       *nrows;           /* number of local rows for each color */
-  PetscInt       **rows;           /* lists the local rows for each color (using the local row numbering) */
-  PetscInt       **columnsforrow;  /* lists the corresponding columns for those rows (using the global column) */
-  PetscInt       *rowcolden2sp3;   /* nested array for row, col and 
-                                      den2sp: maps (row,color) in the dense matrix to index of J values,
-                                      replace rows and columnsforrow above */
-  PetscScalar    **valaddr;        /* maps (row,color) in the dense matrix to address of J values */
   MatEntry       *matentry;        /* holds (row, column, address of value) for Jacobian matrix entry */
-  PetscScalar    *dy;              /* store a block of F(x+dx)-F(x) when J uses BAIJ format */
+  PetscScalar    *dy;              /* store a block of F(x+dx)-F(x) when J is in BAIJ format */
   PetscReal      error_rel;        /* square root of relative error in computing function */
   PetscReal      umin;             /* minimum allowable u'dx value */
   Vec            w1,w2,w3;         /* work vectors used in computing Jacobian */
   PetscBool      fset;             /* indicates that the initial function value F(X) is set */
   PetscErrorCode (*f)(void);       /* function that defines Jacobian */
   void           *fctx;            /* optional user-defined context for use by the function f */
-  PetscInt       **vscaleforrow;   /* location in vscale for each columnsforrow[] entry */
   Vec            vscale;           /* holds FD scaling, i.e. 1/dx for each perturbed column */
   PetscInt       currentcolor;     /* color for which function evaluation is being done now */
   const char     *htype;           /* "wp" or "ds" */
   ISColoringType ctype;            /* IS_COLORING_GLOBAL or IS_COLORING_GHOSTED */
+
+  PetscInt       brows,bcols,*nrows_new;
+  MatEntry       *matentry_new;
 
   void           *ftn_func_pointer,*ftn_func_cntx; /* serve the same purpose as *fortran_func_pointers in PETSc objects */
 };

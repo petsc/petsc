@@ -3188,8 +3188,6 @@ PetscErrorCode MatGetSeqNonzeroStructure_MPIAIJ(Mat mat,Mat *newmat)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode  MatFDColoringApply_AIJ(Mat,MatFDColoring,Vec,MatStructure*,void*);
-
 #undef __FUNCT__
 #define __FUNCT__ "MatInvertBlockDiagonal_MPIAIJ"
 PetscErrorCode  MatInvertBlockDiagonal_MPIAIJ(Mat A,const PetscScalar **values)
@@ -3284,7 +3282,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        0,
                                        0,
                                        0,
-                                /*54*/ MatFDColoringCreate_MPIAIJ,
+                                /*54*/ MatFDColoringCreate_MPIXAIJ,
                                        0,
                                        MatSetUnfactored_MPIAIJ,
                                        MatPermute_MPIAIJ,
