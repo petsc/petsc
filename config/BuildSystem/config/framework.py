@@ -601,16 +601,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         if line: f.write('/* '+line+' */\n')
     f.write('#ifndef '+guard+'\n')
     if value:
-      # Magic token in order to split a define into two pieces: One for C++, the other for C.
-      # Blame Karl Rupp for this hack, who couldn't find a better solution without rewriting larger parts of BuildSystem
-      if '[C/CXX-SPLIT]' in str(value):
-        f.write('#if defined(__cplusplus)\n')
-        f.write('#define '+name+' '+str(value).split('[C/CXX-SPLIT]')[1]+'\n')
-        f.write('#else\n')
-        f.write('#define '+name+' '+str(value).split('[C/CXX-SPLIT]')[0]+'\n')
-        f.write('#endif\n')
-      else:
-        f.write('#define '+name+' '+str(value)+'\n')
+      f.write('#define '+name+' '+str(value)+'\n')
     else:
       f.write('/* #undef '+name+' */\n')
     f.write('#endif\n\n')
