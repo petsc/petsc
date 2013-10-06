@@ -719,15 +719,7 @@ prepend-path PATH %s
       raise RuntimeError('Could not find any unsigned integer type matching void*')
     self.popLanguage()
 
-  def configureInline(self):
-    '''Get a generic inline keyword, depending on the language'''
-    if self.languages.clanguage == 'C':
-      self.addDefine('STATIC_INLINE', self.compilers.cStaticInlineKeyword)
-      self.addDefine('RESTRICT', self.compilers.cRestrict)
-    elif self.languages.clanguage == 'Cxx':
-      self.addDefine('STATIC_INLINE', self.compilers.cxxStaticInlineKeyword)
-      self.addDefine('RESTRICT', self.compilers.cxxRestrict)
-
+  def configureRTLDDefault(self):
     if self.checkCompile('#include <dlfcn.h>\n void *ptr =  RTLD_DEFAULT;'):
       self.addDefine('RTLD_DEFAULT','1')
     return
@@ -921,7 +913,7 @@ prepend-path PATH %s
       raise RuntimeError('PETSc requires a functional math library. Please send configure.log to petsc-maint@mcs.anl.gov.')
     if self.languages.clanguage == 'Cxx' and not hasattr(self.compilers, 'CXX'):
       raise RuntimeError('Cannot set C language to C++ without a functional C++ compiler.')
-    self.executeTest(self.configureInline)
+    self.executeTest(self.configureRTLDDefault)
     self.executeTest(self.configurePrefetch)
     self.executeTest(self.configureUnused)
     self.executeTest(self.configureDeprecated)
