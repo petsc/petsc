@@ -48,7 +48,7 @@ class Configure(PETSc.package.NewPackage):
       raise RuntimeError('Sorry, Elemental does not compile with Oracle/Solaris/Sun compilers')
     args.append('-DMPI_CXX_COMPILER="'+self.framework.getCompiler()+'"')
     args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
-    cxxflags = self.setCompilers.getCompilerFlags()
+    cxxflags = self.framework.getCompilerFlags()
     args.append('-DCMAKE_CXX_FLAGS:STRING="'+cxxflags+'"')
     self.framework.popLanguage()
 
