@@ -550,9 +550,9 @@ class Package(config.base.Configure):
       if self.noMPIUni and self.mpi.usingMPIUni:
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
       if not self.worksonWindows and self.setCompilers.isCygwin():
-        raise RuntimeError('External package '+self.name+' does not work on Microsoft Windows')
-      if self.download and self.framework.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and self.setCompilers.isCygwin():
-        raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' on Microsoft Windows')
+        raise RuntimeError('External package '+self.name+' does not work on Cygwin/Microsoft Windows')
+      if self.download and self.framework.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and self.setCompilers.isWindows():
+        raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' with Microsoft compilers')
     if not self.download and self.framework.argDB.has_key('download-'+self.downloadname.lower()) and self.framework.argDB['download-'+self.downloadname.lower()]:
       raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower())
     return
