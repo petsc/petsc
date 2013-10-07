@@ -28,18 +28,28 @@ typedef float PetscReal;
 #define PetscSqrtReal(a)    sqrt(a)
 #define PetscExpReal(a)     exp(a)
 #define PetscLogReal(a)     log(a)
+#define PetscLog10Real(a)   log10(a)
 #define PetscSinReal(a)     sin(a)
 #define PetscCosReal(a)     cos(a)
+#define PetscAcosReal(a)    acos(a)
 #define PetscPowReal(a,b)   pow(a,b)
+#define PetscCeilReal(a)    ceil(a)
+#define PetscFloorReal(a)   floor(a)
+#define PetscFmodReal(a)    fmod(a)
 #elif defined(PETSC_USE_REAL_DOUBLE)
 #define MPIU_REAL   MPI_DOUBLE
 typedef double PetscReal;
 #define PetscSqrtReal(a)    sqrt(a)
 #define PetscExpReal(a)     exp(a)
 #define PetscLogReal(a)     log(a)
+#define PetscLog10Real(a)   log10(a)
 #define PetscSinReal(a)     sin(a)
 #define PetscCosReal(a)     cos(a)
+#define PetscAcosReal(a)    acos(a)
 #define PetscPowReal(a,b)   pow(a,b)
+#define PetscCeilReal(a)    ceil(a)
+#define PetscFloorReal(a)   floor(a)
+#define PetscFmodReal(a)    fmod(a)
 #elif defined(PETSC_USE_REAL___FLOAT128)
 #if defined(__cplusplus)
 extern "C" {
@@ -54,9 +64,14 @@ typedef __float128 PetscReal;
 #define PetscSqrtReal(a)    sqrtq(a)
 #define PetscExpReal(a)     expq(a)
 #define PetscLogReal(a)     logq(a)
+#define PetscLog10Real(a)   log10q(a)
 #define PetscSinReal(a)     sinq(a)
 #define PetscCosReal(a)     cosq(a)
+#define PetscAcosReal(a)    acosq(a)
 #define PetscPowReal(a,b)   powq(a,b)
+#define PetscCeilReal(a)    ceilq(a)
+#define PetscFloorReal(a)   floorq(a)
+#define PetscFmodReal(a)    fmodq(a)
 #endif /* PETSC_USE_REAL_* */
 
 /*
@@ -298,7 +313,7 @@ M*/
 +  x - value to use if within interval (a,b)
 .  a - lower end of interval
 -  b - upper end of interval
-
+ 
    Notes: type can be integer or floating point value
 
    Level: beginner

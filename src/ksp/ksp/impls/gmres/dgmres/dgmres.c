@@ -268,7 +268,7 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
 
   /* Compute data for the deflation to be used during the next restart */
   if (!ksp->reason && ksp->its < ksp->max_it) {
-    test = max_k *log(ksp->rtol/res) /log(res/res_old);
+    test = max_k *PetscLogReal(ksp->rtol/res) /PetscLogReal(res/res_old);
     /* Compute data for the deflation if the residual rtol will not be reached in the remaining number of steps allowed  */
     if ((test > dgmres->smv*(ksp->max_it-ksp->its)) || dgmres->force) {
       ierr =  KSPDGMRESComputeDeflationData(ksp);CHKERRQ(ierr);

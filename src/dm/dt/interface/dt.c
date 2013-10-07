@@ -264,7 +264,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
 
   PetscFunctionBegin;
 
-  a1      = pow(2, a+b+1);
+  a1      = PetscPowReal(2, a+b+1);
 #if defined(PETSC_HAVE_TGAMMA)
   a2      = tgamma(a + npoints + 1);
   a3      = tgamma(b + npoints + 1);
@@ -278,7 +278,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
   /* Computes the m roots of P_{m}^{a,b} on [-1,1] by Newton's method with Chebyshev points as initial guesses.
    Algorithm implemented from the pseudocode given by Karniadakis and Sherwin and Python in FIAT */
   for (k = 0; k < npoints; ++k) {
-    PetscReal r = -cos((2.0*k + 1.0) * PETSC_PI / (2.0 * npoints)), dP;
+    PetscReal r = -PetscCosReal((2.0*k + 1.0) * PETSC_PI / (2.0 * npoints)), dP;
     PetscInt  j;
 
     if (k > 0) r = 0.5 * (r + x[k-1]);
@@ -291,7 +291,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
       ierr = PetscDTComputeJacobiDerivative(a, b, npoints, r, &fp);CHKERRQ(ierr);
       delta = f / (fp - f * s);
       r     = r - delta;
-      if (fabs(delta) < eps) break;
+      if (PetscAbsReal(delta) < eps) break;
     }
     x[k] = r;
     ierr = PetscDTComputeJacobiDerivative(a, b, npoints, x[k], &dP);CHKERRQ(ierr);
