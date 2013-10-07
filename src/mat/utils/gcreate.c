@@ -347,6 +347,7 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat C)
   PetscCheckSameComm(A,1,C,2);
   if (((PetscObject)C)->refct != 1) SETERRQ1(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"Object C has refct %D > 1, would leave hanging reference",((PetscObject)C)->refct);
 
+  ierr = PetscViewerDestroy(&A->viewonassembly);CHKERRQ(ierr);
   /* free all the interior data structures from mat */
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy_Private((PetscObject)A);CHKERRQ(ierr);
