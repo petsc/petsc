@@ -199,6 +199,12 @@ prepend-path PATH %s
     self.addMakeMacro('CC_FLAGS',self.setCompilers.getCompilerFlags())
     self.setCompilers.popLanguage()
 
+    # And sometimes we need a C++ compiler even when PETSc is built with C
+    if hasattr(self.compilers, 'CXX'):
+      self.setCompilers.pushLanguage('Cxx')
+      self.addMakeMacro('CXX_FLAGS',self.setCompilers.getCompilerFlags())
+      self.setCompilers.popLanguage()
+
     # C preprocessor values
     self.addMakeMacro('CPP_FLAGS',self.setCompilers.CPPFLAGS+self.CHUD.CPPFLAGS)
 
