@@ -35,6 +35,7 @@ static PetscErrorCode DMCreateGlobalVector_Circuit(DM dm,Vec *vec)
 
   PetscFunctionBegin;
   ierr = DMCreateGlobalVector(circuit->plex,vec);CHKERRQ(ierr);
+  ierr = VecSetDM(*vec,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -47,6 +48,7 @@ static PetscErrorCode DMCreateLocalVector_Circuit(DM dm,Vec *vec)
 
   PetscFunctionBegin;
   ierr = DMCreateLocalVector(circuit->plex,vec);CHKERRQ(ierr);
+  ierr = VecSetDM(*vec,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
