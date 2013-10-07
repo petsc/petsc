@@ -501,6 +501,7 @@ int main(int argc,char ** argv)
     ierr = PetscFree(pfdata.load);CHKERRQ(ierr);
   }
 
+
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) {
     DM distcircuitdm;
@@ -555,11 +556,12 @@ int main(int argc,char ** argv)
   Vec X,F;
   ierr = DMCreateGlobalVector(circuitdm,&X);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
-  ierr = SetInitialValues(circuitdm,X,&User);CHKERRQ(ierr);
 
   Mat J;
   ierr = DMCreateMatrix(circuitdm,MATAIJ,&J);CHKERRQ(ierr);
   ierr = MatSetOption(J,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+
+  ierr = SetInitialValues(circuitdm,X,&User);CHKERRQ(ierr);
 
   SNES snes;
   /* HOOK UP SOLVER */
@@ -571,12 +573,13 @@ int main(int argc,char ** argv)
 
   ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 
-  /* Need to fix the object referencing issue that causes crash while freeing the DM
-     ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-     ierr = VecDestroy(&X);CHKERRQ(ierr);
-     ierr = VecDestroy(&F);CHKERRQ(ierr);
-     ierr = MatDestroy(&J);CHKERRQ(ierr);
-  */
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&F);CHKERRQ(ierr);
+  ierr = MatDestroy(&J);CHKERRQ(ierr);
+
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+  ierr = DMDestroy(&circuitdm);CHKERRQ(ierr);
+
   PetscFinalize();
   return 0;
 }

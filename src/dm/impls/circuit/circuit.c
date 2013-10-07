@@ -1,5 +1,6 @@
 #include <petsc-private/dmcircuitimpl.h>  /*I  "petscdmcircuit.h"  *I*/
 #include <petscdmplex.h>
+#include <petscsf.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCircuitSetSizes"
@@ -112,7 +113,6 @@ PetscErrorCode DMCircuitLayoutSetUp(DM dm)
     ierr = PetscMalloc(numCorners*circuit->nNodes*sizeof(PetscInt),&vertexcoords);CHKERRQ(ierr);
   }
   ierr = DMPlexCreateFromCellList(PetscObjectComm((PetscObject)dm),dim,circuit->nEdges,circuit->nNodes,numCorners,PETSC_FALSE,circuit->edges,spacedim,vertexcoords,&circuit->plex);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)circuit->plex);CHKERRQ(ierr);
   if (circuit->nNodes) {
     ierr = PetscFree(vertexcoords);CHKERRQ(ierr);
   }
@@ -551,7 +551,7 @@ PetscErrorCode DMCircuitGetComponentDataArray(DM dm,DMCircuitComponentGenericDat
   Notes:
   This routine should be called only when using multiple processors.
 
-  A non-overlapping partitioning of the edges is done.
+  Distributes the circuit with a non-overlapping partitioning of the edges.
 
   Level: intermediate
 
@@ -570,14 +570,16 @@ PetscErrorCode DMCircuitDistribute(DM oldDM,DM *distDM)
   ierr = DMCircuitCreate(PetscObjectComm((PetscObject)oldDM),&newDM);CHKERRQ(ierr);
   newDMcircuit = (DM_Circuit*)newDM->data;
   newDMcircuit->dataheadersize = sizeof(struct _p_DMCircuitComponentHeader)/sizeof(DMCircuitComponentGenericDataType);
-  /* Distribute dm */
+  /* Distribute plex dm and dof section */
   ierr = DMPlexDistribute(oldDMcircuit->plex,partitioner,0,&pointsf,&newDMcircuit->plex);CHKERRQ(ierr);
   /* Distribute dof section */
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)oldDM),&newDMcircuit->DofSection);CHKERRQ(ierr);
   ierr = PetscSFDistributeSection(pointsf,oldDMcircuit->DofSection,NULL,newDMcircuit->DofSection);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)oldDM),&newDMcircuit->DataSection);CHKERRQ(ierr);
-  /* Distribute data */
+  /* Distribute data and associated section */
   ierr = DMPlexDistributeData(newDMcircuit->plex,pointsf,oldDMcircuit->DataSection,MPI_INT,(void*)oldDMcircuit->componentdataarray,newDMcircuit->DataSection,(void**)&newDMcircuit->componentdataarray);CHKERRQ(ierr);
+  /* Destroy point SF */
+  ierr = PetscSFDestroy(&pointsf);CHKERRQ(ierr);
   
   ierr = PetscSectionGetChart(newDMcircuit->DataSection,&newDMcircuit->pStart,&newDMcircuit->pEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(newDMcircuit->plex,0, &newDMcircuit->eStart,&newDMcircuit->eEnd);CHKERRQ(ierr);
@@ -589,6 +591,7 @@ PetscErrorCode DMCircuitDistribute(DM oldDM,DM *distDM)
   /* Set Dof section as the default section for dm */
   ierr = DMSetDefaultSection(newDMcircuit->plex,newDMcircuit->DofSection);CHKERRQ(ierr);
   ierr = DMGetDefaultGlobalSection(newDMcircuit->plex,&newDMcircuit->GlobalDofSection);CHKERRQ(ierr);
+
   *distDM = newDM;
   PetscFunctionReturn(0);
 }
@@ -717,6 +720,7 @@ PetscErrorCode DMCreateMatrix_Circuit(DM dm,MatType mtype, Mat *J)
 
   PetscFunctionBegin;
   ierr = DMCreateMatrix(circuit->plex,mtype,J);CHKERRQ(ierr);
+  ierr = MatSetDM(*J,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -731,7 +735,7 @@ PetscErrorCode DMDestroy_Circuit(DM dm)
   ierr = DMDestroy(&circuit->plex);CHKERRQ(ierr);
   circuit->edges = NULL;
   ierr = PetscSectionDestroy(&circuit->DataSection);CHKERRQ(ierr);
-  /*  ierr = PetscSectionDestroy(&circuit->DofSection);CHKERRQ(ierr); */
+  ierr = PetscSectionDestroy(&circuit->DofSection);CHKERRQ(ierr);
   /*  ierr = PetscSectionDestroy(&circuit->GlobalDofSection);CHKERRQ(ierr); */
   ierr = PetscFree(circuit->componentdataarray);CHKERRQ(ierr);
   ierr = PetscFree(circuit->cvalue);CHKERRQ(ierr);
