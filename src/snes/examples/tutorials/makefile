@@ -792,7 +792,9 @@ runex19_composite_gs_newton: #test additive composite SNES
         ${RM} -f ex19_composite_gs_newton.tmp
 
 runex19_draw:
-	-@${MPIEXEC} -n 1 ./ex19 -pc_type fieldsplit -snes_view draw -fieldsplit_x_velocity_pc_type mg -fieldsplit_x_velocity_pc_mg_levels 2 -da_refine 1 -fieldsplit_x_velocity_mg_coarse_pc_type svd
+	-@${MPIEXEC} -n 1 ./ex19 -pc_type fieldsplit -snes_view draw -fieldsplit_x_velocity_pc_type mg -fieldsplit_x_velocity_pc_mg_galerkin -fieldsplit_x_velocity_pc_mg_levels 2 -da_refine 1 -fieldsplit_x_velocity_mg_coarse_pc_type svd > ex19_draw.tmp 2>&1; \
+          ${DIFF} output/ex19_draw.out ex19_draw.tmp || echo  ${PWD} "\nPossible problem with ex19_draw, diffs above \n========================================="; \
+          ${RM} ex19_draw.tmp
 
 runex18:
 	-@${MPIEXEC} -n 1 ./ex18 -pc_type mg -ksp_type fgmres -da_refine 2 -pc_mg_galerkin -snes_view > ex18_1.tmp 2>&1; \
