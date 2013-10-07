@@ -251,9 +251,9 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   nz   = 0;
 
   /*------------- reorder Jentry ----------------*/
-  PetscInt brows=coloring->brows;
-  if (brows && ctype == IS_COLORING_GHOSTED) { /* oly supported for seqaij matrix */
-    PetscInt    i,bcols=coloring->bcols,m=J->rmap->n,nbcols;
+  PetscInt brows=coloring->brows,bcols=coloring->bcols;
+  if (bcols>1 && ctype == IS_COLORING_GHOSTED) { /* oly supported for seqaij matrix */
+    PetscInt    i,m=J->rmap->n,nbcols;
     PetscScalar *dy=coloring->dy,*dy_k;
 
     printf("      use block rows impl: brows %d, bcols %d\n",brows,bcols);
@@ -306,29 +306,23 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
       /* 
        (3-3) Loop over block rows of vector, putting results into Jacobian matrix 
        */
-
-      PetscInt *nrows_new=coloring->nrows;
-      MatEntry *Jentry_new=coloring->matentry;
-      
-      nrows_k = nrows_new[nbcols++];
+      nrows_k = nrows[nbcols++];
       ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
+      
       if (coloring->htype[0] == 'w') {
-        dy_k = dy;
         for (l=0; l<nrows_k; l++) { 
-          row                     = Jentry_new[nz].row;   /* local row index */
-          //col                     = Jentry_new[nz].col;   /* color index in this column block */
-          *(Jentry_new[nz++].valaddr) = dy_k[row]*dx;  
+          row                     = Jentry[nz].row;   /* local row index */
+          *(Jentry[nz++].valaddr) = dy[row]*dx;  
         }
       } else { /* htype == 'ds' */
         for (l=0; l<nrows_k; l++) { 
           row                   = Jentry[nz].row;   /* local row index */
-          *(Jentry[nz].valaddr) = y[row]*vscale_array[Jentry[nz].col];
+          *(Jentry[nz].valaddr) = dy[row]*vscale_array[Jentry[nz].col];
           nz++;
         }
       }
       ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
     } 
-  
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     if (vscale) {

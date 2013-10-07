@@ -66,7 +66,6 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
   PetscReal mem;
   mem = nz*(sizeof(PetscScalar) + sizeof(PetscInt)) + 3*c->m*sizeof(PetscInt);
   bcols = (PetscInt)(0.5*mem /(c->m*sizeof(PetscScalar)));
-  printf("mem %g, bcol_est %d\n",mem,bcols);
   if (bcols > nis) bcols = nis;
   brows = 1000/bcols;
 
@@ -148,7 +147,7 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
               break;
             } else {
               Jentry_new[nz_new].row     = Jentry[nz].row + j*m; /* index in dy-array */
-              //Jentry_new[nz_new].col     = j; // j-th column in bcols
+              Jentry_new[nz_new].col     = Jentry[nz].col; 
               Jentry_new[nz_new].valaddr = Jentry[nz].valaddr;  
               nz_new++;
               row_start[i+j]++;
