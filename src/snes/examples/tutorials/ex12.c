@@ -644,8 +644,8 @@ int main(int argc, char **argv)
   ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
 
-  ierr = DMSetMatType(user.dm,MATAIJ);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(user.dm, &J);CHKERRQ(ierr);
+  ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
   if (user.jacobianMF) {
     PetscInt M, m, N, n;
 
