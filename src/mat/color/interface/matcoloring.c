@@ -109,6 +109,7 @@ PetscErrorCode MatColoringDestroy(MatColoring *mc)
   PetscFunctionBegin;
   if (--((PetscObject)(*mc))->refct > 0) {*mc = 0; PetscFunctionReturn(0);}
   ierr = MatDestroy(&(*mc)->mat);CHKERRQ(ierr);
+  if ((*mc)->ops->destroy) {ierr = (*((*mc)->ops->destroy))(*mc);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(mc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
