@@ -307,8 +307,8 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
        (3-3) Loop over block rows of vector, putting results into Jacobian matrix 
        */
 
-      PetscInt *nrows_new=coloring->nrows_new;
-      MatEntry *Jentry_new=coloring->matentry_new;
+      PetscInt *nrows_new=coloring->nrows;
+      MatEntry *Jentry_new=coloring->matentry;
       
       nrows_k = nrows_new[nbcols++];
       ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
@@ -316,9 +316,8 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
         dy_k = dy;
         for (l=0; l<nrows_k; l++) { 
           row                     = Jentry_new[nz].row;   /* local row index */
-          col                     = Jentry_new[nz].col;   /* color index in this column block */
-          *(Jentry_new[nz++].valaddr) = dy_k[row+col*m]*dx;
-          //printf( "%d (%d, %d, %g)\n", nz-1,row,col,*(Jentry_new[nz-1].valaddr));
+          //col                     = Jentry_new[nz].col;   /* color index in this column block */
+          *(Jentry_new[nz++].valaddr) = dy_k[row]*dx;  
         }
       } else { /* htype == 'ds' */
         for (l=0; l<nrows_k; l++) { 
