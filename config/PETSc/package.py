@@ -18,6 +18,7 @@ class NewPackage(config.package.Package):
     self.double           = 1   # 1 means requires double precision
     self.complex          = 0   # 0 means cannot use complex
     self.requires32bitint = 1;  # 1 means that the package will not work with 64 bit integers
+    self.requirescxx11    = 0
     return
 
   def setupDependencies(self, framework):
@@ -38,4 +39,6 @@ class NewPackage(config.package.Package):
         raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')
       if self.libraryOptions.integerSize == 64 and self.requires32bitint:
         raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')
+      if self.requirescxx11 and self.compilers.cxxdialect != 'C++11':
+        raise RuntimeError('Cannot use '+self.name+' without enabling C++11, see --with-cxx-dialect=C++11')
     return

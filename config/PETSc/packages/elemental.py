@@ -3,12 +3,15 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
+    self.gitcommit  = '89e7ddc52db68dc5a3f2635733293d7349dbd518'
+    self.giturls    = ['https://github.com/elemental/Elemental']
     self.download   = ['http://libelemental.org/pub/releases/elemental-0.81.tgz',
                        'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/elemental-0.81.tgz']
     self.liblist    = [['libelemental.a','libpmrrr.a']]
     self.includes   = ['elemental.hpp']
     self.cxx              = 1
-    self.requires32bitint = 1
+    self.requirescxx11    = 1
+    self.requires32bitint = 0
     self.complex          = 1
     self.worksonWindows   = 0
     self.downloadonWindows= 0
@@ -40,6 +43,8 @@ class Configure(PETSc.package.NewPackage):
     args.append('-DCMAKE_RANLIB='+ranlib)
     cflags = self.setCompilers.getCompilerFlags()
     args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
+    if self.framework.argDB['with-64-bit-indices']:
+      args.append('-DUSE_64BIT_INTS=ON')
     self.framework.popLanguage()
 
     self.framework.pushLanguage('Cxx')
@@ -48,7 +53,7 @@ class Configure(PETSc.package.NewPackage):
       raise RuntimeError('Sorry, Elemental does not compile with Oracle/Solaris/Sun compilers')
     args.append('-DMPI_CXX_COMPILER="'+self.framework.getCompiler()+'"')
     args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
-    cxxflags = self.setCompilers.getCompilerFlags()
+    cxxflags = self.framework.getCompilerFlags()
     args.append('-DCMAKE_CXX_FLAGS:STRING="'+cxxflags+'"')
     self.framework.popLanguage()
 
