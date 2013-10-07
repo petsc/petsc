@@ -76,6 +76,7 @@ class Installer(script.Script):
     self.rootConfDir       = os.path.join(self.rootDir, 'conf')
     self.rootBinDir        = os.path.join(self.rootDir, 'bin')
     self.archLibDir        = os.path.join(self.rootDir, self.arch, 'lib')
+    self.PetscArchLibDir   = os.path.join(PETSC_DIR, self.arch, 'lib')
     self.destIncludeDir    = os.path.join(self.destDir, 'include')
     self.destConfDir       = os.path.join(self.destDir, 'conf')
     self.destLibDir        = os.path.join(self.destDir, 'lib')
@@ -251,6 +252,10 @@ for src, dst in copies:
     if os.path.splitext(dst)[1] == '.dylib' and os.path.isfile('/usr/bin/install_name_tool'):
       installName = re.sub(self.destDir, self.installDir, dst)
       self.executeShellCommand('/usr/bin/install_name_tool -id ' + installName + ' ' + dst)
+      old = os.path.join(self.PetscArchLibDir,'libpetsc.dylib')
+      new = os.path.join(self.installDir,'lib','libpetsc.dylib')
+      print ('/usr/bin/install_name_tool -change ' + old + ' ' + new + ' ' + dst)
+      self.executeShellCommand('/usr/bin/install_name_tool -change ' + old + ' ' + new + ' ' + dst)
     # preserve the original timestamps - so that the .a vs .so time order is preserved
     shutil.copystat(src,dst)
     return
