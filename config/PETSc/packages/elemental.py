@@ -60,7 +60,7 @@ class Configure(PETSc.package.NewPackage):
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
       args.append('-DCMAKE_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
-      fcflags = self.setCompilers.getCompilerFlags()
+      fcflags = self.framework.getCompilerFlags()
       args.append('-DCMAKE_Fortran_FLAGS:STRING="'+fcflags+'"')
       self.framework.popLanguage()
 
