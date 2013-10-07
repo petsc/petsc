@@ -11,7 +11,7 @@ class Configure(PETSc.package.NewPackage):
     self.includes   = ['elemental.hpp']
     self.cxx              = 1
     self.requirescxx11    = 1
-    self.requires32bitint = 1
+    self.requires32bitint = 0
     self.complex          = 1
     self.worksonWindows   = 0
     self.downloadonWindows= 0
@@ -43,6 +43,8 @@ class Configure(PETSc.package.NewPackage):
     args.append('-DCMAKE_RANLIB='+ranlib)
     cflags = self.setCompilers.getCompilerFlags()
     args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
+    if self.framework.argDB['with-64-bit-indices']:
+      args.append('-DUSE_64BIT_INTS=ON')
     self.framework.popLanguage()
 
     self.framework.pushLanguage('Cxx')
