@@ -558,7 +558,7 @@ int main(int argc,char ** argv)
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
 
   Mat J;
-  ierr = DMCreateMatrix(circuitdm,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(circuitdm,&J);CHKERRQ(ierr);
   ierr = MatSetOption(J,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
   ierr = SetInitialValues(circuitdm,X,&User);CHKERRQ(ierr);
