@@ -214,7 +214,7 @@ PETSC_EXTERN PetscErrorCode MatCreateSeqSBAIJ(MPI_Comm,PetscInt,PetscInt,PetscIn
 PETSC_EXTERN PetscErrorCode MatCreateSBAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateMPISBAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],Mat *);
 PETSC_EXTERN PetscErrorCode MatMPISBAIJSetPreallocationCSR(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]);
-PETSC_EXTERN PetscErrorCode MatXAIJSetPreallocation(Mat,PetscInt,const PetscInt*,const PetscInt*,const PetscInt*,const PetscInt*);
+PETSC_EXTERN PetscErrorCode MatXAIJSetPreallocation(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],const PetscInt[]);
 
 PETSC_EXTERN PetscErrorCode MatCreateShell(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,void *,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateNormal(Mat,Mat*);
