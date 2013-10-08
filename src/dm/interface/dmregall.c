@@ -9,6 +9,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Circuit(DM);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMRegisterAll"
@@ -43,6 +44,7 @@ PetscErrorCode  DMRegisterAll()
 #if defined(PETSC_HAVE_MOAB)
   ierr = DMRegister(DMMOAB,       DMCreate_Moab);CHKERRQ(ierr);
 #endif
+  ierr = DMRegister(DMCIRCUIT,    DMCreate_Circuit);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #include <petscfe.h>     /*I  "petscfe.h"  I*/
