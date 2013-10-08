@@ -1,6 +1,8 @@
 #include <petsc-private/matimpl.h>      /*I "petscmat.h"  I*/
 #include <petscsf.h>
 
+
+
 typedef struct {
   PetscSF         etoc;
   PetscSF         etor;
@@ -88,8 +90,10 @@ PetscErrorCode MISBipartiteSF_Private(Mat m,PetscSF *etoc,PetscSF *etor)
   ierr = PetscSFSetGraphLayout(*etoc,m->cmap,nentries,NULL,PETSC_COPY_VALUES,rowleaf);CHKERRQ(ierr);
 
   /* determine the number of entries in the column matrix */
+  ierr = PetscLogEventBegin(Mat_Coloring_Comm,*etoc,0,0,0);CHKERRQ(ierr);
   ierr = PetscSFComputeDegreeBegin(*etoc,&coldegrees);CHKERRQ(ierr);
   ierr = PetscSFComputeDegreeEnd(*etoc,&coldegrees);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(Mat_Coloring_Comm,*etoc,0,0,0);CHKERRQ(ierr);
   ncolentries=0;
   for (i=0;i<cn;i++) {
     ncolentries += coldegrees[i];
@@ -97,8 +101,10 @@ PetscErrorCode MISBipartiteSF_Private(Mat m,PetscSF *etoc,PetscSF *etor)
   ierr = PetscMalloc(sizeof(PetscInt)*ncolentries,&colleaf);CHKERRQ(ierr);
 
   /* create the one going the other way by building the leaf set */
+  ierr = PetscLogEventBegin(Mat_Coloring_Comm,*etoc,0,0,0);CHKERRQ(ierr);
   ierr = PetscSFGatherBegin(*etoc,MPI_INT,rowdata,colleaf);CHKERRQ(ierr);
   ierr = PetscSFGatherEnd(*etoc,MPI_INT,rowdata,colleaf);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(Mat_Coloring_Comm,*etoc,0,0,0);CHKERRQ(ierr);
 
   /* this one takes mat entries in *columns* to rows -- you never have to actually be able to order the leaf entries. */
   ierr = PetscSFSetGraphLayout(*etor,m->rmap,ncolentries,NULL,PETSC_COPY_VALUES,colleaf);CHKERRQ(ierr);
@@ -200,8 +206,10 @@ PetscErrorCode MISGreatestWeight_Private(MatColoring mc,PetscReal *wtsin,PetscRe
   for (k=0;k<dist;k++) {
     if (k%2 == 1) {
       /* second step takes the row weights to the column weights */
+      ierr = PetscLogEventBegin(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
       ierr = PetscSFComputeDegreeBegin(etor,&degrees);CHKERRQ(ierr);
       ierr = PetscSFComputeDegreeEnd(etor,&degrees);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
       nentries=0;
       for(i=0;i<nrows;i++) {
           nentries += degrees[i];
@@ -216,8 +224,10 @@ PetscErrorCode MISGreatestWeight_Private(MatColoring mc,PetscReal *wtsin,PetscRe
         wtscol[i]=0.;
       }
       if (idx != nentries) SETERRQ2(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"Bad number of entries %d vs %d",idx,nentries);
+      ierr = PetscLogEventBegin(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
       ierr = PetscSFReduceBegin(etoc,MPI_DOUBLE,ewts,wtscol,MPI_MAX);CHKERRQ(ierr);
       ierr = PetscSFReduceEnd(etoc,MPI_DOUBLE,ewts,wtscol,MPI_MAX);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
     } else {
       /* first step takes the column weights to the row weights */
       ierr = PetscSFComputeDegreeBegin(etoc,&degrees);CHKERRQ(ierr);
@@ -236,8 +246,10 @@ PetscErrorCode MISGreatestWeight_Private(MatColoring mc,PetscReal *wtsin,PetscRe
         wtsrow[i]=0.;
       }
       if (idx != nentries) SETERRQ2(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"Bad number of entries %d vs %d",idx,nentries);
+      ierr = PetscLogEventBegin(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
       ierr = PetscSFReduceBegin(etor,MPI_DOUBLE,ewts,wtsrow,MPI_MAX);CHKERRQ(ierr);
       ierr = PetscSFReduceEnd(etor,MPI_DOUBLE,ewts,wtsrow,MPI_MAX);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
     }
   }
   if (mc->dist % 2 == 1) {
@@ -271,15 +283,17 @@ PetscErrorCode MISSpreadState_Private(MatColoring mc,PetscInt *statein,PetscInt 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscSFGetGraph(etor,&nrows,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(etoc,&ncols,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(etor,&nrows,NULL,NULL,NULL);CHKERRQ(ierr);
   for (i=0;i<ncols;i++) {
     statecol[i] = statein[i];
   }
   for (k=0;k<dist;k++) {
     if (k%2 == 1) {
+      ierr = PetscLogEventBegin(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
       ierr = PetscSFComputeDegreeBegin(etor,&degrees);CHKERRQ(ierr);
       ierr = PetscSFComputeDegreeEnd(etor,&degrees);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
       nentries=0;
       for(i=0;i<nrows;i++) {
         nentries += degrees[i];
@@ -294,11 +308,15 @@ PetscErrorCode MISSpreadState_Private(MatColoring mc,PetscInt *statein,PetscInt 
         statecol[i]=0;
       }
       if (idx != nentries) SETERRQ2(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"Bad number of entries %d vs %d",idx,nentries);
+      ierr = PetscLogEventBegin(Mat_Coloring_Comm,etoc,0,0,0);CHKERRQ(ierr);
       ierr = PetscSFReduceBegin(etoc,MPIU_INT,estate,statecol,MPIU_MAX);CHKERRQ(ierr);
       ierr = PetscSFReduceEnd(etoc,MPIU_INT,estate,statecol,MPIU_MAX);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(Mat_Coloring_Comm,etoc,0,0,0);CHKERRQ(ierr);
     } else {
+      ierr = PetscLogEventBegin(Mat_Coloring_Comm,etoc,0,0,0);CHKERRQ(ierr);
       ierr = PetscSFComputeDegreeBegin(etoc,&degrees);CHKERRQ(ierr);
       ierr = PetscSFComputeDegreeEnd(etoc,&degrees);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(Mat_Coloring_Comm,etoc,0,0,0);CHKERRQ(ierr);
       nentries=0;
       for(i=0;i<ncols;i++) {
         nentries += degrees[i];
@@ -313,8 +331,10 @@ PetscErrorCode MISSpreadState_Private(MatColoring mc,PetscInt *statein,PetscInt 
         staterow[i]=0;
       }
       if (idx != nentries) SETERRQ2(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"Bad number of entries %d vs %d",idx,nentries);
+      ierr = PetscLogEventBegin(Mat_Coloring_Comm,etor,0,0,0);CHKERRQ(ierr);
       ierr = PetscSFReduceBegin(etor,MPIU_INT,estate,staterow,MPI_MAX);CHKERRQ(ierr);
       ierr = PetscSFReduceEnd(etor,MPIU_INT,estate,staterow,MPI_MAX);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(Mat_Coloring_Comm,etor,0,0,0);CHKERRQ(ierr);
     }
   }
   if (mc->dist % 2 == 1) {
@@ -399,7 +419,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_MIS(MatColoring mc,ISColoring *isco
 {
   MC_MIS          *mis=(MC_MIS*)mc->data;
   PetscErrorCode  ierr;
-  ISColoringValue curcolor;
+  ISColoringValue curcolor,finalcolor;
   ISColoringValue *color;
   PetscInt        i,nadded,nadded_total,ncolstotal,ncols;
 
@@ -418,11 +438,15 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_MIS(MatColoring mc,ISColoring *isco
     if (!nadded && nadded_total != ncolstotal) {SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"MatColoringApply_MIS made no progress");}
     curcolor++;
   }
+  finalcolor = curcolor;
   for (i=0;i<ncols;i++) {
     /* set up a dummy color if the coloring has been truncated */
-    if (color[i] == IS_COLORING_MAX) color[i] = curcolor;
+    if (color[i] == IS_COLORING_MAX) {
+      color[i] = curcolor;
+      finalcolor = curcolor+1;
+    }
   }
-  ierr = ISColoringCreate(PetscObjectComm((PetscObject)mc),curcolor,ncols,color,iscoloring);CHKERRQ(ierr);
+  ierr = ISColoringCreate(PetscObjectComm((PetscObject)mc),finalcolor,ncols,color,iscoloring);CHKERRQ(ierr);
   ierr = MISTearDown_Private(mc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

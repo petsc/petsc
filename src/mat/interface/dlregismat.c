@@ -200,6 +200,9 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatSetValBatch3",MAT_CLASSID,&MAT_SetValuesBatchIII);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatSetValBatch4",MAT_CLASSID,&MAT_SetValuesBatchIV);CHKERRQ(ierr);
 
+  ierr = PetscLogEventRegister("MatColoringApply",MAT_COLORING_CLASSID,&Mat_Coloring_Apply);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatColoringComm",MAT_COLORING_CLASSID,&Mat_Coloring_Comm);CHKERRQ(ierr);
+
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(MAT_SetValues, PETSC_FALSE);CHKERRQ(ierr);
   /* Process info exclusions */
