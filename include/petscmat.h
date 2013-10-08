@@ -1029,6 +1029,7 @@ PETSC_EXTERN PetscErrorCode MatSOR(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscI
 J*/
 typedef struct _p_MatColoring* MatColoring;
 typedef const  char*           MatColoringType;
+#define MATCOLORINGJP      "jp"
 #define MATCOLORINGMIS     "mis"
 #define MATCOLORINGNATURAL "natural"
 #define MATCOLORINGSL      "sl"

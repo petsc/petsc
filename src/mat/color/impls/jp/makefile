@@ -3,12 +3,12 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = miscoloring.c
+SOURCEC  = jp.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscmat
 MANSEC   = MatColoring
-LOCDIR   = src/mat/color/impls/mis
+LOCDIR   = src/mat/color/impls/jp
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
