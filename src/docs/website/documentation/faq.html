@@ -992,11 +992,9 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
 
       <ol>
         <li>
-          use the Sieve construct in PETSc, this is a high
-          level approach that uses a small number of
-          abstractions to help you manage distributing the
-          grid data structures and computing the elements into
-          the matrices.
+          use DMPlex, which is a high level approach to manage your mesh and
+          discretization. <a href="http://www.mcs.anl.gov/petsc/petsc-dev/src/snes/examples/tutorials/ex62.c.html">SNES
+          ex62</a> solves the Stokes equation using this approach.
         </li>
         <li>
           manage the grid data structure yourself and use

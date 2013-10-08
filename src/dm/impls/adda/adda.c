@@ -56,7 +56,7 @@ PetscErrorCode  DMCreateGlobalVector_ADDA(DM dm, Vec *vec)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateColoring_ADDA"
-PetscErrorCode  DMCreateColoring_ADDA(DM dm, ISColoringType ctype,MatType mtype,ISColoring *coloring)
+PetscErrorCode  DMCreateColoring_ADDA(DM dm, ISColoringType ctype,ISColoring *coloring)
 {
   PetscFunctionBegin;
   SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP, "Not implemented yet");
@@ -65,7 +65,7 @@ PetscErrorCode  DMCreateColoring_ADDA(DM dm, ISColoringType ctype,MatType mtype,
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_ADDA"
-PetscErrorCode  DMCreateMatrix_ADDA(DM dm, MatType mtype, Mat *mat)
+PetscErrorCode  DMCreateMatrix_ADDA(DM dm, Mat *mat)
 {
   PetscErrorCode ierr;
   DM_ADDA        *dd = (DM_ADDA*)dm->data;
@@ -74,7 +74,7 @@ PetscErrorCode  DMCreateMatrix_ADDA(DM dm, MatType mtype, Mat *mat)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = MatCreate(PetscObjectComm((PetscObject)dm), mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat, dd->lsize, dd->lsize, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetType(*mat, mtype);CHKERRQ(ierr);
+  ierr = MatSetType(*mat, dm->mattype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

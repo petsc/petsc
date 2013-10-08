@@ -68,7 +68,7 @@ char common_options[] = "-ksp_type fgmres\
 char matrix_free_options[] = "-mat_mffd_compute_normu no \
                               -mat_mffd_type wp";
 
-extern PetscErrorCode DMCreateMatrix_MF(DM,MatType,Mat*);
+extern PetscErrorCode DMCreateMatrix_MF(DM,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -287,7 +287,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_MF"
-PetscErrorCode DMCreateMatrix_MF(DM packer,MatType stype,Mat *A)
+PetscErrorCode DMCreateMatrix_MF(DM packer,Mat *A)
 {
   PetscErrorCode ierr;
   Vec            t;

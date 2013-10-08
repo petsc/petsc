@@ -26,13 +26,13 @@ chk_makej:
         if [ "$${makeflags_j}" != "$${makeflags}" ]; then parallel=true; fi;\
         if [ "$${parallel}" = "true" ]; then \
           printf ${PETSC_TEXT_HILIGHT}"********************* ERROR **********************\n" ; \
-          if [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
+          if [ "${PETSC_BUILD_USING_CMAKE}" != "" -o "${PETSC_BUILD_USING_GNUMAKE}" != "" ]; then \
              echo "PETSc compiles are automatically parallel, do not ";\
              echo "provide the -j option to make                     ";\
           else \
              echo "Parallel build with 'make -j' is not supported    ";\
              echo "for PETSc legacy builds. Run without -j <np>      ";\
-             echo "or ./configure PETSc with --download-cmake        ";\
+             echo "or configure PETSc with gnumake using --download-make";\
              echo "to enable parallel builds with PETSc              ";\
           fi;\
           printf "**************************************************"${PETSC_TEXT_NORMAL}"\n" ;\
@@ -100,6 +100,15 @@ ccmake: chk_makej
 
 cmake: chk_makej
 	@${OMAKE} ccmake VERBOSE=1
+
+gnumake: chk_makej
+	@echo "Building PETSc using GNU Make with ${MAKE_NP} build threads"
+	@echo "=========================================="
+	@cd ${PETSC_DIR} && ${OMAKE} -f gmakefile -j ${MAKE_NP} V=${V}
+	@if [ "${BUILDSHAREDLIB}" = "yes" -a "${DSYMUTIL}" != "true" ]; then \
+        echo "Running ${DSYMUTIL} on ${SHLIBS}";\
+        for LIBNAME in ${SHLIBS}; do ${DSYMUTIL} ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; done; fi
+	@echo "========================================="
 
 # Does nothing; needed for some rules that require actions.
 foo:
@@ -391,7 +400,7 @@ getautoconfargs:
         if [ $${mypwd} != $${newpwd} ]; then \
 	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chk_petscdir;\
         fi
-	${PETSC_COMPILE_SINGLE} $<
+	${PETSC_COMPILE_SINGLE} ${PWD}/$<
 	@if [ "${PETSCPORTABLE}" != "" ]; then \
           ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $*.o ; \
         fi
@@ -399,16 +408,16 @@ getautoconfargs:
 #
 #   Compiles CUDA code
 .cu.o:
-	${PETSC_CUCOMPILE_SINGLE} $<
+	${PETSC_CUCOMPILE_SINGLE} ${PWD}/$<
 
 .cu.a:
-	${PETSC_CUCOMPILE_SINGLE} $<
+	${PETSC_CUCOMPILE_SINGLE} ${PWD}/$<
 	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
 	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
 	-${RM} $*.o $*.lo
 
 .c.a .cpp.a .cc.a .C.a:
-	-${PETSC_COMPILE_SINGLE} $<
+	-${PETSC_COMPILE_SINGLE} ${PWD}/$<
 	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
 	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
 	-${RM} $*.o $*.lo

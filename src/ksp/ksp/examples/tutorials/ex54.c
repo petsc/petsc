@@ -163,6 +163,8 @@ int main(int argc,char **args)
 #endif
   ierr = VecSet(xx,.0);CHKERRQ(ierr);
 
+  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+
   ierr = KSPSolve(ksp,bb,xx);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_LOG)

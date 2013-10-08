@@ -155,7 +155,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   ierr = VecCreate(comm, &ctx->coords);CHKERRQ(ierr);
   ierr = VecSetSizes(ctx->coords, ctx->n*ctx->dim, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(ctx->coords, ctx->dim);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(ctx->coords);CHKERRQ(ierr);
+  ierr = VecSetType(ctx->coords,VECSTANDARD);CHKERRQ(ierr);
   ierr = VecGetArray(ctx->coords, &a);CHKERRQ(ierr);
   for (p = 0, q = 0, i = 0; p < N; ++p) {
     if (globalProcs[p] == rank) {
@@ -205,7 +205,7 @@ PetscErrorCode DMInterpolationGetVector(DMInterpolationInfo ctx, Vec *v)
   ierr = VecCreate(ctx->comm, v);CHKERRQ(ierr);
   ierr = VecSetSizes(*v, ctx->n*ctx->dof, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*v, ctx->dof);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(*v);CHKERRQ(ierr);
+  ierr = VecSetType(*v,VECSTANDARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -335,6 +335,7 @@ PETSC_STATIC_INLINE PetscErrorCode QuadMap_Private(SNES snes, Vec Xref, Vec Xrea
   PetscFunctionReturn(0);
 }
 
+#include <petsc-private/dmimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "QuadJacobian_Private"
 PETSC_STATIC_INLINE PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat *J, Mat *M, MatStructure *flag, void *ctx)
@@ -393,7 +394,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInf
   ierr = SNESSetOptionsPrefix(snes, "quad_interp_");CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
   ierr = VecSetSizes(r, 2, 2);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(r);CHKERRQ(ierr);
+  ierr = VecSetType(r,dm->vectype);CHKERRQ(ierr);
   ierr = VecDuplicate(r, &ref);CHKERRQ(ierr);
   ierr = VecDuplicate(r, &real);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF, &J);CHKERRQ(ierr);
@@ -611,7 +612,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo
   ierr = SNESSetOptionsPrefix(snes, "hex_interp_");CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
   ierr = VecSetSizes(r, 3, 3);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(r);CHKERRQ(ierr);
+  ierr = VecSetType(r,dm->vectype);CHKERRQ(ierr);
   ierr = VecDuplicate(r, &ref);CHKERRQ(ierr);
   ierr = VecDuplicate(r, &real);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF, &J);CHKERRQ(ierr);

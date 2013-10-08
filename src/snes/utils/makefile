@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
-DIRS     = mesh
+DIRS     =
 EDIRS    =
 LOCDIR   = src/snes/utils/
 

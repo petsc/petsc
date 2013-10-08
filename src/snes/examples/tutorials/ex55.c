@@ -74,7 +74,8 @@ int main(int argc, char **argv)
   ierr = VecDuplicate(x,&user.q);CHKERRQ(ierr);
 
   /* Get Jacobian matrix structure from the da */
-  ierr = DMCreateMatrix(user.da,MATAIJ,&user.M);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da,&user.M);CHKERRQ(ierr);
   /* Form the jacobian matrix and M_0 */
   ierr = SetUpMatrices(&user);CHKERRQ(ierr);
   ierr = MatDuplicate(user.M,MAT_DO_NOT_COPY_VALUES,&J);CHKERRQ(ierr);
@@ -449,7 +450,8 @@ PetscErrorCode SetUpMatrices(AppCtx *user)
   ierr = DMDAGetInfo(user->da,NULL,&Mda,&Nda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
   hx   = 1.0/(Mda-1);
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,Mda,Nda,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,MATAIJ,&user->M_0);CHKERRQ(ierr);
+  ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,&user->M_0);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 
   eM_0[0][0]=eM_0[1][1]=eM_0[2][2]=hx*hx/12.0;

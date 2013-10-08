@@ -1,9 +1,6 @@
 
 #include <petsc-private/dmdaimpl.h>
 #include <petsc-private/dmpleximpl.h>
-#if defined(PETSC_HAVE_SIEVE)
-#include <petsc-private/meshimpl.h>
-#endif
 
 static PetscBool DMPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
@@ -25,9 +22,6 @@ PetscErrorCode  DMFinalizePackage(void)
   ierr = PetscFunctionListDestroy(&DMList);CHKERRQ(ierr);
   DMPackageInitialized = PETSC_FALSE;
   DMRegisterAllCalled  = PETSC_FALSE;
-#if defined(PETSC_HAVE_SIEVE)
-  ierr = DMMeshFinalize();CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -60,10 +54,6 @@ PetscErrorCode  DMInitializePackage(void)
 
   /* Register Classes */
   ierr = PetscClassIdRegister("Distributed Mesh",&DM_CLASSID);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SIEVE)
-  ierr = PetscClassIdRegister("SectionReal",&SECTIONREAL_CLASSID);CHKERRQ(ierr);
-  ierr = PetscClassIdRegister("SectionInt",&SECTIONINT_CLASSID);CHKERRQ(ierr);
-#endif
 
 #if defined(PETSC_HAVE_HYPRE)
   ierr = MatRegister(MATHYPRESTRUCT, MatCreate_HYPREStruct);CHKERRQ(ierr);
@@ -85,17 +75,6 @@ PetscErrorCode  DMInitializePackage(void)
   ierr = PetscLogEventRegister("DMPlexStratify",         DM_CLASSID,&DMPLEX_Stratify);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexResidualFEM",      DM_CLASSID,&DMPLEX_ResidualFEM);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexJacobianFEM",      DM_CLASSID,&DMPLEX_JacobianFEM);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SIEVE)
-  ierr = PetscLogEventRegister("DMMeshView",             DM_CLASSID,&DMMesh_View);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMMeshGetGlobalScatter", DM_CLASSID,&DMMesh_GetGlobalScatter);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMMeshRestrictVector",   DM_CLASSID,&DMMesh_restrictVector);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMMeshAssembleVector",   DM_CLASSID,&DMMesh_assembleVector);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMMeshAssemVecComplete", DM_CLASSID,&DMMesh_assembleVectorComplete);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMMeshAssembleMatrix",   DM_CLASSID,&DMMesh_assembleMatrix);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMMeshUpdateOperator",   DM_CLASSID,&DMMesh_updateOperator);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SectionRealView",        SECTIONREAL_CLASSID,&SectionReal_View);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SectionIntView",         SECTIONINT_CLASSID,&SectionInt_View);CHKERRQ(ierr);
-#endif
   /* Process info exclusions */
   ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
@@ -103,16 +82,6 @@ PetscErrorCode  DMInitializePackage(void)
     if (className) {
       ierr = PetscInfoDeactivateClass(DM_CLASSID);CHKERRQ(ierr);
     }
-#if defined(PETSC_HAVE_SIEVE)
-    ierr = PetscStrstr(logList, "sectionreal", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(SECTIONREAL_CLASSID);CHKERRQ(ierr);
-    }
-    ierr = PetscStrstr(logList, "sectionint", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(SECTIONINT_CLASSID);CHKERRQ(ierr);
-    }
-#endif
   }
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
@@ -121,16 +90,6 @@ PetscErrorCode  DMInitializePackage(void)
     if (className) {
       ierr = PetscLogEventDeactivateClass(DM_CLASSID);CHKERRQ(ierr);
     }
-#if defined(PETSC_HAVE_SIEVE)
-    ierr = PetscStrstr(logList, "sectionreal", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(SECTIONREAL_CLASSID);CHKERRQ(ierr);
-    }
-    ierr = PetscStrstr(logList, "sectionint", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(SECTIONINT_CLASSID);CHKERRQ(ierr);
-    }
-#endif
   }
   ierr = PetscRegisterFinalize(DMFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
