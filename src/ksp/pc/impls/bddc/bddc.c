@@ -1,20 +1,47 @@
 /* TODOLIST
-   Better management for block size > 1 for idx_R_local and others
-   Provide PCApplyTranpose
-   make runexe59
-   Man pages
-   Propagate nearnullspace info among levels
-   Change of basis approach does not work with my nonlinear mechanics example. why? maybe an issue with l2gmap?
-   Move FETIDP code
-   Provide general case for subassembling
-   Preallocation routines in MatConvert_IS_AIJ
-   Allow different customizations among different linear solves (requires also reset/destroy of ksp_R and coarse_ksp)
-   Why options for "pc_bddc_coarse" solver gets propagated to "pc_bddc_coarse_1" solver?
-   Better management in PCIS code
-   Is it possible working with PCBDDCGraph on boundary indices only?
-   DofSplitting and DM attached to pc?
-   Change SetNeumannBoundaries to SetNeumannBoundariesLocal and provide new SetNeumannBoundaries (same Dirichlet)
-   BDDC with MG framework?
+
+   ConstraintsSetup
+   - assure same constraints between neighbours by sorting vals by global index before SVD!
+   - tolerances for constraints as an option (take care of single precision!)
+   - Allow different constraints customizations among different linear solves (requires also reset/destroy of ksp_R and coarse_ksp)
+   - MAT_IGNORE_ZERO_ENTRIES for Constraints Matrix
+
+   Solvers
+   - Better management for block size > 1 for idx_R_local and others
+   - Try to reduce the work when reusing the solvers
+   - Add support for reuse fill and cholecky factor for coarse solver (similar to local solvers)
+   - reuse already allocated coarse matrix if possible
+   - Propagate ksp prefixes for solvers to mat objects? 
+   - Propagate nearnullspace info among levels
+
+   User interface
+   - Change SetNeumannBoundaries to SetNeumannBoundariesLocal and provide new SetNeumannBoundaries (same Dirichlet)
+   - Negative indices in dirichlet and Neumann is should be skipped (now they cause out-of-bounds access)
+   - Provide PCApplyTranpose_BDDC
+   - DofSplitting and DM attached to pc?
+
+   Debugging output
+   - Better management of verbosity levels of debugging output
+   - Crashes on some architecture -> call SynchronizedAllow before every SynchronizedPrintf
+
+   Build
+   - make runexe59
+
+   Extra
+   - Is it possible to work with PCBDDCGraph on boundary indices only (less memory consumed)?
+   - Why options for "pc_bddc_coarse" solver gets propagated to "pc_bddc_coarse_1" solver?
+   - add support for computing h,H and related using coordinates?
+   - Change of basis approach does not work with my nonlinear mechanics example. why? maybe an issue with l2gmap?
+   - Better management in PCIS code
+   - BDDC with MG framework?
+
+   FETIDP
+   - Move FETIDP code to its own classes
+
+   MATIS related operations contained in BDDC code
+   - Provide general case for subassembling
+   - Preallocation routines in MatConvert_IS_AIJ
+
 */
 
 /* ----------------------------------------------------------------------------------------------------------------------------------------------

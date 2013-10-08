@@ -1449,8 +1449,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       }
     }
     ierr = ISRestoreIndices(*used_IS,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-    /* perform SVD on the constraints if use_nnsp_true has not be requested by the user */
-    if (!pcbddc->use_nnsp_true) {
+    /* perform SVD on the constraints if use_nnsp_true has not be requested by the user and there are non-null constraints on the cc */
+    if (!pcbddc->use_nnsp_true && temp_constraints) {
       PetscReal tol = 1.0e-8; /* tolerance for retaining eigenmodes */
 
 #if defined(PETSC_MISSING_LAPACK_GESVD)
