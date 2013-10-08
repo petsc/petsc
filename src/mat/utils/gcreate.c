@@ -228,7 +228,7 @@ PetscErrorCode  MatSetFromOptions(Mat B)
 .seealso: MatSeqAIJSetPreallocation(), MatMPIAIJSetPreallocation(), MatSeqBAIJSetPreallocation(), MatMPIBAIJSetPreallocation(), MatSeqSBAIJSetPreallocation(), MatMPISBAIJSetPreallocation(),
           PetscSplitOwnership()
 @*/
-PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt *dnnz,const PetscInt *onnz,const PetscInt *dnnzu,const PetscInt *onnzu)
+PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt dnnz[],const PetscInt onnz[],const PetscInt dnnzu[],const PetscInt onnzu[])
 {
   PetscErrorCode ierr;
   void           (*aij)(void);
