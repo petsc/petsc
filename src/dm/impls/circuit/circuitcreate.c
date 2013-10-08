@@ -16,7 +16,7 @@ PetscErrorCode  DMSetFromOptions_Circuit(DM dm)
 }
 
 /* External function declarations here */
-extern PetscErrorCode DMCreateMatrix_Circuit(DM, MatType, Mat*);
+extern PetscErrorCode DMCreateMatrix_Circuit(DM, Mat*);
 extern PetscErrorCode DMDestroy_Circuit(DM);
 extern PetscErrorCode DMView_Circuit(DM, PetscViewer);
 extern PetscErrorCode DMGlobalToLocalBegin_Circuit(DM, Vec, InsertMode, Vec);
