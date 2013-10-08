@@ -511,8 +511,8 @@ PetscErrorCode DMCircuitVariablesSetUp(DM dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCircuitGetComponentDataArray"
-/*@
-  DMCircuitComponentDataArray - Returns the component data array
+/*@C
+  DMCircuitGetComponentDataArray - Returns the component data array
 
   Not Collective
 
@@ -598,7 +598,7 @@ PetscErrorCode DMCircuitDistribute(DM oldDM,DM *distDM)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCircuitGetSupportingEdges"
-/*@ 
+/*@C
   DMCircuitGetSupportingEdges - Return the supporting edges for this vertex point
 
   Not Collective
@@ -619,7 +619,7 @@ PetscErrorCode DMCircuitDistribute(DM oldDM,DM *distDM)
 
 .seealso: DMCircuitCreate, DMCircuitGetConnectedNodes
 @*/
-PetscErrorCode DMCircuitGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedges,const PetscInt **edges)
+PetscErrorCode DMCircuitGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedges,const PetscInt *edges[])
 {
   PetscErrorCode ierr;
   DM_Circuit     *circuit = (DM_Circuit*)dm->data;
@@ -632,7 +632,7 @@ PetscErrorCode DMCircuitGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedge
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCircuitGetConnectedNodes"
-/*@ 
+/*@C
   DMCircuitGetConnectedNodes - Return the connected edges for this edge point
 
   Not Collective
@@ -652,7 +652,7 @@ PetscErrorCode DMCircuitGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedge
 
 .seealso: DMCircuitCreate, DMCircuitGetSupportingEdges
 @*/
-PetscErrorCode DMCircuitGetConnectedNodes(DM dm,PetscInt edge,const PetscInt **vertices)
+PetscErrorCode DMCircuitGetConnectedNodes(DM dm,PetscInt edge,const PetscInt *vertices[])
 {
   PetscErrorCode ierr;
   DM_Circuit     *circuit = (DM_Circuit*)dm->data;
@@ -713,13 +713,13 @@ PetscErrorCode DMSetUp_Circuit(DM dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_Circuit"
-PetscErrorCode DMCreateMatrix_Circuit(DM dm,MatType mtype, Mat *J)
+PetscErrorCode DMCreateMatrix_Circuit(DM dm,Mat *J)
 {
   PetscErrorCode ierr;
   DM_Circuit     *circuit = (DM_Circuit*) dm->data;
 
   PetscFunctionBegin;
-  ierr = DMCreateMatrix(circuit->plex,mtype,J);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(circuit->plex,J);CHKERRQ(ierr);
   ierr = MatSetDM(*J,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
