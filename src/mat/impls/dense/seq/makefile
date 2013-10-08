@@ -1,7 +1,6 @@
-
 ALL: lib
 
-CFLAGS   =
+CFLAGS   = ${MAGMA_INCLUDE}
 FFLAGS   =
 SOURCEC  = dense.c
 SOURCEF  =
