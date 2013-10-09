@@ -107,6 +107,7 @@ PetscErrorCode DMCircuitLayoutSetUp(DM dm)
   PetscInt       spacedim=2;
   double         *vertexcoords=NULL;
   PetscInt       i;
+  PetscInt       ndata;
 
   PetscFunctionBegin;
   if (circuit->nNodes) {
@@ -128,7 +129,6 @@ PetscErrorCode DMCircuitLayoutSetUp(DM dm)
   circuit->dataheadersize = sizeof(struct _p_DMCircuitComponentHeader)/sizeof(DMCircuitComponentGenericDataType);
   ierr = PetscMalloc((circuit->pEnd-circuit->pStart)*sizeof(struct _p_DMCircuitComponentHeader),&circuit->header);CHKERRQ(ierr);
   for (i = circuit->pStart; i < circuit->pEnd; i++) {
-    PetscInt ndata;
     circuit->header[i].ndata = 0;
     ndata = circuit->header[i].ndata;
     ierr = PetscSectionAddDof(circuit->DataSection,i,circuit->dataheadersize);CHKERRQ(ierr);
@@ -475,6 +475,8 @@ PetscErrorCode DMCircuitComponentSetUp(DM dm)
   DMCircuitComponentHeader header;
   DMCircuitComponentValue  cvalue;
   DMCircuitComponentGenericDataType      *componentdataarray;
+  PetscInt ncomp, i;
+
   PetscFunctionBegin;
   ierr = PetscSectionSetUp(circuit->DataSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(circuit->DataSection,&arr_size);CHKERRQ(ierr);
@@ -487,7 +489,6 @@ PetscErrorCode DMCircuitComponentSetUp(DM dm)
     ierr = PetscMemcpy(componentdataarray+offsetp,header,circuit->dataheadersize*sizeof(DMCircuitComponentGenericDataType));
     /* Copy data */
     cvalue = &circuit->cvalue[p];
-    PetscInt ncomp, i;
     ncomp = header->ndata;
     for (i = 0; i < ncomp; i++) {
       offset = offsetp + circuit->dataheadersize + header->offset[i];
