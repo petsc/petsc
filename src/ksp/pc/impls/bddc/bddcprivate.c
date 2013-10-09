@@ -98,7 +98,6 @@ PetscErrorCode PCBDDCResetSolvers(PC pc)
   ierr = MatDestroy(&pcbddc->local_auxmat2);CHKERRQ(ierr);
   ierr = VecDestroy(&pcbddc->vec1_R);CHKERRQ(ierr);
   ierr = VecDestroy(&pcbddc->vec2_R);CHKERRQ(ierr);
-  ierr = VecDestroy(&pcbddc->vec4_D);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->is_R_local);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&pcbddc->R_to_B);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&pcbddc->R_to_D);CHKERRQ(ierr);
@@ -123,7 +122,6 @@ PetscErrorCode PCBDDCCreateWorkVectors(PC pc)
   n_R = pcis->n-n_vertices;
   /* local work vectors */
   ierr = VecGetType(pcis->vec1_N,&impVecType);CHKERRQ(ierr);
-  ierr = VecDuplicate(pcis->vec1_D,&pcbddc->vec4_D);CHKERRQ(ierr);
   ierr = VecCreate(PetscObjectComm((PetscObject)pcis->vec1_N),&pcbddc->vec1_R);CHKERRQ(ierr);
   ierr = VecSetSizes(pcbddc->vec1_R,PETSC_DECIDE,n_R);CHKERRQ(ierr);
   ierr = VecSetType(pcbddc->vec1_R,impVecType);CHKERRQ(ierr);
