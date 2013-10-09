@@ -1242,6 +1242,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 
 
   PetscFunctionBegin;
+  /* Destroy Mat objects computed previously */
+  ierr = MatDestroy(&pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
+  ierr = MatDestroy(&pcbddc->ConstraintMatrix);CHKERRQ(ierr);
   /* Get index sets for faces, edges and vertices from graph */
   if (!pcbddc->use_faces && !pcbddc->use_edges && !pcbddc->use_vertices) {
     pcbddc->use_vertices = PETSC_TRUE;
@@ -2007,6 +2010,8 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   PetscViewer viewer=pcbddc->dbg_viewer;
 
   PetscFunctionBegin;
+  /* Reset previously computed graph */
+  ierr = PCBDDCGraphReset(pcbddc->mat_graph);CHKERRQ(ierr);
   /* Init local Graph struct */
   ierr = PCBDDCGraphInit(pcbddc->mat_graph,matis->mapping);CHKERRQ(ierr);
 

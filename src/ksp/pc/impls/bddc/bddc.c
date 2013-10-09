@@ -849,8 +849,6 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   }
   /* Analyze interface and set up local constraint and change of basis matrices */
   if (computetopography) {
-    /* reset data */
-    ierr = PCBDDCResetTopography(pc);CHKERRQ(ierr);
     ierr = PCBDDCAnalyzeInterface(pc);CHKERRQ(ierr);
     ierr = PCBDDCConstraintsSetUp(pc);CHKERRQ(ierr);
   }
