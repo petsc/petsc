@@ -1201,6 +1201,49 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, PetscBool flip,
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateHybridMesh"
+/*@C
+  DMPlexCreateHybridMesh - Create a mesh with hybrid cells along an internal interface
+
+  Collective on dm
+
+  Input Parameters:
++ dm - The original DM
+- labelName - The label specifying the interface vertices
+
+  Output Parameters:
++ hybridLabel - The label fully marking the interface
+- dmHybrid - The new DM
+
+  Level: developer
+
+.seealso: DMPlexConstructCohesiveCells(), DMPlexLabelCohesiveComplete(), DMCreate()
+@*/
+PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel *hybridLabel, DM *dmHybrid)
+{
+  DM             idm;
+  DMLabel        subpointMap, hlabel;
+  PetscInt       dim;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (hybridLabel) PetscValidPointer(hybridLabel, 3);
+  PetscValidPointer(dmHybrid, 4);
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexCreateSubmesh(dm, label, 1, &idm);CHKERRQ(ierr);
+  ierr = DMPlexOrient(idm);CHKERRQ(ierr);
+  ierr = DMPlexGetSubpointMap(idm, &subpointMap);CHKERRQ(ierr);
+  ierr = DMLabelDuplicate(subpointMap, &hlabel);CHKERRQ(ierr);
+  ierr = DMLabelClearStratum(hlabel, dim);CHKERRQ(ierr);
+  ierr = DMPlexLabelCohesiveComplete(dm, hlabel, PETSC_FALSE, idm);CHKERRQ(ierr);
+  ierr = DMDestroy(&idm);CHKERRQ(ierr);
+  ierr = DMPlexConstructCohesiveCells(dm, hlabel, dmHybrid);CHKERRQ(ierr);
+  if (hybridLabel) *hybridLabel = hlabel;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexMarkSubmesh_Uninterpolated"
 /* Here we need the explicit assumption that:
 
