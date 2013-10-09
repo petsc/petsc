@@ -515,22 +515,16 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for dimension %d", dim);
   }
   {
-    DM      hybridMesh = NULL, faultMesh = NULL;
-    DMLabel subpointMap, label;
+    DM      dmHybrid = NULL;
+    DMLabel faultLabel, hybridLabel;
 
-    ierr = DMPlexCreateSubmesh(*dm, "fault", 1, &faultMesh);CHKERRQ(ierr);
-    ierr = DMPlexOrient(faultMesh);CHKERRQ(ierr);
-    ierr = DMPlexGetSubpointMap(faultMesh, &subpointMap);CHKERRQ(ierr);
-    ierr = DMLabelDuplicate(subpointMap, &label);CHKERRQ(ierr);
-    ierr = DMLabelClearStratum(label, dim);CHKERRQ(ierr);
-    ierr = DMPlexLabelCohesiveComplete(*dm, label, PETSC_FALSE, faultMesh);CHKERRQ(ierr);
-    ierr = DMDestroy(&faultMesh);CHKERRQ(ierr);
+    ierr = DMPlexGetLabel(*dm, "fault", &faultLabel);CHKERRQ(ierr);
+    ierr = DMPlexCreateHybridMesh(*dm, faultLabel, &hybridLabel, &dmHybrid);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
-    ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = DMPlexConstructCohesiveCells(*dm, label, &hybridMesh);CHKERRQ(ierr);
-    ierr = DMLabelDestroy(&label);CHKERRQ(ierr);
+    ierr = DMLabelView(hybridLabel, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&hybridLabel);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
-    *dm  = hybridMesh;
+    *dm  = dmHybrid;
   }
   {
     DM distributedMesh = NULL;
