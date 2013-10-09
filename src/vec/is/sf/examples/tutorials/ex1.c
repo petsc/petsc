@@ -23,6 +23,10 @@ int main(int argc,char **argv)
   PetscMPIInt    rank,size;
   PetscSF        sf;
   PetscBool      test_bcast,test_reduce,test_degree,test_fetchandop,test_gather,test_scatter,test_embed,test_invert;
+  MPI_Op         mop;
+  char           defstring[256] = "sum";
+  char           opstring[256];
+  PetscBool      strflg;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -33,6 +37,48 @@ int main(int argc,char **argv)
   ierr            = PetscOptionsBool("-test_bcast","Test broadcast","",test_bcast,&test_bcast,NULL);CHKERRQ(ierr);
   test_reduce     = PETSC_FALSE;
   ierr            = PetscOptionsBool("-test_reduce","Test reduction","",test_reduce,&test_reduce,NULL);CHKERRQ(ierr);
+  mop             = MPI_SUM;
+  ierr            = PetscOptionsString("-test_op","Designate which MPI_Op to use","",defstring,opstring,256,NULL);CHKERRQ(ierr);
+  ierr = PetscStrcmp("sum",opstring,&strflg);CHKERRQ(ierr);
+  if (strflg) {
+    mop = MPIU_SUM;
+  }
+  ierr = PetscStrcmp("prod",opstring,&strflg);CHKERRQ(ierr);
+  if (strflg) {
+    mop = MPI_PROD;
+  }
+  ierr = PetscStrcmp("max",opstring,&strflg);CHKERRQ(ierr);
+  if (strflg) {
+    mop = MPI_MAX;
+  }
+  ierr = PetscStrcmp("min",opstring,&strflg);CHKERRQ(ierr);
+  if (strflg) {
+    mop = MPI_MIN;
+  }
+  ierr = PetscStrcmp("land",opstring,&strflg);CHKERRQ(ierr);
+  if (strflg) {
+    mop = MPI_LAND;
+  }
+  ierr = PetscStrcmp("band",opstring,&strflg);CHKERRQ(ierr);
+  if (strflg) {
+    mop = MPI_BAND;
+  }
+  ierr = PetscStrcmp("lor",opstring,&strflg);CHKERRQ(ierr);
+  if (strflg) {
+    mop = MPI_LOR;
+  }
+  ierr = PetscStrcmp("bor",opstring,&strflg);CHKERRQ(ierr);
+  if (strflg) {
+    mop = MPI_BOR;
+  }
+  ierr = PetscStrcmp("lxor",opstring,&strflg);CHKERRQ(ierr);
+  if (strflg) {
+    mop = MPI_LXOR;
+  }
+  ierr = PetscStrcmp("bxor",opstring,&strflg);CHKERRQ(ierr);
+  if (strflg) {
+    mop = MPI_BXOR;
+  }
   test_degree     = PETSC_FALSE;
   ierr            = PetscOptionsBool("-test_degree","Test computation of vertex degree","",test_degree,&test_degree,NULL);CHKERRQ(ierr);
   test_fetchandop = PETSC_FALSE;
@@ -102,8 +148,8 @@ int main(int argc,char **argv)
     ierr = PetscIntView(nroots,rootdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     /* Perform reduction. Computation or other communication can be performed between the begin and end calls.
      * This example sums the values, but other MPI_Ops can be used (e.g MPI_MAX, MPI_PROD). */
-    ierr = PetscSFReduceBegin(sf,MPIU_INT,leafdata,rootdata,MPIU_SUM);CHKERRQ(ierr);
-    ierr = PetscSFReduceEnd(sf,MPIU_INT,leafdata,rootdata,MPIU_SUM);CHKERRQ(ierr);
+    ierr = PetscSFReduceBegin(sf,MPIU_INT,leafdata,rootdata,mop);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(sf,MPIU_INT,leafdata,rootdata,mop);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Leafdata\n");CHKERRQ(ierr);
     ierr = PetscIntView(nleaves,leafdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Rootdata\n");CHKERRQ(ierr);
@@ -125,8 +171,8 @@ int main(int argc,char **argv)
     ierr = PetscMalloc3(nleaves,PetscInt,&leafdata,nleaves,PetscInt,&leafupdate,nroots,PetscInt,&rootdata);CHKERRQ(ierr);
     for (i=0; i<nleaves; i++) leafdata[i] = 1;
     for (i=0; i<nroots; i++) rootdata[i] = 0;
-    ierr = PetscSFFetchAndOpBegin(sf,MPIU_INT,rootdata,leafdata,leafupdate,MPIU_SUM);CHKERRQ(ierr);
-    ierr = PetscSFFetchAndOpEnd(sf,MPIU_INT,rootdata,leafdata,leafupdate,MPIU_SUM);CHKERRQ(ierr);
+    ierr = PetscSFFetchAndOpBegin(sf,MPIU_INT,rootdata,leafdata,leafupdate,mop);CHKERRQ(ierr);
+    ierr = PetscSFFetchAndOpEnd(sf,MPIU_INT,rootdata,leafdata,leafupdate,mop);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Rootdata (sum of 1 from each leaf)\n");CHKERRQ(ierr);
     ierr = PetscIntView(nroots,rootdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Leafupdate (value at roots prior to my atomic update)\n");CHKERRQ(ierr);
