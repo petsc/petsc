@@ -15,6 +15,7 @@ In the latter case, in order to avoid runtime errors during factorization, pleas
 
 #include <petscksp.h>
 #include <petscpc.h>
+#include <petscdmda.h>
 #include <petscblaslapack.h>
 #define DEBUG 0
 
@@ -302,6 +303,10 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS *dirichlet,
 static PetscErrorCode ComputeMapping(DomainData dd,ISLocalToGlobalMapping *isg2lmap)
 {
   PetscErrorCode         ierr;
+  DM                     da;
+  AO                     ao;
+  DMDABoundaryType       bx = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE, bz = DMDA_BOUNDARY_NONE;
+  DMDAStencilType        stype = DMDA_STENCIL_BOX;
   ISLocalToGlobalMapping temp_isg2lmap;
   IS                     GlobalIS;
   PetscInt               i,j,k,ig,jg,kg,lindex,gindex,localsize;
@@ -324,9 +329,19 @@ static PetscErrorCode ComputeMapping(DomainData dd,ISLocalToGlobalMapping *isg2l
       }
     }
   }
-  ierr      = ISCreateGeneral(dd.gcomm,localsize,global_indices,PETSC_OWN_POINTER,&GlobalIS);
-  ierr      = ISLocalToGlobalMappingCreateIS(GlobalIS,&temp_isg2lmap);
-  ierr      = ISDestroy(&GlobalIS);CHKERRQ(ierr);
+  if (dd.dim==3) {
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,stype,dd.xm,dd.ym,dd.zm,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
+  } else if (dd.dim==2) {
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,dd.xm,dd.ym,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+  } else {
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,dd.xm,1,1,NULL,&da);CHKERRQ(ierr);
+  }
+  ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
+  ierr = AOApplicationToPetsc(ao,dd.xm_l*dd.ym_l*dd.zm_l,global_indices);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(dd.gcomm,localsize,global_indices,PETSC_OWN_POINTER,&GlobalIS);
+  ierr = ISLocalToGlobalMappingCreateIS(GlobalIS,&temp_isg2lmap);
+  ierr = ISDestroy(&GlobalIS);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   *isg2lmap = temp_isg2lmap;
   PetscFunctionReturn(0);
 }
@@ -371,11 +386,16 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
   localsize = dd.xm_l*dd.ym_l*dd.zm_l;
   ierr      = MatCreate(PETSC_COMM_SELF,&temp_local_mat);CHKERRQ(ierr);
   ierr      = MatSetSizes(temp_local_mat,localsize,localsize,localsize,localsize);CHKERRQ(ierr);
-  ierr      = MatSetType(temp_local_mat,MATSEQAIJ);CHKERRQ(ierr);
+  if (dd.DBC_zerorows) { /* in this case, we need to zero out the some rows, so use seqaij */
+    ierr      = MatSetType(temp_local_mat,MATSEQAIJ);CHKERRQ(ierr);
+  } else {
+    ierr      = MatSetType(temp_local_mat,MATSEQSBAIJ);CHKERRQ(ierr);
+  }
 
   i = PetscPowScalar(3.0*(dd.p+1.0),dd.dim);
 
   ierr = MatSeqAIJSetPreallocation(temp_local_mat,i,NULL);CHKERRQ(ierr);      /* very overestimated */
+  ierr = MatSeqSBAIJSetPreallocation(temp_local_mat,1,i,NULL);CHKERRQ(ierr);      /* very overestimated */
   ierr = MatSetOption(temp_local_mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
 
   yloc = dd.p+1;
@@ -828,7 +848,21 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
 
   /* Primal constraints implemented by using a near null space attached to A -> now it passes in only the constants
     (which in practice is not needed since, by default, PCBDDC build the primal space using constants for quadrature formulas */
+#if 0
+  Vec vecs[2];
+  PetscRandom rctx;
+  ierr = MatGetVecs(A,&vecs[0],&vecs[1]);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
+  ierr = PetscRandomSetType(rctx,PETSCRAND);CHKERRQ(ierr);
+  ierr = VecSetRandom(vecs[0],rctx);CHKERRQ(ierr);
+  ierr = VecSetRandom(vecs[1],rctx);CHKERRQ(ierr);
+  ierr = MatNullSpaceCreate(dd.gcomm,PETSC_TRUE,2,vecs,&near_null_space);CHKERRQ(ierr);
+  ierr = VecDestroy(&vecs[0]);CHKERRQ(ierr);
+  ierr = VecDestroy(&vecs[1]);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
+#else
   ierr = MatNullSpaceCreate(dd.gcomm,PETSC_TRUE,0,NULL,&near_null_space);CHKERRQ(ierr);
+#endif
   ierr = MatSetNearNullSpace(A,near_null_space);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&near_null_space);CHKERRQ(ierr);
 
