@@ -1,4 +1,4 @@
-#include <petsc-private/dmcircuitimpl.h>  /*I  "petscdmcircuit.h"  *I*/
+#include <petsc-private/dmcircuitimpl.h>  /*I  "petscdmcircuit.h"  I*/
 #include <petscdmplex.h>
 #include <petscsf.h>
 
@@ -487,7 +487,8 @@ PetscErrorCode DMCircuitComponentSetUp(DM dm)
     ierr = PetscMemcpy(componentdataarray+offsetp,header,circuit->dataheadersize*sizeof(DMCircuitComponentGenericDataType));
     /* Copy data */
     cvalue = &circuit->cvalue[p];
-    PetscInt ncomp=header->ndata,i;
+    PetscInt ncomp, i;
+    ncomp = header->ndata;
     for (i = 0; i < ncomp; i++) {
       offset = offsetp + circuit->dataheadersize + header->offset[i];
       ierr = PetscMemcpy(componentdataarray+offset,cvalue->data[i],header->size[i]*sizeof(DMCircuitComponentGenericDataType));
