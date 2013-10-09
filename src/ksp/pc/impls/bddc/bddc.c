@@ -7,7 +7,6 @@
    - MAT_IGNORE_ZERO_ENTRIES for Constraints Matrix
 
    Solvers
-   - Better management for block size > 1 for idx_R_local and others
    - Try to reduce the work when reusing the solvers
    - Add support for reuse fill and cholecky factor for coarse solver (similar to local solvers)
    - reuse already allocated coarse matrix if possible
@@ -31,7 +30,7 @@
    - Is it possible to work with PCBDDCGraph on boundary indices only (less memory consumed)?
    - Why options for "pc_bddc_coarse" solver gets propagated to "pc_bddc_coarse_1" solver?
    - add support for computing h,H and related using coordinates?
-   - Change of basis approach does not work with my nonlinear mechanics example. why? maybe an issue with l2gmap?
+   - Change of basis approach does not work with my nonlinear mechanics example. why? (seems not an issue with l2gmap)
    - Better management in PCIS code
    - BDDC with MG framework?
 
