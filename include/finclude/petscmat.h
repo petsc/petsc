@@ -482,7 +482,7 @@
       parameter(MATOP_SET_VALUES_BATCH=129)
       parameter(MATOP_SET_BLOCK_SIZES=139)
       parameter(MATOP_AYPX=140)
-      parameter(MATOP_FDCOLORING_CREATE=141)
+      parameter(MATOP_FDCOLORING_SETUP=141)
 !
 !
 !

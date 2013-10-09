@@ -594,3 +594,11 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFDColoringCreate_MPIXAIJ"
+PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
