@@ -807,6 +807,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
   MatStructure   flag;
   PetscBool      computeis,computetopography,computesolvers;
+  PetscBool      new_nearnullspace_provided;
 
   PetscFunctionBegin;
   /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other nonoverlapping preconditioners */
@@ -850,8 +851,14 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* Analyze interface and set up local constraint and change of basis matrices */
   if (computetopography) {
     ierr = PCBDDCAnalyzeInterface(pc);CHKERRQ(ierr);
+  }
+ 
+  /* how can I infer NullSpace object attached to Mat has changed? */ 
+  new_nearnullspace_provided = PETSC_FALSE;
+  if (computetopography || new_nearnullspace_provided) {
     ierr = PCBDDCConstraintsSetUp(pc);CHKERRQ(ierr);
   }
+
   if (computesolvers) {
     /* reset data */
     ierr = PCBDDCResetSolvers(pc);CHKERRQ(ierr);
