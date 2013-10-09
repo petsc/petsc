@@ -98,6 +98,12 @@
       <ul>
         <li>PetscObjectStateQuery() is now corrected with PetscObjectStateGet()</li>
         <li>A new PetscObjectState typedef is used by interface; 64-bit int to prevent overflow.</li>
+        <li>
+          The configure option <tt>--with-dynamic-loading</tt> has been
+          removed since this functionality is automatically available on
+          systems that support it.  Use the runtime
+          option <tt>-dynamic_library_preload</tt> for similar functionality.
+        </li>
       </ul>
       <h4>IS:</h4>
       <h4>PF:</h4>
@@ -132,6 +138,9 @@
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
       <h4>DM/DA:</h4>
+      <ul>
+        <li>The MatType argument is removed from DMCreateMatrix(), you can use DMSetMatType() to indicate the type you want used with a DM, defaults to MATAIJ</li>
+      </ul>
       <h4>DMComplex/DMPlex:</h4>
       <h4>DMMesh:</h4>
       <h4>DMMG:</h4>

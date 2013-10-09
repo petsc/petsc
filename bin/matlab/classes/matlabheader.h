@@ -110,7 +110,7 @@ int DMSetUp(DM);
 int DMDASetStencilWidth(DM, int);
 int DMDASetStencilType(DM, DMDAStencilType);
 int DMCreateGlobalVector(DM,Vec*);
-int DMCreateMatrix(DM,const char*,Mat*);
+int DMCreateMatrix(DM,Mat*);
 int DMDAGetInfo(DM,int*,int*,int*,int*,int*,int*,int*,int*,int*,DMDABoundaryType*,DMDAStencilType*);
 
 typedef PetscPointer PC;

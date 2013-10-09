@@ -364,9 +364,7 @@ PetscErrorCode  PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
   PetscFunctionBegin;
   PetscValidPointer(r,3);
   *r = NULL;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscRandomInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(rr,_p_PetscRandom,struct _PetscRandomOps,PETSC_RANDOM_CLASSID,"PetscRandom","Random number generator","Sys",comm,PetscRandomDestroy,0);CHKERRQ(ierr);
 

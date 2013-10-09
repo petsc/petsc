@@ -40,6 +40,18 @@
 #  define PETSC_FUNCTION_NAME PETSC_FUNCTION_NAME_C
 #endif
 
+#if defined(__cplusplus)
+#  define PETSC_RESTRICT PETSC_CXX_RESTRICT
+#else
+#  define PETSC_RESTRICT PETSC_C_RESTRICT
+#endif
+
+#if defined(__cplusplus)
+#  define PETSC_STATIC_INLINE PETSC_CXX_STATIC_INLINE
+#else
+#  define PETSC_STATIC_INLINE PETSC_C_STATIC_INLINE
+#endif
+
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES) /* For Win32 shared libraries */
 #  define PETSC_DLLEXPORT __declspec(dllexport)
 #  define PETSC_DLLIMPORT __declspec(dllimport)
@@ -1446,8 +1458,6 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListGet(PetscFunctionList,const char **
      PetscDLLibrary - Linked list of dynamics libraries to search for functions
 
    Level: advanced
-
-   --with-shared-libraries --with-dynamic-loading must be used with ./configure to use dynamic libraries
 
 .seealso:  PetscDLLibraryOpen()
 S*/

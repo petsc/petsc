@@ -1004,7 +1004,7 @@ PetscErrorCode SNESVICreateSubVectors(SNES snes,PetscInt n,Vec *newv)
   PetscFunctionBegin;
   ierr  = VecCreate(PetscObjectComm((PetscObject)snes),&v);CHKERRQ(ierr);
   ierr  = VecSetSizes(v,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr  = VecSetFromOptions(v);CHKERRQ(ierr);
+  ierr  = VecSetType(v,VECSTANDARD);CHKERRQ(ierr);
   *newv = v;
   PetscFunctionReturn(0);
 }
@@ -1573,7 +1573,7 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
       /* Create augmented F and Y */
       ierr = VecCreate(PetscObjectComm((PetscObject)snes),&F_aug);CHKERRQ(ierr);
       ierr = VecSetSizes(F_aug,F->map->n+nkept,PETSC_DECIDE);CHKERRQ(ierr);
-      ierr = VecSetFromOptions(F_aug);CHKERRQ(ierr);
+      ierr = VecSetType(F_aug,VECSTANDARD);CHKERRQ(ierr);
       ierr = VecDuplicate(F_aug,&Y_aug);CHKERRQ(ierr);
 
       /* Copy over F to F_aug in the first n locations */

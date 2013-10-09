@@ -1674,9 +1674,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = TSRosWInitializePackage();CHKERRQ(ierr);
-#endif
 
   ts->ops->reset          = TSReset_RosW;
   ts->ops->destroy        = TSDestroy_RosW;

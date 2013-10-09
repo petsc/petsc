@@ -168,7 +168,6 @@
         <li><a href="#link-shared">How do I link to the PETSc shared libraries?</a></li>
         <li><a href="#link-regular-lib">What if I want to link to the regular .a library files?</a></li>
         <li><a href="#move-shared-exec">What do I do if I want to move my executable to a different machine?</a></li>
-        <li><a href="#dynamic-shared">What is the deal with dynamic libraries (and difference with shared libraries)?</a></li>
       </ul>
 
     </div>
@@ -1828,11 +1827,14 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
 
       <h3><a name="dylib">Unable to locate PETSc dynamic library /home/balay/spetsc/lib/libg/linux/libpetsc</a></h3>
 
-      When using DYNAMIC libraries - the libraries cannot be moved after they are
-      installed. This could also happen on clusters - where the paths are
-      different on the (run) nodes - than on the (compile) front-end. Do not use
-      dynamic libraries &amp; shared libraries. Run ./configure with
-      <code>--with-shared-libraries=0 --with-dynamic-loading=0</code>
+      <p>
+        When using DYNAMIC libraries - the libraries cannot be moved after they are
+        installed. This could also happen on clusters - where the paths are
+        different on the (run) nodes - than on the (compile) front-end. Do not use
+        dynamic libraries &amp; shared libraries. Run ./configure with
+        <code>--with-shared-libraries=0 --with-dynamic-loading=0</code>.
+        This option has been removed in petsc-3.5.
+      </p>
 
       <h3><a name="bisect">How do I determine what update to PETSc broke my code?</a></h3>
 
@@ -1929,22 +1931,6 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
         machine. The other alternative is to build the exeutable without shared
         libraries by first deleting the shared libraries, and then creating the
         executable.
-      </p>
-
-      <h3><a name="dynamic-shared">What is the deal with dynamic libraries (and difference between shared libraries)?</a></h3>
-
-      <p>
-        PETSc libraries are installed as dynamic libraries when the ./configure
-        flag --with-dynamic-loading is used. The difference with this - from
-        shared libraries - is the way the libraries are used. From the program
-        the library is loaded using dlopen() - and the functions are searched
-        using dlsymm(). This separates the resolution of function names from
-        link-time to run-time - i.e when dlopen()/dlsymm() are called.
-      </p>
-
-      <p>
-        When using Dynamic libraries - PETSc libraries cannot be moved to
-        a different location after they are built.
       </p>
 
     </div>

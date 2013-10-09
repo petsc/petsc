@@ -122,8 +122,8 @@ extern PetscErrorCode  DMLocalToGlobalEnd_DA(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode  DMLocalToLocalBegin_DA(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode  DMLocalToLocalEnd_DA(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode  DMCreateInterpolation_DA(DM,DM,Mat*,Vec*);
-extern PetscErrorCode  DMCreateColoring_DA(DM,ISColoringType,MatType,ISColoring*);
-extern PetscErrorCode  DMCreateMatrix_DA(DM,MatType,Mat*);
+extern PetscErrorCode  DMCreateColoring_DA(DM,ISColoringType,ISColoring*);
+extern PetscErrorCode  DMCreateMatrix_DA(DM,Mat*);
 extern PetscErrorCode  DMCreateCoordinateDM_DA(DM,DM*);
 extern PetscErrorCode  DMRefine_DA(DM,MPI_Comm,DM*);
 extern PetscErrorCode  DMCoarsen_DA(DM,MPI_Comm,DM*);
@@ -387,8 +387,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   dd->lz           = NULL;
 
   dd->elementtype = DMDA_ELEMENT_Q1;
-
-  ierr = PetscStrallocpy(VECSTANDARD,(char**)&da->vectype);CHKERRQ(ierr);
 
   da->ops->globaltolocalbegin          = DMGlobalToLocalBegin_DA;
   da->ops->globaltolocalend            = DMGlobalToLocalEnd_DA;

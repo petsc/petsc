@@ -55,8 +55,8 @@ struct _MatOps {
   PetscErrorCode (*setup)(Mat);
   PetscErrorCode (*ilufactorsymbolic)(Mat,Mat,IS,IS,const MatFactorInfo*);
   PetscErrorCode (*iccfactorsymbolic)(Mat,Mat,IS,const MatFactorInfo*);
-  PetscErrorCode (*dummy29)(Mat);
-  PetscErrorCode (*dummy210)(Mat);
+  PetscErrorCode (*placeholder_32)(Mat);
+  PetscErrorCode (*placeholder_33)(Mat);
   /*34*/
   PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
   PetscErrorCode (*forwardsolve)(Mat,Vec,Vec);
@@ -104,7 +104,7 @@ struct _MatOps {
   PetscErrorCode (*getrowminabs)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*convert)(Mat, MatType,MatReuse,Mat*);
   PetscErrorCode (*setcoloring)(Mat,ISColoring);
-  PetscErrorCode (*dummy3)(Mat,void*);
+  PetscErrorCode (*placeholder_73)(Mat,void*);
   /*74*/
   PetscErrorCode (*setvaluesadifor)(Mat,PetscInt,void*);
   PetscErrorCode (*fdcoloringapply)(Mat,MatFDColoring,Vec,MatStructure*,void*);
@@ -134,13 +134,13 @@ struct _MatOps {
   PetscErrorCode (*mattransposemult)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*mattransposemultsymbolic)(Mat,Mat,PetscReal,Mat*);
   PetscErrorCode (*mattransposemultnumeric)(Mat,Mat,Mat);
-  PetscErrorCode (*dummy98)(Mat);
+  PetscErrorCode (*placeholder_98)(Mat);
   /*99*/
-  PetscErrorCode (*dummy99)(Mat);
-  PetscErrorCode (*dummy100)(Mat);
-  PetscErrorCode (*dummy101)(Mat);
+  PetscErrorCode (*placeholder_99)(Mat);
+  PetscErrorCode (*placeholder_100)(Mat);
+  PetscErrorCode (*placeholder_101)(Mat);
   PetscErrorCode (*conjugate)(Mat);                              /* complex conjugate */
-  PetscErrorCode (*dummy5)(void);
+  PetscErrorCode (*placeholder_103)(void);
   /*104*/
   PetscErrorCode (*setvaluesrow)(Mat,PetscInt,const PetscScalar[]);
   PetscErrorCode (*realpart)(Mat);
@@ -169,7 +169,7 @@ struct _MatOps {
   PetscErrorCode (*findnonzerorows)(Mat,IS*);
   PetscErrorCode (*getcolumnnorms)(Mat,NormType,PetscReal*);
   PetscErrorCode (*invertblockdiagonal)(Mat,const PetscScalar**);
-  PetscErrorCode (*dummy4)(Mat,Vec,Vec,Vec);
+  PetscErrorCode (*placeholder_127)(Mat,Vec,Vec,Vec);
   PetscErrorCode (*getsubmatricesparallel)(Mat,PetscInt,const IS[], const IS[], MatReuse, Mat**);
   /*129*/
   PetscErrorCode (*setvaluesbatch)(Mat,PetscInt,PetscInt,PetscInt*,const PetscScalar*);

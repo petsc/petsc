@@ -25,12 +25,12 @@
 
 /* Definitions of Fortran Wrapper routines */
 
-PETSC_EXTERN void PETSC_STDCALL dmplexdistribute_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *overlap, DM *dmParallel, int *ierr PETSC_END_LEN(lenN))
+PETSC_EXTERN void PETSC_STDCALL dmplexdistribute_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *overlap, PetscSF *sf, DM *dmParallel, int *ierr PETSC_END_LEN(lenN))
 {
   char *partitioner;
 
   FIXCHAR(name, lenN, partitioner);
-  *ierr = DMPlexDistribute(*dm, partitioner, *overlap, dmParallel);
+  *ierr = DMPlexDistribute(*dm, partitioner, *overlap, sf, dmParallel);
   FREECHAR(name, partitioner);
 }
 
