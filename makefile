@@ -5,7 +5,7 @@
 #
 ALL: all
 LOCDIR	 = ./
-DIRS	 = src include tutorials lua
+DIRS	 = src include tutorials interfaces
 CFLAGS	 =
 FFLAGS	 =
 CPPFLAGS =
