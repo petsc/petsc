@@ -948,10 +948,10 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
     ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
     ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
   }
-  ierr = DMPlexGetChart(sdm, NULL, &pEnd);CHKERRQ(ierr);
-  if (depth > 0) pMaxNew[0] += depthShift[0];        /* Account for shadow vertices */
-  if (depth > 1) pMaxNew[1]  = pEnd - depthShift[0]; /* There is a hybrid edge for every shadow vertex */
-  if (depth > 2) pMaxNew[2]  = -1;                   /* There are no hybrid faces */
+  for (d = 0; d <= depth; ++d) {
+    ierr = DMPlexGetDepthStratum(sdm, d, NULL, &pEnd);CHKERRQ(ierr);
+    pMaxNew[d] = pEnd - numHybridPoints[d];
+  }
   ierr = DMPlexSetHybridBounds(sdm, depth >= 0 ? pMaxNew[depth] : PETSC_DETERMINE, depth>1 ? pMaxNew[depth-1] : PETSC_DETERMINE, depth>2 ? pMaxNew[1] : PETSC_DETERMINE, depth >= 0 ? pMaxNew[0] : PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = PetscFree6(depthShift, depthOffset, pMaxNew, coneNew, coneONew, supportNew);CHKERRQ(ierr);
   ierr = PetscFree4(pointIS, numSplitPoints, numHybridPoints, splitPoints);CHKERRQ(ierr);
