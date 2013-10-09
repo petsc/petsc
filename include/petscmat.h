@@ -1061,6 +1061,9 @@ PETSC_EXTERN PetscErrorCode MatFDColoringSetFromOptions(MatFDColoring);
 PETSC_EXTERN PetscErrorCode MatFDColoringApply(Mat,MatFDColoring,Vec,MatStructure*,void *);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetF(MatFDColoring,Vec);
 PETSC_EXTERN PetscErrorCode MatFDColoringGetPerturbedColumns(MatFDColoring,PetscInt*,PetscInt*[]);
+PETSC_EXTERN PetscErrorCode MatFDColoringSetUp(Mat,ISColoring,MatFDColoring);
+PETSC_EXTERN PetscErrorCode MatFDColoringSetBlockSize(MatFDColoring,PetscInt,PetscInt);
+
 
 /*S
      MatTransposeColoring - Object for computing a sparse matrix product C=A*B^T via coloring
@@ -1388,7 +1391,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_RART_SYMBOLIC=137,
                MATOP_RART_NUMERIC=138,
                MATOP_SET_BLOCK_SIZES=139,
-               MATOP_AYPX=140
+               MATOP_AYPX=140,
+               MATOP_FDCOLORING_SETUP= 141
              } MatOperation;
 PETSC_EXTERN PetscErrorCode MatHasOperation(Mat,MatOperation,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatShellSetOperation(Mat,MatOperation,void(*)(void));

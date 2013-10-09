@@ -186,6 +186,7 @@ struct _MatOps {
   /*139*/
   PetscErrorCode (*setblocksizes)(Mat,PetscInt,PetscInt);
   PetscErrorCode (*aypx)(Mat,PetscScalar,Mat,MatStructure);
+  PetscErrorCode (*fdcoloringsetup)(Mat,ISColoring,MatFDColoring);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum

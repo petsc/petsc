@@ -7,8 +7,8 @@
     since it operators only on the nonzero structure of the elements or blocks.
 */
 #undef __FUNCT__
-#define __FUNCT__ "MatFDColoringCreate_SeqXAIJ"
-PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
+#define __FUNCT__ "MatFDColoringSetUp_SeqXAIJ"
+PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   PetscErrorCode ierr;
   PetscInt       i,n,nrows,N,j,k,m,ncols,col,nis=iscoloring->n,*rowhit,bs,bs2,*spidx,nz;
@@ -17,7 +17,8 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
   PetscBool      isBAIJ;     
   PetscScalar    *A_val,**valaddrhit;
   MatEntry       *Jentry,*Jentry_new;
-  PetscInt       *color_start,brows,bcols,nz_new,row_end,*row_start,*nrows_new;
+  PetscInt       *color_start,nz_new,row_end,*row_start,*nrows_new;
+  PetscInt       brows,bcols;
 
   PetscFunctionBegin;
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
@@ -114,8 +115,7 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
   color_start[nis] = nz;
 
   // ---------- reorder Jentry ------------
-  ierr = PetscOptionsInt("-brows","The number of block rows","",brows,&brows,NULL);CHKERRQ(ierr);
-  if (!isBAIJ && brows) {
+  if (!isBAIJ && bcols > 1) {
     PetscInt nbcols = 0;
    
     ierr = PetscMalloc(nz*sizeof(MatEntry),&Jentry_new);CHKERRQ(ierr);
@@ -132,8 +132,7 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
     nz_new  = 0;
     for (i=0; i<nis; i+=bcols) { /* loop over colors */
       if (i + bcols > nis) bcols = nis - i;
-      //printf(" color %d, bcols %d\n",i,bcols);
-
+    
       row_end = brows;
       m       = mat->rmap->n;
       if (row_end > m) row_end = m;

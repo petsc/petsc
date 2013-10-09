@@ -177,7 +177,7 @@ PetscErrorCode  MatFDColoringView(MatFDColoring c,PetscViewer viewer)
 .seealso: MatFDColoringCreate(), MatFDColoringSetFromOptions()
 
 @*/
-PetscErrorCode  MatFDColoringSetParameters(MatFDColoring matfd,PetscReal error,PetscReal umin)
+PetscErrorCode MatFDColoringSetParameters(MatFDColoring matfd,PetscReal error,PetscReal umin)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_CLASSID,1);
@@ -188,7 +188,65 @@ PetscErrorCode  MatFDColoringSetParameters(MatFDColoring matfd,PetscReal error,P
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatFDColoringSetBlockSize"
+/*@
+   MatFDColoringSetBlockSize - Sets block size for efficient 
+   inserting entries of Jacobian matrix.
 
+   Logically Collective on MatFDColoring
+
+   Input Parameters:
++  coloring - the coloring context
+.  brows - number of rows in the block 
+-  bcols - number of columns in the block
+
+   Level: intermediate
+
+.keywords: Mat, coloring
+
+.seealso: MatFDColoringCreate(), MatFDColoringSetFromOptions()
+
+@*/
+PetscErrorCode MatFDColoringSetBlockSize(MatFDColoring matfd,PetscInt brows,PetscInt bcols)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_CLASSID,1);
+  PetscValidLogicalCollectiveInt(matfd,brows,2);
+  PetscValidLogicalCollectiveInt(matfd,bcols,3);
+  if (brows != PETSC_DEFAULT) matfd->brows = brows;
+  if (bcols != PETSC_DEFAULT) matfd->bcols = bcols;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFDColoringSetUp"
+/*@
+   MatFDColoringSetUp - Sets up the internal data structures of matrix coloring context for the later use.
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix containing the nonzero structure of the Jacobian
+.  iscoloring - the coloring of the matrix; usually obtained with MatGetColoring() or DMCreateColoring()
+-  color - the matrix coloring context
+
+   Level: beginner
+
+.keywords: MatFDColoring, setup
+
+.seealso: MatFDColoringCreate(), MatFDColoringDestroy()
+@*/
+PetscErrorCode MatFDColoringSetUp(Mat mat,ISColoring iscoloring,MatFDColoring color)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (mat->ops->fdcoloringsetup) {
+    ierr = (*mat->ops->fdcoloringsetup)(mat,iscoloring,color);CHKERRQ(ierr);
+  } else SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Code not yet written for matrix type %s",((PetscObject)mat)->type_name);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringGetFunction"
@@ -313,6 +371,9 @@ PetscErrorCode  MatFDColoringSetFromOptions(MatFDColoring matfd)
     else if (value[0] == 'd' && value[1] == 's') matfd->htype = "ds";
     else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown finite differencing type %s",value);
   }
+  ierr = PetscOptionsInt("-mat_fd_coloring_brows","Number of block rows","MatFDColoringSetBlockSize",matfd->brows,&matfd->brows,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_fd_coloring_bcols","Number of block columns","MatFDColoringSetBlockSize",matfd->bcols,&matfd->bcols,NULL);CHKERRQ(ierr);
+
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)matfd);CHKERRQ(ierr);
   PetscOptionsEnd();CHKERRQ(ierr);
@@ -380,10 +441,6 @@ PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring 
   ierr = PetscHeaderCreate(c,_p_MatFDColoring,int,MAT_FDCOLORING_CLASSID,"MatFDColoring","Jacobian computation via finite differences with coloring","Mat",comm,MatFDColoringDestroy,MatFDColoringView);CHKERRQ(ierr);
 
   c->ctype = iscoloring->ctype;
-
-  if (mat->ops->fdcoloringcreate) {
-    ierr = (*mat->ops->fdcoloringcreate)(mat,iscoloring,c);CHKERRQ(ierr);
-  } else SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Code not yet written for matrix type %s",((PetscObject)mat)->type_name);
 
   ierr = MatGetVecs(mat,NULL,&c->w1);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)c,(PetscObject)c->w1);CHKERRQ(ierr);

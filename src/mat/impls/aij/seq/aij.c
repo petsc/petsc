@@ -3153,7 +3153,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         MatRestoreRowIJ_SeqAIJ,
                                         MatGetColumnIJ_SeqAIJ,
                                         MatRestoreColumnIJ_SeqAIJ,
-                                /* 54*/ MatFDColoringCreate_SeqXAIJ,
+                                /* 54*/ 0,
                                         0,
                                         0,
                                         MatPermute_SeqAIJ,
@@ -3239,7 +3239,8 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         MatRARtSymbolic_SeqAIJ_SeqAIJ,
                                         MatRARtNumeric_SeqAIJ_SeqAIJ,
                                  /*139*/0,
-                                        0
+                                        0,
+                                        MatFDColoringSetUp_SeqXAIJ
 };
 
 #undef __FUNCT__

@@ -200,6 +200,7 @@
         call MatFDColoringSetFunction(fdcoloring,FormFunction,                &
      &                                PETSC_NULL_OBJECT,ierr)
         call MatFDColoringSetFromOptions(fdcoloring,ierr)
+        call MatFDColoringSetUp(J,iscoloring,fdcoloring,ierr)
 !
 !        Tell SNES to use the routine SNESComputeJacobianDefaultColor()
 !      to compute Jacobians.

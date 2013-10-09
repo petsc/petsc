@@ -3282,7 +3282,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        0,
                                        0,
                                        0,
-                                /*54*/ MatFDColoringCreate_MPIXAIJ,
+                                /*54*/ 0,
                                        0,
                                        MatSetUnfactored_MPIAIJ,
                                        MatPermute_MPIAIJ,
@@ -3368,7 +3368,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        0,
                                        0,
                                 /*139*/0,
-                                       0
+                                       0,
+                                       MatFDColoringSetUp_MPIXAIJ
 };
 
 /* ----------------------------------------------------------------------------------------*/

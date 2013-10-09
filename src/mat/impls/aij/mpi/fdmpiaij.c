@@ -251,12 +251,12 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   nz   = 0;
 
   /*------------- reorder Jentry ----------------*/
-  PetscInt brows=coloring->brows,bcols=coloring->bcols;
+  PetscInt bcols=coloring->bcols;
   if (bcols>1 && ctype == IS_COLORING_GHOSTED) { /* oly supported for seqaij matrix */
     PetscInt    i,m=J->rmap->n,nbcols;
     PetscScalar *dy=coloring->dy,*dy_k;
 
-    printf("      use block rows impl: brows %d, bcols %d\n",brows,bcols);
+    //printf("      use block rows impl: brows %d, bcols %d\n",coloring->brows,bcols);
     nbcols = 0;
     for (k=0; k<ncolors; k+=bcols) {
       coloring->currentcolor = k;
@@ -398,8 +398,8 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatFDColoringCreate_MPIXAIJ"
-PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
+#define __FUNCT__ "MatFDColoringSetUp_MPIXAIJ"
+PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   PetscErrorCode         ierr;
   PetscMPIInt            size,*ncolsonproc,*disp,nn;
