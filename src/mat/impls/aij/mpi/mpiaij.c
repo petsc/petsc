@@ -184,7 +184,7 @@ PetscErrorCode MatGetColumnNorms_MPIAIJ(Mat A,NormType type,PetscReal *norms)
 PETSC_EXTERN PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,MatReuse reuse,Mat *inmat)
 {
   PetscMPIInt    rank,size;
-  PetscInt       *rowners,*dlens,*olens,i,rstart,rend,j,jj,nz,*gmataj,cnt,row,*ld,bses[2];
+  PetscInt       *rowners,*dlens,*olens,i,rstart,rend,j,jj,nz = 0,*gmataj,cnt,row,*ld,bses[2];
   PetscErrorCode ierr;
   Mat            mat;
   Mat_SeqAIJ     *gmata;
@@ -1314,7 +1314,7 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
   PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag;
   int            fd;
   PetscInt       nz,header[4],*row_lengths,*range=0,rlen,i;
-  PetscInt       nzmax,*column_indices,j,k,col,*garray = aij->garray,cnt,cstart = mat->cmap->rstart,rnz;
+  PetscInt       nzmax,*column_indices,j,k,col,*garray = aij->garray,cnt,cstart = mat->cmap->rstart,rnz = 0;
   PetscScalar    *column_values;
   PetscInt       message_count,flowcontrolcount;
   FILE           *file;

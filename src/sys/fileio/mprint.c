@@ -441,7 +441,7 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char forma
 PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    rank,size,tag,i,j,n,dummy = 0;
+  PetscMPIInt    rank,size,tag,i,j,n = 0,dummy = 0;
   char          *message;
   MPI_Status     status;
   FILE           *fd;
@@ -460,7 +460,7 @@ PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm)
       ierr = MPI_Send(&dummy,1,MPI_INT,i,tag,comm);CHKERRQ(ierr);
       ierr = MPI_Recv(&n,1,MPI_INT,i,tag,comm,&status);CHKERRQ(ierr);
       for (j=0; j<n; j++) {
-        PetscMPIInt size;
+        PetscMPIInt size = 0;
 
         ierr = MPI_Recv(&size,1,MPI_INT,i,tag,comm,&status);CHKERRQ(ierr);
         ierr = PetscMalloc(size * sizeof(char), &message);CHKERRQ(ierr);
