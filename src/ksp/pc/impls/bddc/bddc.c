@@ -857,6 +857,8 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   new_nearnullspace_provided = PETSC_FALSE;
   if (computetopography || new_nearnullspace_provided) {
     ierr = PCBDDCConstraintsSetUp(pc);CHKERRQ(ierr);
+    /* Allocate needed local vectors (which depends on quantities defined during ConstraintsSetUp) */
+    ierr = PCBDDCSetUpWorkVectors(pc);CHKERRQ(ierr);
   }
 
   if (computesolvers) {
@@ -968,6 +970,10 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   ierr = PCBDDCScalingDestroy(pc);CHKERRQ(ierr);
   /* free solvers stuff */
   ierr = PCBDDCResetSolvers(pc);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcbddc->vec1_P);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcbddc->vec1_C);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcbddc->vec1_R);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcbddc->vec2_R);CHKERRQ(ierr);
   ierr = KSPDestroy(&pcbddc->ksp_D);CHKERRQ(ierr);
   ierr = KSPDestroy(&pcbddc->ksp_R);CHKERRQ(ierr);
   ierr = KSPDestroy(&pcbddc->coarse_ksp);CHKERRQ(ierr);

@@ -14,8 +14,6 @@ PetscErrorCode PCBDDCSetUpSolvers(PC pc)
   /* Compute matrix after change of basis and extract local submatrices */
   ierr = PCBDDCSetUpLocalMatrices(pc);CHKERRQ(ierr);
 
-  /* Allocate needed vectors */
-  ierr = PCBDDCCreateWorkVectors(pc);CHKERRQ(ierr);
 
   /* Setup local scatters R_to_B and (optionally) R_to_D : PCBDDCCreateWorkVectors should be called first! */
   ierr = PCBDDCSetUpLocalScatters(pc);CHKERRQ(ierr);
@@ -92,12 +90,16 @@ PetscErrorCode PCBDDCResetSolvers(PC pc)
   ierr = MatDestroy(&pcbddc->coarse_phi_D);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->coarse_psi_B);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->coarse_psi_D);CHKERRQ(ierr);
+/*
   ierr = VecDestroy(&pcbddc->vec1_P);CHKERRQ(ierr);
   ierr = VecDestroy(&pcbddc->vec1_C);CHKERRQ(ierr);
+*/
   ierr = MatDestroy(&pcbddc->local_auxmat1);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->local_auxmat2);CHKERRQ(ierr);
+/*
   ierr = VecDestroy(&pcbddc->vec1_R);CHKERRQ(ierr);
   ierr = VecDestroy(&pcbddc->vec2_R);CHKERRQ(ierr);
+*/
   ierr = ISDestroy(&pcbddc->is_R_local);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&pcbddc->R_to_B);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&pcbddc->R_to_D);CHKERRQ(ierr);
@@ -106,30 +108,54 @@ PetscErrorCode PCBDDCResetSolvers(PC pc)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCBDDCCreateWorkVectors"
-PetscErrorCode PCBDDCCreateWorkVectors(PC pc)
+#define __FUNCT__ "PCBDDCSetUpWorkVectors"
+PetscErrorCode PCBDDCSetUpWorkVectors(PC pc)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PC_IS          *pcis = (PC_IS*)pc->data;
   VecType        impVecType;
-  PetscInt       n_vertices,n_constraints,local_primal_size,n_R;
+  PetscInt       n_vertices,n_constraints,local_primal_size,n_R,old_size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  /* get sizes */
   ierr = PCBDDCGetPrimalVerticesLocalIdx(pc,&n_vertices,NULL);CHKERRQ(ierr);
-  ierr = PCBDDCGetPrimalConstraintsLocalIdx(pc,&n_constraints,NULL);CHKERRQ(ierr);
-  local_primal_size = n_constraints+n_vertices;
+  ierr = MatGetSize(pcbddc->ConstraintMatrix,&local_primal_size,NULL);CHKERRQ(ierr);
+  n_constraints = local_primal_size - n_vertices;
   n_R = pcis->n-n_vertices;
-  /* local work vectors */
   ierr = VecGetType(pcis->vec1_N,&impVecType);CHKERRQ(ierr);
-  ierr = VecCreate(PetscObjectComm((PetscObject)pcis->vec1_N),&pcbddc->vec1_R);CHKERRQ(ierr);
-  ierr = VecSetSizes(pcbddc->vec1_R,PETSC_DECIDE,n_R);CHKERRQ(ierr);
-  ierr = VecSetType(pcbddc->vec1_R,impVecType);CHKERRQ(ierr);
-  ierr = VecDuplicate(pcbddc->vec1_R,&pcbddc->vec2_R);CHKERRQ(ierr);
-  ierr = VecCreate(PetscObjectComm((PetscObject)pcis->vec1_N),&pcbddc->vec1_P);CHKERRQ(ierr);
-  ierr = VecSetSizes(pcbddc->vec1_P,PETSC_DECIDE,local_primal_size);CHKERRQ(ierr);
-  ierr = VecSetType(pcbddc->vec1_P,impVecType);CHKERRQ(ierr);
-  if (n_constraints) {
+  /* local work vectors (try to avoid unneeded work)*/
+  /* R nodes */
+  old_size = -1;
+  if (pcbddc->vec1_R) {
+    ierr = VecGetSize(pcbddc->vec1_R,&old_size);CHKERRQ(ierr);
+  }
+  if (n_R != old_size) {
+    ierr = VecDestroy(&pcbddc->vec1_R);CHKERRQ(ierr);
+    ierr = VecDestroy(&pcbddc->vec2_R);CHKERRQ(ierr);
+    ierr = VecCreate(PetscObjectComm((PetscObject)pcis->vec1_N),&pcbddc->vec1_R);CHKERRQ(ierr);
+    ierr = VecSetSizes(pcbddc->vec1_R,PETSC_DECIDE,n_R);CHKERRQ(ierr);
+    ierr = VecSetType(pcbddc->vec1_R,impVecType);CHKERRQ(ierr);
+    ierr = VecDuplicate(pcbddc->vec1_R,&pcbddc->vec2_R);CHKERRQ(ierr);
+  }
+  /* local primal dofs */
+  old_size = -1;
+  if (pcbddc->vec1_P) {
+    ierr = VecGetSize(pcbddc->vec1_P,&old_size);CHKERRQ(ierr);
+  }
+  if (local_primal_size != old_size) {
+    ierr = VecDestroy(&pcbddc->vec1_P);CHKERRQ(ierr);
+    ierr = VecCreate(PetscObjectComm((PetscObject)pcis->vec1_N),&pcbddc->vec1_P);CHKERRQ(ierr);
+    ierr = VecSetSizes(pcbddc->vec1_P,PETSC_DECIDE,local_primal_size);CHKERRQ(ierr);
+    ierr = VecSetType(pcbddc->vec1_P,impVecType);CHKERRQ(ierr);
+  }
+  /* local explicit constraints */
+  old_size = -1;
+  if (pcbddc->vec1_C) {
+    ierr = VecGetSize(pcbddc->vec1_C,&old_size);CHKERRQ(ierr);
+  }
+  if (n_constraints && n_constraints != old_size) {
+    ierr = VecDestroy(&pcbddc->vec1_C);CHKERRQ(ierr);
     ierr = VecCreate(PetscObjectComm((PetscObject)pcis->vec1_N),&pcbddc->vec1_C);CHKERRQ(ierr);
     ierr = VecSetSizes(pcbddc->vec1_C,PETSC_DECIDE,n_constraints);CHKERRQ(ierr);
     ierr = VecSetType(pcbddc->vec1_C,impVecType);CHKERRQ(ierr);
