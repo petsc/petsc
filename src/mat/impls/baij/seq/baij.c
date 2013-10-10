@@ -2991,6 +2991,9 @@ PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz
     }
     b->free_a  = PETSC_TRUE;
     b->free_ij = PETSC_TRUE;
+#if defined(PETSC_THREADCOMM_ACTIVE)
+    ierr = MatZeroEntries_SeqBAIJ(B);CHKERRQ(ierr);
+#endif
   } else {
     b->free_a  = PETSC_FALSE;
     b->free_ij = PETSC_FALSE;

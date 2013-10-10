@@ -1560,8 +1560,11 @@ PetscErrorCode DMPlexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt point
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(coveredPoints, 4);
+  if (points) PetscValidIntPointer(points,3);
+  if (numCoveredPoints) PetscValidIntPointer(numCoveredPoints,4);
+  PetscValidPointer(coveredPoints, 5);
   ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, (void*) coveredPoints);CHKERRQ(ierr);
+  if (numCoveredPoints) *numCoveredPoints = 0;
   PetscFunctionReturn(0);
 }
 
@@ -1782,8 +1785,11 @@ PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt point
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(coveredPoints, 4);
+  if (points) PetscValidIntPointer(points,3);
+  if (numCoveredPoints) PetscValidIntPointer(numCoveredPoints,4);
+  PetscValidPointer(coveredPoints,5);
   ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, (void*) coveredPoints);CHKERRQ(ierr);
+  if (numCoveredPoints) *numCoveredPoints = 0;
   PetscFunctionReturn(0);
 }
 
