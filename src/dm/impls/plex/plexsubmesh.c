@@ -2266,7 +2266,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, DMLabel vertexLabe
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateSubmesh"
-/*@C
+/*@
   DMPlexCreateSubmesh - Extract a hypersurface from the mesh using vertices defined by a label
 
   Input Parameters:
