@@ -33,6 +33,7 @@ class Package(config.base.Configure):
     self.gitcommit        = None # Git commit to use for downloads (used in preference to tarball downloads)
     self.giturls          = []   # list of Git repository URLs to be used for downloads
     self.download         = []   # list of URLs where repository or tarballs may be found
+    self.downloadURLSetByUser = False # user overrode package file by providing download location
     self.deps             = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
     self.defaultLanguage  = 'C'  # The language in which to run tests
     self.liblist          = [[]] # list of libraries we wish to check for (override with your own generateLibList())
@@ -329,6 +330,7 @@ class Package(config.base.Configure):
     downloadPackageVal = self.framework.argDB['download-'+self.downloadname.lower()]
     if requireDownload and isinstance(downloadPackageVal, str):
       self.download = [downloadPackageVal]
+      self.downloadURLSetByUser = True
       downloadPackage = 1
     elif downloadPackageVal == 1 and requireDownload:
       downloadPackage = 1
@@ -421,7 +423,7 @@ class Package(config.base.Configure):
         download_urls.append(url.replace('http://','ftp://'))
     # now attempt to download each url until any one succeeds.
     err =''
-    if hasattr(self.sourceControl, 'git') and self.gitcommit and self.gitPreReqCheck():
+    if not self.downloadURLSetByUser and hasattr(self.sourceControl, 'git') and self.gitcommit and self.gitPreReqCheck():
       for giturl in self.giturls: # First try to fetch using Git
         try:
           gitrepo = os.path.join(self.externalPackagesDir, self.downloadname)
