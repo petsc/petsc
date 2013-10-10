@@ -51,6 +51,7 @@ typedef struct {
   PetscBool     use_faces;
   PetscBool     use_edges;
   /* Some customization is possible */
+  PetscBool                  recompute_topography;
   PCBDDCGraph                mat_graph;
   PetscBool                  new_primal_space;
   MatNullSpace               onearnullspace;

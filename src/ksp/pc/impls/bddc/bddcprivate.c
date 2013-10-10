@@ -2185,6 +2185,9 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   if (pcbddc->dbg_flag) {
     ierr = PCBDDCGraphASCIIView(pcbddc->mat_graph,pcbddc->dbg_flag,viewer);
   }
+
+  /* mark topography has done */
+  pcbddc->recompute_topography = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

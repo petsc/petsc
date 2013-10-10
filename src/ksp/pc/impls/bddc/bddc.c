@@ -3,11 +3,9 @@
    ConstraintsSetup
    - assure same constraints between neighbours by sorting vals by global index before SVD!
    - tolerances for constraints as an option (take care of single precision!)
-   - Allow different constraints customizations among different linear solves (requires also reset/destroy of ksp_R and coarse_ksp)
    - MAT_IGNORE_ZERO_ENTRIES for Constraints Matrix
 
    Solvers
-   - Try to reduce the work when reusing the solvers
    - Add support for reuse fill and cholecky factor for coarse solver (similar to local solvers)
    - reuse already allocated coarse matrix if possible
    - Propagate ksp prefixes for solvers to mat objects? 
@@ -38,6 +36,7 @@
    - Move FETIDP code to its own classes
 
    MATIS related operations contained in BDDC code
+   - Add MAT_REUSE in MatConvert_IS_AIJ
    - Provide general case for subassembling
    - Preallocation routines in MatConvert_IS_AIJ
 
@@ -311,6 +310,7 @@ static PetscErrorCode PCBDDCSetDirichletBoundaries_BDDC(PC pc,IS DirichletBounda
   ierr = ISDestroy(&pcbddc->DirichletBoundaries);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)DirichletBoundaries);CHKERRQ(ierr);
   pcbddc->DirichletBoundaries=DirichletBoundaries;
+  pcbddc->recompute_topography = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -354,6 +354,7 @@ static PetscErrorCode PCBDDCSetNeumannBoundaries_BDDC(PC pc,IS NeumannBoundaries
   ierr = ISDestroy(&pcbddc->NeumannBoundaries);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)NeumannBoundaries);CHKERRQ(ierr);
   pcbddc->NeumannBoundaries=NeumannBoundaries;
+  pcbddc->recompute_topography = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -837,6 +838,9 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     computetopography = PETSC_TRUE;
     computesolvers = PETSC_TRUE;
   }
+  if (pcbddc->recompute_topography) {
+    computetopography = PETSC_TRUE;
+  }
 
   /* Get stdout for dbg */
   if (pcbddc->dbg_flag && !pcbddc->dbg_viewer) {
@@ -855,7 +859,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PCISSetUp(pc);CHKERRQ(ierr);
   }
 
-  /* Analyze interface */ 
+  /* Analyze interface */
   if (computetopography) {
     ierr = PCBDDCAnalyzeInterface(pc);CHKERRQ(ierr);
   }
@@ -1373,6 +1377,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->use_nnsp_true       = PETSC_FALSE; /* not yet exposed */
   pcbddc->dbg_flag            = 0;
 
+  pcbddc->recompute_topography       = PETSC_FALSE;
   pcbddc->coarse_size                = 0;
   pcbddc->new_primal_space           = PETSC_FALSE;
   pcbddc->global_primal_indices      = 0;
