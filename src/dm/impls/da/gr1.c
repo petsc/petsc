@@ -224,7 +224,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   PetscMPIInt       rank,size,tag1,tag2;
   PetscInt          i,n,N,step,istart,isize,j,nbounds;
   MPI_Status        status;
-  PetscReal         coors[4],ymin,ymax,min,max,xmin,xmax,tmp,xgtmp;
+  PetscReal         coors[4],ymin,ymax,min,max,xmin = 0.0,xmax = 0.0,tmp = 0.0,xgtmp = 0.0;
   const PetscScalar *array,*xg;
   PetscDraw         draw;
   PetscBool         isnull,showpoints = PETSC_FALSE;
