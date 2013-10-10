@@ -372,7 +372,7 @@ PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSec
     }
     for (proc = 1; proc < numProcs; ++proc) {
       PetscScalar *remoteValues;
-      PetscInt    size, d;
+      PetscInt    size = 0, d;
       MPI_Status  status;
 
       ierr = MPI_Recv(&size, 1, MPIU_INT, proc, tag, comm, &status);CHKERRQ(ierr);
