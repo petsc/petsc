@@ -76,9 +76,7 @@ PetscErrorCode JPBipartiteSF_Private(Mat m,PetscSF *etoc,PetscSF *etor)
   for (i=rs;i<re;i++) {
     ierr = MatGetRow(m,i,&ncol,NULL,&vcol);CHKERRQ(ierr);
     for (j=0;j<ncol;j++) {
-      if (vcol[j] != 0.) {
-        nentries++;
-      }
+      nentries++;
     }
     ierr = MatRestoreRow(m,i,&ncol,NULL,&vcol);CHKERRQ(ierr);
   }
@@ -88,11 +86,9 @@ PetscErrorCode JPBipartiteSF_Private(Mat m,PetscSF *etoc,PetscSF *etor)
   for (i=rs;i<re;i++) {
     ierr = MatGetRow(m,i,&ncol,&icol,&vcol);CHKERRQ(ierr);
     for (j=0;j<ncol;j++) {
-      if (vcol[j] != 0.) {
-        rowleaf[idx] = icol[j];
-        rowdata[idx] = i;
-        idx++;
-      }
+      rowleaf[idx] = icol[j];
+      rowdata[idx] = i;
+      idx++;
     }
     ierr = MatRestoreRow(m,i,&ncol,&icol,&vcol);CHKERRQ(ierr);
   }
@@ -422,6 +418,7 @@ PetscErrorCode JPMinColor_Private(MatColoring mc,ISColoringValue *colors,ISColor
         mskvalue /= 2;
       }
     }
+    if (!minfound) mincolor[i] = (ISColoringValue)jp->stateradix*jp->statesize;
   }
 
   PetscFunctionReturn(0);
