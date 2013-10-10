@@ -2574,16 +2574,8 @@ PetscErrorCode  SNESSetUp(SNES snes)
   }
 
   ierr = SNESGetFunction(snes,&snes->vec_func,NULL,NULL);CHKERRQ(ierr);
-  if (snes->vec_func == snes->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"Solution vector cannot be function vector");
-  if (snes->vec_rhs  == snes->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"Solution vector cannot be right hand side vector");
-
-  if (!snes->vec_sol_update /* && snes->vec_sol */) {
-    ierr = VecDuplicate(snes->vec_sol,&snes->vec_sol_update);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)snes,(PetscObject)snes->vec_sol_update);CHKERRQ(ierr);
-  }
 
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMShellSetGlobalVector(snes->dm,snes->vec_sol);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (!sdm->ops->computefunction) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Function never provided to SNES object");
   if (!sdm->ops->computejacobian) {
@@ -3772,6 +3764,13 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     ierr          = VecDestroy(&snes->vec_rhs);CHKERRQ(ierr);
     snes->vec_rhs = b;
 
+    if (snes->vec_func == snes->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"Solution vector cannot be function vector");
+    if (snes->vec_rhs  == snes->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"Solution vector cannot be right hand side vector");
+    if (!snes->vec_sol_update /* && snes->vec_sol */) {
+      ierr = VecDuplicate(snes->vec_sol,&snes->vec_sol_update);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)snes,(PetscObject)snes->vec_sol_update);CHKERRQ(ierr);
+    }
+    ierr = DMShellSetGlobalVector(dm,snes->vec_sol);CHKERRQ(ierr);
     ierr = SNESSetUp(snes);CHKERRQ(ierr);
 
     if (!grid) {
