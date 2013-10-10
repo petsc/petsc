@@ -1240,6 +1240,7 @@ PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel *hybridLabel
   ierr = DMDestroy(&idm);CHKERRQ(ierr);
   ierr = DMPlexConstructCohesiveCells(dm, hlabel, dmHybrid);CHKERRQ(ierr);
   if (hybridLabel) *hybridLabel = hlabel;
+  else             {ierr = DMLabelDestroy(&hlabel);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
