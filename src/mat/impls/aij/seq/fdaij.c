@@ -11,36 +11,40 @@
 PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   PetscErrorCode ierr;
-  PetscInt       bs,nz,bcols,nis=iscoloring->n;
+  PetscInt       bs,nis=iscoloring->n;
   PetscBool      isBAIJ;     
-  PetscReal      mem;
 
   PetscFunctionBegin;
+  /* set default brows and bcols for speedup inserting the dense matrix into sparse Jacobian */
   ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQBAIJ,&isBAIJ);CHKERRQ(ierr);
-  if (isBAIJ) { 
-    Mat_SeqBAIJ *spA = (Mat_SeqBAIJ*)mat->data;
-    nz    = spA->nz;
-  } else {
-    Mat_SeqAIJ  *spA = (Mat_SeqAIJ*)mat->data;
-    nz    = spA->nz;
+  if (isBAIJ) { /* brows and bcols will not be used */
+    c->brows = 0;
+    c->bcols = 0;
+  } else { /* seqaij matrix */
+    /* bcols is chosen s.t. dy-array takes 50% of memory space as mat */
+    Mat_SeqAIJ *spA = (Mat_SeqAIJ*)mat->data;
+    PetscReal  mem;
+    PetscInt   nz,brows,bcols,m=mat->rmap->n;
+
     bs    = 1; /* only bs=1 is supported for SeqAIJ matrix */
+
+    nz    = spA->nz;
+    mem   = nz*(sizeof(PetscScalar) + sizeof(PetscInt)) + 3*m*sizeof(PetscInt);
+    bcols = (PetscInt)(0.5*mem /(m*sizeof(PetscScalar)));
+    brows = 1000/bcols;
+    if (bcols > nis) bcols = nis;
+    if (brows == 0 || brows > m) brows = m;
+    c->brows = brows;
+    c->bcols = bcols;
   } 
+
   c->M       = mat->rmap->N/bs;   /* set total rows, columns and local rows */
   c->N       = mat->cmap->N/bs;
   c->m       = mat->rmap->N/bs;
   c->rstart  = 0;
   c->ncolors = nis;
-
-  /* set default brows and bcols for speedup inserting the dense matrix into sparse Jacobian; 
-     bcols is chosen s.t. dy-array takes 50% of memory space as mat */
-  mem = nz*(sizeof(PetscScalar) + sizeof(PetscInt)) + 3*c->m*sizeof(PetscInt);
-  bcols = (PetscInt)(0.5*mem /(c->m*sizeof(PetscScalar)));
-  if (bcols > nis) bcols = nis;
-
-  c->brows       = 1000/bcols;
-  c->bcols       = bcols;
-  c->ctype       = IS_COLORING_GHOSTED;
+  c->ctype   = IS_COLORING_GHOSTED;
   PetscFunctionReturn(0);
 }
 
@@ -54,8 +58,8 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   IS             *isa;
   PetscBool      isBAIJ;     
   PetscScalar    *A_val,**valaddrhit;
-  MatEntry       *Jentry,*Jentry_new;
-  PetscInt       *color_start,nz_new,row_end,*row_start,*nrows_new;
+  MatEntry       *Jentry;
+  PetscInt       *color_start;
   PetscInt       bcols=c->bcols;
 
   PetscFunctionBegin;
@@ -138,10 +142,11 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
   /*---------- reorder Jentry for faster MatFDColoringApply() ------------*/
   if (!isBAIJ && bcols > 1) {
-    PetscInt nbcols=0,brows=c->brows;
+    PetscInt nbcols=0,brows=c->brows,*row_start,*nrows_new,nz_new,row_end;
+    MatEntry *Jentry_new;
 
     m = mbs;
-    if (brows < 1) brows = m;
+    if (brows < 1 || brows > m) brows = m;
 
     ierr = PetscMalloc(nz*sizeof(MatEntry),&Jentry_new);CHKERRQ(ierr);
     ierr = PetscMalloc(bcols*sizeof(PetscInt),&row_start);CHKERRQ(ierr); 

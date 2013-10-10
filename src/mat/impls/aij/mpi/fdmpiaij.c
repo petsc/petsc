@@ -252,7 +252,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
 
   /*------------- reorder Jentry ----------------*/
   PetscInt bcols=coloring->bcols;
-  if (bcols>1 && ctype == IS_COLORING_GHOSTED) { /* oly supported for seqaij matrix */
+  if (bcols > 1 && ctype == IS_COLORING_GHOSTED) { /* only supported for seqaij matrix */
     PetscInt    i,m=J->rmap->n,nbcols;
     PetscScalar *dy=coloring->dy,*dy_k;
 
@@ -331,6 +331,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
 
     coloring->currentcolor = -1;
     PetscFunctionReturn(0);
+       
   } /*------------------ endof reorder Jentry ----------------*/
 
   for (k=0; k<ncolors; k++) {
@@ -408,11 +409,12 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   PetscInt               nis=iscoloring->n,nctot,*cols;
   IS                     *isa;
   ISLocalToGlobalMapping map=mat->cmap->mapping;
-  PetscInt               ctype=c->ctype,*spidxA,*spidxB,nz,bs,bs2,spidx;
+  PetscInt               ctype=c->ctype,*spidxA,*spidxB,nz,bs,bs2,spidx,*color_start;
   Mat                    A,B;
   PetscScalar            *A_val,*B_val,**valaddrhit;
   MatEntry               *Jentry;
   PetscBool              isBAIJ; 
+  PetscInt               bcols=c->bcols;
 #if defined(PETSC_USE_CTABLE)
   PetscTable             colmap=NULL;
 #else
@@ -475,12 +477,17 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   ierr       = PetscLogObjectMemory((PetscObject)c,nz*sizeof(MatEntry));CHKERRQ(ierr);
   c->matentry = Jentry;
 
-  ierr = PetscMalloc2(m+1,PetscInt,&rowhit,m+1,PetscScalar*,&valaddrhit);CHKERRQ(ierr);
+  PetscMPIInt rank;
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+
+  ierr = PetscMalloc3(m+1,PetscInt,&rowhit,m+1,PetscScalar*,&valaddrhit,nis+1,PetscInt,&color_start);CHKERRQ(ierr);
   nz = 0;
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
   for (i=0; i<nis; i++) { /* for each local color */
     ierr = ISGetLocalSize(isa[i],&n);CHKERRQ(ierr);
     ierr = ISGetIndices(isa[i],&is);CHKERRQ(ierr);
+    color_start[i] = nz;
+    //printf("[%d] color_start[%d] = %d\n",rank,i,color_start[i]);
 
     c->ncolumns[i] = n; /* local number of columns of this color on this process */
     if (n) {
@@ -577,9 +584,63 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     }
     ierr = PetscFree(cols);CHKERRQ(ierr);
   }
+  color_start[nis] = nz;
+  //printf("[%d] color_start[%d] = %d\n",rank,nis,color_start[nis]);
   ierr = ISColoringRestoreIS(iscoloring,&isa);CHKERRQ(ierr);
+  ierr = PetscFree3(rowhit,valaddrhit,color_start);CHKERRQ(ierr);
 
-  ierr = PetscFree2(rowhit,valaddrhit);CHKERRQ(ierr);
+  /*---------- reorder Jentry for faster MatFDColoringApply() ------------*/
+  if (!isBAIJ && bcols > 1) {
+    PetscInt nbcols=0,brows=c->brows,mbs=c->m,*row_start,*nrows_new,nz_new,row_end;
+    MatEntry *Jentry_new;
+
+    m = mbs;
+    if (brows < 1 || brows > m) brows = m;
+
+    ierr = PetscMalloc(nz*sizeof(MatEntry),&Jentry_new);CHKERRQ(ierr);
+    ierr = PetscMalloc(bcols*sizeof(PetscInt),&row_start);CHKERRQ(ierr); 
+    ierr = PetscMalloc(nis*sizeof(PetscInt),&nrows_new);CHKERRQ(ierr);
+
+    nz_new  = 0;
+    for (i=0; i<nis; i+=bcols) { /* loop over colors */
+      if (i + bcols > nis) bcols = nis - i;
+   
+      row_end = brows;
+      if (row_end > mbs) row_end = mbs;
+      for (j=0; j<bcols; j++) row_start[j] = 0;
+      while (row_end <= mbs) { /* loop over block rows */
+        for (j=0; j<bcols; j++) {       /* loop over block columns */
+          nrows = c->nrows[i+j];
+          nz    = color_start[i+j]; // crash!
+          while (row_start[j] < nrows) {
+            if (Jentry[nz].row >= row_end) {
+              color_start[i+j] = nz;
+              break;
+            } else { /* copy Jentry[nz] to Jentry_new[nz_new] */
+              Jentry_new[nz_new].row     = Jentry[nz].row + j*mbs; /* index in dy-array */
+              Jentry_new[nz_new].col     = Jentry[nz].col; 
+              Jentry_new[nz_new].valaddr = Jentry[nz].valaddr;  
+              nz_new++; nz++; row_start[j]++;
+            }
+          }
+        }
+        if (row_end == mbs) break;
+        row_end += brows;
+        if (row_end > mbs) row_end = mbs;
+      }
+      nrows_new[nbcols++] = nz_new;
+    }
+    for (i=nbcols-1; i>0; i--) nrows_new[i] -= nrows_new[i-1];
+    ierr = PetscFree(c->nrows);CHKERRQ(ierr);
+    c->nrows = nrows_new;
+   
+    ierr = PetscFree(Jentry);CHKERRQ(ierr);
+    c->matentry = Jentry_new;
+    ierr = PetscMalloc(c->bcols*mat->rmap->n*sizeof(PetscScalar),&c->dy);CHKERRQ(ierr);
+    ierr = PetscFree(row_start);CHKERRQ(ierr);
+  }
+  /*---------------------------------------*/
+
   if (isBAIJ) {
     ierr = MatRestoreColumnIJ_SeqBAIJ_Color(A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&spidxA,NULL);CHKERRQ(ierr);
     ierr = MatRestoreColumnIJ_SeqBAIJ_Color(B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&spidxB,NULL);CHKERRQ(ierr);
@@ -599,6 +660,39 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 #define __FUNCT__ "MatFDColoringCreate_MPIXAIJ"
 PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
+  PetscErrorCode ierr;
+  PetscInt       bs,nis=iscoloring->n;
+  PetscBool      isBAIJ;     
+
   PetscFunctionBegin;
+  /* set default brows and bcols for speedup inserting the dense matrix into sparse Jacobian; 
+   bcols is chosen s.t. dy-array takes 50% of memory space as mat */
+  ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&isBAIJ);CHKERRQ(ierr);
+  if (isBAIJ) { /* brows and bcols will not be used */
+    c->brows = 0;
+    c->bcols = 0;
+  } else { /* mpiaij matrix */
+    /* bcols is chosen s.t. dy-array takes 50% of local memory space as mat */
+    Mat_MPIAIJ *aij=(Mat_MPIAIJ*)mat->data;
+    Mat_SeqAIJ *spA,*spB;
+    Mat        A,B;
+    PetscInt   nz,brows,bcols,m=mat->rmap->n;
+    PetscReal  mem;
+
+    bs    = 1; /* only bs=1 is supported for MPIAIJ matrix */
+
+    A = aij->A;  spA = (Mat_SeqAIJ*)A->data; 
+    B = aij->B;  spB = (Mat_SeqAIJ*)B->data; 
+    nz = spA->nz + spB->nz; /* total local nonzero entries of mat */  
+    mem = nz*(sizeof(PetscScalar) + sizeof(PetscInt)) + 3*m*sizeof(PetscInt);
+    bcols = (PetscInt)(0.5*mem /(m*sizeof(PetscScalar)));
+    brows = 1000/bcols;
+    if (bcols > nis) bcols = nis;
+    if (brows == 0 || brows > m) brows = m;
+    c->brows = brows;
+    c->bcols = bcols;
+    printf("   m=%d, brows %d; ncolors=%d, bcols %d\n",m,c->brows,nis,c->bcols);
+  }
   PetscFunctionReturn(0);
 }
