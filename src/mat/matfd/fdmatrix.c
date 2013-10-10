@@ -191,8 +191,7 @@ PetscErrorCode MatFDColoringSetParameters(MatFDColoring matfd,PetscReal error,Pe
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringSetBlockSize"
 /*@
-   MatFDColoringSetBlockSize - Sets block size for efficient 
-   inserting entries of Jacobian matrix.
+   MatFDColoringSetBlockSize - Sets block size for efficient inserting entries of Jacobian matrix.
 
    Logically Collective on MatFDColoring
 
@@ -242,9 +241,15 @@ PetscErrorCode MatFDColoringSetUp(Mat mat,ISColoring iscoloring,MatFDColoring co
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(color,MAT_FDCOLORING_CLASSID,3);
+  if (color->setupcalled) PetscFunctionReturn(0);
+
   if (mat->ops->fdcoloringsetup) {
     ierr = (*mat->ops->fdcoloringsetup)(mat,iscoloring,color);CHKERRQ(ierr);
   } else SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Code not yet written for matrix type %s",((PetscObject)mat)->type_name);
+
+  color->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -437,6 +442,7 @@ PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring 
   PetscInt       M,N;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Matrix must be assembled by calls to MatAssemblyBegin/End();");
   ierr = PetscLogEventBegin(MAT_FDColoringCreate,mat,0,0,0);CHKERRQ(ierr);
   ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
@@ -460,6 +466,7 @@ PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring 
   c->currentcolor = -1;
   c->htype        = "wp";
   c->fset         = PETSC_FALSE;
+  c->setupcalled  = PETSC_FALSE;
 
   *color = c;
   ierr   = PetscObjectCompose((PetscObject)mat,"SNESMatFDColoring",(PetscObject)c);CHKERRQ(ierr);
@@ -577,6 +584,7 @@ PetscErrorCode  MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStruct
   PetscValidHeaderSpecific(x1,VEC_CLASSID,3);
   if (!coloring->f) SETERRQ(PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetFunction()");
   if (!J->ops->fdcoloringapply) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported for this matrix type %s",((PetscObject)J)->type_name);
+  if (!coloring->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetUp()");
 
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-mat_fd_coloring_dont_rezero",&flg,NULL);CHKERRQ(ierr);

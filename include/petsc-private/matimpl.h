@@ -471,6 +471,7 @@ struct  _p_MatFDColoring{
   const char     *htype;           /* "wp" or "ds" */
   ISColoringType ctype;            /* IS_COLORING_GLOBAL or IS_COLORING_GHOSTED */
   PetscInt       brows,bcols;      /* number of block rows or columns for speedup inserting the dense matrix into sparse Jacobian */
+  PetscBool      setupcalled;      /* true if setup has been called */
   void           *ftn_func_pointer,*ftn_func_cntx; /* serve the same purpose as *fortran_func_pointers in PETSc objects */
 };
 
