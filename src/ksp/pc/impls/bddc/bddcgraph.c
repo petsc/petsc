@@ -1007,9 +1007,9 @@ PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap)
   PetscFunctionBegin;
   PetscValidPointer(graph,1);
   PetscValidHeaderSpecific(l2gmap,IS_LTOGM_CLASSID,2);
-  /* reset graph if already allocated */
+  /* raise an error if already allocated */
   if (graph->nvtxs) {
-    ierr = PCBDDCGraphReset(graph);CHKERRQ(ierr);
+    SETERRQ(PetscObjectComm((PetscObject)l2gmap),PETSC_ERR_PLIB,"BDDCGraph already initialized");
   }
   /* set number of vertices */
   ierr = PetscObjectReference((PetscObject)l2gmap);CHKERRQ(ierr);

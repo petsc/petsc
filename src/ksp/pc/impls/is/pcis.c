@@ -223,6 +223,7 @@ PetscErrorCode  PCISSetUp(PC pc)
   ierr = VecCreateSeq(PETSC_COMM_SELF,pcis->n-pcis->n_B,&pcis->vec1_D);CHKERRQ(ierr);
   ierr = VecDuplicate(pcis->vec1_D,&pcis->vec2_D);CHKERRQ(ierr);
   ierr = VecDuplicate(pcis->vec1_D,&pcis->vec3_D);CHKERRQ(ierr);
+  ierr = VecDuplicate(pcis->vec1_D,&pcis->vec4_D);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,pcis->n_B,&pcis->vec1_B);CHKERRQ(ierr);
   ierr = VecDuplicate(pcis->vec1_B,&pcis->vec2_B);CHKERRQ(ierr);
   ierr = VecDuplicate(pcis->vec1_B,&pcis->vec3_B);CHKERRQ(ierr);
@@ -367,6 +368,7 @@ PetscErrorCode  PCISDestroy(PC pc)
   ierr = VecDestroy(&pcis->vec1_D);CHKERRQ(ierr);
   ierr = VecDestroy(&pcis->vec2_D);CHKERRQ(ierr);
   ierr = VecDestroy(&pcis->vec3_D);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcis->vec4_D);CHKERRQ(ierr);
   ierr = VecDestroy(&pcis->vec1_B);CHKERRQ(ierr);
   ierr = VecDestroy(&pcis->vec2_B);CHKERRQ(ierr);
   ierr = VecDestroy(&pcis->vec3_B);CHKERRQ(ierr);
