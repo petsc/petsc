@@ -803,32 +803,28 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
 */
 PetscErrorCode PCSetUp_BDDC(PC pc)
 {
-  PetscErrorCode ierr;
-  PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
-  MatStructure   flag;
-  PetscBool      computeis,computetopography,computesolvers;
-  PetscBool      new_nearnullspace_provided;
-
+  PetscErrorCode   ierr;
+  PC_BDDC*         pcbddc = (PC_BDDC*)pc->data;
+  MatNullSpace     nearnullspace;
+  const Vec        *nearnullvecs,*onearnullvecs;
+  MatStructure     flag;
+  PetscObjectState state;
+  PetscInt         nnsp_size,onnsp_size;
+  PetscBool        computeis,computetopography,computesolvers;
+  PetscBool        new_nearnullspace_provided,nnsp_has_cnst,onnsp_has_cnst;
+ 
   PetscFunctionBegin;
-  /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other nonoverlapping preconditioners */
-  /* PCIS does not support MatStructures different from SAME_PRECONDITIONER */
+  /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other future nonoverlapping preconditioners */
+  /* PCIS does not support MatStructure flags different from SAME_PRECONDITIONER */
   /* For BDDC we need to define a local "Neumann" problem different to that defined in PCISSetup
      Also, BDDC directly build the Dirichlet problem */
-  /* Get stdout for dbg */
-  if (pcbddc->dbg_flag && !pcbddc->dbg_viewer) {
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)pc),&pcbddc->dbg_viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedAllow(pcbddc->dbg_viewer,PETSC_TRUE);CHKERRQ(ierr);
-    if (pcbddc->current_level) {
-      ierr = PetscViewerASCIIAddTab(pcbddc->dbg_viewer,2);CHKERRQ(ierr);
-    }
-  }
-  /* first attempt to split work */
+
+  /* split work */
   if (pc->setupcalled) {
     computeis = PETSC_FALSE;
     ierr = PCGetOperators(pc,NULL,NULL,&flag);CHKERRQ(ierr);
     if (flag == SAME_PRECONDITIONER) {
-      computetopography = PETSC_FALSE;
-      computesolvers = PETSC_FALSE;
+      PetscFunctionReturn(0);
     } else if (flag == SAME_NONZERO_PATTERN) {
       computetopography = PETSC_FALSE;
       computesolvers = PETSC_TRUE;
@@ -841,6 +837,16 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     computetopography = PETSC_TRUE;
     computesolvers = PETSC_TRUE;
   }
+
+  /* Get stdout for dbg */
+  if (pcbddc->dbg_flag && !pcbddc->dbg_viewer) {
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)pc),&pcbddc->dbg_viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedAllow(pcbddc->dbg_viewer,PETSC_TRUE);CHKERRQ(ierr);
+    if (pcbddc->current_level) {
+      ierr = PetscViewerASCIIAddTab(pcbddc->dbg_viewer,2);CHKERRQ(ierr);
+    }
+  }
+
   /* Set up all the "iterative substructuring" common block without computing solvers */
   if (computeis) {
     /* HACK INTO PCIS */
@@ -848,22 +854,59 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     pcis->computesolvers = PETSC_FALSE;
     ierr = PCISSetUp(pc);CHKERRQ(ierr);
   }
-  /* Analyze interface and set up local constraint and change of basis matrices */
+
+  /* Analyze interface */ 
   if (computetopography) {
     ierr = PCBDDCAnalyzeInterface(pc);CHKERRQ(ierr);
   }
  
-  /* how can I infer NullSpace object attached to Mat has changed? */ 
+  /* infer if NullSpace object attached to Mat via MatSetNearNullSpace has changed */
   new_nearnullspace_provided = PETSC_FALSE;
+  ierr = MatGetNearNullSpace(pc->pmat,&nearnullspace);CHKERRQ(ierr);
+  if (pcbddc->onearnullspace) { /* already used nearnullspace */
+    if (!nearnullspace) { /* near null space attached to mat has been destroyed */ 
+      new_nearnullspace_provided = PETSC_TRUE;
+    } else {
+      /* determine if the two nullspaces are different (should be lightweight) */
+      if (nearnullspace != pcbddc->onearnullspace) {
+        new_nearnullspace_provided = PETSC_TRUE; 
+      } else { /* maybe the user has changed the content of the nearnullspace */
+        ierr = MatNullSpaceGetVecs(nearnullspace,&nnsp_has_cnst,&nnsp_size,&nearnullvecs);CHKERRQ(ierr);
+        ierr = MatNullSpaceGetVecs(pcbddc->onearnullspace,&onnsp_has_cnst,&onnsp_size,&onearnullvecs);CHKERRQ(ierr);
+        if ( (nnsp_has_cnst != onnsp_has_cnst) || (nnsp_size != onnsp_size) ) {
+          new_nearnullspace_provided = PETSC_TRUE;
+        } else { /* nullspaces have the same size, so check vectors or their ObjectStateId */
+          PetscInt i;
+          for (i=0;i<nnsp_size;i++) {
+            ierr = PetscObjectStateGet((PetscObject)nearnullvecs[i],&state);CHKERRQ(ierr);
+            if (nearnullvecs[i] != onearnullvecs[i] || pcbddc->onearnullvecs_state[i] != state) { 
+              new_nearnullspace_provided = PETSC_TRUE; 
+              break;
+            }
+          }
+        }
+      }
+    } 
+  } else {
+    if (!nearnullspace) { /* both nearnullspaces are null */
+      new_nearnullspace_provided = PETSC_FALSE;
+    } else { /* nearnullspace attached later */
+      new_nearnullspace_provided = PETSC_TRUE;
+    }
+  }
+
+  /* Setup constraints and related work vectors */
+  pcbddc->new_primal_space = PETSC_FALSE;
   if (computetopography || new_nearnullspace_provided) {
     ierr = PCBDDCConstraintsSetUp(pc);CHKERRQ(ierr);
     /* Allocate needed local vectors (which depends on quantities defined during ConstraintsSetUp) */
-    ierr = PCBDDCSetUpWorkVectors(pc);CHKERRQ(ierr);
-  }
+    ierr = PCBDDCSetUpLocalWorkVectors(pc);CHKERRQ(ierr);
+    /* set flag for primal space */
+    pcbddc->new_primal_space = PETSC_TRUE;
+  } 
 
-  if (computesolvers) {
+  if (computesolvers || pcbddc->new_primal_space) {
     /* reset data */
-    ierr = PCBDDCResetSolvers(pc);CHKERRQ(ierr);
     ierr = PCBDDCScalingDestroy(pc);CHKERRQ(ierr);
     /* Create coarse and local stuffs */
     ierr = PCBDDCSetUpSolvers(pc);CHKERRQ(ierr);
@@ -970,14 +1013,6 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   ierr = PCBDDCScalingDestroy(pc);CHKERRQ(ierr);
   /* free solvers stuff */
   ierr = PCBDDCResetSolvers(pc);CHKERRQ(ierr);
-  ierr = VecDestroy(&pcbddc->vec1_P);CHKERRQ(ierr);
-  ierr = VecDestroy(&pcbddc->vec1_C);CHKERRQ(ierr);
-  ierr = VecDestroy(&pcbddc->vec1_R);CHKERRQ(ierr);
-  ierr = VecDestroy(&pcbddc->vec2_R);CHKERRQ(ierr);
-  ierr = KSPDestroy(&pcbddc->ksp_D);CHKERRQ(ierr);
-  ierr = KSPDestroy(&pcbddc->ksp_R);CHKERRQ(ierr);
-  ierr = KSPDestroy(&pcbddc->coarse_ksp);CHKERRQ(ierr);
-  ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
   /* free global vectors needed in presolve */
   ierr = VecDestroy(&pcbddc->temp_solution);CHKERRQ(ierr);
   ierr = VecDestroy(&pcbddc->original_rhs);CHKERRQ(ierr);
@@ -1338,6 +1373,11 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->use_nnsp_true       = PETSC_FALSE; /* not yet exposed */
   pcbddc->dbg_flag            = 0;
 
+  pcbddc->coarse_size                = 0;
+  pcbddc->new_primal_space           = PETSC_FALSE;
+  pcbddc->global_primal_indices      = 0;
+  pcbddc->onearnullspace             = 0;
+  pcbddc->onearnullvecs_state        = 0;
   pcbddc->user_primal_vertices       = 0;
   pcbddc->NullSpace                  = 0;
   pcbddc->temp_solution              = 0;

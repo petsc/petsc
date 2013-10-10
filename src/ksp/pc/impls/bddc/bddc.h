@@ -19,6 +19,8 @@ typedef struct {
   Mat           coarse_psi_B;
   Mat           coarse_psi_D;
   PetscInt      local_primal_size;
+  PetscInt      coarse_size;
+  PetscInt*     global_primal_indices;
   VecScatter    coarse_loc_to_glob;
   /* Local stuffs needed by BDDC application in KSP */
   Vec           vec1_P;
@@ -50,6 +52,9 @@ typedef struct {
   PetscBool     use_edges;
   /* Some customization is possible */
   PCBDDCGraph                mat_graph;
+  PetscBool                  new_primal_space;
+  MatNullSpace               onearnullspace;
+  PetscObjectState           *onearnullvecs_state;
   MatNullSpace               NullSpace;
   IS                         user_primal_vertices;
   PetscBool                  use_nnsp_true;
