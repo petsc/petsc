@@ -429,19 +429,21 @@ PetscErrorCode VecAYPX_SeqCUSP(Vec yin, PetscScalar alpha, Vec xin)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (alpha != 0.0) {
-    ierr = VecCUSPGetArrayRead(xin,&xarray);CHKERRQ(ierr);
-    ierr = VecCUSPGetArrayReadWrite(yin,&yarray);CHKERRQ(ierr);
-    try {
+  ierr = VecCUSPGetArrayRead(xin,&xarray);CHKERRQ(ierr);
+  ierr = VecCUSPGetArrayReadWrite(yin,&yarray);CHKERRQ(ierr);
+  try {
+    if (alpha != 0.0) {
       cusp::blas::aypx(*xarray,*yarray,alpha);
-      ierr = WaitForGPU();CHKERRCUSP(ierr);
-    } catch(char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
+    } else {
+      cusp::blas::copy(*xarray,*yarray);
     }
-    ierr = VecCUSPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
-    ierr = VecCUSPRestoreArrayReadWrite(yin,&yarray);CHKERRQ(ierr);
-    ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
+    ierr = WaitForGPU();CHKERRCUSP(ierr);
+  } catch(char *ex) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   }
+  ierr = VecCUSPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
+  ierr = VecCUSPRestoreArrayReadWrite(yin,&yarray);CHKERRQ(ierr);
+  ierr = PetscLogFlops(((alpha != 0.0) ? 2.0 : 1.0 )*yin->map->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
