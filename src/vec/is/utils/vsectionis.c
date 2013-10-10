@@ -187,8 +187,9 @@ PetscErrorCode PetscSectionSetNumFields(PetscSection s, PetscInt numFields)
 
   PetscFunctionBegin;
   if (numFields <= 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "The number of fields %d must be positive", numFields);
-  s->numFields = numFields;
+  ierr = PetscSectionReset(s);CHKERRQ(ierr);
 
+  s->numFields = numFields;
   ierr = PetscMalloc(s->numFields * sizeof(PetscInt), &s->numFieldComponents);CHKERRQ(ierr);
   ierr = PetscMalloc(s->numFields * sizeof(char*), &s->fieldNames);CHKERRQ(ierr);
   ierr = PetscMalloc(s->numFields * sizeof(PetscSection), &s->field);CHKERRQ(ierr);
