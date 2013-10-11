@@ -1151,16 +1151,24 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, PetscBool flip,
         for (c = 0; c < coneSize; ++c) {
           ierr = DMLabelGetValue(label, cone[c], &val);CHKERRQ(ierr);
           if (val != -1) {
-            PetscInt marker, closureSize, cl, st, *closure = NULL;
+            PetscInt side, closureSize, cl, st, *closure = NULL;
             if (abs(val) < shift) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Face %d on cell %d has an invalid label %d", cone[c], point, val);
-            if (val > 0) marker = shift+dim;
-            else         marker = -(shift+dim);
-            ierr = DMLabelSetValue(label, point, marker);CHKERRQ(ierr);
+            if (val > 0) side =  1;
+            else         side = -1;
+            ierr = DMLabelSetValue(label, point, side*(shift+dim));CHKERRQ(ierr);
             /* Mark all other cell parts */
             ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
             for (cl = 0; cl < closureSize*2; cl += 2) {
               const PetscInt clpoint = closure[cl];
-              for (st = 0; st < starSize*2; st += 2) if (star[st] == clpoint) {ierr = DMLabelSetValue(label, clpoint, marker);CHKERRQ(ierr); break;}
+              for (st = 0; st < starSize*2; st += 2) {
+                if (star[st] == clpoint) {
+                  ierr = DMLabelGetValue(label, clpoint, &val);CHKERRQ(ierr);
+                  if (val != -1) continue;
+                  ierr = DMLabelGetValue(depthLabel, clpoint, &dep);CHKERRQ(ierr);
+                  ierr = DMLabelSetValue(label, clpoint, side*(shift+dep));CHKERRQ(ierr);
+                  break;
+                }
+              }
             }
             ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
             again = 1;
