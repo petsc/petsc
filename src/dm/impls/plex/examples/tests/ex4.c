@@ -485,6 +485,87 @@ PetscErrorCode CreateTensorProduct_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CreateTensorProductHybrid_3D"
+PetscErrorCode CreateTensorProductHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
+{
+  DM             idm, hdm;
+  DMLabel        faultLabel;
+  PetscInt       p;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  if (!rank) {
+    switch (testNum) {
+    case 0:
+    {
+      PetscInt    numPoints[2]         = {12, 2};
+      PetscInt    coneSize[14]         = {8, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+      PetscInt    cones[16]            = {2, 3, 4, 5, 6, 7, 8, 9,  5, 4, 10, 11, 7, 12, 13, 8};
+      PetscInt    coneOrientations[16] = {0, 0, 0, 0, 0, 0, 0, 0,  0, 0,  0,  0, 0,  0,  0, 0};
+      PetscScalar vertexCoords[36]     = {-1.0, -0.5, -0.5,  -1.0,  0.5, -0.5,  0.0,  0.5, -0.5,   0.0, -0.5, -0.5,
+                                          -1.0, -0.5,  0.5,   0.0, -0.5,  0.5,  0.0,  0.5,  0.5,  -1.0,  0.5,  0.5,
+                                          1.0,  0.5, -0.5,   1.0, -0.5, -0.5,  1.0, -0.5,  0.5,   1.0,  0.5,  0.5};
+      PetscInt    faultPoints[4]       = {2, 3, 5, 6};
+
+      ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+      for(p = 0; p < 4; ++p) {ierr = DMPlexSetLabelValue(*dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
+    }
+    break;
+    case 1:
+    {
+      PetscInt    numPoints[2]         = {30, 7};
+      PetscInt    coneSize[37]         = {8,8,8,8,8,8,8, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+      PetscInt    cones[56]            = { 8,  7, 20, 21, 13, 12, 23, 24,
+                                          14,  9, 10, 15, 13,  8, 21, 24,
+                                          15, 10, 11, 16, 24, 21, 22, 25,
+                                          30, 21, 28, 29, 35, 24, 33, 34,
+                                          24, 35, 30, 21, 25, 36, 31, 22,
+                                          27, 28, 21, 20, 32, 33, 24, 23,
+                                           8, 14, 13, 24, 19, 18, 17, 26};
+      PetscInt    coneOrientations[56] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+      PetscScalar vertexCoords[90]     = {-2.0, -2.0, -2.0,  -2.0, -1.0, -2.0,  -3.0,  0.0, -2.0,  -2.0,  1.0, -2.0,  -2.0,  2.0, -2.0,  -2.0, -2.0,  0.0,
+                                          -2.0, -1.0,  0.0,  -3.0,  0.0,  0.0,  -2.0,  1.0,  0.0,  -2.0,  2.0,  0.0,  -2.0, -1.0,  2.0,  -3.0,  0.0,  2.0,
+                                          -2.0,  1.0,  2.0,   0.0, -2.0, -2.0,   0.0,  0.0, -2.0,   0.0,  2.0, -2.0,   0.0, -2.0,  0.0,   0.0,  0.0,  0.0,
+                                           0.0,  2.0,  0.0,   0.0,  0.0,  2.0,   2.0, -2.0, -2.0,   2.0, -1.0, -2.0,   3.0,  0.0, -2.0,   2.0,  1.0, -2.0,
+                                           2.0,  2.0, -2.0,   2.0, -2.0,  0.0,   2.0, -1.0,  0.0,   3.0,  0.0,  0.0,   2.0,  1.0,  0.0,   2.0,  2.0,  0.0};
+      PetscInt    faultPoints[6]       = {20, 21, 22, 23, 24, 25};
+
+      ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+      for(p = 0; p < 6; ++p) {ierr = DMPlexSetLabelValue(*dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
+    }
+    break;
+    default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+    }
+    ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
+    ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
+    ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
+    ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
+    ierr = DMPlexCheckSymmetry(idm);CHKERRQ(ierr);
+    ierr = DMPlexGetLabel(*dm, "fault", &faultLabel);CHKERRQ(ierr);
+    ierr = DMPlexCreateHybridMesh(idm, faultLabel, NULL, &hdm);CHKERRQ(ierr);
+    ierr = DMDestroy(&idm);CHKERRQ(ierr);
+    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    *dm  = hdm;
+  } else {
+    PetscInt numPoints[4] = {0, 0, 0, 0};
+
+    ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
+    ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
+    ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
+    ierr = DMPlexCreateHybridMesh(idm, NULL, NULL, &hdm);CHKERRQ(ierr);
+    ierr = DMDestroy(&idm);CHKERRQ(ierr);
+    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    *dm  = hdm;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
@@ -526,7 +607,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       }
     } else {
       if (cellHybrid) {
-        SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for hexhedrals");
+        ierr = CreateTensorProductHybrid_3D(comm, user->testNum, dm);CHKERRQ(ierr);
       } else {
         ierr = CreateTensorProduct_3D(comm, user->testNum, dm);CHKERRQ(ierr);
       }

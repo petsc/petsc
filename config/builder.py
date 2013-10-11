@@ -66,7 +66,12 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  # 3D Hex 14-15
                                                                  {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -cell_hybrid 0 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 2, 'args': '-dim 3 -cell_simplex 0 -cell_hybrid 0 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
-                                                                 # 3D Hybrid Simplex 16-17
+                                                                 # 3D Hybrid Simplex 16-19
+                                                                 {'numProcs': 1, 'args': '-dim 3 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 3 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -test_num 1 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 3 -test_num 1 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
+                                                                 # 3D Hybrid Hex 20-23
                                                                  {'numProcs': 1, 'args': '-dim 3 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 2, 'args': '-dim 3 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 1, 'args': '-dim 3 -test_num 1 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
