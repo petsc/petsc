@@ -548,13 +548,18 @@ PetscErrorCode  SNESConvergedSkip(SNES snes,PetscInt it,PetscReal xnorm,PetscRea
 @*/
 PetscErrorCode SNESSetWorkVecs(SNES snes,PetscInt nw)
 {
+  DM             dm;
+  Vec            v;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
   snes->nwork = nw;
 
-  ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work);CHKERRQ(ierr);
+  ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dm, &v);CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(v,snes->nwork,&snes->work);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm, &v);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(snes,nw,snes->work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
