@@ -375,7 +375,7 @@ PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
   DM             idm, hdm;
   DMLabel        faultLabel, hybridLabel;
-  PetscInt       depth = 3, p;
+  PetscInt       p;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -394,57 +394,52 @@ PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 
       ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
       for(p = 0; p < 3; ++p) {ierr = DMPlexSetLabelValue(*dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
-      ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-      ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
-      ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
-      ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
-      ierr = DMPlexGetLabel(*dm, "fault", &faultLabel);CHKERRQ(ierr);
-      ierr = DMPlexCreateHybridMesh(idm, faultLabel, &hybridLabel, &hdm);CHKERRQ(ierr);
-      ierr = DMLabelDestroy(&hybridLabel);CHKERRQ(ierr);
-      ierr = DMDestroy(&idm);CHKERRQ(ierr);
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = hdm;
     }
     break;
     case 1:
     {
-      /* TODO: This should be a 4 tet case */
-      PetscInt    numPoints[2]         = {8, 3};
-      PetscInt    coneSize[11]         = {4, 4, 6, 0, 0, 0, 0, 0, 0, 0, 0};
-      PetscInt    cones[14]            = {4, 5, 6, 3,  8, 10, 9, 7,  4, 5, 6, 8, 9, 10};
-      PetscInt    coneOrientations[14] = {0, 0, 0, 0,  0,  0, 0, 0,  0, 0, 0, 0, 0,  0};
-      PetscScalar vertexCoords[24]     = {-1.0, 0.0, 0.0,  0.0, -1.0, 0.0,  0.0, 0.0, 1.0,  0.0, 1.0, 0.0,  1.0, 0.0, 0.0,  0.0, -1.0, 0.0,  0.0, 0.0, 1.0,  0.0, 1.0, 0.0};
-      PetscInt    cMax = 2;
+      /* Tets 0,3,5 and 1,2,4 */
+      PetscInt    numPoints[2]         = {9, 6};
+      PetscInt    coneSize[15]         = {4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+      PetscInt    cones[24]            = { 7, 9,  8, 6,  11,  9, 13, 14,  10, 13, 11, 9,
+                                          10, 9, 11, 7,   9, 13, 14, 12,   7, 11,  8, 9};
+      PetscInt    coneOrientations[24] = { 0, 0,  0, 0,   0,  0,  0,  0,   0,  0,  0, 0,
+                                           0, 0,  0, 0,   0,  0,  0,  0,   0,  0,  0, 0};
+      PetscScalar vertexCoords[27]     = {-2.0, -1.0,  0.0,  -2.0,  0.0,  0.0,  -2.0,  0.0,  1.0,
+                                           0.0, -1.0,  0.0,   0.0,  0.0,  0.0,   0.0,  0.0,  1.0,
+                                           2.0, -1.0,  0.0,   2.0,  0.0,  0.0,   2.0,  0.0,  1.0};
+      PetscInt    faultPoints[3]       = {9, 10, 11};
 
-      depth = 1;
-      ierr = DMPlexCreateFromDAG(*dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      ierr = DMPlexSetHybridBounds(*dm, cMax, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr); /* Indicate a hybrid mesh */
-      ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-      ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
-      ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
-      ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = idm;
+      ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+      for(p = 0; p < 3; ++p) {ierr = DMPlexSetLabelValue(*dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
     }
     break;
     default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
+    ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
+    ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
+    ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
+    ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
+    ierr = DMPlexCheckSymmetry(idm);CHKERRQ(ierr);
+    ierr = DMPlexGetLabel(*dm, "fault", &faultLabel);CHKERRQ(ierr);
+    ierr = DMPlexCreateHybridMesh(idm, faultLabel, &hybridLabel, &hdm);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&hybridLabel);CHKERRQ(ierr);
+    ierr = DMDestroy(&idm);CHKERRQ(ierr);
+    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    *dm  = hdm;
   } else {
     PetscInt numPoints[4] = {0, 0, 0, 0};
 
-    ierr = DMPlexCreateFromDAG(*dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-    switch (testNum) {
-    case 0:
-    case 1:
-      ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-      ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
-      ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
-      ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      ierr = DMPlexCreateHybridMesh(idm, NULL, NULL, &hdm);CHKERRQ(ierr);
-      *dm  = hdm;
-      break;
-    }
+    ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
+    ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
+    ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
+    ierr = DMPlexCreateHybridMesh(idm, NULL, NULL, &hdm);CHKERRQ(ierr);
+    ierr = DMDestroy(&idm);CHKERRQ(ierr);
+    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    *dm  = hdm;
   }
   PetscFunctionReturn(0);
 }
