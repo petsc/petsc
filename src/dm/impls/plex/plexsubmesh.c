@@ -1132,7 +1132,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, PetscBool flip,
     PetscInt  starSize, s;
     PetscInt  again = 1;  /* 0: Finished 1: Keep iterating after a change 2: No change */
 
-    /* First mark cells connected to the fault */
+    /* All points connected to the fault are inside a cell, so at the top level we will only check cells */
     ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
     while (again) {
       if (again > 1) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Could not classify all cells connected to the fault");
@@ -1145,18 +1145,32 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, PetscBool flip,
         if ((point < cStart) || (point >= cEnd)) continue;
         ierr = DMLabelGetValue(label, point, &val);CHKERRQ(ierr);
         if (val != -1) continue;
-        again = 2;
+        again = again == 1 ? 1 : 2;
         ierr  = DMPlexGetConeSize(dm, point, &coneSize);CHKERRQ(ierr);
         ierr  = DMPlexGetCone(dm, point, &cone);CHKERRQ(ierr);
         for (c = 0; c < coneSize; ++c) {
           ierr = DMLabelGetValue(label, cone[c], &val);CHKERRQ(ierr);
           if (val != -1) {
+            PetscInt side, closureSize, cl, st, *closure = NULL;
             if (abs(val) < shift) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Face %d on cell %d has an invalid label %d", cone[c], point, val);
-            if (val > 0) {
-              ierr = DMLabelSetValue(label, point,   shift+dim);CHKERRQ(ierr);
-            } else {
-              ierr = DMLabelSetValue(label, point, -(shift+dim));CHKERRQ(ierr);
+            if (val > 0) side =  1;
+            else         side = -1;
+            ierr = DMLabelSetValue(label, point, side*(shift+dim));CHKERRQ(ierr);
+            /* Mark all other cell parts */
+            ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+            for (cl = 0; cl < closureSize*2; cl += 2) {
+              const PetscInt clpoint = closure[cl];
+              for (st = 0; st < starSize*2; st += 2) {
+                if (star[st] == clpoint) {
+                  ierr = DMLabelGetValue(label, clpoint, &val);CHKERRQ(ierr);
+                  if (val != -1) continue;
+                  ierr = DMLabelGetValue(depthLabel, clpoint, &dep);CHKERRQ(ierr);
+                  ierr = DMLabelSetValue(label, clpoint, side*(shift+dep));CHKERRQ(ierr);
+                  break;
+                }
+              }
             }
+            ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
             again = 1;
             break;
           }
