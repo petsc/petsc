@@ -250,13 +250,10 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   }
   nz   = 0;
 
-  /*------------- reorder Jentry ----------------*/
-  PetscInt bcols=coloring->bcols;
-  if (bcols > 1) { /* only supported for aij matrix */
-    PetscInt    i,m=J->rmap->n,nbcols;
+  if (coloring->bcols > 1) { /* use blocked insertion of Jentry */
+    PetscInt    i,m=J->rmap->n,nbcols,bcols=coloring->bcols;
     PetscScalar *dy=coloring->dy,*dy_k;
 
-    //printf("      use block rows impl: brows %d, bcols %d\n",coloring->brows,bcols);
     nbcols = 0;
     for (k=0; k<ncolors; k+=bcols) {
       coloring->currentcolor = k;
@@ -323,77 +320,68 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
       }
       ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
     } 
-    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    if (vscale) {
-      ierr = VecRestoreArray(vscale,&vscale_array);CHKERRQ(ierr);
-    }
+  } else { /* bcols == 1 */
+    for (k=0; k<ncolors; k++) {
+      coloring->currentcolor = k;
 
-    coloring->currentcolor = -1;
-    PetscFunctionReturn(0);
-       
-  } /*------------------ endof reorder Jentry ----------------*/
-
-  for (k=0; k<ncolors; k++) {
-    coloring->currentcolor = k;
-
-    /*
-      (3-1) Loop over each column associated with color
-      adding the perturbation to the vector w3 = x1 + dx.
-    */
-    ierr = VecCopy(x1,w3);CHKERRQ(ierr);
-    ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);
-    if (ctype == IS_COLORING_GLOBAL) w3_array -= cstart; /* shift pointer so global index can be used */
-    if (coloring->htype[0] == 'w') {
-      for (l=0; l<ncolumns[k]; l++) {
-        col = coloring->columns[k][l]; /* local column (in global index!) of the matrix we are probing for */
-        w3_array[col] += 1.0/dx;
-      } 
-    } else { /* htype == 'ds' */
-      vscale_array -= cstart; /* shift pointer so global index can be used */
-      for (l=0; l<ncolumns[k]; l++) {
-        col = coloring->columns[k][l]; /* local column (in global index!) of the matrix we are probing for */
-        w3_array[col] += 1.0/vscale_array[col];
+      /*
+       (3-1) Loop over each column associated with color
+       adding the perturbation to the vector w3 = x1 + dx.
+       */
+      ierr = VecCopy(x1,w3);CHKERRQ(ierr);
+      ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);
+      if (ctype == IS_COLORING_GLOBAL) w3_array -= cstart; /* shift pointer so global index can be used */
+      if (coloring->htype[0] == 'w') {
+        for (l=0; l<ncolumns[k]; l++) {
+          col = coloring->columns[k][l]; /* local column (in global index!) of the matrix we are probing for */
+          w3_array[col] += 1.0/dx;
+        } 
+      } else { /* htype == 'ds' */
+        vscale_array -= cstart; /* shift pointer so global index can be used */
+        for (l=0; l<ncolumns[k]; l++) {
+          col = coloring->columns[k][l]; /* local column (in global index!) of the matrix we are probing for */
+          w3_array[col] += 1.0/vscale_array[col];
+        }
+        vscale_array += cstart;
       }
-      vscale_array += cstart;
-    }
-    if (ctype == IS_COLORING_GLOBAL) w3_array += cstart;
-    ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
+      if (ctype == IS_COLORING_GLOBAL) w3_array += cstart;
+      ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
 
-    /*
-      (3-2) Evaluate function at w3 = x1 + dx (here dx is a vector of perturbations)
+      /*
+       (3-2) Evaluate function at w3 = x1 + dx (here dx is a vector of perturbations)
                            w2 = F(x1 + dx) - F(x1)
-    */
-    ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
-    ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
-    ierr = VecAXPY(w2,-1.0,w1);CHKERRQ(ierr);
+       */
+      ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
+      ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
+      ierr = VecAXPY(w2,-1.0,w1);CHKERRQ(ierr);
 
-    /* 
-     (3-3) Loop over rows of vector, putting results into Jacobian matrix 
-    */
-    nrows_k = nrows[k];
-    ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
-    if (coloring->htype[0] == 'w') {
-      for (l=0; l<nrows_k; l++) { 
-        row                     = Jentry[nz].row;   /* local row index */
-        *(Jentry[nz++].valaddr) = y[row]*dx;
+      /* 
+       (3-3) Loop over rows of vector, putting results into Jacobian matrix 
+       */
+      nrows_k = nrows[k];
+      ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
+      if (coloring->htype[0] == 'w') {
+        for (l=0; l<nrows_k; l++) { 
+          row                     = Jentry[nz].row;   /* local row index */
+          *(Jentry[nz++].valaddr) = y[row]*dx;
+        }
+      } else { /* htype == 'ds' */
+        for (l=0; l<nrows_k; l++) { 
+          row                   = Jentry[nz].row;   /* local row index */
+          *(Jentry[nz].valaddr) = y[row]*vscale_array[Jentry[nz].col];
+          nz++;
+        }
       }
-    } else { /* htype == 'ds' */
-      for (l=0; l<nrows_k; l++) { 
-        row                   = Jentry[nz].row;   /* local row index */
-        *(Jentry[nz].valaddr) = y[row]*vscale_array[Jentry[nz].col];
-        nz++;
-      }
-    }
-    ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
-  } 
+      ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
+    } 
+  }
+
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (vscale) {
     ierr = VecRestoreArray(vscale,&vscale_array);CHKERRQ(ierr);
   }
-
   coloring->currentcolor = -1;
   PetscFunctionReturn(0);
 }
@@ -594,6 +582,9 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   if (ctype == IS_COLORING_GHOSTED) {
     ierr = ISLocalToGlobalMappingRestoreIndices(map,&ltog);CHKERRQ(ierr);
   }
+#if defined(PETSC_USE_INFO)
+  ierr = PetscInfo3(c,"ncolors %D, brows %D and bcols %D are used.\n",c->ncolors,c->brows,c->bcols);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
