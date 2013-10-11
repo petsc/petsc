@@ -102,7 +102,7 @@ PETSC_STATIC_INLINE PetscInt GetTriEdge_Static(PetscInt o, PetscInt r) {
 
 /* Return triangle subface for orientation o, if it is r for o == 0 */
 PETSC_STATIC_INLINE PetscInt GetTriSubface_Static(PetscInt o, PetscInt r) {
-  return (o < 0 ? 0-(o+r) : o+r)%3;
+  return (o < 0 ? 3-(o+r) : o+r)%3;
 }
 
 /* Return quad edge for orientation o, if it is r for o == 0 */
@@ -112,7 +112,7 @@ PETSC_STATIC_INLINE PetscInt GetQuadEdge_Static(PetscInt o, PetscInt r) {
 
 /* Return quad subface for orientation o, if it is r for o == 0 */
 PETSC_STATIC_INLINE PetscInt GetQuadSubface_Static(PetscInt o, PetscInt r) {
-  return (o < 0 ? 0-(o+r) : o+r)%4;
+  return (o < 0 ? 4-(o+r) : o+r)%4;
 }
 
 #undef __FUNCT__
