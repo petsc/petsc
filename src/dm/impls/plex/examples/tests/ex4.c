@@ -553,6 +553,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (refinementUniform) {
       ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "orig_");CHKERRQ(ierr);
       ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+      ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
       ierr = DMPlexSetRefinementUniform(*dm, refinementUniform);CHKERRQ(ierr);
       ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
       if (refinedMesh) {
