@@ -323,15 +323,9 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                                                                 'requires': ['opencl']},
                                                                {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -petscspace_order 1 -petscfe_type opencl -petscfe_num_blocks 2 -petscfe_num_batches 2 -dm_plex_print_fem 1 -dm_plex_print_tol 1.0e-06',
                                                                 'requires': ['opencl']},
-                                                               # 2D Laplacian Parallel Refinement 36-38
-                                                               {'numProcs': 2, 'args': '-dm_view -interpolate -refinement_limit 0.0625 -petscspace_order 1 -refinement_uniform -compute_function -batch -gpu -gpu_batches 2',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 1 1 laplacian src/snes/examples/tutorials/ex52.h',
-                                                                'source': ['src/snes/examples/tutorials/ex52_integrateElement.cu'], 'requires': ['cuda']},
-                                                               {'numProcs': 2, 'args': '-dm_view -interpolate -refinement_limit 0.0625 -petscspace_order 1 -refinement_uniform -compute_function -batch -gpu -gpu_batches 2',
-                                                                'requires': ['opencl']},
-                                                               {'numProcs': 2, 'args': '-dm_view -interpolate -refinement_limit 0.0625 -petscspace_order 1 -refinement_uniform -refinement_rounds 3 -compute_function -batch -gpu -gpu_batches 2',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 1 1 laplacian src/snes/examples/tutorials/ex52.h',
-                                                                'source': ['src/snes/examples/tutorials/ex52_integrateElement.cu'], 'requires': ['cuda']},
+                                                               # 2D Laplacian Parallel Refinement 36-37
+                                                               {'numProcs': 2, 'args': '-dm_view -interpolate -refinement_limit 0.0625 -petscspace_order 1 -refinement_uniform -compute_function -batch -gpu -gpu_batches 2', 'requires': ['opencl']},
+                                                               {'numProcs': 2, 'args': '-dm_view -interpolate -refinement_limit 0.0625 -petscspace_order 1 -refinement_uniform -refinement_rounds 3 -compute_function -batch -gpu -gpu_batches 2', 'requires': ['opencl']},
                                                                ],
                         'src/snes/examples/tutorials/ex62':   [# 2D serial P1 tests 0-3
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
@@ -343,8 +337,7 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
 
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
                                                                # Parallel tests 6-17
-                                                               {'numProcs': 2, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex62.h'},
+                                                               {'numProcs': 2, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1'},
                                                                {'numProcs': 3, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1'},
                                                                {'numProcs': 5, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1'},
                                                                {'numProcs': 2, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1'},
@@ -365,15 +358,13 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                                                                {'numProcs': 2, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view'},
                                                                {'numProcs': 3, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_converged_reason -snes_view'},
                                                                {'numProcs': 5, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_converged_reason -snes_view'},
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex62.h'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view'},
                                                                {'numProcs': 2, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view'},
                                                                {'numProcs': 3, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_converged_reason -snes_view'},
                                                                {'numProcs': 5, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_converged_reason -snes_view'},
                                                                # Stokes preconditioners 30-36
                                                                #   Jacobi
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_gmres_restart 100 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex62.h'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_gmres_restart 100 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
                                                                #  Block diagonal \begin{pmatrix} A & 0 \\ 0 & I \end{pmatrix}
                                                                {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
                                                                #  Block triangular \begin{pmatrix} A & B \\ 0 & I \end{pmatrix}
@@ -406,16 +397,11 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                                                                #  Full Schur complement \begin{pmatrix} A & B \\ B^T & S \end{pmatrix}
                                                                {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -jacobian_mf -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
                                                                # 3D serial P1 tests 43-45
-                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 3 1 3 1 laplacian 3 1 1 1 gradient src/snes/examples/tutorials/ex62.h'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
                                                                ],
-
-                        'src/snes/examples/tutorials/ex67':   [{'numProcs': 1, 'args': '-dm_view -snes_monitor -ksp_monitor -snes_view',
-                                                                'setup': 'bin/pythonscripts/PetscGenerateFEMQuadratureTensorProduct.py 2 1 2 1 laplacian 2 0 1 1 gradient src/snes/examples/tutorials/ex67.h'},
-                                                               {'numProcs': 2, 'args': '-dm_view -snes_monitor -ksp_monitor -snes_view'}],
                         'src/snes/examples/tutorials/ex72':   [# 2D serial P1 tests 0-1
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -show_initial -dm_plex_print_fem 1 -show_jacobian',
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadratureTensorProduct.py 2 1 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex72.h'},
