@@ -34,7 +34,7 @@ all: chk_makej
 	 fi
 	@egrep -i "( error | error: |no such file or directory)" ${PETSC_ARCH}/conf/make.log | tee ${PETSC_ARCH}/conf/error.log > /dev/null
 	@if test -s ${PETSC_ARCH}/conf/error.log; then \
-           printf ${PETSC_TEXT_HILIGHT}"**************************ERROR************************************\n" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
+           printf ${PETSC_TEXT_HILIGHT}"**************************ERROR*************************************\n" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
            echo "  Error during compile, check ${PETSC_ARCH}/conf/make.log" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
            echo "  Send it and ${PETSC_ARCH}/conf/configure.log to petsc-maint@mcs.anl.gov" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log;\
            printf "********************************************************************"${PETSC_TEXT_NORMAL}"\n" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log;\
