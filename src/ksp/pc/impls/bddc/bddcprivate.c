@@ -187,7 +187,6 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   Vec                    vec1_C,vec2_C,vec1_V,vec2_V;
   /* additional working stuff */
   IS                     is_aux;
-  ISLocalToGlobalMapping BtoNmap;
   PetscScalar            *coarse_submat_vals; /* TODO: use a PETSc matrix */
   const PetscScalar      *array,*row_cmat_values;
   const PetscInt         *row_cmat_indices,*idx_R_local;
@@ -219,9 +218,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
 
   /* vertices in boundary numbering */
   ierr = PetscMalloc(n_vertices*sizeof(PetscInt),&idx_V_B);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreateIS(pcis->is_B_local,&BtoNmap);CHKERRQ(ierr);
-  ierr = ISGlobalToLocalMappingApply(BtoNmap,IS_GTOLM_DROP,n_vertices,vertices,&i,idx_V_B);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&BtoNmap);CHKERRQ(ierr);
+  ierr = ISGlobalToLocalMappingApply(pcbddc->BtoNmap,IS_GTOLM_DROP,n_vertices,vertices,&i,idx_V_B);CHKERRQ(ierr);
   if (i != n_vertices) {
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Error in boundary numbering for BDDC vertices! %d != %d\n",n_vertices,i);
   }
@@ -1336,7 +1333,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   PetscBool         boolforchange,qr_needed;
   PetscBT           touched,change_basis,qr_needed_idx;
   /* auxiliary stuff */
-  PetscInt          *nnz,*is_indices,*local_to_B;
+  PetscInt          *nnz,*is_indices,*aux_primal_numbering_B;
   /* some quantities */
   PetscInt          n_vertices,total_primal_vertices,valid_constraints;
   PetscInt          size_of_constraint,max_size_of_constraint,max_constraints,temp_constraints;
@@ -1424,12 +1421,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   ierr = PetscMalloc(total_counts*sizeof(PetscScalar),&temp_quadrature_constraint);CHKERRQ(ierr);
   ierr = PetscMalloc(total_counts*sizeof(PetscInt),&temp_indices_to_constraint);CHKERRQ(ierr);
   ierr = PetscMalloc(total_counts*sizeof(PetscInt),&temp_indices_to_constraint_B);CHKERRQ(ierr);
-  /* local to boundary numbering */
-  ierr = PetscMalloc(pcis->n*sizeof(PetscInt),&local_to_B);CHKERRQ(ierr);
-  ierr = ISGetIndices(pcis->is_B_local,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-  for (i=0;i<pcis->n;i++) local_to_B[i]=-1;
-  for (i=0;i<pcis->n_B;i++) local_to_B[is_indices[i]]=i;
-  ierr = ISRestoreIndices(pcis->is_B_local,(const PetscInt**)&is_indices);CHKERRQ(ierr);
   /* get local part of global near null space vectors */
   ierr = PetscMalloc(nnsp_size*sizeof(Vec),&localnearnullsp);CHKERRQ(ierr);
   for (k=0;k<nnsp_size;k++) {
@@ -1503,9 +1494,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   if (ISForVertices) {
     ierr = ISGetIndices(ISForVertices,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     if (nnsp_has_cnst) { /* consider all vertices */
+      ierr = PetscMemcpy(&temp_indices_to_constraint[temp_indices[total_counts]],is_indices,n_vertices*sizeof(PetscInt));CHKERRQ(ierr);
       for (i=0;i<n_vertices;i++) {
-        temp_indices_to_constraint[temp_indices[total_counts]]=is_indices[i];
-        temp_indices_to_constraint_B[temp_indices[total_counts]]=local_to_B[is_indices[i]];
         temp_quadrature_constraint[temp_indices[total_counts]]=1.0;
         temp_indices[total_counts+1]=temp_indices[total_counts]+1;
         total_counts++;
@@ -1519,7 +1509,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           ierr = VecGetArrayRead(localnearnullsp[k],(const PetscScalar**)&array);CHKERRQ(ierr);
           if (PetscAbsScalar(array[is_indices[i]])>0.0) {
             temp_indices_to_constraint[temp_indices[total_counts]]=is_indices[i];
-            temp_indices_to_constraint_B[temp_indices[total_counts]]=local_to_B[is_indices[i]];
             temp_quadrature_constraint[temp_indices[total_counts]]=1.0;
             temp_indices[total_counts+1]=temp_indices[total_counts]+1;
             total_counts++;
@@ -1553,9 +1542,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       PetscScalar quad_value;
       temp_constraints++;
       quad_value = (PetscScalar)(1.0/PetscSqrtReal((PetscReal)size_of_constraint));
+      ierr = PetscMemcpy(&temp_indices_to_constraint[temp_indices[total_counts]],is_indices,size_of_constraint*sizeof(PetscInt));CHKERRQ(ierr);
       for (j=0;j<size_of_constraint;j++) {
-        temp_indices_to_constraint[temp_indices[total_counts]+j]=is_indices[j];
-        temp_indices_to_constraint_B[temp_indices[total_counts]+j]=local_to_B[is_indices[j]];
         temp_quadrature_constraint[temp_indices[total_counts]+j]=quad_value;
       }
       temp_indices[total_counts+1]=temp_indices[total_counts]+size_of_constraint;  /* store new starting point */
@@ -1564,9 +1552,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     for (k=0;k<nnsp_size;k++) {
       PetscReal real_value;
       ierr = VecGetArrayRead(localnearnullsp[k],(const PetscScalar**)&array);CHKERRQ(ierr);
+      ierr = PetscMemcpy(&temp_indices_to_constraint[temp_indices[total_counts]],is_indices,size_of_constraint*sizeof(PetscInt));CHKERRQ(ierr);
       for (j=0;j<size_of_constraint;j++) {
-        temp_indices_to_constraint[temp_indices[total_counts]+j]=is_indices[j];
-        temp_indices_to_constraint_B[temp_indices[total_counts]+j]=local_to_B[is_indices[j]];
         temp_quadrature_constraint[temp_indices[total_counts]+j]=array[is_indices[j]];
       }
       ierr = VecRestoreArrayRead(localnearnullsp[k],(const PetscScalar**)&array);CHKERRQ(ierr);
@@ -1674,6 +1661,11 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   }
   ierr = PetscFree(ISForEdges);CHKERRQ(ierr);
   ierr = ISDestroy(&ISForVertices);CHKERRQ(ierr);
+  /* map temp_indices_to_constraint in boundary numbering */
+  ierr = ISGlobalToLocalMappingApply(pcbddc->BtoNmap,IS_GTOLM_DROP,temp_indices[total_counts],temp_indices_to_constraint,&i,temp_indices_to_constraint_B);CHKERRQ(ierr);
+  if (i != temp_indices[total_counts]) {
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Error in boundary numbering for constraints indices %d != %d\n",temp_indices[total_counts],i);
+  }
 
   /* free workspace */
   if (!pcbddc->use_nnsp_true && !skip_lapack) {
@@ -1909,9 +1901,15 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     }
     /* array to store whether a node is primal or not */
     ierr = PetscBTCreate(pcis->n_B,&is_primal);CHKERRQ(ierr);
-    for (i=0;i<total_primal_vertices;i++) {
-      ierr = PetscBTSet(is_primal,local_to_B[aux_primal_numbering[i]]);CHKERRQ(ierr);
+    ierr = PetscMalloc(total_primal_vertices*sizeof(PetscInt),&aux_primal_numbering_B);CHKERRQ(ierr);
+    ierr = ISGlobalToLocalMappingApply(pcbddc->BtoNmap,IS_GTOLM_DROP,total_primal_vertices,aux_primal_numbering,&i,aux_primal_numbering_B);CHKERRQ(ierr);
+    if (i != total_primal_vertices) {
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Error in boundary numbering for BDDC vertices! %d != %d\n",total_primal_vertices,i);
     }
+    for (i=0;i<total_primal_vertices;i++) {
+      ierr = PetscBTSet(is_primal,aux_primal_numbering_B[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(aux_primal_numbering_B);CHKERRQ(ierr);
 
     /* loop on constraints and see whether or not they need a change of basis and compute it */
     /* -> using implicit ordering contained in temp_indices data */
@@ -2129,7 +2127,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   ierr = PetscBTDestroy(&change_basis);CHKERRQ(ierr);
   ierr = PetscFree(temp_indices_to_constraint);CHKERRQ(ierr);
   ierr = PetscFree(temp_indices_to_constraint_B);CHKERRQ(ierr);
-  ierr = PetscFree(local_to_B);CHKERRQ(ierr);
   ierr = PetscFree(temp_quadrature_constraint);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

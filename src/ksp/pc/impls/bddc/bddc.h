@@ -36,6 +36,7 @@ typedef struct {
   KSP           ksp_D;
   /* Quantities defining constraining details (local) of the preconditioner */
   /* These quantities define the preconditioner itself */
+  ISLocalToGlobalMapping BtoNmap;
   PetscInt      n_constraints;
   PetscInt      n_vertices;
   Mat           ConstraintMatrix;

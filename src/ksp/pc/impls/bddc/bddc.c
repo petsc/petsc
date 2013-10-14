@@ -7,7 +7,6 @@
 
    Solvers
    - Add support for reuse fill and cholecky factor for coarse solver (similar to local solvers)
-   - reuse already allocated coarse matrix if possible
    - Propagate ksp prefixes for solvers to mat objects? 
    - Propagate nearnullspace info among levels
 
@@ -19,7 +18,6 @@
 
    Debugging output
    - Better management of verbosity levels of debugging output
-   - Crashes on some architecture -> call SynchronizedAllow before every SynchronizedPrintf
 
    Build
    - make runexe59
@@ -36,9 +34,8 @@
    - Move FETIDP code to its own classes
 
    MATIS related operations contained in BDDC code
-   - Add MAT_REUSE in MatConvert_IS_AIJ
    - Provide general case for subassembling
-   - Preallocation routines in MatConvert_IS_AIJ
+   - Preallocation routines in MatISGetMPIAXAIJ
 
 */
 
@@ -857,6 +854,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     PC_IS* pcis = (PC_IS*)pc->data;
     pcis->computesolvers = PETSC_FALSE;
     ierr = PCISSetUp(pc);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreateIS(pcis->is_B_local,&pcbddc->BtoNmap);CHKERRQ(ierr);
   }
 
   /* Analyze interface */
@@ -1021,6 +1019,7 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   /* free global vectors needed in presolve */
   ierr = VecDestroy(&pcbddc->temp_solution);CHKERRQ(ierr);
   ierr = VecDestroy(&pcbddc->original_rhs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&pcbddc->BtoNmap);CHKERRQ(ierr);
   /* remove functions */
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesLocalIS_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetCoarseningRatio_C",NULL);CHKERRQ(ierr);
@@ -1378,6 +1377,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->use_nnsp_true       = PETSC_FALSE; /* not yet exposed */
   pcbddc->dbg_flag            = 0;
 
+  pcbddc->BtoNmap                    = 0;
   pcbddc->local_primal_size          = 0;
   pcbddc->primal_indices_local_idxs  = 0;
   pcbddc->recompute_topography       = PETSC_FALSE;
