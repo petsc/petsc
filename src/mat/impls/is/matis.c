@@ -180,6 +180,10 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmappi
   ierr        = PetscObjectReference((PetscObject)rmapping);CHKERRQ(ierr);
   ierr        = ISLocalToGlobalMappingDestroy(&is->mapping);CHKERRQ(ierr);
   is->mapping = rmapping;
+/*
+  ierr = PetscLayoutSetISLocalToGlobalMapping(A->rmap,rmapping);CHKERRQ(ierr);
+  ierr = PetscLayoutSetISLocalToGlobalMapping(A->cmap,cmapping);CHKERRQ(ierr);
+*/
 
   /* Create the local matrix A */
   ierr = ISLocalToGlobalMappingGetSize(rmapping,&n);CHKERRQ(ierr);
