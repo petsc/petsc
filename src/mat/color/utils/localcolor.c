@@ -94,7 +94,7 @@ PETSC_EXTERN PetscErrorCode MatColoringLocalColor(MatColoring mc,PetscSF etoc,Pe
 
   /* alternate between rows and columns to get the distance k minimum coloring */
   for (i=0;i<ncols;i++) {
-    if (color[sidx[i]] != IS_COLORING_MAX) continue;
+    if (color[sidx[i]] == IS_COLORING_MAX) {
     collist = -1;
     rowlist = -1;
     for (j=0;j<totalcolors;j++) colormask[j] = PETSC_FALSE;
@@ -144,8 +144,7 @@ PETSC_EXTERN PetscErrorCode MatColoringLocalColor(MatColoring mc,PetscSF etoc,Pe
               }
             }
           }
-          /* rows aren't counted in even-distance graphs as one may have separate row and column spaces */
-          if (dist % 2 == 0) {if (color[ll_idx[rowlist]] != IS_COLORING_MAX) colormask[color[ll_idx[rowlist]]] = PETSC_TRUE;}
+          if (color[ll_idx[rowlist]] != IS_COLORING_MAX) colormask[color[ll_idx[rowlist]]] = PETSC_TRUE;
           rowseen[ll_idx[rowlist]] = PETSC_FALSE;
           swp = rowlist;
           rowlist = ll_ptr[rowlist];
@@ -165,6 +164,8 @@ PETSC_EXTERN PetscErrorCode MatColoringLocalColor(MatColoring mc,PetscSF etoc,Pe
       ierr = PetscFree(colormask);CHKERRQ(ierr);
       ierr = PetscMalloc(sizeof(PetscBool)*totalcolors,&colormask);CHKERRQ(ierr);
     }
+    }
+    PetscPrintf(PETSC_COMM_SELF,"%d: %d\n",sidx[i],color[sidx[i]]);
   }
 
   ierr = PetscFree(rowseen);CHKERRQ(ierr);
@@ -177,6 +178,221 @@ PETSC_EXTERN PetscErrorCode MatColoringLocalColor(MatColoring mc,PetscSF etoc,Pe
   ierr = PetscFree(sidx);CHKERRQ(ierr);
   ierr = PetscFree(swts);CHKERRQ(ierr);
   ierr = PetscFree(colormask);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatColoringDiscoverBoundary"
+PETSC_EXTERN PetscErrorCode MatColoringDiscoverBoundary(MatColoring mc,PetscSF etoc,PetscSF etor,PetscInt *nboundary,PetscInt **boundary)
+{
+  PetscInt       nrows,ncols,ncolentries,nrowentries,idx,bidx,neighoffset;
+  PetscInt          i,j,k;
+  PetscInt          dist = mc->dist;
+  PetscBool         onBoundary;
+  PetscErrorCode    ierr;
+  PetscBool         *rowseen,*colseen;
+  const PetscInt    *rowdegrees;
+  PetscInt          *rowoffsets;
+  const PetscInt    *coldegrees;
+  PetscInt          *coloffsets;
+  PetscInt          offset;
+  PetscInt          *ll_ptr;
+  PetscInt          *ll_idx;
+  PetscInt          unused;
+  PetscInt          rowlist,collist;
+  PetscInt          swp;
+  PetscMPIInt       rank;
+  const PetscSFNode *colentries,*rowentries;
+
+  PetscFunctionBegin;
+  *nboundary = 0;
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mc),&rank);CHKERRQ(ierr);
+
+  ierr = PetscSFGetGraph(etoc,&ncols,&ncolentries,NULL,&colentries);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(etor,&nrows,&nrowentries,NULL,&rowentries);CHKERRQ(ierr);
+
+  ierr = PetscMalloc(sizeof(PetscBool)*nrows,&rowseen);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscBool)*ncols,&colseen);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscInt)*ncols,&coloffsets);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscInt)*nrows,&rowoffsets);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscInt)*ncols,&ll_ptr);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscInt)*ncols,&ll_idx);CHKERRQ(ierr);
+
+  ierr = PetscSFComputeDegreeBegin(etoc,&rowdegrees);CHKERRQ(ierr);
+  ierr = PetscSFComputeDegreeEnd(etoc,&rowdegrees);CHKERRQ(ierr);
+
+  ierr = PetscSFComputeDegreeBegin(etor,&coldegrees);CHKERRQ(ierr);
+  ierr = PetscSFComputeDegreeEnd(etor,&coldegrees);CHKERRQ(ierr);
+
+  /* set up the "unused" linked list */
+  unused = 0;
+  ll_ptr[ncols-1] = -1;
+  for (i=0;i<ncols-1;i++) {
+    ll_ptr[i] = i+1;
+  }
+
+  /* initialize the offsets */
+  offset=0;
+  for (i=0;i<ncols;i++) {
+    coloffsets[i] = offset;
+    offset+=coldegrees[i];
+    colseen[i] = PETSC_FALSE;
+  }
+  offset=0;
+  for (i=0;i<nrows;i++) {
+    rowoffsets[i] = offset;
+    offset+=rowdegrees[i];
+    rowseen[i] = PETSC_FALSE;
+  }
+
+  /* count the number of boundary nodes */
+  for (i=0;i<ncols;i++) {
+    onBoundary = PETSC_FALSE;
+    collist = -1;
+    rowlist = -1;
+    swp = unused;
+    unused = ll_ptr[unused];
+    ll_ptr[swp] = collist;
+    ll_idx[swp] = i;
+    collist = swp;
+    colseen[i] = PETSC_TRUE;
+    for (k=0;k<=dist;k++) {
+      if (k % 2 == 0) {
+        while (collist >= 0) {
+          if (k != dist && ll_idx[collist] > 0) {
+            for (j=0;j<coldegrees[ll_idx[collist]];j++) {
+              neighoffset = coloffsets[ll_idx[collist]]+j;
+              idx = colentries[neighoffset].index;
+              if (colentries[neighoffset].rank == rank) {
+                if (!rowseen[idx]) {
+                  swp = unused;
+                  unused = ll_ptr[unused];
+                  ll_ptr[swp] = rowlist;
+                  rowlist = swp;
+                  ll_idx[swp] = idx;
+                  rowseen[idx] = PETSC_TRUE;
+                }
+              } else {
+                onBoundary = PETSC_TRUE;
+              }
+            }
+          }
+          colseen[ll_idx[collist]] = PETSC_FALSE;
+          swp = collist;
+          collist = ll_ptr[collist];
+          ll_ptr[swp] = unused;
+          unused = swp;
+        }
+      } else {
+        while (rowlist >= 0) {
+          if (k != dist) {
+            for (j=0;j<rowdegrees[ll_idx[rowlist]];j++) {
+              neighoffset = rowoffsets[ll_idx[rowlist]]+j;
+              if (rowentries[neighoffset].rank == rank) {
+                idx = rowentries[neighoffset].index;
+                if (!colseen[idx]) {
+                  swp = unused;
+                  unused = ll_ptr[unused];
+                  ll_ptr[swp] = collist;
+                  ll_idx[swp] = idx;
+                  colseen[idx] = PETSC_TRUE;
+                  collist = swp;
+                }
+              } else {
+                onBoundary = PETSC_TRUE;
+              }
+            }
+          }
+          rowseen[ll_idx[rowlist]] = PETSC_FALSE;
+          swp = rowlist;
+          rowlist = ll_ptr[rowlist];
+          ll_ptr[swp] = unused;
+          unused = swp;
+        }
+      }
+    }
+    if (onBoundary) {(*nboundary)++;}
+  }
+  ierr = PetscMalloc(sizeof(PetscInt)*(*nboundary),boundary);CHKERRQ(ierr);
+
+  /* set the boundary nodes */
+  bidx=0;
+  /* count the number of boundary nodes */
+  for (i=0;i<ncols;i++) {
+    onBoundary = PETSC_FALSE;
+    collist = -1;
+    rowlist = -1;
+    swp = unused;
+    unused = ll_ptr[unused];
+    ll_ptr[swp] = collist;
+    ll_idx[swp] = i;
+    collist = swp;
+    colseen[i] = PETSC_TRUE;
+    for (k=0;k<=dist;k++) {
+      if (k % 2 == 0) {
+        while (collist >= 0) {
+          if (k != dist && ll_idx[collist] > 0) {
+            for (j=0;j<coldegrees[ll_idx[collist]];j++) {
+              neighoffset = coloffsets[ll_idx[collist]]+j;
+              idx = colentries[neighoffset].index;
+              if (colentries[neighoffset].rank == rank) {
+                if (!rowseen[idx]) {
+                  swp = unused;
+                  unused = ll_ptr[unused];
+                  ll_ptr[swp] = rowlist;
+                  rowlist = swp;
+                  ll_idx[swp] = idx;
+                  rowseen[idx] = PETSC_TRUE;
+                }
+              } else {
+                onBoundary = PETSC_TRUE;
+              }
+            }
+          }
+          colseen[ll_idx[collist]] = PETSC_FALSE;
+          swp = collist;
+          collist = ll_ptr[collist];
+          ll_ptr[swp] = unused;
+          unused = swp;
+        }
+      } else {
+        while (rowlist >= 0) {
+          if (k != dist) {
+            for (j=0;j<rowdegrees[ll_idx[rowlist]];j++) {
+              neighoffset = rowoffsets[ll_idx[rowlist]]+j;
+              if (rowentries[neighoffset].rank == rank) {
+                idx = rowentries[neighoffset].index;
+                if (!colseen[idx]) {
+                  swp = unused;
+                  unused = ll_ptr[unused];
+                  ll_ptr[swp] = collist;
+                  ll_idx[swp] = idx;
+                  colseen[idx] = PETSC_TRUE;
+                  collist = swp;
+                }
+              } else {
+                onBoundary = PETSC_TRUE;
+              }
+            }
+          }
+          rowseen[ll_idx[rowlist]] = PETSC_FALSE;
+          swp = rowlist;
+          rowlist = ll_ptr[rowlist];
+          ll_ptr[swp] = unused;
+          unused = swp;
+        }
+      }
+    }
+    if (onBoundary) {(*boundary)[bidx] = i; bidx++;}
+  }
+
+  ierr = PetscFree(rowseen);CHKERRQ(ierr);
+  ierr = PetscFree(colseen);CHKERRQ(ierr);
+  ierr = PetscFree(coloffsets);CHKERRQ(ierr);
+  ierr = PetscFree(rowoffsets);CHKERRQ(ierr);
+  ierr = PetscFree(ll_ptr);CHKERRQ(ierr);
+  ierr = PetscFree(ll_idx);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

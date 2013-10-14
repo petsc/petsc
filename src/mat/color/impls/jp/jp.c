@@ -1,7 +1,8 @@
 #include <petsc-private/matimpl.h>      /*I "petscmat.h"  I*/
 #include <petscsf.h>
 
-
+PETSC_EXTERN PetscErrorCode MatColoringLocalColor(MatColoring,PetscSF,PetscSF,PetscReal *,ISColoringValue *,ISColoringValue *);
+PETSC_EXTERN PetscErrorCode MatColoringDiscoverBoundary(MatColoring,PetscSF,PetscSF,PetscInt *,PetscInt**);
 
 typedef struct {
   PetscSF         etoc;
@@ -26,6 +27,7 @@ typedef struct {
   ISColoringValue *color;
   ISColoringValue *mincolor;
 } MC_JP;
+
 
 #undef __FUNCT__
 #define __FUNCT__ "JPCreateWeights_Private"
@@ -433,39 +435,47 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscol
   PetscInt        i,nadded,nadded_total,ncolstotal,ncols;
   PetscInt        nr,nc;
   PetscInt        maxcolor_local,maxcolor_global;
+  PetscInt        nboundary,*boundary,totalboundary;
 
   PetscFunctionBegin;
   ierr = JPInitialize_Private(mc);CHKERRQ(ierr);
   ierr = JPCreateWeights_Private(mc);CHKERRQ(ierr);
   ierr = MatGetSize(mc->mat,NULL,&ncolstotal);CHKERRQ(ierr);
   ierr = MatGetLocalSize(mc->mat,NULL,&ncols);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscBool)*ncols,&boundary);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(jp->etor,&nr,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(jp->etoc,&nc,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = MatColoringDiscoverBoundary(mc,jp->etoc,jp->etor,&nboundary,&boundary);CHKERRQ(ierr);
+  totalboundary=0;
+  ierr = MPI_Allreduce(&nboundary,&totalboundary,1,MPI_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"total boundary: %d\n",totalboundary);CHKERRQ(ierr);
+
   for (i=0;i<nc;i++) {
-    if (jp->color[i] == IS_COLORING_MAX) {
-      jp->wtsinit[i] = jp->wts[i];
-    } else {
-      jp->wtsinit[i] = 0.;
-    }
+    jp->wtsinit[i] = 0.;
     jp->state[i]=0;
     jp->wtsspread[i]=0.;
     jp->statespread[i]=0;
   }
+  for (i=0;i<nboundary;i++) {
+    jp->wtsinit[boundary[i]] = jp->wts[boundary[i]];
+  }
+
   nadded=0;
   nadded_total=0;
-  while (nadded_total < ncolstotal) {
+  while (nadded_total < totalboundary) {
+    PetscPrintf(PETSC_COMM_SELF,"%d added, %d\n",nadded_total,totalboundary);CHKERRQ(ierr);
     ierr = JPGreatestWeight_Private(mc,jp->wtsinit,jp->wtsspread);CHKERRQ(ierr);
     ierr = JPMinColor_Private(mc,jp->color,jp->mincolor);CHKERRQ(ierr);
-    for (i=0;i<nc;i++) {
-      if (jp->wtsinit[i] >= jp->wtsspread[i] && jp->wtsinit[i] > 0.) {
+    for (i=0;i<nboundary;i++) {
+      if (jp->wtsinit[boundary[i]] >= jp->wtsspread[boundary[i]] && jp->wtsinit[boundary[i]] > 0.) {
         /* pick this one */
-        if (mc->maxcolors > jp->mincolor[i] || mc->maxcolors==0) {
-          jp->color[i] = jp->mincolor[i];
+        if (mc->maxcolors > jp->mincolor[boundary[i]] || mc->maxcolors==0) {
+          jp->color[boundary[i]] = jp->mincolor[boundary[i]];
         } else {
-          jp->color[i] = mc->maxcolors;
+          jp->color[boundary[i]] = mc->maxcolors;
         }
-        if (jp->color[i] > jp->maxcolor) jp->maxcolor = jp->color[i];
-        jp->wtsinit[i] = 0.;
+        if (jp->color[boundary[i]] > jp->maxcolor) jp->maxcolor = jp->color[boundary[i]];
+        jp->wtsinit[boundary[i]] = 0.;
         nadded++;
       }
     }
@@ -475,6 +485,12 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscol
     ierr = MPI_Allreduce(&maxcolor_local,&maxcolor_global,1,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
     jp->maxcolor = maxcolor_global;
   }
+
+  ierr = MatColoringLocalColor(mc,jp->etoc,jp->etor,jp->wts,jp->color,&jp->maxcolor);CHKERRQ(ierr);
+  maxcolor_local = (PetscInt)jp->maxcolor;
+  maxcolor_global = 0;
+  ierr = MPI_Allreduce(&maxcolor_local,&maxcolor_global,1,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+  jp->maxcolor = maxcolor_global;
   ierr = ISColoringCreate(PetscObjectComm((PetscObject)mc),jp->maxcolor+1,ncols,jp->color,iscoloring);CHKERRQ(ierr);
   ierr = JPTearDown_Private(mc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
