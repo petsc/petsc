@@ -20,27 +20,7 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
   const PetscInt ncolors=coloring->ncolors,*ncolumns=coloring->ncolumns,*nrows=coloring->nrows;
   PetscInt       bs=J->rmap->bs;
 
-  PetscFunctionBegin;
-  /* create vscale for storing dx */
-  if (!vscale) {
-    if (ctype == IS_COLORING_GLOBAL && coloring->htype[0] == 'd') {
-      /* contain the "diagonal" on processor scalings followed by the off processor* - garray must be non-bloced! */
-      Mat_MPIBAIJ    *baij=(Mat_MPIBAIJ*)J->data;
-      PetscInt       *garray;
-      ierr = PetscMalloc(baij->B->cmap->n*sizeof(PetscInt),&garray);CHKERRQ(ierr);
-      for (i=0; i<baij->B->cmap->n/bs; i++) {
-        for (j=0; j<bs; j++) {
-          garray[i*bs+j] = bs*baij->garray[i]+j;
-        }
-      }
-      ierr = VecCreateGhost(PetscObjectComm((PetscObject)J),J->cmap->n,PETSC_DETERMINE,baij->B->cmap->n,garray,&vscale);CHKERRQ(ierr);
-      ierr = PetscFree(garray);CHKERRQ(ierr);
-    } else if (ctype == IS_COLORING_GHOSTED) {
-      ierr = VecDuplicate(x1,&vscale);CHKERRQ(ierr);
-    }
-    coloring->vscale = vscale;
-  }
-  
+  PetscFunctionBegin; 
   /* (1) Set w1 = F(x1) */
   if (!coloring->fset) {
     ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
@@ -191,17 +171,6 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   const PetscInt ncolors=coloring->ncolors,*ncolumns=coloring->ncolumns,*nrows=coloring->nrows;
   
   PetscFunctionBegin;
-  /* create vscale for storing dx */
-  if (!vscale) {
-    if (ctype == IS_COLORING_GLOBAL && coloring->htype[0] == 'd') {
-      Mat_MPIAIJ     *aij=(Mat_MPIAIJ*)J->data;
-      ierr = VecCreateGhost(PetscObjectComm((PetscObject)J),J->cmap->n,PETSC_DETERMINE,aij->B->cmap->n,aij->garray,&vscale);CHKERRQ(ierr);
-    } else if (ctype == IS_COLORING_GHOSTED) {
-      ierr = VecDuplicate(x1,&vscale);CHKERRQ(ierr);
-    }
-    coloring->vscale = vscale;
-  }
-  
   /* (1) Set w1 = F(x1) */
   if (!coloring->fset) {
     ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
@@ -297,7 +266,6 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
         ierr = VecAXPY(w2,-1.0,w1);CHKERRQ(ierr);
         ierr = VecResetArray(w2);CHKERRQ(ierr);
         dy_k += m; /* points to dy+i*nxloc */
-
       }
 
       /* 
@@ -418,17 +386,29 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&isBAIJ);CHKERRQ(ierr);
   if (isBAIJ) {
-    Mat_MPIBAIJ *aij=(Mat_MPIBAIJ*)mat->data;
+    Mat_MPIBAIJ *baij=(Mat_MPIBAIJ*)mat->data;
     Mat_SeqBAIJ *spA,*spB;
-    A = aij->A;  spA = (Mat_SeqBAIJ*)A->data; A_val = spA->a;
-    B = aij->B;  spB = (Mat_SeqBAIJ*)B->data; B_val = spB->a;
+    A = baij->A;  spA = (Mat_SeqBAIJ*)A->data; A_val = spA->a;
+    B = baij->B;  spB = (Mat_SeqBAIJ*)B->data; B_val = spB->a;
     nz = spA->nz + spB->nz; /* total nonzero entries of mat */  
-    if (!aij->colmap) {
+    if (!baij->colmap) {
       ierr = MatCreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
-      colmap = aij->colmap;
+      colmap = baij->colmap;
     }
     ierr = MatGetColumnIJ_SeqBAIJ_Color(A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&spidxA,NULL);CHKERRQ(ierr);
     ierr = MatGetColumnIJ_SeqBAIJ_Color(B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&spidxB,NULL);CHKERRQ(ierr);
+
+    if (ctype == IS_COLORING_GLOBAL && c->htype[0] == 'd') {  /* create vscale for storing dx */
+      PetscInt    *garray;
+      ierr = PetscMalloc(B->cmap->n*sizeof(PetscInt),&garray);CHKERRQ(ierr);
+      for (i=0; i<baij->B->cmap->n/bs; i++) {
+        for (j=0; j<bs; j++) {
+          garray[i*bs+j] = bs*baij->garray[i]+j;
+        }
+      }
+      ierr = VecCreateGhost(PetscObjectComm((PetscObject)mat),mat->cmap->n,PETSC_DETERMINE,B->cmap->n,garray,&c->vscale);CHKERRQ(ierr);
+      ierr = PetscFree(garray);CHKERRQ(ierr);
+    }
   } else {
     Mat_MPIAIJ *aij=(Mat_MPIAIJ*)mat->data;
     Mat_SeqAIJ *spA,*spB;
@@ -445,6 +425,10 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     ierr = MatGetColumnIJ_SeqAIJ_Color(B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&spidxB,NULL);CHKERRQ(ierr);
 
     bs = 1; /* only bs=1 is supported for non MPIBAIJ matrix */
+
+    if (ctype == IS_COLORING_GLOBAL && c->htype[0] == 'd') { /* create vscale for storing dx */
+      ierr = VecCreateGhost(PetscObjectComm((PetscObject)mat),mat->cmap->n,PETSC_DETERMINE,B->cmap->n,aij->garray,&c->vscale);CHKERRQ(ierr);
+    }
   } 
 
   m         = mat->rmap->n/bs;
