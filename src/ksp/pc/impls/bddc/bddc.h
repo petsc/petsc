@@ -39,6 +39,7 @@ typedef struct {
   ISLocalToGlobalMapping BtoNmap;
   PetscInt      n_constraints;
   PetscInt      n_vertices;
+  PetscInt      n_actual_vertices;
   Mat           ConstraintMatrix;
   PetscBool     new_primal_space;
   PetscBool     new_primal_space_local;

@@ -1379,6 +1379,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
 
   pcbddc->BtoNmap                    = 0;
   pcbddc->local_primal_size          = 0;
+  pcbddc->n_vertices                 = 0;
+  pcbddc->n_actual_vertices          = 0;
+  pcbddc->n_constraints              = 0;
   pcbddc->primal_indices_local_idxs  = 0;
   pcbddc->recompute_topography       = PETSC_FALSE;
   pcbddc->coarse_size                = 0;
