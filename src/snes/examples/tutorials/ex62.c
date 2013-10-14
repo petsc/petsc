@@ -50,13 +50,6 @@ For tensor product meshes, see SNES ex67, ex72
 #include <petscfe.h>
 #include <petscsnes.h>
 
-#ifdef PETSC_HAVE_GENERATOR
-/*------------------------------------------------------------------------------
-  This code can be generated using 'bin/pythonscripts/PetscGenerateFEMQuadrature.py dim order dim 1 laplacian dim order 1 1 gradient src/snes/examples/tutorials/ex62.h'
- -----------------------------------------------------------------------------*/
-#include "ex62.h"
-#endif
-
 #define NUM_FIELDS 2
 PetscInt spatialDim = 0;
 
