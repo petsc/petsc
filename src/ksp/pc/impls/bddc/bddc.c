@@ -900,13 +900,14 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   }
 
   /* Setup constraints and related work vectors */
+  /* reset primal space flags */
   pcbddc->new_primal_space = PETSC_FALSE;
+  pcbddc->new_primal_space_local = PETSC_FALSE;
   if (computetopography || new_nearnullspace_provided) {
+    /* It also sets the primal space flags */
     ierr = PCBDDCConstraintsSetUp(pc);CHKERRQ(ierr);
     /* Allocate needed local vectors (which depends on quantities defined during ConstraintsSetUp) */
     ierr = PCBDDCSetUpLocalWorkVectors(pc);CHKERRQ(ierr);
-    /* set flag for primal space */
-    pcbddc->new_primal_space = PETSC_TRUE;
   } 
 
   if (computesolvers || pcbddc->new_primal_space) {
@@ -1377,9 +1378,12 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->use_nnsp_true       = PETSC_FALSE; /* not yet exposed */
   pcbddc->dbg_flag            = 0;
 
+  pcbddc->local_primal_size          = 0;
+  pcbddc->primal_indices_local_idxs  = 0;
   pcbddc->recompute_topography       = PETSC_FALSE;
   pcbddc->coarse_size                = 0;
   pcbddc->new_primal_space           = PETSC_FALSE;
+  pcbddc->new_primal_space_local     = PETSC_FALSE;
   pcbddc->global_primal_indices      = 0;
   pcbddc->onearnullspace             = 0;
   pcbddc->onearnullvecs_state        = 0;

@@ -106,6 +106,7 @@ PetscErrorCode PCBDDCResetSolvers(PC pc)
   ierr = KSPDestroy(&pcbddc->ksp_R);CHKERRQ(ierr);
   ierr = KSPDestroy(&pcbddc->coarse_ksp);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
+  ierr = PetscFree(pcbddc->primal_indices_local_idxs);CHKERRQ(ierr);
   ierr = PetscFree(pcbddc->global_primal_indices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -882,7 +883,7 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
 
   PetscFunctionBegin;
   /* No need to setup local scatters if primal space is unchanged */
-  if (!pcbddc->new_primal_space) {
+  if (!pcbddc->new_primal_space_local) {
     PetscFunctionReturn(0);
   }
   /* destroy old objects */
@@ -1085,7 +1086,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
       ierr = MatDestroy(&A_RR);CHKERRQ(ierr);
       reuse = MAT_INITIAL_MATRIX; 
     } else { /* same sizes, but nonzero pattern depend on primal vertices so it can be changed */
-      if (pcbddc->new_primal_space) { /* we are not sure the matrix will have the same nonzero pattern */
+      if (pcbddc->new_primal_space_local) { /* we are not sure the matrix will have the same nonzero pattern */
         ierr = MatDestroy(&A_RR);CHKERRQ(ierr);
         reuse = MAT_INITIAL_MATRIX;
       } else { /* safe to reuse the matrix */
@@ -1333,6 +1334,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   PetscBLASInt      dummy_int_1=1,dummy_int_2=1;
   PetscScalar       dummy_scalar_1=0.0,dummy_scalar_2=0.0;
 #endif
+  /* reuse */
+  PetscInt          olocal_primal_size;
+  PetscInt          *oprimal_indices_local_idxs;
   /* change of basis */
   PetscInt          *aux_primal_numbering,*aux_primal_minloc,*global_indices;
   PetscBool         boolforchange,qr_needed;
@@ -1693,9 +1697,10 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   }
   ierr = PetscFree(localnearnullsp);CHKERRQ(ierr);
 
-  /* set quantities in pcbddc data structure */
+  /* set quantities in pcbddc data structure and store previous primal size */
   /* n_vertices defines the number of subdomain corners in the primal space */
   /* n_constraints defines the number of averages (they can be point primal dofs if change of basis is requested) */
+  olocal_primal_size = pcbddc->local_primal_size;
   pcbddc->local_primal_size = total_counts;
   pcbddc->n_vertices = n_vertices;
   pcbddc->n_constraints = pcbddc->local_primal_size-pcbddc->n_vertices;
@@ -2092,7 +2097,30 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     ierr = MatView(pcbddc->ChangeOfBasisMatrix,(PetscViewer)0);CHKERRQ(ierr);
     */
   }
-  
+
+  /* get indices in local ordering for vertices and constraints */
+  if (olocal_primal_size == pcbddc->local_primal_size) { /* if this is true, I need to check if a new primal space has been introduced */
+    ierr = PetscMalloc(olocal_primal_size*sizeof(PetscInt),&oprimal_indices_local_idxs);CHKERRQ(ierr);
+    ierr = PetscMemcpy(oprimal_indices_local_idxs,pcbddc->primal_indices_local_idxs,olocal_primal_size*sizeof(PetscInt));CHKERRQ(ierr);
+  }
+  ierr = PetscFree(aux_primal_numbering);CHKERRQ(ierr);
+  ierr = PetscMalloc(pcbddc->local_primal_size*sizeof(PetscInt),&pcbddc->primal_indices_local_idxs);CHKERRQ(ierr);
+  ierr = PCBDDCGetPrimalVerticesLocalIdx(pc,&i,&aux_primal_numbering);CHKERRQ(ierr);
+  ierr = PetscMemcpy(pcbddc->primal_indices_local_idxs,aux_primal_numbering,i*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscFree(aux_primal_numbering);CHKERRQ(ierr);
+  ierr = PCBDDCGetPrimalConstraintsLocalIdx(pc,&j,&aux_primal_numbering);CHKERRQ(ierr);
+  ierr = PetscMemcpy(&pcbddc->primal_indices_local_idxs[i],aux_primal_numbering,j*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscFree(aux_primal_numbering);CHKERRQ(ierr);
+  /* check if a new primal space has been introduced */
+  pcbddc->new_primal_space_local = PETSC_TRUE;
+  if (olocal_primal_size == pcbddc->local_primal_size) {
+    ierr = PetscMemcmp(pcbddc->primal_indices_local_idxs,oprimal_indices_local_idxs,olocal_primal_size,&pcbddc->new_primal_space_local);CHKERRQ(ierr);
+    pcbddc->new_primal_space_local = !pcbddc->new_primal_space_local;
+    ierr = PetscFree(oprimal_indices_local_idxs);CHKERRQ(ierr);
+  }
+  /* new_primal_space will be used for numbering of coarse dofs, so it should be the same across all subdomains */
+  ierr = MPI_Allreduce(&pcbddc->new_primal_space_local,&pcbddc->new_primal_space,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+ 
   /* flush dbg viewer */
   if (pcbddc->dbg_flag) {
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
@@ -2101,7 +2129,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   /* free workspace */
   ierr = PetscBTDestroy(&touched);CHKERRQ(ierr);
   ierr = PetscBTDestroy(&qr_needed_idx);CHKERRQ(ierr);
-  ierr = PetscFree(aux_primal_numbering);CHKERRQ(ierr);
   ierr = PetscFree(aux_primal_minloc);CHKERRQ(ierr);
   ierr = PetscFree(temp_indices);CHKERRQ(ierr);
   ierr = PetscBTDestroy(&change_basis);CHKERRQ(ierr);
@@ -3070,8 +3097,8 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       PetscInt ocoarse_size;
       ierr = KSPGetOperators(pcbddc->coarse_ksp,NULL,&tcoarse_mat,NULL);CHKERRQ(ierr);
       ierr = MatGetSize(tcoarse_mat,&ocoarse_size,NULL);CHKERRQ(ierr);
-      if (ocoarse_size != pcbddc->coarse_size) { /* we need to destroy the KSP */
-        ierr = KSPDestroy(&pcbddc->coarse_ksp);CHKERRQ(ierr);
+      if (ocoarse_size != pcbddc->coarse_size) { /* we need to reset the KSP */
+        ierr = KSPReset(pcbddc->coarse_ksp);CHKERRQ(ierr);
       }
     }
   }
@@ -3301,22 +3328,16 @@ PetscErrorCode PCBDDCComputePrimalNumbering(PC pc,PetscInt* coarse_size_n,PetscI
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
   PC_IS*         pcis = (PC_IS*)pc->data;
   Mat_IS*        matis = (Mat_IS*)pc->pmat->data;
-  PetscInt       i,j,coarse_size;
-  PetscInt       *local_primal_indices,*auxlocal_primal,*aux_idx;
+  PetscInt       i,coarse_size;
+  PetscInt       *local_primal_indices;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* get indices in local ordering for vertices and constraints */
-  ierr = PetscMalloc(pcbddc->local_primal_size*sizeof(PetscInt),&auxlocal_primal);CHKERRQ(ierr);
-  ierr = PCBDDCGetPrimalVerticesLocalIdx(pc,&i,&aux_idx);CHKERRQ(ierr);
-  ierr = PetscMemcpy(auxlocal_primal,aux_idx,i*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscFree(aux_idx);CHKERRQ(ierr);
-  ierr = PCBDDCGetPrimalConstraintsLocalIdx(pc,&j,&aux_idx);CHKERRQ(ierr);
-  ierr = PetscMemcpy(&auxlocal_primal[i],aux_idx,j*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscFree(aux_idx);CHKERRQ(ierr);
-
   /* Compute global number of coarse dofs */
-  ierr = PCBDDCSubsetNumbering(PetscObjectComm((PetscObject)(pc->pmat)),matis->mapping,pcbddc->local_primal_size,auxlocal_primal,NULL,&coarse_size,&local_primal_indices);CHKERRQ(ierr);
+  if (!pcbddc->primal_indices_local_idxs) {
+    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"BDDC Constraint matrix has not been created");
+  }
+  ierr = PCBDDCSubsetNumbering(PetscObjectComm((PetscObject)(pc->pmat)),matis->mapping,pcbddc->local_primal_size,pcbddc->primal_indices_local_idxs,NULL,&coarse_size,&local_primal_indices);CHKERRQ(ierr);
 
   /* check numbering */
   if (pcbddc->dbg_flag) {
@@ -3327,7 +3348,7 @@ PetscErrorCode PCBDDCComputePrimalNumbering(PC pc,PetscInt* coarse_size_n,PetscI
     ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Check coarse indices\n");CHKERRQ(ierr);
     ierr = VecSet(pcis->vec1_N,0.0);CHKERRQ(ierr);
     for (i=0;i<pcbddc->local_primal_size;i++) {
-      ierr = VecSetValue(pcis->vec1_N,auxlocal_primal[i],1.0,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValue(pcis->vec1_N,pcbddc->primal_indices_local_idxs[i],1.0,INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = VecAssemblyBegin(pcis->vec1_N);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(pcis->vec1_N);CHKERRQ(ierr);
@@ -3357,13 +3378,12 @@ PetscErrorCode PCBDDCComputePrimalNumbering(PC pc,PetscInt* coarse_size_n,PetscI
       ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d\n",PetscGlobalRank);CHKERRQ(ierr);
       for (i=0;i<pcbddc->local_primal_size;i++) {
-        ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"local_primal_indices[%d]=%d (%d)\n",i,local_primal_indices[i],auxlocal_primal[i]);
+        ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"local_primal_indices[%d]=%d (%d)\n",i,local_primal_indices[i],pcbddc->primal_indices_local_idxs[i]);
       }
       ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
   }
-  ierr = PetscFree(auxlocal_primal);CHKERRQ(ierr);
   /* get back data */
   *coarse_size_n = coarse_size;
   *local_primal_indices_n = local_primal_indices;
