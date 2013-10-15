@@ -80,8 +80,8 @@ PetscErrorCode MatCreateADA(Mat mat,Vec d1, Vec d2, Mat *J)
   ierr = MatShellSetOperation(*J,MATOP_DUPLICATE,(void(*)(void))MatDuplicate_ADA);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_GET_SUBMATRIX,(void(*)(void))MatGetSubMatrix_ADA);CHKERRQ(ierr);
 
-  ierr = PetscLogObjectParent(*J,ctx->W); CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,*J); CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)(*J),(PetscObject)ctx->W); CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)(*J)); CHKERRQ(ierr);
 
   ierr = MatSetOption(*J,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);  
