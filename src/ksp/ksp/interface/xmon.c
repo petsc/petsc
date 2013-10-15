@@ -59,7 +59,7 @@ PetscErrorCode  KSPMonitorLGResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,void
   PetscFunctionBegin;
   if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
   x = (PetscReal) n;
-  if (rnorm > 0.0) y = log10(rnorm);
+  if (rnorm > 0.0) y = PetscLog10Real(rnorm);
   else y = -15.0;
   ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
   if (n < 20 || !(n % 5)) {
@@ -115,7 +115,7 @@ PetscErrorCode  KSPMonitorLGRange(KSP ksp,PetscInt n,PetscReal rnorm,void *monct
   ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetTitle(draw,"Residual norm");CHKERRQ(ierr);
   x    = (PetscReal) n;
-  if (rnorm > 0.0) y = log10(rnorm);
+  if (rnorm > 0.0) y = PetscLog10Real(rnorm);
   else y = -15.0;
   ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
   if (n < 20 || !(n % 5)) {
@@ -230,7 +230,7 @@ PetscErrorCode  KSPMonitorLGTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,
   if (!rank) {
     if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
     x[0] = x[1] = (PetscReal) n;
-    if (rnorm > 0.0) y[0] = log10(rnorm);
+    if (rnorm > 0.0) y[0] = PetscLog10Real(rnorm);
     else y[0] = -15.0;
   }
 
@@ -240,7 +240,7 @@ PetscErrorCode  KSPMonitorLGTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,
   ierr = VecDestroy(&work);CHKERRQ(ierr);
 
   if (!rank) {
-    if (scnorm > 0.0) y[1] = log10(scnorm);
+    if (scnorm > 0.0) y[1] = PetscLog10Real(scnorm);
     else y[1] = -15.0;
     ierr = PetscDrawLGAddPoint(lg,x,y);CHKERRQ(ierr);
     if (n <= 20 || (n % 3)) {

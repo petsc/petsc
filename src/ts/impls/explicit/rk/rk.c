@@ -364,7 +364,7 @@ static PetscErrorCode TSSolve_RK(TS ts)
      * facmax set above
      * facmin
      */
-    dt_fac = exp(log((rk->maxerror) / norm) / ((rk->p) + 1)) * 0.9;
+    dt_fac = PetscExpReal(PetscLogReal((rk->maxerror) / norm) / ((rk->p) + 1)) * 0.9;
 
     if (dt_fac > fac) dt_fac = fac;
       

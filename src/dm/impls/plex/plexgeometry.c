@@ -210,7 +210,7 @@ static PetscErrorCode DMPlexComputeProjection2Dto1D_Internal(PetscScalar coords[
 {
   const PetscReal x = PetscRealPart(coords[2] - coords[0]);
   const PetscReal y = PetscRealPart(coords[3] - coords[1]);
-  const PetscReal r = sqrt(x*x + y*y), c = x/r, s = y/r;
+  const PetscReal r = PetscSqrtReal(x*x + y*y), c = x/r, s = y/r;
 
   PetscFunctionBegin;
   R[0] =  c; R[1] = s;
@@ -242,7 +242,7 @@ static PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscInt coordSize,
   n[0] = x1[1]*x2[2] - x1[2]*x2[1];
   n[1] = x1[2]*x2[0] - x1[0]*x2[2];
   n[2] = x1[0]*x2[1] - x1[1]*x2[0];
-  norm = sqrt(n[0]*n[0] + n[1]*n[1] + n[2]*n[2]);
+  norm = PetscSqrtReal(n[0]*n[0] + n[1]*n[1] + n[2]*n[2]);
   n[0] /= norm;
   n[1] /= norm;
   n[2] /= norm;
@@ -256,7 +256,7 @@ static PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscInt coordSize,
 
     will rotate the normal vector to \hat z
   */
-  sqrtz = sqrt(1.0 - n[2]*n[2]);
+  sqrtz = PetscSqrtReal(1.0 - n[2]*n[2]);
   /* Check for n = z */
   if (sqrtz < 1.0e-10) {
     if (n[2] < 0.0) {
@@ -810,7 +810,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt dim, 
     normal[1] = -PetscRealPart(coords[0] - coords[dim+0]);
   }
   if (vol) {
-    *vol = sqrt(PetscSqr(PetscRealPart(coords[0] - coords[dim+0])) + PetscSqr(PetscRealPart(coords[1] - coords[dim+1])));
+    *vol = PetscSqrtReal(PetscSqr(PetscRealPart(coords[0] - coords[dim+0])) + PetscSqr(PetscRealPart(coords[1] - coords[dim+1])));
   }
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -847,7 +847,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
       normal[0] = y0*z1 - z0*y1;
       normal[1] = z0*x1 - x0*z1;
       normal[2] = x0*y1 - y0*x1;
-      norm = sqrt(normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2]);
+      norm = PetscSqrtReal(normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2]);
       normal[0] /= norm;
       normal[1] /= norm;
       normal[2] /= norm;
