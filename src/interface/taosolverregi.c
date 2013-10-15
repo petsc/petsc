@@ -23,8 +23,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_FD(TaoSolver);
 
 PETSC_EXTERN PetscErrorCode TaoCreate_LCL(TaoSolver);
 
-extern PetscErrorCode TaoCreate_IPM(TaoSolver);
-
 PETSC_EXTERN PetscErrorCode TaoCreate_SSILS(TaoSolver);
 PETSC_EXTERN PetscErrorCode TaoCreate_SSFLS(TaoSolver);
 PETSC_EXTERN PetscErrorCode TaoCreate_ASILS(TaoSolver);
@@ -98,8 +96,6 @@ PetscErrorCode TaoSolverRegisterAll()
 
 
 
-  
-  ierr = TaoSolverRegister("tao_ipm",TaoCreate_IPM); CHKERRQ(ierr);
   ierr = TaoSolverRegister("tao_lcl",TaoCreate_LCL); CHKERRQ(ierr);
   ierr = TaoSolverRegister("tao_ssils",TaoCreate_SSILS); CHKERRQ(ierr);
   ierr = TaoSolverRegister("tao_ssfls",TaoCreate_SSFLS); CHKERRQ(ierr);
