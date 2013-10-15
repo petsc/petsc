@@ -66,10 +66,7 @@ PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat,MatFDColoring c,Pet
 
   PetscFunctionBegin;
   if (brows < 1 || brows > mbs) brows = mbs;
-  ierr = PetscMalloc2(nis+1,PetscInt,&color_start,bcols,PetscInt,&row_start);CHKERRQ(ierr);
-  color_start[0] = 0;
-  for (i=0; i<nis; i++) color_start[i+1] = c->nrows[i] + color_start[i];
-
+  ierr = PetscMalloc2(bcols+1,PetscInt,&color_start,bcols,PetscInt,&row_start);CHKERRQ(ierr);
   ierr = PetscMalloc(nz*sizeof(MatEntry),&Jentry_new);CHKERRQ(ierr);
   ierr = PetscMalloc(nis*sizeof(PetscInt),&nrows_new);CHKERRQ(ierr);
   ierr = PetscMalloc(bcols*mat->rmap->n*sizeof(PetscScalar),&c->dy);CHKERRQ(ierr);
@@ -77,19 +74,29 @@ PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat,MatFDColoring c,Pet
 
   nz_new = 0;
   nbcols = 0;
+  color_start[bcols] = 0;
   for (i=0; i<nis; i+=bcols) { /* loop over colors */
-    if (i + bcols > nis) bcols = nis - i;
+    if (i + bcols > nis) {
+      color_start[nis - i] = color_start[bcols];
+      bcols                = nis - i;
+    }
    
+    color_start[0] = color_start[bcols];
+    for (j=0; j<bcols; j++) {
+      color_start[j+1] = c->nrows[i+j] + color_start[j];
+      row_start[j]     = 0;
+    }
+
     row_end = brows;
     if (row_end > mbs) row_end = mbs;
-    for (j=0; j<bcols; j++) row_start[j] = 0;
+      
     while (row_end <= mbs) {   /* loop over block rows */
       for (j=0; j<bcols; j++) {       /* loop over block columns */
         nrows = c->nrows[i+j];
-        nz    = color_start[i+j];
+        nz    = color_start[j]; 
         while (row_start[j] < nrows) {
           if (Jentry[nz].row >= row_end) {
-            color_start[i+j] = nz;
+            color_start[j] = nz;
             break;
           } else { /* copy Jentry[nz] to Jentry_new[nz_new] */
             Jentry_new[nz_new].row     = Jentry[nz].row + j*mbs; /* index in dy-array */
