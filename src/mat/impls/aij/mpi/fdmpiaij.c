@@ -17,6 +17,7 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
   PetscInt       ctype=coloring->ctype,nxloc,nrows_k;
   PetscScalar    *valaddr;
   MatEntry       *Jentry=coloring->matentry;
+  MatEntry2      *Jentry2=coloring->matentry2;
   const PetscInt ncolors=coloring->ncolors,*ncolumns=coloring->ncolumns,*nrows=coloring->nrows;
   PetscInt       bs=J->rmap->bs;
 
@@ -117,8 +118,8 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
     nrows_k = nrows[k];
     if (coloring->htype[0] == 'w') {
       for (l=0; l<nrows_k; l++) { 
-        row     = bs*Jentry[nz].row;   /* local row index */
-        valaddr = Jentry[nz++].valaddr;
+        row     = bs*Jentry2[nz].row;   /* local row index */
+        valaddr = Jentry2[nz++].valaddr;
         spidx   = 0;
         dy_i    = dy;
         for (i=0; i<bs; i++) {   /* column of the block */
@@ -168,6 +169,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   void           *fctx=coloring->fctx;
   PetscInt       ctype=coloring->ctype,nxloc,nrows_k;
   MatEntry       *Jentry=coloring->matentry;
+  MatEntry2      *Jentry2=coloring->matentry2;
   const PetscInt ncolors=coloring->ncolors,*ncolumns=coloring->ncolumns,*nrows=coloring->nrows;
   
   PetscFunctionBegin;
@@ -276,8 +278,8 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
       
       if (coloring->htype[0] == 'w') {
         for (l=0; l<nrows_k; l++) { 
-          row                     = Jentry[nz].row;   /* local row index */
-          *(Jentry[nz++].valaddr) = dy[row]*dx;  
+          row                      = Jentry2[nz].row;   /* local row index */
+          *(Jentry2[nz++].valaddr) = dy[row]*dx;  
         }
       } else { /* htype == 'ds' */
         for (l=0; l<nrows_k; l++) { 
@@ -331,8 +333,8 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
       ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
       if (coloring->htype[0] == 'w') {
         for (l=0; l<nrows_k; l++) { 
-          row                     = Jentry[nz].row;   /* local row index */
-          *(Jentry[nz++].valaddr) = y[row]*dx;
+          row                      = Jentry2[nz].row;   /* local row index */
+          *(Jentry2[nz++].valaddr) = y[row]*dx;
         }
       } else { /* htype == 'ds' */
         for (l=0; l<nrows_k; l++) { 
@@ -369,6 +371,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   Mat                    A,B;
   PetscScalar            *A_val,*B_val,**valaddrhit;
   MatEntry               *Jentry;
+  MatEntry2              *Jentry2;
   PetscBool              isBAIJ; 
   PetscInt               bcols=c->bcols;
 #if defined(PETSC_USE_CTABLE)
@@ -440,9 +443,15 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   ierr       = PetscMalloc(nis*sizeof(PetscInt),&c->nrows);CHKERRQ(ierr);
   ierr       = PetscLogObjectMemory((PetscObject)c,3*nis*sizeof(PetscInt));CHKERRQ(ierr);
                         
-  ierr       = PetscMalloc(nz*sizeof(MatEntry),&Jentry);CHKERRQ(ierr);
-  ierr       = PetscLogObjectMemory((PetscObject)c,nz*sizeof(MatEntry));CHKERRQ(ierr);
-  c->matentry = Jentry;
+  if (c->htype[0] == 'd') {
+    ierr       = PetscMalloc(nz*sizeof(MatEntry),&Jentry);CHKERRQ(ierr);
+    ierr       = PetscLogObjectMemory((PetscObject)c,nz*sizeof(MatEntry));CHKERRQ(ierr);
+    c->matentry = Jentry;
+  } else if (c->htype[0] == 'w') {
+    ierr       = PetscMalloc(nz*sizeof(MatEntry2),&Jentry2);CHKERRQ(ierr);
+    ierr       = PetscLogObjectMemory((PetscObject)c,nz*sizeof(MatEntry2));CHKERRQ(ierr);
+    c->matentry2 = Jentry2;
+  } else SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"htype is not supported");
 
   ierr = PetscMalloc2(m+1,PetscInt,&rowhit,m+1,PetscScalar*,&valaddrhit);CHKERRQ(ierr);
   nz = 0;
@@ -536,12 +545,22 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     }
     c->nrows[i] = nrows_i;
     
-    for (j=0; j<m; j++) {
-      if (rowhit[j]) {
-        Jentry[nz].row     = j;              /* local row index */
-        Jentry[nz].col     = rowhit[j] - 1;  /* local column index */
-        Jentry[nz].valaddr = valaddrhit[j];  /* address of mat value for this entry */ 
-        nz++;
+    if (c->htype[0] == 'd') {
+      for (j=0; j<m; j++) {
+        if (rowhit[j]) {
+          Jentry[nz].row     = j;              /* local row index */
+          Jentry[nz].col     = rowhit[j] - 1;  /* local column index */
+          Jentry[nz].valaddr = valaddrhit[j];  /* address of mat value for this entry */ 
+          nz++;
+        }
+      }
+    } else { /* c->htype == 'wp' */
+      for (j=0; j<m; j++) {
+        if (rowhit[j]) {
+          Jentry2[nz].row     = j;              /* local row index */
+          Jentry2[nz].valaddr = valaddrhit[j];  /* address of mat value for this entry */ 
+          nz++;
+        }
       }
     }
     ierr = PetscFree(cols);CHKERRQ(ierr);

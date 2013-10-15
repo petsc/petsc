@@ -49,7 +49,7 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
 }
 
 /* 
- Reorder Jentry such that blocked brows*bols of entries from dense matrix are inserted into sparse Jacobian 
+ Reorder Jentry such that blocked brows*bols of entries from dense matrix are inserted into Jacobian for improved cache performance
    Input Parameters:
 +  mat - the matrix containing the nonzero structure of the Jacobian
 .  color - the coloring context
@@ -62,12 +62,10 @@ PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat,MatFDColoring c,Pet
   PetscErrorCode ierr;
   PetscInt       i,j,nrows,nbcols,brows=c->brows,bcols=c->bcols,mbs=c->m,nis=c->ncolors;
   PetscInt       *color_start,*row_start,*nrows_new,nz_new,row_end;
-  MatEntry       *Jentry_new,*Jentry=c->matentry;
 
   PetscFunctionBegin;
   if (brows < 1 || brows > mbs) brows = mbs;
   ierr = PetscMalloc2(bcols+1,PetscInt,&color_start,bcols,PetscInt,&row_start);CHKERRQ(ierr);
-  ierr = PetscMalloc(nz*sizeof(MatEntry),&Jentry_new);CHKERRQ(ierr);
   ierr = PetscMalloc(nis*sizeof(PetscInt),&nrows_new);CHKERRQ(ierr);
   ierr = PetscMalloc(bcols*mat->rmap->n*sizeof(PetscScalar),&c->dy);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)c,bcols*mat->rmap->n*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -75,50 +73,97 @@ PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat,MatFDColoring c,Pet
   nz_new = 0;
   nbcols = 0;
   color_start[bcols] = 0;
-  for (i=0; i<nis; i+=bcols) { /* loop over colors */
-    if (i + bcols > nis) {
-      color_start[nis - i] = color_start[bcols];
-      bcols                = nis - i;
-    }
-   
-    color_start[0] = color_start[bcols];
-    for (j=0; j<bcols; j++) {
-      color_start[j+1] = c->nrows[i+j] + color_start[j];
-      row_start[j]     = 0;
-    }
 
-    row_end = brows;
-    if (row_end > mbs) row_end = mbs;
+  if (c->htype[0] == 'd') { /* ----  c->htype == 'ds', use MatEntry --------*/
+    MatEntry       *Jentry_new,*Jentry=c->matentry;
+    ierr = PetscMalloc(nz*sizeof(MatEntry),&Jentry_new);CHKERRQ(ierr);
+    for (i=0; i<nis; i+=bcols) { /* loop over colors */
+      if (i + bcols > nis) {
+        color_start[nis - i] = color_start[bcols];
+        bcols                = nis - i;
+      }
+   
+      color_start[0] = color_start[bcols];
+      for (j=0; j<bcols; j++) {
+        color_start[j+1] = c->nrows[i+j] + color_start[j];
+        row_start[j]     = 0;
+      }
+
+      row_end = brows;
+      if (row_end > mbs) row_end = mbs;
       
-    while (row_end <= mbs) {   /* loop over block rows */
-      for (j=0; j<bcols; j++) {       /* loop over block columns */
-        nrows = c->nrows[i+j];
-        nz    = color_start[j]; 
-        while (row_start[j] < nrows) {
-          if (Jentry[nz].row >= row_end) {
-            color_start[j] = nz;
-            break;
-          } else { /* copy Jentry[nz] to Jentry_new[nz_new] */
-            Jentry_new[nz_new].row     = Jentry[nz].row + j*mbs; /* index in dy-array */
-            Jentry_new[nz_new].col     = Jentry[nz].col; 
-            Jentry_new[nz_new].valaddr = Jentry[nz].valaddr;  
-            nz_new++; nz++; row_start[j]++;
+      while (row_end <= mbs) {   /* loop over block rows */
+        for (j=0; j<bcols; j++) {       /* loop over block columns */
+          nrows = c->nrows[i+j];
+          nz    = color_start[j]; 
+          while (row_start[j] < nrows) {
+            if (Jentry[nz].row >= row_end) {
+              color_start[j] = nz;
+              break;
+            } else { /* copy Jentry[nz] to Jentry_new[nz_new] */
+              Jentry_new[nz_new].row     = Jentry[nz].row + j*mbs; /* index in dy-array */
+              Jentry_new[nz_new].col     = Jentry[nz].col; 
+              Jentry_new[nz_new].valaddr = Jentry[nz].valaddr;  
+              nz_new++; nz++; row_start[j]++;
+            }
           }
         }
+        if (row_end == mbs) break;
+        row_end += brows;
+        if (row_end > mbs) row_end = mbs;
       }
-      if (row_end == mbs) break;
-      row_end += brows;
-      if (row_end > mbs) row_end = mbs;
+      nrows_new[nbcols++] = nz_new;
     }
-    nrows_new[nbcols++] = nz_new;
-  }
+    ierr = PetscFree(Jentry);CHKERRQ(ierr);
+    c->matentry = Jentry_new;
+  } else { /* ---------  c->htype == 'wp', use MatEntry2 ------------------*/
+    MatEntry2      *Jentry2_new,*Jentry2=c->matentry2;
+    ierr = PetscMalloc(nz*sizeof(MatEntry2),&Jentry2_new);CHKERRQ(ierr);
+    for (i=0; i<nis; i+=bcols) { /* loop over colors */
+      if (i + bcols > nis) {
+        color_start[nis - i] = color_start[bcols];
+        bcols                = nis - i;
+      }
+   
+      color_start[0] = color_start[bcols];
+      for (j=0; j<bcols; j++) {
+        color_start[j+1] = c->nrows[i+j] + color_start[j];
+        row_start[j]     = 0;
+      }
+
+      row_end = brows;
+      if (row_end > mbs) row_end = mbs;
+      
+      while (row_end <= mbs) {   /* loop over block rows */
+        for (j=0; j<bcols; j++) {       /* loop over block columns */
+          nrows = c->nrows[i+j];
+          nz    = color_start[j]; 
+          while (row_start[j] < nrows) {
+            if (Jentry2[nz].row >= row_end) {
+              color_start[j] = nz;
+              break;
+            } else { /* copy Jentry2[nz] to Jentry2_new[nz_new] */
+              Jentry2_new[nz_new].row     = Jentry2[nz].row + j*mbs; /* index in dy-array */
+              Jentry2_new[nz_new].valaddr = Jentry2[nz].valaddr;  
+              nz_new++; nz++; row_start[j]++;
+            }
+          }
+        }
+        if (row_end == mbs) break;
+        row_end += brows;
+        if (row_end > mbs) row_end = mbs;
+      }
+      nrows_new[nbcols++] = nz_new;
+    }
+    ierr = PetscFree(Jentry2);CHKERRQ(ierr);
+    c->matentry2 = Jentry2_new;
+  } /* ---------------------------------------------*/
+
   ierr = PetscFree2(color_start,row_start);CHKERRQ(ierr);
 
   for (i=nbcols-1; i>0; i--) nrows_new[i] -= nrows_new[i-1];
   ierr = PetscFree(c->nrows);CHKERRQ(ierr);
-  ierr = PetscFree(Jentry);CHKERRQ(ierr);
-  c->nrows    = nrows_new;
-  c->matentry = Jentry_new;
+  c->nrows = nrows_new;
   PetscFunctionReturn(0);
 }
 
@@ -133,6 +178,7 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   PetscBool      isBAIJ;     
   PetscScalar    *A_val,**valaddrhit;
   MatEntry       *Jentry;
+  MatEntry2      *Jentry2;
 
   PetscFunctionBegin;
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
@@ -155,9 +201,15 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   ierr       = PetscMalloc(nis*sizeof(PetscInt),&c->nrows);CHKERRQ(ierr);
   ierr       = PetscLogObjectMemory((PetscObject)c,3*nis*sizeof(PetscInt));CHKERRQ(ierr);
 
-  ierr       = PetscMalloc(nz*sizeof(MatEntry),&Jentry);CHKERRQ(ierr);
-  ierr       = PetscLogObjectMemory((PetscObject)c,nz*sizeof(MatEntry));CHKERRQ(ierr);
-  c->matentry = Jentry;
+  if (c->htype[0] == 'd') {
+    ierr       = PetscMalloc(nz*sizeof(MatEntry),&Jentry);CHKERRQ(ierr);
+    ierr       = PetscLogObjectMemory((PetscObject)c,nz*sizeof(MatEntry));CHKERRQ(ierr);
+    c->matentry = Jentry;
+  } else if (c->htype[0] == 'w') {
+    ierr       = PetscMalloc(nz*sizeof(MatEntry2),&Jentry2);CHKERRQ(ierr);
+    ierr       = PetscLogObjectMemory((PetscObject)c,nz*sizeof(MatEntry2));CHKERRQ(ierr);
+    c->matentry2 = Jentry2;
+  } else SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"htype is not supported");
 
   if (isBAIJ) {
     ierr = MatGetColumnIJ_SeqBAIJ_Color(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,NULL);CHKERRQ(ierr);
@@ -197,15 +249,26 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     }
     c->nrows[i] = nrows; /* total num of rows for this color */
    
-    for (j=0; j<mbs; j++) { /* loop over rows */
-      if (rowhit[j]) {
-        Jentry[nz].row     = j;              /* local row index */
-        Jentry[nz].col     = rowhit[j] - 1;  /* local column index */
-        Jentry[nz].valaddr = valaddrhit[j];  /* address of mat value for this entry */ 
-        nz++;
-        rowhit[j] = 0.0;                     /* zero rowhit for reuse */
-      }
-    } 
+    if (c->htype[0] == 'd') {
+      for (j=0; j<mbs; j++) { /* loop over rows */
+        if (rowhit[j]) {
+          Jentry[nz].row     = j;              /* local row index */
+          Jentry[nz].col     = rowhit[j] - 1;  /* local column index */
+          Jentry[nz].valaddr = valaddrhit[j];  /* address of mat value for this entry */ 
+          nz++;
+          rowhit[j] = 0.0;                     /* zero rowhit for reuse */
+        }
+      } 
+    }  else { /* c->htype == 'wp' */
+      for (j=0; j<mbs; j++) { /* loop over rows */
+        if (rowhit[j]) {
+          Jentry2[nz].row     = j;              /* local row index */
+          Jentry2[nz].valaddr = valaddrhit[j];  /* address of mat value for this entry */ 
+          nz++;
+          rowhit[j] = 0.0;                     /* zero rowhit for reuse */
+        }
+      } 
+    }
     ierr = ISRestoreIndices(isa[i],&is);CHKERRQ(ierr);
   }
 

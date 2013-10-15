@@ -245,11 +245,13 @@ PetscErrorCode MatFDColoringSetUp(Mat mat,ISColoring iscoloring,MatFDColoring co
   PetscValidHeaderSpecific(color,MAT_FDCOLORING_CLASSID,3);
   if (color->setupcalled) PetscFunctionReturn(0);
 
+  ierr = PetscLogEventBegin(MAT_FDColoringSetUp,mat,0,0,0);CHKERRQ(ierr);
   if (mat->ops->fdcoloringsetup) {
     ierr = (*mat->ops->fdcoloringsetup)(mat,iscoloring,color);CHKERRQ(ierr);
   } else SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Code not yet written for matrix type %s",((PetscObject)mat)->type_name);
 
   color->setupcalled = PETSC_TRUE;
+   ierr   = PetscLogEventEnd(MAT_FDColoringSetUp,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -493,23 +495,28 @@ PetscErrorCode  MatFDColoringDestroy(MatFDColoring *c)
 {
   PetscErrorCode ierr;
   PetscInt       i;
+  MatFDColoring  color = *c;
 
   PetscFunctionBegin;
   if (!*c) PetscFunctionReturn(0);
-  if (--((PetscObject)(*c))->refct > 0) {*c = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)color)->refct > 0) {*c = 0; PetscFunctionReturn(0);}
 
-  for (i=0; i<(*c)->ncolors; i++) {
-    ierr = PetscFree((*c)->columns[i]);CHKERRQ(ierr);
+  for (i=0; i<color->ncolors; i++) {
+    ierr = PetscFree(color->columns[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree((*c)->ncolumns);CHKERRQ(ierr);
-  ierr = PetscFree((*c)->columns);CHKERRQ(ierr);
-  ierr = PetscFree((*c)->nrows);CHKERRQ(ierr);
-  ierr = PetscFree((*c)->matentry);CHKERRQ(ierr);
-  ierr = PetscFree((*c)->dy);CHKERRQ(ierr);
-  if ((*c)->vscale) {ierr = VecDestroy(&(*c)->vscale);CHKERRQ(ierr);}
-  ierr = VecDestroy(&(*c)->w1);CHKERRQ(ierr);
-  ierr = VecDestroy(&(*c)->w2);CHKERRQ(ierr);
-  ierr = VecDestroy(&(*c)->w3);CHKERRQ(ierr);
+  ierr = PetscFree(color->ncolumns);CHKERRQ(ierr);
+  ierr = PetscFree(color->columns);CHKERRQ(ierr);
+  ierr = PetscFree(color->nrows);CHKERRQ(ierr);
+  if (color->htype[0] == 'w') {
+    ierr = PetscFree(color->matentry2);CHKERRQ(ierr);
+  } else {
+    ierr = PetscFree(color->matentry);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(color->dy);CHKERRQ(ierr);
+  if (color->vscale) {ierr = VecDestroy(&color->vscale);CHKERRQ(ierr);}
+  ierr = VecDestroy(&color->w1);CHKERRQ(ierr);
+  ierr = VecDestroy(&color->w2);CHKERRQ(ierr);
+  ierr = VecDestroy(&color->w3);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

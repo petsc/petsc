@@ -426,8 +426,6 @@ PETSC_EXTERN PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData*,const Pe
     columns       = {{0,2},{1},{3},{}}
     nrows         = {4,2,3,3}
     rows          = {{0,1,2,3},{0,1},{1,2,3},{0,1,2}}
-    columnsforrow = {{0,0,2,2},{1,1},{4,3,3},{5,5,5}}
-    vscaleforrow  = {{,,,},{,},{,,},{,,}}
     vwscale       = {dx(0),dx(1),dx(2),dx(3)}               MPI Vec
     vscale        = {dx(0),dx(1),dx(2),dx(3),dx(4),dx(5)}   Seq Vec
 
@@ -435,8 +433,6 @@ PETSC_EXTERN PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData*,const Pe
     columns       = {{6},{},{4},{5}}
     nrows         = {3,0,2,2}
     rows          = {{0,1,2},{},{1,2},{1,2}}
-    columnsforrow = {{6,0,6},{},{4,4},{5,5}}
-    vscaleforrow =  {{,,},{},{,},{,}}
     vwscale       = {dx(4),dx(5),dx(6)}              MPI Vec
     vscale        = {dx(0),dx(4),dx(5),dx(6)}        Seq Vec
 
@@ -450,6 +446,11 @@ typedef struct {
   PetscScalar  *valaddr;   /* address of value */
 } MatEntry;
 
+typedef struct {
+  PetscInt     row;
+  PetscScalar  *valaddr;   /* address of value */
+} MatEntry2;
+
 struct  _p_MatFDColoring{
   PETSCHEADER(int);
   PetscInt       M,N,m;            /* total rows, columns; local rows */
@@ -459,6 +460,7 @@ struct  _p_MatFDColoring{
   PetscInt       **columns;        /* lists the local columns of each color (using global column numbering) */
   PetscInt       *nrows;           /* number of local rows for each color */
   MatEntry       *matentry;        /* holds (row, column, address of value) for Jacobian matrix entry */
+  MatEntry2      *matentry2;       /* holds (row, address of value) for Jacobian matrix entry */
   PetscScalar    *dy;              /* store a block of F(x+dx)-F(x) when J is in BAIJ format */
   PetscReal      error_rel;        /* square root of relative error in computing function */
   PetscReal      umin;             /* minimum allowable u'dx value */
@@ -1497,7 +1499,7 @@ PETSC_EXTERN PetscLogEvent MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_Cholesky
 PETSC_EXTERN PetscLogEvent MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
 PETSC_EXTERN PetscLogEvent MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering, MAT_GetRedundantMatrix;
 PETSC_EXTERN PetscLogEvent MAT_IncreaseOverlap, MAT_Partitioning, MAT_Coarsen, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate, MAT_TransposeColoringCreate;
-PETSC_EXTERN PetscLogEvent MAT_FDColoringApply, MAT_Transpose, MAT_FDColoringFunction;
+PETSC_EXTERN PetscLogEvent MAT_FDColoringSetUp, MAT_FDColoringApply, MAT_Transpose, MAT_FDColoringFunction;
 PETSC_EXTERN PetscLogEvent MAT_MatMult, MAT_MatSolve,MAT_MatMultSymbolic, MAT_MatMultNumeric,MAT_Getlocalmatcondensed,MAT_GetBrowsOfAcols,MAT_GetBrowsOfAocols;
 PETSC_EXTERN PetscLogEvent MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric,MAT_Seqstompinum,MAT_Seqstompisym,MAT_Seqstompi,MAT_Getlocalmat;
 PETSC_EXTERN PetscLogEvent MAT_RARt, MAT_RARtSymbolic, MAT_RARtNumeric;
