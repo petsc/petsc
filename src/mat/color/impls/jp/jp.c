@@ -3,6 +3,7 @@
 
 PETSC_EXTERN PetscErrorCode MatColoringLocalColor(MatColoring,PetscSF,PetscSF,PetscReal *,ISColoringValue *,ISColoringValue *);
 PETSC_EXTERN PetscErrorCode MatColoringDiscoverBoundary(MatColoring,PetscSF,PetscSF,PetscInt *,PetscInt**);
+PETSC_EXTERN PetscErrorCode MatColoringCreateBipartiteGraph(MatColoring,PetscSF *,PetscSF *);
 
 typedef struct {
   PetscSF         etoc;
@@ -58,77 +59,6 @@ PetscErrorCode JPCreateWeights_Private(MatColoring mc)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "JPBipartiteSF_Private"
-PetscErrorCode JPBipartiteSF_Private(Mat m,PetscSF *etoc,PetscSF *etor)
-{
-  PetscErrorCode    ierr;
-  PetscInt          nentries,ncolentries,idx;
-  PetscInt          i,j,rs,re,cs,ce,cn;
-  PetscInt          *rowleaf,*colleaf,*rowdata;
-  PetscInt          ncol;
-  const PetscScalar *vcol;
-  const PetscInt    *icol;
-  const PetscInt    *coldegrees;
-
-  PetscFunctionBegin;
-  ierr = MatGetOwnershipRange(m,&rs,&re);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRangeColumn(m,&cs,&ce);CHKERRQ(ierr);
-  cn = ce-cs;
-  nentries=0;
-  for (i=rs;i<re;i++) {
-    ierr = MatGetRow(m,i,&ncol,NULL,&vcol);CHKERRQ(ierr);
-    for (j=0;j<ncol;j++) {
-      nentries++;
-    }
-    ierr = MatRestoreRow(m,i,&ncol,NULL,&vcol);CHKERRQ(ierr);
-  }
-  ierr = PetscMalloc(sizeof(PetscInt)*nentries,&rowleaf);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*nentries,&rowdata);CHKERRQ(ierr);
-  idx=0;
-  for (i=rs;i<re;i++) {
-    ierr = MatGetRow(m,i,&ncol,&icol,&vcol);CHKERRQ(ierr);
-    for (j=0;j<ncol;j++) {
-      rowleaf[idx] = icol[j];
-      rowdata[idx] = i;
-      idx++;
-    }
-    ierr = MatRestoreRow(m,i,&ncol,&icol,&vcol);CHKERRQ(ierr);
-  }
-  if (idx != nentries) SETERRQ2(PetscObjectComm((PetscObject)m),PETSC_ERR_NOT_CONVERGED,"Bad number of entries %d vs %d",idx,nentries);
-  ierr = PetscSFCreate(PetscObjectComm((PetscObject)m),etoc);CHKERRQ(ierr);
-  ierr = PetscSFCreate(PetscObjectComm((PetscObject)m),etor);CHKERRQ(ierr);
-
-  ierr = PetscSFSetGraphLayout(*etoc,m->cmap,nentries,NULL,PETSC_COPY_VALUES,rowleaf);CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(*etoc);CHKERRQ(ierr);
-
-  /* determine the number of entries in the column matrix */
-  ierr = PetscLogEventBegin(Mat_Coloring_Comm,*etoc,0,0,0);CHKERRQ(ierr);
-  ierr = PetscSFComputeDegreeBegin(*etoc,&coldegrees);CHKERRQ(ierr);
-  ierr = PetscSFComputeDegreeEnd(*etoc,&coldegrees);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(Mat_Coloring_Comm,*etoc,0,0,0);CHKERRQ(ierr);
-  ncolentries=0;
-  for (i=0;i<cn;i++) {
-    ncolentries += coldegrees[i];
-  }
-  ierr = PetscMalloc(sizeof(PetscInt)*ncolentries,&colleaf);CHKERRQ(ierr);
-
-  /* create the one going the other way by building the leaf set */
-  ierr = PetscLogEventBegin(Mat_Coloring_Comm,*etoc,0,0,0);CHKERRQ(ierr);
-  ierr = PetscSFGatherBegin(*etoc,MPI_INT,rowdata,colleaf);CHKERRQ(ierr);
-  ierr = PetscSFGatherEnd(*etoc,MPI_INT,rowdata,colleaf);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(Mat_Coloring_Comm,*etoc,0,0,0);CHKERRQ(ierr);
-
-  /* this one takes mat entries in *columns* to rows -- you never have to actually be able to order the leaf entries. */
-  ierr = PetscSFSetGraphLayout(*etor,m->rmap,ncolentries,NULL,PETSC_COPY_VALUES,colleaf);CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(*etor);CHKERRQ(ierr);
-
-  ierr = PetscFree(rowdata);CHKERRQ(ierr);
-  ierr = PetscFree(rowleaf);CHKERRQ(ierr);
-  ierr = PetscFree(colleaf);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "JPInitialize_Private"
 PetscErrorCode JPInitialize_Private(MatColoring mc)
 {
@@ -137,7 +67,7 @@ PetscErrorCode JPInitialize_Private(MatColoring mc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = JPBipartiteSF_Private(mc->mat,&jp->etoc,&jp->etor);CHKERRQ(ierr);
+  ierr = MatColoringCreateBipartiteGraph(mc,&jp->etoc,&jp->etor);CHKERRQ(ierr);
   jp->statesize = 1;
   jp->stateradix = (8*sizeof(PetscInt)-1);
   ierr = PetscSFGetGraph(jp->etoc,&croot,&cleaf,NULL,NULL);CHKERRQ(ierr);
