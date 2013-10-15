@@ -98,6 +98,9 @@ ex23: ex23.o chkopts
 ex24: ex24.o chkopts
 	-${CLINKER} -o ex24 ex24.o  ${PETSC_SYS_LIB}
 	${RM} -f ex24.o
+ex25: ex25.o chkopts
+	-${CLINKER} -o ex25 ex25.o  ${PETSC_SYS_LIB}
+	${RM} -f ex25.o
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1
@@ -157,11 +160,16 @@ runex23:
 	-@${MPIEXEC} -n 1 ./ex23 -options_file_yaml ex23options > ex23.tmp 2>&1;   \
 	   ${DIFF} output/ex23.out ex23.tmp || echo  ${PWD} "\nPossible problem with ex23, diffs above \n========================================="; \
 	   ${RM} -f ex23.tmp
+runex25:
+	-@${MPIEXEC} -n 1 ./ex25 > ex25.tmp 2>&1;   \
+	   ${DIFF} output/ex25.out ex25.tmp || echo  ${PWD} "\nPossible problem with ex25, diffs above \n========================================="; \
+	   ${RM} -f ex25.tmp
 
 
 TESTEXAMPLES_C		       = ex13.PETSc runex13 ex13.rm ex19.PETSc runex19 ex19.rm \
                                  ex20.PETSc runex20 runex20_2 runex20_3 ex20.rm  ex21.PETSc ex21.rm \
-                                 ex22.PETSc runex22 ex22.rm ex24.PETSc ex24.rm
+                                 ex22.PETSc runex22 ex22.rm ex24.PETSc ex24.rm \
+                                 ex25.PETSc runex25 ex25.rm
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm ex17f.PETSc ex17f.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex1f.PETSc runex1f ex1f.rm
