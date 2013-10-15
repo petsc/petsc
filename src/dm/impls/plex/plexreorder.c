@@ -176,7 +176,7 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
   }
   /* Reorder labels */
   {
-    DMLabel label = plex->labels, labelNew;
+    DMLabel label = plex->labels, labelNew = NULL;
 
     while (label) {
       if (!plexNew->labels) {
