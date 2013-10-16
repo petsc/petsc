@@ -25,7 +25,7 @@ typedef struct {
   PetscInt        *stateleafcol;
   PetscInt        *stateleafrow;
   PetscInt        *statespread;
-
+  
   ISColoringValue *color;
   ISColoringValue *mincolor;
 } MC_JP;
@@ -373,14 +373,11 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscol
   ierr = JPCreateWeights_Private(mc);CHKERRQ(ierr);
   ierr = MatGetSize(mc->mat,NULL,&ncolstotal);CHKERRQ(ierr);
   ierr = MatGetLocalSize(mc->mat,NULL,&ncols);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscBool)*ncols,&boundary);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(jp->etor,&nr,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(jp->etoc,&nc,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = MatColoringDiscoverBoundary(mc,jp->etoc,jp->etor,&nboundary,&boundary);CHKERRQ(ierr);
   totalboundary=0;
   ierr = MPI_Allreduce(&nboundary,&totalboundary,1,MPI_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"total boundary: %d\n",totalboundary);CHKERRQ(ierr);
-
   for (i=0;i<nc;i++) {
     jp->wtsinit[i] = 0.;
     jp->state[i]=0;
@@ -389,14 +386,13 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscol
   }
   for (i=0;i<nboundary;i++) {
     jp->wtsinit[boundary[i]] = jp->wts[boundary[i]];
-    PetscPrintf(PETSC_COMM_SELF,"%d is on the boundary \n",boundary[i]);
   }
+
 
   nadded=0;
   nadded_total=0;
   nadded_total_old=0;
   while (nadded_total < totalboundary) {
-    PetscPrintf(PETSC_COMM_SELF,"%d added, %d\n",nadded_total,totalboundary);CHKERRQ(ierr);
     ierr = JPGreatestWeight_Private(mc,jp->wtsinit,jp->wtsspread);CHKERRQ(ierr);
     ierr = JPMinColor_Private(mc,jp->color,jp->mincolor);CHKERRQ(ierr);
     for (i=0;i<nboundary;i++) {
@@ -427,8 +423,8 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscol
   ierr = MPI_Allreduce(&maxcolor_local,&maxcolor_global,1,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
   jp->maxcolor = maxcolor_global;
   ierr = ISColoringCreate(PetscObjectComm((PetscObject)mc),jp->maxcolor+1,ncols,jp->color,iscoloring);CHKERRQ(ierr);
+  ierr = PetscFree(boundary);CHKERRQ(ierr);
   ierr = JPTearDown_Private(mc);CHKERRQ(ierr);
-  ierr = MatColoringTestValid(mc,*iscoloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

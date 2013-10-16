@@ -259,7 +259,7 @@ PETSC_EXTERN PetscErrorCode MatColoringDiscoverBoundary(MatColoring mc,PetscSF e
     for (k=0;k<=dist;k++) {
       if (k % 2 == 0) {
         while (collist >= 0) {
-          if (k != dist && ll_idx[collist] > 0) {
+          if (k != dist) {
             for (j=0;j<coldegrees[ll_idx[collist]];j++) {
               neighoffset = coloffsets[ll_idx[collist]]+j;
               idx = colentries[neighoffset].index;
@@ -331,7 +331,7 @@ PETSC_EXTERN PetscErrorCode MatColoringDiscoverBoundary(MatColoring mc,PetscSF e
     for (k=0;k<=dist;k++) {
       if (k % 2 == 0) {
         while (collist >= 0) {
-          if (k != dist && ll_idx[collist] > 0) {
+          if (k != dist) {
             for (j=0;j<coldegrees[ll_idx[collist]];j++) {
               neighoffset = coloffsets[ll_idx[collist]]+j;
               idx = colentries[neighoffset].index;
@@ -393,6 +393,7 @@ PETSC_EXTERN PetscErrorCode MatColoringDiscoverBoundary(MatColoring mc,PetscSF e
   }
 
   if (bidx != *nboundary) {SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"Number of boundary nodes not matched");}
+
   ierr = PetscFree(rowseen);CHKERRQ(ierr);
   ierr = PetscFree(colseen);CHKERRQ(ierr);
   ierr = PetscFree(coloffsets);CHKERRQ(ierr);
