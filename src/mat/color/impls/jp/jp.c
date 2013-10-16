@@ -271,6 +271,7 @@ PetscErrorCode JPMinColor_Private(MatColoring mc,ISColoringValue *colors,ISColor
       }
     }
   }
+
   for (k=0;k<dist;k++) {
     if (k%2 == 1) {
       ierr = PetscLogEventBegin(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
@@ -429,14 +430,16 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscol
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringCreate_JP"
 /*MC
-  MATCOLORINGJP - Maximal Independent Set based Matrix Coloring
+  MATCOLORINGJP - Parallel Jones-Plassmann Coloring
 
    Level: beginner
 
-   Notes: This algorithm uses a Luby-type method to create a series of independent sets that may be combined into a
-   maximal independent set.  This is repeated on the induced subgraph of uncolored vertices until every column of the
-   matrix is assigned a color.  This algorithm supports arbitrary distance.  If the maximum number of colors is set to
-   one, it will create a maximal independent set.
+   Notes: This method uses a parallel Luby-style coloring with with weights to choose an independent set of processor
+   boundary vertices at each stage that may be assigned colors independently.
+
+   References:
+   M. Jones and P. Plassmann, “A parallel graph coloring heuristic,” SIAM Journal on Scientific Computing, vol. 14, no. 3,
+   pp. 654–669, 1993.
 
 .seealso: MatColoringCreate(), MatColoring, MatColoringSetType()
 M*/
