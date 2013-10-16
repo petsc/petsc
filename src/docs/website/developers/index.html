@@ -166,46 +166,6 @@
       (trouble? please contact us petsc-maint@mcs.anl.gov). And subscribe to the
       <a href="../miscellaneous/mailing-lists.html">petsc mailing lists</a>.
 
-      <h4>Experimental build systems</h4>
-
-      <ul>
-        <li>
-          <b>CMake</b>: The main reasons for using CMake are parallel builds,
-          dependency analysis, and IDE integration. The following instructions
-          assume that you have CMake version 2.6 or later installed.
-          <ol>
-            <li>Configure as usual with ./configure, provide --with-cmake=/path/to/cmake if the CMake executable is not in your PATH.</li>
-            <li>Run make in the build directory ($PETSC_DIR/$PETSC_ARCH), the value of the environment variables is not important.</li>
-          </ol>
-
-           Notes:
-
-          <ul>
-            <li>The generator for the build directory can be changed (e.g. to Eclipse, XCode, Visual Studio) after running configure.</li>
-            <li>Multiple builds can run at once.</li>
-
-            <li>
-              If new files are added, the CMake build files can be quickly
-              updated with bin/maint/cmakegen.py. This is done automatically
-              when reconfiguring for any PETSC_ARCH (e.g.
-              $PETSC_ARCH/conf/reconfigure-$PETSC_ARCH.py).
-            </li>
-
-            <li>
-              The CMake build creates the same libraries as PETSc's standard
-              build, the object files are stored privately in the build
-              directory so multiple PETSC_ARCHs can be built
-              simultaneously.
-            </li>
-          </ul>
-
-        </li>
-
-        <li>
-          <b>builder.py</b>: Run <code>config/builder.py</code>
-        </li>
-      </ul>
-
       <h2><a name="building_documentation:">Building documentation:</a></h2>
 
       <p>
