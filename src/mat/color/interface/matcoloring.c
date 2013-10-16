@@ -3,6 +3,8 @@
 PetscFunctionList MatColoringList              = 0;
 PetscBool         MatColoringRegisterAllCalled = PETSC_FALSE;
 
+PETSC_EXTERN PetscErrorCode MatColoringTestValid(MatColoring,ISColoring);
+
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringRegister"
 /*@C
@@ -57,6 +59,7 @@ PetscErrorCode  MatColoringRegister(const char sname[],PetscErrorCode (*function
 .   -mat_coloring_maxcolors - the maximum number of relevant colors, all nodes not in a color are in maxcolors+1
 .   -mat_coloring_distance - compute a distance 1,2,... coloring.
 .   -mat_coloring_view - print information about the coloring and the produced index sets
+-   -mat_coloring_valid - debugging option that prints all coloring incompatibilities
 
    Level: beginner
 
@@ -82,6 +85,7 @@ PetscErrorCode MatColoringCreate(Mat m,MatColoring *mcptr)
   mc->dist      = 2; /* default to Jacobian computation case */
   mc->maxcolors = 0; /* no maximum */
   *mcptr        = mc;
+  mc->valid     = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -213,6 +217,7 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
   if (mc->ops->setfromoptions) {
     ierr = (*mc->ops->setfromoptions)(mc);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsBool("-mat_coloring_valid","Check that a valid coloring has been produced","",mc->valid,&mc->valid,NULL);CHKERRQ(ierr);
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)mc);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -368,6 +373,10 @@ PetscErrorCode MatColoringApply(MatColoring mc,ISColoring *coloring)
   ierr = PetscLogEventBegin(Mat_Coloring_Apply,mc,0,0,0);CHKERRQ(ierr);
   ierr = (*mc->ops->apply)(mc,coloring);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(Mat_Coloring_Apply,mc,0,0,0);CHKERRQ(ierr);
+  /* valid */
+  if (mc->valid) {
+    ierr = MatColoringTestValid(mc,*coloring);CHKERRQ(ierr);
+  }
   /* view */
   ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)mc),((PetscObject)mc)->prefix,"-mat_coloring_view",&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {

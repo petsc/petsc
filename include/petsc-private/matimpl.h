@@ -483,6 +483,7 @@ struct _p_MatColoring {
   PetscInt   dist;      /* distance of the coloring */
   PetscInt   maxcolors; /* the maximum number of colors returned, maxcolors=1 for MIS */
   void       *data;     /* inner context */
+  PetscBool  valid;     /* check to see if what is produced is a valid coloring */
 };
 
 struct  _p_MatTransposeColoring{

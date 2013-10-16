@@ -4,7 +4,6 @@
 PETSC_EXTERN PetscErrorCode MatColoringLocalColor(MatColoring,PetscSF,PetscSF,PetscReal *,ISColoringValue *,ISColoringValue *);
 PETSC_EXTERN PetscErrorCode MatColoringDiscoverBoundary(MatColoring,PetscSF,PetscSF,PetscInt *,PetscInt**);
 PETSC_EXTERN PetscErrorCode MatColoringCreateBipartiteGraph(MatColoring,PetscSF *,PetscSF *);
-PETSC_EXTERN PetscErrorCode MatColoringTestValid(MatColoring,ISColoring);
 
 typedef struct {
   PetscSF         etoc;
@@ -25,7 +24,6 @@ typedef struct {
   PetscInt        *stateleafcol;
   PetscInt        *stateleafrow;
   PetscInt        *statespread;
-  
   ISColoringValue *color;
   ISColoringValue *mincolor;
 } MC_JP;
