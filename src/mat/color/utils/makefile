@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = localcolor.c bipartite.c
+SOURCEC  = localcolor.c bipartite.c valid.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscmat

@@ -95,77 +95,76 @@ PETSC_EXTERN PetscErrorCode MatColoringLocalColor(MatColoring mc,PetscSF etoc,Pe
   /* alternate between rows and columns to get the distance k minimum coloring */
   for (i=0;i<ncols;i++) {
     if (color[sidx[i]] == IS_COLORING_MAX) {
-    collist = -1;
-    rowlist = -1;
-    for (j=0;j<totalcolors;j++) colormask[j] = PETSC_FALSE;
-    swp = unused;
-    unused = ll_ptr[unused];
-    ll_ptr[swp] = collist;
-    ll_idx[swp] = sidx[i];
-    collist = swp;
-    colseen[sidx[i]] = PETSC_TRUE;
-    for (k=0;k<=dist;k++) {
-      if (k % 2 == 0) {
-        while (collist >= 0) {
-          if (k != dist) {
-            for (j=0;j<coldegrees[ll_idx[collist]];j++) {
-              neighoffset = coloffsets[ll_idx[collist]]+j;
-              idx = colentries[neighoffset].index;
-              if (colentries[neighoffset].rank == rank && !rowseen[idx]) {
-                swp = unused;
-                unused = ll_ptr[unused];
-                ll_ptr[swp] = rowlist;
-                ll_idx[swp] = idx;
-                rowlist = swp;
-                rowseen[idx] = PETSC_TRUE;
+      collist = -1;
+      rowlist = -1;
+      for (j=0;j<totalcolors;j++) colormask[j] = PETSC_FALSE;
+      swp = unused;
+      unused = ll_ptr[unused];
+      ll_ptr[swp] = collist;
+      ll_idx[swp] = sidx[i];
+      collist = swp;
+      colseen[sidx[i]] = PETSC_TRUE;
+      for (k=0;k<=dist;k++) {
+        if (k % 2 == 0) {
+          while (collist >= 0) {
+            if (k != dist) {
+              for (j=0;j<coldegrees[ll_idx[collist]];j++) {
+                neighoffset = coloffsets[ll_idx[collist]]+j;
+                idx = colentries[neighoffset].index;
+                if (colentries[neighoffset].rank == rank && !rowseen[idx]) {
+                  swp = unused;
+                  unused = ll_ptr[unused];
+                  ll_ptr[swp] = rowlist;
+                  ll_idx[swp] = idx;
+                  rowlist = swp;
+                  rowseen[idx] = PETSC_TRUE;
+                }
               }
             }
+            if (color[ll_idx[collist]] != IS_COLORING_MAX) colormask[color[ll_idx[collist]]] = PETSC_TRUE;
+            colseen[ll_idx[collist]] = PETSC_FALSE;
+            swp = collist;
+            collist = ll_ptr[collist];
+            ll_ptr[swp] = unused;
+            unused = swp;
           }
-          if (color[ll_idx[collist]] != IS_COLORING_MAX) colormask[color[ll_idx[collist]]] = PETSC_TRUE;
-          colseen[ll_idx[collist]] = PETSC_FALSE;
-          swp = collist;
-          collist = ll_ptr[collist];
-          ll_ptr[swp] = unused;
-          unused = swp;
-        }
-      } else {
-        while (rowlist >= 0) {
-          if (k != dist) {
-            for (j=0;j<rowdegrees[ll_idx[rowlist]];j++) {
-              neighoffset = rowoffsets[ll_idx[rowlist]]+j;
-              idx = rowentries[neighoffset].index;
-              if (rowentries[neighoffset].rank == rank && !colseen[idx]) {
-                swp = unused;
-                unused = ll_ptr[unused];
-                ll_ptr[swp] = collist;
-                ll_idx[swp] = idx;
-                collist = swp;
-                colseen[idx] = PETSC_TRUE;
+        } else {
+          while (rowlist >= 0) {
+            if (k != dist) {
+              for (j=0;j<rowdegrees[ll_idx[rowlist]];j++) {
+                neighoffset = rowoffsets[ll_idx[rowlist]]+j;
+                idx = rowentries[neighoffset].index;
+                if (rowentries[neighoffset].rank == rank && !colseen[idx]) {
+                  swp = unused;
+                  unused = ll_ptr[unused];
+                  ll_ptr[swp] = collist;
+                  ll_idx[swp] = idx;
+                  collist = swp;
+                  colseen[idx] = PETSC_TRUE;
+                }
               }
             }
+            if (color[ll_idx[rowlist]] != IS_COLORING_MAX) colormask[color[ll_idx[rowlist]]] = PETSC_TRUE;
+            rowseen[ll_idx[rowlist]] = PETSC_FALSE;
+            swp = rowlist;
+            rowlist = ll_ptr[rowlist];
+            ll_ptr[swp] = unused;
+            unused = swp;
           }
-          if (color[ll_idx[rowlist]] != IS_COLORING_MAX) colormask[color[ll_idx[rowlist]]] = PETSC_TRUE;
-          rowseen[ll_idx[rowlist]] = PETSC_FALSE;
-          swp = rowlist;
-          rowlist = ll_ptr[rowlist];
-          ll_ptr[swp] = unused;
-          unused = swp;
         }
       }
+      color[sidx[i]] = totalcolors;
+      for (k=0;k<totalcolors;k++) {
+        if (!colormask[k]) {color[sidx[i]] = k; break;}
+      }
+      if (color[sidx[i]] >= mc->maxcolors && mc->maxcolors > 0) color[sidx[i]] = mc->maxcolors;
+      if (color[sidx[i]] > *maxcolor) *maxcolor = color[sidx[i]];
+      if (color[sidx[i]] > totalcolors-1) {
+        totalcolors *= 2;
+        ierr = PetscFree(colormask);CHKERRQ(ierr);
+        ierr = PetscMalloc(sizeof(PetscBool)*totalcolors,&colormask);CHKERRQ(ierr);
+      }
     }
-    color[sidx[i]] = totalcolors;
-    for (k=0;k<totalcolors;k++) {
-      if (!colormask[k]) {color[sidx[i]] = k; break;}
-    }
-    if (color[sidx[i]] >= mc->maxcolors && mc->maxcolors > 0) color[sidx[i]] = mc->maxcolors;
-    if (color[sidx[i]] > *maxcolor) *maxcolor = color[sidx[i]];
-    if (color[sidx[i]] > totalcolors-1) {
-      totalcolors *= 2;
-      ierr = PetscFree(colormask);CHKERRQ(ierr);
-      ierr = PetscMalloc(sizeof(PetscBool)*totalcolors,&colormask);CHKERRQ(ierr);
-    }
-    }
-    PetscPrintf(PETSC_COMM_SELF,"%d: %d\n",sidx[i],color[sidx[i]]);
   }
 
   ierr = PetscFree(rowseen);CHKERRQ(ierr);
@@ -265,7 +264,7 @@ PETSC_EXTERN PetscErrorCode MatColoringDiscoverBoundary(MatColoring mc,PetscSF e
               neighoffset = coloffsets[ll_idx[collist]]+j;
               idx = colentries[neighoffset].index;
               if (colentries[neighoffset].rank == rank) {
-                if (!rowseen[idx]) {
+                if (!rowseen[idx] && !onBoundary) {
                   swp = unused;
                   unused = ll_ptr[unused];
                   ll_ptr[swp] = rowlist;
@@ -291,7 +290,7 @@ PETSC_EXTERN PetscErrorCode MatColoringDiscoverBoundary(MatColoring mc,PetscSF e
               neighoffset = rowoffsets[ll_idx[rowlist]]+j;
               if (rowentries[neighoffset].rank == rank) {
                 idx = rowentries[neighoffset].index;
-                if (!colseen[idx]) {
+                if (!colseen[idx] && !onBoundary) {
                   swp = unused;
                   unused = ll_ptr[unused];
                   ll_ptr[swp] = collist;
@@ -337,7 +336,7 @@ PETSC_EXTERN PetscErrorCode MatColoringDiscoverBoundary(MatColoring mc,PetscSF e
               neighoffset = coloffsets[ll_idx[collist]]+j;
               idx = colentries[neighoffset].index;
               if (colentries[neighoffset].rank == rank) {
-                if (!rowseen[idx]) {
+                if (!rowseen[idx] && !onBoundary) {
                   swp = unused;
                   unused = ll_ptr[unused];
                   ll_ptr[swp] = rowlist;
@@ -363,7 +362,7 @@ PETSC_EXTERN PetscErrorCode MatColoringDiscoverBoundary(MatColoring mc,PetscSF e
               neighoffset = rowoffsets[ll_idx[rowlist]]+j;
               if (rowentries[neighoffset].rank == rank) {
                 idx = rowentries[neighoffset].index;
-                if (!colseen[idx]) {
+                if (!colseen[idx] && !onBoundary) {
                   swp = unused;
                   unused = ll_ptr[unused];
                   ll_ptr[swp] = collist;
@@ -386,7 +385,14 @@ PETSC_EXTERN PetscErrorCode MatColoringDiscoverBoundary(MatColoring mc,PetscSF e
     }
     if (onBoundary) {(*boundary)[bidx] = i; bidx++;}
   }
+  for (i=0;i<ncols;i++) {
+    if (colseen[i]) {SETERRQ1(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"Likely error in BFS -- column %d still seen\n",i);}
+  }
+  for (i=0;i<nrows;i++) {
+    if (rowseen[i]) {SETERRQ1(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"Likely error in BFS -- row %d still seen\n",i);}
+  }
 
+  if (bidx != *nboundary) {SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"Number of boundary nodes not matched");}
   ierr = PetscFree(rowseen);CHKERRQ(ierr);
   ierr = PetscFree(colseen);CHKERRQ(ierr);
   ierr = PetscFree(coloffsets);CHKERRQ(ierr);
