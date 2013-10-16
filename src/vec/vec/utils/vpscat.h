@@ -58,7 +58,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
         for (k=0; k<bs; k++) sindices[i*bs+k] = tindices[i]+k;
       }
       ierr = PetscFree(tindices);CHKERRQ(ierr);
-      ierr = PetscCUSPIndicesCreate(n*bs,sindices,n*bs,sindices,(PetscCUSPIndices*)&ctx->spptr);CHKERRQ(ierr);
+      ierr = VecScatterCUSPIndicesCreate_PtoP(n*bs,sindices,n*bs,sindices,(PetscCUSPIndices*)&ctx->spptr);CHKERRQ(ierr);
       ierr = PetscFree(sindices);CHKERRQ(ierr);
     }
     ierr = VecCUSPCopyFromGPUSome_Public(xin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);

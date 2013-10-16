@@ -30,6 +30,7 @@
   PetscInt          *i;               /* pointer to beginning of each row */               \
   PetscInt          *j;               /* column values: j + i[k] - 1 is start of row k */  \
   PetscInt          *diag;            /* pointers to diagonal elements */                  \
+  PetscInt          nonzerorowcnt;    /* how many rows have nonzero entries */             \
   PetscBool         free_diag;         \
   datatype          *a;               /* nonzero elements */                               \
   PetscScalar       *solve_work;      /* work space used in MatSolve */                    \
@@ -431,6 +432,6 @@ PETSC_INTERN PetscErrorCode MatDestroy_SeqAIJ(Mat);
 */
 #define PetscSparseDenseMaxDot(max,r,xv,xi,nnz) { \
     PetscInt __i; \
-    for (__i=0; __i<nnz; __i++) max = PetscMax(max, xv[__i] * r[xi[__i]]);}
+    for (__i=0; __i<nnz; __i++) max = PetscMax(PetscRealPart(max), PetscRealPart(xv[__i] * r[xi[__i]]));}
 
 #endif

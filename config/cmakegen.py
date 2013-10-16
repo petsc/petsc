@@ -55,9 +55,6 @@ except:
         def __repr__(self):
             return 'defaultdict(%s, %s)' % (self.default_factory,
                                             dict.__repr__(self))
-# Run with --verbose
-VERBOSE = False
-MISTAKES = []
 
 class StdoutLogger(object):
   def write(self,str):
@@ -88,40 +85,72 @@ def cmakeconditional(key,val):
     raise RuntimeError('Unexpected language: %r'%val)
   raise RuntimeError('Unhandled case: %r=%r'%(key,val))
 
-def pkgsources(pkg):
+AUTODIRS = set('ftn-auto ftn-custom f90-custom'.split()) # Automatically recurse into these, if they exist
+SKIPDIRS = set('benchmarks'.split())                     # Skip these during the build
+NOWARNDIRS = set('tests tutorials'.split())              # Do not warn about mismatch in these
+
+def pathsplit(path):
+    """Recursively split a path, returns a tuple"""
+    stem, basename = os.path.split(path)
+    if stem == '':
+        return (basename,)
+    if stem == path:            # fixed point, likely '/'
+        return (path,)
+    return pathsplit(stem) + (basename,)
+
+class Mistakes(object):
+    def __init__(self, log, verbose=False):
+        self.mistakes = []
+        self.verbose = verbose
+        self.log = log
+
+    def compareDirLists(self,root, mdirs, dirs):
+        if NOWARNDIRS.intersection(pathsplit(root)):
+            return
+        smdirs = set(mdirs)
+        sdirs  = set(dirs).difference(AUTODIRS)
+        if not smdirs.issubset(sdirs):
+            self.mistakes.append('Makefile contains directory not on filesystem: %s: %r' % (root, sorted(smdirs - sdirs)))
+        if not self.verbose: return
+        if smdirs != sdirs:
+            from sys import stderr
+            stderr.write('Directory mismatch at %s:\n\t%s: %r\n\t%s: %r\n\t%s: %r\n'
+                         % (root,
+                            'in makefile   ',sorted(smdirs),
+                            'on filesystem ',sorted(sdirs),
+                            'symmetric diff',sorted(smdirs.symmetric_difference(sdirs))))
+
+    def compareSourceLists(self, root, msources, files):
+        if NOWARNDIRS.intersection(pathsplit(root)):
+            return
+        smsources = set(msources)
+        ssources  = set(f for f in files if os.path.splitext(f)[1] in ['.c', '.cxx', '.cc', '.cu', '.cpp', '.F'])
+        if not smsources.issubset(ssources):
+            self.mistakes.append('Makefile contains file not on filesystem: %s: %r' % (root, sorted(smsources - ssources)))
+        if not self.verbose: return
+        if smsources != ssources:
+            from sys import stderr
+            stderr.write('Source mismatch at %s:\n\t%s: %r\n\t%s: %r\n\t%s: %r\n'
+                         % (root,
+                            'in makefile   ',sorted(smsources),
+                            'on filesystem ',sorted(ssources),
+                            'symmetric diff',sorted(smsources.symmetric_difference(ssources))))
+
+    def summary(self):
+        for m in self.mistakes:
+            self.log.write(m + '\n')
+        if self.mistakes:
+            raise RuntimeError('PETSc makefiles contain mistakes or files are missing on filesystem.\n%s\nPossible reasons:\n\t1. Files were deleted locally, try "hg revert filename" or "git checkout filename".\n\t2. Files were deleted from repository, but were not removed from makefile. Send mail to petsc-maint@mcs.anl.gov.\n\t3. Someone forgot to "add" new files to the repository. Send mail to petsc-maint@mcs.anl.gov.' % ('\n'.join(self.mistakes)))
+
+def stripsplit(line):
+  return line[len('#requires'):].replace("'","").split()
+
+def pkgsources(pkg, mistakes):
   '''
   Walks the source tree associated with 'pkg', analyzes the conditional written into the makefiles,
   and returns a list of sources associated with each unique conditional (as a dictionary).
   '''
   from distutils.sysconfig import parse_makefile
-  autodirs = set('ftn-auto ftn-custom f90-custom'.split()) # Automatically recurse into these, if they exist
-  skipdirs = set('examples benchmarks'.split())            # Skip these during the build
-  def compareDirLists(mdirs,dirs):
-    smdirs = set(mdirs)
-    sdirs  = set(dirs).difference(autodirs)
-    if not smdirs.issubset(sdirs):
-      MISTAKES.append('Makefile contains directory not on filesystem: %s: %r' % (root, sorted(smdirs - sdirs)))
-    if not VERBOSE: return
-    if smdirs != sdirs:
-      from sys import stderr
-      print >>stderr, ('Directory mismatch at %s:\n\t%s: %r\n\t%s: %r\n\t%s: %r'
-                       % (root,
-                          'in makefile   ',sorted(smdirs),
-                          'on filesystem ',sorted(sdirs),
-                          'symmetric diff',sorted(smdirs.symmetric_difference(sdirs))))
-  def compareSourceLists(msources, files):
-    smsources = set(msources)
-    ssources  = set(f for f in files if os.path.splitext(f)[1] in ['.c', '.cxx', '.cc', '.cu', '.cpp', '.F'])
-    if not smsources.issubset(ssources):
-      MISTAKES.append('Makefile contains file not on filesystem: %s: %r' % (root, sorted(smsources - ssources)))
-    if not VERBOSE: return
-    if smsources != ssources:
-      from sys import stderr
-      print >>stderr, ('Source mismatch at %s:\n\t%s: %r\n\t%s: %r\n\t%s: %r'
-                       % (root,
-                          'in makefile   ',sorted(smsources),
-                          'on filesystem ',sorted(ssources),
-                          'symmetric diff',sorted(smsources.symmetric_difference(ssources))))
   allconditions = defaultdict(set)
   sources = defaultdict(deque)
   for root,dirs,files in os.walk(os.path.join('src',pkg)):
@@ -131,12 +160,10 @@ def pkgsources(pkg):
       continue
     makevars = parse_makefile(makefile)
     mdirs = makevars.get('DIRS','').split() # Directories specified in the makefile
-    compareDirLists(mdirs,dirs) # diagnostic output to find unused directories
-    candidates = set(mdirs).union(autodirs).difference(skipdirs)
+    mistakes.compareDirLists(root,mdirs,dirs) # diagnostic output to find unused directories
+    candidates = set(mdirs).union(AUTODIRS).difference(SKIPDIRS)
     dirs[:] = list(candidates.intersection(dirs))
     lines = open(makefile)
-    def stripsplit(line):
-      return filter(lambda c: c!="'", line[len('#requires'):]).split()
     conditions.update(set(tuple(stripsplit(line)) for line in lines if line.startswith('#requires')))
     lines.close()
     def relpath(filename):
@@ -144,7 +171,7 @@ def pkgsources(pkg):
     sourcecu = makevars.get('SOURCECU','').split()
     sourcec = makevars.get('SOURCEC','').split()
     sourcef = makevars.get('SOURCEF','').split()
-    compareSourceLists(sourcec+sourcef+sourcecu, files) # Diagnostic output about unused source files
+    mistakes.compareSourceLists(root,sourcec+sourcef+sourcecu, files) # Diagnostic output about unused source files
     sources[repr(sorted(conditions))].extend(relpath(f) for f in sourcec + sourcef + sourcecu)
     allconditions[root] = conditions
   return sources
@@ -188,8 +215,8 @@ set (CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 ''')
 
-def writePackage(f,pkg,pkgdeps):
-  for conds, srcs in pkgsources(pkg).items():
+def writePackage(f,pkg,pkgdeps,mistakes):
+  for conds, srcs in pkgsources(pkg,mistakes).items():
     conds = eval(conds)
     def body(indentlevel):
       indent = ' '*(indentlevel+2)
@@ -214,9 +241,10 @@ if (NOT PETSC_USE_SINGLE_LIBRARY)
 endif ()
 ''' % dict(pkg=pkg, PKG=pkg.upper(), pkgdeps=' '.join('petsc%s'%p for p in pkgdeps)))
 
-def main(petscdir, log=StdoutLogger()):
+def main(petscdir, log=StdoutLogger(), verbose=False):
   import tempfile, shutil
   written = False               # We delete the temporary file if it wasn't finished, otherwise rename (atomic)
+  mistakes = Mistakes(log=log, verbose=verbose)
   fd,tmplists = tempfile.mkstemp(prefix='CMakeLists.txt.',dir=petscdir,text=True)
   try:
     f = os.fdopen(fd,'w')
@@ -230,7 +258,7 @@ def main(petscdir, log=StdoutLogger()):
                ('snes'           , 'ksp dm mat vec sys'),
                ('ts'             , 'snes ksp dm mat vec sys')]
     for pkg,deps in pkglist:
-      writePackage(f,pkg,deps.split())
+      writePackage(f,pkg,deps.split(),mistakes)
     f.write ('''
 if (PETSC_USE_SINGLE_LIBRARY)
   if (PETSC_HAVE_CUDA)
@@ -261,16 +289,11 @@ endif()''' % ('\n  '.join([r'PETSC' + pkg.upper() + r'_SRCS' for (pkg,_) in pkgl
       shutil.move(tmplists,os.path.join(petscdir,'CMakeLists.txt'))
     else:
       os.remove(tmplists)
-  if MISTAKES:
-    for m in MISTAKES:
-      log.write(m + '\n')
-    raise RuntimeError('PETSc makefiles contain mistakes or files are missing on filesystem.\n%s\nPossible reasons:\n\t1. Files were deleted locally, try "hg revert filename" or "git checkout filename".\n\t2. Files were deleted from repository, but were not removed from makefile. Send mail to petsc-maint@mcs.anl.gov.\n\t3. Someone forgot to "add" new files to the repository. Send mail to petsc-maint@mcs.anl.gov.' % ('\n'.join(MISTAKES)))
+  mistakes.summary()
 
 if __name__ == "__main__":
   import optparse
   parser = optparse.OptionParser()
   parser.add_option('--verbose', help='Show mismatches between makefiles and the filesystem', dest='verbose', action='store_true', default=False)
   (opts, extra_args) = parser.parse_args()
-  if opts.verbose:
-    VERBOSE = True
-  main(petscdir=os.environ['PETSC_DIR'])
+  main(petscdir=os.environ['PETSC_DIR'], verbose=opts.verbose)

@@ -32,7 +32,7 @@ PetscLogEvent MAT_Applypapt, MAT_Applypapt_numeric, MAT_Applypapt_symbolic, MAT_
 PetscLogEvent MAT_GetMultiProcBlock;
 PetscLogEvent MAT_CUSPCopyToGPU, MAT_CUSPARSECopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
 PetscLogEvent MAT_ViennaCLCopyToGPU;
-PetscLogEvent MAT_Merge;
+PetscLogEvent MAT_Merge,MAT_Residual;
 
 const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT","MatFactorType","MAT_FACTOR_",0};
 
@@ -6828,6 +6828,49 @@ PetscErrorCode  MatSetBlockSizes(Mat mat,PetscInt rbs,PetscInt cbs)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatResidual"
+/*@
+   MatResidual - Default routine to calculate the residual.
+
+   Collective on Mat and Vec
+
+   Input Parameters:
++  mat - the matrix
+.  b   - the right-hand-side
+-  x   - the approximate solution
+
+   Output Parameter:
+.  r - location to store the residual
+
+   Level: developer
+
+.keywords: MG, default, multigrid, residual
+
+.seealso: PCMGSetResidual()
+@*/
+PetscErrorCode  MatResidual(Mat mat,Vec b,Vec x,Vec r)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(b,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(r,VEC_CLASSID,4);
+  PetscValidType(mat,1);
+  MatCheckPreallocated(mat,1);
+  ierr  = PetscLogEventBegin(MAT_Residual,mat,0,0,0);CHKERRQ(ierr);
+  if (!mat->ops->residual) {
+    ierr = MatMult(mat,x,r);CHKERRQ(ierr);
+    ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
+  } else {
+    ierr  = (*mat->ops->residual)(mat,b,x,r);CHKERRQ(ierr);
+  }
+  ierr  = PetscLogEventEnd(MAT_Residual,mat,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatGetRowIJ"
 /*@C
     MatGetRowIJ - Returns the compressed row storage i and j indices for sequential matrices.
@@ -7163,7 +7206,7 @@ PetscErrorCode  MatSetUnfactored(Mat mat)
 
     Level: advanced
 
-.seealso:  MatDenseRestoreArrayF90(), MatDenseGetArray(), MatDenseRestoreArray()
+.seealso:  MatDenseRestoreArrayF90(), MatDenseGetArray(), MatDenseRestoreArray(), MatSeqAIJGetArrayF90()
 
     Concepts: matrices^accessing array
 
@@ -7171,7 +7214,7 @@ M*/
 
 /*MC
     MatDenseRestoreArrayF90 - Restores a matrix array that has been
-    accessed with MatGetArrayF90().
+    accessed with MatDenseGetArrayF90().
 
     Synopsis:
     MatDenseRestoreArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
@@ -7196,7 +7239,71 @@ M*/
 
     Level: advanced
 
-.seealso:  MatDenseGetArrayF90(), MatDenseGetArray(), MatDenseRestoreArray()
+.seealso:  MatDenseGetArrayF90(), MatDenseGetArray(), MatDenseRestoreArray(), MatSeqAIJRestoreArrayF90()
+
+M*/
+
+
+/*MC
+    MatSeqAIJGetArrayF90 - Accesses a matrix array from Fortran90.
+
+    Synopsis:
+    MatSeqAIJGetArrayF90(Mat x,{Scalar, pointer :: xx_v(:,:)},integer ierr)
+
+    Not collective
+
+    Input Parameter:
+.   x - matrix
+
+    Output Parameters:
++   xx_v - the Fortran90 pointer to the array
+-   ierr - error code
+
+    Example of Usage:
+.vb
+      PetscScalar, pointer xx_v(:,:)
+      ....
+      call MatSeqAIJGetArrayF90(x,xx_v,ierr)
+      a = xx_v(3)
+      call MatSeqAIJRestoreArrayF90(x,xx_v,ierr)
+.ve
+
+    Level: advanced
+
+.seealso:  MatSeqAIJRestoreArrayF90(), MatSeqAIJGetArray(), MatSeqAIJRestoreArray(), MatDenseGetArrayF90()
+
+    Concepts: matrices^accessing array
+
+M*/
+
+/*MC
+    MatSeqAIJRestoreArrayF90 - Restores a matrix array that has been
+    accessed with MatSeqAIJGetArrayF90().
+
+    Synopsis:
+    MatSeqAIJRestoreArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
+
+    Not collective
+
+    Input Parameters:
++   x - matrix
+-   xx_v - the Fortran90 pointer to the array
+
+    Output Parameter:
+.   ierr - error code
+
+    Example of Usage:
+.vb
+       PetscScalar, pointer xx_v(:)
+       ....
+       call MatSeqAIJGetArrayF90(x,xx_v,ierr)
+       a = xx_v(3)
+       call MatSeqAIJRestoreArrayF90(x,xx_v,ierr)
+.ve
+
+    Level: advanced
+
+.seealso:  MatSeqAIJGetArrayF90(), MatSeqAIJGetArray(), MatSeqAIJRestoreArray(), MatDenseRestoreArrayF90()
 
 M*/
 

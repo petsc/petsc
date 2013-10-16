@@ -515,10 +515,6 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
       mpimat = (Mat_MPIAIJ*)cMat->data;
       matA   = (Mat_SeqAIJ*)mpimat->A->data;
       matB   = (Mat_SeqAIJ*)mpimat->B->data;
-      /* force compressed storage of B */
-      matB->compressedrow.check = PETSC_TRUE;
-
-      ierr = MatCheckCompressedRow(mpimat->B,&matB->compressedrow,matB->i,cMat->rmap->n,-1.0);CHKERRQ(ierr);
       if (!matB->compressedrow.use) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"matB must have compressed row usage");
     } else {
       matA = (Mat_SeqAIJ*)cMat->data;

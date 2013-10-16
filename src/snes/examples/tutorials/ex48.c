@@ -1378,7 +1378,7 @@ static PetscErrorCode DMCreateInterpolation_DA_THI(DM dac,DM daf,Mat *A,Vec *sca
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_THI_Tridiagonal"
-static PetscErrorCode DMCreateMatrix_THI_Tridiagonal(DM da,MatType mtype,Mat *J)
+static PetscErrorCode DMCreateMatrix_THI_Tridiagonal(DM da,Mat *J)
 {
   PetscErrorCode         ierr;
   Mat                    A;
@@ -1393,7 +1393,7 @@ static PetscErrorCode DMCreateMatrix_THI_Tridiagonal(DM da,MatType mtype,Mat *J)
   ierr = DMGetLocalToGlobalMappingBlock(da,&ltogb);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)da),&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,dof*xm*ym*zm,dof*xm*ym*zm,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(A,mtype);CHKERRQ(ierr);
+  ierr = MatSetType(A,da->mattype);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(A,3*2,NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(A,3*2,NULL,0,NULL);CHKERRQ(ierr);

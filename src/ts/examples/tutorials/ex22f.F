@@ -97,7 +97,8 @@
       call TSSetRHSFunction(ts,PETSC_NULL_OBJECT,FormRHSFunction,       &
      &     user,ierr)
       call TSSetIFunction(ts,PETSC_NULL_OBJECT,FormIFunction,user,ierr)
-      call DMCreateMatrix(da,MATAIJ,J,ierr)
+      call DMSetMatType(da,MATAIJ,ierr)
+      call DMCreateMatrix(da,J,ierr)
       call TSSetIJacobian(ts,J,J,FormIJacobian,user,ierr)
 
       call TSGetSNES(ts,snes,ierr)

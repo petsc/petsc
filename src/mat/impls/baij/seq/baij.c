@@ -1255,9 +1255,6 @@ PetscErrorCode MatSetOption_SeqBAIJ(Mat A,MatOption op,PetscBool flg)
   case MAT_UNUSED_NONZERO_LOCATION_ERR:
     a->nounused = (flg ? -1 : 0);
     break;
-  case MAT_CHECK_COMPRESSED_ROW:
-    a->compressedrow.check = flg;
-    break;
   case MAT_NEW_DIAGONALS:
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_USE_HASH_TABLE:
@@ -1904,9 +1901,12 @@ PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
     fshift += imax[mbs-1] - ailen[mbs-1];
     ai[mbs] = ai[mbs-1] + ailen[mbs-1];
   }
+
   /* reset ilen and imax for each row */
+  a->nonzerorowcnt = 0;
   for (i=0; i<mbs; i++) {
     ailen[i] = imax[i] = ai[i+1] - ai[i];
+    a->nonzerorowcnt += ((ai[i+1] - ai[i]) > 0);
   }
   a->nz = ai[mbs];
 
@@ -1926,7 +1926,7 @@ PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
   a->reallocs         = 0;
   A->info.nz_unneeded = (PetscReal)fshift*bs2;
 
-  ierr = MatCheckCompressedRow(A,&a->compressedrow,a->i,mbs,ratio);CHKERRQ(ierr);
+  ierr = MatCheckCompressedRow(A,a->nonzerorowcnt,&a->compressedrow,a->i,mbs,ratio);CHKERRQ(ierr);
 
   A->same_nonzero = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -2825,6 +2825,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
                                        0,
                                        0,
                                /*139*/ 0,
+                                       0,
                                        0
 };
 
@@ -2990,6 +2991,9 @@ PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,PetscInt nz
     }
     b->free_a  = PETSC_TRUE;
     b->free_ij = PETSC_TRUE;
+#if defined(PETSC_THREADCOMM_ACTIVE)
+    ierr = MatZeroEntries_SeqBAIJ(B);CHKERRQ(ierr);
+#endif
   } else {
     b->free_a  = PETSC_FALSE;
     b->free_ij = PETSC_FALSE;
@@ -3220,7 +3224,6 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpval
 
   c->compressedrow.use   = a->compressedrow.use;
   c->compressedrow.nrows = a->compressedrow.nrows;
-  c->compressedrow.check = a->compressedrow.check;
   if (a->compressedrow.use) {
     i    = a->compressedrow.nrows;
     ierr = PetscMalloc2(i+1,PetscInt,&c->compressedrow.i,i+1,PetscInt,&c->compressedrow.rindex);CHKERRQ(ierr);

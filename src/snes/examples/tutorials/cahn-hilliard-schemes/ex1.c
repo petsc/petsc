@@ -65,7 +65,8 @@ int main(int argc, char **argv)
     ierr = DMCreateGlobalVector(da,&user.b_xold);CHKERRQ(ierr);
     
     /* Get Jacobian matrix structure from the da for the entire thing, da1 */
-    ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+    ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(da,&J);CHKERRQ(ierr);
     
     ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
     ierr = SNESSetDM(snes,da);CHKERRQ(ierr);

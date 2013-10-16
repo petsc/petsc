@@ -180,7 +180,7 @@ PetscErrorCode  KSPInitializePackage(void)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_petscksp"
@@ -201,4 +201,4 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscksp(void)
   PetscFunctionReturn(0);
 }
 
-#endif /* PETSC_USE_DYNAMIC_LIBRARIES */
+#endif /* PETSC_HAVE_DYNAMIC_LIBRARIES */

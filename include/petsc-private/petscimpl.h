@@ -68,7 +68,7 @@ typedef struct _p_PetscObject {
   MPI_Comm             comm;
   PetscInt             type;
   PetscLogDouble       flops,time,mem,memchildren;
-  PetscInt             id;
+  PetscObjectId        id;
   PetscInt             refct;
   PetscMPIInt          tag;
   PetscFunctionList    qlist;
@@ -78,20 +78,20 @@ typedef struct _p_PetscObject {
   char                 *mansec;
   char                 *type_name;     /*  this is the subclass, for example VECSEQ which equals "seq" */
   PetscObject          parent;
-  PetscInt             parentid;
+  PetscObjectId        parentid;
   char*                name;
   char                 *prefix;
   PetscInt             tablevel;
   void                 *cpp;
-  PetscInt             state;
+  PetscObjectState     state;
   PetscInt             int_idmax,        intstar_idmax;
-  PetscInt             *intcomposedstate,*intstarcomposedstate;
+  PetscObjectState     *intcomposedstate,*intstarcomposedstate;
   PetscInt             *intcomposeddata, **intstarcomposeddata;
   PetscInt             real_idmax,        realstar_idmax;
-  PetscInt             *realcomposedstate,*realstarcomposedstate;
+  PetscObjectState     *realcomposedstate,*realstarcomposedstate;
   PetscReal            *realcomposeddata, **realstarcomposeddata;
   PetscInt             scalar_idmax,        scalarstar_idmax;
-  PetscInt             *scalarcomposedstate,*scalarstarcomposedstate;
+  PetscObjectState     *scalarcomposedstate,*scalarstarcomposedstate;
   PetscScalar          *scalarcomposeddata, **scalarstarcomposeddata;
   void                 (**fortran_func_pointers)(void);                  /* used by Fortran interface functions to stash user provided Fortran functions */
   PetscInt             num_fortran_func_pointers;                        /* number of Fortran function pointers allocated */
@@ -372,7 +372,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
    #include "petscsys.h"
    PetscErrorCode PetscObjectStateIncrease(PetscObject obj)
 
-   Not Collective
+   Logically Collective
 
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP. This must be
@@ -389,46 +389,19 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
    as VecSet() or MatScale() already call this routine. It is also called, as a
    precaution, in VecRestoreArray(), MatRestoreRow(), MatDenseRestoreArray().
 
+   This routine is logically collective because state equality comparison needs to be possible without communication.
+
    Level: developer
 
-   seealso: PetscObjectStateQuery(), PetscObjectStateDecrease()
+   seealso: PetscObjectStateGet()
 
    Concepts: state
 
 M*/
 #define PetscObjectStateIncrease(obj) ((obj)->state++,0)
 
-/*MC
-   PetscObjectStateDecrease - Decreases the state of any PetscObject,
-   regardless of the type.
-
-   Synopsis:
-   #include "petscsys.h"
-   PetscErrorCode PetscObjectStateDecrease(PetscObject obj)
-
-   Not Collective
-
-   Input Parameter:
-.  obj - any PETSc object, for example a Vec, Mat or KSP. This must be
-         cast with a (PetscObject), for example,
-         PetscObjectStateIncrease((PetscObject)mat);
-
-   Notes: object state is an integer which gets increased every time
-   the object is changed. By saving and later querying the object state
-   one can determine whether information about the object is still current.
-   Currently, state is maintained for Vec and Mat objects.
-
-   Level: developer
-
-   seealso: PetscObjectStateQuery(), PetscObjectStateIncrease()
-
-   Concepts: state
-
-M*/
-#define PetscObjectStateDecrease(obj) ((obj)->state--,0)
-
-PETSC_EXTERN PetscErrorCode PetscObjectStateQuery(PetscObject,PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscObjectSetState(PetscObject,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscObjectStateGet(PetscObject,PetscObjectState*);
+PETSC_EXTERN PetscErrorCode PetscObjectStateSet(PetscObject,PetscObjectState);
 PETSC_EXTERN PetscErrorCode PetscObjectComposedDataRegister(PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscObjectComposedDataIncreaseInt(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectComposedDataIncreaseIntstar(PetscObject);
@@ -751,6 +724,8 @@ M*/
 #define PetscObjectComposedDataGetScalarstar(obj,id,data,flag)         \
         PetscObjectComposedDataGetRealstar(obj,id,data,flag)
 #endif
+
+PETSC_EXTERN PetscErrorCode PetscObjectGetId(PetscObject,PetscObjectId*);
 
 PETSC_EXTERN PetscMPIInt Petsc_Counter_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_InnerComm_keyval;

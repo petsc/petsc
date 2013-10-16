@@ -852,9 +852,12 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
     fshift += imax[m-1] - ailen[m-1];
     ai[m]   = ai[m-1] + ailen[m-1];
   }
+
   /* reset ilen and imax for each row */
+  a->nonzerorowcnt = 0;
   for (i=0; i<m; i++) {
     ailen[i] = imax[i] = ai[i+1] - ai[i];
+    a->nonzerorowcnt += ((ai[i+1] - ai[i]) > 0);
   }
   a->nz = ai[m];
   if (fshift && a->nounused == -1) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Unused space detected in matrix: %D X %D, %D unneeded", m, A->cmap->n, fshift);
@@ -869,7 +872,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   A->info.nz_unneeded = (double)fshift;
   a->rmax             = rmax;
 
-  ierr = MatCheckCompressedRow(A,&a->compressedrow,a->i,m,ratio);CHKERRQ(ierr);
+  ierr = MatCheckCompressedRow(A,a->nonzerorowcnt,&a->compressedrow,a->i,m,ratio);CHKERRQ(ierr);
 
   A->same_nonzero = PETSC_TRUE;
 
@@ -1023,9 +1026,6 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscBool flg)
     break;
   case MAT_IGNORE_ZERO_ENTRIES:
     a->ignorezeroentries = flg;
-    break;
-  case MAT_CHECK_COMPRESSED_ROW:
-    a->compressedrow.check = flg;
     break;
   case MAT_SPD:
   case MAT_SYMMETRIC:
@@ -1193,7 +1193,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   PetscErrorCode    ierr;
   PetscInt          m=A->rmap->n;
   const PetscInt    *aj,*ii,*ridx=NULL;
-  PetscInt          n,i,nonzerorow=0;
+  PetscInt          n,i;
   PetscScalar       sum;
   PetscBool         usecprow=a->compressedrow.use;
 
@@ -1216,7 +1216,6 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
       aj          = a->j + ii[i];
       aa          = a->a + ii[i];
       sum         = 0.0;
-      nonzerorow += (n>0);
       PetscSparseDensePlusDot(sum,x,aa,aj,n);
       /* for (j=0; j<n; j++) sum += (*aa++)*x[*aj++]; */
       y[*ridx++] = sum;
@@ -1230,7 +1229,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
     ierr = PetscThreadCommRunKernel(PetscObjectComm((PetscObject)A),(PetscThreadKernel)MatMult_SeqAIJ_Kernel,3,A,xx,yy);CHKERRQ(ierr);
 #endif
   }
-  ierr = PetscLogFlops(2.0*a->nz - nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz - a->nonzerorowcnt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #else
@@ -1245,7 +1244,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   PetscErrorCode    ierr;
   PetscInt          m=A->rmap->n;
   const PetscInt    *aj,*ii,*ridx=NULL;
-  PetscInt          n,i,nonzerorow=0;
+  PetscInt          n,i;
   PetscScalar       sum;
   PetscBool         usecprow=a->compressedrow.use;
 
@@ -1268,7 +1267,6 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
       aj          = a->j + ii[i];
       aa          = a->a + ii[i];
       sum         = 0.0;
-      nonzerorow += (n>0);
       PetscSparseDensePlusDot(sum,x,aa,aj,n);
       /* for (j=0; j<n; j++) sum += (*aa++)*x[*aj++]; */
       y[*ridx++] = sum;
@@ -1285,14 +1283,13 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
       aj          = a->j + ii[i];
       aa          = a->a + ii[i];
       sum         = 0.0;
-      nonzerorow += (n>0);
       PetscSparseDensePlusDot(sum,x,aa,aj,n);
       y[i] = sum;
     }
 #endif
 #endif
   }
-  ierr = PetscLogFlops(2.0*a->nz - nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz - a->nonzerorowcnt);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1700,35 +1697,56 @@ PetscErrorCode MatSOR_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscR
         if (xb == b) {
           x[i] = sum*idiag[i];
         } else {
-          x[i] = (1-omega)*x[i] + sum*idiag[i];
+          x[i] = (1-omega)*x[i] + sum*idiag[i];  /* omega in idiag */
         }
       }
-      ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
+      ierr = PetscLogFlops(a->nz);CHKERRQ(ierr); /* assumes 1/2 in upper */
     }
     its--;
   }
   while (its--) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
       for (i=0; i<m; i++) {
-        n   = a->i[i+1] - a->i[i];
+        /* lower */
+        n   = diag[i] - a->i[i];
         idx = a->j + a->i[i];
         v   = a->a + a->i[i];
         sum = b[i];
         PetscSparseDenseMinusDot(sum,x,v,idx,n);
-        x[i] = (1. - omega)*x[i] + (sum + mdiag[i]*x[i])*idiag[i];
+        t[i] = sum;             /* save application of the lower-triangular part */
+        /* upper */
+        n   = a->i[i+1] - diag[i] - 1;
+        idx = a->j + diag[i] + 1;
+        v   = a->a + diag[i] + 1;
+        PetscSparseDenseMinusDot(sum,x,v,idx,n);
+        x[i] = (1. - omega)*x[i] + sum*idiag[i]; /* omega in idiag */
       }
+      xb   = t;
       ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
-    }
+    } else xb = b;
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       for (i=m-1; i>=0; i--) {
-        n   = a->i[i+1] - a->i[i];
-        idx = a->j + a->i[i];
-        v   = a->a + a->i[i];
-        sum = b[i];
-        PetscSparseDenseMinusDot(sum,x,v,idx,n);
-        x[i] = (1. - omega)*x[i] + (sum + mdiag[i]*x[i])*idiag[i];
+        sum = xb[i];
+        if (xb == b) {
+          /* whole matrix (no checkpointing available) */
+          n   = a->i[i+1] - a->i[i];
+          idx = a->j + a->i[i];
+          v   = a->a + a->i[i];
+          PetscSparseDenseMinusDot(sum,x,v,idx,n);
+          x[i] = (1. - omega)*x[i] + (sum + mdiag[i]*x[i])*idiag[i];
+        } else { /* lower-triangular part has been saved, so only apply upper-triangular */
+          n   = a->i[i+1] - diag[i] - 1;
+          idx = a->j + diag[i] + 1;
+          v   = a->a + diag[i] + 1;
+          PetscSparseDenseMinusDot(sum,x,v,idx,n);
+          x[i] = (1. - omega)*x[i] + sum*idiag[i];  /* omega in idiag */
+        }
       }
-      ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+      if (xb == b) {
+        ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+      } else {
+        ierr = PetscLogFlops(a->nz);CHKERRQ(ierr); /* assumes 1/2 in upper */
+      }
     }
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
@@ -3296,6 +3314,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         MatRARtSymbolic_SeqAIJ_SeqAIJ,
                                         MatRARtNumeric_SeqAIJ_SeqAIJ,
                                  /*139*/0,
+                                        0,
                                         0
 };
 
@@ -3967,7 +3986,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_clique(Mat,MatFactorType,Mat*);
 
    Level: intermediate
 
-.seealso: MatSeqAIJRestoreArray()
+.seealso: MatSeqAIJRestoreArray(), MatSeqAIJGetArrayF90()
 @*/
 PetscErrorCode  MatSeqAIJGetArray(Mat A,PetscScalar **array)
 {
@@ -3991,7 +4010,7 @@ PetscErrorCode  MatSeqAIJGetArray(Mat A,PetscScalar **array)
 
    Level: intermediate
 
-.seealso: MatSeqAIJGetArray()
+.seealso: MatSeqAIJGetArray(), MatSeqAIJRestoreArrayF90()
 @*/
 PetscErrorCode  MatSeqAIJRestoreArray(Mat A,PetscScalar **array)
 {
@@ -4181,7 +4200,6 @@ PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C,Mat A,MatDuplicateOption cpvalu
 
   c->compressedrow.use   = a->compressedrow.use;
   c->compressedrow.nrows = a->compressedrow.nrows;
-  c->compressedrow.check = a->compressedrow.check;
   if (a->compressedrow.use) {
     i    = a->compressedrow.nrows;
     ierr = PetscMalloc2(i+1,PetscInt,&c->compressedrow.i,i,PetscInt,&c->compressedrow.rindex);CHKERRQ(ierr);

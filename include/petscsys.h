@@ -40,6 +40,18 @@
 #  define PETSC_FUNCTION_NAME PETSC_FUNCTION_NAME_C
 #endif
 
+#if defined(__cplusplus)
+#  define PETSC_RESTRICT PETSC_CXX_RESTRICT
+#else
+#  define PETSC_RESTRICT PETSC_C_RESTRICT
+#endif
+
+#if defined(__cplusplus)
+#  define PETSC_STATIC_INLINE PETSC_CXX_STATIC_INLINE
+#else
+#  define PETSC_STATIC_INLINE PETSC_C_STATIC_INLINE
+#endif
+
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES) /* For Win32 shared libraries */
 #  define PETSC_DLLEXPORT __declspec(dllexport)
 #  define PETSC_DLLIMPORT __declspec(dllimport)
@@ -1207,6 +1219,30 @@ PETSC_EXTERN PetscErrorCode MPIULong_Recv(void*,PetscInt,MPI_Datatype,PetscMPIIn
 S*/
 typedef struct _p_PetscObject* PetscObject;
 
+/*MC
+    PetscObjectId - unique integer Id for a PetscObject
+
+    Level: developer
+
+    Notes: Unlike pointer values, object ids are never reused.
+
+.seealso: PetscObjectState, PetscObjectGetId()
+M*/
+typedef Petsc64bitInt PetscObjectId;
+
+/*MC
+    PetscObjectState - integer state for a PetscObject
+
+    Level: developer
+
+    Notes:
+    Object state is always-increasing and (for objects that track state) can be used to determine if an object has
+    changed since the last time you interacted with it.  It is 64-bit so that it will not overflow for a very long time.
+
+.seealso: PetscObjectId, PetscObjectStateGet(), PetscObjectStateIncrease(), PetscObjectStateSet()
+M*/
+typedef Petsc64bitInt PetscObjectState;
+
 /*S
      PetscFunctionList - Linked list of functions, possibly stored in dynamic libraries, accessed
       by string name
@@ -1423,8 +1459,6 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListGet(PetscFunctionList,const char **
 
    Level: advanced
 
-   --with-shared-libraries --with-dynamic-loading must be used with ./configure to use dynamic libraries
-
 .seealso:  PetscDLLibraryOpen()
 S*/
 typedef struct _n_PetscDLLibrary *PetscDLLibrary;
@@ -1524,6 +1558,7 @@ PETSC_EXTERN PetscErrorCode PetscHelpPrintfDefault(MPI_Comm,const char [],...);
 #if defined(PETSC_HAVE_POPEN)
 PETSC_EXTERN PetscErrorCode PetscPOpen(MPI_Comm,const char[],const char[],const char[],FILE **);
 PETSC_EXTERN PetscErrorCode PetscPClose(MPI_Comm,FILE*,int*);
+PETSC_EXTERN PetscErrorCode PetscPOpenSetMachine(const char[]);
 #endif
 
 PETSC_EXTERN PetscErrorCode PetscSynchronizedPrintf(MPI_Comm,const char[],...);

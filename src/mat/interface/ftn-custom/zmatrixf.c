@@ -439,4 +439,3 @@ PETSC_EXTERN void PETSC_STDCALL matfactorinfoinitialize_(MatFactorInfo *info, in
 {
   *__ierr = MatFactorInfoInitialize(info);
 }
-

@@ -891,6 +891,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
                                        0,
                                        0,
                                /*139*/ 0,
+                                       0,
                                        0
 };
 

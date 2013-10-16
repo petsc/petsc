@@ -185,7 +185,7 @@ PetscErrorCode DMLocalToLocalEndDefaultShell(DM dm,Vec g,InsertMode mode,Vec l)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_Shell"
-static PetscErrorCode DMCreateMatrix_Shell(DM dm,MatType mtype,Mat *J)
+static PetscErrorCode DMCreateMatrix_Shell(DM dm,Mat *J)
 {
   PetscErrorCode ierr;
   DM_Shell       *shell = (DM_Shell*)dm->data;
@@ -202,20 +202,20 @@ static PetscErrorCode DMCreateMatrix_Shell(DM dm,MatType mtype,Mat *J)
       ierr = VecGetLocalSize(shell->Xglobal,&m);CHKERRQ(ierr);
       ierr = MatCreate(PetscObjectComm((PetscObject)dm),&shell->A);CHKERRQ(ierr);
       ierr = MatSetSizes(shell->A,m,m,M,M);CHKERRQ(ierr);
-      if (mtype) {ierr = MatSetType(shell->A,mtype);CHKERRQ(ierr);}
+      ierr = MatSetType(shell->A,dm->mattype);CHKERRQ(ierr);
       ierr = MatSetUp(shell->A);CHKERRQ(ierr);
     } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMShellSetMatrix(), DMShellSetCreateMatrix(), or provide a vector");
   }
   A = shell->A;
   /* the check below is tacky and incomplete */
-  if (mtype) {
+  if (dm->mattype) {
     PetscBool flg,aij,seqaij,mpiaij;
-    ierr = PetscObjectTypeCompare((PetscObject)A,mtype,&flg);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)A,dm->mattype,&flg);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&seqaij);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&mpiaij);CHKERRQ(ierr);
-    ierr = PetscStrcmp(mtype,MATAIJ,&aij);CHKERRQ(ierr);
+    ierr = PetscStrcmp(dm->mattype,MATAIJ,&aij);CHKERRQ(ierr);
     if (!flg) {
-      if (!(aij && (seqaij || mpiaij))) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_NOTSAMETYPE,"Requested matrix of type %s, but only %s available",mtype,((PetscObject)A)->type_name);
+      if (!(aij && (seqaij || mpiaij))) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_NOTSAMETYPE,"Requested matrix of type %s, but only %s available",dm->mattype,((PetscObject)A)->type_name);
     }
   }
   if (((PetscObject)A)->refct < 2) { /* We have an exclusive reference so we can give it out */
@@ -328,7 +328,7 @@ PetscErrorCode DMShellSetMatrix(DM dm,Mat J)
 
 .seealso: DMCreateMatrix(), DMShellSetMatrix()
 @*/
-PetscErrorCode DMShellSetCreateMatrix(DM dm,PetscErrorCode (*func)(DM,MatType,Mat*))
+PetscErrorCode DMShellSetCreateMatrix(DM dm,PetscErrorCode (*func)(DM,Mat*))
 {
 
   PetscFunctionBegin;

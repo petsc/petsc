@@ -227,7 +227,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_SpecEst(KSP ksp)
   ierr = KSPSetTolerances(spec->kspest,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,5);CHKERRQ(ierr);
 
   /* Make the "cheap" preconditioner cheap by default */
-  ierr = KSPSetConvergenceTest(spec->kspcheap,KSPSkipConverged,0,0);CHKERRQ(ierr);
+  ierr = KSPSetConvergenceTest(spec->kspcheap,KSPConvergedSkip,0,0);CHKERRQ(ierr);
   ierr = KSPSetNormType(spec->kspcheap,KSP_NORM_NONE);CHKERRQ(ierr);
   ierr = KSPSetTolerances(spec->kspcheap,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,5);CHKERRQ(ierr);
   PetscFunctionReturn(0);

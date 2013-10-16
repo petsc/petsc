@@ -358,7 +358,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   ierr = VecCreate(PetscObjectComm((PetscObject) dmB), &coordinatesB);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coordinatesB, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(coordinatesB, coordSizeB, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(coordinatesB);CHKERRQ(ierr);
+  ierr = VecSetType(coordinatesB,VECSTANDARD);CHKERRQ(ierr);
   ierr = VecGetArray(coordinatesA, &coordsA);CHKERRQ(ierr);
   ierr = VecGetArray(coordinatesB, &coordsB);CHKERRQ(ierr);
   for (v = 0; v < vEndB-vStartB; ++v) {

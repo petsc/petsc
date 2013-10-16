@@ -2342,7 +2342,7 @@ be used. \sindex{Bi-conjugate gradient}
 \subsection{Convergence Tests}
 \label{section_convergencetests}
 
-The default convergence test, KSPDefaultConverged(), is
+The default convergence test, KSPConvergedDefault(), is
 based on the $l_2$-norm of the residual. Convergence
 (or divergence) is decided by three quantities:
 the decrease of the residual norm relative to the norm of the right hand side, \trl{rtol}, the absolute
@@ -7863,8 +7863,8 @@ Now a PETSc local vector can be created manually using this layout,
 however it is usually easier to use the DM directly, which also provides global vectors,
 \begin{tabbing}
   DMSetDefaultSection(dm, s);\\
-  DMGetLocalVector(s, \&localVec);\\
-  DMGetGlobalVector(s, \&globalVec);
+  DMGetLocalVector(dm, \&localVec);\\
+  DMGetGlobalVector(dm, \&globalVec);
 \end{tabbing}
 
 \subsection{Partitioning and Ordering}

@@ -29,8 +29,7 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm,Vec *vec)
   ierr = VecCreate(PetscObjectComm((PetscObject)dm), vec);CHKERRQ(ierr);
   ierr = VecSetSizes(*vec, localSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*vec, bs);CHKERRQ(ierr);
-  /* ierr = VecSetType(*vec, dm->vectype);CHKERRQ(ierr); */
-  ierr = VecSetFromOptions(*vec);CHKERRQ(ierr);
+  ierr = VecSetType(*vec,dm->vectype);CHKERRQ(ierr);
   ierr = VecSetDM(*vec, dm);CHKERRQ(ierr);
   /* ierr = VecSetLocalToGlobalMapping(*vec, dm->ltogmap);CHKERRQ(ierr); */
   /* ierr = VecSetLocalToGlobalMappingBlock(*vec, dm->ltogmapb);CHKERRQ(ierr); */
@@ -62,7 +61,7 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm,Vec *vec)
   ierr = VecCreate(PETSC_COMM_SELF, vec);CHKERRQ(ierr);
   ierr = VecSetSizes(*vec, localSize, localSize);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*vec, blockSize);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(*vec);CHKERRQ(ierr);
+  ierr = VecSetType(*vec,dm->vectype);CHKERRQ(ierr);
   ierr = VecSetDM(*vec, dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -53,13 +53,6 @@ PETSC_INTERN PetscErrorCode VecSetRandom_SeqCUSP(Vec,PetscRandom);
 PETSC_INTERN PetscErrorCode VecCUSPCopyToGPU_Public(Vec);
 PETSC_INTERN PetscErrorCode VecCUSPAllocateCheck_Public(Vec);
 
-struct  _p_PetscCUSPIndices {
-  PetscInt ns;
-  PetscInt sendLowestIndex;
-  PetscInt nr;
-  PetscInt recvLowestIndex;
-};
-
 #define CHKERRCUSP(err) if (((int)err) != (int)CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error %d",err)
 
 #define VecCUSPCastToRawPtr(x) thrust::raw_pointer_cast(&(x)[0])
@@ -70,6 +63,45 @@ struct Vec_CUSP {
   CUSPARRAY *GPUarray;        /* this always holds the GPU data */
   cudaStream_t stream;        /* A stream for doing asynchronous data transfers */
   PetscBool hostDataRegisteredAsPageLocked;
+};
+
+PETSC_INTERN PetscErrorCode VecScatterCUSPIndicesCreate_PtoP(PetscInt, PetscInt*,PetscInt, PetscInt*,PetscCUSPIndices*);
+PETSC_INTERN PetscErrorCode VecScatterCUSPIndicesCreate_StoS(PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,PetscCUSPIndices*);
+PETSC_INTERN PetscErrorCode VecScatterCUSPIndicesDestroy(PetscCUSPIndices*);
+PETSC_INTERN PetscErrorCode VecScatterCUSP_StoS(Vec,Vec,PetscCUSPIndices,InsertMode,ScatterMode);
+
+typedef enum {VEC_SCATTER_CUSP_STOS, VEC_SCATTER_CUSP_PTOP} VecCUSPScatterType;
+typedef enum {VEC_SCATTER_CUSP_GENERAL, VEC_SCATTER_CUSP_STRIDED} VecCUSPSequentialScatterMode;
+
+struct  _p_VecScatterCUSPIndices_PtoP {
+  PetscInt ns;
+  PetscInt sendLowestIndex;
+  PetscInt nr;
+  PetscInt recvLowestIndex;
+};
+
+struct  _p_VecScatterCUSPIndices_StoS {
+  /* from indices data */
+  PetscInt *fslots;
+  PetscInt fromFirst;
+  PetscInt fromStep;
+  VecCUSPSequentialScatterMode fromMode;
+
+  /* to indices data */
+  PetscInt *tslots;
+  PetscInt toFirst;
+  PetscInt toStep;
+  VecCUSPSequentialScatterMode toMode;
+
+  PetscInt n;
+  PetscInt MAX_BLOCKS;
+  PetscInt MAX_CORESIDENT_THREADS;
+  cudaStream_t stream;
+};
+
+struct  _p_PetscCUSPIndices {
+  void * scatter;
+  VecCUSPScatterType scatterType;
 };
 
 #endif

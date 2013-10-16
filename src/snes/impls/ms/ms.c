@@ -329,8 +329,6 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
     ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
 
-    /* set parameter for default relative tolerance convergence test */
-    snes->ttol = fnorm*snes->rtol;
     /* Test for convergence */
     ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) PetscFunctionReturn(0);
@@ -551,9 +549,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes)
   SNES_MS        *ms;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = SNESMSInitializePackage();CHKERRQ(ierr);
-#endif
 
   snes->ops->setup          = SNESSetUp_MS;
   snes->ops->solve          = SNESSolve_MS;

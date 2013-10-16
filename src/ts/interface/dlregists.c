@@ -83,7 +83,7 @@ PetscErrorCode  TSInitializePackage(void)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
 #undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_petscts"
 /*
@@ -102,4 +102,4 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(void)
 }
 
 
-#endif /* PETSC_USE_DYNAMIC_LIBRARIES */
+#endif /* PETSC_HAVE_DYNAMIC_LIBRARIES */

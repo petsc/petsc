@@ -10,7 +10,10 @@
 #include "finclude/petscmatdef.h"
 
 #if !defined(PETSC_USE_FORTRAN_DATATYPES)
-#define DM PetscFortranAddr
+#define DM             PetscFortranAddr
+#define PetscFE        PetscFortranAddr
+#define PetscSpace     PetscFortranAddr
+#define PetscDualSpace PetscFortranAddr
 #endif
 
 #endif
