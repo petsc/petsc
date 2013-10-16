@@ -416,6 +416,82 @@ def noCheckCommand(command, status, output, error):
   ''' Do no check result'''
   return
 
+class IdentityParser(object):
+  def __init__(self):
+    return
+
+  def parse(self, text):
+    return text, ''
+
+class KSP(object):
+  def __init__(self, atol = 1.0e-12, rtol = 1.0e-8):
+    self.res  = []
+    self.atol = atol
+    self.rtol = rtol
+    return
+
+  def addResidual(self, n, res):
+    if not len(self.res) == n: raise RuntimeError('Invalid KSP residual at iterate '+str(n))
+    self.res.append(res)
+    return
+
+  def __eq__(self, s):
+    return all([abs(a-b) < self.atol or abs((a-b)/a) < self.rtol for a, b in zip(self.res, s.res)])
+
+  def __str__(self):
+    return 'SNES:\n'+str(self.res)
+
+class SNES(object):
+  def __init__(self, atol = 1.0e-12, rtol = 1.0e-8):
+    self.res = []
+    self.atol = atol
+    self.rtol = rtol
+    return
+
+  def addResidual(self, n, res):
+    if not len(self.res) == n: raise RuntimeError('Invalid SNES residual at iterate '+str(n))
+    self.res.append(res)
+    return
+
+  def __eq__(self, s):
+    return all([abs(a-b) < self.atol or abs((a-b)/a) < self.rtol for a, b in zip(self.res, s.res)])
+
+  def __str__(self):
+    return 'SNES:\n'+str(self.res)
+
+class SolverParser(object):
+  def __init__(self, atol = 1.0e-12):
+    import re
+
+    self.atol   = atol
+    self.reSNES = re.compile(r'\s*(?P<it>\d+) SNES Function norm (?P<norm>\d+\.\d+(e(\+|-)\d+)?)')
+    self.reKSP  = re.compile(r'\s*(?P<it>\d+) KSP Residual norm (?P<norm>\d+\.\d+(e(\+|-)\d+)?)')
+    return
+
+  def parse(self, text):
+    lines  = text.split('\n')
+    objs   = []
+    stack  = []
+    excess = []
+    for line in lines:
+      mSNES = self.reSNES.match(line)
+      mKSP  = self.reKSP.match(line)
+      if mSNES:
+        it = int(mSNES.group('it'))
+        if it == 0: stack.append(SNES(atol = self.atol))
+        stack[-1].addResidual(it, float(mSNES.group('norm')))
+      elif mKSP:
+        it = int(mKSP.group('it'))
+        if it == 0: stack.append(KSP(atol = self.atol))
+        stack[-1].addResidual(it, float(mKSP.group('norm')))
+      elif line.strip().startswith('Nonlinear solve converged'):
+        objs.append(stack.pop())
+      elif line.strip().startswith('Linear solve converged'):
+        objs.append(stack.pop())
+      else:
+        excess.append(line)
+    return objs, '\n'.join(excess)
+
 class MakeParser(object):
   def __init__(self, maker):
     self.maker = maker
