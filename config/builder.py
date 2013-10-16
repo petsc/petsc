@@ -158,19 +158,19 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                         'src/dm/impls/plex/examples/tests/ex9': [# 2D Simplex P_1 scalar tests
                                                                  {'numProcs': 1, 'args': '-num_dof 1,0,0 -iterations 10000 \
                                                                   -max_cone_time 1.1e-8 -max_closure_time 1.3e-7 -max_vec_closure_time 3.6e-7'},
-                                                                 {'numProcs': 1, 'args': '-refinement_limit 1.0e-5 -num_dof 1,0,0 -iterations 10 \
+                                                                 {'numProcs': 1, 'args': '-refinement_limit 1.0e-5 -num_dof 1,0,0 -iterations 2 \
                                                                   -max_cone_time 2.1e-8 -max_closure_time 1.5e-7 -max_vec_closure_time 3.6e-7'},
                                                                  {'numProcs': 1, 'args': '-num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 10000 \
                                                                   -max_cone_time 1.1e-8 -max_closure_time 1.3e-7 -max_vec_closure_time 4.5e-7'},
-                                                                 {'numProcs': 1, 'args': '-refinement_limit 1.0e-5 -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 10 \
+                                                                 {'numProcs': 1, 'args': '-refinement_limit 1.0e-5 -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 2 \
                                                                   -max_cone_time 2.1e-8 -max_closure_time 1.5e-7 -max_vec_closure_time 4.7e-7'},
                                                                  {'numProcs': 1, 'args': '-interpolate -num_dof 1,0,0 -iterations 10000 \
                                                                   -max_cone_time 1.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.0e-6'},
-                                                                 {'numProcs': 1, 'args': '-interpolate -refinement_limit 1.0e-5 -num_dof 1,0,0 -iterations 10 \
+                                                                 {'numProcs': 1, 'args': '-interpolate -refinement_limit 1.0e-5 -num_dof 1,0,0 -iterations 2 \
                                                                   -max_cone_time 2.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.0e-6'},
                                                                  {'numProcs': 1, 'args': '-interpolate -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 10000 \
                                                                   -max_cone_time 1.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.1e-6'},
-                                                                 {'numProcs': 1, 'args': '-interpolate -refinement_limit 1.0e-5 -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 10 \
+                                                                 {'numProcs': 1, 'args': '-interpolate -refinement_limit 1.0e-5 -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 2 \
                                                                   -max_cone_time 2.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.2e-6'},
                                                                  # 2D Simplex P_1 vector tests
                                                                  # 2D Simplex P_2 scalar tests
@@ -355,18 +355,18 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                                                                {'numProcs': 3, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1'},
                                                                {'numProcs': 5, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1'},
                                                                # Full solutions 18-29
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view'},
-                                                               {'numProcs': 2, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view'},
-                                                               {'numProcs': 3, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_converged_reason -snes_view'},
-                                                               {'numProcs': 5, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-10 -snes_converged_reason -snes_view'},
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view'},
-                                                               {'numProcs': 2, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view'},
-                                                               {'numProcs': 3, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_converged_reason -snes_view'},
-                                                               {'numProcs': 5, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_converged_reason -snes_view'},
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view'},
-                                                               {'numProcs': 2, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view'},
-                                                               {'numProcs': 3, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_converged_reason -snes_view'},
-                                                               {'numProcs': 5, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_converged_reason -snes_view'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view', 'parser': 'Solver'},
+                                                               {'numProcs': 2, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view', 'parser': 'Solver'},
+                                                               {'numProcs': 3, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -snes_converged_reason -snes_view', 'parser': 'Solver'},
+                                                               {'numProcs': 5, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-10 -snes_monitor_short -snes_converged_reason -snes_view', 'parser': 'Solver'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view', 'parser': 'Solver'},
+                                                               {'numProcs': 2, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view', 'parser': 'Solver'},
+                                                               {'numProcs': 3, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -snes_converged_reason -snes_view', 'parser': 'Solver'},
+                                                               {'numProcs': 5, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -snes_converged_reason -snes_view', 'parser': 'Solver'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view', 'parser': 'Solver'},
+                                                               {'numProcs': 2, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view', 'parser': 'Solver'},
+                                                               {'numProcs': 3, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -snes_converged_reason -snes_view', 'parser': 'Solver'},
+                                                               {'numProcs': 5, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -snes_converged_reason -snes_view', 'parser': 'Solver'},
                                                                # Stokes preconditioners 30-36
                                                                #   Jacobi
                                                                {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_gmres_restart 100 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
@@ -450,6 +450,82 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
 def noCheckCommand(command, status, output, error):
   ''' Do no check result'''
   return
+
+class IdentityParser(object):
+  def __init__(self):
+    return
+
+  def parse(self, text):
+    return text, ''
+
+class KSP(object):
+  def __init__(self, atol = 1.0e-12, rtol = 1.0e-8):
+    self.res  = []
+    self.atol = atol
+    self.rtol = rtol
+    return
+
+  def addResidual(self, n, res):
+    if not len(self.res) == n: raise RuntimeError('Invalid KSP residual at iterate '+str(n))
+    self.res.append(res)
+    return
+
+  def __eq__(self, s):
+    return all([abs(a-b) < self.atol or abs((a-b)/a) < self.rtol for a, b in zip(self.res, s.res)])
+
+  def __str__(self):
+    return 'SNES:\n'+str(self.res)
+
+class SNES(object):
+  def __init__(self, atol = 1.0e-12, rtol = 1.0e-8):
+    self.res = []
+    self.atol = atol
+    self.rtol = rtol
+    return
+
+  def addResidual(self, n, res):
+    if not len(self.res) == n: raise RuntimeError('Invalid SNES residual at iterate '+str(n))
+    self.res.append(res)
+    return
+
+  def __eq__(self, s):
+    return all([abs(a-b) < self.atol or abs((a-b)/a) < self.rtol for a, b in zip(self.res, s.res)])
+
+  def __str__(self):
+    return 'SNES:\n'+str(self.res)
+
+class SolverParser(object):
+  def __init__(self, atol = 1.0e-12):
+    import re
+
+    self.atol   = atol
+    self.reSNES = re.compile(r'\s*(?P<it>\d+) SNES Function norm (?P<norm>\d+\.\d+(e(\+|-)\d+)?)')
+    self.reKSP  = re.compile(r'\s*(?P<it>\d+) KSP Residual norm (?P<norm>\d+\.\d+(e(\+|-)\d+)?)')
+    return
+
+  def parse(self, text):
+    lines  = text.split('\n')
+    objs   = []
+    stack  = []
+    excess = []
+    for line in lines:
+      mSNES = self.reSNES.match(line)
+      mKSP  = self.reKSP.match(line)
+      if mSNES:
+        it = int(mSNES.group('it'))
+        if it == 0: stack.append(SNES(atol = self.atol))
+        stack[-1].addResidual(it, float(mSNES.group('norm')))
+      elif mKSP:
+        it = int(mKSP.group('it'))
+        if it == 0: stack.append(KSP(atol = self.atol))
+        stack[-1].addResidual(it, float(mKSP.group('norm')))
+      elif line.strip().startswith('Nonlinear solve converged'):
+        objs.append(stack.pop())
+      elif line.strip().startswith('Linear solve converged'):
+        objs.append(stack.pop())
+      else:
+        excess.append(line)
+    return objs, '\n'.join(excess)
 
 class MakeParser(object):
   def __init__(self, maker):
@@ -1544,39 +1620,36 @@ class PETScMaker(script.Script):
        os.remove(fname)
    return
 
- def checkTestOutput(self, testDir, executable, cmd, output, testNum, replace = False):
+ def checkTestOutputGeneric(self, parser, testDir, executable, cmd, output, testNum):
    from difflib import unified_diff
    outputName = os.path.join(testDir, 'output', os.path.basename(executable)+'_'+testNum+'.out')
    ret        = 0
-   if not os.path.isfile(outputName):
-     if replace:
-       with file(outputName, 'w') as f:
-         f.write(output)
-       self.logPrint("REPLACED: Regression output file %s (test %s) was stored" % (outputName, testNum), debugSection='screen')
+   with file(outputName) as f:
+     output                  = output.strip()
+     parse, excess           = parser.parse(output)
+     validOutput             = f.read().strip().replace('\r', '') # Jed is now stripping output it appears
+     validParse, validExcess = parser.parse(validOutput)
+     if not validParse == parse or not validExcess == excess:
+       self.logPrint("TEST ERROR: Regression output for %s (test %s) does not match\n" % (executable, testNum), debugSection = 'screen')
+       for linum,line in enumerate(unified_diff(validOutput.split('\n'), output.split('\n'), fromfile=outputName, tofile=cmd)):
+         end = '' if linum < 3 else '\n' # Control lines have their own end-lines
+         self.logWrite(line+end, debugSection = 'screen', forceScroll = True)
+       self.logPrint('Reference output from %s\n' % outputName)
+       self.logPrint(validOutput, indent = 0)
+       self.logPrint('Current output from %s' % cmd)
+       self.logPrint(output, indent = 0)
+       ret = -1
      else:
-       self.logPrint("MISCONFIGURATION: Regression output file %s (test %s) is missing" % (outputName, testNum), debugSection='screen')
-   else:
-     with file(outputName) as f:
-       output      = output.strip()
-       validOutput = f.read().strip().replace('\r', '') # Jed is now stripping output it appears
-       if not validOutput == output:
-         if replace:
-           with file(outputName, 'w') as f:
-             f.write(output)
-           self.logPrint("REPLACED: Regression output file %s (test %s) was stored" % (outputName, testNum), debugSection='screen')
-         else:
-           self.logPrint("TEST ERROR: Regression output for %s (test %s) does not match\n" % (executable, testNum), debugSection = 'screen')
-           for linum,line in enumerate(unified_diff(validOutput.split('\n'), output.split('\n'), fromfile=outputName, tofile=cmd)):
-               end = '' if linum < 3 else '\n' # Control lines have their own end-lines
-               self.logWrite(line+end, debugSection = 'screen', forceScroll = True)
-           self.logPrint('Reference output from %s\n' % outputName)
-           self.logPrint(validOutput, indent = 0)
-           self.logPrint('Current output from %s' % cmd)
-           self.logPrint(output, indent = 0)
-           ret = -1
-       else:
-         self.logPrint("TEST SUCCESS: Regression output for %s (test %s) matches" % (executable, testNum))
+       self.logPrint("TEST SUCCESS: Regression output for %s (test %s) matches" % (executable, testNum))
    return ret
+
+ def checkTestOutput(self, numProcs, testDir, executable, cmd, output, testNum):
+   return self.checkTestOutputGeneric(IdentityParser(), testDir, executable, cmd, output, testNum)
+
+ def checkTestOutputSolver(self, numProcs, testDir, executable, cmd, output, testNum):
+   if numProcs > 1: parser = SolverParser(atol = 1.0e-9)
+   else:            parser = SolverParser()
+   return self.checkTestOutputGeneric(parser, testDir, executable, cmd, output, testNum)
 
  def getTestCommand(self, executable, **params):
    numProcs = params.get('numProcs', 1)
@@ -1589,16 +1662,28 @@ class PETScMaker(script.Script):
 
  def runTest(self, testDir, executable, testNum, replace, **params):
    '''testNum can be any string'''
+   num = str(testNum)
    cmd = self.getTestCommand(executable, **params)
-   self.logPrint('Running #%s: %s' % (str(testNum), cmd), debugSection='screen')
+   numProcs = params.get('numProcs', 1)
+   self.logPrint('Running #%s: %s' % (num, cmd), debugSection='screen')
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
+     outputName = os.path.join(testDir, 'output', os.path.basename(executable)+'_'+num+'.out')
      if status:
        self.logPrint("TEST ERROR: Failed to execute %s\n" % executable, debugSection='screen')
        self.logPrint(output+error, indent = 0, debugSection='screen')
        ret = -2
+     elif replace:
+       outputName = os.path.join(testDir, 'output', os.path.basename(executable)+'_'+str(testNum)+'.out')
+       with file(outputName, 'w') as f:
+         f.write(output+error)
+       self.logPrint("REPLACED: Regression output file %s (test %s) was stored" % (outputName, str(testNum)), debugSection='screen')
+       ret = 0
+     elif not os.path.isfile(outputName):
+       self.logPrint("MISCONFIGURATION: Regression output file %s (test %s) is missing" % (outputName, testNum), debugSection='screen')
+       ret = 0
      else:
-       ret = self.checkTestOutput(testDir, executable, cmd, output+error, str(testNum), replace)
+       ret = getattr(self, 'checkTestOutput'+params.get('parser', ''))(numProcs, testDir, executable, cmd, output+error, num)
    return ret
 
  def regressionTestsDir(self, dirname, dummy):
