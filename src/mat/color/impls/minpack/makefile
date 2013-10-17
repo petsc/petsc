@@ -1,14 +1,14 @@
 
-#requiresdefine   'PETSC_HAVE_FORTRAN'
 ALL: lib
+
 CFLAGS   =
 FFLAGS   =
-SOURCEC  =
+SOURCEC  = color.c degr.c dsm.c ido.c numsrt.c seq.c setr.c slo.c
 SOURCEF  =
-SOURCEH  =
-DIRS     =
+SOURCEH  = color.h
 LIBBASE  = libpetscmat
-LOCDIR   = src/mat/color/ftn-custom/
+MANSEC   = MatColoring
+LOCDIR   = src/mat/color/impls/minpack
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
