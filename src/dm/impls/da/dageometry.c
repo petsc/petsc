@@ -542,7 +542,7 @@ PetscErrorCode DMDAComputeCellGeometry_2D(DM dm, const PetscScalar vertices[], c
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_DEBUG)
+#if 0
   ierr = PetscPrintf(PETSC_COMM_SELF, "Cell (%g,%g)--(%g,%g)--(%g,%g)--(%g,%g)\n",
                      PetscRealPart(x0),PetscRealPart(y0),PetscRealPart(x1),PetscRealPart(y1),PetscRealPart(x2),PetscRealPart(y2),PetscRealPart(x3),PetscRealPart(y3));CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "Ref Point (%g,%g)\n", PetscRealPart(x), PetscRealPart(y));CHKERRQ(ierr);
@@ -551,8 +551,10 @@ PetscErrorCode DMDAComputeCellGeometry_2D(DM dm, const PetscScalar vertices[], c
   J[2]    = PetscRealPart(y1 - y0 + g_01*y) * 0.5; J[3] = PetscRealPart(y3 - y0 + g_01*x) * 0.5;
   *detJ   = J[0]*J[3] - J[1]*J[2];
   invDet  = 1.0/(*detJ);
-  invJ[0] =  invDet*J[3]; invJ[1] = -invDet*J[1];
-  invJ[2] = -invDet*J[2]; invJ[3] =  invDet*J[0];
+  if (invJ) {
+    invJ[0] =  invDet*J[3]; invJ[1] = -invDet*J[1];
+    invJ[2] = -invDet*J[2]; invJ[3] =  invDet*J[0];
+  }
   ierr    = PetscLogFlops(30);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -570,7 +572,7 @@ PetscErrorCode DMDAComputeCellGeometry(DM dm, PetscInt cell, PetscQuadrature *qu
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMDAGetInfo(dm, &dim, 0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMGetCoordinates(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   ierr = DMDAVecGetClosure(cdm, NULL, coordinates, cell, &csize, &vertices);CHKERRQ(ierr);
   for (d = 0; d < dim; ++d) v0[d] = PetscRealPart(vertices[d]);
