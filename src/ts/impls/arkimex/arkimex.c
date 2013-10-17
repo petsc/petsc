@@ -45,6 +45,7 @@ typedef struct {
   Vec          *Y;               /* States computed during the step */
   Vec          *YdotI;           /* Time derivatives for the stiff part */
   Vec          *YdotRHS;         /* Function evaluations for the non-stiff part */
+  PetscBool    prev_step_valid;  /* Stored previous step (Y_prev, YdotI_prev, YdotRHS_prev) is valid */
   Vec          *Y_prev;          /* States computed during the previous time step */
   Vec          *YdotI_prev;      /* Time derivatives for the stiff part for the previous time step*/
   Vec          *YdotRHS_prev;    /* Function evaluations for the non-stiff part for the previous time step*/
@@ -766,7 +767,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
         for (j=0; j<i; j++) w[j] = h*At[i*s+j];
         ierr = VecMAXPY(Z,i,w,YdotI);CHKERRQ(ierr);
 
-        if (init_guess_extrp && ts->steps) {
+        if (init_guess_extrp && ark->prev_step_valid) {
           /* Initial guess extrapolated from previous time step stage values */
           ierr        = TSExtrapolate_ARKIMEX(ts,c[i],Y[i]);CHKERRQ(ierr);
         } else {
@@ -826,6 +827,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
           ierr = VecCopy(YdotRHS[i],ark->YdotRHS_prev[i]);CHKERRQ(ierr);
           ierr = VecCopy(YdotI[i],ark->YdotI_prev[i]);CHKERRQ(ierr);
         }
+        ark->prev_step_valid = PETSC_TRUE;
       }
       break;
     } else {                    /* Roll back the current step */
@@ -876,7 +878,6 @@ static PetscErrorCode TSInterpolate_ARKIMEX(TS ts,PetscReal itime,Vec X)
       b[i]  += h * B[i*pinterp+j] * tt;
     }
   }
-  if (ark->tableau->At[0*s+0] != 0.0) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"First stage not explicit so starting stage not saved");
   ierr = VecCopy(ark->Y[0],X);CHKERRQ(ierr);
   ierr = VecMAXPY(X,s,bt,ark->YdotI);CHKERRQ(ierr);
   ierr = VecMAXPY(X,s,b,ark->YdotRHS);CHKERRQ(ierr);
@@ -908,7 +909,7 @@ static PetscErrorCode TSExtrapolate_ARKIMEX(TS ts,PetscReal c,Vec X)
       b[i]  += h * B[i*pinterp+j] * tt;
     }
   }
-  if (ark->tableau->At[0*s+0] != 0.0) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"First stage not explicit so starting stage not saved");
+  if (!ark->prev_step_valid) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Stages from previous step have not been stored");
   ierr = VecCopy(ark->Y_prev[0],X);CHKERRQ(ierr);
   ierr = VecMAXPY(X,s,bt,ark->YdotI_prev);CHKERRQ(ierr);
   ierr = VecMAXPY(X,s,b,ark->YdotRHS_prev);CHKERRQ(ierr);
