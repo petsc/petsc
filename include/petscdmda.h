@@ -3,6 +3,7 @@
 
 #include <petscdm.h>
 #include <petscdt.h>
+#include <petscfe.h>
 #include <petscdmdatypes.h>
 #include <petscpf.h>
 #include <petscao.h>

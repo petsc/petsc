@@ -36,7 +36,7 @@ static PetscErrorCode DMPlexLocatePoint_General_2D_Internal(DM dm, const PetscSc
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordsLocal, c, NULL, &coords);CHKERRQ(ierr);
   for (f = 0; f < 4; ++f) {
     PetscReal x_i   = PetscRealPart(coords[faces[2*f+0]*2+0]);
@@ -93,7 +93,7 @@ static PetscErrorCode DMPlexLocatePoint_General_3D_Internal(DM dm, const PetscSc
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordsLocal, c, NULL, &coords);CHKERRQ(ierr);
   for (f = 0; f < 6; ++f) {
     /* Check the point is under plane */
@@ -467,7 +467,7 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
   *detJ = 0.0;
   if (numCoords == 4) {
@@ -510,7 +510,7 @@ static PetscErrorCode DMPlexComputeTriangleGeometry_Internal(DM dm, PetscInt e, 
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
   *detJ = 0.0;
   if (numCoords == 9) {
@@ -571,7 +571,7 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
   *detJ = 0.0;
   if (numCoords == 12) {
@@ -631,7 +631,7 @@ static PetscErrorCode DMPlexComputeTetrahedronGeometry_Internal(DM dm, PetscInt 
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, e, NULL, &coords);CHKERRQ(ierr);
   *detJ = 0.0;
   if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
@@ -663,7 +663,7 @@ static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, e, NULL, &coords);CHKERRQ(ierr);
   *detJ = 0.0;
   if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
@@ -704,7 +704,7 @@ static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e
   Since it returns arrays, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
 
-.seealso: DMPlexGetCoordinateSection(), DMPlexGetCoordinateVec()
+.seealso: DMGetCoordinateSection(), DMPlexGetCoordinateVec()
 @*/
 PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, PetscReal *J, PetscReal *invJ, PetscReal *detJ)
 {
@@ -798,7 +798,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt dim, 
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
   if (dim != 2) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "We only support 2D edges right now");
   if (centroid) {
@@ -831,7 +831,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMPlexGetConeSize(dm, cell, &numCorners);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
   dim  = coordSize/numCorners;
   if (normal) {
@@ -901,7 +901,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
 
   if (centroid) for (d = 0; d < dim; ++d) centroid[d] = 0.0;
   ierr = DMPlexGetConeSize(dm, cell, &numFaces);CHKERRQ(ierr);
@@ -990,7 +990,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
   Since it returns arrays, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
 
-.seealso: DMPlexGetCoordinateSection(), DMPlexGetCoordinateVec()
+.seealso: DMGetCoordinateSection(), DMPlexGetCoordinateVec()
 @*/
 PetscErrorCode DMPlexComputeCellGeometryFVM(DM dm, PetscInt cell, PetscReal *vol, PetscReal centroid[], PetscReal normal[])
 {

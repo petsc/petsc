@@ -538,7 +538,7 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
   ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = PetscMalloc(numComp * sizeof(PetscScalar), &values);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {
