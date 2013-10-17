@@ -183,25 +183,19 @@ PETSC_EXTERN PetscErrorCode DMDARestoreArray(DM,PetscBool ,void*);
 
 PETSC_EXTERN PetscErrorCode DMDACreatePF(DM,PF*);
 
-/* Emulation of DMPlex */
-PETSC_EXTERN PetscErrorCode DMDAGetNumCells(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMDAGetNumCells(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDAGetNumVertices(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDAGetNumFaces(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDAGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMDACreateSection(DM, PetscInt[], PetscInt[], PetscInt[], PetscSection *);
+PETSC_EXTERN PetscErrorCode DMDACreateSection(DM, PetscInt[], PetscInt[], PetscInt[], PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMDAComputeCellGeometry(DM, PetscInt, PetscQuadrature *, PetscReal [], PetscReal [], PetscReal [], PetscReal []);
-PETSC_EXTERN PetscErrorCode DMDAVecGetClosure(DM, PetscSection, Vec, PetscInt, PetscInt *, const PetscScalar **);
+PETSC_EXTERN PetscErrorCode DMDAVecGetClosure(DM, PetscSection, Vec, PetscInt, const PetscScalar **);
 PETSC_EXTERN PetscErrorCode DMDAVecSetClosure(DM, PetscSection, Vec, PetscInt, const PetscScalar *, InsertMode);
-PETSC_EXTERN PetscErrorCode DMDAGetClosure(DM, PetscSection, PetscInt, PetscInt*, const PetscInt**);
-PETSC_EXTERN PetscErrorCode DMDARestoreClosure(DM, PetscSection, PetscInt, PetscInt*, const PetscInt**);
-PETSC_EXTERN PetscErrorCode DMDAGetClosureScalar(DM, PetscSection, PetscInt, PetscScalar*, PetscInt*, const PetscScalar**);
-PETSC_EXTERN PetscErrorCode DMDARestoreClosureScalar(DM, PetscSection, PetscInt, PetscScalar*, PetscInt*, const PetscScalar**);
+PETSC_EXTERN PetscErrorCode DMDAGetClosure(DM,PetscSection,PetscInt,PetscInt*,const PetscInt**);
+PETSC_EXTERN PetscErrorCode DMDARestoreClosure(DM,PetscSection,PetscInt,PetscInt*,const PetscInt**);
+PETSC_EXTERN PetscErrorCode DMDAGetClosureScalar(DM,PetscSection,PetscInt,PetscScalar*,const PetscScalar**);
+PETSC_EXTERN PetscErrorCode DMDARestoreClosureScalar(DM,PetscSection,PetscInt,PetscScalar*,const PetscScalar**);
 PETSC_EXTERN PetscErrorCode DMDASetClosureScalar(DM,PetscSection,PetscInt,PetscScalar*,const PetscScalar*,InsertMode);
 PETSC_EXTERN PetscErrorCode DMDAConvertToCell(DM, MatStencil, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMDASetVertexCoordinates(DM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
-
-PETSC_EXTERN PetscErrorCode DMDAProjectFunction(DM, PetscFE[], void (**)(const PetscReal [], PetscScalar *), InsertMode, Vec);
-PETSC_EXTERN PetscErrorCode DMDAProjectFunctionLocal(DM, PetscFE[], void (**)(const PetscReal [], PetscScalar *), InsertMode, Vec);
-PETSC_EXTERN PetscErrorCode DMDAComputeL2Diff(DM, PetscFE[], void (**)(const PetscReal [], PetscScalar *), Vec, PetscReal *);
 
 #endif
