@@ -20,39 +20,25 @@ typedef struct {
   PetscInt  porder;            /* Order of polynomials to test */
 } AppCtx;
 
+static int spdim = 1;
+
 void constant(const PetscReal coords[], PetscScalar *u)
 {
-  *u = 1.0;
+  PetscInt d;
+  for (d = 0; d < spdim; ++d) u[d] = 1.0;
 }
 
-void linear_x(const PetscReal coords[], PetscScalar *u)
+void linear(const PetscReal coords[], PetscScalar *u)
 {
-  *u = coords[0];
-}
-void linear_y(const PetscReal coords[], PetscScalar *u)
-{
-  *u = coords[1];
-}
-void linear_z(const PetscReal coords[], PetscScalar *u)
-{
-  *u = coords[2];
+  PetscInt d;
+  for (d = 0; d < spdim; ++d) u[d] = coords[d];
 }
 
-void quadratic_xx(const PetscReal coords[], PetscScalar *u)
+void quadratic(const PetscReal coords[], PetscScalar *u)
 {
-  *u = coords[0]*coords[0];
-}
-void quadratic_xy(const PetscReal coords[], PetscScalar *u)
-{
-  *u = coords[0]*coords[1];
-}
-void quadratic_yz(const PetscReal coords[], PetscScalar *u)
-{
-  *u = coords[1]*coords[2];
-}
-void quadratic_zx(const PetscReal coords[], PetscScalar *u)
-{
-  *u = coords[2]*coords[0];
+  if (spdim > 2)      {u[0] = coords[0]*coords[1]; u[1] = coords[1]*coords[2]; u[2] = coords[2]*coords[0];}
+  else if (spdim > 1) {u[0] = coords[0]*coords[0]; u[1] = coords[0]*coords[1];}
+  else if (spdim > 0) {u[0] = coords[0]*coords[0];}
 }
 
 #undef __FUNCT__
@@ -81,6 +67,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-num_comp", "The number of field components", "ex3.c", options->numComponents, &options->numComponents, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-porder", "The order of polynomials to test", "ex3.c", options->porder, &options->porder, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
+
+  spdim = options->dim;
   PetscFunctionReturn(0);
 };
 
@@ -233,48 +221,18 @@ PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
   ierr = PetscFEGetQuadrature(user->fe, &fq);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(user->fe, &Nc);CHKERRQ(ierr);
   /* Setup functions to approximate */
-  switch (dim) {
-  case 2:
-    switch (order) {
-    case 0:
-      exactFuncs[0] = constant;
-      exactFuncs[1] = constant;
-      break;
-    case 1:
-      exactFuncs[0] = linear_x;
-      exactFuncs[1] = linear_y;
-      break;
-    case 2:
-      exactFuncs[0] = quadratic_xx;
-      exactFuncs[1] = quadratic_xy;
-      break;
-    default:
-      SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for dimension %d order %d", dim, order);
-    }
+  switch (order) {
+  case 0:
+    exactFuncs[0] = constant;
     break;
-  case 3:
-    switch (order) {
-    case 0:
-      exactFuncs[0] = constant;
-      exactFuncs[1] = constant;
-      exactFuncs[2] = constant;
-      break;
-    case 1:
-      exactFuncs[0] = linear_x;
-      exactFuncs[1] = linear_y;
-      exactFuncs[2] = linear_z;
-      break;
-    case 2:
-      exactFuncs[0] = quadratic_xy;
-      exactFuncs[1] = quadratic_yz;
-      exactFuncs[2] = quadratic_zx;
-      break;
-    default:
-      SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for dimension %d order %d", dim, order);
-    }
+  case 1:
+    exactFuncs[0] = linear;
+    break;
+  case 2:
+    exactFuncs[0] = quadratic;
     break;
   default:
-    SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for dimension %d", dim);
+    SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for dimension %d order %d", dim, order);
   }
   /* Project function into FE function space */
   if (isPlex) {
