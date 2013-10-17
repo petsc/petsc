@@ -781,7 +781,12 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
         ts->snes_its += its; ts->ksp_its += lits;
         ierr          = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
         ierr          = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
-        if (!accept) goto reject_step;
+        if (!accept) {
+          /* We are likely rejecting the step because of solver or function domain problems so we should not attempt to
+           * use extrapolation to initialize the solves on the next attempt. */
+          ark->prev_step_valid = PETSC_FALSE;
+          goto reject_step;
+        }
       }
       if (ts->equation_type>=TS_EQ_IMPLICIT) {
         if (i==0 && tab->explicit_first_stage) {
