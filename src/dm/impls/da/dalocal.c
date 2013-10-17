@@ -210,6 +210,134 @@ PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, Pe
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMDAGetDepthStratum"
+PetscErrorCode DMDAGetDepthStratum(DM dm, PetscInt depth, PetscInt *pStart, PetscInt *pEnd)
+{
+  DM_DA         *da  = (DM_DA*) dm->data;
+  const PetscInt dim = da->dim;
+  PetscInt       nC, nV, nXF, nYF, nZF;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (pStart) PetscValidIntPointer(pStart,3);
+  if (pEnd)   PetscValidIntPointer(pEnd,4);
+  ierr = DMDAGetNumCells(dm, NULL, NULL, NULL, &nC);CHKERRQ(ierr);
+  ierr = DMDAGetNumVertices(dm, NULL, NULL, NULL, &nV);CHKERRQ(ierr);
+  ierr = DMDAGetNumFaces(dm, NULL, &nXF, NULL, &nYF, NULL, &nZF);CHKERRQ(ierr);
+  if (depth == dim) {
+    /* Cells */
+    if (pStart) *pStart = 0;
+    if (pEnd)   *pEnd   = nC;
+  } else if (depth == dim-1) {
+    /* Faces */
+    if (pStart) *pStart = nC+nV;
+    if (pEnd)   *pEnd   = nC+nV+nXF+nYF+nZF;
+  } else if (depth == 0) {
+    /* Vertices */
+    if (pStart) *pStart = nC;
+    if (pEnd)   *pEnd   = nC+nV;
+  } else if (depth < 0) {
+    /* All points */
+    if (pStart) *pStart = 0;
+    if (pEnd)   *pEnd   = nC+nV+nXF+nYF+nZF;
+  } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No points of depth %d in the DA", depth);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetConeSize"
+PetscErrorCode DMDAGetConeSize(DM dm, PetscInt p, PetscInt *coneSize)
+{
+  DM_DA         *da  = (DM_DA*) dm->data;
+  const PetscInt dim = da->dim;
+  PetscInt       nC, nV, nXF, nYF, nZF;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *coneSize = 0;
+  ierr = DMDAGetNumCells(dm, NULL, NULL, NULL, &nC);CHKERRQ(ierr);
+  ierr = DMDAGetNumVertices(dm, NULL, NULL, NULL, &nV);CHKERRQ(ierr);
+  ierr = DMDAGetNumFaces(dm, NULL, &nXF, NULL, &nYF, NULL, &nZF);CHKERRQ(ierr);
+  switch (dim) {
+  case 2:
+    if (p >= 0) {
+      if (p < nC) {
+        *coneSize = 4;
+      } else if (p < nC+nV) {
+        *coneSize = 0;
+      } else if (p < nC+nV+nXF+nYF+nZF) {
+        *coneSize = 2;
+      } else SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %d should be in [0, %d)", p, nC+nV+nXF+nYF+nZF);
+    } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative point %d is invalid", p);
+    break;
+  case 3:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to do 3D");
+    break;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetCone"
+PetscErrorCode DMDAGetCone(DM dm, PetscInt p, PetscInt *cone[])
+{
+  DM_DA         *da  = (DM_DA*) dm->data;
+  const PetscInt dim = da->dim;
+  PetscInt       nCx, nCy, nCz, nC, nVx, nVy, nVz, nV, nxF, nyF, nzF, nXF, nYF, nZF;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!cone) {ierr = DMGetWorkArray(dm, 6, PETSC_INT, cone);CHKERRQ(ierr);}
+  ierr = DMDAGetNumCells(dm, &nCx, &nCy, &nCz, &nC);CHKERRQ(ierr);
+  ierr = DMDAGetNumVertices(dm, &nVx, &nVy, &nVz, &nV);CHKERRQ(ierr);
+  ierr = DMDAGetNumFaces(dm, &nxF, &nXF, &nyF, &nYF, &nzF, &nZF);CHKERRQ(ierr);
+  switch (dim) {
+  case 2:
+    if (p >= 0) {
+      if (p < nC) {
+        const PetscInt cy = p / nCx;
+        const PetscInt cx = p % nCx;
+
+        (*cone)[0] = cy*nxF + cx + nC+nV;
+        (*cone)[1] = cx*nyF + cy + nyF + nC+nV+nXF;
+        (*cone)[2] = cy*nxF + cx + nxF + nC+nV;
+        (*cone)[3] = cx*nyF + cy + nC+nV+nXF;
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to do cell cones");
+      } else if (p < nC+nV) {
+      } else if (p < nC+nV+nXF) {
+        const PetscInt fy = (p - nC+nV) / nxF;
+        const PetscInt fx = (p - nC+nV) % nxF;
+
+        (*cone)[0] = fy*nVx + fx + nC;
+        (*cone)[1] = fy*nVx + fx + 1 + nC;
+      } else if (p < nC+nV+nXF+nYF) {
+        const PetscInt fx = (p - nC+nV+nXF) / nyF;
+        const PetscInt fy = (p - nC+nV+nXF) % nyF;
+
+        (*cone)[0] = fy*nVx + fx + nC;
+        (*cone)[1] = fy*nVx + fx + nVx + nC;
+      } else SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %d should be in [0, %d)", p, nC+nV+nXF+nYF+nZF);
+    } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative point %d is invalid", p);
+    break;
+  case 3:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to do 3D");
+    break;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDARestoreCone"
+PetscErrorCode DMDARestoreCone(DM dm, PetscInt p, PetscInt *cone[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetWorkArray(dm, 6, PETSC_INT, cone);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDACreateSection"
 /*@C
   DMDACreateSection - Create a PetscSection inside the DMDA that describes data layout. This allows multiple fields with
@@ -724,7 +852,60 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
   ierr = DMSetPointSF(dm, sf);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
+#undef __FUNCT__
+#define __FUNCT__ "DMDASetVertexCoordinates"
+PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, PetscReal yl, PetscReal yu, PetscReal zl, PetscReal zu)
+{
+  DM_DA         *da = (DM_DA *) dm->data;
+  Vec            coordinates;
+  PetscSection   section;
+  PetscScalar   *coords;
+  PetscReal      h[3];
+  PetscInt       dim, size, M, N, P, nVx, nVy, nVz, nV, vStart, vEnd, v, i, j, k;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMDAGetInfo(dm, &dim, &M, &N, &P, 0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  h[0] = (xu - xl)/M;
+  h[1] = (yu - yl)/N;
+  h[2] = (zu - zl)/P;
+  ierr = DMDAGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMDAGetNumVertices(dm, &nVx, &nVy, &nVz, &nV);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &section);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(section, 1);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(section, 0, dim);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(section, vStart, vEnd);CHKERRQ(ierr);
+  for (v = vStart; v < vEnd; ++v) {
+    ierr = PetscSectionSetDof(section, v, dim);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF, size, &coordinates);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+  for (k = 0; k < nVz; ++k) {
+    PetscInt ind[3] = {0, 0, k + da->zs}, d, off;
+
+    for (j = 0; j < nVy; ++j) {
+      ind[1] = j + da->ys;
+      for (i = 0; i < nVx; ++i) {
+        const PetscInt vertex = (k*nVy + j)*nVx + i + vStart;
+
+        ierr = PetscSectionGetOffset(section, vertex, &off);CHKERRQ(ierr);
+        ind[0] = i + da->xs;
+        for (d = 0; d < dim; ++d) {
+          coords[off+d] = h[d]*ind[d];
+        }
+      }
+    }
+  }
+  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMSetCoordinateSection(dm, section);CHKERRQ(ierr);
+  ierr = DMSetCoordinatesLocal(dm, coordinates);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
+  ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
   PetscFunctionReturn(0);
 }
 
