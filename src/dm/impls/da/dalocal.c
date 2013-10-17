@@ -346,10 +346,9 @@ PetscErrorCode DMDARestoreCone(DM dm, PetscInt p, PetscInt *cone[])
   Input Parameters:
 + dm- The DMDA
 . numFields - The number of fields
-. numComp - The number of components in each field, or NULL for 1
-. numVertexDof - The number of dofs per vertex for each field, or NULL
+. numComp - The number of components in each field
+. numDof - The number of dofs per dimension for each field
 . numFaceDof - The number of dofs per face for each field and direction, or NULL
-- numCellDof - The number of dofs per cell for each field, or NULL
 
   Level: developer
 
@@ -364,7 +363,7 @@ PetscErrorCode DMDARestoreCone(DM dm, PetscInt p, PetscInt *cone[])
 
   We interpret the default DMDA partition as a cell partition, and the data assignment as a cell assignment.
 @*/
-PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDof[], PetscInt numFaceDof[], PetscInt numCellDof[])
+PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numDof[], PetscInt numFaceDof[], PetscSection *s)
 {
   DM_DA            *da  = (DM_DA*) dm->data;
   PetscSection      section;
@@ -399,65 +398,55 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
   /* Create local section */
   ierr = DMDAGetInfo(dm, 0,0,0,0,0,0,0, &numFields, 0,0,0,0,0);CHKERRQ(ierr);
   for (f = 0; f < numFields; ++f) {
-    if (numVertexDof) numVertexTotDof  += numVertexDof[f];
-    if (numCellDof)   numCellTotDof    += numCellDof[f];
-    if (numFaceDof) {
-      numFaceTotDof[0] += numFaceDof[f*dim+0];
-      numFaceTotDof[1] += dim > 1 ? numFaceDof[f*dim+1] : 0;
-      numFaceTotDof[2] += dim > 2 ? numFaceDof[f*dim+2] : 0;
-    }
+    numVertexTotDof  += numDof[f*(dim+1)+0];
+    numCellTotDof    += numDof[f*(dim+1)+dim];
+    numFaceTotDof[0] += dim > 0 ? (numFaceDof ? numFaceDof[f*dim+0] : numDof[f*(dim+1)+dim-1]) : 0;
+    numFaceTotDof[1] += dim > 1 ? (numFaceDof ? numFaceDof[f*dim+1] : numDof[f*(dim+1)+dim-1]) : 0;
+    numFaceTotDof[2] += dim > 2 ? (numFaceDof ? numFaceDof[f*dim+2] : numDof[f*(dim+1)+dim-1]) : 0;
   }
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &section);CHKERRQ(ierr);
-  if (numFields > 1) {
+  if (numFields > 0) {
     ierr = PetscSectionSetNumFields(section, numFields);CHKERRQ(ierr);
     for (f = 0; f < numFields; ++f) {
       const char *name;
 
       ierr = DMDAGetFieldName(dm, f, &name);CHKERRQ(ierr);
-      ierr = PetscSectionSetFieldName(section, f, name);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldName(section, f, name ? name : "Field");CHKERRQ(ierr);
       if (numComp) {
         ierr = PetscSectionSetFieldComponents(section, f, numComp[f]);CHKERRQ(ierr);
       }
     }
-  } else {
-    numFields = 0;
   }
   ierr = PetscSectionSetChart(section, pStart, pEnd);CHKERRQ(ierr);
-  if (numVertexDof) {
-    for (v = vStart; v < vEnd; ++v) {
-      for (f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldDof(section, v, f, numVertexDof[f]);CHKERRQ(ierr);
-      }
-      ierr = PetscSectionSetDof(section, v, numVertexTotDof);CHKERRQ(ierr);
+  for (v = vStart; v < vEnd; ++v) {
+    for (f = 0; f < numFields; ++f) {
+      ierr = PetscSectionSetFieldDof(section, v, f, numDof[f*(dim+1)+0]);CHKERRQ(ierr);
     }
+    ierr = PetscSectionSetDof(section, v, numVertexTotDof);CHKERRQ(ierr);
   }
-  if (numFaceDof) {
-    for (xf = xfStart; xf < xfEnd; ++xf) {
-      for (f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldDof(section, xf, f, numFaceDof[f*dim+0]);CHKERRQ(ierr);
-      }
-      ierr = PetscSectionSetDof(section, xf, numFaceTotDof[0]);CHKERRQ(ierr);
+  for (xf = xfStart; xf < xfEnd; ++xf) {
+    for (f = 0; f < numFields; ++f) {
+      ierr = PetscSectionSetFieldDof(section, xf, f, numFaceDof ? numFaceDof[f*dim+0] : numDof[f*(dim+1)+dim-1]);CHKERRQ(ierr);
     }
-    for (yf = yfStart; yf < yfEnd; ++yf) {
-      for (f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldDof(section, yf, f, numFaceDof[f*dim+1]);CHKERRQ(ierr);
-      }
-      ierr = PetscSectionSetDof(section, yf, numFaceTotDof[1]);CHKERRQ(ierr);
-    }
-    for (zf = zfStart; zf < zfEnd; ++zf) {
-      for (f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldDof(section, zf, f, numFaceDof[f*dim+2]);CHKERRQ(ierr);
-      }
-      ierr = PetscSectionSetDof(section, zf, numFaceTotDof[2]);CHKERRQ(ierr);
-    }
+    ierr = PetscSectionSetDof(section, xf, numFaceTotDof[0]);CHKERRQ(ierr);
   }
-  if (numCellDof) {
-    for (c = cStart; c < cEnd; ++c) {
-      for (f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldDof(section, c, f, numCellDof[f]);CHKERRQ(ierr);
-      }
-      ierr = PetscSectionSetDof(section, c, numCellTotDof);CHKERRQ(ierr);
+  for (yf = yfStart; yf < yfEnd; ++yf) {
+    for (f = 0; f < numFields; ++f) {
+      ierr = PetscSectionSetFieldDof(section, yf, f, numFaceDof ? numFaceDof[f*dim+1] : numDof[f*(dim+1)+dim-1]);CHKERRQ(ierr);
     }
+    ierr = PetscSectionSetDof(section, yf, numFaceTotDof[1]);CHKERRQ(ierr);
+  }
+  for (zf = zfStart; zf < zfEnd; ++zf) {
+    for (f = 0; f < numFields; ++f) {
+      ierr = PetscSectionSetFieldDof(section, zf, f, numFaceDof ? numFaceDof[f*dim+2] : numDof[f*(dim+1)+dim-1]);CHKERRQ(ierr);
+    }
+    ierr = PetscSectionSetDof(section, zf, numFaceTotDof[2]);CHKERRQ(ierr);
+  }
+  for (c = cStart; c < cEnd; ++c) {
+    for (f = 0; f < numFields; ++f) {
+      ierr = PetscSectionSetFieldDof(section, c, f, numDof[f*(dim+1)+dim]);CHKERRQ(ierr);
+    }
+    ierr = PetscSectionSetDof(section, c, numCellTotDof);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
   /* Create mesh point SF */
@@ -851,7 +840,10 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
   ierr = PetscSFSetGraph(sf, pEnd, nleaves, localPoints, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = DMSetPointSF(dm, sf);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-  ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
+  *s = section;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "DMDASetVertexCoordinates"
 PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, PetscReal yl, PetscReal yu, PetscReal zl, PetscReal zu)
