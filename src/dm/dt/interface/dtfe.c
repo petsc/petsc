@@ -1453,26 +1453,43 @@ PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim
   }
   break;
   case 2:
-  {
-    PetscInt    numPoints[2]        = {3, 1};
-    PetscInt    coneSize[4]         = {3, 0, 0, 0};
-    PetscInt    cones[3]            = {1, 2, 3};
-    PetscInt    coneOrientations[3] = {0, 0, 0};
-    PetscScalar vertexCoords[6]     = {-1.0, -1.0,  1.0, -1.0,  -1.0, 1.0};
+    if (simplex) {
+      PetscInt    numPoints[2]        = {3, 1};
+      PetscInt    coneSize[4]         = {3, 0, 0, 0};
+      PetscInt    cones[3]            = {1, 2, 3};
+      PetscInt    coneOrientations[3] = {0, 0, 0};
+      PetscScalar vertexCoords[6]     = {-1.0, -1.0,  1.0, -1.0,  -1.0, 1.0};
 
-    ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-  }
+      ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+    } else {
+      PetscInt    numPoints[2]        = {4, 1};
+      PetscInt    coneSize[5]         = {4, 0, 0, 0, 0};
+      PetscInt    cones[4]            = {1, 2, 3, 4};
+      PetscInt    coneOrientations[4] = {0, 0, 0, 0};
+      PetscScalar vertexCoords[8]     = {-1.0, -1.0,  1.0, -1.0,  1.0, 1.0,  -1.0, 1.0};
+
+      ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+    }
   break;
   case 3:
-  {
-    PetscInt    numPoints[2]        = {4, 1};
-    PetscInt    coneSize[5]         = {4, 0, 0, 0, 0};
-    PetscInt    cones[4]            = {1, 3, 2, 4};
-    PetscInt    coneOrientations[4] = {0, 0, 0, 0};
-    PetscScalar vertexCoords[12]    = {-1.0, -1.0, -1.0,  1.0, -1.0, -1.0,  -1.0, 1.0, -1.0,  -1.0, -1.0, 1.0};
+    if (simplex) {
+      PetscInt    numPoints[2]        = {4, 1};
+      PetscInt    coneSize[5]         = {4, 0, 0, 0, 0};
+      PetscInt    cones[4]            = {1, 3, 2, 4};
+      PetscInt    coneOrientations[4] = {0, 0, 0, 0};
+      PetscScalar vertexCoords[12]    = {-1.0, -1.0, -1.0,  1.0, -1.0, -1.0,  -1.0, 1.0, -1.0,  -1.0, -1.0, 1.0};
 
-    ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-  }
+      ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+    } else {
+      PetscInt    numPoints[2]        = {8, 1};
+      PetscInt    coneSize[9]         = {8, 0, 0, 0, 0, 0, 0, 0, 0};
+      PetscInt    cones[8]            = {1, 4, 3, 2, 5, 6, 7, 8};
+      PetscInt    coneOrientations[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+      PetscScalar vertexCoords[24]    = {-1.0, -1.0, -1.0,  1.0, -1.0, -1.0,  1.0, 1.0, -1.0,  -1.0, 1.0, -1.0,
+                                         -1.0, -1.0,  1.0,  1.0, -1.0,  1.0,  1.0, 1.0,  1.0,  -1.0, 1.0,  1.0};
+
+      ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+    }
   break;
   default:
     SETERRQ1(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_WRONG, "Cannot create reference cell for dimension %d", dim);
@@ -1530,12 +1547,12 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   PetscSection        csection;
   Vec                 coordinates;
   PetscReal          *qpoints, *qweights;
+  PetscInt           *closure = NULL, closureSize, c;
   PetscInt            depth, dim, pdim, *pStart, *pEnd, coneSize, d, n, f = 0;
+  PetscBool           simplex;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDualSpaceGetDimension(sp, &pdim);CHKERRQ(ierr);
-  ierr = PetscMalloc(pdim * sizeof(PetscQuadrature), &sp->functional);CHKERRQ(ierr);
   /* Classify element type */
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
@@ -1548,10 +1565,23 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   ierr = DMPlexGetConeSize(dm, pStart[depth], &coneSize);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &csection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  if (coneSize == dim+1) {
-    PetscInt *closure = NULL, closureSize, c;
-
-    /* Simplex */
+  if      (coneSize == dim+1)    simplex = PETSC_TRUE;
+  else if (coneSize == 1 << dim) simplex = PETSC_FALSE;
+  else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support simplices and tensor product cells");
+  lag->simplex = simplex;
+  ierr = PetscDualSpaceGetDimension(sp, &pdim);CHKERRQ(ierr);
+  ierr = PetscMalloc(pdim * sizeof(PetscQuadrature), &sp->functional);CHKERRQ(ierr);
+  if (!dim) {
+    sp->functional[f].numPoints = 1;
+    ierr = PetscMalloc(sp->functional[f].numPoints * sizeof(PetscReal), &qpoints);CHKERRQ(ierr);
+    ierr = PetscMalloc(sp->functional[f].numPoints * sizeof(PetscReal), &qweights);CHKERRQ(ierr);
+    qpoints[0]  = 0.0;
+    qweights[0] = 1.0;
+    sp->functional[f].points  = qpoints;
+    sp->functional[f].weights = qweights;
+    ++f;
+    lag->numDof[0] = 1;
+  } else {
     ierr = DMPlexGetTransitiveClosure(dm, pStart[depth], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     for (c = 0; c < closureSize*2; c += 2) {
       const PetscInt p = closure[c];
@@ -1579,28 +1609,29 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
       } else if ((p >= pStart[1]) && (p < pEnd[1])) {
         /* Edges */
         PetscScalar *coords;
-        PetscInt     k;
+        PetscInt     num = order-1, k;
 
         if (order < 2) continue;
         coords = NULL;
         ierr = DMPlexVecGetClosure(dm, csection, coordinates, p, &n, &coords);CHKERRQ(ierr);
         if (n != dim*2) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %d has %d coordinate values instead of %d", p, n, dim*2);
-        for (k = 1; k < order; ++k) {
+        for (k = 1; k <= num; ++k) {
           sp->functional[f].numPoints = 1;
           ierr = PetscMalloc(sp->functional[f].numPoints*dim * sizeof(PetscReal), &qpoints);CHKERRQ(ierr);
           ierr = PetscMalloc(sp->functional[f].numPoints     * sizeof(PetscReal), &qweights);CHKERRQ(ierr);
-          for (d = 0; d < dim; ++d) {qpoints[d] = k*PetscRealPart(coords[1*dim+d] - coords[0*dim+d])/order + PetscRealPart(coords[0*dim+d]);}
+          for (d = 0; d < dim; ++d) {qpoints[d] = k*PetscRealPart(coords[1*dim+d] - coords[0*dim+d])/(num+1) + PetscRealPart(coords[0*dim+d]);}
           qweights[0] = 1.0;
           sp->functional[f].points  = qpoints;
           sp->functional[f].weights = qweights;
           ++f;
         }
         ierr = DMPlexVecRestoreClosure(dm, csection, coordinates, p, &n, &coords);CHKERRQ(ierr);
-        lag->numDof[1] = order-1;
+        lag->numDof[1] = num;
       } else if ((p >= pStart[depth-1]) && (p < pEnd[depth-1])) {
         /* Faces */
 
-        if (order < 3) continue;
+        if ( simplex && (order < 3)) continue;
+        if (!simplex && (order < 2)) continue;
         lag->numDof[depth-1] = 0;
         SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to implement faces");
       } else if ((p >= pStart[depth]) && (p < pEnd[depth])) {
@@ -1608,9 +1639,10 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
         PetscScalar *coords = NULL;
         PetscInt     csize, v, d;
 
-        if ((order > 0) && (order < 3)) continue;
+        if ( simplex && (order > 0) && (order < 3)) continue;
+        if (!simplex && (order > 0) && (order < 2)) continue;
         lag->numDof[depth] = 0;
-        if (order) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to implement cells");}
+        if (order > 0) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to implement cells");}
 
         sp->functional[f].numPoints = 1;
         ierr = PetscMalloc(sp->functional[f].numPoints*dim * sizeof(PetscReal), &qpoints);CHKERRQ(ierr);
@@ -1635,17 +1667,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
       }
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, pStart[depth], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-  } else if (!dim) {
-    sp->functional[f].numPoints = 1;
-    ierr = PetscMalloc(sp->functional[f].numPoints * sizeof(PetscReal), &qpoints);CHKERRQ(ierr);
-    ierr = PetscMalloc(sp->functional[f].numPoints * sizeof(PetscReal), &qweights);CHKERRQ(ierr);
-    qpoints[0]  = 0.0;
-    qweights[0] = 1.0;
-    sp->functional[f].points  = qpoints;
-    sp->functional[f].weights = qweights;
-    ++f;
-    lag->numDof[0] = 1;
-  } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle cells with cone size %d", coneSize);
+  }
   ierr = PetscFree2(pStart,pEnd);CHKERRQ(ierr);
   if (f != pdim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of dual basis vectors %d not equal to dimension %d", f, pdim);
   PetscFunctionReturn(0);
@@ -1668,18 +1690,23 @@ PetscErrorCode PetscDualSpaceDestroy_Lagrange(PetscDualSpace sp)
 #define __FUNCT__ "PetscDualSpaceGetDimension_Lagrange"
 PetscErrorCode PetscDualSpaceGetDimension_Lagrange(PetscDualSpace sp, PetscInt *dim)
 {
+  PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
   PetscInt            deg = sp->order;
   PetscReal           D   = 1.0;
   PetscInt            n, i;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  /* TODO: Assumes simplices */
   ierr = DMPlexGetDimension(sp->dm, &n);CHKERRQ(ierr);
-  for (i = 1; i <= n; ++i) {
-    D *= ((PetscReal) (deg+i))/i;
+  if (lag->simplex) {
+    for (i = 1; i <= n; ++i) {
+      D *= ((PetscReal) (deg+i))/i;
+    }
+    *dim = (PetscInt) (D + 0.5);
+  } else {
+    *dim = 1;
+    for (i = 0; i < n; ++i) *dim *= (deg+1);
   }
-  *dim = (PetscInt) (D + 0.5);
   PetscFunctionReturn(0);
 }
 
@@ -1728,7 +1755,8 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace sp)
   ierr     = PetscNewLog(sp, PetscDualSpace_Lag, &lag);CHKERRQ(ierr);
   sp->data = lag;
 
-  lag->numDof = NULL;
+  lag->numDof  = NULL;
+  lag->simplex = PETSC_TRUE;
 
   ierr = PetscDualSpaceInitialize_Lagrange(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);

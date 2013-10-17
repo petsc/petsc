@@ -54,8 +54,8 @@ struct _p_PetscDualSpace {
 };
 
 typedef struct {
-  PetscInt  cellType;
   PetscInt *numDof;
+  PetscBool simplex;
 } PetscDualSpace_Lag;
 
 typedef struct _PetscFEOps *PetscFEOps;
