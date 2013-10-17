@@ -158,7 +158,7 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, DM dm)
   ierr = DMPlexSymmetrize(dm);CHKERRQ(ierr);
   ierr = DMPlexStratify(dm);CHKERRQ(ierr);
   /* Build coordinates */
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(coordSection, firstVertex, firstVertex+numVertices);CHKERRQ(ierr);
   for (v = firstVertex; v < firstVertex+numVertices; ++v) {
     ierr = PetscSectionSetDof(coordSection, v, 2);CHKERRQ(ierr);
