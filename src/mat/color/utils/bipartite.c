@@ -12,7 +12,7 @@ PETSC_EXTERN PetscErrorCode MatColoringCreateBipartiteGraph(MatColoring mc,Petsc
   PetscInt          ncol;
   const PetscScalar *vcol;
   const PetscInt    *icol;
-  const PetscInt    *coldegrees;
+  const PetscInt    *coldegrees,*rowdegrees;
   Mat               m = mc->mat;
 
   PetscFunctionBegin;
@@ -66,6 +66,11 @@ PETSC_EXTERN PetscErrorCode MatColoringCreateBipartiteGraph(MatColoring mc,Petsc
   /* this one takes mat entries in *columns* to rows -- you never have to actually be able to order the leaf entries. */
   ierr = PetscSFSetGraphLayout(*etor,m->rmap,ncolentries,NULL,PETSC_COPY_VALUES,colleaf);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(*etor);CHKERRQ(ierr);
+
+  ierr = PetscLogEventBegin(Mat_Coloring_Comm,*etor,0,0,0);CHKERRQ(ierr);
+  ierr = PetscSFComputeDegreeBegin(*etor,&rowdegrees);CHKERRQ(ierr);
+  ierr = PetscSFComputeDegreeEnd(*etor,&rowdegrees);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(Mat_Coloring_Comm,*etor,0,0,0);CHKERRQ(ierr);
 
   ierr = PetscFree(rowdata);CHKERRQ(ierr);
   ierr = PetscFree(rowleaf);CHKERRQ(ierr);

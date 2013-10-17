@@ -2,6 +2,7 @@
 #include <petscsf.h>
 
 PETSC_EXTERN PetscErrorCode MatColoringCreateBipartiteGraph(MatColoring,PetscSF *,PetscSF *);
+PETSC_EXTERN PetscErrorCode MatColoringDiscoverBoundary(MatColoring,PetscSF,PetscSF,PetscInt *,PetscInt**);
 
 typedef struct {
   PetscSF         etoc;

@@ -1,6 +1,8 @@
 #include <petsc-private/matimpl.h>      /*I "petscmat.h"  I*/
 #include <petscsf.h>
 
+
+
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringLocalColor"
 PETSC_EXTERN PetscErrorCode MatColoringLocalColor(MatColoring mc,PetscSF etoc,PetscSF etor,PetscReal *wts,ISColoringValue *color, ISColoringValue *maxcolor)
@@ -28,21 +30,20 @@ PETSC_EXTERN PetscErrorCode MatColoringLocalColor(MatColoring mc,PetscSF etoc,Pe
   const PetscSFNode *colentries,*rowentries;
 
   PetscFunctionBegin;
-  *maxcolor = 0;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mc),&rank);CHKERRQ(ierr);
 
   ierr = PetscSFGetGraph(etoc,&ncols,&ncolentries,NULL,&colentries);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(etor,&nrows,&nrowentries,NULL,&rowentries);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(sizeof(PetscBool)*nrows,&rowseen);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscBool)*ncols,&colseen);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*ncols,&coloffsets);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*nrows,&rowoffsets);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*ncols,&ll_ptr);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*ncols,&ll_idx);CHKERRQ(ierr);
+  ierr = PetscMalloc6(nrows,PetscBool,&rowseen,
+                      ncols,PetscBool,&colseen,
+                      ncols,PetscInt,&coloffsets,
+                      nrows,PetscInt,&rowoffsets,
+                      2*ncols,PetscInt,&ll_ptr,
+                      2*ncols,PetscInt,&ll_idx);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(sizeof(PetscInt)*ncols,&sidx);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscReal)*ncols,&swts);CHKERRQ(ierr);
+  ierr = PetscMalloc2(ncols,PetscInt,&sidx,
+                      ncols,PetscReal,&swts);CHKERRQ(ierr);
 
   ierr = PetscSFComputeDegreeBegin(etoc,&rowdegrees);CHKERRQ(ierr);
   ierr = PetscSFComputeDegreeEnd(etoc,&rowdegrees);CHKERRQ(ierr);
@@ -65,8 +66,8 @@ PETSC_EXTERN PetscErrorCode MatColoringLocalColor(MatColoring mc,PetscSF etoc,Pe
 
   /* set up the "unused" linked list */
   unused = 0;
-  ll_ptr[ncols-1] = -1;
-  for (i=0;i<ncols-1;i++) {
+  ll_ptr[2*ncols-1] = -1;
+  for (i=0;i<2*ncols-1;i++) {
     ll_ptr[i] = i+1;
   }
 
@@ -94,9 +95,9 @@ PETSC_EXTERN PetscErrorCode MatColoringLocalColor(MatColoring mc,PetscSF etoc,Pe
 
   /* alternate between rows and columns to get the distance k minimum coloring */
   for (i=0;i<ncols;i++) {
+    collist = -1;
+    rowlist = -1;
     if (color[sidx[i]] == IS_COLORING_MAX) {
-      collist = -1;
-      rowlist = -1;
       for (j=0;j<totalcolors;j++) colormask[j] = PETSC_FALSE;
       swp = unused;
       unused = ll_ptr[unused];
@@ -165,17 +166,18 @@ PETSC_EXTERN PetscErrorCode MatColoringLocalColor(MatColoring mc,PetscSF etoc,Pe
         ierr = PetscMalloc(sizeof(PetscBool)*totalcolors,&colormask);CHKERRQ(ierr);
       }
     }
+    if (collist != -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_NOT_CONVERGED,"Likely error in local coloring BFS -- column queue still has %d\n",collist);
+    if (rowlist != -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_NOT_CONVERGED,"Likely error in local coloring BFS -- row queue still has %d\n",rowlist);
+  }
+  for (i=0;i<ncols;i++) {
+    if (colseen[i]) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_NOT_CONVERGED,"Likely error in local coloring BFS -- column %d still seen\n",i);}
+  }
+  for (i=0;i<nrows;i++) {
+    if (rowseen[i]) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_NOT_CONVERGED,"Likely error in local coloring BFS -- row %d still seen\n",i);}
   }
 
-  ierr = PetscFree(rowseen);CHKERRQ(ierr);
-  ierr = PetscFree(colseen);CHKERRQ(ierr);
-  ierr = PetscFree(coloffsets);CHKERRQ(ierr);
-  ierr = PetscFree(rowoffsets);CHKERRQ(ierr);
-  ierr = PetscFree(ll_ptr);CHKERRQ(ierr);
-  ierr = PetscFree(ll_idx);CHKERRQ(ierr);
-
-  ierr = PetscFree(sidx);CHKERRQ(ierr);
-  ierr = PetscFree(swts);CHKERRQ(ierr);
+  ierr = PetscFree6(rowseen,colseen,coloffsets,rowoffsets,ll_ptr,ll_idx);CHKERRQ(ierr);
+  ierr = PetscFree2(sidx,swts);CHKERRQ(ierr);
   ierr = PetscFree(colormask);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -211,12 +213,12 @@ PETSC_EXTERN PetscErrorCode MatColoringDiscoverBoundary(MatColoring mc,PetscSF e
   ierr = PetscSFGetGraph(etoc,&ncols,&ncolentries,NULL,&colentries);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(etor,&nrows,&nrowentries,NULL,&rowentries);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(sizeof(PetscBool)*nrows,&rowseen);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscBool)*ncols,&colseen);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*ncols,&coloffsets);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*nrows,&rowoffsets);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*ncols,&ll_ptr);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*ncols,&ll_idx);CHKERRQ(ierr);
+  ierr = PetscMalloc6(nrows,PetscBool,&rowseen,
+                      ncols,PetscBool,&colseen,
+                      ncols,PetscInt,&coloffsets,
+                      nrows,PetscInt,&rowoffsets,
+                      2*ncols,PetscInt,&ll_ptr,
+                      2*ncols,PetscInt,&ll_idx);CHKERRQ(ierr);
 
   ierr = PetscSFComputeDegreeBegin(etoc,&rowdegrees);CHKERRQ(ierr);
   ierr = PetscSFComputeDegreeEnd(etoc,&rowdegrees);CHKERRQ(ierr);
@@ -224,10 +226,10 @@ PETSC_EXTERN PetscErrorCode MatColoringDiscoverBoundary(MatColoring mc,PetscSF e
   ierr = PetscSFComputeDegreeBegin(etor,&coldegrees);CHKERRQ(ierr);
   ierr = PetscSFComputeDegreeEnd(etor,&coldegrees);CHKERRQ(ierr);
 
-  /* set up the "unused" linked list */
+  /* set up the "unused" linked list -- double the size of the number of items as in tiny or large distance cases we may have a clique */
   unused = 0;
-  ll_ptr[ncols-1] = -1;
-  for (i=0;i<ncols-1;i++) {
+  ll_ptr[2*ncols-1] = -1;
+  for (i=0;i<2*ncols-1;i++) {
     ll_ptr[i] = i+1;
   }
 
@@ -312,12 +314,20 @@ PETSC_EXTERN PetscErrorCode MatColoringDiscoverBoundary(MatColoring mc,PetscSF e
       }
     }
     if (onBoundary) {(*nboundary)++;}
+    if (collist != -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_NOT_CONVERGED,"Likely error in boundary count BFS -- column queue still has %d\n",collist);
+    if (rowlist != -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_NOT_CONVERGED,"Likely error in boundary count BFS -- row queue still has %d\n",collist);
   }
+  for (i=0;i<ncols;i++) {
+    if (colseen[i]) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_NOT_CONVERGED,"Likely error in boundary count BFS -- column %d still seen\n",i);}
+  }
+  for (i=0;i<nrows;i++) {
+    if (rowseen[i]) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_NOT_CONVERGED,"Likely error in boundary count BFS -- row %d still seen\n",i);}
+  }
+
   ierr = PetscMalloc(sizeof(PetscInt)*(*nboundary),boundary);CHKERRQ(ierr);
 
   /* set the boundary nodes */
   bidx=0;
-  /* count the number of boundary nodes */
   for (i=0;i<ncols;i++) {
     onBoundary = PETSC_FALSE;
     collist = -1;
@@ -386,20 +396,12 @@ PETSC_EXTERN PetscErrorCode MatColoringDiscoverBoundary(MatColoring mc,PetscSF e
     if (onBoundary) {(*boundary)[bidx] = i; bidx++;}
   }
   for (i=0;i<ncols;i++) {
-    if (colseen[i]) {SETERRQ1(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"Likely error in BFS -- column %d still seen\n",i);}
+    if (colseen[i]) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_NOT_CONVERGED,"Likely error in boundary set BFS -- column %d still seen\n",i);}
   }
   for (i=0;i<nrows;i++) {
-    if (rowseen[i]) {SETERRQ1(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"Likely error in BFS -- row %d still seen\n",i);}
+    if (rowseen[i]) {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_NOT_CONVERGED,"Likely error in boundary set BFS -- row %d still seen\n",i);}
   }
-
   if (bidx != *nboundary) {SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"Number of boundary nodes not matched");}
-
-  ierr = PetscFree(rowseen);CHKERRQ(ierr);
-  ierr = PetscFree(colseen);CHKERRQ(ierr);
-  ierr = PetscFree(coloffsets);CHKERRQ(ierr);
-  ierr = PetscFree(rowoffsets);CHKERRQ(ierr);
-  ierr = PetscFree(ll_ptr);CHKERRQ(ierr);
-  ierr = PetscFree(ll_idx);CHKERRQ(ierr);
-
+  ierr = PetscFree6(rowseen,colseen,coloffsets,rowoffsets,ll_ptr,ll_idx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
