@@ -438,6 +438,7 @@ PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscSpace sp)
   ierr = PetscObjectOptionsBegin((PetscObject) sp);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-petscspace_poly_num_variables", "The number of different variables, e.g. x and y", "PetscSpacePolynomialSetNumVariables", poly->numVariables, &poly->numVariables, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-petscspace_poly_sym", "Use only symmetric polynomials", "PetscSpacePolynomialSetSymmetric", poly->symmetric, &poly->symmetric, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-petscspace_poly_tensor", "Use the tensor product polynomials", "PetscSpacePolynomialSetTensor", poly->tensor, &poly->tensor, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -513,10 +514,15 @@ PetscErrorCode PetscSpaceGetDimension_Polynomial(PetscSpace sp, PetscInt *dim)
   PetscReal        D    = 1.0;
 
   PetscFunctionBegin;
-  for (i = 1; i <= n; ++i) {
-    D *= ((PetscReal) (deg+i))/i;
+  if (poly->tensor) {
+    *dim = 1;
+    for (i = 0; i < n; ++i) *dim *= (deg+1);
+  } else {
+    for (i = 1; i <= n; ++i) {
+      D *= ((PetscReal) (deg+i))/i;
+    }
+    *dim = (PetscInt) (D + 0.5);
   }
-  *dim = (PetscInt) (D + 0.5);
   PetscFunctionReturn(0);
 }
 
@@ -561,6 +567,46 @@ static PetscErrorCode LatticePoint_Internal(PetscInt len, PetscInt sum, PetscInt
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TensorPoint_Internal"
+/*
+  TensorPoint_Internal - Returns all tuples of size 'len' with nonnegative integers that are less than 'max'.
+
+  Input Parameters:
++ len - The length of the tuple
+. max - The max for all entries in the tuple
+- ind - The current multi-index of the tuple, initialized to the 0 tuple
+
+  Output Parameter:
++ ind - The multi-index of the tuple, -1 indicates the iteration has terminated
+. tup - A tuple of len integers less than max
+
+  Level: developer
+
+.seealso: 
+*/
+static PetscErrorCode TensorPoint_Internal(PetscInt len, PetscInt max, PetscInt ind[], PetscInt tup[])
+{
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (len == 1) {
+    tup[0] = ind[0]++;
+    ind[0] = ind[0] >= max ? -1 : ind[0];
+  } else if (max == 0) {
+    for (i = 0; i < len; ++i) {ind[0] = -1; tup[i] = 0;}
+  } else {
+    tup[0] = ind[0];
+    ierr = TensorPoint_Internal(len-1, max, &ind[1], &tup[1]);CHKERRQ(ierr);
+    if (ind[1] < 0) {
+      if (ind[0] == max-1) {ind[0] = -1;}
+      else                 {ind[1] = 0; ++ind[0];}
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSpaceEvaluate_Polynomial"
 PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
 {
@@ -599,11 +645,11 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
   ierr = PetscMalloc2(dim,&ind,dim,&tup);CHKERRQ(ierr);
   if (B) {
     /* B (npoints x pdim) */
-    i = 0;
-    for (o = 0; o <= sp->order; ++o) {
+    if (poly->tensor) {
+      i = 0;
       ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
       while (ind[0] >= 0) {
-        ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
+        ierr = TensorPoint_Internal(dim, sp->order+1, ind, tup);CHKERRQ(ierr);
         for (p = 0; p < npoints; ++p) {
           B[p*pdim + i] = 1.0;
           for (d = 0; d < dim; ++d) {
@@ -611,6 +657,21 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
           }
         }
         ++i;
+      }
+    } else {
+      i = 0;
+      for (o = 0; o <= sp->order; ++o) {
+        ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
+        while (ind[0] >= 0) {
+          ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
+          for (p = 0; p < npoints; ++p) {
+            B[p*pdim + i] = 1.0;
+            for (d = 0; d < dim; ++d) {
+              B[p*pdim + i] *= LB[(tup[d]*dim + d)*npoints + p];
+            }
+          }
+          ++i;
+        }
       }
     }
   }
@@ -683,6 +744,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Polynomial(PetscSpace sp)
 
   poly->numVariables = 0;
   poly->symmetric    = PETSC_FALSE;
+  poly->tensor       = PETSC_FALSE;
   poly->degrees      = NULL;
 
   ierr = PetscSpaceInitialize_Polynomial(sp);CHKERRQ(ierr);
@@ -711,6 +773,31 @@ PetscErrorCode PetscSpacePolynomialGetSymmetric(PetscSpace sp, PetscBool *sym)
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidPointer(sym, 2);
   *sym = poly->symmetric;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpacePolynomialSetTensor"
+PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace sp, PetscBool tensor)
+{
+  PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  poly->tensor = tensor;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpacePolynomialGetTensor"
+PetscErrorCode PetscSpacePolynomialGetTensor(PetscSpace sp, PetscBool *tensor)
+{
+  PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  PetscValidPointer(tensor, 2);
+  *tensor = poly->tensor;
   PetscFunctionReturn(0);
 }
 
