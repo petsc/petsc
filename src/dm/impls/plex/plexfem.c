@@ -254,6 +254,7 @@ PetscErrorCode DMPlexProjectFunction(DM dm, PetscFE fe[], void (**funcs)(const P
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
   ierr = DMPlexProjectFunctionLocal(dm, fe, funcs, mode, localX);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
