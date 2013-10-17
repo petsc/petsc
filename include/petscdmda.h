@@ -3,7 +3,7 @@
 
 #include <petscdm.h>
 #include <petscdt.h>
-#include <petscfe.h>
+#include <petscfetypes.h>
 #include <petscdmdatypes.h>
 #include <petscpf.h>
 #include <petscao.h>
@@ -192,6 +192,7 @@ PETSC_EXTERN PetscErrorCode DMDAGetHeightStratum(DM, PetscInt, PetscInt *, Petsc
 PETSC_EXTERN PetscErrorCode DMDACreateSection(DM, PetscInt[], PetscInt[], PetscInt[], PetscSection *);
 PETSC_EXTERN PetscErrorCode DMDAComputeCellGeometry(DM, PetscInt, PetscQuadrature *, PetscReal [], PetscReal [], PetscReal [], PetscReal []);
 PETSC_EXTERN PetscErrorCode DMDAVecGetClosure(DM, PetscSection, Vec, PetscInt, PetscInt *, const PetscScalar **);
+PETSC_EXTERN PetscErrorCode DMDAVecRestoreClosure(DM, PetscSection, Vec, PetscInt, PetscInt *, const PetscScalar **);
 PETSC_EXTERN PetscErrorCode DMDAVecSetClosure(DM, PetscSection, Vec, PetscInt, const PetscScalar *, InsertMode);
 PETSC_EXTERN PetscErrorCode DMDAGetClosure(DM, PetscSection, PetscInt, PetscInt*, const PetscInt**);
 PETSC_EXTERN PetscErrorCode DMDARestoreClosure(DM, PetscSection, PetscInt, PetscInt*, const PetscInt**);
