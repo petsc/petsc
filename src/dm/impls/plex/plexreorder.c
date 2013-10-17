@@ -135,9 +135,11 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexSetDimension(*pdm, dim);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-  ierr = PetscSectionPermute(section, perm, &sectionNew);CHKERRQ(ierr);
-  ierr = DMSetDefaultSection(*pdm, sectionNew);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&sectionNew);CHKERRQ(ierr);
+  if (section) {
+    ierr = PetscSectionPermute(section, perm, &sectionNew);CHKERRQ(ierr);
+    ierr = DMSetDefaultSection(*pdm, sectionNew);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&sectionNew);CHKERRQ(ierr);
+  }
   plexNew = (DM_Plex *) (*pdm)->data;
   /* Ignore ltogmap, ltogmapb */
   /* Ignore sf, defaultSF */
