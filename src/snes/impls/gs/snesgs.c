@@ -8,6 +8,7 @@ typedef struct {
   PetscReal stol;       /* step tolerance of the inner pointblock solver */
 } SNES_GS;
 
+PETSC_EXTERN PetscErrorCode SNESComputeGSDefaultSecant(SNES,Vec,Vec,void *);
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESGSSetTolerances"
@@ -186,7 +187,14 @@ PetscErrorCode SNESDestroy_GS(SNES snes)
 #define __FUNCT__ "SNESSetUp_GS"
 PetscErrorCode SNESSetUp_GS(SNES snes)
 {
+  PetscErrorCode ierr;
+  PetscErrorCode (*f)(SNES,Vec,Vec,void*);
+
   PetscFunctionBegin;
+  ierr = SNESGetGS(snes,&f,NULL);CHKERRQ(ierr);
+  if (!f) {
+    ierr = SNESSetGS(snes,SNESComputeGSDefaultSecant,NULL);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -214,6 +222,14 @@ PetscErrorCode SNESSetFromOptions_GS(SNES snes)
   if (flg || flg1 || flg2 || flg3) {
     ierr = SNESGSSetTolerances(snes,atol,rtol,stol,max_its);CHKERRQ(ierr);
   }
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsBool("-snes_gs_secant","Use pointwise secant local Jacobian approximation","",flg,&flg,NULL);CHKERRQ(ierr);
+  if (flg) {
+    ierr = SNESSetGS(snes,SNESComputeGSDefaultSecant,NULL);CHKERRQ(ierr);
+    ierr = PetscInfo(snes,"Setting default finite difference coloring Jacobian matrix\n");CHKERRQ(ierr);
+  }
+
+
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -281,7 +297,6 @@ PetscErrorCode SNESSolve_GS(SNES snes)
     ierr = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
     ierr = SNESMonitor(snes,0,snes->norm);CHKERRQ(ierr);
   }
-
 
   /* Call general purpose update function */
   if (snes->ops->update) {
