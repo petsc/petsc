@@ -367,7 +367,7 @@ PetscErrorCode DMDASetClosureScalar(DM dm, PetscSection section, PetscInt p,Pets
 {
   DM_DA          *da = (DM_DA*) dm->data;
   PetscInt       dim = da->dim;
-  PetscInt       nVx, nVy, nxF, nXF, nyF, nYF, nzF, nZF;
+  PetscInt       nVx, nVy, nxF, nXF, nyF, nYF, nzF, nZF, nCx, nCy;
   PetscInt       pStart, pEnd, cStart, cEnd, vStart, vEnd, fStart, fEnd, xfStart, xfEnd, yfStart, yfEnd, zfStart;
   PetscErrorCode ierr;
 
@@ -381,6 +381,7 @@ PetscErrorCode DMDASetClosureScalar(DM dm, PetscSection section, PetscInt p,Pets
   ierr    = DMDAGetHeightStratum(dm, 0,   &cStart, &cEnd);CHKERRQ(ierr);
   ierr    = DMDAGetHeightStratum(dm, 1,   &fStart, &fEnd);CHKERRQ(ierr);
   ierr    = DMDAGetHeightStratum(dm, dim, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr    = DMDAGetNumCells(dm, &nCx, &nCy, NULL, NULL);CHKERRQ(ierr);
   ierr    = DMDAGetNumVertices(dm, &nVx, &nVy, NULL, NULL);CHKERRQ(ierr);
   ierr    = DMDAGetNumFaces(dm, &nxF, &nXF, &nyF, &nYF, &nzF, &nZF);CHKERRQ(ierr);
   xfStart = fStart; xfEnd = xfStart+nXF;
@@ -403,11 +404,12 @@ PetscErrorCode DMDASetClosureScalar(DM dm, PetscSection section, PetscInt p,Pets
            |     |
            5--1--6
       */
-      PetscInt c = p - cStart;
+      PetscInt c = p - cStart, l = c/nCx;
       PetscInt points[9];
 
-      points[0] = p; points[1] = c+yfStart; points[2] = c+xfStart+1; points[3] = c+yfStart+nyF; points[4] = c+xfStart+0; points[5] = c+vStart+0;
-      points[6] = c+vStart+1; points[7] = c+vStart+nVx+1; points[8] = c+vStart+nVx+0;
+      points[0] = p;
+      points[1] = yfStart+c+0;  points[2] = xfStart+l+c+1; points[3] = yfStart+nyF+c+0;  points[4] = xfStart+l+c+0;
+      points[5] = vStart+l+c+0; points[6] = vStart+l+c+1;  points[7] = vStart+nVx+l+c+1; points[8] = vStart+nVx+l+c+0;
       ierr      = FillClosureVec_Private(dm, section, 9, points, vArray, values, mode);CHKERRQ(ierr);
     } else {
       /* 6 faces, 8 vertices
