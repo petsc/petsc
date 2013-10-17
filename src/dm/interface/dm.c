@@ -3549,6 +3549,66 @@ PetscErrorCode DMSetCoordinateDM(DM dm, DM cdm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMGetCoordinateSection"
+/*@
+  DMGetCoordinateSection - Retrieve the layout of coordinate values over the mesh.
+
+  Not Collective
+
+  Input Parameter:
+. dm - The DM object
+
+  Output Parameter:
+. section - The PetscSection object
+
+  Level: intermediate
+
+.keywords: mesh, coordinates
+.seealso: DMGetCoordinateDM(), DMGetDefaultSection(), DMSetDefaultSection()
+@*/
+PetscErrorCode DMGetCoordinateSection(DM dm, PetscSection *section)
+{
+  DM             cdm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(section, 2);
+  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(cdm, section);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetCoordinateSection"
+/*@
+  DMSetCoordinateSection - Set the layout of coordinate values over the mesh.
+
+  Not Collective
+
+  Input Parameters:
++ dm      - The DM object
+- section - The PetscSection object
+
+  Level: intermediate
+
+.keywords: mesh, coordinates
+.seealso: DMGetCoordinateSection(), DMGetDefaultSection(), DMSetDefaultSection()
+@*/
+PetscErrorCode DMSetCoordinateSection(DM dm, PetscSection section)
+{
+  DM             cdm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,2);
+  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+  ierr = DMSetDefaultSection(cdm, section);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMLocatePoints"
 /*@
   DMLocatePoints - Locate the points in v in the mesh and return an IS of the containing cells

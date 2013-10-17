@@ -25,6 +25,7 @@ struct _p_PetscSpace {
 typedef struct {
   PetscInt   numVariables; /* The number of variables in the space, e.g. x and y */
   PetscBool  symmetric;    /* Use only symmetric polynomials */
+  PetscBool  tensor;       /* Flag for tensor product */
   PetscInt  *degrees;      /* Degrees of single variable which we need to compute */
 } PetscSpace_Poly;
 
@@ -53,8 +54,8 @@ struct _p_PetscDualSpace {
 };
 
 typedef struct {
-  PetscInt  cellType;
   PetscInt *numDof;
+  PetscBool simplex;
 } PetscDualSpace_Lag;
 
 typedef struct _PetscFEOps *PetscFEOps;
