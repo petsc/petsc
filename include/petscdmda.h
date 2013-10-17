@@ -184,7 +184,8 @@ PETSC_EXTERN PetscErrorCode DMDARestoreArray(DM,PetscBool ,void*);
 
 PETSC_EXTERN PetscErrorCode DMDACreatePF(DM,PF*);
 
-PETSC_EXTERN PetscErrorCode DMDAGetNumCells(DM, PetscInt *);
+/* Emulation of DMPlex */
+PETSC_EXTERN PetscErrorCode DMDAGetNumCells(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDAGetNumVertices(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDAGetNumFaces(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDAGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);

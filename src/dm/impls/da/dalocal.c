@@ -73,7 +73,7 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec *g)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAGetNumCells"
-PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCells)
+PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, PetscInt *numCellsZ, PetscInt *numCells)
 {
   DM_DA          *da = (DM_DA*) dm->data;
   const PetscInt dim = da->dim;
@@ -81,8 +81,20 @@ PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCells)
   const PetscInt nC  = (mx)*(dim > 1 ? (my)*(dim > 2 ? (mz) : 1) : 1);
 
   PetscFunctionBegin;
+  if (numCellsX) {
+    PetscValidIntPointer(numCellsX,2);
+    *numCellsX = mx;
+  }
+  if (numCellsY) {
+    PetscValidIntPointer(numCellsX,3);
+    *numCellsY = my;
+  }
+  if (numCellsZ) {
+    PetscValidIntPointer(numCellsX,4);
+    *numCellsZ = mz;
+  }
   if (numCells) {
-    PetscValidIntPointer(numCells,2);
+    PetscValidIntPointer(numCells,5);
     *numCells = nC;
   }
   PetscFunctionReturn(0);
@@ -174,7 +186,7 @@ PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, Pe
   PetscFunctionBegin;
   if (pStart) PetscValidIntPointer(pStart,3);
   if (pEnd)   PetscValidIntPointer(pEnd,4);
-  ierr = DMDAGetNumCells(dm, &nC);CHKERRQ(ierr);
+  ierr = DMDAGetNumCells(dm, NULL, NULL, NULL, &nC);CHKERRQ(ierr);
   ierr = DMDAGetNumVertices(dm, NULL, NULL, NULL, &nV);CHKERRQ(ierr);
   ierr = DMDAGetNumFaces(dm, NULL, &nXF, NULL, &nYF, NULL, &nZF);CHKERRQ(ierr);
   if (height == 0) {
@@ -243,8 +255,9 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(s, 4);
   ierr    = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
-  ierr    = DMDAGetNumCells(dm, &nC);CHKERRQ(ierr);
+  ierr    = DMDAGetNumCells(dm, NULL, NULL, NULL, &nC);CHKERRQ(ierr);
   ierr    = DMDAGetNumVertices(dm, &nVx, &nVy, &nVz, &nV);CHKERRQ(ierr);
   ierr    = DMDAGetNumFaces(dm, &nxF, &nXF, &nyF, &nYF, &nzF, &nZF);CHKERRQ(ierr);
   ierr    = DMDAGetHeightStratum(dm, -1,  &pStart, &pEnd);CHKERRQ(ierr);
