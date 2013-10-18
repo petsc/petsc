@@ -39,6 +39,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(Mat A,Mat R,PetscReal fil
   Mat                  P;
   PetscInt             *rti,*rtj;
   Mat_RARt             *rart;
+  MatColoring          coloring;
   MatTransposeColoring matcoloring;
   ISColoring           iscoloring;
   Mat                  Rt_dense,RARt_dense;
@@ -65,7 +66,12 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(Mat A,Mat R,PetscReal fil
   if (c->inode.use) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MAT_USE_INODES is not supported. Use '-mat_no_inode'");
 
   /* Create MatTransposeColoring from symbolic C=R*A*R^T */
-  ierr = MatGetColoring(*C,MATCOLORINGLF,&iscoloring);CHKERRQ(ierr);
+  ierr = MatColoringCreate(*C,&coloring);CHKERRQ(ierr);
+  ierr = MatColoringSetDistance(coloring,2);CHKERRQ(ierr);
+  ierr = MatColoringSetType(coloring,MATCOLORINGSL);CHKERRQ(ierr);
+  ierr = MatColoringSetFromOptions(coloring);CHKERRQ(ierr);
+  ierr = MatColoringApply(coloring,&iscoloring);CHKERRQ(ierr);
+  ierr = MatColoringDestroy(&coloring);CHKERRQ(ierr);
   ierr = MatTransposeColoringCreate(*C,iscoloring,&matcoloring);CHKERRQ(ierr);
 
   rart->matcoloring = matcoloring;

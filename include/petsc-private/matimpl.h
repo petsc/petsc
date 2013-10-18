@@ -469,6 +469,23 @@ struct  _p_MatFDColoring{
   void           *ftn_func_pointer,*ftn_func_cntx; /* serve the same purpose as *fortran_func_pointers in PETSc objects */
 };
 
+typedef struct _MatColoringOps *MatColoringOps;
+struct _MatColoringOps {
+  PetscErrorCode (*destroy)(MatColoring);
+  PetscErrorCode (*setfromoptions)(MatColoring);
+  PetscErrorCode (*view)(MatColoring,PetscViewer);
+  PetscErrorCode (*apply)(MatColoring,ISColoring*);
+};
+
+struct _p_MatColoring {
+  PETSCHEADER(struct _MatColoringOps);
+  Mat        mat;
+  PetscInt   dist;      /* distance of the coloring */
+  PetscInt   maxcolors; /* the maximum number of colors returned, maxcolors=1 for MIS */
+  void       *data;     /* inner context */
+  PetscBool  valid;     /* check to see if what is produced is a valid coloring */
+};
+
 struct  _p_MatTransposeColoring{
   PETSCHEADER(int);
   PetscInt       M,N,m;            /* total rows, columns; local rows */
@@ -1506,5 +1523,6 @@ PETSC_EXTERN PetscLogEvent MAT_GetMultiProcBlock;
 PETSC_EXTERN PetscLogEvent MAT_CUSPCopyToGPU, MAT_CUSPARSECopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
 PETSC_EXTERN PetscLogEvent MAT_ViennaCLCopyToGPU;
 PETSC_EXTERN PetscLogEvent MAT_Merge,MAT_Residual;
+PETSC_EXTERN PetscLogEvent Mat_Coloring_Apply,Mat_Coloring_Comm,Mat_Coloring_Local,Mat_Coloring_ISCreate,Mat_Coloring_SetUp;
 
 #endif

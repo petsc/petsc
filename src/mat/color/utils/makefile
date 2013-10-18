@@ -1,13 +1,14 @@
+
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  =
+SOURCEC  = localcolor.c bipartite.c valid.c
+SOURCEF  =
 SOURCEH  =
-DIRS     = interface impls utils
 LIBBASE  = libpetscmat
-LOCDIR   = src/mat/color/
-MANSEC   = MatOrderings
+MANSEC   = MatColoring
+LOCDIR   = src/mat/color/util
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
