@@ -1,14 +1,4 @@
-#include <petsc-private/snesimpl.h>             /*I   "petscsnes.h"   I*/
-
-typedef struct {
-  PetscInt  sweeps;     /* number of sweeps through the local subdomain before neighbor communication */
-  PetscInt  max_its;    /* maximum iterations of the inner pointblock solver */
-  PetscReal rtol;       /* relative tolerance of the inner pointblock solver */
-  PetscReal abstol;     /* absolute tolerance of the inner pointblock solver */
-  PetscReal stol;       /* step tolerance of the inner pointblock solver */
-} SNES_GS;
-
-PETSC_EXTERN PetscErrorCode SNESComputeGSDefaultSecant(SNES,Vec,Vec,void *);
+#include <../src/snes/impls/gs/gsimpl.h>      /*I "petscsnes.h"  I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESGSSetTolerances"
@@ -228,7 +218,8 @@ PetscErrorCode SNESSetFromOptions_GS(SNES snes)
     ierr = SNESSetGS(snes,SNESComputeGSDefaultSecant,NULL);CHKERRQ(ierr);
     ierr = PetscInfo(snes,"Setting default finite difference coloring Jacobian matrix\n");CHKERRQ(ierr);
   }
-
+  ierr = PetscOptionsReal("-snes_gs_secant_h","Differencing parameter for secant search","",gs->h,&gs->h,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_gs_secant_mat_coloring","Use the Jacobian coloring for the secant GS","",gs->secant_mat,&gs->secant_mat,&flg);CHKERRQ(ierr);
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -384,6 +375,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_GS(SNES snes)
   gs->abstol  = 1e-15;
   gs->stol    = 1e-12;
   gs->max_its = 50;
+  gs->h       = 1e-8;
 
   snes->data = (void*) gs;
   PetscFunctionReturn(0);

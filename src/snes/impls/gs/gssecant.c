@@ -1,5 +1,4 @@
-#include <petsc-private/snesimpl.h>      /*I "petscsnes.h"  I*/
-#include <petscdm.h>
+#include <../src/snes/impls/gs/gsimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "GSDestroy_Private"
@@ -17,17 +16,18 @@ PetscErrorCode GSDestroy_Private(ISColoring coloring)
 #define __FUNCT__ "SNESComputeGSDefaultSecant"
 PETSC_EXTERN PetscErrorCode SNESComputeGSDefaultSecant(SNES snes,Vec X,Vec B,void *ctx)
 {
-
   PetscErrorCode ierr;
+  SNES_GS *gs = (SNES_GS*)snes->data;
   PetscInt       i,j,k,ncolors;
   DM             dm;
   PetscBool      flg;
   ISColoring     coloring;
   MatColoring    mc;
   Vec            W,G,F;
-  PetscScalar    h=1e-6;
+  PetscScalar    h=gs->h;
   IS             *coloris;
   PetscScalar    f,g,x,w,d;
+  PetscReal      dxt,xt,ft,ft1;
   const PetscInt *idx;
   PetscInt       size;
   PetscReal      atol,rtol,stol;
@@ -35,6 +35,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeGSDefaultSecant(SNES snes,Vec X,Vec B,voi
   PetscErrorCode (*func)(SNES,Vec,Vec,void*);
   void           *fctx;
   PetscContainer colorcontainer;
+  PetscBool      mat = gs->secant_mat,equal;
 
   PetscFunctionBegin;
   if (snes->nwork < 3) {
@@ -50,7 +51,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeGSDefaultSecant(SNES snes,Vec X,Vec B,voi
   if (!colorcontainer) {
     /* create the coloring */
     ierr = DMHasColoring(dm,&flg);CHKERRQ(ierr);
-    if (flg) {
+    if (flg && !mat) {
       ierr = DMCreateColoring(dm,IS_COLORING_GLOBAL,&coloring);CHKERRQ(ierr);
     } else {
       if (!snes->jacobian) {ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);}
@@ -69,25 +70,52 @@ PETSC_EXTERN PetscErrorCode SNESComputeGSDefaultSecant(SNES snes,Vec X,Vec B,voi
     ierr = PetscContainerGetPointer(colorcontainer,(void **)&coloring);CHKERRQ(ierr);
   }
   ierr = ISColoringGetIS(coloring,&ncolors,&coloris);CHKERRQ(ierr);
+  ierr = VecEqual(X,snes->vec_sol,&equal);CHKERRQ(ierr);
+  if (equal) {
+    /* assume that the function is already computed */
+    ierr = VecCopy(snes->vec_func,F);CHKERRQ(ierr);
+  } else {
+    ierr = (*func)(snes,X,F,fctx);CHKERRQ(ierr);
+    if (B) {ierr = VecAXPY(F,-1.0,B);CHKERRQ(ierr);}
+  }
   for (i=0;i<ncolors;i++) {
+    ierr = ISGetIndices(coloris[i],&idx);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(coloris[i],&size);CHKERRQ(ierr);
+    ierr = VecCopy(X,W);CHKERRQ(ierr);
+    for (j=0;j<size;j++) {
+      ierr = VecSetValue(W,idx[j],h,ADD_VALUES);CHKERRQ(ierr);
+    }
+    ierr = (*func)(snes,W,G,fctx);CHKERRQ(ierr);
+    if (B) {ierr = VecAXPY(G,-1.0,B);CHKERRQ(ierr);}
     for (k=0;k<its;k++) {
-      ierr = (*func)(snes,X,F,fctx);CHKERRQ(ierr);
-      if (B) {ierr = VecAXPY(F,-1.0,B);CHKERRQ(ierr);}
-      ierr = ISGetIndices(coloris[i],&idx);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(coloris[i],&size);CHKERRQ(ierr);
-      ierr = VecCopy(X,W);CHKERRQ(ierr);
-      for (j=0;j<size;j++) {
-        ierr = VecSetValue(W,idx[j],h,ADD_VALUES);CHKERRQ(ierr);
-      }
-      ierr = (*func)(snes,W,G,fctx);CHKERRQ(ierr);
-      if (B) {ierr = VecAXPY(G,-1.0,B);CHKERRQ(ierr);}
+      dxt = 0.;
+      xt = 0.;
       for (j=0;j<size;j++) {
         ierr = VecGetValues(F,1,&idx[j],&f);CHKERRQ(ierr);
         ierr = VecGetValues(X,1,&idx[j],&x);CHKERRQ(ierr);
         ierr = VecGetValues(G,1,&idx[j],&g);CHKERRQ(ierr);
         ierr = VecGetValues(W,1,&idx[j],&w);CHKERRQ(ierr);
-        d = (x*g-w*f) / PetscRealPart(g-f);
+        if (PetscAbsScalar(g-f) > atol) {
+          d = (x*g-w*f) / PetscRealPart(g-f);
+        } else {
+          d = x;
+        }
+        dxt += (d-x)*(d-x);
+        xt += x*x;
+        ft += f*f;
         ierr = VecSetValue(X,idx[j],d,INSERT_VALUES);CHKERRQ(ierr);
+      }
+      if (k == 0) ft1 = PetscSqrtScalar(ft);
+      if (stol*PetscSqrtReal(xt) > PetscSqrtReal(dxt)) break;
+      if (PetscSqrtReal(ft) < atol) break;
+      if (rtol*ft1 > PetscSqrtReal(ft)) break;
+      if (i < ncolors-1 || k < its-1) {
+        ierr = (*func)(snes,X,F,fctx);CHKERRQ(ierr);
+        if (B) {ierr = VecAXPY(F,-1.0,B);CHKERRQ(ierr);}
+      }
+      if (k<its-1) {
+        ierr = VecSwap(X,W);CHKERRQ(ierr);
+        ierr = VecSwap(F,G);CHKERRQ(ierr);
       }
     }
   }
