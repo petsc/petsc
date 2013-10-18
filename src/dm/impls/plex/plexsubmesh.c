@@ -498,7 +498,7 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   Level: developer
 
 .seealso: DMCreate()
-*/
+@*/
 PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt *numGhostCells, DM *dmGhosted)
 {
   DM             gdm;
