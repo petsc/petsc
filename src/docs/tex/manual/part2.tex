@@ -4505,33 +4505,15 @@ $ \dot{u} + \tilde{F}(t,u) $) but
 the Jacobians need not be provided.\footnote{PETSc will automatically translate the function provided to the appropriate form.}
 
 The Explicit Runge-Kutta timestepper with variable timesteps is an \sindex{Runge-Kutta}
-implementation of standard Runge-Kutta using Dormand-Prince \sindex{Dorman-Prince}
-5(4). It is easy to change this table if needed. Since the time-stepper is using variable timesteps, the
-``TSSetInitialTimeStep()'' function is not used.
-
-Setting the tolerance with
-\begin{tabbing}
-TSRKSetTolerance(TS ts,double tolerance)
-\end{tabbing}
-or \trl{-ts_rk_tol} \findex{-ts_rk_tol}
-defines the global tolerance, for the whole time
-period. The tolerance for each timestep is calculated relatively to
-the size of the timestep.
-
-The error in each timestep is calculated using the two solutions given
-from Dormand-Prince 5(4). The local error is calculated from the
-2-norm from the difference of the two solutions.
-
-Other timestep features:
-\begin{itemize}
-  \item The next timestep can be maximum 5 times the present timestep
-  \item The smallest timestep can be 1e-14 (to avoid machine precision
-  errors)
-\end{itemize}
-
-More details about the solver and code examples can be found at
-\trl{http://www.parallab.uib.no/projects/molecul/matrix/}.
-
+implementation of the standard Runge-Kutta with an embedded method. The error in each
+timestep is calculated using the solutions from the Runge-Kutta method and its embedded 
+method (the 2-norm of the difference is used). The default method is the \sindex{Bogacki-Shampine}
+$3$rd-order Bogacki-Shampine method with a $2$nd-order embedded method (TSRK3BS). 
+Other available methods are the \sindex{Fehlberg} $5$th-order Fehlberg RK scheme with a $4$th-order embedded 
+method (TSRK5F), and the \sindex{Dormand-Prince} $5$th-order Dormand-Prince RK scheme with a $4$th-order embedded method 
+(TSRK5DP). Variable timesteps cannot be used with RK schemes that do not have an embedded 
+method (TSRK1 - $1$st-order, $1$-stage forward Euler, TSRK2A - $2$nd-order, $2$-stage RK scheme, 
+TSRK3 - $3$rd-order, $3$-stage RK scheme, TSRK4 - $4$-th order, $4$-stage RK scheme).
 
 \subsection{Special Cases}
 
