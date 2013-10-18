@@ -1275,12 +1275,11 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
   {
     /* -pc_gamg_type */
     {
-      char tname[256] = PCGAMGAGG;
-      const char *deftype = pc_gamg->gamg_type_name ? pc_gamg->gamg_type_name : tname;
-      ierr = PetscOptionsList("-pc_gamg_type","Type of AMG method","PCGAMGSetType",GAMGList, tname, tname, sizeof(tname), &flag);CHKERRQ(ierr);
+      char tname[256];
+      ierr = PetscOptionsList("-pc_gamg_type","Type of AMG method","PCGAMGSetType",GAMGList, pc_gamg->gamg_type_name, tname, sizeof(tname), &flag);CHKERRQ(ierr);
       /* call PCCreateGAMG_XYZ */
-      if (flag || !pc_gamg->gamg_type_name) {
-        ierr = PCGAMGSetType(pc, flag ? tname : deftype);CHKERRQ(ierr);
+      if (flag) {
+        ierr = PCGAMGSetType(pc,tname);CHKERRQ(ierr);
       }
     }
     /* -pc_gamg_verbose */
@@ -1468,7 +1467,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
 #endif
   }
 #endif
-
+  /* PCSetUp_GAMG assumes that the type has been set, so set it to the default now */
+  ierr = PCGAMGSetType(pc,PCGAMGAGG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
