@@ -10,7 +10,7 @@
 #include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscdm.h>
 
-static TSRKType  TSRKDefault = TSRK3;
+static TSRKType  TSRKDefault = TSRK3BS;
 static PetscBool TSRKRegisterAllCalled;
 static PetscBool TSRKPackageInitialized;
 static PetscInt  explicit_stage_time_id;
