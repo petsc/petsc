@@ -1158,7 +1158,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, PetscBool flip,
           ierr = DMLabelGetValue(label, cone[c], &val);CHKERRQ(ierr);
           if (val != -1) {
             const PetscInt *ccone;
-            PetscInt        cconeSize, cc, side, st;
+            PetscInt        cconeSize, cc, side;
 
             if (abs(val) < shift) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Face %d on cell %d has an invalid label %d", cone[c], point, val);
             if (val > 0) side =  1;
@@ -1171,6 +1171,8 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, PetscBool flip,
               PetscInt *closure = NULL;
               PetscInt  closureSize, cl;
 
+              ierr = DMLabelGetValue(label, ccone[cc], &val);CHKERRQ(ierr);
+              if (val != -1) continue;
               ierr = DMPlexGetTransitiveClosure(dm, ccone[cc], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
               for (cl = 0; cl < closureSize*2; cl += 2) {
                 const PetscInt clp = closure[cl];
