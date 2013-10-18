@@ -167,7 +167,7 @@ PetscErrorCode MatColoringSetType(MatColoring mc,MatColoringType type)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringSetFromOptions"
-/*@C
+/*@
    MatColoringSetFromOptions - Sets MatColoring options from user parameters
 
    Collective on MatColoring
@@ -225,7 +225,7 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringSetDistance"
-/*@C
+/*@
    MatColoringSetDistance - Sets the distance of the coloring
 
    Logically Collective on MatColoring
@@ -256,7 +256,7 @@ PetscErrorCode MatColoringSetDistance(MatColoring mc,PetscInt dist)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringGetDistance"
-/*@C
+/*@
    MatColoringGetDistance - Gets the distance of the coloring
 
    Logically Collective on MatColoring
@@ -283,7 +283,7 @@ PetscErrorCode MatColoringGetDistance(MatColoring mc,PetscInt *dist)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringSetMaxColors"
-/*@C
+/*@
    MatColoringSetMaxColors - Sets the maximum number of colors
 
    Logically Collective on MatColoring
@@ -314,7 +314,7 @@ PetscErrorCode MatColoringSetMaxColors(MatColoring mc,PetscInt maxcolors)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringGetMaxColors"
-/*@C
+/*@
    MatColoringGetMaxColors - Gets the maximum number of colors
 
    Logically Collective on MatColoring
@@ -341,7 +341,7 @@ PetscErrorCode MatColoringGetMaxColors(MatColoring mc,PetscInt *maxcolors)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringApply"
-/*@C
+/*@
    MatColoringApply - Apply the coloring to the matrix, producing index
    sets corresponding to a number of independent sets in the induced
    graph.
@@ -395,7 +395,7 @@ PetscErrorCode MatColoringApply(MatColoring mc,ISColoring *coloring)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringView"
-/*@C
+/*@
    MatColoringView - Output details about the MatColoring.
 
    Collective on MatColoring
