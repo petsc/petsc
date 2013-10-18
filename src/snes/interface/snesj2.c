@@ -25,7 +25,7 @@
 .notes: If the coloring is not provided through the context, this will first try to get the
         coloring from the DM.  If the DM type has no coloring routine, then it will try to
         get the coloring from the matrix.  This requires that the matrix have nonzero entries
-        precomputed.  This is discouraged, as MatGetColoring() is not parallel.
+        precomputed.  This is discouraged, as MatColoringApply() is not parallel by default.
 
 .keywords: SNES, finite differences, Jacobian, coloring, sparse
 

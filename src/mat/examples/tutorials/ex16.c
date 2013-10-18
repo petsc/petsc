@@ -91,10 +91,15 @@ int main(int argc,char **args)
   PetscBool Asp_coloring = PETSC_FALSE;
   ierr = PetscOptionsHasName(NULL,"-Asp_color",&Asp_coloring);CHKERRQ(ierr);
   if (Asp_coloring) {
+    MatColoring   mc;
     ISColoring    iscoloring;
     MatFDColoring matfdcoloring;
     ierr = PetscPrintf(PETSC_COMM_WORLD," Create coloring of Asp...\n");
-    ierr = MatGetColoring(Asp,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
+    ierr = MatColoringCreate(Asp,&mc);CHKERRQ(ierr);
+    ierr = MatColoringSetType(mc,MATCOLORINGSL);CHKERRQ(ierr);
+    ierr = MatColoringSetFromOptions(mc);CHKERRQ(ierr);
+    ierr = MatColoringApply(mc,&iscoloring);CHKERRQ(ierr);
+    ierr = MatColoringDestroy(&mc);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(Asp,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
     /*ierr = MatFDColoringView(matfdcoloring,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/

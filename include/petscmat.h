@@ -1020,14 +1020,24 @@ PETSC_EXTERN PetscErrorCode MatSOR(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscI
     These routines are for efficiently computing Jacobians via finite differences.
 */
 
+/*S
+     MatColoring - Object for managing the coloring of matrices.
+
+   Level: beginner
+
+  Concepts: matrix, coloring
+
+.seealso:  MatFDColoringCreate() ISColoring MatFDColoring
+S*/
+typedef struct _p_MatColoring* MatColoring;
 /*J
     MatColoringType - String with the name of a PETSc matrix coloring
 
    Level: beginner
 
-.seealso: MatGetColoring(), MatColoring
+.seealso: MatColoringSetType(), MatColoring
 J*/
-typedef struct _p_MatColoring* MatColoring;
+
 typedef const  char*           MatColoringType;
 #define MATCOLORINGJP      "jp"
 #define MATCOLORINGMIS     "mis"

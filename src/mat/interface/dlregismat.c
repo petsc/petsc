@@ -136,7 +136,6 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatGetRow",        MAT_CLASSID,&MAT_GetRow);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetRowIJ",      MAT_CLASSID,&MAT_GetRowIJ);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetSubMatrice", MAT_CLASSID,&MAT_GetSubMatrices);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatGetColoring",   MAT_CLASSID,&MAT_GetColoring);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetOrdering",   MAT_CLASSID,&MAT_GetOrdering);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatIncreaseOvrlp", MAT_CLASSID,&MAT_IncreaseOverlap);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatPartitioning",  MAT_PARTITIONING_CLASSID,&MAT_Partitioning);CHKERRQ(ierr);

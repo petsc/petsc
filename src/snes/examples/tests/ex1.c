@@ -142,6 +142,7 @@ int main(int argc,char **argv)
 
   if (fd_coloring) {
     ISColoring   iscoloring;
+    MatColoring  mc;
     MatStructure str;
 
     /*
@@ -155,7 +156,11 @@ int main(int argc,char **argv)
        Color the matrix, i.e. determine groups of columns that share no common
       rows. These columns in the Jacobian can all be computed simulataneously.
     */
-    ierr = MatGetColoring(J,MATCOLORINGNATURAL,&iscoloring);CHKERRQ(ierr);
+    ierr = MatColoringCreate(J,&mc);CHKERRQ(ierr);
+    ierr = MatColoringSetType(mc,MATCOLORINGSL);CHKERRQ(ierr);
+    ierr = MatColoringSetFromOptions(mc);CHKERRQ(ierr);
+    ierr = MatColoringApply(mc,&iscoloring);CHKERRQ(ierr);
+    ierr = MatColoringDestroy(&mc);CHKERRQ(ierr);
     /*
        Create the data structure that SNESComputeJacobianDefaultColor() uses
        to compute the actual Jacobians via finite differences.
