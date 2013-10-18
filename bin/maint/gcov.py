@@ -387,7 +387,7 @@ def make_htmlpage(LOC,tarballs):
 
 def main():
 
-    USER = os.environ>['USER']
+    USER = os.environ['USER']
     gcov_dir = "/tmp/gcov-"+USER
 
     if (sys.argv[1] == "-run_gcov"):
