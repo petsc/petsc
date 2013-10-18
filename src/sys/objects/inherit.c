@@ -278,7 +278,7 @@ PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
   PetscErrorCode ierr;
   PetscInt       i;
 #if defined(PETSC_USE_DEBUG)
-  PetscInt       j,k;
+  PetscInt       j,k=0;
 #endif
   PetscObject    h;
 

@@ -14,6 +14,45 @@
 #include "viennacl/ocl/backend.hpp"
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscObjectSetFromOptions_ViennaCL"
+PETSC_EXTERN PetscErrorCode PetscObjectSetFromOptions_ViennaCL(PetscObject obj)
+{
+  PetscErrorCode       ierr;
+  PetscBool            flg;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectOptionsBegin(obj);
+
+  ierr = PetscOptionsHasName(NULL,"-viennacl_device_cpu",&flg);CHKERRQ(ierr);
+  if (flg) {
+    try {
+      viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_CPU);
+    } catch (std::exception const & ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
+    }
+  }
+  ierr = PetscOptionsHasName(NULL,"-viennacl_device_gpu",&flg);CHKERRQ(ierr);
+  if (flg) {
+    try {
+      viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_GPU);
+    } catch (std::exception const & ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
+    }
+  }
+  ierr = PetscOptionsHasName(NULL,"-viennacl_device_accelerator",&flg);CHKERRQ(ierr);
+  if (flg) {
+    try {
+      viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_ACCELERATOR);
+    } catch (std::exception const & ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
+    }
+  }
+
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "VecViennaCLAllocateCheckHost"
 /*
     Allocates space for the vector array on the Host if it does not exist.
@@ -58,6 +97,7 @@ PetscErrorCode VecViennaCLAllocateCheck(Vec v)
   // First allocate memory on the GPU if needed
   if (!v->spptr) {
     try {
+      ierr = PetscObjectSetFromOptions_ViennaCL((PetscObject)v);CHKERRQ(ierr);
       v->spptr                            = new Vec_ViennaCL;
       ((Vec_ViennaCL*)v->spptr)->GPUarray = new ViennaCLVector((PetscBLASInt)v->map->n);
 
@@ -963,7 +1003,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
   V->ops->destroy         = VecDestroy_SeqViennaCL;
   V->ops->duplicate       = VecDuplicate_SeqViennaCL;
 
-  ierr = VecSetFromOptions_SeqViennaCL(V);CHKERRQ(ierr); /* Allows to set device type before allocating any objects */
   ierr = VecViennaCLAllocateCheck(V);CHKERRQ(ierr);
   V->valid_GPU_array      = PETSC_VIENNACL_GPU;
   ierr = VecSet(V,0.0);CHKERRQ(ierr);
