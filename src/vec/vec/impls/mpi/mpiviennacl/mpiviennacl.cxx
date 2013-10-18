@@ -215,7 +215,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_MPIViennaCL(Vec vv)
      reset array?
      get values?
   */
-  ierr = VecSetFromOptions_SeqViennaCL(vv);CHKERRQ(ierr); /* Allows to set device type before allocating any objects */
   ierr = VecViennaCLAllocateCheck(vv);CHKERRQ(ierr);
   vv->valid_GPU_array      = PETSC_VIENNACL_GPU;
   ierr = VecSet(vv,0.0);CHKERRQ(ierr);
