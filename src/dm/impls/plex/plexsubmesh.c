@@ -1039,12 +1039,12 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, PetscBool flip,
       ierr = ISGetIndices(subpointIS, &subpoints);CHKERRQ(ierr);
     }
   }
-  /* Cell orientation for face gives the side of the fault */
+  /* Mark cell on the fault, and its faces which touch the fault: cell orientation for face gives the side of the fault */
   ierr = DMLabelGetStratumIS(label, dim-1, &dimIS);CHKERRQ(ierr);
   if (!dimIS) PetscFunctionReturn(0);
   ierr = ISGetLocalSize(dimIS, &numPoints);CHKERRQ(ierr);
   ierr = ISGetIndices(dimIS, &points);CHKERRQ(ierr);
-  for (p = 0; p < numPoints; ++p) {
+  for (p = 0; p < numPoints; ++p) { /* Loop over fault faces */
     const PetscInt *support;
     PetscInt        supportSize, s;
 
@@ -1127,7 +1127,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, PetscBool flip,
   if (!dimIS) PetscFunctionReturn(0);
   ierr = ISGetLocalSize(dimIS, &numPoints);CHKERRQ(ierr);
   ierr = ISGetIndices(dimIS, &points);CHKERRQ(ierr);
-  for (p = 0; p < numPoints; ++p) {
+  for (p = 0; p < numPoints; ++p) { /* Loop over fault vertices */
     PetscInt *star = NULL;
     PetscInt  starSize, s;
     PetscInt  again = 1;  /* 0: Finished 1: Keep iterating after a change 2: No change */
@@ -1151,26 +1151,31 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, PetscBool flip,
         for (c = 0; c < coneSize; ++c) {
           ierr = DMLabelGetValue(label, cone[c], &val);CHKERRQ(ierr);
           if (val != -1) {
-            PetscInt side, closureSize, cl, st, *closure = NULL;
+            const PetscInt *ccone;
+            PetscInt        cconeSize, cc, side, st;
+
             if (abs(val) < shift) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Face %d on cell %d has an invalid label %d", cone[c], point, val);
             if (val > 0) side =  1;
             else         side = -1;
             ierr = DMLabelSetValue(label, point, side*(shift+dim));CHKERRQ(ierr);
-            /* Mark all other cell parts */
-            ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-            for (cl = 0; cl < closureSize*2; cl += 2) {
-              const PetscInt clpoint = closure[cl];
-              for (st = 0; st < starSize*2; st += 2) {
-                if (star[st] == clpoint) {
-                  ierr = DMLabelGetValue(label, clpoint, &val);CHKERRQ(ierr);
-                  if (val != -1) continue;
-                  ierr = DMLabelGetValue(depthLabel, clpoint, &dep);CHKERRQ(ierr);
-                  ierr = DMLabelSetValue(label, clpoint, side*(shift+dep));CHKERRQ(ierr);
-                  break;
-                }
+            /* Mark cell faces which touch the fault */
+            ierr = DMPlexGetConeSize(dm, point, &cconeSize);CHKERRQ(ierr);
+            ierr = DMPlexGetCone(dm, point, &ccone);CHKERRQ(ierr);
+            for (cc = 0; cc < cconeSize; ++cc) {
+              PetscInt *closure = NULL;
+              PetscInt  closureSize, cl;
+
+              ierr = DMPlexGetTransitiveClosure(dm, ccone[cc], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+              for (cl = 0; cl < closureSize*2; cl += 2) {
+                const PetscInt clp = closure[cl];
+
+                ierr = DMLabelGetValue(label, clp, &val);CHKERRQ(ierr);
+                if (val == -1) continue;
+                ierr = DMLabelSetValue(label, ccone[cc], side*(shift+dim-1));CHKERRQ(ierr);
+                break;
               }
+              ierr = DMPlexRestoreTransitiveClosure(dm, ccone[cc], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
             }
-            ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
             again = 1;
             break;
           }
