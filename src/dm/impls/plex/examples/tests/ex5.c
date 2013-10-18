@@ -391,9 +391,10 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateQuad_2D"
-PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM dm)
+PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
-  PetscInt       depth = 2, testNum  = 0, p;
+  DM             idm;
+  PetscInt       depth = 2, p;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -411,13 +412,41 @@ PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM dm)
       PetscInt    markerPoints[24]     = {2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 7, 1, 8, 1, 10, 1, 11, 1, 12, 1, 13, 1, 14, 1};
       PetscInt    faultPoints[2]       = {3, 4};
 
-      ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      for (p = 0; p < 12; ++p) {
-        ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
-      }
-      for(p = 0; p < 2; ++p) {
-        ierr = DMPlexSetLabelValue(dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);
-      }
+      ierr = DMPlexCreateFromDAG(*dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+      for (p = 0; p < 12; ++p) {ierr = DMPlexSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
+      for(p = 0; p < 2; ++p) {ierr = DMPlexSetLabelValue(*dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
+    }
+    break;
+    case 1:
+    {
+      PetscInt    numPoints[2]         = {16, 9};
+      PetscInt    coneSize[25]         = {4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+      PetscInt    cones[36]            = {9,  13, 14, 10,
+                                          10, 14, 15, 11,
+                                          11, 15, 16, 12,
+                                          13, 17, 18, 14,
+                                          14, 18, 19, 15,
+                                          15, 19, 20, 16,
+                                          17, 21, 22, 18,
+                                          18, 22, 23, 19,
+                                          19, 23, 24, 20};
+      PetscInt    coneOrientations[36] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+      PetscScalar vertexCoords[32]     = {-3.0,  3.0,  -1.0,  3.0,  1.0,  3.0,  3.0,  3.0,  -3.0,  1.0,  -1.0,  1.0,  1.0,  1.0,  3.0,  1.0,
+                                          -3.0, -1.0,  -1.0, -1.0,  1.0, -1.0,  3.0, -1.0,  -3.0, -3.0,  -1.0, -3.0,  1.0, -3.0,  3.0, -3.0};
+      PetscInt    faultPoints[3]       = {11, 15, 19};
+      PetscInt    faultBPoints[2]      = {17, 18};
+
+      ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+      ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
+      ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
+      ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
+      for(p = 0; p < 3; ++p) {ierr = DMPlexSetLabelValue(idm, "fault",  faultPoints[p], 1);CHKERRQ(ierr);}
+      for(p = 0; p < 2; ++p) {ierr = DMPlexSetLabelValue(idm, "faultB", faultBPoints[p], 1);CHKERRQ(ierr);}
+      ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
+      ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
+      ierr = DMPlexCheckSymmetry(idm);CHKERRQ(ierr);
+      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      *dm  = idm;
     }
     break;
     default:
@@ -426,8 +455,17 @@ PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM dm)
   } else {
     PetscInt numPoints[3] = {0, 0, 0};
 
-    ierr = DMPlexCreateFromDAG(dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-    ierr = DMPlexCreateLabel(dm, "fault");CHKERRQ(ierr);
+    ierr = DMPlexCreateFromDAG(*dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = DMPlexCreateLabel(*dm, "fault");CHKERRQ(ierr);
+    switch (testNum) {
+    case 1:
+      ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
+      ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
+      ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
+      ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
+      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      *dm  = idm;
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -464,12 +502,8 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
       PetscInt    faultPoints[4]       = {3, 4, 7, 8};
 
       ierr = DMPlexCreateFromDAG(*dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      for(p = 0; p < 26; ++p) {
-        ierr = DMPlexSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
-      }
-      for(p = 0; p < 4; ++p) {
-        ierr = DMPlexSetLabelValue(*dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);
-      }
+      for(p = 0; p < 26; ++p) {ierr = DMPlexSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
+      for(p = 0; p < 4; ++p) {ierr = DMPlexSetLabelValue(*dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
     }
     break;
     case 1:
@@ -543,7 +577,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (cellSimplex) {
       ierr = CreateSimplex_2D(comm, user, *dm);CHKERRQ(ierr);
     } else {
-      ierr = CreateQuad_2D(comm, *dm);CHKERRQ(ierr);
+      ierr = CreateQuad_2D(comm, user->testNum, dm);CHKERRQ(ierr);
     }
     break;
   case 3:
