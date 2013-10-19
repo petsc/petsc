@@ -31,7 +31,7 @@ PetscErrorCode DMPlexRestoreFaces_Internal(DM dm, PetscInt dim, PetscInt p, Pets
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, faces);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, (void *) faces);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
