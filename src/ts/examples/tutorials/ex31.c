@@ -75,7 +75,7 @@ PetscInt GetSize(char *p)
 #define __FUNCT__ "RHSFunction_Hull1972A1"
 PetscErrorCode RHSFunction_Hull1972A1(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y,*f;
 
   PetscFunctionBegin;
@@ -91,7 +91,7 @@ PetscErrorCode RHSFunction_Hull1972A1(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 #define __FUNCT__ "IFunction_Hull1972A1"
 PetscErrorCode IFunction_Hull1972A1(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y,*f;
 
   PetscFunctionBegin;
@@ -109,14 +109,13 @@ PetscErrorCode IFunction_Hull1972A1(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 #define __FUNCT__ "IJacobian_Hull1972A1"
 PetscErrorCode IJacobian_Hull1972A1(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat *A, Mat *B, MatStructure *flag, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y;
+  PetscInt       row = 0,col = 0;
+  PetscReal      value = a - 1.0;
 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-  PetscInt  row   = 0;
-  PetscInt  col   = 0;
-  PetscReal value = a - 1.0;
   ierr = MatSetValues(*A,1,&row,1,&col,&value,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd  (*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -130,7 +129,7 @@ PetscErrorCode IJacobian_Hull1972A1(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
 #define __FUNCT__ "RHSFunction_Hull1972A2"
 PetscErrorCode RHSFunction_Hull1972A2(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y,*f;
 
   PetscFunctionBegin;
@@ -146,7 +145,7 @@ PetscErrorCode RHSFunction_Hull1972A2(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 #define __FUNCT__ "IFunction_Hull1972A2"
 PetscErrorCode IFunction_Hull1972A2(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y,*f;
 
   PetscFunctionBegin;
@@ -164,14 +163,14 @@ PetscErrorCode IFunction_Hull1972A2(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 #define __FUNCT__ "IJacobian_Hull1972A2"
 PetscErrorCode IJacobian_Hull1972A2(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat *A, Mat *B, MatStructure *flag, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y;
+  PetscInt       row = 0,col = 0;
+  PetscReal      value;
 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-  PetscInt  row   = 0;
-  PetscInt  col   = 0;
-  PetscReal value = a + 0.5*3.0*y[0]*y[0];
+  value = a + 0.5*3.0*y[0]*y[0];
   ierr = MatSetValues(*A,1,&row,1,&col,&value,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd  (*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -185,7 +184,7 @@ PetscErrorCode IJacobian_Hull1972A2(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
 #define __FUNCT__ "RHSFunction_Hull1972A3"
 PetscErrorCode RHSFunction_Hull1972A3(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y,*f;
 
   PetscFunctionBegin;
@@ -201,7 +200,7 @@ PetscErrorCode RHSFunction_Hull1972A3(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 #define __FUNCT__ "IFunction_Hull1972A3"
 PetscErrorCode IFunction_Hull1972A3(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y,*f;
 
   PetscFunctionBegin;
@@ -219,14 +218,13 @@ PetscErrorCode IFunction_Hull1972A3(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 #define __FUNCT__ "IJacobian_Hull1972A3"
 PetscErrorCode IJacobian_Hull1972A3(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat *A, Mat *B, MatStructure *flag, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y;
+  PetscInt       row = 0,col = 0;
+  PetscReal      value = a - PetscCosReal(t);
 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-  PetscInt  row   = 0;
-  PetscInt  col   = 0;
-  PetscReal value = a - PetscCosReal(t);
   ierr = MatSetValues(*A,1,&row,1,&col,&value,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd  (*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -240,7 +238,7 @@ PetscErrorCode IJacobian_Hull1972A3(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
 #define __FUNCT__ "RHSFunction_Hull1972A4"
 PetscErrorCode RHSFunction_Hull1972A4(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y,*f;
 
   PetscFunctionBegin;
@@ -256,7 +254,7 @@ PetscErrorCode RHSFunction_Hull1972A4(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 #define __FUNCT__ "IFunction_Hull1972A4"
 PetscErrorCode IFunction_Hull1972A4(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y,*f;
 
   PetscFunctionBegin;
@@ -274,14 +272,14 @@ PetscErrorCode IFunction_Hull1972A4(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 #define __FUNCT__ "IJacobian_Hull1972A4"
 PetscErrorCode IJacobian_Hull1972A4(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat *A, Mat *B, MatStructure *flag, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y;
+  PetscInt       row = 0,col = 0;
+  PetscReal      value;
 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-  PetscInt  row   = 0;
-  PetscInt  col   = 0;
-  PetscReal value = a - 0.25*(1.0-0.05*y[0]) + (0.25*y[0])*0.05;
+  value = a - 0.25*(1.0-0.05*y[0]) + (0.25*y[0])*0.05;
   ierr = MatSetValues(*A,1,&row,1,&col,&value,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd  (*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -296,7 +294,7 @@ PetscErrorCode IJacobian_Hull1972A4(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
 #define __FUNCT__ "RHSFunction_Hull1972A5"
 PetscErrorCode RHSFunction_Hull1972A5(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y,*f;
 
   PetscFunctionBegin;
@@ -312,7 +310,7 @@ PetscErrorCode RHSFunction_Hull1972A5(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 #define __FUNCT__ "IFunction_Hull1972A5"
 PetscErrorCode IFunction_Hull1972A5(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y,*f;
 
   PetscFunctionBegin;
@@ -330,14 +328,14 @@ PetscErrorCode IFunction_Hull1972A5(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 #define __FUNCT__ "IJacobian_Hull1972A5"
 PetscErrorCode IJacobian_Hull1972A5(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat *A, Mat *B, MatStructure *flag, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y;
+  PetscInt       row = 0,col = 0;
+  PetscReal      value;
 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-  PetscInt  row = 0;
-  PetscInt  col = 0;
-  PetscReal value = a - 2*t/((t+y[0])*(t+y[0]));
+  value = a - 2*t/((t+y[0])*(t+y[0]));
   ierr = MatSetValues(*A,1,&row,1,&col,&value,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd  (*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -351,7 +349,7 @@ PetscErrorCode IJacobian_Hull1972A5(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
 #define __FUNCT__ "RHSFunction_Hull1972B1"
 PetscErrorCode RHSFunction_Hull1972B1(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y,*f;
 
   PetscFunctionBegin;
@@ -368,7 +366,7 @@ PetscErrorCode RHSFunction_Hull1972B1(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 #define __FUNCT__ "IFunction_Hull1972B1"
 PetscErrorCode IFunction_Hull1972B1(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y,*f;
 
   PetscFunctionBegin;
@@ -387,13 +385,13 @@ PetscErrorCode IFunction_Hull1972B1(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 #define __FUNCT__ "IJacobian_Hull1972B1"
 PetscErrorCode IJacobian_Hull1972B1(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat *A, Mat *B, MatStructure *flag, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y;
+  PetscInt       row[2] = {0,1};
+  PetscReal      value[2][2];
 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-  PetscInt  row[2] = {0,1};
-  PetscReal value[2][2];
   value[0][0] = a - 2.0*(1.0-y[1]);    value[0][1] = 2.0*y[0];
   value[1][0] = -y[1];                 value[1][1] = a + 1.0 - y[0];
   ierr = MatSetValues(*A,2,&row[0],2,&row[0],&value[0][0],INSERT_VALUES);CHKERRQ(ierr);
@@ -409,7 +407,7 @@ PetscErrorCode IJacobian_Hull1972B1(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
 #define __FUNCT__ "RHSFunction_Hull1972B2"
 PetscErrorCode RHSFunction_Hull1972B2(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y,*f;
 
   PetscFunctionBegin;
@@ -447,13 +445,13 @@ PetscErrorCode IFunction_Hull1972B2(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 #define __FUNCT__ "IJacobian_Hull1972B2"
 PetscErrorCode IJacobian_Hull1972B2(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat *A, Mat *B, MatStructure *flag, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y;
+  PetscInt       row[3] = {0,1,2};
+  PetscReal      value[3][3];
 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-  PetscInt  row[3] = {0,1,2};
-  PetscReal value[3][3];
   value[0][0] = a + 1.0;  value[0][1] = -1.0;     value[0][2] = 0;
   value[1][0] = -1.0;     value[1][1] = a + 2.0;  value[1][2] = -1.0;
   value[2][0] = 0;        value[2][1] = -1.0;     value[2][2] = a + 1.0;
@@ -470,7 +468,7 @@ PetscErrorCode IJacobian_Hull1972B2(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
 #define __FUNCT__ "RHSFunction_Hull1972B3"
 PetscErrorCode RHSFunction_Hull1972B3(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y,*f;
 
   PetscFunctionBegin;
@@ -488,7 +486,7 @@ PetscErrorCode RHSFunction_Hull1972B3(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 #define __FUNCT__ "IFunction_Hull1972B3"
 PetscErrorCode IFunction_Hull1972B3(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y,*f;
 
   PetscFunctionBegin;
@@ -508,13 +506,13 @@ PetscErrorCode IFunction_Hull1972B3(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 #define __FUNCT__ "IJacobian_Hull1972B3"
 PetscErrorCode IJacobian_Hull1972B3(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat *A, Mat *B, MatStructure *flag, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y;
+  PetscInt       row[3] = {0,1,2};
+  PetscReal      value[3][3];
 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-  PetscInt  row[3] = {0,1,2};
-  PetscReal value[3][3];
   value[0][0] = a + 1.0; value[0][1] = 0;             value[0][2] = 0;
   value[1][0] = -1.0;    value[1][1] = a + 2.0*y[1];  value[1][2] = 0;
   value[2][0] = 0;       value[2][1] = -2.0*y[1];     value[2][2] = a;
@@ -531,7 +529,7 @@ PetscErrorCode IJacobian_Hull1972B3(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
 #define __FUNCT__ "RHSFunction_Hull1972B4"
 PetscErrorCode RHSFunction_Hull1972B4(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y,*f;
 
   PetscFunctionBegin;
@@ -569,15 +567,15 @@ PetscErrorCode IFunction_Hull1972B4(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 #define __FUNCT__ "IJacobian_Hull1972B4"
 PetscErrorCode IJacobian_Hull1972B4(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat *A, Mat *B, MatStructure *flag, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y;
+  PetscInt       row[3] = {0,1,2};
+  PetscReal      value[3][3],fac,fac2;
 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-  PetscInt  row[3] = {0,1,2};
-  PetscReal value[3][3];
-  PetscReal fac  = PetscPowReal(y[0]*y[0]+y[1]*y[1],-1.5);
-  PetscReal fac2 = PetscPowReal(y[0]*y[0]+y[1]*y[1],-0.5);
+  fac  = PetscPowReal(y[0]*y[0]+y[1]*y[1],-1.5);
+  fac2 = PetscPowReal(y[0]*y[0]+y[1]*y[1],-0.5);
   value[0][0] = a + (y[1]*y[1]*y[2])*fac;
   value[0][1] = 1.0 - (y[0]*y[1]*y[2])*fac;
   value[0][2] = y[0]*fac2;
@@ -600,7 +598,7 @@ PetscErrorCode IJacobian_Hull1972B4(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
 #define __FUNCT__ "RHSFunction_Hull1972B5"
 PetscErrorCode RHSFunction_Hull1972B5(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y,*f;
 
   PetscFunctionBegin;
@@ -618,7 +616,7 @@ PetscErrorCode RHSFunction_Hull1972B5(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 #define __FUNCT__ "IFunction_Hull1972B5"
 PetscErrorCode IFunction_Hull1972B5(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y,*f;
 
   PetscFunctionBegin;
@@ -638,13 +636,13 @@ PetscErrorCode IFunction_Hull1972B5(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 #define __FUNCT__ "IJacobian_Hull1972B5"
 PetscErrorCode IJacobian_Hull1972B5(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat *A, Mat *B, MatStructure *flag, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y;
+  PetscInt       row[3] = {0,1,2};
+  PetscReal      value[3][3];
 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-  PetscInt  row[3] = {0,1,2};
-  PetscReal value[3][3];
   value[0][0] = a;          value[0][1] = -y[2];      value[0][2] = -y[1];
   value[1][0] = y[2];       value[1][1] = a;          value[1][2] = y[0];
   value[2][0] = 0.51*y[1];  value[2][1] = 0.51*y[0];  value[2][2] = a;
@@ -661,15 +659,14 @@ PetscErrorCode IJacobian_Hull1972B5(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
 #define __FUNCT__ "RHSFunction_Hull1972C1"
 PetscErrorCode RHSFunction_Hull1972C1(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y,*f;
-  PetscInt        N;
+  PetscInt       N,i;
 
   PetscFunctionBegin;
   ierr = VecGetSize (Y,&N);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  PetscInt i;
   f[0] = -y[0];
   for (i = 1; i < N-1; i++) {
     f[i] = y[i-1] - y[i];
@@ -684,15 +681,14 @@ PetscErrorCode RHSFunction_Hull1972C1(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 #define __FUNCT__ "IFunction_Hull1972C1"
 PetscErrorCode IFunction_Hull1972C1(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y,*f;
-  PetscInt        N;
+  PetscInt       N,i;
 
   PetscFunctionBegin;
   ierr = VecGetSize (Y,&N);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  PetscInt i;
   f[0] = -y[0];
   for (i = 1; i < N-1; i++) {
     f[i] = y[i-1] - y[i];
@@ -711,14 +707,12 @@ PetscErrorCode IJacobian_Hull1972C1(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
 {
   PetscErrorCode  ierr;
   PetscScalar    *y;
-  PetscInt        N;
+  PetscInt        N,i,col[2];
+  PetscReal       value[2];
 
   PetscFunctionBegin;
   ierr = VecGetSize (Y,&N);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-  PetscInt  i;
-  PetscInt  col[2];
-  PetscReal value[2];
   i = 0;
   value[0] = a+1; col[0] = 0;
   value[1] =  0;  col[1] = 1;
@@ -746,13 +740,12 @@ PetscErrorCode RHSFunction_Hull1972C2(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 {
   PetscErrorCode  ierr;
   PetscScalar    *y,*f;
-  PetscInt        N;
+  PetscInt        N,i;
 
   PetscFunctionBegin;
   ierr = VecGetSize (Y,&N);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  PetscInt i;
   f[0] = -y[0];
   for (i = 1; i < N-1; i++) {
     f[i] = (PetscReal)i*y[i-1] - (PetscReal)(i+1)*y[i];
@@ -769,13 +762,12 @@ PetscErrorCode IFunction_Hull1972C2(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 {
   PetscErrorCode  ierr;
   PetscScalar    *y,*f;
-  PetscInt        N;
+  PetscInt        N,i;
 
   PetscFunctionBegin;
   ierr = VecGetSize (Y,&N);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  PetscInt i;
   f[0] = -y[0];
   for (i = 1; i < N-1; i++) {
     f[i] = (PetscReal)i*y[i-1] - (PetscReal)(i+1)*y[i];
@@ -794,14 +786,12 @@ PetscErrorCode IJacobian_Hull1972C2(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
 {
   PetscErrorCode  ierr;
   PetscScalar    *y;
-  PetscInt        N;
+  PetscInt        N,i,col[2];
+  PetscReal       value[2];
 
   PetscFunctionBegin;
   ierr = VecGetSize (Y,&N);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-  PetscInt  i;
-  PetscInt  col[2];
-  PetscReal value[2];
   i = 0;
   value[0] = a+1;                 col[0] = 0;
   value[1] = 0;                   col[1] = 1;
@@ -827,15 +817,14 @@ PetscErrorCode IJacobian_Hull1972C2(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
 #define __FUNCT__ "RHSFunction_Hull1972C34"
 PetscErrorCode RHSFunction_Hull1972C34(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y,*f;
-  PetscInt        N;
+  PetscInt       N,i;
 
   PetscFunctionBegin;
   ierr = VecGetSize (Y,&N);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  PetscInt i;
   f[0] = -2.0*y[0] + y[1];
   for (i = 1; i < N-1; i++) {
     f[i] = y[i-1] - 2*y[i] + y[i+1];
@@ -850,15 +839,14 @@ PetscErrorCode RHSFunction_Hull1972C34(TS ts, PetscReal t, Vec Y, Vec F, void *s
 #define __FUNCT__ "IFunction_Hull1972C34"
 PetscErrorCode IFunction_Hull1972C34(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, void *s)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
   PetscScalar    *y,*f;
-  PetscInt        N;
+  PetscInt       N,i;
 
   PetscFunctionBegin;
   ierr = VecGetSize (Y,&N);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  PetscInt i;
   f[0] = -2.0*y[0] + y[1];
   for (i = 1; i < N-1; i++) {
     f[i] = y[i-1] - 2*y[i] + y[i+1];
@@ -875,16 +863,13 @@ PetscErrorCode IFunction_Hull1972C34(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F,
 #define __FUNCT__ "IJacobian_Hull1972C34"
 PetscErrorCode IJacobian_Hull1972C34(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat *A, Mat *B, MatStructure *flag, void *s)
 {
-  PetscErrorCode  ierr;
-  PetscScalar    *y;
-  PetscInt        N;
+  PetscErrorCode ierr;
+  PetscScalar    *y,value[3];
+  PetscInt       N,i,col[3];
 
   PetscFunctionBegin;
   ierr = VecGetSize (Y,&N);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-  PetscInt  i;
-  PetscInt  col[3];
-  PetscReal value[3];
   for (i = 0; i < N; i++) {
     if (i == 0) {
       value[0] = a+2;  col[0] = i;
@@ -917,6 +902,8 @@ PetscErrorCode Initialize(Vec Y, void* s)
   PetscErrorCode ierr;
   char          *p = (char*) s;
   PetscScalar   *y;
+  PetscInt      N = GetSize(s);
+  PetscBool     flg;
 
   PetscFunctionBegin;
   VecZeroEntries(Y);
@@ -997,8 +984,6 @@ PetscErrorCode Initialize(Vec Y, void* s)
     IFunction   = IFunction_Hull1972C34;
     IJacobian   = IJacobian_Hull1972C34;
   }
-  PetscInt N = GetSize(s);
-  PetscBool flg;
   ierr = PetscOptionsGetRealArray(PETSC_NULL,"-yinit",y,&N,&flg);CHKERRQ(ierr);
   if ((N != GetSize(s)) && flg) {
     printf("Error: number of initial values %d does not match problem size %d.\n",N,GetSize(s));
@@ -1131,18 +1116,19 @@ int main(int argc, char **argv)
   PetscInt        n_refine   = 1;             /* Number of refinement levels for convergence analysis */
   PetscReal       refine_fac = 2.0;           /* Refinement factor for dt                             */
   PetscReal       dt_initial = 0.01;          /* Initial default value of dt                          */
+  PetscReal       dt;
   PetscReal       tfinal     = 20.0;          /* Final time for the time-integration                  */
   PetscInt        maxiter    = 100000;        /* Maximum number of time-integration iterations        */
-  PetscReal      *error;                      /* Array to store the errors for convergence analysis   */
+  PetscReal       *error;                     /* Array to store the errors for convergence analysis   */
   PetscInt        nproc;                      /* No of processors                                     */
   PetscBool       flag;                       /* Flag denoting availability of exact solution         */
   PetscInt        r;
 
   /* Initialize program */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* Check if running with only 1 proc */
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);    CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
   if (nproc>1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
   ierr = PetscOptionsString("-problem","Problem specification","<hull1972a1>",
@@ -1157,11 +1143,9 @@ int main(int argc, char **argv)
                           tfinal,&tfinal,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscMalloc(n_refine*sizeof(PetscReal),&error);CHKERRQ(ierr);
-  for (r = 0; r < n_refine; r++) {
-    PetscReal dt;
+  for (r = 0,dt = dt_initial; r < n_refine; r++) {
     error[r] = 0;
-    if (!r) dt = dt_initial;
-    else    dt /= refine_fac;
+    if (r > 0) dt /= refine_fac;
 
     PetscPrintf(PETSC_COMM_WORLD,"Solving ODE \"%s\" with dt %f, final time %f and system size %d.\n",ptype,dt,tfinal,GetSize(&ptype[0]));
     ierr = SolveODE(&ptype[0],dt,tfinal,maxiter,&error[r],&flag);
@@ -1178,7 +1162,7 @@ int main(int argc, char **argv)
   PetscFree(error);CHKERRQ(ierr);
 
   /* Exit */
-  ierr = PetscFinalize(); CHKERRQ(ierr);
+  PetscFinalize();
   return(0);
 }
 
