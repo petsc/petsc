@@ -1703,6 +1703,18 @@ runex137:
 	   ${DIFF} output/ex137_1.out ex137_1.tmp || echo ${PWD} "\nPossible problem with ex137, diffs above \n========================================="; \
 	   ${RM} -f ex137_1.tmp
 
+runex138_1:
+	-@${MPIEXEC} -n 2 ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij > ex138.tmp 2>&1; \
+	    ${DIFF} output/ex138.out ex138.tmp || echo ${PWD} "\nPossible problem with ex138 nblock=1, diffs above \n========================================="; \
+	    ${RM} -f ex138.tmp
+
+runex138_2:
+	-@for nblock in 2 3; do \
+	    ${MPIEXEC} -n 2 ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type baij -matload_block_size $${nblock} > ex138.tmp 2>&1; \
+	    ${DIFF} output/ex138.out ex138.tmp || echo ${PWD} "\nPossible problem with ex138 nblock=$${nblock}, diffs above \n========================================="; \
+	    ${RM} -f ex138.tmp; \
+	  done
+
 runex139:
 	-@for blocked in 0 1; do \
 	    for mtype in aij baij; do \
@@ -1887,7 +1899,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex128.PETSc runex128 runex128_2 ex128.rm ex129.PETSc runex129 runex129_2 ex129.rm ex131.PETSc ex131.rm ex132.PETSc ex132.rm \
                                  ex133.PETSc ex133.rm ex134.PETSc runex134 ex134.rm ex135.PETSc runex135 ex135.rm ex136.PETSc ex136.rm \
                                  ex137.PETSc runex137 ex137.rm \
-                                 ex138.PETSc ex138.rm ex139.PETSc runex139 ex139.rm ex141.PETSc runex141 ex141.rm \
+                                 ex139.PETSc runex139 ex139.rm ex141.PETSc runex141 ex141.rm \
                                  ex151.PETSc runex151 ex151.rm \
                                  ex159.PETSc runex159 runex159_nest ex159.rm \
                                  ex160.PETSc runex160 ex160.rm  ex161.PETSc runex161 runex161_2 runex161_3 runex161_4 runex161_5 ex161.rm \
@@ -1919,7 +1931,9 @@ TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 ex40.rm ex42.PETSc runex42 \
                                  ex94.PETSc runex94_matmatmult runex94_matmatmult_2 runex94_scalable0 runex94_scalable1 \
                                  runex94_2_mattransposematmult_nonscalable runex94_2_mattransposematmult_matmatmult ex94.rm \
                                  ex136.PETSc runex136 runex136_2 runex136_3 \
-                                 runex136_4 runex136_5 runex136_6 ex136.rm  ex140.PETSc runex140 runex140_2 runex140_3 runex140_4 ex140.rm \
+                                 runex136_4 runex136_5 runex136_6 ex136.rm \
+                                 ex138.PETSc runex138_1 runex138_2 ex138.rm \
+                                 ex140.PETSc runex140 runex140_2 runex140_3 runex140_4 ex140.rm \
                                  ex100.PETSc runex100 ex100.rm ex125.PETSc runex125 ex125.rm \
                                  ex163.PETSc runex163 runex163_2 ex163.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex67f.PETSc runex67f ex67f.rm ex79f.PETSc runex79f ex79f.rm
