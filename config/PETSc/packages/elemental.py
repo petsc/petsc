@@ -34,6 +34,7 @@ class Configure(PETSc.package.NewPackage):
     args = ['-DCMAKE_INSTALL_PREFIX='+self.installDir]
     args.append('-DCMAKE_VERBOSE_MAKEFILE=1')
     args.append('-DMATH_LIBS:STRING="'+self.libraries.toString(self.blasLapack.dlib)+'"')
+    args.append('-DUSE_QT5=OFF') # otherwise we would need Qt5 include paths to compile
 
     self.framework.pushLanguage('C')
     args.append('-DMPI_C_COMPILER="'+self.framework.getCompiler()+'"')
