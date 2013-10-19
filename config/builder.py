@@ -1123,8 +1123,6 @@ class PETScMaker(script.Script):
    flags.extend([self.configInfo.setCompilers.CPPFLAGS, self.configInfo.CHUD.CPPFLAGS]) # Add CPP_FLAGS
    if self.configInfo.compilers.generateDependencies[language]:
      flags.append(self.configInfo.compilers.dependenciesGenerationFlag[language])
-   if not language == 'FC':
-     flags.append('-D__INSDIR__='+os.getcwd().replace(self.petscDir, ''))               # Define __INSDIR__
    cmd      = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
    self.logWrite(cmd+'\n', debugSection = self.debugSection, forceScroll = True)
    if not self.dryRun:
@@ -1181,8 +1179,6 @@ class PETScMaker(script.Script):
    flags.extend([self.configInfo.setCompilers.CPPFLAGS, self.configInfo.CHUD.CPPFLAGS]) # Add CPP_FLAGS
    if self.configInfo.compilers.generateDependencies[language]:
      flags.append(self.configInfo.compilers.dependenciesGenerationFlag[language])
-   if not language == 'FC':
-     flags.append('-D__INSDIR__='+os.getcwd().replace(self.petscDir, ''))               # Define __INSDIR__
    cmd      = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
    if not self.dryRun:
      pipe = self.runShellCommandParallel(cmd)

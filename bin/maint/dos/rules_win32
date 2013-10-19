@@ -25,9 +25,6 @@ OBJS	       = $(OBJSC) $(OBJSF)
 PETSC_INCLUDE  = /I$(PETSC_DIR) /I$(PETSC_DIR)\include $(MPI_INCLUDE) \
                  /I$(PETSC_DIR)\bmake\$(PETSC_ARCH) $(AMS_INCLUDE) $(PETSC_BLASLAPACK_FLAGS)
 CCPPFLAGS      = $(PETSC_INCLUDE) $(PCONF) $(PETSCFLAGS) $(CPPFLAGS)
-# __SDIR__ is not required as, on NT, the absolute path is used when compiling a
-# source file (which already includes the __SDIR__ information
-#		/D__SDIR__="\"$(LOCDIR)\""
 FCPPFLAGS      = $(PETSC_INCLUDE) $(PCONF) $(PETSCFLAGS) $(FPPFLAGS)
 PETSC_SYS_LIB  = libpetsc.lib $(EXTERNAL_LIB) $(BLASLAPACK_LIB) \
                  $(MPE_LIB) $(MPI_LIB) $(X11_LIB) $(SYS_LIB)

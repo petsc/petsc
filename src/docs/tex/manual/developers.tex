@@ -384,7 +384,7 @@ The simplified C/C++ macro-based interface consists of the following two calls
 
 The macro SETERRQ() is given by
 \begin{tabbing}
-return PetscError(\=comm,\_\_LINE\_\_,\_\_FUNCT\_\_,\_\_FILE\_\_,\_\_SDIR\_\_,error code,error type,\\
+return PetscError(\=comm,\_\_LINE\_\_,\_\_FUNCT\_\_,\_\_FILE\_\_,error code,error type,\\
 \> ''Error message'');
 \end{tabbing}
 It calls the error handler with the current function name and location: line number,
@@ -395,7 +395,7 @@ the detailed error information is only printed once instead of for all levels of
 
 The macro CHKERRQ() is defined by
 \begin{tabbing}
-  if (ierr)  PetscError(\=PETSC\_COMM\_SELF,\_\_LINE\_\_,PETSC\_FUNC\_\_,\_\_FILE\_\_,\_\_SDIR\_\_, \\
+  if (ierr)  PetscError(\=PETSC\_COMM\_SELF,\_\_LINE\_\_,PETSC\_FUNC\_\_,\_\_FILE\_\_, \\
  \>ierr,PETSC\_ERROR\_REPEAT," ");
 \end{tabbing}
 
