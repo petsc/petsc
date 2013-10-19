@@ -1050,26 +1050,26 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
     return(0);
   }
   ierr = VecCreate(PETSC_COMM_WORLD,&Y);CHKERRQ(ierr);
-  ierr = VecSetSizes(Y,N,PETSC_DECIDE); CHKERRQ(ierr);
-  ierr = VecSetUp(Y);                   CHKERRQ(ierr);
-  ierr = VecSet(Y,0);                   CHKERRQ(ierr);
+  ierr = VecSetSizes(Y,N,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetUp(Y);CHKERRQ(ierr);
+  ierr = VecSet(Y,0);CHKERRQ(ierr);
 
   /* Initialize the problem */
   ierr = Initialize(Y,&ptype[0]);
 
   /* Create and initialize the time-integrator                            */
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);                      CHKERRQ(ierr);
+  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   /* Default time integration options                                     */
-  ierr = TSSetType(ts,TSEULER);                               CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,maxiter,tfinal);                    CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);                     CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP); CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSEULER);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,maxiter,tfinal);CHKERRQ(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
   /* Read command line options for time integration                       */
-  ierr = TSSetFromOptions(ts);                                CHKERRQ(ierr);
+  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   /* Set solution vector                                                  */
-  ierr = TSSetSolution(ts,Y);                                 CHKERRQ(ierr);
+  ierr = TSSetSolution(ts,Y);CHKERRQ(ierr);
   /* Specify left/right-hand side functions                               */
-  ierr = TSGetType(ts,&time_scheme);                          CHKERRQ(ierr);
+  ierr = TSGetType(ts,&time_scheme);CHKERRQ(ierr);
   if ((!strcmp(time_scheme,TSEULER)) || (!strcmp(time_scheme,TSRK)) || (!strcmp(time_scheme,TSSSP))) {
     /* Explicit time-integration -> specify right-hand side function ydot = f(y) */
     impl_flg = PETSC_FALSE;
@@ -1078,31 +1078,31 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
     /* Implicit time-integration -> specify left-hand side function ydot-f(y) = 0 */
     /* and its Jacobian function                                                 */
     impl_flg = PETSC_TRUE;
-    ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&ptype[0]); CHKERRQ(ierr);
-    ierr = MatCreate(PETSC_COMM_WORLD,&Jac);                  CHKERRQ(ierr);
-    ierr = MatSetSizes(Jac,PETSC_DECIDE,PETSC_DECIDE,N,N);    CHKERRQ(ierr);
-    ierr = MatSetFromOptions(Jac);                            CHKERRQ(ierr);
-    ierr = MatSetUp(Jac);                                     CHKERRQ(ierr);
-    ierr = TSSetIJacobian(ts,Jac,Jac,IJacobian,&ptype[0]);    CHKERRQ(ierr);
+    ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&ptype[0]);CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,&Jac);CHKERRQ(ierr);
+    ierr = MatSetSizes(Jac,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(Jac);CHKERRQ(ierr);
+    ierr = MatSetUp(Jac);CHKERRQ(ierr);
+    ierr = TSSetIJacobian(ts,Jac,Jac,IJacobian,&ptype[0]);CHKERRQ(ierr);
   }
 
   /* Solve */
   ierr = TSSolve(ts,Y);CHKERRQ(ierr);
 
   /* Exact solution */
-  ierr = VecDuplicate(Y,&Yex); CHKERRQ(ierr);
+  ierr = VecDuplicate(Y,&Yex);CHKERRQ(ierr);
   ierr = ExactSolution(Yex,&ptype[0],tfinal,exact_flag);
 
   /* Calculate Error */
-  ierr = VecAYPX(Yex,-1.0,Y);       CHKERRQ(ierr);
-  ierr = VecNorm(Yex,NORM_2,error); CHKERRQ(ierr);
+  ierr = VecAYPX(Yex,-1.0,Y);CHKERRQ(ierr);
+  ierr = VecNorm(Yex,NORM_2,error);CHKERRQ(ierr);
   *error = PetscSqrtReal(((*error)*(*error))/N);
 
   /* Clean up and finalize */
-  if (impl_flg) ierr = MatDestroy(&Jac);  CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);                  CHKERRQ(ierr);
-  ierr = VecDestroy(&Yex);                CHKERRQ(ierr);
-  ierr = VecDestroy(&Y);                  CHKERRQ(ierr);
+  if (impl_flg) ierr = MatDestroy(&Jac);CHKERRQ(ierr);
+  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  ierr = VecDestroy(&Yex);CHKERRQ(ierr);
+  ierr = VecDestroy(&Y);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
