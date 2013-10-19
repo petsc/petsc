@@ -8,6 +8,13 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 
+#if defined(PETSC_HAVE_MAGMA)
+#if !defined(HAVE_CUBLAS)
+#define HAVE_CUBLAS 1
+#endif
+#include "magma.h"
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqDense_SeqAIJ"
 PETSC_EXTERN PetscErrorCode MatConvert_SeqDense_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
@@ -190,6 +197,21 @@ PetscErrorCode MatLUFactorNumeric_SeqDense(Mat fact,Mat A,const MatFactorInfo *i
   PetscFunctionBegin;
   ierr = MatDuplicateNoCreate_SeqDense(fact,A,MAT_COPY_VALUES);CHKERRQ(ierr);
   ierr = MatLUFactor_SeqDense(fact,0,0,&info);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+extern PetscErrorCode MatLUFactor_SeqDense_magma(Mat,IS,IS,const MatFactorInfo*);
+
+#undef __FUNCT__
+#define __FUNCT__ "MatLUFactorNumeric_SeqDense_magma"
+PetscErrorCode MatLUFactorNumeric_SeqDense_magma(Mat fact,Mat A,const MatFactorInfo *info_dummy)
+{
+  MatFactorInfo  info;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatDuplicateNoCreate_SeqDense(fact,A,MAT_COPY_VALUES);CHKERRQ(ierr);
+  ierr = MatLUFactor_SeqDense_magma(fact,0,0,&info);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -445,7 +467,49 @@ PetscErrorCode MatLUFactor_SeqDense(Mat A,IS row,IS col,const MatFactorInfo *min
   A->factortype             = MAT_FACTOR_LU;
 
   ierr = PetscLogFlops((2.0*A->cmap->n*A->cmap->n*A->cmap->n)/3);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* ---------------------------------------------------------------*/
+/* COMMENT: I have chosen to hide row permutation in the pivots,
+   rather than put it in the Mat->row slot.*/
+#undef __FUNCT__
+#define __FUNCT__ "MatLUFactor_SeqDense_magma"
+PetscErrorCode MatLUFactor_SeqDense_magma(Mat A,IS row,IS col,const MatFactorInfo *minfo)
+{
+  Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
+  PetscErrorCode ierr;
+  PetscBLASInt   n,m,info;
+
+  PetscFunctionBegin;
+  ierr = PetscBLASIntCast(A->cmap->n,&n);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
+  if (!mat->pivots) {
+    ierr = PetscMalloc((A->rmap->n+1)*sizeof(PetscBLASInt),&mat->pivots);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)A,A->rmap->n*sizeof(PetscBLASInt));CHKERRQ(ierr);
+  }
+  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
+  ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MAGMA)
+  magma_init();
+#if defined(PETSC_USE_COMPLEX)
+  magma_zgetrf(m,n,mat->v,mat->lda,mat->pivots,&info);
+#else
+  magma_dgetrf(m,n,mat->v,mat->lda,mat->pivots,&info);
 #endif
+  magma_finalize();
+#endif
+  ierr = PetscFPTrapPop();CHKERRQ(ierr);
+
+  if (info<0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to LU factorization");
+  if (info>0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Bad LU factorization");
+  A->ops->solve             = MatSolve_SeqDense;
+  A->ops->solvetranspose    = MatSolveTranspose_SeqDense;
+  A->ops->solveadd          = MatSolveAdd_SeqDense;
+  A->ops->solvetransposeadd = MatSolveTransposeAdd_SeqDense;
+  A->factortype             = MAT_FACTOR_LU;
+
+  ierr = PetscLogFlops((2.0*A->cmap->n*A->cmap->n*A->cmap->n)/3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -479,6 +543,44 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,const MatFactorInfo *fac
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatCholeskyFactor_SeqDense_magma"
+PetscErrorCode MatCholeskyFactor_SeqDense_magma(Mat A,IS perm,const MatFactorInfo *factinfo)
+{
+  Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
+  PetscErrorCode ierr;
+  PetscBLASInt   info,n;
+#if defined(PETSC_HAVE_MAGMA)
+  magma_uplo_t uplo='L';
+#endif
+
+  PetscFunctionBegin;
+  ierr = PetscBLASIntCast(A->cmap->n,&n);CHKERRQ(ierr);
+  ierr = PetscFree(mat->pivots);CHKERRQ(ierr);
+
+  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
+  PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&n,mat->v,&mat->lda,&info));
+#if defined(PETSC_HAVE_MAGMA)
+  magma_init();
+#if defined(PETSC_USE_COMPLEX)
+  magma_zpotrf(uplo,n,mat->v,mat->lda,&info);
+#else
+  magma_dpotrf(uplo,n,mat->v,mat->lda,&info);
+#endif
+  magma_finalize();
+#endif
+  if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %D",(PetscInt)info-1);
+  A->ops->solve             = MatSolve_SeqDense;
+  A->ops->solvetranspose    = MatSolveTranspose_SeqDense;
+  A->ops->solveadd          = MatSolveAdd_SeqDense;
+  A->ops->solvetransposeadd = MatSolveTransposeAdd_SeqDense;
+  A->factortype             = MAT_FACTOR_CHOLESKY;
+
+  ierr = PetscLogFlops((A->cmap->n*A->cmap->n*A->cmap->n)/3.0);CHKERRQ(ierr);
+#endif
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqDense"
@@ -496,6 +598,21 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqDense(Mat fact,Mat A,const MatFactorI
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatCholeskyFactorNumeric_SeqDense_magma"
+PetscErrorCode MatCholeskyFactorNumeric_SeqDense_magma(Mat fact,Mat A,const MatFactorInfo *info_dummy)
+{
+  PetscErrorCode ierr;
+  MatFactorInfo  info;
+
+  PetscFunctionBegin;
+  info.fill = 1.0;
+
+  ierr = MatDuplicateNoCreate_SeqDense(fact,A,MAT_COPY_VALUES);CHKERRQ(ierr);
+  ierr = MatCholeskyFactor_SeqDense_magma(fact,0,&info);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqDense"
 PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,const MatFactorInfo *info)
 {
@@ -507,6 +624,17 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,const Ma
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatCholeskyFactorSymbolic_SeqDense_magma"
+PetscErrorCode MatCholeskyFactorSymbolic_SeqDense_magma(Mat fact,Mat A,IS row,const MatFactorInfo *info)
+{
+  PetscFunctionBegin;
+  fact->assembled                  = PETSC_TRUE;
+  fact->preallocated               = PETSC_TRUE;
+  fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqDense_magma;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_SeqDense"
 PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,IS col,const MatFactorInfo *info)
 {
@@ -514,6 +642,17 @@ PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,IS col,const M
   fact->preallocated         = PETSC_TRUE;
   fact->assembled            = PETSC_TRUE;
   fact->ops->lufactornumeric = MatLUFactorNumeric_SeqDense;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatLUFactorSymbolic_SeqDense_magma"
+PetscErrorCode MatLUFactorSymbolic_SeqDense_magma(Mat fact,Mat A,IS row,IS col,const MatFactorInfo *info)
+{
+  PetscFunctionBegin;
+  fact->preallocated         = PETSC_TRUE;
+  fact->assembled            = PETSC_TRUE;
+  fact->ops->lufactornumeric = MatLUFactorNumeric_SeqDense_magma;
   PetscFunctionReturn(0);
 }
 
@@ -531,6 +670,25 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqdense_petsc(Mat A,MatFactorType ftyp
     (*fact)->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqDense;
   } else {
     (*fact)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqDense;
+  }
+  (*fact)->factortype = ftype;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatGetFactor_seqdense_magma"
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqdense_magma(Mat A,MatFactorType ftype,Mat *fact)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),fact);CHKERRQ(ierr);
+  ierr = MatSetSizes(*fact,A->rmap->n,A->cmap->n,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
+  ierr = MatSetType(*fact,((PetscObject)A)->type_name);CHKERRQ(ierr);
+  if (ftype == MAT_FACTOR_LU) {
+    (*fact)->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqDense_magma;
+  } else {
+    (*fact)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqDense_magma;
   }
   (*fact)->factortype = ftype;
   PetscFunctionReturn(0);
@@ -2100,7 +2258,6 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
                                         0,
                                         0,
                                 /*139*/ 0,
-                                        0,
                                         0
 };
 
@@ -2283,6 +2440,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqDense(Mat B)
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqdense_seqaij_C",MatConvert_SeqDense_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_petsc_C",MatGetFactor_seqdense_petsc);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MAGMA)
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_magma_C",MatGetFactor_seqdense_magma);CHKERRQ(ierr);
+#endif
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqDenseSetPreallocation_C",MatSeqDenseSetPreallocation_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_seqaij_seqdense_C",MatMatMult_SeqAIJ_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_seqaij_seqdense_C",MatMatMultSymbolic_SeqAIJ_SeqDense);CHKERRQ(ierr);
