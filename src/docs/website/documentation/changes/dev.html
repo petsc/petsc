@@ -120,6 +120,8 @@
         <li>MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm
       subcomm,PetscInt mlocal_red,MatReuse reuse,Mat *matredundant) is
       replaced by MatRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,MatReuse reuse,Mat *matredundant).</li>
+        <li>MatSeqBAIJSetPreallocationCSR() and MatMPIBAIJSetPreallocationCSR() now take array arguments that are ordered with contiguous blocks and the ordering within blocks respects the MAT_ROW_ORIENTED option.</li>
+        <li>MatCreateMPIBAIJWithArrays() now takes input ordered with contiguous blocks using column-major ordering within blocks.</li>
       </ul>
       <h4>PC:</h4>
       <ul>
