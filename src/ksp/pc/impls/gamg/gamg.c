@@ -732,7 +732,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         nASMBlocksArr[level]  = 0;
         ierr                  = PCGASMSetType(subpc, PC_GASM_BASIC);CHKERRQ(ierr);
       } else {
-        ierr = PCSetType(subpc, PCJACOBI);CHKERRQ(ierr);
+        ierr = PCSetType(subpc, PCSOR);CHKERRQ(ierr);
       }
     }
     {
@@ -768,7 +768,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
          lidx <= fine_level;
          lidx++, level--) {
       KSP       smoother;
-      PetscBool flag;
+      PetscBool flag,flag2;
       PC        subpc;
 
       ierr = PCMGGetSmoother(pc, lidx, &smoother);CHKERRQ(ierr);
@@ -779,8 +779,9 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       if (flag) {
         PetscReal emax, emin;
         ierr = PetscObjectTypeCompare((PetscObject)subpc, PCJACOBI, &flag);CHKERRQ(ierr);
-        if (flag && emaxs[level] > 0.0) emax=emaxs[level]; /* eigen estimate only for diagnal PC */
-        else { /* eigen estimate 'emax' */
+        ierr = PetscObjectTypeCompare((PetscObject)subpc, PCSOR, &flag2);CHKERRQ(ierr);
+        if ((flag||flag2) && emaxs[level] > 0.0) emax=emaxs[level]; /* eigen estimate only for diagnal PC but lets acccept SOR because it is close and safe (always lower) */
+        else { /* eigen estimate 'emax' -- this is done in cheby */
           KSP eksp;
           Mat Lmat = Aarr[level];
           Vec bb, xx;
