@@ -58,6 +58,7 @@ struct _p_TS {
 
   PetscErrorCode (*prestep)(TS);
   PetscErrorCode (*prestage)(TS,PetscReal);
+  PetscErrorCode (*poststage)(TS,PetscReal,PetscInt,Vec*);
   PetscErrorCode (*poststep)(TS);
 
   IS is_diff; /* Index set containing indices corresponding to differential equations in DAE */
