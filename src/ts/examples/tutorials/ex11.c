@@ -375,14 +375,14 @@ static PetscErrorCode PhysicsFunctional_Advect(Model mod,PetscReal time,const Pe
 #define __FUNCT__ "PhysicsCreate_Advect"
 static PetscErrorCode PhysicsCreate_Advect(Model mod,Physics phys)
 {
-  Physics_Advect *advect = (Physics_Advect*)phys->data;
+  Physics_Advect *advect;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Advect;
   phys->riemann = PhysicsRiemann_Advect;
   ierr = PetscNew(Physics_Advect,&phys->data);CHKERRQ(ierr);
-  advect = phys->data;
+  advect = (Physics_Advect*)phys->data;
   ierr = PetscOptionsHead("Advect options");CHKERRQ(ierr);
   {
     PetscInt two = 2,dof = 1;
@@ -550,7 +550,7 @@ static PetscErrorCode PhysicsCreate_SW(Model mod,Physics phys)
   phys->field_desc = PhysicsFields_SW;
   phys->riemann = PhysicsRiemann_SW;
   ierr          = PetscNew(Physics_SW,&phys->data);CHKERRQ(ierr);
-  sw            = phys->data;
+  sw            = (Physics_SW*)phys->data;
   ierr          = PetscOptionsHead("SW options");CHKERRQ(ierr);
   {
     sw->gravity = 1.0;
@@ -590,7 +590,7 @@ typedef struct {
     PetscInt Pressure;
     PetscInt Speed;
   } monitor;
-} PhysicsEuler;
+} Physics_Euler;
 
 static const struct FieldDescription PhysicsFields_Euler[] = {{"Density",1},{"Momentum",DIM},{"Energy",1},{NULL,0}};
 
@@ -634,9 +634,9 @@ static PetscErrorCode SpeedOfSound_PG(const PetscReal *pars,const EulerNode *x,P
  * */
 static PetscErrorCode EulerFlux(Physics phys,const PetscReal *n,const EulerNode *x,EulerNode *f)
 {
-  PhysicsEuler *eu = (PhysicsEuler*)phys->data;
-  PetscScalar  u,nu,p;
-  PetscInt     i;
+  Physics_Euler *eu = (Physics_Euler*)phys->data;
+  PetscScalar   u,nu,p;
+  PetscInt      i;
 
   PetscFunctionBeginUser;
   u  = DotDIM(x->ru,x->ru);
@@ -671,7 +671,7 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(Model mod, PetscReal time, cons
 #define __FUNCT__ "PhysicsRiemann_Euler_Rusanov"
 static PetscErrorCode PhysicsRiemann_Euler_Rusanov(Physics phys, const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux)
 {
-  PhysicsEuler    *eu = (PhysicsEuler*)phys->data;
+  Physics_Euler   *eu = (Physics_Euler*)phys->data;
   PetscScalar     cL,cR,speed;
   const EulerNode *uL = (const EulerNode*)xL,*uR = (const EulerNode*)xR;
   EulerNode       fL,fR;
@@ -707,7 +707,7 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const Petsc
 static PetscErrorCode PhysicsFunctional_Euler(Model mod,PetscReal time,const PetscReal *coord,const PetscScalar *xx,PetscReal *f,void *ctx)
 {
   Physics         phys = (Physics)ctx;
-  PhysicsEuler    *eu  = (PhysicsEuler*)phys->data;
+  Physics_Euler   *eu  = (Physics_Euler*)phys->data;
   const EulerNode *x   = (const EulerNode*)xx;
   PetscScalar     p;
 
@@ -725,14 +725,14 @@ static PetscErrorCode PhysicsFunctional_Euler(Model mod,PetscReal time,const Pet
 #define __FUNCT__ "PhysicsCreate_Euler"
 static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys)
 {
-  PhysicsEuler   *eu;
-  PetscErrorCode ierr;
+  Physics_Euler   *eu;
+  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Euler;
   phys->riemann = PhysicsRiemann_Euler_Rusanov;
-  ierr = PetscNew(PhysicsEuler,&phys->data);CHKERRQ(ierr);
-  eu   = phys->data;
+  ierr = PetscNew(Physics_Euler,&phys->data);CHKERRQ(ierr);
+  eu   = (Physics_Euler*)phys->data;
   ierr = PetscOptionsHead("Euler options");CHKERRQ(ierr);
   {
     eu->pars[0] = 3.0;
