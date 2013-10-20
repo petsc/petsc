@@ -29,14 +29,13 @@ PETSC_EXTERN void PETSC_STDCALL f90array1dgetaddrmystruct_(void *array, PetscFor
 PETSC_EXTERN void PETSC_STDCALL vecgetarraymystruct_(Vec *x,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
-  PetscInt    len;
+  PetscInt    len,one = 1;
   if (!ptr) {
-    *__ierr = PetscError(((PetscObject)*x)->comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,PETSC_ERR_ARG_BADPTR,PETSC_ERROR_INITIAL,"ptr==NULL");
+    *__ierr = PetscError(((PetscObject)*x)->comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,PETSC_ERR_ARG_BADPTR,PETSC_ERROR_INITIAL,"ptr==NULL");
     return;
   }
   *__ierr = VecGetArray(*x,&fa);      if (*__ierr) return;
   *__ierr = VecGetLocalSize(*x,&len); if (*__ierr) return;
-  PetscInt one = 1;
   f90array1dcreatemystruct_(fa,&one,&len,ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
 
