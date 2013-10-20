@@ -247,6 +247,21 @@ runex7_3:
 	   else echo ${PWD} ; echo "Possible problem with with ex7_3, diffs above \n========================================="; fi; \
 	   ${RM} -f ex7_3.tmp
 
+runex8:
+	-@${MPIEXEC} -n 1 ./ex8 -monitor_error -ts_atol 1e-2 -ts_rtol 1e-2 -ts_exact_final_time interpolate -ts_type arkimex > ex8_1.tmp 2>&1; \
+	   ${DIFF} output/ex8_1.out ex8_1.tmp || printf "${PWD}\nPossible problem with ex8_1, diffs above \n=========================================\n"; \
+	   ${RM} -f ex8_1.tmp
+
+runex8_2:
+	-@${MPIEXEC} -n 1 ./ex8 -ts_atol 1e-2 -ts_rtol 1e-2 -ts_final_time 15 -ts_type arkimex -ts_arkimex_type 2e -problem_type orego -ts_arkimex_initial_guess_extrapolate 0 > ex8_2.tmp 2>&1; \
+	   ${DIFF} output/ex8_2.out ex8_2.tmp || printf "${PWD}\nPossible problem with ex8_2, diffs above \n=========================================\n"; \
+	   ${RM} -f ex8_2.tmp
+
+runex8_3:
+	-@${MPIEXEC} -n 1 ./ex8 -ts_atol 1e-2 -ts_rtol 1e-2 -ts_final_time 15 -ts_type arkimex -ts_arkimex_type 2e -problem_type orego -ts_arkimex_initial_guess_extrapolate 1 > ex8_3.tmp 2>&1; \
+	   ${DIFF} output/ex8_3.out ex8_3.tmp || printf "${PWD}\nPossible problem with ex8_3, diffs above \n=========================================\n"; \
+	   ${RM} -f ex8_3.tmp
+
 runex9:
 	-@${MPIEXEC} -n 1 ./ex9 -da_grid_x 100 -initial 1 -xmin -2 -xmax 5 -exact -limit mc > ex9_1.tmp 2>&1; \
 	   ${DIFF} output/ex9_1.out ex9_1.tmp || echo  ${PWD} "\nPossible problem with ex9_1, diffs above \n========================================="; \
@@ -422,7 +437,7 @@ runex30_2:
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc ex5.rm \
                             ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm \
-                            ex8.PETSc ex8.rm \
+                            ex8.PETSc runex8 runex8_2 runex8_3 ex8.rm \
                             ex10.PETSc runex10 runex10_2 runex10_3  ex10.rm \
                             ex12.PETSc ex12.rm ex13.PETSc runex13 runex13_2 runex13_3 ex13.rm\
                             ex15.PETSc runex15 runex15_2 runex15_3 runex15_4 runex15_5 ex15.rm \
