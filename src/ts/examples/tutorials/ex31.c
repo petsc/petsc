@@ -1040,8 +1040,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   Vec             Yex;              /* Exact solution                         */
   PetscInt        N;                /* Size of the system of equations        */
   TSType          time_scheme;      /* Type of time-integration scheme        */
-  PetscBool       impl_flg;         /* Flag whether implicit time-integration */
-  Mat             Jac;              /* Jacobian matrix                        */
+  Mat             Jac = NULL;       /* Jacobian matrix                        */
 
   PetscFunctionBegin;
   N = GetSize(&ptype[0]);
@@ -1072,12 +1071,10 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   ierr = TSGetType(ts,&time_scheme);CHKERRQ(ierr);
   if ((!strcmp(time_scheme,TSEULER)) || (!strcmp(time_scheme,TSRK)) || (!strcmp(time_scheme,TSSSP))) {
     /* Explicit time-integration -> specify right-hand side function ydot = f(y) */
-    impl_flg = PETSC_FALSE;
     ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,&ptype[0]);CHKERRQ(ierr);
   } else if ((!strcmp(time_scheme,TSBEULER)) || (!strcmp(time_scheme,TSARKIMEX))) {
     /* Implicit time-integration -> specify left-hand side function ydot-f(y) = 0 */
     /* and its Jacobian function                                                 */
-    impl_flg = PETSC_TRUE;
     ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&ptype[0]);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_WORLD,&Jac);CHKERRQ(ierr);
     ierr = MatSetSizes(Jac,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
@@ -1099,7 +1096,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   *error = PetscSqrtReal(((*error)*(*error))/N);
 
   /* Clean up and finalize */
-  if (impl_flg) ierr = MatDestroy(&Jac);CHKERRQ(ierr);
+  ierr = MatDestroy(&Jac);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = VecDestroy(&Yex);CHKERRQ(ierr);
   ierr = VecDestroy(&Y);CHKERRQ(ierr);
