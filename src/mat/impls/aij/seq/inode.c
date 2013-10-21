@@ -2755,10 +2755,10 @@ PetscErrorCode MatColoringPatch_SeqAIJ_Inode(Mat mat,PetscInt ncolors,PetscInt n
 PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar       sum1,sum2,sum3,sum4,sum5,tmp0,tmp1,tmp2,tmp3;
+  PetscScalar       sum1 = 0.0,sum2 = 0.0,sum3 = 0.0,sum4 = 0.0,sum5 = 0.0,tmp0,tmp1,tmp2,tmp3;
   MatScalar         *ibdiag,*bdiag,work[25],*t;
   PetscScalar       *x,tmp4,tmp5,x1,x2,x3,x4,x5;
-  const MatScalar   *v = a->a,*v1,*v2,*v3,*v4,*v5;
+  const MatScalar   *v = a->a,*v1 = NULL,*v2 = NULL,*v3 = NULL,*v4 = NULL,*v5 = NULL;
   const PetscScalar *xb, *b;
   PetscReal         zeropivot = 1.0e-15, shift = 0.0;
   PetscErrorCode    ierr;
