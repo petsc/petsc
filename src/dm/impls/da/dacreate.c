@@ -380,8 +380,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   dd->bz           = DMDA_BOUNDARY_NONE;
   dd->stencil_type = DMDA_STENCIL_BOX;
   dd->interptype   = DMDA_Q1;
-  dd->idx          = NULL;
-  dd->Nl           = -1;
   dd->lx           = NULL;
   dd->ly           = NULL;
   dd->lz           = NULL;

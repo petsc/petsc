@@ -39,13 +39,14 @@ PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
       ierr = DMView_DA_VTK(da,viewer);CHKERRQ(ierr);
     }
   } else if (isdraw) {
-    PetscDraw draw;
-    double    ymin = -1*dd->s-1,ymax = dd->N+dd->s;
-    double    xmin = -1*dd->s-1,xmax = dd->M+dd->s;
-    double    x,y;
-    PetscInt  base,*idx;
-    char      node[10];
-    PetscBool isnull;
+    PetscDraw      draw;
+    double         ymin = -1*dd->s-1,ymax = dd->N+dd->s;
+    double         xmin = -1*dd->s-1,xmax = dd->M+dd->s;
+    double         x,y;
+    PetscInt       base;
+    const PetscInt *idx;
+    char           node[10];
+    PetscBool      isnull;
 
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
@@ -90,17 +91,19 @@ PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
     /* overlay ghost numbers, useful for error checking */
     /* put in numbers */
 
-    base = 0; idx = dd->idx;
+    base = 0;
+    ierr = ISLocalToGlobalMappingGetIndices(da->ltogmapb,&idx);CHKERRQ(ierr);
     ymin = dd->Ys; ymax = dd->Ye; xmin = dd->Xs; xmax = dd->Xe;
     for (y=ymin; y<ymax; y++) {
       for (x=xmin; x<xmax; x++) {
         if ((base % dd->w) == 0) {
-          sprintf(node,"%d",(int)(idx[base]/dd->w));
+          sprintf(node,"%d",(int)(idx[base]));
           ierr = PetscDrawString(draw,x/dd->w,y,PETSC_DRAW_BLUE,node);CHKERRQ(ierr);
         }
         base++;
       }
     }
+    ierr = ISLocalToGlobalMappingRestoreIndices(da->ltogmapb,&idx);
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   } else if (isbinary) {
@@ -234,8 +237,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   MPI_Comm         comm;
   PetscMPIInt      rank,size;
   PetscInt         xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,start,end,IXs,IXe,IYs,IYe;
-  PetscInt         up,down,left,right,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn,*idx_cpy;
-  const PetscInt   *idx_full;
+  PetscInt         up,down,left,right,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
   PetscInt         xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count;
   PetscInt         s_x,s_y; /* s proportionalized to w */
   PetscInt         sn0 = 0,sn2 = 0,sn6 = 0,sn8 = 0;
@@ -779,11 +781,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
      of VecSetValuesLocal().
   */
   ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_OWN_POINTER,&ltogis);CHKERRQ(ierr);
-  ierr = PetscMalloc(nn*dof*sizeof(PetscInt),&idx_cpy);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory((PetscObject)da,nn*dof*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = ISGetIndices(ltogis, &idx_full);CHKERRQ(ierr);
-  ierr = PetscMemcpy(idx_cpy,idx_full,nn*dof*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = ISRestoreIndices(ltogis, &idx_full);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateIS(ltogis,&da->ltogmap);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)da->ltogmap);CHKERRQ(ierr);
   ierr = ISDestroy(&ltogis);CHKERRQ(ierr);
@@ -801,8 +798,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 
   dd->gtol      = gtol;
   dd->ltog      = ltog;
-  dd->idx       = idx_cpy;
-  dd->Nl        = nn*dof;
   dd->base      = base;
   da->ops->view = DMView_DA_2d;
   dd->ltol      = NULL;

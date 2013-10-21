@@ -28,7 +28,9 @@
    during calls to DMDAXXXToXXX().
 
    Essentially the same data is returned in the form of a local-to-global mapping
-   with the routine DMDAGetISLocalToGlobalMapping();
+   with the routine DMDAGetISLocalToGlobalMapping(), that is the recommended interface.
+
+   You must call DMDARestoreGlobalIndices() after you are finished using the indices
 
    Fortran Note:
    This routine is used differently from Fortran
@@ -47,18 +49,22 @@
 
 .keywords: distributed array, get, global, indices, local-to-global
 
-.seealso: DMDACreate2d(), DMDAGetGhostCorners(), DMDAGetCorners(), DMLocalToGlobalBegin()
+.seealso: DMDACreate2d(), DMDAGetGhostCorners(), DMDAGetCorners(), DMLocalToGlobalBegin(), DMDARestoreGlobalIndices()
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToLocalBegin(), DMDAGetAO(), DMDAGetGlobalIndicesF90()
           DMDAGetISLocalToGlobalMapping(), DMDACreate3d(), DMDACreate1d(), DMLocalToLocalEnd(), DMDAGetOwnershipRanges()
 @*/
-PetscErrorCode  DMDAGetGlobalIndices(DM da,PetscInt *n,PetscInt **idx)
+PetscErrorCode  DMDAGetGlobalIndices(DM da,PetscInt *n,const PetscInt *idx[])
 {
-  DM_DA *dd = (DM_DA*)da->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (n) *n = dd->Nl;
-  if (idx) *idx = dd->idx;
+  if (n) {
+    ierr = ISLocalToGlobalMappingGetSize(da->ltogmap,n);CHKERRQ(ierr);
+  }
+  if (idx) {
+    ierr = ISLocalToGlobalMappingGetIndices(da->ltogmap,idx);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -105,6 +111,63 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
   }
   *outNlocal = Nlocal;
   ierr       = ISCreateGeneral(PetscObjectComm((PetscObject)da),Nlocal,lidx,PETSC_OWN_POINTER,isnatural);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDARestoreGlobalIndices"
+/*@C
+   DMDARestoreGlobalIndices - Restores the global node number of all local nodes,   including ghost nodes.
+
+   Not Collective
+
+   Input Parameter:
+.  da - the distributed array
+
+   Output Parameters:
++  n - the number of local elements, including ghost nodes (or NULL)
+-  idx - the global indices
+
+   Level: intermediate
+
+   Note:
+   For DMDA_STENCIL_STAR stencils the inactive corner ghost nodes are also included
+   in the list of local indices (even though those nodes are not updated
+   during calls to DMDAXXXToXXX().
+
+   Essentially the same data is returned in the form of a local-to-global mapping
+   with the routine DMDAGetISLocalToGlobalMapping();
+
+   Fortran Note:
+   This routine is used differently from Fortran
+.vb
+        DM          da
+        integer     n,da_array(1)
+        PetscOffset i_da
+        integer     ierr
+        call DMDAGetGlobalIndices(da,n,da_array,i_da,ierr)
+
+   C Access first local entry in list
+        value = da_array(i_da + 1)
+.ve
+
+   See the <A href="../../docs/manual.pdf#nameddest=ch_fortran">Fortran chapter</A> of the users manual for details.
+
+.keywords: distributed array, get, global, indices, local-to-global
+
+.seealso: DMDACreate2d(), DMDAGetGhostCorners(), DMDAGetCorners(), DMLocalToGlobalBegin()
+          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToLocalBegin(), DMDAGetAO(), DMDAGetGlobalIndicesF90()
+          DMDAGetISLocalToGlobalMapping(), DMDACreate3d(), DMDACreate1d(), DMLocalToLocalEnd(), DMDAGetOwnershipRanges()
+@*/
+PetscErrorCode  DMDARestoreGlobalIndices(DM da,PetscInt *n,const PetscInt *idx[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  if (idx) {
+    ierr = ISLocalToGlobalMappingRestoreIndices(da->ltogmap,idx);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -183,10 +246,33 @@ PetscErrorCode  DMDAGetAO(DM da,AO *ao)
 
     Level: intermediate
 
-    Notes:
-     Not yet supported for all F90 compilers
+.keywords: distributed array, get, global, indices, local-to-global, f90
+
+.seealso: DMDAGetGlobalIndices(), DMDARestoreGlobalIndicesF90(), DMDARestoreGlobalIndices()
+M*/
+
+/*MC
+    DMDARestoreGlobalIndicesF90 - Returns a Fortran90 pointer to the list of
+    global indices (global node number of all local nodes, including
+    ghost nodes).
+
+    Synopsis:
+    DMDARestoreGlobalIndicesF90(DM da,integer n,{integer, pointer :: idx(:)},integer ierr)
+
+    Not Collective
+
+    Input Parameter:
+.   da - the distributed array
+
+    Output Parameters:
++   n - the number of local elements, including ghost nodes (or NULL)
+.   idx - the Fortran90 pointer to the global indices
+-   ierr - error code
+
+    Level: intermediate
 
 .keywords: distributed array, get, global, indices, local-to-global, f90
 
-.seealso: DMDAGetGlobalIndices()
+.seealso: DMDARestoreGlobalIndices(), DMDAGetGlobalIndicesF90(), DMDAGetGlobalIndices()
 M*/
+

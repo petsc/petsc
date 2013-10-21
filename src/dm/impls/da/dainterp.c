@@ -53,8 +53,9 @@ PetscErrorCode  DMCreateInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
 PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode   ierr;
-  PetscInt         i,i_start,m_f,Mx,*idx_f;
-  PetscInt         m_ghost,*idx_c,m_ghost_c;
+  PetscInt         i,i_start,m_f,Mx;
+  const PetscInt   *idx_f,*idx_c;
+  PetscInt         m_ghost,m_ghost_c;
   PetscInt         row,col,i_start_ghost,mx,m_c,nc,ratio;
   PetscInt         i_c,i_start_c,i_start_ghost_c,cols[2],dof;
   PetscScalar      v[2],x;
@@ -167,6 +168,8 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
     }
     ierr = PetscFree(xi);CHKERRQ(ierr);
   }
+  ierr = DMDARestoreGlobalIndices(daf,NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDARestoreGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
@@ -179,8 +182,9 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
 PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode   ierr;
-  PetscInt         i,i_start,m_f,Mx,*idx_f;
-  PetscInt         m_ghost,*idx_c,m_ghost_c;
+  PetscInt         i,i_start,m_f,Mx;
+  const PetscInt   *idx_f,*idx_c;
+  PetscInt         m_ghost,m_ghost_c;
   PetscInt         row,col,i_start_ghost,mx,m_c,nc,ratio;
   PetscInt         i_c,i_start_c,i_start_ghost_c,cols[2],dof;
   PetscScalar      v[2],x;
@@ -238,6 +242,8 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
     }
     ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr);
   }
+  ierr = DMDARestoreGlobalIndices(daf,NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDARestoreGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
@@ -251,8 +257,9 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
 PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode   ierr;
-  PetscInt         i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
-  PetscInt         m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,*dnz,*onz;
+  PetscInt         i,j,i_start,j_start,m_f,n_f,Mx,My,dof;
+  const PetscInt   *idx_c,*idx_f;
+  PetscInt         m_ghost,n_ghost,m_ghost_c,n_ghost_c,*dnz,*onz;
   PetscInt         row,col,i_start_ghost,j_start_ghost,cols[4],mx,m_c,my,nc,ratioi,ratioj;
   PetscInt         i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c,col_shift,col_scale;
   PetscMPIInt      size_c,size_f,rank_f;
@@ -456,6 +463,8 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
     ierr = PetscFree(xi);CHKERRQ(ierr);
     ierr = PetscFree(eta);CHKERRQ(ierr);
   }
+  ierr = DMDARestoreGlobalIndices(daf,NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDARestoreGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
@@ -471,8 +480,9 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
 PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode   ierr;
-  PetscInt         i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
-  PetscInt         m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,*dnz,*onz;
+  PetscInt         i,j,i_start,j_start,m_f,n_f,Mx,My,dof;
+  const PetscInt   *idx_c,*idx_f;
+  PetscInt         m_ghost,n_ghost,m_ghost_c,n_ghost_c,*dnz,*onz;
   PetscInt         row,col,i_start_ghost,j_start_ghost,cols[4],mx,m_c,my,nc,ratioi,ratioj;
   PetscInt         i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c,col_shift,col_scale;
   PetscMPIInt      size_c,size_f,rank_f;
@@ -566,6 +576,8 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
       ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
+  ierr = DMDARestoreGlobalIndices(daf,NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDARestoreGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
@@ -582,8 +594,9 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
 PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode   ierr;
-  PetscInt         i,j,l,i_start,j_start,l_start,m_f,n_f,p_f,Mx,My,Mz,*idx_f,dof;
-  PetscInt         m_ghost,n_ghost,p_ghost,*idx_c,m_ghost_c,n_ghost_c,p_ghost_c,nc,*dnz,*onz;
+  PetscInt         i,j,l,i_start,j_start,l_start,m_f,n_f,p_f,Mx,My,Mz,dof;
+  const PetscInt   *idx_c,*idx_f;
+  PetscInt         m_ghost,n_ghost,p_ghost,m_ghost_c,n_ghost_c,p_ghost_c,nc,*dnz,*onz;
   PetscInt         row,col,i_start_ghost,j_start_ghost,l_start_ghost,cols[8],mx,m_c,my,n_c,mz,p_c,ratioi,ratioj,ratiol;
   PetscInt         i_c,j_c,l_c,i_start_c,j_start_c,l_start_c,i_start_ghost_c,j_start_ghost_c,l_start_ghost_c,col_shift,col_scale;
   PetscMPIInt      size_c,size_f,rank_f;
@@ -688,6 +701,8 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
       }
     }
   }
+  ierr = DMDARestoreGlobalIndices(daf,NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDARestoreGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
@@ -701,8 +716,9 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
 PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
 {
   PetscErrorCode   ierr;
-  PetscInt         i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof,l;
-  PetscInt         m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,Mz,mz;
+  PetscInt         i,j,i_start,j_start,m_f,n_f,Mx,My,dof,l;
+  const PetscInt   *idx_c,*idx_f;
+  PetscInt         m_ghost,n_ghost,m_ghost_c,n_ghost_c,Mz,mz;
   PetscInt         row,col,i_start_ghost,j_start_ghost,cols[8],mx,m_c,my,nc,ratioi,ratioj,ratiok;
   PetscInt         i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
   PetscInt         l_start,p_f,l_start_ghost,p_ghost,l_start_c,p_c;
@@ -962,7 +978,8 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
     ierr = PetscFree(eta);CHKERRQ(ierr);
     ierr = PetscFree(zeta);CHKERRQ(ierr);
   }
-
+  ierr = DMDARestoreGlobalIndices(daf,NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDARestoreGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -1026,8 +1043,9 @@ PetscErrorCode  DMCreateInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
 PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
 {
   PetscErrorCode   ierr;
-  PetscInt         i,i_start,m_f,Mx,*idx_f,dof;
-  PetscInt         m_ghost,*idx_c,m_ghost_c;
+  PetscInt         i,i_start,m_f,Mx,dof;
+  const PetscInt   *idx_f;
+  PetscInt         m_ghost,m_ghost_c;
   PetscInt         row,i_start_ghost,mx,m_c,nc,ratioi;
   PetscInt         i_start_c,i_start_ghost_c;
   PetscInt         *cols;
@@ -1052,7 +1070,6 @@ PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
 
   ierr = DMDAGetCorners(dac,&i_start_c,0,0,&m_c,0,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,0,0,&m_ghost_c,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
 
 
   /* loop over local fine grid nodes setting interpolation for those*/
@@ -1069,6 +1086,7 @@ PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
     cols[nc++] = row/dof;
   }
 
+  ierr = DMDARestoreGlobalIndices(daf,NULL,&idx_f);CHKERRQ(ierr);
 
   ierr = ISCreateBlock(PetscObjectComm((PetscObject)daf),dof,nc,cols,PETSC_OWN_POINTER,&isf);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dac,&vecc);CHKERRQ(ierr);
@@ -1085,8 +1103,9 @@ PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
 PetscErrorCode DMCreateInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
 {
   PetscErrorCode   ierr;
-  PetscInt         i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
-  PetscInt         m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c;
+  PetscInt         i,j,i_start,j_start,m_f,n_f,Mx,My,dof;
+  const PetscInt   *idx_c,*idx_f;
+  PetscInt         m_ghost,n_ghost,m_ghost_c,n_ghost_c;
   PetscInt         row,i_start_ghost,j_start_ghost,mx,m_c,my,nc,ratioi,ratioj;
   PetscInt         i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
   PetscInt         *cols;
@@ -1135,6 +1154,8 @@ PetscErrorCode DMCreateInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
       cols[nc++] = row/dof;
     }
   }
+  ierr = DMDARestoreGlobalIndices(daf,NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDARestoreGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
 
   ierr = ISCreateBlock(PetscObjectComm((PetscObject)daf),dof,nc,cols,PETSC_OWN_POINTER,&isf);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dac,&vecc);CHKERRQ(ierr);
@@ -1159,7 +1180,7 @@ PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
   PetscInt         m_c,n_c,p_c;
   PetscInt         i_start_ghost_c,j_start_ghost_c,k_start_ghost_c;
   PetscInt         row,nc,dof;
-  PetscInt         *idx_c,*idx_f;
+  const PetscInt   *idx_c,*idx_f;
   PetscInt         *cols;
   DMDABoundaryType bx,by,bz;
   Vec              vecf,vecc;
@@ -1218,6 +1239,8 @@ PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
       }
     }
   }
+  ierr = DMDARestoreGlobalIndices(daf,NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDARestoreGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
 
   ierr = ISCreateBlock(PetscObjectComm((PetscObject)daf),dof,nc,cols,PETSC_OWN_POINTER,&isf);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dac,&vecc);CHKERRQ(ierr);
@@ -1276,11 +1299,11 @@ PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
   PetscInt         i,j,l;
   PetscInt         i_start,j_start,l_start, m_f,n_f,p_f;
   PetscInt         i_start_ghost,j_start_ghost,l_start_ghost,m_ghost,n_ghost,p_ghost;
-  PetscInt         *idx_f;
+  const PetscInt   *idx_f;
   PetscInt         i_c,j_c,l_c;
   PetscInt         i_start_c,j_start_c,l_start_c, m_c,n_c,p_c;
   PetscInt         i_start_ghost_c,j_start_ghost_c,l_start_ghost_c,m_ghost_c,n_ghost_c,p_ghost_c;
-  PetscInt         *idx_c;
+  const PetscInt   *idx_c;
   PetscInt         d;
   PetscInt         a;
   PetscInt         max_agg_size;
@@ -1363,6 +1386,8 @@ PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
       }
     }
   }
+  ierr = DMDARestoreGlobalIndices(daf,NULL,&idx_f);CHKERRQ(ierr);
+  ierr = DMDARestoreGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
   ierr = PetscFree2(one_vec,fine_nodes);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*rest, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*rest, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

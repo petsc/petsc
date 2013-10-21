@@ -36,7 +36,7 @@ EXTERN_C_BEGIN
 void (*PETSC_NULL_FUNCTION_Fortran)(void) = 0;
 EXTERN_C_END
 
-size_t PetscIntAddressToFortran(PetscInt *base,PetscInt *addr)
+size_t PetscIntAddressToFortran(const PetscInt *base,const PetscInt *addr)
 {
   size_t tmp1 = (size_t) base,tmp2 = 0;
   size_t tmp3 = (size_t) addr;
@@ -69,9 +69,9 @@ size_t PetscIntAddressToFortran(PetscInt *base,PetscInt *addr)
   return itmp2;
 }
 
-PetscInt *PetscIntAddressFromFortran(PetscInt *base,size_t addr)
+PetscInt *PetscIntAddressFromFortran(const PetscInt *base,size_t addr)
 {
-  return base + addr;
+  return (PetscInt *)(base + addr);
 }
 
 /*

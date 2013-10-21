@@ -593,6 +593,8 @@
  20     continue
  10   continue
 
+      call DMDARestoreGlobalIndices(da,nloc,ltog,idltog,ierr)
+
 !  Assemble matrix, using the 2-step process:
 !    MatAssemblyBegin(), MatAssemblyEnd().
 !  By placing code between these two statements, computations can be

@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   } else if (dim == 3) {
     ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,DMDA_STENCIL_BOX,M1,M1,M1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,NULL,&da_c);CHKERRQ(ierr);
     ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,DMDA_STENCIL_BOX,M2,M2,M2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,NULL,&da_f);CHKERRQ(ierr);
-  }
+  } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"dim must be 1,2, or 3");
 
   ierr = DMCreateGlobalVector(da_c,&v_c);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da_f,&v_f);CHKERRQ(ierr);

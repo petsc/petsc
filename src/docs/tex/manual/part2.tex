@@ -774,7 +774,8 @@ the global node number of each local node
 including the ghost nodes. This number may be determined by using the
 command
 \begin{tabbing}
-  DMDAGetGlobalIndices(DM da,int *n,int *idx[]);
+  DMDAGetGlobalIndices(DM da,int *n,const int *idx[]);
+  DMDARestoreGlobalIndices(DM da,int *n,const int *idx[]);
 \end{tabbing}
 The output argument \trl{n} contains the number of
 local nodes, including ghost nodes, while \trl{idx} contains a list of length

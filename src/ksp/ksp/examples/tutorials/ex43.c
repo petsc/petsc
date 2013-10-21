@@ -1593,7 +1593,7 @@ static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
   PetscInt       si,sj,nx,ny,i,j;
   PetscInt       M,N;
   DMDACoor2d     **_coords;
-  PetscInt       *g_idx;
+  const PetscInt *g_idx;
   PetscInt       *bc_global_ids;
   PetscScalar    *bc_vals;
   PetscInt       nbcs;
@@ -1628,6 +1628,7 @@ static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
 
     bc_vals[j] =  bc_val;
   }
+  ierr = DMDARestoreGlobalIndices(da,NULL,&g_idx);CHKERRQ(ierr);
   nbcs = 0;
   if ((si+nx) == (M)) nbcs = ny;
 
@@ -1657,7 +1658,7 @@ static PetscErrorCode BCApply_WEST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
   PetscInt       si,sj,nx,ny,i,j;
   PetscInt       M,N;
   DMDACoor2d     **_coords;
-  PetscInt       *g_idx;
+  const PetscInt *g_idx;
   PetscInt       *bc_global_ids;
   PetscScalar    *bc_vals;
   PetscInt       nbcs;
@@ -1692,6 +1693,7 @@ static PetscErrorCode BCApply_WEST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
 
     bc_vals[j] =  bc_val;
   }
+  ierr = DMDARestoreGlobalIndices(da,NULL,&g_idx);CHKERRQ(ierr);
   nbcs = 0;
   if (si == 0) nbcs = ny;
 
@@ -1721,7 +1723,7 @@ static PetscErrorCode BCApply_NORTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat 
   PetscInt       si,sj,nx,ny,i,j;
   PetscInt       M,N;
   DMDACoor2d     **_coords;
-  PetscInt       *g_idx;
+  const PetscInt *g_idx;
   PetscInt       *bc_global_ids;
   PetscScalar    *bc_vals;
   PetscInt       nbcs;
@@ -1756,6 +1758,7 @@ static PetscErrorCode BCApply_NORTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat 
 
     bc_vals[i] =  bc_val;
   }
+  ierr = DMDARestoreGlobalIndices(da,NULL,&g_idx);CHKERRQ(ierr);
   nbcs = 0;
   if ((sj+ny) == (N)) nbcs = nx;
 
@@ -1785,7 +1788,7 @@ static PetscErrorCode BCApply_SOUTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat 
   PetscInt       si,sj,nx,ny,i,j;
   PetscInt       M,N;
   DMDACoor2d     **_coords;
-  PetscInt       *g_idx;
+  const PetscInt *g_idx;
   PetscInt       *bc_global_ids;
   PetscScalar    *bc_vals;
   PetscInt       nbcs;
@@ -1820,6 +1823,7 @@ static PetscErrorCode BCApply_SOUTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat 
 
     bc_vals[i] =  bc_val;
   }
+  ierr = DMDARestoreGlobalIndices(da,NULL,&g_idx);CHKERRQ(ierr);
   nbcs = 0;
   if (sj == 0) nbcs = nx;
 
