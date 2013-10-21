@@ -585,9 +585,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   if (ctype == IS_COLORING_GHOSTED) {
     ierr = ISLocalToGlobalMappingRestoreIndices(map,&ltog);CHKERRQ(ierr);
   }
-#if defined(PETSC_USE_INFO)
   ierr = PetscInfo3(c,"ncolors %D, brows %D and bcols %D are used.\n",c->ncolors,c->brows,c->bcols);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 

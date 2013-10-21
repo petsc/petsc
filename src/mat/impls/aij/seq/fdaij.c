@@ -287,8 +287,6 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   ierr = ISColoringRestoreIS(iscoloring,&isa);CHKERRQ(ierr);
 
   ierr = VecCreateGhost(PetscObjectComm((PetscObject)mat),mat->rmap->n,PETSC_DETERMINE,0,NULL,&c->vscale);CHKERRQ(ierr); 
-#if defined(PETSC_USE_INFO)
   ierr = PetscInfo3(c,"ncolors %D, brows %D and bcols %D are used.\n",c->ncolors,c->brows,c->bcols);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
