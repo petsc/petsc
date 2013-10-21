@@ -2529,14 +2529,14 @@ PetscErrorCode MatGetColumnIJ_SeqBAIJ_Color(Mat A,PetscInt oshift,PetscBool symm
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,*collengths,*cia,*cja,n=a->nbs,m=a->mbs; 
+  PetscInt       i,*collengths,*cia,*cja,n=a->nbs,m=a->mbs;
   PetscInt       nz = a->i[m],row,*jj,mr,col;
   PetscInt       *cspidx;
 
   PetscFunctionBegin;
   *nn = n;
   if (!ia) PetscFunctionReturn(0);
-  
+
   ierr = PetscMalloc((n+1)*sizeof(PetscInt),&collengths);CHKERRQ(ierr);
   ierr = PetscMemzero(collengths,n*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMalloc((n+1)*sizeof(PetscInt),&cia);CHKERRQ(ierr);

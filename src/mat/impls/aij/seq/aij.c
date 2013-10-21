@@ -293,7 +293,7 @@ PetscErrorCode MatGetColumnIJ_SeqAIJ_Color(Mat A,PetscInt oshift,PetscBool symme
   PetscFunctionBegin;
   *nn = n;
   if (!ia) PetscFunctionReturn(0);
-  
+
   ierr = PetscMalloc((n+1)*sizeof(PetscInt),&collengths);CHKERRQ(ierr);
   ierr = PetscMemzero(collengths,n*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMalloc((n+1)*sizeof(PetscInt),&cia);CHKERRQ(ierr);
@@ -3174,7 +3174,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         MatSetColoring_SeqAIJ,
                                         0,
                                 /* 74*/ MatSetValuesAdifor_SeqAIJ,
-                                        MatFDColoringApply_AIJ, 
+                                        MatFDColoringApply_AIJ,
                                         0,
                                         0,
                                         0,

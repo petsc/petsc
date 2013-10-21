@@ -443,7 +443,7 @@ PETSC_EXTERN PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData*,const Pe
 */
 typedef struct {
   PetscInt     row;
-  PetscInt     col;     
+  PetscInt     col;
   PetscScalar  *valaddr;   /* address of value */
 } MatEntry;
 

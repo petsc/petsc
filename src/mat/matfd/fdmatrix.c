@@ -138,7 +138,7 @@ PetscErrorCode  MatFDColoringView(MatFDColoring c,PetscViewer viewer)
         }
         ierr = PetscViewerASCIIPrintf(viewer,"    Number of rows %D\n",c->nrows[i]);CHKERRQ(ierr);
         for (j=0; j<c->nrows[i]; j++) {
-          row  = c->matentry[nz].row; 
+          row  = c->matentry[nz].row;
           col  = c->matentry[nz++].col;
           ierr = PetscViewerASCIIPrintf(viewer,"      %D %D \n",row,col);CHKERRQ(ierr);
         }
@@ -197,7 +197,7 @@ PetscErrorCode MatFDColoringSetParameters(MatFDColoring matfd,PetscReal error,Pe
 
    Input Parameters:
 +  coloring - the coloring context
-.  brows - number of rows in the block 
+.  brows - number of rows in the block
 -  bcols - number of columns in the block
 
    Level: intermediate
