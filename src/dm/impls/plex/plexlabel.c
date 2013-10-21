@@ -729,6 +729,35 @@ PetscErrorCode DMPlexClearLabelStratum(DM dm, const char name[], PetscInt value)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMLabelFilter"
+PetscErrorCode DMLabelFilter(DMLabel label, PetscInt start, PetscInt end)
+{
+  PetscInt       v;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  label->pStart = start;
+  label->pEnd   = end;
+  if (label->bt) {ierr = PetscBTDestroy(&label->bt);CHKERRQ(ierr);}
+  /* Could squish offsets, but would only make sense if I reallocate the storage */
+  for (v = 0; v < label->numStrata; ++v) {
+    const PetscInt offset = label->stratumOffsets[v];
+    const PetscInt size   = label->stratumSizes[v];
+    PetscInt       off    = offset, q;
+
+    for (q = offset; q < offset+size; ++q) {
+      const PetscInt point = label->points[q];
+
+      if ((point < start) || (point >= end)) continue;
+      label->points[off++] = point;
+    }
+    label->stratumSizes[v] = off-offset;
+  }
+  ierr = DMLabelCreateIndex(label, start, end);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 
 #undef __FUNCT__
