@@ -217,7 +217,7 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
    References:
 
     "D. G. Anderson. Iterative procedures for nonlinear integral equations.
-    J. Assoc. Comput. Mach., 12:547–560, 1965."
+    J. Assoc. Comput. Mach., 12:547-560, 1965."
 
 .seealso: SNESNGMRES, SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
 M*/

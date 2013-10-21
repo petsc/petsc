@@ -27,7 +27,7 @@
 
  References
   E. Constantinescu and A. Sandu, Extrapolated implicit-explicit time stepping, SIAM Journal on Scientific
-Computing, 31 (2010), pp. 4452–4477.
+Computing, 31 (2010), pp. 4452-4477.
 
       Level: beginner
 
