@@ -2178,10 +2178,10 @@ PetscErrorCode MatGetSubMatrix_MPIBAIJ_Private(Mat mat,IS isrow,IS iscol,PetscIn
 PetscErrorCode MatPermute_MPIBAIJ(Mat A,IS rowp,IS colp,Mat *B)
 {
   MPI_Comm       comm,pcomm;
-  PetscInt       first,rlocal_size,clocal_size,nrows;
+  PetscInt       clocal_size,nrows;
   const PetscInt *rows;
   PetscMPIInt    size;
-  IS             crowp,growp,irowp,lrowp,lcolp;
+  IS             crowp,lcolp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2196,23 +2196,8 @@ PetscErrorCode MatPermute_MPIBAIJ(Mat A,IS rowp,IS colp,Mat *B)
     ierr = ISCreateGeneral(comm,nrows,rows,PETSC_COPY_VALUES,&crowp);CHKERRQ(ierr);
     ierr = ISRestoreIndices(rowp,&rows);CHKERRQ(ierr);
   }
-  /* collect the global row permutation and invert it */
-  ierr = ISAllGather(crowp,&growp);CHKERRQ(ierr);
-  ierr = ISSetPermutation(growp);CHKERRQ(ierr);
-  if (pcomm!=comm) {
-    ierr = ISDestroy(&crowp);CHKERRQ(ierr);
-  }
-  ierr = ISInvertPermutation(growp,PETSC_DECIDE,&irowp);CHKERRQ(ierr);
-  ierr = ISDestroy(&growp);CHKERRQ(ierr);
-  /* get the local target indices */
-  ierr = MatGetOwnershipRange(A,&first,NULL);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&rlocal_size,&clocal_size);CHKERRQ(ierr);
-  ierr = ISGetIndices(irowp,&rows);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(MPI_COMM_SELF,rlocal_size,rows+first,PETSC_COPY_VALUES,&lrowp);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(irowp,&rows);CHKERRQ(ierr);
-  ierr = ISDestroy(&irowp);CHKERRQ(ierr);
-  /* the column permutation is so much easier;
-     make a local version of 'colp' and invert it */
+  ierr = ISSetPermutation(crowp);CHKERRQ(ierr);
+  /* make a local version of 'colp' */
   ierr = PetscObjectGetComm((PetscObject)colp,&pcomm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(pcomm,&size);CHKERRQ(ierr);
   if (size==1) {
@@ -2222,12 +2207,15 @@ PetscErrorCode MatPermute_MPIBAIJ(Mat A,IS rowp,IS colp,Mat *B)
   }
   ierr = ISSetPermutation(lcolp);CHKERRQ(ierr);
   /* now we just get the submatrix */
-  ierr = MatGetSubMatrix_MPIBAIJ_Private(A,lrowp,lcolp,clocal_size,MAT_INITIAL_MATRIX,B);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,PETSC_NULL,&clocal_size);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix_MPIBAIJ_Private(A,crowp,lcolp,clocal_size,MAT_INITIAL_MATRIX,B);CHKERRQ(ierr);
+  /* clean up */
+  if (pcomm!=comm) {
+    ierr = ISDestroy(&crowp);CHKERRQ(ierr);
+  }
   if (size>1) {
     ierr = ISDestroy(&lcolp);CHKERRQ(ierr);
   }
-  /* clean up */
-  ierr = ISDestroy(&lrowp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
