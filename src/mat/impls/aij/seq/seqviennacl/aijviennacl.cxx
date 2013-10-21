@@ -37,6 +37,7 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
       ierr = PetscLogEventBegin(MAT_ViennaCLCopyToGPU,A,0,0,0);CHKERRQ(ierr);
 
       try {
+        ierr = PetscObjectSetFromOptions_ViennaCL((PetscObject)A);CHKERRQ(ierr); /* Allows to set device type before allocating any objects */
         viennaclstruct->mat = new ViennaCLAIJMatrix();
         if (a->compressedrow.use) {
           ii = a->compressedrow.i;
@@ -364,7 +365,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJViennaCL(Mat B)
   B->ops->destroy        = MatDestroy_SeqAIJViennaCL;
   B->ops->getvecs        = MatGetVecs_SeqAIJViennaCL;
 
-  ierr = MatSetFromOptions_SeqViennaCL(B);CHKERRQ(ierr); /* Allows to set device type before allocating any objects */
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJVIENNACL);CHKERRQ(ierr);
 
   B->valid_GPU_matrix = PETSC_VIENNACL_UNALLOCATED;
