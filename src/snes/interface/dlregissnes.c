@@ -62,6 +62,7 @@ PetscErrorCode  SNESInitializePackage(void)
   ierr = PetscLogEventRegister("SNESSolve",            SNES_CLASSID,&SNES_Solve);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESFunctionEval",     SNES_CLASSID,&SNES_FunctionEval);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESGSEval",           SNES_CLASSID,&SNES_GSEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SNESGSFuncEval",       SNES_CLASSID,&SNES_GSFuncEval);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESJacobianEval",     SNES_CLASSID,&SNES_JacobianEval);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESLineSearch",       SNESLINESEARCH_CLASSID,&SNESLineSearch_Apply);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESNPCSolve",         SNES_CLASSID,&SNES_NPCSolve);CHKERRQ(ierr);

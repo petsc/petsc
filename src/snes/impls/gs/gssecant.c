@@ -75,7 +75,9 @@ PETSC_EXTERN PetscErrorCode SNESComputeGSDefaultSecant(SNES snes,Vec X,Vec B,voi
     /* assume that the function is already computed */
     ierr = VecCopy(snes->vec_func,F);CHKERRQ(ierr);
   } else {
+    ierr = PetscLogEventBegin(SNES_GSFuncEval,snes,X,B,0);CHKERRQ(ierr);
     ierr = (*func)(snes,X,F,fctx);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(SNES_GSFuncEval,snes,X,B,0);CHKERRQ(ierr);
     if (B) {ierr = VecAXPY(F,-1.0,B);CHKERRQ(ierr);}
   }
   for (i=0;i<ncolors;i++) {
@@ -85,7 +87,9 @@ PETSC_EXTERN PetscErrorCode SNESComputeGSDefaultSecant(SNES snes,Vec X,Vec B,voi
     for (j=0;j<size;j++) {
       ierr = VecSetValue(W,idx[j],h,ADD_VALUES);CHKERRQ(ierr);
     }
+    ierr = PetscLogEventBegin(SNES_GSFuncEval,snes,X,B,0);CHKERRQ(ierr);
     ierr = (*func)(snes,W,G,fctx);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(SNES_GSFuncEval,snes,X,B,0);CHKERRQ(ierr);
     if (B) {ierr = VecAXPY(G,-1.0,B);CHKERRQ(ierr);}
     for (k=0;k<its;k++) {
       dxt = 0.;
@@ -110,7 +114,9 @@ PETSC_EXTERN PetscErrorCode SNESComputeGSDefaultSecant(SNES snes,Vec X,Vec B,voi
       if (PetscSqrtReal(ft) < atol) break;
       if (rtol*ft1 > PetscSqrtReal(ft)) break;
       if (i < ncolors-1 || k < its-1) {
+        ierr = PetscLogEventBegin(SNES_GSFuncEval,snes,X,B,0);CHKERRQ(ierr);
         ierr = (*func)(snes,X,F,fctx);CHKERRQ(ierr);
+        ierr = PetscLogEventEnd(SNES_GSFuncEval,snes,X,B,0);CHKERRQ(ierr);
         if (B) {ierr = VecAXPY(F,-1.0,B);CHKERRQ(ierr);}
       }
       if (k<its-1) {
