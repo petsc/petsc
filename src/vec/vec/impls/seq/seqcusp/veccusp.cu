@@ -434,6 +434,7 @@ PetscErrorCode VecAYPX_SeqCUSP(Vec yin, PetscScalar alpha, Vec xin)
   try {
     if (alpha != 0.0) {
       cusp::blas::aypx(*xarray,*yarray,alpha);
+      ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
     } else {
       cusp::blas::copy(*xarray,*yarray);
     }
@@ -443,7 +444,6 @@ PetscErrorCode VecAYPX_SeqCUSP(Vec yin, PetscScalar alpha, Vec xin)
   }
   ierr = VecCUSPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = VecCUSPRestoreArrayReadWrite(yin,&yarray);CHKERRQ(ierr);
-  ierr = PetscLogFlops(((alpha != 0.0) ? 2.0 : 1.0 )*yin->map->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

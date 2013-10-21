@@ -215,6 +215,7 @@ PetscErrorCode VecAYPX_SeqViennaCL(Vec yin, PetscScalar alpha, Vec xin)
   try {
     if (alpha != 0.0 && xin->map->n > 0) {
       *ygpu = *xgpu + alpha * *ygpu;
+      ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
     } else {
       *ygpu = *xgpu;
     }
@@ -224,7 +225,6 @@ PetscErrorCode VecAYPX_SeqViennaCL(Vec yin, PetscScalar alpha, Vec xin)
   }
   ierr = VecViennaCLRestoreArrayRead(xin,&xgpu);CHKERRQ(ierr);
   ierr = VecViennaCLRestoreArrayReadWrite(yin,&ygpu);CHKERRQ(ierr);
-  ierr = PetscLogFlops(((alpha != 0.0) ? 2.0 : 1.0)*yin->map->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
