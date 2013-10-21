@@ -390,30 +390,30 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscol
     nadded=0;
     nadded_total=0;
     nadded_total_old=0;
-  }
-  while (nadded_total < totalboundary) {
-    ierr = JPGreatestWeight_Private(mc,jp->wtsinit,jp->wtsspread);CHKERRQ(ierr);
-    ierr = JPMinColor_Private(mc,jp->color,jp->mincolor);CHKERRQ(ierr);
-    for (i=0;i<nboundary;i++) {
-      if (jp->wtsinit[boundary[i]] >= jp->wtsspread[boundary[i]] && jp->wtsinit[boundary[i]] > 0.) {
-        /* pick this one */
-        if (mc->maxcolors > jp->mincolor[boundary[i]] || mc->maxcolors==0) {
-          jp->color[boundary[i]] = jp->mincolor[boundary[i]];
-        } else {
-          jp->color[boundary[i]] = mc->maxcolors;
+    while (nadded_total < totalboundary) {
+      ierr = JPGreatestWeight_Private(mc,jp->wtsinit,jp->wtsspread);CHKERRQ(ierr);
+      ierr = JPMinColor_Private(mc,jp->color,jp->mincolor);CHKERRQ(ierr);
+      for (i=0;i<nboundary;i++) {
+        if (jp->wtsinit[boundary[i]] >= jp->wtsspread[boundary[i]] && jp->wtsinit[boundary[i]] > 0.) {
+          /* pick this one */
+          if (mc->maxcolors > jp->mincolor[boundary[i]] || mc->maxcolors==0) {
+            jp->color[boundary[i]] = jp->mincolor[boundary[i]];
+          } else {
+            jp->color[boundary[i]] = mc->maxcolors;
+          }
+          if (jp->color[boundary[i]] > jp->maxcolor) jp->maxcolor = jp->color[boundary[i]];
+          jp->wtsinit[boundary[i]] = 0.;
+          nadded++;
         }
-        if (jp->color[boundary[i]] > jp->maxcolor) jp->maxcolor = jp->color[boundary[i]];
-        jp->wtsinit[boundary[i]] = 0.;
-        nadded++;
       }
+      ierr = MPI_Allreduce(&nadded,&nadded_total,1,MPI_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+      if (nadded_total == nadded_total_old) {SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"JP didn't make progress");}
+      nadded_total_old = nadded_total;
+      maxcolor_local = (PetscInt)jp->maxcolor;
+      maxcolor_global = 0;
+      ierr = MPI_Allreduce(&maxcolor_local,&maxcolor_global,1,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+      jp->maxcolor = maxcolor_global;
     }
-    ierr = MPI_Allreduce(&nadded,&nadded_total,1,MPI_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
-    if (nadded_total == nadded_total_old) {SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"JP didn't make progress");}
-    nadded_total_old = nadded_total;
-    maxcolor_local = (PetscInt)jp->maxcolor;
-    maxcolor_global = 0;
-    ierr = MPI_Allreduce(&maxcolor_local,&maxcolor_global,1,MPI_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
-    jp->maxcolor = maxcolor_global;
   }
   ierr = PetscLogEventBegin(Mat_Coloring_Local,mc,0,0,0);CHKERRQ(ierr);
   ierr = MatColoringLocalColor(mc,jp->etoc,jp->etor,jp->wts,jp->color,&jp->maxcolor);CHKERRQ(ierr);

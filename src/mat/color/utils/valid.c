@@ -43,6 +43,7 @@ PETSC_EXTERN PetscErrorCode MatColoringTestValid(MatColoring mc,ISColoring color
       statecol[indices[k]-s] = indices[k];
     }
     ierr = ISRestoreIndices(colors[l],&indices);CHKERRQ(ierr);
+    statespread = statecol;
     for (k=0;k<dist;k++) {
       if (k%2 == 1) {
         ierr = PetscSFComputeDegreeBegin(etor,&degrees);CHKERRQ(ierr);
