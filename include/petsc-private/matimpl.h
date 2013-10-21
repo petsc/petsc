@@ -186,6 +186,7 @@ struct _MatOps {
   /*139*/
   PetscErrorCode (*setblocksizes)(Mat,PetscInt,PetscInt);
   PetscErrorCode (*aypx)(Mat,PetscScalar,Mat,MatStructure);
+  PetscErrorCode (*residual)(Mat,Vec,Vec,Vec);
   PetscErrorCode (*fdcoloringsetup)(Mat,ISColoring,MatFDColoring);
 };
 /*
@@ -1513,6 +1514,6 @@ PETSC_EXTERN PetscLogEvent MATMFFD_Mult;
 PETSC_EXTERN PetscLogEvent MAT_GetMultiProcBlock;
 PETSC_EXTERN PetscLogEvent MAT_CUSPCopyToGPU, MAT_CUSPARSECopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
 PETSC_EXTERN PetscLogEvent MAT_ViennaCLCopyToGPU;
-PETSC_EXTERN PetscLogEvent MAT_Merge;
+PETSC_EXTERN PetscLogEvent MAT_Merge,MAT_Residual;
 
 #endif

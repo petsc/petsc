@@ -375,6 +375,7 @@ PETSC_EXTERN PetscErrorCode MatMultHermitianTransposeAdd(Mat,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMultConstrained(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMultTransposeConstrained(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMatSolve(Mat,Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatResidual(Mat,Vec,Vec,Vec);
 
 /*E
     MatDuplicateOption - Indicates if a duplicated sparse matrix should have
@@ -1392,7 +1393,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_RART_NUMERIC=138,
                MATOP_SET_BLOCK_SIZES=139,
                MATOP_AYPX=140,
-               MATOP_FDCOLORING_SETUP= 141
+               MATOP_RESIDUAL=141,
+               MATOP_FDCOLORING_SETUP= 142
              } MatOperation;
 PETSC_EXTERN PetscErrorCode MatHasOperation(Mat,MatOperation,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatShellSetOperation(Mat,MatOperation,void(*)(void));

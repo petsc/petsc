@@ -3240,6 +3240,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         MatRARtNumeric_SeqAIJ_SeqAIJ,
                                  /*139*/0,
                                         0,
+                                        0,
                                         MatFDColoringSetUp_SeqXAIJ
 };
 
