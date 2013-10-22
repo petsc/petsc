@@ -155,34 +155,39 @@ typedef int    MPI_Offset;
 /* In order to handle datatypes, we make them into "sizeof(raw-type)";
     this allows us to do the MPIUNI_Memcpy's easily */
 #define MPI_Datatype         int
-#define MPI_FLOAT            sizeof(float)
-#define MPI_DOUBLE           sizeof(double)
-#define MPI_LONG_DOUBLE      sizeof(long double)
-#define MPI_CHAR             sizeof(char)
-#define MPI_BYTE             sizeof(char)
-#define MPI_INT              sizeof(int)
-#define MPI_LONG             sizeof(long)
-#define MPI_LONG_LONG_INT    sizeof(long long)
-#define MPI_SHORT            sizeof(short)
-#define MPI_UNSIGNED_SHORT   sizeof(unsigned short)
-#define MPI_UNSIGNED         sizeof(unsigned)
-#define MPI_UNSIGNED_CHAR    sizeof(unsigned char)
-#define MPI_UNSIGNED_LONG    sizeof(unsigned long)
-#define MPI_UNSIGNED_LONG_LONG sizeof(unsigned long long)
-#define MPI_COMPLEX          2*sizeof(float)
-#define MPI_C_COMPLEX        2*sizeof(float)
-#define MPI_C_DOUBLE_COMPLEX 2*sizeof(double)
-#define MPI_FLOAT_INT        (sizeof(float) + sizeof(int))
-#define MPI_DOUBLE_INT       (sizeof(double) + sizeof(int))
-#define MPI_LONG_INT         (sizeof(long) + sizeof(int))
-#define MPI_SHORT_INT        (sizeof(short) + sizeof(int))
-#define MPI_2INT             (2* sizeof(int))
+#define MPI_FLOAT            (1 << 16 | sizeof(float))
+#define MPI_DOUBLE           (1 << 16 | sizeof(double))
+#define MPI_LONG_DOUBLE      (1 << 16 | sizeof(long double))
+
+#define MPI_COMPLEX          (2 << 16 | 2*sizeof(float))
+#define MPI_C_COMPLEX        (2 << 16 | 2*sizeof(float))
+#define MPI_C_DOUBLE_COMPLEX (2 << 16 | 2*sizeof(double))
+
+#define MPI_CHAR             (3 << 16 | sizeof(char))
+#define MPI_BYTE             (3 << 16 | sizeof(char))
+#define MPI_UNSIGNED_CHAR    (3 << 16 | sizeof(unsigned char))
+
+#define MPI_INT              (4 << 16 | sizeof(int))
+#define MPI_LONG             (4 << 16 | sizeof(long))
+#define MPI_LONG_LONG_INT    (4 << 16 | sizeof(long long))
+#define MPI_SHORT            (4 << 16 | sizeof(short))
+
+#define MPI_UNSIGNED_SHORT   (5 << 16 | sizeof(unsigned short))
+#define MPI_UNSIGNED         (5 << 16 | sizeof(unsigned))
+#define MPI_UNSIGNED_LONG    (5 << 16 | sizeof(unsigned long))
+#define MPI_UNSIGNED_LONG_LONG (5 << 16 | sizeof(unsigned long long))
+
+#define MPI_FLOAT_INT        (10 << 16 | (sizeof(float) + sizeof(int)))
+#define MPI_DOUBLE_INT       (11 << 16 | (sizeof(double) + sizeof(int)))
+#define MPI_LONG_INT         (12 << 16 | (sizeof(long) + sizeof(int)))
+#define MPI_SHORT_INT        (13 << 16 | (sizeof(short) + sizeof(int)))
+#define MPI_2INT             (14 << 16 | (2* sizeof(int)))
 
 #if defined(PETSC_USE_REAL___FLOAT128)
 extern MPI_Datatype MPIU___FLOAT128;
-#define MPI_sizeof(datatype) ((datatype == MPIU___FLOAT128) ? 2*sizeof(double) : datatype)
+#define MPI_sizeof(datatype) ((datatype == MPIU___FLOAT128) ? 2*sizeof(double) : (datatype) & 0xff)
 #else
-#define MPI_sizeof(datatype) (datatype)
+#define MPI_sizeof(datatype) ((datatype) & 0xff)
 #endif
 extern int MPIUNI_Memcpy(void*,const void*,int);
 
@@ -537,7 +542,7 @@ extern int    MPI_Comm_rank(MPI_Comm,int*);
 #define MPI_Address(location,address) \
      (*(address) = (MPIUNI_INTPTR)(char *)(location),MPI_SUCCESS)
 #define MPI_Type_extent(datatype,extent) *(extent) = datatype
-#define MPI_Type_size(datatype,size) *(size) = datatype
+#define MPI_Type_size(datatype,size) (*(size) = (datatype) & 0xff, MPI_SUCCESS)
 #define MPI_Type_lb(datatype,displacement) \
      MPI_Abort(MPI_COMM_WORLD,0)
 #define MPI_Type_ub(datatype,displacement) \
