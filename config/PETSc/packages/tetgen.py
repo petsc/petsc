@@ -146,7 +146,7 @@ class Configure(PETSc.package.NewPackage):
     g.write('CP               = '+self.programs.cp+'\n')
     g.write('RM               = '+self.programs.RM+'\n')
     g.write('MKDIR            = '+self.programs.mkdir+'\n')
-    g.write('OMAKE            = '+self.make.make+' '+self.make.printdirflag+'\n')
+    g.write('OMAKE            = '+self.make.make+' '+self.make.noprintdirflag+'\n')
 
     g.write('CLINKER          = '+self.setCompilers.getLinker()+'\n')
     g.write('AR               = '+self.setCompilers.AR+'\n')
