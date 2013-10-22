@@ -197,10 +197,17 @@ typedef int MPI_Op;
 #define MPI_MODE_WRONLY   0
 #define MPI_MODE_CREATE   0
 
-#define MPI_SUM           0
-#define MPI_MAX           0
-#define MPI_MIN           0
-#define MPI_REPLACE       0
+#define MPI_SUM           1
+#define MPI_MAX           2
+#define MPI_MIN           3
+#define MPI_REPLACE       4
+#define MPI_PROD          5
+#define MPI_LAND          6
+#define MPI_BAND          7
+#define MPI_LOR           8
+#define MPI_BOR           9
+#define MPI_LXOR          10
+#define MPI_BXOR          11
 #define MPI_ANY_TAG     (-1)
 #define MPI_DATATYPE_NULL 0
 #define MPI_PACKED        0
