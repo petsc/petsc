@@ -238,6 +238,10 @@ cdef class Mat(Object):
         cdef PetscInt bs = asInt(bsize)
         CHKERR( MatSetBlockSize(self.mat, bs) )
 
+    def setBlockSizes(self, row_bsize, col_bsize):
+        cdef PetscInt rbs = asInt(row_bsize)
+        cdef PetscInt cbs = asInt(col_bsize)
+        CHKERR( MatSetBlockSizes(self.mat, rbs, cbs) )
     #
 
     def createAIJ(self, size, bsize=None, nnz=None, csr=None, comm=None):

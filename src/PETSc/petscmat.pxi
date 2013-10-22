@@ -133,6 +133,7 @@ cdef extern from * nogil:
 
     int MatSetSizes(PetscMat,PetscInt,PetscInt,PetscInt,PetscInt)
     int MatSetBlockSize(PetscMat,PetscInt)
+    int MatSetBlockSizes(PetscMat,PetscInt,PetscInt)
     int MatSetType(PetscMat,PetscMatType)
     int MatSetOption(PetscMat,PetscMatOption,PetscBool)
 
