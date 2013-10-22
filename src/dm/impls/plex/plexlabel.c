@@ -145,7 +145,7 @@ PetscErrorCode DMLabelCreateIndex(DMLabel label, PetscInt pStart, PetscInt pEnd)
       const PetscInt point = label->points[label->stratumOffsets[v]+i];
 
       if ((point < pStart) || (point >= pEnd)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %d is not in [%d, %d)", point, pStart, pEnd);
-      ierr = PetscBTSet(label->bt, point);CHKERRQ(ierr);
+      ierr = PetscBTSet(label->bt, point - pStart);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -282,7 +282,7 @@ PetscErrorCode DMLabelSetValue(DMLabel label, PetscInt point, PetscInt value)
     ++label->stratumSizes[v];
     if (label->bt) {
       if ((point < label->pStart) || (point >= label->pEnd)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %d is not in [%d, %d)", point, label->pStart, label->pEnd);
-      ierr = PetscBTSet(label->bt, point);CHKERRQ(ierr);
+      ierr = PetscBTSet(label->bt, point - label->pStart);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -313,7 +313,7 @@ PetscErrorCode DMLabelClearValue(DMLabel label, PetscInt point, PetscInt value)
       --label->stratumSizes[v];
       if (label->bt) {
         if ((point < label->pStart) || (point >= label->pEnd)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %d is not in [%d, %d)", point, label->pStart, label->pEnd);
-        ierr = PetscBTClear(label->bt, point);CHKERRQ(ierr);
+        ierr = PetscBTClear(label->bt, point - label->pStart);CHKERRQ(ierr);
       }
       break;
     }
@@ -399,7 +399,7 @@ PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
       const PetscInt point = label->points[label->stratumOffsets[v]+i];
 
       if ((point < label->pStart) || (point >= label->pEnd)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %d is not in [%d, %d)", point, label->pStart, label->pEnd);
-      ierr = PetscBTClear(label->bt, point);CHKERRQ(ierr);
+      ierr = PetscBTClear(label->bt, point - label->pStart);CHKERRQ(ierr);
     }
   }
   label->stratumSizes[v] = 0;
