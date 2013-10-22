@@ -216,8 +216,21 @@ deletemods: chk_makej
 	-${RM} -f ${PETSC_DIR}/${PETSC_ARCH}/include/petsc*.mod
 
 # Cleans up build
-allclean: deletelibs deletemods
+allclean-legacy: deletelibs deletemods
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=clean tree
+allclean-cmake:
+	-@cd ${PETSC_ARCH} && ${OMAKE} clean
+allclean-gnumake:
+	-@${OMAKE} -f gmakefile clean
+
+allclean:
+	@if [ "${MAKE_IS_GNUMAKE}" != "" ]; then \
+	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} allclean-gnumake; \
+	elif [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
+	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} allclean-cmake; \
+	else \
+	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} allclean-legacy; \
+	fi
 #
 reconfigure:
 	@${PYTHON} ${PETSC_ARCH}/conf/reconfigure-${PETSC_ARCH}.py
