@@ -186,6 +186,7 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
         labelNew = plexNew->labels;
       } else {
         ierr = DMLabelPermute(label, perm, &labelNew->next);CHKERRQ(ierr);
+        labelNew = labelNew->next;
       }
       label = label->next;
     }
