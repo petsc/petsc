@@ -30,7 +30,6 @@ class PCType(object):
     GALERKIN     = S_(PCGALERKIN)
     EXOTIC       = S_(PCEXOTIC)
     HMPI         = S_(PCHMPI)
-    SUPPORTGRAPH = S_(PCSUPPORTGRAPH)
     ASA          = S_(PCASA)
     CP           = S_(PCCP)
     BFBT         = S_(PCBFBT)
