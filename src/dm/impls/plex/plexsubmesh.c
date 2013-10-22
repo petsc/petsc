@@ -1659,7 +1659,7 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Uninterpolated(DM dm, PetscBool 
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexMarkCohesiveSubmesh_Interpolated"
-static PetscErrorCode DMPlexMarkCohesiveSubmesh_Interpolated(DM dm, PetscBool hasLagrange, const char labelname[], PetscInt value, DMLabel subpointMap, DM subdm)
+static PetscErrorCode DMPlexMarkCohesiveSubmesh_Interpolated(DM dm, const char labelname[], PetscInt value, DMLabel subpointMap, DM subdm)
 {
   DMLabel        label = NULL;
   PetscInt      *pStart, *pEnd;
@@ -1673,28 +1673,21 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Interpolated(DM dm, PetscBool ha
   ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   if (cMax < 0) PetscFunctionReturn(0);
   ierr = PetscMalloc2(dim+1,PetscInt,&pStart,dim+1,PetscInt,&pEnd);CHKERRQ(ierr);
-  for (d = 0; d <= dim; ++d) {
-    ierr = DMPlexGetDepthStratum(dm, d, &pStart[d], &pEnd[d]);CHKERRQ(ierr);
-  }
+  for (d = 0; d <= dim; ++d) {ierr = DMPlexGetDepthStratum(dm, d, &pStart[d], &pEnd[d]);CHKERRQ(ierr);}
   for (c = cMax; c < cEnd; ++c) {
     const PetscInt *cone;
     PetscInt       *closure = NULL;
-    PetscInt        coneSize, closureSize, cl;
+    PetscInt        fconeSize, coneSize, closureSize, cl, val;
 
     if (label) {
-      PetscInt val;
-
       ierr = DMLabelGetValue(label, c, &val);CHKERRQ(ierr);
       if (val != value) continue;
     }
     ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
-    if (hasLagrange) {
-      if (coneSize != 3) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cohesive cells should separate two cells");
-    } else {
-      if (coneSize != 2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cohesive cells should separate two cells");
-    }
-    /* Negative face */
     ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
+    ierr = DMPlexGetConeSize(dm, cone[0], &fconeSize);CHKERRQ(ierr);
+    if (coneSize != (fconeSize ? fconeSize : 1) + 2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cohesive cells should separate two cells");
+    /* Negative face */
     ierr = DMPlexGetTransitiveClosure(dm, cone[0], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     for (cl = 0; cl < closureSize*2; cl += 2) {
       const PetscInt point = closure[cl];
@@ -2695,7 +2688,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateCohesiveSubmesh_Interpolated"
-static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, PetscBool hasLagrange, const char label[], PetscInt value, DM subdm)
+static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char label[], PetscInt value, DM subdm)
 {
   MPI_Comm         comm;
   DMLabel          subpointMap;
@@ -2711,7 +2704,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, PetscBool 
   ierr = DMLabelCreate("subpoint_map", &subpointMap);CHKERRQ(ierr);
   ierr = DMPlexSetSubpointMap(subdm, subpointMap);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&subpointMap);CHKERRQ(ierr);
-  ierr = DMPlexMarkCohesiveSubmesh_Interpolated(dm, hasLagrange, label, value, subpointMap, subdm);CHKERRQ(ierr);
+  ierr = DMPlexMarkCohesiveSubmesh_Interpolated(dm, label, value, subpointMap, subdm);CHKERRQ(ierr);
   /* Setup chart */
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = PetscMalloc4(dim+1,PetscInt,&numSubPoints,dim+1,PetscInt,&firstSubPoint,dim+1,IS,&subpointIS,dim+1,const PetscInt *,&subpoints);CHKERRQ(ierr);
@@ -2864,7 +2857,7 @@ PetscErrorCode DMPlexCreateCohesiveSubmesh(DM dm, PetscBool hasLagrange, const c
   ierr = DMSetType(*subdm, DMPLEX);CHKERRQ(ierr);
   ierr = DMPlexSetDimension(*subdm, dim-1);CHKERRQ(ierr);
   if (depth == dim) {
-    ierr = DMPlexCreateCohesiveSubmesh_Interpolated(dm, hasLagrange, label, value, *subdm);CHKERRQ(ierr);
+    ierr = DMPlexCreateCohesiveSubmesh_Interpolated(dm, label, value, *subdm);CHKERRQ(ierr);
   } else {
     ierr = DMPlexCreateCohesiveSubmesh_Uninterpolated(dm, hasLagrange, label, value, *subdm);CHKERRQ(ierr);
   }
