@@ -694,6 +694,7 @@ M*/
 
 #else
 
+PETSC_STATIC_INLINE PetscBool PetscStackActive(void) {return PETSC_FALSE;}
 #define PetscStackPushNoCheck(funct,petsc_routine) do {} while (0)
 #define PetscStackPopNoCheck                       do {} while (0)
 #define PetscFunctionBegin
@@ -702,7 +703,6 @@ M*/
 #define PetscFunctionReturnVoid() return
 #define PetscStackPop             CHKMEMQ
 #define PetscStackPush(f)         CHKMEMQ
-#define PetscStackActive          PETSC_FALSE
 
 #endif
 
