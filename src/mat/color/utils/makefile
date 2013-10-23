@@ -7,8 +7,8 @@ SOURCEC  = localcolor.c bipartite.c valid.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscmat
-MANSEC   = MatColoring
-LOCDIR   = src/mat/color/util
+MANSEC   = MatOrderings
+LOCDIR   = src/mat/color/utils/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

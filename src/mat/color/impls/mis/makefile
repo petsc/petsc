@@ -7,8 +7,8 @@ SOURCEC  = miscoloring.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscmat
-MANSEC   = MatColoring
-LOCDIR   = src/mat/color/impls/mis
+MANSEC   = MatOrderings
+LOCDIR   = src/mat/color/impls/mis/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
