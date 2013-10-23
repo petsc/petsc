@@ -156,8 +156,7 @@ PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
 
    See also KSPPIPECG, which has only a single reduction that overlaps both the matrix-vector product and the preconditioner.
 
-   Level:
-   beginner
+   Level: beginner
 
    Notes:
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.

@@ -2378,6 +2378,8 @@ extern PetscSegBuffer PetscCitationsList;
 +      cite - the bibtex item, formated to displayed on multiple lines nicely
 -      set - a boolean variable initially set to PETSC_FALSE; this is used to insure only a single registration of the citation
 
+   Level: intermediate
+
      Options Database:
 .     -citations [filenmae]   - print out the bibtex entries for the given computation
 @*/
