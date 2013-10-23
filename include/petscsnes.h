@@ -693,18 +693,24 @@ PETSC_EXTERN const char *const SNESNCGTypes[];
 
 PETSC_EXTERN PetscErrorCode SNESNCGSetType(SNES, SNESNCGType);
 
-typedef enum {SNES_QN_SCALE_DEFAULT    = -1,
-              SNES_QN_SCALE_NONE       = 0,
-              SNES_QN_SCALE_SHANNO     = 1,
-              SNES_QN_SCALE_LINESEARCH = 2,
-              SNES_QN_SCALE_JACOBIAN   = 3} SNESQNScaleType;
+typedef enum {SNES_QN_SCALE_DEFAULT    = 0,
+              SNES_QN_SCALE_NONE       = 1,
+              SNES_QN_SCALE_SHANNO     = 2,
+              SNES_QN_SCALE_LINESEARCH = 3,
+              SNES_QN_SCALE_JACOBIAN   = 4} SNESQNScaleType;
 PETSC_EXTERN const char *const SNESQNScaleTypes[];
-typedef enum {SNES_QN_RESTART_DEFAULT  = -1,
-              SNES_QN_RESTART_NONE     = 0,
-              SNES_QN_RESTART_POWELL   = 1,
-              SNES_QN_RESTART_PERIODIC = 2} SNESQNRestartType;
+typedef enum {SNES_QN_RESTART_DEFAULT  = 0,
+              SNES_QN_RESTART_NONE     = 1,
+              SNES_QN_RESTART_POWELL   = 2,
+              SNES_QN_RESTART_PERIODIC = 3} SNESQNRestartType;
 PETSC_EXTERN const char *const SNESQNRestartTypes[];
+typedef enum {SNES_QN_LBFGS      = 0,
+              SNES_QN_BROYDEN    = 1,
+              SNES_QN_BADBROYDEN = 2
+             } SNESQNType;
+PETSC_EXTERN const char *const SNESQNTypes[];
 
+PETSC_EXTERN PetscErrorCode SNESQNSetType(SNES, SNESQNType);
 PETSC_EXTERN PetscErrorCode SNESQNSetScaleType(SNES, SNESQNScaleType);
 PETSC_EXTERN PetscErrorCode SNESQNSetRestartType(SNES, SNESQNRestartType);
 

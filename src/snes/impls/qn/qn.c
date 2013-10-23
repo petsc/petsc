@@ -2,14 +2,9 @@
 
 #define H(i,j)  qn->dXdFmat[i*qn->m + j]
 
-const char *const SNESQNScaleTypes[] =        {"NONE","SHANNO","LINESEARCH","JACOBIAN","SNESQNScaleType","SNES_QN_SCALING_",0};
-const char *const SNESQNRestartTypes[] =      {"NONE","POWELL","PERIODIC","SNESQNRestartType","SNES_QN_RESTART_",0};
+const char *const SNESQNScaleTypes[] =        {"DEFAULT","NONE","SHANNO","LINESEARCH","JACOBIAN","SNESQNScaleType","SNES_QN_SCALING_",0};
+const char *const SNESQNRestartTypes[] =      {"DEFAULT","NONE","POWELL","PERIODIC","SNESQNRestartType","SNES_QN_RESTART_",0};
 const char *const SNESQNTypes[] =             {"LBFGS","BROYDEN","BADBROYDEN","SNESQNType","SNES_QN_",0};
-
-typedef enum {SNES_QN_LBFGS      = 0,
-              SNES_QN_BROYDEN    = 1,
-              SNES_QN_BADBROYDEN = 2
-             } SNESQNType;
 
 typedef struct {
   Vec               *U;                   /* Stored past states (vary from method to method) */
@@ -556,14 +551,14 @@ static PetscErrorCode SNESSetUp_QN(SNES snes)
   }
   ierr = SNESSetWorkVecs(snes,4);CHKERRQ(ierr);
   /* set method defaults */
-  if (qn->scale_type == -1) {
+  if (qn->scale_type == SNES_QN_SCALE_DEFAULT) {
     if (qn->type == SNES_QN_BADBROYDEN) {
       qn->scale_type = SNES_QN_SCALE_NONE;
     } else {
       qn->scale_type = SNES_QN_SCALE_SHANNO;
     }
   }
-  if (qn->restart_type == -1) {
+  if (qn->restart_type == SNES_QN_RESTART_DEFAULT) {
     if (qn->type == SNES_QN_LBFGS) {
       qn->restart_type = SNES_QN_RESTART_POWELL;
     } else {
@@ -626,6 +621,7 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
   SNESLineSearch    linesearch;
   SNESQNRestartType rtype = qn->restart_type;
   SNESQNScaleType   stype = qn->scale_type;
+  SNESQNType        qtype = qn->type;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES QN options");CHKERRQ(ierr);
@@ -641,7 +637,8 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
   if (flg) ierr = SNESQNSetRestartType(snes,rtype);CHKERRQ(ierr);
 
   ierr = PetscOptionsEnum("-snes_qn_type","Quasi-Newton update type","",SNESQNTypes,
-                          (PetscEnum)qn->type,(PetscEnum*)&qn->type,NULL);CHKERRQ(ierr);
+                          (PetscEnum)qtype,(PetscEnum*)&qtype,&flg);CHKERRQ(ierr);
+  if (flg) {ierr = SNESQNSetType(snes,qtype);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (!snes->linesearch) {
     ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
@@ -754,6 +751,51 @@ PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "SNESQNSetType"
+/*@
+    SNESQNSetType - Sets the quasi-Newton variant to be used in SNESQN.
+
+    Logically Collective on SNES
+
+    Input Parameters:
++   snes - the iterative context
+-   qtype - variant type
+
+    Options Database:
+.   -snes_qn_scale_type<lbfgs,broyden,badbroyden>
+
+    Level: beginner
+
+    SNESQNTypes:
++   SNES_QN_LBFGS - LBFGS variant
+.   SNES_QN_BROYDEN - Broyden variant
+-   SNES_QN_BADBROYDEN - Bad Broyden variant
+
+.keywords: SNES, SNESQN, type, set
+@*/
+
+PetscErrorCode SNESQNSetType(SNES snes, SNESQNType qtype)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  ierr = PetscTryMethod(snes,"SNESQNSetType_C",(SNES,SNESQNType),(snes,qtype));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESQNSetType_QN"
+PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
+{
+  SNES_QN *qn = (SNES_QN*)snes->data;
+
+  PetscFunctionBegin;
+  qn->type = qtype;
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------- */
 /*MC
       SNESQN - Limited-Memory Quasi-Newton methods for the solution of nonlinear systems.
@@ -834,5 +876,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES snes)
 
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESQNSetScaleType_C",SNESQNSetScaleType_QN);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESQNSetRestartType_C",SNESQNSetRestartType_QN);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESQNSetType_C",SNESQNSetType_QN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
