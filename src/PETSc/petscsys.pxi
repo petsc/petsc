@@ -23,16 +23,15 @@ cdef extern from * nogil:
     ctypedef enum PetscErrorType:
         PETSC_ERROR_INITIAL
         PETSC_ERROR_REPEAT
-    ctypedef int PetscEHF(MPI_Comm,
-                          int,char*,char*,char*,
-                          int,PetscErrorType,char*,void*)
-    PetscEHF PetscAttachDebuggerErrorHandler
-    PetscEHF PetscEmacsClientErrorHandler
-    PetscEHF PetscTraceBackErrorHandler
-    PetscEHF PetscMPIAbortErrorHandler
-    PetscEHF PetscAbortErrorHandler
-    PetscEHF PetscIgnoreErrorHandler
-    int PetscPushErrorHandler(PetscEHF*,void*)
+    ctypedef int (*PetscErrorHandlerFunction)(MPI_Comm,int,char*,char*,
+                                              int,PetscErrorType,char*,void*)
+    PetscErrorHandlerFunction PetscAttachDebuggerErrorHandler
+    PetscErrorHandlerFunction PetscEmacsClientErrorHandler
+    PetscErrorHandlerFunction PetscTraceBackErrorHandler
+    PetscErrorHandlerFunction PetscMPIAbortErrorHandler
+    PetscErrorHandlerFunction PetscAbortErrorHandler
+    PetscErrorHandlerFunction PetscIgnoreErrorHandler
+    int PetscPushErrorHandler(PetscErrorHandlerFunction,void*)
     int PetscPopErrorHandler()
 
     int PetscErrorMessage(int,char*[],char**)

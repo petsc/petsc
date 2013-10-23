@@ -19,6 +19,21 @@
 
 /* ---------------------------------------------------------------- */
 
+#if PETSC_VERSION_LT(3,5,0)
+typedef PetscErrorCode (*PetscErrorHandlerFunction)
+(MPI_Comm,int,const char*,const char*,const char*,
+ PetscErrorCode,PetscErrorType,const char*,void*);
+#define PetscTBEH(comm,l,f,fn,n,p,mess,ctx) \
+  PetscTraceBackErrorHandler(comm,l,f,fn,"",n,p,mess,ctx)
+#else
+typedef PetscErrorCode (*PetscErrorHandlerFunction)
+(MPI_Comm,int,const char*,const char*,
+ PetscErrorCode,PetscErrorType,const char*,void*);
+#define PetscTBEH PetscTraceBackErrorHandler
+#endif
+
+/* ---------------------------------------------------------------- */
+
 #define PetscCLASSID(stageLog,index) \
         ((stageLog)->classLog->classInfo[(index)].classid)
 

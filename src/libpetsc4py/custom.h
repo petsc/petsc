@@ -118,8 +118,13 @@ PetscErrorCode SNESConverged(SNES snes,
 #define PETSC_ERR_PYTHON ((PetscErrorCode)(-1))
 #endif
 
+#if PETSC_VERSION_LT(3,5,0)
 #define PetscERROR(comm,FUNCT,n,t,msg,arg) \
   PetscError(comm,__LINE__,FUNCT,__FILE__,__SDIR__,n,t,msg,arg)
+#else
+#define PetscERROR(comm,FUNCT,n,t,msg,arg) \
+  PetscError(comm,__LINE__,FUNCT,__FILE__,n,t,msg,arg)
+#endif
 
 #if PY_MAJOR_VERSION < 3
 PyMODINIT_FUNC initlibpetsc4py(void);

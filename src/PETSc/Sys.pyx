@@ -138,27 +138,30 @@ cdef class Sys:
 
     @classmethod
     def pushErrorHandler(cls, errhandler):
+        cdef PetscErrorHandlerFunction handler = NULL
         if errhandler == "python":
-            CHKERR( PetscPushErrorHandler(
-                    PetscPythonErrorHandler, NULL) )
+            handler = <PetscErrorHandlerFunction> \
+                      PetscPythonErrorHandler
+            if PETSC_VERSION_LT(3,5,0):
+                handler = <PetscErrorHandlerFunction> \
+                          PetscPythonErrorHandler_OLD
         elif errhandler == "debugger":
-            CHKERR( PetscPushErrorHandler(
-                    PetscAttachDebuggerErrorHandler, NULL) )
+            handler = PetscAttachDebuggerErrorHandler
         elif errhandler == "emacs":
-            CHKERR( PetscPushErrorHandler(
-                    PetscEmacsClientErrorHandler, NULL) )
+            handler = PetscEmacsClientErrorHandler
         elif errhandler == "traceback":
-            CHKERR( PetscPushErrorHandler(
-                    PetscTraceBackErrorHandler, NULL) )
+            handler = PetscTraceBackErrorHandler
         elif errhandler == "ignore":
-            CHKERR( PetscPushErrorHandler(
-                    PetscIgnoreErrorHandler, NULL) )
+            handler = PetscIgnoreErrorHandler
         elif errhandler == "mpiabort":
-            CHKERR( PetscPushErrorHandler(
-                    PetscMPIAbortErrorHandler, NULL) )
+            handler = PetscMPIAbortErrorHandler
         elif errhandler == "abort":
-            CHKERR( PetscPushErrorHandler(
-                    PetscAbortErrorHandler, NULL) )
+            handler = PetscAbortErrorHandler
+        else:
+            raise ValueError(
+                "unknown error handler: %s" % errhandler)
+        CHKERR( PetscPushErrorHandler(handler, NULL) )
+
 
     @classmethod
     def popErrorHandler(cls):

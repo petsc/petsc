@@ -170,7 +170,8 @@ cdef extern from "Python.h":
     int Py_IsInitialized() nogil
 
 cdef extern from * nogil:
-    PetscEHF *PetscTBEH "PetscTraceBackErrorHandler"
+    int PetscTBEH(MPI_Comm,int,char*,char*,
+                  int,PetscErrorType,char*,void*)
 
 cdef object tracebacklist = []
 
@@ -178,7 +179,6 @@ cdef int traceback(MPI_Comm       comm,
                    int            line,
                    const_char    *cfun,
                    const_char    *cfile,
-                   const_char    *cdir,
                    int            n,
                    PetscErrorType p,
                    const_char    *mess,
@@ -190,8 +190,7 @@ cdef int traceback(MPI_Comm       comm,
     cdef object tbl = tracebacklist
     fun = bytes2str(cfun)
     fnm = bytes2str(cfile)
-    dnm = bytes2str(cdir)
-    m = "%s() line %d in %s%s" % (fun, line, dnm, fnm)
+    m = "%s() line %d in %s" % (fun, line, fnm)
     tbl.insert(0, m)
     if p != PETSC_ERROR_INITIAL: 
         return n
@@ -215,16 +214,27 @@ cdef int PetscPythonErrorHandler(
     int            line,
     const_char    *cfun,
     const_char    *cfile,
-    const_char    *cdir,
     int            n,
     PetscErrorType p,
     const_char    *mess,
     void          *ctx) nogil:
     global tracebacklist
     if Py_IsInitialized() and (<void*>tracebacklist) != NULL:
-        return traceback(comm, line, cfun, cfile, cdir, n, p, mess, ctx)
+        return traceback(comm, line, cfun, cfile, n, p, mess, ctx)
     else:
-        return PetscTBEH(comm, line, cfun, cfile, cdir, n, p, mess, ctx)
+        return PetscTBEH(comm, line, cfun, cfile, n, p, mess, ctx)
+
+cdef int PetscPythonErrorHandler_OLD(
+    MPI_Comm       comm,
+    int            line,
+    const_char    *cfun,
+    const_char    *cfile,
+    const_char    *cdir,
+    int            n,
+    PetscErrorType p,
+    const_char    *mess,
+    void          *ctx) nogil:
+    return PetscPythonErrorHandler(comm,line,cfun,cfile,n,p,mess,ctx)
 
 # --------------------------------------------------------------------
 
@@ -320,7 +330,11 @@ cdef int initialize(object args, object comm) except -1:
     # initialize PETSc
     CHKERR( PetscInitialize(&PyPetsc_Argc, &PyPetsc_Argv, NULL, NULL) )
     # install Python error handler
-    CHKERR( PetscPushErrorHandler(PetscPythonErrorHandler, NULL) )
+    cdef PetscErrorHandlerFunction handler = NULL
+    handler = <PetscErrorHandlerFunction>PetscPythonErrorHandler
+    if PETSC_VERSION_LT(3,5,0):
+        handler = <PetscErrorHandlerFunction>PetscPythonErrorHandler_OLD
+    CHKERR( PetscPushErrorHandler(handler, NULL) )
     # register finalization function
     if Py_AtExit(finalize) < 0:
         PySys_WriteStderr("warning: could not register"
