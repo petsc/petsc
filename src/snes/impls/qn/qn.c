@@ -656,6 +656,25 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "SNESView_QN"
+static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer)
+{
+  SNES_QN        *qn    = (SNES_QN*)snes->data;
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  QN type is %s, restart type is %s, scale type is %s\n",SNESQNTypes[qn->type],SNESQNRestartTypes[qn->restart_type],SNESQNScaleTypes[qn->scale_type]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Stored subspace size: %d\n", qn->m);CHKERRQ(ierr);
+    if (qn->singlereduction) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Using the single reduction variant.\n");CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESQNSetRestartType"
@@ -845,7 +864,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES snes)
   snes->ops->solve          = SNESSolve_QN;
   snes->ops->destroy        = SNESDestroy_QN;
   snes->ops->setfromoptions = SNESSetFromOptions_QN;
-  snes->ops->view           = 0;
+  snes->ops->view           = SNESView_QN;
   snes->ops->reset          = SNESReset_QN;
 
   snes->pcside = PC_LEFT;
