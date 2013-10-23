@@ -1,7 +1,6 @@
 
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 
-#if defined(PETSC_USE_DEBUG)
 
 #if defined(PETSC_HAVE_PTHREADCLASSES)
 #if defined(PETSC_PTHREAD_LOCAL)
@@ -13,6 +12,7 @@ PetscThreadKey petscstack;
 PetscStack *petscstack = 0;
 #endif
 
+#if defined(PETSC_USE_DEBUG)
 
 #if defined(PETSC_HAVE_AMS)
 #include <petscviewerams.h>
@@ -189,16 +189,6 @@ PetscErrorCode  PetscStackPrint(PetscStack *sint,FILE *fp)
 
 #else
 
-#if defined(PETSC_HAVE_PTHREADCLASSES)
-#if defined(PETSC_PTHREAD_LOCAL)
-PETSC_PTHREAD_LOCAL void *petscstack = 0;
-#else
-PetscThreadKey petscstack;
-#endif
-#else
-void *petscstack = 0;
-#endif
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscStackCreate"
 PetscErrorCode  PetscStackCreate(void)
@@ -222,14 +212,14 @@ PetscErrorCode  PetscStackDestroy(void)
 }
 #undef __FUNCT__
 #define __FUNCT__ "PetscStackCopy"
-PetscErrorCode  PetscStackCopy(PETSC_UNUSED void *sint,PETSC_UNUSED void *sout)
+PetscErrorCode  PetscStackCopy(PETSC_UNUSED PetscStack *sint,PETSC_UNUSED PetscStack *sout)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
 #define __FUNCT__ "PetscStackPrint"
-PetscErrorCode  PetscStackPrint(PETSC_UNUSED void *sint,PETSC_UNUSED FILE *fp)
+PetscErrorCode  PetscStackPrint(PETSC_UNUSED PetscStack *sint,PETSC_UNUSED FILE *fp)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
