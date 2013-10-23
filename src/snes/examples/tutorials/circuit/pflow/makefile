@@ -3,6 +3,7 @@ CFLAGS	         =
 FFLAGS	         = 
 CPPFLAGS         = 
 FPPFLAGS         =
+LOCDIR           = src/snes/examples/tutorials/circuit/pflow/
 
 OBJECTS_PF = pf.o PFReadData.o
 
