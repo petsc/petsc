@@ -63,6 +63,7 @@ int main(int argc,char **argv)
   ierr = DMSetMatType(da,MATMPIAIJ);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da,&mat);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(mat,coloring,&fdcoloring);CHKERRQ(ierr);
+  ierr = MatFDColoringSetUp(mat,coloring,fdcoloring);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(da,&dvec);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&lvec);CHKERRQ(ierr);

@@ -620,6 +620,51 @@ runex19:
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_1.tmp
+runex19_2:
+	-@${MPIEXEC} -n 4 ./ex19 -da_refine 3 -snes_converged_reason -pc_type mg -mat_fd_type ds > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_2.out ex19_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_2, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_1.tmp
+runex19_bcols1:
+	-@${MPIEXEC} -n 2 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -ksp_type fgmres -pc_mg_type full -mat_fd_coloring_bcols 1 > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_1.tmp
+runex19_2_bcols1:
+	-@${MPIEXEC} -n 4 ./ex19 -da_refine 3 -snes_converged_reason -pc_type mg -mat_fd_type ds -mat_fd_coloring_bcols 1> ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_2.out ex19_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_2, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_1.tmp
+runex19_fdcoloring_wp:
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fdcoloring_wp.out ex19_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_fdcoloring_wp, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_1.tmp
+runex19_fdcoloring_ds:
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_converged_reason -pc_type mg -mat_fd_type ds > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_2.out ex19_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_fdcoloring_ds, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_1.tmp
+runex19_fdcoloring_wp_bcols1:
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -mat_fd_coloring_bcols 1 > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fdcoloring_wp.out ex19_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_fdcoloring_wp, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_1.tmp
+runex19_fdcoloring_ds_bcols1:
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_converged_reason -pc_type mg -mat_fd_type ds -mat_fd_coloring_bcols 1 > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_2.out ex19_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_fdcoloring_ds, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_1.tmp
+runex19_fdcoloring_wp_baij:
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -dm_mat_type baij > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fdcoloring_wp.out ex19_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_fdcoloring_wp_baij, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_1.tmp
+runex19_fdcoloring_ds_baij:
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_converged_reason -pc_type mg -mat_fd_type ds -dm_mat_type baij > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_2.out ex19_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_fdcoloring_ds_baij, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_1.tmp
 runex19_3: #test pc_redundant
 	-@${MPIEXEC} -n 4 ./ex19 -da_refine 3 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 2 > ex19_3.tmp 2>&1; \
 	   if (${DIFF} output/ex19_3.out ex19_3.tmp) then true; \
@@ -681,9 +726,14 @@ runex19_13: #test pc_fieldsplit with -snes_mf_operator
 	   else  echo  ${PWD} "\nPossible problem with with ex19_13, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_13.tmp
 runex19_14:
-	-@${MPIEXEC} -n 2 ./ex19 -snes_monitor_short -pc_type mg -dm_mat_type baij -mg_coarse_pc_type bjacobi -da_refine 3 -ksp_type fgmres > ex19_14.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex19 -snes_monitor_short -pc_type mg -dm_mat_type baij -mg_coarse_pc_type bjacobi -da_refine 3 -ksp_type fgmres > ex19_14.tmp 2>&1; \
 	   if (${DIFF} output/ex19_14.out ex19_14.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_14, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_14.tmp
+runex19_14_ds:
+	-@${MPIEXEC} -n 4 ./ex19 -snes_converged_reason -pc_type mg -dm_mat_type baij -mg_coarse_pc_type bjacobi -da_refine 3 -ksp_type fgmres -mat_fd_type ds > ex19_14.tmp 2>&1; \
+	   if (${DIFF} output/ex19_2.out ex19_14.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_14_ds, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_14.tmp
 runex19_superlu:
 	-@${MPIEXEC} -n 1 ./ex19 -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu > ex19.tmp 2>&1; \
@@ -1032,11 +1082,13 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2  rune
                                  runex5_6 ex5.rm ex7.PETSc runex7 ex7.rm\
                                  ex14.PETSc runex14 runex14_2 runex14_3 ex14.rm \
                                  ex15.PETSc runex15 runex15_3 runex15_lag_jac runex15_lag_pc ex15.rm ex18.PETSc runex18 ex18.rm \
-                                 ex19.PETSc runex19 runex19_5 \
+                                 ex19.PETSc runex19 runex19_2 runex19_bcols1 runex19_2_bcols1 runex19_fdcoloring_wp runex19_fdcoloring_ds \
+                                 runex19_fdcoloring_wp_bcols1 runex19_fdcoloring_ds_bcols1 \
+                                 runex19_fdcoloring_wp_baij runex19_fdcoloring_ds_baij runex19_5 \
                                  runex19_6 runex19_fieldsplit_2 runex19_fieldsplit_3 runex19_fieldsplit_4 \
                                  runex19_composite_fieldsplit runex19_composite_fieldsplit_bjacobi runex19_composite_fieldsplit_bjacobi_2\
                                  runex19_7 runex19_8 runex19_9 \
-                                 runex19_10 runex19_14   runex19_fas runex19_bjacobi ex19.rm \
+                                 runex19_10 runex19_14 runex19_14_ds runex19_fas runex19_bjacobi ex19.rm \
                                  ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm \
                                  ex25.PETSc runex25 runex25_2 ex25.rm \
                                  ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm \
