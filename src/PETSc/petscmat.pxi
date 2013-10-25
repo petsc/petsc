@@ -516,6 +516,28 @@ cdef inline int Mat_Sizes(object size, object bsize,
     return 0
 
 
+cdef inline int Mat_Blocked_Sizes(object size, object bsize,
+                                  PetscInt *rb, PetscInt *cb,
+                                  PetscInt *m, PetscInt *n,
+                                  PetscInt *M, PetscInt *N) except -1:
+    # unpack row and column sizes
+    cdef object rsize, csize
+    cdef object rbs, cbs
+    try:
+        rsize , csize = size
+    except (TypeError, ValueError):
+        rsize = csize = size
+    # unpack block sizes
+    try:
+        rbs, cbs = bsize
+    except (TypeError, ValueError):
+        rbs = cbs = bsize
+    # split row and column sizes
+    Sys_Sizes(rsize, rbs, rb, m, M)
+    Sys_Sizes(csize, cbs, cb, n, N)
+    return 0
+
+
 cdef inline int Mat_AllocAIJ_SKIP(PetscMat A,
                                   PetscInt bs) except -1:
     cdef PetscInt d_nz=MAT_SKIP_ALLOCATION, *d_nnz=NULL

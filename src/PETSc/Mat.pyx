@@ -228,11 +228,14 @@ cdef class Mat(Object):
         CHKERR( MatSetType(self.mat, cval) )
 
     def setSizes(self, size, bsize=None):
-        cdef PetscInt bs = 0, m = 0, n = 0, M = 0, N = 0
-        Mat_Sizes(size, bsize, &bs, &m, &n, &M, &N)
+        cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
+        Mat_Blocked_Sizes(size, bsize, &rbs, &cbs, &m, &n, &M, &N)
         CHKERR( MatSetSizes(self.mat, m, n, M, N) )
-        if bs != PETSC_DECIDE:
-            CHKERR( MatSetBlockSize(self.mat, bs) )
+        if rbs != PETSC_DECIDE:
+            if cbs != PETSC_DECIDE:
+                CHKERR( MatSetBlockSizes(self.mat, rbs, cbs) )
+            else:
+                CHKERR( MatSetBlockSize(self.mat, rbs) )
 
     def setBlockSize(self, bsize):
         cdef PetscInt bs = asInt(bsize)
