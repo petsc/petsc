@@ -907,7 +907,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
       const PetscInt  oldp   = unsplitPoints[dep][p];
       const PetscInt  newp   = oldp + depthOffset[dep];
       const PetscInt *cone, *support, *ornt;
-      PetscInt        coneSize, supportSize, supportSizeNew, q, qf, qn, qp, v, e, s;
+      PetscInt        coneSize, supportSize, supportSizeNew, q, qf, e, s;
 
       ierr = DMPlexGetConeSize(dm, oldp, &coneSize);CHKERRQ(ierr);
       ierr = DMPlexGetCone(dm, oldp, &cone);CHKERRQ(ierr);
