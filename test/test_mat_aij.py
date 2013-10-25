@@ -38,14 +38,20 @@ class BaseTestMatAnyAIJ(object):
         GM, GN = self.GRID
         BS     = self.BSIZE
         #
-        bs = BS or 1
+        try:
+            rbs, cbs = BS
+            rbs = rbs or 1
+            cbs = cbs or 1
+        except (TypeError, ValueError):
+            rbs = cbs = BS or 1
         sdt = dtype = PETSc.ScalarType
         self.rows, self.xadj, self.adjy = mkgraph(COMM, GM, GN)
-        self.vals = N.array(range(1, 1 + len(self.adjy)* bs**2), dtype=sdt)
-        self.vals.shape = (-1, bs, bs)
+        self.vals = N.array(range(1, 1 + len(self.adjy)* rbs*cbs), dtype=sdt)
+        self.vals.shape = (-1, rbs, cbs)
         #
-        m, n, bs = GM, GN, BS or 1
-        rowsz = colsz = (m*n*bs, None)
+        m, n = GM, GN
+        rowsz = (m*n*rbs, None)
+        colsz = (m*n*cbs, None)
         A = self.A = PETSc.Mat().create(comm=COMM)
         A.setType(self.TYPE)
         A.setSizes([rowsz, colsz], BS)
@@ -181,6 +187,11 @@ class BaseTestMatAnyAIJ(object):
         if PETSc.Sys.getVersion() < (3,3,0):
             if ('mpiaij' in self.A.type and
                 self.BSIZE and self.BSIZE > 1): return
+        try:
+            _ = len(self.BSIZE)
+            return
+        except (TypeError, ValueError):
+            pass
         self._preallocate()
         self._set_values_ijv()
         self.A.assemble()
@@ -274,6 +285,13 @@ class BaseTestMatAnyAIJ(object):
 
     def _chk_bs(self, A, bs):
         self.assertEqual(A.getBlockSize(), bs or 1)
+
+    def _chk_bsizes(self, A, bsizes):
+        try:
+            rbs, cbs = bsizes
+        except (TypeError, ValueError):
+            rbs = cbs = bsizes
+        self.assertEqual(A.getBlockSizes(), (rbs, cbs))
 
     def _chk_aij(self, A, i, j):
         ai, aj = A.getRowIJ(compressed=bool(self.BSIZE))
@@ -546,6 +564,65 @@ class TestMatMPIAIJ_B_G89_B5(TestMatMPIAIJ_B_G89):
     BSIZE = 5
 
 # -----
+
+if PETSc.Sys.getVersion() >= (3,2,0):
+    # -- Non-square blocks --
+    class BaseTestMatAIJ_B(BaseTestMatAnyAIJ, unittest.TestCase):
+        COMM  = PETSc.COMM_WORLD
+        TYPE  = PETSc.Mat.Type.AIJ
+        GRID  = 0, 0
+        BSIZE = (4,2)
+
+        def _preallocate(self):
+            try:
+                rbs, cbs = self.BSIZE
+            except (TypeError, ValueError):
+                rbs = cbs = self.BSIZE
+            self.A.setPreallocationNNZ([5*rbs, 3*cbs])
+            self._chk_bsizes(self.A, self.BSIZE)
+        def testSetPreallocNNZ(self):pass
+        def testSetPreallocNNZ_2(self):pass
+        def testSetPreallocCSR(self):pass
+        def testSetPreallocCSR_2(self):pass
+        def testSetValues(self):
+            self._preallocate()
+            opt = PETSc.Mat.Option.NEW_NONZERO_ALLOCATION_ERR
+            self.A.setOption(opt, True)
+            ai, aj, av = self._set_values()
+            self.A.assemble()
+            self._chk_aij(self.A, ai, aj)
+            opt = PETSc.Mat.Option.NEW_NONZERO_LOCATION_ERR
+            self.A.setOption(opt, True)
+            ai, aj, av = self._set_values()
+            self.A.assemble()
+            self._chk_aij(self.A, ai, aj)
+        def testSetValuesIJV(self):
+            self._preallocate()
+            opt = PETSc.Mat.Option.NEW_NONZERO_ALLOCATION_ERR
+            self.A.setOption(opt, True)
+            ai, aj, av = self._set_values_ijv()
+            self.A.assemble()
+            self._chk_aij(self.A, ai, aj)
+            opt = PETSc.Mat.Option.NEW_NONZERO_LOCATION_ERR
+            self.A.setOption(opt, True)
+            ai, aj, av = self._set_values_ijv()
+            self.A.assemble()
+            self._chk_aij(self.A, ai, aj)
+        def _chk_aij(self, A, i, j):
+            bs = self.BSIZE or 1
+            ai, aj = A.getRowIJ()
+            if None not in (ai, aj):  ## XXX map and check !!
+                #self.assertTrue(N.all(i==ai))
+                #self.assertTrue(N.all(j==aj))
+                pass
+            ai, aj = A.getColumnIJ()
+            if None not in (ai, aj): ## XXX map and check !!
+                #self.assertTrue(N.all(i==ai))
+                #self.assertTrue(N.all(j==aj))
+                pass
+
+# -----
+
 
 if PETSc.Sys.getVersion() >= (3,1,0):
     # -- AIJCRL ---------------------
