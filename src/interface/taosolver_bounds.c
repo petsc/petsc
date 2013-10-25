@@ -323,10 +323,26 @@ PetscErrorCode TaoComputeDualVariables(TaoSolver tao, Vec DL, Vec DU)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoGetDualVariables"
+/*@
+  TaoGetDualVariables - Gets pointers to the dual vectors
+
+  Collective on TaoSolver
+
+  Input Parameters:
+. tao - the TaoSolver context
+
+  Output Parameter:
++ DE - dual variable vector for the lower bounds
+- DI - dual variable vector for the upper bounds
+
+  Level: advanced
+
+.seealso: TaoComputeDualVariables()
+@*/
 PetscErrorCode TaoGetDualVariables(TaoSolver tao, Vec *DE, Vec *DI)
 {
     PetscFunctionBegin;
-    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
     if (DE) {
       *DE = tao->DE;
     } 

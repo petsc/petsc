@@ -28,6 +28,8 @@ PETSC_EXTERN PetscErrorCode TaoCreate_SSFLS(TaoSolver);
 PETSC_EXTERN PetscErrorCode TaoCreate_ASILS(TaoSolver);
 PETSC_EXTERN PetscErrorCode TaoCreate_ASFLS(TaoSolver);
 
+PETSC_EXTERN PetscErrorCode TaoCreate_IPM(TaoSolver);
+
 /* 
    Offset the convergence reasons so negative number represent diverged and
    positive represent converged.
@@ -101,6 +103,9 @@ PetscErrorCode TaoSolverRegisterAll()
   ierr = TaoSolverRegister("tao_ssfls",TaoCreate_SSFLS); CHKERRQ(ierr);
   ierr = TaoSolverRegister("tao_asils",TaoCreate_ASILS); CHKERRQ(ierr);
   ierr = TaoSolverRegister("tao_asfls",TaoCreate_ASFLS); CHKERRQ(ierr);
+
+
+  ierr = TaoSolverRegister("tao_ipm",TaoCreate_IPM); CHKERRQ(ierr);
 
 
 
