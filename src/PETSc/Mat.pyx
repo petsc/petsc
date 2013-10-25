@@ -534,6 +534,11 @@ cdef class Mat(Object):
         CHKERR( MatGetBlockSize(self.mat, &bs) )
         return toInt(bs)
 
+    def getBlockSizes(self):
+        cdef PetscInt rbs = 0, cbs = 0
+        CHKERR( MatGetBlockSizes(self.mat, &rbs, &cbs) )
+        return (toInt(rbs), toInt(cbs))
+
     def getOwnershipRange(self):
         cdef PetscInt ival1 = 0, ival2 = 0
         CHKERR( MatGetOwnershipRange(self.mat, &ival1, &ival2) )
@@ -1222,6 +1227,10 @@ cdef class Mat(Object):
     property block_size:
         def __get__(self):
             return self.getBlockSize()
+
+    property block_sizes:
+        def __get__(self):
+            return self.getBlockSizes()
 
     property owner_range:
         def __get__(self):
