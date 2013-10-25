@@ -492,12 +492,21 @@ cdef inline PetscMatAssemblyType assemblytype(object assembly) \
 
 # -----------------------------------------------------------------------------
 
-cdef inline int Mat_BlockSize(object bsize, PetscInt *_bs) except -1:
-    cdef PetscInt bs = PETSC_DECIDE
-    if bsize is not None: bs = asInt(bsize)
-    if bs != PETSC_DECIDE and bs < 1: raise ValueError(
-        "block size %d must be positive" % toInt(bs) )
-    _bs[0] = bs
+cdef inline int Mat_BlockSize(object bsize, PetscInt *_rbs, PetscInt *_cbs) except -1:
+    cdef PetscInt rbs = PETSC_DECIDE, cbs = PETSC_DECIDE
+    if bsize is not None:
+        try:
+            r, c = bsize
+        except (TypeError, ValueError):
+            r = c = bsize
+        rbs = asInt(r)
+        cbs = asInt(c)
+    if rbs != PETSC_DECIDE and rbs < 1: raise ValueError(
+        "block size %d must be positive" % toInt(rbs) )
+    if cbs != rbs and cbs != PETSC_DECIDE and cbs < 1: raise ValueError(
+        "column block size %d must be positive" % toInt(cbs) )
+    _rbs[0] = rbs
+    _cbs[0] = cbs
     return 0
 
 cdef inline int Mat_Sizes(object size, object bsize,

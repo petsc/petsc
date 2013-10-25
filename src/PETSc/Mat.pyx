@@ -356,20 +356,26 @@ cdef class Mat(Object):
         return self
 
     def setPreallocationNNZ(self, nnz, bsize=None):
-        cdef PetscInt bs = PETSC_DECIDE
-        CHKERR( Mat_BlockSize(bsize, &bs) )
+        cdef PetscInt rbs = PETSC_DECIDE, cbs = PETSC_DECIDE
+        CHKERR( Mat_BlockSize(bsize, &rbs, &cbs) )
+        if rbs != PETSC_DECIDE and rbs != cbs:
+            # Non-square blocks go through the AIJ preallocation routines
+            rbs = 1
         if nnz is not None:
-            CHKERR( Mat_AllocAIJ_NNZ(self.mat, bs, nnz) )
+            CHKERR( Mat_AllocAIJ_NNZ(self.mat, rbs, nnz) )
         else:
-            CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, bs) )
+            CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, rbs) )
 
     def setPreallocationCSR(self, csr, bsize=None):
-        cdef PetscInt bs = PETSC_DECIDE
-        CHKERR( Mat_BlockSize(bsize, &bs) )
+        cdef PetscInt rbs = PETSC_DECIDE, cbs = PETSC_DECIDE
+        CHKERR( Mat_BlockSize(bsize, &rbs, &cbs) )
+        if rbs != PETSC_DECIDE and rbs != cbs:
+            # Non-square blocks go through the AIJ preallocation routines
+            rbs = 1
         if csr is not None:
-            CHKERR( Mat_AllocAIJ_CSR(self.mat, bs, csr) )
+            CHKERR( Mat_AllocAIJ_CSR(self.mat, rbs, csr) )
         else:
-            CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, bs) )
+            CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, rbs) )
 
     def setPreallocationDense(self, array):
         if array is not None:
