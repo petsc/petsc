@@ -634,9 +634,10 @@ cdef inline int matsetvalues(PetscMat A,
                              object oi, object oj, object ov,
                              object oaddv, int blocked, int local) except -1:
     # block size
-    cdef PetscInt bs=1
-    if blocked: CHKERR( MatGetBlockSize(A, &bs) )
-    if bs < 1: bs = 1
+    cdef PetscInt rbs=1, cbs=1
+    if blocked: CHKERR( MatGetBlockSizes(A, &rbs, &cbs) )
+    if rbs < 1: rbs = 1
+    if cbs < 1: cbs = 1
     # rows, cols, and values
     cdef PetscInt ni=0, *i=NULL
     cdef PetscInt nj=0, *j=NULL
@@ -645,7 +646,7 @@ cdef inline int matsetvalues(PetscMat A,
     cdef object ai = iarray_i(oi, &ni, &i)
     cdef object aj = iarray_i(oj, &nj, &j)
     cdef object av = iarray_s(ov, &nv, &v)
-    if ni*nj*bs*bs != nv: raise ValueError(
+    if ni*nj*rbs*cbs != nv: raise ValueError(
         "incompatible array sizes: ni=%d, nj=%d, nv=%d" %
         (toInt(ni), toInt(nj), toInt(nv)) )
     # MatSetValuesXXX function and insert mode
@@ -661,9 +662,10 @@ cdef inline int matsetvalues_rcv(PetscMat A,
                                  object oaddv,
                                  int blocked, int local) except -1:
     # block size
-    cdef PetscInt bs=1
-    if blocked: CHKERR( MatGetBlockSize(A, &bs) )
-    if bs < 1: bs = 1
+    cdef PetscInt rbs=1, cbs=1
+    if blocked: CHKERR( MatGetBlockSizes(A, &rbs, &cbs) )
+    if rbs < 1: rbs = 1
+    if cbs < 1: cbs = 1
     # rows, cols, and values
     cdef PetscInt ni=0, *i=NULL
     cdef PetscInt nj=0, *j=NULL
@@ -695,7 +697,7 @@ cdef inline int matsetvalues_rcv(PetscMat A,
     cdef Py_ssize_t sv = PyArray_SIZE(av) // PyArray_DIM(av, 0)
     if ((nm != PyArray_DIM(aj, 0)) or
         (nm != PyArray_DIM(av, 0)) or
-        (si*bs * sj*bs != sv)): raise ValueError(
+        (si*rbs * sj*cbs != sv)): raise ValueError(
         ("input arrays have incompatible shapes: "
          "rows.shape=%s, cols.shape=%s, vals.shape=%s") %
         (ai.shape, aj.shape, av.shape))
@@ -718,10 +720,10 @@ cdef inline int matsetvalues_ijv(PetscMat A,
                                  object om,
                                  int blocked, int local) except -1:
     # block size
-    cdef PetscInt bs=1
-    if blocked: CHKERR( MatGetBlockSize(A, &bs) )
-    if bs < 1: bs = 1
-    cdef PetscInt bs2 = bs*bs
+    cdef PetscInt rbs=1, cbs=1
+    if blocked: CHKERR( MatGetBlockSizes(A, &rbs, &cbs) )
+    if rbs < 1: rbs = 1
+    if cbs < 1: cbs = 1
     # column pointers, column indices, and values
     cdef PetscInt ni=0, *i=NULL
     cdef PetscInt nj=0, *j=NULL
@@ -739,7 +741,7 @@ cdef inline int matsetvalues_ijv(PetscMat A,
     else:
         if not local:
             CHKERR( MatGetOwnershipRange(A, &rs, &re) )
-            rs //= bs; re //= bs
+            rs //= rbs; re //= rbs
         nm = re - rs
     # check various sizes
     if (ni-1 != nm): raise ValueError(
@@ -751,9 +753,9 @@ cdef inline int matsetvalues_ijv(PetscMat A,
     if (i[ni-1] != nj): raise ValueError(
         "size(J) is %d, expected %d" %
         (toInt(nj), toInt(i[ni-1])) )
-    if (nj*bs2  != nv): raise ValueError(
+    if (nj*rbs*cbs != nv): raise ValueError(
         "size(V) is %d, expected %d" %
-        (toInt(nv), toInt(nj*bs2)) )
+        (toInt(nv), toInt(nj*rbs*cbs)) )
     # MatSetValuesXXX function and insert mode
     cdef MatSetValuesFcn *setvalues = \
          matsetvalues_fcn(blocked, local)
@@ -767,10 +769,10 @@ cdef inline int matsetvalues_ijv(PetscMat A,
         ncol = i[k+1] - i[k]
         icol = j + i[k]
         if blocked:
-            sval = v + i[k]*bs2
+            sval = v + i[k]*rbs*cbs
             for l from 0 <= l < ncol:
                 CHKERR( setvalues(A, 1, &irow, 1, &icol[l],
-                                  &sval[l*bs2], addv) )
+                                  &sval[l*rbs*cbs], addv) )
         else:
             sval = v + i[k]
             CHKERR( setvalues(A, 1, &irow, ncol, icol, sval, addv) )
@@ -925,14 +927,15 @@ cdef matsetvaluestencil(PetscMat A,
                         _Mat_Stencil r, _Mat_Stencil c, object value,
                         PetscInsertMode im, int blocked):
     # block size
-    cdef PetscInt bs=1
-    if blocked: CHKERR( MatGetBlockSize(A, &bs) )
-    if bs < 1: bs = 1
+    cdef PetscInt rbs=1, cbs=1
+    if blocked: CHKERR( MatGetBlockSizes(A, &rbs, &cbs) )
+    if rbs < 1: rbs = 1
+    if cbs < 1: cbs = 1
     # values
     cdef PetscInt    nv = 1
     cdef PetscScalar *v = NULL
     cdef object av = iarray_s(value, &nv, &v)
-    if bs*bs != nv: raise ValueError(
+    if rbs*cbs != nv: raise ValueError(
         "incompatible array sizes: nv=%d" % toInt(nv) )
     if blocked:
         CHKERR( MatSetValuesBlockedStencil(A,
