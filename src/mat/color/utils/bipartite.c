@@ -59,8 +59,8 @@ PETSC_EXTERN PetscErrorCode MatColoringCreateBipartiteGraph(MatColoring mc,Petsc
 
   /* create the one going the other way by building the leaf set */
   ierr = PetscLogEventBegin(Mat_Coloring_Comm,*etoc,0,0,0);CHKERRQ(ierr);
-  ierr = PetscSFGatherBegin(*etoc,MPI_INT,rowdata,colleaf);CHKERRQ(ierr);
-  ierr = PetscSFGatherEnd(*etoc,MPI_INT,rowdata,colleaf);CHKERRQ(ierr);
+  ierr = PetscSFGatherBegin(*etoc,MPIU_INT,rowdata,colleaf);CHKERRQ(ierr);
+  ierr = PetscSFGatherEnd(*etoc,MPIU_INT,rowdata,colleaf);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(Mat_Coloring_Comm,*etoc,0,0,0);CHKERRQ(ierr);
 
   /* this one takes mat entries in *columns* to rows -- you never have to actually be able to order the leaf entries. */

@@ -335,7 +335,7 @@ PetscErrorCode MISCompute_Private(MatColoring mc,ISColoringValue curcolor,PetscI
       }
     }
     misadded_global = 0;
-    ierr = MPI_Allreduce(&misadded,&misadded_global,1,MPI_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&misadded,&misadded_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
     ierr = MISSpreadState_Private(mc,state,spreadstate);CHKERRQ(ierr);
     for (i=0;i<nc;i++) {
       /* eliminated */
@@ -345,7 +345,7 @@ PetscErrorCode MISCompute_Private(MatColoring mc,ISColoringValue curcolor,PetscI
     }
   }
   *nadded_global=0;
-  ierr = MPI_Allreduce(&nadded,nadded_global,1,MPI_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&nadded,nadded_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

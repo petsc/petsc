@@ -62,8 +62,8 @@ PETSC_EXTERN PetscErrorCode MatColoringTestValid(MatColoring mc,ISColoring color
         }
         if (idx != nentries) SETERRQ2(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"Bad number of entries %d vs %d",idx,nentries);
         ierr = PetscLogEventBegin(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
-        ierr = PetscSFReduceBegin(etoc,MPI_INT,stateleafrow,statecol,MPI_MAX);CHKERRQ(ierr);
-        ierr = PetscSFReduceEnd(etoc,MPI_INT,stateleafrow,statecol,MPI_MAX);CHKERRQ(ierr);
+        ierr = PetscSFReduceBegin(etoc,MPIU_INT,stateleafrow,statecol,MPI_MAX);CHKERRQ(ierr);
+        ierr = PetscSFReduceEnd(etoc,MPIU_INT,stateleafrow,statecol,MPI_MAX);CHKERRQ(ierr);
         ierr = PetscLogEventEnd(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
         statespread = statecol;
       } else {
@@ -83,8 +83,8 @@ PETSC_EXTERN PetscErrorCode MatColoringTestValid(MatColoring mc,ISColoring color
         }
         if (idx != nentries) SETERRQ2(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"Bad number of entries %d vs %d",idx,nentries);
         ierr = PetscLogEventBegin(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
-        ierr = PetscSFReduceBegin(etor,MPI_INT,stateleafcol,staterow,MPI_MAX);CHKERRQ(ierr);
-        ierr = PetscSFReduceEnd(etor,MPI_INT,stateleafcol,staterow,MPI_MAX);CHKERRQ(ierr);
+        ierr = PetscSFReduceBegin(etor,MPIU_INT,stateleafcol,staterow,MPI_MAX);CHKERRQ(ierr);
+        ierr = PetscSFReduceEnd(etor,MPIU_INT,stateleafcol,staterow,MPI_MAX);CHKERRQ(ierr);
         ierr = PetscLogEventEnd(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
         statespread = staterow;
       }
