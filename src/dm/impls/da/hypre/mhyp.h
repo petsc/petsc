@@ -22,7 +22,8 @@ typedef struct {
   PetscBool needsinitialization;
 
   /* variables that are stored here so they need not be reloaded for each MatSetValuesLocal() or MatZeroRowsLocal() call */
-  PetscInt *gindices,rstart,gnx,gnxgny,xs,ys,zs,nx,ny,nxny;
+  const PetscInt *gindices;
+  PetscInt       rstart,gnx,gnxgny,xs,ys,zs,nx,ny,nxny;
 } Mat_HYPREStruct;
 
 typedef struct {
@@ -42,7 +43,8 @@ typedef struct {
   PetscBool needsinitialization;
 
   /* variables that are stored here so they need not be reloaded for each MatSetValuesLocal() or MatZeroRowsLocal() call */
-  PetscInt *gindices,rstart,gnx,gnxgny,gnxgnygnz,xs,ys,zs,nx,ny,nz,nxny,nxnynz;
+  const PetscInt *gindices;
+  PetscInt       rstart,gnx,gnxgny,gnxgnygnz,xs,ys,zs,nx,ny,nz,nxny,nxnynz;
 } Mat_HYPRESStruct;
 
 
