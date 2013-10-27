@@ -482,7 +482,7 @@ static PetscErrorCode  MatSetupDM_HYPREStruct(Mat mat,DM da)
 
   /* get values that will be used repeatedly in MatSetValuesLocal() and MatZeroRowsLocal() repeatedly */
   ierr        = MatGetOwnershipRange(mat,&ex->rstart,NULL);CHKERRQ(ierr);
-  ierr        = DMDAGetGlobalIndices(ex->da,NULL,&ex->gindices);CHKERRQ(ierr);
+  ierr        = DMDAGetGlobalIndices(ex->da,NULL, (const PetscInt **) &ex->gindices);CHKERRQ(ierr);
   ierr        = DMDAGetGhostCorners(ex->da,0,0,0,&ex->gnx,&ex->gnxgny,0);CHKERRQ(ierr);
   ex->gnxgny *= ex->gnx;
   ierr        = DMDAGetCorners(ex->da,&ex->xs,&ex->ys,&ex->zs,&ex->nx,&ex->ny,0);CHKERRQ(ierr);
@@ -960,7 +960,7 @@ static PetscErrorCode  MatSetupDM_HYPRESStruct(Mat mat,DM da)
 
   /* get values that will be used repeatedly in MatSetValuesLocal() and MatZeroRowsLocal() repeatedly */
   ierr = MatGetOwnershipRange(mat,&ex->rstart,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(ex->da,NULL,&ex->gindices);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(ex->da,NULL,(const PetscInt **) &ex->gindices);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(ex->da,0,0,0,&ex->gnx,&ex->gnxgny,&ex->gnxgnygnz);CHKERRQ(ierr);
 
   ex->gnxgny    *= ex->gnx;
