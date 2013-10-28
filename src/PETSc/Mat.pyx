@@ -228,16 +228,23 @@ cdef class Mat(Object):
         CHKERR( MatSetType(self.mat, cval) )
 
     def setSizes(self, size, bsize=None):
-        cdef PetscInt bs = 0, m = 0, n = 0, M = 0, N = 0
-        Mat_Sizes(size, bsize, &bs, &m, &n, &M, &N)
+        cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
+        Mat_Blocked_Sizes(size, bsize, &rbs, &cbs, &m, &n, &M, &N)
         CHKERR( MatSetSizes(self.mat, m, n, M, N) )
-        if bs != PETSC_DECIDE:
-            CHKERR( MatSetBlockSize(self.mat, bs) )
+        if rbs != PETSC_DECIDE:
+            if cbs != PETSC_DECIDE:
+                CHKERR( MatSetBlockSizes(self.mat, rbs, cbs) )
+            else:
+                CHKERR( MatSetBlockSize(self.mat, rbs) )
 
     def setBlockSize(self, bsize):
         cdef PetscInt bs = asInt(bsize)
         CHKERR( MatSetBlockSize(self.mat, bs) )
 
+    def setBlockSizes(self, row_bsize, col_bsize):
+        cdef PetscInt rbs = asInt(row_bsize)
+        cdef PetscInt cbs = asInt(col_bsize)
+        CHKERR( MatSetBlockSizes(self.mat, rbs, cbs) )
     #
 
     def createAIJ(self, size, bsize=None, nnz=None, csr=None, comm=None):
@@ -349,20 +356,26 @@ cdef class Mat(Object):
         return self
 
     def setPreallocationNNZ(self, nnz, bsize=None):
-        cdef PetscInt bs = PETSC_DECIDE
-        CHKERR( Mat_BlockSize(bsize, &bs) )
+        cdef PetscInt rbs = PETSC_DECIDE, cbs = PETSC_DECIDE
+        CHKERR( Mat_BlockSize(bsize, &rbs, &cbs) )
+        if rbs != PETSC_DECIDE and rbs != cbs:
+            # Non-square blocks go through the AIJ preallocation routines
+            rbs = 1
         if nnz is not None:
-            CHKERR( Mat_AllocAIJ_NNZ(self.mat, bs, nnz) )
+            CHKERR( Mat_AllocAIJ_NNZ(self.mat, rbs, nnz) )
         else:
-            CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, bs) )
+            CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, rbs) )
 
     def setPreallocationCSR(self, csr, bsize=None):
-        cdef PetscInt bs = PETSC_DECIDE
-        CHKERR( Mat_BlockSize(bsize, &bs) )
+        cdef PetscInt rbs = PETSC_DECIDE, cbs = PETSC_DECIDE
+        CHKERR( Mat_BlockSize(bsize, &rbs, &cbs) )
+        if rbs != PETSC_DECIDE and rbs != cbs:
+            # Non-square blocks go through the AIJ preallocation routines
+            rbs = 1
         if csr is not None:
-            CHKERR( Mat_AllocAIJ_CSR(self.mat, bs, csr) )
+            CHKERR( Mat_AllocAIJ_CSR(self.mat, rbs, csr) )
         else:
-            CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, bs) )
+            CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, rbs) )
 
     def setPreallocationDense(self, array):
         if array is not None:
@@ -533,6 +546,11 @@ cdef class Mat(Object):
         cdef PetscInt bs = 0
         CHKERR( MatGetBlockSize(self.mat, &bs) )
         return toInt(bs)
+
+    def getBlockSizes(self):
+        cdef PetscInt rbs = 0, cbs = 0
+        CHKERR( MatGetBlockSizes(self.mat, &rbs, &cbs) )
+        return (toInt(rbs), toInt(cbs))
 
     def getOwnershipRange(self):
         cdef PetscInt ival1 = 0, ival2 = 0
@@ -1222,6 +1240,10 @@ cdef class Mat(Object):
     property block_size:
         def __get__(self):
             return self.getBlockSize()
+
+    property block_sizes:
+        def __get__(self):
+            return self.getBlockSizes()
 
     property owner_range:
         def __get__(self):
