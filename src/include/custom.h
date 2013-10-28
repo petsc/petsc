@@ -269,9 +269,10 @@ MatCreateAnyAIJCRL(MPI_Comm comm, PetscInt bs,
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateAnyDense"
 static PetscErrorCode
-MatCreateAnyDense(MPI_Comm comm, PetscInt bs,
-                  PetscInt m, PetscInt n,
-                  PetscInt M, PetscInt N,
+MatCreateAnyDense(MPI_Comm comm,
+                  PetscInt rbs, PetscInt cbs,
+                  PetscInt m,   PetscInt n,
+                  PetscInt M,   PetscInt N,
                   Mat *A)
 {
   Mat            mat = PETSC_NULL;
@@ -280,15 +281,16 @@ MatCreateAnyDense(MPI_Comm comm, PetscInt bs,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(A,7);
+  PetscValidPointer(A,8);
   ierr = MatCreate(comm,&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,m,n,M,N);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) mtype = (MatType)MATMPIDENSE;
   else          mtype = (MatType)MATSEQDENSE;
   ierr = MatSetType(mat,mtype);CHKERRQ(ierr);
-  if (bs != PETSC_DECIDE) {
-    ierr = MatSetBlockSize(mat,bs);CHKERRQ(ierr);
+  if (cbs == PETSC_DECIDE) cbs = rbs;
+  if (rbs != PETSC_DECIDE) {
+    ierr = MatSetBlockSizes(mat,rbs,cbs);CHKERRQ(ierr);
   }
   *A = mat;
   PetscFunctionReturn(0);
@@ -345,25 +347,6 @@ MatAnyAIJSetPreallocationCSR(Mat A,PetscInt bs, const PetscInt Ii[],
     ierr = MatSeqBAIJSetPreallocationCSR(A,bs,Ii,Jj,V);CHKERRQ(ierr);
     ierr = MatMPIBAIJSetPreallocationCSR(A,bs,Ii,Jj,V);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatAnyDenseSetPreallocation"
-static PetscErrorCode
-MatAnyDenseSetPreallocation(Mat mat, PetscScalar *data)
-{
-  PetscBool      flag = PETSC_FALSE;
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
-  if (data) PetscValidScalarPointer(data,3);
-  ierr = MatIsPreallocated(mat,&flag);CHKERRQ(ierr);
-  if (flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,
-                    "matrix is already preallocated");
-  ierr = MatSeqDenseSetPreallocation(mat,data);CHKERRQ(ierr);
-  ierr = MatMPIDenseSetPreallocation(mat,data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

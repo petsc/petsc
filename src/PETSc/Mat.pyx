@@ -347,18 +347,28 @@ cdef class Mat(Object):
         Mat_Sizes(size, bsize, &rbs, &cbs, &m, &n, &M, &N)
         Sys_Layout(ccomm, rbs, &m, &M)
         Sys_Layout(ccomm, cbs, &n, &N)
-        cdef PetscInt bs = rbs # XXX
         # create matrix
         cdef PetscMat newmat = NULL
-        CHKERR( MatCreateAnyDense(ccomm, bs, m, n, M, N, &newmat) )
+        CHKERR( MatCreateAnyDense(ccomm, rbs, cbs, m, n, M, N, &newmat) )
         PetscCLEAR(self.obj); self.mat = newmat
         # preallocate matrix
-        if array is not None:
-            array = Mat_AllocDense_ARRAY(self.mat, array)
-            self.set_attr('__array__', array)
-        else:
-            Mat_AllocDense_DEFAULT(self.mat)
+        self.setPreallocationDense(array)
         return self
+
+    def setPreallocationDense(self, array):
+        cdef PetscInt size=0
+        cdef PetscScalar *data=NULL
+        cdef PetscInt m=0, N=0
+        if array is not None:
+            CHKERR( MatGetLocalSize(self.mat, &m, NULL) )
+            CHKERR( MatGetSize(self.mat, NULL, &N) )
+            array = ofarray_s(array, &size, &data)
+            if m*N != size: raise ValueError(
+                "size(array) is %d, expected %dx%d=%d" %
+                (toInt(size), toInt(m), toInt(N), toInt(m*N)) )
+        CHKERR( MatSeqDenseSetPreallocation(self.mat, data) )
+        CHKERR( MatMPIDenseSetPreallocation(self.mat, data) )
+        self.set_attr('__array__', array)
 
     def setPreallocationNNZ(self, nnz, bsize=None):
         cdef PetscInt rbs = PETSC_DECIDE, cbs = PETSC_DECIDE
@@ -381,13 +391,6 @@ cdef class Mat(Object):
             CHKERR( Mat_AllocAIJ_CSR(self.mat, rbs, csr) )
         else:
             CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, rbs) )
-
-    def setPreallocationDense(self, array):
-        if array is not None:
-            array = Mat_AllocDense_ARRAY(self.mat, array)
-            self.set_attr('__array__', array)
-        else:
-            CHKERR( Mat_AllocDense_DEFAULT(self.mat) )
 
     def createScatter(self, Scatter scatter not None, comm=None):
         if comm is None: comm = scatter.getComm()

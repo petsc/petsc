@@ -137,6 +137,9 @@ cdef extern from * nogil:
     int MatSetType(PetscMat,PetscMatType)
     int MatSetOption(PetscMat,PetscMatOption,PetscBool)
 
+    int MatSeqDenseSetPreallocation(PetscMat,PetscScalar[])
+    int MatMPIDenseSetPreallocation(PetscMat,PetscScalar[])
+
     int MatSetOptionsPrefix(PetscMat,char[])
     int MatGetOptionsPrefix(PetscMat,char*[])
     int MatSetFromOptions(PetscMat)
@@ -317,11 +320,11 @@ cdef extern from "custom.h" nogil:
                                   PetscInt,PetscInt[])
     int MatAnyAIJSetPreallocationCSR(PetscMat,PetscInt,PetscInt[],
                                      PetscInt[],PetscScalar[])
-    int MatCreateAnyDense(MPI_Comm,PetscInt,
+    int MatCreateAnyDense(MPI_Comm,
+                          PetscInt,PetscInt,
                           PetscInt,PetscInt,
                           PetscInt,PetscInt,
                           PetscMat*)
-    int MatAnyDenseSetPreallocation(PetscMat,PetscScalar[])
 
 cdef extern from "libpetsc4py.h":
     PetscMatType MATPYTHON
@@ -613,23 +616,6 @@ cdef inline int Mat_AllocAIJ_CSR(PetscMat A, PetscInt bs, object CSR) \
     # preallocate
     CHKERR( MatAnyAIJSetPreallocationCSR(A, bs, i, j, v) )
 
-
-cdef inline int Mat_AllocDense_DEFAULT(PetscMat A) except -1:
-    cdef PetscScalar *data=NULL
-    CHKERR( MatAnyDenseSetPreallocation(A, data) )
-    return 0
-
-cdef inline object Mat_AllocDense_ARRAY(PetscMat A, object array):
-    cdef PetscInt size=0
-    cdef PetscScalar *data=NULL
-    cdef PetscInt m=0, n=0
-    CHKERR( MatGetLocalSize(A, &m, &n) )
-    array = ofarray_s(array, &size, &data)
-    if m*n != size: raise ValueError(
-        "size(array) is %d, expected %dx%d=%d" %
-        (toInt(size), toInt(m), toInt(n), toInt(m*n)) )
-    CHKERR( MatAnyDenseSetPreallocation(A, data) )
-    return array
 
 # -----------------------------------------------------------------------------
 
