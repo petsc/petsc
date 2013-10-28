@@ -510,7 +510,7 @@ cdef inline int Mat_BlockSize(object bsize, PetscInt *_rbs, PetscInt *_cbs) exce
     return 0
 
 cdef inline int Mat_Sizes(object size, object bsize,
-                          PetscInt *b,
+                          PetscInt *r, PetscInt *c,
                           PetscInt *m, PetscInt *n,
                           PetscInt *M, PetscInt *N) except -1:
     # unpack row and column sizes
@@ -519,33 +519,16 @@ cdef inline int Mat_Sizes(object size, object bsize,
         rsize , csize = size
     except (TypeError, ValueError):
         rsize = csize = size
-    # split row and column sizes
-    Sys_Sizes(rsize, bsize, b, m, M)
-    Sys_Sizes(csize, bsize, b, n, N)
-    return 0
-
-
-cdef inline int Mat_Blocked_Sizes(object size, object bsize,
-                                  PetscInt *rb, PetscInt *cb,
-                                  PetscInt *m, PetscInt *n,
-                                  PetscInt *M, PetscInt *N) except -1:
-    # unpack row and column sizes
-    cdef object rsize, csize
-    cdef object rbs, cbs
+    # unpack row and column block sizes
+    cdef object rbsize, cbsize
     try:
-        rsize , csize = size
+        rbsize , cbsize = bsize
     except (TypeError, ValueError):
-        rsize = csize = size
-    # unpack block sizes
-    try:
-        rbs, cbs = bsize
-    except (TypeError, ValueError):
-        rbs = cbs = bsize
+        rbsize = cbsize = bsize
     # split row and column sizes
-    Sys_Sizes(rsize, rbs, rb, m, M)
-    Sys_Sizes(csize, cbs, cb, n, N)
+    Sys_Sizes(rsize, rbsize, r, m, M)
+    Sys_Sizes(csize, cbsize, c, n, N)
     return 0
-
 
 cdef inline int Mat_AllocAIJ_SKIP(PetscMat A,
                                   PetscInt bs) except -1:

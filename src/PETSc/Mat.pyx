@@ -229,7 +229,7 @@ cdef class Mat(Object):
 
     def setSizes(self, size, bsize=None):
         cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
-        Mat_Blocked_Sizes(size, bsize, &rbs, &cbs, &m, &n, &M, &N)
+        Mat_Sizes(size, bsize, &rbs, &cbs, &m, &n, &M, &N)
         CHKERR( MatSetSizes(self.mat, m, n, M, N) )
         if rbs != PETSC_DECIDE:
             if cbs != PETSC_DECIDE:
@@ -250,10 +250,11 @@ cdef class Mat(Object):
     def createAIJ(self, size, bsize=None, nnz=None, csr=None, comm=None):
         # communicator and sizes
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef PetscInt bs = 0, m = 0, n = 0, M = 0, N = 0
-        Mat_Sizes(size, bsize, &bs, &m, &n, &M, &N)
-        Sys_Layout(ccomm, bs, &m, &M)
-        Sys_Layout(ccomm, bs, &n, &N)
+        cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
+        Mat_Sizes(size, bsize, &rbs, &cbs, &m, &n, &M, &N)
+        Sys_Layout(ccomm, rbs, &m, &M)
+        Sys_Layout(ccomm, cbs, &n, &N)
+        cdef PetscInt bs = rbs # XXX
         # create matrix
         cdef PetscMat newmat = NULL
         CHKERR( MatCreateAnyAIJ(ccomm, bs, m, n, M, N, &newmat) )
@@ -270,10 +271,11 @@ cdef class Mat(Object):
     def createAIJCRL(self, size, bsize=None, nnz=None, csr=None, comm=None):
         # communicator and sizes
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef PetscInt bs = 0, m = 0, n = 0, M = 0, N = 0
-        Mat_Sizes(size, bsize, &bs, &m, &n, &M, &N)
-        Sys_Layout(ccomm, bs, &m, &M)
-        Sys_Layout(ccomm, bs, &n, &N)
+        cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
+        Mat_Sizes(size, bsize, &rbs, &cbs, &m, &n, &M, &N)
+        Sys_Layout(ccomm, rbs, &m, &M)
+        Sys_Layout(ccomm, cbs, &n, &N)
+        cdef PetscInt bs = rbs # XXX
         # create matrix
         cdef PetscMat newmat = NULL
         CHKERR( MatCreateAnyAIJCRL(ccomm, bs, m, n, M, N, &newmat) )
@@ -290,11 +292,13 @@ cdef class Mat(Object):
     def createAIJWithArrays(self, size, csr, bsize=None, comm=None):
         # communicator and sizes
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef PetscInt bs = 0, m = 0, n = 0, M = 0, N = 0
-        Mat_Sizes(size, bsize, &bs, &m, &n, &M, &N)
-        Sys_Layout(ccomm, bs, &m, &M)
-        Sys_Layout(ccomm, bs, &n, &N)
-        if bs == PETSC_DECIDE: bs = 1
+        cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
+        Mat_Sizes(size, bsize, &rbs, &cbs, &m, &n, &M, &N)
+        Sys_Layout(ccomm, rbs, &m, &M)
+        Sys_Layout(ccomm, cbs, &n, &N)
+        if rbs == PETSC_DECIDE: rbs = 1
+        if cbs == PETSC_DECIDE: cbs = rbs
+        cdef PetscInt bs = rbs # XXX
         # unpack CSR argument
         cdef object pi, pj, pv, poi, poj, pov
         try:
@@ -339,10 +343,11 @@ cdef class Mat(Object):
 
     def createDense(self, size, bsize=None, array=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef PetscInt bs = 0, m = 0, n = 0, M = 0, N = 0
-        Mat_Sizes(size, bsize, &bs, &m, &n, &M, &N)
-        Sys_Layout(ccomm, bs, &m, &M)
-        Sys_Layout(ccomm, bs, &n, &N)
+        cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
+        Mat_Sizes(size, bsize, &rbs, &cbs, &m, &n, &M, &N)
+        Sys_Layout(ccomm, rbs, &m, &M)
+        Sys_Layout(ccomm, cbs, &n, &N)
+        cdef PetscInt bs = rbs # XXX
         # create matrix
         cdef PetscMat newmat = NULL
         CHKERR( MatCreateAnyDense(ccomm, bs, m, n, M, N, &newmat) )
@@ -458,10 +463,10 @@ cdef class Mat(Object):
     ##    # communicator and sizes
     ##    if comm is None: comm = lgmap.getComm()
     ##    cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-    ##    cdef PetscInt bs = 0, m = 0, n = 0, M = 0, N = 0
-    ##    Mat_Sizes(size, None, &bs, &m, &n, &M, &N)
-    ##    Sys_Layout(ccomm, bs, &m, &M)
-    ##    Sys_Layout(ccomm, bs, &n, &N)
+    ##    cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
+    ##    Mat_Sizes(size, None, &rbs, &cbs, &m, &n, &M, &N)
+    ##    Sys_Layout(ccomm, rbs, &m, &M)
+    ##    Sys_Layout(ccomm, cbs, &n, &N)
     ##    # create matrix
     ##    cdef PetscMat newmat = NULL
     ##    CHKERR( MatCreateIS(ccomm, m, n, M, N, lgmap.lgm, &newmat) )
@@ -471,10 +476,10 @@ cdef class Mat(Object):
     def createPython(self, size, context=None, comm=None):
         # communicator and sizes
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef PetscInt bs = 0, m = 0, n = 0, M = 0, N = 0
-        Mat_Sizes(size, None, &bs, &m, &n, &M, &N)
-        Sys_Layout(ccomm, bs, &m, &M)
-        Sys_Layout(ccomm, bs, &n, &N)
+        cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
+        Mat_Sizes(size, None, &rbs, &cbs, &m, &n, &M, &N)
+        Sys_Layout(ccomm, rbs, &m, &M)
+        Sys_Layout(ccomm, cbs, &n, &N)
         # create matrix
         cdef PetscMat newmat = NULL
         CHKERR( MatCreate(ccomm, &newmat) )
