@@ -127,7 +127,7 @@
       CHKERRQ(ierr)
 
       ! Finalize TAO, PETSc 
-      call TaoFinalize()
+      call TaoFinalize(ierr)
 
       stop
       end program toyf
