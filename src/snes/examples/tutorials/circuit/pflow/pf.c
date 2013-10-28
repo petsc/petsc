@@ -16,7 +16,7 @@ PetscMPIInt rank;
 
 #undef __FUNCT__
 #define __FUNCT__ "GetListofEdges"
-PetscErrorCode GetListofEdges(PetscInt nbranches, EDGEDATA branch,PetscInt *edges)
+PetscErrorCode GetListofEdges(PetscInt nbranches, EDGEDATA branch,int edges[])
 {
   PetscInt       i, fbus,tbus;
 
@@ -418,7 +418,7 @@ int main(int argc,char ** argv)
   char                 pfdata_file[PETSC_MAX_PATH_LEN]="datafiles/case9.m";
   PFDATA               pfdata;
   PetscInt             numEdges=0,numVertices=0;
-  PetscInt             *edges = NULL;
+  int                  *edges = NULL;
   PetscInt             i;  
   DM                   circuitdm;
   PetscInt             componentkey[4];
@@ -451,7 +451,7 @@ int main(int argc,char ** argv)
     numEdges = pfdata.nbranch;
     numVertices = pfdata.nbus;
 
-    ierr = PetscMalloc(2*numEdges*sizeof(PetscInt),&edges);CHKERRQ(ierr);
+    ierr = PetscMalloc(2*numEdges*sizeof(int),&edges);CHKERRQ(ierr);
     ierr = GetListofEdges(pfdata.nbranch,pfdata.branch,edges);CHKERRQ(ierr);
   }
   PetscLogStagePop();

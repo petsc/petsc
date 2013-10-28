@@ -15,7 +15,7 @@ typedef PetscInt DMCircuitComponentGenericDataType;
 
 PETSC_EXTERN PetscErrorCode DMCircuitCreate(MPI_Comm, DM*);
 PETSC_EXTERN PetscErrorCode DMCircuitSetSizes(DM, PetscInt, PetscInt, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode DMCircuitSetEdgeList(DM, PetscInt*);
+PETSC_EXTERN PetscErrorCode DMCircuitSetEdgeList(DM, int[]);
 PETSC_EXTERN PetscErrorCode DMCircuitLayoutSetUp(DM);
 PETSC_EXTERN PetscErrorCode DMCircuitRegisterComponent(DM, const char*, PetscInt, PetscInt*);
 PETSC_EXTERN PetscErrorCode DMCircuitGetVertexRange(DM, PetscInt*, PetscInt*);

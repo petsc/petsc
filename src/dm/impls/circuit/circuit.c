@@ -69,7 +69,7 @@ PetscErrorCode DMCircuitSetSizes(DM dm, PetscInt nV, PetscInt nE, PetscInt NV, P
 
 .seealso: DMCircuitCreate, DMCircuitSetSizes
 @*/
-PetscErrorCode DMCircuitSetEdgeList(DM dm, PetscInt *edgelist)
+PetscErrorCode DMCircuitSetEdgeList(DM dm, int edgelist[])
 {
   DM_Circuit *circuit = (DM_Circuit*) dm->data;
   

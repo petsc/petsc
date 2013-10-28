@@ -31,7 +31,7 @@ typedef struct {
   PetscInt                          NNodes; /* Number of global nodes */
   PetscInt                          nEdges; /* Number of local edges */
   PetscInt                          nNodes; /* Number of local nodes */
-  PetscInt                          *edges; /* Edge list */
+  int                               *edges; /* Edge list */
   PetscInt                          pStart,pEnd; /* Start and end indices for topological points */
   PetscInt                          vStart,vEnd; /* Start and end indices for vertices */
   PetscInt                          eStart,eEnd; /* Start and end indices for edges */
