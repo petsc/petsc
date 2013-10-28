@@ -400,22 +400,29 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   IS              valueIS;
   const PetscInt *values;
   PetscInt       *depthShift;
-  PetscInt        depth = 0, numFS, fs, ghostCell, cEnd, c;
+  PetscInt        depth = 0, numFS, fs, fStart, fEnd, ghostCell, cEnd, c;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   /* Count ghost cells */
   ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
   ierr = ISGetLocalSize(valueIS, &numFS);CHKERRQ(ierr);
   ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
-
   *numGhostCells = 0;
   for (fs = 0; fs < numFS; ++fs) {
-    PetscInt numBdFaces;
+    IS              faceIS;
+    const PetscInt *faces;
+    PetscInt        numFaces, f, numBdFaces = 0;
 
-    ierr = DMLabelGetStratumSize(label, values[fs], &numBdFaces);CHKERRQ(ierr);
-
+    ierr = DMLabelGetStratumIS(label, values[fs], &faceIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
+    ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
+    for (f = 0; f < numFaces; ++f) {
+      if ((faces[f] >= fStart) && (faces[f] < fEnd)) ++numBdFaces;
+    }
     *numGhostCells += numBdFaces;
+    ierr = ISDestroy(&faceIS);CHKERRQ(ierr);
   }
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = PetscMalloc((depth+1) * sizeof(PetscInt), &depthShift);CHKERRQ(ierr);
@@ -438,6 +445,7 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
     for (f = 0; f < numFaces; ++f) {
       PetscInt size;
 
+      if ((faces[f] < fStart) || (faces[f] >= fEnd)) continue;
       ierr = DMPlexGetSupportSize(dm, faces[f], &size);CHKERRQ(ierr);
       if (size != 1) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "DM has boundary face %d with %d support cells", faces[f], size);
       ierr = DMPlexSetSupportSize(gdm, faces[f] + *numGhostCells, 2);CHKERRQ(ierr);
@@ -458,11 +466,13 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
     ierr = DMLabelGetStratumIS(label, values[fs], &faceIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
     ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
-    for (f = 0; f < numFaces; ++f, ++ghostCell) {
+    for (f = 0; f < numFaces; ++f) {
       PetscInt newFace = faces[f] + *numGhostCells;
 
+      if ((faces[f] < fStart) || (faces[f] >= fEnd)) continue;
       ierr = DMPlexSetCone(gdm, ghostCell, &newFace);CHKERRQ(ierr);
       ierr = DMPlexInsertSupport(gdm, newFace, 1, ghostCell);CHKERRQ(ierr);
+      ++ghostCell;
     }
     ierr = ISRestoreIndices(faceIS, &faces);CHKERRQ(ierr);
     ierr = ISDestroy(&faceIS);CHKERRQ(ierr);

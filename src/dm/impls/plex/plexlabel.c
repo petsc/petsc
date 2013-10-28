@@ -145,7 +145,7 @@ PetscErrorCode DMLabelCreateIndex(DMLabel label, PetscInt pStart, PetscInt pEnd)
       const PetscInt point = label->points[label->stratumOffsets[v]+i];
 
       if ((point < pStart) || (point >= pEnd)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %d is not in [%d, %d)", point, pStart, pEnd);
-      ierr = PetscBTSet(label->bt, point);CHKERRQ(ierr);
+      ierr = PetscBTSet(label->bt, point - pStart);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -282,7 +282,7 @@ PetscErrorCode DMLabelSetValue(DMLabel label, PetscInt point, PetscInt value)
     ++label->stratumSizes[v];
     if (label->bt) {
       if ((point < label->pStart) || (point >= label->pEnd)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %d is not in [%d, %d)", point, label->pStart, label->pEnd);
-      ierr = PetscBTSet(label->bt, point);CHKERRQ(ierr);
+      ierr = PetscBTSet(label->bt, point - label->pStart);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -313,7 +313,7 @@ PetscErrorCode DMLabelClearValue(DMLabel label, PetscInt point, PetscInt value)
       --label->stratumSizes[v];
       if (label->bt) {
         if ((point < label->pStart) || (point >= label->pEnd)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %d is not in [%d, %d)", point, label->pStart, label->pEnd);
-        ierr = PetscBTClear(label->bt, point);CHKERRQ(ierr);
+        ierr = PetscBTClear(label->bt, point - label->pStart);CHKERRQ(ierr);
       }
       break;
     }
@@ -399,7 +399,7 @@ PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
       const PetscInt point = label->points[label->stratumOffsets[v]+i];
 
       if ((point < label->pStart) || (point >= label->pEnd)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %d is not in [%d, %d)", point, label->pStart, label->pEnd);
-      ierr = PetscBTClear(label->bt, point);CHKERRQ(ierr);
+      ierr = PetscBTClear(label->bt, point - label->pStart);CHKERRQ(ierr);
     }
   }
   label->stratumSizes[v] = 0;
@@ -726,6 +726,35 @@ PetscErrorCode DMPlexClearLabelStratum(DM dm, const char name[], PetscInt value)
   ierr = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
   if (!label) PetscFunctionReturn(0);
   ierr = DMLabelClearStratum(label, value);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLabelFilter"
+PetscErrorCode DMLabelFilter(DMLabel label, PetscInt start, PetscInt end)
+{
+  PetscInt       v;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  label->pStart = start;
+  label->pEnd   = end;
+  if (label->bt) {ierr = PetscBTDestroy(&label->bt);CHKERRQ(ierr);}
+  /* Could squish offsets, but would only make sense if I reallocate the storage */
+  for (v = 0; v < label->numStrata; ++v) {
+    const PetscInt offset = label->stratumOffsets[v];
+    const PetscInt size   = label->stratumSizes[v];
+    PetscInt       off    = offset, q;
+
+    for (q = offset; q < offset+size; ++q) {
+      const PetscInt point = label->points[q];
+
+      if ((point < start) || (point >= end)) continue;
+      label->points[off++] = point;
+    }
+    label->stratumSizes[v] = off-offset;
+  }
+  ierr = DMLabelCreateIndex(label, start, end);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
