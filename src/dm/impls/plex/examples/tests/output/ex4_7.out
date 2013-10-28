@@ -60,22 +60,18 @@ base <-- cap:
 [1]: 11 <---- 5 (0)
 [1]: 12 <---- 4 (0)
 [1]: 12 <---- 6 (0)
-Vec_0x84000004_0
+coordinates with 1 fields
+  field 0 with 2 components
 Process 0:
-  (   1) dim  2 offset   0 0.5 0.5
-  (   2) dim  2 offset   2 0.2 0
-  (   3) dim  2 offset   4 0.2 1
+  (   1) dim  2 offset   0 1 0.5
+  (   2) dim  2 offset   2 0 -0.5
+  (   3) dim  2 offset   4 0 0.5
 Process 1:
-  (   2) dim  2 offset   0 -0.5 0.5
-  (   3) dim  2 offset   2 -0.2 0
-  (   4) dim  2 offset   4 -0.2 1
-  (   5) dim  2 offset   6 0.2 0
-  (   6) dim  2 offset   8 0.2 1
-Label 'marker':
-[0]: 4 (1)
-[0]: 5 (1)
-[1]: 7 (1)
-[1]: 9 (1)
+  (   2) dim  2 offset   0 -1 -0.5
+  (   3) dim  2 offset   2 0 -0.5
+  (   4) dim  2 offset   4 0 0.5
+  (   5) dim  2 offset   6 0 -0.5
+  (   6) dim  2 offset   8 0 0.5
 PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order
@@ -255,35 +251,22 @@ base <-- cap:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (   4) dim  2 offset   0 0.5 0.5
-  (   5) dim  2 offset   2 0.2 0
-  (   6) dim  2 offset   4 0.2 1
-  (   7) dim  2 offset   6 0.35 0.75
-  (   8) dim  2 offset   8 0.35 0.25
-  (   9) dim  2 offset  10 0.2 0.5
+  (   4) dim  2 offset   0 1 0.5
+  (   5) dim  2 offset   2 0 -0.5
+  (   6) dim  2 offset   4 0 0.5
+  (   7) dim  2 offset   6 0.5 0.5
+  (   8) dim  2 offset   8 0.5 0
+  (   9) dim  2 offset  10 0 0
 Process 1:
-  (   6) dim  2 offset   0 -0.5 0.5
-  (   7) dim  2 offset   2 -0.2 0
-  (   8) dim  2 offset   4 -0.2 1
-  (   9) dim  2 offset   6 0.2 0
-  (  10) dim  2 offset   8 0.2 1
-  (  11) dim  2 offset  10 -0.35 0.25
-  (  12) dim  2 offset  12 -0.2 0.5
-  (  13) dim  2 offset  14 -0.35 0.75
-  (  14) dim  2 offset  16 0.2 0.5
-Label 'marker':
-[0]: 7 (1)
-[0]: 8 (1)
-[0]: 10 (1)
-[0]: 11 (1)
-[0]: 12 (1)
-[0]: 13 (1)
-[1]: 11 (1)
-[1]: 13 (1)
-[1]: 15 (1)
-[1]: 16 (1)
-[1]: 19 (1)
-[1]: 20 (1)
+  (   6) dim  2 offset   0 -1 -0.5
+  (   7) dim  2 offset   2 0 -0.5
+  (   8) dim  2 offset   4 0 0.5
+  (   9) dim  2 offset   6 0 -0.5
+  (  10) dim  2 offset   8 0 0.5
+  (  11) dim  2 offset  10 -0.5 -0.5
+  (  12) dim  2 offset  12 0 0
+  (  13) dim  2 offset  14 -0.5 0
+  (  14) dim  2 offset  16 0 0
 PetscSF Object: 2 MPI processes
   type not yet set
   [0] Number of roots=19, leaves=5, remote ranks=1

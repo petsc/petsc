@@ -60,22 +60,18 @@ base <-- cap:
 [1]: 11 <---- 5 (0)
 [1]: 12 <---- 4 (0)
 [1]: 12 <---- 6 (0)
-Vec_0x84000004_0
+coordinates with 1 fields
+  field 0 with 2 components
 Process 0:
-  (   1) dim  2 offset   0 0.5 0.5
-  (   2) dim  2 offset   2 0.2 0
-  (   3) dim  2 offset   4 0.2 1
+  (   1) dim  2 offset   0 1 0.5
+  (   2) dim  2 offset   2 0 -0.5
+  (   3) dim  2 offset   4 0 0.5
 Process 1:
-  (   2) dim  2 offset   0 -0.5 0.5
-  (   3) dim  2 offset   2 -0.2 0
-  (   4) dim  2 offset   4 -0.2 1
-  (   5) dim  2 offset   6 0.2 0
-  (   6) dim  2 offset   8 0.2 1
-Label 'marker':
-[0]: 4 (1)
-[0]: 5 (1)
-[1]: 7 (1)
-[1]: 9 (1)
+  (   2) dim  2 offset   0 -1 -0.5
+  (   3) dim  2 offset   2 0 -0.5
+  (   4) dim  2 offset   4 0 0.5
+  (   5) dim  2 offset   6 0 -0.5
+  (   6) dim  2 offset   8 0 0.5
 PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order
@@ -152,22 +148,18 @@ base <-- cap:
 [1]: 11 <---- 5 (0)
 [1]: 12 <---- 4 (0)
 [1]: 12 <---- 6 (0)
-Vec_0x84000004_0
+coordinates with 1 fields
+  field 0 with 2 components
 Process 0:
-  (   1) dim  2 offset   0 0.5 0.5
-  (   2) dim  2 offset   2 0.2 0
-  (   3) dim  2 offset   4 0.2 1
+  (   1) dim  2 offset   0 1 0.5
+  (   2) dim  2 offset   2 0 -0.5
+  (   3) dim  2 offset   4 0 0.5
 Process 1:
-  (   2) dim  2 offset   0 -0.5 0.5
-  (   3) dim  2 offset   2 -0.2 0
-  (   4) dim  2 offset   4 -0.2 1
-  (   5) dim  2 offset   6 0.2 0
-  (   6) dim  2 offset   8 0.2 1
-Label 'marker':
-[0]: 4 (1)
-[0]: 5 (1)
-[1]: 7 (1)
-[1]: 9 (1)
+  (   2) dim  2 offset   0 -1 -0.5
+  (   3) dim  2 offset   2 0 -0.5
+  (   4) dim  2 offset   4 0 0.5
+  (   5) dim  2 offset   6 0 -0.5
+  (   6) dim  2 offset   8 0 0.5
 PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order
