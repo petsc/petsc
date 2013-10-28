@@ -130,6 +130,18 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
       for(p = 0; p < 2; ++p) {ierr = DMPlexSetLabelValue(*dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
     }
     break;
+    case 1:
+    {
+      PetscInt    numPoints[2]         = {5, 4};
+      PetscInt    coneSize[9]          = {3, 3, 3, 3, 0, 0, 0, 0, 0};
+      PetscInt    cones[12]            = {4, 5, 6,  6, 7, 4,  6, 5, 8,  6, 8, 7};
+      PetscInt    coneOrientations[12] = {0, 0, 0,  0, 0, 0,  0, 0, 0,  0, 0, 0};
+      PetscScalar vertexCoords[10]     = {-1.0, 0.0,  0.0, -1.0,  0.0, 0.0,  0.0, 1.0,  1.0, 0.0};
+      PetscInt    faultPoints[3]       = {5, 6, 7};
+
+      ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+      for(p = 0; p < 3; ++p) {ierr = DMPlexSetLabelValue(*dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
+    }
     break;
     default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
