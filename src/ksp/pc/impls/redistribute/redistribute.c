@@ -206,6 +206,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   }
 
   /* get diagonal portion of matrix */
+  ierr = PetscFree(red->diag);CHKERRQ(ierr);
   ierr = PetscMalloc(red->dcnt*sizeof(PetscScalar),&red->diag);CHKERRQ(ierr);
   ierr = MatGetVecs(pc->pmat,&diag,NULL);CHKERRQ(ierr);
   ierr = MatGetDiagonal(pc->pmat,diag);CHKERRQ(ierr);
