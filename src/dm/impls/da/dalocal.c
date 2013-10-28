@@ -93,12 +93,13 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec *g)
 @*/
 PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, PetscInt *numCellsZ, PetscInt *numCells)
 {
-  DM_DA          *da = (DM_DA*) dm->data;
+  DM_DA         *da  = (DM_DA*) dm->data;
   const PetscInt dim = da->dim;
   const PetscInt mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
   const PetscInt nC  = (mx)*(dim > 1 ? (my)*(dim > 2 ? (mz) : 1) : 1);
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (numCellsX) {
     PetscValidIntPointer(numCellsX,2);
     *numCellsX = mx;
@@ -115,6 +116,40 @@ PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, 
     PetscValidIntPointer(numCells,5);
     *numCells = nC;
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetCellPoint"
+/*@
+  DMDAGetCellPoint - Get the DM point corresponding to the tuple (i, j, k) in the DMDA
+
+  Input Parameters:
++ dm - The DM object
+- i,j,k - The global indices for the cell
+
+  Output Parameters:
+. point - The local DM point
+
+  Level: developer
+
+.seealso: DMDAGetNumCells()
+@*/
+PetscErrorCode DMDAGetCellPoint(DM dm, PetscInt i, PetscInt j, PetscInt k, PetscInt *point)
+{
+  DM_DA         *da  = (DM_DA*) dm->data;
+  const PetscInt dim = da->dim;
+  DMDALocalInfo  info;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(point,5);
+  ierr = DMDAGetLocalInfo(dm, &info);CHKERRQ(ierr);
+  if (dim > 0) {if ((i < info.gxs) || (i >= info.gxs+info.gxm)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "X index %d not in [%d, %d)", i, info.gxs, info.gxs+info.gxm);}
+  if (dim > 1) {if ((i < info.gys) || (i >= info.gys+info.gym)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Y index %d not in [%d, %d)", i, info.gys, info.gys+info.gym);}
+  if (dim > 2) {if ((i < info.gzs) || (i >= info.gzs+info.gzm)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Z index %d not in [%d, %d)", i, info.gzs, info.gzs+info.gzm);}
+  *point = i + (dim > 1 ? (j + (dim > 2 ? k*info.gym : 0))*info.gxm : 0);
   PetscFunctionReturn(0);
 }
 
