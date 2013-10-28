@@ -4583,7 +4583,7 @@ PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscInt dept
             /* Old vertices stay the same */
             newp = vStartNew + (p - vStart);
             ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
-          } else if ((p >= fStart) && (p < fEnd)) {
+          } else if ((p >= eStart) && (p < eEnd)) {
             /* Old edges add new edges and vertex */
             for (r = 0; r < 2; ++r) {
               newp = eStartNew + (p - eStart)*2 + r;
