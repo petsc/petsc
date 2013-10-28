@@ -1651,11 +1651,11 @@ PetscErrorCode  MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pet
     ierr = (*mat->ops->setvaluesblocked)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
   } else {
     PetscInt buf[8192],*bufr=0,*bufc=0,*iidxm,*iidxn;
-    PetscInt i,j,bs=mat->rmap->bs;
-    if ((m+n)*bs <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
+    PetscInt i,j,bs = mat->rmap->bs,cbs = mat->cmap->bs;
+    if (m*bs+n*cbs <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
       iidxm = buf; iidxn = buf + m*bs;
     } else {
-      ierr  = PetscMalloc2(m*bs,PetscInt,&bufr,n*bs,PetscInt,&bufc);CHKERRQ(ierr);
+      ierr  = PetscMalloc2(m*bs,PetscInt,&bufr,n*cbs,PetscInt,&bufc);CHKERRQ(ierr);
       iidxm = bufr; iidxn = bufc;
     }
     for (i=0; i<m; i++) {
@@ -1664,11 +1664,11 @@ PetscErrorCode  MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pet
       }
     }
     for (i=0; i<n; i++) {
-      for (j=0; j<bs; j++) {
-        iidxn[i*bs+j] = bs*idxn[i] + j;
+      for (j=0; j<cbs; j++) {
+        iidxn[i*cbs+j] = cbs*idxn[i] + j;
       }
     }
-    ierr = MatSetValues(mat,m*bs,iidxm,n*bs,iidxn,v,addv);CHKERRQ(ierr);
+    ierr = MatSetValues(mat,m*bs,iidxm,n*cbs,iidxn,v,addv);CHKERRQ(ierr);
     ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
@@ -2110,20 +2110,20 @@ PetscErrorCode  MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt ir
       ierr = MatSetValuesBlocked(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
       ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
     } else {
-      PetscInt i,j,bs=mat->rmap->bs;
-      if ((nrow+ncol)*bs <=(PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
+      PetscInt i,j,bs = mat->rmap->bs,cbs = mat->cmap->bs;
+      if (nrow*bs+ncol*cbs <=(PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
         irowm = buf; icolm = buf + nrow;
       } else {
-        ierr  = PetscMalloc2(nrow*bs,PetscInt,&bufr,ncol*bs,PetscInt,&bufc);CHKERRQ(ierr);
+        ierr  = PetscMalloc2(nrow*bs,PetscInt,&bufr,ncol*cbs,PetscInt,&bufc);CHKERRQ(ierr);
         irowm = bufr; icolm = bufc;
       }
       for (i=0; i<nrow; i++) {
         for (j=0; j<bs; j++) irowm[i*bs+j] = irow[i]*bs+j;
       }
       for (i=0; i<ncol; i++) {
-        for (j=0; j<bs; j++) icolm[i*bs+j] = icol[i]*bs+j;
+        for (j=0; j<cbs; j++) icolm[i*cbs+j] = icol[i]*cbs+j;
       }
-      ierr = MatSetValuesLocal(mat,nrow*bs,irowm,ncol*bs,icolm,y,addv);CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(mat,nrow*bs,irowm,ncol*cbs,icolm,y,addv);CHKERRQ(ierr);
       ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
     }
   }
@@ -6826,6 +6826,7 @@ PetscErrorCode  MatSetBlockSizes(Mat mat,PetscInt rbs,PetscInt cbs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(mat,rbs,2);
+  PetscValidLogicalCollectiveInt(mat,cbs,3);
   ierr = PetscLayoutSetBlockSize(mat->rmap,rbs);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(mat->cmap,cbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
