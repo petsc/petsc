@@ -75,6 +75,22 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec *g)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAGetNumCells"
+/*@
+  DMDAGetNumCells - Get the number of cells in the local piece of the DMDA. This includes ghost cells.
+
+  Input Parameter:
+. dm - The DM object
+
+  Output Parameters:
++ numCellsX - The number of local cells in the x-direction
+. numCellsY - The number of local cells in the y-direction
+. numCellsZ - The number of local cells in the z-direction
+- numCells - The number of local cells
+
+  Level: developer
+
+.seealso: DMDAGetCellPoint()
+@*/
 PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, PetscInt *numCellsZ, PetscInt *numCells)
 {
   DM_DA          *da = (DM_DA*) dm->data;
