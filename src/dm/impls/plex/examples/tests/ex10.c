@@ -80,8 +80,8 @@ PetscErrorCode TestReordering(DM dm, AppCtx *user)
   ierr = DMPlexPermute(dm, perm, &pdm);CHKERRQ(ierr);
   ierr = DMSetFromOptions(pdm);CHKERRQ(ierr);
   ierr = ISDestroy(&perm);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(dm, MATAIJ, &A);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(pdm, MATAIJ, &pA);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(dm, &A);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(pdm, &pA);CHKERRQ(ierr);
   ierr = MatComputeBandwidth(A, 0.0, &bw);CHKERRQ(ierr);
   ierr = MatComputeBandwidth(pA, 0.0, &pbw);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
