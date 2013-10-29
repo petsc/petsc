@@ -457,7 +457,9 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   }
 
 #if defined(PETSC_HAVE_CUDA)
-  cublasInit();
+  flg  = PETSC_TRUE;
+  *ierr = PetscOptionsGetBool(NULL,"-cublas",&flg,NULL);
+  if (flg) cublasInit();
 #endif
 }
 
