@@ -1,0 +1,15 @@
+Mat Object: 1 MPI processes
+  type: seqaij
+row 0: (0, 0)  (1, 0)  (2, 0)  (3, 0) 
+row 1: (0, 0)  (1, 0)  (2, 0)  (3, 0)  (4, 0) 
+row 2: (0, 0)  (1, 0)  (2, 0)  (3, 0)  (4, 0) 
+row 3: (0, 0)  (1, 0)  (2, 0)  (3, 0)  (4, 0) 
+row 4: (1, 0)  (2, 0)  (3, 0)  (4, 0) 
+Mat Object: 1 MPI processes
+  type: seqaij
+row 0: (0, 0)  (1, 0)  (2, 0)  (3, 0)  (4, 0) 
+row 1: (0, 0)  (1, 0)  (2, 0)  (3, 0)  (4, 0) 
+row 2: (0, 0)  (1, 0)  (2, 0)  (3, 0)  (4, 0) 
+row 3: (0, 0)  (1, 0)  (2, 0)  (3, 0) 
+row 4: (0, 0)  (1, 0)  (2, 0)  (4, 0) 
+Ordering method rcm increased bandwidth from 7 to 9

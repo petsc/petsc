@@ -1663,6 +1663,90 @@ PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt po
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionPermute"
+/*@
+  PetscSectionPermute - Reorder the section according to the input point permutation
+
+  Collective on PetscSection
+
+  Input Parameter:
++ section - The PetscSection object
+- perm - The point permutation
+
+  Output Parameter:
+. sectionNew - The permuted PetscSection
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: MatPermute()
+@*/
+PetscErrorCode PetscSectionPermute(PetscSection section, IS permutation, PetscSection *sectionNew)
+{
+  PetscSection    s = section, sNew;
+  const PetscInt *perm;
+  PetscInt        numFields, f, numPoints, pStart, pEnd, p;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 1);
+  PetscValidHeaderSpecific(permutation, IS_CLASSID, 2);
+  PetscValidPointer(sectionNew, 3);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) s), &sNew);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(s, &numFields);CHKERRQ(ierr);
+  if (numFields) {ierr = PetscSectionSetNumFields(sNew, numFields);CHKERRQ(ierr);}
+  for (f = 0; f < numFields; ++f) {
+    const char *name;
+    PetscInt    numComp;
+
+    ierr = PetscSectionGetFieldName(s, f, &name);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldName(sNew, f, name);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldComponents(s, f, &numComp);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldComponents(sNew, f, numComp);CHKERRQ(ierr);
+  }
+  ierr = ISGetLocalSize(permutation, &numPoints);CHKERRQ(ierr);
+  ierr = ISGetIndices(permutation, &perm);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(sNew, pStart, pEnd);CHKERRQ(ierr);
+  if (numPoints < pEnd) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Permutation size %d is less than largest Section point %d", numPoints, pEnd);
+  for (p = pStart; p < pEnd; ++p) {
+    PetscInt dof, cdof;
+
+    ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(sNew, perm[p], dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(s, p, &cdof);CHKERRQ(ierr);
+    if (cdof) {ierr = PetscSectionSetConstraintDof(sNew, perm[p], cdof);CHKERRQ(ierr);}
+    for (f = 0; f < numFields; ++f) {
+      ierr = PetscSectionGetFieldDof(s, p, f, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldDof(sNew, perm[p], f, dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetFieldConstraintDof(s, p, f, &cdof);CHKERRQ(ierr);
+      if (cdof) {ierr = PetscSectionSetFieldConstraintDof(sNew, perm[p], f, cdof);CHKERRQ(ierr);}
+    }
+  }
+  ierr = PetscSectionSetUp(sNew);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    const PetscInt *cind;
+    PetscInt        cdof;
+
+    ierr = PetscSectionGetConstraintDof(s, p, &cdof);CHKERRQ(ierr);
+    if (cdof) {
+      ierr = PetscSectionGetConstraintIndices(s, p, &cind);CHKERRQ(ierr);
+      ierr = PetscSectionSetConstraintIndices(sNew, perm[p], cind);CHKERRQ(ierr);
+    }
+    for (f = 0; f < numFields; ++f) {
+      ierr = PetscSectionGetFieldConstraintDof(s, p, f, &cdof);CHKERRQ(ierr);
+      if (cdof) {
+        ierr = PetscSectionGetFieldConstraintIndices(s, p, f, &cind);CHKERRQ(ierr);
+        ierr = PetscSectionSetFieldConstraintIndices(sNew, perm[p], f, cind);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = ISRestoreIndices(permutation, &perm);CHKERRQ(ierr);
+  *sectionNew = sNew;
+  PetscFunctionReturn(0);
+}
+
 /*
   I need extract and merge routines for section based on fields. This should be trivial except for updating the
   constraint indices.

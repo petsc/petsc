@@ -406,6 +406,35 @@ PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMLabelPermute"
+PetscErrorCode DMLabelPermute(DMLabel label, IS permutation, DMLabel *labelNew)
+{
+  const PetscInt *perm;
+  PetscInt        numValues, numPoints, v, q;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMLabelDuplicate(label, labelNew);CHKERRQ(ierr);
+  ierr = DMLabelGetNumValues(*labelNew, &numValues);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(permutation, &numPoints);CHKERRQ(ierr);
+  ierr = ISGetIndices(permutation, &perm);CHKERRQ(ierr);
+  for (v = 0; v < numValues; ++v) {
+    const PetscInt offset = (*labelNew)->stratumOffsets[v];
+    const PetscInt size   = (*labelNew)->stratumSizes[v];
+
+    for (q = offset; q < offset+size; ++q) {
+      const PetscInt point = (*labelNew)->points[q];
+
+      if ((point < 0) || (point >= numPoints)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %d is not in [0, %d) for the remapping", point, numPoints);
+      (*labelNew)->points[q] = perm[point];
+    }
+    ierr = PetscSortInt(size, &(*labelNew)->points[offset]);CHKERRQ(ierr);
+  }
+  ierr = ISRestoreIndices(permutation, &perm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 
 #undef __FUNCT__

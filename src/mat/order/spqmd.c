@@ -1,6 +1,6 @@
 
 #include <petscmat.h>
-#include <../src/mat/order/order.h>
+#include <petsc-private/matorderimpl.h>
 
 /*
     MatGetOrdering_QMD - Find the Quotient Minimum Degree ordering of a given matrix.
