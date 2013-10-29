@@ -1,6 +1,7 @@
 #include <petscdmda.h>          /*I "petscdmda.h" I*/
 #include <petsc-private/dmimpl.h>
 #include <petsc-private/tsimpl.h>   /*I "petscts.h" I*/
+#include <petscdraw.h>
 
 /* This structure holds the user-provided DMDA callbacks */
 typedef struct {
@@ -420,10 +421,11 @@ PetscErrorCode DMDATSSetIJacobianLocal(DM dm,DMDATSIJacobianLocal func,void *ctx
 #define __FUNCT__ "TSMonitorDMDARayDestroy"
 PetscErrorCode TSMonitorDMDARayDestroy(void **mctx)
 {
-  TSMonitorDMDARayCtx *rayctx = (TSMonitorDMDARayCtx*)*mctx;
-  PetscErrorCode      ierr;
+  TSMonitorDMDARayCtx *rayctx = (TSMonitorDMDARayCtx *) *mctx;
+  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
+  if (rayctx->lgctx) {ierr = TSMonitorLGCtxDestroy(&rayctx->lgctx);CHKERRQ(ierr);}
   ierr = VecDestroy(&rayctx->ray);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&rayctx->scatter);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&rayctx->viewer);CHKERRQ(ierr);
@@ -445,6 +447,50 @@ PetscErrorCode TSMonitorDMDARay(TS ts,PetscInt steps,PetscReal time,Vec u,void *
   ierr = VecScatterEnd(rayctx->scatter,solution,rayctx->ray,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   if (rayctx->viewer) {
     ierr = VecView(rayctx->ray,rayctx->viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorLGDMDARay"
+PetscErrorCode  TSMonitorLGDMDARay(TS ts, PetscInt step, PetscReal ptime, Vec u, void *ctx)
+{
+  TSMonitorDMDARayCtx *rayctx = (TSMonitorDMDARayCtx *) ctx;
+  TSMonitorLGCtx       lgctx  = (TSMonitorLGCtx) rayctx->lgctx;
+  Vec                  v      = rayctx->ray;
+  const PetscScalar   *a;
+  PetscInt             dim;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  ierr = VecScatterBegin(rayctx->scatter, u, v, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(rayctx->scatter, u, v, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+  if (!step) {
+    PetscDrawAxis axis;
+
+    ierr = PetscDrawLGGetAxis(lgctx->lg, &axis);CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLabels(axis, "Solution Ray as function of time", "Time", "Solution");CHKERRQ(ierr);
+    ierr = VecGetLocalSize(rayctx->ray, &dim);CHKERRQ(ierr);
+    ierr = PetscDrawLGSetDimension(lgctx->lg, dim);CHKERRQ(ierr);
+    ierr = PetscDrawLGReset(lgctx->lg);CHKERRQ(ierr);
+  }
+  ierr = VecGetArrayRead(v, &a);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  {
+    PetscReal *areal;
+    PetscInt   i,n;
+    ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
+    ierr = PetscMalloc(n * sizeof(PetscReal), &areal);CHKERRQ(ierr);
+    for (i = 0; i < n; ++i) areal[i] = PetscRealPart(a[i]);
+    ierr = PetscDrawLGAddCommonPoint(lgctx->lg, ptime, areal);CHKERRQ(ierr);
+    ierr = PetscFree(areal);CHKERRQ(ierr);
+  }
+#else
+  ierr = PetscDrawLGAddCommonPoint(lgctx->lg, ptime, a);CHKERRQ(ierr);
+#endif
+  ierr = VecRestoreArrayRead(v, &a);CHKERRQ(ierr);
+  if (((lgctx->howoften > 0) && (!(step % lgctx->howoften))) || ((lgctx->howoften == -1) && ts->reason)) {
+    ierr = PetscDrawLGDraw(lgctx->lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

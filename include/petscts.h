@@ -319,12 +319,14 @@ PETSC_EXTERN PetscErrorCode DMDATSSetIJacobianLocal(DM,PetscErrorCode (*)(DMDALo
 
 typedef struct _n_TSMonitorLGCtx*  TSMonitorLGCtx;
 typedef struct {
-  Vec         ray;
-  VecScatter  scatter;
-  PetscViewer viewer;
+  Vec            ray;
+  VecScatter     scatter;
+  PetscViewer    viewer;
+  TSMonitorLGCtx lgctx;
 } TSMonitorDMDARayCtx;
 PETSC_EXTERN PetscErrorCode TSMonitorDMDARayDestroy(void**);
 PETSC_EXTERN PetscErrorCode TSMonitorDMDARay(TS,PetscInt,PetscReal,Vec,void*);
+PETSC_EXTERN PetscErrorCode TSMonitorLGDMDARay(TS,PetscInt,PetscReal,Vec,void*);
 
 
 /* Dynamic creation and loading functions */

@@ -263,10 +263,10 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = PetscOptionsString("-ts_monitor_dmda_ray","Display a ray of the solution","None","y=0",dir,16,&flg);CHKERRQ(ierr);
   if (flg) {
     TSMonitorDMDARayCtx *rayctx;
-    int                 ray = 0;
-    DMDADirection       ddir;
-    DM                  da;
-    PetscMPIInt         rank;
+    int                  ray = 0;
+    DMDADirection        ddir;
+    DM                   da;
+    PetscMPIInt          rank;
 
     if (dir[1] != '=') SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONG,"Unknown ray %s",dir);
     if (dir[0] == 'x') ddir = DMDA_X;
@@ -282,7 +282,29 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     if (!rank) {
       ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,0,0,0,600,300,&rayctx->viewer);CHKERRQ(ierr);
     }
+    rayctx->lgctx = NULL;
     ierr = TSMonitorSet(ts,TSMonitorDMDARay,rayctx,TSMonitorDMDARayDestroy);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsString("-ts_monitor_lg_dmda_ray","Display a ray of the solution","None","x=0",dir,16,&flg);CHKERRQ(ierr);
+  if (flg) {
+    TSMonitorDMDARayCtx *rayctx;
+    int                 ray = 0;
+    DMDADirection       ddir;
+    DM                  da;
+    PetscInt            howoften = 1;
+
+    if (dir[1] != '=') SETERRQ1(PetscObjectComm((PetscObject) ts), PETSC_ERR_ARG_WRONG, "Malformed ray %s", dir);
+    if      (dir[0] == 'x') ddir = DMDA_X;
+    else if (dir[0] == 'y') ddir = DMDA_Y;
+    else SETERRQ1(PetscObjectComm((PetscObject) ts), PETSC_ERR_ARG_WRONG, "Unknown ray direction %s", dir);
+    sscanf(dir+2, "%d", &ray);
+
+    ierr = PetscInfo2(((PetscObject) ts),"Displaying LG DMDA ray %c = %D\n", dir[0], ray);CHKERRQ(ierr);
+    ierr = PetscNew(TSMonitorDMDARayCtx, &rayctx);CHKERRQ(ierr);
+    ierr = TSGetDM(ts, &da);CHKERRQ(ierr);
+    ierr = DMDAGetRay(da, ddir, ray, &rayctx->ray, &rayctx->scatter);CHKERRQ(ierr);
+    ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&rayctx->lgctx);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts, TSMonitorLGDMDARay, rayctx, TSMonitorDMDARayDestroy);CHKERRQ(ierr);
   }
 
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
