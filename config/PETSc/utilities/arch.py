@@ -25,7 +25,6 @@ class Configure(config.base.Configure):
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
     self.petscdir = framework.require('PETSc.utilities.petscdir', self)
-    self.languages = framework.require('PETSc.utilities.languages', self)
     return
 
   def configureArchitecture(self):
@@ -49,8 +48,8 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
       else:
         import sys
         self.arch = 'arch-' + sys.platform.replace('cygwin','mswin')
-        # use opt/debug, c/c++ tags.
-        self.arch+= '-'+self.languages.clanguage.lower()
+        # use opt/debug, c/c++ tags.s
+        self.arch+= '-'+self.framework.argDB['with-clanguage'].lower().replace('+','x')
         if self.framework.argDB['with-debugging']:
           self.arch += '-debug'
         else:
