@@ -2758,13 +2758,6 @@ PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u)
 }
 
 /* ------------------------------------------------------------------------*/
-struct _n_TSMonitorLGCtx {
-  PetscDrawLG lg;
-  PetscInt    howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
-  PetscInt    ksp_its,snes_its;
-};
-
-
 #undef __FUNCT__
 #define __FUNCT__ "TSMonitorLGCtxCreate"
 /*@C

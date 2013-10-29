@@ -317,6 +317,7 @@ PETSC_EXTERN PetscErrorCode DMDATSSetRHSJacobianLocal(DM,PetscErrorCode (*)(DMDA
 PETSC_EXTERN PetscErrorCode DMDATSSetIFunctionLocal(DM,InsertMode,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,void*,void*),void *);
 PETSC_EXTERN PetscErrorCode DMDATSSetIJacobianLocal(DM,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,PetscReal,Mat,Mat,MatStructure*,void*),void *);
 
+typedef struct _n_TSMonitorLGCtx*  TSMonitorLGCtx;
 typedef struct {
   Vec         ray;
   VecScatter  scatter;
@@ -346,7 +347,6 @@ PETSC_EXTERN PetscErrorCode TSLoad(TS,PetscViewer);
 PETSC_EXTERN PetscErrorCode TSSetApplicationContext(TS,void *);
 PETSC_EXTERN PetscErrorCode TSGetApplicationContext(TS,void *);
 
-typedef struct _n_TSMonitorLGCtx*  TSMonitorLGCtx;
 PETSC_EXTERN PetscErrorCode TSMonitorLGCtxCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscInt,TSMonitorLGCtx *);
 PETSC_EXTERN PetscErrorCode TSMonitorLGCtxDestroy(TSMonitorLGCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorLGTimeStep(TS,PetscInt,PetscReal,Vec,void *);
