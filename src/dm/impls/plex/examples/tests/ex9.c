@@ -341,6 +341,7 @@ PetscErrorCode TestVecClosure(DM dm, AppCtx *user)
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
   ierr = DMPlexCreateSection(dm, user->dim, user->numFields, user->numComponents, user->numDof, 0, NULL, NULL, &s);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dm, s);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &v);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRQ(ierr);
@@ -397,6 +398,7 @@ int main(int argc, char **argv)
   ierr = TestCone(dm, &user);CHKERRQ(ierr);
   ierr = TestTransitiveClosure(dm, &user);CHKERRQ(ierr);
   ierr = TestVecClosure(dm, &user);CHKERRQ(ierr);
+  ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = CleanupContext(&user);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
