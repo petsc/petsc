@@ -22,11 +22,6 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-petsc-arch=<string>',nargs.Arg(None, None, 'The configuration name'))
     return
 
-  def setupDependencies(self, framework):
-    config.base.Configure.setupDependencies(self, framework)
-    self.petscdir = framework.require('PETSc.utilities.petscdir', self)
-    return
-
   def configureArchitecture(self):
     '''Checks PETSC_ARCH and sets if not set'''
 
