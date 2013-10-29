@@ -363,10 +363,12 @@ def petsc_configure(configure_options):
     framework.logClear()
     if hasattr(framework, 'log'):
       try:
-        framework.log.write('**** Configure header '+framework.compilerDefines+' ****\n')
-        framework.outputHeader(framework.log)
-        framework.log.write('**** C specific Configure header '+framework.compilerFixes+' ****\n')
-        framework.outputCHeader(framework.log)
+        if hasattr(framework,'compilerDefines'):
+          framework.log.write('**** Configure header '+framework.compilerDefines+' ****\n')
+          framework.outputHeader(framework.log)
+        if hasattr(framework,'compilerFixes'):
+          framework.log.write('**** C specific Configure header '+framework.compilerFixes+' ****\n')
+          framework.outputCHeader(framework.log)
       except Exception, e:
         framework.log.write('Problem writing headers to log: '+str(e))
       import traceback
