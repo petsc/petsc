@@ -48,9 +48,12 @@ cdef extern from * nogil:
     int PetscSleep(int)
 
 
-cdef inline int Sys_Sizes(object size, object bsize,
-                          PetscInt *_b, PetscInt *_n, PetscInt *_N) except -1:
-
+cdef inline int Sys_Sizes(
+    object size, object bsize,
+    PetscInt *_b,
+    PetscInt *_n,
+    PetscInt *_N,
+    ) except -1:
     # get block size
     cdef PetscInt bs=PETSC_DECIDE, b=PETSC_DECIDE
     if bsize is not None: bs = b = asInt(bsize)
@@ -81,8 +84,12 @@ cdef inline int Sys_Sizes(object size, object bsize,
     if _N != NULL: _N[0] = N
     return 0
 
-cdef inline int Sys_Layout(MPI_Comm comm,
-                           PetscInt bs, PetscInt *_n, PetscInt *_N) except -1:
+cdef inline int Sys_Layout(
+    MPI_Comm comm,
+    PetscInt bs,
+    PetscInt *_n,
+    PetscInt *_N,
+    ) except -1:
     cdef PetscInt n = _n[0]
     cdef PetscInt N = _N[0]
     if bs < 0: bs = 1

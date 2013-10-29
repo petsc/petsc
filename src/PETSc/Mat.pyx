@@ -8,8 +8,8 @@ class MatType(object):
     IS              = S_(MATIS)
     AIJ             = S_(MATAIJ)
     SEQAIJ          = S_(MATSEQAIJ)
-    SEQAIJPTHREAD   =  S_(MATSEQAIJPTHREAD)
-    AIJPTHREAD      =  S_(MATAIJPTHREAD)
+    SEQAIJPTHREAD   = S_(MATSEQAIJPTHREAD)
+    AIJPTHREAD      = S_(MATAIJPTHREAD)
     MPIAIJ          = S_(MATMPIAIJ)
     AIJCRL          = S_(MATAIJCRL)
     SEQAIJCRL       = S_(MATSEQAIJCRL)
@@ -248,57 +248,65 @@ cdef class Mat(Object):
     #
 
     def createAIJ(self, size, bsize=None, nnz=None, csr=None, comm=None):
-        # communicator and sizes
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
-        Mat_Sizes(size, bsize, &rbs, &cbs, &m, &n, &M, &N)
-        Sys_Layout(ccomm, rbs, &m, &M)
-        Sys_Layout(ccomm, cbs, &n, &N)
-        cdef PetscInt bs = rbs # XXX
         # create matrix
         cdef PetscMat newmat = NULL
-        CHKERR( MatCreateAnyAIJ(ccomm, bs, m, n, M, N, &newmat) )
+        Mat_Create(MATAIJ, comm, size, bsize, &newmat)
         PetscCLEAR(self.obj); self.mat = newmat
         # preallocate matrix
-        if csr is not None:   # with CSR preallocation
-            CHKERR( Mat_AllocAIJ_CSR(self.mat, bs, csr) )
-        elif nnz is not None: # with NNZ preallocation
-            CHKERR( Mat_AllocAIJ_NNZ(self.mat, bs, nnz) )
-        else:                 # default preallocation
-            CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, bs) )
+        Mat_AllocAIJ(self.mat, nnz, csr)
+        return self
+
+    def createBAIJ(self, size, bsize, nnz=None, csr=None, comm=None):
+        # create matrix
+        cdef PetscMat newmat = NULL
+        Mat_Create(MATBAIJ, comm, size, bsize, &newmat)
+        PetscCLEAR(self.obj); self.mat = newmat
+        # preallocate matrix
+        Mat_AllocAIJ(self.mat, nnz, csr)
+        return self
+
+    def createSBAIJ(self, size, bsize, nnz=None, csr=None, comm=None):
+        # create matrix
+        cdef PetscMat newmat = NULL
+        Mat_Create(MATSBAIJ, comm, size, bsize, &newmat)
+        PetscCLEAR(self.obj); self.mat = newmat
+        # preallocate matrix
+        Mat_AllocAIJ(self.mat, nnz, csr)
         return self
 
     def createAIJCRL(self, size, bsize=None, nnz=None, csr=None, comm=None):
-        # communicator and sizes
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
-        Mat_Sizes(size, bsize, &rbs, &cbs, &m, &n, &M, &N)
-        Sys_Layout(ccomm, rbs, &m, &M)
-        Sys_Layout(ccomm, cbs, &n, &N)
-        cdef PetscInt bs = rbs # XXX
         # create matrix
         cdef PetscMat newmat = NULL
-        CHKERR( MatCreateAnyAIJCRL(ccomm, bs, m, n, M, N, &newmat) )
+        Mat_Create(MATAIJCRL, comm, size, bsize, &newmat)
         PetscCLEAR(self.obj); self.mat = newmat
         # preallocate matrix
-        if csr is not None:   # with CSR preallocation
-            CHKERR( Mat_AllocAIJ_CSR(self.mat, bs, csr) )
-        elif nnz is not None: # with NNZ preallocation
-            CHKERR( Mat_AllocAIJ_NNZ(self.mat, bs, nnz) )
-        else:                 # default preallocation
-            CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, bs) )
+        Mat_AllocAIJ(self.mat, nnz, csr)
+        return self
+
+    def setPreallocationNNZ(self, nnz):
+        cdef PetscBool done = PETSC_FALSE
+        CHKERR( MatIsPreallocated(self.mat, &done) )
+        # if done: raise Error(PETSC_ERR_ORDER)
+        Mat_AllocAIJ_NNZ(self.mat, nnz)
+        return self
+
+    def setPreallocationCSR(self, csr):
+        cdef PetscBool done = PETSC_FALSE
+        CHKERR( MatIsPreallocated(self.mat, &done) )
+        # if done: raise Error(PETSC_ERR_ORDER)
+        Mat_AllocAIJ_CSR(self.mat, csr)
         return self
 
     def createAIJWithArrays(self, size, csr, bsize=None, comm=None):
-        # communicator and sizes
+        # communicator
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        # sizes and block sizes
         cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
         Mat_Sizes(size, bsize, &rbs, &cbs, &m, &n, &M, &N)
-        Sys_Layout(ccomm, rbs, &m, &M)
-        Sys_Layout(ccomm, cbs, &n, &N)
         if rbs == PETSC_DECIDE: rbs = 1
         if cbs == PETSC_DECIDE: cbs = rbs
-        cdef PetscInt bs = rbs # XXX
+        Sys_Layout(ccomm, rbs, &m, &M)
+        Sys_Layout(ccomm, cbs, &n, &N)
         # unpack CSR argument
         cdef object pi, pj, pv, poi, poj, pov
         try:
@@ -328,69 +336,44 @@ cdef class Mat(Object):
         # create matrix
         cdef PetscMat newmat = NULL
         if comm_size(ccomm) == 1:
-            if bs == 1:
-                CHKERR( MatCreateSeqAIJWithArrays(
-                    ccomm, m, n, i, j, v, &newmat) )
-            else:
-                CHKERR( MatCreateSeqBAIJWithArrays(
-                    ccomm, bs, m, n, i, j, v, &newmat) )
+            CHKERR( MatCreateSeqAIJWithArrays(
+                ccomm, m, n, i, j, v, &newmat) )
+            csr = (pi, pj, pv)
         else:
-            CHKERR( MatCreateMPIAIJWithSplitArrays(
-                ccomm, m, n, M, N, i, j, v, oi, oj, ov, &newmat) )
+            if oi != NULL and oj != NULL and ov != NULL:
+                CHKERR( MatCreateMPIAIJWithSplitArrays(
+                    ccomm, m, n, M, N, i, j, v, oi, oj, ov, &newmat) )
+                csr = ((pi, pj, pv), (poi, poj, pov))
+            else:
+                CHKERR( MatCreateMPIAIJWithArrays(
+                    ccomm, m, n, M, N, i, j, v, &newmat) )
+                csr = None
         PetscCLEAR(self.obj); self.mat = newmat
-        self.set_attr('__csr__', ((pi, pj, pv), (poi, poj, pov)))
+        self.set_attr('__csr__', csr)
         return self
 
+    #
+
     def createDense(self, size, bsize=None, array=None, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
-        Mat_Sizes(size, bsize, &rbs, &cbs, &m, &n, &M, &N)
-        Sys_Layout(ccomm, rbs, &m, &M)
-        Sys_Layout(ccomm, cbs, &n, &N)
         # create matrix
         cdef PetscMat newmat = NULL
-        CHKERR( MatCreateAnyDense(ccomm, rbs, cbs, m, n, M, N, &newmat) )
+        Mat_Create(MATDENSE, comm, size, bsize, &newmat)
         PetscCLEAR(self.obj); self.mat = newmat
         # preallocate matrix
-        self.setPreallocationDense(array)
+        if array is not None:
+            array = Mat_AllocDense(self.mat, array)
+            self.set_attr('__array__', array)
         return self
 
     def setPreallocationDense(self, array):
-        cdef PetscInt size=0
-        cdef PetscScalar *data=NULL
-        cdef PetscInt m=0, N=0
-        if array is not None:
-            CHKERR( MatGetLocalSize(self.mat, &m, NULL) )
-            CHKERR( MatGetSize(self.mat, NULL, &N) )
-            array = ofarray_s(array, &size, &data)
-            if m*N != size: raise ValueError(
-                "size(array) is %d, expected %dx%d=%d" %
-                (toInt(size), toInt(m), toInt(N), toInt(m*N)) )
-        CHKERR( MatSeqDenseSetPreallocation(self.mat, data) )
-        CHKERR( MatMPIDenseSetPreallocation(self.mat, data) )
+        cdef PetscBool done = PETSC_FALSE
+        CHKERR( MatIsPreallocated(self.mat, &done) )
+        # if done: raise Error(PETSC_ERR_ORDER)
+        array = Mat_AllocDense(self.mat, array)
         self.set_attr('__array__', array)
+        return self
 
-    def setPreallocationNNZ(self, nnz, bsize=None):
-        cdef PetscInt rbs = PETSC_DECIDE, cbs = PETSC_DECIDE
-        CHKERR( Mat_BlockSize(bsize, &rbs, &cbs) )
-        if rbs != PETSC_DECIDE and rbs != cbs:
-            # Non-square blocks go through the AIJ preallocation routines
-            rbs = 1
-        if nnz is not None:
-            CHKERR( Mat_AllocAIJ_NNZ(self.mat, rbs, nnz) )
-        else:
-            CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, rbs) )
-
-    def setPreallocationCSR(self, csr, bsize=None):
-        cdef PetscInt rbs = PETSC_DECIDE, cbs = PETSC_DECIDE
-        CHKERR( Mat_BlockSize(bsize, &rbs, &cbs) )
-        if rbs != PETSC_DECIDE and rbs != cbs:
-            # Non-square blocks go through the AIJ preallocation routines
-            rbs = 1
-        if csr is not None:
-            CHKERR( Mat_AllocAIJ_CSR(self.mat, rbs, csr) )
-        else:
-            CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, rbs) )
+    #
 
     def createScatter(self, Scatter scatter not None, comm=None):
         if comm is None: comm = scatter.getComm()

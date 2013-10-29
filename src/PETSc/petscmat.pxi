@@ -128,7 +128,7 @@ cdef extern from * nogil:
     int MatCreateShell(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,void*,PetscMat*)
 
     int MatCreateSeqAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],PetscMat*)
-    int MatCreateSeqBAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],PetscMat*)
+    int MatCreateMPIAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],PetscMat*)
     int MatCreateMPIAIJWithSplitArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],PetscInt[],PetscInt[],PetscScalar[],PetscMat*)
 
     int MatSetSizes(PetscMat,PetscInt,PetscInt,PetscInt,PetscInt)
@@ -137,6 +137,19 @@ cdef extern from * nogil:
     int MatSetType(PetscMat,PetscMatType)
     int MatSetOption(PetscMat,PetscMatOption,PetscBool)
 
+    enum: MAT_SKIP_ALLOCATION
+    int MatSeqAIJSetPreallocation  (PetscMat,PetscInt,PetscInt[])
+    int MatMPIAIJSetPreallocation  (PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[])
+    int MatSeqBAIJSetPreallocation (PetscMat,PetscInt,PetscInt,PetscInt[])
+    int MatMPIBAIJSetPreallocation (PetscMat,PetscInt,PetscInt,PetscInt[],PetscInt,PetscInt[])
+    int MatSeqSBAIJSetPreallocation(PetscMat,PetscInt,PetscInt,PetscInt[])
+    int MatMPISBAIJSetPreallocation(PetscMat,PetscInt,PetscInt,PetscInt[],PetscInt,PetscInt[])
+    int MatSeqAIJSetPreallocationCSR  (PetscMat,         PetscInt[],PetscInt[],PetscScalar[])
+    int MatMPIAIJSetPreallocationCSR  (PetscMat,         PetscInt[],PetscInt[],PetscScalar[])
+    int MatSeqBAIJSetPreallocationCSR (PetscMat,PetscInt,PetscInt[],PetscInt[],PetscScalar[])
+    int MatMPIBAIJSetPreallocationCSR (PetscMat,PetscInt,PetscInt[],PetscInt[],PetscScalar[])
+    int MatSeqSBAIJSetPreallocationCSR(PetscMat,PetscInt,PetscInt[],PetscInt[],PetscScalar[])
+    int MatMPISBAIJSetPreallocationCSR(PetscMat,PetscInt,PetscInt[],PetscInt[],PetscScalar[])
     int MatSeqDenseSetPreallocation(PetscMat,PetscScalar[])
     int MatMPIDenseSetPreallocation(PetscMat,PetscScalar[])
 
@@ -304,27 +317,10 @@ cdef extern from * nogil:
     int MatScaleSystem(PetscMat,PetscVec,PetscVec)
     int MatUnScaleSystem(PetscMat,PetscVec,PetscVec)
 
-
 cdef extern from "custom.h" nogil:
-    enum: MAT_SKIP_ALLOCATION
-    int MatCreateAnyAIJ(MPI_Comm,PetscInt,
-                        PetscInt,PetscInt,
-                        PetscInt,PetscInt,
-                        PetscMat*)
-    int MatCreateAnyAIJCRL(MPI_Comm,PetscInt,
-                           PetscInt,PetscInt,
-                           PetscInt,PetscInt,
-                           PetscMat*)
-    int MatAnyAIJSetPreallocation(PetscMat,PetscInt,
-                                  PetscInt,PetscInt[],
-                                  PetscInt,PetscInt[])
-    int MatAnyAIJSetPreallocationCSR(PetscMat,PetscInt,PetscInt[],
-                                     PetscInt[],PetscScalar[])
-    int MatCreateAnyDense(MPI_Comm,
-                          PetscInt,PetscInt,
-                          PetscInt,PetscInt,
-                          PetscInt,PetscInt,
-                          PetscMat*)
+    int MatGetBlockSize_NoCheck(PetscMat,PetscInt*)
+    int MatIsPreallocated(PetscMat,PetscBool*)
+    int MatHasPreallocationAIJ(PetscMat,PetscBool*,PetscBool*,PetscBool*)
 
 cdef extern from "libpetsc4py.h":
     PetscMatType MATPYTHON
@@ -495,27 +491,12 @@ cdef inline PetscMatAssemblyType assemblytype(object assembly) \
 
 # -----------------------------------------------------------------------------
 
-cdef inline int Mat_BlockSize(object bsize, PetscInt *_rbs, PetscInt *_cbs) except -1:
-    cdef PetscInt rbs = PETSC_DECIDE, cbs = PETSC_DECIDE
-    if bsize is not None:
-        try:
-            r, c = bsize
-        except (TypeError, ValueError):
-            r = c = bsize
-        rbs = asInt(r)
-        cbs = asInt(c)
-    if rbs != PETSC_DECIDE and rbs < 1: raise ValueError(
-        "block size %d must be positive" % toInt(rbs) )
-    if cbs != rbs and cbs != PETSC_DECIDE and cbs < 1: raise ValueError(
-        "column block size %d must be positive" % toInt(cbs) )
-    _rbs[0] = rbs
-    _cbs[0] = cbs
-    return 0
-
-cdef inline int Mat_Sizes(object size, object bsize,
-                          PetscInt *r, PetscInt *c,
-                          PetscInt *m, PetscInt *n,
-                          PetscInt *M, PetscInt *N) except -1:
+cdef inline int Mat_Sizes(
+    object size, object bsize,
+    PetscInt *r, PetscInt *c,
+    PetscInt *m, PetscInt *n,
+    PetscInt *M, PetscInt *N,
+    ) except -1:
     # unpack row and column sizes
     cdef object rsize, csize
     try:
@@ -533,22 +514,41 @@ cdef inline int Mat_Sizes(object size, object bsize,
     Sys_Sizes(csize, cbsize, c, n, N)
     return 0
 
-cdef inline int Mat_AllocAIJ_SKIP(PetscMat A,
-                                  PetscInt bs) except -1:
-    cdef PetscInt d_nz=MAT_SKIP_ALLOCATION, *d_nnz=NULL
-    cdef PetscInt o_nz=MAT_SKIP_ALLOCATION, *o_nnz=NULL
-    CHKERR( MatAnyAIJSetPreallocation(A, bs, d_nz, d_nnz, o_nz, o_nnz) )
+cdef inline int Mat_Create(
+    PetscMatType mtype,
+    object comm,
+    object size,
+    object bsize,
+    PetscMat *A,
+    ) except -1:
+    # communicator
+    cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+    # sizes and block sizes
+    cdef PetscInt rbs = 0, cbs = 0, m = 0, n = 0, M = 0, N = 0
+    Mat_Sizes(size, bsize, &rbs, &cbs, &m, &n, &M, &N)
+    if rbs == PETSC_DECIDE: rbs = 1
+    if cbs == PETSC_DECIDE: cbs = rbs
+    Sys_Layout(ccomm, rbs, &m, &M)
+    Sys_Layout(ccomm, cbs, &n, &N)
+    # create matrix and set sizes
+    cdef PetscMat mat = NULL
+    CHKERR( MatCreate(ccomm, &mat) )
+    CHKERR( MatSetSizes(mat, m, n, M, N) )
+    CHKERR( MatSetBlockSizes(mat, rbs, cbs) )
+    CHKERR( MatSetType(mat, mtype) )
+    A[0] = mat
     return 0
 
-cdef inline int Mat_AllocAIJ_DEFAULT(PetscMat A,
-                                     PetscInt bs) except -1:
-    cdef PetscInt d_nz=PETSC_DECIDE, *d_nnz=NULL
-    cdef PetscInt o_nz=PETSC_DECIDE, *o_nnz=NULL
-    CHKERR( MatAnyAIJSetPreallocation(A, bs, d_nz, d_nnz, o_nz, o_nnz) )
-    return 0
-
-cdef inline int Mat_AllocAIJ_NNZ(PetscMat A, PetscInt bs, object NNZ) \
-    except -1:
+cdef inline int Mat_AllocAIJ_NNZ( PetscMat A, object NNZ) except -1:
+    #
+    cdef PetscBool aij, baij, sbaij
+    CHKERR( MatHasPreallocationAIJ(A, &aij, &baij, &sbaij))
+    # local row size and block size
+    cdef PetscInt m=0, bs=1
+    CHKERR( MatGetLocalSize(A, &m, NULL) )
+    if baij == PETSC_TRUE or sbaij == PETSC_TRUE:
+        CHKERR( MatGetBlockSize_NoCheck(A, &bs) )
+        assert bs > 0, "block size not set"
     # unpack NNZ argument
     cdef object od_nnz, oo_nnz
     try:
@@ -566,22 +566,38 @@ cdef inline int Mat_AllocAIJ_NNZ(PetscMat A, PetscInt bs, object NNZ) \
         oo_nnz = iarray_i(oo_nnz, &o_n, &o_nnz)
         if   o_n == 0: o_nnz = NULL # just in case
         elif o_n == 1: o_nz = o_nnz[0]; o_n=0; o_nnz = NULL
-    # check sizes
-    cdef PetscInt m=0, b=bs
-    CHKERR( MatGetLocalSize(A, &m, NULL) )
-    if bs == PETSC_DECIDE: b = 1
-    if m != PETSC_DECIDE and (d_n > 1 or o_n > 1):
-        if d_n > 1 and d_n*b != m: raise ValueError(
-            "size(d_nnz) is %d, expected %d" %
-            (toInt(d_n), toInt(m)) )
-        if o_n > 1 and o_n*b != m: raise ValueError(
-            "size(o_nnz) is %d, expected %d" %
-            (toInt(o_n), toInt(m)) )
+    if m == PETSC_DECIDE:
+        if d_n > 1 and d_n*bs > m: m = d_n*bs
+        if o_n > 1 and o_n*bs > m: m = o_n*bs
+    # check array sizes
+    if d_n > 1 and d_n*bs != m: raise ValueError(
+        "size(d_nnz) is %d, expected %d" %
+            (toInt(d_n), toInt(m//bs)) )
+    if o_n > 1 and o_n*bs != m: raise ValueError(
+        "size(o_nnz) is %d, expected %d" %
+            (toInt(o_n), toInt(m//bs)) )
     # preallocate
-    CHKERR( MatAnyAIJSetPreallocation(A, bs, d_nz, d_nnz, o_nz, o_nnz) )
+    if aij == PETSC_TRUE:
+        CHKERR( MatSeqAIJSetPreallocation(A, d_nz, d_nnz) )
+        CHKERR( MatMPIAIJSetPreallocation(A, d_nz, d_nnz, o_nz, o_nnz) )
+    if baij == PETSC_TRUE:
+        CHKERR( MatSeqBAIJSetPreallocation(A, bs, d_nz, d_nnz) )
+        CHKERR( MatMPIBAIJSetPreallocation(A, bs, d_nz, d_nnz, o_nz, o_nnz) )
+    if sbaij == PETSC_TRUE:
+        CHKERR( MatSeqSBAIJSetPreallocation(A, bs, d_nz, d_nnz) )
+        CHKERR( MatMPISBAIJSetPreallocation(A, bs, d_nz, d_nnz, o_nz, o_nnz) )
+    return 0
 
-cdef inline int Mat_AllocAIJ_CSR(PetscMat A, PetscInt bs, object CSR) \
-    except -1:
+cdef inline int Mat_AllocAIJ_CSR(PetscMat A, object CSR) except -1:
+    #
+    cdef PetscBool aij, baij, sbaij
+    CHKERR( MatHasPreallocationAIJ(A, &aij, &baij, &sbaij))
+    # local row size and block size
+    cdef PetscInt m=0, bs = 1
+    CHKERR( MatGetLocalSize(A, &m, NULL) )
+    if baij == PETSC_TRUE or sbaij == PETSC_TRUE:
+        CHKERR( MatGetBlockSize_NoCheck(A, &bs) )
+        assert bs > 0, "block size not set"
     # unpack CSR argument
     cdef object oi, oj, ov
     try:
@@ -591,31 +607,59 @@ cdef inline int Mat_AllocAIJ_CSR(PetscMat A, PetscInt bs, object CSR) \
     # rows, cols, and values
     cdef PetscInt ni=0, *i=NULL
     cdef PetscInt nj=0, *j=NULL
-    oi = iarray_i(oi, &ni, &i)
-    oj = iarray_i(oj, &nj, &j)
     cdef PetscInt nv=0
     cdef PetscScalar *v=NULL
+    oi = iarray_i(oi, &ni, &i)
+    oj = iarray_i(oj, &nj, &j)
     if ov is not None:
         ov = iarray_s(ov, &nv, &v)
-    # check sizes
-    cdef PetscInt m=0, b=bs
-    CHKERR( MatGetLocalSize(A, &m, NULL) )
-    if bs == PETSC_DECIDE: b = 1
-    if (m != PETSC_DECIDE) and (((ni-1)*b) != m):
+    if m == PETSC_DECIDE: m = (ni-1)*bs
+    # check array sizes
+    if ((ni-1)*bs != m):
         raise ValueError("size(I) is %d, expected %d" %
-                         (toInt(ni), toInt(m//b+1)) )
+                         (toInt(ni), toInt(m//bs+1)) )
     if (i[0] != 0):
         raise ValueError("I[0] is %d, expected %d" %
                          (toInt(i[0]), toInt(0)) )
     if (i[ni-1] != nj):
         raise ValueError("size(J) is %d, expected %d" %
                          (toInt(nj), toInt(i[ni-1])) )
-    if ov is not None and (nj*b*b != nv):
+    if v != NULL and (nj*bs*bs != nv):
         raise ValueError("size(V) is %d, expected %d" %
-                         (toInt(nv), toInt(nj*b*b)) )
+                         (toInt(nv), toInt(nj*bs*bs)) )
     # preallocate
-    CHKERR( MatAnyAIJSetPreallocationCSR(A, bs, i, j, v) )
+    if aij == PETSC_TRUE:
+        CHKERR( MatSeqAIJSetPreallocationCSR(A, i, j, v) )
+        CHKERR( MatMPIAIJSetPreallocationCSR(A, i, j, v) )
+    if baij == PETSC_TRUE:
+        CHKERR( MatSeqBAIJSetPreallocationCSR(A, bs, i, j, v) )
+        CHKERR( MatMPIBAIJSetPreallocationCSR(A, bs, i, j, v) )
+    if sbaij == PETSC_TRUE:
+        CHKERR( MatSeqSBAIJSetPreallocationCSR(A, bs, i, j, v) )
+        CHKERR( MatMPISBAIJSetPreallocationCSR(A, bs, i, j, v) )
+    return 0
 
+cdef inline int Mat_AllocAIJ(PetscMat A,object NNZ, object CSR) except -1:
+    if CSR is not None:
+        return Mat_AllocAIJ_CSR(A, CSR)
+    if NNZ is not None:
+        return Mat_AllocAIJ_NNZ(A, NNZ)
+    return 0
+
+cdef inline object Mat_AllocDense(PetscMat A, object array):
+    cdef PetscInt m=0, N=0
+    CHKERR( MatGetLocalSize(A, &m, NULL) )
+    CHKERR( MatGetSize(A, NULL, &N) )
+    cdef PetscInt size=0
+    cdef PetscScalar *data=NULL
+    if array is not None:
+        array = ofarray_s(array, &size, &data)
+        if m*N != size: raise ValueError(
+            "size(array) is %d, expected %dx%d=%d" %
+            (toInt(size), toInt(m), toInt(N), toInt(m*N)) )
+    CHKERR( MatSeqDenseSetPreallocation(A, data) )
+    CHKERR( MatMPIDenseSetPreallocation(A, data) )
+    return array
 
 # -----------------------------------------------------------------------------
 

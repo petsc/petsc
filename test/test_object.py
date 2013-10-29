@@ -192,7 +192,7 @@ class TestObjectMat(BaseTestObject, unittest.TestCase):
     CLASS  = PETSc.Mat
     FACTORY = 'createAIJ'
     TARGS = (0,)
-    KARGS   = {'comm': PETSc.COMM_SELF}
+    KARGS   = {'nnz':0, 'comm': PETSc.COMM_SELF}
 
     def setUp(self):
         BaseTestObject.setUp(self)

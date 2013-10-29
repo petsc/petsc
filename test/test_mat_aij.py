@@ -62,7 +62,7 @@ class BaseTestMatAnyAIJ(object):
 
     def testSetPreallocNNZ(self):
         nnz = [5, 2]
-        self.A.setPreallocationNNZ(nnz, self.BSIZE)
+        self.A.setPreallocationNNZ(nnz)
         self._chk_bs(self.A, self.BSIZE)
         opt = PETSc.Mat.Option.NEW_NONZERO_ALLOCATION_ERR
         self.A.setOption(opt, True)
@@ -79,7 +79,7 @@ class BaseTestMatAnyAIJ(object):
         _, ai, _, _ =self._get_aijv()
         d_nnz = N.diff(ai)
         nnz = [d_nnz, 3]
-        self.A.setPreallocationNNZ(nnz, self.BSIZE)
+        self.A.setPreallocationNNZ(nnz)
         self._chk_bs(self.A, self.BSIZE)
         opt = PETSc.Mat.Option.NEW_NONZERO_ALLOCATION_ERR
         self.A.setOption(opt, True)
@@ -95,7 +95,7 @@ class BaseTestMatAnyAIJ(object):
     def testSetPreallocCSR(self):
         _, ai, aj, _ = self._get_aijv()
         csr = [ai, aj]
-        self.A.setPreallocationCSR(csr, self.BSIZE)
+        self.A.setPreallocationCSR(csr)
         self._chk_bs(self.A, self.BSIZE)
         self._chk_aij(self.A, ai, aj)
         opt = PETSc.Mat.Option.NEW_NONZERO_LOCATION_ERR
@@ -110,7 +110,7 @@ class BaseTestMatAnyAIJ(object):
     def testSetPreallocCSR_2(self):
         _, ai, aj, av =self._get_aijv()
         csr = [ai, aj, av]
-        self.A.setPreallocationCSR(csr, self.BSIZE)
+        self.A.setPreallocationCSR(csr)
         self._chk_bs(self.A, self.BSIZE)
         self._chk_aij(self.A, ai, aj)
         opt = PETSc.Mat.Option.NEW_NONZERO_LOCATION_ERR
@@ -153,6 +153,13 @@ class BaseTestMatAnyAIJ(object):
         self._set_values_ijv()
         A = self.A
         A.assemble()
+        if 'sbaij' in A.getType():
+            opt = PETSc.Mat.Option.GETROW_UPPERTRIANGULAR
+            self.A.setOption(opt, True)
+            ai, aj, av = self.A.getValuesCSR()
+            A = PETSc.Mat()
+            self.A.convert('aij', A)
+            self.A.setOption(opt, False)
         ai, aj, av = A.getValuesCSR()
         if not ('mpibaij' == self.A.type and
                 self.A.comm.size == 1):
@@ -193,6 +200,8 @@ class BaseTestMatAnyAIJ(object):
         except (TypeError, ValueError):
             pass
         self._preallocate()
+        rbs, cbs = self.A.getBlockSizes()
+        if rbs != cbs: return
         self._set_values_ijv()
         self.A.assemble()
         self.A.shift(1000) # Make nonsingular
@@ -201,10 +210,12 @@ class BaseTestMatAnyAIJ(object):
         m, _ = self.A.getLocalSize()
         self.assertEqual(ibdiag.shape, (m//bs, bs, bs))
         tmp = N.empty((m//bs, bs, bs), dtype=PETSc.ScalarType)
-        for i in range(m//bs):
+        rstart, rend = self.A.getOwnershipRange()
+        s, e = rstart//bs, rend//bs
+        for i in range(s, e):
             rows = cols = N.arange(i*bs,(i+1)*bs, dtype=PETSc.IntType)
             vals = self.A.getValues(rows,cols)
-            tmp[i,:,:] = N.linalg.inv(vals)
+            tmp[i-s,:,:] = N.linalg.inv(vals)
         self.assertTrue(N.allclose(ibdiag, tmp))
 
     def testGetSubMatrix(self):
@@ -256,7 +267,7 @@ class BaseTestMatAnyAIJ(object):
         return (self.rows, self.xadj, self.adjy, self.vals,)
 
     def _preallocate(self):
-        self.A.setPreallocationNNZ([5, 2], self.BSIZE)
+        self.A.setPreallocationNNZ([5, 2])
 
     def _set_values(self):
         import sys
@@ -294,11 +305,12 @@ class BaseTestMatAnyAIJ(object):
         self.assertEqual(A.getBlockSizes(), (rbs, cbs))
 
     def _chk_aij(self, A, i, j):
-        ai, aj = A.getRowIJ(compressed=bool(self.BSIZE))
+        compressed = bool(self.BSIZE)
+        ai, aj = A.getRowIJ(compressed=compressed)
         if None not in (ai, aj):
             self.assertTrue(N.all(i==ai))
             self.assertTrue(N.all(j==aj))
-        ai, aj = A.getColumnIJ(compressed=bool(self.BSIZE))
+        ai, aj = A.getColumnIJ(compressed=compressed)
         if None not in (ai, aj):
             self.assertTrue(N.all(i==ai))
             self.assertTrue(N.all(j==aj))
@@ -427,6 +439,108 @@ class TestMatMPIBAIJ_G45_B5(TestMatMPIBAIJ_G45):
 class TestMatMPIBAIJ_G89_B5(TestMatMPIBAIJ_G89):
     BSIZE = 5
 
+# -- SymmBlock AIJ ---------------
+
+class BaseTestMatSBAIJ(BaseTestMatAnyAIJ, unittest.TestCase):
+    COMM  = PETSc.COMM_WORLD
+    TYPE  = PETSc.Mat.Type.SBAIJ
+    GRID  = 0, 0
+    BSIZE = 1
+    def testInvertBlockDiagonal(self): pass
+    def _chk_aij(self, A, i, j):
+        ai, aj = A.getRowIJ(compressed=True)
+        if None not in (ai, aj):
+            if 0: # XXX Implement
+                self.assertTrue(N.all(i==ai))
+                self.assertTrue(N.all(j==aj))
+        ai, aj = A.getColumnIJ(compressed=True)
+        if None not in (ai, aj):
+            if 0: # XXX Implement
+                self.assertTrue(N.all(i==ai))
+                self.assertTrue(N.all(j==aj))
+
+# -- Seq SymmBlock AIJ --
+
+class TestMatSeqSBAIJ(BaseTestMatSBAIJ):
+    COMM = PETSc.COMM_SELF
+    TYPE = PETSc.Mat.Type.SEQSBAIJ
+# bs = 1
+class TestMatSeqSBAIJ_G23(TestMatSeqSBAIJ):
+    GRID  = 2, 3
+class TestMatSeqSBAIJ_G45(TestMatSeqSBAIJ):
+    GRID  = 4, 5
+class TestMatSeqSBAIJ_G89(TestMatSeqSBAIJ):
+    GRID  = 8, 9
+# bs = 2
+class TestMatSeqSBAIJ_G23_B2(TestMatSeqSBAIJ_G23):
+    BSIZE = 2
+class TestMatSeqSBAIJ_G45_B2(TestMatSeqSBAIJ_G45):
+    BSIZE = 2
+class TestMatSeqSBAIJ_G89_B2(TestMatSeqSBAIJ_G89):
+    BSIZE = 2
+# bs = 3
+class TestMatSeqSBAIJ_G23_B3(TestMatSeqSBAIJ_G23):
+    BSIZE = 3
+class TestMatSeqSBAIJ_G45_B3(TestMatSeqSBAIJ_G45):
+    BSIZE = 3
+class TestMatSeqSBAIJ_G89_B3(TestMatSeqSBAIJ_G89):
+    BSIZE = 3
+# bs = 4
+class TestMatSeqSBAIJ_G23_B4(TestMatSeqSBAIJ_G23):
+    BSIZE = 4
+class TestMatSeqSBAIJ_G45_B4(TestMatSeqSBAIJ_G45):
+    BSIZE = 4
+class TestMatSeqSBAIJ_G89_B4(TestMatSeqSBAIJ_G89):
+    BSIZE = 4
+# bs = 5
+class TestMatSeqSBAIJ_G23_B5(TestMatSeqSBAIJ_G23):
+    BSIZE = 5
+class TestMatSeqSBAIJ_G45_B5(TestMatSeqSBAIJ_G45):
+    BSIZE = 5
+class TestMatSeqSBAIJ_G89_B5(TestMatSeqSBAIJ_G89):
+    BSIZE = 5
+
+
+# -- MPI SymmBlock AIJ --
+
+class TestMatMPISBAIJ(BaseTestMatSBAIJ):
+    COMM = PETSc.COMM_WORLD
+    TYPE = PETSc.Mat.Type.MPISBAIJ
+# bs = 1
+class TestMatMPISBAIJ_G23(TestMatMPISBAIJ):
+    GRID  = 2, 3
+class TestMatMPISBAIJ_G45(TestMatMPISBAIJ):
+    GRID  = 4, 5
+class TestMatMPISBAIJ_G89(TestMatMPISBAIJ):
+    GRID  = 8, 9
+# bs = 2
+class TestMatMPISBAIJ_G23_B2(TestMatMPISBAIJ_G23):
+    BSIZE = 2
+class TestMatMPISBAIJ_G45_B2(TestMatMPISBAIJ_G45):
+    BSIZE = 2
+class TestMatMPISBAIJ_G89_B2(TestMatMPISBAIJ_G89):
+    BSIZE = 2
+# bs = 3
+class TestMatMPISBAIJ_G23_B3(TestMatMPISBAIJ_G23):
+    BSIZE = 3
+class TestMatMPISBAIJ_G45_B3(TestMatMPISBAIJ_G45):
+    BSIZE = 3
+class TestMatMPISBAIJ_G89_B3(TestMatMPISBAIJ_G89):
+    BSIZE = 3
+# bs = 4
+class TestMatMPISBAIJ_G23_B4(TestMatMPISBAIJ_G23):
+    BSIZE = 4
+class TestMatMPISBAIJ_G45_B4(TestMatMPISBAIJ_G45):
+    BSIZE = 4
+class TestMatMPISBAIJ_G89_B4(TestMatMPISBAIJ_G89):
+    BSIZE = 4
+# bs = 5
+class TestMatMPISBAIJ_G23_B5(TestMatMPISBAIJ_G23):
+    BSIZE = 5
+class TestMatMPISBAIJ_G45_B5(TestMatMPISBAIJ_G45):
+    BSIZE = 5
+class TestMatMPISBAIJ_G89_B5(TestMatMPISBAIJ_G89):
+    BSIZE = 5
 
 # -- AIJ + Block ---------------
 
@@ -571,7 +685,7 @@ if PETSc.Sys.getVersion() >= (3,2,0):
         COMM  = PETSc.COMM_WORLD
         TYPE  = PETSc.Mat.Type.AIJ
         GRID  = 0, 0
-        BSIZE = (4,2)
+        BSIZE = 4, 2
 
         def _preallocate(self):
             try:

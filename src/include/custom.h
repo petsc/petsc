@@ -193,10 +193,23 @@ VecStrideSum(Vec v, PetscInt start, PetscScalar *a)
 
 /* ---------------------------------------------------------------- */
 
-#undef __FUNCT__
+PETSC_STATIC_INLINE
+#undef  __FUNCT__
+#define __FUNCT__ "MatGetBlockSize_NoCheck"
+PetscErrorCode MatGetBlockSize_NoCheck(Mat A,PetscInt *bs)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidIntPointer(bs,2);
+  ierr = PetscLayoutGetBlockSize(A->rmap,bs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE
+#undef  __FUNCT__
 #define __FUNCT__ "MatIsPreallocated"
-static PetscErrorCode
-MatIsPreallocated(Mat A,PetscBool *flag)
+PetscErrorCode MatIsPreallocated(Mat A,PetscBool *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -205,148 +218,111 @@ MatIsPreallocated(Mat A,PetscBool *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateAnyAIJ"
-static PetscErrorCode
-MatCreateAnyAIJ(MPI_Comm comm, PetscInt bs,
-                PetscInt m, PetscInt n,
-                PetscInt M, PetscInt N,
-                Mat *A)
+PETSC_STATIC_INLINE
+#undef  __FUNCT__
+#define __FUNCT__ "MatHasPreallocationAIJ"
+PetscErrorCode MatHasPreallocationAIJ(Mat A,PetscBool *aij,PetscBool *baij,PetscBool *sbaij)
 {
-  Mat            mat = PETSC_NULL;
-  MatType        mtype = PETSC_NULL;
-  PetscMPIInt    size = 0;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidPointer(A,7);
-  ierr = MatCreate(comm,&mat);CHKERRQ(ierr);
-  ierr = MatSetSizes(mat,m,n,M,N);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  if (bs == PETSC_DECIDE) {
-    if (size > 1) mtype = (MatType)MATMPIAIJ;
-    else          mtype = (MatType)MATSEQAIJ;
-  } else {
-    if (size > 1) mtype = (MatType)MATMPIBAIJ;
-    else          mtype = (MatType)MATSEQBAIJ;
-  }
-  ierr = MatSetType(mat,mtype);CHKERRQ(ierr);
-  if (bs != PETSC_DECIDE) {
-    ierr = MatSetBlockSize(mat,bs);CHKERRQ(ierr);
-  }
-  *A = mat;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateAnyAIJCRL"
-static PetscErrorCode
-MatCreateAnyAIJCRL(MPI_Comm comm, PetscInt bs,
-                   PetscInt m, PetscInt n,
-                   PetscInt M, PetscInt N,
-                   Mat *A)
-{
-  Mat            mat = PETSC_NULL;
-  MatType        mtype = PETSC_NULL;
-  PetscMPIInt    size = 0;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidPointer(A,7);
-  ierr = MatCreate(comm,&mat);CHKERRQ(ierr);
-  ierr = MatSetSizes(mat,m,n,M,N);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  if (size > 1) mtype = (MatType)MATMPIAIJCRL;
-  else          mtype = (MatType)MATSEQAIJCRL;
-  ierr = MatSetType(mat,mtype);CHKERRQ(ierr);
-  if (bs != PETSC_DECIDE) {
-    ierr = MatSetBlockSize(mat,bs);CHKERRQ(ierr);
-  }
-  *A = mat;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateAnyDense"
-static PetscErrorCode
-MatCreateAnyDense(MPI_Comm comm,
-                  PetscInt rbs, PetscInt cbs,
-                  PetscInt m,   PetscInt n,
-                  PetscInt M,   PetscInt N,
-                  Mat *A)
-{
-  Mat            mat = PETSC_NULL;
-  MatType        mtype = PETSC_NULL;
-  PetscMPIInt    size = 0;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidPointer(A,8);
-  ierr = MatCreate(comm,&mat);CHKERRQ(ierr);
-  ierr = MatSetSizes(mat,m,n,M,N);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1) mtype = (MatType)MATMPIDENSE;
-  else          mtype = (MatType)MATSEQDENSE;
-  ierr = MatSetType(mat,mtype);CHKERRQ(ierr);
-  if (cbs == PETSC_DECIDE) cbs = rbs;
-  if (rbs != PETSC_DECIDE) {
-    ierr = MatSetBlockSizes(mat,rbs,cbs);CHKERRQ(ierr);
-  }
-  *A = mat;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatAnyAIJSetPreallocation"
-static PetscErrorCode
-MatAnyAIJSetPreallocation(Mat A,PetscInt bs,
-                          PetscInt d_nz,const PetscInt d_nnz[],
-                          PetscInt o_nz,const PetscInt o_nnz[])
-{
-  PetscBool      flag = PETSC_FALSE;
+  void (*f)(void) = 0;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
-  if (d_nnz) PetscValidIntPointer(d_nnz,3);
-  if (o_nnz) PetscValidIntPointer(o_nnz,5);
-  ierr = MatIsPreallocated(A,&flag);CHKERRQ(ierr);
-  if (flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,
-                    "matrix is already preallocated");
-  if (bs == PETSC_DECIDE) {
-    ierr = MatSeqAIJSetPreallocation(A,d_nz,d_nnz);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(A,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
-  } else {
-    ierr = MatSeqBAIJSetPreallocation(A,bs,d_nz,d_nnz);CHKERRQ(ierr);
-    ierr = MatMPIBAIJSetPreallocation(A,bs,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
-  }
+  PetscValidPointer(aij,2);
+  PetscValidPointer(baij,3);
+  PetscValidPointer(sbaij,4);
+  *aij = *baij = *sbaij = PETSC_FALSE;
+  if (!f) {ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",&f);CHKERRQ(ierr);}
+  if (!f) {ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqAIJSetPreallocation_C",&f);CHKERRQ(ierr);}
+  if ( f) {*aij = PETSC_TRUE; goto done;};
+  if (!f) {ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPIBAIJSetPreallocation_C",&f);CHKERRQ(ierr);}
+  if (!f) {ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqBAIJSetPreallocation_C",&f);CHKERRQ(ierr);}
+  if ( f) {*baij = PETSC_TRUE; goto done;};
+  if (!f) {ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPISBAIJSetPreallocation_C",&f);CHKERRQ(ierr);}
+  if (!f) {ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqSBAIJSetPreallocation_C",&f);CHKERRQ(ierr);}
+  if ( f) {*sbaij = PETSC_TRUE; goto done;};
+ done:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAnyAIJSetPreallocationCSR"
-static PetscErrorCode
-MatAnyAIJSetPreallocationCSR(Mat A,PetscInt bs, const PetscInt Ii[],
-                             const PetscInt Jj[], const PetscScalar V[])
+#undef  __FUNCT__
+#define __FUNCT__ "MatSeqSBAIJSetPreallocationCSR_SeqSBAIJ"
+PetscErrorCode MatSeqSBAIJSetPreallocationCSR_SeqSBAIJ(Mat B,PetscInt bs,const PetscInt ii[],const PetscInt jj[], const PetscScalar V[])
 {
-  PetscBool      flag = PETSC_FALSE;
+  PetscInt       i,j,m,nz,nz_max=0,*nnz;
+  PetscScalar    *values=0;
+#if 0
+  PetscBool      roworiented = ((Mat_SeqSBAIJ*)B->data)->roworiented;
+#else
+  PetscBool      roworiented = PETSC_FALSE;/*((Mat_SeqSBAIJ*)B->data)->roworiented;*/
+  PetscErrorCode (*MatSetValuesBlocked_SeqSBAIJ)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode) = B->ops->setvaluesblocked;
+#endif
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidType(A,1);
-  PetscValidIntPointer(Ii,3);
-  PetscValidIntPointer(Jj,4);
-  if (V) PetscValidScalarPointer(V,5);
-  ierr = MatIsPreallocated(A,&flag);CHKERRQ(ierr);
-  if (flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,
-                    "matrix is already preallocated");
-  if (bs == PETSC_DECIDE) {
-    ierr = MatSeqAIJSetPreallocationCSR(A,Ii,Jj,V);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocationCSR(A,Ii,Jj,V);CHKERRQ(ierr);
-  } else {
-    ierr = MatSeqBAIJSetPreallocationCSR(A,bs,Ii,Jj,V);CHKERRQ(ierr);
-    ierr = MatMPIBAIJSetPreallocationCSR(A,bs,Ii,Jj,V);CHKERRQ(ierr);
+  if (bs < 1) SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size specified, must be positive but it is %D",bs);
+  ierr   = PetscLayoutSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
+  ierr   = PetscLayoutSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
+  ierr   = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
+  ierr   = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
+  ierr   = PetscLayoutGetBlockSize(B->rmap,&bs);CHKERRQ(ierr);
+  m      = B->rmap->n/bs;
+
+  if (ii[0]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ii[0] must be 0 but it is %D",ii[0]);
+  ierr = PetscMalloc((m+1)*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
+  for (i=0; i<m; i++) {
+    nz = ii[i+1] - ii[i];
+    if (nz < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %D has a negative number of columns %D",i,nz);
+    nz_max = PetscMax(nz_max,nz);
+    nnz[i] = nz;
   }
+  ierr = MatSeqSBAIJSetPreallocation(B,bs,0,nnz);CHKERRQ(ierr);
+  ierr = PetscFree(nnz);CHKERRQ(ierr);
+
+  values = (PetscScalar*)V;
+  if (!values) {
+    ierr = PetscMalloc(bs*bs*nz_max*sizeof(PetscScalar),&values);CHKERRQ(ierr);
+    ierr = PetscMemzero(values,bs*bs*nz_max*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
+  for (i=0; i<m; i++) {
+    PetscInt          ncols  = ii[i+1] - ii[i];
+    const PetscInt    *icols = jj + ii[i];
+    if (!roworiented || bs == 1) {
+      const PetscScalar *svals = values + (V ? (bs*bs*ii[i]) : 0);
+      ierr = MatSetValuesBlocked_SeqSBAIJ(B,1,&i,ncols,icols,svals,INSERT_VALUES);CHKERRQ(ierr);
+    } else {
+      for (j=0; j<ncols; j++) {
+        const PetscScalar *svals = values + (V ? (bs*bs*(ii[i]+j)) : 0);
+        ierr = MatSetValuesBlocked_SeqSBAIJ(B,1,&i,1,&icols[j],svals,INSERT_VALUES);CHKERRQ(ierr);
+      }
+    }
+  }
+  if (!V) { ierr = PetscFree(values);CHKERRQ(ierr); }
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "MatSeqSBAIJSetPreallocationCSR"
+PetscErrorCode MatSeqSBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt ii[],const PetscInt jj[], const PetscScalar V[])
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(B,MAT_CLASSID,1);
+  PetscValidType(B,1);
+  PetscValidLogicalCollectiveInt(B,bs,2);
+#if 1
+  {
+    void (*f)(void) = 0;
+    ierr = PetscObjectQueryFunction((PetscObject)B,"MatSeqSBAIJSetPreallocation_C",&f);CHKERRQ(ierr);
+    if (f) {
+      ierr = MatSeqSBAIJSetPreallocationCSR_SeqSBAIJ(B,bs,ii,jj,V);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  }
+#endif
+  ierr = PetscTryMethod(B,"MatSeqSBAIJSetPreallocationCSR_C",(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]),(B,bs,ii,jj,V));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
