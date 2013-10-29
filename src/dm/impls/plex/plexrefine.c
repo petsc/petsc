@@ -4351,11 +4351,13 @@ PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscInt dept
   ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, &vMax);CHKERRQ(ierr);
   switch (refiner) {
   case 0: break;
+  case 7:
+  case 8:
+    if (eMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No edge maximum specified in hybrid mesh");
   case 3:
+  case 4:
     if (cMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No cell maximum specified in hybrid mesh");
-    cMax = PetscMin(cEnd, cMax);
     if (fMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No face maximum specified in hybrid mesh");
-    fMax = PetscMin(fEnd, fMax);
   }
   for (l = 0; l < numLabels; ++l) {
     DMLabel         label, labelNew;
@@ -4565,7 +4567,7 @@ PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscInt dept
             }
             newp = eStartNew + (eMax - eStart)*2 + (fMax - fStart)*3 + (p - cStart);
             ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
-          } else if ((p >= cStart) && (p < cMax)) {
+          } else if ((p >= cMax) && (p < cEnd)) {
             /* Hybrid cells add new cells and faces */
             for (r = 0; r < 4; ++r) {
               newp = cStartNew + (cMax - cStart)*8 + (p - cMax)*4 + r;
