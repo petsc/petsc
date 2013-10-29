@@ -121,6 +121,7 @@ PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecSc
       if (dir == DMDA_X) {
         ierr = PetscMalloc(dd->w * sizeof(PetscInt), &indices);CHKERRQ(ierr);
         indices[0] = dd->w*gp;
+        for (i = 1; i < dd->w; ++i) indices[i] = indices[i-1] + 1;
         ierr = AOApplicationToPetsc(ao, dd->w, indices);CHKERRQ(ierr);
         ierr = VecCreate(PETSC_COMM_SELF, newvec);CHKERRQ(ierr);
         ierr = VecSetBlockSize(*newvec, dd->w);CHKERRQ(ierr);
