@@ -331,6 +331,7 @@ static PetscErrorCode IPMInitializeBounds(TaoSolver tao)
 
   MPI_Comm comm;
   PetscFunctionBegin;
+  cind=xind=ucind=uceind=stepind=0;
   ipmP->mi=0;
   ipmP->nxlb=0;
   ipmP->nxub=0;
@@ -377,6 +378,10 @@ static PetscErrorCode IPMInitializeBounds(TaoSolver tao)
   comm = ((PetscObject)(tao->solution))->comm;
 
   bigsize = ipmP->n+2*ipmP->nb+ipmP->me;
+  ierr = PetscMalloc(ipmP->n*sizeof(PetscInt),&xind); CHKERRQ(ierr);
+  ierr = PetscMalloc(ipmP->me*sizeof(PetscInt),&uceind); CHKERRQ(ierr);
+  ierr = PetscMalloc(bigsize*sizeof(PetscInt),&stepind); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(tao->solution,&xstart,&xend);CHKERRQ(ierr);
   if (ipmP->nb > 0) {
     ierr = VecCreate(comm,&ipmP->s); CHKERRQ(ierr);
     ierr = VecSetSizes(ipmP->s,PETSC_DECIDE,ipmP->nb); CHKERRQ(ierr);
@@ -401,13 +406,9 @@ static PetscErrorCode IPMInitializeBounds(TaoSolver tao)
     ierr = VecDuplicate(ipmP->s,&ipmP->Inf_nb); CHKERRQ(ierr);
     ierr = VecSet(ipmP->Inf_nb,TAO_INFINITY); CHKERRQ(ierr);
     
-    ierr = PetscMalloc(bigsize*sizeof(PetscInt),&stepind); CHKERRQ(ierr);
     ierr = PetscMalloc(ipmP->nb*sizeof(PetscInt),&cind); CHKERRQ(ierr);
     ierr = PetscMalloc(ipmP->mi*sizeof(PetscInt),&ucind); CHKERRQ(ierr);
-    ierr = PetscMalloc(ipmP->n*sizeof(PetscInt),&xind); CHKERRQ(ierr);
-    ierr = PetscMalloc(ipmP->me*sizeof(PetscInt),&uceind); CHKERRQ(ierr);
     
-    ierr = VecGetOwnershipRange(tao->solution,&xstart,&xend);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(ipmP->s,&sstart,&send);CHKERRQ(ierr);
 
 
