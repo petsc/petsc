@@ -22,7 +22,6 @@ class Configure(config.base.Configure):
     config.base.Configure.setupDependencies(self, framework)
     self.arch          = framework.require('PETSc.utilities.arch', self)
     self.scalartypes   = framework.require('PETSc.utilities.scalarTypes', self)
-    self.bmake         = framework.require('PETSc.utilities.bmakeDir', self)
     self.datafilespath = framework.require('PETSc.utilities.dataFilesPath', self)
     self.compilers     = framework.require('config.compilers', self)
     self.mpi           = framework.require('config.packages.MPI', self)

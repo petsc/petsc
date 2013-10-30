@@ -23,21 +23,22 @@ class Configure(config.base.Configure):
     self.arch = framework.require('PETSc.utilities.arch', self)
     return
 
-  def configureBmakeDir(self):
+  def configureInstallDir(self):
     '''Makes $PETSC_ARCH and subdirectories if it does not exist'''
-    self.bmakeDir = os.path.join(self.arch.arch)
-    if not os.path.exists(self.bmakeDir):
-      os.makedirs(self.bmakeDir)
+    self.dir = os.path.abspath(os.path.join(self.arch.arch))
+    if not os.path.exists(self.dir):
+      os.makedirs(self.dir)
     for i in ['include','lib','bin','conf']:
-      self.bmakeDir = os.path.join(self.arch.arch,i)
-      if not os.path.exists(self.bmakeDir):
-        os.makedirs(self.bmakeDir)
+      newdir = os.path.join(self.dir,i)
+      if not os.path.exists(newdir):
+        os.makedirs(newdir)
     if os.path.isfile(self.framework.argDB.saveFilename):
       os.remove(self.framework.argDB.saveFilename)
-    self.framework.argDB.saveFilename = os.path.abspath(os.path.join(self.bmakeDir, 'RDict.db'))
-    self.framework.logPrint('Changed persistence directory to '+self.bmakeDir)
+    confdir = os.path.join(self.dir,'conf')
+    self.framework.argDB.saveFilename = os.path.abspath(os.path.join(confdir, 'RDict.db'))
+    self.framework.logPrint('Changed persistence directory to '+confdir)
     return
 
   def configure(self):
-    self.executeTest(self.configureBmakeDir)
+    self.executeTest(self.configureInstallDir)
     return
