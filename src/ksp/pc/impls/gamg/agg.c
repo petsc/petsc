@@ -211,6 +211,7 @@ PetscErrorCode PCDestroy_GAMG_AGG(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscFree(pc_gamg->subctx);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
