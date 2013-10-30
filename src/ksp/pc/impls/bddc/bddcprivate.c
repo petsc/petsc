@@ -2105,7 +2105,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   pcbddc->new_primal_space_local = PETSC_TRUE;
   if (olocal_primal_size == pcbddc->local_primal_size) {
     ierr = PetscMemcmp(pcbddc->primal_indices_local_idxs,oprimal_indices_local_idxs,olocal_primal_size,&pcbddc->new_primal_space_local);CHKERRQ(ierr);
-    pcbddc->new_primal_space_local = !pcbddc->new_primal_space_local;
+    pcbddc->new_primal_space_local = (PetscBool)(!pcbddc->new_primal_space_local);
     ierr = PetscFree(oprimal_indices_local_idxs);CHKERRQ(ierr);
   }
   /* new_primal_space will be used for numbering of coarse dofs, so it should be the same across all subdomains */

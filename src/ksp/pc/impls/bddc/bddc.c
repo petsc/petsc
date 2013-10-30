@@ -1,9 +1,8 @@
 /* TODOLIST
 
    ConstraintsSetup
-   - assure same constraints between neighbours by sorting vals by global index before SVD!
    - tolerances for constraints as an option (take care of single precision!)
-   - MAT_IGNORE_ZERO_ENTRIES for Constraints Matrix
+   - Can MAT_IGNORE_ZERO_ENTRIES be used for Constraints Matrix?
 
    Solvers
    - Add support for reuse fill and cholecky factor for coarse solver (similar to local solvers)
@@ -12,7 +11,7 @@
 
    User interface
    - Change SetNeumannBoundaries to SetNeumannBoundariesLocal and provide new SetNeumannBoundaries (same Dirichlet)
-   - Negative indices in dirichlet and Neumann is should be skipped (now they cause out-of-bounds access)
+   - Negative indices in dirichlet and Neumann ISs should be skipped (now they cause out-of-bounds access)
    - Provide PCApplyTranpose_BDDC
    - DofSplitting and DM attached to pc?
 
