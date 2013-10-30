@@ -430,6 +430,13 @@ runex5_5_qn:
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_qn, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_5_qn.tmp
 
+runex5_5_broyden:
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type qn -snes_qn_type broyden -snes_qn_m ${N_RESTART} \
+        > ex5_5_broyden.tmp 2>&1; \
+	   if (${DIFF} output/ex5_5_broyden.out ex5_5_broyden.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex5_5_broyden, diffs above \n========================================="; fi; \
+	   ${RM} -f ex5_5_broyden.tmp
+
 runex5_5_ls:
 	-@${CSD_BASIC_COMMAND_LINE} -snes_type newtonls \
         > ex5_5_ls.tmp 2>&1; \
@@ -1076,7 +1083,7 @@ runex73f90t:
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
                                  runex3_2 runex3_3 runex3_4 ex3.rm ex4.PETSc runex4 ex4.rm ex5.PETSc runex5 runex5_2 runex5_3 runex5_4 \
                                  runex5_5_ngmres runex5_5_ngmres_nrichardson runex5_5_ncg runex5_5_nrichardson \
-                                 runex5_5_ngmres_ngs runex5_5_qn runex5_5_ls \
+                                 runex5_5_ngmres_ngs runex5_5_qn runex5_5_broyden runex5_5_ls \
                                  runex5_5_fas runex5_5_ngmres_fas runex5_5_fas_additive \
                                  runex5_5_nasm runex5_5_newton_asm_dmda runex5_5_newton_gasm_dmda \
                                  runex5_6 ex5.rm ex7.PETSc runex7 ex7.rm\
