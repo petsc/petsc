@@ -110,12 +110,8 @@ static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt
 
   if (!repart && new_size==nactive) *a_Amat_crs = Cmat; /* output - no repartitioning or reduction - could bail here */
   else {
-    const PetscInt *idx,ndata_rows=pc_gamg->data_cell_rows,ndata_cols=pc_gamg->data_cell_cols,node_data_sz=ndata_rows*ndata_cols;
     PetscInt       *counts,*newproc_idx,ii,jj,kk,strideNew,*tidx,ncrs_prim_new,ncrs_eq_new,nloc_old;
-    IS             is_eq_newproc,is_eq_num,is_eq_num_prim,isscat,new_eq_indices;
-    VecScatter     vecscat;
-    PetscScalar    *array;
-    Vec            src_crd, dest_crd;
+    IS             is_eq_newproc,is_eq_num,is_eq_num_prim,new_eq_indices;
 
     nloc_old = ncrs_eq/cr_bs;
     if (ncrs_eq % cr_bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ncrs_eq %D not divisible by cr_bs %D",ncrs_eq,cr_bs);
@@ -286,6 +282,13 @@ static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt
 #if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET12],0,0,0,0);CHKERRQ(ierr);
 #endif
+    /* data movement scope -- this could be moved to subclasses so that we don't try to cram all auxilary data into some complex abstracted thing */
+    {
+    Vec            src_crd, dest_crd;
+    const PetscInt *idx,ndata_rows=pc_gamg->data_cell_rows,ndata_cols=pc_gamg->data_cell_cols,node_data_sz=ndata_rows*ndata_cols;
+    VecScatter     vecscat;
+    PetscScalar    *array;
+    IS isscat;
 
     /* move data (for primal equations only) */
     /* Create a vector to contain the newly ordered element information */
@@ -351,7 +354,7 @@ static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt
     }
     ierr = VecRestoreArray(dest_crd, &array);CHKERRQ(ierr);
     ierr = VecDestroy(&dest_crd);CHKERRQ(ierr);
-
+    }
     /* move A and P (columns) with new layout */
 #if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET13],0,0,0,0);CHKERRQ(ierr);
