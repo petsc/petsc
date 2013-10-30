@@ -436,7 +436,7 @@ class KSP(object):
     return
 
   def addResidual(self, n, res):
-    if not len(self.res) == n: raise RuntimeError('Invalid KSP residual at iterate '+str(n))
+    if not len(self.res) == n: raise RuntimeError('Invalid KSP residual '+str(res)+' at iterate '+str(n))
     self.res.append(res)
     return
 
@@ -464,13 +464,31 @@ class SNES(object):
   def __str__(self):
     return 'SNES:\n'+str(self.res)
 
+class Error(object):
+  def __init__(self, atol = 1.0e-12, rtol = 1.0e-8):
+    self.res  = 0.0
+    self.atol = atol
+    self.rtol = rtol
+    return
+
+  def setNorm(self, res):
+    self.res = res
+    return
+
+  def __eq__(self, s):
+    return all([abs(a-b) < self.atol or abs((a-b)/a) < self.rtol for a, b in [(self.res, s.res)]])
+
+  def __str__(self):
+    return 'L_2 Error:\n'+str(self.res)
+
 class SolverParser(object):
   def __init__(self, atol = 1.0e-12):
     import re
 
-    self.atol   = atol
-    self.reSNES = re.compile(r'\s*(?P<it>\d+) SNES Function norm (?P<norm>\d+\.\d+(e(\+|-)\d+)?)')
-    self.reKSP  = re.compile(r'\s*(?P<it>\d+) KSP Residual norm (?P<norm>\d+\.\d+(e(\+|-)\d+)?)')
+    self.atol    = atol
+    self.reSNES  = re.compile(r'\s*(?P<it>\d+) SNES Function norm (?P<norm>\d+\.\d+(e(\+|-)\d+)?)')
+    self.reKSP   = re.compile(r'\s*(?P<it>\d+) KSP Residual norm (?P<norm>\d+\.\d+(e(\+|-)\d+)?)')
+    self.reError = re.compile(r'L_2 Error: (?P<norm>\d+\.\d+(e(\+|-)\d+)?)')
     return
 
   def parse(self, text):
@@ -479,8 +497,9 @@ class SolverParser(object):
     stack  = []
     excess = []
     for line in lines:
-      mSNES = self.reSNES.match(line)
-      mKSP  = self.reKSP.match(line)
+      mSNES  = self.reSNES.match(line)
+      mKSP   = self.reKSP.match(line)
+      mError = self.reError.match(line)
       if mSNES:
         it = int(mSNES.group('it'))
         if it == 0: stack.append(SNES(atol = self.atol))
@@ -489,6 +508,10 @@ class SolverParser(object):
         it = int(mKSP.group('it'))
         if it == 0: stack.append(KSP(atol = self.atol))
         stack[-1].addResidual(it, float(mKSP.group('norm')))
+      elif mError:
+        o = Error(atol = self.atol)
+        o.setNorm(float(mError.group('norm')))
+        objs.append(o)
       elif line.strip().startswith('Nonlinear solve converged'):
         objs.append(stack.pop())
       elif line.strip().startswith('Linear solve converged'):
