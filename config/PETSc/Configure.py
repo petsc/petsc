@@ -59,6 +59,8 @@ class Configure(config.base.Configure):
     self.atomics       = framework.require('config.atomics',            self)
     self.make          = framework.require('config.packages.make',      self)
     self.blasLapack    = framework.require('config.packages.BlasLapack',self)
+    self.externalpackagesdir = framework.require('PETSc.utilities.externalpackagesdir',self)
+
     if os.path.isdir(os.path.join('config', 'PETSc')):
       for d in ['utilities', 'packages']:
         for utility in os.listdir(os.path.join('config', 'PETSc', d)):
@@ -69,6 +71,7 @@ class Configure(config.base.Configure):
             utilityObj.archProvider       = self.arch
             utilityObj.languageProvider   = self.languages
             utilityObj.installDirProvider = self.installdir
+            utilityObj.externalPackagesDirProvider = self.externalpackagesdir
             setattr(self, utilityName.lower(), utilityObj)
 
     for package in config.packages.all:
@@ -77,6 +80,7 @@ class Configure(config.base.Configure):
         packageObj.archProvider       = self.arch
         packageObj.languageProvider   = self.languages
         packageObj.installDirProvider = self.installdir
+        packageObj.externalPackagesDirProvider = self.externalpackagesdir
         setattr(self, package.lower(), packageObj)
     # Force blaslapack to depend on scalarType so precision is set before BlasLapack is built
     framework.require('PETSc.utilities.scalarTypes', self.f2cblaslapack)

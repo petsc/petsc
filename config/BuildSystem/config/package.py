@@ -161,9 +161,11 @@ class Package(config.base.Configure):
 
   def getExternalPackagesDir(self):
     '''The directory for downloaded packages'''
-    if not self.framework.externalPackagesDir is None:
-      packages = os.path.abspath('externalpackages')
-      return self.framework.externalPackagesDir
+    if hasattr(self, 'externalPackagesDirProvider'):
+      if hasattr(self.externalPackagesDirProvider, 'dir'):
+        return self.externalPackagesDirProvider.dir
+    elif not self.framework.externalPackagesDir is None:
+      return os.path.abspath('externalpackages')
     return self._externalPackagesDir
   def setExternalPackagesDir(self, externalPackagesDir):
     '''The directory for downloaded packages'''

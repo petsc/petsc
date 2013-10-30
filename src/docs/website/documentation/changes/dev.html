@@ -105,6 +105,10 @@
           option <tt>-dynamic_library_preload</tt> for similar functionality.
         </li>
         <li>
+          Default location of externalpackages is moved from <tt>PETSC_DIR/externalpackages</tt> to
+          <tt>PETSC_DIR/PETSC_ARCH/externalpackages</tt>
+        </li>
+        <li>
           The <tt>__SDIR__</tt> macro (and <tt>__INSDIR__</tt>) is no longer used.
           We recommend passing full paths or paths from the project root to the compiler so that error messages contain enough context.
         </li>
