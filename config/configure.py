@@ -6,28 +6,6 @@ import user
 extraLogs = []
 petsc_arch = ''
 
-import urllib
-import tarfile
-
-def untar(tar, path = '.', leading = ''):
-  if leading:
-    entries = [t.name for t in tar.getmembers()]
-    prefix = os.path.commonprefix(entries)
-    if prefix:
-      for tarinfo in tar.getmembers():
-        tail = tarinfo.name.split(prefix, 1)[1]
-        tarinfo.name = os.path.join(leading, tail)
-  for tarinfo in tar.getmembers():
-    tar.extract(tarinfo, path)
-  return
-
-def downloadPackage(url, filename, targetDirname):
-  '''Download the tarball for a package at url, save it as filename, and untar it into targetDirname'''
-  filename, headers = urllib.urlretrieve(url, filename)
-  tar = tarfile.open(filename, 'r:gz')
-  untar(tar, targetDirname, leading = filename.split('.')[0])
-  return
-
 # Use en_US as language so that BuildSystem parses compiler messages in english
 if 'LC_LOCAL' in os.environ and os.environ['LC_LOCAL'] != '' and os.environ['LC_LOCAL'] != 'en_US' and os.environ['LC_LOCAL']!= 'en_US.UTF-8': os.environ['LC_LOCAL'] = 'en_US.UTF-8'
 if 'LANG' in os.environ and os.environ['LANG'] != '' and os.environ['LANG'] != 'en_US' and os.environ['LANG'] != 'en_US.UTF-8': os.environ['LANG'] = 'en_US.UTF-8'
