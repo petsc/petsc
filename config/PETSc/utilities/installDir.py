@@ -50,8 +50,31 @@ class Configure(config.base.Configure):
       shutil.rmtree(self.dir)
     return
 
+  def saveReconfigure(self):
+    self.reconfigure_file = os.path.join(self.dir,'conf','reconfigure-'+self.arch.arch+'.py')
+    self.save_reconfigure_file = None
+    if self.framework.argDB['with-clean'] and os.path.exists(self.reconfigure_file):
+      self.save_reconfigure_file = '.save.reconfigure-'+self.arch.arch+'.py'
+      try:
+        if os.path.exists(self.save_reconfigure_file): os.unlink(self.save_reconfigure_file)
+        os.rename(self.reconfigure_file,self.save_reconfigure_file)
+      except Exception, e:
+        self.save_reconfigure_file = None
+        self.framework.logPrint('error in saveReconfigure(): '+ str(e))
+    return
+
+  def restoreReconfigure(self):
+    if self.framework.argDB['with-clean'] and self.save_reconfigure_file:
+      try:
+        os.rename(self.save_reconfigure_file,self.reconfigure_file)
+      except Exception, e:
+        self.framework.logPrint('error in restoreReconfigure(): '+ str(e))
+    return
+
   def configure(self):
     self.executeTest(self.setInstallDir)
+    self.executeTest(self.saveReconfigure)
     self.executeTest(self.cleanInstallDir)
     self.executeTest(self.configureInstallDir)
+    self.executeTest(self.restoreReconfigure)
     return
