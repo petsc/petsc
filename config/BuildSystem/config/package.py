@@ -176,8 +176,7 @@ class Package(config.base.Configure):
     return []
 
   def getInstallDir(self):
-    if not self.arch:  raise RuntimeError('Why the hell is self.arch not defined for this package -- '+self.package+'\n')
-    self.installDir = os.path.join(self.defaultInstallDir, self.arch)
+    self.installDir = self.defaultInstallDir
     self.confDir    = os.path.join(self.installDir, 'conf')
     self.includeDir = os.path.join(self.installDir, 'include')
     self.libDir     = os.path.join(self.installDir, 'lib')

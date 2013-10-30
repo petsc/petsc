@@ -47,6 +47,7 @@ class Configure(config.base.Configure):
     self.setCompilers  = framework.require('config.setCompilers',       self)
     self.arch          = framework.require('PETSc.utilities.arch',      self.setCompilers)
     self.petscdir      = framework.require('PETSc.utilities.petscdir',  self.setCompilers)
+    self.installdir    = framework.require('PETSc.utilities.installDir',self)
     self.languages     = framework.require('PETSc.utilities.languages', self.setCompilers)
     self.debugging     = framework.require('PETSc.utilities.debugging', self.setCompilers)
     self.CHUD          = framework.require('PETSc.utilities.CHUD',      self)
@@ -67,7 +68,7 @@ class Configure(config.base.Configure):
             utilityObj.headerPrefix       = self.headerPrefix
             utilityObj.archProvider       = self.arch
             utilityObj.languageProvider   = self.languages
-            utilityObj.installDirProvider = self.petscdir
+            utilityObj.installDirProvider = self.installdir
             setattr(self, utilityName.lower(), utilityObj)
 
     for package in config.packages.all:
@@ -75,7 +76,7 @@ class Configure(config.base.Configure):
         packageObj                    = framework.require('config.packages.'+package, self)
         packageObj.archProvider       = self.arch
         packageObj.languageProvider   = self.languages
-        packageObj.installDirProvider = self.petscdir
+        packageObj.installDirProvider = self.installdir
         setattr(self, package.lower(), packageObj)
     # Force blaslapack to depend on scalarType so precision is set before BlasLapack is built
     framework.require('PETSc.utilities.scalarTypes', self.f2cblaslapack)
