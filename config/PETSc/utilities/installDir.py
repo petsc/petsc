@@ -16,6 +16,7 @@ class Configure(config.base.Configure):
 
   def setupHelp(self, help):
     import nargs
+    help.addArgument('PETSc', '-with-clean=<bool>',         nargs.ArgBool(None, 0, 'Delete prior build files including externalpackages'))
     return
 
   def setupDependencies(self, framework):
@@ -23,9 +24,12 @@ class Configure(config.base.Configure):
     self.arch = framework.require('PETSc.utilities.arch', self)
     return
 
-  def configureInstallDir(self):
-    '''Makes $PETSC_ARCH and subdirectories if it does not exist'''
+  def setInstallDir(self):
+    ''' setup installDir to PETSC_DIR/PETSC_ARCH'''
     self.dir = os.path.abspath(os.path.join(self.arch.arch))
+
+  def configureInstallDir(self):
+    '''Makes  installDir subdirectories if it does not exist'''
     if not os.path.exists(self.dir):
       os.makedirs(self.dir)
     for i in ['include','lib','bin','conf']:
@@ -39,6 +43,15 @@ class Configure(config.base.Configure):
     self.framework.logPrint('Changed persistence directory to '+confdir)
     return
 
+  def cleanInstallDir(self):
+    import shutil
+    if self.framework.argDB['with-clean'] and os.path.isdir(self.dir):
+      self.logPrintBox('Warning: "with-clean" is specified. Removing all build files from '+ self.dir)
+      shutil.rmtree(self.dir)
+    return
+
   def configure(self):
+    self.executeTest(self.setInstallDir)
+    self.executeTest(self.cleanInstallDir)
     self.executeTest(self.configureInstallDir)
     return

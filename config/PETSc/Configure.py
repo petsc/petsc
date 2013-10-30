@@ -868,6 +868,8 @@ prepend-path PATH %s
     import sys
     scriptName = os.path.join(self.arch.arch,'conf', 'reconfigure-'+self.arch.arch+'.py')
     args = dict([(nargs.Arg.parseArgument(arg)[0], arg) for arg in self.framework.clArgs])
+    if 'with-clean' in args:
+      del args['with-clean']
     if 'configModules' in args:
       if nargs.Arg.parseArgument(args['configModules'])[1] == 'PETSc.Configure':
         del args['configModules']

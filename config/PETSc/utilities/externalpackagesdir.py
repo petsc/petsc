@@ -12,13 +12,22 @@ class Configure(config.base.Configure):
     self.arch          = framework.require('PETSc.utilities.arch',self)
     return
 
-  def configureExternalPackagesDir(self):
+  def setExternalPackagesDir(self):
     if self.framework.externalPackagesDir is None:
       self.dir = os.path.join(self.installdir.dir, 'externalpackages')
     else:
       self.dir = os.path.join(self.framework.externalPackagesDir,self.arch.arch)
     return
 
+  def cleanExternalpackagesDir(self):
+    import shutil
+    if self.framework.argDB['with-clean'] and os.path.isdir(self.dir):
+      self.logPrintBox('Warning: "with-clean" is specified. Removing all externalpackage files from '+ self.dir)
+      shutil.rmtree(self.dir)
+    return
+
   def configure(self):
-    self.executeTest(self.configureExternalPackagesDir)
+    self.executeTest(self.setExternalPackagesDir)
+    self.executeTest(self.cleanExternalpackagesDir)
+
     return
