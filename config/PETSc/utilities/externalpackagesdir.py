@@ -9,13 +9,14 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     self.installdir    = framework.require('PETSc.utilities.installDir',self)
+    self.arch          = framework.require('PETSc.utilities.arch',self)
     return
 
   def configureExternalPackagesDir(self):
     if self.framework.externalPackagesDir is None:
       self.dir = os.path.join(self.installdir.dir, 'externalpackages')
     else:
-      self.dir = self.framework.externalPackagesDir
+      self.dir = os.path.join(self.framework.externalPackagesDir,self.arch.arch)
     return
 
   def configure(self):
