@@ -52,7 +52,6 @@ class Package(config.base.Configure):
     self.includedir       = 'include' # location of includes in the package directory tree
     self.license          = None # optional license text
     self.excludedDirs     = []   # list of directory names that could be false positives, SuperLU_DIST when looking for SuperLU
-    self.archIndependent  = 0    # 1 means the install directory does not incorporate the ARCH name
     self.downloadonWindows   = 0  # 1 means the --download-package works on Microsoft Windows
     self.worksonWindows      = 0  # 1 means that package can be used on Microsof Windows
     # Outside coupling
@@ -395,9 +394,6 @@ class Package(config.base.Configure):
         raise RuntimeError('Unable to download '+self.downloadname)
       self.downLoad()
       return self.getDir(retry = 0)
-    if not self.archIndependent:
-      if not os.path.isdir(os.path.join(packages, Dir, self.arch)):
-        os.mkdir(os.path.join(packages, Dir, self.arch))
     return os.path.join(packages, Dir)
 
   def gitPreReqCheck(self):
