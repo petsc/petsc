@@ -287,7 +287,6 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec x, PetscReal *f, Vec g, v
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecView(x,0);CHKERRQ(ierr);
   ierr = MatMult(user->H,x,g);CHKERRQ(ierr);
   ierr = VecDot(x,g,&xtHx);CHKERRQ(ierr);
   ierr = VecDot(x,user->d,f);CHKERRQ(ierr);

@@ -189,7 +189,6 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *f, Vec G, v
   g[1] = 2.0*(x[1]-2.0) - 2.0;
   ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
   ierr = VecRestoreArray(G,&g); CHKERRQ(ierr);
-  
   PetscFunctionReturn(0);
 }
 
@@ -207,8 +206,6 @@ PetscErrorCode FormHessian(TaoSolver tao, Vec x, Mat *H, Mat *Hpre, MatStructure
   PetscFunctionBegin;
   val = 0.0;
   ierr = TaoGetDualVariables(tao,&DE,&DI); CHKERRQ(ierr);
-  //VecView(DE,0);
-  //VecView(DI,0);
 
   ierr = VecGetArray(DE,&de); CHKERRQ(ierr);
   ierr = VecGetArray(DI,&di); CHKERRQ(ierr);

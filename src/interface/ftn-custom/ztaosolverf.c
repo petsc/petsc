@@ -3,46 +3,54 @@
 
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define taosetobjectiveroutine_            TAOSETOBJECTIVEROUTINE
-#define taosetgradientroutine_             TAOSETGRADIENTROUTINE
-#define taosetobjectiveandgradientroutine_ TAOSETOBJECTIVEANDGRADIENTROUTINE
-#define taosethessianroutine_              TAOSETHESSIANROUTINE
-#define taosetseparableobjectiveroutine_   TAOSETSEPARABLEOBJECTIVEROUTINE
-#define taosetjacobianroutine_             TAOSETJACOBIANROUTINE
-#define taosetjacobianstateroutine_        TAOSETJACOBIANSTATEROUTINE
-#define taosetjacobiandesignroutine_       TAOSETJACOBIANDESIGNROUTINE
-#define taosetvariableboundsroutine_       TAOSETVARIABLEBOUNDSROUTINE
-#define taosetconstraintsroutine_          TAOSETCONSTRAINTSROUTINE
-#define taosetmonitor_                     TAOSETMONITOR
-#define taosettype_                        TAOSETTYPE
-#define taoview_                           TAOVIEW
-#define taogethistory_                     TAOGETHISTORY
-#define taosetconvergencetest_             TAOSETCONVERGENCETEST
-#define taogetoptionsprefix_               TAOGETOPTIONSPREFIX
-#define taosetoptionsprefix_               TAOSETOPTIONSPREFIX
-#define taoappendoptionsprefix_            TAOAPPENDOPTIONSPREFIX
-#define taogettype_                        TAOGETTYPE
+#define taosetobjectiveroutine_             TAOSETOBJECTIVEROUTINE
+#define taosetgradientroutine_              TAOSETGRADIENTROUTINE
+#define taosetobjectiveandgradientroutine_  TAOSETOBJECTIVEANDGRADIENTROUTINE
+#define taosethessianroutine_               TAOSETHESSIANROUTINE
+#define taosetseparableobjectiveroutine_    TAOSETSEPARABLEOBJECTIVEROUTINE
+#define taosetjacobianroutine_              TAOSETJACOBIANROUTINE
+#define taosetjacobianstateroutine_         TAOSETJACOBIANSTATEROUTINE
+#define taosetjacobiandesignroutine_        TAOSETJACOBIANDESIGNROUTINE
+#define taosetjacobianinequalityroutine_    TAOSETJACOBIANINEQUALITYROUTINE
+#define taosetjacobianequalityroutine_      TAOSETJACOBIANEQUALITYROUTINE
+#define taosetinequalityconstraintsroutine_ TAOSETINEQUALITYCONSTRAINTSROUTINE
+#define taosetequalityconstraintsroutine_   TAOSETEQUALITYCONSTRAINTSROUTINE
+#define taosetvariableboundsroutine_        TAOSETVARIABLEBOUNDSROUTINE
+#define taosetconstraintsroutine_           TAOSETCONSTRAINTSROUTINE
+#define taosetmonitor_                      TAOSETMONITOR
+#define taosettype_                         TAOSETTYPE
+#define taoview_                            TAOVIEW
+#define taogethistory_                      TAOGETHISTORY
+#define taosetconvergencetest_              TAOSETCONVERGENCETEST
+#define taogetoptionsprefix_                TAOGETOPTIONSPREFIX
+#define taosetoptionsprefix_                TAOSETOPTIONSPREFIX
+#define taoappendoptionsprefix_             TAOAPPENDOPTIONSPREFIX
+#define taogettype_                         TAOGETTYPE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 
-#define taosetobjectiveroutine_            taosetobjectiveroutine
-#define taosetgradientroutine_             taosetgradientroutine
-#define taosetobjectiveandgradientroutine_ taosetobjectiveandgradientroutine
-#define taosethessianroutine_              taosethessianroutine
-#define taosetseparableobjectiveroutine_   taosetseparableobjectiveroutine
-#define taosetjacobianroutine_             taosetjacobianroutine
-#define taosetjacobianstateroutine_        taosetjacobianstateroutine
-#define taosetjacobiandesignroutine_       taosetjacobiandesignroutine
-#define taosetvariableboundsroutine_       taosetvariableboundsroutine
-#define taosetconstraintsroutine_          taosetconstraintsroutine
-#define taosetmonitor_                     taosetmonitor
-#define taosettype_                        taosettype
-#define taoview_                           taoview
-#define taogethistory_                     taogethistory
-#define taosetconvergencetest_             taosetconvergencetest
-#define taogetoptionsprefix_               taogetoptionsprefix
-#define taosetoptionsprefix_               taosetoptionsprefix
-#define taoappendoptionsprefix_            taoappendoptionsprefix
-#define taogettype_                        taogettype
+#define taosetobjectiveroutine_             taosetobjectiveroutine
+#define taosetgradientroutine_              taosetgradientroutine
+#define taosetobjectiveandgradientroutine_  taosetobjectiveandgradientroutine
+#define taosethessianroutine_               taosethessianroutine
+#define taosetseparableobjectiveroutine_    taosetseparableobjectiveroutine
+#define taosetjacobianroutine_              taosetjacobianroutine
+#define taosetjacobianstateroutine_         taosetjacobianstateroutine
+#define taosetjacobiandesignroutine_        taosetjacobiandesignroutine
+#define taosetjacobianinequalityroutine_    taosetjacobianinequalityroutine
+#define taosetjacobianequalityroutine_      taosetjacobianequalityroutine
+#define taosetinequalityconstraintsroutine_ taosetinequalityconstraintsroutine
+#define taosetequalityconstraintsroutine_   taosetequalityconstraintsroutine
+#define taosetvariableboundsroutine_        taosetvariableboundsroutine
+#define taosetconstraintsroutine_           taosetconstraintsroutine
+#define taosetmonitor_                      taosetmonitor
+#define taosettype_                         taosettype
+#define taoview_                            taoview
+#define taogethistory_                      taogethistory
+#define taosetconvergencetest_              taosetconvergencetest
+#define taogetoptionsprefix_                taogetoptionsprefix
+#define taosetoptionsprefix_                taosetoptionsprefix
+#define taoappendoptionsprefix_             taoappendoptionsprefix
+#define taogettype_                         taogettype
 #endif
 
 static int OBJ=0;       /*  objective routine index */
@@ -59,7 +67,11 @@ static int MONCTX=10;       /*  monitor routine index */
 static int MONDESTROY=11; /*  monitor destroy index */
 static int CONVTEST=12;  /*  */
 static int CONSTRAINTS=13;
-static int NFUNCS=14;
+static int JACINEQ=14;
+static int JACEQ=15;
+static int CONINEQ=16;
+static int CONEQ=17;
+static int NFUNCS=18;
 
 static PetscErrorCode ourtaoobjectiveroutine(TaoSolver tao, Vec x, PetscReal *f, void *ctx)
 {
@@ -173,6 +185,43 @@ static PetscErrorCode ourtaoconstraintsroutine(TaoSolver tao, Vec x, Vec c, void
     
 }
 
+static PetscErrorCode ourtaojacobianinequalityroutine(TaoSolver tao, Vec x, Mat *J, Mat *Jpre, MatStructure *type, void *ctx) 
+{
+    PetscErrorCode ierr = 0;
+    (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))
+     (((PetscObject)tao)->fortran_func_pointers[JACINEQ]))(&tao,&x,J,Jpre,type,ctx,&ierr); CHKERRQ(ierr);
+    return 0;
+}
+
+static PetscErrorCode ourtaojacobianequalityroutine(TaoSolver tao, Vec x, Mat *J, Mat *Jpre, MatStructure *type, void *ctx) 
+{
+    PetscErrorCode ierr = 0;
+    (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))
+     (((PetscObject)tao)->fortran_func_pointers[JACEQ]))(&tao,&x,J,Jpre,type,ctx,&ierr); CHKERRQ(ierr);
+    return 0;
+}
+
+static PetscErrorCode ourtaoinequalityconstraintsroutine(TaoSolver tao, Vec x, Vec c, void *ctx)
+{
+    PetscErrorCode ierr = 0;
+    (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,Vec*,void*,PetscErrorCode*))
+       (((PetscObject)tao)->fortran_func_pointers[CONINEQ]))(&tao,&x,&c,ctx,&ierr);
+    CHKERRQ(ierr);
+    return 0;
+    
+}
+
+static PetscErrorCode ourtaoequalityconstraintsroutine(TaoSolver tao, Vec x, Vec c, void *ctx)
+{
+    PetscErrorCode ierr = 0;
+    (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,Vec*,void*,PetscErrorCode*))
+       (((PetscObject)tao)->fortran_func_pointers[CONEQ]))(&tao,&x,&c,ctx,&ierr);
+    CHKERRQ(ierr);
+    return 0;
+    
+}
+
+
 EXTERN_C_BEGIN
 
 
@@ -264,6 +313,7 @@ void PETSC_STDCALL taosetjacobiandesignroutine_(TaoSolver *tao, Mat *J, void (PE
 	*ierr = TaoSetJacobianDesignRoutine(*tao,*J, ourtaojacobiandesignroutine,ctx);
     }
 }
+
 
 void PETSC_STDCALL taosethessianroutine_(TaoSolver *tao, Mat *J, Mat *Jp, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Mat *, Mat *, MatStructure *,void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
@@ -386,6 +436,58 @@ void PETSC_STDCALL taogettype_(TaoSolver *tao, CHAR name PETSC_MIXED_LEN(len), P
   FIXRETURNCHAR(PETSC_TRUE,name,len);
   
 }
+
+
+void PETSC_STDCALL taosetjacobianinequalityroutine_(TaoSolver *tao, Mat *J, Mat *Jp, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Mat *, Mat *, MatStructure *,void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+{
+    CHKFORTRANNULLOBJECT(ctx);
+    PetscObjectAllocateFortranPointers(*tao,NFUNCS);
+    if (!func) {
+	*ierr = TaoSetJacobianInequalityRoutine(*tao,*J,*Jp,0,ctx);
+    } else {
+	((PetscObject)*tao)->fortran_func_pointers[JACINEQ] = (PetscVoidFunction)func;
+	*ierr = TaoSetJacobianInequalityRoutine(*tao,*J, *Jp, ourtaojacobianinequalityroutine,ctx);
+    }
+}
+
+void PETSC_STDCALL taosetjacobianequalityroutine_(TaoSolver *tao, Mat *J, Mat *Jp, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Mat *, Mat *, MatStructure *,void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+{
+    CHKFORTRANNULLOBJECT(ctx);
+    PetscObjectAllocateFortranPointers(*tao,NFUNCS);
+    if (!func) {
+	*ierr = TaoSetJacobianEqualityRoutine(*tao,*J,*Jp,0,ctx);
+    } else {
+	((PetscObject)*tao)->fortran_func_pointers[JACEQ] = (PetscVoidFunction)func;
+	*ierr = TaoSetJacobianEqualityRoutine(*tao,*J, *Jp, ourtaojacobianequalityroutine,ctx);
+    }
+}
+
+
+void PETSC_STDCALL taosetinequalityconstraintsroutine_(TaoSolver *tao, Vec *C, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+{
+    CHKFORTRANNULLOBJECT(ctx);
+    PetscObjectAllocateFortranPointers(*tao,NFUNCS);
+    if (!func) {
+      *ierr = TaoSetInequalityConstraintsRoutine(*tao,*C,0,ctx);
+    } else {
+	((PetscObject)*tao)->fortran_func_pointers[CONINEQ] = (PetscVoidFunction)func;
+	*ierr = TaoSetInequalityConstraintsRoutine(*tao, *C, ourtaoinequalityconstraintsroutine,ctx);
+    }
+}
+
+void PETSC_STDCALL taosetequalityconstraintsroutine_(TaoSolver *tao, Vec *C, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+{
+    CHKFORTRANNULLOBJECT(ctx);
+    PetscObjectAllocateFortranPointers(*tao,NFUNCS);
+    if (!func) {
+      *ierr = TaoSetEqualityConstraintsRoutine(*tao,*C,0,ctx);
+    } else {
+	((PetscObject)*tao)->fortran_func_pointers[CONEQ] = (PetscVoidFunction)func;
+	*ierr = TaoSetEqualityConstraintsRoutine(*tao, *C, ourtaoequalityconstraintsroutine,ctx);
+    }
+}
+
+
 EXTERN_C_END
 
 

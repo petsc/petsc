@@ -331,6 +331,7 @@ static PetscErrorCode IPMInitializeBounds(TaoSolver tao)
 
   MPI_Comm comm;
   PetscFunctionBegin;
+  cind=xind=ucind=uceind=stepind=0;
   ipmP->mi=0;
   ipmP->nxlb=0;
   ipmP->nxub=0;
@@ -377,6 +378,11 @@ static PetscErrorCode IPMInitializeBounds(TaoSolver tao)
   comm = ((PetscObject)(tao->solution))->comm;
 
   bigsize = ipmP->n+2*ipmP->nb+ipmP->me;
+  ierr = PetscMalloc(bigsize*sizeof(PetscInt),&stepind); CHKERRQ(ierr);
+  ierr = PetscMalloc(ipmP->n*sizeof(PetscInt),&xind); CHKERRQ(ierr);
+  ierr = PetscMalloc(ipmP->me*sizeof(PetscInt),&uceind); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(tao->solution,&xstart,&xend);CHKERRQ(ierr);
+
   if (ipmP->nb > 0) {
     ierr = VecCreate(comm,&ipmP->s); CHKERRQ(ierr);
     ierr = VecSetSizes(ipmP->s,PETSC_DECIDE,ipmP->nb); CHKERRQ(ierr);
@@ -401,13 +407,8 @@ static PetscErrorCode IPMInitializeBounds(TaoSolver tao)
     ierr = VecDuplicate(ipmP->s,&ipmP->Inf_nb); CHKERRQ(ierr);
     ierr = VecSet(ipmP->Inf_nb,TAO_INFINITY); CHKERRQ(ierr);
     
-    ierr = PetscMalloc(bigsize*sizeof(PetscInt),&stepind); CHKERRQ(ierr);
     ierr = PetscMalloc(ipmP->nb*sizeof(PetscInt),&cind); CHKERRQ(ierr);
     ierr = PetscMalloc(ipmP->mi*sizeof(PetscInt),&ucind); CHKERRQ(ierr);
-    ierr = PetscMalloc(ipmP->n*sizeof(PetscInt),&xind); CHKERRQ(ierr);
-    ierr = PetscMalloc(ipmP->me*sizeof(PetscInt),&uceind); CHKERRQ(ierr);
-    
-    ierr = VecGetOwnershipRange(tao->solution,&xstart,&xend);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(ipmP->s,&sstart,&send);CHKERRQ(ierr);
 
 
@@ -753,11 +754,11 @@ static PetscErrorCode IPMComputeKKT(TaoSolver tao)
   }
 
   ipmP->phi = PetscSqrtScalar(ipmP->phi);
+#if defined DEBUG_KKT
   if (ipmP->monitorkkt) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"obj=%G,\tphi = %G,\tmu=%G\talpha1=%G\talpha2=%G\n",ipmP->kkt_f,ipmP->phi,ipmP->mu,ipmP->alpha1,ipmP->alpha2);
   }
   CHKMEMQ;
-#if defined DEBUG_KKT
   PetscPrintf(PETSC_COMM_WORLD,"\ngradient\n");
   ierr = VecView(tao->gradient,0);
   PetscPrintf(PETSC_COMM_WORLD,"\nrd\n");
@@ -1031,7 +1032,7 @@ PetscErrorCode IPMUpdateK(TaoSolver tao)
   ierr = MatGetOwnershipRange(tao->hessian,&hstart,&hend); CHKERRQ(ierr);
   klocalsize = kend-kstart;
   if (!ipmP->K) {
-      if (mpisize == 1) {
+    if (mpisize == 1) {
       ierr = PetscMalloc((kend-kstart)*sizeof(PetscInt),&nonzeros);CHKERRQ(ierr);
       for (i=0;i<bigsize;i++) {
 	if (i<r1) {
@@ -1068,8 +1069,8 @@ PetscErrorCode IPMUpdateK(TaoSolver tao)
 	  d_nonzeros[i-kstart] = PetscMin(ipmP->n+2,kend-kstart);
 	  o_nonzeros[i-kstart] = PetscMin(ipmP->n+2,bigsize-(kend-kstart));
 	} else {
-	  d_nonzeros[i-kstart] = 2;
-	  o_nonzeros[i-kstart] = 2;
+	  d_nonzeros[i-kstart] = PetscMin(2,kend-kstart);
+	  o_nonzeros[i-kstart] = PetscMin(2,bigsize-(kend-kstart));
 	}
       }
       ierr = MatCreate(comm,&ipmP->K); CHKERRQ(ierr);
@@ -1088,7 +1089,9 @@ PetscErrorCode IPMUpdateK(TaoSolver tao)
   /* Copy H */
   for (i=hstart;i<hend;i++) {
     ierr = MatGetRow(tao->hessian,i,&ncols,&cols,&vals); CHKERRQ(ierr);
-    ierr = MatSetValues(ipmP->K,1,&i,ncols,cols,vals,INSERT_VALUES); CHKERRQ(ierr);
+    if (ncols > 0) {
+      ierr = MatSetValues(ipmP->K,1,&i,ncols,cols,vals,INSERT_VALUES); CHKERRQ(ierr);
+    }
     ierr = MatRestoreRow(tao->hessian,i,&ncols,&cols,&vals); CHKERRQ(ierr);
   }
 
@@ -1097,15 +1100,17 @@ PetscErrorCode IPMUpdateK(TaoSolver tao)
     ierr = MatGetOwnershipRange(tao->jacobian_equality,&aestart,&aeend); CHKERRQ(ierr);
     for (i=aestart;i<aeend;i++) {
       ierr = MatGetRow(tao->jacobian_equality,i,&ncols,&cols,&vals); CHKERRQ(ierr);	
-      /*Ae*/
-      row = i+r1;
-      ierr = MatSetValues(ipmP->K,1,&row,ncols,cols,vals,INSERT_VALUES); CHKERRQ(ierr);
-      /*Ae'*/
-      for (j=0;j<ncols;j++) {
-	newcol = i + c2;
-	newrow = cols[j];
-	newval = vals[j];
-	ierr = MatSetValues(ipmP->K,1,&newrow,1,&newcol,&newval,INSERT_VALUES); CHKERRQ(ierr);
+      if (ncols > 0) {
+	/*Ae*/
+	row = i+r1;
+	ierr = MatSetValues(ipmP->K,1,&row,ncols,cols,vals,INSERT_VALUES); CHKERRQ(ierr);
+	/*Ae'*/
+	for (j=0;j<ncols;j++) {
+	  newcol = i + c2;
+	  newrow = cols[j];
+	  newval = vals[j];
+	  ierr = MatSetValues(ipmP->K,1,&newrow,1,&newcol,&newval,INSERT_VALUES); CHKERRQ(ierr);
+	}
       }
       ierr = MatRestoreRow(tao->jacobian_equality,i,&ncols,&cols,&vals); CHKERRQ(ierr);
     }
@@ -1117,14 +1122,16 @@ PetscErrorCode IPMUpdateK(TaoSolver tao)
     for (i=aistart;i<aiend;i++) {
       row = i+r2;
       ierr = MatGetRow(ipmP->Ai,i,&ncols,&cols,&vals); CHKERRQ(ierr);
-      /*Ai*/
-      ierr = MatSetValues(ipmP->K,1,&row,ncols,cols,vals,INSERT_VALUES); CHKERRQ(ierr);
-      /*-Ai'*/
-      for (j=0;j<ncols;j++) {
-	newcol = i + c3;
-	newrow = cols[j];
-	newval = -vals[j];
-	ierr = MatSetValues(ipmP->K,1,&newrow,1,&newcol,&newval,INSERT_VALUES); CHKERRQ(ierr);
+      if (ncols > 0) {
+	/*Ai*/
+	ierr = MatSetValues(ipmP->K,1,&row,ncols,cols,vals,INSERT_VALUES); CHKERRQ(ierr);
+	/*-Ai'*/
+	for (j=0;j<ncols;j++) {
+	  newcol = i + c3;
+	  newrow = cols[j];
+	  newval = -vals[j];
+	  ierr = MatSetValues(ipmP->K,1,&newrow,1,&newcol,&newval,INSERT_VALUES); CHKERRQ(ierr);
+	}
       }
       ierr = MatRestoreRow(ipmP->Ai,i,&ncols,&cols,&vals); CHKERRQ(ierr);
     }
@@ -1137,8 +1144,8 @@ PetscErrorCode IPMUpdateK(TaoSolver tao)
 	newrow = i;
 	newcol = i-r2+c1;
 	newval = -1.0;
+	MatSetValues(ipmP->K,1,&newrow,1,&newcol,&newval,INSERT_VALUES); CHKERRQ(ierr);
       }
-      MatSetValues(ipmP->K,1,&newrow,1,&newcol,&newval,INSERT_VALUES); CHKERRQ(ierr);
     }
 
     /* Copy L,Y */
@@ -1229,15 +1236,15 @@ PetscErrorCode IPMScatterStep(TaoSolver tao, Vec STEP, Vec X1, Vec X2, Vec X3, V
     ierr = VecScatterBegin(ipmP->step1,STEP,X1,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(ipmP->step1,STEP,X1,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
-  if (X2) {
+  if (X2 && ipmP->nb > 0) {
     ierr = VecScatterBegin(ipmP->step2,STEP,X2,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(ipmP->step2,STEP,X2,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
-  if (X3) {
+  if (X3 && ipmP->me > 0) {
     ierr = VecScatterBegin(ipmP->step3,STEP,X3,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(ipmP->step3,STEP,X3,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
-  if (X4) {
+  if (X4 && ipmP->nb > 0) {
     ierr = VecScatterBegin(ipmP->step4,STEP,X4,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(ipmP->step4,STEP,X4,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
