@@ -93,29 +93,13 @@ def chkwinf90():
   return 0
 
 def chkdosfiles():
-  if not os.path.exists('/usr/bin/cygcheck.exe'): return
-  if os.path.exists('.hg'):
-    (status,output) = commands.getstatusoutput('hg showconfig paths.default')
-    if not status and output: return
-  if os.path.exists('.git'):
-    (status,output) = commands.getstatusoutput('git rev-parse')
-    if not status: return
-  # cygwin - but not a hg clone - so check files in bin dir
-  (status,output) = commands.getstatusoutput('file bin/*')
-  if status:
+  # cygwin - but not a hg clone - so check one of files in bin dir
+  if "\r\n" in open(os.path.join('bin','petscmpiexec'),"rb").read():
     print '==============================================================================='
-    print ' *** Incomplete cygwin install? command "file" not found!                    **'
+    print ' *** Scripts are in DOS mode. Was winzip used to extract petsc sources?    ****'
+    print ' *** Please restart with a fresh tarball and use "tar -xzf petsc.tar.gz"   ****'
     print '==============================================================================='
-    return
-  if output.find('with CRLF line terminators') >= 0:
-    print '==============================================================================='
-    print ' *** Scripts are in DOS mode. Was winzip used instead of tar? Converting.......'
-    print '==============================================================================='
-    (status,output) = commands.getstatusoutput('dos2unix bin/*')
-    if status:
-      print '==============================================================================='
-      print ' *** Incomplete cygwin install? command "dos2unix" not found!                **'
-      print '==============================================================================='
+    sys.exit(3)
   return
 
 def chkcygwinlink():
