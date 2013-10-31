@@ -186,6 +186,7 @@ PETSC_EXTERN PetscErrorCode DMDACreatePF(DM,PF*);
 
 /* Emulation of DMPlex */
 PETSC_EXTERN PetscErrorCode DMDAGetNumCells(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMDAGetCellPoint(DM, PetscInt, PetscInt, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDAGetNumVertices(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDAGetNumFaces(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDAGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);
