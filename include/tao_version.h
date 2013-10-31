@@ -6,10 +6,10 @@
 /* 
    Current TAO version number and release date
 */
-#define TAO_VERSION_NUMBER "TAO Version 2.2.0"
+#define TAO_VERSION_NUMBER "TAO Version 2.2.1"
 #define TAO_VERSION_MAJOR    2
 #define TAO_VERSION_MINOR    2
-#define TAO_VERSION_SUBMINOR 0
+#define TAO_VERSION_SUBMINOR 1
 #define TAO_VERSION_PATCH    0
 #define TAO_VERSION_(MAJOR,MINOR,SUBMINOR) \
     ((TAO_VERSION_MAJOR == (MAJOR)) &&       \
