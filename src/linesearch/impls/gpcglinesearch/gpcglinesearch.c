@@ -60,7 +60,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x,
   PetscErrorCode  ierr;
   PetscInt i;
   PetscBool g_computed=PETSC_FALSE; /* to prevent extra gradient computation */
-  PetscReal finit,actred,prered,rho, gdx;
+  PetscReal finit,actred,prered,rho,d1,gdx;
 
   PetscFunctionBegin;
   /* ls->stepmin - lower bound for step */
@@ -102,7 +102,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x,
   if (ls->bounded) {
 	/* Compute the smallest steplength that will make one nonbinding variable
 	   equal the bound */
-      ierr = VecStepBoundInfo(x,ls->lower,ls->upper,s,&rho,0,0); CHKERRQ(ierr);
+      ierr = VecStepBoundInfo(x,ls->lower,ls->upper,s,&rho,&actred,&d1); CHKERRQ(ierr);
       ls->step = PetscMin(ls->step,rho);
   }
   rho=0; actred=0;
