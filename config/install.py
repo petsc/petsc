@@ -51,7 +51,6 @@ class Installer(script.Script):
     self.setCompilers  = self.framework.require('config.setCompilers',         None)
     self.arch          = self.framework.require('PETSc.utilities.arch',        None)
     self.petscdir      = self.framework.require('PETSc.utilities.petscdir',    None)
-    self.makesys       = self.framework.require('config.programs',             None)
     self.compilers     = self.framework.require('config.compilers',            None)
     return
 
@@ -82,7 +81,6 @@ class Installer(script.Script):
     self.rootShareDir      = os.path.join(self.rootDir, 'share')
     self.destShareDir      = os.path.join(self.destDir, 'share')
 
-    self.make        = self.makesys.make+' '+self.makesys.flags
     self.ranlib      = self.compilers.RANLIB
     self.arLibSuffix = self.compilers.AR_LIB_SUFFIX
     return

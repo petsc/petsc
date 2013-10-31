@@ -624,9 +624,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage();CHKERRQ(ierr);
-#endif
   mtype = da->mattype;
 
   ierr = DMGetDefaultSection(da, &section);CHKERRQ(ierr);

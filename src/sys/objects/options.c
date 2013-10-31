@@ -361,27 +361,28 @@ static char *Petscgetline(FILE * f)
 @*/
 PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool require)
 {
-  char           *string,fname[PETSC_MAX_PATH_LEN],*first,*second,*third,*vstring = 0,*astring = 0;
+  char           *string,fname[PETSC_MAX_PATH_LEN],*first,*second,*third,*vstring = 0,*astring = 0,*packed = 0;
   PetscErrorCode ierr;
   size_t         i,len,bytes;
   FILE           *fd;
   PetscToken     token;
   int            err;
   char           cmt[1]={'#'},*cmatch;
-  PetscMPIInt    rank,cnt=0,acnt=0;
-  PetscSegBuffer vseg,aseg;
+  PetscMPIInt    rank,cnt=0,acnt=0,counts[2];
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscSegBufferCreate(1,4000,&vseg);CHKERRQ(ierr);
-    ierr = PetscSegBufferCreate(1,2000,&aseg);CHKERRQ(ierr);
     cnt        = 0;
     acnt       = 0;
 
     ierr = PetscFixFilename(file,fname);CHKERRQ(ierr);
     fd   = fopen(fname,"r");
     if (fd) {
+      PetscSegBuffer vseg,aseg;
+      ierr = PetscSegBufferCreate(1,4000,&vseg);CHKERRQ(ierr);
+      ierr = PetscSegBufferCreate(1,2000,&aseg);CHKERRQ(ierr);
+
       /* the following line will not work when opening initial files (like .petscrc) since info is not yet set */
       ierr = PetscInfo1(0,"Opened options file %s\n",file);CHKERRQ(ierr);
 
@@ -449,24 +450,36 @@ destroy:
       ierr = PetscMPIIntCast(bytes,&acnt);CHKERRQ(ierr);
       ierr = PetscSegBufferGet(aseg,1,&astring);CHKERRQ(ierr);
       astring[0] = 0;
-      ierr = PetscSegBufferExtractInPlace(aseg,&astring);CHKERRQ(ierr);
       ierr = PetscSegBufferGetSize(vseg,&bytes);CHKERRQ(ierr); /* size without null termination */
       ierr = PetscMPIIntCast(bytes,&cnt);CHKERRQ(ierr);
       ierr = PetscSegBufferGet(vseg,1,&vstring);CHKERRQ(ierr);
       vstring[0] = 0;
-      ierr = PetscSegBufferExtractInPlace(vseg,&vstring);CHKERRQ(ierr);
+      ierr = PetscMalloc((2+acnt+cnt)*sizeof(char),&packed);CHKERRQ(ierr);
+      ierr = PetscSegBufferExtractTo(aseg,packed);CHKERRQ(ierr);
+      ierr = PetscSegBufferExtractTo(vseg,packed+acnt+1);CHKERRQ(ierr);
+      ierr = PetscSegBufferDestroy(&aseg);CHKERRQ(ierr);
+      ierr = PetscSegBufferDestroy(&vseg);CHKERRQ(ierr);
     } else if (require) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Unable to open Options File %s",fname);
   }
 
-  ierr = MPI_Bcast(&acnt,1,MPI_INT,0,comm);CHKERRQ(ierr);
+  counts[0] = acnt;
+  counts[1] = cnt;
+  ierr = MPI_Bcast(counts,2,MPI_INT,0,comm);CHKERRQ(ierr);
+  acnt = counts[0];
+  cnt = counts[1];
+  if (rank) {
+    ierr = PetscMalloc((2+acnt+cnt)*sizeof(char),&packed);CHKERRQ(ierr);
+  }
+  if (acnt || cnt) {
+    ierr = MPI_Bcast(packed,2+acnt+cnt,MPI_CHAR,0,comm);CHKERRQ(ierr);
+    astring = packed;
+    vstring = packed + acnt + 1;
+  }
+
   if (acnt) {
     PetscToken token;
     char       *first,*second;
 
-    if (rank) {
-      ierr = PetscMalloc((acnt+1)*sizeof(char),&astring);CHKERRQ(ierr);
-    }
-    ierr = MPI_Bcast(astring,acnt+1,MPI_CHAR,0,comm);CHKERRQ(ierr);
     ierr = PetscTokenCreate(astring,' ',&token);CHKERRQ(ierr);
     ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
     while (first) {
@@ -477,21 +490,10 @@ destroy:
     ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
   }
 
-  ierr = MPI_Bcast(&cnt,1,MPI_INT,0,comm);CHKERRQ(ierr);
   if (cnt) {
-    if (rank) {
-      ierr = PetscMalloc((cnt+1)*sizeof(char),&vstring);CHKERRQ(ierr);
-    }
-    ierr = MPI_Bcast(vstring,cnt+1,MPI_CHAR,0,comm);CHKERRQ(ierr);
     ierr = PetscOptionsInsertString(vstring);CHKERRQ(ierr);
   }
-  if (!rank) {
-    ierr = PetscSegBufferDestroy(&aseg);CHKERRQ(ierr);
-    ierr = PetscSegBufferDestroy(&vseg);CHKERRQ(ierr);
-  } else {
-    ierr = PetscFree(astring);CHKERRQ(ierr);
-    ierr = PetscFree(vstring);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(packed);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

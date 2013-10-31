@@ -329,7 +329,7 @@ PetscErrorCode  KSPSetUp(KSP ksp)
 
    If using a direct method (e.g., via the KSP solver
    KSPPREONLY and a preconditioner such as PCLU/PCILU),
-   then its=1.  See KSPSetTolerances() and KSPDefaultConverged()
+   then its=1.  See KSPSetTolerances() and KSPConvergedDefault()
    for more details.
 
    Understanding Convergence:
@@ -341,7 +341,7 @@ PetscErrorCode  KSPSetUp(KSP ksp)
 
 .keywords: KSP, solve, linear system
 
-.seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged(),
+.seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPConvergedDefault(),
           KSPSolveTranspose(), KSPGetIterationNumber()
 @*/
 PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
@@ -661,7 +661,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
 
 .keywords: KSP, solve, linear system
 
-.seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged(),
+.seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPConvergedDefault(),
           KSPSolve()
 @*/
 
@@ -926,7 +926,7 @@ PetscErrorCode  KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *abstol,Petsc
 .  abstol - the absolute convergence tolerance
    (absolute size of the residual norm)
 .  dtol - the divergence tolerance
-   (amount residual can increase before KSPDefaultConverged()
+   (amount residual can increase before KSPConvergedDefault()
    concludes that the method is diverging)
 -  maxits - maximum number of iterations to use
 
@@ -939,7 +939,7 @@ PetscErrorCode  KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *abstol,Petsc
    Notes:
    Use PETSC_DEFAULT to retain the default value of any of the tolerances.
 
-   See KSPDefaultConverged() for details on the use of these parameters
+   See KSPConvergedDefault() for details on the use of these parameters
    in the default convergence test.  See also KSPSetConvergenceTest()
    for setting user-defined stopping criteria.
 
@@ -948,7 +948,7 @@ PetscErrorCode  KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *abstol,Petsc
 .keywords: KSP, set, tolerance, absolute, relative, divergence,
            convergence, maximum, iterations
 
-.seealso: KSPGetTolerances(), KSPDefaultConverged(), KSPSetConvergenceTest()
+.seealso: KSPGetTolerances(), KSPConvergedDefault(), KSPSetConvergenceTest()
 @*/
 PetscErrorCode  KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt maxits)
 {
@@ -1729,7 +1729,7 @@ $     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,voi
    Must be called after the KSP type has been set so put this after
    a call to KSPSetType(), or KSPSetFromOptions().
 
-   The default convergence test, KSPDefaultConverged(), aborts if the
+   The default convergence test, KSPConvergedDefault(), aborts if the
    residual grows to more than 10000 times the initial residual.
 
    The default is a combination of relative and absolute tolerances.
@@ -1743,7 +1743,7 @@ $     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,voi
 
 .keywords: KSP, set, convergence, test, context
 
-.seealso: KSPDefaultConverged(), KSPGetConvergenceContext(), KSPSetTolerances()
+.seealso: KSPConvergedDefault(), KSPGetConvergenceContext(), KSPSetTolerances()
 @*/
 PetscErrorCode  KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *cctx,PetscErrorCode (*destroy)(void*))
 {
@@ -1778,7 +1778,7 @@ PetscErrorCode  KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,Pet
 
 .keywords: KSP, get, convergence, test, context
 
-.seealso: KSPDefaultConverged(), KSPSetConvergenceTest()
+.seealso: KSPConvergedDefault(), KSPSetConvergenceTest()
 @*/
 PetscErrorCode  KSPGetConvergenceContext(KSP ksp,void **ctx)
 {

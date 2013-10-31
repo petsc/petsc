@@ -1,5 +1,6 @@
 from __future__ import generators
 import config.base
+import config
 
 import os
 
@@ -145,7 +146,7 @@ class Configure(config.base.Configure):
     except RuntimeError:
       pass
     return 0
-  isGNU = staticmethod(isGNU)
+  isGNU = staticmethod(config.memoize(isGNU))
 
   def isClang(compiler):
     '''Returns true if the compiler is a Clang/LLVM compiler'''
@@ -966,8 +967,7 @@ class Configure(config.base.Configure):
        - There needs to be a test that checks that the functionality is actually working'''
     self.usePIC = 0
     useSharedLibraries = 'with-shared-libraries' in self.framework.argDB and self.framework.argDB['with-shared-libraries']
-    useDynamicLoading  = 'with-dynamic-loading'  in self.framework.argDB and self.framework.argDB['with-dynamic-loading']
-    if not self.framework.argDB['with-pic'] and not useSharedLibraries and not useDynamicLoading:
+    if not self.framework.argDB['with-pic'] and not useSharedLibraries:
       self.framework.logPrint("Skip checking PIC options on user request")
       return
     languages = ['C']
@@ -1101,18 +1101,14 @@ class Configure(config.base.Configure):
     arcWindows = os.path.join(self.tmpDir, 'libconf1.lib')
     def checkArchive(command, status, output, error):
       if error or status:
-        self.framework.logPrint('Possible ERROR while running archiver: '+output)
-        if status: self.framework.logPrint('ret = '+str(status))
-        if error: self.framework.logPrint('error message = {'+error+'}')
+        self.logError('archiver', status, output, error)
         if os.path.isfile(objName):
           os.remove(objName)
         raise RuntimeError('Archiver is not functional')
       return
     def checkRanlib(command, status, output, error):
       if error or status:
-        self.framework.logPrint('Possible ERROR while running ranlib: '+output)
-        if status: self.framework.logPrint('ret = '+str(status))
-        if error: self.framework.logPrint('error message = {'+error+'}')
+        self.logError('ranlib', status, output, error)
         if os.path.isfile(arcUnix):
           os.remove(arcUnix)
         raise RuntimeError('Ranlib is not functional with your archiver.  Try --with-ranlib=true if ranlib is unnecessary.')
@@ -1167,8 +1163,7 @@ class Configure(config.base.Configure):
 
   def generateSharedLinkerGuesses(self):
     useSharedLibraries = 'with-shared-libraries' in self.framework.argDB and self.framework.argDB['with-shared-libraries']
-    useDynamicLoading  = 'with-dynamic-loading'  in self.framework.argDB and self.framework.argDB['with-dynamic-loading']
-    if not self.framework.argDB['with-pic'] and not useSharedLibraries and not useDynamicLoading:
+    if not self.framework.argDB['with-pic'] and not useSharedLibraries:
       self.setStaticLinker()
       self.staticLinker = self.AR
       self.staticLibraries = 1
@@ -1196,6 +1191,7 @@ class Configure(config.base.Configure):
     yield (self.CC, ['-shared'], 'so')
     yield (self.CC, ['-dynamic'], 'so')
     yield (self.CC, ['-qmkshrobj'], 'so')
+    yield (self.CC, ['-shared'], 'dll')
     # Solaris default
     if Configure.isSolaris():
       if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':

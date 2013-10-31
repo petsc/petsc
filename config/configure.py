@@ -141,6 +141,14 @@ def chkbrokencygwin():
       sys.exit(3)
   return 0
 
+def chkusingwindowspython():
+  if sys.platform == 'win32':
+    print '==============================================================================='
+    print ' *** Windows python detected. Please rerun ./configure with cygwin-python. ***'
+    print '==============================================================================='
+    sys.exit(3)
+  return 0
+
 def chkcygwinpython():
   if os.path.exists('/usr/bin/cygcheck.exe') and sys.platform == 'cygwin' :
     sys.argv.append('--useThreads=0')
@@ -269,6 +277,8 @@ def petsc_configure(configure_options):
   chkbrokencygwin()
   # Disable threads on RHL9
   chkrhl9()
+  # Make sure cygwin-python is used on windows
+  chkusingwindowspython()
   # Threads don't work for cygwin & python...
   chkcygwinpython()
   chkcygwinlink()

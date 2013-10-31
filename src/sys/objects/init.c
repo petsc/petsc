@@ -632,7 +632,17 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = (*PetscHelpPrintf)(comm,"-----------------------------------------------\n");CHKERRQ(ierr);
   }
 
-#if defined(PETSC_HAVE_SERVER)
+#if defined(PETSC_HAVE_POPEN)
+  {
+  char machine[128];
+  ierr = PetscOptionsGetString(NULL,"-popen_machine",machine,128,&flg1);CHKERRQ(ierr);
+  if (flg1) {
+    ierr = PetscPOpenSetMachine(machine);CHKERRQ(ierr);
+  }
+  }
+#endif
+
+#if defined(PETSC_USE_SERVER)
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-server",&flg1,NULL);CHKERRQ(ierr);
   if (flg1) {

@@ -22,7 +22,7 @@ PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal rnorm,K
   PetscErrorCode           ierr;
 
   PetscFunctionBegin;
-  ierr = KSPDefaultConverged(ksp,n,rnorm,reason,ctx->ctx);CHKERRQ(ierr);
+  ierr = KSPConvergedDefault(ksp,n,rnorm,reason,ctx->ctx);CHKERRQ(ierr);
   if (*reason) {
     ierr = PetscInfo2(snes,"default convergence test KSP iterations=%D, rnorm=%G\n",n,rnorm);CHKERRQ(ierr);
   }
@@ -44,7 +44,7 @@ PetscErrorCode SNES_TR_KSPConverged_Destroy(void *cctx)
   PetscErrorCode           ierr;
 
   PetscFunctionBegin;
-  ierr = KSPDefaultConvergedDestroy(ctx->ctx);CHKERRQ(ierr);
+  ierr = KSPConvergedDefaultDestroy(ctx->ctx);CHKERRQ(ierr);
   ierr = PetscFree(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -132,8 +132,6 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   ierr       = SNESLogConvergenceHistory(snes,fnorm,0);CHKERRQ(ierr);
   ierr       = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
 
-  /* set parameter for default relative tolerance convergence test */
-  snes->ttol = fnorm*snes->rtol;
   /* test convergence */
   ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
@@ -145,7 +143,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
     ierr      = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
     ierr      = PetscNew(SNES_TR_KSPConverged_Ctx,&ctx);CHKERRQ(ierr);
     ctx->snes = snes;
-    ierr      = KSPDefaultConvergedCreate(&ctx->ctx);CHKERRQ(ierr);
+    ierr      = KSPConvergedDefaultCreate(&ctx->ctx);CHKERRQ(ierr);
     ierr      = KSPSetConvergenceTest(ksp,SNES_TR_KSPConverged_Private,ctx,SNES_TR_KSPConverged_Destroy);CHKERRQ(ierr);
     ierr      = PetscInfo(snes,"Using Krylov convergence test SNES_TR_KSPConverged_Private\n");CHKERRQ(ierr);
   }
@@ -229,7 +227,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
       ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
       /* Test for convergence, xnorm = || X || */
       neP->itflag = PETSC_TRUE;
-      if (snes->ops->converged != SNESSkipConverged) { ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); }
+      if (snes->ops->converged != SNESConvergedSkip) { ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); }
       ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
       if (reason) break;
     } else break;

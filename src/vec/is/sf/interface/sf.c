@@ -36,9 +36,7 @@ PetscErrorCode PetscSFCreate(MPI_Comm comm,PetscSF *sf)
 
   PetscFunctionBegin;
   PetscValidPointer(sf,2);
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscSFInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(b,_p_PetscSF,struct _PetscSFOps,PETSCSF_CLASSID,"PetscSF","Star Forest","PetscSF",comm,PetscSFDestroy,PetscSFView);CHKERRQ(ierr);
 
@@ -856,30 +854,35 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
 @*/
 PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nroots,const PetscInt *selected,PetscSF *newsf)
 {
+  PetscInt      *rootdata, *leafdata, *ilocal;
+  PetscSFNode   *iremote;
+  PetscInt       leafsize = 0, nleaves = 0, i;
   PetscErrorCode ierr;
-  PetscInt       i,nleaves,*ilocal,*rootdata,*leafdata;
-  PetscSFNode    *iremote;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   if (nroots) PetscValidPointer(selected,3);
   PetscValidPointer(newsf,4);
-  ierr = PetscMalloc2(sf->nroots,PetscInt,&rootdata,sf->nleaves,PetscInt,&leafdata);CHKERRQ(ierr);
+  if (sf->mine) for (i = 0; i < sf->nleaves; ++i) {leafsize = PetscMax(leafsize, sf->mine[i]+1);}
+  else leafsize = sf->nleaves;
+  ierr = PetscMalloc2(sf->nroots,PetscInt,&rootdata,leafsize,PetscInt,&leafdata);CHKERRQ(ierr);
   ierr = PetscMemzero(rootdata,sf->nroots*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(leafdata,sf->nleaves*sizeof(PetscInt));CHKERRQ(ierr);
-  for (i=0; i<nroots; i++) rootdata[selected[i]] = 1;
+  ierr = PetscMemzero(leafdata,leafsize*sizeof(PetscInt));CHKERRQ(ierr);
+  for (i=0; i<nroots; ++i) rootdata[selected[i]] = 1;
   ierr = PetscSFBcastBegin(sf,MPIU_INT,rootdata,leafdata);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(sf,MPIU_INT,rootdata,leafdata);CHKERRQ(ierr);
 
-  for (i=0,nleaves=0; i<sf->nleaves; i++) nleaves += leafdata[i];
+  for (i = 0; i < leafsize; ++i) nleaves += leafdata[i];
   ierr = PetscMalloc(nleaves*sizeof(PetscInt),&ilocal);CHKERRQ(ierr);
   ierr = PetscMalloc(nleaves*sizeof(PetscSFNode),&iremote);CHKERRQ(ierr);
-  for (i=0,nleaves=0; i<sf->nleaves; i++) {
-    if (leafdata[i]) {
-      ilocal[nleaves]        = sf->mine ? sf->mine[i] : i;
+  for (i = 0, nleaves = 0; i < sf->nleaves; ++i) {
+    const PetscInt lidx = sf->mine ? sf->mine[i] : i;
+
+    if (leafdata[lidx]) {
+      ilocal[nleaves]        = lidx;
       iremote[nleaves].rank  = sf->remote[i].rank;
       iremote[nleaves].index = sf->remote[i].index;
-      nleaves++;
+      ++nleaves;
     }
   }
   ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_RANKS,newsf);CHKERRQ(ierr);

@@ -122,6 +122,7 @@ static PetscErrorCode VecCUSPCopyToGPUSome(Vec v, PetscCUSPIndices ci)
   PetscScalar    *cpuPtr, *gpuPtr;
   cudaStream_t   stream;
   Vec_Seq        *s;
+  VecScatterCUSPIndices_PtoP ptop_scatter = (VecScatterCUSPIndices_PtoP)ci->scatter;
 
   PetscFunctionBegin;
   ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
@@ -131,12 +132,12 @@ static PetscErrorCode VecCUSPCopyToGPUSome(Vec v, PetscCUSPIndices ci)
 
     ierr   = PetscLogEventBegin(VEC_CUSPCopyToGPUSome,v,0,0,0);CHKERRQ(ierr);
     varray = ((Vec_CUSP*)v->spptr)->GPUarray;
-    gpuPtr = varray->data().get() + ci->recvLowestIndex;
-    cpuPtr = s->array + ci->recvLowestIndex;
+    gpuPtr = varray->data().get() + ptop_scatter->recvLowestIndex;
+    cpuPtr = s->array + ptop_scatter->recvLowestIndex;
 
     /* Note : this code copies the smallest contiguous chunk of data
        containing ALL of the indices */
-    err = cudaMemcpyAsync(gpuPtr, cpuPtr, ci->nr*sizeof(PetscScalar),
+    err = cudaMemcpyAsync(gpuPtr, cpuPtr, ptop_scatter->nr*sizeof(PetscScalar),
                            cudaMemcpyHostToDevice, stream);CHKERRCUSP(err);
     err = cudaStreamSynchronize(stream);CHKERRCUSP(err);
 
@@ -208,6 +209,7 @@ PetscErrorCode VecCUSPCopyFromGPUSome(Vec v, PetscCUSPIndices ci)
   PetscScalar    *cpuPtr, *gpuPtr;
   cudaStream_t   stream;
   Vec_Seq        *s;
+  VecScatterCUSPIndices_PtoP ptop_scatter = (VecScatterCUSPIndices_PtoP)ci->scatter;
 
   PetscFunctionBegin;
   ierr = VecCUSPAllocateCheckHost(v);CHKERRQ(ierr);
@@ -217,12 +219,12 @@ PetscErrorCode VecCUSPCopyFromGPUSome(Vec v, PetscCUSPIndices ci)
     stream=((Vec_CUSP*)v->spptr)->stream;
     varray=((Vec_CUSP*)v->spptr)->GPUarray;
     s = (Vec_Seq*)v->data;
-    gpuPtr = varray->data().get() + ci->sendLowestIndex;
-    cpuPtr = s->array + ci->sendLowestIndex;
+    gpuPtr = varray->data().get() + ptop_scatter->sendLowestIndex;
+    cpuPtr = s->array + ptop_scatter->sendLowestIndex;
 
     /* Note : this code copies the smallest contiguous chunk of data
        containing ALL of the indices */
-    err = cudaMemcpyAsync(cpuPtr, gpuPtr, ci->ns*sizeof(PetscScalar),
+    err = cudaMemcpyAsync(cpuPtr, gpuPtr, ptop_scatter->ns*sizeof(PetscScalar),
 			   cudaMemcpyDeviceToHost, stream);CHKERRCUSP(err);
     err = cudaStreamSynchronize(stream);CHKERRCUSP(err);
 
@@ -242,7 +244,6 @@ PetscErrorCode VecCUSPCopyFromGPUSome(Vec v, PetscCUSPIndices ci)
   }
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCopy_SeqCUSP_Private"
@@ -332,57 +333,6 @@ PetscErrorCode VecCUSPCopyToGPU_Public(Vec v)
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscCUSPIndicesCreate"
-/*
-    PetscCUSPIndicesCreate - creates the data structure needed by VecCUSPCopyToGPUSome_Public()
-
-   Input Parameters:
-+    n - the number of indices
--    indices - integer list of indices
-
-   Output Parameter:
-.    ci - the CUSPIndices object suitable to pass to VecCUSPCopyToGPUSome_Public()
-
-.seealso: PetscCUSPIndicesDestroy(), VecCUSPCopyToGPUSome_Public()
-*/
-PetscErrorCode PetscCUSPIndicesCreate(PetscInt ns,PetscInt *sendIndices,PetscInt nr,PetscInt *recvIndices,PetscCUSPIndices *ci)
-{
-  PetscCUSPIndices cci;
-  PetscFunctionBegin;
-  cci = new struct _p_PetscCUSPIndices;
-  /* this calculation assumes that the input indices are sorted */
-  cci->ns = sendIndices[ns-1]-sendIndices[0]+1;
-  cci->sendLowestIndex = sendIndices[0];
-  cci->nr = recvIndices[nr-1]-recvIndices[0]+1;
-  cci->recvLowestIndex = recvIndices[0];
-  *ci = cci;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscCUSPIndicesDestroy"
-/*
-    PetscCUSPIndicesDestroy - destroys the data structure needed by VecCUSPCopyToGPUSome_Public()
-
-   Input Parameters:
-.    ci - the CUSPIndices object suitable to pass to VecCUSPCopyToGPUSome_Public()
-
-.seealso: PetscCUSPIndicesCreate(), VecCUSPCopyToGPUSome_Public()
-*/
-PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices *ci)
-{
-  PetscFunctionBegin;
-  if (!(*ci)) PetscFunctionReturn(0);
-  try {
-    if (ci) delete *ci;
-  } catch(char *ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-  }
-  *ci = 0;
-  PetscFunctionReturn(0);
-}
 
 
 #undef __FUNCT__

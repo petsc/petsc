@@ -67,7 +67,7 @@ PetscBool     asa_events_registered = PETSC_FALSE;
 .   abstol - the absolute convergence tolerance
     (absolute size of the residual norm)
 .   dtol - the divergence tolerance
-    (amount residual can increase before KSPDefaultConverged()
+    (amount residual can increase before KSPConvergedDefault()
     concludes that the method is diverging)
 -   maxits - maximum number of iterations to use
 

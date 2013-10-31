@@ -5,7 +5,7 @@
 /*
   There is a nice discussion of block preconditioners in
 
-[El08] A taxonomy and comparison of parallel block multi-level preconditioners for the incompressible Navier–Stokes equations
+[El08] A taxonomy and comparison of parallel block multi-level preconditioners for the incompressible Navier-Stokes equations
        Howard Elman, V.E. Howle, John Shadid, Robert Shuttleworth, Ray Tuminaro, Journal of Computational Physics 227 (2008) 1790--1808
        http://chess.cs.umd.edu/~elman/papers/tax.pdf
 */

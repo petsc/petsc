@@ -572,9 +572,7 @@ PetscErrorCode  AOCreate(MPI_Comm comm,AO *ao)
   PetscFunctionBegin;
   PetscValidPointer(ao,2);
   *ao = NULL;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = AOInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(aonew,_p_AO,struct _AOOps,AO_CLASSID,"AO","Application Ordering","AO",comm,AODestroy,AOView);CHKERRQ(ierr);
   ierr = PetscMemzero(aonew->ops, sizeof(struct _AOOps));CHKERRQ(ierr);

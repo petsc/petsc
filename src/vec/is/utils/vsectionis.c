@@ -40,9 +40,7 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
 
   PetscFunctionBegin;
   PetscValidPointer(s,2);
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = ISInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(*s,_p_PetscSection,int,PETSC_SECTION_CLASSID,"PetscSection","Section","IS",comm,PetscSectionDestroy,PetscSectionView);CHKERRQ(ierr);
 
@@ -59,6 +57,9 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
   (*s)->numFields          = 0;
   (*s)->fieldNames         = NULL;
   (*s)->field              = NULL;
+  (*s)->clObj              = NULL;
+  (*s)->clSection          = NULL;
+  (*s)->clIndices          = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -186,8 +187,9 @@ PetscErrorCode PetscSectionSetNumFields(PetscSection s, PetscInt numFields)
 
   PetscFunctionBegin;
   if (numFields <= 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "The number of fields %d must be positive", numFields);
-  s->numFields = numFields;
+  ierr = PetscSectionReset(s);CHKERRQ(ierr);
 
+  s->numFields = numFields;
   ierr = PetscMalloc(s->numFields * sizeof(PetscInt), &s->numFieldComponents);CHKERRQ(ierr);
   ierr = PetscMalloc(s->numFields * sizeof(char*), &s->fieldNames);CHKERRQ(ierr);
   ierr = PetscMalloc(s->numFields * sizeof(PetscSection), &s->field);CHKERRQ(ierr);
@@ -1477,6 +1479,8 @@ PetscErrorCode PetscSectionReset(PetscSection s)
   ierr = PetscSectionDestroy(&s->bc);CHKERRQ(ierr);
   ierr = PetscFree(s->bcIndices);CHKERRQ(ierr);
   ierr = PetscFree2(s->atlasDof, s->atlasOff);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&s->clSection);CHKERRQ(ierr);
+  ierr = ISDestroy(&s->clIndices);CHKERRQ(ierr);
 
   s->atlasLayout.pStart = -1;
   s->atlasLayout.pEnd   = -1;
@@ -1484,6 +1488,7 @@ PetscErrorCode PetscSectionReset(PetscSection s)
   s->maxDof             = 0;
   s->setup              = PETSC_FALSE;
   s->numFields          = 0;
+  s->clObj              = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1658,6 +1663,90 @@ PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt po
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionPermute"
+/*@
+  PetscSectionPermute - Reorder the section according to the input point permutation
+
+  Collective on PetscSection
+
+  Input Parameter:
++ section - The PetscSection object
+- perm - The point permutation
+
+  Output Parameter:
+. sectionNew - The permuted PetscSection
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: MatPermute()
+@*/
+PetscErrorCode PetscSectionPermute(PetscSection section, IS permutation, PetscSection *sectionNew)
+{
+  PetscSection    s = section, sNew;
+  const PetscInt *perm;
+  PetscInt        numFields, f, numPoints, pStart, pEnd, p;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 1);
+  PetscValidHeaderSpecific(permutation, IS_CLASSID, 2);
+  PetscValidPointer(sectionNew, 3);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) s), &sNew);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(s, &numFields);CHKERRQ(ierr);
+  if (numFields) {ierr = PetscSectionSetNumFields(sNew, numFields);CHKERRQ(ierr);}
+  for (f = 0; f < numFields; ++f) {
+    const char *name;
+    PetscInt    numComp;
+
+    ierr = PetscSectionGetFieldName(s, f, &name);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldName(sNew, f, name);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldComponents(s, f, &numComp);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldComponents(sNew, f, numComp);CHKERRQ(ierr);
+  }
+  ierr = ISGetLocalSize(permutation, &numPoints);CHKERRQ(ierr);
+  ierr = ISGetIndices(permutation, &perm);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(sNew, pStart, pEnd);CHKERRQ(ierr);
+  if (numPoints < pEnd) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Permutation size %d is less than largest Section point %d", numPoints, pEnd);
+  for (p = pStart; p < pEnd; ++p) {
+    PetscInt dof, cdof;
+
+    ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(sNew, perm[p], dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(s, p, &cdof);CHKERRQ(ierr);
+    if (cdof) {ierr = PetscSectionSetConstraintDof(sNew, perm[p], cdof);CHKERRQ(ierr);}
+    for (f = 0; f < numFields; ++f) {
+      ierr = PetscSectionGetFieldDof(s, p, f, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldDof(sNew, perm[p], f, dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetFieldConstraintDof(s, p, f, &cdof);CHKERRQ(ierr);
+      if (cdof) {ierr = PetscSectionSetFieldConstraintDof(sNew, perm[p], f, cdof);CHKERRQ(ierr);}
+    }
+  }
+  ierr = PetscSectionSetUp(sNew);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    const PetscInt *cind;
+    PetscInt        cdof;
+
+    ierr = PetscSectionGetConstraintDof(s, p, &cdof);CHKERRQ(ierr);
+    if (cdof) {
+      ierr = PetscSectionGetConstraintIndices(s, p, &cind);CHKERRQ(ierr);
+      ierr = PetscSectionSetConstraintIndices(sNew, perm[p], cind);CHKERRQ(ierr);
+    }
+    for (f = 0; f < numFields; ++f) {
+      ierr = PetscSectionGetFieldConstraintDof(s, p, f, &cdof);CHKERRQ(ierr);
+      if (cdof) {
+        ierr = PetscSectionGetFieldConstraintIndices(s, p, f, &cind);CHKERRQ(ierr);
+        ierr = PetscSectionSetFieldConstraintIndices(sNew, perm[p], f, cind);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = ISRestoreIndices(permutation, &perm);CHKERRQ(ierr);
+  *sectionNew = sNew;
+  PetscFunctionReturn(0);
+}
+
 /*
   I need extract and merge routines for section based on fields. This should be trivial except for updating the
   constraint indices.
@@ -1794,11 +1883,11 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
 #define __FUNCT__ "PetscSFCreateRemoteOffsets"
 PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, PetscSection leafSection, PetscInt **remoteOffsets)
 {
-  PetscSF        embedSF;
+  PetscSF         embedSF;
   const PetscInt *indices;
-  IS             selected;
-  PetscInt       numRoots, rpStart = 0, rpEnd = 0, lpStart = 0, lpEnd = 0, isSize;
-  PetscErrorCode ierr;
+  IS              selected;
+  PetscInt        numRoots, rpStart = 0, rpEnd = 0, lpStart = 0, lpEnd = 0;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   *remoteOffsets = NULL;
@@ -1806,18 +1895,12 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
   if (numRoots < 0) PetscFunctionReturn(0);
   ierr = PetscSectionGetChart(rootSection, &rpStart, &rpEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(leafSection, &lpStart, &lpEnd);CHKERRQ(ierr);
-  ierr = PetscMalloc((lpEnd - lpStart) * sizeof(PetscInt), remoteOffsets);CHKERRQ(ierr);
-  isSize = PetscMin(numRoots, rpEnd - rpStart);
-  ierr = ISCreateStride(PETSC_COMM_SELF, isSize, rpStart, 1, &selected);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF, rpEnd - rpStart, rpStart, 1, &selected);CHKERRQ(ierr);
   ierr = ISGetIndices(selected, &indices);CHKERRQ(ierr);
-#if 0
-  ierr = PetscSFCreateEmbeddedSF(sf, isSize, indices, &embedSF);CHKERRQ(ierr);
-#else
-  embedSF = sf;
-  ierr = PetscObjectReference((PetscObject) embedSF);CHKERRQ(ierr);
-#endif
+  ierr = PetscSFCreateEmbeddedSF(sf, rpEnd - rpStart, indices, &embedSF);CHKERRQ(ierr);
   ierr = ISRestoreIndices(selected, &indices);CHKERRQ(ierr);
   ierr = ISDestroy(&selected);CHKERRQ(ierr);
+  ierr = PetscMalloc((lpEnd - lpStart) * sizeof(PetscInt), remoteOffsets);CHKERRQ(ierr);
   ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart]);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart]);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&embedSF);CHKERRQ(ierr);
@@ -1900,5 +1983,35 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
   ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
   if (numIndices != ind) SETERRQ2(comm, PETSC_ERR_PLIB, "Inconsistency in indices, %d should be %d", ind, numIndices);
   ierr = PetscSFSetGraph(*sectionSF, numSectionRoots, numIndices, localIndices, PETSC_OWN_POINTER, remoteIndices, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionSetClosureIndex"
+PetscErrorCode PetscSectionSetClosureIndex(PetscSection section, PetscObject obj, PetscSection clSection, IS clIndices)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  section->clObj     = obj;
+  ierr = PetscSectionDestroy(&section->clSection);CHKERRQ(ierr);
+  ierr = ISDestroy(&section->clIndices);CHKERRQ(ierr);
+  section->clSection = clSection;
+  section->clIndices = clIndices;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetClosureIndex"
+PetscErrorCode PetscSectionGetClosureIndex(PetscSection section, PetscObject obj, PetscSection *clSection, IS *clIndices)
+{
+  PetscFunctionBegin;
+  if (section->clObj == obj) {
+    if (clSection) *clSection = section->clSection;
+    if (clIndices) *clIndices = section->clIndices;
+  } else {
+    if (clSection) *clSection = NULL;
+    if (clIndices) *clIndices = NULL;
+  }
   PetscFunctionReturn(0);
 }

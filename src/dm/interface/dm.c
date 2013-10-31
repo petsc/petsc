@@ -72,11 +72,10 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   PetscFunctionBegin;
   PetscValidPointer(dm,2);
   *dm = NULL;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
+  ierr = PetscSysInitializePackage();CHKERRQ(ierr);
   ierr = VecInitializePackage();CHKERRQ(ierr);
   ierr = MatInitializePackage();CHKERRQ(ierr);
   ierr = DMInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(v, _p_DM, struct _DMOps, DM_CLASSID, "DM", "Distribution Manager", "DM", comm, DMDestroy, DMView);CHKERRQ(ierr);
   ierr = PetscMemzero(v->ops, sizeof(struct _DMOps));CHKERRQ(ierr);
@@ -135,6 +134,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   if (dm->ops->clone) {
     ierr = (*dm->ops->clone)(dm, newdm);CHKERRQ(ierr);
   }
+  (*newdm)->setupcalled = PETSC_TRUE;
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
   ierr = DMSetPointSF(*newdm, sf);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr);
@@ -437,11 +437,6 @@ PetscErrorCode  DMDestroy(DM *dm)
     if ((*dm)->globalin[i]) cnt++;
   }
   for (nlink=(*dm)->namedglobal; nlink; nlink=nlink->next) cnt++;
-  if ((*dm)->x) {
-    DM obj;
-    ierr = VecGetDM((*dm)->x, &obj);CHKERRQ(ierr);
-    if (obj == *dm) cnt++;
-  }
   for (nlink=(*dm)->namedlocal; nlink; nlink=nlink->next) cnt++;
   if ((*dm)->x) {
     DM obj;
@@ -1006,9 +1001,7 @@ PetscErrorCode  DMCreateMatrix(DM dm,Mat *mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage();CHKERRQ(ierr);
-#endif
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(mat,3);
   ierr = (*dm->ops->creatematrix)(dm,mat);CHKERRQ(ierr);
@@ -2854,6 +2847,34 @@ PetscErrorCode DMPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, P
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPrintLocalVec"
+PetscErrorCode DMPrintLocalVec(DM dm, const char name[], PetscReal tol, Vec X)
+{
+  PetscMPIInt    rank, numProcs;
+  PetscInt       p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &numProcs);CHKERRQ(ierr);
+  ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "%s:\n", name);CHKERRQ(ierr);
+  for (p = 0; p < numProcs; ++p) {
+    if (p == rank) {
+      Vec x;
+
+      ierr = VecDuplicate(X, &x);CHKERRQ(ierr);
+      ierr = VecCopy(X, x);CHKERRQ(ierr);
+      ierr = VecChop(x, tol);CHKERRQ(ierr);
+      ierr = VecView(x, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+      ierr = VecDestroy(&x);CHKERRQ(ierr);
+      ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    }
+    ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMGetDefaultSection"
 /*@
   DMGetDefaultSection - Get the PetscSection encoding the local data layout for the DM.
@@ -3467,7 +3488,7 @@ PetscErrorCode DMGetCoordinatesLocal(DM dm, Vec *c)
 #undef __FUNCT__
 #define __FUNCT__ "DMGetCoordinateDM"
 /*@
-  DMGetCoordinateDM - Gets the DM that scatters between global and local coordinates
+  DMGetCoordinateDM - Gets the DM that prescribes coordinate layout and scatters between global and local coordinates
 
   Collective on DM
 
@@ -3480,7 +3501,7 @@ PetscErrorCode DMGetCoordinatesLocal(DM dm, Vec *c)
   Level: intermediate
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
-.seealso: DMSetCoordinates(), DMSetCoordinatesLocal(), DMGetCoordinates(), DMGetCoordinatesLocal()
+.seealso: DMSetCoordinateDM(), DMSetCoordinates(), DMSetCoordinatesLocal(), DMGetCoordinates(), DMGetCoordinatesLocal()
 @*/
 PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm)
 {
@@ -3494,6 +3515,35 @@ PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm)
     ierr = (*dm->ops->createcoordinatedm)(dm, &dm->coordinateDM);CHKERRQ(ierr);
   }
   *cdm = dm->coordinateDM;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetCoordinateDM"
+/*@
+  DMSetCoordinateDM - Sets the DM that prescribes coordinate layout and scatters between global and local coordinates
+
+  Logically Collective on DM
+
+  Input Parameters:
++ dm - the DM
+- cdm - coordinate DM
+
+  Level: intermediate
+
+.keywords: distributed array, get, corners, nodes, local indices, coordinates
+.seealso: DMGetCoordinateDM(), DMSetCoordinates(), DMSetCoordinatesLocal(), DMGetCoordinates(), DMGetCoordinatesLocal()
+@*/
+PetscErrorCode DMSetCoordinateDM(DM dm, DM cdm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(cdm,DM_CLASSID,2);
+  ierr = DMDestroy(&dm->coordinateDM);CHKERRQ(ierr);
+  dm->coordinateDM = cdm;
+  ierr = PetscObjectReference((PetscObject) dm->coordinateDM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

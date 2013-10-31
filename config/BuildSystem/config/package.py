@@ -33,6 +33,7 @@ class Package(config.base.Configure):
     self.gitcommit        = None # Git commit to use for downloads (used in preference to tarball downloads)
     self.giturls          = []   # list of Git repository URLs to be used for downloads
     self.download         = []   # list of URLs where repository or tarballs may be found
+    self.downloadURLSetByUser = False # user overrode package file by providing download location
     self.deps             = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
     self.defaultLanguage  = 'C'  # The language in which to run tests
     self.liblist          = [[]] # list of libraries we wish to check for (override with your own generateLibList())
@@ -77,6 +78,7 @@ class Package(config.base.Configure):
     self.libraries     = framework.require('config.libraries', self)
     self.programs      = framework.require('config.programs', self)
     self.sourceControl = framework.require('config.sourceControl',self)
+    self.make          = framework.require('config.packages.make',self)
     self.mpi           = framework.require('config.packages.MPI',self)
 
     return
@@ -328,6 +330,7 @@ class Package(config.base.Configure):
     downloadPackageVal = self.framework.argDB['download-'+self.downloadname.lower()]
     if requireDownload and isinstance(downloadPackageVal, str):
       self.download = [downloadPackageVal]
+      self.downloadURLSetByUser = True
       downloadPackage = 1
     elif downloadPackageVal == 1 and requireDownload:
       downloadPackage = 1
@@ -420,7 +423,7 @@ class Package(config.base.Configure):
         download_urls.append(url.replace('http://','ftp://'))
     # now attempt to download each url until any one succeeds.
     err =''
-    if hasattr(self.sourceControl, 'git') and self.gitcommit and self.gitPreReqCheck():
+    if not self.downloadURLSetByUser and hasattr(self.sourceControl, 'git') and self.gitcommit and self.gitPreReqCheck():
       for giturl in self.giturls: # First try to fetch using Git
         try:
           gitrepo = os.path.join(self.externalPackagesDir, self.downloadname)
@@ -548,10 +551,10 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' without Fortran, make sure you do NOT have --with-fc=0')
       if self.noMPIUni and self.mpi.usingMPIUni:
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
-      if not self.worksonWindows and self.setCompilers.isCygwin():
-        raise RuntimeError('External package '+self.name+' does not work on Microsoft Windows')
-      if self.download and self.framework.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and self.setCompilers.isCygwin():
-        raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' on Microsoft Windows')
+      if not self.worksonWindows and self.setCompilers.isWindows(self.setCompilers.CC):
+        raise RuntimeError('External package '+self.name+' does not work with Microsoft compilers')
+      if self.download and self.framework.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and self.setCompilers.isWindows(self.setCompilers.CC):
+        raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' with Microsoft compilers')
     if not self.download and self.framework.argDB.has_key('download-'+self.downloadname.lower()) and self.framework.argDB['download-'+self.downloadname.lower()]:
       raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower())
     return

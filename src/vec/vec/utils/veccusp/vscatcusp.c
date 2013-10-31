@@ -1,6 +1,8 @@
 #include <petsc-private/isimpl.h>
 #include <petsc-private/vecimpl.h>             /*I "petscvec.h" I*/
 
+PETSC_INTERN PetscErrorCode VecScatterCUSPIndicesCreate_PtoP(PetscInt, PetscInt*,PetscInt, PetscInt*,PetscCUSPIndices*);
+
 #undef __FUNCT__
 #define __FUNCT__ "VecScatterInitializeForGPU"
 /*@
@@ -74,7 +76,7 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
       ierr = PetscFree(tindicesRecvs);CHKERRQ(ierr);
 
       /* create GPU indices, work vectors, ... */
-      ierr = PetscCUSPIndicesCreate(ns*bs,sindicesSends,nr*from->bs,sindicesRecvs,(PetscCUSPIndices*)&inctx->spptr);CHKERRQ(ierr);
+      ierr = VecScatterCUSPIndicesCreate_PtoP(ns*bs,sindicesSends,nr*from->bs,sindicesRecvs,(PetscCUSPIndices*)&inctx->spptr);CHKERRQ(ierr);
       ierr = PetscFree(sindicesSends);CHKERRQ(ierr);
       ierr = PetscFree(sindicesRecvs);CHKERRQ(ierr);
     }

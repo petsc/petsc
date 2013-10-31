@@ -17,17 +17,23 @@
 +    comm - the MPI communicator
 -    map - pointer to the map
 
-   Level: developer
+   Level: advanced
 
-    Notes: Typical calling sequence
+    Notes:
+    Typical calling sequence
+.vb
        PetscLayoutCreate(MPI_Comm,PetscLayout *);
        PetscLayoutSetBlockSize(PetscLayout,1);
-       PetscLayoutSetSize(PetscLayout,n) or PetscLayoutSetLocalSize(PetscLayout,N);
+       PetscLayoutSetSize(PetscLayout,N) // or PetscLayoutSetLocalSize(PetscLayout,n);
        PetscLayoutSetUp(PetscLayout);
-       Optionally use any of the following:
-          PetscLayoutGetSize(PetscLayout,PetscInt *); or PetscLayoutGetLocalSize(PetscLayout,PetscInt *;)
-          PetscLayoutGetRange(PetscLayout,PetscInt *rstart,PetscInt *rend); or PetscLayoutGetRanges(PetscLayout,const PetscInt *range[])
-       PetscLayoutDestroy(PetscLayout);
+.ve
+    Optionally use any of the following:
+
++      PetscLayoutGetSize(PetscLayout,PetscInt *);
+.      PetscLayoutGetLocalSize(PetscLayout,PetscInt *);
+.      PetscLayoutGetRange(PetscLayout,PetscInt *rstart,PetscInt *rend);
+.      PetscLayoutGetRanges(PetscLayout,const PetscInt *range[]);
+-      PetscLayoutDestroy(PetscLayout*);
 
       The PetscLayout object and methods are intended to be used in the PETSc Vec and Mat implementions; it is often not needed in
       user codes unless you really gain something in their use.

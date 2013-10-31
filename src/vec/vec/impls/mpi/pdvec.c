@@ -523,7 +523,7 @@ PetscErrorCode  VecView_MPI_Draw(Vec xin,PetscViewer viewer)
   PetscMPIInt       rank,size,tag = ((PetscObject)viewer)->tag;
   PetscInt          i,start,end;
   MPI_Status        status;
-  PetscReal         coors[4],ymin,ymax,xmin,xmax,tmp;
+  PetscReal         coors[4],ymin,ymax,xmin,xmax,tmp = 0.0;
   PetscDraw         draw;
   PetscBool         isnull;
   PetscDrawAxis     axis;

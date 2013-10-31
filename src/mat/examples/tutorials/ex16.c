@@ -97,6 +97,7 @@ int main(int argc,char **args)
     ierr = MatGetColoring(Asp,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(Asp,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringSetUp(Asp,iscoloring,matfdcoloring);CHKERRQ(ierr);
     /*ierr = MatFDColoringView(matfdcoloring,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);

@@ -441,7 +441,7 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char forma
 PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    rank,size,tag,i,j,n,dummy = 0;
+  PetscMPIInt    rank,size,tag,i,j,n = 0,dummy = 0;
   char          *message;
   MPI_Status     status;
   FILE           *fd;
@@ -460,7 +460,7 @@ PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm)
       ierr = MPI_Send(&dummy,1,MPI_INT,i,tag,comm);CHKERRQ(ierr);
       ierr = MPI_Recv(&n,1,MPI_INT,i,tag,comm,&status);CHKERRQ(ierr);
       for (j=0; j<n; j++) {
-        PetscMPIInt size;
+        PetscMPIInt size = 0;
 
         ierr = MPI_Recv(&size,1,MPI_INT,i,tag,comm,&status);CHKERRQ(ierr);
         ierr = PetscMalloc(size * sizeof(char), &message);CHKERRQ(ierr);
@@ -639,7 +639,7 @@ PetscErrorCode  PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 -   len - the length of the output buffer
 
     Output Parameter:
-.   string - the line read from the file
+.   string - the line read from the file, at end of file string[0] == 0
 
     Level: intermediate
 
@@ -659,8 +659,8 @@ PetscErrorCode  PetscSynchronizedFGets(MPI_Comm comm,FILE *fp,size_t len,char st
     char *ptr = fgets(string, len, fp);
 
     if (!ptr) {
-      if (feof(fp)) len = 0;
-      else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from file: %d", errno);
+      string[0] = 0;
+      if (!feof(fp)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from file: %d", errno);
     }
   }
   ierr = MPI_Bcast(string,len,MPI_BYTE,0,comm);CHKERRQ(ierr);

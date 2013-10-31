@@ -176,9 +176,7 @@ PetscErrorCode  MatCreateSchurComplement(Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A1
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = KSPInitializePackage();CHKERRQ(ierr);
-#endif
   ierr = MatCreate(((PetscObject)A00)->comm,N);CHKERRQ(ierr);
   ierr = MatSetType(*N,MATSCHURCOMPLEMENT);CHKERRQ(ierr);
   ierr = MatSchurComplementSet(*N,A00,Ap00,A01,A10,A11);CHKERRQ(ierr);

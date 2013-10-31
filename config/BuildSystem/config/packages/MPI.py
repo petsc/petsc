@@ -289,6 +289,7 @@ class Configure(config.package.Package):
   def alternateConfigureLibrary(self):
     '''Setup MPIUNI, our uniprocessor version of MPI'''
     self.addDefine('HAVE_MPIUNI', 1)
+    self.addMakeMacro('MPI_IS_MPIUNI', 1)
     #
     #  Even though MPI-Uni is not an external package (it is in PETSc source) we need to stick the
     #  include path for its mpi.h and mpif.h so that external packages that are built with PETSc to
@@ -376,6 +377,7 @@ class Configure(config.package.Package):
     installDir = os.path.join(self.defaultInstallDir,self.arch)
     confDir = os.path.join(self.defaultInstallDir,self.arch,'conf')
     args = ['--prefix='+installDir,'--with-rsh=ssh']
+    args.append('MAKE='+self.make.make)
     # Configure and Build OPENMPI
     self.pushLanguage('C')
     flags = self.getCompilerFlags()
@@ -437,10 +439,10 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running configure on OPENMPI/MPI: '+str(e))
       try:
         self.logPrintBox('Compiling OPENMPI/MPI; this may take several minutes')
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.programs.make+' clean', timeout=200, log = self.framework.log)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.programs.make+' -j ' + str(self.programs.make_np)+' all', timeout=6000, log = self.framework.log)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.programs.make+' install', timeout=6000, log = self.framework.log)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.programs.make+' clean', timeout=200, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.make.make+' clean', timeout=200, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.make.make_jnp+' all', timeout=6000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.make.make+' install', timeout=6000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.make.make+' clean', timeout=200, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on OPENMPI/MPI: '+str(e))
       if not os.path.isdir(os.path.join(installDir,'lib')):
@@ -476,6 +478,7 @@ class Configure(config.package.Package):
     # Configure and Build MPICH
     self.pushLanguage('C')
     args = ['--prefix='+installDir]
+    args.append('MAKE='+self.make.make)
     compiler = self.getCompiler()
     args.append('CC="'+self.getCompiler()+'"')
     args.append('CFLAGS="'+self.getCompilerFlags().replace('-fvisibility=hidden','')+'"')
@@ -555,11 +558,10 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running configure on MPICH: '+str(e))
       try:
         self.logPrintBox('Running make on MPICH; this may take several minutes')
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.programs.make+' clean', timeout=200, log = self.framework.log)
-        makej_cmd = self.programs.make+' -j ' + str(self.programs.make_np)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+makej_cmd+' all', timeout=6000, log = self.framework.log)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.programs.make+' install', timeout=6000, log = self.framework.log)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.programs.make+' clean', timeout=200, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.make.make+' clean', timeout=200, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.make.make_jnp+' all', timeout=6000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.make.make+' install', timeout=6000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.make.make+' clean', timeout=200, log = self.framework.log)
       except RuntimeError, e:
         import sys
         if sys.platform.startswith('cygwin'):
@@ -762,8 +764,11 @@ class Configure(config.package.Package):
       self.addDefine('HAVE_MPI_WIN_CREATE',1)
       self.addDefine('HAVE_MPI_REPLACE',1) # MPI_REPLACE is strictly for use with the one-sided function MPI_Accumulate
     funcs = '''MPI_Comm_spawn MPI_Type_get_envelope MPI_Type_get_extent MPI_Type_dup MPI_Init_thread
-      MPIX_Iallreduce MPI_Iallreduce MPI_Ibarrier MPI_Finalized MPI_Exscan'''.split()
-    for f in funcs:
+      MPI_Iallreduce MPI_Ibarrier MPI_Finalized MPI_Exscan'''.split()
+    found, missing = self.libraries.checkClassify(self.dlib, funcs)
+    for f in found:
+      self.addDefine('HAVE_' + f.upper(),1)
+    for f in ['MPIX_Iallreduce']: # Unlikely to be found
       if self.libraries.check(self.dlib, f):
         self.addDefine('HAVE_' + f.upper(),1)
 

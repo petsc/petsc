@@ -494,9 +494,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = TSSSPInitializePackage();CHKERRQ(ierr);
-#endif
 
   ts->ops->setup          = TSSetUp_SSP;
   ts->ops->step           = TSStep_SSP;

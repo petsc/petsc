@@ -1532,9 +1532,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_GL(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = TSGLInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscNewLog(ts,TS_GL,&gl);CHKERRQ(ierr);
   ts->data = (void*)gl;

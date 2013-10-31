@@ -1030,6 +1030,7 @@ int main(int argc, char **argv)
       if (user.interpolate) {ierr = CheckFVMGeometry(user.dm, c+cStart, dim, &user.centroid[c*dim], &user.normal[c*dim], user.vol[c]);CHKERRQ(ierr);}
     }
     ierr = PetscFree7(user.v0,user.J,user.invJ,user.detJ,user.centroid,user.normal,user.vol);CHKERRQ(ierr);
+    ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();
   return 0;

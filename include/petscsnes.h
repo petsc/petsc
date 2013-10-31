@@ -193,7 +193,7 @@ $      testing with -pc_type lu to eliminate the linear solver as the cause of t
        (well enough?) or the Jacobian is wrong.
 
    SNES_DIVERGED_MAX_IT means that the solver reached the maximum number of iterations without satisfying any
-   convergence criteria. SNES_CONVERGED_ITS means that SNESSkipConverged() was chosen as the convergence test;
+   convergence criteria. SNES_CONVERGED_ITS means that SNESConvergedSkip() was chosen as the convergence test;
    thus the usual convergence criteria have not been checked and may or may not be satisfied.
 
    Developer Notes: this must match finclude/petscsnes.h
@@ -313,11 +313,11 @@ M*/
 
 PETSC_EXTERN PetscErrorCode SNESSetConvergenceTest(SNES,PetscErrorCode (*)(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*),void*,PetscErrorCode (*)(void*));
 PETSC_EXTERN PetscErrorCode SNESConvergedDefault(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
-PETSC_EXTERN PetscErrorCode SNESSkipConverged(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
+PETSC_EXTERN PetscErrorCode SNESConvergedSkip(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 PETSC_EXTERN PetscErrorCode SNESGetConvergedReason(SNES,SNESConvergedReason*);
 
-PETSC_EXTERN PetscErrorCode SNESDMMeshComputeFunction(SNES,Vec,Vec,void*);
-PETSC_EXTERN PetscErrorCode SNESDMMeshComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PETSC_DEPRECATED("Use SNESConvergedSkip()") PETSC_STATIC_INLINE void SNESSkipConverged(void) { /* never called */ }
+#define SNESSkipConverged (SNESSkipConverged, SNESConvergedSkip)
 
 /* --------- Solving systems of nonlinear equations --------------- */
 PETSC_EXTERN PetscErrorCode SNESSetFunction(SNES,Vec,PetscErrorCode (*SNESFunction)(SNES,Vec,Vec,void*),void*);
@@ -696,16 +696,24 @@ PETSC_EXTERN const char *const SNESNCGTypes[];
 
 PETSC_EXTERN PetscErrorCode SNESNCGSetType(SNES, SNESNCGType);
 
-typedef enum {SNES_QN_SCALE_NONE       = 0,
-              SNES_QN_SCALE_SHANNO     = 1,
-              SNES_QN_SCALE_LINESEARCH = 2,
-              SNES_QN_SCALE_JACOBIAN   = 3} SNESQNScaleType;
+typedef enum {SNES_QN_SCALE_DEFAULT    = 0,
+              SNES_QN_SCALE_NONE       = 1,
+              SNES_QN_SCALE_SHANNO     = 2,
+              SNES_QN_SCALE_LINESEARCH = 3,
+              SNES_QN_SCALE_JACOBIAN   = 4} SNESQNScaleType;
 PETSC_EXTERN const char *const SNESQNScaleTypes[];
-typedef enum {SNES_QN_RESTART_NONE     = 0,
-              SNES_QN_RESTART_POWELL   = 1,
-              SNES_QN_RESTART_PERIODIC = 2} SNESQNRestartType;
+typedef enum {SNES_QN_RESTART_DEFAULT  = 0,
+              SNES_QN_RESTART_NONE     = 1,
+              SNES_QN_RESTART_POWELL   = 2,
+              SNES_QN_RESTART_PERIODIC = 3} SNESQNRestartType;
 PETSC_EXTERN const char *const SNESQNRestartTypes[];
+typedef enum {SNES_QN_LBFGS      = 0,
+              SNES_QN_BROYDEN    = 1,
+              SNES_QN_BADBROYDEN = 2
+             } SNESQNType;
+PETSC_EXTERN const char *const SNESQNTypes[];
 
+PETSC_EXTERN PetscErrorCode SNESQNSetType(SNES, SNESQNType);
 PETSC_EXTERN PetscErrorCode SNESQNSetScaleType(SNES, SNESQNScaleType);
 PETSC_EXTERN PetscErrorCode SNESQNSetRestartType(SNES, SNESQNRestartType);
 

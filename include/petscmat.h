@@ -214,7 +214,7 @@ PETSC_EXTERN PetscErrorCode MatCreateSeqSBAIJ(MPI_Comm,PetscInt,PetscInt,PetscIn
 PETSC_EXTERN PetscErrorCode MatCreateSBAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateMPISBAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],Mat *);
 PETSC_EXTERN PetscErrorCode MatMPISBAIJSetPreallocationCSR(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]);
-PETSC_EXTERN PetscErrorCode MatXAIJSetPreallocation(Mat,PetscInt,const PetscInt*,const PetscInt*,const PetscInt*,const PetscInt*);
+PETSC_EXTERN PetscErrorCode MatXAIJSetPreallocation(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],const PetscInt[]);
 
 PETSC_EXTERN PetscErrorCode MatCreateShell(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,void *,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateNormal(Mat,Mat*);
@@ -333,7 +333,7 @@ typedef enum {MAT_OPTION_MIN = -8,
               MAT_USE_INODES = 8,
               MAT_HERMITIAN = 9,
               MAT_SYMMETRY_ETERNAL = 10,
-              MAT_CHECK_COMPRESSED_ROW = 11,
+              MAT_DUMMY = 11,
               MAT_IGNORE_LOWER_TRIANGULAR = 12,
               MAT_ERROR_LOWER_TRIANGULAR = 13,
               MAT_GETROW_UPPERTRIANGULAR = 14,
@@ -375,6 +375,7 @@ PETSC_EXTERN PetscErrorCode MatMultHermitianTransposeAdd(Mat,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMultConstrained(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMultTransposeConstrained(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMatSolve(Mat,Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatResidual(Mat,Vec,Vec,Vec);
 
 /*E
     MatDuplicateOption - Indicates if a duplicated sparse matrix should have
@@ -1061,6 +1062,9 @@ PETSC_EXTERN PetscErrorCode MatFDColoringSetFromOptions(MatFDColoring);
 PETSC_EXTERN PetscErrorCode MatFDColoringApply(Mat,MatFDColoring,Vec,MatStructure*,void *);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetF(MatFDColoring,Vec);
 PETSC_EXTERN PetscErrorCode MatFDColoringGetPerturbedColumns(MatFDColoring,PetscInt*,PetscInt*[]);
+PETSC_EXTERN PetscErrorCode MatFDColoringSetUp(Mat,ISColoring,MatFDColoring);
+PETSC_EXTERN PetscErrorCode MatFDColoringSetBlockSize(MatFDColoring,PetscInt,PetscInt);
+
 
 /*S
      MatTransposeColoring - Object for computing a sparse matrix product C=A*B^T via coloring
@@ -1283,8 +1287,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_SETUP_PREALLOCATION=29,
                MATOP_ILUFACTOR_SYMBOLIC=30,
                MATOP_ICCFACTOR_SYMBOLIC=31,
-               MATOP_GET_ARRAY=32,
-               MATOP_RESTORE_ARRAY=33,
+               /* MATOP_PLACEHOLDER_32=32, */
+               /* MATOP_PLACEHOLDER_33=33, */
                MATOP_DUPLICATE=34,
                MATOP_FORWARD_SOLVE=35,
                MATOP_BACKWARD_SOLVE=36,
@@ -1299,8 +1303,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_SCALE=45,
                MATOP_SHIFT=46,
                MATOP_DIAGONAL_SET=47,
-               MATOP_ILUDT_FACTOR=48,
-               MATOP_SET_BLOCK_SIZE=49,
+               MATOP_ZERO_ROWS_COLUMNS=48,
+               MATOP_SET_RANDOM=49,
                MATOP_GET_ROW_IJ=50,
                MATOP_RESTORE_ROW_IJ=51,
                MATOP_GET_COLUMN_IJ=52,
@@ -1324,13 +1328,13 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_GET_ROW_MIN_ABS=70,
                MATOP_CONVERT=71,
                MATOP_SET_COLORING=72,
-               MATOP_PLACEHOLDER=73,
+               /* MATOP_PLACEHOLDER_73=73, */
                MATOP_SET_VALUES_ADIFOR=74,
                MATOP_FD_COLORING_APPLY=75,
                MATOP_SET_FROM_OPTIONS=76,
                MATOP_MULT_CONSTRAINED=77,
                MATOP_MULT_TRANSPOSE_CONSTRAIN=78,
-               MATOP_PERMUTE_SPARSIFY=79,
+               MATOP_FIND_ZERO_DIAGONALS=79,
                MATOP_MULT_MULTIPLE=80,
                MATOP_SOLVE_MULTIPLE=81,
                MATOP_GET_INERTIA=82,
@@ -1349,12 +1353,12 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_MAT_TRANSPOSE_MULT=95,
                MATOP_MAT_TRANSPOSE_MULT_SYMBO=96,
                MATOP_MAT_TRANSPOSE_MULT_NUMER=97,
-               MATOP_DUMMY98=98,
-               MATOP_DUMMY99=99,
-               MATOP_DUMMY100=100,
-               MATOP_DUMMY101=101,
+               /* MATOP_PLACEHOLDER_98=98, */
+               /* MATOP_PLACEHOLDER_99=99, */
+               /* MATOP_PLACEHOLDER_100=100, */
+               /* MATOP_PLACEHOLDER_101=101, */
                MATOP_CONJUGATE=102,
-               MATOP_SET_SIZES=103,
+               /* MATOP_PLACEHOLDER_103=103, */
                MATOP_SET_VALUES_ROW=104,
                MATOP_REAL_PART=105,
                MATOP_IMAGINARY_PART=106,
@@ -1375,7 +1379,10 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_MULT_HERMITIAN_TRANSPOSE=121,
                MATOP_MULT_HERMITIAN_TRANS_ADD=122,
                MATOP_GET_MULTI_PROC_BLOCK=123,
+               MATOP_FIND_NONZERO_ROWS=124,
                MATOP_GET_COLUMN_NORMS=125,
+               MATOP_INVERT_BLOCK_DIAGONAL=126,
+               /* MATOP_PLACEHOLDER_127=127, */
                MATOP_GET_SUB_MATRICES_PARALLE=128,
                MATOP_SET_VALUES_BATCH=129,
                MATOP_TRANSPOSE_MAT_MULT=130,
@@ -1388,7 +1395,9 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_RART_SYMBOLIC=137,
                MATOP_RART_NUMERIC=138,
                MATOP_SET_BLOCK_SIZES=139,
-               MATOP_AYPX=140
+               MATOP_AYPX=140,
+               MATOP_RESIDUAL=141,
+               MATOP_FDCOLORING_SETUP= 142
              } MatOperation;
 PETSC_EXTERN PetscErrorCode MatHasOperation(Mat,MatOperation,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatShellSetOperation(Mat,MatOperation,void(*)(void));
@@ -1637,5 +1646,6 @@ PETSC_EXTERN PetscErrorCode MatNestSetSubMats(Mat,PetscInt,const IS[],PetscInt,c
 PETSC_EXTERN PetscErrorCode MatNestSetSubMat(Mat,PetscInt,PetscInt,Mat);
 
 PETSC_EXTERN PetscErrorCode MatChop(Mat,PetscReal);
+PETSC_EXTERN PetscErrorCode MatComputeBandwidth(Mat,PetscReal,PetscInt*);
 
 #endif

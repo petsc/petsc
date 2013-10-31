@@ -77,7 +77,7 @@ class DirectedGraph(object):
   def addSubgraph(self, graph):
     '''Add the vertices and edges of another graph into this one'''
     map(self.addVertex, graph.vertices)
-    map(lambda v: apply(self.addEdges, (v,)+graph.getEdges(v)), graph.vertices)
+    map(lambda v: self.addEdges(v, *graph.getEdges(v)), graph.vertices)
     return
 
   def removeSubgraph(self, graph):

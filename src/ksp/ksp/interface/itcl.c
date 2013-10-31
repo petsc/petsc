@@ -304,8 +304,8 @@ PetscErrorCode  KSPGetOptionsPrefix(KSP ksp,const char *prefix[])
 .   -ksp_atol abstol - absolute tolerance used in default convergence test, i.e. if residual
                 norm is less than this then convergence is declared
 .   -ksp_divtol tol - if residual norm increases by this factor than divergence is declared
-.   -ksp_converged_use_initial_residual_norm - see KSPDefaultConvergedSetUIRNorm()
-.   -ksp_converged_use_min_initial_residual_norm - see KSPDefaultConvergedSetUMIRNorm()
+.   -ksp_converged_use_initial_residual_norm - see KSPConvergedDefaultSetUIRNorm()
+.   -ksp_converged_use_min_initial_residual_norm - see KSPConvergedDefaultSetUMIRNorm()
 .   -ksp_norm_type - none - skip norms used in convergence tests (useful only when not using
 $                       convergence test (say you always want to run with 5 iterations) to
 $                       save on communication overhead
@@ -375,11 +375,11 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   ierr = PetscOptionsReal("-ksp_divtol","Residual norm increase cause divergence","KSPSetTolerances",ksp->divtol,&ksp->divtol,NULL);CHKERRQ(ierr);
 
   flag = PETSC_FALSE;
-  ierr = PetscOptionsBool("-ksp_converged_use_initial_residual_norm","Use initial residual residual norm for computing relative convergence","KSPDefaultConvergedSetUIRNorm",flag,&flag,NULL);CHKERRQ(ierr);
-  if (flag) {ierr = KSPDefaultConvergedSetUIRNorm(ksp);CHKERRQ(ierr);}
+  ierr = PetscOptionsBool("-ksp_converged_use_initial_residual_norm","Use initial residual residual norm for computing relative convergence","KSPConvergedDefaultSetUIRNorm",flag,&flag,NULL);CHKERRQ(ierr);
+  if (flag) {ierr = KSPConvergedDefaultSetUIRNorm(ksp);CHKERRQ(ierr);}
   flag = PETSC_FALSE;
-  ierr = PetscOptionsBool("-ksp_converged_use_min_initial_residual_norm","Use minimum of initial residual norm and b for computing relative convergence","KSPDefaultConvergedSetUMIRNorm",flag,&flag,NULL);CHKERRQ(ierr);
-  if (flag) {ierr = KSPDefaultConvergedSetUMIRNorm(ksp);CHKERRQ(ierr);}
+  ierr = PetscOptionsBool("-ksp_converged_use_min_initial_residual_norm","Use minimum of initial residual norm and b for computing relative convergence","KSPConvergedDefaultSetUMIRNorm",flag,&flag,NULL);CHKERRQ(ierr);
+  if (flag) {ierr = KSPConvergedDefaultSetUMIRNorm(ksp);CHKERRQ(ierr);}
   ierr = KSPGetInitialGuessNonzero(ksp,&flag);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_initial_guess_nonzero","Use the contents of the solution vector for initial guess","KSPSetInitialNonzero",flag,&flag,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -399,10 +399,10 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (flg) {
     switch (indx) {
     case 0:
-      ierr = KSPDefaultConvergedCreate(&ctx);CHKERRQ(ierr);
-      ierr = KSPSetConvergenceTest(ksp,KSPDefaultConverged,ctx,KSPDefaultConvergedDestroy);CHKERRQ(ierr);
+      ierr = KSPConvergedDefaultCreate(&ctx);CHKERRQ(ierr);
+      ierr = KSPSetConvergenceTest(ksp,KSPConvergedDefault,ctx,KSPConvergedDefaultDestroy);CHKERRQ(ierr);
       break;
-    case 1: ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,NULL,NULL);CHKERRQ(ierr);    break;
+    case 1: ierr = KSPSetConvergenceTest(ksp,KSPConvergedSkip,NULL,NULL);CHKERRQ(ierr);    break;
     }
   }
 

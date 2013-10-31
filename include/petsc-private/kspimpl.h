@@ -129,7 +129,7 @@ typedef struct {
   PetscBool  initialrtol;    /* default relative residual decrease is computing from initial residual, not rhs */
   PetscBool  mininitialrtol; /* default relative residual decrease is computing from min of initial residual and rhs */
   Vec        work;
-} KSPDefaultConvergedCtx;
+} KSPConvergedDefaultCtx;
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPLogResidualHistory"

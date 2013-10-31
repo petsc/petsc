@@ -6,7 +6,8 @@
 #include <petscbt.h>
 #include "petsc-private/dmimpl.h"
 
-PETSC_EXTERN PetscLogEvent DMPLEX_Partition, DMPLEX_Distribute, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_Stratify;
+PETSC_EXTERN PetscLogEvent DMPLEX_Distribute, DMPLEX_Stratify, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM;
+PETSC_EXTERN PetscLogEvent DMPLEX_Partition, DMPLEX_Distribute, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_Stratify, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM;
 
 /* This is an integer map, in addition it is also a container class
    Design points:
@@ -61,36 +62,21 @@ typedef struct {
   PetscInt             vtkCellHeight;            /* The height of cells for output, default is 0 */
   PetscReal            scale[NUM_PETSC_UNITS];   /* The scale for each SI unit */
 
-  /* FEM (should go in another DM) */
-  PetscErrorCode (*integrateResidualFEM)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
-                                         const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
-                                         void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                         void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]);
-  PetscErrorCode (*integrateBdResidualFEM)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
-                                           const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
-                                           void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
-                                           void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]), PetscScalar[]);
-  PetscErrorCode (*integrateJacobianActionFEM)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[], const PetscScalar[],
-                                               const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
-                                               void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                               void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                               void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                               void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]);
-  PetscErrorCode (*integrateJacobianFEM)(PetscInt, PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
-                                         const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
-                                         void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                         void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                         void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                         void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]);
-
   /* Debugging */
   PetscBool            printSetValues;
   PetscInt             printFEM;
+  PetscReal            printTol;
 } DM_Plex;
 
 PETSC_EXTERN PetscErrorCode DMPlexVTKWriteAll_VTU(DM,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMPlexVTKGetCellType(DM,PetscInt,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode VecView_Plex_Local(Vec,PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_Plex(Vec,PetscViewer);
+
+PETSC_EXTERN PetscErrorCode DMPlexGetFaces_Internal(DM,PetscInt,PetscInt,PetscInt*,PetscInt*,const PetscInt*[]);
+PETSC_EXTERN PetscErrorCode DMPlexGetRawFaces_Internal(DM,PetscInt,PetscInt,const PetscInt[], PetscInt*,PetscInt*,const PetscInt*[]);
+PETSC_EXTERN PetscErrorCode DMPlexRestoreFaces_Internal(DM,PetscInt,PetscInt,PetscInt*,PetscInt*,const PetscInt*[]);
+PETSC_EXTERN PetscErrorCode DMPlexRefineUniform_Internal(DM,CellRefiner,DM*);
+PETSC_EXTERN PetscErrorCode DMPlexGetCellRefiner_Internal(DM,CellRefiner*);
 
 #endif /* _PLEXIMPL_H */

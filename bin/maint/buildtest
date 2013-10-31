@@ -73,10 +73,13 @@ if ( $? ) then
 else
   set BUILDER="yes"
 endif
+set GCOV=`grep PETSC_USE_GCOV $nPETSC_DIR/$PETSC_ARCH/include/petscconf.h`
 
 if ( "${BUILDER}" == "yes" ) then
   env PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR ./config/builder2.py clean >>& build.log
   env PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR ./config/builder2.py build >>& build.log
+else if ( "${GCOV}" != "" ) then
+  make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  all-legacy test >>& build.log
 else
   make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  all test >>& build.log
 endif
@@ -110,7 +113,6 @@ else
 endif
 echo '******************************************************' >>& $nPETSC_DIR/examples.log
 
-set GCOV=`grep PETSC_USE_GCOV $nPETSC_DIR/$PETSC_ARCH/include/petscconf.h`
 if ( "${GCOV}" != "" ) then
   make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR gcov  >>& examples.log
 endif

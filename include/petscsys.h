@@ -40,6 +40,18 @@
 #  define PETSC_FUNCTION_NAME PETSC_FUNCTION_NAME_C
 #endif
 
+#if defined(__cplusplus)
+#  define PETSC_RESTRICT PETSC_CXX_RESTRICT
+#else
+#  define PETSC_RESTRICT PETSC_C_RESTRICT
+#endif
+
+#if defined(__cplusplus)
+#  define PETSC_STATIC_INLINE PETSC_CXX_STATIC_INLINE
+#else
+#  define PETSC_STATIC_INLINE PETSC_C_STATIC_INLINE
+#endif
+
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES) /* For Win32 shared libraries */
 #  define PETSC_DLLEXPORT __declspec(dllexport)
 #  define PETSC_DLLIMPORT __declspec(dllimport)
@@ -504,7 +516,7 @@ PETSC_EXTERN PetscErrorCode PetscCommDestroy(MPI_Comm*);
   Concepts: memory allocation
 
 M*/
-#define PetscMalloc(a,b)  ((a != 0) ? (*PetscTrMalloc)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,(void**)(b)) : (*(b) = 0,0) )
+#define PetscMalloc(a,b)  ((a != 0) ? (*PetscTrMalloc)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,(void**)(b)) : (*(b) = 0,0) )
 
 /*MC
    PetscAddrAlign - Rounds up an address to PETSC_MEMALIGN alignment
@@ -844,7 +856,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscFree(a)   ((a) && ((*PetscTrFree)((void*)(a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__) || ((a) = 0,0)))
+#define PetscFree(a)   ((a) && ((*PetscTrFree)((void*)(a),__LINE__,PETSC_FUNCTION_NAME,__FILE__) || ((a) = 0,0)))
 
 /*MC
    PetscFreeVoid - Frees memory
@@ -867,7 +879,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscFreeVoid(a) ((*PetscTrFree)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__),(a) = 0)
+#define PetscFreeVoid(a) ((*PetscTrFree)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__),(a) = 0)
 
 
 /*MC
@@ -1057,9 +1069,9 @@ M*/
 #define PetscFree7(m1,m2,m3,m4,m5,m6,m7)   ((m7)=0,(m6)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1))
 #endif
 
-PETSC_EXTERN PetscErrorCode (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**);
-PETSC_EXTERN PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[],const char[]);
-PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t,int,const char[],const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[],const char[]));
+PETSC_EXTERN PetscErrorCode (*PetscTrMalloc)(size_t,int,const char[],const char[],void**);
+PETSC_EXTERN PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[]);
+PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t,int,const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[]));
 PETSC_EXTERN PetscErrorCode PetscMallocClear(void);
 
 /*
@@ -1079,7 +1091,7 @@ PETSC_EXTERN PetscErrorCode PetscMallocGetCurrentUsage(PetscLogDouble *);
 PETSC_EXTERN PetscErrorCode PetscMallocGetMaximumUsage(PetscLogDouble *);
 PETSC_EXTERN PetscErrorCode PetscMallocDebug(PetscBool);
 PETSC_EXTERN PetscErrorCode PetscMallocGetDebug(PetscBool*);
-PETSC_EXTERN PetscErrorCode PetscMallocValidate(int,const char[],const char[],const char[]);
+PETSC_EXTERN PetscErrorCode PetscMallocValidate(int,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscMallocSetDumpLog(void);
 PETSC_EXTERN PetscErrorCode PetscMallocSetDumpLogThreshold(PetscLogDouble);
 PETSC_EXTERN PetscErrorCode PetscMallocGetDumpLog(PetscBool*);
@@ -1206,6 +1218,30 @@ PETSC_EXTERN PetscErrorCode MPIULong_Recv(void*,PetscInt,MPI_Datatype,PetscMPIIn
 .seealso:  PetscObjectDestroy(), PetscObjectView(), PetscObjectGetName(), PetscObjectSetName(), PetscObjectReference(), PetscObjectDereferenc()
 S*/
 typedef struct _p_PetscObject* PetscObject;
+
+/*MC
+    PetscObjectId - unique integer Id for a PetscObject
+
+    Level: developer
+
+    Notes: Unlike pointer values, object ids are never reused.
+
+.seealso: PetscObjectState, PetscObjectGetId()
+M*/
+typedef Petsc64bitInt PetscObjectId;
+
+/*MC
+    PetscObjectState - integer state for a PetscObject
+
+    Level: developer
+
+    Notes:
+    Object state is always-increasing and (for objects that track state) can be used to determine if an object has
+    changed since the last time you interacted with it.  It is 64-bit so that it will not overflow for a very long time.
+
+.seealso: PetscObjectId, PetscObjectStateGet(), PetscObjectStateIncrease(), PetscObjectStateSet()
+M*/
+typedef Petsc64bitInt PetscObjectState;
 
 /*S
      PetscFunctionList - Linked list of functions, possibly stored in dynamic libraries, accessed
@@ -1425,8 +1461,6 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListGet(PetscFunctionList,const char **
 
    Level: advanced
 
-   --with-shared-libraries --with-dynamic-loading must be used with ./configure to use dynamic libraries
-
 .seealso:  PetscDLLibraryOpen()
 S*/
 typedef struct _n_PetscDLLibrary *PetscDLLibrary;
@@ -1526,6 +1560,7 @@ PETSC_EXTERN PetscErrorCode PetscHelpPrintfDefault(MPI_Comm,const char [],...);
 #if defined(PETSC_HAVE_POPEN)
 PETSC_EXTERN PetscErrorCode PetscPOpen(MPI_Comm,const char[],const char[],const char[],FILE **);
 PETSC_EXTERN PetscErrorCode PetscPClose(MPI_Comm,FILE*,int*);
+PETSC_EXTERN PetscErrorCode PetscPOpenSetMachine(const char[]);
 #endif
 
 PETSC_EXTERN PetscErrorCode PetscSynchronizedPrintf(MPI_Comm,const char[],...);
@@ -2344,6 +2379,8 @@ extern PetscSegBuffer PetscCitationsList;
      Input Parameters:
 +      cite - the bibtex item, formated to displayed on multiple lines nicely
 -      set - a boolean variable initially set to PETSC_FALSE; this is used to insure only a single registration of the citation
+
+   Level: intermediate
 
      Options Database:
 .     -citations [filenmae]   - print out the bibtex entries for the given computation
