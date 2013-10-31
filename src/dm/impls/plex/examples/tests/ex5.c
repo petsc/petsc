@@ -267,9 +267,10 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateSimplex_2D"
-PetscErrorCode CreateSimplex_2D(MPI_Comm comm, AppCtx *user, DM dm)
+PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
-  PetscInt       depth = 2, testNum = user->testNum, p;
+  DM             idm;
+  PetscInt       p;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -279,40 +280,32 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, AppCtx *user, DM dm)
     switch (testNum) {
     case 0:
     {
-      PetscInt    numPoints[3]         = {4, 5, 2};
-      PetscInt    coneSize[11]         = {3, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2};
-      PetscInt    cones[16]            = {6, 7, 8,  9, 7, 10,  2, 3,  3, 4,  4, 2,  5, 4,  3, 5};
-      PetscInt    coneOrientations[16] = {0, 0, 0,  0, -2, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0};
-      PetscScalar vertexCoords[8]      = {-0.5, 0.5, 0.0, 0.0, 0.0, 1.0, 0.5, 0.5};
-      PetscInt    markerPoints[16]     = {2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 8, 1, 9, 1, 10, 1};
-      PetscInt    faultPoints[2]       = {3, 4};
+      PetscInt    numPoints[2]        = {4, 2};
+      PetscInt    coneSize[6]         = {3, 3, 0, 0, 0, 0};
+      PetscInt    cones[6]            = {2, 3, 4,  5, 4, 3};
+      PetscInt    coneOrientations[6] = {0, 0, 0,  0, 0, 0};
+      PetscScalar vertexCoords[8]     = {-0.5, 0.5, 0.0, 0.0, 0.0, 1.0, 0.5, 0.5};
+      PetscInt    markerPoints[8]     = {2, 1, 3, 1, 4, 1, 5, 1};
+      PetscInt    faultPoints[2]      = {3, 4};
 
-      ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      for (p = 0; p < 8; ++p) {
-        ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
-      }
-      for(p = 0; p < 2; ++p) {
-        ierr = DMPlexSetLabelValue(dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);
-      }
+      ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+      for (p = 0; p < 4; ++p) {ierr = DMPlexSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
+      for (p = 0; p < 2; ++p) {ierr = DMPlexSetLabelValue(*dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
     }
     break;
     case 1:
     {
-      PetscInt    numPoints[3]         = {6, 9, 4};
-      PetscInt    coneSize[19]         = {3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2};
-      PetscInt    cones[30]            = {10, 11, 12,  11, 13, 14,  15, 16, 17,  18, 12, 15,  4, 6,  6, 5,  5, 4,  6, 7,  7, 5,  8, 5,  5, 9,  9, 8,  8, 4};
-      PetscInt    coneOrientations[30] = { 0,  0,  0,  -2,  0,  0,   0,  0,  0,   0, -2, -2,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0};
+      PetscInt    numPoints[2]         = {6, 4};
+      PetscInt    coneSize[10]         = {3, 3, 3, 3, 0, 0, 0, 0, 0, 0};
+      PetscInt    cones[12]            = {4, 6, 5,  5, 6, 7,  8, 5, 9,  8, 4, 5};
+      PetscInt    coneOrientations[12] = {0, 0, 0,  0, 0, 0,  0, 0, 0,  0, 0, 0};
       PetscScalar vertexCoords[12]     = {-1.0, 0.0, 0.0, 1.0, 0.0, -1.0, 1.0, 0.0, -2.0, 1.0, -1.0, 2.0};
-      PetscInt    markerPoints[10]     = {4, 1, 6, 1, 8, 1, 10, 1, 18, 1};
+      PetscInt    markerPoints[6]      = {4, 1, 6, 1, 8, 1};
       PetscInt    faultPoints[3]       = {5, 6, 8};
 
-      ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      for (p = 0; p < 5; ++p) {
-        ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
-      }
-      for(p = 0; p < 3; ++p) {
-        ierr = DMPlexSetLabelValue(dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);
-      }
+      ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+      for (p = 0; p < 3; ++p) {ierr = DMPlexSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
+      for (p = 0; p < 3; ++p) {ierr = DMPlexSetLabelValue(*dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
     }
     break;
     default:
@@ -321,9 +314,17 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, AppCtx *user, DM dm)
   } else {
     PetscInt numPoints[3] = {0, 0, 0};
 
-    ierr = DMPlexCreateFromDAG(dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-    ierr = DMPlexCreateLabel(dm, "fault");CHKERRQ(ierr);
+    ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = DMPlexCreateLabel(*dm, "fault");CHKERRQ(ierr);
   }
+  ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
+  ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
+  ierr = DMPlexCopyLabels(*dm, idm);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
+  ierr = DMPlexCheckSymmetry(idm);CHKERRQ(ierr);
+  ierr = DMDestroy(dm);CHKERRQ(ierr);
+  *dm  = idm;
   PetscFunctionReturn(0);
 }
 
@@ -575,7 +576,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   switch (dim) {
   case 2:
     if (cellSimplex) {
-      ierr = CreateSimplex_2D(comm, user, *dm);CHKERRQ(ierr);
+      ierr = CreateSimplex_2D(comm, user->testNum, dm);CHKERRQ(ierr);
     } else {
       ierr = CreateQuad_2D(comm, user->testNum, dm);CHKERRQ(ierr);
     }
