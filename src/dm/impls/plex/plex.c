@@ -5887,6 +5887,22 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetHybridBounds"
+/*@
+  DMPlexGetHybridBounds - Get the first mesh point of each dimension which is a hybrid
+
+  Input Parameter:
+. dm - The DMPlex object
+
+  Output Parameters:
++ cMax - The first hybrid cell
+. cMax - The first hybrid face
+. cMax - The first hybrid edge
+- cMax - The first hybrid vertex
+
+  Level: developer
+
+.seealso DMPlexCreateHybridMesh()
+@*/
 PetscErrorCode DMPlexGetHybridBounds(DM dm, PetscInt *cMax, PetscInt *fMax, PetscInt *eMax, PetscInt *vMax)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
