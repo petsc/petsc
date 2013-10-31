@@ -103,7 +103,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x,
 	/* Compute the smallest steplength that will make one nonbinding variable
 	   equal the bound */
       ierr = VecStepBoundInfo(x,ls->lower,ls->upper,s,&rho,&actred,&d1); CHKERRQ(ierr);
-      ls->step = PetscMin(ls->step,d1);
+      ls->step = PetscMin(ls->step,rho);
   }
   rho=0; actred=0;
 
