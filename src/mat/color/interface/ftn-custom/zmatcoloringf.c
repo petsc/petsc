@@ -26,7 +26,7 @@ extern "C" {
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define matcoloringcreate_  MATCOLORINGCREATE
 #define matcoloringsettype_ MATCOLORINGSETTYPE
-#define matcoloringsettype_ MATCOLORINGDESTROY
+#define matcoloringdestroy_ MATCOLORINGDESTROY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define matcoloringcreate_  matcoloringcreate
 #define matcoloringsettype_ matcoloringsettype
