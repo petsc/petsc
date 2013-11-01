@@ -160,9 +160,11 @@ class Package(config.base.Configure):
 
   def getExternalPackagesDir(self):
     '''The directory for downloaded packages'''
-    if not self.framework.externalPackagesDir is None:
-      packages = os.path.abspath('externalpackages')
-      return self.framework.externalPackagesDir
+    if hasattr(self, 'externalPackagesDirProvider'):
+      if hasattr(self.externalPackagesDirProvider, 'dir'):
+        return self.externalPackagesDirProvider.dir
+    elif not self.framework.externalPackagesDir is None:
+      return os.path.abspath('externalpackages')
     return self._externalPackagesDir
   def setExternalPackagesDir(self, externalPackagesDir):
     '''The directory for downloaded packages'''
@@ -175,8 +177,7 @@ class Package(config.base.Configure):
     return []
 
   def getInstallDir(self):
-    if not self.arch:  raise RuntimeError('Why the hell is self.arch not defined for this package -- '+self.package+'\n')
-    self.installDir = os.path.join(self.defaultInstallDir, self.arch)
+    self.installDir = self.defaultInstallDir
     self.confDir    = os.path.join(self.installDir, 'conf')
     self.includeDir = os.path.join(self.installDir, 'include')
     self.libDir     = os.path.join(self.installDir, 'lib')

@@ -374,8 +374,7 @@ class Configure(config.package.Package):
     openmpiDir = self.getDir()
 
     # Get the OPENMPI directories
-    installDir = os.path.join(self.defaultInstallDir,self.arch)
-    confDir = os.path.join(self.defaultInstallDir,self.arch,'conf')
+    installDir = self.installDir
     args = ['--prefix='+installDir,'--with-rsh=ssh']
     args.append('MAKE='+self.make.make)
     # Configure and Build OPENMPI
@@ -470,8 +469,7 @@ class Configure(config.package.Package):
 
   def InstallMPICH(self):
     mpichDir = self.getDir()
-    installDir = os.path.join(self.defaultInstallDir,self.arch)
-    confDir = os.path.join(self.defaultInstallDir,self.arch,'conf')
+    installDir = self.installDir
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
 
