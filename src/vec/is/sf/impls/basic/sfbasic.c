@@ -10,12 +10,26 @@ struct _n_PetscSFBasicPack {
   void (*UnpackMax)(PetscInt,const PetscInt*,void*,const void*);
   void (*UnpackMinloc)(PetscInt,const PetscInt*,void*,const void*);
   void (*UnpackMaxloc)(PetscInt,const PetscInt*,void*,const void*);
+  void (*UnpackMult)(PetscInt,const PetscInt*,void*,const void *);
+  void (*UnpackLAND)(PetscInt,const PetscInt*,void*,const void *);
+  void (*UnpackBAND)(PetscInt,const PetscInt*,void*,const void *);
+  void (*UnpackLOR)(PetscInt,const PetscInt*,void*,const void *);
+  void (*UnpackBOR)(PetscInt,const PetscInt*,void*,const void *);
+  void (*UnpackLXOR)(PetscInt,const PetscInt*,void*,const void *);
+  void (*UnpackBXOR)(PetscInt,const PetscInt*,void*,const void *);
   void (*FetchAndInsert)(PetscInt,const PetscInt*,void*,void*);
   void (*FetchAndAdd)(PetscInt,const PetscInt*,void*,void*);
   void (*FetchAndMin)(PetscInt,const PetscInt*,void*,void*);
   void (*FetchAndMax)(PetscInt,const PetscInt*,void*,void*);
   void (*FetchAndMinloc)(PetscInt,const PetscInt*,void*,void*);
   void (*FetchAndMaxloc)(PetscInt,const PetscInt*,void*,void*);
+  void (*FetchAndMult)(PetscInt,const PetscInt*,void*,void*);
+  void (*FetchAndLAND)(PetscInt,const PetscInt*,void*,void*);
+  void (*FetchAndBAND)(PetscInt,const PetscInt*,void*,void*);
+  void (*FetchAndLOR)(PetscInt,const PetscInt*,void*,void*);
+  void (*FetchAndBOR)(PetscInt,const PetscInt*,void*,void*);
+  void (*FetchAndLXOR)(PetscInt,const PetscInt*,void*,void*);
+  void (*FetchAndBXOR)(PetscInt,const PetscInt*,void*,void*);
 
   MPI_Datatype     unit;
   size_t           unitbytes;   /* Number of bytes in a unit */
@@ -100,6 +114,23 @@ PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Dataty
       u[j] = t + p[i];                                                  \
       p[i] = t;                                                         \
     }                                                                   \
+  }                                                                     \
+  static void CPPJoin2(UnpackMult_,type)(PetscInt n,const PetscInt *idx,void *unpacked,const void *packed) { \
+    type *u = (type*)unpacked;                                          \
+    const type *p = (const type*)packed;                                \
+    PetscInt i;                                                         \
+    for (i=0; i<n; i++) u[idx[i]] *= p[i];                              \
+  }                                                                     \
+  static void CPPJoin2(FetchAndMult_,type)(PetscInt n,const PetscInt *idx,void *unpacked,void *packed) { \
+    type *u = (type*)unpacked;                                          \
+    type *p = (type*)packed;                                            \
+    PetscInt i;                                                         \
+    for (i=0; i<n; i++) {                                               \
+      PetscInt j = idx[i];                                              \
+      type t = u[j];                                                    \
+      u[j] = t * p[i];                                                  \
+      p[i] = t;                                                         \
+    }                                                                   \
   }
 #define DEF_Pack(type) \
   DEF_PackAddNoInit(type)                                               \
@@ -107,8 +138,10 @@ PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Dataty
     link->Pack = CPPJoin2(Pack_,type);                                  \
     link->UnpackInsert = CPPJoin2(UnpackInsert_,type);                  \
     link->UnpackAdd = CPPJoin2(UnpackAdd_,type);                        \
+    link->UnpackMult = CPPJoin2(UnpackMult_,type);                      \
     link->FetchAndInsert = CPPJoin2(FetchAndInsert_,type);              \
     link->FetchAndAdd = CPPJoin2(FetchAndAdd_,type);                    \
+    link->FetchAndMult = CPPJoin2(FetchAndMult_,type);                  \
     link->unitbytes = sizeof(type);                                     \
   }
 /* Comparable types */
@@ -157,14 +190,159 @@ PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Dataty
   static void CPPJoin2(PackInit_,type)(PetscSFBasicPack link) {         \
     link->Pack = CPPJoin2(Pack_,type);                                  \
     link->UnpackInsert = CPPJoin2(UnpackInsert_,type);                  \
-    link->UnpackAdd = CPPJoin2(UnpackAdd_,type);                        \
-    link->UnpackMax = CPPJoin2(UnpackMax_,type);                        \
-    link->UnpackMin = CPPJoin2(UnpackMin_,type);                        \
+    link->UnpackAdd  = CPPJoin2(UnpackAdd_,type);                       \
+    link->UnpackMax  = CPPJoin2(UnpackMax_,type);                       \
+    link->UnpackMin  = CPPJoin2(UnpackMin_,type);                       \
+    link->UnpackMult = CPPJoin2(UnpackMult_,type);                      \
     link->FetchAndInsert = CPPJoin2(FetchAndInsert_,type);              \
     link->FetchAndAdd = CPPJoin2(FetchAndAdd_ ,type);                   \
     link->FetchAndMax = CPPJoin2(FetchAndMax_ ,type);                   \
     link->FetchAndMin = CPPJoin2(FetchAndMin_ ,type);                   \
+    link->FetchAndMult = CPPJoin2(FetchAndMult_,type);                  \
     link->unitbytes = sizeof(type);                                     \
+  }
+
+/* Logical Types */
+#define DEF_PackLog(type)                                               \
+  static void CPPJoin2(UnpackLAND_,type)(PetscInt n,const PetscInt *idx,void *unpacked,const void *packed) { \
+    type *u = (type*)unpacked;                                          \
+    const type *p = (const type*)packed;                                \
+    PetscInt i;                                                         \
+    for (i=0; i<n; i++) {                                               \
+      type v = u[idx[i]];                                               \
+      u[idx[i]] = v && p[i];                                            \
+    }                                                                   \
+  }                                                                     \
+  static void CPPJoin2(UnpackLOR_,type)(PetscInt n,const PetscInt *idx,void *unpacked,const void *packed) { \
+    type *u = (type*)unpacked;                                          \
+    const type *p = (const type*)packed;                                \
+    PetscInt i;                                                         \
+    for (i=0; i<n; i++) {                                               \
+      type v = u[idx[i]];                                               \
+      u[idx[i]] = v || p[i];                                            \
+    }                                                                   \
+  }                                                                     \
+  static void CPPJoin2(UnpackLXOR_,type)(PetscInt n,const PetscInt *idx,void *unpacked,const void *packed) { \
+    type *u = (type*)unpacked;                                          \
+    const type *p = (const type*)packed;                                \
+    PetscInt i;                                                         \
+    for (i=0; i<n; i++) {                                               \
+      type v = u[idx[i]];                                               \
+      u[idx[i]] = (!v)!=(!p[i]);                                        \
+    }                                                                   \
+  }                                                                     \
+  static void CPPJoin2(FetchAndLAND_,type)(PetscInt n,const PetscInt *idx,void *unpacked,void *packed) { \
+    type *u = (type*)unpacked;                                          \
+    type *p = (type*)packed;                                            \
+    PetscInt i;                                                         \
+    for (i=0; i<n; i++) {                                               \
+      PetscInt j = idx[i];                                              \
+      type v = u[j];                                                    \
+      u[j] = v && p[i];                                                 \
+      p[i] = v;                                                         \
+    }                                                                   \
+  }                                                                     \
+  static void CPPJoin2(FetchAndLOR_,type)(PetscInt n,const PetscInt *idx,void *unpacked,void *packed) { \
+    type *u = (type*)unpacked;                                          \
+    type *p = (type*)packed;                                            \
+    PetscInt i;                                                         \
+    for (i=0; i<n; i++) {                                               \
+      PetscInt j = idx[i];                                              \
+      type v = u[j];                                                    \
+      u[j] = v || p[i];                                                 \
+      p[i] = v;                                                         \
+    }                                                                   \
+  }                                                                     \
+  static void CPPJoin2(FetchAndLXOR_,type)(PetscInt n,const PetscInt *idx,void *unpacked,void *packed) { \
+    type *u = (type*)unpacked;                                          \
+    type *p = (type*)packed;                                            \
+    PetscInt i;                                                         \
+    for (i=0; i<n; i++) {                                               \
+      PetscInt j = idx[i];                                              \
+      type v = u[j];                                                    \
+      u[j] = (!v)!=(!p[i]);                                             \
+      p[i] = v;                                                         \
+    }                                                                   \
+  }                                                                     \
+  static void CPPJoin2(PackInit_Logical_,type)(PetscSFBasicPack link) { \
+    link->UnpackLAND = CPPJoin2(UnpackLAND_,type);                      \
+    link->UnpackLOR  = CPPJoin2(UnpackLOR_,type);                       \
+    link->UnpackLXOR = CPPJoin2(UnpackLXOR_,type);                      \
+    link->FetchAndLAND = CPPJoin2(FetchAndLAND_,type);                  \
+    link->FetchAndLOR  = CPPJoin2(FetchAndLOR_,type);                   \
+    link->FetchAndLXOR = CPPJoin2(FetchAndLXOR_,type);                  \
+  }
+
+
+/* Bitwise Types */
+#define DEF_PackBit(type)                                               \
+  static void CPPJoin2(UnpackBAND_,type)(PetscInt n,const PetscInt *idx,void *unpacked,const void *packed) { \
+    type *u = (type*)unpacked;                                          \
+    const type *p = (const type*)packed;                                \
+    PetscInt i;                                                         \
+    for (i=0; i<n; i++) {                                               \
+      type v = u[idx[i]];                                               \
+      u[idx[i]] = v & p[i];                                             \
+    }                                                                   \
+  }                                                                     \
+  static void CPPJoin2(UnpackBOR_,type)(PetscInt n,const PetscInt *idx,void *unpacked,const void *packed) { \
+    type *u = (type*)unpacked;                                          \
+    const type *p = (const type*)packed;                                \
+    PetscInt i;                                                         \
+    for (i=0; i<n; i++) {                                               \
+      type v = u[idx[i]];                                               \
+      u[idx[i]] = v | p[i];                                             \
+    }                                                                   \
+  }                                                                     \
+  static void CPPJoin2(UnpackBXOR_,type)(PetscInt n,const PetscInt *idx,void *unpacked,const void *packed) { \
+    type *u = (type*)unpacked;                                          \
+    const type *p = (const type*)packed;                                \
+    PetscInt i;                                                         \
+    for (i=0; i<n; i++) {                                               \
+      type v = u[idx[i]];                                               \
+      u[idx[i]] = v^p[i];                                               \
+    }                                                                   \
+  }                                                                     \
+  static void CPPJoin2(FetchAndBAND_,type)(PetscInt n,const PetscInt *idx,void *unpacked,void *packed) { \
+    type *u = (type*)unpacked;                                          \
+    type *p = (type*)packed;                                            \
+    PetscInt i;                                                         \
+    for (i=0; i<n; i++) {                                               \
+      PetscInt j = idx[i];                                              \
+      type v = u[j];                                                    \
+      u[j] = v & p[i];                                                  \
+      p[i] = v;                                                         \
+    }                                                                   \
+  }                                                                     \
+  static void CPPJoin2(FetchAndBOR_,type)(PetscInt n,const PetscInt *idx,void *unpacked,void *packed) { \
+    type *u = (type*)unpacked;                                          \
+    type *p = (type*)packed;                                            \
+    PetscInt i;                                                         \
+    for (i=0; i<n; i++) {                                               \
+      PetscInt j = idx[i];                                              \
+      type v = u[j];                                                    \
+      u[j] = v | p[i];                                                  \
+      p[i] = v;                                                         \
+    }                                                                   \
+  }                                                                     \
+  static void CPPJoin2(FetchAndBXOR_,type)(PetscInt n,const PetscInt *idx,void *unpacked,void *packed) { \
+    type *u = (type*)unpacked;                                          \
+    type *p = (type*)packed;                                            \
+    PetscInt i;                                                         \
+    for (i=0; i<n; i++) {                                               \
+      PetscInt j = idx[i];                                              \
+      type v = u[j];                                                    \
+      u[j] = v^p[i];                                                    \
+      p[i] = v;                                                         \
+    }                                                                   \
+  }                                                                     \
+  static void CPPJoin2(PackInit_Bitwise_,type)(PetscSFBasicPack link) { \
+    link->UnpackBAND = CPPJoin2(UnpackBAND_,type);                      \
+    link->UnpackBOR  = CPPJoin2(UnpackBOR_,type);                       \
+    link->UnpackBXOR = CPPJoin2(UnpackBXOR_,type);                      \
+    link->FetchAndBAND = CPPJoin2(FetchAndBAND_,type);                  \
+    link->FetchAndBOR  = CPPJoin2(FetchAndBOR_,type);                   \
+    link->FetchAndBXOR = CPPJoin2(FetchAndBXOR_,type);                  \
   }
 
 /* Pair types */
@@ -292,8 +470,13 @@ PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Dataty
   }
 
 DEF_PackCmp(int)
+DEF_PackBit(int)
+DEF_PackLog(int)
 DEF_PackCmp(PetscInt)
+DEF_PackBit(PetscInt)
+DEF_PackLog(PetscInt)
 DEF_PackCmp(PetscReal)
+DEF_PackLog(PetscReal)
 #if defined(PETSC_HAVE_COMPLEX)
 DEF_Pack(PetscComplex)
 #endif
@@ -372,9 +555,9 @@ static PetscErrorCode PetscSFBasicPackTypeSetup(PetscSFBasicPack link,MPI_Dataty
 #endif
   ierr = MPIPetsc_Type_compare(unit,MPI_2INT,&is2Int);CHKERRQ(ierr);
   ierr = MPIPetsc_Type_compare(unit,MPIU_2INT,&is2PetscInt);CHKERRQ(ierr);
-  if (isInt) PackInit_int(link);
-  else if (isPetscInt) PackInit_PetscInt(link);
-  else if (isPetscReal) PackInit_PetscReal(link);
+  if (isInt) {PackInit_int(link); PackInit_Logical_int(link); PackInit_Bitwise_int(link);}
+  else if (isPetscInt) {PackInit_PetscInt(link); PackInit_Logical_PetscInt(link); PackInit_Bitwise_PetscInt(link);}
+  else if (isPetscReal) {PackInit_PetscReal(link); PackInit_Logical_PetscReal(link);}
 #if defined(PETSC_HAVE_COMPLEX)
   else if (isPetscComplex) PackInit_PetscComplex(link);
 #endif
@@ -408,8 +591,15 @@ static PetscErrorCode PetscSFBasicPackGetUnpackOp(PetscSF sf,PetscSFBasicPack li
   *UnpackOp = NULL;
   if (op == MPIU_REPLACE) *UnpackOp = link->UnpackInsert;
   else if (op == MPI_SUM || op == MPIU_SUM) *UnpackOp = link->UnpackAdd;
+  else if (op == MPI_PROD) *UnpackOp = link->UnpackMult;
   else if (op == MPI_MAX || op == MPIU_MAX) *UnpackOp = link->UnpackMax;
   else if (op == MPI_MIN || op == MPIU_MIN) *UnpackOp = link->UnpackMin;
+  else if (op == MPI_LAND) *UnpackOp = link->UnpackLAND;
+  else if (op == MPI_BAND) *UnpackOp = link->UnpackBAND;
+  else if (op == MPI_LOR) *UnpackOp = link->UnpackLOR;
+  else if (op == MPI_BOR) *UnpackOp = link->UnpackBOR;
+  else if (op == MPI_LXOR) *UnpackOp = link->UnpackLXOR;
+  else if (op == MPI_BXOR) *UnpackOp = link->UnpackBXOR;
   else if (op == MPI_MAXLOC) *UnpackOp = link->UnpackMaxloc;
   else if (op == MPI_MINLOC) *UnpackOp = link->UnpackMinloc;
   else SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"No support for MPI_Op");
@@ -427,6 +617,13 @@ static PetscErrorCode PetscSFBasicPackGetFetchAndOp(PetscSF sf,PetscSFBasicPack 
   else if (op == MPI_MIN || op == MPIU_MIN) *FetchAndOp = link->FetchAndMin;
   else if (op == MPI_MAXLOC) *FetchAndOp = link->FetchAndMaxloc;
   else if (op == MPI_MINLOC) *FetchAndOp = link->FetchAndMinloc;
+  else if (op == MPI_PROD)   *FetchAndOp = link->FetchAndMult;
+  else if (op == MPI_LAND)   *FetchAndOp = link->FetchAndLAND;
+  else if (op == MPI_BAND)   *FetchAndOp = link->FetchAndBAND;
+  else if (op == MPI_LOR)    *FetchAndOp = link->FetchAndLOR;
+  else if (op == MPI_BOR)    *FetchAndOp = link->FetchAndBOR;
+  else if (op == MPI_LXOR)   *FetchAndOp = link->FetchAndLXOR;
+  else if (op == MPI_BXOR)   *FetchAndOp = link->FetchAndBXOR;
   else SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"No support for MPI_Op");
   PetscFunctionReturn(0);
 }

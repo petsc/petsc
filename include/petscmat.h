@@ -136,6 +136,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactorType(Mat,MatFactorType*);
 /* Logging support */
 #define    MAT_FILE_CLASSID 1211216    /* used to indicate matrices in binary files */
 PETSC_EXTERN PetscClassId MAT_CLASSID;
+PETSC_EXTERN PetscClassId MAT_COLORING_CLASSID;
 PETSC_EXTERN PetscClassId MAT_FDCOLORING_CLASSID;
 PETSC_EXTERN PetscClassId MAT_TRANSPOSECOLORING_CLASSID;
 PETSC_EXTERN PetscClassId MAT_PARTITIONING_CLASSID;
@@ -1019,25 +1020,45 @@ PETSC_EXTERN PetscErrorCode MatSOR(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscI
     These routines are for efficiently computing Jacobians via finite differences.
 */
 
+/*S
+     MatColoring - Object for managing the coloring of matrices.
+
+   Level: beginner
+
+  Concepts: matrix, coloring
+
+.seealso:  MatFDColoringCreate() ISColoring MatFDColoring
+S*/
+typedef struct _p_MatColoring* MatColoring;
 /*J
     MatColoringType - String with the name of a PETSc matrix coloring
 
    Level: beginner
 
-.seealso: MatGetColoring(), MatColoring
+.seealso: MatColoringSetType(), MatColoring
 J*/
-typedef const char* MatColoringType;
+
+typedef const  char*           MatColoringType;
+#define MATCOLORINGJP      "jp"
+#define MATCOLORINGMIS     "mis"
 #define MATCOLORINGNATURAL "natural"
 #define MATCOLORINGSL      "sl"
 #define MATCOLORINGLF      "lf"
 #define MATCOLORINGID      "id"
 
-PETSC_EXTERN PetscErrorCode MatGetColoring(Mat,MatColoringType,ISColoring*);
-PETSC_EXTERN PetscErrorCode MatColoringRegister(const char[],PetscErrorCode(*)(Mat,MatColoringType,ISColoring *));
-
-PETSC_EXTERN PetscBool MatColoringRegisterAllCalled;
-
+PETSC_EXTERN PetscErrorCode MatColoringCreate(Mat,MatColoring*);
+PETSC_EXTERN PetscErrorCode MatColoringDestroy(MatColoring*);
+PETSC_EXTERN PetscErrorCode MatColoringView(MatColoring,PetscViewer);
+PETSC_EXTERN PetscErrorCode MatColoringSetType(MatColoring,MatColoringType);
+PETSC_EXTERN PetscErrorCode MatColoringSetFromOptions(MatColoring);
+PETSC_EXTERN PetscErrorCode MatColoringSetDistance(MatColoring,PetscInt);
+PETSC_EXTERN PetscErrorCode MatColoringGetDistance(MatColoring,PetscInt*);
+PETSC_EXTERN PetscErrorCode MatColoringSetMaxColors(MatColoring,PetscInt);
+PETSC_EXTERN PetscErrorCode MatColoringGetMaxColors(MatColoring,PetscInt*);
+PETSC_EXTERN PetscErrorCode MatColoringApply(MatColoring,ISColoring*);
 PETSC_EXTERN PetscErrorCode MatColoringRegisterAll(void);
+PETSC_EXTERN PetscErrorCode MatColoringRegister(const char[],PetscErrorCode(*)(MatColoring));
+PETSC_EXTERN PetscBool MatColoringRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode MatColoringPatch(Mat,PetscInt,PetscInt,ISColoringValue[],ISColoring*);
 
 /*S
