@@ -88,7 +88,7 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Ve
 
     if (qn->monitor) {
       ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(qn->monitor, "using vector %d and %d, gdot: %14.12e\n",k,j,gdot);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(qn->monitor, "using vector %d and %d, gdot: %14.12e\n",k,j,PetscRealPart(gdot));CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
     }
   }
