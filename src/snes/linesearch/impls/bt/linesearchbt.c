@@ -110,6 +110,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
     }
     ierr = VecCopy(X,W);CHKERRQ(ierr);
     ierr = VecCopy(F,G);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetNorms(linesearch,xnorm,fnorm,ynorm);CHKERRQ(ierr);
     ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
