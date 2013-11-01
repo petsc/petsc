@@ -3862,7 +3862,8 @@ PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt depthSiz
   PetscInt          *localPointsNew;
   PetscSFNode       *remotePointsNew;
   PetscInt          *depthSizeOld, *rdepthSize, *rdepthSizeOld, *rdepthMaxOld, *rvStart, *rvStartNew, *reStart, *reStartNew, *rfStart, *rfStartNew, *rcStart, *rcStartNew;
-  PetscInt           depth, numNeighbors, pStartNew, pEndNew, cStart, cStartNew, cEnd, cMax, vStart, vStartNew, vEnd, vMax, fStart, fStartNew, fEnd, fMax, eStart, eStartNew, eEnd, eMax, r, n;
+  PetscInt           depth, numNeighbors, pStartNew, pEndNew, cStart, cEnd, cMax, vStart, vEnd, vMax, fStart, fEnd, fMax, eStart, eEnd, eMax, r, n;
+  PetscInt           cStartNew = 0, vStartNew = 0, fStartNew = 0, eStartNew = 0;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -4337,7 +4338,8 @@ PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt depthSiz
 PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
 {
   PetscInt       numLabels, l;
-  PetscInt       depth, newp, cStart, cStartNew, cEnd, cMax, vStart, vStartNew, vEnd, vMax, fStart, fStartNew, fEnd, fMax, eStart, eStartNew, eEnd, eMax, r;
+  PetscInt       depth, newp, cStart, cEnd, cMax, vStart, vEnd, vMax, fStart, fEnd, fMax, eStart, eEnd, eMax, r;
+  PetscInt       cStartNew = 0, vStartNew = 0, fStartNew = 0, eStartNew = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
