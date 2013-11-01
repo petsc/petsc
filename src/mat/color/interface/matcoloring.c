@@ -203,7 +203,7 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
   if (!MatColoringRegisterAllCalled) {ierr = MatColoringRegisterAll();CHKERRQ(ierr);}
   ierr = PetscObjectOptionsBegin((PetscObject)mc);CHKERRQ(ierr);
   if (((PetscObject)mc)->type_name) deft = ((PetscObject)mc)->type_name;
-  ierr = PetscOptionsList("-mat_coloring_type","The coloring method used","MatColoringSetType",MatColoringList,deft,type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-mat_coloring_type","The coloring method used","MatColoringSetType",MatColoringList,deft,type,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatColoringSetType(mc,type);CHKERRQ(ierr);
   } else if (!((PetscObject)mc)->type_name) {
