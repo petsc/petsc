@@ -198,6 +198,10 @@ ex43: ex43.o  chkopts
 	-${CLINKER} -o ex43 ex43.o ${PETSC_VEC_LIB}
 	${RM} -f ex43.o
 
+ex44: ex44.o  chkopts
+	-${CLINKER} -o ex44 ex44.o ${PETSC_VEC_LIB}
+	${RM} -f ex44.o
+
 #--------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 > ex1_1.tmp 2>&1;\
@@ -420,6 +424,11 @@ runex43:
 	   ${DIFF} output/ex43_1.out ex43_1.tmp || echo  ${PWD} "\nPossible problem with ex43, diffs above \n========================================="; \
 	   ${RM} -f ex43_1.tmp
 
+runex44:
+	-@${MPIEXEC} -n 1 ./ex44 -vec_type cusp > ex44.tmp 2>&1;\
+	   ${DIFF} output/ex44.out ex44.tmp || echo  ${PWD} "\nPossible problem with ex44, diffs above \n========================================="; \
+	   ${RM} -f ex44.tmp
+
 TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm \
                               ex4.PETSc runex4 ex4.rm ex5.PETSc ex5.rm ex6.PETSc runex6 ex6.rm ex7.PETSc \
                               runex7 ex7.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex11.PETSc runex11 \
@@ -436,5 +445,6 @@ TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex32f.PETSc runex32f ex32f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI = ex19f.PETSc runex19f ex19f.rm
 TESTEXAMPLES_C_X_MPIUNI   = ex2.PETSc runex2 ex2.rm ex4.PETSc ex4.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 \
                               ex7.rm ex8.PETSc runex8 ex8.rm ex14.PETSc ex14.rm
+TESTEXAMPLES_CUSP           = ex44.PETSc runex44 ex44.rm
 
 include ${PETSC_DIR}/conf/test
