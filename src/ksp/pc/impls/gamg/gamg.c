@@ -601,6 +601,8 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       } else Parr[level1] = NULL;
 
       if (pc_gamg->use_aggs_in_gasm) {
+        PetscInt bs;
+        ierr = MatGetBlockSizes(Prol11, &bs, NULL);CHKERRQ(ierr);
         ierr = PetscCDGetASMBlocks(agg_lists, bs, &nASMBlocksArr[level], &ASMLocalIDsArr[level]);CHKERRQ(ierr);
       }
 
@@ -703,7 +705,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       /* set defaults */
       ierr = KSPSetType(smoother, KSPCHEBYSHEV);CHKERRQ(ierr);
 
-      /* override defaults and command line args (!) */
+      /* set blocks for GASM smoother that uses the 'aggregates' */
       if (pc_gamg->use_aggs_in_gasm) {
         PetscInt sz;
         IS       *is;
@@ -711,6 +713,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         sz   = nASMBlocksArr[level];
         is   = ASMLocalIDsArr[level];
         ierr = PCSetType(subpc, PCGASM);CHKERRQ(ierr);
+        ierr = PCGASMSetOverlap(subpc, 0);CHKERRQ(ierr);
         if (sz==0) {
           IS       is;
           PetscInt my0,kk;
@@ -726,8 +729,6 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
           }
           ierr = PetscFree(is);CHKERRQ(ierr);
         }
-        ierr = PCGASMSetOverlap(subpc, 0);CHKERRQ(ierr);
-
         ASMLocalIDsArr[level] = NULL;
         nASMBlocksArr[level]  = 0;
         ierr                  = PCGASMSetType(subpc, PC_GASM_BASIC);CHKERRQ(ierr);
