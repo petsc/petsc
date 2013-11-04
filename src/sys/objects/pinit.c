@@ -686,8 +686,7 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
 .  -not_shared_tmp - each processor has own /tmp
 .  -tmp - alternative name of /tmp directory
 .  -get_total_flops - returns total flops done by all processors
-.  -memory_info - Print memory usage at end of run
--  -server <port> - start PETSc webserver (default port is 8080)
+-  -memory_info - Print memory usage at end of run
 
    Options Database Keys for Profiling:
    See the <a href="../../docs/manual.pdf#nameddest=ch_profiling">profiling chapter of the users manual</a> for details.
@@ -1049,15 +1048,6 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscOptionsGetBool(NULL,"-saw_options",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscOptionsSAWsDestroy();CHKERRQ(ierr);
-  }
-#endif
-
-#if defined(PETSC_USE_SERVER)
-  flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-server",&flg1,NULL);CHKERRQ(ierr);
-  if (flg1) {
-    /*  this is a crude hack, but better than nothing */
-    ierr = PetscPOpen(PETSC_COMM_WORLD,NULL,"pkill -9 petscwebserver","r",NULL);CHKERRQ(ierr);
   }
 #endif
 

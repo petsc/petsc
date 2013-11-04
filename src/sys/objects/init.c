@@ -645,15 +645,6 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   }
 #endif
 
-#if defined(PETSC_USE_SERVER)
-  flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-server",&flg1,NULL);CHKERRQ(ierr);
-  if (flg1) {
-    ierr = PetscPOpen(PETSC_COMM_WORLD,NULL,"${PETSC_DIR}/${PETSC_ARCH}/bin/petscwebserver","r",NULL);CHKERRQ(ierr);
-  }
-#endif
-
-
   ierr = PetscOptionsGetReal(NULL,"-petsc_sleep",&si,&flg1);CHKERRQ(ierr);
   if (flg1) {
     ierr = PetscSleep(si);CHKERRQ(ierr);
