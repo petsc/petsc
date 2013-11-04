@@ -97,13 +97,18 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x,
   }
 
   ierr = VecDot(g,s,&gdx); CHKERRQ(ierr);
+   if (gdx > 0) {
+    ierr = PetscInfo1(ls,"Line search error: search direction is not descent direction. dot(g,s) = %G",gdx); CHKERRQ(ierr);
+    ls->reason = TAOLINESEARCH_FAILED_ASCENT;
+    PetscFunctionReturn(0);
+  }
   ierr = VecCopy(x,neP->W2); CHKERRQ(ierr);
   ierr = VecCopy(g,neP->Gold); CHKERRQ(ierr);
   if (ls->bounded) {
 	/* Compute the smallest steplength that will make one nonbinding variable
 	   equal the bound */
       ierr = VecStepBoundInfo(x,ls->lower,ls->upper,s,&rho,&actred,&d1); CHKERRQ(ierr);
-      ls->step = PetscMin(ls->step,rho);
+      ls->step = PetscMin(ls->step,d1);
   }
   rho=0; actred=0;
 
@@ -124,7 +129,9 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x,
     ierr = VecCopy(x,neP->W2); CHKERRQ(ierr);
     ierr = VecAXPY(neP->W2,ls->step,s); CHKERRQ(ierr);
     if (ls->bounded) {
-	ierr = VecMedian(ls->lower,neP->W2,ls->upper,neP->W2); CHKERRQ(ierr);
+      /* Make sure new vector is numerically within bounds */
+      ierr = VecMedian(neP->W2,ls->lower,ls->upper,neP->W2);CHKERRQ(ierr);
+
     }
 
     /* Gradient is not needed here.  Unless there is a separate
@@ -152,12 +159,16 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x,
     
     if (fabs(prered)<1.0e-100) prered=1.0e-12;
     rho = actred/prered;
+    
     /* 
        If sufficient progress has been obtained, accept the
        point.  Otherwise, backtrack. 
     */
-
-    if (rho > ls->ftol){
+    
+    if (actred > 0) {
+      ierr = PetscInfo(ls,"Step resulted in ascent, rejecting.\n"); CHKERRQ(ierr);
+      ls->step = (ls->step)/2;
+    } else if (rho > ls->ftol){
       break;
     } else{
       ls->step = (ls->step)/2;
