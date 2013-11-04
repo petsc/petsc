@@ -103,7 +103,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x,
 	/* Compute the smallest steplength that will make one nonbinding variable
 	   equal the bound */
       ierr = VecStepBoundInfo(x,ls->lower,ls->upper,s,&rho,&actred,&d1); CHKERRQ(ierr);
-      ls->step = PetscMin(ls->step,rho);
+      ls->step = PetscMin(ls->step,d1);
   }
   rho=0; actred=0;
 
@@ -157,7 +157,10 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x,
        point.  Otherwise, backtrack. 
     */
 
-    if (rho > ls->ftol){
+    if (actred > 0) {
+      ierr = PetscInfo(ls,"Step resulted in ascent, rejecting.\n"); CHKERRQ(ierr);
+      ls->step = (ls->step)/2;
+    } else if (rho > ls->ftol){
       break;
     } else{
       ls->step = (ls->step)/2;
