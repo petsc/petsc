@@ -3056,6 +3056,8 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   PetscInt        op            = ocl->op;
   PetscBool       useField      = PETSC_FALSE;
   PetscBool       useFieldDer   = PETSC_TRUE;
+  PetscBool       useFieldAux   = PETSC_TRUE;
+  PetscBool       useFieldDerAux= PETSC_FALSE;
   PetscBool       useF0         = PETSC_TRUE;
   PetscBool       useF1         = PETSC_TRUE;
   PetscReal      *basis, *basisDer;
@@ -3550,6 +3552,12 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscInt Ne, PetscIn
   PetscInt          N_bl;   /* The number of blocks */
   PetscInt          N_bc;   /* The batch size, N_bl*N_q*N_b */
   PetscInt          N_cb;   /* The number of batches */
+  PetscInt          numFlops, f0Flops, f1Flops;
+  PetscBool         useAux      = coefficientsAux ? PETSC_TRUE : PETSC_FALSE;
+  PetscBool         useField    = PETSC_FALSE;
+  PetscBool         useFieldDer = PETSC_TRUE;
+  PetscBool         useF0       = PETSC_TRUE;
+  PetscBool         useF1       = PETSC_TRUE;
   /* OpenCL variables */
   cl_program        ocl_prog;
   cl_kernel         ocl_kernel;
@@ -3602,7 +3610,7 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscInt Ne, PetscIn
       if (order > 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Can only handle P0 coefficient fields");
     }
   }
-  ierr = PetscFEOpenCLGetIntegrationKernel(fem, coefficientsAux ? PETSC_TRUE : PETSC_FALSE, &ocl_prog, &ocl_kernel);CHKERRQ(ierr);
+  ierr = PetscFEOpenCLGetIntegrationKernel(fem, useAux, &ocl_prog, &ocl_kernel);CHKERRQ(ierr);
   /* Create buffers on the device and send data over */
   ierr = PetscDataTypeGetSize(ocl->realType, &realSize);CHKERRQ(ierr);
   if (sizeof(PetscReal) != realSize) {
@@ -3735,7 +3743,23 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscInt Ne, PetscIn
   /* Log performance */
   ierr = clGetEventProfilingInfo(ocl_ev, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &ns_start, NULL);CHKERRQ(ierr);
   ierr = clGetEventProfilingInfo(ocl_ev, CL_PROFILING_COMMAND_END,   sizeof(cl_ulong), &ns_end,   NULL);CHKERRQ(ierr);
-  ierr = PetscFEOpenCLLogResidual(fem, (ns_end - ns_start)*1.0e-9, (((2+(2+2*dim)*dim)*N_comp*N_b+(2+2)*dim*N_comp)*N_q + (2+2*dim)*dim*N_q*N_comp*N_b)*Ne);CHKERRQ(ierr);
+  f0Flops = 0;
+  switch (ocl->op) {
+  case LAPLACIAN:
+    f1Flops = useAux ? dim : 0;break;
+  case ELASTICITY:
+    f1Flops = 2*dim*dim;break;
+  }
+  numFlops = Ne*(
+    N_q*(
+      N_b*N_comp*((useField ? 2 : 0) + (useFieldDer ? 2*dim*(dim + 1) : 0))
+      /*+
+       N_ba*N_compa*((useFieldAux ? 2 : 0) + (useFieldDerAux ? 2*dim*(dim + 1) : 0))*/
+      +
+      N_comp*((useF0 ? f0Flops + 2 : 0) + (useF1 ? f1Flops + 2*dim : 0)))
+    +
+    N_b*((useF0 ? 2 : 0) + (useF1 ? 2*dim*(dim + 1) : 0)));
+  ierr = PetscFEOpenCLLogResidual(fem, (ns_end - ns_start)*1.0e-9, numFlops);CHKERRQ(ierr);
   /* Cleanup */
   ierr = clReleaseMemObject(o_coefficients);CHKERRQ(ierr);
   ierr = clReleaseMemObject(o_coefficientsAux);CHKERRQ(ierr);
