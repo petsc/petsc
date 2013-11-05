@@ -6710,7 +6710,9 @@ PetscErrorCode  MatIncreaseOverlap(Mat mat,PetscInt n,IS is[],PetscInt ov)
 .  bs - block size
 
    Notes:
-   Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ
+   Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ.
+
+   If the block size has not been set yet this routine returns -1.
 
    Level: intermediate
 
@@ -6722,9 +6724,7 @@ PetscErrorCode  MatGetBlockSize(Mat mat,PetscInt *bs)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
   PetscValidIntPointer(bs,2);
-  MatCheckPreallocated(mat,1);
   *bs = mat->rmap->bs;
   PetscFunctionReturn(0);
 }
@@ -6745,7 +6745,9 @@ PetscErrorCode  MatGetBlockSize(Mat mat,PetscInt *bs)
 .  cbs - coumn block size
 
    Notes:
-   Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ
+   Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ.
+
+   If a block size has not been set yet this routine returns -1.
 
    Level: intermediate
 
@@ -6757,10 +6759,8 @@ PetscErrorCode  MatGetBlockSizes(Mat mat,PetscInt *rbs, PetscInt *cbs)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
   if (rbs) PetscValidIntPointer(rbs,2);
   if (cbs) PetscValidIntPointer(cbs,3);
-  MatCheckPreallocated(mat,1);
   if (rbs) *rbs = mat->rmap->bs;
   if (cbs) *cbs = mat->cmap->bs;
   PetscFunctionReturn(0);
