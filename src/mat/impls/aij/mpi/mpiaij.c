@@ -778,6 +778,7 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
   ierr = PetscSFSetGraph(sf, n, N, NULL, PETSC_OWN_POINTER, rrows, PETSC_OWN_POINTER);CHKERRQ(ierr);
   /* Collect flags for rows to be zeroed */
   ierr = PetscSFReduceBegin(sf, MPIU_INT, rows, lrows, MPI_LOR);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sf, MPIU_INT, rows, lrows, MPI_LOR);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   /* Compress and put in row numbers */
   for (r = 0; r < n; ++r) if (lrows[r]) lrows[len++] = r;
