@@ -69,6 +69,9 @@ srcs.o := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
 # with-single-library=1 (default)
 $(libpetsc_shared) : $(srcs.o) | $$(@D)/.DIR
 	$(call quiet,CLINKER) -shared -o $@ $^ $(PETSC_EXTERNAL_LIB_BASIC)
+ifneq ($(DSYMUTIL),true)
+	$(call quiet,DSYMUTIL) $@
+endif
 
 $(libpetsc_static) : obj := $(srcs.o)
 
@@ -124,6 +127,9 @@ else
 endif
 $(libpetscpkgs_shared) : $$(obj) $(libdep_true) | $(libdep_order) $$(@D)/.DIR
 	$(call quiet,CLINKER) -shared -o $@ $(obj) $(libdep) $(PETSC_EXTERNAL_LIB_BASIC)
+ifneq ($(DSYMUTIL),true)
+	$(call quiet,DSYMUTIL) $@
+endif
 
 $(OBJDIR)/%.o : %.c | $$(@D)/.DIR
 	$(PETSC_COMPILE.c) $< -o $@

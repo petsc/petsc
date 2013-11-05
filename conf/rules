@@ -105,9 +105,6 @@ gnumake: chk_makej
 	@echo "Building PETSc using GNU Make with ${MAKE_NP} build threads"
 	@echo "=========================================="
 	@cd ${PETSC_DIR} && ${OMAKE_PRINTDIR} -f gmakefile -j ${MAKE_NP} V=${V}
-	@if [ "${BUILDSHAREDLIB}" = "yes" -a "${DSYMUTIL}" != "true" ]; then \
-        echo "Running ${DSYMUTIL} on ${SHLIBS}";\
-        for LIBNAME in ${SHLIBS}; do ${DSYMUTIL} ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; done; fi
 	@echo "========================================="
 
 # Does nothing; needed for some rules that require actions.
