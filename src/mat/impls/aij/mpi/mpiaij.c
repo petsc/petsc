@@ -756,7 +756,7 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
   PetscFunctionBegin;
   /* Create SF where leaves are input rows and roots are owned rows */
   ierr = PetscMalloc(n * sizeof(PetscInt), &lrows);CHKERRQ(ierr);
-  ierr = PetscMemzero(lrows, n * sizeof(PetscInt));CHKERRQ(ierr);
+  for (r = 0; r < n; ++r) lrows[r] = -1;
   ierr = PetscMalloc(N * sizeof(PetscSFNode), &rrows);CHKERRQ(ierr);
   for (r = 0; r < N; ++r) {
     const PetscInt idx   = rows[r];
@@ -781,7 +781,7 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
   ierr = PetscSFReduceEnd(sf, MPIU_INT, rows, lrows, MPI_LOR);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   /* Compress and put in row numbers */
-  for (r = 0; r < n; ++r) if (lrows[r]) lrows[len++] = r;
+  for (r = 0; r < n; ++r) if (lrows[r] >= 0) lrows[len++] = r;
   /* fix right hand side if needed */
   if (x && b) {
     const PetscScalar *xx;
