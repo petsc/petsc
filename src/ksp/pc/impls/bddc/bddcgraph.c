@@ -699,7 +699,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     k=0;
     for (i=0;i<n_shared[0];i++) {
       j=shared[0][i];
-      if (graph->count[j] > 1) { 
+      if (graph->count[j] > 1) {
         graph->mirrors[j]++;
         k++;
       }

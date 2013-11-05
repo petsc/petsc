@@ -201,7 +201,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
 
   PetscFunctionBegin;
   /* get number of vertices (corners plus constraints with change of basis)
-     pcbddc->n_actual_vertices stores the actual number of vertices, pcbddc->n_vertices the number of corners computed */ 
+     pcbddc->n_actual_vertices stores the actual number of vertices, pcbddc->n_vertices the number of corners computed */
   n_vertices = pcbddc->n_actual_vertices;
   n_constraints = pcbddc->local_primal_size-n_vertices;
   /* Set Non-overlapping dimensions */
@@ -279,7 +279,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     ierr = MatDuplicate(M1,MAT_DO_NOT_COPY_VALUES,&M2);CHKERRQ(ierr);
     ierr = MatZeroEntries(M2);CHKERRQ(ierr);
     ierr = VecSet(vec1_C,m_one);CHKERRQ(ierr);
-    ierr = MatDiagonalSet(M2,vec1_C,INSERT_VALUES);CHKERRQ(ierr); 
+    ierr = MatDiagonalSet(M2,vec1_C,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatMatSolve(M3,M2,M1);CHKERRQ(ierr);
     ierr = MatDestroy(&M2);CHKERRQ(ierr);
     ierr = MatDestroy(&M3);CHKERRQ(ierr);
@@ -323,7 +323,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
         ierr = MatGetSubMatrix(pcbddc->local_mat,is_aux,pcbddc->is_R_local,MAT_INITIAL_MATRIX,&A_VR);CHKERRQ(ierr);
       }
     }
-    ierr = MatGetVecs(A_RV,&vec1_V,NULL);CHKERRQ(ierr);  
+    ierr = MatGetVecs(A_RV,&vec1_V,NULL);CHKERRQ(ierr);
     ierr = VecDuplicate(vec1_V,&vec2_V);CHKERRQ(ierr);
     ierr = ISDestroy(&is_aux);CHKERRQ(ierr);
   }
@@ -550,7 +550,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
         ierr = VecSet(vec1_C,zero);CHKERRQ(ierr);
         for (j=0;j<n_constraints;j++) {
           ierr = VecSetValue(vec1_C,j,coarse_submat_vals[(j+n_vertices)*pcbddc->local_primal_size+i],INSERT_VALUES);CHKERRQ(ierr);
-        } 
+        }
         ierr = VecAssemblyBegin(vec1_C);CHKERRQ(ierr);
         ierr = VecAssemblyEnd(vec1_C);CHKERRQ(ierr);
       }
@@ -598,7 +598,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
         /* assemble subdomain vector of lagrange multipliers */
         for (j=0;j<pcbddc->local_primal_size;j++) {
           ierr = VecSetValue(pcbddc->vec1_P,j,-coarse_submat_vals[j*pcbddc->local_primal_size+i],INSERT_VALUES);CHKERRQ(ierr);
-        } 
+        }
         ierr = VecAssemblyBegin(pcbddc->vec1_P);CHKERRQ(ierr);
         ierr = VecAssemblyEnd(pcbddc->vec1_P);CHKERRQ(ierr);
         /* check saddle point solution */
@@ -783,7 +783,7 @@ PetscErrorCode PCBDDCSetUpLocalMatrices(PC pc)
     PetscInt    *row_cmat_indices;
     PetscInt    *nnz,*is_indices,*temp_indices;
     PetscInt    i,j,k,n_D,n_B;
-    
+
     /* Get Non-overlapping dimensions */
     n_B = pcis->n_B;
     n_D = pcis->n-n_B;
@@ -910,7 +910,7 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
   ierr = MatGetBlockSize(pcbddc->local_mat,&bs);CHKERRQ(ierr);
   if (bs>1 && !(n_vertices%bs)) {
     PetscBool is_blocked = PETSC_TRUE;
-    PetscInt  *vary; 
+    PetscInt  *vary;
     /* Verify if the vertex indices correspond to each element in a block (code taken from sbaij2.c) */
     ierr = PetscMalloc(pcis->n/bs*sizeof(PetscInt),&vary);CHKERRQ(ierr);
     ierr = PetscMemzero(vary,pcis->n/bs*sizeof(PetscInt));CHKERRQ(ierr);
@@ -1078,7 +1078,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
     if (nn_R != n_R) { /* old ksp is not reusable, so reset it */
       ierr = KSPReset(pcbddc->ksp_R);CHKERRQ(ierr);
       ierr = MatDestroy(&A_RR);CHKERRQ(ierr);
-      reuse = MAT_INITIAL_MATRIX; 
+      reuse = MAT_INITIAL_MATRIX;
     } else { /* same sizes, but nonzero pattern depend on primal vertices so it can be changed */
       if (pcbddc->new_primal_space_local) { /* we are not sure the matrix will have the same nonzero pattern */
         ierr = MatDestroy(&A_RR);CHKERRQ(ierr);
@@ -1093,7 +1093,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
       reuse = MAT_INITIAL_MATRIX;
     }
   } else { /* first time, so we need to create the matrix */
-    reuse = MAT_INITIAL_MATRIX; 
+    reuse = MAT_INITIAL_MATRIX;
   }
   /* extract A_RR */
   ierr = MatGetBlockSize(pcbddc->local_mat,&mbs);CHKERRQ(ierr);
@@ -1283,7 +1283,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   PC_IS*            pcis = (PC_IS*)(pc->data);
   PC_BDDC*          pcbddc = (PC_BDDC*)pc->data;
   Mat_IS*           matis = (Mat_IS*)pc->pmat->data;
-  /* constraint and (optionally) change of basis matrix implemented as SeqAIJ */ 
+  /* constraint and (optionally) change of basis matrix implemented as SeqAIJ */
   MatType           impMatType=MATSEQAIJ;
   /* one and zero */
   PetscScalar       one=1.0,zero=0.0;
@@ -1380,7 +1380,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     nnsp_has_cnst = PETSC_TRUE;
   }
   /* get max number of constraints on a single cc */
-  max_constraints = nnsp_size; 
+  max_constraints = nnsp_size;
   if (nnsp_has_cnst) max_constraints++;
 
   /*
@@ -1573,7 +1573,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
          -> When PETSC_USE_COMPLEX and PETSC_MISSING_LAPACK_GESVD are defined
             the constraints basis will differ (by a complex factor with absolute value equal to 1)
             from that computed using LAPACKgesvd
-         -> This is due to a different computation of eigenvectors in LAPACKheev 
+         -> This is due to a different computation of eigenvectors in LAPACKheev
          -> The quality of the POD-computed basis will be the same */
       ierr = PetscMemzero(correlation_mat,temp_constraints*temp_constraints*sizeof(PetscScalar));CHKERRQ(ierr);
       /* Store upper triangular part of correlation matrix */
@@ -1827,8 +1827,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           for (j=0;j<size_of_constraint;j++) nnz[temp_indices_to_constraint_B[temp_indices[i]+j]] = 2;
           /* get local primal index on the cc */
           j = 0;
-          while (!PetscBTLookup(touched,temp_indices_to_constraint_B[temp_indices[i]+j])) j++; 
-          nnz[temp_indices_to_constraint_B[temp_indices[i]+j]] = size_of_constraint; 
+          while (!PetscBTLookup(touched,temp_indices_to_constraint_B[temp_indices[i]+j])) j++;
+          nnz[temp_indices_to_constraint_B[temp_indices[i]+j]] = size_of_constraint;
         }
       }
     }
@@ -1846,25 +1846,25 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 
 
     /* Now we loop on the constraints which need a change of basis */
-    /* 
-       Change of basis matrix is evaluated similarly to the FIRST APPROACH in 
+    /*
+       Change of basis matrix is evaluated similarly to the FIRST APPROACH in
        Klawonn and Widlund, Dual-primal FETI-DP methods for linear elasticity, (see Sect 6.2.1)
 
        Basic blocks of change of basis matrix T computed
 
           - Using the following block transformation if there is only a primal dof on the cc
-            (in the example, primal dof is the last one of the edge in LOCAL ordering  
-             in this code, primal dof is the first one of the edge in GLOBAL ordering)  
+            (in the example, primal dof is the last one of the edge in LOCAL ordering
+             in this code, primal dof is the first one of the edge in GLOBAL ordering)
             | 1        0   ...        0     1 |
             | 0        1   ...        0     1 |
             |              ...                |
             | 0        ...            1     1 |
-            | -s_1/s_n ...    -s_{n-1}/-s_n 1 |  
-   
+            | -s_1/s_n ...    -s_{n-1}/-s_n 1 |
+
           - via QR decomposition of constraints otherwise
     */
     if (qr_needed) {
-      /* space to store Q */ 
+      /* space to store Q */
       ierr = PetscMalloc((max_size_of_constraint)*(max_size_of_constraint)*sizeof(PetscScalar),&qr_basis);CHKERRQ(ierr);
       /* first we issue queries for optimal work */
       ierr = PetscBLASIntCast(max_size_of_constraint,&Blas_M);CHKERRQ(ierr);
@@ -1923,17 +1923,17 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 
         if (pcbddc->dbg_flag) {
           ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Constraints %d to %d (incl) need a change of basis (size %d)\n",total_counts,total_counts+primal_dofs-1,size_of_constraint);CHKERRQ(ierr);
-        } 
-        
+        }
+
         if (primal_dofs > 1) { /* QR */
- 
+
           /* copy quadrature constraints for change of basis check */
           if (pcbddc->dbg_flag) {
             ierr = PetscMemcpy(work,&temp_quadrature_constraint[temp_indices[total_counts]],size_of_constraint*primal_dofs*sizeof(PetscScalar));CHKERRQ(ierr);
           }
           /* copy temporary constraints into larger work vector (in order to store all columns of Q) */
           ierr = PetscMemcpy(qr_basis,&temp_quadrature_constraint[temp_indices[total_counts]],size_of_constraint*primal_dofs*sizeof(PetscScalar));CHKERRQ(ierr);
-    
+
           /* compute QR decomposition of constraints */
           ierr = PetscBLASIntCast(size_of_constraint,&Blas_M);CHKERRQ(ierr);
           ierr = PetscBLASIntCast(primal_dofs,&Blas_N);CHKERRQ(ierr);
@@ -1942,7 +1942,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&Blas_M,&Blas_N,qr_basis,&Blas_LDA,qr_tau,qr_work,&lqr_work,&lierr));
           if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GEQRF Lapack routine %d",(int)lierr);
           ierr = PetscFPTrapPop();CHKERRQ(ierr);
-  
+
           /* explictly compute R^-T */
           ierr = PetscMemzero(trs_rhs,primal_dofs*primal_dofs*sizeof(*trs_rhs));CHKERRQ(ierr);
           for (j=0;j<primal_dofs;j++) trs_rhs[j*(primal_dofs+1)] = 1.0;
@@ -1951,10 +1951,10 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDA);CHKERRQ(ierr);
           ierr = PetscBLASIntCast(primal_dofs,&Blas_LDB);CHKERRQ(ierr);
           ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-          PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U","T","N",&Blas_N,&Blas_NRHS,qr_basis,&Blas_LDA,trs_rhs,&Blas_LDB,&lierr)); 
+          PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U","T","N",&Blas_N,&Blas_NRHS,qr_basis,&Blas_LDA,trs_rhs,&Blas_LDB,&lierr));
           if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TRTRS Lapack routine %d",(int)lierr);
           ierr = PetscFPTrapPop();CHKERRQ(ierr);
-  
+
           /* explicitly compute all columns of Q (Q = [Q1 | Q2] ) overwriting QR factorization in qr_basis */
           ierr = PetscBLASIntCast(size_of_constraint,&Blas_M);CHKERRQ(ierr);
           ierr = PetscBLASIntCast(size_of_constraint,&Blas_N);CHKERRQ(ierr);
@@ -1964,7 +1964,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           PetscStackCallBLAS("LAPACKungqr",LAPACKungqr_(&Blas_M,&Blas_N,&Blas_K,qr_basis,&Blas_LDA,qr_tau,gqr_work,&lgqr_work,&lierr));
           if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in UNGQR Lapack routine %d",(int)lierr);
           ierr = PetscFPTrapPop();CHKERRQ(ierr);
-  
+
           /* first primal_dofs columns of Q need to be re-scaled in order to be unitary w.r.t constraints
              i.e. C_{pxn}*Q_{nxn} should be equal to [I_pxp | 0_pxd] (see check below)
              where n=size_of_constraint, p=primal_dofs, d=dual_dofs (n=p+d), I and 0 identity and null matrix resp. */
@@ -1979,7 +1979,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           ierr = PetscFPTrapPop();CHKERRQ(ierr);
           ierr = PetscMemcpy(qr_basis,&temp_quadrature_constraint[temp_indices[total_counts]],size_of_constraint*primal_dofs*sizeof(PetscScalar));CHKERRQ(ierr);
 
-          /* insert values in change of basis matrix respecting global ordering of new primal dofs */ 
+          /* insert values in change of basis matrix respecting global ordering of new primal dofs */
           start_rows = &temp_indices_to_constraint_B[temp_indices[total_counts]];
           /* insert cols for primal dofs */
           for (j=0;j<primal_dofs;j++) {
@@ -2110,7 +2110,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   }
   /* new_primal_space will be used for numbering of coarse dofs, so it should be the same across all subdomains */
   ierr = MPI_Allreduce(&pcbddc->new_primal_space_local,&pcbddc->new_primal_space,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
- 
+
   /* flush dbg viewer */
   if (pcbddc->dbg_flag) {
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
@@ -2180,7 +2180,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
         ierr = ISCreateStride(PETSC_COMM_SELF,pcis->n/bs,i,bs,&custom_ISForDofs[i]);CHKERRQ(ierr);
       }
       ierr = PCBDDCSetDofsSplitting(pc,bs,custom_ISForDofs);CHKERRQ(ierr);
-      pcbddc->user_provided_isfordofs = PETSC_FALSE; 
+      pcbddc->user_provided_isfordofs = PETSC_FALSE;
       /* remove my references to IS objects */
       for (i=0;i<bs;i++) {
         ierr = ISDestroy(&custom_ISForDofs[i]);CHKERRQ(ierr);
@@ -2499,7 +2499,7 @@ PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt n, Vec vecs[])
 }
 
 /* TODO
-   - now preallocation is done assuming SEQDENSE local matrices  
+   - now preallocation is done assuming SEQDENSE local matrices
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatISGetMPIXAIJ"
@@ -2537,7 +2537,7 @@ static PetscErrorCode MatISGetMPIXAIJ(Mat mat, MatType Mtype, MatReuse reuse, Ma
   ierr = PetscMalloc(PetscMax(local_cols,local_rows)*sizeof(*global_indices),&global_indices);CHKERRQ(ierr);
   /* ierr = ISLocalToGlobalMappingApply(rmapping,local_rows,local_indices,global_indices);CHKERRQ(ierr); */
   ierr = ISLocalToGlobalMappingApply(matis->mapping,local_rows,local_indices,global_indices);CHKERRQ(ierr);
- 
+
   if (reuse==MAT_INITIAL_MATRIX) {
     Vec         vec_dnz,vec_onz;
     PetscScalar *my_dnz,*my_onz;
@@ -2552,7 +2552,7 @@ static PetscErrorCode MatISGetMPIXAIJ(Mat mat, MatType Mtype, MatReuse reuse, Ma
     ierr = MatSetType(new_mat,Mtype);CHKERRQ(ierr);
     ierr = MatSetUp(new_mat);CHKERRQ(ierr);
     ierr = MatGetLocalSize(new_mat,&lrows,&lcols);CHKERRQ(ierr);
- 
+
     /*
       preallocation
     */
@@ -2773,12 +2773,12 @@ PetscErrorCode MatISSubassemble_Private(Mat mat, PetscInt coarsening_ratio, IS* 
   ierr = PetscSortIntWithArray(xadj[1],adjncy,adjncy_wgt);CHKERRQ(ierr);
 
   ierr = PetscMalloc(sizeof(PetscInt),&ranks_send_to_idx);CHKERRQ(ierr);
-  
+
   /*
     Restrict work on active processes only.
   */
   ierr = PetscSubcommCreate(PetscObjectComm((PetscObject)mat),&subcomm);CHKERRQ(ierr);
-  ierr = PetscSubcommSetNumber(subcomm,2);CHKERRQ(ierr); /* 2 groups, active process and not active processes */ 
+  ierr = PetscSubcommSetNumber(subcomm,2);CHKERRQ(ierr); /* 2 groups, active process and not active processes */
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&rank);CHKERRQ(ierr);
   ierr = PetscMPIIntCast(!local_size,&color);CHKERRQ(ierr);
   ierr = PetscSubcommSetTypeGeneral(subcomm,color,rank);CHKERRQ(ierr);
@@ -2906,7 +2906,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt coarsening_ratio,
   ierr = PetscGatherNumberOfMessages(comm,iflags,NULL,&n_recvs);CHKERRQ(ierr);
   ierr = PetscFree(iflags);CHKERRQ(ierr);
 
-  /* prepare send/receive buffers */ 
+  /* prepare send/receive buffers */
   ierr = PetscMalloc(commsize*sizeof(*ilengths_idxs),&ilengths_idxs);CHKERRQ(ierr);
   ierr = PetscMemzero(ilengths_idxs,commsize*sizeof(*ilengths_idxs));CHKERRQ(ierr);
   ierr = PetscMalloc(commsize*sizeof(*ilengths_vals),&ilengths_vals);CHKERRQ(ierr);
@@ -2915,14 +2915,14 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt coarsening_ratio,
   /* Get data from local mat */
   if (!isdense) {
     /* TODO: See below some guidelines on how to prepare the local buffers */
-    /* 
-       send_buffer_vals should contain the raw values of the local matrix 
+    /*
+       send_buffer_vals should contain the raw values of the local matrix
        send_buffer_idxs should contain:
        - MatType_PRIVATE type
        - PetscInt        size_of_l2gmap
        - PetscInt        global_row_indices[size_of_l2gmap]
        - PetscInt        all_other_info_which_is_needed_to_compute_preallocation_and_set_values
-    */ 
+    */
   } else {
     ierr = MatDenseGetArray(local_mat,&send_buffer_vals);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetSize(matis->mapping,&i);CHKERRQ(ierr);
@@ -3000,7 +3000,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt coarsening_ratio,
   /* currently if all local matrices are of type X, then the resulting matrix will be of type X, except for the dense case */
   /* it also assumes that if the block size is set, than it is the same among all local matrices (see checks at the beginning of the function) */
   new_local_type_private = MATAIJ_PRIVATE;
-  new_local_type = MATSEQAIJ; 
+  new_local_type = MATSEQAIJ;
   if (n_recvs) {
     new_local_type_private = (MatTypePrivate)send_buffer_idxs[0];
     ptr_idxs = recv_buffer_idxs;
@@ -3014,22 +3014,22 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt coarsening_ratio,
     switch (new_local_type_private) {
       case MATDENSE_PRIVATE: /* subassembling of dense matrices does not give a dense matrix! */
         new_local_type = MATSEQAIJ;
-        bs = 1; 
+        bs = 1;
         break;
       case MATAIJ_PRIVATE:
-        new_local_type = MATSEQAIJ; 
-        bs = 1; 
+        new_local_type = MATSEQAIJ;
+        bs = 1;
         break;
       case MATBAIJ_PRIVATE:
-        new_local_type = MATSEQBAIJ; 
+        new_local_type = MATSEQBAIJ;
         break;
       case MATSBAIJ_PRIVATE:
-        new_local_type = MATSEQSBAIJ; 
+        new_local_type = MATSEQSBAIJ;
         break;
       default:
         SETERRQ2(comm,PETSC_ERR_LIB,"Unkwown private type %d in %s",new_local_type_private,__FUNCT__);
         break;
-    } 
+    }
   }
 
   /* create MATIS object */
@@ -3125,7 +3125,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   /* Assign global numbering to coarse dofs */
   if (pcbddc->new_primal_space) { /* a new primal space is present, so recompute global numbering */
     PetscInt ocoarse_size;
-    ocoarse_size = pcbddc->coarse_size;  
+    ocoarse_size = pcbddc->coarse_size;
     ierr = PetscFree(pcbddc->global_primal_indices);CHKERRQ(ierr);
     ierr = PCBDDCComputePrimalNumbering(pc,&pcbddc->coarse_size,&pcbddc->global_primal_indices);CHKERRQ(ierr);
     /* see if we can avoid some work */
@@ -3233,7 +3233,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   /* assemble coarse matrix */
   if (isbddc || isnn) {
     ierr = MatISSubassemble(coarse_mat_is,NULL,pcbddc->coarsening_ratio,&coarse_mat);CHKERRQ(ierr);
-  } else { 
+  } else {
     if (coarse_reuse) {
       ierr = KSPGetOperators(pcbddc->coarse_ksp,&coarse_mat,NULL,NULL);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)coarse_mat);CHKERRQ(ierr);
@@ -3267,7 +3267,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     }
   }
 
-  /* set operators */ 
+  /* set operators */
   ierr = PCGetOperators(pc,NULL,NULL,&matstruct);CHKERRQ(ierr);
   ierr = KSPSetOperators(pcbddc->coarse_ksp,coarse_mat,coarse_mat,matstruct);CHKERRQ(ierr);
 
