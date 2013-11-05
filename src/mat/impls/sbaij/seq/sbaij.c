@@ -155,6 +155,7 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqbaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqSBAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqSBAIJSetPreallocationCSR_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqsbstrm_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1703,6 +1704,59 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,PetscInt 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatSeqSBAIJSetPreallocationCSR_SeqSBAIJ"
+PetscErrorCode MatSeqSBAIJSetPreallocationCSR_SeqSBAIJ(Mat B,PetscInt bs,const PetscInt ii[],const PetscInt jj[], const PetscScalar V[])
+{
+  PetscInt       i,j,m,nz,nz_max=0,*nnz;
+  PetscScalar    *values=0;
+  PetscBool      roworiented = ((Mat_SeqSBAIJ*)B->data)->roworiented;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (bs < 1) SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size specified, must be positive but it is %D",bs);
+  ierr   = PetscLayoutSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
+  ierr   = PetscLayoutSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
+  ierr   = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
+  ierr   = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
+  ierr   = PetscLayoutGetBlockSize(B->rmap,&bs);CHKERRQ(ierr);
+  m      = B->rmap->n/bs;
+
+  if (ii[0]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ii[0] must be 0 but it is %D",ii[0]);
+  ierr = PetscMalloc((m+1)*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
+  for (i=0; i<m; i++) {
+    nz = ii[i+1] - ii[i];
+    if (nz < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %D has a negative number of columns %D",i,nz);
+    nz_max = PetscMax(nz_max,nz);
+    nnz[i] = nz;
+  }
+  ierr = MatSeqSBAIJSetPreallocation(B,bs,0,nnz);CHKERRQ(ierr);
+  ierr = PetscFree(nnz);CHKERRQ(ierr);
+
+  values = (PetscScalar*)V;
+  if (!values) {
+    ierr = PetscMalloc(bs*bs*nz_max*sizeof(PetscScalar),&values);CHKERRQ(ierr);
+    ierr = PetscMemzero(values,bs*bs*nz_max*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
+  for (i=0; i<m; i++) {
+    PetscInt          ncols  = ii[i+1] - ii[i];
+    const PetscInt    *icols = jj + ii[i];
+    if (!roworiented || bs == 1) {
+      const PetscScalar *svals = values + (V ? (bs*bs*ii[i]) : 0);
+      ierr = MatSetValuesBlocked_SeqSBAIJ(B,1,&i,ncols,icols,svals,INSERT_VALUES);CHKERRQ(ierr);
+    } else {
+      for (j=0; j<ncols; j++) {
+        const PetscScalar *svals = values + (V ? (bs*bs*(ii[i]+j)) : 0);
+        ierr = MatSetValuesBlocked_SeqSBAIJ(B,1,&i,1,&icols[j],svals,INSERT_VALUES);CHKERRQ(ierr);
+      }
+    }
+  }
+  if (!V) { ierr = PetscFree(values);CHKERRQ(ierr); }
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*
    This is used to set the numeric factorization for both Cholesky and ICC symbolic factorization
 */
@@ -1918,6 +1972,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsbaij_seqaij_C",MatConvert_SeqSBAIJ_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsbaij_seqbaij_C",MatConvert_SeqSBAIJ_SeqBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqSBAIJSetPreallocation_C",MatSeqSBAIJSetPreallocation_SeqSBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqSBAIJSetPreallocationCSR_C",MatSeqSBAIJSetPreallocationCSR_SeqSBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsbaij_seqsbstrm_C",MatConvert_SeqSBAIJ_SeqSBSTRM);CHKERRQ(ierr);
 
   B->symmetric                  = PETSC_TRUE;
@@ -1992,6 +2047,42 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const 
   PetscValidType(B,1);
   PetscValidLogicalCollectiveInt(B,bs,2);
   ierr = PetscTryMethod(B,"MatSeqSBAIJSetPreallocation_C",(Mat,PetscInt,PetscInt,const PetscInt[]),(B,bs,nz,nnz));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "MatSeqSBAIJSetPreallocationCSR"
+/*@C
+   MatSeqSBAIJSetPreallocationCSR - Allocates memory for a sparse sequential matrix in symmetric block AIJ format.
+
+   Input Parameters:
++  A - the matrix
+.  i - the indices into j for the start of each local row (starts with zero)
+.  j - the column indices for each local row (starts with zero) these must be sorted for each row
+-  v - optional values in the matrix
+
+   Level: developer
+
+   Notes:
+   The order of the entries in values is specified by the MatOption MAT_ROW_ORIENTED.  For example, C programs
+   may want to use the default MAT_ROW_ORIENTED=PETSC_TRUE and use an array v[nnz][bs][bs] where the second index is
+   over rows within a block and the last index is over columns within a block row.  Fortran programs will likely set
+   MAT_ROW_ORIENTED=PETSC_FALSE and use a Fortran array v(bs,bs,nnz) in which the first index is over rows within a
+   block column and the second index is over columns within a block.
+
+.keywords: matrix, block, aij, compressed row, sparse
+
+.seealso: MatCreate(), MatCreateSeqSBAIJ(), MatSetValuesBlocked(), MatSeqSBAIJSetPreallocation(), MATSEQSBAIJ
+@*/
+PetscErrorCode MatSeqSBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i[],const PetscInt j[], const PetscScalar v[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(B,MAT_CLASSID,1);
+  PetscValidType(B,1);
+  PetscValidLogicalCollectiveInt(B,bs,2);
+  ierr = PetscTryMethod(B,"MatSeqSBAIJSetPreallocationCSR_C",(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]),(B,bs,i,j,v));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
