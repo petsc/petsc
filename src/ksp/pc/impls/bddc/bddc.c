@@ -803,12 +803,9 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   PetscErrorCode   ierr;
   PC_BDDC*         pcbddc = (PC_BDDC*)pc->data;
   MatNullSpace     nearnullspace;
-  const Vec        *nearnullvecs,*onearnullvecs;
   MatStructure     flag;
-  PetscObjectState state;
-  PetscInt         nnsp_size,onnsp_size;
   PetscBool        computeis,computetopography,computesolvers;
-  PetscBool        new_nearnullspace_provided,nnsp_has_cnst,onnsp_has_cnst;
+  PetscBool        new_nearnullspace_provided;
 
   PetscFunctionBegin;
   /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other future nonoverlapping preconditioners */
@@ -871,19 +868,17 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       /* determine if the two nullspaces are different (should be lightweight) */
       if (nearnullspace != pcbddc->onearnullspace) {
         new_nearnullspace_provided = PETSC_TRUE;
-      } else { /* maybe the user has changed the content of the nearnullspace */
-        ierr = MatNullSpaceGetVecs(nearnullspace,&nnsp_has_cnst,&nnsp_size,&nearnullvecs);CHKERRQ(ierr);
-        ierr = MatNullSpaceGetVecs(pcbddc->onearnullspace,&onnsp_has_cnst,&onnsp_size,&onearnullvecs);CHKERRQ(ierr);
-        if ( (nnsp_has_cnst != onnsp_has_cnst) || (nnsp_size != onnsp_size) ) {
-          new_nearnullspace_provided = PETSC_TRUE;
-        } else { /* nullspaces have the same size, so check vectors or their ObjectStateId */
-          PetscInt i;
-          for (i=0;i<nnsp_size;i++) {
-            ierr = PetscObjectStateGet((PetscObject)nearnullvecs[i],&state);CHKERRQ(ierr);
-            if (nearnullvecs[i] != onearnullvecs[i] || pcbddc->onearnullvecs_state[i] != state) {
-              new_nearnullspace_provided = PETSC_TRUE;
-              break;
-            }
+      } else { /* maybe the user has changed the content of the nearnullspace so check vectors ObjectStateId */
+        PetscInt         i;
+        const Vec        *nearnullvecs;
+        PetscObjectState state;
+        PetscInt         nnsp_size;
+        ierr = MatNullSpaceGetVecs(nearnullspace,NULL,&nnsp_size,&nearnullvecs);CHKERRQ(ierr);
+        for (i=0;i<nnsp_size;i++) {
+          ierr = PetscObjectStateGet((PetscObject)nearnullvecs[i],&state);CHKERRQ(ierr);
+          if (pcbddc->onearnullvecs_state[i] != state) {
+            new_nearnullspace_provided = PETSC_TRUE;
+            break;
           }
         }
       }
