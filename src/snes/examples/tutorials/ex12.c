@@ -225,7 +225,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex12.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   run  = options->runType;
-  ierr = PetscOptionsEList("-run_type", "The run type", "ex12.c", runTypes, 2, runTypes[options->runType], &run, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-run_type", "The run type", "ex12.c", runTypes, 3, runTypes[options->runType], &run, NULL);CHKERRQ(ierr);
 
   options->runType = (RunType) run;
 
