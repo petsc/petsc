@@ -3179,15 +3179,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
 "  const int blbidx  = tidx %% N_q + blidx*N_q;        // Cell mapped to this thread in the basis phase\n"
 "  const int blqidx  = tidx %% N_b + blidx*N_b;        // Cell mapped to this thread in the quadrature phase\n"
 "  const int gidx    = get_group_id(1)*get_num_groups(0) + get_group_id(0);\n"
-"  const int Goffset = gidx*N_c;\n"
-"  const int Coffset = gidx*N_c*N_bt;\n"
-"  const int Eoffset = gidx*N_c*N_bt;\n",
                        &count, N_bl, dim);STRING_ERROR_CHECK("Message to short");
-  if (useAux) {
-    ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
-"  const int Aoffset = gidx*N_c;\n",
-                              &count);STRING_ERROR_CHECK("Message to short");
-  }
   /* Local memory */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "\n"
@@ -3238,6 +3230,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   /* Batch loads */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "  for (int batch = 0; batch < N_cb; ++batch) {\n"
+"    const int Goffset = gidx*N_c;\n"
 "    /* Load geometry */\n"
 "    detJ[tidx] = jacobianDeterminants[Goffset+batch*N_bc+tidx];\n"
 "    for (int n = 0; n < dim*dim; ++n) {\n"
@@ -3247,13 +3240,14 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
 "    /* Load coefficients u_i for this cell */\n"
 "    for (int n = 0; n < N_bt; ++n) {\n"
 "      const int offset = n*N_t;\n"
-"      u_i[offset+tidx] = coefficients[Coffset+batch*N_t*N_b+offset+tidx];\n"
+"      u_i[offset+tidx] = coefficients[(gidx*N_c*N_bt)+batch*N_t*N_b+offset+tidx];\n"
 "    }\n",
                        &count);STRING_ERROR_CHECK("Message to short");
   if (useAux) {
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "    /* Load coefficients a_i for this cell */\n"
-"    a_i[tidx] = coefficientsAux[Aoffset+batch*N_t+tidx];\n",
+"    /* TODO: This should not be N_t here, it should be N_bc*N_comp_aux */\n"
+"    a_i[tidx] = coefficientsAux[(gidx*N_c)+batch*N_t+tidx];\n",
                             &count);STRING_ERROR_CHECK("Message to short");
   }
   /* Quadrature phase */
@@ -3458,7 +3452,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "      }\n"
 "      /* Write element vector for N_{cbc} cells at a time */\n"
-"      elemVec[Eoffset+(batch*N_sbc+c)*N_t+tidx] = e_i;\n"
+"      elemVec[(gidx*N_c*N_bt)+(batch*N_sbc+c)*N_t+tidx] = e_i;\n"
 "    }\n"
 "    /* ==== Could do one write per batch ==== */\n"
 "  }\n"
