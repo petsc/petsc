@@ -318,7 +318,6 @@ cdef extern from * nogil:
     int MatUnScaleSystem(PetscMat,PetscVec,PetscVec)
 
 cdef extern from "custom.h" nogil:
-    int MatGetBlockSize_NoCheck(PetscMat,PetscInt*)
     int MatIsPreallocated(PetscMat,PetscBool*)
     int MatHasPreallocationAIJ(PetscMat,PetscBool*,PetscBool*,PetscBool*)
 
@@ -547,7 +546,7 @@ cdef inline int Mat_AllocAIJ_NNZ( PetscMat A, object NNZ) except -1:
     cdef PetscInt m=0, bs=1
     CHKERR( MatGetLocalSize(A, &m, NULL) )
     if baij == PETSC_TRUE or sbaij == PETSC_TRUE:
-        CHKERR( MatGetBlockSize_NoCheck(A, &bs) )
+        CHKERR( MatGetBlockSize(A, &bs) )
         assert bs > 0, "block size not set"
     # unpack NNZ argument
     cdef object od_nnz, oo_nnz
@@ -596,7 +595,7 @@ cdef inline int Mat_AllocAIJ_CSR(PetscMat A, object CSR) except -1:
     cdef PetscInt m=0, bs = 1
     CHKERR( MatGetLocalSize(A, &m, NULL) )
     if baij == PETSC_TRUE or sbaij == PETSC_TRUE:
-        CHKERR( MatGetBlockSize_NoCheck(A, &bs) )
+        CHKERR( MatGetBlockSize(A, &bs) )
         assert bs > 0, "block size not set"
     # unpack CSR argument
     cdef object oi, oj, ov
