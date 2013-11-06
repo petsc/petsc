@@ -896,7 +896,7 @@ int GetLocalOrdering(GRID *grid)
     ierr = PetscSortIntWithPermutation(nedgeLoc,tmp,eperm);CHKERRQ(ierr);
   }
 #endif
-  ierr = PetscMallocValidate(__LINE__,__FUNCT__,__FILE__,0);CHKERRQ(ierr);
+  ierr = PetscMallocValidate(__LINE__,__FUNCT__,__FILE__);CHKERRQ(ierr);
   k    = 0;
   for (i = 0; i < nedgeLoc; i++) {
     int cross_node=nnodesLoc/2;
