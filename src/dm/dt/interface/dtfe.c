@@ -3178,7 +3178,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
 "  const int qidx    = tidx %% N_q;                    // Quadrature point mapped to this thread\n"
 "  const int blbidx  = tidx %% N_q + blidx*N_q;        // Cell mapped to this thread in the basis phase\n"
 "  const int blqidx  = tidx %% N_b + blidx*N_b;        // Cell mapped to this thread in the quadrature phase\n"
-"  const int gidx    = get_group_id(1)*get_num_groups(0) + get_group_id(0);\n"
+"  const int gidx    = get_group_id(1)*get_num_groups(0) + get_group_id(0);\n",
                        &count, N_bl, dim);STRING_ERROR_CHECK("Message to short");
   /* Local memory */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
