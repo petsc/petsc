@@ -500,6 +500,326 @@ PetscErrorCode PCGAMGProlongator_Classical(PC pc, const Mat A, const Mat G, Pets
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCGAMGProlongator_Standard_Classical"
+PetscErrorCode PCGAMGProlongator_Standard_Classical(PC pc, const Mat A, const Mat G, PetscCoarsenData *agg_lists,Mat *P)
+{
+  PetscErrorCode    ierr;
+  Mat               *lA;
+  Vec               lv,v,cv;
+  PetscScalar       *lcid;
+  IS                lis;
+  PetscInt          fs,fe,cs,ce,nl,i,j,k,li,lni,ci;
+  VecScatter        lscat;
+  PetscInt          fn,cn,cid,c_indx;
+  PetscBool         iscoarse;
+  PetscScalar       c_scalar;
+  const PetscScalar *vcol;
+  const PetscInt    *icol;
+  const PetscInt    *gidx;
+  PetscInt          ncols;
+  PetscInt          *lsparse,*gsparse;
+  MatType           mtype;
+  PetscInt          maxcols;
+  PetscReal         g_pos,g_neg,a_pos,a_neg,diag,invdiag,alpha,beta;
+  /* PetscReal         jdiag,invjdiag; */
+  PetscReal         *amax_pos,*amax_neg;
+  PetscScalar       *pvcol,vi;
+  PetscInt          *picol;
+  PetscInt          pncols;
+  PetscScalar       *pcontrib,pentry;
+  PC_MG             *mg          = (PC_MG*)pc->data;
+  PC_GAMG           *gamg        = (PC_GAMG*)mg->innerctx;
+
+  PetscFunctionBegin;
+
+  ierr = MatGetOwnershipRange(A,&fs,&fe);CHKERRQ(ierr);
+  fn = fe-fs;
+  ierr = MatGetVecs(A,NULL,&v);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,fe-fs,fs,1,&lis);CHKERRQ(ierr);
+  /* increase the overlap by two to get neighbors of neighbors */
+  ierr = MatIncreaseOverlap(A,1,&lis,2);CHKERRQ(ierr);
+  ierr = ISSort(lis);CHKERRQ(ierr);
+  /* get the local part of A */
+  ierr = MatGetSubMatrices(A,1,&lis,&lis,MAT_INITIAL_MATRIX,&lA);CHKERRQ(ierr);
+  /* build the scatter out of it */
+  ierr = ISGetLocalSize(lis,&nl);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,nl,&lv);CHKERRQ(ierr);
+  ierr = VecScatterCreate(v,lis,lv,NULL,&lscat);CHKERRQ(ierr);
+
+  ierr = PetscMalloc(sizeof(PetscInt)*fn,&lsparse);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscInt)*fn,&gsparse);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscScalar)*nl,&amax_pos);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscScalar)*nl,&amax_neg);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscScalar)*nl,&pcontrib);CHKERRQ(ierr);
+
+  /* create coarse vector */
+  cn = 0;
+  for (i=0;i<fn;i++) {
+    ierr = PetscCDEmptyAt(agg_lists,i,&iscoarse);CHKERRQ(ierr);
+    if (!iscoarse) {
+      cn++;
+    }
+  }
+  ierr = VecCreateMPI(PetscObjectComm((PetscObject)A),cn,PETSC_DECIDE,&cv);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(cv,&cs,&ce);CHKERRQ(ierr);
+  cn = 0;
+  for (i=0;i<fn;i++) {
+    ierr = PetscCDEmptyAt(agg_lists,i,&iscoarse); CHKERRQ(ierr);
+    if (!iscoarse) {
+      cid = cs+cn;
+      cn++;
+    } else {
+      cid = -1;
+    }
+    c_scalar = (PetscScalar)cid;
+    c_indx = fs+i;
+    ierr = VecSetValues(v,1,&c_indx,&c_scalar,INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = VecScatterBegin(lscat,v,lv,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(lscat,v,lv,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  /* count to preallocate the prolongator */
+  ierr = ISGetIndices(lis,&gidx);CHKERRQ(ierr);
+  ierr = VecGetArray(lv,&lcid);CHKERRQ(ierr);
+  maxcols = 0;
+  for (i=0;i<nl;i++) {
+    amax_pos[i] = 0.;
+    amax_neg[i] = 0.;
+    pcontrib[i] = 0.;
+    ierr = MatGetRow(lA[0],i,&ncols,&icol,&vcol);CHKERRQ(ierr);
+    for (j=0;j<ncols;j++) {
+      if (i != icol[j]) {
+        if (PetscRealPart(vcol[j]) > 0.) {
+          if (amax_pos[i] < PetscAbsScalar(vcol[j])) amax_pos[i] = PetscAbsScalar(vcol[j]);
+        } else {
+          if (amax_neg[i] < PetscAbsScalar(vcol[j])) amax_neg[i] = PetscAbsScalar(vcol[j]);
+        }
+      }
+    }
+    ierr = MatRestoreRow(lA[0],i,&ncols,&icol,&vcol);CHKERRQ(ierr);
+  }
+  /* count the number of unique contributing coarse cells for each fine */
+  for (i=0;i<nl;i++) {
+    if (gidx[i] >= fs && gidx[i] < fe) {
+      li = gidx[i] - fs;
+      lsparse[li] = 0;
+      gsparse[li] = 0;
+      cid = (PetscInt)lcid[i];
+      if (cid >= 0) {
+        lsparse[li] = 1;
+      } else {
+        ierr = MatGetRow(lA[0],i,&ncols,&icol,&vcol);CHKERRQ(ierr);
+        for (j=0;j<ncols;j++) {
+        }
+        for (j=0;j<ncols;j++) {
+          if ((PetscInt)lcid[icol[j]] >= 0) {
+            pcontrib[icol[j]] = 1.;
+          } else {
+            ci = icol[j];
+            ierr = MatRestoreRow(lA[0],i,&ncols,&icol,&vcol);CHKERRQ(ierr);
+            ierr = MatGetRow(lA[0],ci,&ncols,&icol,&vcol);CHKERRQ(ierr);
+            for (k=0;k<ncols;k++) {
+              if ((PetscInt)lcid[icol[k]] >= 0) {
+                pcontrib[icol[k]] = 1.;
+              }
+            }
+            ierr = MatRestoreRow(lA[0],ci,&ncols,&icol,&vcol);CHKERRQ(ierr);
+            ierr = MatGetRow(lA[0],i,&ncols,&icol,&vcol);CHKERRQ(ierr);
+          }
+        }
+        for (j=0;j<ncols;j++) {
+          if (lcid[icol[j]] >= 0 && pcontrib[icol[j]] != 0.) {
+            /* the neighbor is a coarse node */
+            lni = (PetscInt)lcid[icol[j]];
+            if (lni >= cs && lni < ce) {
+              lsparse[li]++;
+            } else {
+              gsparse[li]++;
+            }
+            pcontrib[icol[j]] = 0.;
+          } else {
+            /* the neighbor is a strongly connected fine node */
+            ci = icol[j];
+            ierr = MatRestoreRow(lA[0],i,&ncols,&icol,&vcol);CHKERRQ(ierr);
+            ierr = MatGetRow(lA[0],ci,&ncols,&icol,&vcol);CHKERRQ(ierr);
+            for (k=0;k<ncols;k++) {
+              if (lcid[icol[k]] >= 0 && pcontrib[icol[k]] != 0.) {
+                lni = (PetscInt)lcid[icol[k]];
+                if (lni >= cs && lni < ce) {
+                  lsparse[li]++;
+                } else {
+                  gsparse[li]++;
+                }
+                pcontrib[icol[k]] = 0.;
+              }
+            }
+            ierr = MatRestoreRow(lA[0],ci,&ncols,&icol,&vcol);CHKERRQ(ierr);
+            ierr = MatGetRow(lA[0],i,&ncols,&icol,&vcol);CHKERRQ(ierr);
+          }
+        }
+        if (lsparse[li] + gsparse[li] > maxcols) maxcols = lsparse[li] + gsparse[li];
+        ierr = MatRestoreRow(lA[0],i,&ncols,&icol,&vcol);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = PetscMalloc(sizeof(PetscInt)*maxcols,&picol);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscScalar)*maxcols,&pvcol);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),P);CHKERRQ(ierr);
+  ierr = MatGetType(A,&mtype);CHKERRQ(ierr);
+  ierr = MatSetType(*P,mtype);CHKERRQ(ierr);
+
+  ierr = MatSetSizes(*P,fn,cn,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(*P,0,lsparse,0,gsparse);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(*P,0,lsparse);CHKERRQ(ierr);
+  for (i=0;i<nl;i++) {
+    if (gidx[i] >= fs && gidx[i] < fe) {
+      a_pos = 0.;
+      a_neg = 0.;
+      g_pos = 0.;
+      g_neg = 0.;
+      li = gidx[i] - fs;
+      pncols=0;
+      cid = (PetscInt)lcid[i];
+      if (cid >= 0) {
+        pncols = 1;
+        picol[0] = cid;
+        pvcol[0] = 1.;
+      } else {
+        ierr = MatGetRow(lA[0],i,&ncols,&icol,&vcol);CHKERRQ(ierr);
+        for (j=0;j<ncols;j++) {
+          if (icol[j] == i) {
+            diag = vcol[j];
+          } else {
+            if ((PetscInt)lcid[icol[j]] >= 0 && (PetscRealPart(vcol[j]) > gamg->threshold*amax_pos[i] || PetscRealPart(-vcol[j]) > gamg->threshold*amax_neg[i])) {
+              if (PetscRealPart(vcol[j]) > 0.) {
+                g_pos += vcol[j];
+              } else {
+                g_neg += vcol[j];
+              }
+            }
+            if (PetscRealPart(vcol[j]) > 0.) {
+              a_pos += vcol[j];
+            } else {
+              a_neg += vcol[j];
+            }
+          }
+        }
+        if (g_neg == 0.) {
+          alpha = 0.;
+        } else {
+          alpha = a_neg/g_neg;
+        }
+        if (g_pos == 0.) {
+          diag += a_pos;
+          beta = 0.;
+        } else {
+          beta = a_pos/g_pos;
+        }
+        invdiag = 0;
+        if (diag != 0.) {
+          invdiag = 1./diag;
+        }
+        for (j=0;j<ncols;j++) {
+          if (PetscRealPart(vcol[j]) > gamg->threshold*amax_pos[i] || PetscRealPart(-vcol[j]) > gamg->threshold*amax_neg[i]) {
+            if (PetscRealPart(vcol[j]) < 0.) {
+              pentry = -vcol[j]*invdiag*alpha;
+            } else {
+              pentry = -vcol[j]*invdiag*beta;
+            }
+            if ((PetscInt)lcid[icol[j]] >= 0) {
+              /* coarse neighbor */
+              pcontrib[icol[j]] = pentry;
+            } else {
+              /* the neighbor is a strongly connected fine node */
+              ci = icol[j];
+              vi = vcol[j];
+              ierr = MatRestoreRow(lA[0],i,&ncols,&icol,&vcol);CHKERRQ(ierr);
+              ierr = MatGetRow(lA[0],ci,&ncols,&icol,&vcol);CHKERRQ(ierr);
+              jdiag = 0.;
+              invjdiag = 0.;
+              for (k=0;k<ncols;k++) {
+                if (ci == icol[k]) jdiag = PetscRealPart(vcol[k]);
+              }
+              if (jdiag != 0) {
+                invjdiag = 1. / jdiag;
+              }
+              for (k=0;k<ncols;k++) {
+                if ((PetscInt)lcid[icol[k]] >= 0 && (PetscAbsScalar(vcol[k]) > gamg->threshold*amax_pos[ci] || PetscRealPart(vcol[k]) < gamg->threshold*amax_neg[ci])) {
+                  /* pcontrib[icol[k]] += -pentry*vcol[k]*invjdiag; */
+                }
+              }
+              ierr = MatRestoreRow(lA[0],ci,&ncols,&icol,&vcol);CHKERRQ(ierr);
+              ierr = MatGetRow(lA[0],i,&ncols,&icol,&vcol);CHKERRQ(ierr);
+            }
+          }
+        }
+        for (j=0;j<ncols;j++) {
+          if (lcid[icol[j]] >= 0 && pcontrib[icol[j]] != 0.) {
+            /* the neighbor is a coarse node */
+            lni = (PetscInt)lcid[icol[j]];
+            pvcol[pncols] = pcontrib[icol[j]];
+            picol[pncols] = lni;
+            pcontrib[icol[j]] = 0.;
+            pncols++;
+          } else {
+            /* the neighbor is a strongly connected fine node */
+            ci = icol[j];
+            ierr = MatRestoreRow(lA[0],i,&ncols,&icol,&vcol);CHKERRQ(ierr);
+            ierr = MatGetRow(lA[0],ci,&ncols,&icol,&vcol);CHKERRQ(ierr);
+            for (k=0;k<ncols;k++) {
+              if (lcid[icol[k]] >= 0 && pcontrib[icol[k]] != 0.) {
+                lni = (PetscInt)lcid[icol[k]];
+                pvcol[pncols] = pcontrib[icol[k]];
+                picol[pncols] = lni;
+                pcontrib[icol[k]] = 0.;
+                pncols++;
+              }
+            }
+            ierr = MatRestoreRow(lA[0],ci,&ncols,&icol,&vcol);CHKERRQ(ierr);
+            ierr = MatGetRow(lA[0],i,&ncols,&icol,&vcol);CHKERRQ(ierr);
+          }
+        }
+        ierr = MatRestoreRow(lA[0],i,&ncols,&icol,&vcol);CHKERRQ(ierr);
+      }
+      ci = gidx[i];
+      li = gidx[i] - fs;
+      if (pncols > 0) {
+        ierr = MatSetValues(*P,1,&ci,pncols,picol,pvcol,INSERT_VALUES);CHKERRQ(ierr);
+      }
+    }
+  }
+
+  ierr = ISRestoreIndices(lis,&gidx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(lv,&lcid);CHKERRQ(ierr);
+
+  ierr = PetscFree(amax_pos);CHKERRQ(ierr);
+  ierr = PetscFree(amax_neg);CHKERRQ(ierr);
+  ierr = PetscFree(pcontrib);CHKERRQ(ierr);
+  ierr = PetscFree(picol);CHKERRQ(ierr);
+  ierr = PetscFree(pvcol);CHKERRQ(ierr);
+  ierr = PetscFree(lsparse);CHKERRQ(ierr);
+  ierr = PetscFree(gsparse);CHKERRQ(ierr);
+  ierr = ISDestroy(&lis);CHKERRQ(ierr);
+  ierr = MatDestroyMatrices(1,&lA);CHKERRQ(ierr);
+  ierr = VecDestroy(&lv);CHKERRQ(ierr);
+  ierr = VecDestroy(&cv);CHKERRQ(ierr);
+  ierr = VecDestroy(&v);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&lscat);CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(*P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  /*
+  Mat Pold;
+  ierr = PCGAMGProlongator_Classical(pc,A,G,agg_lists,&Pold);CHKERRQ(ierr);
+  ierr = MatView(Pold,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatView(*P,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatDestroy(&Pold);CHKERRQ(ierr);
+   */
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCGAMGDestroy_Classical"
 PetscErrorCode PCGAMGDestroy_Classical(PC pc)
 {
@@ -566,7 +886,7 @@ PetscErrorCode  PCCreateGAMG_Classical(PC pc)
   pc_gamg->ops->destroy     = PCGAMGDestroy_Classical;
   pc_gamg->ops->graph       = PCGAMGGraph_Classical;
   pc_gamg->ops->coarsen     = PCGAMGCoarsen_Classical;
-  pc_gamg->ops->prolongator = PCGAMGProlongator_Classical;
+  pc_gamg->ops->prolongator = PCGAMGProlongator_Standard_Classical;
   pc_gamg->ops->optprol     = NULL;
 
   pc_gamg->ops->createdefaultdata = PCGAMGSetData_Classical;
