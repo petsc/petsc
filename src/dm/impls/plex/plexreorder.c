@@ -146,11 +146,12 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
   /* Ignore globalVertexNumbers, globalCellNumbers */
   /* Remap coordinates */
   {
-    DM           cdm, cdmNew;
-    PetscSection csection, csectionNew;
-    Vec          coordinates, coordinatesNew;
-    PetscScalar *coords, *coordsNew;
-    PetscInt     pStart, pEnd, p;
+    DM              cdm, cdmNew;
+    PetscSection    csection, csectionNew;
+    Vec             coordinates, coordinatesNew;
+    PetscScalar    *coords, *coordsNew;
+    const PetscInt *pperm;
+    PetscInt        pStart, pEnd, p;
 
     ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
     ierr = DMGetDefaultSection(cdm, &csection);CHKERRQ(ierr);
@@ -160,14 +161,16 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
     ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
     ierr = VecGetArray(coordinatesNew, &coordsNew);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(csectionNew, &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = ISGetIndices(perm, &pperm);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       PetscInt dof, off, offNew, d;
 
       ierr = PetscSectionGetDof(csectionNew, p, &dof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(csection, p, &off);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(csectionNew, p, &offNew);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(csectionNew, pperm[p], &offNew);CHKERRQ(ierr);
       for (d = 0; d < dof; ++d) coordsNew[offNew+d] = coords[off+d];
     }
+    ierr = ISRestoreIndices(perm, &pperm);CHKERRQ(ierr);
     ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
     ierr = VecRestoreArray(coordinatesNew, &coordsNew);CHKERRQ(ierr);
     ierr = DMGetCoordinateDM(*pdm, &cdmNew);CHKERRQ(ierr);
