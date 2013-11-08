@@ -413,11 +413,16 @@ int main(int argc,char **argv)
     ierr = SNESSetJacobian(snes,Jac,Jac,FormJacobian,(void*)&user);CHKERRQ(ierr);
   } else {  /* Use matfdcoloring */
     ISColoring   iscoloring;
+    MatColoring  mc;
     MatStructure flag;
     /* Get the data structure of Jac */
     ierr = FormJacobian(snes,x,&Jac,&Jac,&flag,&user);CHKERRQ(ierr);
     /* Create coloring context */
-    ierr = MatGetColoring(Jac,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
+    ierr = MatColoringCreate(Jac,&mc);CHKERRQ(ierr);
+    ierr = MatColoringSetType(mc,MATCOLORINGSL);CHKERRQ(ierr);
+    ierr = MatColoringSetFromOptions(mc);CHKERRQ(ierr);
+    ierr = MatColoringApply(mc,&iscoloring);CHKERRQ(ierr);
+    ierr = MatColoringDestroy(&mc);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(Jac,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,&user);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);

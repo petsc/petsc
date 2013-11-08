@@ -153,10 +153,10 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   ierr = PCApplySymmetricLeft(pc,B,BS);CHKERRQ(ierr);
 
   ierr       = VecNorm(BS,NORM_2,&bsnrm);CHKERRQ(ierr);
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = bsnrm;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
   ierr = KSPLogResidualHistory(ksp,bsnrm);CHKERRQ(ierr);
   ierr = KSPMonitor(ksp,0,bsnrm);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,bsnrm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -169,9 +169,9 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   ierr = VecDotRealPart(R,R,&rtr);CHKERRQ(ierr);
 
   for (i=0; i<=maxit; i++) {
-    ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->its++;
-    ierr = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
 
     /* Compute:  asp = D^{-T}*A*D^{-1}*p  */
     ierr = PCApplySymmetricRight(pc,P,WA);CHKERRQ(ierr);
@@ -247,9 +247,9 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
         ierr = VecAXPY(R,-step,ASP);CHKERRQ(ierr); /* r <- -step*asp + r */
         ierr = VecNorm(R,NORM_2,&rnrm);CHKERRQ(ierr);
 
-        ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+        ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
         ksp->rnorm = rnrm;
-        ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+        ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
         ierr = KSPLogResidualHistory(ksp,rnrm);CHKERRQ(ierr);
         ierr = KSPMonitor(ksp,i+1,rnrm);CHKERRQ(ierr);
         ierr = (*ksp->converged)(ksp,i+1,rnrm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);

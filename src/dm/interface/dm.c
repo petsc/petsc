@@ -548,8 +548,8 @@ PetscErrorCode  DMDestroy(DM *dm)
     ierr = PetscObjectDestroy(&(*dm)->fields[f]);CHKERRQ(ierr);
   }
   ierr = PetscFree((*dm)->fields);CHKERRQ(ierr);
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSViewOff((PetscObject)*dm);CHKERRQ(ierr);
+  /* if memory was published with SAWs then destroy it */
+  ierr = PetscObjectSAWsViewOff((PetscObject)*dm);CHKERRQ(ierr);
 
   ierr = (*(*dm)->ops->destroy)(*dm);CHKERRQ(ierr);
   /* We do not destroy (*dm)->data here so that we can reference count backend objects */
@@ -609,7 +609,7 @@ PetscErrorCode  DMSetUp(DM dm)
 @*/
 PetscErrorCode  DMSetFromOptions(DM dm)
 {
-  char           typeName[256] = MATAIJ;
+  char           typeName[256];
   PetscBool      flg;
   PetscErrorCode ierr;
 
@@ -617,11 +617,11 @@ PetscErrorCode  DMSetFromOptions(DM dm)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = PetscObjectOptionsBegin((PetscObject)dm);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_preallocate_only","only preallocate matrix, but do not set column indices","DMSetMatrixPreallocateOnly",dm->prealloc_only,&dm->prealloc_only,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-dm_vec_type","Vector type used for created vectors","DMSetVecType",VecList,dm->vectype,typeName,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-dm_vec_type","Vector type used for created vectors","DMSetVecType",VecList,dm->vectype,typeName,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = DMSetVecType(dm,typeName);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsList("-dm_mat_type","Matrix type used for created matrices","DMSetMatType",MatList,dm->mattype ? dm->mattype : typeName,typeName,sizeof(typeName),&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-dm_mat_type","Matrix type used for created matrices","DMSetMatType",MatList,dm->mattype ? dm->mattype : typeName,typeName,sizeof(typeName),&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = DMSetMatType(dm,typeName);CHKERRQ(ierr);
   }

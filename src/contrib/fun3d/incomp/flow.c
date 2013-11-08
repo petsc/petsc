@@ -156,7 +156,7 @@ int main(int argc,char **args)
   user.grid  = &f_pntr;
   user.tsCtx = &tsCtx;
 
-  /* AMS Stuff */
+  /* SAWs Stuff */
 
   /*
     Preload the executable to get accurate timings. This runs the following chunk of

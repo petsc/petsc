@@ -423,7 +423,7 @@ static PetscErrorCode TSSetFromOptions_SSP(TS ts)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SSP ODE solver options");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsList("-ts_ssp_type","Type of SSP method","TSSSPSetType",TSSSPList,tname,tname,sizeof(tname),&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsFList("-ts_ssp_type","Type of SSP method","TSSSPSetType",TSSSPList,tname,tname,sizeof(tname),&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = TSSSPSetType(ts,tname);CHKERRQ(ierr);
     }

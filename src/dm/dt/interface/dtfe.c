@@ -266,7 +266,7 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
   if (!PetscSpaceRegisterAllCalled) {ierr = PetscSpaceRegisterAll();CHKERRQ(ierr);}
 
   ierr = PetscObjectOptionsBegin((PetscObject) sp);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-petscspace_type", "Linear space", "PetscSpaceSetType", PetscSpaceList, defaultType, name, 256, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-petscspace_type", "Linear space", "PetscSpaceSetType", PetscSpaceList, defaultType, name, 256, &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscSpaceSetType(sp, name);CHKERRQ(ierr);
   } else if (!((PetscObject) sp)->type_name) {
@@ -331,9 +331,6 @@ PetscErrorCode PetscSpaceDestroy(PetscSpace *sp)
 
   if (--((PetscObject)(*sp))->refct > 0) {*sp = 0; PetscFunctionReturn(0);}
   ((PetscObject) (*sp))->refct = 0;
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSViewOff((PetscObject) *sp);CHKERRQ(ierr);
-
   ierr = DMDestroy(&(*sp)->dm);CHKERRQ(ierr);
 
   ierr = (*(*sp)->ops->destroy)(*sp);CHKERRQ(ierr);
@@ -1122,7 +1119,7 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
   if (!PetscSpaceRegisterAllCalled) {ierr = PetscSpaceRegisterAll();CHKERRQ(ierr);}
 
   ierr = PetscObjectOptionsBegin((PetscObject) sp);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-petscdualspace_type", "Dual space", "PetscDualSpaceSetType", PetscDualSpaceList, defaultType, name, 256, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-petscdualspace_type", "Dual space", "PetscDualSpaceSetType", PetscDualSpaceList, defaultType, name, 256, &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscDualSpaceSetType(sp, name);CHKERRQ(ierr);
   } else if (!((PetscObject) sp)->type_name) {
@@ -1188,8 +1185,6 @@ PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *sp)
 
   if (--((PetscObject)(*sp))->refct > 0) {*sp = 0; PetscFunctionReturn(0);}
   ((PetscObject) (*sp))->refct = 0;
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSViewOff((PetscObject) *sp);CHKERRQ(ierr);
 
   ierr = PetscDualSpaceGetDimension(*sp, &dim);CHKERRQ(ierr);
   for (f = 0; f < dim; ++f) {
@@ -1876,7 +1871,7 @@ PetscErrorCode PetscFESetFromOptions(PetscFE fem)
   if (!PetscFERegisterAllCalled) {ierr = PetscFERegisterAll();CHKERRQ(ierr);}
 
   ierr = PetscObjectOptionsBegin((PetscObject) fem);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-petscfe_type", "Finite element space", "PetscFESetType", PetscFEList, defaultType, name, 256, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-petscfe_type", "Finite element space", "PetscFESetType", PetscFEList, defaultType, name, 256, &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscFESetType(fem, name);CHKERRQ(ierr);
   } else if (!((PetscObject) fem)->type_name) {
@@ -1942,8 +1937,6 @@ PetscErrorCode PetscFEDestroy(PetscFE *fem)
 
   if (--((PetscObject)(*fem))->refct > 0) {*fem = 0; PetscFunctionReturn(0);}
   ((PetscObject) (*fem))->refct = 0;
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSViewOff((PetscObject) *fem);CHKERRQ(ierr);
 
   ierr = PetscFree((*fem)->numDof);CHKERRQ(ierr);
   ierr = PetscFERestoreTabulation((*fem), 0, NULL, &(*fem)->B, &(*fem)->D, NULL /*&(*fem)->H*/);CHKERRQ(ierr);

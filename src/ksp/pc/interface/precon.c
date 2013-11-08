@@ -116,8 +116,8 @@ PetscErrorCode  PCDestroy(PC *pc)
 
   ierr = PCReset(*pc);CHKERRQ(ierr);
 
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSViewOff((PetscObject)*pc);CHKERRQ(ierr);
+  /* if memory was published with SAWs then destroy it */
+  ierr = PetscObjectSAWsViewOff((PetscObject)*pc);CHKERRQ(ierr);
   if ((*pc)->ops->destroy) {ierr = (*(*pc)->ops->destroy)((*pc));CHKERRQ(ierr);}
   ierr = DMDestroy(&(*pc)->dm);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(pc);CHKERRQ(ierr);
@@ -1538,8 +1538,8 @@ PetscErrorCode  PCLoad(PC newdm, PetscViewer viewer)
 }
 
 #include <petscdraw.h>
-#if defined(PETSC_HAVE_AMS)
-#include <petscviewerams.h>
+#if defined(PETSC_HAVE_SAWS)
+#include <petscviewersaws.h>
 #endif
 #undef __FUNCT__
 #define __FUNCT__ "PCView"
@@ -1575,7 +1575,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscBool         iascii,isstring,isbinary,isdraw;
   PetscViewerFormat format;
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   PetscBool         isams;
 #endif
 
@@ -1591,8 +1591,8 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERAMS,&isams);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SAWS)
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
 #endif
 
   if (iascii) {
@@ -1667,10 +1667,14 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
       ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);
     }
     ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   } else if (isams) {
-    if (((PetscObject)pc)->amsmem == -1) {
-      ierr = PetscObjectViewAMS((PetscObject)pc,viewer);CHKERRQ(ierr);
+    PetscMPIInt rank;
+
+    ierr = PetscObjectName((PetscObject)pc);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    if (!((PetscObject)pc)->amsmem && !rank) {
+      ierr = PetscObjectViewSAWs((PetscObject)pc,viewer);CHKERRQ(ierr);
     }
     if (pc->mat) {ierr = MatView(pc->mat,viewer);CHKERRQ(ierr);}
     if (pc->pmat && pc->pmat != pc->mat) {ierr = MatView(pc->pmat,viewer);CHKERRQ(ierr);}

@@ -1204,7 +1204,7 @@ static PetscErrorCode TSSetFromOptions_GL(TS ts)
   ierr = PetscOptionsHead("General Linear ODE solver options");CHKERRQ(ierr);
   {
     PetscBool flg;
-    ierr = PetscOptionsList("-ts_gl_type","Type of GL method","TSGLSetType",TSGLList,gl->type_name[0] ? gl->type_name : tname,tname,sizeof(tname),&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsFList("-ts_gl_type","Type of GL method","TSGLSetType",TSGLList,gl->type_name[0] ? gl->type_name : tname,tname,sizeof(tname),&flg);CHKERRQ(ierr);
     if (flg || !gl->type_name[0]) {
       ierr = TSGLSetType(ts,tname);CHKERRQ(ierr);
     }
@@ -1227,7 +1227,7 @@ static PetscErrorCode TSSetFromOptions_GL(TS ts)
     }
     {
       char type[256] = TSGLACCEPT_ALWAYS;
-      ierr = PetscOptionsList("-ts_gl_accept_type","Method to use for determining whether to accept a step","TSGLSetAcceptType",TSGLAcceptList,gl->accept_name[0] ? gl->accept_name : type,type,sizeof(type),&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsFList("-ts_gl_accept_type","Method to use for determining whether to accept a step","TSGLSetAcceptType",TSGLAcceptList,gl->accept_name[0] ? gl->accept_name : type,type,sizeof(type),&flg);CHKERRQ(ierr);
       if (flg || !gl->accept_name[0]) {
         ierr = TSGLSetAcceptType(ts,type);CHKERRQ(ierr);
       }

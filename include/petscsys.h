@@ -1385,27 +1385,29 @@ PETSC_EXTERN PetscErrorCode PetscObjectTypeCompareAny(PetscObject,PetscBool*,con
 PETSC_EXTERN PetscErrorCode PetscRegisterFinalize(PetscErrorCode (*)(void));
 PETSC_EXTERN PetscErrorCode PetscRegisterFinalizeAll(void);
 
-#if defined(PETSC_HAVE_AMS)
-PETSC_EXTERN PetscErrorCode PetscObjectAMSViewOff(PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectAMSSetBlock(PetscObject,PetscBool);
-PETSC_EXTERN PetscErrorCode PetscObjectAMSBlock(PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectAMSGrantAccess(PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectAMSTakeAccess(PetscObject);
-PETSC_EXTERN void           PetscStackAMSGrantAccess(void);
-PETSC_EXTERN void           PetscStackAMSTakeAccess(void);
-PETSC_EXTERN PetscErrorCode PetscStackViewAMS(void);
-PETSC_EXTERN PetscErrorCode PetscStackAMSViewOff(void);
+#if defined(PETSC_HAVE_SAWS)
+PETSC_EXTERN PetscErrorCode PetscSAWsBlock(void);
+PETSC_EXTERN PetscErrorCode PetscObjectSAWsViewOff(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectSAWsSetBlock(PetscObject,PetscBool);
+PETSC_EXTERN PetscErrorCode PetscObjectSAWsBlock(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectSAWsGrantAccess(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectSAWsTakeAccess(PetscObject);
+PETSC_EXTERN void           PetscStackSAWsGrantAccess(void);
+PETSC_EXTERN void           PetscStackSAWsTakeAccess(void);
+PETSC_EXTERN PetscErrorCode PetscStackViewSAWs(void);
+PETSC_EXTERN PetscErrorCode PetscStackSAWsViewOff(void);
 
 #else
-#define PetscObjectAMSViewOff(obj)             0
-#define PetscObjectAMSSetBlock(obj,flg)        0
-#define PetscObjectAMSBlock(obj)               0
-#define PetscObjectAMSGrantAccess(obj)         0
-#define PetscObjectAMSTakeAccess(obj)          0
-#define PetscStackViewAMS()                    0
-#define PetscStackAMSViewOff()                 0
-#define PetscStackAMSTakeAccess()
-#define PetscStackAMSGrantAccess()
+#define PetscSAWsBlock()                        0
+#define PetscObjectSAWsViewOff(obj)             0
+#define PetscObjectSAWsSetBlock(obj,flg)        0
+#define PetscObjectSAWsBlock(obj)               0
+#define PetscObjectSAWsGrantAccess(obj)         0
+#define PetscObjectSAWsTakeAccess(obj)          0
+#define PetscStackViewSAWs()                    0
+#define PetscStackSAWsViewOff()                 0
+#define PetscStackSAWsTakeAccess()
+#define PetscStackSAWsGrantAccess()
 
 #endif
 

@@ -76,6 +76,7 @@
 !     draw        - drawing context
 !
       SNES               snes
+      MatColoring        mc
       Vec                x,r
       PetscDraw               draw
       Mat                J
@@ -190,8 +191,11 @@
 !       Color the matrix, i.e. determine groups of columns that share no common
 !      rows. These columns in the Jacobian can all be computed simulataneously.
 !
-        call MatGetColoring(J,MATCOLORINGNATURAL,iscoloring,ierr)
-
+        call MatColoringCreate(J,mc,ierr)
+        call MatColoringSetType(mc,MATCOLORINGNATURAL,ierr)
+        call MatColoringSetFromOptions(mc,ierr)
+        call MatColoringApply(mc,iscoloring,ierr)
+        call MatColoringDestroy(mc,ierr)
 !
 !       Create the data structure that SNESComputeJacobianDefaultColor() uses
 !       to compute the actual Jacobians via finite differences.

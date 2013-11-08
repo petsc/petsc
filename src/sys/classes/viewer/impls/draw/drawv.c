@@ -437,6 +437,27 @@ PetscErrorCode PetscViewerSetFromOptions_Draw(PetscViewer v)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscViewerView_Draw"
+PetscErrorCode PetscViewerView_Draw(PetscViewer viewer,PetscViewer v)
+{
+  PetscErrorCode   ierr;
+  PetscDraw        draw;
+  PetscInt         i;
+  PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
+
+  PetscFunctionBegin;
+  /*  If the PetscViewer has just been created then no vdraw->draw yet
+      exists so this will not actually call the viewer on any draws. */
+  for (i=0; i<vdraw->draw_base; i++) {
+    if (vdraw->draw[i]) {
+      ierr = PetscViewerDrawGetDraw(viewer,i,&draw);CHKERRQ(ierr);
+      ierr = PetscDrawView(draw,v);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_Draw"
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer)
 {
@@ -449,6 +470,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer)
   viewer->data = (void*)vdraw;
 
   viewer->ops->flush            = PetscViewerFlush_Draw;
+  viewer->ops->view             = PetscViewerView_Draw;
   viewer->ops->destroy          = PetscViewerDestroy_Draw;
   viewer->ops->setfromoptions   = PetscViewerSetFromOptions_Draw;
   viewer->ops->getsingleton     = PetscViewerGetSingleton_Draw;

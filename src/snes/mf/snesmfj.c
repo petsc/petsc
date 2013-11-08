@@ -119,6 +119,11 @@ PetscErrorCode  MatMFFDSetBase_SNESMF(Mat J,Vec U,Vec F)
      automatically gets the current base vector from the SNES object and not from an
      explicit call to MatMFFDSetBase().
 
+   You can call SNESSetJacobian() with MatMFFDComputeJacobian() if you are using matrix and not a different
+   preconditioner matrix
+
+
+
 .seealso: MatDestroy(), MatMFFDSetFunctionError(), MatMFFDDSSetUmin()
           MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateMFFD(),
           MatMFFDGetH(), MatMFFDRegister(), MatMFFDComputeJacobian()

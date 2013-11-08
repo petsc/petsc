@@ -1277,7 +1277,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
     /* -pc_gamg_type */
     {
       char tname[256];
-      ierr = PetscOptionsList("-pc_gamg_type","Type of AMG method","PCGAMGSetType",GAMGList, pc_gamg->gamg_type_name, tname, sizeof(tname), &flag);CHKERRQ(ierr);
+      ierr = PetscOptionsFList("-pc_gamg_type","Type of AMG method","PCGAMGSetType",GAMGList, pc_gamg->gamg_type_name, tname, sizeof(tname), &flag);CHKERRQ(ierr);
       /* call PCCreateGAMG_XYZ */
       if (flag) {
         ierr = PCGAMGSetType(pc,tname);CHKERRQ(ierr);

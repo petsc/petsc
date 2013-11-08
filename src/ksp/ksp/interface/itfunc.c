@@ -636,7 +636,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = VecCopy(x,b);CHKERRQ(ierr);
     ierr = VecDestroy(&x);CHKERRQ(ierr);
   }
-  ierr = PetscObjectAMSBlock((PetscObject)ksp);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsBlock((PetscObject)ksp);CHKERRQ(ierr);
   if (ksp->errorifnotconverged && ksp->reason < 0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged");
   PetscFunctionReturn(0);
 }
@@ -771,7 +771,7 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
   PetscValidHeaderSpecific((*ksp),KSP_CLASSID,1);
   if (--((PetscObject)(*ksp))->refct > 0) {*ksp = 0; PetscFunctionReturn(0);}
 
-  ierr = PetscObjectAMSViewOff((PetscObject)*ksp);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsViewOff((PetscObject)*ksp);CHKERRQ(ierr);
   /*
    Avoid a cascading call to PCReset(ksp->pc) from the following call:
    PCReset() shouldn't be called from KSPDestroy() as it is unprotected by pc's
