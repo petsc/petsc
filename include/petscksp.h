@@ -8,7 +8,7 @@
 PETSC_EXTERN PetscErrorCode KSPInitializePackage(void);
 
 /*S
-     KSP - Abstract PETSc object that manages all Krylov methods. This is the object that manages the 
+     KSP - Abstract PETSc object that manages all Krylov methods. This is the object that manages the
          linear solves in PETSc (even those such as direct solvers that do no use Krylov accelerators).
 
    Level: beginner
@@ -597,6 +597,7 @@ PETSC_EXTERN PetscErrorCode MatSchurComplementSetKSP(Mat,KSP);
 PETSC_EXTERN PetscErrorCode MatSchurComplementSet(Mat,Mat,Mat,Mat,Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatSchurComplementUpdate(Mat,Mat,Mat,Mat,Mat,Mat,MatStructure);
 PETSC_EXTERN PetscErrorCode MatSchurComplementGetSubmatrices(Mat,Mat*,Mat*,Mat*,Mat*,Mat*);
+PETSC_EXTERN PetscErrorCode MatSchurComplementGetPmat(Mat,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetSchurComplement(Mat,IS,IS,IS,IS,MatReuse,Mat *,MatReuse,Mat *);
 
 PETSC_EXTERN PetscErrorCode KSPSetDM(KSP,DM);

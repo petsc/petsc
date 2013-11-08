@@ -152,17 +152,18 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
 
    Collective on Mat
 
-   Input Parameter:
-.   A00,A01,A10,A11  - the four parts of the original matrix (A00 is optional)
+   Input Parameters:
++   A00,A01,A10,A11  - the four parts of the original matrix (A11 is optional)
+-   Ap00             - preconditioning matrix for use in inv(A00)
 
    Output Parameter:
 .   N - the matrix that the Schur complement A11 - A10 ksp(A00) A01
 
    Level: intermediate
 
-   Notes: The Schur complement is NOT actually formed! Rather this
+   Notes: The Schur complement is NOT actually formed! Rather, this
           object performs the matrix-vector product by using the the formula for
-          the Schur complement and a KSP solver to approximate the action of inv(A)
+          the Schur complement and a KSP solver to approximate the action of inv(A).
 
           All four matrices must have the same MPI communicator
 
@@ -191,20 +192,21 @@ PetscErrorCode  MatCreateSchurComplement(Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A1
    Collective on Mat
 
    Input Parameter:
-+   N - matrix obtained with MatCreate() and MatSetType(MATSCHURCOMPLEMENT);
--   A00,A01,A10,A11  - the four parts of the original matrix (A00 is optional)
++   N                - matrix obtained with MatCreate() followed by MatSetType(MATSCHURCOMPLEMENT); alternatives: MatCreateSchurComplement(), MatGetSchurComplement().
+.   A00,A01,A10,A11  - the four parts of the original matrix (A11 is optional)
+-   Ap00             - preconditioning matrix for use in inv(A00)
 
    Level: intermediate
 
-   Notes: The Schur complement is NOT actually formed! Rather this
+   Notes: The Schur complement is NOT actually formed! Rather, this
           object performs the matrix-vector product by using the the formula for
-          the Schur complement and a KSP solver to approximate the action of inv(A)
+          the Schur complement and a KSP solver to approximate the action of inv(A).
 
           All four matrices must have the same MPI communicator
 
           A00 and  A11 must be square matrices
 
-.seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatSchurComplementUpdate(), MatCreateTranspose(), MatGetSchurComplement()
+.seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatSchurComplementUpdate(), MatCreateTranspose(), MatCreateSchurComplement(), MatGetSchurComplement()
 
 @*/
 PetscErrorCode  MatSchurComplementSet(Mat N,Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A11)
@@ -261,18 +263,18 @@ PetscErrorCode  MatSchurComplementSet(Mat N,Mat A00,Mat Ap00,Mat A01,Mat A10,Mat
 #undef __FUNCT__
 #define __FUNCT__ "MatSchurComplementGetKSP"
 /*@
-  MatSchurComplementGetKSP - Gets the KSP object that is used to invert A in the Schur complement matrix S = C A^{-1} B
+  MatSchurComplementGetKSP - Gets the KSP object that is used to invert A00 in the Schur complement matrix S = A11 - A10 inv(A00) A01
 
   Not Collective
 
   Input Parameter:
-. A - matrix created with MatCreateSchurComplement()
+. A - matrix obtained with MatCreate() followed by MatSetType(MATSCHURCOMPLEMENT), or MatCreateSchurComplement(), or MatGetSchurComplement().
 
   Output Parameter:
 . ksp - the linear solver object
 
   Options Database:
-. -fieldsplit_0_XXX sets KSP and PC options for the A block solver inside the Schur complement
+. -fieldsplit_<splitname0>_XXX sets KSP and PC options for the A00 block solver inside the Schur complement used in PCFieldSplit; default <splitname0> is 0
 
   Level: intermediate
 
@@ -293,18 +295,18 @@ PetscErrorCode MatSchurComplementGetKSP(Mat A, KSP *ksp)
 #undef __FUNCT__
 #define __FUNCT__ "MatSchurComplementSetKSP"
 /*@
-  MatSchurComplementSetKSP - Sets the KSP object that is used to invert A in the Schur complement matrix S = C A^{-1} B
+  MatSchurComplementSetKSP - Sets the KSP object that is used to invert A00 in the Schur complement matrix S = A11 - A10 inv(A00) A01
 
   Not Collective
 
   Input Parameters:
-+ A - matrix created with MatCreateSchurComplement()
++ A   - matrix created with MatCreateSchurComplement()
 - ksp - the linear solver object
 
   Level: developer
 
   Developer Notes:
-    There is likely no use case for this function.
+    This is used in PCFieldSplit to reuse the 00-block KSP to implement inv(A00) in S.
 
 .seealso: MatSchurComplementGetKSP(), MatCreateSchurComplement(), MatCreateNormal(), MatMult(), MatCreate(), MATSCHURCOMPLEMENT
 @*/
@@ -332,9 +334,9 @@ PetscErrorCode MatSchurComplementSetKSP(Mat A, KSP ksp)
    Collective on Mat
 
    Input Parameters:
-+   N - the matrix obtained with MatCreateSchurComplement()
++   N        - the matrix obtained with MatCreateSchurComplement()
 .   A,B,C,D  - the four parts of the original matrix (D is optional)
--   str - either SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER
+-   str      - either SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER
 
 
    Level: intermediate
@@ -591,6 +593,102 @@ PetscErrorCode  MatGetSchurComplement(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS i
     ierr = (*f)(mat,isrow0,iscol0,isrow1,iscol1,mreuse,newmat,preuse,newpmat);CHKERRQ(ierr);
   } else {
     ierr = MatGetSchurComplement_Basic(mat,isrow0,iscol0,isrow1,iscol1,mreuse,newmat,preuse,newpmat);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+PetscErrorCode  MatSchurComplementGetPmat_Basic(Mat S,MatReuse preuse,Mat *Spre)
+{
+  Mat A,B,C,D;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (preuse == MAT_IGNORE_MATRIX) PetscFunctionReturn(0);
+
+  ierr = MatSchurComplementGetSubmatrices(S,&A,NULL,&B,&C,&D);CHKERRQ(ierr);
+  if (!A) SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONGSTATE,"Schur complement component matrices unset");
+
+
+  /* Use the diagonal part of A to form D - C inv(diag(A)) B; a NULL B, C or D indicates a zero matrix. */
+
+  /* TODO: Perhaps should create an appropriately-sized zero matrix of the same type as A00? */
+  if ((!B || !C) & !D) SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONGSTATE,"Cannot assemble Sp: A01, A10 and A11 are all NULL.");
+
+  if (!B || !C) {
+    if (!preuse) {
+      ierr = MatDuplicate(D,MAT_COPY_VALUES,Spre);CHKERRQ(ierr);
+    } else {
+      ierr = MatCopy(D,*Spre,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    }
+
+  } else {
+    Mat         AdB,Sp;
+    Vec         diag;
+
+    ierr = MatGetVecs(A,&diag,NULL);CHKERRQ(ierr);
+    ierr = MatGetDiagonal(A,diag);CHKERRQ(ierr);
+    ierr = VecReciprocal(diag);CHKERRQ(ierr);
+    ierr = MatDuplicate(B,MAT_COPY_VALUES,&AdB);CHKERRQ(ierr);
+    ierr = MatDiagonalScale(AdB,diag,NULL);CHKERRQ(ierr);
+    Sp       = (preuse == MAT_REUSE_MATRIX) ? *Spre : (Mat)0;
+    ierr     = MatMatMult(C,AdB,preuse,PETSC_DEFAULT,&Sp);CHKERRQ(ierr);
+    if (!D) {
+      ierr = MatScale(Sp,-1.0);CHKERRQ(ierr);
+    } else {
+      ierr     = MatAYPX(Sp,-1,D,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    }
+    *Spre    = Sp;
+    ierr     = MatDestroy(&AdB);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSchurComplementGetPmat"
+/*@
+    MatSchurComplementGetPmat - Obtain a preconditioning matrix for the Schur complement by assembling Sp = A11 - A10 inv(diag(A00)) A01
+
+    Collective on Mat
+
+    Input Parameters:
++   S      - matrix obtained with MatCreate() followed by MatSetType(MATSCHURCOMPLEMENT), or MatCreateSchurComplement(), or MatGetSchurComplement().
+-   preuse - MAT_INITIAL_MATRIX for a new Sp, or MAT_REUSE_MATRIX to reuse an existing Sp, or MAT_IGNORE_MATRIX to put nothing in Sp
+
+    Output Parameter:
+-   Sp     - approximate Schur complement suitable for preconditioning S = A11 - A10 inv(diag(A00)) A01
+
+    Note:
+    Since the real Schur complement is usually dense, providing a good approximation Sp usually requires
+    application-specific information.  The default for assembled matrices is to use the diagonal of the (0,0) block A00,
+    which will rarely produce a scalable algorithm.
+
+    Sometimes users would like to provide problem-specific data in the Schur complement, usually only
+    for special row and column index sets.  In that case, the user should call PetscObjectComposeFunction() to set
+    "MatSchurComplementGetPmat_C" to their function.  If their function needs to fall back to the default implementation,
+    it should call MatSchurComplementGetPmat_Basic().
+
+    Level: advanced
+
+    Concepts: matrices^submatrices
+
+.seealso: MatGetSubMatrix(), PCFIELDSPLIT, MatGetSchurComplement(), MatCreateSchurComplement(),
+@*/
+PetscErrorCode  MatSchurComplementGetPmat(Mat S,MatReuse preuse,Mat *Sp)
+{
+  PetscErrorCode ierr,(*f)(Mat,MatReuse,Mat*);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(S,MAT_CLASSID,1);
+  if (preuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*Sp,MAT_CLASSID,3);
+  PetscValidType(S,1);
+  if (S->factortype) SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+
+  ierr = PetscObjectQueryFunction((PetscObject)S,"MatSchurComplementGetPmat_C",&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(S,preuse,Sp);CHKERRQ(ierr);
+  } else {
+    ierr = MatSchurComplementGetPmat_Basic(S,preuse,Sp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
