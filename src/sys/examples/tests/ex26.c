@@ -22,8 +22,13 @@ int main(int argc, char **argv)
 
       key.i = PetscMin(i, j);
       key.j = PetscMax(i, j);
+#if 1
+      khint_t ret, idx = kh_put(HASHIJ, table->ht, key, &ret);
+      if (ret == 1) kh_val(table->ht, idx).n = newp++;
+#else
       ierr  = PetscHashIJGet(table, key, &p);CHKERRQ(ierr);
       if (p < 0) {ierr = PetscHashIJAdd(table, key, newp++);CHKERRQ(ierr);}
+#endif
     }
   }
   ierr = PetscHashIJDestroy(&table);CHKERRQ(ierr);
