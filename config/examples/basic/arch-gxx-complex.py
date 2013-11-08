@@ -11,7 +11,6 @@ if __name__ == '__main__':
     '--with-cxx=g++',
     '--with-clanguage=C++',
     '--with-scalar-type=complex',
-    '--with-dynamic-loading=1',
     '--with-shared-libraries=1',
     '--with-python=1',
     '--PETSC_ARCH=arch-gxx-complex'

@@ -91,7 +91,7 @@ PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
 +  da - the distributed array
 .  vec - the vector, either a vector the same size as one obtained with
          DMCreateGlobalVector() or DMCreateLocalVector()
--  array - the array
+-  array - the array, non-NULL pointer is zeroed
 
   Level: intermediate
 

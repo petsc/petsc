@@ -10,7 +10,6 @@ if __name__ == '__main__':
     '--with-clanguage=C++',
     '--with-64-bit-indices=1',
     '--with-scalar-type=real',
-    '--with-dynamic-loading=1',
     '--with-shared-libraries=1',
     '--download-f-blas-lapack=1',
     '--download-mpich=1',

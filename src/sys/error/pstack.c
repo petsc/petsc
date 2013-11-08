@@ -133,12 +133,12 @@ PetscErrorCode  PetscStackView(FILE *file)
     (*PetscErrorPrintf)("Note: The EXACT line numbers in the stack are not available,\n");
     (*PetscErrorPrintf)("      INSTEAD the line number of the start of the function\n");
     (*PetscErrorPrintf)("      is given.\n");
-    for (i=petscstackp->currentsize-1; i>=0; i--) (*PetscErrorPrintf)("[%d] %s line %d %s%s\n",PetscGlobalRank,petscstackp->function[i],petscstackp->line[i],petscstackp->directory[i],petscstackp->file[i]);
+    for (i=petscstackp->currentsize-1; i>=0; i--) (*PetscErrorPrintf)("[%d] %s line %d %s\n",PetscGlobalRank,petscstackp->function[i],petscstackp->line[i],petscstackp->file[i]);
   } else {
     fprintf(file,"Note: The EXACT line numbers in the stack are not available,\n");
     fprintf(file,"      INSTEAD the line number of the start of the function\n");
     fprintf(file,"      is given.\n");
-    for (i=petscstackp->currentsize-1; i>=0; i--) fprintf(file,"[%d] %s line %d %s%s\n",PetscGlobalRank,petscstackp->function[i],petscstackp->line[i],petscstackp->directory[i],petscstackp->file[i]);
+    for (i=petscstackp->currentsize-1; i>=0; i--) fprintf(file,"[%d] %s line %d %s\n",PetscGlobalRank,petscstackp->function[i],petscstackp->line[i],petscstackp->file[i]);
   }
   return 0;
 }
@@ -166,7 +166,6 @@ PetscErrorCode  PetscStackCopy(PetscStack *sint,PetscStack *sout)
     for (i=0; i<sint->currentsize; i++) {
       sout->function[i]     = sint->function[i];
       sout->file[i]         = sint->file[i];
-      sout->directory[i]    = sint->directory[i];
       sout->line[i]         = sint->line[i];
       sout->petscroutine[i] = sint->petscroutine[i];
     }
@@ -183,7 +182,7 @@ PetscErrorCode  PetscStackPrint(PetscStack *sint,FILE *fp)
   int i;
 
   if (!sint) return(0);
-  for (i=sint->currentsize-2; i>=0; i--) fprintf(fp,"      [%d]  %s() line %d in %s%s\n",PetscGlobalRank,sint->function[i],sint->line[i],sint->directory[i],sint->file[i]);
+  for (i=sint->currentsize-2; i>=0; i--) fprintf(fp,"      [%d]  %s() line %d in %s\n",PetscGlobalRank,sint->function[i],sint->line[i],sint->file[i]);
   return 0;
 }
 

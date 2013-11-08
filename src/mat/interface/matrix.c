@@ -18,7 +18,7 @@ PetscLogEvent MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymboli
 PetscLogEvent MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
 PetscLogEvent MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering, MAT_GetRedundantMatrix, MAT_GetSeqNonzeroStructure;
 PetscLogEvent MAT_IncreaseOverlap, MAT_Partitioning, MAT_Coarsen, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate;
-PetscLogEvent MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction;
+PetscLogEvent MAT_FDColoringSetUp, MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction;
 PetscLogEvent MAT_TransposeColoringCreate;
 PetscLogEvent MAT_MatMult, MAT_MatMultSymbolic, MAT_MatMultNumeric;
 PetscLogEvent MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric,MAT_RARt, MAT_RARtSymbolic, MAT_RARtNumeric;
@@ -32,7 +32,7 @@ PetscLogEvent MAT_Applypapt, MAT_Applypapt_numeric, MAT_Applypapt_symbolic, MAT_
 PetscLogEvent MAT_GetMultiProcBlock;
 PetscLogEvent MAT_CUSPCopyToGPU, MAT_CUSPARSECopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
 PetscLogEvent MAT_ViennaCLCopyToGPU;
-PetscLogEvent MAT_Merge;
+PetscLogEvent MAT_Merge,MAT_Residual;
 
 const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT","MatFactorType","MAT_FACTOR_",0};
 
@@ -481,6 +481,10 @@ PetscErrorCode  MatConjugate(Mat mat)
 
    Notes:
    This routine should be called after you have finished examining the entries.
+
+   This routine zeros out ncols, cols, and vals. This is to prevent accidental
+   us of the array after it has been restored. If you pass NULL, it will
+   not zero the pointers.  Use of cols or vals after MatRestoreRow is invalid.
 
    Fortran Notes:
    The calling sequence from Fortran is
@@ -1647,11 +1651,11 @@ PetscErrorCode  MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pet
     ierr = (*mat->ops->setvaluesblocked)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
   } else {
     PetscInt buf[8192],*bufr=0,*bufc=0,*iidxm,*iidxn;
-    PetscInt i,j,bs=mat->rmap->bs;
-    if ((m+n)*bs <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
+    PetscInt i,j,bs = mat->rmap->bs,cbs = mat->cmap->bs;
+    if (m*bs+n*cbs <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
       iidxm = buf; iidxn = buf + m*bs;
     } else {
-      ierr  = PetscMalloc2(m*bs,PetscInt,&bufr,n*bs,PetscInt,&bufc);CHKERRQ(ierr);
+      ierr  = PetscMalloc2(m*bs,PetscInt,&bufr,n*cbs,PetscInt,&bufc);CHKERRQ(ierr);
       iidxm = bufr; iidxn = bufc;
     }
     for (i=0; i<m; i++) {
@@ -1660,11 +1664,11 @@ PetscErrorCode  MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pet
       }
     }
     for (i=0; i<n; i++) {
-      for (j=0; j<bs; j++) {
-        iidxn[i*bs+j] = bs*idxn[i] + j;
+      for (j=0; j<cbs; j++) {
+        iidxn[i*cbs+j] = cbs*idxn[i] + j;
       }
     }
-    ierr = MatSetValues(mat,m*bs,iidxm,n*bs,iidxn,v,addv);CHKERRQ(ierr);
+    ierr = MatSetValues(mat,m*bs,iidxm,n*cbs,iidxn,v,addv);CHKERRQ(ierr);
     ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
@@ -2106,20 +2110,20 @@ PetscErrorCode  MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt ir
       ierr = MatSetValuesBlocked(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
       ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
     } else {
-      PetscInt i,j,bs=mat->rmap->bs;
-      if ((nrow+ncol)*bs <=(PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
+      PetscInt i,j,bs = mat->rmap->bs,cbs = mat->cmap->bs;
+      if (nrow*bs+ncol*cbs <=(PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
         irowm = buf; icolm = buf + nrow;
       } else {
-        ierr  = PetscMalloc2(nrow*bs,PetscInt,&bufr,ncol*bs,PetscInt,&bufc);CHKERRQ(ierr);
+        ierr  = PetscMalloc2(nrow*bs,PetscInt,&bufr,ncol*cbs,PetscInt,&bufc);CHKERRQ(ierr);
         irowm = bufr; icolm = bufc;
       }
       for (i=0; i<nrow; i++) {
         for (j=0; j<bs; j++) irowm[i*bs+j] = irow[i]*bs+j;
       }
       for (i=0; i<ncol; i++) {
-        for (j=0; j<bs; j++) icolm[i*bs+j] = icol[i]*bs+j;
+        for (j=0; j<cbs; j++) icolm[i*cbs+j] = icol[i]*cbs+j;
       }
-      ierr = MatSetValuesLocal(mat,nrow*bs,irowm,ncol*bs,icolm,y,addv);CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(mat,nrow*bs,irowm,ncol*cbs,icolm,y,addv);CHKERRQ(ierr);
       ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
     }
   }
@@ -6706,7 +6710,9 @@ PetscErrorCode  MatIncreaseOverlap(Mat mat,PetscInt n,IS is[],PetscInt ov)
 .  bs - block size
 
    Notes:
-   Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ
+   Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ.
+
+   If the block size has not been set yet this routine returns -1.
 
    Level: intermediate
 
@@ -6718,9 +6724,7 @@ PetscErrorCode  MatGetBlockSize(Mat mat,PetscInt *bs)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
   PetscValidIntPointer(bs,2);
-  MatCheckPreallocated(mat,1);
   *bs = mat->rmap->bs;
   PetscFunctionReturn(0);
 }
@@ -6741,7 +6745,9 @@ PetscErrorCode  MatGetBlockSize(Mat mat,PetscInt *bs)
 .  cbs - coumn block size
 
    Notes:
-   Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ
+   Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ.
+
+   If a block size has not been set yet this routine returns -1.
 
    Level: intermediate
 
@@ -6753,10 +6759,8 @@ PetscErrorCode  MatGetBlockSizes(Mat mat,PetscInt *rbs, PetscInt *cbs)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
   if (rbs) PetscValidIntPointer(rbs,2);
   if (cbs) PetscValidIntPointer(cbs,3);
-  MatCheckPreallocated(mat,1);
   if (rbs) *rbs = mat->rmap->bs;
   if (cbs) *cbs = mat->cmap->bs;
   PetscFunctionReturn(0);
@@ -6822,8 +6826,52 @@ PetscErrorCode  MatSetBlockSizes(Mat mat,PetscInt rbs,PetscInt cbs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(mat,rbs,2);
+  PetscValidLogicalCollectiveInt(mat,cbs,3);
   ierr = PetscLayoutSetBlockSize(mat->rmap,rbs);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(mat->cmap,cbs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatResidual"
+/*@
+   MatResidual - Default routine to calculate the residual.
+
+   Collective on Mat and Vec
+
+   Input Parameters:
++  mat - the matrix
+.  b   - the right-hand-side
+-  x   - the approximate solution
+
+   Output Parameter:
+.  r - location to store the residual
+
+   Level: developer
+
+.keywords: MG, default, multigrid, residual
+
+.seealso: PCMGSetResidual()
+@*/
+PetscErrorCode  MatResidual(Mat mat,Vec b,Vec x,Vec r)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(b,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(r,VEC_CLASSID,4);
+  PetscValidType(mat,1);
+  MatCheckPreallocated(mat,1);
+  ierr  = PetscLogEventBegin(MAT_Residual,mat,0,0,0);CHKERRQ(ierr);
+  if (!mat->ops->residual) {
+    ierr = MatMult(mat,x,r);CHKERRQ(ierr);
+    ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
+  } else {
+    ierr  = (*mat->ops->residual)(mat,b,x,r);CHKERRQ(ierr);
+  }
+  ierr  = PetscLogEventEnd(MAT_Residual,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6906,15 +6954,20 @@ PetscErrorCode MatGetRowIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscBool 
 .   shift - 1 or zero indicating we want the indices starting at 0 or 1
 .   symmetric - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be
                 symmetrized
--   inodecompressed - PETSC_TRUE or PETSC_FALSE indicating if the nonzero structure of the
+.   inodecompressed - PETSC_TRUE or PETSC_FALSE indicating if the nonzero structure of the
                  inodes or the nonzero elements is wanted. For BAIJ matrices the compressed version is
                  always used.
+.   n - number of columns in the (possibly compressed) matrix
+.   ia - the column pointers
+-   ja - the row indices
 
     Output Parameters:
-+   n - number of columns in the (possibly compressed) matrix
-.   ia - the column pointers
-.   ja - the row indices
--   done - PETSC_TRUE or PETSC_FALSE, indicating whether the values have been returned
+.   done - PETSC_TRUE or PETSC_FALSE, indicating whether the values have been returned
+
+    Note:
+    This routine zeros out n, ia, and ja. This is to prevent accidental
+    us of the array after it has been restored. If you pass NULL, it will
+    not zero the pointers.  Use of ia or ja after MatRestoreColumnIJ() is invalid.
 
     Level: developer
 
@@ -6953,15 +7006,20 @@ PetscErrorCode MatGetColumnIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscBo
 .   shift - 1 or zero indicating we want the indices starting at 0 or 1
 .   symmetric - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be
                 symmetrized
--   inodecompressed -  PETSC_TRUE or PETSC_FALSE indicating if the nonzero structure of the
+.   inodecompressed -  PETSC_TRUE or PETSC_FALSE indicating if the nonzero structure of the
                  inodes or the nonzero elements is wanted. For BAIJ matrices the compressed version is
                  always used.
+.   n - size of (possibly compressed) matrix
+.   ia - the row pointers
+-   ja - the column indices
 
     Output Parameters:
-+   n - size of (possibly compressed) matrix
-.   ia - the row pointers
-.   ja - the column indices
--   done - PETSC_TRUE or PETSC_FALSE indicated that the values have been returned
+.   done - PETSC_TRUE or PETSC_FALSE indicated that the values have been returned
+
+    Note:
+    This routine zeros out n, ia, and ja. This is to prevent accidental
+    us of the array after it has been restored. If you pass NULL, it will
+    not zero the pointers.  Use of ia or ja after MatRestoreRowIJ() is invalid.
 
     Level: developer
 

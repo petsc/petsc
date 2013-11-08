@@ -180,14 +180,15 @@ PetscErrorCode DMDAGetClosure(DM dm, PetscSection section, PetscInt p,PetscInt *
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDARestoreClosure"
+/* Zeros n and closure. */
 PetscErrorCode DMDARestoreClosure(DM dm, PetscSection section, PetscInt p,PetscInt *n,const PetscInt **closure)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(n,4);
-  PetscValidPointer(closure, 5);
+  if (n) PetscValidIntPointer(n,4);
+  if (closure) PetscValidPointer(closure, 5);
   ierr = RestorePointArray_Private(dm,n,closure);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -326,6 +327,7 @@ PetscErrorCode DMDAVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt p,
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDARestoreClosureScalar"
+/* values is set to NULL */
 PetscErrorCode DMDARestoreClosureScalar(DM dm, PetscSection section,PetscInt p,PetscScalar *vArray,const PetscScalar **values)
 {
   PetscErrorCode ierr;

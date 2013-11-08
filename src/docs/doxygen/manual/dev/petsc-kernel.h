@@ -58,7 +58,7 @@ The simplified C/C++ macro-based interface consists of the following three calls
 
 The macro SETERRQ() is given by
 \code
-return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,specific,''Error message'');
+return PetscError(comm,__LINE__,__FUNCT__,__FILE__,specific,''Error message'');
 \endcode
 It calls the error handler with the current function name and location: line number,
 file and directory, plus an error codes and an error message.

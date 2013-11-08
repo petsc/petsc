@@ -65,7 +65,6 @@ typedef const char* PCType;
 #define PCGALERKIN        "galerkin"
 #define PCEXOTIC          "exotic"
 #define PCHMPI            "hmpi"
-#define PCSUPPORTGRAPH    "supportgraph"
 #define PCASA             "asa"
 #define PCCP              "cp"
 #define PCBFBT            "bfbt"
@@ -428,6 +427,13 @@ PETSC_EXTERN PetscErrorCode PCPARMSSetSolveRestart(PC pc,PetscInt restart);
 PETSC_EXTERN PetscErrorCode PCPARMSSetNonsymPerm(PC pc,PetscBool nonsym);
 PETSC_EXTERN PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2);
 
+/*E
+    PCGAMGType - type of generalized algebraic multigrid (PCGAMG) method
+
+    Level: intermediate
+
+.seealso: PCMG, PCSetType(), PCGAMGSetThreshold(), PCGAMGSetThreshold(), PCGAMGSetReuseProl()
+E*/
 typedef const char *PCGAMGType;
 #define PCGAMGAGG         "agg"
 #define PCGAMGGEO         "geo"

@@ -138,7 +138,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       for dir in files:
         if re.match(nextDirs[0], dir):
           if nextDirs[1:]:
-            rest = apply(os.path.join, nextDirs[1:])
+            rest = os.path.join(*nextDirs[1:])
           else:
             rest = None
           dirs.extend(self.listDirs(os.path.join(base, dir),rest ))
@@ -295,7 +295,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
           config.setupDependencies(self)
           break
     if config is None:
-      config = apply(type, [self], keywordArgs)
+      config = type(self, *keywordArgs)
       self.addChild(config)
       config.showHelp = 0
       config.logName  = self.logName

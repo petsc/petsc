@@ -278,7 +278,7 @@ PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
   PetscErrorCode ierr;
   PetscInt       i;
 #if defined(PETSC_USE_DEBUG)
-  PetscInt       j,k;
+  PetscInt       j,k=0;
 #endif
   PetscObject    h;
 
@@ -318,7 +318,7 @@ PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
         ierr = PetscMallocGetStack(h,&stack);CHKERRQ(ierr);
         if (stack) {
           for (j=k; j>=0; j--) {
-            fprintf(fd,"      [%d]  %s() in %s%s\n",PetscGlobalRank,stack->function[j],stack->directory[j],stack->file[j]);
+            fprintf(fd,"      [%d]  %s() in %s\n",PetscGlobalRank,stack->function[j],stack->file[j]);
           }
         }
 #endif
@@ -1015,6 +1015,7 @@ PetscErrorCode  PetscContainerCreate(MPI_Comm comm,PetscContainer *container)
 
   PetscFunctionBegin;
   PetscValidPointer(container,2);
+  ierr = PetscSysInitializePackage();CHKERRQ(ierr);
   ierr = PetscHeaderCreate(contain,_p_PetscContainer,PetscInt,PETSC_CONTAINER_CLASSID,"PetscContainer","Container","Sys",comm,PetscContainerDestroy,0);CHKERRQ(ierr);
   *container = contain;
   PetscFunctionReturn(0);

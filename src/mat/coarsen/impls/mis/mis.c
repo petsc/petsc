@@ -59,8 +59,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
     matA   = (Mat_SeqAIJ*)mpimat->A->data;
     matB   = (Mat_SeqAIJ*)mpimat->B->data;
     /* force compressed storage of B */
-    matB->compressedrow.check = PETSC_TRUE;
-    ierr                      = MatCheckCompressedRow(mpimat->B,&matB->compressedrow,matB->i,Gmat->rmap->n,-1.0);CHKERRQ(ierr);
+    ierr   = MatCheckCompressedRow(mpimat->B,matB->nonzerorowcnt,&matB->compressedrow,matB->i,Gmat->rmap->n,-1.0);CHKERRQ(ierr);
   } else {
     PetscBool isAIJ;
     ierr = PetscObjectTypeCompare((PetscObject)Gmat, MATSEQAIJ, &isAIJ);CHKERRQ(ierr);
@@ -356,7 +355,7 @@ PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse,PetscViewer viewer)
 {
   /* MatCoarsen_MIS *MIS = (MatCoarsen_MIS*)coarse->; */
   PetscErrorCode ierr;
-  int            rank;
+  PetscMPIInt    rank;
   PetscBool      iascii;
 
   PetscFunctionBegin;

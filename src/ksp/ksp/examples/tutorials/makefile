@@ -1023,6 +1023,11 @@ runex49_4:
 	   ${DIFF} output/ex49_4.out ex49_4.tmp || echo ${PWD} "\nPossible problem with with ex49_4, diffs above \n========================================="; \
 	   ${RM} -f ex49_4.tmp
 
+runex49_5:
+	-@${MPIEXEC} -n 3 ./ex49 -elas_ksp_monitor_short -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_pc_type gamg -elas_mg_levels_ksp_type chebyshev -elas_mg_levels_ksp_max_it 1 -elas_mg_levels_ksp_chebyshev_estimate_eigenvalues 0.2,1.1 -elas_mg_levels_pc_type jacobi > ex49_5.tmp 2>&1; \
+	   ${DIFF} output/ex49_5.out ex49_5.tmp || printf "${PWD}\nPossible problem with with ex49_5, diffs above \n=========================================\n"; \
+	   ${RM} -f ex49_5.tmp
+
 runex50:
 	-@${MPIEXEC} -n 1 ./ex50 -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -da_refine 1 -mg_levels_pc_factor_shift_type nonzero -mg_coarse_pc_factor_shift_type nonzero -ksp_view  > ex50.tmp 2>&1;         \
         ${DIFF} output/ex50.out ex50.tmp || echo ${PWD} "\nPossible problem with with ex50, diffs above \n========================================="; \
@@ -1057,55 +1062,65 @@ runex53_2:
 	   ${DIFF} output/ex53.out ex53.tmp || echo ${PWD} "\nPossible problem with with ex53_2, diffs above \n========================================="; \
 	   ${RM} -f ex53.tmp
 
-runex54:
-	-@${MPIEXEC} -n 4 ./ex54 -ne 109 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type geo  -ksp_converged_reason -pc_gamg_coarse_eq_limit 80 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -mg_levels_pc_type jacobi > ex54.tmp 2>&1;	  \
-         ${DIFF} output/ex54_0.out ex54.tmp || echo ${PWD} "\nPossible problem with with ex54_0, diffs above \n========================================="; \
+runex54_geo:
+	-@${MPIEXEC} -n 4 ./ex54 -ne 49 -alpha 1.e-3 -pc_type gamg -pc_gamg_type geo -pc_gamg_coarse_eq_limit 200 -mg_levels_pc_type jacobi -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -ksp_monitor_short > ex54.tmp 2>&1;	  \
+         ${DIFF} output/ex54_0.out ex54.tmp || echo ${PWD} "\nPossible problem with with ex54_geo, diffs above \n========================================="; \
         ${RM} -f ex54.tmp
 
-runex54_SA:
-	-@${MPIEXEC} -n 4 ./ex54 -ne 109 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1  -ksp_converged_reason -pc_gamg_coarse_eq_limit 80 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -mg_levels_pc_type jacobi > ex54_sa.tmp 2>&1; \
-         ${DIFF} output/ex54_1.out ex54_sa.tmp || echo ${PWD} "\nPossible problem with with ex54_1, diffs above \n======================================"; \
-        ${RM} -f ex54_sa.tmp
+runex54:
+	-@${MPIEXEC} -n 4 ./ex54 -ne 49 -alpha 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_monitor_short > ex54.tmp 2>&1; \
+         ${DIFF} output/ex54_1.out ex54.tmp || echo ${PWD} "\nPossible problem with with ex54, diffs above \n======================================"; \
+        ${RM} -f ex54.tmp
 
 runex54_Classical:
-	-@${MPIEXEC} -n 4 ./ex54 -ne 109 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type classical -ksp_converged_reason -pc_gamg_coarse_eq_limit 80 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -mg_levels_pc_type jacobi > ex54_classical.tmp 2>&1; \
-         ${DIFF} output/ex54_classical.out ex54_classical.tmp || echo ${PWD} "\nPossible problem with with ex54_Classical, diffs above \n======================================"; \
-        #${RM} -f ex54_classical.tmp
+	-@${MPIEXEC} -n 4 ./ex54 -ne 49 -alpha 1.e-3 -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -ksp_monitor_short > ex54.tmp 2>&1; \
+         ${DIFF} output/ex54_classical.out ex54.tmp || echo ${PWD} "\nPossible problem with with ex54_Classical, diffs above \n======================================"; \
+        ${RM} -f ex54.tmp
 
 runex54f:
-	-@${MPIEXEC} -n 4 ./ex54f -ne 59 -theta 30.0 -epsilon 1.e-1 -ksp_monitor_short -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason  -pc_gamg_coarse_eq_limit 80 -blob_center 0.,0. -mat_coarsen_type hem -pc_gamg_square_graph false > ex54f.tmp 2>&1; \
-         ${DIFF} output/ex54f.out ex54f.tmp || echo ${PWD} "\nPossible problem with with ex54f, diffs above \n======================================"; \
-        ${RM} -f ex54f.tmp
+	-@${MPIEXEC} -n 4 ./ex54f -ne 59 -theta 30.0 -epsilon 1.e-1 -blob_center 0.,0. -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -mat_coarsen_type hem -pc_gamg_square_graph false -ksp_monitor_short > ex54.tmp 2>&1; \
+         ${DIFF} output/ex54f.out ex54.tmp || echo ${PWD} "\nPossible problem with with ex54f, diffs above \n======================================"; \
+        ${RM} -f ex54.tmp
 
-runex55:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type geo -use_coordinates -ksp_converged_reason -pc_gamg_coarse_eq_limit 80 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -mg_levels_pc_type jacobi > ex55.tmp 2>&1;	  \
-         ${DIFF} output/ex55_0.out ex55.tmp || echo ${PWD} "\nPossible problem with with ex55_0, diffs above \n========================================="; \
+runex55_geo:
+	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -pc_type gamg -pc_gamg_type geo -use_coordinates -ksp_monitor_short > ex55.tmp 2>&1;	  \
+         ${DIFF} output/ex55_0.out ex55.tmp || echo ${PWD} "\nPossible problem with with ex55_geo, diffs above \n========================================="; \
         ${RM} -f ex55.tmp
 
-runex55_SA:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -use_coordinates -ksp_converged_reason -pc_gamg_coarse_eq_limit 80 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -mg_levels_pc_type jacobi > ex55_sa.tmp 2>&1; \
-         ${DIFF} output/ex55_sa.out ex55_sa.tmp || echo ${PWD} "\nPossible problem with with ex55_SA, diffs above \n========================================="; \
-        ${RM} -f ex55_sa.tmp
+runex55_hypre:
+	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -pc_type hypre -pc_hypre_type boomeramg -ksp_monitor_short > ex55.tmp 2>&1;	  \
+         ${DIFF} output/ex55_hypre.out ex55.tmp || echo ${PWD} "\nPossible problem with with ex55_hypre, diffs above \n========================================="; \
+        ${RM} -f ex55.tmp
+
+runex55:
+	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -use_coordinates -ksp_monitor_short > ex55.tmp 2>&1; \
+         ${DIFF} output/ex55_sa.out ex55.tmp || echo ${PWD} "\nPossible problem with with ex55, diffs above \n========================================="; \
+        ${RM} -f ex55.tmp
 
 runex55_Classical:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_monitor_short -ksp_type gmres -pc_gamg_type classical -ksp_converged_reason -pc_gamg_coarse_eq_limit 80 -mg_levels_ksp_type chebyshev -mg_levels_pc_type sor -mg_levels_ksp_max_it 5 > ex55_classical.tmp 2>&1; \
-         ${DIFF} output/ex55_classical.out ex55_classical.tmp || echo ${PWD} "\nPossible problem with with ex55_Classical, diffs above \n========================================="; \
-        #${RM} -f ex55_classical.tmp
+	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_type gmres -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_max_it 5 -ksp_monitor_short > ex55.tmp 2>&1; \
+         ${DIFF} output/ex55_classical.out ex55.tmp || echo ${PWD} "\nPossible problem with with ex55_Classical, diffs above \n========================================="; \
+        ${RM} -f ex55.tmp
 
 runex55_NC:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1  -ksp_converged_reason -pc_gamg_coarse_eq_limit 80 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -mg_levels_pc_type jacobi > ex55_nc.tmp 2>&1; \
-         ${DIFF} output/ex55_NC.out ex55_nc.tmp || echo ${PWD} "\nPossible problem with with ex55_NC, diffs above \n======================================"; \
-        ${RM} -f ex55_nc.tmp
+	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_monitor_short > ex55.tmp 2>&1; \
+         ${DIFF} output/ex55_NC.out ex55.tmp || echo ${PWD} "\nPossible problem with with ex55_NC, diffs above \n======================================"; \
+        ${RM} -f ex55.tmp
 
 runex56:
-	-@${MPIEXEC} -n 8 ./ex56 -ne 19 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -ksp_max_it 50 -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -pc_gamg_coarse_eq_limit 80 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -mg_levels_pc_type sor -pc_gamg_reuse_interpolation true -two_solves > ex56.tmp 2>&1;	\
-         ${DIFF} output/ex56_0.out ex56.tmp || echo ${PWD} "\nPossible problem with with ex56_0, diffs above \n========================================="; \
+	-@${MPIEXEC} -n 8 ./ex56 -ne 9 -alpha 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -two_solves -ksp_monitor_short > ex56.tmp 2>&1;	\
+         ${DIFF} output/ex56_0.out ex56.tmp || echo ${PWD} "\nPossible problem with with ex56, diffs above \n========================================="; \
          ${RM} -f ex56.tmp
 
 runex56_ml:
-	-@${MPIEXEC} -n 8 ./ex56 -ne 19 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -ksp_max_it 50 -pc_type ml -ksp_converged_reason -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -mg_levels_pc_type jacobi > ex56.tmp 2>&1;	\
-         ${DIFF} output/ex56_ml.out ex56.tmp || echo ${PWD} "\nPossible problem with with ex56_2, diffs above \n========================================="; \
+	-@${MPIEXEC} -n 8 ./ex56 -ne 9 -alpha 1.e-3 -pc_type ml -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -mg_levels_pc_type sor -ksp_monitor_short > ex56.tmp 2>&1;	\
+         ${DIFF} output/ex56_ml.out ex56.tmp || echo ${PWD} "\nPossible problem with with ex56_ml, diffs above \n========================================="; \
         ${RM} -f ex56.tmp
+
+runex56_nns:
+	-@${MPIEXEC} -n 1 ./ex56 -ne 9 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -ksp_max_it 50 -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 1000 -mg_levels_ksp_type chebyshev -mg_levels_pc_type sor -pc_gamg_reuse_interpolation true -two_solves -use_mat_nearnullspace > ex56.tmp 2>&1;	\
+         ${DIFF} output/ex56_nns.out ex56.tmp || printf "${PWD}\nPossible problem with with ex56_nns, diffs above \n=========================================\n"; \
+         ${RM} -f ex56.tmp
 
 runex58:
 	-@${MPIEXEC} -n 1 ./ex58 -mat_type aij > ex58.tmp 2>&1;         \
@@ -1133,7 +1148,8 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex31.PETSc ex31.rm ex32.PETSc runex32 ex32.rm ex34.PETSc runex34 ex34.rm ex38.PETSc runex38 ex38.rm \
                                  ex43.PETSc runex43 runex43_2 runex43_3 runex43_bjacobi runex43_bjacobi_baij ex43.rm \
                                  ex45.PETSc runex45 runex45_2 ex45.rm \
-                                 ex49.PETSc runex49 runex49_2 runex49_3 ex49.rm ex53.PETSc runex53 ex53.rm ex55.PETSc runex55_SA runex55_Classical ex55.rm\
+                                 ex49.PETSc runex49 runex49_2 runex49_3 runex49_5 ex49.rm ex53.PETSc runex53 ex53.rm ex55.PETSc runex55_SA runex55_Classical ex55.rm\
+                                 ex56.PETSc runex56_nns runex56 ex56.rm \
                                  ex58.PETSc runex58 runex58_baij runex58_sbaij ex58.rm
 TESTEXAMPLES_C_X	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm ex28.PETSc runex28 ex28.rm
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc ex6f.rm \

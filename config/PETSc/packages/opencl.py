@@ -9,7 +9,7 @@ class Configure(PETSc.package.NewPackage):
       self.includes         = ['OpenCL/cl.h']
     else:
       self.includes         = ['CL/cl.h']
-    self.liblist          = [['libOpenCL.a', '-framework opencl'], ['libOpenCL.lib']]
+    self.liblist          = [['libOpenCL.a'], ['libOpenCL.a', '-framework opencl'], ['libOpenCL.lib']]
     self.double           = 0   # 1 means requires double precision
     self.cxx              = 0
     self.requires32bitint = 0

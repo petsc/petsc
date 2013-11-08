@@ -275,19 +275,23 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer, "\\end{document}\n", name);CHKERRQ(ierr);
   } else {
     MPI_Comm    comm;
-    PetscInt   *sizes;
-    PetscInt    locDepth, depth, dim, d;
+    PetscInt   *sizes, *hybsizes;
+    PetscInt    locDepth, depth, dim, d, pMax[4];
     PetscInt    pStart, pEnd, p;
     PetscInt    numLabels, l;
+    const char *name;
     PetscMPIInt size;
 
     ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
     ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "Mesh in %D dimensions:\n", dim);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) dm, &name);CHKERRQ(ierr);
+    if (name) {ierr = PetscViewerASCIIPrintf(viewer, "%s in %D dimensions:\n", name, dim);CHKERRQ(ierr);}
+    else      {ierr = PetscViewerASCIIPrintf(viewer, "Mesh in %D dimensions:\n", dim);CHKERRQ(ierr);}
     ierr = DMPlexGetDepth(dm, &locDepth);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&locDepth, &depth, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
-    ierr = PetscMalloc(size * sizeof(PetscInt), &sizes);CHKERRQ(ierr);
+    ierr = DMPlexGetHybridBounds(dm, &pMax[depth], &pMax[depth-1], &pMax[1], &pMax[0]);CHKERRQ(ierr);
+    ierr = PetscMalloc2(size,PetscInt,&sizes,size,PetscInt,&hybsizes);CHKERRQ(ierr);
     if (depth == 1) {
       ierr = DMPlexGetDepthStratum(dm, 0, &pStart, &pEnd);CHKERRQ(ierr);
       pEnd = pEnd - pStart;
@@ -304,14 +308,19 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     } else {
       for (d = 0; d <= dim; d++) {
         ierr = DMPlexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
-        pEnd = pEnd - pStart;
+        pEnd    -= pStart;
+        pMax[d] -= pStart;
         ierr = MPI_Gather(&pEnd, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+        ierr = MPI_Gather(&pMax[d], 1, MPIU_INT, hybsizes, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer, "  %D-cells:", d);CHKERRQ(ierr);
-        for (p = 0; p < size; ++p) {ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]);CHKERRQ(ierr);}
+        for (p = 0; p < size; ++p) {
+          if (hybsizes[p] >= 0) {ierr = PetscViewerASCIIPrintf(viewer, " %D (%D)", sizes[p], sizes[p] - hybsizes[p]);CHKERRQ(ierr);}
+          else                  {ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]);CHKERRQ(ierr);}
+        }
         ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       }
     }
-    ierr = PetscFree(sizes);CHKERRQ(ierr);
+    ierr = PetscFree2(sizes,hybsizes);CHKERRQ(ierr);
     ierr = DMPlexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
     if (numLabels) {ierr = PetscViewerASCIIPrintf(viewer, "Labels:\n");CHKERRQ(ierr);}
     for (l = 0; l < numLabels; ++l) {
@@ -396,19 +405,18 @@ PetscErrorCode DMDestroy_Plex(DM dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_Plex"
-PetscErrorCode DMCreateMatrix_Plex(DM dm, MatType mtype, Mat *J)
+PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
 {
   PetscSection   section, sectionGlobal;
   PetscInt       bs = -1;
   PetscInt       localSize;
   PetscBool      isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock;
   PetscErrorCode ierr;
+  MatType        mtype;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage();CHKERRQ(ierr);
-#endif
-  if (!mtype) mtype = MATAIJ;
+  mtype = dm->mattype;
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = DMGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
   /* ierr = PetscSectionGetStorageSize(sectionGlobal, &localSize);CHKERRQ(ierr); */
@@ -1179,11 +1187,8 @@ PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
 + mesh - The DMPlex
 . p - The Sieve point, which must lie in the chart set with DMPlexSetChart()
 . useCone - PETSC_TRUE for in-edges,  otherwise use out-edges
-- points - If points is NULL on input, internal storage will be returned, otherwise the provided array is used
-
-  Output Parameters:
-+ numPoints - The number of points in the closure, so points[] is of size 2*numPoints
-- points - The points and point orientations, interleaved as pairs [p0, o0, p1, o1, ...]
+. numPoints - The number of points in the closure, so points[] is of size 2*numPoints, zeroed on exit
+- points - The points and point orientations, interleaved as pairs [p0, o0, p1, o1, ...], zeroed on exit
 
   Note:
   If not using internal storage (points is not NULL on input), this call is unnecessary
@@ -1204,7 +1209,10 @@ PetscErrorCode DMPlexRestoreTransitiveClosure(DM dm, PetscInt p, PetscBool useCo
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (numPoints) PetscValidIntPointer(numPoints,4);
+  if (points) PetscValidPointer(points,5);
   ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, points);CHKERRQ(ierr);
+  if (numPoints) *numPoints = 0;
   PetscFunctionReturn(0);
 }
 
@@ -1552,8 +1560,11 @@ PetscErrorCode DMPlexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt point
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(coveredPoints, 4);
+  if (points) PetscValidIntPointer(points,3);
+  if (numCoveredPoints) PetscValidIntPointer(numCoveredPoints,4);
+  PetscValidPointer(coveredPoints, 5);
   ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, (void*) coveredPoints);CHKERRQ(ierr);
+  if (numCoveredPoints) *numCoveredPoints = 0;
   PetscFunctionReturn(0);
 }
 
@@ -1774,8 +1785,11 @@ PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt point
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(coveredPoints, 4);
+  if (points) PetscValidIntPointer(points,3);
+  if (numCoveredPoints) PetscValidIntPointer(numCoveredPoints,4);
+  PetscValidPointer(coveredPoints,5);
   ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, (void*) coveredPoints);CHKERRQ(ierr);
+  if (numCoveredPoints) *numCoveredPoints = 0;
   PetscFunctionReturn(0);
 }
 
@@ -1884,6 +1898,73 @@ PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt point
   ierr = PetscFree(closures);CHKERRQ(ierr);
   ierr = DMRestoreWorkArray(dm, numPoints*(height+2), PETSC_INT, &offsets);CHKERRQ(ierr);
   ierr = DMRestoreWorkArray(dm, mesh->maxConeSize, PETSC_INT, &meet[1-i]);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexEqual"
+/*@C
+  DMPlexEqual - Determine if two DMs have the same topology
+
+  Not Collective
+
+  Input Parameters:
++ dmA - A DMPlex object
+- dmB - A DMPlex object
+
+  Output Parameters:
+. equal - PETSC_TRUE if the topologies are identical
+
+  Level: intermediate
+
+  Notes:
+  We are not solving graph isomorphism, so we do not permutation.
+
+.keywords: mesh
+.seealso: DMPlexGetCone()
+@*/
+PetscErrorCode DMPlexEqual(DM dmA, DM dmB, PetscBool *equal)
+{
+  PetscInt       depth, depthB, pStart, pEnd, pStartB, pEndB, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dmA, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(dmB, DM_CLASSID, 2);
+  PetscValidPointer(equal, 3);
+
+  *equal = PETSC_FALSE;
+  ierr = DMPlexGetDepth(dmA, &depth);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dmB, &depthB);CHKERRQ(ierr);
+  if (depth != depthB) PetscFunctionReturn(0);
+  ierr = DMPlexGetChart(dmA, &pStart,  &pEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dmB, &pStartB, &pEndB);CHKERRQ(ierr);
+  if ((pStart != pStartB) || (pEnd != pEndB)) PetscFunctionReturn(0);
+  for (p = pStart; p < pEnd; ++p) {
+    const PetscInt *cone, *coneB, *ornt, *orntB, *support, *supportB;
+    PetscInt        coneSize, coneSizeB, c, supportSize, supportSizeB, s;
+
+    ierr = DMPlexGetConeSize(dmA, p, &coneSize);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dmA, p, &cone);CHKERRQ(ierr);
+    ierr = DMPlexGetConeOrientation(dmA, p, &ornt);CHKERRQ(ierr);
+    ierr = DMPlexGetConeSize(dmB, p, &coneSizeB);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dmB, p, &coneB);CHKERRQ(ierr);
+    ierr = DMPlexGetConeOrientation(dmB, p, &orntB);CHKERRQ(ierr);
+    if (coneSize != coneSizeB) PetscFunctionReturn(0);
+    for (c = 0; c < coneSize; ++c) {
+      if (cone[c] != coneB[c]) PetscFunctionReturn(0);
+      if (ornt[c] != orntB[c]) PetscFunctionReturn(0);
+    }
+    ierr = DMPlexGetSupportSize(dmA, p, &supportSize);CHKERRQ(ierr);
+    ierr = DMPlexGetSupport(dmA, p, &support);CHKERRQ(ierr);
+    ierr = DMPlexGetSupportSize(dmB, p, &supportSizeB);CHKERRQ(ierr);
+    ierr = DMPlexGetSupport(dmB, p, &supportB);CHKERRQ(ierr);
+    if (supportSize != supportSizeB) PetscFunctionReturn(0);
+    for (s = 0; s < supportSize; ++s) {
+      if (support[s] != supportB[s]) PetscFunctionReturn(0);
+    }
+  }
+  *equal = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -2712,15 +2793,25 @@ PetscErrorCode DMPlexCreatePartitionClosure(DM dm, PetscSection pointSection, IS
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexDistributeField"
-/*
+/*@
+  DMPlexDistributeField - Distribute field data to match a given PetscSF, usually the SF from mesh distribution
+
+  Collective on DM
+
   Input Parameters:
-. originalSection
-, originalVec
++ dm - The DMPlex object
+. pointSF - The PetscSF describing the communication pattern
+. originalSection - The PetscSection for existing data layout
+- originalVec - The existing data
 
   Output Parameters:
-. newSection
-. newVec
-*/
++ newSection - The PetscSF describing the new data layout
+- newVec - The new data
+
+  Level: developer
+
+.seealso: DMPlexDistribute(), DMPlexDistributeData()
+@*/
 PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection originalSection, Vec originalVec, PetscSection newSection, Vec newVec)
 {
   PetscSF        fieldSF;
@@ -2733,7 +2824,7 @@ PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection origin
 
   ierr = PetscSectionGetStorageSize(newSection, &fieldSize);CHKERRQ(ierr);
   ierr = VecSetSizes(newVec, fieldSize, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(newVec);CHKERRQ(ierr);
+  ierr = VecSetType(newVec,dm->vectype);CHKERRQ(ierr);
 
   ierr = VecGetArray(originalVec, &originalValues);CHKERRQ(ierr);
   ierr = VecGetArray(newVec, &newValues);CHKERRQ(ierr);
@@ -2743,6 +2834,49 @@ PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection origin
   ierr = PetscSFDestroy(&fieldSF);CHKERRQ(ierr);
   ierr = VecRestoreArray(newVec, &newValues);CHKERRQ(ierr);
   ierr = VecRestoreArray(originalVec, &originalValues);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexDistributeData"
+/*@
+  DMPlexDistributeData - Distribute field data to match a given PetscSF, usually the SF from mesh distribution
+
+  Collective on DM
+
+  Input Parameters:
++ dm - The DMPlex object
+. pointSF - The PetscSF describing the communication pattern
+. originalSection - The PetscSection for existing data layout
+. datatype - The type of data
+- originalData - The existing data
+
+  Output Parameters:
++ newSection - The PetscSF describing the new data layout
+- newData - The new data
+
+  Level: developer
+
+.seealso: DMPlexDistribute(), DMPlexDistributeField()
+@*/
+PetscErrorCode DMPlexDistributeData(DM dm, PetscSF pointSF, PetscSection originalSection, MPI_Datatype datatype, void *originalData, PetscSection newSection, void **newData)
+{
+  PetscSF        fieldSF;
+  PetscInt      *remoteOffsets, fieldSize;
+  PetscMPIInt    dataSize;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSFDistributeSection(pointSF, originalSection, &remoteOffsets, newSection);CHKERRQ(ierr);
+
+  ierr = PetscSectionGetStorageSize(newSection, &fieldSize);CHKERRQ(ierr);
+  ierr = MPI_Type_size(datatype, &dataSize);CHKERRQ(ierr);
+  ierr = PetscMalloc(fieldSize * dataSize, newData);CHKERRQ(ierr);
+
+  ierr = PetscSFCreateSectionSF(pointSF, originalSection, remoteOffsets, newSection, &fieldSF);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(fieldSF, datatype, originalData, *newData);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(fieldSF, datatype, originalData, *newData);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&fieldSF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2759,7 +2893,8 @@ PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection origin
 - overlap - The overlap of partitions, 0 is the default
 
   Output Parameter:
-. parallelMesh - The distributed DMPlex object, or NULL
++ sf - The PetscSF used for point distribution
+- parallelMesh - The distributed DMPlex object, or NULL
 
   Note: If the mesh was not distributed, the return value is NULL
 
@@ -2768,7 +2903,7 @@ PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection origin
 .keywords: mesh, elements
 .seealso: DMPlexCreate(), DMPlexDistributeByFace()
 @*/
-PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overlap, DM *dmParallel)
+PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overlap, PetscSF *sf, DM *dmParallel)
 {
   DM_Plex               *mesh   = (DM_Plex*) dm->data, *pmesh;
   MPI_Comm               comm;
@@ -2788,7 +2923,8 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(dmParallel,4);
+  if (sf) PetscValidPointer(sf,4);
+  PetscValidPointer(dmParallel,5);
 
   ierr = PetscLogEventBegin(DMPLEX_Distribute,dm,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
@@ -2925,7 +3061,7 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
       char           *name;
       PetscInt       *stratumSizes = NULL, *points = NULL;
       PetscMPIInt    *sendcnts     = NULL, *offsets = NULL, *displs = NULL;
-      PetscInt        nameSize, s, p;
+      PetscInt        nameSize, s, p, proc;
       PetscBool       isdepth;
       size_t          len = 0;
 
@@ -2953,26 +3089,30 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
       /* Bcast stratumValues (could filter for no points in stratum) */
       if (!rank) {ierr = PetscMemcpy(newLabel->stratumValues, next->stratumValues, next->numStrata * sizeof(PetscInt));CHKERRQ(ierr);}
       ierr = MPI_Bcast(newLabel->stratumValues, newLabel->numStrata, MPIU_INT, 0, comm);CHKERRQ(ierr);
-      /* Find size on each process and Scatter */
+      /* Find size on each process and Scatter
+           we use the fact that both the stratum points and partArray are sorted */
       if (!rank) {
         ierr = ISGetIndices(part, &partArray);CHKERRQ(ierr);
         ierr = PetscMalloc(numProcs*next->numStrata * sizeof(PetscInt), &stratumSizes);CHKERRQ(ierr);
         ierr = PetscMemzero(stratumSizes, numProcs*next->numStrata * sizeof(PetscInt));CHKERRQ(ierr);
-        for (s = 0; s < next->numStrata; ++s) {
-          for (p = next->stratumOffsets[s]; p < next->stratumOffsets[s]+next->stratumSizes[s]; ++p) {
-            const PetscInt point = next->points[p];
-            PetscInt       proc;
+        /* TODO We should switch to using binary search if the label is a lot smaller than partitions */
+        for (proc = 0; proc < numProcs; ++proc) {
+          PetscInt dof, off;
 
-            for (proc = 0; proc < numProcs; ++proc) {
-              PetscInt dof, off, pPart;
+          ierr = PetscSectionGetDof(partSection, proc, &dof);CHKERRQ(ierr);
+          ierr = PetscSectionGetOffset(partSection, proc, &off);CHKERRQ(ierr);
+          for (s = 0; s < next->numStrata; ++s) {
+            PetscInt lStart = next->stratumOffsets[s], lEnd = next->stratumOffsets[s]+next->stratumSizes[s];
+            PetscInt pStart = off,                     pEnd = off+dof;
 
-              ierr = PetscSectionGetDof(partSection, proc, &dof);CHKERRQ(ierr);
-              ierr = PetscSectionGetOffset(partSection, proc, &off);CHKERRQ(ierr);
-              for (pPart = off; pPart < off+dof; ++pPart) {
-                if (partArray[pPart] == point) {
-                  ++stratumSizes[proc*next->numStrata+s];
-                  break;
-                }
+            while (pStart < pEnd && lStart < lEnd) {
+              if (partArray[pStart] > next->points[lStart]) {
+                ++lStart;
+              } else if (next->points[lStart] > partArray[pStart]) {
+                ++pStart;
+              } else {
+                ++stratumSizes[proc*next->numStrata+s];
+                ++pStart; ++lStart;
               }
             }
           }
@@ -2998,21 +3138,24 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
           displs[p+1] = displs[p] + sendcnts[p];
         }
         ierr = PetscMalloc(displs[numProcs] * sizeof(PetscInt), &points);CHKERRQ(ierr);
-        for (s = 0; s < next->numStrata; ++s) {
-          for (p = next->stratumOffsets[s]; p < next->stratumOffsets[s]+next->stratumSizes[s]; ++p) {
-            const PetscInt point = next->points[p];
-            PetscInt       proc;
+        /* TODO We should switch to using binary search if the label is a lot smaller than partitions */
+        for (proc = 0; proc < numProcs; ++proc) {
+          PetscInt dof, off;
 
-            for (proc = 0; proc < numProcs; ++proc) {
-              PetscInt dof, off, pPart;
+          ierr = PetscSectionGetDof(partSection, proc, &dof);CHKERRQ(ierr);
+          ierr = PetscSectionGetOffset(partSection, proc, &off);CHKERRQ(ierr);
+          for (s = 0; s < next->numStrata; ++s) {
+            PetscInt lStart = next->stratumOffsets[s], lEnd = next->stratumOffsets[s]+next->stratumSizes[s];
+            PetscInt pStart = off,                     pEnd = off+dof;
 
-              ierr = PetscSectionGetDof(partSection, proc, &dof);CHKERRQ(ierr);
-              ierr = PetscSectionGetOffset(partSection, proc, &off);CHKERRQ(ierr);
-              for (pPart = off; pPart < off+dof; ++pPart) {
-                if (partArray[pPart] == point) {
-                  points[offsets[proc]++] = point;
-                  break;
-                }
+            while (pStart < pEnd && lStart < lEnd) {
+              if (partArray[pStart] > next->points[lStart]) {
+                ++lStart;
+              } else if (next->points[lStart] > partArray[pStart]) {
+                ++pStart;
+              } else {
+                points[offsets[proc]++] = next->points[lStart];
+                ++pStart; ++lStart;
               }
             }
           }
@@ -3037,6 +3180,33 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
     }
   }
   ierr = PetscLogEventEnd(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);
+  /* Setup hybrid structure */
+  {
+    const PetscInt *gpoints;
+    PetscInt        depth, n, d;
+
+    for (d = 0; d <= dim; ++d) {pmesh->hybridPointMax[d] = mesh->hybridPointMax[d];}
+    ierr = MPI_Bcast(pmesh->hybridPointMax, dim+1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(renumbering, &n);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(renumbering, &gpoints);CHKERRQ(ierr);
+    ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+    for (d = 0; d <= dim; ++d) {
+      PetscInt pmax = pmesh->hybridPointMax[d], newmax = 0, pEnd, stratum[2], p;
+
+      if (pmax < 0) continue;
+      ierr = DMPlexGetDepthStratum(dm, d > depth ? depth : d, &stratum[0], &stratum[1]);CHKERRQ(ierr);
+      ierr = DMPlexGetDepthStratum(*dmParallel, d, NULL, &pEnd);CHKERRQ(ierr);
+      ierr = MPI_Bcast(stratum, 2, MPIU_INT, 0, comm);CHKERRQ(ierr);
+      for (p = 0; p < n; ++p) {
+        const PetscInt point = gpoints[p];
+
+        if ((point >= stratum[0]) && (point < stratum[1]) && (point >= pmax)) ++newmax;
+      }
+      if (newmax > 0) pmesh->hybridPointMax[d] = pEnd - newmax;
+      else            pmesh->hybridPointMax[d] = -1;
+    }
+    ierr = ISLocalToGlobalMappingRestoreIndices(renumbering, &gpoints);CHKERRQ(ierr);
+  }
   /* Cleanup Partition */
   ierr = ISLocalToGlobalMappingDestroy(&renumbering);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&partSF);CHKERRQ(ierr);
@@ -3115,7 +3285,8 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   }
   ierr = PetscLogEventEnd(DMPLEX_DistributeSF,dm,0,0,0);CHKERRQ(ierr);
   /* Cleanup */
-  ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);
+  if (sf) {*sf = pointSF;}
+  else    {ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);}
   ierr = DMSetFromOptions(*dmParallel);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_Distribute,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -4100,1742 +4271,6 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
   PetscFunctionReturn(0);
 }
 
-typedef PetscInt CellRefiner;
-
-#undef __FUNCT__
-#define __FUNCT__ "GetDepthStart_Private"
-PETSC_STATIC_INLINE PetscErrorCode GetDepthStart_Private(PetscInt depth, PetscInt depthSize[], PetscInt *cStart, PetscInt *fStart, PetscInt *eStart, PetscInt *vStart)
-{
-  PetscFunctionBegin;
-  if (cStart) *cStart = 0;
-  if (vStart) *vStart = depthSize[depth];
-  if (fStart) *fStart = depthSize[depth] + depthSize[0];
-  if (eStart) *eStart = depthSize[depth] + depthSize[0] + depthSize[depth-1];
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "GetDepthEnd_Private"
-PETSC_STATIC_INLINE PetscErrorCode GetDepthEnd_Private(PetscInt depth, PetscInt depthSize[], PetscInt *cEnd, PetscInt *fEnd, PetscInt *eEnd, PetscInt *vEnd)
-{
-  PetscFunctionBegin;
-  if (cEnd) *cEnd = depthSize[depth];
-  if (vEnd) *vEnd = depthSize[depth] + depthSize[0];
-  if (fEnd) *fEnd = depthSize[depth] + depthSize[0] + depthSize[depth-1];
-  if (eEnd) *eEnd = depthSize[depth] + depthSize[0] + depthSize[depth-1] + depthSize[1];
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "CellRefinerGetSizes"
-PetscErrorCode CellRefinerGetSizes(CellRefiner refiner, DM dm, PetscInt depthSize[])
-{
-  PetscInt       cStart, cEnd, cMax, vStart, vEnd, vMax, fStart, fEnd, fMax, eStart, eEnd, eMax;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, &vMax);CHKERRQ(ierr);
-  switch (refiner) {
-  case 1:
-    /* Simplicial 2D */
-    depthSize[0] = vEnd - vStart + fEnd - fStart;         /* Add a vertex on every face */
-    depthSize[1] = 2*(fEnd - fStart) + 3*(cEnd - cStart); /* Every face is split into 2 faces and 3 faces are added for each cell */
-    depthSize[2] = 4*(cEnd - cStart);                     /* Every cell split into 4 cells */
-    break;
-  case 3:
-    /* Hybrid 2D */
-    if (cMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No cell maximum specified in hybrid mesh");
-    cMax = PetscMin(cEnd, cMax);
-    if (fMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No face maximum specified in hybrid mesh");
-    fMax         = PetscMin(fEnd, fMax);
-    depthSize[0] = vEnd - vStart + fMax - fStart;                                         /* Add a vertex on every face, but not hybrid faces */
-    depthSize[1] = 2*(fMax - fStart) + 3*(cMax - cStart) + (fEnd - fMax) + (cEnd - cMax); /* Every interior face is split into 2 faces, 3 faces are added for each interior cell, and one in each hybrid cell */
-    depthSize[2] = 4*(cMax - cStart) + 2*(cEnd - cMax);                                   /* Interior cells split into 4 cells, Hybrid cells split into 2 cells */
-    break;
-  case 2:
-    /* Hex 2D */
-    depthSize[0] = vEnd - vStart + cEnd - cStart + fEnd - fStart; /* Add a vertex on every face and cell */
-    depthSize[1] = 2*(fEnd - fStart) + 4*(cEnd - cStart);         /* Every face is split into 2 faces and 4 faces are added for each cell */
-    depthSize[2] = 4*(cEnd - cStart);                             /* Every cell split into 4 cells */
-    break;
-  default:
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "CellRefinerSetConeSizes"
-PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
-{
-  PetscInt       depth, cStart, cStartNew, cEnd, cMax, c, vStart, vStartNew, vEnd, vMax, v, fStart, fStartNew, fEnd, fMax, f, eStart, eStartNew, eEnd, eMax, r;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, &vMax);CHKERRQ(ierr);
-  ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, &fStartNew, &eStartNew, &vStartNew);CHKERRQ(ierr);
-  switch (refiner) {
-  case 1:
-    /* Simplicial 2D */
-    /* All cells have 3 faces */
-    for (c = cStart; c < cEnd; ++c) {
-      for (r = 0; r < 4; ++r) {
-        const PetscInt newp = (c - cStart)*4 + r;
-
-        ierr = DMPlexSetConeSize(rdm, newp, 3);CHKERRQ(ierr);
-      }
-    }
-    /* Split faces have 2 vertices and the same cells as the parent */
-    for (f = fStart; f < fEnd; ++f) {
-      for (r = 0; r < 2; ++r) {
-        const PetscInt newp = fStartNew + (f - fStart)*2 + r;
-        PetscInt       size;
-
-        ierr = DMPlexSetConeSize(rdm, newp, 2);CHKERRQ(ierr);
-        ierr = DMPlexGetSupportSize(dm, f, &size);CHKERRQ(ierr);
-        ierr = DMPlexSetSupportSize(rdm, newp, size);CHKERRQ(ierr);
-      }
-    }
-    /* Interior faces have 2 vertices and 2 cells */
-    for (c = cStart; c < cEnd; ++c) {
-      for (r = 0; r < 3; ++r) {
-        const PetscInt newp = fStartNew + (fEnd - fStart)*2 + (c - cStart)*3 + r;
-
-        ierr = DMPlexSetConeSize(rdm, newp, 2);CHKERRQ(ierr);
-        ierr = DMPlexSetSupportSize(rdm, newp, 2);CHKERRQ(ierr);
-      }
-    }
-    /* Old vertices have identical supports */
-    for (v = vStart; v < vEnd; ++v) {
-      const PetscInt newp = vStartNew + (v - vStart);
-      PetscInt       size;
-
-      ierr = DMPlexGetSupportSize(dm, v, &size);CHKERRQ(ierr);
-      ierr = DMPlexSetSupportSize(rdm, newp, size);CHKERRQ(ierr);
-    }
-    /* Face vertices have 2 + cells*2 supports */
-    for (f = fStart; f < fEnd; ++f) {
-      const PetscInt newp = vStartNew + (vEnd - vStart) + (f - fStart);
-      PetscInt       size;
-
-      ierr = DMPlexGetSupportSize(dm, f, &size);CHKERRQ(ierr);
-      ierr = DMPlexSetSupportSize(rdm, newp, 2 + size*2);CHKERRQ(ierr);
-    }
-    break;
-  case 2:
-    /* Hex 2D */
-    /* All cells have 4 faces */
-    for (c = cStart; c < cEnd; ++c) {
-      for (r = 0; r < 4; ++r) {
-        const PetscInt newp = (c - cStart)*4 + r;
-
-        ierr = DMPlexSetConeSize(rdm, newp, 4);CHKERRQ(ierr);
-      }
-    }
-    /* Split faces have 2 vertices and the same cells as the parent */
-    for (f = fStart; f < fEnd; ++f) {
-      for (r = 0; r < 2; ++r) {
-        const PetscInt newp = fStartNew + (f - fStart)*2 + r;
-        PetscInt       size;
-
-        ierr = DMPlexSetConeSize(rdm, newp, 2);CHKERRQ(ierr);
-        ierr = DMPlexGetSupportSize(dm, f, &size);CHKERRQ(ierr);
-        ierr = DMPlexSetSupportSize(rdm, newp, size);CHKERRQ(ierr);
-      }
-    }
-    /* Interior faces have 2 vertices and 2 cells */
-    for (c = cStart; c < cEnd; ++c) {
-      for (r = 0; r < 4; ++r) {
-        const PetscInt newp = fStartNew + (fEnd - fStart)*2 + (c - cStart)*4 + r;
-
-        ierr = DMPlexSetConeSize(rdm, newp, 2);CHKERRQ(ierr);
-        ierr = DMPlexSetSupportSize(rdm, newp, 2);CHKERRQ(ierr);
-      }
-    }
-    /* Old vertices have identical supports */
-    for (v = vStart; v < vEnd; ++v) {
-      const PetscInt newp = vStartNew + (v - vStart);
-      PetscInt       size;
-
-      ierr = DMPlexGetSupportSize(dm, v, &size);CHKERRQ(ierr);
-      ierr = DMPlexSetSupportSize(rdm, newp, size);CHKERRQ(ierr);
-    }
-    /* Face vertices have 2 + cells supports */
-    for (f = fStart; f < fEnd; ++f) {
-      const PetscInt newp = vStartNew + (vEnd - vStart) + (f - fStart);
-      PetscInt       size;
-
-      ierr = DMPlexGetSupportSize(dm, f, &size);CHKERRQ(ierr);
-      ierr = DMPlexSetSupportSize(rdm, newp, 2 + size);CHKERRQ(ierr);
-    }
-    /* Cell vertices have 4 supports */
-    for (c = cStart; c < cEnd; ++c) {
-      const PetscInt newp = vStartNew + (vEnd - vStart) + (fEnd - fStart) + (c - cStart);
-
-      ierr = DMPlexSetSupportSize(rdm, newp, 4);CHKERRQ(ierr);
-    }
-    break;
-  case 3:
-    /* Hybrid 2D */
-    if (cMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No cell maximum specified in hybrid mesh");
-    cMax = PetscMin(cEnd, cMax);
-    if (fMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No face maximum specified in hybrid mesh");
-    fMax = PetscMin(fEnd, fMax);
-    ierr = DMPlexSetHybridBounds(rdm, cStartNew + (cMax - cStart)*4, fStartNew + (fMax - fStart)*2 + (cMax - cStart)*3, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
-    /* Interior cells have 3 faces */
-    for (c = cStart; c < cMax; ++c) {
-      for (r = 0; r < 4; ++r) {
-        const PetscInt newp = cStartNew + (c - cStart)*4 + r;
-
-        ierr = DMPlexSetConeSize(rdm, newp, 3);CHKERRQ(ierr);
-      }
-    }
-    /* Hybrid cells have 4 faces */
-    for (c = cMax; c < cEnd; ++c) {
-      for (r = 0; r < 2; ++r) {
-        const PetscInt newp = cStartNew + (cMax - cStart)*4 + (c - cMax)*2 + r;
-
-        ierr = DMPlexSetConeSize(rdm, newp, 4);CHKERRQ(ierr);
-      }
-    }
-    /* Interior split faces have 2 vertices and the same cells as the parent */
-    for (f = fStart; f < fMax; ++f) {
-      for (r = 0; r < 2; ++r) {
-        const PetscInt newp = fStartNew + (f - fStart)*2 + r;
-        PetscInt       size;
-
-        ierr = DMPlexSetConeSize(rdm, newp, 2);CHKERRQ(ierr);
-        ierr = DMPlexGetSupportSize(dm, f, &size);CHKERRQ(ierr);
-        ierr = DMPlexSetSupportSize(rdm, newp, size);CHKERRQ(ierr);
-      }
-    }
-    /* Interior cell faces have 2 vertices and 2 cells */
-    for (c = cStart; c < cMax; ++c) {
-      for (r = 0; r < 3; ++r) {
-        const PetscInt newp = fStartNew + (fMax - fStart)*2 + (c - cStart)*3 + r;
-
-        ierr = DMPlexSetConeSize(rdm, newp, 2);CHKERRQ(ierr);
-        ierr = DMPlexSetSupportSize(rdm, newp, 2);CHKERRQ(ierr);
-      }
-    }
-    /* Hybrid faces have 2 vertices and the same cells */
-    for (f = fMax; f < fEnd; ++f) {
-      const PetscInt newp = fStartNew + (fMax - fStart)*2 + (cMax - cStart)*3 + (f - fMax);
-      PetscInt       size;
-
-      ierr = DMPlexSetConeSize(rdm, newp, 2);CHKERRQ(ierr);
-      ierr = DMPlexGetSupportSize(dm, f, &size);CHKERRQ(ierr);
-      ierr = DMPlexSetSupportSize(rdm, newp, size);CHKERRQ(ierr);
-    }
-    /* Hybrid cell faces have 2 vertices and 2 cells */
-    for (c = cMax; c < cEnd; ++c) {
-      const PetscInt newp = fStartNew + (fMax - fStart)*2 + (cMax - cStart)*3 + (fEnd - fMax) + (c - cMax);
-
-      ierr = DMPlexSetConeSize(rdm, newp, 2);CHKERRQ(ierr);
-      ierr = DMPlexSetSupportSize(rdm, newp, 2);CHKERRQ(ierr);
-    }
-    /* Old vertices have identical supports */
-    for (v = vStart; v < vEnd; ++v) {
-      const PetscInt newp = vStartNew + (v - vStart);
-      PetscInt       size;
-
-      ierr = DMPlexGetSupportSize(dm, v, &size);CHKERRQ(ierr);
-      ierr = DMPlexSetSupportSize(rdm, newp, size);CHKERRQ(ierr);
-    }
-    /* Face vertices have 2 + (2 interior, 1 hybrid) supports */
-    for (f = fStart; f < fMax; ++f) {
-      const PetscInt newp = vStartNew + (vEnd - vStart) + (f - fStart);
-      const PetscInt *support;
-      PetscInt       size, newSize = 2, s;
-
-      ierr = DMPlexGetSupportSize(dm, f, &size);CHKERRQ(ierr);
-      ierr = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
-      for (s = 0; s < size; ++s) {
-        if (support[s] >= cMax) newSize += 1;
-        else newSize += 2;
-      }
-      ierr = DMPlexSetSupportSize(rdm, newp, newSize);CHKERRQ(ierr);
-    }
-    break;
-  default:
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "CellRefinerSetCones"
-PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
-{
-  PetscInt       depth, cStart, cEnd, cMax, cStartNew, cEndNew, c, vStart, vEnd, vMax, vStartNew, vEndNew, v, fStart, fEnd, fMax, fStartNew, fEndNew, f, eStart, eEnd, eMax, eStartNew, eEndNew, r, p;
-  PetscInt       maxSupportSize, *supportRef;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, &vMax);CHKERRQ(ierr);
-  ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, &fStartNew, &eStartNew, &vStartNew);CHKERRQ(ierr);
-  ierr = GetDepthEnd_Private(depth, depthSize, &cEndNew, &fEndNew, &eEndNew, &vEndNew);CHKERRQ(ierr);
-  switch (refiner) {
-  case 1:
-    /* Simplicial 2D */
-    /*
-     2
-     |\
-     | \
-     |  \
-     |   \
-     | C  \
-     |     \
-     |      \
-     2---1---1
-     |\  D  / \
-     | 2   0   \
-     |A \ /  B  \
-     0---0-------1
-     */
-    /* All cells have 3 faces */
-    for (c = cStart; c < cEnd; ++c) {
-      const PetscInt  newp = cStartNew + (c - cStart)*4;
-      const PetscInt *cone, *ornt;
-      PetscInt        coneNew[3], orntNew[3];
-
-      ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
-      ierr = DMPlexGetConeOrientation(dm, c, &ornt);CHKERRQ(ierr);
-      /* A triangle */
-      coneNew[0] = fStartNew + (cone[0] - fStart)*2 + (ornt[0] < 0 ? 1 : 0);
-      orntNew[0] = ornt[0];
-      coneNew[1] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*3 + 2;
-      orntNew[1] = -2;
-      coneNew[2] = fStartNew + (cone[2] - fStart)*2 + (ornt[2] < 0 ? 0 : 1);
-      orntNew[2] = ornt[2];
-      ierr       = DMPlexSetCone(rdm, newp+0, coneNew);CHKERRQ(ierr);
-      ierr       = DMPlexSetConeOrientation(rdm, newp+0, orntNew);CHKERRQ(ierr);
-#if 1
-      if ((newp+0 < cStartNew) || (newp+0 >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", newp+0, cStartNew, cEndNew);
-      for (p = 0; p < 3; ++p) {
-        if ((coneNew[p] < fStartNew) || (coneNew[p] >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", coneNew[p], fStartNew, fEndNew);
-      }
-#endif
-      /* B triangle */
-      coneNew[0] = fStartNew + (cone[0] - fStart)*2 + (ornt[0] < 0 ? 0 : 1);
-      orntNew[0] = ornt[0];
-      coneNew[1] = fStartNew + (cone[1] - fStart)*2 + (ornt[1] < 0 ? 1 : 0);
-      orntNew[1] = ornt[1];
-      coneNew[2] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*3 + 0;
-      orntNew[2] = -2;
-      ierr       = DMPlexSetCone(rdm, newp+1, coneNew);CHKERRQ(ierr);
-      ierr       = DMPlexSetConeOrientation(rdm, newp+1, orntNew);CHKERRQ(ierr);
-#if 1
-      if ((newp+1 < cStartNew) || (newp+1 >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", newp+1, cStartNew, cEndNew);
-      for (p = 0; p < 3; ++p) {
-        if ((coneNew[p] < fStartNew) || (coneNew[p] >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", coneNew[p], fStartNew, fEndNew);
-      }
-#endif
-      /* C triangle */
-      coneNew[0] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*3 + 1;
-      orntNew[0] = -2;
-      coneNew[1] = fStartNew + (cone[1] - fStart)*2 + (ornt[1] < 0 ? 0 : 1);
-      orntNew[1] = ornt[1];
-      coneNew[2] = fStartNew + (cone[2] - fStart)*2 + (ornt[2] < 0 ? 1 : 0);
-      orntNew[2] = ornt[2];
-      ierr       = DMPlexSetCone(rdm, newp+2, coneNew);CHKERRQ(ierr);
-      ierr       = DMPlexSetConeOrientation(rdm, newp+2, orntNew);CHKERRQ(ierr);
-#if 1
-      if ((newp+2 < cStartNew) || (newp+2 >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", newp+2, cStartNew, cEndNew);
-      for (p = 0; p < 3; ++p) {
-        if ((coneNew[p] < fStartNew) || (coneNew[p] >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", coneNew[p], fStartNew, fEndNew);
-      }
-#endif
-      /* D triangle */
-      coneNew[0] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*3 + 0;
-      orntNew[0] = 0;
-      coneNew[1] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*3 + 1;
-      orntNew[1] = 0;
-      coneNew[2] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*3 + 2;
-      orntNew[2] = 0;
-      ierr       = DMPlexSetCone(rdm, newp+3, coneNew);CHKERRQ(ierr);
-      ierr       = DMPlexSetConeOrientation(rdm, newp+3, orntNew);CHKERRQ(ierr);
-#if 1
-      if ((newp+3 < cStartNew) || (newp+3 >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", newp+3, cStartNew, cEndNew);
-      for (p = 0; p < 3; ++p) {
-        if ((coneNew[p] < fStartNew) || (coneNew[p] >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", coneNew[p], fStartNew, fEndNew);
-      }
-#endif
-    }
-    /* Split faces have 2 vertices and the same cells as the parent */
-    ierr = DMPlexGetMaxSizes(dm, NULL, &maxSupportSize);CHKERRQ(ierr);
-    ierr = PetscMalloc((2 + maxSupportSize*2) * sizeof(PetscInt), &supportRef);CHKERRQ(ierr);
-    for (f = fStart; f < fEnd; ++f) {
-      const PetscInt newv = vStartNew + (vEnd - vStart) + (f - fStart);
-
-      for (r = 0; r < 2; ++r) {
-        const PetscInt  newp = fStartNew + (f - fStart)*2 + r;
-        const PetscInt *cone, *support;
-        PetscInt        coneNew[2], coneSize, c, supportSize, s;
-
-        ierr             = DMPlexGetCone(dm, f, &cone);CHKERRQ(ierr);
-        coneNew[0]       = vStartNew + (cone[0] - vStart);
-        coneNew[1]       = vStartNew + (cone[1] - vStart);
-        coneNew[(r+1)%2] = newv;
-        ierr             = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
-#if 1
-        if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
-        for (p = 0; p < 2; ++p) {
-          if ((coneNew[p] < vStartNew) || (coneNew[p] >= vEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a vertex [%d, %d)", coneNew[p], vStartNew, vEndNew);
-        }
-#endif
-        ierr = DMPlexGetSupportSize(dm, f, &supportSize);CHKERRQ(ierr);
-        ierr = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
-        for (s = 0; s < supportSize; ++s) {
-          ierr = DMPlexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
-          ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
-          for (c = 0; c < coneSize; ++c) {
-            if (cone[c] == f) break;
-          }
-          supportRef[s] = cStartNew + (support[s] - cStart)*4 + (c+r)%3;
-        }
-        ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
-#if 1
-        if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
-        for (p = 0; p < supportSize; ++p) {
-          if ((supportRef[p] < cStartNew) || (supportRef[p] >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", supportRef[p], cStartNew, cEndNew);
-        }
-#endif
-      }
-    }
-    /* Interior faces have 2 vertices and 2 cells */
-    for (c = cStart; c < cEnd; ++c) {
-      const PetscInt *cone;
-
-      ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
-      for (r = 0; r < 3; ++r) {
-        const PetscInt newp = fStartNew + (fEnd - fStart)*2 + (c - cStart)*3 + r;
-        PetscInt       coneNew[2];
-        PetscInt       supportNew[2];
-
-        coneNew[0] = vStartNew + (vEnd - vStart) + (cone[r]       - fStart);
-        coneNew[1] = vStartNew + (vEnd - vStart) + (cone[(r+1)%3] - fStart);
-        ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
-#if 1
-        if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
-        for (p = 0; p < 2; ++p) {
-          if ((coneNew[p] < vStartNew) || (coneNew[p] >= vEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a vertex [%d, %d)", coneNew[p], vStartNew, vEndNew);
-        }
-#endif
-        supportNew[0] = (c - cStart)*4 + (r+1)%3;
-        supportNew[1] = (c - cStart)*4 + 3;
-        ierr          = DMPlexSetSupport(rdm, newp, supportNew);CHKERRQ(ierr);
-#if 1
-        if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
-        for (p = 0; p < 2; ++p) {
-          if ((supportNew[p] < cStartNew) || (supportNew[p] >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", supportNew[p], cStartNew, cEndNew);
-        }
-#endif
-      }
-    }
-    /* Old vertices have identical supports */
-    for (v = vStart; v < vEnd; ++v) {
-      const PetscInt  newp = vStartNew + (v - vStart);
-      const PetscInt *support, *cone;
-      PetscInt        size, s;
-
-      ierr = DMPlexGetSupportSize(dm, v, &size);CHKERRQ(ierr);
-      ierr = DMPlexGetSupport(dm, v, &support);CHKERRQ(ierr);
-      for (s = 0; s < size; ++s) {
-        PetscInt r = 0;
-
-        ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
-        if (cone[1] == v) r = 1;
-        supportRef[s] = fStartNew + (support[s] - fStart)*2 + r;
-      }
-      ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
-#if 1
-      if ((newp < vStartNew) || (newp >= vEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a vertex [%d, %d)", newp, vStartNew, vEndNew);
-      for (p = 0; p < size; ++p) {
-        if ((supportRef[p] < fStartNew) || (supportRef[p] >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", supportRef[p], fStartNew, fEndNew);
-      }
-#endif
-    }
-    /* Face vertices have 2 + cells*2 supports */
-    for (f = fStart; f < fEnd; ++f) {
-      const PetscInt  newp = vStartNew + (vEnd - vStart) + (f - fStart);
-      const PetscInt *cone, *support;
-      PetscInt        size, s;
-
-      ierr          = DMPlexGetSupportSize(dm, f, &size);CHKERRQ(ierr);
-      ierr          = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
-      supportRef[0] = fStartNew + (f - fStart)*2 + 0;
-      supportRef[1] = fStartNew + (f - fStart)*2 + 1;
-      for (s = 0; s < size; ++s) {
-        PetscInt r = 0;
-
-        ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
-        if      (cone[1] == f) r = 1;
-        else if (cone[2] == f) r = 2;
-        supportRef[2+s*2+0] = fStartNew + (fEnd - fStart)*2 + (support[s] - cStart)*3 + (r+2)%3;
-        supportRef[2+s*2+1] = fStartNew + (fEnd - fStart)*2 + (support[s] - cStart)*3 + r;
-      }
-      ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
-#if 1
-      if ((newp < vStartNew) || (newp >= vEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a vertex [%d, %d)", newp, vStartNew, vEndNew);
-      for (p = 0; p < 2+size*2; ++p) {
-        if ((supportRef[p] < fStartNew) || (supportRef[p] >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", supportRef[p], fStartNew, fEndNew);
-      }
-#endif
-    }
-    ierr = PetscFree(supportRef);CHKERRQ(ierr);
-    break;
-  case 2:
-    /* Hex 2D */
-    /*
-     3---------2---------2
-     |         |         |
-     |    D    2    C    |
-     |         |         |
-     3----3----0----1----1
-     |         |         |
-     |    A    0    B    |
-     |         |         |
-     0---------0---------1
-     */
-    /* All cells have 4 faces */
-    for (c = cStart; c < cEnd; ++c) {
-      const PetscInt  newp = (c - cStart)*4;
-      const PetscInt *cone, *ornt;
-      PetscInt        coneNew[4], orntNew[4];
-
-      ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
-      ierr = DMPlexGetConeOrientation(dm, c, &ornt);CHKERRQ(ierr);
-      /* A quad */
-      coneNew[0] = fStartNew + (cone[0] - fStart)*2 + (ornt[0] < 0 ? 1 : 0);
-      orntNew[0] = ornt[0];
-      coneNew[1] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*4 + 0;
-      orntNew[1] = 0;
-      coneNew[2] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*4 + 3;
-      orntNew[2] = -2;
-      coneNew[3] = fStartNew + (cone[3] - fStart)*2 + (ornt[3] < 0 ? 0 : 1);
-      orntNew[3] = ornt[3];
-      ierr       = DMPlexSetCone(rdm, newp+0, coneNew);CHKERRQ(ierr);
-      ierr       = DMPlexSetConeOrientation(rdm, newp+0, orntNew);CHKERRQ(ierr);
-#if 1
-      if ((newp+0 < cStartNew) || (newp+0 >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", newp+0, cStartNew, cEndNew);
-      for (p = 0; p < 4; ++p) {
-        if ((coneNew[p] < fStartNew) || (coneNew[p] >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", coneNew[p], fStartNew, fEndNew);
-      }
-#endif
-      /* B quad */
-      coneNew[0] = fStartNew + (cone[0] - fStart)*2 + (ornt[0] < 0 ? 0 : 1);
-      orntNew[0] = ornt[0];
-      coneNew[1] = fStartNew + (cone[1] - fStart)*2 + (ornt[1] < 0 ? 1 : 0);
-      orntNew[1] = ornt[1];
-      coneNew[2] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*4 + 1;
-      orntNew[2] = 0;
-      coneNew[3] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*4 + 0;
-      orntNew[3] = -2;
-      ierr       = DMPlexSetCone(rdm, newp+1, coneNew);CHKERRQ(ierr);
-      ierr       = DMPlexSetConeOrientation(rdm, newp+1, orntNew);CHKERRQ(ierr);
-#if 1
-      if ((newp+1 < cStartNew) || (newp+1 >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", newp+1, cStartNew, cEndNew);
-      for (p = 0; p < 4; ++p) {
-        if ((coneNew[p] < fStartNew) || (coneNew[p] >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", coneNew[p], fStartNew, fEndNew);
-      }
-#endif
-      /* C quad */
-      coneNew[0] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*4 + 1;
-      orntNew[0] = -2;
-      coneNew[1] = fStartNew + (cone[1] - fStart)*2 + (ornt[1] < 0 ? 0 : 1);
-      orntNew[1] = ornt[1];
-      coneNew[2] = fStartNew + (cone[2] - fStart)*2 + (ornt[2] < 0 ? 1 : 0);
-      orntNew[2] = ornt[2];
-      coneNew[3] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*4 + 2;
-      orntNew[3] = 0;
-      ierr       = DMPlexSetCone(rdm, newp+2, coneNew);CHKERRQ(ierr);
-      ierr       = DMPlexSetConeOrientation(rdm, newp+2, orntNew);CHKERRQ(ierr);
-#if 1
-      if ((newp+2 < cStartNew) || (newp+2 >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", newp+2, cStartNew, cEndNew);
-      for (p = 0; p < 4; ++p) {
-        if ((coneNew[p] < fStartNew) || (coneNew[p] >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", coneNew[p], fStartNew, fEndNew);
-      }
-#endif
-      /* D quad */
-      coneNew[0] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*4 + 3;
-      orntNew[0] = 0;
-      coneNew[1] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*4 + 2;
-      orntNew[1] = -2;
-      coneNew[2] = fStartNew + (cone[2] - fStart)*2 + (ornt[2] < 0 ? 0 : 1);
-      orntNew[2] = ornt[2];
-      coneNew[3] = fStartNew + (cone[3] - fStart)*2 + (ornt[3] < 0 ? 1 : 0);
-      orntNew[3] = ornt[3];
-      ierr       = DMPlexSetCone(rdm, newp+3, coneNew);CHKERRQ(ierr);
-      ierr       = DMPlexSetConeOrientation(rdm, newp+3, orntNew);CHKERRQ(ierr);
-#if 1
-      if ((newp+3 < cStartNew) || (newp+3 >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", newp+3, cStartNew, cEndNew);
-      for (p = 0; p < 4; ++p) {
-        if ((coneNew[p] < fStartNew) || (coneNew[p] >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", coneNew[p], fStartNew, fEndNew);
-      }
-#endif
-    }
-    /* Split faces have 2 vertices and the same cells as the parent */
-    ierr = DMPlexGetMaxSizes(dm, NULL, &maxSupportSize);CHKERRQ(ierr);
-    ierr = PetscMalloc((2 + maxSupportSize*2) * sizeof(PetscInt), &supportRef);CHKERRQ(ierr);
-    for (f = fStart; f < fEnd; ++f) {
-      const PetscInt newv = vStartNew + (vEnd - vStart) + (f - fStart);
-
-      for (r = 0; r < 2; ++r) {
-        const PetscInt  newp = fStartNew + (f - fStart)*2 + r;
-        const PetscInt *cone, *support;
-        PetscInt        coneNew[2], coneSize, c, supportSize, s;
-
-        ierr             = DMPlexGetCone(dm, f, &cone);CHKERRQ(ierr);
-        coneNew[0]       = vStartNew + (cone[0] - vStart);
-        coneNew[1]       = vStartNew + (cone[1] - vStart);
-        coneNew[(r+1)%2] = newv;
-        ierr             = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
-#if 1
-        if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
-        for (p = 0; p < 2; ++p) {
-          if ((coneNew[p] < vStartNew) || (coneNew[p] >= vEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a vertex [%d, %d)", coneNew[p], vStartNew, vEndNew);
-        }
-#endif
-        ierr = DMPlexGetSupportSize(dm, f, &supportSize);CHKERRQ(ierr);
-        ierr = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
-        for (s = 0; s < supportSize; ++s) {
-          ierr = DMPlexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
-          ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
-          for (c = 0; c < coneSize; ++c) {
-            if (cone[c] == f) break;
-          }
-          supportRef[s] = cStartNew + (support[s] - cStart)*4 + (c+r)%4;
-        }
-        ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
-#if 1
-        if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
-        for (p = 0; p < supportSize; ++p) {
-          if ((supportRef[p] < cStartNew) || (supportRef[p] >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", supportRef[p], cStartNew, cEndNew);
-        }
-#endif
-      }
-    }
-    /* Interior faces have 2 vertices and 2 cells */
-    for (c = cStart; c < cEnd; ++c) {
-      const PetscInt *cone;
-      PetscInt        coneNew[2], supportNew[2];
-
-      ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
-      for (r = 0; r < 4; ++r) {
-        const PetscInt newp = fStartNew + (fEnd - fStart)*2 + (c - cStart)*4 + r;
-
-        coneNew[0] = vStartNew + (vEnd - vStart) + (cone[r] - fStart);
-        coneNew[1] = vStartNew + (vEnd - vStart) + (fEnd    - fStart) + (c - cStart);
-        ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
-#if 1
-        if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
-        for (p = 0; p < 2; ++p) {
-          if ((coneNew[p] < vStartNew) || (coneNew[p] >= vEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a vertex [%d, %d)", coneNew[p], vStartNew, vEndNew);
-        }
-#endif
-        supportNew[0] = (c - cStart)*4 + r;
-        supportNew[1] = (c - cStart)*4 + (r+1)%4;
-        ierr          = DMPlexSetSupport(rdm, newp, supportNew);CHKERRQ(ierr);
-#if 1
-        if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
-        for (p = 0; p < 2; ++p) {
-          if ((supportNew[p] < cStartNew) || (supportNew[p] >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", supportNew[p], cStartNew, cEndNew);
-        }
-#endif
-      }
-    }
-    /* Old vertices have identical supports */
-    for (v = vStart; v < vEnd; ++v) {
-      const PetscInt  newp = vStartNew + (v - vStart);
-      const PetscInt *support, *cone;
-      PetscInt        size, s;
-
-      ierr = DMPlexGetSupportSize(dm, v, &size);CHKERRQ(ierr);
-      ierr = DMPlexGetSupport(dm, v, &support);CHKERRQ(ierr);
-      for (s = 0; s < size; ++s) {
-        PetscInt r = 0;
-
-        ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
-        if (cone[1] == v) r = 1;
-        supportRef[s] = fStartNew + (support[s] - fStart)*2 + r;
-      }
-      ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
-#if 1
-      if ((newp < vStartNew) || (newp >= vEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a vertex [%d, %d)", newp, vStartNew, vEndNew);
-      for (p = 0; p < size; ++p) {
-        if ((supportRef[p] < fStartNew) || (supportRef[p] >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", supportRef[p], fStartNew, fEndNew);
-      }
-#endif
-    }
-    /* Face vertices have 2 + cells supports */
-    for (f = fStart; f < fEnd; ++f) {
-      const PetscInt  newp = vStartNew + (vEnd - vStart) + (f - fStart);
-      const PetscInt *cone, *support;
-      PetscInt        size, s;
-
-      ierr          = DMPlexGetSupportSize(dm, f, &size);CHKERRQ(ierr);
-      ierr          = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
-      supportRef[0] = fStartNew + (f - fStart)*2 + 0;
-      supportRef[1] = fStartNew + (f - fStart)*2 + 1;
-      for (s = 0; s < size; ++s) {
-        PetscInt r = 0;
-
-        ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
-        if      (cone[1] == f) r = 1;
-        else if (cone[2] == f) r = 2;
-        else if (cone[3] == f) r = 3;
-        supportRef[2+s] = fStartNew + (fEnd - fStart)*2 + (support[s] - cStart)*4 + r;
-      }
-      ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
-#if 1
-      if ((newp < vStartNew) || (newp >= vEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a vertex [%d, %d)", newp, vStartNew, vEndNew);
-      for (p = 0; p < 2+size; ++p) {
-        if ((supportRef[p] < fStartNew) || (supportRef[p] >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", supportRef[p], fStartNew, fEndNew);
-      }
-#endif
-    }
-    /* Cell vertices have 4 supports */
-    for (c = cStart; c < cEnd; ++c) {
-      const PetscInt newp = vStartNew + (vEnd - vStart) + (fEnd - fStart) + (c - cStart);
-      PetscInt       supportNew[4];
-
-      for (r = 0; r < 4; ++r) {
-        supportNew[r] = fStartNew + (fEnd - fStart)*2 + (c - cStart)*4 + r;
-      }
-      ierr = DMPlexSetSupport(rdm, newp, supportNew);CHKERRQ(ierr);
-    }
-    break;
-  case 3:
-    if (cMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No cell maximum specified in hybrid mesh");
-    cMax = PetscMin(cEnd, cMax);
-    if (fMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No face maximum specified in hybrid mesh");
-    fMax = PetscMin(fEnd, fMax);
-    /* Interior cells have 3 faces */
-    for (c = cStart; c < cMax; ++c) {
-      const PetscInt  newp = cStartNew + (c - cStart)*4;
-      const PetscInt *cone, *ornt;
-      PetscInt        coneNew[3], orntNew[3];
-
-      ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
-      ierr = DMPlexGetConeOrientation(dm, c, &ornt);CHKERRQ(ierr);
-      /* A triangle */
-      coneNew[0] = fStartNew + (cone[0] - fStart)*2 + (ornt[0] < 0 ? 1 : 0);
-      orntNew[0] = ornt[0];
-      coneNew[1] = fStartNew + (fMax    - fStart)*2 + (c - cStart)*3 + 2;
-      orntNew[1] = -2;
-      coneNew[2] = fStartNew + (cone[2] - fStart)*2 + (ornt[2] < 0 ? 0 : 1);
-      orntNew[2] = ornt[2];
-      ierr       = DMPlexSetCone(rdm, newp+0, coneNew);CHKERRQ(ierr);
-      ierr       = DMPlexSetConeOrientation(rdm, newp+0, orntNew);CHKERRQ(ierr);
-#if 1
-      if ((newp+0 < cStartNew) || (newp+0 >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", newp+0, cStartNew, cEndNew);
-      for (p = 0; p < 3; ++p) {
-        if ((coneNew[p] < fStartNew) || (coneNew[p] >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", coneNew[p], fStartNew, fEndNew);
-      }
-#endif
-      /* B triangle */
-      coneNew[0] = fStartNew + (cone[0] - fStart)*2 + (ornt[0] < 0 ? 0 : 1);
-      orntNew[0] = ornt[0];
-      coneNew[1] = fStartNew + (cone[1] - fStart)*2 + (ornt[1] < 0 ? 1 : 0);
-      orntNew[1] = ornt[1];
-      coneNew[2] = fStartNew + (fMax    - fStart)*2 + (c - cStart)*3 + 0;
-      orntNew[2] = -2;
-      ierr       = DMPlexSetCone(rdm, newp+1, coneNew);CHKERRQ(ierr);
-      ierr       = DMPlexSetConeOrientation(rdm, newp+1, orntNew);CHKERRQ(ierr);
-#if 1
-      if ((newp+1 < cStartNew) || (newp+1 >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", newp+1, cStartNew, cEndNew);
-      for (p = 0; p < 3; ++p) {
-        if ((coneNew[p] < fStartNew) || (coneNew[p] >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", coneNew[p], fStartNew, fEndNew);
-      }
-#endif
-      /* C triangle */
-      coneNew[0] = fStartNew + (fMax    - fStart)*2 + (c - cStart)*3 + 1;
-      orntNew[0] = -2;
-      coneNew[1] = fStartNew + (cone[1] - fStart)*2 + (ornt[1] < 0 ? 0 : 1);
-      orntNew[1] = ornt[1];
-      coneNew[2] = fStartNew + (cone[2] - fStart)*2 + (ornt[2] < 0 ? 1 : 0);
-      orntNew[2] = ornt[2];
-      ierr       = DMPlexSetCone(rdm, newp+2, coneNew);CHKERRQ(ierr);
-      ierr       = DMPlexSetConeOrientation(rdm, newp+2, orntNew);CHKERRQ(ierr);
-#if 1
-      if ((newp+2 < cStartNew) || (newp+2 >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", newp+2, cStartNew, cEndNew);
-      for (p = 0; p < 3; ++p) {
-        if ((coneNew[p] < fStartNew) || (coneNew[p] >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", coneNew[p], fStartNew, fEndNew);
-      }
-#endif
-      /* D triangle */
-      coneNew[0] = fStartNew + (fMax    - fStart)*2 + (c - cStart)*3 + 0;
-      orntNew[0] = 0;
-      coneNew[1] = fStartNew + (fMax    - fStart)*2 + (c - cStart)*3 + 1;
-      orntNew[1] = 0;
-      coneNew[2] = fStartNew + (fMax    - fStart)*2 + (c - cStart)*3 + 2;
-      orntNew[2] = 0;
-      ierr       = DMPlexSetCone(rdm, newp+3, coneNew);CHKERRQ(ierr);
-      ierr       = DMPlexSetConeOrientation(rdm, newp+3, orntNew);CHKERRQ(ierr);
-#if 1
-      if ((newp+3 < cStartNew) || (newp+3 >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", newp+3, cStartNew, cEndNew);
-      for (p = 0; p < 3; ++p) {
-        if ((coneNew[p] < fStartNew) || (coneNew[p] >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", coneNew[p], fStartNew, fEndNew);
-      }
-#endif
-    }
-    /*
-     2----3----3
-     |         |
-     |    B    |
-     |         |
-     0----4--- 1
-     |         |
-     |    A    |
-     |         |
-     0----2----1
-     */
-    /* Hybrid cells have 4 faces */
-    for (c = cMax; c < cEnd; ++c) {
-      const PetscInt  newp = cStartNew + (cMax - cStart)*4 + (c - cMax)*2;
-      const PetscInt *cone, *ornt;
-      PetscInt        coneNew[4], orntNew[4];
-
-      ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
-      ierr = DMPlexGetConeOrientation(dm, c, &ornt);CHKERRQ(ierr);
-      /* A quad */
-      coneNew[0] = fStartNew + (cone[0] - fStart)*2 + (ornt[0] < 0 ? 1 : 0);
-      orntNew[0] = ornt[0];
-      coneNew[1] = fStartNew + (cone[1] - fStart)*2 + (ornt[1] < 0 ? 1 : 0);
-      orntNew[1] = ornt[1];
-      coneNew[2] = fStartNew + (fMax    - fStart)*2 + (cMax - cStart)*3 + (cone[2] - fMax);
-      orntNew[2] = 0;
-      coneNew[3] = fStartNew + (fMax    - fStart)*2 + (cMax - cStart)*3 + (fEnd    - fMax) + (c - cMax);
-      orntNew[3] = 0;
-      ierr       = DMPlexSetCone(rdm, newp+0, coneNew);CHKERRQ(ierr);
-      ierr       = DMPlexSetConeOrientation(rdm, newp+0, orntNew);CHKERRQ(ierr);
-#if 1
-      if ((newp+0 < cStartNew) || (newp+0 >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", newp+0, cStartNew, cEndNew);
-      for (p = 0; p < 4; ++p) {
-        if ((coneNew[p] < fStartNew) || (coneNew[p] >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", coneNew[p], fStartNew, fEndNew);
-      }
-#endif
-      /* B quad */
-      coneNew[0] = fStartNew + (cone[0] - fStart)*2 + (ornt[0] < 0 ? 0 : 1);
-      orntNew[0] = ornt[0];
-      coneNew[1] = fStartNew + (cone[1] - fStart)*2 + (ornt[1] < 0 ? 0 : 1);
-      orntNew[1] = ornt[1];
-      coneNew[2] = fStartNew + (fMax    - fStart)*2 + (cMax - cStart)*3 + (fEnd    - fMax) + (c - cMax);
-      orntNew[2] = 0;
-      coneNew[3] = fStartNew + (fMax    - fStart)*2 + (cMax - cStart)*3 + (cone[3] - fMax);
-      orntNew[3] = 0;
-      ierr       = DMPlexSetCone(rdm, newp+1, coneNew);CHKERRQ(ierr);
-      ierr       = DMPlexSetConeOrientation(rdm, newp+1, orntNew);CHKERRQ(ierr);
-#if 1
-      if ((newp+1 < cStartNew) || (newp+1 >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", newp+1, cStartNew, cEndNew);
-      for (p = 0; p < 4; ++p) {
-        if ((coneNew[p] < fStartNew) || (coneNew[p] >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", coneNew[p], fStartNew, fEndNew);
-      }
-#endif
-    }
-    /* Interior split faces have 2 vertices and the same cells as the parent */
-    ierr = DMPlexGetMaxSizes(dm, NULL, &maxSupportSize);CHKERRQ(ierr);
-    ierr = PetscMalloc((2 + maxSupportSize*2) * sizeof(PetscInt), &supportRef);CHKERRQ(ierr);
-    for (f = fStart; f < fMax; ++f) {
-      const PetscInt newv = vStartNew + (vEnd - vStart) + (f - fStart);
-
-      for (r = 0; r < 2; ++r) {
-        const PetscInt  newp = fStartNew + (f - fStart)*2 + r;
-        const PetscInt *cone, *support;
-        PetscInt        coneNew[2], coneSize, c, supportSize, s;
-
-        ierr             = DMPlexGetCone(dm, f, &cone);CHKERRQ(ierr);
-        coneNew[0]       = vStartNew + (cone[0] - vStart);
-        coneNew[1]       = vStartNew + (cone[1] - vStart);
-        coneNew[(r+1)%2] = newv;
-        ierr             = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
-#if 1
-        if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
-        for (p = 0; p < 2; ++p) {
-          if ((coneNew[p] < vStartNew) || (coneNew[p] >= vEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a vertex [%d, %d)", coneNew[p], vStartNew, vEndNew);
-        }
-#endif
-        ierr = DMPlexGetSupportSize(dm, f, &supportSize);CHKERRQ(ierr);
-        ierr = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
-        for (s = 0; s < supportSize; ++s) {
-          if (support[s] >= cMax) {
-            supportRef[s] = cStartNew + (cMax - cStart)*4 + (support[s] - cMax)*2 + r;
-          } else {
-            ierr = DMPlexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
-            ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
-            for (c = 0; c < coneSize; ++c) {
-              if (cone[c] == f) break;
-            }
-            supportRef[s] = cStartNew + (support[s] - cStart)*4 + (c+r)%3;
-          }
-        }
-        ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
-#if 1
-        if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
-        for (p = 0; p < supportSize; ++p) {
-          if ((supportRef[p] < cStartNew) || (supportRef[p] >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", supportRef[p], cStartNew, cEndNew);
-        }
-#endif
-      }
-    }
-    /* Interior cell faces have 2 vertices and 2 cells */
-    for (c = cStart; c < cMax; ++c) {
-      const PetscInt *cone;
-
-      ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
-      for (r = 0; r < 3; ++r) {
-        const PetscInt newp = fStartNew + (fMax - fStart)*2 + (c - cStart)*3 + r;
-        PetscInt       coneNew[2];
-        PetscInt       supportNew[2];
-
-        coneNew[0] = vStartNew + (vEnd - vStart) + (cone[r]       - fStart);
-        coneNew[1] = vStartNew + (vEnd - vStart) + (cone[(r+1)%3] - fStart);
-        ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
-#if 1
-        if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
-        for (p = 0; p < 2; ++p) {
-          if ((coneNew[p] < vStartNew) || (coneNew[p] >= vEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a vertex [%d, %d)", coneNew[p], vStartNew, vEndNew);
-        }
-#endif
-        supportNew[0] = (c - cStart)*4 + (r+1)%3;
-        supportNew[1] = (c - cStart)*4 + 3;
-        ierr          = DMPlexSetSupport(rdm, newp, supportNew);CHKERRQ(ierr);
-#if 1
-        if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
-        for (p = 0; p < 2; ++p) {
-          if ((supportNew[p] < cStartNew) || (supportNew[p] >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", supportNew[p], cStartNew, cEndNew);
-        }
-#endif
-      }
-    }
-    /* Interior hybrid faces have 2 vertices and the same cells */
-    for (f = fMax; f < fEnd; ++f) {
-      const PetscInt  newp = fStartNew + (fMax - fStart)*2 + (cMax - cStart)*3 + (f - fMax);
-      const PetscInt *cone;
-      const PetscInt *support;
-      PetscInt        coneNew[2];
-      PetscInt        supportNew[2];
-      PetscInt        size, s, r;
-
-      ierr       = DMPlexGetCone(dm, f, &cone);CHKERRQ(ierr);
-      coneNew[0] = vStartNew + (cone[0] - vStart);
-      coneNew[1] = vStartNew + (cone[1] - vStart);
-      ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
-#if 1
-      if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
-      for (p = 0; p < 2; ++p) {
-        if ((coneNew[p] < vStartNew) || (coneNew[p] >= vEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a vertex [%d, %d)", coneNew[p], vStartNew, vEndNew);
-      }
-#endif
-      ierr = DMPlexGetSupportSize(dm, f, &size);CHKERRQ(ierr);
-      ierr = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
-      for (s = 0; s < size; ++s) {
-        ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
-        for (r = 0; r < 2; ++r) {
-          if (cone[r+2] == f) break;
-        }
-        supportNew[s] = (cMax - cStart)*4 + (support[s] - cMax)*2 + r;
-      }
-      ierr = DMPlexSetSupport(rdm, newp, supportNew);CHKERRQ(ierr);
-#if 1
-      if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
-      for (p = 0; p < size; ++p) {
-        if ((supportNew[p] < cStartNew) || (supportNew[p] >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", supportNew[p], cStartNew, cEndNew);
-      }
-#endif
-    }
-    /* Cell hybrid faces have 2 vertices and 2 cells */
-    for (c = cMax; c < cEnd; ++c) {
-      const PetscInt  newp = fStartNew + (fMax - fStart)*2 + (cMax - cStart)*3 + (fEnd - fMax) + (c - cMax);
-      const PetscInt *cone;
-      PetscInt        coneNew[2];
-      PetscInt        supportNew[2];
-
-      ierr       = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
-      coneNew[0] = vStartNew + (vEnd - vStart) + (cone[0] - fStart);
-      coneNew[1] = vStartNew + (vEnd - vStart) + (cone[1] - fStart);
-      ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
-#if 1
-      if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
-      for (p = 0; p < 2; ++p) {
-        if ((coneNew[p] < vStartNew) || (coneNew[p] >= vEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a vertex [%d, %d)", coneNew[p], vStartNew, vEndNew);
-      }
-#endif
-      supportNew[0] = (cMax - cStart)*4 + (c - cMax)*2 + 0;
-      supportNew[1] = (cMax - cStart)*4 + (c - cMax)*2 + 1;
-      ierr          = DMPlexSetSupport(rdm, newp, supportNew);CHKERRQ(ierr);
-#if 1
-      if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
-      for (p = 0; p < 2; ++p) {
-        if ((supportNew[p] < cStartNew) || (supportNew[p] >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", supportNew[p], cStartNew, cEndNew);
-      }
-#endif
-    }
-    /* Old vertices have identical supports */
-    for (v = vStart; v < vEnd; ++v) {
-      const PetscInt  newp = vStartNew + (v - vStart);
-      const PetscInt *support, *cone;
-      PetscInt        size, s;
-
-      ierr = DMPlexGetSupportSize(dm, v, &size);CHKERRQ(ierr);
-      ierr = DMPlexGetSupport(dm, v, &support);CHKERRQ(ierr);
-      for (s = 0; s < size; ++s) {
-        if (support[s] >= fMax) {
-          supportRef[s] = fStartNew + (fMax - fStart)*2 + (cMax - cStart)*3 + (support[s] - fMax);
-        } else {
-          PetscInt r = 0;
-
-          ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
-          if (cone[1] == v) r = 1;
-          supportRef[s] = fStartNew + (support[s] - fStart)*2 + r;
-        }
-      }
-      ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
-#if 1
-      if ((newp < vStartNew) || (newp >= vEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a vertex [%d, %d)", newp, vStartNew, vEndNew);
-      for (p = 0; p < size; ++p) {
-        if ((supportRef[p] < fStartNew) || (supportRef[p] >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", supportRef[p], fStartNew, fEndNew);
-      }
-#endif
-    }
-    /* Face vertices have 2 + (2 interior, 1 hybrid) supports */
-    for (f = fStart; f < fMax; ++f) {
-      const PetscInt  newp = vStartNew + (vEnd - vStart) + (f - fStart);
-      const PetscInt *cone, *support;
-      PetscInt        size, newSize = 2, s;
-
-      ierr          = DMPlexGetSupportSize(dm, f, &size);CHKERRQ(ierr);
-      ierr          = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
-      supportRef[0] = fStartNew + (f - fStart)*2 + 0;
-      supportRef[1] = fStartNew + (f - fStart)*2 + 1;
-      for (s = 0; s < size; ++s) {
-        PetscInt r = 0;
-
-        ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
-        if (support[s] >= cMax) {
-          supportRef[newSize+0] = fStartNew + (fMax - fStart)*2 + (cMax - cStart)*3 + (fEnd - fMax) + (support[s] - cMax);
-
-          newSize += 1;
-        } else {
-          if      (cone[1] == f) r = 1;
-          else if (cone[2] == f) r = 2;
-          supportRef[newSize+0] = fStartNew + (fMax - fStart)*2 + (support[s] - cStart)*3 + (r+2)%3;
-          supportRef[newSize+1] = fStartNew + (fMax - fStart)*2 + (support[s] - cStart)*3 + r;
-
-          newSize += 2;
-        }
-      }
-      ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
-#if 1
-      if ((newp < vStartNew) || (newp >= vEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a vertex [%d, %d)", newp, vStartNew, vEndNew);
-      for (p = 0; p < newSize; ++p) {
-        if ((supportRef[p] < fStartNew) || (supportRef[p] >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", supportRef[p], fStartNew, fEndNew);
-      }
-#endif
-    }
-    ierr = PetscFree(supportRef);CHKERRQ(ierr);
-    break;
-  default:
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "CellRefinerSetCoordinates"
-PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
-{
-  PetscSection   coordSection, coordSectionNew;
-  Vec            coordinates, coordinatesNew;
-  PetscScalar   *coords, *coordsNew;
-  PetscInt       dim, depth, coordSizeNew, cStart, cEnd, c, vStart, vStartNew, vEnd, v, fStart, fEnd, fMax, f;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, NULL, &fMax, NULL, NULL);CHKERRQ(ierr);
-  ierr = GetDepthStart_Private(depth, depthSize, NULL, NULL, NULL, &vStartNew);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &coordSectionNew);CHKERRQ(ierr);
-  ierr = PetscSectionSetNumFields(coordSectionNew, 1);CHKERRQ(ierr);
-  ierr = PetscSectionSetFieldComponents(coordSectionNew, 0, dim);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(coordSectionNew, vStartNew, vStartNew+depthSize[0]);CHKERRQ(ierr);
-  if (fMax < 0) fMax = fEnd;
-  switch (refiner) {
-  case 1:
-  case 2:
-  case 3:
-    /* Simplicial and Hex 2D */
-    /* All vertices have the dim coordinates */
-    for (v = vStartNew; v < vStartNew+depthSize[0]; ++v) {
-      ierr = PetscSectionSetDof(coordSectionNew, v, dim);CHKERRQ(ierr);
-      ierr = PetscSectionSetFieldDof(coordSectionNew, v, 0, dim);CHKERRQ(ierr);
-    }
-    ierr = PetscSectionSetUp(coordSectionNew);CHKERRQ(ierr);
-    ierr = DMPlexSetCoordinateSection(rdm, coordSectionNew);CHKERRQ(ierr);
-    ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-    ierr = PetscSectionGetStorageSize(coordSectionNew, &coordSizeNew);CHKERRQ(ierr);
-    ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinatesNew);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) coordinatesNew, "coordinates");CHKERRQ(ierr);
-    ierr = VecSetSizes(coordinatesNew, coordSizeNew, PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(coordinatesNew);CHKERRQ(ierr);
-    ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-    ierr = VecGetArray(coordinatesNew, &coordsNew);CHKERRQ(ierr);
-    /* Old vertices have the same coordinates */
-    for (v = vStart; v < vEnd; ++v) {
-      const PetscInt newv = vStartNew + (v - vStart);
-      PetscInt       off, offnew, d;
-
-      ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d) {
-        coordsNew[offnew+d] = coords[off+d];
-      }
-    }
-    /* Face vertices have the average of endpoint coordinates */
-    for (f = fStart; f < fMax; ++f) {
-      const PetscInt  newv = vStartNew + (vEnd - vStart) + (f - fStart);
-      const PetscInt *cone;
-      PetscInt        coneSize, offA, offB, offnew, d;
-
-      ierr = DMPlexGetConeSize(dm, f, &coneSize);CHKERRQ(ierr);
-      if (coneSize != 2) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Face %d cone should have two vertices, not %d", f, coneSize);
-      ierr = DMPlexGetCone(dm, f, &cone);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(coordSection, cone[0], &offA);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(coordSection, cone[1], &offB);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d) {
-        coordsNew[offnew+d] = 0.5*(coords[offA+d] + coords[offB+d]);
-      }
-    }
-    /* Just Hex 2D */
-    if (refiner == 2) {
-      /* Cell vertices have the average of corner coordinates */
-      for (c = cStart; c < cEnd; ++c) {
-        const PetscInt newv = vStartNew + (vEnd - vStart) + (fEnd - fStart) + (c - cStart);
-        PetscInt      *cone = NULL;
-        PetscInt       closureSize, coneSize = 0, offA, offB, offC, offD, offnew, p, d;
-
-        ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
-        for (p = 0; p < closureSize*2; p += 2) {
-          const PetscInt point = cone[p];
-          if ((point >= vStart) && (point < vEnd)) cone[coneSize++] = point;
-        }
-        if (coneSize != 4) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Quad %d cone should have four vertices, not %d", c, coneSize);
-        ierr = PetscSectionGetOffset(coordSection, cone[0], &offA);CHKERRQ(ierr);
-        ierr = PetscSectionGetOffset(coordSection, cone[1], &offB);CHKERRQ(ierr);
-        ierr = PetscSectionGetOffset(coordSection, cone[2], &offC);CHKERRQ(ierr);
-        ierr = PetscSectionGetOffset(coordSection, cone[3], &offD);CHKERRQ(ierr);
-        ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
-        for (d = 0; d < dim; ++d) {
-          coordsNew[offnew+d] = 0.25*(coords[offA+d] + coords[offB+d] + coords[offC+d] + coords[offD+d]);
-        }
-        ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
-      }
-    }
-    ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
-    ierr = VecRestoreArray(coordinatesNew, &coordsNew);CHKERRQ(ierr);
-    ierr = DMSetCoordinatesLocal(rdm, coordinatesNew);CHKERRQ(ierr);
-    ierr = VecDestroy(&coordinatesNew);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&coordSectionNew);CHKERRQ(ierr);
-    break;
-  default:
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateProcessSF"
-PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, PetscSF *sfProcess)
-{
-  PetscInt           numRoots, numLeaves, l;
-  const PetscInt    *localPoints;
-  const PetscSFNode *remotePoints;
-  PetscInt          *localPointsNew;
-  PetscSFNode       *remotePointsNew;
-  PetscInt          *ranks, *ranksNew;
-  PetscErrorCode     ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
-  ierr = PetscMalloc(numLeaves * sizeof(PetscInt), &ranks);CHKERRQ(ierr);
-  for (l = 0; l < numLeaves; ++l) {
-    ranks[l] = remotePoints[l].rank;
-  }
-  ierr = PetscSortRemoveDupsInt(&numLeaves, ranks);CHKERRQ(ierr);
-  ierr = PetscMalloc(numLeaves * sizeof(PetscInt),    &ranksNew);CHKERRQ(ierr);
-  ierr = PetscMalloc(numLeaves * sizeof(PetscInt),    &localPointsNew);CHKERRQ(ierr);
-  ierr = PetscMalloc(numLeaves * sizeof(PetscSFNode), &remotePointsNew);CHKERRQ(ierr);
-  for (l = 0; l < numLeaves; ++l) {
-    ranksNew[l]              = ranks[l];
-    localPointsNew[l]        = l;
-    remotePointsNew[l].index = 0;
-    remotePointsNew[l].rank  = ranksNew[l];
-  }
-  ierr = PetscFree(ranks);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), numLeaves, ranksNew, PETSC_OWN_POINTER, processRanks);CHKERRQ(ierr);
-  ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm), sfProcess);CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(*sfProcess);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(*sfProcess, 1, numLeaves, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "CellRefinerCreateSF"
-PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
-{
-  PetscSF            sf, sfNew, sfProcess;
-  IS                 processRanks;
-  MPI_Datatype       depthType;
-  PetscInt           numRoots, numLeaves, numLeavesNew = 0, l, m;
-  const PetscInt    *localPoints, *neighbors;
-  const PetscSFNode *remotePoints;
-  PetscInt          *localPointsNew;
-  PetscSFNode       *remotePointsNew;
-  PetscInt          *depthSizeOld, *rdepthSize, *rdepthSizeOld, *rdepthMaxOld, *rvStart, *rvStartNew, *reStart, *reStartNew, *rfStart, *rfStartNew, *rcStart, *rcStartNew;
-  PetscInt           depth, numNeighbors, pStartNew, pEndNew, cStart, cStartNew, cEnd, cMax, vStart, vStartNew, vEnd, vMax, fStart, fStartNew, fEnd, fMax, eStart, eStartNew, eEnd, eMax, r, n;
-  PetscErrorCode     ierr;
-
-  PetscFunctionBegin;
-  ierr = DMPlexGetChart(rdm, &pStartNew, &pEndNew);CHKERRQ(ierr);
-  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, &vMax);CHKERRQ(ierr);
-  ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, &fStartNew, &eStartNew, &vStartNew);CHKERRQ(ierr);
-  switch (refiner) {
-  case 3:
-    if (cMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No cell maximum specified in hybrid mesh");
-    cMax = PetscMin(cEnd, cMax);
-    if (fMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No face maximum specified in hybrid mesh");
-    fMax = PetscMin(fEnd, fMax);
-  }
-  ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
-  ierr = DMGetPointSF(rdm, &sfNew);CHKERRQ(ierr);
-  /* Caculate size of new SF */
-  ierr = PetscSFGetGraph(sf, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
-  if (numRoots < 0) PetscFunctionReturn(0);
-  for (l = 0; l < numLeaves; ++l) {
-    const PetscInt p = localPoints[l];
-
-    switch (refiner) {
-    case 1:
-      /* Simplicial 2D */
-      if ((p >= vStart) && (p < vEnd)) {
-        /* Old vertices stay the same */
-        ++numLeavesNew;
-      } else if ((p >= fStart) && (p < fEnd)) {
-        /* Old faces add new faces and vertex */
-        numLeavesNew += 1 + 2;
-      } else if ((p >= cStart) && (p < cEnd)) {
-        /* Old cells add new cells and interior faces */
-        numLeavesNew += 4 + 3;
-      }
-      break;
-    case 2:
-      /* Hex 2D */
-      if ((p >= vStart) && (p < vEnd)) {
-        /* Old vertices stay the same */
-        ++numLeavesNew;
-      } else if ((p >= fStart) && (p < fEnd)) {
-        /* Old faces add new faces and vertex */
-        numLeavesNew += 1 + 2;
-      } else if ((p >= cStart) && (p < cEnd)) {
-        /* Old cells add new cells and interior faces */
-        numLeavesNew += 4 + 4;
-      }
-      break;
-    default:
-      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
-    }
-  }
-  /* Communicate depthSizes for each remote rank */
-  ierr = DMPlexCreateProcessSF(dm, sf, &processRanks, &sfProcess);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(processRanks, &numNeighbors);CHKERRQ(ierr);
-  ierr = PetscMalloc5((depth+1)*numNeighbors,PetscInt,&rdepthSize,numNeighbors,PetscInt,&rvStartNew,numNeighbors,PetscInt,&reStartNew,numNeighbors,PetscInt,&rfStartNew,numNeighbors,PetscInt,&rcStartNew);CHKERRQ(ierr);
-  ierr = PetscMalloc7(depth+1,PetscInt,&depthSizeOld,(depth+1)*numNeighbors,PetscInt,&rdepthSizeOld,(depth+1)*numNeighbors,PetscInt,&rdepthMaxOld,numNeighbors,PetscInt,&rvStart,numNeighbors,PetscInt,&reStart,numNeighbors,PetscInt,&rfStart,numNeighbors,PetscInt,&rcStart);CHKERRQ(ierr);
-  ierr = MPI_Type_contiguous(depth+1, MPIU_INT, &depthType);CHKERRQ(ierr);
-  ierr = MPI_Type_commit(&depthType);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sfProcess, depthType, depthSize, rdepthSize);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfProcess, depthType, depthSize, rdepthSize);CHKERRQ(ierr);
-  for (n = 0; n < numNeighbors; ++n) {
-    ierr = GetDepthStart_Private(depth, &rdepthSize[n*(depth+1)], &rcStartNew[n], &rfStartNew[n], &reStartNew[n], &rvStartNew[n]);CHKERRQ(ierr);
-  }
-  depthSizeOld[depth]   = cMax;
-  depthSizeOld[0]       = vMax;
-  depthSizeOld[depth-1] = fMax;
-  depthSizeOld[1]       = eMax;
-
-  ierr = PetscSFBcastBegin(sfProcess, depthType, depthSizeOld, rdepthMaxOld);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfProcess, depthType, depthSizeOld, rdepthMaxOld);CHKERRQ(ierr);
-
-  depthSizeOld[depth]   = cEnd - cStart;
-  depthSizeOld[0]       = vEnd - vStart;
-  depthSizeOld[depth-1] = fEnd - fStart;
-  depthSizeOld[1]       = eEnd - eStart;
-
-  ierr = PetscSFBcastBegin(sfProcess, depthType, depthSizeOld, rdepthSizeOld);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfProcess, depthType, depthSizeOld, rdepthSizeOld);CHKERRQ(ierr);
-  for (n = 0; n < numNeighbors; ++n) {
-    ierr = GetDepthStart_Private(depth, &rdepthSizeOld[n*(depth+1)], &rcStart[n], &rfStart[n], &reStart[n], &rvStart[n]);CHKERRQ(ierr);
-  }
-  ierr = MPI_Type_free(&depthType);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sfProcess);CHKERRQ(ierr);
-  /* Calculate new point SF */
-  ierr = PetscMalloc(numLeavesNew * sizeof(PetscInt),    &localPointsNew);CHKERRQ(ierr);
-  ierr = PetscMalloc(numLeavesNew * sizeof(PetscSFNode), &remotePointsNew);CHKERRQ(ierr);
-  ierr = ISGetIndices(processRanks, &neighbors);CHKERRQ(ierr);
-  for (l = 0, m = 0; l < numLeaves; ++l) {
-    PetscInt    p     = localPoints[l];
-    PetscInt    rp    = remotePoints[l].index, n;
-    PetscMPIInt rrank = remotePoints[l].rank;
-
-    ierr = PetscFindInt(rrank, numNeighbors, neighbors, &n);CHKERRQ(ierr);
-    if (n < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Could not locate remote rank %d", rrank);
-    switch (refiner) {
-    case 1:
-      /* Simplicial 2D */
-      if ((p >= vStart) && (p < vEnd)) {
-        /* Old vertices stay the same */
-        localPointsNew[m]        = vStartNew     + (p  - vStart);
-        remotePointsNew[m].index = rvStartNew[n] + (rp - rvStart[n]);
-        remotePointsNew[m].rank  = rrank;
-        ++m;
-      } else if ((p >= fStart) && (p < fEnd)) {
-        /* Old faces add new faces and vertex */
-        localPointsNew[m]        = vStartNew     + (vEnd - vStart)              + (p  - fStart);
-        remotePointsNew[m].index = rvStartNew[n] + rdepthSizeOld[n*(depth+1)+0] + (rp - rfStart[n]);
-        remotePointsNew[m].rank  = rrank;
-        ++m;
-        for (r = 0; r < 2; ++r, ++m) {
-          localPointsNew[m]        = fStartNew     + (p  - fStart)*2     + r;
-          remotePointsNew[m].index = rfStartNew[n] + (rp - rfStart[n])*2 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-      } else if ((p >= cStart) && (p < cEnd)) {
-        /* Old cells add new cells and interior faces */
-        for (r = 0; r < 4; ++r, ++m) {
-          localPointsNew[m]        = cStartNew     + (p  - cStart)*4     + r;
-          remotePointsNew[m].index = rcStartNew[n] + (rp - rcStart[n])*4 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-        for (r = 0; r < 3; ++r, ++m) {
-          localPointsNew[m]        = fStartNew     + (fEnd - fStart)*2                    + (p  - cStart)*3     + r;
-          remotePointsNew[m].index = rfStartNew[n] + rdepthSizeOld[n*(depth+1)+depth-1]*2 + (rp - rcStart[n])*3 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-      }
-      break;
-    case 2:
-      /* Hex 2D */
-      if ((p >= vStart) && (p < vEnd)) {
-        /* Old vertices stay the same */
-        localPointsNew[m]        = vStartNew     + (p  - vStart);
-        remotePointsNew[m].index = rvStartNew[n] + (rp - rvStart[n]);
-        remotePointsNew[m].rank  = rrank;
-        ++m;
-      } else if ((p >= fStart) && (p < fEnd)) {
-        /* Old faces add new faces and vertex */
-        localPointsNew[m]        = vStartNew     + (vEnd - vStart)              + (p  - fStart);
-        remotePointsNew[m].index = rvStartNew[n] + rdepthSizeOld[n*(depth+1)+0] + (rp - rfStart[n]);
-        remotePointsNew[m].rank  = rrank;
-        ++m;
-        for (r = 0; r < 2; ++r, ++m) {
-          localPointsNew[m]        = fStartNew     + (p  - fStart)*2     + r;
-          remotePointsNew[m].index = rfStartNew[n] + (rp - rfStart[n])*2 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-      } else if ((p >= cStart) && (p < cEnd)) {
-        /* Old cells add new cells and interior faces */
-        for (r = 0; r < 4; ++r, ++m) {
-          localPointsNew[m]        = cStartNew     + (p  - cStart)*4     + r;
-          remotePointsNew[m].index = rcStartNew[n] + (rp - rcStart[n])*4 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-        for (r = 0; r < 4; ++r, ++m) {
-          localPointsNew[m]        = fStartNew     + (fEnd - fStart)*2                    + (p  - cStart)*4     + r;
-          remotePointsNew[m].index = rfStartNew[n] + rdepthSizeOld[n*(depth+1)+depth-1]*2 + (rp - rcStart[n])*4 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-      }
-      break;
-    case 3:
-      /* Hybrid simplicial 2D */
-      if ((p >= vStart) && (p < vEnd)) {
-        /* Old vertices stay the same */
-        localPointsNew[m]        = vStartNew     + (p  - vStart);
-        remotePointsNew[m].index = rvStartNew[n] + (rp - rvStart[n]);
-        remotePointsNew[m].rank  = rrank;
-        ++m;
-      } else if ((p >= fStart) && (p < fMax)) {
-        /* Old interior faces add new faces and vertex */
-        localPointsNew[m]        = vStartNew     + (vEnd - vStart)              + (p  - fStart);
-        remotePointsNew[m].index = rvStartNew[n] + rdepthSizeOld[n*(depth+1)+0] + (rp - rfStart[n]);
-        remotePointsNew[m].rank  = rrank;
-        ++m;
-        for (r = 0; r < 2; ++r, ++m) {
-          localPointsNew[m]        = fStartNew     + (p  - fStart)*2     + r;
-          remotePointsNew[m].index = rfStartNew[n] + (rp - rfStart[n])*2 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-      } else if ((p >= fMax) && (p < fEnd)) {
-        /* Old hybrid faces stay the same */
-        localPointsNew[m]        = fStartNew     + (fMax                              - fStart)*2     + (p  - fMax);
-        remotePointsNew[m].index = rfStartNew[n] + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*2 + (rp - rdepthMaxOld[n*(depth+1)+depth-1]);
-        remotePointsNew[m].rank  = rrank;
-        ++m;
-      } else if ((p >= cStart) && (p < cMax)) {
-        /* Old interior cells add new cells and interior faces */
-        for (r = 0; r < 4; ++r, ++m) {
-          localPointsNew[m]        = cStartNew     + (p  - cStart)*4     + r;
-          remotePointsNew[m].index = rcStartNew[n] + (rp - rcStart[n])*4 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-        for (r = 0; r < 3; ++r, ++m) {
-          localPointsNew[m]        = fStartNew     + (fMax                              - fStart)*2     + (p  - cStart)*3     + r;
-          remotePointsNew[m].index = rfStartNew[n] + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*2 + (rp - rcStart[n])*3 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-      } else if ((p >= cStart) && (p < cMax)) {
-        /* Old hybrid cells add new cells and hybrid face */
-        for (r = 0; r < 2; ++r, ++m) {
-          localPointsNew[m]        = cStartNew     + (p  - cStart)*4     + r;
-          remotePointsNew[m].index = rcStartNew[n] + (rp - rcStart[n])*4 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-        localPointsNew[m]        = fStartNew     + (fMax                              - fStart)*2     + (cMax                            - cStart)*3     + (p  - cMax);
-        remotePointsNew[m].index = rfStartNew[n] + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*2 + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n])*3 + (rp - rdepthMaxOld[n*(depth+1)+depth]);
-        remotePointsNew[m].rank  = rrank;
-        ++m;
-      }
-      break;
-    default:
-      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
-    }
-  }
-  ierr = ISRestoreIndices(processRanks, &neighbors);CHKERRQ(ierr);
-  ierr = ISDestroy(&processRanks);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(sfNew, pEndNew-pStartNew, numLeavesNew, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER);CHKERRQ(ierr);
-  ierr = PetscFree5(rdepthSize,rvStartNew,reStartNew,rfStartNew,rcStartNew);CHKERRQ(ierr);
-  ierr = PetscFree6(depthSizeOld,rdepthSizeOld,rvStart,reStart,rfStart,rcStart);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "CellRefinerCreateLabels"
-PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
-{
-  PetscInt       numLabels, l;
-  PetscInt       newp, cStart, cStartNew, cEnd, cMax, vStart, vStartNew, vEnd, vMax, fStart, fStartNew, fEnd, fMax, eStart, eEnd, eMax, r;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-
-  cStartNew = 0;
-  vStartNew = depthSize[2];
-  fStartNew = depthSize[2] + depthSize[0];
-
-  ierr = DMPlexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, &vMax);CHKERRQ(ierr);
-  switch (refiner) {
-  case 3:
-    if (cMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No cell maximum specified in hybrid mesh");
-    cMax = PetscMin(cEnd, cMax);
-    if (fMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No face maximum specified in hybrid mesh");
-    fMax = PetscMin(fEnd, fMax);
-  }
-  for (l = 0; l < numLabels; ++l) {
-    DMLabel         label, labelNew;
-    const char     *lname;
-    PetscBool       isDepth;
-    IS              valueIS;
-    const PetscInt *values;
-    PetscInt        numValues, val;
-
-    ierr = DMPlexGetLabelName(dm, l, &lname);CHKERRQ(ierr);
-    ierr = PetscStrcmp(lname, "depth", &isDepth);CHKERRQ(ierr);
-    if (isDepth) continue;
-    ierr = DMPlexCreateLabel(rdm, lname);CHKERRQ(ierr);
-    ierr = DMPlexGetLabel(dm, lname, &label);CHKERRQ(ierr);
-    ierr = DMPlexGetLabel(rdm, lname, &labelNew);CHKERRQ(ierr);
-    ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(valueIS, &numValues);CHKERRQ(ierr);
-    ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
-    for (val = 0; val < numValues; ++val) {
-      IS              pointIS;
-      const PetscInt *points;
-      PetscInt        numPoints, n;
-
-      ierr = DMLabelGetStratumIS(label, values[val], &pointIS);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
-      ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
-      for (n = 0; n < numPoints; ++n) {
-        const PetscInt p = points[n];
-        switch (refiner) {
-        case 1:
-          /* Simplicial 2D */
-          if ((p >= vStart) && (p < vEnd)) {
-            /* Old vertices stay the same */
-            newp = vStartNew + (p - vStart);
-            ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
-          } else if ((p >= fStart) && (p < fEnd)) {
-            /* Old faces add new faces and vertex */
-            newp = vStartNew + (vEnd - vStart) + (p - fStart);
-            ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
-            for (r = 0; r < 2; ++r) {
-              newp = fStartNew + (p - fStart)*2 + r;
-              ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
-            }
-          } else if ((p >= cStart) && (p < cEnd)) {
-            /* Old cells add new cells and interior faces */
-            for (r = 0; r < 4; ++r) {
-              newp = cStartNew + (p - cStart)*4 + r;
-              ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
-            }
-            for (r = 0; r < 3; ++r) {
-              newp = fStartNew + (fEnd - fStart)*2 + (p - cStart)*3 + r;
-              ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
-            }
-          }
-          break;
-        case 2:
-          /* Hex 2D */
-          if ((p >= vStart) && (p < vEnd)) {
-            /* Old vertices stay the same */
-            newp = vStartNew + (p - vStart);
-            ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
-          } else if ((p >= fStart) && (p < fEnd)) {
-            /* Old faces add new faces and vertex */
-            newp = vStartNew + (vEnd - vStart) + (p - fStart);
-            ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
-            for (r = 0; r < 2; ++r) {
-              newp = fStartNew + (p - fStart)*2 + r;
-              ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
-            }
-          } else if ((p >= cStart) && (p < cEnd)) {
-            /* Old cells add new cells and interior faces and vertex */
-            for (r = 0; r < 4; ++r) {
-              newp = cStartNew + (p - cStart)*4 + r;
-              ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
-            }
-            for (r = 0; r < 4; ++r) {
-              newp = fStartNew + (fEnd - fStart)*2 + (p - cStart)*4 + r;
-              ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
-            }
-            newp = vStartNew + (vEnd - vStart) + (fEnd - fStart) + (p - cStart);
-            ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
-          }
-          break;
-        case 3:
-          /* Hybrid simplicial 2D */
-          if ((p >= vStart) && (p < vEnd)) {
-            /* Old vertices stay the same */
-            newp = vStartNew + (p - vStart);
-            ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
-          } else if ((p >= fStart) && (p < fMax)) {
-            /* Old interior faces add new faces and vertex */
-            newp = vStartNew + (vEnd - vStart) + (p - fStart);
-            ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
-            for (r = 0; r < 2; ++r) {
-              newp = fStartNew + (p - fStart)*2 + r;
-              ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
-            }
-          } else if ((p >= fMax) && (p < fEnd)) {
-            /* Old hybrid faces stay the same */
-            newp = fStartNew + (fMax - fStart)*2 + (p - fMax);
-            ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
-          } else if ((p >= cStart) && (p < cMax)) {
-            /* Old interior cells add new cells and interior faces */
-            for (r = 0; r < 4; ++r) {
-              newp = cStartNew + (p - cStart)*4 + r;
-              ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
-            }
-            for (r = 0; r < 3; ++r) {
-              newp = fStartNew + (fEnd - fStart)*2 + (p - cStart)*3 + r;
-              ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
-            }
-          } else if ((p >= cMax) && (p < cEnd)) {
-            /* Old hybrid cells add new cells and hybrid face */
-            for (r = 0; r < 2; ++r) {
-              newp = cStartNew + (cMax - cStart)*4 + (p - cMax)*2 + r;
-              ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
-            }
-            newp = fStartNew + (fMax - fStart)*2 + (cMax - cStart)*3 + (p - cMax);
-            ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
-          }
-          break;
-        default:
-          SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
-        }
-      }
-      ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
-      ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
-    }
-    ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
-    ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
-    if (0) {
-      ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
-      ierr = DMLabelView(labelNew, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexRefine_Uniform"
-/* This will only work for interpolated meshes */
-PetscErrorCode DMPlexRefine_Uniform(DM dm, CellRefiner cellRefiner, DM *dmRefined)
-{
-  DM             rdm;
-  PetscInt      *depthSize;
-  PetscInt       dim, depth = 0, d, pStart = 0, pEnd = 0;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMCreate(PetscObjectComm((PetscObject)dm), &rdm);CHKERRQ(ierr);
-  ierr = DMSetType(rdm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(rdm, dim);CHKERRQ(ierr);
-  /* Calculate number of new points of each depth */
-  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  if (depth != dim) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Mesh must be fully interpolated for uniform refinement");
-  ierr = PetscMalloc((depth+1) * sizeof(PetscInt), &depthSize);CHKERRQ(ierr);
-  ierr = PetscMemzero(depthSize, (depth+1) * sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = CellRefinerGetSizes(cellRefiner, dm, depthSize);CHKERRQ(ierr);
-  /* Step 1: Set chart */
-  for (d = 0; d <= depth; ++d) pEnd += depthSize[d];
-  ierr = DMPlexSetChart(rdm, pStart, pEnd);CHKERRQ(ierr);
-  /* Step 2: Set cone/support sizes */
-  ierr = CellRefinerSetConeSizes(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
-  /* Step 3: Setup refined DM */
-  ierr = DMSetUp(rdm);CHKERRQ(ierr);
-  /* Step 4: Set cones and supports */
-  ierr = CellRefinerSetCones(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
-  /* Step 5: Stratify */
-  ierr = DMPlexStratify(rdm);CHKERRQ(ierr);
-  /* Step 6: Set coordinates for vertices */
-  ierr = CellRefinerSetCoordinates(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
-  /* Step 7: Create pointSF */
-  ierr = CellRefinerCreateSF(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
-  /* Step 8: Create labels */
-  ierr = CellRefinerCreateLabels(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
-  ierr = PetscFree(depthSize);CHKERRQ(ierr);
-
-  *dmRefined = rdm;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetRefinementUniform"
-PetscErrorCode DMPlexSetRefinementUniform(DM dm, PetscBool refinementUniform)
-{
-  DM_Plex *mesh = (DM_Plex*) dm->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  mesh->refinementUniform = refinementUniform;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetRefinementUniform"
-PetscErrorCode DMPlexGetRefinementUniform(DM dm, PetscBool *refinementUniform)
-{
-  DM_Plex *mesh = (DM_Plex*) dm->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(refinementUniform,  2);
-  *refinementUniform = mesh->refinementUniform;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetRefinementLimit"
-PetscErrorCode DMPlexSetRefinementLimit(DM dm, PetscReal refinementLimit)
-{
-  DM_Plex *mesh = (DM_Plex*) dm->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  mesh->refinementLimit = refinementLimit;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetRefinementLimit"
-PetscErrorCode DMPlexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
-{
-  DM_Plex *mesh = (DM_Plex*) dm->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(refinementLimit,  2);
-  /* if (mesh->refinementLimit < 0) = getMaxVolume()/2.0; */
-  *refinementLimit = mesh->refinementLimit;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetCellRefiner_Private"
-PetscErrorCode DMPlexGetCellRefiner_Private(DM dm, CellRefiner *cellRefiner)
-{
-  PetscInt       dim, cStart, coneSize, cMax;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, NULL);CHKERRQ(ierr);
-  ierr = DMPlexGetConeSize(dm, cStart, &coneSize);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
-  switch (dim) {
-  case 2:
-    switch (coneSize) {
-    case 3:
-      if (cMax >= 0) *cellRefiner = 3; /* Hybrid */
-      else *cellRefiner = 1; /* Triangular */
-      break;
-    case 4:
-      if (cMax >= 0) *cellRefiner = 4; /* Hybrid */
-      else *cellRefiner = 2; /* Quadrilateral */
-      break;
-    default:
-      SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown coneSize %d in dimension %d for cell refiner", coneSize, dim);
-    }
-    break;
-  default:
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown dimension %d for cell refiner", dim);
-  }
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "DMRefine_Plex"
 PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
@@ -5851,8 +4286,8 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
   if (isUniform) {
     CellRefiner cellRefiner;
 
-    ierr = DMPlexGetCellRefiner_Private(dm, &cellRefiner);CHKERRQ(ierr);
-    ierr = DMPlexRefine_Uniform(dm, cellRefiner, dmRefined);CHKERRQ(ierr);
+    ierr = DMPlexGetCellRefiner_Internal(dm, &cellRefiner);CHKERRQ(ierr);
+    ierr = DMPlexRefineUniform_Internal(dm, cellRefiner, dmRefined);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = DMPlexGetRefinementLimit(dm, &refinementLimit);CHKERRQ(ierr);
@@ -6455,6 +4890,18 @@ PetscErrorCode DMPlexGetConeSection(DM dm, PetscSection *section)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexGetSupportSection"
+PetscErrorCode DMPlexGetSupportSection(DM dm, PetscSection *section)
+{
+  DM_Plex *mesh = (DM_Plex*) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (section) *section = mesh->supportSection;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexGetCones"
 PetscErrorCode DMPlexGetCones(DM dm, PetscInt *cones[])
 {
@@ -6509,6 +4956,8 @@ PetscErrorCode DMPlexGetConeOrientations(DM dm, PetscInt *coneOrientations[])
 @*/
 PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, PetscScalar *values[])
 {
+  PetscSection   clSection;
+  IS             clIndices;
   PetscScalar   *array, *vArray;
   PetscInt      *points = NULL;
   PetscInt       offsets[32];
@@ -6518,8 +4967,29 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(v, VEC_CLASSID, 3);
-  if (!section) {
-    ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  if (!section) {ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);}
+  ierr = PetscSectionGetClosureIndex(section, (PetscObject) dm, &clSection, &clIndices);CHKERRQ(ierr);
+  if (clSection) {
+    const PetscInt *idx;
+    PetscInt        dof, off;
+
+    ierr = PetscSectionGetDof(clSection, point, &dof);CHKERRQ(ierr);
+    if (csize) *csize = dof;
+    if (values) {
+      if (!*values) {
+        ierr = DMGetWorkArray(dm, dof, PETSC_SCALAR, &array);CHKERRQ(ierr);
+        *values = array;
+      } else {
+        array = *values;
+      }
+      ierr = PetscSectionGetOffset(clSection, point, &off);CHKERRQ(ierr);
+      ierr = ISGetIndices(clIndices, &idx);CHKERRQ(ierr);
+      ierr = VecGetArray(v, &vArray);CHKERRQ(ierr);
+      for (p = 0; p < dof; ++p) array[p] = vArray[idx[off+p]];
+      ierr = VecRestoreArray(v, &vArray);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(clIndices, &idx);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
   }
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
@@ -7081,6 +5551,112 @@ PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateClosureIndex"
+/*@
+  DMPlexCreateClosureIndex - Calculate an index for the given PetscSection for the closure operation on the DM
+
+  Not collective
+
+  Input Parameters:
++ dm - The DM
+- section - The section describing the layout in v, or NULL to use the default section
+
+  Note:
+  This should greatly improve the performance of the closure operations, at the cost of additional memory.
+
+  Level: intermediate
+
+.seealso DMPlexVecGetClosure(), DMPlexVecRestoreClosure(), DMPlexVecSetClosure(), DMPlexMatSetClosure()
+@*/
+PetscErrorCode DMPlexCreateClosureIndex(DM dm, PetscSection section)
+{
+  PetscSection   closureSection;
+  IS             closureIS;
+  PetscInt       offsets[32], *clIndices;
+  PetscInt       depth, numFields, pStart, pEnd, point, clSize;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (!section) {ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);}
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+  if (numFields > 31) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Number of fields %D limited to 31", numFields);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) section), &closureSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(closureSection, pStart, pEnd);CHKERRQ(ierr);
+  for (point = pStart; point < pEnd; ++point) {
+    PetscInt *points = NULL, numPoints, p, dof, cldof = 0;
+
+    ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
+    for (p = 0; p < numPoints*2; p += 2) {
+      if ((points[p] >= pStart) && (points[p] < pEnd)) {
+        ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
+        cldof += dof;
+      }
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(closureSection, point, cldof);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(closureSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(closureSection, &clSize);CHKERRQ(ierr);
+  ierr = PetscMalloc(clSize * sizeof(PetscInt), &clIndices);CHKERRQ(ierr);
+  for (point = pStart; point < pEnd; ++point) {
+    PetscInt *points = NULL, numPoints, p, q, cldof, cloff, fdof, f;
+
+    ierr = PetscSectionGetDof(closureSection, point, &cldof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(closureSection, point, &cloff);CHKERRQ(ierr);
+    ierr = PetscMemzero(offsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
+    /* Compress out points not in the section, and create field offsets */
+    for (p = 0, q = 0; p < numPoints*2; p += 2) {
+      if ((points[p] >= pStart) && (points[p] < pEnd)) {
+        points[q*2]   = points[p];
+        points[q*2+1] = points[p+1];
+        for (f = 0; f < numFields; ++f) {
+          ierr = PetscSectionGetFieldDof(section, points[p], f, &fdof);CHKERRQ(ierr);
+          offsets[f+1] += fdof;
+        }
+        ++q;
+      }
+    }
+    numPoints = q;
+    for (f = 1; f < numFields; ++f) offsets[f+1] += offsets[f];
+    if (numFields && offsets[numFields] != cldof) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Invalid size for closure %d should be %d", offsets[numFields], cldof);
+    /* Create indices */
+    for (p = 0; p < numPoints*2; p += 2) {
+      PetscInt o = points[p+1], dof, off, d;
+
+      ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(section, points[p], &off);CHKERRQ(ierr);
+      if (numFields) {
+        PetscInt fdof, foff, fcomp, f, c;
+
+        for (f = 0, foff = 0; f < numFields; ++f) {
+          ierr = PetscSectionGetFieldDof(section, points[p], f, &fdof);CHKERRQ(ierr);
+          if (o >= 0) {
+            for (d = 0; d < fdof; ++d, ++offsets[f]) clIndices[cloff+offsets[f]] = off+foff+d;
+          } else {
+            ierr = PetscSectionGetFieldComponents(section, f, &fcomp);CHKERRQ(ierr);
+            for (d = fdof/fcomp-1; d >= 0; --d) {
+              for (c = 0; c < fcomp; ++c, ++offsets[f]) clIndices[cloff+offsets[f]] = off+foff+d*fcomp+c;
+            }
+          }
+          foff += fdof;
+        }
+      } else {
+        if (o >= 0) for (d = 0;     d < dof; ++d) clIndices[cloff+d] = off+d;
+        else        for (d = dof-1; d >= 0;  --d) clIndices[cloff+d] = off+d;
+      }
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
+  }
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, clSize, clIndices, PETSC_OWN_POINTER, &closureIS);CHKERRQ(ierr);
+  ierr = PetscSectionSetClosureIndex(section, (PetscObject) dm, closureSection, closureIS);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexPrintMatSetValues"
 PetscErrorCode DMPlexPrintMatSetValues(PetscViewer viewer, Mat A, PetscInt point, PetscInt numIndices, const PetscInt indices[], const PetscScalar values[])
 {
@@ -7311,6 +5887,22 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetHybridBounds"
+/*@
+  DMPlexGetHybridBounds - Get the first mesh point of each dimension which is a hybrid
+
+  Input Parameter:
+. dm - The DMPlex object
+
+  Output Parameters:
++ cMax - The first hybrid cell
+. cMax - The first hybrid face
+. cMax - The first hybrid edge
+- cMax - The first hybrid vertex
+
+  Level: developer
+
+.seealso DMPlexCreateHybridMesh()
+@*/
 PetscErrorCode DMPlexGetHybridBounds(DM dm, PetscInt *cMax, PetscInt *fMax, PetscInt *eMax, PetscInt *vMax)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
@@ -7525,5 +6117,128 @@ PetscErrorCode PetscSectionCreateGlobalSectionLabel(PetscSection s, PetscSF sf, 
   }
   if (nroots >= 0 && nroots > pEnd-pStart) {ierr = PetscFree(tmpOff);CHKERRQ(ierr);}
   ierr = PetscFree(neg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexCheckSymmetry"
+/*@
+  DMPlexCheckSymmetry - Check that the adjacency information in the mesh is symmetric.
+
+  Input Parameters:
+  + dm - The DMPlex object
+
+  Note: This is a useful diagnostic when creating meshes programmatically.
+
+  Level: developer
+
+.seealso: DMCreate()
+@*/
+PetscErrorCode DMPlexCheckSymmetry(DM dm)
+{
+  PetscSection    coneSection, supportSection;
+  const PetscInt *cone, *support;
+  PetscInt        coneSize, c, supportSize, s;
+  PetscInt        pStart, pEnd, p, csize, ssize;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMPlexGetConeSection(dm, &coneSection);CHKERRQ(ierr);
+  ierr = DMPlexGetSupportSection(dm, &supportSection);CHKERRQ(ierr);
+  /* Check that point p is found in the support of its cone points, and vice versa */
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
+    for (c = 0; c < coneSize; ++c) {
+      ierr = DMPlexGetSupportSize(dm, cone[c], &supportSize);CHKERRQ(ierr);
+      ierr = DMPlexGetSupport(dm, cone[c], &support);CHKERRQ(ierr);
+      for (s = 0; s < supportSize; ++s) {
+        if (support[s] == p) break;
+      }
+      if (s >= supportSize) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d cone: ", p);
+        for (s = 0; s < coneSize; ++s) {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", cone[s]);
+        }
+        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
+        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d support: ", cone[c]);
+        for (s = 0; s < supportSize; ++s) {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", support[s]);
+        }
+        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
+        SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %d not found in support of cone point %d", p, cone[c]);
+      }
+    }
+    ierr = DMPlexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
+    ierr = DMPlexGetSupport(dm, p, &support);CHKERRQ(ierr);
+    for (s = 0; s < supportSize; ++s) {
+      ierr = DMPlexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
+      ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
+      for (c = 0; c < coneSize; ++c) {
+        if (cone[c] == p) break;
+      }
+      if (c >= coneSize) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d support: ", p);
+        for (c = 0; c < supportSize; ++c) {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", support[c]);
+        }
+        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
+        ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d cone: ", support[s]);
+        for (c = 0; c < coneSize; ++c) {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", cone[c]);
+        }
+        ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
+        SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %d not found in cone of support point %d", p, support[s]);
+      }
+    }
+  }
+  ierr = PetscSectionGetStorageSize(coneSection, &csize);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(supportSection, &ssize);CHKERRQ(ierr);
+  if (csize != ssize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Total cone size %d != Total support size %d", csize, ssize);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexCheckSkeleton"
+/*@
+  DMPlexCheckSkeleton - Check that each cell has the correct number of vertices
+
+  Input Parameters:
+  + dm - The DMPlex object
+
+  Note: This is a useful diagnostic when creating meshes programmatically.
+
+  Level: developer
+
+.seealso: DMCreate()
+@*/
+PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscBool isSimplex)
+{
+  DM             udm;
+  PetscInt       dim, numCorners, coneSize, cStart, cEnd, cMax, c;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  switch (dim) {
+  case 2: numCorners = isSimplex ? 3 : 4; break;
+  case 3: numCorners = isSimplex ? 4 : 8; break;
+  default:
+    SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle meshes of dimension %d", dim);
+  }
+  ierr = DMPlexUninterpolate(dm, &udm);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) udm, "un_");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(udm);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
+  cMax = cMax >= 0 ? cMax : cEnd;
+  for (c = cStart; c < cMax; ++c) {
+    ierr = DMPlexGetConeSize(udm, c, &coneSize);CHKERRQ(ierr);
+    if (coneSize != numCorners) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %d has  %d vertices != %d", c, coneSize, numCorners);
+  }
+  ierr = DMDestroy(&udm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

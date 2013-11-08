@@ -830,8 +830,6 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
   ierr       = SNESLogConvergenceHistory(snes,vi->phinorm,0);CHKERRQ(ierr);
   ierr       = SNESMonitor(snes,0,vi->phinorm);CHKERRQ(ierr);
 
-  /* set parameter for default relative tolerance convergence test */
-  snes->ttol = vi->phinorm*snes->rtol;
   /* test convergence */
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,vi->phinorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) {
@@ -915,7 +913,7 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,lits);CHKERRQ(ierr);
     ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence, xnorm = || X || */
-    if (snes->ops->converged != SNESSkipConverged) { ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); }
+    if (snes->ops->converged != SNESConvergedSkip) { ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); }
     ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,vi->phinorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) break;
   }
@@ -1006,7 +1004,7 @@ PetscErrorCode SNESVICreateSubVectors(SNES snes,PetscInt n,Vec *newv)
   PetscFunctionBegin;
   ierr  = VecCreate(PetscObjectComm((PetscObject)snes),&v);CHKERRQ(ierr);
   ierr  = VecSetSizes(v,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr  = VecSetFromOptions(v);CHKERRQ(ierr);
+  ierr  = VecSetType(v,VECSTANDARD);CHKERRQ(ierr);
   *newv = v;
   PetscFunctionReturn(0);
 }
@@ -1370,7 +1368,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,lits);CHKERRQ(ierr);
     ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence, xnorm = || X || */
-    if (snes->ops->converged != SNESSkipConverged) { ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); }
+    if (snes->ops->converged != SNESConvergedSkip) { ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); }
     ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) break;
   }
@@ -1575,7 +1573,7 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
       /* Create augmented F and Y */
       ierr = VecCreate(PetscObjectComm((PetscObject)snes),&F_aug);CHKERRQ(ierr);
       ierr = VecSetSizes(F_aug,F->map->n+nkept,PETSC_DECIDE);CHKERRQ(ierr);
-      ierr = VecSetFromOptions(F_aug);CHKERRQ(ierr);
+      ierr = VecSetType(F_aug,VECSTANDARD);CHKERRQ(ierr);
       ierr = VecDuplicate(F_aug,&Y_aug);CHKERRQ(ierr);
 
       /* Copy over F to F_aug in the first n locations */
@@ -1757,7 +1755,7 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,lits);CHKERRQ(ierr);
     ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence, xnorm = || X || */
-    if (snes->ops->converged != SNESSkipConverged) { ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); }
+    if (snes->ops->converged != SNESConvergedSkip) { ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); }
     ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) break;
   }

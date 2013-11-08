@@ -469,8 +469,8 @@ PETSC_EXTERN PetscErrorCode VecsDuplicate(Vecs,Vecs*);
 
 #if defined(PETSC_HAVE_CUSP)
 typedef struct _p_PetscCUSPIndices* PetscCUSPIndices;
-PETSC_EXTERN PetscErrorCode PetscCUSPIndicesCreate(PetscInt, PetscInt*,PetscInt, PetscInt*,PetscCUSPIndices*);
-PETSC_EXTERN PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices*);
+typedef struct _p_VecScatterCUSPIndices_StoS* VecScatterCUSPIndices_StoS;
+typedef struct _p_VecScatterCUSPIndices_PtoP* VecScatterCUSPIndices_PtoP;
 PETSC_EXTERN PetscErrorCode VecCUSPCopyToGPUSome_Public(Vec,PetscCUSPIndices);
 PETSC_EXTERN PetscErrorCode VecCUSPCopyFromGPUSome_Public(Vec,PetscCUSPIndices);
 PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter,Vec,ScatterMode);

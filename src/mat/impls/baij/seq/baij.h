@@ -30,6 +30,11 @@ typedef struct {
   SEQBAIJHEADER;
 } Mat_SeqBAIJ;
 
+PETSC_INTERN PetscErrorCode MatGetColumnIJ_SeqBAIJ(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscBool*);
+PETSC_INTERN PetscErrorCode MatRestoreColumnIJ_SeqBAIJ(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscBool*);
+PETSC_INTERN PetscErrorCode MatGetColumnIJ_SeqBAIJ_Color(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscInt *[],PetscBool*);
+PETSC_INTERN PetscErrorCode MatRestoreColumnIJ_SeqBAIJ_Color(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscInt *[],PetscBool*);
+
 PETSC_EXTERN PetscErrorCode MatSeqBAIJSetPreallocation_SeqBAIJ(Mat,PetscInt,PetscInt,PetscInt*);
 PETSC_INTERN PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat,Mat,IS,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat,Mat,IS,IS,const MatFactorInfo*);
@@ -55,6 +60,7 @@ PETSC_INTERN PetscErrorCode MatMultHermitianTransposeAdd_SeqBAIJ(Mat,Vec,Vec,Vec
 PETSC_INTERN PetscErrorCode MatScale_SeqBAIJ(Mat,PetscScalar);
 PETSC_INTERN PetscErrorCode MatNorm_SeqBAIJ(Mat,NormType,PetscReal*);
 PETSC_INTERN PetscErrorCode MatEqual_SeqBAIJ(Mat,Mat,PetscBool*);
+PETSC_INTERN PetscErrorCode MatFDColoringApply_BAIJ(Mat,MatFDColoring,Vec,MatStructure*,void*);
 PETSC_INTERN PetscErrorCode MatGetDiagonal_SeqBAIJ(Mat,Vec);
 PETSC_INTERN PetscErrorCode MatDiagonalScale_SeqBAIJ(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatGetInfo_SeqBAIJ(Mat,MatInfoType,MatInfo*);

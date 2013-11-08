@@ -55,7 +55,8 @@ int main(int argc,char **argv)
      Create parallel matrix preallocated according to the DMDA, format AIJ by default.
      To use symmetric storage, run with -dm_mat_type sbaij -mat_ignore_lower_triangular
   */
-  ierr = DMCreateMatrix(da,MATAIJ,&A);CHKERRQ(ierr);
+  ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
 
   /*
      Set matrix elements for the 2-D, five-point stencil in parallel.

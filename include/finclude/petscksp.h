@@ -64,7 +64,7 @@
 !
 !   Possible arguments to KSPMonitorSet()
 !
-      external KSPDEFAULTCONVERGED
+      external KSPCONVERGEDDEFAULT
       external KSPMONITORDEFAULT
       external KSPMONITORTRUERESIDUALNORM
       external KSPMONITORLGRESIDUALNORM

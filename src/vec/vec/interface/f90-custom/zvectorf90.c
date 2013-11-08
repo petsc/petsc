@@ -23,7 +23,7 @@ PETSC_EXTERN void PETSC_STDCALL vecgetarrayf90_(Vec *x,F90Array1d *ptr,int *__ie
   PetscScalar *fa;
   PetscInt    len;
   if (!ptr) {
-    *__ierr = PetscError(((PetscObject)*x)->comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,PETSC_ERR_ARG_BADPTR,PETSC_ERROR_INITIAL,"ptr==NULL, maybe #include <finclude/petscvec.h90> is missing?");
+    *__ierr = PetscError(((PetscObject)*x)->comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,PETSC_ERR_ARG_BADPTR,PETSC_ERROR_INITIAL,"ptr==NULL, maybe #include <finclude/petscvec.h90> is missing?");
     return;
   }
   *__ierr = VecGetArray(*x,&fa);      if (*__ierr) return;
@@ -43,7 +43,7 @@ PETSC_EXTERN void PETSC_STDCALL vecgetarrayreadf90_(Vec *x,F90Array1d *ptr,int *
   const PetscScalar *fa;
   PetscInt          len;
   if (!ptr) {
-    *__ierr = PetscError(((PetscObject)*x)->comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,PETSC_ERR_ARG_BADPTR,PETSC_ERROR_INITIAL,"ptr==NULL, maybe #include <finclude/petscvec.h90> is missing?");
+    *__ierr = PetscError(((PetscObject)*x)->comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,PETSC_ERR_ARG_BADPTR,PETSC_ERROR_INITIAL,"ptr==NULL, maybe #include <finclude/petscvec.h90> is missing?");
     return;
   }
   *__ierr = VecGetArrayRead(*x,&fa);      if (*__ierr) return;

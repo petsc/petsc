@@ -192,7 +192,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = refinedMesh;
     }
     /* Distribute mesh over processes */
-    ierr = DMPlexDistribute(*dm, partitioner, 0, &distributedMesh);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, partitioner, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
@@ -421,7 +421,7 @@ int main(int argc, char **argv)
 
     ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(dm, &F);CHKERRQ(ierr);
-    ierr = DMPlexProjectFunction(dm, numComp, user.exactFuncs, INSERT_VALUES, X);CHKERRQ(ierr);
+    ierr = DMPlexProjectFunction(dm, user.fe, user.exactFuncs, INSERT_VALUES, X);CHKERRQ(ierr);
     ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &F);CHKERRQ(ierr);
@@ -432,7 +432,8 @@ int main(int argc, char **argv)
     MatStructure flag;
 
     ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
-    ierr = DMCreateMatrix(dm, MATAIJ, &J);CHKERRQ(ierr);
+    ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
     ierr = SNESComputeJacobian(snes, X, &J, &J, &flag);CHKERRQ(ierr);
     ierr = MatDestroy(&J);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &X);CHKERRQ(ierr);
