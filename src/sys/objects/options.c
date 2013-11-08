@@ -49,7 +49,6 @@ typedef struct {
 
 
 static PetscOptionsTable      *options = 0;
-extern PetscOptionsObjectType PetscOptionsObject;
 
 /*
     Options events monitor
@@ -2351,8 +2350,6 @@ PetscErrorCode  PetscOptionsCreate(void)
   options->Naliases       = 0;
   options->numbermonitors = 0;
 
-  PetscOptionsObject.prefix = NULL;
-  PetscOptionsObject.title  = NULL;
   PetscFunctionReturn(0);
 }
 

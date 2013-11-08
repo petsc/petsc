@@ -12,7 +12,7 @@ PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEva
 const char *const TSExactFinalTimeOptions[] = {"STEPOVER","INTERPOLATE","MATCHSTEP","TSExactFinalTimeOption","TS_EXACTFINALTIME_",0};
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetTypeFromOptions"
+#define __FUNCT__ "TSSetTypeFromOptions_Private"
 /*
   TSSetTypeFromOptions - Sets the type of ts from user options.
 
@@ -26,7 +26,7 @@ const char *const TSExactFinalTimeOptions[] = {"STEPOVER","INTERPOLATE","MATCHST
 .keywords: TS, set, options, database, type
 .seealso: TSSetFromOptions(), TSSetType()
 */
-static PetscErrorCode TSSetTypeFromOptions(TS ts)
+static PetscErrorCode TSSetTypeFromOptions_Private(PetscOptionsObjectType *PetscOptionsObject,TS ts)
 {
   PetscBool      opt;
   const char     *defaultType;
@@ -115,7 +115,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
   ierr = PetscObjectOptionsBegin((PetscObject)ts);CHKERRQ(ierr);
   /* Handle TS type options */
-  ierr = TSSetTypeFromOptions(ts);CHKERRQ(ierr);
+  ierr = TSSetTypeFromOptions_Private(PetscOptionsObject,ts);CHKERRQ(ierr);
 
   /* Handle generic TS options */
   ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,NULL);CHKERRQ(ierr);
@@ -329,14 +329,14 @@ PetscErrorCode  TSSetFromOptions(TS ts)
      will bleed memory. Also one is using a PetscOptionsBegin() inside a PetscOptionsBegin()
   */
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-  ierr = TSAdaptSetFromOptions(adapt);CHKERRQ(ierr);
+  ierr = TSAdaptSetFromOptions(PetscOptionsObject,adapt);CHKERRQ(ierr);
 
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (ts->problem_type == TS_LINEAR) {ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);}
 
   /* Handle specific TS options */
   if (ts->ops->setfromoptions) {
-    ierr = (*ts->ops->setfromoptions)(ts);CHKERRQ(ierr);
+    ierr = (*ts->ops->setfromoptions)(PetscOptionsObject,ts);CHKERRQ(ierr);
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */

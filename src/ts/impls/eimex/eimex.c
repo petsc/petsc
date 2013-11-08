@@ -456,7 +456,7 @@ static PetscErrorCode TSSetUp_EIMEX(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_EIMEX"
-static PetscErrorCode TSSetFromOptions_EIMEX(TS ts)
+static PetscErrorCode TSSetFromOptions_EIMEX(PetscOptionsObjectType *PetscOptionsObject,TS ts)
 {
   TS_EIMEX       *ext = (TS_EIMEX*)ts->data;
   PetscErrorCode ierr;
@@ -466,7 +466,7 @@ static PetscErrorCode TSSetFromOptions_EIMEX(TS ts)
   PetscFunctionBegin;
   tindex[0] = TSEIMEXDefault;
   tindex[1] = TSEIMEXDefault;
-  ierr = PetscOptionsHead("EIMEX ODE solver options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"EIMEX ODE solver options");CHKERRQ(ierr);
   {
     PetscBool flg;
     ierr = PetscOptionsInt("-ts_eimex_max_rows","Define the maximum number of rows used","TSEIMEXSetMaxRows",nrows,&nrows,&flg);CHKERRQ(ierr); /* default value 3 */

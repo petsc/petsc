@@ -968,7 +968,7 @@ PetscErrorCode PCGAMGDestroy_Classical(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetFromOptions_Classical"
-PetscErrorCode PCGAMGSetFromOptions_Classical(PC pc)
+PetscErrorCode PCGAMGSetFromOptions_Classical(PetscOptionsObjectType *PetscOptionsObject,PC pc)
 {
   PC_MG             *mg          = (PC_MG*)pc->data;
   PC_GAMG           *pc_gamg     = (PC_GAMG*)mg->innerctx;

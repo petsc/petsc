@@ -136,7 +136,7 @@ PetscErrorCode MatCUSPSetFormat_MPIAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCU
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_MPIAIJCUSP"
-PetscErrorCode MatSetFromOptions_MPIAIJCUSP(Mat A)
+PetscErrorCode MatSetFromOptions_MPIAIJCUSP(PetscOptionsObjectType *PetscOptionsObject,Mat A)
 {
   MatCUSPStorageFormat format;
   PetscErrorCode       ierr;
@@ -145,7 +145,7 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSP(Mat A)
   Mat_MPIAIJCUSP       *cuspStruct = (Mat_MPIAIJCUSP*)a->spptr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("MPIAIJCUSP options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"MPIAIJCUSP options");CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)A);
   if (A->factortype==MAT_FACTOR_NONE) {
     ierr = PetscOptionsEnum("-mat_cusp_mult_diag_storage_format","sets storage format of the diagonal blocks of (mpi)aijcusp gpu matrices for SpMV",

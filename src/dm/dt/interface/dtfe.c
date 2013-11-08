@@ -287,7 +287,7 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
   }
   ierr = PetscOptionsInt("-petscspace_order", "The approximation order", "PetscSpaceSetOrder", sp->order, &sp->order, NULL);CHKERRQ(ierr);
   if (sp->ops->setfromoptions) {
-    ierr = (*sp->ops->setfromoptions)(sp);CHKERRQ(ierr);
+    ierr = (*sp->ops->setfromoptions)(PetscOptionsObject,sp);CHKERRQ(ierr);
   }
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject) sp);CHKERRQ(ierr);
@@ -460,13 +460,13 @@ PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscRe
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSpaceSetFromOptions_Polynomial"
-PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscSpace sp)
+PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscOptionsObjectType *PetscOptionsObject,PetscSpace sp)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("PetscSpace Polynomial Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"PetscSpace polynomial options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-petscspace_poly_num_variables", "The number of different variables, e.g. x and y", "PetscSpacePolynomialSetNumVariables", poly->numVariables, &poly->numVariables, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-petscspace_poly_sym", "Use only symmetric polynomials", "PetscSpacePolynomialSetSymmetric", poly->symmetric, &poly->symmetric, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-petscspace_poly_tensor", "Use the tensor product polynomials", "PetscSpacePolynomialSetTensor", poly->tensor, &poly->tensor, NULL);CHKERRQ(ierr);
@@ -883,13 +883,13 @@ PetscErrorCode PetscSpacePolynomialGetNumVariables(PetscSpace sp, PetscInt *n)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSpaceSetFromOptions_DG"
-PetscErrorCode PetscSpaceSetFromOptions_DG(PetscSpace sp)
+PetscErrorCode PetscSpaceSetFromOptions_DG(PetscOptionsObjectType *PetscOptionsObject,PetscSpace sp)
 {
   PetscSpace_DG *dg = (PetscSpace_DG *) sp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("PetscSpace DG Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"PetscSpace DG options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-petscspace_dg_num_variables", "The number of different variables, e.g. x and y", "PetscSpaceDGSetNumVariables", dg->numVariables, &dg->numVariables, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1269,7 +1269,7 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
   }
   ierr = PetscOptionsInt("-petscdualspace_order", "The approximation order", "PetscDualSpaceSetOrder", sp->order, &sp->order, NULL);CHKERRQ(ierr);
   if (sp->ops->setfromoptions) {
-    ierr = (*sp->ops->setfromoptions)(sp);CHKERRQ(ierr);
+    ierr = (*sp->ops->setfromoptions)(PetscOptionsObject,sp);CHKERRQ(ierr);
   }
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject) sp);CHKERRQ(ierr);
@@ -2592,7 +2592,7 @@ PetscErrorCode PetscFESetFromOptions(PetscFE fem)
   ierr = PetscOptionsInt("-petscfe_num_blocks", "The number of cell blocks to integrate concurrently", "PetscSpaceSetTileSizes", fem->numBlocks, &fem->numBlocks, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-petscfe_num_batches", "The number of cell batches to integrate serially", "PetscSpaceSetTileSizes", fem->numBatches, &fem->numBatches, NULL);CHKERRQ(ierr);
   if (fem->ops->setfromoptions) {
-    ierr = (*fem->ops->setfromoptions)(fem);CHKERRQ(ierr);
+    ierr = (*fem->ops->setfromoptions)(PetscOptionsObject,fem);CHKERRQ(ierr);
   }
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject) fem);CHKERRQ(ierr);

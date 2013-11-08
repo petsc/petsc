@@ -212,7 +212,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_Pilut(PC pc)
   PetscBool      flag;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("HYPRE Pilut Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"HYPRE Pilut Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_hypre_pilut_maxiter","Number of iterations","None",jac->maxiter,&jac->maxiter,&flag);CHKERRQ(ierr);
   if (flag) PetscStackCallStandard(HYPRE_ParCSRPilutSetMaxIter,(jac->hsolver,jac->maxiter));
   ierr = PetscOptionsReal("-pc_hypre_pilut_tol","Drop tolerance","None",jac->tol,&jac->tol,&flag);CHKERRQ(ierr);
@@ -266,7 +266,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_Euclid(PC pc)
   PetscInt       cnt = 0;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("HYPRE Euclid Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"HYPRE Euclid Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_hypre_euclid_levels","Number of levels of fill ILU(k)","None",jac->levels,&jac->levels,&flag);CHKERRQ(ierr);
   if (flag) {
     if (jac->levels < 0) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Number of levels %d must be nonegative",jac->levels);
@@ -371,7 +371,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
   double         tmpdbl, twodbl[2];
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("HYPRE BoomerAMG Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"HYPRE BoomerAMG Options");CHKERRQ(ierr);
   ierr = PetscOptionsEList("-pc_hypre_boomeramg_cycle_type","Cycle type","None",HYPREBoomerAMGCycleType+1,2,HYPREBoomerAMGCycleType[jac->cycletype],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     jac->cycletype = indx+1;
@@ -674,7 +674,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_ParaSails(PC pc)
   const char     *symtlist[] = {"nonsymmetric","SPD","nonsymmetric,SPD"};
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("HYPRE ParaSails Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"HYPRE ParaSails Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_hypre_parasails_nlevels","Number of number of levels","None",jac->nlevels,&jac->nlevels,0);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-pc_hypre_parasails_thresh","Threshold","None",jac->threshhold,&jac->threshhold,&flag);CHKERRQ(ierr);
   if (flag) PetscStackCallStandard(HYPRE_ParaSailsSetParams,(jac->hsolver,jac->threshhold,jac->nlevels));
@@ -879,7 +879,7 @@ static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_HYPRE"
-static PetscErrorCode PCSetFromOptions_HYPRE(PC pc)
+static PetscErrorCode PCSetFromOptions_HYPRE(PetscOptionsObjectType *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PetscInt       indx;
@@ -887,7 +887,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE(PC pc)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("HYPRE preconditioner options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"HYPRE preconditioner options");CHKERRQ(ierr);
   ierr = PetscOptionsEList("-pc_hypre_type","HYPRE preconditioner type","PCHYPRESetType",type,4,"boomeramg",&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCHYPRESetType_HYPRE(pc,type[indx]);CHKERRQ(ierr);
@@ -1081,14 +1081,14 @@ PetscErrorCode PCView_PFMG(PC pc,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_PFMG"
-PetscErrorCode PCSetFromOptions_PFMG(PC pc)
+PetscErrorCode PCSetFromOptions_PFMG(PetscOptionsObjectType *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PC_PFMG        *ex = (PC_PFMG*) pc->data;
   PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("PFMG options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"PFMG options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_pfmg_print_statistics","Print statistics","HYPRE_StructPFMGSetPrintLevel",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     int level=3;
@@ -1186,7 +1186,7 @@ PetscErrorCode PCSetUp_PFMG(PC pc)
   /* create the hypre solver object and set its information */
   if (ex->hsolver) PetscStackCallStandard(HYPRE_StructPFMGDestroy,(ex->hsolver));
   PetscStackCallStandard(HYPRE_StructPFMGCreate,(ex->hcomm,&ex->hsolver));
-  ierr = PCSetFromOptions_PFMG(pc);CHKERRQ(ierr);
+  ierr = PCSetFromOptions_PFMG(PetscOptionsObjectType *PetscOptionsObject,pc);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_StructPFMGSetup,(ex->hsolver,mx->hmat,mx->hb,mx->hx));
   PetscStackCallStandard(HYPRE_StructPFMGSetZeroGuess,(ex->hsolver));
   PetscFunctionReturn(0);
@@ -1298,14 +1298,14 @@ PetscErrorCode PCView_SysPFMG(PC pc,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_SysPFMG"
-PetscErrorCode PCSetFromOptions_SysPFMG(PC pc)
+PetscErrorCode PCSetFromOptions_SysPFMG(PetscOptionsObjectType *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PC_SysPFMG     *ex = (PC_SysPFMG*) pc->data;
   PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SysPFMG options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SysPFMG options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_syspfmg_print_statistics","Print statistics","HYPRE_SStructSysPFMGSetPrintLevel",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     int level=3;
@@ -1436,7 +1436,7 @@ PetscErrorCode PCSetUp_SysPFMG(PC pc)
   /* create the hypre sstruct solver object and set its information */
   if (ex->ss_solver) PetscStackCallStandard(HYPRE_SStructSysPFMGDestroy,(ex->ss_solver));
   PetscStackCallStandard(HYPRE_SStructSysPFMGCreate,(ex->hcomm,&ex->ss_solver));
-  ierr = PCSetFromOptions_SysPFMG(pc);CHKERRQ(ierr);
+  ierr = PCSetFromOptions_SysPFMG(PetscOptionsObjectType *PetscOptionsObject,pc);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetZeroGuess,(ex->ss_solver));
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetup,(ex->ss_solver,mx->ss_mat,mx->ss_b,mx->ss_x));
   PetscFunctionReturn(0);

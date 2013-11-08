@@ -231,7 +231,9 @@ int main(int argc,char **argv)
   user.mu          = 1.0e6;
   ierr = PetscOptionsGetBool(NULL,"-imex",&user.imex,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-monitor",&monitor,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mu","Stiffness parameter","<1.0e6>",user.mu,&user.mu,NULL);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Physical parameters",NULL);
+  ierr = PetscOptionsReal("-mu","Stiffness parameter","<1.0e6>",user.mu,&user.mu,PETSC_NULL);
+  ierr = PetscOptionsEnd();
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors, solve same ODE on every process

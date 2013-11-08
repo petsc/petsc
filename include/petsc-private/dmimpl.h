@@ -13,7 +13,7 @@ struct _DMOps {
   PetscErrorCode (*view)(DM,PetscViewer);
   PetscErrorCode (*load)(DM,PetscViewer);
   PetscErrorCode (*clone)(DM,DM*);
-  PetscErrorCode (*setfromoptions)(DM);
+  PetscErrorCode (*setfromoptions)(PetscOptionsObjectType*,DM);
   PetscErrorCode (*setup)(DM);
   PetscErrorCode (*createdefaultsection)(DM);
   PetscErrorCode (*createdefaultconstraints)(DM);

@@ -608,7 +608,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
   }
   ierr = PetscOptionsEnum("-dm_is_coloring_type","Global or local coloring of Jacobian","ISColoringType",ISColoringTypes,(PetscEnum)dm->coloringtype,(PetscEnum*)&dm->coloringtype,NULL);CHKERRQ(ierr);
   if (dm->ops->setfromoptions) {
-    ierr = (*dm->ops->setfromoptions)(dm);CHKERRQ(ierr);
+    ierr = (*dm->ops->setfromoptions)(PetscOptionsObject,dm);CHKERRQ(ierr);
   }
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject) dm);CHKERRQ(ierr);

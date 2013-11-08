@@ -276,7 +276,7 @@ static PetscErrorCode PCDestroy_PARMS(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_PARMS"
-static PetscErrorCode PCSetFromOptions_PARMS(PC pc)
+static PetscErrorCode PCSetFromOptions_PARMS(PetscOptionsObjectType *PetscOptionsObject,PC pc)
 {
   PC_PARMS          *parms = (PC_PARMS*)pc->data;
   PetscBool         flag;
@@ -285,7 +285,7 @@ static PetscErrorCode PCSetFromOptions_PARMS(PC pc)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("PARMS Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"PARMS Options");CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-pc_parms_global","Global preconditioner","PCPARMSSetGlobal",PCPARMSGlobalTypes,(PetscEnum)parms->global,(PetscEnum*)&global,&flag);CHKERRQ(ierr);
   if (flag) {ierr = PCPARMSSetGlobal(pc,global);CHKERRQ(ierr);}
   ierr = PetscOptionsEnum("-pc_parms_local","Local preconditioner","PCPARMSSetLocal",PCPARMSLocalTypes,(PetscEnum)parms->local,(PetscEnum*)&local,&flag);CHKERRQ(ierr);

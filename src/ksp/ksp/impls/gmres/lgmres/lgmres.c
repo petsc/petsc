@@ -709,7 +709,7 @@ PetscErrorCode KSPView_LGMRES(KSP ksp,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_LGMRES"
-PetscErrorCode KSPSetFromOptions_LGMRES(KSP ksp)
+PetscErrorCode KSPSetFromOptions_LGMRES(PetscOptionsObjectType *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       aug;
@@ -717,8 +717,8 @@ PetscErrorCode KSPSetFromOptions_LGMRES(KSP ksp)
   PetscBool      flg     = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = KSPSetFromOptions_GMRES(ksp);CHKERRQ(ierr);
-  ierr = PetscOptionsHead("KSP LGMRES Options");CHKERRQ(ierr);
+  ierr = KSPSetFromOptions_GMRES(PetscOptionsObject,ksp);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP LGMRES Options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_lgmres_constant","Use constant approx. space size","KSPGMRESSetConstant",lgmres->approx_constant,&lgmres->approx_constant,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_lgmres_augment","Number of error approximations to augment the Krylov space with","KSPLGMRESSetAugDim",lgmres->aug_dim,&aug,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPLGMRESSetAugDim(ksp,aug);CHKERRQ(ierr); }

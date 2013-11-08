@@ -159,7 +159,7 @@ static PetscErrorCode PCDestroy_BJacobi(PC pc)
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_BJacobi"
 
-static PetscErrorCode PCSetFromOptions_BJacobi(PC pc)
+static PetscErrorCode PCSetFromOptions_BJacobi(PetscOptionsObjectType *PetscOptionsObject,PC pc)
 {
   PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
   PetscErrorCode ierr;
@@ -167,7 +167,7 @@ static PetscErrorCode PCSetFromOptions_BJacobi(PC pc)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Block Jacobi options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Block Jacobi options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bjacobi_blocks","Total number of blocks","PCBJacobiSetTotalBlocks",jac->n,&blocks,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCBJacobiSetTotalBlocks(pc,blocks,NULL);CHKERRQ(ierr);

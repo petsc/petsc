@@ -881,7 +881,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   }
 
   if (snes->ops->setfromoptions) {
-    ierr = (*snes->ops->setfromoptions)(snes);CHKERRQ(ierr);
+    ierr = (*snes->ops->setfromoptions)(PetscOptionsObject,snes);CHKERRQ(ierr);
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */

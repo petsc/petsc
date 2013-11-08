@@ -95,7 +95,7 @@ PetscErrorCode  PCFactorGetUseInPlace_ILU(PC pc,PetscBool *flg)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_ILU"
-static PetscErrorCode PCSetFromOptions_ILU(PC pc)
+static PetscErrorCode PCSetFromOptions_ILU(PetscOptionsObjectType *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PetscInt       itmp;
@@ -104,8 +104,8 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
   PetscReal      tol;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("ILU Options");CHKERRQ(ierr);
-  ierr = PCSetFromOptions_Factor(pc);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"ILU Options");CHKERRQ(ierr);
+  ierr = PCSetFromOptions_Factor(PetscOptionsObject,pc);CHKERRQ(ierr);
 
   ierr = PetscOptionsInt("-pc_factor_levels","levels of fill","PCFactorSetLevels",(PetscInt)((PC_Factor*)ilu)->info.levels,&itmp,&flg);CHKERRQ(ierr);
   if (flg) ((PC_Factor*)ilu)->info.levels = itmp;

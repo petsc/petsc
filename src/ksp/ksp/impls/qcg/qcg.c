@@ -340,7 +340,7 @@ static PetscErrorCode  KSPQCGGetQuadratic_QCG(KSP ksp,PetscReal *quadratic)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_QCG"
-PetscErrorCode KSPSetFromOptions_QCG(KSP ksp)
+PetscErrorCode KSPSetFromOptions_QCG(PetscOptionsObjectType *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   PetscReal      delta;
@@ -348,7 +348,7 @@ PetscErrorCode KSPSetFromOptions_QCG(KSP ksp)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP QCG Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP QCG Options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ksp_qcg_trustregionradius","Trust Region Radius","KSPQCGSetTrustRegionRadius",cgP->delta,&delta,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPQCGSetTrustRegionRadius(ksp,delta);CHKERRQ(ierr); }
   ierr = PetscOptionsTail();CHKERRQ(ierr);

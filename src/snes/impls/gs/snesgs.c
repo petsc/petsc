@@ -190,7 +190,7 @@ PetscErrorCode SNESSetUp_NGS(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_NGS"
-PetscErrorCode SNESSetFromOptions_NGS(SNES snes)
+PetscErrorCode SNESSetFromOptions_NGS(PetscOptionsObjectType *PetscOptionsObject,SNES snes)
 {
   SNES_NGS       *gs = (SNES_NGS*)snes->data;
   PetscErrorCode ierr;
@@ -199,7 +199,7 @@ PetscErrorCode SNESSetFromOptions_NGS(SNES snes)
   PetscBool      flg,flg1,flg2,flg3;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SNES GS options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SNES GS options");CHKERRQ(ierr);
   /* GS Options */
   ierr = PetscOptionsInt("-snes_ngs_sweeps","Number of sweeps of GS to apply","SNESComputeGS",gs->sweeps,&sweeps,&flg);CHKERRQ(ierr);
   if (flg) {

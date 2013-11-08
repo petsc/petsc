@@ -558,7 +558,7 @@ PetscErrorCode  KSPGMRESMonitorKrylov(KSP ksp,PetscInt its,PetscReal fgnorm,void
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_GMRES"
-PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp)
+PetscErrorCode KSPSetFromOptions_GMRES(PetscOptionsObjectType *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       restart;
@@ -567,7 +567,7 @@ PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP GMRES Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP GMRES Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_gmres_restart","Number of Krylov search directions","KSPGMRESSetRestart",gmres->max_k,&restart,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPGMRESSetRestart(ksp,restart);CHKERRQ(ierr); }
   ierr = PetscOptionsReal("-ksp_gmres_haptol","Tolerance for exact convergence (happy ending)","KSPGMRESSetHapTol",gmres->haptol,&haptol,&flg);CHKERRQ(ierr);

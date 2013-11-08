@@ -744,7 +744,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
   ierr = PetscOptionsBool("-snes_linesearch_norms","Compute final norms in line search","SNESLineSearchSetComputeNorms",linesearch->norms,&linesearch->norms,NULL);CHKERRQ(ierr);
 
   if (linesearch->ops->setfromoptions) {
-    (*linesearch->ops->setfromoptions)(linesearch);CHKERRQ(ierr);
+    (*linesearch->ops->setfromoptions)(PetscOptionsObject,linesearch);CHKERRQ(ierr);
   }
 
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)linesearch);CHKERRQ(ierr);

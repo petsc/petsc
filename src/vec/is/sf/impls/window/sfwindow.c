@@ -383,13 +383,13 @@ static PetscErrorCode PetscSFSetUp_Window(PetscSF sf)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFSetFromOptions_Window"
-static PetscErrorCode PetscSFSetFromOptions_Window(PetscSF sf)
+static PetscErrorCode PetscSFSetFromOptions_Window(PetscOptionsObjectType *PetscOptionsObject,PetscSF sf)
 {
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("PetscSF Window options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"PetscSF Window options");CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-sf_window_sync","synchronization type to use for PetscSF Window communication","PetscSFWindowSetSyncType",PetscSFWindowSyncTypes,(PetscEnum)w->sync,(PetscEnum*)&w->sync,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

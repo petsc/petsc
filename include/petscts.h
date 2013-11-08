@@ -443,7 +443,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptChoose(TSAdapt,TS,PetscReal,PetscInt*,PetscRe
 PETSC_EXTERN PetscErrorCode TSAdaptCheckStage(TSAdapt,TS,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSAdaptView(TSAdapt,PetscViewer);
 PETSC_EXTERN PetscErrorCode TSAdaptLoad(TSAdapt,PetscViewer);
-PETSC_EXTERN PetscErrorCode TSAdaptSetFromOptions(TSAdapt);
+PETSC_EXTERN PetscErrorCode TSAdaptSetFromOptions(PetscOptionsObjectType*,TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptDestroy(TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetMonitor(TSAdapt,PetscBool);
 PETSC_EXTERN PetscErrorCode TSAdaptSetStepLimits(TSAdapt,PetscReal,PetscReal);
@@ -482,7 +482,7 @@ PETSC_EXTERN PetscErrorCode TSGLAdaptSetType(TSGLAdapt,TSGLAdaptType);
 PETSC_EXTERN PetscErrorCode TSGLAdaptSetOptionsPrefix(TSGLAdapt,const char[]);
 PETSC_EXTERN PetscErrorCode TSGLAdaptChoose(TSGLAdapt,PetscInt,const PetscInt[],const PetscReal[],const PetscReal[],PetscInt,PetscReal,PetscReal,PetscInt*,PetscReal*,PetscBool *);
 PETSC_EXTERN PetscErrorCode TSGLAdaptView(TSGLAdapt,PetscViewer);
-PETSC_EXTERN PetscErrorCode TSGLAdaptSetFromOptions(TSGLAdapt);
+PETSC_EXTERN PetscErrorCode TSGLAdaptSetFromOptions(PetscOptionsObjectType*,TSGLAdapt);
 PETSC_EXTERN PetscErrorCode TSGLAdaptDestroy(TSGLAdapt*);
 
 /*J

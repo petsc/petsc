@@ -55,14 +55,14 @@ static PetscErrorCode PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rt
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_SOR"
-PetscErrorCode PCSetFromOptions_SOR(PC pc)
+PetscErrorCode PCSetFromOptions_SOR(PetscOptionsObjectType *PetscOptionsObject,PC pc)
 {
   PC_SOR         *jac = (PC_SOR*)pc->data;
   PetscErrorCode ierr;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("(S)SOR options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"(S)SOR options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-pc_sor_omega","relaxation factor (0 < omega < 2)","PCSORSetOmega",jac->omega,&jac->omega,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-pc_sor_diagonal_shift","Add to the diagonal entries","",jac->fshift,&jac->fshift,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_sor_its","number of inner SOR iterations","PCSORSetIterations",jac->its,&jac->its,NULL);CHKERRQ(ierr);

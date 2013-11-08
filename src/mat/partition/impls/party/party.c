@@ -378,7 +378,7 @@ PetscErrorCode MatPartitioningPartySetBipart_Party(MatPartitioning part,PetscBoo
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetFromOptions_Party"
-PetscErrorCode MatPartitioningSetFromOptions_Party(MatPartitioning part)
+PetscErrorCode MatPartitioningSetFromOptions_Party(PetscOptionsObjectType *PetscOptionsObject,MatPartitioning part)
 {
   PetscErrorCode        ierr;
   PetscBool             flag;
@@ -387,7 +387,7 @@ PetscErrorCode MatPartitioningSetFromOptions_Party(MatPartitioning part)
   MatPartitioning_Party *party = (MatPartitioning_Party*)part->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Set Party partitioning options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Set Party partitioning options");CHKERRQ(ierr);
   ierr = PetscOptionsString("-mat_partitioning_party_global","Global method","MatPartitioningPartySetGlobal",party->global,value,256,&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatPartitioningPartySetGlobal(part,value);CHKERRQ(ierr); }
   ierr = PetscOptionsString("-mat_partitioning_party_local","Local method","MatPartitioningPartySetLocal",party->local,value,256,&flag);CHKERRQ(ierr);

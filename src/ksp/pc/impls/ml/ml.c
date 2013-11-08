@@ -567,7 +567,7 @@ PetscErrorCode PCReset_ML(PC pc)
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-extern PetscErrorCode PCSetFromOptions_MG(PC);
+extern PetscErrorCode PCSetFromOptions_MG(PetscOptionsObjectType *PetscOptionsObject,PC);
 extern PetscErrorCode PCReset_MG(PC);
 
 #undef __FUNCT__
@@ -887,7 +887,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
     ierr = PCSetType(subpc,PCSOR);CHKERRQ(ierr);
   }
   ierr = PetscObjectOptionsBegin((PetscObject)pc);CHKERRQ(ierr);
-  ierr = PCSetFromOptions_MG(pc);CHKERRQ(ierr); /* should be called in PCSetFromOptions_ML(), but cannot be called prior to PCMGSetLevels() */
+  ierr = PCSetFromOptions_MG(PetscOptionsObjectType *PetscOptionsObject,pc);CHKERRQ(ierr); /* should be called in PCSetFromOptions_ML(), but cannot be called prior to PCMGSetLevels() */
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = PetscMalloc1(Nlevels,&gridctx);CHKERRQ(ierr);
@@ -1035,7 +1035,7 @@ PetscErrorCode PCDestroy_ML(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_ML"
-PetscErrorCode PCSetFromOptions_ML(PC pc)
+PetscErrorCode PCSetFromOptions_ML(PetscOptionsObjectType *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PetscInt       indx,PrintLevel,partindx;
@@ -1053,7 +1053,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscOptionsHead("ML options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"ML options");CHKERRQ(ierr);
 
   PrintLevel = 0;
   indx       = 0;

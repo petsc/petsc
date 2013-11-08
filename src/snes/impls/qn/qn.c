@@ -605,7 +605,7 @@ static PetscErrorCode SNESDestroy_QN(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_QN"
-static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
+static PetscErrorCode SNESSetFromOptions_QN(PetscOptionsObjectType *PetscOptionsObject,SNES snes)
 {
 
   PetscErrorCode    ierr;
@@ -617,7 +617,7 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
   SNESQNType        qtype = qn->type;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SNES QN options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SNES QN options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_qn_m","Number of past states saved for L-BFGS methods","SNESQN",qn->m,&qn->m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_qn_powell_gamma","Powell angle tolerance",          "SNESQN", qn->powell_gamma, &qn->powell_gamma, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_qn_powell_downhill","Powell descent tolerance",        "SNESQN", qn->powell_downhill, &qn->powell_downhill, NULL);CHKERRQ(ierr);

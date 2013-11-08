@@ -5,7 +5,7 @@ const char *const SNESFASTypes[] = {"MULTIPLICATIVE","ADDITIVE","FULL","KASKADE"
 
 extern PetscErrorCode SNESDestroy_FAS(SNES snes);
 extern PetscErrorCode SNESSetUp_FAS(SNES snes);
-extern PetscErrorCode SNESSetFromOptions_FAS(SNES snes);
+extern PetscErrorCode SNESSetFromOptions_FAS(PetscOptionsObjectType *PetscOptionsObject,SNES snes);
 extern PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer);
 extern PetscErrorCode SNESSolve_FAS(SNES snes);
 extern PetscErrorCode SNESReset_FAS(SNES snes);
@@ -311,7 +311,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_FAS"
-PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
+PetscErrorCode SNESSetFromOptions_FAS(PetscOptionsObjectType *PetscOptionsObject,SNES snes)
 {
   SNES_FAS       *fas   = (SNES_FAS*) snes->data;
   PetscInt       levels = 1;
@@ -327,7 +327,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
 
   PetscFunctionBegin;
   ierr = SNESFASCycleIsFine(snes, &isFine);CHKERRQ(ierr);
-  ierr = PetscOptionsHead("SNESFAS Options-----------------------------------");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SNESFAS Options-----------------------------------");CHKERRQ(ierr);
 
   /* number of levels -- only process most options on the finest level */
   if (isFine) {

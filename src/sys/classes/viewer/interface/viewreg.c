@@ -310,7 +310,7 @@ PetscErrorCode  PetscViewerSetFromOptions(PetscViewer viewer)
     ierr = PetscViewerSetType(viewer,PETSCVIEWERASCII);CHKERRQ(ierr);
   }
   if (viewer->ops->setfromoptions) {
-    ierr = (*viewer->ops->setfromoptions)(viewer);CHKERRQ(ierr);
+    ierr = (*viewer->ops->setfromoptions)(PetscOptionsObject,viewer);CHKERRQ(ierr);
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */

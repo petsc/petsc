@@ -606,13 +606,13 @@ static PetscErrorCode TSSetUp_RK(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_RK"
-static PetscErrorCode TSSetFromOptions_RK(TS ts)
+static PetscErrorCode TSSetFromOptions_RK(PetscOptionsObjectType *PetscOptionsObject,TS ts)
 {
   PetscErrorCode ierr;
   char           rktype[256];
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("RK ODE solver options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"RK ODE solver options");CHKERRQ(ierr);
   {
     RKTableauLink  link;
     PetscInt       count,choice;

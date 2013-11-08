@@ -389,7 +389,7 @@ const char *const TSSundialsGramSchmidtTypes[] = {"","MODIFIED","CLASSICAL","TSS
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Sundials"
-PetscErrorCode TSSetFromOptions_Sundials(TS ts)
+PetscErrorCode TSSetFromOptions_Sundials(PetscOptionsObjectType *PetscOptionsObject,TS ts)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   PetscErrorCode ierr;
@@ -398,7 +398,7 @@ PetscErrorCode TSSetFromOptions_Sundials(TS ts)
   PC             pc;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SUNDIALS ODE solver options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SUNDIALS ODE solver options");CHKERRQ(ierr);
   ierr = PetscOptionsEList("-ts_sundials_type","Scheme","TSSundialsSetType",TSSundialsLmmTypes,3,TSSundialsLmmTypes[cvode->cvode_type],&indx,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = TSSundialsSetType(ts,(TSSundialsLmmType)indx);CHKERRQ(ierr);

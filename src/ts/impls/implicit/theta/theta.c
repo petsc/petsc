@@ -363,13 +363,13 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Theta"
-static PetscErrorCode TSSetFromOptions_Theta(TS ts)
+static PetscErrorCode TSSetFromOptions_Theta(PetscOptionsObjectType *PetscOptionsObject,TS ts)
 {
   TS_Theta       *th = (TS_Theta*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Theta ODE solver options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Theta ODE solver options");CHKERRQ(ierr);
   {
     ierr = PetscOptionsReal("-ts_theta_theta","Location of stage (0<Theta<=1)","TSThetaSetTheta",th->Theta,&th->Theta,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_theta_extrapolate","Extrapolate stage solution from previous solution (sometimes unstable)","TSThetaSetExtrapolate",th->extrapolate,&th->extrapolate,NULL);CHKERRQ(ierr);
