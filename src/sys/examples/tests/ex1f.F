@@ -11,12 +11,12 @@
       return
       end
 
-      subroutine MyErrHandler(line,fun,file,dir,n,p,mess,ctx,ierr)
+      subroutine MyErrHandler(line,fun,file,n,p,mess,ctx,ierr)
 #include <finclude/petscsys.h>
       integer line,n,p
       PetscInt ctx
       PetscErrorCode ierr
-      character*(*) fun,file,dir,mess
+      character*(*) fun,file,mess
 
       print*,'My error handler ',mess
       return
