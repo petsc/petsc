@@ -3044,7 +3044,7 @@ PetscErrorCode PetscFEIntegrateResidual_Nonaffine(PetscFE fem, PetscInt Ne, Pets
     numComponents += Nc;
   }
   ierr = PetscFEGetQuadrature(fe[field], &quad);CHKERRQ(ierr);
-  ierr = PetscMalloc6(quad.numQuadPoints*dim,PetscScalar,&f0,quad.numQuadPoints*dim*dim,PetscScalar,&f1,numComponents,PetscScalar,&u,numComponents*dim,PetscScalar,&gradU,dim,PetscReal,&x,dim,PetscReal,&realSpaceDer);
+  ierr = PetscMalloc6(quad.numPoints*dim,PetscScalar,&f0,quad.numPoints*dim*dim,PetscScalar,&f1,numComponents,PetscScalar,&u,numComponents*dim,PetscScalar,&gradU,dim,PetscReal,&x,dim,PetscReal,&realSpaceDer);
   for (f = 0; f < NfAux; ++f) {
     PetscInt Nc;
     ierr = PetscFEGetNumComponents(feAux[f], &Nc);CHKERRQ(ierr);
@@ -3052,9 +3052,9 @@ PetscErrorCode PetscFEIntegrateResidual_Nonaffine(PetscFE fem, PetscInt Ne, Pets
   }
   if (NfAux) {ierr = PetscMalloc2(numComponentsAux,PetscScalar,&a,numComponentsAux*dim,PetscScalar,&gradA);CHKERRQ(ierr);}
   for (e = 0; e < Ne; ++e) {
-    const PetscInt   Nq          = quad.numQuadPoints;
-    const PetscReal *quadPoints  = quad.quadPoints;
-    const PetscReal *quadWeights = quad.quadWeights;
+    const PetscInt   Nq          = quad.numPoints;
+    const PetscReal *quadPoints  = quad.points;
+    const PetscReal *quadWeights = quad.weights;
     PetscInt         q, f;
 
     for (q = 0; q < Nq; ++q) {
@@ -3245,7 +3245,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Nonaffine(PetscFE fem, PetscInt Ne, Pe
     numComponents += Nc;
   }
   ierr = PetscFEGetQuadrature(fe[field], &quad);CHKERRQ(ierr);
-  ierr = PetscMalloc6(quad.numQuadPoints*dim,PetscScalar,&f0,quad.numQuadPoints*dim*dim,PetscScalar,&f1,numComponents,PetscScalar,&u,numComponents*dim,PetscScalar,&gradU,dim,PetscReal,&x,dim,PetscReal,&realSpaceDer);
+  ierr = PetscMalloc6(quad.numPoints*dim,PetscScalar,&f0,quad.numPoints*dim*dim,PetscScalar,&f1,numComponents,PetscScalar,&u,numComponents*dim,PetscScalar,&gradU,dim,PetscReal,&x,dim,PetscReal,&realSpaceDer);
   for (f = 0; f < NfAux; ++f) {
     PetscInt Nc;
     ierr = PetscFEGetNumComponents(feAux[f], &Nc);CHKERRQ(ierr);
@@ -3253,9 +3253,9 @@ PetscErrorCode PetscFEIntegrateBdResidual_Nonaffine(PetscFE fem, PetscInt Ne, Pe
   }
   if (NfAux) {ierr = PetscMalloc2(numComponentsAux,PetscScalar,&a,numComponentsAux*dim,PetscScalar,&gradA);CHKERRQ(ierr);}
   for (e = 0; e < Ne; ++e) {
-    const PetscInt   Nq          = quad.numQuadPoints;
-    const PetscReal *quadPoints  = quad.quadPoints;
-    const PetscReal *quadWeights = quad.quadWeights;
+    const PetscInt   Nq          = quad.numPoints;
+    const PetscReal *quadPoints  = quad.points;
+    const PetscReal *quadWeights = quad.weights;
     PetscInt         q, f;
 
     for (q = 0; q < Nq; ++q) {
@@ -3475,9 +3475,9 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscInt Ne, Pets
   }
   if (NfAux) {ierr = PetscMalloc2(numComponentsAux,PetscScalar,&a,numComponentsAux*dim,PetscScalar,&gradA);CHKERRQ(ierr);}
   for (e = 0; e < Ne; ++e) {
-    const PetscInt   Nq          = quad.numQuadPoints;
-    const PetscReal *quadPoints  = quad.quadPoints;
-    const PetscReal *quadWeights = quad.quadWeights;
+    const PetscInt   Nq          = quad.numPoints;
+    const PetscReal *quadPoints  = quad.points;
+    const PetscReal *quadWeights = quad.weights;
     PetscInt         f, g, q;
 
     for (f = 0; f < NbI; ++f) {
