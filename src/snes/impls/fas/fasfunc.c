@@ -14,7 +14,7 @@ extern PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES, SNES*);
 
 Input Parameters:
 + snes  - FAS context
-- fastype  - SNES_FAS_ADDITIVE or SNES_FAS_MULTIPLICATIVE
+- fastype  - SNES_FAS_ADDITIVE, SNES_FAS_MULTIPLICATIVE, SNES_FAS_FULL, or SNES_FAS_KASKADE
 
 Level: intermediate
 
@@ -1171,5 +1171,38 @@ PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *smooth)
     ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothd);CHKERRQ(ierr);
   }
   *smooth = fas->smoothd;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESFASFullSetDownSweep"
+/*@
+   SNESFASFullSetDownSweep - Smooth during the initial downsweep for SNESFAS
+
+   Logically Collective on SNES
+
+   Input Parameters:
++  snes - the multigrid context
+-  swp - whether to downsweep or not
+
+   Options Database Key:
+.  -snes_fas_full_downsweep - Sets number of pre-smoothing steps
+
+   Level: advanced
+
+.keywords: FAS, MG, smooth, down, pre-smoothing, steps, multigrid
+
+.seealso: SNESFASSetNumberSmoothUp()
+@*/
+PetscErrorCode SNESFASFullSetDownSweep(SNES snes,PetscBool swp)
+{
+  SNES_FAS       *fas =  (SNES_FAS*)snes->data;
+  PetscErrorCode ierr = 0;
+
+  PetscFunctionBegin;
+  fas->full_downsweep = swp;
+  if (fas->next) {
+    ierr = SNESFASFullSetDownSweep(fas->next,swp);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
