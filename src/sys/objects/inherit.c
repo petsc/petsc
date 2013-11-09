@@ -5,8 +5,10 @@
 #include <petsc-private/petscimpl.h>  /*I   "petscsys.h"    I*/
 #include <petscviewer.h>
 
+#if defined(PETSC_USE_LOG)
 PetscObject *PetscObjects      = 0;
 PetscInt    PetscObjectsCounts = 0, PetscObjectsMaxCounts = 0;
+#endif
 
 extern PetscErrorCode PetscObjectGetComm_Petsc(PetscObject,MPI_Comm*);
 extern PetscErrorCode PetscObjectCompose_Petsc(PetscObject,const char[],PetscObject);
@@ -25,8 +27,10 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
 {
   static PetscInt idcnt = 1;
   PetscErrorCode  ierr;
+#if defined(PETSC_USE_LOG)
   PetscObject     *newPetscObjects;
   PetscInt         newPetscObjectsMaxCounts,i;
+#endif
 
   PetscFunctionBegin;
   h->classid               = classid;
@@ -54,6 +58,7 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
 
   ierr = PetscCommDuplicate(comm,&h->comm,&h->tag);CHKERRQ(ierr);
 
+#if defined(PETSC_USE_LOG)
   /* Keep a record of object created */
   PetscObjectsCounts++;
   for (i=0; i<PetscObjectsMaxCounts; i++) {
@@ -73,6 +78,7 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
   PetscObjects                        = newPetscObjects;
   PetscObjects[PetscObjectsMaxCounts] = h;
   PetscObjectsMaxCounts               = newPetscObjectsMaxCounts;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -88,7 +94,6 @@ extern PetscLogDouble PetscMemoryMaximumUsage;
 PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
 {
   PetscErrorCode ierr;
-  PetscInt       i;
 
   PetscFunctionBegin;
   PetscValidHeader(h,1);
@@ -123,6 +128,9 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
   ierr = PetscFree(h->fortrancallback[PETSC_FORTRAN_CALLBACK_CLASS]);CHKERRQ(ierr);
   ierr = PetscFree(h->fortrancallback[PETSC_FORTRAN_CALLBACK_SUBTYPE]);CHKERRQ(ierr);
 
+#if defined(PETSC_USE_LOG)
+  {
+  PetscInt i;
   /* Record object removal from list of all objects */
   for (i=0; i<PetscObjectsMaxCounts; i++) {
     if (PetscObjects[i] == h) {
@@ -135,6 +143,8 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
     ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
     PetscObjectsMaxCounts = 0;
   }
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -256,6 +266,7 @@ PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj,PetscFortranCallbac
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_USE_LOG)
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectsDump"
 /*@C
@@ -327,7 +338,9 @@ PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
   }
   PetscFunctionReturn(0);
 }
+#endif
 
+#if defined(PETSC_USE_LOG)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectsView"
@@ -423,6 +436,7 @@ char *PetscObjectsGetObjectMatlab(const char* name,PetscObject *obj)
   }
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectAddOptionsHandler"
