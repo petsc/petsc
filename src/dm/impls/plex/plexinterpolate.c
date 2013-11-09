@@ -319,6 +319,7 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(DMPLEX_Interpolate,dm,0,0,0);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   if (dim <= 1) {
@@ -335,6 +336,7 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
     odm  = idm;
   }
   *dmInt = idm;
+  ierr = PetscLogEventEnd(DMPLEX_Interpolate,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
