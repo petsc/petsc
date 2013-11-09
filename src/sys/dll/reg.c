@@ -103,6 +103,25 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
   }
+
+  ierr = PetscThreadCommInitializePackage();CHKERRQ(ierr);
+  ierr = PetscThreadCommWorldInitialize();CHKERRQ(ierr);
+  ierr = AOInitializePackage();CHKERRQ(ierr);
+  ierr = PetscSFInitializePackage();CHKERRQ(ierr);
+  ierr = CharacteristicInitializePackage();CHKERRQ(ierr);
+  ierr = ISInitializePackage();CHKERRQ(ierr);
+  ierr = VecInitializePackage();CHKERRQ(ierr);
+  ierr = MatInitializePackage();CHKERRQ(ierr);
+  ierr = DMInitializePackage();CHKERRQ(ierr);
+  ierr = PCInitializePackage();CHKERRQ(ierr);
+  ierr = KSPInitializePackage();CHKERRQ(ierr);
+  ierr = SNESInitializePackage();CHKERRQ(ierr);
+  ierr = TSInitializePackage();CHKERRQ(ierr);
+  {
+    MPI_Comm comm;
+    ierr = PetscCommDuplicate(PETSC_COMM_SELF,&comm,NULL);CHKERRQ(ierr);
+    ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&comm,NULL);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
