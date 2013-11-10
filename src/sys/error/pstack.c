@@ -1,7 +1,6 @@
 
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 
-#if defined(PETSC_USE_DEBUG)
 
 #if defined(PETSC_HAVE_PTHREADCLASSES)
 #if defined(PETSC_PTHREAD_LOCAL)
@@ -13,8 +12,10 @@ PetscThreadKey petscstack;
 PetscStack *petscstack = 0;
 #endif
 
-
 #if defined(PETSC_HAVE_AMS)
+
+#  if defined(PETSC_USE_DEBUG)
+
 #include <petscviewerams.h>
 
 static AMS_Memory amsmemstack = -1;
@@ -97,6 +98,26 @@ PetscErrorCode PetscStackAMSViewOff(void)
   PetscFunctionReturn(0);
 }
 
+#  else
+
+/* AMS stack functions do nothing in optimized mode */
+void PetscStackAMSGrantAccess(void) {}
+void PetscStackAMSTakeAccess(void) {}
+
+PetscErrorCode PetscStackViewAMS(void)
+{
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscStackAMSViewOff"
+PetscErrorCode  PetscStackAMSViewOff(void)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#  endif
 #endif
 
 PetscErrorCode PetscStackCreate(void)
@@ -106,6 +127,7 @@ PetscErrorCode PetscStackCreate(void)
 
   petscstack_in              = (PetscStack*)malloc(sizeof(PetscStack));
   petscstack_in->currentsize = 0;
+  petscstack_in->hotdepth    = 0;
   PetscThreadLocalSetValue((PetscThreadKey*)&petscstack,petscstack_in);
 
 #if defined(PETSC_HAVE_AMS)
@@ -185,72 +207,4 @@ PetscErrorCode  PetscStackPrint(PetscStack *sint,FILE *fp)
   for (i=sint->currentsize-2; i>=0; i--) fprintf(fp,"      [%d]  %s() line %d in %s\n",PetscGlobalRank,sint->function[i],sint->line[i],sint->file[i]);
   return 0;
 }
-
-#else
-
-#if defined(PETSC_HAVE_PTHREADCLASSES)
-#if defined(PETSC_PTHREAD_LOCAL)
-PETSC_PTHREAD_LOCAL void *petscstack = 0;
-#else
-PetscThreadKey petscstack;
-#endif
-#else
-void *petscstack = 0;
-#endif
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscStackCreate"
-PetscErrorCode  PetscStackCreate(void)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-#undef __FUNCT__
-#define __FUNCT__ "PetscStackView"
-PetscErrorCode  PetscStackView(PETSC_UNUSED FILE *file)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-#undef __FUNCT__
-#define __FUNCT__ "PetscStackDestroy"
-PetscErrorCode  PetscStackDestroy(void)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-#undef __FUNCT__
-#define __FUNCT__ "PetscStackCopy"
-PetscErrorCode  PetscStackCopy(PETSC_UNUSED void *sint,PETSC_UNUSED void *sout)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-#undef __FUNCT__
-#define __FUNCT__ "PetscStackPrint"
-PetscErrorCode  PetscStackPrint(PETSC_UNUSED void *sint,PETSC_UNUSED FILE *fp)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-
-#if defined(PETSC_HAVE_AMS)     /* AMS stack functions do nothing in optimized mode */
-void PetscStackAMSGrantAccess(void) {}
-void PetscStackAMSTakeAccess(void) {}
-
-PetscErrorCode PetscStackViewAMS(void)
-{
-  return 0;
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscStackAMSViewOff"
-PetscErrorCode  PetscStackAMSViewOff(void)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-#endif
-
-#endif
 

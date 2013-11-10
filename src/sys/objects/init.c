@@ -261,6 +261,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flg4 = PETSC_FALSE,flag;
   PetscErrorCode ierr;
   PetscReal      si,logthreshold;
+  PetscInt       intensity;
   int            i;
   PetscMPIInt    rank;
   char           version[256];
@@ -382,6 +383,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-fp_trap",&flg1,NULL);CHKERRQ(ierr);
   if (flg1) {ierr = PetscSetFPTrap(PETSC_FP_TRAP_ON);CHKERRQ(ierr);}
+  ierr = PetscOptionsGetInt(NULL,"-check_pointer_intensity",&intensity,&flag);CHKERRQ(ierr);
+  if (flag) {ierr = PetscCheckPointerSetIntensity(intensity);CHKERRQ(ierr);}
 
   /*
       Setup debugger information

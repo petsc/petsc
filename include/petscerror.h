@@ -351,6 +351,7 @@ PETSC_EXTERN PetscErrorCode PetscPopErrorHandler(void);
 PETSC_EXTERN PetscErrorCode PetscSignalHandlerDefault(int,void*);
 PETSC_EXTERN PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*)(int,void *),void*);
 PETSC_EXTERN PetscErrorCode PetscPopSignalHandler(void);
+PETSC_EXTERN PetscErrorCode PetscCheckPointerSetIntensity(PetscInt);
 
 /*MC
     PetscErrorPrintf - Prints error messages.
@@ -471,7 +472,6 @@ PETSC_STATIC_INLINE void PetscThreadLocalDestroy(PETSC_UNUSED PetscThreadKey key
 /*
       Allows the code to build a stack frame as it runs
 */
-#if defined(PETSC_USE_DEBUG)
 
 #define PETSCSTACKSIZE 64
 
@@ -481,6 +481,7 @@ typedef struct  {
         int       line[PETSCSTACKSIZE];
         PetscBool petscroutine[PETSCSTACKSIZE];
         int       currentsize;
+        int       hotdepth;
 } PetscStack;
 
 #if defined(PETSC_HAVE_PTHREADCLASSES)
@@ -499,6 +500,7 @@ PETSC_EXTERN PetscStack *petscstack;
 PETSC_EXTERN PetscErrorCode PetscStackCopy(PetscStack*,PetscStack*);
 PETSC_EXTERN PetscErrorCode PetscStackPrint(PetscStack*,FILE* fp);
 
+#if defined(PETSC_USE_DEBUG)
 PETSC_STATIC_INLINE PetscBool PetscStackActive(void)
 {
   return(PetscThreadLocalGetValue(petscstack) ? PETSC_TRUE : PETSC_FALSE);
@@ -509,7 +511,7 @@ PETSC_STATIC_INLINE PetscBool PetscStackActive(void)
  * least more useful than "unknown" because it can distinguish multiple calls from the same function.
  */
 
-#define PetscStackPushNoCheck(funct,petsc_routine)                            \
+#define PetscStackPushNoCheck(funct,petsc_routine,hot)                        \
   do {                                                                        \
     PetscStack* petscstackp;                                                  \
     PetscStackAMSTakeAccess();                                                \
@@ -520,6 +522,9 @@ PETSC_STATIC_INLINE PetscBool PetscStackActive(void)
       petscstackp->line[petscstackp->currentsize]      = __LINE__;            \
       petscstackp->petscroutine[petscstackp->currentsize] = petsc_routine;    \
       petscstackp->currentsize++;                                             \
+    }                                                                         \
+    if (petscstackp) {                                                        \
+      petscstackp->hotdepth += (hot || petscstackp->hotdepth);                \
     }                                                                         \
     PetscStackAMSGrantAccess();                                               \
   } while (0)
@@ -534,6 +539,9 @@ PETSC_STATIC_INLINE PetscBool PetscStackActive(void)
       petscstackp->file[petscstackp->currentsize]      = 0;             \
       petscstackp->line[petscstackp->currentsize]      = 0;             \
       petscstackp->petscroutine[petscstackp->currentsize] = PETSC_FALSE;\
+    }                                                                   \
+    if (petscstackp) {                                                  \
+      petscstackp->hotdepth = PetscMax(petscstackp->hotdepth-1,0);      \
     }                                                                   \
     PetscStackAMSGrantAccess();                                         \
   } while (0)
@@ -564,10 +572,42 @@ PETSC_STATIC_INLINE PetscBool PetscStackActive(void)
 
 .keywords: traceback, error handling
 M*/
-#define PetscFunctionBegin do {                                   \
-    PetscStackPushNoCheck(PETSC_FUNCTION_NAME,PETSC_TRUE);        \
-    PetscCheck__FUNCT__();                                        \
-    PetscRegister__FUNCT__();                                     \
+#define PetscFunctionBegin do {                                        \
+    PetscStackPushNoCheck(PETSC_FUNCTION_NAME,PETSC_TRUE,PETSC_FALSE); \
+    PetscCheck__FUNCT__();                                             \
+    PetscRegister__FUNCT__();                                          \
+  } while (0)
+
+/*MC
+   PetscFunctionBeginHot - Substitute for PetscFunctionBegin to be used in functions that are called in
+   performance-critical circumstances.  Use of this function allows for lighter profiling by default.
+
+   Synopsis:
+   #include "petscsys.h"
+   void PetscFunctionBeginHot;
+
+   Not Collective
+
+   Usage:
+.vb
+     int something;
+
+     PetscFunctionBeginHot;
+.ve
+
+   Notes:
+     Not available in Fortran
+
+   Level: developer
+
+.seealso: PetscFunctionBegin, PetscFunctionReturn()
+
+.keywords: traceback, error handling
+M*/
+#define PetscFunctionBeginHot do {                                     \
+    PetscStackPushNoCheck(PETSC_FUNCTION_NAME,PETSC_TRUE,PETSC_TRUE);  \
+    PetscCheck__FUNCT__();                                             \
+    PetscRegister__FUNCT__();                                          \
   } while (0)
 
 /*MC
@@ -589,15 +629,15 @@ M*/
    Notes:
      Not available in Fortran
 
-   Level: developer
+   Level: intermediate
 
-.seealso: PetscFunctionReturn()
+.seealso: PetscFunctionReturn(), PetscFunctionBegin, PetscFunctionBeginHot
 
 .keywords: traceback, error handling
 M*/
 #define PetscFunctionBeginUser                                          \
   do {                                                                  \
-    PetscStackPushNoCheck(PETSC_FUNCTION_NAME,PETSC_FALSE);             \
+    PetscStackPushNoCheck(PETSC_FUNCTION_NAME,PETSC_FALSE,PETSC_FALSE); \
     PetscCheck__FUNCT__();                                              \
     PetscRegister__FUNCT__();                                           \
   } while (0)
@@ -630,7 +670,7 @@ M*/
 
 #define PetscStackPush(n) \
   do {                                                                  \
-    PetscStackPushNoCheck(n,PETSC_FALSE);                               \
+    PetscStackPushNoCheck(n,PETSC_FALSE,PETSC_FALSE);                   \
     CHKMEMQ;                                                            \
   } while (0)
 
@@ -678,28 +718,16 @@ M*/
 
 #else
 
-#if defined(PETSC_HAVE_PTHREADCLASSES)
-#if defined(PETSC_PTHREAD_LOCAL)
-PETSC_EXTERN PETSC_PTHREAD_LOCAL void *petscstack;
-#else
-PETSC_EXTERN PetscThreadKey petscstack;
-#endif
-#elif defined(PETSC_HAVE_OPENMP)
-PETSC_EXTERN void *petscstack;
-#pragma omp threadprivate(petscstack)
-#else
-PETSC_EXTERN void *petscstack;
-#endif
-
-#define PetscStackPushNoCheck(funct,petsc_routine) do {} while (0)
-#define PetscStackPopNoCheck                       do {} while (0)
+PETSC_STATIC_INLINE PetscBool PetscStackActive(void) {return PETSC_FALSE;}
+#define PetscStackPushNoCheck(funct,petsc_routine,hot) do {} while (0)
+#define PetscStackPopNoCheck                           do {} while (0)
 #define PetscFunctionBegin
 #define PetscFunctionBeginUser
+#define PetscFunctionBeginHot
 #define PetscFunctionReturn(a)    return(a)
 #define PetscFunctionReturnVoid() return
 #define PetscStackPop             CHKMEMQ
 #define PetscStackPush(f)         CHKMEMQ
-#define PetscStackActive          PETSC_FALSE
 
 #endif
 
