@@ -969,8 +969,10 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_USE_LOG)
 extern PetscObject *PetscObjects;
 extern PetscInt    PetscObjectsCounts, PetscObjectsMaxCounts;
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFinalize"
@@ -1218,6 +1220,7 @@ PetscErrorCode  PetscFinalize(void)
     ierr = PetscThreadCommDestroy(&tcomm_world);CHKERRQ(ierr);
   }
 
+#if defined(PETSC_USE_LOG)
   /*
        List all objects the user may have forgot to free
   */
@@ -1233,10 +1236,13 @@ PetscErrorCode  PetscFinalize(void)
     ierr = PetscSequentialPhaseEnd_Private(local_comm,1);CHKERRQ(ierr);
     ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
   }
+#endif
+
+#if defined(PETSC_USE_LOG)
   PetscObjectsCounts    = 0;
   PetscObjectsMaxCounts = 0;
-
   ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
+#endif
 
 #if defined(PETSC_USE_LOG)
   ierr = PetscLogDestroy();CHKERRQ(ierr);
