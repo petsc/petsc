@@ -4408,11 +4408,10 @@ PetscErrorCode  MatCreateSeqAIJFromTriple(MPI_Comm comm,PetscInt m,PetscInt n,Pe
   ierr = PetscMalloc(m*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
   ierr = PetscMemzero(nnz,m*sizeof(PetscInt));CHKERRQ(ierr);
   for (ii = 0; ii < nz; ii++) {
-    nnz[i[ii]] += 1;
+    nnz[i[ii] - !!idx] += 1;
   }
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat,m,n,m,n);CHKERRQ(ierr);
-  /* ierr = MatSetBlockSizes(*mat,,);CHKERRQ(ierr); */
   ierr = MatSetType(*mat,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation_SeqAIJ(*mat,0,nnz);CHKERRQ(ierr);
   for (ii = 0; ii < nz; ii++) {
