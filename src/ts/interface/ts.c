@@ -586,7 +586,12 @@ static PetscErrorCode TSGetRHSMats_Private(TS ts,Mat *Arhs,Mat *Brhs)
   }
   if (Brhs) {
     if (!ts->Brhs) {
-      ierr = MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&ts->Brhs);CHKERRQ(ierr);
+      if (A != B) {
+        ierr = MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&ts->Brhs);CHKERRQ(ierr);
+      } else {
+        ts->Brhs = ts->Arhs;
+        ierr = PetscObjectReference((PetscObject)ts->Arhs);CHKERRQ(ierr);
+      }
     }
     *Brhs = ts->Brhs;
   }
