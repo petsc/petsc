@@ -1440,6 +1440,7 @@ PetscErrorCode DMPlexStratify(DM dm)
           ierr = DMLabelSetValue(label, support[s], newLevel);CHKERRQ(ierr);
         }
       }
+      ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
       ++level;
       ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
       ierr = DMLabelGetStratumIS(label, level, &pointIS);CHKERRQ(ierr);
