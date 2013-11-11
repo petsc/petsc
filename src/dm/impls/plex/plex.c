@@ -3050,132 +3050,22 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
     PetscInt numLabels = 0, l;
 
     /* Bcast number of labels */
-    while (next) {
-      ++numLabels; next = next->next;
-    }
+    while (next) {++numLabels; next = next->next;}
     ierr = MPI_Bcast(&numLabels, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
     next = mesh->labels;
     for (l = 0; l < numLabels; ++l) {
-      DMLabel         newLabel;
-      const PetscInt *partArray;
-      char           *name;
-      PetscInt       *stratumSizes = NULL, *points = NULL;
-      PetscMPIInt    *sendcnts     = NULL, *offsets = NULL, *displs = NULL;
-      PetscInt        nameSize, s, p, proc;
-      PetscBool       isdepth;
-      size_t          len = 0;
+      DMLabel   labelNew;
+      PetscBool isdepth;
 
-      /* Bcast name (could filter for no points) */
-      if (!rank) {ierr = PetscStrlen(next->name, &len);CHKERRQ(ierr);}
-      nameSize = len;
-      ierr     = MPI_Bcast(&nameSize, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-      ierr     = PetscMalloc(nameSize+1, &name);CHKERRQ(ierr);
-      if (!rank) {ierr = PetscMemcpy(name, next->name, nameSize+1);CHKERRQ(ierr);}
-      ierr = MPI_Bcast(name, nameSize+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
-      ierr = PetscStrcmp(name, "depth", &isdepth);CHKERRQ(ierr);
-      if (isdepth) {            /* skip because "depth" is not distributed */
-        ierr = PetscFree(name);CHKERRQ(ierr);
-        if (!rank) next = next->next;
-        continue;
-      }
-      ierr           = PetscNew(struct _n_DMLabel, &newLabel);CHKERRQ(ierr);
-      newLabel->name = name;
-      /* Bcast numStrata (could filter for no points in stratum) */
-      if (!rank) newLabel->numStrata = next->numStrata;
-      ierr = MPI_Bcast(&newLabel->numStrata, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-      ierr = PetscMalloc3(newLabel->numStrata,PetscInt,&newLabel->stratumValues,
-                          newLabel->numStrata,PetscInt,&newLabel->stratumSizes,
-                          newLabel->numStrata+1,PetscInt,&newLabel->stratumOffsets);CHKERRQ(ierr);
-      /* Bcast stratumValues (could filter for no points in stratum) */
-      if (!rank) {ierr = PetscMemcpy(newLabel->stratumValues, next->stratumValues, next->numStrata * sizeof(PetscInt));CHKERRQ(ierr);}
-      ierr = MPI_Bcast(newLabel->stratumValues, newLabel->numStrata, MPIU_INT, 0, comm);CHKERRQ(ierr);
-      /* Find size on each process and Scatter
-           we use the fact that both the stratum points and partArray are sorted */
-      if (!rank) {
-        ierr = ISGetIndices(part, &partArray);CHKERRQ(ierr);
-        ierr = PetscMalloc(numProcs*next->numStrata * sizeof(PetscInt), &stratumSizes);CHKERRQ(ierr);
-        ierr = PetscMemzero(stratumSizes, numProcs*next->numStrata * sizeof(PetscInt));CHKERRQ(ierr);
-        /* TODO We should switch to using binary search if the label is a lot smaller than partitions */
-        for (proc = 0; proc < numProcs; ++proc) {
-          PetscInt dof, off;
-
-          ierr = PetscSectionGetDof(partSection, proc, &dof);CHKERRQ(ierr);
-          ierr = PetscSectionGetOffset(partSection, proc, &off);CHKERRQ(ierr);
-          for (s = 0; s < next->numStrata; ++s) {
-            PetscInt lStart = next->stratumOffsets[s], lEnd = next->stratumOffsets[s]+next->stratumSizes[s];
-            PetscInt pStart = off,                     pEnd = off+dof;
-
-            while (pStart < pEnd && lStart < lEnd) {
-              if (partArray[pStart] > next->points[lStart]) {
-                ++lStart;
-              } else if (next->points[lStart] > partArray[pStart]) {
-                ++pStart;
-              } else {
-                ++stratumSizes[proc*next->numStrata+s];
-                ++pStart; ++lStart;
-              }
-            }
-          }
-        }
-        ierr = ISRestoreIndices(part, &partArray);CHKERRQ(ierr);
-      }
-      ierr = MPI_Scatter(stratumSizes, newLabel->numStrata, MPIU_INT, newLabel->stratumSizes, newLabel->numStrata, MPIU_INT, 0, comm);CHKERRQ(ierr);
-      /* Calculate stratumOffsets */
-      newLabel->stratumOffsets[0] = 0;
-      for (s = 0; s < newLabel->numStrata; ++s) {
-        newLabel->stratumOffsets[s+1] = newLabel->stratumSizes[s] + newLabel->stratumOffsets[s];
-      }
-      /* Pack points and Scatter */
-      if (!rank) {
-        ierr = PetscMalloc3(numProcs,PetscMPIInt,&sendcnts,numProcs,PetscMPIInt,&offsets,numProcs+1,PetscMPIInt,&displs);CHKERRQ(ierr);
-        displs[0] = 0;
-        for (p = 0; p < numProcs; ++p) {
-          sendcnts[p] = 0;
-          for (s = 0; s < next->numStrata; ++s) {
-            sendcnts[p] += stratumSizes[p*next->numStrata+s];
-          }
-          offsets[p]  = displs[p];
-          displs[p+1] = displs[p] + sendcnts[p];
-        }
-        ierr = PetscMalloc(displs[numProcs] * sizeof(PetscInt), &points);CHKERRQ(ierr);
-        /* TODO We should switch to using binary search if the label is a lot smaller than partitions */
-        for (proc = 0; proc < numProcs; ++proc) {
-          PetscInt dof, off;
-
-          ierr = PetscSectionGetDof(partSection, proc, &dof);CHKERRQ(ierr);
-          ierr = PetscSectionGetOffset(partSection, proc, &off);CHKERRQ(ierr);
-          for (s = 0; s < next->numStrata; ++s) {
-            PetscInt lStart = next->stratumOffsets[s], lEnd = next->stratumOffsets[s]+next->stratumSizes[s];
-            PetscInt pStart = off,                     pEnd = off+dof;
-
-            while (pStart < pEnd && lStart < lEnd) {
-              if (partArray[pStart] > next->points[lStart]) {
-                ++lStart;
-              } else if (next->points[lStart] > partArray[pStart]) {
-                ++pStart;
-              } else {
-                points[offsets[proc]++] = next->points[lStart];
-                ++pStart; ++lStart;
-              }
-            }
-          }
-        }
-      }
-      ierr = PetscMalloc(newLabel->stratumOffsets[newLabel->numStrata] * sizeof(PetscInt), &newLabel->points);CHKERRQ(ierr);
-      ierr = MPI_Scatterv(points, sendcnts, displs, MPIU_INT, newLabel->points, newLabel->stratumOffsets[newLabel->numStrata], MPIU_INT, 0, comm);CHKERRQ(ierr);
-      ierr = PetscFree(points);CHKERRQ(ierr);
-      ierr = PetscFree3(sendcnts,offsets,displs);CHKERRQ(ierr);
-      ierr = PetscFree(stratumSizes);CHKERRQ(ierr);
-      /* Renumber points */
-      ierr = ISGlobalToLocalMappingApply(renumbering, IS_GTOLM_MASK, newLabel->stratumOffsets[newLabel->numStrata], newLabel->points, NULL, newLabel->points);CHKERRQ(ierr);
-      /* Sort points */
-      for (s = 0; s < newLabel->numStrata; ++s) {
-        ierr = PetscSortInt(newLabel->stratumSizes[s], &newLabel->points[newLabel->stratumOffsets[s]]);CHKERRQ(ierr);
-      }
+      /* Skip "depth" because it is recreated */
+      if (!rank) {ierr = PetscStrcmp(next->name, "depth", &isdepth);CHKERRQ(ierr);}
+      ierr = MPI_Bcast(&isdepth, 1, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
+      if (isdepth) {if (!rank) next = next->next; continue;}
+      ierr = DMLabelDistribute(next, partSection, part, renumbering, &labelNew);CHKERRQ(ierr);
       /* Insert into list */
-      if (newNext) newNext->next = newLabel;
-      else pmesh->labels = newLabel;
-      newNext = newLabel;
+      if (newNext) newNext->next = labelNew;
+      else         pmesh->labels = labelNew;
+      newNext = labelNew;
       if (!rank) next = next->next;
     }
   }
