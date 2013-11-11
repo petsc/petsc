@@ -537,6 +537,9 @@ typedef khiter_t PetscHashIIter;
 #define PetscHashIIterGetKey(ht,hi,i) if (kh_exist((ht),(hi)))((i) = kh_key((ht),(hi))); else ((i) = -1);
 #define PetscHashIIterGetVal(ht,hi,ii) if (kh_exist((ht),(hi)))((ii) = kh_val((ht),(hi))); else ((ii) = -1);
 
+#define PetscHashIPut(ht,i,r,ii) ((ii)=kh_put(HASHI,(ht),(i),(r)))
+#define PetscHashIDel(ht,i) (kh_del(HASHI,(ht),(i)))
+
 #define PetscHashIAdd(ht,i,ii)                                          \
 {                                                                       \
  khiter_t _11_hi;                                                       \
@@ -1119,8 +1122,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKLGet(PetscHashIJKL h, PetscHashIJ
 #define __FUNCT__ "PetscHashIJKLClear"
 PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKLClear(PetscHashIJKL h)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   kh_clear(HASHIJKL, (h)->ht);
   PetscFunctionReturn(0);
