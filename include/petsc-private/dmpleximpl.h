@@ -5,6 +5,7 @@
 #include <petscdmplex.h> /*I      "petscdmplex.h"    I*/
 #include <petscbt.h>
 #include "petsc-private/dmimpl.h"
+#include <../src/sys/utils/hash.h>
 
 PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate, DMPLEX_Partition, DMPLEX_Distribute, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM;
 
@@ -15,16 +16,21 @@ PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate, DMPLEX_Partition, DMPLEX_Distribu
      - We can live with O(log) query, but we need O(1) iteration over strata
 */
 struct _n_DMLabel {
-  PetscInt  refct;
-  char     *name;           /* Label name */
-  PetscInt  numStrata;      /* Number of integer values */
-  PetscInt *stratumValues;  /* Value of each stratum */
-  PetscInt *stratumOffsets; /* Offset of each stratum */
-  PetscInt *stratumSizes;   /* Size of each stratum */
-  PetscInt *points;         /* Points for each stratum, sorted after setup */
-  DMLabel   next;           /* Linked list */
-  PetscInt  pStart, pEnd;   /* Bounds for index lookup */
-  PetscBT   bt;             /* A bit-wise index */
+  PetscInt    refct;
+  char       *name;           /* Label name */
+  PetscInt    numStrata;      /* Number of integer values */
+  PetscInt   *stratumValues;  /* Value of each stratum */
+  /* Basic sorted array storage */
+  PetscBool   arrayValid;     /* The array storage is valid (no additions need to be merged in) */
+  PetscInt   *stratumOffsets; /* Offset of each stratum */
+  PetscInt   *stratumSizes;   /* Size of each stratum */
+  PetscInt   *points;         /* Points for each stratum, always sorted */
+  /* Hashtable for fast insertion */
+  PetscHashI *ht;             /* Hash table for fast insertion */
+  /* Index for fast search */
+  PetscInt    pStart, pEnd;   /* Bounds for index lookup */
+  PetscBT     bt;             /* A bit-wise index */
+  DMLabel     next;           /* Linked list */
 };
 
 typedef struct {
