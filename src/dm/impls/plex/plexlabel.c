@@ -491,6 +491,26 @@ PetscErrorCode DMLabelGetStratumSize(DMLabel label, PetscInt value, PetscInt *si
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMLabelGetStratumBounds"
+PetscErrorCode DMLabelGetStratumBounds(DMLabel label, PetscInt value, PetscInt *start, PetscInt *end)
+{
+  PetscInt       v;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (start) {PetscValidPointer(start, 3); *start = 0;}
+  if (end)   {PetscValidPointer(end,   4); *end   = 0;}
+  ierr = DMLabelMakeValid_Private(label);CHKERRQ(ierr);
+  for (v = 0; v < label->numStrata; ++v) {
+    if (label->stratumValues[v] != value) continue;
+    if (start) *start = label->points[label->stratumOffsets[v]];
+    if (end)   *end   = label->points[label->stratumOffsets[v]+label->stratumSizes[v]-1]+1;
+    break;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMLabelGetStratumIS"
 PetscErrorCode DMLabelGetStratumIS(DMLabel label, PetscInt value, IS *points)
 {
