@@ -742,6 +742,7 @@ static PetscErrorCode PCBDDCSetDofsSplittingLocal_BDDC(PC pc,PetscInt n_is, IS I
   }
   pcbddc->n_ISForDofsLocal=n_is;
   if (n_is) pcbddc->user_provided_isfordofs = PETSC_TRUE;
+  pcbddc->recompute_topography = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -808,6 +809,7 @@ static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc,PetscInt n_is, IS ISForD
   }
   pcbddc->n_ISForDofs=n_is;
   if (n_is) pcbddc->user_provided_isfordofs = PETSC_TRUE;
+  pcbddc->recompute_topography = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
