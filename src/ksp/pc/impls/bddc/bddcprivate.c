@@ -3264,6 +3264,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 
   /* propagate symmetry info to coarse matrix */
   ierr = MatSetOption(coarse_mat,MAT_SYMMETRIC,issym);CHKERRQ(ierr);
+  ierr = MatSetOption(coarse_mat,MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
 
   /* Compute coarse null space (special handling by BDDC only) */
   if (pcbddc->NullSpace) {
