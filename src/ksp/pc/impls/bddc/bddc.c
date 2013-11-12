@@ -14,7 +14,6 @@
    - Propagate nearnullspace info among levels
 
    User interface
-   - provide new SetNeumannBoundaries (same Dirichlet)
    - Negative indices in dirichlet and Neumann is should be skipped (now they cause out-of-bounds access)
    - Provide PCApplyTranpose_BDDC
    - DofSplitting and DM attached to pc?
@@ -301,6 +300,52 @@ PetscErrorCode PCBDDCSetNullSpace(PC pc,MatNullSpace NullSpace)
 /* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetDirichletBoundaries_BDDC"
+static PetscErrorCode PCBDDCSetDirichletBoundaries_BDDC(PC pc,IS DirichletBoundaries)
+{
+  PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* last user setting takes precendence -> destroy any other customization */
+  ierr = ISDestroy(&pcbddc->DirichletBoundariesLocal);CHKERRQ(ierr);
+  ierr = ISDestroy(&pcbddc->DirichletBoundaries);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)DirichletBoundaries);CHKERRQ(ierr);
+  pcbddc->DirichletBoundaries = DirichletBoundaries;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetDirichletBoundaries"
+/*@
+ PCBDDCSetDirichletBoundaries - Set IS defining Dirichlet boundaries for the global problem.
+
+   Collective
+
+   Input Parameters:
++  pc - the preconditioning context
+-  DirichletBoundaries - parallel IS defining the Dirichlet boundaries
+
+   Level: intermediate
+
+   Notes: Any process can list any global node
+
+.seealso: PCBDDC
+@*/
+PetscErrorCode PCBDDCSetDirichletBoundaries(PC pc,IS DirichletBoundaries)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidHeaderSpecific(DirichletBoundaries,IS_CLASSID,2);
+  PetscCheckSameComm(pc,1,DirichletBoundaries,2);
+  ierr = PetscTryMethod(pc,"PCBDDCSetDirichletBoundaries_C",(PC,IS),(pc,DirichletBoundaries));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+/* -------------------------------------------------------------------------- */
+
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetDirichletBoundariesLocal_BDDC"
 static PetscErrorCode PCBDDCSetDirichletBoundariesLocal_BDDC(PC pc,IS DirichletBoundaries)
 {
@@ -308,9 +353,11 @@ static PetscErrorCode PCBDDCSetDirichletBoundariesLocal_BDDC(PC pc,IS DirichletB
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  /* last user setting takes precendence -> destroy any other customization */
+  ierr = ISDestroy(&pcbddc->DirichletBoundariesLocal);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->DirichletBoundaries);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)DirichletBoundaries);CHKERRQ(ierr);
-  pcbddc->DirichletBoundaries = DirichletBoundaries;
+  pcbddc->DirichletBoundariesLocal = DirichletBoundaries;
   PetscFunctionReturn(0);
 }
 
@@ -319,7 +366,7 @@ static PetscErrorCode PCBDDCSetDirichletBoundariesLocal_BDDC(PC pc,IS DirichletB
 /*@
  PCBDDCSetDirichletBoundariesLocal - Set IS defining Dirichlet boundaries for the global problem in local ordering.
 
-   Not collective
+   Collective
 
    Input Parameters:
 +  pc - the preconditioning context
@@ -345,6 +392,52 @@ PetscErrorCode PCBDDCSetDirichletBoundariesLocal(PC pc,IS DirichletBoundaries)
 /* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetNeumannBoundaries_BDDC"
+static PetscErrorCode PCBDDCSetNeumannBoundaries_BDDC(PC pc,IS NeumannBoundaries)
+{
+  PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* last user setting takes precendence -> destroy any other customization */
+  ierr = ISDestroy(&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
+  ierr = ISDestroy(&pcbddc->NeumannBoundaries);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)NeumannBoundaries);CHKERRQ(ierr);
+  pcbddc->NeumannBoundaries = NeumannBoundaries;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetNeumannBoundaries"
+/*@
+ PCBDDCSetNeumannBoundaries - Set IS defining Neumann boundaries for the global problem.
+
+   Collective
+
+   Input Parameters:
++  pc - the preconditioning context
+-  NeumannBoundaries - parallel IS defining the Neumann boundaries
+
+   Level: intermediate
+
+   Notes: Any process can list any global node
+
+.seealso: PCBDDC
+@*/
+PetscErrorCode PCBDDCSetNeumannBoundaries(PC pc,IS NeumannBoundaries)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidHeaderSpecific(NeumannBoundaries,IS_CLASSID,2);
+  PetscCheckSameComm(pc,1,NeumannBoundaries,2);
+  ierr = PetscTryMethod(pc,"PCBDDCSetNeumannBoundaries_C",(PC,IS),(pc,NeumannBoundaries));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+/* -------------------------------------------------------------------------- */
+
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetNeumannBoundariesLocal_BDDC"
 static PetscErrorCode PCBDDCSetNeumannBoundariesLocal_BDDC(PC pc,IS NeumannBoundaries)
 {
@@ -352,9 +445,11 @@ static PetscErrorCode PCBDDCSetNeumannBoundariesLocal_BDDC(PC pc,IS NeumannBound
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  /* last user setting takes precendence -> destroy any other customization */
+  ierr = ISDestroy(&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->NeumannBoundaries);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)NeumannBoundaries);CHKERRQ(ierr);
-  pcbddc->NeumannBoundaries = NeumannBoundaries;
+  pcbddc->NeumannBoundariesLocal = NeumannBoundaries;
   PetscFunctionReturn(0);
 }
 
@@ -363,7 +458,7 @@ static PetscErrorCode PCBDDCSetNeumannBoundariesLocal_BDDC(PC pc,IS NeumannBound
 /*@
  PCBDDCSetNeumannBoundariesLocal - Set IS defining Neumann boundaries for the global problem in local ordering.
 
-   Not collective
+   Collective
 
    Input Parameters:
 +  pc - the preconditioning context
@@ -389,8 +484,8 @@ PetscErrorCode PCBDDCSetNeumannBoundariesLocal(PC pc,IS NeumannBoundaries)
 /* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
-#define __FUNCT__ "PCBDDCGetDirichletBoundariesLocal_BDDC"
-static PetscErrorCode PCBDDCGetDirichletBoundariesLocal_BDDC(PC pc,IS *DirichletBoundaries)
+#define __FUNCT__ "PCBDDCGetDirichletBoundaries_BDDC"
+static PetscErrorCode PCBDDCGetDirichletBoundaries_BDDC(PC pc,IS *DirichletBoundaries)
 {
   PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
 
@@ -400,11 +495,52 @@ static PetscErrorCode PCBDDCGetDirichletBoundariesLocal_BDDC(PC pc,IS *Dirichlet
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCBDDCGetDirichletBoundaries"
+/*@
+ PCBDDCGetDirichletBoundaries - Get parallel IS for Dirichlet boundaries
+
+   Collective
+
+   Input Parameters:
+.  pc - the preconditioning context
+
+   Output Parameters:
+.  DirichletBoundaries - index set defining the Dirichlet boundaries
+
+   Level: intermediate
+
+   Notes: The IS returned (if any) is the same passed in earlier by the user with PCBDDCSetDirichletBoundaries
+
+.seealso: PCBDDC
+@*/
+PetscErrorCode PCBDDCGetDirichletBoundaries(PC pc,IS *DirichletBoundaries)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCBDDCGetDirichletBoundaries_C",(PC,IS*),(pc,DirichletBoundaries));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+/* -------------------------------------------------------------------------- */
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCGetDirichletBoundariesLocal_BDDC"
+static PetscErrorCode PCBDDCGetDirichletBoundariesLocal_BDDC(PC pc,IS *DirichletBoundaries)
+{
+  PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
+
+  PetscFunctionBegin;
+  *DirichletBoundaries = pcbddc->DirichletBoundariesLocal;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCGetDirichletBoundariesLocal"
 /*@
  PCBDDCGetDirichletBoundariesLocal - Get parallel IS for Dirichlet boundaries (in local ordering)
 
-   Not collective
+   Collective
 
    Input Parameters:
 .  pc - the preconditioning context
@@ -430,8 +566,8 @@ PetscErrorCode PCBDDCGetDirichletBoundariesLocal(PC pc,IS *DirichletBoundaries)
 /* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
-#define __FUNCT__ "PCBDDCGetNeumannBoundariesLocal_BDDC"
-static PetscErrorCode PCBDDCGetNeumannBoundariesLocal_BDDC(PC pc,IS *NeumannBoundaries)
+#define __FUNCT__ "PCBDDCGetNeumannBoundaries_BDDC"
+static PetscErrorCode PCBDDCGetNeumannBoundaries_BDDC(PC pc,IS *NeumannBoundaries)
 {
   PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
 
@@ -441,11 +577,52 @@ static PetscErrorCode PCBDDCGetNeumannBoundariesLocal_BDDC(PC pc,IS *NeumannBoun
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCBDDCGetNeumannBoundaries"
+/*@
+ PCBDDCGetNeumannBoundaries - Get parallel IS for Neumann boundaries
+
+   Collective
+
+   Input Parameters:
+.  pc - the preconditioning context
+
+   Output Parameters:
+.  NeumannBoundaries - index set defining the Neumann boundaries
+
+   Level: intermediate
+
+   Notes: The IS returned (if any) is the same passed in earlier by the user with PCBDDCSetNeumannBoundaries
+
+.seealso: PCBDDC
+@*/
+PetscErrorCode PCBDDCGetNeumannBoundaries(PC pc,IS *NeumannBoundaries)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCBDDCGetNeumannBoundaries_C",(PC,IS*),(pc,NeumannBoundaries));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+/* -------------------------------------------------------------------------- */
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCGetNeumannBoundariesLocal_BDDC"
+static PetscErrorCode PCBDDCGetNeumannBoundariesLocal_BDDC(PC pc,IS *NeumannBoundaries)
+{
+  PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
+
+  PetscFunctionBegin;
+  *NeumannBoundaries = pcbddc->NeumannBoundariesLocal;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCGetNeumannBoundariesLocal"
 /*@
  PCBDDCGetNeumannBoundariesLocal - Get parallel IS for Neumann boundaries (in local ordering)
 
-   Not collective
+   Collective
 
    Input Parameters:
 .  pc - the preconditioning context
@@ -619,8 +796,6 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   Mat_IS         *matis = (Mat_IS*)pc->pmat->data;
   Mat            temp_mat;
   IS             dirIS;
-  PetscInt       dirsize,i,*is_indices;
-  PetscScalar    *array_x,*array_diagonal;
   Vec            used_vec;
   PetscBool      guess_nonzero;
 
@@ -660,8 +835,12 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   ierr = VecCopy(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
 
   /* Take into account zeroed rows -> change rhs and store solution removed */
+  /* note that Dirichlet boundaries in global ordering (if any) has already been translated into local ordering in PCBDDCAnalyzeInterface */
   ierr = PCBDDCGetDirichletBoundariesLocal(pc,&dirIS);CHKERRQ(ierr);
   if (rhs && dirIS) {
+    PetscInt    dirsize,i,*is_indices;
+    PetscScalar *array_x,*array_diagonal;
+
     ierr = MatGetDiagonal(pc->pmat,pcis->vec1_global);CHKERRQ(ierr);
     ierr = VecPointwiseDivide(pcis->vec1_global,rhs,pcis->vec1_global);CHKERRQ(ierr);
     ierr = VecScatterBegin(matis->ctx,pcis->vec1_global,pcis->vec2_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -972,10 +1151,14 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetUseExactDirichlet_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLevels_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetNullSpace_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDirichletBoundaries_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDirichletBoundariesLocal_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetNeumannBoundaries_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetNeumannBoundariesLocal_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetDirichletBoundaries_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetDirichletBoundariesLocal_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetNeumannBoundaries_LocalC",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetNeumannBoundaries_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetNeumannBoundariesLocal_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDofsSplitting_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLocalAdjacencyGraph_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCCreateFETIDPOperators_C",NULL);CHKERRQ(ierr);
@@ -1345,6 +1528,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->ksp_D                      = 0;
   pcbddc->ksp_R                      = 0;
   pcbddc->NeumannBoundaries          = 0;
+  pcbddc->NeumannBoundariesLocal     = 0;
+  pcbddc->DirichletBoundaries        = 0;
+  pcbddc->DirichletBoundariesLocal   = 0;
   pcbddc->user_provided_isfordofs    = PETSC_FALSE;
   pcbddc->n_ISForDofs                = 0;
   pcbddc->ISForDofs                  = 0;
@@ -1382,9 +1568,13 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetUseExactDirichlet_C",PCBDDCSetUseExactDirichlet_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLevels_C",PCBDDCSetLevels_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetNullSpace_C",PCBDDCSetNullSpace_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDirichletBoundaries_C",PCBDDCSetDirichletBoundaries_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDirichletBoundariesLocal_C",PCBDDCSetDirichletBoundariesLocal_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetNeumannBoundaries_C",PCBDDCSetNeumannBoundaries_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetNeumannBoundariesLocal_C",PCBDDCSetNeumannBoundariesLocal_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetDirichletBoundaries_C",PCBDDCGetDirichletBoundaries_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetDirichletBoundariesLocal_C",PCBDDCGetDirichletBoundariesLocal_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetNeumannBoundaries_C",PCBDDCGetNeumannBoundaries_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetNeumannBoundariesLocal_C",PCBDDCGetNeumannBoundariesLocal_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDofsSplitting_C",PCBDDCSetDofsSplitting_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLocalAdjacencyGraph_C",PCBDDCSetLocalAdjacencyGraph_BDDC);CHKERRQ(ierr);

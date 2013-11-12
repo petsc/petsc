@@ -58,7 +58,9 @@ typedef struct {
   PetscInt                   n_ISForDofs;
   IS                         *ISForDofs;
   IS                         NeumannBoundaries;
+  IS                         NeumannBoundariesLocal;
   IS                         DirichletBoundaries;
+  IS                         DirichletBoundariesLocal;
   PetscBool                  switch_static;
   PetscInt                   coarsening_ratio;
   PetscInt                   current_level;
