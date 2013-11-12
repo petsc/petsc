@@ -661,7 +661,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     DMLabel faultLabel, hybridLabel;
 
     ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
-    ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex);CHKERRQ(ierr);
+    ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
     ierr = DMPlexGetLabel(*dm, "faultB", &faultLabel);CHKERRQ(ierr);
     ierr = DMPlexCreateHybridMesh(*dm, faultLabel, &hybridLabel, &dmHybrid);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
@@ -677,7 +677,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexDistribute(*dm, partitioner, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
       ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
-      ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex);CHKERRQ(ierr);
+      ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
     }
@@ -685,7 +685,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscObjectSetName((PetscObject) *dm, "Hybrid Mesh");CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
-  ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex);CHKERRQ(ierr);
+  ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

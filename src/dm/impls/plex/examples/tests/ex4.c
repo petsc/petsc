@@ -677,7 +677,7 @@ int main(int argc, char **argv)
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
   ierr = DMPlexCheckSymmetry(dm);CHKERRQ(ierr);
-  ierr = DMPlexCheckSkeleton(dm, user.cellSimplex);CHKERRQ(ierr);
+  ierr = DMPlexCheckSkeleton(dm, user.cellSimplex, 0);CHKERRQ(ierr);
 #if 0
   ierr = CheckOrientation(dm);CHKERRQ(ierr);
 #endif
