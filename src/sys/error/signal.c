@@ -117,7 +117,7 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
   SIGNAME[SIGSYS]  = "SYS";
 #endif
 #if !defined(PETSC_MISSING_SIGTERM)
-  SIGNAME[SIGTERM] = "Terminate: Somet process (or the batch system) has told this process to end";
+  SIGNAME[SIGTERM] = "Terminate: Some process (or the batch system) has told this process to end";
 #endif
 #if !defined(PETSC_MISSING_SIGTRAP)
   SIGNAME[SIGTRAP] = "TRAP";
