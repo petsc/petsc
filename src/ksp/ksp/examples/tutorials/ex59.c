@@ -834,8 +834,19 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
      Simple stride-1 IS
      It is not needed since, by default, PCBDDC assumes a stride-1 split */
   ierr = PetscMalloc(1*sizeof(IS),&bddc_dofs_splitting);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,localsize,0,1,&bddc_dofs_splitting[0]);CHKERRQ(ierr);
+#if 1
+  ierr = ISCreateStride(PETSC_COMM_WORLD,localsize,0,1,&bddc_dofs_splitting[0]);CHKERRQ(ierr);
+  ierr = PCBDDCSetDofsSplittingLocal(pc,1,bddc_dofs_splitting);CHKERRQ(ierr);
+#else
+  /* examples for global ordering */
+
+  /* each process lists the nodes it owns */
+  PetscInt sr,er;
+  ierr = MatGetOwnershipRange(A,&sr,&er);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_WORLD,er-sr,sr,1,&bddc_dofs_splitting[0]);CHKERRQ(ierr);
   ierr = PCBDDCSetDofsSplitting(pc,1,bddc_dofs_splitting);CHKERRQ(ierr);
+  /* Split can be passed in a more general way since any process can list any node */
+#endif
   ierr = ISDestroy(&bddc_dofs_splitting[0]);CHKERRQ(ierr);
   ierr = PetscFree(bddc_dofs_splitting);CHKERRQ(ierr);
 

@@ -716,6 +716,72 @@ PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC pc,PetscInt nvtxs,const PetscInt 
 /* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetDofsSplittingLocal_BDDC"
+static PetscErrorCode PCBDDCSetDofsSplittingLocal_BDDC(PC pc,PetscInt n_is, IS ISForDofs[])
+{
+  PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
+  PetscInt i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Destroy ISes if they were already set */
+  for (i=0;i<pcbddc->n_ISForDofsLocal;i++) {
+    ierr = ISDestroy(&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(pcbddc->ISForDofsLocal);CHKERRQ(ierr);
+  /* last user setting takes precendence -> destroy any other customization */
+  for (i=0;i<pcbddc->n_ISForDofs;i++) {
+    ierr = ISDestroy(&pcbddc->ISForDofs[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(pcbddc->ISForDofs);CHKERRQ(ierr);
+  pcbddc->n_ISForDofs = 0;
+  /* allocate space then set */
+  ierr = PetscMalloc(n_is*sizeof(IS),&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
+  for (i=0;i<n_is;i++) {
+    ierr = PetscObjectReference((PetscObject)ISForDofs[i]);CHKERRQ(ierr);
+    pcbddc->ISForDofsLocal[i]=ISForDofs[i];
+  }
+  pcbddc->n_ISForDofsLocal=n_is;
+  if (n_is) pcbddc->user_provided_isfordofs = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetDofsSplittingLocal"
+/*@
+ PCBDDCSetDofsSplittingLocal - Set index sets defining fields of the local subdomain matrix
+
+   Collective
+
+   Input Parameters:
++  pc - the preconditioning context
+-  n_is - number of index sets defining the fields
+.  ISForDofs - array of IS describing the fields in local ordering
+
+   Level: intermediate
+
+   Notes: n_is should be the same among processes. Not all nodes need to be listed: unlisted nodes will belong to a different field.
+
+.seealso: PCBDDC
+@*/
+PetscErrorCode PCBDDCSetDofsSplittingLocal(PC pc,PetscInt n_is, IS ISForDofs[])
+{
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(pc,n_is,2);
+  for (i=0;i<n_is;i++) {
+    PetscCheckSameComm(pc,1,ISForDofs[i],3);
+    PetscValidHeaderSpecific(ISForDofs[i],IS_CLASSID,3);
+  }
+  ierr = PetscTryMethod(pc,"PCBDDCSetDofsSplitting_C",(PC,PetscInt,IS[]),(pc,n_is,ISForDofs));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+/* -------------------------------------------------------------------------- */
+
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetDofsSplitting_BDDC"
 static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc,PetscInt n_is, IS ISForDofs[])
 {
@@ -729,6 +795,12 @@ static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc,PetscInt n_is, IS ISForD
     ierr = ISDestroy(&pcbddc->ISForDofs[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(pcbddc->ISForDofs);CHKERRQ(ierr);
+  /* last user setting takes precendence -> destroy any other customization */
+  for (i=0;i<pcbddc->n_ISForDofsLocal;i++) {
+    ierr = ISDestroy(&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(pcbddc->ISForDofsLocal);CHKERRQ(ierr);
+  pcbddc->n_ISForDofsLocal = 0;
   /* allocate space then set */
   ierr = PetscMalloc(n_is*sizeof(IS),&pcbddc->ISForDofs);CHKERRQ(ierr);
   for (i=0;i<n_is;i++) {
@@ -736,25 +808,25 @@ static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc,PetscInt n_is, IS ISForD
     pcbddc->ISForDofs[i]=ISForDofs[i];
   }
   pcbddc->n_ISForDofs=n_is;
-  pcbddc->user_provided_isfordofs = PETSC_TRUE;
+  if (n_is) pcbddc->user_provided_isfordofs = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetDofsSplitting"
 /*@
- PCBDDCSetDofsSplitting - Set index sets defining fields of the local Neumann matrix
+ PCBDDCSetDofsSplitting - Set index sets defining fields of the global matrix
 
-   Not collective
+   Collective
 
    Input Parameters:
 +  pc - the preconditioning context
 -  n_is - number of index sets defining the fields
-.  ISForDofs - array of IS describing the fields
+.  ISForDofs - array of IS describing the fields in global ordering
 
    Level: intermediate
 
-   Notes:
+   Notes: Any process can list any global node. Not all nodes need to be listed: unlisted nodes will belong to a different field.
 
 .seealso: PCBDDC
 @*/
@@ -765,8 +837,10 @@ PetscErrorCode PCBDDCSetDofsSplitting(PC pc,PetscInt n_is, IS ISForDofs[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(pc,n_is,2);
   for (i=0;i<n_is;i++) {
-    PetscValidHeaderSpecific(ISForDofs[i],IS_CLASSID,2);
+    PetscCheckSameComm(pc,1,ISForDofs[i],3);
+    PetscValidHeaderSpecific(ISForDofs[i],IS_CLASSID,3);
   }
   ierr = PetscTryMethod(pc,"PCBDDCSetDofsSplitting_C",(PC,PetscInt,IS[]),(pc,n_is,ISForDofs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1160,6 +1234,7 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetNeumannBoundaries_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetNeumannBoundariesLocal_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDofsSplitting_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDofsSplittingLocal_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLocalAdjacencyGraph_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCCreateFETIDPOperators_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCMatFETIDPGetRHS_C",NULL);CHKERRQ(ierr);
@@ -1533,7 +1608,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->DirichletBoundariesLocal   = 0;
   pcbddc->user_provided_isfordofs    = PETSC_FALSE;
   pcbddc->n_ISForDofs                = 0;
+  pcbddc->n_ISForDofsLocal           = 0;
   pcbddc->ISForDofs                  = 0;
+  pcbddc->ISForDofsLocal             = 0;
   pcbddc->ConstraintMatrix           = 0;
   pcbddc->use_exact_dirichlet_trick  = PETSC_TRUE;
   pcbddc->coarse_loc_to_glob         = 0;
@@ -1577,6 +1654,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetNeumannBoundaries_C",PCBDDCGetNeumannBoundaries_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetNeumannBoundariesLocal_C",PCBDDCGetNeumannBoundariesLocal_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDofsSplitting_C",PCBDDCSetDofsSplitting_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDofsSplittingLocal_C",PCBDDCSetDofsSplittingLocal_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLocalAdjacencyGraph_C",PCBDDCSetLocalAdjacencyGraph_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCCreateFETIDPOperators_C",PCBDDCCreateFETIDPOperators_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCMatFETIDPGetRHS_C",PCBDDCMatFETIDPGetRHS_BDDC);CHKERRQ(ierr);

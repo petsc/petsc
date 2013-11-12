@@ -47,7 +47,6 @@ PetscErrorCode PCBDDCSetUpSolvers(PC pc)
 PetscErrorCode PCBDDCResetCustomization(PC pc)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
-  PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -58,11 +57,8 @@ PetscErrorCode PCBDDCResetCustomization(PC pc)
   ierr = ISDestroy(&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->DirichletBoundaries);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->DirichletBoundariesLocal);CHKERRQ(ierr);
-  for (i=0;i<pcbddc->n_ISForDofs;i++) {
-    ierr = ISDestroy(&pcbddc->ISForDofs[i]);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(pcbddc->ISForDofs);CHKERRQ(ierr);
-  pcbddc->n_ISForDofs = 0;
+  ierr = PCBDDCSetDofsSplitting(pc,0,NULL);CHKERRQ(ierr);
+  ierr = PCBDDCSetDofsSplittingLocal(pc,0,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2005,7 +2001,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   PC_BDDC     *pcbddc = (PC_BDDC*)pc->data;
   PC_IS       *pcis = (PC_IS*)pc->data;
   Mat_IS      *matis  = (Mat_IS*)pc->pmat->data;
-  PetscInt    bs,ierr,i,vertex_size;
+  PetscInt    ierr,i,vertex_size;
   PetscViewer viewer=pcbddc->dbg_viewer;
 
   PetscFunctionBegin;
@@ -2036,27 +2032,29 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
     ierr = MatDestroy(&mat_adj);CHKERRQ(ierr);
   }
 
-  /* Set default dofs' splitting if no information has been provided by the user with PCBDDCSetDofsSplitting */
+  /* Set default dofs' splitting if no information has been provided by the user with PCBDDCSetDofsSplitting or PCBDDCSetDofsSplittingLocal */
   vertex_size = 1;
-  if (!pcbddc->user_provided_isfordofs) {
-    if (!pcbddc->n_ISForDofs) {
-      IS *custom_ISForDofs;
-
-      ierr = MatGetBlockSize(matis->A,&bs);CHKERRQ(ierr);
-      ierr = PetscMalloc(bs*sizeof(IS),&custom_ISForDofs);CHKERRQ(ierr);
-      for (i=0;i<bs;i++) {
-        ierr = ISCreateStride(PETSC_COMM_SELF,pcis->n/bs,i,bs,&custom_ISForDofs[i]);CHKERRQ(ierr);
+  if (pcbddc->user_provided_isfordofs) {
+    if (pcbddc->n_ISForDofs) { /* need to convert from global to local and remove references to global dofs splitting */
+      ierr = PetscMalloc(pcbddc->n_ISForDofs*sizeof(IS),&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
+      for (i=0;i<pcbddc->n_ISForDofs;i++) {
+        ierr = PCBDDCGlobalToLocal(pc,matis->ctx,pcbddc->ISForDofs[i],&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
+        ierr = ISDestroy(&pcbddc->ISForDofs[i]);CHKERRQ(ierr);
       }
-      ierr = PCBDDCSetDofsSplitting(pc,bs,custom_ISForDofs);CHKERRQ(ierr);
-      pcbddc->user_provided_isfordofs = PETSC_FALSE; 
-      /* remove my references to IS objects */
-      for (i=0;i<bs;i++) {
-        ierr = ISDestroy(&custom_ISForDofs[i]);CHKERRQ(ierr);
-      }
-      ierr = PetscFree(custom_ISForDofs);CHKERRQ(ierr);
+      pcbddc->n_ISForDofsLocal = pcbddc->n_ISForDofs;
+      pcbddc->n_ISForDofs = 0;
+      ierr = PetscFree(pcbddc->ISForDofs);CHKERRQ(ierr);
     }
-  } else { /* mat block size as vertex size (used for elasticity with rigid body modes as nearnullspace) */
+    /* mat block size as vertex size (used for elasticity with rigid body modes as nearnullspace) */
     ierr = MatGetBlockSize(matis->A,&vertex_size);CHKERRQ(ierr);
+  } else {
+    if (!pcbddc->n_ISForDofsLocal) { /* field split not present, create it in local ordering */
+      ierr = MatGetBlockSize(pc->pmat,&pcbddc->n_ISForDofsLocal);CHKERRQ(ierr);
+      ierr = PetscMalloc(pcbddc->n_ISForDofsLocal*sizeof(IS),&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
+      for (i=0;i<pcbddc->n_ISForDofsLocal;i++) {
+        ierr = ISCreateStride(PetscObjectComm((PetscObject)pc),pcis->n/pcbddc->n_ISForDofsLocal,i,pcbddc->n_ISForDofsLocal,&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
+      }
+    }
   }
 
   /* Setup of Graph */
@@ -2066,7 +2064,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   if (!pcbddc->NeumannBoundariesLocal && pcbddc->NeumannBoundaries) { /* need to convert from global to local */
     ierr = PCBDDCGlobalToLocal(pc,matis->ctx,pcbddc->NeumannBoundaries,&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
   }
-  ierr = PCBDDCGraphSetUp(pcbddc->mat_graph,vertex_size,pcbddc->NeumannBoundariesLocal,pcbddc->DirichletBoundariesLocal,pcbddc->n_ISForDofs,pcbddc->ISForDofs,pcbddc->user_primal_vertices);
+  ierr = PCBDDCGraphSetUp(pcbddc->mat_graph,vertex_size,pcbddc->NeumannBoundariesLocal,pcbddc->DirichletBoundariesLocal,pcbddc->n_ISForDofsLocal,pcbddc->ISForDofsLocal,pcbddc->user_primal_vertices);
 
   /* Graph's connected components analysis */
   ierr = PCBDDCGraphComputeConnectedComponents(pcbddc->mat_graph);CHKERRQ(ierr);
