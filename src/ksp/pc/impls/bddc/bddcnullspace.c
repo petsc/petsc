@@ -249,7 +249,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc,IS local_dofs)
     ierr = MatDestroy(&inv_small_mat);CHKERRQ(ierr);
     ierr = MatDestroy(&small_mat);CHKERRQ(ierr);
     ierr = MatScale(shell_ctx->Kbasis_mat,m_one);CHKERRQ(ierr);
-  
+
     /* Rebuild local PC */
     ierr = KSPGetPC(*local_ksp,&shell_ctx->local_pc);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)shell_ctx->local_pc);CHKERRQ(ierr);

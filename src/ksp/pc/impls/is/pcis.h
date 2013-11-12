@@ -38,6 +38,7 @@ typedef struct {
       vec1_D,
       vec2_D,
       vec3_D,
+      vec4_D,
       vec1_B,
       vec2_B,
       vec3_B,
