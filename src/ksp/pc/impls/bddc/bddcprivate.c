@@ -2108,6 +2108,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     pcbddc->new_primal_space_local = (PetscBool)(!pcbddc->new_primal_space_local);
     ierr = PetscFree(oprimal_indices_local_idxs);CHKERRQ(ierr);
   }
+  /* need to set pcbddc->new_primal_space_local to true when the local primal space is empty, otherwise pcbddc->is_R_local will not be created */
+  if (!pcbddc->local_primal_size) pcbddc->new_primal_space_local = PETSC_TRUE;
   /* new_primal_space will be used for numbering of coarse dofs, so it should be the same across all subdomains */
   ierr = MPI_Allreduce(&pcbddc->new_primal_space_local,&pcbddc->new_primal_space,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
 
@@ -3380,8 +3382,8 @@ PetscErrorCode PCBDDCComputePrimalNumbering(PC pc,PetscInt* coarse_size_n,PetscI
 
   PetscFunctionBegin;
   /* Compute global number of coarse dofs */
-  if (!pcbddc->primal_indices_local_idxs) {
-    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"BDDC Constraint matrix has not been created");
+  if (!pcbddc->primal_indices_local_idxs && pcbddc->local_primal_size) {
+    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"BDDC Local primal indices have not been created");
   }
   ierr = PCBDDCSubsetNumbering(PetscObjectComm((PetscObject)(pc->pmat)),matis->mapping,pcbddc->local_primal_size,pcbddc->primal_indices_local_idxs,NULL,&coarse_size,&local_primal_indices);CHKERRQ(ierr);
 
