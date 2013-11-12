@@ -298,10 +298,10 @@ PetscErrorCode DMLabelGetValue(DMLabel label, PetscInt point, PetscInt *value)
         break;
       }
     } else {
-      PetscInt iter;
+      PetscBool has;
 
-      PetscHashIMap(label->ht[v], point, iter);
-      if (iter >= 0) {
+      PetscHashIHasKey(label->ht[v], point, has);
+      if (has) {
         *value = label->stratumValues[v];
         break;
       }
@@ -436,10 +436,10 @@ PetscErrorCode DMLabelClearValue(DMLabel label, PetscInt point, PetscInt value)
       }
     }
   } else {
-    PetscInt iter;
+    PetscBool has;
 
-    PetscHashIMap(label->ht[v], point, iter);
-    if (iter >= 0) {PetscHashIDel(label->ht[v], point);}
+    PetscHashIHasKey(label->ht[v], point, has);
+    if (has) {PetscHashIDel(label->ht[v], point);}
   }
   PetscFunctionReturn(0);
 }
@@ -523,7 +523,11 @@ PetscErrorCode DMLabelGetStratumIS(DMLabel label, PetscInt value, IS *points)
   *points = NULL;
   for (v = 0; v < label->numStrata; ++v) {
     if (label->stratumValues[v] == value) {
-      ierr = ISCreateGeneral(PETSC_COMM_SELF, label->stratumSizes[v], &label->points[label->stratumOffsets[v]], PETSC_COPY_VALUES, points);CHKERRQ(ierr);
+      if (label->arrayValid) {
+        ierr = ISCreateGeneral(PETSC_COMM_SELF, label->stratumSizes[v], &label->points[label->stratumOffsets[v]], PETSC_COPY_VALUES, points);CHKERRQ(ierr);
+      } else {
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Need to implement this to speedup Stratify");
+      }
       break;
     }
   }
