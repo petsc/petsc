@@ -46,7 +46,6 @@ PetscErrorCode PCBDDCSetUpSolvers(PC pc)
 PetscErrorCode PCBDDCResetCustomization(PC pc)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
-  PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -54,14 +53,13 @@ PetscErrorCode PCBDDCResetCustomization(PC pc)
   ierr = ISDestroy(&pcbddc->user_primal_vertices);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&pcbddc->NullSpace);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->NeumannBoundaries);CHKERRQ(ierr);
+  ierr = ISDestroy(&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->DirichletBoundaries);CHKERRQ(ierr);
-  for (i=0;i<pcbddc->n_ISForDofs;i++) {
-    ierr = ISDestroy(&pcbddc->ISForDofs[i]);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(pcbddc->ISForDofs);CHKERRQ(ierr);
-  pcbddc->n_ISForDofs = 0;
   ierr = MatNullSpaceDestroy(&pcbddc->onearnullspace);CHKERRQ(ierr);
   ierr = PetscFree(pcbddc->onearnullvecs_state);CHKERRQ(ierr);
+  ierr = ISDestroy(&pcbddc->DirichletBoundariesLocal);CHKERRQ(ierr);
+  ierr = PCBDDCSetDofsSplitting(pc,0,NULL);CHKERRQ(ierr);
+  ierr = PCBDDCSetDofsSplittingLocal(pc,0,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2137,7 +2135,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   PC_BDDC     *pcbddc = (PC_BDDC*)pc->data;
   PC_IS       *pcis = (PC_IS*)pc->data;
   Mat_IS      *matis  = (Mat_IS*)pc->pmat->data;
-  PetscInt    bs,ierr,i,vertex_size;
+  PetscInt    ierr,i,vertex_size;
   PetscViewer viewer=pcbddc->dbg_viewer;
 
   PetscFunctionBegin;
@@ -2170,31 +2168,39 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
     ierr = MatDestroy(&mat_adj);CHKERRQ(ierr);
   }
 
-  /* Set default dofs' splitting if no information has been provided by the user with PCBDDCSetDofsSplitting */
+  /* Set default dofs' splitting if no information has been provided by the user with PCBDDCSetDofsSplitting or PCBDDCSetDofsSplittingLocal */
   vertex_size = 1;
-  if (!pcbddc->user_provided_isfordofs) {
-    if (!pcbddc->n_ISForDofs) {
-      IS *custom_ISForDofs;
-
-      ierr = MatGetBlockSize(matis->A,&bs);CHKERRQ(ierr);
-      ierr = PetscMalloc(bs*sizeof(IS),&custom_ISForDofs);CHKERRQ(ierr);
-      for (i=0;i<bs;i++) {
-        ierr = ISCreateStride(PETSC_COMM_SELF,pcis->n/bs,i,bs,&custom_ISForDofs[i]);CHKERRQ(ierr);
+  if (pcbddc->user_provided_isfordofs) {
+    if (pcbddc->n_ISForDofs) { /* need to convert from global to local and remove references to global dofs splitting */
+      ierr = PetscMalloc(pcbddc->n_ISForDofs*sizeof(IS),&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
+      for (i=0;i<pcbddc->n_ISForDofs;i++) {
+        ierr = PCBDDCGlobalToLocal(pc,matis->ctx,pcbddc->ISForDofs[i],&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
+        ierr = ISDestroy(&pcbddc->ISForDofs[i]);CHKERRQ(ierr);
       }
-      ierr = PCBDDCSetDofsSplitting(pc,bs,custom_ISForDofs);CHKERRQ(ierr);
-      pcbddc->user_provided_isfordofs = PETSC_FALSE;
-      /* remove my references to IS objects */
-      for (i=0;i<bs;i++) {
-        ierr = ISDestroy(&custom_ISForDofs[i]);CHKERRQ(ierr);
-      }
-      ierr = PetscFree(custom_ISForDofs);CHKERRQ(ierr);
+      pcbddc->n_ISForDofsLocal = pcbddc->n_ISForDofs;
+      pcbddc->n_ISForDofs = 0;
+      ierr = PetscFree(pcbddc->ISForDofs);CHKERRQ(ierr);
     }
-  } else { /* mat block size as vertex size (used for elasticity with rigid body modes as nearnullspace) */
+    /* mat block size as vertex size (used for elasticity with rigid body modes as nearnullspace) */
     ierr = MatGetBlockSize(matis->A,&vertex_size);CHKERRQ(ierr);
+  } else {
+    if (!pcbddc->n_ISForDofsLocal) { /* field split not present, create it in local ordering */
+      ierr = MatGetBlockSize(pc->pmat,&pcbddc->n_ISForDofsLocal);CHKERRQ(ierr);
+      ierr = PetscMalloc(pcbddc->n_ISForDofsLocal*sizeof(IS),&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
+      for (i=0;i<pcbddc->n_ISForDofsLocal;i++) {
+        ierr = ISCreateStride(PetscObjectComm((PetscObject)pc),pcis->n/pcbddc->n_ISForDofsLocal,i,pcbddc->n_ISForDofsLocal,&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
+      }
+    }
   }
 
   /* Setup of Graph */
-  ierr = PCBDDCGraphSetUp(pcbddc->mat_graph,vertex_size,pcbddc->NeumannBoundaries,pcbddc->DirichletBoundaries,pcbddc->n_ISForDofs,pcbddc->ISForDofs,pcbddc->user_primal_vertices);
+  if (!pcbddc->DirichletBoundariesLocal && pcbddc->DirichletBoundaries) { /* need to convert from global to local */
+    ierr = PCBDDCGlobalToLocal(pc,matis->ctx,pcbddc->DirichletBoundaries,&pcbddc->DirichletBoundariesLocal);CHKERRQ(ierr);
+  }
+  if (!pcbddc->NeumannBoundariesLocal && pcbddc->NeumannBoundaries) { /* need to convert from global to local */
+    ierr = PCBDDCGlobalToLocal(pc,matis->ctx,pcbddc->NeumannBoundaries,&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
+  }
+  ierr = PCBDDCGraphSetUp(pcbddc->mat_graph,vertex_size,pcbddc->NeumannBoundariesLocal,pcbddc->DirichletBoundariesLocal,pcbddc->n_ISForDofsLocal,pcbddc->ISForDofsLocal,pcbddc->user_primal_vertices);
 
   /* Graph's connected components analysis */
   ierr = PCBDDCGraphComputeConnectedComponents(pcbddc->mat_graph);CHKERRQ(ierr);
@@ -3439,3 +3445,45 @@ PetscErrorCode PCBDDCComputePrimalNumbering(PC pc,PetscInt* coarse_size_n,PetscI
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCGlobalToLocal"
+PetscErrorCode PCBDDCGlobalToLocal(PC pc,VecScatter ctx,IS globalis,IS* localis)
+{
+  PC_IS*         pcis = (PC_IS*)pc->data;
+  IS             localis_t;
+  PetscInt       i,lsize,*idxs;
+  PetscScalar    *vals;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* get dirichlet indices in local ordering exploiting local to global map */
+  ierr = ISGetLocalSize(globalis,&lsize);CHKERRQ(ierr);
+  ierr = PetscMalloc(lsize*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
+  for (i=0;i<lsize;i++) vals[i] = 1.0;
+  ierr = ISGetIndices(globalis,(const PetscInt**)&idxs);CHKERRQ(ierr);
+  ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
+  ierr = VecSetValues(pcis->vec1_global,lsize,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(pcis->vec1_global);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(globalis,(const PetscInt**)&idxs);CHKERRQ(ierr);
+  ierr = PetscFree(vals);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(pcis->vec1_global);CHKERRQ(ierr);
+  /* now compute dirichlet set in local ordering */
+  ierr = VecScatterBegin(ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(pcis->vec1_N,(const PetscScalar**)&vals);CHKERRQ(ierr);
+  for (i=0,lsize=0;i<pcis->n;i++) {
+    if (vals[i] == 1.0) {
+      lsize++;
+    }
+  }
+  ierr = PetscMalloc(lsize*sizeof(PetscInt),&idxs);CHKERRQ(ierr);
+  for (i=0,lsize=0;i<pcis->n;i++) {
+    if (vals[i] == 1.0) {
+      idxs[lsize++] = i;
+    }
+  }
+  ierr = VecRestoreArrayRead(pcis->vec1_N,(const PetscScalar**)&vals);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),lsize,idxs,PETSC_OWN_POINTER,&localis_t);CHKERRQ(ierr);
+  *localis = localis_t;
+  PetscFunctionReturn(0);
+}

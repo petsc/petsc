@@ -766,7 +766,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   }
   /* Get info for dofs splitting */
   for (i=0;i<n_ISForDofs;i++) {
-    ierr = ISGetSize(ISForDofs[i],&is_size);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(ISForDofs[i],&is_size);CHKERRQ(ierr);
     ierr = ISGetIndices(ISForDofs[i],(const PetscInt**)&is_indices);CHKERRQ(ierr);
     for (j=0;j<is_size;j++) {
       graph->which_dof[is_indices[j]]=i;
@@ -778,7 +778,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   ierr = VecSet(local_vec2,0.0);CHKERRQ(ierr);
   if (neumann_is) {
     ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
-    ierr = ISGetSize(neumann_is,&is_size);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(neumann_is,&is_size);CHKERRQ(ierr);
     ierr = ISGetIndices(neumann_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     for (i=0;i<is_size;i++) {
       array[is_indices[i]] = 1.0;
@@ -804,7 +804,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   if (dirichlet_is) {
     ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
     ierr = VecGetArray(local_vec2,&array2);CHKERRQ(ierr);
-    ierr = ISGetSize(dirichlet_is,&is_size);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(dirichlet_is,&is_size);CHKERRQ(ierr);
     ierr = ISGetIndices(dirichlet_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     for (i=0;i<is_size;i++){
       k = is_indices[i];
@@ -878,7 +878,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
 
   /* mark special nodes -> each will become a single node equivalence class */
   if (custom_primal_vertices) {
-    ierr = ISGetSize(custom_primal_vertices,&is_size);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(custom_primal_vertices,&is_size);CHKERRQ(ierr);
     ierr = ISGetIndices(custom_primal_vertices,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     for (i=0;i<is_size;i++) {
       graph->special_dof[is_indices[i]] = SPECIAL_MARK-i;
@@ -1028,7 +1028,8 @@ PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap)
   /* zeroes memory */
   ierr = PetscMemzero(graph->count,graph->nvtxs*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(graph->subset,graph->nvtxs*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(graph->which_dof,graph->nvtxs*sizeof(PetscInt));CHKERRQ(ierr);
+  /* use -1 as a default value for which_dof array */
+  for (n=0;n<graph->nvtxs;n++) graph->which_dof[n] = -1;
   ierr = PetscMemzero(graph->cptr,(graph->nvtxs+1)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(graph->queue,graph->nvtxs*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(graph->special_dof,graph->nvtxs*sizeof(PetscInt));CHKERRQ(ierr);
