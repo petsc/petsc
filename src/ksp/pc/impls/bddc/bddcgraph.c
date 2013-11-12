@@ -778,7 +778,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   ierr = VecSet(local_vec2,0.0);CHKERRQ(ierr);
   if (neumann_is) {
     ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
-    ierr = ISGetSize(neumann_is,&is_size);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(neumann_is,&is_size);CHKERRQ(ierr);
     ierr = ISGetIndices(neumann_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     for (i=0;i<is_size;i++) {
       array[is_indices[i]] = 1.0;
@@ -804,7 +804,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   if (dirichlet_is) {
     ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
     ierr = VecGetArray(local_vec2,&array2);CHKERRQ(ierr);
-    ierr = ISGetSize(dirichlet_is,&is_size);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(dirichlet_is,&is_size);CHKERRQ(ierr);
     ierr = ISGetIndices(dirichlet_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     for (i=0;i<is_size;i++){
       k = is_indices[i];
