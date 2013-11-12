@@ -2061,70 +2061,10 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
 
   /* Setup of Graph */
   if (!pcbddc->DirichletBoundariesLocal && pcbddc->DirichletBoundaries) { /* need to convert from global to local */
-    PetscInt    i,lsize,*idxs;
-    PetscScalar *vals;
-
-    /* get dirichlet indices in local ordering exploiting local to global map */
-    ierr = ISGetLocalSize(pcbddc->DirichletBoundaries,&lsize);CHKERRQ(ierr);
-    ierr = PetscMalloc(lsize*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
-    for (i=0;i<lsize;i++) vals[i] = 1.0;
-    ierr = ISGetIndices(pcbddc->DirichletBoundaries,(const PetscInt**)&idxs);CHKERRQ(ierr);
-    ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
-    ierr = VecSetValues(pcis->vec1_global,lsize,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(pcis->vec1_global);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(pcbddc->DirichletBoundaries,(const PetscInt**)&idxs);CHKERRQ(ierr);
-    ierr = PetscFree(vals);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(pcis->vec1_global);CHKERRQ(ierr);
-    /* now compute dirichlet set in local ordering */
-    ierr = VecScatterBegin(matis->ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(matis->ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(pcis->vec1_N,(const PetscScalar**)&vals);CHKERRQ(ierr);
-    for (i=0,lsize=0;i<pcis->n;i++) {
-      if (vals[i] == 1.0) {
-        lsize++;
-      }
-    }
-    ierr = PetscMalloc(lsize*sizeof(PetscInt),&idxs);CHKERRQ(ierr);
-    for (i=0,lsize=0;i<pcis->n;i++) {
-      if (vals[i] == 1.0) {
-        idxs[lsize++] = i;
-      }
-    }
-    ierr = VecRestoreArrayRead(pcis->vec1_N,(const PetscScalar**)&vals);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),lsize,idxs,PETSC_OWN_POINTER,&pcbddc->DirichletBoundariesLocal);CHKERRQ(ierr);
+    ierr = PCBDDCGlobalToLocal(pc,matis->ctx,pcbddc->DirichletBoundaries,&pcbddc->DirichletBoundariesLocal);CHKERRQ(ierr);
   }
   if (!pcbddc->NeumannBoundariesLocal && pcbddc->NeumannBoundaries) { /* need to convert from global to local */
-    PetscInt    i,lsize,*idxs;
-    PetscScalar *vals;
-
-    /* get dirichlet indices in local ordering exploiting local to global map */
-    ierr = ISGetLocalSize(pcbddc->NeumannBoundaries,&lsize);CHKERRQ(ierr);
-    ierr = PetscMalloc(lsize*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
-    for (i=0;i<lsize;i++) vals[i] = 1.0;
-    ierr = ISGetIndices(pcbddc->NeumannBoundaries,(const PetscInt**)&idxs);CHKERRQ(ierr);
-    ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
-    ierr = VecSetValues(pcis->vec1_global,lsize,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(pcis->vec1_global);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(pcbddc->NeumannBoundaries,(const PetscInt**)&idxs);CHKERRQ(ierr);
-    ierr = PetscFree(vals);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(pcis->vec1_global);CHKERRQ(ierr);
-    /* now compute dirichlet set in local ordering */
-    ierr = VecScatterBegin(matis->ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(matis->ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(pcis->vec1_N,(const PetscScalar**)&vals);CHKERRQ(ierr);
-    for (i=0,lsize=0;i<pcis->n;i++) {
-      if (vals[i] == 1.0) {
-        lsize++;
-      }
-    }
-    ierr = PetscMalloc(lsize*sizeof(PetscInt),&idxs);CHKERRQ(ierr);
-    for (i=0,lsize=0;i<pcis->n;i++) {
-      if (vals[i] == 1.0) {
-        idxs[lsize++] = i;
-      }
-    }
-    ierr = VecRestoreArrayRead(pcis->vec1_N,(const PetscScalar**)&vals);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),lsize,idxs,PETSC_OWN_POINTER,&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
+    ierr = PCBDDCGlobalToLocal(pc,matis->ctx,pcbddc->NeumannBoundaries,&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
   }
   ierr = PCBDDCGraphSetUp(pcbddc->mat_graph,vertex_size,pcbddc->NeumannBoundariesLocal,pcbddc->DirichletBoundariesLocal,pcbddc->n_ISForDofs,pcbddc->ISForDofs,pcbddc->user_primal_vertices);
 
@@ -3302,3 +3242,45 @@ PetscErrorCode PCBDDCComputePrimalNumbering(PC pc,PetscInt* coarse_size_n,PetscI
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCGlobalToLocal"
+PetscErrorCode PCBDDCGlobalToLocal(PC pc,VecScatter ctx,IS globalis,IS* localis)
+{
+  PC_IS*         pcis = (PC_IS*)pc->data;
+  IS             localis_t;
+  PetscInt       i,lsize,*idxs;
+  PetscScalar    *vals;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* get dirichlet indices in local ordering exploiting local to global map */
+  ierr = ISGetLocalSize(globalis,&lsize);CHKERRQ(ierr);
+  ierr = PetscMalloc(lsize*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
+  for (i=0;i<lsize;i++) vals[i] = 1.0;
+  ierr = ISGetIndices(globalis,(const PetscInt**)&idxs);CHKERRQ(ierr);
+  ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
+  ierr = VecSetValues(pcis->vec1_global,lsize,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(pcis->vec1_global);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(globalis,(const PetscInt**)&idxs);CHKERRQ(ierr);
+  ierr = PetscFree(vals);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(pcis->vec1_global);CHKERRQ(ierr);
+  /* now compute dirichlet set in local ordering */
+  ierr = VecScatterBegin(ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(pcis->vec1_N,(const PetscScalar**)&vals);CHKERRQ(ierr);
+  for (i=0,lsize=0;i<pcis->n;i++) {
+    if (vals[i] == 1.0) {
+      lsize++;
+    }
+  }
+  ierr = PetscMalloc(lsize*sizeof(PetscInt),&idxs);CHKERRQ(ierr);
+  for (i=0,lsize=0;i<pcis->n;i++) {
+    if (vals[i] == 1.0) {
+      idxs[lsize++] = i;
+    }
+  }
+  ierr = VecRestoreArrayRead(pcis->vec1_N,(const PetscScalar**)&vals);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),lsize,idxs,PETSC_OWN_POINTER,&localis_t);CHKERRQ(ierr);
+  *localis = localis_t;
+  PetscFunctionReturn(0);
+}

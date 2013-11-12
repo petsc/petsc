@@ -58,6 +58,7 @@ PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC);
 PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt,Vec[]);
 PetscErrorCode PCBDDCSetUseExactDirichlet(PC,PetscBool);
 PetscErrorCode PCBDDCSetLevel(PC,PetscInt);
+PetscErrorCode PCBDDCGlobalToLocal(PC,VecScatter,IS,IS*);
 
 /* feti-dp */
 PetscErrorCode PCBDDCCreateFETIDPMatContext(PC,FETIDPMat_ctx*);
