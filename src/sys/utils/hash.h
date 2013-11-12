@@ -588,6 +588,14 @@ typedef khiter_t PetscHashIIter;
   }                                                                     \
 }
 
+#define PetscHashIHasKey(ht,i,has)                \
+{                                                 \
+  khiter_t _9_hi;                                 \
+  _9_hi = kh_get(HASHI,(ht),(i));                 \
+  if (_9_hi != kh_end((ht))) (has) = PETSC_TRUE;  \
+  else                       (has) = PETSC_FALSE; \
+}                                                 \
+
 /*
  Locate index i in the hash table ht. If i is found in table, ii is its index,
  between 0 and kh_size(ht)-1 (inclusive); otherwise, ii == -1.
