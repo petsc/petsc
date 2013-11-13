@@ -1,4 +1,35 @@
-  0 SNES Function norm 13.3457 
+0 SNES Function norm 13.3457 
+    0 KSP Residual norm 2.61037 
+    1 KSP Residual norm 1.1058 
+    2 KSP Residual norm 0.694597 
+    3 KSP Residual norm 0.421115 
+    4 KSP Residual norm 0.283943 
+    5 KSP Residual norm 0.200007 
+    6 KSP Residual norm 0.132885 
+    7 KSP Residual norm 0.0938276 
+    8 KSP Residual norm 0.0783396 
+    9 KSP Residual norm 0.075 
+   10 KSP Residual norm 0.0689161 
+   11 KSP Residual norm 0.0441371 
+   12 KSP Residual norm 0.0193091 
+   13 KSP Residual norm 0.0129113 
+   14 KSP Residual norm 0.0104855 
+   15 KSP Residual norm 0.010151 
+   16 KSP Residual norm 0.00952533 
+   17 KSP Residual norm 0.00835051 
+   18 KSP Residual norm 0.00705831 
+   19 KSP Residual norm 0.00525371 
+   20 KSP Residual norm 0.00517801 
+   21 KSP Residual norm 0.00439643 
+   22 KSP Residual norm 0.00258432 
+   23 KSP Residual norm 0.00228274 
+   24 KSP Residual norm 0.000332991 
+   25 KSP Residual norm 0.000118315 
+   26 KSP Residual norm 2.77239e-05 
+   27 KSP Residual norm 2.74204e-05 
+   28 KSP Residual norm 2.67294e-05 
+   29 KSP Residual norm 2.816e-10 
+  Linear solve converged due to CONVERGED_RTOL iterations 29
   1 SNES Function norm 1.36733e-09 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 3 MPI processes
