@@ -334,6 +334,8 @@ PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt timestep, hsize_
     max_chunk_size = 4*GiB,                                           /* HDF5 internal limitation */
     zslices=da->p, yslices=da->n, xslices=da->m;
 
+  PetscFunctionBegin;
+
   MPI_Comm_size(PetscObjectComm(xin), &comm_size);
   avg_local_vec_size = (hsize_t) ceil(vec_size*1.0/comm_size);      /* we will attempt to use this as the chunk size */
 
@@ -348,22 +350,24 @@ PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt timestep, hsize_
                                );
   chunk_size = (hsize_t) PetscMax(1,chunkDims[0])*PetscMax(1,chunkDims[1])*PetscMax(1,chunkDims[2])*PetscMax(1,chunkDims[3])*PetscMax(1,chunkDims[4])*PetscMax(1,chunkDims[5])*sizeof(PetscScalar);
 
-  // if size/rank > max_chunk_size, we need radical measures: even going down to
-  // avg_local_vec_size is not enough, so we simply use chunk size of 4 GiB no matter
-  // what, composed in the most efficient way possible.
-  // N.B. this minimises the number of chunks, which may or may not be the optimal
-  // solution. In a BG, for example, the optimal solution is probably to make # chunks = #
-  // IO nodes involved, but this author has no access to a BG to figure out how to
-  // reliably find the right number. And even then it may or may not be enough.
+  /*
+   if size/rank > max_chunk_size, we need radical measures: even going down to
+   avg_local_vec_size is not enough, so we simply use chunk size of 4 GiB no matter
+   what, composed in the most efficient way possible.
+   N.B. this minimises the number of chunks, which may or may not be the optimal
+   solution. In a BG, for example, the optimal solution is probably to make # chunks = #
+   IO nodes involved, but this author has no access to a BG to figure out how to
+   reliably find the right number. And even then it may or may not be enough.
+   */
   if (avg_local_vec_size > max_chunk_size) {
-    // check if we can just split local z-axis: is that enough?
+    /* check if we can just split local z-axis: is that enough? */
     zslices=(hsize_t) ceil(vec_size*1.0/(da->p*max_chunk_size))*zslices;
     if (zslices > da->P) {
-      // lattice is too large in xy-directions, splitting z only is not enough
+      /* lattice is too large in xy-directions, splitting z only is not enough */
       zslices = da->P;
       yslices=(hsize_t) ceil(vec_size*1.0/(zslices*da->n*max_chunk_size))*yslices;
       if (yslices > da->N) {
-	// lattice is too large in x-direction, splitting along z, y is not enough
+	/* lattice is too large in x-direction, splitting along z, y is not enough */
 	yslices = da->N;
 	xslices=(hsize_t) ceil(vec_size*1.0/(zslices*yslices*da->m*max_chunk_size))*xslices;
       }
@@ -372,45 +376,45 @@ PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt timestep, hsize_
     if (timestep >= 0) {
       ++dim;
     }
-    // prefer to split z-axis, even down to planar slices
+    /* prefer to split z-axis, even down to planar slices */
     if (da->dim == 3) {
-      chunkDims[dim++] = (hsize_t) floor(da->P*1.0/zslices);
-      chunkDims[dim++] = (hsize_t) floor(da->N*1.0/yslices);
-      chunkDims[dim++] = (hsize_t) floor(da->M*1.0/xslices);
+      chunkDims[dim++] = (hsize_t) da->P/zslices;
+      chunkDims[dim++] = (hsize_t) da->N/yslices;
+      chunkDims[dim++] = (hsize_t) da->M/xslices;
     } else {
-      // This is a 2D world exceeding 4GiB in size; yes, I've seen them, even used myself
-      chunkDims[dim++] = (hsize_t) floor(da->N*1.0/yslices);
-      chunkDims[dim++] = (hsize_t) floor(da->M*1.0/xslices);
+      /* This is a 2D world exceeding 4GiB in size; yes, I've seen them, even used myself */
+      chunkDims[dim++] = (hsize_t) da->N/yslices;
+      chunkDims[dim++] = (hsize_t) da->M/xslices;
     }
     chunk_size = (hsize_t) PetscMax(1,chunkDims[0])*PetscMax(1,chunkDims[1])*PetscMax(1,chunkDims[2])*PetscMax(1,chunkDims[3])*PetscMax(1,chunkDims[4])*PetscMax(1,chunkDims[5])*sizeof(double);
   } else {
     if (target_size < chunk_size) {
-      // only change the defaults if target_size < chunk_size
+      /* only change the defaults if target_size < chunk_size */
       dim = 0;
       if (timestep >= 0) {
 	++dim;
       }
-      // prefer to split z-axis, even down to planar slices
+      /* prefer to split z-axis, even down to planar slices */
       if (da->dim == 3) {
-	// try splitting the z-axis to core-size bits, i.e. divide chunk size by # comm_size in z-direction
+	/* try splitting the z-axis to core-size bits, i.e. divide chunk size by # comm_size in z-direction */
 	if (target_size >= chunk_size/da->p) {
-	  // just make chunks the size of <local_z>x<whole_world_y>x<whole_world_x>x<dof>
+	  /* just make chunks the size of <local_z>x<whole_world_y>x<whole_world_x>x<dof> */
 	  chunkDims[dim] = (hsize_t) ceil(da->P*1.0/da->p);
 	} else {
-	  // oops, just splitting the z-axis is NOT ENOUGH, need to split more; let's be
-	  // radical and let everyone write all they've got
+	  /* oops, just splitting the z-axis is NOT ENOUGH, need to split more; let's be
+           radical and let everyone write all they've got */
 	  chunkDims[dim++] = (hsize_t) ceil(da->P*1.0/da->p);
 	  chunkDims[dim++] = (hsize_t) ceil(da->N*1.0/da->n);
 	  chunkDims[dim++] = (hsize_t) ceil(da->M*1.0/da->m);
 	}
       } else {
-	// This is a 2D world exceeding 4GiB in size; yes, I've seen them, even used myself
+	/* This is a 2D world exceeding 4GiB in size; yes, I've seen them, even used myself */
 	if (target_size >= chunk_size/da->n) {
-	  // just make chunks the size of <local_z>x<whole_world_y>x<whole_world_x>x<dof>
+	  /* just make chunks the size of <local_z>x<whole_world_y>x<whole_world_x>x<dof> */
 	  chunkDims[dim] = (hsize_t) ceil(da->N*1.0/da->n);
 	} else {
-	  // oops, just splitting the z-axis is NOT ENOUGH, need to split more; let's be
-	  // radical and let everyone write all they've got
+	  /* oops, just splitting the z-axis is NOT ENOUGH, need to split more; let's be
+	   radical and let everyone write all they've got */
 	  chunkDims[dim++] = (hsize_t) ceil(da->N*1.0/da->n);
 	  chunkDims[dim++] = (hsize_t) ceil(da->M*1.0/da->m);
 	}
@@ -418,7 +422,7 @@ PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt timestep, hsize_
       }
       chunk_size = (hsize_t) PetscMax(1,chunkDims[0])*PetscMax(1,chunkDims[1])*PetscMax(1,chunkDims[2])*PetscMax(1,chunkDims[3])*PetscMax(1,chunkDims[4])*PetscMax(1,chunkDims[5])*sizeof(double);
     } else {
-      // precomputed chunks are fine, we don't need to do anything
+      /* precomputed chunks are fine, we don't need to do anything */
     }
   }
   PetscFunctionReturn(0);
@@ -503,7 +507,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   ++dim;
 #endif
 
-  VecGetHDF5ChunkSize(da, xin, timestep, chunkDims);
+  ierr = VecGetHDF5ChunkSize(da, xin, timestep, chunkDims); CHKERRQ(ierr);
 
   filespace = H5Screate_simple(dim, dims, maxDims);
   if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
