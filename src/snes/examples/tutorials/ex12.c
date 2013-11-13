@@ -209,7 +209,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->variableCoefficient = COEFF_NONE;
   options->jacobianMF      = PETSC_FALSE;
   options->showInitial     = PETSC_FALSE;
-  options->showSolution    = PETSC_TRUE;
+  options->showSolution    = PETSC_FALSE;
 
   options->fem.f0Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->f0Funcs;
   options->fem.f1Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->f1Funcs;
