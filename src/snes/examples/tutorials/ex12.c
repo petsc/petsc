@@ -757,27 +757,6 @@ int main(int argc, char **argv)
     }
   }
 
-  if (user.runType == RUN_FULL) {
-    PetscViewer viewer;
-    Vec         uLocal;
-    const char *name;
-
-    ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, "ex12_sol.vtk");CHKERRQ(ierr);
-
-    ierr = DMGetLocalVector(dm, &uLocal);CHKERRQ(ierr);
-    ierr = PetscObjectGetName((PetscObject) u, &name);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) uLocal, name);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalBegin(dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd(dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
-    ierr = VecView(uLocal, viewer);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(dm, &uLocal);CHKERRQ(ierr);
-
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
-
   if (user.bcType == NEUMANN) {
     ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
   }
