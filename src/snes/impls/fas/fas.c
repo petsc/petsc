@@ -112,7 +112,7 @@ PetscErrorCode SNESReset_FAS(SNES snes)
     ierr = VecDestroy(&fas->Xg);CHKERRQ(ierr);
     ierr = VecDestroy(&fas->Fg);CHKERRQ(ierr);
   }
-  if (fas->next) ierr = SNESReset(fas->next);CHKERRQ(ierr);
+  if (fas->next) {ierr = SNESReset(fas->next);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
