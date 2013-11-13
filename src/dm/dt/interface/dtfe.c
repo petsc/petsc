@@ -3158,9 +3158,9 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
 "  const int N_bst  = N_bt*N_q;                      // The block size, LCM(N_b*N_comp, N_q), Notice that a block is not processed simultaneously\n"
 "  const int N_t    = N_bst*N_bl;                    // The number of threads, N_bst * N_bl\n"
 "  const int N_bc   = N_t/N_comp;                    // The number of cells per batch (N_b*N_q*N_bl)\n"
-"  const int N_c    = N_cb * N_bc;\n"
 "  const int N_sbc  = N_bst / (N_q * N_comp);\n"
 "  const int N_sqc  = N_bst / N_bt;\n"
+"  /*const int N_c    = N_cb * N_bc;*/\n"
 "\n"
 "  /* Calculated indices */\n"
 "  /*const int tidx    = get_local_id(0) + get_local_size(0)*get_local_id(1);*/\n"
@@ -3223,7 +3223,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   /* Batch loads */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "  for (int batch = 0; batch < N_cb; ++batch) {\n"
-"    const int Goffset = gidx*N_c;\n"
+"    const int Goffset = gidx*N_cb*N_bc;\n"
 "    /* Load geometry */\n"
 "    detJ[tidx] = jacobianDeterminants[Goffset+batch*N_bc+tidx];\n"
 "    for (int n = 0; n < dim*dim; ++n) {\n"
@@ -3233,14 +3233,14 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
 "    /* Load coefficients u_i for this cell */\n"
 "    for (int n = 0; n < N_bt; ++n) {\n"
 "      const int offset = n*N_t;\n"
-"      u_i[offset+tidx] = coefficients[(gidx*N_c*N_bt)+batch*N_t*N_b+offset+tidx];\n"
+"      u_i[offset+tidx] = coefficients[(Goffset*N_bt)+batch*N_t*N_b+offset+tidx];\n"
 "    }\n",
                        &count);STRING_ERROR_CHECK("Message to short");
   if (useAux) {
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "    /* Load coefficients a_i for this cell */\n"
 "    /* TODO: This should not be N_t here, it should be N_bc*N_comp_aux */\n"
-"    a_i[tidx] = coefficientsAux[(gidx*N_c)+batch*N_t+tidx];\n",
+"    a_i[tidx] = coefficientsAux[Goffset+batch*N_t+tidx];\n",
                             &count);STRING_ERROR_CHECK("Message to short");
   }
   /* Quadrature phase */
@@ -3445,7 +3445,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "      }\n"
 "      /* Write element vector for N_{cbc} cells at a time */\n"
-"      elemVec[(gidx*N_c*N_bt)+(batch*N_sbc+c)*N_t+tidx] = e_i;\n"
+"      elemVec[(gidx*N_cb*N_bc*N_bt)+(batch*N_sbc+c)*N_t+tidx] = e_i;\n"
 "    }\n"
 "    /* ==== Could do one write per batch ==== */\n"
 "  }\n"
