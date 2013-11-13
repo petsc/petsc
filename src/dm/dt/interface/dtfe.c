@@ -3091,12 +3091,10 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
                        &count, numeric_str, numeric_str, numeric_str, numeric_str, numeric_str);STRING_ERROR_CHECK("Message to short");
   /* Quadrature */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
-"  const int numQuadraturePoints = %d;\n"
-"\n"
 "  /* Quadrature points\n"
 "   - (x1,y1,x2,y2,...) */\n"
 "  const %s points[%d] = {\n",
-                       &count, N_q, numeric_str, N_q*dim);STRING_ERROR_CHECK("Message to short");
+                       &count, numeric_str, N_q*dim);STRING_ERROR_CHECK("Message to short");
   for (p = 0; p < N_q; ++p) {
     for (d = 0; d < dim; ++d) {
       ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, q.points[p*dim+d]);STRING_ERROR_CHECK("Message to short");
@@ -3115,13 +3113,10 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   /* Basis Functions */
   ierr = PetscFEGetDefaultTabulation(fem, &basis, &basisDer, NULL);CHKERRQ(ierr);
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
-"  const int numBasisFunctions  = %d;\n"
-"  const int numBasisComponents = %d;\n"
-"\n"
 "  /* Nodal basis function evaluations\n"
 "    - basis component is fastest varying, the basis function, then point */\n"
 "  const %s Basis[%d] = {\n",
-                       &count, N_b, N_c, numeric_str, N_q*N_b*N_c);STRING_ERROR_CHECK("Message to short");
+                       &count, numeric_str, N_q*N_b*N_c);STRING_ERROR_CHECK("Message to short");
   for (p = 0; p < N_q; ++p) {
     for (b = 0; b < N_b; ++b) {
       for (c = 0; c < N_c; ++c) {
@@ -3154,14 +3149,12 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "};\n", &count);STRING_ERROR_CHECK("Message to short");
   /* Sizes */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
-"  /* Number of concurrent blocks */\n"
-"  const int N_bl = %d;\n"
-"\n"
-"  const int dim    = %d;\n"
-"  const int N_b    = numBasisFunctions;             // The number of basis functions\n"
-"  const int N_comp = numBasisComponents;            // The number of basis function components\n"
+"  const int dim    = %d;                           // The spatial dimension\n"
+"  const int N_bl   = %d;                           // The number of concurrent blocks\n"
+"  const int N_b    = %d;                           // The number of basis functions\n"
+"  const int N_comp = %d;                           // The number of basis function components\n"
 "  const int N_bt   = N_b*N_comp;                    // The total number of scalar basis functions\n"
-"  const int N_q    = numQuadraturePoints;           // The number of quadrature points\n"
+"  const int N_q    = %d;                           // The number of quadrature points\n"
 "  const int N_bst  = N_bt*N_q;                      // The block size, LCM(N_b*N_comp, N_q), Notice that a block is not processed simultaneously\n"
 "  const int N_t    = N_bst*N_bl;                    // The number of threads, N_bst * N_bl\n"
 "  const int N_bc   = N_t/N_comp;                    // The number of cells per batch (N_b*N_q*N_bl)\n"
@@ -3179,7 +3172,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
 "  const int blbidx  = tidx %% N_q + blidx*N_q;        // Cell mapped to this thread in the basis phase\n"
 "  const int blqidx  = tidx %% N_b + blidx*N_b;        // Cell mapped to this thread in the quadrature phase\n"
 "  const int gidx    = get_group_id(1)*get_num_groups(0) + get_group_id(0);\n",
-                       &count, N_bl, dim);STRING_ERROR_CHECK("Message to short");
+                            &count, dim, N_bl, N_b, N_c, N_q);STRING_ERROR_CHECK("Message to short");
   /* Local memory */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "\n"
