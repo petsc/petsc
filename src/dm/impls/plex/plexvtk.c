@@ -80,7 +80,7 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
   PetscInt       dim;
   PetscInt       numCorners = 0, totCorners = 0, maxCorners, *corners;
   PetscInt       numCells   = 0, totCells   = 0, maxCells, cellHeight;
-  PetscInt       numLabelCells, cMax, cStart, cEnd, c, vStart, vEnd, v;
+  PetscInt       numLabelCells, maxLabelCells, cMax, cStart, cEnd, c, vStart, vEnd, v;
   PetscMPIInt    numProcs, rank, proc, tag;
   PetscErrorCode ierr;
 
@@ -97,6 +97,8 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
   if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
   ierr = DMPlexGetLabel(dm, "vtk", &label);CHKERRQ(ierr);
   ierr = DMPlexGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&numLabelCells, &maxLabelCells, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
+  if (!maxLabelCells) label = NULL;
   for (c = cStart; c < cEnd; ++c) {
     PetscInt *closure = NULL;
     PetscInt closureSize, value;
