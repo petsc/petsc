@@ -400,7 +400,7 @@ getautoconfargs:
         if [ $${mypwd} != $${newpwd} ]; then \
 	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chk_petscdir;\
         fi
-	${PETSC_COMPILE_SINGLE} ${PWD}/$<
+	${PETSC_COMPILE_SINGLE} `pwd`/$<
 	@if [ "${PETSCPORTABLE}" != "" ]; then \
           ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $*.o ; \
         fi
@@ -408,16 +408,16 @@ getautoconfargs:
 #
 #   Compiles CUDA code
 .cu.o:
-	${PETSC_CUCOMPILE_SINGLE} ${PWD}/$<
+	${PETSC_CUCOMPILE_SINGLE} `pwd`/$<
 
 .cu.a:
-	${PETSC_CUCOMPILE_SINGLE} ${PWD}/$<
+	${PETSC_CUCOMPILE_SINGLE} `pwd`/$<
 	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
 	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
 	-${RM} $*.o $*.lo
 
 .c.a .cpp.a .cc.a .C.a:
-	-${PETSC_COMPILE_SINGLE} ${PWD}/$<
+	-${PETSC_COMPILE_SINGLE} `pwd`/$<
 	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
 	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
 	-${RM} $*.o $*.lo
