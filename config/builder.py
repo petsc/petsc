@@ -1647,7 +1647,7 @@ class PETScMaker(script.Script):
    except ValueError:
      args   = params.get('args', '')
    hosts    = ','.join(['localhost']*int(numProcs))
-   return ' '.join([self.configInfo.mpi.mpiexec, '-hosts', hosts, '-n', str(numProcs), os.path.abspath(executable), args])
+   return ' '.join([self.configInfo.mpi.mpiexec, '-host', hosts, '-n', str(numProcs), os.path.abspath(executable), args])
 
  def runTest(self, testDir, executable, testNum, replace, **params):
    '''testNum can be any string'''
