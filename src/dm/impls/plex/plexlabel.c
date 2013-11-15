@@ -196,6 +196,20 @@ PetscErrorCode DMLabelHasPoint(DMLabel label, PetscInt point, PetscBool *contain
 
 #undef __FUNCT__
 #define __FUNCT__ "DMLabelGetValue"
+/*@
+  DMLabelGetValue - Return the value a label assigns to a point, or -1
+
+  Input Parameters:
++ label - the DMLabel
+- point - the point
+
+  Output Parameter:
+. value - The point value, or -1
+
+  Level: intermediate
+
+.seealso: DMLabelCreate(), DMLabelSetValue(), DMLabelClearValue()
+@*/
 PetscErrorCode DMLabelGetValue(DMLabel label, PetscInt point, PetscInt *value)
 {
   PetscInt       v;
@@ -218,6 +232,18 @@ PetscErrorCode DMLabelGetValue(DMLabel label, PetscInt point, PetscInt *value)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMLabelSetValue"
+/*@
+  DMLabelSetValue - Set the value a label assigns to a point
+
+  Input Parameters:
++ label - the DMLabel
+. point - the point
+- value - The point value
+
+  Level: intermediate
+
+.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelClearValue()
+@*/
 PetscErrorCode DMLabelSetValue(DMLabel label, PetscInt point, PetscInt value)
 {
   PetscInt       v, loc;
@@ -290,6 +316,18 @@ PetscErrorCode DMLabelSetValue(DMLabel label, PetscInt point, PetscInt value)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMLabelClearValue"
+/*@
+  DMLabelClearValue - Clear the value a label assigns to a point
+
+  Input Parameters:
++ label - the DMLabel
+. point - the point
+- value - The point value
+
+  Level: intermediate
+
+.seealso: DMLabelCreate(), DMLabelGetValue(), DMLabelSetValue()
+@*/
 PetscErrorCode DMLabelClearValue(DMLabel label, PetscInt point, PetscInt value)
 {
   PetscInt       v, p;
