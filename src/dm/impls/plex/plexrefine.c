@@ -2807,7 +2807,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
               supportRef[2+intFaces++] = fStartNew + (fMax - fStart)*4 + (support[s] - cStart)*8 + fint[(c*3 + er)*2 + 1];
             }
           } else {
-            supportRef[2+intFaces++] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (fEnd - fMax)*2 + (support[s] - cMax)*3 + (r+1)%3;
+            supportRef[2+intFaces++] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (fEnd - fMax)*2 + (support[s] - cMax)*3 + (GetTriSubfaceInverse_Static(ornt[c], r) + 1)%3;
           }
         }
         ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
