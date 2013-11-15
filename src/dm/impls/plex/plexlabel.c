@@ -184,7 +184,8 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
   (*labelnew)->numStrata  = label->numStrata;
   (*labelnew)->arrayValid = PETSC_TRUE;
   if (label->numStrata) {
-    ierr = PetscMalloc3(label->numStrata,PetscInt,&(*labelnew)->stratumValues,label->numStrata+1,PetscInt,&(*labelnew)->stratumOffsets,label->numStrata,PetscInt,&(*labelnew)->stratumSizes);CHKERRQ(ierr);
+    ierr = PetscMalloc(label->numStrata * sizeof(PetscInt), &(*labelnew)->stratumValues);CHKERRQ(ierr);
+    ierr = PetscMalloc2(label->numStrata,PetscInt,&(*labelnew)->stratumSizes,label->numStrata+1,PetscInt,&(*labelnew)->stratumOffsets);CHKERRQ(ierr);
     ierr = PetscMalloc(label->stratumOffsets[label->numStrata] * sizeof(PetscInt), &(*labelnew)->points);CHKERRQ(ierr);
     /* Could eliminate unused space here */
     for (v = 0; v < label->numStrata; ++v) {
