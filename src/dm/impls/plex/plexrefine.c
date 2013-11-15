@@ -101,10 +101,16 @@ PetscErrorCode CellRefinerGetSizes(CellRefiner refiner, DM dm, PetscInt depthSiz
 PETSC_STATIC_INLINE PetscInt GetTriEdge_Static(PetscInt o, PetscInt r) {
   return (o < 0 ? 2-(o+r) : o+r)%3;
 }
+PETSC_STATIC_INLINE PetscInt GetTriEdgeInverse_Static(PetscInt o, PetscInt s) {
+  return (o < 0 ? 2-(o+s) : 3+s-o)%3;
+}
 
 /* Return triangle subface for orientation o, if it is r for o == 0 */
 PETSC_STATIC_INLINE PetscInt GetTriSubface_Static(PetscInt o, PetscInt r) {
   return (o < 0 ? 3-(o+r) : o+r)%3;
+}
+PETSC_STATIC_INLINE PetscInt GetTriSubfaceInverse_Static(PetscInt o, PetscInt s) {
+  return (o < 0 ? 3-(o+s) : 3+s-o)%3;
 }
 
 /* Return quad edge for orientation o, if it is r for o == 0 */
