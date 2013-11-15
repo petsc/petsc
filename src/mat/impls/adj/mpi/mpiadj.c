@@ -137,7 +137,6 @@ PetscErrorCode MatMarkDiagonal_MPIAdj(Mat A)
 PetscErrorCode MatGetRow_MPIAdj(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj*)A->data;
-  PetscInt   *itmp;
 
   PetscFunctionBegin;
   row -= A->rmap->rstart;
@@ -146,13 +145,7 @@ PetscErrorCode MatGetRow_MPIAdj(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,P
 
   *nz = a->i[row+1] - a->i[row];
   if (v) *v = NULL;
-  if (idx) {
-    itmp = a->j + a->i[row];
-    if (*nz) {
-      *idx = itmp;
-    }
-    else *idx = 0;
-  }
+  if (idx) *idx = (*nz) ? a->j + a->i[row] : NULL;
   PetscFunctionReturn(0);
 }
 
