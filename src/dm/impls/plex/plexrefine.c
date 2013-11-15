@@ -2284,19 +2284,20 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
     /* Hybrid cells have 5 faces */
     for (c = cMax; c < cEnd; ++c) {
       const PetscInt  newp = cStartNew + (cMax - cStart)*8 + (c - cMax)*4;
-      const PetscInt *cone, *ornt;
+      const PetscInt *cone, *ornt, *fornt;
       PetscInt        coneNew[5], orntNew[5];
 
       ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
       ierr = DMPlexGetConeOrientation(dm, c, &ornt);CHKERRQ(ierr);
+      ierr = DMPlexGetConeOrientation(dm, cone[0], &fornt);CHKERRQ(ierr);
       for (r = 0; r < 3; ++r) {
         coneNew[0] = fStartNew + (cone[0] - fStart)*4 + GetTriSubface_Static(ornt[0], r);
         orntNew[0] = ornt[0];
         coneNew[1] = fStartNew + (cone[1] - fStart)*4 + GetTriSubface_Static(ornt[1], r);
         orntNew[1] = ornt[1];
-        coneNew[2] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (cone[2+GetTriSubface_Static(ornt[0], (r+2)%3)] - fMax)*2 + (ornt[2+GetTriSubface_Static(ornt[0], (r+2)%3)] < 0 ? 0 : 1);
+        coneNew[2] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (cone[2+GetTriEdge_Static(ornt[0], (r+2)%3)] - fMax)*2 + (fornt[GetTriEdge_Static(ornt[0], (r+2)%3)] < 0 ? 0 : 1);
         orntNew[2] = 0;
-        coneNew[3] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (cone[2+GetTriSubface_Static(ornt[0], r)]       - fMax)*2 + (ornt[2+GetTriSubface_Static(ornt[0], r)]       < 0 ? 1 : 0);
+        coneNew[3] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (cone[2+GetTriEdge_Static(ornt[0], r)]       - fMax)*2 + (fornt[GetTriEdge_Static(ornt[0], r)]       < 0 ? 1 : 0);
         orntNew[3] = 0;
         coneNew[4] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (fEnd - fMax)*2 + (c - cMax)*3 + GetTriSubface_Static(ornt[0], r);
         orntNew[4] = 0;
@@ -2417,7 +2418,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
           if (support[s] < cMax) {
             supportRef[s] = cStartNew + (support[s] - cStart)*8 + (r==3 ? (c+2)%4 + 4 : (ornt[c] < 0 ? faces[c*3+(-(ornt[c]+1)+1+3-r)%3] : faces[c*3+r]));
           } else {
-            supportRef[s] = cStartNew + (cMax - cStart)*8 + (support[s] - cMax)*4 + r;
+            supportRef[s] = cStartNew + (cMax - cStart)*8 + (support[s] - cMax)*4 + (r==3 ? r : GetTriSubfaceInverse_Static(ornt[c], r));
           }
         }
         ierr = DMPlexSetSupport(rdm, newp+r, supportRef);CHKERRQ(ierr);
@@ -2672,13 +2673,14 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
         }
 #endif
         for (s = 0; s < size; ++s) {
-          const PetscInt *coneCell, *orntCell;
+          const PetscInt *coneCell, *orntCell, *fornt;
 
           ierr = DMPlexGetCone(dm, support[s], &coneCell);CHKERRQ(ierr);
           ierr = DMPlexGetConeOrientation(dm, support[s], &orntCell);CHKERRQ(ierr);
           for (c = 2; c < 5; ++c) if (coneCell[c] == f) break;
           if (c >= 5) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not find face %d in cone of cell %d", f, support[s]);
-          supportNew[s] = cStartNew + (cMax - cStart)*8 + (support[s] - cMax)*4 + GetTriSubface_Static(orntCell[c], (c-2+r)%3);
+          ierr = DMPlexGetConeOrientation(dm, coneCell[0], &fornt);CHKERRQ(ierr);
+          supportNew[s] = cStartNew + (cMax - cStart)*8 + (support[s] - cMax)*4 + (GetTriEdgeInverse_Static(orntCell[0], c-2) + (fornt[c-2] < 0 ? 1-r : r))%3;
         }
         ierr = DMPlexSetSupport(rdm, newp, supportNew);CHKERRQ(ierr);
 #if 1
