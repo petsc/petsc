@@ -2815,7 +2815,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
               supportRef[2+intFaces++] = fStartNew + (fMax - fStart)*4 + (support[s] - cStart)*8 + fint[(c*3 + er)*2 + 1];
             }
           } else {
-            supportRef[2+intFaces++] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (fEnd - fMax)*2 + (support[s] - cMax)*3 + (r+1)%3;
+            supportRef[2+intFaces++] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (fEnd - fMax)*2 + (support[s] - cMax)*3 + (GetTriSubfaceInverse_Static(ornt[c], r) + 1)%3;
           }
         }
         ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
@@ -2896,7 +2896,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
     /* Hybrid face edges have 2 vertices and 2+2*cells faces */
     for (f = fMax; f < fEnd; ++f) {
       const PetscInt  newp = eStartNew + (eMax - eStart)*2 + (fMax - fStart)*3 + (cMax - cStart) + (eEnd - eMax) + (f - fMax);
-      const PetscInt *cone, *support, *ccone;
+      const PetscInt *cone, *support, *ccone, *cornt;
       PetscInt        coneNew[2], size, csize, s;
 
       ierr = DMPlexGetCone(dm, f, &cone);CHKERRQ(ierr);
@@ -2916,10 +2916,11 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
       for (s = 0; s < size; ++s) {
         ierr = DMPlexGetConeSize(dm, support[s], &csize);CHKERRQ(ierr);
         ierr = DMPlexGetCone(dm, support[s], &ccone);CHKERRQ(ierr);
+        ierr = DMPlexGetConeOrientation(dm, support[s], &cornt);CHKERRQ(ierr);
         for (c = 0; c < csize; ++c) if (ccone[c] == f) break;
         if ((c < 2) || (c >= csize)) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Hybrid face %d is not in cone of hybrid cell %d", f, support[s]);
-        supportRef[2+s*2+0] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (fEnd - fMax)*2 + (support[s] - cMax)*3 + (c-2)%3;
-        supportRef[2+s*2+1] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (fEnd - fMax)*2 + (support[s] - cMax)*3 + (c-1)%3;
+        supportRef[2+s*2+0] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (fEnd - fMax)*2 + (support[s] - cMax)*3 + GetTriSubfaceInverse_Static(cornt[0], c-2);
+        supportRef[2+s*2+1] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (fEnd - fMax)*2 + (support[s] - cMax)*3 + (GetTriSubfaceInverse_Static(cornt[0], c-2) + 1)%3;
       }
       ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
 #if 1
