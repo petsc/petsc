@@ -12,8 +12,8 @@ PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoints, con
   PetscFunctionBegin;
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscMalloc(pEnd-pStart * sizeof(PetscInt), &perm);CHKERRQ(ierr);
-  ierr = PetscMalloc(pEnd-pStart * sizeof(PetscInt) ,&iperm);CHKERRQ(ierr);
+  ierr = PetscMalloc((pEnd-pStart) * sizeof(PetscInt), &perm);CHKERRQ(ierr);
+  ierr = PetscMalloc((pEnd-pStart) * sizeof(PetscInt) ,&iperm);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) iperm[p] = -1;
   for (d = depth; d > 0; --d) {
     ierr = DMPlexGetDepthStratum(dm, d,   &pStart, &pEnd);CHKERRQ(ierr);
