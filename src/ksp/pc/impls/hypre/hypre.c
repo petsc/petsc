@@ -205,7 +205,7 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
 /* --------------------------------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_HYPRE_Pilut"
-static PetscErrorCode PCSetFromOptions_HYPRE_Pilut(PC pc)
+static PetscErrorCode PCSetFromOptions_HYPRE_Pilut(PetscOptionsObjectType *PetscOptionsObject,PC pc)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -257,7 +257,7 @@ static PetscErrorCode PCView_HYPRE_Pilut(PC pc,PetscViewer viewer)
 /* --------------------------------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_HYPRE_Euclid"
-static PetscErrorCode PCSetFromOptions_HYPRE_Euclid(PC pc)
+static PetscErrorCode PCSetFromOptions_HYPRE_Euclid(PetscOptionsObjectType *PetscOptionsObject,PC pc)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -362,7 +362,7 @@ static const char *HYPREBoomerAMGInterpType[]  = {"classical", "", "", "direct",
                                                   "ext+i-cc", "standard", "standard-wts", "", "", "FF", "FF1"};
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_HYPRE_BoomerAMG"
-static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
+static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionsObjectType *PetscOptionsObject,PC pc)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -665,7 +665,7 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
 /* --------------------------------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_HYPRE_ParaSails"
-static PetscErrorCode PCSetFromOptions_HYPRE_ParaSails(PC pc)
+static PetscErrorCode PCSetFromOptions_HYPRE_ParaSails(PetscOptionsObjectType *PetscOptionsObject,PC pc)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -895,7 +895,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE(PetscOptionsObjectType *PetscOption
     ierr = PCHYPRESetType_HYPRE(pc,"boomeramg");CHKERRQ(ierr);
   }
   if (pc->ops->setfromoptions) {
-    ierr = pc->ops->setfromoptions(pc);CHKERRQ(ierr);
+    ierr = pc->ops->setfromoptions(PetscOptionsObject,pc);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1186,7 +1186,6 @@ PetscErrorCode PCSetUp_PFMG(PC pc)
   /* create the hypre solver object and set its information */
   if (ex->hsolver) PetscStackCallStandard(HYPRE_StructPFMGDestroy,(ex->hsolver));
   PetscStackCallStandard(HYPRE_StructPFMGCreate,(ex->hcomm,&ex->hsolver));
-  ierr = PCSetFromOptions_PFMG(PetscOptionsObjectType *PetscOptionsObject,pc);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_StructPFMGSetup,(ex->hsolver,mx->hmat,mx->hb,mx->hx));
   PetscStackCallStandard(HYPRE_StructPFMGSetZeroGuess,(ex->hsolver));
   PetscFunctionReturn(0);
@@ -1436,7 +1435,6 @@ PetscErrorCode PCSetUp_SysPFMG(PC pc)
   /* create the hypre sstruct solver object and set its information */
   if (ex->ss_solver) PetscStackCallStandard(HYPRE_SStructSysPFMGDestroy,(ex->ss_solver));
   PetscStackCallStandard(HYPRE_SStructSysPFMGCreate,(ex->hcomm,&ex->ss_solver));
-  ierr = PCSetFromOptions_SysPFMG(PetscOptionsObjectType *PetscOptionsObject,pc);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetZeroGuess,(ex->ss_solver));
   PetscStackCallStandard(HYPRE_SStructSysPFMGSetup,(ex->ss_solver,mx->ss_mat,mx->ss_b,mx->ss_x));
   PetscFunctionReturn(0);
