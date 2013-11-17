@@ -2260,7 +2260,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
   }
   numCells  = cEnd - cStart;
   faceDepth = depth - cellHeight;
-  if (dim == depth-1) {
+  if (dim == depth) {
     PetscInt f, fStart, fEnd;
 
     ierr = PetscMalloc((numCells+1) * sizeof(PetscInt), &off);CHKERRQ(ierr);
@@ -2297,7 +2297,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
         }
       }
 #if defined(PETSC_USE_DEBUG)
-      for (c = 0; c < cEnd-cStart; ++c) if (tmp[c] != off[c]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Offset %d != %d for cell %d", tmp[c], off[c], c+cStart);
+      for (c = 0; c < cEnd-cStart; ++c) if (tmp[c] != off[c+1]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Offset %d != %d for cell %d", tmp[c], off[c], c+cStart);
 #endif
       ierr = PetscFree(tmp);CHKERRQ(ierr);
     }
