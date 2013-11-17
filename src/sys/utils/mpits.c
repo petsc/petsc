@@ -5,6 +5,7 @@ PetscLogEvent PETSC_BuildTwoSided;
 const char *const PetscBuildTwoSidedTypes[] = {
   "ALLREDUCE",
   "IBARRIER",
+  "REDSCATTER",
   "PetscBuildTwoSidedType",
   "PETSC_BUILDTWOSIDED_",
   0
@@ -186,6 +187,50 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_MPI_REDUCE_SCATTER_BLOCK)
+#undef __FUNCT__
+#define __FUNCT__ "PetscCommBuildTwoSided_RedScatter"
+static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscInt nto,const PetscMPIInt *toranks,const void *todata,PetscInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    size,*iflags,nrecvs,tag,unitbytes,*franks;
+  PetscInt       i;
+  char           *tdata,*fdata;
+  MPI_Request    *reqs,*sendreqs;
+  MPI_Status     *statuses;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&iflags);CHKERRQ(ierr);
+  ierr = PetscMemzero(iflags,size*sizeof(*iflags));CHKERRQ(ierr);
+  for (i=0; i<nto; i++) iflags[toranks[i]] = 1;
+  ierr = MPI_Reduce_scatter_block(iflags,&nrecvs,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr = PetscFree(iflags);CHKERRQ(ierr);
+
+  ierr     = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
+  ierr     = MPI_Type_size(dtype,&unitbytes);CHKERRQ(ierr);
+  ierr     = PetscMalloc(nrecvs*count*unitbytes,&fdata);CHKERRQ(ierr);
+  tdata    = (char*)todata;
+  ierr     = PetscMalloc2(nto+nrecvs,&reqs,nto+nrecvs,&statuses);CHKERRQ(ierr);
+  sendreqs = reqs + nrecvs;
+  for (i=0; i<nrecvs; i++) {
+    ierr = MPI_Irecv((void*)(fdata+count*unitbytes*i),count,dtype,MPI_ANY_SOURCE,tag,comm,reqs+i);CHKERRQ(ierr);
+  }
+  for (i=0; i<nto; i++) {
+    ierr = MPI_Isend((void*)(tdata+count*unitbytes*i),count,dtype,toranks[i],tag,comm,sendreqs+i);CHKERRQ(ierr);
+  }
+  ierr = MPI_Waitall(nto+nrecvs,reqs,statuses);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrecvs,&franks);CHKERRQ(ierr);
+  for (i=0; i<nrecvs; i++) franks[i] = statuses[i].MPI_SOURCE;
+  ierr = PetscFree2(reqs,statuses);CHKERRQ(ierr);
+
+  *nfrom            = nrecvs;
+  *fromranks        = franks;
+  *(void**)fromdata = fdata;
+  PetscFunctionReturn(0);
+}
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscCommBuildTwoSided"
 /*@C
@@ -207,6 +252,9 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
 -  fromdata - packed data from each rank, each with count entries of type dtype (length nfrom, caller responsible for PetscFree())
 
    Level: developer
+
+   Options Database Keys:
+.  -build_twosided <allreduce|ibarrier|redscatter> - algorithm to set up two-sided communication
 
    Notes:
    This memory-scalable interface is an alternative to calling PetscGatherNumberOfMessages() and
@@ -239,6 +287,13 @@ PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm,PetscMPIInt count,MPI_Dataty
     break;
   case PETSC_BUILDTWOSIDED_ALLREDUCE:
     ierr = PetscCommBuildTwoSided_Allreduce(comm,count,dtype,nto,toranks,todata,nfrom,fromranks,fromdata);CHKERRQ(ierr);
+    break;
+  case PETSC_BUILDTWOSIDED_REDSCATTER:
+#if defined(PETSC_HAVE_MPI_REDUCE_SCATTER_BLOCK)
+    ierr = PetscCommBuildTwoSided_RedScatter(comm,count,dtype,nto,toranks,todata,nfrom,fromranks,fromdata);CHKERRQ(ierr);
+#else
+    SETERRQ(comm,PETSC_ERR_PLIB,"MPI implementation does not provide MPI_Reduce_scatter_block (part of MPI-2.2)");
+#endif
     break;
   default: SETERRQ(comm,PETSC_ERR_PLIB,"Unknown method for building two-sided communication");
   }

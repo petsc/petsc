@@ -2474,6 +2474,8 @@ $      a buffer of length equal to the communicator size. Not memory-scalable du
 $      the large reduction size. Requires only MPI-1.
 $  PETSC_BUILDTWOSIDED_IBARRIER - nonblocking algorithm based on MPI_Issend and MPI_Ibarrier.
 $      Proved communication-optimal in Hoefler, Siebert, and Lumsdaine (2010). Requires MPI-3.
+$  PETSC_BUILDTWOSIDED_REDSCATTER - similar to above, but use more optimized function
+$      that only communicates the part of the reduction that is necessary.  Requires MPI-2.
 
    Level: developer
 
@@ -2482,7 +2484,8 @@ E*/
 typedef enum {
   PETSC_BUILDTWOSIDED_NOTSET = -1,
   PETSC_BUILDTWOSIDED_ALLREDUCE = 0,
-  PETSC_BUILDTWOSIDED_IBARRIER = 1
+  PETSC_BUILDTWOSIDED_IBARRIER = 1,
+  PETSC_BUILDTWOSIDED_REDSCATTER = 2,
   /* Updates here must be accompanied by updates in finclude/petscsys.h and the string array in mpits.c */
 } PetscBuildTwoSidedType;
 PETSC_EXTERN const char *const PetscBuildTwoSidedTypes[];
