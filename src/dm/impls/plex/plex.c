@@ -2260,6 +2260,52 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
   }
   numCells  = cEnd - cStart;
   faceDepth = depth - cellHeight;
+  if (dim == depth-1) {
+    PetscInt f, fStart, fEnd;
+
+    ierr = PetscMalloc((numCells+1) * sizeof(PetscInt), &off);CHKERRQ(ierr);
+    ierr = PetscMemzero(off, (numCells+1) * sizeof(PetscInt));CHKERRQ(ierr);
+    /* Count neighboring cells */
+    ierr = DMPlexGetHeightStratum(dm, cellHeight+1, &fStart, &fEnd);CHKERRQ(ierr);
+    for (f = fStart; f < fEnd; ++f) {
+      const PetscInt *support;
+      PetscInt        supportSize;
+      ierr = DMPlexGetSupportSize(dm, f, &supportSize);CHKERRQ(ierr);
+      ierr = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
+      if (supportSize == 2) {
+        ++off[support[0]-cStart+1];
+        ++off[support[1]-cStart+1];
+      }
+    }
+    /* Prefix sum */
+    for (c = 1; c <= numCells; ++c) off[c] += off[c-1];
+    if (adjacency) {
+      PetscInt *tmp;
+
+      ierr = PetscMalloc(off[numCells] * sizeof(PetscInt), &adj);CHKERRQ(ierr);
+      ierr = PetscMalloc((numCells+1) * sizeof(PetscInt), &tmp);CHKERRQ(ierr);
+      ierr = PetscMemcpy(tmp, off, (numCells+1) * sizeof(PetscInt));CHKERRQ(ierr);
+      /* Get neighboring cells */
+      for (f = fStart; f < fEnd; ++f) {
+        const PetscInt *support;
+        PetscInt        supportSize;
+        ierr = DMPlexGetSupportSize(dm, f, &supportSize);CHKERRQ(ierr);
+        ierr = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
+        if (supportSize == 2) {
+          adj[tmp[support[0]-cStart]++] = support[1];
+          adj[tmp[support[1]-cStart]++] = support[0];
+        }
+      }
+#if defined(PETSC_USE_DEBUG)
+      for (c = 0; c < cEnd-cStart; ++c) if (tmp[c] != off[c]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Offset %d != %d for cell %d", tmp[c], off[c], c+cStart);
+#endif
+      ierr = PetscFree(tmp);CHKERRQ(ierr);
+    }
+    if (numVertices) *numVertices = numCells;
+    if (offsets)   *offsets   = off;
+    if (adjacency) *adjacency = adj;
+    PetscFunctionReturn(0);
+  }
   /* Setup face recognition */
   if (faceDepth == 1) {
     PetscInt cornersSeen[30] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; /* Could use PetscBT */
