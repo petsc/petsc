@@ -558,12 +558,14 @@ PetscErrorCode  PetscFreeArguments(char **args)
 }
 
 #if defined(PETSC_HAVE_SAWS)
+#include <petscconfiginfo.h>
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscInitializeSAWs"
 PetscErrorCode  PetscInitializeSAWs(const char help[])
 {
   if (!PetscGlobalRank) {
-    char           cert[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN],*intro,programname[64],*appline;
+    char           cert[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN],*intro,programname[64],*appline,*options,version[64];
     int            port;
     PetscBool      flg,rootlocal = PETSC_FALSE,flg2;
     size_t         applinelen,introlen;
@@ -613,18 +615,19 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
       ierr = PetscSNPrintf(appline,applinelen,"%s.c.html",programname);CHKERRQ(ierr);
       ierr = PetscTestFile(appline,'r',&rootlocal);CHKERRQ(ierr);
     }
+    ierr = PetscOptionsGetAll(&options);CHKERRQ(ierr);
     if (rootlocal && help) {
-      ierr = PetscSNPrintf(appline,applinelen,"<center> Running <a href=\"%s.c.html\">%s</a></center><br><pre>%s</pre><br>\n",programname,programname,help);
+      ierr = PetscSNPrintf(appline,applinelen,"<center> Running <a href=\"%s.c.html\">%s</a>%s</center><br><center><pre>%s</pre></center><br>\n",programname,programname,options,help);
     } else if (help) {
-      ierr = PetscSNPrintf(appline,applinelen,"<center>Running %s </center><br><pre>%s</pre><br>\n",programname,help);
+      ierr = PetscSNPrintf(appline,applinelen,"<center>Running %s %s</center><br><center><pre>%s</pre></center><br>\n",programname,options,help);
     } else {
-      ierr = PetscSNPrintf(appline,applinelen,"<center> Running %s</center><br>\n",programname);
+      ierr = PetscSNPrintf(appline,applinelen,"<center> Running %s %s</center><br>\n",programname,options);
     }
-
+    ierr = PetscGetVersion(version,sizeof(version));CHKERRQ(ierr);
     ierr = PetscSNPrintf(intro,introlen,"<body>\n"
                                     "<center><h2> <a href=\"http://www.mcs.anl.gov/petsc\">PETSc</a> Application Web server powered by <a href=\"https://bitbucket.org/saws/saws\">SAWs</a> </h2></center>\n"
-                                    "<center>This is the default PETSc application dashboard, from it you can access any published PETSc objects or logging data</center><br>\n"
-                                    "%s",appline);
+                                    "<center>This is the default PETSc application dashboard, from it you can access any published PETSc objects or logging data</center><br><center>%s configured at %s with %s</center><br>\n"
+                         "%s",version,petscconfigureruntime,petscconfigureoptions,appline);
     PetscStackCallSAWs(SAWs_Set_Body,("index.html",0,intro));
     ierr = PetscFree(intro);CHKERRQ(ierr);
     ierr = PetscFree(appline);CHKERRQ(ierr);
