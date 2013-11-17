@@ -214,18 +214,29 @@ there would be no place to store the both needed results.
 #define __FUNCT__ "PetscMaxSum"
 PetscErrorCode  PetscMaxSum(MPI_Comm comm,const PetscInt nprocs[],PetscInt *max,PetscInt *sum)
 {
-  PetscMPIInt    size,rank;
-  struct {PetscInt max,sum;} *work;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = PetscMalloc1(size,&work);CHKERRQ(ierr);
-  ierr = MPI_Allreduce((void*)nprocs,work,size,MPIU_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
-  *max = work[rank].max;
-  *sum = work[rank].sum;
-  ierr = PetscFree(work);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPI_REDUCE_SCATTER_BLOCK)
+  {
+    struct {PetscInt max,sum;} work;
+    ierr = MPI_Reduce_scatter_block((void*)nprocs,&work,1,MPIU_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
+    *max = work.max;
+    *sum = work.sum;
+  }
+#else
+  {
+    PetscMPIInt    size,rank;
+    struct {PetscInt max,sum;} *work;
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    ierr = PetscMalloc1(size,&work);CHKERRQ(ierr);
+    ierr = MPI_Allreduce((void*)nprocs,work,size,MPIU_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
+    *max = work[rank].max;
+    *sum = work[rank].sum;
+    ierr = PetscFree(work);CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0);
 }
 

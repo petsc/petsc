@@ -362,6 +362,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm, PetscLogD
 #define MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm) \
  ((petsc_allreduce_ct++,0) || MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm))
 
+#define MPI_Reduce_scatter_block(sendbuf,recvbuf,recvcount,datatype,op,comm) \
+ ((petsc_allreduce_ct++,0) || MPI_Reduce_scatter_block(sendbuf,recvbuf,recvcount,datatype,op,comm))
+
 #define MPI_Alltoall(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm) \
  ((petsc_allreduce_ct++,0) || PetscMPITypeSize(&petsc_send_len,sendcount,sendtype) || MPI_Alltoall(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm))
 
