@@ -24,24 +24,23 @@
 #define petscintview_              petscintview
 #endif
 
-static void (PETSC_STDCALL *f2)(MPI_Comm *comm,int*,const CHAR PETSC_MIXED_LEN(len1),const CHAR PETSC_MIXED_LEN(len2),const CHAR PETSC_MIXED_LEN(len3),PetscErrorCode*,PetscErrorType*,const CHAR PETSC_MIXED_LEN(len4),void*,PetscErrorCode* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3) PETSC_END_LEN(len4));
+static void (PETSC_STDCALL *f2)(MPI_Comm *comm,int*,const CHAR PETSC_MIXED_LEN(len1),const CHAR PETSC_MIXED_LEN(len2),PetscErrorCode*,PetscErrorType*,const CHAR PETSC_MIXED_LEN(len3),void*,PetscErrorCode* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3));
 
 /* These are not extern C because they are passed into non-extern C user level functions */
-static PetscErrorCode ourerrorhandler(MPI_Comm comm,int line,const char *fun,const char *file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
+static PetscErrorCode ourerrorhandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscErrorCode ierr = 0;
-  size_t         len1,len2,len3,len4;
-  int            l1,l2,l3,l4;
+  size_t         len1,len2,len3;
+  int            l1,l2,l3;
 
   PetscStrlen(fun,&len1); l1 = (int)len1;
   PetscStrlen(file,&len2);l2 = (int)len2;
-  PetscStrlen(dir,&len3); l3 = (int)len3;
-  PetscStrlen(mess,&len4);l4 = (int)len4;
+  PetscStrlen(mess,&len3);l3 = (int)len3;
 
 #if defined(PETSC_HAVE_FORTRAN_MIXED_STR_ARG)
-  (*f2)(&comm,&line,fun,l1,file,l2,dir,l3,&n,&p,mess,l4,ctx,&ierr);
+  (*f2)(&comm,&line,fun,l1,file,l2,&n,&p,mess,l3,ctx,&ierr);
 #else
-  (*f2)(&comm,&line,fun,file,dir,&n,&p,mess,ctx,&ierr,l1,l2,l3,l4);
+  (*f2)(&comm,&line,fun,file,&n,&p,mess,ctx,&ierr,l1,l2,l3);
 #endif
   return ierr;
 }
@@ -52,32 +51,32 @@ static PetscErrorCode ourerrorhandler(MPI_Comm comm,int line,const char *fun,con
 
    functions, hence no STDCALL
 */
-PETSC_EXTERN void petsctracebackerrorhandler_(MPI_Comm *comm,int *line,const char *fun,const char *file,const char *dir,PetscErrorCode *n,PetscErrorType *p,const char *mess,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void petsctracebackerrorhandler_(MPI_Comm *comm,int *line,const char *fun,const char *file,PetscErrorCode *n,PetscErrorType *p,const char *mess,void *ctx,PetscErrorCode *ierr)
 {
-  *ierr = PetscTraceBackErrorHandler(*comm,*line,fun,file,dir,*n,*p,mess,ctx);
+  *ierr = PetscTraceBackErrorHandler(*comm,*line,fun,file,*n,*p,mess,ctx);
 }
 
-PETSC_EXTERN void petscaborterrorhandler_(MPI_Comm *comm,int *line,const char *fun,const char *file,const char *dir,PetscErrorCode *n,PetscErrorType *p,const char *mess,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void petscaborterrorhandler_(MPI_Comm *comm,int *line,const char *fun,const char *file,PetscErrorCode *n,PetscErrorType *p,const char *mess,void *ctx,PetscErrorCode *ierr)
 {
-  *ierr = PetscAbortErrorHandler(*comm,*line,fun,file,dir,*n,*p,mess,ctx);
+  *ierr = PetscAbortErrorHandler(*comm,*line,fun,file,*n,*p,mess,ctx);
 }
 
-PETSC_EXTERN void petscattachdebuggererrorhandler_(MPI_Comm *comm,int *line,const char *fun,const char *file,const char *dir,PetscErrorCode *n,PetscErrorType *p,const char *mess,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void petscattachdebuggererrorhandler_(MPI_Comm *comm,int *line,const char *fun,const char *file,PetscErrorCode *n,PetscErrorType *p,const char *mess,void *ctx,PetscErrorCode *ierr)
 {
-  *ierr = PetscAttachDebuggerErrorHandler(*comm,*line,fun,file,dir,*n,*p,mess,ctx);
+  *ierr = PetscAttachDebuggerErrorHandler(*comm,*line,fun,file,*n,*p,mess,ctx);
 }
 
-PETSC_EXTERN void petscemacsclienterrorhandler_(MPI_Comm *comm,int *line,const char *fun,const char *file,const char *dir,PetscErrorCode *n,PetscErrorType *p,const char *mess,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void petscemacsclienterrorhandler_(MPI_Comm *comm,int *line,const char *fun,const char *file,PetscErrorCode *n,PetscErrorType *p,const char *mess,void *ctx,PetscErrorCode *ierr)
 {
-  *ierr = PetscEmacsClientErrorHandler(*comm,*line,fun,file,dir,*n,*p,mess,ctx);
+  *ierr = PetscEmacsClientErrorHandler(*comm,*line,fun,file,*n,*p,mess,ctx);
 }
 
-PETSC_EXTERN void petscignoreerrorhandler_(MPI_Comm *comm,int *line,const char *fun,const char *file,const char *dir,PetscErrorCode *n,PetscErrorType *p,const char *mess,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void petscignoreerrorhandler_(MPI_Comm *comm,int *line,const char *fun,const char *file,PetscErrorCode *n,PetscErrorType *p,const char *mess,void *ctx,PetscErrorCode *ierr)
 {
-  *ierr = PetscIgnoreErrorHandler(*comm,*line,fun,file,dir,*n,*p,mess,ctx);
+  *ierr = PetscIgnoreErrorHandler(*comm,*line,fun,file,*n,*p,mess,ctx);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *handler)(MPI_Comm *comm,int*,const CHAR PETSC_MIXED_LEN(len1),const CHAR PETSC_MIXED_LEN(len2),const CHAR PETSC_MIXED_LEN(len3),PetscErrorCode*,PetscErrorType*,const CHAR PETSC_MIXED_LEN(len4),void*,PetscErrorCode* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3) PETSC_END_LEN(len4)),void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *handler)(MPI_Comm *comm,int*,const CHAR PETSC_MIXED_LEN(len1),const CHAR PETSC_MIXED_LEN(len2),PetscErrorCode*,PetscErrorType*,const CHAR PETSC_MIXED_LEN(len3),void*,PetscErrorCode* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3)),void *ctx,PetscErrorCode *ierr)
 {
   if ((void(*)(void))handler == (void(*)(void))petsctracebackerrorhandler_) *ierr = PetscPushErrorHandler(PetscTraceBackErrorHandler,0);
   else {
@@ -90,7 +89,7 @@ PETSC_EXTERN void PETSC_STDCALL petscerror_(MPI_Comm *comm,PetscErrorCode *numbe
 {
   char *t1;
   FIXCHAR(message,len,t1);
-  *ierr = PetscError(*comm,*line,0,0,0,*number,*p,t1);
+  *ierr = PetscError(*comm,*line,0,0,*number,*p,t1);
   FREECHAR(message,t1);
 }
 

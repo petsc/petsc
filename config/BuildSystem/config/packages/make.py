@@ -160,6 +160,6 @@ class Configure(config.package.Package):
       self.executeTest(self.configureMake)
     self.executeTest(self.configureCheckGNUMake)
     self.executeTest(self.configureMakeNP)
-    self.addMakeMacro('OMAKE ', self.make+' '+self.printdirflag)
-    self.addMakeMacro('OMAKE_NOPRINTDIR ', self.make+' '+self.noprintdirflag)
+    self.addMakeMacro('OMAKE_PRINTDIR ', self.make+' '+self.printdirflag)
+    self.addMakeMacro('OMAKE', self.make+' '+self.noprintdirflag)
     return

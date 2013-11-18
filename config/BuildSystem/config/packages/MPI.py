@@ -374,8 +374,7 @@ class Configure(config.package.Package):
     openmpiDir = self.getDir()
 
     # Get the OPENMPI directories
-    installDir = os.path.join(self.defaultInstallDir,self.arch)
-    confDir = os.path.join(self.defaultInstallDir,self.arch,'conf')
+    installDir = self.installDir
     args = ['--prefix='+installDir,'--with-rsh=ssh']
     args.append('MAKE='+self.make.make)
     # Configure and Build OPENMPI
@@ -470,8 +469,7 @@ class Configure(config.package.Package):
 
   def InstallMPICH(self):
     mpichDir = self.getDir()
-    installDir = os.path.join(self.defaultInstallDir,self.arch)
-    confDir = os.path.join(self.defaultInstallDir,self.arch,'conf')
+    installDir = self.installDir
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
 
@@ -764,8 +762,11 @@ class Configure(config.package.Package):
       self.addDefine('HAVE_MPI_WIN_CREATE',1)
       self.addDefine('HAVE_MPI_REPLACE',1) # MPI_REPLACE is strictly for use with the one-sided function MPI_Accumulate
     funcs = '''MPI_Comm_spawn MPI_Type_get_envelope MPI_Type_get_extent MPI_Type_dup MPI_Init_thread
-      MPIX_Iallreduce MPI_Iallreduce MPI_Ibarrier MPI_Finalized MPI_Exscan'''.split()
-    for f in funcs:
+      MPI_Iallreduce MPI_Ibarrier MPI_Finalized MPI_Exscan'''.split()
+    found, missing = self.libraries.checkClassify(self.dlib, funcs)
+    for f in found:
+      self.addDefine('HAVE_' + f.upper(),1)
+    for f in ['MPIX_Iallreduce']: # Unlikely to be found
       if self.libraries.check(self.dlib, f):
         self.addDefine('HAVE_' + f.upper(),1)
 

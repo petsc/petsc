@@ -2178,10 +2178,10 @@ PetscErrorCode MatGetSubMatrix_MPIBAIJ_Private(Mat mat,IS isrow,IS iscol,PetscIn
 PetscErrorCode MatPermute_MPIBAIJ(Mat A,IS rowp,IS colp,Mat *B)
 {
   MPI_Comm       comm,pcomm;
-  PetscInt       first,rlocal_size,clocal_size,nrows;
+  PetscInt       clocal_size,nrows;
   const PetscInt *rows;
   PetscMPIInt    size;
-  IS             crowp,growp,irowp,lrowp,lcolp;
+  IS             crowp,lcolp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2196,23 +2196,8 @@ PetscErrorCode MatPermute_MPIBAIJ(Mat A,IS rowp,IS colp,Mat *B)
     ierr = ISCreateGeneral(comm,nrows,rows,PETSC_COPY_VALUES,&crowp);CHKERRQ(ierr);
     ierr = ISRestoreIndices(rowp,&rows);CHKERRQ(ierr);
   }
-  /* collect the global row permutation and invert it */
-  ierr = ISAllGather(crowp,&growp);CHKERRQ(ierr);
-  ierr = ISSetPermutation(growp);CHKERRQ(ierr);
-  if (pcomm!=comm) {
-    ierr = ISDestroy(&crowp);CHKERRQ(ierr);
-  }
-  ierr = ISInvertPermutation(growp,PETSC_DECIDE,&irowp);CHKERRQ(ierr);
-  ierr = ISDestroy(&growp);CHKERRQ(ierr);
-  /* get the local target indices */
-  ierr = MatGetOwnershipRange(A,&first,NULL);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&rlocal_size,&clocal_size);CHKERRQ(ierr);
-  ierr = ISGetIndices(irowp,&rows);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(MPI_COMM_SELF,rlocal_size,rows+first,PETSC_COPY_VALUES,&lrowp);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(irowp,&rows);CHKERRQ(ierr);
-  ierr = ISDestroy(&irowp);CHKERRQ(ierr);
-  /* the column permutation is so much easier;
-     make a local version of 'colp' and invert it */
+  ierr = ISSetPermutation(crowp);CHKERRQ(ierr);
+  /* make a local version of 'colp' */
   ierr = PetscObjectGetComm((PetscObject)colp,&pcomm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(pcomm,&size);CHKERRQ(ierr);
   if (size==1) {
@@ -2222,12 +2207,15 @@ PetscErrorCode MatPermute_MPIBAIJ(Mat A,IS rowp,IS colp,Mat *B)
   }
   ierr = ISSetPermutation(lcolp);CHKERRQ(ierr);
   /* now we just get the submatrix */
-  ierr = MatGetSubMatrix_MPIBAIJ_Private(A,lrowp,lcolp,clocal_size,MAT_INITIAL_MATRIX,B);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,PETSC_NULL,&clocal_size);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix_MPIBAIJ_Private(A,crowp,lcolp,clocal_size,MAT_INITIAL_MATRIX,B);CHKERRQ(ierr);
+  /* clean up */
+  if (pcomm!=comm) {
+    ierr = ISDestroy(&crowp);CHKERRQ(ierr);
+  }
   if (size>1) {
     ierr = ISDestroy(&lcolp);CHKERRQ(ierr);
   }
-  /* clean up */
-  ierr = ISDestroy(&lrowp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2241,297 +2229,6 @@ PetscErrorCode  MatGetGhosts_MPIBAIJ(Mat mat,PetscInt *nghosts,const PetscInt *g
   PetscFunctionBegin;
   if (nghosts) *nghosts = B->nbs;
   if (ghosts) *ghosts = baij->garray;
-  PetscFunctionReturn(0);
-}
-
-extern PetscErrorCode MatCreateColmap_MPIBAIJ_Private(Mat);
-
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringCreate_MPIBAIJ"
-/*
-    This routine is almost identical to MatFDColoringCreate_MPIBAIJ()!
-*/
-PetscErrorCode MatFDColoringCreate_MPIBAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
-{
-  Mat_MPIBAIJ            *baij = (Mat_MPIBAIJ*)mat->data;
-  PetscErrorCode         ierr;
-  PetscMPIInt            size,*ncolsonproc,*disp,nn;
-  PetscInt               bs,i,n,nrows,j,k,m,ncols,col;
-  const PetscInt         *is,*rows = 0,*A_ci,*A_cj,*B_ci,*B_cj,*ltog;
-  PetscInt               nis = iscoloring->n,nctot,*cols;
-  PetscInt               *rowhit,M,cstart,cend,colb;
-  PetscInt               *columnsforrow,l;
-  IS                     *isa;
-  PetscBool              done,flg;
-  ISLocalToGlobalMapping map = mat->cmap->bmapping;
-  PetscInt               ctype=c->ctype;
-
-  PetscFunctionBegin;
-  if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Matrix must be assembled first; MatAssemblyBegin/End();");
-  if (ctype == IS_COLORING_GHOSTED && !map) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_INCOMP,"When using ghosted differencing matrix must have local to global mapping provided with MatSetLocalToGlobalMappingBlock");
-
-  if (map) {ierr = ISLocalToGlobalMappingGetIndices(map,&ltog);CHKERRQ(ierr);}
-  else     ltog = NULL;
-  ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
-  ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
-
-  M         = mat->rmap->n/bs;
-  cstart    = mat->cmap->rstart/bs;
-  cend      = mat->cmap->rend/bs;
-  c->M      = mat->rmap->N/bs;         /* set the global rows and columns and local rows */
-  c->N      = mat->cmap->N/bs;
-  c->m      = mat->rmap->n/bs;
-  c->rstart = mat->rmap->rstart/bs;
-
-  c->ncolors = nis;
-  ierr       = PetscMalloc(nis*sizeof(PetscInt),&c->ncolumns);CHKERRQ(ierr);
-  ierr       = PetscMalloc(nis*sizeof(PetscInt*),&c->columns);CHKERRQ(ierr);
-  ierr       = PetscMalloc(nis*sizeof(PetscInt),&c->nrows);CHKERRQ(ierr);
-  ierr       = PetscMalloc(nis*sizeof(PetscInt*),&c->rows);CHKERRQ(ierr);
-  ierr       = PetscMalloc(nis*sizeof(PetscInt*),&c->columnsforrow);CHKERRQ(ierr);
-  ierr       = PetscLogObjectMemory((PetscObject)c,5*nis*sizeof(PetscInt));CHKERRQ(ierr);
-
-  /* Allow access to data structures of local part of matrix */
-  if (!baij->colmap) {
-    ierr = MatCreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
-  }
-  ierr = MatGetColumnIJ(baij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr);
-  ierr = MatGetColumnIJ(baij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr);
-
-  ierr = PetscMalloc((M+1)*sizeof(PetscInt),&rowhit);CHKERRQ(ierr);
-  ierr = PetscMalloc((M+1)*sizeof(PetscInt),&columnsforrow);CHKERRQ(ierr);
-
-  for (i=0; i<nis; i++) {
-    ierr = ISGetLocalSize(isa[i],&n);CHKERRQ(ierr);
-    ierr = ISGetIndices(isa[i],&is);CHKERRQ(ierr);
-
-    c->ncolumns[i] = n;
-    if (n) {
-      ierr = PetscMalloc(n*sizeof(PetscInt),&c->columns[i]);CHKERRQ(ierr);
-      ierr = PetscLogObjectMemory((PetscObject)c,n*sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscMemcpy(c->columns[i],is,n*sizeof(PetscInt));CHKERRQ(ierr);
-    } else {
-      c->columns[i] = 0;
-    }
-
-    if (ctype == IS_COLORING_GLOBAL) {
-      /* Determine the total (parallel) number of columns of this color */
-      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
-      ierr = PetscMalloc2(size,PetscMPIInt,&ncolsonproc,size,PetscMPIInt,&disp);CHKERRQ(ierr);
-
-      ierr  = PetscMPIIntCast(n,&nn);CHKERRQ(ierr);
-      ierr  = MPI_Allgather(&nn,1,MPI_INT,ncolsonproc,1,MPI_INT,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
-      nctot = 0; for (j=0; j<size; j++) nctot += ncolsonproc[j];
-      if (!nctot) {
-        ierr = PetscInfo(mat,"Coloring of matrix has some unneeded colors with no corresponding rows\n");CHKERRQ(ierr);
-      }
-
-      disp[0] = 0;
-      for (j=1; j<size; j++) {
-        disp[j] = disp[j-1] + ncolsonproc[j-1];
-      }
-
-      /* Get complete list of columns for color on each processor */
-      ierr = PetscMalloc((nctot+1)*sizeof(PetscInt),&cols);CHKERRQ(ierr);
-      ierr = MPI_Allgatherv((void*)is,n,MPIU_INT,cols,ncolsonproc,disp,MPIU_INT,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
-      ierr = PetscFree2(ncolsonproc,disp);CHKERRQ(ierr);
-    } else if (ctype == IS_COLORING_GHOSTED) {
-      /* Determine local number of columns of this color on this process, including ghost points */
-      nctot = n;
-      ierr  = PetscMalloc((nctot+1)*sizeof(PetscInt),&cols);CHKERRQ(ierr);
-      ierr  = PetscMemcpy(cols,is,n*sizeof(PetscInt));CHKERRQ(ierr);
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not provided for this MatFDColoring type");
-
-    /*
-       Mark all rows affect by these columns
-    */
-    /* Temporary option to allow for debugging/testing */
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(NULL,"-matfdcoloring_slow",&flg,NULL);CHKERRQ(ierr);
-    if (!flg) { /*-----------------------------------------------------------------------------*/
-      /* crude, fast version */
-      ierr = PetscMemzero(rowhit,M*sizeof(PetscInt));CHKERRQ(ierr);
-      /* loop over columns*/
-      for (j=0; j<nctot; j++) {
-        if (ctype == IS_COLORING_GHOSTED) {
-          col = ltog[cols[j]];
-        } else {
-          col = cols[j];
-        }
-        if (col >= cstart && col < cend) {
-          /* column is in diagonal block of matrix */
-          rows = A_cj + A_ci[col-cstart];
-          m    = A_ci[col-cstart+1] - A_ci[col-cstart];
-        } else {
-#if defined(PETSC_USE_CTABLE)
-          ierr = PetscTableFind(baij->colmap,col+1,&colb);CHKERRQ(ierr);
-          colb--;
-#else
-          colb = baij->colmap[col] - 1;
-#endif
-          if (colb == -1) {
-            m = 0;
-          } else {
-            colb = colb/bs;
-            rows = B_cj + B_ci[colb];
-            m    = B_ci[colb+1] - B_ci[colb];
-          }
-        }
-        /* loop over columns marking them in rowhit */
-        for (k=0; k<m; k++) {
-          rowhit[*rows++] = col + 1;
-        }
-      }
-
-      /* count the number of hits */
-      nrows = 0;
-      for (j=0; j<M; j++) {
-        if (rowhit[j]) nrows++;
-      }
-      c->nrows[i] = nrows;
-      ierr        = PetscMalloc((nrows+1)*sizeof(PetscInt),&c->rows[i]);CHKERRQ(ierr);
-      ierr        = PetscMalloc((nrows+1)*sizeof(PetscInt),&c->columnsforrow[i]);CHKERRQ(ierr);
-      ierr        = PetscLogObjectMemory((PetscObject)c,2*(nrows+1)*sizeof(PetscInt));CHKERRQ(ierr);
-      nrows       = 0;
-      for (j=0; j<M; j++) {
-        if (rowhit[j]) {
-          c->rows[i][nrows]          = j;
-          c->columnsforrow[i][nrows] = rowhit[j] - 1;
-          nrows++;
-        }
-      }
-    } else { /*-------------------------------------------------------------------------------*/
-      /* slow version, using rowhit as a linked list */
-      PetscInt currentcol,fm,mfm;
-      rowhit[M] = M;
-      nrows     = 0;
-      /* loop over columns*/
-      for (j=0; j<nctot; j++) {
-        if (ctype == IS_COLORING_GHOSTED) {
-          col = ltog[cols[j]];
-        } else {
-          col = cols[j];
-        }
-        if (col >= cstart && col < cend) {
-          /* column is in diagonal block of matrix */
-          rows = A_cj + A_ci[col-cstart];
-          m    = A_ci[col-cstart+1] - A_ci[col-cstart];
-        } else {
-#if defined(PETSC_USE_CTABLE)
-          ierr = PetscTableFind(baij->colmap,col+1,&colb);CHKERRQ(ierr);
-          colb--;
-#else
-          colb = baij->colmap[col] - 1;
-#endif
-          if (colb == -1) {
-            m = 0;
-          } else {
-            colb = colb/bs;
-            rows = B_cj + B_ci[colb];
-            m    = B_ci[colb+1] - B_ci[colb];
-          }
-        }
-
-        /* loop over columns marking them in rowhit */
-        fm = M;    /* fm points to first entry in linked list */
-        for (k=0; k<m; k++) {
-          currentcol = *rows++;
-          /* is it already in the list? */
-          do {
-            mfm = fm;
-            fm  = rowhit[fm];
-          } while (fm < currentcol);
-          /* not in list so add it */
-          if (fm != currentcol) {
-            nrows++;
-            columnsforrow[currentcol] = col;
-            /* next three lines insert new entry into linked list */
-            rowhit[mfm]        = currentcol;
-            rowhit[currentcol] = fm;
-            fm                 = currentcol;
-            /* fm points to present position in list since we know the columns are sorted */
-          } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid coloring of matrix detected");
-        }
-      }
-      c->nrows[i] = nrows;
-      ierr        = PetscMalloc((nrows+1)*sizeof(PetscInt),&c->rows[i]);CHKERRQ(ierr);
-      ierr        = PetscMalloc((nrows+1)*sizeof(PetscInt),&c->columnsforrow[i]);CHKERRQ(ierr);
-      ierr        = PetscLogObjectMemory((PetscObject)c,(nrows+1)*sizeof(PetscInt));CHKERRQ(ierr);
-      /* now store the linked list of rows into c->rows[i] */
-      nrows = 0;
-      fm    = rowhit[M];
-      do {
-        c->rows[i][nrows]            = fm;
-        c->columnsforrow[i][nrows++] = columnsforrow[fm];
-        fm                           = rowhit[fm];
-      } while (fm < M);
-    } /* ---------------------------------------------------------------------------------------*/
-    ierr = PetscFree(cols);CHKERRQ(ierr);
-  }
-
-  /* Optimize by adding the vscale, and scaleforrow[][] fields */
-  /*
-       vscale will contain the "diagonal" on processor scalings followed by the off processor
-  */
-  if (ctype == IS_COLORING_GLOBAL) {
-    PetscInt *garray;
-    ierr = PetscMalloc(baij->B->cmap->n*sizeof(PetscInt),&garray);CHKERRQ(ierr);
-    for (i=0; i<baij->B->cmap->n/bs; i++) {
-      for (j=0; j<bs; j++) {
-        garray[i*bs+j] = bs*baij->garray[i]+j;
-      }
-    }
-    ierr = VecCreateGhost(PetscObjectComm((PetscObject)mat),baij->A->rmap->n,PETSC_DETERMINE,baij->B->cmap->n,garray,&c->vscale);CHKERRQ(ierr);
-    ierr = PetscFree(garray);CHKERRQ(ierr);
-    ierr = PetscMalloc(c->ncolors*sizeof(PetscInt*),&c->vscaleforrow);CHKERRQ(ierr);
-    for (k=0; k<c->ncolors; k++) {
-      ierr = PetscMalloc((c->nrows[k]+1)*sizeof(PetscInt),&c->vscaleforrow[k]);CHKERRQ(ierr);
-      for (l=0; l<c->nrows[k]; l++) {
-        col = c->columnsforrow[k][l];
-        if (col >= cstart && col < cend) {
-          /* column is in diagonal block of matrix */
-          colb = col - cstart;
-        } else {
-          /* column  is in "off-processor" part */
-#if defined(PETSC_USE_CTABLE)
-          ierr = PetscTableFind(baij->colmap,col+1,&colb);CHKERRQ(ierr);
-          colb--;
-#else
-          colb = baij->colmap[col] - 1;
-#endif
-          colb  = colb/bs;
-          colb += cend - cstart;
-        }
-        c->vscaleforrow[k][l] = colb;
-      }
-    }
-  } else if (ctype == IS_COLORING_GHOSTED) {
-    /* Get gtol mapping */
-    PetscInt N = mat->cmap->N,nlocal,*gtol;
-    ierr = PetscMalloc((N+1)*sizeof(PetscInt),&gtol);CHKERRQ(ierr);
-    for (i=0; i<N; i++) gtol[i] = -1;
-    ierr = ISLocalToGlobalMappingGetSize(map,&nlocal);CHKERRQ(ierr);
-    for (i=0; i<nlocal; i++) gtol[ltog[i]] = i;
-
-    c->vscale = 0; /* will be created in MatFDColoringApply() */
-    ierr      = PetscMalloc(c->ncolors*sizeof(PetscInt*),&c->vscaleforrow);CHKERRQ(ierr);
-    for (k=0; k<c->ncolors; k++) {
-      ierr = PetscMalloc((c->nrows[k]+1)*sizeof(PetscInt),&c->vscaleforrow[k]);CHKERRQ(ierr);
-      for (l=0; l<c->nrows[k]; l++) {
-        col = c->columnsforrow[k][l];      /* global column index */
-
-        c->vscaleforrow[k][l] = gtol[col]; /* local column index */
-      }
-    }
-    ierr = PetscFree(gtol);CHKERRQ(ierr);
-  }
-  ierr = ISColoringRestoreIS(iscoloring,&isa);CHKERRQ(ierr);
-
-  ierr = PetscFree(rowhit);CHKERRQ(ierr);
-  ierr = PetscFree(columnsforrow);CHKERRQ(ierr);
-  ierr = MatRestoreColumnIJ(baij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr);
-  ierr = MatRestoreColumnIJ(baij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr);
-  if (map) {ierr = ISLocalToGlobalMappingRestoreIndices(map,&ltog);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -2729,7 +2426,89 @@ PetscErrorCode MatSOR_MPIBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,P
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode  MatFDColoringApply_BAIJ(Mat,MatFDColoring,Vec,MatStructure*,void*);
+#undef __FUNCT__
+#define __FUNCT__ "MatGetColumnNorms_MPIBAIJ"
+PetscErrorCode MatGetColumnNorms_MPIBAIJ(Mat A,NormType type,PetscReal *norms)
+{
+  PetscErrorCode ierr;
+  Mat_MPIBAIJ    *aij = (Mat_MPIBAIJ*)A->data;
+  PetscInt       N,i,*garray = aij->garray;
+  PetscInt       ib,jb,bs = A->rmap->bs;
+  Mat_SeqBAIJ    *a_aij = (Mat_SeqBAIJ*) aij->A->data;
+  MatScalar      *a_val = a_aij->a;
+  Mat_SeqBAIJ    *b_aij = (Mat_SeqBAIJ*) aij->B->data;
+  MatScalar      *b_val = b_aij->a;
+  PetscReal      *work;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(A,NULL,&N);CHKERRQ(ierr);
+  ierr = PetscMalloc(N*sizeof(PetscReal),&work);CHKERRQ(ierr);
+  ierr = PetscMemzero(work,N*sizeof(PetscReal));CHKERRQ(ierr);
+  if (type == NORM_2) {
+    for (i=a_aij->i[0]; i<a_aij->i[aij->A->rmap->n/bs]; i++) {
+      for (jb=0; jb<bs; jb++) {
+        for (ib=0; ib<bs; ib++) {
+          work[A->cmap->rstart + a_aij->j[i] * bs + jb] += PetscAbsScalar(*a_val * *a_val);
+          a_val++;
+        }
+      }
+    }
+    for (i=b_aij->i[0]; i<b_aij->i[aij->B->rmap->n/bs]; i++) {
+      for (jb=0; jb<bs; jb++) {
+        for (ib=0; ib<bs; ib++) {
+          work[garray[b_aij->j[i]] * bs + jb] += PetscAbsScalar(*b_val * *b_val);
+          b_val++;
+        }
+      }
+    }
+  } else if (type == NORM_1) {
+    for (i=a_aij->i[0]; i<a_aij->i[aij->A->rmap->n/bs]; i++) {
+      for (jb=0; jb<bs; jb++) {
+        for (ib=0; ib<bs; ib++) {
+          work[A->cmap->rstart + a_aij->j[i] * bs + jb] += PetscAbsScalar(*a_val);
+          a_val++;
+        }
+      }
+    }
+    for (i=b_aij->i[0]; i<b_aij->i[aij->B->rmap->n/bs]; i++) {
+      for (jb=0; jb<bs; jb++) {
+       for (ib=0; ib<bs; ib++) {
+          work[garray[b_aij->j[i]] * bs + jb] += PetscAbsScalar(*b_val);
+          b_val++;
+        }
+      }
+    }
+  } else if (type == NORM_INFINITY) {
+    for (i=a_aij->i[0]; i<a_aij->i[aij->A->rmap->n/bs]; i++) {
+      for (jb=0; jb<bs; jb++) {
+        for (ib=0; ib<bs; ib++) {
+          int col = A->cmap->rstart + a_aij->j[i] * bs + jb;
+          work[col] = PetscMax(PetscAbsScalar(*a_val), work[col]);
+          a_val++;
+        }
+      }
+    }
+    for (i=b_aij->i[0]; i<b_aij->i[aij->B->rmap->n/bs]; i++) {
+      for (jb=0; jb<bs; jb++) {
+        for (ib=0; ib<bs; ib++) {
+          int col = garray[b_aij->j[i]] * bs + jb;
+          work[col] = PetscMax(PetscAbsScalar(*b_val), work[col]);
+          b_val++;
+        }
+      }
+    }
+  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Unknown NormType");
+  if (type == NORM_INFINITY) {
+    ierr = MPI_Allreduce(work,norms,N,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  } else {
+    ierr = MPI_Allreduce(work,norms,N,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  }
+  ierr = PetscFree(work);CHKERRQ(ierr);
+  if (type == NORM_2) {
+    for (i=0; i<N; i++) norms[i] = PetscSqrtReal(norms[i]);
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatInvertBlockDiagonal_MPIBAIJ"
@@ -2799,7 +2578,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                        0,
                                        0,
                                        0,
-                                /*54*/ MatFDColoringCreate_MPIBAIJ,
+                                /*54*/ MatFDColoringCreate_MPIXAIJ,
                                        0,
                                        MatSetUnfactored_MPIBAIJ,
                                        MatPermute_MPIBAIJ,
@@ -2870,7 +2649,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                        0,
                                        MatGetMultiProcBlock_MPIBAIJ,
                                 /*124*/0,
-                                       0,
+                                       MatGetColumnNorms_MPIBAIJ,
                                        MatInvertBlockDiagonal_MPIBAIJ,
                                        0,
                                        0,
@@ -2886,7 +2665,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                        0,
                                /*139*/ 0,
                                        0,
-                                       0
+                                       0,
+                                       MatFDColoringSetUp_MPIXAIJ
 };
 
 #undef __FUNCT__
@@ -2908,6 +2688,7 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
   PetscInt       i,j,d,nz,nz_max=0,*d_nnz=0,*o_nnz=0;
   const PetscInt *JJ    =0;
   PetscScalar    *values=0;
+  PetscBool      roworiented = ((Mat_MPIBAIJ*)B->data)->roworiented;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2952,8 +2733,16 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
     PetscInt          row    = i + rstart;
     PetscInt          ncols  = ii[i+1] - ii[i];
     const PetscInt    *icols = jj + ii[i];
-    const PetscScalar *svals = values + (V ? (bs*bs*ii[i]) : 0);
-    ierr = MatSetValuesBlocked_MPIBAIJ(B,1,&row,ncols,icols,svals,INSERT_VALUES);CHKERRQ(ierr);
+    if (!roworiented) {         /* block ordering matches the non-nested layout of MatSetValues so we can insert entire rows */
+      const PetscScalar *svals = values + (V ? (bs*bs*ii[i]) : 0);
+      ierr = MatSetValuesBlocked_MPIBAIJ(B,1,&row,ncols,icols,svals,INSERT_VALUES);CHKERRQ(ierr);
+    } else {                    /* block ordering does not match so we can only insert one block at a time. */
+      PetscInt j;
+      for (j=0; j<ncols; j++) {
+        const PetscScalar *svals = values + (V ? (bs*bs*(ii[i]+j)) : 0);
+        ierr = MatSetValuesBlocked_MPIBAIJ(B,1,&row,1,&icols[j],svals,INSERT_VALUES);CHKERRQ(ierr);
+      }
+    }
   }
 
   if (!V) { ierr = PetscFree(values);CHKERRQ(ierr); }
@@ -2980,9 +2769,15 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
 
    Level: developer
 
+   Notes: The order of the entries in values is specified by the MatOption MAT_ROW_ORIENTED.  For example, C programs
+   may want to use the default MAT_ROW_ORIENTED=PETSC_TRUE and use an array v[nnz][bs][bs] where the second index is
+   over rows within a block and the last index is over columns within a block row.  Fortran programs will likely set
+   MAT_ROW_ORIENTED=PETSC_FALSE and use a Fortran array v(bs,bs,nnz) in which the first index is over rows within a
+   block column and the second index is over columns within a block.
+
 .keywords: matrix, aij, compressed row, sparse, parallel
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIBAIJSetPreallocation(), MatCreateAIJ(), MPIAIJ
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIBAIJSetPreallocation(), MatCreateAIJ(), MPIAIJ, MatCreateMPIBAIJWithArrays(), MPIBAIJ
 @*/
 PetscErrorCode  MatMPIBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i[],const PetscInt j[], const PetscScalar v[])
 {
@@ -4054,6 +3849,11 @@ PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin,PetscInt *min,const PetscI
      thus you CANNOT change the matrix entries by changing the values of a[] after you have
      called this routine. Use MatCreateMPIAIJWithSplitArrays() to avoid needing to copy the arrays.
 
+     The order of the entries in values is the same as the block compressed sparse row storage format; that is, it is
+     the same as a three dimensional array in Fortran values(bs,bs,nnz) that contains the first column of the first
+     block, followed by the second column of the first block etc etc.  That is, the blocks are contiguous in memory
+     with column-major ordering within blocks.
+
        The i and j indices are 0 based, and i indices are indices corresponding to the local j array.
 
 .keywords: matrix, aij, compressed row, sparse, parallel
@@ -4071,6 +3871,8 @@ PetscErrorCode  MatCreateMPIBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(*mat,MATMPISBAIJ);CHKERRQ(ierr);
+  ierr = MatSetOption(*mat,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocationCSR(*mat,bs,i,j,a);CHKERRQ(ierr);
+  ierr = MatSetOption(*mat,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

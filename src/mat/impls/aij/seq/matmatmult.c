@@ -881,13 +881,19 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   if (abt->usecoloring) {
     /* Create MatTransposeColoring from symbolic C=A*B^T */
     MatTransposeColoring matcoloring;
+    MatColoring          coloring;
     ISColoring           iscoloring;
     Mat                  Bt_dense,C_dense;
     Mat_SeqAIJ           *c=(Mat_SeqAIJ*)(*C)->data;
     /* inode causes memory problem, don't know why */
     if (c->inode.use) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MAT_USE_INODES is not supported. Use '-mat_no_inode'");
 
-    ierr = MatGetColoring(*C,MATCOLORINGLF,&iscoloring);CHKERRQ(ierr);
+    ierr = MatColoringCreate(*C,&coloring);CHKERRQ(ierr);
+    ierr = MatColoringSetDistance(coloring,2);CHKERRQ(ierr);
+    ierr = MatColoringSetType(coloring,MATCOLORINGSL);CHKERRQ(ierr);
+    ierr = MatColoringSetFromOptions(coloring);CHKERRQ(ierr);
+    ierr = MatColoringApply(coloring,&iscoloring);CHKERRQ(ierr);
+    ierr = MatColoringDestroy(&coloring);CHKERRQ(ierr);
     ierr = MatTransposeColoringCreate(*C,iscoloring,&matcoloring);CHKERRQ(ierr);
 
     abt->matcoloring = matcoloring;
@@ -1396,74 +1402,6 @@ PetscErrorCode MatTransColoringApplyDenToSp_SeqAIJ(MatTransposeColoring matcolor
   PetscFunctionReturn(0);
 }
 
-/*
- MatGetColumnIJ_SeqAIJ_Color() and MatRestoreColumnIJ_SeqAIJ_Color() are customized from
- MatGetColumnIJ_SeqAIJ() and MatRestoreColumnIJ_SeqAIJ() by adding an output
- spidx[], index of a->a, to be used in MatTransposeColoringCreate_SeqAIJ().
- */
-#undef __FUNCT__
-#define __FUNCT__ "MatGetColumnIJ_SeqAIJ_Color"
-PetscErrorCode MatGetColumnIJ_SeqAIJ_Color(Mat A,PetscInt oshift,PetscBool symmetric,PetscBool inodecompressed,PetscInt *nn,const PetscInt *ia[],const PetscInt *ja[],PetscInt *spidx[],PetscBool  *done)
-{
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       i,*collengths,*cia,*cja,n = A->cmap->n,m = A->rmap->n;
-  PetscInt       nz = a->i[m],row,*jj,mr,col;
-  PetscInt       *cspidx;
-
-  PetscFunctionBegin;
-  *nn = n;
-  if (!ia) PetscFunctionReturn(0);
-  if (symmetric) {
-    SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatGetColumnIJ_SeqAIJ_Color() not supported for the case symmetric");
-    ierr = MatToSymmetricIJ_SeqAIJ(A->rmap->n,a->i,a->j,0,oshift,(PetscInt**)ia,(PetscInt**)ja);CHKERRQ(ierr);
-  } else {
-    ierr = PetscMalloc((n+1)*sizeof(PetscInt),&collengths);CHKERRQ(ierr);
-    ierr = PetscMemzero(collengths,n*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMalloc((n+1)*sizeof(PetscInt),&cia);CHKERRQ(ierr);
-    ierr = PetscMalloc((nz+1)*sizeof(PetscInt),&cja);CHKERRQ(ierr);
-    ierr = PetscMalloc((nz+1)*sizeof(PetscInt),&cspidx);CHKERRQ(ierr);
-    jj   = a->j;
-    for (i=0; i<nz; i++) {
-      collengths[jj[i]]++;
-    }
-    cia[0] = oshift;
-    for (i=0; i<n; i++) {
-      cia[i+1] = cia[i] + collengths[i];
-    }
-    ierr = PetscMemzero(collengths,n*sizeof(PetscInt));CHKERRQ(ierr);
-    jj   = a->j;
-    for (row=0; row<m; row++) {
-      mr = a->i[row+1] - a->i[row];
-      for (i=0; i<mr; i++) {
-        col = *jj++;
-
-        cspidx[cia[col] + collengths[col] - oshift] = a->i[row] + i; /* index of a->j */
-        cja[cia[col] + collengths[col]++ - oshift]  = row + oshift;
-      }
-    }
-    ierr   = PetscFree(collengths);CHKERRQ(ierr);
-    *ia    = cia; *ja = cja;
-    *spidx = cspidx;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatRestoreColumnIJ_SeqAIJ_Color"
-PetscErrorCode MatRestoreColumnIJ_SeqAIJ_Color(Mat A,PetscInt oshift,PetscBool symmetric,PetscBool inodecompressed,PetscInt *n,const PetscInt *ia[],const PetscInt *ja[],PetscInt *spidx[],PetscBool  *done)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (!ia) PetscFunctionReturn(0);
-
-  ierr = PetscFree(*ia);CHKERRQ(ierr);
-  ierr = PetscFree(*ja);CHKERRQ(ierr);
-  ierr = PetscFree(*spidx);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "MatTransposeColoringCreate_SeqAIJ"
 PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatTransposeColoring c)
@@ -1531,13 +1469,11 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
     /* fast, crude version requires O(N*N) work */
     ierr = PetscMemzero(rowhit,cm*sizeof(PetscInt));CHKERRQ(ierr);
 
-    /* loop over columns*/
-    for (j=0; j<n; j++) {
+    for (j=0; j<n; j++) { /* loop over columns*/
       col     = is[j];
       row_idx = cj + ci[col];
       m       = ci[col+1] - ci[col];
-      /* loop over columns marking them in rowhit */
-      for (k=0; k<m; k++) {
+      for (k=0; k<m; k++) { /* loop over columns marking them in rowhit */
         idxhit[*row_idx]   = spidx[ci[col] + k];
         rowhit[*row_idx++] = col + 1;
       }
@@ -1551,7 +1487,7 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
     colorforrow[i+1] = colorforrow[i] + nrows;
 
     nrows = 0;
-    for (j=0; j<cm; j++) {
+    for (j=0; j<cm; j++) { /* loop over rows */
       if (rowhit[j]) {
         rows_i[nrows]   = j;
         den2sp_i[nrows] = idxhit[j];

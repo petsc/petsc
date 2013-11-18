@@ -436,6 +436,9 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
    Level: intermediate
 
+   Note:
+   This routine zeros out ptr. This is to prevent accidental us of the array after it has been restored.
+
 .seealso: ISGetIndices(), ISRestoreIndicesF90()
 @*/
 PetscErrorCode  ISRestoreIndices(IS is,const PetscInt *ptr[])

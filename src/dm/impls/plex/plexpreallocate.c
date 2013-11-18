@@ -31,6 +31,22 @@ static PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool u
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexSetPreallocationCenterDimension"
+/*@
+  DMPlexSetPreallocationCenterDimension - Determine the topology used to determine adjacency
+
+  Input Parameters:
++ dm - The DM object
+- preallocCenterDim - The dimension of points which connect adjacent entries
+
+  Level: developer
+
+  Notes:
+$     FEM:   Two points p and q are adjacent if q \in closure(star(p)), preallocCenterDim = dim
+$     FVM:   Two points p and q are adjacent if q \in star(cone(p)),    preallocCenterDim = dim-1
+$     FVM++: Two points p and q are adjacent if q \in star(closure(p)), preallocCenterDim = 0
+
+.seealso: DMCreateMatrix(), DMPlexPreallocateOperator()
+@*/
 PetscErrorCode DMPlexSetPreallocationCenterDimension(DM dm, PetscInt preallocCenterDim)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;

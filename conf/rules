@@ -104,7 +104,7 @@ cmake: chk_makej
 gnumake: chk_makej
 	@echo "Building PETSc using GNU Make with ${MAKE_NP} build threads"
 	@echo "=========================================="
-	@cd ${PETSC_DIR} && ${OMAKE} -f gmakefile -j ${MAKE_NP} V=${V}
+	@cd ${PETSC_DIR} && ${OMAKE_PRINTDIR} -f gmakefile -j ${MAKE_NP} V=${V}
 	@if [ "${BUILDSHAREDLIB}" = "yes" -a "${DSYMUTIL}" != "true" ]; then \
         echo "Running ${DSYMUTIL} on ${SHLIBS}";\
         for LIBNAME in ${SHLIBS}; do ${DSYMUTIL} ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; done; fi
@@ -257,7 +257,7 @@ tree: ${ACTION}
             fi; \
             (cd $$dir ; \
             if [ ${NO_PRINT_DIR}foo = foo ] ; then echo ${ACTION} in: `pwd`; fi; \
-            ${OMAKE_NOPRINTDIR} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH} BASE_DIR=${BASE_DIR} NO_PRINT_DIR=${NO_PRINT_DIR});\
+            ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH} BASE_DIR=${BASE_DIR} NO_PRINT_DIR=${NO_PRINT_DIR});\
 	  done
 
 

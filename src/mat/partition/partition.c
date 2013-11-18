@@ -561,7 +561,7 @@ PetscErrorCode  MatPartitioningSetFromOptions(MatPartitioning part)
   } else {
     def = ((PetscObject)part)->type_name;
   }
-  ierr = PetscOptionsList("-mat_partitioning_type","Type of partitioner","MatPartitioningSetType",MatPartitioningList,def,type,256,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-mat_partitioning_type","Type of partitioner","MatPartitioningSetType",MatPartitioningList,def,type,256,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = MatPartitioningSetType(part,type);CHKERRQ(ierr);
   }

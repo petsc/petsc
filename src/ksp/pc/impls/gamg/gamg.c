@@ -732,7 +732,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         nASMBlocksArr[level]  = 0;
         ierr                  = PCGASMSetType(subpc, PC_GASM_BASIC);CHKERRQ(ierr);
       } else {
-        ierr = PCSetType(subpc, PCJACOBI);CHKERRQ(ierr);
+        ierr = PCSetType(subpc, PCSOR);CHKERRQ(ierr);
       }
     }
     {
@@ -768,7 +768,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
          lidx <= fine_level;
          lidx++, level--) {
       KSP       smoother;
-      PetscBool flag;
+      PetscBool flag,flag2;
       PC        subpc;
 
       ierr = PCMGGetSmoother(pc, lidx, &smoother);CHKERRQ(ierr);
@@ -779,8 +779,9 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       if (flag) {
         PetscReal emax, emin;
         ierr = PetscObjectTypeCompare((PetscObject)subpc, PCJACOBI, &flag);CHKERRQ(ierr);
-        if (flag && emaxs[level] > 0.0) emax=emaxs[level]; /* eigen estimate only for diagnal PC */
-        else { /* eigen estimate 'emax' */
+        ierr = PetscObjectTypeCompare((PetscObject)subpc, PCSOR, &flag2);CHKERRQ(ierr);
+        if ((flag||flag2) && emaxs[level] > 0.0) emax=emaxs[level]; /* eigen estimate only for diagnal PC but lets acccept SOR because it is close and safe (always lower) */
+        else { /* eigen estimate 'emax' -- this is done in cheby */
           KSP eksp;
           Mat Lmat = Aarr[level];
           Vec bb, xx;
@@ -1275,12 +1276,11 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
   {
     /* -pc_gamg_type */
     {
-      char tname[256] = PCGAMGAGG;
-      const char *deftype = pc_gamg->gamg_type_name ? pc_gamg->gamg_type_name : tname;
-      ierr = PetscOptionsList("-pc_gamg_type","Type of AMG method","PCGAMGSetType",GAMGList, tname, tname, sizeof(tname), &flag);CHKERRQ(ierr);
+      char tname[256];
+      ierr = PetscOptionsFList("-pc_gamg_type","Type of AMG method","PCGAMGSetType",GAMGList, pc_gamg->gamg_type_name, tname, sizeof(tname), &flag);CHKERRQ(ierr);
       /* call PCCreateGAMG_XYZ */
-      if (flag || !pc_gamg->gamg_type_name) {
-        ierr = PCGAMGSetType(pc, flag ? tname : deftype);CHKERRQ(ierr);
+      if (flag) {
+        ierr = PCGAMGSetType(pc,tname);CHKERRQ(ierr);
       }
     }
     /* -pc_gamg_verbose */
@@ -1468,7 +1468,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
 #endif
   }
 #endif
-
+  /* PCSetUp_GAMG assumes that the type has been set, so set it to the default now */
+  ierr = PCGAMGSetType(pc,PCGAMGAGG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

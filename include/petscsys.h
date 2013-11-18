@@ -516,7 +516,7 @@ PETSC_EXTERN PetscErrorCode PetscCommDestroy(MPI_Comm*);
   Concepts: memory allocation
 
 M*/
-#define PetscMalloc(a,b)  ((a != 0) ? (*PetscTrMalloc)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,(void**)(b)) : (*(b) = 0,0) )
+#define PetscMalloc(a,b)  ((a != 0) ? (*PetscTrMalloc)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,(void**)(b)) : (*(b) = 0,0) )
 
 /*MC
    PetscAddrAlign - Rounds up an address to PETSC_MEMALIGN alignment
@@ -856,7 +856,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscFree(a)   ((a) && ((*PetscTrFree)((void*)(a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__) || ((a) = 0,0)))
+#define PetscFree(a)   ((a) && ((*PetscTrFree)((void*)(a),__LINE__,PETSC_FUNCTION_NAME,__FILE__) || ((a) = 0,0)))
 
 /*MC
    PetscFreeVoid - Frees memory
@@ -879,7 +879,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscFreeVoid(a) ((*PetscTrFree)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__),(a) = 0)
+#define PetscFreeVoid(a) ((*PetscTrFree)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__),(a) = 0)
 
 
 /*MC
@@ -1069,9 +1069,9 @@ M*/
 #define PetscFree7(m1,m2,m3,m4,m5,m6,m7)   ((m7)=0,(m6)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1))
 #endif
 
-PETSC_EXTERN PetscErrorCode (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**);
-PETSC_EXTERN PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[],const char[]);
-PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t,int,const char[],const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[],const char[]));
+PETSC_EXTERN PetscErrorCode (*PetscTrMalloc)(size_t,int,const char[],const char[],void**);
+PETSC_EXTERN PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[]);
+PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t,int,const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[]));
 PETSC_EXTERN PetscErrorCode PetscMallocClear(void);
 
 /*
@@ -1091,7 +1091,7 @@ PETSC_EXTERN PetscErrorCode PetscMallocGetCurrentUsage(PetscLogDouble *);
 PETSC_EXTERN PetscErrorCode PetscMallocGetMaximumUsage(PetscLogDouble *);
 PETSC_EXTERN PetscErrorCode PetscMallocDebug(PetscBool);
 PETSC_EXTERN PetscErrorCode PetscMallocGetDebug(PetscBool*);
-PETSC_EXTERN PetscErrorCode PetscMallocValidate(int,const char[],const char[],const char[]);
+PETSC_EXTERN PetscErrorCode PetscMallocValidate(int,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscMallocSetDumpLog(void);
 PETSC_EXTERN PetscErrorCode PetscMallocSetDumpLogThreshold(PetscLogDouble);
 PETSC_EXTERN PetscErrorCode PetscMallocGetDumpLog(PetscBool*);
@@ -1385,27 +1385,29 @@ PETSC_EXTERN PetscErrorCode PetscObjectTypeCompareAny(PetscObject,PetscBool*,con
 PETSC_EXTERN PetscErrorCode PetscRegisterFinalize(PetscErrorCode (*)(void));
 PETSC_EXTERN PetscErrorCode PetscRegisterFinalizeAll(void);
 
-#if defined(PETSC_HAVE_AMS)
-PETSC_EXTERN PetscErrorCode PetscObjectAMSViewOff(PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectAMSSetBlock(PetscObject,PetscBool);
-PETSC_EXTERN PetscErrorCode PetscObjectAMSBlock(PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectAMSGrantAccess(PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectAMSTakeAccess(PetscObject);
-PETSC_EXTERN void           PetscStackAMSGrantAccess(void);
-PETSC_EXTERN void           PetscStackAMSTakeAccess(void);
-PETSC_EXTERN PetscErrorCode PetscStackViewAMS(void);
-PETSC_EXTERN PetscErrorCode PetscStackAMSViewOff(void);
+#if defined(PETSC_HAVE_SAWS)
+PETSC_EXTERN PetscErrorCode PetscSAWsBlock(void);
+PETSC_EXTERN PetscErrorCode PetscObjectSAWsViewOff(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectSAWsSetBlock(PetscObject,PetscBool);
+PETSC_EXTERN PetscErrorCode PetscObjectSAWsBlock(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectSAWsGrantAccess(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectSAWsTakeAccess(PetscObject);
+PETSC_EXTERN void           PetscStackSAWsGrantAccess(void);
+PETSC_EXTERN void           PetscStackSAWsTakeAccess(void);
+PETSC_EXTERN PetscErrorCode PetscStackViewSAWs(void);
+PETSC_EXTERN PetscErrorCode PetscStackSAWsViewOff(void);
 
 #else
-#define PetscObjectAMSViewOff(obj)             0
-#define PetscObjectAMSSetBlock(obj,flg)        0
-#define PetscObjectAMSBlock(obj)               0
-#define PetscObjectAMSGrantAccess(obj)         0
-#define PetscObjectAMSTakeAccess(obj)          0
-#define PetscStackViewAMS()                    0
-#define PetscStackAMSViewOff()                 0
-#define PetscStackAMSTakeAccess()
-#define PetscStackAMSGrantAccess()
+#define PetscSAWsBlock()                        0
+#define PetscObjectSAWsViewOff(obj)             0
+#define PetscObjectSAWsSetBlock(obj,flg)        0
+#define PetscObjectSAWsBlock(obj)               0
+#define PetscObjectSAWsGrantAccess(obj)         0
+#define PetscObjectSAWsTakeAccess(obj)          0
+#define PetscStackViewSAWs()                    0
+#define PetscStackSAWsViewOff()                 0
+#define PetscStackSAWsTakeAccess()
+#define PetscStackSAWsGrantAccess()
 
 #endif
 
@@ -2377,6 +2379,8 @@ extern PetscSegBuffer PetscCitationsList;
      Input Parameters:
 +      cite - the bibtex item, formated to displayed on multiple lines nicely
 -      set - a boolean variable initially set to PETSC_FALSE; this is used to insure only a single registration of the citation
+
+   Level: intermediate
 
      Options Database:
 .     -citations [filenmae]   - print out the bibtex entries for the given computation

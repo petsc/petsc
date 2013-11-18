@@ -355,7 +355,7 @@ PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse,PetscViewer viewer)
 {
   /* MatCoarsen_MIS *MIS = (MatCoarsen_MIS*)coarse->; */
   PetscErrorCode ierr;
-  int            rank;
+  PetscMPIInt    rank;
   PetscBool      iascii;
 
   PetscFunctionBegin;

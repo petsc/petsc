@@ -7,7 +7,7 @@
 
 typedef struct _EH *EH;
 struct _EH {
-  PetscErrorCode (*handler)(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
+  PetscErrorCode (*handler)(MPI_Comm,int,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
   void           *ctx;
   EH             previous;
 };
@@ -27,7 +27,6 @@ static EH eh = 0;
 .  line - the line number of the error (indicated by __LINE__)
 .  func - the function where error is detected (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
-.  dir - the directory of the file (indicated by __SDIR__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
 .  p - specific error number
@@ -57,7 +56,7 @@ $     SETERRQ(PETSC_COMM_SELF,number,p,mess)
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(),
           PetscAbortErrorHandler()
  @*/
-PetscErrorCode  PetscEmacsClientErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
+PetscErrorCode  PetscEmacsClientErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscErrorCode ierr;
   char           command[PETSC_MAX_PATH_LEN];
@@ -67,7 +66,7 @@ PetscErrorCode  PetscEmacsClientErrorHandler(MPI_Comm comm,int line,const char *
 
   PetscFunctionBegin;
   ierr = PetscGetPetscDir(&pdir);if (ierr) PetscFunctionReturn(ierr);
-  sprintf(command,"cd %s; emacsclient --no-wait +%d %s%s\n",pdir,line,dir,file);
+  sprintf(command,"cd %s; emacsclient --no-wait +%d %s\n",pdir,line,file);
 #if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(MPI_COMM_WORLD,(char*)ctx,command,"r",&fp);if (ierr) PetscFunctionReturn(ierr);
   ierr = PetscPClose(MPI_COMM_WORLD,fp,&rval);if (ierr) PetscFunctionReturn(ierr);
@@ -76,9 +75,9 @@ PetscErrorCode  PetscEmacsClientErrorHandler(MPI_Comm comm,int line,const char *
 #endif
   ierr = PetscPopErrorHandler();if (ierr) PetscFunctionReturn(ierr); /* remove this handler from the stack of handlers */
   if (!eh) {
-    ierr = PetscTraceBackErrorHandler(comm,line,fun,file,dir,n,p,mess,0);if (ierr) PetscFunctionReturn(ierr);
+    ierr = PetscTraceBackErrorHandler(comm,line,fun,file,n,p,mess,0);if (ierr) PetscFunctionReturn(ierr);
   } else {
-    ierr = (*eh->handler)(comm,line,fun,file,dir,n,p,mess,eh->ctx);if (ierr) PetscFunctionReturn(ierr);
+    ierr = (*eh->handler)(comm,line,fun,file,n,p,mess,eh->ctx);if (ierr) PetscFunctionReturn(ierr);
   }
   PetscFunctionReturn(ierr);
 }
@@ -96,13 +95,12 @@ PetscErrorCode  PetscEmacsClientErrorHandler(MPI_Comm comm,int line,const char *
          example file pointers for error messages etc.)
 
    Calling sequence of handler:
-$    int handler(MPI_Comm comm,int line,char *func,char *file,char *dir,PetscErrorCode n,int p,char *mess,void *ctx);
+$    int handler(MPI_Comm comm,int line,char *func,char *file,PetscErrorCode n,int p,char *mess,void *ctx);
 
 +  comm - communicator over which error occured
 .  func - the function where the error occured (indicated by __FUNCT__)
 .  line - the line number of the error (indicated by __LINE__)
 .  file - the file in which the error was detected (indicated by __FILE__)
-.  dir - the directory of the file (indicated by __SDIR__)
 .  n - the generic error number (see list defined in include/petscerror.h)
 .  p - PETSC_ERROR_INITIAL if error just detected, otherwise PETSC_ERROR_REPEAT
 .  mess - an error text string, usually just printed to the screen
@@ -123,7 +121,7 @@ $    int handler(MPI_Comm comm,int line,char *func,char *file,char *dir,PetscErr
 .seealso: PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), PetscTraceBackErrorHandler(), PetscPushSignalHandler()
 
 @*/
-PetscErrorCode  PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*),void *ctx)
+PetscErrorCode  PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm,int,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*),void *ctx)
 {
   EH             neweh;
   PetscErrorCode ierr;
@@ -178,7 +176,6 @@ PetscErrorCode  PetscPopErrorHandler(void)
 .  line - the line number of the error (indicated by __LINE__)
 .  func - the function where error is detected (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
-.  dir - the directory of the file (indicated by __SDIR__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
 .  p - specific error number
@@ -206,7 +203,7 @@ $     SETERRQ(comm,number,mess)
 .seealso:  PetscPushErrorHandler(), PetscPopErrorHandler().
  @*/
 
-PetscErrorCode  PetscReturnErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
+PetscErrorCode  PetscReturnErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(n);
@@ -325,7 +322,6 @@ static void PetscCxxErrorThrow() {
 +  comm - communicator over which error occurred.  ALL ranks of this communicator MUST call this routine
 .  line - the line number of the error (indicated by __LINE__)
 .  func - the function where the error occured (indicated by __FUNCT__)
-.  dir - the directory of file (indicated by __SDIR__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
@@ -350,7 +346,7 @@ $     SETERRQ(comm,n,mess)
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), SETERRQ(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 @*/
-PetscErrorCode  PetscError(MPI_Comm comm,int line,const char *func,const char *file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,...)
+PetscErrorCode  PetscError(MPI_Comm comm,int line,const char *func,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,...)
 {
   va_list        Argp;
   size_t         fullLength;
@@ -361,7 +357,6 @@ PetscErrorCode  PetscError(MPI_Comm comm,int line,const char *func,const char *f
   PetscFunctionBegin;
   if (!func) func = "User provided function";
   if (!file) file = "User file";
-  if (!dir)   dir = " ";
   if (comm == MPI_COMM_NULL) comm = PETSC_COMM_SELF;
 
   /* Compose the message evaluating the print format */
@@ -373,8 +368,8 @@ PetscErrorCode  PetscError(MPI_Comm comm,int line,const char *func,const char *f
     if (p == 1) PetscStrncpy(PetscErrorBaseMessage,lbuf,1023);
   }
 
-  if (!eh) ierr = PetscTraceBackErrorHandler(comm,line,func,file,dir,n,p,lbuf,0);
-  else     ierr = (*eh->handler)(comm,line,func,file,dir,n,p,lbuf,eh->ctx);
+  if (!eh) ierr = PetscTraceBackErrorHandler(comm,line,func,file,n,p,lbuf,0);
+  else     ierr = (*eh->handler)(comm,line,func,file,n,p,lbuf,eh->ctx);
 
   /*
       If this is called from the main() routine we call MPI_Abort() instead of

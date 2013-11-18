@@ -6,7 +6,8 @@ FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
                 ex9.c ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
-                ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c ex28.c ex30.cxx
+                ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c \
+                ex28.c ex30.cxx ex31.c
 EXAMPLESF       = ex1f.F ex2f.F ex22f.F # ex22f_mf.F90
 EXAMPLESFH      = ex2f.h
 MANSEC          = TS
@@ -151,6 +152,10 @@ ex30: ex30.o chkopts
 	-${CLINKER} -o ex30 ex30.o ${PETSC_TS_LIB}
 	${RM} ex30.o
 
+ex31: ex31.o chkopts
+	-${CLINKER} -o ex31 ex31.o ${PETSC_TS_LIB}
+	${RM} ex31.o
+
 #---------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo > ex1_1.tmp 2>&1;	  \
@@ -246,6 +251,21 @@ runex7_3:
 	   if (${DIFF} output/ex7_3.out ex7_3.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex7_3, diffs above \n========================================="; fi; \
 	   ${RM} -f ex7_3.tmp
+
+runex8:
+	-@${MPIEXEC} -n 1 ./ex8 -monitor_error -ts_atol 1e-2 -ts_rtol 1e-2 -ts_exact_final_time interpolate -ts_type arkimex > ex8_1.tmp 2>&1; \
+	   ${DIFF} output/ex8_1.out ex8_1.tmp || printf "${PWD}\nPossible problem with ex8_1, diffs above \n=========================================\n"; \
+	   ${RM} -f ex8_1.tmp
+
+runex8_2:
+	-@${MPIEXEC} -n 1 ./ex8 -ts_atol 1e-2 -ts_rtol 1e-2 -ts_final_time 15 -ts_type arkimex -ts_arkimex_type 2e -problem_type orego -ts_arkimex_initial_guess_extrapolate 0 > ex8_2.tmp 2>&1; \
+	   ${DIFF} output/ex8_2.out ex8_2.tmp || printf "${PWD}\nPossible problem with ex8_2, diffs above \n=========================================\n"; \
+	   ${RM} -f ex8_2.tmp
+
+runex8_3:
+	-@${MPIEXEC} -n 1 ./ex8 -ts_atol 1e-2 -ts_rtol 1e-2 -ts_final_time 15 -ts_type arkimex -ts_arkimex_type 2e -problem_type orego -ts_arkimex_initial_guess_extrapolate 1 > ex8_3.tmp 2>&1; \
+	   ${DIFF} output/ex8_3.out ex8_3.tmp || printf "${PWD}\nPossible problem with ex8_3, diffs above \n=========================================\n"; \
+	   ${RM} -f ex8_3.tmp
 
 runex9:
 	-@${MPIEXEC} -n 1 ./ex9 -da_grid_x 100 -initial 1 -xmin -2 -xmax 5 -exact -limit mc > ex9_1.tmp 2>&1; \
@@ -349,6 +369,11 @@ runex17_2:
 	   ${DIFF} output/ex17_2.out ex17_2.tmp || echo  ${PWD} "\nPossible problem with ex17_2, diffs above \n=========================================";  \
 	   ${RM} -f ex17_2.tmp
 
+runex20:
+	-@${MPIEXEC} -n 1 ./ex20 > ex20_1.tmp 2>&1; \
+	   ${DIFF} output/ex20_1.out ex20_1.tmp || echo  ${PWD} "\nPossible problem with ex20_1, diffs above \n=========================================";  \
+	   ${RM} -f ex20_1.tmp
+
 runex22:
 	-@${MPIEXEC} -n 1 ./ex22 -nox -da_grid_x 200 -ts_monitor_draw_solution -ts_arkimex_type 4 -ts_adapt_type none > ex22_1.tmp 2>&1; \
 	   ${DIFF} output/ex22_1.out ex22_1.tmp || echo  ${PWD} "\nPossible problem with ex22_1, diffs above \n=========================================";  \
@@ -419,15 +444,23 @@ runex30_2:
 	   ${DIFF} output/ex30_2.out ex30_2.tmp || printf "${PWD}\nPossible problem with ex30_2, diffs above \n=========================================\n"; \
 	   ${RM} -f ex30_2.tmp
 
+runex31:
+	-@${MPIEXEC} -n 1 ./ex31 > ex31_1.tmp 2>&1; \
+	   ${DIFF} output/ex31_1.out ex31_1.tmp || echo  ${PWD} "\nPossible problem with ex20_1, diffs above \n=========================================";  \
+	   ${RM} -f ex31_1.tmp
+
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc ex5.rm \
                             ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm \
-                            ex8.PETSc ex8.rm \
+                            ex8.PETSc runex8 runex8_2 runex8_3 ex8.rm \
                             ex10.PETSc runex10 runex10_2 runex10_3  ex10.rm \
                             ex12.PETSc ex12.rm ex13.PETSc runex13 runex13_2 runex13_3 ex13.rm\
                             ex15.PETSc runex15 runex15_2 runex15_3 runex15_4 runex15_5 ex15.rm \
-                            ex17.PETSc runex17 runex17_2 ex17.rm ex22.PETSc runex22 runex22_2 runex22_3 ex22.rm \
-                            ex25.PETSc runex25 ex25.rm ex26.PETSc runex26 runex26_2 runex26_3 runex26_4 ex26.rm
+                            ex17.PETSc runex17 runex17_2 ex17.rm \
+                            ex20.PETSc ex20.rm \
+                            ex22.PETSc runex22 runex22_2 runex22_3 ex22.rm \
+                            ex25.PETSc runex25 ex25.rm ex26.PETSc runex26 runex26_2 runex26_3 runex26_4 ex26.rm \
+                            ex31.PETsc ex31.rm
 TESTEXAMPLES_C_NOCOMPLEX  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm
 TESTEXAMPLES_C_X	  =
 TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex22f.PETSc ex22f.rm # ex22f_mf.PETSc ex22f_mf.rm

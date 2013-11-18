@@ -20,6 +20,7 @@ static PetscErrorCode TSStep_Euler(TS ts)
   ierr = TSPreStage(ts,ts->ptime);CHKERRQ(ierr);
   ierr = TSComputeRHSFunction(ts,ts->ptime,sol,update);CHKERRQ(ierr);
   ierr = VecAXPY(sol,ts->time_step,update);CHKERRQ(ierr);
+  ierr = TSPostStage(ts,ts->ptime,0,&sol);CHKERRQ(ierr);
   ts->ptime += ts->time_step;
   ts->steps++;
   PetscFunctionReturn(0);

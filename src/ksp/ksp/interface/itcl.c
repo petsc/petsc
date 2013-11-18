@@ -358,7 +358,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
 
   if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll();CHKERRQ(ierr);}
   ierr = PetscObjectOptionsBegin((PetscObject)ksp);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-ksp_type","Krylov method","KSPSetType",KSPList,(char*)(((PetscObject)ksp)->type_name ? ((PetscObject)ksp)->type_name : KSPGMRES),type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-ksp_type","Krylov method","KSPSetType",KSPList,(char*)(((PetscObject)ksp)->type_name ? ((PetscObject)ksp)->type_name : KSPGMRES),type,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = KSPSetType(ksp,type);CHKERRQ(ierr);
   }
@@ -571,16 +571,16 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     ierr = KSPMonitorSet(ksp,KSPMonitorLGRange,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
 
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   /*
     Publish convergence information using AMS
   */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-ksp_monitor_ams","Publish KSP progress using AMS","KSPMonitorSet",flg,&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_monitor_saws","Publish KSP progress using SAWs","KSPMonitorSet",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     void *ctx;
-    ierr = KSPMonitorAMSCreate(ksp,NULL,&ctx);CHKERRQ(ierr);
-    ierr = KSPMonitorSet(ksp,KSPMonitorAMS,ctx,KSPMonitorAMSDestroy);CHKERRQ(ierr);
+    ierr = KSPMonitorSAWsCreate(ksp,&ctx);CHKERRQ(ierr);
+    ierr = KSPMonitorSet(ksp,KSPMonitorSAWs,ctx,KSPMonitorSAWsDestroy);CHKERRQ(ierr);
     ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr);
   }
 #endif
@@ -600,13 +600,13 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   ierr = PetscOptionsBool("-ksp_plot_eigenvalues","Scatter plot extreme eigenvalues","KSPSetComputeSingularValues",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) { ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr); }
 
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   {
   PetscBool set;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-ksp_ams_block","Block for AMS memory snooper at end of KSPSolve","PetscObjectAMSBlock",((PetscObject)ksp)->amspublishblock,&flg,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_saws_block","Block for SAWs at end of KSPSolve","PetscObjectSAWsBlock",((PetscObject)ksp)->amspublishblock,&flg,&set);CHKERRQ(ierr);
   if (set) {
-    ierr = PetscObjectAMSSetBlock((PetscObject)ksp,flg);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsSetBlock((PetscObject)ksp,flg);CHKERRQ(ierr);
   }
   }
 #endif

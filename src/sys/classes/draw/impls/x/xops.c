@@ -724,6 +724,20 @@ PetscErrorCode PetscDrawXGetDisplaySize_Private(const char name[],int *width,int
   PetscFunctionReturn(0);
 }
 
+/*MC
+     PETSC_DRAW_X  - PETSc graphics device that uses either X windows or its virtual version Xvfb
+
+   Options Database Keys:
++  -display <display> - sets the display to use
+-  -x_virtual - forces use of a X virtual display Xvfb that will not display anything but -draw_save will still work. Xvfb is automatically
+                started up in PetscSetDisplay() with this option
+
+   Level: beginner
+
+.seealso:  PetscDrawOpenX(), PetscDrawSetDisplay(), PetscDrawSetFromOptions()
+
+M*/
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawCreate_X"
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)

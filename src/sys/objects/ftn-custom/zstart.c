@@ -139,8 +139,8 @@ extern PetscErrorCode  PetscInitialize_DynamicLibraries(void);
 #if defined(PETSC_USE_LOG)
 extern PetscErrorCode  PetscLogBegin_Private(void);
 #endif
-extern PetscErrorCode  PetscMallocAlign(size_t,int,const char[],const char[],const char[],void**);
-extern PetscErrorCode  PetscFreeAlign(void*,int,const char[],const char[],const char[]);
+extern PetscErrorCode  PetscMallocAlign(size_t,int,const char[],const char[],void**);
+extern PetscErrorCode  PetscFreeAlign(void*,int,const char[],const char[]);
 extern int  PetscGlobalArgc;
 extern char **PetscGlobalArgs;
 
@@ -173,7 +173,7 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
   ierr = MPI_Bcast(argc,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   /* PetscTrMalloc() not yet set, so don't use PetscMalloc() */
-  ierr = PetscMallocAlign((*argc+1)*(warg*sizeof(char)+sizeof(char*)),0,0,0,0,(void**)argv);CHKERRQ(ierr);
+  ierr = PetscMallocAlign((*argc+1)*(warg*sizeof(char)+sizeof(char*)),0,0,0,(void**)argv);CHKERRQ(ierr);
   (*argv)[0] = (char*)(*argv + *argc + 1);
 
   if (!rank) {
@@ -219,6 +219,10 @@ extern MPI_Op PetscADMin_Op;
 PETSC_EXTERN void MPIAPI PetscADMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 PETSC_EXTERN void MPIAPI PetscADMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 
+#if defined(PETSC_HAVE_SAWS)
+#include <petscviewersaws.h>
+extern PetscErrorCode  PetscInitializeSAWs(const char[]);
+#endif
 
 /*
     petscinitialize - Version called from Fortran.
@@ -401,6 +405,12 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating options database\n");return;}
   *ierr = PetscOptionsCheckInitial_Private();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options\n");return;}
+  *ierr = PetscCitationsInitialize();
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscCitationsInitialize()\n");return;}
+#if defined(PETSC_HAVE_SAWS)
+  *ierr = PetscInitializeSAWs(NULL);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Initializing SAWs\n");return;}
+#endif
 #if defined(PETSC_USE_LOG)
   *ierr = PetscLogBegin_Private();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: intializing logging\n");return;}
@@ -431,9 +441,6 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscStackCreate()\n");return;}
 #endif
 
-  *ierr = PetscCitationsInitialize();
-  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscCitationsInitialize()\n");return;}
-
   *ierr = PetscOptionsGetInt(NULL,"-hmpi_spawn_size",&nodesize,&flg);
   if (flg) {
 #if defined(PETSC_HAVE_MPI_COMM_SPAWN)
@@ -457,7 +464,9 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   }
 
 #if defined(PETSC_HAVE_CUDA)
-  cublasInit();
+  flg  = PETSC_TRUE;
+  *ierr = PetscOptionsGetBool(NULL,"-cublas",&flg,NULL);
+  if (flg) cublasInit();
 #endif
 }
 
@@ -468,7 +477,7 @@ PETSC_EXTERN void PETSC_STDCALL petscfinalize_(PetscErrorCode *ierr)
   standard_arithmetic();
 #endif
   /* was malloced with PetscMallocAlign() so free the same way */
-  *ierr = PetscFreeAlign(PetscGlobalArgs,0,0,0,0);if (*ierr) {(*PetscErrorPrintf)("PetscFinalize:Freeing args\n");return;}
+  *ierr = PetscFreeAlign(PetscGlobalArgs,0,0,0);if (*ierr) {(*PetscErrorPrintf)("PetscFinalize:Freeing args\n");return;}
 
   *ierr = PetscFinalize();
 }

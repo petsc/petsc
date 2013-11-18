@@ -80,7 +80,7 @@ class Configure(config.package.Package):
     oldLibs = self.compilers.LIBS
     prototype = ''
     call      = ''
-    routine   = self.getPrefix()+routineIn
+    routine   = self.mangleBlas(routineIn)
     if fortranMangle=='stdcall':
       if routine=='ddot':
         prototype = 'double __stdcall DDOT(int*,double*,int*,double*,int*);'
@@ -92,11 +92,10 @@ class Configure(config.package.Package):
   def checkLapack(self, lapackLibrary, otherLibs, fortranMangle, routinesIn = ['getrs', 'geev']):
     oldLibs = self.compilers.LIBS
     routines = list(routinesIn)
-    found   = 0
+    found   = 1
     prototypes = ['','']
     calls      = ['','']
-    for routine in range(len(routines)):
-      routines[routine] = self.getPrefix()+routines[routine]
+    routines   = map(self.mangleBlas, routines)
 
     if fortranMangle=='stdcall':
       if routines == ['dgetrs','dgeev']:
@@ -105,8 +104,8 @@ class Configure(config.package.Package):
         calls      = ['DGETRS(0,0,0,0,0,0,0,0,0,0);',
                       'DGEEV(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);']
     for routine, prototype, call in zip(routines, prototypes, calls):
-      found = found or self.libraries.check(lapackLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle, prototype = prototype, call = call)
-      if found: break
+      found = found and self.libraries.check(lapackLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle, prototype = prototype, call = call)
+      if not found: break
     self.compilers.LIBS = oldLibs
     return found
 
@@ -125,7 +124,6 @@ class Configure(config.package.Package):
     foundBlas   = 0
     foundLapack = 0
     self.f2c    = 0
-    self.f2cpkg = 0
     mangleFunc = self.compilers.fortranMangling
     foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc,'dot')
     if foundBlas:
@@ -136,7 +134,8 @@ class Configure(config.package.Package):
     else:
       self.framework.logPrint('Checking for no name mangling on BLAS/LAPACK')
       foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'dot')
-      foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['getrs', 'geev'])
+      if foundBlas:
+        foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['getrs', 'geev'])
       if foundBlas and foundLapack:
         self.framework.logPrint('Found no name mangling on BLAS/LAPACK')
         self.mangling = 'unchanged'
@@ -144,12 +143,12 @@ class Configure(config.package.Package):
       else:
         self.framework.logPrint('Checking for underscore name mangling on BLAS/LAPACK')
         foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'dot_')
-        foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['getrs_', 'geev_'])
+        if foundBlas:
+          foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['getrs_', 'geev_'])
         if foundBlas and foundLapack:
           self.framework.logPrint('Found underscore name mangling on BLAS/LAPACK')
           self.mangling = 'underscore'
           self.f2c = 1
-    self.f2cpkg = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'f2cblaslapack311_id')
     return (foundBlas, foundLapack)
 
   def generateGuesses(self):
@@ -509,25 +508,25 @@ class Configure(config.package.Package):
       raise RuntimeError('Cannot use PESSL instead of ESSL!')
     return
 
+  def mangleBlas(self, baseName):
+    prefix = self.getPrefix()
+    if self.f2c and self.mangling == 'underscore':
+      return prefix+baseName+'_'
+    else:
+      return prefix+baseName
+
   def checkMissing(self):
     '''Check for missing LAPACK routines'''
     if self.foundLapack:
       mangleFunc = hasattr(self.compilers, 'FC') and not self.f2c
-      for baseName in ['trsen','gerfs','gges','tgsen','gesvd','getrf','getrs','geev','gelss','syev','syevx','sygv','sygvx','potrf','potrs','stebz','pttrf','pttrs','stein','orgqr','geqrf','gesv','hseqr','geqrf','steqr']:
-        prefix = self.getPrefix()
-        if self.f2c:
-          if self.mangling == 'underscore':
-            routine = prefix+baseName+'_'
-          else:
-            routine = prefix+baseName
-        else:
-          routine = prefix+baseName
-        oldLibs = self.compilers.LIBS
-        if not self.libraries.check(self.lapackLibrary, routine, otherLibs = self.getOtherLibs(), fortranMangle = mangleFunc):
-          self.missingRoutines.append(baseName)
-          self.addDefine('MISSING_LAPACK_'+baseName.upper(), 1)
-        self.compilers.LIBS = oldLibs
-    return
+    routines = ['trsen','gerfs','gges','tgsen','gesvd','getrf','getrs','geev','gelss','syev','syevx','sygv','sygvx','potrf','potrs','stebz','pttrf','pttrs','stein','orgqr','geqrf','gesv','hseqr','steqr']
+    oldLibs = self.compilers.LIBS
+    found, missing = self.libraries.checkClassify(self.lapackLibrary, map(self.mangleBlas,routines), otherLibs = self.getOtherLibs(), fortranMangle = mangleFunc)
+    for baseName in routines:
+      if self.mangleBlas(baseName) in missing:
+        self.missingRoutines.append(baseName)
+        self.addDefine('MISSING_LAPACK_'+baseName.upper(), 1)
+    self.compilers.LIBS = oldLibs
 
   def checklsame(self):
     ''' Do the BLAS/LAPACK libraries have a valid lsame() function with correction binding. Lion and xcode 4.2 do not'''

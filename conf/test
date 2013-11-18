@@ -31,7 +31,7 @@ testexamples_METIS: ${TESTEXAMPLES_METIS}
 testexamples_SPAI: ${TESTEXAMPLES_SPAI}
 testexamples_ADIFOR: ${TESTEXAMPLES_ADIFOR}
 testexamples_FFTW: ${TESTEXAMPLES_FFTW}
-testexamples_AMS: ${TESTEXAMPLES_AMS}
+testexamples_SAWS: ${TESTEXAMPLES_SAWS}
 testexamples_VALGRIND: ${TESTEXAMPLES_VALGRIND}
 testexamples_MATLAB: ${TESTEXAMPLES_MATLAB}
 testexamples_MUMPS: ${TESTEXAMPLES_MUMPS}
@@ -120,8 +120,8 @@ buildexamples_ADIFOR:
 	-@${OMAKE} testexamples_ADIFOR TESTEXAMPLES_ADIFOR=`echo ${TESTEXAMPLES_ADIFOR} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_FFTW:
 	-@${OMAKE} testexamples_FFTW TESTEXAMPLES_FFTW=`echo ${TESTEXAMPLES_FFTW} | sed s/runex[0-9]*[a-z0-9_]*//g`
-buildexamples_AMS:
-	-@${OMAKE} testexamples_AMS TESTEXAMPLES_AMS=`echo ${TESTEXAMPLES_AMS} | sed s/runex[0-9]*[a-z0-9_]*//g`
+buildexamples_SAWS:
+	-@${OMAKE} testexamples_SAWS TESTEXAMPLES_SAWS=`echo ${TESTEXAMPLES_SAWS} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_VALGRIND:
 	-@${OMAKE} testexamples_VALGRIND TESTEXAMPLES_VALGRIND=`echo ${TESTEXAMPLES_VALGRIND} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_MATLAB:
