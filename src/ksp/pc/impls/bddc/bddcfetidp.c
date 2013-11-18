@@ -570,7 +570,7 @@ PetscErrorCode FETIDPMatMult(Mat fetimat, Vec x, Vec y)
   ierr = MatMultTranspose(mat_ctx->B_delta,mat_ctx->lambda_local,pcis->vec1_B);CHKERRQ(ierr);
   /* Application of \widetilde{S}^-1 */
   ierr = VecSet(pcis->vec1_D,0.0);CHKERRQ(ierr);
-  ierr = PCBDDCApplyInterfacePreconditioner(mat_ctx->pc);CHKERRQ(ierr);
+  ierr = PCBDDCApplyInterfacePreconditioner(mat_ctx->pc,PETSC_FALSE);CHKERRQ(ierr);
   /* Application of B_delta */
   ierr = MatMult(mat_ctx->B_delta,pcis->vec1_B,mat_ctx->lambda_local);CHKERRQ(ierr);
   ierr = VecSet(y,0.0);CHKERRQ(ierr);
