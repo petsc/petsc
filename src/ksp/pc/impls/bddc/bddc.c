@@ -870,7 +870,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCApply_BDDC - Applies the BDDC preconditioner to a vector.
+   PCApply_BDDC - Applies the BDDC operator to a vector.
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -900,7 +900,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
   if (!pcbddc->use_exact_dirichlet_trick) {
     /* First Dirichlet solve */
     ierr = VecScatterBegin(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = KSPSolve(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
     /*
       Assembling right hand side for BDDC operator
@@ -913,7 +913,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
     ierr = VecScale(pcis->vec2_D,m_one);CHKERRQ(ierr);
     ierr = VecCopy(r,z);CHKERRQ(ierr);
     ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcis->global_to_B,pcis->vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = PCBDDCScalingRestriction(pc,z,pcis->vec1_B);CHKERRQ(ierr);
   } else {
     ierr = VecSet(pcis->vec1_D,zero);CHKERRQ(ierr);
@@ -930,7 +930,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
 
   /* Second Dirichlet solve and assembling of output */
   ierr = VecScatterBegin(pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = MatMult(pcis->A_IB,pcis->vec1_B,pcis->vec3_D);CHKERRQ(ierr);
   if (pcbddc->switch_static) { ierr = MatMultAdd(pcis->A_II,pcis->vec1_D,pcis->vec3_D,pcis->vec3_D);CHKERRQ(ierr); }
   ierr = KSPSolve(pcbddc->ksp_D,pcis->vec3_D,pcbddc->vec4_D);CHKERRQ(ierr);
@@ -938,7 +938,77 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
   if (pcbddc->switch_static) { ierr = VecAXPY (pcbddc->vec4_D,one,pcis->vec1_D);CHKERRQ(ierr); }
   ierr = VecAXPY (pcis->vec2_D,one,pcbddc->vec4_D);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* -------------------------------------------------------------------------- */
+/*
+   PCApplyTranspose_BDDC - Applies the transpose of the BDDC operator to a vector.
+
+   Input Parameters:
+.  pc - the preconditioner context
+.  r - input vector (global)
+
+   Output Parameter:
+.  z - output vector (global)
+
+   Application Interface Routine: PCApplyTranspose()
+ */
+#undef __FUNCT__
+#define __FUNCT__ "PCApplyTranspose_BDDC"
+PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
+{
+  PC_IS             *pcis = (PC_IS*)(pc->data);
+  PC_BDDC           *pcbddc = (PC_BDDC*)(pc->data);
+  PetscErrorCode    ierr;
+  const PetscScalar one = 1.0;
+  const PetscScalar m_one = -1.0;
+  const PetscScalar zero = 0.0;
+
+  PetscFunctionBegin;
+  if (!pcbddc->use_exact_dirichlet_trick) {
+    /* First Dirichlet solve */
+    ierr = VecScatterBegin(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = KSPSolveTranspose(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+    /*
+      Assembling right hand side for BDDC operator
+      - pcis->vec1_D for the Dirichlet part (if needed, i.e. prec_flag=PETSC_TRUE)
+      - pcis->vec1_B the interface part of the global vector z
+    */
+    ierr = VecScale(pcis->vec2_D,m_one);CHKERRQ(ierr);
+    ierr = MatMultTranspose(pcis->A_IB,pcis->vec2_D,pcis->vec1_B);CHKERRQ(ierr);
+    if (pcbddc->switch_static) { ierr = MatMultTransposeAdd(pcis->A_II,pcis->vec2_D,pcis->vec1_D,pcis->vec1_D);CHKERRQ(ierr); }
+    ierr = VecScale(pcis->vec2_D,m_one);CHKERRQ(ierr);
+    ierr = VecCopy(r,z);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcis->global_to_B,pcis->vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = PCBDDCScalingRestriction(pc,z,pcis->vec1_B);CHKERRQ(ierr);
+  } else {
+    ierr = VecSet(pcis->vec1_D,zero);CHKERRQ(ierr);
+    ierr = VecSet(pcis->vec2_D,zero);CHKERRQ(ierr);
+    ierr = PCBDDCScalingRestriction(pc,r,pcis->vec1_B);CHKERRQ(ierr);
+  }
+
+  /* Apply interface preconditioner
+     input/output vecs: pcis->vec1_B and pcis->vec1_D */
+  ierr = PCBDDCApplyInterfacePreconditioner(pc);CHKERRQ(ierr);
+
+  /* Apply transpose of partition of unity operator */
+  ierr = PCBDDCScalingExtension(pc,pcis->vec1_B,z);CHKERRQ(ierr);
+
+  /* Second Dirichlet solve and assembling of output */
+  ierr = VecScatterBegin(pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = MatMultTranspose(pcis->A_BI,pcis->vec1_B,pcis->vec3_D);CHKERRQ(ierr);
+  if (pcbddc->switch_static) { ierr = MatMultTransposeAdd(pcis->A_II,pcis->vec1_D,pcis->vec3_D,pcis->vec3_D);CHKERRQ(ierr); }
+  ierr = KSPSolveTranspose(pcbddc->ksp_D,pcis->vec3_D,pcbddc->vec4_D);CHKERRQ(ierr);
+  ierr = VecScale(pcbddc->vec4_D,m_one);CHKERRQ(ierr);
+  if (pcbddc->switch_static) { ierr = VecAXPY (pcbddc->vec4_D,one,pcis->vec1_D);CHKERRQ(ierr); }
+  ierr = VecAXPY (pcis->vec2_D,one,pcbddc->vec4_D);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
