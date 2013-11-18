@@ -100,7 +100,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
   PetscSegBuffer segrank,segdata;
 
   PetscFunctionBegin;
-  ierr  = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
+  ierr  = PetscCommDuplicate(comm,&comm,&tag);CHKERRQ(ierr);
   ierr  = MPI_Type_size(dtype,&unitbytes);CHKERRQ(ierr);
   tdata = (char*)todata;
   ierr  = PetscMalloc1(nto,&sendreqs);CHKERRQ(ierr);
@@ -142,6 +142,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
   ierr   = PetscSegBufferDestroy(&segrank);CHKERRQ(ierr);
   ierr   = PetscSegBufferExtractAlloc(segdata,fromdata);CHKERRQ(ierr);
   ierr   = PetscSegBufferDestroy(&segdata);CHKERRQ(ierr);
+  ierr   = PetscCommDestroy(&comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
@@ -164,7 +165,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
   ierr = PetscGatherNumberOfMessages(comm,iflags,NULL,&nrecvs);CHKERRQ(ierr);
   ierr = PetscFree(iflags);CHKERRQ(ierr);
 
-  ierr     = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
+  ierr     = PetscCommDuplicate(comm,&comm,&tag);CHKERRQ(ierr);
   ierr     = MPI_Type_size(dtype,&unitbytes);CHKERRQ(ierr);
   ierr     = PetscMalloc(nrecvs*count*unitbytes,&fdata);CHKERRQ(ierr);
   tdata    = (char*)todata;
@@ -180,6 +181,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
   ierr = PetscMalloc1(nrecvs,&franks);CHKERRQ(ierr);
   for (i=0; i<nrecvs; i++) franks[i] = statuses[i].MPI_SOURCE;
   ierr = PetscFree2(reqs,statuses);CHKERRQ(ierr);
+  ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
 
   *nfrom            = nrecvs;
   *fromranks        = franks;
@@ -207,7 +209,7 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm,PetscMPIIn
   ierr = MPI_Reduce_scatter_block(iflags,&nrecvs,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
   ierr = PetscFree(iflags);CHKERRQ(ierr);
 
-  ierr     = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
+  ierr     = PetscCommDuplicate(comm,&comm,&tag);CHKERRQ(ierr);
   ierr     = MPI_Type_size(dtype,&unitbytes);CHKERRQ(ierr);
   ierr     = PetscMalloc(nrecvs*count*unitbytes,&fdata);CHKERRQ(ierr);
   tdata    = (char*)todata;
@@ -223,6 +225,7 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm,PetscMPIIn
   ierr = PetscMalloc1(nrecvs,&franks);CHKERRQ(ierr);
   for (i=0; i<nrecvs; i++) franks[i] = statuses[i].MPI_SOURCE;
   ierr = PetscFree2(reqs,statuses);CHKERRQ(ierr);
+  ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
 
   *nfrom            = nrecvs;
   *fromranks        = franks;
