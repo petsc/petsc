@@ -24,6 +24,7 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-shared-libraries=<bool>', nargs.ArgBool(None, 1, 'Make PETSc libraries shared -- libpetsc.so (Unix/Linux) or libpetsc.dylib (Mac)'))
+    help.addArgument('PETSc', '-with-serialized-functions=<bool>', nargs.ArgBool(None, 0, 'Allows function pointers to be serialized to binary files with string representations'))
     return
 
   def setupDependencies(self, framework):
@@ -47,6 +48,7 @@ class Configure(config.base.Configure):
     # Note: there is code in setCompilers.py that uses this as default.
     if self.framework.argDB['with-shared-libraries'] and not self.framework.argDB['with-pic']: self.framework.argDB['with-pic'] = 1
     return
+
 
   def configureSharedLibraries(self):
     '''Checks whether shared libraries should be used, for which you must
@@ -93,10 +95,21 @@ class Configure(config.base.Configure):
       self.addDefine('HAVE_DYNAMIC_LIBRARIES', 1)
     return
 
+  def configureSerializedFunctions(self):
+    '''
+    Defines PETSC_SERIALIZE_FUNCTIONS if they are used
+    Requires shared libraries'''
+    import sys
+
+    if self.framework.argDB['with-serialize-functions'] and self.setCompilers.dynamicLibraries:
+      self.addDefine('SERIALIZE_FUNCTIONS', 1)
+
+
   def configure(self):
     # on windows use with-shared-libraries=0 as default
     if self.setCompilers.isCygwin() and 'with-shared-libraries' not in self.framework.clArgDB: self.framework.argDB['with-shared-libraries'] = 0
     self.executeTest(self.checkSharedDynamicPicOptions)
     self.executeTest(self.configureSharedLibraries)
     self.executeTest(self.configureDynamicLibraries)
+    self.executeTest(self.configureSerializedFunctions)
     return
