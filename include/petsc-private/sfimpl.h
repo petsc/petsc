@@ -5,6 +5,8 @@
 #include <petsc-private/petscimpl.h>
 #include <petscviewer.h>
 
+PETSC_EXTERN PetscLogEvent PETSCSF_SetGraph, PETSCSF_BcastBegin, PETSCSF_BcastEnd, PETSCSF_ReduceBegin, PETSCSF_ReduceEnd, PETSCSF_FetchAndOpBegin, PETSCSF_FetchAndOpEnd;
+
 struct _PetscSFOps {
   PetscErrorCode (*Reset)(PetscSF);
   PetscErrorCode (*Destroy)(PetscSF);
