@@ -1091,8 +1091,8 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCBDDCSolveSaddlePoint"
-static PetscErrorCode  PCBDDCSolveSaddlePoint(PC pc)
+#define __FUNCT__ "PCBDDCSolveSubstructureCorrection"
+static PetscErrorCode  PCBDDCSolveSubstructureCorrection(PC pc)
 {
   PetscErrorCode ierr;
   PC_BDDC*       pcbddc = (PC_BDDC*)(pc->data);
@@ -1136,7 +1136,7 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc)
     ierr = VecScatterBegin(pcbddc->R_to_D,pcis->vec1_D,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd  (pcbddc->R_to_D,pcis->vec1_D,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   }
-  ierr = PCBDDCSolveSaddlePoint(pc);CHKERRQ(ierr);
+  ierr = PCBDDCSolveSubstructureCorrection(pc);CHKERRQ(ierr);
   ierr = VecSet(pcis->vec1_B,zero);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcbddc->R_to_B,pcbddc->vec2_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcbddc->R_to_B,pcbddc->vec2_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
