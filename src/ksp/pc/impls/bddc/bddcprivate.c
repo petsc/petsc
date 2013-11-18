@@ -3125,7 +3125,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   PCType                 coarse_pc_type;
   KSPType                coarse_ksp_type;
   PetscBool              multilevel_requested,multilevel_allowed;
-  PetscBool              setsym,issym,isbddc,isnn,coarse_reuse;
+  PetscBool              setsym,issym,isherm,ispreonly,isbddc,isnn,coarse_reuse;
   MatStructure           matstruct;
   PetscErrorCode         ierr;
 
@@ -3151,9 +3151,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     coarse_reuse = PETSC_TRUE;
   }
 
-  /* infer some info from user */
-  issym = PETSC_FALSE;
-  ierr = MatIsSymmetricKnown(pc->pmat,&setsym,&issym);CHKERRQ(ierr);
+  /* test if we can go multilevel */ 
   multilevel_allowed = PETSC_FALSE;
   multilevel_requested = PETSC_FALSE;
   if (pcbddc->current_level < pcbddc->max_levels) multilevel_requested = PETSC_TRUE;
@@ -3170,11 +3168,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 
   /* set defaults for coarse KSP and PC */
   if (multilevel_allowed) {
-    if (issym) {
-      coarse_ksp_type = KSPRICHARDSON;
-    } else {
-      coarse_ksp_type = KSPCHEBYSHEV;
-    }
+    coarse_ksp_type = KSPRICHARDSON;
     coarse_pc_type = PCBDDC;
   } else {
     coarse_ksp_type = KSPPREONLY;
@@ -3310,7 +3304,11 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   ierr = ISDestroy(&coarse_is);CHKERRQ(ierr);
 
   /* propagate symmetry info to coarse matrix */
+  issym = PETSC_FALSE;
+  ierr = MatIsSymmetricKnown(pc->pmat,&setsym,&issym);CHKERRQ(ierr);
   ierr = MatSetOption(coarse_mat,MAT_SYMMETRIC,issym);CHKERRQ(ierr);
+  isherm = PETSC_FALSE;
+  ierr = MatIsHermitianKnown(pc->pmat,&setsym,&isherm);CHKERRQ(ierr);
   ierr = MatSetOption(coarse_mat,MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
 
   /* Compute coarse null space (special handling by BDDC only) */
@@ -3332,8 +3330,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   if (max_it < 5) {
     ierr = KSPSetNormType(pcbddc->coarse_ksp,KSP_NORM_NONE);CHKERRQ(ierr);
   }
-  /* ierr = KSPChebyshevSetEstimateEigenvalues(pcbddc->coarse_ksp,1.0,0.0,0.0,1.1);CHKERRQ(ierr); */
-
 
   /* print some info if requested */
   if (pcbddc->dbg_flag) {
@@ -3352,34 +3348,27 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 
   /* setup coarse ksp */
   ierr = KSPSetUp(pcbddc->coarse_ksp);CHKERRQ(ierr);
-  if (pcbddc->dbg_flag) {
-    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Coarse solver setup completed at level %d\n",pcbddc->current_level);CHKERRQ(ierr);
-    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
-    ierr = KSPView(pcbddc->coarse_ksp,pcbddc->dbg_viewer);CHKERRQ(ierr);
-    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
-  }
 
-  /* Check coarse problem if requested */
-  if (pcbddc->dbg_flag) {
+  /* Check coarse problem if in debug mode or if solving with an iterative method */
+  ierr = PetscObjectTypeCompare((PetscObject)pcbddc->coarse_ksp,KSPPREONLY,&ispreonly);CHKERRQ(ierr);
+  if (pcbddc->dbg_flag || !ispreonly) {
     KSP       check_ksp;
     KSPType   check_ksp_type;
     PC        check_pc;
     Vec       check_vec;
     PetscReal abs_infty_error,infty_error,lambda_min,lambda_max;
     PetscInt  its;
-    PetscBool ispreonly,compute;
+    PetscBool compute;
 
     /* Create ksp object suitable for estimation of extreme eigenvalues */
     ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&check_ksp);CHKERRQ(ierr);
     ierr = KSPSetOperators(check_ksp,coarse_mat,coarse_mat,SAME_PRECONDITIONER);CHKERRQ(ierr);
     ierr = KSPSetTolerances(check_ksp,1.e-12,1.e-12,PETSC_DEFAULT,pcbddc->coarse_size);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)pcbddc->coarse_ksp,KSPPREONLY,&ispreonly);CHKERRQ(ierr);
     if (ispreonly) {
       check_ksp_type = KSPPREONLY;
       compute = PETSC_FALSE;
     } else {
-      if (issym) check_ksp_type = KSPCG;
-      else check_ksp_type = KSPGMRES;
+      check_ksp_type = KSPGMRES;
       compute = PETSC_TRUE;
     }
     ierr = KSPSetType(check_ksp,check_ksp_type);CHKERRQ(ierr);
@@ -3399,24 +3388,39 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     if (CoarseNullSpace) {
       ierr = MatNullSpaceRemove(CoarseNullSpace,pcbddc->coarse_vec);CHKERRQ(ierr);
     }
-    /* check coarse problem residual error */
-    ierr = VecAXPY(check_vec,-1.0,pcbddc->coarse_vec);CHKERRQ(ierr);
-    ierr = VecNorm(check_vec,NORM_INFINITY,&infty_error);CHKERRQ(ierr);
-    ierr = MatMult(coarse_mat,check_vec,pcbddc->coarse_rhs);CHKERRQ(ierr);
-    ierr = VecNorm(pcbddc->coarse_rhs,NORM_INFINITY,&abs_infty_error);CHKERRQ(ierr);
-    ierr = VecDestroy(&check_vec);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Coarse problem (%s) details\n",((PetscObject)(pcbddc->coarse_ksp))->prefix);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Coarse problem exact infty_error   : %1.6e\n",infty_error);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Coarse problem residual infty_error: %1.6e\n",abs_infty_error);CHKERRQ(ierr);
-    /* get eigenvalue estimation if preonly has not been requested */
+    /* set eigenvalue estimation if preonly has not been requested */
     if (!ispreonly) {
       ierr = KSPComputeExtremeSingularValues(check_ksp,&lambda_max,&lambda_min);CHKERRQ(ierr);
-      ierr = KSPGetIterationNumber(check_ksp,&its);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Coarse problem eigenvalues (estimated with %d iterations of %s): %1.6e %1.6e\n",its,check_ksp_type,lambda_min,lambda_max);CHKERRQ(ierr);
+      ierr = KSPChebyshevSetEigenvalues(pcbddc->coarse_ksp,lambda_max,lambda_min);CHKERRQ(ierr);
+      ierr = KSPRichardsonSetScale(pcbddc->coarse_ksp,2.0/(lambda_max+lambda_min));CHKERRQ(ierr);
     }
-    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+    /* check coarse problem residual error */
+    if (pcbddc->dbg_flag) {
+      ierr = VecAXPY(check_vec,-1.0,pcbddc->coarse_vec);CHKERRQ(ierr);
+      ierr = VecNorm(check_vec,NORM_INFINITY,&infty_error);CHKERRQ(ierr);
+      ierr = MatMult(coarse_mat,check_vec,pcbddc->coarse_rhs);CHKERRQ(ierr);
+      ierr = VecNorm(pcbddc->coarse_rhs,NORM_INFINITY,&abs_infty_error);CHKERRQ(ierr);
+      ierr = VecDestroy(&check_vec);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Coarse problem (%s) details\n",((PetscObject)(pcbddc->coarse_ksp))->prefix);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Coarse problem exact infty_error   : %1.6e\n",infty_error);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Coarse problem residual infty_error: %1.6e\n",abs_infty_error);CHKERRQ(ierr);
+      if (!ispreonly) {
+        ierr = KSPGetIterationNumber(check_ksp,&its);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Coarse problem eigenvalues (estimated with %d iterations of %s): %1.6e %1.6e\n",its,check_ksp_type,lambda_min,lambda_max);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+    }
     ierr = KSPDestroy(&check_ksp);CHKERRQ(ierr);
   }
+
+  /* print additional info */
+  if (pcbddc->dbg_flag) {
+    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Coarse solver setup completed at level %d\n",pcbddc->current_level);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+    ierr = KSPView(pcbddc->coarse_ksp,pcbddc->dbg_viewer);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+  }
+
   /* free memory */
   ierr = MatNullSpaceDestroy(&CoarseNullSpace);CHKERRQ(ierr);
   ierr = MatDestroy(&coarse_mat);CHKERRQ(ierr);
