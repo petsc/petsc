@@ -524,10 +524,10 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ft
   ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)A),&(lu->comm_superlu));CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
   /* Default num of process columns and rows */
-  ierr = PetscMPIIntCast((PetscInt)(0.5 + PetscSqrtReal((PetscReal)size)),&lu->npcol);CHKERRQ(ierr);
+  lu->npcol = (int_t) (0.5 + PetscSqrtReal((PetscReal)size));
   if (!lu->npcol) lu->npcol = 1;
   while (lu->npcol > 0) {
-    ierr = PetscMPIIntCast(size/lu->npcol,&lu->nprow);CHKERRQ(ierr);
+    lu->nprow = (int_t) (size/lu->npcol);
     if (size == lu->nprow * lu->npcol) break;
     lu->npcol--;
   }
