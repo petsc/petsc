@@ -178,6 +178,10 @@ M*/
 typedef enum { ENUM_DUMMY } PetscEnum;
 PETSC_EXTERN MPI_Datatype MPIU_ENUM PetscAttrMPITypeTag(PetscEnum);
 
+#if defined(PETSC_HAVE_STDINT_H)
+#include <stdint.h>
+#endif
+
 /*MC
     PetscInt - PETSc type that represents integer - used primarily to
       represent size of arrays and indexing into arrays. Its size can be configured with the option
@@ -187,7 +191,9 @@ PETSC_EXTERN MPI_Datatype MPIU_ENUM PetscAttrMPITypeTag(PetscEnum);
 
 .seealso: PetscScalar, PetscBLASInt, PetscMPIInt
 M*/
-#if (PETSC_SIZEOF_LONG_LONG == 8)
+#if defined(PETSC_HAVE_STDINT_H)
+typedef int64_t Petsc64bitInt;
+#elif (PETSC_SIZEOF_LONG_LONG == 8)
 typedef long long Petsc64bitInt;
 #elif defined(PETSC_HAVE___INT64)
 typedef __int64 Petsc64bitInt;
@@ -196,7 +202,11 @@ typedef unknown64bit Petsc64bitInt
 #endif
 #if defined(PETSC_USE_64BIT_INDICES)
 typedef Petsc64bitInt PetscInt;
-#define MPIU_INT MPI_LONG_LONG_INT
+#  if defined(MPI_INT64_T)
+#    define MPIU_INT MPI_INT64_T
+#  else
+#    define MPIU_INT MPI_LONG_LONG_INT
+#  endif
 #else
 typedef int PetscInt;
 #define MPIU_INT MPI_INT
@@ -1607,9 +1617,6 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt,const PetscScalar[],PetscVi
 
 #if defined(PETSC_HAVE_XMMINTRIN_H) && !defined(__CUDACC__)
 #include <xmmintrin.h>
-#endif
-#if defined(PETSC_HAVE_STDINT_H)
-#include <stdint.h>
 #endif
 
 #undef __FUNCT__
