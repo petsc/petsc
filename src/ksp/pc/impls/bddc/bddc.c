@@ -1225,8 +1225,10 @@ PetscErrorCode PCBDDCMatFETIDPGetSolution(Mat fetidp_mat, Vec fetidp_flux_sol, V
 /* -------------------------------------------------------------------------- */
 
 extern PetscErrorCode FETIDPMatMult(Mat,Vec,Vec);
+extern PetscErrorCode FETIDPMatMultTranspose(Mat,Vec,Vec);
 extern PetscErrorCode PCBDDCDestroyFETIDPMat(Mat);
 extern PetscErrorCode FETIDPPCApply(PC,Vec,Vec);
+extern PetscErrorCode FETIDPPCApplyTranspose(PC,Vec,Vec);
 extern PetscErrorCode PCBDDCDestroyFETIDPPC(PC);
 
 #undef __FUNCT__
@@ -1248,6 +1250,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, Mat *fetidp_mat, P
   ierr = PCBDDCSetupFETIDPMatContext(fetidpmat_ctx);CHKERRQ(ierr);
   ierr = MatCreateShell(comm,PETSC_DECIDE,PETSC_DECIDE,fetidpmat_ctx->n_lambda,fetidpmat_ctx->n_lambda,fetidpmat_ctx,&newmat);CHKERRQ(ierr);
   ierr = MatShellSetOperation(newmat,MATOP_MULT,(void (*)(void))FETIDPMatMult);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(newmat,MATOP_MULT_TRANSPOSE,(void (*)(void))FETIDPMatMultTranspose);CHKERRQ(ierr);
   ierr = MatShellSetOperation(newmat,MATOP_DESTROY,(void (*)(void))PCBDDCDestroyFETIDPMat);CHKERRQ(ierr);
   ierr = MatSetUp(newmat);CHKERRQ(ierr);
   /* FETIDP preconditioner */
@@ -1257,6 +1260,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, Mat *fetidp_mat, P
   ierr = PCSetType(newpc,PCSHELL);CHKERRQ(ierr);
   ierr = PCShellSetContext(newpc,fetidppc_ctx);CHKERRQ(ierr);
   ierr = PCShellSetApply(newpc,FETIDPPCApply);CHKERRQ(ierr);
+  ierr = PCShellSetApplyTranspose(newpc,FETIDPPCApplyTranspose);CHKERRQ(ierr);
   ierr = PCShellSetDestroy(newpc,PCBDDCDestroyFETIDPPC);CHKERRQ(ierr);
   ierr = PCSetOperators(newpc,newmat,newmat,SAME_PRECONDITIONER);CHKERRQ(ierr);
   ierr = PCSetUp(newpc);CHKERRQ(ierr);
