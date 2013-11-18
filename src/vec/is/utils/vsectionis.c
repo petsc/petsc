@@ -804,7 +804,7 @@ PetscErrorCode PetscSectionGetMaxDof(PetscSection s, PetscInt *maxDof)
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetStorageSize"
 /*@
-  PetscSectionGetStorageSize - Return the size of an arary or local Vec capable of holding all the degrees of freedom.
+  PetscSectionGetStorageSize - Return the size of an array or local Vec capable of holding all the degrees of freedom.
 
   Not collective
 
