@@ -10,7 +10,7 @@
        http://chess.cs.umd.edu/~elman/papers/tax.pdf
 */
 
-const char *const PCFieldSplitSchurPreTypes[] = {"SELF","A11","USER","PCFieldSplitSchurPreType","PC_FIELDSPLIT_SCHUR_PRE_",0};
+const char *const PCFieldSplitSchurPreTypes[] = {"SELF","SELFP","A11","USER","PCFieldSplitSchurPreType","PC_FIELDSPLIT_SCHUR_PRE_",0};
 const char *const PCFieldSplitSchurFactTypes[] = {"DIAG","LOWER","UPPER","FULL","PCFieldSplitSchurFactType","PC_FIELDSPLIT_SCHUR_FACT_",0};
 
 typedef struct _PC_FieldSplitLink *PC_FieldSplitLink;
@@ -41,6 +41,7 @@ typedef struct {
   Mat                       B;                     /* The (0,1) block */
   Mat                       C;                     /* The (1,0) block */
   Mat                       schur;                 /* The Schur complement S = A11 - A10 A00^{-1} A01, the KSP here, kspinner, is H_1 in [El08] */
+  Mat                       schurp;                /* Assembled approximation to S built by MatSchurComplement to be used as a preconditioning matrix when solving with S */
   Mat                       schur_user;            /* User-provided preconditioning matrix for the Schur complement */
   PCFieldSplitSchurPreType  schurpre;              /* Determines which preconditioning matrix is used for the Schur complement */
   PCFieldSplitSchurFactType schurfactorization;
@@ -64,6 +65,7 @@ static Mat FieldSplitSchurPre(PC_FieldSplit *jac)
 {
   switch (jac->schurpre) {
   case PC_FIELDSPLIT_SCHUR_PRE_SELF: return jac->schur;
+  case PC_FIELDSPLIT_SCHUR_PRE_SELFP: return jac->schurp;
   case PC_FIELDSPLIT_SCHUR_PRE_A11: return jac->pmat[1];
   case PC_FIELDSPLIT_SCHUR_PRE_USER:   /* Use a user-provided matrix if it is given, otherwise diagonal block */
   default:
@@ -163,6 +165,8 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
     switch (jac->schurpre) {
     case PC_FIELDSPLIT_SCHUR_PRE_SELF:
       ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from S itself\n");CHKERRQ(ierr);break;
+    case PC_FIELDSPLIT_SCHUR_PRE_SELFP:
+      ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from Sp, an assembled approximation to S, which uses A00's diagonal's inverse\n");CHKERRQ(ierr);break;
     case PC_FIELDSPLIT_SCHUR_PRE_A11:
       ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from A11\n");CHKERRQ(ierr);break;
     case PC_FIELDSPLIT_SCHUR_PRE_USER:
@@ -613,6 +617,10 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ierr  = MatSchurComplementUpdate(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1],pc->flag);CHKERRQ(ierr);
+      if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELFP) {
+	ierr = MatDestroy(&jac->schurp);CHKERRQ(ierr);
+	ierr = MatSchurComplementGetPmat(jac->schur,MAT_INITIAL_MATRIX,&jac->schurp);CHKERRQ(ierr);
+      }
       if (kspA != kspInner) {
         ierr = KSPSetOperators(kspA,jac->mat[0],jac->pmat[0],pc->flag);CHKERRQ(ierr);
       }
@@ -696,6 +704,9 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         ierr          = PetscObjectReference((PetscObject) jac->head->ksp);CHKERRQ(ierr);
       }
 
+      if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELFP) {
+	ierr = MatSchurComplementGetPmat(jac->schur,MAT_INITIAL_MATRIX,&jac->schurp);CHKERRQ(ierr);
+      }
       ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&jac->kspschur);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->kspschur);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)jac->kspschur,(PetscObject)pc,1);CHKERRQ(ierr);
@@ -1009,6 +1020,7 @@ static PetscErrorCode PCReset_FieldSplit(PC pc)
   ierr       = VecDestroy(&jac->w1);CHKERRQ(ierr);
   ierr       = VecDestroy(&jac->w2);CHKERRQ(ierr);
   ierr       = MatDestroy(&jac->schur);CHKERRQ(ierr);
+  ierr       = MatDestroy(&jac->schurp);CHKERRQ(ierr);
   ierr       = MatDestroy(&jac->schur_user);CHKERRQ(ierr);
   ierr       = KSPDestroy(&jac->kspschur);CHKERRQ(ierr);
   ierr       = KSPDestroy(&jac->kspupper);CHKERRQ(ierr);
@@ -1440,12 +1452,12 @@ PetscErrorCode  PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
     Collective on PC
 
     Input Parameters:
-+   pc  - the preconditioner context
-.   ptype - which matrix to use for preconditioning the Schur complement, PC_FIELDSPLIT_SCHUR_PRE_A11 (diag) is default
++   pc      - the preconditioner context
+.   ptype   - which matrix to use for preconditioning the Schur complement: PC_FIELDSPLIT_SCHUR_PRE_A11 (default), PC_FIELDSPLIT_SCHUR_PRE_SELF, PC_FIELDSPLIT_PRE_USER
 -   userpre - matrix to use for preconditioning, or NULL
 
     Options Database:
-.     -pc_fieldsplit_schur_precondition <self,user,a11> default is a11
+.     -pc_fieldsplit_schur_precondition <self,selfp,user,a11> default is a11
 
     Notes:
 $    If ptype is
@@ -1456,13 +1468,15 @@ $             matrix associated with the Schur complement (i.e. A11)
 $        self the preconditioner for the Schur complement is generated from the Schur complement matrix itself:
 $             The only preconditioner that currently works directly with the Schur complement matrix object is the PCLSC
 $             preconditioner
+$        selfp then the preconditioning matrix is an explicitly-assembled approximation Sp = A11 - A10 inv(diag(A00)) A01
+$             This is only a good preconditioner when diag(A00) is a good preconditioner for A00.
 
      When solving a saddle point problem, where the A11 block is identically zero, using a11 as the ptype only makes sense
     with the additional option -fieldsplit_1_pc_type none. Usually for saddle point problems one would use a ptype of self and
-    -fieldsplit_1_pc_type lsc which uses the least squares commutator compute a preconditioner for the Schur complement.
+    -fieldsplit_1_pc_type lsc which uses the least squares commutator to compute a preconditioner for the Schur complement.
 
-    Developer Notes: This is a terrible name, gives no good indication of what the function does and should also have Set in
-     the name since it sets a proceedure to use.
+    Developer Notes: This is a terrible name, which gives no good indication of what the function does.
+                     Among other things, it should have 'Set' in the name, since it sets the type of matrix to use.
 
     Level: intermediate
 
@@ -1488,7 +1502,7 @@ static PetscErrorCode  PCFieldSplitSchurPrecondition_FieldSplit(PC pc,PCFieldSpl
 
   PetscFunctionBegin;
   jac->schurpre = ptype;
-  if (pre) {
+  if (ptype == PC_FIELDSPLIT_SCHUR_PRE_USER && pre) {
     ierr            = MatDestroy(&jac->schur_user);CHKERRQ(ierr);
     jac->schur_user = pre;
     ierr            = PetscObjectReference((PetscObject)jac->schur_user);CHKERRQ(ierr);
@@ -1705,7 +1719,7 @@ PetscErrorCode PCFieldSplitGetType(PC pc, PCCompositeType *type)
 -  flg  - boolean indicating whether to use field splits defined by the DM
 
    Options Database Key:
-.  -pc_fieldsplit_dm_splits 
+.  -pc_fieldsplit_dm_splits
 
    Level: Intermediate
 
@@ -1786,7 +1800,7 @@ PetscErrorCode  PCFieldSplitGetDMSplits(PC pc,PetscBool* flg)
                               been supplied explicitly by -pc_fieldsplit_%d_fields
 .   -pc_fieldsplit_block_size <bs> - size of block that defines fields (i.e. there are bs fields)
 .   -pc_fieldsplit_type <additive,multiplicative,symmetric_multiplicative,schur> - type of relaxation or factorization splitting
-.   -pc_fieldsplit_schur_precondition <self,user,a11> - default is a11
+.   -pc_fieldsplit_schur_precondition <self,selfp,user,a11> - default is a11
 .   -pc_fieldsplit_detect_saddle_point - automatically finds rows with zero or negative diagonal and uses Schur complement with no preconditioner as the solver
 
 -    Options prefix for inner solvers when using Schur complement preconditioner are -fieldsplit_0_ and -fieldsplit_1_
@@ -1808,11 +1822,14 @@ $              ( I   -A10 ksp(A00) ) ( inv(A00)     0  ) (     I          0  )
 $              ( 0         I       ) (   0      ksp(S) ) ( -A10 ksp(A00)  I  )
      where the action of inv(A00) is applied using the KSP solver with prefix -fieldsplit_0_. The action of
      ksp(S) is computed using the KSP solver with prefix -fieldsplit_splitname_ (where splitname was given
-     in providing the SECOND split or 1 if not give). For PCFieldSplitGetKSP() when field number is 0,
+     in providing the SECOND split or 1 if not given). For PCFieldSplitGetKSP() when field number is 0,
      it returns the KSP associated with -fieldsplit_0_ while field number 1 gives -fieldsplit_1_ KSP. By default
      A11 is used to construct a preconditioner for S, use PCFieldSplitSchurPrecondition() to turn on or off this
-     option. You can use the preconditioner PCLSC to precondition the Schur complement with -fieldsplit_1_pc_type lsc. The
-     factorization type is set using -pc_fieldsplit_schur_fact_type <diag, lower, upper, full>. The full is shown above,
+     option. You can use the preconditioner PCLSC to precondition the Schur complement with -fieldsplit_1_pc_type lsc.
+     When option -fieldsplit_schur_precondition selfp is given, an approximation to S is assembled --
+     Sp = A11 - A10 inv(diag(A00)) A01, which has type AIJ and can be used with a variety of preconditioners
+     (e.g., -fieldsplit_1_pc_type asm).
+     The factorization type is set using -pc_fieldsplit_schur_fact_type <diag, lower, upper, full>. The full is shown above,
      diag gives
 $              ( inv(A00)     0   )
 $              (   0      -ksp(S) )
