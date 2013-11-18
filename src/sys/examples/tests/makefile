@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/examples/tests/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex9.c ex10.c ex11.c ex12.c \
+EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex8.c ex9.c ex10.c ex11.c ex12.c \
                 ex13.c ex14.c ex15.c ex16.c ex18.c ex19.c ex20.c ex21.c \
                 ex22.c ex23.c ex24.c
 EXAMPLESF       = ex1f.F ex5f.F ex6f.F ex17f.F
@@ -44,6 +44,10 @@ ex6f: ex6f.o chkopts
 ex7: ex7.o chkopts
 	-${CLINKER} -o ex7 ex7.o  ${PETSC_SYS_LIB}
 	${RM} -f ex7.o
+
+ex8: ex8.o chkopts
+	-${CLINKER} -o ex8 ex8.o  ${PETSC_SYS_LIB}
+	${RM} -f ex8.o
 
 ex9: ex9.o chkopts
 	-${CLINKER} -o ex9 ex9.o  ${PETSC_SYS_LIB}
@@ -120,6 +124,12 @@ runex7:
 	   if (${DIFF} output/ex7.out ex7.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex7_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex7.tmp ex7.tmp
+
+runex8:
+	-@${MPIEXEC} -n 1 ./ex8 > ex8.tmp 2>&1;\
+	   if (${DIFF} output/ex8.out ex8.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex8_1, diffs above \n========================================="; fi; \
+	   ${RM} -f ex8.tmp ex8.tmp
 
 runex10:
 	-@${MPIEXEC} -n 1 ./ex10 > ex10_1.tmp 2>&1;\
