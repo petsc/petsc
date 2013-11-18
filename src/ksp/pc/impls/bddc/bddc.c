@@ -16,7 +16,6 @@
    User interface
    - Change SetNeumannBoundaries to SetNeumannBoundariesLocal and provide new SetNeumannBoundaries (same Dirichlet)
    - Negative indices in dirichlet and Neumann is should be skipped (now they cause out-of-bounds access)
-   - Provide PCApplyTranpose_BDDC
    - DofSplitting and DM attached to pc?
 
    Debugging output
@@ -1363,9 +1362,8 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, Mat *fetidp_mat, PC *fetidp_pc
    Level: intermediate
 
    Developer notes:
-     Currently does not work with KSPBCGS and other KSPs requiring the specialization of PCApplyTranspose
 
-     New deluxe scaling operator will be available soon.
+   New deluxe scaling operator will be available soon.
 
    Contributed by Stefano Zampini
 
@@ -1439,7 +1437,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
 
   /* function pointers */
   pc->ops->apply               = PCApply_BDDC;
-  pc->ops->applytranspose      = 0;
+  pc->ops->applytranspose      = PCApplyTranspose_BDDC;
   pc->ops->setup               = PCSetUp_BDDC;
   pc->ops->destroy             = PCDestroy_BDDC;
   pc->ops->setfromoptions      = PCSetFromOptions_BDDC;
