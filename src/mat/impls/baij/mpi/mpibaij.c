@@ -1,6 +1,7 @@
 
 #include <../src/mat/impls/baij/mpi/mpibaij.h>   /*I  "petscmat.h"  I*/
 #include <petscblaslapack.h>
+#include <petscsf.h>
 
 extern PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat);
 extern PetscErrorCode MatDisAssemble_MPIBAIJ(Mat);
@@ -1723,129 +1724,53 @@ PetscErrorCode MatDiagonalScale_MPIBAIJ(Mat mat,Vec ll,Vec rr)
 #define __FUNCT__ "MatZeroRows_MPIBAIJ"
 PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
-  Mat_MPIBAIJ       *l = (Mat_MPIBAIJ*)A->data;
-  PetscErrorCode    ierr;
-  PetscMPIInt       imdex,size = l->size,n,rank = l->rank;
-  PetscInt          i,*owners = A->rmap->range;
-  PetscInt          *nprocs,j,idx,nsends,row;
-  PetscInt          nmax,*svalues,*starts,*owner,nrecvs;
-  PetscInt          *rvalues,tag = ((PetscObject)A)->tag,count,base,slen,*source,lastidx = -1;
-  PetscInt          *lens,*lrows,*values,rstart_bs=A->rmap->rstart;
-  MPI_Comm          comm;
-  MPI_Request       *send_waits,*recv_waits;
-  MPI_Status        recv_status,*send_status;
-  const PetscScalar *xx;
-  PetscScalar       *bb;
-#if defined(PETSC_DEBUG)
-  PetscBool         found = PETSC_FALSE;
-#endif
+  Mat_MPIBAIJ   *l      = (Mat_MPIBAIJ *) A->data;
+  PetscInt      *owners = A->rmap->range;
+  PetscInt       n      = A->rmap->n;
+  PetscMPIInt    size   = l->size;
+  PetscSF        sf;
+  PetscInt      *lrows;
+  PetscSFNode   *rrows;
+  PetscInt       lastidx = -1, r, p = 0, len = 0;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  /*  first count number of contributors to each processor */
-  ierr = PetscMalloc(2*size*sizeof(PetscInt),&nprocs);CHKERRQ(ierr);
-  ierr = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMalloc((N+1)*sizeof(PetscInt),&owner);CHKERRQ(ierr);  /* see note*/
-  j    = 0;
-  for (i=0; i<N; i++) {
-    if (lastidx > (idx = rows[i])) j = 0;
+  /* Create SF where leaves are input rows and roots are owned rows */
+  ierr = PetscMalloc(n * sizeof(PetscInt), &lrows);CHKERRQ(ierr);
+  for (r = 0; r < n; ++r) lrows[r] = -1;
+  ierr = PetscMalloc(N * sizeof(PetscSFNode), &rrows);CHKERRQ(ierr);
+  for (r = 0; r < N; ++r) {
+    const PetscInt idx   = rows[r];
+    PetscBool      found = PETSC_FALSE;
+    /* Trick for efficient searching for sorted rows */
+    if (lastidx > idx) p = 0;
     lastidx = idx;
-    for (; j<size; j++) {
-      if (idx >= owners[j] && idx < owners[j+1]) {
-        nprocs[2*j]++;
-        nprocs[2*j+1] = 1;
-        owner[i]      = j;
-#if defined(PETSC_DEBUG)
+    for (; p < size; ++p) {
+      if (idx >= owners[p] && idx < owners[p+1]) {
+        rrows[r].rank  = p;
+        rrows[r].index = rows[r] - owners[p];
         found = PETSC_TRUE;
-#endif
         break;
       }
     }
-#if defined(PETSC_DEBUG)
-    if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index out of range");
-    found = PETSC_FALSE;
-#endif
+    if (!found) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row %d not found in matrix distribution", idx);
   }
-  nsends = 0;  for (i=0; i<size; i++) nsends += nprocs[2*i+1];
-
-  if (A->nooffproczerorows) {
-    if (nsends > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"You called MatSetOption(,MAT_NO_OFF_PROC_ZERO_ROWS,PETSC_TRUE) but set an off process zero row");
-    nrecvs = nsends;
-    nmax   = N;
-  } else {
-    /* inform other processors of number of messages and max length*/
-    ierr = PetscMaxSum(comm,nprocs,&nmax,&nrecvs);CHKERRQ(ierr);
-  }
-
-  /* post receives:   */
-  ierr = PetscMalloc((nrecvs+1)*(nmax+1)*sizeof(PetscInt),&rvalues);CHKERRQ(ierr);
-  ierr = PetscMalloc((nrecvs+1)*sizeof(MPI_Request),&recv_waits);CHKERRQ(ierr);
-  for (i=0; i<nrecvs; i++) {
-    ierr = MPI_Irecv(rvalues+nmax*i,nmax,MPIU_INT,MPI_ANY_SOURCE,tag,comm,recv_waits+i);CHKERRQ(ierr);
-  }
-
-  /* do sends:
-     1) starts[i] gives the starting index in svalues for stuff going to
-     the ith processor
-  */
-  ierr      = PetscMalloc((N+1)*sizeof(PetscInt),&svalues);CHKERRQ(ierr);
-  ierr      = PetscMalloc((nsends+1)*sizeof(MPI_Request),&send_waits);CHKERRQ(ierr);
-  ierr      = PetscMalloc((size+1)*sizeof(PetscInt),&starts);CHKERRQ(ierr);
-  starts[0] = 0;
-  for (i=1; i<size; i++) starts[i] = starts[i-1] + nprocs[2*i-2];
-  for (i=0; i<N; i++) {
-    svalues[starts[owner[i]]++] = rows[i];
-  }
-
-  starts[0] = 0;
-  for (i=1; i<size+1; i++) starts[i] = starts[i-1] + nprocs[2*i-2];
-  count = 0;
-  for (i=0; i<size; i++) {
-    if (nprocs[2*i+1]) {
-      ierr = MPI_Isend(svalues+starts[i],nprocs[2*i],MPIU_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
-    }
-  }
-  ierr = PetscFree(starts);CHKERRQ(ierr);
-
-  base = owners[rank];
-
-  /*  wait on receives */
-  ierr  = PetscMalloc2(nrecvs+1,PetscInt,&lens,nrecvs+1,PetscInt,&source);CHKERRQ(ierr);
-  count = nrecvs;
-  slen  = 0;
-  while (count) {
-    ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
-    /* unpack receives into our local space */
-    ierr = MPI_Get_count(&recv_status,MPIU_INT,&n);CHKERRQ(ierr);
-
-    source[imdex] = recv_status.MPI_SOURCE;
-    lens[imdex]   = n;
-    slen         += n;
-    count--;
-  }
-  ierr = PetscFree(recv_waits);CHKERRQ(ierr);
-
-  /* move the data into the send scatter */
-  ierr  = PetscMalloc((slen+1)*sizeof(PetscInt),&lrows);CHKERRQ(ierr);
-  count = 0;
-  for (i=0; i<nrecvs; i++) {
-    values = rvalues + i*nmax;
-    for (j=0; j<lens[i]; j++) {
-      lrows[count++] = values[j] - base;
-    }
-  }
-  ierr = PetscFree(rvalues);CHKERRQ(ierr);
-  ierr = PetscFree2(lens,source);CHKERRQ(ierr);
-  ierr = PetscFree(owner);CHKERRQ(ierr);
-  ierr = PetscFree(nprocs);CHKERRQ(ierr);
-
+  ierr = PetscSFCreate(PetscObjectComm((PetscObject) A), &sf);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(sf, n, N, NULL, PETSC_OWN_POINTER, rrows, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  /* Collect flags for rows to be zeroed */
+  ierr = PetscSFReduceBegin(sf, MPIU_INT, (PetscInt *) rows, lrows, MPI_LOR);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sf, MPIU_INT, (PetscInt *) rows, lrows, MPI_LOR);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+  /* Compress and put in row numbers */
+  for (r = 0; r < n; ++r) if (lrows[r] >= 0) lrows[len++] = r;
   /* fix right hand side if needed */
   if (x && b) {
+    const PetscScalar *xx;
+    PetscScalar       *bb;
+
     ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
     ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
-    for (i=0; i<slen; i++) {
-      bb[lrows[i]] = diag*xx[lrows[i]];
-    }
+    for (r = 0; r < len; ++r) bb[lrows[r]] = diag*xx[lrows[r]];
     ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
     ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
   }
@@ -1859,33 +1784,23 @@ PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscS
 
   */
   /* must zero l->B before l->A because the (diag) case below may put values into l->B*/
-  ierr = MatZeroRows_SeqBAIJ(l->B,slen,lrows,0.0,0,0);CHKERRQ(ierr);
+  ierr = MatZeroRows_SeqBAIJ(l->B,len,lrows,0.0,0,0);CHKERRQ(ierr);
   if ((diag != 0.0) && (l->A->rmap->N == l->A->cmap->N)) {
-    ierr = MatZeroRows_SeqBAIJ(l->A,slen,lrows,diag,0,0);CHKERRQ(ierr);
+    ierr = MatZeroRows_SeqBAIJ(l->A,len,lrows,diag,0,0);CHKERRQ(ierr);
   } else if (diag != 0.0) {
-    ierr = MatZeroRows_SeqBAIJ(l->A,slen,lrows,0.0,0,0);CHKERRQ(ierr);
+    ierr = MatZeroRows_SeqBAIJ(l->A,len,lrows,0.0,0,0);CHKERRQ(ierr);
     if (((Mat_SeqBAIJ*)l->A->data)->nonew) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatZeroRows() on rectangular matrices cannot be used with the Mat options \n\
        MAT_NEW_NONZERO_LOCATIONS,MAT_NEW_NONZERO_LOCATION_ERR,MAT_NEW_NONZERO_ALLOCATION_ERR");
-    for (i=0; i<slen; i++) {
-      row  = lrows[i] + rstart_bs;
+    for (r = 0; r < len; ++r) {
+      const PetscInt row = lrows[r] + A->rmap->rstart;
       ierr = MatSetValues(A,1,&row,1,&row,&diag,INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   } else {
-    ierr = MatZeroRows_SeqBAIJ(l->A,slen,lrows,0.0,0,0);CHKERRQ(ierr);
+    ierr = MatZeroRows_SeqBAIJ(l->A,len,lrows,0.0,0,0);CHKERRQ(ierr);
   }
-
   ierr = PetscFree(lrows);CHKERRQ(ierr);
-
-  /* wait on sends */
-  if (nsends) {
-    ierr = PetscMalloc(nsends*sizeof(MPI_Status),&send_status);CHKERRQ(ierr);
-    ierr = MPI_Waitall(nsends,send_waits,send_status);CHKERRQ(ierr);
-    ierr = PetscFree(send_status);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(send_waits);CHKERRQ(ierr);
-  ierr = PetscFree(svalues);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
