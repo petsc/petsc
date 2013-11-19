@@ -2799,9 +2799,11 @@ PetscErrorCode MatISSubassemble_Private(Mat mat, PetscInt coarsening_ratio, IS* 
     ierr = PetscMalloc(size*sizeof(*oldranks),&oldranks);CHKERRQ(ierr);
     prank = rank;
     ierr = MPI_Allgather(&prank,1,MPIU_INT,oldranks,1,MPIU_INT,subcomm->comm);CHKERRQ(ierr);
+    /*
     for (i=0;i<size;i++) {
       PetscPrintf(subcomm->comm,"oldranks[%d] = %d\n",i,oldranks[i]);
     }
+    */
     for (i=0;i<xadj[1];i++) {
       ierr = PetscFindInt(adjncy[i],size,oldranks,&adjncy[i]);CHKERRQ(ierr);
     }
@@ -2818,7 +2820,7 @@ PetscErrorCode MatISSubassemble_Private(Mat mat, PetscInt coarsening_ratio, IS* 
       v_wgt[0] = local_size;
       ierr = MatPartitioningSetVertexWeights(partitioner,v_wgt);CHKERRQ(ierr);
     }
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)partitioner),"NPARTS %d\n",n_subdomains/coarsening_ratio);CHKERRQ(ierr);
+    /* ierr = PetscPrintf(PetscObjectComm((PetscObject)partitioner),"NPARTS %d\n",n_subdomains/coarsening_ratio);CHKERRQ(ierr); */
     ierr = MatPartitioningSetNParts(partitioner,n_subdomains/coarsening_ratio);CHKERRQ(ierr);
     ierr = MatPartitioningSetFromOptions(partitioner);CHKERRQ(ierr);
     ierr = MatPartitioningApply(partitioner,&new_ranks);CHKERRQ(ierr);
@@ -3238,14 +3240,14 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     /* dofs splitting */
     ierr = PetscMalloc(pcbddc->n_ISForDofsLocal*sizeof(IS),&c_isfordofs);CHKERRQ(ierr);
     for (i=0;i<pcbddc->n_ISForDofsLocal;i++) {
-      ierr = ISView(pcbddc->ISForDofsLocal[i],0);CHKERRQ(ierr);
+      /* ierr = ISView(pcbddc->ISForDofsLocal[i],0);CHKERRQ(ierr); */
       ierr = ISGetLocalSize(pcbddc->ISForDofsLocal[i],&tsize);CHKERRQ(ierr);
       ierr = ISGetIndices(pcbddc->ISForDofsLocal[i],&idxs);CHKERRQ(ierr);
       ierr = ISGlobalToLocalMappingApply(tmap,IS_GTOLM_DROP,tsize,idxs,&nout,tidxs);CHKERRQ(ierr);
       ierr = ISRestoreIndices(pcbddc->ISForDofsLocal[i],&idxs);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingApply(coarse_islg,nout,tidxs,tidxs2);CHKERRQ(ierr);
       ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pcbddc->ISForDofsLocal[i]),nout,tidxs2,PETSC_COPY_VALUES,&c_isfordofs[i]);CHKERRQ(ierr);
-      ierr = ISView(c_isfordofs[i],0);CHKERRQ(ierr);
+      /* ierr = ISView(c_isfordofs[i],0);CHKERRQ(ierr); */
     }
     ierr = PCBDDCSetDofsSplitting(pc_temp,pcbddc->n_ISForDofsLocal,c_isfordofs);CHKERRQ(ierr);
     for (i=0;i<pcbddc->n_ISForDofsLocal;i++) {
@@ -3254,14 +3256,14 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     ierr = PetscFree(c_isfordofs);CHKERRQ(ierr);
     /* neumann boundaries */
     if (pcbddc->NeumannBoundariesLocal) {
-      ierr = ISView(pcbddc->NeumannBoundariesLocal,0);CHKERRQ(ierr);
+      /* ierr = ISView(pcbddc->NeumannBoundariesLocal,0);CHKERRQ(ierr); */
       ierr = ISGetLocalSize(pcbddc->NeumannBoundariesLocal,&tsize);CHKERRQ(ierr);
       ierr = ISGetIndices(pcbddc->NeumannBoundariesLocal,&idxs);CHKERRQ(ierr);
       ierr = ISGlobalToLocalMappingApply(tmap,IS_GTOLM_DROP,tsize,idxs,&nout,tidxs);CHKERRQ(ierr);
       ierr = ISRestoreIndices(pcbddc->NeumannBoundariesLocal,&idxs);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingApply(coarse_islg,nout,tidxs,tidxs2);CHKERRQ(ierr);
       ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pcbddc->NeumannBoundariesLocal),nout,tidxs2,PETSC_COPY_VALUES,&c_isneumann);CHKERRQ(ierr);
-      ierr = ISView(c_isneumann,0);CHKERRQ(ierr);
+      /* ierr = ISView(c_isneumann,0);CHKERRQ(ierr); */
       ierr = PCBDDCSetNeumannBoundaries(pc_temp,c_isneumann);CHKERRQ(ierr);
     }
     ierr = ISDestroy(&c_isneumann);CHKERRQ(ierr);
@@ -3391,6 +3393,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     /* set eigenvalue estimation if preonly has not been requested */
     if (!ispreonly) {
       ierr = KSPComputeExtremeSingularValues(check_ksp,&lambda_max,&lambda_min);CHKERRQ(ierr);
+      /* ierr = PetscPrintf(PetscObjectComm((PetscObject)pc),"Coarse problem eigenvalues: %1.6e %1.6e\n",lambda_min,lambda_max);CHKERRQ(ierr); */
       ierr = KSPChebyshevSetEigenvalues(pcbddc->coarse_ksp,lambda_max,lambda_min);CHKERRQ(ierr);
       ierr = KSPRichardsonSetScale(pcbddc->coarse_ksp,2.0/(lambda_max+lambda_min));CHKERRQ(ierr);
     }
