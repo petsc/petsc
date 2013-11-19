@@ -4839,7 +4839,7 @@ PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
 . section - The PetscSection object
 
   Notes: numDof[f*(dim+1)+d] gives the number of dof for field f on sieve points of dimension d. For instance, numDof[1] is the
-  nubmer of dof for field 0 on each edge.
+  number of dof for field 0 on each edge.
 
   Level: developer
 
