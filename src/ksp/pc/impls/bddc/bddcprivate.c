@@ -2811,7 +2811,7 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt coarsening_ratio, 
     ierr = PetscSortIntWithArray(xadj[1],adjncy,adjncy_wgt);CHKERRQ(ierr);
     ierr = MatCreateMPIAdj(subcomm->comm,1,(PetscInt)size,xadj,adjncy,adjncy_wgt,&subdomain_adj);CHKERRQ(ierr);
     n_subdomains = (PetscInt)size;
-    ierr = MatView(subdomain_adj,0);CHKERRQ(ierr);
+    /* ierr = MatView(subdomain_adj,0);CHKERRQ(ierr); */
 
     /* Partition */
     ierr = MatPartitioningCreate(subcomm->comm,&partitioner);CHKERRQ(ierr);
@@ -2825,7 +2825,7 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt coarsening_ratio, 
     ierr = MatPartitioningSetNParts(partitioner,n_subdomains/coarsening_ratio);CHKERRQ(ierr);
     ierr = MatPartitioningSetFromOptions(partitioner);CHKERRQ(ierr);
     ierr = MatPartitioningApply(partitioner,&new_ranks);CHKERRQ(ierr);
-    ierr = MatPartitioningView(partitioner,0);CHKERRQ(ierr);
+    /* ierr = MatPartitioningView(partitioner,0);CHKERRQ(ierr); */
 
     ierr = ISGetIndices(new_ranks,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     /* ranks_send_to_idx[0] = oldranks[is_indices[0]]; */ /* contiguos set of processes */
@@ -2843,7 +2843,6 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt coarsening_ratio, 
   i = 1;
   if (color) i=0;
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)mat),i,ranks_send_to_idx,PETSC_OWN_POINTER,&ranks_send_to);CHKERRQ(ierr);
-  ierr = ISView(ranks_send_to,0);CHKERRQ(ierr);
 
   /* get back IS */
   *is_sends = ranks_send_to;
@@ -3302,6 +3301,11 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   if (isbddc || isnn) {
     if (!pcbddc->coarse_subassembling) { /* subassembling info is not present */
       ierr = MatISGetSubassemblingPattern(coarse_mat_is,pcbddc->coarsening_ratio,&pcbddc->coarse_subassembling);CHKERRQ(ierr);
+      if (pcbddc->dbg_flag) {
+        ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Subassembling pattern\n");CHKERRQ(ierr);
+        ierr = ISView(pcbddc->coarse_subassembling,pcbddc->dbg_viewer);CHKERRQ(ierr);
+      }
     }
     if (coarse_reuse) {
       ierr = KSPGetOperators(pcbddc->coarse_ksp,&coarse_mat,NULL,NULL);CHKERRQ(ierr);
