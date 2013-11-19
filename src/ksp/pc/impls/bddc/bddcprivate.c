@@ -2827,7 +2827,8 @@ PetscErrorCode MatISSubassemble_Private(Mat mat, PetscInt coarsening_ratio, IS* 
     ierr = MatPartitioningView(partitioner,0);CHKERRQ(ierr);
 
     ierr = ISGetIndices(new_ranks,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-    ranks_send_to_idx[0] = oldranks[is_indices[0]];
+    /* ranks_send_to_idx[0] = oldranks[is_indices[0]]; */ /* contiguos set of processes */
+    ranks_send_to_idx[0] = coarsening_ratio*oldranks[is_indices[0]]; /* scattered set of processes */
     ierr = ISRestoreIndices(new_ranks,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     /* clean up */
     ierr = PetscFree(oldranks);CHKERRQ(ierr);
