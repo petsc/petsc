@@ -878,8 +878,15 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* No need to setup local scatters if primal space is unchanged */
-  if (!pcbddc->new_primal_space_local && !pcbddc->dbg_flag) {
+  /*
+    No need to setup local scatters if
+      - primal space is unchanged
+        AND
+      - we actually have locally some primal dofs (could not be true in multilevel or for isolated subdomains)
+        AND
+      - we are not in debugging mode (this is needed since there are Synchronized prints at the end of the subroutine
+  */
+  if (!pcbddc->new_primal_space_local && pcbddc->local_primal_size && !pcbddc->dbg_flag) {
     PetscFunctionReturn(0);
   }
   /* destroy old objects */
@@ -2107,8 +2114,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     pcbddc->new_primal_space_local = (PetscBool)(!pcbddc->new_primal_space_local);
     ierr = PetscFree(oprimal_indices_local_idxs);CHKERRQ(ierr);
   }
-  /* need to set pcbddc->new_primal_space_local to true when the local primal space is empty, otherwise pcbddc->is_R_local will not be created */
-  if (!pcbddc->local_primal_size) pcbddc->new_primal_space_local = PETSC_TRUE;
   /* new_primal_space will be used for numbering of coarse dofs, so it should be the same across all subdomains */
   ierr = MPI_Allreduce(&pcbddc->new_primal_space_local,&pcbddc->new_primal_space,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
 
