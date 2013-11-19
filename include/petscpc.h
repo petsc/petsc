@@ -453,6 +453,11 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetReuseProl(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PCGAMGInitializePackage(void);
 
+typedef const char *PCGAMGClassicalType;
+#define PCGAMGCLASSICALDIRECT   "direct"
+#define PCGAMGCLASSICALSTANDARD "standard"
+PETSC_EXTERN PetscErrorCode PCGAMGClassicalSetType(PC,PCGAMGClassicalType);
+
 #if defined(PETSC_HAVE_PCBDDC)
 PETSC_EXTERN PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCSetCoarseningRatio(PC,PetscInt);

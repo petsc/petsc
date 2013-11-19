@@ -1,10 +1,54 @@
 #include <../src/ksp/pc/impls/gamg/gamg.h>        /*I "petscpc.h" I*/
 #include <petsc-private/kspimpl.h>
 
+PetscFunctionList PCGAMGClassicalProlongatorList    = NULL;
+PetscBool         PCGAMGClassicalPackageInitialized = PETSC_FALSE;
+
 typedef struct {
   PetscReal interp_threshold; /* interpolation threshold */
+  char prolongtype[256];
 } PC_GAMG_Classical;
 
+#undef __FUNCT__
+#define __FUNCT__ "PCGAMGClassicalSetType"
+/*@
+   PCGAMGClassicalSetType - Sets the type of classical interpolation to use
+
+   Collective on PC
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+   Options Database Key:
+.  -pc_gamg_classical_type
+
+   Level: intermediate
+
+.seealso: ()
+@*/
+PetscErrorCode PCGAMGClassicalSetType(PC pc, PCGAMGClassicalType type)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCGAMGClassicalSetType_C",(PC,PCGAMGType),(pc,type));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCGAMGClassicalSetType_GAMG"
+static PetscErrorCode PCGAMGClassicalSetType_GAMG(PC pc, PCGAMGClassicalType type)
+{
+  PetscErrorCode    ierr;
+  PC_MG             *mg          = (PC_MG*)pc->data;
+  PC_GAMG           *pc_gamg     = (PC_GAMG*)mg->innerctx;
+  PC_GAMG_Classical *cls         = (PC_GAMG_Classical*)pc_gamg->subctx;
+
+  PetscFunctionBegin;
+  ierr = PetscStrcpy(cls->prolongtype,type);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGClassicalCreateGhostVector_Private"
@@ -204,8 +248,8 @@ PetscErrorCode PCGAMGClassicalGhost_Private(Mat G,Vec v,Vec gv)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCGAMGProlongator_Classical"
-PetscErrorCode PCGAMGProlongator_Classical(PC pc, const Mat A, const Mat G, PetscCoarsenData *agg_lists,Mat *P)
+#define __FUNCT__ "PCGAMGProlongator_Classical_Direct"
+PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, const Mat A, const Mat G, PetscCoarsenData *agg_lists,Mat *P)
 {
   PetscErrorCode    ierr;
   MPI_Comm          comm;
@@ -544,7 +588,7 @@ PetscErrorCode PCGAMGTruncateProlongator_Private(PC pc,Mat *P)
       }
     }
     for (j=0;j<ncols;j++) {
-      if (PetscRealPart(pval[j]) > pmax_pos*cls->interp_threshold || PetscRealPart(pval[j]) < pmax_neg*cls->interp_threshold) {
+      if (PetscRealPart(pval[j]) >= pmax_pos*cls->interp_threshold || PetscRealPart(pval[j]) <= pmax_neg*cls->interp_threshold) {
         if (pcol[j] < pcf || pcol[j] >= pcs) {
           lsparse[i]++;
         } else {
@@ -580,9 +624,9 @@ PetscErrorCode PCGAMGTruncateProlongator_Private(PC pc,Mat *P)
     ptot_pos = 0.;
     ptot_neg = 0.;
     for (j=0;j<ncols;j++) {
-      if (PetscRealPart(pval[j]) > cls->interp_threshold*pmax_pos) {
+      if (PetscRealPart(pval[j]) >= cls->interp_threshold*pmax_pos) {
         pthresh_pos += PetscRealPart(pval[j]);
-      } else if (PetscRealPart(pval[j]) < cls->interp_threshold*pmax_neg) {
+      } else if (PetscRealPart(pval[j]) <= cls->interp_threshold*pmax_neg) {
         pthresh_neg += PetscRealPart(pval[j]);
       }
       if (PetscRealPart(pval[j]) > 0.) {
@@ -595,11 +639,11 @@ PetscErrorCode PCGAMGTruncateProlongator_Private(PC pc,Mat *P)
     if (PetscAbsScalar(pthresh_neg) > 0.) ptot_neg /= pthresh_neg;
     idx=0;
     for (j=0;j<ncols;j++) {
-      if (PetscRealPart(pval[j]) > pmax_pos*cls->interp_threshold) {
+      if (PetscRealPart(pval[j]) >= pmax_pos*cls->interp_threshold) {
         pnval[idx] = ptot_pos*pval[j];
         pncol[idx] = pcol[j];
         idx++;
-      } else if (PetscRealPart(pval[j]) < pmax_neg*cls->interp_threshold) {
+      } else if (PetscRealPart(pval[j]) <= pmax_neg*cls->interp_threshold) {
         pnval[idx] = ptot_neg*pval[j];
         pncol[idx] = pcol[j];
         idx++;
@@ -622,8 +666,8 @@ PetscErrorCode PCGAMGTruncateProlongator_Private(PC pc,Mat *P)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCGAMGProlongator_Standard_Classical"
-PetscErrorCode PCGAMGProlongator_Standard_Classical(PC pc, const Mat A, const Mat G, PetscCoarsenData *agg_lists,Mat *P)
+#define __FUNCT__ "PCGAMGProlongator_Classical_Standard"
+PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, const Mat A, const Mat G, PetscCoarsenData *agg_lists,Mat *P)
 {
   PetscErrorCode    ierr;
   Mat               *lA;
@@ -889,7 +933,23 @@ PetscErrorCode PCGAMGProlongator_Standard_Classical(PC pc, const Mat A, const Ma
   ierr = MatView(*P,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatDestroy(&Pold);CHKERRQ(ierr);
    */
+  PetscFunctionReturn(0);
+}
 
+#undef __FUNCT__
+#define __FUNCT__ "PCGAMGProlongator_Classical"
+PetscErrorCode PCGAMGProlongator_Classical(PC pc, const Mat A, const Mat G, PetscCoarsenData *agg_lists,Mat *P)
+{
+  PetscErrorCode    ierr;
+  PetscErrorCode    (*f)(PC,Mat,Mat,PetscCoarsenData*,Mat*);
+  PC_MG             *mg          = (PC_MG*)pc->data;
+  PC_GAMG           *pc_gamg     = (PC_GAMG*)mg->innerctx;
+  PC_GAMG_Classical *cls         = (PC_GAMG_Classical*)pc_gamg->subctx;
+
+  PetscFunctionBegin;
+  ierr = PetscFunctionListFind(PCGAMGClassicalProlongatorList,cls->prolongtype,&f);CHKERRQ(ierr);
+  if (!f)SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot find PCGAMG Classical prolongator type");
+  ierr = (*f)(pc,A,G,agg_lists,P);CHKERRQ(ierr);
   ierr = PCGAMGTruncateProlongator_Private(pc,P);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -904,6 +964,7 @@ PetscErrorCode PCGAMGDestroy_Classical(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscFree(pc_gamg->subctx);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGClassicalSetType_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -914,10 +975,17 @@ PetscErrorCode PCGAMGSetFromOptions_Classical(PC pc)
   PC_MG             *mg          = (PC_MG*)pc->data;
   PC_GAMG           *pc_gamg     = (PC_GAMG*)mg->innerctx;
   PC_GAMG_Classical *cls         = (PC_GAMG_Classical*)pc_gamg->subctx;
+  char              tname[256];
   PetscErrorCode    ierr;
+  PetscBool         flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("GAMG-Classical options");CHKERRQ(ierr);
+  ierr = PetscOptionsList("-pc_gamg_classical_type","Type of Classical AMG prolongation",
+                          "PCGAMGClassicalSetType",PCGAMGClassicalProlongatorList,cls->prolongtype, tname, sizeof(tname), &flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCGAMGClassicalSetType(pc,tname);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsReal("-pc_gamg_interp_threshold","Threshold for classical interpolator entries","",cls->interp_threshold,&cls->interp_threshold,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -939,6 +1007,33 @@ PetscErrorCode PCGAMGSetData_Classical(PC pc, Mat A)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "PCGAMGClassicalFinalizePackage"
+PetscErrorCode PCGAMGClassicalFinalizePackage(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PCGAMGClassicalPackageInitialized = PETSC_FALSE;
+  ierr = PetscFunctionListDestroy(&PCGAMGClassicalProlongatorList);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCGAMGClassicalInitializePackage"
+PetscErrorCode PCGAMGClassicalInitializePackage(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (PCGAMGClassicalPackageInitialized) PetscFunctionReturn(0);
+  ierr = PetscFunctionListAdd(&PCGAMGClassicalProlongatorList,"direct",PCGAMGProlongator_Classical_Direct);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PCGAMGClassicalProlongatorList,"standard",PCGAMGProlongator_Classical_Standard);CHKERRQ(ierr);
+  ierr = PetscRegisterFinalize(PCGAMGClassicalFinalizePackage);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------- */
 /*
    PCCreateGAMG_Classical
@@ -954,6 +1049,7 @@ PetscErrorCode  PCCreateGAMG_Classical(PC pc)
   PC_GAMG_Classical *pc_gamg_classical;
 
   PetscFunctionBegin;
+  ierr = PCGAMGClassicalInitializePackage();
   if (pc_gamg->subctx) {
     /* call base class */
     ierr = PCDestroy_GAMG(pc);CHKERRQ(ierr);
@@ -969,12 +1065,12 @@ PetscErrorCode  PCCreateGAMG_Classical(PC pc)
   pc_gamg->ops->destroy        = PCGAMGDestroy_Classical;
   pc_gamg->ops->graph          = PCGAMGGraph_Classical;
   pc_gamg->ops->coarsen        = PCGAMGCoarsen_Classical;
-  pc_gamg->ops->prolongator    = PCGAMGProlongator_Standard_Classical;
+  pc_gamg->ops->prolongator    = PCGAMGProlongator_Classical;
   pc_gamg->ops->optprol        = NULL;
   pc_gamg->ops->setfromoptions = PCGAMGSetFromOptions_Classical;
 
   pc_gamg->ops->createdefaultdata = PCGAMGSetData_Classical;
   pc_gamg_classical->interp_threshold = 0.2;
-
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGClassicalSetType_C",PCGAMGClassicalSetType_GAMG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
