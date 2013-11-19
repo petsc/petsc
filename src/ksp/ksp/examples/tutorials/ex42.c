@@ -11,7 +11,6 @@ all boundaries are free-slip, i.e. zero normal flow and zero tangential stress \
 
 #include "petscksp.h"
 #include "petscdmda.h"
-#include <petsctime.h>
 
 #define PROFILE_TIMING
 #define ASSEMBLE_LOWER_TRIANGULAR
@@ -845,7 +844,6 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,CellProperties cell_pr
   ierr = DMDAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
 
   ierr = DMDAGetElementCorners(stokes_da,&sex,&sey,&sez,&mx,&my,&mz);CHKERRQ(ierr);
-  PetscTime(&t0);
   for (ek = sez; ek < sez+mz; ek++) {
     for (ej = sey; ej < sey+my; ej++) {
       for (ei = sex; ei < sex+mx; ei++) {
@@ -904,7 +902,6 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,CellProperties cell_pr
 
   ierr = DMDAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
 
-  PetscTime(&t1);
   PetscFunctionReturn(0);
 }
 
@@ -1398,7 +1395,6 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscTime(&t0);CHKERRQ(ierr);
 
   /* create file name */
   PetscObjectGetComm((PetscObject)da,&comm);
@@ -1500,7 +1496,6 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
     vtk_fp = NULL;
   }
 
-  ierr = PetscTime(&t1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

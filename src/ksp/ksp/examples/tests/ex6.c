@@ -4,7 +4,6 @@ Input arguments are:\n\
   -f <input_file> : file to load. For example see $PETSC_DIR/share/petsc/datafiles/matrices\n\n";
 
 #include <petscksp.h>
-#include <petsctime.h>
 #include <petsclog.h>
 
 #undef __FUNCT__
@@ -16,7 +15,6 @@ int main(int argc,char **args)
   PetscInt       its;
   PetscLogStage  stage1,stage2;
   PetscReal      norm;
-  PetscLogDouble tsetup1,tsetup2,tsetup,tsolve1,tsolve2,tsolve;
   Vec            x,b,u;
   Mat            A;
   char           file[PETSC_MAX_PATH_LEN];
@@ -77,23 +75,17 @@ int main(int argc,char **args)
 
   PetscLogStageRegister("mystage 1",&stage1);
   PetscLogStagePush(stage1);
-  ierr   = PetscTime(&tsetup1);CHKERRQ(ierr);
   ierr   = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr   = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr   = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr   = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr   = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
-  ierr   = PetscTime(&tsetup2);CHKERRQ(ierr);
-  tsetup = tsetup2 -tsetup1;
   PetscLogStagePop();
   ierr = PetscBarrier((PetscObject)A);CHKERRQ(ierr);
 
   PetscLogStageRegister("mystage 2",&stage2);
   PetscLogStagePush(stage2);
-  ierr   = PetscTime(&tsolve1);CHKERRQ(ierr);
   ierr   = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  ierr   = PetscTime(&tsolve2);CHKERRQ(ierr);
-  tsolve = tsolve2 - tsolve1;
   PetscLogStagePop();
 
   /* Show result */
@@ -101,15 +93,14 @@ int main(int argc,char **args)
   ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  /*  matrix PC   KSP   Options       its    residual setuptime solvetime  */
+  /*  matrix PC   KSP   Options       its    residual  */
   if (table) {
     char        *matrixname,kspinfo[120];
     PetscViewer viewer;
     ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,kspinfo,120,&viewer);CHKERRQ(ierr);
     ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
     ierr = PetscStrrchr(file,'/',&matrixname);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3D %2.0e %2.1e %2.1e %2.1e %s \n",
-                       matrixname,its,norm,tsetup+tsolve,tsetup,tsolve,kspinfo);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3D %2.0e %s \n",matrixname,its,norm,kspinfo);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   } else {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);

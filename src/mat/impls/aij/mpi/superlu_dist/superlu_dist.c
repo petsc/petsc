@@ -5,7 +5,6 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
-#include <petsctime.h>
 #if defined(PETSC_HAVE_STDLIB_H) /* This is to get around weird problem with SuperLU on cray */
 #include <stdlib.h>
 #endif
@@ -264,7 +263,6 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
   SuperLUStat_t    stat;
   double           *berr=0;
   IS               isrow;
-  PetscLogDouble   time0,time,time_min,time_max;
   Mat              F_diag=NULL;
 #if defined(PETSC_USE_COMPLEX)
   doublecomplex    *av, *bv;
@@ -274,11 +272,6 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
-
-  if (lu->options.PrintStat) { /* collect time for mat conversion */
-    ierr = MPI_Barrier(PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
-    ierr = PetscTime(&time0);CHKERRQ(ierr);
-  }
 
   if (lu->MatInputMode == GLOBAL) { /* global mat input */
     if (size > 1) { /* convert mpi A to seq mat A */
@@ -395,10 +388,6 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
     PetscStackCall("SuperLU_DIST:dCreate_CompRowLoc_Matrix_dist",dCreate_CompRowLoc_Matrix_dist(&lu->A_sup, M, N, nz, m, rstart,lu->val, lu->col, lu->row, SLU_NR_loc, SLU_D, SLU_GE));
 #endif
   }
-  if (lu->options.PrintStat) {
-    ierr  = PetscTime(&time);CHKERRQ(ierr);
-    time0 = time - time0;
-  }
 
   /* Factor the matrix. */
   PetscStackCall("SuperLU_DIST:PStatInit",PStatInit(&stat));   /* Initialize the statistics variables. */
@@ -423,11 +412,6 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
   }
 
   if (lu->options.PrintStat) {
-    ierr = MPI_Reduce(&time0,&time_max,1,MPI_DOUBLE,MPI_MAX,0,PetscObjectComm((PetscObject)A));
-    ierr = MPI_Reduce(&time0,&time_min,1,MPI_DOUBLE,MPI_MIN,0,PetscObjectComm((PetscObject)A));
-    ierr = MPI_Reduce(&time0,&time,1,MPI_DOUBLE,MPI_SUM,0,PetscObjectComm((PetscObject)A));
-    time = time/size; /* average time */
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)A), "        Mat conversion(PETSc->SuperLU_DIST) time (max/min/avg): \n                              %g / %g / %g\n",time_max,time_min,time);CHKERRQ(ierr);
     PStatPrint(&lu->options, &stat, &lu->grid);  /* Print the statistics. */
   }
   PStatFree(&stat);
