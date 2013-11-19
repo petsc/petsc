@@ -2702,6 +2702,143 @@ PetscErrorCode MatSeqAIJRestoreArray_SeqAIJ(Mat A,PetscScalar *array[])
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatFDColoringApply_SeqAIJ"
+PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
+{
+  PetscErrorCode     (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void*))coloring->f;
+  PetscErrorCode     ierr;
+  PetscInt           k,N,start,end,l,row,col,srow,**vscaleforrow;
+  PetscScalar        dx,*y,*w3_array,*vscale_array;
+  const PetscScalar  *xx,*vscale_arrayread;
+  PetscReal          epsilon = coloring->error_rel,umin = coloring->umin;
+  Vec                w1,w2,w3;
+  void               *fctx = coloring->fctx;
+  PetscBool          flg   = PETSC_FALSE;
+
+  PetscFunctionBegin;
+  if (!coloring->w1) {
+    ierr = VecDuplicate(x1,&coloring->w1);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)coloring,(PetscObject)coloring->w1);CHKERRQ(ierr);
+    ierr = VecDuplicate(x1,&coloring->w2);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)coloring,(PetscObject)coloring->w2);CHKERRQ(ierr);
+    ierr = VecDuplicate(x1,&coloring->w3);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)coloring,(PetscObject)coloring->w3);CHKERRQ(ierr);
+  }
+  w1 = coloring->w1; w2 = coloring->w2; w3 = coloring->w3;
+
+  ierr = MatSetUnfactored(J);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)coloring)->prefix,"-mat_fd_coloring_dont_rezero",&flg,NULL);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscInfo(coloring,"Not calling MatZeroEntries()\n");CHKERRQ(ierr);
+  } else {
+    PetscBool assembled;
+    ierr = MatAssembled(J,&assembled);CHKERRQ(ierr);
+    if (assembled) {
+      ierr = MatZeroEntries(J);CHKERRQ(ierr);
+    }
+  }
+
+  ierr = VecGetOwnershipRange(x1,&start,&end);CHKERRQ(ierr);
+  ierr = VecGetSize(x1,&N);CHKERRQ(ierr);
+
+  if (!coloring->fset) {
+    ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
+    ierr = (*f)(sctx,x1,w1,fctx);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
+  } else {
+    coloring->fset = PETSC_FALSE;
+  }
+
+  /*
+      Compute all the scale factors and share with other processors
+  */
+  ierr = VecGetArrayRead(x1,&xx);CHKERRQ(ierr);xx = xx - start;
+  ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);vscale_array = vscale_array - start;
+  for (k=0; k<coloring->ncolors; k++) {
+    /*
+       Loop over each column associated with color adding the
+       perturbation to the vector w3.
+    */
+    for (l=0; l<coloring->ncolumns[k]; l++) {
+      col = coloring->columns[k][l];    /* column of the matrix we are probing for */
+      dx  = xx[col];
+      if (dx == 0.0) dx = 1.0;
+      if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
+      else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
+      dx               *= epsilon;
+      vscale_array[col] = 1.0/dx;
+    }
+  }
+  vscale_array = vscale_array + start;
+
+  ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+  ierr = VecGhostUpdateBegin(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecGhostUpdateEnd(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+  /*  ierr = VecView(coloring->vscale,PETSC_VIEWER_STDOUT_WORLD);
+      ierr = VecView(x1,PETSC_VIEWER_STDOUT_WORLD);*/
+
+  if (coloring->vscaleforrow) vscaleforrow = coloring->vscaleforrow;
+  else                        vscaleforrow = coloring->columnsforrow;
+
+  ierr = VecGetArrayRead(coloring->vscale,&vscale_arrayread);CHKERRQ(ierr);
+  /*
+      Loop over each color
+  */
+  for (k=0; k<coloring->ncolors; k++) {
+    coloring->currentcolor = k;
+
+    ierr = VecCopy(x1,w3);CHKERRQ(ierr);
+    ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);w3_array = w3_array - start;
+    /*
+       Loop over each column associated with color adding the
+       perturbation to the vector w3.
+    */
+    for (l=0; l<coloring->ncolumns[k]; l++) {
+      col = coloring->columns[k][l];    /* column of the matrix we are probing for */
+      dx  = xx[col];
+      if (dx == 0.0) dx = 1.0;
+      if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
+      else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
+      dx *= epsilon;
+      if (!PetscAbsScalar(dx)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Computed 0 differencing parameter");
+      w3_array[col] += dx;
+    }
+    w3_array = w3_array + start; ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
+
+    /*
+       Evaluate function at x1 + dx (here dx is a vector of perturbations)
+    */
+
+    ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
+    ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
+    ierr = VecAXPY(w2,-1.0,w1);CHKERRQ(ierr);
+
+    /*
+       Loop over rows of vector, putting results into Jacobian matrix
+    */
+    ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
+    for (l=0; l<coloring->nrows[k]; l++) {
+      row     = coloring->rows[k][l];
+      col     = coloring->columnsforrow[k][l];
+      y[row] *= vscale_arrayread[vscaleforrow[k][l]];
+      srow    = row + start;
+      ierr    = MatSetValues_SeqAIJ(J,1,&srow,1,&col,y+row,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
+  }
+  coloring->currentcolor = k;
+
+  ierr = VecRestoreArrayRead(coloring->vscale,&vscale_arrayread);CHKERRQ(ierr);
+  xx   = xx + start;
+  ierr = VecRestoreArrayRead(x1,&xx);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*
    Computes the number of nonzeros per row needed for preallocation when X and Y
    have different nonzero structure.
