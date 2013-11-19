@@ -2,14 +2,16 @@
 
 
 if test $# -lt 2 ; then
-  echo "Usage: $> runhtml.sh LOGDIR OUTFILE";
+  echo "Usage: $> runhtml.sh BRANCH LOGDIR OUTFILE";
+  echo " BRANCH  ... Branch log files to be processed";
   echo " LOGDIR  ... Directory where to find the log files";
   echo " OUTFILE ... The output file where the HTML code will be written to";
   exit 0
 fi
 
-LOGDIR=$1
-OUTFILE=$2
+BRANCH=$1
+LOGDIR=$2
+OUTFILE=$3
 
 ## Write HTML header
 
@@ -108,7 +110,7 @@ generate_section()
   echo "<center><table>" >> $OUTFILE
   echo "<tr><th>Test</th><th>Warnings</th><th>Errors</th></tr>" >> $OUTFILE
 
-  for f in `ls $LOGDIR/$2*.log`
+  for f in `ls $LOGDIR/${2}_${BRANCH}*.log`
   do
     echo "Processing file $f..."
     echo "<tr><td class=\"desc\">" >> $OUTFILE
@@ -141,7 +143,7 @@ generate_configure_section()
   echo "<center><table>" >> $OUTFILE
   echo "<tr><th>Configuration</th><th>Status</th></tr>" >> $OUTFILE
 
-  for f in `ls $LOGDIR/configure*.log`
+  for f in `ls $LOGDIR/configure_${BRANCH}*.log`
   do
     echo "Processing file $f..."
     echo "<tr><td class=\"desc\">" >> $OUTFILE
