@@ -490,48 +490,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
     }
   }
   if (preuse != MAT_IGNORE_MATRIX) {
-    /* Use the diagonal part of A to form D - C inv(diag(A)) B */
-    Mat         Ad,AdB,S;
-    Vec         diag;
-    PetscInt    i,m,n,mstart,mend;
-    PetscScalar *x;
-
-    /* We could compose these with newpmat so that the matrices can be reused. */
-    if (!A) {ierr = MatGetSubMatrix(mat,isrow0,iscol0,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);}
-    if (!B) {ierr = MatGetSubMatrix(mat,isrow0,iscol1,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);}
-    if (!C) {ierr = MatGetSubMatrix(mat,isrow1,iscol0,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);}
-    if (!D) {ierr = MatGetSubMatrix(mat,isrow1,iscol1,MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr);}
-
-    ierr = MatGetVecs(A,&diag,NULL);CHKERRQ(ierr);
-    ierr = MatGetDiagonal(A,diag);CHKERRQ(ierr);
-    ierr = VecReciprocal(diag);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-    /* We need to compute S = D - C inv(diag(A)) B.  For row-oriented formats, it is easy to scale the rows of B and
-     * for column-oriented formats the columns of C can be scaled.  Would skip creating a silly diagonal matrix. */
-    ierr = MatCreate(PetscObjectComm((PetscObject)A),&Ad);CHKERRQ(ierr);
-    ierr = MatSetSizes(Ad,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = MatSetOptionsPrefix(Ad,((PetscObject)mat)->prefix);CHKERRQ(ierr);
-    ierr = MatAppendOptionsPrefix(Ad,"diag_");CHKERRQ(ierr);
-    ierr = MatSetFromOptions(Ad);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(Ad,1,NULL);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(Ad,1,NULL,0,NULL);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(Ad,&mstart,&mend);CHKERRQ(ierr);
-    ierr = VecGetArray(diag,&x);CHKERRQ(ierr);
-    for (i=mstart; i<mend; i++) {
-      ierr = MatSetValue(Ad,i,i,x[i-mstart],INSERT_VALUES);CHKERRQ(ierr);
-    }
-    ierr = VecRestoreArray(diag,&x);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(Ad,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Ad,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = VecDestroy(&diag);CHKERRQ(ierr);
-
-    ierr     = MatMatMult(Ad,B,MAT_INITIAL_MATRIX,1,&AdB);CHKERRQ(ierr);
-    S        = (preuse == MAT_REUSE_MATRIX) ? *newpmat : (Mat)0;
-    ierr     = MatMatMult(C,AdB,preuse,PETSC_DEFAULT,&S);CHKERRQ(ierr);
-    ierr     = MatAYPX(S,-1,D,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-    *newpmat = S;
-    ierr     = MatDestroy(&Ad);CHKERRQ(ierr);
-    ierr     = MatDestroy(&AdB);CHKERRQ(ierr);
+    ierr = MatCreateSchurComplementPmat(A,B,C,D,preuse,Sp);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -602,21 +561,14 @@ PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS isc
 
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSchurComplementGetPmat_Basic"
-PetscErrorCode  MatSchurComplementGetPmat_Basic(Mat S,MatReuse preuse,Mat *Spmat)
+#define __FUNCT__ "MatCreateSchurComplementPmat_Private"
+PetscErrorCode  MatCreateSchurComplementPmat_Private(Mat A,Mat B,Mat C,Mat D,MatReuse preuse,Mat *Spmat)
 {
   Mat A,B,C,D;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (preuse == MAT_IGNORE_MATRIX) PetscFunctionReturn(0);
-
-  ierr = MatSchurComplementGetSubmatrices(S,&A,NULL,&B,&C,&D);CHKERRQ(ierr);
-  if (!A) SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONGSTATE,"Schur complement component matrices unset");
-
-
   /* Use the diagonal part of A to form D - C inv(diag(A)) B; a NULL B, C or D indicates a zero matrix. */
-
   /* TODO: Perhaps should create an appropriately-sized zero matrix of the same type as A00? */
   if ((!B || !C) & !D) SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONGSTATE,"Cannot assemble Sp: A01, A10 and A11 are all NULL.");
 
@@ -646,6 +598,22 @@ PetscErrorCode  MatSchurComplementGetPmat_Basic(Mat S,MatReuse preuse,Mat *Spmat
     *Spmat    = Sp;
     ierr     = MatDestroy(&AdB);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSchurComplementGetPmat_Basic"
+PetscErrorCode  MatSchurComplementGetPmat_Basic(Mat S,MatReuse preuse,Mat *Spmat)
+{
+  Mat A,B,C,D;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (preuse == MAT_IGNORE_MATRIX) PetscFunctionReturn(0);
+
+  ierr = MatSchurComplementGetSubmatrices(S,&A,NULL,&B,&C,&D);CHKERRQ(ierr);
+  if (!A) SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONGSTATE,"Schur complement component matrices unset");
+  ierr = MatCreateSchurComplementPmat_Private(A,B,C,D,preuse,Spmat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
