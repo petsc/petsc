@@ -1088,9 +1088,11 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   }
 
   /* Get stdout for dbg */
-  if (pcbddc->dbg_flag && !pcbddc->dbg_viewer) {
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)pc),&pcbddc->dbg_viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedAllow(pcbddc->dbg_viewer,PETSC_TRUE);CHKERRQ(ierr);
+  if (pcbddc->dbg_flag) {
+    if (!pcbddc->dbg_viewer) {
+      ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)pc),&pcbddc->dbg_viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedAllow(pcbddc->dbg_viewer,PETSC_TRUE);CHKERRQ(ierr);
+    }
     if (pcbddc->current_level) {
       ierr = PetscViewerASCIIAddTab(pcbddc->dbg_viewer,2);CHKERRQ(ierr);
     }
@@ -1161,6 +1163,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PCBDDCSetUpSolvers(pc);CHKERRQ(ierr);
     ierr = PCBDDCScalingSetUp(pc);CHKERRQ(ierr);
   }
+
   if (pcbddc->dbg_flag && pcbddc->current_level) {
     ierr = PetscViewerASCIISubtractTab(pcbddc->dbg_viewer,2);CHKERRQ(ierr);
   }

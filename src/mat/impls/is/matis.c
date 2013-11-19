@@ -174,11 +174,16 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmappi
   Vec            global;
 
   PetscFunctionBegin;
-  if (is->mapping) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for matrix");
   PetscCheckSameComm(A,1,rmapping,2);
   if (rmapping != cmapping) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"MATIS requires the row and column mappings to be identical");
-  ierr        = PetscObjectReference((PetscObject)rmapping);CHKERRQ(ierr);
-  ierr        = ISLocalToGlobalMappingDestroy(&is->mapping);CHKERRQ(ierr);
+  if (is->mapping) { /* Currenly destroys the objects that will be created by this routine. Is there anything else that should be checked? */
+    ierr = ISLocalToGlobalMappingDestroy(&is->mapping);CHKERRQ(ierr);
+    ierr = VecDestroy(&is->x);CHKERRQ(ierr);
+    ierr = VecDestroy(&is->y);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&is->ctx);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectReference((PetscObject)rmapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&is->mapping);CHKERRQ(ierr);
   is->mapping = rmapping;
 /*
   ierr = PetscLayoutSetISLocalToGlobalMapping(A->rmap,rmapping);CHKERRQ(ierr);

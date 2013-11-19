@@ -107,6 +107,7 @@ PetscErrorCode PCBDDCResetSolvers(PC pc)
   ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
   ierr = PetscFree(pcbddc->primal_indices_local_idxs);CHKERRQ(ierr);
   ierr = PetscFree(pcbddc->global_primal_indices);CHKERRQ(ierr);
+  ierr = ISDestroy(&pcbddc->coarse_subassembling);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -878,7 +879,7 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
 
   PetscFunctionBegin;
   /* No need to setup local scatters if primal space is unchanged */
-  if (!pcbddc->new_primal_space_local) {
+  if (!pcbddc->new_primal_space_local && !pcbddc->dbg_flag) {
     PetscFunctionReturn(0);
   }
   /* destroy old objects */
@@ -2703,8 +2704,8 @@ static PetscErrorCode MatISGetMPIXAIJ(Mat mat, MatType Mtype, MatReuse reuse, Ma
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatISSubassemble_Private"
-PetscErrorCode MatISSubassemble_Private(Mat mat, PetscInt coarsening_ratio, IS* is_sends)
+#define __FUNCT__ "MatISGetSubassemblingPattern"
+PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt coarsening_ratio, IS* is_sends)
 {
   Mat             subdomain_adj;
   IS              new_ranks,ranks_send_to;
@@ -2853,9 +2854,9 @@ typedef enum {MATDENSE_PRIVATE=0,MATAIJ_PRIVATE,MATBAIJ_PRIVATE,MATSBAIJ_PRIVATE
 
 #undef __FUNCT__
 #define __FUNCT__ "MatISSubassemble"
-PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt coarsening_ratio, Mat *mat_n)
+PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt coarsening_ratio, MatReuse reuse, Mat *mat_n)
 {
-  Mat                    local_mat,new_mat;
+  Mat                    local_mat;
   Mat_IS                 *matis;
   IS                     is_sends_internal;
   PetscInt               rows,cols;
@@ -2887,12 +2888,22 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt coarsening_ratio,
   if (!isdense) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Currently cannot subassemble MATIS when local matrix type is not of type SEQDENSE");
   ierr = MatGetSize(local_mat,&rows,&cols);CHKERRQ(ierr);
   if (rows != cols) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Local MATIS matrices should be square");
+  if (reuse == MAT_REUSE_MATRIX) {
+    PetscInt mrows,mcols,mnrows,mncols;
+    PetscBool ismatis;
+    ierr = PetscObjectTypeCompare((PetscObject)*mat_n,MATIS,&ismatis);CHKERRQ(ierr);
+    if (!ismatis) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot reuse a matrix which is not of type MATIS");
+    ierr = MatGetSize(mat,&mrows,&mcols);CHKERRQ(ierr);
+    ierr = MatGetSize(*mat_n,&mnrows,&mncols);CHKERRQ(ierr);
+    if (mrows != mnrows) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot reuse matrix! Wrong number of rows %D != %D",mrows,mnrows);
+    if (mcols != mncols) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot reuse matrix! Wrong number of cols %D != %D",mcols,mncols);
+  }
   ierr = MatGetBlockSize(local_mat,&bs);CHKERRQ(ierr);
   PetscValidLogicalCollectiveInt(mat,bs,0);
   /* prepare IS for sending if not provided */
   if (!is_sends) {
     if (!coarsening_ratio) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"You should specify either an IS or a coarsening ratio");
-    ierr = MatISSubassemble_Private(mat,coarsening_ratio,&is_sends_internal);CHKERRQ(ierr);
+    ierr = MatISGetSubassemblingPattern(mat,coarsening_ratio,&is_sends_internal);CHKERRQ(ierr);
   } else {
     ierr = PetscObjectReference((PetscObject)is_sends);CHKERRQ(ierr);
     is_sends_internal = is_sends;
@@ -3043,11 +3054,16 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt coarsening_ratio,
     }
   }
 
-  /* create MATIS object */
-  ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
-  ierr = MatCreateIS(comm,bs,PETSC_DECIDE,PETSC_DECIDE,rows,cols,l2gmap,&new_mat);CHKERRQ(ierr);
+  /* create MATIS object if needed */
+  if (reuse == MAT_INITIAL_MATRIX) {
+    ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
+    ierr = MatCreateIS(comm,bs,PETSC_DECIDE,PETSC_DECIDE,rows,cols,l2gmap,mat_n);CHKERRQ(ierr);
+  } else {
+    /* it also destroys the local matrices */
+    ierr = MatSetLocalToGlobalMapping(*mat_n,l2gmap,l2gmap);CHKERRQ(ierr);
+  }
   ierr = ISLocalToGlobalMappingDestroy(&l2gmap);CHKERRQ(ierr);
-  ierr = MatISGetLocalMat(new_mat,&local_mat);CHKERRQ(ierr);
+  ierr = MatISGetLocalMat(*mat_n,&local_mat);CHKERRQ(ierr);
   ierr = MatSetType(local_mat,new_local_type);CHKERRQ(ierr);
   ierr = MatSetUp(local_mat);CHKERRQ(ierr); /* WARNING -> no preallocation yet */
 
@@ -3058,7 +3074,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt coarsening_ratio,
   for (i=0;i<n_recvs;i++) {
     if (*ptr_idxs == (PetscInt)MATDENSE_PRIVATE) { /* values insertion provided for dense case only */
       ierr = MatSetOption(local_mat,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
-      ierr = MatSetValues(new_mat,*(ptr_idxs+1),ptr_idxs+2,*(ptr_idxs+1),ptr_idxs+2,ptr_vals,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(*mat_n,*(ptr_idxs+1),ptr_idxs+2,*(ptr_idxs+1),ptr_idxs+2,ptr_vals,ADD_VALUES);CHKERRQ(ierr);
       ierr = MatAssemblyBegin(local_mat,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(local_mat,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatSetOption(local_mat,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
@@ -3068,8 +3084,8 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt coarsening_ratio,
   }
   ierr = MatAssemblyBegin(local_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(local_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(new_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(new_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*mat_n,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*mat_n,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   { /* check */
     Vec       lvec,rvec;
@@ -3079,7 +3095,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt coarsening_ratio,
     ierr = VecSetRandom(rvec,NULL);CHKERRQ(ierr);
     ierr = MatMult(mat,rvec,lvec);CHKERRQ(ierr);
     ierr = VecScale(lvec,-1.0);CHKERRQ(ierr);
-    ierr = MatMultAdd(new_mat,rvec,lvec,lvec);CHKERRQ(ierr);
+    ierr = MatMultAdd(*mat_n,rvec,lvec,lvec);CHKERRQ(ierr);
     ierr = VecNorm(lvec,NORM_INFINITY,&infty_error);CHKERRQ(ierr);
     ierr = PetscPrintf(PetscObjectComm((PetscObject)mat),"Infinity error subassembling %1.6e\n",infty_error);
     ierr = VecDestroy(&rvec);CHKERRQ(ierr);
@@ -3107,8 +3123,6 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt coarsening_ratio,
   ierr = PetscFree(olengths_vals);CHKERRQ(ierr);
   ierr = PetscFree(olengths_idxs);CHKERRQ(ierr);
   ierr = PetscFree(onodes);CHKERRQ(ierr);
-  /* get back new mat */
-  *mat_n = new_mat;
   PetscFunctionReturn(0);
 }
 
@@ -3150,6 +3164,8 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     } else { /* there's no coarse ksp, so we need to create the coarse matrix too */
       coarse_reuse = PETSC_FALSE;
     }
+    /* reset any subassembling information */
+    ierr = ISDestroy(&pcbddc->coarse_subassembling);CHKERRQ(ierr);
   } else { /* primal space has not been changed, so we can reuse coarse matrix */
     coarse_reuse = PETSC_TRUE;
   }
@@ -3284,7 +3300,16 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 
   /* assemble coarse matrix */
   if (isbddc || isnn) {
-    ierr = MatISSubassemble(coarse_mat_is,NULL,pcbddc->coarsening_ratio,&coarse_mat);CHKERRQ(ierr);
+    if (!pcbddc->coarse_subassembling) { /* subassembling info is not present */
+      ierr = MatISGetSubassemblingPattern(coarse_mat_is,pcbddc->coarsening_ratio,&pcbddc->coarse_subassembling);CHKERRQ(ierr);
+    }
+    if (coarse_reuse) {
+      ierr = KSPGetOperators(pcbddc->coarse_ksp,&coarse_mat,NULL,NULL);CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)coarse_mat);CHKERRQ(ierr);
+      ierr = MatISSubassemble(coarse_mat_is,pcbddc->coarse_subassembling,pcbddc->coarsening_ratio,MAT_REUSE_MATRIX,&coarse_mat);CHKERRQ(ierr);
+    } else {
+      ierr = MatISSubassemble(coarse_mat_is,pcbddc->coarse_subassembling,pcbddc->coarsening_ratio,MAT_INITIAL_MATRIX,&coarse_mat);CHKERRQ(ierr);
+    }
   } else {
     if (coarse_reuse) {
       ierr = KSPGetOperators(pcbddc->coarse_ksp,&coarse_mat,NULL,NULL);CHKERRQ(ierr);
