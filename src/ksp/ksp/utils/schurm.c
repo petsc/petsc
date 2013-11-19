@@ -490,7 +490,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
     }
   }
   if (preuse != MAT_IGNORE_MATRIX) {
-    ierr = MatCreateSchurComplementPmat(A,B,C,D,preuse,Sp);CHKERRQ(ierr);
+    ierr = MatCreateSchurComplementPmat(A,B,C,D,preuse,newpmat);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -561,39 +561,62 @@ PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS isc
 
 
 #undef __FUNCT__
-#define __FUNCT__ "MatCreateSchurComplementPmat_Private"
-PetscErrorCode  MatCreateSchurComplementPmat_Private(Mat A,Mat B,Mat C,Mat D,MatReuse preuse,Mat *Spmat)
+#define __FUNCT__ "MatCreateSchurComplementPmat"
+/*@
+    MatCreateSchurComplementPmat - create a preconditioning matrix for the Schur complement by assembling Sp = A11 - A10 inv(diag(A00)) A01
+
+    Collective on Mat
+
+    Input Parameters:
++   A00,A01,A10,A11      - the four parts of the original matrix A = [A00 A01; A10 A11] (A01,A10, and A11 are optional, implying zero matrices)
+-   preuse               - MAT_INITIAL_MATRIX for a new Sp, or MAT_REUSE_MATRIX to reuse an existing Sp, or MAT_IGNORE_MATRIX to put nothing in Sp
+
+    Output Parameter:
+-   Spmat                - approximate Schur complement suitable for preconditioning S = A11 - A10 inv(diag(A00)) A01
+
+    Note:
+    Since the real Schur complement is usually dense, providing a good approximation Sp usually requires
+    application-specific information.  The default for assembled matrices is to use the diagonal of the (0,0) block A00,
+    which will rarely produce a scalable algorithm.
+
+    Level: advanced
+
+    Concepts: matrices^submatrices
+
+.seealso: MatCreateSchurComplement(), MatGetSchurComplement(), MatSchurComplementGetPmat()
+@*/
+PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,MatReuse preuse,Mat *Spmat)
 {
-  Mat A,B,C,D;
+
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Use the diagonal part of A to form D - C inv(diag(A)) B; a NULL B, C or D indicates a zero matrix. */
+  /* Use the diagonal part of A00 to form A11 - A10 inv(diag(A00)) A01; a NULL A01, A10 or A11 indicates a zero matrix. */
   /* TODO: Perhaps should create an appropriately-sized zero matrix of the same type as A00? */
-  if ((!B || !C) & !D) SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONGSTATE,"Cannot assemble Sp: A01, A10 and A11 are all NULL.");
+  if ((!A01 || !A10) & !A11) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot assemble Spmat: A01, A10 and A11 are all NULL.");
 
-  if (!B || !C) {
+  if (!A01 || !A10) {
     if (!preuse) {
-      ierr = MatDuplicate(D,MAT_COPY_VALUES,Spmat);CHKERRQ(ierr);
+      ierr = MatDuplicate(A11,MAT_COPY_VALUES,Spmat);CHKERRQ(ierr);
     } else {
-      ierr = MatCopy(D,*Spmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatCopy(A11,*Spmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     }
 
   } else {
     Mat         AdB,Sp;
     Vec         diag;
 
-    ierr = MatGetVecs(A,&diag,NULL);CHKERRQ(ierr);
-    ierr = MatGetDiagonal(A,diag);CHKERRQ(ierr);
+    ierr = MatGetVecs(A00,&diag,NULL);CHKERRQ(ierr);
+    ierr = MatGetDiagonal(A00,diag);CHKERRQ(ierr);
     ierr = VecReciprocal(diag);CHKERRQ(ierr);
-    ierr = MatDuplicate(B,MAT_COPY_VALUES,&AdB);CHKERRQ(ierr);
+    ierr = MatDuplicate(A01,MAT_COPY_VALUES,&AdB);CHKERRQ(ierr);
     ierr = MatDiagonalScale(AdB,diag,NULL);CHKERRQ(ierr);
     Sp       = (preuse == MAT_REUSE_MATRIX) ? *Spmat : (Mat)0;
-    ierr     = MatMatMult(C,AdB,preuse,PETSC_DEFAULT,&Sp);CHKERRQ(ierr);
-    if (!D) {
+    ierr     = MatMatMult(A10,AdB,preuse,PETSC_DEFAULT,&Sp);CHKERRQ(ierr);
+    if (!A11) {
       ierr = MatScale(Sp,-1.0);CHKERRQ(ierr);
     } else {
-      ierr     = MatAYPX(Sp,-1,D,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr     = MatAYPX(Sp,-1,A11,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     }
     *Spmat    = Sp;
     ierr     = MatDestroy(&AdB);CHKERRQ(ierr);
@@ -613,7 +636,7 @@ PetscErrorCode  MatSchurComplementGetPmat_Basic(Mat S,MatReuse preuse,Mat *Spmat
 
   ierr = MatSchurComplementGetSubmatrices(S,&A,NULL,&B,&C,&D);CHKERRQ(ierr);
   if (!A) SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONGSTATE,"Schur complement component matrices unset");
-  ierr = MatCreateSchurComplementPmat_Private(A,B,C,D,preuse,Spmat);CHKERRQ(ierr);
+  ierr = MatCreateSchurComplementPmat(A,B,C,D,preuse,Spmat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -625,7 +648,7 @@ PetscErrorCode  MatSchurComplementGetPmat_Basic(Mat S,MatReuse preuse,Mat *Spmat
     Collective on Mat
 
     Input Parameters:
-+   S      - a matrix obtained with MatCreateSchurComplement() (or equivalent) and implementing the action of A11 - A10 ksp(A00,Ap00) A01
++   S      - matrix obtained with MatCreateSchurComplement() (or equivalent) and implementing the action of A11 - A10 ksp(A00,Ap00) A01
 -   preuse - MAT_INITIAL_MATRIX for a new Sp, or MAT_REUSE_MATRIX to reuse an existing Sp, or MAT_IGNORE_MATRIX to put nothing in Sp
 
     Output Parameter:

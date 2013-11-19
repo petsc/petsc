@@ -599,6 +599,7 @@ PETSC_EXTERN PetscErrorCode MatSchurComplementUpdate(Mat,Mat,Mat,Mat,Mat,Mat,Mat
 PETSC_EXTERN PetscErrorCode MatSchurComplementGetSubmatrices(Mat,Mat*,Mat*,Mat*,Mat*,Mat*);
 PETSC_EXTERN PetscErrorCode MatSchurComplementGetPmat(Mat,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetSchurComplement(Mat,IS,IS,IS,IS,MatReuse,Mat *,MatReuse,Mat *);
+PETSC_EXTERN PetscErrorCode MatCreateSchurComplementPmat(Mat,Mat,Mat,Mat,MatReuse,Mat*);
 
 PETSC_EXTERN PetscErrorCode KSPSetDM(KSP,DM);
 PETSC_EXTERN PetscErrorCode KSPSetDMActive(KSP,PetscBool );
