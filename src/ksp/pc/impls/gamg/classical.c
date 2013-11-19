@@ -11,7 +11,7 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGClassicalSetType"
-/*@
+/*@C
    PCGAMGClassicalSetType - Sets the type of classical interpolation to use
 
    Collective on PC
@@ -733,7 +733,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, const Mat A, const Ma
     } else {
       cid = -1;
     }
-    c_scalar = (PetscScalar)cid;
+    c_scalar = *(PetscScalar*)&cid;
     c_indx = fs+i;
     ierr = VecSetValues(v,1,&c_indx,&c_scalar,INSERT_VALUES);CHKERRQ(ierr);
   }
@@ -751,19 +751,19 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, const Mat A, const Ma
       li = gidx[i] - fs;
       lsparse[li] = 0;
       gsparse[li] = 0;
-      cid = (PetscInt)lcid[i];
+      cid = *(PetscInt*)&(lcid[i]);
       if (cid >= 0) {
         lsparse[li] = 1;
       } else {
         for (j=0;j<ncols;j++) {
-          if ((PetscInt)lcid[icol[j]] >= 0) {
+          if (*(PetscInt*)&(lcid[icol[j]]) >= 0) {
             pcontrib[icol[j]] = 1.;
           } else {
             ci = icol[j];
             ierr = MatRestoreRow(lA[0],i,&ncols,&icol,NULL);CHKERRQ(ierr);
             ierr = MatGetRow(lA[0],ci,&ncols,&icol,NULL);CHKERRQ(ierr);
             for (k=0;k<ncols;k++) {
-              if ((PetscInt)lcid[icol[k]] >= 0) {
+              if (*(PetscInt*)&(lcid[icol[k]]) >= 0) {
                 pcontrib[icol[k]] = 1.;
               }
             }
@@ -772,8 +772,8 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, const Mat A, const Ma
           }
         }
         for (j=0;j<ncols;j++) {
-          if (lcid[icol[j]] >= 0 && pcontrib[icol[j]] != 0.) {
-            lni = (PetscInt)lcid[icol[j]];
+          if (*(PetscInt*)&(lcid[icol[j]]) >= 0 && pcontrib[icol[j]] != 0.) {
+            lni = *(PetscInt*)&(lcid[icol[j]]);
             if (lni >= cs && lni < ce) {
               lsparse[li]++;
             } else {
@@ -785,8 +785,8 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, const Mat A, const Ma
             ierr = MatRestoreRow(lA[0],i,&ncols,&icol,NULL);CHKERRQ(ierr);
             ierr = MatGetRow(lA[0],ci,&ncols,&icol,NULL);CHKERRQ(ierr);
             for (k=0;k<ncols;k++) {
-              if (lcid[icol[k]] >= 0 && pcontrib[icol[k]] != 0.) {
-                lni = (PetscInt)lcid[icol[k]];
+              if (*(PetscInt*)&(lcid[icol[k]]) >= 0 && pcontrib[icol[k]] != 0.) {
+                lni = *(PetscInt*)&(lcid[icol[k]]);
                 if (lni >= cs && lni < ce) {
                   lsparse[li]++;
                 } else {
@@ -817,7 +817,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, const Mat A, const Ma
     if (gidx[i] >= fs && gidx[i] < fe) {
       li = gidx[i] - fs;
       pncols=0;
-      cid = (PetscInt)lcid[i];
+      cid = *(PetscInt*)&(lcid[i]);
       if (cid >= 0) {
         pncols = 1;
         picol[0] = cid;
@@ -826,7 +826,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, const Mat A, const Ma
         ierr = MatGetRow(lA[0],i,&ncols,&icol,&vcol);CHKERRQ(ierr);
         for (j=0;j<ncols;j++) {
           pentry = vcol[j];
-          if ((PetscInt)lcid[icol[j]] >= 0) {
+          if (*(PetscInt*)&(lcid[icol[j]]) >= 0) {
             /* coarse neighbor */
             pcontrib[icol[j]] += pentry;
           } else if (icol[j] != i) {
@@ -839,19 +839,19 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, const Mat A, const Ma
             jdiag = 0.;
             for (k=0;k<ncols;k++) {
               if (ci == icol[k]) {
-                jdiag = vcol[k];
+                jdiag = PetscRealPart(vcol[k]);
               }
             }
             for (k=0;k<ncols;k++) {
-              if ((PetscInt)lcid[icol[k]] >= 0 && jdiag*vcol[k] < 0.) {
+              if (*(PetscInt*)&(lcid[icol[k]]) >= 0 && jdiag*PetscRealPart(vcol[k]) < 0.) {
                 pjentry = vcol[k];
-                jwttotal += pjentry;
+                jwttotal += PetscRealPart(pjentry);
               }
             }
             if (jwttotal != 0.) {
-              jwttotal = vi/jwttotal;
+              jwttotal = PetscRealPart(vi)/jwttotal;
               for (k=0;k<ncols;k++) {
-                if ((PetscInt)lcid[icol[k]] >= 0 && jdiag*vcol[k] < 0.) {
+                if (*(PetscInt*)&(lcid[icol[k]]) >= 0 && jdiag*PetscRealPart(vcol[k]) < 0.) {
                   pjentry = vcol[k]*jwttotal;
                   pcontrib[icol[k]] += pjentry;
                 }
@@ -868,10 +868,10 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, const Mat A, const Ma
         if (diag != 0.) {
           diag = 1./diag;
           for (j=0;j<ncols;j++) {
-            if ((PetscInt)lcid[icol[j]] >= 0 && pcontrib[icol[j]] != 0.) {
+            if (*(PetscInt*)&(lcid[icol[j]]) >= 0 && pcontrib[icol[j]] != 0.) {
               /* the neighbor is a coarse node */
               if (PetscAbsScalar(pcontrib[icol[j]]) > 0.0) {
-                lni = (PetscInt)lcid[icol[j]];
+                lni = *(PetscInt*)&(lcid[icol[j]]);
                 pvcol[pncols] = -pcontrib[icol[j]]*diag;
                 picol[pncols] = lni;
                 pncols++;
@@ -883,9 +883,9 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, const Mat A, const Ma
               ierr = MatRestoreRow(lA[0],i,&ncols,&icol,&vcol);CHKERRQ(ierr);
               ierr = MatGetRow(lA[0],ci,&ncols,&icol,&vcol);CHKERRQ(ierr);
               for (k=0;k<ncols;k++) {
-                if ((PetscInt)lcid[icol[k]] >= 0 && pcontrib[icol[k]] != 0.) {
+                if (*(PetscInt*)&(lcid[icol[k]]) >= 0 && pcontrib[icol[k]] != 0.) {
                   if (PetscAbsScalar(pcontrib[icol[k]]) > 0.0) {
-                    lni = (PetscInt)lcid[icol[k]];
+                    lni = *(PetscInt*)&(lcid[icol[k]]);
                     pvcol[pncols] = -pcontrib[icol[k]]*diag;
                     picol[pncols] = lni;
                     pncols++;
@@ -1028,8 +1028,8 @@ PetscErrorCode PCGAMGClassicalInitializePackage(void)
 
   PetscFunctionBegin;
   if (PCGAMGClassicalPackageInitialized) PetscFunctionReturn(0);
-  ierr = PetscFunctionListAdd(&PCGAMGClassicalProlongatorList,"direct",PCGAMGProlongator_Classical_Direct);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&PCGAMGClassicalProlongatorList,"standard",PCGAMGProlongator_Classical_Standard);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PCGAMGClassicalProlongatorList,PCGAMGCLASSICALDIRECT,PCGAMGProlongator_Classical_Direct);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PCGAMGClassicalProlongatorList,PCGAMGCLASSICALSTANDARD,PCGAMGProlongator_Classical_Standard);CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(PCGAMGClassicalFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1072,5 +1072,6 @@ PetscErrorCode  PCCreateGAMG_Classical(PC pc)
   pc_gamg->ops->createdefaultdata = PCGAMGSetData_Classical;
   pc_gamg_classical->interp_threshold = 0.2;
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGClassicalSetType_C",PCGAMGClassicalSetType_GAMG);CHKERRQ(ierr);
+  ierr = PCGAMGClassicalSetType(pc,PCGAMGCLASSICALSTANDARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
