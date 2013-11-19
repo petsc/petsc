@@ -7811,7 +7811,7 @@ Data is associated to a mesh using the PetscSection object. A PetscSection can b
 PetscLayout, in the same way that a fiber bundle is a generalization of the normal Euclidean basis used in linear
 algebra. With PetscLayout, we associate a unit vector ($e_i$) with every point in the space, and just divide up points
 between processes. Using PetscSection, we can associate a set of dofs, a small space $\{e_k\}$, with every point, and
-though our points must be contiguous liek PetscLayout, they can be in any range $[\mathrm{pStart}, \mathrm{pEnd})$.
+though our points must be contiguous like PetscLayout, they can be in any range $[\mathrm{pStart}, \mathrm{pEnd})$.
 
 The sequence for setting up any PetscSection is the following:
 \begin{enumerate}
