@@ -40,7 +40,7 @@ typedef struct {
   moab::Range             *vlocal, *vowned, *vghost;
   moab::Range             *elocal, *eghost;
   moab::EntityHandle      fileset;
-  moab::Range             *bndyvtx,*bndyfaces;
+  moab::Range             *bndyvtx,*bndyfaces,*bndyelems;
 
   PetscInt                nfields;
   const char**            fields;

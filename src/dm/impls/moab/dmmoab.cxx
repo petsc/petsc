@@ -26,6 +26,7 @@ PetscErrorCode DMDestroy_Moab(DM dm)
   delete dmmoab->eghost;
   delete dmmoab->bndyvtx;
   delete dmmoab->bndyfaces;
+  delete dmmoab->bndyelems;
 
   ierr = PetscFree(dmmoab->gsindices);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&dmmoab->ltog_sendrecv);CHKERRQ(ierr);
@@ -47,6 +48,8 @@ PetscErrorCode DMSetUp_Moab(DM dm)
   DM_Moab                *dmmoab = (DM_Moab*)dm->data;
   PetscInt                totsize,local_min,local_max,global_min;
   PetscSection            section;
+
+  moab::Range adj;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -121,7 +124,7 @@ PetscErrorCode DMSetUp_Moab(DM dm)
 
     /* find out the local and global minima of GLOBAL_ID */
     local_min=local_max=dmmoab->gsindices[0];
-    for (i=1; i<totsize; ++i) {
+    for (i=0; i<totsize; ++i) {
 //      if (dmmoab->pcomm->rank())
 //        PetscPrintf(PETSC_COMM_SELF, "[%D] gsindices[%D] = %D\n", dmmoab->pcomm->rank(), i, dmmoab->gsindices[i]);
       if(local_min>dmmoab->gsindices[i]) local_min=dmmoab->gsindices[i];
@@ -147,9 +150,9 @@ PetscErrorCode DMSetUp_Moab(DM dm)
           ierr = PetscSectionSetFieldOffset(section, locgid, i, (locgid-global_min)*dmmoab->nfields);
         }
         else {
-          ierr = PetscSectionSetFieldDof(section, locgid, i, totsize*i+locgid-global_min);CHKERRQ(ierr);
-          ierr = PetscSectionSetFieldOffset(section, locgid, i, i*totsize);
-//          PetscPrintf(PETSC_COMM_SELF, "[%D] Local_GID = %D, FDOF = %D, OFF = %D.\n", dmmoab->pcomm->rank(), locgid, totsize*i+locgid-global_min, totsize );
+          ierr = PetscSectionSetFieldDof(section, locgid, i, dmmoab->n*i+locgid-global_min);CHKERRQ(ierr);
+          ierr = PetscSectionSetFieldOffset(section, locgid, i, i*dmmoab->n);
+          PetscPrintf(PETSC_COMM_SELF, "[%D] Local_GID = %D, FDOF = %D, OFF = %D.\n", dmmoab->pcomm->rank(), locgid, dmmoab->n*i+locgid-global_min, i*dmmoab->n );
         }
       }
       ierr = PetscSectionSetDof(section, locgid, dmmoab->nfields);CHKERRQ(ierr);
@@ -190,9 +193,29 @@ PetscErrorCode DMSetUp_Moab(DM dm)
     moab::Skinner skinner(dmmoab->mbiface);
     dmmoab->bndyvtx = new moab::Range();
     dmmoab->bndyfaces = new moab::Range();
-    merr = skinner.find_skin(dmmoab->fileset, *dmmoab->elocal, true, *dmmoab->bndyvtx);MBERRNM(merr); // 'true' param indicates we want vertices back, not faces
-    merr = skinner.find_skin(dmmoab->fileset, *dmmoab->elocal, false, *dmmoab->bndyfaces);MBERRNM(merr); // 'false' param indicates we want faces back, not vertices
-    PetscInfo2(dm, "Found %D boundary vertices and %D faces.\n", dmmoab->bndyvtx->size(), dmmoab->bndyvtx->size());
+    dmmoab->bndyelems = new moab::Range();
+    merr = skinner.find_skin(dmmoab->fileset, *dmmoab->elocal, false, *dmmoab->bndyfaces, NULL, false, true, false, false);MBERRNM(merr); // 'false' param indicates we want faces back, not vertices
+//    merr = skinner.find_skin(dmmoab->fileset, *dmmoab->elocal, true, *dmmoab->bndyvtx, NULL, true, true, false, false);MBERRNM(merr); // 'true' param indicates we want vertices back, not faces
+
+    if (dmmoab->dim == 3) {
+      // get the edges from faces and then do the same if needed
+    }
+
+    merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
+    merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces,PSTATUS_SHARED,PSTATUS_NOT);MBERRNM(merr);
+//    merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces,PSTATUS_MULTISHARED,PSTATUS_NOT);MBERRNM(merr);
+
+    merr = dmmoab->mbiface->get_connectivity(*dmmoab->bndyfaces, *dmmoab->bndyvtx, false);MBERRNM(ierr);
+    merr = dmmoab->mbiface->get_adjacencies(*dmmoab->bndyfaces, dmmoab->dim, false, *dmmoab->bndyelems, moab::Interface::UNION);MBERRNM(ierr);
+
+    dmmoab->bndyfaces->print(0);
+    dmmoab->bndyvtx->print(0);
+    dmmoab->bndyelems->print(0);
+
+//    merr = skinner.find_geometric_skin(dmmoab->fileset, *dmmoab->bndyelems, dmmoab->dim);MBERRV(dmmoab->mbiface,merr);
+//    merr = skinner.find_skin(dmmoab->fileset, *dmmoab->elocal, dmmoab->bndyvtx, dmmoab->bndyfaces, dmmoab->bndyelems, true, true);MBERRNM(merr);
+
+    PetscInfo3(dm, "Found %D boundary vertices, %D boundary faces and %D boundary elements.\n", dmmoab->bndyvtx->size(), dmmoab->bndyvtx->size(), dmmoab->bndyelems->size());
   }
   PetscFunctionReturn(0);
 }
@@ -782,8 +805,47 @@ PetscErrorCode DMMoabGetElementConnectivity(DM dm,moab::EntityHandle ehandle,Pet
 
 
 #undef __FUNCT__
+#define __FUNCT__ "DMMoabIsEntityOnBoundary"
+PetscErrorCode DMMoabIsEntityOnBoundary(DM dm,const moab::EntityHandle ent,PetscBool* ent_on_boundary)
+{
+  moab::EntityType etype;
+  DM_Moab         *dmmoab;
+  PetscInt         edim;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(ent_on_boundary,3);
+  dmmoab = (DM_Moab*)(dm)->data;
+
+  /* get the entity type and handle accordingly */
+  etype=dmmoab->mbiface->type_from_handle(ent);
+  if(etype >= moab::MBPOLYHEDRON) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Entity type on the boundary skin is invalid. EntityType = %D\n",etype);
+
+  /* get the entity dimension */
+  edim=dmmoab->mbiface->dimension_from_handle(ent);
+
+  *ent_on_boundary=PETSC_FALSE;
+  if(etype == moab::MBVERTEX && edim == 0) {
+    moab::Range::const_iterator giter = dmmoab->bndyvtx->find(ent);
+    if (giter != dmmoab->bndyvtx->end()) *ent_on_boundary=PETSC_TRUE;
+  }
+  else {
+    if (edim == dmmoab->dim) {  /* check the higher-dimensional elements first */
+      moab::Range::const_iterator geiter = dmmoab->bndyelems->find(ent);
+      if (geiter != dmmoab->bndyelems->end()) *ent_on_boundary=PETSC_TRUE;
+    }
+    else {                      /* next check the lower-dimensional faces */
+      moab::Range::const_iterator gfiter = dmmoab->bndyfaces->find(ent);
+      if (gfiter != dmmoab->bndyfaces->end()) *ent_on_boundary=PETSC_TRUE;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "DMMoabCheckBoundaryVertices"
-PetscErrorCode DMMoabCheckBoundaryVertices(DM dm,PetscInt nconn,const moab::EntityHandle *cnt,PetscBool* isbdvtx,PetscBool* elem_on_boundary)
+PetscErrorCode DMMoabCheckBoundaryVertices(DM dm,PetscInt nconn,const moab::EntityHandle *cnt,PetscBool* isbdvtx)
 {
   DM_Moab        *dmmoab;
   PetscInt       i;
@@ -794,13 +856,9 @@ PetscErrorCode DMMoabCheckBoundaryVertices(DM dm,PetscInt nconn,const moab::Enti
   PetscValidPointer(isbdvtx,4);
   dmmoab = (DM_Moab*)(dm)->data;
 
-  if (elem_on_boundary) *elem_on_boundary = PETSC_FALSE;
   for (i=0; i < nconn; ++i) {
     moab::Range::const_iterator giter = dmmoab->bndyvtx->find(cnt[i]);
-    if (giter != dmmoab->bndyvtx->end()) {
-      isbdvtx[i] = PETSC_TRUE;
-      if (elem_on_boundary) *elem_on_boundary = PETSC_TRUE;
-    }
+    if (giter != dmmoab->bndyvtx->end()) isbdvtx[i] = PETSC_TRUE;
     else isbdvtx[i] = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
@@ -809,7 +867,7 @@ PetscErrorCode DMMoabCheckBoundaryVertices(DM dm,PetscInt nconn,const moab::Enti
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetBoundaryEntities"
-PetscErrorCode DMMoabGetBoundaryEntities(DM dm,moab::Range *bdvtx,moab::Range* bdfaces)
+PetscErrorCode DMMoabGetBoundaryEntities(DM dm,moab::Range *bdvtx,moab::Range* bdfaces,moab::Range* bdelems)
 {
   DM_Moab        *dmmoab;
 
@@ -819,6 +877,7 @@ PetscErrorCode DMMoabGetBoundaryEntities(DM dm,moab::Range *bdvtx,moab::Range* b
 
   if (bdvtx)  *bdvtx = *dmmoab->bndyvtx;
   if (bdfaces)  *bdfaces = *dmmoab->bndyfaces;
+  if (bdelems)  *bdfaces = *dmmoab->bndyelems;
   PetscFunctionReturn(0);
 }
 
