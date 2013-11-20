@@ -206,7 +206,7 @@ PetscErrorCode DMSetUp_Moab(DM dm)
     moab::Skinner skinner(dmmoab->mbiface);
 
     /* get the entities on the skin - only the faces */
-    merr = skinner.find_skin(dmmoab->fileset, *dmmoab->elocal, false, bndyfaces, NULL, false, true, false, false);MBERRNM(merr); // 'false' param indicates we want faces back, not vertices
+    merr = skinner.find_skin(dmmoab->fileset, *dmmoab->elocal, false, bndyfaces, NULL, false, true, false);MBERRNM(merr); // 'false' param indicates we want faces back, not vertices
 
     /* filter all the non-owned and shared entities out of the list */
     merr = dmmoab->pcomm->filter_pstatus(bndyfaces,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
@@ -350,8 +350,8 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
     dmmoab->icreatedinstance = PETSC_FALSE;
   }
 
-  /* create a fileset to store the hierarchy of entities belonging to current DM */
-  merr = dmmoab->mbiface->create_meshset(moab::MESHSET_ORDERED, dmmoab->fileset);MBERR("Creating file set failed", merr);
+  /* by default the fileset = root set. This set stores the hierarchy of entities belonging to current DM */
+  dmmoab->fileset=0;
 
   if (!pcomm) {
     ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
