@@ -116,8 +116,12 @@ generate_section()
     echo "<tr><td class=\"desc\">" >> $OUTFILE
     echo "<a href=\"${f#$LOGDIR/}\">${f#$LOGDIR/}</a>" >> $OUTFILE
 
-    # Write number of warnings:
-    numwarnings=`grep "[Ww]arning[: ]" $f | wc -l`
+    # Write number of warnings: [greps 1,2 below are for solaris builds and 3 is for Mac]
+    numwarnings=`grep "[Ww]arning[: ]" $f \
+        | grep -v 'warning: statement not reached' \
+        | grep -v 'warning: loop not entered at top' \
+        | grep -v 'warning: no debug symbols in executable (-arch x86_64)' \
+        | wc -l`
     if [ "$numwarnings" -gt "0" ]
     then
 	  echo "</td><td class=\"yellow\">$numwarnings</td>" >> $OUTFILE
