@@ -39,6 +39,8 @@ static char help[] = "\
 #error You must have MOAB for this example. Reconfigure using --download-moab
 #endif
 
+//#define LOCAL_ASSEMBLY
+
 const int NQPTS1D=2;
 const int NQPTS=NQPTS1D*NQPTS1D;
 const int VPERE=4;
@@ -124,7 +126,7 @@ int main(int argc,char **argv)
   ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
 
   ierr = DMMoabSetFieldVector(dm, 0, x);CHKERRQ(ierr);
-  ierr = DMMoabOutput(dm, "ex4.vtk", "");CHKERRQ(ierr);
+  ierr = DMMoabOutput(dm, "ex4.h5m", "");CHKERRQ(ierr);
 
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
@@ -152,20 +154,26 @@ PetscErrorCode ComputeRho_MOAB(PetscReal coords[3], PetscReal centerRho, PetscRe
 #define __FUNCT__ "ComputeRHS_MOAB"
 PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
 {
-  UserContext*  user = (UserContext*)ptr;
-  DM            dm;
+  UserContext*      user = (UserContext*)ptr;
+  DM                dm;
 
-  PetscScalar   *array;
-  PetscInt dof_indices[VPERE];
-  PetscBool dbdry[VPERE];
-  PetscScalar vpos[VPERE*3],quadrature[NQPTS*3],jxw[NQPTS];
-  PetscInt i,q,num_conn;
+#ifdef LOCAL_ASSEMBLY
+  PetscScalar       *array;
+#endif
+  PetscInt          dof_indices[VPERE];
+  PetscBool         dbdry[VPERE];
+  PetscScalar       vpos[VPERE*3],quadrature[NQPTS*3],jxw[NQPTS];
+  PetscInt          i,q,num_conn;
   const moab::EntityHandle *connect;
-  moab::Range elocal,vlocal,bdvtx;
+  moab::Range       elocal;
   moab::Interface*  mbImpl;
-  PetscScalar phi[VPERE*NQPTS];
+  PetscScalar       phi[VPERE*NQPTS],localv[VPERE];
   PetscBool         elem_on_boundary;
-  PetscErrorCode   ierr;
+  PetscErrorCode    ierr;
+
+  moab::ErrorCode merr;
+  moab::Tag idtag;
+  PetscInt egid,rank;
 
   PetscFunctionBegin;
   ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
@@ -173,19 +181,24 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
   /* reset the RHS */
   ierr = VecSet(b, 0.0);CHKERRQ(ierr);
 
+#ifdef LOCAL_ASSEMBLY
   /* Get pointers to vector data 
       -- get the local representation of the arrays from DM */
   ierr = DMMoabVecGetArray(dm, b, &array);CHKERRQ(ierr);
+#endif
 
   /* get the essential MOAB mesh related quantities needed for FEM assembly */
   ierr = DMMoabGetInterface(dm, &mbImpl);CHKERRQ(ierr);
-  ierr = DMMoabGetLocalVertices(dm, &vlocal, PETSC_NULL);CHKERRQ(ierr);
   ierr = DMMoabGetLocalElements(dm, &elocal);CHKERRQ(ierr);
-  ierr = DMMoabGetBoundaryEntities(dm, &bdvtx, PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
+  ierr = DMMoabGetLocalToGlobalTag(dm, &idtag);CHKERRQ(ierr); 
 
   /* loop over local elements */
   for(moab::Range::iterator iter = elocal.begin(); iter != elocal.end(); iter++) {
     const moab::EntityHandle ehandle = *iter;
+
+    ierr = PetscMemzero(localv,sizeof(PetscScalar)*VPERE);CHKERRQ(ierr);
 
     // Get connectivity information:
     ierr = DMMoabGetElementConnectivity(dm, ehandle, &num_conn, &connect);CHKERRQ(ierr);
@@ -194,41 +207,69 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
     /* compute the mid-point of the element and use a 1-point lumped quadrature */
     ierr = DMMoabGetVertexCoordinates(dm,num_conn,connect,vpos);CHKERRQ(ierr);
 
-    ierr = DMMoabGetFieldDofs(dm, num_conn, connect, 0, dof_indices);CHKERRQ(ierr);
-    
+    /* get the global DOF number to appropriately set the element contribution in the RHS vector */
+#ifdef LOCAL_ASSEMBLY
+    ierr = DMMoabGetLocalFieldDofs(dm, num_conn, connect, 0, dof_indices);CHKERRQ(ierr);
+#else
+    ierr = DMMoabGetFieldDofs(dm, num_conn, connect, 0, dof_indices);CHKERRQ(ierr);    
+#endif
+
+    /* compute the quadrature points transformed to the physical space */
     ierr = ComputeQuadraturePointsPhysical(vpos, quadrature, jxw);CHKERRQ(ierr);
 
     /* compute the basis functions and the derivatives wrt x and y directions */
     ierr = Compute_Quad4_Basis(vpos, NQPTS, quadrature, phi,  0, 0);CHKERRQ(ierr);
+
+    merr = mbImpl->tag_get_data(idtag,&ehandle,1,&egid);MBERRNM(merr);
+//    PetscPrintf(PETSC_COMM_SELF, "[%D]: ASSEMBLING ELEMENT %D; DOFS = [%D, %D, %D, %D]\n", rank, egid, dof_indices[0], dof_indices[1], dof_indices[2], dof_indices[3]);
 
     /* Compute function over the locally owned part of the grid */
     for (q=0; q<NQPTS; ++q) {
       const PetscScalar xx=(quadrature[3*q]-user->xref)*(quadrature[3*q]-user->xref);
       const PetscScalar yy=(quadrature[3*q+1]-user->yref)*(quadrature[3*q+1]-user->yref);
       for (i=0; i < VPERE; ++i) {
-        array[dof_indices[i]] += jxw[q] * phi[q*VPERE+i] * PetscExpScalar(-(xx+yy)/user->nu);
+        localv[i] += jxw[q] * phi[q*VPERE+i] * PetscExpScalar(-(xx+yy)/user->nu);
       }
+//      PetscPrintf(PETSC_COMM_SELF, "[%D]: Quadrature %D: Phi [%G, %G, %G, %G]\n", rank, q, phi[q*VPERE], phi[q*VPERE+1], phi[q*VPERE+2], phi[q*VPERE+3]);
+//      PetscPrintf(PETSC_COMM_SELF, "[%D]: Quadrature %D: JxW [%G]\n", rank, q, jxw[q]);
+
+//      PetscPrintf(PETSC_COMM_SELF, "[%D]: Quadrature %D: [%G, %G] - %D Contribution %G\n", rank, q, xx, yy, dof_indices[0], array[dof_indices[0]]);
     }
 
-    /* check if element is on the bundary */
-    ierr = DMMoabCheckBoundaryVertices(dm,num_conn,connect,dbdry,&elem_on_boundary);CHKERRQ(ierr);
-    
+//    PetscPrintf(PETSC_COMM_SELF, "[%D]: Element %D:  array values\n", rank, egid);
+//    for (i=0; i < 9; ++i)
+//      PetscPrintf(PETSC_COMM_SELF, "[%D]:  %D \t %G\n", rank, i, array[i]);
+
+    /* check if element is on the boundary */
+    ierr = DMMoabIsEntityOnBoundary(dm,ehandle,&elem_on_boundary);CHKERRQ(ierr);
+
     /* apply dirichlet boundary conditions */
     if (elem_on_boundary && user->bcType == DIRICHLET) {
+
+      /* get the list of nodes on boundary so that we can enforce dirichlet conditions strongly */
+      ierr = DMMoabCheckBoundaryVertices(dm,num_conn,connect,dbdry);CHKERRQ(ierr);
+
       for (i=0; i < VPERE; ++i) {
         if (dbdry[i]) {  /* dirichlet node */
           /* think about strongly imposing dirichlet */
-          const PetscScalar xx=(vpos[3*q]-user->xref)*(vpos[3*q]-user->xref);
-          const PetscScalar yy=(vpos[3*q+1]-user->yref)*(vpos[3*q+1]-user->yref);
-          array[dof_indices[i]] = PetscExpScalar(-(xx+yy)/user->nu);
+//          PetscPrintf(PETSC_COMM_SELF, "[%D]: Found boundary node %D\n", rank, dof_indices[i]);
+
+          const PetscScalar xx=(vpos[3*i]-user->xref)*(vpos[3*i]-user->xref);
+          const PetscScalar yy=(vpos[3*i+1]-user->yref)*(vpos[3*i+1]-user->yref);
+          localv[i] = PetscExpScalar(-(xx+yy)/user->nu);
         }
       }
     }
 
-  }
+#ifdef LOCAL_ASSEMBLY
+    /* set the values directly into appropriate locations. Can alternately use VecSetValues */
+    for (i=0; i < VPERE; ++i)
+      array[dof_indices[i]] += localv[i];
+#else
+    ierr = VecSetValues(b, VPERE, dof_indices, localv, ADD_VALUES);CHKERRQ(ierr);
+#endif
 
-  /* Restore vectors */
-  ierr = DMMoabVecRestoreArray(dm, b, &array);CHKERRQ(ierr);
+  }
 
   /* force right hand side to be consistent for singular matrix */
   /* note this is really a hack, normally the model would provide you with a consistent right handside */
@@ -239,6 +280,15 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
     ierr = MatNullSpaceRemove(nullspace,b);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
   }
+
+#ifdef LOCAL_ASSEMBLY
+  /* Restore vectors */
+  ierr = DMMoabVecRestoreArray(dm, b, &array);CHKERRQ(ierr);
+#else
+  ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
+#endif
+
   PetscFunctionReturn(0);
 }
 
@@ -255,7 +305,7 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,MatStructure *str,void *
   PetscScalar vpos[VPERE*3],quadrature[NQPTS*3],jxw[NQPTS];
   PetscBool dbdry[VPERE];
   const moab::EntityHandle *connect;
-  moab::Range elocal,vlocal,bdvtx;;
+  moab::Range elocal;
   moab::Interface*  mbImpl;
   PetscBool         elem_on_boundary;
   PetscScalar  array[VPERE*VPERE];
@@ -268,9 +318,7 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,MatStructure *str,void *
 
   /* get the essential MOAB mesh related quantities needed for FEM assembly */  
   ierr = DMMoabGetInterface(dm, &mbImpl);CHKERRQ(ierr);
-  ierr = DMMoabGetLocalVertices(dm, &vlocal, PETSC_NULL);CHKERRQ(ierr);
   ierr = DMMoabGetLocalElements(dm, &elocal);CHKERRQ(ierr);
-  ierr = DMMoabGetBoundaryEntities(dm, &bdvtx, PETSC_NULL);CHKERRQ(ierr);
 
   /* loop over local elements */
   for(moab::Range::iterator iter = elocal.begin(); iter != elocal.end(); iter++) {
@@ -283,17 +331,18 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,MatStructure *str,void *
     /* compute the mid-point of the element and use a 1-point lumped quadrature */
     ierr = DMMoabGetVertexCoordinates(dm,num_conn,connect,vpos);CHKERRQ(ierr);
 
+    /* get the global DOF number to appropriately set the element contribution in the RHS vector */
     ierr = DMMoabGetFieldDofs(dm, num_conn, connect, 0, dof_indices);CHKERRQ(ierr);
 
+    /* compute the quadrature points transformed to the physical space */
     ierr = ComputeQuadraturePointsPhysical(vpos, quadrature, jxw);CHKERRQ(ierr);
 
-    /* compute the inhomogeneous diffusion coefficient at the first quadrature point 
-        -- for large spatial variations, embed this property evaluation inside quadrature loop
-    */
-    ierr  = ComputeRho_MOAB(quadrature, user->rho, &rho);CHKERRQ(ierr);
- 
     /* compute the basis functions and the derivatives wrt x and y directions */
     ierr = Compute_Quad4_Basis(vpos, NQPTS, quadrature, phi,  dphidx, dphidy);CHKERRQ(ierr);
+
+    /* compute the inhomogeneous diffusion coefficient at the first quadrature point 
+        -- for large spatial variations, embed this property evaluation inside quadrature loop */
+    ierr  = ComputeRho_MOAB(quadrature, user->rho, &rho);CHKERRQ(ierr);
 
     ierr = PetscMemzero(array, VPERE*VPERE*sizeof(PetscScalar));
 
@@ -302,16 +351,20 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,MatStructure *str,void *
       for (i=0; i < VPERE; ++i) {
         for (j=0; j < VPERE; ++j) {
           array[i*VPERE+j] += jxw[q] * rho * ( dphidx[q*VPERE+i]*dphidx[q*VPERE+j] + 
-                                                              dphidy[q*VPERE+i]*dphidy[q*VPERE+j] );
+                                               dphidy[q*VPERE+i]*dphidy[q*VPERE+j] );
         }
       }
     }
 
-    /* check if element is on the bundary */
-    ierr = DMMoabCheckBoundaryVertices(dm,num_conn,connect,dbdry,&elem_on_boundary);CHKERRQ(ierr);
+    /* check if element is on the boundary */
+    ierr = DMMoabIsEntityOnBoundary(dm,ehandle,&elem_on_boundary);CHKERRQ(ierr);
 
     /* apply dirichlet boundary conditions */
     if (elem_on_boundary && user->bcType == DIRICHLET) {
+
+      /* get the list of nodes on boundary so that we can enforce dirichlet conditions strongly */
+      ierr = DMMoabCheckBoundaryVertices(dm,num_conn,connect,dbdry);CHKERRQ(ierr);
+
       for (i=0; i < VPERE; ++i) {
         if (dbdry[i]) {  /* dirichlet node */
           /* think about strongly imposing dirichlet */
@@ -335,6 +388,7 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,MatStructure *str,void *
 
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
   if (user->bcType == NEUMANN) {
     MatNullSpace nullspace;
 
