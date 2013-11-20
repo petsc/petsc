@@ -37,6 +37,10 @@ typedef struct {
   VecScatter              ltog_sendrecv;
   moab::Range             *vlocal, *vowned, *vghost;
   moab::Range             *elocal, *eghost;
+  moab::EntityHandle      fileset;
+
+  PetscInt                nfields;
+  const char**            fields;
 } DM_Moab;
 
 
