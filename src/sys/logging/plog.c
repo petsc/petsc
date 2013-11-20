@@ -29,11 +29,6 @@ PetscErrorCode PetscLogObjectMemory(PetscObject p,PetscLogDouble m)
 
 PetscLogEvent PETSC_LARGEST_EVENT = PETSC_EVENT;
 
-#if defined(PETSC_CLANGUAGE_CXX)
-std::map<std::string,PETSc::LogEvent> PETSc::Log::event_registry;
-std::map<std::string,PETSc::LogStage> PETSc::Log::stage_registry;
-#endif
-
 #if defined(PETSC_USE_LOG)
 #include <petscmachineinfo.h>
 #include <petscconfiginfo.h>
