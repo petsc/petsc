@@ -34,6 +34,7 @@ typedef struct {
   PetscBool               icreatedinstance;       /* true if DM created moab instance internally, will destroy instance in DMDestroy */
   PetscInt                *gsindices;
   PetscInt                *gidmap,*lidmap,*lmap,*lgmap;
+  PetscInt                vstart,vend;
 
   moab::ParallelComm      *pcomm;
   moab::Interface         *mbiface;
@@ -42,9 +43,8 @@ typedef struct {
   VecScatter              ltog_sendrecv;
   moab::Range             *vlocal, *vowned, *vghost;
   moab::Range             *elocal, *eghost;
+  moab::Range             *bndyvtx,*bndyfaces,*bndyelems;
   moab::EntityHandle      fileset;
-
-  PetscBool               *isbndyvtx,*isbndyfaces,*isbndyelems;
 
   PetscInt                nfields;
   const char**            fields;
