@@ -305,7 +305,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, const PetscReal*
   else if(locnpts+ghnpts != (int) ownedvtx.size())
     SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Created the wrong number of vertices! (%D!=%D)",locnpts+ghnpts,ownedvtx.size());    
   else
-    PetscInfo2(*dm, "Created %D elements and %D vertices.\n", ownedelms.size(), ownedvtx.size());
+    PetscInfo2(NULL, "Created %D elements and %D vertices.\n", ownedelms.size(), ownedvtx.size());
 
   /* lets create some sets */
   merr = mbiface->tag_get_handle(GEOM_DIMENSION_TAG_NAME, 1, moab::MB_TYPE_INTEGER, geom_tag, moab::MB_TAG_SPARSE|moab::MB_TAG_CREAT);MBERRNM(merr);
@@ -363,10 +363,10 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, const PetscReal*
   merr = mbiface->get_entities_by_type(dmmoab->fileset,etype,ownedelms,true);MBERRNM(merr);
   merr = pcomm->resolve_shared_ents(dmmoab->fileset,ownedelms,dim,dim-1,NULL,&id_tag);MBERRV(mbiface,merr);
 
-  /* Reassign global IDs on all entities. */
-  merr = pcomm->assign_global_ids(dmmoab->fileset,dim,1,true,true,true);MBERRNM(merr);
-
   merr = pcomm->exchange_ghost_cells(dim,0,user_nghost,dim,true,false,&dmmoab->fileset);MBERRV(mbiface,merr);
+
+  /* Reassign global IDs on all entities. */
+  merr = pcomm->assign_global_ids(dmmoab->fileset,dim,1,false,true,false);MBERRNM(merr);
 
   /* Everything is set up, now just do a tag exchange to update tags
      on all of the ghost vertexes */
@@ -471,7 +471,7 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm,PetscInt dim,const char* filenam
 
   PetscInfo3(*dm, "MOAB file '%s' was successfully loaded. Found %D vertices and %D elements.\n", filename, verts.size(), elems.size());
 
-#if 1
+#if 0
   std::stringstream sstr;
   sstr << "test_" << pcomm->rank() << ".vtk";
   mbiface->write_mesh(sstr.str().c_str());
