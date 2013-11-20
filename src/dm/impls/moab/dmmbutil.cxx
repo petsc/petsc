@@ -10,7 +10,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabComputeDomainBounds_Private"
-PetscErrorCode DMMoabComputeDomainBounds_Private(moab::ParallelComm* pcomm, PetscInt dim, PetscInt neleglob, PetscInt *ise)
+static PetscErrorCode DMMoabComputeDomainBounds_Private(moab::ParallelComm* pcomm, PetscInt dim, PetscInt neleglob, PetscInt *ise)
 {
   PetscInt size,rank;
   PetscInt fraction,remainder;
@@ -46,14 +46,18 @@ PetscErrorCode DMMoabComputeDomainBounds_Private(moab::ParallelComm* pcomm, Pets
   PetscFunctionReturn(0);
 }
 
-static void set_structured_coordinates(PetscInt i, PetscInt j, PetscInt k, PetscReal hx, PetscReal hy, PetscReal hz, PetscInt vcount, std::vector<double*>& vcoords)
+#undef __FUNCT__
+#define __FUNCT__ "DMMoab_SetStructuredCoords_Private"
+static void DMMoab_SetStructuredCoords_Private(PetscInt i, PetscInt j, PetscInt k, PetscReal hx, PetscReal hy, PetscReal hz, PetscInt vcount, std::vector<double*>& vcoords)
 {
   vcoords[0][vcount] = i*hx;
   vcoords[1][vcount] = j*hy;
   vcoords[2][vcount] = k*hz;
 }
 
-static void set_element_connectivity(PetscInt dim, moab::EntityType etype, PetscInt offset, PetscInt nele, PetscInt i, PetscInt j, PetscInt k, PetscInt vfirst, moab::EntityHandle *connectivity)
+#undef __FUNCT__
+#define __FUNCT__ "DMMoab_SetElementConnectivity_Private"
+static void DMMoab_SetElementConnectivity_Private(PetscInt dim, moab::EntityType etype, PetscInt offset, PetscInt nele, PetscInt i, PetscInt j, PetscInt k, PetscInt vfirst, moab::EntityHandle *connectivity)
 {
   std::vector<int>    subent_conn(pow(2,dim));  /* only linear edge, quad, hex supported now */
 
@@ -86,6 +90,26 @@ static void set_element_connectivity(PetscInt dim, moab::EntityType etype, Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabCreateBoxMesh"
+/*@
+  DMMoabCreateBoxMesh - Creates a mesh on the tensor product (box) of intervals with user specified bounds.
+
+  Collective on MPI_Comm
+
+  Input Parameters:
++ comm - The communicator for the DM object
+. dim - The spatial dimension
+- bounds - The bounds of the box specified with [x-left, x-right, y-bottom, y-top, z-bottom, z-top] depending on the spatial dimension
+- nele - The number of discrete elements in each direction
+- user_nghost - The number of ghosted layers needed in the partitioned mesh
+
+  Output Parameter:
+. dm  - The DM object
+
+  Level: beginner
+
+.keywords: DM, create
+.seealso: DMSetType(), DMCreate(), DMMoabLoadFromFile()
+@*/
 PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, const PetscReal* bounds, PetscInt nele, PetscInt user_nghost, DM *dm)
 {
   PetscErrorCode  ierr;
@@ -211,7 +235,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, const PetscReal*
   for (k = ise[4]; k <= ise[5]; k++) {
     for (j = ise[2]; j <= ise[3]; j++) {
       for (i = ise[0]; i <= ise[1]; i++, vcount++) {
-        set_structured_coordinates(i,j,k,hx,hy,hz,vcount,vcoords);
+        DMMoab_SetStructuredCoords_Private(i,j,k,hx,hy,hz,vcount,vcoords);
         vgid[vcount] = (k*npts+j)*npts+i+1;
       }
     }
@@ -222,7 +246,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, const PetscReal*
     for (k = (dim==3?ise[4]-nghost:ise[4]); k <= (dim==3?ise[4]-1:ise[5]); k++) {
       for (j = (dim==2?ise[2]-nghost:ise[2]); j <= (dim==2?ise[2]-1:ise[3]); j++) {
         for (i = (dim>1?ise[0]:ise[0]-nghost); i <= (dim>1?ise[1]:ise[0]-1); i++, vcount++) {
-          set_structured_coordinates(i,j,k,hx,hy,hz,vcount,vcoords);
+          DMMoab_SetStructuredCoords_Private(i,j,k,hx,hy,hz,vcount,vcoords);
           vgid[vcount] = (k*npts+j)*npts+i+1;
         }
       }
@@ -234,7 +258,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, const PetscReal*
     for (k = (dim==3?ise[5]+1:ise[4]); k <= (dim==3?ise[5]+nghost:ise[5]); k++) {
       for (j = (dim==2?ise[3]+1:ise[2]); j <= (dim==2?ise[3]+nghost:ise[3]); j++) {
         for (i = (dim>1?ise[0]:ise[1]+1); i <= (dim>1?ise[1]:ise[1]+nghost); i++, vcount++) {
-          set_structured_coordinates(i,j,k,hx,hy,hz,vcount,vcoords);
+          DMMoab_SetStructuredCoords_Private(i,j,k,hx,hy,hz,vcount,vcoords);
           vgid[vcount] = (k*npts+j)*npts+i+1;
         }
       }
@@ -268,7 +292,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, const PetscReal*
     for (k = (dim==3?ise[4]-nghost:ise[4]); k < (dim==3?ise[4]:std::max(ise[5],1)); k++) {
       for (j = (dim==2?ise[2]-nghost:ise[2]); j < (dim==2?ise[2]:std::max(ise[3],1)); j++) {
         for (i = (dim>1?ise[0]:ise[0]-nghost); i < (dim>1?std::max(ise[1],1):ise[0]); i++, ecount++) {
-          set_element_connectivity(dim, etype, ecount*vpere, nele, i, j, k, vfirst, connectivity);
+          DMMoab_SetElementConnectivity_Private(dim, etype, ecount*vpere, nele, i, j, k, vfirst, connectivity);
         }
       }
     }
@@ -278,7 +302,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, const PetscReal*
   for (k = ise[4]; k < std::max(ise[5],1); k++) {
     for (j = ise[2]; j < std::max(ise[3],1); j++) {
       for (i = ise[0]; i < std::max(ise[1],1); i++,ecount++) {
-        set_element_connectivity(dim, etype, ecount*vpere, nele, i, j, k, vfirst, connectivity);
+        DMMoab_SetElementConnectivity_Private(dim, etype, ecount*vpere, nele, i, j, k, vfirst, connectivity);
       }
     }
   }
@@ -288,7 +312,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, const PetscReal*
     for (k = (dim==3?ise[5]:ise[4]); k < (dim==3?ise[5]+nghost:std::max(ise[5],1)); k++) {
       for (j = (dim==2?ise[3]:ise[2]); j < (dim==2?ise[3]+nghost:std::max(ise[3],1)); j++) {
         for (i = (dim>1?ise[0]:ise[1]); i < (dim>1?std::max(ise[1],1):ise[1]+nghost); i++, ecount++) {
-          set_element_connectivity(dim, etype, ecount*vpere, nele, i, j, k, vfirst, connectivity);
+          DMMoab_SetElementConnectivity_Private(dim, etype, ecount*vpere, nele, i, j, k, vfirst, connectivity);
         }
       }
     }
@@ -410,6 +434,26 @@ PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabLoadFromFile"
+/*@
+  DMMoabLoadFromFile - Creates a DM object by loading the mesh from a user specified file.
+
+  Collective on MPI_Comm
+
+  Input Parameters:
++ comm - The communicator for the DM object
+. dim - The spatial dimension
+- filename - The name of the mesh file to be loaded
+- usrreadopts - The options string to read a MOAB mesh. 
+  Reference (Parallel Mesh Initialization: http://www.mcs.anl.gov/~fathom/moab-docs/html/contents.html#fivetwo)
+
+  Output Parameter:
+. dm  - The DM object
+
+  Level: beginner
+
+.keywords: DM, create
+.seealso: DMSetType(), DMCreate(), DMMoabCreateBoxMesh()
+@*/
 PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm,PetscInt dim,const char* filename, const char* usrreadopts, DM *dm)
 {
   moab::ErrorCode merr;
@@ -433,6 +477,7 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm,PetscInt dim,const char* filenam
   mbiface = dmmoab->mbiface;
   pcomm = dmmoab->pcomm;
   nprocs = pcomm->size();
+  /* TODO: Decipher dimension based on the loaded mesh instead of getting from user */
   dmmoab->dim = dim;
 
   /* create a file set to associate all entities in current mesh */
