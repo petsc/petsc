@@ -135,10 +135,34 @@ generate_section()
   echo "</table></center>" >> $OUTFILE
 }
 
+generate_configure_section()
+{
+  echo "<h3>Configure</h3>" >> $OUTFILE
+  echo "<center><table>" >> $OUTFILE
+  echo "<tr><th>Configuration</th><th>Status</th></tr>" >> $OUTFILE
 
+  for f in `ls $LOGDIR/configure*.log`
+  do
+    echo "Processing file $f..."
+    echo "<tr><td class=\"desc\">" >> $OUTFILE
+    echo "<a href=\"${f#$LOGDIR/}\">${f#$LOGDIR/}</a>" >> $OUTFILE
+
+    # Check for "Configure stage complete" string
+    stagecomplete=`grep "Configure stage complete" $f | wc -l`
+    if [ "$stagecomplete" -gt "0" ]
+    then
+	  echo "</td><td class=\"green\">Success</td>" >> $OUTFILE
+    else
+	  echo "</td><td class=\"red\">Fail</td>" >> $OUTFILE
+    fi
+  done
+  echo "</table></center>" >> $OUTFILE
+
+}
 
 ############ Part 1: Build ####################
 #generate_section Configure configure  #Note: Current grep-driven extraction is not suitable for configure*.log files
+generate_configure_section
 generate_section Build     build
 generate_section Examples  examples
 generate_section Make      make

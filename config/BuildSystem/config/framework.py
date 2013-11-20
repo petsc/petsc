@@ -37,7 +37,7 @@ configure module for HYPRE requires information about MPI, and thus contains
 Notice that passing self for the last arguments means that the MPI module will
 run before the HYPRE module. Furthermore, we save the resulting object as
 self.mpi so that we may interogate it later. HYPRE can initially test whether
-MPI was indeed found using self.mpi.foundMPI. When HYPRE requires the list of
+MPI was indeed found using self.mpi.found. When HYPRE requires the list of
 MPI libraries in order to link a test object, the module can use self.mpi.lib.
 '''
 import user

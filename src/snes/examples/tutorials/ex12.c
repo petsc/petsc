@@ -11,7 +11,7 @@ domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\n\n";
 #define NUM_FIELDS 1
 PetscInt spatialDim = 0;
 
-typedef enum {NEUMANN, DIRICHLET} BCType;
+typedef enum {NEUMANN, DIRICHLET, NONE} BCType;
 typedef enum {RUN_FULL, RUN_TEST, RUN_PERF} RunType;
 typedef enum {COEFF_NONE, COEFF_ANALYTIC, COEFF_FIELD} CoeffType;
 
@@ -191,7 +191,7 @@ void quadratic_u_3d(const PetscReal x[], PetscScalar *u)
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  const char    *bcTypes[2]  = {"neumann", "dirichlet"};
+  const char    *bcTypes[3]  = {"neumann", "dirichlet", "none"};
   const char    *runTypes[3] = {"full", "test", "perf"};
   const char    *coeffTypes[3] = {"none", "analytic", "field"};
   PetscInt       bc, run, coeff;
@@ -225,7 +225,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex12.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   run  = options->runType;
-  ierr = PetscOptionsEList("-run_type", "The run type", "ex12.c", runTypes, 2, runTypes[options->runType], &run, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-run_type", "The run type", "ex12.c", runTypes, 3, runTypes[options->runType], &run, NULL);CHKERRQ(ierr);
 
   options->runType = (RunType) run;
 
@@ -240,7 +240,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
   ierr = PetscOptionsString("-partitioner", "The graph partitioner", "pflotran.cxx", options->partitioner, options->partitioner, 2048, NULL);CHKERRQ(ierr);
   bc   = options->bcType;
-  ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex12.c",bcTypes,2,bcTypes[options->bcType],&bc,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex12.c",bcTypes,3,bcTypes[options->bcType],&bc,NULL);CHKERRQ(ierr);
   options->bcType = (BCType) bc;
   coeff = options->variableCoefficient;
   ierr = PetscOptionsEList("-variable_coefficient","Type of variable coefficent","ex12.c",coeffTypes,3,coeffTypes[options->variableCoefficient],&coeff,NULL);CHKERRQ(ierr);

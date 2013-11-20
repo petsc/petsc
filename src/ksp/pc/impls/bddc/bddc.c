@@ -11,7 +11,6 @@
 
    User interface
    - Negative indices in dirichlet and Neumann is should be skipped (now they cause out-of-bounds access)
-   - Provide PCApplyTranpose_BDDC
    - DofSplitting and DM attached to pc?
 
    Debugging output
@@ -1172,7 +1171,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCApply_BDDC - Applies the BDDC preconditioner to a vector.
+   PCApply_BDDC - Applies the BDDC operator to a vector.
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -1202,7 +1201,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
   if (!pcbddc->use_exact_dirichlet_trick) {
     /* First Dirichlet solve */
     ierr = VecScatterBegin(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = KSPSolve(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
     /*
       Assembling right hand side for BDDC operator
@@ -1215,7 +1214,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
     ierr = VecScale(pcis->vec2_D,m_one);CHKERRQ(ierr);
     ierr = VecCopy(r,z);CHKERRQ(ierr);
     ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcis->global_to_B,pcis->vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = PCBDDCScalingRestriction(pc,z,pcis->vec1_B);CHKERRQ(ierr);
   } else {
     ierr = VecSet(pcis->vec1_D,zero);CHKERRQ(ierr);
@@ -1225,14 +1224,14 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
 
   /* Apply interface preconditioner
      input/output vecs: pcis->vec1_B and pcis->vec1_D */
-  ierr = PCBDDCApplyInterfacePreconditioner(pc);CHKERRQ(ierr);
+  ierr = PCBDDCApplyInterfacePreconditioner(pc,PETSC_FALSE);CHKERRQ(ierr);
 
   /* Apply transpose of partition of unity operator */
   ierr = PCBDDCScalingExtension(pc,pcis->vec1_B,z);CHKERRQ(ierr);
 
   /* Second Dirichlet solve and assembling of output */
   ierr = VecScatterBegin(pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = MatMult(pcis->A_IB,pcis->vec1_B,pcis->vec3_D);CHKERRQ(ierr);
   if (pcbddc->switch_static) { ierr = MatMultAdd(pcis->A_II,pcis->vec1_D,pcis->vec3_D,pcis->vec3_D);CHKERRQ(ierr); }
   ierr = KSPSolve(pcbddc->ksp_D,pcis->vec3_D,pcis->vec4_D);CHKERRQ(ierr);
@@ -1240,7 +1239,77 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
   if (pcbddc->switch_static) { ierr = VecAXPY (pcis->vec4_D,one,pcis->vec1_D);CHKERRQ(ierr); }
   ierr = VecAXPY (pcis->vec2_D,one,pcis->vec4_D);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* -------------------------------------------------------------------------- */
+/*
+   PCApplyTranspose_BDDC - Applies the transpose of the BDDC operator to a vector.
+
+   Input Parameters:
+.  pc - the preconditioner context
+.  r - input vector (global)
+
+   Output Parameter:
+.  z - output vector (global)
+
+   Application Interface Routine: PCApplyTranspose()
+ */
+#undef __FUNCT__
+#define __FUNCT__ "PCApplyTranspose_BDDC"
+PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
+{
+  PC_IS             *pcis = (PC_IS*)(pc->data);
+  PC_BDDC           *pcbddc = (PC_BDDC*)(pc->data);
+  PetscErrorCode    ierr;
+  const PetscScalar one = 1.0;
+  const PetscScalar m_one = -1.0;
+  const PetscScalar zero = 0.0;
+
+  PetscFunctionBegin;
+  if (!pcbddc->use_exact_dirichlet_trick) {
+    /* First Dirichlet solve */
+    ierr = VecScatterBegin(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = KSPSolveTranspose(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+    /*
+      Assembling right hand side for BDDC operator
+      - pcis->vec1_D for the Dirichlet part (if needed, i.e. prec_flag=PETSC_TRUE)
+      - pcis->vec1_B the interface part of the global vector z
+    */
+    ierr = VecScale(pcis->vec2_D,m_one);CHKERRQ(ierr);
+    ierr = MatMultTranspose(pcis->A_IB,pcis->vec2_D,pcis->vec1_B);CHKERRQ(ierr);
+    if (pcbddc->switch_static) { ierr = MatMultTransposeAdd(pcis->A_II,pcis->vec2_D,pcis->vec1_D,pcis->vec1_D);CHKERRQ(ierr); }
+    ierr = VecScale(pcis->vec2_D,m_one);CHKERRQ(ierr);
+    ierr = VecCopy(r,z);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcis->global_to_B,pcis->vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = PCBDDCScalingRestriction(pc,z,pcis->vec1_B);CHKERRQ(ierr);
+  } else {
+    ierr = VecSet(pcis->vec1_D,zero);CHKERRQ(ierr);
+    ierr = VecSet(pcis->vec2_D,zero);CHKERRQ(ierr);
+    ierr = PCBDDCScalingRestriction(pc,r,pcis->vec1_B);CHKERRQ(ierr);
+  }
+
+  /* Apply interface preconditioner
+     input/output vecs: pcis->vec1_B and pcis->vec1_D */
+  ierr = PCBDDCApplyInterfacePreconditioner(pc,PETSC_TRUE);CHKERRQ(ierr);
+
+  /* Apply transpose of partition of unity operator */
+  ierr = PCBDDCScalingExtension(pc,pcis->vec1_B,z);CHKERRQ(ierr);
+
+  /* Second Dirichlet solve and assembling of output */
+  ierr = VecScatterBegin(pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = MatMultTranspose(pcis->A_BI,pcis->vec1_B,pcis->vec3_D);CHKERRQ(ierr);
+  if (pcbddc->switch_static) { ierr = MatMultTransposeAdd(pcis->A_II,pcis->vec1_D,pcis->vec3_D,pcis->vec3_D);CHKERRQ(ierr); }
+  ierr = KSPSolveTranspose(pcbddc->ksp_D,pcis->vec3_D,pcbddc->vec4_D);CHKERRQ(ierr);
+  ierr = VecScale(pcbddc->vec4_D,m_one);CHKERRQ(ierr);
+  if (pcbddc->switch_static) { ierr = VecAXPY (pcbddc->vec4_D,one,pcis->vec1_D);CHKERRQ(ierr); }
+  ierr = VecAXPY (pcis->vec2_D,one,pcbddc->vec4_D);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -1342,7 +1411,7 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
     ierr = VecCopy(mat_ctx->temp_solution_D,pcis->vec1_D);CHKERRQ(ierr);
   }
   /* apply BDDC */
-  ierr = PCBDDCApplyInterfacePreconditioner(mat_ctx->pc);CHKERRQ(ierr);
+  ierr = PCBDDCApplyInterfacePreconditioner(mat_ctx->pc,PETSC_FALSE);CHKERRQ(ierr);
   /* Application of B_delta and assembling of rhs for fetidp fluxes */
   ierr = VecSet(fetidp_flux_rhs,0.0);CHKERRQ(ierr);
   ierr = MatMult(mat_ctx->B_delta,pcis->vec1_B,mat_ctx->lambda_local);CHKERRQ(ierr);
@@ -1409,7 +1478,7 @@ static PetscErrorCode PCBDDCMatFETIDPGetSolution_BDDC(Mat fetidp_mat, Vec fetidp
     ierr = VecCopy(mat_ctx->temp_solution_D,pcis->vec1_D);CHKERRQ(ierr);
   }
   /* apply BDDC */
-  ierr = PCBDDCApplyInterfacePreconditioner(mat_ctx->pc);CHKERRQ(ierr);
+  ierr = PCBDDCApplyInterfacePreconditioner(mat_ctx->pc,PETSC_FALSE);CHKERRQ(ierr);
   /* put values into standard global vector */
   ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_B,standard_sol,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec1_B,standard_sol,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -1460,8 +1529,10 @@ PetscErrorCode PCBDDCMatFETIDPGetSolution(Mat fetidp_mat, Vec fetidp_flux_sol, V
 /* -------------------------------------------------------------------------- */
 
 extern PetscErrorCode FETIDPMatMult(Mat,Vec,Vec);
+extern PetscErrorCode FETIDPMatMultTranspose(Mat,Vec,Vec);
 extern PetscErrorCode PCBDDCDestroyFETIDPMat(Mat);
 extern PetscErrorCode FETIDPPCApply(PC,Vec,Vec);
+extern PetscErrorCode FETIDPPCApplyTranspose(PC,Vec,Vec);
 extern PetscErrorCode PCBDDCDestroyFETIDPPC(PC);
 
 #undef __FUNCT__
@@ -1483,6 +1554,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, Mat *fetidp_mat, P
   ierr = PCBDDCSetupFETIDPMatContext(fetidpmat_ctx);CHKERRQ(ierr);
   ierr = MatCreateShell(comm,PETSC_DECIDE,PETSC_DECIDE,fetidpmat_ctx->n_lambda,fetidpmat_ctx->n_lambda,fetidpmat_ctx,&newmat);CHKERRQ(ierr);
   ierr = MatShellSetOperation(newmat,MATOP_MULT,(void (*)(void))FETIDPMatMult);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(newmat,MATOP_MULT_TRANSPOSE,(void (*)(void))FETIDPMatMultTranspose);CHKERRQ(ierr);
   ierr = MatShellSetOperation(newmat,MATOP_DESTROY,(void (*)(void))PCBDDCDestroyFETIDPMat);CHKERRQ(ierr);
   ierr = MatSetUp(newmat);CHKERRQ(ierr);
   /* FETIDP preconditioner */
@@ -1492,6 +1564,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, Mat *fetidp_mat, P
   ierr = PCSetType(newpc,PCSHELL);CHKERRQ(ierr);
   ierr = PCShellSetContext(newpc,fetidppc_ctx);CHKERRQ(ierr);
   ierr = PCShellSetApply(newpc,FETIDPPCApply);CHKERRQ(ierr);
+  ierr = PCShellSetApplyTranspose(newpc,FETIDPPCApplyTranspose);CHKERRQ(ierr);
   ierr = PCShellSetDestroy(newpc,PCBDDCDestroyFETIDPPC);CHKERRQ(ierr);
   ierr = PCSetOperators(newpc,newmat,newmat,SAME_PRECONDITIONER);CHKERRQ(ierr);
   ierr = PCSetUp(newpc);CHKERRQ(ierr);
@@ -1597,9 +1670,8 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, Mat *fetidp_mat, PC *fetidp_pc
    Level: intermediate
 
    Developer notes:
-     Currently does not work with KSPBCGS and other KSPs requiring the specialization of PCApplyTranspose
 
-     New deluxe scaling operator will be available soon.
+   New deluxe scaling operator will be available soon.
 
    Contributed by Stefano Zampini
 
@@ -1691,7 +1763,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
 
   /* function pointers */
   pc->ops->apply               = PCApply_BDDC;
-  pc->ops->applytranspose      = 0;
+  pc->ops->applytranspose      = PCApplyTranspose_BDDC;
   pc->ops->setup               = PCSetUp_BDDC;
   pc->ops->destroy             = PCDestroy_BDDC;
   pc->ops->setfromoptions      = PCSetFromOptions_BDDC;
