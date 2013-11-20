@@ -41,7 +41,6 @@ typedef struct {
   moab::Range             *elocal, *eghost;
   moab::EntityHandle      fileset;
 
-  moab::Range             *bndyvtx,*bndyfaces,*bndyelems;
   PetscBool               *isbndyvtx,*isbndyfaces,*isbndyelems;
 
   PetscInt                nfields;

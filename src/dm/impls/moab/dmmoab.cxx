@@ -31,10 +31,6 @@ PetscErrorCode DMDestroy_Moab(DM dm)
   ierr = PetscFree(dmmoab->isbndyvtx);CHKERRQ(ierr);
   ierr = PetscFree(dmmoab->isbndyfaces);CHKERRQ(ierr);
   ierr = PetscFree(dmmoab->isbndyelems);CHKERRQ(ierr);
-  delete dmmoab->bndyvtx;
-  delete dmmoab->bndyfaces;
-  delete dmmoab->bndyelems;
-
   ierr = PetscFree(dmmoab->gsindices);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&dmmoab->ltog_sendrecv);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&dmmoab->ltog_map);CHKERRQ(ierr);
@@ -187,48 +183,42 @@ PetscErrorCode DMSetUp_Moab(DM dm)
 
   /* skin the boundary and store nodes */
   {
+    moab::Range bndyfaces, bndyvtx, bndyelems;
     /* get the skin vertices of boundary faces for the current partition and then filter 
        the local, boundary faces, vertices and elements alone via PSTATUS flags;
        this should not give us any ghosted boundary, but if user needs such a functionality
        it would be easy to add it based on the find_skin query below */
     moab::Skinner skinner(dmmoab->mbiface);
-    dmmoab->bndyvtx = new moab::Range();
-    dmmoab->bndyfaces = new moab::Range();
-    dmmoab->bndyelems = new moab::Range();
 
     /* get the entities on the skin - only the faces */
-    merr = skinner.find_skin(dmmoab->fileset, *dmmoab->elocal, false, *dmmoab->bndyfaces, NULL, false, true, false, false);MBERRNM(merr); // 'false' param indicates we want faces back, not vertices
+    merr = skinner.find_skin(dmmoab->fileset, *dmmoab->elocal, false, bndyfaces, NULL, false, true, false, false);MBERRNM(merr); // 'false' param indicates we want faces back, not vertices
 
     /* filter all the non-owned and shared entities out of the list */
-    merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
-    merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces,PSTATUS_SHARED,PSTATUS_NOT);MBERRNM(merr);
-
-    if (dmmoab->dim == 3) {
-      // get the edges from faces and then do the same if needed
-    }
+    merr = dmmoab->pcomm->filter_pstatus(bndyfaces,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
+    merr = dmmoab->pcomm->filter_pstatus(bndyfaces,PSTATUS_SHARED,PSTATUS_NOT);MBERRNM(merr);
 
     /* get all the nodes via connectivity and the parent elements via adjacency information */
-    merr = dmmoab->mbiface->get_connectivity(*dmmoab->bndyfaces, *dmmoab->bndyvtx, false);MBERRNM(ierr);
-    merr = dmmoab->mbiface->get_adjacencies(*dmmoab->bndyfaces, dmmoab->dim, false, *dmmoab->bndyelems, moab::Interface::UNION);MBERRNM(ierr);
-    PetscInfo3(dm, "Found %D boundary vertices, %D boundary faces and %D boundary elements.\n", dmmoab->bndyvtx->size(), dmmoab->bndyvtx->size(), dmmoab->bndyelems->size());
+    merr = dmmoab->mbiface->get_connectivity(bndyfaces, bndyvtx, false);MBERRNM(ierr);
+    merr = dmmoab->mbiface->get_adjacencies(bndyfaces, dmmoab->dim, false, bndyelems, moab::Interface::UNION);MBERRNM(ierr);
+    PetscInfo3(dm, "Found %D boundary vertices, %D boundary faces and %D boundary elements.\n", bndyvtx.size(), bndyvtx.size(), bndyelems.size());
 
     /* cache a bit-vector for easy query */
-    ierr = PetscMalloc(sizeof(PetscBool)*(dmmoab->nloc+dmmoab->nghost),&dmmoab->isbndyvtx);CHKERRQ(ierr);
-    ierr = PetscMemzero(dmmoab->isbndyvtx,sizeof(PetscBool)*(dmmoab->nloc+dmmoab->nghost));CHKERRQ(ierr);
-    for(moab::Range::iterator iter = dmmoab->bndyvtx->begin(); iter != dmmoab->bndyvtx->end(); iter++) {
-      dmmoab->isbndyvtx[(PetscInt)*iter-1]=PETSC_TRUE;
+    ierr = PetscMalloc(sizeof(PetscBool)*((PetscInt)(*bndyvtx.rbegin())+1),&dmmoab->isbndyvtx);CHKERRQ(ierr);
+    ierr = PetscMemzero(dmmoab->isbndyvtx,sizeof(PetscBool)*((PetscInt)(*bndyvtx.rbegin())+1));CHKERRQ(ierr);
+    for(moab::Range::iterator iter = bndyvtx.begin(); iter != bndyvtx.end(); iter++) {
+      dmmoab->isbndyvtx[(PetscInt)*iter]=PETSC_TRUE;
     }
 
-    ierr = PetscMalloc(sizeof(PetscBool)*dmmoab->neleloc,&dmmoab->isbndyelems);CHKERRQ(ierr);
-    ierr = PetscMemzero(dmmoab->isbndyelems,sizeof(PetscBool)*dmmoab->neleloc);CHKERRQ(ierr);
-    for(moab::Range::iterator iter = dmmoab->bndyelems->begin(); iter != dmmoab->bndyelems->end(); iter++) {
-      dmmoab->isbndyelems[(PetscInt)*iter-1]=PETSC_TRUE;
+    ierr = PetscMalloc(sizeof(PetscBool)*((PetscInt)(*bndyelems.rbegin())+1),&dmmoab->isbndyelems);CHKERRQ(ierr);
+    ierr = PetscMemzero(dmmoab->isbndyelems,sizeof(PetscBool)*((PetscInt)(*bndyelems.rbegin())+1));CHKERRQ(ierr);
+    for(moab::Range::iterator iter = bndyelems.begin(); iter != bndyelems.end(); iter++) {
+      dmmoab->isbndyelems[(PetscInt)*iter]=PETSC_TRUE;
     }
 
-    ierr = PetscMalloc(sizeof(PetscBool)*dmmoab->bndyfaces->size(),&dmmoab->isbndyfaces);CHKERRQ(ierr);
-    ierr = PetscMemzero(dmmoab->isbndyfaces,sizeof(PetscBool)*dmmoab->bndyfaces->size());CHKERRQ(ierr);
-    for(moab::Range::iterator iter = dmmoab->bndyfaces->begin(); iter != dmmoab->bndyfaces->end(); iter++) {
-      dmmoab->isbndyfaces[(PetscInt)*iter-1]=PETSC_TRUE;
+    ierr = PetscMalloc(sizeof(PetscBool)*((PetscInt)(*bndyfaces.rbegin())+1),&dmmoab->isbndyfaces);CHKERRQ(ierr);
+    ierr = PetscMemzero(dmmoab->isbndyfaces,sizeof(PetscBool)*((PetscInt)(*bndyfaces.rbegin())+1));CHKERRQ(ierr);
+    for(moab::Range::iterator iter = bndyfaces.begin(); iter != bndyfaces.end(); iter++) {
+      dmmoab->isbndyfaces[(PetscInt)*iter]=PETSC_TRUE;
     }
   }
   PetscFunctionReturn(0);
@@ -354,8 +344,7 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
 
     /* Create root sets for each mesh.  Then pass these
        to the load_file functions to be populated. */
-    merr = dmmoab->mbiface->create_meshset(moab::MESHSET_SET, partnset);
-    MBERR("Creating partition set failed", merr);
+    merr = dmmoab->mbiface->create_meshset(moab::MESHSET_SET, partnset);MBERR("Creating partition set failed", merr);
 
     /* Create the parallel communicator object with the partition handle associated with MOAB */
     dmmoab->pcomm = moab::ParallelComm::get_pcomm(dmmoab->mbiface, partnset, &comm);
@@ -1077,16 +1066,16 @@ PetscErrorCode DMMoabIsEntityOnBoundary(DM dm,const moab::EntityHandle ent,Petsc
   *ent_on_boundary=PETSC_FALSE;
   if(etype == moab::MBVERTEX && edim == 0) {
     if (ent < (*dmmoab->vlocal)[0] || ent > (*dmmoab->vlocal)[dmmoab->nloc-1]) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid boundary vertex entity handle: %D\n",ent);
-    *ent_on_boundary=dmmoab->isbndyvtx[(PetscInt)ent-1];
+    *ent_on_boundary=dmmoab->isbndyvtx[(PetscInt)ent];
   }
   else {
     if (edim == dmmoab->dim) {  /* check the higher-dimensional elements first */
       if (ent < (*dmmoab->elocal)[0] || ent > (*dmmoab->elocal)[dmmoab->neleloc-1]) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid boundary element entity handle: %D\n",ent);
-      *ent_on_boundary=dmmoab->isbndyelems[(PetscInt)ent-1];
+      *ent_on_boundary=dmmoab->isbndyelems[(PetscInt)ent];
     }
     else {                      /* next check the lower-dimensional faces */
-      moab::Range::const_iterator gfiter = dmmoab->bndyfaces->find(ent);
-      if (gfiter != dmmoab->bndyfaces->end()) *ent_on_boundary=PETSC_TRUE;
+      /* how do we check the bounds before accessing ? will segfault for non-boundary faces */
+      *ent_on_boundary=dmmoab->isbndyfaces[(PetscInt)ent];
     }
   }
   PetscFunctionReturn(0);
@@ -1107,17 +1096,15 @@ PetscErrorCode DMMoabCheckBoundaryVertices(DM dm,PetscInt nconn,const moab::Enti
   dmmoab = (DM_Moab*)(dm)->data;
 
   for (i=0; i < nconn; ++i) {
-    moab::Range::const_iterator giter = dmmoab->bndyvtx->find(cnt[i]);
-    if (giter != dmmoab->bndyvtx->end()) isbdvtx[i] = PETSC_TRUE;
-    else isbdvtx[i] = PETSC_FALSE;
+    isbdvtx[i]=dmmoab->isbndyvtx[(PetscInt)cnt[i]];
   }
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNCT__
-#define __FUNCT__ "DMMoabGetBoundaryEntities"
-PetscErrorCode DMMoabGetBoundaryEntities(DM dm,moab::Range *bdvtx,moab::Range* bdfaces,moab::Range* bdelems)
+#define __FUNCT__ "DMMoabGetBoundaryMarkers"
+PetscErrorCode DMMoabGetBoundaryMarkers(DM dm,PetscBool **bdvtx,PetscBool** bdelems,PetscBool** bdfaces)
 {
   DM_Moab        *dmmoab;
 
@@ -1125,9 +1112,9 @@ PetscErrorCode DMMoabGetBoundaryEntities(DM dm,moab::Range *bdvtx,moab::Range* b
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   dmmoab = (DM_Moab*)(dm)->data;
 
-  if (bdvtx)  *bdvtx = *dmmoab->bndyvtx;
-  if (bdfaces)  *bdfaces = *dmmoab->bndyfaces;
-  if (bdelems)  *bdfaces = *dmmoab->bndyelems;
+  if (bdvtx)  *bdvtx = dmmoab->isbndyvtx;
+  if (bdfaces)  *bdfaces = dmmoab->isbndyfaces;
+  if (bdelems)  *bdfaces = dmmoab->isbndyelems;
   PetscFunctionReturn(0);
 }
 
