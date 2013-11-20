@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/impls/moab/examples/tests/
-EXAMPLESC       = ex1.cxx ex2.c ex3.c ex4.c ex5.c
+EXAMPLESC       = ex1.cxx ex2.c ex3.c ex4.c
 EXAMPLESF       =
 MANSEC          = DM
 
@@ -26,10 +26,6 @@ ex3: ex3.o  chkopts
 ex4: ex4.o  chkopts
 	-${CLINKER} -o ex4 ex4.o ${PETSC_DM_LIB}
 	${RM} -f ex4.o
-
-ex5: ex5.o  chkopts
-	-${CLINKER} -o ex5 ex5.o ${PETSC_DM_LIB}
-	${RM} -f ex5.o
 
 
 #--------------------------------------------------------------------------

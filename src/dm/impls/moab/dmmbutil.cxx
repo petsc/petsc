@@ -46,11 +46,11 @@ PetscErrorCode DMMoabComputeDomainBounds_Private(moab::ParallelComm* pcomm, Pets
   PetscFunctionReturn(0);
 }
 
-static void set_structured_coordinates(PetscInt i, PetscInt j, PetscInt k, PetscReal hxyz, PetscInt vcount, std::vector<double*>& vcoords)
+static void set_structured_coordinates(PetscInt i, PetscInt j, PetscInt k, PetscReal hx, PetscReal hy, PetscReal hz, PetscInt vcount, std::vector<double*>& vcoords)
 {
-  vcoords[0][vcount] = i*hxyz;
-  vcoords[1][vcount] = j*hxyz;
-  vcoords[2][vcount] = k*hxyz;
+  vcoords[0][vcount] = i*hx;
+  vcoords[1][vcount] = j*hy;
+  vcoords[2][vcount] = k*hz;
 }
 
 static void set_element_connectivity(PetscInt dim, moab::EntityType etype, PetscInt offset, PetscInt nele, PetscInt i, PetscInt j, PetscInt k, PetscInt vfirst, moab::EntityHandle *connectivity)
@@ -86,7 +86,7 @@ static void set_element_connectivity(PetscInt dim, moab::EntityType etype, Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabCreateBoxMesh"
-PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, PetscInt user_nghost, DM *dm)
+PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, const PetscReal* bounds, PetscInt nele, PetscInt user_nghost, DM *dm)
 {
   PetscErrorCode  ierr;
   moab::ErrorCode merr;
@@ -103,7 +103,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
   moab::EntityHandle  *connectivity = 0;
   moab::EntityType etype;
   PetscInt    ise[6];
-  PetscReal   xse[6];
+  PetscReal   xse[6],defbounds[6];
   /* TODO: Fix nghost > 0 - now relying on exchange_ghost_cells */
   const PetscInt nghost=0;
 
@@ -189,13 +189,29 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
   /* Compute the co-ordinates of vertices and global IDs */
   std::vector<int>    vgid(locnpts+ghnpts);
   int vcount=0;
-  double hxyz=1.0/nele;
+
+  if (!bounds) { /* default box mesh is defined on a unit-cube */
+    defbounds[0]=0.0; defbounds[1]=1.0;
+    defbounds[2]=0.0; defbounds[3]=1.0;
+    defbounds[4]=0.0; defbounds[5]=1.0;
+    bounds=defbounds;
+  }
+  else {
+    /* validate the bounds data */
+    if(bounds[0] >= bounds[1]) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"X-dim: Left boundary cannot be greater than right. [%G >= %G]\n",bounds[0],bounds[1]);
+    if(dim > 1 && (bounds[2] >= bounds[3])) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Y-dim: Left boundary cannot be greater than right. [%G >= %G]\n",bounds[2],bounds[3]);
+    if(dim > 2 && (bounds[4] >= bounds[5])) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Z-dim: Left boundary cannot be greater than right. [%G >= %G]\n",bounds[4],bounds[5]);
+  }
+
+  const double hx=(bounds[1]-bounds[0])/nele;
+  const double hy=(dim > 1 ? (bounds[3]-bounds[2])/nele : 0.0);
+  const double hz=(dim > 2 ? (bounds[5]-bounds[4])/nele : 0.0);
 
   /* create all the owned vertices */
   for (k = ise[4]; k <= ise[5]; k++) {
     for (j = ise[2]; j <= ise[3]; j++) {
       for (i = ise[0]; i <= ise[1]; i++, vcount++) {
-        set_structured_coordinates(i,j,k,hxyz,vcount,vcoords);
+        set_structured_coordinates(i,j,k,hx,hy,hz,vcount,vcoords);
         vgid[vcount] = (k*npts+j)*npts+i+1;
       }
     }
@@ -206,7 +222,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
     for (k = (dim==3?ise[4]-nghost:ise[4]); k <= (dim==3?ise[4]-1:ise[5]); k++) {
       for (j = (dim==2?ise[2]-nghost:ise[2]); j <= (dim==2?ise[2]-1:ise[3]); j++) {
         for (i = (dim>1?ise[0]:ise[0]-nghost); i <= (dim>1?ise[1]:ise[0]-1); i++, vcount++) {
-          set_structured_coordinates(i,j,k,hxyz,vcount,vcoords);
+          set_structured_coordinates(i,j,k,hx,hy,hz,vcount,vcoords);
           vgid[vcount] = (k*npts+j)*npts+i+1;
         }
       }
@@ -218,7 +234,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
     for (k = (dim==3?ise[5]+1:ise[4]); k <= (dim==3?ise[5]+nghost:ise[5]); k++) {
       for (j = (dim==2?ise[3]+1:ise[2]); j <= (dim==2?ise[3]+nghost:ise[3]); j++) {
         for (i = (dim>1?ise[0]:ise[1]+1); i <= (dim>1?ise[1]:ise[1]+nghost); i++, vcount++) {
-          set_structured_coordinates(i,j,k,hxyz,vcount,vcoords);
+          set_structured_coordinates(i,j,k,hx,hy,hz,vcount,vcoords);
           vgid[vcount] = (k*npts+j)*npts+i+1;
         }
       }

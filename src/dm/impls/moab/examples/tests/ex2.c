@@ -137,6 +137,7 @@ int main(int argc,char **argv)
   moab::Interface*  mbImpl;
   moab::Tag         solndofs;
   moab::Range       ownedvtx;
+  const PetscReal   bounds[2] = {0.0,1.0};
   const char        *fields[2] = {"U","V"};
   PetscScalar       deflt[2]={0.0,0.0};
 
@@ -146,7 +147,7 @@ int main(int argc,char **argv)
   ierr = Initialize_AppContext(&user);CHKERRQ(ierr);
 
   /* Fill in the user defined work context: */
-  ierr = DMMoabCreateBoxMesh(PETSC_COMM_WORLD, 1, user->n, 1, &dm);CHKERRQ(ierr);
+  ierr = DMMoabCreateBoxMesh(PETSC_COMM_WORLD, 1, bounds, user->n, 1, &dm);CHKERRQ(ierr);
   ierr = DMMoabSetBlockSize(dm, user->nvars);CHKERRQ(ierr);
   ierr = DMMoabSetFields(dm, user->nvars, fields);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
