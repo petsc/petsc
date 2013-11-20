@@ -45,7 +45,6 @@ struct pUserCtx {
   PetscInt ftype;       /* The type of function assembly routine to use in residual calculation
                            0 (default) = MOAB-Ops, 1 = Block-Ops, 2 = Ghosted-Ops  */
   PetscBool io;
-  PetscBool debug;
 };
 typedef pUserCtx* UserCtx;
 
@@ -73,7 +72,6 @@ PetscErrorCode Initialize_AppContext(UserCtx *puser)
     user->ntsteps = 10000;
     user->ftype = 0;
     user->io = PETSC_FALSE;
-    user->debug = PETSC_FALSE;
     ierr = PetscOptionsReal("-A","Reaction rate","",user->A,&user->A,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-B","Reaction rate","",user->B,&user->B,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-alpha","Diffusion coefficient","",user->alpha,&user->alpha,PETSC_NULL);CHKERRQ(ierr);
@@ -85,7 +83,6 @@ PetscErrorCode Initialize_AppContext(UserCtx *puser)
     ierr = PetscOptionsInt("-ndt","Number of time steps","",user->ntsteps,&user->ntsteps,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ftype","Type of function evaluation model for FEM assembly","",user->ftype,&user->ftype,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-io","Write the mesh and solution output to a file.","",user->io,&user->io,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-dbg","Print verbose debug data.","",user->debug,&user->debug,PETSC_NULL);CHKERRQ(ierr);
     user->npts   = user->n+1;
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -274,10 +271,6 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   /* Restore vectors */
   ierr = DMMoabVecRestoreArrayRead(dm, X, &x);CHKERRQ(ierr);
   ierr = DMMoabVecRestoreArray(dm, F, &f);CHKERRQ(ierr);
-  if (user->debug) {
-    PetscPrintf(PETSC_COMM_WORLD,"FormRHSFunction:: PRINTING RHS\n");
-    VecView(F,0);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -294,7 +287,6 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J
   const moab::EntityHandle *connect;
   PetscInt            vpere=2;
   PetscReal           hx;
-  PetscInt            rank;
   DM                  dm;
   moab::Interface*    mbImpl;
   const moab::Range   *elocal;
@@ -303,7 +295,6 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J
 
   PetscFunctionBegin;
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
-  MPI_Comm_rank( PETSC_COMM_WORLD,&rank );
 
   /* get the essential MOAB mesh related quantities needed for FEM assembly */
   ierr = DMMoabGetInterface(dm, &mbImpl);CHKERRQ(ierr);
@@ -364,9 +355,6 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J
     ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   *str=SAME_NONZERO_PATTERN;
-  if (user->debug) {
-    MatView(*Jpre,0);
-  }  
   PetscFunctionReturn(0);
 }
 
@@ -413,10 +401,6 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
 
   /* Restore vectors */
   ierr = DMMoabVecRestoreArray(dm, X, &x);CHKERRQ(ierr);
-  if (user->debug) {
-    PetscPrintf(PETSC_COMM_WORLD,"FormInitialSolution:: PRINTING Solution\n");
-    VecView(X,0);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -450,11 +434,6 @@ static PetscErrorCode FormIFunctionMOAB(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,v
 
   /* reset the residual vector */
   ierr = VecSet(F,0.0);CHKERRQ(ierr);
-  if (user->debug) {
-    PetscPrintf(PETSC_COMM_WORLD,"FormIFunctionMOAB:: PRINTING SOLUTION and SOLUTION_T\n");
-    VecView(X,0);
-    VecView(Xdot,0);
-  }
 
   /* get the local representation of the arrays from Vectors */
   ierr = DMMoabVecGetArrayRead(dm, X, &x);CHKERRQ(ierr);
@@ -504,11 +483,6 @@ static PetscErrorCode FormIFunctionMOAB(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,v
   ierr = DMMoabVecRestoreArrayRead(dm, X, &x);CHKERRQ(ierr);
   ierr = DMMoabVecRestoreArrayRead(dm, Xdot, &xdot);CHKERRQ(ierr);
   ierr = DMMoabVecRestoreArray(dm, F, &f);CHKERRQ(ierr);
-  if (user->debug) {
-    PetscPrintf(PETSC_COMM_WORLD,"FormIFunctionMOAB:: PRINTING RESIDUAL\n");
-    VecView(F,0);
-    std::cin.get();
-  }
   PetscFunctionReturn(0);
 }
 
@@ -518,7 +492,6 @@ static PetscErrorCode FormIFunctionMOAB(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,v
 static PetscErrorCode FormIFunctionGlobalBlocked(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr)
 {
   UserCtx             user = (UserCtx)ptr;
-  PetscInt            rank,xs;
   Field               *x,*xdot;
   Vec                 xltmp, xdtmp, xlocal,xdotlocal,flocal;
   PetscReal           hx;
@@ -538,7 +511,6 @@ static PetscErrorCode FormIFunctionGlobalBlocked(TS ts,PetscReal t,Vec X,Vec Xdo
   PetscFunctionBegin;
   hx = 1.0/user->n;
 
-  MPI_Comm_rank( PETSC_COMM_WORLD,&rank );
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
 
   /* get the essential MOAB mesh related quantities needed for FEM assembly */
@@ -569,7 +541,6 @@ static PetscErrorCode FormIFunctionGlobalBlocked(TS ts,PetscReal t,Vec X,Vec Xdo
   ierr = DMGetLocalVector(dm,&flocal);CHKERRQ(ierr);
   ierr = VecSet(flocal, 0.0);CHKERRQ(ierr);
 
-  ierr = DMMoabGetOffset(dm,&xs);CHKERRQ(ierr);
   ierr = DMMoabGetVertexDofsBlocked(dm, &dofs);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the grid 
@@ -586,13 +557,13 @@ static PetscErrorCode FormIFunctionGlobalBlocked(TS ts,PetscReal t,Vec X,Vec Xdo
     
     ierr = DMMoabGetDofsBlockedLocal(dm, vpere, connect, dof_indices);CHKERRQ(ierr);
     for (i=0; i<2; i++)
-      gdof[i] = dofs[dof_indices[i]];
+      gdof[i] = dofs[connect[i]];
 
     /* check if element is on the boundary */
     ierr = DMMoabIsEntityOnBoundary(dm,ehandle,&elem_on_boundary);CHKERRQ(ierr);
 
     if (elem_on_boundary) {
-      if (idl == 0) {
+      if (gdof[0] == 0) {
         const double vals[4] = { hx * (x[idl].u - user->leftbc.u),
                                  hx * (x[idl].v - user->leftbc.v),
                                  hx/2 * xdot[idr].u + user->alpha * ( x[idr].u - x[idl].u ) / hx,
@@ -635,11 +606,6 @@ static PetscErrorCode FormIFunctionGlobalBlocked(TS ts,PetscReal t,Vec X,Vec Xdo
   ierr = DMLocalToGlobalBegin(dm,flocal,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm,flocal,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &flocal);CHKERRQ(ierr);
-  if (user->debug) {
-    PetscPrintf(PETSC_COMM_WORLD,"FormIFunctionGlobalBlocked:: PRINTING RESIDUAL\n");
-    VecView(F,0);
-    std::cin.get();
-  }
   PetscFunctionReturn(0);
 }
 
@@ -649,13 +615,13 @@ static PetscErrorCode FormIFunctionGlobalBlocked(TS ts,PetscReal t,Vec X,Vec Xdo
 static PetscErrorCode FormIFunctionGhosted(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr)
 {
   UserCtx             user = (UserCtx)ptr;
-  PetscInt            rank;
   Field               *x,*xdot;
   Field               *f;
   Vec                 xltmp, xdtmp, xlocal,xdotlocal, flocal,fltmp;
   PetscReal           hx;
   PetscErrorCode      ierr;
   DM                  dm;
+  PetscInt           *dofs;
 
   PetscBool           elem_on_boundary;
   PetscInt            vpere=2;  
@@ -668,7 +634,6 @@ static PetscErrorCode FormIFunctionGhosted(TS ts,PetscReal t,Vec X,Vec Xdot,Vec 
   PetscFunctionBegin;
   hx = 1.0/user->n;
 
-  MPI_Comm_rank( PETSC_COMM_WORLD,&rank );
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
 
   /* get the essential MOAB mesh related quantities needed for FEM assembly */
@@ -693,8 +658,11 @@ static PetscErrorCode FormIFunctionGhosted(TS ts,PetscReal t,Vec X,Vec Xdot,Vec 
   ierr = DMGlobalToLocalBegin(dm,F,INSERT_VALUES,flocal);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm,F,INSERT_VALUES,flocal);CHKERRQ(ierr);
   ierr = VecGhostGetLocalForm(flocal,&fltmp);CHKERRQ(ierr);
+
   // reset the residual vector before assembly
   ierr = VecSet(fltmp, 0.0);CHKERRQ(ierr);
+
+  ierr = DMMoabGetVertexDofsBlocked(dm, &dofs);CHKERRQ(ierr);
 
   ierr = VecGetArrayRead(xltmp, (const PetscScalar**)&x);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xdtmp, (const PetscScalar**)&xdot);CHKERRQ(ierr);
@@ -721,7 +689,7 @@ static PetscErrorCode FormIFunctionGhosted(TS ts,PetscReal t,Vec X,Vec Xdot,Vec 
     ierr = DMMoabIsEntityOnBoundary(dm,ehandle,&elem_on_boundary);CHKERRQ(ierr);
 
     if (elem_on_boundary) {
-      if (idl == 0) {
+      if (dofs[connect[0]] == 0) {
         f[idl].u = hx * (x[idl].u - user->leftbc.u);
         f[idl].v = hx * (x[idl].v - user->leftbc.v);
         f[idr].u += hx/2 * xdot[idr].u + user->alpha * ( x[idr].u - x[idl].u ) / hx;
