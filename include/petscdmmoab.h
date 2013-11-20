@@ -17,6 +17,12 @@
 #define MBERRV(mbif,rval) do{if(rval != moab::MB_SUCCESS) { std::string emsg; mbif->get_last_error(emsg); SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s",(PetscErrorCode)rval,emsg.c_str());} } while(0)
 #define MBERRVM(mbif,msg,rval) do{if(rval != moab::MB_SUCCESS) { std::string emsg; mbif->get_last_error(emsg); SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s :: %s",(PetscErrorCode)rval,msg,emsg.c_str());} } while(0)
 
+#define MOAB_PARROPTS_READ_PART    "READ_PART"
+#define MOAB_PARROPTS_READ_DELETE  "READ_DELETE"
+#define MOAB_PARROPTS_BCAST_DELETE "BCAST_DELETE"
+
+typedef const char* MoabReadMode;
+
 PETSC_EXTERN PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *moab);
 PETSC_EXTERN PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::ParallelComm *pcomm, moab::Tag *ltog_tag, moab::Range *range, DM *moab);
 PETSC_EXTERN PetscErrorCode DMMoabOutput(DM,const char*,const char*);
@@ -50,14 +56,13 @@ PETSC_EXTERN PetscErrorCode DMMoabSetFields(DM dm,PetscInt nfields,const char** 
 PETSC_EXTERN PetscErrorCode DMMoabGetFieldDof(DM dm,moab::EntityHandle point, PetscInt field,PetscInt* dof);
 PETSC_EXTERN PetscErrorCode DMMoabGetFieldDofs(DM dm,PetscInt npoints,const moab::EntityHandle* points, PetscInt field,PetscInt* dof);
 
+/* discretization and assembly specific DMMoab interface functions */
+PETSC_EXTERN PetscErrorCode DMMoabGetElementConnectivity(DM dm,moab::EntityHandle ehandle,PetscInt* nconn,const moab::EntityHandle **conn);
+PETSC_EXTERN PetscErrorCode DMMoabGetVertexCoordinates(DM dm,PetscInt nconn,const moab::EntityHandle *conn,PetscScalar *vpos);
+PETSC_EXTERN PetscErrorCode DMMoabCheckBoundaryVertices(DM dm,PetscInt nconn,const moab::EntityHandle *cnt,PetscBool* isbdvtx,PetscBool* elem_on_boundary);
 
+/* DM utility creation interface */
 PETSC_EXTERN PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm,PetscInt,PetscInt,PetscInt,DM*);
 PETSC_EXTERN PetscErrorCode DMMoabLoadFromFile(MPI_Comm,PetscInt,const char*,const char*,DM*);
-
-#define MOAB_PARROPTS_READ_PART    "READ_PART"
-#define MOAB_PARROPTS_READ_DELETE  "READ_DELETE"
-#define MOAB_PARROPTS_BCAST_DELETE "BCAST_DELETE"
-
-typedef const char* MoabReadMode;
 
 #endif
