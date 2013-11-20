@@ -1236,8 +1236,8 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
   if (pcbddc->switch_static) { ierr = MatMultAdd(pcis->A_II,pcis->vec1_D,pcis->vec3_D,pcis->vec3_D);CHKERRQ(ierr); }
   ierr = KSPSolve(pcbddc->ksp_D,pcis->vec3_D,pcis->vec4_D);CHKERRQ(ierr);
   ierr = VecScale(pcis->vec4_D,m_one);CHKERRQ(ierr);
-  if (pcbddc->switch_static) { ierr = VecAXPY (pcis->vec4_D,one,pcis->vec1_D);CHKERRQ(ierr); }
-  ierr = VecAXPY (pcis->vec2_D,one,pcis->vec4_D);CHKERRQ(ierr);
+  if (pcbddc->switch_static) { ierr = VecAXPY(pcis->vec4_D,one,pcis->vec1_D);CHKERRQ(ierr); }
+  ierr = VecAXPY(pcis->vec2_D,one,pcis->vec4_D);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1304,10 +1304,10 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
   ierr = VecScatterEnd(pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = MatMultTranspose(pcis->A_BI,pcis->vec1_B,pcis->vec3_D);CHKERRQ(ierr);
   if (pcbddc->switch_static) { ierr = MatMultTransposeAdd(pcis->A_II,pcis->vec1_D,pcis->vec3_D,pcis->vec3_D);CHKERRQ(ierr); }
-  ierr = KSPSolveTranspose(pcbddc->ksp_D,pcis->vec3_D,pcbddc->vec4_D);CHKERRQ(ierr);
-  ierr = VecScale(pcbddc->vec4_D,m_one);CHKERRQ(ierr);
-  if (pcbddc->switch_static) { ierr = VecAXPY (pcbddc->vec4_D,one,pcis->vec1_D);CHKERRQ(ierr); }
-  ierr = VecAXPY (pcis->vec2_D,one,pcbddc->vec4_D);CHKERRQ(ierr);
+  ierr = KSPSolveTranspose(pcbddc->ksp_D,pcis->vec3_D,pcis->vec4_D);CHKERRQ(ierr);
+  ierr = VecScale(pcis->vec4_D,m_one);CHKERRQ(ierr);
+  if (pcbddc->switch_static) { ierr = VecAXPY(pcis->vec4_D,one,pcis->vec1_D);CHKERRQ(ierr); }
+  ierr = VecAXPY(pcis->vec2_D,one,pcis->vec4_D);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
