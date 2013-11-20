@@ -118,12 +118,12 @@ PetscErrorCode Destroy_AppContext(UserCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  delete (*user)->pcomm;
-  delete (*user)->mbint;
   delete (*user)->ownedvtx;
   delete (*user)->ownedelms;
   delete (*user)->allvtx;
   delete (*user)->ghostvtx;
+  delete (*user)->pcomm;
+  delete (*user)->mbint;
 
   ierr = PetscFree(*user);CHKERRQ(ierr);
   user = PETSC_NULL;
@@ -309,7 +309,7 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J
   // Get the global IDs on all vertexes:
   ierr = DMMoabGetLocalToGlobalTag(dm, &id_tag);CHKERRQ(ierr);
   merr = user->mbint->tag_iterate(id_tag,user->allvtx->begin(),user->allvtx->end(),
-  				  count,reinterpret_cast<void*&>(vertex_ids));MBERRNM(merr);
+            count,reinterpret_cast<void*&>(vertex_ids));MBERRNM(merr);
 
   /* zero out the discrete operator */
   ierr = MatZeroEntries(*Jpre);CHKERRQ(ierr);
@@ -476,8 +476,6 @@ PetscErrorCode CreateMesh(UserCtx user)
   PetscErrorCode ierr;
   moab::ErrorCode merr;
   PetscScalar     deflt[2]={0.0,0.0};
-  void            *data;
-  PetscInt        count;
 
   PetscFunctionBegin;
   ierr = Create_1D_Mesh(user->pcomm,user->npts,1); CHKERRQ(ierr);
@@ -497,13 +495,13 @@ PetscErrorCode CreateMesh(UserCtx user)
   /* subtract owned vertices from all the local vertices (which includes ghost vertices) */
   *user->ghostvtx = moab::subtract(*user->allvtx, *user->ownedvtx);
  
-  /* Do some error checking...make sure that tag_data is in a single sequence */
+  /* create a tag to store the unknown fields in the problem */
   merr = user->mbint->tag_get_handle("UNKNOWNS",2,moab::MB_TYPE_DOUBLE,user->solndofs,
                                   moab::MB_TAG_DENSE | moab::MB_TAG_CREAT,deflt);MBERRNM(merr);
-  merr = user->mbint->tag_iterate(user->solndofs,user->allvtx->begin(),user->allvtx->end(),count,data);MBERRNM(merr);
 
-  if((unsigned int) count != user->allvtx->size()) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Tag data not laid out contiguously %i %i",count,user->allvtx->size());
+  /* Do some error checking...make sure that the local entities in the range are in a single sequence */
+  if(user->allvtx->psize() != 1) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Locally owned entities not contiguous: Range pairs = %i",user->allvtx->psize());
   }
   PetscFunctionReturn(0);
 }
@@ -521,6 +519,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   moab::Tag         id_tag;
   moab::ErrorCode   merr;
   PetscErrorCode    ierr;
+  moab::Range::iterator iter;
 
   PetscFunctionBegin;
   hx = 1.0/(PetscReal)(user->npts-1);
@@ -528,8 +527,8 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   // Get the global IDs on all vertexes:
   ierr = VecGetDM(X, &dm);CHKERRQ(ierr);
   ierr = DMMoabGetLocalToGlobalTag(dm, &id_tag);CHKERRQ(ierr);
-  merr = user->mbint->tag_iterate(id_tag,user->allvtx->begin(),user->allvtx->end(),
-  				  count,reinterpret_cast<void*&>(vertex_ids));MBERRNM(merr);
+  merr = user->mbint->tag_iterate(id_tag,user->/*allvtx*/ownedvtx->begin(),user->ownedvtx->end(),
+            count,reinterpret_cast<void*&>(vertex_ids));MBERRNM(merr);
 
   ierr = VecSet(X, 0.0);CHKERRQ(ierr);
 
@@ -538,7 +537,6 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
 
   /* Compute function over the locally owned part of the grid */
   const int first_vertex = vertex_ids[*user->ownedvtx->begin()-1];
-  moab::Range::iterator iter;
   for(iter = user->ownedvtx->begin(); iter != user->ownedvtx->end(); iter++) {
     const int i = vertex_ids[*iter-1]-first_vertex ;
     PetscReal xi = (i+first_vertex)*hx;
@@ -564,7 +562,7 @@ static PetscErrorCode FormIFunctionMOAB(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,v
   PetscErrorCode  ierr;
   moab::ErrorCode merr;
   PetscInt        *vertex_ids;
-  moab::Tag       id_tag,x_tag,xdot_tag,f_tag;
+  moab::Tag       id_tag;
 
   PetscFunctionBegin;
   hx = 1.0/(PetscReal)(user->npts-1);
@@ -577,32 +575,20 @@ static PetscErrorCode FormIFunctionMOAB(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,v
   moab::Range::iterator iter = user->ownedelms->begin();
   merr = user->mbint->connect_iterate(iter,user->ownedelms->end(),connect,verts_per_entity,num_edges);MBERRNM(merr);
 
-  // get tag data for solution 
-  ierr = DMMoabGetVecTag(X,&x_tag);CHKERRQ(ierr);
-  merr = user->mbint->tag_iterate(x_tag,user->allvtx->begin(),user->allvtx->end(),
-				  count,reinterpret_cast<void*&>(x));MBERRNM(merr);
-
-  // get the tag data for solution derivative
-  ierr = DMMoabGetVecTag(Xdot,&xdot_tag);CHKERRQ(ierr);
-  merr = user->mbint->tag_iterate(xdot_tag,user->allvtx->begin(),user->allvtx->end(),
-				  count,reinterpret_cast<void*&>(xdot));MBERRNM(merr);
-
-  // get the residual tag
-  ierr = DMMoabGetVecTag(F,&f_tag);CHKERRQ(ierr);
-  merr = user->mbint->tag_iterate(f_tag,user->allvtx->begin(),user->allvtx->end(),
-				  count,reinterpret_cast<void*&>(f));MBERRNM(merr);
+  ierr = VecSet(F,0.0);CHKERRQ(ierr);
 
   // Get the global IDs on all vertexes:
   ierr = DMMoabGetLocalToGlobalTag(dm,&id_tag);CHKERRQ(ierr);
   merr = user->mbint->tag_iterate(id_tag,user->allvtx->begin(),user->allvtx->end(),
-  				  count,reinterpret_cast<void*&>(vertex_ids));MBERRNM(merr);
+            count,reinterpret_cast<void*&>(vertex_ids));MBERRNM(merr);
 
-  // Exchange tags that are needed for assembly:
-  merr = user->pcomm->exchange_tags(x_tag,*user->allvtx);MBERRNM(merr);
-  merr = user->pcomm->exchange_tags(xdot_tag,*user->allvtx);MBERRNM(merr);
+  /* get the local representation of the arrays from Vectors */
+  ierr = DMMoabVecGetArrayRead(dm, X, &x);CHKERRQ(ierr);
+  ierr = DMMoabVecGetArrayRead(dm, Xdot, &xdot);CHKERRQ(ierr);
+  ierr = DMMoabVecGetArray(dm, F, &f);CHKERRQ(ierr);
 
   /* reset the residual vector */
-  ierr = PetscMemzero(f,sizeof(Field)*user->allvtx->size());CHKERRQ(ierr);
+  ierr = PetscMemzero(f,user->allvtx->size()*sizeof(Field));CHKERRQ(ierr);
 
   const moab::EntityHandle first_vertex = *user->allvtx->begin();
 
@@ -633,7 +619,9 @@ static PetscErrorCode FormIFunctionMOAB(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,v
   }
 
   // Add tags on shared vertexes:
-  merr = user->pcomm->reduce_tags(f_tag,MPI_SUM,*user->ghostvtx);MBERRNM(merr);
+  ierr = DMMoabVecRestoreArrayRead(dm, X, &x);CHKERRQ(ierr);
+  ierr = DMMoabVecRestoreArrayRead(dm, Xdot, &xdot);CHKERRQ(ierr);
+  ierr = DMMoabVecRestoreArray(dm, F, &f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -682,7 +670,7 @@ static PetscErrorCode FormIFunctionGlobalBlocked(TS ts,PetscReal t,Vec X,Vec Xdo
   // Get the global IDs on all vertexes:
   ierr = DMMoabGetLocalToGlobalTag(dm, &id_tag);CHKERRQ(ierr);
   merr = user->mbint->tag_iterate(id_tag,user->allvtx->begin(),user->allvtx->end(),
-  				  count,reinterpret_cast<void*&>(vertex_ids));MBERRNM(merr);
+            count,reinterpret_cast<void*&>(vertex_ids));MBERRNM(merr);
 
   int xsiz,xlocsiz;
   VecGetSize(xlocal, &xsiz);
@@ -809,7 +797,7 @@ static PetscErrorCode FormIFunctionGhosted(TS ts,PetscReal t,Vec X,Vec Xdot,Vec 
   // Get the global IDs on all vertexes:
   ierr = DMMoabGetLocalToGlobalTag(dm, &id_tag);CHKERRQ(ierr);
   merr = user->mbint->tag_iterate(id_tag,user->allvtx->begin(),user->allvtx->end(),
-  				  count,reinterpret_cast<void*&>(vertex_ids));MBERRNM(merr);
+            count,reinterpret_cast<void*&>(vertex_ids));MBERRNM(merr);
 
   int xsiz,xlocsiz;
   VecGetSize(xlocal, &xsiz);
