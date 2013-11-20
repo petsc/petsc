@@ -65,7 +65,7 @@ PetscErrorCode DMSetUp_Moab(DM dm)
     dmmoab->nghost = dmmoab->vghost->size();
     ierr = MPI_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
 
-#if 1
+#if 0
     if(dmmoab->pcomm->rank() || dmmoab->pcomm->size()==1) {
       PetscPrintf(PETSC_COMM_SELF, "Vertices: global: %D, local: %D", dmmoab->n, dmmoab->nloc+dmmoab->nghost);
       dmmoab->vlocal->print(0);
@@ -149,7 +149,7 @@ PetscErrorCode DMSetUp_Moab(DM dm)
         else {
           ierr = PetscSectionSetFieldDof(section, locgid, i, totsize*i+locgid-global_min);CHKERRQ(ierr);
           ierr = PetscSectionSetFieldOffset(section, locgid, i, i*totsize);
-          PetscPrintf(PETSC_COMM_SELF, "[%D] Local_GID = %D, FDOF = %D, OFF = %D.\n", dmmoab->pcomm->rank(), locgid, totsize*i+locgid-global_min, totsize );
+//          PetscPrintf(PETSC_COMM_SELF, "[%D] Local_GID = %D, FDOF = %D, OFF = %D.\n", dmmoab->pcomm->rank(), locgid, totsize*i+locgid-global_min, totsize );
         }
       }
       ierr = PetscSectionSetDof(section, locgid, dmmoab->nfields);CHKERRQ(ierr);
