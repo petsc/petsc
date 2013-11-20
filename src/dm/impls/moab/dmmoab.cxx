@@ -3,63 +3,6 @@
 
 #include <petscdmmoab.h>
 #include <MBTagConventions.hpp>
-#include <sstream>
-
-
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalBegin_Moab"
-PetscErrorCode  DMGlobalToLocalBegin_Moab(DM dm,Vec g,InsertMode mode,Vec l)
-{
-  PetscErrorCode    ierr;  
-  DM_Moab         *dmmoab = (DM_Moab*)dm->data;
-
-  PetscFunctionBegin;
-  ierr = VecScatterBegin(dmmoab->ltog_sendrecv,g,l,mode,SCATTER_FORWARD/*SCATTER_FORWARD*/);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalEnd_Moab"
-PetscErrorCode  DMGlobalToLocalEnd_Moab(DM dm,Vec g,InsertMode mode,Vec l)
-{
-  PetscErrorCode    ierr;  
-  DM_Moab         *dmmoab = (DM_Moab*)dm->data;
-
-  PetscFunctionBegin;
-  ierr = VecScatterEnd(dmmoab->ltog_sendrecv,g,l,mode,SCATTER_FORWARD/*SCATTER_FORWARD*/);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToGlobalBegin_Moab"
-PetscErrorCode  DMLocalToGlobalBegin_Moab(DM dm,Vec l,InsertMode mode,Vec g)
-{
-  PetscErrorCode    ierr;  
-  DM_Moab         *dmmoab = (DM_Moab*)dm->data;
-
-  PetscFunctionBegin;
-//  PetscPrintf(PETSC_COMM_WORLD,"\n Inside local-global begin. Printing global and local vecs.\n");
-//  ierr = VecView(g, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-//  ierr = VecView(l, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = VecScatterBegin(dmmoab->ltog_sendrecv,l,g,mode,SCATTER_REVERSE);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToGlobalEnd_Moab"
-PetscErrorCode  DMLocalToGlobalEnd_Moab(DM dm,Vec l,InsertMode mode,Vec g)
-{
-  PetscErrorCode    ierr;  
-  DM_Moab         *dmmoab = (DM_Moab*)dm->data;
-
-  PetscFunctionBegin;
-  ierr = VecScatterEnd(dmmoab->ltog_sendrecv,l,g,mode,SCATTER_REVERSE);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDestroy_Moab"
@@ -95,7 +38,7 @@ PetscErrorCode DMSetUp_Moab(DM dm)
   Vec                     local, global;
   IS                      from;
   moab::Range::iterator   iter;
-  PetscInt                bs, *gsindices;
+  PetscInt                bs, *gsindices,gsiz,lsiz;
   DM_Moab                *dmmoab = (DM_Moab*)dm->data;
   PetscInt                count,dof,totsize;
 
@@ -121,14 +64,10 @@ PetscErrorCode DMSetUp_Moab(DM dm)
     ierr = MPI_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
   }
 
-//  PetscPrintf(PETSC_COMM_SELF, "\n Local vertices size = %D and shared vertices = %D", dmmoab->vowned->size(), dmmoab->vghost->size());
-//  PetscPrintf(PETSC_COMM_SELF, "\n Global vertices size = %D and local vertices = %D", dmmoab->n, dmmoab->nloc);
-
   /* get the information about the local elements in the mesh */
   {
     dmmoab->elocal->clear();
     dmmoab->eghost->clear();
-//    PetscPrintf(PETSC_COMM_SELF, "\n Getting all elements of dimension = %D", dmmoab->dim);
     merr = dmmoab->mbiface->get_entities_by_dimension(0, dmmoab->dim, *dmmoab->elocal, true);CHKERRQ(merr);
     *dmmoab->eghost = *dmmoab->elocal;
     merr = dmmoab->pcomm->filter_pstatus(*dmmoab->elocal,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
@@ -136,14 +75,13 @@ PetscErrorCode DMSetUp_Moab(DM dm)
 
     dmmoab->neleloc = dmmoab->elocal->size();
     ierr = MPI_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
-//    PetscPrintf(PETSC_COMM_SELF, "\n Global elements = %D and local elements = %D", dmmoab->nele, dmmoab->neleloc);
   }
 
   bs = dmmoab->bs;
   if (!dmmoab->ltog_tag) {
-    // Get the global ID tag. The global ID tag is applied to each
-    // vertex. It acts as an global identifier which MOAB uses to
-    // assemble the individual pieces of the mesh:
+    /* Get the global ID tag. The global ID tag is applied to each
+       vertex. It acts as an global identifier which MOAB uses to
+       assemble the individual pieces of the mesh */
     merr = dmmoab->mbiface->tag_get_handle(GLOBAL_ID_TAG_NAME, dmmoab->ltog_tag);MBERRNM(merr);
   }
 
@@ -168,22 +106,15 @@ PetscErrorCode DMSetUp_Moab(DM dm)
 
     /* global to local must retrieve ghost points */
     ierr = ISCreateBlock(((PetscObject)dm)->comm,bs,totsize,gsindices,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
-//    ierr = ISCreateGeneral(((PetscObject)dm)->comm,totsize*bs,gsindices,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
 
-    PetscInt gsiz, lsiz;
-    VecGetLocalSize(global,&gsiz);
-    VecGetLocalSize(local,&lsiz);
-//    PetscPrintf(PETSC_COMM_SELF, "\n Global vec size = %D and local vec size = %D; Local=%D; Ghosted=%D; Start=%D\n Printing From and To IS \n", gsiz, lsiz, dmmoab->nloc, dmmoab->nghost, gsindices[0]);
-//    ISView(from, PETSC_VIEWER_STDOUT_WORLD);
+    ierr = VecGetLocalSize(global,&gsiz);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(local,&lsiz);CHKERRQ(ierr);
 
     ierr = VecScatterCreate(local,from,global,from,&dmmoab->ltog_sendrecv);CHKERRQ(ierr);
     ierr = ISDestroy(&from);CHKERRQ(ierr);
     ierr = VecDestroy(&local);CHKERRQ(ierr);
     ierr = VecDestroy(&global);CHKERRQ(ierr);
     ierr = PetscFree(gsindices);CHKERRQ(ierr);
-
-    /* create the local to global mapping for all indices */
-//    ierr = ISLocalToGlobalMappingCreate(((PetscObject)dm)->comm,dmmoab->nghost*bs,gsindices,PETSC_OWN_POINTER,&dmmoab->ltog_map);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -300,14 +231,14 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
     ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm, &nprocs);CHKERRQ(ierr);
 
-    // Create root sets for each mesh.  Then pass these
-    // to the load_file functions to be populated.
+    /* Create root sets for each mesh.  Then pass these
+       to the load_file functions to be populated. */
     merr = mbiface->create_meshset(moab::MESHSET_SET, rootset);
     MBERR("Creating root set failed", merr);
     merr = mbiface->create_meshset(moab::MESHSET_SET, partnset);
     MBERR("Creating partition set failed", merr);
 
-    // Create the parallel communicator object with the partition handle associated with MOAB
+    /* Create the parallel communicator object with the partition handle associated with MOAB */
     pcomm = moab::ParallelComm::get_pcomm(mbiface, partnset, &comm);
   }
 
@@ -318,7 +249,7 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
     ierr = DMMoabSetLocalToGlobalTag(*dmb, *ltog_tag);CHKERRQ(ierr);
   }
 
-    // do the initialization of the DM
+  /* do the initialization of the DM */
   dmmoab->bs       = 1;
   ierr = DMMoabSetParallelComm(*dmb, pcomm);CHKERRQ(ierr);
   dmmoab->ltog_tag = *ltog_tag;  
