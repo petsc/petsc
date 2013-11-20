@@ -86,11 +86,11 @@ static void set_element_connectivity(PetscInt dim, moab::EntityType etype, Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabCreateBoxMesh"
-PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, PetscInt nghost, DM *dm)
+PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, PetscInt user_nghost, DM *dm)
 {
   PetscErrorCode  ierr;
   moab::ErrorCode merr;
-  PetscInt        i,j,k,n,nprocs,rank;
+  PetscInt        i,j,k,n,nprocs;
   DM_Moab        *dmmoab;
   moab::Interface *mbiface;
   moab::ParallelComm *pcomm;
@@ -98,12 +98,19 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
 
   moab::Tag  id_tag=PETSC_NULL;
   moab::Range         ownedvtx,ownedelms;
-  moab::EntityHandle  vfirst,efirst;
+  moab::EntityHandle  vfirst,efirst,regionset,faceset,edgeset,vtxset;
   std::vector<double*> vcoords;
   moab::EntityHandle  *connectivity = 0;
   moab::EntityType etype;
   PetscInt    ise[6];
   PetscReal   xse[6];
+  /* TODO: Fix nghost > 0 - now relying on exchange_ghost_cells */
+  const PetscInt nghost=0;
+
+  moab::Tag geom_tag;
+
+  moab::Range adj,dim3,dim2;
+  bool build_adjacencies=false;
 
   const PetscInt npts=nele+1;        /* Number of points in every dimension */
   PetscInt vpere,locnele,locnpts,ghnele,ghnpts;    /* Number of verts/element, vertices, elements owned by this process */
@@ -129,7 +136,6 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
   pcomm = dmmoab->pcomm;
   id_tag = dmmoab->ltog_tag;
   nprocs = pcomm->size();
-  rank = pcomm->rank();
   dmmoab->dim = dim;
 
   /* No errors yet; proceed with building the mesh */
@@ -219,7 +225,6 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
   if (locnpts+ghnpts != vcount) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Created the wrong number of vertices! (%D!=%D)",locnpts+ghnpts,vcount);
 
   merr = mbiface->get_entities_by_type(0,moab::MBVERTEX,ownedvtx,true);MBERRNM(merr);
-  merr = mbiface->add_entities (dmmoab->fileset, ownedvtx);MBERRNM(merr);
 
   /* The global ID tag is applied to each owned
      vertex. It acts as an global identifier which MOAB uses to
@@ -275,7 +280,6 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
   /* 2. Get the vertices and hexes from moab and check their numbers against I*J*K and (I-1)*(J-1)*(K-1), resp.
         first '0' specifies "root set", or entire MOAB instance, second the entity dimension being requested */
   merr = mbiface->get_entities_by_dimension(0, dim, ownedelms);MBERRNM(merr);
-  merr = mbiface->add_entities (dmmoab->fileset, ownedelms);MBERRNM(merr);
 
   if (locnele+ghnele != (int) ownedelms.size())
     SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Created the wrong number of elements! (%D!=%D)",locnele+ghnele,ownedelms.size());
@@ -283,6 +287,49 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
     SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Created the wrong number of vertices! (%D!=%D)",locnpts+ghnpts,ownedvtx.size());    
   else
     PetscInfo2(*dm, "Created %D elements and %D vertices.\n", ownedelms.size(), ownedvtx.size());
+
+  /* lets create some sets */
+  merr = mbiface->tag_get_handle(GEOM_DIMENSION_TAG_NAME, 1, moab::MB_TYPE_INTEGER, geom_tag, moab::MB_TAG_SPARSE|moab::MB_TAG_CREAT);MBERRNM(merr);
+
+  merr = mbiface->create_meshset(moab::MESHSET_SET, regionset);MBERRNM(merr);
+  merr = mbiface->add_entities(regionset, ownedelms);MBERRNM(merr);
+  merr = mbiface->add_parent_child(dmmoab->fileset,regionset);MBERRNM(merr);
+  merr = mbiface->tag_set_data(geom_tag, &regionset, 1, &dmmoab->dim);MBERRNM(merr);
+  merr = mbiface->unite_meshset(dmmoab->fileset, regionset);MBERRNM(merr);
+
+  merr = mbiface->create_meshset(moab::MESHSET_SET, vtxset);MBERRNM(merr);
+  merr = mbiface->add_entities(vtxset, ownedvtx);MBERRNM(merr);
+  merr = mbiface->add_parent_child(dmmoab->fileset,vtxset);MBERRNM(merr);
+  merr = mbiface->unite_meshset(dmmoab->fileset, vtxset);MBERRNM(merr);
+
+  if (build_adjacencies) {
+    // generate all lower dimensional adjacencies
+    merr = mbiface->get_adjacencies( ownedelms, dim-1, true, adj, moab::Interface::UNION );MBERRNM(merr);
+    merr = dmmoab->pcomm->get_part_entities(dim2, dim-1);MBERRNM(merr);
+    adj.merge(dim2);
+
+    /* create face sets */
+    merr = mbiface->create_meshset(moab::MESHSET_SET, faceset);MBERRNM(merr);
+    merr = mbiface->add_entities(faceset, adj);MBERRNM(merr);
+    merr = mbiface->add_parent_child(dmmoab->fileset,faceset);MBERRNM(merr);
+    i=dim-1;
+    merr = mbiface->tag_set_data(geom_tag, &faceset, 1, &i);MBERRNM(merr);
+    merr = mbiface->unite_meshset(dmmoab->fileset, faceset);MBERRNM(merr);
+    PetscInfo2(dm, "Found %d %d-Dim quantities.\n", adj.size(), dim-1);
+
+    if (dim > 2) {
+      dim2.clear();
+      /* create edge sets, if appropriate i.e., if dim=3 */
+      merr = mbiface->create_meshset(moab::MESHSET_SET, edgeset);MBERRNM(merr);
+      merr = mbiface->get_adjacencies(adj, dim-1, true, dim2, moab::Interface::UNION );MBERRNM(merr);
+      merr = mbiface->add_entities(edgeset, dim2);MBERRNM(merr);
+      merr = mbiface->add_parent_child(dmmoab->fileset,edgeset);MBERRNM(merr);
+      i=dim-2;
+      merr = mbiface->tag_set_data(geom_tag, &edgeset, 1, &i);MBERRNM(merr);
+      merr = mbiface->unite_meshset(dmmoab->fileset, edgeset);MBERRNM(merr);
+      PetscInfo2(dm, "Found %d %d-Dim quantities.\n", adj.size(), dim-2);
+    }
+  }
 
   /* check the handles */
   merr = pcomm->check_all_shared_handles();MBERRV(mbiface,merr);
@@ -300,7 +347,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
   /* Reassign global IDs on all entities. */
   merr = pcomm->assign_global_ids(dmmoab->fileset,dim,1,true,true,true);MBERRNM(merr);
 
-  merr = pcomm->exchange_ghost_cells(dim,0,1/*nghost*/,dim,true,false,&dmmoab->fileset);MBERRV(mbiface,merr);
+  merr = pcomm->exchange_ghost_cells(dim,0,user_nghost,dim,true,false,&dmmoab->fileset);MBERRV(mbiface,merr);
 
   /* Everything is set up, now just do a tag exchange to update tags
      on all of the ghost vertexes */
