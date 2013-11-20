@@ -8,7 +8,9 @@ PETSC_EXTERN PetscErrorCode DMCreate_ADDA(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM);
+#if defined(PETSC_HAVE_MOAB)
 PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM);
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "DMRegisterAll"
