@@ -21,7 +21,11 @@
 #define MOAB_PARROPTS_READ_DELETE  "READ_DELETE"
 #define MOAB_PARROPTS_BCAST_DELETE "BCAST_DELETE"
 
+#define MOAB_PARWOPTS_WRITE_PART "WRITE_PART"
+#define MOAB_PARWOPTS_WRITE_FORMAT "FORMAT"
+
 typedef const char* MoabReadMode;
+typedef const char* MoabWriteMode;
 
 PETSC_EXTERN PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *moab);
 PETSC_EXTERN PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::ParallelComm *pcomm, moab::Tag *ltog_tag, moab::Range *range, DM *moab);
