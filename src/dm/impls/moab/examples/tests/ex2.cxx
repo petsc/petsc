@@ -23,11 +23,12 @@ static const char help[] = "Time-dependent Brusselator reaction-diffusion PDE in
 #  include <moab/Core.hpp>
 #  include <moab/ReadUtilIface.hpp>
 #  include <MBTagConventions.hpp>
+
+typedef moab::Range* MBRange;
 #else
 #error You must have MOAB for this example. Reconfigure using --download-moab
 #endif
 
-typedef moab::Range* MBRange;
 
 typedef struct {
   PetscScalar u,v;
