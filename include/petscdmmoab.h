@@ -19,6 +19,7 @@
 
 PETSC_EXTERN PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *moab);
 PETSC_EXTERN PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::ParallelComm *pcomm, moab::Tag *ltog_tag, moab::Range *range, DM *moab);
+PETSC_EXTERN PetscErrorCode DMMoabOutput(DM,const char*,const char*);
 
 PETSC_EXTERN PetscErrorCode DMMoabSetParallelComm(DM dm,moab::ParallelComm *pcomm);
 PETSC_EXTERN PetscErrorCode DMMoabGetParallelComm(DM dm,moab::ParallelComm **pcomm);
@@ -32,6 +33,7 @@ PETSC_EXTERN PetscErrorCode DMMoabSetLocalToGlobalTag(DM dm,moab::Tag ltogtag);
 PETSC_EXTERN PetscErrorCode DMMoabGetLocalToGlobalTag(DM dm,moab::Tag *ltog_tag);
 PETSC_EXTERN PetscErrorCode DMMoabSetBlockSize(DM dm,PetscInt bs);
 PETSC_EXTERN PetscErrorCode DMMoabGetBlockSize(DM dm,PetscInt *bs);
+PETSC_EXTERN PetscErrorCode DMMoabGetBoundaryEntities(DM dm,moab::Range *bdvtx,moab::Range* bdfaces);
 
 PETSC_EXTERN PetscErrorCode DMMoabVecGetArrayRead(DM,Vec,void*);
 PETSC_EXTERN PetscErrorCode DMMoabVecRestoreArrayRead(DM,Vec,void*);
@@ -42,6 +44,7 @@ PETSC_EXTERN PetscErrorCode DMMoabCreateVector(DM dm, moab::Tag tag,PetscInt tag
 PETSC_EXTERN PetscErrorCode DMMoabCreateMatrix(DM dm, MatType mtype,Mat *J);
 PETSC_EXTERN PetscErrorCode DMMoabGetVecTag(Vec vec,moab::Tag *tag);
 PETSC_EXTERN PetscErrorCode DMMoabGetVecRange(Vec vec,moab::Range *range);
+PETSC_EXTERN PetscErrorCode DMMoabSetFieldVector(DM, PetscInt, Vec);
 
 PETSC_EXTERN PetscErrorCode DMMoabSetFields(DM dm,PetscInt nfields,const char** fields);
 PETSC_EXTERN PetscErrorCode DMMoabGetFieldDof(DM dm,moab::EntityHandle point, PetscInt field,PetscInt* dof);

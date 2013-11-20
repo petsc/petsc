@@ -20,6 +20,7 @@ PetscErrorCode DMMoab_CreateVector_Private(DM dm,moab::Tag tag,PetscInt tag_size
   PetscInt               *gindices,*gsindices;
   PetscInt               i,count,icount,dof;
   PetscInt               size,rank;
+  std::string ttname;
   PetscScalar *data_ptr;
 
   Vec_MOAB *vmoab;
@@ -33,7 +34,8 @@ PetscErrorCode DMMoab_CreateVector_Private(DM dm,moab::Tag tag,PetscInt tag_size
   else range = userrange;
   if(!range) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Input range cannot be empty or call DMSetUp first.");
 
-  if (!tag) {
+  merr = mbiface->tag_get_name(tag, ttname);
+  if (!ttname.length() && merr !=moab::MB_SUCCESS) {
     /* get the new name for the anonymous MOABVec -> the tag_name will be destroyed along with Tag */
     char *tag_name = PETSC_NULL;
     ierr = DMMoab_VecCreateTagName_Private(pcomm,&tag_name);CHKERRQ(ierr);

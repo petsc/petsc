@@ -30,6 +30,7 @@ typedef struct {
   PetscInt                n,nloc,nghost;           /* Number of global, local only and shared degrees of freedom for current partition */
   PetscInt                nele,neleloc;           /* Number of global, local only and shared degrees of freedom for current partition */
   PetscBool               icreatedinstance;       /* true if DM created moab instance internally, will destroy instance in DMDestroy */
+
   moab::ParallelComm      *pcomm;
   moab::Interface         *mbiface;
   moab::Tag               ltog_tag;               /* moab supports "global id" tags, which are usually local to global numbering */
@@ -38,6 +39,7 @@ typedef struct {
   moab::Range             *vlocal, *vowned, *vghost;
   moab::Range             *elocal, *eghost;
   moab::EntityHandle      fileset;
+  moab::Range             *bndyvtx,*bndyfaces;
 
   PetscInt                nfields;
   const char**            fields;
