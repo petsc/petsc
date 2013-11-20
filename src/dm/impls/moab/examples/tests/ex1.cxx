@@ -134,7 +134,7 @@ int main(int argc, char **argv)
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
 
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &user.dm);CHKERRQ(ierr); /* create the MOAB dm and the mesh */
-  ierr = DMMoabCreateVector(user.dm, user.tag, 1, &user.range, PETSC_TRUE, PETSC_FALSE,
+  ierr = DMMoabCreateVector(user.dm, user.tag, &user.range, PETSC_TRUE, PETSC_FALSE,
                               &vec);CHKERRQ(ierr); /* create a vec from user-input tag */
   std::cout << "Created VecMoab from existing tag." << std::endl;
   ierr = VecDestroy(&vec);CHKERRQ(ierr);
