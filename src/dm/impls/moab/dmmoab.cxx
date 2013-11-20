@@ -46,8 +46,9 @@ PetscErrorCode DMSetUp_Moab(DM dm)
   moab::Range::iterator   iter;
   PetscInt                i,j,bs,gsiz,lsiz;
   DM_Moab                *dmmoab = (DM_Moab*)dm->data;
-  PetscInt                totsize,local_min,local_max,global_min;
+  PetscInt                totsize;
   PetscSection            section;
+  PetscInt                gmin,lmin,lmax;
 
   moab::Range adj;
 
@@ -123,36 +124,31 @@ PetscErrorCode DMSetUp_Moab(DM dm)
     }
 
     /* find out the local and global minima of GLOBAL_ID */
-    local_min=local_max=dmmoab->gsindices[0];
+    lmin=lmax=dmmoab->gsindices[0];
     for (i=0; i<totsize; ++i) {
-//      if (dmmoab->pcomm->rank())
-//        PetscPrintf(PETSC_COMM_SELF, "[%D] gsindices[%D] = %D\n", dmmoab->pcomm->rank(), i, dmmoab->gsindices[i]);
-      if(local_min>dmmoab->gsindices[i]) local_min=dmmoab->gsindices[i];
-      if(local_max<dmmoab->gsindices[i]) local_max=dmmoab->gsindices[i];
+      if(lmin>dmmoab->gsindices[i]) lmin=dmmoab->gsindices[i];
+      if(lmax<dmmoab->gsindices[i]) lmax=dmmoab->gsindices[i];
     }
 
-    ierr = MPI_Allreduce(&local_min, &global_min, 1, MPI_INT, MPI_MIN, ((PetscObject)dm)->comm);CHKERRQ(ierr);
-    PetscInfo3(dm, "GLOBAL_ID: Local minima - %D, Local maxima - %D, Global minima - %D.\n", local_min, local_max, global_min);
-//    PetscPrintf(PETSC_COMM_SELF, "[%D] GLOBAL_ID: Local minima - %D, Local maxima - %D, Global minima - %D.\n", dmmoab->pcomm->rank(), local_min, local_max, global_min);
+    ierr = MPI_Allreduce(&lmin, &gmin, 1, MPI_INT, MPI_MIN, ((PetscObject)dm)->comm);CHKERRQ(ierr);
+    PetscInfo3(dm, "GLOBAL_ID: Local minima - %D, Local maxima - %D, Global minima - %D.\n", lmin, lmax, gmin);
   }
     
   {
     ierr = PetscSectionCreate(((PetscObject)dm)->comm, &section);CHKERRQ(ierr);
     ierr = PetscSectionSetNumFields(section, dmmoab->nfields);CHKERRQ(ierr);
-//    ierr = PetscSectionSetChart(section, dmmoab->gsindices[0], dmmoab->gsindices[dmmoab->nloc-1]+1);CHKERRQ(ierr);
-    ierr = PetscSectionSetChart(section, local_min, local_max+1);CHKERRQ(ierr);
+    ierr = PetscSectionSetChart(section, lmin, lmax+1);CHKERRQ(ierr);
     for (j=0; j<totsize; ++j) {
       PetscInt locgid = dmmoab->gsindices[j];
       for (i=0; i < dmmoab->nfields; ++i) {
         ierr = PetscSectionSetFieldName(section, i, dmmoab->fields[i]);CHKERRQ(ierr);
         if (bs>1) {
-          ierr = PetscSectionSetFieldDof(section, locgid, i, (locgid-global_min)*dmmoab->nfields+i);CHKERRQ(ierr);
-          ierr = PetscSectionSetFieldOffset(section, locgid, i, (locgid-global_min)*dmmoab->nfields);
+          ierr = PetscSectionSetFieldDof(section, locgid, i, (locgid-gmin)*dmmoab->nfields+i);CHKERRQ(ierr);
+          ierr = PetscSectionSetFieldOffset(section, locgid, i, (locgid-gmin)*dmmoab->nfields);
         }
         else {
-          ierr = PetscSectionSetFieldDof(section, locgid, i, dmmoab->n*i+locgid-global_min);CHKERRQ(ierr);
+          ierr = PetscSectionSetFieldDof(section, locgid, i, dmmoab->n*i+locgid-gmin);CHKERRQ(ierr);
           ierr = PetscSectionSetFieldOffset(section, locgid, i, i*dmmoab->n);
-          PetscPrintf(PETSC_COMM_SELF, "[%D] Local_GID = %D, FDOF = %D, OFF = %D.\n", dmmoab->pcomm->rank(), locgid, dmmoab->n*i+locgid-global_min, i*dmmoab->n );
         }
       }
       ierr = PetscSectionSetDof(section, locgid, dmmoab->nfields);CHKERRQ(ierr);
@@ -163,9 +159,7 @@ PetscErrorCode DMSetUp_Moab(DM dm)
 
   {
     for (i=0; i<totsize; ++i) {
-      dmmoab->gsindices[i]-=global_min;   /* zero based index needed for IS */
-//      if (dmmoab->pcomm->rank())
-//        PetscPrintf(PETSC_COMM_SELF, "[%D] modified gsindices[%D] = %D\n", dmmoab->pcomm->rank(), i, dmmoab->gsindices[i]);
+      dmmoab->gsindices[i]-=gmin;   /* zero based index needed for IS */
     }
 
     /* Create Global to Local Vector Scatter Context */
@@ -186,35 +180,29 @@ PetscErrorCode DMSetUp_Moab(DM dm)
 
   /* skin the boundary and store nodes */
   {
-    // get the skin vertices of those faces and mark them as fixed; we don't want to fix the vertices on a
-    // part boundary, but since we exchanged a layer of ghost faces, those vertices aren't on the skin locally
-    // ok to mark non-owned skin vertices too, I won't move those anyway
-    // use MOAB's skinner class to find the skin
+    /* get the skin vertices of boundary faces for the current partition and then filter 
+       the local, boundary faces, vertices and elements alone via PSTATUS flags;
+       this should not give us any ghosted boundary, but if user needs such a functionality
+       it would be easy to add it based on the find_skin query below */
     moab::Skinner skinner(dmmoab->mbiface);
     dmmoab->bndyvtx = new moab::Range();
     dmmoab->bndyfaces = new moab::Range();
     dmmoab->bndyelems = new moab::Range();
+
+    /* get the entities on the skin - only the faces */
     merr = skinner.find_skin(dmmoab->fileset, *dmmoab->elocal, false, *dmmoab->bndyfaces, NULL, false, true, false, false);MBERRNM(merr); // 'false' param indicates we want faces back, not vertices
-//    merr = skinner.find_skin(dmmoab->fileset, *dmmoab->elocal, true, *dmmoab->bndyvtx, NULL, true, true, false, false);MBERRNM(merr); // 'true' param indicates we want vertices back, not faces
+
+    /* filter all the non-owned and shared entities out of the list */
+    merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
+    merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces,PSTATUS_SHARED,PSTATUS_NOT);MBERRNM(merr);
 
     if (dmmoab->dim == 3) {
       // get the edges from faces and then do the same if needed
     }
 
-    merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
-    merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces,PSTATUS_SHARED,PSTATUS_NOT);MBERRNM(merr);
-//    merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces,PSTATUS_MULTISHARED,PSTATUS_NOT);MBERRNM(merr);
-
+    /* get all the nodes via connectivity and the parent elements via adjacency information */
     merr = dmmoab->mbiface->get_connectivity(*dmmoab->bndyfaces, *dmmoab->bndyvtx, false);MBERRNM(ierr);
     merr = dmmoab->mbiface->get_adjacencies(*dmmoab->bndyfaces, dmmoab->dim, false, *dmmoab->bndyelems, moab::Interface::UNION);MBERRNM(ierr);
-
-    dmmoab->bndyfaces->print(0);
-    dmmoab->bndyvtx->print(0);
-    dmmoab->bndyelems->print(0);
-
-//    merr = skinner.find_geometric_skin(dmmoab->fileset, *dmmoab->bndyelems, dmmoab->dim);MBERRV(dmmoab->mbiface,merr);
-//    merr = skinner.find_skin(dmmoab->fileset, *dmmoab->elocal, dmmoab->bndyvtx, dmmoab->bndyfaces, dmmoab->bndyelems, true, true);MBERRNM(merr);
-
     PetscInfo3(dm, "Found %D boundary vertices, %D boundary faces and %D boundary elements.\n", dmmoab->bndyvtx->size(), dmmoab->bndyvtx->size(), dmmoab->bndyelems->size());
   }
   PetscFunctionReturn(0);
@@ -948,6 +936,35 @@ PetscErrorCode DMMoabGetFieldDofs(DM dm,PetscInt npoints,const moab::EntityHandl
   for (i=0; i<npoints; ++i) {
     gid=dof[i];
     ierr = PetscSectionGetFieldDof(section, gid, field, &dof[i]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabGetLocalFieldDofs"
+PetscErrorCode DMMoabGetLocalFieldDofs(DM dm,PetscInt npoints,const moab::EntityHandle* points,PetscInt field,PetscInt* dof)
+{
+  PetscInt i,offset;
+  PetscErrorCode  ierr;
+  DM_Moab        *dmmoab;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  dmmoab = (DM_Moab*)(dm)->data;
+
+  if (!dof) {
+    ierr = PetscMalloc(sizeof(PetscScalar)*npoints, &dof);CHKERRQ(ierr);
+  }
+
+  if (dmmoab->bs > 1) {
+    for (i=0; i<npoints; ++i)
+      dof[i] = (points[i]-1)*dmmoab->bs+field;
+  }
+  else {
+    offset = field*dmmoab->n; /* assume all fields have equal distribution */
+    for (i=0; i<npoints; ++i)
+      dof[i] = offset+points[i]-1;
   }
   PetscFunctionReturn(0);
 }

@@ -19,7 +19,7 @@ PetscErrorCode DMMoab_CreateVector_Private(DM dm,moab::Tag tag,PetscInt tag_size
   moab::Range           *range;
   PetscInt               *gindices;
   PetscInt               i,count,dof;
-  PetscInt               size,rank;
+  PetscInt               size;
   std::string ttname;
   PetscScalar *data_ptr;
 
@@ -67,7 +67,6 @@ PetscErrorCode DMMoab_CreateVector_Private(DM dm,moab::Tag tag,PetscInt tag_size
   merr = mbiface->tag_get_length(tag,vmoab->tag_size);MBERR("tag_get_size", merr);
 
   size = pcomm->size();
-  rank = pcomm->rank();
   
   /* set the reference for vector range */
   vmoab->tag_range = new moab::Range(*range);
