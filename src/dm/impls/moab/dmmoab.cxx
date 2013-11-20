@@ -123,6 +123,7 @@ PetscErrorCode DMSetUp_Moab(DM dm)
         else {
           ierr = PetscSectionSetFieldDof(section, j, i, totsize*i+locgid);CHKERRQ(ierr);
           ierr = PetscSectionSetFieldOffset(section, j, i, totsize);
+          PetscPrintf(PETSC_COMM_SELF, "[%D] Index - %D, Local_GID = %D, FDOF = %D, OFF = %D.\n", dmmoab->pcomm->rank(), j, locgid, totsize*i+locgid, totsize );
         }
       }
       ierr = PetscSectionSetDof(section, j, dmmoab->nfields);CHKERRQ(ierr);
@@ -703,6 +704,77 @@ PetscErrorCode DMMoabSetFieldVector(DM dm, PetscInt ifield, Vec fvec)
     /* make sure the parallel exchange for ghosts are done appropriately */
     merr = dmmoab->pcomm->exchange_tags(ntag, *dmmoab->vlocal);MBERRNM(merr);
     ierr = PetscFree(varray);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabGetVertexCoordinates"
+PetscErrorCode DMMoabGetVertexCoordinates(DM dm,PetscInt nconn,const moab::EntityHandle *conn,PetscScalar *vpos)
+{
+  DM_Moab         *dmmoab;
+  PetscErrorCode  ierr;
+  moab::ErrorCode merr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(conn,3);
+  dmmoab = (DM_Moab*)(dm)->data;
+
+  if (!vpos) {
+    ierr = PetscMalloc(sizeof(PetscScalar)*nconn*3, &vpos);CHKERRQ(ierr);
+  }
+
+  /* Get connectivity information in MOAB canonical ordering */
+  merr = dmmoab->mbiface->get_coords(conn, nconn, vpos);MBERRNM(merr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabGetElementConnectivity"
+PetscErrorCode DMMoabGetElementConnectivity(DM dm,moab::EntityHandle ehandle,PetscInt* nconn,const moab::EntityHandle **conn)
+{
+  DM_Moab        *dmmoab;
+  const moab::EntityHandle *connect;
+  moab::ErrorCode merr;
+  PetscInt nnodes;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(conn,4);
+  dmmoab = (DM_Moab*)(dm)->data;
+
+  /* Get connectivity information in MOAB canonical ordering */
+  merr = dmmoab->mbiface->get_connectivity(ehandle, connect, nnodes);MBERRNM(merr);
+  if (conn) *conn=connect;
+  if (nconn) *nconn=nnodes;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabCheckBoundaryVertices"
+PetscErrorCode DMMoabCheckBoundaryVertices(DM dm,PetscInt nconn,const moab::EntityHandle *cnt,PetscBool* isbdvtx,PetscBool* elem_on_boundary)
+{
+  DM_Moab        *dmmoab;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(cnt,3);
+  PetscValidPointer(isbdvtx,4);
+  dmmoab = (DM_Moab*)(dm)->data;
+
+  if (elem_on_boundary) *elem_on_boundary = PETSC_FALSE;
+  for (i=0; i < nconn; ++i) {
+    moab::Range::const_iterator giter = dmmoab->bndyvtx->find(cnt[i]);
+    if (giter != dmmoab->bndyvtx->end()) {
+      isbdvtx[i] = PETSC_TRUE;
+      if (elem_on_boundary) *elem_on_boundary = PETSC_TRUE;
+    }
+    else isbdvtx[i] = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
 }

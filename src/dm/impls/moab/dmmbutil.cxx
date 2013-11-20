@@ -241,15 +241,15 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoab_GetReadOptions_Private"
-PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc, PetscInt dim, MoabReadMode mode, PetscInt dbglevel, const char* extra_opts, const char* read_opts)
+PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc, PetscInt dim, MoabReadMode mode, PetscInt dbglevel, const char* extra_opts, const char** read_opts)
 {
   std::ostringstream str;
 
   PetscFunctionBegin;
   // do parallel read unless only one processor
   if (numproc > 1) {
-    str << "PARALLEL=" << mode << ";PARTITION=PARALLEL_PARTITION;";
-    str << "PARTITION_DISTRIBUTE;PARALLEL_RESOLVE_SHARED_ENTS;PARALLEL_GHOSTS=" << dim << ".0.1;";
+    str << "PARALLEL=" << mode << ";PARTITION=PARALLEL_PARTITION;PARTITION_DISTRIBUTE;";
+    str << "PARALLEL_RESOLVE_SHARED_ENTS;PARALLEL_GHOSTS=" << dim << ".0.1;";
     if (by_rank)
       str << "PARTITION_BY_RANK;";
   }
@@ -258,9 +258,9 @@ PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc
     str << extra_opts << ";";
 
   if (dbglevel)
-    str << "DEBUG_IO=" << dbglevel << ";CPUTIME;";
+    str << "DEBUG_IO=" << dbglevel << ";DEBUG_PIO=" << dbglevel << ";CPUTIME;";
 
-  read_opts = str.str().c_str();
+  *read_opts = str.str().c_str();
   PetscFunctionReturn(0);
 }
 
@@ -270,12 +270,13 @@ PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc
 PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm,PetscInt dim,const char* filename, const char* usrreadopts, DM *dm)
 {
   moab::ErrorCode merr;
-  PetscInt            nprocs;
+  PetscInt        nprocs,dbglevel=0;
+  PetscBool       part_by_rank=PETSC_FALSE;
   DM_Moab        *dmmoab;
   moab::Interface *mbiface;
   moab::ParallelComm *pcomm;
   moab::Range verts,elems;
-  const char* readopts=0;
+  const char *readopts;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -290,24 +291,25 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm,PetscInt dim,const char* filenam
   pcomm = dmmoab->pcomm;
   nprocs = pcomm->size();
 
+  /* TODO: Use command-line options to control by_rank, verbosity, MoabReadMode and extra options */
+  ierr  = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for reading/writing MOAB based meshes from file", "DMMoab");
+  ierr  = PetscOptionsInt("-dmmb_rw_dbg", "The verbosity level for reading and writing MOAB meshes", "dmmbutil.cxx", dbglevel, &dbglevel, NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsBool("-dmmb_part_by_rank", "Use partition by rank when reading MOAB meshes from file", "dmmbutil.cxx", part_by_rank, &part_by_rank, NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsEnd();
+
   /* add mesh loading options specific to the DM */
-  ierr = DMMoab_GetReadOptions_Private(PETSC_TRUE, nprocs, dim, MOAB_PARROPTS_READ_PART, 0, usrreadopts, readopts);CHKERRQ(ierr);
+  ierr = DMMoab_GetReadOptions_Private(part_by_rank, nprocs, dim, MOAB_PARROPTS_READ_PART, dbglevel, usrreadopts, &readopts);CHKERRQ(ierr);
+
+  PetscInfo2(*dm, "Reading file %s with options: %s",filename,readopts);
 
   /* Load the mesh from a file. */
-  merr = mbiface->load_file(filename, &dmmoab->fileset, ""/*readopts*/);MBERRVM(mbiface,"Reading MOAB file failed.", merr);
+  merr = mbiface->load_file(filename, &dmmoab->fileset, readopts);MBERRVM(mbiface,"Reading MOAB file failed.", merr);
 
   /* Reassign global IDs on all entities. */
   merr = pcomm->assign_global_ids(dmmoab->fileset,dim,1,false,true);MBERRNM(merr);
+  merr = pcomm->exchange_ghost_cells(dim,0,1,0,true);MBERRV(mbiface,merr);
 
   merr = pcomm->collective_sync_partition();MBERR("Collective sync failed", merr);
-
-  /* load the local vertices */
-  merr = mbiface->get_entities_by_type(dmmoab->fileset, moab::MBVERTEX, verts, true);MBERRNM(merr);
-  ierr = DMMoabSetLocalVertices(*dm, &verts);CHKERRQ(ierr);
-
-  /* load the local elements */
-  merr = mbiface->get_entities_by_dimension(dmmoab->fileset, dim, elems, true);MBERRNM(merr);
-//  ierr = DMMoabSetLocalElements(*dm, &elems);CHKERRQ(ierr);
 
   merr = mbiface->set_dimension(dim);MBERRNM(merr);
 
