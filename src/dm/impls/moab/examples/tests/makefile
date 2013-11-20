@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/impls/moab/examples/tests/
-EXAMPLESC       = ex1.cxx ex2.cxx
+EXAMPLESC       = ex1.cxx ex2.cxx ex4.c
 EXAMPLESF       =
 MANSEC          = DM
 
@@ -20,6 +20,11 @@ ex2: ex2.o  chkopts
 	-${CLINKER} -o ex2 ex2.o ${PETSC_DM_LIB}
 	dsymutil ./ex2
 	${RM} -f ex2.o
+
+ex4: ex4.o  chkopts
+	-${CLINKER} -o ex4 ex4.o ${PETSC_DM_LIB}
+	dsymutil ./ex4
+	${RM} -f ex4.o
 
 #--------------------------------------------------------------------------
 runex1:
