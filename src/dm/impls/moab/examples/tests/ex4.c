@@ -48,8 +48,6 @@ const int NQPTS1D=2;
 const int NQPTS=NQPTS1D*NQPTS1D;
 const int VPERE=4;
 
-extern PetscErrorCode ComputeMatrix_DA(KSP,Mat,Mat,MatStructure*,void*);
-extern PetscErrorCode ComputeRHS_DA(KSP,Vec,void*);
 extern PetscErrorCode ComputeMatrix_MOAB(KSP,Mat,Mat,MatStructure*,void*);
 extern PetscErrorCode ComputeRHS_MOAB(KSP,Vec,void*);
 
