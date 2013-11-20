@@ -76,8 +76,6 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       bc,np;
   Vec            b,x;
-  Mat            J;
-  MatStructure   str;
   PetscBool      use_extfile;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
@@ -103,6 +101,7 @@ int main(int argc,char **argv)
   ierr        = PetscOptionsString("-file", "The mesh file for the problem", "ex4.c", "",user.filename,PETSC_MAX_PATH_LEN,&use_extfile);CHKERRQ(ierr);
   ierr        = PetscOptionsEnd();
 
+  /* Create the DM object from either a mesh file or from in-memory structured grid */
   if (use_extfile) {
     ierr = DMMoabLoadFromFile(PETSC_COMM_WORLD, user.dim, user.filename, (np==1 ? "" : ""), &dm);CHKERRQ(ierr);
   }
@@ -122,26 +121,18 @@ int main(int argc,char **argv)
 
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-#if 0
-  ierr = DMCreateGlobalVector(dm,&b);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(dm,&x);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(dm, MATAIJ, &J);CHKERRQ(ierr);
-  ierr = ComputeRHS_MOAB(ksp,b,&user);CHKERRQ(ierr);
-  ierr = ComputeMatrix_MOAB(ksp,J,J,&str,&user);CHKERRQ(ierr);
-#else
+  /* Perform the actual solve */
   ierr = KSPSolve(ksp,NULL,NULL);CHKERRQ(ierr);
   ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
 
-  ierr = DMMoabSetFieldVector(dm, 0, x);CHKERRQ(ierr);
-//  ierr = DMMoabSetGlobalFieldVector(dm, x);CHKERRQ(ierr);
+  ierr = DMMoabSetGlobalFieldVector(dm, x);CHKERRQ(ierr);
   ierr = DMMoabOutput(dm, "ex4.h5m", "");CHKERRQ(ierr);
-#endif
 
+  /* Cleanup objects */
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = PetscFinalize();
-
   return 0;
 }
 
@@ -247,7 +238,6 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
 #else
     ierr = VecSetValues(b, VPERE, dof_indices, localv, ADD_VALUES);CHKERRQ(ierr);
 #endif
-
   }
 
   /* force right hand side to be consistent for singular matrix */
@@ -383,13 +373,8 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,MatStructure *str,void *
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "Compute_Quad4_Basis"
-PetscErrorCode Compute_Quad4_Basis ( PetscScalar coords[VPERE*3], PetscInt n, PetscScalar *pts, PetscScalar *phi, PetscScalar *dphidx, PetscScalar *dphidy)
 /*
-*  Purpose:
-*
-*    BASIS_MN_Q4: all bases at N points for a Q4 element.
+*  Purpose: BASIS_MN_Q4: all bases at N points for a Q4 element.
 *
 *  Discussion:
 *
@@ -430,6 +415,9 @@ PetscErrorCode Compute_Quad4_Basis ( PetscScalar coords[VPERE*3], PetscInt n, Pe
 *  Original Author: John Burkardt (http://people.sc.fsu.edu/~jburkardt/cpp_src/fem2d_pack/fem2d_pack.cpp)
 *  Modified by Vijay Mahadevan
 */
+#undef __FUNCT__
+#define __FUNCT__ "Compute_Quad4_Basis"
+PetscErrorCode Compute_Quad4_Basis ( PetscScalar coords[VPERE*3], PetscInt n, PetscScalar *pts, PetscScalar *phi, PetscScalar *dphidx, PetscScalar *dphidy)
 {
   PetscScalar ejac;
   int i,j;
@@ -483,25 +471,27 @@ PetscErrorCode Compute_Quad4_Basis ( PetscScalar coords[VPERE*3], PetscInt n, Pe
   PetscFunctionReturn(0);
 }
 
-const PetscScalar GLG_QUAD_P1[1+1] = {0.0, 2.0};
-const PetscScalar GLG_QUAD_P3[2+1] = {-0.577350269189625764509148780502, 0.577350269189625764509148780502, 1.0};
+
+/*
+*  Purpose: Compute the quadrature points in the physical space with appropriate transformation for QUAD4 elements.
+*
+*  Parameters:
+*
+*    Input, PetscScalar verts[VPERE*4], the coordinates of the vertices.
+*    It is common to list these points in counter clockwise order.
+*
+*    Output, PetscScalar quad[3*NQPTS], the physical quadrature evaluation point.
+*
+*    Output, PetscScalar jxw[NQPTS], the product of Jacobian of the physical element times the weights at the quadrature points.
+*/
+
 PetscErrorCode ComputeQuadraturePointsPhysical(const PetscScalar verts[VPERE*3], PetscScalar quad[NQPTS*3], PetscScalar jxw[NQPTS])
 {
   int i,j;
   PetscScalar centroid[3];
-  const PetscScalar *x;
+  const PetscScalar GLG_QUAD[3] = {-0.577350269189625764509148780502, 0.577350269189625764509148780502, 1.0};
   PetscScalar dx = fabs(verts[0+2*3] - verts[0+0*3])/2, dy = fabs( verts[1+2*3] - verts[1+0*3] )/2;
   PetscScalar ejac = dx*dy;
-
-  switch(NQPTS1D) {
-   case 1:
-     x = GLG_QUAD_P1;
-     break;
-   case 2:
-   default:
-     x = GLG_QUAD_P3;
-     break;
-  }
   
   centroid[0] = centroid[1] = centroid[2] = 0.0;
   for (i=0; i<VPERE; ++i) {
@@ -515,13 +505,12 @@ PetscErrorCode ComputeQuadraturePointsPhysical(const PetscScalar verts[VPERE*3],
 
   for (i=0; i<NQPTS1D; ++i) {
     for (j=0; j<NQPTS1D; ++j) {
-      quad[(i*NQPTS1D+j)*3] = centroid[0]+dx*(x[i]);
-      quad[(i*NQPTS1D+j)*3+1] = centroid[1]+dy*(x[j]);
+      quad[(i*NQPTS1D+j)*3] = centroid[0]+dx*(GLG_QUAD[i]);
+      quad[(i*NQPTS1D+j)*3+1] = centroid[1]+dy*(GLG_QUAD[j]);
       quad[(i*NQPTS1D+j)*3+2] = centroid[2];
-      jxw[i*NQPTS1D+j] = x[NQPTS1D]*ejac;
+      jxw[i*NQPTS1D+j] = GLG_QUAD[NQPTS1D]*ejac;
     }
   }
   PetscFunctionReturn(0);
 }
-
 
