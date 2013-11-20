@@ -872,7 +872,7 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
   moab::ErrorCode merr;
   PetscErrorCode  ierr;
   PetscSection section;
-  PetscInt i,doff,ifield;
+  PetscInt i,ifield;
   std::string tag_name;
   moab::Range::iterator iter;
 
@@ -885,6 +885,7 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
   /* get the Tag corresponding to the global vector - possible that there is no tag associated.. */
   ierr = DMMoabGetVecTag(fvec,&vtag);CHKERRQ(ierr);
   merr = dmmoab->mbiface->tag_get_name(vtag, tag_name);
+  ierr = PetscMalloc(dmmoab->nloc*sizeof(PetscScalar),&farray);CHKERRQ(ierr);
   if (!tag_name.length() && merr !=moab::MB_SUCCESS) {
     /* not a MOAB vector - use VecGetSubVector to get the parts as needed */
 
@@ -895,20 +896,19 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
       merr = dmmoab->mbiface->tag_get_handle(dmmoab->fields[ifield],1,moab::MB_TYPE_DOUBLE,ntag,
                                             moab::MB_TAG_DENSE|moab::MB_TAG_CREAT);MBERRNM(merr);
 
-      for(iter = dmmoab->vowned->begin(); iter != dmmoab->vowned->end(); iter++) {
-        moab::EntityHandle vtx = (*iter);
-
-        /* get field dof index */
-        ierr = DMMoabGetFieldDof(dm, vtx, ifield, &doff);
-
-        /* use the entity handle and the Dof index to set the right value */
-        merr = dmmoab->mbiface->tag_set_data(ntag, &vtx, 1, (const void*)&varray[doff]);MBERRNM(merr);
+      for(i=0;i<dmmoab->nloc;i++) {
+        if (dmmoab->bs == 1)
+          farray[i]=varray[ifield*dmmoab->nloc+i];
+        else
+          farray[i]=varray[i*dmmoab->nfields+ifield];
       }
+
+      /* use the entity handle and the Dof index to set the right value */
+      merr = dmmoab->mbiface->tag_set_data(ntag, *dmmoab->vowned, (const void*)farray);MBERRNM(merr);
     }
     ierr = VecRestoreArrayRead(fvec,&varray);CHKERRQ(ierr);
   }
   else {
-    ierr = PetscMalloc(dmmoab->nloc*sizeof(PetscScalar),&farray);CHKERRQ(ierr);
     ierr = PetscMalloc(dmmoab->nloc*dmmoab->bs*sizeof(PetscScalar),&varray);CHKERRQ(ierr);
 
     /* we are using a MOAB Vec - directly copy the tag data to new one */
@@ -928,9 +928,9 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
       /* make sure the parallel exchange for ghosts are done appropriately */
       merr = dmmoab->pcomm->exchange_tags(ntag, *dmmoab->vlocal);MBERRNM(merr);
     }
-    ierr = PetscFree(farray);CHKERRQ(ierr);
     ierr = PetscFree(varray);CHKERRQ(ierr);
   }
+  ierr = PetscFree(farray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
