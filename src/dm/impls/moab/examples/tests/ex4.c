@@ -18,6 +18,10 @@ with Dirichlet boundary conditions
    u = f(x,y) for x = 0, x = 1, y = 0, y = 1
 
 or pure Neumman boundary conditions
+
+Usage:
+    mpiexec -n 2 ./ex4 -bc_type dirichlet -nu .01 -rho .01 -file input/quad_2p.h5m -dmmb_rw_dbg 0 -n 50
+
 */
 
 static char help[] = "\
@@ -106,7 +110,7 @@ int main(int argc,char **argv)
     ierr = DMMoabLoadFromFile(PETSC_COMM_WORLD, user.dim, user.filename, (np==1 ? "" : ""), &dm);CHKERRQ(ierr);
   }
   else {
-    ierr = DMMoabCreateBoxMesh(PETSC_COMM_WORLD, user.dim, user.n, 1, &dm);CHKERRQ(ierr);
+    ierr = DMMoabCreateBoxMesh(PETSC_COMM_WORLD, user.dim, NULL, user.n, 1, &dm);CHKERRQ(ierr);
   }
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMMoabSetFields(dm, 1, fields);CHKERRQ(ierr);
