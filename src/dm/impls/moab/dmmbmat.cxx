@@ -23,12 +23,6 @@ PetscErrorCode DMCreateMatrix_Moab(DM dm,Mat *J)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(J,3);
 
-  /* create the Matrix and set its type as specified by user */
-  ierr = MatCreate(dmmoab->pcomm->comm(), J);CHKERRQ(ierr);
-  ierr = MatSetSizes(*J, nloc, nloc, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(*J, mtype);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(*J);CHKERRQ(ierr);
-  
   /* next, need to allocate the non-zero arrays to enable pre-allocation */
   mtype = dm->mattype;
   ierr = PetscStrstr(mtype, "baij", &tmp);CHKERRQ(ierr);
@@ -101,8 +95,7 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
   merr = dmmoab->pcomm->filter_pstatus(allvlocal,PSTATUS_NOT_OWNED,PSTATUS_NOT,-1,&adjs);MBERRNM(merr);
   allvghost = moab::subtract(allvlocal, adjs);
 
-  /* loop over vertices and update the number of connectivity */
-  for (j=0;j<vpere;j++) {
+  for(iter = dmmoab->vowned->begin(),ivtx=0; iter != dmmoab->vowned->end(); iter++,ivtx++) {
 
     vtx = *iter;
     adjs.clear();
@@ -110,6 +103,10 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
        to the current vertex. We can then decipher if a vertex is ghosted or not and compute the 
        non-zero pattern accordingly. */
     merr = dmmoab->mbiface->get_adjacencies(&vtx,1,dmmoab->dim,false,adjs,moab::Interface::INTERSECT);
+
+    /* reset counters */
+    n_nnz=n_onz=0;
+    found.clear();
 
     /* loop over vertices and update the number of connectivity */
     for(jter = adjs.begin(); jter != adjs.end(); jter++) {
@@ -145,7 +142,7 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
     nnz[i]=(nnz[i]>dmmoab->nloc ? dmmoab->nloc:nnz[i]);
     if (!isbaij) {
       nnz[i]*=bs;
-      onz[i]*=bs;
+      if (onz) onz[i]*=bs;
     }
     PetscInfo3(dm, "Vertex ID: %D \t NNZ = %D \t ONZ = %D.\n",i,nnz[i],onz[i]);
     
