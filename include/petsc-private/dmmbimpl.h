@@ -30,6 +30,7 @@ typedef struct {
   PetscInt                n,nloc,nghost;           /* Number of global, local only and shared degrees of freedom for current partition */
   PetscInt                nele,neleloc;           /* Number of global, local only and shared degrees of freedom for current partition */
   PetscBool               icreatedinstance;       /* true if DM created moab instance internally, will destroy instance in DMDestroy */
+  PetscInt                *gsindices;
 
   moab::ParallelComm      *pcomm;
   moab::Interface         *mbiface;

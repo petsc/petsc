@@ -17,7 +17,7 @@ PetscErrorCode DMMoab_CreateVector_Private(DM dm,moab::Tag tag,PetscInt tag_size
   moab::ErrorCode        merr;
   PetscBool              is_newtag;
   moab::Range           *range;
-  PetscInt               *gindices,*gsindices;
+  PetscInt               *gindices;
   PetscInt               i,count,icount,dof;
   PetscInt               size,rank;
   std::string ttname;
@@ -65,6 +65,9 @@ PetscErrorCode DMMoab_CreateVector_Private(DM dm,moab::Tag tag,PetscInt tag_size
   vmoab->new_tag = is_newtag;
   vmoab->is_global_vec = is_global_vec;
   merr = mbiface->tag_get_length(tag,vmoab->tag_size);MBERR("tag_get_size", merr);
+
+  size = pcomm->size();
+  rank = pcomm->rank();
   
   /* set the reference for vector range */
   vmoab->tag_range = new moab::Range(*range);
@@ -73,30 +76,18 @@ PetscErrorCode DMMoab_CreateVector_Private(DM dm,moab::Tag tag,PetscInt tag_size
      tag data if it hasn't already happened */
   merr = mbiface->tag_iterate(tag,range->begin(),range->end(),count,(void*&)data_ptr);MBERRNM(merr);
 
+  if (rank) range->print();
   /* Check to make sure the tag data is in a single sequence */
-  if ((unsigned)count != range->size()) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only create MOAB Vector for single sequence");
-
-  ierr = MPI_Comm_size(((PetscObject)dm)->comm, &size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(((PetscObject)dm)->comm, &rank);CHKERRQ(ierr);
+  if ((unsigned)count != range->size()) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only create MOAB Vector for single sequence: %D != %D",count,range->size());
 
   /* Create the PETSc Vector
      Query MOAB mesh to check if there are any ghosted entities
        -> if we do, create a ghosted vector to map correctly to the same layout
        -> else, create a non-ghosted parallel vector */
-  if (!is_global_vec && (size>1) && dmmoab->nghost) {
-    moab::Range::iterator  iter;
-    ierr = PetscMalloc(dmmoab->nghost*sizeof(PetscInt), &gsindices);CHKERRQ(ierr);
-
-    for(iter = dmmoab->vghost->begin(),icount=0; iter != dmmoab->vghost->end(); iter++) {
-      merr = mbiface->tag_get_data(ltog_tag,&(*iter),1,&dof);MBERRNM(merr);
-      gsindices[icount++] = dof;
-    }
-
+  if (!is_global_vec && (size>1)) {
     /* This is an MPI Vector with ghosted padding */
     ierr = VecCreateGhostBlockWithArray(vmoab->pcomm->comm(),vmoab->tag_size,vmoab->tag_size*dmmoab->nloc,
-                              vmoab->tag_size*dmmoab->n,dmmoab->nghost,gsindices,data_ptr,vec);CHKERRQ(ierr);
-
-    ierr = PetscFree(gsindices);CHKERRQ(ierr);
+                              vmoab->tag_size*dmmoab->n,dmmoab->nghost,&dmmoab->gsindices[dmmoab->nloc],data_ptr,vec);CHKERRQ(ierr);
   }
   else if (size>1) {
     /* This is an MPI Vector without ghosted padding */
@@ -199,15 +190,12 @@ PetscErrorCode DMCreateGlobalVector_Moab(DM dm,Vec *gvec)
 PetscErrorCode DMCreateLocalVector_Moab(DM dm,Vec *lvec)
 {
   PetscErrorCode  ierr;
-  moab::Range     vlocal;
   DM_Moab         *dmmoab = (DM_Moab*)dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(lvec,2);
-  vlocal = *dmmoab->vowned;
-  vlocal.merge(*dmmoab->vghost);
-  ierr = DMMoab_CreateVector_Private(dm,PETSC_NULL,dmmoab->bs,dmmoab->vowned,PETSC_FALSE,PETSC_TRUE,lvec);CHKERRQ(ierr);
+  ierr = DMMoab_CreateVector_Private(dm,PETSC_NULL,dmmoab->bs,dmmoab->vlocal,PETSC_FALSE,PETSC_TRUE,lvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
