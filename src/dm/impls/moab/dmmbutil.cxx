@@ -138,6 +138,9 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
   nprocs = pcomm->size();
   dmmoab->dim = dim;
 
+  /* create a file set to associate all entities in current mesh */
+  merr = dmmoab->mbiface->create_meshset(moab::MESHSET_SET, dmmoab->fileset);MBERR("Creating file set failed", merr);
+
   /* No errors yet; proceed with building the mesh */
   merr = mbiface->query_interface(readMeshIface);MBERRNM(merr);
 
@@ -293,8 +296,8 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
 
   merr = mbiface->create_meshset(moab::MESHSET_SET, regionset);MBERRNM(merr);
   merr = mbiface->add_entities(regionset, ownedelms);MBERRNM(merr);
-  merr = mbiface->add_parent_child(dmmoab->fileset,regionset);MBERRNM(merr);
   merr = mbiface->tag_set_data(geom_tag, &regionset, 1, &dmmoab->dim);MBERRNM(merr);
+  merr = mbiface->add_parent_child(dmmoab->fileset,regionset);MBERRNM(merr);
   merr = mbiface->unite_meshset(dmmoab->fileset, regionset);MBERRNM(merr);
 
   merr = mbiface->create_meshset(moab::MESHSET_SET, vtxset);MBERRNM(merr);
@@ -415,6 +418,9 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm,PetscInt dim,const char* filenam
   pcomm = dmmoab->pcomm;
   nprocs = pcomm->size();
   dmmoab->dim = dim;
+
+  /* create a file set to associate all entities in current mesh */
+  merr = dmmoab->mbiface->create_meshset(moab::MESHSET_SET, dmmoab->fileset);MBERR("Creating file set failed", merr);
 
   /* TODO: Use command-line options to control by_rank, verbosity, MoabReadMode and extra options */
   ierr  = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for reading/writing MOAB based meshes from file", "DMMoab");
