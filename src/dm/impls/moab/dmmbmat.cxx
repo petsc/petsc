@@ -125,12 +125,12 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
       if (!isbaij) {
         offset=(dof-firstvtx)*bs;
         for (k=0;k<bs;k++) {
-          nnz[offset+k]+=vpere-1;
+          nnz[offset+k]+=vpere-nghost_found-1;      /* leave out self to avoid repeats -> node shared by multiple elements */
           onz[offset+k]+=nghost_found;  /* found a ghost non-owned node */
         }
       }
       else {
-        nnz[(dof-firstvtx)]+=vpere-1;
+        nnz[(dof-firstvtx)]+=vpere-nghost_found-1;  /* leave out self to avoid repeats -> node shared by multiple elements */
         onz[(dof-firstvtx)]+=nghost_found;  /* found a ghost non-owned node */
       }
     }
