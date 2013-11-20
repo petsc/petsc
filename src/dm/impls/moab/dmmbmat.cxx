@@ -2,8 +2,6 @@
 #include <petsc-private/vecimpl.h> /*I  "petscdm.h"   I*/
 
 #include <petscdmmoab.h>
-#include <MBTagConventions.hpp>
-#include <sstream>
 
 static PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscBool);
 
@@ -25,14 +23,14 @@ PetscErrorCode DMCreateMatrix_Moab(DM dm, MatType mtype,Mat *J)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(J,3);
   nloc = dmmoab->vowned->size() * dmmoab->bs;
-//  ierr = DMMoabCreateMatrix(dm,PETSC_NULL,dmmoab->bs,dmmoab->vowned,PETSC_TRUE,PETSC_TRUE,J);CHKERRQ(ierr);
 
+  /* create the Matrix and set its type as specified by user */
   ierr = MatCreate(dmmoab->pcomm->comm(), J);CHKERRQ(ierr);
   ierr = MatSetSizes(*J, nloc, nloc, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(*J, mtype);CHKERRQ(ierr);
   ierr = MatSetFromOptions(*J);CHKERRQ(ierr);
   
-  /* allocate the non-zeros properly */
+  /* next, need to allocate the non-zero arrays to enable pre-allocation */
   ierr = MatGetType(*J, &mltype);CHKERRQ(ierr); /* in case user overrode the default type from command-line, re-check the type */
   ierr = PetscStrstr(mltype, "baij", &tmp);CHKERRQ(ierr);
   nsize = (tmp ? dmmoab->nloc:dmmoab->nloc*dmmoab->bs);
@@ -47,7 +45,7 @@ PetscErrorCode DMCreateMatrix_Moab(DM dm, MatType mtype,Mat *J)
   ierr = DMMoab_Compute_NNZ_From_Connectivity(dm,&innz,nnz,&ionz,onz,(tmp?PETSC_TRUE:PETSC_FALSE));CHKERRQ(ierr);
 
   if (dmmoab->bs > 1 && tmp) {
-     // Block matrix created, now set local to global mapping:
+    /* Block matrix created, now set local to global mapping */
     ierr = PetscMalloc(sizeof(PetscInt)*range->size()*dmmoab->bs, &gindices);CHKERRQ(ierr);
     moab::Range::iterator  iter;
     for(iter = range->begin(),count=0; iter != range->end(); iter++,count+=dmmoab->bs) {
@@ -59,7 +57,7 @@ PetscErrorCode DMCreateMatrix_Moab(DM dm, MatType mtype,Mat *J)
     ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,range->size(),gindices,PETSC_COPY_VALUES,&ltog);CHKERRQ(ierr);
     ierr = MatSetLocalToGlobalMappingBlock(*J,ltog,ltog);CHKERRQ(ierr);
 
-      // Clean up:
+    /* Clean up */
     ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
     ierr = PetscFree(gindices);CHKERRQ(ierr);
     
@@ -180,21 +178,6 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
     if (innz && nnz[i]>*innz) *innz=nnz[i];
     if (ionz && onz[i]>*ionz) *ionz=onz[i];
   }
-//  PetscPrintf (PETSC_COMM_WORLD, "\n Maximum NNZ = %D and ONZ = %D \n", *innz,*ionz);
-
-  /* Print for debug purposes only */
-  /*
-  IS     nzis,onzis;
-  ierr = ISCreateGeneral(((PetscObject)dm)->comm, nsize, nnz, PETSC_COPY_VALUES, &nzis);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(((PetscObject)dm)->comm, nsize, onz, PETSC_COPY_VALUES, &onzis);CHKERRQ(ierr);
-  ierr = ISView(nzis, 0);CHKERRQ(ierr);
-  ierr = ISView(onzis, 0);CHKERRQ(ierr);
-  ierr = ISDestroy(&onzis);CHKERRQ(ierr);
-  ierr = ISDestroy(&onzis);CHKERRQ(ierr);
-  std::cin.get();
-  */
-  
-
   PetscFunctionReturn(0);
 }
 
