@@ -41,8 +41,8 @@ struct pUserCtx {
   PetscInt  npts;       /* Number of mesh points */
   PetscInt  ntsteps;    /* Number of time steps */
   PetscInt nvars;       /* Number of variables in the equation system */
-  PetscInt ftype;       /* The type of function assembly routine to use 
-                           0 (default) = MOAB, 1 = BlockOps, 2 = Other  */
+  PetscInt ftype;       /* The type of function assembly routine to use in residual calculation
+                           0 (default) = MOAB-Ops, 1 = Block-Ops, 2 = Ghosted-Ops  */
 
   moab::ParallelComm *pcomm;
   moab::Interface    *mbint;
@@ -61,6 +61,7 @@ PetscErrorCode Initialize_AppContext(UserCtx *puser)
   moab::ErrorCode   merr;
   PetscErrorCode    ierr;
 
+  PetscFunctionBegin;
   ierr = PetscNew(struct pUserCtx, &user);CHKERRQ(ierr);
 
   user->mbint = new moab::Core();
@@ -130,8 +131,8 @@ PetscErrorCode Destroy_AppContext(UserCtx *user)
 }
 
 static PetscErrorCode FormRHSFunction(TS,PetscReal,Vec,Vec,void*);
-static PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
-static PetscErrorCode FormIFunctionBlocked(TS,PetscReal,Vec,Vec,Vec,void*);
+static PetscErrorCode FormIFunctionGhosted(TS,PetscReal,Vec,Vec,Vec,void*);
+static PetscErrorCode FormIFunctionGlobalBlocked(TS,PetscReal,Vec,Vec,Vec,void*);
 static PetscErrorCode FormIFunctionMOAB(TS,PetscReal,Vec,Vec,Vec,void*);
 static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
 static PetscErrorCode FormInitialSolution(TS,Vec,void*);
@@ -164,13 +165,6 @@ int main(int argc,char **argv)
   // Fill in the user defined work context:
   ierr = CreateMesh(user);CHKERRQ(ierr);
 
-  /*
-  PetscPrintf(PETSC_COMM_SELF, "\n Number of owned elements = %D", user->ownedelms->size());
-  PetscPrintf(PETSC_COMM_SELF, "\n Number of owned vertices = %D", user->ownedvtx->size());
-  PetscPrintf(PETSC_COMM_SELF, "\n Number of shared vertices = %D", user->ghostvtx->size());
-  PetscPrintf(PETSC_COMM_SELF, "\n Number of vertices = %D\n", user->allvtx->size());
-  */
-
   // Create the solution vector:
   ierr = DMCreate(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
   ierr = DMSetType(dm, DMMOAB);CHKERRQ(ierr);
@@ -181,15 +175,21 @@ int main(int argc,char **argv)
   /* SetUp the data structures for DMMOAB */
   ierr = DMSetUp(dm);CHKERRQ(ierr);
 
+  // print some information if -info is enabled
+  PetscInfo1(dm, "Number of owned elements = %D\n", user->ownedelms->size());
+  PetscInfo1(dm, "Number of owned vertices = %D\n", user->ownedvtx->size());
+  PetscInfo1(dm, "Number of shared vertices = %D\n", user->ghostvtx->size());
+  PetscInfo1(dm, "Number of vertices = %D\n", user->allvtx->size());
+
   //  Create timestepping solver context
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,PETSC_NULL,FormRHSFunction,user);CHKERRQ(ierr);
   if (user->ftype == 1) {
-    ierr = TSSetIFunction(ts,PETSC_NULL,FormIFunctionBlocked,user);CHKERRQ(ierr);
+    ierr = TSSetIFunction(ts,PETSC_NULL,FormIFunctionGlobalBlocked,user);CHKERRQ(ierr);
   } else if(user->ftype == 2) {
-    ierr = TSSetIFunction(ts,PETSC_NULL,FormIFunction,user);CHKERRQ(ierr);  
+    ierr = TSSetIFunction(ts,PETSC_NULL,FormIFunctionGhosted,user);CHKERRQ(ierr);  
   } else {
     ierr = TSSetIFunction(ts,PETSC_NULL,FormIFunctionMOAB,user);CHKERRQ(ierr);
   }
@@ -284,7 +284,7 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   PetscFunctionReturn(0);
 }
 
-/* --------------------------------------------------------------------- */
+
 /*
   IJacobian - Compute IJacobian = dF/dU + a dF/dUdot
 */
@@ -464,11 +464,6 @@ PetscErrorCode Create_1D_Mesh(moab::ParallelComm* pcomm,int npts,int nghost)
 
   // set the dimension of the mesh
   merr = mbint->set_dimension(1);MBERRNM(merr);
-
-//  std::stringstream sstr;
-//  sstr << "test_" << rank << ".vtk";
-//  mbint->write_mesh(sstr.str().c_str());
-
   PetscFunctionReturn(0);
 }
 
@@ -565,11 +560,11 @@ static PetscErrorCode FormIFunctionMOAB(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,v
   DM              dm;
   PetscInt        i;
   Field           *x,*xdot,*f;
-  moab::Tag       id_tag;
   PetscReal       hx;
   PetscErrorCode  ierr;
   moab::ErrorCode merr;
   PetscInt        *vertex_ids;
+  moab::Tag       id_tag,x_tag,xdot_tag,f_tag;
 
   PetscFunctionBegin;
   hx = 1.0/(PetscReal)(user->npts-1);
@@ -582,18 +577,17 @@ static PetscErrorCode FormIFunctionMOAB(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,v
   moab::Range::iterator iter = user->ownedelms->begin();
   merr = user->mbint->connect_iterate(iter,user->ownedelms->end(),connect,verts_per_entity,num_edges);MBERRNM(merr);
 
-  // Get tag data:
-  moab::Tag x_tag;
+  // get tag data for solution 
   ierr = DMMoabGetVecTag(X,&x_tag);CHKERRQ(ierr);
   merr = user->mbint->tag_iterate(x_tag,user->allvtx->begin(),user->allvtx->end(),
 				  count,reinterpret_cast<void*&>(x));MBERRNM(merr);
 
-  moab::Tag xdot_tag;
+  // get the tag data for solution derivative
   ierr = DMMoabGetVecTag(Xdot,&xdot_tag);CHKERRQ(ierr);
   merr = user->mbint->tag_iterate(xdot_tag,user->allvtx->begin(),user->allvtx->end(),
 				  count,reinterpret_cast<void*&>(xdot));MBERRNM(merr);
 
-  moab::Tag f_tag;
+  // get the residual tag
   ierr = DMMoabGetVecTag(F,&f_tag);CHKERRQ(ierr);
   merr = user->mbint->tag_iterate(f_tag,user->allvtx->begin(),user->allvtx->end(),
 				  count,reinterpret_cast<void*&>(f));MBERRNM(merr);
@@ -636,7 +630,6 @@ static PetscErrorCode FormIFunctionMOAB(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,v
       f[idx_right].u += user->alpha*(x[idx_right].u-x[idx_left].u)/hx;
       f[idx_right].v += user->alpha*(x[idx_right].v-x[idx_left].v)/hx;
     }
-
   }
 
   // Add tags on shared vertexes:
@@ -646,8 +639,8 @@ static PetscErrorCode FormIFunctionMOAB(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,v
 
 
 #undef __FUNCT__
-#define __FUNCT__ "FormIFunctionBlocked"
-static PetscErrorCode FormIFunctionBlocked(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr)
+#define __FUNCT__ "FormIFunctionGlobalBlocked"
+static PetscErrorCode FormIFunctionGlobalBlocked(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr)
 {
   UserCtx             user = (UserCtx)ptr;
   PetscInt            i,count,rank,rstart,rend;
@@ -768,8 +761,8 @@ static PetscErrorCode FormIFunctionBlocked(TS ts,PetscReal t,Vec X,Vec Xdot,Vec 
 
 
 #undef __FUNCT__
-#define __FUNCT__ "FormIFunction"
-static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr)
+#define __FUNCT__ "FormIFunctionGhosted"
+static PetscErrorCode FormIFunctionGhosted(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr)
 {
   UserCtx             user = (UserCtx)ptr;
   PetscInt            i,count,rank,rstart,rend;
@@ -805,7 +798,6 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
   ierr = VecGhostGetLocalForm(xdotlocal,&xdtmp);CHKERRQ(ierr);
   ierr = VecGhostUpdateBegin(xdotlocal,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGhostUpdateEnd(xdotlocal,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-
 
   ierr = DMGetLocalVector(dm,&flocal);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm,F,INSERT_VALUES,flocal);CHKERRQ(ierr);
