@@ -3200,7 +3200,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     coarse_reuse = PETSC_TRUE;
   }
 
-  /* test if we can go multilevel */ 
+  /* test if we can go multilevel */
   multilevel_allowed = PETSC_FALSE;
   multilevel_requested = PETSC_FALSE;
   if (pcbddc->current_level < pcbddc->max_levels) multilevel_requested = PETSC_TRUE;
