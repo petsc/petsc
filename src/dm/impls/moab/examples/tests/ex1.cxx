@@ -87,7 +87,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     user->dim = user->iface->dimension_from_handle(*tmp_range.rbegin());
   }
   merr = user->iface->get_entities_by_dimension(0, user->dim, user->range);MBERRNM(merr);
-  ierr = DMMoabSetRange(*dm, &user->range);CHKERRQ(ierr);
+  ierr = DMMoabSetLocalVertices(*dm, &user->range);CHKERRQ(ierr);
 
     // get the requested tag if a name was input
   if (strlen(user->tagname)) {
