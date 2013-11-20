@@ -18,7 +18,7 @@ PetscErrorCode DMMoab_CreateVector_Private(DM dm,moab::Tag tag,PetscInt tag_size
   PetscBool              is_newtag;
   moab::Range           *range;
   PetscInt               *gindices;
-  PetscInt               i,count,icount,dof;
+  PetscInt               i,count,dof;
   PetscInt               size,rank;
   std::string ttname;
   PetscScalar *data_ptr;
@@ -76,7 +76,6 @@ PetscErrorCode DMMoab_CreateVector_Private(DM dm,moab::Tag tag,PetscInt tag_size
      tag data if it hasn't already happened */
   merr = mbiface->tag_iterate(tag,range->begin(),range->end(),count,(void*&)data_ptr);MBERRNM(merr);
 
-  if (rank) range->print();
   /* Check to make sure the tag data is in a single sequence */
   if ((unsigned)count != range->size()) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only create MOAB Vector for single sequence: %D != %D",count,range->size());
 

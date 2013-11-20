@@ -66,10 +66,8 @@ PetscErrorCode DMCreateMatrix_Moab(DM dm, MatType mtype,Mat *J)
   }
 
   /* set preallocation based on different supported Mat types */
-//  ierr = MatSeqAIJSetPreallocation(*J, innz, nnz);CHKERRQ(ierr);
-//  ierr = MatMPIAIJSetPreallocation(*J, innz, nnz, ionz, onz);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(*J, innz, 0);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(*J, innz, 0, ionz, 0);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(*J, innz, nnz);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(*J, innz, nnz, ionz, onz);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(*J, dmmoab->bs, innz, nnz);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocation(*J, dmmoab->bs, innz, nnz, ionz, onz);CHKERRQ(ierr);
 
@@ -114,7 +112,6 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
       moab::Range::const_iterator giter = dmmoab->vghost->find(connect[j]);
       if (giter != dmmoab->vghost->end()) nghost_found++;
     }
-//      PetscPrintf(PETSC_COMM_WORLD, "Element %D, VPERE %D, nGhost %D\n", i,vpere,nghost_found);
 
     /* loop over vertices and update the number of connectivity */
     for (j=0;j<vpere;j++) {
@@ -127,7 +124,6 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
       */
 
       merr = dmmoab->mbiface->get_adjacencies(&connect[j],1,1,true,adjs,moab::Interface::INTERSECT);
-//      PetscPrintf(PETSC_COMM_WORLD, "Point %D, nADJS %D\n", connect[j], adjs.size());
 
       merr = dmmoab->mbiface->tag_get_data(id_tag,&connect[j],1,&dof);MBERRNM(merr);
       ierr = PetscSectionGetDof(section, connect[j], &ndofs);
@@ -139,7 +135,6 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
         nnz[doff]+=adjs.size();      /* leave out self to avoid repeats -> node shared by multiple elements */
         onz[doff]+=nghost_found;  /* add ghost non-owned nodes */
 
-//        PetscPrintf(PETSC_COMM_WORLD, "Point %D, Field %D, DOFPP %D \t DOF %D, OFFSET %D : NNZ = %D, ONZ = %D\n", connect[j], f, ndofs, dof, doff, nnz[doff], onz[doff]);
         adjs.clear();
       }
     }
@@ -155,157 +150,10 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
       nnz[i]*=bs;
       onz[i]*=bs;
     }
-//    PetscPrintf(PETSC_COMM_WORLD, "Index %D: NNZ = %D, ONZ = %D\n", i, nnz[i], onz[i]);
 
     if (innz && nnz[i]>*innz) *innz=nnz[i];
     if (ionz && onz[i]>*ionz) *ionz=onz[i];
   }
-//    PetscPrintf(PETSC_COMM_WORLD, "MAX: NNZ = %D, ONZ = %D\n", *innz, *ionz);
   PetscFunctionReturn(0);
 }
-
-
-#if 0
-
-#undef __FUNCT__
-#define __FUNCT__ "DMMoab_Compute_NNZ_From_Connectivity_OLD"
-PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity_OLD(DM dm,PetscInt* innz,PetscInt* nnz,PetscInt* ionz,PetscInt* onz,PetscBool isbaij)
-{
-  PetscErrorCode  ierr;
-  PetscInt        i,j,k,f,nloc,count,vpere,bs,nsize,nghost_found;
-  DM_Moab         *dmmoab = (DM_Moab*)dm->data;
-  const moab::EntityHandle *connect;
-  moab::Range     *vowned=dmmoab->vowned,*elocal=dmmoab->elocal,*eghost=dmmoab->eghost,adjs;
-  moab::Range::iterator iter;
-  PetscInt        *vertex_ids,firstvtx,dof,doff,ndofs,offset;
-  moab::Tag       id_tag;
-  std::vector<moab::EntityHandle> storage;
-  moab::ErrorCode merr;
-  PetscSection section;
-
-  PetscFunctionBegin;
-  bs = dmmoab->bs;
-  nloc = dmmoab->nloc;
-  nsize = (isbaij ? nloc:nloc*bs);
-
-  ierr = DMMoabGetLocalToGlobalTag(dm,&id_tag);CHKERRQ(ierr);
-
-  merr = dmmoab->mbiface->tag_get_data(id_tag,&(*vowned->begin()),1,&firstvtx);MBERRNM(merr);
-  //firstvtx = vertex_ids[0];
-
-  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-
-  for(iter = elocal->begin(),i=0; iter != elocal->end(); iter++,i++) {
-    /* Get connectivity information in canonical ordering for the local element */
-    merr = dmmoab->mbiface->get_connectivity((*iter),connect,vpere,false,&storage);MBERRNM(merr);
-
-    nghost_found=0;
-    /* loop over vertices and update the number of connectivity */
-    for (j=0;j<vpere;j++) {
-      moab::Range::const_iterator giter = dmmoab->vghost->find(connect[j]);
-      if (giter != dmmoab->vghost->end()) nghost_found++;
-    }
-
-    /* loop over vertices and update the number of connectivity */
-    for (j=0;j<vpere;j++) {
-
-      merr = dmmoab->mbiface->get_adjacencies(&connect[j],1,1,true,adjs,moab::Interface::INTERSECT);
-      PetscPrintf(PETSC_COMM_WORLD, "Point %D, nADJS %D\n", connect[j], adjs.size());
-
-      moab::Range::const_iterator giter = dmmoab->vghost->find(connect[j]);
-      if (giter != dmmoab->vghost->end()) continue;
-
-      merr = dmmoab->mbiface->tag_get_data(id_tag,&connect[j],1,&dof);MBERRNM(merr);
-      ierr = PetscSectionGetDof(section, connect[j], &ndofs);
-
-      for (f=0;f<dmmoab->nfields;f++) {
-        ierr = PetscSectionGetFieldOffset(section, connect[j], f, &doff);
-
-//        nnz[doff]+=ndofs*(vpere-nghost_found-1);      /* leave out self to avoid repeats -> node shared by multiple elements */
-        nnz[doff]+=adjs.size()-nghost_found-1;      /* leave out self to avoid repeats -> node shared by multiple elements */
-        onz[doff]+=nghost_found;  /* add ghost non-owned nodes */
-
-        PetscPrintf(PETSC_COMM_WORLD, "Point %D, Field %D, DOFPP %D \t DOF %D, OFFSET %D : NNZ = %D, ONZ = %D\n", connect[j], f, ndofs, dof, doff, nnz[doff], onz[doff]);
-        adjs.clear();
-      }
-
-//      /* if block format, then all the block data are local only */
-//      if (!isbaij) {
-//        offset=(dof-firstvtx)*bs;
-//        for (k=0;k<bs;k++) {
-//          nnz[offset+k]+=vpere-nghost_found-1;      /* leave out self to avoid repeats -> node shared by multiple elements */
-//          onz[offset+k]+=nghost_found;  /* found a ghost non-owned node */
-//        }
-//      }
-//      else {
-//        nnz[(dof-firstvtx)]+=vpere-nghost_found-1;  /* leave out self to avoid repeats -> node shared by multiple elements */
-//        onz[(dof-firstvtx)]+=nghost_found;  /* found a ghost non-owned node */
-//      }
-
-    }
-  }
-
-  /* loop through ghosted elements that contain non-ghosted (locally owned) vertices */
-  for(iter = eghost->begin(),i=0; iter != eghost->end(); iter++,i++) {
-    /* Get connectivity information in canonical ordering for the local element */
-    merr = dmmoab->mbiface->get_connectivity((*iter),connect,vpere,false,&storage);MBERRNM(merr);
-
-    nghost_found=0;
-    /* loop over vertices and update the number of connectivity */
-    for (j=0;j<vpere;j++) {
-      moab::Range::const_iterator giter = dmmoab->vghost->find(connect[j]);
-      if (giter != dmmoab->vghost->end()) nghost_found++;
-    }
-
-    if (nghost_found == vpere) continue;  /* all vertices are ghosted.. */
-
-    /* loop over vertices and update the number of connectivity */
-    for (j=0;j<vpere;j++) {
-      moab::Range::const_iterator giter = dmmoab->vghost->find(connect[j]);
-      if (giter != dmmoab->vghost->end()) continue;
-
-      merr = dmmoab->mbiface->tag_get_data(id_tag,&connect[j],1,&dof);MBERRNM(merr);
-      ierr = PetscSectionGetDof(section, connect[j], &ndofs);
-      
-      for (f=0;f<dmmoab->nfields;f++) {
-        ierr = PetscSectionGetFieldOffset(section, connect[j], f, &doff);
-
-        onz[doff]+=nghost_found;  /* add ghost non-owned nodes */
-
-        PetscPrintf(PETSC_COMM_WORLD, "Point %D, Field %D, DOF %D, OFFSET %D : ONZ = %D\n", connect[j], f, dof, doff, onz[doff]);
-
-      }
-
-//      if (dof-firstvtx < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Invalid local vertex ordering. Found ghost node with ID less than first vertex: [%i, %i]",dof,firstvtx);
-//
-//      /* if block format, then all the block data are local only */
-//      if (!isbaij) {
-//        offset=(dof-firstvtx)*bs;
-//        for (k=0;k<bs;k++)
-//          onz[offset+k]+=nghost_found;
-//      }
-//      else {
-//        onz[(dof-firstvtx)]+=nghost_found;
-//      }
-    }
-  }
-
-  if (innz) *innz=0;
-  if (ionz) *ionz=0;
-  for (i=0;i<nsize;i++) {
-    nnz[i]+=1;  /* self count the node */
-    if (!isbaij) {
-      nnz[i]*=bs;
-      onz[i]*=bs;
-    }
-    PetscPrintf(PETSC_COMM_WORLD, "Index %D: NNZ = %D, ONZ = %D\n", i, nnz[i], onz[i]);
-    
-    if (innz && nnz[i]>*innz) *innz=nnz[i];
-    if (ionz && onz[i]>*ionz) *ionz=onz[i];
-  }
-    PetscPrintf(PETSC_COMM_WORLD, "MAX: NNZ = %D, ONZ = %D\n", *innz, *ionz);
-  PetscFunctionReturn(0);
-}
-
-#endif
 

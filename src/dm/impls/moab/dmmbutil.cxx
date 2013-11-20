@@ -51,7 +51,6 @@ static void set_structured_coordinates(PetscInt i, PetscInt j, PetscInt k, Petsc
   vcoords[0][vcount] = i*hxyz;
   vcoords[1][vcount] = j*hxyz;
   vcoords[2][vcount] = k*hxyz;
-//  PetscPrintf(PETSC_COMM_SELF, " vertex - %D, %D, %D - [%G, %G]\n", i, j, k, vcoords[0][vcount], vcoords[1][vcount]);
 }
 
 static void set_element_connectivity(PetscInt dim, moab::EntityType etype, PetscInt offset, PetscInt nele, PetscInt i, PetscInt j, PetscInt k, PetscInt vfirst, moab::EntityHandle *connectivity)
@@ -64,14 +63,12 @@ static void set_element_connectivity(PetscInt dim, moab::EntityType etype, Petsc
     case 1:
       connectivity[offset+subent_conn[0]] = vfirst+i;
       connectivity[offset+subent_conn[1]] = vfirst+(i+1);
-//            PetscPrintf(PETSC_COMM_SELF, "[%D] ELEMENT[%D,%D,%D]: CONNECTIVITY = %D, %D\n", pcomm->rank(), i,j,k,connectivity[offset+subent_conn[0]], connectivity[offset+subent_conn[1]]);
       break;
     case 2:
       connectivity[offset+subent_conn[0]] = vfirst+i+j*(nele+1);
       connectivity[offset+subent_conn[1]] = vfirst+(i+1)+j*(nele+1);
       connectivity[offset+subent_conn[2]] = vfirst+(i+1)+(j+1)*(nele+1);
       connectivity[offset+subent_conn[3]] = vfirst+i+(j+1)*(nele+1);
-//            PetscPrintf(PETSC_COMM_SELF, "[%D] ELEMENT[%D,%D,%D]: CONNECTIVITY = %D, %D, %D, %D\n", pcomm->rank(), i,j,k,connectivity[offset+subent_conn[0]], connectivity[offset+subent_conn[1]], connectivity[offset+subent_conn[2]], connectivity[offset+subent_conn[3]]);
       break;
     case 3:
     default:
@@ -85,7 +82,6 @@ static void set_element_connectivity(PetscInt dim, moab::EntityType etype, Petsc
       connectivity[offset+subent_conn[7]] = vfirst+i+(nele+1)*((j+1)+(nele+1)*(k+1));
       break;
   }
-
 }
 
 #undef __FUNCT__
@@ -171,7 +167,6 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
     etype = moab::MBHEX;
     break;
   }
-//  PetscPrintf(PETSC_COMM_SELF, "[%D] Element Partition Indices -[%D - %D], [%D - %D], [%D - %D]\n", rank, ise[0], ise[1], ise[2], ise[3], ise[4], ise[5]);
 
   /* we have a domain of size [1,1,1] - now compute local co-ordinate box */
   ierr = PetscMemzero(xse,sizeof(PetscReal)*6);CHKERRQ(ierr);  
@@ -191,7 +186,6 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
   for (k = ise[4]; k <= ise[5]; k++) {
     for (j = ise[2]; j <= ise[3]; j++) {
       for (i = ise[0]; i <= ise[1]; i++, vcount++) {
-//        PetscPrintf(PETSC_COMM_SELF, "[%D] creating owned", rank);
         set_structured_coordinates(i,j,k,hxyz,vcount,vcoords);
         vgid[vcount] = (k*npts+j)*npts+i+1;
       }
@@ -203,7 +197,6 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
     for (k = (dim==3?ise[4]-nghost:ise[4]); k <= (dim==3?ise[4]-1:ise[5]); k++) {
       for (j = (dim==2?ise[2]-nghost:ise[2]); j <= (dim==2?ise[2]-1:ise[3]); j++) {
         for (i = (dim>1?ise[0]:ise[0]-nghost); i <= (dim>1?ise[1]:ise[0]-1); i++, vcount++) {
-//          PetscPrintf(PETSC_COMM_SELF, "[%D] creating ghost", rank);
           set_structured_coordinates(i,j,k,hxyz,vcount,vcoords);
           vgid[vcount] = (k*npts+j)*npts+i+1;
         }
@@ -216,7 +209,6 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
     for (k = (dim==3?ise[5]+1:ise[4]); k <= (dim==3?ise[5]+nghost:ise[5]); k++) {
       for (j = (dim==2?ise[3]+1:ise[2]); j <= (dim==2?ise[3]+nghost:ise[3]); j++) {
         for (i = (dim>1?ise[0]:ise[1]+1); i <= (dim>1?ise[1]:ise[1]+nghost); i++, vcount++) {
-//          PetscPrintf(PETSC_COMM_SELF, "[%D] creating ghost", rank);
           set_structured_coordinates(i,j,k,hxyz,vcount,vcoords);
           vgid[vcount] = (k*npts+j)*npts+i+1;
         }
@@ -228,7 +220,6 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
 
   merr = mbiface->get_entities_by_type(0,moab::MBVERTEX,ownedvtx,true);MBERRNM(merr);
   merr = mbiface->add_entities (dmmoab->fileset, ownedvtx);MBERRNM(merr);
-//  merr = mbiface->get_entities_by_type(dmmoab->fileset,moab::MBVERTEX,ownedvtx,true);MBERRNM(merr);
 
   /* The global ID tag is applied to each owned
      vertex. It acts as an global identifier which MOAB uses to
@@ -253,7 +244,6 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
     for (k = (dim==3?ise[4]-nghost:ise[4]); k < (dim==3?ise[4]:std::max(ise[5],1)); k++) {
       for (j = (dim==2?ise[2]-nghost:ise[2]); j < (dim==2?ise[2]:std::max(ise[3],1)); j++) {
         for (i = (dim>1?ise[0]:ise[0]-nghost); i < (dim>1?std::max(ise[1],1):ise[0]); i++, ecount++) {
-//          PetscPrintf(PETSC_COMM_SELF, "[%D] creating ghost element - %D, %D, %D\n", rank, i, j, k);
           set_element_connectivity(dim, etype, ecount*vpere, nele, i, j, k, vfirst, connectivity);
         }
       }
@@ -264,7 +254,6 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
   for (k = ise[4]; k < std::max(ise[5],1); k++) {
     for (j = ise[2]; j < std::max(ise[3],1); j++) {
       for (i = ise[0]; i < std::max(ise[1],1); i++,ecount++) {
-//        PetscPrintf(PETSC_COMM_SELF, "[%D] creating owned element - %D, %D, %D\n", rank, i, j, k);
         set_element_connectivity(dim, etype, ecount*vpere, nele, i, j, k, vfirst, connectivity);
       }
     }
@@ -275,7 +264,6 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
     for (k = (dim==3?ise[5]:ise[4]); k < (dim==3?ise[5]+nghost:std::max(ise[5],1)); k++) {
       for (j = (dim==2?ise[3]:ise[2]); j < (dim==2?ise[3]+nghost:std::max(ise[3],1)); j++) {
         for (i = (dim>1?ise[0]:ise[1]); i < (dim>1?std::max(ise[1],1):ise[1]+nghost); i++, ecount++) {
-//          PetscPrintf(PETSC_COMM_SELF, "[%D] creating ghost element - %D, %D, %D\n", rank, i, j, k);
           set_element_connectivity(dim, etype, ecount*vpere, nele, i, j, k, vfirst, connectivity);
         }
       }
@@ -288,9 +276,6 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
         first '0' specifies "root set", or entire MOAB instance, second the entity dimension being requested */
   merr = mbiface->get_entities_by_dimension(0, dim, ownedelms);MBERRNM(merr);
   merr = mbiface->add_entities (dmmoab->fileset, ownedelms);MBERRNM(merr);
-//  merr = mbiface->get_entities_by_dimension(dmmoab->fileset, dim, ownedelms);MBERRNM(merr);
-
-//  merr = mbiface->unite_meshset(0, dmmoab->fileset);MBERRV(mbiface,merr);
 
   if (locnele+ghnele != (int) ownedelms.size())
     SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Created the wrong number of elements! (%D!=%D)",locnele+ghnele,ownedelms.size());
@@ -324,12 +309,6 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
   
   merr = pcomm->exchange_tags(id_tag,ownedvtx);MBERRV(mbiface,merr);
   merr = pcomm->exchange_tags(id_tag,ownedelms);MBERRV(mbiface,merr);
-
-//  if(rank) {
-//    ownedvtx.print(0);
-//    ownedelms.print(0);
-//  }
-
   PetscFunctionReturn(0);
 }
 
@@ -341,7 +320,7 @@ PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc
   std::ostringstream str;
 
   PetscFunctionBegin;
-  // do parallel read unless only one processor
+  /* do parallel read unless using only one processor */
   if (numproc > 1) {
     str << "PARALLEL=" << mode << ";PARTITION=PARALLEL_PARTITION;PARTITION_DISTRIBUTE;";
     str << "PARALLEL_RESOLVE_SHARED_ENTS;PARALLEL_GHOSTS=" << dim << ".0.1;";
@@ -428,7 +407,6 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm,PetscInt dim,const char* filenam
   sstr << "test_" << pcomm->rank() << ".vtk";
   mbiface->write_mesh(sstr.str().c_str());
 #endif
-
   PetscFunctionReturn(0);
 }
 
