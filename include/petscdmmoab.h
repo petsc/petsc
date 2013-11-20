@@ -43,7 +43,7 @@ PETSC_EXTERN PetscErrorCode DMMoabSetLocalToGlobalTag(DM dm,moab::Tag ltogtag);
 PETSC_EXTERN PetscErrorCode DMMoabGetLocalToGlobalTag(DM dm,moab::Tag *ltog_tag);
 PETSC_EXTERN PetscErrorCode DMMoabSetBlockSize(DM dm,PetscInt bs);
 PETSC_EXTERN PetscErrorCode DMMoabGetBlockSize(DM dm,PetscInt *bs);
-PETSC_EXTERN PetscErrorCode DMMoabGetBoundaryEntities(DM dm,moab::Range *bdvtx,moab::Range* bdfaces);
+PETSC_EXTERN PetscErrorCode DMMoabGetBoundaryEntities(DM dm,moab::Range *bdvtx,moab::Range* bdfaces,moab::Range* bdelems);
 
 PETSC_EXTERN PetscErrorCode DMMoabVecGetArrayRead(DM,Vec,void*);
 PETSC_EXTERN PetscErrorCode DMMoabVecRestoreArrayRead(DM,Vec,void*);
@@ -63,7 +63,8 @@ PETSC_EXTERN PetscErrorCode DMMoabGetFieldDofs(DM dm,PetscInt npoints,const moab
 /* discretization and assembly specific DMMoab interface functions */
 PETSC_EXTERN PetscErrorCode DMMoabGetElementConnectivity(DM dm,moab::EntityHandle ehandle,PetscInt* nconn,const moab::EntityHandle **conn);
 PETSC_EXTERN PetscErrorCode DMMoabGetVertexCoordinates(DM dm,PetscInt nconn,const moab::EntityHandle *conn,PetscScalar *vpos);
-PETSC_EXTERN PetscErrorCode DMMoabCheckBoundaryVertices(DM dm,PetscInt nconn,const moab::EntityHandle *cnt,PetscBool* isbdvtx,PetscBool* elem_on_boundary);
+PETSC_EXTERN PetscErrorCode DMMoabIsEntityOnBoundary(DM dm,const moab::EntityHandle ent,PetscBool* ent_on_boundary);
+PETSC_EXTERN PetscErrorCode DMMoabCheckBoundaryVertices(DM dm,PetscInt nconn,const moab::EntityHandle *cnt,PetscBool* isbdvtx);
 
 /* DM utility creation interface */
 PETSC_EXTERN PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm,PetscInt,PetscInt,PetscInt,DM*);
