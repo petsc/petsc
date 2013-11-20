@@ -36,4 +36,7 @@ PETSC_EXTERN PetscErrorCode DMMoabCreateVector(DM dm, moab::Tag tag,PetscInt tag
 PETSC_EXTERN PetscErrorCode DMMoabCreateMatrix(DM dm, MatType mtype,Mat *J);
 PETSC_EXTERN PetscErrorCode DMMoabGetVecTag(Vec vec,moab::Tag *tag);
 PETSC_EXTERN PetscErrorCode DMMoabGetVecRange(Vec vec,moab::Range *range);
+
+PETSC_EXTERN PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, PetscInt nghost, DM *dm);
+
 #endif
