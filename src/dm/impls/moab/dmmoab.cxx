@@ -10,10 +10,13 @@
 PetscErrorCode DMDestroy_Moab(DM dm)
 {
   PetscErrorCode ierr;
-  DM_Moab         *dmmoab = (DM_Moab*)dm->data;
+  DM_Moab        *dmmoab = (DM_Moab*)dm->data;
+  PetscSection   section;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   if (dmmoab->icreatedinstance) {
     delete dmmoab->mbiface;
   }
@@ -695,15 +698,69 @@ PetscErrorCode DMMoabGetBlockSize(DM dm,PetscInt *bs)
 
 
 #undef __FUNCT__
+#define __FUNCT__ "DMMoabGetSize"
+/*@
+  DMMoabGetSize - Get the global vertex size used with this DMMoab
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm - The DMMoab object being set
+
+  Output Parameter:
+. ng - The global size of the DMMoab instance
+
+  Level: beginner
+
+.keywords: DMMoab, create
+@*/
+PetscErrorCode DMMoabGetSize(DM dm,PetscInt *ng)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if(ng) *ng = ((DM_Moab*)dm->data)->n;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabGetLocalSize"
+/*@
+  DMMoabGetLocalSize - Get the local and ghosted vertex size used with this DMMoab
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm - The DMMoab object being set
+
+  Output Parameter:
+. nl - The local size of the DMMoab instance
+. ng - The ghosted size of the DMMoab instance
+
+  Level: beginner
+
+.keywords: DMMoab, create
+@*/
+PetscErrorCode DMMoabGetLocalSize(DM dm,PetscInt *nl,PetscInt *ng)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if(nl) *nl = ((DM_Moab*)dm->data)->nloc;
+  if(ng) *ng = ((DM_Moab*)dm->data)->nghost;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "DMMoabSetFieldVector"
 PetscErrorCode DMMoabSetFieldVector(DM dm, PetscInt ifield, Vec fvec)
 {
   DM_Moab        *dmmoab;
   moab::Tag     vtag,ntag;
-  PetscScalar   *varray;
+  const PetscScalar *varray;
+  PetscScalar *farray;
   moab::ErrorCode merr;
   PetscErrorCode  ierr;
-  PetscSection section;
   PetscInt doff;
   std::string tag_name;
   moab::Range::iterator iter;
@@ -711,8 +768,6 @@ PetscErrorCode DMMoabSetFieldVector(DM dm, PetscInt ifield, Vec fvec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   dmmoab = (DM_Moab*)(dm)->data;
-
-  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
 
   /* Create a tag in MOAB mesh to index and keep track of number of Petsc vec tags */
   merr = dmmoab->mbiface->tag_get_handle(dmmoab->fields[ifield],1,moab::MB_TYPE_DOUBLE,ntag,
@@ -722,29 +777,105 @@ PetscErrorCode DMMoabSetFieldVector(DM dm, PetscInt ifield, Vec fvec)
 
   merr = dmmoab->mbiface->tag_get_name(vtag, tag_name);
   if (!tag_name.length() && merr !=moab::MB_SUCCESS) {
-    ierr = DMMoabVecGetArray(dm,fvec,&varray);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(fvec,&varray);CHKERRQ(ierr);
+
     for(iter = dmmoab->vowned->begin(); iter != dmmoab->vowned->end(); iter++) {
       moab::EntityHandle vtx = (*iter);
 
       /* get field dof index */
-      ierr = PetscSectionGetFieldOffset(section, vtx, ifield, &doff);
+      ierr = DMMoabGetFieldDof(dm, vtx, ifield, &doff);
 
       /* use the entity handle and the Dof index to set the right value */
       merr = dmmoab->mbiface->tag_set_data(ntag, &vtx, 1, (const void*)&varray[doff]);MBERRNM(merr);
     }
-    ierr = DMMoabVecRestoreArray(dm,fvec,&varray);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(fvec,&varray);CHKERRQ(ierr);
   }
   else {
-    ierr = PetscMalloc(dmmoab->nloc*sizeof(PetscScalar),&varray);CHKERRQ(ierr);
+    ierr = PetscMalloc(dmmoab->nloc*sizeof(PetscScalar),&farray);CHKERRQ(ierr);
     /* we are using a MOAB Vec - directly copy the tag data to new one */
-    merr = dmmoab->mbiface->tag_get_data(vtag, *dmmoab->vowned, (void*)varray);MBERRNM(merr);
-    merr = dmmoab->mbiface->tag_set_data(ntag, *dmmoab->vowned, (const void*)varray);MBERRNM(merr);
+    merr = dmmoab->mbiface->tag_get_data(vtag, *dmmoab->vowned, (void*)farray);MBERRNM(merr);
+    merr = dmmoab->mbiface->tag_set_data(ntag, *dmmoab->vowned, (const void*)farray);MBERRNM(merr);
     /* make sure the parallel exchange for ghosts are done appropriately */
     merr = dmmoab->pcomm->exchange_tags(ntag, *dmmoab->vlocal);MBERRNM(merr);
+    ierr = PetscFree(farray);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabSetGlobalFieldVector"
+PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
+{
+  DM_Moab        *dmmoab;
+  moab::Tag     vtag,ntag;
+  const PetscScalar   *varray;
+  PetscScalar   *farray;
+  moab::ErrorCode merr;
+  PetscErrorCode  ierr;
+  PetscSection section;
+  PetscInt i,doff,ifield;
+  std::string tag_name;
+  moab::Range::iterator iter;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  dmmoab = (DM_Moab*)(dm)->data;
+
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+
+  /* get the Tag corresponding to the global vector - possible that there is no tag associated.. */
+  ierr = DMMoabGetVecTag(fvec,&vtag);CHKERRQ(ierr);
+  merr = dmmoab->mbiface->tag_get_name(vtag, tag_name);
+  if (!tag_name.length() && merr !=moab::MB_SUCCESS) {
+    /* not a MOAB vector - use VecGetSubVector to get the parts as needed */
+
+    ierr = VecGetArrayRead(fvec,&varray);CHKERRQ(ierr);
+    for (ifield=0; ifield<dmmoab->nfields; ++ifield) {
+
+      /* Create a tag in MOAB mesh to index and keep track of number of Petsc vec tags */
+      merr = dmmoab->mbiface->tag_get_handle(dmmoab->fields[ifield],1,moab::MB_TYPE_DOUBLE,ntag,
+                                            moab::MB_TAG_SPARSE | moab::MB_TAG_CREAT);MBERRNM(merr);
+
+      for(iter = dmmoab->vowned->begin(); iter != dmmoab->vowned->end(); iter++) {
+        moab::EntityHandle vtx = (*iter);
+
+        /* get field dof index */
+        ierr = DMMoabGetFieldDof(dm, vtx, ifield, &doff);
+
+        /* use the entity handle and the Dof index to set the right value */
+        merr = dmmoab->mbiface->tag_set_data(ntag, &vtx, 1, (const void*)&varray[doff]);MBERRNM(merr);
+      }
+    }
+    ierr = VecRestoreArrayRead(fvec,&varray);CHKERRQ(ierr);
+  }
+  else {
+    ierr = PetscMalloc(dmmoab->nloc*sizeof(PetscScalar),&farray);CHKERRQ(ierr);
+    ierr = PetscMalloc(dmmoab->nloc*dmmoab->bs*sizeof(PetscScalar),&varray);CHKERRQ(ierr);
+
+    /* we are using a MOAB Vec - directly copy the tag data to new one */
+    merr = dmmoab->mbiface->tag_get_data(vtag, *dmmoab->vowned, (void*)varray);MBERRNM(merr);
+    for (ifield=0; ifield<dmmoab->nfields; ++ifield) {
+
+      /* Create a tag in MOAB mesh to index and keep track of number of Petsc vec tags */
+      merr = dmmoab->mbiface->tag_get_handle(dmmoab->fields[ifield],1,moab::MB_TYPE_DOUBLE,ntag,
+                                            moab::MB_TAG_SPARSE | moab::MB_TAG_CREAT);MBERRNM(merr);
+
+      /* we are using a MOAB Vec - directly copy the tag data to new one */
+      for(i=0; i < dmmoab->nloc; i++) {
+        farray[i] = varray[i*dmmoab->bs+ifield];
+      }
+
+      merr = dmmoab->mbiface->tag_set_data(ntag, *dmmoab->vowned, (const void*)farray);MBERRNM(merr);
+      /* make sure the parallel exchange for ghosts are done appropriately */
+      merr = dmmoab->pcomm->exchange_tags(ntag, *dmmoab->vlocal);MBERRNM(merr);
+    }
+    ierr = PetscFree(farray);CHKERRQ(ierr);
     ierr = PetscFree(varray);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
+
 
 
 #undef __FUNCT__
@@ -942,8 +1073,8 @@ PetscErrorCode DMMoabGetFieldDofs(DM dm,PetscInt npoints,const moab::EntityHandl
 
 
 #undef __FUNCT__
-#define __FUNCT__ "DMMoabGetLocalFieldDofs"
-PetscErrorCode DMMoabGetLocalFieldDofs(DM dm,PetscInt npoints,const moab::EntityHandle* points,PetscInt field,PetscInt* dof)
+#define __FUNCT__ "DMMoabGetFieldDofsLocal"
+PetscErrorCode DMMoabGetFieldDofsLocal(DM dm,PetscInt npoints,const moab::EntityHandle* points,PetscInt field,PetscInt* dof)
 {
   PetscInt i,offset;
   PetscErrorCode  ierr;
@@ -969,6 +1100,122 @@ PetscErrorCode DMMoabGetLocalFieldDofs(DM dm,PetscInt npoints,const moab::Entity
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabGetDofs"
+PetscErrorCode DMMoabGetDofs(DM dm,PetscInt npoints,const moab::EntityHandle* points,PetscInt* dof)
+{
+  PetscInt i,f,gid;
+  PetscSection section;
+  PetscErrorCode  ierr;
+  moab::ErrorCode merr;
+  DM_Moab        *dmmoab;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  dmmoab = (DM_Moab*)(dm)->data;
+
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  if (!dof) {
+    ierr = PetscMalloc(sizeof(PetscScalar)*dmmoab->nfields*npoints, &dof);CHKERRQ(ierr);
+  }
+
+  /* first get the local indices */
+  merr = dmmoab->mbiface->tag_get_data(dmmoab->ltog_tag,points,npoints,dof);MBERRNM(merr);
+
+  for (i=0; i<npoints; ++i) {
+    gid=dof[i];
+    for (f=0; f<dmmoab->nfields; ++f) {
+      ierr = PetscSectionGetFieldDof(section, gid, f, &dof[i*dmmoab->nfields+f]);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabGetDofsLocal"
+PetscErrorCode DMMoabGetDofsLocal(DM dm,PetscInt npoints,const moab::EntityHandle* points,PetscInt* dof)
+{
+  PetscInt        i,f,offset;
+  PetscErrorCode  ierr;
+  DM_Moab        *dmmoab;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  dmmoab = (DM_Moab*)(dm)->data;
+
+  if (!dof) {
+    ierr = PetscMalloc(sizeof(PetscScalar)*dmmoab->nfields*npoints, &dof);CHKERRQ(ierr);
+  }
+
+  if (dmmoab->bs > 1) {
+    for (f=0; f<dmmoab->nfields; ++f)
+      for (i=0; i<npoints; ++i)
+        dof[i*dmmoab->nfields+f] = (points[i]-1)*dmmoab->bs+f;
+  }
+  else {
+    for (f=0; f<dmmoab->nfields; ++f) {
+      offset = f*dmmoab->n;     /* assume all fields have equal distribution - say all vertex based */
+      for (i=0; i<npoints; ++i)
+        dof[i*dmmoab->nfields+f] = offset+points[i]-1;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabGetDofsBlocked"
+PetscErrorCode DMMoabGetDofsBlocked(DM dm,PetscInt npoints,const moab::EntityHandle* points,PetscInt* dof)
+{
+  PetscInt i,gid,dofindx;
+  PetscSection section;
+  PetscErrorCode  ierr;
+  moab::ErrorCode merr;
+  DM_Moab        *dmmoab;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  dmmoab = (DM_Moab*)(dm)->data;
+
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  if (!dof) {
+    ierr = PetscMalloc(sizeof(PetscScalar)*npoints, &dof);CHKERRQ(ierr);
+  }
+
+  /* first get the local indices */
+  merr = dmmoab->mbiface->tag_get_data(dmmoab->ltog_tag,points,npoints,dof);MBERRNM(merr);
+
+  for (i=0; i<npoints; ++i) {
+    gid=dof[i];
+    ierr = PetscSectionGetFieldDof(section, gid, 0, &dofindx);CHKERRQ(ierr);
+    if (dmmoab->bs > 1)  dof[i]=dofindx/dmmoab->bs;
+    else dof[i]=dofindx;
+//    PetscPrintf(PETSC_COMM_SELF, "I=%D, GID=%D, DOFINDX=%D, DOF=%D\n", i, gid, dofindx, dof[i]);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabGetDofsBlockedLocal"
+PetscErrorCode DMMoabGetDofsBlockedLocal(DM dm,PetscInt npoints,const moab::EntityHandle* points,PetscInt* dof)
+{
+  PetscInt        i;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+
+  if (!dof) {
+    ierr = PetscMalloc(sizeof(PetscScalar)*npoints, &dof);CHKERRQ(ierr);
+  }
+
+  for (i=0; i<npoints; ++i)
+    dof[i] = points[i]-1;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoab_GetWriteOptions_Private"
