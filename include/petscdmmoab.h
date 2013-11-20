@@ -15,16 +15,19 @@
 #define MBERR(msg,rval) do{if(rval != moab::MB_SUCCESS) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s",(PetscErrorCode)rval,msg);} while(0)
 #define MBERRNM(rval) do{if(rval != moab::MB_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i)",rval);} while(0)
 #define MBERRV(mbif,rval) do{if(rval != moab::MB_SUCCESS) { std::string emsg; mbif->get_last_error(emsg); SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s",(PetscErrorCode)rval,emsg.c_str());} } while(0)
-#define MBERRVM(mbif,msg,rval) do{if(rval != moab::MB_SUCCESS) { std::string emsg; mbif->get_last_error(emsg); SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s :: %s",(PetscErrorCode)rval,msg,emsg.c_str());} } while(0)
+#define MBERRVM(mbif,msg,rval) do{if(rval != moab::MB_SUCCESS) { std::string emsg; mbif->get_last_error(emsg); SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s :: %s",(PetscErrorCode)rval,msg,emsg.c_str());} } while(0)
 
 PETSC_EXTERN PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *moab);
 PETSC_EXTERN PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::ParallelComm *pcomm, moab::Tag *ltog_tag, moab::Range *range, DM *moab);
+
 PETSC_EXTERN PetscErrorCode DMMoabSetParallelComm(DM dm,moab::ParallelComm *pcomm);
 PETSC_EXTERN PetscErrorCode DMMoabGetParallelComm(DM dm,moab::ParallelComm **pcomm);
 PETSC_EXTERN PetscErrorCode DMMoabSetInterface(DM dm,moab::Interface *iface);
 PETSC_EXTERN PetscErrorCode DMMoabGetInterface(DM dm,moab::Interface **iface);
-PETSC_EXTERN PetscErrorCode DMMoabSetRange(DM dm,moab::Range *range);
-PETSC_EXTERN PetscErrorCode DMMoabGetRange(DM dm,moab::Range **range);
+PETSC_EXTERN PetscErrorCode DMMoabSetLocalVertices(DM dm,moab::Range *range);
+PETSC_EXTERN PetscErrorCode DMMoabGetLocalVertices(DM dm,moab::Range *owned,moab::Range *ghost);
+PETSC_EXTERN PetscErrorCode DMMoabSetLocalElements(DM dm,moab::Range *range);
+PETSC_EXTERN PetscErrorCode DMMoabGetLocalElements(DM dm,moab::Range *range);
 PETSC_EXTERN PetscErrorCode DMMoabSetLocalToGlobalTag(DM dm,moab::Tag ltogtag);
 PETSC_EXTERN PetscErrorCode DMMoabGetLocalToGlobalTag(DM dm,moab::Tag *ltog_tag);
 PETSC_EXTERN PetscErrorCode DMMoabSetBlockSize(DM dm,PetscInt bs);
@@ -40,6 +43,18 @@ PETSC_EXTERN PetscErrorCode DMMoabCreateMatrix(DM dm, MatType mtype,Mat *J);
 PETSC_EXTERN PetscErrorCode DMMoabGetVecTag(Vec vec,moab::Tag *tag);
 PETSC_EXTERN PetscErrorCode DMMoabGetVecRange(Vec vec,moab::Range *range);
 
-PETSC_EXTERN PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, PetscInt nghost, DM *dm);
+PETSC_EXTERN PetscErrorCode DMMoabSetFields(DM dm,PetscInt nfields,const char** fields);
+PETSC_EXTERN PetscErrorCode DMMoabGetFieldDof(DM dm,moab::EntityHandle point, PetscInt field,PetscInt* dof);
+PETSC_EXTERN PetscErrorCode DMMoabGetFieldDofs(DM dm,PetscInt npoints,const moab::EntityHandle* points, PetscInt field,PetscInt* dof);
+
+
+PETSC_EXTERN PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm,PetscInt,PetscInt,PetscInt,DM*);
+PETSC_EXTERN PetscErrorCode DMMoabLoadFromFile(MPI_Comm,PetscInt,const char*,const char*,DM*);
+
+#define MOAB_PARROPTS_READ_PART    "READ_PART"
+#define MOAB_PARROPTS_READ_DELETE  "READ_DELETE"
+#define MOAB_PARROPTS_BCAST_DELETE "BCAST_DELETE"
+
+typedef const char* MoabReadMode;
 
 #endif

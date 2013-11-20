@@ -249,9 +249,12 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
     ierr = DMMoabSetLocalToGlobalTag(*dmb, *ltog_tag);CHKERRQ(ierr);
   }
 
+  /* create a fileset to store the hierarchy of entities belonging to current DM */
+  merr = mbiface->create_meshset(MESHSET_ORDERED, dmmoab->file_set);MBERRNM(ierr);
+
   /* set the local range of entities (vertices) of interest */
   if (range) {
-    ierr = DMMoabSetRange(*dmb, range);CHKERRQ(ierr);
+    ierr = DMMoabSetLocalVertices(*dmb, range);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -369,9 +372,9 @@ PetscErrorCode DMMoabGetInterface(DM dm,moab::Interface **mbiface)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "DMMoabSetRange"
+#define __FUNCT__ "DMMoabSetLocalVertices"
 /*@
-  DMMoabSetRange - Set the entities having DOFs on this DMMoab
+  DMMoabSetLocalVertices - Set the entities having DOFs on this DMMoab
 
   Collective on MPI_Comm
 
@@ -383,7 +386,7 @@ PetscErrorCode DMMoabGetInterface(DM dm,moab::Interface **mbiface)
 
 .keywords: DMMoab, create
 @*/
-PetscErrorCode DMMoabSetRange(DM dm,moab::Range *range)
+PetscErrorCode DMMoabSetLocalVertices(DM dm,moab::Range *range)
 {
   moab::ErrorCode merr;
   PetscErrorCode  ierr;
@@ -405,9 +408,9 @@ PetscErrorCode DMMoabSetRange(DM dm,moab::Range *range)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "DMMoabGetRange"
+#define __FUNCT__ "DMMoabGetLocalVertices"
 /*@
-  DMMoabGetRange - Get the entities having DOFs on this DMMoab
+  DMMoabGetLocalVertices - Get the entities having DOFs on this DMMoab
 
   Collective on MPI_Comm
 
@@ -415,19 +418,47 @@ PetscErrorCode DMMoabSetRange(DM dm,moab::Range *range)
 . dm    - The DMMoab object being set
 
   Output Parameter:
-. range - The entities treated by this DMMoab
+. owned - The owned vertex entities in this DMMoab
+. ghost - The ghosted entities (non-owned) stored locally in this partition
 
   Level: beginner
 
 .keywords: DMMoab, create
 @*/
-PetscErrorCode DMMoabGetRange(DM dm,moab::Range **range)
+PetscErrorCode DMMoabGetLocalVertices(DM dm,moab::Range **owned,moab::Range **ghost)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  *range = ((DM_Moab*)dm->data)->vowned;
+  if (*owned) *owned = ((DM_Moab*)dm->data)->vowned;
+  if (*ghost) *ghost = ((DM_Moab*)dm->data)->vghost;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabGetLocalElements"
+/*@
+  DMMoabGetLocalElements - Get the higher-dimensional entities that are locally owned
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm    - The DMMoab object being set
+
+  Output Parameter:
+. range - The entities owned locally
+
+  Level: beginner
+
+.keywords: DMMoab, create
+@*/
+PetscErrorCode DMMoabGetLocalElements(DM dm,moab::Range **range)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  *range = ((DM_Moab*)dm->data)->elocal;
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabSetLocalToGlobalTag"
