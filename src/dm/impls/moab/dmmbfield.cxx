@@ -255,15 +255,14 @@ PetscErrorCode DMMoabGetFieldName(DM dm, PetscInt field, const char **fieldName)
   
 .seealso: DMMoabGetFieldName(), DMMoabSetFields()
 @*/
-PetscErrorCode DMMoabSetFieldName(DM dm, PetscInt field, const char **fieldName)
+PetscErrorCode DMMoabSetFieldName(DM dm, PetscInt field, const char *fieldName)
 {
   PetscErrorCode ierr;
   DM_Moab        *dmmoab;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(fieldName,3);
-  PetscValidCharPointer(*fieldName,3);
+  PetscValidCharPointer(fieldName,3);
 
   dmmoab = (DM_Moab*)(dm)->data;
   if ((field < 0) || (field >= dmmoab->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "DM field %d should be in [%d, %d)", field, 0, dmmoab->numFields);
@@ -271,7 +270,7 @@ PetscErrorCode DMMoabSetFieldName(DM dm, PetscInt field, const char **fieldName)
   if (dmmoab->fieldNames[field]) {
     ierr = PetscFree(dmmoab->fieldNames[field]);CHKERRQ(ierr);
   }
-  ierr = PetscStrallocpy(*fieldName, (char**) &dmmoab->fieldNames[field]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(fieldName, (char**) &dmmoab->fieldNames[field]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
