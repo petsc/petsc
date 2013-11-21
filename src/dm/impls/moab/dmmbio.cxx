@@ -3,7 +3,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoab_GetWriteOptions_Private"
-PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt numproc, PetscInt dim, MoabWriteMode mode, PetscInt dbglevel, const char* extra_opts, const char** write_opts)
+static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt numproc, PetscInt dim, MoabWriteMode mode, PetscInt dbglevel, const char* extra_opts, const char** write_opts)
 {
   std::ostringstream str;
 
@@ -28,6 +28,29 @@ PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt numproc,
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabOutput"
+/*@C
+   DMMoabOutput - Output the solution vectors that are stored in the DMMoab object as tags 
+   along with the complete mesh data structure in the native H5M format. This output file
+   can be visualized directly with Paraview (if compiled with appropriate plugin) or converted
+   with tools/mbconvert to a VTK or Exodus file.
+
+   This routine can also be used for check-pointing purposes to store a complete history of 
+   the solution along with any other necessary data to restart computations.
+
+   Not Collective
+
+   Input Parameters:
++ dm     - the discretization manager object containing solution in MOAB tags.
+.  filename - the name of the output file: e.g., poisson.h5m
+-  usrwriteopts - the parallel write options needed for serializing a MOAB mesh database. Can be NULL.
+   Reference (Parallel Mesh Initialization: http://www.mcs.anl.gov/~fathom/moab-docs/html/contents.html#fivetwo)
+
+  Level: intermediate
+
+.keywords: discretization manager, set, component solution
+
+.seealso: DMMoabLoadFromFile(), DMMoabSetGlobalFieldVector()
+@*/
 PetscErrorCode DMMoabOutput(DM dm,const char* filename,const char* usrwriteopts)
 {
   DM_Moab        *dmmoab;
