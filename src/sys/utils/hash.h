@@ -568,7 +568,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIDelKey(PetscHashI ht, PetscInt key)
 PETSC_STATIC_INLINE PetscErrorCode PetscHashIGetKeys(PetscHashI ht, PetscInt *n, PetscInt arr[])
 {
   PetscHashIIter hi;
-  PetscInt       size, off = *n;
+  PetscInt       off = *n;
 
   for (hi = kh_begin(ht); hi != kh_end(ht); ++hi) {
     if (kh_exist(ht, hi) && !__ac_isdel(ht->flags, hi)) arr[off++] = kh_key(ht, hi);
