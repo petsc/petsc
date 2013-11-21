@@ -202,7 +202,7 @@ typedef unknown64bit Petsc64bitInt
 #endif
 #if defined(PETSC_USE_64BIT_INDICES)
 typedef Petsc64bitInt PetscInt;
-#  if defined(MPI_INT64_T)
+#  if defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
 #    define MPIU_INT MPI_INT64_T
 #  else
 #    define MPIU_INT MPI_LONG_LONG_INT
