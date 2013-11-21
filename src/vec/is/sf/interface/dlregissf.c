@@ -27,6 +27,13 @@ PetscErrorCode PetscSFInitializePackage(void)
 
   ierr = PetscClassIdRegister("Bipartite Graph",&PETSCSF_CLASSID);CHKERRQ(ierr);
   ierr = PetscSFRegisterAll();CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PetscSFSetGraph"     , PETSCSF_CLASSID, &PETSCSF_SetGraph);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PetscSFBcastBegin"   , PETSCSF_CLASSID, &PETSCSF_BcastBegin);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PetscSFBcastEnd"     , PETSCSF_CLASSID, &PETSCSF_BcastEnd);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PetscSFReduceBegin"  , PETSCSF_CLASSID, &PETSCSF_ReduceBegin);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PetscSFReduceEnd"    , PETSCSF_CLASSID, &PETSCSF_ReduceEnd);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PetscSFFetchOpBegin" , PETSCSF_CLASSID, &PETSCSF_FetchAndOpBegin);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PetscSFFetchOpEnd"   , PETSCSF_CLASSID, &PETSCSF_FetchAndOpEnd);CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(PetscSFFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

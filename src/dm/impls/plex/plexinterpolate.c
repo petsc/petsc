@@ -158,16 +158,16 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
   if (pEnd[cellDepth] > pStart[cellDepth]) {ierr = DMPlexGetFaces_Internal(dm, cellDim, pStart[cellDepth], NULL, &faceSizeAll, NULL);CHKERRQ(ierr);}
   if (faceSizeAll > 4) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Do not support interpolation of meshes with faces of %D vertices", faceSizeAll);
   ierr = PetscHashIJKLCreate(&faceTable);CHKERRQ(ierr);
-  ierr = PetscHashIJKLSetMultivalued(faceTable, PETSC_FALSE);CHKERRQ(ierr);
   for (c = pStart[cellDepth], face = pStart[faceDepth]; c < pEnd[cellDepth]; ++c) {
     const PetscInt *cellFaces;
-    PetscInt        numCellFaces, faceSize, cf, f;
+    PetscInt        numCellFaces, faceSize, cf;
 
     ierr = DMPlexGetFaces_Internal(dm, cellDim, c, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
     if (faceSize != faceSizeAll) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent face for cell %D of size %D != %D", c, faceSize, faceSizeAll);
     for (cf = 0; cf < numCellFaces; ++cf) {
-      const PetscInt  *cellFace = &cellFaces[cf*faceSize];
-      PetscHashIJKLKey key;
+      const PetscInt   *cellFace = &cellFaces[cf*faceSize];
+      PetscHashIJKLKey  key;
+      PetscHashIJKLIter missing, iter;
 
       if (faceSize == 2) {
         key.i = PetscMin(cellFace[0], cellFace[1]);
@@ -178,11 +178,8 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
         key.i = cellFace[0]; key.j = cellFace[1]; key.k = cellFace[2]; key.l = faceSize > 3 ? cellFace[3] : 0;
         ierr = PetscSortInt(faceSize, (PetscInt *) &key);
       }
-      ierr  = PetscHashIJKLGet(faceTable, key, &f);CHKERRQ(ierr);
-      if (f < 0) {
-        ierr = PetscHashIJKLAdd(faceTable, key, face);CHKERRQ(ierr);
-        f    = face++;
-      }
+      ierr = PetscHashIJKLPut(faceTable, key, &missing, &iter);CHKERRQ(ierr);
+      if (missing) {ierr = PetscHashIJKLSet(faceTable, iter, face++);CHKERRQ(ierr);}
     }
     ierr = DMPlexRestoreFaces_Internal(dm, cellDim, c, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
   }
@@ -219,7 +216,6 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
   /* Get face cones from subsets of cell vertices */
   if (faceSizeAll > 4) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Do not support interpolation of meshes with faces of %D vertices", faceSizeAll);
   ierr = PetscHashIJKLCreate(&faceTable);CHKERRQ(ierr);
-  ierr = PetscHashIJKLSetMultivalued(faceTable, PETSC_FALSE);CHKERRQ(ierr);
   for (d = depth; d > cellDepth; --d) {
     const PetscInt *cone;
     PetscInt        p;
@@ -233,13 +229,14 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
   }
   for (c = pStart[cellDepth], face = pStart[faceDepth]; c < pEnd[cellDepth]; ++c) {
     const PetscInt *cellFaces;
-    PetscInt        numCellFaces, faceSize, cf, f;
+    PetscInt        numCellFaces, faceSize, cf;
 
     ierr = DMPlexGetFaces_Internal(dm, cellDim, c, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
     if (faceSize != faceSizeAll) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent face for cell %D of size %D != %D", c, faceSize, faceSizeAll);
     for (cf = 0; cf < numCellFaces; ++cf) {
       const PetscInt  *cellFace = &cellFaces[cf*faceSize];
       PetscHashIJKLKey key;
+      PetscHashIJKLIter missing, iter;
 
       if (faceSize == 2) {
         key.i = PetscMin(cellFace[0], cellFace[1]);
@@ -250,16 +247,16 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
         key.i = cellFace[0]; key.j = cellFace[1]; key.k = cellFace[2]; key.l = faceSize > 3 ? cellFace[3] : 0;
         ierr = PetscSortInt(faceSize, (PetscInt *) &key);
       }
-      ierr  = PetscHashIJKLGet(faceTable, key, &f);CHKERRQ(ierr);
-      if (f < 0) {
+      ierr = PetscHashIJKLPut(faceTable, key, &missing, &iter);CHKERRQ(ierr);
+      if (missing) {
         ierr = DMPlexSetCone(idm, face, cellFace);CHKERRQ(ierr);
-        ierr = PetscHashIJKLAdd(faceTable, key, face);CHKERRQ(ierr);
-        f    = face++;
-        ierr = DMPlexInsertCone(idm, c, cf, f);CHKERRQ(ierr);
+        ierr = PetscHashIJKLSet(faceTable, iter, face);CHKERRQ(ierr);
+        ierr = DMPlexInsertCone(idm, c, cf, face++);CHKERRQ(ierr);
       } else {
         const PetscInt *cone;
-        PetscInt        coneSize, ornt, i, j;
+        PetscInt        coneSize, ornt, i, j, f;
 
+        ierr = PetscHashIJKLGet(faceTable, iter, &f);CHKERRQ(ierr);
         ierr = DMPlexInsertCone(idm, c, cf, f);CHKERRQ(ierr);
         /* Orient face: Do not allow reverse orientation at the first vertex */
         ierr = DMPlexGetConeSize(idm, f, &coneSize);CHKERRQ(ierr);
@@ -319,6 +316,7 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(DMPLEX_Interpolate,dm,0,0,0);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   if (dim <= 1) {
@@ -335,6 +333,7 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
     odm  = idm;
   }
   *dmInt = idm;
+  ierr = PetscLogEventEnd(DMPLEX_Interpolate,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
