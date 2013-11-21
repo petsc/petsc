@@ -410,7 +410,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return output
 
   def filterCompileOutput(self, output):
-    if self.argDB['ignoreCompileOutput']:
+    if output.find('warning:  attribute "deprecated" is unknown, ignored') >= 0: return output
+    elif self.argDB['ignoreCompileOutput']:
       output = ''
     elif output:
       lines = output.splitlines()
