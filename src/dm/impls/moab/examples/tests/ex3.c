@@ -1,7 +1,7 @@
 static char help[] = "Solves C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirth's SciDAC project.\n";
 
 /*
-        C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirth's SciDAC project.
+        C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirth's SciDAC project. (A DMMoab fork of Barry's advection-diffusion-reaction/ex10.c)
 
         D*C_xx  - diffusion of He[1-5] and V[1] and I[1]
         F(C)  -   forcing function; He being created.
@@ -19,8 +19,7 @@ static char help[] = "Solves C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirt
     Rules for maximum number of He allowed for V in cluster
 
     Usage: ./ex3 -nele 10 -snes_mf -mymonitor -ts_monitor
-           ./ex3 -file <$XOLOTL_DIR/xolotl/tests/reactants/testfiles/tungsten.txt> -snes_mf -mymonitor -ts_monitor
-
+           ./ex3 -file <$XOLOTL_DIR/benchmarks/tungsten.txt> -snes_mf -mymonitor -ts_monitor
 */
 
 #include <petscdmmoab.h>
@@ -98,7 +97,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   DM             dm;                  /* manages the grid data */
   AppCtx         ctx;                 /* holds problem specific paramters */
-  PetscInt       He,*ofill,*dfill;
+  /* PetscInt       He,*ofill,*dfill; */
   char           filename[PETSC_MAX_PATH_LEN];
   const PetscReal   bounds[2] = {0.0,8.0};
   PetscBool      flg;
@@ -257,30 +256,29 @@ PetscErrorCode InitializeVariableSystem(DM dm)
 {
   PetscErrorCode ierr;
   PetscInt       I,He,V,cnt = 0;
-  const PetscInt maxwidth=16;
-  char           field[maxwidth];
+  char           field[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBeginUser;
-  ierr = DMMoabSetFields(dm, DOF, NULL);CHKERRQ(ierr);
+  ierr = DMMoabSetFieldNames(dm, DOF, NULL);CHKERRQ(ierr);
   ierr = DMMoabSetBlockSize(dm, DOF);CHKERRQ(ierr);
 
   /* Name each of the concentrations */
   for (He=1; He<NHe+1; He++) {
-    ierr = PetscSNPrintf(field,maxwidth,"%d-He",He);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(field,PETSC_MAX_PATH_LEN,"%d-He",He);CHKERRQ(ierr);
     ierr = DMMoabSetFieldName(dm,cnt++,field);CHKERRQ(ierr);
   }
   for (V=1; V<NV+1; V++) {
-    ierr = PetscSNPrintf(field,maxwidth,"%d-V",V);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(field,PETSC_MAX_PATH_LEN,"%d-V",V);CHKERRQ(ierr);
     ierr = DMMoabSetFieldName(dm,cnt++,field);CHKERRQ(ierr);
   }
   for (I=1; I<NI+1; I++) {
-    ierr = PetscSNPrintf(field,maxwidth,"%d-I",I);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(field,PETSC_MAX_PATH_LEN,"%d-I",I);CHKERRQ(ierr);
     ierr = DMMoabSetFieldName(dm,cnt++,field);CHKERRQ(ierr);
   }
 
   for (He=1; He<MHeV+1; He++) {
     for (V=1; V<NHeV[He]+1; V++) {
-      ierr = PetscSNPrintf(field,maxwidth,"%d-He-%d-V",He,V);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(field,PETSC_MAX_PATH_LEN,"%d-He-%d-V",He,V);CHKERRQ(ierr);
       ierr = DMMoabSetFieldName(dm,cnt++,field);CHKERRQ(ierr);
     }
   }
@@ -292,11 +290,11 @@ PetscErrorCode InitializeVariableSystem(DM dm)
 #define __FUNCT__ "InitialConditions"
 PetscErrorCode InitialConditions(DM dm,Vec C)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,I,He,V;
-  Concentrations *c;
-  PetscReal      **cHeV;
-  moab::Range    vowned;
+  PetscErrorCode    ierr;
+  PetscInt          i,I,He,V;
+  Concentrations    *c;
+  PetscReal         **cHeV;
+  const moab::Range *vowned;
 
   PetscFunctionBeginUser;
   /*
@@ -315,7 +313,7 @@ PetscErrorCode InitialConditions(DM dm,Vec C)
      Compute function over the locally owned part of the grid
   */
   ierr = cHeVCreate(&cHeV);CHKERRQ(ierr);
-  for(moab::Range::iterator iter = vowned.begin(); iter != vowned.end(); iter++) {
+  for(moab::Range::iterator iter = vowned->begin(); iter != vowned->end(); iter++) {
     const moab::EntityHandle vhandle = *iter;
     ierr = DMMoabGetDofsBlockedLocal(dm, 1, &vhandle, &i);CHKERRQ(ierr);
 
@@ -353,14 +351,14 @@ PetscErrorCode InitialConditions(DM dm,Vec C)
  */
 PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec C,Vec F,void *ptr)
 {
-  AppCtx         *ctx = (AppCtx*) ptr;
-  DM             dm;
-  PetscErrorCode ierr;
-  PetscInt       xi,Mx,He,he,V,v,I,i;
-  PetscReal      hx,sx,x,vpos[3],**cHeV,**fHeV;
-  Concentrations *c,*f;
-  Vec            localC;
-  moab::Range    vowned,elocal;
+  AppCtx            *ctx = (AppCtx*) ptr;
+  DM                dm;
+  PetscErrorCode    ierr;
+  PetscInt          xi,Mx,He,he,V,v,I,i;
+  PetscReal         hx,sx,x,vpos[3],**cHeV,**fHeV;
+  Concentrations    *c,*f;
+  Vec               localC;
+  const moab::Range *vowned,*elocal;
 
   PetscFunctionBeginUser;
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
@@ -399,7 +397,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec C,Vec F,void *ptr)
   /*
      Loop over grid points computing ODE terms for each grid point
   */
-  for(moab::Range::iterator iter = vowned.begin(); iter != vowned.end(); iter++) {
+  for(moab::Range::iterator iter = vowned->begin(); iter != vowned->end(); iter++) {
     const moab::EntityHandle vhandle = *iter;
     ierr = DMMoabGetDofsBlockedLocal(dm, 1, &vhandle, &xi);CHKERRQ(ierr);
 
@@ -615,7 +613,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
   Vec                  localC;
   const moab::EntityHandle *connect;
   PetscInt             vpere=2;
-  moab::Range          elocal;
+  const moab::Range    *elocal;
   const PetscReal      *rowstart,*colstart;
   const PetscReal      **cHeV,**fHeV;
   static PetscBool     initialized = PETSC_FALSE;
@@ -671,7 +669,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
     /* Compute ODE terms over the locally owned part of the grid 
       Assemble the operator by looping over edges and computing
       contribution for each vertex dof                         */
-    for(moab::Range::iterator iter = elocal.begin(); iter != elocal.end(); iter++) {
+    for(moab::Range::iterator iter = elocal->begin(); iter != elocal->end(); iter++) {
       const moab::EntityHandle ehandle = *iter;
 
       // Get connectivity information in canonical order
@@ -890,7 +888,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
   /*
      Loop over grid points computing Jacobian terms for each grid point for reaction terms
   */
-  for(moab::Range::iterator iter = elocal.begin(); iter != elocal.end(); iter++) {
+  for(moab::Range::iterator iter = elocal->begin(); iter != elocal->end(); iter++) {
     const moab::EntityHandle ehandle = *iter;
 
     // Get connectivity information in canonical order
