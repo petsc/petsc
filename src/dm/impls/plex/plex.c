@@ -1509,10 +1509,12 @@ PetscErrorCode DMPlexSymmetrize(DM dm)
   Output Parameter:
 
   Notes:
-  The normal association for the point grade is element dimension (or co-dimension). For instance, all vertices would
-  have depth 0, and all edges depth 1. Likewise, all cells heights would have height 0, and all faces height 1.
+  Concretely, DMPlexStratify creates a new label named "depth" containing the dimension of each element: 0 for vertices,
+  1 for edges, and so on.  The depth label can be accessed through DMPlexGetDepthLabel or DMPlexGetDepthStratum, or
+  manually via DMPlexGetLabel.  The height is defined implicitly by height = maxDimension - depth, and can be accessed
+  via DMPlexGetHeightStratum.  For example, cells have height 0 and faces have height 1.
 
-  This should be called after all calls to DMPlexSymmetrize()
+  DMPlexStratify should be called after all calls to DMPlexSymmetrize()
 
   Level: beginner
 
