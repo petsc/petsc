@@ -6150,6 +6150,7 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscBool isSimplex)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   switch (dim) {
+  case 1: numCorners = isSimplex ? 2 : 2; break;
   case 2: numCorners = isSimplex ? 3 : 4; break;
   case 3: numCorners = isSimplex ? 4 : 8; break;
   default:
