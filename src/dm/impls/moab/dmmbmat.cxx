@@ -95,6 +95,7 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
   merr = dmmoab->pcomm->filter_pstatus(allvlocal,PSTATUS_NOT_OWNED,PSTATUS_NOT,-1,&adjs);MBERRNM(merr);
   allvghost = moab::subtract(allvlocal, adjs);
 
+  /* loop over the locally owned vertices and figure out the NNZ pattern using connectivity information */
   for(iter = dmmoab->vowned->begin(),ivtx=0; iter != dmmoab->vowned->end(); iter++,ivtx++) {
 
     vtx = *iter;
@@ -114,10 +115,11 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
       /* Get connectivity information in canonical ordering for the local element */
       merr = dmmoab->mbiface->get_connectivity(*jter,connect,vpere,false,&storage);MBERRNM(merr);
 
+      /* loop over each element connected to the adjacent vertex and update as needed */
       for (i=0; i<vpere; ++i) {
-        if (connect[i] == vtx || found.find(connect[i]) != found.end()) continue;
-        if (allvghost.find(connect[i]) != allvghost.end()) n_onz++;
-        else n_nnz++;
+        if (connect[i] == vtx || found.find(connect[i]) != found.end()) continue; /* make sure we don't double count shared vertices */
+        if (allvghost.find(connect[i]) != allvghost.end()) n_onz++; /* update out-of-proc onz */
+        else n_nnz++; /* else local vertex */
         found.insert(connect[i]);
       }
     }
@@ -126,7 +128,7 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
       nnz[ivtx]=n_nnz;      /* leave out self to avoid repeats -> node shared by multiple elements */
       if (onz) onz[ivtx]=n_onz;  /* add ghost non-owned nodes */
     }
-    else {
+    else { /* AIJ matrices */
       for (f=0;f<dmmoab->numFields;f++) {
         nnz[dmmoab->numFields*ivtx+f]=n_nnz;      /* leave out self to avoid repeats -> node shared by multiple elements */
         if (onz) onz[dmmoab->numFields*ivtx+f]=n_onz;  /* add ghost non-owned nodes */
@@ -144,8 +146,8 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
       nnz[i]*=bs;
       if (onz) onz[i]*=bs;
     }
-    PetscInfo3(dm, "Vertex ID: %D \t NNZ = %D \t ONZ = %D.\n",i,nnz[i],onz[i]);
-    
+
+    /* update innz and ionz based on local maxima */
     if (innz && (nnz[i]>*innz)) *innz=nnz[i];
     if ((ionz && onz) && (onz[i]>*ionz)) *ionz=onz[i];
   }
@@ -181,7 +183,6 @@ PetscErrorCode DMMoab_MatFillMatrixEntries_Private(DM dm, Mat A)
       ierr = PetscMalloc(sizeof(PetscScalar)*nconn*nconn*dmmoab->numFields*dmmoab->numFields,&locala);CHKERRQ(ierr);
       ierr = PetscMemzero(locala,sizeof(PetscScalar)*nconn*nconn*dmmoab->numFields*dmmoab->numFields);CHKERRQ(ierr);
       ierr = PetscMalloc(sizeof(PetscInt)*nconn,&dof_indices);CHKERRQ(ierr);
-      PetscInfo2(dm, "Allocating new memory and zeroing out for locala. [Prev: %d,  Curr-size: %d].\n",prev_nconn*prev_nconn*dmmoab->numFields*dmmoab->numFields,nconn*nconn*dmmoab->numFields*dmmoab->numFields);
       prev_nconn=nconn;
     }
 
