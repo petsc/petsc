@@ -74,7 +74,7 @@ int main(int argc,char **argv)
   
   UserContext    user;
   const char     *bcTypes[2] = {"dirichlet","neumann"};
-  const char     *fields[1] = {"Pressure"};
+  const char     *fields[1] = {"T-Variable"};
   PetscErrorCode ierr;
   PetscInt       bc,np;
   Vec            b,x;
@@ -111,7 +111,7 @@ int main(int argc,char **argv)
     ierr = DMMoabCreateBoxMesh(PETSC_COMM_WORLD, user.dim, NULL, user.n, 1, &dm);CHKERRQ(ierr);
   }
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = DMMoabSetFields(dm, 1, fields);CHKERRQ(ierr);
+  ierr = DMMoabSetFieldNames(dm, 1, fields);CHKERRQ(ierr);
 
   /* SetUp the data structures for DMMOAB */
   ierr = DMSetUp(dm);CHKERRQ(ierr);

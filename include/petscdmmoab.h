@@ -64,8 +64,9 @@ PETSC_EXTERN PetscErrorCode DMMoabGetVecRange(Vec vec,moab::Range *range);
 PETSC_EXTERN PetscErrorCode DMMoabSetFieldVector(DM, PetscInt, Vec);
 PETSC_EXTERN PetscErrorCode DMMoabSetGlobalFieldVector(DM, Vec);
 
-PETSC_EXTERN PetscErrorCode DMMoabSetFieldName(DM dm, PetscInt field, const char fieldName[]);
-PETSC_EXTERN PetscErrorCode DMMoabSetFields(DM dm,PetscInt nfields,const char** fields);
+PETSC_EXTERN PetscErrorCode DMMoabGetFieldName(DM dm, PetscInt field, const char **fieldName);
+PETSC_EXTERN PetscErrorCode DMMoabSetFieldName(DM dm, PetscInt field, const char **fieldName);
+PETSC_EXTERN PetscErrorCode DMMoabSetFieldNames(DM dm,PetscInt nfields,const char** fields);
 PETSC_EXTERN PetscErrorCode DMMoabGetFieldDof(DM dm,moab::EntityHandle point, PetscInt field,PetscInt* dof);
 PETSC_EXTERN PetscErrorCode DMMoabGetFieldDofs(DM dm,PetscInt npoints,const moab::EntityHandle* points, PetscInt field,PetscInt* dof);
 PETSC_EXTERN PetscErrorCode DMMoabGetFieldDofsLocal(DM dm,PetscInt npoints,const moab::EntityHandle* points, PetscInt field,PetscInt* dof);
