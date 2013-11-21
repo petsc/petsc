@@ -46,9 +46,8 @@ static PetscErrorCode DMLabelMakeValid_Private(DMLabel label)
   ierr = PetscMalloc(off * sizeof(PetscInt), &label->points);CHKERRQ(ierr);
   off = 0;
   for (v = 0; v < label->numStrata; ++v) {
-    PetscInt size = 0;
-    PetscHashISize(label->ht[v], size);
-    if (size) {PetscHashIGetKeys(label->ht[v], off, label->points);}
+    ierr = PetscHashIGetKeys(label->ht[v], &off, label->points);CHKERRQ(ierr);
+    if (off != label->stratumOffsets[v+1]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid number of contributed points %d from value %d should be %d", off-label->stratumOffsets[v], label->stratumValues[v], label->stratumOffsets[v+1]-label->stratumOffsets[v]);
     PetscHashIDestroy(label->ht[v]);
     ierr = PetscSortInt(label->stratumSizes[v], &label->points[label->stratumOffsets[v]]);CHKERRQ(ierr);
     if (label->bt) {
@@ -64,7 +63,6 @@ static PetscErrorCode DMLabelMakeValid_Private(DMLabel label)
   }
   ierr = PetscFree(label->ht);CHKERRQ(ierr);
   label->ht = NULL;
-  if (off != label->stratumOffsets[label->numStrata]) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid number of points %d should be %d", off, label->stratumOffsets[label->numStrata]);
   label->arrayValid = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

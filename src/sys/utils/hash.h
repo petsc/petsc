@@ -557,16 +557,16 @@ typedef khiter_t PetscHashIIter;
   arr is the integer array to put the indices to, n is the offset into arr to start putting the indices at.
   n is updated as the indices are put into arr, so n must be an lvalue.
  */
-#define PetscHashIGetKeys(ht,n,arr)                                     \
-{                                                                       \
-  PetscHashIIter _12_hi;                                                \
-  PetscInt _12_i;                                                       \
-  PetscHashIIterBegin((ht),_12_hi);                                     \
-  while (!PetscHashIIterAtEnd((ht),_12_hi)) {                            \
-    PetscHashIIterGetKey((ht),_12_hi,_12_i);                            \
-    (arr)[(n)++] = _12_i;                                               \
-    PetscHashIIterNext((ht),_12_hi);                                    \
-  }                                                                     \
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIGetKeys(PetscHashI ht, PetscInt *n, PetscInt arr[])
+{
+  PetscHashIIter hi;
+  PetscInt       size, off = *n;
+
+  for (hi = kh_begin(ht); hi != kh_end(ht); ++hi) {
+    if (kh_exist(ht, hi) && !__ac_isdel(ht->flags, hi)) arr[off++] = kh_key(ht, hi);
+  }
+  *n = off;
+  return 0;
 }
 
 #define PetscHashIGetVals(ht,n,arr)                                     \
