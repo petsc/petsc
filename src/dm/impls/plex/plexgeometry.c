@@ -782,7 +782,7 @@ PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, Pe
       }
       break;
     default:
-      SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported dimension %D for element geometry computation", dim);
+      SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported dimension %D in cell %D for element geometry computation", dim, cell);
     }
   }
   PetscFunctionReturn(0);
