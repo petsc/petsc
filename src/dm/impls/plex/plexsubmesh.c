@@ -1716,7 +1716,7 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Interpolated(DM dm, const char l
       PetscInt        supportSize, s;
 
       ierr = DMPlexGetSupportSize(dm, cone[cl], &supportSize);CHKERRQ(ierr);
-      if (supportSize != 2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cohesive faces should separate two cells");
+      /* if (supportSize != 2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cohesive faces should separate two cells"); */
       ierr = DMPlexGetSupport(dm, cone[cl], &support);CHKERRQ(ierr);
       for (s = 0; s < supportSize; ++s) {
         ierr = DMLabelSetValue(subpointMap, support[s], dim);CHKERRQ(ierr);
