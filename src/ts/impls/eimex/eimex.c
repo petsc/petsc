@@ -461,9 +461,12 @@ static PetscErrorCode TSSetFromOptions_EIMEX(TS ts)
 {
   TS_EIMEX       *ext = (TS_EIMEX*)ts->data;
   PetscErrorCode ierr;
-  PetscInt       tindex[2]={TSEIMEXDefault,TSEIMEXDefault};
+  PetscInt       tindex[2];
   PetscInt       np = 2, nrows=TSEIMEXDefault;
+
   PetscFunctionBegin;
+  tindex[0] = TSEIMEXDefault;
+  tindex[1] = TSEIMEXDefault;
   ierr = PetscOptionsHead("EIMEX ODE solver options");CHKERRQ(ierr);
   {
     PetscBool flg;
