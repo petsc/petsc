@@ -4,303 +4,6 @@
 #include <MBTagConventions.hpp>
 #include <moab/Skinner.hpp>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDestroy_Moab"
-PetscErrorCode DMDestroy_Moab(DM dm)
-{
-  PetscErrorCode ierr;
-  DM_Moab        *dmmoab = (DM_Moab*)dm->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (dmmoab->icreatedinstance) {
-    delete dmmoab->mbiface;
-  }
-  dmmoab->mbiface = NULL;
-  dmmoab->pcomm = NULL;
-  delete dmmoab->vlocal;
-  delete dmmoab->vowned;
-  delete dmmoab->vghost;
-  delete dmmoab->elocal;
-  delete dmmoab->eghost;
-  delete dmmoab->bndyvtx;
-  delete dmmoab->bndyfaces;
-  delete dmmoab->bndyelems;
-
-  ierr = PetscFree(dmmoab->gsindices);CHKERRQ(ierr);
-  ierr = PetscFree(dmmoab->lidmap);CHKERRQ(ierr);
-  ierr = PetscFree(dmmoab->gidmap);CHKERRQ(ierr);
-  ierr = PetscFree(dmmoab->llmap);CHKERRQ(ierr);
-  ierr = PetscFree(dmmoab->lgmap);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&dmmoab->ltog_sendrecv);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&dmmoab->ltog_map);CHKERRQ(ierr);
-  ierr = PetscFree(dm->data);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMSetUp_Moab"
-PetscErrorCode DMSetUp_Moab(DM dm)
-{
-  PetscErrorCode          ierr;
-  moab::ErrorCode         merr;
-  Vec                     local, global;
-  IS                      from,to;
-  moab::Range::iterator   iter;
-  PetscInt                i,j,f,bs,gmin,lmin,lmax,vent,totsize;
-  DM_Moab                *dmmoab = (DM_Moab*)dm->data;
-  moab::Range             adjs;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  /* Get the local and shared vertices and cache it */
-  if (dmmoab->mbiface == PETSC_NULL || dmmoab->pcomm == PETSC_NULL) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ORDER, "Set the MOAB Interface and ParallelComm objects before calling SetUp.");
- 
-  /* Get the entities recursively in the current part of the mesh, if user did not set the local vertices explicitly */
-  if (dmmoab->vlocal->empty())
-  {
-    merr = dmmoab->mbiface->get_entities_by_type(dmmoab->fileset,moab::MBVERTEX,*dmmoab->vlocal,true);MBERRNM(merr);
-
-    /* filter based on parallel status */
-    merr = dmmoab->pcomm->filter_pstatus(*dmmoab->vlocal,PSTATUS_NOT_OWNED,PSTATUS_NOT,-1,dmmoab->vowned);MBERRNM(merr);
-
-    /* filter all the non-owned and shared entities out of the list */
-    adjs = moab::subtract(*dmmoab->vlocal, *dmmoab->vowned);
-    merr = dmmoab->pcomm->filter_pstatus(adjs,PSTATUS_INTERFACE,PSTATUS_OR,-1,dmmoab->vghost);MBERRNM(merr);
-    adjs = moab::subtract(adjs, *dmmoab->vghost);
-    *dmmoab->vlocal = moab::subtract(*dmmoab->vlocal, adjs);
-
-    /* compute and cache the sizes of local and ghosted entities */
-    dmmoab->nloc = dmmoab->vowned->size();
-    dmmoab->nghost = dmmoab->vghost->size();
-    ierr = MPI_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
-
-#if 0
-    if(dmmoab->pcomm->rank() || dmmoab->pcomm->size()==1) {
-      PetscPrintf(PETSC_COMM_SELF, "Vertices: global: %D, local: %D", dmmoab->n, dmmoab->nloc+dmmoab->nghost);
-      dmmoab->vlocal->print(0);
-      PetscPrintf(PETSC_COMM_SELF, "Vertices: owned: %D", dmmoab->nloc);
-      dmmoab->vowned->print(0);
-      PetscPrintf(PETSC_COMM_SELF, "Vertices: ghost: %D", dmmoab->nghost);
-      dmmoab->vghost->print(0);
-    }
-#endif
-  }
-
-  {
-    /* get the information about the local elements in the mesh */
-    dmmoab->eghost->clear();
-
-    /* first decipher the leading dimension */
-    for (i=3;i>0;i--) {
-      dmmoab->elocal->clear();
-      merr = dmmoab->mbiface->get_entities_by_dimension(dmmoab->fileset, i, *dmmoab->elocal, true);CHKERRQ(merr);
-
-      /* store the current mesh dimension */
-      if (dmmoab->elocal->size()) {
-        dmmoab->dim=i;
-        break;
-      }
-    }
-
-    /* filter the ghosted and owned element list */
-    *dmmoab->eghost = *dmmoab->elocal;
-    merr = dmmoab->pcomm->filter_pstatus(*dmmoab->elocal,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
-    *dmmoab->eghost = moab::subtract(*dmmoab->eghost, *dmmoab->elocal);
-
-    dmmoab->neleloc = dmmoab->elocal->size();
-    dmmoab->neleghost = dmmoab->eghost->size();
-    ierr = MPI_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
-  }
-
-  bs = dmmoab->bs;
-  if (!dmmoab->ltog_tag) {
-    /* Get the global ID tag. The global ID tag is applied to each
-       vertex. It acts as an global identifier which MOAB uses to
-       assemble the individual pieces of the mesh */
-    merr = dmmoab->mbiface->tag_get_handle(GLOBAL_ID_TAG_NAME, dmmoab->ltog_tag);MBERRNM(merr);
-  }
-
-  totsize=dmmoab->vlocal->size();
-  if (totsize != dmmoab->nloc+dmmoab->nghost) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Mismatch between local and owned+ghost vertices. %D != %D.",totsize,dmmoab->nloc+dmmoab->nghost);
-  ierr = PetscMalloc(totsize*sizeof(PetscInt), &dmmoab->gsindices);CHKERRQ(ierr);
-  {
-    /* first get the local indices */
-    merr = dmmoab->mbiface->tag_get_data(dmmoab->ltog_tag,*dmmoab->vowned,&dmmoab->gsindices[0]);MBERRNM(merr);
-    /* next get the ghosted indices */
-    if (dmmoab->nghost) {
-      merr = dmmoab->mbiface->tag_get_data(dmmoab->ltog_tag,*dmmoab->vghost,&dmmoab->gsindices[dmmoab->nloc]);MBERRNM(merr);
-    }
-
-    /* find out the local and global minima of GLOBAL_ID */
-    lmin=lmax=dmmoab->gsindices[0];
-    for (i=0; i<totsize; ++i) {
-      if(lmin>dmmoab->gsindices[i]) lmin=dmmoab->gsindices[i];
-      if(lmax<dmmoab->gsindices[i]) lmax=dmmoab->gsindices[i];
-    }
-
-    ierr = MPI_Allreduce(&lmin, &gmin, 1, MPI_INT, MPI_MIN, ((PetscObject)dm)->comm);CHKERRQ(ierr);
-
-    /* set the GID map */
-    for (i=0; i<totsize; ++i) {
-      dmmoab->gsindices[i]-=gmin;   /* zero based index needed for IS */
-    }
-    lmin-=gmin;
-    lmax-=gmin;
-
-    PetscInfo3(NULL, "GLOBAL_ID: Local minima - %D, Local maxima - %D, Global minima - %D.\n", lmin, lmax, gmin);
-  }
-
-  {
-
-    ierr = PetscMalloc(((PetscInt)(dmmoab->vlocal->back())+1)*sizeof(PetscInt), &dmmoab->gidmap);CHKERRQ(ierr);
-    ierr = PetscMalloc(((PetscInt)(dmmoab->vlocal->back())+1)*sizeof(PetscInt), &dmmoab->lidmap);CHKERRQ(ierr);
-    ierr = PetscMalloc(totsize*dmmoab->numFields*sizeof(PetscInt), &dmmoab->llmap);CHKERRQ(ierr);
-    ierr = PetscMalloc(totsize*dmmoab->numFields*sizeof(PetscInt), &dmmoab->lgmap);CHKERRQ(ierr);
-
-    i=j=0;
-    /* set the owned vertex data first */
-    for(moab::Range::iterator iter = dmmoab->vowned->begin(); iter != dmmoab->vowned->end(); iter++,i++) {
-      vent=(PetscInt)(*iter);
-      dmmoab->gidmap[vent]=dmmoab->gsindices[i];
-      dmmoab->lidmap[vent]=i;
-      if (bs > 1) {
-        for (f=0;f<dmmoab->numFields;f++,j++) {
-          dmmoab->lgmap[j]=dmmoab->gsindices[i]*dmmoab->numFields+f;
-          dmmoab->llmap[j]=i*dmmoab->numFields+f;
-          PetscInfo4(NULL, "Owned Vertex: %D,  Field: %D \t  LID = %D \t GID = %D.\n", *iter, f, i*dmmoab->numFields+f, dmmoab->gsindices[i]*dmmoab->numFields+f);
-        }
-      }
-      else {
-        for (f=0;f<dmmoab->numFields;f++,j++) {
-          dmmoab->lgmap[j]=totsize*f+dmmoab->gsindices[i];
-          dmmoab->llmap[j]=totsize*f+i;
-          PetscInfo4(NULL, "Owned Vertex: %D,  Field: %D \t  LID = %D \t GID = %D.\n", *iter, f, totsize*f+i, totsize*f+dmmoab->gsindices[i]);
-        }
-      }
-    }
-    /* next arrange all the ghosted data information */
-    for(moab::Range::iterator iter = dmmoab->vghost->begin(); iter != dmmoab->vghost->end(); iter++,i++) {
-      vent=(PetscInt)(*iter);
-      dmmoab->gidmap[vent]=dmmoab->gsindices[i];
-      dmmoab->lidmap[vent]=i;
-      if (bs > 1) {
-        for (f=0;f<dmmoab->numFields;f++,j++) {
-          dmmoab->lgmap[j]=dmmoab->gsindices[i]*dmmoab->numFields+f;
-          dmmoab->llmap[j]=i*dmmoab->numFields+f;
-          PetscInfo4(NULL, "Ghost Vertex: %D,  Field: %D \t  LID = %D \t GID = %D.\n", vent, f, i*dmmoab->numFields+f, dmmoab->gsindices[i]*dmmoab->numFields+f);
-        }
-      }
-      else {
-        for (f=0;f<dmmoab->numFields;f++,j++) {
-          dmmoab->lgmap[j]=totsize*f+dmmoab->gsindices[i];
-          dmmoab->llmap[j]=totsize*f+i;
-          PetscInfo4(NULL, "Ghost Vertex: %D,  Field: %D \t  LID = %D \t GID = %D.\n", vent, f, totsize*f+i, totsize*f+dmmoab->gsindices[i]);
-        }
-      }
-    }
-
-    /* We need to create the Global to Local Vector Scatter Contexts
-       1) First create a local and global vector
-       2) Create a local and global IS
-       3) Create VecScatter and LtoGMapping objects
-       4) Cleanup the IS and Vec objects
-    */
-    ierr = DMCreateGlobalVector(dm, &global);CHKERRQ(ierr);
-    ierr = DMCreateLocalVector(dm, &local);CHKERRQ(ierr);
-
-    ierr = VecGetOwnershipRange(global, &dmmoab->vstart, &dmmoab->vend);CHKERRQ(ierr);
-    PetscInfo3(NULL, "Total-size = %D\t Owned = %D, Ghosted = %D.\n", totsize, dmmoab->nloc, dmmoab->nghost);
-
-    /* global to local must retrieve ghost points */
-    ierr = ISCreateStride(((PetscObject)dm)->comm,dmmoab->nloc*dmmoab->numFields,dmmoab->vstart,1,&from);CHKERRQ(ierr);
-    ierr = ISSetBlockSize(from,bs);CHKERRQ(ierr);
-
-    ierr = ISCreateGeneral(((PetscObject)dm)->comm,dmmoab->nloc*dmmoab->numFields,&dmmoab->lgmap[0],PETSC_COPY_VALUES,&to);CHKERRQ(ierr);
-    ierr = ISSetBlockSize(to,bs);CHKERRQ(ierr);
-
-    if (!dmmoab->ltog_map) {
-      /* create to the local to global mapping for vectors in order to use VecSetValuesLocal */
-      ierr = ISLocalToGlobalMappingCreate(((PetscObject)dm)->comm,totsize*dmmoab->numFields,dmmoab->lgmap,
-                                          PETSC_COPY_VALUES,&dmmoab->ltog_map);CHKERRQ(ierr);
-    }
-
-    /* now create the scatter object from local to global vector */
-    ierr = VecScatterCreate(local,from,global,to,&dmmoab->ltog_sendrecv);CHKERRQ(ierr);
-
-    /* clean up IS, Vec */
-    ierr = ISDestroy(&from);CHKERRQ(ierr);
-    ierr = ISDestroy(&to);CHKERRQ(ierr);
-    ierr = VecDestroy(&local);CHKERRQ(ierr);
-    ierr = VecDestroy(&global);CHKERRQ(ierr);
-  }
-
-  /* skin the boundary and store nodes */
-  {
-    /* get the skin vertices of boundary faces for the current partition and then filter 
-       the local, boundary faces, vertices and elements alone via PSTATUS flags;
-       this should not give us any ghosted boundary, but if user needs such a functionality
-       it would be easy to add it based on the find_skin query below */
-    moab::Skinner skinner(dmmoab->mbiface);
-
-    dmmoab->bndyvtx = new moab::Range();
-    dmmoab->bndyfaces = new moab::Range();
-    dmmoab->bndyelems = new moab::Range();
-
-    /* get the entities on the skin - only the faces */
-    merr = skinner.find_skin(dmmoab->fileset, *dmmoab->elocal, false, *dmmoab->bndyfaces, NULL, false, true, false);MBERRNM(merr); // 'false' param indicates we want faces back, not vertices
-
-    /* filter all the non-owned and shared entities out of the list */
-    merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
-    merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces,PSTATUS_SHARED,PSTATUS_NOT);MBERRNM(merr);
-
-    /* get all the nodes via connectivity and the parent elements via adjacency information */
-    merr = dmmoab->mbiface->get_connectivity(*dmmoab->bndyfaces, *dmmoab->bndyvtx, false);MBERRNM(ierr);
-    merr = dmmoab->mbiface->get_adjacencies(*dmmoab->bndyfaces, dmmoab->dim, false, *dmmoab->bndyelems, moab::Interface::UNION);MBERRNM(ierr);
-    PetscInfo3(NULL, "Found %D boundary vertices, %D boundary faces and %D boundary elements.\n", dmmoab->bndyvtx->size(), dmmoab->bndyvtx->size(), dmmoab->bndyelems->size());
-  }
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "DMCreate_Moab"
-PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM dm)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = PetscNewLog(dm,&dm->data);CHKERRQ(ierr);
-
-  ((DM_Moab*)dm->data)->bs = 1;
-  ((DM_Moab*)dm->data)->numFields = 1;
-  ((DM_Moab*)dm->data)->n = 0;
-  ((DM_Moab*)dm->data)->nloc = 0;
-  ((DM_Moab*)dm->data)->nghost = 0;
-  ((DM_Moab*)dm->data)->nele = 0;
-  ((DM_Moab*)dm->data)->neleloc = 0;
-  ((DM_Moab*)dm->data)->neleghost = 0;
-  ((DM_Moab*)dm->data)->ltog_map = PETSC_NULL;
-  ((DM_Moab*)dm->data)->ltog_sendrecv = PETSC_NULL;
-
-  ((DM_Moab*)dm->data)->vlocal = new moab::Range();
-  ((DM_Moab*)dm->data)->vowned = new moab::Range();
-  ((DM_Moab*)dm->data)->vghost = new moab::Range();
-  ((DM_Moab*)dm->data)->elocal = new moab::Range();
-  ((DM_Moab*)dm->data)->eghost = new moab::Range();
-  
-  dm->ops->createglobalvector              = DMCreateGlobalVector_Moab;
-  dm->ops->createlocalvector               = DMCreateLocalVector_Moab;
-  dm->ops->creatematrix                    = DMCreateMatrix_Moab;
-  dm->ops->setup                           = DMSetUp_Moab;
-  dm->ops->destroy                         = DMDestroy_Moab;
-  dm->ops->globaltolocalbegin              = DMGlobalToLocalBegin_Moab;
-  dm->ops->globaltolocalend                = DMGlobalToLocalEnd_Moab;
-  dm->ops->localtoglobalbegin              = DMLocalToGlobalBegin_Moab;
-  dm->ops->localtoglobalend                = DMLocalToGlobalEnd_Moab;
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabCreate"
@@ -1060,6 +763,290 @@ PetscErrorCode DMMoabGetBoundaryMarkers(DM dm,const moab::Range **bdvtx,const mo
   if (bdvtx)  *bdvtx = dmmoab->bndyvtx;
   if (bdfaces)  *bdfaces = dmmoab->bndyfaces;
   if (bdelems)  *bdfaces = dmmoab->bndyelems;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDestroy_Moab"
+PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm)
+{
+  PetscErrorCode ierr;
+  DM_Moab        *dmmoab = (DM_Moab*)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (dmmoab->icreatedinstance) {
+    delete dmmoab->mbiface;
+  }
+  dmmoab->mbiface = NULL;
+  dmmoab->pcomm = NULL;
+  delete dmmoab->vlocal;
+  delete dmmoab->vowned;
+  delete dmmoab->vghost;
+  delete dmmoab->elocal;
+  delete dmmoab->eghost;
+  delete dmmoab->bndyvtx;
+  delete dmmoab->bndyfaces;
+  delete dmmoab->bndyelems;
+
+  ierr = PetscFree(dmmoab->gsindices);CHKERRQ(ierr);
+  ierr = PetscFree(dmmoab->lidmap);CHKERRQ(ierr);
+  ierr = PetscFree(dmmoab->gidmap);CHKERRQ(ierr);
+  ierr = PetscFree(dmmoab->llmap);CHKERRQ(ierr);
+  ierr = PetscFree(dmmoab->lgmap);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&dmmoab->ltog_sendrecv);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&dmmoab->ltog_map);CHKERRQ(ierr);
+  ierr = PetscFree(dm->data);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetUp_Moab"
+PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
+{
+  PetscErrorCode          ierr;
+  moab::ErrorCode         merr;
+  Vec                     local, global;
+  IS                      from,to;
+  moab::Range::iterator   iter;
+  PetscInt                i,j,f,bs,gmin,lmin,lmax,vent,totsize;
+  DM_Moab                *dmmoab = (DM_Moab*)dm->data;
+  moab::Range             adjs;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  /* Get the local and shared vertices and cache it */
+  if (dmmoab->mbiface == PETSC_NULL || dmmoab->pcomm == PETSC_NULL) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ORDER, "Set the MOAB Interface and ParallelComm objects before calling SetUp.");
+ 
+  /* Get the entities recursively in the current part of the mesh, if user did not set the local vertices explicitly */
+  if (dmmoab->vlocal->empty())
+  {
+    merr = dmmoab->mbiface->get_entities_by_type(dmmoab->fileset,moab::MBVERTEX,*dmmoab->vlocal,true);MBERRNM(merr);
+
+    /* filter based on parallel status */
+    merr = dmmoab->pcomm->filter_pstatus(*dmmoab->vlocal,PSTATUS_NOT_OWNED,PSTATUS_NOT,-1,dmmoab->vowned);MBERRNM(merr);
+
+    /* filter all the non-owned and shared entities out of the list */
+    adjs = moab::subtract(*dmmoab->vlocal, *dmmoab->vowned);
+    merr = dmmoab->pcomm->filter_pstatus(adjs,PSTATUS_INTERFACE,PSTATUS_OR,-1,dmmoab->vghost);MBERRNM(merr);
+    adjs = moab::subtract(adjs, *dmmoab->vghost);
+    *dmmoab->vlocal = moab::subtract(*dmmoab->vlocal, adjs);
+
+    /* compute and cache the sizes of local and ghosted entities */
+    dmmoab->nloc = dmmoab->vowned->size();
+    dmmoab->nghost = dmmoab->vghost->size();
+    ierr = MPI_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
+  }
+
+  {
+    /* get the information about the local elements in the mesh */
+    dmmoab->eghost->clear();
+
+    /* first decipher the leading dimension */
+    for (i=3;i>0;i--) {
+      dmmoab->elocal->clear();
+      merr = dmmoab->mbiface->get_entities_by_dimension(dmmoab->fileset, i, *dmmoab->elocal, true);CHKERRQ(merr);
+
+      /* store the current mesh dimension */
+      if (dmmoab->elocal->size()) {
+        dmmoab->dim=i;
+        break;
+      }
+    }
+
+    /* filter the ghosted and owned element list */
+    *dmmoab->eghost = *dmmoab->elocal;
+    merr = dmmoab->pcomm->filter_pstatus(*dmmoab->elocal,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
+    *dmmoab->eghost = moab::subtract(*dmmoab->eghost, *dmmoab->elocal);
+
+    dmmoab->neleloc = dmmoab->elocal->size();
+    dmmoab->neleghost = dmmoab->eghost->size();
+    ierr = MPI_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
+  }
+
+  bs = dmmoab->bs;
+  if (!dmmoab->ltog_tag) {
+    /* Get the global ID tag. The global ID tag is applied to each
+       vertex. It acts as an global identifier which MOAB uses to
+       assemble the individual pieces of the mesh */
+    merr = dmmoab->mbiface->tag_get_handle(GLOBAL_ID_TAG_NAME, dmmoab->ltog_tag);MBERRNM(merr);
+  }
+
+  totsize=dmmoab->vlocal->size();
+  if (totsize != dmmoab->nloc+dmmoab->nghost) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Mismatch between local and owned+ghost vertices. %D != %D.",totsize,dmmoab->nloc+dmmoab->nghost);
+  ierr = PetscMalloc(totsize*sizeof(PetscInt), &dmmoab->gsindices);CHKERRQ(ierr);
+  {
+    /* first get the local indices */
+    merr = dmmoab->mbiface->tag_get_data(dmmoab->ltog_tag,*dmmoab->vowned,&dmmoab->gsindices[0]);MBERRNM(merr);
+    /* next get the ghosted indices */
+    if (dmmoab->nghost) {
+      merr = dmmoab->mbiface->tag_get_data(dmmoab->ltog_tag,*dmmoab->vghost,&dmmoab->gsindices[dmmoab->nloc]);MBERRNM(merr);
+    }
+
+    /* find out the local and global minima of GLOBAL_ID */
+    lmin=lmax=dmmoab->gsindices[0];
+    for (i=0; i<totsize; ++i) {
+      if(lmin>dmmoab->gsindices[i]) lmin=dmmoab->gsindices[i];
+      if(lmax<dmmoab->gsindices[i]) lmax=dmmoab->gsindices[i];
+    }
+
+    ierr = MPI_Allreduce(&lmin, &gmin, 1, MPI_INT, MPI_MIN, ((PetscObject)dm)->comm);CHKERRQ(ierr);
+
+    /* set the GID map */
+    for (i=0; i<totsize; ++i) {
+      dmmoab->gsindices[i]-=gmin;   /* zero based index needed for IS */
+    }
+    lmin-=gmin;
+    lmax-=gmin;
+
+    PetscInfo3(NULL, "GLOBAL_ID: Local minima - %D, Local maxima - %D, Global minima - %D.\n", lmin, lmax, gmin);
+  }
+
+  {
+    ierr = PetscMalloc(((PetscInt)(dmmoab->vlocal->back())+1)*sizeof(PetscInt), &dmmoab->gidmap);CHKERRQ(ierr);
+    ierr = PetscMalloc(((PetscInt)(dmmoab->vlocal->back())+1)*sizeof(PetscInt), &dmmoab->lidmap);CHKERRQ(ierr);
+    ierr = PetscMalloc(totsize*dmmoab->numFields*sizeof(PetscInt), &dmmoab->llmap);CHKERRQ(ierr);
+    ierr = PetscMalloc(totsize*dmmoab->numFields*sizeof(PetscInt), &dmmoab->lgmap);CHKERRQ(ierr);
+
+    i=j=0;
+    /* set the owned vertex data first */
+    for(moab::Range::iterator iter = dmmoab->vowned->begin(); iter != dmmoab->vowned->end(); iter++,i++) {
+      vent=(PetscInt)(*iter);
+      dmmoab->gidmap[vent]=dmmoab->gsindices[i];
+      dmmoab->lidmap[vent]=i;
+      if (bs > 1) {
+        for (f=0;f<dmmoab->numFields;f++,j++) {
+          dmmoab->lgmap[j]=dmmoab->gsindices[i]*dmmoab->numFields+f;
+          dmmoab->llmap[j]=i*dmmoab->numFields+f;
+        }
+      }
+      else {
+        for (f=0;f<dmmoab->numFields;f++,j++) {
+          dmmoab->lgmap[j]=totsize*f+dmmoab->gsindices[i];
+          dmmoab->llmap[j]=totsize*f+i;
+        }
+      }
+    }
+    /* next arrange all the ghosted data information */
+    for(moab::Range::iterator iter = dmmoab->vghost->begin(); iter != dmmoab->vghost->end(); iter++,i++) {
+      vent=(PetscInt)(*iter);
+      dmmoab->gidmap[vent]=dmmoab->gsindices[i];
+      dmmoab->lidmap[vent]=i;
+      if (bs > 1) {
+        for (f=0;f<dmmoab->numFields;f++,j++) {
+          dmmoab->lgmap[j]=dmmoab->gsindices[i]*dmmoab->numFields+f;
+          dmmoab->llmap[j]=i*dmmoab->numFields+f;
+        }
+      }
+      else {
+        for (f=0;f<dmmoab->numFields;f++,j++) {
+          dmmoab->lgmap[j]=totsize*f+dmmoab->gsindices[i];
+          dmmoab->llmap[j]=totsize*f+i;
+        }
+      }
+    }
+
+    /* We need to create the Global to Local Vector Scatter Contexts
+       1) First create a local and global vector
+       2) Create a local and global IS
+       3) Create VecScatter and LtoGMapping objects
+       4) Cleanup the IS and Vec objects
+    */
+    ierr = DMCreateGlobalVector(dm, &global);CHKERRQ(ierr);
+    ierr = DMCreateLocalVector(dm, &local);CHKERRQ(ierr);
+
+    ierr = VecGetOwnershipRange(global, &dmmoab->vstart, &dmmoab->vend);CHKERRQ(ierr);
+    PetscInfo3(NULL, "Total-size = %D\t Owned = %D, Ghosted = %D.\n", totsize, dmmoab->nloc, dmmoab->nghost);
+
+    /* global to local must retrieve ghost points */
+    ierr = ISCreateStride(((PetscObject)dm)->comm,dmmoab->nloc*dmmoab->numFields,dmmoab->vstart,1,&from);CHKERRQ(ierr);
+    ierr = ISSetBlockSize(from,bs);CHKERRQ(ierr);
+
+    ierr = ISCreateGeneral(((PetscObject)dm)->comm,dmmoab->nloc*dmmoab->numFields,&dmmoab->lgmap[0],PETSC_COPY_VALUES,&to);CHKERRQ(ierr);
+    ierr = ISSetBlockSize(to,bs);CHKERRQ(ierr);
+
+    if (!dmmoab->ltog_map) {
+      /* create to the local to global mapping for vectors in order to use VecSetValuesLocal */
+      ierr = ISLocalToGlobalMappingCreate(((PetscObject)dm)->comm,totsize*dmmoab->numFields,dmmoab->lgmap,
+                                          PETSC_COPY_VALUES,&dmmoab->ltog_map);CHKERRQ(ierr);
+    }
+
+    /* now create the scatter object from local to global vector */
+    ierr = VecScatterCreate(local,from,global,to,&dmmoab->ltog_sendrecv);CHKERRQ(ierr);
+
+    /* clean up IS, Vec */
+    ierr = ISDestroy(&from);CHKERRQ(ierr);
+    ierr = ISDestroy(&to);CHKERRQ(ierr);
+    ierr = VecDestroy(&local);CHKERRQ(ierr);
+    ierr = VecDestroy(&global);CHKERRQ(ierr);
+  }
+
+  /* skin the boundary and store nodes */
+  {
+    /* get the skin vertices of boundary faces for the current partition and then filter 
+       the local, boundary faces, vertices and elements alone via PSTATUS flags;
+       this should not give us any ghosted boundary, but if user needs such a functionality
+       it would be easy to add it based on the find_skin query below */
+    moab::Skinner skinner(dmmoab->mbiface);
+
+    dmmoab->bndyvtx = new moab::Range();
+    dmmoab->bndyfaces = new moab::Range();
+    dmmoab->bndyelems = new moab::Range();
+
+    /* get the entities on the skin - only the faces */
+    merr = skinner.find_skin(dmmoab->fileset, *dmmoab->elocal, false, *dmmoab->bndyfaces, NULL, false, true, false);MBERRNM(merr); // 'false' param indicates we want faces back, not vertices
+
+    /* filter all the non-owned and shared entities out of the list */
+    merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
+    merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces,PSTATUS_SHARED,PSTATUS_NOT);MBERRNM(merr);
+
+    /* get all the nodes via connectivity and the parent elements via adjacency information */
+    merr = dmmoab->mbiface->get_connectivity(*dmmoab->bndyfaces, *dmmoab->bndyvtx, false);MBERRNM(ierr);
+    merr = dmmoab->mbiface->get_adjacencies(*dmmoab->bndyfaces, dmmoab->dim, false, *dmmoab->bndyelems, moab::Interface::UNION);MBERRNM(ierr);
+    PetscInfo3(NULL, "Found %D boundary vertices, %D boundary faces and %D boundary elements.\n", dmmoab->bndyvtx->size(), dmmoab->bndyvtx->size(), dmmoab->bndyelems->size());
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCreate_Moab"
+PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM dm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscNewLog(dm,DM_Moab,&dm->data);CHKERRQ(ierr);
+
+  ((DM_Moab*)dm->data)->bs = 1;
+  ((DM_Moab*)dm->data)->numFields = 1;
+  ((DM_Moab*)dm->data)->n = 0;
+  ((DM_Moab*)dm->data)->nloc = 0;
+  ((DM_Moab*)dm->data)->nghost = 0;
+  ((DM_Moab*)dm->data)->nele = 0;
+  ((DM_Moab*)dm->data)->neleloc = 0;
+  ((DM_Moab*)dm->data)->neleghost = 0;
+  ((DM_Moab*)dm->data)->ltog_map = PETSC_NULL;
+  ((DM_Moab*)dm->data)->ltog_sendrecv = PETSC_NULL;
+
+  ((DM_Moab*)dm->data)->vlocal = new moab::Range();
+  ((DM_Moab*)dm->data)->vowned = new moab::Range();
+  ((DM_Moab*)dm->data)->vghost = new moab::Range();
+  ((DM_Moab*)dm->data)->elocal = new moab::Range();
+  ((DM_Moab*)dm->data)->eghost = new moab::Range();
+
+  dm->ops->createglobalvector       = DMCreateGlobalVector_Moab;
+  dm->ops->createlocalvector        = DMCreateLocalVector_Moab;
+  dm->ops->creatematrix             = DMCreateMatrix_Moab;
+  dm->ops->setup                    = DMSetUp_Moab;
+  dm->ops->destroy                  = DMDestroy_Moab;
+  dm->ops->globaltolocalbegin       = DMGlobalToLocalBegin_Moab;
+  dm->ops->globaltolocalend         = DMGlobalToLocalEnd_Moab;
+  dm->ops->localtoglobalbegin       = DMLocalToGlobalBegin_Moab;
+  dm->ops->localtoglobalend         = DMLocalToGlobalEnd_Moab;
   PetscFunctionReturn(0);
 }
 
