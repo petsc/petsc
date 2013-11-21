@@ -2909,8 +2909,8 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   MPI_Comm               comm;
   const PetscInt         height = 0;
   PetscInt               dim, numRemoteRanks;
-  IS                     origCellPart,        cellPart,        part;
-  PetscSection           origCellPartSection, cellPartSection, partSection;
+  IS                     origCellPart,        origPart,        cellPart,        part;
+  PetscSection           origCellPartSection, origPartSection, cellPartSection, partSection;
   PetscSFNode           *remoteRanks;
   PetscSF                partSF, pointSF, coneSF;
   ISLocalToGlobalMapping renumbering;
@@ -3228,20 +3228,23 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
       rowners[p].index = -1;
     }
     if (origCellPart) {
-      /* Make sure cells in the original partition are not assigned to other procs */
-      const PetscInt *origCells;
+      /* Make sure points in the original partition are not assigned to other procs */
+      const PetscInt *origPoints;
 
-      ierr = ISGetIndices(origCellPart, &origCells);CHKERRQ(ierr);
+      ierr = DMPlexCreatePartitionClosure(dm, origCellPartSection, origCellPart, &origPartSection, &origPart);CHKERRQ(ierr);
+      ierr = ISGetIndices(origPart, &origPoints);CHKERRQ(ierr);
       for (p = 0; p < numProcs; ++p) {
         PetscInt dof, off, d;
 
-        ierr = PetscSectionGetDof(origCellPartSection, p, &dof);CHKERRQ(ierr);
-        ierr = PetscSectionGetOffset(origCellPartSection, p, &off);CHKERRQ(ierr);
+        ierr = PetscSectionGetDof(origPartSection, p, &dof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(origPartSection, p, &off);CHKERRQ(ierr);
         for (d = off; d < off+dof; ++d) {
-          rowners[origCells[d]].rank = p;
+          rowners[origPoints[d]].rank = p;
         }
       }
-      ierr = ISRestoreIndices(origCellPart, &origCells);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(origPart, &origPoints);CHKERRQ(ierr);
+      ierr = ISDestroy(&origPart);CHKERRQ(ierr);
+      ierr = PetscSectionDestroy(&origPartSection);CHKERRQ(ierr);
     }
     ierr = ISDestroy(&origCellPart);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&origCellPartSection);CHKERRQ(ierr);
