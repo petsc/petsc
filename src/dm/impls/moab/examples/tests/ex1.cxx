@@ -57,7 +57,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = DMMoabCreateMoab(comm, user->iface, user->pcomm, &user->ltog_tag, &user->range, dm);CHKERRQ(ierr);
-  std::cout << "Created DMMoab using DMMoabCreateDMAndInstance." << std::endl;
+  std::cout << "Created DMMoab using DMMoabCreateMoab." << std::endl;
   ierr = DMMoabGetInterface(*dm, &user->iface);CHKERRQ(ierr);
 
     // load file and get entities of requested or max dimension
@@ -70,7 +70,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       // make a simple structured mesh
     moab::ScdInterface *scdi;
     merr = user->iface->query_interface(scdi);
-  std::cout << "creating structured." << std::endl;
+    std::cout << "Creating structured." << std::endl;
 
     moab::ScdBox *box;
     merr = scdi->construct_box (moab::HomCoord(0,0,0), moab::HomCoord(2,2,2), NULL, 0, box);MBERRNM(merr);
@@ -144,3 +144,4 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return 0;
 }
+

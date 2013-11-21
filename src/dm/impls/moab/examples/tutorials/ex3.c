@@ -20,13 +20,13 @@ with Dirichlet boundary conditions
 or pure Neumman boundary conditions
 
 Usage:
-    mpiexec -n 2 ./ex4 -bc_type dirichlet -nu .01 -rho .01 -file input/quad_2p.h5m -dmmb_rw_dbg 0 -n 50
+    mpiexec -n 2 ./ex3 -bc_type dirichlet -nu .01 -rho .01 -file input/quad_2p.h5m -dmmb_rw_dbg 0 -n 50
 
 */
 
 static char help[] = "\
                       Solves 2D inhomogeneous Laplacian equation with a Gaussian source.\n \
-                      Usage: ./ex4 -bc_type dirichlet -nu .01 -n 10\n";
+                      Usage: ./ex3 -bc_type dirichlet -nu .01 -n 10\n";
 
 
 // PETSc includes:
@@ -129,7 +129,7 @@ int main(int argc,char **argv)
   ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
 
   ierr = DMMoabSetGlobalFieldVector(dm, x);CHKERRQ(ierr);
-  ierr = DMMoabOutput(dm, "ex4.h5m", "");CHKERRQ(ierr);
+  ierr = DMMoabOutput(dm, "ex3.h5m", "");CHKERRQ(ierr);
 
   /* Cleanup objects */
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
