@@ -18,8 +18,8 @@ static char help[] = "Solves C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirt
 
     Rules for maximum number of He allowed for V in cluster
 
-    Usage: ./ex3 -nele 10 -snes_mf -mymonitor -ts_monitor
-           ./ex3 -file <$XOLOTL_DIR/benchmarks/tungsten.txt> -snes_mf -mymonitor -ts_monitor
+    Usage: ./ex2 -nele 10 -snes_mf -mymonitor -ts_monitor
+           ./ex2 -file <$XOLOTL_DIR/benchmarks/tungsten.txt> -snes_mf -mymonitor -ts_monitor
 */
 
 #include <petscdmmoab.h>

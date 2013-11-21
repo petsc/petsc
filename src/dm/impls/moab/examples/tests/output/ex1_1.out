@@ -1,4 +1,5 @@
-Created DMMoab using DMMoabCreateDMAndInstance.
+Created DMMoab using DMMoabCreateMoab.
+Creating structured.
 Created structured 2x2x2 mesh.
 Created VecMoab from existing tag.
 Destroyed VecMoab.

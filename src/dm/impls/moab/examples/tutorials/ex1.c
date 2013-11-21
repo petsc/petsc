@@ -216,7 +216,7 @@ int main(int argc,char **argv)
 
     /* Write out the solution along with the mesh */
     ierr = DMMoabSetGlobalFieldVector(dm, X);CHKERRQ(ierr);
-    ierr = DMMoabOutput(dm, "ex2.h5m", "");CHKERRQ(ierr);
+    ierr = DMMoabOutput(dm, "ex1.h5m", "");CHKERRQ(ierr);
   }
 
   /* Free work space.
