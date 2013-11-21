@@ -410,10 +410,7 @@ PetscErrorCode DMLabelClearValue(DMLabel label, PetscInt point, PetscInt value)
       }
     }
   } else {
-    PetscBool has;
-
-    PetscHashIHasKey(label->ht[v], point, has);
-    if (has) {PetscHashIDel(label->ht[v], point);}
+    ierr = PetscHashIDelKey(label->ht[v], point);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

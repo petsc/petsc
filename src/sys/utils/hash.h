@@ -553,6 +553,14 @@ typedef khiter_t PetscHashIIter;
  _11_hi = kh_put(HASHI,(ht),(i),&_11_hr);                               \
  kh_val((ht),_11_hi) = (ii);                                            \
 }
+
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIDelKey(PetscHashI ht, PetscInt key)
+{
+  khiter_t hi = kh_get(HASHI, ht, key);
+  if (hi != kh_end(ht)) kh_del(HASHI, ht, hi);
+  return 0;
+}
+
 /*
   arr is the integer array to put the indices to, n is the offset into arr to start putting the indices at.
   n is updated as the indices are put into arr, so n must be an lvalue.
