@@ -1,11 +1,9 @@
-#if !defined(_MOABIMPL_H)
-#define _MOABIMPL_H
+#if !defined(_DMMBIMPL_H)
+#define _DMMBIMPL_H
 
-#include <petscmat.h>       /*I      "petscmat.h"          I*/
-#include <petscdmmoab.h> /*I      "petscdmplex.h"    I*/
+#include <petscmat.h>       /*I      "petscmat.h"       I*/
+#include <petscdmmoab.h>    /*I      "petscdmplex.h"    I*/
 #include "petsc-private/dmimpl.h"
-
-/* PETSC_EXTERN PetscLogEvent DMMOAB_Read, DMMOAB_Write; */
 
 /* This is an integer map, in addition it is also a container class
    Design points:
@@ -27,27 +25,31 @@ typedef struct {
 
 
 typedef struct {
-  PetscInt                bs;                      /* Number of degrees of freedom on each entity, aka tag size in moab */
-  PetscInt                dim;
-  PetscInt                n,nloc,nghost;           /* Number of global, local only and shared vertices for current partition */
-  PetscInt                nele,neleloc,neleghost;  /* Number of global, local only and shared elements for current partition */
-  PetscInt                *gsindices;
-  PetscInt                *gidmap,*lidmap,*llmap,*lgmap;
-  PetscInt                vstart,vend;
+  PetscInt                dim;                            /* Current topological dimension handled by DMMoab */
+  PetscInt                n,nloc,nghost;                  /* Number of global, local only and shared vertices for current partition */
+  PetscInt                nele,neleloc,neleghost;         /* Number of global, local only and shared elements for current partition */
+  PetscInt                bs;                             /* Block size that controls the strided vs interlaced configuration in discrete systems -
+                                                             This affects the layout and hence the degree-of-freedom of the different fields (components) */
+  PetscInt                *gsindices;                     /* Global ID for all local+ghosted vertices */
+  PetscInt                *gidmap,*lidmap,*llmap,*lgmap;  /* Global ID indices, Local ID indices, field-based local map, field-based global map */
+  PetscInt                vstart,vend;                    /* Global start and end index for distributed Vec */
 
-  moab::ParallelComm      *pcomm;
-  moab::Interface         *mbiface;
-  moab::Tag               ltog_tag;                /* moab supports "global id" tags, which are usually local to global numbering */
+  /* MOAB objects cached internally in DMMoab */
+  moab::Interface         *mbiface;                       /* MOAB Interface/Core reference */
+  moab::ParallelComm      *pcomm;                         /* MOAB ParallelComm reference */
+  moab::Tag               ltog_tag;                       /* MOAB supports "global id" tags */
+  moab::Range             *vowned, *vghost, *vlocal;      /* Vertex entities: strictly owned, strictly ghosted, owned+ghosted */
+  moab::Range             *elocal, *eghost;               /* Topological dimensional entities: strictly owned, strictly ghosted */
+  moab::Range             *bndyvtx,*bndyfaces,*bndyelems; /* Boundary entities: skin vertices, skin faces and elements on the outer skin */
+  moab::EntityHandle      fileset;                        /* The Global set to which all local entities belong */
+
+  /* store the mapping information */
   ISLocalToGlobalMapping  ltog_map;
   VecScatter              ltog_sendrecv;
-  moab::Range             *vlocal, *vowned, *vghost;
-  moab::Range             *elocal, *eghost;
-  moab::Range             *bndyvtx,*bndyfaces,*bndyelems;
-  moab::EntityHandle      fileset;
 
   PetscInt                numFields;
   const char              **fieldNames;
-  PetscBool               icreatedinstance;        /* true if DM created moab instance internally, will destroy instance in DMDestroy */
+  PetscBool               icreatedinstance;               /* true if DM created moab instance internally, will destroy instance in DMDestroy */
 } DM_Moab;
 
 
@@ -59,6 +61,5 @@ PETSC_EXTERN PetscErrorCode DMGlobalToLocalEnd_Moab(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMLocalToGlobalBegin_Moab(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMLocalToGlobalEnd_Moab(DM,Vec,InsertMode,Vec);
 
-
-#endif /* _MOABIMPL_H */
+#endif /* _DMMBIMPL_H */
 
