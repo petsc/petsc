@@ -4,6 +4,23 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabSetFieldVector"
+/*@C
+   DMMoabSetFieldVector - Sets the vector reference that represents the solution associated
+   with a particular field component.
+
+   Not Collective
+
+   Input Parameters:
++ dm     - the discretization manager object
+.  ifield - the index of the field as set before via DMMoabSetFieldName.
+-  fvec - the Vector solution corresponding to the field (component)
+
+  Level: intermediate
+
+.keywords: discretization manager, set, component solution
+
+.seealso: DMMoabGetFieldName(), DMMoabSetGlobalFieldVector()
+@*/
 PetscErrorCode DMMoabSetFieldVector(DM dm, PetscInt ifield, Vec fvec)
 {
   DM_Moab        *dmmoab;
@@ -48,6 +65,24 @@ PetscErrorCode DMMoabSetFieldVector(DM dm, PetscInt ifield, Vec fvec)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabSetGlobalFieldVector"
+/*@C
+   DMMoabSetGlobalFieldVector - Sets the vector reference that represents the global solution associated
+   with all fields (components) managed by DM. 
+   A useful utility when updating the DM solution after a solve, to be serialized with the mesh for 
+   checkpointing purposes.
+
+   Not Collective
+
+   Input Parameters:
++ dm     - the discretization manager object
+-  fvec - the global Vector solution corresponding to all the fields managed by DM
+
+  Level: intermediate
+
+.keywords: discretization manager, set, component solution
+
+.seealso: DMMoabGetFieldName(), DMMoabSetFieldVector()
+@*/
 PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
 {
   DM_Moab        *dmmoab;
@@ -118,8 +153,24 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "DMMoabSetFields"
-PetscErrorCode DMMoabSetFields(DM dm,PetscInt numFields,const char** fields)
+#define __FUNCT__ "DMMoabSetFieldNames"
+/*@C
+  DMMoabSetFieldNames - Sets the number of fields and their names to be managed by the DM
+
+  Not Collective
+
+  Input Parameters:
++ dm     - the discretization manager object
+. numFields - the total number of fields
+- fields - the array containing the names of each field (component); Can be NULL.
+
+  Level: intermediate
+
+.keywords: discretization manager, set, component name
+  
+.seealso: DMMoabGetFieldName(), DMMoabSetFieldName()
+@*/
+PetscErrorCode DMMoabSetFieldNames(DM dm,PetscInt numFields,const char** fields)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -148,42 +199,105 @@ PetscErrorCode DMMoabSetFields(DM dm,PetscInt numFields,const char** fields)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabGetFieldName"
+/*@C
+  DMMoabGetFieldName - Gets the names of individual field components in multicomponent
+   vectors associated with a DMDA.
+
+   Not Collective
+
+   Input Parameter:
++ dm     - the discretization manager object
+-  field - field number for the DMMoab (0, 1, ... dof-1), where dof indicates the
+        number of degrees of freedom per node within the DMMoab
+
+   Output Parameter:
+.  fieldName - the name of the field (component)
+
+  Level: intermediate
+
+.keywords: discretization manager, get, component name
+
+.seealso: DMMoabSetFieldName(), DMMoabSetFields()
+@*/
+PetscErrorCode DMMoabGetFieldName(DM dm, PetscInt field, const char **fieldName)
+{
+  DM_Moab        *dmmoab;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  dmmoab = (DM_Moab*)(dm)->data;
+  if ((field < 0) || (field >= dmmoab->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "DM field %d should be in [%d, %d)", field, 0, dmmoab->numFields);
+
+  *fieldName = dmmoab->fieldNames[field];
+  PetscFunctionReturn(0);
+}
+
+
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabSetFieldName"
 /*@C
-  DMMoabSetFieldName - Sets the name of a field in the DM
+  DMMoabSetFieldName - Sets the name of a field (component) managed by the DM
 
   Not Collective
 
   Input Parameters:
-+ dm     - the DM object
++ dm     - the discretization manager object
 . field - the field number
-- fieldName - the field name
+- fieldName - the field (component) name
 
-  Level: developer
-  Note: Needs to be called after DMMoabSetFields with correct numFields
+  Level: intermediate
+  Notes: Can only be called after DMMoabSetFields supplied with correct numFields
 
-.seealso: DMMoabSetFields()
+.keywords: discretization manager, set, component name
+  
+.seealso: DMMoabGetFieldName(), DMMoabSetFields()
 @*/
-PetscErrorCode DMMoabSetFieldName(DM dm, PetscInt field, const char fieldName[])
+PetscErrorCode DMMoabSetFieldName(DM dm, PetscInt field, const char **fieldName)
 {
   PetscErrorCode ierr;
   DM_Moab        *dmmoab;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidCharPointer(fieldName,3);
-  dmmoab = (DM_Moab*)(dm)->data;
+  PetscValidPointer(fieldName,3);
+  PetscValidCharPointer(*fieldName,3);
 
+  dmmoab = (DM_Moab*)(dm)->data;
   if ((field < 0) || (field >= dmmoab->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "DM field %d should be in [%d, %d)", field, 0, dmmoab->numFields);
-  ierr = PetscFree(dmmoab->fieldNames[field]);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(fieldName, (char**) &dmmoab->fieldNames[field]);CHKERRQ(ierr);
+
+  if (dmmoab->fieldNames[field]) {
+    ierr = PetscFree(dmmoab->fieldNames[field]);CHKERRQ(ierr);
+  }
+  ierr = PetscStrallocpy(*fieldName, (char**) &dmmoab->fieldNames[field]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetFieldDof"
+/*@C
+  DMMoabGetFieldDof - Gets the global degree-of-freedom of a field (component) defined on a
+  particular MOAB EntityHandle.
+
+  Not Collective
+
+  Input Parameters:
++ dm     - the discretization manager object
+. point - the MOAB EntityHandle container which holds the field degree-of-freedom values
+- field - the field (component) index
+
+   Output Parameter:
++  dof - the global degree-of-freedom index corresponding to the field in the discrete representation (Vec, Mat)
+
+  Level: beginner
+
+.keywords: discretization manager, get, global degree of freedom
+  
+.seealso: DMMoabGetFieldDofs(), DMMoabGetFieldDofsLocal()
+@*/
 PetscErrorCode DMMoabGetFieldDof(DM dm,moab::EntityHandle point,PetscInt field,PetscInt* dof)
 {
   DM_Moab        *dmmoab;
@@ -199,6 +313,27 @@ PetscErrorCode DMMoabGetFieldDof(DM dm,moab::EntityHandle point,PetscInt field,P
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetFieldDofs"
+/*@C
+  DMMoabGetFieldDofs - Gets the global degree-of-freedom of a field (component) defined on an
+  array of MOAB EntityHandles.
+
+  Not Collective
+
+  Input Parameters:
++ dm     - the discretization manager object
+. npoints - the total number of Entities in the points array
+. points - the MOAB EntityHandle container array which holds the field degree-of-freedom values
+- field - the field (component) index
+
+  Output Parameter:
++ dof - the global degree-of-freedom index array corresponding to the field in the discrete representation (Vec, Mat)
+
+  Level: intermediate
+
+.keywords: discretization manager, get, global degrees of freedom
+  
+.seealso: DMMoabGetFieldDof(), DMMoabGetFieldDofsLocal()
+@*/
 PetscErrorCode DMMoabGetFieldDofs(DM dm,PetscInt npoints,const moab::EntityHandle* points,PetscInt field,PetscInt* dof)
 {
   PetscInt        i;
@@ -207,20 +342,20 @@ PetscErrorCode DMMoabGetFieldDofs(DM dm,PetscInt npoints,const moab::EntityHandl
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(points,2);
+  PetscValidPointer(points,3);
   dmmoab = (DM_Moab*)(dm)->data;
 
   if (!dof) {
     ierr = PetscMalloc(sizeof(PetscInt)*npoints, &dof);CHKERRQ(ierr);
   }
 
-  /* first get the local indices */
-  if (dmmoab->bs > 1) {
+  if (dmmoab->bs > 1) { /* compute the DOF based on local blocking in the fields */
     for (i=0; i<npoints; ++i)
       dof[i] = dmmoab->gidmap[(PetscInt)points[i]]*dmmoab->numFields+field;
   }
   else {
-    /* assume all fields have equal distribution */
+    /* assume all fields have equal distribution; i.e., all fields are either defined on vertices or elements and not on a mixture */
+    /* TODO: eliminate the limitation using PetscSection to manage DOFs */
     for (i=0; i<npoints; ++i)
       dof[i] = dmmoab->gidmap[(PetscInt)points[i]]+field*dmmoab->n;
   }
@@ -230,6 +365,27 @@ PetscErrorCode DMMoabGetFieldDofs(DM dm,PetscInt npoints,const moab::EntityHandl
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetFieldDofsLocal"
+/*@C
+  DMMoabGetFieldDofsLocal - Gets the local degrees-of-freedom of a field (component) defined on an
+  array of MOAB EntityHandles.
+
+  Not Collective
+
+  Input Parameters:
++ dm     - the discretization manager object
+. npoints - the total number of Entities in the points array
+. points - the MOAB EntityHandle container array which holds the field degree-of-freedom values
+- field - the field (component) index
+
+  Output Parameter:
++ dof - the local degree-of-freedom index array corresponding to the field in the discrete representation (Vec, Mat)
+
+  Level: intermediate
+
+.keywords: discretization manager, get, local degrees of freedom
+  
+.seealso: DMMoabGetFieldDof(), DMMoabGetFieldDofs()
+@*/
 PetscErrorCode DMMoabGetFieldDofsLocal(DM dm,PetscInt npoints,const moab::EntityHandle* points,PetscInt field,PetscInt* dof)
 {
   PetscInt i,offset;
@@ -238,19 +394,21 @@ PetscErrorCode DMMoabGetFieldDofsLocal(DM dm,PetscInt npoints,const moab::Entity
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(points,2);
+  PetscValidPointer(points,3);
   dmmoab = (DM_Moab*)(dm)->data;
 
   if (!dof) {
     ierr = PetscMalloc(sizeof(PetscInt)*npoints, &dof);CHKERRQ(ierr);
   }
 
-  if (dmmoab->bs > 1) {
+  if (dmmoab->bs > 1) { /* compute the DOF based on local blocking in the fields */
     for (i=0; i<npoints; ++i)
       dof[i] = dmmoab->lidmap[(PetscInt)points[i]]*dmmoab->numFields+field;
   }
   else {
-    offset = field*dmmoab->n; /* assume all fields have equal distribution */
+    /* assume all fields have equal distribution; i.e., all fields are either defined on vertices or elements and not on a mixture */
+    /* TODO: eliminate the limitation using PetscSection to manage DOFs */
+    offset = field*dmmoab->n;
     for (i=0; i<npoints; ++i)
       dof[i] = dmmoab->lidmap[(PetscInt)points[i]]+offset;
   }
@@ -260,6 +418,26 @@ PetscErrorCode DMMoabGetFieldDofsLocal(DM dm,PetscInt npoints,const moab::Entity
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetDofs"
+/*@C
+  DMMoabGetDofs - Gets the global degree-of-freedom for all fields (components) defined on an
+  array of MOAB EntityHandles.
+
+  Not Collective
+
+  Input Parameters:
++ dm     - the discretization manager object
+. npoints - the total number of Entities in the points array
+. points - the MOAB EntityHandle container array which holds the field degree-of-freedom values
+
+  Output Parameter:
++ dof - the global degree-of-freedom index array corresponding to the field in the discrete representation (Vec, Mat)
+
+  Level: intermediate
+
+.keywords: discretization manager, get, global degrees of freedom
+  
+.seealso: DMMoabGetFieldDofs(), DMMoabGetDofsLocal(), DMMoabGetDofsBlocked()
+@*/
 PetscErrorCode DMMoabGetDofs(DM dm,PetscInt npoints,const moab::EntityHandle* points,PetscInt* dof)
 {
   PetscInt        i,field,offset;  
@@ -268,22 +446,24 @@ PetscErrorCode DMMoabGetDofs(DM dm,PetscInt npoints,const moab::EntityHandle* po
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(points,2);
+  PetscValidPointer(points,3);
   dmmoab = (DM_Moab*)(dm)->data;
 
   if (!dof) {
     ierr = PetscMalloc(sizeof(PetscInt)*dmmoab->numFields*npoints, &dof);CHKERRQ(ierr);
   }
   
-  if (dmmoab->bs > 1) {
+  if (dmmoab->bs > 1) { /* compute the DOF based on local blocking in the fields */
     for (field=0; field<dmmoab->numFields; ++field) {
       for (i=0; i<npoints; ++i)
         dof[i*dmmoab->numFields+field] = dmmoab->gidmap[(PetscInt)points[i]]*dmmoab->numFields+field;
     }
   }
   else {
+    /* assume all fields have equal distribution; i.e., all fields are either defined on vertices or elements and not on a mixture */
+    /* TODO: eliminate the limitation using PetscSection to manage DOFs */
     for (field=0; field<dmmoab->numFields; ++field) {
-      offset = field*dmmoab->n; /* assume all fields have equal distribution */
+      offset = field*dmmoab->n;
       for (i=0; i<npoints; ++i)
         dof[i*dmmoab->numFields+field] = dmmoab->gidmap[(PetscInt)points[i]]+offset;
     }
@@ -294,6 +474,26 @@ PetscErrorCode DMMoabGetDofs(DM dm,PetscInt npoints,const moab::EntityHandle* po
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetDofsLocal"
+/*@C
+  DMMoabGetDofsLocal - Gets the local degree-of-freedom for all fields (components) defined on an
+  array of MOAB EntityHandles.
+
+  Not Collective
+
+  Input Parameters:
++ dm     - the discretization manager object
+. npoints - the total number of Entities in the points array
+. points - the MOAB EntityHandle container array which holds the field degree-of-freedom values
+
+  Output Parameter:
++ dof - the local degree-of-freedom index array corresponding to the field in the discrete representation (Vec, Mat)
+
+  Level: intermediate
+
+.keywords: discretization manager, get, global degrees of freedom
+  
+.seealso: DMMoabGetFieldDofs(), DMMoabGetDofs(), DMMoabGetDofsBlocked()
+@*/
 PetscErrorCode DMMoabGetDofsLocal(DM dm,PetscInt npoints,const moab::EntityHandle* points,PetscInt* dof)
 {
   PetscInt        i,field,offset;
@@ -302,22 +502,24 @@ PetscErrorCode DMMoabGetDofsLocal(DM dm,PetscInt npoints,const moab::EntityHandl
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(points,2);
+  PetscValidPointer(points,3);
   dmmoab = (DM_Moab*)(dm)->data;
 
   if (!dof) {
     ierr = PetscMalloc(sizeof(PetscInt)*dmmoab->numFields*npoints, &dof);CHKERRQ(ierr);
   }
 
-  if (dmmoab->bs > 1) {
+  if (dmmoab->bs > 1) { /* compute the DOF based on local blocking in the fields */
     for (field=0; field<dmmoab->numFields; ++field) {
       for (i=0; i<npoints; ++i)
         dof[i*dmmoab->numFields+field] = dmmoab->lidmap[(PetscInt)points[i]]*dmmoab->numFields+field;
     }
   }
   else {
+    /* assume all fields have equal distribution; i.e., all fields are either defined on vertices or elements and not on a mixture */
+    /* TODO: eliminate the limitation using PetscSection to manage DOFs */
     for (field=0; field<dmmoab->numFields; ++field) {
-      offset = field*dmmoab->n; /* assume all fields have equal distribution */
+      offset = field*dmmoab->n;
       for (i=0; i<npoints; ++i)
         dof[i*dmmoab->numFields+field] = dmmoab->lidmap[(PetscInt)points[i]]+offset;
     }
@@ -328,6 +530,27 @@ PetscErrorCode DMMoabGetDofsLocal(DM dm,PetscInt npoints,const moab::EntityHandl
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetDofsBlocked"
+/*@C
+  DMMoabGetDofsBlocked - Gets the global degree-of-freedom for the first field (component) defined on an
+  array of MOAB EntityHandles. It is useful when performing Blocked(Get/Set) methods in computation
+  of element residuals and assembly of the discrete systems when all fields are co-located.
+
+  Not Collective
+
+  Input Parameters:
++ dm     - the discretization manager object
+. npoints - the total number of Entities in the points array
+. points - the MOAB EntityHandle container array which holds the field degree-of-freedom values
+
+  Output Parameter:
++ dof - the blocked global degree-of-freedom index array in the discrete representation (Vec, Mat)
+
+  Level: intermediate
+
+.keywords: discretization manager, get, global degrees of freedom
+  
+.seealso: DMMoabGetDofsLocal(), DMMoabGetDofs(), DMMoabGetDofsBlockedLocal()
+@*/
 PetscErrorCode DMMoabGetDofsBlocked(DM dm,PetscInt npoints,const moab::EntityHandle* points,PetscInt* dof)
 {
   PetscInt        i;
@@ -352,6 +575,27 @@ PetscErrorCode DMMoabGetDofsBlocked(DM dm,PetscInt npoints,const moab::EntityHan
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetDofsBlockedLocal"
+/*@C
+  DMMoabGetDofsBlockedLocal - Gets the local degree-of-freedom for the first field (component) defined on an
+  array of MOAB EntityHandles. It is useful when performing local Blocked(Get/Set) methods in computation
+  of element residuals and assembly of the discrete systems when all fields are co-located.
+
+  Not Collective
+
+  Input Parameters:
++ dm     - the discretization manager object
+. npoints - the total number of Entities in the points array
+. points - the MOAB EntityHandle container array which holds the field degree-of-freedom values
+
+  Output Parameter:
++ dof - the blocked local degree-of-freedom index array in the discrete representation (Vec, Mat)
+
+  Level: intermediate
+
+.keywords: discretization manager, get, global degrees of freedom
+  
+.seealso: DMMoabGetDofsLocal(), DMMoabGetDofs(), DMMoabGetDofsBlockedLocal()
+@*/
 PetscErrorCode DMMoabGetDofsBlockedLocal(DM dm,PetscInt npoints,const moab::EntityHandle* points,PetscInt* dof)
 {
   PetscInt        i;
@@ -375,6 +619,25 @@ PetscErrorCode DMMoabGetDofsBlockedLocal(DM dm,PetscInt npoints,const moab::Enti
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetVertexDofsBlocked"
+/*@C
+  DMMoabGetVertexDofsBlocked - Gets the global degree-of-freedom for the first field (component) defined on an
+  array of locally owned MOAB mesh vertices. It's utility is when performing Finite-Difference type calculations
+  where vertex traversal is faster than element-wise assembly that is typically done in FEM calculations.
+
+  Not Collective
+
+  Input Parameters:
++ dm     - the discretization manager object
+
+  Output Parameter:
++ dof - the blocked global degree-of-freedom index array in the discrete representation (Vec, Mat) that is vertex-based based on local numbering
+
+  Level: intermediate
+
+.keywords: discretization manager, get, blocked degrees of freedom
+  
+.seealso: DMMoabGetVertexDofsBlockedLocal(), DMMoabGetDofsBlocked(), DMMoabGetDofsBlockedLocal()
+@*/
 PetscErrorCode DMMoabGetVertexDofsBlocked(DM dm,PetscInt** dof)
 {
   DM_Moab        *dmmoab;
@@ -390,6 +653,25 @@ PetscErrorCode DMMoabGetVertexDofsBlocked(DM dm,PetscInt** dof)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetVertexDofsBlockedLocal"
+/*@C
+  DMMoabGetVertexDofsBlockedLocal - Gets the local degree-of-freedom for the first field (component) defined on an
+  array of locally owned MOAB mesh vertices. It's utility is when performing Finite-Difference type calculations
+  where vertex traversal is faster than element-wise assembly that is typically done in FEM calculations.
+
+  Not Collective
+
+  Input Parameters:
++ dm     - the discretization manager object
+
+  Output Parameter:
++ dof - the blocked local degree-of-freedom index array in the discrete representation (Vec, Mat) that is vertex-based based on local numbering
+
+  Level: intermediate
+
+.keywords: discretization manager, get, blocked degrees of freedom
+  
+.seealso: DMMoabGetVertexDofsBlocked(), DMMoabGetDofsBlocked(), DMMoabGetDofsBlockedLocal()
+@*/
 PetscErrorCode DMMoabGetVertexDofsBlockedLocal(DM dm,PetscInt** dof)
 {
   DM_Moab        *dmmoab;
@@ -402,6 +684,4 @@ PetscErrorCode DMMoabGetVertexDofsBlockedLocal(DM dm,PetscInt** dof)
   *dof = dmmoab->lidmap;
   PetscFunctionReturn(0);
 }
-
-
 
