@@ -1,4 +1,4 @@
-#include <petsc-private/dmmbimpl.h> /*I  "petscdm.h"   I*/
+#include <petsc-private/dmmbimpl.h> /*I  "petscdmmoab.h"   I*/
 
 #include <petscdmmoab.h>
 #include <MBTagConventions.hpp>
@@ -546,7 +546,7 @@ PetscErrorCode DMMoabGetSize(DM dm,PetscInt *neg,PetscInt *nvg)
 . dm - The DMMoab object being set
 
   Output Parameter:
-. nel - The number of owned elements in this processor
++ nel - The number of owned elements in this processor
 . neg - The number of ghosted elements in this processor
 . nvl - The number of owned vertices in this processor
 . nvg - The number of ghosted vertices in this processor

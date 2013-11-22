@@ -1,5 +1,5 @@
-#include <petsc-private/dmmbimpl.h> /*I  "petscdm.h"   I*/
-#include <petsc-private/vecimpl.h> /*I  "petscdm.h"   I*/
+#include <petsc-private/dmmbimpl.h> /*I  "petscdmmoab.h"   I*/
+#include <petsc-private/vecimpl.h>
 
 #include <petscdmmoab.h>
 #include <MBTagConventions.hpp>
@@ -12,13 +12,13 @@ static PetscErrorCode DMVecCreateTagName_Moab_Private(moab::ParallelComm *pcomm,
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabCreateVector"
-/*@
+/*@C
   DMMoabCreateVector - Create a Vec from either an existing tag, or a specified tag size, and a range of entities
 
   Collective on MPI_Comm
 
   Input Parameter:
-. dm              - The DMMoab object being set
++ dm              - The DMMoab object being set
 . tag             - If non-zero, block size will be taken from the tag size
 . range           - If non-empty, Vec corresponds to these entities, otherwise to the entities set on the DMMoab
 . is_global_vec   - If true, this is a local representation of the Vec (including ghosts in parallel), otherwise a truly parallel one
@@ -29,7 +29,9 @@ static PetscErrorCode DMVecCreateTagName_Moab_Private(moab::ParallelComm *pcomm,
 
   Level: beginner
 
-.keywords: DMMoab, create
+.keywords: Vec, create
+
+.seealso: VecCreate()
 @*/
 PetscErrorCode DMMoabCreateVector(DM dm,moab::Tag tag,const moab::Range* range,PetscBool is_global_vec,PetscBool destroy_tag,Vec *vec)
 {
@@ -45,7 +47,7 @@ PetscErrorCode DMMoabCreateVector(DM dm,moab::Tag tag,const moab::Range* range,P
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetVecTag"
-/*@
+/*@C
   DMMoabGetVecTag - Get the MOAB tag associated with this Vec
 
   Input Parameter:
@@ -56,7 +58,9 @@ PetscErrorCode DMMoabCreateVector(DM dm,moab::Tag tag,const moab::Range* range,P
 
   Level: beginner
 
-.keywords: DMMoab, create
+.keywords: DMMoab, MOAB tag
+
+.seealso: DMMoabCreateVector(), DMMoabGetVecRange()
 @*/
 PetscErrorCode DMMoabGetVecTag(Vec vec,moab::Tag *tag)
 {
@@ -78,7 +82,7 @@ PetscErrorCode DMMoabGetVecTag(Vec vec,moab::Tag *tag)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetVecRange"
-/*@
+/*@C
   DMMoabGetVecRange - Get the MOAB entities associated with this Vec
 
   Input Parameter:
@@ -89,7 +93,9 @@ PetscErrorCode DMMoabGetVecTag(Vec vec,moab::Tag *tag)
 
   Level: beginner
 
-.keywords: DMMoab, create
+.keywords: DMMoab, MOAB range
+
+.seealso: DMMoabCreateVector(), DMMoabGetVecTag()
 @*/
 PetscErrorCode DMMoabGetVecRange(Vec vec,moab::Range *range)
 {
@@ -111,7 +117,7 @@ PetscErrorCode DMMoabGetVecRange(Vec vec,moab::Range *range)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabVecGetArray"
-/*@
+/*@C
   DMMoabVecGetArray - Returns the writable direct access array to the local representation of MOAB tag data for the underlying vector using locally owned+ghosted range of entities
 
   Collective on MPI_Comm
@@ -198,7 +204,7 @@ PetscErrorCode  DMMoabVecGetArray(DM dm,Vec vec,void* array)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabVecRestoreArray"
-/*@
+/*@C
   DMMoabVecRestoreArray - Restores the writable direct access array obtained via DMMoabVecGetArray
 
   Collective on MPI_Comm
@@ -206,7 +212,7 @@ PetscErrorCode  DMMoabVecGetArray(DM dm,Vec vec,void* array)
   Input Parameter:
 + dm              - The DMMoab object being set
 . vec             - The Vector whose underlying data is requested
-- array           - The local data array
+. array           - The local data array
 
   Level: intermediate
 
@@ -282,7 +288,7 @@ PetscErrorCode  DMMoabVecRestoreArray(DM dm,Vec vec,void* array)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabVecGetArrayRead"
-/*@
+/*@C
   DMMoabVecGetArrayRead - Returns the read-only direct access array to the local representation of MOAB tag data for the underlying vector using locally owned+ghosted range of entities
 
   Collective on MPI_Comm
@@ -366,7 +372,7 @@ PetscErrorCode  DMMoabVecGetArrayRead(DM dm,Vec vec,void* array)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabVecRestoreArrayRead"
-/*@
+/*@C
   DMMoabVecRestoreArray - Restores the read-only direct access array obtained via DMMoabVecGetArray
 
   Collective on MPI_Comm
@@ -374,7 +380,7 @@ PetscErrorCode  DMMoabVecGetArrayRead(DM dm,Vec vec,void* array)
   Input Parameter:
 + dm              - The DMMoab object being set
 . vec             - The Vector whose underlying data is requested
-- array           - The local data array
+. array           - The local data array
 
   Level: intermediate
 

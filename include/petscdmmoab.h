@@ -1,13 +1,13 @@
 #if !defined(__PETSCMOAB_H)
 #define __PETSCMOAB_H
 
-#include <petscvec.h>
-#include <petscmat.h>
-#include <petscdm.h>
+#include <petscvec.h>    /*I      "petscvec.h"    I*/
+#include <petscmat.h>    /*I      "petscmat.h"    I*/
+#include <petscdm.h>     /*I      "petscdm.h"    I*/
 
 #include <string>
-#include <moab/Core.hpp>
-#include <moab/ParallelComm.hpp>
+#include <moab/Core.hpp> /*I      "moab/Core.hpp"    I*/
+#include <moab/ParallelComm.hpp> /*I      "moab/ParallelComm.hpp"    I*/
 
 /* The MBERR macro is used to save typing. It checks a MOAB error code
  * (rval) and calls SETERRQ if not MB_SUCCESS. A message (msg) can

@@ -1,5 +1,5 @@
-#include <petsc-private/dmmbimpl.h> /*I  "petscdm.h"   I*/
-#include <petsc-private/vecimpl.h> /*I  "petscdm.h"   I*/
+#include <petsc-private/dmmbimpl.h> /*I  "petscdmmoab.h"   I*/
+#include <petsc-private/vecimpl.h>
 
 #include <petscdmmoab.h>
 #include <MBTagConventions.hpp>

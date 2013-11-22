@@ -1,8 +1,7 @@
 #if !defined(_DMMBIMPL_H)
 #define _DMMBIMPL_H
 
-#include <petscmat.h>       /*I      "petscmat.h"       I*/
-#include <petscdmmoab.h>    /*I      "petscdmplex.h"    I*/
+#include <petscdmmoab.h>    /*I      "petscdmmoab.h"    I*/
 #include "petsc-private/dmimpl.h"
 
 /* This is an integer map, in addition it is also a container class

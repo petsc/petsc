@@ -1,4 +1,4 @@
-#include <petsc-private/dmmbimpl.h> /*I  "petscdm.h"   I*/
+#include <petsc-private/dmmbimpl.h> /*I  "petscdmmoab.h"   I*/
 #include <petscdmmoab.h>
 
 #undef __FUNCT__
@@ -29,17 +29,17 @@ static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt n
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabOutput"
 /*@C
-   DMMoabOutput - Output the solution vectors that are stored in the DMMoab object as tags 
-   along with the complete mesh data structure in the native H5M format. This output file
-   can be visualized directly with Paraview (if compiled with appropriate plugin) or converted
-   with tools/mbconvert to a VTK or Exodus file.
+  DMMoabOutput - Output the solution vectors that are stored in the DMMoab object as tags 
+  along with the complete mesh data structure in the native H5M format. This output file
+  can be visualized directly with Paraview (if compiled with appropriate plugin) or converted
+  with tools/mbconvert to a VTK or Exodus file.
 
-   This routine can also be used for check-pointing purposes to store a complete history of 
-   the solution along with any other necessary data to restart computations.
+  This routine can also be used for check-pointing purposes to store a complete history of 
+  the solution along with any other necessary data to restart computations.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
+  Input Parameters:
 + dm     - the discretization manager object containing solution in MOAB tags.
 .  filename - the name of the output file: e.g., poisson.h5m
 -  usrwriteopts - the parallel write options needed for serializing a MOAB mesh database. Can be NULL.

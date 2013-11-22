@@ -1,19 +1,19 @@
-#include <petsc-private/dmmbimpl.h> /*I  "petscdm.h"   I*/
+#include <petsc-private/dmmbimpl.h> /*I  "petscdmmoab.h"   I*/
 
 #include <petscdmmoab.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabSetFieldVector"
 /*@C
-   DMMoabSetFieldVector - Sets the vector reference that represents the solution associated
-   with a particular field component.
+  DMMoabSetFieldVector - Sets the vector reference that represents the solution associated
+  with a particular field component.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
+  Input Parameters:
 + dm     - the discretization manager object
-.  ifield - the index of the field as set before via DMMoabSetFieldName.
--  fvec - the Vector solution corresponding to the field (component)
+. ifield - the index of the field as set before via DMMoabSetFieldName.
+. fvec - the Vector solution corresponding to the field (component)
 
   Level: intermediate
 
@@ -66,16 +66,16 @@ PetscErrorCode DMMoabSetFieldVector(DM dm, PetscInt ifield, Vec fvec)
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabSetGlobalFieldVector"
 /*@C
-   DMMoabSetGlobalFieldVector - Sets the vector reference that represents the global solution associated
-   with all fields (components) managed by DM. 
-   A useful utility when updating the DM solution after a solve, to be serialized with the mesh for 
-   checkpointing purposes.
+  DMMoabSetGlobalFieldVector - Sets the vector reference that represents the global solution associated
+  with all fields (components) managed by DM. 
+  A useful utility when updating the DM solution after a solve, to be serialized with the mesh for 
+  checkpointing purposes.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
+  Input Parameters:
 + dm     - the discretization manager object
--  fvec - the global Vector solution corresponding to all the fields managed by DM
+. fvec - the global Vector solution corresponding to all the fields managed by DM
 
   Level: intermediate
 
@@ -162,7 +162,7 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
   Input Parameters:
 + dm     - the discretization manager object
 . numFields - the total number of fields
-- fields - the array containing the names of each field (component); Can be NULL.
+. fields - the array containing the names of each field (component); Can be NULL.
 
   Level: intermediate
 
@@ -204,17 +204,17 @@ PetscErrorCode DMMoabSetFieldNames(DM dm,PetscInt numFields,const char** fields)
 #define __FUNCT__ "DMMoabGetFieldName"
 /*@C
   DMMoabGetFieldName - Gets the names of individual field components in multicomponent
-   vectors associated with a DMDA.
+  vectors associated with a DMDA.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
+  Input Parameter:
 + dm     - the discretization manager object
--  field - field number for the DMMoab (0, 1, ... dof-1), where dof indicates the
+. field - field number for the DMMoab (0, 1, ... dof-1), where dof indicates the
         number of degrees of freedom per node within the DMMoab
 
-   Output Parameter:
-.  fieldName - the name of the field (component)
+  Output Parameter:
+. fieldName - the name of the field (component)
 
   Level: intermediate
 
@@ -246,7 +246,7 @@ PetscErrorCode DMMoabGetFieldName(DM dm, PetscInt field, const char **fieldName)
   Input Parameters:
 + dm     - the discretization manager object
 . field - the field number
-- fieldName - the field (component) name
+. fieldName - the field (component) name
 
   Level: intermediate
   Notes: Can only be called after DMMoabSetFields supplied with correct numFields
@@ -286,15 +286,15 @@ PetscErrorCode DMMoabSetFieldName(DM dm, PetscInt field, const char *fieldName)
   Input Parameters:
 + dm     - the discretization manager object
 . point - the MOAB EntityHandle container which holds the field degree-of-freedom values
-- field - the field (component) index
+. field - the field (component) index
 
-   Output Parameter:
-+  dof - the global degree-of-freedom index corresponding to the field in the discrete representation (Vec, Mat)
+  Output Parameter:
++ dof - the global degree-of-freedom index corresponding to the field in the discrete representation (Vec, Mat)
 
   Level: beginner
 
 .keywords: discretization manager, get, global degree of freedom
-  
+
 .seealso: DMMoabGetFieldDofs(), DMMoabGetFieldDofsLocal()
 @*/
 PetscErrorCode DMMoabGetFieldDof(DM dm,moab::EntityHandle point,PetscInt field,PetscInt* dof)
@@ -322,7 +322,7 @@ PetscErrorCode DMMoabGetFieldDof(DM dm,moab::EntityHandle point,PetscInt field,P
 + dm     - the discretization manager object
 . npoints - the total number of Entities in the points array
 . points - the MOAB EntityHandle container array which holds the field degree-of-freedom values
-- field - the field (component) index
+. field - the field (component) index
 
   Output Parameter:
 + dof - the global degree-of-freedom index array corresponding to the field in the discrete representation (Vec, Mat)
@@ -374,7 +374,7 @@ PetscErrorCode DMMoabGetFieldDofs(DM dm,PetscInt npoints,const moab::EntityHandl
 + dm     - the discretization manager object
 . npoints - the total number of Entities in the points array
 . points - the MOAB EntityHandle container array which holds the field degree-of-freedom values
-- field - the field (component) index
+. field - the field (component) index
 
   Output Parameter:
 + dof - the local degree-of-freedom index array corresponding to the field in the discrete representation (Vec, Mat)

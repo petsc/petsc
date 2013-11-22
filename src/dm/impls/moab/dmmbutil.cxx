@@ -1,5 +1,5 @@
-#include <petsc-private/dmmbimpl.h> /*I  "petscdm.h"   I*/
-#include <petsc-private/vecimpl.h> /*I  "petscdm.h"   I*/
+#include <petsc-private/dmmbimpl.h> /*I  "petscdmmoab.h"   I*/
+#include <petsc-private/vecimpl.h>
 
 #include <petscdmmoab.h>
 #include <MBTagConventions.hpp>
@@ -29,12 +29,10 @@ static PetscErrorCode DMMoabComputeDomainBounds_Private(moab::ParallelComm* pcom
   starts[0]=starts[1]=starts[2]=0;       /* default dimensional element = 1 */
   sizes[0]=sizes[1]=sizes[2]=neleglob;   /* default dimensional element = 1 */
 
-  if(rank < remainder) {
-    /* This process gets "fraction+1" elements */
+  if(rank < remainder) { /* This process gets "fraction+1" elements */
     sizes[dim-1] = (fraction + 1);
     starts[dim-1] = rank * (fraction+1);
-  } else {
-    /* This process gets "fraction" elements */
+  } else { /* This process gets "fraction" elements */
     sizes[dim-1] = fraction;
     starts[dim-1] = (remainder*(fraction+1) + fraction*(rank-remainder));
   }
@@ -42,7 +40,6 @@ static PetscErrorCode DMMoabComputeDomainBounds_Private(moab::ParallelComm* pcom
   for(int i=dim-1; i>=0; --i) {
     ise[2*i]=starts[i];ise[2*i+1]=starts[i]+sizes[i];
   }
-  
   PetscFunctionReturn(0);
 }
 
@@ -98,9 +95,9 @@ static void DMMoab_SetElementConnectivity_Private(PetscInt dim, moab::EntityType
   Input Parameters:
 + comm - The communicator for the DM object
 . dim - The spatial dimension
-- bounds - The bounds of the box specified with [x-left, x-right, y-bottom, y-top, z-bottom, z-top] depending on the spatial dimension
-- nele - The number of discrete elements in each direction
-- user_nghost - The number of ghosted layers needed in the partitioned mesh
+. bounds - The bounds of the box specified with [x-left, x-right, y-bottom, y-top, z-bottom, z-top] depending on the spatial dimension
+. nele - The number of discrete elements in each direction
+. user_nghost - The number of ghosted layers needed in the partitioned mesh
 
   Output Parameter:
 . dm  - The DM object
@@ -358,7 +355,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, const PetscReal*
     i=dim-1;
     merr = mbiface->tag_set_data(geom_tag, &faceset, 1, &i);MBERRNM(merr);
     merr = mbiface->unite_meshset(dmmoab->fileset, faceset);MBERRNM(merr);
-    PetscInfo2(dm, "Found %d %d-Dim quantities.\n", adj.size(), dim-1);
+    PetscInfo2(NULL, "Found %d %d-Dim quantities.\n", adj.size(), dim-1);
 
     if (dim > 2) {
       dim2.clear();
@@ -370,18 +367,12 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, const PetscReal*
       i=dim-2;
       merr = mbiface->tag_set_data(geom_tag, &edgeset, 1, &i);MBERRNM(merr);
       merr = mbiface->unite_meshset(dmmoab->fileset, edgeset);MBERRNM(merr);
-      PetscInfo2(dm, "Found %d %d-Dim quantities.\n", adj.size(), dim-2);
+      PetscInfo2(NULL, "Found %d %d-Dim quantities.\n", adj.size(), dim-2);
     }
   }
 
   /* check the handles */
   merr = pcomm->check_all_shared_handles();MBERRV(mbiface,merr);
-
-#if 0
-  std::stringstream sstr;
-  sstr << "test_" << pcomm->rank() << ".vtk";
-  mbiface->write_mesh(sstr.str().c_str());
-#endif
 
   /* resolve the shared entities by exchanging information to adjacent processors */
   merr = mbiface->get_entities_by_type(dmmoab->fileset,etype,ownedelms,true);MBERRNM(merr);
@@ -442,8 +433,8 @@ PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc
   Input Parameters:
 + comm - The communicator for the DM object
 . dim - The spatial dimension
-- filename - The name of the mesh file to be loaded
-- usrreadopts - The options string to read a MOAB mesh. 
+. filename - The name of the mesh file to be loaded
+. usrreadopts - The options string to read a MOAB mesh. 
   Reference (Parallel Mesh Initialization: http://www.mcs.anl.gov/~fathom/moab-docs/html/contents.html#fivetwo)
 
   Output Parameter:
@@ -452,6 +443,7 @@ PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc
   Level: beginner
 
 .keywords: DM, create
+
 .seealso: DMSetType(), DMCreate(), DMMoabCreateBoxMesh()
 @*/
 PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm,PetscInt dim,const char* filename, const char* usrreadopts, DM *dm)
@@ -515,12 +507,6 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm,PetscInt dim,const char* filenam
   merr = pcomm->collective_sync_partition();MBERR("Collective sync failed", merr);
 
   PetscInfo3(*dm, "MOAB file '%s' was successfully loaded. Found %D vertices and %D elements.\n", filename, verts.size(), elems.size());
-
-#if 0
-  std::stringstream sstr;
-  sstr << "test_" << pcomm->rank() << ".vtk";
-  mbiface->write_mesh(sstr.str().c_str());
-#endif
   PetscFunctionReturn(0);
 }
 
