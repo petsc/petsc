@@ -2,12 +2,8 @@ static char help[] = "Create a box mesh with DMMoab and test defining a tag on t
 
 #include <petscdmmoab.h>
 
-#if defined(PETSC_HAVE_CGNS)
-#include <cgnslib.h>
-#endif
-
 typedef struct {
-  DM            dm;                /* REQUIRED in order to use SNES evaluation functions */
+  DM            dm;                /* DM implementation using the MOAB interface */
   PetscBool     debug;             /* The debugging level */
   PetscLogEvent createMeshEvent;
   /* Domain and mesh definition */
@@ -34,11 +30,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->nfields           = 256;
   options->write_output      = PETSC_FALSE;
   options->input_file[0]     = '\0';
-//  ierr = PetscStrallocpy("ex2.h5m",&options->output_file);CHKERRQ(ierr);
-//  ierr = PetscStrallocpy("TestEX2Var",&options->fieldname);CHKERRQ(ierr);
   ierr = PetscStrcpy(options->output_file,"ex2.h5m");CHKERRQ(ierr);
-//  ierr = PetscMalloc(sizeof(char)*PETSC_MAX_PATH_LEN,options->fieldname[0]);CHKERRQ(ierr);
-//  ierr = PetscStrcpy(options->fieldname[0],"TestEX2Var");CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMMOAB");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-debug", "Enable debug messages", "ex2.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);

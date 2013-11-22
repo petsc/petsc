@@ -117,11 +117,12 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
   dmmoab->numFields = 1;
 
   /* set global ID tag handle */
-  if (!ltog_tag) {
-    merr = dmmoab->mbiface->tag_get_handle(GLOBAL_ID_TAG_NAME, dmmoab->ltog_tag);MBERRNM(merr);
+  if (ltog_tag && *ltog_tag) {
+    ierr = DMMoabSetLocalToGlobalTag(*dmb, *ltog_tag);CHKERRQ(ierr);
   }
   else {
-    ierr = DMMoabSetLocalToGlobalTag(*dmb, *ltog_tag);CHKERRQ(ierr);
+    merr = dmmoab->mbiface->tag_get_handle(GLOBAL_ID_TAG_NAME, dmmoab->ltog_tag);MBERRNM(merr);
+    if (ltog_tag) *ltog_tag = dmmoab->ltog_tag;
   }
 
   /* set the local range of entities (vertices) of interest */
