@@ -402,7 +402,7 @@ PetscErrorCode DMLabelClearValue(DMLabel label, PetscInt point, PetscInt value)
     /* Check whether point exists */
     ierr = PetscFindInt(point, label->stratumSizes[v], &label->points[label->stratumOffsets[v]], &p);CHKERRQ(ierr);
     if (p >= 0) {
-      ierr = PetscMemmove(&label->points[p], &label->points[p+1], (label->stratumSizes[v]-p-1) * sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscMemmove(&label->points[p+label->stratumOffsets[v]], &label->points[p+label->stratumOffsets[v]+1], (label->stratumSizes[v]-p-1) * sizeof(PetscInt));CHKERRQ(ierr);
       --label->stratumSizes[v];
       if (label->bt) {
         if ((point < label->pStart) || (point >= label->pEnd)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %d is not in [%d, %d)", point, label->pStart, label->pEnd);
