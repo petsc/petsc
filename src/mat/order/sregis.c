@@ -9,6 +9,7 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_RCM(Mat,MatOrderingType,IS*,IS*);
 PETSC_EXTERN PetscErrorCode MatGetOrdering_RowLength(Mat,MatOrderingType,IS*,IS*);
 PETSC_EXTERN PetscErrorCode MatGetOrdering_DSC(Mat,MatOrderingType,IS*,IS*);
 PETSC_EXTERN PetscErrorCode MatGetOrdering_WBM(Mat,MatOrderingType,IS*,IS*);
+PETSC_EXTERN PetscErrorCode MatGetOrdering_Spectral(Mat,MatOrderingType,IS*,IS*);
 #if defined(PETSC_HAVE_UMFPACK)
 PETSC_EXTERN PetscErrorCode MatGetOrdering_AMD(Mat,MatOrderingType,IS*,IS*);
 #endif
@@ -53,6 +54,7 @@ PetscErrorCode  MatOrderingRegisterAll(void)
 #if defined(PETSC_HAVE_SUPERLU_DIST)
   ierr = MatOrderingRegister(MATORDERINGWBM,      MatGetOrdering_WBM);CHKERRQ(ierr);
 #endif
+  ierr = MatOrderingRegister(MATORDERINGSPECTRAL, MatGetOrdering_Spectral);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_UMFPACK)
   ierr = MatOrderingRegister(MATORDERINGAMD,      MatGetOrdering_AMD);CHKERRQ(ierr);
 #endif
