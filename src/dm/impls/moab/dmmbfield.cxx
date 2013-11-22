@@ -87,8 +87,8 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
 {
   DM_Moab        *dmmoab;
   moab::Tag     vtag,ntag;
-  const PetscScalar   *varray;
-  PetscScalar   *farray;
+  const PetscScalar   *rarray;
+  PetscScalar   *varray,*farray;
   moab::ErrorCode merr;
   PetscErrorCode  ierr;
   PetscInt i,ifield;
@@ -106,7 +106,7 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
   if (!tag_name.length() && merr !=moab::MB_SUCCESS) {
     /* not a MOAB vector - use VecGetSubVector to get the parts as needed */
 
-    ierr = VecGetArrayRead(fvec,&varray);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(fvec,&rarray);CHKERRQ(ierr);
     for (ifield=0; ifield<dmmoab->numFields; ++ifield) {
 
       /* Create a tag in MOAB mesh to index and keep track of number of Petsc vec tags */
@@ -115,18 +115,18 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
 
       for(i=0;i<dmmoab->nloc;i++) {
         if (dmmoab->bs == 1)
-          farray[i]=varray[ifield*dmmoab->nloc+i];
+          farray[i]=rarray[ifield*dmmoab->nloc+i];
         else
-          farray[i]=varray[i*dmmoab->numFields+ifield];
+          farray[i]=rarray[i*dmmoab->numFields+ifield];
       }
 
       /* use the entity handle and the Dof index to set the right value */
       merr = dmmoab->mbiface->tag_set_data(ntag, *dmmoab->vowned, (const void*)farray);MBERRNM(merr);
     }
-    ierr = VecRestoreArrayRead(fvec,&varray);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(fvec,&rarray);CHKERRQ(ierr);
   }
   else {
-    ierr = PetscMalloc(dmmoab->nloc*dmmoab->bs*sizeof(PetscScalar),&varray);CHKERRQ(ierr);
+    ierr = PetscMalloc(dmmoab->nloc*dmmoab->numFields*sizeof(PetscScalar),&varray);CHKERRQ(ierr);
 
     /* we are using a MOAB Vec - directly copy the tag data to new one */
     merr = dmmoab->mbiface->tag_get_data(vtag, *dmmoab->vowned, (void*)varray);MBERRNM(merr);
@@ -138,7 +138,10 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
 
       /* we are using a MOAB Vec - directly copy the tag data to new one */
       for(i=0; i < dmmoab->nloc; i++) {
-        farray[i] = varray[i*dmmoab->bs+ifield];
+        if (dmmoab->bs == 1)
+          farray[i]=varray[ifield*dmmoab->nloc+i];
+        else
+          farray[i]=varray[i*dmmoab->numFields+ifield];
       }
 
       merr = dmmoab->mbiface->tag_set_data(ntag, *dmmoab->vowned, (const void*)farray);MBERRNM(merr);
@@ -170,7 +173,7 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
   
 .seealso: DMMoabGetFieldName(), DMMoabSetFieldName()
 @*/
-PetscErrorCode DMMoabSetFieldNames(DM dm,PetscInt numFields,const char** fields)
+PetscErrorCode DMMoabSetFieldNames(DM dm,PetscInt numFields,const char* fields[])
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -190,7 +193,7 @@ PetscErrorCode DMMoabSetFieldNames(DM dm,PetscInt numFields,const char** fields)
 
   /* now re-allocate and assign field names  */
   dmmoab->numFields = numFields;
-  ierr = PetscMalloc(sizeof(char*)*numFields,&dmmoab->fieldNames);CHKERRQ(ierr);
+  ierr = PetscMalloc(numFields*sizeof(char*),&dmmoab->fieldNames);CHKERRQ(ierr);
   if (fields) {
     for(i=0; i<dmmoab->numFields; i++) {
       ierr = PetscStrallocpy(fields[i], (char**) &dmmoab->fieldNames[i]);CHKERRQ(ierr);
