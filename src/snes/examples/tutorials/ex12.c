@@ -554,8 +554,9 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
     ierr = DMPlexCreateLabel(dm, bdLabel);CHKERRQ(ierr);
     ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
     ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
-    ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
   }
+  ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
+  ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
   if (user->bcType == DIRICHLET) {ierr  = DMPlexGetStratumIS(dm, bdLabel, 1, &bcPoints[0]);CHKERRQ(ierr);}
   ierr = DMPlexCreateSection(dm, dim, NUM_FIELDS, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldName(section, 0, "potential");CHKERRQ(ierr);
