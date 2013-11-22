@@ -544,9 +544,10 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexConstructCohesiveCells_Internal"
 /*
-  We are adding two kinds of points here:
-    Replicated: Copies of points which exist in the mesh, such as vertices identified across a fault
-    Hybrid:     Entirely new points, such as cohesive cells
+  We are adding three kinds of points here:
+    Replicated:     Copies of points which exist in the mesh, such as vertices identified across a fault
+    Non-replicated: Points which exist on the fault, but are not replicated
+    Hybrid:         Entirely new points, such as cohesive cells
 */
 static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label, DM sdm)
 {
