@@ -64,6 +64,7 @@
 #define MATORDERINGRCM       'rcm'
 #define MATORDERINGQMD       'qmd'
 #define MATORDERINGROWLENGTH 'rowlength'
+#define MATORDERINGWBM       'wbm'
 #define MATORDERINGAMD       'amd'
 !
 !  Matrix types
