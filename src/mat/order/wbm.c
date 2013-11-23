@@ -12,9 +12,9 @@
 #  endif
 
 /* SuperLU_DIST bundles f2ced mc64ad_() from HSL */
-extern PetscInt mc64id_(PetscInt *icntl);
-extern PetscInt mc64ad_(const PetscInt *job, PetscInt *n, PetscInt *ne, const PetscInt *ip, const PetscInt *irn, PetscScalar *a, PetscInt *num,
-                        PetscInt *perm, PetscInt *liw, PetscInt *iw, PetscInt *ldw, PetscScalar *dw, PetscInt *icntl, PetscInt *info);
+PETSC_EXTERN PetscInt mc64id_(PetscInt *icntl);
+PETSC_EXTERN PetscInt mc64ad_(const PetscInt *job, PetscInt *n, PetscInt *ne, const PetscInt *ip, const PetscInt *irn, PetscScalar *a, PetscInt *num,
+                              PetscInt *perm, PetscInt *liw, PetscInt *iw, PetscInt *ldw, PetscScalar *dw, PetscInt *icntl, PetscInt *info);
 #endif
 
 /*
