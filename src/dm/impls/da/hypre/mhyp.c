@@ -226,8 +226,8 @@ PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A,HYPRE_IJMatrix ij)
   ierr = PetscMemcpy(hoffd->i,poffd->i,(pA->A->rmap->n + 1)*sizeof(PetscInt));
   /* need to move the offd column indices (hoffd->j) back to global numbering since hypre is expecting this
      If we hacked a hypre a bit more we might be able to avoid this step */
-  jj  = hoffd->j;
-  pjj = poffd->j;
+  jj  = (PetscInt*) hoffd->j;
+  pjj = (PetscInt*) poffd->j;
   for (i=0; i<poffd->nz; i++) jj[i] = garray[pjj[i]];
   ierr = PetscMemcpy(hoffd->data,poffd->a,poffd->nz*sizeof(PetscScalar));
 
