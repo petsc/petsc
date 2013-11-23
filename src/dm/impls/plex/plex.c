@@ -5499,7 +5499,7 @@ PetscErrorCode DMPlexCreateClosureIndex(DM dm, PetscSection section)
   PetscSection   closureSection;
   IS             closureIS;
   PetscInt       offsets[32], *clIndices;
-  PetscInt       depth, numFields, pStart, pEnd, point, clSize;
+  PetscInt       depth, numFields, pStart, pEnd, sStart, sEnd, point, clSize;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -5507,7 +5507,8 @@ PetscErrorCode DMPlexCreateClosureIndex(DM dm, PetscSection section)
   if (!section) {ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);}
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
-  ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(section, &sStart, &sEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   if (numFields > 31) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Number of fields %D limited to 31", numFields);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) section), &closureSection);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(closureSection, pStart, pEnd);CHKERRQ(ierr);
@@ -5516,7 +5517,7 @@ PetscErrorCode DMPlexCreateClosureIndex(DM dm, PetscSection section)
 
     ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
     for (p = 0; p < numPoints*2; p += 2) {
-      if ((points[p] >= pStart) && (points[p] < pEnd)) {
+      if ((points[p] >= sStart) && (points[p] < sEnd)) {
         ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
         cldof += dof;
       }
@@ -5536,7 +5537,7 @@ PetscErrorCode DMPlexCreateClosureIndex(DM dm, PetscSection section)
     ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
     /* Compress out points not in the section, and create field offsets */
     for (p = 0, q = 0; p < numPoints*2; p += 2) {
-      if ((points[p] >= pStart) && (points[p] < pEnd)) {
+      if ((points[p] >= sStart) && (points[p] < sEnd)) {
         points[q*2]   = points[p];
         points[q*2+1] = points[p+1];
         for (f = 0; f < numFields; ++f) {
@@ -5573,6 +5574,7 @@ PetscErrorCode DMPlexCreateClosureIndex(DM dm, PetscSection section)
       } else {
         if (o >= 0) for (d = 0;     d < dof; ++d) clIndices[cloff+d] = off+d;
         else        for (d = dof-1; d >= 0;  --d) clIndices[cloff+d] = off+d;
+        cloff += dof;
       }
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
