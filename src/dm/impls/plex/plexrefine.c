@@ -27,7 +27,7 @@ PETSC_STATIC_INLINE PetscErrorCode GetDepthEnd_Private(PetscInt depth, PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "CellRefinerGetSizes"
-PetscErrorCode CellRefinerGetSizes(CellRefiner refiner, DM dm, PetscInt depthSize[])
+static PetscErrorCode CellRefinerGetSizes(CellRefiner refiner, DM dm, PetscInt depthSize[])
 {
   PetscInt       cStart, cEnd, cMax, vStart, vEnd, vMax, fStart, fEnd, fMax, eStart, eEnd, eMax;
   PetscErrorCode ierr;
@@ -140,7 +140,7 @@ PETSC_STATIC_INLINE PetscInt GetQuadSubfaceInverse_Static(PetscInt o, PetscInt s
 
 #undef __FUNCT__
 #define __FUNCT__ "CellRefinerSetConeSizes"
-PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
+static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
 {
   PetscInt       depth, cStart, cStartNew, cEnd, cMax, c, vStart, vStartNew, vEnd, vMax, v, fStart, fStartNew, fEnd, fMax, f, eStart, eStartNew, eEnd, eMax, e, r;
   PetscErrorCode ierr;
@@ -717,7 +717,7 @@ PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscInt dept
 
 #undef __FUNCT__
 #define __FUNCT__ "CellRefinerSetCones"
-PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
+static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
 {
   const PetscInt *faces, cellInd[4] = {0, 1, 2, 3};
   PetscInt        cStart,    cEnd,    cMax,    vStart,    vEnd, vMax, fStart,    fEnd,    fMax,    eStart,    eEnd,    eMax;
@@ -3707,7 +3707,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
 
 #undef __FUNCT__
 #define __FUNCT__ "CellRefinerSetCoordinates"
-PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
+static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
 {
   PetscSection   coordSection, coordSectionNew;
   Vec            coordinates, coordinatesNew;
@@ -3841,7 +3841,7 @@ PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, PetscInt de
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateProcessSF"
-PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, PetscSF *sfProcess)
+static PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, PetscSF *sfProcess)
 {
   PetscInt           numRoots, numLeaves, l;
   const PetscInt    *localPoints;
@@ -3877,7 +3877,7 @@ PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, P
 
 #undef __FUNCT__
 #define __FUNCT__ "CellRefinerCreateSF"
-PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
+static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
 {
   PetscSF            sf, sfNew, sfProcess;
   IS                 processRanks;
@@ -4361,7 +4361,7 @@ PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt depthSiz
 
 #undef __FUNCT__
 #define __FUNCT__ "CellRefinerCreateLabels"
-PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
+static PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
 {
   PetscInt       numLabels, l;
   PetscInt       depth, newp, cStart, cEnd, cMax, vStart, vEnd, vMax, fStart, fEnd, fMax, eStart, eEnd, eMax, r;
