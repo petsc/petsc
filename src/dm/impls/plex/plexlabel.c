@@ -80,8 +80,8 @@ static PetscErrorCode DMLabelMakeInvalid_Private(DMLabel label)
   PetscFunctionBegin;
   ierr = PetscMalloc(label->numStrata * sizeof(PetscHashI), &label->ht);CHKERRQ(ierr);
   for (v = 0; v < label->numStrata; ++v) {
-    PetscHashIIter ret, iter;
-    PetscInt       p;
+    PETSC_UNUSED PetscHashIIter ret, iter;
+    PetscInt                    p;
 
     PetscHashICreate(label->ht[v]);
     for (p = label->stratumOffsets[v]; p < label->stratumOffsets[v]+label->stratumSizes[v]; ++p) PetscHashIPut(label->ht[v], label->points[p], ret, iter);
@@ -341,9 +341,9 @@ PetscErrorCode DMLabelGetValue(DMLabel label, PetscInt point, PetscInt *value)
 @*/
 PetscErrorCode DMLabelSetValue(DMLabel label, PetscInt point, PetscInt value)
 {
-  PetscHashIIter iter, ret;
-  PetscInt       v;
-  PetscErrorCode ierr;
+  PETSC_UNUSED PetscHashIIter iter, ret;
+  PetscInt                    v;
+  PetscErrorCode              ierr;
 
   PetscFunctionBegin;
   ierr = DMLabelMakeInvalid_Private(label);CHKERRQ(ierr);
