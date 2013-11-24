@@ -9,16 +9,44 @@ typedef struct {
 } Unit;
 
 #undef __FUNCT__
+#define __FUNCT__ "MakeDatatype"
+static PetscErrorCode MakeDatatype(MPI_Datatype *dtype)
+{
+  PetscErrorCode ierr;
+  MPI_Datatype dtypes[3];
+  PetscMPIInt  lengths[3];
+  MPI_Aint     displs[3];
+
+  PetscFunctionBegin;
+  dtypes[0] = MPIU_INT;
+  dtypes[1] = MPIU_SCALAR;
+  dtypes[2] = MPI_CHAR;
+  lengths[0] = 1;
+  lengths[1] = 1;
+  lengths[2] = 3;
+  displs[0] = offsetof(Unit,rank);
+  displs[1] = offsetof(Unit,value);
+  displs[2] = offsetof(Unit,ok);
+  ierr = MPI_Type_create_struct(3,lengths,displs,dtypes,dtype);CHKERRQ(ierr);
+  ierr = MPI_Type_commit(dtype);CHKERRQ(ierr);
+  {
+    MPI_Aint lb,extent;
+    ierr = MPI_Type_get_extent(*dtype,&lb,&extent);CHKERRQ(ierr);
+    if (extent != sizeof(Unit)) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_LIB,"New type has extent %d != sizeof(Unit) %d",extent,(int)sizeof(Unit));
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    rank,size,*toranks,*fromranks,lengths[3],nto,nfrom;
-  MPI_Aint       displs[3];
+  PetscMPIInt    rank,size,*toranks,*fromranks,nto,nfrom;
   PetscInt       i,n;
   PetscBool      verbose;
   Unit           *todata,*fromdata;
-  MPI_Datatype   dtype,dtypes[3];
+  MPI_Datatype   dtype;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -44,22 +72,7 @@ int main(int argc,char **argv)
     ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
   }
 
-  dtypes[0] = MPIU_INT;
-  dtypes[1] = MPIU_SCALAR;
-  dtypes[2] = MPI_CHAR;
-  lengths[0] = 1;
-  lengths[1] = 1;
-  lengths[2] = 3;
-  displs[0] = offsetof(Unit,rank);
-  displs[1] = offsetof(Unit,value);
-  displs[2] = offsetof(Unit,ok);
-  ierr = MPI_Type_create_struct(3,lengths,displs,dtypes,&dtype);CHKERRQ(ierr);
-  ierr = MPI_Type_commit(&dtype);CHKERRQ(ierr);
-  {
-    MPI_Aint lb,extent;
-    ierr = MPI_Type_get_extent(dtype,&lb,&extent);CHKERRQ(ierr);
-    if (extent != sizeof(Unit)) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_LIB,"New type has extent %d != sizeof(Unit) %d",extent,(int)sizeof(Unit));
-  }
+  ierr = MakeDatatype(&dtype);CHKERRQ(ierr);
 
   ierr = PetscCommBuildTwoSided(PETSC_COMM_WORLD,1,dtype,nto,toranks,todata,&nfrom,&fromranks,&fromdata);CHKERRQ(ierr);
   ierr = MPI_Type_free(&dtype);CHKERRQ(ierr);
