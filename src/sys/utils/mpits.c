@@ -90,11 +90,10 @@ PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm comm,PetscBuildTwoSidedTyp
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscCommBuildTwoSided_Ibarrier"
-static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscInt nto,const PetscMPIInt *toranks,const void *todata,PetscInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
+static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    nrecvs,tag,unitbytes,done;
-  PetscInt       i;
+  PetscMPIInt    nrecvs,tag,unitbytes,done,i;
   char           *tdata;
   MPI_Request    *sendreqs,barrier;
   PetscSegBuffer segrank,segdata;
@@ -149,11 +148,10 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscCommBuildTwoSided_Allreduce"
-static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscInt nto,const PetscMPIInt *toranks,const void *todata,PetscInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
+static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size,*iflags,nrecvs,tag,unitbytes,*franks;
-  PetscInt       i;
+  PetscMPIInt    size,*iflags,nrecvs,tag,unitbytes,*franks,i;
   char           *tdata,*fdata;
   MPI_Request    *reqs,*sendreqs;
   MPI_Status     *statuses;
@@ -192,11 +190,10 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
 #if defined(PETSC_HAVE_MPI_REDUCE_SCATTER_BLOCK)
 #undef __FUNCT__
 #define __FUNCT__ "PetscCommBuildTwoSided_RedScatter"
-static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscInt nto,const PetscMPIInt *toranks,const void *todata,PetscInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
+static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size,*iflags,nrecvs,tag,unitbytes,*franks;
-  PetscInt       i;
+  PetscMPIInt    size,*iflags,nrecvs,tag,unitbytes,*franks,i;
   char           *tdata,*fdata;
   MPI_Request    *reqs,*sendreqs;
   MPI_Status     *statuses;
@@ -271,7 +268,7 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm,PetscMPIIn
 
 .seealso: PetscGatherNumberOfMessages(), PetscGatherMessageLengths()
 @*/
-PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscInt nto,const PetscMPIInt *toranks,const void *todata,PetscInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
+PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
 {
   PetscErrorCode         ierr;
   PetscBuildTwoSidedType buildtype = PETSC_BUILDTWOSIDED_NOTSET;

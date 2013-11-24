@@ -12,9 +12,9 @@ typedef struct {
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    rank,size,*toranks,*fromranks,lengths[2];
+  PetscMPIInt    rank,size,*toranks,*fromranks,lengths[2],nto,nfrom;
   MPI_Aint       displs[2];
-  PetscInt       i,n,nto,nfrom;
+  PetscInt       i,n;
   Unit           *todata,*fromdata;
   MPI_Datatype   dtype,dtypes[2];
 

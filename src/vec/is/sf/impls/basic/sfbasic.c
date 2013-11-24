@@ -42,7 +42,7 @@ struct _n_PetscSFBasicPack {
 
 typedef struct {
   PetscMPIInt      tag;
-  PetscInt         niranks;     /* Number of incoming ranks (ranks accessing my roots) */
+  PetscMPIInt      niranks;     /* Number of incoming ranks (ranks accessing my roots) */
   PetscMPIInt      *iranks;     /* Array of ranks that reference my roots */
   PetscInt         itotal;      /* Total number of graph edges referencing my roots */
   PetscInt         *ioffset;    /* Array of length niranks+1 holding offset in irootloc[] for each rank */
