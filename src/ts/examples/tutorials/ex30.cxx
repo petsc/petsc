@@ -84,10 +84,11 @@ int main(int argc,char **argv)
   ierr = create_app_data(user);CHKERRQ(ierr);
 
     // Create the DM to manage the mesh
-  ierr = DMMoabCreateMoab(user.pcomm->comm(),user.mbint,user.pcomm,user.id_tag,user.owned_vertexes,&dm);CHKERRQ(ierr);
+  ierr = DMMoabCreateMoab(user.pcomm->comm(),user.mbint,user.pcomm,&user.id_tag,user.owned_vertexes,&dm);CHKERRQ(ierr);
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
 
   // Create the solution vector:
-  ierr = DMMoabCreateVector(dm,user.unknowns_tag,user.unknowns_tag_size,*user.owned_vertexes,PETSC_FALSE,PETSC_FALSE,&X);CHKERRQ(ierr);
+  ierr = DMMoabCreateVector(dm,user.unknowns_tag,user.owned_vertexes,PETSC_TRUE,PETSC_FALSE,&X);CHKERRQ(ierr);
     // Create the matrix
   ierr = create_matrix(user, dm, &J);CHKERRQ(ierr);
 
@@ -100,6 +101,7 @@ int main(int argc,char **argv)
   ierr = TSSetRHSFunction(ts,PETSC_NULL,FormRHSFunction,&user);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,PETSC_NULL,FormIFunction,&user);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&user);CHKERRQ(ierr);
+  ierr = TSSetDM(ts,dm);CHKERRQ(ierr);
 
   ftime = 10.0;
   maxsteps = 10000;
@@ -128,14 +130,10 @@ int main(int argc,char **argv)
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %G after %D steps\n",TSConvergedReasons[reason],ftime,steps);CHKERRQ(ierr);
 
-
-  // Print the solution:
-  ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Write out the final mesh
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  merr = user.mbint->write_file("ex30-final.h5m");MBERRNM(merr);
+  merr = user.mbint->write_file("ex30.h5m");MBERRNM(merr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.
@@ -539,22 +537,22 @@ PetscErrorCode create_matrix(_User &user, DM &dm, Mat *J)
   PetscErrorCode ierr;
   moab::ErrorCode merr;
   moab::Tag ltog_tag;
-  moab::Range range;
+  const moab::Range *range;
 
   PetscFunctionBegin;
   ierr = DMMoabGetLocalToGlobalTag(dm,&ltog_tag);CHKERRQ(ierr);
-  ierr = DMMoabGetRange(dm,&range);CHKERRQ(ierr);
+  ierr = DMMoabGetLocalVertices(dm,&range,NULL);CHKERRQ(ierr);
 
   // Create the matrix:
-  ierr = MatCreateBAIJ(user.pcomm->comm(),2,2*range.size(),2*range.size(),
+  ierr = MatCreateBAIJ(user.pcomm->comm(),2,2*range->size(),2*range->size(),
   		       PETSC_DECIDE,PETSC_DECIDE,3, NULL, 3, NULL, J);CHKERRQ(ierr);
 
   // Set local to global numbering using the ltog_tag:
   ISLocalToGlobalMapping ltog;
-  PetscInt               *gindices = new PetscInt[range.size()];
-  merr = user.pcomm->get_moab()->tag_get_data(ltog_tag, range, gindices);MBERRNM(merr);
+  PetscInt               *gindices = new PetscInt[range->size()];
+  merr = user.pcomm->get_moab()->tag_get_data(ltog_tag, *range, gindices);MBERRNM(merr);
 
-  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, range.size(), gindices,PETSC_COPY_VALUES, &ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, range->size(), gindices,PETSC_COPY_VALUES, &ltog);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMappingBlock(*J,ltog,ltog);CHKERRQ(ierr);
 
   // Clean up:
