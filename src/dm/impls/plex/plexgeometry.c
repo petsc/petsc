@@ -213,8 +213,8 @@ static PetscErrorCode DMPlexComputeProjection2Dto1D_Internal(PetscScalar coords[
   const PetscReal r = sqrt(x*x + y*y), c = x/r, s = y/r;
 
   PetscFunctionBegin;
-  R[0] =  c; R[1] = s;
-  R[2] = -s; R[3] = c;
+  R[0] = c; R[1] = -s;
+  R[2] = s; R[3] =  c;
   coords[0] = 0.0;
   coords[1] = r;
   PetscFunctionReturn(0);
