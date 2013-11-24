@@ -806,8 +806,13 @@ static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt dim, 
     centroid[1] = 0.5*PetscRealPart(coords[1] + coords[dim+1]);
   }
   if (normal) {
+    PetscReal norm;
+
     normal[0] = -PetscRealPart(coords[1] - coords[dim+1]);
     normal[1] =  PetscRealPart(coords[0] - coords[dim+0]);
+    norm = PetscSqrtReal(normal[0]*normal[0] + normal[1]*normal[1]);
+    normal[0] /= norm;
+    normal[1] /= norm;
   }
   if (vol) {
     *vol = sqrt(PetscSqr(PetscRealPart(coords[0] - coords[dim+0])) + PetscSqr(PetscRealPart(coords[1] - coords[dim+1])));
