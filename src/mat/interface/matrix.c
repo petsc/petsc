@@ -1387,7 +1387,7 @@ PetscErrorCode  MatSetValuesStencil(Mat mat,PetscInt m,const MatStencil idxm[],P
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetValuesBlockedStencil"
-/*@C
+/*@
    MatSetValuesBlockedStencil - Inserts or adds a block of values into a matrix.
      Using structured grid indexing
 
