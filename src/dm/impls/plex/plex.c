@@ -2903,7 +2903,7 @@ PetscErrorCode DMPlexDistributeData(DM dm, PetscSF pointSF, PetscSection origina
 {
   PetscSF        fieldSF;
   PetscInt      *remoteOffsets, fieldSize;
-  PetscMPIInt    dataSize;
+  MPI_Aint       lb,dataSize;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2911,7 +2911,8 @@ PetscErrorCode DMPlexDistributeData(DM dm, PetscSF pointSF, PetscSection origina
   ierr = PetscSFDistributeSection(pointSF, originalSection, &remoteOffsets, newSection);CHKERRQ(ierr);
 
   ierr = PetscSectionGetStorageSize(newSection, &fieldSize);CHKERRQ(ierr);
-  ierr = MPI_Type_size(datatype, &dataSize);CHKERRQ(ierr);
+  ierr = MPI_Type_get_extent(datatype, &lb, &dataSize);CHKERRQ(ierr);
+  if (lb != 0) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
   ierr = PetscMalloc(fieldSize * dataSize, newData);CHKERRQ(ierr);
 
   ierr = PetscSFCreateSectionSF(pointSF, originalSection, remoteOffsets, newSection, &fieldSF);CHKERRQ(ierr);
