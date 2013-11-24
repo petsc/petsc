@@ -126,10 +126,19 @@ runex7:
 	   ${RM} -f ex7.tmp ex7.tmp
 
 runex8:
-	-@${MPIEXEC} -n 1 ./ex8 > ex8.tmp 2>&1;\
-	   if (${DIFF} output/ex8.out ex8.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex8_1, diffs above \n========================================="; fi; \
-	   ${RM} -f ex8.tmp ex8.tmp
+	-@${MPIEXEC} -n 4 ./ex8 -verbose -build_twosided allreduce > ex8.tmp 2>&1;\
+	   ${DIFF} output/ex8_1.out ex8.tmp || printf "${PWD}\nPossible problem with with ex8, diffs above\n=========================================\n"; \
+	   ${RM} -f ex8.tmp
+
+runex8_redscatter:
+	-@${MPIEXEC} -n 4 ./ex8 -verbose -build_twosided redscatter > ex8.tmp 2>&1;\
+	   ${DIFF} output/ex8_1.out ex8.tmp || printf "${PWD}\nPossible problem with with ex8_redscatter, diffs above\n=========================================\n"; \
+	   ${RM} -f ex8.tmp
+
+runex8_ibarrier:
+	-@${MPIEXEC} -n 4 ./ex8 -verbose -build_twosided ibarrier > ex8.tmp 2>&1;\
+	   ${DIFF} output/ex8_1.out ex8.tmp || printf "${PWD}\nPossible problem with with ex8_redscatter, diffs above\n=========================================\n"; \
+	   ${RM} -f ex8.tmp
 
 runex10:
 	-@${MPIEXEC} -n 1 ./ex10 > ex10_1.tmp 2>&1;\
@@ -169,7 +178,7 @@ runex23:
 	   ${RM} -f ex23.tmp
 
 
-TESTEXAMPLES_C		       = ex13.PETSc runex13 ex13.rm ex19.PETSc runex19 ex19.rm \
+TESTEXAMPLES_C		       = ex8.PETSc runex8 ex8.rm ex13.PETSc runex13 ex13.rm ex19.PETSc runex19 ex19.rm \
                                  ex20.PETSc runex20 runex20_2 runex20_3 ex20.rm  ex21.PETSc ex21.rm \
                                  ex22.PETSc runex22 ex22.rm ex24.PETSc ex24.rm
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm
