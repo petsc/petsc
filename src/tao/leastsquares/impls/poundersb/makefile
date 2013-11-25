@@ -5,7 +5,7 @@ FFLAGS   =
 SOURCEC  = poundersb.c
 SOURCEF  = 
 SOURCEH  = poundersb.h 
-LIBBASE  = libtaosolver
+LIBBASE  = libtao
 MANSEC   = 
 LOCDIR   = src/tao/leastsquares/impls/poundersb/
 
