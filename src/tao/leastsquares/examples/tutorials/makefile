@@ -18,18 +18,18 @@ include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
 
-chwirut1: chwirut1.o tao_chkopts
+chwirut1: chwirut1.o chkopts
 	-${CLINKER} -o chwirut1 chwirut1.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} chwirut1.o
 
-chwirut2: chwirut2.o tao_chkopts
+chwirut2: chwirut2.o chkopts
 	-${CLINKER} -o chwirut2 chwirut2.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} chwirut2.o
 
-chwirut1f: chwirut1f.o tao_chkopts
+chwirut1f: chwirut1f.o chkopts
 	-${FLINKER} -o chwirut1f chwirut1f.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} chwirut1f.o
 
-chwirut2f: chwirut2f.o tao_chkopts
+chwirut2f: chwirut2f.o chkopts
 	-${FLINKER} -o chwirut2f chwirut2f.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} chwirut2f.o

@@ -18,23 +18,23 @@ include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
 
-istest: istest.o tao_chkopts
+istest: istest.o chkopts
 	-${CLINKER} -o istest istest.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} istest.o
 
-maros: maros.o tao_chkopts
+maros: maros.o chkopts
 	-${CLINKER} -o maros maros.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} maros.o
 
-toy: toy.o tao_chkopts
+toy: toy.o chkopts
 	-${CLINKER} -o toy toy.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} toy.o
 
-toyf: toyf.o tao_chkopts
+toyf: toyf.o chkopts
 	-${CLINKER} -o toyf toyf.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} toyf.o
 
-polygon1: polygon1.o tao_chkopts
+polygon1: polygon1.o chkopts
 	-${CLINKER} -o polygon1 polygon1.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} polygon1.o
 

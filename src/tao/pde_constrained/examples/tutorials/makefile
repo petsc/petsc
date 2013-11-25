@@ -15,14 +15,14 @@ include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
 
-parabolic: parabolic.o tao_chkopts
+parabolic: parabolic.o chkopts
 	-${CLINKER} -o parabolic parabolic.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} parabolic.o
 
-hyperbolic: hyperbolic.o tao_chkopts
+hyperbolic: hyperbolic.o chkopts
 	-${CLINKER} -o hyperbolic hyperbolic.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} hyperbolic.o
 
-elliptic: elliptic.o tao_chkopts
+elliptic: elliptic.o chkopts
 	-${CLINKER} -o elliptic elliptic.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} elliptic.o
