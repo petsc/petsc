@@ -19,10 +19,10 @@ include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
 
 minsurf1: minsurf1.o chkopts
-	-${CLINKER} -o minsurf1 minsurf1.o ${TAO_LIB} ${PETSC_LIB}
+	-${CLINKER} -o minsurf1 minsurf1.o ${PETSC_TAO_LIB}
 	${RM} minsurf1.o
 
 blackscholes: blackscholes.o chkopts
-	-${CLINKER} -o blackscholes blackscholes.o ${TAO_LIB} ${PETSC_LIB}
+	-${CLINKER} -o blackscholes blackscholes.o ${PETSC_TAO_LIB}
 	${RM} blackscholes.o
 

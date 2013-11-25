@@ -20,31 +20,31 @@ include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
 
 rosenbrock1: rosenbrock1.o chkopts
-	-${CLINKER} -o rosenbrock1 rosenbrock1.o ${TAO_LIB} ${PETSC_LIB}
+	-${CLINKER} -o rosenbrock1 rosenbrock1.o ${PETSC_TAO_LIB}
 	${RM} rosenbrock1.o
 
 eptorsion2: eptorsion2.o chkopts
-	-${CLINKER} -o eptorsion2 eptorsion2.o ${TAO_LIB} ${PETSC_LIB}
+	-${CLINKER} -o eptorsion2 eptorsion2.o ${PETSC_TAO_LIB}
 	${RM} eptorsion2.o
 
 eptorsion1: eptorsion1.o chkopts
-	-${CLINKER} -o eptorsion1 eptorsion1.o ${TAO_LIB} ${PETSC_LIB}
+	-${CLINKER} -o eptorsion1 eptorsion1.o ${PETSC_TAO_LIB}
 	${RM} eptorsion1.o
 
 rosenbrock1f: rosenbrock1f.o chkopts
-	-${FLINKER} -o rosenbrock1f rosenbrock1f.o ${TAO_LIB} ${PETSC_LIB} 
+	-${FLINKER} -o rosenbrock1f rosenbrock1f.o ${PETSC_TAO_LIB} 
 	${RM} rosenbrock1f.o
 
 eptorsion2f: eptorsion2f.o chkopts
-	-${FLINKER} -o eptorsion2f eptorsion2f.o ${TAO_LIB} ${PETSC_LIB}
+	-${FLINKER} -o eptorsion2f eptorsion2f.o ${PETSC_TAO_LIB}
 	${RM} eptorsion2f.o
 
 minsurf1: minsurf1.o chkopts
-	-${CLINKER} -o minsurf1 minsurf1.o ${TAO_LIB} ${PETSC_LIB}
+	-${CLINKER} -o minsurf1 minsurf1.o ${PETSC_TAO_LIB}
 	${RM} minsurf1.o
 
 minsurf2: minsurf2.o chkopts
-	-${CLINKER} -o minsurf2 minsurf2.o ${TAO_LIB} ${PETSC_LIB}
+	-${CLINKER} -o minsurf2 minsurf2.o ${PETSC_TAO_LIB}
 	${RM} minsurf2.o
 
 
