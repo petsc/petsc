@@ -12,5 +12,7 @@ LIBBASE  = libtao
 MANSEC   = 
 LOCDIR   = src/complementarity/impls/ssls/
 
-include ${TAO_DIR}/conf/tao_base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/conf/test
 

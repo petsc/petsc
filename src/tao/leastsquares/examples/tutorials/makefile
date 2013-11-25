@@ -14,7 +14,9 @@ TUTORIALS        = chwirut1.c chwirut2.c chwirut1f.F chwirut2f.F
 DOCS		 = 
 DIRS		 = 
 
-include ${TAO_DIR}/conf/tao_base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/conf/test
 
 chwirut1: chwirut1.o tao_chkopts
 	-${CLINKER} -o chwirut1 chwirut1.o ${TAO_LIB} ${PETSC_LIB}

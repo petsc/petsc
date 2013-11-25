@@ -3,4 +3,6 @@ ALL: lib
 DIRS = ssls asls # isls rscs
 LOCDIR = src/complementarity/impls/
 
-include ${TAO_DIR}/conf/tao_base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/conf/test

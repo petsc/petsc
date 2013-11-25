@@ -12,4 +12,6 @@ MANSEC   = taosolver
 LOCDIR   = src/interface/
 
 
-include ${TAO_DIR}/conf/tao_base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/conf/test

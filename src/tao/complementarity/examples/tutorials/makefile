@@ -14,7 +14,9 @@ MANSEC		 = Complementarity
 DOCS		 = 
 DIRS		 = 
 
-include ${TAO_DIR}/conf/tao_base
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/conf/test
 
 minsurf1: minsurf1.o tao_chkopts
 	-${CLINKER} -o minsurf1 minsurf1.o ${TAO_LIB} ${PETSC_LIB}
