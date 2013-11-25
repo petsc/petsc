@@ -145,6 +145,11 @@ runex8_f:
 	   ${DIFF} output/ex8_1.out ex8.tmp || printf "${PWD}\nPossible problem with with ex8_f, diffs above\n=========================================\n"; \
 	   ${RM} -f ex8.tmp
 
+runex8_f_ibarrier:
+	-@${MPIEXEC} -n 4 ./ex8 -verbose -build_twosided_f -build_twosided ibarrier > ex8.tmp 2>&1;\
+	   ${DIFF} output/ex8_1.out ex8.tmp || printf "${PWD}\nPossible problem with with ex8_f, diffs above\n=========================================\n"; \
+	   ${RM} -f ex8.tmp
+
 runex10:
 	-@${MPIEXEC} -n 1 ./ex10 > ex10_1.tmp 2>&1;\
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
