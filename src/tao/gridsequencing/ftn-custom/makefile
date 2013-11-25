@@ -4,7 +4,6 @@ ALL: lib
 CFLAGS=
 FFLAGS=
 SOURCEC=ztaodmf.c
-OBJSC =ztaodmf.o
 SOURCEF=
 SOURCEH=
 DIR=

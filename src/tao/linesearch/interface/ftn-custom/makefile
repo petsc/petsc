@@ -3,7 +3,6 @@ ALL: lib
 CFLAGS=
 FFLAGS=
 SOURCEC=ztaolinesearchf.c
-OBJSC =ztaolinesearchf.o
 SOURCEF=
 SOURCEH=
 DIR=

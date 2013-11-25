@@ -4,7 +4,6 @@ ALL: lib
 CFLAGS=
 FFLAGS=
 SOURCEC=ztaosolverf.c ztaof.c
-OBJSC =ztaosolverf.o ztaof.o
 SOURCEF=
 SOURCEH=
 DIR=
