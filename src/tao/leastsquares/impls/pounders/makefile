@@ -9,7 +9,7 @@ OBJSC    = pounders.o gqt.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = 
-LOCDIR   = src/leastsquares/impls/pounders/
+LOCDIR   = src/tao/leastsquares/impls/pounders/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

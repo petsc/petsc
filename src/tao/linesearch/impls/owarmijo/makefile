@@ -10,7 +10,7 @@ OBJSC    = owarmijo.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = 
-LOCDIR   = src/linesearch/impls/owarmijo/
+LOCDIR   = src/tao/linesearch/impls/owarmijo/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

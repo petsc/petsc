@@ -8,7 +8,7 @@ SOURCEF=
 SOURCEH=
 DIR=
 LIBBASE=libtao
-LOCDIR=src/linesearch/interface/ftn-custom/
+LOCDIR=src/tao/linesearch/interface/ftn-custom/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

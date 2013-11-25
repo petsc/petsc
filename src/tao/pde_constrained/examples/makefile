@@ -1,6 +1,6 @@
 ALL:
 
-LOCDIR	 = src/pde_constrained/examples/
+LOCDIR	 = src/tao/pde_constrained/examples/
 DIRS	 = tests tutorials
 
 include ${PETSC_DIR}/conf/variables

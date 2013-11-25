@@ -1,5 +1,5 @@
 DIRS     = interface util unconstrained constrained bound complementarity linesearch matrix leastsquares pde_constrained
-LOCDIR   = src/
+LOCDIR   = src/tao/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

@@ -10,7 +10,7 @@ OBJSC    = ssls.o ssils.o ssfls.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = 
-LOCDIR   = src/complementarity/impls/ssls/
+LOCDIR   = src/tao/complementarity/impls/ssls/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

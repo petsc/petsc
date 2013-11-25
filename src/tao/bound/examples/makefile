@@ -1,6 +1,6 @@
 ALL:
 
-LOCDIR	 = src/bound/examples/
+LOCDIR	 = src/tao/bound/examples/
 DIRS	 = tutorials
 
 

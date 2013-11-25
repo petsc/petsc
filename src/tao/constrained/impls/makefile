@@ -1,7 +1,7 @@
 ALL: lib
 
 DIRS     = ipm
-LOCDIR   = src/constrained/impls/
+LOCDIR   = src/tao/constrained/impls/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

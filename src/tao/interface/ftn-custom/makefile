@@ -9,7 +9,7 @@ SOURCEF=
 SOURCEH=
 DIR=
 LIBBASE=libtao
-LOCDIR=src/interface/ftn-custom/
+LOCDIR=src/tao/interface/ftn-custom/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

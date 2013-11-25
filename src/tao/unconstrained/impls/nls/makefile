@@ -9,7 +9,7 @@ OBJSC    = nls.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = 
-LOCDIR   = src/unconstrained/impls/nls/
+LOCDIR   = src/tao/unconstrained/impls/nls/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

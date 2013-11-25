@@ -9,7 +9,7 @@ OBJSC    = cg.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = 
-LOCDIR   = src/unconstrained/impls/cg/
+LOCDIR   = src/tao/unconstrained/impls/cg/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

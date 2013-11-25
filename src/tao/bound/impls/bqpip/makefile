@@ -9,7 +9,7 @@ OBJSC    = bqpip.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = 
-LOCDIR   = src/bound/impls/bqpip/
+LOCDIR   = src/tao/bound/impls/bqpip/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

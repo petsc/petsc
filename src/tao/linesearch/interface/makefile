@@ -10,7 +10,7 @@ OBJSC    = linesearch.o dlregis_taolinesearch.o
 OBJSF    =
 LIBBASE  = libtao
 MANSEC   = taolinesearch
-LOCDIR   = src/linesearch/interface/
+LOCDIR   = src/tao/linesearch/interface/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

@@ -10,7 +10,7 @@ OBJSC    = morethuente.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = 
-LOCDIR   = src/linesearch/impls/morethuente/
+LOCDIR   = src/tao/linesearch/impls/morethuente/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

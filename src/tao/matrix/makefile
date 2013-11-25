@@ -10,7 +10,7 @@ OBJSC    =  lmvmmat.o adamat.o submatfree.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = taosolver
-LOCDIR   = src/matrix/
+LOCDIR   = src/tao/matrix/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

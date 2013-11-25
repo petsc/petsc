@@ -13,7 +13,7 @@ LIBBASE  = libtao
 MANSEC   = taosolver
 DIRS     = 
 EDIRS    = 
-LOCDIR   = src/util/
+LOCDIR   = src/tao/util/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

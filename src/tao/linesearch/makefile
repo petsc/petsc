@@ -3,7 +3,7 @@ ALL: lib
 
 SOURCEH  = 
 DIRS     = impls  interface
-LOCDIR   = src/linesearch/
+LOCDIR   = src/tao/linesearch/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

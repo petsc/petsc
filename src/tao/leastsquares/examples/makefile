@@ -1,7 +1,7 @@
 
 ALL:
 
-LOCDIR	 = src/leastsquares/examples/
+LOCDIR	 = src/tao/leastsquares/examples/
 DIRS	 = tutorials
 
 

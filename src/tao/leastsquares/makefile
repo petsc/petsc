@@ -2,7 +2,7 @@ ALL: lib
 
 SOURCEH  = 
 DIRS     = impls examples
-LOCDIR   = src/leastsquares/
+LOCDIR   = src/tao/leastsquares/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

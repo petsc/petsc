@@ -9,7 +9,7 @@ OBJSC    = ipm.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = 
-LOCDIR   = src/unconstrained/impls/ipm/
+LOCDIR   = src/tao/constrained/impls/ipm/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

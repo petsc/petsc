@@ -9,7 +9,7 @@ OBJSC    = poundersb.o
 OBJSF    = 
 LIBBASE  = libtaosolver
 MANSEC   = 
-LOCDIR   = src/leastsquares/impls/poundersb/
+LOCDIR   = src/tao/leastsquares/impls/poundersb/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

@@ -9,7 +9,7 @@ OBJSC    = neldermead.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = 
-LOCDIR   = src/unconstrained/impls/neldermead/
+LOCDIR   = src/tao/unconstrained/impls/neldermead/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

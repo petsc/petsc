@@ -9,7 +9,7 @@ OBJSC    = pounder.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = 
-LOCDIR   = src/unconstrained/impls/pounder/
+LOCDIR   = src/tao/unconstrained/impls/pounder/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

@@ -10,7 +10,7 @@ OBJSC    = asils.o asfls.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = solver
-LOCDIR   = src/complementarity/impls/asls/
+LOCDIR   = src/tao/complementarity/impls/asls/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

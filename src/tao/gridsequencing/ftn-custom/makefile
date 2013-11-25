@@ -9,7 +9,7 @@ SOURCEF=
 SOURCEH=
 DIR=
 LIBBASE=libtao
-LOCDIR=src/gridsequencing/ftn-custom/
+LOCDIR=src/tao/gridsequencing/ftn-custom/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

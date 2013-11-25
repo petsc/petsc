@@ -4,7 +4,7 @@ CFLAGS	        =
 FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =	 
-LOCDIR          = src/unconstrained/examples/tests/
+LOCDIR          = src/tao/unconstrained/examples/tests/
 
 TESTEXAMPLES_1  = 
 TESTEXAMPLES_2  = 

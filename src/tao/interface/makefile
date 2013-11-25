@@ -9,7 +9,7 @@ OBJSC    = taosolver.o taosolver_fg.o taosolverregi.o taosolver_hj.o taosolver_b
 OBJSF    =
 LIBBASE  = libtao
 MANSEC   = taosolver
-LOCDIR   = src/interface/
+LOCDIR   = src/tao/interface/
 
 
 include ${PETSC_DIR}/conf/variables

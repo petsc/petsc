@@ -9,7 +9,7 @@ OBJSC    = tron.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = 
-LOCDIR   = src/bound/impls/tron/
+LOCDIR   = src/tao/bound/impls/tron/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

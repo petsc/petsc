@@ -2,7 +2,7 @@ ALL: lib
 
 SOURCEH  = 
 DIRS     = pounders 
-LOCDIR   = src/pounders/impls/
+LOCDIR   = src/tao/leastsquares/impls/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

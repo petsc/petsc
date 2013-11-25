@@ -10,7 +10,7 @@ OBJSC    = gpcglinesearch.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = 
-LOCDIR   = src/linesearch/impls/gpcglinesearch/
+LOCDIR   = src/tao/linesearch/impls/gpcglinesearch/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

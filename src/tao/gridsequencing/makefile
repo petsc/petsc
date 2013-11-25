@@ -10,7 +10,7 @@ OBJSC    = taodm.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = 
-LOCDIR   = src/gridsequencing/
+LOCDIR   = src/tao/gridsequencing/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

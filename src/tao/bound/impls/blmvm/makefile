@@ -9,7 +9,7 @@ OBJSC    = blmvm.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = 
-LOCDIR   = src/bound/impls/blmvm/
+LOCDIR   = src/tao/bound/impls/blmvm/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

@@ -9,7 +9,7 @@ OBJSC    = lcl.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = 
-LOCDIR   = src/pde_constrained/impls/lcl/
+LOCDIR   = src/tao/pde_constrained/impls/lcl/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

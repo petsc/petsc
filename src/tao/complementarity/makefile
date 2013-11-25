@@ -2,7 +2,7 @@ ALL: lib
 
 SOURCEH  = 
 DIRS     = impls examples
-LOCDIR   = src/complementarity/
+LOCDIR   = src/tao/complementarity/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

@@ -1,6 +1,6 @@
 ALL:
 
-LOCDIR	 = src/unconstrained/examples/
+LOCDIR	 = src/tao/unconstrained/examples/
 DIRS	 = tutorials
 
 

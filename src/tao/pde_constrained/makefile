@@ -2,7 +2,7 @@ ALL: lib
 
 SOURCEH  = 
 DIRS     = impls  examples
-LOCDIR   = src/pde_constrained
+LOCDIR   = src/tao/pde_constrained/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

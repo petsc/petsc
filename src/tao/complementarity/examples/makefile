@@ -1,6 +1,6 @@
 ALL:
 
-LOCDIR	 = src/complementarity/examples/
+LOCDIR	 = src/tao/complementarity/examples/
 DIRS	 = tutorials
 
 

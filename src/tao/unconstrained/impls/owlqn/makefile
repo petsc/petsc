@@ -11,7 +11,7 @@ OBJSC    = owlqn.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = 
-LOCDIR   = src/unconstrained/impls/owlqn/
+LOCDIR   = src/tao/unconstrained/impls/owlqn/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

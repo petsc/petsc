@@ -9,7 +9,7 @@ OBJSC    = projection.o  isutil.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = 
-LOCDIR   = src/bound/utils/
+LOCDIR   = src/tao/bound/utils/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

@@ -9,7 +9,7 @@ OBJSC    = sqpcon.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = 
-LOCDIR   = src/pde_constrained/impls/sqpcon/
+LOCDIR   = src/tao/pde_constrained/impls/sqpcon/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
