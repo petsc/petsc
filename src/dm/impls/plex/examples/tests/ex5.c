@@ -508,6 +508,15 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
     break;
     case 1:
     {
+      /* Cell Adjacency Graph:
+        0 -- { 8, 13, 21, 24} --> 1
+        0 -- {20, 21, 23, 24} --> 5 F
+        1 -- {10, 15, 21, 24} --> 2
+        1 -- {13, 14, 15, 24} --> 6
+        2 -- {21, 22, 24, 25} --> 4 F
+        3 -- {21, 24, 30, 35} --> 4
+        3 -- {21, 24, 28, 33} --> 5
+       */
       PetscInt    numPoints[2]         = {30, 7};
       PetscInt    coneSize[37]         = {8,8,8,8,8,8,8, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
       PetscInt    cones[56]            = { 8, 21, 20,  7, 13, 12, 23, 24,
@@ -530,6 +539,33 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
       ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
       ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
       for(p = 0; p < 6; ++p) {ierr = DMPlexSetLabelValue(idm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
+      ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
+      ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
+      ierr = DMPlexCheckSymmetry(idm);CHKERRQ(ierr);
+      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      *dm  = idm;
+    }
+    break;
+    case 2:
+    {
+      /* Buried fault edge */
+      PetscInt    numPoints[2]         = {18, 4};
+      PetscInt    coneSize[22]         = {8,8,8,8, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+      PetscInt    cones[32]            = { 4,  5,  8,  7, 13, 16, 17, 14,
+                                           5,  6,  9,  8, 14, 17, 18, 15,
+                                           7,  8, 11, 10, 16, 19, 20, 17,
+                                           8,  9, 12, 11, 17, 20, 21, 18};
+      PetscInt    coneOrientations[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+      PetscScalar vertexCoords[54]     = {-2.0, -2.0,  0.0,  -2.0,  0.0,  0.0,  -2.0,  2.0,  0.0,   0.0, -2.0,  0.0,   0.0,  0.0,  0.0,   0.0,  2.0,  0.0,
+                                           2.0, -2.0,  0.0,   2.0,  0.0,  0.0,   2.0,  2.0,  0.0,  -2.0, -2.0,  2.0,  -2.0,  0.0,  2.0,  -2.0,  2.0,  2.0,
+                                           0.0, -2.0,  2.0,   0.0,  0.0,  2.0,   0.0,  2.0,  2.0,   2.0, -2.0,  2.0,   2.0,  0.0,  2.0,   2.0,  2.0,  2.0};
+      PetscInt    faultPoints[4]       = {7, 8, 16, 17};
+
+      ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+      ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
+      ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
+      ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
+      for(p = 0; p < 4; ++p) {ierr = DMPlexSetLabelValue(idm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
       ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
       ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
       ierr = DMPlexCheckSymmetry(idm);CHKERRQ(ierr);
