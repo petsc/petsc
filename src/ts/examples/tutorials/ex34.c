@@ -30,6 +30,7 @@ static PetscErrorCode FormInitialSolution(TS,Vec,void*);
 int main(int argc,char **argv)
 {
   TS                ts;         /* time integrator */
+  TSAdapt           adapt;
   Vec               X;          /* solution, residual vectors */
   Mat               J;          /* Jacobian matrix */
   PetscInt          steps,maxsteps;
@@ -63,6 +64,8 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
+  ierr = TSARKIMEXSetFullyImplicit(ts,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = TSARKIMEXSetType(ts,TSARKIMEX4);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,NULL,FormRHSFunction,&user);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ts,J,J,FormRHSJacobian,&user);CHKERRQ(ierr);
 
@@ -77,6 +80,9 @@ int main(int argc,char **argv)
   ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
   dt   = 1e-10;                 /* Initial time step */
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
+  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
+  ierr = TSAdaptSetStepLimits(adapt,1e-12,1e-4);CHKERRQ(ierr); /* Also available with -ts_adapt_dt_min/-ts_adapt_dt_max */
+  ierr = TSSetMaxSNESFailures(ts,-1);CHKERRQ(ierr);            /* Retry step an unlimited number of times */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
