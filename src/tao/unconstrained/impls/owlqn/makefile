@@ -7,7 +7,7 @@ FFLAGS   =
 SOURCEC  = owlqn.c
 SOURCEF  = 
 SOURCEH  = owlqn.h
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/unconstrained/impls/owlqn/
 

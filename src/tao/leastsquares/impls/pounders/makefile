@@ -5,7 +5,7 @@ FFLAGS   =
 SOURCEC  = pounders.c gqt.c
 SOURCEF  = 
 SOURCEH  = pounders.h 
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/leastsquares/impls/pounders/
 

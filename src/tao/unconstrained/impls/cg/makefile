@@ -5,7 +5,7 @@ FFLAGS   =
 SOURCEC  = taocg.c
 SOURCEF  = 
 SOURCEH  = taocg.h
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/unconstrained/impls/cg/
 

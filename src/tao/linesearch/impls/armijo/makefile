@@ -6,7 +6,7 @@ FFLAGS   =
 SOURCEC  = armijo.c
 SOURCEF  = 
 SOURCEH  = armijo.h
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/linesearch/impls/armijo/
 

@@ -6,7 +6,7 @@ FFLAGS   =
 SOURCEC  = taolinesearch.c dlregis_taolinesearch.c
 SOURCEF  =
 SOURCEH  = 
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = taolinesearch
 LOCDIR   = src/tao/linesearch/interface/
 

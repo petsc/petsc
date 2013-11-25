@@ -6,7 +6,7 @@ FFLAGS   =
 SOURCEC  = unit.c
 SOURCEF  = 
 SOURCEH  = unit.h
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/linesearch/impls/unit/
 

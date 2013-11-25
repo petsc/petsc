@@ -5,7 +5,7 @@ FFLAGS   =
 SOURCEC  = nls.c
 SOURCEF  = 
 SOURCEH  = nls.h
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/unconstrained/impls/nls/
 

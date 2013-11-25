@@ -5,7 +5,7 @@ FFLAGS   =
 SOURCEC  = neldermead.c
 SOURCEF  = 
 SOURCEH  = neldermead.h
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/unconstrained/impls/neldermead/
 

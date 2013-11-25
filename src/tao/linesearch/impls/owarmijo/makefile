@@ -6,7 +6,7 @@ FFLAGS   =
 SOURCEC  = owarmijo.c
 SOURCEF  = 
 SOURCEH  = owarmijo.h
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/linesearch/impls/owarmijo/
 

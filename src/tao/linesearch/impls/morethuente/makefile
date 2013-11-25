@@ -6,7 +6,7 @@ FFLAGS   =
 SOURCEC  = morethuente.c
 SOURCEF  = 
 SOURCEH  = morethuente.h
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/linesearch/impls/morethuente/
 

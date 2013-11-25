@@ -6,7 +6,7 @@ FFLAGS   =
 SOURCEC  = asils.c asfls.c
 SOURCEF  = 
 SOURCEH  = 
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = solver
 LOCDIR   = src/tao/complementarity/impls/asls/
 

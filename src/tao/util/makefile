@@ -7,7 +7,7 @@ CPPFLAGS = -DTAO_LIB_DIR='"${TAO_LIB_DIR}"'
 SOURCEC  = tao_util.c
 SOURCEF  =
 SOURCEH  = 
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = taosolver
 DIRS     = 
 EDIRS    = 

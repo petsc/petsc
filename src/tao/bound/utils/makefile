@@ -5,7 +5,7 @@ FFLAGS   =
 SOURCEC  = projection.c  isutil.c
 SOURCEF  = 
 SOURCEH  = 
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/bound/utils/
 

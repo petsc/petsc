@@ -5,7 +5,7 @@ FFLAGS   =
 SOURCEC  = tron.c
 SOURCEF  = 
 SOURCEH  = tron.h
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/bound/impls/tron/
 

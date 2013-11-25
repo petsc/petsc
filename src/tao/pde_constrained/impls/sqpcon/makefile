@@ -5,7 +5,7 @@ FFLAGS   =
 SOURCEC  = sqpcon.c
 SOURCEF  = 
 SOURCEH  = sqpcon.h
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/pde_constrained/impls/sqpcon/
 

@@ -5,7 +5,7 @@ FFLAGS   =
 SOURCEC  = gpcg.c
 SOURCEF  = 
 SOURCEH  = gpcg.h
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/bound/impls/gpcg/
 

@@ -6,7 +6,7 @@ SOURCEC=ztaolinesearchf.c
 SOURCEF=
 SOURCEH=
 DIR=
-LIBBASE=libtao
+LIBBASE=libpetsctao
 LOCDIR=src/tao/linesearch/interface/ftn-custom/
 
 include ${PETSC_DIR}/conf/variables

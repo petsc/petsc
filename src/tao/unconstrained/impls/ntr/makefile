@@ -5,7 +5,7 @@ FFLAGS   =
 SOURCEC  = ntr.c
 SOURCEF  = 
 SOURCEH  = ntr.h
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/unconstrained/impls/ntr/
 

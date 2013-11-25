@@ -5,7 +5,7 @@ FFLAGS   =
 SOURCEC  = bqpip.c
 SOURCEF  = 
 SOURCEH  = bqpip.h
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/bound/impls/bqpip/
 

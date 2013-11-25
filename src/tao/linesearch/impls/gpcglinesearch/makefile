@@ -6,7 +6,7 @@ FFLAGS   =
 SOURCEC  = gpcglinesearch.c
 SOURCEF  = 
 SOURCEH  = gpcglinesearch.h
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/linesearch/impls/gpcglinesearch/
 

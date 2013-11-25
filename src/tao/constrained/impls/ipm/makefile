@@ -5,7 +5,7 @@ FFLAGS   =
 SOURCEC  = ipm.c
 SOURCEF  = 
 SOURCEH  = ipm.h
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/constrained/impls/ipm/
 

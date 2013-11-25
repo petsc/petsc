@@ -6,7 +6,7 @@ FFLAGS   =
 SOURCEC  = taodm.c
 SOURCEF  = 
 SOURCEH  = 
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/gridsequencing/
 

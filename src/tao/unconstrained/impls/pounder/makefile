@@ -5,7 +5,7 @@ FFLAGS   =
 SOURCEC  = pounder.c
 SOURCEF  = 
 SOURCEH  = 
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/unconstrained/impls/pounder/
 

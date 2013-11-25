@@ -5,7 +5,7 @@ FFLAGS   =
 SOURCEC  = lmvm.c
 SOURCEF  = 
 SOURCEH  = lmvm.h
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/unconstrained/impls/lmvm/
 

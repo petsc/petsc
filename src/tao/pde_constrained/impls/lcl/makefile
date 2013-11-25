@@ -5,7 +5,7 @@ FFLAGS   =
 SOURCEC  = lcl.c
 SOURCEF  = 
 SOURCEH  = lcl.h
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/pde_constrained/impls/lcl/
 

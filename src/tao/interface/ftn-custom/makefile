@@ -7,7 +7,7 @@ SOURCEC=ztaosolverf.c ztaof.c
 SOURCEF=
 SOURCEH=
 DIR=
-LIBBASE=libtao
+LIBBASE=libpetsctao
 LOCDIR=src/tao/interface/ftn-custom/
 
 include ${PETSC_DIR}/conf/variables

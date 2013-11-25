@@ -5,7 +5,7 @@ FFLAGS   =
 SOURCEC  = blmvm.c
 SOURCEF  = 
 SOURCEH  = blmvm.h
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/bound/impls/blmvm/
 

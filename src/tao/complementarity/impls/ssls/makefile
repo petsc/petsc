@@ -6,7 +6,7 @@ FFLAGS   =
 SOURCEC  = ssls.c ssils.c ssfls.c
 SOURCEF  = 
 SOURCEH  = ssls.h
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/complementarity/impls/ssls/
 

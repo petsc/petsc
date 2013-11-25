@@ -7,7 +7,7 @@ FFLAGS   =
 SOURCEC  = bmrm.c
 SOURCEF  = 
 SOURCEH  = bmrm.h
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = 
 LOCDIR   = src/tao/unconstrained/impls/bmrm/
 

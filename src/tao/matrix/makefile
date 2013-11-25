@@ -6,7 +6,7 @@ FFLAGS   =
 SOURCEC  = lmvmmat.c adamat.c submatfree.c
 SOURCEF  = 
 SOURCEH  = lmvmmat.h adamat.h submatfree.h
-LIBBASE  = libtao
+LIBBASE  = libpetsctao
 MANSEC   = taosolver
 LOCDIR   = src/tao/matrix/
 

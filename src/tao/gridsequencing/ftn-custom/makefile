@@ -7,7 +7,7 @@ SOURCEC=ztaodmf.c
 SOURCEF=
 SOURCEH=
 DIR=
-LIBBASE=libtao
+LIBBASE=libpetsctao
 LOCDIR=src/tao/gridsequencing/ftn-custom/
 
 include ${PETSC_DIR}/conf/variables
