@@ -2,9 +2,9 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = cg.c
+SOURCEC  = taocg.c
 SOURCEF  = 
-SOURCEH  = cg.h
+SOURCEH  = taocg.h
 LIBBASE  = libtao
 MANSEC   = 
 LOCDIR   = src/tao/unconstrained/impls/cg/

@@ -1,5 +1,5 @@
 #include "taolinesearch.h"
-#include "cg.h"
+#include "taocg.h"
 
 #define CG_FletcherReeves       0
 #define CG_PolakRibiere         1
