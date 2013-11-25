@@ -394,11 +394,11 @@ PetscErrorCode TaoSetFromOptions(TaoSolver tao)
 	    default_type = ((PetscObject)tao)->type_name;
 	}
 	/* Check for type from options */
-	ierr = PetscOptionsList("-tao_type","Tao Solver type","TaoSetType",TaoSolverList,default_type,type,256,&flg); CHKERRQ(ierr);
+	ierr = PetscOptionsFList("-tao_type","Tao Solver type","TaoSetType",TaoSolverList,default_type,type,256,&flg); CHKERRQ(ierr);
 	if (flg) {
 	    ierr = TaoSetType(tao,type); CHKERRQ(ierr);
 	} else {
-	  ierr = PetscOptionsList("-tao_method","Tao Solver type","TaoSetType",TaoSolverList,default_type,type,256,&flg); CHKERRQ(ierr);
+	  ierr = PetscOptionsFList("-tao_method","Tao Solver type","TaoSetType",TaoSolverList,default_type,type,256,&flg); CHKERRQ(ierr);
 	  if (flg) {
   	    ierr = TaoSetType(tao,type); CHKERRQ(ierr);
 	  } else if (!((PetscObject)tao)->type_name) {

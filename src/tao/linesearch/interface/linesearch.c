@@ -556,7 +556,7 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
        default_type = ((PetscObject)ls)->type_name;
      }
      /* Check for type from options */
-     ierr = PetscOptionsList("-tao_ls_type","Tao Line Search type","TaoLineSearchSetType",TaoLineSearchList,default_type,type,256,&flg); CHKERRQ(ierr);
+     ierr = PetscOptionsFList("-tao_ls_type","Tao Line Search type","TaoLineSearchSetType",TaoLineSearchList,default_type,type,256,&flg); CHKERRQ(ierr);
      if (flg) {
        ierr = TaoLineSearchSetType(ls,type); CHKERRQ(ierr);
      } else if (!((PetscObject)ls)->type_name) {
