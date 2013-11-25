@@ -150,14 +150,16 @@ PetscErrorCode DMDAGetTransitiveClosure(DM dm, PetscInt p, PetscBool useClosure,
            |     |
            5--1--6
       */
+#if 0
       PetscInt c  = p - cStart, cx = c % (nVx-1), cy = c / (nVx-1), cz = c / ((nVx-1)*(nVy-1));
       PetscInt v  = cy*nVx + cx +  vStart;
       PetscInt xf = cy*nxF + cx + xfStart;
       PetscInt yf = c + yfStart;
 
-      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented");
       if (closureSize) {PetscValidPointer(closureSize, 4); *closureSize = 26;}
       if (!(*closure)) {ierr = DMGetWorkArray(dm, *closureSize, PETSC_INT, closure);CHKERRQ(ierr);}
+#endif
+      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented");
     }
   } else if ((p >= vStart) || (p < vEnd)) {
     /* Vertex */
