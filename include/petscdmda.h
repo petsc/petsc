@@ -204,6 +204,8 @@ PETSC_EXTERN PetscErrorCode DMDARestoreClosureScalar(DM, PetscSection, PetscInt,
 PETSC_EXTERN PetscErrorCode DMDASetClosureScalar(DM,PetscSection,PetscInt,PetscScalar*,const PetscScalar*,InsertMode);
 PETSC_EXTERN PetscErrorCode DMDAConvertToCell(DM, MatStencil, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDASetVertexCoordinates(DM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode DMDASetPreallocationCenterDimension(DM, PetscInt);
+PETSC_EXTERN PetscErrorCode DMDAGetPreallocationCenterDimension(DM, PetscInt*);
 
 PETSC_EXTERN PetscErrorCode DMDAProjectFunction(DM, PetscFE[], void (**)(const PetscReal [], PetscScalar *), InsertMode, Vec);
 PETSC_EXTERN PetscErrorCode DMDAProjectFunctionLocal(DM, PetscFE[], void (**)(const PetscReal [], PetscScalar *), InsertMode, Vec);
