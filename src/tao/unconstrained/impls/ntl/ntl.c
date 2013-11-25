@@ -1,4 +1,4 @@
-#include "src/matrix/lmvmmat.h"
+#include "../src/tao/matrix/lmvmmat.h"
 #include "ntl.h"
 
 #include "petscksp.h"

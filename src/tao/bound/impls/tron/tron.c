@@ -1,7 +1,7 @@
 #include "tron.h"
 #include "petsc-private/kspimpl.h"
 #include "petsc-private/matimpl.h"
-#include "src/matrix/submatfree.h"
+#include "../src/tao/matrix/submatfree.h"
 
 
 /* TRON Routines */

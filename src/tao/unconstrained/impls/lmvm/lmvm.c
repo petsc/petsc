@@ -1,5 +1,5 @@
 #include "taolinesearch.h"
-#include "src/matrix/lmvmmat.h"
+#include "../src/tao/matrix/lmvmmat.h"
 #include "lmvm.h"
 
 #define LMVM_BFGS                0

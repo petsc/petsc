@@ -1,7 +1,7 @@
 #include "sqpcon.h"
-#include "src/matrix/lmvmmat.h"
-#include "src/matrix/approxmat.h"
-#include "src/matrix/submatfree.h"
+#include "../src/tao/matrix/lmvmmat.h"
+#include "../src/tao/matrix/approxmat.h"
+#include "../src/tao/matrix/submatfree.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_SQPCON"

@@ -1,5 +1,5 @@
 #include "taolinesearch.h"
-#include "src/matrix/lmvmmat.h"
+#include "../src/tao/matrix/lmvmmat.h"
 #include "owlqn.h"
 
 #define OWLQN_BFGS                0
