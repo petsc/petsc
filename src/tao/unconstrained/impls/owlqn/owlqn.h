@@ -5,7 +5,7 @@
 
 #ifndef __TAO_OWLQN_H
 #define __TAO_OWLQN_H
-#include "include/tao-private/taosolver_impl.h"
+#include "tao-private/taosolver_impl.h"
 
 typedef struct {
   Mat M;
