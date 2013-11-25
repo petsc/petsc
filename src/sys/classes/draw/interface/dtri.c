@@ -65,6 +65,7 @@ PetscErrorCode  PetscDrawScalePopup(PetscDraw popup,PetscReal min,PetscReal max)
 
   PetscFunctionBegin;
   ierr = PetscDrawCheckResizedWindow(popup);CHKERRQ(ierr);
+  ierr = PetscDrawSynchronizedClear(popup);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)popup,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);

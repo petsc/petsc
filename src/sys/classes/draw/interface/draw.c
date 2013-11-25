@@ -313,6 +313,10 @@ PetscErrorCode  PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
   if (draw->popup) *popup = draw->popup;
   else if (draw->ops->getpopup) {
     ierr = (*draw->ops->getpopup)(draw,popup);CHKERRQ(ierr);
+    if (*popup) {
+      ierr = PetscObjectSetOptionsPrefix((PetscObject)*popup,"popup_");CHKERRQ(ierr);
+    }
+    ierr = PetscDrawSetFromOptions(*popup);CHKERRQ(ierr);
   } else *popup = NULL;
   PetscFunctionReturn(0);
 }
