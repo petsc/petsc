@@ -5,10 +5,30 @@
 #include <../src/vec/vec/impls/dvecimpl.h>
 
 typedef struct {
+  PetscInt insertmode;
+  PetscInt count;
+  PetscInt bcount;
+} VecAssemblyHeader;
+
+typedef struct {
   VECHEADER
   PetscInt    nghost;                   /* length of local portion including ghost padding */
   Vec         localrep;                 /* local representation of vector */
   VecScatter  localupdate;              /* scatter to update ghost values */
+
+  PetscInt    nsendranks;
+  PetscInt    nrecvranks;
+  PetscMPIInt *sendranks;
+  PetscMPIInt *recvranks;
+  VecAssemblyHeader *sendhdr,*recvhdr;
+  struct {                      /* Pointers for the main messages */
+    PetscInt *ints;
+    PetscInt *intb;
+    PetscScalar *scalars;
+    PetscScalar *scalarb;
+  } *sendptrs;
+  PetscSegBuffer segrecvint;
+  PetscSegBuffer segrecvscalar;
 } Vec_MPI;
 
 PETSC_INTERN PetscErrorCode VecMDot_MPI(Vec,PetscInt,const Vec[],PetscScalar*);
