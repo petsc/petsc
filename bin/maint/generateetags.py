@@ -110,7 +110,7 @@ def processDir(tagfiles,dirname,names):
   # check for configure generated PETSC_ARCHes
   rmnames=[]
   for name in names:
-    if os.path.isdir(os.path.join(name,'conf')):
+    if os.path.isdir(os.path.join(dirname,name,'conf')):
       rmnames.append(name)
   for rmname in rmnames:
     names.remove(rmname)
