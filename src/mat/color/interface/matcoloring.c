@@ -209,7 +209,6 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
   } else if (!((PetscObject)mc)->type_name) {
     ierr = MatColoringSetType(mc,deft);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsName("-mat_coloring_view","Print detailed information on solver used","MatColoringView",0);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_coloring_distance","Distance of the coloring","MatColoringSetDistance",dist,&dist,&flg);CHKERRQ(ierr);
   if (flg) {ierr = MatColoringSetDistance(mc,dist);CHKERRQ(ierr);}
   ierr = PetscOptionsInt("-mat_coloring_maxcolors","Maximum colors returned at the end. 1 returns an independent set","MatColoringSetMaxColors",maxcolors,&maxcolors,&flg);CHKERRQ(ierr);

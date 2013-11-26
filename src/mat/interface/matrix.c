@@ -1029,7 +1029,6 @@ PetscErrorCode  MatDestroy(Mat *A)
   PetscValidHeaderSpecific(*A,MAT_CLASSID,1);
   if (--((PetscObject)(*A))->refct > 0) {*A = NULL; PetscFunctionReturn(0);}
 
-  ierr = PetscViewerDestroy(&(*A)->viewonassembly);CHKERRQ(ierr);
   /* if memory was published with SAWs then destroy it */
   ierr = PetscObjectSAWsViewOff((PetscObject)*A);CHKERRQ(ierr);
   if ((*A)->ops->destroy) {
@@ -2952,12 +2951,7 @@ PetscErrorCode  MatLUFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *info)
   ierr = PetscLogEventBegin(MAT_LUFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
   ierr = (fact->ops->lufactornumeric)(fact,mat,info);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_LUFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
-
-  if (fact->viewonassembly) {
-    ierr = PetscViewerPushFormat(fact->viewonassembly,fact->viewformatonassembly);CHKERRQ(ierr);
-    ierr = MatView(fact,fact->viewonassembly);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(fact->viewonassembly);CHKERRQ(ierr);
-  }
+  ierr = MatViewFromOptions(fact,NULL,"-mat_view");CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3127,12 +3121,7 @@ PetscErrorCode  MatCholeskyFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *i
   ierr = PetscLogEventBegin(MAT_CholeskyFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
   ierr = (fact->ops->choleskyfactornumeric)(fact,mat,info);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_CholeskyFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
-
-  if (fact->viewonassembly) {
-    ierr = PetscViewerPushFormat(fact->viewonassembly,fact->viewformatonassembly);CHKERRQ(ierr);
-    ierr = MatView(fact,fact->viewonassembly);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(fact->viewonassembly);CHKERRQ(ierr);
-  }
+  ierr = MatViewFromOptions(fact,NULL,"-mat_view");CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -4912,49 +4901,6 @@ PetscErrorCode  MatAssembled(Mat mat,PetscBool  *assembled)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatViewFromOptions"
-/*
-  MatViewFromOptions - Processes command line options to determine if/how a matrix is to be viewed. Called from higher level packages.
-
-  Collective on Vec
-
-  Input Parameters:
-+ mat   - the matrix
-. prefix - prefix to use for viewing, or NULL to use prefix of 'mat'
-- optionname - option to activate viewing
-
-  Level: intermediate
-
-.keywords: Mat, view, options, database
-.seealso: MatViewFromOptions()
-*/
-PetscErrorCode MatViewFromOptions(Mat mat,const char prefix[],const char optionname[])
-{
-  PetscErrorCode    ierr;
-  PetscViewer       viewer;
-  PetscBool         flg;
-  static PetscBool  incall = PETSC_FALSE;
-  PetscViewerFormat format;
-
-  PetscFunctionBegin;
-  if (incall) PetscFunctionReturn(0);
-  incall = PETSC_TRUE;
-  if (prefix) {
-    ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)mat),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
-  } else {
-    ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
-  }
-  if (flg) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = MatView(mat,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
-  incall = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd"
 /*@
    MatAssemblyEnd - Completes assembling the matrix.  This routine should
@@ -5040,11 +4986,7 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
   }
 #endif
   if (inassm == 1 && type != MAT_FLUSH_ASSEMBLY) {
-    if (mat->viewonassembly) {
-      ierr = PetscViewerPushFormat(mat->viewonassembly,mat->viewformatonassembly);CHKERRQ(ierr);
-      ierr = MatView(mat,mat->viewonassembly);CHKERRQ(ierr);
-      ierr = PetscViewerPopFormat(mat->viewonassembly);CHKERRQ(ierr);
-    }
+    ierr = MatViewFromOptions(mat,NULL,"-mat_view");CHKERRQ(ierr);
 
     if (mat->checksymmetryonassembly) {
       ierr = MatIsSymmetric(mat,mat->checksymmetrytol,&flg);CHKERRQ(ierr);
@@ -5340,11 +5282,7 @@ PetscErrorCode  MatZeroRowsColumns(Mat mat,PetscInt numRows,const PetscInt rows[
   MatCheckPreallocated(mat,1);
 
   ierr = (*mat->ops->zerorowscolumns)(mat,numRows,rows,diag,x,b);CHKERRQ(ierr);
-  if (mat->viewonassembly) {
-    ierr = PetscViewerPushFormat(mat->viewonassembly,mat->viewformatonassembly);CHKERRQ(ierr);
-    ierr = MatView(mat,mat->viewonassembly);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(mat->viewonassembly);CHKERRQ(ierr);
-  }
+  ierr = MatViewFromOptions(mat,NULL,"-mat_view");CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
@@ -5475,11 +5413,7 @@ PetscErrorCode  MatZeroRows(Mat mat,PetscInt numRows,const PetscInt rows[],Petsc
   MatCheckPreallocated(mat,1);
 
   ierr = (*mat->ops->zerorows)(mat,numRows,rows,diag,x,b);CHKERRQ(ierr);
-  if (mat->viewonassembly) {
-    ierr = PetscViewerPushFormat(mat->viewonassembly,mat->viewformatonassembly);CHKERRQ(ierr);
-    ierr = MatView(mat,mat->viewonassembly);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(mat->viewonassembly);CHKERRQ(ierr);
-  }
+  ierr = MatViewFromOptions(mat,NULL,"-mat_view");CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
