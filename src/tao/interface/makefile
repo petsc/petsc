@@ -6,7 +6,7 @@ SOURCEC  = taosolver.c taosolver_fg.c taosolverregi.c taosolver_hj.c taosolver_b
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetsctao
-MANSEC   = taosolver
+MANSEC   = TaoSolver
 LOCDIR   = src/tao/interface/
 
 
