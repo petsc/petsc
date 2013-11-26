@@ -98,7 +98,7 @@ static PetscErrorCode ourmonitordestroy(void **ctx)
 {
   PetscErrorCode ierr  = 0;
   TS             ts    = *(TS*)ctx;
-  void           *mctx = (void*) ((PetscObject)ts)->fortran_func_pointers[OUR_MONITOR_CTX];
+  void           *mctx = (void*) (PETSC_UINTPTR_T) ((PetscObject)ts)->fortran_func_pointers[OUR_MONITOR_CTX];
   (*(void (PETSC_STDCALL*)(void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_MONITORDESTROY]))(mctx,&ierr);
   return 0;
 }
@@ -109,7 +109,7 @@ static PetscErrorCode ourmonitordestroy(void **ctx)
 static PetscErrorCode ourmonitor(TS ts,PetscInt i,PetscReal d,Vec v,void *ctx)
 {
   PetscErrorCode ierr  = 0;
-  void           *mctx = (void*) ((PetscObject)ts)->fortran_func_pointers[OUR_MONITOR_CTX];
+  void           *mctx = (void*) (PETSC_UINTPTR_T) ((PetscObject)ts)->fortran_func_pointers[OUR_MONITOR_CTX];
   (*(void (PETSC_STDCALL*)(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_MONITOR]))(&ts,&i,&d,&v,mctx,&ierr);
   return 0;
 }
