@@ -115,6 +115,12 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
   /* do the remaining initializations for DMMoab */
   dmmoab->bs = 1;
   dmmoab->numFields = 1;
+  dmmoab->rw_dbglevel = 0;
+  dmmoab->partition_by_rank = PETSC_FALSE;
+  dmmoab->extra_read_options[0] = '\0';
+  dmmoab->extra_write_options[0] = '\0';
+  dmmoab->read_mode = READ_PART;
+  dmmoab->write_mode = WRITE_PART;
 
   /* set global ID tag handle */
   if (ltog_tag && *ltog_tag) {
@@ -821,6 +827,27 @@ PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm)
 
 
 #undef __FUNCT__
+#define __FUNCT__ "DMSetFromOptions_Moab"
+PETSC_EXTERN PetscErrorCode DMSetFromOptions_Moab(DM dm)
+{
+  PetscErrorCode ierr;
+  DM_Moab        *dmmoab = (DM_Moab*)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscOptionsHead("DMMoab Options");CHKERRQ(ierr);
+  ierr  = PetscOptionsInt("-dm_moab_rw_dbg", "The verbosity level for reading and writing MOAB meshes", "DMView", dmmoab->rw_dbglevel, &dmmoab->rw_dbglevel, NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsBool("-dm_moab_partiton_by_rank", "Use partition by rank when reading MOAB meshes from file", "DMView", dmmoab->partition_by_rank, &dmmoab->partition_by_rank, NULL);CHKERRQ(ierr);
+  /* TODO: typically, the read options are needed before a DM is completely created and available in which case, the options wont be available ?? */
+  ierr  = PetscOptionsString("-dm_moab_read_opts", "Extra options to enable MOAB reader to load DM from file", "DMView", dmmoab->extra_read_options, dmmoab->extra_read_options, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsString("-dm_moab_write_opts", "Extra options to enable MOAB writer to serialize DM to file", "DMView", dmmoab->extra_write_options, dmmoab->extra_write_options, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsEnum("-dm_moab_read_mode", "MOAB parallel read mode", "DMView", MoabReadModes, (PetscEnum)dmmoab->read_mode, (PetscEnum*)&dmmoab->read_mode, NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsEnum("-dm_moab_write_mode", "MOAB parallel write mode", "DMView", MoabWriteModes, (PetscEnum)dmmoab->write_mode, (PetscEnum*)&dmmoab->write_mode, NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "DMSetUp_Moab"
 PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
 {
@@ -1061,6 +1088,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM dm)
   dm->ops->creatematrix             = DMCreateMatrix_Moab;
   dm->ops->setup                    = DMSetUp_Moab;
   dm->ops->destroy                  = DMDestroy_Moab;
+  dm->ops->setfromoptions           = DMSetFromOptions_Moab;
   dm->ops->globaltolocalbegin       = DMGlobalToLocalBegin_Moab;
   dm->ops->globaltolocalend         = DMGlobalToLocalEnd_Moab;
   dm->ops->localtoglobalbegin       = DMLocalToGlobalBegin_Moab;
