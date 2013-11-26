@@ -11,7 +11,7 @@ EXAMPLESFH       = eptorsion2f.h rosenbrock1f.h
 TUTORIALS        = rosenbrock1.c eptorsion1.c minsurf1.c eptorsion2.c\
                    minsurf2.c eptorsion2f.F
 LOCDIR		 = src/tao/unconstrained/examples/tutorials/
-MANSEC		 = Unconstrained
+MANSEC		 =
 DOCS		 = 
 DIRS		 = 
 

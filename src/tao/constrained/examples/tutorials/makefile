@@ -10,7 +10,7 @@ EXAMPLESCH       =
 EXAMPLESFH       = 
 TUTORIALS        = 
 LOCDIR		 = src/tao/constrained/examples/tutorials/
-MANSEC		 = Constrained
+MANSEC		 =
 DOCS		 = 
 DIRS		 = 
 

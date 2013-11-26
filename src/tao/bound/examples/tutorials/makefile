@@ -10,7 +10,7 @@ EXAMPLECH        =
 EXAMPLESF        = plate2f.F
 EXAMPLESFH       = plate2f.h
 LOCDIR		 = src/tao/bound/examples/tutorials/
-MANSEC		 = Bound
+MANSEC		 =
 DOCS		 = 
 DIRS		 = 
 

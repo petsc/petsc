@@ -7,7 +7,7 @@ SOURCEC  = asils.c asfls.c
 SOURCEF  = 
 SOURCEH  = 
 LIBBASE  = libpetsctao
-MANSEC   = solver
+MANSEC   =
 LOCDIR   = src/tao/complementarity/impls/asls/
 
 include ${PETSC_DIR}/conf/variables

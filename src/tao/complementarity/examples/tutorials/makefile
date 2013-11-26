@@ -10,7 +10,7 @@ EXAMPLESCH       =
 EXAMPLESFH       = 
 TUTORIALS        = minsurf1.c blackscholes.c
 LOCDIR		 = src/tao/complementarity/examples/tutorials/
-MANSEC		 = Complementarity
+MANSEC		 =
 DOCS		 = 
 DIRS		 = 
 
