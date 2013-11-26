@@ -123,14 +123,19 @@ generate_section()
         | grep -v 'warning: no debug symbols in executable (-arch x86_64)' \
         | grep -v 'cusp/complex.h' | grep -v 'cusp/detail/device/generalized_spmv/coo_flat.h' \
         | grep -v 'thrust/detail/vector_base.inl' | grep -v 'thrust/detail/tuple_transform.h' | grep -v 'detail/tuple.inl' | grep -v 'detail/launch_closure.inl'`
-    filtered_warnings_num=`grep "[Ww]arning[: ]" $f | wc -l`
+    filtered_warnings_num="0"
+    if [ "$filtered_warnings" != "" ]; then
+      filtered_warnings_num=`echo "$filtered_warnings" | wc -l`
+    fi
 
-    # Grep errors
-    filtered_errors=`grep " [Kk]illed\| [Ff]atal[: ]\| [Ee][Rr][Rr][Oo][Rr][: ]" $f`
+    # Grep errors (with context)
+    filtered_errors=`grep -B 2 -A 5 " [Kk]illed\| [Ff]atal[: ]\| [Ee][Rr][Rr][Oo][Rr][: ]" $f`
     filtered_errors_num=`grep " [Kk]illed\| [Ff]atal[: ]\| [Ee][Rr][Rr][Oo][Rr][: ]" $f | wc -l`
 
-    echo "$filtered_warnings" > $LOGDIR/filtered-${f#$LOGDIR/}
-    echo "$filtered_errors"  >> $LOGDIR/filtered-${f#$LOGDIR/}
+    echo -e "---- WARNINGS ----\n"  > $LOGDIR/filtered-${f#$LOGDIR/}
+    echo "$filtered_warnings"      >> $LOGDIR/filtered-${f#$LOGDIR/}
+    echo -e "\n---- ERRORS ----\n" >> $LOGDIR/filtered-${f#$LOGDIR/}
+    echo "$filtered_errors"        >> $LOGDIR/filtered-${f#$LOGDIR/}
 
     # Write number of warnings:
     if [ "$filtered_warnings_num" -gt "0" ]
