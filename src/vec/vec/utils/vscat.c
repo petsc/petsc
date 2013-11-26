@@ -662,7 +662,7 @@ PetscErrorCode VecScatterBegin_SSToSS(VecScatter ctx,Vec x,Vec y,InsertMode addv
   if (x->valid_GPU_array == PETSC_CUSP_GPU) {
     /* create the scatter indices if not done already */
     if (!ctx->spptr) {
-      PetscInt *tslots = 0,*fslots;
+      PetscInt *tslots = 0,*fslots = 0;
       ierr = VecScatterCUSPIndicesCreate_StoS(n,to_first,from_first,to_step,from_step,tslots,fslots,(PetscCUSPIndices*)&(ctx->spptr));CHKERRQ(ierr);
     }
     /* next do the scatter */
