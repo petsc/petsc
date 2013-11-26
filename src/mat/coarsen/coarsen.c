@@ -116,7 +116,6 @@ PetscErrorCode  MatCoarsenApply(MatCoarsen coarser)
   ierr = PetscLogEventBegin(MAT_Coarsen,coarser,0,0,0);CHKERRQ(ierr);
   ierr = (*coarser->ops->apply)(coarser);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Coarsen,coarser,0,0,0);CHKERRQ(ierr);
-  ierr = MatCoarsenViewFromOptions(coarser,NULL,"-mat_coarsen_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -490,6 +489,7 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
     ierr = (*coarser->ops->setfromoptions)(coarser);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = MatCoarsenViewFromOptions(coarser,NULL,"-mat_coarsen_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
