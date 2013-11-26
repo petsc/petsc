@@ -7,7 +7,14 @@ static const char help[] = "Integrate chemistry using TChem.\n";
 #else
 #  error TChem is required for this example.  Reconfigure PETSc using --download-tchem.
 #endif
+/*
+    Obtain the three files into this directory
 
+       curl http://www.me.berkeley.edu/gri_mech/version30/files30/grimech30.dat chem.inp
+       curl http://www.me.berkeley.edu/gri_mech/version30/files30/thermo30.dat therm.dat
+       cp $PETSC_DIR/externallibaries/tchem/data/periodictable.dat . 
+
+*/
 typedef struct _User *User;
 struct _User {
   PetscReal pressure;
@@ -58,6 +65,8 @@ int main(int argc,char **argv)
   ierr = VecCreateSeq(PETSC_COMM_SELF,user.Nspec+1,&X);CHKERRQ(ierr);
 
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user.Nspec+1,user.Nspec+1,PETSC_DECIDE,NULL,&J);CHKERRQ(ierr);
+  /*ierr = MatCreateSeqDense(PETSC_COMM_SELF,user.Nspec+1,user.Nspec+1,NULL,&J);CHKERRQ(ierr);*/
+  ierr = MatSetFromOptions(J);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
