@@ -252,7 +252,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
   }
 
 /*
-    v = v - A w  v_gets_v_minus_Ar_times_w
+    w <- w - A v  w_gets_w_minus_Ar_times_v
 
    v - array of length ncol
    A(bs,ncols)
