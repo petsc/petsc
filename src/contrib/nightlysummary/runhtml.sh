@@ -123,29 +123,29 @@ generate_section()
         | grep -v 'warning: no debug symbols in executable (-arch x86_64)' \
         | grep -v 'cusp/complex.h' | grep -v 'cusp/detail/device/generalized_spmv/coo_flat.h' \
         | grep -v 'thrust/detail/vector_base.inl' | grep -v 'thrust/detail/tuple_transform.h' | grep -v 'detail/tuple.inl' | grep -v 'detail/launch_closure.inl'`
+    filtered_warnings_num=`grep "[Ww]arning[: ]" $f | wc -l`
 
     # Grep errors
     filtered_errors=`grep " [Kk]illed\| [Ff]atal[: ]\| [Ee][Rr][Rr][Oo][Rr][: ]" $f`
+    filtered_errors_num=`grep " [Kk]illed\| [Ff]atal[: ]\| [Ee][Rr][Rr][Oo][Rr][: ]" $f | wc -l`
 
     echo "$filtered_warnings" > $LOGDIR/filtered-${f#$LOGDIR/}
     echo "$filtered_errors"  >> $LOGDIR/filtered-${f#$LOGDIR/}
 
     # Write number of warnings:
-    numwarnings=`echo "$filtered_warnings" | wc -l`
-    if [ "$numwarnings" -gt "0" ]
+    if [ "$filtered_warnings_num" -gt "0" ]
     then
-	  echo "</td><td class=\"yellow\">$numwarnings</td>" >> $OUTFILE
+	  echo "</td><td class=\"yellow\">$filtered_warnings_num</td>" >> $OUTFILE
     else
-	  echo "</td><td class=\"green\">$numwarnings</td>" >> $OUTFILE
+	  echo "</td><td class=\"green\">$filtered_warnings_num</td>" >> $OUTFILE
     fi
 
     # Write number of errors:
-    numerrors=`echo "$filtered_errors" | wc -l`
-    if [ "$numerrors" -gt "0" ]
+    if [ "$filtered_errors_num" -gt "0" ]
     then
-	  echo "</td><td class=\"red\">$numerrors</td></tr>" >> $OUTFILE
+	  echo "</td><td class=\"red\">$filtered_errors_num</td></tr>" >> $OUTFILE
     else
-	  echo "</td><td class=\"green\">$numerrors</td></tr>" >> $OUTFILE
+	  echo "</td><td class=\"green\">$filtered_errors_num</td></tr>" >> $OUTFILE
     fi
   done
   echo "</table></center>" >> $OUTFILE
