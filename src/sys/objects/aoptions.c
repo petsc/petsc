@@ -170,7 +170,6 @@ PetscErrorCode PetscOptionsGetFromTextInput()
   PetscErrorCode ierr;
   PetscOptions   next = PetscOptionsObject.next;
   char           str[512];
-  PetscInt       id;
   PetscBool      bid;
   PetscReal      ir,*valr;
   PetscInt       *vald;
@@ -271,14 +270,18 @@ PetscErrorCode PetscOptionsGetFromTextInput()
       ierr = PetscPrintf(PETSC_COMM_WORLD,"-%s%s <%d>: %s (%s) ",PetscOptionsObject.prefix ? PetscOptionsObject.prefix : "",next->option+1,*(int*)next->data,next->text,next->man);CHKERRQ(ierr);
       ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
       if (str[0]) {
-#if defined(PETSC_USE_64BIT_INDICES)
-        sscanf(str,"%lld",&id);
+#if defined(PETSC_SIZEOF_LONG_LONG)
+        long long lid;
+        sscanf(str,"%lld",&lid);
+        if (lid > PETSC_MAX_INT || lid < PETSC_MIN_INT) SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Argument: -%s%s %lld",PetscOptionsObject.prefix ? PetscOptionsObject.prefix : "",next->option+1,lid);
 #else
-        sscanf(str,"%d",&id);
+        long  lid;
+        sscanf(str,"%ld",&lid);
+        if (lid > PETSC_MAX_INT || lid < PETSC_MIN_INT) SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Argument: -%s%s %ld",PetscOptionsObject.prefix ? PetscOptionsObject.prefix : "",next->option+1,lid);
 #endif
-        next->set = PETSC_TRUE;
 
-        *((PetscInt*)next->data) = id;
+        next->set = PETSC_TRUE;
+        *((PetscInt*)next->data) = (PetscInt)lid;
       }
       break;
     case OPTION_REAL:
