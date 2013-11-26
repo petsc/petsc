@@ -1208,10 +1208,11 @@ PetscErrorCode PetscSectionGetFieldPointOffset(PetscSection s, PetscInt point, P
 @*/
 PetscErrorCode PetscSectionGetOffsetRange(PetscSection s, PetscInt *start, PetscInt *end)
 {
-  PetscInt       os = s->atlasOff[0], oe = s->atlasOff[0], pStart, pEnd, p;
+  PetscInt       os = 0, oe = 0, pStart, pEnd, p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (s->atlasOff) {os = s->atlasOff[0]; oe = s->atlasOff[0];}
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
   for (p = 0; p < pEnd-pStart; ++p) {
     PetscInt dof = s->atlasDof[p], off = s->atlasOff[p];
