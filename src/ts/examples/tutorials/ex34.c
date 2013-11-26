@@ -14,6 +14,11 @@ static const char help[] = "Integrate chemistry using TChem.\n";
        curl http://www.me.berkeley.edu/gri_mech/version30/files30/thermo30.dat therm.dat
        cp $PETSC_DIR/externallibaries/tchem/data/periodictable.dat . 
 
+    Run with
+   ./ex34 -Tini 1500 -ts_arkimex_fully_implicit -ts_max_snes_failures -1 -ts_adapt_monitor -ts_adapt_dt_max 1e-4 -ts_arkimex_type 4 -ts_monitor_lg_solution
+
+
+
 */
 typedef struct _User *User;
 struct _User {
