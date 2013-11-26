@@ -326,7 +326,7 @@ PetscErrorCode  PetscDrawRegister(const char *sname,PetscErrorCode (*function)(P
    Level: intermediate
 
    Notes:
-    Must be called after PetscDrawCreate() before the PetscDrawtor is used.
+    Must be called after PetscDrawCreate() before the PetscDraw is used.
 
     Concepts: drawing^setting options
     Concepts: graphics^setting options
