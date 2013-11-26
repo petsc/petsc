@@ -17,15 +17,12 @@
 #define MBERRV(mbif,rval) do{if(rval != moab::MB_SUCCESS) { std::string emsg; mbif->get_last_error(emsg); SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s",(PetscErrorCode)rval,emsg.c_str());} } while(0)
 #define MBERRVM(mbif,msg,rval) do{if(rval != moab::MB_SUCCESS) { std::string emsg; mbif->get_last_error(emsg); SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s :: %s",(PetscErrorCode)rval,msg,emsg.c_str());} } while(0)
 
-#define MOAB_PARROPTS_READ_PART    "READ_PART"
-#define MOAB_PARROPTS_READ_DELETE  "READ_DELETE"
-#define MOAB_PARROPTS_BCAST_DELETE "BCAST_DELETE"
 
-#define MOAB_PARWOPTS_WRITE_PART "WRITE_PART"
-#define MOAB_PARWOPTS_WRITE_FORMAT "FORMAT"
-
-typedef const char* MoabReadMode;
-typedef const char* MoabWriteMode;
+/* define enums for options to read and write MOAB files in parallel */
+typedef enum {READ_PART,READ_DELETE,BCAST_DELETE} MoabReadMode;
+static const char *const MoabReadModes[] = {"READ_PART","READ_DELETE","BCAST_DELETE","MoabReadMode","",0};
+typedef enum {WRITE_PART,FORMAT} MoabWriteMode;
+static const char *const MoabWriteModes[] = {"WRITE_PART","FORMAT","MoabWriteMode","",0};
 
 PETSC_EXTERN PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *moab);
 PETSC_EXTERN PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::ParallelComm *pcomm, moab::Tag *ltog_tag, moab::Range *range, DM *moab);

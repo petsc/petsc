@@ -396,17 +396,21 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, const PetscReal*
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoab_GetReadOptions_Private"
-PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc, PetscInt dim, MoabReadMode mode, PetscInt dbglevel, const char* extra_opts, const char** read_opts)
+PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc, PetscInt dim, MoabReadMode mode, PetscInt dbglevel, const char* dm_opts, const char* extra_opts, const char** read_opts)
 {
   std::ostringstream str;
 
   PetscFunctionBegin;
   /* do parallel read unless using only one processor */
   if (numproc > 1) {
-    str << "PARALLEL=" << mode << ";PARTITION=PARALLEL_PARTITION;PARTITION_DISTRIBUTE;";
+    str << "PARALLEL=" << MoabReadModes[mode] << ";PARTITION=PARALLEL_PARTITION;PARTITION_DISTRIBUTE;";
     str << "PARALLEL_RESOLVE_SHARED_ENTS;PARALLEL_GHOSTS=" << dim << ".0.1;";
     if (by_rank)
       str << "PARTITION_BY_RANK;";
+  }
+
+  if (strlen(dm_opts)) {
+    str << dm_opts << ";";
   }
 
   if (dbglevel) {
@@ -449,8 +453,7 @@ PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc
 PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm,PetscInt dim,const char* filename, const char* usrreadopts, DM *dm)
 {
   moab::ErrorCode merr;
-  PetscInt        nprocs,dbglevel=0;
-  PetscBool       part_by_rank=PETSC_FALSE;
+  PetscInt        nprocs;
   DM_Moab        *dmmoab;
   moab::Interface *mbiface;
   moab::ParallelComm *pcomm;
@@ -475,14 +478,9 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm,PetscInt dim,const char* filenam
   /* create a file set to associate all entities in current mesh */
   merr = dmmoab->mbiface->create_meshset(moab::MESHSET_SET, dmmoab->fileset);MBERR("Creating file set failed", merr);
 
-  /* TODO: Use command-line options to control by_rank, verbosity, MoabReadMode and extra options */
-  ierr  = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for reading/writing MOAB based meshes from file", "DMMoab");
-  ierr  = PetscOptionsInt("-dmmb_rw_dbg", "The verbosity level for reading and writing MOAB meshes", "dmmbutil.cxx", dbglevel, &dbglevel, NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsBool("-dmmb_part_by_rank", "Use partition by rank when reading MOAB meshes from file", "dmmbutil.cxx", part_by_rank, &part_by_rank, NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsEnd();
-
   /* add mesh loading options specific to the DM */
-  ierr = DMMoab_GetReadOptions_Private(part_by_rank, nprocs, dim, MOAB_PARROPTS_READ_PART, dbglevel, usrreadopts, &readopts);CHKERRQ(ierr);
+  ierr = DMMoab_GetReadOptions_Private(dmmoab->partition_by_rank, nprocs, dim, dmmoab->read_mode,
+                                        dmmoab->rw_dbglevel, dmmoab->extra_read_options, usrreadopts, &readopts);CHKERRQ(ierr);
 
   PetscInfo2(*dm, "Reading file %s with options: %s\n",filename,readopts);
 

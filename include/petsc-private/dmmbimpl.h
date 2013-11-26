@@ -46,6 +46,14 @@ typedef struct {
   ISLocalToGlobalMapping  ltog_map;
   VecScatter              ltog_sendrecv;
 
+  /* store options to customize DMMoab */
+  PetscInt                rw_dbglevel;
+  PetscBool               partition_by_rank;
+  char                    extra_read_options[PETSC_MAX_PATH_LEN];
+  char                    extra_write_options[PETSC_MAX_PATH_LEN];
+  MoabReadMode            read_mode;
+  MoabWriteMode           write_mode;
+
   PetscInt                numFields;
   const char              **fieldNames;
   PetscBool               icreatedinstance;               /* true if DM created moab instance internally, will destroy instance in DMDestroy */
