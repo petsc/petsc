@@ -1,7 +1,7 @@
 #ifndef __TAOSOLVER_H
 #define __TAOSOLVER_H
 
-#include "petsc.h"
+#include "petscsys.h"
 #include "petscvec.h"
 #include "petscmat.h"
 #include "tao_version.h"

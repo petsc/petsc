@@ -26,3 +26,4 @@
 #include <petscsnesfas.h>
 
 #include <petscts.h>
+#include <taosolver.h>
