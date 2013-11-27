@@ -409,19 +409,23 @@ PetscErrorCode  PetscDrawLGDestroy(PetscDrawLG *lg)
    Not Collective, but ignored by all processors except processor 0 in PetscDrawLG
 
    Input Parameters:
-.  lg - the linegraph context
++  lg - the linegraph context
+-  flg - should mark each data point 
+
+   Options Database:
+.  -lg_indicate_data_points  <true,false>
 
    Level: intermediate
 
    Concepts: line graph^showing points
 
 @*/
-PetscErrorCode  PetscDrawLGIndicateDataPoints(PetscDrawLG lg)
+PetscErrorCode  PetscDrawLGIndicateDataPoints(PetscDrawLG lg,PetscBool flg)
 {
   PetscFunctionBegin;
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
 
-  lg->use_dots = PETSC_TRUE;
+  lg->use_dots = flg;
   PetscFunctionReturn(0);
 }
 
@@ -488,7 +492,7 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
         else cl = PETSC_DRAW_BLACK+i;
         ierr = PetscDrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],lg->x[j*dim+i],lg->y[j*dim+i],cl);CHKERRQ(ierr);
         if (lg->use_dots) {
-          ierr = PetscDrawString(draw,lg->x[j*dim+i],lg->y[j*dim+i],cl,"x");CHKERRQ(ierr);
+          ierr = PetscDrawString(draw,lg->x[j*dim+i],lg->y[(j-1)*dim+i],cl,"x");CHKERRQ(ierr);
         }
       }
     }
@@ -555,6 +559,35 @@ PetscErrorCode  PetscDrawLGView(PetscDrawLG lg,PetscViewer viewer)
     for (j = 0; j < nopts; j++) {
       ierr = PetscViewerASCIIPrintf(viewer, "  X: %g Y: %g\n", (double)lg->x[j*dim+i], (double)lg->y[j*dim+i]);CHKERRQ(ierr);
     }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawLGSetFromOptions"
+/*@
+    PetscDrawLGSetFromOptions - Sets options related to the PetscDrawLG
+
+    Collective over PetscDrawLG
+
+    Options Database:
+.
+
+    Level: intermediate
+
+    Concepts: line graph^creating
+
+.seealso:  PetscDrawLGDestroy(), PetscDrawLGCreate()
+@*/
+PetscErrorCode  PetscDrawLGSetFromOptions(PetscDrawLG lg)
+{
+  PetscErrorCode ierr;
+  PetscBool      flg,set;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsGetBool(NULL,"-lg_indicate_data_points",&flg,&set);CHKERRQ(ierr);
+  if (set) {
+    ierr = PetscDrawLGIndicateDataPoints(lg,flg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

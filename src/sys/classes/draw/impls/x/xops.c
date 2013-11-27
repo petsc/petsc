@@ -577,6 +577,10 @@ PetscErrorCode PetscDrawDestroy_X(PetscDraw draw)
 #endif
 
   PetscFunctionBegin;
+  if (draw->savefinalfilename) {
+    ierr = PetscDrawSetSave(draw,draw->savefinalfilename,PETSC_FALSE);CHKERRQ(ierr);
+    draw->savefilecount = 0;
+  }
   ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_POPEN)
