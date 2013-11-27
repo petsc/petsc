@@ -1,6 +1,8 @@
-LOCDIR = tests/nlstests
-include ${TAO_DIR}/conf/tao_base
+LOCDIR = src/tao/tests/nlstests
 
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/conf/test
 
 # Directories
 PPATH = problems
@@ -13,10 +15,10 @@ PFSRC = $(PPATH)/dfoxs.f $(PPATH)/dfovec.f $(PPATH)/dfonm.f \
 calfun: dfovec.o calfun.f
 	${FLINKER} -o calfun calfun.f dfovec.o
 
-runtests: wallclock.o driver.o dfovec.o dfoxs.o tao_chkopts
-	${CLINKER} -o runtests driver.o wallclock.o dfovec.o dfoxs.o ${TAO_LIB} ${PETSC_LIB}
+runtests: wallclock.o driver.o dfovec.o dfoxs.o chkopts
+	${CLINKER} -o runtests driver.o wallclock.o dfovec.o dfoxs.o ${PETSC_TAO_LIB}
 
-runmatlab: wallclock.o mdriver.o dfovec.o dfoxs.o calfun tao_chkopts 
-	${CLINKER} -o runmatlab mdriver.o wallclock.o dfovec.o dfoxs.o ${TAO_LIB} ${PETSC_LIB}
+runmatlab: wallclock.o mdriver.o dfovec.o dfoxs.o calfun chkopts 
+	${CLINKER} -o runmatlab mdriver.o wallclock.o dfovec.o dfoxs.o ${PETSC_TAO_LIB}
 
 
