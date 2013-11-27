@@ -96,7 +96,7 @@
       CHKERRQ(ierr)
 
 !     Create Hessian
-      call DMCreateMatrix(dm,MATAIJ,H,ierr)
+      call DMCreateMatrix(dm,H,ierr)
       CHKERRQ(ierr)
       call MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE,ierr)
       CHKERRQ(ierr)
