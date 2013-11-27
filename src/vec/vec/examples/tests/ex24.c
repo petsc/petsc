@@ -61,7 +61,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerGetSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
   ierr = VecView(y,sviewer);CHKERRQ(ierr); fflush(stdout);
   ierr = PetscViewerRestoreSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
 

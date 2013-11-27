@@ -277,7 +277,6 @@ PetscErrorCode  PetscSNPrintfCount(char *str,size_t len,const char format[],size
 
 PrintfQueue petsc_printfqueue       = 0,petsc_printfqueuebase = 0;
 int         petsc_printfqueuelength = 0;
-FILE        *petsc_printfqueuefile  = NULL;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSynchronizedPrintf"
@@ -387,8 +386,6 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char forma
     va_list Argp;
     va_start(Argp,format);
     ierr = (*PetscVFPrintf)(fp,format,Argp);CHKERRQ(ierr);
-
-    petsc_printfqueuefile = fp;
     if (petsc_history && (fp !=petsc_history)) {
       va_start(Argp,format);
       ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
@@ -420,14 +417,15 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char forma
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSynchronizedFlush"
-/*@
+/*@C
     PetscSynchronizedFlush - Flushes to the screen output from all processors
     involved in previous PetscSynchronizedPrintf() calls.
 
     Collective on MPI_Comm
 
     Input Parameters:
-.   comm - the communicator
++   comm - the communicator
+-   fd - the file pointer (valid on process 0 of the communicator)
 
     Level: intermediate
 
@@ -437,14 +435,13 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char forma
 
 .seealso: PetscSynchronizedPrintf(), PetscFPrintf(), PetscPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf()
-@*/
-PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm)
+C@*/
+PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm,FILE *fd)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,tag,i,j,n = 0,dummy = 0;
   char          *message;
   MPI_Status     status;
-  FILE           *fd;
 
   PetscFunctionBegin;
   ierr = PetscCommDuplicate(comm,&comm,&tag);CHKERRQ(ierr);
@@ -453,8 +450,7 @@ PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm)
 
   /* First processor waits for messages from all other processors */
   if (!rank) {
-    if (petsc_printfqueuefile) fd = petsc_printfqueuefile;
-    else fd = PETSC_STDOUT;
+    if (!fd) fd = PETSC_STDOUT;
     for (i=1; i<size; i++) {
       /* to prevent a flood of messages to process zero, request each message separately */
       ierr = MPI_Send(&dummy,1,MPI_INT,i,tag,comm);CHKERRQ(ierr);
@@ -469,7 +465,6 @@ PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm)
         ierr = PetscFree(message);CHKERRQ(ierr);
       }
     }
-    petsc_printfqueuefile = NULL;
   } else { /* other processors send queue to processor 0 */
     PrintfQueue next = petsc_printfqueuebase,previous;
 

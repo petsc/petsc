@@ -24,7 +24,7 @@ PetscErrorCode MyMult(MPI_Comm comm,MyMultCtx *ctx,void *dummy)
 
   PetscFunctionBeginUser;
   ierr = PetscSynchronizedPrintf(ctx->comm,"Doing multiply\n");
-  ierr = PetscSynchronizedFlush(ctx->comm);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(ctx->comm,PETSC_STDOUT);CHKERRQ(ierr);
   /* moves data that lives only on master processes to all processes */
   ierr = VecScatterBegin(ctx->sct,ctx->xr,ctx->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx->sct,ctx->xr,ctx->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -47,7 +47,7 @@ PetscErrorCode MySubsolver(MyMultCtx *ctx)
 
   PetscFunctionBeginUser;
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"MySubsolver\n");
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
   /* allocates memory on each process, both masters and workers */
   ierr = PetscHMPIMalloc(PETSC_COMM_LOCAL_WORLD,sizeof(int),&subctx);CHKERRQ(ierr);
   /* runs MyMult() function on each process, both masters and workers */

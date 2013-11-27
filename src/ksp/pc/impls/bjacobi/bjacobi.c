@@ -1246,7 +1246,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
       ierr = MatGetLocalSize(mpjac->submats,&m,NULL);CHKERRQ(ierr);
       ierr = MatGetSize(mpjac->submats,&n,NULL);CHKERRQ(ierr);
       ierr = PetscSynchronizedPrintf(comm,"[%d], sub-size %d,sub-rank %d\n",rank,subsize,subrank);
-      ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+      ierr = PetscSynchronizedFlush(comm,PETSC_STDOUT);CHKERRQ(ierr);
     */
 
     /* create dummy vectors xsub and ysub */

@@ -114,7 +114,7 @@ int main(int argc,char **argv)
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
   if (mats_view) {
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d] b: m %d\n",rank,m);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
     ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);

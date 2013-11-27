@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
   if (flg) {
     ierr = PetscRandomGetValue(ran,(PetscScalar*)&r);
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] rval: %g\n",myid,r);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);
   }
 
   hinfo.n           = 31;

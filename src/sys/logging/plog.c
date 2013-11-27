@@ -1854,7 +1854,7 @@ PetscErrorCode  PetscLogPrintDetailed(MPI_Comm comm, const char filename[])
       }
     }
   }
-  ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(comm,fd);CHKERRQ(ierr);
 
   ierr = PetscFree(stageUsed);CHKERRQ(ierr);
   ierr = PetscFree(stageVisible);CHKERRQ(ierr);
