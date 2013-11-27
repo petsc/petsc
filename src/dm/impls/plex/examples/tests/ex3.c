@@ -218,7 +218,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
 #define __FUNCT__ "CheckFunctions"
 PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
 {
-  void          (*exactFuncs[3]) (const PetscReal x[], PetscScalar *u);
+  void          (*exactFuncs[3]) (const PetscReal x[], PetscScalar *u, void *ctx);
   MPI_Comm        comm;
   PetscInt        dim  = user->dim, Nc;
   PetscQuadrature fq;
@@ -278,15 +278,15 @@ PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
   }
   /* Project function into FE function space */
   if (isPlex) {
-    ierr = DMPlexProjectFunction(dm, &user->fe, exactFuncs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+    ierr = DMPlexProjectFunction(dm, &user->fe, exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   } else if (isDA) {
-    ierr = DMDAProjectFunction(dm, &user->fe, exactFuncs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+    ierr = DMDAProjectFunction(dm, &user->fe, exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "No FEM projection routine for this type of DM");
   /* Compare approximation to exact in L_2 */
   if (isPlex) {
-    ierr = DMPlexComputeL2Diff(dm, &user->fe, exactFuncs, u, &error);CHKERRQ(ierr);
+    ierr = DMPlexComputeL2Diff(dm, &user->fe, exactFuncs, NULL, u, &error);CHKERRQ(ierr);
   } else if (isDA) {
-    ierr = DMDAComputeL2Diff(dm, &user->fe, exactFuncs, u, &error);CHKERRQ(ierr);
+    ierr = DMDAComputeL2Diff(dm, &user->fe, exactFuncs, NULL, u, &error);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "No FEM projection routine for this type of DM");
   if (error > tol) {
     ierr = PetscPrintf(comm, "Tests FAIL for order %d at tolerance %g error %g\n", order, tol, error);CHKERRQ(ierr);
