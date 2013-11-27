@@ -1,24 +1,23 @@
-#define TaoSolver PetscFortranAddr
-#define TaoLineSearch PetscFortranAddr
-#define TaoSolverTerminationReason integer
+!
+!  Include file for Fortran use of the TAO (Optimization) package in PETSc
+!
+#include "finclude/taosolverdef.h"
 
-#if !defined (PETSC_AVOID_DECLARATIONS)
-
-      integer TAO_CONVERGED_FATOL
-      integer TAO_CONVERGED_FRTOL
-      integer TAO_CONVERGED_GATOL
-      integer TAO_CONVERGED_GRTOL
-      integer TAO_CONVERGED_GTTOL
-      integer TAO_CONVERGED_STEPTOL
-      integer TAO_CONVERGED_MINF
-      integer TAO_CONVERGED_USER
-      integer TAO_DIVERGED_MAXITS
-      integer TAO_DIVERGED_NAN
-      integer TAO_DIVERGED_MAXFCN
-      integer TAO_DIVERGED_LS_FAILURE
-      integer TAO_DIVERGED_TR_REDUCTION
-      integer TAO_DIVERGED_USER
-      integer TAO_CONTINUE_ITERATING
+      PetscEnum TAO_CONVERGED_FATOL
+      PetscEnum TAO_CONVERGED_FRTOL
+      PetscEnum TAO_CONVERGED_GATOL
+      PetscEnum TAO_CONVERGED_GRTOL
+      PetscEnum TAO_CONVERGED_GTTOL
+      PetscEnum TAO_CONVERGED_STEPTOL
+      PetscEnum TAO_CONVERGED_MINF
+      PetscEnum TAO_CONVERGED_USER
+      PetscEnum TAO_DIVERGED_MAXITS
+      PetscEnum TAO_DIVERGED_NAN
+      PetscEnum TAO_DIVERGED_MAXFCN
+      PetscEnum TAO_DIVERGED_LS_FAILURE
+      PetscEnum TAO_DIVERGED_TR_REDUCTION
+      PetscEnum TAO_DIVERGED_USER
+      PetscEnum TAO_CONTINUE_ITERATING
 
       parameter ( TAO_CONVERGED_FATOL = 1)
       parameter ( TAO_CONVERGED_FRTOL = 2)
@@ -35,6 +34,3 @@
       parameter ( TAO_DIVERGED_TR_REDUCTION = -7)
       parameter ( TAO_DIVERGED_USER = -8)
       parameter ( TAO_CONTINUE_ITERATING = 0)
-
-
-#endif
