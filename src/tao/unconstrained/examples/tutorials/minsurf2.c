@@ -129,20 +129,12 @@ int main( int argc, char **argv )
      the Hessian evalution routine.
      Set the matrix structure to be used for Hessian evalutions
   */
-#if (PETSC_VERSION_RELEASE==0)
   ierr = DMCreateMatrix(user.dm,&user.H);CHKERRQ(ierr);
-#else
-  ierr = DMCreateMatrix(user.dm,MATAIJ,&user.H);CHKERRQ(ierr);
-#endif
   ierr = MatSetOption(user.H,MAT_SYMMETRIC,PETSC_TRUE); CHKERRQ(ierr);
 
 
   if (fdcoloring) {
-#if (PETSC_VERSION_RELEASE==0) 
     ierr = DMCreateColoring(user.dm,IS_COLORING_GLOBAL,&iscoloring); 
-#else
-    ierr = DMCreateColoring(user.dm,IS_COLORING_GLOBAL,MATAIJ,&iscoloring); 
-#endif
       CHKERRQ(ierr);
 
       ierr = MatFDColoringCreate(user.H,iscoloring,&matfdcoloring);
