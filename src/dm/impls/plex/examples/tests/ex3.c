@@ -20,37 +20,37 @@ typedef struct {
   PetscInt  porder;            /* Order of polynomials to test */
 } AppCtx;
 
-void constant(const PetscReal coords[], PetscScalar *u)
+void constant(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
-  *u = 1.0;
+  *u = *(PetscReal *)ctx;
 }
 
-void linear_x(const PetscReal coords[], PetscScalar *u)
+void linear_x(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
   *u = coords[0];
 }
-void linear_y(const PetscReal coords[], PetscScalar *u)
+void linear_y(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
   *u = coords[1];
 }
-void linear_z(const PetscReal coords[], PetscScalar *u)
+void linear_z(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
   *u = coords[2];
 }
 
-void quadratic_xx(const PetscReal coords[], PetscScalar *u)
+void quadratic_xx(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
   *u = coords[0]*coords[0];
 }
-void quadratic_xy(const PetscReal coords[], PetscScalar *u)
+void quadratic_xy(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
   *u = coords[0]*coords[1];
 }
-void quadratic_yz(const PetscReal coords[], PetscScalar *u)
+void quadratic_yz(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
   *u = coords[1]*coords[2];
 }
-void quadratic_zx(const PetscReal coords[], PetscScalar *u)
+void quadratic_zx(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
   *u = coords[2]*coords[0];
 }
@@ -219,6 +219,8 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
 PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
 {
   void          (*exactFuncs[3]) (const PetscReal x[], PetscScalar *u, void *ctx);
+  void           *exactCtxs[3] = { NULL, NULL, NULL };
+  PetscReal       constants[3] = { 1.0, 2.0, 3.0 };
   MPI_Comm        comm;
   PetscInt        dim  = user->dim, Nc;
   PetscQuadrature fq;
@@ -239,6 +241,8 @@ PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
     case 0:
       exactFuncs[0] = constant;
       exactFuncs[1] = constant;
+      exactCtxs[0] = &constants[0];
+      exactCtxs[1] = &constants[1];
       break;
     case 1:
       exactFuncs[0] = linear_x;
@@ -258,6 +262,9 @@ PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
       exactFuncs[0] = constant;
       exactFuncs[1] = constant;
       exactFuncs[2] = constant;
+      exactCtxs[0] = &constants[0];
+      exactCtxs[1] = &constants[1];
+      exactCtxs[2] = &constants[2];
       break;
     case 1:
       exactFuncs[0] = linear_x;
@@ -278,15 +285,15 @@ PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
   }
   /* Project function into FE function space */
   if (isPlex) {
-    ierr = DMPlexProjectFunction(dm, &user->fe, exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+    ierr = DMPlexProjectFunction(dm, &user->fe, exactFuncs, exactCtxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   } else if (isDA) {
-    ierr = DMDAProjectFunction(dm, &user->fe, exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+    ierr = DMDAProjectFunction(dm, &user->fe, exactFuncs, exactCtxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "No FEM projection routine for this type of DM");
   /* Compare approximation to exact in L_2 */
   if (isPlex) {
-    ierr = DMPlexComputeL2Diff(dm, &user->fe, exactFuncs, NULL, u, &error);CHKERRQ(ierr);
+    ierr = DMPlexComputeL2Diff(dm, &user->fe, exactFuncs, exactCtxs, u, &error);CHKERRQ(ierr);
   } else if (isDA) {
-    ierr = DMDAComputeL2Diff(dm, &user->fe, exactFuncs, NULL, u, &error);CHKERRQ(ierr);
+    ierr = DMDAComputeL2Diff(dm, &user->fe, exactFuncs, exactCtxs, u, &error);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "No FEM projection routine for this type of DM");
   if (error > tol) {
     ierr = PetscPrintf(comm, "Tests FAIL for order %d at tolerance %g error %g\n", order, tol, error);CHKERRQ(ierr);
