@@ -1,4 +1,4 @@
-#include "petscdm.h"
+#include "petscdmda.h"
 #include "taosolver.h"
 #include "taodm.h"
 

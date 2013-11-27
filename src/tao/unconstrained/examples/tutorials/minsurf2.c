@@ -2,10 +2,10 @@
 
 /*
   Include "taosolver.h" so we can use TAO solvers.
-  petscdm.h for distributed array
+  petscdmda.h for distributed array
 */
 #include "taosolver.h"
-#include "petscdm.h"
+#include "petscdmda.h"
 
 static  char help[] = 
 "This example demonstrates use of the TAO package to \n\

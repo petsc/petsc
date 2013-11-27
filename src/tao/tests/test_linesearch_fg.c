@@ -1,10 +1,10 @@
 /*
   Include "tao.h" so we can use TAO solvers with PETSc support.  
-  Include "petscdm.h" so that we can use distributed arrays (DMs) for managing
+  Include "petscdmda.h" so that we can use distributed arrays (DMs) for managing
   the parallel mesh.
 */
 
-#include "petscdm.h"
+#include "petscdmda.h"
 #include "petscksp.h"
 #include "taosolver.h"
 

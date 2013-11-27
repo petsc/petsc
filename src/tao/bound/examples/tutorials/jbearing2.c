@@ -1,11 +1,11 @@
 /*
   Include "taosolver.h" so we can use TAO solvers
-  Include "petscdm.h" so that we can use distributed arrays (DMs) for managing
+  Include "petscdmda.h" so that we can use distributed arrays (DMs) for managing
   Include "petscksp.h" so we can set KSP type
   the parallel mesh.
 */
 
-#include "petscdm.h"
+#include "petscdmda.h"
 #include "petscksp.h"
 #include "taosolver.h"
 

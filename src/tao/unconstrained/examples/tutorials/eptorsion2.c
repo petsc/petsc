@@ -26,12 +26,12 @@
      petscsys.h    - sysem routines        petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
-  Include "petscdm.h" so that we can use distributed arrays (DMs) for managing
+  Include "petscdmda.h" so that we can use distributed arrays (DMs) for managing
   the parallel mesh.
 */
 
 #include "taosolver.h"
-#include "petscdm.h"
+#include "petscdmda.h"
 
 static  char help[] = 
 "Demonstrates use of the TAO package to solve \n\

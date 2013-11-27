@@ -1,4 +1,4 @@
-#include "petscdm.h"   /*I "petscdm.h" I*/
+#include "petscdmda.h"   /*I "petscdmda.h" I*/
 #include "taosolver.h" /*I "taosolver.h" I*/
 
 static  char help[] = 

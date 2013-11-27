@@ -1,4 +1,4 @@
-#include "petscdm.h"            /*I "petscdm.h"   I*/
+#include "petscdmda.h"            /*I "petscdmda.h"   I*/
 #include "petscksp.h"           /*I "petscksp.h"  I*/
 #include "petsc-private/pcimpl.h"     /*I "petscpc.h"   I*/
 #include "tao-private/taosolver_impl.h" /*I "taosolver.h" I*/

@@ -66,11 +66,11 @@
 
 /*
   Include "tao.h" so we can use TAO solvers.
-  Include "petscdm.h" so that we can use distributed meshes (DMs) for managing
+  Include "petscdmda.h" so that we can use distributed meshes (DMs) for managing
   the parallel mesh.
 */
 
-#include "petscdm.h"
+#include "petscdmda.h"
 #include "tao.h"
 
 static char  help[] =
