@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.gitcommit         = '6ed398f4e75cc071360bebaaf575ce249477d61f'
+    self.gitcommit         = 'fdecceecbcd917ed36bbdab98210e7a37bf7e613'
     self.giturls           = ['https://bitbucket.org/petsc/ctetgen.git']
     self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ctetgen-0.1.tar.gz']
     self.functions         = []
@@ -14,6 +14,7 @@ class Configure(PETSc.package.NewPackage):
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
+    framework.require('PETSc.packages.openmp',self)
     self.deps       = []
     return
 
