@@ -201,7 +201,8 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
     if (jac->kspupper != jac->head->ksp) {
       ierr = PetscViewerASCIIPrintf(viewer,"KSP solver for upper A00 in upper triangular factor \n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = KSPView(jac->kspupper,viewer);CHKERRQ(ierr);
+      if (jac->kspupper) {ierr = KSPView(jac->kspupper,viewer);CHKERRQ(ierr);}
+      else {ierr = PetscViewerASCIIPrintf(viewer,"  not yet available\n");CHKERRQ(ierr);}
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"KSP solver for S = A11 - A10 inv(A00) A01 \n");CHKERRQ(ierr);
