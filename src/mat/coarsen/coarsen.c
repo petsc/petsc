@@ -483,7 +483,7 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
     def = ((PetscObject)coarser)->type_name;
   }
 
-  ierr = PetscOptionsList("-mat_coarsen_type","Type of aggregator","MatCoarsenSetType",MatCoarsenList,def,type,256,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-mat_coarsen_type","Type of aggregator","MatCoarsenSetType",MatCoarsenList,def,type,256,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = MatCoarsenSetType(coarser,type);CHKERRQ(ierr);
   }

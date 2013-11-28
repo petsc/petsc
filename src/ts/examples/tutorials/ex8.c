@@ -374,7 +374,7 @@ int main(int argc,char **argv)
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Timestepping benchmark options","");CHKERRQ(ierr);
   {
-    ierr        = PetscOptionsList("-problem_type","Name of problem to run","",plist,pname,pname,sizeof(pname),NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsFList("-problem_type","Name of problem to run","",plist,pname,pname,sizeof(pname),NULL);CHKERRQ(ierr);
     use_monitor = PETSC_FALSE;
     ierr        = PetscOptionsBool("-monitor_error","Display errors relative to exact solutions","",use_monitor,&use_monitor,NULL);CHKERRQ(ierr);
   }

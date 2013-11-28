@@ -77,7 +77,7 @@ PETSC_EXTERN PetscInt PetscOptionsPublishCount;
   Notes: Needs to be ended by a call the PetscOptionsEnd()
          Can add subheadings with PetscOptionsHead()
 
-  Developer notes: PetscOptionsPublish is set in PetscOptionsCheckInitial_Private() with -options_gui. When PetscOptionsPublish is set the
+  Developer notes: PetscOptionsPublish is set in PetscOptionsCheckInitial_Private() with -saws_options. When PetscOptionsPublish is set the
 $             loop between PetscOptionsBegin() and PetscOptionsEnd() is run THREE times with PetscOptionsPublishCount of values -1,0,1 otherwise
 $             the loop is run ONCE with a PetscOptionsPublishCount of 1.
 $             = -1 : The PetscOptionsInt() etc just call the PetscOptionsGetInt() etc
@@ -97,7 +97,7 @@ $           currently set.
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList(), PetscObjectOptionsBegin()
+          PetscOptionsFList(), PetscOptionsEList(), PetscObjectOptionsBegin()
 
 M*/
 #define    PetscOptionsBegin(comm,prefix,mess,sec) 0; do {\
@@ -128,7 +128,7 @@ M*/
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList()
+          PetscOptionsFList(), PetscOptionsEList()
 
 M*/
 #define PetscObjectOptionsBegin(obj) 0; do {                            \
@@ -155,7 +155,7 @@ M*/
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList(), PetscObjectOptionsBegin()
+          PetscOptionsFList(), PetscOptionsEList(), PetscObjectOptionsBegin()
 
 M*/
 #define    PetscOptionsEnd() _5_ierr = PetscOptionsEnd_Private();CHKERRQ(_5_ierr);}} while (0)
@@ -194,7 +194,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsHead(const char[]);
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList(), PetscOptionsEnum()
+          PetscOptionsFList(), PetscOptionsEList(), PetscOptionsEnum()
 M*/
 #define    PetscOptionsTail() 0; {if (PetscOptionsPublishCount != 1) PetscFunctionReturn(0);}
 
@@ -208,7 +208,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsBool(const char[],const char[],const cha
 PETSC_EXTERN PetscErrorCode PetscOptionsBoolGroupBegin(const char[],const char[],const char[],PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsBoolGroup(const char[],const char[],const char[],PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsBoolGroupEnd(const char[],const char[],const char[],PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOptionsList(const char[],const char[],const char[],PetscFunctionList,const char[],char[],size_t,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsFList(const char[],const char[],const char[],PetscFunctionList,const char[],char[],size_t,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsEList(const char[],const char[],const char[],const char*const*,PetscInt,const char[],PetscInt*,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsRealArray(const char[],const char[],const char[],PetscReal[],PetscInt*,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsIntArray(const char[],const char[],const char[],PetscInt[],PetscInt*,PetscBool *);
@@ -217,23 +217,23 @@ PETSC_EXTERN PetscErrorCode PetscOptionsBoolArray(const char[],const char[],cons
 
 
 PETSC_EXTERN PetscErrorCode PetscOptionsSetFromOptions(void);
-PETSC_EXTERN PetscErrorCode PetscOptionsAMSDestroy(void);
+PETSC_EXTERN PetscErrorCode PetscOptionsSAWsDestroy(void);
 
 /*
     See manual page for PetscOptionsBegin()
 */
-typedef enum {OPTION_INT,OPTION_LOGICAL,OPTION_REAL,OPTION_LIST,OPTION_STRING,OPTION_REAL_ARRAY,OPTION_HEAD,OPTION_INT_ARRAY,OPTION_ELIST,OPTION_LOGICAL_ARRAY,OPTION_STRING_ARRAY} PetscOptionType;
+typedef enum {OPTION_INT,OPTION_BOOL,OPTION_REAL,OPTION_FLIST,OPTION_STRING,OPTION_REAL_ARRAY,OPTION_HEAD,OPTION_INT_ARRAY,OPTION_ELIST,OPTION_BOOL_ARRAY,OPTION_STRING_ARRAY} PetscOptionType;
 typedef struct _n_PetscOptions* PetscOptions;
 struct _n_PetscOptions {
   char              *option;
   char              *text;
   void              *data;         /* used to hold the default value and then any value it is changed to by GUI */
-  PetscFunctionList flist;         /* used for available values for PetscOptionsList() */
+  PetscFunctionList flist;         /* used for available values for PetscOptionsFList() */
   const char *const *list;        /* used for available values for PetscOptionsEList() */
   char              nlist;         /* number of entries in list */
   char              *man;
   size_t            arraylength;   /* number of entries in data in the case that it is an array (of PetscInt etc) */
-  PetscBool         set;           /* the user has changed this value in the GUI */
+  int               set;           /* the user has changed this value in the GUI */
   PetscOptionType   type;
   PetscOptions      next;
   char              *pman;

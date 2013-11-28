@@ -430,6 +430,13 @@ runex5_5_qn:
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_qn, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_5_qn.tmp
 
+runex5_5_broyden:
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type qn -snes_qn_type broyden -snes_qn_m ${N_RESTART} \
+        > ex5_5_broyden.tmp 2>&1; \
+	   if (${DIFF} output/ex5_5_broyden.out ex5_5_broyden.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex5_5_broyden, diffs above \n========================================="; fi; \
+	   ${RM} -f ex5_5_broyden.tmp
+
 runex5_5_ls:
 	-@${CSD_BASIC_COMMAND_LINE} -snes_type newtonls \
         > ex5_5_ls.tmp 2>&1; \
@@ -815,6 +822,13 @@ runex19_fas: #test ex19 with FAS and pointwise GS smoother
 	   ${DIFF} output/ex19_fas.out ex19_fas.tmp || echo  ${PWD} "\nPossible problem with ex19_fas, diffs above \n========================================="; \
            ${RM} -f ex19_fas.tmp
 
+runex19_fas_full: #test ex19 with FAS and pointwise GS smoother
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 4 -snes_monitor_short -snes_type fas -snes_fas_type full -snes_fas_full_downsweep \
+        -fas_levels_snes_type gs -fas_levels_snes_gs_sweeps 3 -fas_levels_snes_gs_rtol 1e-15 -fas_levels_snes_gs_atol 0.0 -fas_levels_snes_gs_stol 0.0 \
+        -grashof 4e4 -snes_fas_smoothup 6 -snes_fas_smoothdown 6 -lidvelocity 100 > ex19_fas_full.tmp 2>&1; \
+	   ${DIFF} output/ex19_fas_full.out ex19_fas_full.tmp || echo  ${PWD} "\nPossible problem with ex19_fas, diffs above \n========================================="; \
+        #           ${RM} -f ex19_fas_full.tmp
+
 runex19_ngmres_fas: #test ex19 with NGMRES preconditioned by FAS with pointwise GS smoother
 	-@${MPIEXEC} -n 1 ./ex19 -da_refine 4 -snes_monitor_short -snes_type ngmres \
         -npc_fas_levels_snes_type gs -npc_fas_levels_snes_gs_sweeps 3 -npc_fas_levels_snes_gs_rtol 1e-15 -npc_fas_levels_snes_gs_atol 0.0 -npc_fas_levels_snes_gs_stol 0.0 \
@@ -1076,7 +1090,7 @@ runex73f90t:
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
                                  runex3_2 runex3_3 runex3_4 ex3.rm ex4.PETSc runex4 ex4.rm ex5.PETSc runex5 runex5_2 runex5_3 runex5_4 \
                                  runex5_5_ngmres runex5_5_ngmres_nrichardson runex5_5_ncg runex5_5_nrichardson \
-                                 runex5_5_ngmres_ngs runex5_5_qn runex5_5_ls \
+                                 runex5_5_ngmres_ngs runex5_5_qn runex5_5_broyden runex5_5_ls \
                                  runex5_5_fas runex5_5_ngmres_fas runex5_5_fas_additive \
                                  runex5_5_nasm runex5_5_newton_asm_dmda runex5_5_newton_gasm_dmda \
                                  runex5_6 ex5.rm ex7.PETSc runex7 ex7.rm\
@@ -1106,7 +1120,7 @@ TESTEXAMPLES_C_X_MPIUNI        = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm
 TESTEXAMPLES_F90	       = ex5f90.PETSc runex5f90 runex5f90_2 runex5f90_3 runex5f90_4 runex5f90_5 ex5f90.rm
 TESTEXAMPLES_13		       =
 TESTEXAMPLES_MATLAB_ENGINE     =
-TESTEXAMPLES_AMS	       =
+TESTEXAMPLES_SAWS	       =
 TESTEXAMPLES_ADIFOR	       = ex5f.PETSc runex5f_2 ex5f.rm
 TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_4 runex19_fieldsplit_mumps runex19_3 runex19_4  ex19.rm
 TESTEXAMPLES_SUPERLU           = ex19.PETSc runex19_superlu ex19.rm

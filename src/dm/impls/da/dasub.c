@@ -113,44 +113,58 @@ PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecSc
   PetscInt       *indices,i,j;
 
   PetscFunctionBegin;
-  if (dd->dim == 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot get slice from 1d DMDA");
-  if (dd->dim == 3) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot get slice from 3d DMDA");
-  ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRQ(ierr);
+  if (dd->dim == 3) SETERRQ(PetscObjectComm((PetscObject) da), PETSC_ERR_SUP, "Cannot get slice from 3d DMDA");
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) da), &rank);CHKERRQ(ierr);
+  ierr = DMDAGetAO(da, &ao);CHKERRQ(ierr);
   if (!rank) {
-    if (dir == DMDA_Y) {
-      ierr       = PetscMalloc(dd->w*dd->M*sizeof(PetscInt),&indices);CHKERRQ(ierr);
-      indices[0] = gp*dd->M*dd->w;
-      for (i=1; i<dd->M*dd->w; i++) indices[i] = indices[i-1] + 1;
+    if (dd->dim == 1) {
+      if (dir == DMDA_X) {
+        ierr = PetscMalloc(dd->w * sizeof(PetscInt), &indices);CHKERRQ(ierr);
+        indices[0] = dd->w*gp;
+        for (i = 1; i < dd->w; ++i) indices[i] = indices[i-1] + 1;
+        ierr = AOApplicationToPetsc(ao, dd->w, indices);CHKERRQ(ierr);
+        ierr = VecCreate(PETSC_COMM_SELF, newvec);CHKERRQ(ierr);
+        ierr = VecSetBlockSize(*newvec, dd->w);CHKERRQ(ierr);
+        ierr = VecSetSizes(*newvec, dd->w, PETSC_DETERMINE);CHKERRQ(ierr);
+        ierr = VecSetType(*newvec, VECSEQ);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PETSC_COMM_SELF, dd->w, indices, PETSC_OWN_POINTER, &is);CHKERRQ(ierr);
+      } else if (dir == DMDA_Y) SETERRQ(PetscObjectComm((PetscObject) da), PETSC_ERR_SUP, "Cannot get Y slice from 1d DMDA");
+      else SETERRQ(PetscObjectComm((PetscObject) da), PETSC_ERR_ARG_OUTOFRANGE, "Unknown DMDADirection");
+    } else {
+      if (dir == DMDA_Y) {
+        ierr       = PetscMalloc(dd->w*dd->M*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+        indices[0] = gp*dd->M*dd->w;
+        for (i=1; i<dd->M*dd->w; i++) indices[i] = indices[i-1] + 1;
 
-      ierr = AOApplicationToPetsc(ao,dd->M*dd->w,indices);CHKERRQ(ierr);
-      ierr = VecCreate(PETSC_COMM_SELF,newvec);CHKERRQ(ierr);
-      ierr = VecSetBlockSize(*newvec,dd->w);CHKERRQ(ierr);
-      ierr = VecSetSizes(*newvec,dd->M*dd->w,PETSC_DETERMINE);CHKERRQ(ierr);
-      ierr = VecSetType(*newvec,VECSEQ);CHKERRQ(ierr);
-      ierr = ISCreateGeneral(PETSC_COMM_SELF,dd->w*dd->M,indices,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
-    } else if (dir == DMDA_X) {
-      ierr       = PetscMalloc(dd->w*dd->N*sizeof(PetscInt),&indices);CHKERRQ(ierr);
-      indices[0] = dd->w*gp;
-      for (j=1; j<dd->w; j++) indices[j] = indices[j-1] + 1;
-      for (i=1; i<dd->N; i++) {
-        indices[i*dd->w] = indices[i*dd->w-1] + dd->w*dd->M - dd->w + 1;
-        for (j=1; j<dd->w; j++) indices[i*dd->w + j] = indices[i*dd->w + j - 1] + 1;
-      }
-      ierr = AOApplicationToPetsc(ao,dd->w*dd->N,indices);CHKERRQ(ierr);
-      ierr = VecCreate(PETSC_COMM_SELF,newvec);CHKERRQ(ierr);
-      ierr = VecSetBlockSize(*newvec,dd->w);CHKERRQ(ierr);
-      ierr = VecSetSizes(*newvec,dd->N*dd->w,PETSC_DETERMINE);CHKERRQ(ierr);
-      ierr = VecSetType(*newvec,VECSEQ);CHKERRQ(ierr);
-      ierr = ISCreateGeneral(PETSC_COMM_SELF,dd->w*dd->N,indices,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
-    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown DMDADirection");
+        ierr = AOApplicationToPetsc(ao,dd->M*dd->w,indices);CHKERRQ(ierr);
+        ierr = VecCreate(PETSC_COMM_SELF,newvec);CHKERRQ(ierr);
+        ierr = VecSetBlockSize(*newvec,dd->w);CHKERRQ(ierr);
+        ierr = VecSetSizes(*newvec,dd->M*dd->w,PETSC_DETERMINE);CHKERRQ(ierr);
+        ierr = VecSetType(*newvec,VECSEQ);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PETSC_COMM_SELF,dd->w*dd->M,indices,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+      } else if (dir == DMDA_X) {
+        ierr       = PetscMalloc(dd->w*dd->N*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+        indices[0] = dd->w*gp;
+        for (j=1; j<dd->w; j++) indices[j] = indices[j-1] + 1;
+        for (i=1; i<dd->N; i++) {
+          indices[i*dd->w] = indices[i*dd->w-1] + dd->w*dd->M - dd->w + 1;
+          for (j=1; j<dd->w; j++) indices[i*dd->w + j] = indices[i*dd->w + j - 1] + 1;
+        }
+        ierr = AOApplicationToPetsc(ao,dd->w*dd->N,indices);CHKERRQ(ierr);
+        ierr = VecCreate(PETSC_COMM_SELF,newvec);CHKERRQ(ierr);
+        ierr = VecSetBlockSize(*newvec,dd->w);CHKERRQ(ierr);
+        ierr = VecSetSizes(*newvec,dd->N*dd->w,PETSC_DETERMINE);CHKERRQ(ierr);
+        ierr = VecSetType(*newvec,VECSEQ);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PETSC_COMM_SELF,dd->w*dd->N,indices,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown DMDADirection");
+    }
   } else {
-    ierr = VecCreateSeq(PETSC_COMM_SELF,0,newvec);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,0,0,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF, 0, newvec);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, 0, 0, PETSC_COPY_VALUES, &is);CHKERRQ(ierr);
   }
-  ierr = DMGetGlobalVector(da,&vec);CHKERRQ(ierr);
-  ierr = VecScatterCreate(vec,is,*newvec,NULL,scatter);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(da,&vec);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(da, &vec);CHKERRQ(ierr);
+  ierr = VecScatterCreate(vec, is, *newvec, NULL, scatter);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da, &vec);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

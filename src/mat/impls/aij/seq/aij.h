@@ -312,7 +312,7 @@ PETSC_INTERN PetscErrorCode MatView_SeqAIJ(Mat,PetscViewer);
 PETSC_INTERN PetscErrorCode MatSeqAIJInvalidateDiagonal(Mat);
 PETSC_INTERN PetscErrorCode MatSeqAIJInvalidateDiagonal_Inode(Mat);
 PETSC_INTERN PetscErrorCode Mat_CheckInode(Mat,PetscBool);
-PETSC_INTERN PetscErrorCode Mat_CheckInode_FactorLU(Mat,PetscBool);
+PETSC_INTERN PetscErrorCode Mat_CheckInode_FactorLU(Mat);
 
 PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_SeqAIJ(Mat,Mat,PetscInt*);
 

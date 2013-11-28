@@ -1672,7 +1672,7 @@ PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt po
 
   Input Parameter:
 + section - The PetscSection object
-- perm - The point permutation
+- perm - The point permutation, old point p becomes new point perm[p]
 
   Output Parameter:
 . sectionNew - The permuted PetscSection

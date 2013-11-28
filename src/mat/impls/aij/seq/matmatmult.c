@@ -9,7 +9,6 @@
 #include <../src/mat/utils/petscheap.h>
 #include <petscbt.h>
 #include <../src/mat/impls/dense/seq/dense.h>
-#include <petsctime.h>
 
 static PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat,Mat,PetscReal,Mat*);
 
@@ -881,13 +880,19 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   if (abt->usecoloring) {
     /* Create MatTransposeColoring from symbolic C=A*B^T */
     MatTransposeColoring matcoloring;
+    MatColoring          coloring;
     ISColoring           iscoloring;
     Mat                  Bt_dense,C_dense;
     Mat_SeqAIJ           *c=(Mat_SeqAIJ*)(*C)->data;
     /* inode causes memory problem, don't know why */
     if (c->inode.use) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MAT_USE_INODES is not supported. Use '-mat_no_inode'");
 
-    ierr = MatGetColoring(*C,MATCOLORINGLF,&iscoloring);CHKERRQ(ierr);
+    ierr = MatColoringCreate(*C,&coloring);CHKERRQ(ierr);
+    ierr = MatColoringSetDistance(coloring,2);CHKERRQ(ierr);
+    ierr = MatColoringSetType(coloring,MATCOLORINGSL);CHKERRQ(ierr);
+    ierr = MatColoringSetFromOptions(coloring);CHKERRQ(ierr);
+    ierr = MatColoringApply(coloring,&iscoloring);CHKERRQ(ierr);
+    ierr = MatColoringDestroy(&coloring);CHKERRQ(ierr);
     ierr = MatTransposeColoringCreate(*C,iscoloring,&matcoloring);CHKERRQ(ierr);
 
     abt->matcoloring = matcoloring;

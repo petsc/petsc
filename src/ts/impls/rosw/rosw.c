@@ -1480,6 +1480,25 @@ static PetscErrorCode TSView_RosW(TS ts,PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSLoad_RosW"
+static PetscErrorCode TSLoad_RosW(TS ts,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  SNES           snes;
+  TSAdapt        tsadapt;
+
+  PetscFunctionBegin;
+  ierr = TSGetAdapt(ts,&tsadapt);CHKERRQ(ierr);
+  ierr = TSAdaptLoad(tsadapt,viewer);CHKERRQ(ierr);
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  ierr = SNESLoad(snes,viewer);CHKERRQ(ierr);
+  /* function and Jacobian context for SNES when used with TS is always ts object */
+  ierr = SNESSetFunction(snes,NULL,NULL,ts);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,NULL,NULL,NULL,ts);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSRosWSetType"
 /*@C
   TSRosWSetType - Set the type of Rosenbrock-W scheme
@@ -1680,6 +1699,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS ts)
   ts->ops->reset          = TSReset_RosW;
   ts->ops->destroy        = TSDestroy_RosW;
   ts->ops->view           = TSView_RosW;
+  ts->ops->load           = TSLoad_RosW;
   ts->ops->setup          = TSSetUp_RosW;
   ts->ops->step           = TSStep_RosW;
   ts->ops->interpolate    = TSInterpolate_RosW;

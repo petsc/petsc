@@ -459,11 +459,6 @@ PETSC_EXTERN PetscErrorCode PetscIntStackPop(PetscIntStack, int *);
 PETSC_EXTERN PetscErrorCode PetscIntStackTop(PetscIntStack, int *);
 PETSC_EXTERN PetscErrorCode PetscIntStackEmpty(PetscIntStack, PetscBool  *);
 
-/* Special support for C++ */
-#if defined(PETSC_CLANGUAGE_CXX) && defined(__cplusplus)
-#include <petsclog.hh>
-#endif
-
 #define PetscPreLoadBegin(flag,name) \
 do {\
   PetscBool      PetscPreLoading = flag;\

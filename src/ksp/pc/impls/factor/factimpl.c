@@ -261,7 +261,7 @@ PetscErrorCode  PCSetFromOptions_Factor(PC pc)
   }
 
   ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-pc_factor_mat_ordering_type","Reordering to reduce nonzeros in factored matrix","PCFactorSetMatOrderingType",ordlist,((PC_Factor*)factor)->ordering,tname,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-pc_factor_mat_ordering_type","Reordering to reduce nonzeros in factored matrix","PCFactorSetMatOrderingType",ordlist,((PC_Factor*)factor)->ordering,tname,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCFactorSetMatOrderingType(pc,tname);CHKERRQ(ierr);
   }

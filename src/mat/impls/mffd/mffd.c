@@ -619,7 +619,7 @@ PetscErrorCode  MatSetFromOptions_MFFD(Mat mat)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidHeaderSpecific(mfctx,MATMFFD_CLASSID,1);
   ierr = PetscObjectOptionsBegin((PetscObject)mfctx);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-mat_mffd_type","Matrix free type","MatMFFDSetType",MatMFFDList,((PetscObject)mfctx)->type_name,ftype,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-mat_mffd_type","Matrix free type","MatMFFDSetType",MatMFFDList,((PetscObject)mfctx)->type_name,ftype,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatMFFDSetType(mat,ftype);CHKERRQ(ierr);
   }
@@ -801,6 +801,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
      error_rel = square root of relative error in function evaluation
      umin = minimum iterate parameter
 .ve
+
+   You can call SNESSetJacobian() with MatMFFDComputeJacobian() if you are using matrix and not a different
+   preconditioner matrix
 
    The user can set the error_rel via MatMFFDSetFunctionError() and
    umin via MatMFFDDSSetUmin(); see the <A href="../../docs/manual.pdf#nameddest=ch_snes">SNES chapter of the users manual</A> for details.

@@ -7,7 +7,7 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
 {
   PetscErrorCode ierr;
   DM_DA          *dd         = (DM_DA*)da->data;
-  PetscInt       refine      = 0,maxnlevels = 100,*refx,*refy,*refz,n,i;
+  PetscInt       refine      = 0,maxnlevels = 100,refx[100],refy[100],refz[100],n,i;
   PetscBool      negativeMNP = PETSC_FALSE,bM = PETSC_FALSE,bN = PETSC_FALSE, bP = PETSC_FALSE,flg;
 
   PetscFunctionBegin;
@@ -54,7 +54,6 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
   dd->coarsen_x = dd->refine_x; dd->coarsen_y = dd->refine_y; dd->coarsen_z = dd->refine_z;
 
   /* Get refinement factors, defaults taken from the coarse DMDA */
-  ierr = PetscMalloc3(maxnlevels,PetscInt,&refx,maxnlevels,PetscInt,&refy,maxnlevels,PetscInt,&refz);CHKERRQ(ierr);
   ierr = DMDAGetRefinementFactor(da,&refx[0],&refy[0],&refz[0]);CHKERRQ(ierr);
   for (i=1; i<maxnlevels; i++) {
     refx[i] = refx[0];
@@ -109,7 +108,6 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
       dd->coarsen_z = refz[da->levelup - da->leveldown - 1];
     }
   }
-  ierr = PetscFree3(refx,refy,refz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

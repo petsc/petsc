@@ -176,7 +176,7 @@ PetscErrorCode  MatSetFromOptions(Mat B)
     }
   }
 
-  ierr = PetscOptionsList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatSetType(B,type);CHKERRQ(ierr);
   } else if (!((PetscObject)B)->type_name) {

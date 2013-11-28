@@ -274,7 +274,7 @@ PetscErrorCode  PetscDrawDestroy(PetscDraw *draw)
   }
 
   /* if memory was published then destroy it */
-  ierr = PetscObjectAMSViewOff((PetscObject)*draw);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsViewOff((PetscObject)*draw);CHKERRQ(ierr);
 
   if ((*draw)->ops->destroy) {
     ierr = (*(*draw)->ops->destroy)(*draw);CHKERRQ(ierr);
@@ -282,6 +282,7 @@ PetscErrorCode  PetscDrawDestroy(PetscDraw *draw)
   ierr = PetscFree((*draw)->title);CHKERRQ(ierr);
   ierr = PetscFree((*draw)->display);CHKERRQ(ierr);
   ierr = PetscFree((*draw)->savefilename);CHKERRQ(ierr);
+  ierr = PetscFree((*draw)->savefinalfilename);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -313,6 +314,10 @@ PetscErrorCode  PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
   if (draw->popup) *popup = draw->popup;
   else if (draw->ops->getpopup) {
     ierr = (*draw->ops->getpopup)(draw,popup);CHKERRQ(ierr);
+    if (*popup) {
+      ierr = PetscObjectSetOptionsPrefix((PetscObject)*popup,"popup_");CHKERRQ(ierr);
+    }
+    ierr = PetscDrawSetFromOptions(*popup);CHKERRQ(ierr);
   } else *popup = NULL;
   PetscFunctionReturn(0);
 }

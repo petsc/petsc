@@ -74,14 +74,14 @@ PetscErrorCode DMPlexVTKGetCellType(DM dm, PetscInt dim, PetscInt corners, Petsc
 PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
 {
   MPI_Comm       comm;
-  IS             globalVertexNumbers;
+  DMLabel        label;
+  IS             globalVertexNumbers = NULL;
   const PetscInt *gvertex;
   PetscInt       dim;
   PetscInt       numCorners = 0, totCorners = 0, maxCorners, *corners;
   PetscInt       numCells   = 0, totCells   = 0, maxCells, cellHeight;
-  PetscInt       numLabelCells, cMax, cStart, cEnd, c, vStart, vEnd, v;
+  PetscInt       numLabelCells, maxLabelCells, cMax, cStart, cEnd, c, vStart, vEnd, v;
   PetscMPIInt    numProcs, rank, proc, tag;
-  PetscBool      hasLabel;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -95,17 +95,16 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
+  ierr = DMPlexGetLabel(dm, "vtk", &label);CHKERRQ(ierr);
   ierr = DMPlexGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
-
-  hasLabel = numLabelCells > 0 ? PETSC_TRUE : PETSC_FALSE;
+  ierr = MPI_Allreduce(&numLabelCells, &maxLabelCells, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
+  if (!maxLabelCells) label = NULL;
   for (c = cStart; c < cEnd; ++c) {
     PetscInt *closure = NULL;
-    PetscInt closureSize;
+    PetscInt closureSize, value;
 
-    if (hasLabel) {
-      PetscInt value;
-
-      ierr = DMPlexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
+    if (label) {
+      ierr = DMLabelGetValue(label, c, &value);CHKERRQ(ierr);
       if (value != 1) continue;
     }
     ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
@@ -131,12 +130,10 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
     ierr = PetscMalloc(maxCorners * sizeof(int), &vertices);CHKERRQ(ierr);
     for (c = cStart, numCells = 0; c < cEnd; ++c) {
       PetscInt *closure = NULL;
-      PetscInt closureSize, nC = 0;
+      PetscInt closureSize, value, nC = 0;
 
-      if (hasLabel) {
-        PetscInt value;
-
-        ierr = DMPlexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
+      if (label) {
+        ierr = DMLabelGetValue(label, c, &value);CHKERRQ(ierr);
         if (value != 1) continue;
       }
       ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
@@ -183,12 +180,10 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
     ierr = PetscMalloc(numSend * sizeof(PetscInt), &localVertices);CHKERRQ(ierr);
     for (c = cStart, numCells = 0; c < cEnd; ++c) {
       PetscInt *closure = NULL;
-      PetscInt closureSize, nC = 0;
+      PetscInt closureSize, value, nC = 0;
 
-      if (hasLabel) {
-        PetscInt value;
-
-        ierr = DMPlexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
+      if (label) {
+        ierr = DMLabelGetValue(label, c, &value);CHKERRQ(ierr);
         if (value != 1) continue;
       }
       ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
@@ -545,7 +540,6 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
           IS              subpointIS;
           PetscInt        n = 0, q;
 
-          ierr = PetscPrintf(PETSC_COMM_SELF, "Making translation PetscSection\n");CHKERRQ(ierr);
           ierr = PetscSectionGetChart(section, &qStart, &qEnd);CHKERRQ(ierr);
           ierr = DMPlexCreateSubpointIS(dm, &subpointIS);CHKERRQ(ierr);
           if (subpointIS) {

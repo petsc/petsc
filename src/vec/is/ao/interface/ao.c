@@ -75,8 +75,8 @@ PetscErrorCode  AODestroy(AO *ao)
   if (!*ao) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*ao),AO_CLASSID,1);
   if (--((PetscObject)(*ao))->refct > 0) {*ao = 0; PetscFunctionReturn(0);}
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSViewOff((PetscObject)*ao);CHKERRQ(ierr);
+  /* if memory was published with SAWs then destroy it */
+  ierr = PetscObjectSAWsViewOff((PetscObject)*ao);CHKERRQ(ierr);
   /* destroy the internal part */
   if ((*ao)->ops->destroy) {
     ierr = (*(*ao)->ops->destroy)(*ao);CHKERRQ(ierr);
@@ -450,7 +450,7 @@ PetscErrorCode AOSetFromOptions(AO ao)
   PetscValidHeaderSpecific(ao,AO_CLASSID,1);
 
   ierr = PetscObjectOptionsBegin((PetscObject)ao);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-ao_type","AO type","AOSetType",AOList,def,type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-ao_type","AO type","AOSetType",AOList,def,type,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = AOSetType(ao,type);CHKERRQ(ierr);
   } else if (!((PetscObject)ao)->type_name) {

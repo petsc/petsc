@@ -34,7 +34,7 @@ PetscErrorCode ISColoringSetType(ISColoring coloring,ISColoringType type)
 
    Level: advanced
 
-.seealso: ISColoringView(), MatGetColoring()
+.seealso: ISColoringView(), MatColoring
 @*/
 PetscErrorCode  ISColoringDestroy(ISColoring *iscoloring)
 {
@@ -71,7 +71,7 @@ PetscErrorCode  ISColoringDestroy(ISColoring *iscoloring)
 
    Level: advanced
 
-.seealso: ISColoringDestroy(), ISColoringGetIS(), MatGetColoring()
+.seealso: ISColoringDestroy(), ISColoringGetIS(), MatColoring
 @*/
 PetscErrorCode  ISColoringView(ISColoring iscoloring,PetscViewer viewer)
 {

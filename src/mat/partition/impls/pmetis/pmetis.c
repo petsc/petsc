@@ -101,7 +101,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
     }
     /* Duplicate the communicator to be sure that ParMETIS attribute caching does not interfere with PETSc. */
     ierr   = MPI_Comm_dup(pcomm,&comm);CHKERRQ(ierr);
-    PetscStackCallParmetis(ParMETIS_V3_PartKway,(vtxdist,xadj,adjncy,part->vertex_weights,adj->values,&wgtflag,&numflag,&ncon,&nparts,tpwgts,ubvec,options,&pmetis->cuts,locals,&comm));
+    PetscStackCallParmetis(ParMETIS_V3_PartKway,((idx_t*)vtxdist,(idx_t*)xadj,(idx_t*)adjncy,(idx_t*)part->vertex_weights,(idx_t*)adj->values,(idx_t*)&wgtflag,(idx_t*)&numflag,(idx_t*)&ncon,(idx_t*)&nparts,tpwgts,ubvec,(idx_t*)options,(idx_t*)&pmetis->cuts,(idx_t*)locals,&comm));
     ierr   = MPI_Comm_free(&comm);CHKERRQ(ierr);
 
     ierr = PetscFree(tpwgts);CHKERRQ(ierr);
@@ -358,7 +358,7 @@ PetscErrorCode MatMeshToCellGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use MPIAdj matrix type");
   
   ierr = PetscObjectGetComm((PetscObject)mesh,&comm);CHKERRQ(ierr);
-  PetscStackCallParmetis(ParMETIS_V3_Mesh2Dual,(mesh->rmap->range,adj->i,adj->j,&numflag,&ncommonnodes,&newxadj,&newadjncy,&comm));
+  PetscStackCallParmetis(ParMETIS_V3_Mesh2Dual,((idx_t*)mesh->rmap->range,(idx_t*)adj->i,(idx_t*)adj->j,(idx_t*)&numflag,(idx_t*)&ncommonnodes,(idx_t**)&newxadj,(idx_t**)&newadjncy,&comm));
   ierr   = MatCreateMPIAdj(PetscObjectComm((PetscObject)mesh),mesh->rmap->n,mesh->rmap->N,newxadj,newadjncy,NULL,dual);CHKERRQ(ierr);
   newadj = (Mat_MPIAdj*)(*dual)->data;
 

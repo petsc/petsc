@@ -178,6 +178,10 @@ M*/
 typedef enum { ENUM_DUMMY } PetscEnum;
 PETSC_EXTERN MPI_Datatype MPIU_ENUM PetscAttrMPITypeTag(PetscEnum);
 
+#if defined(PETSC_HAVE_STDINT_H)
+#include <stdint.h>
+#endif
+
 /*MC
     PetscInt - PETSc type that represents integer - used primarily to
       represent size of arrays and indexing into arrays. Its size can be configured with the option
@@ -187,7 +191,9 @@ PETSC_EXTERN MPI_Datatype MPIU_ENUM PetscAttrMPITypeTag(PetscEnum);
 
 .seealso: PetscScalar, PetscBLASInt, PetscMPIInt
 M*/
-#if (PETSC_SIZEOF_LONG_LONG == 8)
+#if defined(PETSC_HAVE_STDINT_H)
+typedef int64_t Petsc64bitInt;
+#elif (PETSC_SIZEOF_LONG_LONG == 8)
 typedef long long Petsc64bitInt;
 #elif defined(PETSC_HAVE___INT64)
 typedef __int64 Petsc64bitInt;
@@ -196,7 +202,11 @@ typedef unknown64bit Petsc64bitInt
 #endif
 #if defined(PETSC_USE_64BIT_INDICES)
 typedef Petsc64bitInt PetscInt;
-#define MPIU_INT MPI_LONG_LONG_INT
+#  if defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
+#    define MPIU_INT MPI_INT64_T
+#  else
+#    define MPIU_INT MPI_LONG_LONG_INT
+#  endif
 #else
 typedef int PetscInt;
 #define MPIU_INT MPI_INT
@@ -1385,27 +1395,29 @@ PETSC_EXTERN PetscErrorCode PetscObjectTypeCompareAny(PetscObject,PetscBool*,con
 PETSC_EXTERN PetscErrorCode PetscRegisterFinalize(PetscErrorCode (*)(void));
 PETSC_EXTERN PetscErrorCode PetscRegisterFinalizeAll(void);
 
-#if defined(PETSC_HAVE_AMS)
-PETSC_EXTERN PetscErrorCode PetscObjectAMSViewOff(PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectAMSSetBlock(PetscObject,PetscBool);
-PETSC_EXTERN PetscErrorCode PetscObjectAMSBlock(PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectAMSGrantAccess(PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectAMSTakeAccess(PetscObject);
-PETSC_EXTERN void           PetscStackAMSGrantAccess(void);
-PETSC_EXTERN void           PetscStackAMSTakeAccess(void);
-PETSC_EXTERN PetscErrorCode PetscStackViewAMS(void);
-PETSC_EXTERN PetscErrorCode PetscStackAMSViewOff(void);
+#if defined(PETSC_HAVE_SAWS)
+PETSC_EXTERN PetscErrorCode PetscSAWsBlock(void);
+PETSC_EXTERN PetscErrorCode PetscObjectSAWsViewOff(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectSAWsSetBlock(PetscObject,PetscBool);
+PETSC_EXTERN PetscErrorCode PetscObjectSAWsBlock(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectSAWsGrantAccess(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectSAWsTakeAccess(PetscObject);
+PETSC_EXTERN void           PetscStackSAWsGrantAccess(void);
+PETSC_EXTERN void           PetscStackSAWsTakeAccess(void);
+PETSC_EXTERN PetscErrorCode PetscStackViewSAWs(void);
+PETSC_EXTERN PetscErrorCode PetscStackSAWsViewOff(void);
 
 #else
-#define PetscObjectAMSViewOff(obj)             0
-#define PetscObjectAMSSetBlock(obj,flg)        0
-#define PetscObjectAMSBlock(obj)               0
-#define PetscObjectAMSGrantAccess(obj)         0
-#define PetscObjectAMSTakeAccess(obj)          0
-#define PetscStackViewAMS()                    0
-#define PetscStackAMSViewOff()                 0
-#define PetscStackAMSTakeAccess()
-#define PetscStackAMSGrantAccess()
+#define PetscSAWsBlock()                        0
+#define PetscObjectSAWsViewOff(obj)             0
+#define PetscObjectSAWsSetBlock(obj,flg)        0
+#define PetscObjectSAWsBlock(obj)               0
+#define PetscObjectSAWsGrantAccess(obj)         0
+#define PetscObjectSAWsTakeAccess(obj)          0
+#define PetscStackViewSAWs()                    0
+#define PetscStackSAWsViewOff()                 0
+#define PetscStackSAWsTakeAccess()
+#define PetscStackSAWsGrantAccess()
 
 #endif
 
@@ -1605,9 +1617,6 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt,const PetscScalar[],PetscVi
 
 #if defined(PETSC_HAVE_XMMINTRIN_H) && !defined(__CUDACC__)
 #include <xmmintrin.h>
-#endif
-#if defined(PETSC_HAVE_STDINT_H)
-#include <stdint.h>
 #endif
 
 #undef __FUNCT__

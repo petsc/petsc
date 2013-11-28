@@ -641,7 +641,11 @@ PetscErrorCode  PetscBagView(PetscBag bag,PetscViewer view)
   ierr = PetscObjectTypeCompare((PetscObject)view,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)view,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (isascii) {
-    ierr = PetscViewerASCIIPrintf(view,"PetscBag Object:  %s %s\n",bag->bagname,bag->baghelp);CHKERRQ(ierr);
+    if (bag->bagprefix) {
+      ierr = PetscViewerASCIIPrintf(view,"PetscBag Object:  %s (%s) %s\n",bag->bagname,bag->bagprefix,bag->baghelp);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(view,"PetscBag Object:  %s %s\n",bag->bagname,bag->baghelp);CHKERRQ(ierr);
+    }
     while (nitem) {
       if (nitem->dtype == PETSC_CHAR) {
         char *value = (char*)(((char*)bag) + nitem->offset);

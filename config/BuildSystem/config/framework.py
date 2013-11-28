@@ -37,7 +37,7 @@ configure module for HYPRE requires information about MPI, and thus contains
 Notice that passing self for the last arguments means that the MPI module will
 run before the HYPRE module. Furthermore, we save the resulting object as
 self.mpi so that we may interogate it later. HYPRE can initially test whether
-MPI was indeed found using self.mpi.foundMPI. When HYPRE requires the list of
+MPI was indeed found using self.mpi.found. When HYPRE requires the list of
 MPI libraries in order to link a test object, the module can use self.mpi.lib.
 '''
 import user
@@ -410,7 +410,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return output
 
   def filterCompileOutput(self, output):
-    if self.argDB['ignoreCompileOutput']:
+    if output.find('warning:  attribute "deprecated" is unknown, ignored') >= 0: return output
+    if output.find('warning: ISO C90 does not support complex types') >= 0: return output
+    elif self.argDB['ignoreCompileOutput']:
       output = ''
     elif output:
       lines = output.splitlines()

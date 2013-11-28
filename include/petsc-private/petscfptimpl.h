@@ -1,4 +1,7 @@
 
+#if !defined(_PETSCFPIMPL_H)
+#define _PETSCFPIMPL_H
+#include <petscviewertypes.h>
 #include <petscsys.h>
 /*
     Function pointer table that maps from function pointers to their string representation
@@ -129,3 +132,4 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscFPTFind(void* key,char const **data)
   return(0);
 }
 
+#endif
