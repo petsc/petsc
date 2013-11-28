@@ -263,7 +263,7 @@ PetscErrorCode FACreate(FA *infa)
     tonglobal += nx*ny;
   }
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Number of unknowns owned %d\n",rank,tonglobal);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   /* Get tonatural number for each node */
   ierr      = PetscMalloc((tonglobal+1)*sizeof(PetscInt),&tonatural);CHKERRQ(ierr);
@@ -330,7 +330,7 @@ PetscErrorCode FACreate(FA *infa)
   ierr          = MPI_Scan(&fromnglobal,&globalrstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   globalrstart -= fromnglobal;
   ierr          = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Number of unknowns owned %d\n",rank,fromnglobal);CHKERRQ(ierr);
-  ierr          = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr          = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   /* Get fromnatural number for each node */
   ierr        = PetscMalloc((fromnglobal+1)*sizeof(PetscInt),&fromnatural);CHKERRQ(ierr);
@@ -740,7 +740,7 @@ PetscErrorCode FATest(FA fa)
         ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
       }
       ierr = FARestoreLocalArray(fa,l,p,&la);CHKERRQ(ierr);
-      ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+      ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
     }
   }
   ierr = VecDestroy(&g);CHKERRQ(ierr);

@@ -2562,7 +2562,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ_interlaced(Mat mat,PetscInt nsubcomm
     ierr = PetscMalloc((nzlocal+1)*sizeof(PetscScalar),&sbuf_a);CHKERRQ(ierr);
     /*
     ierr = PetscSynchronizedPrintf(comm,"[%d] nsends %d, nrecvs %d\n",rank,nsends,nrecvs);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(comm,PETSC_STDOUT);CHKERRQ(ierr);
      */
   } /* endof if (reuse == MAT_INITIAL_MATRIX) */
 

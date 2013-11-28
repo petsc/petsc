@@ -195,7 +195,7 @@ static PetscErrorCode RDStateView(RD rd,Vec X,Vec Xdot,Vec F)
   ierr = DMDAVecRestoreArray(rd->da,X,&x);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(rd->da,Xdot,&xdot);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(rd->da,F,&f);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(comm,PETSC_STDOUT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

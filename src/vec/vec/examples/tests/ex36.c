@@ -62,7 +62,7 @@ int main(int argc,char **argv)
                                    "%d: idx[%D] == %D; val[%D] == %f\n",
                                    rank, i, indices[i], i, PetscRealPart(values[i]));CHKERRQ(ierr);
   }
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   ierr = VecSetValues(x, m, indices, values, INSERT_VALUES);CHKERRQ(ierr);
 
@@ -87,7 +87,7 @@ int main(int argc,char **argv)
   for (i=0; i<m; i++) {
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: idx[%D] == %D\n", rank, i, indices[i]);CHKERRQ(ierr);
   }
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   ierr = VecGetValues(x, m, indices, values);CHKERRQ(ierr);
 
@@ -96,7 +96,7 @@ int main(int argc,char **argv)
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: idx[%D] == %D; val[%D] == %f\n",
                                    rank, i, indices[i], i, PetscRealPart(values[i]));CHKERRQ(ierr);
   }
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   /*
      Free work space.

@@ -2038,7 +2038,7 @@ static PetscErrorCode InferLocalCellConnectivity(PetscInt nnodes,PetscInt nedge,
   ierr = PetscFree2(ui,uj);CHKERRQ(ierr);
 
   ierr    = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"Inferred %D cells with nnodes=%D nedge=%D\n",ncell,nnodes,nedge);CHKERRQ(ierr);
-  ierr    = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr    = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
   *incell = ncell;
   *iconn  = (PetscInt*)conn;
   PetscFunctionReturn(0);
@@ -2191,7 +2191,7 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   ierr = PetscFree(p2l);CHKERRQ(ierr);
 
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %s: nedgeLoc=%D nedgeOv=%D\n",rank,PETSC_FUNCTION_NAME,nedgeLoc,nedgeOv);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   flg  = PETSC_TRUE;
   ierr = PetscOptionsGetBool(NULL,"-complete_overlap",&flg,NULL);CHKERRQ(ierr);

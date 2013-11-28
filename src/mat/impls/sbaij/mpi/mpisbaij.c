@@ -899,7 +899,7 @@ PetscErrorCode MatMultAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionBegin;
   /*
   PetscSynchronizedPrintf(PetscObjectComm((PetscObject)A)," MatMultAdd is called ...\n");
-  PetscSynchronizedFlush(PetscObjectComm((PetscObject)A));
+  PetscSynchronizedFlush(PetscObjectComm((PetscObject)A),PETSC_STDOUT);
   */
   /* diagonal part */
   ierr = (*a->A->ops->multadd)(a->A,xx,yy,a->slvec1a);CHKERRQ(ierr);

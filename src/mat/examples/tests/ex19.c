@@ -112,7 +112,7 @@ int main(int argc,char **args)
         }
       }
     }
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
     ierr = PetscFree(rsub);CHKERRQ(ierr);
     ierr = PetscFree(csub);CHKERRQ(ierr);
     ierr = PetscFree(vals);CHKERRQ(ierr);

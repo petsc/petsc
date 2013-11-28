@@ -71,7 +71,7 @@ PetscErrorCode PetscSubcommView(PetscSubcomm psubcomm,PetscViewer viewer)
       ierr = MPI_Comm_rank(psubcomm->comm,&subrank);CHKERRQ(ierr);
       ierr = MPI_Comm_rank(psubcomm->dupparent,&duprank);CHKERRQ(ierr);
       ierr = PetscSynchronizedPrintf(comm,"  [%d], color %d, sub-size %d, sub-rank %d, duprank %d\n",rank,psubcomm->color,subsize,subrank,duprank);
-      ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+      ierr = PetscSynchronizedFlush(comm,PETSC_STDOUT);CHKERRQ(ierr);
     }
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported yet");
   PetscFunctionReturn(0);

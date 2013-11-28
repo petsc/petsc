@@ -132,7 +132,7 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
 
   if (vascii->allowsynchronized) {
     /* Also flush anything printed with PetscViewerASCIISynchronizedPrintf()  */
-    ierr = PetscSynchronizedFlush(PetscObjectComm((PetscObject)viewer));CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PetscObjectComm((PetscObject)viewer),vascii->fd);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -539,8 +539,6 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
   if (!rank) {
     va_list Argp;
-    if (ascii->bviewer) petsc_printfqueuefile = fd;
-
     tab = ascii->tab;
     while (tab--) {
       ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"  ");CHKERRQ(ierr);
@@ -925,7 +923,6 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
     ierr = (*PetscVFPrintf)(fp,format,Argp);CHKERRQ(ierr);
     err  = fflush(fp);
     if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
-    petsc_printfqueuefile = fp;
     if (petsc_history) {
       va_start(Argp,format);
       ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
