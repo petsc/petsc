@@ -189,7 +189,7 @@ int main(int argc,char **argv)
   PetscInt       n = 3;
   AppCtx         ctx;
   PetscScalar    *u;
-  const char     * const names[] = {"U1","U2","U3"};
+  const char     * const names[] = {"U1","U2","U3",NULL};
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -257,7 +257,7 @@ int main(int argc,char **argv)
   ierr = TSSetDuration(ts,1000,20.0);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = TSMonitorLGSolutionSetLegend(ts,names);CHKERRQ(ierr);
+  ierr = TSMonitorLGSetVariableNames(ts,names);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system

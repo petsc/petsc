@@ -108,9 +108,10 @@ int main(int argc,char **argv)
   ierr = PetscMalloc((user.Nspec+1)*LENGTHOFSPECNAME*sizeof(char),&names);CHKERRQ(ierr);
   ierr = PetscStrcpy(names,"Temp");CHKERRQ(ierr);
   TC_getSnames(user.Nspec,names+LENGTHOFSPECNAME);CHKERRQ(ierr);
-  ierr = PetscMalloc((user.Nspec+1)*sizeof(char*),&snames);CHKERRQ(ierr);
+  ierr = PetscMalloc((user.Nspec+2)*sizeof(char*),&snames);CHKERRQ(ierr);
   for (i=0; i<user.Nspec+1; i++) snames[i] = names+i*LENGTHOFSPECNAME;
-  ierr = TSMonitorLGSolutionSetLegend(ts,snames);CHKERRQ(ierr);
+  snames[user.Nspec+1] = NULL;
+  ierr = TSMonitorLGSetVariableNames(ts,(const char * const *)snames);CHKERRQ(ierr);
   ierr = PetscFree(snames);CHKERRQ(ierr);
   ierr = PetscFree(names);CHKERRQ(ierr);
 

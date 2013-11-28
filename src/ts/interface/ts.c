@@ -2911,6 +2911,7 @@ PetscErrorCode  TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
   ierr = PetscDrawLGGetDraw((*ctx)->lg,&draw);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   ierr = PetscDrawLGDestroy(&(*ctx)->lg);CHKERRQ(ierr);
+  ierr = PetscStrArrayDestroy(&(*ctx)->names);CHKERRQ(ierr);
   ierr = PetscFree(*ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -4806,15 +4807,15 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSMonitorLGSolutionSetLegend"
+#define __FUNCT__ "TSMonitorLGSetVariableNames"
 /*@C
-   TSMonitorLGSolutionSetLegend - Sets the name of each component in the solution vector so that it may be displayed in the plot
+   TSMonitorLGSetVariableNames - Sets the name of each component in the solution vector so that it may be displayed in the plot
 
    Collective on TS
 
    Input Parameters:
 +  ts - the TS context
-.  names - the names of the components
+.  names - the names of the components, final string must be NULL
 
    Level: intermediate
 
@@ -4822,7 +4823,7 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
 @*/
-PetscErrorCode  TSMonitorLGSolutionSetLegend(TS ts,const char * const *names)
+PetscErrorCode  TSMonitorLGSetVariableNames(TS ts,const char * const *names)
 {
   PetscErrorCode    ierr;
   PetscInt          i;
@@ -4832,6 +4833,7 @@ PetscErrorCode  TSMonitorLGSolutionSetLegend(TS ts,const char * const *names)
     if (ts->monitor[i] == TSMonitorLGSolution) {
       TSMonitorLGCtx  ctx = ts->monitorcontext[i];
       Vec             u;
+      ierr = PetscStrArrayallocpy(names,&ctx->names);CHKERRQ(ierr);
       ierr = TSGetSolution(ts,&u);CHKERRQ(ierr);
       if (u) {
         PetscInt dim;

@@ -353,7 +353,7 @@ PETSC_EXTERN PetscErrorCode TSMonitorLGCtxCreate(MPI_Comm,const char[],const cha
 PETSC_EXTERN PetscErrorCode TSMonitorLGCtxDestroy(TSMonitorLGCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorLGTimeStep(TS,PetscInt,PetscReal,Vec,void *);
 PETSC_EXTERN PetscErrorCode TSMonitorLGSolution(TS,PetscInt,PetscReal,Vec,void *);
-PETSC_EXTERN PetscErrorCode TSMonitorLGSolutionSetLegend(TS,const char * const*);
+PETSC_EXTERN PetscErrorCode TSMonitorLGSetVariableNames(TS,const char * const*);
 PETSC_EXTERN PetscErrorCode TSMonitorLGError(TS,PetscInt,PetscReal,Vec,void *);
 PETSC_EXTERN PetscErrorCode TSMonitorLGSNESIterations(TS,PetscInt,PetscReal,Vec,void *);
 PETSC_EXTERN PetscErrorCode TSMonitorLGKSPIterations(TS,PetscInt,PetscReal,Vec,void *);
