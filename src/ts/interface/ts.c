@@ -2912,6 +2912,9 @@ PetscErrorCode  TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
   ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   ierr = PetscDrawLGDestroy(&(*ctx)->lg);CHKERRQ(ierr);
   ierr = PetscStrArrayDestroy(&(*ctx)->names);CHKERRQ(ierr);
+  ierr = PetscStrArrayDestroy(&(*ctx)->displaynames);CHKERRQ(ierr);
+  ierr = PetscFree((*ctx)->displayvariables);CHKERRQ(ierr);
+  ierr = PetscFree((*ctx)->displayvalues);CHKERRQ(ierr);
   ierr = PetscFree(*ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3178,7 +3181,7 @@ PetscErrorCode  TSGetIJacobian(TS ts,Mat *Amat,Mat *Pmat,TSIJacobian *f,void **c
    Options Database:
 .   -ts_monitor_draw_solution_initial - show initial solution as well as current solution
 
-   Notes: the initial solution and current solution are not displayed with a common axis scaling so generally the option -ts_monitor_draw_solution_initial
+   Notes: the initial solution and current solution are not display with a common axis scaling so generally the option -ts_monitor_draw_solution_initial
        will look bad
 
    Level: intermediate
@@ -4781,8 +4784,27 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
     PetscDrawAxis axis;
     ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLabels(axis,"Solution as function of time","Time","Solution");CHKERRQ(ierr);
-    ierr = VecGetLocalSize(u,&dim);CHKERRQ(ierr);
-    ierr = PetscDrawLGSetDimension(ctx->lg,dim);CHKERRQ(ierr);
+    if (ctx->names && !ctx->displaynames) {
+      char      **displaynames;
+      PetscBool flg;
+
+      ierr = VecGetLocalSize(u,&dim);CHKERRQ(ierr);
+      ierr = PetscMalloc((dim+1)*sizeof(char*),&displaynames);CHKERRQ(ierr);
+      ierr = PetscMemzero(displaynames,(dim+1)*sizeof(char*));CHKERRQ(ierr);
+      ierr = PetscOptionsGetStringArray(((PetscObject)ts)->prefix,"-ts_lg_monitor_solution_variables",displaynames,&dim,&flg);CHKERRQ(ierr);
+      if (flg) {
+        ierr = TSMonitorLGSetDisplayVariables(ts,(const char *const *)displaynames);CHKERRQ(ierr);
+      }
+      ierr = PetscStrArrayDestroy(&displaynames);CHKERRQ(ierr);
+    }
+    if (ctx->displaynames) {
+      ierr = PetscDrawLGSetDimension(ctx->lg,ctx->ndisplayvariables);CHKERRQ(ierr);
+      ierr = PetscDrawLGSetLegend(ctx->lg,(const char *const *)ctx->displaynames);CHKERRQ(ierr);
+    } else if (ctx->names) {
+      ierr = VecGetLocalSize(u,&dim);CHKERRQ(ierr);
+      ierr = PetscDrawLGSetDimension(ctx->lg,dim);CHKERRQ(ierr);
+      ierr = PetscDrawLGSetLegend(ctx->lg,(const char *const *)ctx->names);CHKERRQ(ierr);
+    }
     ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);
   }
   ierr = VecGetArrayRead(u,&yy);CHKERRQ(ierr);
@@ -4797,7 +4819,15 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
     ierr = PetscFree(yreal);CHKERRQ(ierr);
   }
 #else
-  ierr = PetscDrawLGAddCommonPoint(ctx->lg,ptime,yy);CHKERRQ(ierr);
+  if (ctx->displaynames) {
+    PetscInt i;
+    for (i=0; i<ctx->ndisplayvariables; i++) {
+      ctx->displayvalues[i] = yy[ctx->displayvariables[i]];
+    }
+    ierr = PetscDrawLGAddCommonPoint(ctx->lg,ptime,ctx->displayvalues);CHKERRQ(ierr);
+  } else {
+    ierr = PetscDrawLGAddCommonPoint(ctx->lg,ptime,yy);CHKERRQ(ierr);
+  }
 #endif
   ierr = VecRestoreArrayRead(u,&yy);CHKERRQ(ierr);
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
@@ -4805,6 +4835,7 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
   }
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__
 #define __FUNCT__ "TSMonitorLGSetVariableNames"
@@ -4821,7 +4852,7 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
 
 .keywords: TS,  vector, monitor, view
 
-.seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetDisplayVariables()
 @*/
 PetscErrorCode  TSMonitorLGSetVariableNames(TS ts,const char * const *names)
 {
@@ -4832,14 +4863,60 @@ PetscErrorCode  TSMonitorLGSetVariableNames(TS ts,const char * const *names)
   for (i=0; i<ts->numbermonitors; i++) {
     if (ts->monitor[i] == TSMonitorLGSolution) {
       TSMonitorLGCtx  ctx = ts->monitorcontext[i];
-      Vec             u;
+      ierr = PetscStrArrayDestroy(&ctx->names);CHKERRQ(ierr);
       ierr = PetscStrArrayallocpy(names,&ctx->names);CHKERRQ(ierr);
-      ierr = TSGetSolution(ts,&u);CHKERRQ(ierr);
-      if (u) {
-        PetscInt dim;
-        ierr = VecGetLocalSize(u,&dim);CHKERRQ(ierr);
-        ierr = PetscDrawLGSetDimension(ctx->lg,dim);CHKERRQ(ierr);
-        ierr = PetscDrawLGSetLegend(ctx->lg,names);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorLGSetDisplayVariables"
+/*@C
+   TSMonitorLGSetDisplayVariables - Sets the variables that are to be display in the monitor
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+.  displaynames - the names of the components, final string must be NULL
+
+   Level: intermediate
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetVariableNames()
+@*/
+PetscErrorCode  TSMonitorLGSetDisplayVariables(TS ts,const char * const *displaynames)
+{
+  PetscInt          i,j = 0,k;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  for (i=0; i<ts->numbermonitors; i++) {
+    if (ts->monitor[i] == TSMonitorLGSolution) {
+      TSMonitorLGCtx  ctx = ts->monitorcontext[i];
+
+      if (!ctx->names) PetscFunctionReturn(0);
+      ierr = PetscStrArrayDestroy(&ctx->displaynames);CHKERRQ(ierr);
+      ierr = PetscStrArrayallocpy(displaynames,&ctx->displaynames);CHKERRQ(ierr);
+      while (displaynames[j]) j++;
+      ctx->ndisplayvariables = j;
+      ierr = PetscMalloc(ctx->ndisplayvariables*sizeof(PetscInt),&ctx->displayvariables);CHKERRQ(ierr);
+      ierr = PetscMalloc(ctx->ndisplayvariables*sizeof(PetscReal),&ctx->displayvalues);CHKERRQ(ierr);
+      j = 0; 
+      while (displaynames[j]) {
+        k = 0;
+        while (ctx->names[k]) {
+          PetscBool flg;
+          ierr = PetscStrcmp(displaynames[j],ctx->names[k],&flg);CHKERRQ(ierr);
+          if (flg) {
+            ctx->displayvariables[j] = k;
+            break;
+          }
+          k++;
+        }
+        j++;
       }
     }
   }

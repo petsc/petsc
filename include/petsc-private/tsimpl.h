@@ -213,6 +213,10 @@ struct _n_TSMonitorLGCtx {
   PetscInt    howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
   PetscInt    ksp_its,snes_its;
   char        **names;
+  char        **displaynames;
+  PetscInt    ndisplayvariables;
+  PetscBool   *displayvariables;
+  PetscReal   *displayvalues;
 };
 
 #endif
