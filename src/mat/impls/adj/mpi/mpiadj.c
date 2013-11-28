@@ -75,6 +75,7 @@ PetscErrorCode MatDestroy_MPIAdj(Mat mat)
       ierr = PetscFree(a->values);CHKERRQ(ierr);
     }
   }
+  ierr = PetscFree(a->rowvalues);CHKERRQ(ierr);
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjSetPreallocation_C",NULL);CHKERRQ(ierr);
@@ -137,7 +138,7 @@ PetscErrorCode MatMarkDiagonal_MPIAdj(Mat A)
 PetscErrorCode MatGetRow_MPIAdj(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj*)A->data;
-  PetscInt   *itmp;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   row -= A->rmap->rstart;
@@ -145,14 +146,17 @@ PetscErrorCode MatGetRow_MPIAdj(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,P
   if (row < 0 || row >= A->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row out of range");
 
   *nz = a->i[row+1] - a->i[row];
-  if (v) *v = NULL;
-  if (idx) {
-    itmp = a->j + a->i[row];
-    if (*nz) {
-      *idx = itmp;
+  if (v) {
+    PetscInt j;
+    if (a->rowvalues_alloc < *nz) {
+      ierr = PetscFree(a->rowvalues);CHKERRQ(ierr);
+      a->rowvalues_alloc = PetscMax(a->rowvalues_alloc*2, *nz);
+      ierr = PetscMalloc(a->rowvalues_alloc*sizeof(PetscScalar),&a->rowvalues);CHKERRQ(ierr);
     }
-    else *idx = 0;
+    for (j=0; j<*nz; j++) a->rowvalues[j] = a->values[a->i[row]+j];
+    *v = (*nz) ? a->rowvalues : NULL;
   }
+  if (idx) *idx = (*nz) ? a->j + a->i[row] : NULL;
   PetscFunctionReturn(0);
 }
 

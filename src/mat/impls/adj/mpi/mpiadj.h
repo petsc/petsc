@@ -20,6 +20,8 @@ typedef struct {
   PetscBool symmetric;               /* user indicates the nonzero structure is symmetric */
   PetscBool freeaij;                 /* free a, i,j at destroy */
   PetscBool freeaijwithfree;         /* use free() to free i,j instead of PetscFree() */
+  PetscScalar *rowvalues;            /* scalar work space for MatGetRow() */
+  PetscInt    rowvalues_alloc;
 } Mat_MPIAdj;
 
 #endif
