@@ -13,12 +13,20 @@ static const char help[] = "Integrate chemistry using TChem.\n";
 
        curl http://www.me.berkeley.edu/gri_mech/version30/files30/grimech30.dat chem.inp
        curl http://www.me.berkeley.edu/gri_mech/version30/files30/thermo30.dat therm.dat
-       cp $PETSC_DIR/externallibaries/tchem/data/periodictable.dat . 
+       cp $PETSC_DIR/externallibaries/tchem/data/periodictable.dat .
 
     Run with
-   ./extchem -Tini 1500 -ts_arkimex_fully_implicit -ts_max_snes_failures -1 -ts_adapt_monitor -ts_adapt_dt_max 1e-4 -ts_arkimex_type 4 -ts_monitor_lg_solution -ts_final_time .005 -draw_pause -2 -lg_indicate_data_points false
+   ./extchem -Tini 1500 -ts_arkimex_fully_implicit -ts_max_snes_failures -1 -ts_adapt_monitor -ts_adapt_dt_max 1e-4 -ts_arkimex_type 4 -ts_monitor_lg_solution -ts_final_time .005 -draw_pause -2 -lg_indicate_data_points false -ts_lg_monitor_solution_variables CH4,O2,N2,AR,CO,O
 
+    The solution for component i = 0 is the tempature.
 
+    The solution, i > 0, is the mass fraction, massf[i], of species i, i.e. mass of species i/ total mass of all species
+
+    The mole fraction molef[i], i > 0, is the number of moles of a species/ total number of moles of all species
+        Define M[i] = mass per mole of species i then
+        molef[i] = massf[i]/(M[i]*(sum_j massf[j]/M[j]))
+
+    FormMoleFraction(User,massf,molef) converts the mass fraction solution of each species to the mole fraction of each species.
 
 */
 typedef struct _User *User;
@@ -32,6 +40,7 @@ struct _User {
   PetscInt  *rows;
 };
 
+
 static PetscErrorCode FormRHSFunction(TS,PetscReal,Vec,Vec,void*);
 static PetscErrorCode FormRHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
 static PetscErrorCode FormInitialSolution(TS,Vec,void*);
@@ -44,7 +53,7 @@ int main(int argc,char **argv)
 {
   TS                ts;         /* time integrator */
   TSAdapt           adapt;
-  Vec               X;          /* solution, residual vectors */
+  Vec               X;          /* solution vector */
   Mat               J;          /* Jacobian matrix */
   PetscInt          steps,maxsteps;
   PetscErrorCode    ierr;
@@ -105,6 +114,10 @@ int main(int argc,char **argv)
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Pass information to graphical monitoring routine
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscMalloc((user.Nspec+1)*LENGTHOFSPECNAME*sizeof(char),&names);CHKERRQ(ierr);
   ierr = PetscStrcpy(names,"Temp");CHKERRQ(ierr);
   TC_getSnames(user.Nspec,names+LENGTHOFSPECNAME);CHKERRQ(ierr);
@@ -114,6 +127,7 @@ int main(int argc,char **argv)
   ierr = TSMonitorLGSetVariableNames(ts,(const char * const *)snames);CHKERRQ(ierr);
   ierr = PetscFree(snames);CHKERRQ(ierr);
   ierr = PetscFree(names);CHKERRQ(ierr);
+  ierr = TSMonitorLGSetTransform(ts,(PetscErrorCode (*)(void*,Vec,Vec))FormMoleFraction,&user);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
@@ -216,5 +230,30 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
     x[1+ispec] = initial[i].massfrac;
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "FormMoleFraction"
+PetscErrorCode FormMoleFraction(User user,Vec massf,Vec molef)
+{
+  PetscErrorCode ierr;
+  PetscReal      *M,tM=0;
+  PetscInt       i,n = user->Nspec+1;
+  PetscScalar    *maf,*mof;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc(user->Nspec*sizeof(PetscReal),&M);CHKERRQ(ierr);
+  TC_getSmass(user->Nspec, M);
+  ierr = VecGetArray(massf,&maf);CHKERRQ(ierr);
+  ierr = VecGetArray(molef,&mof);CHKERRQ(ierr);
+  mof[0] = maf[0]; /* copy over temptature */
+  for (i=1; i<n; i++) tM += maf[i]/M[i-1];
+  for (i=1; i<n; i++) {
+    mof[i] = maf[i]/(M[i-1]*tM);
+  }
+  ierr = VecRestoreArray(massf,&maf);CHKERRQ(ierr);
+  ierr = VecRestoreArray(molef,&mof);CHKERRQ(ierr);
+  ierr = PetscFree(M);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

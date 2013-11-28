@@ -4778,6 +4778,7 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
   TSMonitorLGCtx    ctx = (TSMonitorLGCtx)dummy;
   const PetscScalar *yy;
   PetscInt          dim;
+  Vec               v;
 
   PetscFunctionBegin;
   if (!step) {
@@ -4807,12 +4808,18 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
     }
     ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);
   }
-  ierr = VecGetArrayRead(u,&yy);CHKERRQ(ierr);
+  if (ctx->transform) {
+    ierr = VecDuplicate(u,&v);CHKERRQ(ierr);
+    ierr = (*ctx->transform)(ctx->transformctx,u,v);CHKERRQ(ierr);
+  } else {
+    v = u;
+  }
+  ierr = VecGetArrayRead(v,&yy);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   {
     PetscReal *yreal;
     PetscInt  i,n;
-    ierr = VecGetLocalSize(u,&n);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
     ierr = PetscMalloc(n*sizeof(PetscReal),&yreal);CHKERRQ(ierr);
     for (i=0; i<n; i++) yreal[i] = PetscRealPart(yy[i]);
     ierr = PetscDrawLGAddCommonPoint(ctx->lg,ptime,yreal);CHKERRQ(ierr);
@@ -4829,7 +4836,10 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
     ierr = PetscDrawLGAddCommonPoint(ctx->lg,ptime,yy);CHKERRQ(ierr);
   }
 #endif
-  ierr = VecRestoreArrayRead(u,&yy);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(v,&yy);CHKERRQ(ierr);
+  if (ctx->transform) {
+    ierr = VecDestroy(&v);CHKERRQ(ierr);
+  }
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
   }
@@ -4918,6 +4928,39 @@ PetscErrorCode  TSMonitorLGSetDisplayVariables(TS ts,const char * const *display
         }
         j++;
       }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorLGSetTransform"
+/*@C
+   TSMonitorLGSetTransform - Solution vector will be transformed by provided function before being displayed
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+.  transform - the transform function
+-  ctx - optional context used by transform function
+
+   Level: intermediate
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetVariableNames()
+@*/
+PetscErrorCode  TSMonitorLGSetTransform(TS ts,PetscErrorCode (*transform)(void*,Vec,Vec),void *tctx)
+{
+  PetscInt          i;
+
+  PetscFunctionBegin;
+  for (i=0; i<ts->numbermonitors; i++) {
+    if (ts->monitor[i] == TSMonitorLGSolution) {
+      TSMonitorLGCtx  ctx = ts->monitorcontext[i];
+      ctx->transform    = transform;
+      ctx->transformctx = tctx;
     }
   }
   PetscFunctionReturn(0);
