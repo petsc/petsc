@@ -4806,6 +4806,45 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSMonitorLGSolutionSetLegend"
+/*@C
+   TSMonitorLGSolutionSetLegend - Sets the name of each component in the solution vector so that it may be displayed in the plot
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+.  names - the names of the components
+
+   Level: intermediate
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
+@*/
+PetscErrorCode  TSMonitorLGSolutionSetLegend(TS ts,const char * const *names)
+{
+  PetscErrorCode    ierr;
+  PetscInt          i;
+
+  PetscFunctionBegin;
+  for (i=0; i<ts->numbermonitors; i++) {
+    if (ts->monitor[i] == TSMonitorLGSolution) {
+      TSMonitorLGCtx  ctx = ts->monitorcontext[i];
+      Vec             u;
+      ierr = TSGetSolution(ts,&u);CHKERRQ(ierr);
+      if (u) {
+        PetscInt dim;
+        ierr = VecGetLocalSize(u,&dim);CHKERRQ(ierr);
+        ierr = PetscDrawLGSetDimension(ctx->lg,dim);CHKERRQ(ierr);
+        ierr = PetscDrawLGSetLegend(ctx->lg,names);CHKERRQ(ierr);
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSMonitorLGError"
 /*@C
    TSMonitorLGError - Monitors progress of the TS solvers by plotting each component of the solution vector

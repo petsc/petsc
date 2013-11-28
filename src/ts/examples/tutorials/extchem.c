@@ -3,6 +3,7 @@ static const char help[] = "Integrate chemistry using TChem.\n";
 #include <petscts.h>
 
 #if defined(PETSC_HAVE_TCHEM)
+#  include <TC_params.h>
 #  include <TC_interface.h>
 #else
 #  error TChem is required for this example.  Reconfigure PETSc using --download-tchem.
@@ -51,6 +52,8 @@ int main(int argc,char **argv)
   char              chemfile[PETSC_MAX_PATH_LEN] = "chem.inp",thermofile[PETSC_MAX_PATH_LEN] = "therm.dat";
   struct _User      user;       /* user-defined work context */
   TSConvergedReason reason;
+  char              **snames,*names;
+  PetscInt          i;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Chemistry solver options","");CHKERRQ(ierr);
@@ -102,6 +105,14 @@ int main(int argc,char **argv)
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  ierr = PetscMalloc((user.Nspec+1)*LENGTHOFSPECNAME*sizeof(char),&names);CHKERRQ(ierr);
+  ierr = PetscStrcpy(names,"Temp");CHKERRQ(ierr);
+  TC_getSnames(user.Nspec,names+LENGTHOFSPECNAME);CHKERRQ(ierr);
+  ierr = PetscMalloc((user.Nspec+1)*sizeof(char*),&snames);CHKERRQ(ierr);
+  for (i=0; i<user.Nspec+1; i++) snames[i] = names+i*LENGTHOFSPECNAME;
+  ierr = TSMonitorLGSolutionSetLegend(ts,snames);CHKERRQ(ierr);
+  ierr = PetscFree(snames);CHKERRQ(ierr);
+  ierr = PetscFree(names);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
