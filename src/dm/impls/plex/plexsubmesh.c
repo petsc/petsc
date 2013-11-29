@@ -980,7 +980,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
         ierr = DMPlexSetSupport(sdm, hybedge, supportNew);CHKERRQ(ierr);
       } else if (dep == dim-2) {
         const PetscInt hybface = p + pMaxNew[dep+1] + numSplitPoints[dep+1] + numSplitPoints[dep];
-        PetscInt       hybcell;
+        PetscInt       hybcell = -1;
 
         /* Unsplit edge: Faces into original edge, split face, and cohesive face twice */
         for (f = 0, qf = 0; f < supportSize; ++f) {
