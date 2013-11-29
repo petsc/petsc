@@ -83,10 +83,12 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, IS *perm)
   PetscValidPointer(perm, 3);
   ierr = DMPlexCreateNeighborCSR(dm, 0, &numCells, &start, &adjacency);CHKERRQ(ierr);
   ierr = PetscMalloc3(numCells,PetscInt,&cperm,numCells,PetscInt,&mask,numCells*2,PetscInt,&xls);CHKERRQ(ierr);
-  /* Shift for Fortran numbering */
-  for (i = 0; i < start[numCells]; ++i) ++adjacency[i];
-  for (i = 0; i <= numCells; ++i)       ++start[i];
-  ierr = SPARSEPACKgenrcm(&numCells, start, adjacency, cperm, mask, xls);CHKERRQ(ierr);
+  if (numCells) {
+    /* Shift for Fortran numbering */
+    for (i = 0; i < start[numCells]; ++i) ++adjacency[i];
+    for (i = 0; i <= numCells; ++i)       ++start[i];
+    ierr = SPARSEPACKgenrcm(&numCells, start, adjacency, cperm, mask, xls);CHKERRQ(ierr);
+  }
   ierr = PetscFree(start);CHKERRQ(ierr);
   ierr = PetscFree(adjacency);CHKERRQ(ierr);
   /* Shift for Fortran numbering */
