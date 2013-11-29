@@ -3,12 +3,12 @@ static char help[] = "Tests for uniform refinement\n\n";
 #include <petscdmplex.h>
 
 typedef struct {
-  PetscInt  debug;             /* The debugging level */
-  PetscInt  dim;               /* The topological mesh dimension */
-  PetscBool refinementUniform; /* Uniformly refine the mesh */
-  PetscBool cellHybrid;        /* Use a hybrid mesh */
-  PetscBool cellSimplex;       /* Use simplices or hexes */
-  PetscInt  testNum;           /* The particular mesh to test */
+  PetscInt  debug;          /* The debugging level */
+  PetscInt  dim;            /* The topological mesh dimension */
+  PetscInt  numRefinements; /* The number of refinement steps */
+  PetscBool cellHybrid;     /* Use a hybrid mesh */
+  PetscBool cellSimplex;    /* Use simplices or hexes */
+  PetscInt  testNum;        /* The particular mesh to test */
 } AppCtx;
 
 #undef __FUNCT__
@@ -18,17 +18,17 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->debug             = 0;
-  options->dim               = 2;
-  options->refinementUniform = PETSC_FALSE;
-  options->cellHybrid        = PETSC_TRUE;
-  options->cellSimplex       = PETSC_TRUE;
-  options->testNum           = 0;
+  options->debug          = 0;
+  options->dim            = 2;
+  options->numRefinements = 0;
+  options->cellHybrid     = PETSC_TRUE;
+  options->cellSimplex    = PETSC_TRUE;
+  options->testNum        = 0;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex4.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex4.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-refinement_uniform", "Uniformly refine the mesh", "ex4.c", options->refinementUniform, &options->refinementUniform, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-num_refinements", "The number of refinement steps", "ex4.c", options->numRefinements, &options->numRefinements, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_hybrid", "Use a hyrbid mesh", "ex4.c", options->cellHybrid, &options->cellHybrid, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex4.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-test_num", "The particular mesh to test", "ex4.c", options->testNum, &options->testNum, NULL);CHKERRQ(ierr);
@@ -498,11 +498,11 @@ PetscErrorCode CreateTensorProductHybrid_3D(MPI_Comm comm, PetscInt testNum, DM 
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscInt       dim               = user->dim;
-  PetscBool      refinementUniform = user->refinementUniform;
-  PetscBool      cellHybrid        = user->cellHybrid;
-  PetscBool      cellSimplex       = user->cellSimplex;
-  const char     *partitioner      = "chaco";
+  PetscInt       dim            = user->dim;
+  PetscInt       numRefinements = user->numRefinements;
+  PetscBool      cellHybrid     = user->cellHybrid;
+  PetscBool      cellSimplex    = user->cellSimplex;
+  const char    *partitioner    = "chaco";
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -548,6 +548,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   {
     DM refinedMesh     = NULL;
     DM distributedMesh = NULL;
+    PetscInt r;
 
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, partitioner, 0, NULL, &distributedMesh);CHKERRQ(ierr);
@@ -555,11 +556,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
     }
-    if (refinementUniform) {
+    for (r = 0; r < numRefinements; ++r) {
       ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "orig_");CHKERRQ(ierr);
       ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
       ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
-      ierr = DMPlexSetRefinementUniform(*dm, refinementUniform);CHKERRQ(ierr);
+      ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
       ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
       if (refinedMesh) {
         ierr = DMDestroy(dm);CHKERRQ(ierr);
