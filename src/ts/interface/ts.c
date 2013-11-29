@@ -83,7 +83,8 @@ struct _n_TSMonitorDrawCtx {
 .  -ts_monitor_draw_solution_phase - Monitor solution graphically with phase diagram
 .  -ts_monitor_draw_error - Monitor error graphically
 .  -ts_monitor_solution_binary <filename> - Save each solution to a binary file
--  -ts_monitor_solution_vtk <filename.vts> - Save each time step to a binary file, use filename-%%03D.vts
+.  -ts_monitor_solution_vtk <filename.vts> - Save each time step to a binary file, use filename-%%03D.vts
+-  -ts_monitor_envelope - determine maximum and minimum value of each component of the solution over the solution time
 
    Developer Note: We should unify all the -ts_monitor options in the way that -xxx_view has been unified
 
@@ -316,6 +317,14 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = DMDAGetRay(da, ddir, ray, &rayctx->ray, &rayctx->scatter);CHKERRQ(ierr);
     ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&rayctx->lgctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts, TSMonitorLGDMDARay, rayctx, TSMonitorDMDARayDestroy);CHKERRQ(ierr);
+  }
+
+  ierr = PetscOptionsName("-ts_monitor_envelope","Monitor maximum and minimum value of each component of the solution","TSMonitorEnvelope",&opt);CHKERRQ(ierr);
+  if (opt) {
+    TSMonitorEnvelopeCtx ctx;
+
+    ierr = TSMonitorEnvelopeCtxCreate(ts,&ctx);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,TSMonitorEnvelope,ctx,(PetscErrorCode (*)(void**))TSMonitorEnvelopeCtxDestroy);CHKERRQ(ierr);
   }
 
   /*
@@ -4748,8 +4757,6 @@ PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
 }
 #endif
 
-
-
 #undef __FUNCT__
 #define __FUNCT__ "TSMonitorLGSolution"
 /*@C
@@ -4763,6 +4770,9 @@ PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
 .  step - current time-step
 .  ptime - current time
 -  lg - a line graph object
+
+   Options Database:
+.   -ts_lg_monitor_solution_variables
 
    Level: intermediate
 
@@ -4856,7 +4866,7 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
 
    Input Parameters:
 +  ts - the TS context
-.  names - the names of the components, final string must be NULL
+-  names - the names of the components, final string must be NULL
 
    Level: intermediate
 
@@ -4875,6 +4885,42 @@ PetscErrorCode  TSMonitorLGSetVariableNames(TS ts,const char * const *names)
       TSMonitorLGCtx  ctx = ts->monitorcontext[i];
       ierr = PetscStrArrayDestroy(&ctx->names);CHKERRQ(ierr);
       ierr = PetscStrArrayallocpy(names,&ctx->names);CHKERRQ(ierr);
+      break;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorLGGetVariableNames"
+/*@C
+   TSMonitorLGGetVariableNames - Gets the name of each component in the solution vector so that it may be displayed in the plot
+
+   Collective on TS
+
+   Input Parameter:
+.  ts - the TS context
+
+   Output Parameter:
+.  names - the names of the components, final string must be NULL
+
+   Level: intermediate
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetDisplayVariables()
+@*/
+PetscErrorCode  TSMonitorLGGetVariableNames(TS ts,const char *const **names)
+{
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  *names = NULL;
+  for (i=0; i<ts->numbermonitors; i++) {
+    if (ts->monitor[i] == TSMonitorLGSolution) {
+      TSMonitorLGCtx  ctx = ts->monitorcontext[i];
+      *names = (const char *const *)ctx->names;
+      break;
     }
   }
   PetscFunctionReturn(0);
@@ -4928,6 +4974,7 @@ PetscErrorCode  TSMonitorLGSetDisplayVariables(TS ts,const char * const *display
         }
         j++;
       }
+      break;
     }
   }
   PetscFunctionReturn(0);
@@ -5122,5 +5169,143 @@ PetscErrorCode TSComputeLinearStability(TS ts,PetscReal xr,PetscReal xi,PetscRea
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (!ts->ops->linearstability) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Linearized stability function not provided for this method");
   ierr = (*ts->ops->linearstability)(ts,xr,xi,yr,yi);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* ------------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorEnvelopeCtxCreate"
+/*@C
+   TSMonitorEnvelopeCtxCreate - Creates a context for use with TSMonitorEnvelope()
+
+   Collective on TS
+
+   Input Parameters:
+.  ts  - the ODE solver object
+
+   Output Parameter:
+.  ctx - the context
+
+   Level: intermediate
+
+.keywords: TS, monitor, line graph, residual, seealso
+
+.seealso: TSMonitorLGTimeStep(), TSMonitorSet(), TSMonitorLGSolution(), TSMonitorLGError()
+
+@*/
+PetscErrorCode  TSMonitorEnvelopeCtxCreate(TS ts,TSMonitorEnvelopeCtx *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(struct _n_TSMonitorEnvelopeCtx,ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorEnvelope"
+/*@C
+   TSMonitorEnvelope - Monitors the maximum and minimum value of each component of the solution
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+.  step - current time-step
+.  ptime - current time
+-  ctx - the envelope context
+
+   Options Database:
+.  -ts_monitor_envelope
+
+   Level: intermediate
+
+   Notes: after a solve you can use TSMonitorEnvelopeGetBounds() to access the envelope
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorEnvelopeGetBounds()
+@*/
+PetscErrorCode  TSMonitorEnvelope(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dummy)
+{
+  PetscErrorCode       ierr;
+  TSMonitorEnvelopeCtx ctx = (TSMonitorEnvelopeCtx)dummy;
+
+  PetscFunctionBegin;
+  if (!ctx->max) {
+    ierr = VecDuplicate(u,&ctx->max);CHKERRQ(ierr);
+    ierr = VecDuplicate(u,&ctx->min);CHKERRQ(ierr);
+    ierr = VecCopy(u,ctx->max);CHKERRQ(ierr);
+    ierr = VecCopy(u,ctx->min);CHKERRQ(ierr);
+  } else {
+    ierr = VecPointwiseMax(ctx->max,u,ctx->max);CHKERRQ(ierr);
+    ierr = VecPointwiseMin(ctx->min,u,ctx->min);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorEnvelopeGetBounds"
+/*@C
+   TSMonitorEnvelopeGetBounds - Gets the bounds for the components of the solution
+
+   Collective on TS
+
+   Input Parameter:
+.  ts - the TS context
+
+   Output Parameter:
++  max - the maximum values
+-  min - the minimum values
+
+   Level: intermediate
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetDisplayVariables()
+@*/
+PetscErrorCode  TSMonitorEnvelopeGetBounds(TS ts,Vec *max,Vec *min)
+{
+  PetscInt i;
+
+  PetscFunctionBegin;
+  if (max) *max = NULL;
+  if (min) *min = NULL;
+  for (i=0; i<ts->numbermonitors; i++) {
+    if (ts->monitor[i] == TSMonitorEnvelope) {
+      TSMonitorEnvelopeCtx  ctx = ts->monitorcontext[i];
+      if (max) *max = ctx->max;
+      if (min) *min = ctx->min;
+      break;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorEnvelopeCtxDestroy"
+/*@C
+   TSMonitorEnvelopeCtxDestroy - Destroys a context that was created  with TSMonitorEnvelopeCtxCreate().
+
+   Collective on TSMonitorEnvelopeCtx
+
+   Input Parameter:
+.  ctx - the monitor context
+
+   Level: intermediate
+
+.keywords: TS, monitor, line graph, destroy
+
+.seealso: TSMonitorLGCtxCreate(),  TSMonitorSet(), TSMonitorLGTimeStep();
+@*/
+PetscErrorCode  TSMonitorEnvelopeCtxDestroy(TSMonitorEnvelopeCtx *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecDestroy(&(*ctx)->min);CHKERRQ(ierr);
+  ierr = VecDestroy(&(*ctx)->max);CHKERRQ(ierr);
+  ierr = PetscFree(*ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

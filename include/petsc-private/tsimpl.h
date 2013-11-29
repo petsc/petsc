@@ -221,4 +221,8 @@ struct _n_TSMonitorLGCtx {
   void           *transformctx;
 };
 
+struct _n_TSMonitorEnvelopeCtx {
+  Vec max,min;
+};
+
 #endif

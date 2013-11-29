@@ -16,7 +16,7 @@ static const char help[] = "Integrate chemistry using TChem.\n";
        cp $PETSC_DIR/externallibaries/tchem/data/periodictable.dat .
 
     Run with
-   ./extchem -Tini 1500 -ts_arkimex_fully_implicit -ts_max_snes_failures -1 -ts_adapt_monitor -ts_adapt_dt_max 1e-4 -ts_arkimex_type 4 -ts_monitor_lg_solution -ts_final_time .005 -draw_pause -2 -lg_indicate_data_points false -ts_lg_monitor_solution_variables CH4,O2,N2,AR,CO,O
+   ./extchem -Tini 1500 -ts_arkimex_fully_implicit -ts_max_snes_failures -1 -ts_adapt_monitor -ts_adapt_dt_max 1e-4 -ts_arkimex_type 4 -ts_monitor_lg_solution -ts_final_time .005 -draw_pause -2 -lg_indicate_data_points false -ts_lg_monitor_solution_variables H2,O2,H2O,CH4,CO,CO2,C2H2,N2  -ts_monitor_envelope
 
     The solution for component i = 0 is the tempature.
 
@@ -41,6 +41,7 @@ struct _User {
 };
 
 
+static PetscErrorCode FormMoleFraction(User,Vec,Vec);
 static PetscErrorCode FormRHSFunction(TS,PetscReal,Vec,Vec,void*);
 static PetscErrorCode FormRHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
 static PetscErrorCode FormInitialSolution(TS,Vec,void*);
@@ -138,6 +139,24 @@ int main(int argc,char **argv)
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %G after %D steps\n",TSConvergedReasons[reason],ftime,steps);CHKERRQ(ierr);
 
+  {
+    Vec                max;
+    const char * const *names;
+    PetscInt           i;
+    const PetscReal    *bmax;
+
+    ierr = TSMonitorEnvelopeGetBounds(ts,&max,NULL);CHKERRQ(ierr);
+    if (max) {
+      ierr = TSMonitorLGGetVariableNames(ts,&names);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(max,&bmax);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Species - maximum mass fraction\n");CHKERRQ(ierr);
+      for (i=1; i<user.Nspec; i++) {
+        if (bmax[i] > .01) {ierr = PetscPrintf(PETSC_COMM_SELF,"%s %g\n",names[i],bmax[i]);CHKERRQ(ierr);}
+      }
+      ierr = VecRestoreArrayRead(max,&bmax);CHKERRQ(ierr);
+    }
+  }
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -226,7 +245,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   for (i=0; i<sizeof(initial)/sizeof(initial[0]); i++) {
     int ispec = TC_getSpos(initial[i].name, strlen(initial[i].name));
     if (ispec < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Could not find species %s",initial[i].name);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Species %d: %s\n",i,initial[i].name);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Species %d: %s %g\n",i,initial[i].name,initial[i].massfrac);CHKERRQ(ierr);
     x[1+ispec] = initial[i].massfrac;
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
