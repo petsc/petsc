@@ -2655,7 +2655,7 @@ PetscErrorCode DMPlexEnlargePartition(DM dm, const PetscInt start[], const Petsc
     PetscHashISize(h, numNewPoints);
     ierr = PetscSectionSetDof(*partSection, part, numNewPoints);CHKERRQ(ierr);
     ierr = PetscMalloc(numNewPoints * sizeof(PetscInt), &tmpPoints[part]);CHKERRQ(ierr);
-    if (numNewPoints) PetscHashIGetKeys(h, n, tmpPoints[part]); /* Should not need this conditional */
+    ierr =  PetscHashIGetKeys(h, &n, tmpPoints[part]);CHKERRQ(ierr);
     totPoints += numNewPoints;
   }
   ierr = ISRestoreIndices(origPartition, &points);CHKERRQ(ierr);
