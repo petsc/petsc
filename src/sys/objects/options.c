@@ -141,6 +141,78 @@ PetscErrorCode  PetscOptionsStringToReal(const char name[],PetscReal *a)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscOptionsStringToScalar"
+/*
+   Converts a string to PetscScalar value. Handles
+      [-][2].0
+      [-][2].0i
+      [-][2].0+/-2.0i
+
+*/
+PetscErrorCode  PetscOptionsStringToScalar(const char name[],PetscScalar *a)
+{
+  PetscErrorCode ierr;
+  size_t         len;
+
+  PetscFunctionBegin;
+  ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
+  if (!len) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"character string of length zero has no numerical value");
+
+  if (name[0] == '+') name++;
+  if (name[0] == 'i') {
+    *a = PETSC_i;
+  } else {
+    PetscToken token;
+    char       *tvalue;
+    PetscBool  neg = PETSC_FALSE, negim = PETSC_FALSE;
+    PetscReal  re = 0.0,im = 0.0;
+
+    if (name[0] != '-' && name[0] != '.' && name[0] < '0' && name[0] > '9') SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value ",name);
+    if (name[0] == '-') {
+      neg = PETSC_TRUE;
+      name++;
+    }
+    if (name[0] == 'i') {
+      *a = -PETSC_i;
+      PetscFunctionReturn(0);
+    }
+
+    ierr = PetscTokenCreate(name,'+',&token);CHKERRQ(ierr);
+    ierr = PetscTokenFind(token,&tvalue);CHKERRQ(ierr);
+    if (!tvalue) {
+      ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
+      ierr = PetscTokenCreate(name,'-',&token);CHKERRQ(ierr);
+      ierr = PetscTokenFind(token,&tvalue);CHKERRQ(ierr);
+    }
+    if (tvalue) {
+      ierr = PetscOptionsStringToReal(tvalue,&re);CHKERRQ(ierr);
+      if (neg) re = -re;
+      ierr = PetscTokenFind(token,&tvalue);CHKERRQ(ierr);
+      if (!tvalue) {
+        *a = re;
+        PetscFunctionReturn(0);
+      }
+      ierr = PetscStrlen(tvalue,&len);CHKERRQ(ierr);
+      if (tvalue[len-1] != 'i') SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value ",name);
+      tvalue[len-1] = 0;
+      ierr = PetscOptionsStringToReal(tvalue,&im);CHKERRQ(ierr);
+      if (negim) im = -im;
+      ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
+    } else {
+      ierr = PetscStrstr(name,"i",&tvalue);CHKERRQ(ierr);
+      if (tvalue) {
+        tvalue[0] = 0;
+        ierr = PetscOptionsStringToReal(name,&im);CHKERRQ(ierr);
+      } else {
+        ierr = PetscOptionsStringToReal(name,&re);CHKERRQ(ierr);
+      }
+    }
+    *a = re + im*PETSC_i;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscOptionsStringToBool"
 /*
    PetscOptionsStringToBool - Converts string to PetscBool , handles cases like "yes", "no", "true", "false", "0", "1"
@@ -1676,8 +1748,7 @@ PetscErrorCode  PetscOptionsGetReal(const char pre[],const char name[],PetscReal
    Level: beginner
 
    Usage:
-   A complex number 2+3i can be specified as 2,3 at the command line.
-   or a number 2.0e-10 - 3.3e-20 i  can be specified as 2.0e-10,-3.3e-20
+   A complex number 2+3i must be specified with NO spaces
 
    Note: if the option is given but no value is provided then set is given the value PETSC_FALSE
 
@@ -1707,21 +1778,7 @@ PetscErrorCode  PetscOptionsGetScalar(const char pre[],const char name[],PetscSc
 #if !defined(PETSC_USE_COMPLEX)
       ierr = PetscOptionsStringToReal(value,dvalue);CHKERRQ(ierr);
 #else
-      PetscReal  re=0.0,im=0.0;
-      PetscToken token;
-      char       *tvalue = 0;
-
-      ierr = PetscTokenCreate(value,',',&token);CHKERRQ(ierr);
-      ierr = PetscTokenFind(token,&tvalue);CHKERRQ(ierr);
-      if (!tvalue) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"unknown string specified\n");
-      ierr = PetscOptionsStringToReal(tvalue,&re);CHKERRQ(ierr);
-      ierr = PetscTokenFind(token,&tvalue);CHKERRQ(ierr);
-      if (!tvalue) *dvalue = re; /* Unknown separator used. using only real value */
-      else {
-        ierr    = PetscOptionsStringToReal(tvalue,&im);CHKERRQ(ierr);
-        *dvalue = re + PETSC_i*im;
-      }
-      ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
+      ierr = PetscOptionsStringToScalar(value,dvalue);CHKERRQ(ierr);
 #endif
       if (set) *set = PETSC_TRUE;
     }
@@ -1746,7 +1803,7 @@ PetscErrorCode  PetscOptionsGetScalar(const char pre[],const char name[],PetscSc
 -  nmax - maximum number of values to retrieve
 
    Output Parameters:
-+  dvalue - the double value to return
++  dvalue - the double values to return
 .  nmax - actual number of values retreived
 -  set - PETSC_TRUE if found, else PETSC_FALSE
 
@@ -1791,6 +1848,74 @@ PetscErrorCode  PetscOptionsGetRealArray(const char pre[],const char name[],Pets
   while (n < *nmax) {
     if (!value) break;
     ierr = PetscOptionsStringToReal(value,dvalue++);CHKERRQ(ierr);
+    ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
+    n++;
+  }
+  ierr  = PetscTokenDestroy(&token);CHKERRQ(ierr);
+  *nmax = n;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscOptionsGetScalarArray"
+/*@C
+   PetscOptionsGetScalarArray - Gets an array of scalars for a
+   particular option in the database.  The values must be separated with
+   commas with no intervening spaces.
+
+   Not Collective
+
+   Input Parameters:
++  pre - string to prepend to each name or NULL
+.  name - the option one is seeking
+-  nmax - maximum number of values to retrieve
+
+   Output Parameters:
++  dvalue - the scalar values to return
+.  nmax - actual number of values retreived
+-  set - PETSC_TRUE if found, else PETSC_FALSE
+
+   Level: beginner
+
+   Concepts: options database^array of doubles
+
+.seealso: PetscOptionsGetInt(), PetscOptionsHasName(),
+           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsBool(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
+          PetscOptionsFList(), PetscOptionsEList()
+@*/
+PetscErrorCode  PetscOptionsGetScalarArray(const char pre[],const char name[],PetscScalar dvalue[],PetscInt *nmax,PetscBool  *set)
+{
+  char           *value;
+  PetscErrorCode ierr;
+  PetscInt       n = 0;
+  PetscBool      flag;
+  PetscToken     token;
+
+  PetscFunctionBegin;
+  PetscValidCharPointer(name,2);
+  PetscValidRealPointer(dvalue,3);
+  ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
+  if (!flag) {
+    if (set) *set = PETSC_FALSE;
+    *nmax = 0;
+    PetscFunctionReturn(0);
+  }
+  if (!value) {
+    if (set) *set = PETSC_TRUE;
+    *nmax = 0;
+    PetscFunctionReturn(0);
+  }
+
+  if (set) *set = PETSC_TRUE;
+
+  ierr = PetscTokenCreate(value,',',&token);CHKERRQ(ierr);
+  ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
+  while (n < *nmax) {
+    if (!value) break;
+    ierr = PetscOptionsStringToScalar(value,dvalue++);CHKERRQ(ierr);
     ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
     n++;
   }
