@@ -161,7 +161,7 @@ PetscErrorCode  PetscOptionsStringToScalar(const char name[],PetscScalar *a)
 
   if (name[0] == '+') name++;
   if (name[0] == 'i') {
-#if defined(PETSC_HAVE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
     *a = PETSC_i;
 #else
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s is imaginary but complex not supported ",name);
@@ -178,7 +178,7 @@ PetscErrorCode  PetscOptionsStringToScalar(const char name[],PetscScalar *a)
       name++;
     }
     if (name[0] == 'i') {
-#if defined(PETSC_HAVE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
       *a = -PETSC_i;
 #else
      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s is imaginary but complex not supported ",name);
@@ -216,7 +216,7 @@ PetscErrorCode  PetscOptionsStringToScalar(const char name[],PetscScalar *a)
         ierr = PetscOptionsStringToReal(name,&re);CHKERRQ(ierr);
       }
     }
-#if defined(PETSC_HAVE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
     *a = re + im*PETSC_i;
 #else
     if (im != 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s is complex but complex not supported ",name);
