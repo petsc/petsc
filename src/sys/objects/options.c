@@ -1,6 +1,7 @@
 
 /* Define Feature test macros to make sure atoll is available (SVr4, POSIX.1-2001, 4.3BSD, C99), not in (C89 and POSIX.1-1996) */
 #define PETSC_DESIRE_FEATURE_TEST_MACROS
+#define PETSC_DESIRE_COMPLEX
 
 /*
    These routines simplify the use of command line, file options, etc., and are used to manipulate the options database.
@@ -160,7 +161,11 @@ PetscErrorCode  PetscOptionsStringToScalar(const char name[],PetscScalar *a)
 
   if (name[0] == '+') name++;
   if (name[0] == 'i') {
+#if defined(PETSC_HAVE_COMPLEX)
     *a = PETSC_i;
+#else
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s is imaginary but complex not supported ",name);
+#endif
   } else {
     PetscToken token;
     char       *tvalue;
@@ -173,7 +178,11 @@ PetscErrorCode  PetscOptionsStringToScalar(const char name[],PetscScalar *a)
       name++;
     }
     if (name[0] == 'i') {
+#if defined(PETSC_HAVE_COMPLEX)
       *a = -PETSC_i;
+#else
+     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s is imaginary but complex not supported ",name);
+#endif
       PetscFunctionReturn(0);
     }
 
@@ -207,7 +216,12 @@ PetscErrorCode  PetscOptionsStringToScalar(const char name[],PetscScalar *a)
         ierr = PetscOptionsStringToReal(name,&re);CHKERRQ(ierr);
       }
     }
+#if defined(PETSC_HAVE_COMPLEX)
     *a = re + im*PETSC_i;
+#else
+    if (im != 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s is complex but complex not supported ",name);
+    *a = re;
+#endif
   }
   PetscFunctionReturn(0);
 }
