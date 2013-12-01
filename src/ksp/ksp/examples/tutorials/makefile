@@ -509,8 +509,8 @@ runex8g_3:
 
 
 
-runex10_basic:
-	-@${MPIEXEC} -n 2 ./ex10 -f0 ${PETSC_DIR}/include/datafiles/matrices/spd-${PETSC_SCALAR_TYPE}-${PETSC_INDEX_SIZE}-${PETSC_SCALAR_SIZE} > ex10_1.tmp 2>&1; \
+runex10:
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${PETSC_DIR}/include/datafiles/matrices/spd-real-${PETSC_INDEX_SIZE}-${PETSC_SCALAR_SIZE} > ex10_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_1.tmp
@@ -1159,7 +1159,7 @@ TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f e
 TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_3 ex2.rm \
                                  ex7.PETSc ex7.rm ex5.PETSc ex5.rm  ex9.PETSc runex9 ex9.rm \
                                  ex23.PETSc runex23 ex23.rm
-TESTEXAMPLES_C_COMPLEX	       = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm ex39.PETSc runex39 ex39.rm ex40.PETSc runex40 ex40.rm
+TESTEXAMPLES_C_COMPLEX	       = ex10.PETSc ex10.rm ex11.PETSc runex11 ex11.rm ex39.PETSc runex39 ex39.rm ex40.PETSc runex40 ex40.rm
 TESTEXAMPLES_DATAFILESPATH     = ex10.PETSc runex10_2 runex10_3 runex10_4 runex10_5 runex10_6 runex10_7 runex10_8 \
                                  runex10_9 runex10_10 runex10_19 runex10_22 runex10_23 runex10_24 runex10_25  runex10_ILU runex10_ILUBAIJ runex10_cg \
                                  runex10_cg_singlereduction runex10_seqaijcrl runex10_mpiaijcrl runex10_seqaijperm runex10_mpiaijperm ex10.rm
