@@ -458,6 +458,11 @@ runex7:
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex7_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex7_1.tmp
+runex7_2:
+	-@${MPIEXEC} -n 2 ./ex7 -ksp_view > ex7_2.tmp 2>&1; \
+	   if (${DIFF} output/ex7_2.out ex7_2.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex7_2, diffs above \n========================================="; fi; \
+	   ${RM} -f ex7_2.tmp
 runex9:
 	-@${MPIEXEC} -n 1 ./ex9 -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres -ksp_gmres_cgs_refinement_type refine_always \
 	   -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_monitor_short \
@@ -1138,7 +1143,7 @@ runex58_sbaij:
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 runex2_specest_1 runex2_specest_2 \
                                  runex2_chebyest_1 runex2_chebyest_2 runex2_chebyest_3 runex2_chebyest_4 runex2_fbcgs runex2_fbcgs_2 ex2.rm \
-                                 ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 runex5_2 \
+                                 ex7.PETSc runex7 runex7_2 ex7.rm ex5.PETSc runex5 runex5_2 \
                                  runex5_redundant_0 runex5_redundant_1 runex5_redundant_2 runex5_redundant_3 runex5_redundant_4 ex5.rm \
                                  ex8g.PETSc runex8g_1 runex8g_2 runex8g_3 ex8g.rm \
                                  ex9.PETSc runex9 ex9.rm ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
