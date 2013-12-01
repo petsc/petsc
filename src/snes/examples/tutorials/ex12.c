@@ -209,7 +209,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->variableCoefficient = COEFF_NONE;
   options->jacobianMF      = PETSC_FALSE;
   options->showInitial     = PETSC_FALSE;
-  options->showSolution    = PETSC_TRUE;
+  options->showSolution    = PETSC_FALSE;
 
   options->fem.f0Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->f0Funcs;
   options->fem.f1Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->f1Funcs;
@@ -755,27 +755,6 @@ int main(int argc, char **argv)
       ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Linear L_2 Residual: %g\n", res);CHKERRQ(ierr);
     }
-  }
-
-  if (user.runType == RUN_FULL) {
-    PetscViewer viewer;
-    Vec         uLocal;
-    const char *name;
-
-    ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, "ex12_sol.vtk");CHKERRQ(ierr);
-
-    ierr = DMGetLocalVector(dm, &uLocal);CHKERRQ(ierr);
-    ierr = PetscObjectGetName((PetscObject) u, &name);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) uLocal, name);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalBegin(dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd(dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
-    ierr = VecView(uLocal, viewer);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(dm, &uLocal);CHKERRQ(ierr);
-
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
   if (user.bcType == NEUMANN) {
