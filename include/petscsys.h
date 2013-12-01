@@ -1320,15 +1320,6 @@ PETSC_EXTERN PetscErrorCode PetscFreeArguments(char **);
 PETSC_EXTERN PetscErrorCode PetscEnd(void);
 PETSC_EXTERN PetscErrorCode PetscSysInitializePackage(void);
 
-PETSC_EXTERN MPI_Comm PETSC_COMM_LOCAL_WORLD;
-PETSC_EXTERN PetscErrorCode PetscHMPIMerge(PetscMPIInt,PetscErrorCode (*)(void*),void*);
-PETSC_EXTERN PetscErrorCode PetscHMPISpawn(PetscMPIInt);
-PETSC_EXTERN PetscErrorCode PetscHMPIFinalize(void);
-PETSC_EXTERN PetscErrorCode PetscHMPIRun(MPI_Comm,PetscErrorCode (*)(MPI_Comm,void *),void*);
-PETSC_EXTERN PetscErrorCode PetscHMPIRunCtx(MPI_Comm,PetscErrorCode (*)(MPI_Comm,void*,void *),void*);
-PETSC_EXTERN PetscErrorCode PetscHMPIFree(MPI_Comm,void*);
-PETSC_EXTERN PetscErrorCode PetscHMPIMalloc(MPI_Comm,size_t,void**);
-
 PETSC_EXTERN PetscErrorCode PetscPythonInitialize(const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscPythonFinalize(void);
 PETSC_EXTERN PetscErrorCode PetscPythonPrintError(void);

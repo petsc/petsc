@@ -658,37 +658,6 @@ runex10_19:
 	${RM} -f ex10_19aij.tmp ex10_19sbaij.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 
-# Start a sequential user code [on 1 node, assembling seqaij] and then
-# spwan a parallel solver on 2 procs.
-# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
-runex10_22:
-	-@${MPIEXEC} -n 2 ./ex10 -hmpi_merge_size 2 -pc_type hmpi  -ksp_type preonly -hmpi_pc_type ksp -f0 ${DATAFILESPATH}/matrices/medium > ex10_22.tmp 2>&1;\
-	   if (${DIFF} output/ex10_22.out ex10_22.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex10_22, diffs above \n========================================="; fi; \
-	   ${RM} -f ex10_22.tmp
-runex10_23:
-	-@${MPIEXEC} -n 2 ./ex10 -hmpi_merge_size 2 -pc_type hmpi  -ksp_type preonly -hmpi_pc_type ksp -hmpi_ksp_pc_type bjacobi -hmpi_ksp_ksp_type gmres -f0 ${DATAFILESPATH}/matrices/medium > ex10_23.tmp 2>&1;\
-	   if (${DIFF} output/ex10_23.out ex10_23.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex10_23, diffs above \n========================================="; fi; \
-	   ${RM} -f ex10_23.tmp
-
-runex10_24:
-	-@${MPIEXEC} -n 2 ./ex10 -hmpi_merge_size 2 -pc_type hmpi -hmpi_pc_type sor -f0 ${DATAFILESPATH}/matrices/medium -hmpi_ksp_monitor_short -initialguess -ksp_type gmres -ksp_monitor_short -ksp_view > ex10_24.tmp 2>&1;\
-	   if (${DIFF} output/ex10_24.out ex10_24.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex10_24, diffs above \n========================================="; fi; \
-	   ${RM} -f ex10_24.tmp
-
-# Start a parallel user code [on 4 nodes, assembling MPIAIJ with
-# np=4] and then spwan a parallel sub-domain-solver on each node
-# [with np=2]. This emulates mixed MPI-shared memory model [MPI between
-# nodes, MPI within the nodes]
-# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
-runex10_25:
-	-@${MPIEXEC} -n 8 ./ex10 -hmpi_merge_size 2 -sub_pc_type hmpi -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor_short> ex10_25.tmp 2>&1;\
-	   if (${DIFF} output/ex10_25.out ex10_25.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex10_25, diffs above \n========================================="; fi; \
-	   ${RM} -f ex10_25.tmp
-
 runex10_superlu_lu_1:
 	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package superlu -num_numfac 2 -num_rhs 2 > ex10_superlu_lu_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mumps.out ex10_superlu_lu_1.tmp) then true; \
@@ -1161,7 +1130,7 @@ TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PET
                                  ex23.PETSc runex23 ex23.rm
 TESTEXAMPLES_C_COMPLEX	       = ex10.PETSc ex10.rm ex11.PETSc runex11 ex11.rm ex39.PETSc runex39 ex39.rm ex40.PETSc runex40 ex40.rm
 TESTEXAMPLES_DATAFILESPATH     = ex10.PETSc runex10_2 runex10_3 runex10_4 runex10_5 runex10_6 runex10_7 runex10_8 \
-                                 runex10_9 runex10_10 runex10_19 runex10_22 runex10_23 runex10_24 runex10_25  runex10_ILU runex10_ILUBAIJ runex10_cg \
+                                 runex10_9 runex10_10 runex10_19  runex10_ILU runex10_ILUBAIJ runex10_cg \
                                  runex10_cg_singlereduction runex10_seqaijcrl runex10_mpiaijcrl runex10_seqaijperm runex10_mpiaijperm ex10.rm
 # even though ex10.c is -pc_mg_smoothdown na C example to run with -mat_type lusol requires a Fortran compiler, hence
 # we list it with the fortran examples
