@@ -2830,6 +2830,80 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
     ierr = DMSetCoordinatesLocal(subdm, subCoordinates);CHKERRQ(ierr);
     ierr = VecDestroy(&subCoordinates);CHKERRQ(ierr);
   }
+  /* Build SF: We need this complexity because subpoints might not be selected on the owning process */
+  {
+    PetscSF            sfPoint, sfPointSub;
+    IS                 subpointIS;
+    const PetscSFNode *remotePoints;
+    PetscSFNode       *sremotePoints, *newLocalPoints, *newOwners;
+    const PetscInt    *localPoints, *subpoints;
+    PetscInt          *slocalPoints;
+    PetscInt           numRoots, numLeaves, numSubpoints, numSubroots, numSubleaves = 0, l, sl, ll, pStart, pEnd, p;
+    PetscMPIInt        rank;
+
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
+    ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
+    ierr = DMGetPointSF(subdm, &sfPointSub);CHKERRQ(ierr);
+    ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetChart(subdm, NULL, &numSubroots);CHKERRQ(ierr);
+    ierr = DMPlexCreateSubpointIS(subdm, &subpointIS);CHKERRQ(ierr);
+    ierr = ISGetIndices(subpointIS, &subpoints);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(subpointIS, &numSubpoints);CHKERRQ(ierr);
+    ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
+    if (numRoots >= 0) {
+      ierr = PetscMalloc2(pEnd-pStart,PetscSFNode,&newLocalPoints,numRoots,PetscSFNode,&newOwners);CHKERRQ(ierr);
+      for (p = 0; p < pEnd-pStart; ++p) {
+        newLocalPoints[p].rank  = -2;
+        newLocalPoints[p].index = -2;
+      }
+      /* Set subleaves */
+      for (l = 0; l < numLeaves; ++l) {
+        const PetscInt point    = localPoints[l];
+        const PetscInt subpoint = DMPlexFilterPoint_Internal(point, 0, numSubpoints, subpoints);
+
+        if (subpoint < 0) continue;
+        newLocalPoints[point-pStart].rank  = rank;
+        newLocalPoints[point-pStart].index = subpoint;
+        ++numSubleaves;
+      }
+      /* Must put in owned subpoints */
+      for (p = pStart; p < pEnd; ++p) {
+        const PetscInt subpoint = DMPlexFilterPoint_Internal(p, 0, numSubpoints, subpoints);
+
+        if (subpoint < 0) {
+          newOwners[p-pStart].rank  = -3;
+          newOwners[p-pStart].index = -3;
+        } else {
+          newOwners[p-pStart].rank  = rank;
+          newOwners[p-pStart].index = subpoint;
+        }
+      }
+      ierr = PetscSFReduceBegin(sfPoint, MPIU_2INT, newLocalPoints, newOwners, MPI_MAXLOC);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(sfPoint, MPIU_2INT, newLocalPoints, newOwners, MPI_MAXLOC);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(sfPoint, MPIU_2INT, newOwners, newLocalPoints);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sfPoint, MPIU_2INT, newOwners, newLocalPoints);CHKERRQ(ierr);
+      ierr = PetscMalloc(numSubleaves * sizeof(PetscInt),    &slocalPoints);CHKERRQ(ierr);
+      ierr = PetscMalloc(numSubleaves * sizeof(PetscSFNode), &sremotePoints);CHKERRQ(ierr);
+      for (l = 0, sl = 0, ll = 0; l < numLeaves; ++l) {
+        const PetscInt point    = localPoints[l];
+        const PetscInt subpoint = DMPlexFilterPoint_Internal(point, 0, numSubpoints, subpoints);
+
+        if (subpoint < 0) continue;
+        if (newLocalPoints[point].rank == rank) {++ll; continue;}
+        slocalPoints[sl]        = subpoint;
+        sremotePoints[sl].rank  = newLocalPoints[point].rank;
+        sremotePoints[sl].index = newLocalPoints[point].index;
+        if (sremotePoints[sl].rank  < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid remote rank for local point %d", point);
+        if (sremotePoints[sl].index < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid remote subpoint for local point %d", point);
+        ++sl;
+      }
+      if (sl + ll != numSubleaves) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatch in number of subleaves %d + %d != %d", sl, ll, numSubleaves);
+      ierr = PetscFree2(newLocalPoints,newOwners);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(subpointIS, &subpoints);CHKERRQ(ierr);
+      ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
+      ierr = PetscSFSetGraph(sfPointSub, numSubroots, sl, slocalPoints, PETSC_OWN_POINTER, sremotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    }
+  }
   /* Cleanup */
   for (d = 0; d <= dim; ++d) {
     if (subpointIS[d]) {ierr = ISRestoreIndices(subpointIS[d], &subpoints[d]);CHKERRQ(ierr);}
