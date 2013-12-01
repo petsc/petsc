@@ -564,8 +564,6 @@ PetscErrorCode  PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar 
   PetscFunctionReturn(0);
 }
 
-
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscMergeIntArrayPair"
 /*@
@@ -585,7 +583,7 @@ PetscErrorCode  PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar 
 
    Output Parameters:
 +  n   - number of values in the merged array (== an + bn)
-.  I   - merged sorted array
+.  L   - merged sorted array
 -  J   - merged additional array
 
    Level: intermediate
@@ -599,6 +597,7 @@ PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const Pet
   PetscErrorCode ierr;
   PetscInt       n_, *L_ = *L, *J_= *J, ak, bk, k;
 
+  PetscFunctionBegin;
   n_ = an + bn;
   *n = n_;
   if (!L_) {
