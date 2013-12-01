@@ -30,8 +30,8 @@ F_SH_LIB_PATH	= ${PETSC_F_SH_LIB_PATH}
 #
 # The following variables define PETSc compile procedures
 #
-PSOURCEC  = $(SOURCEC:%=${PWD}/%)
-PSOURCECU = $(SOURCECU:%=${PWD}/%)
+PSOURCEC  = $(SOURCEC:%=`pwd`/%)
+PSOURCECU = $(SOURCECU:%=`pwd`/%)
 PETSC_COMPILE         = ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}  ${PSOURCEC}
 PETSC_COMPILE_SINGLE  = ${PCC} -o $*.o -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}
 PETSC_FCOMPILE        = ${FC} -c ${FC_FLAGS} ${FFLAGS} ${FCPPFLAGS}  ${SOURCEF}
