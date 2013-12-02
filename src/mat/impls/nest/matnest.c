@@ -466,17 +466,28 @@ static PetscErrorCode MatDiagonalScale_Nest(Mat A,Vec l,Vec r)
 
   PetscFunctionBegin;
   ierr = PetscMalloc1(bA->nc,&br);CHKERRQ(ierr);
-  for (j=0; j<bA->nc; j++) {ierr = VecGetSubVector(r,bA->isglobal.col[j],&br[j]);CHKERRQ(ierr);}
+  if (r) {
+    for (j=0; j<bA->nc; j++) {ierr = VecGetSubVector(r,bA->isglobal.col[j],&br[j]);CHKERRQ(ierr);}
+  } else {
+    PetscMemzero(br, bA->nc*sizeof(Vec));
+  }
+  bl = NULL;
   for (i=0; i<bA->nr; i++) {
-    ierr = VecGetSubVector(l,bA->isglobal.row[i],&bl);CHKERRQ(ierr);
+    if (l) {
+      ierr = VecGetSubVector(l,bA->isglobal.row[i],&bl);CHKERRQ(ierr);
+    }
     for (j=0; j<bA->nc; j++) {
       if (bA->m[i][j]) {
         ierr = MatDiagonalScale(bA->m[i][j],bl,br[j]);CHKERRQ(ierr);
       }
     }
-    ierr = VecRestoreSubVector(l,bA->isglobal.row[i],&bl);CHKERRQ(ierr);
+    if (l) {
+      ierr = VecRestoreSubVector(l,bA->isglobal.row[i],&bl);CHKERRQ(ierr);
+    }
   }
-  for (j=0; j<bA->nc; j++) {ierr = VecRestoreSubVector(r,bA->isglobal.col[j],&br[j]);CHKERRQ(ierr);}
+  if (r) {
+    for (j=0; j<bA->nc; j++) {ierr = VecRestoreSubVector(r,bA->isglobal.col[j],&br[j]);CHKERRQ(ierr);}
+  }
   ierr = PetscFree(br);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
