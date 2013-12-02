@@ -2838,7 +2838,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
     PetscSFNode       *sremotePoints, *newLocalPoints, *newOwners;
     const PetscInt    *localPoints, *subpoints;
     PetscInt          *slocalPoints;
-    PetscInt           numRoots, numLeaves, numSubpoints, numSubroots, numSubleaves = 0, l, sl, ll, pStart, pEnd, p;
+    PetscInt           numRoots, numLeaves, numSubpoints = 0, numSubroots, numSubleaves = 0, l, sl, ll, pStart, pEnd, p;
     PetscMPIInt        rank;
 
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
@@ -2847,8 +2847,10 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
     ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
     ierr = DMPlexGetChart(subdm, NULL, &numSubroots);CHKERRQ(ierr);
     ierr = DMPlexCreateSubpointIS(subdm, &subpointIS);CHKERRQ(ierr);
-    ierr = ISGetIndices(subpointIS, &subpoints);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(subpointIS, &numSubpoints);CHKERRQ(ierr);
+    if (subpointIS) {
+      ierr = ISGetIndices(subpointIS, &subpoints);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(subpointIS, &numSubpoints);CHKERRQ(ierr);
+    }
     ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
     if (numRoots >= 0) {
       ierr = PetscMalloc2(pEnd-pStart,PetscSFNode,&newLocalPoints,numRoots,PetscSFNode,&newOwners);CHKERRQ(ierr);
@@ -2899,8 +2901,10 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
       }
       if (sl + ll != numSubleaves) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatch in number of subleaves %d + %d != %d", sl, ll, numSubleaves);
       ierr = PetscFree2(newLocalPoints,newOwners);CHKERRQ(ierr);
-      ierr = ISRestoreIndices(subpointIS, &subpoints);CHKERRQ(ierr);
-      ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
+      if (subpointIS) {
+        ierr = ISRestoreIndices(subpointIS, &subpoints);CHKERRQ(ierr);
+        ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
+      }
       ierr = PetscSFSetGraph(sfPointSub, numSubroots, sl, slocalPoints, PETSC_OWN_POINTER, sremotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
     }
   }
