@@ -1715,13 +1715,15 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
       ierr = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
       for (r = 0; r < 4; ++r) {
         for (s = 0; s < supportSize; ++s) {
+          PetscInt subf;
           ierr = DMPlexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
           ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
           ierr = DMPlexGetConeOrientation(dm, support[s], &ornt);CHKERRQ(ierr);
           for (c = 0; c < coneSize; ++c) {
             if (cone[c] == f) break;
           }
-          supportRef[s] = cStartNew + (support[s] - cStart)*8 + (r==3 ? (c+2)%4 + 4 : (ornt[c] < 0 ? faces[c*3+(-(ornt[c]+1)+1+3-r)%3] : faces[c*3+r]));
+          subf = GetTriSubfaceInverse_Static(ornt[c], r);
+          supportRef[s] = cStartNew + (support[s] - cStart)*8 + (r==3 ? (c+2)%4 + 4 : faces[c*3+subf]);
         }
         ierr = DMPlexSetSupport(rdm, newp+r, supportRef);CHKERRQ(ierr);
 #if 1
