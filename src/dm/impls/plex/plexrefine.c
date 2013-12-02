@@ -117,10 +117,16 @@ PETSC_STATIC_INLINE PetscInt GetTriSubfaceInverse_Static(PetscInt o, PetscInt s)
 PETSC_STATIC_INLINE PetscInt GetQuadEdge_Static(PetscInt o, PetscInt r) {
   return (o < 0 ? 3-(o+r) : o+r)%4;
 }
+PETSC_STATIC_INLINE PetscInt GetQuadEdgeInverse_Static(PetscInt o, PetscInt s) {
+  return (o < 0 ? 3-(o+s) : 4+s-o)%4;
+}
 
 /* Return quad subface for orientation o, if it is r for o == 0 */
 PETSC_STATIC_INLINE PetscInt GetQuadSubface_Static(PetscInt o, PetscInt r) {
   return (o < 0 ? 4-(o+r) : o+r)%4;
+}
+PETSC_STATIC_INLINE PetscInt GetQuadSubfaceInverse_Static(PetscInt o, PetscInt s) {
+  return (o < 0 ? 4-(o+s) : 4+s-o)%4;
 }
 
 #undef __FUNCT__
