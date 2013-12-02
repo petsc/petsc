@@ -2833,7 +2833,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
   /* Build SF: We need this complexity because subpoints might not be selected on the owning process */
   {
     PetscSF            sfPoint, sfPointSub;
-    IS                 subpointIS;
+    IS                 subpIS;
     const PetscSFNode *remotePoints;
     PetscSFNode       *sremotePoints, *newLocalPoints, *newOwners;
     const PetscInt    *localPoints, *subpoints;
@@ -2846,10 +2846,10 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
     ierr = DMGetPointSF(subdm, &sfPointSub);CHKERRQ(ierr);
     ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
     ierr = DMPlexGetChart(subdm, NULL, &numSubroots);CHKERRQ(ierr);
-    ierr = DMPlexCreateSubpointIS(subdm, &subpointIS);CHKERRQ(ierr);
-    if (subpointIS) {
-      ierr = ISGetIndices(subpointIS, &subpoints);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(subpointIS, &numSubpoints);CHKERRQ(ierr);
+    ierr = DMPlexCreateSubpointIS(subdm, &subpIS);CHKERRQ(ierr);
+    if (subpIS) {
+      ierr = ISGetIndices(subpIS, &subpoints);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(subpIS, &numSubpoints);CHKERRQ(ierr);
     }
     ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
     if (numRoots >= 0) {
@@ -2901,11 +2901,11 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
       }
       if (sl + ll != numSubleaves) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatch in number of subleaves %d + %d != %d", sl, ll, numSubleaves);
       ierr = PetscFree2(newLocalPoints,newOwners);CHKERRQ(ierr);
-      if (subpointIS) {
-        ierr = ISRestoreIndices(subpointIS, &subpoints);CHKERRQ(ierr);
-        ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
-      }
       ierr = PetscSFSetGraph(sfPointSub, numSubroots, sl, slocalPoints, PETSC_OWN_POINTER, sremotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    }
+    if (subpIS) {
+      ierr = ISRestoreIndices(subpIS, &subpoints);CHKERRQ(ierr);
+      ierr = ISDestroy(&subpIS);CHKERRQ(ierr);
     }
   }
   /* Cleanup */
