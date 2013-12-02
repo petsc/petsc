@@ -206,7 +206,6 @@ PetscErrorCode  PetscOptionsStringToScalar(const char name[],PetscScalar *a)
       tvalue[len-1] = 0;
       ierr = PetscOptionsStringToReal(tvalue,&im);CHKERRQ(ierr);
       if (negim) im = -im;
-      ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
     } else {
       ierr = PetscStrstr(name,"i",&tvalue);CHKERRQ(ierr);
       if (tvalue) {
@@ -216,6 +215,7 @@ PetscErrorCode  PetscOptionsStringToScalar(const char name[],PetscScalar *a)
         ierr = PetscOptionsStringToReal(name,&re);CHKERRQ(ierr);
       }
     }
+    ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
     *a = re + im*PETSC_i;
 #else
