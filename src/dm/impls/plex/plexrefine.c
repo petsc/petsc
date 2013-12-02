@@ -4232,6 +4232,7 @@ PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt depthSiz
         localPointsNew[m]        = eStartNew     + (eMax                        - eStart)*2     + (fMax                              - fStart)     + (cMax                            - cStart)     + (fEnd                                          - fMax);
         remotePointsNew[m].index = reStartNew[n] + (rdepthMaxOld[n*(depth+1)+1] - reStart[n])*2 + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n]) + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n]) + (rdepthSizeOld[n*(depth+1)+depth-1]+rfStart[n] - rdepthMaxOld[n*(depth+1)+depth-1]);
         remotePointsNew[m].rank  = rrank;
+        ++m;
       } else if ((p >= cStart) && (p < cMax)) {
         /* Interior cells add new cells, faces, and edges */
         for (r = 0; r < 8; ++r, ++m) {
@@ -4247,6 +4248,7 @@ PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt depthSiz
         localPointsNew[m]        = eStartNew     + (eMax                        - eStart)*2     + (fMax                              - fStart)*3     + (p  - cStart)*1     + r;
         remotePointsNew[m].index = reStartNew[n] + (rdepthMaxOld[n*(depth+1)+1] - reStart[n])*2 + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*3 + (rp - rcStart[n])*1 + r;
         remotePointsNew[m].rank  = rrank;
+        ++m;
       } else if ((p >= cMax) && (p < cEnd)) {
         /* Hybrid cells add new cells and faces */
         for (r = 0; r < 4; ++r, ++m) {
@@ -4324,6 +4326,7 @@ PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt depthSiz
       SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
     }
   }
+  if (m != numLeavesNew) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of leaf point %d should be %d", m, numLeavesNew);
   ierr = ISRestoreIndices(processRanks, &neighbors);CHKERRQ(ierr);
   ierr = ISDestroy(&processRanks);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sfNew, pEndNew-pStartNew, numLeavesNew, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER);CHKERRQ(ierr);
