@@ -100,20 +100,28 @@ ex24: ex24.o chkopts
 	${RM} -f ex24.o
 #----------------------------------------------------------------------------
 runex1:
-	-@${MPIEXEC} -n 1 ./ex1
-	-@echo "This is a contrived error to test error handling."
+	-@${MPIEXEC} -n 1 ./ex1 > ex1.tmp1 2>&1; egrep "(main|CreateError|Error Created)" ex1.tmp1 | cut -f1,2,3,4,5 -d" " > ex1.tmp;\
+	if (${DIFF} output/ex1_1.out ex1.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex1_1, diffs above \n========================================="; fi; \
+	   ${RM} -f ex1.tmp1 ex1.tmp
 
 runex1f:
-	-@${MPIEXEC} -n 1 ./ex1f
-	-@echo "This is a contrived error to test error handling."
+	-@${MPIEXEC} -n 1 ./ex1f  > ex1f.tmp1 2>&1; egrep "(PETSC ERROR)" ex1f.tmp1  > ex1f.tmp;\
+	if (${DIFF} output/ex1f_1.out ex1f.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex1_1, diffs above \n========================================="; fi; \
+	   ${RM} -f ex1f.tmp1 ex1f.tmp
 
 runex2:
-	-@${MPIEXEC} -n 1 ./ex2
-	-@echo "This is a contrived error to test error handling."
+	-@${MPIEXEC} -n 1 ./ex2 > ex2.tmp1 2>&1; egrep "(Caught signal number 11 SEGV)" ex2.tmp1  > ex2.tmp;\
+	if (${DIFF} output/ex2_1.out ex2.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex2_1, diffs above \n========================================="; fi; \
+	   ${RM} -f ex2.tmp1 ex2.tmp
 
 runex3:
-	-@${MPIEXEC} -n 1 ./ex3 -fp_trap
-	-@echo "This is a contrived error to test error handling of floating point exceptions."
+	-@${MPIEXEC} -n 1 ./ex3 -fp_trap > ex3.tmp1 2>&1; egrep "(PetscDefaultFPTrap|CreateError)" ex3.tmp1 | cut -f1,2,3,4 -d" " > ex3.tmp;\
+	if (${DIFF} output/ex3_1.out ex3.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex3_1, diffs above \n========================================="; fi; \
+	   ${RM} -f ex3.tmp1 ex3.tmp
 
 runex7:
 	-@${MPIEXEC} -n 1 ./ex7 > ex7.tmp 2>&1;\
