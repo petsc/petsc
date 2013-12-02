@@ -3065,7 +3065,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
       coneNew[1] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 + 11; /* BH */
       orntNew[1] = 0;
       coneNew[2] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  3; /* AB */
-      orntNew[2] = -3;
+      orntNew[2] = -1;
       coneNew[3] = fStartNew + (cone[3] - fStart)*4 + GetQuadSubface_Static(ornt[3], 1);
       orntNew[3] = ornt[3];
       coneNew[4] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  2; /* BC */
@@ -3086,13 +3086,13 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
       coneNew[1] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 + 10; /* CG */
       orntNew[1] = 0;
       coneNew[2] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  1; /* CD */
-      orntNew[2] = 0;
+      orntNew[2] = -1;
       coneNew[3] = fStartNew + (cone[3] - fStart)*4 + GetQuadSubface_Static(ornt[3], 0);
       orntNew[3] = ornt[3];
       coneNew[4] = fStartNew + (cone[4] - fStart)*4 + GetQuadSubface_Static(ornt[4], 1);
       orntNew[4] = ornt[4];
       coneNew[5] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  2; /* BC */
-      orntNew[5] = -3;
+      orntNew[5] = -4;
       ierr       = DMPlexSetCone(rdm, newp+2, coneNew);CHKERRQ(ierr);
       ierr       = DMPlexSetConeOrientation(rdm, newp+2, orntNew);CHKERRQ(ierr);
 #if 1
@@ -3109,11 +3109,11 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
       coneNew[2] = fStartNew + (cone[2] - fStart)*4 + GetQuadSubface_Static(ornt[2], 1);
       orntNew[2] = ornt[2];
       coneNew[3] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  1; /* CD */
-      orntNew[3] = -3;
+      orntNew[3] = 0;
       coneNew[4] = fStartNew + (cone[4] - fStart)*4 + GetQuadSubface_Static(ornt[4], 0);
       orntNew[4] = ornt[4];
       coneNew[5] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  0; /* AD */
-      orntNew[5] = -3;
+      orntNew[5] = -4;
       ierr       = DMPlexSetCone(rdm, newp+3, coneNew);CHKERRQ(ierr);
       ierr       = DMPlexSetConeOrientation(rdm, newp+3, orntNew);CHKERRQ(ierr);
 #if 1
@@ -3124,7 +3124,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
 #endif
       /* E hex */
       coneNew[0] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  8; /* AE */
-      orntNew[0] = -3;
+      orntNew[0] = -4;
       coneNew[1] = fStartNew + (cone[1] - fStart)*4 + GetQuadSubface_Static(ornt[1], 0);
       orntNew[1] = ornt[1];
       coneNew[2] = fStartNew + (cone[2] - fStart)*4 + GetQuadSubface_Static(ornt[2], 3);
@@ -3132,7 +3132,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
       coneNew[3] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  7; /* EH */
       orntNew[3] = 0;
       coneNew[4] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  4; /* EF */
-      orntNew[4] = 0;
+      orntNew[4] = -1;
       coneNew[5] = fStartNew + (cone[5] - fStart)*4 + GetQuadSubface_Static(ornt[5], 1);
       orntNew[5] = ornt[5];
       ierr       = DMPlexSetCone(rdm, newp+4, coneNew);CHKERRQ(ierr);
@@ -3145,17 +3145,17 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
 #endif
       /* F hex */
       coneNew[0] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  9; /* DF */
-      orntNew[0] = -3;
+      orntNew[0] = -4;
       coneNew[1] = fStartNew + (cone[1] - fStart)*4 + GetQuadSubface_Static(ornt[1], 1);
       orntNew[1] = ornt[1];
       coneNew[2] = fStartNew + (cone[2] - fStart)*4 + GetQuadSubface_Static(ornt[2], 2);
       orntNew[2] = ornt[2];
       coneNew[3] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  5; /* FG */
-      orntNew[3] = 0;
+      orntNew[3] = -1;
       coneNew[4] = fStartNew + (cone[4] - fStart)*4 + GetQuadSubface_Static(ornt[4], 3);
       orntNew[4] = ornt[4];
       coneNew[5] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  4; /* EF */
-      orntNew[5] = -3;
+      orntNew[5] = 1;
       ierr       = DMPlexSetCone(rdm, newp+5, coneNew);CHKERRQ(ierr);
       ierr       = DMPlexSetConeOrientation(rdm, newp+5, orntNew);CHKERRQ(ierr);
 #if 1
@@ -3166,17 +3166,17 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
 #endif
       /* G hex */
       coneNew[0] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 + 10; /* CG */
-      orntNew[0] = -3;
+      orntNew[0] = -4;
       coneNew[1] = fStartNew + (cone[1] - fStart)*4 + GetQuadSubface_Static(ornt[1], 2);
       orntNew[1] = ornt[1];
       coneNew[2] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  5; /* FG */
-      orntNew[2] = -3;
+      orntNew[2] = 0;
       coneNew[3] = fStartNew + (cone[3] - fStart)*4 + GetQuadSubface_Static(ornt[3], 3);
       orntNew[3] = ornt[3];
       coneNew[4] = fStartNew + (cone[4] - fStart)*4 + GetQuadSubface_Static(ornt[4], 2);
       orntNew[4] = ornt[4];
       coneNew[5] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  6; /* GH */
-      orntNew[5] = 0;
+      orntNew[5] = -3;
       ierr       = DMPlexSetCone(rdm, newp+6, coneNew);CHKERRQ(ierr);
       ierr       = DMPlexSetConeOrientation(rdm, newp+6, orntNew);CHKERRQ(ierr);
 #if 1
@@ -3187,15 +3187,15 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
 #endif
       /* H hex */
       coneNew[0] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 + 11; /* BH */
-      orntNew[0] = -3;
+      orntNew[0] = -4;
       coneNew[1] = fStartNew + (cone[1] - fStart)*4 + GetQuadSubface_Static(ornt[1], 3);
       orntNew[1] = ornt[1];
       coneNew[2] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  7; /* EH */
-      orntNew[2] = -3;
+      orntNew[2] = -1;
       coneNew[3] = fStartNew + (cone[3] - fStart)*4 + GetQuadSubface_Static(ornt[3], 2);
       orntNew[3] = ornt[3];
       coneNew[4] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  6; /* GH */
-      orntNew[4] = -3;
+      orntNew[4] = 3;
       coneNew[5] = fStartNew + (cone[5] - fStart)*4 + GetQuadSubface_Static(ornt[5], 2);
       orntNew[5] = ornt[5];
       ierr       = DMPlexSetCone(rdm, newp+7, coneNew);CHKERRQ(ierr);
@@ -3220,14 +3220,14 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
 
         ierr = DMPlexGetCone(dm, f, &cone);CHKERRQ(ierr);
         ierr = DMPlexGetConeOrientation(dm, f, &ornt);CHKERRQ(ierr);
-        coneNew[0] = eStartNew + (cone[(r+3)%4] - eStart)*2 + (ornt[(r+3)%4] < 0 ? 0 : 1);
-        orntNew[0] = ornt[(r+3)%4];
-        coneNew[1] = eStartNew + (cone[r]       - eStart)*2 + (ornt[r] < 0 ? 1 : 0);
-        orntNew[1] = ornt[r];
-        coneNew[2] = eStartNew + (eEnd - eStart)*2 + (f - fStart)*4 + r;
-        orntNew[2] = 0;
-        coneNew[3] = eStartNew + (eEnd - eStart)*2 + (f - fStart)*4 + (r+3)%4;
-        orntNew[3] = -2;
+        coneNew[(r+3)%4] = eStartNew + (cone[(r+3)%4] - eStart)*2 + (ornt[(r+3)%4] < 0 ? 0 : 1);
+        orntNew[(r+3)%4] = ornt[(r+3)%4];
+        coneNew[(r+0)%4] = eStartNew + (cone[r]       - eStart)*2 + (ornt[r] < 0 ? 1 : 0);
+        orntNew[(r+0)%4] = ornt[r];
+        coneNew[(r+1)%4] = eStartNew + (eEnd - eStart)*2 + (f - fStart)*4 + r;
+        orntNew[(r+1)%4] = 0;
+        coneNew[(r+2)%4] = eStartNew + (eEnd - eStart)*2 + (f - fStart)*4 + (r+3)%4;
+        orntNew[(r+2)%4] = -2;
         ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
         ierr       = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
 #if 1
@@ -3245,7 +3245,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
           for (c = 0; c < coneSize; ++c) {
             if (cone[c] == f) break;
           }
-          supportRef[s] = cStartNew + (support[s] - cStart)*8 + newCells[c*4+GetQuadSubface_Static(ornt[c], r)];
+          supportRef[s] = cStartNew + (support[s] - cStart)*8 + newCells[c*4+GetQuadSubfaceInverse_Static(ornt[c], r)];
         }
         ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
 #if 1
@@ -3266,13 +3266,13 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
       ierr = DMPlexGetConeOrientation(dm, c, &ornt);CHKERRQ(ierr);
       /* A-D face */
       newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*12 + 0;
-      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[2] - fStart)*4 + GetQuadEdge_Static(ornt[2], 0);
-      orntNew[0] = -2;
-      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[0] - fStart)*4 + GetQuadEdge_Static(ornt[0], 3);
+      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[0] - fStart)*4 + GetQuadEdge_Static(ornt[0], 3);
+      orntNew[0] = 0;
+      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 0;
       orntNew[1] = 0;
-      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 0;
-      orntNew[2] = 0;
-      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 2;
+      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 2;
+      orntNew[2] = -2;
+      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (cone[2] - fStart)*4 + GetQuadEdge_Static(ornt[2], 0);
       orntNew[3] = -2;
       ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
       ierr       = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
@@ -3284,13 +3284,13 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
 #endif
       /* C-D face */
       newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*12 + 1;
-      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[4] - fStart)*4 + GetQuadEdge_Static(ornt[4], 0);
-      orntNew[0] = -2;
-      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[0] - fStart)*4 + GetQuadEdge_Static(ornt[0], 2);
+      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[0] - fStart)*4 + GetQuadEdge_Static(ornt[0], 2);
+      orntNew[0] = 0;
+      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 0;
       orntNew[1] = 0;
-      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 0;
-      orntNew[2] = 0;
-      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 4;
+      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 4;
+      orntNew[2] = -2;
+      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (cone[4] - fStart)*4 + GetQuadEdge_Static(ornt[4], 0);
       orntNew[3] = -2;
       ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
       ierr       = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
@@ -3338,14 +3338,14 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
 #endif
       /* E-F face */
       newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*12 + 4;
-      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[2] - fStart)*4 + GetQuadEdge_Static(ornt[2], 2);
+      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 2;
       orntNew[0] = -2;
-      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[1] - fStart)*4 + GetQuadEdge_Static(ornt[1], 0);
-      orntNew[1] = 0;
-      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 1;
+      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[2] - fStart)*4 + GetQuadEdge_Static(ornt[2], 2);
+      orntNew[1] = -2;
+      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (cone[1] - fStart)*4 + GetQuadEdge_Static(ornt[1], 0);
       orntNew[2] = 0;
-      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 2;
-      orntNew[3] = -2;
+      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 1;
+      orntNew[3] = 0;
       ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
       ierr       = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
 #if 1
@@ -3356,14 +3356,14 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
 #endif
       /* F-G face */
       newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*12 + 5;
-      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[4] - fStart)*4 + GetQuadEdge_Static(ornt[4], 2);
+      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 4;
       orntNew[0] = -2;
-      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[1] - fStart)*4 + GetQuadEdge_Static(ornt[1], 1);
-      orntNew[1] = 0;
-      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 1;
+      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[4] - fStart)*4 + GetQuadEdge_Static(ornt[4], 2);
+      orntNew[1] = -2;
+      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (cone[1] - fStart)*4 + GetQuadEdge_Static(ornt[1], 1);
       orntNew[2] = 0;
-      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 4;
-      orntNew[3] = -2;
+      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 1;
+      orntNew[3] = 0;
       ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
       ierr       = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
 #if 1
@@ -3392,14 +3392,14 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
 #endif
       /* E-H face */
       newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*12 + 7;
-      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[5] - fStart)*4 + GetQuadEdge_Static(ornt[5], 1);
+      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 5;
       orntNew[0] = -2;
-      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[1] - fStart)*4 + GetQuadEdge_Static(ornt[1], 3);
-      orntNew[1] = 0;
-      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 1;
+      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[5] - fStart)*4 + GetQuadEdge_Static(ornt[5], 1);
+      orntNew[1] = -2;
+      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (cone[1] - fStart)*4 + GetQuadEdge_Static(ornt[1], 3);
       orntNew[2] = 0;
-      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 5;
-      orntNew[3] = -2;
+      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 1;
+      orntNew[3] = 0;
       ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
       ierr       = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
 #if 1
@@ -3410,13 +3410,13 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
 #endif
       /* A-E face */
       newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*12 + 8;
-      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[5] - fStart)*4 + GetQuadEdge_Static(ornt[5], 0);
-      orntNew[0] = -2;
-      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[2] - fStart)*4 + GetQuadEdge_Static(ornt[2], 3);
+      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[2] - fStart)*4 + GetQuadEdge_Static(ornt[2], 3);
+      orntNew[0] = 0;
+      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 2;
       orntNew[1] = 0;
-      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 2;
-      orntNew[2] = 0;
-      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 5;
+      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 5;
+      orntNew[2] = -2;
+      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (cone[5] - fStart)*4 + GetQuadEdge_Static(ornt[5], 0);
       orntNew[3] = -2;
       ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
       ierr       = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
@@ -3446,14 +3446,14 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
 #endif
       /* C-G face */
       newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*12 + 10;
-      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[4] - fStart)*4 + GetQuadEdge_Static(ornt[4], 1);
+      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 4;
       orntNew[0] = -2;
-      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[3] - fStart)*4 + GetQuadEdge_Static(ornt[3], 3);
-      orntNew[1] = 0;
-      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 3;
+      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[4] - fStart)*4 + GetQuadEdge_Static(ornt[4], 1);
+      orntNew[1] = -2;
+      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (cone[3] - fStart)*4 + GetQuadEdge_Static(ornt[3], 3);
       orntNew[2] = 0;
-      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 4;
-      orntNew[3] = -2;
+      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 3;
+      orntNew[3] = 0;
       ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
       ierr       = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
 #if 1
@@ -3464,14 +3464,14 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
 #endif
       /* B-H face */
       newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*12 + 11;
-      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[3] - fStart)*4 + GetQuadEdge_Static(ornt[3], 1);
-      orntNew[0] = -2;
-      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[5] - fStart)*4 + GetQuadEdge_Static(ornt[5], 2);
-      orntNew[1] = 0;
-      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 5;
-      orntNew[2] = 0;
-      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 3;
-      orntNew[3] = -2;
+      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 5;
+      orntNew[0] = 0;
+      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 3;
+      orntNew[1] = -2;
+      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (cone[3] - fStart)*4 + GetQuadEdge_Static(ornt[3], 1);
+      orntNew[2] = -2;
+      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (cone[5] - fStart)*4 + GetQuadEdge_Static(ornt[5], 2);
+      orntNew[3] = 0;
       ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
       ierr       = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
 #if 1
@@ -3563,7 +3563,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
           ierr = DMPlexGetCone(dm, support[s], &coneCell);CHKERRQ(ierr);
           ierr = DMPlexGetConeOrientation(dm, support[s], &orntCell);CHKERRQ(ierr);
           for (c = 0; c < coneSize; ++c) if (coneCell[c] == f) break;
-          supportRef[2+s] = fStartNew + (fEnd - fStart)*4 + (support[s] - cStart)*12 + newFaces[c*4 + GetQuadEdge_Static(orntCell[c], r)];
+          supportRef[2+s] = fStartNew + (fEnd - fStart)*4 + (support[s] - cStart)*12 + newFaces[c*4 + GetQuadEdgeInverse_Static(orntCell[c], r)];
         }
         ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
 #if 1
