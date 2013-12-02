@@ -6440,9 +6440,9 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscBool isSimplex, PetscInt cellHeight)
         const PetscInt p = fclosure[cl];
         if ((p >= vStart) && (p < vEnd)) fclosure[fnumCorners++] = p;
       }
-      if (fnumCorners != faceSize) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d of cell %d has %d vertices but should have %d", cone[f], c, fnumCorners, faceSize);
+      if (fnumCorners != faceSize) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d (%d) of cell %d has %d vertices but should have %d", cone[f], f, c, fnumCorners, faceSize);
       for (v = 0; v < fnumCorners; ++v) {
-        if (fclosure[v] != faces[f*faceSize+v]) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d of cell %d vertex %d, %d != %d", cone[f], c, v, fclosure[v], faces[f*faceSize+v]);
+        if (fclosure[v] != faces[f*faceSize+v]) SETERRQ6(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d (%d) of cell %d vertex %d, %d != %d", cone[f], f, c, v, fclosure[v], faces[f*faceSize+v]);
       }
       ierr = DMPlexRestoreTransitiveClosure(dm, cone[f], PETSC_TRUE, &fclosureSize, &fclosure);CHKERRQ(ierr);
     }
