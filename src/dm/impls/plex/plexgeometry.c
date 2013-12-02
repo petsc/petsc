@@ -213,8 +213,8 @@ static PetscErrorCode DMPlexComputeProjection2Dto1D_Internal(PetscScalar coords[
   const PetscReal r = sqrt(x*x + y*y), c = x/r, s = y/r;
 
   PetscFunctionBegin;
-  R[0] =  c; R[1] = s;
-  R[2] = -s; R[3] = c;
+  R[0] = c; R[1] = -s;
+  R[2] = s; R[3] =  c;
   coords[0] = 0.0;
   coords[1] = r;
   PetscFunctionReturn(0);
@@ -806,8 +806,13 @@ static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt dim, 
     centroid[1] = 0.5*PetscRealPart(coords[1] + coords[dim+1]);
   }
   if (normal) {
-    normal[0] =  PetscRealPart(coords[1] - coords[dim+1]);
-    normal[1] = -PetscRealPart(coords[0] - coords[dim+0]);
+    PetscReal norm;
+
+    normal[0] = -PetscRealPart(coords[1] - coords[dim+1]);
+    normal[1] =  PetscRealPart(coords[0] - coords[dim+0]);
+    norm = PetscSqrtReal(normal[0]*normal[0] + normal[1]*normal[1]);
+    normal[0] /= norm;
+    normal[1] /= norm;
   }
   if (vol) {
     *vol = sqrt(PetscSqr(PetscRealPart(coords[0] - coords[dim+0])) + PetscSqr(PetscRealPart(coords[1] - coords[dim+1])));
