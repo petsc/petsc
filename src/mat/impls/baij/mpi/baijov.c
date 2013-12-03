@@ -164,12 +164,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
 
   /* Memory for doing local proc's work*/
   {
-    ierr = PetscMalloc5(imax,&table, imax,&data, imax,&isz, Mbs*imax,&d_p, (Mbs/PETSC_BITS_PER_BYTE+1)*imax,&t_p);CHKERRQ(ierr);
-    ierr = PetscMemzero(table,imax*sizeof(PetscBT));CHKERRQ(ierr);
-    ierr = PetscMemzero(data,imax*sizeof(PetscInt*));CHKERRQ(ierr);
-    ierr = PetscMemzero(isz,imax*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemzero(d_p,Mbs*imax*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemzero(t_p,(Mbs/PETSC_BITS_PER_BYTE+1)*imax*sizeof(char));CHKERRQ(ierr);
+    ierr = PetscCalloc5(imax,&table, imax,&data, imax,&isz, Mbs*imax,&d_p, (Mbs/PETSC_BITS_PER_BYTE+1)*imax,&t_p);CHKERRQ(ierr);
 
     for (i=0; i<imax; i++) {
       table[i] = t_p + (Mbs/PETSC_BITS_PER_BYTE+1)*i;

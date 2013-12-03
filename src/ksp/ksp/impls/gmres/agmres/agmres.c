@@ -59,16 +59,12 @@ PetscErrorCode    KSPSetUp_AGMRES(KSP ksp)
   hes             = (N + 1) * (N + 1);
 
   /* Data for the Newton basis GMRES */
-  ierr = PetscMalloc4(max_k,&agmres->Rshift,max_k,&agmres->Ishift,hes,&agmres->Rloc,((N+1)*4),&agmres->wbufptr);CHKERRQ(ierr);
+  ierr = PetscCalloc4(max_k,&agmres->Rshift,max_k,&agmres->Ishift,hes,&agmres->Rloc,((N+1)*4),&agmres->wbufptr);CHKERRQ(ierr);
   ierr = PetscMalloc7((N+1),&agmres->Scale,(N+1),&agmres->sgn,(N+1),&agmres->tloc,(N+1),&agmres->temp,(N+1),&agmres->tau,lwork,&agmres->work,(N+1),&agmres->nrs);CHKERRQ(ierr);
-  ierr = PetscMemzero(agmres->Rshift, max_k*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(agmres->Ishift, max_k*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemzero(agmres->Scale, (N+1)*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(agmres->Rloc, (N+1)*(N+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemzero(agmres->sgn, (N+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemzero(agmres->tloc, (N+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemzero(agmres->temp, (N+1)*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(agmres->wbufptr, (N+1)*4*sizeof(PetscScalar));CHKERRQ(ierr);
 
   /* Allocate space for the vectors in the orthogonalized basis*/
   ierr = VecGetLocalSize(agmres->vecs[0], &nloc);CHKERRQ(ierr);

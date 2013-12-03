@@ -1229,11 +1229,9 @@ PetscErrorCode  DMCreateInterpolation_Composite(DM coarse,DM fine,Mat *A,Vec *v)
 
   nDM = comfine->nDM;
   if (nDM != comcoarse->nDM) SETERRQ2(PetscObjectComm((PetscObject)fine),PETSC_ERR_ARG_INCOMP,"Fine DMComposite has %D entries, but coarse has %D",nDM,comcoarse->nDM);
-  ierr = PetscMalloc1(nDM*nDM,&mats);CHKERRQ(ierr);
-  ierr = PetscMemzero(mats,nDM*nDM*sizeof(Mat));CHKERRQ(ierr);
+  ierr = PetscCalloc1(nDM*nDM,&mats);CHKERRQ(ierr);
   if (v) {
-    ierr = PetscMalloc1(nDM,&vecs);CHKERRQ(ierr);
-    ierr = PetscMemzero(vecs,nDM*sizeof(Vec));CHKERRQ(ierr);
+    ierr = PetscCalloc1(nDM,&vecs);CHKERRQ(ierr);
   }
 
   /* loop over packed objects, handling one at at time */

@@ -248,8 +248,7 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
 
   PetscFunctionBegin;
   /*  first count number of contributors to each processor */
-  ierr = PetscMalloc1(2*size,&nprocs);CHKERRQ(ierr);
-  ierr = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(2*size,&nprocs);CHKERRQ(ierr);
   ierr = PetscMalloc1(stash->n,&owner);CHKERRQ(ierr);
 
   j       = 0;

@@ -1963,8 +1963,7 @@ static PetscErrorCode InferLocalCellConnectivity(PetscInt nnodes,PetscInt nedge,
   acell   = 100000;              /* allocate for this many cells */
   ierr    = PetscMalloc1(acell,&conn);CHKERRQ(ierr);
   ierr    = PetscMalloc2(nnodes+1,&ui,nedge,&uj);CHKERRQ(ierr);
-  ierr    = PetscMalloc1(nnodes,&utmp);CHKERRQ(ierr);
-  ierr    = PetscMemzero(utmp,nnodes*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr    = PetscCalloc1(nnodes,&utmp);CHKERRQ(ierr);
   /* count the number of edges in the upper-triangular matrix u */
   for (i=0; i<nedge; i++) {     /* count number of nonzeros in upper triangular matrix */
     GetEdge(eptr,i,node0,node1);

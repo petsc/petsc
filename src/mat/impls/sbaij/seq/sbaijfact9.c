@@ -20,8 +20,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat C,Mat A,const MatFactorIn
 
   PetscFunctionBegin;
   /* initialization */
-  ierr = PetscMalloc1(36*mbs,&w);CHKERRQ(ierr);
-  ierr = PetscMemzero(w,36*mbs*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = PetscCalloc1(36*mbs,&w);CHKERRQ(ierr);
   ierr = PetscMalloc2(mbs,&il,mbs,&jl);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     jl[i] = mbs; il[0] = 0;

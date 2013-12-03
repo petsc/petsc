@@ -42,8 +42,7 @@ static PetscErrorCode PCSetUp_CP(PC pc)
   if (!cp->a) {
     ierr = PetscMalloc3(aij->nz,&cp->a,cp->n+1,&cp->i,aij->nz,&cp->j);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc1(cp->n,&colcnt);CHKERRQ(ierr);
-  ierr = PetscMemzero(colcnt,cp->n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(cp->n,&colcnt);CHKERRQ(ierr);
 
   for (i=0; i<aij->nz; i++) colcnt[aij->j[i]]++;
   cp->i[0] = 0;

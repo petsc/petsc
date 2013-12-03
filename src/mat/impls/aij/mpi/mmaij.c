@@ -67,8 +67,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 #else
   /* Make an array as long as the number of columns */
   /* mark those columns that are in aij->B */
-  ierr = PetscMalloc1((N+1),&indices);CHKERRQ(ierr);
-  ierr = PetscMemzero(indices,N*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(N+1,&indices);CHKERRQ(ierr);
   for (i=0; i<aij->B->rmap->n; i++) {
     for (j=0; j<B->ilen[i]; j++) {
       if (!indices[aj[B->i[i] + j]]) ec++;
@@ -215,8 +214,7 @@ PetscErrorCode MatMPIAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
   PetscFunctionBegin;
   ierr = MatGetOwnershipRange(inA,&cstart,&cend);CHKERRQ(ierr);
   ierr = MatGetSize(ina->A,NULL,&n);CHKERRQ(ierr);
-  ierr = PetscMalloc1((inA->rmap->mapping->n+1),&r_rmapd);CHKERRQ(ierr);
-  ierr = PetscMemzero(r_rmapd,inA->rmap->mapping->n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(inA->rmap->mapping->n+1,&r_rmapd);CHKERRQ(ierr);
   nt   = 0;
   for (i=0; i<inA->rmap->mapping->n; i++) {
     if (inA->rmap->mapping->indices[i] >= cstart && inA->rmap->mapping->indices[i] < cend) {
@@ -234,14 +232,12 @@ PetscErrorCode MatMPIAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
   ierr = PetscFree(r_rmapd);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&auglydd);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1((inA->cmap->N+1),&lindices);CHKERRQ(ierr);
-  ierr = PetscMemzero(lindices,inA->cmap->N*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(inA->cmap->N+1,&lindices);CHKERRQ(ierr);
   for (i=0; i<ina->B->cmap->n; i++) {
     lindices[garray[i]] = i+1;
   }
   no   = inA->rmap->mapping->n - nt;
-  ierr = PetscMalloc1((inA->rmap->mapping->n+1),&r_rmapo);CHKERRQ(ierr);
-  ierr = PetscMemzero(r_rmapo,inA->rmap->mapping->n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(inA->rmap->mapping->n+1,&r_rmapo);CHKERRQ(ierr);
   nt   = 0;
   for (i=0; i<inA->rmap->mapping->n; i++) {
     if (lindices[inA->rmap->mapping->indices[i]]) {

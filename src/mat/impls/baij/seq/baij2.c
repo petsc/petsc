@@ -97,10 +97,9 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse 
   ierr = ISGetLocalSize(isrow,&nrows);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscol,&ncols);CHKERRQ(ierr);
 
-  ierr  = PetscMalloc1((1+oldcols),&smap);CHKERRQ(ierr);
+  ierr  = PetscCalloc1((1+oldcols),&smap);CHKERRQ(ierr);
   ssmap = smap;
   ierr  = PetscMalloc1((1+nrows),&lens);CHKERRQ(ierr);
-  ierr  = PetscMemzero(smap,oldcols*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<ncols; i++) smap[icol[i]] = i+1;
   /* determine lens of each row */
   for (i=0; i<nrows; i++) {
@@ -2512,8 +2511,7 @@ PetscErrorCode MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
   } else if (type == NORM_1) { /* maximum column sum */
     PetscReal *tmp;
     PetscInt  *bcol = a->j;
-    ierr = PetscMalloc1((A->cmap->n+1),&tmp);CHKERRQ(ierr);
-    ierr = PetscMemzero(tmp,A->cmap->n*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscCalloc1((A->cmap->n+1),&tmp);CHKERRQ(ierr);
     for (i=0; i<nz; i++) {
       for (j=0; j<bs; j++) {
         k1 = bs*(*bcol) + j; /* column index */

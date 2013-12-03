@@ -146,8 +146,7 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
 #endif
 
       /* generate the lists of nodes for each color */
-      ierr = PetscMalloc1(nc,&mcolors);CHKERRQ(ierr);
-      ierr = PetscMemzero(mcolors,nc*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscCalloc1(nc,&mcolors);CHKERRQ(ierr);
       for (i=0; i<n; i++) mcolors[colors[i]]++;
 
       ierr = PetscMalloc1(nc,&ii);CHKERRQ(ierr);
@@ -424,8 +423,7 @@ PetscErrorCode  ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
         sums - total number of "previous" nodes for any particular partition
         starts - global number of first element in each partition on this processor
   */
-  ierr = PetscMalloc1(len,&lsizes);CHKERRQ(ierr);
-  ierr = PetscMemzero(lsizes,len*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(len,&lsizes);CHKERRQ(ierr);
   for (i=0; i<n; i++) lsizes[indices[i]]++;
   ierr = ISRestoreIndices(part,&indices);CHKERRQ(ierr);
   ierr = PetscMPIIntCast(len,&npp);CHKERRQ(ierr);

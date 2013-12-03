@@ -38,8 +38,7 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse 
   /* Traverse garray and identify column indices [of offdiag mat] that
    should be discarded. For the ones not discarded, store the newCol+1
    value in garrayCMap */
-  ierr = PetscMalloc1(aij->B->cmap->n,&garrayCMap);CHKERRQ(ierr);
-  ierr = PetscMemzero(garrayCMap,aij->B->cmap->n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(aij->B->cmap->n,&garrayCMap);CHKERRQ(ierr);
   for (i=0; i<aij->B->cmap->n; i++) {
     col = aij->garray[i];
     for (subRank=0; subRank<subCommSize; subRank++) {
@@ -53,8 +52,7 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse 
 
   if (scall == MAT_INITIAL_MATRIX) {
     /* Now compute preallocation for the offdiag mat */
-    ierr = PetscMalloc1(aij->B->rmap->n,&nnz);CHKERRQ(ierr);
-    ierr = PetscMemzero(nnz,aij->B->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscCalloc1(aij->B->rmap->n,&nnz);CHKERRQ(ierr);
     for (i=0; i<aij->B->rmap->n; i++) {
       for (j=aijB->i[i]; j<aijB->i[i+1]; j++) {
         if (garrayCMap[aijB->j[j]]) nnz[i]++;

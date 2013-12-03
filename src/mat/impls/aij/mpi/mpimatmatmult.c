@@ -295,8 +295,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
 
   /* malloc apa to store dense row A[i,:]*P */
-  ierr = PetscMalloc1(pN,&apa);CHKERRQ(ierr);
-  ierr = PetscMemzero(apa,pN*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscCalloc1(pN,&apa);CHKERRQ(ierr);
 
   ptap->apa = apa;
 
@@ -759,8 +758,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
   /* malloc apa for assembly Cmpi */
-  ierr = PetscMalloc1(apnz_max,&apa);CHKERRQ(ierr);
-  ierr = PetscMemzero(apa,apnz_max*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscCalloc1(apnz_max,&apa);CHKERRQ(ierr);
 
   ptap->apa = apa;
   for (i=0; i<am; i++) {
@@ -903,13 +901,11 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,
   /*--------------------------------------------------------------*/
   /* get data from symbolic products */
   coi  = merge->coi; coj = merge->coj;
-  ierr = PetscMalloc1((coi[pon]+1),&coa);CHKERRQ(ierr);
-  ierr = PetscMemzero(coa,coi[pon]*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = PetscCalloc1((coi[pon]+1),&coa);CHKERRQ(ierr);
 
   bi     = merge->bi; bj = merge->bj;
   owners = merge->rowmap->range;
-  ierr   = PetscMalloc1((bi[cm]+1),&ba);CHKERRQ(ierr);
-  ierr   = PetscMemzero(ba,bi[cm]*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr   = PetscCalloc1((bi[cm]+1),&ba);CHKERRQ(ierr);
 
   /* get A_loc by taking all local rows of A */
   A_loc = ptap->A_loc;
@@ -918,8 +914,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,
   ai    = a_loc->i;
   aj    = a_loc->j;
 
-  ierr = PetscMalloc1((A->cmap->N),&aval);CHKERRQ(ierr); /* non-scalable!!! */
-  ierr = PetscMemzero(aval,A->cmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscCalloc1((A->cmap->N),&aval);CHKERRQ(ierr); /* non-scalable!!! */
 
   for (i=0; i<am; i++) {
     /* 2-a) put A[i,:] to dense array aval */
@@ -1163,8 +1158,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   owners = merge->rowmap->range;
 
   /* determine the number of messages to send, their lengths */
-  ierr = PetscMalloc1(size,&len_si);CHKERRQ(ierr);
-  ierr = PetscMemzero(len_si,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(size,&len_si);CHKERRQ(ierr);
   ierr = PetscMalloc1(size,&merge->len_s);CHKERRQ(ierr);
 
   len_s        = merge->len_s;
@@ -1330,8 +1324,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
 
   /* create symbolic parallel matrix Cmpi - why cannot be assembled in Numeric part   */
   /*----------------------------------------------------------------------------------*/
-  ierr = PetscMalloc1((rmax+1),&vals);CHKERRQ(ierr);
-  ierr = PetscMemzero(vals,rmax*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscCalloc1(rmax+1,&vals);CHKERRQ(ierr);
 
   ierr = MatCreate(comm,&Cmpi);CHKERRQ(ierr);
   ierr = MatSetSizes(Cmpi,pn,A->cmap->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
@@ -1421,12 +1414,10 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
   /*------------------------------------------*/
   /* get data from symbolic products */
   coi    = merge->coi; coj = merge->coj;
-  ierr   = PetscMalloc1((coi[pon]+1),&coa);CHKERRQ(ierr);
-  ierr   = PetscMemzero(coa,coi[pon]*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr   = PetscCalloc1((coi[pon]+1),&coa);CHKERRQ(ierr);
   bi     = merge->bi; bj = merge->bj;
   owners = merge->rowmap->range;
-  ierr   = PetscMalloc1((bi[cm]+1),&ba);CHKERRQ(ierr);
-  ierr   = PetscMemzero(ba,bi[cm]*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr   = PetscCalloc1(bi[cm]+1,&ba);CHKERRQ(ierr);
 
   /* get A_loc by taking all local rows of A */
   A_loc = ptap->A_loc;
@@ -1674,8 +1665,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   owners = merge->rowmap->range;
 
   /* determine the number of messages to send, their lengths */
-  ierr = PetscMalloc1(size,&len_si);CHKERRQ(ierr);
-  ierr = PetscMemzero(len_si,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(size,&len_si);CHKERRQ(ierr);
   ierr = PetscMalloc1(size,&merge->len_s);CHKERRQ(ierr);
 
   len_s        = merge->len_s;
@@ -1840,8 +1830,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
 
   /* create symbolic parallel matrix Cmpi - why cannot be assembled in Numeric part   */
   /*----------------------------------------------------------------------------------*/
-  ierr = PetscMalloc1((rmax+1),&vals);CHKERRQ(ierr);
-  ierr = PetscMemzero(vals,rmax*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscCalloc1(rmax+1,&vals);CHKERRQ(ierr);
 
   ierr = MatCreate(comm,&Cmpi);CHKERRQ(ierr);
   ierr = MatSetSizes(Cmpi,pn,A->cmap->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);

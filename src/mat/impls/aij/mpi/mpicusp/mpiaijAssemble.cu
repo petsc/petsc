@@ -265,9 +265,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   ierr = PetscLogEventBegin(MAT_SetValuesBatchI,0,0,0,0);CHKERRQ(ierr);
   PetscMPIInt *procSendSizes, *procRecvSizes;
 
-  ierr = PetscMalloc2(numProcs, &procSendSizes, numProcs, &procRecvSizes);CHKERRQ(ierr);
-  ierr = PetscMemzero(procSendSizes, numProcs * sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(procRecvSizes, numProcs * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc2(numProcs, &procSendSizes, numProcs, &procRecvSizes);CHKERRQ(ierr);
 
   numNonlocalRows = 0;
   for (size_t i = 0; i < N; ++i) {

@@ -1035,9 +1035,7 @@ PetscErrorCode MatNestSetSubMats_Nest(Mat A,PetscInt nr,const IS is_row[],PetscI
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(nr,&s->left,nc,&s->right);CHKERRQ(ierr);
-  ierr = PetscMemzero(s->left,nr*sizeof(Vec));CHKERRQ(ierr);
-  ierr = PetscMemzero(s->right,nc*sizeof(Vec));CHKERRQ(ierr);
+  ierr = PetscCalloc2(nr,&s->left,nc,&s->right);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

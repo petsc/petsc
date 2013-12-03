@@ -99,8 +99,7 @@ PetscErrorCode  DMDASetBlockFills(DM da,const PetscInt *dfill,const PetscInt *of
 
   /* ofillcount tracks the columns of ofill that have any nonzero in thems; the value in each location is the number of
    columns to the left with any nonzeros in them plus 1 */
-  ierr = PetscMalloc1(dd->w,&dd->ofillcols);CHKERRQ(ierr);
-  ierr = PetscMemzero(dd->ofillcols,dd->w*sizeof(PetscBool));CHKERRQ(ierr);
+  ierr = PetscCalloc1(dd->w,&dd->ofillcols);CHKERRQ(ierr);
   for (i=0; i<dd->w; i++) {
     for (k=dd->ofill[i]; k<dd->ofill[i+1]; k++) dd->ofillcols[dd->ofill[k]] = 1;
   }
@@ -673,11 +672,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
         bsLocal = bs;
         ierr    = MPI_Allreduce(&bsLocal, &bs, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
       }
-      ierr = PetscMalloc4(localSize/bs, &dnz, localSize/bs, &onz, localSize/bs, &dnzu, localSize/bs, &onzu);CHKERRQ(ierr);
-      ierr = PetscMemzero(dnz,  localSize/bs * sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscMemzero(onz,  localSize/bs * sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscMemzero(dnzu, localSize/bs * sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscMemzero(onzu, localSize/bs * sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscCalloc4(localSize/bs, &dnz, localSize/bs, &onz, localSize/bs, &dnzu, localSize/bs, &onzu);CHKERRQ(ierr);
       /* ierr = DMPlexPreallocateOperator(dm, bs, section, sectionGlobal, dnz, onz, dnzu, onzu, *J, fillMatrix);CHKERRQ(ierr); */
       ierr = PetscFree4(dnz, onz, dnzu, onzu);CHKERRQ(ierr);
     }
@@ -868,8 +863,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
     PETSc ordering.
   */
   if (!da->prealloc_only) {
-    ierr = PetscMalloc1(col*col*nc*nc,&values);CHKERRQ(ierr);
-    ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscCalloc1(col*col*nc*nc,&values);CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
 
       pstart = (bx == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
@@ -982,8 +976,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
     PETSc ordering.
   */
   if (!da->prealloc_only) {
-    ierr = PetscMalloc1(col*col*nc*nc,&values);CHKERRQ(ierr);
-    ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscCalloc1(col*col*nc*nc,&values);CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
 
       pstart = (bx == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
@@ -1102,8 +1095,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J)
     PETSc ordering.
   */
   if (!da->prealloc_only) {
-    ierr = PetscMalloc1(col*col*col*nc*nc*nc,&values);CHKERRQ(ierr);
-    ierr = PetscMemzero(values,col*col*col*nc*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscCalloc1(col*col*col*nc*nc*nc,&values);CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
       istart = (bx == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
       iend   = (bx == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
@@ -1174,9 +1166,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
   ierr = DMDAGetGhostCorners(da,&gxs,0,0,&gnx,0,0);CHKERRQ(ierr);
 
   ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
-  ierr = PetscMalloc2(nx*nc,&cols,nx*nc,&ocols);CHKERRQ(ierr);
-  ierr = PetscMemzero(cols,nx*nc*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(ocols,nx*nc*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc2(nx*nc,&cols,nx*nc,&ocols);CHKERRQ(ierr);
 
   /*
         note should be smaller for first and last process with no periodic
@@ -1222,8 +1212,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
   */
   if (!da->prealloc_only) {
     ierr = PetscMalloc1(col*nc*nc,&cols);CHKERRQ(ierr);
-    ierr = PetscMalloc1(col*nc*nc,&values);CHKERRQ(ierr);
-    ierr = PetscMemzero(values,col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscCalloc1(col*nc*nc,&values);CHKERRQ(ierr);
 
     row = xs*nc;
     /* coupling with process to the left */
@@ -1330,8 +1319,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da,Mat J)
   */
   if (!da->prealloc_only) {
     ierr = PetscMalloc2(nc,&rows,col*nc*nc,&cols);CHKERRQ(ierr);
-    ierr = PetscMalloc1(col*nc*nc,&values);CHKERRQ(ierr);
-    ierr = PetscMemzero(values,col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscCalloc1(col*nc*nc,&values);CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
       istart = PetscMax(-s,gxs - i);
       iend   = PetscMin(s,gxs + gnx - i - 1);
@@ -1420,8 +1408,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIBAIJ(DM da,Mat J)
     PETSc ordering.
   */
   if (!da->prealloc_only) {
-    ierr = PetscMalloc1(col*col*nc*nc,&values);CHKERRQ(ierr);
-    ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscCalloc1(col*col*nc*nc,&values);CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
       istart = (bx == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
       iend   = (bx == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
@@ -1522,8 +1509,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM da,Mat J)
     PETSc ordering.
   */
   if (!da->prealloc_only) {
-    ierr = PetscMalloc1(col*col*col*nc*nc,&values);CHKERRQ(ierr);
-    ierr = PetscMemzero(values,col*col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscCalloc1(col*col*col*nc*nc,&values);CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
       istart = (bx == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
       iend   = (bx == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
@@ -1646,8 +1632,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM da,Mat J)
     PETSc ordering.
   */
   if (!da->prealloc_only) {
-    ierr = PetscMalloc1(col*col*nc*nc,&values);CHKERRQ(ierr);
-    ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscCalloc1(col*col*nc*nc,&values);CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
       istart = (bx == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
       iend   = (bx == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
@@ -1752,8 +1737,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da,Mat J)
     PETSc ordering.
   */
   if (!da->prealloc_only) {
-    ierr = PetscMalloc1(col*col*col*nc*nc,&values);CHKERRQ(ierr);
-    ierr = PetscMemzero(values,col*col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscCalloc1(col*col*col*nc*nc,&values);CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
       istart = (bx == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
       iend   = (bx == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
@@ -1883,8 +1867,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da,Mat J)
     PETSc ordering.
   */
   if (!da->prealloc_only) {
-    ierr = PetscMalloc1(col*col*col*nc*nc*nc,&values);CHKERRQ(ierr);
-    ierr = PetscMemzero(values,col*col*col*nc*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscCalloc1(col*col*col*nc*nc*nc,&values);CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
       istart = (bx == DMDA_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
       iend   = (bx == DMDA_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));

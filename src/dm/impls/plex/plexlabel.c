@@ -639,8 +639,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSection partSection, IS par
     PetscInt        proc;
 
     ierr = ISGetIndices(part, &partArray);CHKERRQ(ierr);
-    ierr = PetscMalloc(numProcs*label->numStrata * sizeof(PetscInt), &stratumSizes);CHKERRQ(ierr);
-    ierr = PetscMemzero(stratumSizes, numProcs*label->numStrata * sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscCalloc1(numProcs*label->numStrata, &stratumSizes);CHKERRQ(ierr);
     /* TODO We should switch to using binary search if the label is a lot smaller than partitions */
     for (proc = 0; proc < numProcs; ++proc) {
       PetscInt dof, off;

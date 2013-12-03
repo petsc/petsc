@@ -859,8 +859,7 @@ static PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
     }
 
     /* Solve the system H^T*t = h_{m+1,m}e_m */
-    ierr    = PetscMalloc1(bn, &t);CHKERRQ(ierr);
-    ierr    = PetscMemzero(t, bn*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr    = PetscCalloc1(bn, &t);CHKERRQ(ierr);
     t[bn-1] = dgmres->hes_origin[(bn -1) * ldA + bn]; /* Pick the last element H(m+1,m) */
     ierr    = PetscMalloc1(bn, &ipiv);CHKERRQ(ierr);
     /* Call the LAPACK routine dgesv to solve the system Ht^-1 * t */
@@ -907,8 +906,7 @@ static PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
   }
   /* Reorder the Schur decomposition so that the cluster of smallest eigenvalues appears in the leading diagonal blocks of A */
 
-  ierr = PetscMalloc(n * sizeof(PetscBLASInt), &select);CHKERRQ(ierr);
-  ierr = PetscMemzero(select, n * sizeof(PetscBLASInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(n, &select);CHKERRQ(ierr);
 
   if (!dgmres->GreatestEig) {
     for (j = 0; j < NbrEig; j++) select[perm[j]] = 1;
@@ -1129,8 +1127,7 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
   dgmres->r = r = NbrEig;
 
   /* Select the eigenvalues to reorder */
-  ierr = PetscMalloc(N * sizeof(PetscBLASInt), &select);CHKERRQ(ierr);
-  ierr = PetscMemzero(select, N * sizeof(PetscBLASInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(N, &select);CHKERRQ(ierr);
   if (!dgmres->GreatestEig) {
     for (j = 0; j < NbrEig; j++) select[perm[j]] = 1;
   } else {

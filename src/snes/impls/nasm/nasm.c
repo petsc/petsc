@@ -136,20 +136,16 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
   } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Must set subproblems manually if there is no DM!");
   /* allocate the global vectors */
   if (!nasm->x) {
-    ierr = PetscMalloc1(nasm->n,&nasm->x);CHKERRQ(ierr);
-    ierr = PetscMemzero(nasm->x,nasm->n*sizeof(Vec));CHKERRQ(ierr);
+    ierr = PetscCalloc1(nasm->n,&nasm->x);CHKERRQ(ierr);
   }
   if (!nasm->xl) {
-    ierr = PetscMalloc1(nasm->n,&nasm->xl);CHKERRQ(ierr);
-    ierr = PetscMemzero(nasm->xl,nasm->n*sizeof(Vec));CHKERRQ(ierr);
+    ierr = PetscCalloc1(nasm->n,&nasm->xl);CHKERRQ(ierr);
   }
   if (!nasm->y) {
-    ierr = PetscMalloc1(nasm->n,&nasm->y);CHKERRQ(ierr);
-    ierr = PetscMemzero(nasm->y,nasm->n*sizeof(Vec));CHKERRQ(ierr);
+    ierr = PetscCalloc1(nasm->n,&nasm->y);CHKERRQ(ierr);
   }
   if (!nasm->b) {
-    ierr = PetscMalloc1(nasm->n,&nasm->b);CHKERRQ(ierr);
-    ierr = PetscMemzero(nasm->b,nasm->n*sizeof(Vec));CHKERRQ(ierr);
+    ierr = PetscCalloc1(nasm->n,&nasm->b);CHKERRQ(ierr);
   }
 
   for (i=0; i<nasm->n; i++) {

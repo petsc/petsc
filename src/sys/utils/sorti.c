@@ -679,8 +679,7 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool mask[],const PetscIn
   }
 
   /* determine the level in the tree of each node */
-  ierr = PetscMalloc1(n,&level);CHKERRQ(ierr);
-  ierr = PetscMemzero(level,n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(n,&level);CHKERRQ(ierr);
 
   level[0] = 1;
   while (!done) {
@@ -697,8 +696,7 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool mask[],const PetscIn
   }
 
   /* count the number of nodes on each level and its max */
-  ierr = PetscMalloc1(nlevels,&levelcnt);CHKERRQ(ierr);
-  ierr = PetscMemzero(levelcnt,nlevels*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(nlevels,&levelcnt);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (mask[i]) continue;
     levelcnt[level[i]-1]++;

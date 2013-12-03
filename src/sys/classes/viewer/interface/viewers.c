@@ -67,8 +67,7 @@ PetscErrorCode  PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
   (*v)->n    = 64;
   (*v)->comm = comm;
 
-  ierr = PetscMalloc1(64,&(*v)->viewer);CHKERRQ(ierr);
-  ierr = PetscMemzero((*v)->viewer,64*sizeof(PetscViewer));CHKERRQ(ierr);
+  ierr = PetscCalloc1(64,&(*v)->viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -103,8 +102,7 @@ PetscErrorCode  PetscViewersGetViewer(PetscViewers viewers,PetscInt n,PetscViewe
     PetscViewer *v;
     int         newn = n + 64; /* add 64 new ones at a time */
 
-    ierr = PetscMalloc1(newn,&v);CHKERRQ(ierr);
-    ierr = PetscMemzero(v,newn*sizeof(PetscViewer));CHKERRQ(ierr);
+    ierr = PetscCalloc1(newn,&v);CHKERRQ(ierr);
     ierr = PetscMemcpy(v,viewers->viewer,viewers->n*sizeof(PetscViewer));CHKERRQ(ierr);
     ierr = PetscFree(viewers->viewer);CHKERRQ(ierr);
 

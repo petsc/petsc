@@ -86,8 +86,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,PetscReal fi
   ierr  = PetscMalloc1((pn+1),&ci);CHKERRQ(ierr);
   ci[0] = 0;
 
-  ierr         = PetscMalloc1((2*an+1),&ptadenserow);CHKERRQ(ierr);
-  ierr         = PetscMemzero(ptadenserow,(2*an+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr         = PetscCalloc1(2*an+1,&ptadenserow);CHKERRQ(ierr);
   ptasparserow = ptadenserow  + an;
 
   /* create and initialize a linked list */
@@ -154,9 +153,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,PetscReal fi
   ierr = PetscFree(ptadenserow);CHKERRQ(ierr);
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
 
-  /* Allocate space for ca */
-  ierr = PetscMalloc1((ci[pn]+1),&ca);CHKERRQ(ierr);
-  ierr = PetscMemzero(ca,(ci[pn]+1)*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = PetscCalloc1((ci[pn]+1),&ca);CHKERRQ(ierr);
 
   /* put together the new matrix */
   ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),pn,pn,ci,cj,ca,C);CHKERRQ(ierr);
@@ -304,8 +301,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_DenseAxpy(Mat A,Mat P,PetscReal fil
 
   c         = (Mat_SeqAIJ*)(*C)->data;
   ci        = c->i;
-  ierr      = PetscMalloc1((ci[pn]+1),&ca);CHKERRQ(ierr);
-  ierr      = PetscMemzero(ca,(ci[pn]+1)*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr      = PetscCalloc1(ci[pn]+1,&ca);CHKERRQ(ierr);
   c->a      = ca;
   c->free_a = PETSC_TRUE;
 
@@ -317,8 +313,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_DenseAxpy(Mat A,Mat P,PetscReal fil
   (*C)->ops->destroy = MatDestroy_SeqAIJ_PtAP;
 
   /* Allocate temporary array for storage of one row of A*P */
-  ierr = PetscMalloc1((pn+1),&ptap->apa);CHKERRQ(ierr);
-  ierr = PetscMemzero(ptap->apa,(pn+1)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscCalloc1(pn+1,&ptap->apa);CHKERRQ(ierr);
 
   (*C)->ops->ptapnumeric = MatPtAPNumeric_SeqAIJ_SeqAIJ;
 

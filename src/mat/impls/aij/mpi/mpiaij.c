@@ -134,8 +134,7 @@ PetscErrorCode MatGetColumnNorms_MPIAIJ(Mat A,NormType type,PetscReal *norms)
 
   PetscFunctionBegin;
   ierr = MatGetSize(A,NULL,&n);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,&work);CHKERRQ(ierr);
-  ierr = PetscMemzero(work,n*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscCalloc1(n,&work);CHKERRQ(ierr);
   if (type == NORM_2) {
     for (i=0; i<a_aij->i[aij->A->rmap->n]; i++) {
       work[A->cmap->rstart + a_aij->j[i]] += PetscAbsScalar(a_aij->a[i]*a_aij->a[i]);
@@ -228,8 +227,7 @@ PETSC_EXTERN PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt
       }
       /* determine number diagonal and off-diagonal counts */
       ierr = PetscMemzero(olens,m*sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscMalloc1(m,&ld);CHKERRQ(ierr);
-      ierr = PetscMemzero(ld,m*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscCalloc1(m,&ld);CHKERRQ(ierr);
       jj   = 0;
       for (i=0; i<m; i++) {
         for (j=0; j<dlens[i]; j++) {
@@ -262,8 +260,7 @@ PETSC_EXTERN PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt
       ierr = MPI_Recv(gmataj,nz,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
       /* determine number diagonal and off-diagonal counts */
       ierr = PetscMemzero(olens,m*sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscMalloc1(m,&ld);CHKERRQ(ierr);
-      ierr = PetscMemzero(ld,m*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscCalloc1(m,&ld);CHKERRQ(ierr);
       jj   = 0;
       for (i=0; i<m; i++) {
         for (j=0; j<dlens[i]; j++) {
@@ -371,9 +368,8 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
     ierr = PetscTableAdd(aij->colmap,aij->garray[i]+1,i+1,INSERT_VALUES);CHKERRQ(ierr);
   }
 #else
-  ierr = PetscMalloc1((mat->cmap->N+1),&aij->colmap);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory((PetscObject)mat,mat->cmap->N*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(aij->colmap,mat->cmap->N*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1((mat->cmap->N+1),&aij->colmap);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)mat,(mat->cmap->N+1)*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<n; i++) aij->colmap[aij->garray[i]] = i+1;
 #endif
   PetscFunctionReturn(0);
@@ -841,8 +837,7 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   /*  first count number of contributors to each processor */
-  ierr = PetscMalloc1(2*size,&nprocs);CHKERRQ(ierr);
-  ierr = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(2*size,&nprocs);CHKERRQ(ierr);
   ierr = PetscMalloc1((N+1),&owner);CHKERRQ(ierr); /* see note*/
   j    = 0;
   for (i=0; i<N; i++) {
@@ -1661,9 +1656,7 @@ PetscErrorCode MatPermute_MPIAIJ(Mat A,IS rowp,IS colp,Mat *B)
   ierr = PetscSFBcastEnd(sf,MPIU_INT,cdest,gcdest);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
 
-  ierr = PetscMalloc4(m,&dnnz,m,&onnz,m,&tdnnz,m,&tonnz);CHKERRQ(ierr);
-  ierr = PetscMemzero(dnnz,m*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(onnz,m*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc4(m,&dnnz,m,&onnz,m,&tdnnz,m,&tonnz);CHKERRQ(ierr);
   ierr = MatGetRowIJ(aA,0,PETSC_FALSE,PETSC_FALSE,&anz,&ai,&aj,&done);CHKERRQ(ierr);
   ierr = MatGetRowIJ(aB,0,PETSC_FALSE,PETSC_FALSE,&bnz,&bi,&bj,&done);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
@@ -1682,8 +1675,6 @@ PetscErrorCode MatPermute_MPIAIJ(Mat A,IS rowp,IS colp,Mat *B)
       else onnz[i]++;
     }
   }
-  ierr = PetscMemzero(tdnnz,m*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(tonnz,m*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscSFBcastBegin(rowsf,MPIU_INT,dnnz,tdnnz);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(rowsf,MPIU_INT,dnnz,tdnnz);CHKERRQ(ierr);
   ierr = PetscSFBcastBegin(rowsf,MPIU_INT,onnz,tonnz);CHKERRQ(ierr);
@@ -1947,9 +1938,8 @@ PetscErrorCode MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
     } else if (type == NORM_1) { /* max column norm */
       PetscReal *tmp,*tmp2;
       PetscInt  *jj,*garray = aij->garray;
-      ierr  = PetscMalloc1((mat->cmap->N+1),&tmp);CHKERRQ(ierr);
+      ierr  = PetscCalloc1((mat->cmap->N+1),&tmp);CHKERRQ(ierr);
       ierr  = PetscMalloc1((mat->cmap->N+1),&tmp2);CHKERRQ(ierr);
-      ierr  = PetscMemzero(tmp,mat->cmap->N*sizeof(PetscReal));CHKERRQ(ierr);
       *norm = 0.0;
       v     = amat->a; jj = amat->j;
       for (j=0; j<amat->nz; j++) {
@@ -2052,8 +2042,7 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
   for (i=0; i<ai[ma]; i++) aj[i] -= cstart; /* resume local col index */
 
   /* copy over the B part */
-  ierr  = PetscMalloc1(bi[mb],&cols);CHKERRQ(ierr);
-  ierr  = PetscMemzero(cols,bi[mb]*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr  = PetscCalloc1(bi[mb],&cols);CHKERRQ(ierr);
   array = Bloc->a;
   row   = A->rmap->rstart;
   for (i=0; i<bi[mb]; i++) cols[i] = a->garray[bj[i]];
@@ -3484,8 +3473,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
   if (!rank) {
     ierr = PetscBinaryRead(fd,ourlens,m,PETSC_INT);CHKERRQ(ierr);
     ierr = PetscMalloc1(mmax,&rowlengths);CHKERRQ(ierr);
-    ierr = PetscMalloc1(size,&procsnz);CHKERRQ(ierr);
-    ierr = PetscMemzero(procsnz,size*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscCalloc1(size,&procsnz);CHKERRQ(ierr);
     for (j=0; j<m; j++) {
       procsnz[0] += ourlens[j];
     }
@@ -3832,8 +3820,7 @@ PetscErrorCode  MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt Ii[],co
 
   if (v) values = (PetscScalar*)v;
   else {
-    ierr = PetscMalloc1((nnz_max+1),&values);CHKERRQ(ierr);
-    ierr = PetscMemzero(values,nnz_max*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscCalloc1((nnz_max+1),&values);CHKERRQ(ierr);
   }
 
   for (i=0; i<m; i++) {

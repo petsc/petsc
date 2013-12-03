@@ -281,13 +281,12 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* determine the number of messages to send, their lengths */
   ierr = PetscMalloc2(size,&len_si,size,&sstatus);CHKERRQ(ierr);
   ierr = PetscMemzero(len_si,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
-  ierr = PetscMalloc1(size,&merge->len_s);CHKERRQ(ierr);
+  ierr = PetscCalloc1(size,&merge->len_s);CHKERRQ(ierr);
 
   len_s        = merge->len_s;
   merge->nsend = 0;
 
   ierr = PetscMalloc1((size+2),&owners_co);CHKERRQ(ierr);
-  ierr = PetscMemzero(len_s,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
 
   proc = 0;
   for (i=0; i<pon; i++) {
@@ -485,11 +484,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   ierr = PetscOptionsGetBool(((PetscObject)Cmpi)->prefix,"-matptap_scalable",&ptap->scalable,NULL);CHKERRQ(ierr);
   if (!ptap->scalable) {  /* Do dense axpy */
-    ierr = PetscMalloc1(pN,&ptap->apa);CHKERRQ(ierr);
-    ierr = PetscMemzero(ptap->apa,pN*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscCalloc1(pN,&ptap->apa);CHKERRQ(ierr);
   } else {
-    ierr = PetscMalloc1((ap_rmax+1),&ptap->apa);CHKERRQ(ierr);
-    ierr = PetscMemzero(ptap->apa,ap_rmax*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscCalloc1(ap_rmax+1,&ptap->apa);CHKERRQ(ierr);
   }
 
 #if defined(PTAP_PROFILE)
@@ -575,13 +572,11 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   pi_oth=p_oth->i; pj_oth=p_oth->j; pa_oth=p_oth->a;
 
   coi  = merge->coi; coj = merge->coj;
-  ierr = PetscMalloc1((coi[pon]+1),&coa);CHKERRQ(ierr);
-  ierr = PetscMemzero(coa,coi[pon]*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = PetscCalloc1(coi[pon]+1,&coa);CHKERRQ(ierr);
 
   bi     = merge->bi; bj = merge->bj;
   owners = merge->rowmap->range;
-  ierr   = PetscMalloc1((bi[cm]+1),&ba);CHKERRQ(ierr);  /* ba: Cseq->a */
-  ierr   = PetscMemzero(ba,bi[cm]*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr   = PetscCalloc1(bi[cm]+1,&ba);CHKERRQ(ierr);  /* ba: Cseq->a */
 
   api = ptap->api; apj = ptap->apj;
 

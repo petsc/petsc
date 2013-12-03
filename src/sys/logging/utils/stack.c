@@ -174,8 +174,7 @@ PetscErrorCode PetscIntStackCreate(PetscIntStack *stack)
   s->top = -1;
   s->max = 128;
 
-  ierr = PetscMalloc(s->max * sizeof(int), &s->stack);CHKERRQ(ierr);
-  ierr = PetscMemzero(s->stack, s->max * sizeof(int));CHKERRQ(ierr);
+  ierr = PetscCalloc1(s->max, &s->stack);CHKERRQ(ierr);
   *stack = s;
   PetscFunctionReturn(0);
 }

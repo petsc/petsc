@@ -1884,8 +1884,7 @@ PetscErrorCode PetscOptionsVec(const char key[],const char text[],const char man
   PetscFunctionBegin;
   ierr = VecGetOwnershipRange(v,&rstart,&rend);CHKERRQ(ierr);
   ierr = VecGetSize(v,&N);CHKERRQ(ierr);
-  ierr = PetscMalloc1(N,&xreal);CHKERRQ(ierr);
-  ierr = PetscMemzero(xreal,N*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscCalloc1(N,&xreal);CHKERRQ(ierr);
   ierr = PetscOptionsRealArray(key,text,man,xreal,&N,&iset);CHKERRQ(ierr);
   if (iset) {
     ierr = VecGetArray(v,&xx);CHKERRQ(ierr);

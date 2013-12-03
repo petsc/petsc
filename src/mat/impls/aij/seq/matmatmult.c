@@ -181,8 +181,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
     ca        = c->a;
   }
   if (!c->matmult_abdense) {
-    ierr = PetscMalloc1(B->cmap->N,&ab_dense);CHKERRQ(ierr);
-    ierr = PetscMemzero(ab_dense,B->cmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscCalloc1(B->cmap->N,&ab_dense);CHKERRQ(ierr);
     c->matmult_abdense = ab_dense;
   } else {
     ab_dense = c->matmult_abdense;

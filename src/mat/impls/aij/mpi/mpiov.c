@@ -158,12 +158,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
 
   /* Memory for doing local proc's work*/
   {
-    ierr = PetscMalloc5(imax,&table, imax,&data, imax,&isz, M*imax,&d_p, (M/PETSC_BITS_PER_BYTE+1)*imax,&t_p);CHKERRQ(ierr);
-    ierr = PetscMemzero(table,imax*sizeof(PetscBT));CHKERRQ(ierr);
-    ierr = PetscMemzero(data,imax*sizeof(PetscInt*));CHKERRQ(ierr);
-    ierr = PetscMemzero(isz,imax*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemzero(d_p,M*imax*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemzero(t_p,(M/PETSC_BITS_PER_BYTE+1)*imax*sizeof(char));CHKERRQ(ierr);
+    ierr = PetscCalloc5(imax,&table, imax,&data, imax,&isz, M*imax,&d_p, (M/PETSC_BITS_PER_BYTE+1)*imax,&t_p);CHKERRQ(ierr);
 
     for (i=0; i<imax; i++) {
       table[i] = t_p + (M/PETSC_BITS_PER_BYTE+1)*i;
@@ -248,8 +243,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
   {
     PetscMPIInt *rw1;
 
-    ierr = PetscMalloc1(size,&rw1);CHKERRQ(ierr);
-    ierr = PetscMemzero(rw1,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
+    ierr = PetscCalloc1(size,&rw1);CHKERRQ(ierr);
 
     for (i=0; i<nrqr; ++i) {
       proc = recv_status[i].MPI_SOURCE;

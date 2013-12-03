@@ -135,10 +135,8 @@ int main(int argc,char **args)
     PetscScalar       *nvals;
 
     ierr = MatGetOwnershipRange(B,&rstart,NULL);CHKERRQ(ierr);
-    ierr = PetscMalloc1(2*m,&nzd);CHKERRQ(ierr);
-    ierr = PetscMemzero(nzd,2*m*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMalloc1(2*m,&nzo);CHKERRQ(ierr);
-    ierr = PetscMemzero(nzo,2*m*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscCalloc1(2*m,&nzd);CHKERRQ(ierr);
+    ierr = PetscCalloc1(2*m,&nzo);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       ierr = MatGetRow(B,i+rstart,&nzl,&cols,NULL);CHKERRQ(ierr);
       for (j=0; j<nzl; j++) {
