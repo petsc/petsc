@@ -6407,47 +6407,50 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscBool isSimplex)
 @*/
 PetscErrorCode DMPlexCheckFaces(DM dm, PetscBool isSimplex, PetscInt cellHeight)
 {
-  PetscInt       dim, vStart, vEnd, cStart, cEnd, cMax, c;
+  PetscInt       pMax[4];
+  PetscInt       dim, vStart, vEnd, cStart, cEnd, c, h;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
-  cMax = cMax >= 0 ? cMax : cEnd;
-  for (c = cStart; c < cMax; ++c) {
-    const PetscInt *cone, *ornt, *faces;
-    PetscInt        numFaces, faceSize, coneSize,f;
-    PetscInt       *closure = NULL, closureSize, cl, numCorners = 0;
+  ierr = DMPlexGetHybridBounds(dm, &pMax[3], &pMax[2], &pMax[1], &pMax[0]);CHKERRQ(ierr);
+  for (h = cellHeight; h < dim; ++h) {
+    ierr = DMPlexGetHeightStratum(dm, h, &cStart, &cEnd);CHKERRQ(ierr);
+    for (c = cStart; c < cEnd; ++c) {
+      const PetscInt *cone, *ornt, *faces;
+      PetscInt        numFaces, faceSize, coneSize,f;
+      PetscInt       *closure = NULL, closureSize, cl, numCorners = 0;
 
-    ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
-    ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
-    ierr = DMPlexGetConeOrientation(dm, c, &ornt);CHKERRQ(ierr);
-    ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-    for (cl = 0; cl < closureSize*2; cl += 2) {
-      const PetscInt p = closure[cl];
-      if ((p >= vStart) && (p < vEnd)) closure[numCorners++] = p;
-    }
-    ierr = DMPlexGetRawFaces_Internal(dm, dim, numCorners, closure, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
-    if (coneSize != numFaces) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %d has %d faces but should have %d", c, coneSize, numFaces);
-    for (f = 0; f < numFaces; ++f) {
-      PetscInt *fclosure = NULL, fclosureSize, cl, fnumCorners = 0, v;
+      if (pMax[h] >= 0 && c >= pMax[h]) continue;
+      ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
+      ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
+      ierr = DMPlexGetConeOrientation(dm, c, &ornt);CHKERRQ(ierr);
+      ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      for (cl = 0; cl < closureSize*2; cl += 2) {
+        const PetscInt p = closure[cl];
+        if ((p >= vStart) && (p < vEnd)) closure[numCorners++] = p;
+      }
+      ierr = DMPlexGetRawFaces_Internal(dm, dim-h, numCorners, closure, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
+      if (coneSize != numFaces) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %d has %d faces but should have %d", c, coneSize, numFaces);
+      for (f = 0; f < numFaces; ++f) {
+        PetscInt *fclosure = NULL, fclosureSize, cl, fnumCorners = 0, v;
 
-      ierr = DMPlexGetTransitiveClosure_Internal(dm, cone[f], ornt[f], PETSC_TRUE, &fclosureSize, &fclosure);CHKERRQ(ierr);
-      for (cl = 0; cl < fclosureSize*2; cl += 2) {
-        const PetscInt p = fclosure[cl];
-        if ((p >= vStart) && (p < vEnd)) fclosure[fnumCorners++] = p;
+        ierr = DMPlexGetTransitiveClosure_Internal(dm, cone[f], ornt[f], PETSC_TRUE, &fclosureSize, &fclosure);CHKERRQ(ierr);
+        for (cl = 0; cl < fclosureSize*2; cl += 2) {
+          const PetscInt p = fclosure[cl];
+          if ((p >= vStart) && (p < vEnd)) fclosure[fnumCorners++] = p;
+        }
+        if (fnumCorners != faceSize) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d (%d) of cell %d has %d vertices but should have %d", cone[f], f, c, fnumCorners, faceSize);
+        for (v = 0; v < fnumCorners; ++v) {
+          if (fclosure[v] != faces[f*faceSize+v]) SETERRQ6(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d (%d) of cell %d vertex %d, %d != %d", cone[f], f, c, v, fclosure[v], faces[f*faceSize+v]);
+        }
+        ierr = DMPlexRestoreTransitiveClosure(dm, cone[f], PETSC_TRUE, &fclosureSize, &fclosure);CHKERRQ(ierr);
       }
-      if (fnumCorners != faceSize) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d (%d) of cell %d has %d vertices but should have %d", cone[f], f, c, fnumCorners, faceSize);
-      for (v = 0; v < fnumCorners; ++v) {
-        if (fclosure[v] != faces[f*faceSize+v]) SETERRQ6(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d (%d) of cell %d vertex %d, %d != %d", cone[f], f, c, v, fclosure[v], faces[f*faceSize+v]);
-      }
-      ierr = DMPlexRestoreTransitiveClosure(dm, cone[f], PETSC_TRUE, &fclosureSize, &fclosure);CHKERRQ(ierr);
+      ierr = DMPlexRestoreFaces_Internal(dm, dim, c, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
+      ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
-    ierr = DMPlexRestoreFaces_Internal(dm, dim, c, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
-    ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
