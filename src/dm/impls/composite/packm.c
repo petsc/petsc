@@ -77,7 +77,7 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,Mat *J)
     ierr = MatSeqAIJSetPreallocation(*J,mA,NULL);CHKERRQ(ierr);
 
     ierr = MatGetOwnershipRange(*J,&rstart,&rend);CHKERRQ(ierr);
-    ierr = PetscMalloc2(mA,PetscScalar,&values,mA,PetscInt,&indices);CHKERRQ(ierr);
+    ierr = PetscMalloc2(mA,&values,mA,&indices);CHKERRQ(ierr);
     ierr = PetscMemzero(values,mA*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=0; i<mA; i++) indices[i] = i;
     for (i=rstart; i<rend; i++) {

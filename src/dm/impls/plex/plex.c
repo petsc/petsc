@@ -291,7 +291,7 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     ierr = DMPlexGetDepth(dm, &locDepth);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&locDepth, &depth, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
     ierr = DMPlexGetHybridBounds(dm, &pMax[depth], &pMax[depth-1], &pMax[1], &pMax[0]);CHKERRQ(ierr);
-    ierr = PetscMalloc2(size,PetscInt,&sizes,size,PetscInt,&hybsizes);CHKERRQ(ierr);
+    ierr = PetscMalloc2(size,&sizes,size,&hybsizes);CHKERRQ(ierr);
     if (depth == 1) {
       ierr = DMPlexGetDepthStratum(dm, 0, &pStart, &pEnd);CHKERRQ(ierr);
       pEnd = pEnd - pStart;
@@ -468,7 +468,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
         bs = 1;
       }
     }
-    ierr = PetscMalloc4(localSize/bs, PetscInt, &dnz, localSize/bs, PetscInt, &onz, localSize/bs, PetscInt, &dnzu, localSize/bs, PetscInt, &onzu);CHKERRQ(ierr);
+    ierr = PetscMalloc4(localSize/bs, &dnz, localSize/bs, &onz, localSize/bs, &dnzu, localSize/bs, &onzu);CHKERRQ(ierr);
     ierr = PetscMemzero(dnz,  localSize/bs * sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemzero(onz,  localSize/bs * sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemzero(dnzu, localSize/bs * sizeof(PetscInt));CHKERRQ(ierr);
@@ -2328,7 +2328,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
   }
   maxClosure   = 2*PetscMax(PetscPowInt(maxConeSize,depth+1),PetscPowInt(maxSupportSize,depth+1));
   maxNeighbors = PetscPowInt(maxConeSize,depth+1)*PetscPowInt(maxSupportSize,depth+1);
-  ierr         = PetscMalloc2(maxNeighbors,PetscInt,&neighborCells,maxClosure,PetscInt,&tmpClosure);CHKERRQ(ierr);
+  ierr         = PetscMalloc2(maxNeighbors,&neighborCells,maxClosure,&tmpClosure);CHKERRQ(ierr);
   ierr         = PetscMalloc((numCells+1) * sizeof(PetscInt), &off);CHKERRQ(ierr);
   ierr         = PetscMemzero(off, (numCells+1) * sizeof(PetscInt));CHKERRQ(ierr);
   /* Count neighboring cells */
@@ -2564,7 +2564,7 @@ PetscErrorCode DMPlexPartition_ParMetis(DM dm, PetscInt numVertices, PetscInt st
   nparts = commSize;
   options[0] = 0; /* Use all defaults */
   /* Calculate vertex distribution */
-  ierr = PetscMalloc4(nparts+1,PetscInt,&vtxdist,nparts*ncon,PetscReal,&tpwgts,ncon,PetscReal,&ubvec,nvtxs,PetscInt,&assignment);CHKERRQ(ierr);
+  ierr = PetscMalloc4(nparts+1,&vtxdist,nparts*ncon,&tpwgts,ncon,&ubvec,nvtxs,&assignment);CHKERRQ(ierr);
   vtxdist[0] = 0;
   ierr = MPI_Allgather(&nvtxs, 1, MPIU_INT, &vtxdist[1], 1, MPIU_INT, comm);CHKERRQ(ierr);
   for (p = 2; p <= nparts; ++p) {
@@ -3165,7 +3165,7 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
 
     ierr = DMPlexGetChart(*dmParallel, &pStart, &pEnd);CHKERRQ(ierr);
     ierr = PetscSFGetGraph(pointSF, &numRoots, &numLeaves, &leaves, NULL);CHKERRQ(ierr);
-    ierr = PetscMalloc2(numRoots,PetscSFNode,&rowners,numLeaves,PetscSFNode,&lowners);CHKERRQ(ierr);
+    ierr = PetscMalloc2(numRoots,&rowners,numLeaves,&lowners);CHKERRQ(ierr);
     for (p=0; p<numRoots; p++) {
       rowners[p].rank  = -1;
       rowners[p].index = -1;

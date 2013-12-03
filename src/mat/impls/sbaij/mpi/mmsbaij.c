@@ -39,7 +39,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
 
   /* form arrays of columns we need */
   ierr = PetscMalloc(ec*sizeof(PetscInt),&garray);CHKERRQ(ierr);
-  ierr = PetscMalloc2(2*ec,PetscInt,&sgarray,ec,PetscInt,&ec_owner);CHKERRQ(ierr);
+  ierr = PetscMalloc2(2*ec,&sgarray,ec,&ec_owner);CHKERRQ(ierr);
 
   ec = 0;
   for (j=0; j<size; j++) {

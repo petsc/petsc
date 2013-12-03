@@ -489,7 +489,7 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
   if (llen != ilen) SETERRQ2(comm, PETSC_ERR_ARG_SIZ, "Incompatible IS sizes: %D and %D", ilen, llen);
   ierr = ISGetIndices(coloris, &ccolors);CHKERRQ(ierr);
   ierr = ISGetIndices(indis, &cinds);CHKERRQ(ierr);
-  ierr = PetscMalloc2(ilen,PetscInt,&inds,llen,PetscInt,&colors);CHKERRQ(ierr);
+  ierr = PetscMalloc2(ilen,&inds,llen,&colors);CHKERRQ(ierr);
   ierr = PetscMemcpy(inds,cinds,ilen*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemcpy(colors,ccolors,llen*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscSortIntWithArray(llen, colors, inds);CHKERRQ(ierr);

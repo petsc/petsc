@@ -216,7 +216,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
   ierr = PetscObjectGetComm((PetscObject)isapp,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = PetscMalloc2(size,PetscMPIInt, &lens,size,PetscMPIInt,&disp);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size, &lens,size,&disp);CHKERRQ(ierr);
   ierr = MPI_Allgather(&count, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
   N    =  0;
   for (i = 0; i < size; i++) {
@@ -239,7 +239,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
   }
 
   /* get all indices on all processors */
-  ierr = PetscMalloc2(N,PetscInt,&allpetsc,N,PetscInt,&allapp);CHKERRQ(ierr);
+  ierr = PetscMalloc2(N,&allpetsc,N,&allapp);CHKERRQ(ierr);
   ierr = MPI_Allgatherv(petsc, count, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
   ierr = MPI_Allgatherv((void*)myapp, count, MPIU_INT, allapp, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
   ierr = PetscFree2(lens,disp);CHKERRQ(ierr);
@@ -266,7 +266,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
 #endif
 
   /* generate a list of application and PETSc node numbers */
-  ierr = PetscMalloc2(N,PetscInt, &aobasic->app,N,PetscInt,&aobasic->petsc);CHKERRQ(ierr);
+  ierr = PetscMalloc2(N, &aobasic->app,N,&aobasic->petsc);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)ao,2*N*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(aobasic->app, N*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(aobasic->petsc, N*sizeof(PetscInt));CHKERRQ(ierr);

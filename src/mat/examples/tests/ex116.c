@@ -136,7 +136,7 @@ PetscInt main(PetscInt argc,char **args)
     minMN = PetscMin(m,n);
     maxMN = PetscMax(m,n);
     lwork = 5*minMN + maxMN;
-    ierr  = PetscMalloc4(m*minMN,PetscScalar,&arrayU,m*minMN,PetscScalar,&arrayVT,m*minMN,PetscScalar,&arrayErr,lwork,PetscScalar,&work);CHKERRQ(ierr);
+    ierr  = PetscMalloc4(m*minMN,&arrayU,m*minMN,&arrayVT,m*minMN,&arrayErr,lwork,&work);CHKERRQ(ierr);
 
     /* Create matrix Err for checking error */
     ierr = MatCreate(PETSC_COMM_WORLD,&Err);CHKERRQ(ierr);

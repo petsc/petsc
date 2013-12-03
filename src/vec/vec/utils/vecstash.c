@@ -208,7 +208,7 @@ PetscErrorCode VecStashExpand_Private(VecStash *stash,PetscInt incr)
 
   if (newnmax  < (stash->nmax + incr)) newnmax += 2*incr;
 
-  ierr = PetscMalloc2(bs*newnmax,PetscScalar,&n_array,newnmax,PetscInt,&n_idx);CHKERRQ(ierr);
+  ierr = PetscMalloc2(bs*newnmax,&n_array,newnmax,&n_idx);CHKERRQ(ierr);
   ierr = PetscMemcpy(n_array,stash->array,bs*stash->nmax*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemcpy(n_idx,stash->idx,stash->nmax*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscFree2(stash->array,stash->idx);CHKERRQ(ierr);
@@ -275,7 +275,7 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
      allocate the largest needed buffer for each receive. Potentially
      this is a lot of wasted space.
   */
-  ierr = PetscMalloc2(nreceives*nmax*bs,PetscScalar,&rvalues,nreceives*nmax,PetscInt,&rindices);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nreceives*nmax*bs,&rvalues,nreceives*nmax,&rindices);CHKERRQ(ierr);
   ierr = PetscMalloc(2*nreceives*sizeof(MPI_Request),&recv_waits);CHKERRQ(ierr);
   for (i=0,count=0; i<nreceives; i++) {
     ierr = MPI_Irecv(rvalues+bs*nmax*i,bs*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag1,comm,recv_waits+count++);CHKERRQ(ierr);
@@ -286,7 +286,7 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
       1) starts[i] gives the starting index in svalues for stuff going to
          the ith processor
   */
-  ierr = PetscMalloc2(stash->n*bs,PetscScalar,&svalues,stash->n,PetscInt,&sindices);CHKERRQ(ierr);
+  ierr = PetscMalloc2(stash->n*bs,&svalues,stash->n,&sindices);CHKERRQ(ierr);
   ierr = PetscMalloc(2*nsends*sizeof(MPI_Request),&send_waits);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscInt),&start);CHKERRQ(ierr);
   /* use 2 sends the first with all_v, the next with all_i */

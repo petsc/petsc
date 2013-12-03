@@ -82,7 +82,7 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, IS *perm)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(perm, 3);
   ierr = DMPlexCreateNeighborCSR(dm, 0, &numCells, &start, &adjacency);CHKERRQ(ierr);
-  ierr = PetscMalloc3(numCells,PetscInt,&cperm,numCells,PetscInt,&mask,numCells*2,PetscInt,&xls);CHKERRQ(ierr);
+  ierr = PetscMalloc3(numCells,&cperm,numCells,&mask,numCells*2,&xls);CHKERRQ(ierr);
   if (numCells) {
     /* Shift for Fortran numbering */
     for (i = 0; i < start[numCells]; ++i) ++adjacency[i];

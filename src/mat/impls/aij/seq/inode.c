@@ -1224,7 +1224,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
 
-  ierr  = PetscMalloc4(n,PetscScalar,&rtmp1,n,PetscScalar,&rtmp2,n,PetscScalar,&rtmp3,n,PetscScalar,&rtmp4);CHKERRQ(ierr);
+  ierr  = PetscMalloc4(n,&rtmp1,n,&rtmp2,n,&rtmp3,n,&rtmp4);CHKERRQ(ierr);
   ierr  = PetscMemzero(rtmp1,n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr  = PetscMemzero(rtmp2,n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr  = PetscMemzero(rtmp3,n*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -1957,7 +1957,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
   ierr   = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr   = ISGetIndices(iscol,&c);CHKERRQ(ierr);
   ierr   = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
-  ierr   = PetscMalloc3(n,PetscScalar,&rtmp11,n,PetscScalar,&rtmp22,n,PetscScalar,&rtmp33);CHKERRQ(ierr);
+  ierr   = PetscMalloc3(n,&rtmp11,n,&rtmp22,n,&rtmp33);CHKERRQ(ierr);
   ierr   = PetscMemzero(rtmp11,n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr   = PetscMemzero(rtmp22,n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr   = PetscMemzero(rtmp33,n*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -2789,7 +2789,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
       }
       a->inode.bdiagsize = cnt;
 
-      ierr = PetscMalloc3(cnt,MatScalar,&a->inode.ibdiag,cnt,MatScalar,&a->inode.bdiag,A->rmap->n,MatScalar,&a->inode.ssor_work);CHKERRQ(ierr);
+      ierr = PetscMalloc3(cnt,&a->inode.ibdiag,cnt,&a->inode.bdiag,A->rmap->n,&a->inode.ssor_work);CHKERRQ(ierr);
     }
 
     /* copy over the diagonal blocks and invert them */
@@ -4248,7 +4248,7 @@ PetscErrorCode Mat_CheckInode_FactorLU(Mat A)
 
   i          = 0;
   node_count = 0;
-  ierr = PetscMalloc2(m,PetscInt,&cols1,m,PetscInt,&cols2);CHKERRQ(ierr);
+  ierr = PetscMalloc2(m,&cols1,m,&cols2);CHKERRQ(ierr);
   while (i < m) {                /* For each row */
     nzl1 = ai[i+1] - ai[i];       /* Number of nonzeros in L */
     nzu1 = adiag[i] - adiag[i+1] - 1; /* Number of nonzeros in U excluding diagonal*/
@@ -4342,7 +4342,7 @@ PetscErrorCode  MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A,IS *rperm,IS *cperm)
 
   ierr = Mat_CreateColInode(A,&nslim_col,&ns_col);CHKERRQ(ierr);
   ierr = PetscMalloc((((nslim_row>nslim_col) ? nslim_row : nslim_col)+1)*sizeof(PetscInt),&tns);CHKERRQ(ierr);
-  ierr = PetscMalloc2(m,PetscInt,&permr,n,PetscInt,&permc);CHKERRQ(ierr);
+  ierr = PetscMalloc2(m,&permr,n,&permc);CHKERRQ(ierr);
 
   ierr = ISGetIndices(ris,&ridx);CHKERRQ(ierr);
   ierr = ISGetIndices(cis,&cidx);CHKERRQ(ierr);

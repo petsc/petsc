@@ -50,7 +50,7 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
   rs    = (max_k + 2);
   cc    = (max_k + 1);
 
-  ierr = PetscMalloc5(hh,PetscScalar,&gmres->hh_origin,hes,PetscScalar,&gmres->hes_origin,rs,PetscScalar,&gmres->rs_origin,cc,PetscScalar,&gmres->cc_origin,cc,PetscScalar,&gmres->ss_origin);CHKERRQ(ierr);
+  ierr = PetscMalloc5(hh,&gmres->hh_origin,hes,&gmres->hes_origin,rs,&gmres->rs_origin,cc,&gmres->cc_origin,cc,&gmres->ss_origin);CHKERRQ(ierr);
   ierr = PetscMemzero(gmres->hh_origin,hh*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemzero(gmres->hes_origin,hes*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemzero(gmres->rs_origin,rs*sizeof(PetscScalar));CHKERRQ(ierr);

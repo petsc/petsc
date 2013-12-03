@@ -344,7 +344,7 @@ PETSC_EXTERN PetscErrorCode IntegrateElementCoefBatchGPU(PetscInt Ne, PetscInt N
     realType *c, *pc, *jI, *jD;
     PetscInt i;
 
-    ierr = PetscMalloc4(Ne*N_bt,realType,&c,Ne*N_q,realType,&pc,Ne*dim*dim,realType,&jI,Ne,realType,&jD);CHKERRQ(ierr);
+    ierr = PetscMalloc4(Ne*N_bt,&c,Ne*N_q,&pc,Ne*dim*dim,&jI,Ne,&jD);CHKERRQ(ierr);
     for (i = 0; i < Ne*N_bt;    ++i) c[i]  = coefficients[i];
     for (i = 0; i < Ne*N_q;     ++i) pc[i] = physCoefficients[i];
     for (i = 0; i < Ne*dim*dim; ++i) jI[i] = jacobianInverses[i];

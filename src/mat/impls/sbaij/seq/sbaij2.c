@@ -191,7 +191,7 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,M
 
   /* Verify if the indices corespond to each element in a block
    and form the IS with compressed IS */
-  ierr = PetscMalloc2(a->mbs,PetscInt,&vary,a->mbs,PetscInt,&iary);CHKERRQ(ierr);
+  ierr = PetscMalloc2(a->mbs,&vary,a->mbs,&iary);CHKERRQ(ierr);
   ierr = PetscMemzero(vary,a->mbs*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<nrows; i++) vary[irow[i]/bs]++;
 
@@ -1157,7 +1157,7 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
     }
     *norm = PetscSqrtReal(sum_diag + 2*sum_off);
   } else if (type == NORM_INFINITY || type == NORM_1) {  /* maximum row/column sum */
-    ierr = PetscMalloc3(bs,PetscReal,&sum,mbs,PetscInt,&il,mbs,PetscInt,&jl);CHKERRQ(ierr);
+    ierr = PetscMalloc3(bs,&sum,mbs,&il,mbs,&jl);CHKERRQ(ierr);
     for (i=0; i<mbs; i++) jl[i] = mbs;
     il[0] = 0;
 

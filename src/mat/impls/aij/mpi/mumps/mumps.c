@@ -755,7 +755,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
 
       lsol_loc = mumps->id.INFO(23); /* length of sol_loc */
 
-      ierr = PetscMalloc2(lsol_loc,PetscScalar,&sol_loc,lsol_loc,PetscInt,&mumps->id.isol_loc);CHKERRQ(ierr);
+      ierr = PetscMalloc2(lsol_loc,&sol_loc,lsol_loc,&mumps->id.isol_loc);CHKERRQ(ierr);
 
       mumps->id.lsol_loc = lsol_loc;
 #if defined(PETSC_USE_COMPLEX)

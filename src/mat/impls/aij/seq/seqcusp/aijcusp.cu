@@ -246,7 +246,7 @@ PetscErrorCode MatCUSPCopyFromGPU(Mat A, CUSPMATRIX *Agpu)
             if (a->j) {ierr = PetscFree(a->j);CHKERRQ(ierr);}
             if (a->a) {ierr = PetscFree(a->a);CHKERRQ(ierr);}
           }
-          ierr = PetscMalloc3(a->nz,PetscScalar,&a->a,a->nz,PetscInt,&a->j,m+1,PetscInt,&a->i);CHKERRQ(ierr);
+          ierr = PetscMalloc3(a->nz,&a->a,a->nz,&a->j,m+1,&a->i);CHKERRQ(ierr);
           ierr = PetscLogObjectMemory((PetscObject)A, a->nz*(sizeof(PetscScalar)+sizeof(PetscInt))+(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
 
           a->singlemalloc = PETSC_TRUE;
@@ -255,7 +255,7 @@ PetscErrorCode MatCUSPCopyFromGPU(Mat A, CUSPMATRIX *Agpu)
           thrust::copy(mat->values.begin(), mat->values.end(), a->a);
           /* Setup row lengths */
           if (a->imax) {ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);}
-          ierr = PetscMalloc2(m,PetscInt,&a->imax,m,PetscInt,&a->ilen);CHKERRQ(ierr);
+          ierr = PetscMalloc2(m,&a->imax,m,&a->ilen);CHKERRQ(ierr);
           ierr = PetscLogObjectMemory((PetscObject)A, 2*m*sizeof(PetscInt));CHKERRQ(ierr);
           for (i = 0; i < m; ++i) a->imax[i] = a->ilen[i] = a->i[i+1] - a->i[i];
           /* a->diag?*/

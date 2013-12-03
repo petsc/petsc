@@ -318,7 +318,7 @@ PetscErrorCode TSRKRegister(TSRKType name,PetscInt order,PetscInt s,
   ierr     = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);
   t->order = order;
   t->s     = s;
-  ierr     = PetscMalloc3(s*s,PetscReal,&t->A,s,PetscReal,&t->b,s,PetscReal,&t->c);CHKERRQ(ierr);
+  ierr     = PetscMalloc3(s*s,&t->A,s,&t->b,s,&t->c);CHKERRQ(ierr);
   ierr     = PetscMemcpy(t->A,A,s*s*sizeof(A[0]));CHKERRQ(ierr);
   if (b)  { ierr = PetscMemcpy(t->b,b,s*sizeof(b[0]));CHKERRQ(ierr); }
   else for (i=0; i<s; i++) t->b[i] = A[(s-1)*s+i];

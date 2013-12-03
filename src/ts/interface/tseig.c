@@ -149,7 +149,7 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
 
       ierr = PetscDrawSPReset(drawsp);CHKERRQ(ierr);
       ierr = PetscDrawSPSetLimits(drawsp,ctx->xmin,ctx->xmax,ctx->ymin,ctx->ymax);CHKERRQ(ierr);
-      ierr = PetscMalloc2(PetscMax(n,N),PetscReal,&r,PetscMax(n,N),PetscReal,&c);CHKERRQ(ierr);
+      ierr = PetscMalloc2(PetscMax(n,N),&r,PetscMax(n,N),&c);CHKERRQ(ierr);
       if (ctx->computeexplicitly) {
         ierr = KSPComputeEigenvaluesExplicitly(ksp,n,r,c);CHKERRQ(ierr);
         neig = n;

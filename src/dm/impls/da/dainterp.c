@@ -1333,7 +1333,7 @@ PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
                       max_agg_size, NULL, max_agg_size, NULL, rest);CHKERRQ(ierr);
 
   /* store nodes in the fine grid here */
-  ierr = PetscMalloc2(max_agg_size,PetscScalar, &one_vec,max_agg_size,PetscInt, &fine_nodes);CHKERRQ(ierr);
+  ierr = PetscMalloc2(max_agg_size, &one_vec,max_agg_size, &fine_nodes);CHKERRQ(ierr);
   for (i=0; i<max_agg_size; i++) one_vec[i] = 1.0;
 
   /* loop over all coarse nodes */

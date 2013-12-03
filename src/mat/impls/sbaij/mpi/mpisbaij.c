@@ -425,7 +425,7 @@ PetscErrorCode MatNorm_MPISBAIJ(Mat mat,NormType type,PetscReal *norm)
       PetscInt     brow,bcol,col,bs=baij->A->rmap->bs,row,grow,gcol,mbs=amat->mbs;
       MatScalar    *v;
 
-      ierr = PetscMalloc2(mat->cmap->N,PetscReal,&rsum,mat->cmap->N,PetscReal,&rsum2);CHKERRQ(ierr);
+      ierr = PetscMalloc2(mat->cmap->N,&rsum,mat->cmap->N,&rsum2);CHKERRQ(ierr);
       ierr = PetscMemzero(rsum,mat->cmap->N*sizeof(PetscReal));CHKERRQ(ierr);
       /* Amat */
       v = amat->a; jj = amat->j;
@@ -1001,7 +1001,7 @@ PetscErrorCode MatGetRow_MPISBAIJ(Mat matin,PetscInt row,PetscInt *nz,PetscInt *
       tmp = Aa->i[i+1] - Aa->i[i] + Ba->i[i+1] - Ba->i[i]; /* row length */
       if (max < tmp) max = tmp;
     }
-    ierr = PetscMalloc2(max*bs2,PetscScalar,&mat->rowvalues,max*bs2,PetscInt,&mat->rowindices);CHKERRQ(ierr);
+    ierr = PetscMalloc2(max*bs2,&mat->rowvalues,max*bs2,&mat->rowindices);CHKERRQ(ierr);
   }
 
   if (row < brstart || row >= brend) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only local rows");
@@ -1651,7 +1651,7 @@ PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B,PetscInt bs,const P
   cend   = B->cmap->rend/bs;
 
   if (ii[0]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ii[0] must be 0 but it is %D",ii[0]);
-  ierr = PetscMalloc2(m,PetscInt,&d_nnz,m,PetscInt,&o_nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc2(m,&d_nnz,m,&o_nnz);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     nz = ii[i+1] - ii[i];
     if (nz < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local row %D has a negative number of columns %D",i,nz);
@@ -2236,7 +2236,7 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
     m   = newmat->rmap->n;
     mbs = m/bs;
   }
-  ierr       = PetscMalloc2(size+1,PetscMPIInt,&rowners,size+1,PetscMPIInt,&browners);CHKERRQ(ierr);
+  ierr       = PetscMalloc2(size+1,&rowners,size+1,&browners);CHKERRQ(ierr);
   ierr       = PetscMPIIntCast(mbs,&mmbs);CHKERRQ(ierr);
   ierr       = MPI_Allgather(&mmbs,1,MPI_INT,rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
   rowners[0] = 0;
@@ -2314,8 +2314,8 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
   }
 
   /* loop over local rows, determining number of off diagonal entries */
-  ierr     = PetscMalloc2(rend-rstart,PetscInt,&dlens,rend-rstart,PetscInt,&odlens);CHKERRQ(ierr);
-  ierr     = PetscMalloc3(Mbs,PetscInt,&mask,Mbs,PetscInt,&masked1,Mbs,PetscInt,&masked2);CHKERRQ(ierr);
+  ierr     = PetscMalloc2(rend-rstart,&dlens,rend-rstart,&odlens);CHKERRQ(ierr);
+  ierr     = PetscMalloc3(Mbs,&mask,Mbs,&masked1,Mbs,&masked2);CHKERRQ(ierr);
   ierr     = PetscMemzero(mask,Mbs*sizeof(PetscInt));CHKERRQ(ierr);
   ierr     = PetscMemzero(masked1,Mbs*sizeof(PetscInt));CHKERRQ(ierr);
   ierr     = PetscMemzero(masked2,Mbs*sizeof(PetscInt));CHKERRQ(ierr);

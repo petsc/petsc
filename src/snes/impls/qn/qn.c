@@ -539,15 +539,10 @@ static PetscErrorCode SNESSetUp_QN(SNES snes)
   PetscFunctionBegin;
   ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->U);CHKERRQ(ierr);
   if (qn->type != SNES_QN_BROYDEN) ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->V);CHKERRQ(ierr);
-  ierr = PetscMalloc4(qn->m, PetscScalar, &qn->alpha,
-                      qn->m, PetscScalar, &qn->beta,
-                      qn->m, PetscScalar, &qn->dXtdF,
-                      qn->m, PetscReal, &qn->lambda);CHKERRQ(ierr);
+  ierr = PetscMalloc4(qn->m,&qn->alpha,qn->m,&qn->beta,qn->m,&qn->dXtdF,qn->m,&qn->lambda);CHKERRQ(ierr);
 
   if (qn->singlereduction) {
-    ierr = PetscMalloc3(qn->m*qn->m, PetscScalar, &qn->dXdFmat,
-                        qn->m, PetscScalar, &qn->dFtdX,
-                        qn->m, PetscScalar, &qn->YtdX);CHKERRQ(ierr);
+    ierr = PetscMalloc3(qn->m*qn->m,&qn->dXdFmat,qn->m,&qn->dFtdX,qn->m,&qn->YtdX);CHKERRQ(ierr);
   }
   ierr = SNESSetWorkVecs(snes,4);CHKERRQ(ierr);
   /* set method defaults */

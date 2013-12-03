@@ -411,7 +411,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 
   /* determine starting point of each processor */
   nn       = x*y*z;
-  ierr     = PetscMalloc2(size+1,PetscInt,&bases,size,PetscInt,&ldims);CHKERRQ(ierr);
+  ierr     = PetscMalloc2(size+1,&bases,size,&ldims);CHKERRQ(ierr);
   ierr     = MPI_Allgather(&nn,1,MPIU_INT,ldims,1,MPIU_INT,comm);CHKERRQ(ierr);
   bases[0] = 0;
   for (i=1; i<=size; i++) bases[i] = ldims[i-1];

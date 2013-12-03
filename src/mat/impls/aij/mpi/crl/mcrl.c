@@ -62,7 +62,7 @@ PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A)
   aijcrl->rmax = rmax;
 
   ierr  = PetscFree2(aijcrl->acols,aijcrl->icols);CHKERRQ(ierr);
-  ierr  = PetscMalloc2(rmax*m,PetscScalar,&aijcrl->acols,rmax*m,PetscInt,&aijcrl->icols);CHKERRQ(ierr);
+  ierr  = PetscMalloc2(rmax*m,&aijcrl->acols,rmax*m,&aijcrl->icols);CHKERRQ(ierr);
   acols = aijcrl->acols;
   icols = aijcrl->icols;
   for (i=0; i<m; i++) {

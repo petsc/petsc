@@ -87,7 +87,7 @@ PetscErrorCode  PetscViewerDrawGetDraw(PetscViewer viewer,PetscInt windownumber,
 
     vdraw->draw_max = 2*windownumber;
 
-    ierr = PetscMalloc3(vdraw->draw_max,PetscDraw,&vdraw->draw,vdraw->draw_max,PetscDrawLG,&vdraw->drawlg,vdraw->draw_max,PetscDrawAxis,&vdraw->drawaxis);CHKERRQ(ierr);
+    ierr = PetscMalloc3(vdraw->draw_max,&vdraw->draw,vdraw->draw_max,&vdraw->drawlg,vdraw->draw_max,&vdraw->drawaxis);CHKERRQ(ierr);
     ierr = PetscMemzero(vdraw->draw,vdraw->draw_max*sizeof(PetscDraw));CHKERRQ(ierr);
     ierr = PetscMemzero(vdraw->drawlg,vdraw->draw_max*sizeof(PetscDrawLG));CHKERRQ(ierr);
     ierr = PetscMemzero(vdraw->drawaxis,vdraw->draw_max*sizeof(PetscDrawAxis));CHKERRQ(ierr);
@@ -482,7 +482,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer)
   vdraw->w         = PETSC_DECIDE;
   vdraw->h         = PETSC_DECIDE;
 
-  ierr = PetscMalloc3(vdraw->draw_max,PetscDraw,&vdraw->draw,vdraw->draw_max,PetscDrawLG,&vdraw->drawlg,vdraw->draw_max,PetscDrawAxis,&vdraw->drawaxis);CHKERRQ(ierr);
+  ierr = PetscMalloc3(vdraw->draw_max,&vdraw->draw,vdraw->draw_max,&vdraw->drawlg,vdraw->draw_max,&vdraw->drawaxis);CHKERRQ(ierr);
   ierr = PetscMemzero(vdraw->draw,vdraw->draw_max*sizeof(PetscDraw));CHKERRQ(ierr);
   ierr = PetscMemzero(vdraw->drawlg,vdraw->draw_max*sizeof(PetscDrawLG));CHKERRQ(ierr);
   ierr = PetscMemzero(vdraw->drawaxis,vdraw->draw_max*sizeof(PetscDrawAxis));CHKERRQ(ierr);

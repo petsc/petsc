@@ -471,7 +471,7 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-  ierr = PetscMalloc2(size,PetscMPIInt,&sizes,size,PetscMPIInt,&offsets);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,&sizes,size,&offsets);CHKERRQ(ierr);
 
   ierr = PetscMPIIntCast(n,&nn);CHKERRQ(ierr);
   ierr = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);

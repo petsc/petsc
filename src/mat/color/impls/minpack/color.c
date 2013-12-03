@@ -84,7 +84,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscol
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(n,PetscInt,&list,4*n,PetscInt,&work);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,&list,4*n,&work);CHKERRQ(ierr);
 
   MINPACKslo(&n,cja,cia,rja,ria,seq,list,&clique,work,work+n,work+2*n,work+3*n);
 
@@ -182,7 +182,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscol
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(n,PetscInt,&list,4*n,PetscInt,&work);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,&list,4*n,&work);CHKERRQ(ierr);
 
   n1   = n - 1;
   none = -1;
@@ -279,7 +279,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscol
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(n,PetscInt,&list,4*n,PetscInt,&work);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,&list,4*n,&work);CHKERRQ(ierr);
 
   MINPACKido(&n,&n,cja,cia,rja,ria,seq,list,&clique,work,work+n,work+2*n,work+3*n);
 

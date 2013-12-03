@@ -706,7 +706,7 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool mask[],const PetscIn
   for (i=0; i<nlevels;i++) levelmax = PetscMax(levelmax,levelcnt[i]);
 
   /* for each level sort the ids by the parent id */
-  ierr = PetscMalloc2(levelmax,PetscInt,&workid,levelmax,PetscInt,&workparentid);CHKERRQ(ierr);
+  ierr = PetscMalloc2(levelmax,&workid,levelmax,&workparentid);CHKERRQ(ierr);
   ierr = PetscMalloc(nmask*sizeof(PetscInt),&idbylevel);CHKERRQ(ierr);
   for (j=1; j<=nlevels;j++) {
     cnt = 0;

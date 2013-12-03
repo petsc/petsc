@@ -117,7 +117,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
         load balance the non-diagonal rows
     */
     /*  count number of contributors to each processor */
-    ierr   = PetscMalloc2(size,PetscMPIInt,&nprocs,cnt,PetscInt,&owner);CHKERRQ(ierr);
+    ierr   = PetscMalloc2(size,&nprocs,cnt,&owner);CHKERRQ(ierr);
     ierr   = PetscMemzero(nprocs,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
     j      = 0;
     nsends = 0;
@@ -138,7 +138,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     recvtotal = 0; for (i=0; i<nrecvs; i++) recvtotal += olengths1[i];
 
     /* post receives:  rvalues - rows I will own; count - nu */
-    ierr  = PetscMalloc3(recvtotal,PetscInt,&rvalues,nrecvs,PetscInt,&source,nrecvs,MPI_Request,&recv_waits);CHKERRQ(ierr);
+    ierr  = PetscMalloc3(recvtotal,&rvalues,nrecvs,&source,nrecvs,&recv_waits);CHKERRQ(ierr);
     count = 0;
     for (i=0; i<nrecvs; i++) {
       ierr   = MPI_Irecv((rvalues+count),olengths1[i],MPIU_INT,onodes1[i],tag,comm,recv_waits+i);CHKERRQ(ierr);
@@ -149,7 +149,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
        1) starts[i] gives the starting index in svalues for stuff going to
        the ith processor
     */
-    ierr      = PetscMalloc3(cnt,PetscInt,&svalues,nsends,MPI_Request,&send_waits,size,PetscInt,&starts);CHKERRQ(ierr);
+    ierr      = PetscMalloc3(cnt,&svalues,nsends,&send_waits,size,&starts);CHKERRQ(ierr);
     starts[0] = 0;
     for (i=1; i<size; i++) starts[i] = starts[i-1] + nprocs[i-1];
     for (i=0; i<cnt; i++)  svalues[starts[owner[i]]++] = rows[i];

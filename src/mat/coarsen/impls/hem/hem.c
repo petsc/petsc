@@ -790,7 +790,7 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
           if (!ise) nSend1++;
         }
         ierr = PetscMalloc(nSend1*sizeof(PetscInt*), &sbuffs1);CHKERRQ(ierr);
-        /* ierr = PetscMalloc4(nSend1, PetscInt*, sbuffs1, nSend1, PetscInt*, rbuffs1, nSend1, MPI_Request*, sreqs1, nSend1, MPI_Request*, rreqs1);CHKERRQ(ierr); */
+        /* ierr = PetscMalloc4(nSend1, sbuffs1, nSend1, rbuffs1, nSend1, sreqs1, nSend1, rreqs1);CHKERRQ(ierr); */
         /* PetscFree4(sbuffs1,rbuffs1,sreqs1,rreqs1); */
         for (proc=0,nSend1=0; proc<size; proc++) {
           /* count ghosts */
@@ -801,7 +801,7 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
             MPI_Request *request;
             n   /= 2;
             ierr = PetscMalloc((2 + 2*n + n*CHUNCK_SIZE)*sizeof(PetscInt) + 2*sizeof(MPI_Request), &sbuff);CHKERRQ(ierr);
-            /* PetscMalloc4(2+2*n,PetscInt,sbuffs1[nSend1],n*CHUNCK_SIZE,PetscInt,rbuffs1[nSend1],1,MPI_Request,rreqs2[nSend1],1,MPI_Request,sreqs2[nSend1]); */
+            /* PetscMalloc4(2+2*n,sbuffs1[nSend1],n*CHUNCK_SIZE,rbuffs1[nSend1],1,rreqs2[nSend1],1,sreqs2[nSend1]); */
             /* save requests */
             sbuffs1[nSend1] = sbuff;
             request         = (MPI_Request*)sbuff;

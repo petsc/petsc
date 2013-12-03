@@ -279,7 +279,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   owners = merge->rowmap->range;
 
   /* determine the number of messages to send, their lengths */
-  ierr = PetscMalloc2(size,PetscMPIInt,&len_si,size,MPI_Status,&sstatus);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,&len_si,size,&sstatus);CHKERRQ(ierr);
   ierr = PetscMemzero(len_si,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscMPIInt),&merge->len_s);CHKERRQ(ierr);
 
@@ -388,7 +388,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr          = PetscFreeSpaceGet(nnz,&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
-  ierr = PetscMalloc3(merge->nrecv,PetscInt**,&buf_ri_k,merge->nrecv,PetscInt*,&nextrow,merge->nrecv,PetscInt*,&nextci);CHKERRQ(ierr);
+  ierr = PetscMalloc3(merge->nrecv,&buf_ri_k,merge->nrecv,&nextrow,merge->nrecv,&nextci);CHKERRQ(ierr);
   for (k=0; k<merge->nrecv; k++) {
     buf_ri_k[k] = buf_ri[k]; /* beginning of k-th recved i-structure */
     nrows       = *buf_ri_k[k];
@@ -775,7 +775,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   ierr   = PetscCommGetNewTag(comm,&taga);CHKERRQ(ierr);
   ierr   = PetscPostIrecvScalar(comm,taga,merge->nrecv,merge->id_r,merge->len_r,&abuf_r,&r_waits);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(merge->nsend+1,MPI_Request,&s_waits,size,MPI_Status,&status);CHKERRQ(ierr);
+  ierr = PetscMalloc2(merge->nsend+1,&s_waits,size,&status);CHKERRQ(ierr);
   for (proc=0,k=0; proc<size; proc++) {
     if (!len_s[proc]) continue;
     i    = merge->owners_co[proc];
@@ -794,7 +794,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 
   /* 4) insert local Cseq and received values into Cmpi */
   /*------------------------------------------------------*/
-  ierr = PetscMalloc3(merge->nrecv,PetscInt**,&buf_ri_k,merge->nrecv,PetscInt*,&nextrow,merge->nrecv,PetscInt*,&nextci);CHKERRQ(ierr);
+  ierr = PetscMalloc3(merge->nrecv,&buf_ri_k,merge->nrecv,&nextrow,merge->nrecv,&nextci);CHKERRQ(ierr);
   for (k=0; k<merge->nrecv; k++) {
     buf_ri_k[k] = buf_ri[k]; /* beginning of k-th recved i-structure */
     nrows       = *(buf_ri_k[k]);

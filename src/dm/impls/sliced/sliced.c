@@ -46,7 +46,7 @@ PetscErrorCode  DMCreateMatrix_Sliced(DM dm, Mat *J)
       ierr = MatMPIAIJSetPreallocation(*J,slice->d_nz*bs,NULL,slice->o_nz*bs,NULL);CHKERRQ(ierr);
     } else {
       /* The user has provided preallocation per block-row, convert it to per scalar-row respecting DMSlicedSetBlockFills() if applicable */
-      ierr = PetscMalloc2(slice->n*bs,PetscInt,&sd_nnz,(!!slice->o_nnz)*slice->n*bs,PetscInt,&so_nnz);CHKERRQ(ierr);
+      ierr = PetscMalloc2(slice->n*bs,&sd_nnz,(!!slice->o_nnz)*slice->n*bs,&so_nnz);CHKERRQ(ierr);
       for (i=0; i<slice->n*bs; i++) {
         sd_nnz[i] = (slice->d_nnz[i/bs]-1) * (slice->ofill ? slice->ofill->i[i%bs+1]-slice->ofill->i[i%bs] : bs)
                                            + (slice->dfill ? slice->dfill->i[i%bs+1]-slice->dfill->i[i%bs] : bs);
@@ -169,7 +169,7 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs,const PetscInt *
   if (*inf) {ierr = PetscFree3((*inf)->i,(*inf)->j,*inf);CHKERRQ(ierr);}
   if (!fill) PetscFunctionReturn(0);
   for (i=0,nz=0; i<bs*bs; i++) if (fill[i]) nz++;
-  ierr  = PetscMalloc3(1,DMSlicedBlockFills,&f,bs+1,PetscInt,&fi,nz,PetscInt,&fj);CHKERRQ(ierr);
+  ierr  = PetscMalloc3(1,&f,bs+1,&fi,nz,&fj);CHKERRQ(ierr);
   f->bs = bs;
   f->nz = nz;
   f->i  = fi;

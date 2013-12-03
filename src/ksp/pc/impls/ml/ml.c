@@ -321,7 +321,7 @@ static PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
   }
 
   nz_max = PetscMax(1,mlmat->max_nz_per_row);
-  ierr   = PetscMalloc2(nz_max,PetscScalar,&aa,nz_max,PetscInt,&aj);CHKERRQ(ierr);
+  ierr   = PetscMalloc2(nz_max,&aa,nz_max,&aj);CHKERRQ(ierr);
   if (!reuse) {
     ierr = MatCreate(PETSC_COMM_SELF,newmat);CHKERRQ(ierr);
     ierr = MatSetSizes(*newmat,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
@@ -404,7 +404,7 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
   if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m %d must equal to n %d",m,n);
 
   nz_max = PetscMax(1,mlmat->max_nz_per_row);
-  ierr = PetscMalloc2(nz_max,PetscScalar,&aa,nz_max,PetscInt,&aj);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nz_max,&aa,nz_max,&aj);CHKERRQ(ierr);
   if (reuse) A = *newmat;
   else {
     PetscInt *nnzA,*nnzB,*nnz;
@@ -413,7 +413,7 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
     ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
     /* keep track of block size for A matrices */
     ierr = MatSetBlockSize (A,mlmat->num_PDEs);CHKERRQ(ierr);
-    ierr = PetscMalloc3(m,PetscInt,&nnzA,m,PetscInt,&nnzB,m,PetscInt,&nnz);CHKERRQ(ierr);
+    ierr = PetscMalloc3(m,&nnzA,m,&nnzB,m,&nnz);CHKERRQ(ierr);
 
     for (i=0; i<m; i++) {
       PetscStackCall("ML_Operator_Getrow",ML_Operator_Getrow(mlmat,1,&i,nz_max,aj,aa,&nnz[i]));

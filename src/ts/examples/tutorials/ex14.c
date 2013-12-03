@@ -1453,7 +1453,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
   ierr = VecGetArray(X2,&x2);CHKERRQ(ierr);
   if (!rank) {
     PetscScalar *array,*array2;
-    ierr = PetscMalloc2(nmax,PetscScalar,&array,nmax2,PetscScalar,&array2);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nmax,&array,nmax2,&array2);CHKERRQ(ierr);
     for (r=0; r<size; r++) {
       PetscInt i,j,k,f,xs,xm,ys,ym,zs,zm;
       Node     *y3;

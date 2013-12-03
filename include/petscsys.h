@@ -549,19 +549,17 @@ M*/
 #define PetscAddrAlign(a) (void*)((((PETSC_UINTPTR_T)(a))+(PETSC_MEMALIGN-1)) & ~(PETSC_MEMALIGN-1))
 
 /*MC
-   PetscMalloc2 - Allocates 2 chunks of  memory both aligned to PETSC_MEMALIGN
+   PetscMalloc2 - Allocates 2 arrays of memory both aligned to PETSC_MEMALIGN
 
    Synopsis:
     #include "petscsys.h"
-   PetscErrorCode PetscMalloc2(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2)
+   PetscErrorCode PetscMalloc2(size_t m1,type **r1,size_t m2,type **r2)
 
    Not Collective
 
    Input Parameter:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
-.  t1 - type of first memory elements
-.  m2 - number of elements to allocate in 2nd chunk  (may be zero)
--  t2 - type of second memory elements
+-  m2 - number of elements to allocate in 2nd chunk  (may be zero)
 
    Output Parameter:
 +  r1 - memory allocated in first chunk
@@ -575,27 +573,24 @@ M*/
 
 M*/
 #if defined(PETSC_USE_DEBUG)
-#define PetscMalloc2(m1,t1,r1,m2,t2,r2) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2))
+#define PetscMalloc2(m1,r1,m2,r2) (PetscMalloc((m1)*sizeof(**(r1)),r1) || PetscMalloc((m2)*sizeof(**(r2)),r2))
 #else
-#define PetscMalloc2(m1,t1,r1,m2,t2,r2) ((*(r2) = 0,PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(PETSC_MEMALIGN-1),r1)) || (*(r2) = (t2*)PetscAddrAlign(*(r1)+m1),0))
+#define PetscMalloc2(m1,r1,m2,r2) ((*(r2) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(PETSC_MEMALIGN-1),r1)) || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),0))
 #endif
 
 /*MC
-   PetscMalloc3 - Allocates 3 chunks of  memory  all aligned to PETSC_MEMALIGN
+   PetscMalloc3 - Allocates 3 arrays of memory, all aligned to PETSC_MEMALIGN
 
    Synopsis:
     #include "petscsys.h"
-   PetscErrorCode PetscMalloc3(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3)
+   PetscErrorCode PetscMalloc3(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3)
 
    Not Collective
 
    Input Parameter:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
-.  t1 - type of first memory elements
 .  m2 - number of elements to allocate in 2nd chunk  (may be zero)
-.  t2 - type of second memory elements
-.  m3 - number of elements to allocate in 3rd chunk  (may be zero)
--  t3 - type of third memory elements
+-  m3 - number of elements to allocate in 3rd chunk  (may be zero)
 
    Output Parameter:
 +  r1 - memory allocated in first chunk
@@ -610,30 +605,26 @@ M*/
 
 M*/
 #if defined(PETSC_USE_DEBUG)
-#define PetscMalloc3(m1,t1,r1,m2,t2,r2,m3,t3,r3) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3))
+#define PetscMalloc3(m1,r1,m2,r2,m3,r3) (PetscMalloc((m1)*sizeof(**(r1)),r1) || PetscMalloc((m2)*sizeof(**(r2)),r2) || PetscMalloc((m3)*sizeof(**(r3)),r3))
 #else
-#define PetscMalloc3(m1,t1,r1,m2,t2,r2,m3,t3,r3) ((*(r2) = 0,*(r3) = 0,PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+2*(PETSC_MEMALIGN-1),r1)) \
-                                                  || (*(r2) = (t2*)PetscAddrAlign(*(r1)+m1),*(r3) = (t3*)PetscAddrAlign(*(r2)+m2),0))
+#define PetscMalloc3(m1,r1,m2,r2,m3,r3) ((*(r2) = 0,*(r3) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+2*(PETSC_MEMALIGN-1),r1)) \
+                                         || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),*(void**)(r3) = PetscAddrAlign(*(r2)+(m2)),0))
 #endif
 
 /*MC
-   PetscMalloc4 - Allocates 4 chunks of  memory  all aligned to PETSC_MEMALIGN
+   PetscMalloc4 - Allocates 4 arrays of memory, all aligned to PETSC_MEMALIGN
 
    Synopsis:
     #include "petscsys.h"
-   PetscErrorCode PetscMalloc4(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4)
+   PetscErrorCode PetscMalloc4(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4)
 
    Not Collective
 
    Input Parameter:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
-.  t1 - type of first memory elements
 .  m2 - number of elements to allocate in 2nd chunk  (may be zero)
-.  t2 - type of second memory elements
 .  m3 - number of elements to allocate in 3rd chunk  (may be zero)
-.  t3 - type of third memory elements
-.  m4 - number of elements to allocate in 4th chunk  (may be zero)
--  t4 - type of fourth memory elements
+-  m4 - number of elements to allocate in 4th chunk  (may be zero)
 
    Output Parameter:
 +  r1 - memory allocated in first chunk
@@ -649,33 +640,28 @@ M*/
 
 M*/
 #if defined(PETSC_USE_DEBUG)
-#define PetscMalloc4(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3) || PetscMalloc((m4)*sizeof(t4),r4))
+#define PetscMalloc4(m1,r1,m2,r2,m3,r3,m4,r4) (PetscMalloc((m1)*sizeof(**(r1)),r1) || PetscMalloc((m2)*sizeof(**(r2)),r2) || PetscMalloc((m3)*sizeof(**(r3)),r3) || PetscMalloc((m4)*sizeof(**(r4)),r4))
 #else
-#define PetscMalloc4(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4)               \
-  ((*(r2) = 0, *(r3) = 0, *(r4) = 0,PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4)+3*(PETSC_MEMALIGN-1),r1)) \
-   || (*(r2) = (t2*)PetscAddrAlign(*(r1)+m1),*(r3) = (t3*)PetscAddrAlign(*(r2)+m2),*(r4) = (t4*)PetscAddrAlign(*(r3)+m3),0))
+#define PetscMalloc4(m1,r1,m2,r2,m3,r3,m4,r4)                           \
+  ((*(r2) = 0, *(r3) = 0, *(r4) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+(m4)*sizeof(**(r4))+3*(PETSC_MEMALIGN-1),r1)) \
+   || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),*(void**)(r3) = PetscAddrAlign(*(r2)+(m2)),*(void**)(r4) = PetscAddrAlign(*(r3)+(m3)),0))
 #endif
 
 /*MC
-   PetscMalloc5 - Allocates 5 chunks of  memory all aligned to PETSC_MEMALIGN
+   PetscMalloc5 - Allocates 5 arrays of memory, all aligned to PETSC_MEMALIGN
 
    Synopsis:
     #include "petscsys.h"
-   PetscErrorCode PetscMalloc5(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4,size_t m5,type t5,void **r5)
+   PetscErrorCode PetscMalloc5(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4,size_t m5,type **r5)
 
    Not Collective
 
    Input Parameter:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
-.  t1 - type of first memory elements
 .  m2 - number of elements to allocate in 2nd chunk  (may be zero)
-.  t2 - type of second memory elements
 .  m3 - number of elements to allocate in 3rd chunk  (may be zero)
-.  t3 - type of third memory elements
 .  m4 - number of elements to allocate in 4th chunk  (may be zero)
-.  t4 - type of fourth memory elements
-.  m5 - number of elements to allocate in 5th chunk  (may be zero)
--  t5 - type of fifth memory elements
+-  m5 - number of elements to allocate in 5th chunk  (may be zero)
 
    Output Parameter:
 +  r1 - memory allocated in first chunk
@@ -692,36 +678,30 @@ M*/
 
 M*/
 #if defined(PETSC_USE_DEBUG)
-#define PetscMalloc5(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3) || PetscMalloc((m4)*sizeof(t4),r4) || PetscMalloc((m5)*sizeof(t5),r5))
+#define PetscMalloc5(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5) (PetscMalloc((m1)*sizeof(**(r1)),r1) || PetscMalloc((m2)*sizeof(**(r2)),r2) || PetscMalloc((m3)*sizeof(**(r3)),r3) || PetscMalloc((m4)*sizeof(**(r4)),r4) || PetscMalloc((m5)*sizeof(**(r5)),r5))
 #else
-#define PetscMalloc5(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5)      \
-  ((*(r2) = 0, *(r3) = 0, *(r4) = 0,*(r5) = 0,PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4)+(m5)*sizeof(t5)+4*(PETSC_MEMALIGN-1),r1)) \
-   || (*(r2) = (t2*)PetscAddrAlign(*(r1)+m1),*(r3) = (t3*)PetscAddrAlign(*(r2)+m2),*(r4) = (t4*)PetscAddrAlign(*(r3)+m3),*(r5) = (t5*)PetscAddrAlign(*(r4)+m4),0))
+#define PetscMalloc5(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5)      \
+  ((*(r2) = 0, *(r3) = 0, *(r4) = 0,*(r5) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+(m4)*sizeof(**(r4))+(m5)*sizeof(**(r5))+4*(PETSC_MEMALIGN-1),r1)) \
+   || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),*(void**)(r3) = PetscAddrAlign(*(r2)+(m2)),*(void**)(r4) = PetscAddrAlign(*(r3)+(m3)),*(void**)(r5) = PetscAddrAlign(*(r4)+(m4)),0))
 #endif
 
 
 /*MC
-   PetscMalloc6 - Allocates 6 chunks of  memory all aligned to PETSC_MEMALIGN
+   PetscMalloc6 - Allocates 6 arrays of memory, all aligned to PETSC_MEMALIGN
 
    Synopsis:
     #include "petscsys.h"
-   PetscErrorCode PetscMalloc6(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4,size_t m5,type t5,void **r5,size_t m6,type t6,void **r6)
+   PetscErrorCode PetscMalloc6(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4,size_t m5,type **r5,size_t m6,type **r6)
 
    Not Collective
 
    Input Parameter:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
-.  t1 - type of first memory elements
 .  m2 - number of elements to allocate in 2nd chunk  (may be zero)
-.  t2 - type of second memory elements
 .  m3 - number of elements to allocate in 3rd chunk  (may be zero)
-.  t3 - type of third memory elements
 .  m4 - number of elements to allocate in 4th chunk  (may be zero)
-.  t4 - type of fourth memory elements
 .  m5 - number of elements to allocate in 5th chunk  (may be zero)
-.  t5 - type of fifth memory elements
-.  m6 - number of elements to allocate in 6th chunk  (may be zero)
--  t6 - type of sixth memory elements
+-  m6 - number of elements to allocate in 6th chunk  (may be zero)
 
    Output Parameter:
 +  r1 - memory allocated in first chunk
@@ -739,37 +719,30 @@ M*/
 
 M*/
 #if defined(PETSC_USE_DEBUG)
-#define PetscMalloc6(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5,m6,t6,r6) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3) || PetscMalloc((m4)*sizeof(t4),r4) || PetscMalloc((m5)*sizeof(t5),r5) || PetscMalloc((m6)*sizeof(t6),r6))
+#define PetscMalloc6(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6) (PetscMalloc((m1)*sizeof(**(r1)),r1) || PetscMalloc((m2)*sizeof(**(r2)),r2) || PetscMalloc((m3)*sizeof(**(r3)),r3) || PetscMalloc((m4)*sizeof(**(r4)),r4) || PetscMalloc((m5)*sizeof(**(r5)),r5) || PetscMalloc((m6)*sizeof(**(r6)),r6))
 #else
-#define PetscMalloc6(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5,m6,t6,r6) \
-  ((*(r2) = 0, *(r3) = 0, *(r4) = 0,*(r5) = 0,*(r6) = 0,PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4)+(m5)*sizeof(t5)+(m6)*sizeof(t6)+5*(PETSC_MEMALIGN-1),r1)) \
-   || (*(r2) = (t2*)PetscAddrAlign(*(r1)+m1),*(r3) = (t3*)PetscAddrAlign(*(r2)+m2),*(r4) = (t4*)PetscAddrAlign(*(r3)+m3),*(r5) = (t5*)PetscAddrAlign(*(r4)+m4),*(r6) = (t6*)PetscAddrAlign(*(r5)+m5),0))
+#define PetscMalloc6(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6) \
+  ((*(r2) = 0, *(r3) = 0, *(r4) = 0,*(r5) = 0,*(r6) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+(m4)*sizeof(**(r4))+(m5)*sizeof(**(r5))+(m6)*sizeof(**(r6))+5*(PETSC_MEMALIGN-1),r1)) \
+   || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),*(void**)(r3) = PetscAddrAlign(*(r2)+(m2)),*(void**)(r4) = PetscAddrAlign(*(r3)+(m3)),*(void**)(r5) = PetscAddrAlign(*(r4)+(m4)),*(void**)(r6) = PetscAddrAlign(*(r5)+(m5)),0))
 #endif
 
 /*MC
-   PetscMalloc7 - Allocates 7 chunks of  memory all aligned to PETSC_MEMALIGN
+   PetscMalloc7 - Allocates 7 arrays of memory, all aligned to PETSC_MEMALIGN
 
    Synopsis:
     #include "petscsys.h"
-   PetscErrorCode PetscMalloc7(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4,size_t m5,type t5,void **r5,size_t m6,type t6,void **r6,size_t m7,type t7,void **r7)
+   PetscErrorCode PetscMalloc7(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4,size_t m5,type **r5,size_t m6,type **r6,size_t m7,type **r7)
 
    Not Collective
 
    Input Parameter:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
-.  t1 - type of first memory elements
 .  m2 - number of elements to allocate in 2nd chunk  (may be zero)
-.  t2 - type of second memory elements
 .  m3 - number of elements to allocate in 3rd chunk  (may be zero)
-.  t3 - type of third memory elements
 .  m4 - number of elements to allocate in 4th chunk  (may be zero)
-.  t4 - type of fourth memory elements
 .  m5 - number of elements to allocate in 5th chunk  (may be zero)
-.  t5 - type of fifth memory elements
 .  m6 - number of elements to allocate in 6th chunk  (may be zero)
-.  t6 - type of sixth memory elements
-.  m7 - number of elements to allocate in 7th chunk  (may be zero)
--  t7 - type of sixth memory elements
+-  m7 - number of elements to allocate in 7th chunk  (may be zero)
 
    Output Parameter:
 +  r1 - memory allocated in first chunk
@@ -788,11 +761,11 @@ M*/
 
 M*/
 #if defined(PETSC_USE_DEBUG)
-#define PetscMalloc7(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5,m6,t6,r6,m7,t7,r7) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3) || PetscMalloc((m4)*sizeof(t4),r4) || PetscMalloc((m5)*sizeof(t5),r5) || PetscMalloc((m6)*sizeof(t6),r6) || PetscMalloc((m7)*sizeof(t7),r7))
+#define PetscMalloc7(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6,m7,r7) (PetscMalloc((m1)*sizeof(**(r1)),r1) || PetscMalloc((m2)*sizeof(**(r2)),r2) || PetscMalloc((m3)*sizeof(**(r3)),r3) || PetscMalloc((m4)*sizeof(**(r4)),r4) || PetscMalloc((m5)*sizeof(**(r5)),r5) || PetscMalloc((m6)*sizeof(**(r6)),r6) || PetscMalloc((m7)*sizeof(**(r7)),r7))
 #else
-#define PetscMalloc7(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5,m6,t6,r6,m7,t7,r7) \
-  ((*(r2) = 0, *(r3) = 0, *(r4) = 0,*(r5) = 0,*(r6) = 0,*(r7) = 0,PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4)+(m5)*sizeof(t5)+(m6)*sizeof(t6)+(m7)*sizeof(t7)+6*(PETSC_MEMALIGN-1),r1)) \
-   || (*(r2) = (t2*)PetscAddrAlign(*(r1)+m1),*(r3) = (t3*)PetscAddrAlign(*(r2)+m2),*(r4) = (t4*)PetscAddrAlign(*(r3)+m3),*(r5) = (t5*)PetscAddrAlign(*(r4)+m4),*(r6) = (t6*)PetscAddrAlign(*(r5)+m5),*(r7) = (t7*)PetscAddrAlign(*(r6)+m6),0))
+#define PetscMalloc7(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6,m7,r7) \
+  ((*(r2) = 0, *(r3) = 0, *(r4) = 0,*(r5) = 0,*(r6) = 0,*(r7) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+(m4)*sizeof(**(r4))+(m5)*sizeof(**(r5))+(m6)*sizeof(**(r6))+(m7)*sizeof(**(r7))+6*(PETSC_MEMALIGN-1),r1)) \
+   || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),*(void**)(r3) = PetscAddrAlign(*(r2)+(m2)),*(void**)(r4) = PetscAddrAlign(*(r3)+(m3)),*(void**)(r5) = PetscAddrAlign(*(r4)+(m4)),*(void**)(r6) = PetscAddrAlign(*(r5)+(m5)),*(void**)(r7) = PetscAddrAlign(*(r6)+(m6)),0))
 #endif
 
 /*MC

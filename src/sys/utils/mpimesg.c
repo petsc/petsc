@@ -42,7 +42,7 @@ PetscErrorCode  PetscGatherNumberOfMessages(MPI_Comm comm,const PetscMPIInt ifla
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(size,PetscMPIInt,&recv_buf,size,PetscMPIInt,&iflags_localm);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,&recv_buf,size,&iflags_localm);CHKERRQ(ierr);
 
   /* If iflags not provided, compute iflags from ilengths */
   if (!iflags) {
@@ -109,7 +109,7 @@ PetscErrorCode  PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,Petsc
   ierr = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
 
   /* cannot use PetscMalloc3() here because in the call to MPI_Waitall() they MUST be contiguous */
-  ierr    = PetscMalloc2(nrecvs+nsends,MPI_Request,&r_waits,nrecvs+nsends,MPI_Status,&w_status);CHKERRQ(ierr);
+  ierr    = PetscMalloc2(nrecvs+nsends,&r_waits,nrecvs+nsends,&w_status);CHKERRQ(ierr);
   s_waits = r_waits+nrecvs;
 
   /* Post the Irecv to get the message length-info */
@@ -182,7 +182,7 @@ PetscErrorCode  PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,Pets
   ierr = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
 
   /* cannot use PetscMalloc5() because r_waits and s_waits must be contiquous for the call to MPI_Waitall() */
-  ierr = PetscMalloc4(nrecvs+nsends,MPI_Request,&r_waits,2*nrecvs,PetscMPIInt,&buf_r,2*nsends,PetscMPIInt,&buf_s,nrecvs+nsends,MPI_Status,&w_status);CHKERRQ(ierr);
+  ierr = PetscMalloc4(nrecvs+nsends,&r_waits,2*nrecvs,&buf_r,2*nsends,&buf_s,nrecvs+nsends,&w_status);CHKERRQ(ierr);
   s_waits = r_waits + nrecvs;
 
   /* Post the Irecv to get the message length-info */

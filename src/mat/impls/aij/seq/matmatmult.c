@@ -1427,7 +1427,7 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
   c->brows  = 100;
 
   c->ncolors = nis;
-  ierr = PetscMalloc3(nis,PetscInt,&c->ncolumns,nis,PetscInt,&c->nrows,nis+1,PetscInt,&colorforrow);CHKERRQ(ierr);
+  ierr = PetscMalloc3(nis,&c->ncolumns,nis,&c->nrows,nis+1,&colorforrow);CHKERRQ(ierr);
   ierr = PetscMalloc((csp->nz+1)*sizeof(PetscInt),&rows);CHKERRQ(ierr);
   ierr = PetscMalloc((csp->nz+1)*sizeof(PetscInt),&den2sp);CHKERRQ(ierr);
 

@@ -23,11 +23,11 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat C,Mat A,const MatFactorIn
   /* initialization */
   ierr = PetscMalloc(49*mbs*sizeof(MatScalar),&w);CHKERRQ(ierr);
   ierr = PetscMemzero(w,49*mbs*sizeof(MatScalar));CHKERRQ(ierr);
-  ierr = PetscMalloc2(mbs,PetscInt,&il,mbs,PetscInt,&jl);CHKERRQ(ierr);
+  ierr = PetscMalloc2(mbs,&il,mbs,&jl);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     jl[i] = mbs; il[0] = 0;
   }
-  ierr = PetscMalloc2(49,MatScalar,&dk,49,MatScalar,&uik);CHKERRQ(ierr);
+  ierr = PetscMalloc2(49,&dk,49,&uik);CHKERRQ(ierr);
   ierr = ISGetIndices(perm,&perm_ptr);CHKERRQ(ierr);
 
   /* check permutation */

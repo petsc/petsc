@@ -727,14 +727,14 @@ PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,const Pe
   ierr     = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);
   t->order = order;
   t->s     = s;
-  ierr     = PetscMalloc5(s*s,PetscReal,&t->A,s*s,PetscReal,&t->Gamma,s,PetscReal,&t->b,s,PetscReal,&t->ASum,s,PetscReal,&t->GammaSum);CHKERRQ(ierr);
-  ierr     = PetscMalloc5(s*s,PetscReal,&t->At,s,PetscReal,&t->bt,s*s,PetscReal,&t->GammaInv,s,PetscBool,&t->GammaZeroDiag,s*s,PetscReal,&t->GammaExplicitCorr);CHKERRQ(ierr);
+  ierr     = PetscMalloc5(s*s,&t->A,s*s,&t->Gamma,s,&t->b,s,&t->ASum,s,&t->GammaSum);CHKERRQ(ierr);
+  ierr     = PetscMalloc5(s*s,&t->At,s,&t->bt,s*s,&t->GammaInv,s,&t->GammaZeroDiag,s*s,&t->GammaExplicitCorr);CHKERRQ(ierr);
   ierr     = PetscMemcpy(t->A,A,s*s*sizeof(A[0]));CHKERRQ(ierr);
   ierr     = PetscMemcpy(t->Gamma,Gamma,s*s*sizeof(Gamma[0]));CHKERRQ(ierr);
   ierr     = PetscMemcpy(t->GammaExplicitCorr,Gamma,s*s*sizeof(Gamma[0]));CHKERRQ(ierr);
   ierr     = PetscMemcpy(t->b,b,s*sizeof(b[0]));CHKERRQ(ierr);
   if (bembed) {
-    ierr = PetscMalloc2(s,PetscReal,&t->bembed,s,PetscReal,&t->bembedt);CHKERRQ(ierr);
+    ierr = PetscMalloc2(s,&t->bembed,s,&t->bembedt);CHKERRQ(ierr);
     ierr = PetscMemcpy(t->bembed,bembed,s*sizeof(bembed[0]));CHKERRQ(ierr);
   }
   for (i=0; i<s; i++) {

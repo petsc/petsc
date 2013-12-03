@@ -189,7 +189,7 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
   const PetscScalar *mvalues;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc2(A->cmap->N,PetscScalar,&diag,A->cmap->N,PetscScalar,&work);CHKERRQ(ierr);
+  ierr = PetscMalloc2(A->cmap->N,&diag,A->cmap->N,&work);CHKERRQ(ierr);
   ierr = PetscMemzero(work,A->cmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {

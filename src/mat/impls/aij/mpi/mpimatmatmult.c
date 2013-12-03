@@ -414,10 +414,10 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
   /* Create work matrix used to store off processor rows of B needed for local product */
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,nz,B->cmap->N,NULL,&contents->workB);CHKERRQ(ierr);
   /* Create work arrays needed */
-  ierr = PetscMalloc4(B->cmap->N*from->starts[from->n],PetscScalar,&contents->rvalues,
-                      B->cmap->N*to->starts[to->n],PetscScalar,&contents->svalues,
-                      from->n,MPI_Request,&contents->rwaits,
-                      to->n,MPI_Request,&contents->swaits);CHKERRQ(ierr);
+  ierr = PetscMalloc4(B->cmap->N*from->starts[from->n],&contents->rvalues,
+                      B->cmap->N*to->starts[to->n],&contents->svalues,
+                      from->n,&contents->rwaits,
+                      to->n,&contents->swaits);CHKERRQ(ierr);
 
   ierr = PetscContainerCreate(PetscObjectComm((PetscObject)A),&container);CHKERRQ(ierr);
   ierr = PetscContainerSetPointer(container,contents);CHKERRQ(ierr);
@@ -979,7 +979,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,
   ierr   = PetscCommGetNewTag(comm,&taga);CHKERRQ(ierr);
   ierr   = PetscPostIrecvScalar(comm,taga,merge->nrecv,merge->id_r,merge->len_r,&abuf_r,&r_waits);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(merge->nsend+1,MPI_Request,&s_waits,size,MPI_Status,&status);CHKERRQ(ierr);
+  ierr = PetscMalloc2(merge->nsend+1,&s_waits,size,&status);CHKERRQ(ierr);
   for (proc=0,k=0; proc<size; proc++) {
     if (!len_s[proc]) continue;
     i    = merge->owners_co[proc];
@@ -995,7 +995,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,
 
   /* 4) insert local Cseq and received values into Cmpi */
   /*----------------------------------------------------*/
-  ierr = PetscMalloc3(merge->nrecv,PetscInt**,&buf_ri_k,merge->nrecv,PetscInt*,&nextrow,merge->nrecv,PetscInt*,&nextci);CHKERRQ(ierr);
+  ierr = PetscMalloc3(merge->nrecv,&buf_ri_k,merge->nrecv,&nextrow,merge->nrecv,&nextci);CHKERRQ(ierr);
   for (k=0; k<merge->nrecv; k++) {
     buf_ri_k[k] = buf_ri[k]; /* beginning of k-th recved i-structure */
     nrows       = *(buf_ri_k[k]);
@@ -1268,7 +1268,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   ierr          = PetscFreeSpaceGet(nnz,&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
-  ierr = PetscMalloc3(merge->nrecv,PetscInt**,&buf_ri_k,merge->nrecv,PetscInt*,&nextrow,merge->nrecv,PetscInt*,&nextci);CHKERRQ(ierr);
+  ierr = PetscMalloc3(merge->nrecv,&buf_ri_k,merge->nrecv,&nextrow,merge->nrecv,&nextci);CHKERRQ(ierr);
   for (k=0; k<merge->nrecv; k++) {
     buf_ri_k[k] = buf_ri[k]; /* beginning of k-th recved i-structure */
     nrows       = *buf_ri_k[k];
@@ -1491,7 +1491,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
   ierr   = PetscCommGetNewTag(comm,&taga);CHKERRQ(ierr);
   ierr   = PetscPostIrecvScalar(comm,taga,merge->nrecv,merge->id_r,merge->len_r,&abuf_r,&r_waits);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(merge->nsend+1,MPI_Request,&s_waits,size,MPI_Status,&status);CHKERRQ(ierr);
+  ierr = PetscMalloc2(merge->nsend+1,&s_waits,size,&status);CHKERRQ(ierr);
   for (proc=0,k=0; proc<size; proc++) {
     if (!len_s[proc]) continue;
     i    = merge->owners_co[proc];
@@ -1507,7 +1507,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
 
   /* 4) insert local Cseq and received values into Cmpi */
   /*----------------------------------------------------*/
-  ierr = PetscMalloc3(merge->nrecv,PetscInt**,&buf_ri_k,merge->nrecv,PetscInt*,&nextrow,merge->nrecv,PetscInt*,&nextci);CHKERRQ(ierr);
+  ierr = PetscMalloc3(merge->nrecv,&buf_ri_k,merge->nrecv,&nextrow,merge->nrecv,&nextci);CHKERRQ(ierr);
   for (k=0; k<merge->nrecv; k++) {
     buf_ri_k[k] = buf_ri[k]; /* beginning of k-th recved i-structure */
     nrows       = *(buf_ri_k[k]);
@@ -1779,7 +1779,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   ierr          = PetscFreeSpaceGet(nnz,&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
-  ierr = PetscMalloc3(merge->nrecv,PetscInt**,&buf_ri_k,merge->nrecv,PetscInt*,&nextrow,merge->nrecv,PetscInt*,&nextci);CHKERRQ(ierr);
+  ierr = PetscMalloc3(merge->nrecv,&buf_ri_k,merge->nrecv,&nextrow,merge->nrecv,&nextci);CHKERRQ(ierr);
   for (k=0; k<merge->nrecv; k++) {
     buf_ri_k[k] = buf_ri[k]; /* beginning of k-th recved i-structure */
     nrows       = *buf_ri_k[k];

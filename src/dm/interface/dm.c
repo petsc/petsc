@@ -1177,7 +1177,7 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
 
     ierr = DMGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
     ierr = PetscSectionGetNumFields(section, &nF);CHKERRQ(ierr);
-    ierr = PetscMalloc2(nF,PetscInt,&fieldSizes,nF,PetscInt*,&fieldIndices);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nF,&fieldSizes,nF,&fieldIndices);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
     for (f = 0; f < nF; ++f) {
       fieldSizes[f] = 0;
@@ -1305,7 +1305,7 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
     if (section) {ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);}
     if (section && numFields && dm->ops->createsubdm) {
       *len = numFields;
-      ierr = PetscMalloc3(numFields,char*,namelist,numFields,IS,islist,numFields,DM,dmlist);CHKERRQ(ierr);
+      ierr = PetscMalloc3(numFields,namelist,numFields,islist,numFields,dmlist);CHKERRQ(ierr);
       for (f = 0; f < numFields; ++f) {
         const char *fieldName;
 

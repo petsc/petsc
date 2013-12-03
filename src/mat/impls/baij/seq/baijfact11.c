@@ -193,7 +193,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat B,Mat A,const MatFactorInfo *inf
   }
 
   /* generate work space needed by the factorization */
-  ierr = PetscMalloc2(bs2*n,MatScalar,&rtmp,bs2,MatScalar,&mwork);CHKERRQ(ierr);
+  ierr = PetscMalloc2(bs2*n,&rtmp,bs2,&mwork);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
@@ -452,7 +452,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat B,Mat A,const Ma
 
   PetscFunctionBegin;
   /* generate work space needed by the factorization */
-  ierr = PetscMalloc2(bs2*n,MatScalar,&rtmp,bs2,MatScalar,&mwork);CHKERRQ(ierr);
+  ierr = PetscMalloc2(bs2*n,&rtmp,bs2,&mwork);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
 
   if (info->shifttype == MAT_SHIFT_NONE) {

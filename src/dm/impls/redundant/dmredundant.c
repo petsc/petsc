@@ -31,7 +31,7 @@ static PetscErrorCode DMCreateMatrix_Redundant(DM dm,Mat *J)
   ierr = MatSetLocalToGlobalMapping(*J,ltog,ltog);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMappingBlock(*J,ltogb,ltogb);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(red->N,PetscInt,&cols,red->N,PetscScalar,&vals);CHKERRQ(ierr);
+  ierr = PetscMalloc2(red->N,&cols,red->N,&vals);CHKERRQ(ierr);
   for (i=0; i<red->N; i++) {
     cols[i] = i;
     vals[i] = 0.0;

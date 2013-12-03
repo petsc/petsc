@@ -265,7 +265,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   ierr = PetscLogEventBegin(MAT_SetValuesBatchI,0,0,0,0);CHKERRQ(ierr);
   PetscMPIInt *procSendSizes, *procRecvSizes;
 
-  ierr = PetscMalloc2(numProcs, PetscMPIInt, &procSendSizes, numProcs, PetscMPIInt, &procRecvSizes);CHKERRQ(ierr);
+  ierr = PetscMalloc2(numProcs, &procSendSizes, numProcs, &procRecvSizes);CHKERRQ(ierr);
   ierr = PetscMemzero(procSendSizes, numProcs * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(procRecvSizes, numProcs * sizeof(PetscInt));CHKERRQ(ierr);
 
@@ -334,9 +334,9 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   PetscInt    *sendCols, *recvCols;
   PetscScalar *sendVals, *recvVals;
 
-  ierr = PetscMalloc2(numProcs, PetscMPIInt, &procSendDispls, numProcs, PetscMPIInt, &procRecvDispls);CHKERRQ(ierr);
-  ierr = PetscMalloc3(numSendEntries, PetscInt, &sendRows, numSendEntries, PetscInt, &sendCols, numSendEntries, PetscScalar, &sendVals);CHKERRQ(ierr);
-  ierr = PetscMalloc3(numRecvEntries, PetscInt, &recvRows, numRecvEntries, PetscInt, &recvCols, numRecvEntries, PetscScalar, &recvVals);CHKERRQ(ierr);
+  ierr = PetscMalloc2(numProcs, &procSendDispls, numProcs, &procRecvDispls);CHKERRQ(ierr);
+  ierr = PetscMalloc3(numSendEntries, &sendRows, numSendEntries, &sendCols, numSendEntries, &sendVals);CHKERRQ(ierr);
+  ierr = PetscMalloc3(numRecvEntries, &recvRows, numRecvEntries, &recvCols, numRecvEntries, &recvVals);CHKERRQ(ierr);
 
   procSendDispls[0] = procRecvDispls[0] = 0;
   for (PetscInt p = 1; p < numProcs; ++p) {

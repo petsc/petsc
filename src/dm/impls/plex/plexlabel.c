@@ -34,7 +34,7 @@ static PetscErrorCode DMLabelMakeValid_Private(DMLabel label)
 
   if (label->arrayValid) return 0;
   PetscFunctionBegin;
-  ierr = PetscMalloc2(label->numStrata,PetscInt,&label->stratumSizes,label->numStrata+1,PetscInt,&label->stratumOffsets);CHKERRQ(ierr);
+  ierr = PetscMalloc2(label->numStrata,&label->stratumSizes,label->numStrata+1,&label->stratumOffsets);CHKERRQ(ierr);
   for (v = 0; v < label->numStrata; ++v) {
     PetscInt size = 0;
     PetscHashISize(label->ht[v], size);
@@ -183,7 +183,7 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
   (*labelnew)->arrayValid = PETSC_TRUE;
   if (label->numStrata) {
     ierr = PetscMalloc(label->numStrata * sizeof(PetscInt), &(*labelnew)->stratumValues);CHKERRQ(ierr);
-    ierr = PetscMalloc2(label->numStrata,PetscInt,&(*labelnew)->stratumSizes,label->numStrata+1,PetscInt,&(*labelnew)->stratumOffsets);CHKERRQ(ierr);
+    ierr = PetscMalloc2(label->numStrata,&(*labelnew)->stratumSizes,label->numStrata+1,&(*labelnew)->stratumOffsets);CHKERRQ(ierr);
     ierr = PetscMalloc(label->stratumOffsets[label->numStrata] * sizeof(PetscInt), &(*labelnew)->points);CHKERRQ(ierr);
     /* Could eliminate unused space here */
     for (v = 0; v < label->numStrata; ++v) {
@@ -629,7 +629,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSection partSection, IS par
   if (!rank) (*labelNew)->numStrata = label->numStrata;
   ierr = MPI_Bcast(&(*labelNew)->numStrata, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
   ierr = PetscMalloc((*labelNew)->numStrata * sizeof(PetscInt), &(*labelNew)->stratumValues);CHKERRQ(ierr);
-  ierr = PetscMalloc2((*labelNew)->numStrata,PetscInt,&(*labelNew)->stratumSizes,(*labelNew)->numStrata+1,PetscInt,&(*labelNew)->stratumOffsets);CHKERRQ(ierr);
+  ierr = PetscMalloc2((*labelNew)->numStrata,&(*labelNew)->stratumSizes,(*labelNew)->numStrata+1,&(*labelNew)->stratumOffsets);CHKERRQ(ierr);
   /* Bcast stratumValues */
   if (!rank) {ierr = PetscMemcpy((*labelNew)->stratumValues, label->stratumValues, label->numStrata * sizeof(PetscInt));CHKERRQ(ierr);}
   ierr = MPI_Bcast((*labelNew)->stratumValues, (*labelNew)->numStrata, MPIU_INT, 0, comm);CHKERRQ(ierr);
@@ -674,7 +674,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSection partSection, IS par
     const PetscInt *partArray;
 
     ierr = ISGetIndices(part, &partArray);CHKERRQ(ierr);
-    ierr = PetscMalloc3(numProcs,PetscMPIInt,&sendcnts,numProcs,PetscMPIInt,&offsets,numProcs+1,PetscMPIInt,&displs);CHKERRQ(ierr);
+    ierr = PetscMalloc3(numProcs,&sendcnts,numProcs,&offsets,numProcs+1,&displs);CHKERRQ(ierr);
     displs[0] = 0;
     for (p = 0; p < numProcs; ++p) {
       sendcnts[p] = 0;

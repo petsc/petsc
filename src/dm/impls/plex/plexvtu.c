@@ -58,7 +58,7 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm,PieceInfo *piece,PetscVTKIn
   PetscInt       dim,vStart,vEnd,cStart,cEnd,pStart,pEnd,cellHeight,cMax,numLabelCells,hasLabel,c,v,countcell,countconn;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc3(piece->nconn,PetscVTKInt,&conn,piece->ncells,PetscVTKInt,&offsets,piece->ncells,PetscVTKType,&types);CHKERRQ(ierr);
+  ierr = PetscMalloc3(piece->nconn,&conn,piece->ncells,&offsets,piece->ncells,&types);CHKERRQ(ierr);
 
   ierr = DMPlexGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);

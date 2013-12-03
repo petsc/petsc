@@ -339,7 +339,7 @@ PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt spatial_dim, Petsc
     realType *c, *jI, *jD;
     PetscInt i;
 
-    ierr = PetscMalloc3(Ne*N_bt,realType,&c,Ne*dim*dim,realType,&jI,Ne,realType,&jD);CHKERRQ(ierr);
+    ierr = PetscMalloc3(Ne*N_bt,&c,Ne*dim*dim,&jI,Ne,&jD);CHKERRQ(ierr);
     for (i = 0; i < Ne*N_bt;    ++i) c[i]  = coefficients[i];
     for (i = 0; i < Ne*dim*dim; ++i) jI[i] = jacobianInverses[i];
     for (i = 0; i < Ne;         ++i) jD[i] = jacobianDeterminants[i];

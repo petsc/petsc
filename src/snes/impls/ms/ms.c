@@ -228,7 +228,7 @@ PetscErrorCode SNESMSRegister(SNESMSType name,PetscInt nstages,PetscInt nregiste
   t->nregisters = nregisters;
   t->stability  = stability;
 
-  ierr = PetscMalloc3(nstages*nregisters,PetscReal,&t->gamma,nstages,PetscReal,&t->delta,nstages,PetscReal,&t->betasub);CHKERRQ(ierr);
+  ierr = PetscMalloc3(nstages*nregisters,&t->gamma,nstages,&t->delta,nstages,&t->betasub);CHKERRQ(ierr);
   ierr = PetscMemcpy(t->gamma,gamma,nstages*nregisters*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemcpy(t->delta,delta,nstages*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemcpy(t->betasub,betasub,nstages*sizeof(PetscReal));CHKERRQ(ierr);

@@ -109,7 +109,7 @@ static PetscErrorCode  PCGASMPrintSubdomains(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc2(osm->n, PetscInt, &permutation, osm->n, PetscInt, &numbering);CHKERRQ(ierr);
+  ierr = PetscMalloc2(osm->n, &permutation, osm->n, &numbering);CHKERRQ(ierr);
   for (i = 0; i < osm->n; ++i) permutation[i] = i;
   ierr = PetscObjectsGetGlobalNumbering(PetscObjectComm((PetscObject)pc), osm->n, (PetscObject*)osm->ois, &gcount, numbering);CHKERRQ(ierr);
   ierr = PetscSortIntWithPermutation(osm->n, numbering, permutation);CHKERRQ(ierr);
@@ -162,7 +162,7 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank);CHKERRQ(ierr);
-  ierr = PetscMalloc2(osm->n, PetscInt, &permutation, osm->n, PetscInt, &numbering);CHKERRQ(ierr);
+  ierr = PetscMalloc2(osm->n, &permutation, osm->n, &numbering);CHKERRQ(ierr);
   for (i = 0; i < osm->n; ++i) permutation[i] = i;
   ierr = PetscObjectsGetGlobalNumbering(PetscObjectComm((PetscObject)pc), osm->n, (PetscObject*)osm->ois, &gcount, numbering);CHKERRQ(ierr);
   ierr = PetscSortIntWithPermutation(osm->n, numbering, permutation);CHKERRQ(ierr);

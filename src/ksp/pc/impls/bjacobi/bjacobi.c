@@ -1031,7 +1031,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
       ierr = PetscNewLog(pc,PC_BJacobi_Multiblock,&bjac);CHKERRQ(ierr);
       ierr = PetscMalloc(n_local*sizeof(KSP),&jac->ksp);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory((PetscObject)pc,sizeof(n_local*sizeof(KSP)));CHKERRQ(ierr);
-      ierr = PetscMalloc2(n_local,Vec,&bjac->x,n_local,Vec,&bjac->y);CHKERRQ(ierr);
+      ierr = PetscMalloc2(n_local,&bjac->x,n_local,&bjac->y);CHKERRQ(ierr);
       ierr = PetscMalloc(n_local*sizeof(PetscScalar),&bjac->starts);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory((PetscObject)pc,sizeof(n_local*sizeof(PetscScalar)));CHKERRQ(ierr);
 

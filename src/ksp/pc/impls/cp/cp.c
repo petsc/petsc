@@ -40,7 +40,7 @@ static PetscErrorCode PCSetUp_CP(PC pc)
 
   /* convert to column format */
   if (!cp->a) {
-    ierr = PetscMalloc3(aij->nz,PetscScalar,&cp->a,cp->n+1,PetscInt,&cp->i,aij->nz,PetscInt,&cp->j);CHKERRQ(ierr);
+    ierr = PetscMalloc3(aij->nz,&cp->a,cp->n+1,&cp->i,aij->nz,&cp->j);CHKERRQ(ierr);
   }
   ierr = PetscMalloc(cp->n*sizeof(PetscInt),&colcnt);CHKERRQ(ierr);
   ierr = PetscMemzero(colcnt,cp->n*sizeof(PetscInt));CHKERRQ(ierr);

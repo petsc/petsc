@@ -233,7 +233,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
 
     idummy   = n;
     lwork    = 5*n;
-    ierr     = PetscMalloc2(n,PetscReal,&realpart,n,PetscReal,&imagpart);CHKERRQ(ierr);
+    ierr     = PetscMalloc2(n,&realpart,n,&imagpart);CHKERRQ(ierr);
     ierr     = PetscMalloc(5*n*sizeof(PetscReal),&work);CHKERRQ(ierr);
 #if defined(PETSC_MISSING_LAPACK_GEEV)
     SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
@@ -358,7 +358,7 @@ PetscErrorCode KSPPlotEigenContours_Private(KSP ksp,PetscInt neig,const PetscRea
     ymin = PetscMin(ymin,c[i]);
     ymax = PetscMax(ymax,c[i]);
   }
-  ierr = PetscMalloc3(M,PetscReal,&xloc,N,PetscReal,&yloc,M*N,PetscReal,&value);CHKERRQ(ierr);
+  ierr = PetscMalloc3(M,&xloc,N,&yloc,M*N,&value);CHKERRQ(ierr);
   for (i=0; i<M; i++) xloc[i] = xmin - 0.1*(xmax-xmin) + 1.2*(xmax-xmin)*i/(M-1);
   for (i=0; i<N; i++) yloc[i] = ymin - 0.1*(ymax-ymin) + 1.2*(ymax-ymin)*i/(N-1);
   ierr   = PolyEval(neig,r,c,0,0,&px0,&py0);CHKERRQ(ierr);

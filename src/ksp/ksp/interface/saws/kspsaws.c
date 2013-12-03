@@ -96,7 +96,7 @@ PetscErrorCode KSPMonitorSAWs(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
   ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin);CHKERRQ(ierr);
 
   ierr = PetscFree2(mon->eigr,mon->eigi);CHKERRQ(ierr);
-  ierr = PetscMalloc2(n,PetscReal,&mon->eigr,n,PetscReal,&mon->eigi);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,&mon->eigr,n,&mon->eigi);CHKERRQ(ierr);
   if (n) {
     ierr = KSPComputeEigenvalues(ksp,n,mon->eigr,mon->eigi,&mon->neigs);CHKERRQ(ierr);
 

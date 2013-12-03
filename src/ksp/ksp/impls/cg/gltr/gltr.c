@@ -903,7 +903,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     }
 
     cg->alloced = PetscMin(cg->alloced, t_size);
-    ierr        = PetscMalloc2(10*cg->alloced,PetscReal, &cg->rwork,5*cg->alloced,PetscBLASInt, &cg->iwork);CHKERRQ(ierr);
+    ierr        = PetscMalloc2(10*cg->alloced, &cg->rwork,5*cg->alloced, &cg->iwork);CHKERRQ(ierr);
   }
 
   /***************************************************************************/
@@ -1338,7 +1338,7 @@ PetscErrorCode KSPSetUp_GLTR(KSP ksp)
 
   ierr = KSPSetWorkVecs(ksp, 3);CHKERRQ(ierr);
 
-  ierr = PetscMalloc5(max_its,PetscReal,&cg->diag,max_its,PetscReal,&cg->offd,max_its,PetscReal,&cg->alpha,max_its,PetscReal,&cg->beta,max_its,PetscReal,&cg->norm_r);CHKERRQ(ierr);
+  ierr = PetscMalloc5(max_its,&cg->diag,max_its,&cg->offd,max_its,&cg->alpha,max_its,&cg->beta,max_its,&cg->norm_r);CHKERRQ(ierr);
   ierr = PetscMemzero(cg->diag, max_its*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemzero(cg->offd, max_its*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemzero(cg->alpha, max_its*sizeof(PetscReal));CHKERRQ(ierr);

@@ -175,7 +175,7 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Ma
 
   /* Verify if the indices corespond to each element in a block
    and form the IS with compressed IS */
-  ierr = PetscMalloc2(a->mbs,PetscInt,&vary,a->mbs,PetscInt,&iary);CHKERRQ(ierr);
+  ierr = PetscMalloc2(a->mbs,&vary,a->mbs,&iary);CHKERRQ(ierr);
   ierr = PetscMemzero(vary,a->mbs*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<nrows; i++) vary[irow[i]/bs]++;
   count = 0;

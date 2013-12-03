@@ -457,7 +457,7 @@ PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user)
   ierr = DMGetLocalVector(user->dm, &localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(user->dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(user->dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
-  ierr = PetscMalloc4(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
+  ierr = PetscMalloc4(dim,&coords,dim,&v0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(user->dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *x = NULL;
@@ -805,7 +805,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
   PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->residualEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
-  ierr = PetscMalloc3(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J);CHKERRQ(ierr);
+  ierr = PetscMalloc3(dim,&coords,dim,&v0,dim*dim,&J);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   const PetscInt numCells = cEnd - cStart;
   PetscInt       cellDof  = 0;
@@ -814,7 +814,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
   for (field = 0; field < numFields; ++field) {
     cellDof += user->q[field].numBasisFuncs*user->q[field].numComponents;
   }
-  ierr = PetscMalloc4(numCells*cellDof,PetscScalar,&u,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
+  ierr = PetscMalloc4(numCells*cellDof,&u,numCells*dim*dim,&invJ,numCells,&detJ,numCells*cellDof,&elemVec);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *x = NULL;
     PetscInt     i;
@@ -1098,7 +1098,7 @@ PetscErrorCode FormJacobianActionLocal(DM dm, Mat Jac, Vec X, Vec F, AppCtx *use
   ierr = PetscLogEventBegin(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = MatShellGetContext(Jac, &jctx);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
-  ierr = PetscMalloc3(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J);CHKERRQ(ierr);
+  ierr = PetscMalloc3(dim,&coords,dim,&v0,dim*dim,&J);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   const PetscInt numCells = cEnd - cStart;
   PetscInt       cellDof  = 0;
@@ -1107,7 +1107,7 @@ PetscErrorCode FormJacobianActionLocal(DM dm, Mat Jac, Vec X, Vec F, AppCtx *use
   for (field = 0; field < numFields; ++field) {
     cellDof += user->q[field].numBasisFuncs*user->q[field].numComponents;
   }
-  ierr = PetscMalloc5(numCells*cellDof,PetscScalar,&u,numCells*cellDof,PetscScalar,&a,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
+  ierr = PetscMalloc5(numCells*cellDof,&u,numCells*cellDof,&a,numCells*dim*dim,&invJ,numCells,&detJ,numCells*cellDof,&elemVec);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *x = NULL;
     PetscInt     i;
@@ -1437,14 +1437,14 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, MatStructure *
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = DMGetDefaultGlobalSection(dm, &globalSection);CHKERRQ(ierr);
   ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
-  ierr = PetscMalloc2(dim,PetscReal,&v0,dim*dim,PetscReal,&J);CHKERRQ(ierr);
+  ierr = PetscMalloc2(dim,&v0,dim*dim,&J);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
 
   numCells = cEnd - cStart;
   for (field = 0; field < numFields; ++field) {
     cellDof += user->q[field].numBasisFuncs*user->q[field].numComponents;
   }
-  ierr = PetscMalloc4(numCells*cellDof,PetscScalar,&u,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof*cellDof,PetscScalar,&elemMat);CHKERRQ(ierr);
+  ierr = PetscMalloc4(numCells*cellDof,&u,numCells*dim*dim,&invJ,numCells,&detJ,numCells*cellDof*cellDof,&elemMat);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *x = NULL;
     PetscInt     i;

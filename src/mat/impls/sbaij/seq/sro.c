@@ -56,7 +56,7 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
   ierr = ISDestroy(&iperm);CHKERRQ(ierr);
 
   if (!a->inew) {
-    ierr = PetscMalloc2(mbs+1,PetscInt,&ai, 2*a->i[mbs],PetscInt,&aj);CHKERRQ(ierr);
+    ierr = PetscMalloc2(mbs+1,&ai, 2*a->i[mbs],&aj);CHKERRQ(ierr);
   } else {
     ai = a->inew; aj = a->jnew;
   }

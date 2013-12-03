@@ -474,7 +474,7 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin),&size);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
-    ierr = PetscMalloc2(N,PetscReal,&xx,N,PetscReal,&yy);CHKERRQ(ierr);
+    ierr = PetscMalloc2(N,&xx,N,&yy);CHKERRQ(ierr);
     for (i=0; i<N; i++) xx[i] = (PetscReal) i;
     ierr = PetscMalloc(size*sizeof(PetscInt),&lens);CHKERRQ(ierr);
     for (i=0; i<size; i++) lens[i] = xin->map->range[i+1] - xin->map->range[i];

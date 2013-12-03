@@ -74,7 +74,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F,Mat A,IS perm,const 
   iu[0] = mbs+1;
   juidx = mbs + 1; /* index for ju */
   /* jl linked list for pivot row -- linked list for col index */
-  ierr = PetscMalloc2(mbs,PetscInt,&jl,mbs,PetscInt,&q);CHKERRQ(ierr);
+  ierr = PetscMalloc2(mbs,&jl,mbs,&q);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     jl[i] = mbs;
     q[i]  = 0;
@@ -253,7 +253,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const M
 
   /* jl: linked list for storing indices of the pivot rows
      il: il[i] points to the 1st nonzero entry of U(i,k:mbs-1) */
-  ierr = PetscMalloc4(mbs,PetscInt*,&ui_ptr,mbs,PetscInt,&il,mbs,PetscInt,&jl,mbs,PetscInt,&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc4(mbs,&ui_ptr,mbs,&il,mbs,&jl,mbs,&cols);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     jl[i] = mbs; il[i] = 0;
   }
@@ -441,7 +441,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm
 
   /* jl: linked list for storing indices of the pivot rows
      il: il[i] points to the 1st nonzero entry of U(i,k:mbs-1) */
-  ierr = PetscMalloc4(mbs,PetscInt*,&ui_ptr,mbs,PetscInt,&il,mbs,PetscInt,&jl,mbs,PetscInt,&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc4(mbs,&ui_ptr,mbs,&il,mbs,&jl,mbs,&cols);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     jl[i] = mbs; il[i] = 0;
   }
@@ -588,11 +588,11 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat C,Mat A,const MatFactorIn
   /* initialization */
   ierr = PetscMalloc(bs2*mbs*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,bs2*mbs*sizeof(MatScalar));CHKERRQ(ierr);
-  ierr = PetscMalloc2(mbs,PetscInt,&il,mbs,PetscInt,&jl);CHKERRQ(ierr);
+  ierr = PetscMalloc2(mbs,&il,mbs,&jl);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     jl[i] = mbs; il[0] = 0;
   }
-  ierr = PetscMalloc3(bs2,MatScalar,&dk,bs2,MatScalar,&uik,bs,MatScalar,&work);CHKERRQ(ierr);
+  ierr = PetscMalloc3(bs2,&dk,bs2,&uik,bs,&work);CHKERRQ(ierr);
   ierr = PetscMalloc(bs*sizeof(PetscInt),&pivots);CHKERRQ(ierr);
 
   ierr = ISGetIndices(perm,&perm_ptr);CHKERRQ(ierr);
@@ -755,11 +755,11 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat C,Mat A,c
   PetscFunctionBegin;
   ierr = PetscMalloc(bs2*mbs*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,bs2*mbs*sizeof(MatScalar));CHKERRQ(ierr);
-  ierr = PetscMalloc2(mbs,PetscInt,&il,mbs,PetscInt,&jl);CHKERRQ(ierr);
+  ierr = PetscMalloc2(mbs,&il,mbs,&jl);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     jl[i] = mbs; il[0] = 0;
   }
-  ierr = PetscMalloc3(bs2,MatScalar,&dk,bs2,MatScalar,&uik,bs,MatScalar,&work);CHKERRQ(ierr);
+  ierr = PetscMalloc3(bs2,&dk,bs2,&uik,bs,&work);CHKERRQ(ierr);
   ierr = PetscMalloc(bs*sizeof(PetscInt),&pivots);CHKERRQ(ierr);
 
   ai = a->i; aj = a->j; aa = a->a;
@@ -893,7 +893,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat C,Mat A,const MatFactorIn
             row i of U */
   ierr = PetscMalloc(4*mbs*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,4*mbs*sizeof(MatScalar));CHKERRQ(ierr);
-  ierr = PetscMalloc2(mbs,PetscInt,&il,mbs,PetscInt,&jl);CHKERRQ(ierr);
+  ierr = PetscMalloc2(mbs,&il,mbs,&jl);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     jl[i] = mbs; il[0] = 0;
   }
@@ -1065,7 +1065,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat C,Mat A,c
             row i of U */
   ierr = PetscMalloc(4*mbs*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,4*mbs*sizeof(MatScalar));CHKERRQ(ierr);
-  ierr = PetscMalloc2(mbs,PetscInt,&il,mbs,PetscInt,&jl);CHKERRQ(ierr);
+  ierr = PetscMalloc2(mbs,&il,mbs,&jl);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     jl[i] = mbs; il[0] = 0;
   }
@@ -1219,7 +1219,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_inplace(Mat C,Mat A,const Mat
             jl(i) = mbs indicates the end of a list
      il(i): points to the first nonzero element in columns k,...,mbs-1 of
             row i of U */
-  ierr = PetscMalloc3(mbs,MatScalar,&rtmp,mbs,PetscInt,&il,mbs,PetscInt,&jl);CHKERRQ(ierr);
+  ierr = PetscMalloc3(mbs,&rtmp,mbs,&il,mbs,&jl);CHKERRQ(ierr);
 
   do {
     sctx.newshift = PETSC_FALSE;
@@ -1342,7 +1342,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,c
   MatScalar      d,*v;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc3(mbs,MatScalar,&rtmp,mbs,PetscInt,&il,mbs,PetscInt,&c2r);CHKERRQ(ierr);
+  ierr = PetscMalloc3(mbs,&rtmp,mbs,&il,mbs,&c2r);CHKERRQ(ierr);
 
   /* MatPivotSetUp(): initialize shift context sctx */
   ierr = PetscMemzero(&sctx,sizeof(FactorShiftCtx));CHKERRQ(ierr);
@@ -1497,7 +1497,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(Mat C
      il(i): points to the first nonzero element in U(i,k:mbs-1)
   */
   ierr = PetscMalloc(mbs*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
-  ierr = PetscMalloc2(mbs,PetscInt,&il,mbs,PetscInt,&jl);CHKERRQ(ierr);
+  ierr = PetscMalloc2(mbs,&il,mbs,&jl);CHKERRQ(ierr);
 
   do {
     sctx.newshift = PETSC_FALSE;

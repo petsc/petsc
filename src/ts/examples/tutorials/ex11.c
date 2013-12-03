@@ -1014,7 +1014,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
   if (numRoots >= 0) {
-    ierr = PetscMalloc2(numRoots,PetscInt,&newLocation,pEnd-pStart,PetscInt,&newRemoteLocation);CHKERRQ(ierr);
+    ierr = PetscMalloc2(numRoots,&newLocation,pEnd-pStart,&newRemoteLocation);CHKERRQ(ierr);
     for (l=0; l<numRoots; l++) newLocation[l] = l; /* + (l >= cEnd ? user->numGhostCells : 0); */
     ierr = PetscSFBcastBegin(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
@@ -1174,7 +1174,7 @@ static PetscErrorCode BuildLeastSquares(DM dm,PetscInt cEndInterior,DM dmFace,Pe
   ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetMaxSizes(dm,&maxNumFaces,NULL);CHKERRQ(ierr);
   ierr = PseudoInverseGetWorkRequired(maxNumFaces,&worksize);CHKERRQ(ierr);
-  ierr = PetscMalloc5(maxNumFaces*DIM,PetscScalar,&B,worksize,PetscScalar,&Binv,worksize,PetscScalar,&work,maxNumFaces,PetscScalar,&tau,maxNumFaces,PetscScalar*,&gref);CHKERRQ(ierr);
+  ierr = PetscMalloc5(maxNumFaces*DIM,&B,worksize,&Binv,worksize,&work,maxNumFaces,&tau,maxNumFaces,&gref);CHKERRQ(ierr);
   for (c=cStart; c<cEndInterior; c++) {
     const PetscInt *faces;
     PetscInt       numFaces,usedFaces,f,i,j;
@@ -2093,7 +2093,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     DM                dmCell;
     PetscReal         *fmin,*fmax,*fintegral,*ftmp;
     fcount = mod->maxComputed+1;
-    ierr   = PetscMalloc4(fcount,PetscReal,&fmin,fcount,PetscReal,&fmax,fcount,PetscReal,&fintegral,fcount,PetscReal,&ftmp);CHKERRQ(ierr);
+    ierr   = PetscMalloc4(fcount,&fmin,fcount,&fmax,fcount,&fintegral,fcount,&ftmp);CHKERRQ(ierr);
     for (i=0; i<fcount; i++) {
       fmin[i]      = PETSC_MAX_REAL;
       fmax[i]      = PETSC_MIN_REAL;
@@ -2246,7 +2246,7 @@ int main(int argc, char **argv)
 
     if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
     if (phys->dof <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
-    ierr = PetscMalloc3(phys->dof,PetscScalar,&user->work.flux,phys->dof,PetscScalar,&user->work.state0,phys->dof,PetscScalar,&user->work.state1);CHKERRQ(ierr);
+    ierr = PetscMalloc3(phys->dof,&user->work.flux,phys->dof,&user->work.state0,phys->dof,&user->work.state1);CHKERRQ(ierr);
     user->reconstruct = PETSC_FALSE;
     ierr = PetscOptionsBool("-ufv_reconstruct","Reconstruct gradients for a second order method (grows stencil)","",user->reconstruct,&user->reconstruct,NULL);CHKERRQ(ierr);
     user->RHSFunctionLocal = user->reconstruct ? RHSFunctionLocal_LS : RHSFunctionLocal_Upwind;

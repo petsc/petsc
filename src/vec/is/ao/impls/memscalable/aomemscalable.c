@@ -42,7 +42,7 @@ PetscErrorCode AOView_MemoryScalable(AO ao,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"Number of elements in ordering %D\n",ao->N);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,  "PETSc->App  App->PETSc\n");CHKERRQ(ierr);
 
-    ierr = PetscMalloc2(map->N,PetscInt,&app,map->N,PetscInt,&petsc);CHKERRQ(ierr);
+    ierr = PetscMalloc2(map->N,&app,map->N,&petsc);CHKERRQ(ierr);
     len  = map->n;
     /* print local AO */
     ierr = PetscViewerASCIIPrintf(viewer,"Process [%D]\n",rank);CHKERRQ(ierr);
@@ -120,7 +120,7 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /*  first count number of contributors to each processor */
-  ierr = PetscMalloc2(2*size,PetscInt,&nprocs,size,PetscInt,&start);CHKERRQ(ierr);
+  ierr = PetscMalloc2(2*size,&nprocs,size,&start);CHKERRQ(ierr);
   ierr = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscInt),&owner);CHKERRQ(ierr);
   ierr = PetscMemzero(owner,n*sizeof(PetscInt));CHKERRQ(ierr);
@@ -151,11 +151,11 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
   ierr = PetscObjectGetNewTag((PetscObject)ao,&tag1);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)ao,&tag2);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(nreceives*nmax,PetscInt,&rindices,nreceives,MPI_Request,&recv_waits);CHKERRQ(ierr);
-  ierr = PetscMalloc2(nsends*nmax,PetscInt,&rindices2,nsends,MPI_Request,&recv_waits2);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nreceives*nmax,&rindices,nreceives,&recv_waits);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nsends*nmax,&rindices2,nsends,&recv_waits2);CHKERRQ(ierr);
 
-  ierr = PetscMalloc3(n,PetscInt,&sindices,nsends,MPI_Request,&send_waits,nsends,MPI_Status,&send_status);CHKERRQ(ierr);
-  ierr = PetscMalloc3(n,PetscInt,&sindices2,nreceives,MPI_Request,&send_waits2,nreceives,MPI_Status,&send_status2);CHKERRQ(ierr);
+  ierr = PetscMalloc3(n,&sindices,nsends,&send_waits,nsends,&send_status);CHKERRQ(ierr);
+  ierr = PetscMalloc3(n,&sindices2,nreceives,&send_waits2,nreceives,&send_status2);CHKERRQ(ierr);
 
   /* post 1st receives: receive others requests
      since we don't know how long each individual message is we
@@ -337,8 +337,8 @@ PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const
 
   /* allocate arrays */
   ierr = PetscObjectGetNewTag((PetscObject)ao,&tag);CHKERRQ(ierr);
-  ierr = PetscMalloc2(nreceives*nmax,PetscInt,&rindices,nreceives,MPI_Request,&recv_waits);CHKERRQ(ierr);
-  ierr = PetscMalloc3(2*n,PetscInt,&sindices,nsends,MPI_Request,&send_waits,nsends,MPI_Status,&send_status);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nreceives*nmax,&rindices,nreceives,&recv_waits);CHKERRQ(ierr);
+  ierr = PetscMalloc3(2*n,&sindices,nsends,&send_waits,nsends,&send_status);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscInt),&start);CHKERRQ(ierr);
 
   /* post receives: */
@@ -429,7 +429,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
   ierr = PetscObjectGetComm((PetscObject)isapp,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = PetscMalloc2(size,PetscInt,&lens,size,PetscInt,&disp);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,&lens,size,&disp);CHKERRQ(ierr);
   ierr = ISGetLocalSize(isapp,&napp);CHKERRQ(ierr);
   ierr = MPI_Allgather(&napp, 1, MPIU_INT, lens, 1, MPIU_INT, comm);CHKERRQ(ierr);
 
@@ -463,7 +463,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
 
   /* create distributed indices app_loc: petsc->app and petsc_loc: app->petsc */
   n_local = map->n;
-  ierr    = PetscMalloc2(n_local,PetscInt, &aomems->app_loc,n_local,PetscInt,&aomems->petsc_loc);CHKERRQ(ierr);
+  ierr    = PetscMalloc2(n_local, &aomems->app_loc,n_local,&aomems->petsc_loc);CHKERRQ(ierr);
   ierr    = PetscLogObjectMemory((PetscObject)ao,2*n_local*sizeof(PetscInt));CHKERRQ(ierr);
   ierr    = PetscMemzero(aomems->app_loc,n_local*sizeof(PetscInt));CHKERRQ(ierr);
   ierr    = PetscMemzero(aomems->petsc_loc,n_local*sizeof(PetscInt));CHKERRQ(ierr);

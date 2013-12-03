@@ -559,7 +559,7 @@ PetscErrorCode TSARKIMEXRegister(TSARKIMEXType name,PetscInt order,PetscInt s,
   ierr     = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);
   t->order = order;
   t->s     = s;
-  ierr     = PetscMalloc6(s*s,PetscReal,&t->At,s,PetscReal,&t->bt,s,PetscReal,&t->ct,s*s,PetscReal,&t->A,s,PetscReal,&t->b,s,PetscReal,&t->c);CHKERRQ(ierr);
+  ierr     = PetscMalloc6(s*s,&t->At,s,&t->bt,s,&t->ct,s*s,&t->A,s,&t->b,s,&t->c);CHKERRQ(ierr);
   ierr     = PetscMemcpy(t->At,At,s*s*sizeof(At[0]));CHKERRQ(ierr);
   ierr     = PetscMemcpy(t->A,A,s*s*sizeof(A[0]));CHKERRQ(ierr);
   if (bt) { ierr = PetscMemcpy(t->bt,bt,s*sizeof(bt[0]));CHKERRQ(ierr); }
@@ -577,13 +577,13 @@ PetscErrorCode TSARKIMEXRegister(TSARKIMEXType name,PetscInt order,PetscInt s,
   /*def of FSAL can be made more precise*/
   t->FSAL_implicit = (PetscBool)(t->explicit_first_stage && t->stiffly_accurate);
   if (bembedt) {
-    ierr = PetscMalloc2(s,PetscReal,&t->bembedt,s,PetscReal,&t->bembed);CHKERRQ(ierr);
+    ierr = PetscMalloc2(s,&t->bembedt,s,&t->bembed);CHKERRQ(ierr);
     ierr = PetscMemcpy(t->bembedt,bembedt,s*sizeof(bembedt[0]));CHKERRQ(ierr);
     ierr = PetscMemcpy(t->bembed,bembed ? bembed : bembedt,s*sizeof(bembed[0]));CHKERRQ(ierr);
   }
 
   t->pinterp     = pinterp;
-  ierr           = PetscMalloc2(s*pinterp,PetscReal,&t->binterpt,s*pinterp,PetscReal,&t->binterp);CHKERRQ(ierr);
+  ierr           = PetscMalloc2(s*pinterp,&t->binterpt,s*pinterp,&t->binterp);CHKERRQ(ierr);
   ierr           = PetscMemcpy(t->binterpt,binterpt,s*pinterp*sizeof(binterpt[0]));CHKERRQ(ierr);
   ierr           = PetscMemcpy(t->binterp,binterp ? binterp : binterpt,s*pinterp*sizeof(binterpt[0]));CHKERRQ(ierr);
   link->next     = ARKTableauList;
@@ -876,7 +876,7 @@ static PetscErrorCode TSInterpolate_ARKIMEX(TS ts,PetscReal itime,Vec X)
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Invalid TSStepStatus");
   }
-  ierr = PetscMalloc2(s,PetscScalar,&bt,s,PetscScalar,&b);CHKERRQ(ierr);
+  ierr = PetscMalloc2(s,&bt,s,&b);CHKERRQ(ierr);
   for (i=0; i<s; i++) bt[i] = b[i] = 0;
   for (j=0,tt=t; j<pinterp; j++,tt*=t) {
     for (i=0; i<s; i++) {
@@ -907,7 +907,7 @@ static PetscErrorCode TSExtrapolate_ARKIMEX(TS ts,PetscReal c,Vec X)
   if (!Bt || !B) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSARKIMEX %s does not have an interpolation formula",ark->tableau->name);
   t = 1.0 + (ts->time_step/ts->time_step_prev)*c;
   h = ts->time_step;
-  ierr = PetscMalloc2(s,PetscScalar,&bt,s,PetscScalar,&b);CHKERRQ(ierr);
+  ierr = PetscMalloc2(s,&bt,s,&b);CHKERRQ(ierr);
   for (i=0; i<s; i++) bt[i] = b[i] = 0;
   for (j=0,tt=t; j<pinterp; j++,tt*=t) {
     for (i=0; i<s; i++) {

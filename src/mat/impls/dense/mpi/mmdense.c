@@ -113,7 +113,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
     if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"IScol is not sorted");
   }
 
-  ierr = PetscMalloc5(ismax,const PetscInt*,&irow,ismax,const PetscInt*,&icol,ismax,PetscInt,&nrow,ismax,PetscInt,&ncol,m,PetscInt,&rtable);CHKERRQ(ierr);
+  ierr = PetscMalloc5(ismax,&irow,ismax,&icol,ismax,&nrow,ismax,&ncol,m,&rtable);CHKERRQ(ierr);
   for (i=0; i<ismax; i++) {
     ierr = ISGetIndices(isrow[i],&irow[i]);CHKERRQ(ierr);
     ierr = ISGetIndices(iscol[i],&icol[i]);CHKERRQ(ierr);
@@ -129,7 +129,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
 
   /* evaluate communication - mesg to who,length of mesg, and buffer space
      required. Based on this, buffers are allocated, and data copied into them*/
-  ierr = PetscMalloc3(2*size,PetscInt,&w1,size,PetscInt,&w3,size,PetscInt,&w4);CHKERRQ(ierr);
+  ierr = PetscMalloc3(2*size,&w1,size,&w3,size,&w4);CHKERRQ(ierr);
   ierr = PetscMemzero(w1,size*2*sizeof(PetscInt));CHKERRQ(ierr); /* initialize work vector*/
   ierr = PetscMemzero(w3,size*sizeof(PetscInt));CHKERRQ(ierr); /* initialize work vector*/
   for (i=0; i<ismax; i++) {
@@ -179,7 +179,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   }
 
   /* Allocate Memory for outgoing messages */
-  ierr = PetscMalloc4(size,PetscInt*,&sbuf1,size,PetscInt*,&ptr,2*msz,PetscInt,&tmp,size,PetscInt,&ctr);CHKERRQ(ierr);
+  ierr = PetscMalloc4(size,&sbuf1,size,&ptr,2*msz,&tmp,size,&ctr);CHKERRQ(ierr);
   ierr = PetscMemzero(sbuf1,size*sizeof(PetscInt*));CHKERRQ(ierr);
   ierr = PetscMemzero(ptr,size*sizeof(PetscInt*));CHKERRQ(ierr);
   {

@@ -127,7 +127,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   maxClosureSize = 2*PetscMax(PetscPowInt(mesh->maxConeSize,depth+1),PetscPowInt(mesh->maxSupportSize,depth+1));
   maxAdjSize     = PetscPowInt(mesh->maxConeSize,depth+1) * PetscPowInt(mesh->maxSupportSize,depth+1) + 1;
 
-  ierr = PetscMalloc2(maxClosureSize,PetscInt,&tmpClosure,maxAdjSize,PetscInt,&tmpAdj);CHKERRQ(ierr);
+  ierr = PetscMalloc2(maxClosureSize,&tmpClosure,maxAdjSize,&tmpAdj);CHKERRQ(ierr);
 
   /*
    ** The bootstrapping process involves six rounds with similar structure of visiting neighbors of each point.
@@ -545,7 +545,7 @@ PetscErrorCode DMPlexPreallocateOperator_2(DM dm, PetscInt bs, PetscSection sect
   ierr    = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   npoints = pEnd - pStart;
 
-  ierr = PetscMalloc3(maxClosureSize,PetscInt,&tmpClosure,npoints,PetscInt,&lvisits,npoints,PetscInt,&visits);CHKERRQ(ierr);
+  ierr = PetscMalloc3(maxClosureSize,&tmpClosure,npoints,&lvisits,npoints,&visits);CHKERRQ(ierr);
   ierr = PetscMemzero(lvisits,(pEnd-pStart)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(visits,(pEnd-pStart)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
@@ -562,7 +562,7 @@ PetscErrorCode DMPlexPreallocateOperator_2(DM dm, PetscInt bs, PetscSection sect
   ierr = PetscSFGetRanks();CHKERRQ(ierr);
 
 
-  ierr = PetscMalloc2(maxClosureSize*maxClosureSize,PetscInt,&cellmat,npoints,PetscInt,&owner);CHKERRQ(ierr);
+  ierr = PetscMalloc2(maxClosureSize*maxClosureSize,&cellmat,npoints,&owner);CHKERRQ(ierr);
   for (c=cStart; c<cEnd; c++) {
     ierr = PetscMemzero(cellmat,maxClosureSize*maxClosureSize*sizeof(PetscInt));CHKERRQ(ierr);
     /*

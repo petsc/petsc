@@ -3973,8 +3973,8 @@ PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt depthSiz
   /* Communicate depthSizes for each remote rank */
   ierr = DMPlexCreateProcessSF(dm, sf, &processRanks, &sfProcess);CHKERRQ(ierr);
   ierr = ISGetLocalSize(processRanks, &numNeighbors);CHKERRQ(ierr);
-  ierr = PetscMalloc5((depth+1)*numNeighbors,PetscInt,&rdepthSize,numNeighbors,PetscInt,&rvStartNew,numNeighbors,PetscInt,&reStartNew,numNeighbors,PetscInt,&rfStartNew,numNeighbors,PetscInt,&rcStartNew);CHKERRQ(ierr);
-  ierr = PetscMalloc7(depth+1,PetscInt,&depthSizeOld,(depth+1)*numNeighbors,PetscInt,&rdepthSizeOld,(depth+1)*numNeighbors,PetscInt,&rdepthMaxOld,numNeighbors,PetscInt,&rvStart,numNeighbors,PetscInt,&reStart,numNeighbors,PetscInt,&rfStart,numNeighbors,PetscInt,&rcStart);CHKERRQ(ierr);
+  ierr = PetscMalloc5((depth+1)*numNeighbors,&rdepthSize,numNeighbors,&rvStartNew,numNeighbors,&reStartNew,numNeighbors,&rfStartNew,numNeighbors,&rcStartNew);CHKERRQ(ierr);
+  ierr = PetscMalloc7(depth+1,&depthSizeOld,(depth+1)*numNeighbors,&rdepthSizeOld,(depth+1)*numNeighbors,&rdepthMaxOld,numNeighbors,&rvStart,numNeighbors,&reStart,numNeighbors,&rfStart,numNeighbors,&rcStart);CHKERRQ(ierr);
   ierr = MPI_Type_contiguous(depth+1, MPIU_INT, &depthType);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&depthType);CHKERRQ(ierr);
   ierr = PetscSFBcastBegin(sfProcess, depthType, depthSize, rdepthSize);CHKERRQ(ierr);

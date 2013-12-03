@@ -42,7 +42,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
 
     ierr = PetscMalloc((Mbs+1)*sizeof(PetscInt),&nidx);CHKERRQ(ierr);
     ierr = PetscBTCreate(Mbs,&table);CHKERRQ(ierr); /* for column search */
-    ierr = PetscMalloc2(is_max+1,PetscBool,&allcolumns,is_max+1,PetscBool,&allrows);CHKERRQ(ierr);
+    ierr = PetscMalloc2(is_max+1,&allcolumns,is_max+1,&allrows);CHKERRQ(ierr);
 
     /* Create is_row */
     ierr = PetscMalloc(is_max*sizeof(IS **),&is_row);CHKERRQ(ierr);
@@ -199,7 +199,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
      step 3: table[i] - mark indices of is[i] when whose=MINE
              table[0] - mark incideces of is[] when whose=OTHER */
   len  = PetscMax(is_max, size);CHKERRQ(ierr);
-  ierr = PetscMalloc2(len,PetscBT,&table,(Mbs/PETSC_BITS_PER_BYTE+1)*len,char,&t_p);CHKERRQ(ierr);
+  ierr = PetscMalloc2(len,&table,(Mbs/PETSC_BITS_PER_BYTE+1)*len,&t_p);CHKERRQ(ierr);
   for (i=0; i<len; i++) {
     table[i] = t_p  + (Mbs/PETSC_BITS_PER_BYTE+1)*i;
   }
@@ -226,7 +226,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   ierr = PetscMalloc(size*sizeof(PetscInt*),&data1_start);CHKERRQ(ierr);
   for (i=0; i<size; i++) data1_start[i] = data1 + i*len;
 
-  ierr = PetscMalloc4(size,PetscInt,&len_s,size,PetscInt,&btable,size,PetscMPIInt,&iwork,size+1,PetscInt,&Bowners);CHKERRQ(ierr);
+  ierr = PetscMalloc4(size,&len_s,size,&btable,size,&iwork,size+1,&Bowners);CHKERRQ(ierr);
 
   /* gather c->garray from all processors */
   ierr = ISCreateGeneral(comm,Bnbs,c->garray,PETSC_COPY_VALUES,&garray_local);CHKERRQ(ierr);
@@ -317,7 +317,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   ierr = PetscGatherMessageLengths(comm,nrqs,nrqr,len_s,&id_r1,&len_r1);CHKERRQ(ierr);
 
   /*  Now  post the sends */
-  ierr = PetscMalloc2(size,MPI_Request,&s_waits1,size,MPI_Request,&s_waits2);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,&s_waits1,size,&s_waits2);CHKERRQ(ierr);
   k    = 0;
   for (proc_id=0; proc_id<size; proc_id++) {  /* send data1 to processor [proc_id] */
     if (len_s[proc_id]) {

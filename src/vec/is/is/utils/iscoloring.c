@@ -336,7 +336,7 @@ PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
         sums - total number of "previous" nodes for any particular partition
         starts - global number of first element in each partition on this processor
   */
-  ierr = PetscMalloc3(np,PetscInt,&lsizes,np,PetscInt,&starts,np,PetscInt,&sums);CHKERRQ(ierr);
+  ierr = PetscMalloc3(np,&lsizes,np,&starts,np,&sums);CHKERRQ(ierr);
   ierr = PetscMemzero(lsizes,np*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<n; i++) lsizes[indices[i]]++;
   ierr = MPI_Allreduce(lsizes,sums,np,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
@@ -489,7 +489,7 @@ PetscErrorCode  ISAllGather(IS is,IS *isout)
     ierr = ISStrideGetInfo(is,&first,&step);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,n,first,step,isout);CHKERRQ(ierr);
   } else {
-    ierr = PetscMalloc2(size,PetscMPIInt,&sizes,size,PetscMPIInt,&offsets);CHKERRQ(ierr);
+    ierr = PetscMalloc2(size,&sizes,size,&offsets);CHKERRQ(ierr);
 
     ierr       = PetscMPIIntCast(n,&nn);CHKERRQ(ierr);
     ierr       = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
@@ -546,7 +546,7 @@ PetscErrorCode  ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lind
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscMalloc2(size,PetscMPIInt,&sizes,size,PetscMPIInt,&offsets);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,&sizes,size,&offsets);CHKERRQ(ierr);
 
   ierr       = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
   offsets[0] = 0;

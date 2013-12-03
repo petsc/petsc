@@ -364,7 +364,7 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
       /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
       ierr = KSPSetFromOptions(jac->kspschur);CHKERRQ(ierr);
 
-      ierr     = PetscMalloc2(2,Vec,&jac->x,2,Vec,&jac->y);CHKERRQ(ierr);
+      ierr     = PetscMalloc2(2,&jac->x,2,&jac->y);CHKERRQ(ierr);
       ierr     = MatGetVecs(jac->pmat[0],&jac->x[0],&jac->y[0]);CHKERRQ(ierr);
       ierr     = MatGetVecs(jac->pmat[1],&jac->x[1],&jac->y[1]);CHKERRQ(ierr);
       ilink    = jac->head;

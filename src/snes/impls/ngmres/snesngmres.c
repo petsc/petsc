@@ -60,11 +60,7 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
     hsize = msize * msize;
 
     /* explicit least squares minimization solve */
-    ierr = PetscMalloc5(hsize,PetscScalar,&ngmres->h,
-                        msize,PetscScalar,&ngmres->beta,
-                        msize,PetscScalar,&ngmres->xi,
-                        msize,PetscReal, &ngmres->fnorms,
-                        hsize,PetscScalar,&ngmres->q);CHKERRQ(ierr);
+    ierr = PetscMalloc5(hsize,&ngmres->h, msize,&ngmres->beta, msize,&ngmres->xi, msize,&ngmres->fnorms, hsize,&ngmres->q);CHKERRQ(ierr);
     ierr = PetscMalloc(msize*sizeof(PetscReal),&ngmres->xnorms);CHKERRQ(ierr);
     ngmres->nrhs  = 1;
     ngmres->lda   = msize;

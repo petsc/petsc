@@ -33,7 +33,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,const M
   ierr = PetscOptionsGetInt(((PetscObject)A)->prefix,"-sol_ver",&sol_ver,NULL);CHKERRQ(ierr);
 
   /* generate work space needed by the factorization */
-  ierr = PetscMalloc2(bs2*n,MatScalar,&rtmp,bs2,MatScalar,&mwork);CHKERRQ(ierr);
+  ierr = PetscMalloc2(bs2*n,&rtmp,bs2,&mwork);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
@@ -148,7 +148,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
   ierr = PetscMemzero(rtmp,bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
 
   /* generate work space needed by dense LU factorization */
-  ierr = PetscMalloc3(bs,MatScalar,&v_work,bs2,MatScalar,&mwork,bs,PetscInt,&v_pivots);CHKERRQ(ierr);
+  ierr = PetscMalloc3(bs,&v_work,bs2,&mwork,bs,&v_pivots);CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
     /* zero rtmp */
@@ -267,7 +267,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_ilu0(Mat fact,Mat A,IS isrow,IS isco
   b    = (Mat_SeqBAIJ*)(fact)->data;
 
   /* allocate matrix arrays for new data structure */
-  ierr = PetscMalloc3(bs2*ai[n]+1,PetscScalar,&b->a,ai[n]+1,PetscInt,&b->j,n+1,PetscInt,&b->i);CHKERRQ(ierr);
+  ierr = PetscMalloc3(bs2*ai[n]+1,&b->a,ai[n]+1,&b->j,n+1,&b->i);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)fact,ai[n]*(bs2*sizeof(PetscScalar)+sizeof(PetscInt))+(n+1)*sizeof(PetscInt));CHKERRQ(ierr);
 
   b->singlemalloc    = PETSC_TRUE;
@@ -392,7 +392,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
   ierr     = PetscMalloc((n+1)*sizeof(PetscInt),&bdiag);CHKERRQ(ierr);
   bdiag[0] = 0;
 
-  ierr = PetscMalloc2(n,PetscInt*,&bj_ptr,n,PetscInt*,&bjlvl_ptr);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,&bj_ptr,n,&bjlvl_ptr);CHKERRQ(ierr);
 
   /* create a linked list for storing column indices of the active row */
   nlnk = n + 1;

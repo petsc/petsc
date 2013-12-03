@@ -505,9 +505,9 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
       1) starts[i] gives the starting index in svalues for stuff going to
          the ith processor
   */
-  ierr = PetscMalloc2(bs2*stash->n,PetscScalar,&svalues,2*(stash->n+1),PetscInt,&sindices);CHKERRQ(ierr);
+  ierr = PetscMalloc2(bs2*stash->n,&svalues,2*(stash->n+1),&sindices);CHKERRQ(ierr);
   ierr = PetscMalloc(2*nsends*sizeof(MPI_Request),&send_waits);CHKERRQ(ierr);
-  ierr = PetscMalloc2(size,PetscInt,&startv,size,PetscInt,&starti);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,&startv,size,&starti);CHKERRQ(ierr);
   /* use 2 sends the first with all_a, the next with all_i and all_j */
   startv[0] = 0; starti[0] = 0;
   for (i=1; i<size; i++) {

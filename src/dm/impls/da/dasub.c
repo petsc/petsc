@@ -223,7 +223,7 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_C
     if (gp >= xs && gp < xs+xm) flag = 1;
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Invalid direction");
 
-  ierr = PetscMalloc2(size,PetscInt,&owners,size,PetscMPIInt,&ranks);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,&owners,size,&ranks);CHKERRQ(ierr);
   ierr = MPI_Allgather(&flag,1,MPIU_INT,owners,1,MPIU_INT,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
   ict  = 0;
   ierr = PetscInfo2(da,"DMDAGetProcessorSubset: dim=%D, direction=%d, procs: ",dd->dim,(int)dir);CHKERRQ(ierr);
@@ -292,7 +292,7 @@ PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDADirection dir, MPI_Comm *subc
     firstPoint = xs;
   } else SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"Invalid direction");
 
-  ierr = PetscMalloc2(size, PetscInt, &firstPoints, size, PetscMPIInt, &subgroupRanks);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size, &firstPoints, size, &subgroupRanks);CHKERRQ(ierr);
   ierr = MPI_Allgather(&firstPoint, 1, MPIU_INT, firstPoints, 1, MPIU_INT, comm);CHKERRQ(ierr);
   ierr = PetscInfo2(da,"DMDAGetProcessorSubset: dim=%D, direction=%d, procs: ",dd->dim,(int)dir);CHKERRQ(ierr);
   for (p = 0; p < size; ++p) {

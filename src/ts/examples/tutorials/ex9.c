@@ -1572,8 +1572,8 @@ int main(int argc,char *argv[])
   ierr = DMDASetUniformCoordinates(da,ctx.xmin+0.5*(ctx.xmax-ctx.xmin)/Mx,ctx.xmax+0.5*(ctx.xmax-ctx.xmin)/Mx,0,0,0,0);CHKERRQ(ierr);
 
   /* Allocate work space for the Finite Volume solver (so it doesn't have to be reallocated on each function evaluation) */
-  ierr = PetscMalloc4(dof*dof,PetscScalar,&ctx.R,dof*dof,PetscScalar,&ctx.Rinv,2*dof,PetscScalar,&ctx.cjmpLR,1*dof,PetscScalar,&ctx.cslope);CHKERRQ(ierr);
-  ierr = PetscMalloc3(2*dof,PetscScalar,&ctx.uLR,dof,PetscScalar,&ctx.flux,dof,PetscReal,&ctx.speeds);CHKERRQ(ierr);
+  ierr = PetscMalloc4(dof*dof,&ctx.R,dof*dof,&ctx.Rinv,2*dof,&ctx.cjmpLR,1*dof,&ctx.cslope);CHKERRQ(ierr);
+  ierr = PetscMalloc3(2*dof,&ctx.uLR,dof,&ctx.flux,dof,&ctx.speeds);CHKERRQ(ierr);
 
   /* Create a vector to store the solution and to save the initial state */
   ierr = DMCreateGlobalVector(da,&X);CHKERRQ(ierr);

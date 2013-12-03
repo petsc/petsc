@@ -3013,7 +3013,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
   ci[0] = 0;
 
   /* Work arrays for rows of P^T*A */
-  ierr = PetscMalloc4(an,PetscInt,&ptadenserow,an,PetscInt,&ptasparserow,cn,PetscInt,&denserow,cn,PetscInt,&sparserow);CHKERRQ(ierr);
+  ierr = PetscMalloc4(an,&ptadenserow,an,&ptasparserow,cn,&denserow,cn,&sparserow);CHKERRQ(ierr);
   ierr = PetscMemzero(ptadenserow,an*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(denserow,cn*sizeof(PetscInt));CHKERRQ(ierr);
 
@@ -3136,7 +3136,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat C)
 
   PetscFunctionBegin;
   /* Allocate temporary array for storage of one row of A*P */
-  ierr = PetscMalloc3(cn,MatScalar,&apa,cn,PetscInt,&apj,cn,PetscInt,&apjdense);CHKERRQ(ierr);
+  ierr = PetscMalloc3(cn,&apa,cn,&apj,cn,&apjdense);CHKERRQ(ierr);
   ierr = PetscMemzero(apa,cn*sizeof(MatScalar));CHKERRQ(ierr);
   ierr = PetscMemzero(apj,cn*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(apjdense,cn*sizeof(PetscInt));CHKERRQ(ierr);
@@ -3328,7 +3328,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newtype,Mat
   PetscScalar    *vals,*ovals;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc2(A->rmap->n,PetscInt,&dnz,A->rmap->n,PetscInt,&onz);CHKERRQ(ierr);
+  ierr = PetscMalloc2(A->rmap->n,&dnz,A->rmap->n,&onz);CHKERRQ(ierr);
   for (i=0; i<A->rmap->n/dof; i++) {
     nmax  = PetscMax(nmax,AIJ->ilen[i]);
     onmax = PetscMax(onmax,OAIJ->ilen[i]);
@@ -3340,7 +3340,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newtype,Mat
   ierr = MatCreateAIJ(PetscObjectComm((PetscObject)A),A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N,0,dnz,0,onz,&B);CHKERRQ(ierr);
   ierr = PetscFree2(dnz,onz);CHKERRQ(ierr);
 
-  ierr   = PetscMalloc2(nmax,PetscInt,&icols,onmax,PetscInt,&oicols);CHKERRQ(ierr);
+  ierr   = PetscMalloc2(nmax,&icols,onmax,&oicols);CHKERRQ(ierr);
   rstart = dof*maij->A->rmap->rstart;
   cstart = dof*maij->A->cmap->rstart;
   garray = mpiaij->garray;

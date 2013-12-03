@@ -86,7 +86,7 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
     /* number of nonzeros in matrix has changed, so need new data structure */
     ierr    = MatSeqXAIJFreeAIJ(mat,&aij->a,&aij->j,&aij->i);CHKERRQ(ierr);
     aij->nz = nz;
-    ierr    = PetscMalloc3(aij->nz,PetscScalar,&aij->a,aij->nz,PetscInt,&aij->j,mat->rmap->n+1,PetscInt,&aij->i);CHKERRQ(ierr);
+    ierr    = PetscMalloc3(aij->nz,&aij->a,aij->nz,&aij->j,mat->rmap->n+1,&aij->i);CHKERRQ(ierr);
 
     aij->singlemalloc = PETSC_TRUE;
   }

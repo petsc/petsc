@@ -508,7 +508,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
     ierr = MatGetVecs(pc->pmat,&xtmp,NULL);CHKERRQ(ierr);
     ierr = PetscMalloc(nsplit*sizeof(Mat),&jac->pmat);CHKERRQ(ierr);
-    ierr = PetscMalloc2(nsplit,Vec,&jac->x,nsplit,Vec,&jac->y);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nsplit,&jac->x,nsplit,&jac->y);CHKERRQ(ierr);
     for (i=0; i<nsplit; i++) {
       MatNullSpace sp;
 

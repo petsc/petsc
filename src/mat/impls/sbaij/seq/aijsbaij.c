@@ -17,7 +17,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,Ma
 
   PetscFunctionBegin;
   /* compute rowlengths of newmat */
-  ierr = PetscMalloc2(m,PetscInt,&rowlengths,m+1,PetscInt,&rowstart);CHKERRQ(ierr);
+  ierr = PetscMalloc2(m,&rowlengths,m+1,&rowstart);CHKERRQ(ierr);
 
   for (i=0; i<mbs; i++) rowlengths[i*bs] = 0;
   aj = a->j;
@@ -184,7 +184,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,M
 
   PetscFunctionBegin;
   /* compute browlengths of newmat */
-  ierr = PetscMalloc2(mbs,PetscInt,&browlengths,mbs,PetscInt,&browstart);CHKERRQ(ierr);
+  ierr = PetscMalloc2(mbs,&browlengths,mbs,&browstart);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) browlengths[i] = 0;
   aj = a->j;
   for (i=0; i<mbs; i++) {

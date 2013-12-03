@@ -218,7 +218,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   nlnk = n + 1;
   ierr = PetscLLCreate(n,n,nlnk,lnk,lnkbt);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(n+1,PetscInt**,&bi_ptr,n+1,PetscInt,&im);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n+1,&bi_ptr,n+1,&im);CHKERRQ(ierr);
 
   /* initial FreeSpace size is f*(ai[n]+1) */
   f    = info->fill;
@@ -374,7 +374,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
   nlnk = n + 1;
   ierr = PetscLLCreate(n,n,nlnk,lnk,lnkbt);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(n+1,PetscInt**,&bi_ptr,n+1,PetscInt,&im);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n+1,&bi_ptr,n+1,&im);CHKERRQ(ierr);
 
   /* initial FreeSpace size is f*(ai[n]+1) */
   f             = info->fill;

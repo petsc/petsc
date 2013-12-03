@@ -143,8 +143,8 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
        IIint and IIsurf are the same as the Iint, Isurf except they are in the global numbering
   */
 #define Endpoint(a,start,b) (a == 0 || a == (b-1-start))
-  ierr = PetscMalloc3(N,PetscInt,&II,Nint,PetscInt,&Iint,Nsurf,PetscInt,&Isurf);CHKERRQ(ierr);
-  ierr = PetscMalloc2(Nint,PetscInt,&IIint,Nsurf,PetscInt,&IIsurf);CHKERRQ(ierr);
+  ierr = PetscMalloc3(N,&II,Nint,&Iint,Nsurf,&Isurf);CHKERRQ(ierr);
+  ierr = PetscMalloc2(Nint,&IIint,Nsurf,&IIsurf);CHKERRQ(ierr);
   for (k=0; k<p-kstart; k++) {
     for (j=0; j<n-jstart; j++) {
       for (i=0; i<m-istart; i++) {
@@ -424,8 +424,8 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
        IIint and IIsurf are the same as the Iint, Isurf except they are in the global numbering
   */
 #define Endpoint(a,start,b) (a == 0 || a == (b-1-start))
-  ierr = PetscMalloc3(N,PetscInt,&II,Nint,PetscInt,&Iint,Nsurf,PetscInt,&Isurf);CHKERRQ(ierr);
-  ierr = PetscMalloc2(Nint,PetscInt,&IIint,Nsurf,PetscInt,&IIsurf);CHKERRQ(ierr);
+  ierr = PetscMalloc3(N,&II,Nint,&Iint,Nsurf,&Isurf);CHKERRQ(ierr);
+  ierr = PetscMalloc2(Nint,&IIint,Nsurf,&IIsurf);CHKERRQ(ierr);
   for (k=0; k<p-kstart; k++) {
     for (j=0; j<n-jstart; j++) {
       for (i=0; i<m-istart; i++) {

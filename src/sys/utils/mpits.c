@@ -166,7 +166,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
   ierr     = MPI_Type_size(dtype,&unitbytes);CHKERRQ(ierr);
   ierr     = PetscMalloc(nrecvs*count*unitbytes,&fdata);CHKERRQ(ierr);
   tdata    = (char*)todata;
-  ierr     = PetscMalloc2(nto+nrecvs,MPI_Request,&reqs,nto+nrecvs,MPI_Status,&statuses);CHKERRQ(ierr);
+  ierr     = PetscMalloc2(nto+nrecvs,&reqs,nto+nrecvs,&statuses);CHKERRQ(ierr);
   sendreqs = reqs + nrecvs;
   for (i=0; i<nrecvs; i++) {
     ierr = MPI_Irecv((void*)(fdata+count*unitbytes*i),count,dtype,MPI_ANY_SOURCE,tag,comm,reqs+i);CHKERRQ(ierr);

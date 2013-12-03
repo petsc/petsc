@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
   ierr = PetscSNPrintf(fname,sizeof(fname),"%s.%d.graph.xyz",prefix,rank);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_SELF,fname,"r",&fp);CHKERRQ(ierr);
 
-  ierr = PetscMalloc3(ni*ndims,real_t,&xyz,ni,idx_t,&part,size,real_t,&tpwgts);CHKERRQ(ierr);
+  ierr = PetscMalloc3(ni*ndims,&xyz,ni,&part,size,&tpwgts);CHKERRQ(ierr);
 
   fread(xyz, sizeof(real_t), ndims*ni, fp);
   ierr = PetscFClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);

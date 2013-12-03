@@ -76,7 +76,7 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat,MatOrderingType typ
   ierr = MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot get rows for matrix");
 
-  ierr = PetscMalloc2(n,PetscInt,&lens,n,PetscInt,&permr);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,&lens,n,&permr);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     lens[i]  = ia[i+1] - ia[i];
     permr[i] = i;

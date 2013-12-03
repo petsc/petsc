@@ -517,8 +517,8 @@ static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
 
   /* Send leaf identities to roots */
   for (i=0,bas->itotal=0; i<bas->niranks; i++) bas->itotal += ilengths[i];
-  ierr = PetscMalloc2(bas->niranks+1,PetscInt,&bas->ioffset,bas->itotal,PetscInt,&bas->irootloc);CHKERRQ(ierr);
-  ierr = PetscMalloc2(bas->niranks,MPI_Request,&rootreqs,sf->nranks,MPI_Request,&leafreqs);CHKERRQ(ierr);
+  ierr = PetscMalloc2(bas->niranks+1,&bas->ioffset,bas->itotal,&bas->irootloc);CHKERRQ(ierr);
+  ierr = PetscMalloc2(bas->niranks,&rootreqs,sf->nranks,&leafreqs);CHKERRQ(ierr);
   bas->ioffset[0] = 0;
   for (i=0; i<bas->niranks; i++) {
     bas->ioffset[i+1] = bas->ioffset[i] + ilengths[i];
@@ -704,7 +704,7 @@ static PetscErrorCode PetscSFBasicGetPack(PetscSF sf,MPI_Datatype unit,const voi
   ierr = PetscSFBasicGetLeafInfo(sf,&nleafranks,NULL,&leafoffset,NULL);CHKERRQ(ierr);
   ierr = PetscNew(struct _n_PetscSFBasicPack,&link);CHKERRQ(ierr);
   ierr = PetscSFBasicPackTypeSetup(link,unit);CHKERRQ(ierr);
-  ierr = PetscMalloc2(rootoffset[nrootranks]*link->unitbytes,char,&link->root,leafoffset[nleafranks]*link->unitbytes,char,&link->leaf);CHKERRQ(ierr);
+  ierr = PetscMalloc2(rootoffset[nrootranks]*link->unitbytes,&link->root,leafoffset[nleafranks]*link->unitbytes,&link->leaf);CHKERRQ(ierr);
   ierr = PetscMalloc((nrootranks+nleafranks)*sizeof(MPI_Request),&link->requests);CHKERRQ(ierr);
 
 found:

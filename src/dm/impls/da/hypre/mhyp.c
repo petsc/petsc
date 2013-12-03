@@ -802,7 +802,7 @@ PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
       iupper[i]= ex->hbox.imax[i];
     }
 
-    ierr = PetscMalloc2(nvars*7,PetscInt,&entries,nvars*7*size,PetscScalar,&values);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nvars*7,&entries,nvars*7*size,&values);CHKERRQ(ierr);
     for (i= 0; i< nvars*7; i++) entries[i]= i;
     ierr = PetscMemzero(values,nvars*7*size*sizeof(PetscScalar));CHKERRQ(ierr);
 

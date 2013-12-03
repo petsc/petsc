@@ -112,7 +112,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
     ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
     ierr = PetscLayoutGetSize(layout, &N);CHKERRQ(ierr);
     /* Communicate all points to all processes */
-    ierr = PetscMalloc3(N*ctx->dim,PetscReal,&globalPoints,size,PetscMPIInt,&counts,size,PetscMPIInt,&displs);CHKERRQ(ierr);
+    ierr = PetscMalloc3(N*ctx->dim,&globalPoints,size,&counts,size,&displs);CHKERRQ(ierr);
     ierr = PetscLayoutGetRanges(layout, &ranges);CHKERRQ(ierr);
     for (p = 0; p < size; ++p) {
       counts[p] = (ranges[p+1] - ranges[p])*ctx->dim;
@@ -125,7 +125,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
     globalPoints = ctx->points;
   }
 #if 0
-  ierr = PetscMalloc3(N,PetscInt,&foundCells,N,PetscMPIInt,&foundProcs,N,PetscMPIInt,&globalProcs);CHKERRQ(ierr);
+  ierr = PetscMalloc3(N,&foundCells,N,&foundProcs,N,&globalProcs);CHKERRQ(ierr);
   /* foundCells[p] = m->locatePoint(&globalPoints[p*ctx->dim]); */
 #else
 #if defined(PETSC_USE_COMPLEX)
@@ -135,7 +135,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   globalPointsScalar = globalPoints;
 #endif
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, ctx->dim, N*ctx->dim, globalPointsScalar, &pointVec);CHKERRQ(ierr);
-  ierr = PetscMalloc2(N,PetscMPIInt,&foundProcs,N,PetscMPIInt,&globalProcs);CHKERRQ(ierr);
+  ierr = PetscMalloc2(N,&foundProcs,N,&globalProcs);CHKERRQ(ierr);
   ierr = DMLocatePoints(dm, pointVec, &cellIS);CHKERRQ(ierr);
   ierr = ISGetIndices(cellIS, &foundCells);CHKERRQ(ierr);
 #endif
@@ -232,7 +232,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Triangle_Private(DMInterpolatio
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc3(ctx->dim,PetscReal,&v0,ctx->dim*ctx->dim,PetscReal,&J,ctx->dim*ctx->dim,PetscReal,&invJ);CHKERRQ(ierr);
+  ierr = PetscMalloc3(ctx->dim,&v0,ctx->dim*ctx->dim,&J,ctx->dim*ctx->dim,&invJ);CHKERRQ(ierr);
   ierr = VecGetArray(ctx->coords, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
   for (p = 0; p < ctx->n; ++p) {
@@ -269,7 +269,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Tetrahedron_Private(DMInterpola
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc3(ctx->dim,PetscReal,&v0,ctx->dim*ctx->dim,PetscReal,&J,ctx->dim*ctx->dim,PetscReal,&invJ);CHKERRQ(ierr);
+  ierr = PetscMalloc3(ctx->dim,&v0,ctx->dim*ctx->dim,&J,ctx->dim*ctx->dim,&invJ);CHKERRQ(ierr);
   ierr = VecGetArray(ctx->coords, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
   for (p = 0; p < ctx->n; ++p) {

@@ -357,7 +357,7 @@ static PetscErrorCode KSPChebyshevComputeExtremeEigenvalues_Private(KSP kspest,P
 
   PetscFunctionBegin;
   ierr = KSPGetIterationNumber(kspest,&n);CHKERRQ(ierr);
-  ierr = PetscMalloc2(n,PetscReal,&re,n,PetscReal,&im);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,&re,n,&im);CHKERRQ(ierr);
   ierr = KSPComputeEigenvalues(kspest,n,re,im,&neig);CHKERRQ(ierr);
   min  = PETSC_MAX_REAL;
   max  = PETSC_MIN_REAL;

@@ -116,7 +116,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
 
   /* Now write the arrays. */
   tag  = ((PetscObject)viewer)->tag;
-  ierr = PetscMalloc2(maxnnodes*PetscMax(3,bs),PetscScalar,&array,maxnnodes*3,PetscScalar,&array2);CHKERRQ(ierr);
+  ierr = PetscMalloc2(maxnnodes*PetscMax(3,bs),&array,maxnnodes*3,&array2);CHKERRQ(ierr);
   for (r=0; r<size; r++) {
     MPI_Status status;
     PetscInt   xs=-1,xm=-1,ys=-1,ym=-1,zs=-1,zm=-1,nnodes = 0;
@@ -323,7 +323,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
 
   /* Now write the arrays. */
   tag  = ((PetscObject)viewer)->tag;
-  ierr = PetscMalloc2(PetscMax(maxnnodes*bs,info.xm+info.ym+info.zm),PetscScalar,&array,PetscMax(maxnnodes*3,info.xm+info.ym+info.zm),PetscScalar,&array2);CHKERRQ(ierr);
+  ierr = PetscMalloc2(PetscMax(maxnnodes*bs,info.xm+info.ym+info.zm),&array,PetscMax(maxnnodes*3,info.xm+info.ym+info.zm),&array2);CHKERRQ(ierr);
   for (r=0; r<size; r++) {
     MPI_Status status;
     PetscInt   xs=-1,xm=-1,ys=-1,ym=-1,zs=-1,zm=-1,nnodes = 0;

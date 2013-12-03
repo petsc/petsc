@@ -619,7 +619,7 @@ M*/
 #define MatPreallocateInitialize(comm,nrows,ncols,dnz,onz) 0; \
 { \
   PetscErrorCode _4_ierr; PetscInt __nrows = (nrows),__ctmp = (ncols),__rstart,__start,__end; \
-  _4_ierr = PetscMalloc2(__nrows,PetscInt,&dnz,__nrows,PetscInt,&onz);CHKERRQ(_4_ierr); \
+  _4_ierr = PetscMalloc2(__nrows,&dnz,__nrows,&onz);CHKERRQ(_4_ierr); \
   _4_ierr = PetscMemzero(dnz,__nrows*sizeof(PetscInt));CHKERRQ(_4_ierr);\
   _4_ierr = PetscMemzero(onz,__nrows*sizeof(PetscInt));CHKERRQ(_4_ierr); __start = 0; __end = __start; \
   _4_ierr = MPI_Scan(&__ctmp,&__end,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __start = __end - __ctmp;\

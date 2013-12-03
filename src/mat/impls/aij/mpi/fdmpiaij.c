@@ -453,7 +453,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     c->matentry2 = Jentry2;
   } else SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"htype is not supported");
 
-  ierr = PetscMalloc2(m+1,PetscInt,&rowhit,m+1,PetscScalar*,&valaddrhit);CHKERRQ(ierr);
+  ierr = PetscMalloc2(m+1,&rowhit,m+1,&valaddrhit);CHKERRQ(ierr);
   nz = 0;
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
   for (i=0; i<nis; i++) { /* for each local color */
@@ -472,7 +472,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     if (ctype == IS_COLORING_GLOBAL) {
       /* Determine nctot, the total (parallel) number of columns of this color */
       ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
-      ierr = PetscMalloc2(size,PetscMPIInt,&ncolsonproc,size,PetscMPIInt,&disp);CHKERRQ(ierr);
+      ierr = PetscMalloc2(size,&ncolsonproc,size,&disp);CHKERRQ(ierr);
 
       /* ncolsonproc[j]: local ncolumns on proc[j] of this color */
       ierr  = PetscMPIIntCast(n,&nn);CHKERRQ(ierr);

@@ -551,9 +551,9 @@ PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
 
   PetscFunctionBegin;
   ierr = KSPSetWorkVecs(ksp, 6+2*ell);CHKERRQ(ierr);
-  ierr = PetscMalloc5(ldMZ,PetscScalar,&AY0c,ldMZ,PetscScalar,&AYlc,ldMZ,PetscScalar,&AYtc,ldMZ*ldMZ,PetscScalar,&MZa,ldMZ*ldMZ,PetscScalar,&MZb);CHKERRQ(ierr);
+  ierr = PetscMalloc5(ldMZ,&AY0c,ldMZ,&AYlc,ldMZ,&AYtc,ldMZ*ldMZ,&MZa,ldMZ*ldMZ,&MZb);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(5*ell,&bcgsl->lwork);CHKERRQ(ierr);
-  ierr = PetscMalloc5(bcgsl->lwork,PetscScalar,&bcgsl->work,ell,PetscReal,&bcgsl->s,ell*ell,PetscScalar,&bcgsl->u,ell*ell,PetscScalar,&bcgsl->v,5*ell,PetscReal,&bcgsl->realwork);CHKERRQ(ierr);
+  ierr = PetscMalloc5(bcgsl->lwork,&bcgsl->work,ell,&bcgsl->s,ell*ell,&bcgsl->u,ell*ell,&bcgsl->v,5*ell,&bcgsl->realwork);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

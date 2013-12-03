@@ -1962,7 +1962,7 @@ static PetscErrorCode InferLocalCellConnectivity(PetscInt nnodes,PetscInt nedge,
   *iconn  = NULL;
   acell   = 100000;              /* allocate for this many cells */
   ierr    = PetscMalloc(acell*sizeof(*conn),&conn);CHKERRQ(ierr);
-  ierr    = PetscMalloc2(nnodes+1,PetscInt,&ui,nedge,PetscInt,&uj);CHKERRQ(ierr);
+  ierr    = PetscMalloc2(nnodes+1,&ui,nedge,&uj);CHKERRQ(ierr);
   ierr    = PetscMalloc(nnodes*sizeof(PetscInt),&utmp);CHKERRQ(ierr);
   ierr    = PetscMemzero(utmp,nnodes*sizeof(PetscInt));CHKERRQ(ierr);
   /* count the number of edges in the upper-triangular matrix u */
@@ -1990,7 +1990,7 @@ static PetscErrorCode InferLocalCellConnectivity(PetscInt nnodes,PetscInt nedge,
 
   /* Infer cells */
   ncell = 0;
-  ierr  = PetscMalloc3(rowmax,PetscInt,&tmp1,rowmax,PetscInt,&tmp2,rowmax,PetscInt,&tmp3);CHKERRQ(ierr);
+  ierr  = PetscMalloc3(rowmax,&tmp1,rowmax,&tmp2,rowmax,&tmp3);CHKERRQ(ierr);
   for (i=0; i<nnodes; i++) {
     node0 = i;
     ntmp1 = ui[node0+1] - ui[node0]; /* Number of candidates for node1 */
@@ -2066,7 +2066,7 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   /* Count the number of neighbors of each owned node */
   ierr    = MPI_Scan(&nnodesLoc,&rstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   rstart -= nnodesLoc;
-  ierr    = PetscMalloc2(nnodesLoc,PetscInt,&nodeEdgeCount,nnodesLoc,PetscInt,&nodeEdgeOffset);CHKERRQ(ierr);
+  ierr    = PetscMalloc2(nnodesLoc,&nodeEdgeCount,nnodesLoc,&nodeEdgeOffset);CHKERRQ(ierr);
   ierr    = PetscMemzero(nodeEdgeCount,nnodesLoc*sizeof(*nodeEdgeCount));CHKERRQ(ierr);
   for (i=0; i<nedgeLoc; i++) {
     GetEdge(grid->eptr,i,node0,node1);

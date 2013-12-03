@@ -400,7 +400,7 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],Petsc
   base = owners[rank];
 
   /*  wait on receives */
-  ierr  = PetscMalloc2(nrecvs,PetscInt,&lens,nrecvs,PetscInt,&source);CHKERRQ(ierr);
+  ierr  = PetscMalloc2(nrecvs,&lens,nrecvs,&source);CHKERRQ(ierr);
   count = nrecvs;
   slen  = 0;
   while (count) {
@@ -909,7 +909,7 @@ PetscErrorCode MatNorm_MPIDense(Mat A,NormType type,PetscReal *nrm)
       ierr = PetscLogFlops(2.0*mdn->A->cmap->n*mdn->A->rmap->n);CHKERRQ(ierr);
     } else if (type == NORM_1) {
       PetscReal *tmp,*tmp2;
-      ierr = PetscMalloc2(A->cmap->N,PetscReal,&tmp,A->cmap->N,PetscReal,&tmp2);CHKERRQ(ierr);
+      ierr = PetscMalloc2(A->cmap->N,&tmp,A->cmap->N,&tmp2);CHKERRQ(ierr);
       ierr = PetscMemzero(tmp,A->cmap->N*sizeof(PetscReal));CHKERRQ(ierr);
       ierr = PetscMemzero(tmp2,A->cmap->N*sizeof(PetscReal));CHKERRQ(ierr);
       *nrm = 0.0;
@@ -1576,7 +1576,7 @@ PetscErrorCode MatLoad_MPIDense(Mat newmat,PetscViewer viewer)
   rend   = rowners[rank+1];
 
   /* distribute row lengths to all processors */
-  ierr = PetscMalloc2(rend-rstart,PetscInt,&ourlens,rend-rstart,PetscInt,&offlens);CHKERRQ(ierr);
+  ierr = PetscMalloc2(rend-rstart,&ourlens,rend-rstart,&offlens);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscMalloc(M*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);

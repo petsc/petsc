@@ -325,7 +325,7 @@ PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
   /* Determine number of nonzero blocks for each block row */
   a    = (Mat_SeqAIJ*) tmpA->data;
   mbs  = m/bs;
-  ierr = PetscMalloc3(mbs,PetscInt,&lens,bs,PetscInt*,&ii,bs,PetscInt,&ilens);CHKERRQ(ierr);
+  ierr = PetscMalloc3(mbs,&lens,bs,&ii,bs,&ilens);CHKERRQ(ierr);
   ierr = PetscMemzero(lens,mbs*sizeof(PetscInt));CHKERRQ(ierr);
 
   for (i=0; i<mbs; i++) {
@@ -964,7 +964,7 @@ PetscErrorCode  MatBlockMatSetPreallocation_BlockMat(Mat A,PetscInt bs,PetscInt 
   ierr = VecCreateSeq(PETSC_COMM_SELF,bs,&bmat->left);CHKERRQ(ierr);
 
   if (!bmat->imax) {
-    ierr = PetscMalloc2(A->rmap->n,PetscInt,&bmat->imax,A->rmap->n,PetscInt,&bmat->ilen);CHKERRQ(ierr);
+    ierr = PetscMalloc2(A->rmap->n,&bmat->imax,A->rmap->n,&bmat->ilen);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)A,2*A->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);
   }
   if (nnz) {
@@ -980,7 +980,7 @@ PetscErrorCode  MatBlockMatSetPreallocation_BlockMat(Mat A,PetscInt bs,PetscInt 
 
   /* allocate the matrix space */
   ierr       = MatSeqXAIJFreeAIJ(A,(PetscScalar**)&bmat->a,&bmat->j,&bmat->i);CHKERRQ(ierr);
-  ierr       = PetscMalloc3(nz,Mat,&bmat->a,nz,PetscInt,&bmat->j,A->rmap->n+1,PetscInt,&bmat->i);CHKERRQ(ierr);
+  ierr       = PetscMalloc3(nz,&bmat->a,nz,&bmat->j,A->rmap->n+1,&bmat->i);CHKERRQ(ierr);
   ierr       = PetscLogObjectMemory((PetscObject)A,(A->rmap->n+1)*sizeof(PetscInt)+nz*(sizeof(PetscScalar)+sizeof(PetscInt)));CHKERRQ(ierr);
   bmat->i[0] = 0;
   for (i=1; i<bmat->mbs+1; i++) {

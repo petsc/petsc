@@ -150,7 +150,7 @@ static PetscErrorCode DMPlexShiftPoints_Internal(DM dm, PetscInt depthShift[], D
   if (depth < 0) PetscFunctionReturn(0);
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
   ierr = DMPlexGetMaxSizes(dmNew, &maxConeSizeNew, &maxSupportSizeNew);CHKERRQ(ierr);
-  ierr = PetscMalloc2(depth+1,PetscInt,&depthEnd,PetscMax(PetscMax(maxConeSize, maxSupportSize), PetscMax(maxConeSizeNew, maxSupportSizeNew)),PetscInt,&newpoints);CHKERRQ(ierr);
+  ierr = PetscMalloc2(depth+1,&depthEnd,PetscMax(PetscMax(maxConeSize, maxSupportSize), PetscMax(maxConeSizeNew, maxSupportSizeNew)),&newpoints);CHKERRQ(ierr);
   for (d = 0; d <= depth; ++d) {
     ierr = DMPlexGetDepthStratum(dm, d, NULL, &depthEnd[d]);CHKERRQ(ierr);
   }
@@ -267,7 +267,7 @@ static PetscErrorCode DMPlexShiftSF_Internal(DM dm, PetscInt depthShift[], DM dm
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
   if (numRoots >= 0) {
-    ierr = PetscMalloc2(numRoots,PetscInt,&newLocation,pEnd-pStart,PetscInt,&newRemoteLocation);CHKERRQ(ierr);
+    ierr = PetscMalloc2(numRoots,&newLocation,pEnd-pStart,&newRemoteLocation);CHKERRQ(ierr);
     for (l=0; l<numRoots; l++) newLocation[l] = DMPlexShiftPoint_Internal(l, depth, depthEnd, depthShift);
     ierr = PetscSFBcastBegin(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
@@ -583,8 +583,8 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
   depths[3] = 1;
   /* Count split points and add cohesive cells */
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
-  ierr = PetscMalloc3(depth+1,PetscInt,&depthShift,depth+1,PetscInt,&depthOffset,depth+1,PetscInt,&pMaxNew);CHKERRQ(ierr);
-  ierr = PetscMalloc7(depth+1,IS,&splitIS,depth+1,IS,&unsplitIS,depth+1,PetscInt,&numSplitPoints,depth+1,PetscInt,&numUnsplitPoints,depth+1,PetscInt,&numHybridPoints,depth+1,const PetscInt*,&splitPoints,depth+1,const PetscInt*,&unsplitPoints);CHKERRQ(ierr);
+  ierr = PetscMalloc3(depth+1,&depthShift,depth+1,&depthOffset,depth+1,&pMaxNew);CHKERRQ(ierr);
+  ierr = PetscMalloc7(depth+1,&splitIS,depth+1,&unsplitIS,depth+1,&numSplitPoints,depth+1,&numUnsplitPoints,depth+1,&numHybridPoints,depth+1,&splitPoints,depth+1,&unsplitPoints);CHKERRQ(ierr);
   ierr = PetscMemzero(depthShift,  (depth+1) * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(depthOffset, (depth+1) * sizeof(PetscInt));CHKERRQ(ierr);
   for (d = 0; d <= depth; ++d) {
@@ -723,7 +723,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
   ierr = DMSetUp(sdm);CHKERRQ(ierr);
   ierr = DMPlexShiftPoints_Internal(dm, depthShift, sdm);CHKERRQ(ierr);
   ierr = DMPlexGetMaxSizes(sdm, &maxConeSizeNew, &maxSupportSizeNew);CHKERRQ(ierr);
-  ierr = PetscMalloc3(PetscMax(maxConeSize, maxConeSizeNew)*3,PetscInt,&coneNew,PetscMax(maxConeSize, maxConeSizeNew)*3,PetscInt,&coneONew,PetscMax(maxSupportSize, maxSupportSizeNew),PetscInt,&supportNew);CHKERRQ(ierr);
+  ierr = PetscMalloc3(PetscMax(maxConeSize, maxConeSizeNew)*3,&coneNew,PetscMax(maxConeSize, maxConeSizeNew)*3,&coneONew,PetscMax(maxSupportSize, maxSupportSizeNew),&supportNew);CHKERRQ(ierr);
   /* Step 6: Set cones and supports for new points */
   for (dep = 0; dep <= depth; ++dep) {
     for (p = 0; p < numSplitPoints[dep]; ++p) {
@@ -1450,7 +1450,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   pSize = PetscMax(depth, dim) + 1;
-  ierr = PetscMalloc3(pSize,PetscInt,&pStart,pSize,PetscInt,&pEnd,pSize,PetscInt,&pMax);CHKERRQ(ierr);
+  ierr = PetscMalloc3(pSize,&pStart,pSize,&pEnd,pSize,&pMax);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, depth >= 0 ? &pMax[depth] : NULL, depth>1 ? &pMax[depth-1] : NULL, depth>2 ? &pMax[1] : NULL, &pMax[0]);CHKERRQ(ierr);
   for (d = 0; d <= depth; ++d) {
     ierr = DMPlexGetDepthStratum(dm, d, &pStart[d], &pEnd[d]);CHKERRQ(ierr);
@@ -1532,7 +1532,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel,
 
   PetscFunctionBegin;
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = PetscMalloc3(dim+1,PetscInt,&pStart,dim+1,PetscInt,&pEnd,dim+1,PetscInt,&pMax);CHKERRQ(ierr);
+  ierr = PetscMalloc3(dim+1,&pStart,dim+1,&pEnd,dim+1,&pMax);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &pMax[dim], dim>1 ? &pMax[dim-1] : NULL, dim > 2 ? &pMax[1] : NULL, &pMax[0]);CHKERRQ(ierr);
   for (d = 0; d <= dim; ++d) {
     ierr = DMPlexGetDepthStratum(dm, d, &pStart[d], &pEnd[d]);CHKERRQ(ierr);
@@ -1682,7 +1682,7 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Interpolated(DM dm, const char l
   ierr = DMPlexGetHeightStratum(dm, 0, NULL, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   if (cMax < 0) PetscFunctionReturn(0);
-  ierr = PetscMalloc2(dim+1,PetscInt,&pStart,dim+1,PetscInt,&pEnd);CHKERRQ(ierr);
+  ierr = PetscMalloc2(dim+1,&pStart,dim+1,&pEnd);CHKERRQ(ierr);
   for (d = 0; d <= dim; ++d) {ierr = DMPlexGetDepthStratum(dm, d, &pStart[d], &pEnd[d]);CHKERRQ(ierr);}
   for (c = cMax; c < cEnd; ++c) {
     const PetscInt *cone;
@@ -2321,7 +2321,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, DMLabel vertexLabe
   if (vertexLabel) {ierr = DMPlexMarkSubmesh_Interpolated(dm, vertexLabel, value, subpointMap, subdm);CHKERRQ(ierr);}
   /* Setup chart */
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = PetscMalloc4(dim+1,PetscInt,&numSubPoints,dim+1,PetscInt,&firstSubPoint,dim+1,IS,&subpointIS,dim+1,const PetscInt *,&subpoints);CHKERRQ(ierr);
+  ierr = PetscMalloc4(dim+1,&numSubPoints,dim+1,&firstSubPoint,dim+1,&subpointIS,dim+1,&subpoints);CHKERRQ(ierr);
   for (d = 0; d <= dim; ++d) {
     ierr = DMLabelGetStratumSize(subpointMap, d, &numSubPoints[d]);CHKERRQ(ierr);
     totSubPoints += numSubPoints[d];
@@ -2359,7 +2359,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, DMLabel vertexLabe
   ierr = DMSetUp(subdm);CHKERRQ(ierr);
   /* Set cones */
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc2(maxConeSize,PetscInt,&coneNew,maxConeSize,PetscInt,&coneONew);CHKERRQ(ierr);
+  ierr = PetscMalloc2(maxConeSize,&coneNew,maxConeSize,&coneONew);CHKERRQ(ierr);
   for (d = 0; d <= dim; ++d) {
     for (p = 0; p < numSubPoints[d]; ++p) {
       const PetscInt  point    = subpoints[d][p];
@@ -2636,7 +2636,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
     ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
     if (numRoots >= 0) {
       /* Only vertices should be shared */
-      ierr = PetscMalloc2(pEnd-pStart,PetscSFNode,&newLocalPoints,numRoots,PetscSFNode,&newOwners);CHKERRQ(ierr);
+      ierr = PetscMalloc2(pEnd-pStart,&newLocalPoints,numRoots,&newOwners);CHKERRQ(ierr);
       for (p = 0; p < pEnd-pStart; ++p) {
         newLocalPoints[p].rank  = -2;
         newLocalPoints[p].index = -2;
@@ -2717,7 +2717,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
   ierr = DMPlexMarkCohesiveSubmesh_Interpolated(dm, label, value, subpointMap, subdm);CHKERRQ(ierr);
   /* Setup chart */
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = PetscMalloc4(dim+1,PetscInt,&numSubPoints,dim+1,PetscInt,&firstSubPoint,dim+1,IS,&subpointIS,dim+1,const PetscInt *,&subpoints);CHKERRQ(ierr);
+  ierr = PetscMalloc4(dim+1,&numSubPoints,dim+1,&firstSubPoint,dim+1,&subpointIS,dim+1,&subpoints);CHKERRQ(ierr);
   for (d = 0; d <= dim; ++d) {
     ierr = DMLabelGetStratumSize(subpointMap, d, &numSubPoints[d]);CHKERRQ(ierr);
     totSubPoints += numSubPoints[d];
@@ -2755,7 +2755,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
   ierr = DMSetUp(subdm);CHKERRQ(ierr);
   /* Set cones */
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc2(maxConeSize,PetscInt,&coneNew,maxConeSize,PetscInt,&orntNew);CHKERRQ(ierr);
+  ierr = PetscMalloc2(maxConeSize,&coneNew,maxConeSize,&orntNew);CHKERRQ(ierr);
   for (d = 0; d <= dim; ++d) {
     for (p = 0; p < numSubPoints[d]; ++p) {
       const PetscInt  point    = subpoints[d][p];

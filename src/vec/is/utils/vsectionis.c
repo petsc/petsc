@@ -381,7 +381,7 @@ PetscErrorCode PetscSectionSetChart(PetscSection s, PetscInt pStart, PetscInt pE
 
   s->atlasLayout.pStart = pStart;
   s->atlasLayout.pEnd   = pEnd;
-  ierr = PetscMalloc2((pEnd - pStart), PetscInt, &s->atlasDof, (pEnd - pStart), PetscInt, &s->atlasOff);CHKERRQ(ierr);
+  ierr = PetscMalloc2((pEnd - pStart), &s->atlasDof, (pEnd - pStart), &s->atlasOff);CHKERRQ(ierr);
   ierr = PetscMemzero(s->atlasDof, (pEnd - pStart)*sizeof(PetscInt));CHKERRQ(ierr);
   for (f = 0; f < s->numFields; ++f) {
     ierr = PetscSectionSetChart(s->field[f], pStart, pEnd);CHKERRQ(ierr);
@@ -878,7 +878,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   nlocal = nroots;              /* The local/leaf space matches global/root space */
   /* Must allocate for all points visible to SF, which may be more than this section */
   if (nroots >= 0) {             /* nroots < 0 means that the graph has not been set, only happens in serial */
-    ierr = PetscMalloc2(nroots,PetscInt,&neg,nlocal,PetscInt,&recv);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nroots,&neg,nlocal,&recv);CHKERRQ(ierr);
     ierr = PetscMemzero(neg,nroots*sizeof(PetscInt));CHKERRQ(ierr);
   }
   /* Mark all local points with negative dof */
@@ -1773,7 +1773,7 @@ PetscErrorCode PetscSFConvertPartition(PetscSF sfPart, PetscSection partSection,
 
   /* Get the number of parts and sizes that I have to distribute */
   ierr = PetscSFGetGraph(sfPart,NULL,&numParts,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc2(numParts,PetscInt,&partSizes,numParts,PetscInt,&partOffsets);CHKERRQ(ierr);
+  ierr = PetscMalloc2(numParts,&partSizes,numParts,&partOffsets);CHKERRQ(ierr);
   for (p=0,numPoints=0; p<numParts; p++) {
     ierr = PetscSectionGetDof(partSection, p, &partSizes[p]);CHKERRQ(ierr);
     numPoints += partSizes[p];

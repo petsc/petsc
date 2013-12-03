@@ -671,7 +671,7 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
   bs   = v->map->bs;
   if (bs < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Input vector does not have a valid blocksize set");
 
-  ierr = PetscMalloc2(bs,PetscReal*,&y,bs,PetscInt,&bss);CHKERRQ(ierr);
+  ierr = PetscMalloc2(bs,&y,bs,&bss);CHKERRQ(ierr);
   nv   = 0;
   nvc  = 0;
   for (i=0; i<bs; i++) {
@@ -768,7 +768,7 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
   bs   = v->map->bs;
   if (bs < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Input vector does not have a valid blocksize set");
 
-  ierr = PetscMalloc2(bs,PetscScalar**,&y,bs,PetscInt,&bss);CHKERRQ(ierr);
+  ierr = PetscMalloc2(bs,&y,bs,&bss);CHKERRQ(ierr);
   nv   = 0;
   nvc  = 0;
   for (i=0; i<bs; i++) {
@@ -1424,7 +1424,7 @@ PetscErrorCode  VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e)
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject) vec), &size);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec, &m);CHKERRQ(ierr);
   ierr = VecGetArray(vec, &v);CHKERRQ(ierr);
-  ierr = PetscMalloc2(m,PetscScalar,&tmp,size,PetscMPIInt,&N);CHKERRQ(ierr);
+  ierr = PetscMalloc2(m,&tmp,size,&N);CHKERRQ(ierr);
   for (i = 0, j = 0, l = 0; i < m; ++i) {
     /* Can speed this up with sorting */
     for (j = 0; j < l; ++j) {
@@ -1440,7 +1440,7 @@ PetscErrorCode  VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e)
   for (p = 0, ng = 0; p < size; ++p) {
     ng += N[p];
   }
-  ierr = PetscMalloc2(ng,PetscScalar,&vals,size+1,PetscMPIInt,&displs);CHKERRQ(ierr);
+  ierr = PetscMalloc2(ng,&vals,size+1,&displs);CHKERRQ(ierr);
   for (p = 1, displs[0] = 0; p <= size; ++p) {
     displs[p] = displs[p-1] + N[p-1];
   }

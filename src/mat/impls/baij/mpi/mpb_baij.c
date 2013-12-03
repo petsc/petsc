@@ -81,7 +81,7 @@ PetscErrorCode  MatGetMultiProcBlock_MPIBAIJ(Mat mat, MPI_Comm subComm, MatReuse
   }
 
   /* Now traverse aij->B and insert values into subMat */
-  ierr = PetscMalloc3(bs,PetscInt,&newbRow,bs,PetscInt,&newbCol,bs*bs,PetscScalar,&vals);CHKERRQ(ierr);
+  ierr = PetscMalloc3(bs,&newbRow,bs,&newbCol,bs*bs,&vals);CHKERRQ(ierr);
   for (i=0; i<aij->B->rmap->n/bs; i++) {
     newRow = (*subMat)->rmap->range[subCommRank] + i*bs;
     for (j=aijB->i[i]; j<aijB->i[i+1]; j++) {
