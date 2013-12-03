@@ -51,6 +51,20 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
   if (faces) {ierr = DMGetWorkArray(dm, PetscSqr(PetscMax(maxConeSize, maxSupportSize)), PETSC_INT, &facesTmp);CHKERRQ(ierr);}
   switch (dim) {
+  case 1:
+    switch (coneSize) {
+    case 2:
+      if (faces) {
+        facesTmp[0] = cone[0]; facesTmp[1] = cone[1];
+        *faces = facesTmp;
+      }
+      if (numFaces) *numFaces         = 2;
+      if (faceSize) *faceSize         = 1;
+      break;
+    default:
+      SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone size %D not supported for dimension %D", coneSize, dim);
+    }
+    break;
   case 2:
     switch (coneSize) {
     case 3:
