@@ -113,6 +113,15 @@ PETSC_STATIC_INLINE PetscInt GetTriSubfaceInverse_Static(PetscInt o, PetscInt s)
   return (o < 0 ? 3-(o+s) : 3+s-o)%3;
 }
 
+/* I HAVE NO IDEA: Return ??? for orientation o, if it is r for o == 0 */
+PETSC_STATIC_INLINE PetscInt GetTetSomething_Static(PetscInt o, PetscInt r) {
+  return (o < 0 ? 1-(o+r) : o+r)%3;
+}
+PETSC_STATIC_INLINE PetscInt GetTetSomethingInverse_Static(PetscInt o, PetscInt s) {
+  return (o < 0 ? 1-(o+s) : 3+s-o)%3;
+}
+
+
 /* Return quad edge for orientation o, if it is r for o == 0 */
 PETSC_STATIC_INLINE PetscInt GetQuadEdge_Static(PetscInt o, PetscInt r) {
   return (o < 0 ? 3-(o+r) : o+r)%4;
@@ -385,7 +394,7 @@ PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscInt dept
           ierr = DMPlexGetConeOrientation(dm, support[s], &ornt);CHKERRQ(ierr);
           for (c = 0; c < coneSize; ++c) {if (cone[c] == f) break;}
           /* Here we want to determine whether edge newp contains a vertex which is part of the cross-tet edge */
-          er = ornt[c] < 0 ? (-(ornt[c]+1) + 2-r)%3 : (ornt[c] + r)%3;
+          er   = GetTetSomethingInverse_Static(ornt[c], r) /*ornt[c] < 0 ? (1-(ornt[c]+r))%3 : (ornt[c] + r)%3 */;
           if (er == eint[c]) {
             intFaces += 1;
           } else {
@@ -2017,7 +2026,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
           ierr = DMPlexGetConeOrientation(dm, support[s], &ornt);CHKERRQ(ierr);
           for (c = 0; c < coneSize; ++c) {if (cone[c] == f) break;}
           /* Here we want to determine whether edge newp contains a vertex which is part of the cross-tet edge */
-          er   = ornt[c] < 0 ? (-(ornt[c]+1) + 2-r)%3 : (ornt[c] + r)%3;
+          er   = GetTetSomethingInverse_Static(ornt[c], r) /*ornt[c] < 0 ? (1-(ornt[c]+r))%3 : (ornt[c] + r)%3 */;
           if (er == eint[c]) {
             supportRef[2+intFaces++] = fStartNew + (fEnd - fStart)*4 + (support[s] - cStart)*8 + (c + 2)%4;
           } else {
