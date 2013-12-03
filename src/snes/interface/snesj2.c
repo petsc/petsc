@@ -55,6 +55,7 @@ PetscErrorCode  SNESComputeJacobianDefaultColor(SNES snes,Vec x1,Mat *J,Mat *B,M
   if (!color) {
     ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
     ierr = DMHasColoring(dm,&hascolor);CHKERRQ(ierr);
+    matcolor = PETSC_FALSE;
     ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_fd_color_use_mat",&matcolor,NULL);CHKERRQ(ierr);
     if (hascolor && !matcolor) {
       ierr = DMCreateColoring(dm,IS_COLORING_GLOBAL,&iscoloring);CHKERRQ(ierr);
