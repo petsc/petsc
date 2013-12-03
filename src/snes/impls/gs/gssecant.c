@@ -111,9 +111,9 @@ PETSC_EXTERN PetscErrorCode SNESComputeGSDefaultSecant(SNES snes,Vec X,Vec B,voi
         } else {
           d = x;
         }
-        dxt += (d-x)*(d-x);
-        xt += x*x;
-        ft += f*f;
+        dxt += PetscRealPart(PetscSqr(d-x));
+        xt += PetscRealPart(PetscSqr(x));
+        ft += PetscRealPart(PetscSqr(f));
         xa[idx[j]-s] = d;
       }
 
