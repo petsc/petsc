@@ -11,6 +11,13 @@ typedef struct {
 } VecAssemblyHeader;
 
 typedef struct {
+  PetscInt *ints;
+  PetscInt *intb;
+  PetscScalar *scalars;
+  PetscScalar *scalarb;
+} VecAssemblyFrame;
+
+typedef struct {
   VECHEADER
   PetscInt    nghost;                   /* length of local portion including ghost padding */
   Vec         localrep;                 /* local representation of vector */
@@ -21,14 +28,10 @@ typedef struct {
   PetscMPIInt *sendranks;
   PetscMPIInt *recvranks;
   VecAssemblyHeader *sendhdr,*recvhdr;
-  struct {                      /* Pointers for the main messages */
-    PetscInt *ints;
-    PetscInt *intb;
-    PetscScalar *scalars;
-    PetscScalar *scalarb;
-  } *sendptrs;
+  VecAssemblyFrame *sendptrs;   /* pointers to the main messages */
   PetscSegBuffer segrecvint;
   PetscSegBuffer segrecvscalar;
+  PetscSegBuffer segrecvframe;
 } Vec_MPI;
 
 PETSC_INTERN PetscErrorCode VecMDot_MPI(Vec,PetscInt,const Vec[],PetscScalar*);

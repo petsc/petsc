@@ -124,21 +124,23 @@ static PetscErrorCode VecAssemblyRecv_MPI_Private(MPI_Comm comm,const PetscMPIIn
   Vec_MPI *x = (Vec_MPI*)X->data;
   VecAssemblyHeader *hdr = (VecAssemblyHeader*)rdata;
   PetscErrorCode ierr;
-  PetscInt *rint,bs = X->map->bs;
-  PetscScalar *rscalar;
+  PetscInt bs = X->map->bs;
+  VecAssemblyFrame *frame;
 
   PetscFunctionBegin;
-  ierr = PetscSegBufferGet(x->segrecvint,hdr->count,&rint);CHKERRQ(ierr);
-  ierr = MPI_Irecv(rint,hdr->count,MPIU_INT,rank,tag[0],comm,&req[0]);CHKERRQ(ierr);
+  ierr = PetscSegBufferGet(x->segrecvframe,1,&frame);CHKERRQ(ierr);
 
-  ierr = PetscSegBufferGet(x->segrecvint,hdr->bcount,&rint);CHKERRQ(ierr);
-  ierr = MPI_Irecv(rint,hdr->bcount,MPIU_INT,rank,tag[1],comm,&req[1]);CHKERRQ(ierr);
+  ierr = PetscSegBufferGet(x->segrecvint,hdr->count,&frame->ints);CHKERRQ(ierr);
+  ierr = MPI_Irecv(frame->ints,hdr->count,MPIU_INT,rank,tag[0],comm,&req[0]);CHKERRQ(ierr);
 
-  ierr = PetscSegBufferGet(x->segrecvscalar,hdr->count,&rscalar);CHKERRQ(ierr);
-  ierr = MPI_Irecv(rscalar,hdr->count,MPIU_SCALAR,rank,tag[2],comm,&req[2]);CHKERRQ(ierr);
+  ierr = PetscSegBufferGet(x->segrecvint,hdr->bcount,&frame->intb);CHKERRQ(ierr);
+  ierr = MPI_Irecv(frame->intb,hdr->bcount,MPIU_INT,rank,tag[1],comm,&req[1]);CHKERRQ(ierr);
 
-  ierr = PetscSegBufferGet(x->segrecvscalar,hdr->bcount*bs,&rscalar);CHKERRQ(ierr);
-  ierr = MPI_Irecv(rscalar,hdr->bcount*bs,MPIU_SCALAR,rank,tag[3],comm,&req[3]);CHKERRQ(ierr);
+  ierr = PetscSegBufferGet(x->segrecvscalar,hdr->count,&frame->scalars);CHKERRQ(ierr);
+  ierr = MPI_Irecv(frame->scalars,hdr->count,MPIU_SCALAR,rank,tag[2],comm,&req[2]);CHKERRQ(ierr);
+
+  ierr = PetscSegBufferGet(x->segrecvscalar,hdr->bcount*bs,&frame->scalarb);CHKERRQ(ierr);
+  ierr = MPI_Irecv(frame->scalarb,hdr->bcount*bs,MPIU_SCALAR,rank,tag[3],comm,&req[3]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -190,6 +192,7 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
 
   if (!x->segrecvint) {ierr = PetscSegBufferCreate(sizeof(PetscInt),1000,&x->segrecvint);CHKERRQ(ierr);}
   if (!x->segrecvscalar) {ierr = PetscSegBufferCreate(sizeof(PetscScalar),1000,&x->segrecvscalar);CHKERRQ(ierr);}
+  if (!x->segrecvframe) {ierr = PetscSegBufferCreate(sizeof(VecAssemblyFrame),50,&x->segrecvframe);CHKERRQ(ierr);}
   ierr = PetscCommBuildTwoSidedF(comm,3,MPIU_INT,x->nsendranks,x->sendranks,(PetscInt*)x->sendhdr,&x->nrecvranks,&x->recvranks,&x->recvhdr,4,VecAssemblySend_MPI_Private,VecAssemblyRecv_MPI_Private,X);CHKERRQ(ierr);
 
   {
@@ -207,20 +210,22 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
 static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
 {
   Vec_MPI *x = (Vec_MPI*)X->data;
-  PetscInt *recvint,bs = X->map->bs,i,j,k;
-  PetscScalar *recvscalar,*xarray;
+  PetscInt bs = X->map->bs,i,j,k;
+  PetscScalar *xarray;
   PetscErrorCode ierr;
+  VecAssemblyFrame *frame;
 
   PetscFunctionBegin;
   if (X->stash.donotstash) PetscFunctionReturn(0);
 
   ierr = VecGetArray(X,&xarray);CHKERRQ(ierr);
-  ierr = PetscSegBufferExtractInPlace(x->segrecvint,&recvint);CHKERRQ(ierr);
-  ierr = PetscSegBufferExtractInPlace(x->segrecvscalar,&recvscalar);CHKERRQ(ierr);
+  ierr = PetscSegBufferExtractInPlace(x->segrecvframe,&frame);CHKERRQ(ierr);
   for (i=0; i<x->nrecvranks; i++) {
     InsertMode imode = x->recvhdr[i].insertmode;
+    PetscInt *recvint;
+    PetscScalar *recvscalar;
     /* Unpack scalar stash */
-    for (j=0; j<x->recvhdr[i].count; j++,recvint++) {
+    for (j=0,recvint=frame[i].ints,recvscalar=frame[i].scalars; j<x->recvhdr[i].count; j++,recvint++) {
       PetscInt loc = *recvint - X->map->rstart;
       if (*recvint < X->map->rstart || X->map->rend <= *recvint) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Received vector entry %D out of local range [%D,%D)]",*recvint,X->map->rstart,X->map->rend);
       switch (imode) {
@@ -234,7 +239,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
       }
     }
     /* Unpack block stash */
-    for (j=0; j<x->recvhdr[i].bcount; j++,recvint++) {
+    for (j=0,recvint=frame[i].intb,recvscalar=frame[i].scalarb; j<x->recvhdr[i].bcount; j++,recvint++) {
       PetscInt loc = (*recvint)*bs - X->map->rstart;
       switch (imode) {
       case ADD_VALUES:
@@ -255,6 +260,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
   ierr = PetscFree(x->sendptrs);CHKERRQ(ierr);
   ierr = PetscSegBufferDestroy(&x->segrecvint);CHKERRQ(ierr);
   ierr = PetscSegBufferDestroy(&x->segrecvscalar);CHKERRQ(ierr);
+  ierr = PetscSegBufferDestroy(&x->segrecvframe);CHKERRQ(ierr);
   X->stash.insertmode = NOT_SET_VALUES;
 
   ierr = VecStashScatterEnd_Private(&X->stash);CHKERRQ(ierr);
