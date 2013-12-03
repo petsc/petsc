@@ -184,7 +184,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_CP(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr     = PetscNewLog(pc,PC_CP,&cp);CHKERRQ(ierr);
+  ierr     = PetscNewLog(pc,&cp);CHKERRQ(ierr);
   pc->data = (void*)cp;
 
   pc->ops->apply           = PCApply_CP;

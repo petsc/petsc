@@ -218,7 +218,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
   }
   
   /* create struct Mat_PtAPMPI and attached it to C later */
-  ierr = PetscNew(Mat_PtAPMPI,&ptap);CHKERRQ(ierr);
+  ierr = PetscNew(&ptap);CHKERRQ(ierr);
 
   /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
   ierr = MatGetBrowsOfAoCols_MPIAIJ(A,P,MAT_INITIAL_MATRIX,&ptap->startsj_s,&ptap->startsj_r,&ptap->bufa,&ptap->P_oth);CHKERRQ(ierr);
@@ -409,7 +409,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
 
   (*C)->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIDense;
 
-  ierr = PetscNew(MPIAIJ_MPIDense,&contents);CHKERRQ(ierr);
+  ierr = PetscNew(&contents);CHKERRQ(ierr);
   /* Create work matrix used to store off processor rows of B needed for local product */
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,nz,B->cmap->N,NULL,&contents->workB);CHKERRQ(ierr);
   /* Create work arrays needed */
@@ -671,7 +671,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   /* create struct Mat_PtAPMPI and attached it to C later */
-  ierr = PetscNew(Mat_PtAPMPI,&ptap);CHKERRQ(ierr);
+  ierr = PetscNew(&ptap);CHKERRQ(ierr);
 
   /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
   ierr = MatGetBrowsOfAoCols_MPIAIJ(A,P,MAT_INITIAL_MATRIX,&ptap->startsj_s,&ptap->startsj_r,&ptap->bufa,&ptap->P_oth);CHKERRQ(ierr);
@@ -1074,7 +1074,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   /* create struct Mat_PtAPMPI and attached it to C later */
-  ierr = PetscNew(Mat_PtAPMPI,&ptap);CHKERRQ(ierr);
+  ierr = PetscNew(&ptap);CHKERRQ(ierr);
 
   /* get A_loc by taking all local rows of A */
   ierr = MatMPIAIJGetLocalMat(A,MAT_INITIAL_MATRIX,&A_loc);CHKERRQ(ierr);
@@ -1148,7 +1148,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
   /* send j-array (coj) of Co to other processors */
   /*----------------------------------------------*/
   /* determine row ownership */
-  ierr = PetscNew(Mat_Merge_SeqsToMPI,&merge);CHKERRQ(ierr);
+  ierr = PetscNew(&merge);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&merge->rowmap);CHKERRQ(ierr);
 
   merge->rowmap->n  = pn;
@@ -1581,7 +1581,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   /* create struct Mat_PtAPMPI and attached it to C later */
-  ierr = PetscNew(Mat_PtAPMPI,&ptap);CHKERRQ(ierr);
+  ierr = PetscNew(&ptap);CHKERRQ(ierr);
 
   /* get A_loc by taking all local rows of A */
   ierr = MatMPIAIJGetLocalMat(A,MAT_INITIAL_MATRIX,&A_loc);CHKERRQ(ierr);
@@ -1655,7 +1655,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   /* send j-array (coj) of Co to other processors */
   /*----------------------------------------------*/
   /* determine row ownership */
-  ierr = PetscNew(Mat_Merge_SeqsToMPI,&merge);CHKERRQ(ierr);
+  ierr = PetscNew(&merge);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&merge->rowmap);CHKERRQ(ierr);
 
   merge->rowmap->n  = pn;

@@ -188,7 +188,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr     = PetscNewLog(A,Mat_MPIMAIJ,&b);CHKERRQ(ierr);
+  ierr     = PetscNewLog(A,&b);CHKERRQ(ierr);
   A->data  = (void*)b;
 
   ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);

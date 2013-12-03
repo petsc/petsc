@@ -240,7 +240,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LCD(KSP ksp)
   KSP_LCD        *lcd;
 
   PetscFunctionBegin;
-  ierr         = PetscNewLog(ksp,KSP_LCD,&lcd);CHKERRQ(ierr);
+  ierr         = PetscNewLog(ksp,&lcd);CHKERRQ(ierr);
   ksp->data    = (void*)lcd;
   ierr         = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   lcd->restart = 30;

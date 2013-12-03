@@ -200,7 +200,7 @@ PetscErrorCode  MatCreateLocalRef(Mat A,IS isrow,IS iscol,Mat *newmat)
 
   B->ops->destroy = MatDestroy_LocalRef;
 
-  ierr    = PetscNewLog(B,Mat_LocalRef,&lr);CHKERRQ(ierr);
+  ierr    = PetscNewLog(B,&lr);CHKERRQ(ierr);
   B->data = (void*)lr;
 
   ierr = PetscObjectTypeCompare((PetscObject)A,MATLOCALREF,&islr);CHKERRQ(ierr);

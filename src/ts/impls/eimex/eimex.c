@@ -656,7 +656,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS ts)
   ts->ops->snesfunction   = SNESTSFormFunction_EIMEX;
   ts->ops->snesjacobian   = SNESTSFormJacobian_EIMEX;
 
-  ierr = PetscNewLog(ts,TS_EIMEX,&ext);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&ext);CHKERRQ(ierr);
   ts->data = (void*)ext;
 
   ext->ord_adapt = PETSC_FALSE; /* By default, no order adapativity */

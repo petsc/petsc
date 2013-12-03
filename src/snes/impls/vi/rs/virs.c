@@ -220,7 +220,7 @@ PetscErrorCode  DMSetVI(DM dm,IS inactive)
   if (!isnes) {
     ierr = PetscContainerCreate(PetscObjectComm((PetscObject)dm),&isnes);CHKERRQ(ierr);
     ierr = PetscContainerSetUserDestroy(isnes,(PetscErrorCode (*)(void*))DMDestroy_SNESVI);CHKERRQ(ierr);
-    ierr = PetscNew(DM_SNESVI,&dmsnesvi);CHKERRQ(ierr);
+    ierr = PetscNew(&dmsnesvi);CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(isnes,(void*)dmsnesvi);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)dm,"VI",(PetscObject)isnes);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&isnes);CHKERRQ(ierr);
@@ -797,7 +797,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONRSLS(SNES snes)
   snes->usesksp = PETSC_TRUE;
   snes->usespc  = PETSC_FALSE;
 
-  ierr                = PetscNewLog(snes,SNES_VINEWTONRSLS,&vi);CHKERRQ(ierr);
+  ierr                = PetscNewLog(snes,&vi);CHKERRQ(ierr);
   snes->data          = (void*)vi;
   vi->checkredundancy = NULL;
 

@@ -603,7 +603,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SPAI(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr     = PetscNewLog(pc,PC_SPAI,&ispai);CHKERRQ(ierr);
+  ierr     = PetscNewLog(pc,&ispai);CHKERRQ(ierr);
   pc->data = ispai;
 
   pc->ops->destroy         = PCDestroy_SPAI;

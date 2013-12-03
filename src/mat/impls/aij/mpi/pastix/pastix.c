@@ -634,7 +634,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_pastix(Mat A,MatFactorType ftype
 
   B->factortype = MAT_FACTOR_LU;
 
-  ierr = PetscNewLog(B,Mat_Pastix,&pastix);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&pastix);CHKERRQ(ierr);
 
   pastix->CleanUpPastix = PETSC_FALSE;
   pastix->isAIJ         = PETSC_TRUE;
@@ -672,7 +672,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_mpiaij_pastix(Mat A,MatFactorType ftype
 
   B->factortype = MAT_FACTOR_LU;
 
-  ierr = PetscNewLog(B,Mat_Pastix,&pastix);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&pastix);CHKERRQ(ierr);
 
   pastix->CleanUpPastix = PETSC_FALSE;
   pastix->isAIJ         = PETSC_TRUE;
@@ -710,7 +710,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat A,MatFactorType fty
 
   B->factortype = MAT_FACTOR_CHOLESKY;
 
-  ierr = PetscNewLog(B,Mat_Pastix,&pastix);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&pastix);CHKERRQ(ierr);
 
   pastix->CleanUpPastix = PETSC_FALSE;
   pastix->isAIJ         = PETSC_TRUE;
@@ -749,7 +749,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat A,MatFactorType fty
 
   B->factortype = MAT_FACTOR_CHOLESKY;
 
-  ierr = PetscNewLog(B,Mat_Pastix,&pastix);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&pastix);CHKERRQ(ierr);
 
   pastix->CleanUpPastix = PETSC_FALSE;
   pastix->isAIJ         = PETSC_TRUE;

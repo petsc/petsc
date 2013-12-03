@@ -497,7 +497,7 @@ static PetscErrorCode  SNESCompositeAddSNES_Composite(SNES snes,SNESType type)
   DM               dm;
 
   PetscFunctionBegin;
-  ierr        = PetscNewLog(snes,struct _SNES_CompositeLink,&ilink);CHKERRQ(ierr);
+  ierr        = PetscNewLog(snes,&ilink);CHKERRQ(ierr);
   ilink->next = 0;
   ierr        = SNESCreate(PetscObjectComm((PetscObject)snes),&ilink->snes);CHKERRQ(ierr);
   ierr        = PetscLogObjectParent((PetscObject)snes,(PetscObject)ilink->snes);CHKERRQ(ierr);
@@ -813,7 +813,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Composite(SNES snes)
   SNES_Composite   *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(snes,SNES_Composite,&jac);CHKERRQ(ierr);
+  ierr = PetscNewLog(snes,&jac);CHKERRQ(ierr);
 
   snes->ops->solve           = SNESSolve_Composite;
   snes->ops->setup           = SNESSetUp_Composite;

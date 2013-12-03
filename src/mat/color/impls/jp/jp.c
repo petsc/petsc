@@ -452,7 +452,7 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_JP(MatColoring mc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr                    = PetscNewLog(mc,MC_JP,&jp);CHKERRQ(ierr);
+  ierr                    = PetscNewLog(mc,&jp);CHKERRQ(ierr);
   mc->data                = jp;
   mc->ops->apply          = MatColoringApply_JP;
   mc->ops->view           = NULL;

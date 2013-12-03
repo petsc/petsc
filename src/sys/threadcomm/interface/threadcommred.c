@@ -429,7 +429,7 @@ PetscErrorCode PetscThreadCommReductionCreate(PetscThreadComm tcomm,PetscThreadC
   PetscInt                 i,j;
 
   PetscFunctionBegin;
-  ierr         = PetscNew(struct _p_PetscThreadCommReduction,&redout);CHKERRQ(ierr);
+  ierr         = PetscNew(&redout);CHKERRQ(ierr);
   redout->nreds=0;
   redout->ctr  = 0;
   ierr         = PetscMalloc1(PETSC_REDUCTIONS_MAX,&redout->redctx);CHKERRQ(ierr);

@@ -421,7 +421,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
   DM_Redundant   *red;
 
   PetscFunctionBegin;
-  ierr     = PetscNewLog(dm,DM_Redundant,&red);CHKERRQ(ierr);
+  ierr     = PetscNewLog(dm,&red);CHKERRQ(ierr);
   dm->data = red;
 
   ierr = PetscObjectChangeTypeName((PetscObject)dm,DMREDUNDANT);CHKERRQ(ierr);

@@ -394,7 +394,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
   ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
-  ierr = PetscNewLog(B,Mat_UMFPACK,&lu);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&lu);CHKERRQ(ierr);
 
   B->spptr                 = lu;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_UMFPACK;

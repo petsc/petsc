@@ -444,7 +444,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp)
   KSP_CG         *cg;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,KSP_CG,&cg);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,&cg);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
   cg->type = KSP_CG_SYMMETRIC;
 #else

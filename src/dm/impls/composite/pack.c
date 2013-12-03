@@ -610,7 +610,7 @@ PetscErrorCode  DMCompositeAddDM(DM dmc,DM dm)
   if (com->setup) SETERRQ(PetscObjectComm((PetscObject)dmc),PETSC_ERR_ARG_WRONGSTATE,"Cannot add a DM once you have used the DMComposite");
 
   /* create new link */
-  ierr = PetscNew(struct DMCompositeLink,&mine);CHKERRQ(ierr);
+  ierr = PetscNew(&mine);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dm,&global);CHKERRQ(ierr);
   ierr = VecGetLocalSize(global,&n);CHKERRQ(ierr);
@@ -1396,7 +1396,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
   DM_Composite   *com;
 
   PetscFunctionBegin;
-  ierr      = PetscNewLog(p,DM_Composite,&com);CHKERRQ(ierr);
+  ierr      = PetscNewLog(p,&com);CHKERRQ(ierr);
   p->data   = com;
   ierr      = PetscObjectChangeTypeName((PetscObject)p,"DMComposite");CHKERRQ(ierr);
   com->n    = 0;

@@ -57,7 +57,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(Mat A,Mat R,PetscReal fil
   (*C)->ops->rartnumeric = MatRARtNumeric_SeqAIJ_SeqAIJ_colorrart;
 
   /* create a supporting struct */
-  ierr    = PetscNew(Mat_RARt,&rart);CHKERRQ(ierr);
+  ierr    = PetscNew(&rart);CHKERRQ(ierr);
   c       = (Mat_SeqAIJ*)(*C)->data;
   c->rart = rart;
 
@@ -273,7 +273,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_matmattransposemult(Mat A,Mat R,Pet
   *C                     = RARt;
   RARt->ops->rartnumeric = MatRARtNumeric_SeqAIJ_SeqAIJ_matmattransposemult;
 
-  ierr = PetscNew(Mat_RARt,&rart);CHKERRQ(ierr);
+  ierr = PetscNew(&rart);CHKERRQ(ierr);
   c         = (Mat_SeqAIJ*)(*C)->data;
   c->rart   = rart;
   rart->ARt = ARt;
@@ -313,7 +313,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
   ierr = MatTranspose_SeqAIJ(R,MAT_INITIAL_MATRIX,&Rt);CHKERRQ(ierr);
   ierr = MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(R,A,Rt,fill,C);CHKERRQ(ierr);
 
-  ierr = PetscNew(Mat_RARt,&rart);CHKERRQ(ierr);
+  ierr = PetscNew(&rart);CHKERRQ(ierr);
   rart->Rt = Rt;
   c        = (Mat_SeqAIJ*)(*C)->data;
   c->rart  = rart;

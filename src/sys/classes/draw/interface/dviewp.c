@@ -170,7 +170,7 @@ PetscErrorCode  PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDra
     PetscFunctionReturn(0);
   }
 
-  ierr             = PetscNew(PetscDrawViewPorts,ports);CHKERRQ(ierr);
+  ierr             = PetscNew(ports);CHKERRQ(ierr);
   (*ports)->draw   = draw;
   (*ports)->nports = nports;
 
@@ -250,7 +250,7 @@ PetscErrorCode  PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt
   n    = nx*ny;
   hx   = 1.0/nx;
   hy   = 1.0/ny;
-  ierr = PetscNew(PetscDrawViewPorts, ports);CHKERRQ(ierr);
+  ierr = PetscNew(ports);CHKERRQ(ierr);
 
   (*ports)->draw   = draw;
   (*ports)->nports = n;

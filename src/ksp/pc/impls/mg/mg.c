@@ -201,7 +201,7 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
 
   mg->stageApply = 0;
   for (i=0; i<levels; i++) {
-    ierr = PetscNewLog(pc,PC_MG_Levels,&mglevels[i]);CHKERRQ(ierr);
+    ierr = PetscNewLog(pc,&mglevels[i]);CHKERRQ(ierr);
 
     mglevels[i]->level               = i;
     mglevels[i]->levels              = levels;
@@ -1150,7 +1150,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr        = PetscNewLog(pc,PC_MG,&mg);CHKERRQ(ierr);
+  ierr        = PetscNewLog(pc,&mg);CHKERRQ(ierr);
   pc->data    = (void*)mg;
   mg->nlevels = -1;
 

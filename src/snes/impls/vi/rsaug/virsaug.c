@@ -271,7 +271,7 @@ PetscErrorCode  DMSetVIRSAUG(DM dm,IS inactive)
   if (!isnes) {
     ierr = PetscContainerCreate(PetscObjectComm((PetscObject)dm),&isnes);CHKERRQ(ierr);
     ierr = PetscContainerSetUserDestroy(isnes,(PetscErrorCode (*)(void*))DMDestroy_SNESVIRSAUG);CHKERRQ(ierr);
-    ierr = PetscNew(DM_SNESVI,&dmsnesvi);CHKERRQ(ierr);
+    ierr = PetscNew(&dmsnesvi);CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(isnes,(void*)dmsnesvi);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)dm,"VI",(PetscObject)isnes);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&isnes);CHKERRQ(ierr);
@@ -2513,7 +2513,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VIRSAUG(SNES snes)
   snes->usesksp = PETSC_TRUE;
   snes->usespc  = PETSC_FALSE;
 
-  ierr                = PetscNewLog(snes,SNES_VIRSAUG,&vi);CHKERRQ(ierr);
+  ierr                = PetscNewLog(snes,&vi);CHKERRQ(ierr);
   snes->data          = (void*)vi;
   snes->ls_alpha      = 1.e-4;
   snes->maxstep       = 1.e8;

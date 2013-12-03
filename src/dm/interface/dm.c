@@ -1063,7 +1063,7 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt count,PetscDataType dtype,void *mem
     link       = dm->workin;
     dm->workin = dm->workin->next;
   } else {
-    ierr = PetscNewLog(dm,struct _DMWorkLink,&link);CHKERRQ(ierr);
+    ierr = PetscNewLog(dm,&link);CHKERRQ(ierr);
   }
   ierr = PetscDataTypeGetSize(dtype,&size);CHKERRQ(ierr);
   if (size*count > link->bytes) {

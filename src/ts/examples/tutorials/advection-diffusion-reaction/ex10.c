@@ -782,7 +782,7 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   if (!flg) PetscFunctionReturn(0);
 
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = PetscNew(MyMonitorCtx,&ctx);CHKERRQ(ierr);
+  ierr = PetscNew(&ctx);CHKERRQ(ierr);
   ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)da),NULL,"",PETSC_DECIDE,PETSC_DECIDE,600,400,&ctx->viewer);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);

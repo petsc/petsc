@@ -368,7 +368,7 @@ int main(int argc, char *argv[])
   ierr = DMCreateGlobalVector(pack,&X);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
 
-  ierr = PetscNew(struct _UserCtx,&user);CHKERRQ(ierr);
+  ierr = PetscNew(&user);CHKERRQ(ierr);
 
   user->pack = pack;
 

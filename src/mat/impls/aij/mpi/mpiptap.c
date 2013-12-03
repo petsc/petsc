@@ -139,8 +139,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   /* create struct Mat_PtAPMPI and attached it to C later */
-  ierr        = PetscNew(Mat_PtAPMPI,&ptap);CHKERRQ(ierr);
-  ierr        = PetscNew(Mat_Merge_SeqsToMPI,&merge);CHKERRQ(ierr);
+  ierr        = PetscNew(&ptap);CHKERRQ(ierr);
+  ierr        = PetscNew(&merge);CHKERRQ(ierr);
   ptap->merge = merge;
   ptap->reuse = MAT_INITIAL_MATRIX;
 

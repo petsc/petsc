@@ -166,7 +166,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer v)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(v,PetscViewer_VTK,&vtk);CHKERRQ(ierr);
+  ierr = PetscNewLog(v,&vtk);CHKERRQ(ierr);
 
   v->data         = (void*)vtk;
   v->ops->destroy = PetscViewerDestroy_VTK;

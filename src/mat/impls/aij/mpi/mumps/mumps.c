@@ -1423,7 +1423,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat
     ierr = MatMPIAIJSetPreallocation(B,0,NULL,0,NULL);CHKERRQ(ierr);
   }
 
-  ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&mumps);CHKERRQ(ierr);
 
   B->ops->view    = MatView_MUMPS;
   B->ops->getinfo = MatGetInfo_MUMPS;
@@ -1475,7 +1475,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,M
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&mumps);CHKERRQ(ierr);
   if (isSeqSBAIJ) {
     ierr = MatSeqSBAIJSetPreallocation(B,1,0,NULL);CHKERRQ(ierr);
 
@@ -1529,7 +1529,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Ma
     ierr = MatMPIBAIJSetPreallocation(B,A->rmap->bs,0,NULL,0,NULL);CHKERRQ(ierr);
   }
 
-  ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&mumps);CHKERRQ(ierr);
   if (ftype == MAT_FACTOR_LU) {
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_BAIJMUMPS;
     B->factortype            = MAT_FACTOR_LU;

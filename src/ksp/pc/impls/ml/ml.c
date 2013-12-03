@@ -370,7 +370,7 @@ static PetscErrorCode MatWrapML_SHELL(ML_Operator *mlmat,MatReuse reuse,Mat *new
 
   MLcomm = mlmat->comm;
 
-  ierr = PetscNew(Mat_MLShell,&shellctx);CHKERRQ(ierr);
+  ierr = PetscNew(&shellctx);CHKERRQ(ierr);
   ierr = MatCreateShell(MLcomm->USR_comm,m,n,PETSC_DETERMINE,PETSC_DETERMINE,shellctx,newmat);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*newmat,MATOP_MULT,(void(*)(void))MatMult_ML);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*newmat,MATOP_MULT_ADD,(void(*)(void))MatMultAdd_ML);CHKERRQ(ierr);
@@ -677,7 +677,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   } else SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG, "Matrix type '%s' cannot be used with ML. ML can only handle AIJ matrices.",((PetscObject)A)->type_name);
 
   /* create and initialize struct 'PetscMLdata' */
-  ierr               = PetscNewLog(pc,FineGridCtx,&PetscMLdata);CHKERRQ(ierr);
+  ierr               = PetscNewLog(pc,&PetscMLdata);CHKERRQ(ierr);
   pc_ml->PetscMLdata = PetscMLdata;
   ierr               = PetscMalloc1((Aloc->cmap->n+1),&PetscMLdata->pwork);CHKERRQ(ierr);
 
@@ -1198,7 +1198,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ML(PC pc)
   mg->galerkin = 2;             /* Use Galerkin, but it is computed externally */
 
   /* create a supporting struct and attach it to pc */
-  ierr         = PetscNewLog(pc,PC_ML,&pc_ml);CHKERRQ(ierr);
+  ierr         = PetscNewLog(pc,&pc_ml);CHKERRQ(ierr);
   mg->innerctx = pc_ml;
 
   pc_ml->ml_object                = 0;

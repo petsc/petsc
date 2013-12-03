@@ -113,7 +113,7 @@ PETSC_EXTERN PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
   PetscFunctionBegin;
   ptcommcrtct++;
   ierr = PetscStrcpy(tcomm->type,PTHREAD);CHKERRQ(ierr);
-  ierr = PetscNew(struct _p_PetscThreadComm_PThread,&ptcomm);CHKERRQ(ierr);
+  ierr = PetscNew(&ptcomm);CHKERRQ(ierr);
 
   tcomm->data              = (void*)ptcomm;
   ptcomm->nthreads         = 0;

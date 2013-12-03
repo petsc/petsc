@@ -7,7 +7,7 @@ PetscErrorCode DMLabelCreate(const char name[], DMLabel *label)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_DMLabel, label);CHKERRQ(ierr);
+  ierr = PetscNew(label);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name, &(*label)->name);CHKERRQ(ierr);
 
   (*label)->refct          = 1;
@@ -175,7 +175,7 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
 
   PetscFunctionBegin;
   ierr = DMLabelMakeValid_Private(label);CHKERRQ(ierr);
-  ierr = PetscNew(struct _n_DMLabel, labelnew);CHKERRQ(ierr);
+  ierr = PetscNew(labelnew);CHKERRQ(ierr);
   ierr = PetscStrallocpy(label->name, &(*labelnew)->name);CHKERRQ(ierr);
 
   (*labelnew)->refct      = 1;

@@ -169,7 +169,7 @@ PetscErrorCode PetscIntStackCreate(PetscIntStack *stack)
 
   PetscFunctionBegin;
   PetscValidPointer(stack,1);
-  ierr = PetscNew(struct _n_PetscIntStack, &s);CHKERRQ(ierr);
+  ierr = PetscNew(&s);CHKERRQ(ierr);
 
   s->top = -1;
   s->max = 128;

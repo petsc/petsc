@@ -187,7 +187,7 @@ PetscErrorCode FACreate(FA *infa)
   VecScatter  vscat;
   PetscScalar *globalarray,*localarray,*toarray;
 
-  ierr = PetscNew(struct _p_FA,&fa);CHKERRQ(ierr);
+  ierr = PetscNew(&fa);CHKERRQ(ierr);
   /*
       fa->sw is the stencil width
 

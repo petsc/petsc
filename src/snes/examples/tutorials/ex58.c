@@ -472,7 +472,7 @@ PetscErrorCode FormBoundaryConditions(SNES snes,AppCtx **ouser)
 
   PetscFunctionBeginUser;
   ierr     = SNESGetDM(snes,&da);CHKERRQ(ierr);
-  ierr     = PetscNew(AppCtx,&user);CHKERRQ(ierr);
+  ierr     = PetscNew(&user);CHKERRQ(ierr);
   *ouser   = user;
   user->lb = .05;
   user->ub = SNES_VI_INF;

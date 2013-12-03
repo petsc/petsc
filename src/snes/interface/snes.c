@@ -1531,7 +1531,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->maxLinearSolveFailures = 1;
 
   /* Create context to compute Eisenstat-Walker relative tolerance for KSP */
-  ierr = PetscNewLog(snes,SNESKSPEW,&kctx);CHKERRQ(ierr);
+  ierr = PetscNewLog(snes,&kctx);CHKERRQ(ierr);
 
   snes->kspconvctx  = (void*)kctx;
   kctx->version     = 2;

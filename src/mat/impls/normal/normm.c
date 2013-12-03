@@ -241,7 +241,7 @@ PetscErrorCode  MatCreateNormal(Mat A,Mat *N)
   ierr = MatSetSizes(*N,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*N,MATNORMAL);CHKERRQ(ierr);
 
-  ierr       = PetscNewLog(*N,Mat_Normal,&Na);CHKERRQ(ierr);
+  ierr       = PetscNewLog(*N,&Na);CHKERRQ(ierr);
   (*N)->data = (void*) Na;
   ierr       = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
   Na->A      = A;

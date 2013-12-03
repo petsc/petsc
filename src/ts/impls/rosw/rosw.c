@@ -1707,7 +1707,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS ts)
   ts->ops->snesfunction   = SNESTSFormFunction_RosW;
   ts->ops->snesjacobian   = SNESTSFormJacobian_RosW;
 
-  ierr = PetscNewLog(ts,TS_RosW,&ros);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&ros);CHKERRQ(ierr);
   ts->data = (void*)ros;
 
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWGetType_C",TSRosWGetType_RosW);CHKERRQ(ierr);

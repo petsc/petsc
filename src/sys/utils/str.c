@@ -925,7 +925,7 @@ PetscErrorCode  PetscTokenCreate(const char a[],const char b,PetscToken *t)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _p_PetscToken,t);CHKERRQ(ierr);
+  ierr = PetscNew(t);CHKERRQ(ierr);
   ierr = PetscStrallocpy(a,&(*t)->array);CHKERRQ(ierr);
 
   (*t)->current = (*t)->array;

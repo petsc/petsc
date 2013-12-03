@@ -114,7 +114,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqSBSTRM(Mat A,MatType type,Mat
   }
 
 
-  ierr     = PetscNewLog(B,Mat_SeqSBSTRM,&sbstrm);CHKERRQ(ierr);
+  ierr     = PetscNewLog(B,&sbstrm);CHKERRQ(ierr);
   B->spptr = (void*) sbstrm;
 
   /* Set function pointers for methods that we inherit from BAIJ but override. */

@@ -1388,12 +1388,12 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   ierr = PetscObjectChangeTypeName((PetscObject)pc, PCGAMG);CHKERRQ(ierr);
 
   /* create a supporting struct and attach it to pc */
-  ierr         = PetscNewLog(pc, PC_GAMG, &pc_gamg);CHKERRQ(ierr);
+  ierr         = PetscNewLog(pc,&pc_gamg);CHKERRQ(ierr);
   mg           = (PC_MG*)pc->data;
   mg->galerkin = 2;             /* Use Galerkin, but it is computed externally */
   mg->innerctx = pc_gamg;
 
-  ierr = PetscNewLog(pc,struct _PCGAMGOps,&pc_gamg->ops);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&pc_gamg->ops);CHKERRQ(ierr);
 
   pc_gamg->setup_count = 0;
   /* these should be in subctx but repartitioning needs simple arrays */

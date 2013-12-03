@@ -80,7 +80,7 @@ PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic c)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr    = PetscNew(Characteristic_DA, &da);CHKERRQ(ierr);
+  ierr    = PetscNew(&da);CHKERRQ(ierr);
   ierr    = PetscMemzero(da, sizeof(Characteristic_DA));CHKERRQ(ierr);
   ierr    = PetscLogObjectMemory((PetscObject)c, sizeof(Characteristic_DA));CHKERRQ(ierr);
   c->data = (void*) da;

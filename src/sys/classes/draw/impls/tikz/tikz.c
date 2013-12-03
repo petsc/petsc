@@ -181,7 +181,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_TikZ(PetscDraw draw)
 
   PetscFunctionBegin;
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
-  ierr = PetscNew(PetscDraw_TikZ,&win);CHKERRQ(ierr);
+  ierr = PetscNew(&win);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)draw,sizeof(PetscDraw_TikZ));CHKERRQ(ierr);
 
   draw->data = (void*) win;

@@ -410,7 +410,7 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MIS(MatCoarsen coarse)
   MatCoarsen_MIS *MIS;
 
   PetscFunctionBegin;
-  ierr           = PetscNewLog(coarse, MatCoarsen_MIS, &MIS);CHKERRQ(ierr);
+  ierr           = PetscNewLog(coarse,&MIS);CHKERRQ(ierr);
   coarse->subctx = (void*)MIS;
 
   coarse->ops->apply   = MatCoarsenApply_MIS;

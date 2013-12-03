@@ -44,7 +44,7 @@ PetscErrorCode MPISBSTRM_create_sbstrm(Mat A)
 
   /* printf(" --- blen=%d, slen=%d\n", blen, slen);  */
 
-  ierr         = PetscNewLog(a->A,Mat_SeqSBSTRM,&sbstrmA);CHKERRQ(ierr);
+  ierr         = PetscNewLog(a->A,&sbstrmA);CHKERRQ(ierr);
   a->A->spptr  = (void*) sbstrmA;
   sbstrmA      = (Mat_SeqSBSTRM*) a->A->spptr;
   sbstrmA->rbs = sbstrmA->cbs = bs;
@@ -79,7 +79,7 @@ PetscErrorCode MPISBSTRM_create_sbstrm(Mat A)
 /*.....*/
   blen         = bi[MROW]-bi[0];
   slen         = blen*bs;
-  ierr         = PetscNewLog(a->B,Mat_SeqSBSTRM,&sbstrmB);CHKERRQ(ierr);
+  ierr         = PetscNewLog(a->B,&sbstrmB);CHKERRQ(ierr);
   a->B->spptr  = (void*) sbstrmB;
   sbstrmB      = (Mat_SeqSBSTRM*) a->B->spptr;
   sbstrmB->rbs = sbstrmB->cbs = bs;
@@ -186,7 +186,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPISBAIJ_MPISBSTRM(Mat A,MatType type,Mat
   }
   /* printf(" --- in MatConvert_MPISBAIJ_MPISBSTRM  -- 1 \n"); */
 
-  ierr     = PetscNewLog(B,   Mat_SeqSBSTRM,&sbstrm);CHKERRQ(ierr);
+  ierr     = PetscNewLog(B,&sbstrm);CHKERRQ(ierr);
   B->spptr = (void*)sbstrm;
 
   /* Set function pointers for methods that we inherit from AIJ but override.

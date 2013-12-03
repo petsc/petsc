@@ -767,7 +767,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_ADDA(DM dm)
   DM_ADDA        *dd;
 
   PetscFunctionBegin;
-  ierr     = PetscNewLog(dm,DM_ADDA,&dd);CHKERRQ(ierr);
+  ierr     = PetscNewLog(dm,&dd);CHKERRQ(ierr);
   dm->data = (void*)dd;
 
   dm->ops->view                = DMView;

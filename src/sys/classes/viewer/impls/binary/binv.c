@@ -1244,7 +1244,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
 #endif
 
   PetscFunctionBegin;
-  ierr                     = PetscNewLog(v,PetscViewer_Binary,&vbinary);CHKERRQ(ierr);
+  ierr                     = PetscNewLog(v,&vbinary);CHKERRQ(ierr);
   v->data                  = (void*)vbinary;
   v->ops->destroy          = PetscViewerDestroy_Binary;
   v->ops->view             = PetscViewerView_Binary;

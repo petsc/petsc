@@ -192,7 +192,7 @@ PetscErrorCode  PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrar
     ierr = PetscInfo2(0,"Dynamic library %s does not have symbol %s\n",libname,registername);CHKERRQ(ierr);
   }
 
-  ierr = PetscNew(struct _n_PetscDLLibrary,entry);CHKERRQ(ierr);
+  ierr = PetscNew(entry);CHKERRQ(ierr);
   (*entry)->next   = 0;
   (*entry)->handle = handle;
   ierr = PetscStrcpy((*entry)->libname,libname);CHKERRQ(ierr);

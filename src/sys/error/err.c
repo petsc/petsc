@@ -127,7 +127,7 @@ PetscErrorCode  PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm,in
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _EH,&neweh);CHKERRQ(ierr);
+  ierr = PetscNew(&neweh);CHKERRQ(ierr);
   if (eh) neweh->previous = eh;
   else    neweh->previous = 0;
   neweh->handler = handler;

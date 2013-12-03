@@ -1147,7 +1147,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GASM(PC pc)
   PC_GASM        *osm;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_GASM,&osm);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&osm);CHKERRQ(ierr);
 
   osm->N                      = PETSC_DECIDE;
   osm->n                      = PETSC_DECIDE;

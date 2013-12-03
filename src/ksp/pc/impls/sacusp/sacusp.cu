@@ -251,7 +251,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SACUSP(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr     = PetscNewLog(pc,PC_SACUSP,&sac);CHKERRQ(ierr);
+  ierr     = PetscNewLog(pc,&sac);CHKERRQ(ierr);
   pc->data = (void*)sac;
 
   /*

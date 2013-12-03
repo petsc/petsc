@@ -625,7 +625,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_BCGSL(KSP ksp)
 
   PetscFunctionBegin;
   /* allocate BiCGStab(L) context */
-  ierr      = PetscNewLog(ksp, KSP_BCGSL, &bcgsl);CHKERRQ(ierr);
+  ierr      = PetscNewLog(ksp,&bcgsl);CHKERRQ(ierr);
   ksp->data = (void*)bcgsl;
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);

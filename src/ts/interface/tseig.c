@@ -55,7 +55,7 @@ PetscErrorCode  TSMonitorSPEigCtxCreate(MPI_Comm comm,const char host[],const ch
   PC             pc;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_TSMonitorSPEigCtx,ctx);CHKERRQ(ierr);
+  ierr = PetscNew(ctx);CHKERRQ(ierr);
   ierr = PetscRandomCreate(comm,&(*ctx)->rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions((*ctx)->rand);CHKERRQ(ierr);
   ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&win);CHKERRQ(ierr);

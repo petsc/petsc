@@ -290,7 +290,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes)
 
   snes->pcside = PC_LEFT;
 
-  ierr       = PetscNewLog(snes, SNES_NRichardson, &neP);CHKERRQ(ierr);
+  ierr       = PetscNewLog(snes,&neP);CHKERRQ(ierr);
   snes->data = (void*) neP;
 
   if (!snes->tolerancesset) {

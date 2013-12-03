@@ -596,7 +596,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftyp
   B->assembled    = PETSC_TRUE;           /* required by -ksp_view */
   B->preallocated = PETSC_TRUE;
 
-  ierr = PetscNewLog(B,Mat_SuperLU,&lu);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&lu);CHKERRQ(ierr);
 
   if (ftype == MAT_FACTOR_LU) {
     set_default_options(&lu->options);

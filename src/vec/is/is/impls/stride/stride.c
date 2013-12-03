@@ -429,7 +429,7 @@ PETSC_EXTERN PetscErrorCode ISCreate_Stride(IS is)
 
   PetscFunctionBegin;
   ierr = PetscMemcpy(is->ops,&myops,sizeof(myops));CHKERRQ(ierr);
-  ierr = PetscNewLog(is,IS_Stride,&sub);CHKERRQ(ierr);
+  ierr = PetscNewLog(is,&sub);CHKERRQ(ierr);
   is->bs   = 1;
   is->data = sub;
   ierr = PetscObjectComposeFunction((PetscObject)is,"ISStrideSetStride_C",ISStrideSetStride_Stride);CHKERRQ(ierr);

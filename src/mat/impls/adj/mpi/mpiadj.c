@@ -577,7 +577,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscNewLog(B,Mat_MPIAdj,&b);CHKERRQ(ierr);
+  ierr         = PetscNewLog(B,&b);CHKERRQ(ierr);
   B->data      = (void*)b;
   ierr         = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->assembled = PETSC_FALSE;

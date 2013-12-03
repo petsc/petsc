@@ -295,7 +295,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p)
   DM_Sliced      *slice;
 
   PetscFunctionBegin;
-  ierr    = PetscNewLog(p,DM_Sliced,&slice);CHKERRQ(ierr);
+  ierr    = PetscNewLog(p,&slice);CHKERRQ(ierr);
   p->data = slice;
 
   ierr = PetscObjectChangeTypeName((PetscObject)p,DMSLICED);CHKERRQ(ierr);

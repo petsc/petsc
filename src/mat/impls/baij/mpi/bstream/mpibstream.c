@@ -35,7 +35,7 @@ PetscErrorCode MatMPIBSTRM_create_bstrm(Mat A)
   blen = ai[MROW]-ai[0];
   slen = blen*bs;
 
-  ierr        = PetscNewLog(a->A,Mat_SeqBSTRM,&bstrmA);CHKERRQ(ierr);
+  ierr        = PetscNewLog(a->A,&bstrmA);CHKERRQ(ierr);
   a->A->spptr = (void*) bstrmA;
   bstrmA      = (Mat_SeqBSTRM*) a->A->spptr;
   bstrmA->rbs = bstrmA->cbs = bs;
@@ -68,7 +68,7 @@ PetscErrorCode MatMPIBSTRM_create_bstrm(Mat A)
 /*.....*/
   blen = bi[MROW]-bi[0];
   slen = blen*bs;
-  ierr = PetscNewLog(a->B,Mat_SeqBSTRM,&bstrmB);CHKERRQ(ierr);
+  ierr = PetscNewLog(a->B,&bstrmB);CHKERRQ(ierr);
 
   a->B->spptr = (void*) bstrmB;
   bstrmB      = (Mat_SeqBSTRM*) a->B->spptr;
@@ -169,7 +169,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIBAIJ_MPIBSTRM(Mat A,MatType type,MatRe
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr     = PetscNewLog(B,   Mat_SeqBSTRM,&bstrm);CHKERRQ(ierr);
+  ierr     = PetscNewLog(B,&bstrm);CHKERRQ(ierr);
   B->spptr = (void*) bstrm;
 
   /* Set function pointers for methods that we inherit from AIJ but override.

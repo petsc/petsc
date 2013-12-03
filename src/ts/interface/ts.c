@@ -286,7 +286,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     sscanf(dir+2,"%d",&ray);
 
     ierr = PetscInfo2(((PetscObject)ts),"Displaying DMDA ray %c = %D\n",dir[0],ray);CHKERRQ(ierr);
-    ierr = PetscNew(TSMonitorDMDARayCtx,&rayctx);CHKERRQ(ierr);
+    ierr = PetscNew(&rayctx);CHKERRQ(ierr);
     ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
     ierr = DMDAGetRay(da,ddir,ray,&rayctx->ray,&rayctx->scatter);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ts),&rank);CHKERRQ(ierr);
@@ -311,7 +311,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     sscanf(dir+2, "%d", &ray);
 
     ierr = PetscInfo2(((PetscObject) ts),"Displaying LG DMDA ray %c = %D\n", dir[0], ray);CHKERRQ(ierr);
-    ierr = PetscNew(TSMonitorDMDARayCtx, &rayctx);CHKERRQ(ierr);
+    ierr = PetscNew(&rayctx);CHKERRQ(ierr);
     ierr = TSGetDM(ts, &da);CHKERRQ(ierr);
     ierr = DMDAGetRay(da, ddir, ray, &rayctx->ray, &rayctx->scatter);CHKERRQ(ierr);
     ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&rayctx->lgctx);CHKERRQ(ierr);
@@ -2850,7 +2850,7 @@ PetscErrorCode  TSMonitorLGCtxCreate(MPI_Comm comm,const char host[],const char 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_TSMonitorLGCtx,ctx);CHKERRQ(ierr);
+  ierr = PetscNew(ctx);CHKERRQ(ierr);
   ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&win);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(win);CHKERRQ(ierr);
   ierr = PetscDrawLGCreate(win,1,&(*ctx)->lg);CHKERRQ(ierr);
@@ -3352,7 +3352,7 @@ PetscErrorCode  TSMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const cha
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_TSMonitorDrawCtx,ctx);CHKERRQ(ierr);
+  ierr = PetscNew(ctx);CHKERRQ(ierr);
   ierr = PetscViewerDrawOpen(comm,host,label,x,y,m,n,&(*ctx)->viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetFromOptions((*ctx)->viewer);CHKERRQ(ierr);
 

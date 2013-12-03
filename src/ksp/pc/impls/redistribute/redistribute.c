@@ -342,7 +342,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc)
   const char      *prefix;
 
   PetscFunctionBegin;
-  ierr     = PetscNewLog(pc,PC_Redistribute,&red);CHKERRQ(ierr);
+  ierr     = PetscNewLog(pc,&red);CHKERRQ(ierr);
   pc->data = (void*)red;
 
   pc->ops->apply          = PCApply_Redistribute;

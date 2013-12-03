@@ -1205,7 +1205,7 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_HEM(MatCoarsen coarse)
   MatCoarsen_HEM *HEM;
 
   PetscFunctionBegin;
-  ierr                 = PetscNewLog(coarse, MatCoarsen_HEM, &HEM);CHKERRQ(ierr);
+  ierr                 = PetscNewLog(coarse,&HEM);CHKERRQ(ierr);
   coarse->subctx       = (void*)HEM;
   coarse->ops->apply   = MatCoarsenApply_HEM;
   coarse->ops->view    = MatCoarsenView_HEM;

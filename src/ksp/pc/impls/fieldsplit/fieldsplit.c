@@ -1115,7 +1115,7 @@ static PetscErrorCode  PCFieldSplitSetFields_FieldSplit(PC pc,const char splitna
     if (fields[i] >= jac->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Field %D requested but only %D exist",fields[i],jac->bs);
     if (fields[i] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative field %D requested",fields[i]);
   }
-  ierr = PetscNew(struct _PC_FieldSplitLink,&ilink);CHKERRQ(ierr);
+  ierr = PetscNew(&ilink);CHKERRQ(ierr);
   if (splitname) {
     ierr = PetscStrallocpy(splitname,&ilink->splitname);CHKERRQ(ierr);
   } else {
@@ -1201,7 +1201,7 @@ static PetscErrorCode  PCFieldSplitSetIS_FieldSplit(PC pc,const char splitname[]
     ierr = PetscInfo1(pc,"Ignoring new split \"%s\" because the splits have already been defined\n",splitname);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscNew(struct _PC_FieldSplitLink,&ilink);CHKERRQ(ierr);
+  ierr = PetscNew(&ilink);CHKERRQ(ierr);
   if (splitname) {
     ierr = PetscStrallocpy(splitname,&ilink->splitname);CHKERRQ(ierr);
   } else {
@@ -1848,7 +1848,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_FieldSplit(PC pc)
   PC_FieldSplit  *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_FieldSplit,&jac);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&jac);CHKERRQ(ierr);
 
   jac->bs                 = -1;
   jac->nsplits            = 0;

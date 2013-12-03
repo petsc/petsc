@@ -561,7 +561,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes)
   snes->usespc  = PETSC_FALSE;
   snes->usesksp = PETSC_TRUE;
 
-  ierr        = PetscNewLog(snes,SNES_MS,&ms);CHKERRQ(ierr);
+  ierr        = PetscNewLog(snes,&ms);CHKERRQ(ierr);
   snes->data  = (void*)ms;
   ms->damping = 0.9;
   ms->norms   = PETSC_FALSE;

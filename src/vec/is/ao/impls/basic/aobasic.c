@@ -202,7 +202,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
 
   PetscFunctionBegin;
   /* create special struct aobasic */
-  ierr     = PetscNewLog(ao, AO_Basic, &aobasic);CHKERRQ(ierr);
+  ierr     = PetscNewLog(ao,&aobasic);CHKERRQ(ierr);
   ao->data = (void*) aobasic;
   ierr     = PetscMemcpy(ao->ops,&AOOps_Basic,sizeof(struct _AOOps));CHKERRQ(ierr);
   ierr     = PetscObjectChangeTypeName((PetscObject)ao,AOBASIC);CHKERRQ(ierr);

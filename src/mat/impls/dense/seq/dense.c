@@ -2268,7 +2268,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqDense(Mat B)
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)B),&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Comm must be of size 1");
 
-  ierr    = PetscNewLog(B,Mat_SeqDense,&b);CHKERRQ(ierr);
+  ierr    = PetscNewLog(B,&b);CHKERRQ(ierr);
   ierr    = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->data = (void*)b;
 

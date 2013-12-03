@@ -785,7 +785,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr      = PetscNewLog(ksp,KSP_AGMRES,&agmres);CHKERRQ(ierr);
+  ierr      = PetscNewLog(ksp,&agmres);CHKERRQ(ierr);
   ksp->data = (void*)agmres;
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);

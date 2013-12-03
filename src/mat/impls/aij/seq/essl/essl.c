@@ -164,7 +164,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,M
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
 
-  ierr = PetscNewLog(B,Mat_Essl,&essl);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&essl);CHKERRQ(ierr);
 
   B->spptr                 = essl;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_Essl;

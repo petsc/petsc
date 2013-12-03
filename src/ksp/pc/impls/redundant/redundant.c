@@ -481,7 +481,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Redundant(PC pc)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_Redundant,&red);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&red);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
 
   red->nsubcomm       = size;

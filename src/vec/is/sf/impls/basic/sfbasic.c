@@ -702,7 +702,7 @@ static PetscErrorCode PetscSFBasicGetPack(PetscSF sf,MPI_Datatype unit,const voi
   /* Create new composite types for each send rank */
   ierr = PetscSFBasicGetRootInfo(sf,&nrootranks,NULL,&rootoffset,NULL);CHKERRQ(ierr);
   ierr = PetscSFBasicGetLeafInfo(sf,&nleafranks,NULL,&leafoffset,NULL);CHKERRQ(ierr);
-  ierr = PetscNew(struct _n_PetscSFBasicPack,&link);CHKERRQ(ierr);
+  ierr = PetscNew(&link);CHKERRQ(ierr);
   ierr = PetscSFBasicPackTypeSetup(link,unit);CHKERRQ(ierr);
   ierr = PetscMalloc2(rootoffset[nrootranks]*link->unitbytes,&link->root,leafoffset[nleafranks]*link->unitbytes,&link->leaf);CHKERRQ(ierr);
   ierr = PetscMalloc1((nrootranks+nleafranks),&link->requests);CHKERRQ(ierr);
@@ -1021,7 +1021,7 @@ PETSC_EXTERN PetscErrorCode PetscSFCreate_Basic(PetscSF sf)
   sf->ops->FetchAndOpBegin = PetscSFFetchAndOpBegin_Basic;
   sf->ops->FetchAndOpEnd   = PetscSFFetchAndOpEnd_Basic;
 
-  ierr     = PetscNewLog(sf,PetscSF_Basic,&bas);CHKERRQ(ierr);
+  ierr     = PetscNewLog(sf,&bas);CHKERRQ(ierr);
   sf->data = (void*)bas;
   PetscFunctionReturn(0);
 }

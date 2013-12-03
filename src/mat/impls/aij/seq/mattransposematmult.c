@@ -54,7 +54,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,PetscReal
   Mat_SeqDense        *c;
 
   PetscFunctionBegin;
-  ierr = PetscNew(Mat_MatTransMatMult,&atb);CHKERRQ(ierr);
+  ierr = PetscNew(&atb);CHKERRQ(ierr);
 
   /* create output dense matrix C = A^T*B */
   ierr = MatCreate(PETSC_COMM_SELF,&Cdense);CHKERRQ(ierr);

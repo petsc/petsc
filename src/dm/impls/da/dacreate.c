@@ -331,7 +331,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
 
   PetscFunctionBegin;
   PetscValidPointer(da,1);
-  ierr     = PetscNewLog(da,DM_DA,&dd);CHKERRQ(ierr);
+  ierr     = PetscNewLog(da,&dd);CHKERRQ(ierr);
   da->data = dd;
 
   dd->dim        = -1;

@@ -1520,7 +1520,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr    = PetscNewLog(A,Mat_Nest,&s);CHKERRQ(ierr);
+  ierr    = PetscNewLog(A,&s);CHKERRQ(ierr);
   A->data = (void*)s;
 
   s->nr            = -1;

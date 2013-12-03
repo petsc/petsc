@@ -631,7 +631,7 @@ PetscErrorCode SNESMultiblockSetFields_Default(SNES snes, const char name[], Pet
     if (fields[i] >= mb->bs) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field %D requested but only %D exist", fields[i], mb->bs);
     if (fields[i] < 0)       SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative field %D requested", fields[i]);
   }
-  ierr = PetscNew(struct _BlockDesc, &newblock);CHKERRQ(ierr);
+  ierr = PetscNew(&newblock);CHKERRQ(ierr);
   if (name) {
     ierr = PetscStrallocpy(name, &newblock->name);CHKERRQ(ierr);
   } else {
@@ -682,7 +682,7 @@ PetscErrorCode SNESMultiblockSetIS_Default(SNES snes, const char name[], IS is)
     ierr = PetscInfo1(snes, "Ignoring new block \"%s\" because the blocks have already been defined\n", name);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscNew(struct _BlockDesc, &newblock);CHKERRQ(ierr);
+  ierr = PetscNew(&newblock);CHKERRQ(ierr);
   if (name) {
     ierr = PetscStrallocpy(name, &newblock->name);CHKERRQ(ierr);
   } else {
@@ -971,7 +971,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Multiblock(SNES snes)
 
   snes->usesksp = PETSC_FALSE;
 
-  ierr          = PetscNewLog(snes, SNES_Multiblock, &mb);CHKERRQ(ierr);
+  ierr          = PetscNewLog(snes,&mb);CHKERRQ(ierr);
   snes->data    = (void*) mb;
   mb->defined   = PETSC_FALSE;
   mb->numBlocks = 0;

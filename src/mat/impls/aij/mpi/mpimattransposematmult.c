@@ -55,7 +55,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal
   Mat_MPIDense        *c;
   
   PetscFunctionBegin;
-  ierr = PetscNew(Mat_MatTransMatMult,&atb);CHKERRQ(ierr);
+  ierr = PetscNew(&atb);CHKERRQ(ierr);
 
   /* create output dense matrix C = A^T*B */
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&Cdense);CHKERRQ(ierr);

@@ -833,7 +833,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscNewLog(viewer,PetscViewer_ASCII,&vascii);CHKERRQ(ierr);
+  ierr         = PetscNewLog(viewer,&vascii);CHKERRQ(ierr);
   viewer->data = (void*)vascii;
 
   viewer->ops->destroy          = PetscViewerDestroy_ASCII;
@@ -936,7 +936,7 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
     size_t      fullLength;
     PrintfQueue next;
 
-    ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
+    ierr = PetscNew(&next);CHKERRQ(ierr);
     if (petsc_printfqueue) {
       petsc_printfqueue->next = next;
       petsc_printfqueue       = next;

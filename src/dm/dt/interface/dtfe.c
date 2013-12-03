@@ -678,7 +678,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Polynomial(PetscSpace sp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  ierr     = PetscNewLog(sp, PetscSpace_Poly, &poly);CHKERRQ(ierr);
+  ierr     = PetscNewLog(sp,&poly);CHKERRQ(ierr);
   sp->data = poly;
 
   poly->numVariables = 0;
@@ -878,7 +878,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_DG(PetscSpace sp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  ierr     = PetscNewLog(sp, PetscSpace_DG, &dg);CHKERRQ(ierr);
+  ierr     = PetscNewLog(sp,&dg);CHKERRQ(ierr);
   sp->data = dg;
 
   dg->numVariables   = 0;
@@ -1632,7 +1632,7 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace sp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  ierr     = PetscNewLog(sp, PetscDualSpace_Lag, &lag);CHKERRQ(ierr);
+  ierr     = PetscNewLog(sp,&lag);CHKERRQ(ierr);
   sp->data = lag;
 
   lag->numDof = NULL;
@@ -2993,7 +2993,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Basic(PetscFE fem)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  ierr      = PetscNewLog(fem, PetscFE_Basic, &b);CHKERRQ(ierr);
+  ierr      = PetscNewLog(fem,&b);CHKERRQ(ierr);
   fem->data = b;
 
   ierr = PetscFEInitialize_Basic(fem);CHKERRQ(ierr);
@@ -3777,7 +3777,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE fem)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  ierr      = PetscNewLog(fem, PetscFE_OpenCL, &ocl);CHKERRQ(ierr);
+  ierr      = PetscNewLog(fem,&ocl);CHKERRQ(ierr);
   fem->data = ocl;
 
   /* Init Platform */

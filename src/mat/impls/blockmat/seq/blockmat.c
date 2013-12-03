@@ -1015,7 +1015,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr    = PetscNewLog(A,Mat_BlockMat,&b);CHKERRQ(ierr);
+  ierr    = PetscNewLog(A,&b);CHKERRQ(ierr);
   A->data = (void*)b;
   ierr    = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
 

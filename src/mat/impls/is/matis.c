@@ -571,7 +571,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   Mat_IS         *b;
 
   PetscFunctionBegin;
-  ierr    = PetscNewLog(A,Mat_IS,&b);CHKERRQ(ierr);
+  ierr    = PetscNewLog(A,&b);CHKERRQ(ierr);
   A->data = (void*)b;
   ierr    = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
 

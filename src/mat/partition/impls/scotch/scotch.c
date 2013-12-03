@@ -375,7 +375,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning part)
   MatPartitioning_PTScotch *scotch;
 
   PetscFunctionBegin;
-  ierr       = PetscNewLog(part,MatPartitioning_PTScotch,&scotch);CHKERRQ(ierr);
+  ierr       = PetscNewLog(part,&scotch);CHKERRQ(ierr);
   part->data = (void*)scotch;
 
   scotch->imbalance = 0.01;

@@ -23,7 +23,7 @@ PetscErrorCode  PetscTableCreate(const PetscInt n,PetscInt maxkey,PetscTable *rt
 
   PetscFunctionBegin;
   if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n < 0");
-  ierr          = PetscNew(struct _n_PetscTable,&ta);CHKERRQ(ierr);
+  ierr          = PetscNew(&ta);CHKERRQ(ierr);
   ta->tablesize = (3*n)/2 + 17;
   if (ta->tablesize < n) ta->tablesize = PETSC_MAX_INT/4; /* overflow */
   ierr       = PetscCalloc1(ta->tablesize,&ta->keytable);CHKERRQ(ierr);
@@ -49,7 +49,7 @@ PetscErrorCode  PetscTableCreateCopy(const PetscTable intable,PetscTable *rta)
   PetscTable     ta;
 
   PetscFunctionBegin;
-  ierr          = PetscNew(struct _n_PetscTable,&ta);CHKERRQ(ierr);
+  ierr          = PetscNew(&ta);CHKERRQ(ierr);
   ta->tablesize = intable->tablesize;
   ierr          = PetscMalloc(sizeof(PetscInt)*ta->tablesize,&ta->keytable);CHKERRQ(ierr);
   ierr          = PetscMalloc(sizeof(PetscInt)*ta->tablesize,&ta->table);CHKERRQ(ierr);

@@ -867,7 +867,7 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,Bt,fill,C);CHKERRQ(ierr);
 
   /* create a supporting struct for reuse intermidiate dense matrices with matcoloring */
-  ierr   = PetscNew(Mat_MatMatTransMult,&abt);CHKERRQ(ierr);
+  ierr   = PetscNew(&abt);CHKERRQ(ierr);
   c      = (Mat_SeqAIJ*)(*C)->data;
   c->abt = abt;
 

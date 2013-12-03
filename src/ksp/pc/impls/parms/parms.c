@@ -697,7 +697,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_PARMS(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_PARMS,&parms);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&parms);CHKERRQ(ierr);
 
   parms->map        = 0;
   parms->A          = 0;

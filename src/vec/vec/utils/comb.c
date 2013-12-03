@@ -78,7 +78,7 @@ static PetscErrorCode  PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReducti
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr               = PetscNew(PetscSplitReduction,sr);CHKERRQ(ierr);
+  ierr               = PetscNew(sr);CHKERRQ(ierr);
   (*sr)->numopsbegin = 0;
   (*sr)->numopsend   = 0;
   (*sr)->state       = STATE_BEGIN;

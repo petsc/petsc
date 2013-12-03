@@ -177,7 +177,7 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,c
 
   PetscFunctionBegin;
   if (!*fl) {
-    ierr           = PetscNew(struct _n_PetscFunctionList,&entry);CHKERRQ(ierr);
+    ierr           = PetscNew(&entry);CHKERRQ(ierr);
     ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
     entry->routine = fnc;
     entry->next    = 0;
@@ -207,7 +207,7 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,c
       else break;
     }
     /* create new entry and add to end of list */
-    ierr           = PetscNew(struct _n_PetscFunctionList,&entry);CHKERRQ(ierr);
+    ierr           = PetscNew(&entry);CHKERRQ(ierr);
     ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
     entry->routine = fnc;
     entry->next    = 0;

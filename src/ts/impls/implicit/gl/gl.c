@@ -142,7 +142,7 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
   if (s < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"At least one stage is required");
   PetscValidPointer(inscheme,4);
   *inscheme = 0;
-  ierr      = PetscNew(struct _TSGLScheme,&scheme);CHKERRQ(ierr);
+  ierr      = PetscNew(&scheme);CHKERRQ(ierr);
   scheme->p = p;
   scheme->q = q;
   scheme->r = r;
@@ -1534,7 +1534,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_GL(TS ts)
   PetscFunctionBegin;
   ierr = TSGLInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscNewLog(ts,TS_GL,&gl);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&gl);CHKERRQ(ierr);
   ts->data = (void*)gl;
 
   ts->ops->reset          = TSReset_GL;

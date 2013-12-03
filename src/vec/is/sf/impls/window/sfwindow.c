@@ -608,7 +608,7 @@ PETSC_EXTERN PetscErrorCode PetscSFCreate_Window(PetscSF sf)
   sf->ops->FetchAndOpBegin = PetscSFFetchAndOpBegin_Window;
   sf->ops->FetchAndOpEnd   = PetscSFFetchAndOpEnd_Window;
 
-  ierr     = PetscNewLog(sf,PetscSF_Window,&w);CHKERRQ(ierr);
+  ierr     = PetscNewLog(sf,&w);CHKERRQ(ierr);
   sf->data = (void*)w;
   w->sync  = PETSCSF_WINDOW_SYNC_FENCE;
 

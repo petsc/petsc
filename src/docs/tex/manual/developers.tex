@@ -444,7 +444,7 @@ Pe\=tscErrorCode PetscPushErrorHandler(\=PetscErrorCode (*handler)(int,const cha
   \> PetscErrorCode ierr;\\
   \>EH neweh; \\
   \>PetscFunctionBegin;\\
-  \>ierr = PetscNew(struct \_EH,\&neweh);CHKERRQ(ierr);\\
+  \>ierr = PetscNew(\&neweh);CHKERRQ(ierr);\\
   \>if (eh) {neweh-$>$previous = eh;} \\
   \>else    {neweh-$>$previous = 0;}\\
   \>neweh-$>$handler = handler;\\

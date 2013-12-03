@@ -60,7 +60,7 @@ PetscErrorCode MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,Pets
   }
 
   /* create struct Mat_MatMatMatMult and attached it to *D */
-  ierr = PetscNew(Mat_MatMatMatMult,&matmatmatmult);CHKERRQ(ierr);
+  ierr = PetscNew(&matmatmatmult);CHKERRQ(ierr);
 
   matmatmatmult->BC      = BC;
   matmatmatmult->destroy = (*D)->ops->destroy;

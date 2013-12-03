@@ -1094,7 +1094,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   ierr = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   A->insertmode = NOT_SET_VALUES;
 
-  ierr = PetscNewLog(A,Mat_Elemental,&a);CHKERRQ(ierr);
+  ierr = PetscNewLog(A,&a);CHKERRQ(ierr);
   A->data = (void*)a;
 
   /* Set up the elemental matrix */
@@ -1107,7 +1107,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   ierr = PetscCommDuplicate(cxxcomm,&icomm,NULL);CHKERRQ(ierr);
   ierr = MPI_Attr_get(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg);CHKERRQ(ierr);
   if (!flg) {
-    ierr = PetscNewLog(A,Mat_Elemental_Grid,&commgrid);CHKERRQ(ierr);
+    ierr = PetscNewLog(A,&commgrid);CHKERRQ(ierr);
 
     ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"Elemental Options","Mat");CHKERRQ(ierr);
     /* displayed default grid sizes (CommSize,1) are set by us arbitrarily until elem::Grid() is called */

@@ -306,7 +306,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_DenseAxpy(Mat A,Mat P,PetscReal fil
   c->free_a = PETSC_TRUE;
 
   /* Create a supporting struct for reuse by MatPtAPNumeric() */
-  ierr = PetscNew(Mat_PtAP,&ptap);CHKERRQ(ierr);
+  ierr = PetscNew(&ptap);CHKERRQ(ierr);
 
   c->ptap            = ptap;
   ptap->destroy      = (*C)->ops->destroy;

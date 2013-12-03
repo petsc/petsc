@@ -191,7 +191,7 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat *A)
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(comm,PETSC_ERR_USER, "Parallel DMDA (out) not yet supported by USFFT");
   ierr         = MatCreate(comm,A);CHKERRQ(ierr);
-  ierr         = PetscNewLog(*A,Mat_USFFT,&usfft);CHKERRQ(ierr);
+  ierr         = PetscNewLog(*A,&usfft);CHKERRQ(ierr);
   (*A)->data   = (void*)usfft;
   usfft->inda  = inda;
   usfft->outda = outda;

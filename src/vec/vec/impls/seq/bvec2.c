@@ -1242,7 +1242,7 @@ PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(v,Vec_Seq,&s);CHKERRQ(ierr);
+  ierr = PetscNewLog(v,&s);CHKERRQ(ierr);
   ierr = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
 
   v->data            = (void*)s;

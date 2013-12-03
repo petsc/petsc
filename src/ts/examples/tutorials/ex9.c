@@ -354,7 +354,7 @@ static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx)
   AdvectCtx      *user;
 
   PetscFunctionBeginUser;
-  ierr = PetscNew(*user,&user);CHKERRQ(ierr);
+  ierr = PetscNew(&user);CHKERRQ(ierr);
   ctx->physics.sample         = PhysicsSample_Advect;
   ctx->physics.riemann        = PhysicsRiemann_Advect;
   ctx->physics.characteristic = PhysicsCharacteristic_Advect;
@@ -491,7 +491,7 @@ static PetscErrorCode PhysicsCreate_Burgers(FVCtx *ctx)
   char              rname[256] = "exact";
 
   PetscFunctionBeginUser;
-  ierr = PetscNew(*user,&user);CHKERRQ(ierr);
+  ierr = PetscNew(&user);CHKERRQ(ierr);
 
   ctx->physics.sample         = PhysicsSample_Burgers;
   ctx->physics.characteristic = PhysicsCharacteristic_Conservative;
@@ -631,7 +631,7 @@ static PetscErrorCode PhysicsCreate_Traffic(FVCtx *ctx)
   char              rname[256] = "exact";
 
   PetscFunctionBeginUser;
-  ierr = PetscNew(*user,&user);CHKERRQ(ierr);
+  ierr = PetscNew(&user);CHKERRQ(ierr);
   ctx->physics.sample         = PhysicsSample_Traffic;
   ctx->physics.characteristic = PhysicsCharacteristic_Conservative;
   ctx->physics.destroy        = PhysicsDestroy_SimpleFree;
@@ -789,7 +789,7 @@ static PetscErrorCode PhysicsCreate_Acoustics(FVCtx *ctx)
   char              rname[256] = "exact",rcname[256] = "characteristic";
 
   PetscFunctionBeginUser;
-  ierr = PetscNew(*user,&user);CHKERRQ(ierr);
+  ierr = PetscNew(&user);CHKERRQ(ierr);
   ctx->physics.sample         = PhysicsSample_Acoustics;
   ctx->physics.destroy        = PhysicsDestroy_SimpleFree;
   ctx->physics.user           = user;
@@ -1019,7 +1019,7 @@ static PetscErrorCode PhysicsCreate_IsoGas(FVCtx *ctx)
   char              rname[256] = "exact",rcname[256] = "characteristic";
 
   PetscFunctionBeginUser;
-  ierr = PetscNew(*user,&user);CHKERRQ(ierr);
+  ierr = PetscNew(&user);CHKERRQ(ierr);
   ctx->physics.sample         = PhysicsSample_IsoGas;
   ctx->physics.destroy        = PhysicsDestroy_SimpleFree;
   ctx->physics.user           = user;
@@ -1196,7 +1196,7 @@ static PetscErrorCode PhysicsCreate_Shallow(FVCtx *ctx)
   char              rname[256] = "exact",rcname[256] = "characteristic";
 
   PetscFunctionBeginUser;
-  ierr = PetscNew(*user,&user);CHKERRQ(ierr);
+  ierr = PetscNew(&user);CHKERRQ(ierr);
   /* Shallow water and Isothermal Gas dynamics are similar so we reuse initial conditions for now */
   ctx->physics.sample         = PhysicsSample_IsoGas;
   ctx->physics.destroy        = PhysicsDestroy_SimpleFree;

@@ -200,7 +200,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_SpecEst(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
 
-  ierr = PetscNewLog(ksp,KSP_SpecEst,&spec);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,&spec);CHKERRQ(ierr);
 
   ksp->data                = (void*)spec;
   ksp->ops->setup          = KSPSetUp_SpecEst;

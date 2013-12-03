@@ -440,7 +440,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Party(MatPartitioning part)
   MatPartitioning_Party *party;
 
   PetscFunctionBegin;
-  ierr       = PetscNewLog(part,MatPartitioning_Party,&party);CHKERRQ(ierr);
+  ierr       = PetscNewLog(part,&party);CHKERRQ(ierr);
   part->data = (void*)party;
 
   ierr = PetscStrcpy(party->global,"gcf,gbf");CHKERRQ(ierr);

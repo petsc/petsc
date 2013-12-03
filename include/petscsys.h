@@ -1017,15 +1017,12 @@ M*/
 
    Synopsis:
     #include "petscsys.h"
-   PetscErrorCode PetscNew(struct type,((type *))result)
+   PetscErrorCode PetscNew(type **result)
 
    Not Collective
 
-   Input Parameter:
-.  type - structure name of space to be allocated. Memory of size sizeof(type) is allocated
-
    Output Parameter:
-.  result - memory allocated
+.  result - memory allocated, sized to match pointer type
 
    Level: beginner
 
@@ -1034,24 +1031,23 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscNew(A,b)      (PetscMalloc(sizeof(A),(b)) || PetscMemzero(*(b),sizeof(A)))
+#define PetscNew(b)      PetscCalloc1(1,(b))
 
 /*MC
-   PetscNewLog - Allocates memory of a particular type, zeros the memory! Aligned to PETSC_MEMALIGN. Associates the memory allocated
+   PetscNewLog - Allocates memory of a type matching pointer, zeros the memory! Aligned to PETSC_MEMALIGN. Associates the memory allocated
          with the given object using PetscLogObjectMemory().
 
    Synopsis:
     #include "petscsys.h"
-   PetscErrorCode PetscNewLog(PetscObject obj,struct type,((type *))result)
+   PetscErrorCode PetscNewLog(PetscObject obj,type **result)
 
    Not Collective
 
    Input Parameter:
-+  obj - object memory is logged to
--  type - structure name of space to be allocated. Memory of size sizeof(type) is allocated
+.  obj - object memory is logged to
 
    Output Parameter:
-.  result - memory allocated
+.  result - memory allocated, sized to match pointer type
 
    Level: developer
 
@@ -1060,7 +1056,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscNewLog(o,A,b) (PetscNew(A,b) || ((o) ? PetscLogObjectMemory((PetscObject)o,sizeof(A)) : 0))
+#define PetscNewLog(o,b) (PetscNew((b)) || ((o) ? PetscLogObjectMemory((PetscObject)o,sizeof(**(b))) : 0))
 
 /*MC
    PetscFree - Frees memory

@@ -292,8 +292,8 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
   out->view    = in->view;
 
   /* allocate entire send scatter context */
-  ierr = PetscNewLog(out,VecScatter_MPI_General,&out_to);CHKERRQ(ierr);
-  ierr = PetscNewLog(out,VecScatter_MPI_General,&out_from);CHKERRQ(ierr);
+  ierr = PetscNewLog(out,&out_to);CHKERRQ(ierr);
+  ierr = PetscNewLog(out,&out_from);CHKERRQ(ierr);
 
   ny                = in_to->starts[in_to->n];
   out_to->n         = in_to->n;
@@ -425,8 +425,8 @@ PetscErrorCode VecScatterCopy_PtoP_AllToAll(VecScatter in,VecScatter out)
   out->view      = in->view;
 
   /* allocate entire send scatter context */
-  ierr = PetscNewLog(out,VecScatter_MPI_General,&out_to);CHKERRQ(ierr);
-  ierr = PetscNewLog(out,VecScatter_MPI_General,&out_from);CHKERRQ(ierr);
+  ierr = PetscNewLog(out,&out_to);CHKERRQ(ierr);
+  ierr = PetscNewLog(out,&out_from);CHKERRQ(ierr);
 
   ny                = in_to->starts[in_to->n];
   out_to->n         = in_to->n;
@@ -1652,7 +1652,7 @@ PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscI
   PetscErrorCode         ierr;
 
   /* allocate entire send scatter context */
-  ierr  = PetscNewLog(ctx,VecScatter_MPI_General,&to);CHKERRQ(ierr);
+  ierr  = PetscNewLog(ctx,&to);CHKERRQ(ierr);
   to->n = nsends;
   for (n = 0, sendSize = 0; n < to->n; n++) sendSize += sendSizes[n];
 
@@ -1670,7 +1670,7 @@ PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscI
   ctx->todata = (void*) to;
 
   /* allocate entire receive scatter context */
-  ierr    = PetscNewLog(ctx,VecScatter_MPI_General,&from);CHKERRQ(ierr);
+  ierr    = PetscNewLog(ctx,&from);CHKERRQ(ierr);
   from->n = nrecvs;
   for (n = 0, recvSize = 0; n < from->n; n++) recvSize += recvSizes[n];
 
@@ -1811,7 +1811,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   if (slen != recvtotal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Total message lengths %D not expected %D",slen,recvtotal);
 
   /* allocate entire send scatter context */
-  ierr  = PetscNewLog(ctx,VecScatter_MPI_General,&to);CHKERRQ(ierr);
+  ierr  = PetscNewLog(ctx,&to);CHKERRQ(ierr);
   to->n = nrecvs;
 
   ierr  = PetscMalloc1(nrecvs,&to->requests);CHKERRQ(ierr);
@@ -1838,7 +1838,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   ierr = PetscFree3(rvalues,source,recv_waits);CHKERRQ(ierr);
 
   /* allocate entire receive scatter context */
-  ierr = PetscNewLog(ctx,VecScatter_MPI_General,&from);CHKERRQ(ierr);
+  ierr = PetscNewLog(ctx,&from);CHKERRQ(ierr);
   from->n = nsends;
 
   ierr = PetscMalloc1(nsends,&from->requests);CHKERRQ(ierr);

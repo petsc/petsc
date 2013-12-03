@@ -804,7 +804,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LGMRES(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,KSP_LGMRES,&lgmres);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,&lgmres);CHKERRQ(ierr);
 
   ksp->data               = (void*)lgmres;
   ksp->ops->buildsolution = KSPBuildSolution_LGMRES;

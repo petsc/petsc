@@ -645,7 +645,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Chebyshev(KSP ksp)
   KSP_Chebyshev  *chebyshevP;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,KSP_Chebyshev,&chebyshevP);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,&chebyshevP);CHKERRQ(ierr);
 
   ksp->data = (void*)chebyshevP;
   ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);

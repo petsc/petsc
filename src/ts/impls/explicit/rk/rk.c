@@ -820,7 +820,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
   ts->ops->evaluatestep   = TSEvaluateStep_RK;
   ts->ops->setfromoptions = TSSetFromOptions_RK;
 
-  ierr = PetscNewLog(ts,TS_RK,&th);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;
 
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetType_C",TSRKGetType_RK);CHKERRQ(ierr);

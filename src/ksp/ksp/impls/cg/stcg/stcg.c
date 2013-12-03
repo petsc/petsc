@@ -746,7 +746,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_STCG(KSP ksp)
   KSP_STCG       *cg;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,KSP_STCG, &cg);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,&cg);CHKERRQ(ierr);
 
   cg->radius = 0.0;
   cg->dtype  = STCG_UNPRECONDITIONED_DIRECTION;

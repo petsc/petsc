@@ -63,7 +63,7 @@ PetscErrorCode  PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr       = PetscNew(struct _n_PetscViewers,v);CHKERRQ(ierr);
+  ierr       = PetscNew(v);CHKERRQ(ierr);
   (*v)->n    = 64;
   (*v)->comm = comm;
 

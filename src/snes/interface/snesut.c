@@ -370,7 +370,7 @@ PetscErrorCode  SNESMonitorSetRatio(SNES snes,PetscViewer viewer)
     ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)snes),"stdout",&viewer);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
   }
-  ierr = PetscNewLog(snes,SNESMonitorRatioContext,&ctx);CHKERRQ(ierr);
+  ierr = PetscNewLog(snes,&ctx);CHKERRQ(ierr);
   ierr = SNESGetConvergenceHistory(snes,&history,NULL,NULL);CHKERRQ(ierr);
   if (!history) {
     ierr = PetscMalloc1(100,&ctx->history);CHKERRQ(ierr);

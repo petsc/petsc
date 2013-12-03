@@ -838,7 +838,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr       = PetscNewLog(snes, SNES_NASM, &nasm);CHKERRQ(ierr);
+  ierr       = PetscNewLog(snes,&nasm);CHKERRQ(ierr);
   snes->data = (void*)nasm;
 
   nasm->n        = PETSC_DECIDE;

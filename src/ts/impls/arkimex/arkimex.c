@@ -1425,7 +1425,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS ts)
   ts->ops->snesfunction   = SNESTSFormFunction_ARKIMEX;
   ts->ops->snesjacobian   = SNESTSFormJacobian_ARKIMEX;
 
-  ierr = PetscNewLog(ts,TS_ARKIMEX,&th);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;
   th->imex = PETSC_TRUE;
 

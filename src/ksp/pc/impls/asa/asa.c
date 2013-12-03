@@ -1992,7 +1992,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASA(PC pc)
   }
 
   /* Create new PC_ASA object */
-  ierr     = PetscNewLog(pc,PC_ASA,&asa);CHKERRQ(ierr);
+  ierr     = PetscNewLog(pc,&asa);CHKERRQ(ierr);
   pc->data = (void*)asa;
 
   /* WORK: find some better initial values  */

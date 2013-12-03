@@ -468,7 +468,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscNewLog(ksp,KSP_LSQR,&lsqr);CHKERRQ(ierr);
+  ierr         = PetscNewLog(ksp,&lsqr);CHKERRQ(ierr);
   lsqr->se     = NULL;
   lsqr->se_flg = PETSC_FALSE;
   lsqr->arnorm = 0.0;

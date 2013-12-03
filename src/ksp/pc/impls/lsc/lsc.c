@@ -228,7 +228,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_LSC(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr     = PetscNewLog(pc,PC_LSC,&lsc);CHKERRQ(ierr);
+  ierr     = PetscNewLog(pc,&lsc);CHKERRQ(ierr);
   pc->data = (void*)lsc;
 
   pc->ops->apply           = PCApply_LSC;

@@ -381,7 +381,7 @@ static PetscErrorCode PhysicsCreate_Advect(Model mod,Physics phys)
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Advect;
   phys->riemann = PhysicsRiemann_Advect;
-  ierr = PetscNew(Physics_Advect,&phys->data);CHKERRQ(ierr);
+  ierr = PetscNew(&phys->data);CHKERRQ(ierr);
   advect = (Physics_Advect*)phys->data;
   ierr = PetscOptionsHead("Advect options");CHKERRQ(ierr);
   {
@@ -549,7 +549,7 @@ static PetscErrorCode PhysicsCreate_SW(Model mod,Physics phys)
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_SW;
   phys->riemann = PhysicsRiemann_SW;
-  ierr          = PetscNew(Physics_SW,&phys->data);CHKERRQ(ierr);
+  ierr          = PetscNew(&phys->data);CHKERRQ(ierr);
   sw            = (Physics_SW*)phys->data;
   ierr          = PetscOptionsHead("SW options");CHKERRQ(ierr);
   {
@@ -731,7 +731,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys)
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Euler;
   phys->riemann = PhysicsRiemann_Euler_Rusanov;
-  ierr = PetscNew(Physics_Euler,&phys->data);CHKERRQ(ierr);
+  ierr = PetscNew(&phys->data);CHKERRQ(ierr);
   eu   = (Physics_Euler*)phys->data;
   ierr = PetscOptionsHead("Euler options");CHKERRQ(ierr);
   {
@@ -1598,7 +1598,7 @@ static PetscErrorCode ModelBoundaryRegister(Model mod,const char *name,BoundaryF
   BoundaryLink   link;
 
   PetscFunctionBeginUser;
-  ierr          = PetscNew(struct _n_BoundaryLink,&link);CHKERRQ(ierr);
+  ierr          = PetscNew(&link);CHKERRQ(ierr);
   ierr          = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
   link->numids  = numids;
   ierr          = PetscMalloc1(numids,&link->ids);CHKERRQ(ierr);
@@ -1672,7 +1672,7 @@ static PetscErrorCode ModelFunctionalRegister(Model mod,const char *name,PetscIn
 
   PetscFunctionBeginUser;
   for (ptr=&mod->functionalRegistry; *ptr; ptr = &(*ptr)->next) lastoffset = (*ptr)->offset;
-  ierr         = PetscNew(struct _n_FunctionalLink,&link);CHKERRQ(ierr);
+  ierr         = PetscNew(&link);CHKERRQ(ierr);
   ierr         = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
   link->offset = lastoffset + 1;
   link->func   = func;
@@ -2201,9 +2201,9 @@ int main(int argc, char **argv)
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
 
-  ierr = PetscNew(struct _n_User,&user);CHKERRQ(ierr);
-  ierr = PetscNew(struct _n_Model,&user->model);CHKERRQ(ierr);
-  ierr = PetscNew(struct _n_Physics,&user->model->physics);CHKERRQ(ierr);
+  ierr = PetscNew(&user);CHKERRQ(ierr);
+  ierr = PetscNew(&user->model);CHKERRQ(ierr);
+  ierr = PetscNew(&user->model->physics);CHKERRQ(ierr);
   mod  = user->model;
   phys = mod->physics;
   mod->comm = comm;

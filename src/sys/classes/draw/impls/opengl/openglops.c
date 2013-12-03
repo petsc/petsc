@@ -1169,7 +1169,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_GLUT(PetscDraw draw)
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
 
   /* actually create and open the window */
-  ierr = PetscNew(PetscDraw_OpenGL,&win);CHKERRQ(ierr);
+  ierr = PetscNew(&win);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)draw,sizeof(PetscDraw_OpenGL));CHKERRQ(ierr);
 
   if (x < 0 || y < 0)   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative corner of window");
@@ -1287,7 +1287,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_OpenGLES(PetscDraw draw)
   NSLog(@"Beginning PetscDrawCreate_OpenGLES()");
 
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
-  ierr = PetscNew(PetscDraw_OpenGL,&win);CHKERRQ(ierr);
+  ierr = PetscNew(&win);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)draw,sizeof(PetscDraw_OpenGL));CHKERRQ(ierr);
 
   draw->data = win;

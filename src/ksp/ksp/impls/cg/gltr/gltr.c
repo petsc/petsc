@@ -1504,7 +1504,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp)
   KSP_GLTR       *cg;
 
   PetscFunctionBegin;
-  ierr       = PetscNewLog(ksp, KSP_GLTR, &cg);CHKERRQ(ierr);
+  ierr       = PetscNewLog(ksp,&cg);CHKERRQ(ierr);
   cg->radius = 0.0;
   cg->dtype  = GLTR_UNPRECONDITIONED_DIRECTION;
 

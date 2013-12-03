@@ -327,7 +327,7 @@ PetscErrorCode  PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
     PrintfQueue next;
     size_t      fullLength = 8191;
 
-    ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
+    ierr = PetscNew(&next);CHKERRQ(ierr);
     if (petsc_printfqueue) {
       petsc_printfqueue->next = next;
       petsc_printfqueue       = next;
@@ -395,7 +395,7 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char forma
     va_list     Argp;
     PrintfQueue next;
     size_t      fullLength = 8191;
-    ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
+    ierr = PetscNew(&next);CHKERRQ(ierr);
     if (petsc_printfqueue) {
       petsc_printfqueue->next = next;
       petsc_printfqueue       = next;

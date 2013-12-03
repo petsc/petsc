@@ -446,7 +446,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
 
-  ierr     = PetscNewLog(B,Mat_LUSOL,&lusol);CHKERRQ(ierr);
+  ierr     = PetscNewLog(B,&lusol);CHKERRQ(ierr);
   B->spptr = lusol;
 
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_LUSOL;

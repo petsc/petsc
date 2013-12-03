@@ -1311,7 +1311,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
 
   PetscFunctionBegin;
   /* Creates the private data structure for this preconditioner and attach it to the PC object. */
-  ierr      = PetscNewLog(pc,PC_BDDC,&pcbddc);CHKERRQ(ierr);
+  ierr      = PetscNewLog(pc,&pcbddc);CHKERRQ(ierr);
   pc->data  = (void*)pcbddc;
 
   /* create PCIS data structure */

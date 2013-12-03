@@ -253,7 +253,7 @@ PetscErrorCode  PetscSubcommCreate(MPI_Comm comm,PetscSubcomm *psubcomm)
   PetscMPIInt    rank,size;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_PetscSubcomm,psubcomm);CHKERRQ(ierr);
+  ierr = PetscNew(psubcomm);CHKERRQ(ierr);
 
   /* set defaults */
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);

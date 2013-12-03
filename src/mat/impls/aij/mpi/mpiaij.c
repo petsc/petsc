@@ -2784,7 +2784,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ_interlaced(Mat mat,PetscInt nsubcomm
     *matredundant = C;
 
     /* create a supporting struct and attach it to C for reuse */
-    ierr = PetscNewLog(C,Mat_Redundant,&redund);CHKERRQ(ierr);
+    ierr = PetscNewLog(C,&redund);CHKERRQ(ierr);
     if (subsize == 1) {
       Mat_SeqAIJ *c = (Mat_SeqAIJ*)C->data;
       c->redundant = redund;
@@ -2895,7 +2895,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
 
   if (reuse == MAT_INITIAL_MATRIX) {
     /* create a supporting struct and attach it to C for reuse */
-    ierr = PetscNewLog(*matredundant,Mat_Redundant,&redund);CHKERRQ(ierr);
+    ierr = PetscNewLog(*matredundant,&redund);CHKERRQ(ierr);
     if (subsize == 1) {
       Mat_SeqAIJ *c = (Mat_SeqAIJ*)(*matredundant)->data;
       c->redundant = redund;
@@ -4725,7 +4725,7 @@ PetscErrorCode  MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm,Mat seqmat,PetscI
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  ierr = PetscNew(Mat_Merge_SeqsToMPI,&merge);CHKERRQ(ierr);
+  ierr = PetscNew(&merge);CHKERRQ(ierr);
   ierr = PetscMalloc1(size,&status);CHKERRQ(ierr);
 
   /* determine row ownership */
@@ -5624,7 +5624,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)B),&size);CHKERRQ(ierr);
 
-  ierr          = PetscNewLog(B,Mat_MPIAIJ,&b);CHKERRQ(ierr);
+  ierr          = PetscNewLog(B,&b);CHKERRQ(ierr);
   B->data       = (void*)b;
   ierr          = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->assembled  = PETSC_FALSE;

@@ -107,7 +107,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(v, PetscViewer_HDF5, &hdf5);CHKERRQ(ierr);
+  ierr = PetscNewLog(v,&hdf5);CHKERRQ(ierr);
 
   v->data         = (void*) hdf5;
   v->ops->destroy = PetscViewerDestroy_HDF5;

@@ -1005,7 +1005,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HYPRE(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_HYPRE,&jac);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&jac);CHKERRQ(ierr);
 
   pc->data                = jac;
   pc->ops->destroy        = PCDestroy_HYPRE;
@@ -1222,7 +1222,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_PFMG(PC pc)
   PC_PFMG        *ex;
 
   PetscFunctionBegin;
-  ierr     = PetscNew(PC_PFMG,&ex);CHKERRQ(ierr); \
+  ierr     = PetscNew(&ex);CHKERRQ(ierr); \
   pc->data = ex;
 
   ex->its            = 1;
@@ -1472,7 +1472,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SysPFMG(PC pc)
   PC_SysPFMG     *ex;
 
   PetscFunctionBegin;
-  ierr     = PetscNew(PC_SysPFMG,&ex);CHKERRQ(ierr); \
+  ierr     = PetscNew(&ex);CHKERRQ(ierr); \
   pc->data = ex;
 
   ex->its            = 1;

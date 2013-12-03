@@ -598,7 +598,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat A,MatType type,MatR
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr     = PetscNewLog(B,Mat_SeqAIJPERM,&aijperm);CHKERRQ(ierr);
+  ierr     = PetscNewLog(B,&aijperm);CHKERRQ(ierr);
   B->spptr = (void*) aijperm;
 
   /* Set function pointers for methods that we inherit from AIJ but override. */

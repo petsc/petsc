@@ -57,7 +57,7 @@ PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],Mat
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
 
   ierr      = MatCreate(comm,&FFT);CHKERRQ(ierr);
-  ierr      = PetscNewLog(FFT,Mat_FFT,&fft);CHKERRQ(ierr);
+  ierr      = PetscNewLog(FFT,&fft);CHKERRQ(ierr);
   FFT->data = (void*)fft;
   N         = 1;
   for (i=0; i<ndim; i++) {

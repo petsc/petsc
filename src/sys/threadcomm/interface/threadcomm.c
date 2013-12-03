@@ -143,11 +143,11 @@ PetscErrorCode PetscThreadCommCreate(PetscThreadComm *tcomm)
 
   *tcomm = NULL;
 
-  ierr                   = PetscNew(struct _p_PetscThreadComm,&tcommout);CHKERRQ(ierr);
+  ierr                   = PetscNew(&tcommout);CHKERRQ(ierr);
   tcommout->refct        = 0;
   tcommout->nworkThreads =  -1;
   tcommout->affinities   = NULL;
-  ierr                   = PetscNew(struct _PetscThreadCommOps,&tcommout->ops);CHKERRQ(ierr);
+  ierr                   = PetscNew(&tcommout->ops);CHKERRQ(ierr);
   tcommout->leader       = 0;
   *tcomm                 = tcommout;
 
@@ -1229,7 +1229,7 @@ PetscErrorCode PetscThreadCommWorldInitialize(void)
   tcomm = PETSC_THREAD_COMM_WORLD;
   ierr = PetscThreadCommSetNThreads(tcomm,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscThreadCommSetAffinities(tcomm,NULL);CHKERRQ(ierr);
-  ierr = PetscNew(struct _p_PetscThreadCommJobQueue,&PetscJobQueue);CHKERRQ(ierr);
+  ierr = PetscNew(&PetscJobQueue);CHKERRQ(ierr);
 
   tcomm->nkernels = 16;
 

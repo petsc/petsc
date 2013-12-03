@@ -137,7 +137,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A,MatType type,MatRe
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr     = PetscNewLog(B,Mat_AIJCRL,&aijcrl);CHKERRQ(ierr);
+  ierr     = PetscNewLog(B,&aijcrl);CHKERRQ(ierr);
   B->spptr = (void*) aijcrl;
 
   /* Set function pointers for methods that we inherit from AIJ but override. */

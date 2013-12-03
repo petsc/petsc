@@ -575,7 +575,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BJacobi(PC pc)
   PC_BJacobi     *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_BJacobi,&jac);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&jac);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
 
   pc->ops->apply           = 0;
@@ -812,7 +812,7 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
       ierr        = PetscMalloc(sizeof(KSP),&jac->ksp);CHKERRQ(ierr);
       jac->ksp[0] = ksp;
 
-      ierr      = PetscNewLog(pc,PC_BJacobi_Singleblock,&bjac);CHKERRQ(ierr);
+      ierr      = PetscNewLog(pc,&bjac);CHKERRQ(ierr);
       jac->data = (void*)bjac;
     } else {
       ksp  = jac->ksp[0];
@@ -1028,7 +1028,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
       pc->ops->applytranspose= PCApplyTranspose_BJacobi_Multiblock;
       pc->ops->setuponblocks = PCSetUpOnBlocks_BJacobi_Multiblock;
 
-      ierr = PetscNewLog(pc,PC_BJacobi_Multiblock,&bjac);CHKERRQ(ierr);
+      ierr = PetscNewLog(pc,&bjac);CHKERRQ(ierr);
       ierr = PetscMalloc1(n_local,&jac->ksp);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory((PetscObject)pc,sizeof(n_local*sizeof(KSP)));CHKERRQ(ierr);
       ierr = PetscMalloc2(n_local,&bjac->x,n_local,&bjac->y);CHKERRQ(ierr);
@@ -1208,7 +1208,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
   jac->n_local = 1; /* currently only a single block is supported for a subcommunicator */
   if (!pc->setupcalled) {
     wasSetup  = PETSC_FALSE;
-    ierr      = PetscNewLog(pc,PC_BJacobi_Multiproc,&mpjac);CHKERRQ(ierr);
+    ierr      = PetscNewLog(pc,&mpjac);CHKERRQ(ierr);
     jac->data = (void*)mpjac;
 
     /* initialize datastructure mpjac */

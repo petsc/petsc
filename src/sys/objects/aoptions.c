@@ -88,7 +88,7 @@ static int PetscOptionsCreate_Private(const char opt[],const char text[],const c
   ierr = PetscOptionsValidKey(opt,&valid);CHKERRQ(ierr);
   if (!valid) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"The option '%s' is not a valid key",opt);
 
-  ierr            = PetscNew(struct _n_PetscOptions,amsopt);CHKERRQ(ierr);
+  ierr            = PetscNew(amsopt);CHKERRQ(ierr);
   (*amsopt)->next = 0;
   (*amsopt)->set  = PETSC_FALSE;
   (*amsopt)->type = t;

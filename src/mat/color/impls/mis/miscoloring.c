@@ -407,7 +407,7 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_MIS(MatColoring mc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr                    = PetscNewLog(mc,MC_MIS,&mis);CHKERRQ(ierr);
+  ierr                    = PetscNewLog(mc,&mis);CHKERRQ(ierr);
   mc->data                = mis;
   mc->ops->apply          = MatColoringApply_MIS;
   mc->ops->view           = NULL;

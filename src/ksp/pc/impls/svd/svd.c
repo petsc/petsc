@@ -386,7 +386,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr          = PetscNewLog(pc,PC_SVD,&jac);CHKERRQ(ierr);
+  ierr          = PetscNewLog(pc,&jac);CHKERRQ(ierr);
   jac->zerosing = 1.e-12;
   pc->data      = (void*)jac;
 

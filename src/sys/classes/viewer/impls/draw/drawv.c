@@ -462,7 +462,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer)
   PetscViewer_Draw *vdraw;
 
   PetscFunctionBegin;
-  ierr         = PetscNewLog(viewer,PetscViewer_Draw,&vdraw);CHKERRQ(ierr);
+  ierr         = PetscNewLog(viewer,&vdraw);CHKERRQ(ierr);
   viewer->data = (void*)vdraw;
 
   viewer->ops->flush            = PetscViewerFlush_Draw;

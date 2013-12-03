@@ -2875,7 +2875,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJ(Mat B)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr    = PetscNewLog(B,Mat_MPIBAIJ,&b);CHKERRQ(ierr);
+  ierr    = PetscNewLog(B,&b);CHKERRQ(ierr);
   B->data = (void*)b;
 
   ierr         = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);

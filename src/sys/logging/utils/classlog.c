@@ -28,7 +28,7 @@ PetscErrorCode PetscClassRegLogCreate(PetscClassRegLog *classLog)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_PetscClassRegLog, &l);CHKERRQ(ierr);
+  ierr = PetscNew(&l);CHKERRQ(ierr);
 
   l->numClasses = 0;
   l->maxClasses = 100;
@@ -113,7 +113,7 @@ PetscErrorCode ClassPerfLogCreate(PetscClassPerfLog *classLog)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_PetscClassPerfLog, &l);CHKERRQ(ierr);
+  ierr = PetscNew(&l);CHKERRQ(ierr);
 
   l->numClasses = 0;
   l->maxClasses = 100;

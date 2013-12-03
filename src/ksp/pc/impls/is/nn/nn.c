@@ -181,7 +181,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_NN(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr     = PetscNewLog(pc,PC_NN,&pcnn);CHKERRQ(ierr);
+  ierr     = PetscNewLog(pc,&pcnn);CHKERRQ(ierr);
   pc->data = (void*)pcnn;
 
   ierr             = PCISCreate(pc);CHKERRQ(ierr);

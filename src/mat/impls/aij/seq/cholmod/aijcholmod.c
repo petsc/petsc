@@ -72,7 +72,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A,MatFactorType ftyp
   ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
-  ierr = PetscNewLog(B,Mat_CHOLMOD,&chol);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&chol);CHKERRQ(ierr);
 
   chol->Wrap    = MatWrapCholmod_seqaij;
   chol->Destroy = MatDestroy_SeqAIJ;

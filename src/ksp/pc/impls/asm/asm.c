@@ -1052,7 +1052,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
   PC_ASM         *osm;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_ASM,&osm);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&osm);CHKERRQ(ierr);
 
   osm->n                 = PETSC_DECIDE;
   osm->n_local           = 0;

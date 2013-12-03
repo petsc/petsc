@@ -1362,7 +1362,7 @@ PetscErrorCode  PCCreateGAMG_AGG(PC pc)
 
   PetscFunctionBegin;
   /* create sub context for SA */
-  ierr            = PetscNewLog(pc, PC_GAMG_AGG, &pc_gamg_agg);CHKERRQ(ierr);
+  ierr            = PetscNewLog(pc,&pc_gamg_agg);CHKERRQ(ierr);
   pc_gamg->subctx = pc_gamg_agg;
 
   pc_gamg->ops->setfromoptions = PCSetFromOptions_GAMG_AGG;
