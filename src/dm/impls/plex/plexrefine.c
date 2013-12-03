@@ -1883,7 +1883,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
       coneNew[1] = eStartNew + (eEnd - eStart)*2 + (fEnd - fStart)*3 + (c - cStart);
       orntNew[1] = 0;
       coneNew[2] = eStartNew + (eEnd - eStart)*2 + (cone[2] - fStart)*3 + GetTetSomething_Static(ornt[2], 0);
-      orntNew[2] = ornt[1] < 0 ? 0 : -2;
+      orntNew[2] = ornt[2] < 0 ? 0 : -2;
       ierr = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
       ierr = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
 #if 1
