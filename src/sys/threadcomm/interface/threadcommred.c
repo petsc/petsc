@@ -432,12 +432,12 @@ PetscErrorCode PetscThreadCommReductionCreate(PetscThreadComm tcomm,PetscThreadC
   ierr         = PetscNew(&redout);CHKERRQ(ierr);
   redout->nreds=0;
   redout->ctr  = 0;
-  ierr         = PetscMalloc1(PETSC_REDUCTIONS_MAX,&redout->redctx);CHKERRQ(ierr);
+  ierr         = PetscMalloc1(PETSC_REDUCTIONS_MAX,(struct _p_PetscThreadCommRedCtx**)&redout->redctx);CHKERRQ(ierr);
   ierr         = PetscMalloc1(PETSC_REDUCTIONS_MAX*tcomm->nworkThreads,&redout->redctx[0].thread_status);CHKERRQ(ierr);
   /* Note that the size of local_red is twice the number of threads. The first half holds the local reductions
      from each thread while the second half is used only for maxloc and minloc operations to hold the local max and min locations
   */
-  ierr = PetscMalloc1(PETSC_REDUCTIONS_MAX*2*tcomm->nworkThreads,&redout->redctx[0].local_red);CHKERRQ(ierr);
+  ierr = PetscMalloc1(PETSC_REDUCTIONS_MAX*2*tcomm->nworkThreads,(PetscScalar**)&redout->redctx[0].local_red);CHKERRQ(ierr);
   for (i=0; i < PETSC_REDUCTIONS_MAX; i++) {
     redctx                = &redout->redctx[i];
     redctx->thread_status = redout->redctx[0].thread_status + i*tcomm->nworkThreads;
