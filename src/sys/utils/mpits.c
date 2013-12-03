@@ -308,10 +308,11 @@ PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm,PetscMPIInt count,MPI_Dataty
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscCommBuildTwoSidedF_Reference"
-static PetscErrorCode PetscCommBuildTwoSidedF_Reference(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata,PetscMPIInt ntags,
-                                                        PetscErrorCode (*send)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,PetscMPIInt,void*,MPI_Request[],void*),
-                                                        PetscErrorCode (*recv)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,void*,MPI_Request[],void*),void *ctx)
+#define __FUNCT__ "PetscCommBuildTwoSidedFReq_Reference"
+static PetscErrorCode PetscCommBuildTwoSidedFReq_Reference(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,
+                                                           PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata,PetscMPIInt ntags,MPI_Request **toreqs,MPI_Request **fromreqs,
+                                                           PetscErrorCode (*send)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,PetscMPIInt,void*,MPI_Request[],void*),
+                                                           PetscErrorCode (*recv)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,void*,MPI_Request[],void*),void *ctx)
 {
   PetscErrorCode ierr;
   PetscMPIInt i,*tag;
@@ -330,8 +331,8 @@ static PetscErrorCode PetscCommBuildTwoSidedF_Reference(MPI_Comm comm,PetscMPIIn
   /* Perform complete initial rendezvous */
   ierr = PetscCommBuildTwoSided(comm,count,dtype,nto,toranks,todata,nfrom,fromranks,fromdata);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1((nto + *nfrom)*ntags,&sendreq);CHKERRQ(ierr);
-  recvreq = sendreq + nto*ntags;
+  ierr = PetscMalloc1(nto*ntags,&sendreq);CHKERRQ(ierr);
+  ierr = PetscMalloc1(*nfrom*ntags,&recvreq);CHKERRQ(ierr);
 
   ierr = MPI_Type_get_extent(dtype,&lb,&unitbytes);CHKERRQ(ierr);
   if (lb != 0) SETERRQ1(comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
@@ -342,20 +343,21 @@ static PetscErrorCode PetscCommBuildTwoSidedF_Reference(MPI_Comm comm,PetscMPIIn
     void *header = (*(char**)fromdata) + count*unitbytes*i;
     ierr = (*recv)(comm,tag,(*fromranks)[i],header,recvreq+i*ntags,ctx);CHKERRQ(ierr);
   }
-  ierr = MPI_Waitall((nto+*nfrom)*ntags,sendreq,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-  ierr = PetscFree(sendreq);CHKERRQ(ierr);
   ierr = PetscFree(tag);CHKERRQ(ierr);
   ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
+  *toreqs = sendreq;
+  *fromreqs = recvreq;
   PetscFunctionReturn(0);
 }
 
 #if defined(PETSC_HAVE_MPI_IBARRIER)
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscCommBuildTwoSidedF_Ibarrier"
-static PetscErrorCode PetscCommBuildTwoSidedF_Ibarrier(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata,PetscMPIInt ntags,
-                                                       PetscErrorCode (*send)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,PetscMPIInt,void*,MPI_Request[],void*),
-                                                       PetscErrorCode (*recv)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,void*,MPI_Request[],void*),void *ctx)
+#define __FUNCT__ "PetscCommBuildTwoSidedFReq_Ibarrier"
+static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,
+                                                          PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata,PetscMPIInt ntags,MPI_Request **toreqs,MPI_Request **fromreqs,
+                                                          PetscErrorCode (*send)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,PetscMPIInt,void*,MPI_Request[],void*),
+                                                          PetscErrorCode (*recv)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,void*,MPI_Request[],void*),void *ctx)
 {
   PetscErrorCode ierr;
   PetscMPIInt    nrecvs,tag,*tags,done,i;
@@ -373,7 +375,8 @@ static PetscErrorCode PetscCommBuildTwoSidedF_Ibarrier(MPI_Comm comm,PetscMPIInt
   ierr = MPI_Type_get_extent(dtype,&lb,&unitbytes);CHKERRQ(ierr);
   if (lb != 0) SETERRQ1(comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
   tdata = (char*)todata;
-  ierr = PetscMalloc2(nto,&sendreqs,nto*ntags,&usendreqs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nto,&sendreqs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nto*ntags,&usendreqs);CHKERRQ(ierr);
   /* Post synchronous sends */
   for (i=0; i<nto; i++) {
     ierr = MPI_Issend((void*)(tdata+count*unitbytes*i),count,dtype,toranks[i],tag,comm,sendreqs+i);CHKERRQ(ierr);
@@ -421,11 +424,10 @@ static PetscErrorCode PetscCommBuildTwoSidedF_Ibarrier(MPI_Comm comm,PetscMPIInt
   ierr = PetscSegBufferDestroy(&segrank);CHKERRQ(ierr);
   ierr = PetscSegBufferExtractAlloc(segdata,fromdata);CHKERRQ(ierr);
   ierr = PetscSegBufferDestroy(&segdata);CHKERRQ(ierr);
-  ierr = PetscSegBufferExtractInPlace(segreq,&req);CHKERRQ(ierr);
-  ierr = MPI_Waitall(nto*ntags,usendreqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-  ierr = MPI_Waitall(nrecvs*ntags,req,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  *toreqs = usendreqs;
+  ierr = PetscSegBufferExtractAlloc(segreq,fromreqs);CHKERRQ(ierr);
   ierr = PetscSegBufferDestroy(&segreq);CHKERRQ(ierr);
-  ierr = PetscFree2(sendreqs,usendreqs);CHKERRQ(ierr);
+  ierr = PetscFree(sendreqs);CHKERRQ(ierr);
   ierr = PetscFree(tags);CHKERRQ(ierr);
   ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -468,13 +470,71 @@ static PetscErrorCode PetscCommBuildTwoSidedF_Ibarrier(MPI_Comm comm,PetscMPIInt
    The MPI_Ibarrier implementation uses the algorithm in
    Hoefler, Siebert and Lumsdaine, Scalable communication protocols for dynamic sparse data exchange, 2010.
 
-.seealso: PetscCommBuildTwoSided(), PetscGatherNumberOfMessages(), PetscGatherMessageLengths()
+.seealso: PetscCommBuildTwoSided(), PetscCommBuildTwoSidedFReq(), PetscGatherNumberOfMessages(), PetscGatherMessageLengths()
 @*/
 PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata,PetscMPIInt ntags,
                                        PetscErrorCode (*send)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,PetscMPIInt,void*,MPI_Request[],void*),
                                        PetscErrorCode (*recv)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,void*,MPI_Request[],void*),void *ctx)
 {
-  PetscErrorCode         ierr,(*f)(MPI_Comm,PetscMPIInt,MPI_Datatype,PetscMPIInt,const PetscMPIInt[],const void*,PetscMPIInt*,PetscMPIInt**,void*,PetscMPIInt,
+  PetscErrorCode ierr;
+  MPI_Request    *toreqs,*fromreqs;
+
+  PetscFunctionBegin;
+  ierr = PetscCommBuildTwoSidedFReq(comm,count,dtype,nto,toranks,todata,nfrom,fromranks,fromdata,ntags,&toreqs,&fromreqs,send,recv,ctx);CHKERRQ(ierr);
+  ierr = MPI_Waitall(nto*ntags,toreqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  ierr = MPI_Waitall(*nfrom*ntags,fromreqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  ierr = PetscFree(toreqs);CHKERRQ(ierr);
+  ierr = PetscFree(fromreqs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscCommBuildTwoSidedFReq"
+/*@C
+   PetscCommBuildTwoSidedFReq - discovers communicating ranks given one-sided information, calling user-defined functions during rendezvous, returns requests
+
+   Collective on MPI_Comm
+
+   Input Arguments:
++  comm - communicator
+.  count - number of entries to send/receive in initial rendezvous (must match on all ranks)
+.  dtype - datatype to send/receive from each rank (must match on all ranks)
+.  nto - number of ranks to send data to
+.  toranks - ranks to send to (array of length nto)
+.  todata - data to send to each rank (packed)
+.  ntags - number of tags needed by send/recv callbacks
+.  send - callback invoked on sending process when ready to send primary payload
+.  recv - callback invoked on receiving process after delivery of rendezvous message
+-  ctx - context for callbacks
+
+   Output Arguments:
++  nfrom - number of ranks receiving messages from
+.  fromranks - ranks receiving messages from (length nfrom; caller should PetscFree())
+.  fromdata - packed data from each rank, each with count entries of type dtype (length nfrom, caller responsible for PetscFree())
+.  toreqs - array of nto*ntags sender requests (caller must wait on these, then PetscFree())
+-  fromreqs - array of nfrom*ntags receiver requests (caller must wait on these, then PetscFree())
+
+   Level: developer
+
+   Notes:
+   This memory-scalable interface is an alternative to calling PetscGatherNumberOfMessages() and
+   PetscGatherMessageLengths(), possibly with a subsequent round of communication to send other data.
+
+   Basic data types as well as contiguous types are supported, but non-contiguous (e.g., strided) types are not.
+
+   References:
+   The MPI_Ibarrier implementation uses the algorithm in
+   Hoefler, Siebert and Lumsdaine, Scalable communication protocols for dynamic sparse data exchange, 2010.
+
+.seealso: PetscCommBuildTwoSided(), PetscCommBuildTwoSidedF(), PetscGatherNumberOfMessages(), PetscGatherMessageLengths()
+@*/
+PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,
+                                          PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata,PetscMPIInt ntags,MPI_Request **toreqs,MPI_Request **fromreqs,
+                                          PetscErrorCode (*send)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,PetscMPIInt,void*,MPI_Request[],void*),
+                                          PetscErrorCode (*recv)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,void*,MPI_Request[],void*),void *ctx)
+{
+  PetscErrorCode         ierr,(*f)(MPI_Comm,PetscMPIInt,MPI_Datatype,PetscMPIInt,const PetscMPIInt[],const void*,
+                                   PetscMPIInt*,PetscMPIInt**,void*,PetscMPIInt,MPI_Request**,MPI_Request**,
                                    PetscErrorCode (*send)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,PetscMPIInt,void*,MPI_Request[],void*),
                                    PetscErrorCode (*recv)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,void*,MPI_Request[],void*),void *ctx);
   PetscBuildTwoSidedType buildtype = PETSC_BUILDTWOSIDED_NOTSET;
@@ -486,18 +546,18 @@ PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm comm,PetscMPIInt count,MPI_Datat
   switch (buildtype) {
   case PETSC_BUILDTWOSIDED_IBARRIER:
 #if defined(PETSC_HAVE_MPI_IBARRIER)
-    f = PetscCommBuildTwoSidedF_Ibarrier;
+    f = PetscCommBuildTwoSidedFReq_Ibarrier;
 #else
     SETERRQ(comm,PETSC_ERR_PLIB,"MPI implementation does not provide MPI_Ibarrier (part of MPI-3)");
 #endif
     break;
   case PETSC_BUILDTWOSIDED_ALLREDUCE:
   case PETSC_BUILDTWOSIDED_REDSCATTER:
-    f = PetscCommBuildTwoSidedF_Reference;
+    f = PetscCommBuildTwoSidedFReq_Reference;
     break;
   default: SETERRQ(comm,PETSC_ERR_PLIB,"Unknown method for building two-sided communication");
   }
-  ierr = (*f)(comm,count,dtype,nto,toranks,todata,nfrom,fromranks,fromdata,ntags,send,recv,ctx);CHKERRQ(ierr);
+  ierr = (*f)(comm,count,dtype,nto,toranks,todata,nfrom,fromranks,fromdata,ntags,toreqs,fromreqs,send,recv,ctx);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PETSC_BuildTwoSided,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

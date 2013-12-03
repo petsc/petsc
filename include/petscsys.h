@@ -2471,6 +2471,11 @@ PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm,PetscMPIInt,MPI_Dat
                                                     PetscErrorCode (*send)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,PetscMPIInt,void*,MPI_Request[],void*),
                                                     PetscErrorCode (*recv)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,void*,MPI_Request[],void*),void *ctx)
   PetscAttrMPIPointerWithType(6,3);
+PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm,PetscMPIInt,MPI_Datatype,PetscMPIInt,const PetscMPIInt[],const void*,PetscMPIInt*,PetscMPIInt**,void*,PetscMPIInt,
+                                                       MPI_Request**,MPI_Request**,
+                                                       PetscErrorCode (*send)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,PetscMPIInt,void*,MPI_Request[],void*),
+                                                       PetscErrorCode (*recv)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,void*,MPI_Request[],void*),void *ctx)
+  PetscAttrMPIPointerWithType(6,3);
 
 /*E
     PetscBuildTwoSidedType - algorithm for setting up two-sided communication
