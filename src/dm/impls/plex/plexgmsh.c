@@ -84,8 +84,8 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   if (!rank) {
     fpos = ftell(fd);
     for (c = 0; c < numCells; ++c) {
-      PetscInt cone[8], numCorners, t;
-      int      i, cellType, numTags, tag;
+      PetscInt numCorners, t;
+      int      cone[8], i, cellType, numTags, tag;
 
       snum = fscanf(fd, "%d %d %d", &i, &cellType, &numTags);CHKERRQ(snum != 3);
       if (numTags) for (t = 0; t < numTags; ++t) {snum = fscanf(fd, "%d", &tag);CHKERRQ(snum != 1);}
@@ -126,8 +126,8 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   if (!rank) {
     ierr = fseek(fd, fpos, SEEK_SET);CHKERRQ(ierr);
     for (c = 0; c < numCells; ++c) {
-      PetscInt cone[8], numCorners, corner, t;
-      int      i, cellType, numTags, tag;
+      PetscInt pcone[8], numCorners, corner, t;
+      int      cone[8], i, cellType, numTags, tag;
 
       snum = fscanf(fd, "%d %d %d", &i, &cellType, &numTags);CHKERRQ(snum != 3);
       if (numTags) for (t = 0; t < numTags; ++t) {snum = fscanf(fd, "%d", &tag);CHKERRQ(snum != 1);}
@@ -160,8 +160,8 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
       default:
         SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported Gmsh element type %d", cellType);
       }
-      for (corner = 0; corner < numCorners; ++corner) cone[corner] += numCells-1;
-      ierr = DMPlexSetCone(*dm, c, cone);CHKERRQ(ierr);
+      for (corner = 0; corner < numCorners; ++corner) pcone[corner] = cone[corner] + numCells-1;
+      ierr = DMPlexSetCone(*dm, c, pcone);CHKERRQ(ierr);
       if (i != c+1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell number %d should be %d", i, c+1);
     }
     fgets(line, PETSC_MAX_PATH_LEN, fd);
