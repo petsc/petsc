@@ -72,7 +72,7 @@ PetscErrorCode    KSPSetUp_AGMRES(KSP ksp)
 
   /* Allocate space for the vectors in the orthogonalized basis*/
   ierr = VecGetLocalSize(agmres->vecs[0], &nloc);CHKERRQ(ierr);
-  ierr = PetscMalloc(nloc*(N+1)*sizeof(PetscScalar), &agmres->Qloc);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nloc*(N+1), &agmres->Qloc);CHKERRQ(ierr);
 
   /* Init the ring of processors for the roddec orthogonalization */
   ierr = KSPAGMRESRoddecInitNeighboor(ksp);CHKERRQ(ierr);
@@ -80,7 +80,7 @@ PetscErrorCode    KSPSetUp_AGMRES(KSP ksp)
   if (agmres->neig < 1) PetscFunctionReturn(0);
 
   /* Allocate space for the deflation */
-  ierr = PetscMalloc(N*sizeof(PetscScalar), &agmres->select);CHKERRQ(ierr);
+  ierr = PetscMalloc1(N, &agmres->select);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(VEC_V(0), N, &agmres->TmpU);CHKERRQ(ierr);
   ierr = PetscMalloc2(N*N, &agmres->MatEigL, N*N, &agmres->MatEigR);CHKERRQ(ierr);
   /*  ierr = PetscMalloc6(N*N, &agmres->Q, N*N, &agmres->Z, N, &agmres->wr, N, &agmres->wi, N, &agmres->beta, N, &agmres->modul);CHKERRQ(ierr); */

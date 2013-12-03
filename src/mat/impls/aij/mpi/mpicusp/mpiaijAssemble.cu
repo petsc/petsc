@@ -502,7 +502,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
 
     // Create the column map
     ierr = PetscFree(j->garray);CHKERRQ(ierr);
-    ierr = PetscMalloc(Nc * sizeof(PetscInt), &j->garray);CHKERRQ(ierr);
+    ierr = PetscMalloc1(Nc, &j->garray);CHKERRQ(ierr);
     PetscInt c = 0;
     for (IndexHostArray::iterator c_iter = colmap.begin(); c_iter != colmap.end(); ++c_iter, ++c) {
       j->garray[c] = *c_iter;

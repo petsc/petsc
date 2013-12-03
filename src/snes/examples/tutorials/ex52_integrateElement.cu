@@ -377,7 +377,7 @@ PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt spatial_dim, Petsc
     realType *eV;
     PetscInt i;
 
-    ierr = PetscMalloc(Ne*N_bt * sizeof(realType), &eV);CHKERRQ(ierr);
+    ierr = PetscMalloc1(Ne*N_bt, &eV);CHKERRQ(ierr);
     ierr = cudaMemcpy(eV, d_elemVec, Ne*N_bt * sizeof(realType), cudaMemcpyDeviceToHost);CHKERRQ(ierr);
     for (i = 0; i < Ne*N_bt; ++i) elemVec[i] = eV[i];
     ierr = PetscFree(eV);CHKERRQ(ierr);

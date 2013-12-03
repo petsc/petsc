@@ -43,7 +43,7 @@ static PetscErrorCode DMLabelMakeValid_Private(DMLabel label)
     off += size;
   }
   label->stratumOffsets[v] = off;
-  ierr = PetscMalloc(off * sizeof(PetscInt), &label->points);CHKERRQ(ierr);
+  ierr = PetscMalloc1(off, &label->points);CHKERRQ(ierr);
   off = 0;
   for (v = 0; v < label->numStrata; ++v) {
     ierr = PetscHashIGetKeys(label->ht[v], &off, label->points);CHKERRQ(ierr);
@@ -76,7 +76,7 @@ static PetscErrorCode DMLabelMakeInvalid_Private(DMLabel label)
 
   if (!label->arrayValid) return 0;
   PetscFunctionBegin;
-  ierr = PetscMalloc(label->numStrata * sizeof(PetscHashI), &label->ht);CHKERRQ(ierr);
+  ierr = PetscMalloc1(label->numStrata, &label->ht);CHKERRQ(ierr);
   for (v = 0; v < label->numStrata; ++v) {
     PETSC_UNUSED PetscHashIIter ret, iter;
     PetscInt                    p;
@@ -182,9 +182,9 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
   (*labelnew)->numStrata  = label->numStrata;
   (*labelnew)->arrayValid = PETSC_TRUE;
   if (label->numStrata) {
-    ierr = PetscMalloc(label->numStrata * sizeof(PetscInt), &(*labelnew)->stratumValues);CHKERRQ(ierr);
+    ierr = PetscMalloc1(label->numStrata, &(*labelnew)->stratumValues);CHKERRQ(ierr);
     ierr = PetscMalloc2(label->numStrata,&(*labelnew)->stratumSizes,label->numStrata+1,&(*labelnew)->stratumOffsets);CHKERRQ(ierr);
-    ierr = PetscMalloc(label->stratumOffsets[label->numStrata] * sizeof(PetscInt), &(*labelnew)->points);CHKERRQ(ierr);
+    ierr = PetscMalloc1(label->stratumOffsets[label->numStrata], &(*labelnew)->points);CHKERRQ(ierr);
     /* Could eliminate unused space here */
     for (v = 0; v < label->numStrata; ++v) {
       (*labelnew)->stratumValues[v]  = label->stratumValues[v];
@@ -354,8 +354,8 @@ PetscErrorCode DMLabelSetValue(DMLabel label, PetscInt point, PetscInt value)
     PetscInt   *tmpV;
     PetscHashI *tmpH;
 
-    ierr = PetscMalloc((label->numStrata+1) * sizeof(PetscInt), &tmpV);CHKERRQ(ierr);
-    ierr = PetscMalloc((label->numStrata+1) * sizeof(PetscHashI), &tmpH);CHKERRQ(ierr);
+    ierr = PetscMalloc1((label->numStrata+1), &tmpV);CHKERRQ(ierr);
+    ierr = PetscMalloc1((label->numStrata+1), &tmpH);CHKERRQ(ierr);
     for (v = 0; v < label->numStrata; ++v) {
       tmpV[v] = label->stratumValues[v];
       tmpH[v] = label->ht[v];
@@ -628,7 +628,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSection partSection, IS par
   /* Bcast numStrata */
   if (!rank) (*labelNew)->numStrata = label->numStrata;
   ierr = MPI_Bcast(&(*labelNew)->numStrata, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-  ierr = PetscMalloc((*labelNew)->numStrata * sizeof(PetscInt), &(*labelNew)->stratumValues);CHKERRQ(ierr);
+  ierr = PetscMalloc1((*labelNew)->numStrata, &(*labelNew)->stratumValues);CHKERRQ(ierr);
   ierr = PetscMalloc2((*labelNew)->numStrata,&(*labelNew)->stratumSizes,(*labelNew)->numStrata+1,&(*labelNew)->stratumOffsets);CHKERRQ(ierr);
   /* Bcast stratumValues */
   if (!rank) {ierr = PetscMemcpy((*labelNew)->stratumValues, label->stratumValues, label->numStrata * sizeof(PetscInt));CHKERRQ(ierr);}
@@ -682,7 +682,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSection partSection, IS par
       offsets[p]  = displs[p];
       displs[p+1] = displs[p] + sendcnts[p];
     }
-    ierr = PetscMalloc(displs[numProcs] * sizeof(PetscInt), &points);CHKERRQ(ierr);
+    ierr = PetscMalloc1(displs[numProcs], &points);CHKERRQ(ierr);
     /* TODO We should switch to using binary search if the label is a lot smaller than partitions */
     for (proc = 0; proc < numProcs; ++proc) {
       PetscInt dof, off;
@@ -707,7 +707,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSection partSection, IS par
     }
     ierr = ISRestoreIndices(part, &partArray);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc((*labelNew)->stratumOffsets[(*labelNew)->numStrata] * sizeof(PetscInt), &(*labelNew)->points);CHKERRQ(ierr);
+  ierr = PetscMalloc1((*labelNew)->stratumOffsets[(*labelNew)->numStrata], &(*labelNew)->points);CHKERRQ(ierr);
   ierr = MPI_Scatterv(points, sendcnts, displs, MPIU_INT, (*labelNew)->points, (*labelNew)->stratumOffsets[(*labelNew)->numStrata], MPIU_INT, 0, comm);CHKERRQ(ierr);
   ierr = PetscFree(points);CHKERRQ(ierr);
   ierr = PetscFree3(sendcnts,offsets,displs);CHKERRQ(ierr);

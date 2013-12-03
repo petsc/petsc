@@ -764,7 +764,7 @@ PetscErrorCode  PetscViewerDrawSetBounds(PetscViewer viewer,PetscInt nbounds,con
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   vdraw->nbounds = nbounds;
 
-  ierr = PetscMalloc(2*nbounds*sizeof(PetscReal),&vdraw->bounds);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2*nbounds,&vdraw->bounds);CHKERRQ(ierr);
   ierr = PetscMemcpy(vdraw->bounds,bounds,2*nbounds*sizeof(PetscReal));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

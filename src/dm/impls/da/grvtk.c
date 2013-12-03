@@ -44,7 +44,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
 #endif
   ierr = PetscFPrintf(comm,fp,"  <StructuredGrid WholeExtent=\"%D %D %D %D %D %D\">\n",0,mx-1,0,my-1,0,mz-1);CHKERRQ(ierr);
 
-  if (!rank) {ierr = PetscMalloc(size*6*sizeof(PetscInt),&grloc);CHKERRQ(ierr);}
+  if (!rank) {ierr = PetscMalloc1(size*6,&grloc);CHKERRQ(ierr);}
   rloc[0] = info.xs;
   rloc[1] = info.xm;
   rloc[2] = info.ys;
@@ -262,7 +262,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
 #endif
   ierr = PetscFPrintf(comm,fp,"  <RectilinearGrid WholeExtent=\"%D %D %D %D %D %D\">\n",0,mx-1,0,my-1,0,mz-1);CHKERRQ(ierr);
 
-  if (!rank) {ierr = PetscMalloc(size*6*sizeof(PetscInt),&grloc);CHKERRQ(ierr);}
+  if (!rank) {ierr = PetscMalloc1(size*6,&grloc);CHKERRQ(ierr);}
   rloc[0] = info.xs;
   rloc[1] = info.xm;
   rloc[2] = info.ys;

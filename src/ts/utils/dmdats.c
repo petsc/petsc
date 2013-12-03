@@ -480,7 +480,7 @@ PetscErrorCode  TSMonitorLGDMDARay(TS ts, PetscInt step, PetscReal ptime, Vec u,
     PetscReal *areal;
     PetscInt   i,n;
     ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
-    ierr = PetscMalloc(n * sizeof(PetscReal), &areal);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n, &areal);CHKERRQ(ierr);
     for (i = 0; i < n; ++i) areal[i] = PetscRealPart(a[i]);
     ierr = PetscDrawLGAddCommonPoint(lgctx->lg, ptime, areal);CHKERRQ(ierr);
     ierr = PetscFree(areal);CHKERRQ(ierr);

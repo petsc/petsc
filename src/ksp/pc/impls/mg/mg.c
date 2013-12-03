@@ -194,7 +194,7 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
 
   mg->nlevels = levels;
 
-  ierr = PetscMalloc(levels*sizeof(PC_MG*),&mglevels);CHKERRQ(ierr);
+  ierr = PetscMalloc1(levels,&mglevels);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)pc,levels*(sizeof(PC_MG*)));CHKERRQ(ierr);
 
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
@@ -586,7 +586,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     /* construct the interpolation from the DMs */
     Mat p;
     Vec rscale;
-    ierr     = PetscMalloc(n*sizeof(DM),&dms);CHKERRQ(ierr);
+    ierr     = PetscMalloc1(n,&dms);CHKERRQ(ierr);
     dms[n-1] = pc->dm;
     for (i=n-2; i>-1; i--) {
       DMKSP kdm;

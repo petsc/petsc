@@ -111,7 +111,7 @@ PetscErrorCode AOPetscToApplicationPermuteInt_Basic(AO ao, PetscInt block, Petsc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(ao->N*block * sizeof(PetscInt), &temp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ao->N*block, &temp);CHKERRQ(ierr);
   for (i = 0; i < ao->N; i++) {
     for (j = 0; j < block; j++) temp[i*block+j] = array[aobasic->petsc[i]*block+j];
   }
@@ -130,7 +130,7 @@ PetscErrorCode AOApplicationToPetscPermuteInt_Basic(AO ao, PetscInt block, Petsc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(ao->N*block * sizeof(PetscInt), &temp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ao->N*block, &temp);CHKERRQ(ierr);
   for (i = 0; i < ao->N; i++) {
     for (j = 0; j < block; j++) temp[i*block+j] = array[aobasic->app[i]*block+j];
   }
@@ -149,7 +149,7 @@ PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, PetscInt block, Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(ao->N*block * sizeof(PetscReal), &temp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ao->N*block, &temp);CHKERRQ(ierr);
   for (i = 0; i < ao->N; i++) {
     for (j = 0; j < block; j++) temp[i*block+j] = array[aobasic->petsc[i]*block+j];
   }
@@ -168,7 +168,7 @@ PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, PetscInt block, Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(ao->N*block * sizeof(PetscReal), &temp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ao->N*block, &temp);CHKERRQ(ierr);
   for (i = 0; i < ao->N; i++) {
     for (j = 0; j < block; j++) temp[i*block+j] = array[aobasic->app[i]*block+j];
   }
@@ -230,7 +230,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
   if (napp) {
     if (!ispetsc) {
       start = disp[rank];
-      ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
+      ierr  = PetscMalloc1((napp+1), &petsc);CHKERRQ(ierr);
       for (i=0; i<napp; i++) petsc[i] = start + i;
     } else {
       ierr  = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
@@ -247,7 +247,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
 #if defined(PETSC_USE_DEBUG)
   {
     PetscInt *sorted;
-    ierr = PetscMalloc(N*sizeof(PetscInt),&sorted);CHKERRQ(ierr);
+    ierr = PetscMalloc1(N,&sorted);CHKERRQ(ierr);
 
     ierr = PetscMemcpy(sorted,allpetsc,N*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscSortInt(N,sorted);CHKERRQ(ierr);

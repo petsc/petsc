@@ -21,7 +21,7 @@ PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o,HYPRE_IJMatrix ij)
   if (A_d) { /* determine number of nonzero entries in local diagonal part */
     ierr = MatGetRowIJ(A_d,0,PETSC_FALSE,PETSC_FALSE,&n_d,&ia_d,NULL,&done_d);CHKERRQ(ierr);
     if (done_d) {
-      ierr = PetscMalloc(n_d*sizeof(PetscInt),&nnz_d);CHKERRQ(ierr);
+      ierr = PetscMalloc1(n_d,&nnz_d);CHKERRQ(ierr);
       for (i=0; i<n_d; i++) {
         nnz_d[i] = ia_d[i+1] - ia_d[i];
       }
@@ -31,7 +31,7 @@ PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o,HYPRE_IJMatrix ij)
   if (A_o) { /* determine number of nonzero entries in local off-diagonal part */
     ierr = MatGetRowIJ(A_o,0,PETSC_FALSE,PETSC_FALSE,&n_o,&ia_o,NULL,&done_o);CHKERRQ(ierr);
     if (done_o) {
-      ierr = PetscMalloc(n_o*sizeof(PetscInt),&nnz_o);CHKERRQ(ierr);
+      ierr = PetscMalloc1(n_o,&nnz_o);CHKERRQ(ierr);
       for (i=0; i<n_o; i++) {
         nnz_o[i] = ia_o[i+1] - ia_o[i];
       }
@@ -40,7 +40,7 @@ PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o,HYPRE_IJMatrix ij)
   }
   if (done_d) {    /* set number of nonzeros in HYPRE IJ matrix */
     if (!done_o) { /* only diagonal part */
-      ierr = PetscMalloc(n_d*sizeof(PetscInt),&nnz_o);CHKERRQ(ierr);
+      ierr = PetscMalloc1(n_d,&nnz_o);CHKERRQ(ierr);
       for (i=0; i<n_d; i++) {
         nnz_o[i] = 0;
       }
@@ -623,7 +623,7 @@ PetscErrorCode  MatSetValuesLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const Pe
   PetscInt row,*entries;
 
   PetscFunctionBegin;
-  ierr    = PetscMalloc(7*nvars*sizeof(PetscInt),&entries);CHKERRQ(ierr);
+  ierr    = PetscMalloc1(7*nvars,&entries);CHKERRQ(ierr);
   ordering= ex->dofs_order;  /* ordering= 0   nodal ordering
                                           1   variable ordering */
   /* stencil entries are orderer by variables: var0_stencil0, var0_stencil1, ..., var0_stencil6, var1_stencil0, var1_stencil1, ...  */
@@ -735,10 +735,10 @@ PetscErrorCode  MatZeroRowsLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const Pet
 
   PetscFunctionBegin;
   if (x && b) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"No support");
-  ierr = PetscMalloc(7*nvars*sizeof(PetscInt),&entries);CHKERRQ(ierr);
+  ierr = PetscMalloc1(7*nvars,&entries);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(nvars*sizeof(PetscScalar*),&values);CHKERRQ(ierr);
-  ierr = PetscMalloc(7*nvars*nvars*sizeof(PetscScalar),&values[0]);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nvars,&values);CHKERRQ(ierr);
+  ierr = PetscMalloc1(7*nvars*nvars,&values[0]);CHKERRQ(ierr);
   for (i=1; i<nvars; i++) {
     values[i] = values[i-1] + nvars*7;
   }
@@ -859,7 +859,7 @@ static PetscErrorCode  MatSetupDM_HYPRESStruct(Mat mat,DM da)
 
   {
     HYPRE_SStructVariable *vartypes;
-    ierr = PetscMalloc(ex->nvars*sizeof(HYPRE_SStructVariable),&vartypes);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ex->nvars,&vartypes);CHKERRQ(ierr);
     for (i= 0; i< ex->nvars; i++) vartypes[i]= HYPRE_SSTRUCT_VARIABLE_CELL;
     PetscStackCallStandard(HYPRE_SStructGridSetVariables,(ex->ss_grid, part, ex->nvars,vartypes));
     ierr = PetscFree(vartypes);CHKERRQ(ierr);
@@ -1017,7 +1017,7 @@ PetscErrorCode MatMult_HYPRESStruct(Mat A,Vec x,Vec y)
     PetscScalar *z;
     PetscInt    j, k;
 
-    ierr = PetscMalloc(nvars*size*sizeof(PetscScalar),&z);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nvars*size,&z);CHKERRQ(ierr);
     PetscStackCallStandard(HYPRE_SStructVectorSetConstantValues,(mx->ss_b,0.0));
     ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
 

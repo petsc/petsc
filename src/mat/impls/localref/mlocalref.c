@@ -102,7 +102,7 @@ static PetscErrorCode ISL2GCompose(IS is,ISLocalToGlobalMapping ltog,ISLocalToGl
   PetscValidPointer(cltog,3);
   ierr = ISGetLocalSize(is,&m);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&idx);CHKERRQ(ierr);
-  ierr = PetscMalloc(m*sizeof(PetscInt),&idxm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&idxm);CHKERRQ(ierr);
   if (ltog) {
     ierr = ISLocalToGlobalMappingApply(ltog,m,idx,idxm);CHKERRQ(ierr);
   } else {
@@ -127,7 +127,7 @@ static PetscErrorCode ISL2GComposeBlock(IS is,ISLocalToGlobalMapping ltog,ISLoca
   PetscValidPointer(cltog,3);
   ierr = ISBlockGetLocalSize(is,&m);CHKERRQ(ierr);
   ierr = ISBlockGetIndices(is,&idx);CHKERRQ(ierr);
-  ierr = PetscMalloc(m*sizeof(PetscInt),&idxm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&idxm);CHKERRQ(ierr);
   if (ltog) {
     ierr = ISLocalToGlobalMappingApply(ltog,m,idx,idxm);CHKERRQ(ierr);
   } else {

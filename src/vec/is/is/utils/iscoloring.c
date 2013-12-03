@@ -146,12 +146,12 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
 #endif
 
       /* generate the lists of nodes for each color */
-      ierr = PetscMalloc(nc*sizeof(PetscInt),&mcolors);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nc,&mcolors);CHKERRQ(ierr);
       ierr = PetscMemzero(mcolors,nc*sizeof(PetscInt));CHKERRQ(ierr);
       for (i=0; i<n; i++) mcolors[colors[i]]++;
 
-      ierr = PetscMalloc(nc*sizeof(PetscInt*),&ii);CHKERRQ(ierr);
-      ierr = PetscMalloc(n*sizeof(PetscInt),&ii[0]);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nc,&ii);CHKERRQ(ierr);
+      ierr = PetscMalloc1(n,&ii[0]);CHKERRQ(ierr);
       for (i=1; i<nc; i++) ii[i] = ii[i-1] + mcolors[i-1];
       ierr = PetscMemzero(mcolors,nc*sizeof(PetscInt));CHKERRQ(ierr);
 
@@ -163,7 +163,7 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
         for (i=0; i<n; i++) ii[colors[i]][mcolors[colors[i]]++] = i;   /* local idx */
       } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not provided for this ISColoringType type");
 
-      ierr = PetscMalloc(nc*sizeof(IS),&is);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nc,&is);CHKERRQ(ierr);
       for (i=0; i<nc; i++) {
         ierr = ISCreateGeneral(iscoloring->comm,mcolors[i],ii[i],PETSC_COPY_VALUES,is+i);CHKERRQ(ierr);
       }
@@ -350,7 +350,7 @@ PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
   /*
       For each local index give it the new global number
   */
-  ierr = PetscMalloc(n*sizeof(PetscInt),&newi);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&newi);CHKERRQ(ierr);
   for (i=0; i<n; i++) newi[i] = starts[indices[i]]++;
   ierr = PetscFree3(lsizes,starts,sums);CHKERRQ(ierr);
 
@@ -424,7 +424,7 @@ PetscErrorCode  ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
         sums - total number of "previous" nodes for any particular partition
         starts - global number of first element in each partition on this processor
   */
-  ierr = PetscMalloc(len*sizeof(PetscInt),&lsizes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(len,&lsizes);CHKERRQ(ierr);
   ierr = PetscMemzero(lsizes,len*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<n; i++) lsizes[indices[i]]++;
   ierr = ISRestoreIndices(part,&indices);CHKERRQ(ierr);
@@ -497,7 +497,7 @@ PetscErrorCode  ISAllGather(IS is,IS *isout)
     for (i=1; i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
     N = offsets[size-1] + sizes[size-1];
 
-    ierr = PetscMalloc(N*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+    ierr = PetscMalloc1(N,&indices);CHKERRQ(ierr);
     ierr = ISGetIndices(is,&lindices);CHKERRQ(ierr);
     ierr = MPI_Allgatherv((void*)lindices,nn,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr);
     ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);
@@ -554,7 +554,7 @@ PetscErrorCode  ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lind
   N    = offsets[size-1] + sizes[size-1];
   ierr = PetscFree2(sizes,offsets);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((N+1)*sizeof(ISColoringValue),&indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1((N+1),&indices);CHKERRQ(ierr);
   ierr = MPI_Allgatherv(lindices,(PetscMPIInt)n,MPIU_COLORING_VALUE,indices,sizes,offsets,MPIU_COLORING_VALUE,comm);CHKERRQ(ierr);
 
   *outindices = indices;
@@ -621,7 +621,7 @@ PetscErrorCode  ISComplement(IS is,PetscInt nmin,PetscInt nmax,IS *isout)
   for (i=0; i<n-1; i++) {
     if (indices[i+1] != indices[i]) unique++;
   }
-  ierr = PetscMalloc((nmax-nmin-unique)*sizeof(PetscInt),&nindices);CHKERRQ(ierr);
+  ierr = PetscMalloc1((nmax-nmin-unique),&nindices);CHKERRQ(ierr);
   cnt  = 0;
   for (i=nmin,j=0; i<nmax; i++) {
     if (j<n && i==indices[j]) do { j++; } while (j<n && i==indices[j]);

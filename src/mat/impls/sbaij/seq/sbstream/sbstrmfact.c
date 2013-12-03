@@ -585,8 +585,8 @@ PetscErrorCode SeqSBSTRM_convertFact_sbstrm(Mat F)
   if (sbstrm->as) {
     ierr = PetscFree(sbstrm->as);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc(bs2*ai[m]*sizeof(MatScalar), &sbstrm->as);CHKERRQ(ierr);
-  ierr = PetscMalloc(rbs*sizeof(MatScalar*), &asp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bs2*ai[m], &sbstrm->as);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rbs, &asp);CHKERRQ(ierr);
 
   asu = sbstrm->as;
   for (i=0; i<m*bs2; i++) asu[i] = aa[i];

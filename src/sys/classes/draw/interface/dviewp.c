@@ -179,10 +179,10 @@ PetscErrorCode  PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDra
   n = (PetscInt)(.1 + PetscSqrtReal((PetscReal)nports));
   while (n*n < nports) n++;
 
-  ierr = PetscMalloc(n*n*sizeof(PetscReal),&xl);CHKERRQ(ierr);(*ports)->xl = xl;
-  ierr = PetscMalloc(n*n*sizeof(PetscReal),&xr);CHKERRQ(ierr);(*ports)->xr = xr;
-  ierr = PetscMalloc(n*n*sizeof(PetscReal),&yl);CHKERRQ(ierr);(*ports)->yl = yl;
-  ierr = PetscMalloc(n*n*sizeof(PetscReal),&yr);CHKERRQ(ierr);(*ports)->yr = yr;
+  ierr = PetscMalloc1(n*n,&xl);CHKERRQ(ierr);(*ports)->xl = xl;
+  ierr = PetscMalloc1(n*n,&xr);CHKERRQ(ierr);(*ports)->xr = xr;
+  ierr = PetscMalloc1(n*n,&yl);CHKERRQ(ierr);(*ports)->yl = yl;
+  ierr = PetscMalloc1(n*n,&yr);CHKERRQ(ierr);(*ports)->yr = yr;
 
   h = 1.0/n;
 
@@ -256,10 +256,10 @@ PetscErrorCode  PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt
   (*ports)->nports = n;
 
   ierr = PetscObjectReference((PetscObject) draw);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscReal), &xl);CHKERRQ(ierr);(*ports)->xl = xl;
-  ierr = PetscMalloc(n*sizeof(PetscReal), &xr);CHKERRQ(ierr);(*ports)->xr = xr;
-  ierr = PetscMalloc(n*sizeof(PetscReal), &yl);CHKERRQ(ierr);(*ports)->yl = yl;
-  ierr = PetscMalloc(n*sizeof(PetscReal), &yr);CHKERRQ(ierr);(*ports)->yr = yr;
+  ierr = PetscMalloc1(n, &xl);CHKERRQ(ierr);(*ports)->xl = xl;
+  ierr = PetscMalloc1(n, &xr);CHKERRQ(ierr);(*ports)->xr = xr;
+  ierr = PetscMalloc1(n, &yl);CHKERRQ(ierr);(*ports)->yl = yl;
+  ierr = PetscMalloc1(n, &yr);CHKERRQ(ierr);(*ports)->yr = yr;
   for (i = 0; i < nx; i++) {
     for (j = 0; j < ny; j++) {
       PetscInt k = j*nx+i;

@@ -1438,7 +1438,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM da,Vec X,const char filena
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   if (!rank) {
     PetscScalar *array;
-    ierr = PetscMalloc(nmax*sizeof(PetscScalar),&array);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nmax,&array);CHKERRQ(ierr);
     for (r=0; r<size; r++) {
       PetscInt    i,j,k,xs,xm,ys,ym,zs,zm;
       PetscScalar *ptr;

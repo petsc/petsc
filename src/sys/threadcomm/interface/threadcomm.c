@@ -420,7 +420,7 @@ PetscErrorCode PetscThreadCommSetAffinities(PetscThreadComm tcomm,const PetscInt
   PetscFunctionBegin;
   /* Free if affinities set already */
   ierr = PetscFree(tcomm->affinities);CHKERRQ(ierr);
-  ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&tcomm->affinities);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tcomm->nworkThreads,&tcomm->affinities);CHKERRQ(ierr);
 
   if (!affinities) {
     /* Check if option is present in the options database */
@@ -1237,8 +1237,8 @@ PetscErrorCode PetscThreadCommWorldInitialize(void)
   ierr = PetscOptionsInt("-threadcomm_nkernels","number of kernels that can be launched simultaneously","",16,&tcomm->nkernels,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = PetscMalloc(tcomm->nkernels*sizeof(struct _p_PetscThreadCommJobCtx),&PetscJobQueue->jobs);CHKERRQ(ierr);
-  ierr = PetscMalloc(tcomm->nworkThreads*tcomm->nkernels*sizeof(PetscInt),&PetscJobQueue->jobs[0].job_status);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tcomm->nkernels,&PetscJobQueue->jobs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tcomm->nworkThreads*tcomm->nkernels,&PetscJobQueue->jobs[0].job_status);CHKERRQ(ierr);
   for (i=0; i<tcomm->nkernels; i++) {
     PetscJobQueue->jobs[i].job_status = PetscJobQueue->jobs[0].job_status + i*tcomm->nworkThreads;
     for (j=0; j<tcomm->nworkThreads; j++) PetscJobQueue->jobs[i].job_status[j] = THREAD_JOB_NONE;
@@ -1281,7 +1281,7 @@ PetscErrorCode PetscThreadCommGetOwnershipRanges(MPI_Comm comm,PetscInt N,PetscI
   PetscFunctionBegin;
   ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
 
-  ierr            = PetscMalloc((tcomm->nworkThreads+1)*sizeof(PetscInt),&trstarts_out);CHKERRQ(ierr);
+  ierr            = PetscMalloc1((tcomm->nworkThreads+1),&trstarts_out);CHKERRQ(ierr);
   trstarts_out[0] = 0;
   Q               = N/tcomm->nworkThreads;
   R               = N - Q*tcomm->nworkThreads;

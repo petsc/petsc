@@ -83,10 +83,10 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,PetscReal fi
 
   /* Allocate ci array, arrays for fill computation and */
   /* free space for accumulating nonzero column info */
-  ierr  = PetscMalloc((pn+1)*sizeof(PetscInt),&ci);CHKERRQ(ierr);
+  ierr  = PetscMalloc1((pn+1),&ci);CHKERRQ(ierr);
   ci[0] = 0;
 
-  ierr         = PetscMalloc((2*an+1)*sizeof(PetscInt),&ptadenserow);CHKERRQ(ierr);
+  ierr         = PetscMalloc1((2*an+1),&ptadenserow);CHKERRQ(ierr);
   ierr         = PetscMemzero(ptadenserow,(2*an+1)*sizeof(PetscInt));CHKERRQ(ierr);
   ptasparserow = ptadenserow  + an;
 
@@ -149,13 +149,13 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,PetscReal fi
   /* nnz is now stored in ci[ptm], column indices are in the list of free space */
   /* Allocate space for cj, initialize cj, and */
   /* destroy list of free space and other temporary array(s) */
-  ierr = PetscMalloc((ci[pn]+1)*sizeof(PetscInt),&cj);CHKERRQ(ierr);
+  ierr = PetscMalloc1((ci[pn]+1),&cj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
   ierr = PetscFree(ptadenserow);CHKERRQ(ierr);
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
 
   /* Allocate space for ca */
-  ierr = PetscMalloc((ci[pn]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
+  ierr = PetscMalloc1((ci[pn]+1),&ca);CHKERRQ(ierr);
   ierr = PetscMemzero(ca,(ci[pn]+1)*sizeof(MatScalar));CHKERRQ(ierr);
 
   /* put together the new matrix */
@@ -304,7 +304,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_DenseAxpy(Mat A,Mat P,PetscReal fil
 
   c         = (Mat_SeqAIJ*)(*C)->data;
   ci        = c->i;
-  ierr      = PetscMalloc((ci[pn]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
+  ierr      = PetscMalloc1((ci[pn]+1),&ca);CHKERRQ(ierr);
   ierr      = PetscMemzero(ca,(ci[pn]+1)*sizeof(MatScalar));CHKERRQ(ierr);
   c->a      = ca;
   c->free_a = PETSC_TRUE;
@@ -317,7 +317,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_DenseAxpy(Mat A,Mat P,PetscReal fil
   (*C)->ops->destroy = MatDestroy_SeqAIJ_PtAP;
 
   /* Allocate temporary array for storage of one row of A*P */
-  ierr = PetscMalloc((pn+1)*sizeof(PetscScalar),&ptap->apa);CHKERRQ(ierr);
+  ierr = PetscMalloc1((pn+1),&ptap->apa);CHKERRQ(ierr);
   ierr = PetscMemzero(ptap->apa,(pn+1)*sizeof(PetscScalar));CHKERRQ(ierr);
 
   (*C)->ops->ptapnumeric = MatPtAPNumeric_SeqAIJ_SeqAIJ;

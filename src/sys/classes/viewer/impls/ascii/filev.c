@@ -945,7 +945,7 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
     }
     petsc_printfqueuelength++;
     next->size = QUEUESTRINGSIZE;
-    ierr       = PetscMalloc(next->size*sizeof(char), &next->string);CHKERRQ(ierr);
+    ierr       = PetscMalloc1(next->size, &next->string);CHKERRQ(ierr);
     ierr       = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
     string     = next->string;
     tab       *= 2;

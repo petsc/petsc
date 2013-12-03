@@ -70,8 +70,8 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
               s.t. a(perm(r),perm(aj)) will fall into upper triangle part.
   */
 
-  ierr = PetscMalloc(mbs*sizeof(PetscInt),&nzr);CHKERRQ(ierr);
-  ierr = PetscMalloc(ai[mbs]*sizeof(PetscInt),&r);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mbs,&nzr);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ai[mbs],&r);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) nzr[i] = 0;
   for (i=0; i<ai[mbs]; i++) r[i] = 0;
 

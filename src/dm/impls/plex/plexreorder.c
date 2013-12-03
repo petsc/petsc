@@ -12,7 +12,7 @@ PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoints, con
   PetscFunctionBegin;
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscMalloc((pEnd-pStart) * sizeof(PetscInt), &perm);CHKERRQ(ierr);
+  ierr = PetscMalloc1((pEnd-pStart), &perm);CHKERRQ(ierr);
   ierr = PetscMalloc((pEnd-pStart) * sizeof(PetscInt) ,&iperm);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) iperm[p] = -1;
   for (d = depth; d > 0; --d) {
@@ -209,8 +209,8 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
     ierr = PetscSectionDestroy(&plexNew->coneSection);CHKERRQ(ierr);
     ierr = PetscSectionPermute(plex->coneSection, perm, &plexNew->coneSection);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(plexNew->coneSection, &n);CHKERRQ(ierr);
-    ierr = PetscMalloc(n * sizeof(PetscInt), &plexNew->cones);CHKERRQ(ierr);
-    ierr = PetscMalloc(n * sizeof(PetscInt), &plexNew->coneOrientations);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n, &plexNew->cones);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n, &plexNew->coneOrientations);CHKERRQ(ierr);
     ierr = ISGetIndices(perm, &pperm);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(plex->coneSection, &pStart, &pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
@@ -227,7 +227,7 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
     ierr = PetscSectionDestroy(&plexNew->supportSection);CHKERRQ(ierr);
     ierr = PetscSectionPermute(plex->supportSection, perm, &plexNew->supportSection);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(plexNew->supportSection, &n);CHKERRQ(ierr);
-    ierr = PetscMalloc(n * sizeof(PetscInt), &plexNew->supports);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n, &plexNew->supports);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(plex->supportSection, &pStart, &pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       PetscInt dof, off, offNew, d;

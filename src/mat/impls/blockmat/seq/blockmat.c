@@ -43,7 +43,7 @@ PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORType
   }
 
   if (!a->diags) {
-    ierr = PetscMalloc(mbs*sizeof(Mat),&a->diags);CHKERRQ(ierr);
+    ierr = PetscMalloc1(mbs,&a->diags);CHKERRQ(ierr);
     ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
     for (i=0; i<mbs; i++) {
       ierr = MatGetOrdering(a->a[a->diag[i]], MATORDERINGND,&row,&col);CHKERRQ(ierr);
@@ -148,7 +148,7 @@ PetscErrorCode MatSOR_BlockMat(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
   if (fshift) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for fshift");
 
   if (!a->diags) {
-    ierr = PetscMalloc(mbs*sizeof(Mat),&a->diags);CHKERRQ(ierr);
+    ierr = PetscMalloc1(mbs,&a->diags);CHKERRQ(ierr);
     ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
     for (i=0; i<mbs; i++) {
       ierr = MatGetOrdering(a->a[a->diag[i]], MATORDERINGND,&row,&col);CHKERRQ(ierr);
@@ -365,7 +365,7 @@ PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
   amat = (Mat_BlockMat*)(newmat)->data;
 
   /* preallocate the submatrices */
-  ierr = PetscMalloc(bs*sizeof(PetscInt),&llens);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bs,&llens);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) { /* loops for block rows */
     for (j=0; j<bs; j++) {
       ii[j]    = a->j + a->i[i*bs + j];
@@ -598,7 +598,7 @@ PetscErrorCode MatMarkDiagonal_BlockMat(Mat A)
 
   PetscFunctionBegin;
   if (!a->diag) {
-    ierr = PetscMalloc(mbs*sizeof(PetscInt),&a->diag);CHKERRQ(ierr);
+    ierr = PetscMalloc1(mbs,&a->diag);CHKERRQ(ierr);
   }
   for (i=0; i<mbs; i++) {
     a->diag[i] = a->i[i+1];

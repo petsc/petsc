@@ -1837,7 +1837,7 @@ PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt point
   PetscValidPointer(coveredPoints, 4);
 
   ierr    = DMPlexGetDepth(dm, &height);CHKERRQ(ierr);
-  ierr    = PetscMalloc(numPoints * sizeof(PetscInt*), &closures);CHKERRQ(ierr);
+  ierr    = PetscMalloc1(numPoints, &closures);CHKERRQ(ierr);
   ierr    = DMGetWorkArray(dm, numPoints*(height+2), PETSC_INT, &offsets);CHKERRQ(ierr);
   maxSize = PetscPowInt(mesh->maxConeSize,height+1);
   ierr    = DMGetWorkArray(dm, maxSize, PETSC_INT, &meet[0]);CHKERRQ(ierr);
@@ -2070,7 +2070,7 @@ PetscErrorCode DMPlexOrient(DM dm)
   ierr = PetscBTMemzero(cEnd - cStart, flippedCells);CHKERRQ(ierr);
   ierr = PetscBTCreate(fEnd - fStart, &seenFaces);CHKERRQ(ierr);
   ierr = PetscBTMemzero(fEnd - fStart, seenFaces);CHKERRQ(ierr);
-  ierr = PetscMalloc((fEnd - fStart) * sizeof(PetscInt), &faceFIFO);CHKERRQ(ierr);
+  ierr = PetscMalloc1((fEnd - fStart), &faceFIFO);CHKERRQ(ierr);
   fTop = fBottom = 0;
   /* Initialize FIFO with first cell */
   if (cEnd > cStart) {
@@ -2282,8 +2282,8 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
     if (adjacency) {
       PetscInt *tmp;
 
-      ierr = PetscMalloc(off[numCells] * sizeof(PetscInt), &adj);CHKERRQ(ierr);
-      ierr = PetscMalloc((numCells+1) * sizeof(PetscInt), &tmp);CHKERRQ(ierr);
+      ierr = PetscMalloc1(off[numCells], &adj);CHKERRQ(ierr);
+      ierr = PetscMalloc1((numCells+1), &tmp);CHKERRQ(ierr);
       ierr = PetscMemcpy(tmp, off, (numCells+1) * sizeof(PetscInt));CHKERRQ(ierr);
       /* Get neighboring cells */
       for (f = fStart; f < fEnd; ++f) {
@@ -2366,7 +2366,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
   for (cell = 1; cell <= numCells; ++cell) off[cell] += off[cell-1];
 
   if (adjacency) {
-    ierr = PetscMalloc(off[numCells] * sizeof(PetscInt), &adj);CHKERRQ(ierr);
+    ierr = PetscMalloc1(off[numCells], &adj);CHKERRQ(ierr);
     /* Get neighboring cells */
     for (cell = cStart; cell < cEnd; ++cell) {
       PetscInt numNeighbors = maxNeighbors, n;
@@ -2473,7 +2473,7 @@ PetscErrorCode DMPlexPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
   mesh_dims[0] = commSize;
   mesh_dims[1] = 1;
   mesh_dims[2] = 1;
-  ierr = PetscMalloc(nvtxs * sizeof(short int), &assignment);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nvtxs, &assignment);CHKERRQ(ierr);
   /* Chaco outputs to stdout. We redirect this to a buffer. */
   /* TODO: check error codes for UNIX calls */
 #if defined(PETSC_HAVE_UNISTD_H)
@@ -2513,7 +2513,7 @@ PetscErrorCode DMPlexPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
     ierr = PetscSectionAddDof(*partSection, assignment[v], 1);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(*partSection);CHKERRQ(ierr);
-  ierr = PetscMalloc(nvtxs * sizeof(PetscInt), &points);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nvtxs, &points);CHKERRQ(ierr);
   for (p = 0, i = 0; p < commSize; ++p) {
     for (v = 0; v < nvtxs; ++v) {
       if (assignment[v] == p) points[i++] = v;
@@ -2600,7 +2600,7 @@ PetscErrorCode DMPlexPartition_ParMetis(DM dm, PetscInt numVertices, PetscInt st
     ierr = PetscSectionAddDof(*partSection, assignment[v], 1);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(*partSection);CHKERRQ(ierr);
-  ierr = PetscMalloc(nvtxs * sizeof(PetscInt), &points);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nvtxs, &points);CHKERRQ(ierr);
   for (p = 0, i = 0; p < commSize; ++p) {
     for (v = 0; v < nvtxs; ++v) {
       if (assignment[v] == p) points[i++] = v;
@@ -2630,7 +2630,7 @@ PetscErrorCode DMPlexEnlargePartition(DM dm, const PetscInt start[], const Petsc
   ierr = PetscSectionGetChart(origPartSection, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*partSection, pStart, pEnd);CHKERRQ(ierr);
   ierr = ISGetIndices(origPartition, &points);CHKERRQ(ierr);
-  ierr = PetscMalloc((pEnd - pStart) * sizeof(PetscInt*), &tmpPoints);CHKERRQ(ierr);
+  ierr = PetscMalloc1((pEnd - pStart), &tmpPoints);CHKERRQ(ierr);
   for (part = pStart; part < pEnd; ++part) {
     PetscInt numPoints, nP, numNewPoints, off, p, n = 0;
 
@@ -2654,14 +2654,14 @@ PetscErrorCode DMPlexEnlargePartition(DM dm, const PetscInt start[], const Petsc
     }
     PetscHashISize(h, numNewPoints);
     ierr = PetscSectionSetDof(*partSection, part, numNewPoints);CHKERRQ(ierr);
-    ierr = PetscMalloc(numNewPoints * sizeof(PetscInt), &tmpPoints[part]);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numNewPoints, &tmpPoints[part]);CHKERRQ(ierr);
     ierr =  PetscHashIGetKeys(h, &n, tmpPoints[part]);CHKERRQ(ierr);
     totPoints += numNewPoints;
   }
   ierr = ISRestoreIndices(origPartition, &points);CHKERRQ(ierr);
   PetscHashIDestroy(h);
   ierr = PetscSectionSetUp(*partSection);CHKERRQ(ierr);
-  ierr = PetscMalloc(totPoints * sizeof(PetscInt), &newPoints);CHKERRQ(ierr);
+  ierr = PetscMalloc1(totPoints, &newPoints);CHKERRQ(ierr);
   for (part = pStart, q = 0; part < pEnd; ++part) {
     PetscInt numPoints, p;
 
@@ -2717,7 +2717,7 @@ PetscErrorCode DMPlexCreatePartition(DM dm, const char name[], PetscInt height, 
     ierr = PetscSectionSetChart(*partSection, 0, size);CHKERRQ(ierr);
     ierr = PetscSectionSetDof(*partSection, 0, cEnd-cStart);CHKERRQ(ierr);
     ierr = PetscSectionSetUp(*partSection);CHKERRQ(ierr);
-    ierr = PetscMalloc((cEnd - cStart) * sizeof(PetscInt), &points);CHKERRQ(ierr);
+    ierr = PetscMalloc1((cEnd - cStart), &points);CHKERRQ(ierr);
     for (c = cStart; c < cEnd; ++c) points[c] = c;
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), cEnd-cStart, points, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -2820,7 +2820,7 @@ PetscErrorCode DMPlexCreatePartitionClosure(DM dm, PetscSection pointSection, IS
 
   ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(*section, &newSize);CHKERRQ(ierr);
-  ierr = PetscMalloc(newSize * sizeof(PetscInt), &allPoints);CHKERRQ(ierr);
+  ierr = PetscMalloc1(newSize, &allPoints);CHKERRQ(ierr);
 
   ierr = PetscSegBufferExtractInPlace(segpack,&packPoints);CHKERRQ(ierr);
   for (rank = rStart; rank < rEnd; ++rank) {
@@ -2993,7 +2993,7 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   /* Create SF assuming a serial partition for all processes: Could check for IS length here */
   if (!rank) numRemoteRanks = numProcs;
   else       numRemoteRanks = 0;
-  ierr = PetscMalloc(numRemoteRanks * sizeof(PetscSFNode), &remoteRanks);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numRemoteRanks, &remoteRanks);CHKERRQ(ierr);
   for (p = 0; p < numRemoteRanks; ++p) {
     remoteRanks[p].rank  = p;
     remoteRanks[p].index = 0;
@@ -3215,8 +3215,8 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
       if (lowners[p].rank < 0 || lowners[p].index < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cell partition corrupt: point not claimed");
       if (lowners[p].rank != rank) ++numGhostPoints;
     }
-    ierr = PetscMalloc(numGhostPoints * sizeof(PetscInt),    &ghostPoints);CHKERRQ(ierr);
-    ierr = PetscMalloc(numGhostPoints * sizeof(PetscSFNode), &remotePoints);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numGhostPoints,    &ghostPoints);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numGhostPoints, &remotePoints);CHKERRQ(ierr);
     for (p = 0, gp = 0; p < numLeaves; ++p) {
       if (lowners[p].rank != rank) {
         ghostPoints[gp]        = leaves ? leaves[p] : p;
@@ -3377,8 +3377,8 @@ PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
     Vec          coordinates;
     PetscScalar *array;
 
-    ierr = PetscMalloc(in.numberofpoints*dim * sizeof(double), &in.pointlist);CHKERRQ(ierr);
-    ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(in.numberofpoints*dim, &in.pointlist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(in.numberofpoints, &in.pointmarkerlist);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(boundary, &coordinates);CHKERRQ(ierr);
     ierr = DMPlexGetCoordinateSection(boundary, &coordSection);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &array);CHKERRQ(ierr);
@@ -3397,8 +3397,8 @@ PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
   ierr  = DMPlexGetHeightStratum(boundary, 0, &eStart, &eEnd);CHKERRQ(ierr);
   in.numberofsegments = eEnd - eStart;
   if (in.numberofsegments > 0) {
-    ierr = PetscMalloc(in.numberofsegments*2 * sizeof(int), &in.segmentlist);CHKERRQ(ierr);
-    ierr = PetscMalloc(in.numberofsegments   * sizeof(int), &in.segmentmarkerlist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(in.numberofsegments*2, &in.segmentlist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(in.numberofsegments, &in.segmentmarkerlist);CHKERRQ(ierr);
     for (e = eStart; e < eEnd; ++e) {
       const PetscInt  idx = e - eStart;
       const PetscInt *cone;
@@ -3417,7 +3417,7 @@ PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
 
   ierr = DMPlexGetHoles(boundary, &in.numberofholes, &holeCords);CHKERRQ(ierr);
   if (in.numberofholes > 0) {
-    ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(in.numberofholes*dim, &in.holelist);CHKERRQ(ierr);
     for (h = 0; h < in.numberofholes; ++h) {
       for (d = 0; d < dim; ++d) {
         in.holelist[h*dim+d] = holeCoords[h*dim+d];
@@ -3508,8 +3508,8 @@ PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
     Vec          coordinates;
     PetscScalar *array;
 
-    ierr = PetscMalloc(in.numberofpoints*dim * sizeof(double), &in.pointlist);CHKERRQ(ierr);
-    ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(in.numberofpoints*dim, &in.pointlist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(in.numberofpoints, &in.pointmarkerlist);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
     ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &array);CHKERRQ(ierr);
@@ -3532,7 +3532,7 @@ PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
 
   in.trianglearealist  = (double*) maxVolumes;
   if (in.numberoftriangles > 0) {
-    ierr = PetscMalloc(in.numberoftriangles*in.numberofcorners * sizeof(int), &in.trianglelist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(in.numberoftriangles*in.numberofcorners, &in.trianglelist);CHKERRQ(ierr);
     for (c = cStart; c < cEnd; ++c) {
       const PetscInt idx      = c - cStart;
       PetscInt      *closure = NULL;
@@ -3553,7 +3553,7 @@ PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
 
   ierr = DMPlexGetHoles(boundary, &in.numberofholes, &holeCords);CHKERRQ(ierr);
   if (in.numberofholes > 0) {
-    ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(in.numberofholes*dim, &in.holelist);CHKERRQ(ierr);
     for (h = 0; h < in.numberofholes; ++h) {
       for (d = 0; d < dim; ++d) {
         in.holelist[h*dim+d] = holeCoords[h*dim+d];
@@ -3893,8 +3893,8 @@ PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm
     Vec          coordinates;
     PetscScalar *array;
 
-    ierr = PetscMalloc(in->numberofpoints*dim * sizeof(PetscReal), &in->pointlist);CHKERRQ(ierr);
-    ierr = PetscMalloc(in->numberofpoints     * sizeof(int),       &in->pointmarkerlist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(in->numberofpoints*dim, &in->pointlist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(in->numberofpoints,       &in->pointmarkerlist);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(boundary, &coordinates);CHKERRQ(ierr);
     ierr = DMPlexGetCoordinateSection(boundary, &coordSection);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &array);CHKERRQ(ierr);
@@ -3916,8 +3916,8 @@ PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm
 
   in->numberoffacets = fEnd - fStart;
   if (in->numberoffacets > 0) {
-    ierr = PetscMalloc(in->numberoffacets * sizeof(facet), &in->facetlist);CHKERRQ(ierr);
-    ierr = PetscMalloc(in->numberoffacets * sizeof(int),   &in->facetmarkerlist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(in->numberoffacets, &in->facetlist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(in->numberoffacets,   &in->facetmarkerlist);CHKERRQ(ierr);
     for (f = fStart; f < fEnd; ++f) {
       const PetscInt idx     = f - fStart;
       PetscInt      *points = NULL, numPoints, p, numVertices = 0, v, m;
@@ -3925,7 +3925,7 @@ PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm
 
       in->facetlist[idx].numberofpolygons = 1;
 
-      ierr = PetscMalloc(in->facetlist[idx].numberofpolygons * sizeof(polygon), &in->facetlist[idx].polygonlist);CHKERRQ(ierr);
+      ierr = PetscMalloc1(in->facetlist[idx].numberofpolygons, &in->facetlist[idx].polygonlist);CHKERRQ(ierr);
 
       in->facetlist[idx].numberofholes    = 0;
       in->facetlist[idx].holelist         = NULL;
@@ -3938,7 +3938,7 @@ PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm
 
       poly                   = in->facetlist[idx].polygonlist;
       poly->numberofvertices = numVertices;
-      ierr                   = PetscMalloc(poly->numberofvertices * sizeof(int), &poly->vertexlist);CHKERRQ(ierr);
+      ierr                   = PetscMalloc1(poly->numberofvertices, &poly->vertexlist);CHKERRQ(ierr);
       for (v = 0; v < numVertices; ++v) {
         const PetscInt vIdx = points[v] - vStart;
         poly->vertexlist[v] = vIdx;
@@ -4040,8 +4040,8 @@ PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
     Vec          coordinates;
     PetscScalar *array;
 
-    ierr = PetscMalloc(in->numberofpoints*dim * sizeof(PetscReal), &in->pointlist);CHKERRQ(ierr);
-    ierr = PetscMalloc(in->numberofpoints     * sizeof(int),       &in->pointmarkerlist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(in->numberofpoints*dim, &in->pointlist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(in->numberofpoints,       &in->pointmarkerlist);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
     ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &array);CHKERRQ(ierr);
@@ -4065,7 +4065,7 @@ PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
   in->numberoftetrahedra    = cEnd - cStart;
   in->tetrahedronvolumelist = maxVolumes;
   if (in->numberoftetrahedra > 0) {
-    ierr = PetscMalloc(in->numberoftetrahedra*in->numberofcorners * sizeof(int), &in->tetrahedronlist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(in->numberoftetrahedra*in->numberofcorners, &in->tetrahedronlist);CHKERRQ(ierr);
     for (c = cStart; c < cEnd; ++c) {
       const PetscInt idx      = c - cStart;
       PetscInt      *closure = NULL;
@@ -4254,7 +4254,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
       double  *maxVolumes;
       PetscInt c;
 
-      ierr = PetscMalloc((cEnd - cStart) * sizeof(double), &maxVolumes);CHKERRQ(ierr);
+      ierr = PetscMalloc1((cEnd - cStart), &maxVolumes);CHKERRQ(ierr);
       for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
       ierr = DMPlexRefine_Triangle(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
       ierr = PetscFree(maxVolumes);CHKERRQ(ierr);
@@ -4269,7 +4269,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
       PetscReal *maxVolumes;
       PetscInt   c;
 
-      ierr = PetscMalloc((cEnd - cStart) * sizeof(PetscReal), &maxVolumes);CHKERRQ(ierr);
+      ierr = PetscMalloc1((cEnd - cStart), &maxVolumes);CHKERRQ(ierr);
       for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
       ierr = DMPlexRefine_CTetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
 #else
@@ -4280,7 +4280,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
       double  *maxVolumes;
       PetscInt c;
 
-      ierr = PetscMalloc((cEnd - cStart) * sizeof(double), &maxVolumes);CHKERRQ(ierr);
+      ierr = PetscMalloc1((cEnd - cStart), &maxVolumes);CHKERRQ(ierr);
       for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
       ierr = DMPlexRefine_Tetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
 #else
@@ -4456,7 +4456,7 @@ PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numField
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc((dim+1) * sizeof(PetscInt), &numDofTot);CHKERRQ(ierr);
+  ierr = PetscMalloc1((dim+1), &numDofTot);CHKERRQ(ierr);
   for (d = 0; d <= dim; ++d) {
     numDofTot[d] = 0;
     for (f = 0; f < numFields; ++f) numDofTot[d] += numDof[f*(dim+1)+d];
@@ -4540,7 +4540,7 @@ PetscErrorCode DMPlexCreateSectionBCIndicesAll(DM dm, PetscSection section)
   PetscFunctionBegin;
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscMalloc((numFields+1) * sizeof(PetscInt), &maxConstraints);CHKERRQ(ierr);
+  ierr = PetscMalloc1((numFields+1), &maxConstraints);CHKERRQ(ierr);
   for (f = 0; f <= numFields; ++f) maxConstraints[f] = 0;
   for (p = pStart; p < pEnd; ++p) {
     PetscInt cdof;
@@ -4561,7 +4561,7 @@ PetscErrorCode DMPlexCreateSectionBCIndicesAll(DM dm, PetscSection section)
   if (maxConstraints[numFields]) {
     PetscInt *indices;
 
-    ierr = PetscMalloc(maxConstraints[numFields] * sizeof(PetscInt), &indices);CHKERRQ(ierr);
+    ierr = PetscMalloc1(maxConstraints[numFields], &indices);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       PetscInt cdof, d;
 
@@ -4615,7 +4615,7 @@ PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt field, IS bcPoi
     PetscInt *idx, i;
 
     ierr = PetscSectionGetMaxDof(section, &maxDof);CHKERRQ(ierr);
-    ierr = PetscMalloc(maxDof * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(maxDof, &idx);CHKERRQ(ierr);
     for (i = 0; i < maxDof; ++i) idx[i] = i;
     for (p = 0; p < numPoints; ++p) {
       ierr = PetscSectionSetFieldConstraintIndices(section, points[p], field, idx);CHKERRQ(ierr);
@@ -4648,7 +4648,7 @@ PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
 
   PetscFunctionBegin;
   ierr = PetscSectionGetMaxDof(section, &maxDof);CHKERRQ(ierr);
-  ierr = PetscMalloc(maxDof * sizeof(PetscInt), &indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxDof, &indices);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   if (!numFields) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "This function only works after users have set field constraint indices.");
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
@@ -5526,7 +5526,7 @@ PetscErrorCode DMPlexCreateClosureIndex(DM dm, PetscSection section)
   }
   ierr = PetscSectionSetUp(closureSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(closureSection, &clSize);CHKERRQ(ierr);
-  ierr = PetscMalloc(clSize * sizeof(PetscInt), &clIndices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(clSize, &clIndices);CHKERRQ(ierr);
   for (point = pStart; point < pEnd; ++point) {
     PetscInt *points = NULL, numPoints, p, q, cldof, cloff, fdof, f;
 
@@ -5905,7 +5905,7 @@ PetscErrorCode DMPlexCreateNumbering_Private(DM dm, PetscInt pStart, PetscInt pE
   }
   ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
   ierr = PetscSectionCreateGlobalSection(section, sf, PETSC_FALSE, &globalSection);CHKERRQ(ierr);
-  ierr = PetscMalloc((pEnd - pStart) * sizeof(PetscInt), &numbers);CHKERRQ(ierr);
+  ierr = PetscMalloc1((pEnd - pStart), &numbers);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
     ierr = PetscSectionGetOffset(globalSection, p, &numbers[p-pStart]);CHKERRQ(ierr);
   }

@@ -1018,8 +1018,8 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
     for (l=0; l<numRoots; l++) newLocation[l] = l; /* + (l >= cEnd ? user->numGhostCells : 0); */
     ierr = PetscSFBcastBegin(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
-    ierr = PetscMalloc(numLeaves * sizeof(PetscInt),    &glocalPoints);CHKERRQ(ierr);
-    ierr = PetscMalloc(numLeaves * sizeof(PetscSFNode), &gremotePoints);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numLeaves,    &glocalPoints);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numLeaves, &gremotePoints);CHKERRQ(ierr);
     for (l = 0; l < numLeaves; ++l) {
       glocalPoints[l]        = localPoints[l]; /* localPoints[l] >= cEnd ? localPoints[l] + user->numGhostCells : localPoints[l]; */
       gremotePoints[l].rank  = remotePoints[l].rank;
@@ -1060,7 +1060,7 @@ static PetscErrorCode PseudoInverse(PetscInt m,PetscInt mstride,PetscInt n,Petsc
 
   PetscFunctionBeginUser;
   if (debug) {
-    ierr = PetscMalloc(m*n*sizeof(PetscScalar),&Aback);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m*n,&Aback);CHKERRQ(ierr);
     ierr = PetscMemcpy(Aback,A,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
@@ -1127,7 +1127,7 @@ static PetscErrorCode PseudoInverseSVD(PetscInt m,PetscInt mstride,PetscInt n,Pe
 
   PetscFunctionBeginUser;
   if (debug) {
-    ierr = PetscMalloc(m*n*sizeof(PetscScalar),&Aback);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m*n,&Aback);CHKERRQ(ierr);
     ierr = PetscMemcpy(Aback,A,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
@@ -1540,7 +1540,7 @@ PetscErrorCode SetUpLocalSpace(DM dm, User user)
     ierr = PetscSectionSetConstraintDof(stateSection, c, dof);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(stateSection);CHKERRQ(ierr);
-  ierr = PetscMalloc(dof * sizeof(PetscInt), &cind);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dof, &cind);CHKERRQ(ierr);
   for (d = 0; d < dof; ++d) cind[d] = d;
 #if 0
   for (c = cStart; c < cEnd; ++c) {
@@ -1581,7 +1581,7 @@ PetscErrorCode SetUpBoundaries(DM dm, User user)
       /* TODO: check all IDs to make sure they exist in the mesh */
       ierr      = PetscFree(b->ids);CHKERRQ(ierr);
       b->numids = len;
-      ierr      = PetscMalloc(len*sizeof(PetscInt),&b->ids);CHKERRQ(ierr);
+      ierr      = PetscMalloc1(len,&b->ids);CHKERRQ(ierr);
       ierr      = PetscMemcpy(b->ids,ids,len*sizeof(PetscInt));CHKERRQ(ierr);
     }
   }
@@ -1601,7 +1601,7 @@ static PetscErrorCode ModelBoundaryRegister(Model mod,const char *name,BoundaryF
   ierr          = PetscNew(struct _n_BoundaryLink,&link);CHKERRQ(ierr);
   ierr          = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
   link->numids  = numids;
-  ierr          = PetscMalloc(numids*sizeof(PetscInt),&link->ids);CHKERRQ(ierr);
+  ierr          = PetscMalloc1(numids,&link->ids);CHKERRQ(ierr);
   ierr          = PetscMemcpy(link->ids,ids,numids*sizeof(PetscInt));CHKERRQ(ierr);
   link->func    = bcFunc;
   link->ctx     = ctx;
@@ -1696,9 +1696,9 @@ static PetscErrorCode ModelFunctionalSetFromOptions(Model mod)
   mod->numMonitored = ALEN(names);
   ierr = PetscOptionsStringArray("-monitor","list of functionals to monitor","",names,&mod->numMonitored,NULL);CHKERRQ(ierr);
   /* Create list of functionals that will be computed somehow */
-  ierr = PetscMalloc(mod->numMonitored*sizeof(FunctionalLink),&mod->functionalMonitored);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mod->numMonitored,&mod->functionalMonitored);CHKERRQ(ierr);
   /* Create index of calls that we will have to make to compute these functionals (over-allocation in general). */
-  ierr = PetscMalloc(mod->numMonitored*sizeof(FunctionalLink),&mod->functionalCall);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mod->numMonitored,&mod->functionalCall);CHKERRQ(ierr);
   mod->numCall = 0;
   for (i=0; i<mod->numMonitored; i++) {
     for (link=mod->functionalRegistry; link; link=link->next) {

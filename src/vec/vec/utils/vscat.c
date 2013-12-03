@@ -77,13 +77,13 @@ PetscErrorCode VecScatterBegin_MPI_ToAll(VecScatter ctx,Vec x,Vec y,InsertMode a
       ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
       if (scat->work1) xvt = scat->work1;
       else {
-        ierr        = PetscMalloc(xx_n*sizeof(PetscScalar),&xvt);CHKERRQ(ierr);
+        ierr        = PetscMalloc1(xx_n,&xvt);CHKERRQ(ierr);
         scat->work1 = xvt;
       }
       if (!rank) { /* I am the zeroth processor, values are accumulated here */
         if   (scat->work2) xvt2 = scat->work2;
         else {
-          ierr        = PetscMalloc(xx_n*sizeof(PetscScalar),&xvt2);CHKERRQ(ierr);
+          ierr        = PetscMalloc1(xx_n,&xvt2);CHKERRQ(ierr);
           scat->work2 = xvt2;
         }
         ierr = MPI_Gatherv(yv,yy_n,MPIU_SCALAR,xvt2,scat->count,disply,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
@@ -113,7 +113,7 @@ PetscErrorCode VecScatterBegin_MPI_ToAll(VecScatter ctx,Vec x,Vec y,InsertMode a
     } else {
       if (scat->work1) yvt = scat->work1;
       else {
-        ierr        = PetscMalloc(yy_n*sizeof(PetscScalar),&yvt);CHKERRQ(ierr);
+        ierr        = PetscMalloc1(yy_n,&yvt);CHKERRQ(ierr);
         scat->work1 = yvt;
       }
       ierr = MPI_Allgatherv(xv,xx_n,MPIU_SCALAR,yvt,scat->count,displx,MPIU_SCALAR,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
@@ -181,7 +181,7 @@ PetscErrorCode VecScatterBegin_MPI_ToOne(VecScatter ctx,Vec x,Vec y,InsertMode a
     } else {
       if (scat->work2) yvt = scat->work2;
       else {
-        ierr        = PetscMalloc(xx_n*sizeof(PetscScalar),&yvt);CHKERRQ(ierr);
+        ierr        = PetscMalloc1(xx_n,&yvt);CHKERRQ(ierr);
         scat->work2 = yvt;
       }
       ierr = MPI_Scatterv(xv,scat->count,disply,MPIU_SCALAR,yvt,yy_n,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
@@ -206,7 +206,7 @@ PetscErrorCode VecScatterBegin_MPI_ToOne(VecScatter ctx,Vec x,Vec y,InsertMode a
       if (!rank) {
         if (scat->work1) yvt = scat->work1;
         else {
-          ierr        = PetscMalloc(yy_n*sizeof(PetscScalar),&yvt);CHKERRQ(ierr);
+          ierr        = PetscMalloc1(yy_n,&yvt);CHKERRQ(ierr);
           scat->work1 = yvt;
         }
       }
@@ -788,7 +788,7 @@ PetscErrorCode VecScatterCopy_SGToSS(VecScatter in,VecScatter out)
   out->view    = in->view;
 
   ierr          = PetscMalloc2(1,&out_to,1,&out_from);CHKERRQ(ierr);
-  ierr          = PetscMalloc(in_from->n*sizeof(PetscInt),&out_from->vslots);CHKERRQ(ierr);
+  ierr          = PetscMalloc1(in_from->n,&out_from->vslots);CHKERRQ(ierr);
   out_to->n     = in_to->n;
   out_to->type  = in_to->type;
   out_to->first = in_to->first;
@@ -1168,7 +1168,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = ISStrideGetInfo(iy,&first,&step);CHKERRQ(ierr);
       if (nx != ny) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
       ierr       = PetscMalloc2(1,&to9,1,&from9);CHKERRQ(ierr);
-      ierr       = PetscMalloc(nx*sizeof(PetscInt),&from9->vslots);CHKERRQ(ierr);
+      ierr       = PetscMalloc1(nx,&from9->vslots);CHKERRQ(ierr);
       to9->n     = nx;
       to9->first = first;
       to9->step  = step;
@@ -1200,7 +1200,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = ISStrideGetInfo(ix,&first,&step);CHKERRQ(ierr);
       if (nx != ny) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
       ierr = PetscMalloc2(1,&to10,1,&from10);CHKERRQ(ierr);
-      ierr = PetscMalloc(nx*sizeof(PetscInt),&to10->vslots);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nx,&to10->vslots);CHKERRQ(ierr);
       from10->n     = nx;
       from10->first = first;
       from10->step  = step;
@@ -1474,7 +1474,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
           ierr = ISBlockGetLocalSize(ix,&nx);CHKERRQ(ierr);
           ierr = ISBlockGetIndices(ix,&idx);CHKERRQ(ierr);
           if (ysize != bsx*nx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
-          ierr = PetscMalloc(nx*sizeof(PetscInt),&idy);CHKERRQ(ierr);
+          ierr = PetscMalloc1(nx,&idy);CHKERRQ(ierr);
           if (nx) {
             idy[0] = ystart/bsx;
             for (il=1; il<nx; il++) idy[il] = idy[il-1] + 1;
@@ -1560,7 +1560,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ierr = ISBlockGetLocalSize(ix,&nx);CHKERRQ(ierr);
         ierr = ISBlockGetIndices(ix,&idx);CHKERRQ(ierr);
         if (ysize != bsx*nx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
-        ierr = PetscMalloc(nx*sizeof(PetscInt),&idy);CHKERRQ(ierr);
+        ierr = PetscMalloc1(nx,&idy);CHKERRQ(ierr);
         if (nx) {
           idy[0] = ystart/bsx;
           for (il=1; il<nx; il++) idy[il] = idy[il-1] + 1;

@@ -6544,7 +6544,7 @@ possibly user-defined routines as well) with
 \end{tabbing}
 Likewise, all memory allocations should be checked with
 \begin{tabbing}
-  ierr = PetscMalloc(n*sizeof(double),\&ptr);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,\&ptr);CHKERRQ(ierr);
 \end{tabbing}
 If this procedure is followed throughout all of the user's libraries
 and codes, any error will by default generate a clean traceback of

@@ -608,7 +608,7 @@ PetscErrorCode DMPlexEqualReordered(DM dmA, DM dmB, PetscBool *equal)
   ierr = DMPlexGetChart(dmA, &pStart,  &pEnd);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dmB, &pStartB, &pEndB);CHKERRQ(ierr);
   if ((pStart != pStartB) || (pEnd != pEndB)) PetscFunctionReturn(0);
-  ierr = PetscMalloc((pEnd - pStart) * sizeof(PetscInt), &perm);CHKERRQ(ierr);
+  ierr = PetscMalloc1((pEnd - pStart), &perm);CHKERRQ(ierr);
   perm -= pStart;
   for (p = pStart; p < pEnd; ++p) perm[p] = -1;
   for (p = pStart; p < pEnd; ++p) {

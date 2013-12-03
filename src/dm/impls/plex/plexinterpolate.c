@@ -495,7 +495,7 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
     maxConeSize = PetscMax(maxConeSize, coneSize);
   }
   ierr = DMSetUp(udm);CHKERRQ(ierr);
-  ierr = PetscMalloc(maxConeSize * sizeof(PetscInt), &cone);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxConeSize, &cone);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscInt *closure = NULL, closureSize, cl, coneSize = 0;
 

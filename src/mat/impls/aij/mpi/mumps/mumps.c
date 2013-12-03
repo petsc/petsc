@@ -118,7 +118,7 @@ PetscErrorCode MatConvertToTriples_seqaij_seqaij(Mat A,int shift,MatReuse reuse,
     ai   = aa->i;
     aj   = aa->j;
     *nnz = nz;
-    ierr = PetscMalloc(2*nz*sizeof(PetscInt), &row);CHKERRQ(ierr);
+    ierr = PetscMalloc1(2*nz, &row);CHKERRQ(ierr);
     col  = row + nz;
 
     nz = 0;
@@ -150,7 +150,7 @@ PetscErrorCode MatConvertToTriples_seqbaij_seqaij(Mat A,int shift,MatReuse reuse
     ai   = aa->i; aj = aa->j;
     nz   = bs2*aa->nz;
     *nnz = nz;
-    ierr = PetscMalloc(2*nz*sizeof(PetscInt), &row);CHKERRQ(ierr);
+    ierr = PetscMalloc1(2*nz, &row);CHKERRQ(ierr);
     col  = row + nz;
 
     for (i=0; i<M; i++) {
@@ -188,7 +188,7 @@ PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A,int shift,MatReuse re
     aj   = aa->j;
     *v   = aa->a;
     *nnz = nz;
-    ierr = PetscMalloc(2*nz*sizeof(PetscInt), &row);CHKERRQ(ierr);
+    ierr = PetscMalloc1(2*nz, &row);CHKERRQ(ierr);
     col  = row + nz;
 
     nz = 0;
@@ -923,7 +923,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
           const PetscInt *idx;
           PetscInt       i,*perm_in;
 
-          ierr = PetscMalloc(M*sizeof(PetscInt),&perm_in);CHKERRQ(ierr);
+          ierr = PetscMalloc1(M,&perm_in);CHKERRQ(ierr);
           ierr = ISGetIndices(r,&idx);CHKERRQ(ierr);
 
           mumps->id.perm_in = perm_in;

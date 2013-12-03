@@ -48,9 +48,9 @@ PetscErrorCode MPISBSTRM_create_sbstrm(Mat A)
   a->A->spptr  = (void*) sbstrmA;
   sbstrmA      = (Mat_SeqSBSTRM*) a->A->spptr;
   sbstrmA->rbs = sbstrmA->cbs = bs;
-  ierr         = PetscMalloc(bs2*blen*sizeof(PetscScalar), &sbstrmA->as);CHKERRQ(ierr);
+  ierr         = PetscMalloc1(bs2*blen, &sbstrmA->as);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(rbs*sizeof(PetscScalar*), &asp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rbs, &asp);CHKERRQ(ierr);
 
   for (i=0; i<rbs; i++) asp[i] = sbstrmA->as + i*slen;
 
@@ -84,9 +84,9 @@ PetscErrorCode MPISBSTRM_create_sbstrm(Mat A)
   sbstrmB      = (Mat_SeqSBSTRM*) a->B->spptr;
   sbstrmB->rbs = sbstrmB->cbs = bs;
 
-  ierr  = PetscMalloc(bs2*blen*sizeof(PetscScalar), &sbstrmB->as);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(bs2*blen, &sbstrmB->as);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(rbs*sizeof(PetscScalar*), &bsp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rbs, &bsp);CHKERRQ(ierr);
 
   for (i=0; i<rbs; i++) bsp[i] = sbstrmB->as + i*slen;
 

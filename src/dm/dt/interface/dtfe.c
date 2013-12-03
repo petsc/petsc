@@ -485,7 +485,7 @@ PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(ndegree * sizeof(PetscInt), &poly->degrees);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ndegree, &poly->degrees);CHKERRQ(ierr);
   for (deg = 0; deg < ndegree; ++deg) poly->degrees[deg] = deg;
   PetscFunctionReturn(0);
 }
@@ -1443,7 +1443,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
 
   PetscFunctionBegin;
   ierr = PetscDualSpaceGetDimension(sp, &pdim);CHKERRQ(ierr);
-  ierr = PetscMalloc(pdim * sizeof(PetscQuadrature), &sp->functional);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pdim, &sp->functional);CHKERRQ(ierr);
   /* Classify element type */
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
@@ -1471,8 +1471,8 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
 
         if (order < 1) continue;
         sp->functional[f].numPoints = 1;
-        ierr = PetscMalloc(sp->functional[f].numPoints*dim * sizeof(PetscReal), &qpoints);CHKERRQ(ierr);
-        ierr = PetscMalloc(sp->functional[f].numPoints     * sizeof(PetscReal), &qweights);CHKERRQ(ierr);
+        ierr = PetscMalloc1(sp->functional[f].numPoints*dim, &qpoints);CHKERRQ(ierr);
+        ierr = PetscMalloc1(sp->functional[f].numPoints, &qweights);CHKERRQ(ierr);
         ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
         ierr = PetscSectionGetDof(csection, p, &dof);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(csection, p, &off);CHKERRQ(ierr);
@@ -1495,8 +1495,8 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
         if (n != dim*2) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %d has %d coordinate values instead of %d", p, n, dim*2);
         for (k = 1; k < order; ++k) {
           sp->functional[f].numPoints = 1;
-          ierr = PetscMalloc(sp->functional[f].numPoints*dim * sizeof(PetscReal), &qpoints);CHKERRQ(ierr);
-          ierr = PetscMalloc(sp->functional[f].numPoints     * sizeof(PetscReal), &qweights);CHKERRQ(ierr);
+          ierr = PetscMalloc1(sp->functional[f].numPoints*dim, &qpoints);CHKERRQ(ierr);
+          ierr = PetscMalloc1(sp->functional[f].numPoints, &qweights);CHKERRQ(ierr);
           for (d = 0; d < dim; ++d) {qpoints[d] = k*PetscRealPart(coords[1*dim+d] - coords[0*dim+d])/order + PetscRealPart(coords[0*dim+d]);}
           qweights[0] = 1.0;
           sp->functional[f].points  = qpoints;
@@ -1521,8 +1521,8 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
         if (order) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to implement cells");}
 
         sp->functional[f].numPoints = 1;
-        ierr = PetscMalloc(sp->functional[f].numPoints*dim * sizeof(PetscReal), &qpoints);CHKERRQ(ierr);
-        ierr = PetscMalloc(sp->functional[f].numPoints     * sizeof(PetscReal), &qweights);CHKERRQ(ierr);
+        ierr = PetscMalloc1(sp->functional[f].numPoints*dim, &qpoints);CHKERRQ(ierr);
+        ierr = PetscMalloc1(sp->functional[f].numPoints, &qweights);CHKERRQ(ierr);
         ierr = DMPlexVecGetClosure(dm, csection, coordinates, p, &csize, &coords);CHKERRQ(ierr);
         if (csize%dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Coordinate size %d is not divisible by spatial dimension %d", csize, dim);
         for (d = 0; d < dim; ++d) {
@@ -1545,8 +1545,8 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
     ierr = DMPlexRestoreTransitiveClosure(dm, pStart[depth], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
   } else if (!dim) {
     sp->functional[f].numPoints = 1;
-    ierr = PetscMalloc(sp->functional[f].numPoints * sizeof(PetscReal), &qpoints);CHKERRQ(ierr);
-    ierr = PetscMalloc(sp->functional[f].numPoints * sizeof(PetscReal), &qweights);CHKERRQ(ierr);
+    ierr = PetscMalloc1(sp->functional[f].numPoints, &qpoints);CHKERRQ(ierr);
+    ierr = PetscMalloc1(sp->functional[f].numPoints, &qweights);CHKERRQ(ierr);
     qpoints[0]  = 0.0;
     qweights[0] = 1.0;
     sp->functional[f].points  = qpoints;
@@ -2168,7 +2168,7 @@ PetscErrorCode PetscFEGetNumDof(PetscFE fem, const PetscInt **numDof)
 
     ierr = PetscDualSpaceGetDM(fem->dualSpace, &dm);CHKERRQ(ierr);
     ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-    ierr = PetscMalloc((dim+1) * sizeof(PetscInt), &fem->numDof);CHKERRQ(ierr);
+    ierr = PetscMalloc1((dim+1), &fem->numDof);CHKERRQ(ierr);
     for (d = 0; d <= dim; ++d) {
       fem->numDof[d] = fem->numComponents*numDofDual[d];
     }
@@ -3469,7 +3469,7 @@ PetscErrorCode PetscFEOpenCLGetIntegrationKernel(PetscFE fem, PetscBool useAux, 
 
   PetscFunctionBegin;
   ierr = PetscFEGetSpatialDimension(fem, &dim);CHKERRQ(ierr);
-  ierr = PetscMalloc(8192 * sizeof(char), &buffer);CHKERRQ(ierr);
+  ierr = PetscMalloc1(8192, &buffer);CHKERRQ(ierr);
   ierr = PetscFEGetTileSizes(fem, NULL, &N_bl, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscFEOpenCLGenerateIntegrationCode(fem, &buffer, 8192, useAux, N_bl);CHKERRQ(ierr);
   len  = strlen(buffer);
@@ -3693,7 +3693,7 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscInt Ne, PetscIn
       PetscInt c, b;
 
       ierr = PetscFree4(f_coeff,f_coeffAux,f_invJ,f_detJ);CHKERRQ(ierr);
-      ierr = PetscMalloc(Ne*N_bt * sizeof(float), &elem);CHKERRQ(ierr);
+      ierr = PetscMalloc1(Ne*N_bt, &elem);CHKERRQ(ierr);
       ierr = clEnqueueReadBuffer(ocl->queue_id, o_elemVec, CL_TRUE, 0, Ne*N_bt * realSize, elem, 0, NULL, NULL);CHKERRQ(ierr);
       for (c = 0; c < Ne; ++c) {
         for (b = 0; b < N_bt; ++b) {
@@ -3709,7 +3709,7 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscInt Ne, PetscIn
       PetscInt c, b;
 
       ierr = PetscFree4(d_coeff,d_coeffAux,d_invJ,d_detJ);CHKERRQ(ierr);
-      ierr = PetscMalloc(Ne*N_bt * sizeof(double), &elem);CHKERRQ(ierr);
+      ierr = PetscMalloc1(Ne*N_bt, &elem);CHKERRQ(ierr);
       ierr = clEnqueueReadBuffer(ocl->queue_id, o_elemVec, CL_TRUE, 0, Ne*N_bt * realSize, elem, 0, NULL, NULL);CHKERRQ(ierr);
       for (c = 0; c < Ne; ++c) {
         for (b = 0; b < N_bt; ++b) {

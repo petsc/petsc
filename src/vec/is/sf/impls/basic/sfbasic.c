@@ -507,7 +507,7 @@ static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
   /*
    * Inform roots about how many leaves and from which ranks
    */
-  ierr = PetscMalloc(sf->nranks*sizeof(PetscInt),&rlengths);CHKERRQ(ierr);
+  ierr = PetscMalloc1(sf->nranks,&rlengths);CHKERRQ(ierr);
   /* Determine number, sending ranks, and length of incoming  */
   for (i=0; i<sf->nranks; i++) {
     rlengths[i] = sf->roffset[i+1] - sf->roffset[i]; /* Number of roots referenced by my leaves; for rank sf->ranks[i] */
@@ -705,7 +705,7 @@ static PetscErrorCode PetscSFBasicGetPack(PetscSF sf,MPI_Datatype unit,const voi
   ierr = PetscNew(struct _n_PetscSFBasicPack,&link);CHKERRQ(ierr);
   ierr = PetscSFBasicPackTypeSetup(link,unit);CHKERRQ(ierr);
   ierr = PetscMalloc2(rootoffset[nrootranks]*link->unitbytes,&link->root,leafoffset[nleafranks]*link->unitbytes,&link->leaf);CHKERRQ(ierr);
-  ierr = PetscMalloc((nrootranks+nleafranks)*sizeof(MPI_Request),&link->requests);CHKERRQ(ierr);
+  ierr = PetscMalloc1((nrootranks+nleafranks),&link->requests);CHKERRQ(ierr);
 
 found:
   link->key  = key;

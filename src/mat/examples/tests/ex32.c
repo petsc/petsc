@@ -39,12 +39,12 @@ int main(int argc,char **args)
   ierr = VecSetSizes(b,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&col);CHKERRQ(ierr);
+  ierr = PetscMalloc1((n+1),&col);CHKERRQ(ierr);
   for (i=0; i<n+1; i++) fscanf(file,"     I=%d%d\n",&j,&col[i]);
   fscanf(file,"  EOD JA\n");
 
-  ierr = PetscMalloc(nnz*sizeof(PetscScalar),&val);CHKERRQ(ierr);
-  ierr = PetscMalloc(nnz*sizeof(PetscInt),&row);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nnz,&val);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nnz,&row);CHKERRQ(ierr);
   fscanf(file,"  COEFFICIENT MATRIX IN SLAPSV: I, IA, A\n");
   for (i=0; i<nnz; i++) {
     fscanf(file,"    %d%d%le\n",&j,&row[i],(double*)&val[i]);
@@ -52,8 +52,8 @@ int main(int argc,char **args)
   }
   fscanf(file,"  EOD IA\n");
 
-  ierr = PetscMalloc(n*sizeof(PetscScalar),&bval);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscInt),&brow);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&bval);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&brow);CHKERRQ(ierr);
   fscanf(file,"  RESIDUAL IN SLAPSV ;IRHS=%d\n",&j);
   for (i=0; i<n; i++) {
     fscanf(file,"      %d%le%d\n",&j,(double*)(bval+i),&j);

@@ -74,8 +74,8 @@ int main(int Argc,char **Args)
   ierr = DMADDAGetCorners(adda, &lcs, &lce);CHKERRQ(ierr);
 
   /* Allocate space for the indices that we use to construct the matrix */
-  ierr = PetscMalloc(2*sizeof(PetscInt), &(sxy.x));CHKERRQ(ierr);
-  ierr = PetscMalloc(2*sizeof(PetscInt), &(sxy_m.x));CHKERRQ(ierr);
+  ierr = PetscMalloc1(2, &(sxy.x));CHKERRQ(ierr);
+  ierr = PetscMalloc1(2, &(sxy_m.x));CHKERRQ(ierr);
 
   /* Assemble the matrix */
   for (x=lcs[0]; x<lce[0]; x++) {

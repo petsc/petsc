@@ -805,7 +805,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
     }
     /* Split faces have 2 vertices and the same cells as the parent */
     ierr = DMPlexGetMaxSizes(dm, NULL, &maxSupportSize);CHKERRQ(ierr);
-    ierr = PetscMalloc((2 + maxSupportSize*2) * sizeof(PetscInt), &supportRef);CHKERRQ(ierr);
+    ierr = PetscMalloc1((2 + maxSupportSize*2), &supportRef);CHKERRQ(ierr);
     for (f = fStart; f < fEnd; ++f) {
       const PetscInt newv = vStartNew + (vEnd - vStart) + (f - fStart);
 
@@ -1019,7 +1019,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
     }
     /* Split faces have 2 vertices and the same cells as the parent */
     ierr = DMPlexGetMaxSizes(dm, NULL, &maxSupportSize);CHKERRQ(ierr);
-    ierr = PetscMalloc((2 + maxSupportSize*2) * sizeof(PetscInt), &supportRef);CHKERRQ(ierr);
+    ierr = PetscMalloc1((2 + maxSupportSize*2), &supportRef);CHKERRQ(ierr);
     for (f = fStart; f < fEnd; ++f) {
       const PetscInt newv = vStartNew + (vEnd - vStart) + (f - fStart);
 
@@ -1280,7 +1280,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
     }
     /* Interior split faces have 2 vertices and the same cells as the parent */
     ierr = DMPlexGetMaxSizes(dm, NULL, &maxSupportSize);CHKERRQ(ierr);
-    ierr = PetscMalloc((2 + maxSupportSize*2) * sizeof(PetscInt), &supportRef);CHKERRQ(ierr);
+    ierr = PetscMalloc1((2 + maxSupportSize*2), &supportRef);CHKERRQ(ierr);
     for (f = fStart; f < fMax; ++f) {
       const PetscInt newv = vStartNew + (vEnd - vStart) + (f - fStart);
 
@@ -1631,7 +1631,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
     }
     /* Split faces have 3 edges and the same cells as the parent */
     ierr = DMPlexGetMaxSizes(dm, NULL, &maxSupportSize);CHKERRQ(ierr);
-    ierr = PetscMalloc((2 + maxSupportSize*2) * sizeof(PetscInt), &supportRef);CHKERRQ(ierr);
+    ierr = PetscMalloc1((2 + maxSupportSize*2), &supportRef);CHKERRQ(ierr);
     for (f = fStart; f < fEnd; ++f) {
       const PetscInt  newp = fStartNew + (f - fStart)*4;
       const PetscInt *cone, *ornt, *support;
@@ -2330,7 +2330,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
     }
     /* Split faces have 3 edges and the same cells as the parent */
     ierr = DMPlexGetMaxSizes(dm, NULL, &maxSupportSize);CHKERRQ(ierr);
-    ierr = PetscMalloc((2 + maxSupportSize*2) * sizeof(PetscInt), &supportRef);CHKERRQ(ierr);
+    ierr = PetscMalloc1((2 + maxSupportSize*2), &supportRef);CHKERRQ(ierr);
     for (f = fStart; f < fMax; ++f) {
       const PetscInt  newp = fStartNew + (f - fStart)*4;
       const PetscInt *cone, *ornt, *support;
@@ -3194,7 +3194,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
     }
     /* Split faces have 4 edges and the same cells as the parent */
     ierr = DMPlexGetMaxSizes(dm, NULL, &maxSupportSize);CHKERRQ(ierr);
-    ierr = PetscMalloc((4 + maxSupportSize*2) * sizeof(PetscInt), &supportRef);CHKERRQ(ierr);
+    ierr = PetscMalloc1((4 + maxSupportSize*2), &supportRef);CHKERRQ(ierr);
     for (f = fStart; f < fEnd; ++f) {
       for (r = 0; r < 4; ++r) {
         /* TODO: This can come from GetFaces_Internal() */
@@ -3827,14 +3827,14 @@ PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, P
 
   PetscFunctionBegin;
   ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
-  ierr = PetscMalloc(numLeaves * sizeof(PetscInt), &ranks);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numLeaves, &ranks);CHKERRQ(ierr);
   for (l = 0; l < numLeaves; ++l) {
     ranks[l] = remotePoints[l].rank;
   }
   ierr = PetscSortRemoveDupsInt(&numLeaves, ranks);CHKERRQ(ierr);
-  ierr = PetscMalloc(numLeaves * sizeof(PetscInt),    &ranksNew);CHKERRQ(ierr);
-  ierr = PetscMalloc(numLeaves * sizeof(PetscInt),    &localPointsNew);CHKERRQ(ierr);
-  ierr = PetscMalloc(numLeaves * sizeof(PetscSFNode), &remotePointsNew);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numLeaves,    &ranksNew);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numLeaves,    &localPointsNew);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numLeaves, &remotePointsNew);CHKERRQ(ierr);
   for (l = 0; l < numLeaves; ++l) {
     ranksNew[l]              = ranks[l];
     localPointsNew[l]        = l;
@@ -4003,8 +4003,8 @@ PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt depthSiz
   ierr = MPI_Type_free(&depthType);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sfProcess);CHKERRQ(ierr);
   /* Calculate new point SF */
-  ierr = PetscMalloc(numLeavesNew * sizeof(PetscInt),    &localPointsNew);CHKERRQ(ierr);
-  ierr = PetscMalloc(numLeavesNew * sizeof(PetscSFNode), &remotePointsNew);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numLeavesNew,    &localPointsNew);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numLeavesNew, &remotePointsNew);CHKERRQ(ierr);
   ierr = ISGetIndices(processRanks, &neighbors);CHKERRQ(ierr);
   for (l = 0, m = 0; l < numLeaves; ++l) {
     PetscInt    p     = localPoints[l];
@@ -4658,7 +4658,7 @@ PetscErrorCode DMPlexRefineUniform_Internal(DM dm, CellRefiner cellRefiner, DM *
   ierr = DMPlexSetDimension(rdm, dim);CHKERRQ(ierr);
   /* Calculate number of new points of each depth */
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  ierr = PetscMalloc((depth+1) * sizeof(PetscInt), &depthSize);CHKERRQ(ierr);
+  ierr = PetscMalloc1((depth+1), &depthSize);CHKERRQ(ierr);
   ierr = PetscMemzero(depthSize, (depth+1) * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = CellRefinerGetSizes(cellRefiner, dm, depthSize);CHKERRQ(ierr);
   /* Step 1: Set chart */

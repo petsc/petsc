@@ -47,8 +47,8 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   /* Create the IS corresponding to subdomains */
-  ierr = PetscMalloc(nd*sizeof(IS **),&is1);CHKERRQ(ierr);
-  ierr = PetscMalloc(nd*sizeof(IS **),&is2);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nd,&is1);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nd,&is2);CHKERRQ(ierr);
 
   /* Create the random Index Sets */
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);

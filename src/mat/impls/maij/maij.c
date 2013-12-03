@@ -3009,7 +3009,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
   cn = pn*ppdof;
   /* Allocate ci array, arrays for fill computation and */
   /* free space for accumulating nonzero column info */
-  ierr  = PetscMalloc((cn+1)*sizeof(PetscInt),&ci);CHKERRQ(ierr);
+  ierr  = PetscMalloc1((cn+1),&ci);CHKERRQ(ierr);
   ci[0] = 0;
 
   /* Work arrays for rows of P^T*A */
@@ -3091,12 +3091,12 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
   /* nnz is now stored in ci[ptm], column indices are in the list of free space */
   /* Allocate space for cj, initialize cj, and */
   /* destroy list of free space and other temporary array(s) */
-  ierr = PetscMalloc((ci[cn]+1)*sizeof(PetscInt),&cj);CHKERRQ(ierr);
+  ierr = PetscMalloc1((ci[cn]+1),&cj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
   ierr = PetscFree4(ptadenserow,ptasparserow,denserow,sparserow);CHKERRQ(ierr);
 
   /* Allocate space for ca */
-  ierr = PetscMalloc((ci[cn]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
+  ierr = PetscMalloc1((ci[cn]+1),&ca);CHKERRQ(ierr);
   ierr = PetscMemzero(ca,(ci[cn]+1)*sizeof(MatScalar));CHKERRQ(ierr);
 
   /* put together the new matrix */
@@ -3279,14 +3279,14 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqMAIJ_SeqAIJ(Mat A, MatType newtype,Mat
 
   PetscFunctionBegin;
   ierr = MatGetSize(a,&m,&n);CHKERRQ(ierr);
-  ierr = PetscMalloc(dof*m*sizeof(PetscInt),&ilen);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dof*m,&ilen);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     nmax = PetscMax(nmax,aij->ilen[i]);
     for (j=0; j<dof; j++) ilen[dof*i+j] = aij->ilen[i];
   }
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,dof*m,dof*n,0,ilen,&B);CHKERRQ(ierr);
   ierr = PetscFree(ilen);CHKERRQ(ierr);
-  ierr = PetscMalloc(nmax*sizeof(PetscInt),&icols);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nmax,&icols);CHKERRQ(ierr);
   ii   = 0;
   for (i=0; i<m; i++) {
     ierr = MatGetRow_SeqAIJ(a,i,&ncols,&cols,&vals);CHKERRQ(ierr);

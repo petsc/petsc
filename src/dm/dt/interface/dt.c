@@ -333,14 +333,14 @@ PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt order, PetscR
 
   PetscFunctionBegin;
   if ((a != -1.0) || (b != 1.0)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must use default internal right now");
-  ierr = PetscMalloc(npoints*dim * sizeof(PetscReal), &x);CHKERRQ(ierr);
-  ierr = PetscMalloc(npoints     * sizeof(PetscReal), &w);CHKERRQ(ierr);
+  ierr = PetscMalloc1(npoints*dim, &x);CHKERRQ(ierr);
+  ierr = PetscMalloc1(npoints, &w);CHKERRQ(ierr);
   switch (dim) {
   case 0:
     ierr = PetscFree(x);CHKERRQ(ierr);
     ierr = PetscFree(w);CHKERRQ(ierr);
-    ierr = PetscMalloc(1 * sizeof(PetscReal), &x);CHKERRQ(ierr);
-    ierr = PetscMalloc(1 * sizeof(PetscReal), &w);CHKERRQ(ierr);
+    ierr = PetscMalloc1(1, &x);CHKERRQ(ierr);
+    ierr = PetscMalloc1(1, &w);CHKERRQ(ierr);
     x[0] = 0.0;
     w[0] = 1.0;
     break;
@@ -456,7 +456,7 @@ static PetscErrorCode PetscDTLegendreIntegrate(PetscInt ninterval,const PetscRea
   PetscInt i,j;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc((ninterval+1)*ndegree*sizeof(PetscReal),&Bv);CHKERRQ(ierr);
+  ierr = PetscMalloc1((ninterval+1)*ndegree,&Bv);CHKERRQ(ierr);
   /* Point evaluation of L_p on all the source vertices */
   ierr = PetscDTLegendreEval(ninterval+1,x,ndegree,degrees,Bv,NULL,NULL);CHKERRQ(ierr);
   /* Integral over each interval: \int_a^b L_p' = L_p(b)-L_p(a) */

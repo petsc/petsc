@@ -776,7 +776,7 @@ static PetscErrorCode MatGetOwnershipIS_Elemental(Mat A,IS *rows,IS *cols)
     m = a->emat->LocalHeight();
     shift = a->emat->ColShift();
     stride = a->emat->ColStride();
-    ierr = PetscMalloc(m*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m,&idx);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       PetscInt rank,offset;
       E2RO(A,0,shift+i*stride,&rank,&offset);
@@ -788,7 +788,7 @@ static PetscErrorCode MatGetOwnershipIS_Elemental(Mat A,IS *rows,IS *cols)
     m = a->emat->LocalWidth();
     shift = a->emat->RowShift();
     stride = a->emat->RowStride();
-    ierr = PetscMalloc(m*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m,&idx);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       PetscInt rank,offset;
       E2RO(A,1,shift+i*stride,&rank,&offset);

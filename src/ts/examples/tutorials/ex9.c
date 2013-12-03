@@ -1371,7 +1371,7 @@ static PetscErrorCode FVIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shi
   ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&dainfo);CHKERRQ(ierr);
   hx   = (ctx->xmax - ctx->xmin)/dainfo.mx;
-  ierr = PetscMalloc(dof*dof*sizeof(PetscScalar),&J);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dof*dof,&J);CHKERRQ(ierr);
   for (i=dainfo.xs; i<dainfo.xs+dainfo.xm; i++) {
     ierr = (*ctx->physics.characteristic)(ctx->physics.user,dof,&x[i*dof],ctx->R,ctx->Rinv,ctx->speeds);CHKERRQ(ierr);
     for (j=0; j<dof; j++) ctx->speeds[j] = PetscAbs(ctx->speeds[j]);
@@ -1404,7 +1404,7 @@ static PetscErrorCode FVSample(FVCtx *ctx,DM da,PetscReal time,Vec U)
   ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
-  ierr = PetscMalloc(dof*sizeof(uj[0]),&uj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dof,&uj);CHKERRQ(ierr);
   for (i=xs; i<xs+xm; i++) {
     const PetscReal h = (ctx->xmax-ctx->xmin)/Mx,xi = ctx->xmin+h/2+i*h;
     const PetscInt  N = 200;

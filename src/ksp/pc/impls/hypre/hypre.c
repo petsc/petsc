@@ -1369,7 +1369,7 @@ PetscErrorCode PCApply_SysPFMG(PC pc,Vec x,Vec y)
     PetscScalar *z;
     PetscInt    j, k;
 
-    ierr = PetscMalloc(nvars*size*sizeof(PetscScalar),&z);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nvars*size,&z);CHKERRQ(ierr);
     PetscStackCallStandard(HYPRE_SStructVectorSetConstantValues,(mx->ss_b,0.0));
     ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
 

@@ -23,8 +23,8 @@ int main(int argc,char **argv)
   /*
    * Create matrix and three vectors: these are all normal
    */
-  ierr = PetscMalloc(size*size*sizeof(PetscScalar),&a);CHKERRQ(ierr);
-  ierr = PetscMalloc(size*size*sizeof(PetscScalar),&b);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size*size,&a);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size*size,&b);CHKERRQ(ierr);
   for (i=0; i<size; i++) {
     for (j=0; j<size; j++) {
       a[i+j*size] = rand(); b[i+j*size] = a[i+j*size];
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(size*sizeof(PetscScalar),&x);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&x);CHKERRQ(ierr);
   for (i=0; i<size; i++) {
     x[i] = one;
   }
@@ -45,12 +45,12 @@ int main(int argc,char **argv)
   ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(size*sizeof(PetscScalar),&y);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&y);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size,y,&Y);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(Y);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(Y);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(size*sizeof(PetscScalar),&z);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&z);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size,z,&Z);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(Z);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(Z);CHKERRQ(ierr);

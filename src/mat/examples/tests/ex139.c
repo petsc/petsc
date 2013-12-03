@@ -62,7 +62,7 @@ int main(int argc,char *argv[])
   ierr = MatGetOwnershipRange(J,&rstart,&rend);CHKERRQ(ierr);
 
   nlocblocks = (rend-rstart)/top_bs + 2;
-  ierr       = PetscMalloc(nlocblocks*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr       = PetscMalloc1(nlocblocks,&idx);CHKERRQ(ierr);
   for (i=0; i<nlocblocks; i++) {
     idx[i] = (rstart/top_bs + i - 1 + m/top_bs) % (m/top_bs);
   }

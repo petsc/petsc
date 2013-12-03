@@ -759,7 +759,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
 
   PetscFunctionBegin;
   if (!draw->display) {
-    ierr = PetscMalloc(256*sizeof(char),&draw->display);CHKERRQ(ierr);
+    ierr = PetscMalloc1(256,&draw->display);CHKERRQ(ierr);
     ierr = PetscGetDisplay(draw->display,256);CHKERRQ(ierr);
   }
 

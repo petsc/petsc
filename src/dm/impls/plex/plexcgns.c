@@ -99,7 +99,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
         PetscInt off;
 
         ierr = cg_ElementDataSize(cgid, 1, z, 1, &elementDataSize);CHKERRQ(ierr);
-        ierr = PetscMalloc(elementDataSize * sizeof(cgsize_t), &elements);CHKERRQ(ierr);
+        ierr = PetscMalloc1(elementDataSize, &elements);CHKERRQ(ierr);
         ierr = cg_elements_read(cgid, 1, z, 1, elements, NULL);CHKERRQ(ierr);
         for (c_loc = start, off = 0; c_loc < end; ++c_loc, ++c) {
           switch (elements[off]) {

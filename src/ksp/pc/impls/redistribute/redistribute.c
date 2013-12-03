@@ -82,8 +82,8 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
       if (nz > 1) cnt++;
       ierr = MatRestoreRow(pc->mat,i,&nz,NULL,NULL);CHKERRQ(ierr);
     }
-    ierr = PetscMalloc(cnt*sizeof(PetscInt),&rows);CHKERRQ(ierr);
-    ierr = PetscMalloc((rend - rstart - cnt)*sizeof(PetscInt),&drows);CHKERRQ(ierr);
+    ierr = PetscMalloc1(cnt,&rows);CHKERRQ(ierr);
+    ierr = PetscMalloc1((rend - rstart - cnt),&drows);CHKERRQ(ierr);
 
     /* list non-diagonal rows on process */
     cnt = 0; dcnt = 0;
@@ -187,7 +187,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr = PetscFree3(rvalues,source,recv_waits);CHKERRQ(ierr);
     ierr = PetscFree2(nprocs,owner);CHKERRQ(ierr);
     if (nsends) {   /* wait on sends */
-      ierr = PetscMalloc(nsends*sizeof(MPI_Status),&send_status);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nsends,&send_status);CHKERRQ(ierr);
       ierr = MPI_Waitall(nsends,send_waits,send_status);CHKERRQ(ierr);
       ierr = PetscFree(send_status);CHKERRQ(ierr);
     }
@@ -207,7 +207,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
 
   /* get diagonal portion of matrix */
   ierr = PetscFree(red->diag);CHKERRQ(ierr);
-  ierr = PetscMalloc(red->dcnt*sizeof(PetscScalar),&red->diag);CHKERRQ(ierr);
+  ierr = PetscMalloc1(red->dcnt,&red->diag);CHKERRQ(ierr);
   ierr = MatGetVecs(pc->pmat,&diag,NULL);CHKERRQ(ierr);
   ierr = MatGetDiagonal(pc->pmat,diag);CHKERRQ(ierr);
   ierr = VecGetArrayRead(diag,&d);CHKERRQ(ierr);

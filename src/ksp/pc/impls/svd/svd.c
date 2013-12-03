@@ -67,7 +67,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   ierr  = MatGetSize(pc->pmat,&n,NULL);CHKERRQ(ierr);
   ierr  = PetscBLASIntCast(n,&nb);CHKERRQ(ierr);
   lwork = 5*nb;
-  ierr  = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(lwork,&work);CHKERRQ(ierr);
   ierr  = MatDenseGetArray(jac->A,&a);CHKERRQ(ierr);
   ierr  = MatDenseGetArray(jac->U,&u);CHKERRQ(ierr);
   ierr  = MatDenseGetArray(jac->Vt,&v);CHKERRQ(ierr);
@@ -84,8 +84,8 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   {
     PetscBLASInt lierr;
     PetscReal    *rwork,*dd;
-    ierr = PetscMalloc(5*nb*sizeof(PetscReal),&rwork);CHKERRQ(ierr);
-    ierr = PetscMalloc(nb*sizeof(PetscReal),&dd);CHKERRQ(ierr);
+    ierr = PetscMalloc1(5*nb,&rwork);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nb,&dd);CHKERRQ(ierr);
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
     PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("A","A",&nb,&nb,a,&nb,dd,u,&nb,v,&nb,work,&lwork,rwork,&lierr));
     if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"gesv() error %d",lierr);

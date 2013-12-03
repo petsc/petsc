@@ -73,7 +73,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     int *cs_connect;
 
     /* Get cell sets IDs */
-    ierr = PetscMalloc(num_cs * sizeof(int), &cs_id);CHKERRQ(ierr);
+    ierr = PetscMalloc1(num_cs, &cs_id);CHKERRQ(ierr);
     ierr = ex_get_elem_blk_ids(exoid, cs_id);CHKERRQ(ierr);
     /* Read the cell set connectivity table and build mesh topology
        EXO standard requires that cells in cell sets be numbered sequentially and be pairwise disjoint. */
@@ -143,11 +143,11 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     int *vs_vertex_list;
 
     /* Get vertex set ids */
-    ierr = PetscMalloc(num_vs * sizeof(int), &vs_id);CHKERRQ(ierr);
+    ierr = PetscMalloc1(num_vs, &vs_id);CHKERRQ(ierr);
     ierr = ex_get_node_set_ids(exoid, vs_id);CHKERRQ(ierr);
     for (vs = 0; vs < num_vs; ++vs) {
       ierr = ex_get_node_set_param(exoid, vs_id[vs], &num_vertex_in_set, &num_attr);CHKERRQ(ierr);
-      ierr = PetscMalloc(num_vertex_in_set * sizeof(int), &vs_vertex_list);CHKERRQ(ierr);
+      ierr = PetscMalloc1(num_vertex_in_set, &vs_vertex_list);CHKERRQ(ierr);
       ierr = ex_get_node_set(exoid, vs_id[vs], vs_vertex_list);CHKERRQ(ierr);
       for (v = 0; v < num_vertex_in_set; ++v) {
         ierr = DMPlexSetLabelValue(*dm, "Vertex Sets", vs_vertex_list[v]+numCells-1, vs_id[vs]);CHKERRQ(ierr);
@@ -203,7 +203,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     int *fs_vertex_count_list, *fs_vertex_list;
 
     /* Get side set ids */
-    ierr = PetscMalloc(num_fs * sizeof(int), &fs_id);CHKERRQ(ierr);
+    ierr = PetscMalloc1(num_fs, &fs_id);CHKERRQ(ierr);
     ierr = ex_get_side_set_ids(exoid, fs_id);CHKERRQ(ierr);
     for (fs = 0; fs < num_fs; ++fs) {
       ierr = ex_get_side_set_param(exoid, fs_id[fs], &num_side_in_set, &num_dist_fact_in_set);CHKERRQ(ierr);

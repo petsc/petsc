@@ -549,6 +549,30 @@ M*/
 #define PetscAddrAlign(a) (void*)((((PETSC_UINTPTR_T)(a))+(PETSC_MEMALIGN-1)) & ~(PETSC_MEMALIGN-1))
 
 /*MC
+   PetscMalloc1 - Allocates an array of memory aligned to PETSC_MEMALIGN
+
+   Synopsis:
+    #include "petscsys.h"
+   PetscErrorCode PetscMalloc1(size_t m1,type **r1)
+
+   Not Collective
+
+   Input Parameter:
+.  m1 - number of elements to allocate in 1st chunk  (may be zero)
+
+   Output Parameter:
+.  r1 - memory allocated in first chunk
+
+   Level: developer
+
+.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2()
+
+  Concepts: memory allocation
+
+M*/
+#define PetscMalloc1(m1,r1) PetscMalloc((m1)*sizeof(**(r1)),r1)
+
+/*MC
    PetscMalloc2 - Allocates 2 arrays of memory both aligned to PETSC_MEMALIGN
 
    Synopsis:
@@ -567,7 +591,7 @@ M*/
 
    Level: developer
 
-.seealso: PetscFree(), PetscNew(), PetscMalloc()
+.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc1()
 
   Concepts: memory allocation
 

@@ -299,7 +299,7 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
   if (ilocal) {
     switch (localmode) {
     case PETSC_COPY_VALUES:
-      ierr        = PetscMalloc(nleaves*sizeof(*sf->mine),&sf->mine_alloc);CHKERRQ(ierr);
+      ierr        = PetscMalloc1(nleaves,&sf->mine_alloc);CHKERRQ(ierr);
       sf->mine    = sf->mine_alloc;
       ierr        = PetscMemcpy(sf->mine,ilocal,nleaves*sizeof(*sf->mine));CHKERRQ(ierr);
       sf->minleaf = PETSC_MAX_INT;
@@ -325,7 +325,7 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
   }
   switch (remotemode) {
   case PETSC_COPY_VALUES:
-    ierr       = PetscMalloc(nleaves*sizeof(*sf->remote),&sf->remote_alloc);CHKERRQ(ierr);
+    ierr       = PetscMalloc1(nleaves,&sf->remote_alloc);CHKERRQ(ierr);
     sf->remote = sf->remote_alloc;
     ierr       = PetscMemcpy(sf->remote,iremote,nleaves*sizeof(*sf->remote));CHKERRQ(ierr);
     break;
@@ -463,7 +463,7 @@ PetscErrorCode PetscSFCreateInverseSF(PetscSF sf,PetscSF *isf)
   for (i=0,count=0; i<nroots; i++) if (roots[i].rank >= 0) count++;
   if (count == nroots) newilocal = NULL;
   else {                        /* Index for sparse leaves and compact "roots" array (which is to become our leaves). */
-    ierr = PetscMalloc(count*sizeof(PetscInt),&newilocal);CHKERRQ(ierr);
+    ierr = PetscMalloc1(count,&newilocal);CHKERRQ(ierr);
     for (i=0,count=0; i<nroots; i++) {
       if (roots[i].rank >= 0) {
         newilocal[count]   = i;
@@ -702,7 +702,7 @@ PetscErrorCode PetscSFGetGroups(PetscSF sf,MPI_Group *incoming,MPI_Group *outgoi
     PetscSF        bgcount;
 
     /* Compute the number of incoming ranks */
-    ierr = PetscMalloc(sf->nranks*sizeof(PetscSFNode),&remote);CHKERRQ(ierr);
+    ierr = PetscMalloc1(sf->nranks,&remote);CHKERRQ(ierr);
     for (i=0; i<sf->nranks; i++) {
       remote[i].rank  = sf->ranks[i];
       remote[i].index = 0;
@@ -794,7 +794,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
     }
 #endif
 #endif
-    ierr = PetscMalloc(sf->nleaves*sizeof(*remote),&remote);CHKERRQ(ierr);
+    ierr = PetscMalloc1(sf->nleaves,&remote);CHKERRQ(ierr);
     for (i=0; i<sf->nleaves; i++) {
       remote[i].rank  = sf->remote[i].rank;
       remote[i].index = outoffset[i];
@@ -820,7 +820,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
       }
       ierr = PetscSFBcastBegin(sf->multi,MPIU_INT,newoffset,newoutoffset);CHKERRQ(ierr);
       ierr = PetscSFBcastEnd(sf->multi,MPIU_INT,newoffset,newoutoffset);CHKERRQ(ierr);
-      ierr = PetscMalloc(sf->nleaves*sizeof(*newremote),&newremote);CHKERRQ(ierr);
+      ierr = PetscMalloc1(sf->nleaves,&newremote);CHKERRQ(ierr);
       for (i=0; i<sf->nleaves; i++) {
         newremote[i].rank  = sf->remote[i].rank;
         newremote[i].index = newoutoffset[i];
@@ -878,8 +878,8 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nroots,const PetscInt
   ierr = PetscSFBcastEnd(sf,MPIU_INT,rootdata,leafdata);CHKERRQ(ierr);
 
   for (i = 0; i < leafsize; ++i) nleaves += leafdata[i];
-  ierr = PetscMalloc(nleaves*sizeof(PetscInt),&ilocal);CHKERRQ(ierr);
-  ierr = PetscMalloc(nleaves*sizeof(PetscSFNode),&iremote);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleaves,&ilocal);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleaves,&iremote);CHKERRQ(ierr);
   for (i = 0, nleaves = 0; i < sf->nleaves; ++i) {
     const PetscInt lidx = sf->mine ? sf->mine[i] : i;
 
@@ -1057,8 +1057,8 @@ PetscErrorCode PetscSFComputeDegreeBegin(PetscSF sf,const PetscInt **degree)
   PetscValidPointer(degree,2);
   if (!sf->degree) {
     PetscInt i;
-    ierr = PetscMalloc(sf->nroots*sizeof(PetscInt),&sf->degree);CHKERRQ(ierr);
-    ierr = PetscMalloc(sf->nleaves*sizeof(PetscInt),&sf->degreetmp);CHKERRQ(ierr);
+    ierr = PetscMalloc1(sf->nroots,&sf->degree);CHKERRQ(ierr);
+    ierr = PetscMalloc1(sf->nleaves,&sf->degreetmp);CHKERRQ(ierr);
     for (i=0; i<sf->nroots; i++) sf->degree[i] = 0;
     for (i=0; i<sf->nleaves; i++) sf->degreetmp[i] = 1;
     ierr = PetscSFReduceBegin(sf,MPIU_INT,sf->degreetmp,sf->degree,MPIU_SUM);CHKERRQ(ierr);

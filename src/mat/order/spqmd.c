@@ -18,7 +18,7 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_QMD(Mat mat,MatOrderingType type,IS *
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot get rows for matrix");
 
-  ierr = PetscMalloc(nrow * sizeof(PetscInt),&perm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrow,&perm);CHKERRQ(ierr);
   ierr = PetscMalloc5(nrow,&iperm,nrow,&deg,nrow,&marker,nrow,&rchset,nrow,&nbrhd);CHKERRQ(ierr);
   ierr = PetscMalloc2(nrow,&qsize,nrow,&qlink);CHKERRQ(ierr);
   /* WARNING - genqmd trashes ja */

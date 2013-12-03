@@ -61,7 +61,7 @@ PetscErrorCode  DMCreateMatrix_Sliced(DM dm, Mat *J)
   }
 
   /* Set up the local to global map.  For the scalar map, we have to translate to entry-wise indexing instead of block-wise. */
-  ierr = PetscMalloc((slice->n+slice->Nghosts)*bs*sizeof(PetscInt),&globals);CHKERRQ(ierr);
+  ierr = PetscMalloc1((slice->n+slice->Nghosts)*bs,&globals);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(*J,&rstart,NULL);CHKERRQ(ierr);
   for (i=0; i<slice->n*bs; i++) globals[i] = rstart + i;
 
@@ -105,7 +105,7 @@ PetscErrorCode  DMSlicedSetGhosts(DM dm,PetscInt bs,PetscInt nlocal,PetscInt Ngh
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr           = PetscFree(slice->ghosts);CHKERRQ(ierr);
-  ierr           = PetscMalloc(Nghosts*sizeof(PetscInt),&slice->ghosts);CHKERRQ(ierr);
+  ierr           = PetscMalloc1(Nghosts,&slice->ghosts);CHKERRQ(ierr);
   ierr           = PetscMemcpy(slice->ghosts,ghosts,Nghosts*sizeof(PetscInt));CHKERRQ(ierr);
   slice->bs      = bs;
   slice->n       = nlocal;

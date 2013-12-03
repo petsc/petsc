@@ -109,7 +109,7 @@ PetscErrorCode PetscIntStackPush(PetscIntStack stack, int item)
   PetscFunctionBegin;
   stack->top++;
   if (stack->top >= stack->max) {
-    ierr = PetscMalloc(stack->max*2 * sizeof(int), &array);CHKERRQ(ierr);
+    ierr = PetscMalloc1(stack->max*2, &array);CHKERRQ(ierr);
     ierr = PetscMemcpy(array, stack->stack, stack->max * sizeof(int));CHKERRQ(ierr);
     ierr = PetscFree(stack->stack);CHKERRQ(ierr);
 

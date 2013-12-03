@@ -337,10 +337,10 @@ static PetscErrorCode SNESSetUp_Composite(SNES snes)
     jac->ldb   = jac->nsnes;
     jac->n     = jac->nsnes;
 
-    ierr = PetscMalloc(jac->n*jac->n*sizeof(PetscScalar),&jac->h);CHKERRQ(ierr);
-    ierr = PetscMalloc(jac->n*sizeof(PetscScalar),&jac->beta);CHKERRQ(ierr);
-    ierr = PetscMalloc(jac->n*sizeof(PetscScalar),&jac->s);CHKERRQ(ierr);
-    ierr = PetscMalloc(jac->n*sizeof(PetscScalar),&jac->g);CHKERRQ(ierr);
+    ierr = PetscMalloc1(jac->n*jac->n,&jac->h);CHKERRQ(ierr);
+    ierr = PetscMalloc1(jac->n,&jac->beta);CHKERRQ(ierr);
+    ierr = PetscMalloc1(jac->n,&jac->s);CHKERRQ(ierr);
+    ierr = PetscMalloc1(jac->n,&jac->g);CHKERRQ(ierr);
     jac->lwork = 12*jac->n;
 #if PETSC_USE_COMPLEX
     ierr = PetscMalloc(sizeof(PetscReal)*jac->lwork,&jac->rwork);CHKERRQ(ierr);

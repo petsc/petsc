@@ -256,7 +256,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   /* convert that to global numbering and get them on all processes */
   ierr = ISLocalToGlobalMappingApply(ltg,26,gl,gl);CHKERRQ(ierr);
   /* PetscIntView(26,gl,PETSC_VIEWER_STDOUT_WORLD); */
-  ierr = PetscMalloc(26*mp*np*pp*sizeof(PetscInt),&globals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(26*mp*np*pp,&globals);CHKERRQ(ierr);
   ierr = MPI_Allgather(gl,26,MPIU_INT,globals,26,MPIU_INT,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
 
   /* Number the coarse grid points from 0 to Ntotal */
@@ -534,7 +534,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   /* convert that to global numbering and get them on all processes */
   ierr = ISLocalToGlobalMappingApply(ltg,6,gl,gl);CHKERRQ(ierr);
   /* PetscIntView(6,gl,PETSC_VIEWER_STDOUT_WORLD); */
-  ierr = PetscMalloc(6*mp*np*pp*sizeof(PetscInt),&globals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(6*mp*np*pp,&globals);CHKERRQ(ierr);
   ierr = MPI_Allgather(gl,6,MPIU_INT,globals,6,MPIU_INT,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
 
   /* Number the coarse grid points from 0 to Ntotal */

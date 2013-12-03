@@ -1057,7 +1057,7 @@ PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
 
   /* loop over local fine grid nodes setting interpolation for those*/
   nc   = 0;
-  ierr = PetscMalloc(m_f*sizeof(PetscInt),&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m_f,&cols);CHKERRQ(ierr);
 
 
   for (i=i_start_c; i<i_start_c+m_c; i++) {
@@ -1123,7 +1123,7 @@ PetscErrorCode DMCreateInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
 
   /* loop over local fine grid nodes setting interpolation for those*/
   nc   = 0;
-  ierr = PetscMalloc(n_f*m_f*sizeof(PetscInt),&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n_f*m_f,&cols);CHKERRQ(ierr);
   for (j=j_start_c; j<j_start_c+n_c; j++) {
     for (i=i_start_c; i<i_start_c+m_c; i++) {
       PetscInt i_f = i*ratioi,j_f = j*ratioj;
@@ -1202,7 +1202,7 @@ PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
 
   /* loop over local fine grid nodes setting interpolation for those*/
   nc   = 0;
-  ierr = PetscMalloc(n_f*m_f*p_f*sizeof(PetscInt),&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n_f*m_f*p_f,&cols);CHKERRQ(ierr);
   for (k=k_start_c; k<k_start_c+p_c; k++) {
     for (j=j_start_c; j<j_start_c+n_c; j++) {
       for (i=i_start_c; i<i_start_c+m_c; i++) {

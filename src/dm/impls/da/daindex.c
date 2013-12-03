@@ -80,7 +80,7 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
   if (dd->dim > 1) Nlocal *= (dd->ye-dd->ys);
   if (dd->dim > 2) Nlocal *= (dd->ze-dd->zs);
 
-  ierr = PetscMalloc(Nlocal*sizeof(PetscInt),&lidx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nlocal,&lidx);CHKERRQ(ierr);
 
   if (dd->dim == 1) {
     for (i=dd->xs; i<dd->xe; i++) {

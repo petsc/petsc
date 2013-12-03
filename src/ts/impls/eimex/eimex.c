@@ -591,7 +591,7 @@ static PetscErrorCode TSEIMEXSetMaxRows_EIMEX(TS ts,PetscInt nrows)
   if (nrows < 0 || nrows > 100) SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Max number of rows (current value %D) should be an integer number between 1 and 100\n",nrows);
   ierr = PetscFree(ext->N);CHKERRQ(ierr);
   ext->max_rows = nrows;
-  ierr = PetscMalloc(nrows*sizeof(PetscInt),&ext->N);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrows,&ext->N);CHKERRQ(ierr);
   for(i=0;i<nrows;i++) ext->N[i]=i+1;
   PetscFunctionReturn(0);
 }

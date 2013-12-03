@@ -130,8 +130,8 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
   /* ----------------------------------*/
 
   if (!lu->Wi) {  /* first time, allocate working space for wsolve */
-    ierr = PetscMalloc(A->rmap->n*sizeof(PetscInt),&lu->Wi);CHKERRQ(ierr);
-    ierr = PetscMalloc(5*A->rmap->n*sizeof(PetscScalar),&lu->W);CHKERRQ(ierr);
+    ierr = PetscMalloc1(A->rmap->n,&lu->Wi);CHKERRQ(ierr);
+    ierr = PetscMalloc1(5*A->rmap->n,&lu->W);CHKERRQ(ierr);
   }
 
   ierr = VecGetArray(b,&ba);
@@ -234,7 +234,7 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const Ma
   PetscFunctionBegin;
   if (lu->PetscMatOrdering) {
     ierr = ISGetIndices(r,&ra);CHKERRQ(ierr);
-    ierr = PetscMalloc(m*sizeof(PetscInt),&lu->perm_c);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m,&lu->perm_c);CHKERRQ(ierr);
     /* we cannot simply memcpy on 64 bit archs */
     for (i = 0; i < m; i++) lu->perm_c[i] = ra[i];
     ierr = ISRestoreIndices(r,&ra);CHKERRQ(ierr);

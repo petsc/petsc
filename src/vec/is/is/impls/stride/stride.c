@@ -157,7 +157,7 @@ PetscErrorCode ISGetIndices_Stride(IS in,const PetscInt *idx[])
   PetscInt       i,**dx = (PetscInt**)idx;
 
   PetscFunctionBegin;
-  ierr      = PetscMalloc(sub->n*sizeof(PetscInt),idx);CHKERRQ(ierr);
+  ierr      = PetscMalloc1(sub->n,idx);CHKERRQ(ierr);
   if (sub->n) {
     (*dx)[0] = sub->first;
     for (i=1; i<sub->n; i++) (*dx)[i] = (*dx)[i-1] + sub->step;

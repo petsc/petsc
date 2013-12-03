@@ -95,7 +95,7 @@ int main(int argc,char **argv)
 
   nroots  = 2 + (PetscInt)(rank == 0);
   nleaves = 2 + (PetscInt)(rank > 0);
-  ierr    = PetscMalloc(nleaves*sizeof(*remote),&remote);CHKERRQ(ierr);
+  ierr    = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
   /* Left periodic neighbor */
   remote[0].rank  = (rank+size-1)%size;
   remote[0].index = 1;

@@ -174,7 +174,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
     ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     piece.ncells++;
   }
-  if (!rank) {ierr = PetscMalloc(size*sizeof(piece),&gpiece);CHKERRQ(ierr);}
+  if (!rank) {ierr = PetscMalloc1(size,&gpiece);CHKERRQ(ierr);}
   ierr = MPI_Gather((PetscInt*)&piece,sizeof(piece)/sizeof(PetscInt),MPIU_INT,(PetscInt*)gpiece,sizeof(piece)/sizeof(PetscInt),MPIU_INT,0,comm);CHKERRQ(ierr);
 
   /*
@@ -301,7 +301,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         ierr  = DMGetCoordinatesLocal(dm,&coords);CHKERRQ(ierr);
         ierr  = VecGetArrayRead(coords,&x);CHKERRQ(ierr);
         if (dim != 3) {
-          ierr = PetscMalloc(piece.nvertices*3*sizeof(PetscScalar),&y);CHKERRQ(ierr);
+          ierr = PetscMalloc1(piece.nvertices*3,&y);CHKERRQ(ierr);
           for (i=0; i<piece.nvertices; i++) {
             y[i*3+0] = x[i*dim+0];
             y[i*3+1] = (dim > 1) ? x[i*dim+1] : 0;
@@ -323,7 +323,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
       }
       {                         /* Owners (cell data) */
         PetscVTKInt *owners;
-        ierr = PetscMalloc(piece.ncells*sizeof(PetscVTKInt),&owners);CHKERRQ(ierr);
+        ierr = PetscMalloc1(piece.ncells,&owners);CHKERRQ(ierr);
         for (i=0; i<piece.ncells; i++) owners[i] = rank;
         ierr = TransferWrite(viewer,fp,r,0,owners,buffer,piece.ncells,PETSC_INT32,tag);CHKERRQ(ierr);
         ierr = PetscFree(owners);CHKERRQ(ierr);
@@ -337,7 +337,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         if ((link->ft != PETSC_VTK_CELL_FIELD) && (link->ft != PETSC_VTK_CELL_VECTOR_FIELD)) continue;
         ierr = PetscSectionGetDof(dm->defaultSection,cStart,&bs);CHKERRQ(ierr);
         ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-        ierr = PetscMalloc(piece.ncells*sizeof(PetscScalar),&y);CHKERRQ(ierr);
+        ierr = PetscMalloc1(piece.ncells,&y);CHKERRQ(ierr);
         for (i=0; i<bs; i++) {
           PetscInt cnt;
           for (c=cStart,cnt=0; c<cEnd; c++) {
@@ -365,7 +365,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         if ((link->ft != PETSC_VTK_POINT_FIELD) && (link->ft != PETSC_VTK_POINT_VECTOR_FIELD)) continue;
         ierr = PetscSectionGetDof(dm->defaultSection,vStart,&bs);CHKERRQ(ierr);
         ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-        ierr = PetscMalloc(piece.nvertices*sizeof(PetscScalar),&y);CHKERRQ(ierr);
+        ierr = PetscMalloc1(piece.nvertices,&y);CHKERRQ(ierr);
         for (i=0; i<bs; i++) {
           PetscInt cnt;
           for (v=vStart,cnt=0; v<vEnd; v++) {

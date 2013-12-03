@@ -32,7 +32,7 @@ static PetscErrorCode PCSetUp_CP(PC pc)
   if (cp->m != cp->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently only for square matrices");
 
   if (!cp->work) {ierr = MatGetVecs(pc->pmat,&cp->work,NULL);CHKERRQ(ierr);}
-  if (!cp->d) {ierr = PetscMalloc(cp->n*sizeof(PetscScalar),&cp->d);CHKERRQ(ierr);}
+  if (!cp->d) {ierr = PetscMalloc1(cp->n,&cp->d);CHKERRQ(ierr);}
   if (cp->a && pc->flag != SAME_NONZERO_PATTERN) {
     ierr  = PetscFree3(cp->a,cp->i,cp->j);CHKERRQ(ierr);
     cp->a = 0;
@@ -42,7 +42,7 @@ static PetscErrorCode PCSetUp_CP(PC pc)
   if (!cp->a) {
     ierr = PetscMalloc3(aij->nz,&cp->a,cp->n+1,&cp->i,aij->nz,&cp->j);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc(cp->n*sizeof(PetscInt),&colcnt);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cp->n,&colcnt);CHKERRQ(ierr);
   ierr = PetscMemzero(colcnt,cp->n*sizeof(PetscInt));CHKERRQ(ierr);
 
   for (i=0; i<aij->nz; i++) colcnt[aij->j[i]]++;

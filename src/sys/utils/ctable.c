@@ -126,8 +126,8 @@ PetscErrorCode  PetscTableAddExpand(PetscTable ta,PetscInt key,PetscInt data,Ins
   ta->tablesize = 2*tsize;
   if (ta->tablesize <= tsize) ta->tablesize = PETSC_MAX_INT/4;
 
-  ierr = PetscMalloc(ta->tablesize*sizeof(PetscInt),&ta->table);CHKERRQ(ierr);
-  ierr = PetscMalloc(ta->tablesize*sizeof(PetscInt),&ta->keytable);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ta->tablesize,&ta->table);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ta->tablesize,&ta->keytable);CHKERRQ(ierr);
   ierr = PetscMemzero(ta->keytable,ta->tablesize*sizeof(PetscInt));CHKERRQ(ierr);
 
   ta->count = 0;
@@ -254,8 +254,8 @@ PetscErrorCode  PetscTableAddCountExpand(PetscTable ta,PetscInt key)
   ta->tablesize = 2*tsize;
   if (ta->tablesize <= tsize) ta->tablesize = PETSC_MAX_INT/4;
 
-  ierr = PetscMalloc(ta->tablesize*sizeof(PetscInt),&ta->table);CHKERRQ(ierr);
-  ierr = PetscMalloc(ta->tablesize*sizeof(PetscInt),&ta->keytable);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ta->tablesize,&ta->table);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ta->tablesize,&ta->keytable);CHKERRQ(ierr);
   ierr = PetscMemzero(ta->keytable,ta->tablesize*sizeof(PetscInt));CHKERRQ(ierr);
 
   ta->count = 0;

@@ -47,7 +47,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
       }
       if (sum != M) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local lens set incorrectly");
     } else {
-      ierr = PetscMalloc(jac->n_local*sizeof(PetscInt),&jac->l_lens);CHKERRQ(ierr);
+      ierr = PetscMalloc1(jac->n_local,&jac->l_lens);CHKERRQ(ierr);
       for (i=0; i<jac->n_local; i++) jac->l_lens[i] = bs*((M/bs)/jac->n_local + (((M/bs) % jac->n_local) > i));
     }
   } else if (jac->n > 0 && jac->n_local < 0) { /* global block count given */
@@ -60,7 +60,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
       }
       if (size == 1) {
         jac->n_local = jac->n;
-        ierr         = PetscMalloc(jac->n_local*sizeof(PetscInt),&jac->l_lens);CHKERRQ(ierr);
+        ierr         = PetscMalloc1(jac->n_local,&jac->l_lens);CHKERRQ(ierr);
         ierr         = PetscMemcpy(jac->l_lens,jac->g_lens,jac->n_local*sizeof(PetscInt));CHKERRQ(ierr);
         /* check that user set these correctly */
         sum = 0;
@@ -83,12 +83,12 @@ start_1:
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Block sizes used in PCBJacobiSetTotalBlocks()\nare not compatible with parallel matrix layout");
 end_1:
         jac->n_local = i_end - i_start;
-        ierr         = PetscMalloc(jac->n_local*sizeof(PetscInt),&jac->l_lens);CHKERRQ(ierr);
+        ierr         = PetscMalloc1(jac->n_local,&jac->l_lens);CHKERRQ(ierr);
         ierr         = PetscMemcpy(jac->l_lens,jac->g_lens+i_start,jac->n_local*sizeof(PetscInt));CHKERRQ(ierr);
       }
     } else { /* no global blocks given, determine then using default layout */
       jac->n_local = jac->n/size + ((jac->n % size) > rank);
-      ierr         = PetscMalloc(jac->n_local*sizeof(PetscInt),&jac->l_lens);CHKERRQ(ierr);
+      ierr         = PetscMalloc1(jac->n_local,&jac->l_lens);CHKERRQ(ierr);
       for (i=0; i<jac->n_local; i++) {
         jac->l_lens[i] = ((M/bs)/jac->n_local + (((M/bs) % jac->n_local) > i))*bs;
         if (!jac->l_lens[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Too many blocks given");
@@ -101,7 +101,7 @@ end_1:
     jac->l_lens[0] = M;
   } else { /* jac->n > 0 && jac->n_local > 0 */
     if (!jac->l_lens) {
-      ierr = PetscMalloc(jac->n_local*sizeof(PetscInt),&jac->l_lens);CHKERRQ(ierr);
+      ierr = PetscMalloc1(jac->n_local,&jac->l_lens);CHKERRQ(ierr);
       for (i=0; i<jac->n_local; i++) jac->l_lens[i] = bs*((M/bs)/jac->n_local + (((M/bs) % jac->n_local) > i));
     }
   }
@@ -298,7 +298,7 @@ static PetscErrorCode  PCBJacobiSetTotalBlocks_BJacobi(PC pc,PetscInt blocks,Pet
   jac->n = blocks;
   if (!lens) jac->g_lens = 0;
   else {
-    ierr = PetscMalloc(blocks*sizeof(PetscInt),&jac->g_lens);CHKERRQ(ierr);
+    ierr = PetscMalloc1(blocks,&jac->g_lens);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)pc,blocks*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemcpy(jac->g_lens,lens,blocks*sizeof(PetscInt));CHKERRQ(ierr);
   }
@@ -330,7 +330,7 @@ static PetscErrorCode  PCBJacobiSetLocalBlocks_BJacobi(PC pc,PetscInt blocks,con
   jac->n_local = blocks;
   if (!lens) jac->l_lens = 0;
   else {
-    ierr = PetscMalloc(blocks*sizeof(PetscInt),&jac->l_lens);CHKERRQ(ierr);
+    ierr = PetscMalloc1(blocks,&jac->l_lens);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)pc,blocks*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemcpy(jac->l_lens,lens,blocks*sizeof(PetscInt));CHKERRQ(ierr);
   }
@@ -1029,14 +1029,14 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
       pc->ops->setuponblocks = PCSetUpOnBlocks_BJacobi_Multiblock;
 
       ierr = PetscNewLog(pc,PC_BJacobi_Multiblock,&bjac);CHKERRQ(ierr);
-      ierr = PetscMalloc(n_local*sizeof(KSP),&jac->ksp);CHKERRQ(ierr);
+      ierr = PetscMalloc1(n_local,&jac->ksp);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory((PetscObject)pc,sizeof(n_local*sizeof(KSP)));CHKERRQ(ierr);
       ierr = PetscMalloc2(n_local,&bjac->x,n_local,&bjac->y);CHKERRQ(ierr);
-      ierr = PetscMalloc(n_local*sizeof(PetscScalar),&bjac->starts);CHKERRQ(ierr);
+      ierr = PetscMalloc1(n_local,&bjac->starts);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory((PetscObject)pc,sizeof(n_local*sizeof(PetscScalar)));CHKERRQ(ierr);
 
       jac->data = (void*)bjac;
-      ierr      = PetscMalloc(n_local*sizeof(IS),&bjac->is);CHKERRQ(ierr);
+      ierr      = PetscMalloc1(n_local,&bjac->is);CHKERRQ(ierr);
       ierr      = PetscLogObjectMemory((PetscObject)pc,sizeof(n_local*sizeof(IS)));CHKERRQ(ierr);
 
       for (i=0; i<n_local; i++) {

@@ -122,7 +122,7 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
   /*  first count number of contributors to each processor */
   ierr = PetscMalloc2(2*size,&nprocs,size,&start);CHKERRQ(ierr);
   ierr = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscInt),&owner);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&owner);CHKERRQ(ierr);
   ierr = PetscMemzero(owner,n*sizeof(PetscInt));CHKERRQ(ierr);
 
   j       = 0;
@@ -309,9 +309,9 @@ PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /*  first count number of contributors (of from_array[]) to each processor */
-  ierr = PetscMalloc(2*size*sizeof(PetscInt),&nprocs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2*size,&nprocs);CHKERRQ(ierr);
   ierr = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscInt),&owner);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&owner);CHKERRQ(ierr);
 
   j       = 0;
   lastidx = -1;
@@ -339,7 +339,7 @@ PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const
   ierr = PetscObjectGetNewTag((PetscObject)ao,&tag);CHKERRQ(ierr);
   ierr = PetscMalloc2(nreceives*nmax,&rindices,nreceives,&recv_waits);CHKERRQ(ierr);
   ierr = PetscMalloc3(2*n,&sindices,nsends,&send_waits,nsends,&send_status);CHKERRQ(ierr);
-  ierr = PetscMalloc(size*sizeof(PetscInt),&start);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&start);CHKERRQ(ierr);
 
   /* post receives: */
   for (i=0; i<nreceives; i++) {
@@ -443,7 +443,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
   if (napp) {
     if (!ispetsc) {
       start = disp[rank];
-      ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
+      ierr  = PetscMalloc1((napp+1), &petsc);CHKERRQ(ierr);
       for (i=0; i<napp; i++) petsc[i] = start + i;
     } else {
       ierr  = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);

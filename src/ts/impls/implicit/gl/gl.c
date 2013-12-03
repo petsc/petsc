@@ -495,7 +495,7 @@ PETSC_EXTERN PetscErrorCode TSGLCreate_IRKS(TS ts)
   gl->Destroy               = TSGLDestroy_Default;
   gl->EstimateHigherMoments = TSGLEstimateHigherMoments_Default;
   gl->CompleteStep          = TSGLCompleteStep_RescaleAndModify;
-  ierr = PetscMalloc(10*sizeof(TSGLScheme),&gl->schemes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(10,&gl->schemes);CHKERRQ(ierr);
   gl->nschemes = 0;
 
   {

@@ -602,11 +602,11 @@ PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const Pet
   n_ = an + bn;
   *n = n_;
   if (!L_) {
-    ierr = PetscMalloc(n_*sizeof(PetscInt), L);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n_, L);CHKERRQ(ierr);
     L_   = *L;
   }
   if (!J_) {
-    ierr = PetscMalloc(n_*sizeof(PetscInt), &J_);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n_, &J_);CHKERRQ(ierr);
     J_   = *J;
   }
   k = ak = bk = 0;
@@ -679,7 +679,7 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool mask[],const PetscIn
   }
 
   /* determine the level in the tree of each node */
-  ierr = PetscMalloc(n*sizeof(PetscInt),&level);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&level);CHKERRQ(ierr);
   ierr = PetscMemzero(level,n*sizeof(PetscInt));CHKERRQ(ierr);
 
   level[0] = 1;
@@ -697,7 +697,7 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool mask[],const PetscIn
   }
 
   /* count the number of nodes on each level and its max */
-  ierr = PetscMalloc(nlevels*sizeof(PetscInt),&levelcnt);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nlevels,&levelcnt);CHKERRQ(ierr);
   ierr = PetscMemzero(levelcnt,nlevels*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (mask[i]) continue;
@@ -707,7 +707,7 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool mask[],const PetscIn
 
   /* for each level sort the ids by the parent id */
   ierr = PetscMalloc2(levelmax,&workid,levelmax,&workparentid);CHKERRQ(ierr);
-  ierr = PetscMalloc(nmask*sizeof(PetscInt),&idbylevel);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nmask,&idbylevel);CHKERRQ(ierr);
   for (j=1; j<=nlevels;j++) {
     cnt = 0;
     for (i=0; i<n; i++) {
@@ -728,7 +728,7 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool mask[],const PetscIn
   ierr = PetscFree2(workid,workparentid);CHKERRQ(ierr);
 
   /* for each node list its column */
-  ierr = PetscMalloc(n*sizeof(PetscInt),&column);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&column);CHKERRQ(ierr);
   cnt = 0;
   for (j=0; j<nlevels; j++) {
     for (i=0; i<levelcnt[j]; i++) {

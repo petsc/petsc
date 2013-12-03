@@ -545,7 +545,7 @@ destroy:
       ierr = PetscMPIIntCast(bytes,&cnt);CHKERRQ(ierr);
       ierr = PetscSegBufferGet(vseg,1,&vstring);CHKERRQ(ierr);
       vstring[0] = 0;
-      ierr = PetscMalloc((2+acnt+cnt)*sizeof(char),&packed);CHKERRQ(ierr);
+      ierr = PetscMalloc1((2+acnt+cnt),&packed);CHKERRQ(ierr);
       ierr = PetscSegBufferExtractTo(aseg,packed);CHKERRQ(ierr);
       ierr = PetscSegBufferExtractTo(vseg,packed+acnt+1);CHKERRQ(ierr);
       ierr = PetscSegBufferDestroy(&aseg);CHKERRQ(ierr);
@@ -559,7 +559,7 @@ destroy:
   acnt = counts[0];
   cnt = counts[1];
   if (rank) {
-    ierr = PetscMalloc((2+acnt+cnt)*sizeof(char),&packed);CHKERRQ(ierr);
+    ierr = PetscMalloc1((2+acnt+cnt),&packed);CHKERRQ(ierr);
   }
   if (acnt || cnt) {
     ierr = MPI_Bcast(packed,2+acnt+cnt,MPI_CHAR,0,comm);CHKERRQ(ierr);
@@ -728,7 +728,7 @@ PetscErrorCode  PetscOptionsInsert(int *argc,char ***args,const char file[])
     } else {
       ierr = MPI_Bcast(&len,1,MPIU_SIZE_T,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
       if (len) {
-        ierr = PetscMalloc((len+1)*sizeof(char*),&eoptions);CHKERRQ(ierr);
+        ierr = PetscMalloc1((len+1),&eoptions);CHKERRQ(ierr);
       }
     }
     if (len) {
@@ -838,7 +838,7 @@ PetscErrorCode  PetscOptionsGetAll(char *copts[])
       len += 1 + lent;
     }
   }
-  ierr = PetscMalloc(len*sizeof(char),&coptions);CHKERRQ(ierr);
+  ierr = PetscMalloc1(len,&coptions);CHKERRQ(ierr);
   coptions[0] = 0;
   for (i=0; i<options->N; i++) {
     ierr = PetscStrcat(coptions,"-");CHKERRQ(ierr);
@@ -1507,7 +1507,7 @@ PetscErrorCode  PetscOptionsGetEList(const char pre[],const char opt[],const cha
     if (alen > len) len = alen;
   }
   len += 5; /* a little extra space for user mistypes */
-  ierr = PetscMalloc(len*sizeof(char),&svalue);CHKERRQ(ierr);
+  ierr = PetscMalloc1(len,&svalue);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(pre,opt,svalue,len,&aset);CHKERRQ(ierr);
   if (aset) {
     ierr = PetscEListFind(ntext,list,svalue,value,&flg);CHKERRQ(ierr);
