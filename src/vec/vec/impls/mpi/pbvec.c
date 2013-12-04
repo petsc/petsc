@@ -109,10 +109,14 @@ static PetscErrorCode VecAssemblySend_MPI_Private(MPI_Comm comm,const PetscMPIIn
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Isend(x->sendptrs[rankid].ints,hdr->count,MPIU_INT,rank,tag[0],comm,&req[0]);CHKERRQ(ierr);
-  ierr = MPI_Isend(x->sendptrs[rankid].scalars,hdr->count,MPIU_SCALAR,rank,tag[1],comm,&req[1]);CHKERRQ(ierr);
-  ierr = MPI_Isend(x->sendptrs[rankid].intb,hdr->bcount,MPIU_INT,rank,tag[2],comm,&req[2]);CHKERRQ(ierr);
-  ierr = MPI_Isend(x->sendptrs[rankid].scalarb,hdr->bcount*bs,MPIU_SCALAR,rank,tag[3],comm,&req[3]);CHKERRQ(ierr);
+  if (hdr->count) {
+    ierr = MPI_Isend(x->sendptrs[rankid].ints,hdr->count,MPIU_INT,rank,tag[0],comm,&req[0]);CHKERRQ(ierr);
+    ierr = MPI_Isend(x->sendptrs[rankid].scalars,hdr->count,MPIU_SCALAR,rank,tag[1],comm,&req[1]);CHKERRQ(ierr);
+  }
+  if (hdr->bcount) {
+    ierr = MPI_Isend(x->sendptrs[rankid].intb,hdr->bcount,MPIU_INT,rank,tag[2],comm,&req[2]);CHKERRQ(ierr);
+    ierr = MPI_Isend(x->sendptrs[rankid].scalarb,hdr->bcount*bs,MPIU_SCALAR,rank,tag[3],comm,&req[3]);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -130,19 +134,29 @@ static PetscErrorCode VecAssemblyRecv_MPI_Private(MPI_Comm comm,const PetscMPIIn
   PetscFunctionBegin;
   ierr = PetscSegBufferGet(x->segrecvframe,1,&frame);CHKERRQ(ierr);
 
-  ierr = PetscSegBufferGet(x->segrecvint,hdr->count,&frame->ints);CHKERRQ(ierr);
-  ierr = MPI_Irecv(frame->ints,hdr->count,MPIU_INT,rank,tag[0],comm,&req[0]);CHKERRQ(ierr);
+  if (hdr->count) {
+    ierr = PetscSegBufferGet(x->segrecvint,hdr->count,&frame->ints);CHKERRQ(ierr);
+    ierr = MPI_Irecv(frame->ints,hdr->count,MPIU_INT,rank,tag[0],comm,&req[0]);CHKERRQ(ierr);
+    ierr = PetscSegBufferGet(x->segrecvscalar,hdr->count,&frame->scalars);CHKERRQ(ierr);
+    ierr = MPI_Irecv(frame->scalars,hdr->count,MPIU_SCALAR,rank,tag[1],comm,&req[1]);CHKERRQ(ierr);
+    frame->pendings = 2;
+  } else {
+    frame->ints = NULL;
+    frame->scalars = NULL;
+    frame->pendings = 0;
+  }
 
-  ierr = PetscSegBufferGet(x->segrecvscalar,hdr->count,&frame->scalars);CHKERRQ(ierr);
-  ierr = MPI_Irecv(frame->scalars,hdr->count,MPIU_SCALAR,rank,tag[1],comm,&req[1]);CHKERRQ(ierr);
-  frame->pendings = 2;
-
-  ierr = PetscSegBufferGet(x->segrecvint,hdr->bcount,&frame->intb);CHKERRQ(ierr);
-  ierr = MPI_Irecv(frame->intb,hdr->bcount,MPIU_INT,rank,tag[2],comm,&req[2]);CHKERRQ(ierr);
-
-  ierr = PetscSegBufferGet(x->segrecvscalar,hdr->bcount*bs,&frame->scalarb);CHKERRQ(ierr);
-  ierr = MPI_Irecv(frame->scalarb,hdr->bcount*bs,MPIU_SCALAR,rank,tag[3],comm,&req[3]);CHKERRQ(ierr);
-  frame->pendingb = 2;
+  if (hdr->bcount) {
+    ierr = PetscSegBufferGet(x->segrecvint,hdr->bcount,&frame->intb);CHKERRQ(ierr);
+    ierr = MPI_Irecv(frame->intb,hdr->bcount,MPIU_INT,rank,tag[2],comm,&req[2]);CHKERRQ(ierr);
+    ierr = PetscSegBufferGet(x->segrecvscalar,hdr->bcount*bs,&frame->scalarb);CHKERRQ(ierr);
+    ierr = MPI_Irecv(frame->scalarb,hdr->bcount*bs,MPIU_SCALAR,rank,tag[3],comm,&req[3]);CHKERRQ(ierr);
+    frame->pendingb = 2;
+  } else {
+    frame->intb = NULL;
+    frame->scalarb = NULL;
+    frame->pendingb = 0;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -213,7 +227,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
 {
   Vec_MPI *x = (Vec_MPI*)X->data;
   PetscInt bs = X->map->bs;
-  PetscMPIInt npending,*some_indices;
+  PetscMPIInt npending,*some_indices,r;
   PetscScalar *xarray;
   PetscErrorCode ierr;
   VecAssemblyFrame *frame;
@@ -224,7 +238,8 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
   ierr = VecGetArray(X,&xarray);CHKERRQ(ierr);
   ierr = PetscSegBufferExtractInPlace(x->segrecvframe,&frame);CHKERRQ(ierr);
   ierr = PetscMalloc1(4*x->nrecvranks,&some_indices);CHKERRQ(ierr);
-  for (npending=4*x->nrecvranks; npending>0; ) {
+  for (r=0,npending=0; r<x->nrecvranks; r++) npending += frame[r].pendings + frame[r].pendingb;
+  while (npending>0) {
     PetscMPIInt ndone,ii;
     ierr = MPI_Waitsome(4*x->nrecvranks,x->recvreqs,&ndone,some_indices,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
     for (ii=0; ii<ndone; ii++) {
