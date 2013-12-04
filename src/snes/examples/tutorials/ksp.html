@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PETSc Solver Selection</title>
+<script src="externalpackages/jquery-1.9.1.js"></script>
+<link href="externalpackages/jquery-ui-1.10.3.custom/css/ui-lightness/jquery-ui-1.10.3.custom.css" rel="stylesheet">
+<script src="externalpackages/jquery-ui-1.10.3.custom/js/jquery-1.9.1.js"></script>
+<script src="externalpackages/jquery-ui-1.10.3.custom/js/jquery-ui-1.10.3.custom.js"></script>
+<script src="src/finalTex.js"></script>
+<script src="src/tex2.js"></script>
+<script src="src/main.js"></script>
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="src/tree.js"></script>
+<script src="src/lists.js"></script>
+<script src="src/listLogic.js"></script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<style type="text/css">
+/*used to make the tree; centers multiple div elements */
+#matrixButtons{
+	overflow:hidden;
+	margin:0 0 0 10%;
+ text-align:center;
+}
+#matrixButtons l1 {
+	float:left;
+	margin:auto;
+	padding:0;
+	list-style:none;
+	position:relative;
+	left:50%;
+}
+#matrixButtons l1 u1 {
+	display:-moz-inline-box;/* older gecko*/
+	display:inline-block;
+	position:relative;
+	left:-50%;
+}
+body
+{
+background-color: #E8E8E8;
+}
+<!--
+{
+background-color: rgb(213, 234, 255);
+}
+-->
+nav a {text-decoration:none;color:#344873;font-family: Georgia, serif;} 
+</style>
+</head>
+
+<body>
+<header style="width:1290px;background-color:#000033;color:#FFFFFF; padding:5px;text-align:left;">
+<h1> PETSc Linear Solver (KSP) Selection </h1>
+</header>
+
+<nav id="optionLists" style="font-size:14px;width:1290px; float:left; margin: 0px 0px 0px 0px;background-color:#90C7E3;padding:5px;">
+<br>
+  <b style="font-size:16px">Krylov Methods (KSP):</b><br>
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPBCGS.html" target="_blank">BCGS</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPBCGSL.html" target="_blank">BCGSL</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPBICG.html" target="_blank">BICG</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPCG.html" target="_blank">CG</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPCGNE.html" target="_blank">CGNE</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPCGS.html" target="_blank">CGS</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPCHEBYSHEV.html" target="_blank">CHEBYSHEV</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPCR.html" target="_blank">CR</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPFGMRES.html" target="_blank">FGMRES</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPGLTR.html" target="_blank">GLTR</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPGMRES.html" target="_blank">GMRES</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPGROPPCG.html" target="_blank">GROPPCG</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPLSQR.html" target="_blank">LSQR</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPMINRES.html" target="_blank">MINRES</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPNASH.html" target="_blank">NASH</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPGMRES.html" target="_blank">PGMRES</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPIPECG.html" target="_blank">PIPECG</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPIPECR.html" target="_blank">PIPECR</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPREONLY.html" target="_blank">PREONLY</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPQCG.html" target="_blank">QCG</a>,	
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPRICHARDSON.html" target="_blank">RICHARDSON</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSPECEST.html" target="_blank">SPECEST</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSYMMLQ.html" target="_blank">SYMMLQ</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPTCQMR.html" target="_blank">TCQMR</a>,
+     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPTFQMR.html" target="_blank">TFQMR</a>
+
+<br><br>
+<b style="font-size:16px">Preconditioners (PC):</b><br>
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCASA.html" target="_blank">ASA</a>,<!-- empty link -->
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCASM.html" target="_blank">ASM</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCBJACOBI.html" target="_blank">BJACOBI</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCCHOLESKY.html" target="_blank">CHOLESKY</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCCOMPOSITE.html" target="_blank">COMPOSITE</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCCP.html" target="_blank">CP</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCEISENSTAT.html" target="_blank">EISENSTAT</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCEXOTIC.html" target="_blank">EXOTIC</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCFIELDSPLIT.html" target="_blank">FIELDSPLIT</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCGALERKIN.html" target="_blank">GALERKIN</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCGAMG.html" target="_blank">GAMG</a>
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCGASM.html" target="_blank">GASM</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCHMPI.html" target="_blank">HMPI</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCICC.html" target="_blank">ICC</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCILU.html" target="_blank">ILU</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCJACOBI.html" target="_blank">JACOBI</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCKSP.html" target="_blank">KSP</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCLSC.html" target="_blank">LSC</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCLU.html" target="_blank">LU</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCMAT.html" target="_blank">MAT</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCMG.html" target="_blank">MG</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCNN.html" target="_blank">NN</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCNONE.html" target="_blank">NONE</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCPBJACOBI.html" target="_blank">PBJACOBI</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCREDISTRIBUTE.html" target="_blank">REDISTRIBUTE</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCREDUNDANT.html" target="_blank">REDUNDANT</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCSHELL.html" target="_blank">SHELL</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCSOR.html" target="_blank">SOR</a>,
+<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCSVD.html" target="_blank">SVD</a>
+<br><br><br>
+</nav> <!-- endof nav id="optionLists" -->
+
+<div id="outside" style="width:1290px;background-color:#90C7E3;padding:5px;" >
+
+<input type="button" id="optionListsButton" value="Hide Information"> 
+
+<br><br><br><br>
+<div id="matrixPic" style="width:540px;height:220px; float:left;background-color:#90C7E3;padding:5px;"></div>
+
+<div id="parameters" style="width:740px;height:220px;background-color:#90C7E3;padding:5px;">
+<FORM NAME="parameters" id="questions" >
+  <br>
+  <TABLE cellspacing="5" >
+    <colgroup>
+      <col span="1" style="background-color:#90C7E3">
+    </colgroup>
+    <TR> <!-- 1st row -->
+	<TH id="isYourMatrix"><span>Is your matrix A &nbsp </span></TH>
+	<TH>Yes</TH> <TH>No</TH>
+    </TR>
+    <TR> <!-- 2nd row -->
+      <TD><span>Symmetric?</span></TD>
+      <TD><INPUT TYPE="radio" id="symm" name="symmOpt"></TD>
+      <TD><INPUT TYPE="radio" id="nsymm" name="symmOpt"></TD>
+    </TR>
+    <TR id="posdefRow"> <!-- 3rd row -->
+	<TD><span>Positive Definite?</span></TD>
+	<TD><INPUT TYPE="radio" id="posdef" name="posdefOpt"></TD>
+	<TD><INPUT TYPE="radio" id="nposdef" name="posdefOpt"></TD>
+    </TR>
+    <TR> <!-- 4th row -->
+      <TD>Logically Block Structured?</TD>
+      <TD><INPUT TYPE="radio" id="logstruc" name="logstrucOpt"></TD>
+      <TD><INPUT TYPE="radio" id="nlogstruc" name="logstrucOpt"></TD>
+    </TR>
+    <TR><TD COLSPAN=3>
+    </TD></TR>
+  </TABLE>
+
+  <TABLE cellspacing="5" >
+    <colgroup>
+      <col span="1" style="background-color:#90C7E3">
+    </colgroup>
+    <TR> <!-- 1st row -->
+	<TH id="isPreconditioner"><span>Is its preconditioner</span></TH>
+	<TH>Yes</TH> 
+    </TR>
+    <TR> <!-- 2nd row -->
+      <TD><span>Multigrid?</span></TD>
+      <TD><INPUT TYPE="radio" id="mg" name="mgOpt"></TD>
+    </TR>
+    <TR><TD COLSPAN=2>
+    </TD></TR>
+  </TABLE>
+
+  <div>
+    <b>KSP &nbsp;</b><select class="kspLists" id="kspList"></select>
+    <br>
+    <b>PC &nbsp; &nbsp;</b><select class="pcLists" id="pcList"></select>
+  </div>
+  <br>
+  <input type="button" value="Submit" id="submitButton" style="float:right;">
+  
+</FORM>
+<br><br>
+
+</div> <!-- endof div id="parameters"-->
+
+<br><br><br><br><br><br>
+<!--
+<div id="matrixButtons"style="width:740px;height:120px;padding:5px">Your
+  matrix block structure: <br>
+	<l1></l1>
+</div>
+-->
+
+<br>
+<!--min-width allows for expandable div but with a minimum width -->
+
+<div id="results" style="min-width:1000px;float:left;margin:10px;font-size:14px ">
+  
+  <INPUT TYPE=button value="Solver Tree" id="solverTreeButton">
+  <INPUT TYPE=button value="Solver Tree (detailed)" id="solverTreeButtonDetailed">
+  <INPUT TYPE=button value="Toggle Tree" id="treeToggle">
+  <input type=button value="Clear Output" id="clearOutput">
+  
+  <div id="treeContainer">Your solver selection: (click to toggle)</div>
+
+  <!-- put table here for oDivs and oCmdOptions -->
+
+  <table cellspacing="5" id="oContainer"> </table> <!-- using jquery, find the #oContainer table element and add <TR> div etc </TR> -->
+  <!-- th=header (center+bold by default) td=standard cell (left+normal by default) -->
+
+</div> <!-- endof div id="results" -->
+
+</div> <!-- endof div id="outside" -->
+
+</body>
+</html>

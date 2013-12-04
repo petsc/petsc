@@ -105,6 +105,7 @@ M*/
              for (PetscOptionsPublishCount=(PetscOptionsPublish?-1:1); PetscOptionsPublishCount<2; PetscOptionsPublishCount++) {\
              PetscErrorCode _5_ierr = PetscOptionsBegin_Private(comm,prefix,mess,sec);CHKERRQ(_5_ierr);
 
+extern PetscClassId KSP_CLASSID,PC_CLASSID;
 /*MC
     PetscObjectOptionsBegin - Begins a set of queries on the options database that are related and should be
      displayed on the same window of a GUI that allows the user to set the options interactively.
@@ -133,6 +134,8 @@ M*/
 
 M*/
 #define PetscObjectOptionsBegin(obj) 0; do {                            \
+  if ((((PetscObject)obj)->classid == KSP_CLASSID) || (((PetscObject)obj)->classid == PC_CLASSID)) PetscOptionsPublish = PETSC_TRUE; \
+  else PetscOptionsPublish = PETSC_FALSE;\
   for (PetscOptionsPublishCount=(PetscOptionsPublish?-1:1); PetscOptionsPublishCount<2; PetscOptionsPublishCount++) { \
   PetscErrorCode _5_ierr = PetscObjectOptionsBegin_Private(obj);CHKERRQ(_5_ierr);
 
