@@ -141,6 +141,8 @@ static PetscErrorCode VecAssemblyRecv_MPI_Private(MPI_Comm comm,const PetscMPIIn
 
   ierr = PetscSegBufferGet(x->segrecvscalar,hdr->bcount*bs,&frame->scalarb);CHKERRQ(ierr);
   ierr = MPI_Irecv(frame->scalarb,hdr->bcount*bs,MPIU_SCALAR,rank,tag[3],comm,&req[3]);CHKERRQ(ierr);
+
+  frame->npending = 4;
   PetscFunctionReturn(0);
 }
 
@@ -193,7 +195,7 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
   if (!x->segrecvint) {ierr = PetscSegBufferCreate(sizeof(PetscInt),1000,&x->segrecvint);CHKERRQ(ierr);}
   if (!x->segrecvscalar) {ierr = PetscSegBufferCreate(sizeof(PetscScalar),1000,&x->segrecvscalar);CHKERRQ(ierr);}
   if (!x->segrecvframe) {ierr = PetscSegBufferCreate(sizeof(VecAssemblyFrame),50,&x->segrecvframe);CHKERRQ(ierr);}
-  ierr = PetscCommBuildTwoSidedF(comm,3,MPIU_INT,x->nsendranks,x->sendranks,(PetscInt*)x->sendhdr,&x->nrecvranks,&x->recvranks,&x->recvhdr,4,VecAssemblySend_MPI_Private,VecAssemblyRecv_MPI_Private,X);CHKERRQ(ierr);
+  ierr = PetscCommBuildTwoSidedFReq(comm,3,MPIU_INT,x->nsendranks,x->sendranks,(PetscInt*)x->sendhdr,&x->nrecvranks,&x->recvranks,&x->recvhdr,4,&x->sendreqs,&x->recvreqs,VecAssemblySend_MPI_Private,VecAssemblyRecv_MPI_Private,X);CHKERRQ(ierr);
 
   {
     PetscInt nstash,reallocs;
@@ -210,7 +212,8 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
 static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
 {
   Vec_MPI *x = (Vec_MPI*)X->data;
-  PetscInt bs = X->map->bs,i,j,k;
+  PetscInt bs = X->map->bs;
+  PetscMPIInt npending,*some_indices;
   PetscScalar *xarray;
   PetscErrorCode ierr;
   VecAssemblyFrame *frame;
@@ -220,39 +223,51 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
 
   ierr = VecGetArray(X,&xarray);CHKERRQ(ierr);
   ierr = PetscSegBufferExtractInPlace(x->segrecvframe,&frame);CHKERRQ(ierr);
-  for (i=0; i<x->nrecvranks; i++) {
-    InsertMode imode = x->recvhdr[i].insertmode;
-    PetscInt *recvint;
-    PetscScalar *recvscalar;
-    /* Unpack scalar stash */
-    for (j=0,recvint=frame[i].ints,recvscalar=frame[i].scalars; j<x->recvhdr[i].count; j++,recvint++) {
-      PetscInt loc = *recvint - X->map->rstart;
-      if (*recvint < X->map->rstart || X->map->rend <= *recvint) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Received vector entry %D out of local range [%D,%D)]",*recvint,X->map->rstart,X->map->rend);
-      switch (imode) {
-      case ADD_VALUES:
-        xarray[loc] += *recvscalar++;
-        break;
-      case INSERT_VALUES:
-        xarray[loc] = *recvscalar++;
-        break;
-      default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Insert mode not supported 0x%x",imode);
+  ierr = PetscMalloc1(4*x->nrecvranks,&some_indices);CHKERRQ(ierr);
+  for (npending=4*x->nrecvranks; npending>0; ) {
+    PetscMPIInt ndone,ii;
+    ierr = MPI_Waitsome(4*x->nrecvranks,x->recvreqs,&ndone,some_indices,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+    for (ii=0; ii<ndone; ii++) {
+      PetscInt i = some_indices[ii]/4,j,k;
+      InsertMode imode = x->recvhdr[i].insertmode;
+      PetscInt *recvint;
+      PetscScalar *recvscalar;
+      npending--;
+      if (--frame[i].npending > 0) continue;
+      /* Unpack scalar stash */
+      for (j=0,recvint=frame[i].ints,recvscalar=frame[i].scalars; j<x->recvhdr[i].count; j++,recvint++) {
+        PetscInt loc = *recvint - X->map->rstart;
+        if (*recvint < X->map->rstart || X->map->rend <= *recvint) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Received vector entry %D out of local range [%D,%D)]",*recvint,X->map->rstart,X->map->rend);
+        switch (imode) {
+        case ADD_VALUES:
+          xarray[loc] += *recvscalar++;
+          break;
+        case INSERT_VALUES:
+          xarray[loc] = *recvscalar++;
+          break;
+        default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Insert mode not supported 0x%x",imode);
+        }
       }
-    }
-    /* Unpack block stash */
-    for (j=0,recvint=frame[i].intb,recvscalar=frame[i].scalarb; j<x->recvhdr[i].bcount; j++,recvint++) {
-      PetscInt loc = (*recvint)*bs - X->map->rstart;
-      switch (imode) {
-      case ADD_VALUES:
-        for (k=loc; k<loc+bs; k++) xarray[k] += *recvscalar++;
-        break;
-      case INSERT_VALUES:
-        for (k=loc; k<loc+bs; k++) xarray[k] = *recvscalar++;
-        break;
-      default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Insert mode not supported 0x%x",imode);
+      /* Unpack block stash */
+      for (j=0,recvint=frame[i].intb,recvscalar=frame[i].scalarb; j<x->recvhdr[i].bcount; j++,recvint++) {
+        PetscInt loc = (*recvint)*bs - X->map->rstart;
+        switch (imode) {
+        case ADD_VALUES:
+          for (k=loc; k<loc+bs; k++) xarray[k] += *recvscalar++;
+          break;
+        case INSERT_VALUES:
+          for (k=loc; k<loc+bs; k++) xarray[k] = *recvscalar++;
+          break;
+        default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Insert mode not supported 0x%x",imode);
+        }
       }
     }
   }
   ierr = VecRestoreArray(X,&xarray);CHKERRQ(ierr);
+  ierr = MPI_Waitall(4*x->nsendranks,x->sendreqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  ierr = PetscFree(x->sendreqs);CHKERRQ(ierr);
+  ierr = PetscFree(x->recvreqs);CHKERRQ(ierr);
+  ierr = PetscFree(some_indices);CHKERRQ(ierr);
   ierr = PetscFree(x->sendranks);CHKERRQ(ierr);
   ierr = PetscFree(x->recvranks);CHKERRQ(ierr);
   ierr = PetscFree(x->sendhdr);CHKERRQ(ierr);

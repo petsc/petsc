@@ -15,6 +15,7 @@ typedef struct {
   PetscInt *intb;
   PetscScalar *scalars;
   PetscScalar *scalarb;
+  PetscInt    npending;
 } VecAssemblyFrame;
 
 typedef struct {
@@ -29,6 +30,8 @@ typedef struct {
   PetscMPIInt *recvranks;
   VecAssemblyHeader *sendhdr,*recvhdr;
   VecAssemblyFrame *sendptrs;   /* pointers to the main messages */
+  MPI_Request    *sendreqs;
+  MPI_Request    *recvreqs;
   PetscSegBuffer segrecvint;
   PetscSegBuffer segrecvscalar;
   PetscSegBuffer segrecvframe;
