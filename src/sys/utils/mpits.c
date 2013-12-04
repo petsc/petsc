@@ -337,10 +337,14 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Reference(MPI_Comm comm,PetscMP
   ierr = MPI_Type_get_extent(dtype,&lb,&unitbytes);CHKERRQ(ierr);
   if (lb != 0) SETERRQ1(comm,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
   for (i=0; i<nto; i++) {
+    PetscMPIInt k;
+    for (k=0; k<ntags; k++) sendreq[i*ntags+k] = MPI_REQUEST_NULL;
     ierr = (*send)(comm,tag,i,toranks[i],((char*)todata)+count*unitbytes*i,sendreq+i*ntags,ctx);CHKERRQ(ierr);
   }
   for (i=0; i<*nfrom; i++) {
     void *header = (*(char**)fromdata) + count*unitbytes*i;
+    PetscMPIInt k;
+    for (k=0; k<ntags; k++) recvreq[i*ntags+k] = MPI_REQUEST_NULL;
     ierr = (*recv)(comm,tag,(*fromranks)[i],header,recvreq+i*ntags,ctx);CHKERRQ(ierr);
   }
   ierr = PetscFree(tag);CHKERRQ(ierr);
@@ -384,6 +388,8 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPI
   /* Post actual payloads.  These are typically larger messages.  Hopefully sending these later does not slow down the
    * synchronous messages above. */
   for (i=0; i<nto; i++) {
+    PetscMPIInt k;
+    for (k=0; k<ntags; k++) usendreqs[i*ntags+k] = MPI_REQUEST_NULL;
     ierr = (*send)(comm,tags,i,toranks[i],tdata+count*unitbytes*i,usendreqs+i*ntags,ctx);CHKERRQ(ierr);
   }
 
@@ -398,13 +404,14 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPI
     MPI_Status  status;
     ierr = MPI_Iprobe(MPI_ANY_SOURCE,tag,comm,&flag,&status);CHKERRQ(ierr);
     if (flag) {                 /* incoming message */
-      PetscMPIInt *recvrank;
+      PetscMPIInt *recvrank,k;
       void        *buf;
       ierr = PetscSegBufferGet(segrank,1,&recvrank);CHKERRQ(ierr);
       ierr = PetscSegBufferGet(segdata,count,&buf);CHKERRQ(ierr);
       *recvrank = status.MPI_SOURCE;
       ierr = MPI_Recv(buf,count,dtype,status.MPI_SOURCE,tag,comm,MPI_STATUS_IGNORE);CHKERRQ(ierr);
       ierr = PetscSegBufferGet(segreq,ntags,&req);CHKERRQ(ierr);
+      for (k=0; k<ntags; k++) req[k] = MPI_REQUEST_NULL;
       ierr = (*recv)(comm,tags,status.MPI_SOURCE,buf,req,ctx);CHKERRQ(ierr);
       nrecvs++;
     }

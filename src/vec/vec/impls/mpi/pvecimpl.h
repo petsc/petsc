@@ -15,7 +15,8 @@ typedef struct {
   PetscInt *intb;
   PetscScalar *scalars;
   PetscScalar *scalarb;
-  PetscInt    npending;
+  char        pendings;
+  char        pendingb;
 } VecAssemblyFrame;
 
 typedef struct {
