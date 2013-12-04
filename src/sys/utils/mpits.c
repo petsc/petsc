@@ -1,6 +1,6 @@
 #include <petscsys.h>        /*I  "petscsys.h"  I*/
 
-PetscLogEvent PETSC_BuildTwoSided;
+PetscLogEvent PETSC_BuildTwoSided,PETSC_BuildTwoSidedF;
 
 const char *const PetscBuildTwoSidedTypes[] = {
   "ALLREDUCE",
@@ -556,7 +556,7 @@ PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm comm,PetscMPIInt count,MPI_Da
 
   PetscFunctionBegin;
   ierr = PetscSysInitializePackage();CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(PETSC_BuildTwoSided,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PETSC_BuildTwoSidedF,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscCommBuildTwoSidedGetType(comm,&buildtype);CHKERRQ(ierr);
   switch (buildtype) {
   case PETSC_BUILDTWOSIDED_IBARRIER:
@@ -573,6 +573,6 @@ PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm comm,PetscMPIInt count,MPI_Da
   default: SETERRQ(comm,PETSC_ERR_PLIB,"Unknown method for building two-sided communication");
   }
   ierr = (*f)(comm,count,dtype,nto,toranks,todata,nfrom,fromranks,fromdata,ntags,toreqs,fromreqs,send,recv,ctx);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(PETSC_BuildTwoSided,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PETSC_BuildTwoSidedF,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
