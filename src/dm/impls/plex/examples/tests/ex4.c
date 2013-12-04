@@ -591,7 +591,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "orig_");CHKERRQ(ierr);
       ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
       ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
-      ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex);CHKERRQ(ierr);
+      ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
       ierr = DMPlexCheckFaces(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
       ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
       ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
