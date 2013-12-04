@@ -6352,7 +6352,9 @@ PetscErrorCode DMPlexCheckSymmetry(DM dm)
   DMPlexCheckSkeleton - Check that each cell has the correct number of vertices
 
   Input Parameters:
-  + dm - The DMPlex object
++ dm - The DMPlex object
+. isSimplex - Are the cells simplices or tensor products
+- cellHeight - Normally 0
 
   Note: This is a useful diagnostic when creating meshes programmatically.
 
@@ -6360,10 +6362,9 @@ PetscErrorCode DMPlexCheckSymmetry(DM dm)
 
 .seealso: DMCreate(), DMCheckSymmetry(), DMCheckFaces()
 @*/
-PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscBool isSimplex)
+PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscBool isSimplex, PetscInt cellHeight)
 {
-  DM             udm;
-  PetscInt       dim, numCorners, coneSize, cStart, cEnd, cMax, c;
+  PetscInt       dim, numCorners, vStart, vEnd, cStart, cEnd, cMax, c;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -6375,17 +6376,21 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscBool isSimplex)
   default:
     SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle meshes of dimension %d", dim);
   }
-  ierr = DMPlexUninterpolate(dm, &udm);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) udm, "un_");CHKERRQ(ierr);
-  ierr = DMSetFromOptions(udm);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   cMax = cMax >= 0 ? cMax : cEnd;
   for (c = cStart; c < cMax; ++c) {
-    ierr = DMPlexGetConeSize(udm, c, &coneSize);CHKERRQ(ierr);
+    PetscInt *closure = NULL, closureSize, cl, coneSize = 0;
+
+    ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    for (cl = 0; cl < closureSize*2; cl += 2) {
+      const PetscInt p = closure[cl];
+      if ((p >= vStart) && (p < vEnd)) ++coneSize;
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     if (coneSize != numCorners) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %d has  %d vertices != %d", c, coneSize, numCorners);
   }
-  ierr = DMDestroy(&udm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
