@@ -6420,7 +6420,7 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscBool isSimplex, PetscInt cellHeight)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &pMax[3], &pMax[2], &pMax[1], &pMax[0]);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &pMax[dim], &pMax[dim-1], &pMax[1], &pMax[0]);CHKERRQ(ierr);
   for (h = cellHeight; h < dim; ++h) {
     ierr = DMPlexGetHeightStratum(dm, h, &cStart, &cEnd);CHKERRQ(ierr);
     for (c = cStart; c < cEnd; ++c) {
@@ -6428,7 +6428,7 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscBool isSimplex, PetscInt cellHeight)
       PetscInt        numFaces, faceSize, coneSize,f;
       PetscInt       *closure = NULL, closureSize, cl, numCorners = 0;
 
-      if (pMax[h] >= 0 && c >= pMax[h]) continue;
+      if (pMax[dim-h] >= 0 && c >= pMax[dim-h]) continue;
       ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
       ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
       ierr = DMPlexGetConeOrientation(dm, c, &ornt);CHKERRQ(ierr);
