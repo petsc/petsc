@@ -209,7 +209,19 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
   if (!x->segrecvint) {ierr = PetscSegBufferCreate(sizeof(PetscInt),1000,&x->segrecvint);CHKERRQ(ierr);}
   if (!x->segrecvscalar) {ierr = PetscSegBufferCreate(sizeof(PetscScalar),1000,&x->segrecvscalar);CHKERRQ(ierr);}
   if (!x->segrecvframe) {ierr = PetscSegBufferCreate(sizeof(VecAssemblyFrame),50,&x->segrecvframe);CHKERRQ(ierr);}
-  ierr = PetscCommBuildTwoSidedFReq(comm,3,MPIU_INT,x->nsendranks,x->sendranks,(PetscInt*)x->sendhdr,&x->nrecvranks,&x->recvranks,&x->recvhdr,4,&x->sendreqs,&x->recvreqs,VecAssemblySend_MPI_Private,VecAssemblyRecv_MPI_Private,X);CHKERRQ(ierr);
+  if (x->recvhdr) {             /* VEC_SUBSET_OFF_PROC_ENTRIES and this is not the first assembly */
+    PetscMPIInt tag[4];
+    if (!x->assembly_subset) SETERRQ(comm,PETSC_ERR_PLIB,"Attempt to reuse rendezvous when not VEC_SUBSET_OFF_PROC_ENTRIES");
+    for (i=0; i<4; i++) {ierr = PetscCommGetNewTag(comm,&tag[i]);CHKERRQ(ierr);}
+    for (i=0; i<x->nsendranks; i++) {
+      ierr = VecAssemblySend_MPI_Private(comm,tag,i,x->sendranks[i],x->sendhdr+i,x->sendreqs+4*i,X);CHKERRQ(ierr);
+    }
+    for (i=0; i<x->nrecvranks; i++) {
+      ierr = VecAssemblyRecv_MPI_Private(comm,tag,x->recvranks[i],x->recvhdr+i,x->recvreqs+4*i,X);CHKERRQ(ierr);
+    }
+  } else {                      /* First time */
+    ierr = PetscCommBuildTwoSidedFReq(comm,3,MPIU_INT,x->nsendranks,x->sendranks,(PetscInt*)x->sendhdr,&x->nrecvranks,&x->recvranks,&x->recvhdr,4,&x->sendreqs,&x->recvreqs,VecAssemblySend_MPI_Private,VecAssemblyRecv_MPI_Private,X);CHKERRQ(ierr);
+  }
 
   {
     PetscInt nstash,reallocs;
@@ -282,9 +294,31 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
   }
   ierr = VecRestoreArray(X,&xarray);CHKERRQ(ierr);
   ierr = MPI_Waitall(4*x->nsendranks,x->sendreqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  ierr = PetscFree(some_indices);CHKERRQ(ierr);
+  if (x->assembly_subset) {
+    void *dummy;                /* reset segbuffers */
+    ierr = PetscSegBufferExtractInPlace(x->segrecvint,&dummy);CHKERRQ(ierr);
+    ierr = PetscSegBufferExtractInPlace(x->segrecvscalar,&dummy);CHKERRQ(ierr);
+  } else {
+    ierr = VecAssemblyReset_MPI(X);CHKERRQ(ierr);
+  }
+
+  X->stash.insertmode = NOT_SET_VALUES;
+  ierr = VecStashScatterEnd_Private(&X->stash);CHKERRQ(ierr);
+  ierr = VecStashScatterEnd_Private(&X->bstash);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecAssemblyReset_MPI"
+PetscErrorCode VecAssemblyReset_MPI(Vec X)
+{
+  Vec_MPI *x = (Vec_MPI*)X->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
   ierr = PetscFree(x->sendreqs);CHKERRQ(ierr);
   ierr = PetscFree(x->recvreqs);CHKERRQ(ierr);
-  ierr = PetscFree(some_indices);CHKERRQ(ierr);
   ierr = PetscFree(x->sendranks);CHKERRQ(ierr);
   ierr = PetscFree(x->recvranks);CHKERRQ(ierr);
   ierr = PetscFree(x->sendhdr);CHKERRQ(ierr);
@@ -293,10 +327,6 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
   ierr = PetscSegBufferDestroy(&x->segrecvint);CHKERRQ(ierr);
   ierr = PetscSegBufferDestroy(&x->segrecvscalar);CHKERRQ(ierr);
   ierr = PetscSegBufferDestroy(&x->segrecvframe);CHKERRQ(ierr);
-  X->stash.insertmode = NOT_SET_VALUES;
-
-  ierr = VecStashScatterEnd_Private(&X->stash);CHKERRQ(ierr);
-  ierr = VecStashScatterEnd_Private(&X->bstash);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

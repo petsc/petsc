@@ -49,9 +49,11 @@
 !
       PetscEnum VEC_IGNORE_OFF_PROC_ENTRIES
       PetscEnum VEC_IGNORE_NEGATIVE_INDICES
+      PetscEnum VEC_SUBSET_OFF_PROC_ENTRIES
 
       parameter (VEC_IGNORE_OFF_PROC_ENTRIES=0)
       parameter (VEC_IGNORE_NEGATIVE_INDICES=1)
+      parameter (VEC_SUBSET_OFF_PROC_ENTRIES=2)
 
 !
 !  VecOperation

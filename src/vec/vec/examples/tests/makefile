@@ -365,6 +365,14 @@ runex29_bts:
 	-@${MPIEXEC} -n 3 ./ex29 -n 126 -vec_assembly_bts > ex29_bts.tmp 2>&1;\
 	   ${DIFF} output/ex29_1.out ex29_bts.tmp || printf "${PWD}\nPossible problem with with ex29_bts, diffs above \n=========================================\n";\
 	   ${RM} ex29_bts.tmp
+runex29_bts_2:
+	-@${MPIEXEC} -n 3 ./ex29 -n 126 -vec_assembly_bts -repeat 2 > ex29_bts_2.tmp 2>&1;\
+	   ${DIFF} output/ex29_1.out ex29_bts_2.tmp || printf "${PWD}\nPossible problem with with ex29_bts_2, diffs above \n=========================================\n";\
+	   ${RM} ex29_bts_2.tmp
+runex29_bts_2_subset:
+	-@${MPIEXEC} -n 3 ./ex29 -n 126 -vec_assembly_bts -repeat 2 -subset > ex29_bts_2.tmp 2>&1;\
+	   ${DIFF} output/ex29_1.out ex29_bts_2.tmp || printf "${PWD}\nPossible problem with with ex29_bts_2, diffs above \n=========================================\n";\
+	   ${RM} ex29_bts_2.tmp
 runex30f:
 	-@${MPIEXEC} -n 4 ./ex30f > ex30f_1.tmp 2>&1;\
 	   if (${DIFF} output/ex30f_1.out ex30f_1.tmp) then true; \
