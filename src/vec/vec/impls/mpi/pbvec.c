@@ -219,8 +219,10 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
     for (i=0; i<x->nrecvranks; i++) {
       ierr = VecAssemblyRecv_MPI_Private(comm,tag,x->recvranks[i],x->recvhdr+i,x->recvreqs+4*i,X);CHKERRQ(ierr);
     }
+    x->use_status = PETSC_TRUE;
   } else {                      /* First time */
     ierr = PetscCommBuildTwoSidedFReq(comm,3,MPIU_INT,x->nsendranks,x->sendranks,(PetscInt*)x->sendhdr,&x->nrecvranks,&x->recvranks,&x->recvhdr,4,&x->sendreqs,&x->recvreqs,VecAssemblySend_MPI_Private,VecAssemblyRecv_MPI_Private,X);CHKERRQ(ierr);
+    x->use_status = PETSC_FALSE;
   }
 
   {
@@ -240,6 +242,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
   Vec_MPI *x = (Vec_MPI*)X->data;
   PetscInt bs = X->map->bs;
   PetscMPIInt npending,*some_indices,r;
+  MPI_Status  *some_statuses;
   PetscScalar *xarray;
   PetscErrorCode ierr;
   VecAssemblyFrame *frame;
@@ -249,20 +252,30 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
 
   ierr = VecGetArray(X,&xarray);CHKERRQ(ierr);
   ierr = PetscSegBufferExtractInPlace(x->segrecvframe,&frame);CHKERRQ(ierr);
-  ierr = PetscMalloc1(4*x->nrecvranks,&some_indices);CHKERRQ(ierr);
+  ierr = PetscMalloc2(4*x->nrecvranks,&some_indices,x->use_status?4*x->nrecvranks:0,&some_statuses);CHKERRQ(ierr);
   for (r=0,npending=0; r<x->nrecvranks; r++) npending += frame[r].pendings + frame[r].pendingb;
   while (npending>0) {
     PetscMPIInt ndone,ii;
-    ierr = MPI_Waitsome(4*x->nrecvranks,x->recvreqs,&ndone,some_indices,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+    /* Filling MPI_Status fields requires some resources from the MPI library.  We skip it on the first assembly, or
+     * when VEC_SUBSET_OFF_PROC_ENTRIES has not been set, because we could exchange exact sizes in the initial
+     * rendezvous.  When the rendezvous is elided, however, we use MPI_Status to get actual message lengths, so that
+     * subsequent assembly can set a proper subset of the values. */
+    ierr = MPI_Waitsome(4*x->nrecvranks,x->recvreqs,&ndone,some_indices,x->use_status?some_statuses:MPI_STATUSES_IGNORE);CHKERRQ(ierr);
     for (ii=0; ii<ndone; ii++) {
       PetscInt i = some_indices[ii]/4,j,k;
       InsertMode imode = x->recvhdr[i].insertmode;
       PetscInt *recvint;
       PetscScalar *recvscalar;
+      PetscBool intmsg = (PetscBool)(some_indices[ii]%2 == 0);
+      PetscBool blockmsg = (PetscBool)((some_indices[ii]%4)/2 == 1);
       npending--;
-      if ((some_indices[ii]%4)/2 == 0) { /* Scalar stash */
+      if (!blockmsg) { /* Scalar stash */
+        PetscMPIInt count;
         if (--frame[i].pendings > 0) continue;
-        for (j=0,recvint=frame[i].ints,recvscalar=frame[i].scalars; j<x->recvhdr[i].count; j++,recvint++) {
+        if (x->use_status) {
+          ierr = MPI_Get_count(&some_statuses[ii],intmsg ? MPIU_INT : MPIU_SCALAR,&count);CHKERRQ(ierr);
+        } else count = x->recvhdr[i].count;
+        for (j=0,recvint=frame[i].ints,recvscalar=frame[i].scalars; j<count; j++,recvint++) {
           PetscInt loc = *recvint - X->map->rstart;
           if (*recvint < X->map->rstart || X->map->rend <= *recvint) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Received vector entry %D out of local range [%D,%D)]",*recvint,X->map->rstart,X->map->rend);
           switch (imode) {
@@ -276,8 +289,13 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
           }
         }
       } else {                  /* Block stash */
+        PetscMPIInt count;
         if (--frame[i].pendingb > 0) continue;
-        for (j=0,recvint=frame[i].intb,recvscalar=frame[i].scalarb; j<x->recvhdr[i].bcount; j++,recvint++) {
+        if (x->use_status) {
+          ierr = MPI_Get_count(&some_statuses[ii],intmsg ? MPIU_INT : MPIU_SCALAR,&count);CHKERRQ(ierr);
+          if (!intmsg) count /= bs; /* Convert from number of scalars to number of blocks */
+        } else count = x->recvhdr[i].bcount;
+        for (j=0,recvint=frame[i].intb,recvscalar=frame[i].scalarb; j<count; j++,recvint++) {
           PetscInt loc = (*recvint)*bs - X->map->rstart;
           switch (imode) {
           case ADD_VALUES:
@@ -294,7 +312,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
   }
   ierr = VecRestoreArray(X,&xarray);CHKERRQ(ierr);
   ierr = MPI_Waitall(4*x->nsendranks,x->sendreqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-  ierr = PetscFree(some_indices);CHKERRQ(ierr);
+  ierr = PetscFree2(some_indices,some_statuses);CHKERRQ(ierr);
   if (x->assembly_subset) {
     void *dummy;                /* reset segbuffers */
     ierr = PetscSegBufferExtractInPlace(x->segrecvint,&dummy);CHKERRQ(ierr);
