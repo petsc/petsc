@@ -558,7 +558,7 @@ PetscErrorCode SetRandomVectors(AppCtx *user,PetscReal t)
     }
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerBinaryRead(viewer,&n,1,PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscMalloc(n*sizeof(RandomValues),&randomvalues);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&randomvalues);CHKERRQ(ierr);
     ierr = PetscViewerBinaryRead(viewer,randomvalues,4*n,PETSC_DOUBLE);CHKERRQ(ierr);
     for (i=0; i<n; i++) randomvalues[i].dt = randomvalues[i].dt*user->dtevent;
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -850,7 +850,7 @@ PetscErrorCode CheckRedundancy(SNES snes, IS act, IS *outact, DM da)
   printf("Number of active constraints after applying redundancy %d\n",cnt);
 
 
-  ierr = PetscMalloc(cnt*sizeof(PetscInt),&outindex);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cnt,&outindex);CHKERRQ(ierr);
   cnt  = 0;
 
   for (i=xs; i < xs+xm;i++) {

@@ -55,7 +55,7 @@ PetscErrorCode  TSMonitorSPEigCtxCreate(MPI_Comm comm,const char host[],const ch
   PC             pc;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_TSMonitorSPEigCtx,ctx);CHKERRQ(ierr);
+  ierr = PetscNew(ctx);CHKERRQ(ierr);
   ierr = PetscRandomCreate(comm,&(*ctx)->rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions((*ctx)->rand);CHKERRQ(ierr);
   ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&win);CHKERRQ(ierr);
@@ -149,7 +149,7 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
 
       ierr = PetscDrawSPReset(drawsp);CHKERRQ(ierr);
       ierr = PetscDrawSPSetLimits(drawsp,ctx->xmin,ctx->xmax,ctx->ymin,ctx->ymax);CHKERRQ(ierr);
-      ierr = PetscMalloc2(PetscMax(n,N),PetscReal,&r,PetscMax(n,N),PetscReal,&c);CHKERRQ(ierr);
+      ierr = PetscMalloc2(PetscMax(n,N),&r,PetscMax(n,N),&c);CHKERRQ(ierr);
       if (ctx->computeexplicitly) {
         ierr = KSPComputeEigenvaluesExplicitly(ksp,n,r,c);CHKERRQ(ierr);
         neig = n;

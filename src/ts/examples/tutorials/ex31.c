@@ -1139,7 +1139,7 @@ int main(int argc, char **argv)
   ierr = PetscOptionsReal("-final_time","Final time for the time-integration","<20.0>",
                           tfinal,&tfinal,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(n_refine*sizeof(PetscReal),&error);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n_refine,&error);CHKERRQ(ierr);
   for (r = 0,dt = dt_initial; r < n_refine; r++) {
     error[r] = 0;
     if (r > 0) dt /= refine_fac;

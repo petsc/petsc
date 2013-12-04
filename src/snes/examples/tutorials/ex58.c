@@ -472,7 +472,7 @@ PetscErrorCode FormBoundaryConditions(SNES snes,AppCtx **ouser)
 
   PetscFunctionBeginUser;
   ierr     = SNESGetDM(snes,&da);CHKERRQ(ierr);
-  ierr     = PetscNew(AppCtx,&user);CHKERRQ(ierr);
+  ierr     = PetscNew(&user);CHKERRQ(ierr);
   *ouser   = user;
   user->lb = .05;
   user->ub = SNES_VI_INF;
@@ -483,10 +483,10 @@ PetscErrorCode FormBoundaryConditions(SNES snes,AppCtx **ouser)
   ierr = PetscOptionsGetScalar(NULL, "-ub", &user->ub, 0);CHKERRQ(ierr);
   bsize=mx+2; lsize=my+2; rsize=my+2; tsize=mx+2;
 
-  ierr = PetscMalloc(bsize*sizeof(PetscScalar), &user->bottom);CHKERRQ(ierr);
-  ierr = PetscMalloc(tsize*sizeof(PetscScalar), &user->top);CHKERRQ(ierr);
-  ierr = PetscMalloc(lsize*sizeof(PetscScalar), &user->left);CHKERRQ(ierr);
-  ierr = PetscMalloc(rsize*sizeof(PetscScalar), &user->right);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bsize, &user->bottom);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tsize, &user->top);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lsize, &user->left);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rsize, &user->right);CHKERRQ(ierr);
 
   hx= (r-l)/(mx+1.0); hy=(t-b)/(my+1.0);
 

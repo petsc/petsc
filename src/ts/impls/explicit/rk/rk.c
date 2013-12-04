@@ -318,7 +318,7 @@ PetscErrorCode TSRKRegister(TSRKType name,PetscInt order,PetscInt s,
   ierr     = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);
   t->order = order;
   t->s     = s;
-  ierr     = PetscMalloc3(s*s,PetscReal,&t->A,s,PetscReal,&t->b,s,PetscReal,&t->c);CHKERRQ(ierr);
+  ierr     = PetscMalloc3(s*s,&t->A,s,&t->b,s,&t->c);CHKERRQ(ierr);
   ierr     = PetscMemcpy(t->A,A,s*s*sizeof(A[0]));CHKERRQ(ierr);
   if (b)  { ierr = PetscMemcpy(t->b,b,s*sizeof(b[0]));CHKERRQ(ierr); }
   else for (i=0; i<s; i++) t->b[i] = A[(s-1)*s+i];
@@ -327,12 +327,12 @@ PetscErrorCode TSRKRegister(TSRKType name,PetscInt order,PetscInt s,
   t->FSAL = PETSC_TRUE;
   for (i=0; i<s; i++) if (t->A[(s-1)*s+i] != t->b[i]) t->FSAL = PETSC_FALSE;
   if (bembed) {
-    ierr = PetscMalloc(s*sizeof(PetscReal),&t->bembed);CHKERRQ(ierr);
+    ierr = PetscMalloc1(s,&t->bembed);CHKERRQ(ierr);
     ierr = PetscMemcpy(t->bembed,bembed,s*sizeof(bembed[0]));CHKERRQ(ierr);
   }
 
   t->pinterp     = pinterp;
-  ierr           = PetscMalloc(s*pinterp*sizeof(PetscReal),&t->binterp);CHKERRQ(ierr);
+  ierr           = PetscMalloc1(s*pinterp,&t->binterp);CHKERRQ(ierr);
   ierr           = PetscMemcpy(t->binterp,binterp,s*pinterp*sizeof(binterp[0]));CHKERRQ(ierr);
   link->next     = RKTableauList;
   RKTableauList = link;
@@ -496,7 +496,7 @@ static PetscErrorCode TSInterpolate_RK(TS ts,PetscReal itime,Vec X)
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Invalid TSStepStatus");
   }
-  ierr = PetscMalloc(s*sizeof(PetscScalar),&b);CHKERRQ(ierr);
+  ierr = PetscMalloc1(s,&b);CHKERRQ(ierr);
   for (i=0; i<s; i++) b[i] = 0;
   for (j=0,tt=t; j<pinterp; j++,tt*=t) {
     for (i=0; i<s; i++) {
@@ -594,7 +594,7 @@ static PetscErrorCode TSSetUp_RK(TS ts)
   s    = tab->s;
   ierr = VecDuplicateVecs(ts->vec_sol,s,&rk->Y);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ts->vec_sol,s,&rk->YdotRHS);CHKERRQ(ierr);
-  ierr = PetscMalloc(s*sizeof(rk->work[0]),&rk->work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(s,&rk->work);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   if (dm) {
     ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSRK,DMRestrictHook_TSRK,ts);CHKERRQ(ierr);
@@ -620,7 +620,7 @@ static PetscErrorCode TSSetFromOptions_RK(TS ts)
     const char   **namelist;
     ierr = PetscStrncpy(rktype,TSRKDefault,sizeof(rktype));CHKERRQ(ierr);
     for (link=RKTableauList,count=0; link; link=link->next,count++) ;
-    ierr = PetscMalloc(count*sizeof(char*),&namelist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(count,&namelist);CHKERRQ(ierr);
     for (link=RKTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
     ierr      = PetscOptionsEList("-ts_rk_type","Family of RK method","TSRKSetType",(const char*const*)namelist,count,rktype,&choice,&flg);CHKERRQ(ierr);
     ierr      = TSRKSetType(ts,flg ? namelist[choice] : rktype);CHKERRQ(ierr);
@@ -820,7 +820,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
   ts->ops->evaluatestep   = TSEvaluateStep_RK;
   ts->ops->setfromoptions = TSSetFromOptions_RK;
 
-  ierr = PetscNewLog(ts,TS_RK,&th);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;
 
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKGetType_C",TSRKGetType_RK);CHKERRQ(ierr);

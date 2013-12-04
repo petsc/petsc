@@ -146,7 +146,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
   ++depth;
   ++cellDepth;
   cellDim -= depth - cellDepth;
-  ierr = PetscMalloc2(depth+1,PetscInt,&pStart,depth+1,PetscInt,&pEnd);CHKERRQ(ierr);
+  ierr = PetscMalloc2(depth+1,&pStart,depth+1,&pEnd);CHKERRQ(ierr);
   for (d = depth-1; d >= faceDepth; --d) {
     ierr = DMPlexGetDepthStratum(dm, d, &pStart[d+1], &pEnd[d+1]);CHKERRQ(ierr);
   }
@@ -495,7 +495,7 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
     maxConeSize = PetscMax(maxConeSize, coneSize);
   }
   ierr = DMSetUp(udm);CHKERRQ(ierr);
-  ierr = PetscMalloc(maxConeSize * sizeof(PetscInt), &cone);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxConeSize, &cone);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscInt *closure = NULL, closureSize, cl, coneSize = 0;
 

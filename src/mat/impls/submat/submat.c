@@ -293,7 +293,7 @@ PetscErrorCode  MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat *newmat)
   ierr = MatSetSizes(N,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)N,MATSUBMATRIX);CHKERRQ(ierr);
 
-  ierr      = PetscNewLog(N,Mat_SubMatrix,&Na);CHKERRQ(ierr);
+  ierr      = PetscNewLog(N,&Na);CHKERRQ(ierr);
   N->data   = (void*)Na;
   ierr      = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
   ierr      = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);

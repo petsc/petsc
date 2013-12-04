@@ -297,7 +297,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   */
 
   if (!lx) {
-    ierr = PetscMalloc(m*sizeof(PetscInt), &dd->lx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m, &dd->lx);CHKERRQ(ierr);
     lx   = dd->lx;
     for (i=0; i<m; i++) lx[i] = M/m + ((M % m) > (i % m));
   }
@@ -307,7 +307,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   if ((x < s) && ((m > 1) || (bx == DMDA_BOUNDARY_PERIODIC))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
 
   if (!ly) {
-    ierr = PetscMalloc(n*sizeof(PetscInt), &dd->ly);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n, &dd->ly);CHKERRQ(ierr);
     ly   = dd->ly;
     for (i=0; i<n; i++) ly[i] = N/n + ((N % n) > (i % n));
   }
@@ -318,7 +318,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   for (i=0; i<(rank % (m*n))/m; i++) ys += ly[i];
 
   if (!lz) {
-    ierr = PetscMalloc(p*sizeof(PetscInt), &dd->lz);CHKERRQ(ierr);
+    ierr = PetscMalloc1(p, &dd->lz);CHKERRQ(ierr);
     lz = dd->lz;
     for (i=0; i<p; i++) lz[i] = P/p + ((P % p) > (i % p));
   }
@@ -411,7 +411,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 
   /* determine starting point of each processor */
   nn       = x*y*z;
-  ierr     = PetscMalloc2(size+1,PetscInt,&bases,size,PetscInt,&ldims);CHKERRQ(ierr);
+  ierr     = PetscMalloc2(size+1,&bases,size,&ldims);CHKERRQ(ierr);
   ierr     = MPI_Allgather(&nn,1,MPIU_INT,ldims,1,MPIU_INT,comm);CHKERRQ(ierr);
   bases[0] = 0;
   for (i=1; i<=size; i++) bases[i] = ldims[i-1];
@@ -429,7 +429,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   ierr = VecGetOwnershipRange(global,&start,&end);CHKERRQ(ierr);
   ierr = ISCreateStride(comm,x*y*z*dof,start,1,&to);CHKERRQ(ierr);
 
-  ierr   = PetscMalloc(x*y*z*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(x*y*z,&idx);CHKERRQ(ierr);
   left   = xs - Xs; right = left + x;
   bottom = ys - Ys; top = bottom + y;
   down   = zs - Zs; up  = down + z;
@@ -452,7 +452,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
      but not ghost points outside the domain that aren't periodic */
   if (stencil_type == DMDA_STENCIL_BOX) {
     count = (IXe-IXs)*(IYe-IYs)*(IZe-IZs);
-    ierr  = PetscMalloc(count*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(count,&idx);CHKERRQ(ierr);
 
     left   = IXs - Xs; right = left + (IXe-IXs);
     bottom = IYs - Ys; top = bottom + (IYe-IYs);
@@ -470,7 +470,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   } else {
     /* This is way ugly! We need to list the funny cross type region */
     count = ((ys-IYs) + (IYe-ye))*x*z + ((xs-IXs) + (IXe-xe))*y*z + ((zs-IZs) + (IZe-ze))*x*y + x*y*z;
-    ierr  = PetscMalloc(count*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(count,&idx);CHKERRQ(ierr);
 
     left   = xs - Xs; right = left + x;
     bottom = ys - Ys; top = bottom + y;
@@ -726,7 +726,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     if (ze==P) n18 = n19 = n20 = n21 = n22 = n23 = n24 = n25 = n26 = -2;
   }
 
-  ierr = PetscMalloc(27*sizeof(PetscInt),&dd->neighbors);CHKERRQ(ierr);
+  ierr = PetscMalloc1(27,&dd->neighbors);CHKERRQ(ierr);
 
   dd->neighbors[0]  = n0;
   dd->neighbors[1]  = n1;
@@ -766,7 +766,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     n0 = n1 = n2 = n3 = n5 = n6 = n7 = n8 = n9 = n11 = n15 = n17 = n18 = n19 = n20 = n21 = n23 = n24 = n25 = n26 = -1;
   }
 
-  ierr = PetscMalloc((Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1((Xe-Xs)*(Ye-Ys)*(Ze-Zs),&idx);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)da,(Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(PetscInt));CHKERRQ(ierr);
 
   nn = 0;
@@ -1357,7 +1357,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
      of VecSetValuesLocal().
   */
   ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_OWN_POINTER,&ltogis);CHKERRQ(ierr);
-  ierr = PetscMalloc(nn*dof*sizeof(PetscInt),&idx_cpy);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nn*dof,&idx_cpy);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)da,nn*dof*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISGetIndices(ltogis, &idx_full);CHKERRQ(ierr);
   ierr = PetscMemcpy(idx_cpy,idx_full,nn*dof*sizeof(PetscInt));CHKERRQ(ierr);

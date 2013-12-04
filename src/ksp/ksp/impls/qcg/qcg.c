@@ -413,7 +413,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_QCG(KSP ksp)
 
   PetscFunctionBegin;
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_SYMMETRIC,2);CHKERRQ(ierr);
-  ierr = PetscNewLog(ksp,KSP_QCG,&cgP);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,&cgP);CHKERRQ(ierr);
 
   ksp->data                = (void*)cgP;
   ksp->ops->setup          = KSPSetUp_QCG;

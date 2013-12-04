@@ -62,8 +62,8 @@ PetscErrorCode KSPAGMRESLejaOrdering(PetscScalar *re, PetscScalar *im, PetscScal
   PetscInt       i, pos, j;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(m*sizeof(PetscScalar), &n_cmpl);CHKERRQ(ierr);
-  ierr = PetscMalloc(m*sizeof(PetscInt), &spos);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m, &n_cmpl);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m, &spos);CHKERRQ(ierr);
   /* Check the proper order of complex conjugate pairs */
   j = 0;
   while (j  < m) {

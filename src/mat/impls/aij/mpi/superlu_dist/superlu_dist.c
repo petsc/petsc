@@ -487,7 +487,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ft
 
   B->factortype = MAT_FACTOR_LU;
 
-  ierr     = PetscNewLog(B,Mat_SuperLU_DIST,&lu);CHKERRQ(ierr);
+  ierr     = PetscNewLog(B,&lu);CHKERRQ(ierr);
   B->spptr = lu;
 
   /* Set the default input options:

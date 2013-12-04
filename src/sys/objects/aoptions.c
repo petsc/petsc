@@ -88,7 +88,7 @@ static int PetscOptionsCreate_Private(const char opt[],const char text[],const c
   ierr = PetscOptionsValidKey(opt,&valid);CHKERRQ(ierr);
   if (!valid) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"The option '%s' is not a valid key",opt);
 
-  ierr            = PetscNew(struct _n_PetscOptions,amsopt);CHKERRQ(ierr);
+  ierr            = PetscNew(amsopt);CHKERRQ(ierr);
   (*amsopt)->next = 0;
   (*amsopt)->set  = PETSC_FALSE;
   (*amsopt)->type = t;
@@ -440,7 +440,7 @@ PetscErrorCode PetscOptionsSAWsInput()
       PetscInt ntext = next->nlist;
       ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s",next->option);CHKERRQ(ierr);
       PetscStackCallSAWs(SAWs_Register,(dir,&next->data,1,SAWs_WRITE,SAWs_STRING));
-      ierr = PetscMalloc((ntext+1)*sizeof(char*),&next->edata);CHKERRQ(ierr);
+      ierr = PetscMalloc1((ntext+1),&next->edata);CHKERRQ(ierr);
       ierr = PetscMemcpy(next->edata,next->list,ntext*sizeof(char*));CHKERRQ(ierr);
       PetscStackCallSAWs(SAWs_Set_Legal_Variable_Values,(dir,ntext,next->edata));
       }
@@ -1257,7 +1257,7 @@ PetscErrorCode  PetscOptionsRealArray(const char opt[],const char text[],const c
     PetscReal *vals;
 
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_REAL_ARRAY,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc((*n)*sizeof(PetscReal),&amsopt->data);CHKERRQ(ierr);
+    ierr = PetscMalloc1((*n),(PetscReal**)&amsopt->data);CHKERRQ(ierr);
     vals = (PetscReal*)amsopt->data;
     for (i=0; i<*n; i++) vals[i] = value[i];
     amsopt->arraylength = *n;
@@ -1326,7 +1326,7 @@ PetscErrorCode  PetscOptionsIntArray(const char opt[],const char text[],const ch
     PetscInt *vals;
 
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_INT_ARRAY,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc((*n)*sizeof(PetscInt),&amsopt->data);CHKERRQ(ierr);
+    ierr = PetscMalloc1((*n),(PetscInt**)&amsopt->data);CHKERRQ(ierr);
     vals = (PetscInt*)amsopt->data;
     for (i=0; i<*n; i++) vals[i] = value[i];
     amsopt->arraylength = *n;
@@ -1390,7 +1390,7 @@ PetscErrorCode  PetscOptionsStringArray(const char opt[],const char text[],const
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_STRING_ARRAY,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc((*nmax)*sizeof(char*),&amsopt->data);CHKERRQ(ierr);
+    ierr = PetscMalloc1((*nmax),(char**)&amsopt->data);CHKERRQ(ierr);
 
     amsopt->arraylength = *nmax;
   }
@@ -1448,7 +1448,7 @@ PetscErrorCode  PetscOptionsBoolArray(const char opt[],const char text[],const c
     PetscBool *vals;
 
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_BOOL_ARRAY,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc((*n)*sizeof(PetscBool),&amsopt->data);CHKERRQ(ierr);
+    ierr = PetscMalloc1((*n),(PetscBool**)&amsopt->data);CHKERRQ(ierr);
     vals = (PetscBool*)amsopt->data;
     for (i=0; i<*n; i++) vals[i] = value[i];
     amsopt->arraylength = *n;

@@ -320,7 +320,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
   lu->B.ncol = 1;   /* Set the number of right-hand side */
   if (lu->options.Equil && !lu->rhs_dup) {
     /* superlu overwrites b when Equil is used, thus create rhs_dup to keep user's b unchanged */
-    ierr = PetscMalloc(n*sizeof(PetscScalar),&lu->rhs_dup);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&lu->rhs_dup);CHKERRQ(ierr);
   }
   if (lu->options.Equil) {
     /* Copy b into rsh_dup */
@@ -596,7 +596,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftyp
   B->assembled    = PETSC_TRUE;           /* required by -ksp_view */
   B->preallocated = PETSC_TRUE;
 
-  ierr = PetscNewLog(B,Mat_SuperLU,&lu);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&lu);CHKERRQ(ierr);
 
   if (ftype == MAT_FACTOR_LU) {
     set_default_options(&lu->options);
@@ -664,11 +664,11 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftyp
   }
 
   /* Allocate spaces (notice sizes are for the transpose) */
-  ierr = PetscMalloc(m*sizeof(PetscInt),&lu->etree);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscInt),&lu->perm_r);CHKERRQ(ierr);
-  ierr = PetscMalloc(m*sizeof(PetscInt),&lu->perm_c);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscScalar),&lu->R);CHKERRQ(ierr);
-  ierr = PetscMalloc(m*sizeof(PetscScalar),&lu->C);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&lu->etree);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&lu->perm_r);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&lu->perm_c);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&lu->R);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&lu->C);CHKERRQ(ierr);
 
   /* create rhs and solution x without allocate space for .Store */
 #if defined(PETSC_USE_COMPLEX)

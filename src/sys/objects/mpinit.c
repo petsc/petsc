@@ -172,7 +172,7 @@ PetscErrorCode  PetscHMPIMerge(PetscMPIInt nodesize,PetscErrorCode (*func)(void*
       *) one that contains all processes in a node:  (0,1,2...,nodesize-1), (nodesize,nodesize+1,...2*nodesize-), ...
   */
   ierr = MPI_Comm_group(saved_PETSC_COMM_WORLD,&group);CHKERRQ(ierr);
-  ierr = PetscMalloc((size/nodesize)*sizeof(PetscMPIInt),&ranks);CHKERRQ(ierr);
+  ierr = PetscMalloc1((size/nodesize),&ranks);CHKERRQ(ierr);
   for (i=0; i<(size/nodesize); i++) ranks[i] = i*nodesize;
   ierr = MPI_Group_incl(group,size/nodesize,ranks,&newgroup);CHKERRQ(ierr);
   ierr = PetscFree(ranks);CHKERRQ(ierr);

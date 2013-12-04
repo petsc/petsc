@@ -74,15 +74,15 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetBool(NULL,"-distribute",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     if (m == PETSC_DECIDE) SETERRQ(PETSC_COMM_WORLD,1,"Must set -m option with -distribute option");
-    ierr = PetscMalloc(m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m,&lx);CHKERRQ(ierr);
     for (i=0; i<m-1; i++) lx[i] = 4;
     lx[m-1] = M - 4*(m-1);
     if (n == PETSC_DECIDE) SETERRQ(PETSC_COMM_WORLD,1,"Must set -n option with -distribute option");
-    ierr = PetscMalloc(n*sizeof(PetscInt),&ly);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&ly);CHKERRQ(ierr);
     for (i=0; i<n-1; i++) ly[i] = 2;
     ly[n-1] = N - 2*(n-1);
     if (p == PETSC_DECIDE) SETERRQ(PETSC_COMM_WORLD,1,"Must set -p option with -distribute option");
-    ierr = PetscMalloc(p*sizeof(PetscInt),&lz);CHKERRQ(ierr);
+    ierr = PetscMalloc1(p,&lz);CHKERRQ(ierr);
     for (i=0; i<p-1; i++) lz[i] = 2;
     lz[p-1] = P - 2*(p-1);
   }
@@ -138,7 +138,7 @@ int main(int argc,char **argv)
     ierr = DMDAGetGlobalIndices(da,&nloc,&ltog);CHKERRQ(ierr);
     ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
     /* ierr = AOView(ao,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-    ierr = PetscMalloc(nloc*sizeof(PetscInt),&iglobal);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nloc,&iglobal);CHKERRQ(ierr);
 
     /* Set iglobal to be global indices for each processor's local and ghost nodes,
        using the DMDA ordering of grid points */

@@ -71,19 +71,19 @@ PetscErrorCode JPInitialize_Private(MatColoring mc)
   jp->stateradix = (8*sizeof(PetscInt)-1);
   ierr = PetscSFGetGraph(jp->etoc,&croot,&cleaf,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(jp->etor,&rroot,&rleaf,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc7(croot,PetscReal,&jp->wts,
-                      croot,PetscReal,&jp->wtsinit,
-                      croot,PetscReal,&jp->wtscol,
-                      rroot,PetscReal,&jp->wtsrow,
-                      croot,PetscReal,&jp->wtsspread,
-                      cleaf,PetscReal,&jp->wtsleafcol,
-                      rleaf,PetscReal,&jp->wtsleafrow);CHKERRQ(ierr);
-  ierr = PetscMalloc6(croot*jp->statesize,PetscInt,&jp->state,
-                      croot*jp->statesize,PetscInt,&jp->statecol,
-                      rroot*jp->statesize,PetscInt,&jp->staterow,
-                      croot*jp->statesize,PetscInt,&jp->statespread,
-                      cleaf*jp->statesize,PetscInt,&jp->stateleafcol,
-                      rleaf*jp->statesize,PetscInt,&jp->stateleafrow);CHKERRQ(ierr);
+  ierr = PetscMalloc7(croot,&jp->wts,
+                      croot,&jp->wtsinit,
+                      croot,&jp->wtscol,
+                      rroot,&jp->wtsrow,
+                      croot,&jp->wtsspread,
+                      cleaf,&jp->wtsleafcol,
+                      rleaf,&jp->wtsleafrow);CHKERRQ(ierr);
+  ierr = PetscMalloc6(croot*jp->statesize,&jp->state,
+                      croot*jp->statesize,&jp->statecol,
+                      rroot*jp->statesize,&jp->staterow,
+                      croot*jp->statesize,&jp->statespread,
+                      cleaf*jp->statesize,&jp->stateleafcol,
+                      rleaf*jp->statesize,&jp->stateleafrow);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(ISColoringValue)*croot,&jp->color);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(ISColoringValue)*croot,&jp->mincolor);CHKERRQ(ierr);
   for (i=0;i<croot;i++) {
@@ -238,12 +238,12 @@ PetscErrorCode JPMinColor_Private(MatColoring mc,ISColoringValue *colors,ISColor
                       jp->stateleafcol,
                       jp->stateleafrow);CHKERRQ(ierr);
     jp->statesize++;
-    ierr = PetscMalloc6(ncols*jp->statesize,PetscInt,&jp->state,
-                        ncols*jp->statesize,PetscInt,&jp->statecol,
-                        nrows*jp->statesize,PetscInt,&jp->staterow,
-                        ncols*jp->statesize,PetscInt,&jp->statespread,
-                        nleafcols*jp->statesize,PetscInt,&jp->stateleafcol,
-                        nleafrows*jp->statesize,PetscInt,&jp->stateleafrow);CHKERRQ(ierr);
+    ierr = PetscMalloc6(ncols*jp->statesize,&jp->state,
+                        ncols*jp->statesize,&jp->statecol,
+                        nrows*jp->statesize,&jp->staterow,
+                        ncols*jp->statesize,&jp->statespread,
+                        nleafcols*jp->statesize,&jp->stateleafcol,
+                        nleafrows*jp->statesize,&jp->stateleafrow);CHKERRQ(ierr);
   }
   statecol = jp->statecol;
   staterow = jp->staterow;
@@ -452,7 +452,7 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_JP(MatColoring mc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr                    = PetscNewLog(mc,MC_JP,&jp);CHKERRQ(ierr);
+  ierr                    = PetscNewLog(mc,&jp);CHKERRQ(ierr);
   mc->data                = jp;
   mc->ops->apply          = MatColoringApply_JP;
   mc->ops->view           = NULL;

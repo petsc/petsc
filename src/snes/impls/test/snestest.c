@@ -195,7 +195,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Test(SNES snes)
 
   snes->usesksp = PETSC_FALSE;
 
-  ierr                = PetscNewLog(snes,SNES_Test,&neP);CHKERRQ(ierr);
+  ierr                = PetscNewLog(snes,&neP);CHKERRQ(ierr);
   snes->data          = (void*)neP;
   neP->complete_print = PETSC_FALSE;
   PetscFunctionReturn(0);

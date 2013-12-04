@@ -830,8 +830,8 @@ PetscErrorCode VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
   PetscReal         *yy;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(n*sizeof(PetscReal),&xx);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscReal),&yy);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&xx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&yy);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xin,&xv);CHKERRQ(ierr);
   for (c=0; c<bs; c++) {
     ierr = PetscViewerDrawGetDrawLG(v,c,&lg);CHKERRQ(ierr);
@@ -1242,7 +1242,7 @@ PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(v,Vec_Seq,&s);CHKERRQ(ierr);
+  ierr = PetscNewLog(v,&s);CHKERRQ(ierr);
   ierr = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
 
   v->data            = (void*)s;

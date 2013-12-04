@@ -25,7 +25,7 @@ PETSC_EXTERN void PETSC_STDCALL iscoloringcreate_(MPI_Comm *comm,PetscInt *n,Pet
   PetscInt        i;
 
   /* copies the colors[] array since that is kept by the ISColoring that is created */
-  *ierr = PetscMalloc((*n+1)*sizeof(ISColoringValue),&color);if (*ierr) return;
+  *ierr = PetscMalloc1((*n+1),&color);if (*ierr) return;
   for (i=0; i<(*n); i++) {
     if (colors[i] > IS_COLORING_MAX) {
       *ierr = PetscError(PETSC_COMM_SELF,__LINE__,"ISColoringCreate_Fortran",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"Color too large");

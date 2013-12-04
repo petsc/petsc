@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
   if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify -prefix");CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = PetscMalloc((size+1)*sizeof(idx_t),&vtxdist);CHKERRQ(ierr);
+  ierr = PetscMalloc1((size+1),&vtxdist);CHKERRQ(ierr);
 
   ierr = PetscSNPrintf(fname,sizeof(fname),"%s.%d.graph",prefix,rank);CHKERRQ(ierr);
 
@@ -56,11 +56,11 @@ int main(int argc, char *argv[])
 
   ni = vtxdist[rank+1]-vtxdist[rank];
 
-  ierr = PetscMalloc((ni+1)*sizeof(idx_t),&xadj);CHKERRQ(ierr);
+  ierr = PetscMalloc1((ni+1),&xadj);CHKERRQ(ierr);
 
   fread(xadj, sizeof(idx_t), ni+1, fp);
 
-  ierr = PetscMalloc(xadj[ni]*sizeof(idx_t),&adjncy);CHKERRQ(ierr);
+  ierr = PetscMalloc1(xadj[ni],&adjncy);CHKERRQ(ierr);
 
   for (i=0; i<ni; i++) fread(&adjncy[xadj[i]], sizeof(idx_t), xadj[i+1]-xadj[i], fp);
 
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
   ierr = PetscSNPrintf(fname,sizeof(fname),"%s.%d.graph.xyz",prefix,rank);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_SELF,fname,"r",&fp);CHKERRQ(ierr);
 
-  ierr = PetscMalloc3(ni*ndims,real_t,&xyz,ni,idx_t,&part,size,real_t,&tpwgts);CHKERRQ(ierr);
+  ierr = PetscMalloc3(ni*ndims,&xyz,ni,&part,size,&tpwgts);CHKERRQ(ierr);
 
   fread(xyz, sizeof(real_t), ndims*ni, fp);
   ierr = PetscFClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
