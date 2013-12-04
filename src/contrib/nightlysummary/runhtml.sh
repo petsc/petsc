@@ -192,11 +192,10 @@ generate_configure_section()
 }
 
 ############ Part 1: Build ####################
-#generate_section Configure configure  #Note: Current grep-driven extraction is not suitable for configure*.log files
-generate_configure_section
-generate_section Build     build     1
-generate_section Examples  examples  0
+#generate_section Build     build     1  # Considered duplicative by Barry
 generate_section Make      make      1
+generate_section Examples  examples  0
+generate_configure_section
 
 
 echo "</div></body></html>" >> $OUTFILE
