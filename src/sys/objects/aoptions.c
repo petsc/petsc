@@ -312,7 +312,7 @@ PetscErrorCode PetscOptionsGetFromTextInput()
       ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
       if (str[0]) {
         next->set = PETSC_TRUE;
-        ierr = PetscStrallocpy(str,(char**) &next->data);CHKERRQ(ierr);
+        next->data = (void*)strdup(str);
       }
       break;
     case OPTION_FLIST:
@@ -321,7 +321,7 @@ PetscErrorCode PetscOptionsGetFromTextInput()
       if (str[0]) {
         PetscOptionsObject.changedmethod = PETSC_TRUE;
         next->set = PETSC_TRUE;
-        ierr = PetscStrallocpy(str,(char**) &next->data);CHKERRQ(ierr);
+        next->data = (void*)strdup(str);
       }
       break;
     default:
@@ -563,7 +563,12 @@ PetscErrorCode PetscOptionsEnd_Private(void)
     ierr   = PetscFree(PetscOptionsObject.next->option);CHKERRQ(ierr);
     ierr   = PetscFree(PetscOptionsObject.next->man);CHKERRQ(ierr);
     ierr   = PetscFree(PetscOptionsObject.next->edata);CHKERRQ(ierr);
-    ierr   = PetscFree(PetscOptionsObject.next->data);CHKERRQ(ierr);
+
+    if ((PetscOptionsObject.next->type == OPTION_STRING) || (PetscOptionsObject.next->type == OPTION_FLIST) || (PetscOptionsObject.next->type == OPTION_ELIST)){
+      free(PetscOptionsObject.next->data);
+    } else {
+      ierr   = PetscFree(PetscOptionsObject.next->data);CHKERRQ(ierr);
+    }
 
     last                    = PetscOptionsObject.next;
     PetscOptionsObject.next = PetscOptionsObject.next->next;
@@ -720,7 +725,7 @@ PetscErrorCode  PetscOptionsString(const char opt[],const char text[],const char
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_STRING,&amsopt);CHKERRQ(ierr);
-    ierr = PetscStrallocpy(defaultv ? defaultv : "",(char**) &amsopt->data);CHKERRQ(ierr);
+    amsopt->data = (void*)strdup(defaultv ? defaultv : "");
   }
   ierr = PetscOptionsGetString(PetscOptionsObject.prefix,opt,value,len,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
@@ -919,7 +924,7 @@ PetscErrorCode  PetscOptionsFList(const char opt[],const char ltext[],const char
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,ltext,man,OPTION_FLIST,&amsopt);CHKERRQ(ierr);
-    ierr = PetscStrallocpy(defaultv ? defaultv : "",(char**) &amsopt->data);CHKERRQ(ierr);
+    amsopt->data = (void*)strdup(defaultv ? defaultv : "");
     amsopt->flist = list;
   }
   ierr = PetscOptionsGetString(PetscOptionsObject.prefix,opt,value,len,set);CHKERRQ(ierr);
@@ -972,7 +977,7 @@ PetscErrorCode  PetscOptionsEList(const char opt[],const char ltext[],const char
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,ltext,man,OPTION_ELIST,&amsopt);CHKERRQ(ierr);
-    ierr = PetscStrallocpy(defaultv ? defaultv : "",(char**) &amsopt->data);CHKERRQ(ierr);
+    amsopt->data = (void*)strdup(defaultv ? defaultv : "");
     amsopt->list  = list;
     amsopt->nlist = ntext;
   }
@@ -1496,7 +1501,7 @@ PetscErrorCode  PetscOptionsViewer(const char opt[],const char text[],const char
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_STRING,&amsopt);CHKERRQ(ierr);
-    ierr = PetscStrallocpy("",(char**) &amsopt->data);CHKERRQ(ierr);
+    amsopt->data = (void*)strdup("");
   }
   ierr = PetscOptionsGetViewer(PetscOptionsObject.comm,PetscOptionsObject.prefix,opt,viewer,format,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
