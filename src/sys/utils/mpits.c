@@ -86,7 +86,7 @@ PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm comm,PetscBuildTwoSidedTyp
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_MPI_IBARRIER)
+#if defined(PETSC_HAVE_MPI_IBARRIER) || defined(PETSC_HAVE_MPIX_IBARRIER)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscCommBuildTwoSided_Ibarrier"
@@ -131,7 +131,11 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
       ierr = PetscMPIIntCast(nto,&nsends);CHKERRQ(ierr);
       ierr = MPI_Testall(nsends,sendreqs,&sent,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
       if (sent) {
+#if defined(PETSC_HAVE_MPI_IBARRIER)
         ierr = MPI_Ibarrier(comm,&barrier);CHKERRQ(ierr);
+#elif defined(PETSC_HAVE_MPIX_IBARRIER)
+        ierr = MPIX_Ibarrier(comm,&barrier);CHKERRQ(ierr);
+#endif
         ierr = PetscFree(sendreqs);CHKERRQ(ierr);
       }
     } else {
@@ -285,7 +289,7 @@ PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm,PetscMPIInt count,MPI_Dataty
   ierr = PetscCommBuildTwoSidedGetType(comm,&buildtype);CHKERRQ(ierr);
   switch (buildtype) {
   case PETSC_BUILDTWOSIDED_IBARRIER:
-#if defined(PETSC_HAVE_MPI_IBARRIER)
+#if defined(PETSC_HAVE_MPI_IBARRIER) || defined(PETSC_HAVE_MPIX_IBARRIER)
     ierr = PetscCommBuildTwoSided_Ibarrier(comm,count,dtype,nto,toranks,todata,nfrom,fromranks,fromdata);CHKERRQ(ierr);
 #else
     SETERRQ(comm,PETSC_ERR_PLIB,"MPI implementation does not provide MPI_Ibarrier (part of MPI-3)");
@@ -354,7 +358,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Reference(MPI_Comm comm,PetscMP
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_MPI_IBARRIER)
+#if defined(PETSC_HAVE_MPI_IBARRIER) || defined(PETSC_HAVE_MPIX_IBARRIER)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscCommBuildTwoSidedFReq_Ibarrier"
@@ -420,7 +424,11 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPI
       ierr = PetscMPIIntCast(nto,&nsends);CHKERRQ(ierr);
       ierr = MPI_Testall(nsends,sendreqs,&sent,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
       if (sent) {
+#if defined(PETSC_HAVE_MPI_IBARRIER)
         ierr = MPI_Ibarrier(comm,&barrier);CHKERRQ(ierr);
+#elif defined(PETSC_HAVE_MPIX_IBARRIER)
+        ierr = MPIX_Ibarrier(comm,&barrier);CHKERRQ(ierr);
+#endif
       }
     } else {
       ierr = MPI_Test(&barrier,&done,MPI_STATUS_IGNORE);CHKERRQ(ierr);
@@ -552,7 +560,7 @@ PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm comm,PetscMPIInt count,MPI_Da
   ierr = PetscCommBuildTwoSidedGetType(comm,&buildtype);CHKERRQ(ierr);
   switch (buildtype) {
   case PETSC_BUILDTWOSIDED_IBARRIER:
-#if defined(PETSC_HAVE_MPI_IBARRIER)
+#if defined(PETSC_HAVE_MPI_IBARRIER) || defined(PETSC_HAVE_MPIX_IBARRIER)
     f = PetscCommBuildTwoSidedFReq_Ibarrier;
 #else
     SETERRQ(comm,PETSC_ERR_PLIB,"MPI implementation does not provide MPI_Ibarrier (part of MPI-3)");

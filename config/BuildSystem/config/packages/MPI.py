@@ -766,7 +766,7 @@ class Configure(config.package.Package):
     found, missing = self.libraries.checkClassify(self.dlib, funcs)
     for f in found:
       self.addDefine('HAVE_' + f.upper(),1)
-    for f in ['MPIX_Iallreduce']: # Unlikely to be found
+    for f in ['MPIX_Iallreduce', 'MPIX_Ibarrier']: # Unlikely to be found
       if self.libraries.check(self.dlib, f):
         self.addDefine('HAVE_' + f.upper(),1)
 
