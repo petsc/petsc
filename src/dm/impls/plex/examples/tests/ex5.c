@@ -383,7 +383,6 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
   ierr = DMPlexCopyLabels(*dm, idm);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
-  ierr = DMPlexCheckSymmetry(idm);CHKERRQ(ierr);
   ierr = DMDestroy(dm);CHKERRQ(ierr);
   *dm  = idm;
   PetscFunctionReturn(0);
@@ -679,6 +678,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   default:
     SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for dimension %d", dim);
   }
+  ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
+  ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
+  ierr = DMPlexCheckFaces(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
   {
     DM      dmHybrid = NULL;
     DMLabel faultLabel, hybridLabel;
