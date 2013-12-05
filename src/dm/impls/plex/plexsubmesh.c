@@ -2938,7 +2938,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
     }
     ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
     if (numRoots >= 0) {
-      ierr = PetscMalloc2(pEnd-pStart,PetscSFNode,&newLocalPoints,numRoots,PetscSFNode,&newOwners);CHKERRQ(ierr);
+      ierr = PetscMalloc2(pEnd-pStart,&newLocalPoints,numRoots,&newOwners);CHKERRQ(ierr);
       for (p = 0; p < pEnd-pStart; ++p) {
         newLocalPoints[p].rank  = -2;
         newLocalPoints[p].index = -2;
