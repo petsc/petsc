@@ -19,7 +19,15 @@ PETSc.displayDirectory = function(sub,divEntry)
                                       window.setTimeout(PETSc.getAndDisplayDirectory,1000,null,divEntry);
                                     })
   }
-  alert(JSON.stringify(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data))
+    //alert(JSON.stringify(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data))
+    //alert(JSON.stringify(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._man_0.data))
+    //alert(JSON.stringify(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._text_0.data))
+   
+    alert("pcValue="+JSON.stringify(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].data)) 
+    alert(JSON.stringify(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].alternatives)) //pcList
+    
+    //alert(JSON.stringify(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables))
+    
   if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Preconditioner (PC) options") {
       window.location = 'ksp.html'
   } else {
