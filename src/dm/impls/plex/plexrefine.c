@@ -358,7 +358,7 @@ static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscI
         ierr = DMPlexSetSupportSize(rdm, newp, size);CHKERRQ(ierr);
       }
     }
-    /* Interior faces have 3 edges and 2 cells */
+    /* Interior cell faces have 3 edges and 2 cells */
     for (c = cStart; c < cEnd; ++c) {
       for (r = 0; r < 8; ++r) {
         const PetscInt newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*8 + r;
@@ -394,7 +394,7 @@ static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscI
           ierr = DMPlexGetConeOrientation(dm, support[s], &ornt);CHKERRQ(ierr);
           for (c = 0; c < coneSize; ++c) {if (cone[c] == f) break;}
           /* Here we want to determine whether edge newp contains a vertex which is part of the cross-tet edge */
-          er   = GetTetSomethingInverse_Static(ornt[c], r) /*ornt[c] < 0 ? (1-(ornt[c]+r))%3 : (ornt[c] + r)%3 */;
+          er = GetTetSomethingInverse_Static(ornt[c], r);
           if (er == eint[c]) {
             intFaces += 1;
           } else {
@@ -404,7 +404,7 @@ static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscI
         ierr = DMPlexSetSupportSize(rdm, newp, 2+intFaces);CHKERRQ(ierr);
       }
     }
-    /* Interior edges have 2 vertices and 4 faces */
+    /* Interior cell edges have 2 vertices and 4 faces */
     for (c = cStart; c < cEnd; ++c) {
       const PetscInt newp = eStartNew + (eEnd - eStart)*2 + (fEnd - fStart)*3 + (c - cStart);
 
@@ -536,7 +536,7 @@ static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscI
           for (c = 0; c < coneSize; ++c) {if (cone[c] == f) break;}
           if (support[s] < cMax) {
             /* Here we want to determine whether edge newp contains a vertex which is part of the cross-tet edge */
-            er = ornt[c] < 0 ? (-(ornt[c]+1) + 2-r)%3 : (ornt[c] + r)%3;
+            er = GetTetSomethingInverse_Static(ornt[c], r);
             if (er == eint[c]) {
               intFaces += 1;
             } else {
@@ -1736,7 +1736,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
         }
         ierr = DMPlexSetSupport(rdm, newp+r, supportRef);CHKERRQ(ierr);
 #if 1
-        if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
+        if ((newp+r < fStartNew) || (newp+r >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp+r, fStartNew, fEndNew);
         for (p = 0; p < supportSize; ++p) {
           if ((supportRef[p] < cStartNew) || (supportRef[p] >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", supportRef[p], cStartNew, cEndNew);
         }
@@ -2026,7 +2026,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
           ierr = DMPlexGetConeOrientation(dm, support[s], &ornt);CHKERRQ(ierr);
           for (c = 0; c < coneSize; ++c) {if (cone[c] == f) break;}
           /* Here we want to determine whether edge newp contains a vertex which is part of the cross-tet edge */
-          er   = GetTetSomethingInverse_Static(ornt[c], r) /*ornt[c] < 0 ? (1-(ornt[c]+r))%3 : (ornt[c] + r)%3 */;
+          er = GetTetSomethingInverse_Static(ornt[c], r);
           if (er == eint[c]) {
             supportRef[2+intFaces++] = fStartNew + (fEnd - fStart)*4 + (support[s] - cStart)*8 + (c + 2)%4;
           } else {
@@ -2232,12 +2232,12 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
       /* A' tetrahedron: {d, a, c, f} */
       coneNew[0] = fStartNew + (fMax    - fStart)*4 + (c - cStart)*8 + 0;
       orntNew[0] = -3;
-      coneNew[1] = fStartNew + (fMax    - fStart)*4 + (c - cStart)*8 + 4;
-      orntNew[1] = 0;
-      coneNew[2] = fStartNew + (cone[2] - fStart)*4 + 3;
-      orntNew[2] = ornt[2] < 0 ? -((-(ornt[2]+1)+2)%3+1) : (ornt[2]+2)%3;
-      coneNew[3] = fStartNew + (fMax    - fStart)*4 + (c - cStart)*8 + 5;
-      orntNew[3] = 0;
+      coneNew[1] = fStartNew + (cone[2] - fStart)*4 + 3;
+      orntNew[1] = ornt[2] < 0 ? -(GetTetSomething_Static(ornt[2], 0)+1) : GetTetSomething_Static(ornt[2], 0);
+      coneNew[2] = fStartNew + (fMax    - fStart)*4 + (c - cStart)*8 + 5;
+      orntNew[2] = 0;
+      coneNew[3] = fStartNew + (fMax    - fStart)*4 + (c - cStart)*8 + 4;
+      orntNew[3] = 2;
       ierr       = DMPlexSetCone(rdm, newp+4, coneNew);CHKERRQ(ierr);
       ierr       = DMPlexSetConeOrientation(rdm, newp+4, orntNew);CHKERRQ(ierr);
 #if 1
@@ -2249,12 +2249,12 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
       /* B' tetrahedron: {e, b, a, f} */
       coneNew[0] = fStartNew + (fMax    - fStart)*4 + (c - cStart)*8 + 1;
       orntNew[0] = -3;
-      coneNew[1] = fStartNew + (cone[3] - fStart)*4 + 3;
-      orntNew[1] = ornt[3] < 0 ? -((-(ornt[3]+1)+1)%3+1) : (ornt[3]+1)%3;
-      coneNew[2] = fStartNew + (fMax    - fStart)*4 + (c - cStart)*8 + 6;
+      coneNew[1] = fStartNew + (fMax    - fStart)*4 + (c - cStart)*8 + 6;
+      orntNew[1] = 1;
+      coneNew[2] = fStartNew + (fMax    - fStart)*4 + (c - cStart)*8 + 7;
       orntNew[2] = 0;
-      coneNew[3] = fStartNew + (fMax    - fStart)*4 + (c - cStart)*8 + 7;
-      orntNew[3] = 0;
+      coneNew[3] = fStartNew + (cone[3] - fStart)*4 + 3;
+      orntNew[3] = ornt[3] < 0 ? -(GetTetSomething_Static(ornt[3], 0)+1) : GetTetSomething_Static(ornt[3], 0);
       ierr       = DMPlexSetCone(rdm, newp+5, coneNew);CHKERRQ(ierr);
       ierr       = DMPlexSetConeOrientation(rdm, newp+5, orntNew);CHKERRQ(ierr);
 #if 1
@@ -2266,12 +2266,12 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
       /* C' tetrahedron: {b, f, c, a} */
       coneNew[0] = fStartNew + (fMax    - fStart)*4 + (c - cStart)*8 + 2;
       orntNew[0] = -3;
-      coneNew[1] = fStartNew + (fMax    - fStart)*4 + (c - cStart)*8 + 7;
-      orntNew[1] = -2;
-      coneNew[2] = fStartNew + (cone[0] - fStart)*4 + 3;
-      orntNew[2] = ornt[0] < 0 ? (-(ornt[0]+1)+1)%3 : -((ornt[0]+1)%3+1);
-      coneNew[3] = fStartNew + (fMax    - fStart)*4 + (c - cStart)*8 + 5;
-      orntNew[3] = -1;
+      coneNew[1] = fStartNew + (cone[0] - fStart)*4 + 3;
+      orntNew[1] = ornt[0] < 0 ? -(GetTetSomething_Static(ornt[0], 2)+1) : GetTetSomething_Static(ornt[0], 2);
+      coneNew[2] = fStartNew + (fMax    - fStart)*4 + (c - cStart)*8 + 5;
+      orntNew[2] = -3;
+      coneNew[3] = fStartNew + (fMax    - fStart)*4 + (c - cStart)*8 + 7;
+      orntNew[3] = -2;
       ierr       = DMPlexSetCone(rdm, newp+6, coneNew);CHKERRQ(ierr);
       ierr       = DMPlexSetConeOrientation(rdm, newp+6, orntNew);CHKERRQ(ierr);
 #if 1
@@ -2283,12 +2283,12 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
       /* D' tetrahedron: {f, e, d, a} */
       coneNew[0] = fStartNew + (fMax    - fStart)*4 + (c - cStart)*8 + 3;
       orntNew[0] = -3;
-      coneNew[1] = fStartNew + (fMax    - fStart)*4 + (c - cStart)*8 + 6;
+      coneNew[1] = fStartNew + (fMax    - fStart)*4 + (c - cStart)*8 + 4;
       orntNew[1] = -3;
-      coneNew[2] = fStartNew + (fMax    - fStart)*4 + (c - cStart)*8 + 4;
-      orntNew[2] = -2;
-      coneNew[3] = fStartNew + (cone[1] - fStart)*4 + 3;
-      orntNew[3] = ornt[2];
+      coneNew[2] = fStartNew + (cone[1] - fStart)*4 + 3;
+      orntNew[2] = ornt[1] < 0 ? -(GetTetSomething_Static(ornt[1], 0)+1) : GetTetSomething_Static(ornt[1], 0);
+      coneNew[3] = fStartNew + (fMax    - fStart)*4 + (c - cStart)*8 + 6;
+      orntNew[3] = -3;
       ierr       = DMPlexSetCone(rdm, newp+7, coneNew);CHKERRQ(ierr);
       ierr       = DMPlexSetConeOrientation(rdm, newp+7, orntNew);CHKERRQ(ierr);
 #if 1
@@ -2426,21 +2426,23 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
       ierr = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
       for (r = 0; r < 4; ++r) {
         for (s = 0; s < supportSize; ++s) {
+          PetscInt subf;
           ierr = DMPlexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
           ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
           ierr = DMPlexGetConeOrientation(dm, support[s], &ornt);CHKERRQ(ierr);
           for (c = 0; c < coneSize; ++c) {
             if (cone[c] == f) break;
           }
+          subf = GetTriSubfaceInverse_Static(ornt[c], r);
           if (support[s] < cMax) {
-            supportRef[s] = cStartNew + (support[s] - cStart)*8 + (r==3 ? (c+2)%4 + 4 : (ornt[c] < 0 ? faces[c*3+(-(ornt[c]+1)+1+3-r)%3] : faces[c*3+r]));
+            supportRef[s] = cStartNew + (support[s] - cStart)*8 + (r==3 ? (c+2)%4 + 4 : faces[c*3+subf]);
           } else {
-            supportRef[s] = cStartNew + (cMax - cStart)*8 + (support[s] - cMax)*4 + (r==3 ? r : GetTriSubfaceInverse_Static(ornt[c], r));
+            supportRef[s] = cStartNew + (cMax - cStart)*8 + (support[s] - cMax)*4 + (r==3 ? r : subf);
           }
         }
         ierr = DMPlexSetSupport(rdm, newp+r, supportRef);CHKERRQ(ierr);
 #if 1
-        if ((newp < fStartNew) || (newp >= fMaxNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fMaxNew);
+        if ((newp+r < fStartNew) || (newp+r >= fMaxNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp+r, fStartNew, fMaxNew);
         for (p = 0; p < supportSize; ++p) {
           if ((supportRef[p] < cStartNew) || (supportRef[p] >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not an interior or hybrid cell [%d, %d)", supportRef[p], cStartNew, cEndNew);
         }
@@ -2457,11 +2459,11 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
       ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
       ierr = DMPlexGetConeOrientation(dm, c, &ornt);CHKERRQ(ierr);
       /* Face A: {c, a, d} */
-      coneNew[0] = eStartNew + (eMax - eStart)*2 + (cone[0] - fStart)*3 + (ornt[0] < 0 ? (-(ornt[0]+1)+0)%3 : (ornt[0]+2)%3);
+      coneNew[0] = eStartNew + (eMax - eStart)*2 + (cone[0] - fStart)*3 + GetTetSomething_Static(ornt[0], 2);
       orntNew[0] = ornt[0] < 0 ? -2 : 0;
-      coneNew[1] = eStartNew + (eMax - eStart)*2 + (cone[1] - fStart)*3 + (ornt[1] < 0 ? (-(ornt[1]+1)+0)%3 : (ornt[1]+2)%3);
+      coneNew[1] = eStartNew + (eMax - eStart)*2 + (cone[1] - fStart)*3 + GetTetSomething_Static(ornt[1], 2);
       orntNew[1] = ornt[1] < 0 ? -2 : 0;
-      coneNew[2] = eStartNew + (eMax - eStart)*2 + (cone[2] - fStart)*3 + (ornt[2] < 0 ? (-(ornt[2]+1)+0)%3 : (ornt[2]+2)%3);
+      coneNew[2] = eStartNew + (eMax - eStart)*2 + (cone[2] - fStart)*3 + GetTetSomething_Static(ornt[2], 2);
       orntNew[2] = ornt[2] < 0 ? -2 : 0;
       ierr = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
       ierr = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
@@ -2482,11 +2484,11 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
 #endif
       ++newp;
       /* Face B: {a, b, e} */
-      coneNew[0] = eStartNew + (eMax - eStart)*2 + (cone[0] - fStart)*3 + (ornt[0] < 0 ? (-(ornt[0]+1)+2)%3 : (ornt[0]+0)%3);
+      coneNew[0] = eStartNew + (eMax - eStart)*2 + (cone[0] - fStart)*3 + GetTetSomething_Static(ornt[0], 0);
       orntNew[0] = ornt[0] < 0 ? -2 : 0;
-      coneNew[1] = eStartNew + (eMax - eStart)*2 + (cone[3] - fStart)*3 + (ornt[3] < 0 ? (-(ornt[3]+1)+2)%3 : (ornt[3]+0)%3);
+      coneNew[1] = eStartNew + (eMax - eStart)*2 + (cone[3] - fStart)*3 + GetTetSomething_Static(ornt[3], 0);
       orntNew[1] = ornt[3] < 0 ? -2 : 0;
-      coneNew[2] = eStartNew + (eMax - eStart)*2 + (cone[1] - fStart)*3 + (ornt[1] < 0 ? (-(ornt[1]+1)+1)%3 : (ornt[1]+1)%3);
+      coneNew[2] = eStartNew + (eMax - eStart)*2 + (cone[1] - fStart)*3 + GetTetSomething_Static(ornt[1], 1);
       orntNew[2] = ornt[1] < 0 ? -2 : 0;
       ierr = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
       ierr = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
@@ -2507,11 +2509,11 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
 #endif
       ++newp;
       /* Face C: {c, f, b} */
-      coneNew[0] = eStartNew + (eMax - eStart)*2 + (cone[2] - fStart)*3 + (ornt[2] < 0 ? (-(ornt[2]+1)+2)%3 : (ornt[2]+0)%3);
+      coneNew[0] = eStartNew + (eMax - eStart)*2 + (cone[2] - fStart)*3 + GetTetSomething_Static(ornt[2], 0);
       orntNew[0] = ornt[2] < 0 ? -2 : 0;
-      coneNew[1] = eStartNew + (eMax - eStart)*2 + (cone[3] - fStart)*3 + (ornt[3] < 0 ? (-(ornt[3]+1)+0)%3 : (ornt[3]+2)%3);
+      coneNew[1] = eStartNew + (eMax - eStart)*2 + (cone[3] - fStart)*3 + GetTetSomething_Static(ornt[3], 2);
       orntNew[1] = ornt[3] < 0 ? -2 : 0;
-      coneNew[2] = eStartNew + (eMax - eStart)*2 + (cone[0] - fStart)*3 + (ornt[0] < 0 ? (-(ornt[0]+1)+1)%3 : (ornt[0]+1)%3);
+      coneNew[2] = eStartNew + (eMax - eStart)*2 + (cone[0] - fStart)*3 + GetTetSomething_Static(ornt[0], 1);
       orntNew[2] = ornt[0] < 0 ? -2 : 0;
       ierr = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
       ierr = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
@@ -2532,11 +2534,11 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
 #endif
       ++newp;
       /* Face D: {d, e, f} */
-      coneNew[0] = eStartNew + (eMax - eStart)*2 + (cone[1] - fStart)*3 + (ornt[1] < 0 ? (-(ornt[1]+1)+2)%3 : (ornt[1]+0)%3);
+      coneNew[0] = eStartNew + (eMax - eStart)*2 + (cone[1] - fStart)*3 + GetTetSomething_Static(ornt[1], 0);
       orntNew[0] = ornt[1] < 0 ? -2 : 0;
-      coneNew[1] = eStartNew + (eMax - eStart)*2 + (cone[3] - fStart)*3 + (ornt[3] < 0 ? (-(ornt[3]+1)+1)%3 : (ornt[3]+1)%3);
+      coneNew[1] = eStartNew + (eMax - eStart)*2 + (cone[3] - fStart)*3 + GetTetSomething_Static(ornt[3], 1);
       orntNew[1] = ornt[3] < 0 ? -2 : 0;
-      coneNew[2] = eStartNew + (eMax - eStart)*2 + (cone[2] - fStart)*3 + (ornt[2] < 0 ? (-(ornt[2]+1)+1)%3 : (ornt[2]+1)%3);
+      coneNew[2] = eStartNew + (eMax - eStart)*2 + (cone[2] - fStart)*3 + GetTetSomething_Static(ornt[2], 1);
       orntNew[2] = ornt[2] < 0 ? -2 : 0;
       ierr = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
       ierr = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
@@ -2557,11 +2559,11 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
 #endif
       ++newp;
       /* Face E: {d, f, a} */
-      coneNew[0] = eStartNew + (eMax - eStart)*2 + (cone[2] - fStart)*3 + (ornt[2] < 0 ? (-(ornt[2]+1)+1)%3 : (ornt[2]+1)%3);
+      coneNew[0] = eStartNew + (eMax - eStart)*2 + (cone[2] - fStart)*3 + GetTetSomething_Static(ornt[2], 1);
       orntNew[0] = ornt[2] < 0 ? 0 : -2;
       coneNew[1] = eStartNew + (eMax - eStart)*2 + (fMax - fStart)*3 + (c - cStart);
-      orntNew[1] = 0;
-      coneNew[2] = eStartNew + (eMax - eStart)*2 + (cone[1] - fStart)*3 + (ornt[1] < 0 ? (-(ornt[1]+1)+0)%3 : (ornt[1]+2)%3);
+      orntNew[1] = -2;
+      coneNew[2] = eStartNew + (eMax - eStart)*2 + (cone[1] - fStart)*3 + GetTetSomething_Static(ornt[1], 2);
       orntNew[2] = ornt[1] < 0 ? -2 : 0;
       ierr = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
       ierr = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
@@ -2582,12 +2584,12 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
 #endif
       ++newp;
       /* Face F: {c, a, f} */
-      coneNew[0] = eStartNew + (eMax - eStart)*2 + (cone[0] - fStart)*3 + (ornt[0] < 0 ? (-(ornt[0]+1)+0)%3 : (ornt[0]+2)%3);
+      coneNew[0] = eStartNew + (eMax - eStart)*2 + (cone[0] - fStart)*3 + GetTetSomething_Static(ornt[0], 2);
       orntNew[0] = ornt[0] < 0 ? -2 : 0;
       coneNew[1] = eStartNew + (eMax - eStart)*2 + (fMax - fStart)*3 + (c - cStart);
-      orntNew[1] = -2;
-      coneNew[2] = eStartNew + (eMax - eStart)*2 + (cone[2] - fStart)*3 + (ornt[2] < 0 ? (-(ornt[2]+1)+2)%3 : (ornt[2]+0)%3);
-      orntNew[2] = ornt[1] < 0 ? 0 : -2;
+      orntNew[1] = 0;
+      coneNew[2] = eStartNew + (eMax - eStart)*2 + (cone[2] - fStart)*3 + GetTetSomething_Static(ornt[2], 0);
+      orntNew[2] = ornt[2] < 0 ? 0 : -2;
       ierr = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
       ierr = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
 #if 1
@@ -2607,11 +2609,11 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
 #endif
       ++newp;
       /* Face G: {e, a, f} */
-      coneNew[0] = eStartNew + (eMax - eStart)*2 + (cone[1] - fStart)*3 + (ornt[1] < 0 ? (-(ornt[1]+1)+1)%3 : (ornt[1]+1)%3);
+      coneNew[0] = eStartNew + (eMax - eStart)*2 + (cone[1] - fStart)*3 + GetTetSomething_Static(ornt[1], 1);
       orntNew[0] = ornt[1] < 0 ? -2 : 0;
       coneNew[1] = eStartNew + (eMax - eStart)*2 + (fMax - fStart)*3 + (c - cStart);
-      orntNew[1] = -2;
-      coneNew[2] = eStartNew + (eMax - eStart)*2 + (cone[3] - fStart)*3 + (ornt[3] < 0 ? (-(ornt[3]+1)+1)%3 : (ornt[3]+1)%3);
+      orntNew[1] = 0;
+      coneNew[2] = eStartNew + (eMax - eStart)*2 + (cone[3] - fStart)*3 + GetTetSomething_Static(ornt[3], 1);
       orntNew[2] = ornt[3] < 0 ? 0 : -2;
       ierr = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
       ierr = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
@@ -2632,12 +2634,12 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
 #endif
       ++newp;
       /* Face H: {a, b, f} */
-      coneNew[0] = eStartNew + (eMax - eStart)*2 + (cone[0] - fStart)*3 + (ornt[0] < 0 ? (-(ornt[0]+1)+2)%3 : (ornt[0]+0)%3);
+      coneNew[0] = eStartNew + (eMax - eStart)*2 + (cone[0] - fStart)*3 + GetTetSomething_Static(ornt[0], 0);
       orntNew[0] = ornt[0] < 0 ? -2 : 0;
-      coneNew[1] = eStartNew + (eMax - eStart)*2 + (cone[3] - fStart)*3 + (ornt[3] < 0 ? (-(ornt[3]+1)+0)%3 : (ornt[3]+2)%3);
+      coneNew[1] = eStartNew + (eMax - eStart)*2 + (cone[3] - fStart)*3 + GetTetSomething_Static(ornt[3], 2);
       orntNew[1] = ornt[3] < 0 ? 0 : -2;
       coneNew[2] = eStartNew + (eMax - eStart)*2 + (fMax - fStart)*3 + (c - cStart);
-      orntNew[2] = 0;
+      orntNew[2] = -2;
       ierr = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
       ierr = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
 #if 1
@@ -2824,7 +2826,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
           for (c = 0; c < coneSize; ++c) {if (cone[c] == f) break;}
           if (support[s] < cMax) {
             /* Here we want to determine whether edge newp contains a vertex which is part of the cross-tet edge */
-            er   = ornt[c] < 0 ? (-(ornt[c]+1) + 2-r)%3 : (ornt[c] + r)%3;
+            er = GetTetSomethingInverse_Static(ornt[c], r);
             if (er == eint[c]) {
               supportRef[2+intFaces++] = fStartNew + (fMax - fStart)*4 + (support[s] - cStart)*8 + (c + 2)%4;
             } else {
