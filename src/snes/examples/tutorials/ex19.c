@@ -117,8 +117,8 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return(1);
 
   PetscFunctionBeginUser;
-  SAWs_Set_Header("index.html",Header);
-  SAWs_Set_Body("index.html",2,BodyBottom);
+  SAWs_Push_Header("index.html",Header);
+  SAWs_Push_Body("index.html",2,BodyBottom);
   comm = PETSC_COMM_WORLD;
   ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
 
