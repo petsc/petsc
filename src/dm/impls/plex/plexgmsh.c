@@ -31,7 +31,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   PetscScalar   *coords, *coordsIn = NULL;
   PetscInt       dim = 0, coordSize, c, v, d;
   int            numVertices = 0, numCells = 0, snum;
-  long           fpos;
+  long           fpos = 0;
   PetscMPIInt    num_proc, rank;
   char           line[PETSC_MAX_PATH_LEN];
   PetscBool      match;
