@@ -3753,8 +3753,9 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   switch (refiner) {
   case 0: break;
   case 6: /* Hex 3D */
+  case 8: /* Hybrid Hex 3D */
     /* Face vertices have the average of corner coordinates */
-    for (f = fStart; f < fEnd; ++f) {
+    for (f = fStart; f < fMax; ++f) {
       const PetscInt newv = vStartNew + (vEnd - vStart) + (eEnd - eStart) + (f - fStart);
       PetscInt      *cone = NULL;
       PetscInt       closureSize, coneSize = 0, off[8], offnew, p, d;
