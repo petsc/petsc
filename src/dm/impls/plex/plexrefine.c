@@ -4255,12 +4255,12 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
       } else if ((p >= fMax) && (p < fEnd)) {
         /* Hybrid faces add new faces and edges */
         for (r = 0; r < 2; ++r, ++m) {
-          localPointsNew[m]        = fStartNew     + (fMax                              - fStart)*4     + (cMax                            - cStart)*8     + (p  - fStart)*2     + r;
-          remotePointsNew[m].index = rfStartNew[n] + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*4 + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n])*8 + (rp - rfStart[n])*2 + r;
+          localPointsNew[m]        = fStartNew     + (fMax                              - fStart)*4     + (cMax                            - cStart)*8     + (p  - fMax)*2                              + r;
+          remotePointsNew[m].index = rfStartNew[n] + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*4 + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n])*8 + (rp - rdepthMaxOld[n*(depth+1)+depth-1])*2 + r;
           remotePointsNew[m].rank  = rrank;
         }
-        localPointsNew[m]        = eStartNew     + (eMax                        - eStart)*2     + (fMax                              - fStart)     + (cMax                            - cStart)     + (fEnd                                          - fMax);
-        remotePointsNew[m].index = reStartNew[n] + (rdepthMaxOld[n*(depth+1)+1] - reStart[n])*2 + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n]) + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n]) + (rdepthSizeOld[n*(depth+1)+depth-1]+rfStart[n] - rdepthMaxOld[n*(depth+1)+depth-1]);
+        localPointsNew[m]        = eStartNew     + (eMax                        - eStart)*2     + (fMax                              - fStart)*3     + (cMax                            - cStart)     + (p  - fMax);
+        remotePointsNew[m].index = reStartNew[n] + (rdepthMaxOld[n*(depth+1)+1] - reStart[n])*2 + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*3 + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n]) + (rp - rdepthMaxOld[n*(depth+1)+depth-1]);
         remotePointsNew[m].rank  = rrank;
         ++m;
       } else if ((p >= cStart) && (p < cMax)) {
@@ -4287,8 +4287,8 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
           remotePointsNew[m].rank  = rrank;
         }
         for (r = 0; r < 3; ++r, ++m) {
-          localPointsNew[m]        = fStartNew     + (fMax                              - fStart)*4     + (cMax                            - cStart)*8     + (fEnd                                          - fMax)*4                              + (p  - cMax)*3                            + r;
-          remotePointsNew[m].index = rfStartNew[n] + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*4 + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n])*8 + (rdepthSizeOld[n*(depth+1)+depth-1]+rfStart[n] - rdepthMaxOld[n*(depth+1)+depth-1])*4 + (rp - rdepthMaxOld[n*(depth+1)+depth])*3 + r;
+          localPointsNew[m]        = fStartNew     + (fMax                              - fStart)*4     + (cMax                            - cStart)*8     + (fEnd                                          - fMax)*2                              + (p  - cMax)*3                            + r;
+          remotePointsNew[m].index = rfStartNew[n] + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*4 + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n])*8 + (rdepthSizeOld[n*(depth+1)+depth-1]+rfStart[n] - rdepthMaxOld[n*(depth+1)+depth-1])*2 + (rp - rdepthMaxOld[n*(depth+1)+depth])*3 + r;
           remotePointsNew[m].rank  = rrank;
         }
       }
