@@ -51,10 +51,10 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  {'numProcs': 2, 'args': '-dim 2 -cell_hybrid 0 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 2, 'args': '-dim 2 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
                                                                  # 2D Hybrid Simplex 4-7
-                                                                 {'numProcs': 1, 'args': '-dim 2 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
-                                                                 {'numProcs': 1, 'args': '-dim 2 -num_refinements 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
-                                                                 {'numProcs': 2, 'args': '-dim 2 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
-                                                                 {'numProcs': 2, 'args': '-dim 2 -num_refinements 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
+                                                                 {'numProcs': 1, 'args': '-dim 2 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 2 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 2 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 2 -num_refinements 1 -dm_view ::ascii_info_detail'},
                                                                  # 3D Simplex 8-11
                                                                  {'numProcs': 1, 'args': '-dim 3 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 2, 'args': '-dim 3 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
@@ -67,10 +67,10 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 2, 'args': '-dim 3 -cell_simplex 0 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
                                                                  # 3D Hybrid Simplex 16-19
-                                                                 {'numProcs': 1, 'args': '-dim 3 -num_refinements 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
-                                                                 {'numProcs': 2, 'args': '-dim 3 -num_refinements 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
-                                                                 {'numProcs': 1, 'args': '-dim 3 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
-                                                                 {'numProcs': 2, 'args': '-dim 3 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 3 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 3 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail'},
                                                                  # 3D Hybrid Hex 20-23
                                                                  {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -num_refinements 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
                                                                  {'numProcs': 2, 'args': '-dim 3 -cell_simplex 0 -num_refinements 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
