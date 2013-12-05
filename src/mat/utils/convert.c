@@ -47,7 +47,7 @@ PetscErrorCode MatConvert_Basic(Mat mat, MatType newtype,MatReuse reuse,Mat *new
     prbs = (isseqbaij || ismpibaij || isseqsbaij || ismpisbaij) ? M->rmap->bs : 1;
     pcbs = (isseqbaij || ismpibaij || isseqsbaij || ismpisbaij) ? M->cmap->bs : 1;
 
-    ierr = PetscMalloc2(lm/prbs,PetscInt,&dnz,lm/prbs,PetscInt,&onz);CHKERRQ(ierr);
+    ierr = PetscMalloc2(lm/prbs,&dnz,lm/prbs,&onz);CHKERRQ(ierr);
     ierr = MatGetOwnershipRangeColumn(mat,&cstart,&cend);CHKERRQ(ierr);
     for (i=0; i<lm; i+=prbs) {
       ierr = MatGetRow(mat,rstart+i,&nz,&cwork,NULL);CHKERRQ(ierr);

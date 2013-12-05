@@ -221,7 +221,7 @@ PetscErrorCode  PetscMaxSum(MPI_Comm comm,const PetscInt nprocs[],PetscInt *max,
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = PetscMalloc(size*sizeof(*work),&work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&work);CHKERRQ(ierr);
   ierr = MPI_Allreduce((void*)nprocs,work,size,MPIU_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
   *max = work[rank].max;
   *sum = work[rank].sum;
@@ -517,7 +517,7 @@ PetscErrorCode  PetscGetArguments(char ***args)
   PetscFunctionBegin;
   if (!PetscInitializeCalled && PetscFinalizeCalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"You must call after PetscInitialize() but before PetscFinalize()");
   if (!argc) {*args = 0; PetscFunctionReturn(0);}
-  ierr = PetscMalloc(argc*sizeof(char*),args);CHKERRQ(ierr);
+  ierr = PetscMalloc1(argc,args);CHKERRQ(ierr);
   for (i=0; i<argc-1; i++) {
     ierr = PetscStrallocpy(PetscGlobalArgs[i+1],&(*args)[i]);CHKERRQ(ierr);
   }
@@ -602,7 +602,7 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
       ierr = PetscSNPrintf(jsdir,PETSC_MAX_PATH_LEN,"%s/js",root);CHKERRQ(ierr);
       ierr = PetscTestDirectory(jsdir,'r',&flg);CHKERRQ(ierr);
       if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"-saws_local option requires js directory in root directory");
-      PetscStackCallSAWs(SAWs_Set_Local_JSHeader,());CHKERRQ(ierr);
+      PetscStackCallSAWs(SAWs_Push_Local_Header,());CHKERRQ(ierr);
     }
     ierr = PetscGetProgramName(programname,64);CHKERRQ(ierr);
     ierr = PetscStrlen(help,&applinelen);CHKERRQ(ierr);
@@ -617,7 +617,7 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
     }
     ierr = PetscOptionsGetAll(&options);CHKERRQ(ierr);
     if (rootlocal && help) {
-      ierr = PetscSNPrintf(appline,applinelen,"<center> Running <a href=\"%s.c.html\">%s</a>%s</center><br><center><pre>%s</pre></center><br>\n",programname,programname,options,help);
+      ierr = PetscSNPrintf(appline,applinelen,"<center> Running <a href=\"%s.c.html\">%s</a> %s</center><br><center><pre>%s</pre></center><br>\n",programname,programname,options,help);
     } else if (help) {
       ierr = PetscSNPrintf(appline,applinelen,"<center>Running %s %s</center><br><center><pre>%s</pre></center><br>\n",programname,options,help);
     } else {
@@ -629,7 +629,7 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
                                     "<center><h2> <a href=\"http://www.mcs.anl.gov/petsc\">PETSc</a> Application Web server powered by <a href=\"https://bitbucket.org/saws/saws\">SAWs</a> </h2></center>\n"
                                     "<center>This is the default PETSc application dashboard, from it you can access any published PETSc objects or logging data</center><br><center>%s configured at %s with %s</center><br>\n"
                          "%s",version,petscconfigureruntime,petscconfigureoptions,appline);
-    PetscStackCallSAWs(SAWs_Set_Body,("index.html",0,intro));
+    PetscStackCallSAWs(SAWs_Push_Body,("index.html",0,intro));
     ierr = PetscFree(intro);CHKERRQ(ierr);
     ierr = PetscFree(appline);CHKERRQ(ierr);
     PetscStackCallSAWs(SAWs_Initialize,());

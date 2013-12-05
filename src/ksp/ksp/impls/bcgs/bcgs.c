@@ -221,7 +221,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_BCGS(KSP ksp)
   KSP_BCGS       *bcgs;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,KSP_BCGS,&bcgs);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,&bcgs);CHKERRQ(ierr);
 
   ksp->data                = bcgs;
   ksp->ops->setup          = KSPSetUp_BCGS;

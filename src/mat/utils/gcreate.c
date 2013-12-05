@@ -254,7 +254,7 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt dnnz[],c
     } else {                    /* Convert block-row precallocation to scalar-row */
       PetscInt i,m,*sdnnz,*sonnz;
       ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
-      ierr = PetscMalloc2((!!dnnz)*m,PetscInt,&sdnnz,(!!onnz)*m,PetscInt,&sonnz);CHKERRQ(ierr);
+      ierr = PetscMalloc2((!!dnnz)*m,&sdnnz,(!!onnz)*m,&sonnz);CHKERRQ(ierr);
       for (i=0; i<m; i++) {
         if (dnnz) sdnnz[i] = dnnz[i/bs] * bs;
         if (onnz) sonnz[i] = onnz[i/bs] * bs;

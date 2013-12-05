@@ -339,7 +339,7 @@ PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt spatial_dim, Petsc
     realType *c, *jI, *jD;
     PetscInt i;
 
-    ierr = PetscMalloc3(Ne*N_bt,realType,&c,Ne*dim*dim,realType,&jI,Ne,realType,&jD);CHKERRQ(ierr);
+    ierr = PetscMalloc3(Ne*N_bt,&c,Ne*dim*dim,&jI,Ne,&jD);CHKERRQ(ierr);
     for (i = 0; i < Ne*N_bt;    ++i) c[i]  = coefficients[i];
     for (i = 0; i < Ne*dim*dim; ++i) jI[i] = jacobianInverses[i];
     for (i = 0; i < Ne;         ++i) jD[i] = jacobianDeterminants[i];
@@ -377,7 +377,7 @@ PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt spatial_dim, Petsc
     realType *eV;
     PetscInt i;
 
-    ierr = PetscMalloc(Ne*N_bt * sizeof(realType), &eV);CHKERRQ(ierr);
+    ierr = PetscMalloc1(Ne*N_bt, &eV);CHKERRQ(ierr);
     ierr = cudaMemcpy(eV, d_elemVec, Ne*N_bt * sizeof(realType), cudaMemcpyDeviceToHost);CHKERRQ(ierr);
     for (i = 0; i < Ne*N_bt; ++i) elemVec[i] = eV[i];
     ierr = PetscFree(eV);CHKERRQ(ierr);

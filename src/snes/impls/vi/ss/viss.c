@@ -505,7 +505,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONSSLS(SNES snes)
   snes->usesksp = PETSC_TRUE;
   snes->usespc  = PETSC_FALSE;
 
-  ierr       = PetscNewLog(snes,SNES_VINEWTONSSLS,&vi);CHKERRQ(ierr);
+  ierr       = PetscNewLog(snes,&vi);CHKERRQ(ierr);
   snes->data = (void*)vi;
 
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESVISetVariableBounds_C",SNESVISetVariableBounds_VI);CHKERRQ(ierr);

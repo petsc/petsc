@@ -651,10 +651,10 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
     lnk_empty - flg indicating the list is empty
 */
 #define PetscLLCreate(idx_start,lnk_max,nlnk,lnk,bt) \
-  (PetscMalloc(nlnk*sizeof(PetscInt),&lnk) || PetscBTCreate(nlnk,&(bt)) || (lnk[idx_start] = lnk_max,0))
+  (PetscMalloc1(nlnk,&lnk) || PetscBTCreate(nlnk,&(bt)) || (lnk[idx_start] = lnk_max,0))
 
 #define PetscLLCreate_new(idx_start,lnk_max,nlnk,lnk,bt,lnk_empty)\
-  (PetscMalloc(nlnk*sizeof(PetscInt),&lnk) || PetscBTCreate(nlnk,&(bt)) || (lnk_empty = PETSC_TRUE,0) ||(lnk[idx_start] = lnk_max,0))
+  (PetscMalloc1(nlnk,&lnk) || PetscBTCreate(nlnk,&(bt)) || (lnk_empty = PETSC_TRUE,0) ||(lnk[idx_start] = lnk_max,0))
 
 /*
   Add an index set into a sorted linked list
@@ -898,7 +898,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat mat,const MatFactorInfo *in
     bt        - PetscBT (bitarray) with all bits set to false
 */
 #define PetscIncompleteLLCreate(idx_start,lnk_max,nlnk,lnk,lnk_lvl,bt)\
-  (PetscMalloc(2*nlnk*sizeof(PetscInt),&lnk) || PetscBTCreate(nlnk,&(bt)) || (lnk[idx_start] = lnk_max,lnk_lvl = lnk + nlnk,0))
+  (PetscMalloc1(2*nlnk,&lnk) || PetscBTCreate(nlnk,&(bt)) || (lnk[idx_start] = lnk_max,lnk_lvl = lnk + nlnk,0))
 
 /*
   Initialize a sorted linked list used for ILU and ICC
@@ -1202,7 +1202,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate(PetscInt nlnk_max,Pets
   PetscInt       *llnk;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(2*(nlnk_max+2)*sizeof(PetscInt),lnk);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2*(nlnk_max+2),lnk);CHKERRQ(ierr);
   ierr = PetscBTCreate(lnk_max,bt);CHKERRQ(ierr);
   llnk = *lnk;
   llnk[0] = 0;         /* number of entries on the list */
@@ -1320,7 +1320,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_Scalable(PetscInt nlnk
   PetscInt       *llnk;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(2*(nlnk_max+2)*sizeof(PetscInt),lnk);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2*(nlnk_max+2),lnk);CHKERRQ(ierr);
   llnk = *lnk;
   llnk[0] = 0;               /* number of entries on the list */
   llnk[2] = PETSC_MAX_INT;   /* value in the head node */
@@ -1409,7 +1409,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_fast(PetscInt nlnk_max
   PetscInt       *llnk;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(3*(nlnk_max+3)*sizeof(PetscInt),lnk);CHKERRQ(ierr);
+  ierr = PetscMalloc1(3*(nlnk_max+3),lnk);CHKERRQ(ierr);
   llnk = *lnk;
   llnk[0] = 0;   /* nlnk: number of entries on the list */
   llnk[1] = 0;          /* number of integer entries represented in list */

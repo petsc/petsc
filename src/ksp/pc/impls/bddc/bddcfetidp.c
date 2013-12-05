@@ -130,9 +130,9 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   ierr = PCBDDCGetPrimalVerticesLocalIdx(fetidpmat_ctx->pc,&n_vertices,&vertex_indices);CHKERRQ(ierr);
   dual_size = pcis->n_B-n_vertices;
   ierr = PetscSortInt(n_vertices,vertex_indices);CHKERRQ(ierr);
-  ierr = PetscMalloc(dual_size*sizeof(*dual_dofs_boundary_indices),&dual_dofs_boundary_indices);CHKERRQ(ierr);
-  ierr = PetscMalloc(dual_size*sizeof(*aux_local_numbering_1),&aux_local_numbering_1);CHKERRQ(ierr);
-  ierr = PetscMalloc(dual_size*sizeof(*aux_local_numbering_2),&aux_local_numbering_2);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dual_size,&dual_dofs_boundary_indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dual_size,&aux_local_numbering_1);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dual_size,&aux_local_numbering_2);CHKERRQ(ierr);
 
   ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
   for (i=0;i<pcis->n;i++){
@@ -183,18 +183,18 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   /* init data for scaling factors exchange */
   partial_sum = 0;
   j = 0;
-  ierr = PetscMalloc(pcis->n_neigh*sizeof(PetscInt),&ptrs_buffer);CHKERRQ(ierr);
-  ierr = PetscMalloc((pcis->n_neigh-1)*sizeof(MPI_Request),&send_reqs);CHKERRQ(ierr);
-  ierr = PetscMalloc((pcis->n_neigh-1)*sizeof(MPI_Request),&recv_reqs);CHKERRQ(ierr);
-  ierr = PetscMalloc(pcis->n*sizeof(PetscScalar*),&all_factors);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pcis->n_neigh,&ptrs_buffer);CHKERRQ(ierr);
+  ierr = PetscMalloc1((pcis->n_neigh-1),&send_reqs);CHKERRQ(ierr);
+  ierr = PetscMalloc1((pcis->n_neigh-1),&recv_reqs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pcis->n,&all_factors);CHKERRQ(ierr);
   ptrs_buffer[0]=0;
   for (i=1;i<pcis->n_neigh;i++) {
     partial_sum += pcis->n_shared[i];
     ptrs_buffer[i] = ptrs_buffer[i-1]+pcis->n_shared[i];
   }
-  ierr = PetscMalloc(partial_sum*sizeof(PetscScalar),&send_buffer);CHKERRQ(ierr);
-  ierr = PetscMalloc(partial_sum*sizeof(PetscScalar),&recv_buffer);CHKERRQ(ierr);
-  ierr = PetscMalloc(partial_sum*sizeof(PetscScalar),&all_factors[0]);CHKERRQ(ierr);
+  ierr = PetscMalloc1(partial_sum,&send_buffer);CHKERRQ(ierr);
+  ierr = PetscMalloc1(partial_sum,&recv_buffer);CHKERRQ(ierr);
+  ierr = PetscMalloc1(partial_sum,&all_factors[0]);CHKERRQ(ierr);
   for (i=0;i<pcis->n-1;i++) {
     j = mat_graph->count[i];
     all_factors[i+1]=all_factors[i]+j;
@@ -232,11 +232,11 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   ierr = PetscFree(ptrs_buffer);CHKERRQ(ierr);
 
   /* Compute B and B_delta (local actions) */
-  ierr = PetscMalloc(pcis->n_neigh*sizeof(*aux_sums),&aux_sums);CHKERRQ(ierr);
-  ierr = PetscMalloc(n_local_lambda*sizeof(*l2g_indices),&l2g_indices);CHKERRQ(ierr);
-  ierr = PetscMalloc(n_local_lambda*sizeof(*vals_B_delta),&vals_B_delta);CHKERRQ(ierr);
-  ierr = PetscMalloc(n_local_lambda*sizeof(*cols_B_delta),&cols_B_delta);CHKERRQ(ierr);
-  ierr = PetscMalloc(n_local_lambda*sizeof(*scaling_factors),&scaling_factors);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pcis->n_neigh,&aux_sums);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n_local_lambda,&l2g_indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n_local_lambda,&vals_B_delta);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n_local_lambda,&cols_B_delta);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n_local_lambda,&scaling_factors);CHKERRQ(ierr);
   n_global_lambda=0;
   partial_sum=0;
   for (i=0;i<dual_size;i++) {

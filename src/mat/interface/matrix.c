@@ -1357,7 +1357,7 @@ PetscErrorCode  MatSetValuesStencil(Mat mat,PetscInt m,const MatStencil idxm[],P
   if ((m+n) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
     jdxm = buf; jdxn = buf+m;
   } else {
-    ierr = PetscMalloc2(m,PetscInt,&bufm,n,PetscInt,&bufn);CHKERRQ(ierr);
+    ierr = PetscMalloc2(m,&bufm,n,&bufn);CHKERRQ(ierr);
     jdxm = bufm; jdxn = bufn;
   }
   for (i=0; i<m; i++) {
@@ -1470,7 +1470,7 @@ PetscErrorCode  MatSetValuesBlockedStencil(Mat mat,PetscInt m,const MatStencil i
   if ((m+n) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
     jdxm = buf; jdxn = buf+m;
   } else {
-    ierr = PetscMalloc2(m,PetscInt,&bufm,n,PetscInt,&bufn);CHKERRQ(ierr);
+    ierr = PetscMalloc2(m,&bufm,n,&bufn);CHKERRQ(ierr);
     jdxm = bufm; jdxn = bufn;
   }
   for (i=0; i<m; i++) {
@@ -1662,7 +1662,7 @@ PetscErrorCode  MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pet
     if (m*bs+n*cbs <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
       iidxm = buf; iidxn = buf + m*bs;
     } else {
-      ierr  = PetscMalloc2(m*bs,PetscInt,&bufr,n*cbs,PetscInt,&bufc);CHKERRQ(ierr);
+      ierr  = PetscMalloc2(m*bs,&bufr,n*cbs,&bufc);CHKERRQ(ierr);
       iidxm = bufr; iidxn = bufc;
     }
     for (i=0; i<m; i++) {
@@ -2015,7 +2015,7 @@ PetscErrorCode  MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pe
     if ((nrow+ncol) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
       irowm = buf; icolm = buf+nrow;
     } else {
-      ierr  = PetscMalloc2(nrow,PetscInt,&bufr,ncol,PetscInt,&bufc);CHKERRQ(ierr);
+      ierr  = PetscMalloc2(nrow,&bufr,ncol,&bufc);CHKERRQ(ierr);
       irowm = bufr; icolm = bufc;
     }
     ierr = ISLocalToGlobalMappingApply(mat->rmap->mapping,nrow,irow,irowm);CHKERRQ(ierr);
@@ -2109,7 +2109,7 @@ PetscErrorCode  MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt ir
       if ((nrow+ncol) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
         irowm = buf; icolm = buf + nrow;
       } else {
-        ierr  = PetscMalloc2(nrow,PetscInt,&bufr,ncol,PetscInt,&bufc);CHKERRQ(ierr);
+        ierr  = PetscMalloc2(nrow,&bufr,ncol,&bufc);CHKERRQ(ierr);
         irowm = bufr; icolm = bufc;
       }
       ierr = ISLocalToGlobalMappingApply(mat->rmap->bmapping,nrow,irow,irowm);CHKERRQ(ierr);
@@ -2121,7 +2121,7 @@ PetscErrorCode  MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt ir
       if (nrow*bs+ncol*cbs <=(PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
         irowm = buf; icolm = buf + nrow;
       } else {
-        ierr  = PetscMalloc2(nrow*bs,PetscInt,&bufr,ncol*cbs,PetscInt,&bufc);CHKERRQ(ierr);
+        ierr  = PetscMalloc2(nrow*bs,&bufr,ncol*cbs,&bufc);CHKERRQ(ierr);
         irowm = bufr; icolm = bufc;
       }
       for (i=0; i<nrow; i++) {
@@ -5633,7 +5633,7 @@ PetscErrorCode  MatZeroRowsStencil(Mat mat,PetscInt numRows,const MatStencil row
   PetscValidType(mat,1);
   if (numRows) PetscValidIntPointer(rows,3);
 
-  ierr = PetscMalloc(numRows*sizeof(PetscInt), &jdxm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numRows, &jdxm);CHKERRQ(ierr);
   for (i = 0; i < numRows; ++i) {
     /* Skip unused dimensions (they are ordered k, j, i, c) */
     for (j = 0; j < 3-sdim; ++j) dxm++;
@@ -5735,7 +5735,7 @@ PetscErrorCode  MatZeroRowsColumnsStencil(Mat mat,PetscInt numRows,const MatSten
   PetscValidType(mat,1);
   if (numRows) PetscValidIntPointer(rows,3);
 
-  ierr = PetscMalloc(numRows*sizeof(PetscInt), &jdxm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numRows, &jdxm);CHKERRQ(ierr);
   for (i = 0; i < numRows; ++i) {
     /* Skip unused dimensions (they are ordered k, j, i, c) */
     for (j = 0; j < 3-sdim; ++j) dxm++;

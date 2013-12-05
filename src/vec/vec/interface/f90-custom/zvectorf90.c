@@ -64,7 +64,7 @@ PETSC_EXTERN void PETSC_STDCALL vecduplicatevecsf90_(Vec *v,int *m,F90Array1d *p
   PetscFortranAddr *newvint;
   int              i;
   *__ierr = VecDuplicateVecs(*v,*m,&lV); if (*__ierr) return;
-  *__ierr = PetscMalloc((*m)*sizeof(PetscFortranAddr),&newvint);  if (*__ierr) return;
+  *__ierr = PetscMalloc1((*m),&newvint);  if (*__ierr) return;
 
   for (i=0; i<*m; i++) newvint[i] = (PetscFortranAddr)lV[i];
   *__ierr = PetscFree(lV); if (*__ierr) return;

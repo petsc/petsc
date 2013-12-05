@@ -75,7 +75,7 @@ PETSC_EXTERN PetscErrorCode PFCreate_Constant(PF pf,void *value)
   PetscScalar    *loc;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(2*sizeof(PetscScalar),&loc);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2,&loc);CHKERRQ(ierr);
   if (value) loc[0] = *(PetscScalar*)value;
   else loc[0] = 0.0;
   loc[1] = pf->dimout;

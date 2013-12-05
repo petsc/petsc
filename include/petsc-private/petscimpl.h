@@ -144,9 +144,9 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscOb
 
 @*/
 #define PetscHeaderCreate(h,tp,pops,classid,class_name,descr,mansec,com,des,vie) \
-  (PetscNew(struct tp,&(h)) ||                                                  \
-   PetscNew(PetscOps,&(((PetscObject)(h))->bops)) ||                            \
-   PetscNew(pops,&((h)->ops)) ||                                                \
+  (PetscNew(&(h)) ||                                                  \
+   PetscNew(&(((PetscObject)(h))->bops)) ||                            \
+   PetscNew(&((h)->ops)) ||                                                \
    PetscHeaderCreate_Private((PetscObject)h,classid,class_name,descr,mansec,com,(PetscObjectFunction)des,(PetscObjectViewerFunction)vie) || \
    PetscLogObjectCreate(h) ||                                                   \
    PetscLogObjectMemory((PetscObject)h, sizeof(struct tp) + sizeof(PetscOps) + sizeof(pops)))

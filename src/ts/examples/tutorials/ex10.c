@@ -926,7 +926,7 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
 
   PetscFunctionBeginUser;
   *inrd = 0;
-  ierr  = PetscNew(struct _n_RD,&rd);CHKERRQ(ierr);
+  ierr  = PetscNew(&rd);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm,NULL,"Options for nonequilibrium radiation-diffusion with RD ionization",NULL);CHKERRQ(ierr);
   {

@@ -340,7 +340,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
       }
     }
   }
-  ierr = PetscMalloc2(nleaves,PetscInt,&localPoints,nleaves,PetscSFNode,&remotePoints);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nleaves,&localPoints,nleaves,&remotePoints);CHKERRQ(ierr);
   for (zn = 0; zn < (dim > 2 ? 3 : 1); ++zn) {
     for (yn = 0; yn < (dim > 1 ? 3 : 1); ++yn) {
       for (xn = 0; xn < 3; ++xn) {
@@ -787,7 +787,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool ghosted,void *vptr)
   case 1: {
     void *ptr;
 
-    ierr = PetscMalloc(xm*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
+    ierr = PetscMalloc1(xm,&iarray_start);CHKERRQ(ierr);
 
     ptr   = (void*)(iarray_start - xs*sizeof(PetscScalar));
     *iptr = (void*)ptr;
@@ -796,7 +796,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool ghosted,void *vptr)
   case 2: {
     void **ptr;
 
-    ierr = PetscMalloc((ym+1)*sizeof(void*)+xm*ym*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
+    ierr = PetscMalloc1((ym+1)*sizeof(void*)+xm*ym,&iarray_start);CHKERRQ(ierr);
 
     ptr = (void**)(iarray_start + xm*ym*sizeof(PetscScalar) - ys*sizeof(void*));
     for (j=ys; j<ys+ym; j++) ptr[j] = iarray_start + sizeof(PetscScalar)*(xm*(j-ys) - xs);
@@ -806,7 +806,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool ghosted,void *vptr)
   case 3: {
     void ***ptr,**bptr;
 
-    ierr = PetscMalloc((zm+1)*sizeof(void**)+(ym*zm+1)*sizeof(void*)+xm*ym*zm*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
+    ierr = PetscMalloc1((zm+1)*sizeof(void**)+(ym*zm+1)*sizeof(void*)+xm*ym*zm,&iarray_start);CHKERRQ(ierr);
 
     ptr  = (void***)(iarray_start + xm*ym*zm*sizeof(PetscScalar) - zs*sizeof(void*));
     bptr = (void**)(iarray_start + xm*ym*zm*sizeof(PetscScalar) + zm*sizeof(void**));

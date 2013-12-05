@@ -220,7 +220,7 @@ PetscErrorCode  SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   char           p[64];
 
   PetscFunctionBegin;
-  ierr                    = PetscNewLog(snes,MFCtx_Private,&mfctx);CHKERRQ(ierr);
+  ierr                    = PetscNewLog(snes,&mfctx);CHKERRQ(ierr);
   mfctx->sp               = 0;
   mfctx->snes             = snes;
   mfctx->error_rel        = PETSC_SQRT_MACHINE_EPSILON;

@@ -100,7 +100,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
   ierr  = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
   ierr  = MPI_Type_size(dtype,&unitbytes);CHKERRQ(ierr);
   tdata = (char*)todata;
-  ierr  = PetscMalloc(nto*sizeof(MPI_Request),&sendreqs);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(nto,&sendreqs);CHKERRQ(ierr);
   for (i=0; i<nto; i++) {
     ierr = MPI_Issend((void*)(tdata+count*unitbytes*i),count,dtype,toranks[i],tag,comm,sendreqs+i);CHKERRQ(ierr);
   }
@@ -156,8 +156,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscMalloc(size*sizeof(*iflags),&iflags);CHKERRQ(ierr);
-  ierr = PetscMemzero(iflags,size*sizeof(*iflags));CHKERRQ(ierr);
+  ierr = PetscCalloc1(size,&iflags);CHKERRQ(ierr);
   for (i=0; i<nto; i++) iflags[toranks[i]] = 1;
   ierr = PetscGatherNumberOfMessages(comm,iflags,NULL,&nrecvs);CHKERRQ(ierr);
   ierr = PetscFree(iflags);CHKERRQ(ierr);
@@ -166,7 +165,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
   ierr     = MPI_Type_size(dtype,&unitbytes);CHKERRQ(ierr);
   ierr     = PetscMalloc(nrecvs*count*unitbytes,&fdata);CHKERRQ(ierr);
   tdata    = (char*)todata;
-  ierr     = PetscMalloc2(nto+nrecvs,MPI_Request,&reqs,nto+nrecvs,MPI_Status,&statuses);CHKERRQ(ierr);
+  ierr     = PetscMalloc2(nto+nrecvs,&reqs,nto+nrecvs,&statuses);CHKERRQ(ierr);
   sendreqs = reqs + nrecvs;
   for (i=0; i<nrecvs; i++) {
     ierr = MPI_Irecv((void*)(fdata+count*unitbytes*i),count,dtype,MPI_ANY_SOURCE,tag,comm,reqs+i);CHKERRQ(ierr);
@@ -175,7 +174,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
     ierr = MPI_Isend((void*)(tdata+count*unitbytes*i),count,dtype,toranks[i],tag,comm,sendreqs+i);CHKERRQ(ierr);
   }
   ierr = MPI_Waitall(nto+nrecvs,reqs,statuses);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrecvs*sizeof(PetscMPIInt),&franks);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrecvs,&franks);CHKERRQ(ierr);
   for (i=0; i<nrecvs; i++) franks[i] = statuses[i].MPI_SOURCE;
   ierr = PetscFree2(reqs,statuses);CHKERRQ(ierr);
 

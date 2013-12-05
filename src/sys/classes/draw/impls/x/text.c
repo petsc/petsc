@@ -25,7 +25,7 @@ PetscErrorCode PetscDrawXiFontFixed(PetscDraw_X *XBWin,int w,int h,PetscDrawXiFo
 
   PetscFunctionBegin;
   if (!curfont) { ierr = PetscDrawXiInitFonts(XBWin);CHKERRQ(ierr);}
-  ierr = PetscNew(PetscDrawXiFont,&font);CHKERRQ(ierr);
+  ierr = PetscNew(&font);CHKERRQ(ierr);
   ierr = PetscDrawXiMatchFontSize(font,w,h);CHKERRQ(ierr);
   ierr = PetscDrawXiLoadFont(XBWin,font);CHKERRQ(ierr);
 

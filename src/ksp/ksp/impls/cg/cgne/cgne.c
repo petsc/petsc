@@ -43,7 +43,7 @@ PetscErrorCode KSPSetUp_CGNE(KSP ksp)
   */
   if (ksp->calc_sings) {
     /* get space to store tridiagonal matrix for Lanczos */
-    ierr = PetscMalloc4(maxit+1,PetscScalar,&cgP->e,maxit+1,PetscScalar,&cgP->d,maxit+1,PetscReal,&cgP->ee,maxit+1,PetscReal,&cgP->dd);CHKERRQ(ierr);
+    ierr = PetscMalloc4(maxit+1,&cgP->e,maxit+1,&cgP->d,maxit+1,&cgP->ee,maxit+1,&cgP->dd);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)ksp,2*(maxit+1)*(sizeof(PetscScalar)+sizeof(PetscReal)));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -248,7 +248,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CGNE(KSP ksp)
   KSP_CG         *cg;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,KSP_CG,&cg);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,&cg);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
   cg->type = KSP_CG_SYMMETRIC;
 #else

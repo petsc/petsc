@@ -142,20 +142,20 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
   if (s < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"At least one stage is required");
   PetscValidPointer(inscheme,4);
   *inscheme = 0;
-  ierr      = PetscNew(struct _TSGLScheme,&scheme);CHKERRQ(ierr);
+  ierr      = PetscNew(&scheme);CHKERRQ(ierr);
   scheme->p = p;
   scheme->q = q;
   scheme->r = r;
   scheme->s = s;
 
-  ierr = PetscMalloc5(s,PetscScalar,&scheme->c,s*s,PetscScalar,&scheme->a,r*s,PetscScalar,&scheme->b,r*s,PetscScalar,&scheme->u,r*r,PetscScalar,&scheme->v);CHKERRQ(ierr);
+  ierr = PetscMalloc5(s,&scheme->c,s*s,&scheme->a,r*s,&scheme->b,r*s,&scheme->u,r*r,&scheme->v);CHKERRQ(ierr);
   ierr = PetscMemcpy(scheme->c,c,s*sizeof(PetscScalar));CHKERRQ(ierr);
   for (j=0; j<s*s; j++) scheme->a[j] = (PetscAbsScalar(a[j]) < 1e-12) ? 0 : a[j];
   for (j=0; j<r*s; j++) scheme->b[j] = (PetscAbsScalar(b[j]) < 1e-12) ? 0 : b[j];
   for (j=0; j<s*r; j++) scheme->u[j] = (PetscAbsScalar(u[j]) < 1e-12) ? 0 : u[j];
   for (j=0; j<r*r; j++) scheme->v[j] = (PetscAbsScalar(v[j]) < 1e-12) ? 0 : v[j];
 
-  ierr = PetscMalloc6(r,PetscScalar,&scheme->alpha,r,PetscScalar,&scheme->beta,r,PetscScalar,&scheme->gamma,3*s,PetscScalar,&scheme->phi,3*r,PetscScalar,&scheme->psi,r,PetscScalar,&scheme->stage_error);CHKERRQ(ierr);
+  ierr = PetscMalloc6(r,&scheme->alpha,r,&scheme->beta,r,&scheme->gamma,3*s,&scheme->phi,3*r,&scheme->psi,r,&scheme->stage_error);CHKERRQ(ierr);
   {
     PetscInt     i,j,k,ss=s+2;
     PetscBLASInt m,n,one=1,*ipiv,lwork=4*((s+3)*3+3),info,ldb;
@@ -164,7 +164,7 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
 #if !defined(PETSC_MISSING_LAPACK_GELSS)
     PetscBLASInt rank;
 #endif
-    ierr = PetscMalloc7(PetscSqr(r),PetscScalar,&ImV,3*s,PetscScalar,&H,3*ss,PetscScalar,&bmat,lwork,PetscScalar,&workscalar,5*(3+r),PetscReal,&workreal,r+s,PetscReal,&sing,r+s,PetscBLASInt,&ipiv);CHKERRQ(ierr);
+    ierr = PetscMalloc7(PetscSqr(r),&ImV,3*s,&H,3*ss,&bmat,lwork,&workscalar,5*(3+r),&workreal,r+s,&sing,r+s,&ipiv);CHKERRQ(ierr);
 
     /* column-major input */
     for (i=0; i<r-1; i++) {
@@ -495,7 +495,7 @@ PETSC_EXTERN PetscErrorCode TSGLCreate_IRKS(TS ts)
   gl->Destroy               = TSGLDestroy_Default;
   gl->EstimateHigherMoments = TSGLEstimateHigherMoments_Default;
   gl->CompleteStep          = TSGLCompleteStep_RescaleAndModify;
-  ierr = PetscMalloc(10*sizeof(TSGLScheme),&gl->schemes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(10,&gl->schemes);CHKERRQ(ierr);
   gl->nschemes = 0;
 
   {
@@ -1534,7 +1534,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_GL(TS ts)
   PetscFunctionBegin;
   ierr = TSGLInitializePackage();CHKERRQ(ierr);
 
-  ierr = PetscNewLog(ts,TS_GL,&gl);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&gl);CHKERRQ(ierr);
   ts->data = (void*)gl;
 
   ts->ops->reset          = TSReset_GL;

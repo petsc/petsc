@@ -182,9 +182,9 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
   ierr  = MatGetSize(dJ,&n,NULL);CHKERRQ(ierr);
   ierr  = PetscBLASIntCast(n,&nb);CHKERRQ(ierr);
   lwork = 3*nb;
-  ierr  = PetscMalloc(n*sizeof(PetscReal),&eigr);CHKERRQ(ierr);
-  ierr  = PetscMalloc(n*sizeof(PetscReal),&eigi);CHKERRQ(ierr);
-  ierr  = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(n,&eigr);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(n,&eigi);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(lwork,&work);CHKERRQ(ierr);
   ierr  = MatDenseGetArray(dJdense,&a);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
   {
@@ -370,10 +370,10 @@ PetscErrorCode  SNESMonitorSetRatio(SNES snes,PetscViewer viewer)
     ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)snes),"stdout",&viewer);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
   }
-  ierr = PetscNewLog(snes,SNESMonitorRatioContext,&ctx);CHKERRQ(ierr);
+  ierr = PetscNewLog(snes,&ctx);CHKERRQ(ierr);
   ierr = SNESGetConvergenceHistory(snes,&history,NULL,NULL);CHKERRQ(ierr);
   if (!history) {
-    ierr = PetscMalloc(100*sizeof(PetscReal),&ctx->history);CHKERRQ(ierr);
+    ierr = PetscMalloc1(100,&ctx->history);CHKERRQ(ierr);
     ierr = SNESSetConvergenceHistory(snes,ctx->history,0,100,PETSC_TRUE);CHKERRQ(ierr);
   }
   ctx->viewer = viewer;

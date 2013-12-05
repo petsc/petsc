@@ -25,7 +25,7 @@ int main(int argc, char **args)
 
   nemptyranks = 10;
   nbigranks   = 10;
-  ierr        = PetscMalloc2(nemptyranks,PetscInt,&emptyranks,nbigranks,PetscInt,&bigranks);CHKERRQ(ierr);
+  ierr        = PetscMalloc2(nemptyranks,&emptyranks,nbigranks,&bigranks);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Partitioning example options",NULL);CHKERRQ(ierr);
   ierr = PetscOptionsIntArray("-emptyranks","Ranks to be skipped by partition","",emptyranks,&nemptyranks,NULL);CHKERRQ(ierr);

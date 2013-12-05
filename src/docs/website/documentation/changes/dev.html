@@ -118,6 +118,11 @@
           The <tt>__SDIR__</tt> macro (and <tt>__INSDIR__</tt>) is no longer used.
           We recommend passing full paths or paths from the project root to the compiler so that error messages contain enough context.
         </li>
+        <li>
+          The "type" argument to <tt>PetscMalloc2()</tt> through <tt>PetscMalloc7()</tt>, <tt>PetscNew()</tt>, and <tt>PetscNewLog()</tt> have been removed.
+          The type is now inferred from the pointer return type.
+          <tt>PetscMalloc1()</tt> is now available for allocating arrays, and <tt>PetscCalloc1()</tt> through <tt>PetscCalloc7()</tt> have been added for when cleared (zeroed) memory is needed.
+        </li>
       </ul>
       <h4>IS:</h4>
       <h4>PF:</h4>

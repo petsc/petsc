@@ -141,7 +141,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   if (!conv) {
     SNES_TR_KSPConverged_Ctx *ctx;
     ierr      = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-    ierr      = PetscNew(SNES_TR_KSPConverged_Ctx,&ctx);CHKERRQ(ierr);
+    ierr      = PetscNew(&ctx);CHKERRQ(ierr);
     ctx->snes = snes;
     ierr      = KSPConvergedDefaultCreate(&ctx->ctx);CHKERRQ(ierr);
     ierr      = KSPSetConvergenceTest(ksp,SNES_TR_KSPConverged_Private,ctx,SNES_TR_KSPConverged_Destroy);CHKERRQ(ierr);
@@ -358,7 +358,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTR(SNES snes)
   snes->usesksp = PETSC_TRUE;
   snes->usespc  = PETSC_FALSE;
 
-  ierr        = PetscNewLog(snes,SNES_NEWTONTR,&neP);CHKERRQ(ierr);
+  ierr        = PetscNewLog(snes,&neP);CHKERRQ(ierr);
   snes->data  = (void*)neP;
   neP->mu     = 0.25;
   neP->eta    = 0.75;

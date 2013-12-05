@@ -109,7 +109,12 @@ generate_section()
 {
   echo "<h3>$1</h3>" >> $OUTFILE
   echo "<center><table>" >> $OUTFILE
-  echo "<tr><th>Test</th><th>Warnings</th><th>Errors</th></tr>" >> $OUTFILE
+  if [ $3 -gt "0" ]
+  then
+    echo "<tr><th>Test</th><th>Warnings</th><th>Errors</th></tr>" >> $OUTFILE
+  else
+    echo "<tr><th>Test</th><th>Possible Problems</th></tr>" >> $OUTFILE
+  fi
 
   for f in `ls $LOGDIR/${2}_${BRANCH}*.log`
   do
@@ -147,20 +152,31 @@ generate_section()
       echo "$filtered_errors"        >> $LOGDIR/filtered-${f#$LOGDIR/}
     fi
 
-    # Write number of warnings:
-    if [ "$filtered_warnings_num" -gt "0" ]
+    if [ $3 -gt "0" ]
     then
-	  echo "</td><td class=\"yellow\">$filtered_warnings_num</td>" >> $OUTFILE
-    else
-	  echo "</td><td class=\"green\">$filtered_warnings_num</td>" >> $OUTFILE
-    fi
+      # Write number of warnings:
+      if [ "$filtered_warnings_num" -gt "0" ]
+      then
+	    echo "</td><td class=\"yellow\">$filtered_warnings_num</td>" >> $OUTFILE
+      else
+	    echo "</td><td class=\"green\">$filtered_warnings_num</td>" >> $OUTFILE
+      fi
 
-    # Write number of errors:
-    if [ "$filtered_errors_num" -gt "0" ]
-    then
-	  echo "</td><td class=\"red\">$filtered_errors_num</td></tr>" >> $OUTFILE
-    else
-	  echo "</td><td class=\"green\">$filtered_errors_num</td></tr>" >> $OUTFILE
+      # Write number of errors:
+      if [ "$filtered_errors_num" -gt "0" ]
+      then
+	    echo "</td><td class=\"red\">$filtered_errors_num</td></tr>" >> $OUTFILE
+      else
+	    echo "</td><td class=\"green\">$filtered_errors_num</td></tr>" >> $OUTFILE
+      fi
+    else # do not count warnings and errors separately, only report possible problems:
+      possible_problems=`grep -i "Possible problem" $f | wc -l`
+      if [ "$possible_problems" -gt "0" ]
+      then
+	    echo "</td><td class=\"yellow\">$possible_problems</td></tr>" >> $OUTFILE
+      else
+	    echo "</td><td class=\"green\">$possible_problems</td></tr>" >> $OUTFILE
+      fi
     fi
   done
   echo "</table></center>" >> $OUTFILE
@@ -192,11 +208,10 @@ generate_configure_section()
 }
 
 ############ Part 1: Build ####################
-#generate_section Configure configure  #Note: Current grep-driven extraction is not suitable for configure*.log files
-generate_configure_section
-generate_section Build     build     1
-generate_section Examples  examples  0
+#generate_section Build     build     1  # Considered duplicative by Barry
 generate_section Make      make      1
+generate_section Examples  examples  0
+generate_configure_section
 
 
 echo "</div></body></html>" >> $OUTFILE

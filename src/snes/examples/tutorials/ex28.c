@@ -349,7 +349,7 @@ int main(int argc, char *argv[])
   ierr = DMSetFromOptions(dau);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(dau,&lxu,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(dau,0, &m,0,0, &nprocs,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscMalloc(nprocs*sizeof(*lxk),&lxk);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nprocs,&lxk);CHKERRQ(ierr);
   ierr = PetscMemcpy(lxk,lxu,nprocs*sizeof(*lxk));CHKERRQ(ierr);
   lxk[0]--;
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,m-1,1,1,lxk,&dak);CHKERRQ(ierr);
@@ -368,7 +368,7 @@ int main(int argc, char *argv[])
   ierr = DMCreateGlobalVector(pack,&X);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
 
-  ierr = PetscNew(struct _UserCtx,&user);CHKERRQ(ierr);
+  ierr = PetscNew(&user);CHKERRQ(ierr);
 
   user->pack = pack;
 

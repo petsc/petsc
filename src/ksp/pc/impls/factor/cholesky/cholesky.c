@@ -299,7 +299,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC pc)
   PC_Cholesky    *dir;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_Cholesky,&dir);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&dir);CHKERRQ(ierr);
 
   ((PC_Factor*)dir)->fact = 0;
   dir->inplace            = PETSC_FALSE;

@@ -1807,7 +1807,7 @@ PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
   ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);
   ierr = VecGetSize(in,&M);CHKERRQ(ierr);
   ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
-  ierr = PetscMalloc((m+1)*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc1((m+1),&rows);CHKERRQ(ierr);
   for (i=0; i<m; i++) rows[i] = start + i;
 
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);

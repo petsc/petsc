@@ -503,7 +503,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS ts)
   ts->ops->setfromoptions = TSSetFromOptions_SSP;
   ts->ops->view           = TSView_SSP;
 
-  ierr = PetscNewLog(ts,TS_SSP,&ssp);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&ssp);CHKERRQ(ierr);
   ts->data = (void*)ssp;
 
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPGetType_C",TSSSPGetType_SSP);CHKERRQ(ierr);
