@@ -146,6 +146,8 @@ static PetscErrorCode PetscScanString(MPI_Comm comm,size_t n,char str[])
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscStrdup"
 /*
     This is needed because certain strings may be freed by SAWs, hence we cannot use PetscStrallocpy()
 */
@@ -461,7 +463,7 @@ PetscErrorCode PetscOptionsSAWsInput()
       PetscInt ntext = next->nlist;
       ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s",next->option);CHKERRQ(ierr);
       PetscStackCallSAWs(SAWs_Register,(dir,&next->data,1,SAWs_WRITE,SAWs_STRING));
-      ierr = PetscMalloc1((ntext+1),&next->edata);CHKERRQ(ierr);
+      ierr = PetscMalloc1((ntext+1),(char***)&next->edata);CHKERRQ(ierr);
       ierr = PetscMemcpy(next->edata,next->list,ntext*sizeof(char*));CHKERRQ(ierr);
       PetscStackCallSAWs(SAWs_Set_Legal_Variable_Values,(dir,ntext,next->edata));
       }
