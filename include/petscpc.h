@@ -79,6 +79,7 @@ typedef const char* PCType;
 #define PCBICGSTABCUSP    "bicgstabcusp"
 #define PCAINVCUSP        "ainvcusp"
 #define PCBDDC            "bddc"
+#define PCKACZMARZ        "kaczmarz"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId PC_CLASSID;
