@@ -1,3 +1,4 @@
+#requiresscalar    real
 DIRS     = interface util unconstrained constrained bound complementarity linesearch matrix leastsquares pde_constrained tests
 LOCDIR   = src/tao/
 
