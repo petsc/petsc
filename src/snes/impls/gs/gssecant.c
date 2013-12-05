@@ -117,7 +117,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeGSDefaultSecant(SNES snes,Vec X,Vec B,voi
         xa[idx[j]-s] = d;
       }
 
-      if (k == 0) ft1 = PetscSqrtScalar(ft);
+      if (k == 0) ft1 = PetscSqrtReal(ft);
       if (k<its-1) {
         isdone = PETSC_FALSE;
         if (stol*PetscSqrtReal(xt) > PetscSqrtReal(dxt)) isdone = PETSC_TRUE;
