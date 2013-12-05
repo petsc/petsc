@@ -146,6 +146,27 @@ static PetscErrorCode PetscScanString(MPI_Comm comm,size_t n,char str[])
   PetscFunctionReturn(0);
 }
 
+/*
+    This is needed because certain strings may be freed by SAWs, hence we cannot use PetscStrallocpy()
+*/
+static PetscErrorCode  PetscStrdup(const char s[],char *t[])
+{
+  PetscErrorCode ierr;
+  size_t         len;
+  char           *tmp = 0;
+
+  PetscFunctionBegin;
+  if (s) {
+    ierr = PetscStrlen(s,&len);CHKERRQ(ierr);
+    tmp = (void*) malloc((len+1)*sizeof(char*));
+    if (!tmp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"No memory to duplicate string");
+    ierr = PetscStrcpy(tmp,s);CHKERRQ(ierr);
+  }
+  *t = tmp;
+  PetscFunctionReturn(0);
+}
+
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsGetFromTextInput"
 /*
@@ -316,7 +337,7 @@ PetscErrorCode PetscOptionsGetFromTextInput()
       if (str[0]) {
         next->set = PETSC_TRUE;
         /* must use system malloc since SAWs may free this */
-        next->data = (void*)strdup(str);
+        ierr = PetscStrdup(str,(char**)&next->data);CHKERRQ(ierr);
       }
       break;
     case OPTION_FLIST:
@@ -326,7 +347,7 @@ PetscErrorCode PetscOptionsGetFromTextInput()
         PetscOptionsObject.changedmethod = PETSC_TRUE;
         next->set = PETSC_TRUE;
         /* must use system malloc since SAWs may free this */
-        next->data = (void*)strdup(str);
+        ierr = PetscStrdup(str,(char**)&next->data);CHKERRQ(ierr);
       }
       break;
     default:
@@ -732,7 +753,7 @@ PetscErrorCode  PetscOptionsString(const char opt[],const char text[],const char
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_STRING,&amsopt);CHKERRQ(ierr);
     /* must use system malloc since SAWs may free this */
-    amsopt->data = (void*)strdup(defaultv ? defaultv : "");
+    ierr = PetscStrdup(defaultv ? defaultv : "",(char**)&amsopt->data);CHKERRQ(ierr);
   }
   ierr = PetscOptionsGetString(PetscOptionsObject.prefix,opt,value,len,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
@@ -932,7 +953,7 @@ PetscErrorCode  PetscOptionsFList(const char opt[],const char ltext[],const char
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,ltext,man,OPTION_FLIST,&amsopt);CHKERRQ(ierr);
     /* must use system malloc since SAWs may free this */
-    amsopt->data = (void*)strdup(defaultv ? defaultv : "");
+    ierr = PetscStrdup(defaultv ? defaultv : "",(char**)&amsopt->data);CHKERRQ(ierr);
     amsopt->flist = list;
   }
   ierr = PetscOptionsGetString(PetscOptionsObject.prefix,opt,value,len,set);CHKERRQ(ierr);
@@ -986,7 +1007,7 @@ PetscErrorCode  PetscOptionsEList(const char opt[],const char ltext[],const char
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,ltext,man,OPTION_ELIST,&amsopt);CHKERRQ(ierr);
     /* must use system malloc since SAWs may free this */
-    amsopt->data = (void*)strdup(defaultv ? defaultv : "");
+    ierr = PetscStrdup(defaultv ? defaultv : "",(char**)&amsopt->data);CHKERRQ(ierr);
     amsopt->list  = list;
     amsopt->nlist = ntext;
   }
@@ -1511,7 +1532,7 @@ PetscErrorCode  PetscOptionsViewer(const char opt[],const char text[],const char
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_STRING,&amsopt);CHKERRQ(ierr);
     /* must use system malloc since SAWs may free this */
-    amsopt->data = (void*)strdup("");
+    ierr = PetscStrdup("",(char**)&amsopt->data);CHKERRQ(ierr);
   }
   ierr = PetscOptionsGetViewer(PetscOptionsObject.comm,PetscOptionsObject.prefix,opt,viewer,format,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
