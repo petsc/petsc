@@ -102,7 +102,7 @@ $           currently set.
 
 M*/
 #define    PetscOptionsBegin(comm,prefix,mess,sec) 0; do {\
-             for (PetscOptionsPublishCount=(PetscOptionsPublish?-1:1); PetscOptionsPublishCount<2; PetscOptionsPublishCount++) {\
+             for (PetscOptionsPublishCount=(PETSC_FALSE?-1:1); PetscOptionsPublishCount<2; PetscOptionsPublishCount++) {\
              PetscErrorCode _5_ierr = PetscOptionsBegin_Private(comm,prefix,mess,sec);CHKERRQ(_5_ierr);
 
 extern PetscClassId KSP_CLASSID,PC_CLASSID;
@@ -134,9 +134,9 @@ extern PetscClassId KSP_CLASSID,PC_CLASSID;
 
 M*/
 #define PetscObjectOptionsBegin(obj) 0; do {                            \
-  if ((((PetscObject)obj)->classid == KSP_CLASSID) || (((PetscObject)obj)->classid == PC_CLASSID)) PetscOptionsPublish = PETSC_TRUE; \
-  else PetscOptionsPublish = PETSC_FALSE;\
-  for (PetscOptionsPublishCount=(PetscOptionsPublish?-1:1); PetscOptionsPublishCount<2; PetscOptionsPublishCount++) { \
+  PetscBool publishedclass = PETSC_FALSE;\
+  if ((((PetscObject)obj)->classid == KSP_CLASSID) || (((PetscObject)obj)->classid == PC_CLASSID)) publishedclass = PETSC_TRUE; \
+  for (PetscOptionsPublishCount=((PetscOptionsPublish && publishedclass)?-1:1); PetscOptionsPublishCount<2; PetscOptionsPublishCount++) { \
   PetscErrorCode _5_ierr = PetscObjectOptionsBegin_Private(obj);CHKERRQ(_5_ierr);
 
 /*MC
