@@ -3673,7 +3673,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
 
       ierr          = DMPlexGetSupportSize(dm, f, &size);CHKERRQ(ierr);
       ierr          = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
-      for (r = 0; r < 4; ++r) supportRef[r] = eStartNew + (e - eStart)*2 +  (f - fStart)*4 + r;
+      for (r = 0; r < 4; ++r) supportRef[r] = eStartNew + (eEnd - eStart)*2 +  (f - fStart)*4 + r;
       for (s = 0; s < size; ++s) {
         PetscInt r;
 
