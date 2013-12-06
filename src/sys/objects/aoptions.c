@@ -373,6 +373,18 @@ PetscErrorCode PetscOptionsSAWsDestroy(void)
   PetscFunctionReturn(0);
 }
 
+static const char *OptionsHeader = "<head>\n"
+                                   "<script jowererw type=\"text/javascript\" src=\"https://bitbucket.org/saws/saws/raw/master/js/jquery-1.9.1.js\"></script>\n"
+                                   "<script type=\"text/javascript\" src=\"https://bitbucket.org/saws/saws/raw/master/js/jsSAWs.js\"></script>\n"
+                                   "<script type=\"text/javascript\" src=\"PETSc.js\"></script>\n"
+                                   "<script>\n"
+                                      "jQuery(document).ready(function() {\n"
+                                         "PETSc.getAndDisplayDirectory(null,\"#variablesInfo\")\n"
+                                      "})\n"
+                                  "</script>\n"
+                                  "</head>\n";
+static const char *OptionsBodyBottom = "<div id=\"variablesInfo\" style=\"float:left\"></div>\n<br>\n</body>";
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsSAWsInput"
 /*
@@ -475,7 +487,11 @@ PetscErrorCode PetscOptionsSAWsInput()
   }
 
   /* wait until accessor has unlocked the memory */
+  PetscStackCallSAWs(SAWs_Push_Header,("index.html",OptionsHeader));
+  PetscStackCallSAWs(SAWs_Push_Body,("index.html",2,OptionsBodyBottom));
   ierr = PetscSAWsBlock();CHKERRQ(ierr);
+  PetscStackCallSAWs(SAWs_Pop_Header,("index.html"));
+  PetscStackCallSAWs(SAWs_Pop_Body,("index.html",2));
 
   /* determine if any values have been set in GUI */
   next = PetscOptionsObject.next;

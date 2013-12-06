@@ -53,19 +53,6 @@ T*/
 
   ------------------------------------------------------------------------F*/
 
-static const char *Header = "<head>\n"
-                             "<script jowererw type=\"text/javascript\" src=\"https://bitbucket.org/saws/saws/raw/master/js/jquery-1.9.1.js\"></script>\n"
-                             "<script type=\"text/javascript\" src=\"https://bitbucket.org/saws/saws/raw/master/js/jsSAWs.js\"></script>\n"
-                             "<script type=\"text/javascript\" src=\"PETSc.js\"></script>\n"
-                             "<script>\n"
-                             "jQuery(document).ready(function() {\n"
-                             "PETSc.getAndDisplayDirectory(null,\"#variablesInfo\")\n"
-                             "})\n"
-                             "</script>\n"
-                             "</head>\n";
-static const char *BodyBottom = "<div id=\"variablesInfo\" style=\"float:left\"></div>\n"
-                                "<br>\n"
-                                "</body>";
 /*
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
@@ -83,7 +70,6 @@ static const char *BodyBottom = "<div id=\"variablesInfo\" style=\"float:left\">
 #include <petscsnes.h>
 #include <petscdmda.h>
 #endif
-#include <saws.h>
 
 /*
    User-defined routines and data structures
@@ -117,8 +103,6 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return(1);
 
   PetscFunctionBeginUser;
-  SAWs_Push_Header("index.html",Header);
-  SAWs_Push_Body("index.html",2,BodyBottom);
   comm = PETSC_COMM_WORLD;
   ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
 
