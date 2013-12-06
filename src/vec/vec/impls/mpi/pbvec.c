@@ -109,11 +109,13 @@ static PetscErrorCode VecAssemblySend_MPI_Private(MPI_Comm comm,const PetscMPIIn
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (hdr->count) {
+  /* x->recvhdr only exists when we are reusing a communication network.  In that case, some messages can be empty, but
+   * we have to send them this time if we sent them before because the receiver is expecting them. */
+  if (hdr->count || (x->recvhdr && x->sendptrs[rankid].ints)) {
     ierr = MPI_Isend(x->sendptrs[rankid].ints,hdr->count,MPIU_INT,rank,tag[0],comm,&req[0]);CHKERRQ(ierr);
     ierr = MPI_Isend(x->sendptrs[rankid].scalars,hdr->count,MPIU_SCALAR,rank,tag[1],comm,&req[1]);CHKERRQ(ierr);
   }
-  if (hdr->bcount) {
+  if (hdr->bcount || (x->recvhdr && x->sendptrs[rankid].intb)) {
     ierr = MPI_Isend(x->sendptrs[rankid].intb,hdr->bcount,MPIU_INT,rank,tag[2],comm,&req[2]);CHKERRQ(ierr);
     ierr = MPI_Isend(x->sendptrs[rankid].scalarb,hdr->bcount*bs,MPIU_SCALAR,rank,tag[3],comm,&req[3]);CHKERRQ(ierr);
   }
@@ -193,17 +195,26 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
     ierr = PetscFree(owners);CHKERRQ(ierr);
     ierr = PetscFree(bowners);CHKERRQ(ierr);
     ierr = PetscMalloc1(x->nsendranks,&x->sendhdr);CHKERRQ(ierr);
-    ierr = PetscMalloc1(x->nsendranks,&x->sendptrs);CHKERRQ(ierr);
+    ierr = PetscCalloc1(x->nsendranks,&x->sendptrs);CHKERRQ(ierr);
   }
   for (i=0,j=0,jb=0; i<x->nsendranks; i++) {
     PetscMPIInt rank = x->sendranks[i];
     x->sendhdr[i].insertmode = X->stash.insertmode;
-    x->sendptrs[i].ints    = &X->stash.idx[j];
-    x->sendptrs[i].scalars = &X->stash.array[j];
-    for (x->sendhdr[i].count=0; j<X->stash.n && X->stash.idx[j] < X->map->range[rank+1]; j++) x->sendhdr[i].count++;
-    x->sendptrs[i].intb    = &X->bstash.idx[jb];
-    x->sendptrs[i].scalarb = &X->bstash.array[jb*bs];
-    for (x->sendhdr[i].bcount=0; jb<X->bstash.n && X->bstash.idx[jb]*bs < X->map->range[rank+1]; jb++) x->sendhdr[i].bcount++;
+    /* Initialize pointers for non-empty stashes the first time around.  Subsequent assemblies with
+     * VEC_SUBSET_OFF_PROC_ENTRIES will leave the old pointers (dangling because the stash has been collected) when
+     * there is nothing new to send, so that size-zero messages get sent instead. */
+    x->sendhdr[i].count = 0;
+    if (X->stash.n) {
+      x->sendptrs[i].ints    = &X->stash.idx[j];
+      x->sendptrs[i].scalars = &X->stash.array[j];
+      for ( ; j<X->stash.n && X->stash.idx[j] < X->map->range[rank+1]; j++) x->sendhdr[i].count++;
+    }
+    x->sendhdr[i].bcount = 0;
+    if (X->bstash.n) {
+      x->sendptrs[i].intb    = &X->bstash.idx[jb];
+      x->sendptrs[i].scalarb = &X->bstash.array[jb*bs];
+      for ( ; jb<X->bstash.n && X->bstash.idx[jb]*bs < X->map->range[rank+1]; jb++) x->sendhdr[i].bcount++;
+    }
   }
 
   if (!x->segrecvint) {ierr = PetscSegBufferCreate(sizeof(PetscInt),1000,&x->segrecvint);CHKERRQ(ierr);}

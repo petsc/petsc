@@ -370,9 +370,13 @@ runex29_bts_2:
 	   ${DIFF} output/ex29_1.out ex29_bts_2.tmp || printf "${PWD}\nPossible problem with with ex29_bts_2, diffs above \n=========================================\n";\
 	   ${RM} ex29_bts_2.tmp
 runex29_bts_2_subset:
-	-@${MPIEXEC} -n 3 ./ex29 -n 126 -vec_assembly_bts -repeat 2 -subset > ex29_bts_2.tmp 2>&1;\
-	   ${DIFF} output/ex29_1.out ex29_bts_2.tmp || printf "${PWD}\nPossible problem with with ex29_bts_2, diffs above \n=========================================\n";\
-	   ${RM} ex29_bts_2.tmp
+	-@${MPIEXEC} -n 3 ./ex29 -n 126 -vec_assembly_bts -repeat 2 -subset > ex29_bts_2_subset.tmp 2>&1;\
+	   ${DIFF} output/ex29_1.out ex29_bts_2_subset.tmp || printf "${PWD}\nPossible problem with with ex29_bts_2_subset, diffs above \n=========================================\n";\
+	   ${RM} ex29_bts_2_subset@.tmp
+runex29_bts_2_subset_proper:
+	-@${MPIEXEC} -n 3 ./ex29 -n 126 -vec_assembly_bts -repeat 5 -subset > ex29_bts_2_subset_proper.tmp 2>&1;\
+	   ${DIFF} output/ex29_1.out ex29_bts_2_subset_proper.tmp || printf "${PWD}\nPossible problem with with ex29_bts_2_subset_proper, diffs above \n=========================================\n";\
+	   ${RM} ex29_bts_2_subset_proper.tmp
 runex30f:
 	-@${MPIEXEC} -n 4 ./ex30f > ex30f_1.tmp 2>&1;\
 	   if (${DIFF} output/ex30f_1.out ex30f_1.tmp) then true; \
@@ -451,7 +455,8 @@ TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc 
                               runex11_bts ex11.rm ex12.PETSc runex12 ex12.rm  ex14.PETSc runex14 \
                               ex14.rm ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm ex17.PETSc runex17 \
                               ex17.rm ex21.PETSc runex21 runex21_2 ex21.rm ex25.PETSc runex25 ex25.rm ex29.PETSc \
-                              runex29 runex29_bts ex29.rm ex34.PETSc runex34 ex34.rm ex36.PETSc runex36 ex36.rm \
+                              runex29 runex29_bts runex29_bts_2 runex29_bts_2_subset runex29_bts_2_subset_proper ex29.rm \
+                              ex34.PETSc runex34 ex34.rm ex36.PETSc runex36 ex36.rm \
                               ex37.PETSc runex37 runex37_1 runex37_2 ex37.rm ex38.PETSc runex38 ex38.rm
 TESTEXAMPLES_C_X	    = ex10.PETSc runex10 ex10.rm ex22.PETSc runex22 ex22.rm ex23.PETSc runex23 ex23.rm \
                               ex24.PETSc runex24 ex24.rm ex28.PETSc runex28 runex28_2 ex28.rm ex33.PETSc runex33 ex33.rm
