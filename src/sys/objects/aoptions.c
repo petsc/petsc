@@ -376,7 +376,7 @@ PetscErrorCode PetscOptionsSAWsDestroy(void)
 static const char *OptionsHeader = "<head>\n"
                                    "<script jowererw type=\"text/javascript\" src=\"https://bitbucket.org/saws/saws/raw/master/js/jquery-1.9.1.js\"></script>\n"
                                    "<script type=\"text/javascript\" src=\"https://bitbucket.org/saws/saws/raw/master/js/jsSAWs.js\"></script>\n"
-                                   "<script type=\"text/javascript\" src=\"PETSc.js\"></script>\n"
+                                   "<script type=\"text/javascript\" src=\"js/PETSc.js\"></script>\n"
                                    "<script>\n"
                                       "jQuery(document).ready(function() {\n"
                                          "PETSc.getAndDisplayDirectory(null,\"#variablesInfo\")\n"
