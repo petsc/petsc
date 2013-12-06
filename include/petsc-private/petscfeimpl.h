@@ -107,6 +107,7 @@ typedef struct {
 } PetscFE_Basic;
 
 typedef struct {
+  PetscInt dummy;
 } PetscFE_Nonaffine;
 
 #ifdef PETSC_HAVE_OPENCL
