@@ -1,0 +1,5 @@
+/*! jQuery UI - v1.10.3 - 2013-10-20
+* http://jqueryui.com
+* Copyright 2013 jQuery Foundation and other contributors; Licensed MIT */
+
+(function(e){e.effects.effect.explode=function(t,i){function s(){b.push(this),b.length===d*c&&a()}function a(){p.css({visibility:"visible"}),e(b).remove(),m||p.hide(),i()}var n,r,o,l,h,u,d=t.pieces?Math.round(Math.sqrt(t.pieces)):3,c=d,p=e(this),f=e.effects.setMode(p,t.mode||"hide"),m="show"===f,g=p.show().css("visibility","hidden").offset(),v=Math.ceil(p.outerWidth()/c),y=Math.ceil(p.outerHeight()/d),b=[];for(n=0;d>n;n++)for(l=g.top+n*y,u=n-(d-1)/2,r=0;c>r;r++)o=g.left+r*v,h=r-(c-1)/2,p.clone().appendTo("body").wrap("<div></div>").css({position:"absolute",visibility:"visible",left:-r*v,top:-n*y}).parent().addClass("ui-effects-explode").css({position:"absolute",overflow:"hidden",width:v,height:y,left:o+(m?h*v:0),top:l+(m?u*y:0),opacity:m?0:1}).animate({left:o+(m?0:h*v),top:l+(m?0:u*y),opacity:m?1:0},t.duration||500,t.easing,s)}})(jQuery);
