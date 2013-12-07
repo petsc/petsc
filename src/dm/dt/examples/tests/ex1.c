@@ -74,6 +74,9 @@ int main(int argc,char **argv)
       first  -= weights[i] * points[i];
       second -= weights[i] * PetscSqr(points[i]);
     }
+    if (PetscAbs(zeroth) < 1e-10) zeroth = 0.;
+    if (PetscAbs(first)  < 1e-10) first  = 0.;
+    if (PetscAbs(second) < 1e-10) second = 0.;
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Moment error: zeroth=%G, first=%G, second=%G\n",-zeroth,-first,-second);CHKERRQ(ierr);
   }
   ierr = CheckPoints("Gauss points",npoints,points,ndegrees,degrees);CHKERRQ(ierr);
