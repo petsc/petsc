@@ -15,7 +15,6 @@
 #if defined(PETSC_USE_LOG)
 extern PetscErrorCode PetscLogBegin_Private(void);
 #endif
-extern PetscBool PetscHMPIWorker;
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
 PetscFPT PetscFPTData = 0;
@@ -747,7 +746,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 {
   PetscErrorCode ierr;
   PetscMPIInt    flag, size;
-  PetscInt       nodesize;
   PetscBool      flg;
   char           hostname[256];
 
@@ -915,24 +913,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #endif
 #endif
 
-  ierr = PetscOptionsGetInt(NULL,"-hmpi_spawn_size",&nodesize,&flg);CHKERRQ(ierr);
-  if (flg) {
-#if defined(PETSC_HAVE_MPI_COMM_SPAWN)
-    ierr = PetscHMPISpawn((PetscMPIInt) nodesize);CHKERRQ(ierr); /* worker nodes never return from here; they go directly to PetscEnd() */
-#else
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"PETSc built without MPI 2 (MPI_Comm_spawn) support, use -hmpi_merge_size instead");
-#endif
-  } else {
-    ierr = PetscOptionsGetInt(NULL,"-hmpi_merge_size",&nodesize,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PetscHMPIMerge((PetscMPIInt) nodesize,NULL,NULL);CHKERRQ(ierr);
-      if (PetscHMPIWorker) { /* if worker then never enter user code */
-        PetscInitializeCalled = PETSC_TRUE;
-        PetscEnd();
-      }
-    }
-  }
-
 #if defined(PETSC_HAVE_CUDA)
   flg  = PETSC_TRUE;
   ierr = PetscOptionsGetBool(NULL,"-cublas",&flg,NULL);CHKERRQ(ierr);
@@ -1066,8 +1046,6 @@ PetscErrorCode  PetscFinalize(void)
   }
 #endif
 
-  ierr = PetscHMPIFinalize();CHKERRQ(ierr);
-
   ierr = PetscOptionsGetBool(NULL,"-malloc_info",&flg2,NULL);CHKERRQ(ierr);
   if (!flg2) {
     flg2 = PETSC_FALSE;
@@ -1178,24 +1156,22 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscOptionsHasName(NULL,"-nox",&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,"-nox_warning",&flg1);CHKERRQ(ierr);
 
-  if (!PetscHMPIWorker) { /* worker processes skip this because they do not usually process options */
-    flg3 = PETSC_FALSE; /* default value is required */
-    ierr = PetscOptionsGetBool(NULL,"-options_left",&flg3,&flg1);CHKERRQ(ierr);
-    ierr = PetscOptionsAllUsed(&nopt);CHKERRQ(ierr);
-    if (flg3) {
-      if (!flg2) { /* have not yet printed the options */
-        PetscViewer viewer;
-        ierr = PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
-        ierr = PetscOptionsView(viewer);CHKERRQ(ierr);
-        ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-      }
-      if (!nopt) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"There are no unused options.\n");CHKERRQ(ierr);
-      } else if (nopt == 1) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"There is one unused database option. It is:\n");CHKERRQ(ierr);
-      } else {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"There are %D unused database options. They are:\n",nopt);CHKERRQ(ierr);
-      }
+  flg3 = PETSC_FALSE; /* default value is required */
+  ierr = PetscOptionsGetBool(NULL,"-options_left",&flg3,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsAllUsed(&nopt);CHKERRQ(ierr);
+  if (flg3) {
+    if (!flg2) { /* have not yet printed the options */
+      PetscViewer viewer;
+      ierr = PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
+      ierr = PetscOptionsView(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    }
+    if (!nopt) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"There are no unused options.\n");CHKERRQ(ierr);
+    } else if (nopt == 1) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"There is one unused database option. It is:\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"There are %D unused database options. They are:\n",nopt);CHKERRQ(ierr);
     }
 #if defined(PETSC_USE_DEBUG)
     if (nopt && !flg3 && !flg1) {
