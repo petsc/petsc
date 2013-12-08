@@ -122,8 +122,7 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
   /*  first count number of contributors to each processor */
   ierr = PetscMalloc2(2*size,&sizes,size,&start);CHKERRQ(ierr);
   ierr = PetscMemzero(sizes,2*size*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,&owner);CHKERRQ(ierr);
-  ierr = PetscMemzero(owner,n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(n,&owner);CHKERRQ(ierr);
 
   j       = 0;
   lastidx = -1;
@@ -309,9 +308,8 @@ PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /*  first count number of contributors (of from_array[]) to each processor */
-  ierr = PetscMalloc(2*size*sizeof(PetscInt),&sizes);CHKERRQ(ierr);
-  ierr = PetscMemzero(sizes,2*size*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscInt),&owner);CHKERRQ(ierr);
+  ierr = PetscCalloc1(2*size,&sizes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&owner);CHKERRQ(ierr);
 
   j       = 0;
   lastidx = -1;

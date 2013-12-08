@@ -349,8 +349,7 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],Petsc
   if (A->rmap->N != A->cmap->N) SETERRQ(comm,PETSC_ERR_SUP,"Only handles square matrices");
   if (A->rmap->n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only handles matrices with identical column and row ownership");
   /*  first count number of contributors to each processor */
-  ierr = PetscMalloc1(2*size,&sizes);CHKERRQ(ierr);
-  ierr = PetscMemzero(sizes,2*size*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(2*size,&sizes);CHKERRQ(ierr);
   ierr = PetscMalloc1(N+1,&owner);CHKERRQ(ierr);  /* see note*/
   for (i=0; i<N; i++) {
     idx   = rows[i];
