@@ -727,7 +727,7 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
     if (!rank) {
       ierr = PetscObjectSetName((PetscObject)((Mat_MPIDense*)(A->data))->A,((PetscObject)mat)->name);CHKERRQ(ierr);
       /* Set the type name to MATMPIDense so that the correct type can be printed out by PetscObjectPrintClassNamePrefixType() in MatView_SeqDense_ASCII()*/
-      PetscStrcpy(((PetscObject)((Mat_MPIDense*)(A->data))->A)->type_name,MATMPIDENSE);
+      ierr = PetscStrcpy(((PetscObject)((Mat_MPIDense*)(A->data))->A)->type_name,MATMPIDENSE);CHKERRQ(ierr);
       ierr = MatView(((Mat_MPIDense*)(A->data))->A,sviewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
