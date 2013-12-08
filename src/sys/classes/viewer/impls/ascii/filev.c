@@ -573,7 +573,7 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
     size_t      fullLength;
     PrintfQueue next;
 
-    ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
+    ierr = PetscNew(&next);CHKERRQ(ierr);
     if (petsc_printfqueue) {
       petsc_printfqueue->next = next;
       petsc_printfqueue       = next;
