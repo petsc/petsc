@@ -40,7 +40,7 @@ $(document).ready(function(){
     formSet(recursionCounter,matrixInformation);
 
     //populate PC drop-down menu 
-    var pctype = ["none","jacobi","pbjacobi","bjacobi","sor","lu","shell","mg","eisenstat","ilu","icc","cholesky","asm","gasm","ksp","composite","redundant","nn","mat"];
+    var pctype = ["none","jacobi","pbjacobi","bjacobi","sor","lu","shell","mg","eisenstat","ilu","icc","cholesky","asm","gasm","ksp","composite","redundant","nn","null"];
     populatePcList("pcList");
     //alert("recursionCounter="+recursionCounter+"; pcVal="+pcVal);
     var pcVal = "ilu";
