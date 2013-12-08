@@ -40,11 +40,11 @@ $(document).ready(function(){
     formSet(recursionCounter,matrixInformation);
 
     //populate PC drop-down menu 
-    populatePcList("pcList");  
-    var pcVal = 'ilu';
-    alert("recursionCounter="+recursionCounter+"; pcVal="+pcVal);
-    //$("#pcList").find("option[value='ilu']").attr("selected","selected"); -- work!
-    $("#pcList").find("option[value=pcVal]").attr("selected","selected"); //not working ???
+    var pctype = ["none","jacobi","pbjacobi","bjacobi","sor","lu","shell","mg","eisenstat","ilu","icc","cholesky","asm","gasm","ksp","composite","redundant","nn","mat"];
+    populatePcList("pcList");
+    //alert("recursionCounter="+recursionCounter+"; pcVal="+pcVal);
+    var pcVal = "ilu";
+    $("#pcList").find("option[value=" + pcVal +"]").attr("selected","selected"); 
 
     //Add the first matrix image
     $("#matrixPic").html("<center>" + tex2(matrixInformation, recursionCounter) + "</center>");
