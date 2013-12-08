@@ -986,7 +986,7 @@ PetscErrorCode Initialize(Vec Y, void* s)
   }
   ierr = PetscOptionsGetScalarArray(PETSC_NULL,"-yinit",y,&N,&flg);CHKERRQ(ierr);
   if ((N != GetSize(s)) && flg) {
-    printf("Error: number of initial values %d does not match problem size %d.\n",N,GetSize(s));
+    printf("Error: number of initial values %d does not match problem size %d.\n",(int)N,(int)GetSize(s));
   }
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1111,13 +1111,13 @@ int main(int argc, char **argv)
   PetscErrorCode  ierr;                       /* Error code                                           */
   char            ptype[256] = "hull1972a1";  /* Problem specification                                */
   PetscInt        n_refine   = 1;             /* Number of refinement levels for convergence analysis */
-  PetscReal     refine_fac = 2.0;           /* Refinement factor for dt                             */
+  PetscReal       refine_fac = 2.0;           /* Refinement factor for dt                             */
   PetscReal       dt_initial = 0.01;          /* Initial default value of dt                          */
   PetscReal       dt;
   PetscReal       tfinal     = 20.0;          /* Final time for the time-integration                  */
   PetscInt        maxiter    = 100000;        /* Maximum number of time-integration iterations        */
   PetscReal       *error;                     /* Array to store the errors for convergence analysis   */
-  PetscInt        nproc;                      /* No of processors                                     */
+  PetscMPIInt     size;                      /* No of processors                                     */
   PetscBool       flag;                       /* Flag denoting availability of exact solution         */
   PetscInt        r;
 
@@ -1125,8 +1125,8 @@ int main(int argc, char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* Check if running with only 1 proc */
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
-  if (nproc>1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size>1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
   ierr = PetscOptionsString("-problem","Problem specification","<hull1972a1>",
                             ptype,ptype,sizeof(ptype),PETSC_NULL);CHKERRQ(ierr);

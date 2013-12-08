@@ -53,12 +53,12 @@ int Mat_Parallel_Load(MPI_Comm comm,const char *name,Mat *newmat)
 
   /* error checking on files */
   if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
-  ierr = MPI_Allreduce(header+2,&N,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(header+2,&N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   if (N != size*header[2]) SETERRQ(PETSC_COMM_SELF,1,"All files must have matrices with the same number of total columns");
 
   /* number of rows in matrix is sum of rows in all files */
   m    = header[1]; N = header[2];
-  ierr = MPI_Allreduce(&m,&M,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&m,&M,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
 
   /* determine rows of matrices owned by each process */
   ierr       = PetscMalloc1((size+1),&rowners);CHKERRQ(ierr);

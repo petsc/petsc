@@ -27,9 +27,9 @@ int main(int argc, char *argv[])
 {
   PetscErrorCode ierr;
   PetscBool      flg;
-  int            rank, size;
-  int            i, ni, status;
-  idx_t          *vtxdist, *xadj, *adjncy, *vwgt, *part;
+  PetscMPIInt    rank, size;
+  int            i, status;
+  idx_t          ni,isize,*vtxdist, *xadj, *adjncy, *vwgt, *part;
   idx_t          wgtflag=0, numflag=0, ncon=1, ndims=3, edgecut=0;
   idx_t          options[5];
   real_t         *xyz, *tpwgts, ubvec[1];
@@ -77,6 +77,7 @@ int main(int argc, char *argv[])
   vwgt = NULL;
 
   for (i = 0; i < size; i++) tpwgts[i] = 1. / size;
+  isize = size;
 
   ubvec[0]   = 1.05;
   options[0] = 1;
@@ -87,7 +88,7 @@ int main(int argc, char *argv[])
 
   ierr   = MPI_Comm_dup(MPI_COMM_WORLD, &comm);CHKERRQ(ierr);
   status = ParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, vwgt,
-                                    NULL, &wgtflag, &numflag, &ndims, xyz, &ncon, &size, tpwgts, ubvec,
+                                    NULL, &wgtflag, &numflag, &ndims, xyz, &ncon, &isize, tpwgts, ubvec,
                                     options, &edgecut, part, &comm);CHKERRQPARMETIS(status);
   ierr = MPI_Comm_free(&comm);CHKERRQ(ierr);
 
