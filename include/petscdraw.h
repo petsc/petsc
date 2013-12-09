@@ -1,5 +1,5 @@
 /*
-  Interface to the PETSc graphics (currently only support for X-windows
+  Interface to the PETSc graphics
 */
 #if !defined(__PETSCDRAW_H)
 #define __PETSCDRAW_H
@@ -7,21 +7,6 @@
 #include <petscdrawtypes.h>
 
 PETSC_EXTERN PetscClassId PETSC_DRAW_CLASSID;
-
-/*J
-    PetscDrawType - String with the name of a PetscDraw
-
-   Level: beginner
-
-.seealso: PetscDrawSetType(), PetscDraw, PetscViewer, PetscDrawCreate()
-J*/
-typedef const char* PetscDrawType;
-#define PETSC_DRAW_X          "x"
-#define PETSC_DRAW_GLUT       "glut"
-#define PETSC_DRAW_OPENGLES   "opengles"
-#define PETSC_DRAW_NULL       "null"
-#define PETSC_DRAW_WIN32      "win32"
-#define PETSC_DRAW_TIKZ       "tikz"
 
 PETSC_EXTERN PetscFunctionList PetscDrawList;
 PETSC_EXTERN PetscErrorCode PetscDrawRegisterAll(void);

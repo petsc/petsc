@@ -22,6 +22,7 @@ PetscErrorCode PetscViewerDestroy_Draw(PetscViewer v)
   ierr = PetscFree(vdraw->title);CHKERRQ(ierr);
   ierr = PetscFree3(vdraw->draw,vdraw->drawlg,vdraw->drawaxis);CHKERRQ(ierr);
   ierr = PetscFree(vdraw->bounds);CHKERRQ(ierr);
+  ierr = PetscFree(vdraw->drawtype);CHKERRQ(ierr);
   ierr = PetscFree(vdraw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -104,6 +105,9 @@ PetscErrorCode  PetscViewerDrawGetDraw(PetscViewer viewer,PetscInt windownumber,
       title = tmp_str;
     }
     ierr = PetscDrawCreate(PetscObjectComm((PetscObject)viewer),vdraw->display,title,PETSC_DECIDE,PETSC_DECIDE,vdraw->w,vdraw->h,&vdraw->draw[windownumber]);CHKERRQ(ierr);
+    if (vdraw->drawtype) {
+      ierr = PetscDrawSetType(vdraw->draw[windownumber],vdraw->drawtype);CHKERRQ(ierr);
+    }
     ierr = PetscDrawSetPause(vdraw->draw[windownumber],vdraw->pause);CHKERRQ(ierr);
     ierr = PetscDrawSetFromOptions(vdraw->draw[windownumber]);CHKERRQ(ierr);
   }
@@ -294,6 +298,23 @@ PetscErrorCode  PetscViewerDrawSetInfo(PetscViewer v,const char display[],const 
   vdraw->w = w;
   ierr     = PetscStrallocpy(display,&vdraw->display);CHKERRQ(ierr);
   ierr     = PetscStrallocpy(title,&vdraw->title);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerDrawSetDrawType"
+PetscErrorCode  PetscViewerDrawSetDrawType(PetscViewer v,PetscDrawType drawtype)
+{
+  PetscErrorCode   ierr;
+  PetscViewer_Draw *vdraw = (PetscViewer_Draw*)v->data;
+  PetscBool        flg;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERDRAW,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscFree(vdraw->drawtype);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(drawtype,(char**)&vdraw->drawtype);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

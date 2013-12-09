@@ -26,12 +26,13 @@ PetscFunctionList PetscViewerList = 0;
    Level: intermediate
 
    Notes: If no value is provided ascii:stdout is used
-$       ascii[:[filename][:[format][:append]]]   defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab, for example ascii::ascii_info prints just the info
-$                                     about the object to standard out - unless :append is given filename opens in write mode
-$       binary[:[filename][:[format][:append]]]   defaults to binaryoutput
-$       draw
-$       socket[:port]                  defaults to the standard output port
-$       ams[:communicatorname]         publishes object to the SAWs (Argonne Memory Snooper) 
+$       ascii[:[filename][:[format][:append]]]    defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab, 
+                                                  for example ascii::ascii_info prints just the information about the object not all details
+                                                  unless :append is given filename opens in write mode, overwriting what was already there
+$       binary[:[filename][:[format][:append]]]   defaults to the file binaryoutput
+$       draw[:drawtype}                           for example, draw:tikz  or draw:x
+$       socket[:port]                             defaults to the standard output port
+$       ams[:communicatorname]                    publishes object to the Scientific Application Webserver (SAWs)
 
    Use PetscViewerDestroy() after using the viewer, otherwise a memory leak will occur
 
@@ -122,6 +123,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
           }
           ierr = PetscViewerFileSetMode(*viewer,flag?fmode:FILE_MODE_WRITE);CHKERRQ(ierr);
           ierr = PetscViewerFileSetName(*viewer,loc1_fname);CHKERRQ(ierr);
+          ierr = PetscViewerDrawSetDrawType(*viewer,loc1_fname);CHKERRQ(ierr);
         }
       }
       if (loc2_fmt && *loc2_fmt) {
