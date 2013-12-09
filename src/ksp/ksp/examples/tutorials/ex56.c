@@ -146,9 +146,11 @@ int main(int argc,char **args)
           }
         }
       } else {
+        double dd;
         for (i=0; i<24; i++) {
           for (j=0; j<24; j++) {
-            ierr = fscanf(file, "%le", &DD1[i][j]);
+            ierr = fscanf(file, "%le", &dd);
+            DD1[i][j] = dd;
           }
         }
       }
