@@ -69,47 +69,60 @@ function populateKspList(listId)
   populatePcList - populate the pc list
   input:
     listId - string
+    listVals - an array of pctypes, e.g. listVals = ["none","jacobi","pbjacobi","bjacobi","null"]; the laster entry must be "null"
+    defaultVal - default pctype
 */
-function populatePcList(listId) 
+function populatePcList(listId,listVals,defaultVal) 
 {
     var list="#"+listId;
+    if (listVals == null) {
+        $(list).append("<option value=\"asa\">asa</option>")
+        $(list).append("<option value=\"asm\">asm</option>")
+        $(list).append("<option value=\"bjacobi\">bjacobi</option>")
+        $(list).append("<option value=\"cholesky\">cholesky</option>")
+        $(list).append("<option value=\"composite\">composite</option>")
+        $(list).append("<option value=\"cp\">cp</option>")
+        $(list).append("<option value=\"eisenstat\">eisenstat</option>")
+        $(list).append("<option value=\"exotic\">exotic</option>")
+        $(list).append("<option value=\"fieldsplit\">fieldsplit (block structured)</option>")
+        $(list).append("<option value=\"galerkin\">galerkin</option>")
+        $(list).append("<option value=\"gamg\">gamg</option>")
+        $(list).append("<option value=\"gasm\">gasm</option>")
+        $(list).append("<option value=\"hmpi\">hmpi</option>")
+        $(list).append("<option value=\"icc\">icc</option>")
+        $(list).append("<option value=\"ilu\">ilu</option>")
+        $(list).append("<option value=\"jacobi\">jacobi</option>")
+        $(list).append("<option value=\"ksp\">ksp</option>")
+        $(list).append("<option value=\"lsc\">lsc</option>")
+        $(list).append("<option value=\"lu\">lu</option>")
+        $(list).append("<option value=\"mat\">mat</option>")
+        $(list).append("<option value=\"mg\">mg</option>")
+        $(list).append("<option value=\"nn\">nn</option>")
+        $(list).append("<option value=\"none\">none</option>")
+        $(list).append("<option value=\"pbjacobi\">pbjacobi</option>")
+        $(list).append("<option value=\"redistribute\">redistribute</option>")
+        $(list).append("<option value=\"redundant\">redundant</option>")
+        $(list).append("<option value=\"shell\">shell</option>")
+        $(list).append("<option value=\"sor\">sor</option>")
+        $(list).append("<option value=\"svd\">svd</option>")
+    } else {
+        var i=0;
+        while (listVals[i] != "null"){
+            $(list).append("<option value="+listVals[i]+">"+listVals[i]+"</option>");
+            i++;
+        }
+    }
 
-    $(list).append("<option value=\"asa\">asa</option>")
-    $(list).append("<option value=\"asm\">asm</option>")
-    $(list).append("<option value=\"bjacobi\">bjacobi</option>")
-    $(list).append("<option value=\"cholesky\">cholesky</option>")
-    $(list).append("<option value=\"composite\">composite</option>")
-    $(list).append("<option value=\"cp\">cp</option>")
-    $(list).append("<option value=\"eisenstat\">eisenstat</option>")
-    $(list).append("<option value=\"exotic\">exotic</option>")
-    $(list).append("<option value=\"fieldsplit\">fieldsplit (block structured)</option>")
-    $(list).append("<option value=\"galerkin\">galerkin</option>")
-    $(list).append("<option value=\"gamg\">gamg</option>")
-    $(list).append("<option value=\"gasm\">gasm</option>")
-    $(list).append("<option value=\"hmpi\">hmpi</option>")
-    $(list).append("<option value=\"icc\">icc</option>")
-    $(list).append("<option value=\"ilu\">ilu</option>")
-    $(list).append("<option value=\"jacobi\">jacobi</option>")
-    $(list).append("<option value=\"ksp\">ksp</option>")
-    $(list).append("<option value=\"lsc\">lsc</option>")
-    $(list).append("<option value=\"lu\">lu</option>")
-    $(list).append("<option value=\"mat\">mat</option>")
-    $(list).append("<option value=\"mg\">mg</option>")
-    $(list).append("<option value=\"nn\">nn</option>")
-    $(list).append("<option value=\"none\">none</option>")
-    $(list).append("<option value=\"pbjacobi\">pbjacobi</option>")
-    $(list).append("<option value=\"redistribute\">redistribute</option>")
-    $(list).append("<option value=\"redundant\">redundant</option>")
-    $(list).append("<option value=\"shell\">shell</option>")
-    $(list).append("<option value=\"sor\">sor</option>")
-    $(list).append("<option value=\"svd\">svd</option>")
-
-    //choose defaults for the different cases
+    //set default pc_type
     var recursionCounter = oDivGetRecursionCounter(listId);
     if (recursionCounter >-1 && matrixInformation[recursionCounter].logstruc) { 
 	$(list).find("option[value='fieldsplit']").attr("selected","selected");
     } else { // !logstruc
-	$(list).find("option[value='bjacobi']").attr("selected","selected");  
+        if (defaultVal == "null") {
+	    $(list).find("option[value='bjacobi']").attr("selected","selected");  
+        } else {
+            $(list).find("option[value=" + defaultVal +"]").attr("selected","selected"); 
+        }
     }
 }
 

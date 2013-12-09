@@ -33,18 +33,20 @@ var matDivCounter = 0;
 //Call the "Tex" function which populates an array with TeX to be used instead of images
 //var texMatrices = tex(maxMatricies)
 
+//global variables - remove later???
+var SAWs_pcList = ["none","jacobi","pbjacobi","bjacobi","sor","lu","shell","mg","eisenstat","ilu","icc","cholesky","asm","gasm","ksp","composite","redundant","nn","fieldsplit","null"]; 
+var SAWs_pcVal = "ilu"; 
+
 //$(document).ready is required in javascript/jQuery
 $(document).ready(function(){
 
+    //SAWs.getDirectory(/SAWs/PETSc/)
+
     //reset the form
     formSet(recursionCounter,matrixInformation);
-
-    //populate PC drop-down menu 
-    var pctype = ["none","jacobi","pbjacobi","bjacobi","sor","lu","shell","mg","eisenstat","ilu","icc","cholesky","asm","gasm","ksp","composite","redundant","nn","null"];
-    populatePcList("pcList");
-    //alert("recursionCounter="+recursionCounter+"; pcVal="+pcVal);
-    var pcVal = "ilu";
-    $("#pcList").find("option[value=" + pcVal +"]").attr("selected","selected"); 
+   
+    //using inputs from SAWs to populate PC drop-down menu and set default pctype
+    populatePcList("pcList",SAWs_pcList,SAWs_pcVal);
 
     //Add the first matrix image
     $("#matrixPic").html("<center>" + tex2(matrixInformation, recursionCounter) + "</center>");
@@ -55,22 +57,22 @@ $(document).ready(function(){
 	    $("#oCmdOptions"+i).empty();
     });
 
-
     $("#optionListsButton").click(function(){ //this is for show/hide information
-
-	if($("#optionListsButton").val()=="Hide Information") {
+	if ($("#optionListsButton").val()=="Hide Information") {
 	    $("#optionLists").hide();
 	    $("#optionListsButton").attr("value","Show Information");
-	}
-	else {
+	} else {
 	    $("#optionLists").show();
 	    $("#optionListsButton").attr("value","Hide Information");
 	}
-
     });
 
     $("#submitButton").click(function(){
-	
+
+        //remove divPcList from the screen
+        if (recursionCounter == 0) 
+            $("#divPcList").hide();
+        
 	//matrixLevel is how many matrices deep the data is. 0 is the overall matrix, 
 	// 1 would be 4 blocks, 2 would be 10 blocks, 3 would be 20 blocks, etc
 	var matrixLevel = matGetLevel(recursionCounter);
@@ -131,7 +133,12 @@ $(document).ready(function(){
 
 	//populate the kspList[recursionCounter] and pclist[recursionCounter] with default options
         populateKspList("kspList"+recursionCounter);
-	populatePcList("pcList"+recursionCounter);
+        if (recursionCounter == 0) {
+            var pcVal = $("#pcList").val(); //Get pctype from the drop-down pcList
+	    populatePcList("pcList"+recursionCounter,SAWs_pcList,pcVal);
+        } else {
+            populatePcList("pcList"+recursionCounter,null,"null");
+        }
 
         //manually trigger pclist once because additional options, e.g., detailed info may need to be added
 	$("#pcList"+recursionCounter).trigger("change"); 
@@ -232,7 +239,6 @@ $(document).ready(function(){
         treeDetailed = true;
 	buildTree(matrixInformation,matLevelForTree,treeDetailed);
     })
-
     
     //Toggles the tree on and off
     $('#treeToggle').click(function () {

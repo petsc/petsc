@@ -69,7 +69,7 @@ $(document).on('change', '.pcLists', function(){
                 $("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id=\"text_kspList"+parent+myendtag+"\">KSP Level "+level+" &nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+ parent+myendtag +"\"></select>")
 	        $("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id=\"text_pcList"+parent+myendtag+"\">PC Level "+level+" &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList"+ parent+myendtag+"\"></select>")
                 populateKspList("kspList"+parent+myendtag);
-	        populatePcList("pcList"+parent+myendtag); 
+	        populatePcList("pcList"+parent+myendtag,null,"null"); 
                 // set defaults
                 $("#kspList"+parent+myendtag).find("option[value='chebyshev']").attr("selected","selected");
 	        $("#pcList"+parent+myendtag).find("option[value='sor']").attr("selected","selected");
@@ -82,7 +82,7 @@ $(document).on('change', '.pcLists', function(){
         $("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList" + parent+myendtag +"\"></select>")
 	$("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent+myendtag +"\"></select>")
 	populateKspList("kspList"+parent+myendtag);
-	populatePcList("pcList"+parent+myendtag);
+	populatePcList("pcList"+parent+myendtag,null,"null");
 	//set defaults
 	$("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
 	$("#pcList"+parent+myendtag).find("option[value='redundant']").attr("selected","selected");
@@ -105,7 +105,7 @@ $(document).on('change', '.pcLists', function(){
 	$("#"+newDiv).append("<br><b>Redundant KSP    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"redundant\" id=\"kspList" + parent +myendtag+"\"></select>");
 	$("#"+newDiv).append("<br><b>Redundant PC     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent +myendtag+"\"></select>");
 	populateKspList("kspList"+parent+myendtag);
-	populatePcList("pcList"+parent+myendtag);
+	populatePcList("pcList"+parent+myendtag,null,"null");
 
 	//set defaults for redundant
 	$("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
@@ -132,7 +132,7 @@ $(document).on('change', '.pcLists', function(){
 	$("#"+newDiv).append("<br><b>Bjacobi KSP   &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+parent+myendtag+"\"></select>");
 	$("#"+newDiv).append("<br><b>Bjacobi PC   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList"+parent+myendtag+"\"></select>");
 	populateKspList("kspList"+parent+myendtag);
-        populatePcList("pcList"+parent+myendtag);
+        populatePcList("pcList"+parent+myendtag,null,"null");
 
 	//set defaults for bjacobi
 	$("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
@@ -166,7 +166,7 @@ $(document).on('change', '.pcLists', function(){
 	$("#"+newDiv).append("<br><b>ASM KSP   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList" + parent +myendtag+"\"></select>");
 	$("#"+newDiv).append("<br><b>ASM PC   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent +myendtag+"\"></select>");
 	populateKspList("kspList"+parent+myendtag);
-	populatePcList("pcList"+parent+myendtag);
+	populatePcList("pcList"+parent+myendtag,null,"null");
 
 	//set defaults for asm
 	$("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
@@ -192,7 +192,7 @@ $(document).on('change', '.pcLists', function(){
 	$("#"+newDiv).append("<b>KSP KSP   </b><select class=\"kspLists\" id=\"kspList" + parent +myendtag+"\"></select>");
 	$("#"+newDiv).append("<br><b>KSP PC &nbsp;&nbsp; </b><select class=\"pcLists\" id=\"pcList" + parent +myendtag+"\"></select>");
 	populateKspList("kspList"+parent+myendtag);
-	populatePcList("pcList"+parent+myendtag);
+	populatePcList("pcList"+parent+myendtag,null,"null");
 
 	//set defaults for ksp
 	$("#kspList"+parent+myendtag).find("option[value='gmres']").attr("selected","selected");
@@ -232,7 +232,7 @@ $(document).on('change', '.pcLists', function(){
 	$("#"+this.id).after("<div id=\""+newDiv+"\" style='margin-left:50px;'></div>");
         myendtag = endtag+"0";
 	$("#"+newDiv).append("<b>Fieldsplit Type &nbsp;&nbsp;</b><select class=\"fieldsplitList\" id=\"fieldsplitList" + parent +myendtag+"\"></select>")  
-        populateFieldsplitList("fieldsplitList"+parent+myendtag);
+        populateFieldsplitList("fieldsplitList"+parent+myendtag,null,"null");
 
     } else { //not fieldsplit 
 	var newDiv = generateDivName(this.id,parent,"fieldsplit");
@@ -367,7 +367,7 @@ $(document).on('change', '.mgLevels', function()
             $("#text_smoothing"+recursionCounter+endtag).after("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id=\"text_kspList"+recursionCounter+myendtag+"\">KSP Level "+level+" &nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+ recursionCounter+myendtag +"\"></select>");
             
             populateKspList("kspList"+recursionCounter+myendtag);
-	    populatePcList("pcList"+recursionCounter+myendtag); 
+	    populatePcList("pcList"+recursionCounter+myendtag,null,"null"); 
             // set defaults
             $("#kspList"+recursionCounter+myendtag).find("option[value='chebyshev']").attr("selected","selected");
 	    $("#pcList"+recursionCounter+myendtag).find("option[value='sor']").attr("selected","selected");
