@@ -320,7 +320,7 @@ static PetscErrorCode FormInitial_Coupled(User user,Vec X)
   ierr = DMDAGetLocalInfo(dak,&infok);CHKERRQ(ierr);
   hx   = 1./(infok.mx);
   for (i=infou.xs; i<infou.xs+infou.xm; i++) u[i] = (PetscScalar)i*hx * (1.-(PetscScalar)i*hx);
-  for (i=infok.xs; i<infok.xs+infok.xm; i++) k[i] = 1.0 + 0.5*(PetscScalar)sin((double)2*PETSC_PI*i*hx);
+  for (i=infok.xs; i<infok.xs+infok.xm; i++) k[i] = 1.0 + 0.5*PetscSinScalar(2*PETSC_PI*i*hx);
   ierr = DMDAVecRestoreArray(dau,Xu,&u);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(dak,Xk,&k);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(user->pack,X,&Xu,&Xk);CHKERRQ(ierr);

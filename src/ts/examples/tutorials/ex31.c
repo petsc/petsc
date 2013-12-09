@@ -45,7 +45,7 @@ PetscErrorCode (*IJacobian)   (TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStruc
 #undef __FUNCT__
 #define __FUNCT__ "GetSize"
 /* Returns the size of the system of equations depending on problem specification */
-PetscInt GetSize(char *p)
+PetscInt GetSize(const char *p)
 {
   PetscFunctionBegin;
   if      ((!strcmp(p,"hull1972a1"))
@@ -414,7 +414,7 @@ PetscErrorCode RHSFunction_Hull1972B2(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = -y[0] + y[1];
-  f[1] = y[0] - 2*y[1] + y[2];
+  f[1] = y[0] - 2.0*y[1] + y[2];
   f[2] = y[1] - y[2];
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
@@ -432,7 +432,7 @@ PetscErrorCode IFunction_Hull1972B2(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = -y[0] + y[1];
-  f[1] = y[0] - 2*y[1] + y[2];
+  f[1] = y[0] - 2.0*y[1] + y[2];
   f[2] = y[1] - y[2];
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
@@ -535,9 +535,9 @@ PetscErrorCode RHSFunction_Hull1972B4(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  f[0] = -y[1] - y[0]*y[2]/PetscSqrtReal(y[0]*y[0]+y[1]*y[1]);
-  f[1] =  y[0] - y[1]*y[2]/PetscSqrtReal(y[0]*y[0]+y[1]*y[1]);
-  f[2] = y[0]/PetscSqrtReal(y[0]*y[0]+y[1]*y[1]);
+  f[0] = -y[1] - y[0]*y[2]/PetscSqrtScalar(y[0]*y[0]+y[1]*y[1]);
+  f[1] =  y[0] - y[1]*y[2]/PetscSqrtScalar(y[0]*y[0]+y[1]*y[1]);
+  f[2] = y[0]/PetscSqrtScalar(y[0]*y[0]+y[1]*y[1]);
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -553,9 +553,9 @@ PetscErrorCode IFunction_Hull1972B4(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  f[0] = -y[1] - y[0]*y[2]/PetscSqrtReal(y[0]*y[0]+y[1]*y[1]);
-  f[1] =  y[0] - y[1]*y[2]/PetscSqrtReal(y[0]*y[0]+y[1]*y[1]);
-  f[2] = y[0]/PetscSqrtReal(y[0]*y[0]+y[1]*y[1]);
+  f[0] = -y[1] - y[0]*y[2]/PetscSqrtScalar(y[0]*y[0]+y[1]*y[1]);
+  f[1] =  y[0] - y[1]*y[2]/PetscSqrtScalar(y[0]*y[0]+y[1]*y[1]);
+  f[2] = y[0]/PetscSqrtScalar(y[0]*y[0]+y[1]*y[1]);
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   /* Left hand side = ydot - f(y) */
@@ -574,8 +574,8 @@ PetscErrorCode IJacobian_Hull1972B4(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-  fac  = PetscPowReal(y[0]*y[0]+y[1]*y[1],-1.5);
-  fac2 = PetscPowReal(y[0]*y[0]+y[1]*y[1],-0.5);
+  fac  = PetscPowScalar(y[0]*y[0]+y[1]*y[1],-1.5);
+  fac2 = PetscPowScalar(y[0]*y[0]+y[1]*y[1],-0.5);
   value[0][0] = a + (y[1]*y[1]*y[2])*fac;
   value[0][1] = 1.0 - (y[0]*y[1]*y[2])*fac;
   value[0][2] = y[0]*fac2;
@@ -902,7 +902,7 @@ PetscErrorCode Initialize(Vec Y, void* s)
   PetscErrorCode ierr;
   char          *p = (char*) s;
   PetscScalar   *y;
-  PetscInt      N = GetSize(s);
+  PetscInt      N = GetSize((const char *)s);
   PetscBool     flg;
 
   PetscFunctionBegin;
@@ -985,7 +985,7 @@ PetscErrorCode Initialize(Vec Y, void* s)
     IJacobian   = IJacobian_Hull1972C34;
   }
   ierr = PetscOptionsGetScalarArray(PETSC_NULL,"-yinit",y,&N,&flg);CHKERRQ(ierr);
-  if ((N != GetSize(s)) && flg) {
+  if ((N != GetSize((const char*)s)) && flg) {
     printf("Error: number of initial values %d does not match problem size %d.\n",(int)N,(int)GetSize(s));
   }
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
@@ -1004,22 +1004,22 @@ PetscErrorCode ExactSolution(Vec Y, void* s, PetscReal t, PetscBool *flag)
   PetscFunctionBegin;
   if (!strcmp(p,"hull1972a1")) {
     ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    y[0] = PetscExpReal(-t);
+    y[0] = PetscExpScalar(-t);
     *flag = PETSC_TRUE;
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else if (!strcmp(p,"hull1972a2")) {
     ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    y[0] = 1.0/PetscSqrtReal(t+1);
+    y[0] = 1.0/PetscSqrtScalar(t+1);
     *flag = PETSC_TRUE;
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else if (!strcmp(p,"hull1972a3")) {
     ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    y[0] = PetscExpReal(sin(t));
+    y[0] = PetscExpScalar(sin(t));
     *flag = PETSC_TRUE;
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else if (!strcmp(p,"hull1972a4")) {
     ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    y[0] = 20.0/(1+19.0*PetscExpReal(-t/4.0));
+    y[0] = 20.0/(1+19.0*PetscExpScalar(-t/4.0));
     *flag = PETSC_TRUE;
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else {
@@ -1043,7 +1043,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   Mat             Jac = NULL;       /* Jacobian matrix                        */
 
   PetscFunctionBegin;
-  N = GetSize(&ptype[0]);
+  N = GetSize((const char *)&ptype[0]);
   if (N < 0) {
     printf("Error: Illegal problem specification.\n");
     return(0);

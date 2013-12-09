@@ -762,7 +762,7 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
 }
 
 /* Temperature that is in equilibrium with the radiation density */
-static PetscScalar RDRadiationTemperature(RD rd,PetscScalar E) { return pow(E*rd->c/(4.*rd->sigma_b),0.25); }
+static PetscScalar RDRadiationTemperature(RD rd,PetscScalar E) { return PetscPowScalar(E*rd->c/(4.*rd->sigma_b),0.25); }
 
 #undef __FUNCT__
 #define __FUNCT__ "RDInitialState"
@@ -784,7 +784,7 @@ static PetscErrorCode RDInitialState(RD rd,Vec X)
       x[i].T = RDRadiationTemperature(rd,x[i].E);
       break;
     case 2:
-      x[i].E = 0.001 + 100.*PetscExpScalar(-PetscSqr(coord/0.1));
+      x[i].E = 0.001 + 100.*PetscExpReal(-PetscSqr(coord/0.1));
       x[i].T = RDRadiationTemperature(rd,x[i].E);
       break;
     case 3:

@@ -291,8 +291,8 @@ PetscErrorCode FormInitialSolution(TS ts,Vec U,void *ptr)
   /* Compute function over the locally owned part of the grid */
   for (i=xs; i<xs+xm; i++) {
     x = i*hx;
-    r = PetscSqrtScalar((x-.5)*(x-.5));
-    if (r < .125) u[i] = PetscExpScalar(c*r*r*r);
+    r = PetscSqrtReal((x-.5)*(x-.5));
+    if (r < .125) u[i] = PetscExpReal(c*r*r*r);
     else          u[i] = 0.0;
   }
 
