@@ -1471,9 +1471,11 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   if (set) {
     char        *ext;
     PetscViewer viewer;
+    PetscBool   flg;
     ierr = PetscViewerCreate(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
     ierr = PetscStrrchr(filename,'.',&ext);CHKERRQ(ierr);
-    if (!strcmp("vts",ext)) {
+    ierr = PetscStrcmp("vts",ext,&flg);CHKERRQ(ierr);
+    if (flg) {
       ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerSetType(viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
