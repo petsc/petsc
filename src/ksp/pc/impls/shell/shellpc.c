@@ -812,7 +812,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Shell(PC pc)
   PC_Shell       *shell;
 
   PetscFunctionBegin;
-  ierr     = PetscNewLog(pc,PC_Shell,&shell);CHKERRQ(ierr);
+  ierr     = PetscNewLog(pc,&shell);CHKERRQ(ierr);
   pc->data = (void*)shell;
 
   pc->ops->destroy         = PCDestroy_Shell;

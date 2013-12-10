@@ -152,7 +152,7 @@ PetscErrorCode  DMDASplitComm2d(MPI_Comm comm,PetscInt M,PetscInt N,PetscInt sw,
     PetscMPIInt i,*groupies;
 
     ierr = MPI_Comm_group(comm,&entire_group);CHKERRQ(ierr);
-    ierr = PetscMalloc(csize*sizeof(PetscInt),&groupies);CHKERRQ(ierr);
+    ierr = PetscMalloc1(csize,&groupies);CHKERRQ(ierr);
     for (i=0; i<csize; i++) {
       groupies[i] = (rank/csize)*csize + i;
     }
@@ -293,7 +293,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
      xs is the first local node number, x is the number of local nodes
   */
   if (!lx) {
-    ierr = PetscMalloc(m*sizeof(PetscInt), &dd->lx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m, &dd->lx);CHKERRQ(ierr);
     lx   = dd->lx;
     for (i=0; i<m; i++) {
       lx[i] = M/m + ((M % m) > i);
@@ -317,7 +317,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
      ys is the first local node number, y is the number of local nodes
   */
   if (!ly) {
-    ierr = PetscMalloc(n*sizeof(PetscInt), &dd->ly);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n, &dd->ly);CHKERRQ(ierr);
     ly   = dd->ly;
     for (i=0; i<n; i++) {
       ly[i] = N/n + ((N % n) > i);
@@ -408,7 +408,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 
   /* determine starting point of each processor */
   nn       = x*y;
-  ierr     = PetscMalloc2(size+1,PetscInt,&bases,size,PetscInt,&ldims);CHKERRQ(ierr);
+  ierr     = PetscMalloc2(size+1,&bases,size,&ldims);CHKERRQ(ierr);
   ierr     = MPI_Allgather(&nn,1,MPIU_INT,ldims,1,MPIU_INT,comm);CHKERRQ(ierr);
   bases[0] = 0;
   for (i=1; i<=size; i++) {
@@ -430,7 +430,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   ierr = VecGetOwnershipRange(global,&start,&end);CHKERRQ(ierr);
   ierr = ISCreateStride(comm,x*y*dof,start,1,&to);CHKERRQ(ierr);
 
-  ierr  = PetscMalloc(x*y*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(x*y,&idx);CHKERRQ(ierr);
   left  = xs - Xs; right = left + x;
   down  = ys - Ys; up = down + y;
   count = 0;
@@ -442,7 +442,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 
   ierr = ISCreateBlock(comm,dof,count,idx,PETSC_OWN_POINTER,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(dd,ltog);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)ltog);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
 
@@ -450,7 +450,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
      but not ghost points outside the domain that aren't periodic */
   if (stencil_type == DMDA_STENCIL_BOX) {
     count = (IXe-IXs)*(IYe-IYs);
-    ierr  = PetscMalloc(count*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(count,&idx);CHKERRQ(ierr);
 
     left  = IXs - Xs; right = left + (IXe-IXs);
     down  = IYs - Ys; up = down + (IYe-IYs);
@@ -474,7 +474,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
             -----------
          Xs xs        xe Xe */
     count = (ys-IYs)*x + y*(IXe-IXs) + (IYe-ye)*x;
-    ierr  = PetscMalloc(count*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(count,&idx);CHKERRQ(ierr);
 
     left  = xs - Xs; right = left + x;
     down  = ys - Ys; up = down + y;
@@ -567,7 +567,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     if ((n7 >= 0) && (n8 < 0)) n8 = rank+1;
   }
 
-  ierr = PetscMalloc(9*sizeof(PetscInt),&dd->neighbors);CHKERRQ(ierr);
+  ierr = PetscMalloc1(9,&dd->neighbors);CHKERRQ(ierr);
 
   dd->neighbors[0] = n0;
   dd->neighbors[1] = n1;
@@ -585,8 +585,8 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     n0  = n2 = n6 = n8 = -1;
   }
 
-  ierr = PetscMalloc((Xe-Xs)*(Ye-Ys)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(da,(Xe-Xs)*(Ye-Ys)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc1((Xe-Xs)*(Ye-Ys),&idx);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)da,(Xe-Xs)*(Ye-Ys)*sizeof(PetscInt));CHKERRQ(ierr);
 
   nn = 0;
   xbase = bases[rank];
@@ -664,7 +664,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 
   ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,local,to,&gtol);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,gtol);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)gtol);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
 
@@ -779,16 +779,16 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
      of VecSetValuesLocal().
   */
   ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_OWN_POINTER,&ltogis);CHKERRQ(ierr);
-  ierr = PetscMalloc(nn*dof*sizeof(PetscInt),&idx_cpy);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(da,nn*dof*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc1(nn*dof,&idx_cpy);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)da,nn*dof*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISGetIndices(ltogis, &idx_full);CHKERRQ(ierr);
   ierr = PetscMemcpy(idx_cpy,idx_full,nn*dof*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISRestoreIndices(ltogis, &idx_full);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateIS(ltogis,&da->ltogmap);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)da->ltogmap);CHKERRQ(ierr);
   ierr = ISDestroy(&ltogis);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingBlock(da->ltogmap,dd->w,&da->ltogmapb);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)da->ltogmap);CHKERRQ(ierr);
 
   ierr  = PetscFree2(bases,ldims);CHKERRQ(ierr);
   dd->m = m;  dd->n  = n;
@@ -863,7 +863,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 .keywords: distributed array, create, two-dimensional
 
 .seealso: DMDestroy(), DMView(), DMDACreate1d(), DMDACreate3d(), DMGlobalToLocalBegin(), DMDAGetRefinementFactor(),
-          DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMDALocalToLocalBegin(), DMDALocalToLocalEnd(), DMDASetRefinementFactor(),
+          DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMLocalToLocalBegin(), DMLocalToLocalEnd(), DMDASetRefinementFactor(),
           DMDAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DMDACreateNaturalVector(), DMLoad(), DMDAGetOwnershipRanges()
 
 @*/

@@ -176,6 +176,7 @@ PetscErrorCode  MatCreateSchurComplement(Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A1
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = KSPInitializePackage();CHKERRQ(ierr);
   ierr = MatCreate(((PetscObject)A00)->comm,N);CHKERRQ(ierr);
   ierr = MatSetType(*N,MATSCHURCOMPLEMENT);CHKERRQ(ierr);
   ierr = MatSchurComplementSet(*N,A00,Ap00,A01,A10,A11);CHKERRQ(ierr);
@@ -602,7 +603,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SchurComplement(Mat N)
   Mat_SchurComplement *Na;
 
   PetscFunctionBegin;
-  ierr    = PetscNewLog(N,Mat_SchurComplement,&Na);CHKERRQ(ierr);
+  ierr    = PetscNewLog(N,&Na);CHKERRQ(ierr);
   N->data = (void*) Na;
 
   N->ops->destroy        = MatDestroy_SchurComplement;

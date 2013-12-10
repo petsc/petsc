@@ -260,7 +260,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
   /* If using __float128 precision we still read in doubles from file */
   if (type == PETSC_SCALAR) {
     m    = m/2;
-    ierr = PetscMalloc(n*sizeof(double),&ppp);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&ppp);CHKERRQ(ierr);
     pp   = (char*)ppp;
   }
 #endif
@@ -364,7 +364,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
     const char *fnametmp;
 
     if (n > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only binary view a single function at a time");
-    ierr = PetscFPTFind(p,&fnametmp);CHKERRQ(ierr);
+    ierr = PetscFPTFind(*(void**)p,&fnametmp);CHKERRQ(ierr);
     ierr = PetscStrncpy(fname,fnametmp,64);CHKERRQ(ierr);
 #else
     ierr = PetscStrncpy(fname,"",64);CHKERRQ(ierr);

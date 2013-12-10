@@ -76,7 +76,8 @@ int main(int argc, char **argv)
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   /* Get Jacobian matrix structure from the da */
-  ierr = DMCreateMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da,&J);CHKERRQ(ierr);
 
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);

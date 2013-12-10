@@ -193,8 +193,8 @@ PetscErrorCode CalculateElementVelocity(DM da, UserContext *user)
   ierr = DMDAGetElements(da, &ne, &nc, &necon);CHKERRQ(ierr);
   ierr = VecGetArray(user->sol_n.u, &u_n);CHKERRQ(ierr);
   ierr = VecGetArray(user->sol_n.v, &v_n);CHKERRQ(ierr);
-  ierr = PetscMalloc(ne*sizeof(PetscScalar),&u_phi);CHKERRQ(ierr);
-  ierr = PetscMalloc(ne*sizeof(PetscScalar),&v_phi);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ne,&u_phi);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ne,&v_phi);CHKERRQ(ierr);
   for (e = 0; e < ne; e++) {
     u_phi[e] = 0.0;
     v_phi[e] = 0.0;
@@ -348,7 +348,8 @@ PetscErrorCode TaylorGalerkinStepIIMomentum(DM da, UserContext *user)
 
   PetscFunctionBeginUser;
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da, MATAIJ, &mat);CHKERRQ(ierr);
+  ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da, &mat);CHKERRQ(ierr);
   ierr = MatSetOption(mat,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_u);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_v);CHKERRQ(ierr);
@@ -478,7 +479,8 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DM da, UserContext *user)
 
   PetscFunctionBeginUser;
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da, MATAIJ, &mat);CHKERRQ(ierr);
+  ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da, &mat);CHKERRQ(ierr);
   ierr = MatSetOption(mat,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_m);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_e);CHKERRQ(ierr);

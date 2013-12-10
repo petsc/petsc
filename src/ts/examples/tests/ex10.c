@@ -26,7 +26,7 @@ PetscErrorCode TSDAESimpleCreate(MPI_Comm comm,TSDAESimple *tsdae)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr           = PetscNew(struct _p_TSDAESimple,tsdae);CHKERRQ(ierr);
+  ierr           = PetscNew(tsdae);CHKERRQ(ierr);
   (*tsdae)->comm = comm;
   PetscFunctionReturn(0);
 }

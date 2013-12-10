@@ -194,14 +194,14 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
 
   mg->nlevels = levels;
 
-  ierr = PetscMalloc(levels*sizeof(PC_MG*),&mglevels);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,levels*(sizeof(PC_MG*)));CHKERRQ(ierr);
+  ierr = PetscMalloc1(levels,&mglevels);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)pc,levels*(sizeof(PC_MG*)));CHKERRQ(ierr);
 
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
 
   mg->stageApply = 0;
   for (i=0; i<levels; i++) {
-    ierr = PetscNewLog(pc,PC_MG_Levels,&mglevels[i]);CHKERRQ(ierr);
+    ierr = PetscNewLog(pc,&mglevels[i]);CHKERRQ(ierr);
 
     mglevels[i]->level               = i;
     mglevels[i]->levels              = levels;
@@ -216,7 +216,7 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
     if (comms) comm = comms[i];
     ierr = KSPCreate(comm,&mglevels[i]->smoothd);CHKERRQ(ierr);
     ierr = KSPSetType(mglevels[i]->smoothd,KSPCHEBYSHEV);CHKERRQ(ierr);
-    ierr = KSPSetConvergenceTest(mglevels[i]->smoothd,KSPSkipConverged,NULL,NULL);CHKERRQ(ierr);
+    ierr = KSPSetConvergenceTest(mglevels[i]->smoothd,KSPConvergedSkip,NULL,NULL);CHKERRQ(ierr);
     ierr = KSPSetNormType(mglevels[i]->smoothd,KSP_NORM_NONE);CHKERRQ(ierr);
     ierr = KSPGetPC(mglevels[i]->smoothd,&ipc);CHKERRQ(ierr);
     ierr = PCSetType(ipc,PCSOR);CHKERRQ(ierr);
@@ -248,7 +248,7 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
       sprintf(tprefix,"mg_levels_%d_",(int)i);
       ierr = KSPAppendOptionsPrefix(mglevels[i]->smoothd,tprefix);CHKERRQ(ierr);
     }
-    ierr = PetscLogObjectParent(pc,mglevels[i]->smoothd);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)mglevels[i]->smoothd);CHKERRQ(ierr);
 
     mglevels[i]->smoothu = mglevels[i]->smoothd;
     mg->rtol             = 0.0;
@@ -586,7 +586,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     /* construct the interpolation from the DMs */
     Mat p;
     Vec rscale;
-    ierr     = PetscMalloc(n*sizeof(DM),&dms);CHKERRQ(ierr);
+    ierr     = PetscMalloc1(n,&dms);CHKERRQ(ierr);
     dms[n-1] = pc->dm;
     for (i=n-2; i>-1; i--) {
       DMKSP kdm;
@@ -732,7 +732,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     if (!mglevels[i]->residual) {
       Mat mat;
       ierr = KSPGetOperators(mglevels[i]->smoothd,NULL,&mat,NULL);CHKERRQ(ierr);
-      ierr = PCMGSetResidual(pc,i,PCMGResidual_Default,mat);CHKERRQ(ierr);
+      ierr = PCMGSetResidual(pc,i,PCMGResidualDefault,mat);CHKERRQ(ierr);
     }
   }
   for (i=1; i<n; i++) {
@@ -1150,7 +1150,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr        = PetscNewLog(pc,PC_MG,&mg);CHKERRQ(ierr);
+  ierr        = PetscNewLog(pc,&mg);CHKERRQ(ierr);
   pc->data    = (void*)mg;
   mg->nlevels = -1;
 

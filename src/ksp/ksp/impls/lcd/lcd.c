@@ -15,7 +15,7 @@ PetscErrorCode KSPSetUp_LCD(KSP ksp)
 
   ierr = VecDuplicateVecs(ksp->work[0],restart+1,&lcd->P);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ksp->work[0], restart + 1, &lcd->Q);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,2*(restart+2)*sizeof(Vec));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)ksp,2*(restart+2)*sizeof(Vec));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -240,7 +240,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LCD(KSP ksp)
   KSP_LCD        *lcd;
 
   PetscFunctionBegin;
-  ierr         = PetscNewLog(ksp,KSP_LCD,&lcd);CHKERRQ(ierr);
+  ierr         = PetscNewLog(ksp,&lcd);CHKERRQ(ierr);
   ksp->data    = (void*)lcd;
   ierr         = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   lcd->restart = 30;

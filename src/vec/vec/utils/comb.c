@@ -78,17 +78,17 @@ static PetscErrorCode  PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReducti
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr               = PetscNew(PetscSplitReduction,sr);CHKERRQ(ierr);
+  ierr               = PetscNew(sr);CHKERRQ(ierr);
   (*sr)->numopsbegin = 0;
   (*sr)->numopsend   = 0;
   (*sr)->state       = STATE_BEGIN;
   (*sr)->maxops      = 32;
-  ierr               = PetscMalloc(2*32*sizeof(PetscScalar),&(*sr)->lvalues);CHKERRQ(ierr);
-  ierr               = PetscMalloc(2*32*sizeof(PetscScalar),&(*sr)->gvalues);CHKERRQ(ierr);
-  ierr               = PetscMalloc(32*sizeof(void*),&(*sr)->invecs);CHKERRQ(ierr);
+  ierr               = PetscMalloc1(2*32,&(*sr)->lvalues);CHKERRQ(ierr);
+  ierr               = PetscMalloc1(2*32,&(*sr)->gvalues);CHKERRQ(ierr);
+  ierr               = PetscMalloc1(32,&(*sr)->invecs);CHKERRQ(ierr);
   (*sr)->comm        = comm;
   (*sr)->request     = MPI_REQUEST_NULL;
-  ierr               = PetscMalloc(32*sizeof(PetscInt),&(*sr)->reducetype);CHKERRQ(ierr);
+  ierr               = PetscMalloc1(32,&(*sr)->reducetype);CHKERRQ(ierr);
   (*sr)->async       = PETSC_FALSE;
 #if defined(PETSC_HAVE_MPI_IALLREDUCE) || defined(PETSC_HAVE_MPIX_IALLREDUCE)
   (*sr)->async = PETSC_TRUE;    /* Enable by default */
@@ -288,10 +288,10 @@ PetscErrorCode  PetscSplitReductionExtend(PetscSplitReduction *sr)
 
   PetscFunctionBegin;
   sr->maxops     = 2*maxops;
-  ierr = PetscMalloc(2*2*maxops*sizeof(PetscScalar),&sr->lvalues);CHKERRQ(ierr);
-  ierr = PetscMalloc(2*2*maxops*sizeof(PetscScalar),&sr->gvalues);CHKERRQ(ierr);
-  ierr = PetscMalloc(2*maxops*sizeof(PetscInt),&sr->reducetype);CHKERRQ(ierr);
-  ierr = PetscMalloc(2*maxops*sizeof(void*),&sr->invecs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2*2*maxops,&sr->lvalues);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2*2*maxops,&sr->gvalues);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2*maxops,&sr->reducetype);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2*maxops,&sr->invecs);CHKERRQ(ierr);
   ierr = PetscMemcpy(sr->lvalues,lvalues,maxops*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemcpy(sr->gvalues,gvalues,maxops*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemcpy(sr->reducetype,reducetype,maxops*sizeof(PetscInt));CHKERRQ(ierr);

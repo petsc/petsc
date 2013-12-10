@@ -1,5 +1,6 @@
 
 #include <petsc-private/snesimpl.h>       /*I   "petsc-private/snesimpl.h"   I*/
+#include <petscdm.h>
 #include <petscblaslapack.h>
 
 #undef __FUNCT__
@@ -181,9 +182,9 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
   ierr  = MatGetSize(dJ,&n,NULL);CHKERRQ(ierr);
   ierr  = PetscBLASIntCast(n,&nb);CHKERRQ(ierr);
   lwork = 3*nb;
-  ierr  = PetscMalloc(n*sizeof(PetscReal),&eigr);CHKERRQ(ierr);
-  ierr  = PetscMalloc(n*sizeof(PetscReal),&eigi);CHKERRQ(ierr);
-  ierr  = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(n,&eigr);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(n,&eigi);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(lwork,&work);CHKERRQ(ierr);
   ierr  = MatDenseGetArray(dJdense,&a);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
   {
@@ -369,10 +370,10 @@ PetscErrorCode  SNESMonitorSetRatio(SNES snes,PetscViewer viewer)
     ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)snes),"stdout",&viewer);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
   }
-  ierr = PetscNewLog(snes,SNESMonitorRatioContext,&ctx);CHKERRQ(ierr);
+  ierr = PetscNewLog(snes,&ctx);CHKERRQ(ierr);
   ierr = SNESGetConvergenceHistory(snes,&history,NULL,NULL);CHKERRQ(ierr);
   if (!history) {
-    ierr = PetscMalloc(100*sizeof(PetscReal),&ctx->history);CHKERRQ(ierr);
+    ierr = PetscMalloc1(100,&ctx->history);CHKERRQ(ierr);
     ierr = SNESSetConvergenceHistory(snes,ctx->history,0,100,PETSC_TRUE);CHKERRQ(ierr);
   }
   ctx->viewer = viewer;
@@ -486,9 +487,9 @@ PetscErrorCode  SNESConvergedDefault(SNES snes,PetscInt it,PetscReal xnorm,Petsc
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESSkipConverged"
+#define __FUNCT__ "SNESConvergedSkip"
 /*@C
-   SNESSkipConverged - Convergence test for SNES that NEVER returns as
+   SNESConvergedSkip - Convergence test for SNES that NEVER returns as
    converged, UNLESS the maximum number of iteration have been reached.
 
    Logically Collective on SNES
@@ -513,7 +514,7 @@ PetscErrorCode  SNESConvergedDefault(SNES snes,PetscInt it,PetscReal xnorm,Petsc
 
 .seealso: SNESSetConvergenceTest()
 @*/
-PetscErrorCode  SNESSkipConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscReal snorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
+PetscErrorCode  SNESConvergedSkip(SNES snes,PetscInt it,PetscReal xnorm,PetscReal snorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
   PetscErrorCode ierr;
 
@@ -548,13 +549,18 @@ PetscErrorCode  SNESSkipConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscRea
 @*/
 PetscErrorCode SNESSetWorkVecs(SNES snes,PetscInt nw)
 {
+  DM             dm;
+  Vec            v;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
   snes->nwork = nw;
 
-  ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work);CHKERRQ(ierr);
+  ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dm, &v);CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(v,snes->nwork,&snes->work);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm, &v);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(snes,nw,snes->work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

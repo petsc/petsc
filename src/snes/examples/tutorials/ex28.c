@@ -335,7 +335,7 @@ int main(int argc, char *argv[])
   PetscErrorCode ierr;
   DM             dau,dak,pack;
   const PetscInt *lxu;
-  PetscInt       *lxk,m,nprocs;
+  PetscInt       *lxk,m,sizes;
   User           user;
   SNES           snes;
   Vec            X,F,Xu,Xk,Fu,Fk;
@@ -348,9 +348,9 @@ int main(int argc, char *argv[])
   ierr = DMSetOptionsPrefix(dau,"u_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(dau);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(dau,&lxu,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(dau,0, &m,0,0, &nprocs,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscMalloc(nprocs*sizeof(*lxk),&lxk);CHKERRQ(ierr);
-  ierr = PetscMemcpy(lxk,lxu,nprocs*sizeof(*lxk));CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dau,0, &m,0,0, &sizes,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscMalloc1(sizes,&lxk);CHKERRQ(ierr);
+  ierr = PetscMemcpy(lxk,lxu,sizes*sizeof(*lxk));CHKERRQ(ierr);
   lxk[0]--;
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,m-1,1,1,lxk,&dak);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(dak,"k_");CHKERRQ(ierr);
@@ -368,7 +368,7 @@ int main(int argc, char *argv[])
   ierr = DMCreateGlobalVector(pack,&X);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
 
-  ierr = PetscNew(struct _UserCtx,&user);CHKERRQ(ierr);
+  ierr = PetscNew(&user);CHKERRQ(ierr);
 
   user->pack = pack;
 
@@ -393,7 +393,7 @@ int main(int argc, char *argv[])
   case 0:
     ierr = DMCompositeGetAccess(pack,X,&Xu,0);CHKERRQ(ierr);
     ierr = DMCompositeGetAccess(pack,F,&Fu,0);CHKERRQ(ierr);
-    ierr = DMCreateMatrix(dau,NULL,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dau,&B);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,Fu,FormFunction_All,user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,B,B,FormJacobian_All,user);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
@@ -405,7 +405,7 @@ int main(int argc, char *argv[])
   case 1:
     ierr = DMCompositeGetAccess(pack,X,0,&Xk);CHKERRQ(ierr);
     ierr = DMCompositeGetAccess(pack,F,0,&Fk);CHKERRQ(ierr);
-    ierr = DMCreateMatrix(dak,NULL,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dak,&B);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,Fk,FormFunction_All,user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,B,B,FormJacobian_All,user);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
@@ -415,7 +415,7 @@ int main(int argc, char *argv[])
     ierr = DMCompositeRestoreAccess(pack,F,0,&Fk);CHKERRQ(ierr);
     break;
   case 2:
-    ierr = DMCreateMatrix(pack,NULL,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(pack,&B);CHKERRQ(ierr);
     /* This example does not correctly allocate off-diagonal blocks. These options allows new nonzeros (slow). */
     ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);

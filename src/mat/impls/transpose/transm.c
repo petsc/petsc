@@ -100,7 +100,7 @@ PetscErrorCode  MatCreateTranspose(Mat A,Mat *N)
   ierr = MatSetSizes(*N,n,m,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*N,MATTRANSPOSEMAT);CHKERRQ(ierr);
 
-  ierr       = PetscNewLog(*N,Mat_Transpose,&Na);CHKERRQ(ierr);
+  ierr       = PetscNewLog(*N,&Na);CHKERRQ(ierr);
   (*N)->data = (void*) Na;
   ierr       = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
   Na->A      = A;

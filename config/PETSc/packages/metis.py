@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/metis-5.0.2-p3.tar.gz']
+    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/metis-5.1.0-p1.tar.gz']
     self.functions         = ['METIS_PartGraphKway']
     self.includes          = ['metis.h']
     self.liblist           = [['libmetis.a']]
@@ -70,7 +70,7 @@ class Configure(PETSc.package.NewPackage):
       if os.path.isdir(folder):
         import shutil
         shutil.rmtree(folder)
-        os.mkdir(folder)
+      os.mkdir(folder)
 
       try:
         self.logPrintBox('Configuring METIS; this may take several minutes')

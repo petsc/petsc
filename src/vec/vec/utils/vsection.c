@@ -129,7 +129,10 @@ PetscErrorCode VecGetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
 
   Level: developer
 
-  Note: This is similar to MatSetValuesStencil()
+  Note: This is similar to MatSetValuesStencil(). The Fortran binding is
+$
+$   VecSetValuesSectionF90(vec, section, point, values, mode, ierr)
+$
 
 .seealso: PetscSection, PetscSectionCreate()
 @*/
@@ -145,7 +148,7 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr  = PetscSectionGetConstraintDof(s, p, &cDim);CHKERRQ(ierr);
+  ierr  = PetscSectionGetConstraintDof(s, point, &cDim);CHKERRQ(ierr);
   ierr  = VecGetArray(v, &baseArray);CHKERRQ(ierr);
   array = &baseArray[s->atlasOff[p]];
   if (!cDim && doInterior) {

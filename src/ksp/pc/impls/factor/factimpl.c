@@ -107,6 +107,17 @@ PetscErrorCode  PCFactorSetMatOrderingType_Factor(PC pc,MatOrderingType ordering
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCFactorGetLevels_Factor"
+PetscErrorCode  PCFactorGetLevels_Factor(PC pc,PetscInt *levels)
+{
+  PC_Factor      *ilu = (PC_Factor*)pc->data;
+
+  PetscFunctionBegin;
+  *levels = ilu->info.levels;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetLevels_Factor"
 PetscErrorCode  PCFactorSetLevels_Factor(PC pc,PetscInt levels)
 {
@@ -250,7 +261,7 @@ PetscErrorCode  PCSetFromOptions_Factor(PC pc)
   }
 
   ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-pc_factor_mat_ordering_type","Reordering to reduce nonzeros in factored matrix","PCFactorSetMatOrderingType",ordlist,((PC_Factor*)factor)->ordering,tname,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-pc_factor_mat_ordering_type","Reordering to reduce nonzeros in factored matrix","PCFactorSetMatOrderingType",ordlist,((PC_Factor*)factor)->ordering,tname,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCFactorSetMatOrderingType(pc,tname);CHKERRQ(ierr);
   }
@@ -288,14 +299,8 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
     }
 
     ierr = PetscViewerASCIIPrintf(viewer,"  tolerance for zero pivot %G\n",factor->info.zeropivot);CHKERRQ(ierr);
-    if (factor->info.shifttype==(PetscReal)MAT_SHIFT_POSITIVE_DEFINITE) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  using Manteuffel shift\n");CHKERRQ(ierr);
-    }
-    if (factor->info.shifttype==(PetscReal)MAT_SHIFT_NONZERO) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  using diagonal shift to prevent zero pivot\n");CHKERRQ(ierr);
-    }
-    if (factor->info.shifttype==(PetscReal)MAT_SHIFT_INBLOCKS) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  using diagonal shift on blocks to prevent zero pivot\n");CHKERRQ(ierr);
+    if (MatFactorShiftTypesDetail[(int)factor->info.shifttype]) { /* Only print when using a nontrivial shift */
+      ierr = PetscViewerASCIIPrintf(viewer,"  using %s [%s]\n",MatFactorShiftTypesDetail[(int)factor->info.shifttype],MatFactorShiftTypes[(int)factor->info.shifttype]);CHKERRQ(ierr);
     }
 
     ierr = PetscViewerASCIIPrintf(viewer,"  matrix ordering: %s\n",factor->ordering);CHKERRQ(ierr);

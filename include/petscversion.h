@@ -1,10 +1,10 @@
 #if !defined(__PETSCVERSION_H)
 #define __PETSCVERSION_H
 
-#define PETSC_VERSION_RELEASE    1
+#define PETSC_VERSION_RELEASE    0
 #define PETSC_VERSION_MAJOR      3
 #define PETSC_VERSION_MINOR      4
-#define PETSC_VERSION_SUBMINOR   0
+#define PETSC_VERSION_SUBMINOR   3
 #define PETSC_VERSION_PATCH      0
 #define PETSC_RELEASE_DATE       "May, 13, 2013"
 #define PETSC_VERSION_DATE       "unknown"
@@ -24,7 +24,7 @@
    (PETSC_VERSION_RELEASE  == 1))
 
 #define PETSC_VERSION_LT(MAJOR,MINOR,SUBMINOR)          \
-  (PETSC_VERSION_RELEASE == 0 &&                        \
+  (PETSC_VERSION_RELEASE == 1 &&                        \
    (PETSC_VERSION_MAJOR < (MAJOR) ||                    \
     (PETSC_VERSION_MAJOR == (MAJOR) &&                  \
      (PETSC_VERSION_MINOR < (MINOR) ||                  \

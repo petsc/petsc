@@ -161,6 +161,7 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
     ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
     ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
+    ierr = TSPostStage(ts,ts->ptime+ts->time_step,0,&(pseudo->update));CHKERRQ(ierr);
     ts->snes_its += its; ts->ksp_its += lits;
     ierr = PetscInfo3(ts,"step=%D, nonlinear solve iterations=%D, linear solve iterations=%D\n",ts->steps,its,lits);CHKERRQ(ierr);
     pseudo->fnorm = -1;         /* The current norm is no longer valid, monitor must recompute it. */
@@ -687,7 +688,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts)
   ierr = SNESGetType(snes,&stype);CHKERRQ(ierr);
   if (!stype) {ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);}
 
-  ierr = PetscNewLog(ts,TS_Pseudo,&pseudo);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&pseudo);CHKERRQ(ierr);
   ts->data = (void*)pseudo;
 
   pseudo->dt_increment                 = 1.1;

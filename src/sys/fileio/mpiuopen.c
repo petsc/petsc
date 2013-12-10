@@ -101,6 +101,7 @@ PetscErrorCode  PetscFClose(MPI_Comm comm,FILE *fd)
 }
 
 #if defined(PETSC_HAVE_POPEN)
+static char PetscPOpenMachine[128] = "";
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscPClose"
@@ -124,7 +125,7 @@ PetscErrorCode  PetscFClose(MPI_Comm comm,FILE *fd)
 .seealso: PetscFOpen(), PetscFClose(), PetscPOpen()
 
 @*/
-PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd,PetscInt *rval)
+PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd,int *rval)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -166,10 +167,13 @@ PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd,PetscInt *rval)
        Use PetscPClose() to close the file pointer when you are finished with it
        Does not work under Windows
 
+       If machine is not provided will use the value set with PetsPOpenSetMachine() if that was provided, otherwise
+       will use the machine running node zero of the communicator
+
        The program string may contain ${DISPLAY}, ${HOMEDIRECTORY} or ${WORKINGDIRECTORY}; these
     will be replaced with relevent values.
 
-.seealso: PetscFOpen(), PetscFClose(), PetscPClose()
+.seealso: PetscFOpen(), PetscFClose(), PetscPClose(), PetscPOpenSetMachine()
 
 @*/
 PetscErrorCode  PetscPOpen(MPI_Comm comm,const char machine[],const char program[],const char mode[],FILE **fp)
@@ -182,9 +186,13 @@ PetscErrorCode  PetscPOpen(MPI_Comm comm,const char machine[],const char program
 
   PetscFunctionBegin;
   /* all processors have to do the string manipulation because PetscStrreplace() is a collective operation */
-  if (machine && machine[0]) {
+  if (PetscPOpenMachine[0] || (machine && machine[0])) {
     ierr = PetscStrcpy(command,"ssh ");CHKERRQ(ierr);
-    ierr = PetscStrcat(command,machine);CHKERRQ(ierr);
+    if (PetscPOpenMachine[0]) {
+      ierr = PetscStrcat(command,PetscPOpenMachine);CHKERRQ(ierr);
+    } else {
+      ierr = PetscStrcat(command,machine);CHKERRQ(ierr);
+    }
     ierr = PetscStrcat(command," \" export DISPLAY=${DISPLAY}; ");CHKERRQ(ierr);
     /*
         Copy program into command but protect the " with a \ in front of it
@@ -209,6 +217,37 @@ PetscErrorCode  PetscPOpen(MPI_Comm comm,const char machine[],const char program
     ierr = PetscInfo1(0,"Running command :%s\n",commandt);CHKERRQ(ierr);
     if (!(fd = popen(commandt,mode))) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot run command %s",commandt);
     if (fp) *fp = fd;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPOpenSetMachine"
+/*@C
+      PetscPOpenSetMachine - Sets the name of the default machine to run PetscPOpen() calls on
+
+     Logically Collective on MPI_Comm, but only process 0 runs the command
+
+   Input Parameter:
+.   machine - machine to run command on or NULL to remove previous entry
+
+   Options Database:
+.   -popen_machine <machine>
+
+   Level: intermediate
+
+.seealso: PetscFOpen(), PetscFClose(), PetscPClose(), PetscPOpen()
+
+@*/
+PetscErrorCode  PetscPOpenSetMachine(const char machine[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (machine) {
+    ierr = PetscStrcpy(PetscPOpenMachine,machine);CHKERRQ(ierr);
+  } else {
+    PetscPOpenMachine[0] = 0;
   }
   PetscFunctionReturn(0);
 }

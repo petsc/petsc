@@ -136,8 +136,8 @@ PetscErrorCode TSStep_Sundials(TS ts)
 
   ierr = TSPreStep(ts);CHKERRQ(ierr);
 
-  /* We would like to call TSPreStep() when starting each step (including rejections) and TSPreStage() before each
-   * stage solve, but CVode does not appear to support this. */
+  /* We would like to call TSPreStep() when starting each step (including rejections), TSPreStage(),
+   * and TSPostStage() before each stage solve, but CVode does not appear to support this. */
   if (cvode->monitorstep) flag = CVode(mem,tout,cvode->y,&t,CV_ONE_STEP);
   else flag = CVode(mem,tout,cvode->y,&t,CV_NORMAL);
 
@@ -307,8 +307,8 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
 
   ierr = VecDuplicate(ts->vec_sol,&cvode->update);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&cvode->ydot);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(ts,cvode->update);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(ts,cvode->ydot);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)cvode->update);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)cvode->ydot);CHKERRQ(ierr);
 
   /*
     Create work vectors for the TSPSolve_Sundials() routine. Note these are
@@ -317,8 +317,8 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
   */
   ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)ts),1,locsize,PETSC_DECIDE,0,&cvode->w1);CHKERRQ(ierr);
   ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)ts),1,locsize,PETSC_DECIDE,0,&cvode->w2);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(ts,cvode->w1);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(ts,cvode->w2);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)cvode->w1);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)cvode->w2);CHKERRQ(ierr);
 
   /* Call CVodeCreate to create the solver memory and the use of a Newton iteration */
   mem = CVodeCreate(cvode->cvode_type, CV_NEWTON);
@@ -948,7 +948,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Sundials(TS ts)
   ts->ops->interpolate    = TSInterpolate_Sundials;
   ts->ops->setfromoptions = TSSetFromOptions_Sundials;
 
-  ierr = PetscNewLog(ts,TS_Sundials,&cvode);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&cvode);CHKERRQ(ierr);
 
   ts->data           = (void*)cvode;
   cvode->cvode_type  = SUNDIALS_BDF;

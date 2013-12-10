@@ -580,6 +580,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
     ierr = PetscThreadCommRunKernel3(PetscObjectComm((PetscObject)xin),(PetscThreadKernel)VecNorm_kernel,xin,(void*)&type,red);CHKERRQ(ierr);
     ierr = PetscThreadReductionEnd(red,z);CHKERRQ(ierr);
     *z   = PetscSqrtReal(*z);
+    ierr = PetscLogFlops(PetscMax(2*xin->map->n-1.0,0.0));
   } else if (type == NORM_INFINITY) {
     ierr = PetscThreadReductionBegin(PetscObjectComm((PetscObject)xin),THREADCOMM_MAX,PETSC_REAL,1,&red);CHKERRQ(ierr);
     ierr = PetscThreadCommRunKernel3(PetscObjectComm((PetscObject)xin),(PetscThreadKernel)VecNorm_kernel,xin,(void*)&type,red);CHKERRQ(ierr);
@@ -588,6 +589,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
     ierr = PetscThreadReductionBegin(PetscObjectComm((PetscObject)xin),THREADCOMM_SUM,PETSC_REAL,1,&red);CHKERRQ(ierr);
     ierr = PetscThreadCommRunKernel3(PetscObjectComm((PetscObject)xin),(PetscThreadKernel)VecNorm_kernel,xin,(void*)&type,red);CHKERRQ(ierr);
     ierr = PetscThreadReductionEnd(red,z);CHKERRQ(ierr);
+    ierr = PetscLogFlops(PetscMax(xin->map->n-1.0,0.0));
   } else if (type == NORM_1_AND_2) {
     ierr = VecNorm_Seq(xin,NORM_1,z);CHKERRQ(ierr);
     ierr = VecNorm_Seq(xin,NORM_2,z+1);CHKERRQ(ierr);
@@ -791,7 +793,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
     }
   } else if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) PetscFunctionReturn(0);
   else {
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)xin,viewer,"Vector Object");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)xin,viewer);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       if (format == PETSC_VIEWER_ASCII_INDEX) {
         ierr = PetscViewerASCIIPrintf(viewer,"%D: ",i);CHKERRQ(ierr);
@@ -828,8 +830,8 @@ PetscErrorCode VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
   PetscReal         *yy;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(n*sizeof(PetscReal),&xx);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscReal),&yy);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&xx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&yy);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xin,&xv);CHKERRQ(ierr);
   for (c=0; c<bs; c++) {
     ierr = PetscViewerDrawGetDrawLG(v,c,&lg);CHKERRQ(ierr);
@@ -917,9 +919,9 @@ PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
       ierr = PetscObjectGetName((PetscObject)xin,&name);CHKERRQ(ierr);
       ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
       ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
-      ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinary for MATLAB format ---%\n");CHKERRQ(ierr);
-      ierr = PetscFPrintf(comm,info,"%%$$ Set.%s = PetscBinaryRead(fd);\n",name);CHKERRQ(ierr);
-      ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscViewerBinary for MATLAB format ---%\n\n");CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"#--- begin code written by PetscViewerBinary for MATLAB format ---#\n");CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"#$$ Set.%s = PetscBinaryRead(fd);\n",name);CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"#--- end code written by PetscViewerBinary for MATLAB format ---#\n\n");CHKERRQ(ierr);
     }
 #if defined(PETSC_HAVE_MPIIO)
   } else {
@@ -1240,7 +1242,7 @@ PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(v,Vec_Seq,&s);CHKERRQ(ierr);
+  ierr = PetscNewLog(v,&s);CHKERRQ(ierr);
   ierr = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
 
   v->data            = (void*)s;

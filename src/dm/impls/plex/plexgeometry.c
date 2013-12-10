@@ -27,7 +27,7 @@ static PetscErrorCode DMPlexLocatePoint_General_2D_Internal(DM dm, const PetscSc
 {
   PetscSection       coordSection;
   Vec             coordsLocal;
-  PetscScalar    *coords;
+  PetscScalar    *coords = NULL;
   const PetscInt  faces[8]  = {0, 1, 1, 2, 2, 3, 3, 0};
   PetscReal       x         = PetscRealPart(point[0]);
   PetscReal       y         = PetscRealPart(point[1]);
@@ -82,11 +82,11 @@ static PetscErrorCode DMPlexLocatePoint_Simplex_3D_Internal(DM dm, const PetscSc
 #define __FUNCT__ "DMPlexLocatePoint_General_3D_Internal"
 static PetscErrorCode DMPlexLocatePoint_General_3D_Internal(DM dm, const PetscScalar point[], PetscInt c, PetscInt *cell)
 {
-  PetscSection       coordSection;
+  PetscSection   coordSection;
   Vec            coordsLocal;
   PetscScalar   *coords;
-  const PetscInt faces[24] = {0, 1, 2, 3,  5, 4, 7, 6,  1, 0, 4, 5,
-                              3, 2, 6, 7,  1, 5, 6, 2,  0, 3, 7, 4};
+  const PetscInt faces[24] = {0, 3, 2, 1,  5, 4, 7, 6,  3, 0, 4, 5,
+                              1, 2, 6, 7,  3, 5, 6, 2,  0, 1, 7, 4};
   PetscBool      found = PETSC_TRUE;
   PetscInt       f;
   PetscErrorCode ierr;
@@ -154,7 +154,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
   if (bs != dim) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Block size for point vector %d must be the mesh coordinate dimension %d", bs, dim);
   numPoints /= bs;
-  ierr       = PetscMalloc(numPoints * sizeof(PetscInt), &cells);CHKERRQ(ierr);
+  ierr       = PetscMalloc1(numPoints, &cells);CHKERRQ(ierr);
   for (p = 0; p < numPoints; ++p) {
     const PetscScalar *point = &a[p*bs];
 
@@ -182,7 +182,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
         case 4:
           ierr = DMPlexLocatePoint_Simplex_3D_Internal(dm, point, c, &cell);CHKERRQ(ierr);
           break;
-        case 8:
+        case 6:
           ierr = DMPlexLocatePoint_General_3D_Internal(dm, point, c, &cell);CHKERRQ(ierr);
           break;
         default:
@@ -213,8 +213,8 @@ static PetscErrorCode DMPlexComputeProjection2Dto1D_Internal(PetscScalar coords[
   const PetscReal r = sqrt(x*x + y*y), c = x/r, s = y/r;
 
   PetscFunctionBegin;
-  R[0] =  c; R[1] = s;
-  R[2] = -s; R[3] = c;
+  R[0] = c; R[1] = -s;
+  R[2] = s; R[3] =  c;
   coords[0] = 0.0;
   coords[1] = r;
   PetscFunctionReturn(0);
@@ -461,7 +461,7 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
 {
   PetscSection   coordSection;
   Vec            coordinates;
-  PetscScalar   *coords;
+  PetscScalar   *coords = NULL;
   PetscInt       numCoords, d;
   PetscErrorCode ierr;
 
@@ -504,7 +504,7 @@ static PetscErrorCode DMPlexComputeTriangleGeometry_Internal(DM dm, PetscInt e, 
 {
   PetscSection   coordSection;
   Vec            coordinates;
-  PetscScalar   *coords;
+  PetscScalar   *coords = NULL;
   PetscInt       numCoords, d, f, g;
   PetscErrorCode ierr;
 
@@ -565,7 +565,7 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
 {
   PetscSection   coordSection;
   Vec            coordinates;
-  PetscScalar   *coords;
+  PetscScalar   *coords = NULL;
   PetscInt       numCoords, d, f, g;
   PetscErrorCode ierr;
 
@@ -624,7 +624,7 @@ static PetscErrorCode DMPlexComputeTetrahedronGeometry_Internal(DM dm, PetscInt 
 {
   PetscSection   coordSection;
   Vec            coordinates;
-  PetscScalar   *coords;
+  PetscScalar   *coords = NULL;
   const PetscInt dim = 3;
   PetscInt       d;
   PetscErrorCode ierr;
@@ -656,7 +656,7 @@ static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e
 {
   PetscSection   coordSection;
   Vec            coordinates;
-  PetscScalar   *coords;
+  PetscScalar   *coords = NULL;
   const PetscInt dim = 3;
   PetscInt       d;
   PetscErrorCode ierr;
@@ -792,7 +792,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt dim, 
 {
   PetscSection   coordSection;
   Vec            coordinates;
-  PetscScalar   *coords;
+  PetscScalar   *coords = NULL;
   PetscInt       coordSize;
   PetscErrorCode ierr;
 
@@ -806,8 +806,13 @@ static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt dim, 
     centroid[1] = 0.5*PetscRealPart(coords[1] + coords[dim+1]);
   }
   if (normal) {
-    normal[0] =  PetscRealPart(coords[1] - coords[dim+1]);
-    normal[1] = -PetscRealPart(coords[0] - coords[dim+0]);
+    PetscReal norm;
+
+    normal[0] = -PetscRealPart(coords[1] - coords[dim+1]);
+    normal[1] =  PetscRealPart(coords[0] - coords[dim+0]);
+    norm = PetscSqrtReal(normal[0]*normal[0] + normal[1]*normal[1]);
+    normal[0] /= norm;
+    normal[1] /= norm;
   }
   if (vol) {
     *vol = sqrt(PetscSqr(PetscRealPart(coords[0] - coords[dim+0])) + PetscSqr(PetscRealPart(coords[1] - coords[dim+1])));
@@ -895,7 +900,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
   Vec             coordinates;
   PetscScalar    *coords = NULL;
   PetscReal       vsum = 0.0, vtmp, coordsTmp[3*3];
-  const PetscInt *faces;
+  const PetscInt *faces, *facesO;
   PetscInt        numFaces, f, coordSize, numCorners, p, d;
   PetscErrorCode  ierr;
 
@@ -906,6 +911,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
   if (centroid) for (d = 0; d < dim; ++d) centroid[d] = 0.0;
   ierr = DMPlexGetConeSize(dm, cell, &numFaces);CHKERRQ(ierr);
   ierr = DMPlexGetCone(dm, cell, &faces);CHKERRQ(ierr);
+  ierr = DMPlexGetConeOrientation(dm, cell, &facesO);CHKERRQ(ierr);
   for (f = 0; f < numFaces; ++f) {
     ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, faces[f], &coordSize, &coords);CHKERRQ(ierr);
     numCorners = coordSize/dim;
@@ -917,8 +923,9 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
         coordsTmp[2*dim+d] = PetscRealPart(coords[2*dim+d]);
       }
       Volume_Tetrahedron_Origin_Internal(&vtmp, coordsTmp);
+      if (facesO[f] < 0) vtmp = -vtmp;
       vsum += vtmp;
-      if (centroid) {
+      if (centroid) {           /* Centroid of OABC = (a+b+c)/4 */
         for (d = 0; d < dim; ++d) {
           for (p = 0; p < 3; ++p) centroid[d] += coordsTmp[p*dim+d]*vtmp;
         }
@@ -933,6 +940,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
         coordsTmp[2*dim+d] = PetscRealPart(coords[3*dim+d]);
       }
       Volume_Tetrahedron_Origin_Internal(&vtmp, coordsTmp);
+      if (facesO[f] < 0) vtmp = -vtmp;
       vsum += vtmp;
       if (centroid) {
         for (d = 0; d < dim; ++d) {
@@ -946,6 +954,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
         coordsTmp[2*dim+d] = PetscRealPart(coords[3*dim+d]);
       }
       Volume_Tetrahedron_Origin_Internal(&vtmp, coordsTmp);
+      if (facesO[f] < 0) vtmp = -vtmp;
       vsum += vtmp;
       if (centroid) {
         for (d = 0; d < dim; ++d) {
@@ -956,7 +965,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
     default:
       SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle faces with %d vertices", numCorners);
     }
-    ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
+    ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, faces[f], &coordSize, &coords);CHKERRQ(ierr);
   }
   if (vol)     *vol = PetscAbsReal(vsum);
   if (normal)   for (d = 0; d < dim; ++d) normal[d]    = 0.0;

@@ -38,18 +38,18 @@
       parameter (SNES_DIVERGED_LOCAL_MIN          = -8)
       parameter (SNES_CONVERGED_ITERATING         =  0)
 !
-! SNESNormType
+  ! SNESNormSchedule
 !
       PetscEnum SNES_NORM_DEFAULT
       PetscEnum SNES_NORM_NONE
-      PetscEnum SNES_NORM_FUNCTION
+      PetscEnum SNES_NORM_ALWAYS
       PetscEnum SNES_NORM_INITIAL_ONLY
       PetscEnum SNES_NORM_FINAL_ONLY
       PetscEnum SNES_NORM_INITIAL_FINAL_ONLY
 
       parameter (SNES_NORM_DEFAULT                = -1)
       parameter (SNES_NORM_NONE                   =  0)
-      parameter (SNES_NORM_FUNCTION               =  1)
+      parameter (SNES_NORM_ALWAYS                 =  1)
       parameter (SNES_NORM_INITIAL_ONLY           =  2)
       parameter (SNES_NORM_FINAL_ONLY             =  3)
       parameter (SNES_NORM_INITIAL_FINAL_ONLY     =  4)
@@ -66,7 +66,7 @@
       external SNESMONITORSOLUTIONUPDATE
 
       external SNESCONVERGEDDEFAULT
-      external SNESSKIPCONVERGED
+      external SNESCONVERGEDSKIP
 
 !
 ! SNESNGMRESRestartType
@@ -98,27 +98,31 @@
 ! SNESQNScaleType
 !
 
+      PetscEnum SNES_QN_SCALE_DEFAULT
       PetscEnum SNES_QN_SCALE_NONE
       PetscEnum SNES_QN_SCALE_SHANNO
       PetscEnum SNES_QN_SCALE_LINESEARCH
       PetscEnum SNES_QN_SCALE_JACOBIAN
 
-      parameter(SNES_QN_SCALE_NONE       = 0)
-      parameter(SNES_QN_SCALE_SHANNO     = 1)
-      parameter(SNES_QN_SCALE_LINESEARCH = 2)
-      parameter(SNES_QN_SCALE_JACOBIAN   = 3)
+      parameter(SNES_QN_SCALE_DEFAULT    = 0)
+      parameter(SNES_QN_SCALE_NONE       = 1)
+      parameter(SNES_QN_SCALE_SHANNO     = 2)
+      parameter(SNES_QN_SCALE_LINESEARCH = 3)
+      parameter(SNES_QN_SCALE_JACOBIAN   = 4)
 
 !
 ! SNESQNRestartType
 !
 
+      PetscEnum SNES_QN_RESTART_DEFAULT
       PetscEnum SNES_QN_RESTART_NONE
       PetscEnum SNES_QN_RESTART_POWELL
       PetscEnum SNES_QN_RESTART_PERIODIC
 
-      parameter(SNES_QN_RESTART_NONE     = 0)
-      parameter(SNES_QN_RESTART_POWELL   = 1)
-      parameter(SNES_QN_RESTART_PERIODIC = 2)
+      parameter(SNES_QN_RESTART_DEFAULT  = 0)
+      parameter(SNES_QN_RESTART_NONE     = 1)
+      parameter(SNES_QN_RESTART_POWELL   = 2)
+      parameter(SNES_QN_RESTART_PERIODIC = 3)
 
 !
 ! SNESNCGType

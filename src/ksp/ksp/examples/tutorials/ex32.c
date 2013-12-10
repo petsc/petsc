@@ -118,7 +118,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
     MatNullSpace nullspace;
 
     ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
-    ierr = MatNullSpaceRemove(nullspace,b,NULL);CHKERRQ(ierr);
+    ierr = MatNullSpaceRemove(nullspace,b);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

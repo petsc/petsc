@@ -8,6 +8,7 @@
 
 /* Logging support */
 PetscClassId MAT_CLASSID;
+PetscClassId MAT_COLORING_CLASSID;
 PetscClassId MAT_FDCOLORING_CLASSID;
 PetscClassId MAT_TRANSPOSECOLORING_CLASSID;
 
@@ -16,9 +17,9 @@ PetscLogEvent MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT
 PetscLogEvent MAT_SolveTransposeAdd, MAT_SOR, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
 PetscLogEvent MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor;
 PetscLogEvent MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
-PetscLogEvent MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering, MAT_GetRedundantMatrix, MAT_GetSeqNonzeroStructure;
+PetscLogEvent MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetOrdering, MAT_GetRedundantMatrix, MAT_GetSeqNonzeroStructure;
 PetscLogEvent MAT_IncreaseOverlap, MAT_Partitioning, MAT_Coarsen, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate;
-PetscLogEvent MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction;
+PetscLogEvent MAT_FDColoringSetUp, MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction;
 PetscLogEvent MAT_TransposeColoringCreate;
 PetscLogEvent MAT_MatMult, MAT_MatMultSymbolic, MAT_MatMultNumeric;
 PetscLogEvent MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric,MAT_RARt, MAT_RARtSymbolic, MAT_RARtNumeric;
@@ -31,7 +32,9 @@ PetscLogEvent MAT_GetBrowsOfAocols, MAT_Getlocalmat, MAT_Getlocalmatcondensed, M
 PetscLogEvent MAT_Applypapt, MAT_Applypapt_numeric, MAT_Applypapt_symbolic, MAT_GetSequentialNonzeroStructure;
 PetscLogEvent MAT_GetMultiProcBlock;
 PetscLogEvent MAT_CUSPCopyToGPU, MAT_CUSPARSECopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
-PetscLogEvent MAT_Merge;
+PetscLogEvent MAT_ViennaCLCopyToGPU;
+PetscLogEvent MAT_Merge,MAT_Residual;
+PetscLogEvent Mat_Coloring_Apply,Mat_Coloring_Comm,Mat_Coloring_Local,Mat_Coloring_ISCreate,Mat_Coloring_SetUp;
 
 const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT","MatFactorType","MAT_FACTOR_",0};
 
@@ -224,6 +227,11 @@ PetscErrorCode  MatRealPart(Mat mat)
     mat->valid_GPU_matrix = PETSC_CUSP_CPU;
   }
 #endif
+#if defined(PETSC_HAVE_VIENNACL)
+  if (mat->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_VIENNACL_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -295,6 +303,11 @@ PetscErrorCode  MatImaginaryPart(Mat mat)
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
     mat->valid_GPU_matrix = PETSC_CUSP_CPU;
+  }
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
+  if (mat->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_VIENNACL_CPU;
   }
 #endif
   PetscFunctionReturn(0);
@@ -444,6 +457,11 @@ PetscErrorCode  MatConjugate(Mat mat)
     mat->valid_GPU_matrix = PETSC_CUSP_CPU;
   }
 #endif
+#if defined(PETSC_HAVE_VIENNACL)
+  if (mat->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_VIENNACL_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 #else
   return 0;
@@ -465,6 +483,10 @@ PetscErrorCode  MatConjugate(Mat mat)
 
    Notes:
    This routine should be called after you have finished examining the entries.
+
+   This routine zeros out ncols, cols, and vals. This is to prevent accidental
+   us of the array after it has been restored. If you pass NULL, it will
+   not zero the pointers.  Use of cols or vals after MatRestoreRow is invalid.
 
    Fortran Notes:
    The calling sequence from Fortran is
@@ -709,8 +731,8 @@ PetscErrorCode  MatSetUp(Mat A)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_AMS)
-#include <petscviewerams.h>
+#if defined(PETSC_HAVE_SAWS)
+#include <petscviewersaws.h>
 #endif
 #undef __FUNCT__
 #define __FUNCT__ "MatView"
@@ -797,7 +819,7 @@ PetscErrorCode  MatView(Mat mat,PetscViewer viewer)
   PetscInt          rows,cols,bs;
   PetscBool         iascii;
   PetscViewerFormat format;
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   PetscBool      isams;
 #endif
 
@@ -809,18 +831,18 @@ PetscErrorCode  MatView(Mat mat,PetscViewer viewer)
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(mat,1,viewer,2);
-  if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Must call MatAssemblyBegin/End() before viewing matrix");
   MatCheckPreallocated(mat,1);
 
   ierr = PetscLogEventBegin(MAT_View,mat,viewer,0,0);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERAMS,&isams);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SAWS)
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
 #endif
   if (iascii) {
+    if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Must call MatAssemblyBegin/End() before viewing matrix");
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)mat,viewer,"Matrix Object");CHKERRQ(ierr);
+      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)mat,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
       ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
@@ -840,11 +862,17 @@ PetscErrorCode  MatView(Mat mat,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"total: nonzeros=%lld, allocated nonzeros=%lld\n",(Petsc64bitInt)info.nz_used,(Petsc64bitInt)info.nz_allocated);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"total number of mallocs used during MatSetValues calls =%D\n",(PetscInt)info.mallocs);CHKERRQ(ierr);
       }
+      if (mat->nullsp) {ierr = PetscViewerASCIIPrintf(viewer,"  has attached null space\n");CHKERRQ(ierr);}
+      if (mat->nearnullsp) {ierr = PetscViewerASCIIPrintf(viewer,"  has attached near null space\n");CHKERRQ(ierr);}
     }
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   } else if (isams) {
-    if (((PetscObject)mat)->amsmem == -1) {
-      ierr = PetscObjectViewAMS((PetscObject)mat,viewer);CHKERRQ(ierr);
+    PetscMPIInt rank;
+
+    ierr = PetscObjectName((PetscObject)mat);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    if (!((PetscObject)mat)->amsmem && !rank) {
+      ierr = PetscObjectViewSAWs((PetscObject)mat,viewer);CHKERRQ(ierr);
     }
 #endif
   }
@@ -854,6 +882,7 @@ PetscErrorCode  MatView(Mat mat,PetscViewer viewer)
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   } else if (!iascii) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported",((PetscObject)viewer)->type_name);
   if (iascii) {
+    if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Must call MatAssemblyBegin/End() before viewing matrix");
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -1001,8 +1030,8 @@ PetscErrorCode  MatDestroy(Mat *A)
   if (--((PetscObject)(*A))->refct > 0) {*A = NULL; PetscFunctionReturn(0);}
 
   ierr = PetscViewerDestroy(&(*A)->viewonassembly);CHKERRQ(ierr);
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSViewOff((PetscObject)*A);CHKERRQ(ierr);
+  /* if memory was published with SAWs then destroy it */
+  ierr = PetscObjectSAWsViewOff((PetscObject)*A);CHKERRQ(ierr);
   if ((*A)->ops->destroy) {
     ierr = (*(*A)->ops->destroy)(*A);CHKERRQ(ierr);
   }
@@ -1068,7 +1097,7 @@ PetscErrorCode  MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n
   PetscInt i,j;
 #endif
 
-  PetscFunctionBegin;
+  PetscFunctionBeginHot;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
   if (!m || !n) PetscFunctionReturn(0); /* no values to insert */
@@ -1108,6 +1137,11 @@ PetscErrorCode  MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
     mat->valid_GPU_matrix = PETSC_CUSP_CPU;
+  }
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
+  if (mat->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_VIENNACL_CPU;
   }
 #endif
   PetscFunctionReturn(0);
@@ -1159,6 +1193,11 @@ PetscErrorCode  MatSetValuesRowLocal(Mat mat,PetscInt row,const PetscScalar v[])
     mat->valid_GPU_matrix = PETSC_CUSP_CPU;
   }
 #endif
+#if defined(PETSC_HAVE_VIENNACL)
+  if (mat->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_VIENNACL_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1195,7 +1234,7 @@ PetscErrorCode  MatSetValuesRow(Mat mat,PetscInt row,const PetscScalar v[])
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginHot;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
   MatCheckPreallocated(mat,1);
@@ -1217,6 +1256,11 @@ PetscErrorCode  MatSetValuesRow(Mat mat,PetscInt row,const PetscScalar v[])
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
     mat->valid_GPU_matrix = PETSC_CUSP_CPU;
+  }
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
+  if (mat->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_VIENNACL_CPU;
   }
 #endif
   PetscFunctionReturn(0);
@@ -1313,7 +1357,7 @@ PetscErrorCode  MatSetValuesStencil(Mat mat,PetscInt m,const MatStencil idxm[],P
   if ((m+n) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
     jdxm = buf; jdxn = buf+m;
   } else {
-    ierr = PetscMalloc2(m,PetscInt,&bufm,n,PetscInt,&bufn);CHKERRQ(ierr);
+    ierr = PetscMalloc2(m,&bufm,n,&bufn);CHKERRQ(ierr);
     jdxm = bufm; jdxn = bufn;
   }
   for (i=0; i<m; i++) {
@@ -1343,7 +1387,7 @@ PetscErrorCode  MatSetValuesStencil(Mat mat,PetscInt m,const MatStencil idxm[],P
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetValuesBlockedStencil"
-/*@C
+/*@
    MatSetValuesBlockedStencil - Inserts or adds a block of values into a matrix.
      Using structured grid indexing
 
@@ -1426,7 +1470,7 @@ PetscErrorCode  MatSetValuesBlockedStencil(Mat mat,PetscInt m,const MatStencil i
   if ((m+n) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
     jdxm = buf; jdxn = buf+m;
   } else {
-    ierr = PetscMalloc2(m,PetscInt,&bufm,n,PetscInt,&bufn);CHKERRQ(ierr);
+    ierr = PetscMalloc2(m,&bufm,n,&bufn);CHKERRQ(ierr);
     jdxm = bufm; jdxn = bufn;
   }
   for (i=0; i<m; i++) {
@@ -1454,6 +1498,11 @@ PetscErrorCode  MatSetValuesBlockedStencil(Mat mat,PetscInt m,const MatStencil i
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
     mat->valid_GPU_matrix = PETSC_CUSP_CPU;
+  }
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
+  if (mat->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_VIENNACL_CPU;
   }
 #endif
   PetscFunctionReturn(0);
@@ -1583,7 +1632,7 @@ PetscErrorCode  MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pet
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginHot;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
   if (!m || !n) PetscFunctionReturn(0); /* no values to insert */
@@ -1609,11 +1658,11 @@ PetscErrorCode  MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pet
     ierr = (*mat->ops->setvaluesblocked)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
   } else {
     PetscInt buf[8192],*bufr=0,*bufc=0,*iidxm,*iidxn;
-    PetscInt i,j,bs=mat->rmap->bs;
-    if ((m+n)*bs <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
+    PetscInt i,j,bs = mat->rmap->bs,cbs = mat->cmap->bs;
+    if (m*bs+n*cbs <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
       iidxm = buf; iidxn = buf + m*bs;
     } else {
-      ierr  = PetscMalloc2(m*bs,PetscInt,&bufr,n*bs,PetscInt,&bufc);CHKERRQ(ierr);
+      ierr  = PetscMalloc2(m*bs,&bufr,n*cbs,&bufc);CHKERRQ(ierr);
       iidxm = bufr; iidxn = bufc;
     }
     for (i=0; i<m; i++) {
@@ -1622,17 +1671,22 @@ PetscErrorCode  MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pet
       }
     }
     for (i=0; i<n; i++) {
-      for (j=0; j<bs; j++) {
-        iidxn[i*bs+j] = bs*idxn[i] + j;
+      for (j=0; j<cbs; j++) {
+        iidxn[i*cbs+j] = cbs*idxn[i] + j;
       }
     }
-    ierr = MatSetValues(mat,m*bs,iidxm,n*bs,iidxn,v,addv);CHKERRQ(ierr);
+    ierr = MatSetValues(mat,m*bs,iidxm,n*cbs,iidxn,v,addv);CHKERRQ(ierr);
     ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
     mat->valid_GPU_matrix = PETSC_CUSP_CPU;
+  }
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
+  if (mat->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_VIENNACL_CPU;
   }
 #endif
   PetscFunctionReturn(0);
@@ -1932,7 +1986,7 @@ PetscErrorCode  MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pe
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginHot;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
   MatCheckPreallocated(mat,1);
@@ -1961,7 +2015,7 @@ PetscErrorCode  MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pe
     if ((nrow+ncol) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
       irowm = buf; icolm = buf+nrow;
     } else {
-      ierr  = PetscMalloc2(nrow,PetscInt,&bufr,ncol,PetscInt,&bufc);CHKERRQ(ierr);
+      ierr  = PetscMalloc2(nrow,&bufr,ncol,&bufc);CHKERRQ(ierr);
       irowm = bufr; icolm = bufc;
     }
     ierr = ISLocalToGlobalMappingApply(mat->rmap->mapping,nrow,irow,irowm);CHKERRQ(ierr);
@@ -1973,6 +2027,11 @@ PetscErrorCode  MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pe
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
     mat->valid_GPU_matrix = PETSC_CUSP_CPU;
+  }
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
+  if (mat->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_VIENNACL_CPU;
   }
 #endif
   PetscFunctionReturn(0);
@@ -2020,7 +2079,7 @@ PetscErrorCode  MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt ir
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginHot;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
   MatCheckPreallocated(mat,1);
@@ -2050,7 +2109,7 @@ PetscErrorCode  MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt ir
       if ((nrow+ncol) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
         irowm = buf; icolm = buf + nrow;
       } else {
-        ierr  = PetscMalloc2(nrow,PetscInt,&bufr,ncol,PetscInt,&bufc);CHKERRQ(ierr);
+        ierr  = PetscMalloc2(nrow,&bufr,ncol,&bufc);CHKERRQ(ierr);
         irowm = bufr; icolm = bufc;
       }
       ierr = ISLocalToGlobalMappingApply(mat->rmap->bmapping,nrow,irow,irowm);CHKERRQ(ierr);
@@ -2058,20 +2117,20 @@ PetscErrorCode  MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt ir
       ierr = MatSetValuesBlocked(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
       ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
     } else {
-      PetscInt i,j,bs=mat->rmap->bs;
-      if ((nrow+ncol)*bs <=(PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
+      PetscInt i,j,bs = mat->rmap->bs,cbs = mat->cmap->bs;
+      if (nrow*bs+ncol*cbs <=(PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
         irowm = buf; icolm = buf + nrow;
       } else {
-        ierr  = PetscMalloc2(nrow*bs,PetscInt,&bufr,ncol*bs,PetscInt,&bufc);CHKERRQ(ierr);
+        ierr  = PetscMalloc2(nrow*bs,&bufr,ncol*cbs,&bufc);CHKERRQ(ierr);
         irowm = bufr; icolm = bufc;
       }
       for (i=0; i<nrow; i++) {
         for (j=0; j<bs; j++) irowm[i*bs+j] = irow[i]*bs+j;
       }
       for (i=0; i<ncol; i++) {
-        for (j=0; j<bs; j++) icolm[i*bs+j] = icol[i]*bs+j;
+        for (j=0; j<cbs; j++) icolm[i*cbs+j] = icol[i]*cbs+j;
       }
-      ierr = MatSetValuesLocal(mat,nrow*bs,irowm,ncol*bs,icolm,y,addv);CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(mat,nrow*bs,irowm,ncol*cbs,icolm,y,addv);CHKERRQ(ierr);
       ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
     }
   }
@@ -2079,6 +2138,11 @@ PetscErrorCode  MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt ir
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
     mat->valid_GPU_matrix = PETSC_CUSP_CPU;
+  }
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
+  if (mat->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_VIENNACL_CPU;
   }
 #endif
   PetscFunctionReturn(0);
@@ -3422,7 +3486,7 @@ PetscErrorCode  MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
       ierr = VecAXPY(x,one,y);CHKERRQ(ierr);
     } else {
       ierr = VecDuplicate(x,&tmp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(mat,tmp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)tmp);CHKERRQ(ierr);
       ierr = VecCopy(x,tmp);CHKERRQ(ierr);
       ierr = MatSolve(mat,b,x);CHKERRQ(ierr);
       ierr = VecAXPY(x,one,tmp);CHKERRQ(ierr);
@@ -3549,7 +3613,7 @@ PetscErrorCode  MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
       ierr = VecAXPY(x,one,y);CHKERRQ(ierr);
     } else {
       ierr = VecDuplicate(x,&tmp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(mat,tmp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)tmp);CHKERRQ(ierr);
       ierr = VecCopy(x,tmp);CHKERRQ(ierr);
       ierr = MatSolveTranspose(mat,b,x);CHKERRQ(ierr);
       ierr = VecAXPY(x,one,tmp);CHKERRQ(ierr);
@@ -4659,6 +4723,11 @@ PetscErrorCode  MatDiagonalScale(Mat mat,Vec l,Vec r)
     mat->valid_GPU_matrix = PETSC_CUSP_CPU;
   }
 #endif
+#if defined(PETSC_HAVE_VIENNACL)
+  if (mat->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_VIENNACL_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -4704,6 +4773,11 @@ PetscErrorCode  MatScale(Mat mat,PetscScalar a)
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
     mat->valid_GPU_matrix = PETSC_CUSP_CPU;
+  }
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
+  if (mat->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_VIENNACL_CPU;
   }
 #endif
   PetscFunctionReturn(0);
@@ -4846,7 +4920,7 @@ PetscErrorCode  MatAssembled(Mat mat,PetscBool  *assembled)
 
   Input Parameters:
 + mat   - the matrix
-. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
+. prefix - prefix to use for viewing, or NULL to use prefix of 'mat'
 - optionname - option to activate viewing
 
   Level: intermediate
@@ -4958,6 +5032,11 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
     mat->valid_GPU_matrix = PETSC_CUSP_CPU;
+  }
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
+  if (mat->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_VIENNACL_CPU;
   }
 #endif
   if (inassm == 1 && type != MAT_FLUSH_ASSEMBLY) {
@@ -5104,8 +5183,10 @@ PetscErrorCode  MatSetOption(Mat mat,MatOption op,PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  if (op > 0) PetscValidLogicalCollectiveEnum(mat,op,2);
-  PetscValidLogicalCollectiveBool(mat,flg,3);
+  if (op > 0) {
+    PetscValidLogicalCollectiveEnum(mat,op,2);
+    PetscValidLogicalCollectiveBool(mat,flg,3);
+  }
 
   if (((int) op) <= MAT_OPTION_MIN || ((int) op) >= MAT_OPTION_MAX) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)op);
   if (!((PetscObject)mat)->type_name) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_TYPENOTSET,"Cannot set options until type and size have been set, see MatSetType() and MatSetSizes()");
@@ -5198,6 +5279,11 @@ PetscErrorCode  MatZeroEntries(Mat mat)
     mat->valid_GPU_matrix = PETSC_CUSP_CPU;
   }
 #endif
+#if defined(PETSC_HAVE_VIENNACL)
+  if (mat->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_VIENNACL_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -5263,6 +5349,11 @@ PetscErrorCode  MatZeroRowsColumns(Mat mat,PetscInt numRows,const PetscInt rows[
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
     mat->valid_GPU_matrix = PETSC_CUSP_CPU;
+  }
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
+  if (mat->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_VIENNACL_CPU;
   }
 #endif
   PetscFunctionReturn(0);
@@ -5393,6 +5484,11 @@ PetscErrorCode  MatZeroRows(Mat mat,PetscInt numRows,const PetscInt rows[],Petsc
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
     mat->valid_GPU_matrix = PETSC_CUSP_CPU;
+  }
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
+  if (mat->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_VIENNACL_CPU;
   }
 #endif
   PetscFunctionReturn(0);
@@ -5537,7 +5633,7 @@ PetscErrorCode  MatZeroRowsStencil(Mat mat,PetscInt numRows,const MatStencil row
   PetscValidType(mat,1);
   if (numRows) PetscValidIntPointer(rows,3);
 
-  ierr = PetscMalloc(numRows*sizeof(PetscInt), &jdxm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numRows, &jdxm);CHKERRQ(ierr);
   for (i = 0; i < numRows; ++i) {
     /* Skip unused dimensions (they are ordered k, j, i, c) */
     for (j = 0; j < 3-sdim; ++j) dxm++;
@@ -5639,7 +5735,7 @@ PetscErrorCode  MatZeroRowsColumnsStencil(Mat mat,PetscInt numRows,const MatSten
   PetscValidType(mat,1);
   if (numRows) PetscValidIntPointer(rows,3);
 
-  ierr = PetscMalloc(numRows*sizeof(PetscInt), &jdxm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numRows, &jdxm);CHKERRQ(ierr);
   for (i = 0; i < numRows; ++i) {
     /* Skip unused dimensions (they are ordered k, j, i, c) */
     for (j = 0; j < 3-sdim; ++j) dxm++;
@@ -5740,6 +5836,11 @@ PetscErrorCode  MatZeroRowsLocal(Mat mat,PetscInt numRows,const PetscInt rows[],
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
     mat->valid_GPU_matrix = PETSC_CUSP_CPU;
+  }
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
+  if (mat->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_VIENNACL_CPU;
   }
 #endif
   PetscFunctionReturn(0);
@@ -5869,6 +5970,11 @@ PetscErrorCode  MatZeroRowsColumnsLocal(Mat mat,PetscInt numRows,const PetscInt 
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
     mat->valid_GPU_matrix = PETSC_CUSP_CPU;
+  }
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
+  if (mat->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+    mat->valid_GPU_matrix = PETSC_VIENNACL_CPU;
   }
 #endif
   PetscFunctionReturn(0);
@@ -6611,7 +6717,9 @@ PetscErrorCode  MatIncreaseOverlap(Mat mat,PetscInt n,IS is[],PetscInt ov)
 .  bs - block size
 
    Notes:
-   Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ
+   Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ.
+
+   If the block size has not been set yet this routine returns -1.
 
    Level: intermediate
 
@@ -6623,9 +6731,7 @@ PetscErrorCode  MatGetBlockSize(Mat mat,PetscInt *bs)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
   PetscValidIntPointer(bs,2);
-  MatCheckPreallocated(mat,1);
   *bs = mat->rmap->bs;
   PetscFunctionReturn(0);
 }
@@ -6646,7 +6752,9 @@ PetscErrorCode  MatGetBlockSize(Mat mat,PetscInt *bs)
 .  cbs - coumn block size
 
    Notes:
-   Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ
+   Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ.
+
+   If a block size has not been set yet this routine returns -1.
 
    Level: intermediate
 
@@ -6658,10 +6766,8 @@ PetscErrorCode  MatGetBlockSizes(Mat mat,PetscInt *rbs, PetscInt *cbs)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
   if (rbs) PetscValidIntPointer(rbs,2);
   if (cbs) PetscValidIntPointer(cbs,3);
-  MatCheckPreallocated(mat,1);
   if (rbs) *rbs = mat->rmap->bs;
   if (cbs) *cbs = mat->cmap->bs;
   PetscFunctionReturn(0);
@@ -6727,8 +6833,52 @@ PetscErrorCode  MatSetBlockSizes(Mat mat,PetscInt rbs,PetscInt cbs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(mat,rbs,2);
+  PetscValidLogicalCollectiveInt(mat,cbs,3);
   ierr = PetscLayoutSetBlockSize(mat->rmap,rbs);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(mat->cmap,cbs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatResidual"
+/*@
+   MatResidual - Default routine to calculate the residual.
+
+   Collective on Mat and Vec
+
+   Input Parameters:
++  mat - the matrix
+.  b   - the right-hand-side
+-  x   - the approximate solution
+
+   Output Parameter:
+.  r - location to store the residual
+
+   Level: developer
+
+.keywords: MG, default, multigrid, residual
+
+.seealso: PCMGSetResidual()
+@*/
+PetscErrorCode  MatResidual(Mat mat,Vec b,Vec x,Vec r)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(b,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(r,VEC_CLASSID,4);
+  PetscValidType(mat,1);
+  MatCheckPreallocated(mat,1);
+  ierr  = PetscLogEventBegin(MAT_Residual,mat,0,0,0);CHKERRQ(ierr);
+  if (!mat->ops->residual) {
+    ierr = MatMult(mat,x,r);CHKERRQ(ierr);
+    ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
+  } else {
+    ierr  = (*mat->ops->residual)(mat,b,x,r);CHKERRQ(ierr);
+  }
+  ierr  = PetscLogEventEnd(MAT_Residual,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6811,15 +6961,20 @@ PetscErrorCode MatGetRowIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscBool 
 .   shift - 1 or zero indicating we want the indices starting at 0 or 1
 .   symmetric - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be
                 symmetrized
--   inodecompressed - PETSC_TRUE or PETSC_FALSE indicating if the nonzero structure of the
+.   inodecompressed - PETSC_TRUE or PETSC_FALSE indicating if the nonzero structure of the
                  inodes or the nonzero elements is wanted. For BAIJ matrices the compressed version is
                  always used.
+.   n - number of columns in the (possibly compressed) matrix
+.   ia - the column pointers
+-   ja - the row indices
 
     Output Parameters:
-+   n - number of columns in the (possibly compressed) matrix
-.   ia - the column pointers
-.   ja - the row indices
--   done - PETSC_TRUE or PETSC_FALSE, indicating whether the values have been returned
+.   done - PETSC_TRUE or PETSC_FALSE, indicating whether the values have been returned
+
+    Note:
+    This routine zeros out n, ia, and ja. This is to prevent accidental
+    us of the array after it has been restored. If you pass NULL, it will
+    not zero the pointers.  Use of ia or ja after MatRestoreColumnIJ() is invalid.
 
     Level: developer
 
@@ -6858,15 +7013,20 @@ PetscErrorCode MatGetColumnIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscBo
 .   shift - 1 or zero indicating we want the indices starting at 0 or 1
 .   symmetric - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be
                 symmetrized
--   inodecompressed -  PETSC_TRUE or PETSC_FALSE indicating if the nonzero structure of the
+.   inodecompressed -  PETSC_TRUE or PETSC_FALSE indicating if the nonzero structure of the
                  inodes or the nonzero elements is wanted. For BAIJ matrices the compressed version is
                  always used.
+.   n - size of (possibly compressed) matrix
+.   ia - the row pointers
+-   ja - the column indices
 
     Output Parameters:
-+   n - size of (possibly compressed) matrix
-.   ia - the row pointers
-.   ja - the column indices
--   done - PETSC_TRUE or PETSC_FALSE indicated that the values have been returned
+.   done - PETSC_TRUE or PETSC_FALSE indicated that the values have been returned
+
+    Note:
+    This routine zeros out n, ia, and ja. This is to prevent accidental
+    us of the array after it has been restored. If you pass NULL, it will
+    not zero the pointers.  Use of ia or ja after MatRestoreRowIJ() is invalid.
 
     Level: developer
 
@@ -7068,7 +7228,7 @@ PetscErrorCode  MatSetUnfactored(Mat mat)
 
     Level: advanced
 
-.seealso:  MatDenseRestoreArrayF90(), MatDenseGetArray(), MatDenseRestoreArray()
+.seealso:  MatDenseRestoreArrayF90(), MatDenseGetArray(), MatDenseRestoreArray(), MatSeqAIJGetArrayF90()
 
     Concepts: matrices^accessing array
 
@@ -7076,7 +7236,7 @@ M*/
 
 /*MC
     MatDenseRestoreArrayF90 - Restores a matrix array that has been
-    accessed with MatGetArrayF90().
+    accessed with MatDenseGetArrayF90().
 
     Synopsis:
     MatDenseRestoreArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
@@ -7101,7 +7261,71 @@ M*/
 
     Level: advanced
 
-.seealso:  MatDenseGetArrayF90(), MatDenseGetArray(), MatDenseRestoreArray()
+.seealso:  MatDenseGetArrayF90(), MatDenseGetArray(), MatDenseRestoreArray(), MatSeqAIJRestoreArrayF90()
+
+M*/
+
+
+/*MC
+    MatSeqAIJGetArrayF90 - Accesses a matrix array from Fortran90.
+
+    Synopsis:
+    MatSeqAIJGetArrayF90(Mat x,{Scalar, pointer :: xx_v(:,:)},integer ierr)
+
+    Not collective
+
+    Input Parameter:
+.   x - matrix
+
+    Output Parameters:
++   xx_v - the Fortran90 pointer to the array
+-   ierr - error code
+
+    Example of Usage:
+.vb
+      PetscScalar, pointer xx_v(:,:)
+      ....
+      call MatSeqAIJGetArrayF90(x,xx_v,ierr)
+      a = xx_v(3)
+      call MatSeqAIJRestoreArrayF90(x,xx_v,ierr)
+.ve
+
+    Level: advanced
+
+.seealso:  MatSeqAIJRestoreArrayF90(), MatSeqAIJGetArray(), MatSeqAIJRestoreArray(), MatDenseGetArrayF90()
+
+    Concepts: matrices^accessing array
+
+M*/
+
+/*MC
+    MatSeqAIJRestoreArrayF90 - Restores a matrix array that has been
+    accessed with MatSeqAIJGetArrayF90().
+
+    Synopsis:
+    MatSeqAIJRestoreArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
+
+    Not collective
+
+    Input Parameters:
++   x - matrix
+-   xx_v - the Fortran90 pointer to the array
+
+    Output Parameter:
+.   ierr - error code
+
+    Example of Usage:
+.vb
+       PetscScalar, pointer xx_v(:)
+       ....
+       call MatSeqAIJGetArrayF90(x,xx_v,ierr)
+       a = xx_v(3)
+       call MatSeqAIJRestoreArrayF90(x,xx_v,ierr)
+.ve
+
+    Level: advanced
+
+.seealso:  MatSeqAIJGetArrayF90(), MatSeqAIJGetArray(), MatSeqAIJRestoreArray(), MatDenseRestoreArrayF90()
 
 M*/
 
@@ -8188,9 +8412,11 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
       }
       ierr = MatDestroy(&Pt);CHKERRQ(ierr);
     } else {
+      ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
       ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
       ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
   }
@@ -8841,13 +9067,21 @@ PetscErrorCode  MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Ma
   MatCheckPreallocated(A,1);
 
   fA = A->ops->transposematmult;
-  if (!fA) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatTransposeMatMult not supported for A of type %s",((PetscObject)A)->type_name);
   fB = B->ops->transposematmult;
-  if (!fB) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatTransposeMatMult not supported for B of type %s",((PetscObject)B)->type_name);
   if (fB==fA) {
+    if (!fA) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatTransposeMatMult not supported for A of type %s",((PetscObject)A)->type_name);
     transposematmult = fA;
-  } 
-  if (!transposematmult) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"MatTransposeMatMult requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
+  } else {
+    /* dispatch based on the type of A and B from their PetscObject's PetscFunctionLists. */
+    char multname[256];
+    ierr = PetscStrcpy(multname,"MatTransposeMatMult_");CHKERRQ(ierr);
+    ierr = PetscStrcat(multname,((PetscObject)A)->type_name);CHKERRQ(ierr);
+    ierr = PetscStrcat(multname,"_");CHKERRQ(ierr);
+    ierr = PetscStrcat(multname,((PetscObject)B)->type_name);CHKERRQ(ierr);
+    ierr = PetscStrcat(multname,"_C");CHKERRQ(ierr); /* e.g., multname = "MatMatMult_seqdense_seqaij_C" */
+    ierr = PetscObjectQueryFunction((PetscObject)B,multname,&transposematmult);CHKERRQ(ierr);
+    if (!transposematmult) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"MatTransposeMatMult requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
+  }
   ierr = PetscLogEventBegin(MAT_TransposeMatMult,A,B,0,0);CHKERRQ(ierr);
   ierr = (*transposematmult)(A,B,scall,fill,C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_TransposeMatMult,A,B,0,0);CHKERRQ(ierr);
@@ -8961,8 +9195,7 @@ PetscErrorCode  MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Ma
    Input Parameters:
 +  mat - the matrix
 .  nsubcomm - the number of subcommunicators (= number of redundant parallel or sequential matrices)
-.  subcomm - MPI communicator split from the communicator where mat resides in
-.  mlocal_red - number of local rows of the redundant matrix
+.  subcomm - MPI communicator split from the communicator where mat resides in (or MPI_COMM_NULL if nsubcomm is used)
 -  reuse - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
    Output Parameter:
@@ -8984,15 +9217,15 @@ PetscErrorCode  MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Ma
 
 .seealso: MatDestroy()
 @*/
-PetscErrorCode  MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,PetscInt mlocal_red,MatReuse reuse,Mat *matredundant)
+PetscErrorCode  MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,MatReuse reuse,Mat *matredundant)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   if (nsubcomm && reuse == MAT_REUSE_MATRIX) {
-    PetscValidPointer(*matredundant,6);
-    PetscValidHeaderSpecific(*matredundant,MAT_CLASSID,6);
+    PetscValidPointer(*matredundant,5);
+    PetscValidHeaderSpecific(*matredundant,MAT_CLASSID,5);
   }
   if (!mat->ops->getredundantmatrix) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
@@ -9000,7 +9233,7 @@ PetscErrorCode  MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm
   MatCheckPreallocated(mat,1);
 
   ierr = PetscLogEventBegin(MAT_GetRedundantMatrix,mat,0,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->getredundantmatrix)(mat,nsubcomm,subcomm,mlocal_red,reuse,matredundant);CHKERRQ(ierr);
+  ierr = (*mat->ops->getredundantmatrix)(mat,nsubcomm,subcomm,reuse,matredundant);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_GetRedundantMatrix,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -9233,12 +9466,14 @@ PetscErrorCode  MatTransposeColoringDestroy(MatTransposeColoring *c)
   if (!matcolor) PetscFunctionReturn(0);
   if (--((PetscObject)matcolor)->refct > 0) {matcolor = 0; PetscFunctionReturn(0);}
 
-  ierr = PetscFree(matcolor->ncolumns);CHKERRQ(ierr);
-  ierr = PetscFree(matcolor->nrows);CHKERRQ(ierr);
-  ierr = PetscFree(matcolor->colorforrow);CHKERRQ(ierr);
-  ierr = PetscFree2(matcolor->rows,matcolor->columnsforspidx);CHKERRQ(ierr);
+  ierr = PetscFree3(matcolor->ncolumns,matcolor->nrows,matcolor->colorforrow);CHKERRQ(ierr);
+  ierr = PetscFree(matcolor->rows);CHKERRQ(ierr);
+  ierr = PetscFree(matcolor->den2sp);CHKERRQ(ierr);
   ierr = PetscFree(matcolor->colorforcol);CHKERRQ(ierr);
   ierr = PetscFree(matcolor->columns);CHKERRQ(ierr);
+  if (matcolor->brows>0) {
+    ierr = PetscFree(matcolor->lstart);CHKERRQ(ierr);
+  }
   ierr = PetscHeaderDestroy(c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -9336,7 +9571,7 @@ PetscErrorCode MatTransColoringApplyDenToSp(MatTransposeColoring matcoloring,Mat
 
    Input Parameters:
 +  mat - the matrix product C
--  iscoloring - the coloring of the matrix; usually obtained with MatGetColoring() or DMCreateColoring()
+-  iscoloring - the coloring of the matrix; usually obtained with MatColoringCreate() or DMCreateColoring()
 
     Output Parameter:
 .   color - the new coloring context

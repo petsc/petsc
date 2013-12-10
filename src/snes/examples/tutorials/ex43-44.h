@@ -89,7 +89,7 @@ PetscErrorCode SolveSubproblem(SNES snes)
   for (i=0; i<n; i++) {
     if (PetscAbsScalar(r[i]) > .20*rmax) cnt++;
   }
-  ierr = PetscMalloc(cnt*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cnt,&indices);CHKERRQ(ierr);
   cnt  = 0;
   for (i=0; i<n; i++) {
     if (PetscAbsScalar(r[i]) > .20*rmax) indices[cnt++] = i;

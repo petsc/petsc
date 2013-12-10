@@ -40,8 +40,8 @@ $     elemVec[i] += \psi^{fc}_f(q) f0_{fc}(u, \nabla u) + \nabla\psi^{fc}_f(q) \
 */
 PetscErrorCode FEMIntegrateResidualBatch(PetscInt Ne, PetscInt numFields, PetscInt field, PetscQuadrature quad[], const PetscScalar coefficients[],
                                          const PetscReal v0s[], const PetscReal jacobians[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[],
-                                         void (*f0_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[]),
-                                         void (*f1_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f1[]), PetscScalar elemVec[])
+                                         void (*f0_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f0[]),
+                                         void (*f1_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f1[]), PetscScalar elemVec[])
 {
   const PetscInt debug   = 0;
   const PetscInt dim     = SPATIAL_DIM_0;
@@ -123,11 +123,11 @@ PetscErrorCode FEMIntegrateResidualBatch(PetscInt Ne, PetscInt numFields, PetscI
         dOffset += Nb*Ncomp;
       }
 
-      f0_func(u, gradU, x, &f0[q*Ncomp]);
+      f0_func(u, gradU, NULL, NULL, x, &f0[q*Ncomp]);
       for (i = 0; i < Ncomp; ++i) {
         f0[q*Ncomp+i] *= detJ*quadWeights[q];
       }
-      f1_func(u, gradU, x, &f1[q*Ncomp*dim]);
+      f1_func(u, gradU, NULL, NULL, x, &f1[q*Ncomp*dim]);
       for (i = 0; i < Ncomp*dim; ++i) {
         f1[q*Ncomp*dim+i] *= detJ*quadWeights[q];
       }
@@ -232,10 +232,10 @@ $                      + \nabla\psi^{fc}_f(q) \cdot g3_{fc,gc,df,dg}(u, \nabla u
 */
 PetscErrorCode FEMIntegrateJacobianActionBatch(PetscInt Ne, PetscInt numFields, PetscInt fieldI, PetscQuadrature quad[], const PetscScalar coefficients[], const PetscScalar argCoefficients[],
                                                const PetscReal v0s[], const PetscReal jacobians[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[],
-                                               void (**g0_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g0[]),
-                                               void (**g1_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g1[]),
-                                               void (**g2_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g2[]),
-                                               void (**g3_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g3[]), PetscScalar elemVec[]) {
+                                               void (**g0_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g0[]),
+                                               void (**g1_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g1[]),
+                                               void (**g2_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g2[]),
+                                               void (**g3_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g3[]), PetscScalar elemVec[]) {
   const PetscReal *basisI    = quad[fieldI].basis;
   const PetscReal *basisDerI = quad[fieldI].basisDer;
   const PetscInt   debug   = 0;
@@ -343,25 +343,25 @@ PetscErrorCode FEMIntegrateJacobianActionBatch(PetscInt Ne, PetscInt numFields, 
             ierr = PetscMemzero(g2, Ncomp_i*Ncomp_j*dim     * sizeof(PetscScalar));CHKERRQ(ierr);
             ierr = PetscMemzero(g3, Ncomp_i*Ncomp_j*dim*dim * sizeof(PetscScalar));CHKERRQ(ierr);
             if (g0_func[fieldI*numFields+fieldJ]) {
-              g0_func[fieldI*numFields+fieldJ](u, gradU, x, g0);
+              g0_func[fieldI*numFields+fieldJ](u, gradU, NULL, NULL, x, g0);
               for (c = 0; c < Ncomp_i*Ncomp_j; ++c) {
                 g0[c] *= detJ*quadWeights[q];
               }
             }
             if (g1_func[fieldI*numFields+fieldJ]) {
-              g1_func[fieldI*numFields+fieldJ](u, gradU, x, g1);
+              g1_func[fieldI*numFields+fieldJ](u, gradU, NULL, NULL, x, g1);
               for (c = 0; c < Ncomp_i*Ncomp_j*dim; ++c) {
                 g1[c] *= detJ*quadWeights[q];
               }
             }
             if (g2_func[fieldI*numFields+fieldJ]) {
-              g2_func[fieldI*numFields+fieldJ](u, gradU, x, g2);
+              g2_func[fieldI*numFields+fieldJ](u, gradU, NULL, NULL, x, g2);
               for (c = 0; c < Ncomp_i*Ncomp_j*dim; ++c) {
                 g2[c] *= detJ*quadWeights[q];
               }
             }
             if (g3_func[fieldI*numFields+fieldJ]) {
-              g3_func[fieldI*numFields+fieldJ](u, gradU, x, g3);
+              g3_func[fieldI*numFields+fieldJ](u, gradU, NULL, NULL, x, g3);
               for (c = 0; c < Ncomp_i*Ncomp_j*dim*dim; ++c) {
                 g3[c] *= detJ*quadWeights[q];
               }
@@ -465,10 +465,10 @@ $                      + \nabla\psi^{fc}_f(q) \cdot g3_{fc,gc,df,dg}(u, \nabla u
 */
 PetscErrorCode FEMIntegrateJacobianBatch(PetscInt Ne, PetscInt numFields, PetscInt fieldI, PetscInt fieldJ, PetscQuadrature quad[], const PetscScalar coefficients[],
                                          const PetscReal v0s[], const PetscReal jacobians[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[],
-                                         void (*g0_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g0[]),
-                                         void (*g1_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g1[]),
-                                         void (*g2_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g2[]),
-                                         void (*g3_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g3[]), PetscScalar elemMat[]) {
+                                         void (*g0_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g0[]),
+                                         void (*g1_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g1[]),
+                                         void (*g2_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g2[]),
+                                         void (*g3_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g3[]), PetscScalar elemMat[]) {
   const PetscReal *basisI    = quad[fieldI].basis;
   const PetscReal *basisDerI = quad[fieldI].basisDer;
   const PetscReal *basisJ    = quad[fieldJ].basis;
@@ -571,25 +571,25 @@ PetscErrorCode FEMIntegrateJacobianBatch(PetscInt Ne, PetscInt numFields, PetscI
           ierr = PetscMemzero(g2, Ncomp_i*Ncomp_j*dim     * sizeof(PetscScalar));CHKERRQ(ierr);
           ierr = PetscMemzero(g3, Ncomp_i*Ncomp_j*dim*dim * sizeof(PetscScalar));CHKERRQ(ierr);
           if (g0_func) {
-            g0_func(u, gradU, x, g0);
+            g0_func(u, gradU, NULL, NULL, x, g0);
             for (c = 0; c < Ncomp_i*Ncomp_j; ++c) {
               g0[c] *= detJ*quadWeights[q];
             }
           }
           if (g1_func) {
-            g1_func(u, gradU, x, g1);
+            g1_func(u, gradU, NULL, NULL, x, g1);
             for (c = 0; c < Ncomp_i*Ncomp_j*dim; ++c) {
               g1[c] *= detJ*quadWeights[q];
             }
           }
           if (g2_func) {
-            g2_func(u, gradU, x, g2);
+            g2_func(u, gradU, NULL, NULL, x, g2);
             for (c = 0; c < Ncomp_i*Ncomp_j*dim; ++c) {
               g2[c] *= detJ*quadWeights[q];
             }
           }
           if (g3_func) {
-            g3_func(u, gradU, x, g3);
+            g3_func(u, gradU, NULL, NULL, x, g3);
             for (c = 0; c < Ncomp_i*Ncomp_j*dim*dim; ++c) {
               g3[c] *= detJ*quadWeights[q];
             }
@@ -686,8 +686,8 @@ $     elemVec[i] += \psi^{fc}_f(q) f0_{fc}(u, \nabla u) + \nabla\psi^{fc}_f(q) \
 */
 PetscErrorCode FEMIntegrateBdResidualBatch(PetscInt Ne, PetscInt numFields, PetscInt field, PetscQuadrature quad[], const PetscScalar coefficients[],
                                            const PetscReal v0s[], const PetscReal normals[], const PetscReal jacobians[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[],
-                                           void (*f0_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], const PetscReal n[], PetscScalar f0[]),
-                                           void (*f1_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], const PetscReal n[], PetscScalar f1[]), PetscScalar elemVec[])
+                                           void (*f0_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], const PetscReal n[], PetscScalar f0[]),
+                                           void (*f1_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], const PetscReal n[], PetscScalar f1[]), PetscScalar elemVec[])
 {
   const PetscInt debug   = 0;
   const PetscInt dim     = SPATIAL_DIM_0;
@@ -770,11 +770,11 @@ PetscErrorCode FEMIntegrateBdResidualBatch(PetscInt Ne, PetscInt numFields, Pets
         dOffset += Nb*Ncomp;
       }
 
-      f0_func(u, gradU, x, n, &f0[q*Ncomp]);
+      f0_func(u, gradU, NULL, NULL, x, n, &f0[q*Ncomp]);
       for (i = 0; i < Ncomp; ++i) {
         f0[q*Ncomp+i] *= detJ*quadWeights[q];
       }
-      f1_func(u, gradU, x, n, &f1[q*Ncomp*dim]);
+      f1_func(u, gradU, NULL, NULL, x, n, &f1[q*Ncomp*dim]);
       for (i = 0; i < Ncomp*dim; ++i) {
         f1[q*Ncomp*dim+i] *= detJ*quadWeights[q];
       }

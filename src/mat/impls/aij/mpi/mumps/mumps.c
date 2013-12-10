@@ -94,6 +94,11 @@ extern PetscErrorCode MatDuplicate_MUMPS(Mat,MatDuplicateOption,Mat*);
   output:
     nnz     - dim of r, c, and v (number of local nonzero entries of A)
     r, c, v - row and col index, matrix values (matrix triples)
+
+  The returned values r, c, and sometimes v are obtained in a single PetscMalloc(). Then in MatDestroy_MUMPS() it is
+  freed with PetscFree((mumps->irn);  This is not ideal code, the fact that v is ONLY sometimes part of mumps->irn means
+  that the PetscMalloc() cannot easily be replaced with a PetscMalloc3(). 
+
  */
 
 #undef __FUNCT__
@@ -113,7 +118,7 @@ PetscErrorCode MatConvertToTriples_seqaij_seqaij(Mat A,int shift,MatReuse reuse,
     ai   = aa->i;
     aj   = aa->j;
     *nnz = nz;
-    ierr = PetscMalloc(2*nz*sizeof(PetscInt), &row);CHKERRQ(ierr);
+    ierr = PetscMalloc1(2*nz, &row);CHKERRQ(ierr);
     col  = row + nz;
 
     nz = 0;
@@ -145,7 +150,7 @@ PetscErrorCode MatConvertToTriples_seqbaij_seqaij(Mat A,int shift,MatReuse reuse
     ai   = aa->i; aj = aa->j;
     nz   = bs2*aa->nz;
     *nnz = nz;
-    ierr = PetscMalloc(2*nz*sizeof(PetscInt), &row);CHKERRQ(ierr);
+    ierr = PetscMalloc1(2*nz, &row);CHKERRQ(ierr);
     col  = row + nz;
 
     for (i=0; i<M; i++) {
@@ -183,7 +188,7 @@ PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A,int shift,MatReuse re
     aj   = aa->j;
     *v   = aa->a;
     *nnz = nz;
-    ierr = PetscMalloc(2*nz*sizeof(PetscInt), &row);CHKERRQ(ierr);
+    ierr = PetscMalloc1(2*nz, &row);CHKERRQ(ierr);
     col  = row + nz;
 
     nz = 0;
@@ -550,14 +555,17 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
 #define __FUNCT__ "MatSolve_MUMPS"
 PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
 {
-  Mat_MUMPS      *mumps=(Mat_MUMPS*)A->spptr;
-  PetscScalar    *array;
-  Vec            b_seq;
-  IS             is_iden,is_petsc;
-  PetscErrorCode ierr;
-  PetscInt       i;
+  Mat_MUMPS        *mumps=(Mat_MUMPS*)A->spptr;
+  PetscScalar      *array;
+  Vec              b_seq;
+  IS               is_iden,is_petsc;
+  PetscErrorCode   ierr;
+  PetscInt         i;
+  static PetscBool cite1 = PETSC_FALSE,cite2 = PETSC_FALSE;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister("@article{MUMPS01,\n  author = {P.~R. Amestoy and I.~S. Duff and J.-Y. L'Excellent and J. Koster},\n  title = {A fully asynchronous multifrontal solver using distributed dynamic scheduling},\n  journal = {SIAM Journal on Matrix Analysis and Applications},\n  volume = {23},\n  number = {1},\n  pages = {15--41},\n  year = {2001}\n}\n",&cite1);CHKERRQ(ierr);
+  ierr = PetscCitationsRegister("@article{MUMPS02,\n  author = {P.~R. Amestoy and A. Guermouche and J.-Y. L'Excellent and S. Pralet},\n  title = {Hybrid scheduling for the parallel solution of linear systems},\n  journal = {Parallel Computing},\n  volume = {32},\n  number = {2},\n  pages = {136--156},\n  year = {2006}\n}\n",&cite2);CHKERRQ(ierr);
   mumps->id.nrhs = 1;
   b_seq          = mumps->b_seq;
   if (mumps->size > 1) {
@@ -747,7 +755,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
 
       lsol_loc = mumps->id.INFO(23); /* length of sol_loc */
 
-      ierr = PetscMalloc2(lsol_loc,PetscScalar,&sol_loc,lsol_loc,PetscInt,&mumps->id.isol_loc);CHKERRQ(ierr);
+      ierr = PetscMalloc2(lsol_loc,&sol_loc,lsol_loc,&mumps->id.isol_loc);CHKERRQ(ierr);
 
       mumps->id.lsol_loc = lsol_loc;
 #if defined(PETSC_USE_COMPLEX)
@@ -915,7 +923,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
           const PetscInt *idx;
           PetscInt       i,*perm_in;
 
-          ierr = PetscMalloc(M*sizeof(PetscInt),&perm_in);CHKERRQ(ierr);
+          ierr = PetscMalloc1(M,&perm_in);CHKERRQ(ierr);
           ierr = ISGetIndices(r,&idx);CHKERRQ(ierr);
 
           mumps->id.perm_in = perm_in;
@@ -947,10 +955,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
       ierr = VecCreateSeq(PETSC_COMM_SELF,0,&mumps->b_seq);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&is_iden);CHKERRQ(ierr);
     }
-    ierr = VecCreate(PetscObjectComm((PetscObject)A),&b);CHKERRQ(ierr);
-    ierr = VecSetSizes(b,A->rmap->n,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-
+    ierr = MatGetVecs(A,NULL,&b);CHKERRQ(ierr);
     ierr = VecScatterCreate(b,is_iden,mumps->b_seq,is_iden,&mumps->scat_rhs);CHKERRQ(ierr);
     ierr = ISDestroy(&is_iden);CHKERRQ(ierr);
     ierr = VecDestroy(&b);CHKERRQ(ierr);
@@ -1028,10 +1033,7 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
       ierr = VecCreateSeq(PETSC_COMM_SELF,0,&mumps->b_seq);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&is_iden);CHKERRQ(ierr);
     }
-    ierr = VecCreate(PetscObjectComm((PetscObject)A),&b);CHKERRQ(ierr);
-    ierr = VecSetSizes(b,A->rmap->n,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-
+    ierr = MatGetVecs(A,NULL,&b);CHKERRQ(ierr);
     ierr = VecScatterCreate(b,is_iden,mumps->b_seq,is_iden,&mumps->scat_rhs);CHKERRQ(ierr);
     ierr = ISDestroy(&is_iden);CHKERRQ(ierr);
     ierr = VecDestroy(&b);CHKERRQ(ierr);
@@ -1108,10 +1110,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
       ierr = VecCreateSeq(PETSC_COMM_SELF,0,&mumps->b_seq);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&is_iden);CHKERRQ(ierr);
     }
-    ierr = VecCreate(PetscObjectComm((PetscObject)A),&b);CHKERRQ(ierr);
-    ierr = VecSetSizes(b,A->rmap->n,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-
+    ierr = MatGetVecs(A,NULL,&b);CHKERRQ(ierr);
     ierr = VecScatterCreate(b,is_iden,mumps->b_seq,is_iden,&mumps->scat_rhs);CHKERRQ(ierr);
     ierr = ISDestroy(&is_iden);CHKERRQ(ierr);
     ierr = VecDestroy(&b);CHKERRQ(ierr);
@@ -1424,7 +1423,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat
     ierr = MatMPIAIJSetPreallocation(B,0,NULL,0,NULL);CHKERRQ(ierr);
   }
 
-  ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&mumps);CHKERRQ(ierr);
 
   B->ops->view    = MatView_MUMPS;
   B->ops->getinfo = MatGetInfo_MUMPS;
@@ -1476,7 +1475,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,M
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&mumps);CHKERRQ(ierr);
   if (isSeqSBAIJ) {
     ierr = MatSeqSBAIJSetPreallocation(B,1,0,NULL);CHKERRQ(ierr);
 
@@ -1530,7 +1529,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Ma
     ierr = MatMPIBAIJSetPreallocation(B,A->rmap->bs,0,NULL,0,NULL);CHKERRQ(ierr);
   }
 
-  ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&mumps);CHKERRQ(ierr);
   if (ftype == MAT_FACTOR_LU) {
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_BAIJMUMPS;
     B->factortype            = MAT_FACTOR_LU;

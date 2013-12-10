@@ -1,4 +1,4 @@
-static char help[] = "Demonstrates using the PetscViewerBinaryMatlab viewer\n\n";
+static char help[] = "Demonstrates using PetscViewerSetFormat(viewer,PETSC_FORMAT_BINARY_MATLAB)\n\n";
 
 /*T
    Concepts: viewers
@@ -64,16 +64,18 @@ int main(int argc,char **argv)
   ierr = PetscBagRegisterBool (bag,&params->ta,PETSC_TRUE,"do_output","Write output file (true/false)");CHKERRQ(ierr);
 
   /*
-     Write output file with PetscViewerBinaryMatlab viewer.
+     Write output file with PETSC_VIEWER_BINARY_MATLAB format
      NOTE: the output generated with this viewer can be loaded into
-     matlab using bin/matlab/PetscBinaryReadMatlab.m
+     MATLAB using $PETSC_DIR/bin/matlab/PetscReadBinaryMatlab.m
   */
-  ierr = PetscViewerBinaryMatlabOpen(PETSC_COMM_WORLD,params->filename,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryMatlabOutputBag(viewer,"params",bag);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,params->filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_BINARY_MATLAB);CHKERRQ(ierr);
+  ierr = PetscBagView(bag,viewer);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"field1");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"field2");CHKERRQ(ierr);
-  ierr = PetscViewerBinaryMatlabOutputVecDA(viewer,"da1",global,da);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryMatlabDestroy(&viewer);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)global,"da1");CHKERRQ(ierr);
+  ierr = VecView(global,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   /* clean up and exit */
   ierr = PetscBagDestroy(&bag);CHKERRQ(ierr);

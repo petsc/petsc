@@ -495,7 +495,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = refinedMesh;
     }
     /* Distribute mesh over processes */
-    ierr = DMPlexDistribute(*dm, partitioner, 0, &distributedMesh);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, partitioner, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
@@ -550,9 +550,9 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
   */
   *numBoundaries = 5;
 
-  ierr = PetscMalloc(*numBoundaries * sizeof(PetscInt), numBoundaryConstraints);CHKERRQ(ierr);
-  ierr = PetscMalloc(*numBoundaries * sizeof(IS), boundaryPoints);CHKERRQ(ierr);
-  ierr = PetscMalloc(*numBoundaries * sizeof(IS), constraintIndices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(*numBoundaries, numBoundaryConstraints);CHKERRQ(ierr);
+  ierr = PetscMalloc1(*numBoundaries, boundaryPoints);CHKERRQ(ierr);
+  ierr = PetscMalloc1(*numBoundaries, constraintIndices);CHKERRQ(ierr);
 
   /* Set number of constraints for each boundary */
   (*numBoundaryConstraints)[corner] = 2;
@@ -561,19 +561,19 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
   (*numBoundaryConstraints)[top]    = 1;
   (*numBoundaryConstraints)[left]   = 1;
   /* Set local constraint indices for each boundary */
-  ierr   = PetscMalloc((*numBoundaryConstraints)[corner] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  ierr   = PetscMalloc1((*numBoundaryConstraints)[corner], &idx);CHKERRQ(ierr);
   idx[0] = 0; idx[1] = 1;
   ierr   = ISCreateGeneral(comm, (*numBoundaryConstraints)[corner], idx, PETSC_OWN_POINTER, &(*constraintIndices)[corner]);CHKERRQ(ierr);
-  ierr   = PetscMalloc((*numBoundaryConstraints)[bottom] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  ierr   = PetscMalloc1((*numBoundaryConstraints)[bottom], &idx);CHKERRQ(ierr);
   idx[0] = 1;
   ierr   = ISCreateGeneral(comm, (*numBoundaryConstraints)[bottom], idx, PETSC_OWN_POINTER, &(*constraintIndices)[bottom]);CHKERRQ(ierr);
-  ierr   = PetscMalloc((*numBoundaryConstraints)[right] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  ierr   = PetscMalloc1((*numBoundaryConstraints)[right], &idx);CHKERRQ(ierr);
   idx[0] = 0;
   ierr   = ISCreateGeneral(comm, (*numBoundaryConstraints)[right], idx, PETSC_OWN_POINTER, &(*constraintIndices)[right]);CHKERRQ(ierr);
-  ierr   = PetscMalloc((*numBoundaryConstraints)[top] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  ierr   = PetscMalloc1((*numBoundaryConstraints)[top], &idx);CHKERRQ(ierr);
   idx[0] = 1;
   ierr   = ISCreateGeneral(comm, (*numBoundaryConstraints)[top], idx, PETSC_OWN_POINTER, &(*constraintIndices)[top]);CHKERRQ(ierr);
-  ierr   = PetscMalloc((*numBoundaryConstraints)[left] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  ierr   = PetscMalloc1((*numBoundaryConstraints)[left], &idx);CHKERRQ(ierr);
   idx[0] = 0;
   ierr   = ISCreateGeneral(comm, (*numBoundaryConstraints)[left], idx, PETSC_OWN_POINTER, &(*constraintIndices)[left]);CHKERRQ(ierr);
 
@@ -622,7 +622,7 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
   }
   /* Set points on each boundary */
   for (bd = 0; bd < 5; ++bd) {
-    ierr = PetscMalloc(numBoundaryPoints[bd] * sizeof(PetscInt), &bdPoints[bd]);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numBoundaryPoints[bd], &bdPoints[bd]);CHKERRQ(ierr);
     numBoundaryPoints[bd] = 0;
   }
   for (p = 0; p < numPoints; ++p) {
@@ -1127,7 +1127,8 @@ int main(int argc, char **argv)
   ierr = PetscObjectSetName((PetscObject) u, "solution");CHKERRQ(ierr);
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
 
-  ierr = DMCreateMatrix(user.dm, MATAIJ, &J);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.dm,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.dm, &J);CHKERRQ(ierr);
   if (user.jacobianMF) {
     PetscInt M, m, N, n;
 
@@ -1165,7 +1166,7 @@ int main(int argc, char **argv)
     ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(user.dm, &crd_vec);CHKERRQ(ierr);
     ierr = VecGetLocalSize(crd_vec,&mlocal);CHKERRQ(ierr);
-    ierr = PetscMalloc(SPATIAL_DIM_0*mlocal*sizeof(*coords),&coords);CHKERRQ(ierr);
+    ierr = PetscMalloc1(SPATIAL_DIM_0*mlocal,&coords);CHKERRQ(ierr);
     ierr = VecGetArrayRead(crd_vec,&v);CHKERRQ(ierr);
     for (k=j=0; j<mlocal; j++) {
       for (i=0; i<SPATIAL_DIM_0; i++,k++) {
@@ -1243,30 +1244,23 @@ int main(int argc, char **argv)
   }
 
   if (user.runType == RUN_FULL) {
-    PetscContainer c;
-    PetscSection   section;
-    Vec            sol;
-    PetscViewer    viewer;
-    const char     *name;
+    PetscViewer viewer;
+    Vec         uLocal;
+    const char *name;
 
     ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, "ex31_sol.vtk");CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-    ierr = DMGetLocalVector(user.dm, &sol);CHKERRQ(ierr);
+
+    ierr = DMGetLocalVector(user.dm, &uLocal);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) u, &name);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) sol, name);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalBegin(user.dm, u, INSERT_VALUES, sol);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd(user.dm, u, INSERT_VALUES, sol);CHKERRQ(ierr);
-    ierr = DMGetDefaultSection(user.dm, &section);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject) user.dm);CHKERRQ(ierr); /* Needed because viewer destroys the DM */
-    ierr = PetscViewerVTKAddField(viewer, (PetscObject) user.dm, DMPlexVTKWriteAll, PETSC_VTK_POINT_FIELD, (PetscObject) sol);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject) sol);CHKERRQ(ierr); /* Needed because viewer destroys the Vec */
-    ierr = PetscContainerCreate(comm, &c);CHKERRQ(ierr);
-    ierr = PetscContainerSetPointer(c, section);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) sol, "section", (PetscObject) c);CHKERRQ(ierr);
-    ierr = PetscContainerDestroy(&c);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(user.dm, &sol);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) uLocal, name);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(user.dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(user.dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
+    ierr = VecView(uLocal, viewer);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(user.dm, &uLocal);CHKERRQ(ierr);
+
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 

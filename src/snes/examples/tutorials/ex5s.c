@@ -173,7 +173,7 @@ int main(int argc,char **argv)
 
   */
   ierr = VecGetOwnershipRange(r,&rstart,&rend);CHKERRQ(ierr);
-  ierr = PetscMalloc((rend-rstart)*sizeof(PetscInt),&colors);CHKERRQ(ierr);
+  ierr = PetscMalloc1((rend-rstart),&colors);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) colors[i - rstart] = 3*((i/user.mx) % 3) + (i % 3);
 
   ierr = ISColoringCreate(PETSC_COMM_WORLD,3*2+2,rend-rstart,colors,&iscoloring);CHKERRQ(ierr);
@@ -220,6 +220,7 @@ int main(int argc,char **argv)
   ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring);CHKERRQ(ierr);
   ierr = MatFDColoringSetFunction(fdcoloring,(PetscErrorCode (*)(void))fnc,&user);CHKERRQ(ierr);
   ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr);
+  ierr = MatFDColoringSetUp(J,iscoloring,fdcoloring);CHKERRQ(ierr);
   /*
         Tell SNES to use the routine SNESComputeJacobianDefaultColor()
       to compute Jacobians.

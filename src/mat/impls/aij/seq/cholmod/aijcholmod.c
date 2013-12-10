@@ -17,7 +17,7 @@ static PetscErrorCode MatWrapCholmod_seqaij(Mat A,PetscBool values,cholmod_spars
   ierr  = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
   adiag = aij->diag;
   for (i=0,nz=0; i<m; i++) nz += ai[i+1] - adiag[i];
-  ierr = PetscMalloc3(m+1,PetscInt,&ci,nz,PetscInt,&cj,values ? nz : 0,PetscScalar,&ca);CHKERRQ(ierr);
+  ierr = PetscMalloc3(m+1,&ci,nz,&cj,values ? nz : 0,&ca);CHKERRQ(ierr);
   for (i=0,k=0; i<m; i++) {
     ci[i] = k;
     for (j=adiag[i]; j<ai[i+1]; j++,k++) {
@@ -72,7 +72,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A,MatFactorType ftyp
   ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
-  ierr = PetscNewLog(B,Mat_CHOLMOD,&chol);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&chol);CHKERRQ(ierr);
 
   chol->Wrap    = MatWrapCholmod_seqaij;
   chol->Destroy = MatDestroy_SeqAIJ;

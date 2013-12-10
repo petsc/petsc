@@ -74,7 +74,7 @@ int main(int argc,char **args)
       ierr = MatView(A,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     }
 
-    ierr = PetscMalloc(size*sizeof(PetscInt),&count);CHKERRQ(ierr);
+    ierr = PetscMalloc1(size,&count);CHKERRQ(ierr);
     ierr = MatPartitioningCreate(PETSC_COMM_WORLD, &mpart);CHKERRQ(ierr);
     ierr = MatPartitioningSetAdjacency(mpart, A);CHKERRQ(ierr);
     /* ierr = MatPartitioningSetVertexWeights(mpart, weight);CHKERRQ(ierr); */

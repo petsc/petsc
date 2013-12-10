@@ -4,6 +4,7 @@
 #include "petsc-private/matimpl.h"
 #include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
 #include <petsc-private/kspimpl.h>
+#include <../src/ksp/pc/impls/bjacobi/bjacobi.h> /* Hack to access same_local_solves */
 
 #if defined PETSC_GAMG_USE_LOG
 PetscLogEvent petsc_gamg_setup_events[NUM_SET];
@@ -17,7 +18,6 @@ PetscLogEvent PC_GAMGCoarsen_GEO;
 PetscLogEvent PC_GAMGProlongator_AGG;
 PetscLogEvent PC_GAMGProlongator_GEO;
 PetscLogEvent PC_GAMGOptprol_AGG;
-PetscLogEvent PC_GAMGKKTProl_AGG;
 #endif
 
 #define GAMG_MAXLEVELS 30
@@ -52,61 +52,6 @@ PetscErrorCode PCReset_GAMG(PC pc)
   PetscFunctionReturn(0);
 }
 
-/* private 2x2 Mat Nest for Stokes */
-typedef struct {
-  Mat A11,A21,A12,Amat;
-  IS  prim_is,constr_is;
-} GAMGKKTMat;
-
-#undef __FUNCT__
-#define __FUNCT__ "GAMGKKTMatCreate"
-static PetscErrorCode GAMGKKTMatCreate(Mat A, PetscBool iskkt, GAMGKKTMat *out)
-{
-  PetscFunctionBegin;
-  out->Amat = A;
-  if (iskkt) {
-    PetscErrorCode ierr;
-    IS             is_constraint, is_prime;
-    PetscInt       nmin,nmax;
-
-    ierr = MatGetOwnershipRange(A, &nmin, &nmax);CHKERRQ(ierr);
-    ierr = MatFindZeroDiagonals(A, &is_constraint);CHKERRQ(ierr);
-    ierr = ISComplement(is_constraint, nmin, nmax, &is_prime);CHKERRQ(ierr);
-
-    out->prim_is   = is_prime;
-    out->constr_is = is_constraint;
-
-    ierr = MatGetSubMatrix(A, is_prime, is_prime,      MAT_INITIAL_MATRIX, &out->A11);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(A, is_prime, is_constraint, MAT_INITIAL_MATRIX, &out->A12);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(A, is_constraint, is_prime, MAT_INITIAL_MATRIX, &out->A21);CHKERRQ(ierr);
-  } else {
-    out->A11       = A;
-    out->A21       = NULL;
-    out->A12       = NULL;
-    out->prim_is   = NULL;
-    out->constr_is = NULL;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "GAMGKKTMatDestroy"
-static PetscErrorCode GAMGKKTMatDestroy(GAMGKKTMat *mat)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (mat->A11 && mat->A11 != mat->Amat) {
-    ierr = MatDestroy(&mat->A11);CHKERRQ(ierr);
-  }
-  ierr = MatDestroy(&mat->A21);CHKERRQ(ierr);
-  ierr = MatDestroy(&mat->A12);CHKERRQ(ierr);
-
-  ierr = ISDestroy(&mat->prim_is);CHKERRQ(ierr);
-  ierr = ISDestroy(&mat->constr_is);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /* -------------------------------------------------------------------------- */
 /*
    createLevel: create coarse op with RAP.  repartition and/or reduce number
@@ -118,7 +63,6 @@ static PetscErrorCode GAMGKKTMatDestroy(GAMGKKTMat *mat)
    . Amat_fine - matrix on this fine (k) level
    . cr_bs - coarse block size
    . isLast -
-   . stokes -
    In/Output Parameter:
    . a_P_inout - prolongation operator to the next level (k-->k-1)
    . a_nactive_proc - number of active procs
@@ -128,7 +72,8 @@ static PetscErrorCode GAMGKKTMatDestroy(GAMGKKTMat *mat)
 
 #undef __FUNCT__
 #define __FUNCT__ "createLevel"
-static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt cr_bs,const PetscBool isLast,const PetscBool stokes,Mat *a_P_inout,Mat *a_Amat_crs,PetscMPIInt *a_nactive_proc)
+static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt cr_bs,const PetscBool isLast,
+                                  Mat *a_P_inout,Mat *a_Amat_crs,PetscMPIInt *a_nactive_proc)
 {
   PetscErrorCode  ierr;
   PC_MG           *mg         = (PC_MG*)pc->data;
@@ -167,7 +112,7 @@ static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt
   else {
     const PetscInt *idx,ndata_rows=pc_gamg->data_cell_rows,ndata_cols=pc_gamg->data_cell_cols,node_data_sz=ndata_rows*ndata_cols;
     PetscInt       *counts,*newproc_idx,ii,jj,kk,strideNew,*tidx,ncrs_prim_new,ncrs_eq_new,nloc_old;
-    IS             is_eq_newproc,is_eq_newproc_prim,is_eq_num,is_eq_num_prim,isscat,new_eq_indices;
+    IS             is_eq_newproc,is_eq_num,is_eq_num_prim,isscat,new_eq_indices;
     VecScatter     vecscat;
     PetscScalar    *array;
     Vec            src_crd, dest_crd;
@@ -178,8 +123,8 @@ static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET12],0,0,0,0);CHKERRQ(ierr);
 #endif
     /* make 'is_eq_newproc' */
-    ierr = PetscMalloc(size*sizeof(PetscInt), &counts);CHKERRQ(ierr);
-    if (repart && !stokes) {
+    ierr = PetscMalloc1(size, &counts);CHKERRQ(ierr);
+    if (repart) {
       /* Repartition Cmat_{k} and move colums of P^{k}_{k-1} and coordinates of primal part accordingly */
       Mat adj;
 
@@ -204,8 +149,8 @@ static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt
         PetscInt          *d_nnz, *o_nnz, M, N;
         static PetscInt   llev = 0;
 
-        ierr = PetscMalloc(ncrs_prim*sizeof(PetscInt), &d_nnz);CHKERRQ(ierr);
-        ierr = PetscMalloc(ncrs_prim*sizeof(PetscInt), &o_nnz);CHKERRQ(ierr);
+        ierr = PetscMalloc1(ncrs_prim, &d_nnz);CHKERRQ(ierr);
+        ierr = PetscMalloc1(ncrs_prim, &o_nnz);CHKERRQ(ierr);
         ierr = MatGetOwnershipRange(Cmat, &Istart_crs, &Iend_crs);CHKERRQ(ierr);
         ierr = MatGetSize(Cmat, &M, &N);CHKERRQ(ierr);
         for (Ii = Istart_crs, jj = 0; Ii < Iend_crs; Ii += cr_bs, jj++) {
@@ -270,7 +215,7 @@ static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt
         ierr = MatPartitioningDestroy(&mpart);CHKERRQ(ierr);
 
         /* collect IS info */
-        ierr     = PetscMalloc(ncrs_eq*sizeof(PetscInt), &newproc_idx);CHKERRQ(ierr);
+        ierr     = PetscMalloc1(ncrs_eq, &newproc_idx);CHKERRQ(ierr);
         ierr     = ISGetIndices(proc_is, &is_idx);CHKERRQ(ierr);
         targetPE = 1; /* bring to "front" of machine */
         /*targetPE = size/new_size;*/ /* spread partitioning across machine */
@@ -322,30 +267,20 @@ static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt
       if (pc_gamg->verbose) PetscPrintf(comm,"\t[%d]%s number of equations (loc) %d with simple aggregation\n",rank,__FUNCT__,ncrs_eq);
       targetPE = rank/rfactor;
       ierr     = ISCreateStride(comm, ncrs_eq, targetPE, 0, &is_eq_newproc);CHKERRQ(ierr);
-
-      if (stokes) {
-        ierr = ISCreateStride(comm, ncrs_prim*cr_bs, targetPE, 0, &is_eq_newproc_prim);CHKERRQ(ierr);
-      }
     } /* end simple 'is_eq_newproc' */
 
     /*
      Create an index set from the is_eq_newproc index set to indicate the mapping TO
      */
     ierr = ISPartitioningToNumbering(is_eq_newproc, &is_eq_num);CHKERRQ(ierr);
-    if (stokes) {
-      ierr = ISPartitioningToNumbering(is_eq_newproc_prim, &is_eq_num_prim);CHKERRQ(ierr);
-    } else is_eq_num_prim = is_eq_num;
+    is_eq_num_prim = is_eq_num;
     /*
       Determine how many equations/vertices are assigned to each processor
      */
     ierr        = ISPartitioningCount(is_eq_newproc, size, counts);CHKERRQ(ierr);
     ncrs_eq_new = counts[rank];
     ierr        = ISDestroy(&is_eq_newproc);CHKERRQ(ierr);
-    if (stokes) {
-      ierr          = ISPartitioningCount(is_eq_newproc_prim, size, counts);CHKERRQ(ierr);
-      ierr          = ISDestroy(&is_eq_newproc_prim);CHKERRQ(ierr);
-      ncrs_prim_new = counts[rank]/cr_bs; /* nodes */
-    } else ncrs_prim_new = ncrs_eq_new/cr_bs; /* eqs */
+    ncrs_prim_new = ncrs_eq_new/cr_bs; /* eqs */
 
     ierr = PetscFree(counts);CHKERRQ(ierr);
 #if defined PETSC_GAMG_USE_LOG
@@ -356,12 +291,12 @@ static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt
     /* Create a vector to contain the newly ordered element information */
     ierr = VecCreate(comm, &dest_crd);CHKERRQ(ierr);
     ierr = VecSetSizes(dest_crd, node_data_sz*ncrs_prim_new, PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(dest_crd);CHKERRQ(ierr); /* this is needed! */
+    ierr = VecSetType(dest_crd,VECSTANDARD);CHKERRQ(ierr); /* this is needed! */
     /*
      There are 'ndata_rows*ndata_cols' data items per node, (one can think of the vectors of having
      a block size of ...).  Note, ISs are expanded into equation space by 'cr_bs'.
      */
-    ierr = PetscMalloc((ncrs_prim*node_data_sz)*sizeof(PetscInt), &tidx);CHKERRQ(ierr);
+    ierr = PetscMalloc1((ncrs_prim*node_data_sz), &tidx);CHKERRQ(ierr);
     ierr = ISGetIndices(is_eq_num_prim, &idx);CHKERRQ(ierr);
     for (ii=0,jj=0; ii<ncrs_prim; ii++) {
       PetscInt id = idx[ii*cr_bs]/cr_bs; /* get node back */
@@ -400,7 +335,7 @@ static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt
       Put the element vertex data into a new allocation of the gdata->ele
     */
     ierr = PetscFree(pc_gamg->data);CHKERRQ(ierr);
-    ierr = PetscMalloc(node_data_sz*ncrs_prim_new*sizeof(PetscReal), &pc_gamg->data);CHKERRQ(ierr);
+    ierr = PetscMalloc1(node_data_sz*ncrs_prim_new, &pc_gamg->data);CHKERRQ(ierr);
 
     pc_gamg->data_sz = node_data_sz*ncrs_prim_new;
     strideNew        = ncrs_prim_new*ndata_rows;
@@ -536,10 +471,9 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   Mat            Aarr[GAMG_MAXLEVELS],Parr[GAMG_MAXLEVELS];
   PetscReal      emaxs[GAMG_MAXLEVELS];
   IS             *ASMLocalIDsArr[GAMG_MAXLEVELS];
-  GAMGKKTMat     kktMatsArr[GAMG_MAXLEVELS];
   PetscLogDouble nnz0=0.,nnztot=0.;
   MatInfo        info;
-  PetscBool      stokes = PETSC_FALSE, redo_mesh_setup = (PetscBool)(!pc_gamg->reuse_prol);
+  PetscBool      redo_mesh_setup = (PetscBool)(!pc_gamg->reuse_prol);
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
@@ -567,7 +501,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 
         for (level=pc_gamg->Nlevels-2; level>=0; level--) {
           /* the first time through the matrix structure has changed from repartitioning */
-          if (pc_gamg->setup_count==2 && (pc_gamg->repart || level==0)) {
+          if (pc_gamg->setup_count==2) {
             ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
             ierr = MatDestroy(&mglevels[level]->A);CHKERRQ(ierr);
 
@@ -589,10 +523,6 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     }
   }
 
-  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,NULL);CHKERRQ(ierr);
-
-  ierr = GAMGKKTMatCreate(Pmat, stokes, &kktMatsArr[0]);CHKERRQ(ierr);
-
   if (!pc_gamg->data) {
     if (pc_gamg->orig_data) {
       ierr = MatGetBlockSize(Pmat, &bs);CHKERRQ(ierr);
@@ -602,28 +532,24 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       pc_gamg->data_cell_rows = pc_gamg->orig_data_cell_rows;
       pc_gamg->data_cell_cols = pc_gamg->orig_data_cell_cols;
 
-      ierr = PetscMalloc(pc_gamg->data_sz*sizeof(PetscReal), &pc_gamg->data);CHKERRQ(ierr);
+      ierr = PetscMalloc1(pc_gamg->data_sz, &pc_gamg->data);CHKERRQ(ierr);
       for (qq=0; qq<pc_gamg->data_sz; qq++) pc_gamg->data[qq] = pc_gamg->orig_data[qq];
     } else {
       if (!pc_gamg->ops->createdefaultdata) SETERRQ(comm,PETSC_ERR_PLIB,"'createdefaultdata' not set(?) need to support NULL data");
-      if (stokes) SETERRQ(comm,PETSC_ERR_PLIB,"Need data (eg, PCSetCoordinates) for Stokes problems");
-      ierr = pc_gamg->ops->createdefaultdata(pc, kktMatsArr[0].A11);CHKERRQ(ierr);
+      ierr = pc_gamg->ops->createdefaultdata(pc,Pmat);CHKERRQ(ierr);
     }
   }
 
   /* cache original data for reuse */
   if (!pc_gamg->orig_data && redo_mesh_setup) {
-    ierr = PetscMalloc(pc_gamg->data_sz*sizeof(PetscReal), &pc_gamg->orig_data);CHKERRQ(ierr);
+    ierr = PetscMalloc1(pc_gamg->data_sz, &pc_gamg->orig_data);CHKERRQ(ierr);
     for (qq=0; qq<pc_gamg->data_sz; qq++) pc_gamg->orig_data[qq] = pc_gamg->data[qq];
     pc_gamg->orig_data_cell_rows = pc_gamg->data_cell_rows;
     pc_gamg->orig_data_cell_cols = pc_gamg->data_cell_cols;
   }
 
   /* get basic dims */
-  if (stokes) bs = pc_gamg->data_cell_rows; /* this is agg-mg specific */
-  else {
-    ierr = MatGetBlockSize(Pmat, &bs);CHKERRQ(ierr);
-  }
+  ierr = MatGetBlockSize(Pmat, &bs);CHKERRQ(ierr);
 
   ierr = MatGetSize(Pmat, &M, &qq);CHKERRQ(ierr);
   if (pc_gamg->verbose) {
@@ -652,43 +578,26 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     ierr = PetscLogStagePush(gamg_stages[level]);CHKERRQ(ierr);
 #endif
 #endif
-    /* deal with Stokes, get sub matrices */
-    if (level > 0) {
-      ierr = GAMGKKTMatCreate(Aarr[level], stokes, &kktMatsArr[level]);CHKERRQ(ierr);
-    }
     { /* construct prolongator */
       Mat              Gmat;
       PetscCoarsenData *agg_lists;
-      Mat              Prol11,Prol22;
+      Mat              Prol11;
 
-      ierr = pc_gamg->ops->graph(pc,kktMatsArr[level].A11, &Gmat);CHKERRQ(ierr);
+      ierr = pc_gamg->ops->graph(pc,Aarr[level], &Gmat);CHKERRQ(ierr);
       ierr = pc_gamg->ops->coarsen(pc, &Gmat, &agg_lists);CHKERRQ(ierr);
-      ierr = pc_gamg->ops->prolongator(pc, kktMatsArr[level].A11, Gmat, agg_lists, &Prol11);CHKERRQ(ierr);
+      ierr = pc_gamg->ops->prolongator(pc,Aarr[level],Gmat,agg_lists,&Prol11);CHKERRQ(ierr);
 
       /* could have failed to create new level */
       if (Prol11) {
         /* get new block size of coarse matrices */
         ierr = MatGetBlockSizes(Prol11, NULL, &bs);CHKERRQ(ierr);
 
-        if (stokes) {
-          if (!pc_gamg->ops->formkktprol) SETERRQ(comm,PETSC_ERR_USER,"Stokes not supportd by AMG method.");
-          /* R A12 == (T = A21 P)';  G = T' T; coarsen G; form plain agg with G */
-          ierr = pc_gamg->ops->formkktprol(pc, Prol11, kktMatsArr[level].A21, &Prol22);CHKERRQ(ierr);
-        }
-
         if (pc_gamg->ops->optprol) {
           /* smooth */
-          ierr = pc_gamg->ops->optprol(pc, kktMatsArr[level].A11, &Prol11);CHKERRQ(ierr);
+          ierr = pc_gamg->ops->optprol(pc, Aarr[level], &Prol11);CHKERRQ(ierr);
         }
 
-        if (stokes) {
-          IS  is_row[2];
-          Mat a[4];
-
-          is_row[0] = kktMatsArr[level].prim_is; is_row[1] = kktMatsArr[level].constr_is;
-          a[0]      = Prol11; a[1] = NULL; a[2] = NULL; a[3] = Prol22;
-          ierr      = MatCreateNest(comm,2,is_row, 2, is_row, a, &Parr[level1]);CHKERRQ(ierr);
-        } else Parr[level1] = Prol11;
+        Parr[level1] = Prol11;
       } else Parr[level1] = NULL;
 
       if (pc_gamg->use_aggs_in_gasm) {
@@ -704,7 +613,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     /* cache eigen estimate */
     if (pc_gamg->emax_id != -1) {
       PetscBool flag;
-      ierr = PetscObjectComposedDataGetReal((PetscObject)kktMatsArr[level].A11, pc_gamg->emax_id, emaxs[level], flag);CHKERRQ(ierr);
+      ierr = PetscObjectComposedDataGetReal((PetscObject)Aarr[level], pc_gamg->emax_id, emaxs[level], flag);CHKERRQ(ierr);
       if (!flag) emaxs[level] = -1.;
     } else emaxs[level] = -1.;
     if (level==0) Aarr[0] = Pmat; /* use Pmat for finest level setup */
@@ -719,7 +628,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 #endif
 
     ierr = createLevel(pc, Aarr[level], bs, (PetscBool)(level==pc_gamg->Nlevels-2),
-                       stokes, &Parr[level1], &Aarr[level1], &nactivepe);CHKERRQ(ierr);
+                       &Parr[level1], &Aarr[level1], &nactivepe);CHKERRQ(ierr);
 
 #if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET2],0,0,0,0);CHKERRQ(ierr);
@@ -791,19 +700,6 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       ierr = KSPSetOperators(smoother, Aarr[level], Aarr[level], SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = PCMGSetInterpolation(pc, lidx, Parr[level+1]);CHKERRQ(ierr);
 
-      /* create field split PC, get subsmoother */
-      if (stokes) {
-        KSP      *ksps;
-        PetscInt nn;
-        ierr     = PCFieldSplitSetIS(subpc,"0",kktMatsArr[level].prim_is);CHKERRQ(ierr);
-        ierr     = PCFieldSplitSetIS(subpc,"1",kktMatsArr[level].constr_is);CHKERRQ(ierr);
-        ierr     = PCFieldSplitGetSubKSP(subpc,&nn,&ksps);CHKERRQ(ierr);
-        smoother = ksps[0];
-        ierr     = KSPGetPC(smoother, &subpc);CHKERRQ(ierr);
-        ierr     = PetscFree(ksps);CHKERRQ(ierr);
-      }
-      ierr = GAMGKKTMatDestroy(&kktMatsArr[level]);CHKERRQ(ierr);
-
       /* set defaults */
       ierr = KSPSetType(smoother, KSPCHEBYSHEV);CHKERRQ(ierr);
 
@@ -836,7 +732,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         nASMBlocksArr[level]  = 0;
         ierr                  = PCGASMSetType(subpc, PC_GASM_BASIC);CHKERRQ(ierr);
       } else {
-        ierr = PCSetType(subpc, PCJACOBI);CHKERRQ(ierr);
+        ierr = PCSetType(subpc, PCSOR);CHKERRQ(ierr);
       }
     }
     {
@@ -855,6 +751,10 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       ierr = PCSetType(pc2, PCLU);CHKERRQ(ierr);
       ierr = PCFactorSetShiftType(pc2,MAT_SHIFT_INBLOCKS);CHKERRQ(ierr);
       ierr = KSPSetTolerances(k2[0],PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
+      /* This flag gets reset by PCBJacobiGetSubKSP(), but our BJacobi really does the same algorithm everywhere (and in
+       * fact, all but one process will have zero dofs), so we reset the flag to avoid having PCView_BJacobi attempt to
+       * view every subdomain as though they were different. */
+      ((PC_BJacobi*)subpc->data)->same_local_solves = PETSC_TRUE;
     }
 
     /* should be called in PCSetFromOptions_GAMG(), but cannot be called prior to PCMGSetLevels() */
@@ -868,29 +768,20 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
          lidx <= fine_level;
          lidx++, level--) {
       KSP       smoother;
-      PetscBool flag;
+      PetscBool flag,flag2;
       PC        subpc;
 
       ierr = PCMGGetSmoother(pc, lidx, &smoother);CHKERRQ(ierr);
       ierr = KSPGetPC(smoother, &subpc);CHKERRQ(ierr);
-
-      /* create field split PC, get subsmoother */
-      if (stokes) {
-        KSP      *ksps;
-        PetscInt nn;
-        ierr     = PCFieldSplitGetSubKSP(subpc,&nn,&ksps);CHKERRQ(ierr);
-        smoother = ksps[0];
-        ierr     = KSPGetPC(smoother, &subpc);CHKERRQ(ierr);
-        ierr     = PetscFree(ksps);CHKERRQ(ierr);
-      }
 
       /* do my own cheby */
       ierr = PetscObjectTypeCompare((PetscObject)smoother, KSPCHEBYSHEV, &flag);CHKERRQ(ierr);
       if (flag) {
         PetscReal emax, emin;
         ierr = PetscObjectTypeCompare((PetscObject)subpc, PCJACOBI, &flag);CHKERRQ(ierr);
-        if (flag && emaxs[level] > 0.0) emax=emaxs[level]; /* eigen estimate only for diagnal PC */
-        else { /* eigen estimate 'emax' */
+        ierr = PetscObjectTypeCompare((PetscObject)subpc, PCSOR, &flag2);CHKERRQ(ierr);
+        if ((flag||flag2) && emaxs[level] > 0.0) emax=emaxs[level]; /* eigen estimate only for diagnal PC but lets acccept SOR because it is close and safe (always lower) */
+        else { /* eigen estimate 'emax' -- this is done in cheby */
           KSP eksp;
           Mat Lmat = Aarr[level];
           Vec bb, xx;
@@ -1385,12 +1276,11 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
   {
     /* -pc_gamg_type */
     {
-      char tname[256] = PCGAMGAGG;
-      const char *deftype = pc_gamg->gamg_type_name ? pc_gamg->gamg_type_name : tname;
-      ierr = PetscOptionsList("-pc_gamg_type","Type of AMG method","PCGAMGSetType",GAMGList, tname, tname, sizeof(tname), &flag);CHKERRQ(ierr);
+      char tname[256];
+      ierr = PetscOptionsFList("-pc_gamg_type","Type of AMG method","PCGAMGSetType",GAMGList, pc_gamg->gamg_type_name, tname, sizeof(tname), &flag);CHKERRQ(ierr);
       /* call PCCreateGAMG_XYZ */
-      if (flag || !pc_gamg->gamg_type_name) {
-        ierr = PCGAMGSetType(pc, flag ? tname : deftype);CHKERRQ(ierr);
+      if (flag) {
+        ierr = PCGAMGSetType(pc,tname);CHKERRQ(ierr);
       }
     }
     /* -pc_gamg_verbose */
@@ -1498,12 +1388,12 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   ierr = PetscObjectChangeTypeName((PetscObject)pc, PCGAMG);CHKERRQ(ierr);
 
   /* create a supporting struct and attach it to pc */
-  ierr         = PetscNewLog(pc, PC_GAMG, &pc_gamg);CHKERRQ(ierr);
+  ierr         = PetscNewLog(pc,&pc_gamg);CHKERRQ(ierr);
   mg           = (PC_MG*)pc->data;
   mg->galerkin = 2;             /* Use Galerkin, but it is computed externally */
   mg->innerctx = pc_gamg;
 
-  ierr = PetscNewLog(pc,struct _PCGAMGOps,&pc_gamg->ops);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&pc_gamg->ops);CHKERRQ(ierr);
 
   pc_gamg->setup_count = 0;
   /* these should be in subctx but repartitioning needs simple arrays */
@@ -1511,9 +1401,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   pc_gamg->data    = 0;
 
   /* register AMG type */
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PCGAMGInitializePackage();CHKERRQ(ierr);
-#endif
 
   /* overwrite the pointers of PCMG by the functions of base class PCGAMG */
   pc->ops->setfromoptions = PCSetFromOptions_GAMG;
@@ -1580,18 +1468,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
 #endif
   }
 #endif
-  /* general events */
-#if defined PETSC_USE_LOG
-  ierr = PetscLogEventRegister("PCGAMGgraph_AGG", 0, &PC_GAMGGgraph_AGG);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("PCGAMGgraph_GEO", PC_CLASSID, &PC_GAMGGgraph_GEO);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("PCGAMGcoarse_AGG", PC_CLASSID, &PC_GAMGCoarsen_AGG);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("PCGAMGcoarse_GEO", PC_CLASSID, &PC_GAMGCoarsen_GEO);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("PCGAMGProl_AGG", PC_CLASSID, &PC_GAMGProlongator_AGG);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("PCGAMGProl_GEO", PC_CLASSID, &PC_GAMGProlongator_GEO);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("PCGAMGPOpt_AGG", PC_CLASSID, &PC_GAMGOptprol_AGG);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("GAMGKKTProl_AGG", PC_CLASSID, &PC_GAMGKKTProl_AGG);CHKERRQ(ierr);
-#endif
-
+  /* PCSetUp_GAMG assumes that the type has been set, so set it to the default now */
+  ierr = PCGAMGSetType(pc,PCGAMGAGG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1616,7 +1494,20 @@ PetscErrorCode PCGAMGInitializePackage(void)
   PCGAMGPackageInitialized = PETSC_TRUE;
   ierr = PetscFunctionListAdd(&GAMGList,PCGAMGGEO,PCCreateGAMG_GEO);CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&GAMGList,PCGAMGAGG,PCCreateGAMG_AGG);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&GAMGList,PCGAMGCLASSICAL,PCCreateGAMG_Classical);CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(PCGAMGFinalizePackage);CHKERRQ(ierr);
+
+  /* general events */
+#if defined PETSC_USE_LOG
+  ierr = PetscLogEventRegister("PCGAMGgraph_AGG", 0, &PC_GAMGGgraph_AGG);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCGAMGgraph_GEO", PC_CLASSID, &PC_GAMGGgraph_GEO);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCGAMGcoarse_AGG", PC_CLASSID, &PC_GAMGCoarsen_AGG);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCGAMGcoarse_GEO", PC_CLASSID, &PC_GAMGCoarsen_GEO);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCGAMGProl_AGG", PC_CLASSID, &PC_GAMGProlongator_AGG);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCGAMGProl_GEO", PC_CLASSID, &PC_GAMGProlongator_GEO);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCGAMGPOpt_AGG", PC_CLASSID, &PC_GAMGOptprol_AGG);CHKERRQ(ierr);
+#endif
+
   PetscFunctionReturn(0);
 }
 

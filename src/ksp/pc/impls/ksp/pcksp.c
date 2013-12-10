@@ -223,7 +223,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_KSP(PC pc)
   PC_KSP         *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_KSP,&jac);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&jac);CHKERRQ(ierr);
 
   pc->ops->apply           = PCApply_KSP;
   pc->ops->applytranspose  = PCApplyTranspose_KSP;

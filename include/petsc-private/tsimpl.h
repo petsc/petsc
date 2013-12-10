@@ -51,6 +51,7 @@ struct _p_TS {
 
   PetscErrorCode (*prestep)(TS);
   PetscErrorCode (*prestage)(TS,PetscReal);
+  PetscErrorCode (*poststage)(TS,PetscReal,PetscInt,Vec*);
   PetscErrorCode (*poststep)(TS);
 
   /* ---------------------- IMEX support ---------------------------------*/
@@ -65,19 +66,16 @@ struct _p_TS {
   struct {
     PetscReal time;             /* The time at which the matrices were last evaluated */
     Vec X;                      /* Solution vector at which the Jacobian was last evaluated */
-    PetscInt Xstate;            /* State of the solution vector */
+    PetscObjectState Xstate;    /* State of the solution vector */
     MatStructure mstructure;    /* The structure returned */
+    /* Flag to unshift Jacobian before calling the IJacobian or RHSJacobian functions.  This is useful
+     * if the user would like to reuse (part of) the Jacobian from the last evaluation. */
+    PetscBool reuse;
+    PetscReal scale,shift;
   } rhsjacobian;
 
   struct {
-    PetscReal time;             /* The time at which the matrices were last evaluated */
-    Vec X;                      /* Solution vector at which the Jacobian was last evaluated */
-    Vec Xdot;                   /* Time derivative of the state vector at which the Jacobian was last evaluated */
-    PetscInt Xstate;            /* State of the solution vector */
-    PetscInt Xdotstate;         /* State of the solution vector */
-    MatStructure mstructure;    /* The structure returned */
     PetscReal shift;            /* The derivative of the lhs wrt to Xdot */
-    PetscBool imex;             /* Flag of the method if it was started as an imex method */
   } ijacobian;
 
   /* ---------------------Nonlinear Iteration------------------------------*/
@@ -209,5 +207,11 @@ typedef enum {TS_STEP_INCOMPLETE, /* vec_sol, ptime, etc point to beginning of s
               TS_STEP_PENDING,    /* vec_sol advanced, but step has not been accepted yet */
               TS_STEP_COMPLETE    /* step accepted and ptime, steps, etc have been advanced */
 } TSStepStatus;
+
+struct _n_TSMonitorLGCtx {
+  PetscDrawLG lg;
+  PetscInt    howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
+  PetscInt    ksp_its,snes_its;
+};
 
 #endif

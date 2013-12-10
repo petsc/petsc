@@ -141,7 +141,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
      xs is the first local node number, x is the number of local nodes
   */
   if (!lx) {
-    ierr = PetscMalloc(m*sizeof(PetscInt), &dd->lx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m, &dd->lx);CHKERRQ(ierr);
     ierr = PetscOptionsGetBool(NULL,"-da_partition_blockcomm",&flg1,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetBool(NULL,"-da_partition_nodes_at_end",&flg2,NULL);CHKERRQ(ierr);
     if (flg1) {      /* Block Comm type Distribution */
@@ -218,7 +218,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   ierr = ISCreateStride(comm,x,start,1,&to);CHKERRQ(ierr);
   ierr = ISCreateStride(comm,x,xs-Xs,1,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,ltog);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)ltog);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
 
@@ -226,8 +226,8 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   /* global to local must retrieve ghost points */
   ierr = ISCreateStride(comm,(IXe-IXs),IXs-Xs,1,&to);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((x+2*(sDist))*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(da,(x+2*(sDist))*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc1((x+2*(sDist)),&idx);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)da,(x+2*(sDist))*sizeof(PetscInt));CHKERRQ(ierr);
 
   for (i=0; i<IXs-Xs; i++) idx[i] = -1; /* prepend with -1s if needed for ghosted case*/
 
@@ -278,9 +278,9 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
 
   ierr = ISCreateGeneral(comm,nn-IXs+Xs,&idx[IXs-Xs],PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,local,to,&gtol);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,to);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,from);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,gtol);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)to);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)from);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)gtol);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
   ierr = VecDestroy(&local);CHKERRQ(ierr);
@@ -302,7 +302,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
 
   ierr = ISLocalToGlobalMappingCreate(comm,nn,idx,PETSC_COPY_VALUES,&da->ltogmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingBlock(da->ltogmap,dd->w,&da->ltogmapb);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)da->ltogmap);CHKERRQ(ierr);
 
   dd->idx = idx;
   dd->Nl  = nn;
@@ -348,7 +348,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
 .keywords: distributed array, create, one-dimensional
 
 .seealso: DMDestroy(), DMView(), DMDACreate2d(), DMDACreate3d(), DMGlobalToLocalBegin(), DMDASetRefinementFactor(),
-          DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMDALocalToLocalBegin(), DMDALocalToLocalEnd(), DMDAGetRefinementFactor(),
+          DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMLocalToLocalBegin(), DMLocalToLocalEnd(), DMDAGetRefinementFactor(),
           DMDAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DMDACreateNaturalVector(), DMLoad(), DMDAGetOwnershipRanges()
 
 @*/

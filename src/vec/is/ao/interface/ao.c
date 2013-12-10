@@ -75,8 +75,8 @@ PetscErrorCode  AODestroy(AO *ao)
   if (!*ao) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*ao),AO_CLASSID,1);
   if (--((PetscObject)(*ao))->refct > 0) {*ao = 0; PetscFunctionReturn(0);}
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSViewOff((PetscObject)*ao);CHKERRQ(ierr);
+  /* if memory was published with SAWs then destroy it */
+  ierr = PetscObjectSAWsViewOff((PetscObject)*ao);CHKERRQ(ierr);
   /* destroy the internal part */
   if ((*ao)->ops->destroy) {
     ierr = (*(*ao)->ops->destroy)(*ao);CHKERRQ(ierr);
@@ -450,7 +450,7 @@ PetscErrorCode AOSetFromOptions(AO ao)
   PetscValidHeaderSpecific(ao,AO_CLASSID,1);
 
   ierr = PetscObjectOptionsBegin((PetscObject)ao);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-ao_type","AO type","AOSetType",AOList,def,type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-ao_type","AO type","AOSetType",AOList,def,type,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = AOSetType(ao,type);CHKERRQ(ierr);
   } else if (!((PetscObject)ao)->type_name) {
@@ -503,6 +503,45 @@ PetscErrorCode AOSetIS(AO ao,IS isapp,IS ispetsc)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "AOViewFromOptions"
+/*
+   AOViewFromOptions - Processes command line options to determine if/how an AO is to be viewed.
+
+   Collective
+
+   Input Arguments:
++  ao - the application ordering
+.  prefix - prefix to use for viewing, or NULL to use prefix of 'ao'
+-  optionname - option to activate viewing
+
+   Level: intermediate
+
+.keywords: AO, view, options, database
+.seealso: AOView(), VecViewFromOptions(), DMViewFromOptions()
+*/
+PetscErrorCode AOViewFromOptions(AO ao,const char *prefix,const char *optionname)
+{
+  PetscErrorCode    ierr;
+  PetscBool         flg;
+  PetscViewer       viewer;
+  PetscViewerFormat format;
+
+  PetscFunctionBegin;
+  if (prefix) {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ao),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  } else {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ao),((PetscObject)ao)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  }
+  if (flg) {
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+    ierr = AOView(ao,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "AOCreate"
 /*@C
    AOCreate - Creates an application ordering.
@@ -529,23 +568,14 @@ PetscErrorCode  AOCreate(MPI_Comm comm,AO *ao)
 {
   PetscErrorCode ierr;
   AO             aonew;
-  PetscBool      opt;
 
   PetscFunctionBegin;
   PetscValidPointer(ao,2);
   *ao = NULL;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = AOInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(aonew,_p_AO,struct _AOOps,AO_CLASSID,"AO","Application Ordering","AO",comm,AODestroy,AOView);CHKERRQ(ierr);
   ierr = PetscMemzero(aonew->ops, sizeof(struct _AOOps));CHKERRQ(ierr);
   *ao  = aonew;
-
-  opt  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL, "-ao_view", &opt,NULL);CHKERRQ(ierr);
-  if (opt) {
-    ierr = AOView(aonew, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }

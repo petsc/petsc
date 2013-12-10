@@ -124,6 +124,18 @@ PetscErrorCode  PetscSetDisplay(void)
 
   str = getenv("DISPLAY");
   if (!str) str = ":0.0";
+#if defined(PETSC_HAVE_X)
+  flag = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,"-x_virtual",&flag,NULL);CHKERRQ(ierr);
+  if (flag) {
+    /*  this is a crude hack, but better than nothing */
+    ierr = PetscPOpen(PETSC_COMM_WORLD,NULL,"pkill -9 Xvfb","r",NULL);CHKERRQ(ierr);
+    ierr = PetscSleep(1);CHKERRQ(ierr);
+    ierr = PetscPOpen(PETSC_COMM_WORLD,NULL,"Xvfb :15 -screen 0 1600x1200x24","r",NULL);CHKERRQ(ierr);
+    ierr = PetscSleep(5);CHKERRQ(ierr);
+    str  = ":15";
+  }
+#endif
   if (str[0] != ':' || singlehost) {
     ierr = PetscStrncpy(display,str,sizeof(display));CHKERRQ(ierr);
   } else if (!rank) {
@@ -149,6 +161,11 @@ PetscErrorCode  PetscSetDisplay(void)
 
   Output Parameters:
 .   display - the display string
+
+  Options Database:
++  -display <display> - sets the display to use
+-  -x_virtual - forces use of a X virtual display Xvfb that will not display anything but -draw_save will still work. Xvfb is automatically
+                started up in PetscSetDisplay() with this option
 
 */
 PetscErrorCode  PetscGetDisplay(char display[],size_t n)

@@ -26,7 +26,7 @@ static PetscErrorCode DMSNESDuplicate_DMLocal(DMSNES oldsdm,DMSNES sdm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(sdm,DMSNES_Local,&sdm->data);CHKERRQ(ierr);
+  ierr = PetscNewLog(sdm,(DMSNES_Local**)&sdm->data);CHKERRQ(ierr);
   if (oldsdm->data) {
     ierr = PetscMemcpy(sdm->data,oldsdm->data,sizeof(DMSNES_Local));CHKERRQ(ierr);
   }
@@ -42,7 +42,7 @@ static PetscErrorCode DMLocalSNESGetContext(DM dm,DMSNES sdm,DMSNES_Local **dmlo
   PetscFunctionBegin;
   *dmlocalsnes = NULL;
   if (!sdm->data) {
-    ierr = PetscNewLog(dm,DMSNES_Local,&sdm->data);CHKERRQ(ierr);
+    ierr = PetscNewLog(dm,(DMSNES_Local**)&sdm->data);CHKERRQ(ierr);
 
     sdm->ops->destroy   = DMSNESDestroy_DMLocal;
     sdm->ops->duplicate = DMSNESDuplicate_DMLocal;
@@ -108,7 +108,7 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat *A,Mat *B,
     if (!fdcoloring) {
       ISColoring coloring;
 
-      ierr = DMCreateColoring(dm,dm->coloringtype,dm->mattype,&coloring);CHKERRQ(ierr);
+      ierr = DMCreateColoring(dm,dm->coloringtype,&coloring);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(*B,coloring,&fdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(&coloring);CHKERRQ(ierr);
       switch (dm->coloringtype) {
@@ -119,6 +119,7 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat *A,Mat *B,
       }
       ierr = PetscObjectSetOptionsPrefix((PetscObject)fdcoloring,((PetscObject)dm)->prefix);CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr);
+      ierr = MatFDColoringSetUp(*B,coloring,fdcoloring);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject)dm,"DMDASNES_FDCOLORING",(PetscObject)fdcoloring);CHKERRQ(ierr);
       ierr = PetscObjectDereference((PetscObject)fdcoloring);CHKERRQ(ierr);
 

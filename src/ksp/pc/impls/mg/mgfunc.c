@@ -1,10 +1,11 @@
 
 #include <../src/ksp/pc/impls/mg/mgimpl.h>       /*I "petscksp.h" I*/
 
+/* ---------------------------------------------------------------------------*/
 #undef __FUNCT__
-#define __FUNCT__ "PCMGResidual_Default"
+#define __FUNCT__ "PCMGResidualDefault"
 /*@C
-   PCMGResidual_Default - Default routine to calculate the residual.
+   PCMGResidualDefault - Default routine to calculate the residual.
 
    Collective on Mat and Vec
 
@@ -22,17 +23,14 @@
 
 .seealso: PCMGSetResidual()
 @*/
-PetscErrorCode  PCMGResidual_Default(Mat mat,Vec b,Vec x,Vec r)
+PetscErrorCode  PCMGResidualDefault(Mat mat,Vec b,Vec x,Vec r)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMult(mat,x,r);CHKERRQ(ierr);
-  ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
+  ierr = MatResidual(mat,b,x,r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-/* ---------------------------------------------------------------------------*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCMGGetCoarseSolve"
@@ -81,7 +79,7 @@ PetscErrorCode  PCMGGetCoarseSolve(PC pc,KSP *ksp)
 
 .keywords:  MG, set, multigrid, residual, level
 
-.seealso: PCMGResidual_Default()
+.seealso: PCMGResidualDefault()
 @*/
 PetscErrorCode  PCMGSetResidual(PC pc,PetscInt l,PetscErrorCode (*residual)(Mat,Vec,Vec,Vec),Mat mat)
 {
@@ -93,10 +91,9 @@ PetscErrorCode  PCMGSetResidual(PC pc,PetscInt l,PetscErrorCode (*residual)(Mat,
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   if (residual) mglevels[l]->residual = residual;
-  if (!mglevels[l]->residual) mglevels[l]->residual = PCMGResidual_Default;
+  if (!mglevels[l]->residual) mglevels[l]->residual = PCMGResidualDefault;
   if (mat) {ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);}
   ierr = MatDestroy(&mglevels[l]->A);CHKERRQ(ierr);
-
   mglevels[l]->A = mat;
   PetscFunctionReturn(0);
 }
@@ -458,10 +455,10 @@ PetscErrorCode  PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
     ierr = KSPSetTolerances(mglevels[l]->smoothu,rtol,abstol,dtol,maxits);CHKERRQ(ierr);
     ierr = KSPSetType(mglevels[l]->smoothu,ksptype);CHKERRQ(ierr);
     ierr = KSPSetNormType(mglevels[l]->smoothu,normtype);CHKERRQ(ierr);
-    ierr = KSPSetConvergenceTest(mglevels[l]->smoothu,KSPSkipConverged,NULL,NULL);CHKERRQ(ierr);
+    ierr = KSPSetConvergenceTest(mglevels[l]->smoothu,KSPConvergedSkip,NULL,NULL);CHKERRQ(ierr);
     ierr = KSPGetPC(mglevels[l]->smoothu,&ipc);CHKERRQ(ierr);
     ierr = PCSetType(ipc,pctype);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(pc,mglevels[l]->smoothu);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)mglevels[l]->smoothu);CHKERRQ(ierr);
   }
   if (ksp) *ksp = mglevels[l]->smoothu;
   PetscFunctionReturn(0);

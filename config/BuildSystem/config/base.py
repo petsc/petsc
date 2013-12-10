@@ -103,6 +103,17 @@ class Configure(script.Script):
   def __str__(self):
     return ''
 
+  def logError(self, component, status, output, error):
+    if status:
+      exitstr = ' exit code ' + str(status)
+    else:
+      exitstr = ''
+    self.framework.log.write('Possible ERROR while running %s:%s\n' % (component, exitstr))
+    if output:
+      self.framework.log.write('stdout:\n' + output)
+    if error:
+      self.framework.log.write('stderr:\n' + error)
+
   def executeTest(self, test, args = [], kargs = {}):
     import time
 
@@ -112,7 +123,7 @@ class Configure(script.Script):
     if test.__doc__: self.logWrite('  '+test.__doc__+'\n')
     #t = time.time()
     if not isinstance(args, list): args = [args]
-    ret = apply(test, args,kargs)
+    ret = test(*args,**kargs)
     #self.logPrint('  TIME: '+str(time.time() - t)+' sec', debugSection = 'screen', indent = 0)
     return ret
 
@@ -210,10 +221,11 @@ class Configure(script.Script):
       useDefaultPath = 1
 
     def getNames(name, resultName):
-      index = name.find(' ')
-      if index >= 0:
-        options = name[index:]
-        name    = name[:index]
+      import re
+      prog = re.match(r'(.*?)(?<!\\)(\s.*)',name)
+      if prog:
+        name = prog.group(1)
+        options = prog.group(2)
       else:
         options = ''
       if not resultName:
@@ -409,11 +421,8 @@ class Configure(script.Script):
   def preprocess(self, codeStr, timeout = 600.0):
     def report(command, status, output, error):
       if error or status:
-        self.framework.log.write('Possible ERROR while running preprocessor: '+error)
-        if status: self.framework.log.write('ret = '+str(status)+'\n')
-        if error: self.framework.log.write('error message = {'+error+'}\n')
+        self.logError('preprocessor', status, output, error)
         self.framework.log.write('Source:\n'+self.getCode(codeStr))
-      return
 
     command = self.getPreprocessorCmd()
     if self.compilerDefines: self.framework.outputHeader(self.compilerDefines)
@@ -461,14 +470,10 @@ class Configure(script.Script):
     '''Return the error output from this compile and the return code'''
     def report(command, status, output, error):
       if error or status:
-        self.framework.log.write('Possible ERROR while running compiler: '+output)
-        if status: self.framework.log.write('ret = '+str(status)+'\n')
-        if error: self.framework.log.write('error message = {'+error+'}\n')
-        self.framework.log.write('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
+        self.logError('compiler', status, output, error)
       else:
         self.framework.log.write('Successful compile:\n')
-        self.framework.log.write('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
-      return
+      self.framework.log.write('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
 
     cleanup = cleanup and self.framework.doCleanup
     command = self.getCompilerCmd()
@@ -515,10 +520,11 @@ class Configure(script.Script):
   def filterLinkOutput(self, output):
     return self.framework.filterLinkOutput(output)
 
-  def outputLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0, linkLanguage=None):
+  def outputLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0, linkLanguage=None, examineOutput=lambda ret,out,err:None):
     import sys
 
     (out, err, ret) = self.outputCompile(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd)
+    examineOutput(ret, out, err)
     out = self.filterCompileOutput(out+'\n'+err)
     if ret or len(out):
       self.framework.logPrint('Compile failed inside link\n'+out)
@@ -541,12 +547,8 @@ class Configure(script.Script):
     linkerObj = self.linkerObj
     def report(command, status, output, error):
       if error or status:
-        self.framework.log.write('Possible ERROR while running linker: '+error)
-        self.framework.log.write(' output: '+output)
-        if status: self.framework.log.write('ret = '+str(status)+'\n')
-        if error: self.framework.log.write('error message = {'+error+'}\n')
-        self.framework.log.write(' in '+self.getLinkerCmd()+'\n')
-        self.framework.log.write('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
+        self.logError('linker', status, output, error)
+        examineOutput(status, output, error)
       return
     (out, err, ret) = Configure.executeShellCommand(cmd, checkCommand = report, log = self.framework.log)
     self.linkerObj = linkerObj
@@ -555,10 +557,10 @@ class Configure(script.Script):
       if os.path.isfile(self.linkerObj):os.remove(self.linkerObj)
       pdbfile = os.path.splitext(self.linkerObj)[0]+'.pdb'
       if os.path.isfile(pdbfile): os.remove(pdbfile)
-    return (out+err, ret)
+    return (out+'\n'+err, ret)
 
-  def checkLink(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None, shared = 0, linkLanguage=None):
-    (output, returnCode) = self.outputLink(includes, body, cleanup, codeBegin, codeEnd, shared, linkLanguage)
+  def checkLink(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None, shared = 0, linkLanguage=None, examineOutput=lambda ret,out,err:None):
+    (output, returnCode) = self.outputLink(includes, body, cleanup, codeBegin, codeEnd, shared, linkLanguage, examineOutput)
     output = self.filterLinkOutput(output)
     return not (returnCode or len(output))
 

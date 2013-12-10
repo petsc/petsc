@@ -74,13 +74,6 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
 
     return
 
-  def configureExternalPackagesDir(self):
-    if self.framework.externalPackagesDir is None:
-      self.externalPackagesDir = os.path.join(self.dir, 'externalpackages')
-    else:
-      self.externalPackagesDir = self.framework.externalPackagesDir
-    return
-
   def configureInstallationMethod(self):
     if os.path.exists(os.path.join(self.dir,'bin','maint')):
       self.logPrint('bin/maint exists. This appears to be a repository clone')
@@ -109,6 +102,5 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
 
   def configure(self):
     self.executeTest(self.configureDirectories)
-    self.executeTest(self.configureExternalPackagesDir)
     self.executeTest(self.configureInstallationMethod)
     return

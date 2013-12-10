@@ -8,7 +8,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex10.c
 EXAMPLESF       =
 EXAMPLESFH      =
 MANSEC          = TS
-DIRS            = phasefield
+DIRS            =
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

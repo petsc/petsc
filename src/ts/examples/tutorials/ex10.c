@@ -195,7 +195,7 @@ static PetscErrorCode RDStateView(RD rd,Vec X,Vec Xdot,Vec F)
   ierr = DMDAVecRestoreArray(rd->da,X,&x);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(rd->da,Xdot,&xdot);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(rd->da,F,&f);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(comm,PETSC_STDOUT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -926,7 +926,7 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
 
   PetscFunctionBeginUser;
   *inrd = 0;
-  ierr  = PetscNew(struct _n_RD,&rd);CHKERRQ(ierr);
+  ierr  = PetscNew(&rd);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm,NULL,"Options for nonequilibrium radiation-diffusion with RD ionization",NULL);CHKERRQ(ierr);
   {
@@ -1062,7 +1062,8 @@ int main(int argc, char *argv[])
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   ierr = RDCreate(PETSC_COMM_WORLD,&rd);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(rd->da,&X);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(rd->da,MATAIJ,&B);CHKERRQ(ierr);
+  ierr = DMSetMatType(rd->da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(rd->da,&B);CHKERRQ(ierr);
   ierr = RDInitialState(rd,X);CHKERRQ(ierr);
 
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);

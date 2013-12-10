@@ -361,7 +361,7 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char libname[],char llibna
   size_t         len = 0;
   PetscBool      flg1,flg2,flg3,sharedtmp,exists;
 #if defined(PETSC_HAVE_POPEN)
-  PetscInt       rval;
+  int            rval;
 #endif
 
   PetscFunctionBegin;

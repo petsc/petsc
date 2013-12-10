@@ -168,9 +168,11 @@ int main(int argc, char **argv)
 
 
   /* Get Jacobian matrix structure from the da for the entire thing, da1 */
-  ierr = DMCreateMatrix(user.da1,MATAIJ,&user.M);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.da1,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da1,&user.M);CHKERRQ(ierr);
   /* Get the (usual) mass matrix structure from da2 */
-  ierr = DMCreateMatrix(user.da2,MATAIJ,&user.M_0);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.da2,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da2,&user.M_0);CHKERRQ(ierr);
   ierr = SetInitialGuess(x,&user);CHKERRQ(ierr);
   /* twodomain modeling */
   if (user.domain) {
@@ -669,7 +671,7 @@ PetscErrorCode SetRandomVectors(AppCtx *user,PetscReal t)
     }
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerBinaryRead(viewer,&n,1,PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscMalloc(n*sizeof(RandomValues),&randomvalues);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&randomvalues);CHKERRQ(ierr);
     ierr = PetscViewerBinaryRead(viewer,randomvalues,4*n,PETSC_DOUBLE);CHKERRQ(ierr);
     for (i=0; i<n; i++) randomvalues[i].dt = randomvalues[i].dt*user->dtevent;
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);

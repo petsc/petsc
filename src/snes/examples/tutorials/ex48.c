@@ -429,7 +429,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   }
   ierr = PetscHeaderCreate(thi,_p_THI,0,THI_CLASSID,"THI","Toy Hydrostatic Ice","",comm,THIDestroy,0);CHKERRQ(ierr);
 
-  ierr            = PetscNew(struct _n_Units,&thi->units);CHKERRQ(ierr);
+  ierr            = PetscNew(&thi->units);CHKERRQ(ierr);
   units           = thi->units;
   units->meter    = 1e-2;
   units->second   = 1e-7;
@@ -520,7 +520,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
     ierr = PetscOptionsReal("-thi_ssa_friction_scale","Scale slip boundary conditions by this factor in SSA (2D) assembly","",thi->ssa_friction_scale,&thi->ssa_friction_scale,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-thi_coarse2d","Use a 2D coarse space corresponding to SSA","",thi->coarse2d,&thi->coarse2d,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-thi_tridiagonal","Assemble a tridiagonal system (column coupling only) on the finest level","",thi->tridiagonal,&thi->tridiagonal,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-thi_mat_type","Matrix type","MatSetType",MatList,mtype,(char*)mtype,sizeof(mtype),NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsFList("-thi_mat_type","Matrix type","MatSetType",MatList,mtype,(char*)mtype,sizeof(mtype),NULL);CHKERRQ(ierr);
     ierr = PetscStrallocpy(mtype,(char**)&thi->mattype);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-thi_verbose","Enable verbose output (like matrix sizes and statistics)","",thi->verbose,&thi->verbose,NULL);CHKERRQ(ierr);
   }
@@ -1378,7 +1378,7 @@ static PetscErrorCode DMCreateInterpolation_DA_THI(DM dac,DM daf,Mat *A,Vec *sca
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_THI_Tridiagonal"
-static PetscErrorCode DMCreateMatrix_THI_Tridiagonal(DM da,MatType mtype,Mat *J)
+static PetscErrorCode DMCreateMatrix_THI_Tridiagonal(DM da,Mat *J)
 {
   PetscErrorCode         ierr;
   Mat                    A;
@@ -1393,7 +1393,7 @@ static PetscErrorCode DMCreateMatrix_THI_Tridiagonal(DM da,MatType mtype,Mat *J)
   ierr = DMGetLocalToGlobalMappingBlock(da,&ltogb);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)da),&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,dof*xm*ym*zm,dof*xm*ym*zm,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(A,mtype);CHKERRQ(ierr);
+  ierr = MatSetType(A,da->mattype);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(A,3*2,NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(A,3*2,NULL,0,NULL);CHKERRQ(ierr);
@@ -1438,7 +1438,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM da,Vec X,const char filena
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   if (!rank) {
     PetscScalar *array;
-    ierr = PetscMalloc(nmax*sizeof(PetscScalar),&array);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nmax,&array);CHKERRQ(ierr);
     for (r=0; r<size; r++) {
       PetscInt    i,j,k,xs,xm,ys,ym,zs,zm;
       PetscScalar *ptr;

@@ -260,11 +260,11 @@ never
       informative.
 \item {\em No} space after a ( or before a ). No space before the CHKXXX(). That is, do not write
 \begin{tabbing}
-   ierr = PetscMalloc( 10*sizeof(int),\&a ); CHKERRQ(ierr);
+   ierr = PetscMalloc1( 10,\&a ); CHKERRQ(ierr);
 \end{tabbing}
 instead write
 \begin{tabbing}
-   ierr = PetscMalloc(10*sizeof(int),\&a);CHKERRQ(ierr);
+   ierr = PetscMalloc1(10,\&a);CHKERRQ(ierr);
 \end{tabbing}
 \item Except in code that may be called before PETSc is fully initialized, always use PetscMalloc(), PetscNew(), and PetscFree(), not \trl{malloc()} and \trl{free()}.
 \item {\em No} space after the ) in a cast, no space between the type and the * in a caste.
@@ -384,7 +384,7 @@ The simplified C/C++ macro-based interface consists of the following two calls
 
 The macro SETERRQ() is given by
 \begin{tabbing}
-return PetscError(\=comm,\_\_LINE\_\_,\_\_FUNCT\_\_,\_\_FILE\_\_,\_\_SDIR\_\_,error code,error type,\\
+return PetscError(\=comm,\_\_LINE\_\_,\_\_FUNCT\_\_,\_\_FILE\_\_,error code,error type,\\
 \> ''Error message'');
 \end{tabbing}
 It calls the error handler with the current function name and location: line number,
@@ -395,7 +395,7 @@ the detailed error information is only printed once instead of for all levels of
 
 The macro CHKERRQ() is defined by
 \begin{tabbing}
-  if (ierr)  PetscError(\=PETSC\_COMM\_SELF,\_\_LINE\_\_,PETSC\_FUNC\_\_,\_\_FILE\_\_,\_\_SDIR\_\_, \\
+  if (ierr)  PetscError(\=PETSC\_COMM\_SELF,\_\_LINE\_\_,PETSC\_FUNC\_\_,\_\_FILE\_\_, \\
  \>ierr,PETSC\_ERROR\_REPEAT," ");
 \end{tabbing}
 
@@ -444,7 +444,7 @@ Pe\=tscErrorCode PetscPushErrorHandler(\=PetscErrorCode (*handler)(int,const cha
   \> PetscErrorCode ierr;\\
   \>EH neweh; \\
   \>PetscFunctionBegin;\\
-  \>ierr = PetscNew(struct \_EH,\&neweh);CHKERRQ(ierr);\\
+  \>ierr = PetscNew(\&neweh);CHKERRQ(ierr);\\
   \>if (eh) {neweh-$>$previous = eh;} \\
   \>else    {neweh-$>$previous = 0;}\\
   \>neweh-$>$handler = handler;\\

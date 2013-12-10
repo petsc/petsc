@@ -268,7 +268,7 @@ PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
   tag  = 0x666;
   pas  = 1;
   ierr = VecGetLocalSize(VEC_V(0), &nloc);CHKERRQ(ierr);
-  ierr = PetscMalloc(nvec*sizeof(PetscScalar), &y);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nvec, &y);CHKERRQ(ierr);
   ierr = PetscMemcpy(y, In, nvec*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = VecGetArray(Out, &zloc);CHKERRQ(ierr);
 

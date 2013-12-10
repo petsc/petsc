@@ -423,7 +423,7 @@ static PetscErrorCode TSSetFromOptions_SSP(TS ts)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SSP ODE solver options");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsList("-ts_ssp_type","Type of SSP method","TSSSPSetType",TSSSPList,tname,tname,sizeof(tname),&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsFList("-ts_ssp_type","Type of SSP method","TSSSPSetType",TSSSPList,tname,tname,sizeof(tname),&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = TSSSPSetType(ts,tname);CHKERRQ(ierr);
     }
@@ -494,9 +494,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = TSSSPInitializePackage();CHKERRQ(ierr);
-#endif
 
   ts->ops->setup          = TSSetUp_SSP;
   ts->ops->step           = TSStep_SSP;
@@ -505,7 +503,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS ts)
   ts->ops->setfromoptions = TSSetFromOptions_SSP;
   ts->ops->view           = TSView_SSP;
 
-  ierr = PetscNewLog(ts,TS_SSP,&ssp);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&ssp);CHKERRQ(ierr);
   ts->data = (void*)ssp;
 
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPGetType_C",TSSSPGetType_SSP);CHKERRQ(ierr);

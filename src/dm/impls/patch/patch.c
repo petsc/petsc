@@ -86,7 +86,7 @@ PetscErrorCode DMPatchZoom(DM dm, Vec X, MatStencil lower, MatStencil upper, MPI
     exr  = PetscMin(sxb+mxb, upper.i - blower.i);
     eyr  = PetscMin(syb+myb, upper.j - blower.j);
     ezr  = PetscMin(szb+mzb, upper.k - blower.k);
-    ierr = PetscMalloc2(rM*rN*rP,PetscInt,&localPoints,rM*rN*rP,PetscSFNode,&remotePoints);CHKERRQ(ierr);
+    ierr = PetscMalloc2(rM*rN*rP,&localPoints,rM*rN*rP,&remotePoints);CHKERRQ(ierr);
   } else {
     sxr = syr = szr = exr = eyr = ezr = sxb = syb = szb = mxb = myb = mzb = 0;
   }

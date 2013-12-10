@@ -110,6 +110,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
     }
     ierr = VecCopy(X,W);CHKERRQ(ierr);
     ierr = VecCopy(F,G);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetNorms(linesearch,xnorm,fnorm,ynorm);CHKERRQ(ierr);
     ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -156,7 +157,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
   if (objective) {
     ierr = SNESComputeObjective(snes,W,&g);CHKERRQ(ierr);
   } else {
-    ierr = SNESComputeFunction(snes,W,G);CHKERRQ(ierr);
+    ierr = (*linesearch->ops->snesfunc)(snes,W,G);CHKERRQ(ierr);
     ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
     if (domainerror) {
       ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
@@ -217,7 +218,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
     if (objective) {
       ierr = SNESComputeObjective(snes,W,&g);CHKERRQ(ierr);
     } else {
-      ierr = SNESComputeFunction(snes,W,G);CHKERRQ(ierr);
+      ierr = (*linesearch->ops->snesfunc)(snes,W,G);CHKERRQ(ierr);
       ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
       if (domainerror) PetscFunctionReturn(0);
 
@@ -226,8 +227,8 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
         ierr = (*linesearch->ops->vinorm)(snes, G, W, &gnorm);CHKERRQ(ierr);
       } else {
         ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);
-        g    = gnorm*gnorm;
       }
+      g = PetscSqr(gnorm);
     }
     if (PetscIsInfOrNanReal(g)) {
       ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
@@ -305,7 +306,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
         if (objective) {
           ierr = SNESComputeObjective(snes,W,&g);CHKERRQ(ierr);
         } else {
-          ierr = SNESComputeFunction(snes,W,G);CHKERRQ(ierr);
+          ierr = (*linesearch->ops->snesfunc)(snes,W,G);CHKERRQ(ierr);
           ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
           if (domainerror) {
             ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
@@ -316,8 +317,8 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
             ierr  = (*linesearch->ops->vinorm)(snes, G, W, &gnorm);CHKERRQ(ierr);
           } else {
             ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);
-            g    = gnorm*gnorm;
           }
+          g = PetscSqr(gnorm);
         }
         if (PetscIsInfOrNanReal(gnorm)) {
           ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
@@ -375,7 +376,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
     }
   }
   if (changed_y || changed_w || objective) { /* recompute the function norm if the step has changed or the objective isn't the norm */
-    ierr = SNESComputeFunction(snes,W,G);CHKERRQ(ierr);
+    ierr = (*linesearch->ops->snesfunc)(snes,W,G);CHKERRQ(ierr);
     ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
     if (domainerror) {
       ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
@@ -498,7 +499,7 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_BT(SNESLineSearch linesearch)
   linesearch->ops->view           = SNESLineSearchView_BT;
   linesearch->ops->setup          = NULL;
 
-  ierr = PetscNewLog(linesearch, SNESLineSearch_BT, &bt);CHKERRQ(ierr);
+  ierr = PetscNewLog(linesearch,&bt);CHKERRQ(ierr);
 
   linesearch->data    = (void*)bt;
   linesearch->max_its = 40;

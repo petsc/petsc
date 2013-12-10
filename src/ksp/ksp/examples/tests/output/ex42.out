@@ -1,5 +1,5 @@
 Linear solve did not converge due to DIVERGED_INDEFINITE_MAT iterations 11
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 1
 0.5

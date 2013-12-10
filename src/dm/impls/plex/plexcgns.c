@@ -99,16 +99,15 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
         PetscInt off;
 
         ierr = cg_ElementDataSize(cgid, 1, z, 1, &elementDataSize);CHKERRQ(ierr);
-        ierr = PetscMalloc(elementDataSize * sizeof(cgsize_t), &elements);CHKERRQ(ierr);
+        ierr = PetscMalloc1(elementDataSize, &elements);CHKERRQ(ierr);
         ierr = cg_elements_read(cgid, 1, z, 1, elements, NULL);CHKERRQ(ierr);
         for (c_loc = start, off = 0; c_loc < end; ++c_loc, ++c) {
-          cellType = elements[off];
-          switch (cellType) {
+          switch (elements[off]) {
           case TRI_3:   numCorners = 3;break;
           case QUAD_4:  numCorners = 4;break;
           case TETRA_4: numCorners = 4;break;
           case HEXA_8:  numCorners = 8;break;
-          default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int) cellType);
+          default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int) elements[off]);
           }
           ierr = DMPlexSetConeSize(*dm, c, numCorners);CHKERRQ(ierr);
           off += numCorners+1;
@@ -138,19 +137,19 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
       numc = end - start;
       /* This alone is reason enough to bludgeon every single CGNDS developer, this must be what they describe as the "idiocy of crowds" */
       ierr = cg_ElementDataSize(cgid, 1, z, 1, &elementDataSize);CHKERRQ(ierr);
-      ierr = PetscMalloc2(elementDataSize,cgsize_t,&elements,maxCorners,PetscInt,&cone);CHKERRQ(ierr);
+      ierr = PetscMalloc2(elementDataSize,&elements,maxCorners,&cone);CHKERRQ(ierr);
       ierr = cg_elements_read(cgid, 1, z, 1, elements, NULL);CHKERRQ(ierr);
       if (cellType == MIXED) {
         /* CGNS uses Fortran-based indexing, sieve uses C-style and numbers cell first then vertices. */
         for (c_loc = 0, v = 0; c_loc < numc; ++c_loc, ++c) {
-          cellType = elements[v]; ++v;
-          switch (cellType) {
+          switch (elements[v]) {
           case TRI_3:   numCorners = 3;break;
           case QUAD_4:  numCorners = 4;break;
           case TETRA_4: numCorners = 4;break;
           case HEXA_8:  numCorners = 8;break;
-          default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int) cellType);
+          default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int) elements[v]);
           }
+          ++v;
           for (v_loc = 0; v_loc < numCorners; ++v_loc, ++v) {
             cone[v_loc] = elements[v]+numCells-1;
           }
@@ -233,14 +232,14 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
   ierr = VecCreate(comm, &coordinates);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
+  ierr = VecSetType(coordinates,VECSTANDARD);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   if (!rank) {
     PetscInt off = 0;
     float   *x[3];
     int      z, c, d;
 
-    ierr = PetscMalloc3(numVertices,float,&x[0],numVertices,float,&x[1],numVertices,float,&x[2]);CHKERRQ(ierr);
+    ierr = PetscMalloc3(numVertices,&x[0],numVertices,&x[1],numVertices,&x[2]);CHKERRQ(ierr);
     for (z = 1, c = 0; z <= nzones; ++z) {
       DataType_t datatype;
       cgsize_t   sizes[3]; /* Number of vertices, number of cells, number of boundary vertices */

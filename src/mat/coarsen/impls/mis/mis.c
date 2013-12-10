@@ -59,8 +59,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
     matA   = (Mat_SeqAIJ*)mpimat->A->data;
     matB   = (Mat_SeqAIJ*)mpimat->B->data;
     /* force compressed storage of B */
-    matB->compressedrow.check = PETSC_TRUE;
-    ierr                      = MatCheckCompressedRow(mpimat->B,&matB->compressedrow,matB->i,Gmat->rmap->n,-1.0);CHKERRQ(ierr);
+    ierr   = MatCheckCompressedRow(mpimat->B,matB->nonzerorowcnt,&matB->compressedrow,matB->i,Gmat->rmap->n,-1.0);CHKERRQ(ierr);
   } else {
     PetscBool isAIJ;
     ierr = PetscObjectTypeCompare((PetscObject)Gmat, MATSEQAIJ, &isAIJ);CHKERRQ(ierr);
@@ -87,13 +86,13 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
     ierr = VecSet(ghostState, (PetscScalar)((PetscReal)NOT_DONE));CHKERRQ(ierr); /* set with UNKNOWN state */
   } else num_fine_ghosts = 0;
 
-  ierr = PetscMalloc(nloc*sizeof(PetscInt), &lid_cprowID);CHKERRQ(ierr);
-  ierr = PetscMalloc((nloc+1)*sizeof(PetscInt), &lid_gid);CHKERRQ(ierr); /* explicit array needed */
-  ierr = PetscMalloc(nloc*sizeof(PetscBool), &lid_removed);CHKERRQ(ierr); /* explicit array needed */
+  ierr = PetscMalloc1(nloc, &lid_cprowID);CHKERRQ(ierr);
+  ierr = PetscMalloc1((nloc+1), &lid_gid);CHKERRQ(ierr); /* explicit array needed */
+  ierr = PetscMalloc1(nloc, &lid_removed);CHKERRQ(ierr); /* explicit array needed */
   if (strict_aggs) {
-    ierr = PetscMalloc((nloc+1)*sizeof(PetscScalar), &lid_parent_gid);CHKERRQ(ierr);
+    ierr = PetscMalloc1((nloc+1), &lid_parent_gid);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc((nloc+1)*sizeof(PetscScalar), &lid_state);CHKERRQ(ierr);
+  ierr = PetscMalloc1((nloc+1), &lid_state);CHKERRQ(ierr);
 
   /* has ghost nodes for !strict and uses local indexing (yuck) */
   ierr = PetscCDCreate(strict_aggs ? nloc : num_fine_ghosts+nloc, &agg_lists);CHKERRQ(ierr);
@@ -273,7 +272,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
     PetscInt    cpid,*icpcol_gid;
 
     /* need to copy this to free buffer -- should do this globaly */
-    ierr = PetscMalloc(num_fine_ghosts*sizeof(PetscInt), &icpcol_gid);CHKERRQ(ierr);
+    ierr = PetscMalloc1(num_fine_ghosts, &icpcol_gid);CHKERRQ(ierr);
     for (cpid=0; cpid<num_fine_ghosts; cpid++) icpcol_gid[cpid] = (PetscInt)PetscRealPart(cpcol_gid[cpid]);
 
     /* get proc of deleted ghost */
@@ -356,7 +355,7 @@ PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse,PetscViewer viewer)
 {
   /* MatCoarsen_MIS *MIS = (MatCoarsen_MIS*)coarse->; */
   PetscErrorCode ierr;
-  int            rank;
+  PetscMPIInt    rank;
   PetscBool      iascii;
 
   PetscFunctionBegin;
@@ -411,7 +410,7 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MIS(MatCoarsen coarse)
   MatCoarsen_MIS *MIS;
 
   PetscFunctionBegin;
-  ierr           = PetscNewLog(coarse, MatCoarsen_MIS, &MIS);CHKERRQ(ierr);
+  ierr           = PetscNewLog(coarse,&MIS);CHKERRQ(ierr);
   coarse->subctx = (void*)MIS;
 
   coarse->ops->apply   = MatCoarsenApply_MIS;

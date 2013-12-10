@@ -29,7 +29,7 @@
             <li><a href="referencing.html">Citing PETSc</a></li>
             <li><a href="tutorials/index.html">Tutorials</a></li>
             <li><a href="installation.html">Installation</a> </li>
-            <li><a href="ams.html">AMS</a></li>
+            <li><a href="SAWs.html">SAWs</a></li>
             <li><a href="changes/index.html">Changes</a></li>
             <li><a href="bugreporting.html">Bug Reporting</a></li>
             <li><a href="codemanagement.html">Code Management</a></li>
@@ -168,7 +168,6 @@
         <li><a href="#link-shared">How do I link to the PETSc shared libraries?</a></li>
         <li><a href="#link-regular-lib">What if I want to link to the regular .a library files?</a></li>
         <li><a href="#move-shared-exec">What do I do if I want to move my executable to a different machine?</a></li>
-        <li><a href="#dynamic-shared">What is the deal with dynamic libraries (and difference with shared libraries)?</a></li>
       </ul>
 
     </div>
@@ -572,11 +571,8 @@
       <h3><a name="gfortran">What Fortran compiler do you recommend for the Apple Mac OS X?</a></h3>
 
       <p>
-        (as of 11/6/2010) We recommend installing gfortran from <a
-          href="http://hpc.sourceforge.net/">http://hpc.sourceforge.net</a>.  They
-        have gfortran-4.6.0 (experimental) for Snow Leopard (10.6) and gfortran
-        4.4.1 (prerelease) for Leopard (10.5).
-      </p>
+        (as of 04/29/2013) We recommend installing gfortran from <a
+          href="http://hpc.sourceforge.net/">http://hpc.sourceforge.net</a>. They have gfortran-4.7.0 for Lion (10.7) and gfortran 4.8 for Mountain Lion (10.8). </p>
 
       <p>
         Please contact Apple at <a
@@ -698,7 +694,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
 
       <h3><a name="nosaij">You have AIJ and BAIJ matrix formats, and SBAIJ for symmetric storage, how come no SAIJ?</a></h3>
 
-      Just for historical reasons, the SBAIJ format with blocksize one is just as
+        Just for historical reasons; the SBAIJ format with blocksize one is just as
       efficient as an SAIJ would be.
 
       <h3><a name="domaindecomposition">How do I use PETSc for Domain Decomposition?</a></h3>
@@ -995,11 +991,9 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
 
       <ol>
         <li>
-          use the Sieve construct in PETSc, this is a high
-          level approach that uses a small number of
-          abstractions to help you manage distributing the
-          grid data structures and computing the elements into
-          the matrices.
+          use DMPlex, which is a high level approach to manage your mesh and
+          discretization. <a href="http://www.mcs.anl.gov/petsc/petsc-dev/src/snes/examples/tutorials/ex62.c.html">SNES
+          ex62</a> solves the Stokes equation using this approach.
         </li>
         <li>
           manage the grid data structure yourself and use
@@ -1048,23 +1042,23 @@ MPI_COMM_WORLD as default)
 PETSC_COMM_WORLD = NewComm;
     </pre>
 
-      <h3><a name="redistribute">The When solving a system with Dirichlet boundary conditions I can use MatZeroRows() to eliminate the Dirichlet rows but this results in a non-symmetric system. How can I apply Dirichlet boundary conditions but keep the matrix symmetric?</a></h3>
+      <h3><a name="redistribute">When solving a system with Dirichlet boundary conditions I can use MatZeroRows() to eliminate the Dirichlet rows but this results in a non-symmetric system. How can I apply Dirichlet boundary conditions but keep the matrix symmetric?</a></h3>
 
       <p>
         For nonsymmetric systems put the appropriate boundary solutions in the
-        x vector and use MatZeroRows() followed by KSPSetOperators(). For symmetric
-        problems use MatZeroRowsColumns() instead.  If you have many Dirichlet
+        x vector and use <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatZeroRows.html">MatZeroRows()</a> followed by <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetOperators.html">KSPSetOperators()</a>. For symmetric
+        problems use <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatZeroRowsColumns.html">MatZeroRowsColumns()</a> instead.  If you have many Dirichlet
         locations you can use MatZeroRows() (not MatZeroRowsColumns()) and
-        -ksp_type preonly -pc_type redistribute, see the manual page for
-        PCREDISTRIBUTE) and PETSc will repartition the parallel matrix for load
+        -ksp_type preonly -pc_type redistribute; see <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCREDISTRIBUTE.html">
+        PCREDISTRIBUTE</a>) and PETSc will repartition the parallel matrix for load
         balancing; in this case the new matrix solved remains symmetric even though
         MatZeroRows() is used.
       </p>
 
       <p>
-        An alternative approach is when assemblying the matrix, (generating values
-        and passing them to the matrix), never include locations for the Dirichlet
-        grid points in the vector and matrix, instead take them into account as you
+        An alternative approach is, when assemblying the matrix (generating values
+        and passing them to the matrix), never to include locations for the Dirichlet
+        grid points in the vector and matrix, instead taking them into account as you
         put the other values into the load.
       </p>
 
@@ -1074,14 +1068,14 @@ PETSC_COMM_WORLD = NewComm;
 
       <ol>
         <li>
-          Using the MATLAB Engine, this allows PETSc to automatically call MATLAB
-          to perform some specific computations. It does not allow MATLAB to be
+          Using the MATLAB Engine, allowing PETSc to automatically call MATLAB
+          to perform some specific computations. This does not allow MATLAB to be
           used interactively by the user. See the <a
             href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Sys/PetscMatlabEngine.html">PetscMatlabEngine</a>.
         </li>
 
         <li>
-          To save PETSc Mat and Vecs to files that can be read from MATLAB use <a
+          To save PETSc Mats and Vecs to files that can be read from MATLAB use <a
             href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Viewer/PetscViewerBinaryOpen.html">PetscViewerBinaryOpen()</a>
           viewer and VecView() or MatView() to save objects for MATLAB and
           VecLoad() and MatLoad() to get the objects that MATLAB has saved. See
@@ -1104,7 +1098,7 @@ PETSC_COMM_WORLD = NewComm;
           viewer that saves .mat files can then be loaded into MATLAB.
         </li>
         <li>
-          We are just being to develop in <a
+          We are just beginning to develop in <a
             href="../developers/index.html">petsc-dev</a> an API to call most of
           the PETSc function directly from MATLAB; we could use help in
           developing this. See bin/matlab/classes/PetscInitialize.m
@@ -1802,7 +1796,7 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
         matrix-vector product via differencing, the residual norms computed by
         GMRES start to "drift" from the correct values. At the restart, we compute
         the residual norm directly, hence the "strange stuff," the difference
-        printed. The drifting, if it remains small, is harmless (doesn't effect the
+        printed. The drifting, if it remains small, is harmless (doesn't affect the
         accuracy of the solution that GMRES computes).
       </p>
 
@@ -1833,11 +1827,14 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
 
       <h3><a name="dylib">Unable to locate PETSc dynamic library /home/balay/spetsc/lib/libg/linux/libpetsc</a></h3>
 
-      When using DYNAMIC libraries - the libraries cannot be moved after they are
-      installed. This could also happen on clusters - where the paths are
-      different on the (run) nodes - than on the (compile) front-end. Do not use
-      dynamic libraries &amp; shared libraries. Run ./configure with
-      <code>--with-shared-libraries=0 --with-dynamic-loading=0</code>
+      <p>
+        When using DYNAMIC libraries - the libraries cannot be moved after they are
+        installed. This could also happen on clusters - where the paths are
+        different on the (run) nodes - than on the (compile) front-end. Do not use
+        dynamic libraries &amp; shared libraries. Run ./configure with
+        <code>--with-shared-libraries=0 --with-dynamic-loading=0</code>.
+        This option has been removed in petsc-3.5.
+      </p>
 
       <h3><a name="bisect">How do I determine what update to PETSc broke my code?</a></h3>
 
@@ -1934,22 +1931,6 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
         machine. The other alternative is to build the exeutable without shared
         libraries by first deleting the shared libraries, and then creating the
         executable.
-      </p>
-
-      <h3><a name="dynamic-shared">What is the deal with dynamic libraries (and difference between shared libraries)?</a></h3>
-
-      <p>
-        PETSc libraries are installed as dynamic libraries when the ./configure
-        flag --with-dynamic-loading is used. The difference with this - from
-        shared libraries - is the way the libraries are used. From the program
-        the library is loaded using dlopen() - and the functions are searched
-        using dlsymm(). This separates the resolution of function names from
-        link-time to run-time - i.e when dlopen()/dlsymm() are called.
-      </p>
-
-      <p>
-        When using Dynamic libraries - PETSc libraries cannot be moved to
-        a different location after they are built.
       </p>
 
     </div>

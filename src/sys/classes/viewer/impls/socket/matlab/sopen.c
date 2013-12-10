@@ -134,7 +134,7 @@ int establish(u_short portnum)
 
   {
   int optval = 1; /* Turn on the option */
-  ierr = setsockopt(s,SOL_SOCKET,SO_REUSEADDR,(char*)&optval,sizeof(optval));
+  (void) setsockopt(s,SOL_SOCKET,SO_REUSEADDR,(char*)&optval,sizeof(optval));
   }
 
   while (bind(s,(struct sockaddr*)&sa,sizeof(sa)) < 0) {

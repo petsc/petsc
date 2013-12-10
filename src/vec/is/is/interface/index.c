@@ -172,7 +172,7 @@ PetscErrorCode  ISSetPermutation(IS is)
       const PetscInt *iidx;
 
       ierr = ISGetSize(is,&n);CHKERRQ(ierr);
-      ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+      ierr = PetscMalloc1(n,&idx);CHKERRQ(ierr);
       ierr = ISGetIndices(is,&iidx);CHKERRQ(ierr);
       ierr = PetscMemcpy(idx,iidx,n*sizeof(PetscInt));CHKERRQ(ierr);
       ierr = PetscSortInt(n,idx);CHKERRQ(ierr);
@@ -436,6 +436,9 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
    Level: intermediate
 
+   Note:
+   This routine zeros out ptr. This is to prevent accidental us of the array after it has been restored.
+
 .seealso: ISGetIndices(), ISRestoreIndicesF90()
 @*/
 PetscErrorCode  ISRestoreIndices(IS is,const PetscInt *ptr[])
@@ -468,7 +471,7 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-  ierr = PetscMalloc2(size,PetscMPIInt,&sizes,size,PetscMPIInt,&offsets);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,&sizes,size,&offsets);CHKERRQ(ierr);
 
   ierr = PetscMPIIntCast(n,&nn);CHKERRQ(ierr);
   ierr = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
@@ -476,7 +479,7 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
   for (i=1; i<size; ++i) offsets[i] = offsets[i-1] + sizes[i-1];
   N = offsets[size-1] + sizes[size-1];
 
-  ierr = PetscMalloc(N*sizeof(PetscInt),&(is->total));CHKERRQ(ierr);
+  ierr = PetscMalloc1(N,&(is->total));CHKERRQ(ierr);
   ierr = ISGetIndices(is,&lindices);CHKERRQ(ierr);
   ierr = MPI_Allgatherv((void*)lindices,nn,MPIU_INT,is->total,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);

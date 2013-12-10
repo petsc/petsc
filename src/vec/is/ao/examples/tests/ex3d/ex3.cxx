@@ -46,7 +46,7 @@ int main(int argc, char** argv)
   }
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] has %D indices.\n",
           myrank,myapp.size());CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(PETSC_COMM_WORLD, myapp.size(), &(myapp[0]), PETSC_USE_POINTER, &isapp);CHKERRQ(ierr);
   //ierr = ISView(isapp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

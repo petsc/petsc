@@ -38,7 +38,7 @@ int main(int argc,char **argv)
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = PetscMalloc((nsrc_points-1)*(ntarget_points-1)*sizeof(PetscReal),&R);CHKERRQ(ierr);
+  ierr = PetscMalloc1((nsrc_points-1)*(ntarget_points-1),&R);CHKERRQ(ierr);
   for (i=0; i<ndegrees; i++) {
     ierr = PetscDTReconstructPoly(degrees[i],nsrc_points-1,src_points,ntarget_points-1,target_points,R);CHKERRQ(ierr);
     for (j=0; j<(ntarget_points-1)*(nsrc_points-1); j++) { /* Truncate to zero for nicer output */

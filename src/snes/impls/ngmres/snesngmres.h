@@ -63,9 +63,9 @@ typedef struct {
 
 /* private functions that are shared components of the methods */
 PETSC_INTERN PetscErrorCode SNESNGMRESUpdateSubspace_Private(SNES,PetscInt,PetscInt,Vec,PetscReal,Vec);
-PETSC_INTERN PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES,PetscInt,Vec,Vec,PetscReal,Vec,Vec,Vec);
-PETSC_INTERN PetscErrorCode SNESNGMRESCalculateDifferences_Private(SNES,PetscInt,Vec,Vec,Vec,Vec,Vec,Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
-PETSC_INTERN PetscErrorCode SNESNGMRESSelect_Private(SNES,PetscInt,Vec,Vec,PetscReal,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscReal,Vec,Vec,Vec,PetscReal*);
+PETSC_INTERN PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES,PetscInt,PetscInt,Vec,Vec,PetscReal,Vec,Vec,Vec);
+PETSC_INTERN PetscErrorCode SNESNGMRESNorms_Private(SNES,PetscInt,Vec,Vec,Vec,Vec,Vec,Vec,Vec,PetscReal*,PetscReal*, PetscReal*,PetscReal*,PetscReal*, PetscReal*,PetscReal*,PetscReal*);
+PETSC_INTERN PetscErrorCode SNESNGMRESSelect_Private(SNES,PetscInt,Vec,Vec,PetscReal,PetscReal,PetscReal,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,Vec,Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
 PETSC_INTERN PetscErrorCode SNESNGMRESSelectRestart_Private(SNES,PetscInt,PetscReal,PetscReal,PetscReal,PetscReal,PetscBool*);
 
 #endif

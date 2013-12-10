@@ -56,7 +56,7 @@ int main(int argc,char **args)
     PetscScalar *bval;
     row /= bs;
     col  = start/bs;
-    ierr = PetscMalloc(bs*bs*sizeof(PetscScalar),&bval);CHKERRQ(ierr);
+    ierr = PetscMalloc1(bs*bs,&bval);CHKERRQ(ierr);
     /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Set offproc blockvalues, blockrow %d, blockcol: %d\n",rank,row,col);CHKERRQ(ierr); */
     k = 1;
     /* row oriented - defalt */

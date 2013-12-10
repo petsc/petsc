@@ -242,7 +242,7 @@ PetscErrorCode SampleShellPCCreate(SampleShellPC **shell)
   SampleShellPC  *newctx;
   PetscErrorCode ierr;
 
-  ierr         = PetscNew(SampleShellPC,&newctx);CHKERRQ(ierr);
+  ierr         = PetscNew(&newctx);CHKERRQ(ierr);
   newctx->diag = 0;
   *shell       = newctx;
   return 0;

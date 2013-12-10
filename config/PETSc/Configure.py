@@ -20,14 +20,14 @@ class Configure(config.base.Configure):
   def __str2__(self):
     desc = []
     desc.append('xxx=========================================================================xxx')
-    if self.getMakeMacro('PETSC_BUILD_USING_CMAKE'):
+    if self.make.getMakeMacro('MAKE_IS_GNUMAKE'):
+      build_type = 'gnumake build'
+    elif self.getMakeMacro('PETSC_BUILD_USING_CMAKE'):
       build_type = 'cmake build'
     else:
       build_type = 'legacy build'
     desc.append(' Configure stage complete. Now build PETSc libraries with (%s):' % build_type)
     desc.append('   make PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' all')
-    desc.append(' or (experimental with python):')
-    desc.append('   PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' ./config/builder.py')
     desc.append('xxx=========================================================================xxx')
     return '\n'.join(desc)+'\n'
 
@@ -45,6 +45,7 @@ class Configure(config.base.Configure):
     self.setCompilers  = framework.require('config.setCompilers',       self)
     self.arch          = framework.require('PETSc.utilities.arch',      self.setCompilers)
     self.petscdir      = framework.require('PETSc.utilities.petscdir',  self.setCompilers)
+    self.installdir    = framework.require('PETSc.utilities.installDir',self)
     self.languages     = framework.require('PETSc.utilities.languages', self.setCompilers)
     self.debugging     = framework.require('PETSc.utilities.debugging', self.setCompilers)
     self.CHUD          = framework.require('PETSc.utilities.CHUD',      self)
@@ -54,7 +55,10 @@ class Configure(config.base.Configure):
     self.functions     = framework.require('config.functions',          self)
     self.libraries     = framework.require('config.libraries',          self)
     self.atomics       = framework.require('config.atomics',            self)
+    self.make          = framework.require('config.packages.make',      self)
     self.blasLapack    = framework.require('config.packages.BlasLapack',self)
+    self.externalpackagesdir = framework.require('PETSc.utilities.externalpackagesdir',self)
+
     if os.path.isdir(os.path.join('config', 'PETSc')):
       for d in ['utilities', 'packages']:
         for utility in os.listdir(os.path.join('config', 'PETSc', d)):
@@ -64,7 +68,8 @@ class Configure(config.base.Configure):
             utilityObj.headerPrefix       = self.headerPrefix
             utilityObj.archProvider       = self.arch
             utilityObj.languageProvider   = self.languages
-            utilityObj.installDirProvider = self.petscdir
+            utilityObj.installDirProvider = self.installdir
+            utilityObj.externalPackagesDirProvider = self.externalpackagesdir
             setattr(self, utilityName.lower(), utilityObj)
 
     for package in config.packages.all:
@@ -72,7 +77,8 @@ class Configure(config.base.Configure):
         packageObj                    = framework.require('config.packages.'+package, self)
         packageObj.archProvider       = self.arch
         packageObj.languageProvider   = self.languages
-        packageObj.installDirProvider = self.petscdir
+        packageObj.installDirProvider = self.installdir
+        packageObj.externalPackagesDirProvider = self.externalpackagesdir
         setattr(self, package.lower(), packageObj)
     # Force blaslapack to depend on scalarType so precision is set before BlasLapack is built
     framework.require('PETSc.utilities.scalarTypes', self.f2cblaslapack)
@@ -91,11 +97,11 @@ class Configure(config.base.Configure):
                                             'unistd', 'sys/sysinfo', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib','memory',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
-                                            'WindowsX', 'cxxabi','float','ieeefp','stdint','fenv','sched','pthread'])
-    functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
+                                            'WindowsX', 'cxxabi','float','ieeefp','stdint','sched','pthread','mathimf'])
+    functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname',
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'usleep', 'sleep', '_sleep', 'socket',
-                 'times', 'gethostbyname', 'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp',
+                 'times', 'gethostbyname', 'uname','snprintf','_snprintf','lseek','_lseek','time','fork','stricmp',
                  'strcasecmp', 'bzero', 'dlopen', 'dlsym', 'dlclose', 'dlerror','get_nprocs','sysctlbyname',
                  '_intel_fast_memcpy','_intel_fast_memset']
     libraries1 = [(['socket', 'nsl'], 'socket'), (['fpe'], 'handle_sigfpes')]
@@ -386,39 +392,41 @@ prepend-path PATH %s
     import platform
     import time
     import script
+    def escape(s):
+      return s.replace('"',r'\"').replace(r'\ ',r'\\ ')
     fd = file(os.path.join(self.arch.arch,'include','petscmachineinfo.h'),'w')
     fd.write('static const char *petscmachineinfo = \"\\n\"\n')
     fd.write('\"-----------------------------------------\\n\"\n')
     fd.write('\"Libraries compiled on %s on %s \\n\"\n' % (time.ctime(time.time()), platform.node()))
     fd.write('\"Machine characteristics: %s\\n\"\n' % (platform.platform()))
-    fd.write('\"Using PETSc directory: %s\\n\"\n' % (self.petscdir.dir))
-    fd.write('\"Using PETSc arch: %s\\n\"\n' % (self.arch.arch))
+    fd.write('\"Using PETSc directory: %s\\n\"\n' % (escape(self.petscdir.dir)))
+    fd.write('\"Using PETSc arch: %s\\n\"\n' % (escape(self.arch.arch)))
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsccompilerinfo = \"\\n\"\n')
     self.setCompilers.pushLanguage(self.languages.clanguage)
-    fd.write('\"Using C compiler: %s %s ${COPTFLAGS} ${CFLAGS}\\n\"\n' % (self.setCompilers.getCompiler(), self.setCompilers.getCompilerFlags()))
+    fd.write('\"Using C compiler: %s %s ${COPTFLAGS} ${CFLAGS}\\n\"\n' % (escape(self.setCompilers.getCompiler()), escape(self.setCompilers.getCompilerFlags())))
     self.setCompilers.popLanguage()
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
-      fd.write('\"Using Fortran compiler: %s %s ${FOPTFLAGS} ${FFLAGS} %s\\n\"\n' % (self.setCompilers.getCompiler(), self.setCompilers.getCompilerFlags(), self.setCompilers.CPPFLAGS))
+      fd.write('\"Using Fortran compiler: %s %s ${FOPTFLAGS} ${FFLAGS} %s\\n\"\n' % (escape(self.setCompilers.getCompiler()), escape(self.setCompilers.getCompilerFlags()), escape(self.setCompilers.CPPFLAGS)))
       self.setCompilers.popLanguage()
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsccompilerflagsinfo = \"\\n\"\n')
-    fd.write('\"Using include paths: %s %s %s\\n\"\n' % ('-I'+os.path.join(self.petscdir.dir, self.arch.arch, 'include'), '-I'+os.path.join(self.petscdir.dir, 'include'), self.PETSC_CC_INCLUDES.replace('\\ ','\\\\ ')))
+    fd.write('\"Using include paths: %s %s %s\\n\"\n' % ('-I'+escape(os.path.join(self.petscdir.dir, self.arch.arch, 'include')), '-I'+escape(os.path.join(self.petscdir.dir, 'include')), escape(self.PETSC_CC_INCLUDES)))
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsclinkerinfo = \"\\n\"\n')
     self.setCompilers.pushLanguage(self.languages.clanguage)
-    fd.write('\"Using C linker: %s\\n\"\n' % (self.setCompilers.getLinker()))
+    fd.write('\"Using C linker: %s\\n\"\n' % (escape(self.setCompilers.getLinker())))
     self.setCompilers.popLanguage()
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
-      fd.write('\"Using Fortran linker: %s\\n\"\n' % (self.setCompilers.getLinker()))
+      fd.write('\"Using Fortran linker: %s\\n\"\n' % (escape(self.setCompilers.getLinker())))
       self.setCompilers.popLanguage()
     if self.framework.argDB['with-single-library']:
       petsclib = '-lpetsc'
     else:
       petsclib = '-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys'
-    fd.write('\"Using libraries: %s%s -L%s %s %s\\n\"\n' % (self.setCompilers.CSharedLinkerFlag, os.path.join(self.petscdir.dir, self.arch.arch, 'lib'), os.path.join(self.petscdir.dir, self.arch.arch, 'lib'), petsclib, self.PETSC_EXTERNAL_LIB_BASIC.replace('\\ ','\\\\ ')))
+    fd.write('\"Using libraries: %s%s -L%s %s %s\\n\"\n' % (escape(self.setCompilers.CSharedLinkerFlag), escape(os.path.join(self.petscdir.dir, self.arch.arch, 'lib')), escape(os.path.join(self.petscdir.dir, self.arch.arch, 'lib')), escape(petsclib), escape(self.PETSC_EXTERNAL_LIB_BASIC)))
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.close()
     return
@@ -660,8 +668,19 @@ prepend-path PATH %s
   def configureDeprecated(self):
     '''Check if __attribute((deprecated)) is supported'''
     self.pushLanguage(self.languages.clanguage)
-    if self.checkCompile("""__attribute((deprecated("Why you shouldn't use myfunc"))) static int myfunc(void) { return 1;}""", ''):
-      self.addDefine('DEPRECATED(why)', '__attribute((deprecated(why)))')
+    ## Recent versions of gcc and clang support __attribute((deprecated("string argument"))), which is very useful, but
+    ## Intel has conspired to make a supremely environment-sensitive compiler.  The Intel compiler looks at the gcc
+    ## executable in the environment to determine the language compatibility that it should attempt to emulate.  Some
+    ## important Cray installations have built PETSc using the Intel compiler, but with a newer gcc module loaded (e.g.,
+    ## 4.7).  Thus at PETSc configure time, the Intel compiler decides to support the string argument, but the the gcc
+    ## found in the default user environment is older and does not support the argument.  If GCC and Intel were cool
+    ## like Clang and supported __has_attribute, we could avoid configure tests entirely, but they don't.  And that is
+    ## why we can't have nice things.
+    #
+    # if self.checkCompile("""__attribute((deprecated("Why you shouldn't use myfunc"))) static int myfunc(void) { return 1;}""", ''):
+    #   self.addDefine('DEPRECATED(why)', '__attribute((deprecated(why)))')
+    if self.checkCompile("""__attribute((deprecated)) static int myfunc(void) { return 1;}""", ''):
+      self.addDefine('DEPRECATED(why)', '__attribute((deprecated))')
     else:
       self.addDefine('DEPRECATED(why)', ' ')
     self.popLanguage()
@@ -717,15 +736,7 @@ prepend-path PATH %s
       raise RuntimeError('Could not find any unsigned integer type matching void*')
     self.popLanguage()
 
-  def configureInline(self):
-    '''Get a generic inline keyword, depending on the language'''
-    if self.languages.clanguage == 'C':
-      self.addDefine('STATIC_INLINE', self.compilers.cStaticInlineKeyword)
-      self.addDefine('RESTRICT', self.compilers.cRestrict)
-    elif self.languages.clanguage == 'Cxx':
-      self.addDefine('STATIC_INLINE', self.compilers.cxxStaticInlineKeyword)
-      self.addDefine('RESTRICT', self.compilers.cxxRestrict)
-
+  def configureRTLDDefault(self):
     if self.checkCompile('#include <dlfcn.h>\n void *ptr =  RTLD_DEFAULT;'):
       self.addDefine('RTLD_DEFAULT','1')
     return
@@ -816,6 +827,22 @@ prepend-path PATH %s
     return
 
 #-----------------------------------------------------------------------------------------------------
+  def configureCygwinBrokenPipe(self):
+    '''Cygwin version <= 1.7.18 had issues with pipes and long commands invoked from gnu-make
+    http://cygwin.com/ml/cygwin/2013-05/msg00340.html '''
+    if config.setCompilers.Configure.isCygwin():
+      import platform
+      import re
+      r=re.compile("([0-9]+).([0-9]+).([0-9]+)")
+      m=r.match(platform.release())
+      major=int(m.group(1))
+      minor=int(m.group(2))
+      subminor=int(m.group(3))
+      if ((major < 1) or (major == 1 and minor < 7) or (major == 1 and minor == 7 and subminor <= 18)):
+        self.addMakeMacro('PETSC_CYGWIN_BROKEN_PIPE','1')
+    return
+
+#-----------------------------------------------------------------------------------------------------
   def configureDefaultArch(self):
     conffile = os.path.join('conf', 'petscvariables')
     if self.framework.argDB['with-default-arch']:
@@ -839,6 +866,8 @@ prepend-path PATH %s
     import sys
     scriptName = os.path.join(self.arch.arch,'conf', 'reconfigure-'+self.arch.arch+'.py')
     args = dict([(nargs.Arg.parseArgument(arg)[0], arg) for arg in self.framework.clArgs])
+    if 'with-clean' in args:
+      del args['with-clean']
     if 'configModules' in args:
       if nargs.Arg.parseArgument(args['configModules'])[1] == 'PETSc.Configure':
         del args['configModules']
@@ -919,7 +948,7 @@ prepend-path PATH %s
       raise RuntimeError('PETSc requires a functional math library. Please send configure.log to petsc-maint@mcs.anl.gov.')
     if self.languages.clanguage == 'Cxx' and not hasattr(self.compilers, 'CXX'):
       raise RuntimeError('Cannot set C language to C++ without a functional C++ compiler.')
-    self.executeTest(self.configureInline)
+    self.executeTest(self.configureRTLDDefault)
     self.executeTest(self.configurePrefetch)
     self.executeTest(self.configureUnused)
     self.executeTest(self.configureDeprecated)
@@ -929,6 +958,7 @@ prepend-path PATH %s
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)
     self.executeTest(self.configureWin32)
+    self.executeTest(self.configureCygwinBrokenPipe)
     self.executeTest(self.configureDefaultArch)
     self.executeTest(self.configureScript)
     self.executeTest(self.configureInstall)

@@ -17,17 +17,23 @@
 +    comm - the MPI communicator
 -    map - pointer to the map
 
-   Level: developer
+   Level: advanced
 
-    Notes: Typical calling sequence
+    Notes:
+    Typical calling sequence
+.vb
        PetscLayoutCreate(MPI_Comm,PetscLayout *);
        PetscLayoutSetBlockSize(PetscLayout,1);
-       PetscLayoutSetSize(PetscLayout,n) or PetscLayoutSetLocalSize(PetscLayout,N);
+       PetscLayoutSetSize(PetscLayout,N) // or PetscLayoutSetLocalSize(PetscLayout,n);
        PetscLayoutSetUp(PetscLayout);
-       Optionally use any of the following:
-          PetscLayoutGetSize(PetscLayout,PetscInt *); or PetscLayoutGetLocalSize(PetscLayout,PetscInt *;)
-          PetscLayoutGetRange(PetscLayout,PetscInt *rstart,PetscInt *rend); or PetscLayoutGetRanges(PetscLayout,const PetscInt *range[])
-       PetscLayoutDestroy(PetscLayout);
+.ve
+    Optionally use any of the following:
+
++      PetscLayoutGetSize(PetscLayout,PetscInt *);
+.      PetscLayoutGetLocalSize(PetscLayout,PetscInt *);
+.      PetscLayoutGetRange(PetscLayout,PetscInt *rstart,PetscInt *rend);
+.      PetscLayoutGetRanges(PetscLayout,const PetscInt *range[]);
+-      PetscLayoutDestroy(PetscLayout*);
 
       The PetscLayout object and methods are intended to be used in the PETSc Vec and Mat implementions; it is often not needed in
       user codes unless you really gain something in their use.
@@ -44,7 +50,7 @@ PetscErrorCode  PetscLayoutCreate(MPI_Comm comm,PetscLayout *map)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_PetscLayout,map);CHKERRQ(ierr);
+  ierr = PetscNew(map);CHKERRQ(ierr);
 
   (*map)->comm   = comm;
   (*map)->bs     = -1;
@@ -147,7 +153,7 @@ PetscErrorCode  PetscLayoutSetUp(PetscLayout map)
   map->n = map->n*map->bs;
   map->N = map->N*map->bs;
   if (!map->range) {
-    ierr = PetscMalloc((size+1)*sizeof(PetscInt), &map->range);CHKERRQ(ierr);
+    ierr = PetscMalloc1((size+1), &map->range);CHKERRQ(ierr);
   }
   ierr = MPI_Allgather(&map->n, 1, MPIU_INT, map->range+1, 1, MPIU_INT, map->comm);CHKERRQ(ierr);
 
@@ -195,7 +201,7 @@ PetscErrorCode  PetscLayoutDuplicate(PetscLayout in,PetscLayout *out)
   ierr = PetscLayoutCreate(comm,out);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscMemcpy(*out,in,sizeof(struct _n_PetscLayout));CHKERRQ(ierr);
-  ierr = PetscMalloc((size+1)*sizeof(PetscInt),&(*out)->range);CHKERRQ(ierr);
+  ierr = PetscMalloc1((size+1),&(*out)->range);CHKERRQ(ierr);
   ierr = PetscMemcpy((*out)->range,in->range,(size+1)*sizeof(PetscInt));CHKERRQ(ierr);
 
   (*out)->refcnt = 0;
@@ -587,7 +593,7 @@ PetscErrorCode PetscSFSetGraphLayout(PetscSF sf,PetscLayout layout,PetscInt nlea
 
   PetscFunctionBegin;
   ierr = PetscLayoutGetLocalSize(layout,&nroots);CHKERRQ(ierr);
-  ierr = PetscMalloc(nleaves*sizeof(PetscSFNode),&remote);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
   for (i=0; i<nleaves; i++) {
     PetscInt owner = -1;
     ierr = PetscLayoutFindOwner(layout,iremote[i],&owner);CHKERRQ(ierr);

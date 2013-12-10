@@ -31,6 +31,22 @@ static PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool u
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexSetPreallocationCenterDimension"
+/*@
+  DMPlexSetPreallocationCenterDimension - Determine the topology used to determine adjacency
+
+  Input Parameters:
++ dm - The DM object
+- preallocCenterDim - The dimension of points which connect adjacent entries
+
+  Level: developer
+
+  Notes:
+$     FEM:   Two points p and q are adjacent if q \in closure(star(p)), preallocCenterDim = dim
+$     FVM:   Two points p and q are adjacent if q \in star(cone(p)),    preallocCenterDim = dim-1
+$     FVM++: Two points p and q are adjacent if q \in star(closure(p)), preallocCenterDim = 0
+
+.seealso: DMCreateMatrix(), DMPlexPreallocateOperator()
+@*/
 PetscErrorCode DMPlexSetPreallocationCenterDimension(DM dm, PetscInt preallocCenterDim)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -47,9 +63,10 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
 {
   DM_Plex           *mesh = (DM_Plex*) dm->data;
   MPI_Comm           comm;
+  MatType            mtype;
   PetscSF            sf, sfDof, sfAdj;
   PetscSection       leafSectionAdj, rootSectionAdj, sectionAdj;
-  PetscInt           nleaves, l, p;
+  PetscInt           nroots, nleaves, l, p;
   const PetscInt    *leaves;
   const PetscSFNode *remotes;
   PetscInt           dim, pStart, pEnd, numDof, globalOffStart, globalOffEnd, numCols;
@@ -58,15 +75,19 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   PetscLayout        rLayout;
   PetscInt           locRows, rStart, rEnd, r;
   PetscMPIInt        size;
-  PetscBool          useClosure, debug = PETSC_FALSE;
+  PetscBool          useClosure, doCommLocal, doComm, debug = PETSC_FALSE, isSymBlock, isSymSeqBlock, isSymMPIBlock;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(DMPLEX_Preallocate,dm,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL, "-dm_view_preallocation", &debug, NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sf, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
+  doCommLocal = (size > 1) && (nroots >= 0) ? PETSC_TRUE : PETSC_FALSE;
+  ierr = MPI_Allreduce(&doCommLocal, &doComm, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
   /* Create dof SF based on point SF */
   if (debug) {
     ierr = PetscPrintf(comm, "Input Section for Preallocation:\n");CHKERRQ(ierr);
@@ -106,7 +127,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   maxClosureSize = 2*PetscMax(PetscPowInt(mesh->maxConeSize,depth+1),PetscPowInt(mesh->maxSupportSize,depth+1));
   maxAdjSize     = PetscPowInt(mesh->maxConeSize,depth+1) * PetscPowInt(mesh->maxSupportSize,depth+1) + 1;
 
-  ierr = PetscMalloc2(maxClosureSize,PetscInt,&tmpClosure,maxAdjSize,PetscInt,&tmpAdj);CHKERRQ(ierr);
+  ierr = PetscMalloc2(maxClosureSize,&tmpClosure,maxAdjSize,&tmpAdj);CHKERRQ(ierr);
 
   /*
    ** The bootstrapping process involves six rounds with similar structure of visiting neighbors of each point.
@@ -129,6 +150,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
     PetscInt dof, off, d, q;
     PetscInt p = leaves[l], numAdj = maxAdjSize;
 
+    if ((p < pStart) || (p >= pEnd)) continue;
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
     ierr = DMPlexGetAdjacency_Internal(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
@@ -150,7 +172,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
     ierr = PetscSectionView(leafSectionAdj, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   /* Get maximum remote adjacency sizes for owned dofs on interface (roots) */
-  if (size > 1) {
+  if (doComm) {
     ierr = PetscSFReduceBegin(sfDof, MPIU_INT, leafSectionAdj->atlasDof, rootSectionAdj->atlasDof, MPI_SUM);CHKERRQ(ierr);
     ierr = PetscSFReduceEnd(sfDof, MPIU_INT, leafSectionAdj->atlasDof, rootSectionAdj->atlasDof, MPI_SUM);CHKERRQ(ierr);
   }
@@ -196,12 +218,12 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   /* Create leaf adjacency */
   ierr = PetscSectionSetUp(leafSectionAdj);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(leafSectionAdj, &adjSize);CHKERRQ(ierr);
-  ierr = PetscMalloc(adjSize * sizeof(PetscInt), &adj);CHKERRQ(ierr);
-  ierr = PetscMemzero(adj, adjSize * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(adjSize, &adj);CHKERRQ(ierr);
   for (l = 0; l < nleaves; ++l) {
     PetscInt dof, off, d, q;
     PetscInt p = leaves[l], numAdj = maxAdjSize;
 
+    if ((p < pStart) || (p >= pEnd)) continue;
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
     ierr = DMPlexGetAdjacency_Internal(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
@@ -230,12 +252,13 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
     ierr = PetscPrintf(comm, "Leaf adjacency indices\n");CHKERRQ(ierr);
     ierr = ISCreateGeneral(comm, adjSize, adj, PETSC_USE_POINTER, &tmp);CHKERRQ(ierr);
     ierr = ISView(tmp, NULL);CHKERRQ(ierr);
+    ierr = ISDestroy(&tmp);CHKERRQ(ierr);
   }
   /* Gather adjacenct indices to root */
   ierr = PetscSectionGetStorageSize(rootSectionAdj, &adjSize);CHKERRQ(ierr);
-  ierr = PetscMalloc(adjSize * sizeof(PetscInt), &rootAdj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(adjSize, &rootAdj);CHKERRQ(ierr);
   for (r = 0; r < adjSize; ++r) rootAdj[r] = -1;
-  if (size > 1) {
+  if (doComm) {
     ierr = PetscSFGatherBegin(sfAdj, MPIU_INT, adj, rootAdj);CHKERRQ(ierr);
     ierr = PetscSFGatherEnd(sfAdj, MPIU_INT, adj, rootAdj);CHKERRQ(ierr);
   }
@@ -247,6 +270,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
     ierr = PetscPrintf(comm, "Root adjacency indices after gather\n");CHKERRQ(ierr);
     ierr = ISCreateGeneral(comm, adjSize, rootAdj, PETSC_USE_POINTER, &tmp);CHKERRQ(ierr);
     ierr = ISView(tmp, NULL);CHKERRQ(ierr);
+    ierr = ISDestroy(&tmp);CHKERRQ(ierr);
   }
   /* Add in local adjacency indices for owned dofs on interface (roots) */
   for (p = pStart; p < pEnd; ++p) {
@@ -285,6 +309,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
     ierr = PetscPrintf(comm, "Root adjacency indices\n");CHKERRQ(ierr);
     ierr = ISCreateGeneral(comm, adjSize, rootAdj, PETSC_USE_POINTER, &tmp);CHKERRQ(ierr);
     ierr = ISView(tmp, NULL);CHKERRQ(ierr);
+    ierr = ISDestroy(&tmp);CHKERRQ(ierr);
   }
   /* Compress indices */
   ierr = PetscSectionSetUp(rootSectionAdj);CHKERRQ(ierr);
@@ -313,6 +338,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
     ierr = PetscPrintf(comm, "Root adjacency indices after compression\n");CHKERRQ(ierr);
     ierr = ISCreateGeneral(comm, adjSize, rootAdj, PETSC_USE_POINTER, &tmp);CHKERRQ(ierr);
     ierr = ISView(tmp, NULL);CHKERRQ(ierr);
+    ierr = ISDestroy(&tmp);CHKERRQ(ierr);
   }
   /* Build adjacency section: Maps global indices to sets of adjacent global indices */
   ierr = PetscSectionGetOffsetRange(sectionGlobal, &globalOffStart, &globalOffEnd);CHKERRQ(ierr);
@@ -363,7 +389,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   }
   /* Get adjacent indices */
   ierr = PetscSectionGetStorageSize(sectionAdj, &numCols);CHKERRQ(ierr);
-  ierr = PetscMalloc(numCols * sizeof(PetscInt), &cols);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numCols, &cols);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
     PetscInt  numAdj = maxAdjSize, dof, cdof, off, goff, d, q;
     PetscBool found  = PETSC_TRUE;
@@ -424,6 +450,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
     ierr = PetscPrintf(comm, "Column indices\n");CHKERRQ(ierr);
     ierr = ISCreateGeneral(comm, numCols, cols, PETSC_USE_POINTER, &tmp);CHKERRQ(ierr);
     ierr = ISView(tmp, NULL);CHKERRQ(ierr);
+    ierr = ISDestroy(&tmp);CHKERRQ(ierr);
   }
   /* Create allocation vectors from adjacency graph */
   ierr = MatGetLocalSize(A, &locRows, NULL);CHKERRQ(ierr);
@@ -462,6 +489,12 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   /* Set matrix pattern */
   ierr = MatXAIJSetPreallocation(A, bs, dnz, onz, dnzu, onzu);CHKERRQ(ierr);
   ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  /* Check for symmetric storage */
+  ierr = MatGetType(A, &mtype);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATSBAIJ, &isSymBlock);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATSEQSBAIJ, &isSymSeqBlock);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATMPISBAIJ, &isSymMPIBlock);CHKERRQ(ierr);
+  if (isSymBlock || isSymSeqBlock || isSymMPIBlock) {ierr = MatSetOption(A, MAT_IGNORE_LOWER_TRIANGULAR, PETSC_TRUE);CHKERRQ(ierr);}
   /* Fill matrix with zeros */
   if (fillMatrix) {
     PetscScalar *values;
@@ -473,8 +506,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
       ierr      = PetscSectionGetDof(sectionAdj, r, &len);CHKERRQ(ierr);
       maxRowLen = PetscMax(maxRowLen, len);
     }
-    ierr = PetscMalloc(maxRowLen * sizeof(PetscScalar), &values);CHKERRQ(ierr);
-    ierr = PetscMemzero(values, maxRowLen * sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscCalloc1(maxRowLen, &values);CHKERRQ(ierr);
     for (r = rStart; r < rEnd; ++r) {
       PetscInt numCols, cStart;
 
@@ -488,6 +520,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   }
   ierr = PetscSectionDestroy(&sectionAdj);CHKERRQ(ierr);
   ierr = PetscFree(cols);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMPLEX_Preallocate,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -510,7 +543,7 @@ PetscErrorCode DMPlexPreallocateOperator_2(DM dm, PetscInt bs, PetscSection sect
   ierr    = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   npoints = pEnd - pStart;
 
-  ierr = PetscMalloc3(maxClosureSize,PetscInt,&tmpClosure,npoints,PetscInt,&lvisits,npoints,PetscInt,&visits);CHKERRQ(ierr);
+  ierr = PetscMalloc3(maxClosureSize,&tmpClosure,npoints,&lvisits,npoints,&visits);CHKERRQ(ierr);
   ierr = PetscMemzero(lvisits,(pEnd-pStart)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(visits,(pEnd-pStart)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
@@ -527,7 +560,7 @@ PetscErrorCode DMPlexPreallocateOperator_2(DM dm, PetscInt bs, PetscSection sect
   ierr = PetscSFGetRanks();CHKERRQ(ierr);
 
 
-  ierr = PetscMalloc2(maxClosureSize*maxClosureSize,PetscInt,&cellmat,npoints,PetscInt,&owner);CHKERRQ(ierr);
+  ierr = PetscMalloc2(maxClosureSize*maxClosureSize,&cellmat,npoints,&owner);CHKERRQ(ierr);
   for (c=cStart; c<cEnd; c++) {
     ierr = PetscMemzero(cellmat,maxClosureSize*maxClosureSize*sizeof(PetscInt));CHKERRQ(ierr);
     /*

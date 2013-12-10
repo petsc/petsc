@@ -52,15 +52,15 @@ PetscErrorCode MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Pets
   ierr = PetscOptionsBool("-matmatmatmult_scalable","Use a scalable but slower D=A*B*C","",scalable,&scalable,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (scalable) {
-    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(B,C,fill,&BC);CHKERRQ(ierr);
-    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(A,BC,fill,D);CHKERRQ(ierr);
-  } else {
     ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ(B,C,fill,&BC);CHKERRQ(ierr);
     ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ(A,BC,fill,D);CHKERRQ(ierr);
+  } else {
+    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(B,C,fill,&BC);CHKERRQ(ierr);
+    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(A,BC,fill,D);CHKERRQ(ierr);
   }
 
   /* create struct Mat_MatMatMatMult and attached it to *D */
-  ierr = PetscNew(Mat_MatMatMatMult,&matmatmatmult);CHKERRQ(ierr);
+  ierr = PetscNew(&matmatmatmult);CHKERRQ(ierr);
 
   matmatmatmult->BC      = BC;
   matmatmatmult->destroy = (*D)->ops->destroy;

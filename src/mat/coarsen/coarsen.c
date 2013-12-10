@@ -271,9 +271,7 @@ PetscErrorCode  MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
   PetscFunctionBegin;
   *newcrs = 0;
 
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage();CHKERRQ(ierr);
-#endif
   ierr = PetscHeaderCreate(agg, _p_MatCoarsen, struct _MatCoarsenOps, MAT_COARSEN_CLASSID,"MatCoarsen","Matrix/graph coarsen",
                            "MatCoarsen", comm, MatCoarsenDestroy, MatCoarsenView);CHKERRQ(ierr);
 
@@ -324,7 +322,7 @@ PetscErrorCode  MatCoarsenView(MatCoarsen agg,PetscViewer viewer)
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)agg,viewer,"MatCoarsen Object");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)agg,viewer);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this MatCoarsen",((PetscObject)viewer)->type_name);
 
   if (agg->ops->view) {
@@ -485,7 +483,7 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
     def = ((PetscObject)coarser)->type_name;
   }
 
-  ierr = PetscOptionsList("-mat_coarsen_type","Type of aggregator","MatCoarsenSetType",MatCoarsenList,def,type,256,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-mat_coarsen_type","Type of aggregator","MatCoarsenSetType",MatCoarsenList,def,type,256,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = MatCoarsenSetType(coarser,type);CHKERRQ(ierr);
   }

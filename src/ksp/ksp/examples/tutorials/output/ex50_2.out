@@ -35,14 +35,14 @@ PC Object: 2 MPI processes
       PC Object:      (mg_coarse_redundant_)       1 MPI processes
         type: svd
         linear system matrix = precond matrix:
-        Matrix Object:         1 MPI processes
+        Mat Object:         1 MPI processes
           type: seqaij
           rows=121, cols=121
           total: nonzeros=561, allocated nonzeros=605
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
       linear system matrix = precond matrix:
-      Matrix Object:       2 MPI processes
+      Mat Object:       2 MPI processes
         type: mpiaij
         rows=121, cols=121
         total: nonzeros=561, allocated nonzeros=561
@@ -73,11 +73,11 @@ PC Object: 2 MPI processes
           ILU: out-of-place factorization
           0 levels of fill
           tolerance for zero pivot 2.22045e-14
-          using diagonal shift to prevent zero pivot
+          using diagonal shift to prevent zero pivot [NONZERO]
           matrix ordering: natural
           factor fill ratio given 1, needed 1
             Factored matrix follows:
-              Matrix Object:               1 MPI processes
+              Mat Object:               1 MPI processes
                 type: seqaij
                 rows=231, cols=231
                 package used to perform factorization: petsc
@@ -85,21 +85,21 @@ PC Object: 2 MPI processes
                 total number of mallocs used during MatSetValues calls =0
                   not using I-node routines
         linear system matrix = precond matrix:
-        Matrix Object:         1 MPI processes
+        Mat Object:         1 MPI processes
           type: seqaij
           rows=231, cols=231
           total: nonzeros=1091, allocated nonzeros=1091
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
       linear system matrix = precond matrix:
-      Matrix Object:       2 MPI processes
+      Mat Object:       2 MPI processes
         type: mpiaij
         rows=441, cols=441
         total: nonzeros=2121, allocated nonzeros=2121
         total number of mallocs used during MatSetValues calls =0
   Up solver (post-smoother) same as down solver (pre-smoother)
   linear system matrix = precond matrix:
-  Matrix Object:   2 MPI processes
+  Mat Object:   2 MPI processes
     type: mpiaij
     rows=441, cols=441
     total: nonzeros=2121, allocated nonzeros=2121

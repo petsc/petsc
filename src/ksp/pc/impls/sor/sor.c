@@ -307,7 +307,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SOR(PC pc)
   PC_SOR         *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_SOR,&jac);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&jac);CHKERRQ(ierr);
 
   pc->ops->apply           = PCApply_SOR;
   pc->ops->applyrichardson = PCApplyRichardson_SOR;

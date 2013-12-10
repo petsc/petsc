@@ -113,10 +113,10 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 
   /* Test for nothing to do */
   ierr       = VecNorm(U,NORM_2,&rnorm);CHKERRQ(ierr);
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = rnorm;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
   ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
   ierr = KSPMonitor(ksp,0,rnorm);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -204,10 +204,10 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     lsqr->arnorm = alpha*PetscAbsScalar(tau);
     rnorm        = PetscRealPart(phibar);
 
-    ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = rnorm;
-    ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
     ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,i+1,rnorm);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -386,7 +386,7 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
 #undef __FUNCT__
 #define __FUNCT__ "KSPLSQRDefaultConverged"
 /*@C
-   KSPLSQRDefaultConverged - Determines convergence of the LSQR Krylov method. This calls KSPDefaultConverged() and if that does not determine convergence then checks
+   KSPLSQRDefaultConverged - Determines convergence of the LSQR Krylov method. This calls KSPConvergedDefault() and if that does not determine convergence then checks
       convergence for the least squares problem.
 
    Collective on KSP
@@ -395,7 +395,7 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
 +  ksp   - iterative context
 .  n     - iteration number
 .  rnorm - 2-norm residual value (may be estimated)
--  ctx - convergence context which must be created by KSPDefaultConvergedCreate()
+-  ctx - convergence context which must be created by KSPConvergedDefaultCreate()
 
    reason is set to:
 +   positive - if the iteration has converged;
@@ -409,8 +409,8 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
 
 .keywords: KSP, default, convergence, residual
 
-.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(),
-          KSPDefaultConvergedSetUIRNorm(), KSPDefaultConvergedSetUMIRNorm(), KSPDefaultConvergedCreate(), KSPDefaultConvergedDestroy(), KSPDefaultConverged()
+.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(),
+          KSPConvergedDefaultSetUIRNorm(), KSPConvergedDefaultSetUMIRNorm(), KSPConvergedDefaultCreate(), KSPConvergedDefaultDestroy(), KSPConvergedDefault()
 @*/
 PetscErrorCode  KSPLSQRDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
 {
@@ -418,7 +418,7 @@ PetscErrorCode  KSPLSQRDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
 
   PetscFunctionBegin;
-  ierr = KSPDefaultConverged(ksp,n,rnorm,reason,ctx);CHKERRQ(ierr);
+  ierr = KSPConvergedDefault(ksp,n,rnorm,reason,ctx);CHKERRQ(ierr);
   if (!n || *reason) PetscFunctionReturn(0);
   if (lsqr->arnorm/lsqr->rhs_norm < ksp->rtol) *reason = KSP_CONVERGED_RTOL_NORMAL;
   if (lsqr->arnorm < ksp->abstol) *reason = KSP_CONVERGED_ATOL_NORMAL;
@@ -468,7 +468,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscNewLog(ksp,KSP_LSQR,&lsqr);CHKERRQ(ierr);
+  ierr         = PetscNewLog(ksp,&lsqr);CHKERRQ(ierr);
   lsqr->se     = NULL;
   lsqr->se_flg = PETSC_FALSE;
   lsqr->arnorm = 0.0;

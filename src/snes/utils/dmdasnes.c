@@ -36,7 +36,7 @@ static PetscErrorCode DMSNESDuplicate_DMDA(DMSNES oldsdm,DMSNES sdm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(sdm,DMSNES_DA,&sdm->data);CHKERRQ(ierr);
+  ierr = PetscNewLog(sdm,(DMSNES_DA**)&sdm->data);CHKERRQ(ierr);
   if (oldsdm->data) {
     ierr = PetscMemcpy(sdm->data,oldsdm->data,sizeof(DMSNES_DA));CHKERRQ(ierr);
   }
@@ -53,7 +53,7 @@ static PetscErrorCode DMDASNESGetContext(DM dm,DMSNES sdm,DMSNES_DA  **dmdasnes)
   PetscFunctionBegin;
   *dmdasnes = NULL;
   if (!sdm->data) {
-    ierr                = PetscNewLog(dm,DMSNES_DA,&sdm->data);CHKERRQ(ierr);
+    ierr = PetscNewLog(dm,(DMSNES_DA**)&sdm->data);CHKERRQ(ierr);
     sdm->ops->destroy   = DMSNESDestroy_DMDA;
     sdm->ops->duplicate = DMSNESDuplicate_DMDA;
   }
@@ -183,9 +183,8 @@ static PetscErrorCode SNESComputeJacobian_DMDA(SNES snes,Vec X,Mat *A,Mat *B,Mat
     if (!fdcoloring) {
       ISColoring coloring;
 
-      ierr = DMCreateColoring(dm,dm->coloringtype,dm->mattype,&coloring);CHKERRQ(ierr);
+      ierr = DMCreateColoring(dm,dm->coloringtype,&coloring);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(*B,coloring,&fdcoloring);CHKERRQ(ierr);
-      ierr = ISColoringDestroy(&coloring);CHKERRQ(ierr);
       switch (dm->coloringtype) {
       case IS_COLORING_GLOBAL:
         ierr = MatFDColoringSetFunction(fdcoloring,(PetscErrorCode (*)(void))SNESComputeFunction_DMDA,dmdasnes);CHKERRQ(ierr);
@@ -194,6 +193,8 @@ static PetscErrorCode SNESComputeJacobian_DMDA(SNES snes,Vec X,Mat *A,Mat *B,Mat
       }
       ierr = PetscObjectSetOptionsPrefix((PetscObject)fdcoloring,((PetscObject)dm)->prefix);CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr);
+      ierr = MatFDColoringSetUp(*B,coloring,fdcoloring);CHKERRQ(ierr);
+      ierr = ISColoringDestroy(&coloring);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject)dm,"DMDASNES_FDCOLORING",(PetscObject)fdcoloring);CHKERRQ(ierr);
       ierr = PetscObjectDereference((PetscObject)fdcoloring);CHKERRQ(ierr);
 
@@ -264,7 +265,7 @@ PetscErrorCode DMDASNESSetFunctionLocal(DM dm,InsertMode imode,PetscErrorCode (*
 #undef __FUNCT__
 #define __FUNCT__ "DMDASNESSetJacobianLocal"
 /*@C
-   DMDASNESSetJacobianLocal - set a local residual evaluation function
+   DMDASNESSetJacobianLocal - set a local Jacobian evaluation function
 
    Logically Collective
 
