@@ -42,6 +42,7 @@ typedef struct {
   Mat                       C;                     /* The (1,0) block */
   Mat                       schur;                 /* The Schur complement S = A11 - A10 A00^{-1} A01, the KSP here, kspinner, is H_1 in [El08] */
   Mat                       schurp;                /* Assembled approximation to S built by MatSchurComplement to be used as a preconditioning matrix when solving with S */
+  PetscBool                 schurp_lump;           /* Whether to lump A00 when forming Sp. */
   Mat                       schur_user;            /* User-provided preconditioning matrix for the Schur complement */
   PCFieldSplitSchurPreType  schurpre;              /* Determines which preconditioning matrix is used for the Schur complement */
   PCFieldSplitSchurFactType schurfactorization;
@@ -705,6 +706,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       }
 
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELFP) {
+	ierr = MatSchurComplementSetPmatLumping(jac->schur,jac->schurp_lump);CHKERRQ(ierr);
 	ierr = MatSchurComplementGetPmat(jac->schur,MAT_INITIAL_MATRIX,&jac->schurp);CHKERRQ(ierr);
       }
       ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&jac->kspschur);CHKERRQ(ierr);
@@ -1101,6 +1103,8 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
     if (flg) {ierr = PetscInfo(pc,"Deprecated use of -pc_fieldsplit_schur_factorization_type\n");CHKERRQ(ierr);}
     ierr = PetscOptionsEnum("-pc_fieldsplit_schur_fact_type","Which off-diagonal parts of the block factorization to use","PCFieldSplitSetSchurFactType",PCFieldSplitSchurFactTypes,(PetscEnum)jac->schurfactorization,(PetscEnum*)&jac->schurfactorization,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnum("-pc_fieldsplit_schur_precondition","How to build preconditioner for Schur complement","PCFieldSplitSchurPrecondition",PCFieldSplitSchurPreTypes,(PetscEnum)jac->schurpre,(PetscEnum*)&jac->schurpre,NULL);CHKERRQ(ierr);
+    jac->schurp_lump = PETSC_FALSE;
+    ierr = PetscOptionsBool("-pc_fieldsplit_schur_precondition_selfp_lump","Lump A00 when assembling selfp preconditioning matrix for Schur complement","PCFieldSplitSetSelfpLumping",jac->schurp_lump,&jac->schurp_lump,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1490,6 +1494,87 @@ PetscErrorCode  PCFieldSplitSchurPrecondition(PC pc,PCFieldSplitSchurPreType pty
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscTryMethod(pc,"PCFieldSplitSchurPrecondition_C",(PC,PCFieldSplitSchurPreType,Mat),(pc,ptype,pre));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFieldSplitSchurSetSelfpLumping"
+/*@
+    PCFieldSplitSchurSetSelfpLumping -  Indicates whether the Schur complement preconditioner matrix 'selfp' is to be assembled
+      using a row-lumped A00 matrix.
+
+    Not collective
+
+    Input Parameters:
++   pc      - the preconditioner context
+-   lump    - whether to lump A00 when forming Sp = A11 - A10 inv(diag(A00)) A01
+
+    Options Database:
++     -pc_fieldsplit_schur_precondition_selfp_lump
+.     Only used with -pc_fieldsplit_schur_precondition selfp or programmatic equivalent PCFieldSplitSchurSetSelfLumping()
+-     Default is PETSC_FALSE.
+
+
+    Level: advanced
+
+.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSchurPreType, PCFieldSplitSchurPrecondition(), PCFieldSplitSchurGetSelfpLumping()
+
+@*/
+PetscErrorCode  PCFieldSplitSchurSetSelfpLumping(PC pc,PetscBool lump)
+{
+  PetscErrorCode ierr;
+  const char*    t;
+  PetscBool      isfs;
+  PC_FieldSplit  *jac;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscObjectGetType((PetscObject)pc,&t);CHKERRQ(ierr);
+  ierr = PetscStrcmp(t,PCFIELDSPLIT,&isfs);CHKERRQ(ierr);
+  if (!isfs) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected PC of type PCFIELDSPLIT, got %s instead",t);
+  jac = (PC_FieldSplit*)pc->data;
+  jac->schurp_lump = lump;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFieldSplitSchurGetSelfpLumping"
+/*@
+    PCFieldSplitSchurGetSelfpLumping -  Indicates whether the Schur complement preconditioner matrix 'selfp' is to be assembled
+      using a row-lumped A00 matrix.
+
+    Not collective
+
+    Input Parameter:
+.   pc      - the preconditioner context
+
+    Output Parameter:
+.   lump    - whether to lump A00 when forming Sp = A11 - A10 inv(diag(A00)) A01
+
+    Options Database:
++     Only used with -pc_fieldsplit_schur_precondition selfp or programmatic equivalent PCFieldSplitSchurSetSelfLumping()
+-     Default is PETSC_FALSE.
+
+
+    Level: advanced
+
+.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSchurPreType, PCFieldSplitSchurPrecondition(), PCFieldSplitSchurSetSelfpLumping()
+
+@*/
+PetscErrorCode  PCFieldSplitSchurGetSelfpLumping(PC pc,PetscBool *lump)
+{
+  PetscErrorCode ierr;
+  const char*    t;
+  PetscBool      isfs;
+  PC_FieldSplit  *jac;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscObjectGetType((PetscObject)pc,&t);CHKERRQ(ierr);
+  ierr = PetscStrcmp(t,PCFIELDSPLIT,&isfs);CHKERRQ(ierr);
+  if (!isfs) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected PC of type PCFIELDSPLIT, got %s instead",t);
+  jac = (PC_FieldSplit*)pc->data;
+  if (lump) *lump = jac->schurp_lump;
   PetscFunctionReturn(0);
 }
 
