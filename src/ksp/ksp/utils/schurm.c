@@ -3,9 +3,10 @@
 #include <petscksp.h>                 /*I "petscksp.h" I*/
 
 typedef struct {
-  Mat A,Ap,B,C,D;
-  KSP ksp;
-  Vec work1,work2;
+  Mat       A,Ap,B,C,D;
+  KSP       ksp;
+  Vec       work1,work2;
+  PetscBool Alump;
 } Mat_SchurComplement;
 
 #undef __FUNCT__
@@ -450,7 +451,7 @@ PetscErrorCode  MatSchurComplementGetSubmatrices(Mat S,Mat *A00,Mat *Ap00,Mat *A
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSchurComplement_Basic"
 /* Developer Notes: This should be implemented with a MatCreate_SchurComplement() as that is the standard design for new Mat classes. */
-PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *newmat,MatReuse preuse,Mat *newpmat)
+PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *newmat,PetscBool plump, MatReuse preuse,Mat *newpmat)
 {
   PetscErrorCode ierr;
   Mat            A=0,Ap=0,B=0,C=0,D=0;
@@ -490,7 +491,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
     }
   }
   if (preuse != MAT_IGNORE_MATRIX) {
-    ierr = MatCreateSchurComplementPmat(A,B,C,D,preuse,newpmat);CHKERRQ(ierr);
+    ierr = MatCreateSchurComplementPmat(A,B,C,D,plump,preuse,newpmat);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -513,6 +514,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
 .   isrow1 - rows in which the Schur complement is formed
 .   iscol1 - columns in which the Schur complement is formed
 .   mreuse - MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX, use MAT_IGNORE_MATRIX to put nothing in newmat
+.   plump  - whether to lump A00 when assembling preconditioning matrix Sp
 -   preuse - MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX, use MAT_IGNORE_MATRIX to put nothing in newpmat
 
     Output Parameters:
@@ -521,8 +523,9 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
 
     Note:
     Since the real Schur complement is usually dense, providing a good approximation to newpmat usually requires
-    application-specific information.  The default for assembled matrices is to use the diagonal of the (0,0) block
-    which will rarely produce a scalable algorithm.
+    application-specific information.  The default for assembled matrices is to use the inverse of the diagonal of
+    the (0,0) block A00 in place of A00^{-1}. This rarely produce a scalable algorithm. Optionally, A00 can be lumped
+    before forming inv(diag(A00)).
 
     Sometimes users would like to provide problem-specific data in the Schur complement, usually only for special row
     and column index sets.  In that case, the user should call PetscObjectComposeFunction() to set
@@ -535,7 +538,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
 
 .seealso: MatGetSubMatrix(), PCFIELDSPLIT, MatCreateSchurComplement()
 @*/
-PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *S,MatReuse preuse,Mat *Sp)
+PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *S,PetscBool plump,MatReuse preuse,Mat *Sp)
 {
   PetscErrorCode ierr,(*f)(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatReuse,Mat*);
 
@@ -554,11 +557,92 @@ PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS isc
   if (f) {
     ierr = (*f)(A,isrow0,iscol0,isrow1,iscol1,mreuse,S,preuse,Sp);CHKERRQ(ierr);
   } else {
-    ierr = MatGetSchurComplement_Basic(A,isrow0,iscol0,isrow1,iscol1,mreuse,S,preuse,Sp);CHKERRQ(ierr);
+    ierr = MatGetSchurComplement_Basic(A,isrow0,iscol0,isrow1,iscol1,mreuse,S,plump,preuse,Sp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatSchurComplementSetPmatLumping"
+/*@
+    MatSchurComplementSetPmatLumping - whether in MatSchurComplementGetPmat() the (0,0) block should be lumped to form Sp.
+
+    Not collective.
+
+    Input Parameters:
++   S      - matrix obtained with MatCreateSchurComplement() (or equivalent) and implementing the action of A11 - A10 ksp(A00,Ap00) A01
+-   lump   - whether to lump A00 when forming Sp = A11 - A10 inv(diag(A00)) A01
+
+    Note:
+    Since the real Schur complement is usually dense, providing a good approximation to newpmat usually requires
+    application-specific information.  The default for assembled matrices is to use the inverse of the diagonal of
+    the (0,0) block A00 in place of A00^{-1}. This rarely produce a scalable algorithm. Optionally, A00 can be lumped
+    before forming inv(diag(A00)).
+
+    Level: advanced
+
+    Concepts: matrices^submatrices
+
+.seealso: MatCreateSchurComplement(), MatSchurComplementGetPmat(), MatSchurComplementGetPmatLumping()
+@*/
+PetscErrorCode  MatSchurComplementSetPmatLumping(Mat S,PetscBool lump)
+{
+  PetscErrorCode      ierr;
+  const char*         t;
+  PetscBool           isschur;
+  Mat_SchurComplement *schur;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(S,MAT_CLASSID,1);
+  ierr = PetscObjectGetType((PetscObject)S,&t);CHKERRQ(ierr);
+  ierr = PetscStrcmp(t,MATSCHURCOMPLEMENT,&isschur);CHKERRQ(ierr);
+  if (!isschur) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected Mat of type MATSCHURCOMPLEMENT, got %s instead",t);
+  schur = (Mat_SchurComplement*)S->data;
+  schur->Alump = lump;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSchurComplementGetPmatLumping"
+/*@
+    MatSchurComplementGetPmatLumping - returns flag indicating whether in MatSchurComplementGetPmat() the (0,0) block should be lumped to form Sp.
+
+    Not collective.
+
+    Input Parameter:
+.   S      - matrix obtained with MatCreateSchurComplement() (or equivalent) and implementing the action of A11 - A10 ksp(A00,Ap00) A01
+
+    Output Parameter:
+.   lump   - whether to lump A00 when forming Sp = A11 - A10 inv(diag(A00)) A01
+
+    Note:
+    Since the real Schur complement is usually dense, providing a good approximation to newpmat usually requires
+    application-specific information.  The default for assembled matrices is to use the inverse of the diagonal of
+    the (0,0) block A00 in place of A00^{-1}. This rarely produce a scalable algorithm. Optionally, A00 can be lumped
+    before forming inv(diag(A00)).
+
+    Level: advanced
+
+    Concepts: matrices^submatrices
+
+.seealso: MatCreateSchurComplement(), MatSchurComplementGetPmat(), MatSchurComplementSetPmatLumping()
+@*/
+PetscErrorCode  MatSchurComplementGetPmatLumping(Mat S,PetscBool *lump)
+{
+  PetscErrorCode      ierr;
+  const char*         t;
+  PetscBool           isschur;
+  Mat_SchurComplement *schur;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(S,MAT_CLASSID,1);
+  ierr = PetscObjectGetType((PetscObject)S,&t);CHKERRQ(ierr);
+  ierr = PetscStrcmp(t,MATSCHURCOMPLEMENT,&isschur);CHKERRQ(ierr);
+  if (!isschur) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected Mat of type MATSCHURCOMPLEMENT, got %s instead",t);
+  schur = (Mat_SchurComplement*)S->data;
+  if (lump) *lump = schur->Alump;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateSchurComplementPmat"
@@ -569,15 +653,17 @@ PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS isc
 
     Input Parameters:
 +   A00,A01,A10,A11      - the four parts of the original matrix A = [A00 A01; A10 A11] (A01,A10, and A11 are optional, implying zero matrices)
+.   plump                - whether to lump A00 in inv(diag(A00)); this amounts to replacing diag(A00) by the row sums of A00
 -   preuse               - MAT_INITIAL_MATRIX for a new Sp, or MAT_REUSE_MATRIX to reuse an existing Sp, or MAT_IGNORE_MATRIX to put nothing in Sp
 
     Output Parameter:
 -   Spmat                - approximate Schur complement suitable for preconditioning S = A11 - A10 inv(diag(A00)) A01
 
     Note:
-    Since the real Schur complement is usually dense, providing a good approximation Sp usually requires
-    application-specific information.  The default for assembled matrices is to use the diagonal of the (0,0) block A00,
-    which will rarely produce a scalable algorithm.
+    Since the real Schur complement is usually dense, providing a good approximation to newpmat usually requires
+    application-specific information.  The default for assembled matrices is to use the inverse of the diagonal of
+    the (0,0) block A00 in place of A00^{-1}. This rarely produce a scalable algorithm. Optionally, A00 can be lumped
+    before forming inv(diag(A00)).
 
     Level: advanced
 
@@ -585,7 +671,7 @@ PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS isc
 
 .seealso: MatCreateSchurComplement(), MatGetSchurComplement(), MatSchurComplementGetPmat()
 @*/
-PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,MatReuse preuse,Mat *Spmat)
+PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,PetscBool plump,MatReuse preuse,Mat *Spmat)
 {
 
   PetscErrorCode ierr;
@@ -607,7 +693,11 @@ PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,Mat
     Vec         diag;
 
     ierr = MatGetVecs(A00,&diag,NULL);CHKERRQ(ierr);
-    ierr = MatGetDiagonal(A00,diag);CHKERRQ(ierr);
+    if (plump) {
+      ierr = MatGetRowSum(A00,diag);CHKERRQ(ierr);
+    } else {
+      ierr = MatGetDiagonal(A00,diag);CHKERRQ(ierr);
+    }
     ierr = VecReciprocal(diag);CHKERRQ(ierr);
     ierr = MatDuplicate(A01,MAT_COPY_VALUES,&AdB);CHKERRQ(ierr);
     ierr = MatDiagonalScale(AdB,diag,NULL);CHKERRQ(ierr);
@@ -629,14 +719,15 @@ PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,Mat
 PetscErrorCode  MatSchurComplementGetPmat_Basic(Mat S,MatReuse preuse,Mat *Spmat)
 {
   Mat A,B,C,D;
-  PetscErrorCode ierr;
+  Mat_SchurComplement *schur = (Mat_SchurComplement *)S->data;
+  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   if (preuse == MAT_IGNORE_MATRIX) PetscFunctionReturn(0);
 
   ierr = MatSchurComplementGetSubmatrices(S,&A,NULL,&B,&C,&D);CHKERRQ(ierr);
   if (!A) SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONGSTATE,"Schur complement component matrices unset");
-  ierr = MatCreateSchurComplementPmat(A,B,C,D,preuse,Spmat);CHKERRQ(ierr);
+  ierr = MatCreateSchurComplementPmat(A,B,C,D,schur->Alump,preuse,Spmat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -655,9 +746,10 @@ PetscErrorCode  MatSchurComplementGetPmat_Basic(Mat S,MatReuse preuse,Mat *Spmat
 -   Sp     - approximate Schur complement suitable for preconditioning S = A11 - A10 inv(diag(A00)) A01
 
     Note:
-    Since the real Schur complement is usually dense, providing a good approximation Sp usually requires
-    application-specific information.  The default for assembled matrices is to use the diagonal of the (0,0) block A00,
-    which will rarely produce a scalable algorithm.
+    Since the real Schur complement is usually dense, providing a good approximation to newpmat usually requires
+    application-specific information.  The default for assembled matrices is to use the inverse of the diagonal of
+    the (0,0) block A00 in place of A00^{-1}. This rarely produce a scalable algorithm. Optionally, A00 can be lumped
+    before forming inv(diag(A00)).
 
     Sometimes users would like to provide problem-specific data in the Schur complement, usually only
     for special row and column index sets.  In that case, the user should call PetscObjectComposeFunction() to set
@@ -668,7 +760,7 @@ PetscErrorCode  MatSchurComplementGetPmat_Basic(Mat S,MatReuse preuse,Mat *Spmat
 
     Concepts: matrices^submatrices
 
-.seealso: MatGetSubMatrix(), PCFIELDSPLIT, MatGetSchurComplement(), MatCreateSchurComplement(),
+.seealso: MatGetSubMatrix(), PCFIELDSPLIT, MatGetSchurComplement(), MatCreateSchurComplement(), MatSchurComplementSetPmatLumping()
 @*/
 PetscErrorCode  MatSchurComplementGetPmat(Mat S,MatReuse preuse,Mat *Sp)
 {
