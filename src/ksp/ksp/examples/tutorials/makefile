@@ -458,6 +458,11 @@ runex7:
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex7_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex7_1.tmp
+runex7_2:
+	-@${MPIEXEC} -n 2 ./ex7 -ksp_view > ex7_2.tmp 2>&1; \
+	   if (${DIFF} output/ex7_2.out ex7_2.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex7_2, diffs above \n========================================="; fi; \
+	   ${RM} -f ex7_2.tmp
 runex9:
 	-@${MPIEXEC} -n 1 ./ex9 -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres -ksp_gmres_cgs_refinement_type refine_always \
 	   -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_monitor_short \
@@ -509,8 +514,8 @@ runex8g_3:
 
 
 
-runex10_basic:
-	-@${MPIEXEC} -n 2 ./ex10 -f0 ${PETSC_DIR}/include/datafiles/matrices/spd-${PETSC_SCALAR_TYPE}-${PETSC_INDEX_SIZE}-${PETSC_SCALAR_SIZE} > ex10_1.tmp 2>&1; \
+runex10:
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${PETSC_DIR}/include/datafiles/matrices/spd-real-${PETSC_INDEX_SIZE}-${PETSC_SCALAR_SIZE} > ex10_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_1.tmp
@@ -657,37 +662,6 @@ runex10_19:
 	   else echo ${PWD} ; echo "Possible problem with with ex10_19, diffs above \n========================================="; fi; \
 	${RM} -f ex10_19aij.tmp ex10_19sbaij.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
-
-# Start a sequential user code [on 1 node, assembling seqaij] and then
-# spwan a parallel solver on 2 procs.
-# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
-runex10_22:
-	-@${MPIEXEC} -n 2 ./ex10 -hmpi_merge_size 2 -pc_type hmpi  -ksp_type preonly -hmpi_pc_type ksp -f0 ${DATAFILESPATH}/matrices/medium > ex10_22.tmp 2>&1;\
-	   if (${DIFF} output/ex10_22.out ex10_22.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex10_22, diffs above \n========================================="; fi; \
-	   ${RM} -f ex10_22.tmp
-runex10_23:
-	-@${MPIEXEC} -n 2 ./ex10 -hmpi_merge_size 2 -pc_type hmpi  -ksp_type preonly -hmpi_pc_type ksp -hmpi_ksp_pc_type bjacobi -hmpi_ksp_ksp_type gmres -f0 ${DATAFILESPATH}/matrices/medium > ex10_23.tmp 2>&1;\
-	   if (${DIFF} output/ex10_23.out ex10_23.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex10_23, diffs above \n========================================="; fi; \
-	   ${RM} -f ex10_23.tmp
-
-runex10_24:
-	-@${MPIEXEC} -n 2 ./ex10 -hmpi_merge_size 2 -pc_type hmpi -hmpi_pc_type sor -f0 ${DATAFILESPATH}/matrices/medium -hmpi_ksp_monitor_short -initialguess -ksp_type gmres -ksp_monitor_short -ksp_view > ex10_24.tmp 2>&1;\
-	   if (${DIFF} output/ex10_24.out ex10_24.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex10_24, diffs above \n========================================="; fi; \
-	   ${RM} -f ex10_24.tmp
-
-# Start a parallel user code [on 4 nodes, assembling MPIAIJ with
-# np=4] and then spwan a parallel sub-domain-solver on each node
-# [with np=2]. This emulates mixed MPI-shared memory model [MPI between
-# nodes, MPI within the nodes]
-# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
-runex10_25:
-	-@${MPIEXEC} -n 8 ./ex10 -hmpi_merge_size 2 -sub_pc_type hmpi -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor_short> ex10_25.tmp 2>&1;\
-	   if (${DIFF} output/ex10_25.out ex10_25.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex10_25, diffs above \n========================================="; fi; \
-	   ${RM} -f ex10_25.tmp
 
 runex10_superlu_lu_1:
 	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package superlu -num_numfac 2 -num_rhs 2 > ex10_superlu_lu_1.tmp 2>&1; \
@@ -1062,54 +1036,59 @@ runex53_2:
 	   ${DIFF} output/ex53.out ex53.tmp || echo ${PWD} "\nPossible problem with with ex53_2, diffs above \n========================================="; \
 	   ${RM} -f ex53.tmp
 
-runex54:
-	-@${MPIEXEC} -n 4 ./ex54 -ne 109 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type geo  -ksp_converged_reason -pc_gamg_coarse_eq_limit 80 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -mg_levels_pc_type jacobi > ex54.tmp 2>&1;	  \
-         ${DIFF} output/ex54_0.out ex54.tmp || echo ${PWD} "\nPossible problem with with ex54_0, diffs above \n========================================="; \
+runex54_geo:
+	-@${MPIEXEC} -n 4 ./ex54 -ne 49 -alpha 1.e-3 -pc_type gamg -pc_gamg_type geo -pc_gamg_coarse_eq_limit 200 -mg_levels_pc_type jacobi -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -ksp_monitor_short > ex54.tmp 2>&1;	  \
+         ${DIFF} output/ex54_0.out ex54.tmp || echo ${PWD} "\nPossible problem with with ex54_geo, diffs above \n========================================="; \
         ${RM} -f ex54.tmp
 
-runex54_SA:
-	-@${MPIEXEC} -n 4 ./ex54 -ne 109 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1  -ksp_converged_reason -pc_gamg_coarse_eq_limit 80 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -mg_levels_pc_type jacobi > ex54_sa.tmp 2>&1; \
-         ${DIFF} output/ex54_1.out ex54_sa.tmp || echo ${PWD} "\nPossible problem with with ex54_1, diffs above \n======================================"; \
-        ${RM} -f ex54_sa.tmp
+runex54:
+	-@${MPIEXEC} -n 4 ./ex54 -ne 49 -alpha 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_monitor_short > ex54.tmp 2>&1; \
+         ${DIFF} output/ex54_1.out ex54.tmp || echo ${PWD} "\nPossible problem with with ex54, diffs above \n======================================"; \
+        ${RM} -f ex54.tmp
 
 runex54_Classical:
-	-@${MPIEXEC} -n 4 ./ex54 -ne 109 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type classical -ksp_converged_reason -pc_gamg_coarse_eq_limit 80 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -mg_levels_pc_type jacobi > ex54_classical.tmp 2>&1; \
-         ${DIFF} output/ex54_classical.out ex54_classical.tmp || echo ${PWD} "\nPossible problem with with ex54_Classical, diffs above \n======================================"; \
-        ${RM} -f ex54_classical.tmp
+	-@${MPIEXEC} -n 4 ./ex54 -ne 49 -alpha 1.e-3 -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -ksp_monitor_short > ex54.tmp 2>&1; \
+         ${DIFF} output/ex54_classical.out ex54.tmp || echo ${PWD} "\nPossible problem with with ex54_Classical, diffs above \n======================================"; \
+        ${RM} -f ex54.tmp
 
 runex54f:
-	-@${MPIEXEC} -n 4 ./ex54f -ne 59 -theta 30.0 -epsilon 1.e-1 -ksp_monitor_short -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason  -pc_gamg_coarse_eq_limit 80 -blob_center 0.,0. -mat_coarsen_type hem -pc_gamg_square_graph false > ex54f.tmp 2>&1; \
-         ${DIFF} output/ex54f.out ex54f.tmp || echo ${PWD} "\nPossible problem with with ex54f, diffs above \n======================================"; \
-        ${RM} -f ex54f.tmp
+	-@${MPIEXEC} -n 4 ./ex54f -ne 59 -theta 30.0 -epsilon 1.e-1 -blob_center 0.,0. -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -mat_coarsen_type hem -pc_gamg_square_graph false -ksp_monitor_short > ex54.tmp 2>&1; \
+         ${DIFF} output/ex54f.out ex54.tmp || echo ${PWD} "\nPossible problem with with ex54f, diffs above \n======================================"; \
+        ${RM} -f ex54.tmp
 
-runex55:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type geo -use_coordinates -ksp_converged_reason -pc_gamg_coarse_eq_limit 80 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -mg_levels_pc_type jacobi > ex55.tmp 2>&1;	  \
-         ${DIFF} output/ex55_0.out ex55.tmp || echo ${PWD} "\nPossible problem with with ex55_0, diffs above \n========================================="; \
+runex55_geo:
+	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -pc_type gamg -pc_gamg_type geo -use_coordinates -ksp_monitor_short > ex55.tmp 2>&1;	  \
+         ${DIFF} output/ex55_0.out ex55.tmp || echo ${PWD} "\nPossible problem with with ex55_geo, diffs above \n========================================="; \
         ${RM} -f ex55.tmp
 
-runex55_SA:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -use_coordinates -ksp_converged_reason -pc_gamg_coarse_eq_limit 80 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -mg_levels_pc_type jacobi > ex55_sa.tmp 2>&1; \
-         ${DIFF} output/ex55_sa.out ex55_sa.tmp || echo ${PWD} "\nPossible problem with with ex55_SA, diffs above \n========================================="; \
-        ${RM} -f ex55_sa.tmp
+runex55_hypre:
+	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -pc_type hypre -pc_hypre_type boomeramg -ksp_monitor_short > ex55.tmp 2>&1;	  \
+         ${DIFF} output/ex55_hypre.out ex55.tmp || echo ${PWD} "\nPossible problem with with ex55_hypre, diffs above \n========================================="; \
+        ${RM} -f ex55.tmp
+
+runex55:
+	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -use_coordinates -ksp_monitor_short > ex55.tmp 2>&1; \
+         ${DIFF} output/ex55_sa.out ex55.tmp || echo ${PWD} "\nPossible problem with with ex55, diffs above \n========================================="; \
+        ${RM} -f ex55.tmp
 
 runex55_Classical:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_monitor_short -ksp_type gmres -pc_gamg_type classical -ksp_converged_reason -pc_gamg_coarse_eq_limit 80 -mg_levels_ksp_type chebyshev -mg_levels_pc_type sor -mg_levels_ksp_max_it 5 > ex55_classical.tmp 2>&1; \
-         ${DIFF} output/ex55_classical.out ex55_classical.tmp || echo ${PWD} "\nPossible problem with with ex55_Classical, diffs above \n========================================="; \
-        ${RM} -f ex55_classical.tmp
+	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_type gmres -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_max_it 5 -ksp_monitor_short > ex55.tmp 2>&1; \
+         ${DIFF} output/ex55_classical.out ex55.tmp || echo ${PWD} "\nPossible problem with with ex55_Classical, diffs above \n========================================="; \
+        ${RM} -f ex55.tmp
 
 runex55_NC:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1  -ksp_converged_reason -pc_gamg_coarse_eq_limit 80 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -mg_levels_pc_type jacobi > ex55_nc.tmp 2>&1; \
-         ${DIFF} output/ex55_NC.out ex55_nc.tmp || echo ${PWD} "\nPossible problem with with ex55_NC, diffs above \n======================================"; \
-        ${RM} -f ex55_nc.tmp
+	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_monitor_short > ex55.tmp 2>&1; \
+         ${DIFF} output/ex55_NC.out ex55.tmp || echo ${PWD} "\nPossible problem with with ex55_NC, diffs above \n======================================"; \
+        ${RM} -f ex55.tmp
 
 runex56:
-	-@${MPIEXEC} -n 8 ./ex56 -ne 19 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -ksp_max_it 50 -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -pc_gamg_coarse_eq_limit 80 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -mg_levels_pc_type sor -pc_gamg_reuse_interpolation true -two_solves > ex56.tmp 2>&1;	\
-         ${DIFF} output/ex56_0.out ex56.tmp || echo ${PWD} "\nPossible problem with with ex56_0, diffs above \n========================================="; \
+	-@${MPIEXEC} -n 8 ./ex56 -ne 9 -alpha 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -two_solves -ksp_monitor_short > ex56.tmp 2>&1;	\
+         ${DIFF} output/ex56_0.out ex56.tmp || echo ${PWD} "\nPossible problem with with ex56, diffs above \n========================================="; \
          ${RM} -f ex56.tmp
 
 runex56_ml:
-	-@${MPIEXEC} -n 8 ./ex56 -ne 19 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -ksp_max_it 50 -pc_type ml -ksp_converged_reason -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -mg_levels_pc_type jacobi > ex56.tmp 2>&1;	\
-         ${DIFF} output/ex56_ml.out ex56.tmp || echo ${PWD} "\nPossible problem with with ex56_2, diffs above \n========================================="; \
+	-@${MPIEXEC} -n 8 ./ex56 -ne 9 -alpha 1.e-3 -pc_type ml -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -mg_levels_pc_type sor -ksp_monitor_short > ex56.tmp 2>&1;	\
+         ${DIFF} output/ex56_ml.out ex56.tmp || echo ${PWD} "\nPossible problem with with ex56_ml, diffs above \n========================================="; \
         ${RM} -f ex56.tmp
 
 runex56_nns:
@@ -1133,7 +1112,7 @@ runex58_sbaij:
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 runex2_specest_1 runex2_specest_2 \
                                  runex2_chebyest_1 runex2_chebyest_2 runex2_chebyest_3 runex2_chebyest_4 runex2_fbcgs runex2_fbcgs_2 ex2.rm \
-                                 ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 runex5_2 \
+                                 ex7.PETSc runex7 runex7_2 ex7.rm ex5.PETSc runex5 runex5_2 \
                                  runex5_redundant_0 runex5_redundant_1 runex5_redundant_2 runex5_redundant_3 runex5_redundant_4 ex5.rm \
                                  ex8g.PETSc runex8g_1 runex8g_2 runex8g_3 ex8g.rm \
                                  ex9.PETSc runex9 ex9.rm ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
@@ -1143,7 +1122,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex31.PETSc ex31.rm ex32.PETSc runex32 ex32.rm ex34.PETSc runex34 ex34.rm ex38.PETSc runex38 ex38.rm \
                                  ex43.PETSc runex43 runex43_2 runex43_3 runex43_bjacobi runex43_bjacobi_baij ex43.rm \
                                  ex45.PETSc runex45 runex45_2 ex45.rm \
-                                 ex49.PETSc runex49 runex49_2 runex49_3 runex49_5 ex49.rm ex53.PETSc runex53 ex53.rm ex55.PETSc runex55_SA runex55_Classical ex55.rm\
+                                 ex49.PETSc runex49 runex49_2 runex49_3 runex49_5 ex49.rm ex53.PETSc runex53 ex53.rm ex55.PETSc runex55_Classical ex55.rm\
                                  ex56.PETSc runex56_nns runex56 ex56.rm \
                                  ex58.PETSc runex58 runex58_baij runex58_sbaij ex58.rm
 TESTEXAMPLES_C_X	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm ex28.PETSc runex28 ex28.rm
@@ -1154,9 +1133,9 @@ TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f e
 TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_3 ex2.rm \
                                  ex7.PETSc ex7.rm ex5.PETSc ex5.rm  ex9.PETSc runex9 ex9.rm \
                                  ex23.PETSc runex23 ex23.rm
-TESTEXAMPLES_C_COMPLEX	       = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm ex39.PETSc runex39 ex39.rm ex40.PETSc runex40 ex40.rm
+TESTEXAMPLES_C_COMPLEX	       = ex10.PETSc ex10.rm ex11.PETSc runex11 ex11.rm ex39.PETSc runex39 ex39.rm ex40.PETSc runex40 ex40.rm
 TESTEXAMPLES_DATAFILESPATH     = ex10.PETSc runex10_2 runex10_3 runex10_4 runex10_5 runex10_6 runex10_7 runex10_8 \
-                                 runex10_9 runex10_10 runex10_19 runex10_22 runex10_23 runex10_24 runex10_25  runex10_ILU runex10_ILUBAIJ runex10_cg \
+                                 runex10_9 runex10_10 runex10_19  runex10_ILU runex10_ILUBAIJ runex10_cg \
                                  runex10_cg_singlereduction runex10_seqaijcrl runex10_mpiaijcrl runex10_seqaijperm runex10_mpiaijperm ex10.rm
 # even though ex10.c is -pc_mg_smoothdown na C example to run with -mat_type lusol requires a Fortran compiler, hence
 # we list it with the fortran examples

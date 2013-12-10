@@ -91,7 +91,7 @@ int main(int argc,char **args)
   }
 
   /* get number of new vertices for each processor */
-  ierr = PetscMalloc(size*sizeof(PetscInt),&nlocal);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&nlocal);CHKERRQ(ierr);
   ierr = ISPartitioningCount(is,size,nlocal);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
 
@@ -135,10 +135,8 @@ int main(int argc,char **args)
     PetscScalar       *nvals;
 
     ierr = MatGetOwnershipRange(B,&rstart,NULL);CHKERRQ(ierr);
-    ierr = PetscMalloc(2*m*sizeof(PetscInt),&nzd);CHKERRQ(ierr);
-    ierr = PetscMemzero(nzd,2*m*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMalloc(2*m*sizeof(PetscInt),&nzo);CHKERRQ(ierr);
-    ierr = PetscMemzero(nzo,2*m*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscCalloc1(2*m,&nzd);CHKERRQ(ierr);
+    ierr = PetscCalloc1(2*m,&nzo);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       ierr = MatGetRow(B,i+rstart,&nzl,&cols,NULL);CHKERRQ(ierr);
       for (j=0; j<nzl; j++) {
@@ -157,7 +155,7 @@ int main(int argc,char **args)
     ierr = PetscInfo(0,"Created empty Jacobian matrix\n");CHKERRQ(ierr);
     ierr = PetscFree(nzd);CHKERRQ(ierr);
     ierr = PetscFree(nzo);CHKERRQ(ierr);
-    ierr = PetscMalloc2(nzmax,PetscInt,&ncols,nzmax,PetscScalar,&nvals);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nzmax,&ncols,nzmax,&nvals);CHKERRQ(ierr);
     ierr = PetscMemzero(nvals,nzmax*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       ierr = MatGetRow(B,i+rstart,&nzl,&cols,&vals);CHKERRQ(ierr);

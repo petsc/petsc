@@ -449,7 +449,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   ierr = PetscFEGetNumComponents(user->fe[1], &numComp[1]);CHKERRQ(ierr);
   ierr = PetscFEGetNumDof(user->fe[0], &numFieldDof[0]);CHKERRQ(ierr);
   ierr = PetscFEGetNumDof(user->fe[1], &numFieldDof[1]);CHKERRQ(ierr);
-  ierr = PetscMalloc(NUM_FIELDS*(dim+1) * sizeof(PetscInt), &numDof);CHKERRQ(ierr);
+  ierr = PetscMalloc1(NUM_FIELDS*(dim+1), &numDof);CHKERRQ(ierr);
   for (f = 0; f < NUM_FIELDS; ++f) {
     for (d = 0; d <= dim; ++d) {
       numDof[f*(dim+1)+d] = numFieldDof[f][d];

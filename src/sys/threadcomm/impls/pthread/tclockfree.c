@@ -118,8 +118,8 @@ PetscErrorCode PetscPThreadCommInitialize_LockFree(PetscThreadComm tcomm)
   PetscThreadComm_PThread ptcomm=(PetscThreadComm_PThread)tcomm->data;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscThreadCommJobCtx),&job_lockfree.data);CHKERRQ(ierr);
-  ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&job_lockfree.my_job_status);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tcomm->nworkThreads,&job_lockfree.data);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tcomm->nworkThreads,&job_lockfree.my_job_status);CHKERRQ(ierr);
 
   /* Create threads */
   for (i=ptcomm->thread_num_start; i < tcomm->nworkThreads; i++) {

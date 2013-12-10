@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   */
   ierr = PetscOptionsGetBool(NULL,"-distribute",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscMalloc(size*sizeof(PetscInt),&localnodes);CHKERRQ(ierr);
+    ierr = PetscMalloc1(size,&localnodes);CHKERRQ(ierr);
     for (i=0; i<size-1; i++) localnodes[i] = 2;
     localnodes[size-1] = M - 2*(size-1);
   }

@@ -730,7 +730,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_NASH(KSP ksp)
   KSP_NASH       *cg;
 
   PetscFunctionBegin;
-  ierr       = PetscNewLog(ksp,KSP_NASH, &cg);CHKERRQ(ierr);
+  ierr       = PetscNewLog(ksp,&cg);CHKERRQ(ierr);
   cg->radius = 0.0;
   cg->dtype  = NASH_UNPRECONDITIONED_DIRECTION;
 

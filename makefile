@@ -24,7 +24,7 @@ all: chk_makej
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chk_petscdir chk_upgrade | tee ${PETSC_ARCH}/conf/make.log
 	@ln -sf ${PETSC_ARCH}/conf/make.log make.log
 	@if [ "${MAKE_IS_GNUMAKE}" != "" ]; then \
-	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-gnumake-local 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
+	   ${OMAKE_PRINTDIR} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-gnumake-local 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
 	elif [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
 	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-cmake-local 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log \
 		| egrep -v '( --check-build-system |cmake -E | -o CMakeFiles/petsc[[:lower:]]*.dir/| -o lib/libpetsc|CMakeFiles/petsc[[:lower:]]*\.dir/(build|depend|requires)|-f CMakeFiles/Makefile2|Dependee .* is newer than depender |provides\.build. is up to date)'; \
@@ -45,7 +45,7 @@ all: chk_makej
 
 all-gnumake:
 	@if [ "${MAKE_IS_GNUMAKE}" != "" ]; then \
-          ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} PETSC_BUILD_USING_CMAKE="" all;\
+          ${OMAKE_PRINTDIR}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} PETSC_BUILD_USING_CMAKE="" all;\
         else printf ${PETSC_TEXT_HILIGHT}"Build not configured for GNUMAKE. Quiting"${PETSC_TEXT_NORMAL}"\n"; exit 1; fi
 
 all-cmake:
@@ -138,27 +138,27 @@ build: chk_makej
 #
 check: test
 test:
-	-@${OMAKE_NOPRINTDIR} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} test_build 2>&1 | tee ./${PETSC_ARCH}/conf/test.log
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} test_build 2>&1 | tee ./${PETSC_ARCH}/conf/test.log
 testx:
-	-@${OMAKE_NOPRINTDIR} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testx_build 2>&1 | tee ./${PETSC_ARCH}/conf/testx.log
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testx_build 2>&1 | tee ./${PETSC_ARCH}/conf/testx.log
 test_build:
 	-@echo "Running test examples to verify correct installation"
 	-@echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}"
-	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE_NOPRINTDIR} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
-	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE_NOPRINTDIR} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex19
+	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
+	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex19
 	@if [ "${FC}" != "" ]; then \
           egrep "^#define PETSC_USE_FORTRAN_DATATYPES 1" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h | tee .ftn-dtype.log > /dev/null; \
           if test -s .ftn-dtype.log; then F90TEST="testex5f90t"; else F90TEST="testex5f"; fi; ${RM} .ftn-dtype.log; \
-          cd src/snes/examples/tutorials >/dev/null; ${OMAKE_NOPRINTDIR} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} $${F90TEST}; \
+          cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} $${F90TEST}; \
          fi;
-	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE_NOPRINTDIR} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
+	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
 	-@echo "Completed test examples"
 testx_build:
 	-@echo "Running graphics test example to verify correct X11 installation"
 	-@echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}"
-	@cd src/snes/examples/tutorials; ${OMAKE_NOPRINTDIR} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
-	@cd src/snes/examples/tutorials; ${OMAKE_NOPRINTDIR} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testxex19
-	@cd src/snes/examples/tutorials; ${OMAKE_NOPRINTDIR} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
+	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
+	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testxex19
+	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
 	-@echo "Completed graphics test example"
 
 testexamples: info
@@ -216,8 +216,21 @@ deletemods: chk_makej
 	-${RM} -f ${PETSC_DIR}/${PETSC_ARCH}/include/petsc*.mod
 
 # Cleans up build
-allclean: deletelibs deletemods
+allclean-legacy: deletelibs deletemods
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=clean tree
+allclean-cmake:
+	-@cd ${PETSC_ARCH} && ${OMAKE} clean
+allclean-gnumake:
+	-@${OMAKE} -f gmakefile clean
+
+allclean:
+	@if [ "${MAKE_IS_GNUMAKE}" != "" ]; then \
+	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} allclean-gnumake; \
+	elif [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
+	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} allclean-cmake; \
+	else \
+	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} allclean-legacy; \
+	fi
 #
 reconfigure:
 	@${PYTHON} ${PETSC_ARCH}/conf/reconfigure-${PETSC_ARCH}.py

@@ -54,6 +54,7 @@ typedef struct {
   MatNullSpace               NullSpace;
   IS                         user_primal_vertices;
   PetscBool                  use_nnsp_true;
+  PetscBool                  user_provided_isfordofs;
   PetscInt                   n_ISForDofs;
   IS                         *ISForDofs;
   IS                         NeumannBoundaries;

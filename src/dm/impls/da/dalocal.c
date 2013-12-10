@@ -340,7 +340,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
       }
     }
   }
-  ierr = PetscMalloc2(nleaves,PetscInt,&localPoints,nleaves,PetscSFNode,&remotePoints);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nleaves,&localPoints,nleaves,&remotePoints);CHKERRQ(ierr);
   for (zn = 0; zn < (dim > 2 ? 3 : 1); ++zn) {
     for (yn = 0; yn < (dim > 1 ? 3 : 1); ++yn) {
       for (xn = 0; xn < 3; ++xn) {

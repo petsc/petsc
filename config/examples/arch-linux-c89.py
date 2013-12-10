@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 configure_options = [
-  'CFLAGS=-std=c89 -pedantic -Wno-long-long',
+  'CFLAGS=-std=c89 -pedantic -Wno-long-long -Wno-overlength-strings',
   '--with-shared-libraries=1'
   ]
 

@@ -176,7 +176,7 @@ PetscErrorCode  MatSetFromOptions(Mat B)
     }
   }
 
-  ierr = PetscOptionsList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatSetType(B,type);CHKERRQ(ierr);
   } else if (!((PetscObject)B)->type_name) {
@@ -254,7 +254,7 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt dnnz[],c
     } else {                    /* Convert block-row precallocation to scalar-row */
       PetscInt i,m,*sdnnz,*sonnz;
       ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
-      ierr = PetscMalloc2((!!dnnz)*m,PetscInt,&sdnnz,(!!onnz)*m,PetscInt,&sonnz);CHKERRQ(ierr);
+      ierr = PetscMalloc2((!!dnnz)*m,&sdnnz,(!!onnz)*m,&sonnz);CHKERRQ(ierr);
       for (i=0; i<m; i++) {
         if (dnnz) sdnnz[i] = dnnz[i/bs] * bs;
         if (onnz) sonnz[i] = onnz[i/bs] * bs;
@@ -361,7 +361,6 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat C)
 
   ((PetscObject)A)->refct = refct;
 
-  ierr = PetscLogObjectDestroy((PetscObject)C);CHKERRQ(ierr);
   ierr = PetscFree(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

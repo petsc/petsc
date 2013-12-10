@@ -13,7 +13,7 @@ Input parameters include:\n";
        y' = -z = f(y,z)        (1)
        0  = y-(z^3/3 - z) = g(y,z)
    on the domain 0 <= x <= 1, with the boundary conditions
-       y(0) = -2, y'(0) = −2.355301397608119909925287735864250951918
+       y(0) = -2, y'(0) = -2.355301397608119909925287735864250951918
    This is a nonlinear equation.
 
    Notes:

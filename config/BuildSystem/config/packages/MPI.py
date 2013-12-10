@@ -249,7 +249,7 @@ class Configure(config.package.Package):
     oldLibs  = self.compilers.LIBS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
     self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
-    mpitypes = [('MPI_LONG_DOUBLE', 'long-double')]
+    mpitypes = [('MPI_LONG_DOUBLE', 'long-double'), ('MPI_INT64_T', 'int64_t')]
     if self.getDefaultLanguage() == 'C': mpitypes.extend([('MPI_C_DOUBLE_COMPLEX', 'c-double-complex')])
     for datatype, name in mpitypes:
       includes = '#ifdef PETSC_HAVE_STDLIB_H\n  #include <stdlib.h>\n#endif\n#include <mpi.h>\n'
@@ -374,8 +374,7 @@ class Configure(config.package.Package):
     openmpiDir = self.getDir()
 
     # Get the OPENMPI directories
-    installDir = os.path.join(self.defaultInstallDir,self.arch)
-    confDir = os.path.join(self.defaultInstallDir,self.arch,'conf')
+    installDir = self.installDir
     args = ['--prefix='+installDir,'--with-rsh=ssh']
     args.append('MAKE='+self.make.make)
     # Configure and Build OPENMPI
@@ -470,8 +469,7 @@ class Configure(config.package.Package):
 
   def InstallMPICH(self):
     mpichDir = self.getDir()
-    installDir = os.path.join(self.defaultInstallDir,self.arch)
-    confDir = os.path.join(self.defaultInstallDir,self.arch,'conf')
+    installDir = self.installDir
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
 

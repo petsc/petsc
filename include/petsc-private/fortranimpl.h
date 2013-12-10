@@ -76,12 +76,16 @@ if (flg) {                                   \
   for (; __i<n; __i++) a[__i] = ' ' ; \
 }
 
-#define FORTRANNULLINTEGER(a)  (((void*)a) == PETSC_NULL_INTEGER_Fortran)
-#define FORTRANNULLSCALAR(a)   (((void*)a) == PETSC_NULL_SCALAR_Fortran)
-#define FORTRANNULLDOUBLE(a)   (((void*)a) == PETSC_NULL_DOUBLE_Fortran)
-#define FORTRANNULLREAL(a)     (((void*)a) == PETSC_NULL_REAL_Fortran)
-#define FORTRANNULLOBJECT(a)   (((void*)a) == PETSC_NULL_OBJECT_Fortran)
-#define FORTRANNULLBOOL(a)    (((void*)a) == PETSC_NULL_BOOL_Fortran)
+/*
+    The cast through PETSC_UINTPTR_T is so that compilers that warn about casting to/from void * to void(*)(void)
+    will not complain about these comparisons. It is now know if this works for all compilers
+*/
+#define FORTRANNULLINTEGER(a)  (((void*)(PETSC_UINTPTR_T)a) == PETSC_NULL_INTEGER_Fortran)
+#define FORTRANNULLSCALAR(a)   (((void*)(PETSC_UINTPTR_T)a) == PETSC_NULL_SCALAR_Fortran)
+#define FORTRANNULLDOUBLE(a)   (((void*)(PETSC_UINTPTR_T)a) == PETSC_NULL_DOUBLE_Fortran)
+#define FORTRANNULLREAL(a)     (((void*)(PETSC_UINTPTR_T)a) == PETSC_NULL_REAL_Fortran)
+#define FORTRANNULLOBJECT(a)   (((void*)(PETSC_UINTPTR_T)a) == PETSC_NULL_OBJECT_Fortran)
+#define FORTRANNULLBOOL(a)    (((void*)(PETSC_UINTPTR_T)a) == PETSC_NULL_BOOL_Fortran)
 #define FORTRANNULLFUNCTION(a) (((void(*)(void))(PETSC_UINTPTR_T)a) == PETSC_NULL_FUNCTION_Fortran)
 
 

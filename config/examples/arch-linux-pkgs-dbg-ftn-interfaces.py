@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 configure_options = [
+  '--with-cc=clang',
+  '--with-cxx=clang++',
+  '--with-fc=gfortran',
   '--with-debugging=1',
   '--with-fortran-interfaces=1',
   '--download-mpich=1',

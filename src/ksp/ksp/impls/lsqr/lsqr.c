@@ -113,10 +113,10 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 
   /* Test for nothing to do */
   ierr       = VecNorm(U,NORM_2,&rnorm);CHKERRQ(ierr);
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = rnorm;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
   ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
   ierr = KSPMonitor(ksp,0,rnorm);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -204,10 +204,10 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     lsqr->arnorm = alpha*PetscAbsScalar(tau);
     rnorm        = PetscRealPart(phibar);
 
-    ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = rnorm;
-    ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
     ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,i+1,rnorm);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -468,7 +468,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscNewLog(ksp,KSP_LSQR,&lsqr);CHKERRQ(ierr);
+  ierr         = PetscNewLog(ksp,&lsqr);CHKERRQ(ierr);
   lsqr->se     = NULL;
   lsqr->se_flg = PETSC_FALSE;
   lsqr->arnorm = 0.0;

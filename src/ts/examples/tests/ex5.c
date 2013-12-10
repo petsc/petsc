@@ -277,6 +277,7 @@ int main(int argc,char **argv)
     ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringSetUp(J,iscoloring,matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,matfdcoloring);CHKERRQ(ierr);
@@ -745,7 +746,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
 
   if (step%user->interval == 0) {
     ierr = VecGetArray(T,&array);CHKERRQ(ierr);
-    if (!rank) printf("step %4d, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",step,time,(((array[0]-273)*9)/5 + 32),(((array[1]-273)*9)/5 + 32),array[2],array[3],array[4],array[5]);
+    if (!rank) printf("step %4d, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",(int)step,time,(((array[0]-273)*9)/5 + 32),(((array[1]-273)*9)/5 + 32),array[2],array[3],array[4],array[5]);
     ierr = VecRestoreArray(T,&array);CHKERRQ(ierr);
   }
 

@@ -73,8 +73,8 @@ PetscErrorCode  PFDestroy(PF *pf)
     ierr = PFView((*pf),viewer);CHKERRQ(ierr);
   }
 
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSViewOff((PetscObject)*pf);CHKERRQ(ierr);
+  /* if memory was published with SAWs then destroy it */
+  ierr = PetscObjectSAWsViewOff((PetscObject)*pf);CHKERRQ(ierr);
 
   if ((*pf)->ops->destroy) {ierr =  (*(*pf)->ops->destroy)((*pf)->data);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(pf);CHKERRQ(ierr);
@@ -455,7 +455,7 @@ PetscErrorCode  PFSetFromOptions(PF pf)
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
 
   ierr = PetscObjectOptionsBegin((PetscObject)pf);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-pf_type","Type of function","PFSetType",PFList,0,type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-pf_type","Type of function","PFSetType",PFList,0,type,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PFSetType(pf,type,NULL);CHKERRQ(ierr);
   }

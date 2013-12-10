@@ -117,7 +117,7 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
   SIGNAME[SIGSYS]  = "SYS";
 #endif
 #if !defined(PETSC_MISSING_SIGTERM)
-  SIGNAME[SIGTERM] = "Terminate: Somet process (or the batch system) has told this process to end";
+  SIGNAME[SIGTERM] = "Terminate: Some process (or the batch system) has told this process to end";
 #endif
 #if !defined(PETSC_MISSING_SIGTRAP)
   SIGNAME[SIGTRAP] = "TRAP";
@@ -304,7 +304,7 @@ PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void
 #endif
     SignalSet = PETSC_FALSE;
   }
-  ierr = PetscNew(struct SH,&newsh);CHKERRQ(ierr);
+  ierr = PetscNew(&newsh);CHKERRQ(ierr);
   if (sh) {
     if (sh->classid != SIGNAL_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Signal object has been corrupted");
     newsh->previous = sh;

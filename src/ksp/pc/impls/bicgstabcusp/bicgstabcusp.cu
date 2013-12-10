@@ -231,7 +231,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BiCGStabCUSP(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
    */
-  ierr = PetscNewLog(pc,PC_BiCGStabCUSP,&bicg);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&bicg);CHKERRQ(ierr);
   /*
      Set default values.  We don't actually want to set max iterations as far as I know, but the Cusp monitor requires them so we use a large number.
    */

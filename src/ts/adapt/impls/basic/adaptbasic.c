@@ -122,7 +122,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_Basic(TSAdapt adapt)
   TSAdapt_Basic  *a;
 
   PetscFunctionBegin;
-  ierr                       = PetscNewLog(adapt,TSAdapt_Basic,&a);CHKERRQ(ierr);
+  ierr                       = PetscNewLog(adapt,&a);CHKERRQ(ierr);
   adapt->data                = (void*)a;
   adapt->ops->choose         = TSAdaptChoose_Basic;
   adapt->ops->setfromoptions = TSAdaptSetFromOptions_Basic;

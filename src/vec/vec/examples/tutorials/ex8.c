@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   ierr = VecGetSize(x,&M);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
   ng   = rend - rstart + 2;
-  ierr = PetscMalloc(ng*sizeof(PetscInt),&gindices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ng,&gindices);CHKERRQ(ierr);
   gindices[0] = rstart - 1;
   for (i=0; i<ng-1; i++) gindices[i+1] = gindices[i] + 1;
   /* map the first and last point as periodic */

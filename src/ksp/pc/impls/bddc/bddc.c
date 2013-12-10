@@ -1,19 +1,46 @@
 /* TODOLIST
-   Better management for BAIJ local mats. How to deal with SBAIJ?
-   Provide PCApplyTranpose
-   make runexe59
-   Man pages
-   Propagate nearnullspace info among levels
-   Move FETIDP code
-   Provide general case for subassembling
-   Preallocation routines in MatConvert_IS_AIJ
-   Allow different customizations among different linear solves (requires also reset/destroy of ksp_R and coarse_ksp)
-   Why options for "pc_bddc_coarse" solver gets propagated to "pc_bddc_coarse_1" solver?
-   Better management in PCIS code
-   Is it possible working with PCBDDCGraph on boundary indices only?
-   DofSplitting and DM attached to pc?
-   Change SetNeumannBoundaries to SetNeumannBoundariesLocal and provide new SetNeumannBoundaries (same Dirichlet)
-   BDDC with MG framework?
+
+   ConstraintsSetup
+   - assure same constraints between neighbours by sorting vals by global index before SVD!
+   - tolerances for constraints as an option (take care of single precision!)
+   - Allow different constraints customizations among different linear solves (requires also reset/destroy of ksp_R and coarse_ksp)
+   - MAT_IGNORE_ZERO_ENTRIES for Constraints Matrix
+
+   Solvers
+   - Try to reduce the work when reusing the solvers
+   - Add support for reuse fill and cholecky factor for coarse solver (similar to local solvers)
+   - reuse already allocated coarse matrix if possible
+   - Propagate ksp prefixes for solvers to mat objects? 
+   - Propagate nearnullspace info among levels
+
+   User interface
+   - Change SetNeumannBoundaries to SetNeumannBoundariesLocal and provide new SetNeumannBoundaries (same Dirichlet)
+   - Negative indices in dirichlet and Neumann is should be skipped (now they cause out-of-bounds access)
+   - Provide PCApplyTranpose_BDDC
+   - DofSplitting and DM attached to pc?
+
+   Debugging output
+   - Better management of verbosity levels of debugging output
+   - Crashes on some architecture -> call SynchronizedAllow before every SynchronizedPrintf
+
+   Build
+   - make runexe59
+
+   Extra
+   - Is it possible to work with PCBDDCGraph on boundary indices only (less memory consumed)?
+   - Why options for "pc_bddc_coarse" solver gets propagated to "pc_bddc_coarse_1" solver?
+   - add support for computing h,H and related using coordinates?
+   - Change of basis approach does not work with my nonlinear mechanics example. why? (seems not an issue with l2gmap)
+   - Better management in PCIS code
+   - BDDC with MG framework?
+
+   FETIDP
+   - Move FETIDP code to its own classes
+
+   MATIS related operations contained in BDDC code
+   - Provide general case for subassembling
+   - Preallocation routines in MatConvert_IS_AIJ
+
 */
 
 /* ----------------------------------------------------------------------------------------------------------------------------------------------
@@ -455,8 +482,8 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
   /* TODO: PCBDDCGraphSetAdjacency */
   /* get CSR into graph structure */
   if (copymode == PETSC_COPY_VALUES) {
-    ierr = PetscMalloc((nvtxs+1)*sizeof(PetscInt),&mat_graph->xadj);CHKERRQ(ierr);
-    ierr = PetscMalloc(xadj[nvtxs]*sizeof(PetscInt),&mat_graph->adjncy);CHKERRQ(ierr);
+    ierr = PetscMalloc1((nvtxs+1),&mat_graph->xadj);CHKERRQ(ierr);
+    ierr = PetscMalloc1(xadj[nvtxs],&mat_graph->adjncy);CHKERRQ(ierr);
     ierr = PetscMemcpy(mat_graph->xadj,xadj,(nvtxs+1)*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemcpy(mat_graph->adjncy,adjncy,xadj[nvtxs]*sizeof(PetscInt));CHKERRQ(ierr);
   } else if (copymode == PETSC_OWN_POINTER) {
@@ -524,12 +551,13 @@ static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc,PetscInt n_is, IS ISForD
   }
   ierr = PetscFree(pcbddc->ISForDofs);CHKERRQ(ierr);
   /* allocate space then set */
-  ierr = PetscMalloc(n_is*sizeof(IS),&pcbddc->ISForDofs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n_is,&pcbddc->ISForDofs);CHKERRQ(ierr);
   for (i=0;i<n_is;i++) {
     ierr = PetscObjectReference((PetscObject)ISForDofs[i]);CHKERRQ(ierr);
     pcbddc->ISForDofs[i]=ISForDofs[i];
   }
   pcbddc->n_ISForDofs=n_is;
+  pcbddc->user_provided_isfordofs = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -1218,11 +1246,11 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, Mat *fetidp_mat, PC *fetidp_pc
 
    The matrix to be preconditioned (Pmat) must be of type MATIS.
 
-   Currently works with MATIS matrices with local Neumann matrices of type MATSEQAIJ or MATSEQBAIJ, either with real or complex numbers.
-
-   Unlike 'conventional' interface preconditioners, PCBDDC iterates over all degrees of freedom, not just those on the interface. This allows the use of approximate solvers on the subdomains.
+   Currently works with MATIS matrices with local Neumann matrices of type MATSEQAIJ, MATSEQBAIJ or MATSEQSBAIJ, either with real or complex numbers.
 
    It also works with unsymmetric and indefinite problems. 
+
+   Unlike 'conventional' interface preconditioners, PCBDDC iterates over all degrees of freedom, not just those on the interface. This allows the use of approximate solvers on the subdomains.
 
    Approximate local solvers are automatically adapted for singular linear problems (see [1]) if the user has provided the nullspace using PCBDDCSetNullSpace
 
@@ -1230,7 +1258,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, Mat *fetidp_mat, PC *fetidp_pc
 
    Constraints can be customized by attaching a MatNullSpace object to the MATIS matrix via MatSetNearNullSpace.
 
-   Change of basis is performed similarly to [2]. When more the one constraint is present on a single connected component (i.e. an edge or a face), a robust method based on local QR factorizations is used.
+   Change of basis is performed similarly to [2] when requested. When more the one constraint is present on a single connected component (i.e. an edge or a face), a robust method based on local QR factorizations is used.
 
    The PETSc implementation also supports multilevel BDDC [3]. Coarse grids are partitioned using MatPartitioning object.
 
@@ -1238,7 +1266,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, Mat *fetidp_mat, PC *fetidp_pc
 
 .    -pc_bddc_use_vertices <1> - use or not vertices in primal space
 .    -pc_bddc_use_edges <1> - use or not edges in primal space
-.    -pc_bddc_use_faces <1> - use or not faces in primal space
+.    -pc_bddc_use_faces <0> - use or not faces in primal space
 .    -pc_bddc_use_change_of_basis <0> - use change of basis approach (on edges only)
 .    -pc_bddc_use_change_on_faces <0> - use change of basis approach on faces if change of basis has been requested
 .    -pc_bddc_switch_static <0> - switches from M_2 to M_3 operator (see reference article [1])
@@ -1264,7 +1292,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, Mat *fetidp_mat, PC *fetidp_pc
 
    Level: intermediate
 
-   Notes:
+   Developer notes:
      Currently does not work with KSPBCGS and other KSPs requiring the specialization of PCApplyTranspose
 
      New deluxe scaling operator will be available soon.
@@ -1283,7 +1311,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
 
   PetscFunctionBegin;
   /* Creates the private data structure for this preconditioner and attach it to the PC object. */
-  ierr      = PetscNewLog(pc,PC_BDDC,&pcbddc);CHKERRQ(ierr);
+  ierr      = PetscNewLog(pc,&pcbddc);CHKERRQ(ierr);
   pc->data  = (void*)pcbddc;
 
   /* create PCIS data structure */
@@ -1322,6 +1350,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->ksp_D                      = 0;
   pcbddc->ksp_R                      = 0;
   pcbddc->NeumannBoundaries          = 0;
+  pcbddc->user_provided_isfordofs    = PETSC_FALSE;
+  pcbddc->n_ISForDofs                = 0;
   pcbddc->ISForDofs                  = 0;
   pcbddc->ConstraintMatrix           = 0;
   pcbddc->use_exact_dirichlet_trick  = PETSC_TRUE;

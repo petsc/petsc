@@ -29,7 +29,7 @@ typedef const char* PetscViewerType;
 #define PETSCVIEWERHDF5         "hdf5"
 #define PETSCVIEWERVTK          "vtk"
 #define PETSCVIEWERMATLAB       "matlab"
-#define PETSCVIEWERAMS          "ams"
+#define PETSCVIEWERSAWS          "saws"
 
 PETSC_EXTERN PetscFunctionList PetscViewerList;
 PETSC_EXTERN PetscErrorCode PetscViewerRegisterAll(void);
@@ -363,8 +363,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerMatlabPutArray(PetscViewer,int,int,const 
 PETSC_EXTERN PetscErrorCode PetscViewerMatlabGetArray(PetscViewer,int,int,PetscScalar*,const char*);
 PETSC_EXTERN PetscErrorCode PetscViewerMatlabPutVariable(PetscViewer,const char*,void*);
 
-#if defined(PETSC_HAVE_AMS)
-PETSC_EXTERN PetscErrorCode PetscObjectViewAMS(PetscObject,PetscViewer);
+#if defined(PETSC_HAVE_SAWS)
+PETSC_EXTERN PetscErrorCode PetscObjectViewSAWs(PetscObject,PetscViewer);
 #endif
 
 /*S

@@ -48,7 +48,7 @@ int main(int argc,char **argv)
   ierr = ISGetIndices(isrows,&rows);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
   ierr = ISGetIndices(iscols,&cols);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrows*ncols*sizeof(*v),&v);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrows*ncols,&v);CHKERRQ(ierr);
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
       ierr         = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
@@ -80,7 +80,7 @@ int main(int argc,char **argv)
   ierr = ISGetIndices(isrows,&rows);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
   ierr = ISGetIndices(iscols,&cols);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrows*ncols*sizeof(*v),&v);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrows*ncols,&v);CHKERRQ(ierr);
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
       ierr         = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
@@ -114,7 +114,7 @@ int main(int argc,char **argv)
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
   if (mats_view) {
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d] b: m %d\n",rank,m);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
     ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);

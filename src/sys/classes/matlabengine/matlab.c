@@ -192,7 +192,7 @@ PetscErrorCode  PetscMatlabEnginePrintOutput(PetscMatlabEngine mengine,FILE *fd)
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mengine),&rank);CHKERRQ(ierr);
   ierr = PetscSynchronizedFPrintf(PetscObjectComm((PetscObject)mengine),fd,"[%d]%s",rank,mengine->buffer);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PetscObjectComm((PetscObject)mengine));CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PetscObjectComm((PetscObject)mengine),fd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

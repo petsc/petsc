@@ -347,7 +347,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_AINVCUSP(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
    */
-  ierr                = PetscNewLog(pc,PC_AINVCUSP,&ainv);CHKERRQ(ierr);
+  ierr                = PetscNewLog(pc,&ainv);CHKERRQ(ierr);
   pc->data            = (void*)ainv;
   ainv->AINVCUSP      = 0;
   ainv->droptolerance = 0.1;

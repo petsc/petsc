@@ -61,8 +61,8 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   MPI_Comm_rank(PetscObjectComm((PetscObject)pmat),&rank);
 
   ierr  = MatGetSize(pmat,&n,NULL);CHKERRQ(ierr);
-  ierr  = PetscMalloc((npro+1)*sizeof(int),&mapptr);CHKERRQ(ierr);
-  ierr  = PetscMalloc(n*sizeof(int),&maptmp);CHKERRQ(ierr);
+  ierr  = PetscMalloc1((npro+1),&mapptr);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(n,&maptmp);CHKERRQ(ierr);
   ierr  = MatGetOwnershipRanges(pmat,&mapptr0);CHKERRQ(ierr);
   low   = mapptr0[rank];
   high  = mapptr0[rank+1];
@@ -90,12 +90,12 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   parms_MatCreate(&parms->A,parms->map);
 
   /* setup and copy csr data structure for pARMS */
-  ierr   = PetscMalloc((lsize+1)*sizeof(int),&ia);CHKERRQ(ierr);
+  ierr   = PetscMalloc1((lsize+1),&ia);CHKERRQ(ierr);
   ia[0]  = 1;
   ierr   = MatGetInfo(pmat,MAT_LOCAL,&matinfo);CHKERRQ(ierr);
   length = matinfo.nz_used;
-  ierr   = PetscMalloc(length*sizeof(int),&ja);CHKERRQ(ierr);
-  ierr   = PetscMalloc(length*sizeof(PetscScalar),&aa);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(length,&ja);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(length,&aa);CHKERRQ(ierr);
 
   for (i = low; i<high; i++) {
     pos         = ia[i-low]-1;
@@ -104,11 +104,11 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
 
     if (ia[i-low+1] >= length) {
       length += ncols;
-      ierr    = PetscMalloc(length*sizeof(int),&ja1);CHKERRQ(ierr);
+      ierr    = PetscMalloc1(length,&ja1);CHKERRQ(ierr);
       ierr    = PetscMemcpy(ja1,ja,(ia[i-low]-1)*sizeof(int));CHKERRQ(ierr);
       ierr    = PetscFree(ja);CHKERRQ(ierr);
       ja      = ja1;
-      ierr    = PetscMalloc(length*sizeof(PetscScalar),&aa1);CHKERRQ(ierr);
+      ierr    = PetscMalloc1(length,&aa1);CHKERRQ(ierr);
       ierr    = PetscMemcpy(aa1,aa,(ia[i-low]-1)*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr    = PetscFree(aa);CHKERRQ(ierr);
       aa      = aa1;
@@ -119,7 +119,7 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   }
 
   /* csr info is for local matrix so initialize im[] locally */
-  ierr = PetscMalloc(lsize*sizeof(int),&im);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lsize,&im);CHKERRQ(ierr);
   ierr = PetscMemcpy(im,&maptmp[mapptr[rank]-1],lsize*sizeof(int));CHKERRQ(ierr);
 
   /* 1-based indexing */
@@ -177,9 +177,9 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
 
   /* Allocate two auxiliary vector of length lsize */
   if (parms->lvec0) { ierr = PetscFree(parms->lvec0);CHKERRQ(ierr); }
-  ierr = PetscMalloc(lsize*sizeof(PetscScalar), &parms->lvec0);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lsize, &parms->lvec0);CHKERRQ(ierr);
   if (parms->lvec1) { ierr = PetscFree(parms->lvec1);CHKERRQ(ierr); }
-  ierr = PetscMalloc(lsize*sizeof(PetscScalar), &parms->lvec1);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lsize, &parms->lvec1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -697,7 +697,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_PARMS(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_PARMS,&parms);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&parms);CHKERRQ(ierr);
 
   parms->map        = 0;
   parms->A          = 0;

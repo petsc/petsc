@@ -136,6 +136,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactorType(Mat,MatFactorType*);
 /* Logging support */
 #define    MAT_FILE_CLASSID 1211216    /* used to indicate matrices in binary files */
 PETSC_EXTERN PetscClassId MAT_CLASSID;
+PETSC_EXTERN PetscClassId MAT_COLORING_CLASSID;
 PETSC_EXTERN PetscClassId MAT_FDCOLORING_CLASSID;
 PETSC_EXTERN PetscClassId MAT_TRANSPOSECOLORING_CLASSID;
 PETSC_EXTERN PetscClassId MAT_PARTITIONING_CLASSID;
@@ -213,6 +214,7 @@ PETSC_EXTERN PetscErrorCode MatCreateSeqSBAIJ(MPI_Comm,PetscInt,PetscInt,PetscIn
 
 PETSC_EXTERN PetscErrorCode MatCreateSBAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateMPISBAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],Mat *);
+PETSC_EXTERN PetscErrorCode MatSeqSBAIJSetPreallocationCSR(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatMPISBAIJSetPreallocationCSR(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatXAIJSetPreallocation(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],const PetscInt[]);
 
@@ -617,9 +619,8 @@ M*/
 #define MatPreallocateInitialize(comm,nrows,ncols,dnz,onz) 0; \
 { \
   PetscErrorCode _4_ierr; PetscInt __nrows = (nrows),__ctmp = (ncols),__rstart,__start,__end; \
-  _4_ierr = PetscMalloc2(__nrows,PetscInt,&dnz,__nrows,PetscInt,&onz);CHKERRQ(_4_ierr); \
-  _4_ierr = PetscMemzero(dnz,__nrows*sizeof(PetscInt));CHKERRQ(_4_ierr);\
-  _4_ierr = PetscMemzero(onz,__nrows*sizeof(PetscInt));CHKERRQ(_4_ierr); __start = 0; __end = __start; \
+  _4_ierr = PetscCalloc2(__nrows,&dnz,__nrows,&onz);CHKERRQ(_4_ierr); \
+  __start = 0; __end = __start;                                         \
   _4_ierr = MPI_Scan(&__ctmp,&__end,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __start = __end - __ctmp;\
   _4_ierr = MPI_Scan(&__nrows,&__rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __rstart = __rstart - __nrows;
 
@@ -1019,25 +1020,45 @@ PETSC_EXTERN PetscErrorCode MatSOR(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscI
     These routines are for efficiently computing Jacobians via finite differences.
 */
 
+/*S
+     MatColoring - Object for managing the coloring of matrices.
+
+   Level: beginner
+
+  Concepts: matrix, coloring
+
+.seealso:  MatFDColoringCreate() ISColoring MatFDColoring
+S*/
+typedef struct _p_MatColoring* MatColoring;
 /*J
     MatColoringType - String with the name of a PETSc matrix coloring
 
    Level: beginner
 
-.seealso: MatGetColoring(), MatColoring
+.seealso: MatColoringSetType(), MatColoring
 J*/
-typedef const char* MatColoringType;
+
+typedef const  char*           MatColoringType;
+#define MATCOLORINGJP      "jp"
+#define MATCOLORINGMIS     "mis"
 #define MATCOLORINGNATURAL "natural"
 #define MATCOLORINGSL      "sl"
 #define MATCOLORINGLF      "lf"
 #define MATCOLORINGID      "id"
 
-PETSC_EXTERN PetscErrorCode MatGetColoring(Mat,MatColoringType,ISColoring*);
-PETSC_EXTERN PetscErrorCode MatColoringRegister(const char[],PetscErrorCode(*)(Mat,MatColoringType,ISColoring *));
-
-PETSC_EXTERN PetscBool MatColoringRegisterAllCalled;
-
+PETSC_EXTERN PetscErrorCode MatColoringCreate(Mat,MatColoring*);
+PETSC_EXTERN PetscErrorCode MatColoringDestroy(MatColoring*);
+PETSC_EXTERN PetscErrorCode MatColoringView(MatColoring,PetscViewer);
+PETSC_EXTERN PetscErrorCode MatColoringSetType(MatColoring,MatColoringType);
+PETSC_EXTERN PetscErrorCode MatColoringSetFromOptions(MatColoring);
+PETSC_EXTERN PetscErrorCode MatColoringSetDistance(MatColoring,PetscInt);
+PETSC_EXTERN PetscErrorCode MatColoringGetDistance(MatColoring,PetscInt*);
+PETSC_EXTERN PetscErrorCode MatColoringSetMaxColors(MatColoring,PetscInt);
+PETSC_EXTERN PetscErrorCode MatColoringGetMaxColors(MatColoring,PetscInt*);
+PETSC_EXTERN PetscErrorCode MatColoringApply(MatColoring,ISColoring*);
 PETSC_EXTERN PetscErrorCode MatColoringRegisterAll(void);
+PETSC_EXTERN PetscErrorCode MatColoringRegister(const char[],PetscErrorCode(*)(MatColoring));
+PETSC_EXTERN PetscBool MatColoringRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode MatColoringPatch(Mat,PetscInt,PetscInt,ISColoringValue[],ISColoring*);
 
 /*S
@@ -1062,6 +1083,9 @@ PETSC_EXTERN PetscErrorCode MatFDColoringSetFromOptions(MatFDColoring);
 PETSC_EXTERN PetscErrorCode MatFDColoringApply(Mat,MatFDColoring,Vec,MatStructure*,void *);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetF(MatFDColoring,Vec);
 PETSC_EXTERN PetscErrorCode MatFDColoringGetPerturbedColumns(MatFDColoring,PetscInt*,PetscInt*[]);
+PETSC_EXTERN PetscErrorCode MatFDColoringSetUp(Mat,ISColoring,MatFDColoring);
+PETSC_EXTERN PetscErrorCode MatFDColoringSetBlockSize(MatFDColoring,PetscInt,PetscInt);
+
 
 /*S
      MatTransposeColoring - Object for computing a sparse matrix product C=A*B^T via coloring
@@ -1393,7 +1417,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_RART_NUMERIC=138,
                MATOP_SET_BLOCK_SIZES=139,
                MATOP_AYPX=140,
-               MATOP_RESIDUAL=141
+               MATOP_RESIDUAL=141,
+               MATOP_FDCOLORING_SETUP= 142
              } MatOperation;
 PETSC_EXTERN PetscErrorCode MatHasOperation(Mat,MatOperation,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatShellSetOperation(Mat,MatOperation,void(*)(void));
@@ -1642,5 +1667,6 @@ PETSC_EXTERN PetscErrorCode MatNestSetSubMats(Mat,PetscInt,const IS[],PetscInt,c
 PETSC_EXTERN PetscErrorCode MatNestSetSubMat(Mat,PetscInt,PetscInt,Mat);
 
 PETSC_EXTERN PetscErrorCode MatChop(Mat,PetscReal);
+PETSC_EXTERN PetscErrorCode MatComputeBandwidth(Mat,PetscReal,PetscInt*);
 
 #endif

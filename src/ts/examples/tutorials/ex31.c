@@ -112,7 +112,7 @@ PetscErrorCode IJacobian_Hull1972A1(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscErrorCode ierr;
   PetscScalar    *y;
   PetscInt       row = 0,col = 0;
-  PetscReal      value = a - 1.0;
+  PetscScalar    value = a - 1.0;
 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
@@ -166,7 +166,7 @@ PetscErrorCode IJacobian_Hull1972A2(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscErrorCode ierr;
   PetscScalar    *y;
   PetscInt       row = 0,col = 0;
-  PetscReal      value;
+  PetscScalar    value;
 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
@@ -221,7 +221,7 @@ PetscErrorCode IJacobian_Hull1972A3(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscErrorCode ierr;
   PetscScalar    *y;
   PetscInt       row = 0,col = 0;
-  PetscReal      value = a - PetscCosReal(t);
+  PetscScalar    value = a - PetscCosReal(t);
 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
@@ -275,7 +275,7 @@ PetscErrorCode IJacobian_Hull1972A4(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscErrorCode ierr;
   PetscScalar    *y;
   PetscInt       row = 0,col = 0;
-  PetscReal      value;
+  PetscScalar    value;
 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
@@ -331,7 +331,7 @@ PetscErrorCode IJacobian_Hull1972A5(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscErrorCode ierr;
   PetscScalar    *y;
   PetscInt       row = 0,col = 0;
-  PetscReal      value;
+  PetscScalar    value;
 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
@@ -388,7 +388,7 @@ PetscErrorCode IJacobian_Hull1972B1(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscErrorCode ierr;
   PetscScalar    *y;
   PetscInt       row[2] = {0,1};
-  PetscReal      value[2][2];
+  PetscScalar    value[2][2];
 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
@@ -448,7 +448,7 @@ PetscErrorCode IJacobian_Hull1972B2(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscErrorCode ierr;
   PetscScalar    *y;
   PetscInt       row[3] = {0,1,2};
-  PetscReal      value[3][3];
+  PetscScalar    value[3][3];
 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
@@ -509,7 +509,7 @@ PetscErrorCode IJacobian_Hull1972B3(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscErrorCode ierr;
   PetscScalar    *y;
   PetscInt       row[3] = {0,1,2};
-  PetscReal      value[3][3];
+  PetscScalar    value[3][3];
 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
@@ -570,7 +570,7 @@ PetscErrorCode IJacobian_Hull1972B4(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscErrorCode ierr;
   PetscScalar    *y;
   PetscInt       row[3] = {0,1,2};
-  PetscReal      value[3][3],fac,fac2;
+  PetscScalar    value[3][3],fac,fac2;
 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
@@ -639,7 +639,7 @@ PetscErrorCode IJacobian_Hull1972B5(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscErrorCode ierr;
   PetscScalar    *y;
   PetscInt       row[3] = {0,1,2};
-  PetscReal      value[3][3];
+  PetscScalar    value[3][3];
 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
@@ -708,7 +708,7 @@ PetscErrorCode IJacobian_Hull1972C1(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscErrorCode  ierr;
   PetscScalar    *y;
   PetscInt        N,i,col[2];
-  PetscReal       value[2];
+  PetscScalar     value[2];
 
   PetscFunctionBegin;
   ierr = VecGetSize (Y,&N);CHKERRQ(ierr);
@@ -787,7 +787,7 @@ PetscErrorCode IJacobian_Hull1972C2(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscErrorCode  ierr;
   PetscScalar    *y;
   PetscInt        N,i,col[2];
-  PetscReal       value[2];
+  PetscScalar     value[2];
 
   PetscFunctionBegin;
   ierr = VecGetSize (Y,&N);CHKERRQ(ierr);
@@ -984,9 +984,9 @@ PetscErrorCode Initialize(Vec Y, void* s)
     IFunction   = IFunction_Hull1972C34;
     IJacobian   = IJacobian_Hull1972C34;
   }
-  ierr = PetscOptionsGetRealArray(PETSC_NULL,"-yinit",y,&N,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalarArray(PETSC_NULL,"-yinit",y,&N,&flg);CHKERRQ(ierr);
   if ((N != GetSize(s)) && flg) {
-    printf("Error: number of initial values %d does not match problem size %d.\n",N,GetSize(s));
+    printf("Error: number of initial values %d does not match problem size %d.\n",(int)N,(int)GetSize(s));
   }
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1117,7 +1117,7 @@ int main(int argc, char **argv)
   PetscReal       tfinal     = 20.0;          /* Final time for the time-integration                  */
   PetscInt        maxiter    = 100000;        /* Maximum number of time-integration iterations        */
   PetscReal       *error;                     /* Array to store the errors for convergence analysis   */
-  PetscInt        nproc;                      /* No of processors                                     */
+  PetscMPIInt     size;                      /* No of processors                                     */
   PetscBool       flag;                       /* Flag denoting availability of exact solution         */
   PetscInt        r;
 
@@ -1125,8 +1125,8 @@ int main(int argc, char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* Check if running with only 1 proc */
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
-  if (nproc>1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size>1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
   ierr = PetscOptionsString("-problem","Problem specification","<hull1972a1>",
                             ptype,ptype,sizeof(ptype),PETSC_NULL);CHKERRQ(ierr);
@@ -1139,7 +1139,7 @@ int main(int argc, char **argv)
   ierr = PetscOptionsReal("-final_time","Final time for the time-integration","<20.0>",
                           tfinal,&tfinal,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(n_refine*sizeof(PetscReal),&error);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n_refine,&error);CHKERRQ(ierr);
   for (r = 0,dt = dt_initial; r < n_refine; r++) {
     error[r] = 0;
     if (r > 0) dt /= refine_fac;

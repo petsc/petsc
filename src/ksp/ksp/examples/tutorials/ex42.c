@@ -11,7 +11,6 @@ all boundaries are free-slip, i.e. zero normal flow and zero tangential stress \
 
 #include "petscksp.h"
 #include "petscdmda.h"
-#include <petsctime.h>
 
 #define PROFILE_TIMING
 #define ASSEMBLE_LOWER_TRIANGULAR
@@ -845,7 +844,6 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,CellProperties cell_pr
   ierr = DMDAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
 
   ierr = DMDAGetElementCorners(stokes_da,&sex,&sey,&sez,&mx,&my,&mz);CHKERRQ(ierr);
-  PetscTime(&t0);
   for (ek = sez; ek < sez+mz; ek++) {
     for (ej = sey; ej < sey+my; ej++) {
       for (ei = sex; ei < sex+mx; ei++) {
@@ -904,7 +902,6 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,CellProperties cell_pr
 
   ierr = DMDAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
 
-  PetscTime(&t1);
   PetscFunctionReturn(0);
 }
 
@@ -1398,7 +1395,6 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscTime(&t0);CHKERRQ(ierr);
 
   /* create file name */
   PetscObjectGetComm((PetscObject)da,&comm);
@@ -1500,7 +1496,6 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
     vtk_fp = NULL;
   }
 
-  ierr = PetscTime(&t1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1508,7 +1503,7 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
 #define __FUNCT__ "DAViewVTK_write_PieceExtend"
 PetscErrorCode DAViewVTK_write_PieceExtend(FILE *vtk_fp,PetscInt indent_level,DM da,const char local_file_prefix[])
 {
-  PetscMPIInt    nproc,rank;
+  PetscMPIInt    size,rank;
   MPI_Comm       comm;
   const PetscInt *lx,*ly,*lz;
   PetscInt       M,N,P,pM,pN,pP,sum,*olx,*oly,*olz;
@@ -1519,7 +1514,7 @@ PetscErrorCode DAViewVTK_write_PieceExtend(FILE *vtk_fp,PetscInt indent_level,DM
   PetscFunctionBeginUser;
   /* create file name */
   PetscObjectGetComm((PetscObject)da,&comm);
-  MPI_Comm_size(comm,&nproc);
+  MPI_Comm_size(comm,&size);
   MPI_Comm_rank(comm,&rank);
 
   ierr = DMDAGetInfo(da,0,&M,&N,&P,&pM,&pN,&pP,0,&stencil,0,0,0,0);CHKERRQ(ierr);
@@ -1606,7 +1601,7 @@ PetscErrorCode DAViewVTK_write_PieceExtend(FILE *vtk_fp,PetscInt indent_level,DM
 PetscErrorCode DAView_3DVTK_PStructuredGrid(DM da,const char file_prefix[],const char local_file_prefix[])
 {
   MPI_Comm       comm;
-  PetscMPIInt    nproc,rank;
+  PetscMPIInt    size,rank;
   char           vtk_filename[PETSC_MAX_PATH_LEN];
   FILE           *vtk_fp = NULL;
   PetscInt       M,N,P,si,sj,sk,nx,ny,nz;
@@ -1616,7 +1611,7 @@ PetscErrorCode DAView_3DVTK_PStructuredGrid(DM da,const char file_prefix[],const
   PetscFunctionBeginUser;
   /* only master generates this file */
   PetscObjectGetComm((PetscObject)da,&comm);
-  MPI_Comm_size(comm,&nproc);
+  MPI_Comm_size(comm,&size);
   MPI_Comm_rank(comm,&rank);
 
   if (rank != 0) PetscFunctionReturn(0);

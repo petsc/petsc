@@ -19,13 +19,12 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering(Mat C,Mat A,c
 
   PetscFunctionBegin;
   /* initialization */
-  ierr = PetscMalloc(25*mbs*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
-  ierr = PetscMemzero(rtmp,25*mbs*sizeof(MatScalar));CHKERRQ(ierr);
-  ierr = PetscMalloc2(mbs,PetscInt,&il,mbs,PetscInt,&jl);CHKERRQ(ierr);
+  ierr = PetscCalloc1(25*mbs,&rtmp);CHKERRQ(ierr);
+  ierr = PetscMalloc2(mbs,&il,mbs,&jl);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     jl[i] = mbs; il[0] = 0;
   }
-  ierr = PetscMalloc2(25,MatScalar,&dk,25,MatScalar,&uik);CHKERRQ(ierr);
+  ierr = PetscMalloc2(25,&dk,25,&uik);CHKERRQ(ierr);
   ai   = a->i; aj = a->j; aa = a->a;
 
   /* for each row k */

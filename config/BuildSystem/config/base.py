@@ -557,7 +557,7 @@ class Configure(script.Script):
       if os.path.isfile(self.linkerObj):os.remove(self.linkerObj)
       pdbfile = os.path.splitext(self.linkerObj)[0]+'.pdb'
       if os.path.isfile(pdbfile): os.remove(pdbfile)
-    return (out+err, ret)
+    return (out+'\n'+err, ret)
 
   def checkLink(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None, shared = 0, linkLanguage=None, examineOutput=lambda ret,out,err:None):
     (output, returnCode) = self.outputLink(includes, body, cleanup, codeBegin, codeEnd, shared, linkLanguage, examineOutput)

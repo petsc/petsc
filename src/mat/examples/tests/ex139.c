@@ -62,7 +62,7 @@ int main(int argc,char *argv[])
   ierr = MatGetOwnershipRange(J,&rstart,&rend);CHKERRQ(ierr);
 
   nlocblocks = (rend-rstart)/top_bs + 2;
-  ierr       = PetscMalloc(nlocblocks*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr       = PetscMalloc1(nlocblocks,&idx);CHKERRQ(ierr);
   for (i=0; i<nlocblocks; i++) {
     idx[i] = (rstart/top_bs + i - 1 + m/top_bs) % (m/top_bs);
   }
@@ -79,7 +79,7 @@ int main(int argc,char *argv[])
   /* Create index sets for local submatrix */
   nrowblocks = (rend-rstart)/row_bs;
   ncolblocks = (rend-rstart)/col_bs;
-  ierr       = PetscMalloc2(nrowblocks,PetscInt,&ridx,ncolblocks,PetscInt,&cidx);CHKERRQ(ierr);
+  ierr       = PetscMalloc2(nrowblocks,&ridx,ncolblocks,&cidx);CHKERRQ(ierr);
   for (i=0; i<nrowblocks; i++) ridx[i] = i + ((i > nrowblocks/2) ^ !rstart);
   for (i=0; i<ncolblocks; i++) cidx[i] = i + ((i < ncolblocks/2) ^ !!rstart);
   ierr = ISCreateBlock(PETSC_COMM_SELF,row_bs,nrowblocks,ridx,PETSC_COPY_VALUES,&is0);CHKERRQ(ierr);
@@ -97,7 +97,7 @@ int main(int argc,char *argv[])
 
   ierr = MatZeroEntries(J);CHKERRQ(ierr);
 
-  ierr = PetscMalloc3(row_bs,PetscInt,&irow,col_bs,PetscInt,&icol,row_bs*col_bs,PetscScalar,&vals);CHKERRQ(ierr);
+  ierr = PetscMalloc3(row_bs,&irow,col_bs,&icol,row_bs*col_bs,&vals);CHKERRQ(ierr);
   for (i=0; i<nrowblocks; i++) {
     for (j=0; j<ncolblocks; j++) {
       for (k=0; k<row_bs; k++) {

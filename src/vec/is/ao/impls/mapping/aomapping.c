@@ -265,14 +265,14 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   ierr = AOInitializePackage();CHKERRQ(ierr);
 
   ierr     = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_CLASSID, "AO", "Application Ordering", "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
-  ierr     = PetscNewLog(ao, AO_Mapping, &aomap);CHKERRQ(ierr);
+  ierr     = PetscNewLog(ao,&aomap);CHKERRQ(ierr);
   ierr     = PetscMemcpy(ao->ops, &AOps, sizeof(AOps));CHKERRQ(ierr);
   ao->data = (void*) aomap;
 
   /* transmit all lengths to all processors */
   ierr  = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr  = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr  = PetscMalloc2(size,PetscMPIInt, &lens,size,PetscMPIInt,&disp);CHKERRQ(ierr);
+  ierr  = PetscMalloc2(size, &lens,size,&disp);CHKERRQ(ierr);
   nnapp = napp;
   ierr  = MPI_Allgather(&nnapp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
   N     = 0;
@@ -287,20 +287,20 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   /* If mypetsc is 0 then use "natural" numbering */
   if (!mypetsc) {
     start = disp[rank];
-    ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
+    ierr  = PetscMalloc1((napp+1), &petsc);CHKERRQ(ierr);
     for (i = 0; i < napp; i++) petsc[i] = start + i;
   } else {
     petsc = (PetscInt*)mypetsc;
   }
 
   /* get all indices on all processors */
-  ierr = PetscMalloc4(N,PetscInt, &allapp,N,PetscInt,&appPerm,N,PetscInt,&allpetsc,N,PetscInt,&petscPerm);CHKERRQ(ierr);
+  ierr = PetscMalloc4(N, &allapp,N,&appPerm,N,&allpetsc,N,&petscPerm);CHKERRQ(ierr);
   ierr = MPI_Allgatherv((void*)myapp, napp, MPIU_INT, allapp,   lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
   ierr = MPI_Allgatherv((void*)petsc, napp, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
   ierr = PetscFree2(lens,disp);CHKERRQ(ierr);
 
   /* generate a list of application and PETSc node numbers */
-  ierr = PetscMalloc4(N,PetscInt, &aomap->app,N,PetscInt,&aomap->appPerm,N,PetscInt,&aomap->petsc,N,PetscInt,&aomap->petscPerm);CHKERRQ(ierr);
+  ierr = PetscMalloc4(N, &aomap->app,N,&aomap->appPerm,N,&aomap->petsc,N,&aomap->petscPerm);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)ao, 4*N * sizeof(PetscInt));CHKERRQ(ierr);
   for (i = 0; i < N; i++) {
     appPerm[i]   = i;

@@ -200,7 +200,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
 
   PetscFunctionBegin;
   ierr           = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr           = PetscNewLog(ksp,KSP_MINRES,&minres);CHKERRQ(ierr);
+  ierr           = PetscNewLog(ksp,&minres);CHKERRQ(ierr);
   minres->haptol = 1.e-18;
   ksp->data      = (void*)minres;
 

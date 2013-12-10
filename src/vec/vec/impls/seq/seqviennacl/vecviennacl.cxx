@@ -70,7 +70,7 @@ PetscErrorCode VecViennaCLAllocateCheckHost(Vec v)
   s    = (Vec_Seq*)v->data;
   ierr = VecViennaCLAllocateCheck(v);CHKERRQ(ierr);
   if (s->array == 0) {
-    ierr               = PetscMalloc(n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
+    ierr               = PetscMalloc1(n,&array);CHKERRQ(ierr);
     ierr               = PetscLogObjectMemory((PetscObject)v,n*sizeof(PetscScalar));CHKERRQ(ierr);
     s->array           = array;
     s->array_allocated = array;
@@ -207,7 +207,7 @@ static PetscErrorCode VecDestroy_SeqViennaCL_Private(Vec v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectAMSViewOff(v);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsViewOff(v);CHKERRQ(ierr);
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)v,"Length=%D",v->map->n);
 #endif

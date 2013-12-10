@@ -50,19 +50,14 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
   rs    = (max_k + 2);
   cc    = (max_k + 1);
 
-  ierr = PetscMalloc5(hh,PetscScalar,&gmres->hh_origin,hes,PetscScalar,&gmres->hes_origin,rs,PetscScalar,&gmres->rs_origin,cc,PetscScalar,&gmres->cc_origin,cc,PetscScalar,&gmres->ss_origin);CHKERRQ(ierr);
-  ierr = PetscMemzero(gmres->hh_origin,hh*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(gmres->hes_origin,hes*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(gmres->rs_origin,rs*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(gmres->cc_origin,cc*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(gmres->ss_origin,cc*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscCalloc5(hh,&gmres->hh_origin,hes,&gmres->hes_origin,rs,&gmres->rs_origin,cc,&gmres->cc_origin,cc,&gmres->ss_origin);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)ksp,(hh + hes + rs + 2*cc)*sizeof(PetscScalar));CHKERRQ(ierr);
 
   if (ksp->calc_sings) {
     /* Allocate workspace to hold Hessenberg matrix needed by lapack */
-    ierr = PetscMalloc((max_k + 3)*(max_k + 9)*sizeof(PetscScalar),&gmres->Rsvd);CHKERRQ(ierr);
+    ierr = PetscMalloc1((max_k + 3)*(max_k + 9),&gmres->Rsvd);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)ksp,(max_k + 3)*(max_k + 9)*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = PetscMalloc(6*(max_k+2)*sizeof(PetscReal),&gmres->Dsvd);CHKERRQ(ierr);
+    ierr = PetscMalloc1(6*(max_k+2),&gmres->Dsvd);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)ksp,6*(max_k+2)*sizeof(PetscReal));CHKERRQ(ierr);
   }
 
@@ -70,9 +65,9 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
    4 + max_k + 1 (since we need it+1 vectors, and it <= max_k) */
   gmres->vecs_allocated = VEC_OFFSET + 2 + max_k + gmres->nextra_vecs;
 
-  ierr = PetscMalloc((gmres->vecs_allocated)*sizeof(Vec),&gmres->vecs);CHKERRQ(ierr);
-  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(Vec*),&gmres->user_work);CHKERRQ(ierr);
-  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(PetscInt),&gmres->mwork_alloc);CHKERRQ(ierr);
+  ierr = PetscMalloc1((gmres->vecs_allocated),&gmres->vecs);CHKERRQ(ierr);
+  ierr = PetscMalloc1((VEC_OFFSET+2+max_k),&gmres->user_work);CHKERRQ(ierr);
+  ierr = PetscMalloc1((VEC_OFFSET+2+max_k),&gmres->mwork_alloc);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)ksp,(VEC_OFFSET+2+max_k)*(sizeof(Vec*)+sizeof(PetscInt)) + gmres->vecs_allocated*sizeof(Vec));CHKERRQ(ierr);
 
   if (gmres->q_preallocate) {
@@ -134,9 +129,9 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
   *GRS(0) = res_norm;
 
   /* check for the convergence */
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->rnorm = res;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
   gmres->it  = (it - 1);
   ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
   ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
@@ -229,9 +224,9 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
   PetscFunctionBegin;
   if (ksp->calc_sings && !gmres->Rsvd) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
 
-  ierr     = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr     = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its = 0;
-  ierr     = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr     = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
 
   itcount     = 0;
   ksp->reason = KSP_CONVERGED_ITERATING;
@@ -470,7 +465,7 @@ PetscErrorCode KSPBuildSolution_GMRES(KSP ksp,Vec ptr,Vec *result)
   }
   if (!gmres->nrs) {
     /* allocate the work area */
-    ierr = PetscMalloc(gmres->max_k*sizeof(PetscScalar),&gmres->nrs);CHKERRQ(ierr);
+    ierr = PetscMalloc1(gmres->max_k,&gmres->nrs);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)ksp,gmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
@@ -899,7 +894,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr      = PetscNewLog(ksp,KSP_GMRES,&gmres);CHKERRQ(ierr);
+  ierr      = PetscNewLog(ksp,&gmres);CHKERRQ(ierr);
   ksp->data = (void*)gmres;
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);

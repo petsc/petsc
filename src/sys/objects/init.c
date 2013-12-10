@@ -261,6 +261,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flg4 = PETSC_FALSE,flag;
   PetscErrorCode ierr;
   PetscReal      si,logthreshold;
+  PetscInt       intensity;
   int            i;
   PetscMPIInt    rank;
   char           version[256];
@@ -382,6 +383,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-fp_trap",&flg1,NULL);CHKERRQ(ierr);
   if (flg1) {ierr = PetscSetFPTrap(PETSC_FP_TRAP_ON);CHKERRQ(ierr);}
+  ierr = PetscOptionsGetInt(NULL,"-check_pointer_intensity",&intensity,&flag);CHKERRQ(ierr);
+  if (flag) {ierr = PetscCheckPointerSetIntensity(intensity);CHKERRQ(ierr);}
 
   /*
       Setup debugger information
@@ -426,7 +429,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       }
     }
     /* check if this processor node should be in debugger */
-    ierr  = PetscMalloc(size*sizeof(PetscInt),&nodes);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(size,&nodes);CHKERRQ(ierr);
     lsize = size;
     ierr  = PetscOptionsGetIntArray(NULL,"-debugger_nodes",nodes,&lsize,&flag);CHKERRQ(ierr);
     if (flag) {
@@ -505,7 +508,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   }
 #endif
 
-  ierr = PetscOptionsGetBool(NULL,"-options_gui",&PetscOptionsPublish,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-saws_options",&PetscOptionsPublish,NULL);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscOptionsHasName(NULL,"-cuda_show_devices",&flg1);CHKERRQ(ierr);
@@ -598,7 +601,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = (*PetscHelpPrintf)(comm," -debugger_pause [m] : delay (in seconds) to attach debugger\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -stop_for_debugger : prints message on how to attach debugger manually\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"                      waits the delay for you to attach\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -display display: Location where graphics and debuggers are displayed\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -display display: Location where X window graphics and debuggers are displayed\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -no_signal_handler: do not trap error signals\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -mpi_return_on_error: MPI returns error code, rather than abort on internal error\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -fp_trap: stop on floating point exceptions\n");CHKERRQ(ierr);
@@ -639,14 +642,6 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   if (flg1) {
     ierr = PetscPOpenSetMachine(machine);CHKERRQ(ierr);
   }
-  }
-#endif
-
-#if defined(PETSC_USE_SERVER)
-  flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-server",&flg1,NULL);CHKERRQ(ierr);
-  if (flg1) {
-    ierr = PetscPOpen(PETSC_COMM_WORLD,NULL,"${PETSC_DIR}/${PETSC_ARCH}/bin/petscwebserver","r",NULL);CHKERRQ(ierr);
   }
 #endif
 

@@ -37,7 +37,7 @@ int main(int argc,char **argv)
   ierr = ISGetIndices(isrows,&rows);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
   ierr = ISGetIndices(iscols,&cols);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrows*ncols*sizeof(*v),&v);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrows*ncols,&v);CHKERRQ(ierr);
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
       ierr         = PetscRandomGetValue(r,&rval);CHKERRQ(ierr);

@@ -501,7 +501,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     if (!nits) {
       ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Zero iterations in solver, cannot approximate any eigenvalues\n");CHKERRQ(ierr);
     } else {
-      ierr = PetscMalloc2(n,PetscReal,&r,n,PetscReal,&c);CHKERRQ(ierr);
+      ierr = PetscMalloc2(n,&r,n,&c);CHKERRQ(ierr);
       ierr = KSPComputeEigenvalues(ksp,n,r,c,&neig);CHKERRQ(ierr);
       if (flag1) {
         ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Iteratively computed eigenvalues\n");CHKERRQ(ierr);
@@ -561,7 +561,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     PetscInt  n,i;
     PetscReal *r,*c;
     ierr = VecGetSize(ksp->vec_sol,&n);CHKERRQ(ierr);
-    ierr = PetscMalloc2(n,PetscReal,&r,n,PetscReal,&c);CHKERRQ(ierr);
+    ierr = PetscMalloc2(n,&r,n,&c);CHKERRQ(ierr);
     ierr = KSPComputeEigenvaluesExplicitly(ksp,n,r,c);CHKERRQ(ierr);
     if (flag1) {
       ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Explicitly computed eigenvalues\n");CHKERRQ(ierr);
@@ -636,7 +636,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = VecCopy(x,b);CHKERRQ(ierr);
     ierr = VecDestroy(&x);CHKERRQ(ierr);
   }
-  ierr = PetscObjectAMSBlock((PetscObject)ksp);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsBlock((PetscObject)ksp);CHKERRQ(ierr);
   if (ksp->errorifnotconverged && ksp->reason < 0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged");
   PetscFunctionReturn(0);
 }
@@ -771,7 +771,7 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
   PetscValidHeaderSpecific((*ksp),KSP_CLASSID,1);
   if (--((PetscObject)(*ksp))->refct > 0) {*ksp = 0; PetscFunctionReturn(0);}
 
-  ierr = PetscObjectAMSViewOff((PetscObject)*ksp);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsViewOff((PetscObject)*ksp);CHKERRQ(ierr);
   /*
    Avoid a cascading call to PCReset(ksp->pc) from the following call:
    PCReset() shouldn't be called from KSPDestroy() as it is unprotected by pc's
@@ -1652,7 +1652,7 @@ PetscErrorCode  KSPSetResidualHistory(KSP ksp,PetscReal a[],PetscInt na,PetscBoo
   } else {
     if (na != PETSC_DECIDE && na != PETSC_DEFAULT) ksp->res_hist_max = na;
     else                                           ksp->res_hist_max = 10000; /* like default ksp->max_it */
-    ierr = PetscMalloc(ksp->res_hist_max*sizeof(PetscReal),&ksp->res_hist_alloc);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ksp->res_hist_max,&ksp->res_hist_alloc);CHKERRQ(ierr);
 
     ksp->res_hist = ksp->res_hist_alloc;
   }

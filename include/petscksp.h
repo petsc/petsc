@@ -248,9 +248,9 @@ PETSC_EXTERN PetscErrorCode KSPMonitorTrueResidualNorm(KSP,PetscInt,PetscReal,vo
 PETSC_EXTERN PetscErrorCode KSPMonitorTrueResidualMaxNorm(KSP,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode KSPMonitorDefaultShort(KSP,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode KSPMonitorSolution(KSP,PetscInt,PetscReal,void *);
-PETSC_EXTERN PetscErrorCode KSPMonitorAMS(KSP,PetscInt,PetscReal,void*);
-PETSC_EXTERN PetscErrorCode KSPMonitorAMSCreate(KSP,const char*,void**);
-PETSC_EXTERN PetscErrorCode KSPMonitorAMSDestroy(void**);
+PETSC_EXTERN PetscErrorCode KSPMonitorSAWs(KSP,PetscInt,PetscReal,void*);
+PETSC_EXTERN PetscErrorCode KSPMonitorSAWsCreate(KSP,void**);
+PETSC_EXTERN PetscErrorCode KSPMonitorSAWsDestroy(void**);
 PETSC_EXTERN PetscErrorCode KSPGMRESMonitorKrylov(KSP,PetscInt,PetscReal,void *);
 
 PETSC_EXTERN PetscErrorCode KSPUnwindPreconditioner(KSP,Vec,Vec);

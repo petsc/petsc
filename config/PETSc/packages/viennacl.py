@@ -8,7 +8,6 @@ class Configure(PETSc.package.NewPackage):
     self.downloadfilename = str('ViennaCL-1.4.1')
     self.includes        = ['viennacl/forwards.h']
     self.cxx             = 1
-    self.archIndependent = 1
     self.worksonWindows  = 1
     self.downloadonWindows = 1
     self.complex          = 0

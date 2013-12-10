@@ -540,7 +540,7 @@ PetscErrorCode  VecDestroy(Vec *v)
   PetscValidHeaderSpecific((*v),VEC_CLASSID,1);
   if (--((PetscObject)(*v))->refct > 0) {*v = 0; PetscFunctionReturn(0);}
 
-  ierr = PetscObjectAMSViewOff((PetscObject)*v);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsViewOff((PetscObject)*v);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&(*v)->viewonassembly);CHKERRQ(ierr);
   /* destroy the internal part */
   if ((*v)->ops->destroy) {
@@ -936,7 +936,7 @@ PetscErrorCode VecDuplicateVecs_Default(Vec w,PetscInt m,Vec *V[])
   PetscValidHeaderSpecific(w,VEC_CLASSID,1);
   PetscValidPointer(V,3);
   if (m <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %D",m);
-  ierr = PetscMalloc(m*sizeof(Vec*),V);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,V);CHKERRQ(ierr);
   for (i=0; i<m; i++) {ierr = VecDuplicate(w,*V+i);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -1347,7 +1347,7 @@ static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
   }
 
   if (!VecRegisterAllCalled) {ierr = VecRegisterAll();CHKERRQ(ierr);}
-  ierr = PetscOptionsList("-vec_type","Vector type","VecSetType",VecList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-vec_type","Vector type","VecSetType",VecList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = VecSetType(vec, typeName);CHKERRQ(ierr);
   } else {
@@ -1884,8 +1884,7 @@ PetscErrorCode PetscOptionsVec(const char key[],const char text[],const char man
   PetscFunctionBegin;
   ierr = VecGetOwnershipRange(v,&rstart,&rend);CHKERRQ(ierr);
   ierr = VecGetSize(v,&N);CHKERRQ(ierr);
-  ierr = PetscMalloc(N*sizeof(PetscReal),&xreal);CHKERRQ(ierr);
-  ierr = PetscMemzero(xreal,N*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscCalloc1(N,&xreal);CHKERRQ(ierr);
   ierr = PetscOptionsRealArray(key,text,man,xreal,&N,&iset);CHKERRQ(ierr);
   if (iset) {
     ierr = VecGetArray(v,&xx);CHKERRQ(ierr);

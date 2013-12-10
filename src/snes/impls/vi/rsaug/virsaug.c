@@ -62,7 +62,7 @@ PetscErrorCode SNESVIComputeInactiveSetIS(Vec upper,Vec lower,Vec X,Vec F,IS *in
     if (((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + 1.e-8 || (PetscRealPart(f[i]) < 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - 1.e-8) || PetscRealPart(f[i]) > 0.0))) nloc_isact++;
   }
 
-  ierr = PetscMalloc(nloc_isact*sizeof(PetscInt),&idx_act);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nloc_isact,&idx_act);CHKERRQ(ierr);
 
   /* Set inactive set indices */
   for (i=0; i < nlocal; i++) {
@@ -209,7 +209,7 @@ PetscErrorCode  DMCoarsen_SNESVIRSAUG(DM dm1,MPI_Comm comm,DM *dm2)
   for (k=0; k<n; k++) {
     if (marked[k] != 0.0) cnt++;
   }
-  ierr = PetscMalloc(cnt*sizeof(PetscInt),&coarseindex);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cnt,&coarseindex);CHKERRQ(ierr);
   cnt  = 0;
   for (k=0; k<n; k++) {
     if (marked[k] != 0.0) coarseindex[cnt++] = k + rstart;
@@ -271,7 +271,7 @@ PetscErrorCode  DMSetVIRSAUG(DM dm,IS inactive)
   if (!isnes) {
     ierr = PetscContainerCreate(PetscObjectComm((PetscObject)dm),&isnes);CHKERRQ(ierr);
     ierr = PetscContainerSetUserDestroy(isnes,(PetscErrorCode (*)(void*))DMDestroy_SNESVIRSAUG);CHKERRQ(ierr);
-    ierr = PetscNew(DM_SNESVI,&dmsnesvi);CHKERRQ(ierr);
+    ierr = PetscNew(&dmsnesvi);CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(isnes,(void*)dmsnesvi);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)dm,"VI",(PetscObject)isnes);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&isnes);CHKERRQ(ierr);
@@ -805,10 +805,10 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
   G      = snes->work[1];
   W      = snes->work[2];
 
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter = 0;
   snes->norm = 0.0;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
 
   ierr = SNESVIProjectOntoBounds(snes,X);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,X,vi->phi);CHKERRQ(ierr);
@@ -824,9 +824,9 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(vi->merit)) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
 
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = vi->phinorm;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   ierr       = SNESLogConvergenceHistory(snes,vi->phinorm,0);CHKERRQ(ierr);
   ierr       = SNESMonitor(snes,0,vi->phinorm);CHKERRQ(ierr);
 
@@ -906,10 +906,10 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
     ierr        = VecCopy(G,vi->phi);CHKERRQ(ierr);
     ierr        = VecCopy(W,X);CHKERRQ(ierr);
     /* Monitor convergence */
-    ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
     snes->iter = i+1;
     snes->norm = vi->phinorm;
-    ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,lits);CHKERRQ(ierr);
     ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence, xnorm = || X || */
@@ -961,7 +961,7 @@ PetscErrorCode SNESVIGetActiveSetIS(SNES snes,Vec X,Vec F,IS *ISact)
     } else if (!(PetscRealPart(x[i]) > PetscRealPart(xl[i]) + 1.e-8  && PetscRealPart(x[i]) < PetscRealPart(xu[i]) - 1.e-8)) nloc_isact++;
   }
 
-  ierr = PetscMalloc(nloc_isact*sizeof(PetscInt),&idx_act);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nloc_isact,&idx_act);CHKERRQ(ierr);
 
   /* Set active set indices */
   for (i=0; i < nlocal; i++) {
@@ -1111,10 +1111,10 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
   G      = snes->work[1];
   W      = snes->work[2];
 
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter = 0;
   snes->norm = 0.0;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
 
   ierr = SNESVIProjectOntoBounds(snes,X);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
@@ -1127,9 +1127,9 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
 
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   ierr       = SNESLogConvergenceHistory(snes,fnorm,0);CHKERRQ(ierr);
   ierr       = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
 
@@ -1195,7 +1195,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
         ierr = ISGetLocalSize(keptrows,&cnt);CHKERRQ(ierr);
         ierr = ISGetIndices(keptrows,&krows);CHKERRQ(ierr);
         ierr = ISGetIndices(IS_inact,&inact);CHKERRQ(ierr);
-        ierr = PetscMalloc(cnt*sizeof(PetscInt),&nrows);CHKERRQ(ierr);
+        ierr = PetscMalloc1(cnt,&nrows);CHKERRQ(ierr);
         for (k=0; k<cnt; k++) nrows[k] = inact[krows[k]-rstart];
         ierr = ISRestoreIndices(keptrows,&krows);CHKERRQ(ierr);
         ierr = ISRestoreIndices(IS_inact,&inact);CHKERRQ(ierr);
@@ -1361,10 +1361,10 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     ierr  = VecCopy(G,F);CHKERRQ(ierr);
     ierr  = VecCopy(W,X);CHKERRQ(ierr);
     /* Monitor convergence */
-    ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
     snes->iter = i+1;
     snes->norm = fnorm;
-    ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,lits);CHKERRQ(ierr);
     ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence, xnorm = || X || */
@@ -1488,10 +1488,10 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
   G      = snes->work[1];
   W      = snes->work[2];
 
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter = 0;
   snes->norm = 0.0;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
 
   ierr = SNESVIProjectOntoBounds(snes,X);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
@@ -1504,9 +1504,9 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
 
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   ierr       = SNESLogConvergenceHistory(snes,fnorm,0);CHKERRQ(ierr);
   ierr       = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
 
@@ -1549,12 +1549,12 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
         /* User called checkredundancy function but didn't create IS_redact because
            there were no redundant active set variables */
         /* Copy over all active set indices to the list */
-        ierr = PetscMalloc(nis_act*sizeof(PetscInt),&idx_actkept);CHKERRQ(ierr);
+        ierr = PetscMalloc1(nis_act,&idx_actkept);CHKERRQ(ierr);
         for (k=0; k < nis_act; k++) idx_actkept[k] = idx_act[k];
         nkept = nis_act;
       } else {
         ierr = ISGetLocalSize(IS_redact,&nis_redact);CHKERRQ(ierr);
-        ierr = PetscMalloc((nis_act-nis_redact)*sizeof(PetscInt),&idx_actkept);CHKERRQ(ierr);
+        ierr = PetscMalloc1((nis_act-nis_redact),&idx_actkept);CHKERRQ(ierr);
 
         /* Create reduced active set list */
         ierr = ISGetIndices(IS_act,&idx_act);CHKERRQ(ierr);
@@ -1598,7 +1598,7 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
         PetscInt          row,col[2];
         PetscInt          *d_nnz;
         value[0] = 1.0; value[1] = 0.0;
-        ierr     = PetscMalloc((X->map->n+nkept)*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
+        ierr     = PetscMalloc1((X->map->n+nkept),&d_nnz);CHKERRQ(ierr);
         ierr     = PetscMemzero(d_nnz,(X->map->n+nkept)*sizeof(PetscInt));CHKERRQ(ierr);
         for (row=0; row<snes->jacobian->rmap->n; row++) {
           ierr        = MatGetRow(snes->jacobian,row,&ncols,NULL,NULL);CHKERRQ(ierr);
@@ -1748,10 +1748,10 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
     ierr  = VecCopy(G,F);CHKERRQ(ierr);
     ierr  = VecCopy(W,X);CHKERRQ(ierr);
     /* Monitor convergence */
-    ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
     snes->iter = i+1;
     snes->norm = fnorm;
-    ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,lits);CHKERRQ(ierr);
     ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence, xnorm = || X || */
@@ -1819,7 +1819,7 @@ PetscErrorCode SNESSetUp_VIRSAUG(SNES snes)
 
     ierr = VecGetOwnershipRange(snes->vec_sol,&rstart,&rend);CHKERRQ(ierr);
     ierr = VecGetLocalSize(snes->vec_sol,&n);CHKERRQ(ierr);
-    ierr = PetscMalloc(n*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&indices);CHKERRQ(ierr);
     for (i=0; i < n; i++) indices[i] = rstart + i;
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject)snes),n,indices,PETSC_OWN_POINTER,&vi->IS_inact_prev);
   }
@@ -2513,7 +2513,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VIRSAUG(SNES snes)
   snes->usesksp = PETSC_TRUE;
   snes->usespc  = PETSC_FALSE;
 
-  ierr                = PetscNewLog(snes,SNES_VIRSAUG,&vi);CHKERRQ(ierr);
+  ierr                = PetscNewLog(snes,&vi);CHKERRQ(ierr);
   snes->data          = (void*)vi;
   snes->ls_alpha      = 1.e-4;
   snes->maxstep       = 1.e8;

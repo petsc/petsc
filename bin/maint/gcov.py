@@ -89,18 +89,17 @@ def make_tarball(dirname):
     print """Tarball created in %s"""%(PETSC_DIR)
     return
 
-def make_htmlpage(LOC,tarballs):
+def make_htmlpage(gcov_dir,LOC,tarballs):
 
     # Create index_gcov webpages using information processed from
     # running gcov
     # This is done in four stages
-    # Stage 1: Extract tar balls,merge files and dump .lines files in /tmp/gcov
+    # Stage 1: Extract tar balls,merge files and dump .lines files in gcov_dir
     # Stage 2: Process .lines files
     # Stage 3: Create marked HTML source code files
     # Stage 4: Create HTML pages having statistics and hyperlinks to HTML source code           files (files are sorted by filename and percentage code tested)
     #  Stores the main HTML pages in LOC if LOC is defined via command line argument o-wise it uses the default PETSC_DIR
 
-    gcov_dir = os.path.join('/tmp','gcov')
     if os.path.isdir(gcov_dir):
         shutil.rmtree(gcov_dir)
     os.makedirs(gcov_dir)
@@ -406,7 +405,7 @@ def main():
             LOC = PETSC_DIR
             tarballs = sys.argv[2:]
 
-        make_htmlpage(LOC,tarballs)
+        make_htmlpage(gcov_dir,LOC,tarballs)
     else:
         print "No or invalid option specified:"
         print "Usage: To run gcov and create tarball"

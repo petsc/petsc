@@ -2,6 +2,7 @@
 
 configure_options = [
   '--with-threadcomm=1',
+  '--with-serialize-functions=1',
   '--download-mpich=1',
   '--download-f-blas-lapack=1',
   '--download-hypre=1',

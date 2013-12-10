@@ -104,10 +104,7 @@ cmake: chk_makej
 gnumake: chk_makej
 	@echo "Building PETSc using GNU Make with ${MAKE_NP} build threads"
 	@echo "=========================================="
-	@cd ${PETSC_DIR} && ${OMAKE} -f gmakefile -j ${MAKE_NP} V=${V}
-	@if [ "${BUILDSHAREDLIB}" = "yes" -a "${DSYMUTIL}" != "true" ]; then \
-        echo "Running ${DSYMUTIL} on ${SHLIBS}";\
-        for LIBNAME in ${SHLIBS}; do ${DSYMUTIL} ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; done; fi
+	@cd ${PETSC_DIR} && ${OMAKE_PRINTDIR} -f gmakefile -j ${MAKE_NP} V=${V}
 	@echo "========================================="
 
 # Does nothing; needed for some rules that require actions.
@@ -257,7 +254,7 @@ tree: ${ACTION}
             fi; \
             (cd $$dir ; \
             if [ ${NO_PRINT_DIR}foo = foo ] ; then echo ${ACTION} in: `pwd`; fi; \
-            ${OMAKE_NOPRINTDIR} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH} BASE_DIR=${BASE_DIR} NO_PRINT_DIR=${NO_PRINT_DIR});\
+            ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH} BASE_DIR=${BASE_DIR} NO_PRINT_DIR=${NO_PRINT_DIR});\
 	  done
 
 
@@ -400,7 +397,7 @@ getautoconfargs:
         if [ $${mypwd} != $${newpwd} ]; then \
 	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chk_petscdir;\
         fi
-	${PETSC_COMPILE_SINGLE} ${PWD}/$<
+	${PETSC_COMPILE_SINGLE} `pwd`/$<
 	@if [ "${PETSCPORTABLE}" != "" ]; then \
           ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $*.o ; \
         fi
@@ -408,16 +405,16 @@ getautoconfargs:
 #
 #   Compiles CUDA code
 .cu.o:
-	${PETSC_CUCOMPILE_SINGLE} ${PWD}/$<
+	${PETSC_CUCOMPILE_SINGLE} `pwd`/$<
 
 .cu.a:
-	${PETSC_CUCOMPILE_SINGLE} ${PWD}/$<
+	${PETSC_CUCOMPILE_SINGLE} `pwd`/$<
 	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
 	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
 	-${RM} $*.o $*.lo
 
 .c.a .cpp.a .cc.a .C.a:
-	-${PETSC_COMPILE_SINGLE} ${PWD}/$<
+	-${PETSC_COMPILE_SINGLE} `pwd`/$<
 	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
 	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
 	-${RM} $*.o $*.lo

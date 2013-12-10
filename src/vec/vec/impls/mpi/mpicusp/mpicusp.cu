@@ -99,7 +99,7 @@ PetscErrorCode VecMDot_MPICUSP(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 
   PetscFunctionBegin;
   if (nv > 128) {
-    ierr = PetscMalloc(nv*sizeof(PetscScalar),&work);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nv,&work);CHKERRQ(ierr);
   }
   ierr = VecMDot_SeqCUSP(xin,nv,y,work);CHKERRQ(ierr);
   ierr = MPI_Allreduce(work,z,nv,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);

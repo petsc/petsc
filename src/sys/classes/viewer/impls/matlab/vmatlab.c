@@ -184,7 +184,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)
   PetscViewer_Matlab *e;
 
   PetscFunctionBegin;
-  ierr         = PetscNewLog(viewer,PetscViewer_Matlab,&e);CHKERRQ(ierr);
+  ierr         = PetscNewLog(viewer,&e);CHKERRQ(ierr);
   ierr         = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&e->rank);CHKERRQ(ierr);
   e->btype     = (PetscFileMode)-1;
   viewer->data = (void*) e;
