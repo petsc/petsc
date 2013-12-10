@@ -261,11 +261,15 @@ int main(int argc,char **args)
   if (use_nearnullspace) {
     MatNullSpace matnull;
     Vec vec_coords;
-    ierr = VecCreateSeqWithArray(MPI_COMM_SELF,3,m,coords,&vec_coords);CHKERRQ(ierr);
+    PetscScalar *sCoord;
+    ierr = PetscMalloc1(m, &sCoord);CHKERRQ(ierr);
+    for (i=0; i<m; i++) sCoord[i] = coords[i];
+    ierr = VecCreateSeqWithArray(MPI_COMM_SELF,3,m,sCoord,&vec_coords);CHKERRQ(ierr);
     ierr = MatNullSpaceCreateRigidBody(vec_coords,&matnull);CHKERRQ(ierr);
     ierr = MatSetNearNullSpace(Amat,matnull);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&matnull);CHKERRQ(ierr);
     ierr = VecDestroy(&vec_coords);CHKERRQ(ierr);
+    ierr = PetscFree(sCoord);CHKERRQ(ierr);
   } else {
     ierr = PCSetCoordinates(pc, 3, m/3, coords);CHKERRQ(ierr);
   }
