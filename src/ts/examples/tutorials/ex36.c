@@ -1,0 +1,207 @@
+
+static char help[] = "Transistor amplifier.\n";
+
+/*F
+  M y=f(t,y)
+
+  Useful options: -ts_monitor_lg_solution -ts_monitor_lg_timestep -lg_indicate_data_points 0
+F*/
+
+/*
+   Include "petscts.h" so that we can use TS solvers.  Note that this
+   file automatically includes:
+     petscsys.h       - base PETSc routines   petscvec.h - vectors
+     petscmat.h - matrices
+     petscis.h     - index sets            petscksp.h - Krylov subspace methods
+     petscviewer.h - viewers               petscpc.h  - preconditioners
+     petscksp.h   - linear solvers
+*/
+#include <petscts.h>
+
+FILE *gfilepointer_data,*gfilepointer_info;
+
+/* Defines the source  */
+/*#undef __FUNCT__
+#define __FUNCT__ "Ue"
+PetscErrorCode Ue(PetscScalar t,PetscScalar *U)
+{
+  PetscFunctionBegin;
+  U=0.4*sin(200*pi*t);
+  PetscFunctionReturn(0);
+  }*/
+
+
+#undef __FUNCT__
+#define __FUNCT__ "IFunction"
+/*
+     Defines the DAE passed to the time solver
+*/
+static PetscErrorCode IFunction(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec F,void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscScalar    *y,*ydot,*f;
+
+  PetscFunctionBegin;
+  /*  The next three lines allow us to access the entries of the vectors directly */
+  ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(Ydot,&ydot);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  /*printf("%g\n",(2* PetscSinReal(200*PETSC_PI*t))/5.);*/
+  /*printf("%g\n",t);*/
+  f[0]=((2.* PetscSinReal(200.*PETSC_PI*t))/5. - y[0] + (-ydot[0] + ydot[1])/1000.)/1000.;
+  f[1]=0.0006666666666666666 + (1. -  PetscExpReal((500.*(y[1] - y[2]))/13.))/1.e8 - y[1]/4500. + ydot[0]/1.e6 - ydot[1]/1.e6;
+  f[2]=(-1. +  PetscExpReal((500.*(y[1] - y[2]))/13.))/1.e6 - y[2]/9000. - ydot[2]/500000.;
+  f[3]=0.0006666666666666666 - (99.*(-1. +  PetscExpReal((500.*(y[1] - y[2]))/13.)))/1.e8 - y[3]/9000. - (3.*ydot[3])/1.e6 + (3*ydot[4])/1.e6;
+  f[4]=-y[4]/9000. + (3.*(ydot[3] - ydot[4]))/1.e6;
+ 
+  ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Ydot,&ydot);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "IJacobian"
+/*
+     Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
+*/
+static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec Y,Vec Ydot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscInt       rowcol[] = {0,1,2,3,4};
+  const PetscScalar    *y,*ydot;
+  PetscScalar    J[5][5];
+
+  PetscFunctionBegin;
+  ierr    = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
+  ierr    = VecGetArrayRead(Ydot,&ydot);CHKERRQ(ierr);
+
+  PetscMemzero(J,sizeof(J));
+  
+  J[0][0]=(-1000 - a)/1.e6;
+  J[0][1]=a/1.e6;
+  J[1][0]=a/1.e6;
+  J[1][1]=(-26000 - 117*a - 45* PetscExpReal((500*(y[1] - y[2]))/13.))/1.17e8;
+  J[1][2]= PetscExpReal((500*(y[1] - y[2]))/13.)/2.6e6;
+  J[2][1]= PetscExpReal((500*(y[1] - y[2]))/13.)/26000.;
+  J[2][2]=-a/500000. + (-26 - 9* PetscExpReal((500*(y[1] - y[2]))/13.))/234000.;
+  J[3][1]=(-99* PetscExpReal((500*(y[1] - y[2]))/13.))/2.6e6;
+  J[3][2]=(99* PetscExpReal((500*(y[1] - y[2]))/13.))/2.6e6;
+  J[3][3]=-0.00011111111111111112 - (3*a)/1.e6;
+  J[3][4]=(3*a)/1.e6;
+  J[4][3]=(3*a)/1.e6;
+  J[4][4]=-0.00011111111111111112 - (3*a)/1.e6;
+
+  ierr    = MatSetValues(*B,5,rowcol,5,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  
+  ierr    = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
+  ierr    = VecRestoreArrayRead(Ydot,&ydot);CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (*A != *B) {
+    ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  *flag = SAME_NONZERO_PATTERN;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "main"
+int main(int argc,char **argv)
+{
+  TS             ts;            /* ODE integrator */
+  Vec            Y;             /* solution will be stored here */
+  Mat            A;             /* Jacobian matrix */
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+  PetscInt       n = 5;
+  PetscScalar    *y,t;
+  int i;
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Initialize program
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
+
+  gfilepointer_data=fopen("amplifier_dae_implicit_out.bin", "wb");
+  if (gfilepointer_data == NULL) {
+    perror("Failed to open file \"amplifier_dae_implicit_out.bin\"");
+    return -1;
+  }
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    Create necessary matrix and vectors
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,n,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
+
+  ierr = MatGetVecs(A,&Y,PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
+  y[0] = 0.0;
+  y[1] = 3.0;
+  y[2] = y[1];
+  y[3] = 6.0;
+  y[4] = 0.0;
+  ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
+  
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Create timestepping solver context
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
+  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
+  ierr = TSSetEquationType(ts,TS_EQ_DAE_IMPLICIT_INDEX1);CHKERRQ(ierr);
+  ierr = TSARKIMEXSetFullyImplicit(ts,PETSC_TRUE);CHKERRQ(ierr);
+  /*ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);*/
+  ierr = TSSetIFunction(ts,PETSC_NULL,(TSIFunction) IFunction,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,PETSC_NULL);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Set initial conditions
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = TSSetSolution(ts,Y);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Set solver options
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = TSSetDuration(ts,100000,0.15);CHKERRQ(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);
+  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Do Time stepping
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = TSSolve(ts,Y);CHKERRQ(ierr);
+
+  
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      IO for testing
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+  ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
+
+  for(i=0;i<n;i++){
+    printf("Y[%d]=%g\n",i,y[i]);
+  }
+
+  ierr = TSGetTime(ts,&t); CHKERRQ(ierr);
+  fwrite(&t,sizeof(t),1,gfilepointer_data);
+  fwrite(y,sizeof(y[0]),n,gfilepointer_data);
+  ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Free work space.  All PETSc objects should be destroyed when they are no longer needed.
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = VecDestroy(&Y);CHKERRQ(ierr);
+  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+
+  ierr = PetscFinalize();
+  return(0);
+}
