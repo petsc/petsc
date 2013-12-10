@@ -155,8 +155,6 @@ PetscErrorCode PetscDrawBoxedString_TikZ(PetscDraw draw,PetscReal xl,PetscReal y
 #define __FUNCT__ "PetscDrawStringGetSize_TikZ"
 PetscErrorCode PetscDrawStringGetSize_TikZ(PetscDraw draw,PetscReal *x,PetscReal  *y)
 {
-  PetscDraw_TikZ *win = (PetscDraw_TikZ*)draw->data;
-
   PetscFunctionBegin;
   if (x) *x = .014*(draw->coor_xr - draw->coor_xl)/((draw->port_xr - draw->port_xl));
   if (y) *y = .05*(draw->coor_yr - draw->coor_yl)/((draw->port_yr - draw->port_yl));
