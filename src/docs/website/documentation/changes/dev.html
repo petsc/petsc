@@ -96,6 +96,8 @@
 
       <h4>General:</h4>
       <ul>
+        <li>PETSc options of complex numbers must be passed as [+/-][realnumber][+/-]realnumberi with no spaces, you can no longer pass the real and complex part with a comma between them</li>
+        <li>PetscSynchronizedFlush() takes an additional argument, the file pointer on rank 0</li>
         <li>PetscObjectStateQuery() is now corrected with PetscObjectStateGet()</li>
         <li>A new PetscObjectState typedef is used by interface; 64-bit int to prevent overflow.</li>
         <li>
@@ -115,6 +117,11 @@
         <li>
           The <tt>__SDIR__</tt> macro (and <tt>__INSDIR__</tt>) is no longer used.
           We recommend passing full paths or paths from the project root to the compiler so that error messages contain enough context.
+        </li>
+        <li>
+          The "type" argument to <tt>PetscMalloc2()</tt> through <tt>PetscMalloc7()</tt>, <tt>PetscNew()</tt>, and <tt>PetscNewLog()</tt> have been removed.
+          The type is now inferred from the pointer return type.
+          <tt>PetscMalloc1()</tt> is now available for allocating arrays, and <tt>PetscCalloc1()</tt> through <tt>PetscCalloc7()</tt> have been added for when cleared (zeroed) memory is needed.
         </li>
       </ul>
       <h4>IS:</h4>

@@ -59,20 +59,16 @@ PetscErrorCode    KSPSetUp_AGMRES(KSP ksp)
   hes             = (N + 1) * (N + 1);
 
   /* Data for the Newton basis GMRES */
-  ierr = PetscMalloc4(max_k,PetscScalar,&agmres->Rshift,max_k,PetscScalar,&agmres->Ishift,hes,PetscScalar,&agmres->Rloc,((N+1)*4),PetscScalar,&agmres->wbufptr);CHKERRQ(ierr);
-  ierr = PetscMalloc7((N+1),PetscScalar,&agmres->Scale,(N+1),PetscScalar,&agmres->sgn,(N+1),PetscScalar,&agmres->tloc,(N+1),PetscScalar,&agmres->temp,(N+1),PetscScalar,&agmres->tau,lwork,PetscScalar,&agmres->work,(N+1),PetscScalar,&agmres->nrs);CHKERRQ(ierr);
-  ierr = PetscMemzero(agmres->Rshift, max_k*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(agmres->Ishift, max_k*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscCalloc4(max_k,&agmres->Rshift,max_k,&agmres->Ishift,hes,&agmres->Rloc,((N+1)*4),&agmres->wbufptr);CHKERRQ(ierr);
+  ierr = PetscMalloc7((N+1),&agmres->Scale,(N+1),&agmres->sgn,(N+1),&agmres->tloc,(N+1),&agmres->temp,(N+1),&agmres->tau,lwork,&agmres->work,(N+1),&agmres->nrs);CHKERRQ(ierr);
   ierr = PetscMemzero(agmres->Scale, (N+1)*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(agmres->Rloc, (N+1)*(N+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemzero(agmres->sgn, (N+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemzero(agmres->tloc, (N+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemzero(agmres->temp, (N+1)*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(agmres->wbufptr, (N+1)*4*sizeof(PetscScalar));CHKERRQ(ierr);
 
   /* Allocate space for the vectors in the orthogonalized basis*/
   ierr = VecGetLocalSize(agmres->vecs[0], &nloc);CHKERRQ(ierr);
-  ierr = PetscMalloc(nloc*(N+1)*sizeof(PetscScalar), &agmres->Qloc);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nloc*(N+1), &agmres->Qloc);CHKERRQ(ierr);
 
   /* Init the ring of processors for the roddec orthogonalization */
   ierr = KSPAGMRESRoddecInitNeighboor(ksp);CHKERRQ(ierr);
@@ -80,12 +76,12 @@ PetscErrorCode    KSPSetUp_AGMRES(KSP ksp)
   if (agmres->neig < 1) PetscFunctionReturn(0);
 
   /* Allocate space for the deflation */
-  ierr = PetscMalloc(N*sizeof(PetscScalar), &agmres->select);CHKERRQ(ierr);
+  ierr = PetscMalloc1(N, &agmres->select);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(VEC_V(0), N, &agmres->TmpU);CHKERRQ(ierr);
-  ierr = PetscMalloc2(N*N, PetscScalar, &agmres->MatEigL, N*N, PetscScalar, &agmres->MatEigR);CHKERRQ(ierr);
-  /*  ierr = PetscMalloc6(N*N, PetscScalar, &agmres->Q, N*N, PetscScalar, &agmres->Z, N, PetscScalar, &agmres->wr, N, PetscScalar, &agmres->wi, N, PetscScalar, &agmres->beta, N, PetscScalar, &agmres->modul);CHKERRQ(ierr); */
-  ierr = PetscMalloc3(N*N, PetscScalar, &agmres->Q, N*N, PetscScalar, &agmres->Z, N, PetscScalar, &agmres->beta);CHKERRQ(ierr);
-  ierr = PetscMalloc2((N+1),PetscInt,&agmres->perm,(2*neig*N),PetscInt,&agmres->iwork);CHKERRQ(ierr);
+  ierr = PetscMalloc2(N*N, &agmres->MatEigL, N*N, &agmres->MatEigR);CHKERRQ(ierr);
+  /*  ierr = PetscMalloc6(N*N, &agmres->Q, N*N, &agmres->Z, N, &agmres->wr, N, &agmres->wi, N, &agmres->beta, N, &agmres->modul);CHKERRQ(ierr); */
+  ierr = PetscMalloc3(N*N, &agmres->Q, N*N, &agmres->Z, N, &agmres->beta);CHKERRQ(ierr);
+  ierr = PetscMalloc2((N+1),&agmres->perm,(2*neig*N),&agmres->iwork);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -169,7 +165,7 @@ static PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
     PetscFunctionReturn(0);
   } else ksp->reason = KSP_CONVERGED_ITERATING;
   /* Now, compute the Shifts values */
-  ierr = PetscMalloc2(max_k,PetscScalar,&Rshift,max_k,PetscScalar,&Ishift);CHKERRQ(ierr);
+  ierr = PetscMalloc2(max_k,&Rshift,max_k,&Ishift);CHKERRQ(ierr);
   ierr = KSPComputeEigenvalues(kspgmres, max_k, Rshift, Ishift, &m);CHKERRQ(ierr);
   if (m < max_k) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "Unable to compute the Shifts for the Newton basis");
   else {
@@ -233,7 +229,7 @@ PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
   } else { /* Perform another cycle of DGMRES to find another set of eigenvalues */
     PetscInt    i;
     PetscScalar *wr, *wi,*Rshift, *Ishift;
-    ierr = PetscMalloc4(2*max_k, PetscScalar, &wr, 2*max_k, PetscScalar, &wi, 2*max_k, PetscScalar, &Rshift, 2*max_k, PetscScalar, &Ishift);CHKERRQ(ierr);
+    ierr = PetscMalloc4(2*max_k, &wr, 2*max_k, &wi, 2*max_k, &Rshift, 2*max_k, &Ishift);CHKERRQ(ierr);
     for (i = 0; i < max_k; i++) {
       wr[i] = agmres->wr[i];
       wi[i] = agmres->wi[i];
@@ -789,7 +785,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr      = PetscNewLog(ksp,KSP_AGMRES,&agmres);CHKERRQ(ierr);
+  ierr      = PetscNewLog(ksp,&agmres);CHKERRQ(ierr);
   ksp->data = (void*)agmres;
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);

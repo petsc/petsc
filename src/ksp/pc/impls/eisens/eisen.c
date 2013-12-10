@@ -334,7 +334,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Eisenstat(PC pc)
   PC_Eisenstat   *eis;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_Eisenstat,&eis);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&eis);CHKERRQ(ierr);
 
   pc->ops->apply           = PCApply_Eisenstat;
   pc->ops->presolve        = PCPreSolve_Eisenstat;

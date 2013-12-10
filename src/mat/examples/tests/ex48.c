@@ -154,7 +154,7 @@ int main(int argc,char **args)
   }
 
   /* Do LUFactor() on both the matrices */
-  ierr = PetscMalloc(M*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(M,&idx);CHKERRQ(ierr);
   for (i=0; i<M; i++) idx[i] = i;
   ierr = ISCreateGeneral(PETSC_COMM_SELF,M,idx,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,M,idx,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);

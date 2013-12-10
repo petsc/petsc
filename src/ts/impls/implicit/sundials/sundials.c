@@ -948,7 +948,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Sundials(TS ts)
   ts->ops->interpolate    = TSInterpolate_Sundials;
   ts->ops->setfromoptions = TSSetFromOptions_Sundials;
 
-  ierr = PetscNewLog(ts,TS_Sundials,&cvode);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&cvode);CHKERRQ(ierr);
 
   ts->data           = (void*)cvode;
   cvode->cvode_type  = SUNDIALS_BDF;

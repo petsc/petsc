@@ -115,11 +115,11 @@ or
       informative.
   - **No** space after a `(` or before a `)`. No space before the `CHKXXX()`. That is, do not write
 \code
-   ierr = PetscMalloc( 10*sizeof(int),&a ); CHKERRQ(ierr);
+   ierr = PetscMalloc1( 10,&a ); CHKERRQ(ierr);
 \endcode
 instead write
 \code
-   ierr = PetscMalloc(10*sizeof(int),&a);CHKERRQ(ierr);
+   ierr = PetscMalloc1(10,&a);CHKERRQ(ierr);
 \endcode
   - **No** space after the `)` in a cast, no space between the type and the `*` in a cast.
   - **No** space before or after a comma in lists

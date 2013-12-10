@@ -15,11 +15,17 @@
       IS       isrow
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-
+#if defined(PETSC_USE_64BIT_INDICES)
+      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,                          &
+     & '../../../../share/petsc/datafiles/matrices/' //                       &
+     & 'ns-real-int64-float64',                                               &
+     &                          FILE_MODE_READ,v,ierr)
+#else
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,                          &
      & '../../../../share/petsc/datafiles/matrices/' //                       &
      & 'ns-real-int32-float64',                                               &
      &                          FILE_MODE_READ,v,ierr)
+#endif
 
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
       call MatSetType(A, MATSEQAIJ,ierr)

@@ -508,7 +508,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NCG(SNES snes)
     snes->stol      = 1e-20;
   }
 
-  ierr         = PetscNewLog(snes, SNES_NCG, &neP);CHKERRQ(ierr);
+  ierr         = PetscNewLog(snes,&neP);CHKERRQ(ierr);
   snes->data   = (void*) neP;
   neP->monitor = NULL;
   neP->type    = SNES_NCG_PRP;

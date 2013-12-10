@@ -70,8 +70,8 @@ PetscErrorCode  ISEqual(IS is1,IS is2,PetscBool  *flg)
       ierr = ISGetIndices(is1,&ptr1);CHKERRQ(ierr);
       ierr = ISGetIndices(is2,&ptr2);CHKERRQ(ierr);
 
-      ierr = PetscMalloc(sz1*sizeof(PetscInt),&a1);CHKERRQ(ierr);
-      ierr = PetscMalloc(sz2*sizeof(PetscInt),&a2);CHKERRQ(ierr);
+      ierr = PetscMalloc1(sz1,&a1);CHKERRQ(ierr);
+      ierr = PetscMalloc1(sz2,&a2);CHKERRQ(ierr);
 
       ierr = PetscMemcpy(a1,ptr1,sz1*sizeof(PetscInt));CHKERRQ(ierr);
       ierr = PetscMemcpy(a2,ptr2,sz2*sizeof(PetscInt));CHKERRQ(ierr);

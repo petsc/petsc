@@ -5,12 +5,19 @@
 #define petscprintf_               PETSCPRINTF
 #define petscsynchronizedfprintf_  PETSCSYNCHRONIZEDFPRINTF
 #define petscsynchronizedprintf_   PETSCSYNCHRONIZEDPRINTF
+#define petscsynchronizedflush_    PETSCSYNCHRONIZEDFLUSH
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscfprintf_                 petscfprintf
 #define petscprintf_                  petscprintf
 #define petscsynchronizedfprintf_     petscsynchronizedfprintf
 #define petscsynchronizedprintf_      petscsynchronizedprintf
+#define petscsynchronizedflush_       petscsynchronizedflush
 #endif
+
+PETSC_EXTERN void PETSC_STDCALL petscsynchronizedflush_(MPI_Fint * comm, FILE **file,int *ierr)
+{
+  *ierr = PetscSynchronizedFlush(MPI_Comm_f2c( *(comm) ),*file);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFixSlashN"

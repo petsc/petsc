@@ -120,7 +120,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
       n = 1;
       for (i=1; i<size; i++) n = PetscMax(n,range[i+1] - range[i]);
 
-      ierr = PetscMalloc(n*sizeof(PetscScalar),&avecwork);CHKERRQ(ierr);
+      ierr = PetscMalloc1(n,&avecwork);CHKERRQ(ierr);
       for (i=1; i<size; i++) {
         n    = range[i+1] - range[i];
         ierr = PetscBinaryRead(fd,avecwork,n,PETSC_SCALAR);CHKERRQ(ierr);

@@ -6,12 +6,12 @@ static char help[] = "Tests PetscRandom functions.\n\n";
 #define DATAFILENAME "ex2_stock.txt"
 
 struct himaInfoTag {
-  int    n;
-  double r;
-  double dt;
-  int    totalNumSim;
-  double *St0;
-  double *vol;
+  PetscInt    n;
+  double      r;
+  double      dt;
+  PetscInt    totalNumSim;
+  double      *St0;
+  double      *vol;
 };
 typedef struct himaInfoTag himaInfo;
 
@@ -19,9 +19,9 @@ typedef struct himaInfoTag himaInfo;
 PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo);
 double mcVal(double St, double r, double vol, double dt, double eps);
 void exchange(double *a, double *b);
-double basketPayoff(double vol[], double St0[], int n, double r,double dt, double eps[]);
-void stdNormalArray(double *eps, int size,PetscRandom ran);
-unsigned long divWork(int id, unsigned long num, int np);
+double basketPayoff(double vol[], double St0[], PetscInt n, double r,double dt, double eps[]);
+void stdNormalArray(double *eps, PetscInt numdim,PetscRandom ran);
+PetscInt divWork(PetscMPIInt id, PetscInt num, PetscMPIInt size);
 
 /*
    Contributed by Xiaoyan Zeng <zengxia@iit.edu> and Liu, Kwong Ip" <kiliu@math.hkbu.edu.hk>
@@ -36,10 +36,10 @@ int main(int argc, char *argv[])
 {
   /* double         payoff; */
   double         r,dt;
-  int            n;
+  PetscInt            n;
   unsigned long  i,myNumSim,totalNumSim,numdim;
   double         *vol, *St0, x, totalx;
-  int            np,myid;
+  PetscMPIInt   size,rank;
   double         *eps;
   himaInfo       hinfo;
   PetscRandom    ran;
@@ -58,14 +58,14 @@ int main(int argc, char *argv[])
 #endif
   ierr = PetscRandomSetFromOptions(ran);CHKERRQ(ierr);
 
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &np);CHKERRQ(ierr);       /* number of nodes */
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &myid);CHKERRQ(ierr);     /* my ranking */
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);       /* number of nodes */
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);     /* my ranking */
 
   ierr = PetscOptionsHasName(NULL, "-check_generators", &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscRandomGetValue(ran,(PetscScalar*)&r);
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] rval: %g\n",myid,r);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] rval: %g\n",rank,r);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);
   }
 
   hinfo.n           = 31;
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
   if (numdim%2 == 1) numdim++;
   eps = (double*)malloc(sizeof(double)*numdim);
 
-  myNumSim = divWork(myid,totalNumSim,np);
+  myNumSim = divWork(rank,totalNumSim,size);
 
   x = 0;
   for (i=0; i<myNumSim; i++) {
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
   ierr = MPI_Reduce(&x, &totalx, 1, MPI_DOUBLE, MPI_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   /* payoff = exp(-r*dt*n)*(totalx/totalNumSim);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Option price = $%.3f using %ds of %s computation with %d %s for %d stocks, %d trading period per year, %.2f%% interest rate\n",
-   payoff,(int)(stop - start),"parallel",np,"processors",n,(int)(1/dt),r);CHKERRQ(ierr); */
+   payoff,(int)(stop - start),"parallel",size,"processors",n,(int)(1/dt),r);CHKERRQ(ierr); */
 
   free(vol);
   free(eps);
@@ -111,13 +111,13 @@ int main(int argc, char *argv[])
   return 0;
 }
 
-void stdNormalArray(double *eps, int size, PetscRandom ran)
+void stdNormalArray(double *eps, PetscInt numdim, PetscRandom ran)
 {
   int            i;
   double         u1,u2,t;
   PetscErrorCode ierr;
 
-  for (i=0; i<size; i+=2) {
+  for (i=0; i<numdim; i+=2) {
     ierr = PetscRandomGetValue(ran,(PetscScalar*)&u1);CHKERRABORT(PETSC_COMM_WORLD,ierr);
     ierr = PetscRandomGetValue(ran,(PetscScalar*)&u2);CHKERRABORT(PETSC_COMM_WORLD,ierr);
 
@@ -128,12 +128,12 @@ void stdNormalArray(double *eps, int size, PetscRandom ran)
 }
 
 
-double basketPayoff(double vol[], double St0[], int n, double r,double dt, double eps[])
+double basketPayoff(double vol[], double St0[], PetscInt n, double r,double dt, double eps[])
 {
   double Stk[PETSC_MAXBSIZE], temp;
   double payoff;
-  int    maxk,i,j;
-  int    pointcount=0;
+  PetscInt    maxk,i,j;
+  PetscInt    pointcount=0;
 
   for (i=0;i<n;i++) Stk[i] = St0[i];
 
@@ -194,11 +194,11 @@ double mcVal(double St, double r, double vol, double dt, double eps)
   return (St * exp((r-0.5*vol*vol)*dt + vol*sqrt(dt)*eps));
 }
 
-unsigned long divWork(int id, unsigned long num, int np)
+PetscInt divWork(PetscMPIInt id, PetscInt num, PetscMPIInt size)
 {
-  unsigned long numit;
+  PetscInt numit;
 
-  numit = (unsigned long)(((double)num)/np);
+  numit = (PetscInt)(((double)num)/size);
   numit++;
   return numit;
 }

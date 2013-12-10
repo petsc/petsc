@@ -88,9 +88,11 @@ int main(int argc,char **args)
   if (size > 1) {
     MPI_Comm       subcomm;
     Mat            Credundant;
-    PetscMPIInt    nsubcomms=size,subsize;
+    PetscInt       Nsubcomms = size;
+    PetscMPIInt    nsubcomms,subsize;
 
-    ierr = PetscOptionsGetInt(NULL,"-nsubcomms",&nsubcomms,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,"-nsubcomms",&Nsubcomms,NULL);CHKERRQ(ierr);
+    ierr = PetscMPIIntCast(Nsubcomms,&nsubcomms);CHKERRQ(ierr);
     if (nsubcomms > size) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"nsubcomms %d cannot > ncomms %d",nsubcomms,size);
 
     ierr = MatGetRedundantMatrix(C,nsubcomms,MPI_COMM_NULL,MAT_INITIAL_MATRIX,&Credundant);CHKERRQ(ierr);

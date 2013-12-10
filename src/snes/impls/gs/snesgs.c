@@ -361,7 +361,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_GS(SNES snes)
     snes->max_funcs = 10000;
   }
 
-  ierr = PetscNewLog(snes, SNES_GS, &gs);CHKERRQ(ierr);
+  ierr = PetscNewLog(snes,&gs);CHKERRQ(ierr);
 
   gs->sweeps  = 1;
   gs->rtol    = 1e-5;

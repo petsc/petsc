@@ -242,7 +242,7 @@ int main(int argc,char **args)
     Mat             BB;
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-    ierr = PetscMalloc(size*sizeof(PetscInt),&count);CHKERRQ(ierr);
+    ierr = PetscMalloc1(size,&count);CHKERRQ(ierr);
     ierr = MatPartitioningCreate(PETSC_COMM_WORLD, &mpart);CHKERRQ(ierr);
     ierr = MatPartitioningSetAdjacency(mpart, A);CHKERRQ(ierr);
     /* ierr = MatPartitioningSetVertexWeights(mpart, weight);CHKERRQ(ierr); */

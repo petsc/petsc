@@ -31,7 +31,7 @@ class Configure(PETSc.package.NewPackage):
         raise RuntimeError('Error running configure on cmake: '+str(e))
       try:
         self.logPrintBox('Compiling CMake; this may take several minutes')
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make && make install && make clean', timeout=2500, log = self.framework.log)
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && '+self.make.make_jnp+' && '+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on cmake: '+str(e))
       self.postInstall(output+err,'cmake.args')

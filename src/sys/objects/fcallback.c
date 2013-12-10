@@ -72,8 +72,7 @@ PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid,const char *sub
     if (!_classbase) {
       ierr = PetscRegisterFinalize(PetscFortranCallbackFinalize);CHKERRQ(ierr);
     }
-    ierr = PetscMalloc((newmax-PETSC_SMALLEST_CLASSID)*sizeof(_classbase[0]),&newbase);CHKERRQ(ierr);
-    ierr = PetscMemzero(newbase,(newmax-PETSC_SMALLEST_CLASSID)*sizeof(_classbase[0]));CHKERRQ(ierr);
+    ierr = PetscCalloc1((newmax-PETSC_SMALLEST_CLASSID),&newbase);CHKERRQ(ierr);
     ierr = PetscMemcpy(newbase,_classbase,(_maxclassid-PETSC_SMALLEST_CLASSID)*sizeof(_classbase[0]));CHKERRQ(ierr);
     ierr = PetscFree(_classbase);CHKERRQ(ierr);
 

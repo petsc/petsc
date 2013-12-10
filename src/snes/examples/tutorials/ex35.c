@@ -197,7 +197,7 @@ PetscErrorCode FormMatrix(DM da,Mat jac)
   hxdhy = hx/hy;
   hydhx = hy/hx;
 
-  ierr = PetscMalloc(info.ym*info.xm*sizeof(MatStencil),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc1(info.ym*info.xm,&rows);CHKERRQ(ierr);
   /*
      Compute entries for the locally owned part of the Jacobian.
       - Currently, all PETSc parallel matrix formats are partitioned by

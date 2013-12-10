@@ -67,7 +67,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   ierr  = MatGetSize(pc->pmat,&n,NULL);CHKERRQ(ierr);
   ierr  = PetscBLASIntCast(n,&nb);CHKERRQ(ierr);
   lwork = 5*nb;
-  ierr  = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(lwork,&work);CHKERRQ(ierr);
   ierr  = MatDenseGetArray(jac->A,&a);CHKERRQ(ierr);
   ierr  = MatDenseGetArray(jac->U,&u);CHKERRQ(ierr);
   ierr  = MatDenseGetArray(jac->Vt,&v);CHKERRQ(ierr);
@@ -81,7 +81,19 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
   }
 #else
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not coded for complex");
+  {
+    PetscBLASInt lierr;
+    PetscReal    *rwork,*dd;
+    ierr = PetscMalloc1(5*nb,&rwork);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nb,&dd);CHKERRQ(ierr);
+    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+    PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("A","A",&nb,&nb,a,&nb,dd,u,&nb,v,&nb,work,&lwork,rwork,&lierr));
+    if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"gesv() error %d",lierr);
+    ierr = PetscFree(rwork);CHKERRQ(ierr);
+    for (i=0; i<nb; i++) d[i] = dd[i];
+    ierr = PetscFree(dd);CHKERRQ(ierr);
+    ierr = PetscFPTrapPop();CHKERRQ(ierr);
+  }
 #endif
   ierr = MatDenseRestoreArray(jac->A,&a);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(jac->U,&u);CHKERRQ(ierr);
@@ -225,9 +237,17 @@ static PetscErrorCode PCApply_SVD(PC pc,Vec x,Vec y)
   PetscFunctionBegin;
   ierr = PCSVDGetVec(pc,PC_RIGHT,READ,x,&xred);CHKERRQ(ierr);
   ierr = PCSVDGetVec(pc,PC_LEFT,WRITE,y,&yred);CHKERRQ(ierr);
+#if !defined(PETSC_USE_COMPLEX)
   ierr = MatMultTranspose(jac->U,xred,work);CHKERRQ(ierr);
+#else
+  ierr = MatMultHermitianTranspose(jac->U,xred,work);CHKERRQ(ierr);
+#endif
   ierr = VecPointwiseMult(work,work,jac->diag);CHKERRQ(ierr);
+#if !defined(PETSC_USE_COMPLEX)
   ierr = MatMultTranspose(jac->Vt,work,yred);CHKERRQ(ierr);
+#else
+  ierr = MatMultHermitianTranspose(jac->Vt,work,yred);CHKERRQ(ierr);
+#endif
   ierr = PCSVDRestoreVec(pc,PC_RIGHT,READ,x,&xred);CHKERRQ(ierr);
   ierr = PCSVDRestoreVec(pc,PC_LEFT,WRITE,y,&yred);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -244,9 +264,17 @@ static PetscErrorCode PCApplyTranspose_SVD(PC pc,Vec x,Vec y)
   PetscFunctionBegin;
   ierr = PCSVDGetVec(pc,PC_LEFT,READ,x,&xred);CHKERRQ(ierr);
   ierr = PCSVDGetVec(pc,PC_RIGHT,WRITE,y,&yred);CHKERRQ(ierr);
+#if !defined(PETSC_USE_COMPLEX)
   ierr = MatMultTranspose(jac->Vt,work,yred);CHKERRQ(ierr);
+#else
+  ierr = MatMultHermitianTranspose(jac->Vt,work,yred);CHKERRQ(ierr);
+#endif
   ierr = VecPointwiseMult(work,work,jac->diag);CHKERRQ(ierr);
+#if !defined(PETSC_USE_COMPLEX)
   ierr = MatMultTranspose(jac->U,xred,work);CHKERRQ(ierr);
+#else
+  ierr = MatMultHermitianTranspose(jac->U,xred,work);CHKERRQ(ierr);
+#endif
   ierr = PCSVDRestoreVec(pc,PC_LEFT,READ,x,&xred);CHKERRQ(ierr);
   ierr = PCSVDRestoreVec(pc,PC_RIGHT,WRITE,y,&yred);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -358,7 +386,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr          = PetscNewLog(pc,PC_SVD,&jac);CHKERRQ(ierr);
+  ierr          = PetscNewLog(pc,&jac);CHKERRQ(ierr);
   jac->zerosing = 1.e-12;
   pc->data      = (void*)jac;
 

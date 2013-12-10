@@ -35,15 +35,8 @@ PETSC_EXTERN PetscErrorCode MatColoringLocalColor(MatColoring mc,PetscSF etoc,Pe
   ierr = PetscSFGetGraph(etoc,&ncols,&ncolentries,NULL,&colentries);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(etor,&nrows,&nrowentries,NULL,&rowentries);CHKERRQ(ierr);
 
-  ierr = PetscMalloc6(nrows,PetscBool,&rowseen,
-                      ncols,PetscBool,&colseen,
-                      ncols,PetscInt,&coloffsets,
-                      nrows,PetscInt,&rowoffsets,
-                      2*ncols,PetscInt,&ll_ptr,
-                      2*ncols,PetscInt,&ll_idx);CHKERRQ(ierr);
-
-  ierr = PetscMalloc2(ncols,PetscInt,&sidx,
-                      ncols,PetscReal,&swts);CHKERRQ(ierr);
+  ierr = PetscMalloc6(nrows,&rowseen,ncols,&colseen,ncols,&coloffsets,nrows,&rowoffsets,2*ncols,&ll_ptr,2*ncols,&ll_idx);CHKERRQ(ierr);
+  ierr = PetscMalloc2(ncols,&sidx,ncols,&swts);CHKERRQ(ierr);
 
   ierr = PetscSFComputeDegreeBegin(etoc,&rowdegrees);CHKERRQ(ierr);
   ierr = PetscSFComputeDegreeEnd(etoc,&rowdegrees);CHKERRQ(ierr);
@@ -213,12 +206,12 @@ PETSC_EXTERN PetscErrorCode MatColoringDiscoverBoundary(MatColoring mc,PetscSF e
   ierr = PetscSFGetGraph(etoc,&ncols,&ncolentries,NULL,&colentries);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(etor,&nrows,&nrowentries,NULL,&rowentries);CHKERRQ(ierr);
 
-  ierr = PetscMalloc6(nrows,PetscBool,&rowseen,
-                      ncols,PetscBool,&colseen,
-                      ncols,PetscInt,&coloffsets,
-                      nrows,PetscInt,&rowoffsets,
-                      2*ncols,PetscInt,&ll_ptr,
-                      2*ncols,PetscInt,&ll_idx);CHKERRQ(ierr);
+  ierr = PetscMalloc6(nrows,&rowseen,
+                      ncols,&colseen,
+                      ncols,&coloffsets,
+                      nrows,&rowoffsets,
+                      2*ncols,&ll_ptr,
+                      2*ncols,&ll_idx);CHKERRQ(ierr);
 
   ierr = PetscSFComputeDegreeBegin(etoc,&rowdegrees);CHKERRQ(ierr);
   ierr = PetscSFComputeDegreeEnd(etoc,&rowdegrees);CHKERRQ(ierr);

@@ -184,7 +184,7 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal
   /* fill up x and y coordinates */
   if (!xi) {
     xin      = 0;
-    ierr     = PetscMalloc(ctx.m*sizeof(PetscReal),&ctx.x);CHKERRQ(ierr);
+    ierr     = PetscMalloc1(ctx.m,&ctx.x);CHKERRQ(ierr);
     h        = 1.0/(ctx.m-1);
     ctx.x[0] = 0.0;
     for (i=1; i<ctx.m; i++) ctx.x[i] = ctx.x[i-1] + h;
@@ -192,7 +192,7 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal
 
   if (!yi) {
     yin      = 0;
-    ierr     = PetscMalloc(ctx.n*sizeof(PetscReal),&ctx.y);CHKERRQ(ierr);
+    ierr     = PetscMalloc1(ctx.n,&ctx.y);CHKERRQ(ierr);
     h        = 1.0/(ctx.n-1);
     ctx.y[0] = 0.0;
     for (i=1; i<ctx.n; i++) ctx.y[i] = ctx.y[i-1] + h;

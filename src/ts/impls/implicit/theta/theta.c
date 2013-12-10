@@ -516,7 +516,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
   ts->ops->linearstability = TSComputeLinearStability_Theta;
 #endif
 
-  ierr = PetscNewLog(ts,TS_Theta,&th);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;
 
   th->extrapolate = PETSC_FALSE;

@@ -13,6 +13,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsGetReal(const char[],const char[],PetscR
 PETSC_EXTERN PetscErrorCode PetscOptionsGetScalar(const char[],const char[],PetscScalar *,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetIntArray(const char[],const char[],PetscInt[],PetscInt *,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetRealArray(const char[],const char[],PetscReal[],PetscInt *,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsGetScalarArray(const char[],const char[],PetscScalar[],PetscInt *,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetBoolArray(const char[],const char[],PetscBool [],PetscInt *,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetString(const char[],const char[],char[],size_t,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetStringArray(const char[],const char[],char*[],PetscInt*,PetscBool *);

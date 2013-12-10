@@ -550,9 +550,9 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
   */
   *numBoundaries = 5;
 
-  ierr = PetscMalloc(*numBoundaries * sizeof(PetscInt), numBoundaryConstraints);CHKERRQ(ierr);
-  ierr = PetscMalloc(*numBoundaries * sizeof(IS), boundaryPoints);CHKERRQ(ierr);
-  ierr = PetscMalloc(*numBoundaries * sizeof(IS), constraintIndices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(*numBoundaries, numBoundaryConstraints);CHKERRQ(ierr);
+  ierr = PetscMalloc1(*numBoundaries, boundaryPoints);CHKERRQ(ierr);
+  ierr = PetscMalloc1(*numBoundaries, constraintIndices);CHKERRQ(ierr);
 
   /* Set number of constraints for each boundary */
   (*numBoundaryConstraints)[corner] = 2;
@@ -561,19 +561,19 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
   (*numBoundaryConstraints)[top]    = 1;
   (*numBoundaryConstraints)[left]   = 1;
   /* Set local constraint indices for each boundary */
-  ierr   = PetscMalloc((*numBoundaryConstraints)[corner] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  ierr   = PetscMalloc1((*numBoundaryConstraints)[corner], &idx);CHKERRQ(ierr);
   idx[0] = 0; idx[1] = 1;
   ierr   = ISCreateGeneral(comm, (*numBoundaryConstraints)[corner], idx, PETSC_OWN_POINTER, &(*constraintIndices)[corner]);CHKERRQ(ierr);
-  ierr   = PetscMalloc((*numBoundaryConstraints)[bottom] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  ierr   = PetscMalloc1((*numBoundaryConstraints)[bottom], &idx);CHKERRQ(ierr);
   idx[0] = 1;
   ierr   = ISCreateGeneral(comm, (*numBoundaryConstraints)[bottom], idx, PETSC_OWN_POINTER, &(*constraintIndices)[bottom]);CHKERRQ(ierr);
-  ierr   = PetscMalloc((*numBoundaryConstraints)[right] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  ierr   = PetscMalloc1((*numBoundaryConstraints)[right], &idx);CHKERRQ(ierr);
   idx[0] = 0;
   ierr   = ISCreateGeneral(comm, (*numBoundaryConstraints)[right], idx, PETSC_OWN_POINTER, &(*constraintIndices)[right]);CHKERRQ(ierr);
-  ierr   = PetscMalloc((*numBoundaryConstraints)[top] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  ierr   = PetscMalloc1((*numBoundaryConstraints)[top], &idx);CHKERRQ(ierr);
   idx[0] = 1;
   ierr   = ISCreateGeneral(comm, (*numBoundaryConstraints)[top], idx, PETSC_OWN_POINTER, &(*constraintIndices)[top]);CHKERRQ(ierr);
-  ierr   = PetscMalloc((*numBoundaryConstraints)[left] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  ierr   = PetscMalloc1((*numBoundaryConstraints)[left], &idx);CHKERRQ(ierr);
   idx[0] = 0;
   ierr   = ISCreateGeneral(comm, (*numBoundaryConstraints)[left], idx, PETSC_OWN_POINTER, &(*constraintIndices)[left]);CHKERRQ(ierr);
 
@@ -622,7 +622,7 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
   }
   /* Set points on each boundary */
   for (bd = 0; bd < 5; ++bd) {
-    ierr = PetscMalloc(numBoundaryPoints[bd] * sizeof(PetscInt), &bdPoints[bd]);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numBoundaryPoints[bd], &bdPoints[bd]);CHKERRQ(ierr);
     numBoundaryPoints[bd] = 0;
   }
   for (p = 0; p < numPoints; ++p) {
@@ -1166,7 +1166,7 @@ int main(int argc, char **argv)
     ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(user.dm, &crd_vec);CHKERRQ(ierr);
     ierr = VecGetLocalSize(crd_vec,&mlocal);CHKERRQ(ierr);
-    ierr = PetscMalloc(SPATIAL_DIM_0*mlocal*sizeof(*coords),&coords);CHKERRQ(ierr);
+    ierr = PetscMalloc1(SPATIAL_DIM_0*mlocal,&coords);CHKERRQ(ierr);
     ierr = VecGetArrayRead(crd_vec,&v);CHKERRQ(ierr);
     for (k=j=0; j<mlocal; j++) {
       for (i=0; i<SPATIAL_DIM_0; i++,k++) {

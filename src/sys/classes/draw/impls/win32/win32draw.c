@@ -768,7 +768,7 @@ static PetscErrorCode PetscDrawGetPopup_Win32(PetscDraw draw,PetscDraw *popdraw)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PetscDraw_Win32,&pop);CHKERRQ(ierr);
+  ierr = PetscNew(&pop);CHKERRQ(ierr);
 
   (*popdraw)->data = pop;
 
@@ -784,7 +784,7 @@ static PetscErrorCode PetscDrawGetPopup_Win32(PetscDraw draw,PetscDraw *popdraw)
   WaitForSingleObject(g_hWindowListMutex, INFINITE);
 
   draw->popup            = (*popdraw);
-  ierr                   = PetscNew(struct _p_WindowNode,&newnode);CHKERRQ(ierr);
+  ierr                   = PetscNew(&newnode);CHKERRQ(ierr);
   newnode->MouseListHead = NULL;
   newnode->MouseListTail = NULL;
   newnode->wnext         = WindowListHead;
@@ -829,7 +829,7 @@ PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
   WindowNode      newnode;
 
   PetscFunctionBegin;
-  ierr       = PetscNew(PetscDraw_Win32,&windraw);CHKERRQ(ierr);
+  ierr       = PetscNew(&windraw);CHKERRQ(ierr);
   draw->data = windraw;
 
   /* the following is temporary fix for initializing a global datastructure */
@@ -844,7 +844,7 @@ PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
   CloseHandle(windraw->hReadyEvent);
   WaitForSingleObject(g_hWindowListMutex,INFINITE);
 
-  ierr                   = PetscNew(struct _p_WindowNode,&newnode);CHKERRQ(ierr);
+  ierr                   = PetscNew(&newnode);CHKERRQ(ierr);
   newnode->MouseListHead = NULL;
   newnode->MouseListTail = NULL;
   newnode->wnext         = WindowListHead;
@@ -975,7 +975,7 @@ static PetscErrorCode MouseRecord_Win32(HWND hWnd,PetscDrawButton button)
     while (current != NULL) {
       if (current->hWnd == hWnd) {
 
-        ierr            = PetscNew(struct _p_MouseNode,&newnode);CHKERRQ(ierr);
+        ierr            = PetscNew(&newnode);CHKERRQ(ierr);
         newnode->Button = button;
         GetCursorPos(&mousepos);
         newnode->user.x = mousepos.x;
