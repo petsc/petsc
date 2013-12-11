@@ -41,13 +41,6 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
       self.dir = os.getcwd()
     if self.isPetsc and not os.path.realpath(self.dir) == os.path.realpath(os.getcwd()):
       raise RuntimeError('The environmental variable PETSC_DIR '+self.dir+' MUST be the current directory '+os.getcwd())
-    if self.dir[1] == ':':
-      try:
-        dir = self.dir.replace('\\','/')
-        (dir, error, status) = self.executeShellCommand('cygpath -au '+dir)
-        self.dir = dir.replace('\n','')
-      except RuntimeError:
-        pass
     self.version  = 'Unknown'
     versionHeader = os.path.join(self.dir, 'include', 'petscversion.h')
     versionInfo = []
