@@ -986,7 +986,7 @@ PetscErrorCode Initialize(Vec Y, void* s)
   }
   ierr = PetscOptionsGetScalarArray(PETSC_NULL,"-yinit",y,&N,&flg);CHKERRQ(ierr);
   if ((N != GetSize((const char*)s)) && flg) {
-    printf("Error: number of initial values %d does not match problem size %d.\n",(int)N,(int)GetSize(s));
+    printf("Error: number of initial values %d does not match problem size %d.\n",(int)N,(int)GetSize((const char*)s));
   }
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
