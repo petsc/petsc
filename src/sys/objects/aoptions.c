@@ -1488,7 +1488,7 @@ PetscErrorCode  PetscOptionsBoolArray(const char opt[],const char text[],const c
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsViewer"
 /*@C
-   PetscOptionsInt - Gets a viewer appropriate for the type indicated by the user
+   PetscOptionsViewer - Gets a viewer appropriate for the type indicated by the user
 
    Logically Collective on the communicator passed in PetscOptionsBegin()
 
@@ -1506,14 +1506,8 @@ PetscErrorCode  PetscOptionsBoolArray(const char opt[],const char text[],const c
    Concepts: options database^has int
 
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
-If no value is provided ascii:stdout is used
-$       ascii[:[filename][:format]]   defaults to stdout - format can be one of info, info_detailed, or matlab, for example ascii::info prints just the info
-$                                     about the object to standard out
-$       binary[:filename]   defaults to binaryoutput
-$       draw
-$       socket[:port]    defaults to the standard output port
 
-   Use PetscRestoreViewerDestroy() after using the viewer, otherwise a memory leak will occur
+   See PetscOptionsGetVieweer() for the format of the supplied viewer and its options
 
 .seealso: PetscOptionsGetViewer(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
