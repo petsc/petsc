@@ -1593,6 +1593,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectGetOptionsPrefix(PetscObject,const char*[
 PETSC_EXTERN PetscErrorCode PetscObjectChangeTypeName(PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectRegisterDestroy(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectRegisterDestroyAll(void);
+PETSC_EXTERN PetscErrorCode PetscObjectViewFromOptions(PetscObject,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectName(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectTypeCompare(PetscObject,const char[],PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscObjectTypeCompareAny(PetscObject,PetscBool*,const char[],...);
@@ -2383,7 +2384,7 @@ PETSC_EXTERN PetscErrorCode PetscRandomRegister(const char[],PetscErrorCode (*)(
 PETSC_EXTERN PetscErrorCode PetscRandomSetType(PetscRandom, PetscRandomType);
 PETSC_EXTERN PetscErrorCode PetscRandomSetFromOptions(PetscRandom);
 PETSC_EXTERN PetscErrorCode PetscRandomGetType(PetscRandom, PetscRandomType*);
- PETSC_EXTERN PetscErrorCode PetscRandomViewFromOptions(PetscRandom,const char[],const char[]);
+PETSC_STATIC_INLINE PetscErrorCode PetscRandomViewFromOptions(PetscRandom A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 PETSC_EXTERN PetscErrorCode PetscRandomView(PetscRandom,PetscViewer);
 
 PETSC_EXTERN PetscErrorCode PetscRandomCreate(MPI_Comm,PetscRandom*);

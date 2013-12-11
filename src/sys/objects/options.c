@@ -2493,3 +2493,44 @@ PetscErrorCode  PetscOptionsMonitorCancel(void)
   options->numbermonitors = 0;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectViewFromOptions"
+/*
+  PetscObjectViewFromOptions - Processes command line options to determine if/how a PetscObject is to be viewed. 
+
+  Collective on PetscObject
+
+  Input Parameters:
++ obj   - the object
+. prefix - prefix to use for viewing, or NULL to use the prefix of obj
+- optionname - option to activate viewing
+
+  Level: intermediate
+
+*/
+PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,const char prefix[],const char optionname[])
+{
+  PetscErrorCode    ierr;
+  PetscViewer       viewer;
+  PetscBool         flg;
+  static PetscBool  incall = PETSC_FALSE;
+  PetscViewerFormat format;
+
+  PetscFunctionBegin;
+  if (incall) PetscFunctionReturn(0);
+  incall = PETSC_TRUE;
+  if (prefix) {
+    ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  } else {
+    ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),((PetscObject)obj)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  }
+  if (flg) {
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+    ierr = PetscObjectView(obj,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+  incall = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}

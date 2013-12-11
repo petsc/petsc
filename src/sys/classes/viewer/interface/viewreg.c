@@ -288,8 +288,6 @@ PetscErrorCode  PetscViewerSetFromOptions(PetscViewer viewer)
   PetscErrorCode    ierr;
   char              vtype[256];
   PetscBool         flg;
-  PetscViewer       v2;
-  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
@@ -312,12 +310,7 @@ PetscErrorCode  PetscViewerSetFromOptions(PetscViewer viewer)
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)viewer);CHKERRQ(ierr);
-  ierr = PetscOptionsViewer("-viewer_view","Display Viewer with the viewer","PetscViewerView",&v2,&format,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscViewerPushFormat(v2,format);CHKERRQ(ierr);
-    ierr = PetscViewerView(viewer,v2);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(v2);CHKERRQ(ierr);
-  }
+  ierr = PetscViewerViewFromOptions(viewer,NULL,"-viewer_view");CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -456,10 +456,6 @@ PetscErrorCode AOSetFromOptions(AO ao)
   } else if (!((PetscObject)ao)->type_name) {
     ierr = AOSetType(ao,def);CHKERRQ(ierr);
   }
-
-  /* not used here, but called so will go into help messaage */
-  ierr = PetscOptionsName("-ao_view","Print detailed information on AO used","AOView",0);CHKERRQ(ierr);
-
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -499,45 +495,6 @@ PetscErrorCode AOSetIS(AO ao,IS isapp,IS ispetsc)
   }
   ao->isapp   = isapp;
   ao->ispetsc = ispetsc;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "AOViewFromOptions"
-/*
-   AOViewFromOptions - Processes command line options to determine if/how an AO is to be viewed.
-
-   Collective
-
-   Input Arguments:
-+  ao - the application ordering
-.  prefix - prefix to use for viewing, or NULL to use prefix of 'ao'
--  optionname - option to activate viewing
-
-   Level: intermediate
-
-.keywords: AO, view, options, database
-.seealso: AOView(), VecViewFromOptions(), DMViewFromOptions()
-*/
-PetscErrorCode AOViewFromOptions(AO ao,const char *prefix,const char *optionname)
-{
-  PetscErrorCode    ierr;
-  PetscBool         flg;
-  PetscViewer       viewer;
-  PetscViewerFormat format;
-
-  PetscFunctionBegin;
-  if (prefix) {
-    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ao),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
-  } else {
-    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ao),((PetscObject)ao)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
-  }
-  if (flg) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = AOView(ao,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 

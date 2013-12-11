@@ -371,7 +371,6 @@ PetscErrorCode ISCreateGeneral_Private(IS is)
   PetscInt       n      = sub->n,i,min,max;
   const PetscInt *idx   = sub->idx;
   PetscBool      sorted = PETSC_TRUE;
-  PetscBool      flg    = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
@@ -389,12 +388,7 @@ PetscErrorCode ISCreateGeneral_Private(IS is)
   is->max        = max;
   is->isperm     = PETSC_FALSE;
   is->isidentity = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-is_view",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)is),&viewer);CHKERRQ(ierr);
-    ierr = ISView(is,viewer);CHKERRQ(ierr);
-  }
+  ierr = ISViewFromOptions(is,NULL,"-is_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
