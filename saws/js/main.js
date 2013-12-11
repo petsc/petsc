@@ -33,46 +33,27 @@ var matDivCounter = 0;
 //Call the "Tex" function which populates an array with TeX to be used instead of images
 //var texMatrices = tex(maxMatricies)
 
+DisplayPCType = function(defl) {
+    SAWs.getDirectory("PETSc/Options/-pc_type",function(data,indef){
+                                                 if (indef) var def = indef;
+                                                 else       var def = JSON.stringify(data.directories.Options.variables["-pc_type"].data[0]);
+                                                 var alternatives = data.directories.Options.variables["-pc_type"].data.alternatives;
+                                                 populatePcList("pcList",alternatives,def);
+ // here it should display all the other PC options available to the PC currently
+                                               },defl)
+}
+
 HandlePCOptions = function(){
 
-    SAWs.getDirectory("PETSc/Options/-pc_type",function(data,functx){
-                                                  var def = JSON.stringify(data.directories.Options.variables["-pc_type"].data[0]);
-                                                  var alternatives = data.directories.Options.variables["-pc_type"].data.alternatives;
-                                                  populatePcList("pcList",alternatives,def);
-                                                },0);
-
+    DisplayPCType(0);
 
     //reset the form
     formSet(recursionCounter,matrixInformation);
 
     //When the button "Logically Block Structured" is clicked...
     $("#logstruc, #nlogstruc").change(function(){ 
-                                        SAWs.getDirectory("PETSc/Options/-pc_type",function(data,functx){
-                                                         var def = "fieldsplit";
-                                                         var alternatives = data.directories.Options.variables["-pc_type"].data.alternatives;
-                                                         populatePcList("pcList",alternatives,def);
-                                                         },0);
-
-    })
-
-    //Add the first matrix image
-    $("#matrixPic").html("<center>" + tex2(matrixInformation, recursionCounter) + "</center>");
-
-    //$("#logstruc, #nlogstruc").change(function(){ //When the button "Logically Block Structured" is clicked...
-    $("#clearOutput").click(function(){
-	for(var i=0; i<=14; i++)
-	    $("#oCmdOptions"+i).empty();
-    });
-
-    $("#optionListsButton").click(function(){ //this is for show/hide information
-	if ($("#optionListsButton").val()=="Hide Information") {
-	    $("#optionLists").hide();
-	    $("#optionListsButton").attr("value","Show Information");
-	} else {
-	    $("#optionLists").show();
-	    $("#optionListsButton").attr("value","Hide Information");
-	}
-    });
+                                         DisplayPCType("fieldsplit");
+                                      })
 
     $("#submitButton").click(function(){
 
@@ -197,57 +178,7 @@ HandlePCOptions = function(){
     $("#symm").change(function(){
 	$("#posdefRow").show();
     })
-    // If we are doing lists, .remove() is probably not needed.
-    //Here is the messiest part of the code: The if..else tree that removes
-    // the options as we weed them out. I'd like a better way to do this, but I can't
-    // think of one off the top of my head.
-    //$("#stcg").remove()
-
-    //build the tree on click
-    //-------------------------------------------------------
-    var treeDetailed;
-    $("#solverTreeButton").click(function(){
-	$("#treeContainer").html("<div id='tree'> </div>");
-	
-	//get the options from the drop-down lists
-        solverGetOptions(matrixInformation);
-
-	//get the number of levels for the tree for scaling purposes
-	var matLevelForTree = matGetLevel(currentRecursionCounter) + 1;
-
-	//build the tree
-        treeDetailed = false;
-	buildTree(matrixInformation,matLevelForTree,treeDetailed);
-
-        //show cmdOptions to the screen
-        for (var i=0; i<=maxMatricies; i++) {
-	    if(typeof matrixInformation[i]=="undefined")//sometimes there will be gaps so we need to make sure program doesn't crash in middle of loop
-		continue;
-	    $("#oCmdOptions" + i).empty();
-            $("#oCmdOptions" + i).append("<br><br>" + matrixInformation[i].string);
-
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub]); //Tell mathJax to re compile the tex data    
-        }
-    })
-
-    $("#solverTreeButtonDetailed").click(function(){
-	$("#treeContainer").html("<div id='tree'> </div>");
-	
-	//get the options from the drop-down lists
-        solverGetOptions(matrixInformation);
-
-	//get the number of levels for the tree for scaling purposes
-	var matLevelForTree = matGetLevel(currentRecursionCounter) + 1;
-
-	//build the tree
-        treeDetailed = true;
-	buildTree(matrixInformation,matLevelForTree,treeDetailed);
-    })
-    
-    //Toggles the tree on and off
-    $('#treeToggle').click(function () {
-        $("#tree").toggle();
-    })   
+   
 }
 
 
