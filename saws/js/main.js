@@ -40,13 +40,18 @@ var SAWs_pcVal = "ilu";
 //$(document).ready is required in javascript/jQuery
 $(document).ready(function(){
 
-    //SAWs.getDirectory(/SAWs/PETSc/)
+    SAWs.getDirectory("PETSc/Options/-pc_type",function(data,functx){
+                                                  var def = JSON.stringify(data.directories.Options.variables["-pc_type"].data[0]);
+                                                  alert(def);
+                                                  var alternatives = data.directories.Options.variables["-pc_type"].data.alternatives;
+                                                  populatePcList("pcList",alternatives,def);
+                                                },0);
 
     //reset the form
     formSet(recursionCounter,matrixInformation);
    
     //using inputs from SAWs to populate PC drop-down menu and set default pctype
-    populatePcList("pcList",SAWs_pcList,SAWs_pcVal);
+//    populatePcList("pcList",SAWs_pcList,SAWs_pcVal);
 
     //Add the first matrix image
     $("#matrixPic").html("<center>" + tex2(matrixInformation, recursionCounter) + "</center>");

@@ -13,6 +13,7 @@
 <script src="js/tree.js"></script>
 <script src="js/lists.js"></script>
 <script src="js/listLogic.js"></script>
+<script src="js/jsSAWs.js"></script>
 <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
 </script>
 <style type="text/css">
@@ -47,71 +48,10 @@ nav a {text-decoration:none;color:#344873;font-family: Georgia, serif;}
 
 <body>
 <header style="width:1290px;background-color:#000033;color:#FFFFFF; padding:5px;text-align:left;">
-<h1> PETSc Linear Solver (KSP) Selection </h1>
+<h1> PETSc Linear Solver Selection </h1>
 </header>
 
-<nav id="optionLists" style="font-size:14px;width:1290px; float:left; margin: 0px 0px 0px 0px;background-color:#90C7E3;padding:5px;">
-<br>
-  <b style="font-size:16px">Krylov Methods (KSP):</b><br>
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPBCGS.html" target="_blank">BCGS</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPBCGSL.html" target="_blank">BCGSL</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPBICG.html" target="_blank">BICG</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPCG.html" target="_blank">CG</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPCGNE.html" target="_blank">CGNE</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPCGS.html" target="_blank">CGS</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPCHEBYSHEV.html" target="_blank">CHEBYSHEV</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPCR.html" target="_blank">CR</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPFGMRES.html" target="_blank">FGMRES</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPGLTR.html" target="_blank">GLTR</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPGMRES.html" target="_blank">GMRES</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPGROPPCG.html" target="_blank">GROPPCG</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPLSQR.html" target="_blank">LSQR</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPMINRES.html" target="_blank">MINRES</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPNASH.html" target="_blank">NASH</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPGMRES.html" target="_blank">PGMRES</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPIPECG.html" target="_blank">PIPECG</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPIPECR.html" target="_blank">PIPECR</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPREONLY.html" target="_blank">PREONLY</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPQCG.html" target="_blank">QCG</a>,	
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPRICHARDSON.html" target="_blank">RICHARDSON</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSPECEST.html" target="_blank">SPECEST</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSYMMLQ.html" target="_blank">SYMMLQ</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPTCQMR.html" target="_blank">TCQMR</a>,
-     <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPTFQMR.html" target="_blank">TFQMR</a>
 
-<br><br>
-<b style="font-size:16px">Preconditioners (PC):</b><br>
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCASA.html" target="_blank">ASA</a>,<!-- empty link -->
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCASM.html" target="_blank">ASM</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCBJACOBI.html" target="_blank">BJACOBI</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCCHOLESKY.html" target="_blank">CHOLESKY</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCCOMPOSITE.html" target="_blank">COMPOSITE</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCCP.html" target="_blank">CP</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCEISENSTAT.html" target="_blank">EISENSTAT</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCEXOTIC.html" target="_blank">EXOTIC</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCFIELDSPLIT.html" target="_blank">FIELDSPLIT</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCGALERKIN.html" target="_blank">GALERKIN</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCGAMG.html" target="_blank">GAMG</a>
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCGASM.html" target="_blank">GASM</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCHMPI.html" target="_blank">HMPI</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCICC.html" target="_blank">ICC</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCILU.html" target="_blank">ILU</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCJACOBI.html" target="_blank">JACOBI</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCKSP.html" target="_blank">KSP</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCLSC.html" target="_blank">LSC</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCLU.html" target="_blank">LU</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCMAT.html" target="_blank">MAT</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCMG.html" target="_blank">MG</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCNN.html" target="_blank">NN</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCNONE.html" target="_blank">NONE</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCPBJACOBI.html" target="_blank">PBJACOBI</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCREDISTRIBUTE.html" target="_blank">REDISTRIBUTE</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCREDUNDANT.html" target="_blank">REDUNDANT</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCSHELL.html" target="_blank">SHELL</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCSOR.html" target="_blank">SOR</a>,
-<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCSVD.html" target="_blank">SVD</a>
-<br><br><br>
-</nav> <!-- endof nav id="optionLists" -->
 
 <div id="outside" style="width:1290px;background-color:#90C7E3;padding:5px;" >
 
