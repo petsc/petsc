@@ -33,25 +33,27 @@ var matDivCounter = 0;
 //Call the "Tex" function which populates an array with TeX to be used instead of images
 //var texMatrices = tex(maxMatricies)
 
-//global variables - remove later???
-var SAWs_pcList = ["none","jacobi","pbjacobi","bjacobi","sor","lu","shell","mg","eisenstat","ilu","icc","cholesky","asm","gasm","ksp","composite","redundant","nn","fieldsplit","null"]; 
-var SAWs_pcVal = "ilu"; 
-
-//$(document).ready is required in javascript/jQuery
-$(document).ready(function(){
+HandlePCOptions = function(){
 
     SAWs.getDirectory("PETSc/Options/-pc_type",function(data,functx){
                                                   var def = JSON.stringify(data.directories.Options.variables["-pc_type"].data[0]);
-                                                  alert(def);
                                                   var alternatives = data.directories.Options.variables["-pc_type"].data.alternatives;
                                                   populatePcList("pcList",alternatives,def);
                                                 },0);
 
+
     //reset the form
     formSet(recursionCounter,matrixInformation);
-   
-    //using inputs from SAWs to populate PC drop-down menu and set default pctype
-//    populatePcList("pcList",SAWs_pcList,SAWs_pcVal);
+
+    //When the button "Logically Block Structured" is clicked...
+    $("#logstruc, #nlogstruc").change(function(){ 
+                                        SAWs.getDirectory("PETSc/Options/-pc_type",function(data,functx){
+                                                         var def = "fieldsplit";
+                                                         var alternatives = data.directories.Options.variables["-pc_type"].data.alternatives;
+                                                         populatePcList("pcList",alternatives,def);
+                                                         },0);
+
+    })
 
     //Add the first matrix image
     $("#matrixPic").html("<center>" + tex2(matrixInformation, recursionCounter) + "</center>");
@@ -74,10 +76,7 @@ $(document).ready(function(){
 
     $("#submitButton").click(function(){
 
-        //remove divPcList from the screen
-        if (recursionCounter == 0) 
-            $("#divPcList").hide();
-        
+
 	//matrixLevel is how many matrices deep the data is. 0 is the overall matrix, 
 	// 1 would be 4 blocks, 2 would be 10 blocks, 3 would be 20 blocks, etc
 	var matrixLevel = matGetLevel(recursionCounter);
@@ -249,7 +248,11 @@ $(document).ready(function(){
     $('#treeToggle').click(function () {
         $("#tree").toggle();
     })   
-})
+}
+
+
+//  This function is run when the page is first visited
+$(document).ready(function(){HandlePCOptions();})
 
 //------------------------------------------------------------------------------
 /*
