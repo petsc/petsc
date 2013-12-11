@@ -406,7 +406,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   Mat            jac    = *B;             /* Jacobian matrix */
   Vec            localX = user->localX;   /* local vector */
   PetscErrorCode ierr;
-  PetscInt       *ltog;                   /* local-to-global mapping */
+  const PetscInt *ltog;                   /* local-to-global mapping */
   PetscInt       i,j,row,mx,my,col[5];
   PetscInt       nloc,xs,ys,xm,ym,gxs,gys,gxm,gym,grow;
   PetscScalar    two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
@@ -471,6 +471,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
       ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
+  ierr = DMDARestoreGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
 
   /*
      Assemble matrix, using the 2-step process:
