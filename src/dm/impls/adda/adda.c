@@ -75,6 +75,7 @@ PetscErrorCode  DMCreateMatrix_ADDA(DM dm, Mat *mat)
   ierr = MatCreate(PetscObjectComm((PetscObject)dm), mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat, dd->lsize, dd->lsize, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(*mat, dm->mattype);CHKERRQ(ierr);
+  ierr = MatSetUp(*mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

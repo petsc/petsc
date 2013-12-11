@@ -194,8 +194,7 @@ int main(int argc,char **args)
 
           if (i<ne && j<ne && k<ne) {
             /* radius */
-            PetscReal radius = PetscSqrtScalar((x-.5+h/2)*(x-.5+h/2)+(y-.5+h/2)*(y-.5+h/2)+
-                                               (z-.5+h/2)*(z-.5+h/2));
+            PetscReal radius = PetscSqrtReal((x-.5+h/2)*(x-.5+h/2)+(y-.5+h/2)*(y-.5+h/2)+(z-.5+h/2)*(z-.5+h/2));
             PetscReal alpha = 1.0;
             PetscInt  jx,ix,idx[8] = { id, id+1, id+NN+1, id+NN,
                                        id        + NN*NN, id+1    + NN*NN,

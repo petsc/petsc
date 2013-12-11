@@ -228,9 +228,9 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
     y = j*hy;
     for (i=xs; i<xs+xm; i++) {
       x = i*hx;
-      r = PetscSqrtScalar((x-.5)*(x-.5) + (y-.5)*(y-.5));
+      r = PetscSqrtReal((x-.5)*(x-.5) + (y-.5)*(y-.5));
       if (r < .125) {
-        u[j][i][0] = PetscExpScalar(-30.0*r*r*r);
+        u[j][i][0] = PetscExpReal(-30.0*r*r*r);
         u[j][i][1] = 0.0;
       } else {
         u[j][i][0] = 0.0;

@@ -199,6 +199,7 @@ PetscErrorCode  PetscOptionsStringToScalar(const char name[],PetscScalar *a)
       ierr = PetscTokenFind(token,&tvalue);CHKERRQ(ierr);
       if (!tvalue) {
         *a = re;
+        ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }
       ierr = PetscStrlen(tvalue,&len);CHKERRQ(ierr);

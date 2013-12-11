@@ -43,7 +43,7 @@ int main(int argc,char **argv)
     xx[0] = xx[1] = xx[2] = x;
     yy[0] = (1.-x*x)*(1. - x*x);
     yy[1] = (1. - x*x);
-    yy[2] = -(1.-x)*PetscLogScalar(1.-x);
+    yy[2] = -(1.-x)*PetscLogReal(1.-x);
     ierr  = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
     x    += hx;
   }
@@ -63,7 +63,7 @@ int main(int argc,char **argv)
     xx[0] = xx[1] = xx[2] = x;
     yy[0] = x*x*x - x;
     yy[1] = -x;
-    yy[2] = 1.0 + PetscLogScalar(1. - x);
+    yy[2] = 1.0 + PetscLogReal(1. - x);
     ierr  = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
     x    += hx;
   }
