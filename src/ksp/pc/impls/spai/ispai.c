@@ -724,7 +724,7 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     ierr = MatGetRow(A,i,&num_ptr[i-rstart],NULL,NULL);CHKERRQ(ierr);
-    ierr = MatRestoreRow(A,i,&num_ptr[i-rstart],NULL,NULL);CHKERRQ(ierr);
+    ierr = MatRestoreRow(A,i,NULL,NULL,NULL);CHKERRQ(ierr);
   }
 
   /* allocate buffers */
@@ -766,7 +766,7 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
     /* count number of nonzeros in every column */
     for (i=rstart; i<rend; i++) {
       ierr = MatGetRow(AT,i,&num_ptr[i-rstart],NULL,NULL);CHKERRQ(ierr);
-      ierr = MatRestoreRow(AT,i,&num_ptr[i-rstart],NULL,NULL);CHKERRQ(ierr);
+      ierr = MatRestoreRow(AT,i,NULL,NULL,NULL);CHKERRQ(ierr);
     }
 
     /* allocate buffers */
