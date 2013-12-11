@@ -35,12 +35,19 @@ var matDivCounter = 0;
 
 DisplayPCType = function(defl) {
     SAWs.getDirectory("PETSc/Options/-pc_type",function(data,indef){
-                                                 if (indef) var def = indef;
-                                                 else       var def = JSON.stringify(data.directories.Options.variables["-pc_type"].data[0]);
-                                                 var alternatives = data.directories.Options.variables["-pc_type"].data.alternatives;
-                                                 populatePcList("pcList",alternatives,def);
+        var def;
+        var alternatives;
+        if (indef) {
+            def          = "null"; 
+            alternatives = null;
+        } else {
+            def          = data.directories.Options.variables["-pc_type"].data[0];
+            alternatives = data.directories.Options.variables["-pc_type"].alternatives;
+        }
+        //var alternatives = JSON.stringify(data.directories.Options.variables["-pc_type"].alternatives);
+        populatePcList("pcList",alternatives,def);
  // here it should display all the other PC options available to the PC currently
-                                               },defl)
+    },defl)
 }
 
 HandlePCOptions = function(){

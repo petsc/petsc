@@ -107,7 +107,7 @@ function populatePcList(listId,listVals,defaultVal)
         $(list).append("<option value=\"svd\">svd</option>")
     } else {
         var i=0;
-        while (listVals[i] != "null"){
+        while (listVals[i] != "(null)"){
             $(list).append("<option value="+listVals[i]+">"+listVals[i]+"</option>");
             i++;
         }
