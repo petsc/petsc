@@ -35,16 +35,9 @@ var matDivCounter = 0;
 
 DisplayPCType = function(defl) {
     SAWs.getDirectory("PETSc/Options/-pc_type",function(data,indef){
-        var def;
-        var alternatives;
-        if (indef) {
-            def          = "null"; 
-            alternatives = null;
-        } else {
-            def          = data.directories.Options.variables["-pc_type"].data[0];
-            alternatives = data.directories.Options.variables["-pc_type"].alternatives;
-        }
-        //var alternatives = JSON.stringify(data.directories.Options.variables["-pc_type"].alternatives);
+        if (indef) var def = indef; 
+        else       var def = data.directories.Options.variables["-pc_type"].data[0];
+        var alternatives = data.directories.Options.variables["-pc_type"].alternatives;
         populatePcList("pcList",alternatives,def);
  // here it should display all the other PC options available to the PC currently
     },defl)
@@ -59,8 +52,10 @@ HandlePCOptions = function(){
 
     //When the button "Logically Block Structured" is clicked...
     $("#logstruc, #nlogstruc").change(function(){ 
-                                         DisplayPCType("fieldsplit");
-                                      })
+        DisplayPCType("fieldsplit");
+    })
+    //manually trigger pclist once because additional options, e.g., detailed info may need to be added
+    $("#pcList0").trigger("change"); 
 
     $("#submitButton").click(function(){
 
