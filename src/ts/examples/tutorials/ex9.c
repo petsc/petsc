@@ -30,9 +30,6 @@ static const char help[] = "1D periodic Finite Volume solver in slope-limiter fo
   "Several initial conditions can be chosen with -initial N\n\n"
   "The problem size should be set with -da_grid_x M\n\n";
 
-/* To get isfinite in math.h */
-#define _XOPEN_SOURCE 600
-
 #include <petscts.h>
 #include <petscdmda.h>
 #include <petscdraw.h>
@@ -902,11 +899,12 @@ static PetscErrorCode PhysicsRiemann_IsoGas_Roe(void *vctx,PetscInt m,const Pets
 #define __FUNCT__ "PhysicsRiemann_IsoGas_Exact"
 static PetscErrorCode PhysicsRiemann_IsoGas_Exact(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
-  IsoGasCtx   *phys = (IsoGasCtx*)vctx;
-  PetscReal   c     = phys->acoustic_speed;
-  PetscScalar ustar[2];
+  IsoGasCtx                   *phys = (IsoGasCtx*)vctx;
+  PetscReal                   c     = phys->acoustic_speed;
+  PetscScalar                 ustar[2];
   struct {PetscScalar rho,u;} L = {uL[0],uL[1]/uL[0]},R = {uR[0],uR[1]/uR[0]},star;
-  PetscInt i;
+  PetscInt                    i;
+  PetscErrorCode              ierr;
 
   PetscFunctionBeginUser;
   if (!(L.rho > 0 && R.rho > 0)) SETERRQ(PETSC_COMM_SELF,1,"Reconstructed density is negative");
@@ -922,7 +920,7 @@ static PetscErrorCode PhysicsRiemann_IsoGas_Exact(void *vctx,PetscInt m,const Pe
         ? (rho-R.rho)/PetscSqrtScalar(R.rho*rho)       /* shock */
         : PetscLogScalar(rho) - PetscLogScalar(R.rho); /* rarefaction */
       res = R.u-L.u + c*(fr+fl);
-      if (!isfinite(res)) SETERRQ1(PETSC_COMM_SELF,1,"non-finite residual=%g",res);
+      ierr = PetscIsInfOrNanScalar(res);CHKERRQ(ierr);
       if (PetscAbsScalar(res) < 1e-10) {
         star.rho = rho;
         star.u   = L.u - c*fl;
@@ -1067,10 +1065,11 @@ PETSC_STATIC_INLINE void ShallowFlux(ShallowCtx *phys,const PetscScalar *u,Petsc
 #define __FUNCT__ "PhysicsRiemann_Shallow_Exact"
 static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
-  ShallowCtx *phys = (ShallowCtx*)vctx;
-  PetscScalar g    = phys->gravity,ustar[2],cL,cR,c,cstar;
+  ShallowCtx                *phys = (ShallowCtx*)vctx;
+  PetscScalar               g    = phys->gravity,ustar[2],cL,cR,c,cstar;
   struct {PetscScalar h,u;} L = {uL[0],uL[1]/uL[0]},R = {uR[0],uR[1]/uR[0]},star;
-  PetscInt i;
+  PetscInt                  i;
+  PetscErrorCode            ierr;
 
   PetscFunctionBeginUser;
   if (!(L.h > 0 && R.h > 0)) SETERRQ(PETSC_COMM_SELF,1,"Reconstructed thickness is negative");
@@ -1091,7 +1090,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx,PetscInt m,const P
         ? PetscSqrtScalar(0.5*g*(h*h - R.h*R.h)*(1/R.h - 1/h)) /* shock */
         : 2*PetscSqrtScalar(g*h) - 2*PetscSqrtScalar(g*R.h);   /* rarefaction */
       res = R.u - L.u + fr + fl;
-      if (!isfinite(res)) SETERRQ1(PETSC_COMM_SELF,1,"non-finite residual=%g",res);
+      ierr = PetscIsInfOrNanScalar(res);CHKERRQ(ierr);
       if (PetscAbsScalar(res) < 1e-8 || (i > 0 && PetscAbsScalar(h-h0) < 1e-8)) {
         star.h = h;
         star.u = L.u - fl;
