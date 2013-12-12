@@ -967,7 +967,7 @@ TESTEXAMPLES_DATAFILESPATH     = ex6.PETSc runex6 runex6_2 ex6.rm ex11.PETSc run
                                  ex25.PETSc runex25 runex25_2 ex25.rm ex27.PETSc runex27 ex25.rm \
                                  ex30.PETSc runex30 runex30_2 runex30_shift runex30_shift_cholesky_aij runex30_shift_cholesky_sbaij ex30.rm \
                                  ex31.PETSc runex31 ex31.rm \
-                                 ex34.PETSc runex34 ex34.rm ex37.PETSc runex37 runex37_2 runex37_3 runex37_4 runex37_5 ex37.rm \
+                                 ex37.PETSc runex37 runex37_2 runex37_3 runex37_4 runex37_5 ex37.rm \
                                  ex12f.PETSc runex12f ex12f.rm ex16f.PETSc runex16f ex16f.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX =
 TESTEXAMPLES_13		       = ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex5f.PETSc ex5f.rm

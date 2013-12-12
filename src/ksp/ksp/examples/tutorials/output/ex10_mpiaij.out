@@ -44,14 +44,14 @@ PC Object: 2 MPI processes
               not using I-node routines
     linear system matrix = precond matrix:
     Mat Object:     1 MPI processes
-      type: seqaijperm
+      type: seqaij
       rows=18, cols=18
       total: nonzeros=72, allocated nonzeros=72
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
   linear system matrix = precond matrix:
   Mat Object:   2 MPI processes
-    type: mpiaijperm
+    type: mpiaijcrl
     rows=36, cols=36
     total: nonzeros=156, allocated nonzeros=156
     total number of mallocs used during MatSetValues calls =0
