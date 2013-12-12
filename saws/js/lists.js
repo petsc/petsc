@@ -114,8 +114,29 @@ function populatePcList(listId,listVals,defaultVal)
     }
 
     //set default pc_type
+/*
     var recursionCounter = oDivGetRecursionCounter(listId);
     if (recursionCounter >-1 && matrixInformation[recursionCounter].logstruc) { 
+	$(list).find("option[value='fieldsplit']").attr("selected","selected");
+    } else { // !logstruc
+        if (defaultVal == "null") {
+	    $(list).find("option[value='bjacobi']").attr("selected","selected");  
+        } else {
+            $(list).find("option[value=" + defaultVal +"]").attr("selected","selected"); 
+        }
+    }
+*/
+
+    var recursionCounter = oDivGetRecursionCounter(listId);
+    if (matrixInformation[recursionCounter] === undefined) {
+        if (matrixInformation[recursionCounter] === undefined) 
+            alert("Warning: matrixInformation["+recursionCounter+"] is undefined!");
+        if (defaultVal == "null") {
+	    $(list).find("option[value='bjacobi']").attr("selected","selected");  
+        } else {
+            $(list).find("option[value=" + defaultVal +"]").attr("selected","selected"); 
+        }
+    } else if (matrixInformation[recursionCounter].logstruc) {
 	$(list).find("option[value='fieldsplit']").attr("selected","selected");
     } else { // !logstruc
         if (defaultVal == "null") {

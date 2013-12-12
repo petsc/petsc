@@ -17,6 +17,7 @@ $(document).on('change', '.pcLists', function(){
 
     //get the pc option
     var pcValue = $(this).val();
+    //if (pcValue == null) alert("Warning: pcValue = null!");
 
     //.parent() returns a weird object so we need to use .get(0)
     var parentDiv = $(this).parent().get(0).id;
@@ -239,7 +240,7 @@ $(document).on('change', '.pcLists', function(){
 	$("#"+newDiv).remove();
     }
 
-    // if parentFieldSplit is false, disable kspList and pcList
+    // if parentFieldSplit is false, disable kspList and pcList 
     for (var i=0; i<maxMatricies; i++) {
 	if (!$("#pcList" + i).data("parentFieldSplit")) {
 	    $("#pcList" + i).attr("disabled", true)

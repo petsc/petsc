@@ -38,27 +38,44 @@ DisplayPCType = function(defl) {
         if (indef) var def = indef; 
         else       var def = data.directories.Options.variables["-pc_type"].data[0];
         var alternatives = data.directories.Options.variables["-pc_type"].alternatives;
-        populatePcList("pcList",alternatives,def);
- // here it should display all the other PC options available to the PC currently
+        populatePcList("pcList-1",alternatives,def);
+
+        // here it should display all the other PC options available to the PC currently
     },defl)
 }
 
 HandlePCOptions = function(){
-
-    DisplayPCType(0);
+    recursionCounter = -1;
 
     //reset the form
     formSet(recursionCounter,matrixInformation);
+   
+    //must define these parameters before setting default pcVal, see populatePcList() and listLogic.js!
+    matrixInformation[recursionCounter] = {
+        posdef:  0,
+        symm:    0,
+        logstruc:0,
+    }
+   
+    //create div 'o-1'
+    $("#divPc").append("<div id=\"o"+recursionCounter+"\"> </div>");
+    $("#o" + recursionCounter).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b title=\"Krylov method\">KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + recursionCounter +"\"></select>");//giving an html element a title creates a tooltip
+    $("#o"+ recursionCounter).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + recursionCounter +"\"></select>");
 
+    //set parentFieldSplit:true as default -ugly???
+    $("#pcList"+ recursionCounter).data("parentFieldSplit", true);
+   
+    DisplayPCType(0);
     //When the button "Logically Block Structured" is clicked...
     $("#logstruc, #nlogstruc").change(function(){ 
         DisplayPCType("fieldsplit");
     })
     //manually trigger pclist once because additional options, e.g., detailed info may need to be added
-    $("#pcList0").trigger("change"); 
-
-    $("#submitButton").click(function(){
-
+    $("#pcList"+ recursionCounter).trigger("change"); 
+    
+    recursionCounter++;
+    $("#continueButton").click(function(){
+        //alert(recursionCounter);
 
 	//matrixLevel is how many matrices deep the data is. 0 is the overall matrix, 
 	// 1 would be 4 blocks, 2 would be 10 blocks, 3 would be 20 blocks, etc
@@ -115,14 +132,14 @@ HandlePCOptions = function(){
 	//store the recursion counter in the div as a data() - for solverTree - (seems never been used)???
 	$("#kspList" + recursionCounter).data("listRecursionCounter", recursionCounter);
 	$("#pcList" + recursionCounter).data("listRecursionCounter", recursionCounter);
-
-	$("#pcList" + recursionCounter).data("parentFieldSplit", true);
+        //set parentFieldSplit:true as default - ugly???
+	$("#pcList" + recursionCounter).data("parentFieldSplit",true);
 
 	//populate the kspList[recursionCounter] and pclist[recursionCounter] with default options
         populateKspList("kspList"+recursionCounter);
         if (recursionCounter == 0) {
-            var pcVal = $("#pcList").val(); //Get pctype from the drop-down pcList
-	    populatePcList("pcList"+recursionCounter,SAWs_pcList,pcVal);
+            var pcVal = $("#pcList-1").val(); //Get pctype from the drop-down pcList-1
+	    populatePcList("pcList"+recursionCounter,null,pcVal);
         } else {
             populatePcList("pcList"+recursionCounter,null,"null");
         }
@@ -225,9 +242,9 @@ function formSet(recursionCounter,matrixInformation)
     $("#logstruc").removeAttr("checked");
     $("#nlogstruc").removeAttr("checked");
 
-    $("#mg").removeAttr("checked");
-    $("#submitFormButton").removeAttr("checked");
-    $("#submitButton").removeAttr("checked");
+    //$("#mg").removeAttr("checked");
+    //$("#submitFormButton").removeAttr("checked");
+    //$("#submitButton").removeAttr("checked");
 
     //fill in the form if the information was previously set
     //if symmetric, fill in bubble and show posdef
