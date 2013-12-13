@@ -1238,37 +1238,42 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
     ierr = MatMultTranspose(pcbddc->coarse_psi_B,pcis->vec1_B,pcbddc->vec1_P);CHKERRQ(ierr);
     if (pcbddc->switch_static) { ierr = MatMultTransposeAdd(pcbddc->coarse_psi_D,pcis->vec1_D,pcbddc->vec1_P,pcbddc->vec1_P);CHKERRQ(ierr); }
   }
-  /* Scatter data of coarse_rhs */
-  ierr = VecSet(pcbddc->coarse_rhs,zero);CHKERRQ(ierr);
-  ierr = PCBDDCScatterCoarseDataBegin(pc,pcbddc->vec1_P,pcbddc->coarse_rhs,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  /* start communications from local primal nodes to rhs of coarse solver */
+  ierr = VecSet(pcbddc->coarse_vec,zero);CHKERRQ(ierr);
+  ierr = PCBDDCScatterCoarseDataBegin(pc,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = PCBDDCScatterCoarseDataEnd(pc,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+  /* Coarse solution -> rhs and sol updated in PCBDDCScattarCoarseDataBegin/End */
+  /* TODO remove null space when doing multilevel */
+  if (pcbddc->coarse_ksp) {
+    if (applytranspose) {
+      ierr = KSPSolveTranspose(pcbddc->coarse_ksp,NULL,NULL);CHKERRQ(ierr);
+    } else {
+      ierr = KSPSolve(pcbddc->coarse_ksp,NULL,NULL);CHKERRQ(ierr);
+    }
+  }
+  /* start communications from coarse solver solution to local primal nodes */
+  ierr = PCBDDCScatterCoarseDataBegin(pc,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 
   /* Local solution on R nodes */
   ierr = VecSet(pcbddc->vec1_R,zero);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcbddc->R_to_B,pcis->vec1_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (pcbddc->R_to_B,pcis->vec1_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(pcbddc->R_to_B,pcis->vec1_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   if (pcbddc->switch_static) {
     ierr = VecScatterBegin(pcbddc->R_to_D,pcis->vec1_D,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (pcbddc->R_to_D,pcis->vec1_D,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcbddc->R_to_D,pcis->vec1_D,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   }
   ierr = PCBDDCSolveSubstructureCorrection(pc,pcbddc->vec1_R,pcbddc->vec2_R,pcbddc->vec1_C,applytranspose);CHKERRQ(ierr);
   ierr = VecSet(pcis->vec1_B,zero);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcbddc->R_to_B,pcbddc->vec2_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (pcbddc->R_to_B,pcbddc->vec2_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(pcbddc->R_to_B,pcbddc->vec2_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   if (pcbddc->switch_static) {
     ierr = VecScatterBegin(pcbddc->R_to_D,pcbddc->vec2_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (pcbddc->R_to_D,pcbddc->vec2_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcbddc->R_to_D,pcbddc->vec2_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
 
-  /* Coarse solution */
-  ierr = PCBDDCScatterCoarseDataEnd(pc,pcbddc->vec1_P,pcbddc->coarse_rhs,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  /* TODO remove null space when doing multilevel */
-  if (applytranspose) {
-    ierr = KSPSolveTranspose(pcbddc->coarse_ksp,pcbddc->coarse_rhs,pcbddc->coarse_vec);CHKERRQ(ierr);
-  } else {
-    ierr = KSPSolve(pcbddc->coarse_ksp,pcbddc->coarse_rhs,pcbddc->coarse_vec);CHKERRQ(ierr);
-  }
-  ierr = PCBDDCScatterCoarseDataBegin(pc,pcbddc->coarse_vec,pcbddc->vec1_P,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = PCBDDCScatterCoarseDataEnd  (pc,pcbddc->coarse_vec,pcbddc->vec1_P,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  /* complete communications from coarse sol to local primal nodes */
+  ierr = PCBDDCScatterCoarseDataEnd(pc,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 
   /* Sum contributions from two levels */
   if (applytranspose) {
@@ -1281,27 +1286,70 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
   PetscFunctionReturn(0);
 }
 
+/* TODO: the following two function can be optimized using VecPlaceArray whenever possible and using overlap flag */
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCScatterCoarseDataBegin"
-PetscErrorCode PCBDDCScatterCoarseDataBegin(PC pc,Vec vec_from, Vec vec_to, InsertMode imode, ScatterMode smode)
+PetscErrorCode PCBDDCScatterCoarseDataBegin(PC pc,InsertMode imode, ScatterMode smode)
 {
   PetscErrorCode ierr;
   PC_BDDC*       pcbddc = (PC_BDDC*)(pc->data);
+  PetscScalar    *array,*array2;
+  Vec            from,to;
 
   PetscFunctionBegin;
-  ierr = VecScatterBegin(pcbddc->coarse_loc_to_glob,vec_from,vec_to,imode,smode);CHKERRQ(ierr);
+  if (smode == SCATTER_REVERSE) { /* from global to local -> get data from coarse solution */
+    from = pcbddc->coarse_vec;
+    to = pcbddc->vec1_P;
+    if (pcbddc->coarse_ksp) { /* get array from coarse processes */
+      Vec tvec;
+      PetscInt lsize;
+      ierr = KSPGetSolution(pcbddc->coarse_ksp,&tvec);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(tvec,&lsize);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(tvec,(const PetscScalar**)&array);CHKERRQ(ierr);
+      ierr = VecGetArray(from,&array2);CHKERRQ(ierr);
+      ierr = PetscMemcpy(array2,array,lsize*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(tvec,(const PetscScalar**)&array);CHKERRQ(ierr);
+      ierr = VecRestoreArray(from,&array2);CHKERRQ(ierr);
+    }
+  } else { /* from local to global -> put data in coarse right hand side */
+    from = pcbddc->vec1_P;
+    to = pcbddc->coarse_vec;
+  }
+  ierr = VecScatterBegin(pcbddc->coarse_loc_to_glob,from,to,imode,smode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCScatterCoarseDataEnd"
-PetscErrorCode PCBDDCScatterCoarseDataEnd(PC pc,Vec vec_from, Vec vec_to, InsertMode imode, ScatterMode smode)
+PetscErrorCode PCBDDCScatterCoarseDataEnd(PC pc, InsertMode imode, ScatterMode smode)
 {
   PetscErrorCode ierr;
   PC_BDDC*       pcbddc = (PC_BDDC*)(pc->data);
+  PetscScalar    *array,*array2;
+  Vec            from,to;
 
   PetscFunctionBegin;
-  ierr = VecScatterEnd(pcbddc->coarse_loc_to_glob,vec_from,vec_to,imode,smode);CHKERRQ(ierr);
+  if (smode == SCATTER_REVERSE) { /* from global to local -> get data from coarse solution */
+    from = pcbddc->coarse_vec;
+    to = pcbddc->vec1_P;
+  } else { /* from local to global -> put data in coarse right hand side */
+    from = pcbddc->vec1_P;
+    to = pcbddc->coarse_vec;
+  }
+  ierr = VecScatterEnd(pcbddc->coarse_loc_to_glob,from,to,imode,smode);CHKERRQ(ierr);
+  if (smode == SCATTER_FORWARD) {
+    if (pcbddc->coarse_ksp) { /* get array from coarse processes */
+      Vec tvec;
+      PetscInt lsize;
+      ierr = KSPGetRhs(pcbddc->coarse_ksp,&tvec);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(tvec,&lsize);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(to,(const PetscScalar**)&array);CHKERRQ(ierr);
+      ierr = VecGetArray(tvec,&array2);CHKERRQ(ierr);
+      ierr = PetscMemcpy(array2,array,lsize*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(to,(const PetscScalar**)&array);CHKERRQ(ierr);
+      ierr = VecRestoreArray(tvec,&array2);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -3315,6 +3363,9 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
   PetscFunctionReturn(0);
 }
 
+/* temporary hack into ksp private data structure */
+#include <petsc-private/kspimpl.h>
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetUpCoarseSolver"
 PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
@@ -3536,6 +3587,8 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   ierr = MatIsHermitianKnown(pc->pmat,&setsym,&isherm);CHKERRQ(ierr);
   ierr = MatSetOption(coarse_mat,MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
 
+/* temporary disabled code */
+#if 0
   /* Compute coarse null space (special handling by BDDC only) */
   if (pcbddc->NullSpace) {
     ierr = PCBDDCNullSpaceAssembleCoarse(pc,coarse_mat,&CoarseNullSpace);CHKERRQ(ierr);
@@ -3545,6 +3598,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr = KSPSetNullSpace(pcbddc->coarse_ksp,CoarseNullSpace);CHKERRQ(ierr);
     }
   }
+#endif
 
   /* set operators */
   ierr = KSPSetOperators(pcbddc->coarse_ksp,coarse_mat,coarse_mat,matstruct);CHKERRQ(ierr);
@@ -3572,6 +3626,8 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 
   /* setup coarse ksp */
   ierr = KSPSetUp(pcbddc->coarse_ksp);CHKERRQ(ierr);
+  /* hack -> use a DM on coarse_ksp to remove this hack */
+  ierr = MatGetVecs(coarse_mat,&((pcbddc->coarse_ksp)->vec_rhs),&((pcbddc->coarse_ksp)->vec_sol));CHKERRQ(ierr);
 
   /* Check coarse problem if in debug mode or if solving with an iterative method */
   ierr = PetscObjectTypeCompare((PetscObject)pcbddc->coarse_ksp,KSPPREONLY,&ispreonly);CHKERRQ(ierr);
