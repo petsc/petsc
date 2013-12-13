@@ -1089,12 +1089,10 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* Get stdout for dbg */
   if (pcbddc->dbg_flag) {
     if (!pcbddc->dbg_viewer) {
-      ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)pc),&pcbddc->dbg_viewer);CHKERRQ(ierr);
+      pcbddc->dbg_viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)pc));
       ierr = PetscViewerASCIISynchronizedAllow(pcbddc->dbg_viewer,PETSC_TRUE);CHKERRQ(ierr);
     }
-    if (pcbddc->current_level) {
-      ierr = PetscViewerASCIIAddTab(pcbddc->dbg_viewer,2);CHKERRQ(ierr);
-    }
+    ierr = PetscViewerASCIIAddTab(pcbddc->dbg_viewer,2*pcbddc->current_level);CHKERRQ(ierr);
   }
 
   /* Set up all the "iterative substructuring" common block without computing solvers */
@@ -1163,8 +1161,8 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PCBDDCScalingSetUp(pc);CHKERRQ(ierr);
   }
 
-  if (pcbddc->dbg_flag && pcbddc->current_level) {
-    ierr = PetscViewerASCIISubtractTab(pcbddc->dbg_viewer,2);CHKERRQ(ierr);
+  if (pcbddc->dbg_flag) {
+    ierr = PetscViewerASCIISubtractTab(pcbddc->dbg_viewer,2*pcbddc->current_level);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
