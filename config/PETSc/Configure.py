@@ -819,10 +819,13 @@ prepend-path PATH %s
       self.addDefine('DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('REPLACE_DIR_SEPARATOR','\'/\'')
       self.addDefine('CANNOT_START_DEBUGGER',1)
+      (petscdir,error,status) = self.executeShellCommand('cygpath -w '+self.petscdir.dir)
+      self.addDefine('DIR','"'+petscdir.replace('\\','\\\\')+'"')
     else:
       self.addDefine('PATH_SEPARATOR','\':\'')
       self.addDefine('REPLACE_DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('DIR_SEPARATOR','\'/\'')
+      self.addDefine('DIR', '"'+self.petscdir.dir+'"')
 
     return
 
