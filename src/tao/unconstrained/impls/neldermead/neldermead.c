@@ -241,7 +241,7 @@ PetscErrorCode TaoCreate_NM(TaoSolver tao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(tao,TAO_NelderMead,&nm); CHKERRQ(ierr);
+  ierr = PetscNewLog(tao,&nm); CHKERRQ(ierr);
   tao->data = (void*)nm;
 
   tao->ops->setup = TaoSetUp_NM;

@@ -1044,7 +1044,7 @@ PetscErrorCode TaoCreate_NTL(TaoSolver tao)
   PetscErrorCode ierr;
   const char *morethuente_type = TAOLINESEARCH_MT;
   PetscFunctionBegin;
-  ierr = PetscNewLog(tao, TAO_NTL, &tl); CHKERRQ(ierr);
+  ierr = PetscNewLog(tao,&tl); CHKERRQ(ierr);
   
   tao->ops->setup = TaoSetUp_NTL;
   tao->ops->solve = TaoSolve_NTL;

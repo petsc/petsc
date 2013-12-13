@@ -36,7 +36,7 @@ PetscErrorCode MatCreateSubMatrixFree(Mat mat,IS Rows, IS Cols, Mat *J)
   PetscInt mloc,nloc,m,n;
   PetscFunctionBegin;
 
-  ierr = PetscNew(_p_MatSubMatFreeCtx,&ctx);CHKERRQ(ierr);
+  ierr = PetscNew(&ctx);CHKERRQ(ierr);
   ctx->A=mat;
   ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
   ierr = MatGetLocalSize(mat,&mloc,&nloc);CHKERRQ(ierr);

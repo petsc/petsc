@@ -570,7 +570,7 @@ PetscErrorCode TaoCreate_POUNDER(TaoSolver tao)
   tao->ops->destroy = TaoDestroy_POUNDER;
 
 
-  ierr = PetscNewLog(tao, TAO_POUNDERS, &mfqP); CHKERRQ(ierr);
+  ierr = PetscNewLog(tao,&mfqP); CHKERRQ(ierr);
   tao->data = (void*)mfqP;
   tao->max_it = 2000;
   tao->max_funcs = 4000;

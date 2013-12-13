@@ -303,7 +303,7 @@ PetscErrorCode TaoCreate_BMRM(TaoSolver tao)
   tao->ops->setfromoptions = TaoSetFromOptions_BMRM;
   tao->ops->destroy = TaoDestroy_BMRM;
 
-  ierr = PetscNewLog(tao,TAO_BMRM,&bmrm); CHKERRQ(ierr);
+  ierr = PetscNewLog(tao,&bmrm); CHKERRQ(ierr);
   bmrm->lambda = 1.0;
   tao->data = (void*)bmrm;
 

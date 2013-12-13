@@ -556,7 +556,7 @@ PetscErrorCode TaoCreate_BQPIP(TaoSolver tao)
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(tao, TAO_BQPIP, &qp); CHKERRQ(ierr);
+  ierr = PetscNewLog(tao,&qp); CHKERRQ(ierr);
   tao->ops->setup = TaoSetUp_BQPIP;
   tao->ops->solve = TaoSolve_BQPIP;
   tao->ops->view = TaoView_BQPIP;

@@ -298,7 +298,7 @@ PetscErrorCode TaoCreate_LMVM(TaoSolver tao)
   tao->ops->setfromoptions = TaoSetFromOptions_LMVM;
   tao->ops->destroy = TaoDestroy_LMVM;
 
-  ierr = PetscNewLog(tao,TAO_LMVM, &lmP); CHKERRQ(ierr);
+  ierr = PetscNewLog(tao,&lmP); CHKERRQ(ierr);
   lmP->D = 0;
   lmP->M = 0;
   lmP->Xold = 0;

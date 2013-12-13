@@ -1206,7 +1206,7 @@ PetscErrorCode TaoCreate_NLS(TaoSolver tao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(tao,TAO_NLS,&nlsP); CHKERRQ(ierr);
+  ierr = PetscNewLog(tao,&nlsP); CHKERRQ(ierr);
 
   tao->ops->setup = TaoSetUp_NLS;
   tao->ops->solve = TaoSolve_NLS;

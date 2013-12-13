@@ -1280,7 +1280,7 @@ PetscErrorCode TaoCreate_IPM(TaoSolver tao)
   tao->ops->destroy = TaoDestroy_IPM;
   //tao->ops->computedual = TaoComputeDual_IPM;
   
-  ierr = PetscNewLog(tao, TAO_IPM, &ipmP); CHKERRQ(ierr);
+  ierr = PetscNewLog(tao,&ipmP); CHKERRQ(ierr);
   tao->data = (void*)ipmP;
   tao->max_it = 200;
   tao->max_funcs = 500;

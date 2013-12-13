@@ -321,7 +321,7 @@ PetscErrorCode TaoCreate_CG(TaoSolver tao)
     ierr = TaoLineSearchUseTaoSolverRoutines(tao->linesearch, tao); CHKERRQ(ierr);
     
     
-    ierr = PetscNewLog(tao,TAO_CG,&cgP); CHKERRQ(ierr);
+    ierr = PetscNewLog(tao,&cgP); CHKERRQ(ierr);
     tao->data = (void*)cgP;
     cgP->eta = 0.1;
     cgP->delta_min = 1e-7;

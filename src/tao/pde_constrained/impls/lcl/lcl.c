@@ -626,7 +626,7 @@ PetscErrorCode TaoCreate_LCL(TaoSolver tao)
   tao->ops->destroy = TaoDestroy_LCL;
   
 
-  ierr = PetscNewLog(tao,TAO_LCL,&lclP); CHKERRQ(ierr);
+  ierr = PetscNewLog(tao,&lclP); CHKERRQ(ierr);
   tao->data = (void*)lclP;
 
 

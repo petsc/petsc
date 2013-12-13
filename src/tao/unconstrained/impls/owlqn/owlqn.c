@@ -402,7 +402,7 @@ PetscErrorCode TaoCreate_OWLQN(TaoSolver tao)
   tao->ops->setfromoptions = TaoSetFromOptions_OWLQN;
   tao->ops->destroy = TaoDestroy_OWLQN;
 
-  ierr = PetscNewLog(tao,TAO_OWLQN, &lmP); CHKERRQ(ierr);
+  ierr = PetscNewLog(tao,&lmP); CHKERRQ(ierr);
   lmP->D = 0;
   lmP->M = 0;
   lmP->GV = 0;

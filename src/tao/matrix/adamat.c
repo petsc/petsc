@@ -37,7 +37,7 @@ PetscErrorCode MatCreateADA(Mat mat,Vec d1, Vec d2, Mat *J)
 
   PetscFunctionBegin;
 
-  ierr = PetscNew(_p_TaoMatADACtx,&ctx);CHKERRQ(ierr);
+  ierr = PetscNew(&ctx);CHKERRQ(ierr);
 
   ctx->A=mat;
   ctx->D1=d1;

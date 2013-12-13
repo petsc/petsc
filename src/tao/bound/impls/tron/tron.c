@@ -377,7 +377,7 @@ PetscErrorCode TaoCreate_TRON(TaoSolver tao)
   tao->ops->destroy = TaoDestroy_TRON;
   tao->ops->computedual = TaoComputeDual_TRON;
 
-  ierr = PetscNewLog(tao,TAO_TRON,&tron); CHKERRQ(ierr);
+  ierr = PetscNewLog(tao,&tron); CHKERRQ(ierr);
 
   tao->max_it = 50;
   tao->fatol = 1e-10;

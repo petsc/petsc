@@ -340,7 +340,7 @@ PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
     TAOLINESEARCH_MT_CTX *ctx;
     PetscFunctionBegin;
     PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
-    ierr = PetscNewLog(ls,TAOLINESEARCH_MT_CTX,&ctx); CHKERRQ(ierr);
+    ierr = PetscNewLog(ls,&ctx); CHKERRQ(ierr);
     ctx->bracket=0;
     ctx->infoc=1;
     ls->data = (void*)ctx;

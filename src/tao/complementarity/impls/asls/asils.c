@@ -305,7 +305,7 @@ PetscErrorCode TaoCreate_ASILS(TaoSolver tao)
   const char *armijo_type = TAOLINESEARCH_ARMIJO;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(tao,TAO_SSLS,&asls); CHKERRQ(ierr);
+  ierr = PetscNewLog(tao,&asls); CHKERRQ(ierr);
   tao->data = (void*)asls;
   tao->ops->solve = TaoSolve_ASILS;
   tao->ops->setup = TaoSetUp_ASILS;

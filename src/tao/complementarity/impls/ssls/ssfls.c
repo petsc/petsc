@@ -134,7 +134,7 @@ PetscErrorCode TaoCreate_SSFLS(TaoSolver tao)
   const char *armijo_type = TAOLINESEARCH_ARMIJO;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(tao,TAO_SSLS,&ssls); CHKERRQ(ierr);
+  ierr = PetscNewLog(tao,&ssls); CHKERRQ(ierr);
   tao->data = (void*)ssls;
   tao->ops->solve=TaoSolve_SSFLS;
   tao->ops->setup=TaoSetUp_SSFLS;

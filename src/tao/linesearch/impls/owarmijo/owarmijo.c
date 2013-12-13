@@ -369,7 +369,7 @@ PetscErrorCode TaoLineSearchCreate_OWArmijo(TaoLineSearch ls)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
-  ierr = PetscNewLog(ls,TAOLINESEARCH_OWARMIJO_CTX, &armP);CHKERRQ(ierr);
+  ierr = PetscNewLog(ls,&armP);CHKERRQ(ierr);
 
   armP->memory = PETSC_NULL;
   armP->alpha = 1.0;

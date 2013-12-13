@@ -234,7 +234,7 @@ PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch ls)
   ls->max_funcs		  = 30;
   ls->step                = 1.0;
 
-  ierr = PetscNewLog(ls,TAOLINESEARCH_GPCG_CTX,&neP);CHKERRQ(ierr);
+  ierr = PetscNewLog(ls,&neP);CHKERRQ(ierr);
   neP->bracket		  = 0; 
   neP->infoc              = 1;
   ls->data = (void*)neP;

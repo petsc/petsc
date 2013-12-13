@@ -301,7 +301,7 @@ PetscErrorCode TaoCreate_SQPCON(TaoSolver tao)
   tao->ops->destroy = TaoDestroy_SQPCON;
   
 
-  ierr = PetscNewLog(tao,TAO_SQPCON,&sqpconP); CHKERRQ(ierr);
+  ierr = PetscNewLog(tao,&sqpconP); CHKERRQ(ierr);
   tao->data = (void*)sqpconP;
 
   tao->max_it=200;

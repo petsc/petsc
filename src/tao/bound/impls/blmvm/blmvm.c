@@ -286,7 +286,7 @@ PetscErrorCode TaoCreate_BLMVM(TaoSolver tao)
   tao->ops->destroy = TaoDestroy_BLMVM;
   tao->ops->computedual = TaoComputeDual_BLMVM;
 
-  ierr = PetscNewLog(tao, TAO_BLMVM, &blmP); CHKERRQ(ierr);
+  ierr = PetscNewLog(tao,&blmP); CHKERRQ(ierr);
   tao->data = (void*)blmP;
   tao->max_it = 2000;
   tao->max_funcs = 4000;

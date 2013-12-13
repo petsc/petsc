@@ -368,7 +368,7 @@ PetscErrorCode TaoCreate_GPCG(TaoSolver tao)
   tao->ops->destroy = TaoDestroy_GPCG;
   tao->ops->computedual = TaoComputeDual_GPCG;
 
-  ierr = PetscNewLog(tao, TAO_GPCG, &gpcg); CHKERRQ(ierr);
+  ierr = PetscNewLog(tao,&gpcg); CHKERRQ(ierr);
   tao->data = (void*)gpcg;
 
   tao->max_it = 500;

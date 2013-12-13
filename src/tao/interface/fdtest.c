@@ -178,7 +178,7 @@ PetscErrorCode  TaoCreate_FD(TaoSolver  tao)
   tao->ops->view            = 0;
 
   
-  ierr			= PetscNewLog(tao,FD_Test,&fd);CHKERRQ(ierr);
+  ierr			= PetscNewLog(tao,&fd);CHKERRQ(ierr);
   tao->data    	= (void*)fd;
   fd->complete_print   = PETSC_FALSE;
   fd->check_gradient = PETSC_TRUE;

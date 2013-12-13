@@ -778,7 +778,7 @@ PetscErrorCode TaoCreate_NTR(TaoSolver tao)
 
   PetscFunctionBegin;
 
-  ierr = PetscNewLog(tao, TAO_NTR, &tr); CHKERRQ(ierr);
+  ierr = PetscNewLog(tao,&tr); CHKERRQ(ierr);
 
   tao->ops->setup = TaoSetUp_NTR;
   tao->ops->solve = TaoSolve_NTR;
