@@ -2717,7 +2717,6 @@ static PetscErrorCode MatISGetMPIXAIJ(Mat mat, MatType Mtype, MatReuse reuse, Ma
     ierr = PetscFree(global_indices);CHKERRQ(ierr);
   } else { /* very basic values insertion for all other matrix types */
     ierr = PetscFree(local_indices);CHKERRQ(ierr);
-    ierr = PetscFree(global_indices);CHKERRQ(ierr);
     for (i=0;i<local_rows;i++) {
       ierr = MatGetRow(matis->A,i,&j,(const PetscInt**)&local_indices,(const PetscScalar**)&array);CHKERRQ(ierr);
       /* ierr = MatSetValuesLocal(*M,1,&i,j,local_indices,array,ADD_VALUES);CHKERRQ(ierr); */
@@ -2726,6 +2725,7 @@ static PetscErrorCode MatISGetMPIXAIJ(Mat mat, MatType Mtype, MatReuse reuse, Ma
       ierr = MatSetValues(*M,1,&index_row,j,global_indices,array,ADD_VALUES);CHKERRQ(ierr);
       ierr = MatRestoreRow(matis->A,i,&j,(const PetscInt**)&local_indices,(const PetscScalar**)&array);CHKERRQ(ierr);
     }
+    ierr = PetscFree(global_indices);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(*M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
