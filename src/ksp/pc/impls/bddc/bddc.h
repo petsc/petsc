@@ -77,6 +77,8 @@ typedef struct {
   PetscInt                   current_level;
   PetscInt                   max_levels;
   IS                         coarse_subassembling;
+  IS                         coarse_subassembling_init;
+  PetscBool                  use_coarse_estimates;
   /* scaling */
   Vec                        work_scaling;
   PetscBool                  use_deluxe_scaling;
