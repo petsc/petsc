@@ -22,13 +22,6 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-petsc-arch=<string>',nargs.Arg(None, None, 'The configuration name'))
     return
 
-  def setupDependencies(self, framework):
-    config.base.Configure.setupDependencies(self, framework)
-    self.petscdir = framework.require('PETSc.utilities.petscdir', self)
-    self.languages = framework.require('PETSc.utilities.languages', self)
-    self.compilerFlags = framework.require('config.compilerFlags', self)
-    return
-
   def configureArchitecture(self):
     '''Checks PETSC_ARCH and sets if not set'''
 
@@ -50,9 +43,9 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
       else:
         import sys
         self.arch = 'arch-' + sys.platform.replace('cygwin','mswin')
-        # use opt/debug, c/c++ tags.
-        self.arch+= '-'+self.languages.clanguage.lower()
-        if self.compilerFlags.debugging:
+        # use opt/debug, c/c++ tags.s
+        self.arch+= '-'+self.framework.argDB['with-clanguage'].lower().replace('+','x')
+        if self.framework.argDB['with-debugging']:
           self.arch += '-debug'
         else:
           self.arch += '-opt'

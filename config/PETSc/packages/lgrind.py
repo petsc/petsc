@@ -51,7 +51,7 @@ class Configure(PETSc.package.NewPackage):
   def configure(self):
     import os
     '''Determine whether the Lgrind exist or not'''
-    if self.petscdir.isClone:
+    if self.petscclone.isClone:
       if self.framework.argDB['with-lgrind']:
         self.framework.logPrint('PETSc clone, checking for Lgrind\n')
         self.installDir  = os.path.join(self.petscdir.dir,self.arch)
