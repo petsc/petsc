@@ -181,6 +181,7 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmappi
     ierr = VecDestroy(&is->x);CHKERRQ(ierr);
     ierr = VecDestroy(&is->y);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&is->ctx);CHKERRQ(ierr);
+    ierr = MatDestroy(&is->A);CHKERRQ(ierr);
   }
   ierr = PetscObjectReference((PetscObject)rmapping);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&is->mapping);CHKERRQ(ierr);
