@@ -2174,6 +2174,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     ierr = PetscMemcpy(oprimal_indices_local_idxs,pcbddc->primal_indices_local_idxs,olocal_primal_size*sizeof(PetscInt));CHKERRQ(ierr);
   }
   ierr = PetscFree(aux_primal_numbering);CHKERRQ(ierr);
+  ierr = PetscFree(pcbddc->primal_indices_local_idxs);CHKERRQ(ierr);
   ierr = PetscMalloc(pcbddc->local_primal_size*sizeof(PetscInt),&pcbddc->primal_indices_local_idxs);CHKERRQ(ierr);
   ierr = PCBDDCGetPrimalVerticesLocalIdx(pc,&i,&aux_primal_numbering);CHKERRQ(ierr);
   ierr = PetscMemcpy(pcbddc->primal_indices_local_idxs,aux_primal_numbering,i*sizeof(PetscInt));CHKERRQ(ierr);
@@ -3760,12 +3761,19 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 #endif
 
   if (pcbddc->coarse_ksp) {
+    Vec crhs,csol;
     PetscBool ispreonly;
     /* setup coarse ksp */
     ierr = KSPSetUp(pcbddc->coarse_ksp);CHKERRQ(ierr);
+    ierr = KSPGetSolution(pcbddc->coarse_ksp,&csol);CHKERRQ(ierr);
+    ierr = KSPGetRhs(pcbddc->coarse_ksp,&crhs);CHKERRQ(ierr);
     /* hack */
-    ierr = MatGetVecs(coarse_mat,&((pcbddc->coarse_ksp)->vec_rhs),&((pcbddc->coarse_ksp)->vec_sol));CHKERRQ(ierr);
-
+    if (!csol) {
+      ierr = MatGetVecs(coarse_mat,&((pcbddc->coarse_ksp)->vec_sol),NULL);CHKERRQ(ierr);
+    }
+    if (!crhs) {
+      ierr = MatGetVecs(coarse_mat,NULL,&((pcbddc->coarse_ksp)->vec_rhs));CHKERRQ(ierr);
+    }
     /* Check coarse problem if in debug mode or if solving with an iterative method */
     ierr = PetscObjectTypeCompare((PetscObject)pcbddc->coarse_ksp,KSPPREONLY,&ispreonly);CHKERRQ(ierr);
     if (pcbddc->dbg_flag || (!ispreonly && pcbddc->use_coarse_estimates) ) {
