@@ -21,7 +21,6 @@
 
    Extra
    - Is it possible to work with PCBDDCGraph on boundary indices only (less memory consumed)?
-   - Why options for "pc_bddc_coarse" solver gets propagated to "pc_bddc_coarse_1" solver?
    - add support for computing h,H and related using coordinates?
    - Change of basis approach does not work with my nonlinear mechanics example. why? (seems not an issue with l2gmap)
    - Better management in PCIS code
@@ -245,6 +244,7 @@ PetscErrorCode PCBDDCSetLevels(PC pc,PetscInt levels)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,levels,2);
+  if (levels > 99) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Maximum number of levels for bddc is 99\n");
   ierr = PetscTryMethod(pc,"PCBDDCSetLevels_C",(PC,PetscInt),(pc,levels));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1660,11 +1660,11 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, Mat *fetidp_mat, PC *fetidp_pc
 
    When using a multilevel approach, solvers' options at the N-th level can be specified as
 .vb
-      -pc_bddc_dirichlet_N_
-      -pc_bddc_neumann_N_
-      -pc_bddc_coarse_N_
+      -pc_bddc_dirichlet_lN_
+      -pc_bddc_neumann_lN_
+      -pc_bddc_coarse_lN_
 .ve
-   Note that level number ranges from the finest 0 to the coarsest N
+   Note that level number ranges from the finest 0 to the coarsest N.
 
    Level: intermediate
 

@@ -1018,7 +1018,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
   PetscBool      use_exact,use_exact_reduced,issbaij;
   PetscErrorCode ierr;
   /* prefixes stuff */
-  char           dir_prefix[256],neu_prefix[256],str_level[3];
+  char           dir_prefix[256],neu_prefix[256],str_level[16];
   size_t         len;
 
   PetscFunctionBegin;
@@ -1034,10 +1034,11 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
     ierr = PetscStrcat(neu_prefix,"pc_bddc_neumann_");CHKERRQ(ierr);
   } else {
     ierr = PetscStrcpy(str_level,"");CHKERRQ(ierr);
-    sprintf(str_level,"%d_",(int)(pcbddc->current_level));
+    sprintf(str_level,"l%d_",(int)(pcbddc->current_level));
     ierr = PetscStrlen(((PetscObject)pc)->prefix,&len);CHKERRQ(ierr);
     len -= 15; /* remove "pc_bddc_coarse_" */
-    if (pcbddc->current_level>1) len -= 2; /* remove "X_" with X level number (works with 9 levels max) */
+    if (pcbddc->current_level>1) len -= 3; /* remove "lX_" with X level number */
+    if (pcbddc->current_level>10) len -= 1; /* remove another char from level number */
     ierr = PetscStrncpy(dir_prefix,((PetscObject)pc)->prefix,len);CHKERRQ(ierr);
     ierr = PetscStrncpy(neu_prefix,((PetscObject)pc)->prefix,len);CHKERRQ(ierr);
     *(dir_prefix+len)='\0';
@@ -1065,10 +1066,10 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
       ierr = PCSetType(pc_temp,PCLU);CHKERRQ(ierr);
     }
     ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
+    /* Allow user's customization */
+    ierr = KSPSetFromOptions(pcbddc->ksp_D);CHKERRQ(ierr);
   }
   ierr = KSPSetOperators(pcbddc->ksp_D,pcis->A_II,pcis->A_II,matstruct);CHKERRQ(ierr);
-  /* Allow user's customization */
-  ierr = KSPSetFromOptions(pcbddc->ksp_D);CHKERRQ(ierr);
   /* umfpack interface has a bug when matrix dimension is zero. TODO solve from umfpack interface */
   if (!n_D) {
     ierr = KSPGetPC(pcbddc->ksp_D,&pc_temp);CHKERRQ(ierr);
@@ -1134,10 +1135,10 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
       ierr = PCSetType(pc_temp,PCLU);CHKERRQ(ierr);
     }
     ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
+    /* Allow user's customization */
+    ierr = KSPSetFromOptions(pcbddc->ksp_R);CHKERRQ(ierr);
   }
   ierr = KSPSetOperators(pcbddc->ksp_R,A_RR,A_RR,matstruct);CHKERRQ(ierr);
-  /* Allow user's customization */
-  ierr = KSPSetFromOptions(pcbddc->ksp_R);CHKERRQ(ierr);
   /* umfpack interface has a bug when matrix dimension is zero. TODO solve from umfpack interface */
   if (!n_R) {
     ierr = KSPGetPC(pcbddc->ksp_R,&pc_temp);CHKERRQ(ierr);
@@ -3239,7 +3240,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   /* create the coarse KSP object only once with defaults */
   ierr = PCGetOperators(pc,NULL,NULL,&matstruct);CHKERRQ(ierr);
   if (!pcbddc->coarse_ksp) {
-    char prefix[256],str_level[3];
+    char prefix[256],str_level[16];
     size_t len;
     ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&pcbddc->coarse_ksp);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)pcbddc->coarse_ksp,(PetscObject)pc,1);CHKERRQ(ierr);
@@ -3256,18 +3257,17 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr = PetscStrcat(prefix,"pc_bddc_coarse_");CHKERRQ(ierr);
     } else {
       ierr = PetscStrlen(((PetscObject)pc)->prefix,&len);CHKERRQ(ierr);
-      if (pcbddc->current_level>1) len -= 2;
+      if (pcbddc->current_level>1) len -= 3; /* remove "lX_" with X level number */
+      if (pcbddc->current_level>10) len -= 1; /* remove another char from level number */
       ierr = PetscStrncpy(prefix,((PetscObject)pc)->prefix,len);CHKERRQ(ierr);
       *(prefix+len)='\0';
-      sprintf(str_level,"%d_",(int)(pcbddc->current_level));
+      sprintf(str_level,"l%d_",(int)(pcbddc->current_level));
       ierr = PetscStrcat(prefix,str_level);CHKERRQ(ierr);
     }
     ierr = KSPSetOptionsPrefix(pcbddc->coarse_ksp,prefix);CHKERRQ(ierr);
+    /* allow user customization */
+    ierr = KSPSetFromOptions(pcbddc->coarse_ksp);CHKERRQ(ierr);
   }
-  /* allow user customization */
-  /* ierr = PetscPrintf(PETSC_COMM_WORLD,"Type of %s before setting from options %s\n",((PetscObject)pcbddc->coarse_ksp)->prefix,((PetscObject)pcbddc->coarse_ksp)->type_name);CHKERRQ(ierr); */
-  ierr = KSPSetFromOptions(pcbddc->coarse_ksp);CHKERRQ(ierr);
-  /* ierr = PetscPrintf(PETSC_COMM_WORLD,"Type of %s after setting from options %s\n",((PetscObject)pcbddc->coarse_ksp)->prefix,((PetscObject)pcbddc->coarse_ksp)->type_name);CHKERRQ(ierr); */
 
   /* get some info after set from options */
   ierr = KSPGetPC(pcbddc->coarse_ksp,&pc_temp);CHKERRQ(ierr);
