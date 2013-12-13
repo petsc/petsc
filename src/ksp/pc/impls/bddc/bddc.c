@@ -1751,6 +1751,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->coarsening_ratio           = 8;
   pcbddc->current_level              = 0;
   pcbddc->max_levels                 = 0;
+  pcbddc->coarse_subassembling       = 0;
 
   /* create local graph structure */
   ierr = PCBDDCGraphCreate(&pcbddc->mat_graph);CHKERRQ(ierr);
