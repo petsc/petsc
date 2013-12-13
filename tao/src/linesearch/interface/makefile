@@ -1,0 +1,17 @@
+
+ALL: lib
+
+CFLAGS   =
+FFLAGS   =
+SOURCEC  = linesearch.c dlregis_taolinesearch.c
+SOURCEF  =
+SOURCEH  = 
+OBJSC    = linesearch.o dlregis_taolinesearch.o
+OBJSF    =
+LIBBASE  = libtao
+MANSEC   = taolinesearch
+LOCDIR   = src/linesearch/interface/
+
+include ${TAO_DIR}/conf/tao_base
+
+

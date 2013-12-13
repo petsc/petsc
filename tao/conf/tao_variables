@@ -1,0 +1,42 @@
+#
+# TAO uses PETSc for linear algebra tools, system utilities, and
+# portable makefiles
+#
+# TAO-specific definitions:
+#
+# LIBNAME       - library name
+# TAO_INCLUDE   - locations of include files
+#
+# Definitions from the PETSc makefile system:
+#
+# SOURCE        - source files
+# SSOURCE       - single precision versions of some source code
+# OBJS          - object files
+# SOBJS         - single precision versions of some object files
+# DOCS          - files that contain documentation, readmes etc.
+# CPPFLAGS      - preprocessor flags for *.c, *.F preprocessing
+#
+
+INSTALL_LIB_DIR	= ${TAO_DIR}/${PETSC_ARCH}/lib
+TAO_LIB_DIR     = ${TAO_DIR}/${PETSC_ARCH}/lib
+TAO_INCLUDE	= -I${TAO_DIR} -I${TAO_DIR}/include 
+CPP_FLAGS	= ${TAO_INCLUDE} 
+
+FPP_FLAGS	= ${TAO_INCLUDE} 
+
+
+C_SH_LIB_PATH	= ${CC_LINKER_SLFLAG}${TAO_LIB_DIR} ${TAO_C_SH_LIB_PATH} ${PETSC_C_SH_LIB_PATH}
+F_SH_LIB_PATH	= ${FC_LINKER_SLFLAG}${TAO_LIB_DIR} ${TAO_F_SH_LIB_PATH} ${PETSC_C_SH_LIB_PATH}
+
+TAO_LIB		= -L${TAO_LIB_DIR}  -ltao
+
+#
+# Some variables used to build shared libraries
+#
+SHLIBS       = libtao
+
+LIBNAME = ${INSTALL_LIB_DIR}/${LIBBASE}.${AR_LIB_SUFFIX}
+
+tao_clean: clean
+tao_chkopts: chkopts
+

@@ -1,0 +1,6 @@
+
+---- Elastic-Plastic Torsion Problem -----
+mx: 10     my: 10   
+
+iter =   0, Function value -0.330579, Residual: 0.728961 
+iter =   1, Function value -0.427745, Residual: < 1.0e-6 

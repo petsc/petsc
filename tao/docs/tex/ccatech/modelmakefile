@@ -1,0 +1,16 @@
+include babel.make
+
+BABEL_ROOT=/usr/local/babel
+OBJS=${IMPLSRCS:.cc=.o} ${IORSRCS:.c=.o} ${SKELSRCS:.cc=.o} \
+     ${STUBSRCS:.cc=.o}
+INCLUDES = -I${BABEL_ROOT}/include
+
+libRosenbrockModel.so: ${OBJS}
+	g++ -shared ${OBJS} -o libRosenbrockModel.so 
+
+
+.c.o:
+	gcc -fPIC -c ${INCLUDES} $<
+
+.cc.o:
+	g++ -fPIC -c ${INCLUDES} $<
