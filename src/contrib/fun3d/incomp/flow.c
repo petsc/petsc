@@ -681,7 +681,7 @@ int GetLocalOrdering(GRID *grid)
   int         nsnodeLoc,nvnodeLoc,nfnodeLoc;
   int         nnbound,nvbound,nfbound;
   int         bs = 4;
-  int         fdes;
+  int         fdes = 0;
   off_t       currentPos  = 0,newPos = 0;
   int         grid_param  = 13;
   int         cross_edges = 0;
