@@ -412,12 +412,12 @@ runex26:
 	   ${RM} -f ex26_1.tmp
 
 runex26_2:
-	-@${MPIEXEC} -n 4 ./ex26 -da_refine 2 -lidvelocity 100 -grashof 1e3 -ts_max_steps 10 -ts_rtol 1e-3 -ts_atol 1e-3 -pc_type lu -ts_type beuler -ts_monitor -snes_monitor -snes_type ngmres -npc_snes_type nasm -npc_snes_nasm_type restrict -da_overlap 4  > ex26_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex26 -da_refine 2 -lidvelocity 100 -grashof 1e3 -ts_max_steps 10 -ts_rtol 1e-3 -ts_atol 1e-3 -pc_type lu -ts_type beuler -ts_monitor -snes_monitor_short -snes_type ngmres -npc_snes_type nasm -npc_snes_nasm_type restrict -da_overlap 4  > ex26_2.tmp 2>&1; \
 	   ${DIFF} output/ex26_2.out ex26_2.tmp || echo  ${PWD} "\nPossible problem with ex26_2, diffs above \n=========================================";  \
 	   ${RM} -f ex26_2.tmp
 
 runex26_3:
-	-@${MPIEXEC} -n 4 ./ex26 -da_refine 2 -lidvelocity 100 -grashof 1e3 -ts_max_steps 10 -ts_rtol 1e-3 -ts_atol 1e-3 -pc_type lu -ts_type beuler -ts_monitor -snes_monitor -snes_type aspin -da_overlap 4  > ex26_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex26 -da_refine 2 -lidvelocity 100 -grashof 1e3 -ts_max_steps 10 -ts_rtol 1e-3 -ts_atol 1e-3 -pc_type lu -ts_type beuler -ts_monitor -snes_monitor_short -snes_type aspin -da_overlap 4  > ex26_3.tmp 2>&1; \
 	   ${DIFF} output/ex26_3.out ex26_3.tmp || echo  ${PWD} "\nPossible problem with ex26_3, diffs above \n=========================================";  \
 	   ${RM} -f ex26_3.tmp
 
