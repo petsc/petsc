@@ -631,6 +631,16 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
   } else if (format == PETSC_VIEWER_ASCII_DENSE) {
     PetscInt    cnt = 0,jcnt;
     PetscScalar value;
+#if defined(PETSC_USE_COMPLEX)
+    PetscBool   realonly = PETSC_TRUE;
+
+    for (i=0; i<a->i[m]; i++) {
+      if (PetscImaginaryPart(a->a[i]) != 0.0) {
+        realonly = PETSC_FALSE;
+        break;
+      }
+    }
+#endif
 
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer);CHKERRQ(ierr);
@@ -644,7 +654,11 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
           value = 0.0;
         }
 #if defined(PETSC_USE_COMPLEX)
-        ierr = PetscViewerASCIIPrintf(viewer," %7.5e+%7.5e i ",PetscRealPart(value),PetscImaginaryPart(value));CHKERRQ(ierr);
+        if (realonly) {
+          ierr = PetscViewerASCIIPrintf(viewer," %7.5e ",PetscRealPart(value));CHKERRQ(ierr);
+        } else {
+          ierr = PetscViewerASCIIPrintf(viewer," %7.5e+%7.5e i ",PetscRealPart(value),PetscImaginaryPart(value));CHKERRQ(ierr);
+        }
 #else
         ierr = PetscViewerASCIIPrintf(viewer," %7.5e ",value);CHKERRQ(ierr);
 #endif
