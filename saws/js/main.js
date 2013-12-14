@@ -37,14 +37,81 @@ DisplayPCType = function(defl) {
     SAWs.getDirectory("PETSc/Options/-pc_type",function(data,indef){
         if (indef) var def = indef; 
         else       var def = data.directories.Options.variables["-pc_type"].data[0];
+        alert("-pc_type "+def);
         var alternatives = data.directories.Options.variables["-pc_type"].alternatives;
         populatePcList("pcList-1",alternatives,def);
+        $("#pcList-1").data("listRecursionCounter", -1);
+
+        //manually trigger pclist once because additional options, e.g., detailed info may need to be added
+        $("#pcList-1").trigger("change");
 
         // here it should display all the other PC options available to the PC currently
     },defl)
 }
 
+//GetAndDisplayDirectory: modified from PETSc.getAndDisplayDirectory 
+GetAndDisplayDirectory = function(names,divEntry){
+    //alert("1. GetAndDisplayDirectory: name="+name+"; divEntry="+divEntry);
+    jQuery(divEntry).html(""); //Get the HTML contents of the first element in the set of matched elements
+    SAWs.getDirectory(names,DisplayDirectory,divEntry)
+}
+
+//DisplayDirectory: modified from PETSc.displayDirectory
+DisplayDirectory = function(sub,divEntry)
+{
+    globaldirectory[divEntry] = sub
+    //alert("2. DisplayDirectory: sub="+sub+"; divEntry="+divEntry);
+    if (sub.directories.SAWs_ROOT_DIRECTORY.variables.hasOwnProperty("__Block") && (sub.directories.SAWs_ROOT_DIRECTORY.variables.__Block.data[0] == "true")) {
+        //alert("3. divEntry="+divEntry);
+        //jQuery(divEntry).append("<center><input type=\"button\" value=\"Continue\" id=\"continue\"></center>")
+        //jQuery('#continue').on('click', function(){
+            //alert("click continue - sub="+sub+"; divEntry="+divEntry);
+            SAWs.updateDirectoryFromDisplay(divEntry)
+            sub.directories.SAWs_ROOT_DIRECTORY.variables.__Block.data = ["false"];
+            SAWs.postDirectory(sub);
+            jQuery(divEntry).html("");
+            window.setTimeout(GetAndDisplayDirectory,1000,null,divEntry);
+        //})
+    }
+   
+    if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Preconditioner (PC) options") {
+        var SAWs_pcVal = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].data[0];
+        var SAWs_alternatives = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].alternatives;
+        var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables.prefix.data[0];
+        //alert("Preconditioner (PC) options, SAWs_pcVal "+SAWs_pcVal+", SAWs_prefix "+SAWs_prefix);
+        if (SAWs_prefix == "(null)") {
+            populatePcList("pcList-1",SAWs_alternatives,SAWs_pcVal);
+            $("#pcList-1").trigger("change"); //manually trigger pclist once because additional options, e.g., detailed info may need to be added
+        } else if (SAWs_prefix == "sub_") {
+            //alert("SAWs_alternatives="+SAWs_alternatives);
+            populatePcList("pcList-1_0",SAWs_alternatives,SAWs_pcVal);
+        }
+
+        if (SAWs_pcVal == 'bjacobi') {
+            var SAWs_bjacobi_blocks = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_bjacobi_blocks"].data[0];
+            alert("SAWs_bjacobi_blocks "+SAWs_bjacobi_blocks);
+            //set SAWs_bjacobi_blocks to #bjacobiBlocks-1_0.processorInput ???
+        }
+    } else if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Krylov Method (KSP) options") {
+        var SAWs_kspVal = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-ksp_type"].data[0];
+        var SAWs_alternatives = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-ksp_type"].alternatives;
+        var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables.prefix.data[0];
+        //alert("Krylov Method (KSP) options, SAWs_kspVal "+SAWs_kspVal+", SAWs_prefix "+SAWs_prefix);
+        //alert(SAWs_alternatives);
+        if (SAWs_prefix == "(null)") {
+            populateKspList("kspList-1",SAWs_alternatives,SAWs_kspVal);
+        } else if (SAWs_prefix == "sub_") {
+            populateKspList("kspList-1_0",SAWs_alternatives,SAWs_kspVal);
+        }
+    }
+
+    //alert('call SAWs.displayDirectoryRecursive...');
+    SAWs.displayDirectoryRecursive(sub.directories,divEntry,0,"")
+}
+
+//When pcoptions.html is loaded ...
 HandlePCOptions = function(){
+    
     recursionCounter = -1;
 
     //reset the form
@@ -57,23 +124,27 @@ HandlePCOptions = function(){
         logstruc:0,
     }
    
-    //create div 'o-1'
+    //create div 'o-1' for displaying SAWs options
     $("#divPc").append("<div id=\"o"+recursionCounter+"\"> </div>");
-    $("#o" + recursionCounter).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b title=\"Krylov method\">KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + recursionCounter +"\"></select>");//giving an html element a title creates a tooltip
-    $("#o"+ recursionCounter).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + recursionCounter +"\"></select>");
-
-    //set parentFieldSplit:true as default -ugly???
-    $("#pcList"+ recursionCounter).data("parentFieldSplit", true);
+    $("#o" + recursionCounter).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b title=\"Krylov method\">-ksp_type &nbsp;</b><select class=\"kspLists\" id=\"kspList" + recursionCounter +"\"></select>");//giving an html element a title creates a tooltip
+    $("#o"+ recursionCounter).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>-pc_type &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + recursionCounter +"\"></select>");
    
-    DisplayPCType(0);
+    // get SAWs options 
+    GetAndDisplayDirectory("","#variablesInfo"); //interfere $("#logstruc, #nlogstruc").change(function() ???
+    
     //When the button "Logically Block Structured" is clicked...
-    $("#logstruc, #nlogstruc").change(function(){ 
-        DisplayPCType("fieldsplit");
-    })
-    //manually trigger pclist once because additional options, e.g., detailed info may need to be added
-    $("#pcList"+ recursionCounter).trigger("change"); 
+    $("#logstruc, #nlogstruc").change(function(){ //why still say !logstruc ???
+        matrixInformation[recursionCounter] = {
+            posdef:  document.getElementById("posdef").checked,
+            symm:    document.getElementById("symm").checked,
+            logstruc:document.getElementById("logstruc").checked,
+        }
+        alert('logstruc='+matrixInformation[recursionCounter].logstruc);
+        DisplayPCType("fieldsplit"); //why matrixInformation[recursionCounter].logstruc is not input into $(document).on('change', '.pcLists', function()???
+    });
     
     recursionCounter++;
+
     $("#continueButton").click(function(){
         //alert(recursionCounter);
 
@@ -136,7 +207,7 @@ HandlePCOptions = function(){
 	$("#pcList" + recursionCounter).data("parentFieldSplit",true);
 
 	//populate the kspList[recursionCounter] and pclist[recursionCounter] with default options
-        populateKspList("kspList"+recursionCounter);
+        populateKspList("kspList"+recursionCounter,null,"null");
         if (recursionCounter == 0) {
             var pcVal = $("#pcList-1").val(); //Get pctype from the drop-down pcList-1
 	    populatePcList("pcList"+recursionCounter,null,pcVal);

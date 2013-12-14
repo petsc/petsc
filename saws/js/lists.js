@@ -21,47 +21,62 @@ function populateMgList(listId)
   populateKspList - populate the ksp list
   input
     listId - string
+    listVals - an array of ksptypes, e.g. listVals = ["cg","(null)"]; 
+    defaultVal - default pctype
 */
-function populateKspList(listId)
+function populateKspList(listId,listVals,defaultVal)
 {
     var list = "#" + listId;
+    $(list).empty(); //empty existing list
     
-    //all options without parenthesis are for nonsymmetric (and, therefore, non pd) KSP list
-    $(list).append("<option value=\"bcgs\">bcgs</option>");
-    $(list).append("<option value=\"bcgsl\">bcgsl</option>");
-    $(list).append("<option value=\"bicg\">bicg</option>");
-    $(list).append("<option value=\"cg\">cg (symm, positive definite)</option>");
-    $(list).append("<option value=\"cgne\">cgne</option>");
-    $(list).append("<option value=\"cgs\">cgs</option>");
-    $(list).append("<option value=\"chebyshev\">chebyshev</option>");
-    $(list).append("<option value=\"cr\">cr</option>");
-    $(list).append("<option value=\"fgmres\">fgmres</option>");
-    $(list).append("<option value=\"gltr\">gltr</option>");
-    $(list).append("<option value=\"gmres\">gmres</option>");
-    $(list).append("<option value=\"groppcg\">groppcg</option>");
-    $(list).append("<option value=\"lsqr\">lsqr</option>");
-    $(list).append("<option value=\"minres\">minres (symm, non-positive definite)</option>");
-    $(list).append("<option value=\"nash\">nash</option>");
-    $(list).append("<option value=\"pgmres\">pgmres</option>");
-    $(list).append("<option value=\"pipecg\">pipecg</option>");
-    $(list).append("<option value=\"pipecr\">pipecr</option>");
-    $(list).append("<option value=\"preonly\">preonly</option>");
-    $(list).append("<option value=\"qcg\">qcg (symm, positive definite)</option>");
-    $(list).append("<option value=\"richardson\">richardson</option>");
-    $(list).append("<option value=\"specest\">specest</option>");
-    $(list).append("<option value=\"stcg\">stcg</option>");
-    $(list).append("<option value=\"symmlq\">symmlq (symm, non-positive definite)</option>");
-    $(list).append("<option value=\"tcqmr\">tcqmr</option>");
-    $(list).append("<option value=\"tfqmr\">tfqmr</option>");
-
-    //choose defaults for the different cases
-    var recursionCounter = oDivGetRecursionCounter(listId);
-    if (recursionCounter >-1 && matrixInformation[recursionCounter].symm && !matrixInformation[recursionCounter].posdef) {
-	$(list).find("option[value='minres']").attr("selected","selected");
-    } else if (recursionCounter >-1 && matrixInformation[recursionCounter].symm && matrixInformation[recursionCounter].posdef) {
-	$(list).find("option[value='cg']").attr("selected","selected");
+    if (listVals == null) {
+        //all options without parenthesis are for nonsymmetric (and, therefore, non pd) KSP list
+        $(list).append("<option value=\"bcgs\">bcgs</option>");
+        $(list).append("<option value=\"bcgsl\">bcgsl</option>");
+        $(list).append("<option value=\"bicg\">bicg</option>");
+        $(list).append("<option value=\"cg\">cg (symm, positive definite)</option>");
+        $(list).append("<option value=\"cgne\">cgne</option>");
+        $(list).append("<option value=\"cgs\">cgs</option>");
+        $(list).append("<option value=\"chebyshev\">chebyshev</option>");
+        $(list).append("<option value=\"cr\">cr</option>");
+        $(list).append("<option value=\"fgmres\">fgmres</option>");
+        $(list).append("<option value=\"gltr\">gltr</option>");
+        $(list).append("<option value=\"gmres\">gmres</option>");
+        $(list).append("<option value=\"groppcg\">groppcg</option>");
+        $(list).append("<option value=\"lsqr\">lsqr</option>");
+        $(list).append("<option value=\"minres\">minres (symm, non-positive definite)</option>");
+        $(list).append("<option value=\"nash\">nash</option>");
+        $(list).append("<option value=\"pgmres\">pgmres</option>");
+        $(list).append("<option value=\"pipecg\">pipecg</option>");
+        $(list).append("<option value=\"pipecr\">pipecr</option>");
+        $(list).append("<option value=\"preonly\">preonly</option>");
+        $(list).append("<option value=\"qcg\">qcg (symm, positive definite)</option>");
+        $(list).append("<option value=\"richardson\">richardson</option>");
+        $(list).append("<option value=\"specest\">specest</option>");
+        $(list).append("<option value=\"stcg\">stcg</option>");
+        $(list).append("<option value=\"symmlq\">symmlq (symm, non-positive definite)</option>");
+        $(list).append("<option value=\"tcqmr\">tcqmr</option>");
+        $(list).append("<option value=\"tfqmr\">tfqmr</option>");
     } else {
-	$(list).find("option[value='gmres']").attr("selected","selected");
+        var i=0;
+        while (listVals[i] != "(null)"){
+            $(list).append("<option value="+listVals[i]+">"+listVals[i]+"</option>");
+            i++;
+        }
+    }
+
+    //set defaults ksp_type
+    if (defaultVal != "null") {
+        $(list).find("option[value=" + defaultVal +"]").attr("selected","selected"); 
+    } else {
+        var recursionCounter = oDivGetRecursionCounter(listId);
+        if (recursionCounter >-1 && matrixInformation[recursionCounter].symm && !matrixInformation[recursionCounter].posdef) {
+	    $(list).find("option[value='minres']").attr("selected","selected");
+        } else if (recursionCounter >-1 && matrixInformation[recursionCounter].symm && matrixInformation[recursionCounter].posdef) {
+	    $(list).find("option[value='cg']").attr("selected","selected");
+        } else {
+	    $(list).find("option[value='gmres']").attr("selected","selected");
+        }
     }
 }
 
@@ -69,12 +84,14 @@ function populateKspList(listId)
   populatePcList - populate the pc list
   input:
     listId - string
-    listVals - an array of pctypes, e.g. listVals = ["none","jacobi","pbjacobi","bjacobi","null"]; the laster entry must be "null"
+    listVals - an array of pctypes, e.g. listVals = ["none","jacobi","pbjacobi","bjacobi","(null)"]; the laster entry must be "(null)"
     defaultVal - default pctype
 */
 function populatePcList(listId,listVals,defaultVal) 
 {
     var list="#"+listId;
+    $(list).empty(); //empty existing list
+
     if (listVals == null) {
         $(list).append("<option value=\"asa\">asa</option>")
         $(list).append("<option value=\"asm\">asm</option>")
@@ -114,21 +131,8 @@ function populatePcList(listId,listVals,defaultVal)
     }
 
     //set default pc_type
-/*
     var recursionCounter = oDivGetRecursionCounter(listId);
-    if (recursionCounter >-1 && matrixInformation[recursionCounter].logstruc) { 
-	$(list).find("option[value='fieldsplit']").attr("selected","selected");
-    } else { // !logstruc
-        if (defaultVal == "null") {
-	    $(list).find("option[value='bjacobi']").attr("selected","selected");  
-        } else {
-            $(list).find("option[value=" + defaultVal +"]").attr("selected","selected"); 
-        }
-    }
-*/
-
-    var recursionCounter = oDivGetRecursionCounter(listId);
-    if (matrixInformation[recursionCounter] === undefined) {
+    if (matrixInformation[recursionCounter] === undefined || !matrixInformation[recursionCounter].logstruc) {
         if (matrixInformation[recursionCounter] === undefined) 
             alert("Warning: matrixInformation["+recursionCounter+"] is undefined!");
         if (defaultVal == "null") {
@@ -138,13 +142,7 @@ function populatePcList(listId,listVals,defaultVal)
         }
     } else if (matrixInformation[recursionCounter].logstruc) {
 	$(list).find("option[value='fieldsplit']").attr("selected","selected");
-    } else { // !logstruc
-        if (defaultVal == "null") {
-	    $(list).find("option[value='bjacobi']").attr("selected","selected");  
-        } else {
-            $(list).find("option[value=" + defaultVal +"]").attr("selected","selected"); 
-        }
-    }
+    } 
 }
 
 /*

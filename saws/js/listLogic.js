@@ -17,17 +17,18 @@ $(document).on('change', '.pcLists', function(){
 
     //get the pc option
     var pcValue = $(this).val();
-    //if (pcValue == null) alert("Warning: pcValue = null!");
+    if (pcValue == null) alert("Warning: pcValue = null!");
 
     //.parent() returns a weird object so we need to use .get(0)
     var parentDiv = $(this).parent().get(0).id;
     
-    //new way of finding parent (the number after o in the o div):  (parent=matrix recursion counter, rename 'parent' as 'matOutIdx'???)
+    //new way of finding parent (the number after o in the o div): parent=listRecursionCounter, but listRecursionCounter may not be defined, so cannot be used :-(
     parent = parentDiv;
     while (parent.indexOf('_') != -1)
 	parent=$("#"+parent).parent().get(0).id;
     parent = parent.substring(1, parent.length);  //parent=matrix recursion counter b/c resursion counter is not in this scope
     //alert('parentDiv '+ parentDiv + '; parent '+parent + '; pcValue '+pcValue +'; this.id '+ this.id);
+    //alert('logstruc='+matrixInformation[parent].logstruc);
 
     // if pcValue is changed to !fieldsplit for logically structured matrix
     if (pcValue != "fieldsplit" && matrixInformation[parent].logstruc) {
@@ -69,7 +70,7 @@ $(document).on('change', '.pcLists', function(){
                 myendtag = endtag+level;
                 $("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id=\"text_kspList"+parent+myendtag+"\">KSP Level "+level+" &nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+ parent+myendtag +"\"></select>")
 	        $("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id=\"text_pcList"+parent+myendtag+"\">PC Level "+level+" &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList"+ parent+myendtag+"\"></select>")
-                populateKspList("kspList"+parent+myendtag);
+                populateKspList("kspList"+parent+myendtag,null,"null");
 	        populatePcList("pcList"+parent+myendtag,null,"null"); 
                 // set defaults
                 $("#kspList"+parent+myendtag).find("option[value='chebyshev']").attr("selected","selected");
@@ -82,7 +83,7 @@ $(document).on('change', '.pcLists', function(){
 	$("#"+newDiv).append("<br><br><b>Coarse Grid Solver (Level 0)  </b>")
         $("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList" + parent+myendtag +"\"></select>")
 	$("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent+myendtag +"\"></select>")
-	populateKspList("kspList"+parent+myendtag);
+	populateKspList("kspList"+parent+myendtag,null,"null");
 	populatePcList("pcList"+parent+myendtag,null,"null");
 	//set defaults
 	$("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
@@ -105,7 +106,7 @@ $(document).on('change', '.pcLists', function(){
 	$("#"+newDiv).append("<b>Redundant number   </b><input type='text' id='redundantNumber"+parent+myendtag+"\' value='np' maxlength='4' class='processorInput'>");
 	$("#"+newDiv).append("<br><b>Redundant KSP    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"redundant\" id=\"kspList" + parent +myendtag+"\"></select>");
 	$("#"+newDiv).append("<br><b>Redundant PC     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent +myendtag+"\"></select>");
-	populateKspList("kspList"+parent+myendtag);
+	populateKspList("kspList"+parent+myendtag,null,"null");
 	populatePcList("pcList"+parent+myendtag,null,"null");
 
 	//set defaults for redundant
@@ -132,7 +133,7 @@ $(document).on('change', '.pcLists', function(){
 	$("#"+newDiv).append("<b>Bjacobi blocks </b><input type='text' id='bjacobiBlocks"+parent+myendtag+"\' value='np' maxlength='4' class='processorInput'>"); // use style='margin-left:30px;'
 	$("#"+newDiv).append("<br><b>Bjacobi KSP   &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+parent+myendtag+"\"></select>");
 	$("#"+newDiv).append("<br><b>Bjacobi PC   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList"+parent+myendtag+"\"></select>");
-	populateKspList("kspList"+parent+myendtag);
+	populateKspList("kspList"+parent+myendtag,null,"null");
         populatePcList("pcList"+parent+myendtag,null,"null");
 
 	//set defaults for bjacobi
@@ -166,7 +167,7 @@ $(document).on('change', '.pcLists', function(){
 	$("#"+newDiv).append("<br><b>ASM overlap   </b><input type='text' id='asmOverlap"+parent+myendtag+"\' value='1' maxlength='4'>");
 	$("#"+newDiv).append("<br><b>ASM KSP   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList" + parent +myendtag+"\"></select>");
 	$("#"+newDiv).append("<br><b>ASM PC   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent +myendtag+"\"></select>");
-	populateKspList("kspList"+parent+myendtag);
+	populateKspList("kspList"+parent+myendtag,null,"null");
 	populatePcList("pcList"+parent+myendtag,null,"null");
 
 	//set defaults for asm
@@ -192,7 +193,7 @@ $(document).on('change', '.pcLists', function(){
         var myendtag = endtag+"0";
 	$("#"+newDiv).append("<b>KSP KSP   </b><select class=\"kspLists\" id=\"kspList" + parent +myendtag+"\"></select>");
 	$("#"+newDiv).append("<br><b>KSP PC &nbsp;&nbsp; </b><select class=\"pcLists\" id=\"pcList" + parent +myendtag+"\"></select>");
-	populateKspList("kspList"+parent+myendtag);
+	populateKspList("kspList"+parent+myendtag,null,"null");
 	populatePcList("pcList"+parent+myendtag,null,"null");
 
 	//set defaults for ksp
@@ -367,7 +368,7 @@ $(document).on('change', '.mgLevels', function()
 	    $("#text_smoothing"+recursionCounter+endtag).after("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id=\"text_pcList"+recursionCounter+myendtag+"\">PC Level "+level+" &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList"+ recursionCounter+myendtag+"\"></select>");
             $("#text_smoothing"+recursionCounter+endtag).after("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id=\"text_kspList"+recursionCounter+myendtag+"\">KSP Level "+level+" &nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+ recursionCounter+myendtag +"\"></select>");
             
-            populateKspList("kspList"+recursionCounter+myendtag);
+            populateKspList("kspList"+recursionCounter+myendtag,null,"null");
 	    populatePcList("pcList"+recursionCounter+myendtag,null,"null"); 
             // set defaults
             $("#kspList"+recursionCounter+myendtag).find("option[value='chebyshev']").attr("selected","selected");

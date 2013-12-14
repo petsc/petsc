@@ -2,6 +2,9 @@
 PETSc = {}
 
 PETSc.getAndDisplayDirectory = function(names,divEntry){
+    window.location = 'pcoptions.html'
+
+   //below are skipped now ... 
   jQuery(divEntry).html("")
   SAWs.getDirectory(names,PETSc.displayDirectory,divEntry)
 }
