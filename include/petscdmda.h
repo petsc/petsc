@@ -6,6 +6,7 @@
 #include <petscdmdatypes.h>
 #include <petscpf.h>
 #include <petscao.h>
+#include <petscfe.h>
 
 /*MC
      DMDA_STENCIL_STAR - "Star"-type stencil. In logical grid coordinates, only (i,j,k), (i+s,j,k), (i,j+s,k),
