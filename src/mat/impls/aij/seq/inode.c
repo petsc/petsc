@@ -4135,12 +4135,14 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscBool samestructure)
       A->ops->mult              = MatMult_SeqAIJ_Inode;
       A->ops->sor               = MatSOR_SeqAIJ_Inode;
       A->ops->multadd           = MatMultAdd_SeqAIJ_Inode;
-      A->ops->getrowij          = MatGetRowIJ_SeqAIJ_Inode;
-      A->ops->restorerowij      = MatRestoreRowIJ_SeqAIJ_Inode;
-      A->ops->getcolumnij       = MatGetColumnIJ_SeqAIJ_Inode;
-      A->ops->restorecolumnij   = MatRestoreColumnIJ_SeqAIJ_Inode;
-      A->ops->coloringpatch     = MatColoringPatch_SeqAIJ_Inode;
       A->ops->multdiagonalblock = MatMultDiagonalBlock_SeqAIJ_Inode;
+      if (A->rmap->n == A->cmap->n) {
+        A->ops->getrowij          = MatGetRowIJ_SeqAIJ_Inode;
+        A->ops->restorerowij      = MatRestoreRowIJ_SeqAIJ_Inode;
+        A->ops->getcolumnij       = MatGetColumnIJ_SeqAIJ_Inode;
+        A->ops->restorecolumnij   = MatRestoreColumnIJ_SeqAIJ_Inode;
+        A->ops->coloringpatch     = MatColoringPatch_SeqAIJ_Inode;
+      }
     } else {
       A->ops->solve = MatSolve_SeqAIJ_Inode_inplace;
     }
