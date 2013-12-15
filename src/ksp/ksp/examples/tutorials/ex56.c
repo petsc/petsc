@@ -56,7 +56,7 @@ int main(int argc,char **args)
     ierr = PetscLogStageRegister("3rd Setup", &stage[4]);CHKERRQ(ierr);
     ierr = PetscLogStageRegister("3rd Solve", &stage[5]);CHKERRQ(ierr);
   } else {
-    for (i=0; i<(PetscInt)sizeof(stage)/sizeof(stage[0]); i++) stage[i] = -1;
+    for (i=0; i<(PetscInt)(sizeof(stage)/sizeof(stage[0])); i++) stage[i] = -1;
   }
 
   h = 1./ne; nn = ne+1;
