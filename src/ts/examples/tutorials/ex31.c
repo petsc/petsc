@@ -830,9 +830,9 @@ PetscErrorCode RHSFunction_Hull1972C34(TS ts, PetscReal t, Vec Y, Vec F, void *s
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = -2.0*y[0] + y[1];
   for (i = 1; i < N-1; i++) {
-    f[i] = y[i-1] - 2*y[i] + y[i+1];
+    f[i] = y[i-1] - 2.0*y[i] + y[i+1];
   }
-  f[N-1] = y[N-2] - 2*y[N-1];
+  f[N-1] = y[N-2] - 2.0*y[N-1];
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -852,9 +852,9 @@ PetscErrorCode IFunction_Hull1972C34(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F,
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = -2.0*y[0] + y[1];
   for (i = 1; i < N-1; i++) {
-    f[i] = y[i-1] - 2*y[i] + y[i+1];
+    f[i] = y[i-1] - 2.0*y[i] + y[i+1];
   }
-  f[N-1] = y[N-2] - 2*y[N-1];
+  f[N-1] = y[N-2] - 2.0*y[N-1];
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   /* Left hand side = ydot - f(y) */
