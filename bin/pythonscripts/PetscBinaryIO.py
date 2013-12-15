@@ -198,7 +198,6 @@ class PetscBinaryIO(object):
 
         if self.precision == 'longlong':
             nbyte = 16
-            print nbyte
         elif self.precision == 'single':
             nbyte = 4
         else:
