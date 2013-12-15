@@ -3222,8 +3222,8 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
     Vec          originalCoordinates, newCoordinates;
     const char  *name;
 
-    ierr = DMPlexGetCoordinateSection(dm, &originalCoordSection);CHKERRQ(ierr);
-    ierr = DMPlexGetCoordinateSection(*dmParallel, &newCoordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(dm, &originalCoordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(*dmParallel, &newCoordSection);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &originalCoordinates);CHKERRQ(ierr);
     ierr = VecCreate(comm, &newCoordinates);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) originalCoordinates, &name);CHKERRQ(ierr);
@@ -3517,7 +3517,7 @@ PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
     ierr = PetscMalloc1(in.numberofpoints*dim, &in.pointlist);CHKERRQ(ierr);
     ierr = PetscMalloc1(in.numberofpoints, &in.pointmarkerlist);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(boundary, &coordinates);CHKERRQ(ierr);
-    ierr = DMPlexGetCoordinateSection(boundary, &coordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(boundary, &coordSection);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &array);CHKERRQ(ierr);
     for (v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
@@ -3648,7 +3648,7 @@ PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
     ierr = PetscMalloc1(in.numberofpoints*dim, &in.pointlist);CHKERRQ(ierr);
     ierr = PetscMalloc1(in.numberofpoints, &in.pointmarkerlist);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-    ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &array);CHKERRQ(ierr);
     for (v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
@@ -3780,7 +3780,7 @@ PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
     in.pointmarkerlist = new int[in.numberofpoints];
 
     ierr = DMGetCoordinatesLocal(boundary, &coordinates);CHKERRQ(ierr);
-    ierr = DMPlexGetCoordinateSection(boundary, &coordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(boundary, &coordSection);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &array);CHKERRQ(ierr);
     for (v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
@@ -3908,7 +3908,7 @@ PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
     in.pointmarkerlist = new int[in.numberofpoints];
 
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-    ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &array);CHKERRQ(ierr);
     for (v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
@@ -4033,7 +4033,7 @@ PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm
     ierr = PetscMalloc1(in->numberofpoints*dim, &in->pointlist);CHKERRQ(ierr);
     ierr = PetscMalloc1(in->numberofpoints,       &in->pointmarkerlist);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(boundary, &coordinates);CHKERRQ(ierr);
-    ierr = DMPlexGetCoordinateSection(boundary, &coordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(boundary, &coordSection);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &array);CHKERRQ(ierr);
     for (v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
@@ -4180,7 +4180,7 @@ PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
     ierr = PetscMalloc1(in->numberofpoints*dim, &in->pointlist);CHKERRQ(ierr);
     ierr = PetscMalloc1(in->numberofpoints,       &in->pointmarkerlist);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-    ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &array);CHKERRQ(ierr);
     for (v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
@@ -4856,12 +4856,7 @@ PetscErrorCode DMPlexCreateSection(DM dm, PetscInt dim, PetscInt numFields,const
   ierr = DMPlexCreateSectionBCDof(dm, numBC, bcField, bcPoints, PETSC_DETERMINE, *section);CHKERRQ(ierr);
   ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
   if (numBC) {ierr = DMPlexCreateSectionBCIndicesAll(dm, *section);CHKERRQ(ierr);}
-  {
-    PetscBool view = PETSC_FALSE;
-
-    ierr = PetscOptionsHasName(((PetscObject) dm)->prefix, "-section_view", &view);CHKERRQ(ierr);
-    if (view) {ierr = PetscSectionView(*section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
-  }
+  ierr = PetscSectionViewFromOptions(*section,NULL,"-section_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4877,66 +4872,6 @@ PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &section);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(*cdm, section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetCoordinateSection"
-/*@
-  DMPlexGetCoordinateSection - Retrieve the layout of coordinate values over the mesh.
-
-  Not Collective
-
-  Input Parameter:
-. dm - The DMPlex object
-
-  Output Parameter:
-. section - The PetscSection object
-
-  Level: intermediate
-
-.keywords: mesh, coordinates
-.seealso: DMGetCoordinateDM(), DMPlexGetDefaultSection(), DMPlexSetDefaultSection()
-@*/
-PetscErrorCode DMPlexGetCoordinateSection(DM dm, PetscSection *section)
-{
-  DM             cdm;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(section, 2);
-  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(cdm, section);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetCoordinateSection"
-/*@
-  DMPlexSetCoordinateSection - Set the layout of coordinate values over the mesh.
-
-  Not Collective
-
-  Input Parameters:
-+ dm      - The DMPlex object
-- section - The PetscSection object
-
-  Level: intermediate
-
-.keywords: mesh, coordinates
-.seealso: DMPlexGetCoordinateSection(), DMPlexGetDefaultSection(), DMPlexSetDefaultSection()
-@*/
-PetscErrorCode DMPlexSetCoordinateSection(DM dm, PetscSection section)
-{
-  DM             cdm;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,2);
-  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  ierr = DMSetDefaultSection(cdm, section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

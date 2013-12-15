@@ -27,6 +27,7 @@ class NewPackage(config.package.Package):
     self.scalartypes    = framework.require('PETSc.utilities.scalarTypes',self)
     self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
     self.petscdir       = framework.require('PETSc.utilities.petscdir', self.setCompilers)
+    self.petscclone     = framework.require('PETSc.utilities.petscclone',self.setCompilers)
     return
 
   def consistencyChecks(self):

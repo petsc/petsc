@@ -300,12 +300,10 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   */
   for (i=0; i<Xe-IXe; i++) idx[nn++] = -1; /* pad with -1s if needed for ghosted case*/
 
-  ierr = ISLocalToGlobalMappingCreate(comm,nn,idx,PETSC_COPY_VALUES,&da->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,nn,idx,PETSC_OWN_POINTER,&da->ltogmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingBlock(da->ltogmap,dd->w,&da->ltogmapb);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)da->ltogmap);CHKERRQ(ierr);
 
-  dd->idx = idx;
-  dd->Nl  = nn;
   PetscFunctionReturn(0);
 }
 
@@ -370,6 +368,5 @@ PetscErrorCode  DMDACreate1d(MPI_Comm comm, DMDABoundaryType bx, PetscInt M, Pet
   /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
   ierr = DMSetFromOptions(*da);CHKERRQ(ierr);
   ierr = DMSetUp(*da);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*da,NULL,"-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

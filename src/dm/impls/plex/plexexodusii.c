@@ -157,7 +157,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
     ierr = PetscFree(vs_id);CHKERRQ(ierr);
   }
   /* Read coordinates */
-  ierr = DMPlexGetCoordinateSection(*dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(*dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldComponents(coordSection, 0, dim);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);

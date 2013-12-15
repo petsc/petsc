@@ -38,7 +38,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsBegin(comm,NULL,"3D bilinear Q1 elasticity options","");CHKERRQ(ierr);
   {
     char nestring[256];
-    ierr = PetscSNPrintf(nestring,sizeof nestring,"number of elements in each direction, ne+1 must be a multiple of %D (nprocs^{1/3})",(PetscInt)(PetscPowReal((PetscReal)npe,1./3.) + .5));CHKERRQ(ierr);
+    ierr = PetscSNPrintf(nestring,sizeof nestring,"number of elements in each direction, ne+1 must be a multiple of %D (sizes^{1/3})",(PetscInt)(PetscPowReal((PetscReal)npe,1./3.) + .5));CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ne",nestring,"",ne,&ne,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-log_stages","Log stages of solve separately","",log_stages,&log_stages,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-alpha","material coefficient inside circle","",soft_alpha,&soft_alpha,NULL);CHKERRQ(ierr);
@@ -56,7 +56,7 @@ int main(int argc,char **args)
     ierr = PetscLogStageRegister("3rd Setup", &stage[4]);CHKERRQ(ierr);
     ierr = PetscLogStageRegister("3rd Solve", &stage[5]);CHKERRQ(ierr);
   } else {
-    for (i=0; i<sizeof(stage)/sizeof(stage[0]); i++) stage[i] = -1;
+    for (i=0; i<(PetscInt)sizeof(stage)/sizeof(stage[0]); i++) stage[i] = -1;
   }
 
   h = 1./ne; nn = ne+1;
@@ -146,9 +146,11 @@ int main(int argc,char **args)
           }
         }
       } else {
+        double dd;
         for (i=0; i<24; i++) {
           for (j=0; j<24; j++) {
-            ierr = fscanf(file, "%le", &DD1[i][j]);
+            ierr = fscanf(file, "%le", &dd);
+            DD1[i][j] = dd;
           }
         }
       }
@@ -192,8 +194,7 @@ int main(int argc,char **args)
 
           if (i<ne && j<ne && k<ne) {
             /* radius */
-            PetscReal radius = PetscSqrtScalar((x-.5+h/2)*(x-.5+h/2)+(y-.5+h/2)*(y-.5+h/2)+
-                                               (z-.5+h/2)*(z-.5+h/2));
+            PetscReal radius = PetscSqrtReal((x-.5+h/2)*(x-.5+h/2)+(y-.5+h/2)*(y-.5+h/2)+(z-.5+h/2)*(z-.5+h/2));
             PetscReal alpha = 1.0;
             PetscInt  jx,ix,idx[8] = { id, id+1, id+NN+1, id+NN,
                                        id        + NN*NN, id+1    + NN*NN,

@@ -10,7 +10,8 @@ int main(int argc,char **argv)
   PetscMPIInt      rank;
   PetscInt         M = 3,N = 5,P=3,s=1,w=2,nloc,l,i,j,k,kk,m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE;
   PetscErrorCode   ierr;
-  PetscInt         Xs,Xm,Ys,Ym,Zs,Zm,iloc,*ltog,*iglobal;
+  PetscInt         Xs,Xm,Ys,Ym,Zs,Zm,iloc,*iglobal;
+  const PetscInt   *ltog;
   PetscInt         *lx        = NULL,*ly = NULL,*lz = NULL;
   PetscBool        test_order = PETSC_FALSE;
   DM               da;
@@ -125,6 +126,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetBool(NULL,"-local_print",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer sviewer;
+    ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nLocal Vector: processor %d\n",rank);CHKERRQ(ierr);
     ierr = PetscViewerGetSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
     ierr = VecView(local,sviewer);CHKERRQ(ierr);
@@ -178,6 +180,7 @@ int main(int argc,char **argv)
       }
     }
     ierr = PetscFree(iglobal);CHKERRQ(ierr);
+    ierr = DMDARestoreGlobalIndices(da,&nloc,&ltog);CHKERRQ(ierr);
   }
 
   /* Free memory */

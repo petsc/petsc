@@ -320,7 +320,7 @@ static PetscErrorCode FormInitial_Coupled(User user,Vec X)
   ierr = DMDAGetLocalInfo(dak,&infok);CHKERRQ(ierr);
   hx   = 1./(infok.mx);
   for (i=infou.xs; i<infou.xs+infou.xm; i++) u[i] = (PetscScalar)i*hx * (1.-(PetscScalar)i*hx);
-  for (i=infok.xs; i<infok.xs+infok.xm; i++) k[i] = 1.0 + 0.5*(PetscScalar)sin((double)2*PETSC_PI*i*hx);
+  for (i=infok.xs; i<infok.xs+infok.xm; i++) k[i] = 1.0 + 0.5*PetscSinScalar(2*PETSC_PI*i*hx);
   ierr = DMDAVecRestoreArray(dau,Xu,&u);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(dak,Xk,&k);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(user->pack,X,&Xu,&Xk);CHKERRQ(ierr);
@@ -335,7 +335,7 @@ int main(int argc, char *argv[])
   PetscErrorCode ierr;
   DM             dau,dak,pack;
   const PetscInt *lxu;
-  PetscInt       *lxk,m,nprocs;
+  PetscInt       *lxk,m,sizes;
   User           user;
   SNES           snes;
   Vec            X,F,Xu,Xk,Fu,Fk;
@@ -348,9 +348,9 @@ int main(int argc, char *argv[])
   ierr = DMSetOptionsPrefix(dau,"u_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(dau);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(dau,&lxu,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(dau,0, &m,0,0, &nprocs,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nprocs,&lxk);CHKERRQ(ierr);
-  ierr = PetscMemcpy(lxk,lxu,nprocs*sizeof(*lxk));CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dau,0, &m,0,0, &sizes,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscMalloc1(sizes,&lxk);CHKERRQ(ierr);
+  ierr = PetscMemcpy(lxk,lxu,sizes*sizeof(*lxk));CHKERRQ(ierr);
   lxk[0]--;
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,m-1,1,1,lxk,&dak);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(dak,"k_");CHKERRQ(ierr);

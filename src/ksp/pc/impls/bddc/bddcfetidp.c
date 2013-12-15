@@ -95,7 +95,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   PetscBool      skip_node,fully_redundant;
   PetscInt       i,j,k,s,n_boundary_dofs,n_global_lambda,n_vertices,partial_sum;
   PetscInt       n_local_lambda,n_lambda_for_dof,dual_size,n_neg_values,n_pos_values;
-  PetscMPIInt    rank,nprocs,buf_size,neigh;
+  PetscMPIInt    rank,size,buf_size,neigh;
   PetscScalar    scalar_value;
   PetscInt       *vertex_indices;
   PetscInt       *dual_dofs_boundary_indices,*aux_local_numbering_1,*aux_global_numbering;
@@ -114,7 +114,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)(fetidpmat_ctx->pc),&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&nprocs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /* Default type of lagrange multipliers is non-redundant */
   fully_redundant = PETSC_FALSE;

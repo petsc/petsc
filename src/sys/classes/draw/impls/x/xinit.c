@@ -407,7 +407,8 @@ PetscErrorCode PetscDrawSave_X(PetscDraw draw)
       gif  = gif->next;
     }
     ierr = PetscStrcat(body,"<br>\n");CHKERRQ(ierr);
-    PetscStackCallSAWs(SAWs_Set_Body,("index.html",1,body));
+    if (draw->savefilecount > 0) PetscStackCallSAWs(SAWs_Pop_Body,("index.html",1));
+    PetscStackCallSAWs(SAWs_Push_Body,("index.html",1,body));
   }
 #endif
 

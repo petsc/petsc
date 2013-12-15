@@ -2700,11 +2700,8 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec U,PetscBool *done)
 @*/
 PetscErrorCode TSSolve(TS ts,Vec u)
 {
-  PetscBool         flg;
-  PetscViewer       viewer;
   Vec               solution;
   PetscErrorCode    ierr;
-  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -2729,13 +2726,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   ts->reject            = 0;
   ts->reason            = TS_CONVERGED_ITERATING;
 
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ts),((PetscObject)ts)->prefix,"-ts_view_pre",&viewer,&format,&flg);CHKERRQ(ierr);
-  if (flg && !PetscPreLoadingOn) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = TSView(ts,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
+  ierr = TSViewFromOptions(ts,NULL,"-ts_view_pre");CHKERRQ(ierr);
 
   if (ts->ops->solve) {         /* This private interface is transitional and should be removed when all implementations are updated. */
     ierr = (*ts->ops->solve)(ts);CHKERRQ(ierr);
@@ -2761,13 +2752,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     }
     ierr = TSMonitor(ts,ts->steps,ts->solvetime,solution);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ts),((PetscObject)ts)->prefix,"-ts_view",&viewer,&format,&flg);CHKERRQ(ierr);
-  if (flg && !PetscPreLoadingOn) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = TSView(ts,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
+  ierr = TSViewFromOptions(ts,NULL,"-ts_view");CHKERRQ(ierr);
   ierr = PetscObjectSAWsBlock((PetscObject)ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

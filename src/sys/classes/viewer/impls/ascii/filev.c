@@ -85,6 +85,7 @@ PetscErrorCode PetscViewerDestroy_ASCII_Singleton(PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscViewerRestoreSingleton(vascii->bviewer,&viewer);CHKERRQ(ierr);
+  vascii->bviewer = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -96,7 +97,8 @@ PetscErrorCode PetscViewerDestroy_ASCII_Subcomm(PetscViewer viewer)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerRestoreSubcomm(vascii->bviewer,PetscObjectComm((PetscObject)viewer),&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerRestoreSubcomm(vascii->subviewer,PetscObjectComm((PetscObject)viewer),&viewer);CHKERRQ(ierr);
+  vascii->subviewer = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -524,10 +526,10 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
   PetscMPIInt       rank;
-  PetscInt          tab;
+  PetscInt          tab,intab = ascii->tab;
   PetscErrorCode    ierr;
   FILE              *fd = ascii->fd;
-  PetscBool         iascii;
+  PetscBool         iascii,issingleton = PETSC_FALSE;
   int               err;
 
   PetscFunctionBegin;
@@ -535,11 +537,17 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
   PetscValidCharPointer(format,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (!iascii) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not ASCII PetscViewer");
+  if (ascii->bviewer) {
+    viewer      = ascii->bviewer;
+    ascii       = (PetscViewer_ASCII*)viewer->data;
+    fd          = ascii->fd;
+    issingleton = PETSC_TRUE;
+  }
 
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
   if (!rank) {
     va_list Argp;
-    tab = ascii->tab;
+    tab = intab;
     while (tab--) {
       ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"  ");CHKERRQ(ierr);
     }
@@ -550,7 +558,7 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
     if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
     if (petsc_history) {
       va_start(Argp,format);
-      tab = ascii->tab;
+      tab = intab;
       while (tab--) {
         ierr = PetscFPrintf(PETSC_COMM_SELF,petsc_history,"  ");CHKERRQ(ierr);
       }
@@ -558,6 +566,32 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
       err  = fflush(petsc_history);
       if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
     }
+    va_end(Argp);
+  } else if (issingleton) {
+    char        *string;
+    va_list     Argp;
+    size_t      fullLength;
+    PrintfQueue next;
+
+    ierr = PetscNew(&next);CHKERRQ(ierr);
+    if (petsc_printfqueue) {
+      petsc_printfqueue->next = next;
+      petsc_printfqueue       = next;
+    } else {
+      petsc_printfqueuebase = petsc_printfqueue = next;
+    }
+    petsc_printfqueuelength++;
+    next->size = QUEUESTRINGSIZE;
+    ierr       = PetscMalloc(next->size*sizeof(char), &next->string);CHKERRQ(ierr);
+    ierr       = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
+    string     = next->string;
+    tab        = intab;
+    tab       *= 2;
+    while (tab--) {
+      *string++ = ' ';
+    }
+    va_start(Argp,format);
+    ierr = PetscVSNPrintf(string,next->size-2*ascii->tab,format,&fullLength,Argp);CHKERRQ(ierr);
     va_end(Argp);
   }
   PetscFunctionReturn(0);
@@ -784,7 +818,7 @@ PetscErrorCode PetscViewerGetSubcomm_ASCII(PetscViewer viewer,MPI_Comm subcomm,P
   ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)(*outviewer),name);CHKERRQ(ierr);
 
-  ((PetscViewer_ASCII*)((*outviewer)->data))->bviewer = viewer;
+  ((PetscViewer_ASCII*)((*outviewer)->data))->subviewer = viewer;
 
   (*outviewer)->ops->destroy = PetscViewerDestroy_ASCII_Subcomm;
   PetscFunctionReturn(0);
@@ -848,6 +882,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
   vascii->fd        = PETSC_STDOUT;
   vascii->mode      = FILE_MODE_WRITE;
   vascii->bviewer   = 0;
+  vascii->subviewer = 0;
   vascii->sviewer   = 0;
   vascii->tab       = 0;
   vascii->tab_store = 0;

@@ -817,7 +817,7 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
   PetscErrorCode    ierr;
   PetscMPIInt       size = l->size,imdex,n,rank = l->rank,tag = ((PetscObject)A)->tag,lastidx = -1;
   PetscInt          i,*owners = A->rmap->range;
-  PetscInt          *nprocs,j,idx,nsends;
+  PetscInt          *sizes,j,idx,nsends;
   PetscInt          nmax,*svalues,*starts,*owner,nrecvs;
   PetscInt          *rvalues,count,base,slen,*source;
   PetscInt          *lens,*lrows,*values,m;
@@ -837,16 +837,16 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   /*  first count number of contributors to each processor */
-  ierr = PetscCalloc1(2*size,&nprocs);CHKERRQ(ierr);
-  ierr = PetscMalloc1((N+1),&owner);CHKERRQ(ierr); /* see note*/
+  ierr = PetscCalloc1(2*size,&sizes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(N+1,&owner);CHKERRQ(ierr); /* see note*/
   j    = 0;
   for (i=0; i<N; i++) {
     if (lastidx > (idx = rows[i])) j = 0;
     lastidx = idx;
     for (; j<size; j++) {
       if (idx >= owners[j] && idx < owners[j+1]) {
-        nprocs[2*j]++;
-        nprocs[2*j+1] = 1;
+        sizes[2*j]++;
+        sizes[2*j+1] = 1;
         owner[i]      = j;
 #if defined(PETSC_DEBUG)
         found = PETSC_TRUE;
@@ -859,10 +859,10 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
     found = PETSC_FALSE;
 #endif
   }
-  nsends = 0;  for (i=0; i<size; i++) nsends += nprocs[2*i+1];
+  nsends = 0;  for (i=0; i<size; i++) nsends += sizes[2*i+1];
 
   /* inform other processors of number of messages and max length*/
-  ierr = PetscMaxSum(comm,nprocs,&nmax,&nrecvs);CHKERRQ(ierr);
+  ierr = PetscMaxSum(comm,sizes,&nmax,&nrecvs);CHKERRQ(ierr);
 
   /* post receives:   */
   ierr = PetscMalloc1((nrecvs+1)*(nmax+1),&rvalues);CHKERRQ(ierr);
@@ -880,15 +880,15 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
   ierr = PetscMalloc1((size+1),&starts);CHKERRQ(ierr);
 
   starts[0] = 0;
-  for (i=1; i<size; i++) starts[i] = starts[i-1] + nprocs[2*i-2];
+  for (i=1; i<size; i++) starts[i] = starts[i-1] + sizes[2*i-2];
   for (i=0; i<N; i++) svalues[starts[owner[i]]++] = rows[i];
 
   starts[0] = 0;
-  for (i=1; i<size+1; i++) starts[i] = starts[i-1] + nprocs[2*i-2];
+  for (i=1; i<size+1; i++) starts[i] = starts[i-1] + sizes[2*i-2];
   count = 0;
   for (i=0; i<size; i++) {
-    if (nprocs[2*i+1]) {
-      ierr = MPI_Isend(svalues+starts[i],nprocs[2*i],MPIU_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
+    if (sizes[2*i+1]) {
+      ierr = MPI_Isend(svalues+starts[i],sizes[2*i],MPIU_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree(starts);CHKERRQ(ierr);
@@ -920,7 +920,7 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
   ierr = PetscFree(rvalues);CHKERRQ(ierr);
   ierr = PetscFree2(lens,source);CHKERRQ(ierr);
   ierr = PetscFree(owner);CHKERRQ(ierr);
-  ierr = PetscFree(nprocs);CHKERRQ(ierr);
+  ierr = PetscFree(sizes);CHKERRQ(ierr);
   /* lrows are the local rows to be zeroed, slen is the number of local rows */
 
   /* zero diagonal part of matrix */

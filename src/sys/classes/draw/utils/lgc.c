@@ -492,7 +492,7 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
         else cl = PETSC_DRAW_BLACK+i;
         ierr = PetscDrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],lg->x[j*dim+i],lg->y[j*dim+i],cl);CHKERRQ(ierr);
         if (lg->use_dots) {
-          ierr = PetscDrawString(draw,lg->x[j*dim+i],lg->y[(j-1)*dim+i],cl,"x");CHKERRQ(ierr);
+          ierr = PetscDrawString(draw,lg->x[j*dim+i],lg->y[j*dim+i],cl,"x");CHKERRQ(ierr);
         }
       }
     }

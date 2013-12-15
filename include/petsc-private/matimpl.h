@@ -327,8 +327,6 @@ struct _p_Mat {
 #endif
   void                   *spptr;          /* pointer for special library like SuperLU */
   MatSolverPackage       solvertype;
-  PetscViewer            viewonassembly;         /* the following are set in MatSetFromOptions() and used in MatAssemblyEnd() */
-  PetscViewerFormat      viewformatonassembly;
   PetscBool              checksymmetryonassembly,checknullspaceonassembly;
   PetscReal              checksymmetrytol;
   };

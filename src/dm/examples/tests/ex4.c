@@ -11,7 +11,8 @@ int main(int argc,char **argv)
   PetscErrorCode   ierr;
   PetscInt         M = 10,N = 8,m = PETSC_DECIDE;
   PetscInt         s =2,w=2,n = PETSC_DECIDE,nloc,l,i,j,kk;
-  PetscInt         Xs,Xm,Ys,Ym,iloc,*iglobal,*ltog;
+  PetscInt         Xs,Xm,Ys,Ym,iloc,*iglobal;
+  const PetscInt   *ltog;
   PetscInt         *lx       = NULL,*ly = NULL;
   PetscBool        testorder = PETSC_FALSE,flg;
   DMDABoundaryType bx        = DMDA_BOUNDARY_NONE,by= DMDA_BOUNDARY_NONE;
@@ -101,6 +102,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetBool(NULL,"-local_print",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer sviewer;
+  
+    ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nLocal Vector: processor %d\n",rank);CHKERRQ(ierr);
     ierr = PetscViewerGetSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
     ierr = VecView(local,sviewer);CHKERRQ(ierr);
@@ -148,6 +151,7 @@ int main(int argc,char **argv)
       }
     }
     ierr = PetscFree(iglobal);CHKERRQ(ierr);
+    ierr = DMDARestoreGlobalIndices(da,&nloc,&ltog);CHKERRQ(ierr);
   }
 
   /* Free memory */

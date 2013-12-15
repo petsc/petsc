@@ -7,7 +7,7 @@ LOCDIR    = src/ksp/ksp/examples/tests/
 EXAMPLESC       = ex1.c ex3.c ex4.c ex6.c ex7.c ex10.c ex11.c ex14.c \
                 ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c \
                 ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c \
-                ex33.c ex34.c ex35.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
+                ex33.c ex35.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
                 ex43.c ex44.c
 EXAMPLESCH      =
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F
@@ -769,12 +769,6 @@ runex33_mumps_2:
 	   else echo ${PWD} ; echo "Possible problem with with ex33_mumps_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex33.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
-runex34:
-	-@${MPIEXEC} -n 2 ./ex34 -f  ${DATAFILESPATH}/matrices/small -nodesize 2 > ex34.tmp 2>&1; \
-	if (${DIFF} output/ex34_1.out ex34.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex34, diffs above \n========================================="; fi; \
-	   ${RM} -f ex34.tmp
-
 runex35_1:
 	-@${MPIEXEC} -n 1 ./ex35 -dof 1 -mat_view -check_final_residual> ex35.tmp 2>&1;\
 	if (${DIFF} output/ex35_1.out ex35.tmp) then true; \
@@ -973,7 +967,7 @@ TESTEXAMPLES_DATAFILESPATH     = ex6.PETSc runex6 runex6_2 ex6.rm ex11.PETSc run
                                  ex25.PETSc runex25 runex25_2 ex25.rm ex27.PETSc runex27 ex25.rm \
                                  ex30.PETSc runex30 runex30_2 runex30_shift runex30_shift_cholesky_aij runex30_shift_cholesky_sbaij ex30.rm \
                                  ex31.PETSc runex31 ex31.rm \
-                                 ex34.PETSc runex34 ex34.rm ex37.PETSc runex37 runex37_2 runex37_3 runex37_4 runex37_5 ex37.rm \
+                                 ex37.PETSc runex37 runex37_2 runex37_3 runex37_4 runex37_5 ex37.rm \
                                  ex12f.PETSc runex12f ex12f.rm ex16f.PETSc runex16f ex16f.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX =
 TESTEXAMPLES_13		       = ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex5f.PETSc ex5f.rm

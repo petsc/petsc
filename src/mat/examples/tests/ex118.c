@@ -183,7 +183,7 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
       tmp  = -eval[i];
       ierr = VecAXPY(vt1,tmp,vt2);CHKERRQ(ierr);
       ierr = VecNorm(vt1, NORM_INFINITY, &norm);CHKERRQ(ierr);
-      norm = PetscAbsScalar(norm);
+      norm = PetscAbsReal(norm);
       if (norm > norm_max) norm_max = norm;
 #if defined(DEBUG_CkEigenSolutions)
       /* sniff, and bark if necessary */

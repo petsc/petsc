@@ -349,9 +349,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   PetscErrorCode    ierr;
   PetscMPIInt       rank;
   PetscBool         flag1,flag2,flag3,flg = PETSC_FALSE,inXisinB=PETSC_FALSE,guess_zero;
-  PetscViewer       viewer;
   Mat               mat,premat;
-  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -373,14 +371,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr         = VecDestroy(&ksp->vec_sol);CHKERRQ(ierr);
     ksp->vec_sol = x;
   }
-
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,"-ksp_view_pre",&viewer,&format,&flg);CHKERRQ(ierr);
-  if (flg && !PetscPreLoadingOn) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
+  ierr = KSPViewFromOptions(ksp,NULL,"-ksp_view_pre");CHKERRQ(ierr);
 
   if (ksp->presolve) {
     ierr = (*ksp->presolve)(ksp,ksp->vec_rhs,ksp->vec_sol,ksp->prectx);CHKERRQ(ierr);
@@ -607,13 +598,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = MatViewFromOptions(B,((PetscObject)ksp)->prefix,"-ksp_view_preconditioned_operator_explicit");CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,"-ksp_view",&viewer,&format,&flg);CHKERRQ(ierr);
-  if (flg && !PetscPreLoadingOn) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
+  ierr = KSPViewFromOptions(ksp,NULL,"-ksp_view");CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_final_residual",&flg,NULL);CHKERRQ(ierr);

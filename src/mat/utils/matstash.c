@@ -447,7 +447,7 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
   PetscScalar        **rvalues,*svalues;
   MPI_Comm           comm = stash->comm;
   MPI_Request        *send_waits,*recv_waits,*recv_waits1,*recv_waits2;
-  PetscMPIInt        *nprocs,*nlengths,nreceives;
+  PetscMPIInt        *sizes,*nlengths,nreceives;
   PetscInt           *sp_idx,*sp_idy;
   PetscScalar        *sp_val;
   PetscMatStashSpace space,space_next;
@@ -456,9 +456,9 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
   bs2 = stash->bs*stash->bs;
 
   /*  first count number of contributors to each processor */
-  ierr = PetscCalloc1(size,&nprocs);CHKERRQ(ierr);
+  ierr = PetscCalloc1(size,&sizes);CHKERRQ(ierr);
   ierr = PetscCalloc1(size,&nlengths);CHKERRQ(ierr);
-  ierr = PetscMalloc1((stash->n+1),&owner);CHKERRQ(ierr);
+  ierr = PetscMalloc1(stash->n+1,&owner);CHKERRQ(ierr);
 
   i       = j    = 0;
   lastidx = -1;
@@ -482,13 +482,13 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
   /* Now check what procs get messages - and compute nsends. */
   for (i=0, nsends=0; i<size; i++) {
     if (nlengths[i]) {
-      nprocs[i] = 1; nsends++;
+      sizes[i] = 1; nsends++;
     }
   }
 
   {PetscMPIInt *onodes,*olengths;
    /* Determine the number of messages to expect, their lengths, from from-ids */
-   ierr = PetscGatherNumberOfMessages(comm,nprocs,nlengths,&nreceives);CHKERRQ(ierr);
+   ierr = PetscGatherNumberOfMessages(comm,sizes,nlengths,&nreceives);CHKERRQ(ierr);
    ierr = PetscGatherMessageLengths(comm,nsends,nreceives,nlengths,&onodes,&olengths);CHKERRQ(ierr);
    /* since clubbing row,col - lengths are multiplied by 2 */
    for (i=0; i<nreceives; i++) olengths[i] *=2;
@@ -543,7 +543,7 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
   for (i=1; i<size; i++) startv[i] = startv[i-1] + nlengths[i-1];
 
   for (i=0,count=0; i<size; i++) {
-    if (nprocs[i]) {
+    if (sizes[i]) {
       ierr = MPI_Isend(sindices+2*startv[i],2*nlengths[i],MPIU_INT,i,tag1,comm,send_waits+count++);CHKERRQ(ierr);
       ierr = MPI_Isend(svalues+bs2*startv[i],bs2*nlengths[i],MPIU_SCALAR,i,tag2,comm,send_waits+count++);CHKERRQ(ierr);
     }
@@ -551,7 +551,7 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
 #if defined(PETSC_USE_INFO)
   ierr = PetscInfo1(NULL,"No of messages: %d \n",nsends);CHKERRQ(ierr);
   for (i=0; i<size; i++) {
-    if (nprocs[i]) {
+    if (sizes[i]) {
       ierr = PetscInfo2(NULL,"Mesg_to: %d: size: %d bytes\n",i,nlengths[i]*(bs2*sizeof(PetscScalar)+2*sizeof(PetscInt)));CHKERRQ(ierr);
     }
   }
@@ -559,7 +559,7 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
   ierr = PetscFree(nlengths);CHKERRQ(ierr);
   ierr = PetscFree(owner);CHKERRQ(ierr);
   ierr = PetscFree2(startv,starti);CHKERRQ(ierr);
-  ierr = PetscFree(nprocs);CHKERRQ(ierr);
+  ierr = PetscFree(sizes);CHKERRQ(ierr);
 
   /* recv_waits need to be contiguous for MatStashScatterGetMesg_Private() */
   ierr = PetscMalloc1(2*nreceives,&recv_waits);CHKERRQ(ierr);

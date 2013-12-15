@@ -214,7 +214,7 @@ PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
   SNES_NASM      *nasm = (SNES_NASM*)snes->data;
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
-  PetscInt       i,j,N,bsz;
+  PetscInt       i,N,bsz;
   PetscBool      iascii,isstring;
   PetscViewer    sviewer;
   MPI_Comm       comm;
@@ -250,19 +250,15 @@ PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following SNES objects:\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
-      for (j=0; j<size; j++) {
-        ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
-        if (rank == j) {
-          for (i=0; i<nasm->n; i++) {
-            ierr = VecGetLocalSize(nasm->x[i],&bsz);CHKERRQ(ierr);
-            ierr = PetscViewerASCIIPrintf(sviewer,"[%d] local block number %D, size = %D\n",(int)rank,i,bsz);CHKERRQ(ierr);
-            ierr = SNESView(nasm->subsnes[i],sviewer);CHKERRQ(ierr);
-            ierr = PetscViewerASCIIPrintf(sviewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
-          }
-        }
-        ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
-        ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      for (i=0; i<nasm->n; i++) {
+        ierr = VecGetLocalSize(nasm->x[i],&bsz);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(sviewer,"[%d] local block number %D, size = %D\n",(int)rank,i,bsz);CHKERRQ(ierr);
+        ierr = SNESView(nasm->subsnes[i],sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(sviewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
       }
+      ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   } else if (isstring) {

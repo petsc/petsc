@@ -5,46 +5,6 @@ PetscClassId  DM_CLASSID;
 PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal;
 
 #undef __FUNCT__
-#define __FUNCT__ "DMViewFromOptions"
-/*
-  DMViewFromOptions - Processes command line options to determine if/how a DM is to be viewed.
-
-  Collective on Vec
-
-  Input Parameters:
-+ dm   - the DM
-. prefix - prefix to use for viewing, or NULL to use prefix of 'dm'
-- optionname - option to activate viewing
-
-  Level: intermediate
-
-.keywords: DM, view, options, database
-.seealso: VecViewFromOptions(), MatViewFromOptions()
-*/
-PetscErrorCode  DMViewFromOptions(DM dm,const char prefix[],const char optionname[])
-{
-  PetscErrorCode    ierr;
-  PetscBool         flg;
-  PetscViewer       viewer;
-  PetscViewerFormat format;
-
-  PetscFunctionBegin;
-  if (prefix) {
-    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)dm),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
-  } else {
-    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)dm),((PetscObject)dm)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
-  }
-  if (flg) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = DMView(dm,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
 #define __FUNCT__ "DMCreate"
 /*@
   DMCreate - Creates an empty DM object. The type can then be set with DMSetType().
@@ -583,6 +543,7 @@ PetscErrorCode  DMSetUp(DM dm)
     ierr = (*dm->ops->setup)(dm);CHKERRQ(ierr);
   }
   dm->setupcalled = PETSC_TRUE;
+  ierr = DMViewFromOptions(dm,NULL,"-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -632,7 +593,6 @@ PetscErrorCode  DMSetFromOptions(DM dm)
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject) dm);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm,NULL,"-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3545,6 +3505,66 @@ PetscErrorCode DMSetCoordinateDM(DM dm, DM cdm)
   ierr = DMDestroy(&dm->coordinateDM);CHKERRQ(ierr);
   dm->coordinateDM = cdm;
   ierr = PetscObjectReference((PetscObject) dm->coordinateDM);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetCoordinateSection"
+/*@
+  DMGetCoordinateSection - Retrieve the layout of coordinate values over the mesh.
+
+  Not Collective
+
+  Input Parameter:
+. dm - The DM object
+
+  Output Parameter:
+. section - The PetscSection object
+
+  Level: intermediate
+
+.keywords: mesh, coordinates
+.seealso: DMGetCoordinateDM(), DMGetDefaultSection(), DMSetDefaultSection()
+@*/
+PetscErrorCode DMGetCoordinateSection(DM dm, PetscSection *section)
+{
+  DM             cdm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(section, 2);
+  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(cdm, section);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetCoordinateSection"
+/*@
+  DMSetCoordinateSection - Set the layout of coordinate values over the mesh.
+
+  Not Collective
+
+  Input Parameters:
++ dm      - The DM object
+- section - The PetscSection object
+
+  Level: intermediate
+
+.keywords: mesh, coordinates
+.seealso: DMGetCoordinateSection(), DMGetDefaultSection(), DMSetDefaultSection()
+@*/
+PetscErrorCode DMSetCoordinateSection(DM dm, PetscSection section)
+{
+  DM             cdm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,2);
+  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+  ierr = DMSetDefaultSection(cdm, section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
