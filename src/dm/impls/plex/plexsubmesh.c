@@ -207,7 +207,7 @@ static PetscErrorCode DMPlexShiftCoordinates_Internal(DM dm, PetscInt depthShift
   /* Step 8: Convert coordinates */
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dmNew, 0, &vStartNew, &vEndNew);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &newCoordSection);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(newCoordSection, 1);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldComponents(newCoordSection, 0, dim);CHKERRQ(ierr);
@@ -217,7 +217,7 @@ static PetscErrorCode DMPlexShiftCoordinates_Internal(DM dm, PetscInt depthShift
     ierr = PetscSectionSetFieldDof(newCoordSection, v, 0, dim);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(newCoordSection);CHKERRQ(ierr);
-  ierr = DMPlexSetCoordinateSection(dmNew, newCoordSection);CHKERRQ(ierr);
+  ierr = DMSetCoordinateSection(dmNew, newCoordSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(newCoordSection, &coordSize);CHKERRQ(ierr);
   ierr = VecCreate(PetscObjectComm((PetscObject)dm), &newCoordinates);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) newCoordinates, "coordinates");CHKERRQ(ierr);
@@ -1082,7 +1082,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
   ierr = DMPlexStratify(sdm);CHKERRQ(ierr);
   /* Step 8: Coordinates */
   ierr = DMPlexShiftCoordinates_Internal(dm, depthShift, sdm);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateSection(sdm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(sdm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(sdm, &coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   for (v = 0; v < (numSplitPoints ? numSplitPoints[0] : 0); ++v) {
@@ -2336,9 +2336,9 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, DMLabel vertexLa
     PetscScalar *coords, *subCoords;
     PetscInt     numComp, coordSize, v;
 
-    ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-    ierr = DMPlexGetCoordinateSection(subdm, &subCoordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(subdm, &subCoordSection);CHKERRQ(ierr);
     ierr = PetscSectionSetNumFields(subCoordSection, 1);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldComponents(coordSection, 0, &numComp);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldComponents(subCoordSection, 0, numComp);CHKERRQ(ierr);
@@ -2480,9 +2480,9 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, DMLabel vertexLabe
     PetscScalar *coords, *subCoords;
     PetscInt     numComp, coordSize;
 
-    ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-    ierr = DMPlexGetCoordinateSection(subdm, &subCoordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(subdm, &subCoordSection);CHKERRQ(ierr);
     ierr = PetscSectionSetNumFields(subCoordSection, 1);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldComponents(coordSection, 0, &numComp);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldComponents(subCoordSection, 0, numComp);CHKERRQ(ierr);
@@ -2663,9 +2663,9 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
     PetscScalar *coords, *subCoords;
     PetscInt     numComp, coordSize, v;
 
-    ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-    ierr = DMPlexGetCoordinateSection(subdm, &subCoordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(subdm, &subCoordSection);CHKERRQ(ierr);
     ierr = PetscSectionSetNumFields(subCoordSection, 1);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldComponents(coordSection, 0, &numComp);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldComponents(subCoordSection, 0, numComp);CHKERRQ(ierr);
@@ -2875,9 +2875,9 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
     PetscScalar *coords, *subCoords;
     PetscInt     numComp, coordSize;
 
-    ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-    ierr = DMPlexGetCoordinateSection(subdm, &subCoordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(subdm, &subCoordSection);CHKERRQ(ierr);
     ierr = PetscSectionSetNumFields(subCoordSection, 1);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldComponents(coordSection, 0, &numComp);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldComponents(subCoordSection, 0, numComp);CHKERRQ(ierr);
