@@ -1549,7 +1549,6 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
 
   PetscFunctionBegin;
   ierr = PetscDualSpaceGetDimension(sp, &pdim);CHKERRQ(ierr);
-  ierr = PetscMalloc1(pdim, &sp->functional);CHKERRQ(ierr);
   /* Classify element type */
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
@@ -1566,7 +1565,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support simplices and tensor product cells");
   lag->simplex = simplex;
   ierr = PetscDualSpaceGetDimension(sp, &pdim);CHKERRQ(ierr);
-  ierr = PetscMalloc(pdim * sizeof(PetscQuadrature), &sp->functional);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pdim, &sp->functional);CHKERRQ(ierr);
   if (!dim) {
     sp->functional[f].numPoints = 1;
     ierr = PetscMalloc1(sp->functional[f].numPoints, &qpoints);CHKERRQ(ierr);
