@@ -1569,8 +1569,8 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   ierr = PetscMalloc(pdim * sizeof(PetscQuadrature), &sp->functional);CHKERRQ(ierr);
   if (!dim) {
     sp->functional[f].numPoints = 1;
-    ierr = PetscMalloc(sp->functional[f].numPoints * sizeof(PetscReal), &qpoints);CHKERRQ(ierr);
-    ierr = PetscMalloc(sp->functional[f].numPoints * sizeof(PetscReal), &qweights);CHKERRQ(ierr);
+    ierr = PetscMalloc1(sp->functional[f].numPoints, &qpoints);CHKERRQ(ierr);
+    ierr = PetscMalloc1(sp->functional[f].numPoints, &qweights);CHKERRQ(ierr);
     qpoints[0]  = 0.0;
     qweights[0] = 1.0;
     sp->functional[f].points  = qpoints;
@@ -1663,17 +1663,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
       }
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, pStart[depth], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-  } else if (!dim) {
-    sp->functional[f].numPoints = 1;
-    ierr = PetscMalloc1(sp->functional[f].numPoints, &qpoints);CHKERRQ(ierr);
-    ierr = PetscMalloc1(sp->functional[f].numPoints, &qweights);CHKERRQ(ierr);
-    qpoints[0]  = 0.0;
-    qweights[0] = 1.0;
-    sp->functional[f].points  = qpoints;
-    sp->functional[f].weights = qweights;
-    ++f;
-    lag->numDof[0] = 1;
-  } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle cells with cone size %d", coneSize);
+  }
   ierr = PetscFree2(pStart,pEnd);CHKERRQ(ierr);
   if (f != pdim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of dual basis vectors %d not equal to dimension %d", f, pdim);
   PetscFunctionReturn(0);

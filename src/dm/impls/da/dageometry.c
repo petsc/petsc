@@ -2,7 +2,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "FillClosureArray_Static"
-PETSC_STATIC_INLINE PetscErrorCode FillClosureArray_Static(DM dm, PetscSection section, PetscInt nP, const PetscInt points[], PetscScalar *vArray, PetscInt *csize, const PetscScalar **array)
+PETSC_STATIC_INLINE PetscErrorCode FillClosureArray_Static(DM dm, PetscSection section, PetscInt nP, const PetscInt points[], PetscScalar *vArray, PetscInt *csize, PetscScalar **array)
 {
   PetscScalar    *a;
   PetscInt       pStart, pEnd, size = 0, dof, off, d, k, i;
@@ -205,7 +205,7 @@ PetscErrorCode DMDARestoreClosure(DM dm, PetscSection section, PetscInt p,PetscI
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAGetClosureScalar"
-PetscErrorCode DMDAGetClosureScalar(DM dm, PetscSection section, PetscInt p, PetscScalar *vArray, PetscInt *csize, const PetscScalar **values)
+PetscErrorCode DMDAGetClosureScalar(DM dm, PetscSection section, PetscInt p, PetscScalar *vArray, PetscInt *csize, PetscScalar **values)
 {
   DM_DA          *da = (DM_DA*) dm->data;
   PetscInt       dim = da->dim;
@@ -319,7 +319,7 @@ PetscErrorCode DMDAGetClosureScalar(DM dm, PetscSection section, PetscInt p, Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAVecGetClosure"
-PetscErrorCode DMDAVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt p, PetscInt *csize, const PetscScalar **values)
+PetscErrorCode DMDAVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt p, PetscInt *csize, PetscScalar **values)
 {
   PetscScalar    *vArray;
   PetscErrorCode ierr;
@@ -336,7 +336,7 @@ PetscErrorCode DMDAVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt p,
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDARestoreClosureScalar"
-PetscErrorCode DMDARestoreClosureScalar(DM dm, PetscSection section, PetscInt p, PetscScalar *vArray, PetscInt *csize, const PetscScalar **values)
+PetscErrorCode DMDARestoreClosureScalar(DM dm, PetscSection section, PetscInt p, PetscScalar *vArray, PetscInt *csize, PetscScalar **values)
 {
   PetscErrorCode ierr;
 
@@ -349,7 +349,7 @@ PetscErrorCode DMDARestoreClosureScalar(DM dm, PetscSection section, PetscInt p,
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAVecRestoreClosure"
-PetscErrorCode DMDAVecRestoreClosure(DM dm, PetscSection section, Vec v, PetscInt p, PetscInt *csize, const PetscScalar **values)
+PetscErrorCode DMDAVecRestoreClosure(DM dm, PetscSection section, Vec v, PetscInt p, PetscInt *csize, PetscScalar **values)
 {
   PetscErrorCode ierr;
 
@@ -565,7 +565,7 @@ PetscErrorCode DMDAComputeCellGeometry(DM dm, PetscInt cell, PetscQuadrature *qu
 {
   DM                 cdm;
   Vec                coordinates;
-  const PetscScalar *vertices = NULL;
+  PetscScalar       *vertices = NULL;
   PetscInt           csize, dim, d, q;
   PetscErrorCode     ierr;
 
