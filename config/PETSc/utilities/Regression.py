@@ -42,7 +42,7 @@ class Configure(config.base.Configure):
       jobs.append('C')
       if self.x.found:
         jobs.append('C_X')
-      if self.fortrancpp.fortranDatatypes and hasattr(self.compilers, 'FC'):
+      if hasattr(self.compilers, 'FC') and self.fortrancpp.fortranDatatypes:
         jobs.append('F90_DataTypes')
       elif hasattr(self.compilers, 'FC'):
         jobs.append('Fortran')
