@@ -80,6 +80,8 @@ DisplayDirectory = function(sub,divEntry)
         var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables.prefix.data[0];
         
         if (SAWs_prefix == "(null)") SAWs_prefix = ""; //"(null)" fails populatePcList(), don't know why???
+        //create <select> "pcList-1"+SAWs_prefix+" when it is not defined ???
+        //$("#pcList-1"+SAWs_prefix).remove(); 
         $("#o-1").append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>-"+SAWs_prefix+"pc_type &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList-1"+SAWs_prefix+"\"></select>");
         populatePcList("pcList-1"+SAWs_prefix,SAWs_alternatives,SAWs_pcVal);
         //alert("Preconditioner (PC) options, SAWs_pcVal "+SAWs_pcVal+", SAWs_prefix "+SAWs_prefix);
@@ -96,10 +98,10 @@ DisplayDirectory = function(sub,divEntry)
         var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables.prefix.data[0];
         
         if (SAWs_prefix == "(null)") SAWs_prefix = "";
-        $("#o-1").append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b title=\"Krylov method\">-"+SAWs_prefix+"ksp_type &nbsp;</b><select class=\"kspLists\" id=\"kspList"+SAWs_prefix+"\"></select>");//giving an html element a title creates a tooltip
-
+        //$("#kspList-1"+SAWs_prefix).remove(); 
+        $("#o-1").append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b title=\"Krylov method\">-"+SAWs_prefix+"ksp_type &nbsp;</b><select class=\"kspLists\" id=\"kspList-1"+SAWs_prefix+"\"></select>");//giving an html element a title creates a tooltip
+       
         populateKspList("kspList-1"+SAWs_prefix,SAWs_alternatives,SAWs_kspVal);
-        //populateKspList("kspList-1"+SAWs_prefix,null,"null");
         //alert("populateKspList is done, SAWs_kspVal "+SAWs_kspVal+", SAWs_prefix "+SAWs_prefix);
     }
 
