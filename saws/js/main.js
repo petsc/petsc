@@ -78,31 +78,29 @@ DisplayDirectory = function(sub,divEntry)
         var SAWs_pcVal = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].data[0];
         var SAWs_alternatives = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].alternatives;
         var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables.prefix.data[0];
+        
+        if (SAWs_prefix == "(null)") SAWs_prefix = ""; //"(null)" fails populatePcList(), don't know why???
+        $("#o-1").append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>-"+SAWs_prefix+"pc_type &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList-1"+SAWs_prefix+"\"></select>");
+        populatePcList("pcList-1"+SAWs_prefix,SAWs_alternatives,SAWs_pcVal);
         //alert("Preconditioner (PC) options, SAWs_pcVal "+SAWs_pcVal+", SAWs_prefix "+SAWs_prefix);
-        if (SAWs_prefix == "(null)") {
-            populatePcList("pcList-1",SAWs_alternatives,SAWs_pcVal);
-            $("#pcList-1").trigger("change"); //manually trigger pclist once because additional options, e.g., detailed info may need to be added
-        } else if (SAWs_prefix == "sub_") {
-            //alert("SAWs_alternatives="+SAWs_alternatives);
-            populatePcList("pcList-1_0",SAWs_alternatives,SAWs_pcVal);
-        }
 
         if (SAWs_pcVal == 'bjacobi') {
             var SAWs_bjacobi_blocks = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_bjacobi_blocks"].data[0];
-            alert("SAWs_bjacobi_blocks "+SAWs_bjacobi_blocks);
+            //alert("SAWs_bjacobi_blocks "+SAWs_bjacobi_blocks);
             //set SAWs_bjacobi_blocks to #bjacobiBlocks-1_0.processorInput ???
         }
+
     } else if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Krylov Method (KSP) options") {
         var SAWs_kspVal = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-ksp_type"].data[0];
         var SAWs_alternatives = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-ksp_type"].alternatives;
         var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables.prefix.data[0];
-        //alert("Krylov Method (KSP) options, SAWs_kspVal "+SAWs_kspVal+", SAWs_prefix "+SAWs_prefix);
-        //alert(SAWs_alternatives);
-        if (SAWs_prefix == "(null)") {
-            populateKspList("kspList-1",SAWs_alternatives,SAWs_kspVal);
-        } else if (SAWs_prefix == "sub_") {
-            populateKspList("kspList-1_0",SAWs_alternatives,SAWs_kspVal);
-        }
+        
+        if (SAWs_prefix == "(null)") SAWs_prefix = "";
+        $("#o-1").append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b title=\"Krylov method\">-"+SAWs_prefix+"ksp_type &nbsp;</b><select class=\"kspLists\" id=\"kspList"+SAWs_prefix+"\"></select>");//giving an html element a title creates a tooltip
+
+        populateKspList("kspList-1"+SAWs_prefix,SAWs_alternatives,SAWs_kspVal);
+        //populateKspList("kspList-1"+SAWs_prefix,null,"null");
+        //alert("populateKspList is done, SAWs_kspVal "+SAWs_kspVal+", SAWs_prefix "+SAWs_prefix);
     }
 
     //alert('call SAWs.displayDirectoryRecursive...');
@@ -126,9 +124,7 @@ HandlePCOptions = function(){
    
     //create div 'o-1' for displaying SAWs options
     $("#divPc").append("<div id=\"o"+recursionCounter+"\"> </div>");
-    $("#o" + recursionCounter).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b title=\"Krylov method\">-ksp_type &nbsp;</b><select class=\"kspLists\" id=\"kspList" + recursionCounter +"\"></select>");//giving an html element a title creates a tooltip
-    $("#o"+ recursionCounter).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>-pc_type &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + recursionCounter +"\"></select>");
-   
+    
     // get SAWs options 
     GetAndDisplayDirectory("","#variablesInfo"); //interfere $("#logstruc, #nlogstruc").change(function() ???
     

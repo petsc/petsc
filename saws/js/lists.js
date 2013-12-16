@@ -28,6 +28,7 @@ function populateKspList(listId,listVals,defaultVal)
 {
     var list = "#" + listId;
     $(list).empty(); //empty existing list
+    //alert("enter  populateKspList...");
     
     if (listVals == null) {
         //all options without parenthesis are for nonsymmetric (and, therefore, non pd) KSP list
@@ -93,35 +94,35 @@ function populatePcList(listId,listVals,defaultVal)
     $(list).empty(); //empty existing list
 
     if (listVals == null) {
-        $(list).append("<option value=\"asa\">asa</option>")
-        $(list).append("<option value=\"asm\">asm</option>")
-        $(list).append("<option value=\"bjacobi\">bjacobi</option>")
-        $(list).append("<option value=\"cholesky\">cholesky</option>")
-        $(list).append("<option value=\"composite\">composite</option>")
-        $(list).append("<option value=\"cp\">cp</option>")
-        $(list).append("<option value=\"eisenstat\">eisenstat</option>")
-        $(list).append("<option value=\"exotic\">exotic</option>")
-        $(list).append("<option value=\"fieldsplit\">fieldsplit (block structured)</option>")
-        $(list).append("<option value=\"galerkin\">galerkin</option>")
-        $(list).append("<option value=\"gamg\">gamg</option>")
-        $(list).append("<option value=\"gasm\">gasm</option>")
-        $(list).append("<option value=\"hmpi\">hmpi</option>")
-        $(list).append("<option value=\"icc\">icc</option>")
-        $(list).append("<option value=\"ilu\">ilu</option>")
-        $(list).append("<option value=\"jacobi\">jacobi</option>")
-        $(list).append("<option value=\"ksp\">ksp</option>")
-        $(list).append("<option value=\"lsc\">lsc</option>")
-        $(list).append("<option value=\"lu\">lu</option>")
-        $(list).append("<option value=\"mat\">mat</option>")
-        $(list).append("<option value=\"mg\">mg</option>")
-        $(list).append("<option value=\"nn\">nn</option>")
-        $(list).append("<option value=\"none\">none</option>")
-        $(list).append("<option value=\"pbjacobi\">pbjacobi</option>")
-        $(list).append("<option value=\"redistribute\">redistribute</option>")
-        $(list).append("<option value=\"redundant\">redundant</option>")
-        $(list).append("<option value=\"shell\">shell</option>")
-        $(list).append("<option value=\"sor\">sor</option>")
-        $(list).append("<option value=\"svd\">svd</option>")
+        $(list).append("<option value=\"asa\">asa</option>");
+        $(list).append("<option value=\"asm\">asm</option>");
+        $(list).append("<option value=\"bjacobi\">bjacobi</option>");
+        $(list).append("<option value=\"cholesky\">cholesky</option>");
+        $(list).append("<option value=\"composite\">composite</option>");
+        $(list).append("<option value=\"cp\">cp</option>");
+        $(list).append("<option value=\"eisenstat\">eisenstat</option>");
+        $(list).append("<option value=\"exotic\">exotic</option>");
+        $(list).append("<option value=\"fieldsplit\">fieldsplit (block structured)</option>");
+        $(list).append("<option value=\"galerkin\">galerkin</option>");
+        $(list).append("<option value=\"gamg\">gamg</option>");
+        $(list).append("<option value=\"gasm\">gasm</option>");
+        $(list).append("<option value=\"hmpi\">hmpi</option>");
+        $(list).append("<option value=\"icc\">icc</option>");
+        $(list).append("<option value=\"ilu\">ilu</option>");
+        $(list).append("<option value=\"jacobi\">jacobi</option>");
+        $(list).append("<option value=\"ksp\">ksp</option>");
+        $(list).append("<option value=\"lsc\">lsc</option>");
+        $(list).append("<option value=\"lu\">lu</option>");
+        $(list).append("<option value=\"mat\">mat</option>");
+        $(list).append("<option value=\"mg\">mg</option>");
+        $(list).append("<option value=\"nn\">nn</option>");
+        $(list).append("<option value=\"none\">none</option>");
+        $(list).append("<option value=\"pbjacobi\">pbjacobi</option>");
+        $(list).append("<option value=\"redistribute\">redistribute</option>");
+        $(list).append("<option value=\"redundant\">redundant</option>");
+        $(list).append("<option value=\"shell\">shell</option>");
+        $(list).append("<option value=\"sor\">sor</option>");
+        $(list).append("<option value=\"svd\">svd</option>");
     } else {
         var i=0;
         while (listVals[i] != "(null)"){
