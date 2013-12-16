@@ -606,7 +606,7 @@ static PetscErrorCode PetscDrawStringVertical_OpenGL(PetscDraw draw,PetscReal x,
   [yourLabel setTextColor:[UIColor colorWithRed:rcolor[c]/255.0 green:gcolor[c]/255.0 blue:rcolor[c]/255.0 alpha:1.0]];
   [yourLabel setText: [[NSString alloc] initWithCString:chrs encoding:NSMacOSRomanStringEncoding]];
   [yourLabel setBackgroundColor:[UIColor clearColor]];
-  [yourLabel setTransform:CGAffineTransformTranslate(CGAffineTransformMakeRotation(-M_PI / 2),-w/2.0-yy,-h+xx)];
+  [yourLabel setTransform:CGAffineTransformTranslate(CGAffineTransformMakeRotation(-PETSC_PI / 2),-w/2.0-yy,-h+xx)];
   /* [yourLabel setFont:[UIFont fontWithName: @"Trebuchet MS" size: 14.0f]]; */
   [win->view addSubview:yourLabel];
   NSLog(@"Draw string vertical end");

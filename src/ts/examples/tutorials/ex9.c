@@ -334,9 +334,9 @@ static PetscErrorCode PhysicsSample_Advect(void *vctx,PetscInt initial,FVBCType 
     case 0: u[0] = (x0 < 0) ? 1 : -1; break;
     case 1: u[0] = (x0 < 0) ? -1 : 1; break;
     case 2: u[0] = (0 < x0 && x0 < 1) ? 1 : 0; break;
-    case 3: u[0] = sin(2*M_PI*x0); break;
+    case 3: u[0] = sin(2*PETSC_PI*x0); break;
     case 4: u[0] = PetscAbs(x0); break;
-    case 5: u[0] = (x0 < 0 || x0 > 0.5) ? 0 : PetscSqr(sin(2*M_PI*x0)); break;
+    case 5: u[0] = (x0 < 0 || x0 > 0.5) ? 0 : PetscSqr(sin(2*PETSC_PI*x0)); break;
     case 6: u[0] = (x0 < 0) ? 0 : ((x0 < 1) ? x0 : ((x0 < 2) ? 2-x0 : 0)); break;
     default: SETERRQ(PETSC_COMM_SELF,1,"unknown initial condition");
   }
@@ -403,7 +403,7 @@ static PetscErrorCode PhysicsSample_Burgers(void *vctx,PetscInt initial,FVBCType
       break;
     case 4:
       if (t > 0) SETERRQ(PETSC_COMM_SELF,1,"Only initial condition available");
-      u[0] = 0.7 + 0.3*sin(2*M_PI*((x-xmin)/(xmax-xmin)));
+      u[0] = 0.7 + 0.3*sin(2*PETSC_PI*((x-xmin)/(xmax-xmin)));
       break;
     case 5:                     /* Pure shock solution */
       if (x < 0.5*t) u[0] = 1;
@@ -547,7 +547,7 @@ static PetscErrorCode PhysicsSample_Traffic(void *vctx,PetscInt initial,FVBCType
       break;
     case 2:
       if (t > 0) SETERRQ(PETSC_COMM_SELF,1,"Only initial condition available");
-      u[0] = 0.7 + 0.3*sin(2*M_PI*((x-xmin)/(xmax-xmin)));
+      u[0] = 0.7 + 0.3*sin(2*PETSC_PI*((x-xmin)/(xmax-xmin)));
       break;
     default: SETERRQ(PETSC_COMM_SELF,1,"unknown initial condition");
   }
@@ -841,7 +841,7 @@ static PetscErrorCode PhysicsSample_IsoGas(void *vctx,PetscInt initial,FVBCType 
       u[1] = (x < 0) ? 1 : 0.7;
       break;
     case 1:
-      u[0] = 1+0.5*sin(2*M_PI*x);
+      u[0] = 1+0.5*sin(2*PETSC_PI*x);
       u[1] = 1*u[0];
       break;
     default: SETERRQ(PETSC_COMM_SELF,1,"unknown initial condition");
