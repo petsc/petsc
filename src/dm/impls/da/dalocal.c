@@ -877,8 +877,11 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
   ierr = VecCreateSeq(PETSC_COMM_SELF, size, &coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   for (k = 0; k < nVz; ++k) {
-    PetscInt ind[3] = {0, 0, k + da->zs}, d, off;
+    PetscInt ind[3], d, off;
 
+    ind[0] = 0;
+    ind[1] = 0;
+    ind[2] = k + da->zs;
     for (j = 0; j < nVy; ++j) {
       ind[1] = j + da->ys;
       for (i = 0; i < nVx; ++i) {
