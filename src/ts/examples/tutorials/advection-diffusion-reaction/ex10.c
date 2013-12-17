@@ -112,8 +112,8 @@ int main(int argc,char **argv)
      of freedom at one point with degrees of freedom on the adjacent point to the left or right. A 1 at i,j in the
      ofill array indicates that the degree of freedom i at a point is coupled to degree of freedom j at the
      adjacent point. In this case ofill has only a few diagonal entries since the only spatial coupling is regular diffusion. */
-  ierr = PetscMalloc(dof*dof*sizeof(PetscInt),&ofill);CHKERRQ(ierr);
-  ierr = PetscMalloc(dof*dof*sizeof(PetscInt),&dfill);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dof*dof,&ofill);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dof*dof,&dfill);CHKERRQ(ierr);
   ierr = PetscMemzero(ofill,dof*dof*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(dfill,dof*dof*sizeof(PetscInt));CHKERRQ(ierr);
 
@@ -782,7 +782,7 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   if (!flg) PetscFunctionReturn(0);
 
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = PetscNew(MyMonitorCtx,&ctx);CHKERRQ(ierr);
+  ierr = PetscNew(&ctx);CHKERRQ(ierr);
   ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)da),NULL,"",PETSC_DECIDE,PETSC_DECIDE,600,400,&ctx->viewer);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
@@ -796,7 +796,7 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   ierr = DMDASetCoordinateName(ctx->da,1,ycoor);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(ctx->da,&ctx->He);CHKERRQ(ierr);
-  ierr = PetscMalloc(2*N*xm*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2*N*xm,&idx);CHKERRQ(ierr);
   cnt  = 0;
   for (xj=0; xj<N; xj++) {
     for (xi=xs; xi<xs+xm; xi++) {

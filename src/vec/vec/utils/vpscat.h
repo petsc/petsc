@@ -50,10 +50,10 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   if (!xin->map->n || ((xin->map->n > 10000) && (sstarts[nsends]*bs < 0.05*xin->map->n) && (xin->valid_GPU_array == PETSC_CUSP_GPU) && !(to->local.n))) {
     if (!ctx->spptr) {
       PetscInt k,*tindices,n = sstarts[nsends],*sindices;
-      ierr = PetscMalloc(n*sizeof(PetscInt),&tindices);CHKERRQ(ierr);
+      ierr = PetscMalloc1(n,&tindices);CHKERRQ(ierr);
       ierr = PetscMemcpy(tindices,to->indices,n*sizeof(PetscInt));CHKERRQ(ierr);
       ierr = PetscSortRemoveDupsInt(&n,tindices);CHKERRQ(ierr);
-      ierr = PetscMalloc(bs*n*sizeof(PetscInt),&sindices);CHKERRQ(ierr);
+      ierr = PetscMalloc1(bs*n,&sindices);CHKERRQ(ierr);
       for (i=0; i<n; i++) {
         for (k=0; k<bs; k++) sindices[i*bs+k] = tindices[i]+k;
       }

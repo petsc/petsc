@@ -247,7 +247,7 @@ PetscErrorCode InitialConditions(DM da,Vec U)
     x = i*hx;
     if (x < 1.0) u[i].rho = 0.0;
     else         u[i].rho = 1.0;
-    u[i].c = PetscCosScalar(.5*PETSC_PI*x);
+    u[i].c = PetscCosReal(.5*PETSC_PI*x);
   }
 
   /*

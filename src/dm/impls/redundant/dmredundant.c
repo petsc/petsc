@@ -31,7 +31,7 @@ static PetscErrorCode DMCreateMatrix_Redundant(DM dm,Mat *J)
   ierr = MatSetLocalToGlobalMapping(*J,ltog,ltog);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMappingBlock(*J,ltogb,ltogb);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(red->N,PetscInt,&cols,red->N,PetscScalar,&vals);CHKERRQ(ierr);
+  ierr = PetscMalloc2(red->N,&cols,red->N,&vals);CHKERRQ(ierr);
   for (i=0; i<red->N; i++) {
     cols[i] = i;
     vals[i] = 0.0;
@@ -127,7 +127,7 @@ static PetscErrorCode DMLocalToGlobalBegin_Redundant(DM dm,Vec l,InsertMode imod
       buffer = gv;
       source = MPI_IN_PLACE;
 #else
-      ierr   = PetscMalloc(red->N*sizeof(PetscScalar),&buffer);CHKERRQ(ierr);
+      ierr   = PetscMalloc1(red->N,&buffer);CHKERRQ(ierr);
       source = buffer;
 #endif
       if (imode == ADD_VALUES) for (i=0; i<red->N; i++) buffer[i] = gv[i] + lv[i];
@@ -199,7 +199,7 @@ static PetscErrorCode DMSetUp_Redundant(DM dm)
   PetscInt       i,*globals;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(red->N*sizeof(PetscInt),&globals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(red->N,&globals);CHKERRQ(ierr);
   for (i=0; i<red->N; i++) globals[i] = i;
   ierr         = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,red->N,globals,PETSC_OWN_POINTER,&dm->ltogmap);CHKERRQ(ierr);
   ierr         = PetscObjectReference((PetscObject)dm->ltogmap);CHKERRQ(ierr);
@@ -242,7 +242,7 @@ static PetscErrorCode DMCreateColoring_Redundant(DM dm,ISColoringType ctype,ISCo
     break;
   default: SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   }
-  ierr = PetscMalloc(nloc*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nloc,&colors);CHKERRQ(ierr);
   for (i=0; i<nloc; i++) colors[i] = i;
   ierr = ISColoringCreate(PetscObjectComm((PetscObject)dm),red->N,nloc,colors,coloring);CHKERRQ(ierr);
   ierr = ISColoringSetType(*coloring,ctype);CHKERRQ(ierr);
@@ -421,7 +421,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
   DM_Redundant   *red;
 
   PetscFunctionBegin;
-  ierr     = PetscNewLog(dm,DM_Redundant,&red);CHKERRQ(ierr);
+  ierr     = PetscNewLog(dm,&red);CHKERRQ(ierr);
   dm->data = red;
 
   ierr = PetscObjectChangeTypeName((PetscObject)dm,DMREDUNDANT);CHKERRQ(ierr);

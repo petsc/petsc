@@ -1,10 +1,6 @@
 #!/bin/sh
 #
-# This script makes a Apple Mac OS X framework for PETSc 
-#
-#  ./systems/Apple/OSX/bin/arch-OSX.py
-#  make cmake test
-#  ./systems/Apple/OSX/bin/makeframework
+# This script makes a Apple Mac OS X framework for PETSc see ./makeall
 #
 # To use the framework:
 #

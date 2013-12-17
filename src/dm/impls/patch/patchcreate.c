@@ -65,7 +65,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr     = PetscNewLog(dm, DM_Patch, &mesh);CHKERRQ(ierr);
+  ierr     = PetscNewLog(dm,&mesh);CHKERRQ(ierr);
   dm->data = mesh;
 
   mesh->refct       = 1;

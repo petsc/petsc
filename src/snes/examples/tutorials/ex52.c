@@ -211,6 +211,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       }
     }
   }
+  ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
 
@@ -350,9 +351,10 @@ PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetLocalVector(dmAux, &epsilon);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(dmAux, &epsilon);CHKERRQ(ierr);
   ierr = VecSet(epsilon, 1.0);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) epsilon);CHKERRQ(ierr);
+  ierr = VecDestroy(&epsilon);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -414,8 +416,8 @@ int main(int argc, char **argv)
   ierr = SetupSection(dmAux, &user);CHKERRQ(ierr);
   ierr = SetupMaterial(dm, dmAux, &user);CHKERRQ(ierr);
 
-  ierr = DMSNESSetFunctionLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))DMPlexComputeResidualFEM,&user);CHKERRQ(ierr);
-  ierr = DMSNESSetJacobianLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure*,void*))DMPlexComputeJacobianFEM,&user);CHKERRQ(ierr);
+  ierr = DMSNESSetFunctionLocal(dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))DMPlexComputeResidualFEM,&user);CHKERRQ(ierr);
+  ierr = DMSNESSetJacobianLocal(dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure*,void*))DMPlexComputeJacobianFEM,&user);CHKERRQ(ierr);
   if (user.computeFunction) {
     Vec X, F;
 
@@ -440,9 +442,9 @@ int main(int argc, char **argv)
   }
   ierr = PetscFree(user.exactFuncs);CHKERRQ(ierr);
   ierr = DestroyElement(&user);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

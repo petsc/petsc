@@ -11,7 +11,7 @@ int main(int argc,char **args)
   Mat            A,F;
   Vec            u,x,b;
   PetscErrorCode ierr;
-  PetscMPIInt    rank,nproc;
+  PetscMPIInt    rank,size;
   PetscInt       m,n,nfact;
   PetscReal      norm,tol=1.e-12,Anorm;
   IS             perm,iperm;
@@ -22,7 +22,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &nproc);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
 
   /* Determine file from which we read the matrix A */
   ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);

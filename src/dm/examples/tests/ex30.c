@@ -49,7 +49,7 @@ int main(int argc,char *argv[])
   ghosts[0] = (N+rstart-1)%N;
   ghosts[1] = (rstart+n)%N;
 
-  ierr = PetscMalloc2(n,PetscInt,&d_nnz,n,PetscInt,&o_nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,&d_nnz,n,&o_nnz);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (size > 1 && (i==0 || i==n-1)) {
       d_nnz[i] = 2;

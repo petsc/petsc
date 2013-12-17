@@ -51,6 +51,7 @@ int main(int argc,char **argv)
   Data           data;
   PetscInt       mn;
   PetscBool      flg;
+  MatColoring    mc;
   ISColoring     iscoloring;
   MatFDColoring  matfdcoloring        = 0;
   PetscBool      fd_jacobian_coloring = PETSC_FALSE;
@@ -132,7 +133,11 @@ int main(int argc,char **argv)
       }
 
       /* create coloring context */
-      ierr = MatGetColoring(J,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
+      ierr = MatColoringCreate(J,&mc);CHKERRQ(ierr);
+      ierr = MatColoringSetType(mc,MATCOLORINGSL);CHKERRQ(ierr);
+      ierr = MatColoringSetFromOptions(mc);CHKERRQ(ierr);
+      ierr = MatColoringApply(mc,&iscoloring);CHKERRQ(ierr);
+      ierr = MatColoringDestroy(&mc);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
       ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
@@ -275,7 +280,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   ierr = VecGetSize(global,&n);CHKERRQ(ierr);
 
   /* Set the index sets */
-  ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&idx);CHKERRQ(ierr);
   for (i=0; i<n; i++) idx[i]=i;
 
   /* Create local sequential vectors */
@@ -426,7 +431,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   ierr = VecGetSize(globalin,&len);CHKERRQ(ierr);
 
   /* Set the index sets */
-  ierr = PetscMalloc(len*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(len,&idx);CHKERRQ(ierr);
   for (i=0; i<len; i++) idx[i]=i;
 
   /* Create local sequential vectors */

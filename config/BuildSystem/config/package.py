@@ -52,7 +52,6 @@ class Package(config.base.Configure):
     self.includedir       = 'include' # location of includes in the package directory tree
     self.license          = None # optional license text
     self.excludedDirs     = []   # list of directory names that could be false positives, SuperLU_DIST when looking for SuperLU
-    self.archIndependent  = 0    # 1 means the install directory does not incorporate the ARCH name
     self.downloadonWindows   = 0  # 1 means the --download-package works on Microsoft Windows
     self.worksonWindows      = 0  # 1 means that package can be used on Microsof Windows
     # Outside coupling
@@ -161,9 +160,11 @@ class Package(config.base.Configure):
 
   def getExternalPackagesDir(self):
     '''The directory for downloaded packages'''
-    if not self.framework.externalPackagesDir is None:
-      packages = os.path.abspath('externalpackages')
-      return self.framework.externalPackagesDir
+    if hasattr(self, 'externalPackagesDirProvider'):
+      if hasattr(self.externalPackagesDirProvider, 'dir'):
+        return self.externalPackagesDirProvider.dir
+    elif not self.framework.externalPackagesDir is None:
+      return os.path.abspath('externalpackages')
     return self._externalPackagesDir
   def setExternalPackagesDir(self, externalPackagesDir):
     '''The directory for downloaded packages'''
@@ -176,8 +177,7 @@ class Package(config.base.Configure):
     return []
 
   def getInstallDir(self):
-    if not self.arch:  raise RuntimeError('Why the hell is self.arch not defined for this package -- '+self.package+'\n')
-    self.installDir = os.path.join(self.defaultInstallDir, self.arch)
+    self.installDir = self.defaultInstallDir
     self.confDir    = os.path.join(self.installDir, 'conf')
     self.includeDir = os.path.join(self.installDir, 'include')
     self.libDir     = os.path.join(self.installDir, 'lib')
@@ -395,9 +395,6 @@ class Package(config.base.Configure):
         raise RuntimeError('Unable to download '+self.downloadname)
       self.downLoad()
       return self.getDir(retry = 0)
-    if not self.archIndependent:
-      if not os.path.isdir(os.path.join(packages, Dir, self.arch)):
-        os.mkdir(os.path.join(packages, Dir, self.arch))
     return os.path.join(packages, Dir)
 
   def gitPreReqCheck(self):
@@ -551,9 +548,9 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' without Fortran, make sure you do NOT have --with-fc=0')
       if self.noMPIUni and self.mpi.usingMPIUni:
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
-      if not self.worksonWindows and self.setCompilers.isWindows(self.setCompilers.CC):
+      if not self.worksonWindows and (self.setCompilers.CC.find('win32fe') >= 0):
         raise RuntimeError('External package '+self.name+' does not work with Microsoft compilers')
-      if self.download and self.framework.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and self.setCompilers.isWindows(self.setCompilers.CC):
+      if self.download and self.framework.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and (self.setCompilers.CC.find('win32fe') >= 0):
         raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' with Microsoft compilers')
     if not self.download and self.framework.argDB.has_key('download-'+self.downloadname.lower()) and self.framework.argDB['download-'+self.downloadname.lower()]:
       raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower())

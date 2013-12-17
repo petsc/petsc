@@ -93,7 +93,7 @@ int main(int argc,char **args)
   sort_cols = PETSC_FALSE;
   ierr      = PetscOptionsGetBool(NULL, "-sort_cols", &sort_cols, NULL);CHKERRQ(ierr);
   for (l = 0; l < nsub; ++l) {
-    ierr = PetscMalloc(12*sizeof(PetscInt), &subindices);CHKERRQ(ierr);
+    ierr = PetscMalloc1(12, &subindices);CHKERRQ(ierr);
     k    = 0;
     for (i = 0; i < 4; ++i) {
       for (j = jlow[l]; j < jhigh[l]; ++j) {
@@ -115,7 +115,7 @@ int main(int argc,char **args)
       ierr = ISSort(colis[l]);CHKERRQ(ierr);
     }
   }
-  ierr = PetscMalloc(nsub*sizeof(Mat), &S);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nsub, &S);CHKERRQ(ierr);
   ierr = MatGetSubMatrices(A,nsub,rowis,colis,MAT_INITIAL_MATRIX, &S);CHKERRQ(ierr);
 
   show_inversions = PETSC_FALSE;

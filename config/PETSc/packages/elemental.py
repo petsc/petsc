@@ -76,7 +76,7 @@ class Configure(PETSc.package.NewPackage):
       if os.path.isdir(folder):
         import shutil
         shutil.rmtree(folder)
-        os.mkdir(folder)
+      os.mkdir(folder)
       try:
         self.logPrintBox('Configuring Elemental; this may take several minutes')
         output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+folder+' && '+self.cmake.cmake+' .. '+args, timeout=900, log = self.framework.log)

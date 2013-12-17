@@ -29,7 +29,7 @@
             <li><a href="../referencing.html">Citing PETSc</a></li>
             <li><a href="../tutorials/index.html">Tutorials</a></li>
             <li><a href="../installation.html">Installation</a></li>
-            <li><a href="../ams.html">AMS</a></li>
+            <li><a href="../saws.html">SAWs</a></li>
             <li>
               <a href="index.html">Changes</a>
               <ul>
@@ -96,6 +96,8 @@
 
       <h4>General:</h4>
       <ul>
+        <li>PETSc options of complex numbers must be passed as [+/-][realnumber][+/-]realnumberi with no spaces, you can no longer pass the real and complex part with a comma between them</li>
+        <li>PetscSynchronizedFlush() takes an additional argument, the file pointer on rank 0</li>
         <li>PetscObjectStateQuery() is now corrected with PetscObjectStateGet()</li>
         <li>A new PetscObjectState typedef is used by interface; 64-bit int to prevent overflow.</li>
         <li>
@@ -105,8 +107,21 @@
           option <tt>-dynamic_library_preload</tt> for similar functionality.
         </li>
         <li>
+          Default location of externalpackages is moved from <tt>PETSC_DIR/externalpackages</tt> to
+          <tt>PETSC_DIR/PETSC_ARCH/externalpackages</tt>
+        </li>
+        <li>
+          Added <tt>--with-clean</tt> option to delete the build files in <tt>PETSC_DIR/PETSC_ARCH</tt>
+          at the begining of the build
+        </li>
+        <li>
           The <tt>__SDIR__</tt> macro (and <tt>__INSDIR__</tt>) is no longer used.
           We recommend passing full paths or paths from the project root to the compiler so that error messages contain enough context.
+        </li>
+        <li>
+          The "type" argument to <tt>PetscMalloc2()</tt> through <tt>PetscMalloc7()</tt>, <tt>PetscNew()</tt>, and <tt>PetscNewLog()</tt> have been removed.
+          The type is now inferred from the pointer return type.
+          <tt>PetscMalloc1()</tt> is now available for allocating arrays, and <tt>PetscCalloc1()</tt> through <tt>PetscCalloc7()</tt> have been added for when cleared (zeroed) memory is needed.
         </li>
       </ul>
       <h4>IS:</h4>
@@ -124,8 +139,7 @@
         <li>MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm
       subcomm,PetscInt mlocal_red,MatReuse reuse,Mat *matredundant) is
       replaced by MatRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,MatReuse reuse,Mat *matredundant).</li>
-        <li>MatSeqBAIJSetPreallocationCSR() and MatMPIBAIJSetPreallocationCSR() now take array arguments that are ordered with contiguous blocks and the ordering within blocks respects the MAT_ROW_ORIENTED option.</li>
-        <li>MatCreateMPIBAIJWithArrays() now takes input ordered with contiguous blocks using column-major ordering within blocks.</li>
+        <li>MatGetColoring() has been removed and replaced by the MatColoring object.</li>
       </ul>
       <h4>PC:</h4>
       <ul>

@@ -75,6 +75,7 @@ PetscErrorCode  DMCreateMatrix_ADDA(DM dm, Mat *mat)
   ierr = MatCreate(PetscObjectComm((PetscObject)dm), mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat, dd->lsize, dd->lsize, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(*mat, dm->mattype);CHKERRQ(ierr);
+  ierr = MatSetUp(*mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -147,7 +148,7 @@ PetscErrorCode  DMCoarsen_ADDA(DM dm, MPI_Comm comm,DM *dmc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(dmc, 3);
-  ierr = PetscMalloc(dd->dim*sizeof(PetscInt), &nodesc);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dd->dim, &nodesc);CHKERRQ(ierr);
   for (i=0; i<dd->dim; i++) {
     nodesc[i] = (dd->nodes[i] % dd->refine[i]) ? dd->nodes[i] / dd->refine[i] + 1 : dd->nodes[i] / dd->refine[i];
   }
@@ -424,8 +425,8 @@ PetscErrorCode  DMADDAGetCorners(DM dm, PetscInt **lcorner, PetscInt **ucorner)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(lcorner,2);
   PetscValidPointer(ucorner,3);
-  ierr = PetscMalloc(dd->dim*sizeof(PetscInt), lcorner);CHKERRQ(ierr);
-  ierr = PetscMalloc(dd->dim*sizeof(PetscInt), ucorner);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dd->dim, lcorner);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dd->dim, ucorner);CHKERRQ(ierr);
   ierr = PetscMemcpy(*lcorner, dd->lcs, dd->dim*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemcpy(*ucorner, dd->lce, dd->dim*sizeof(PetscInt));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -461,8 +462,8 @@ PetscErrorCode  DMADDAGetGhostCorners(DM dm, PetscInt **lcorner, PetscInt **ucor
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(lcorner,2);
   PetscValidPointer(ucorner,3);
-  ierr = PetscMalloc(dd->dim*sizeof(PetscInt), lcorner);CHKERRQ(ierr);
-  ierr = PetscMalloc(dd->dim*sizeof(PetscInt), ucorner);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dd->dim, lcorner);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dd->dim, ucorner);CHKERRQ(ierr);
   ierr = PetscMemcpy(*lcorner, dd->lgs, dd->dim*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemcpy(*ucorner, dd->lge, dd->dim*sizeof(PetscInt));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -525,14 +526,14 @@ PetscErrorCode  DMADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx id
 
   PetscFunctionBegin;
   /* find correct multiplying factors */
-  ierr = PetscMalloc(ddm->dim*sizeof(PetscInt), &nodemult);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ddm->dim, &nodemult);CHKERRQ(ierr);
 
   nodemult[ddm->dim-1] = 1;
   for (j=ddm->dim-2; j>=0; j--) {
     nodemult[j] = nodemult[j+1]*(ddm->nodes[j+1]);
   }
   /* convert each coordinate in idxm to the matrix row index */
-  ierr = PetscMalloc(m*sizeof(PetscInt), &matidxm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m, &matidxm);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     x   = idxm[i].x; d = idxm[i].d;
     idx = 0;
@@ -562,14 +563,14 @@ PetscErrorCode  DMADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx id
   ierr = PetscFree(nodemult);CHKERRQ(ierr);
 
   /* find correct multiplying factors */
-  ierr = PetscMalloc(ddn->dim*sizeof(PetscInt), &nodemult);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ddn->dim, &nodemult);CHKERRQ(ierr);
 
   nodemult[ddn->dim-1] = 1;
   for (j=ddn->dim-2; j>=0; j--) {
     nodemult[j] = nodemult[j+1]*(ddn->nodes[j+1]);
   }
   /* convert each coordinate in idxn to the matrix colum index */
-  ierr = PetscMalloc(n*sizeof(PetscInt), &matidxn);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &matidxn);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     x   = idxn[i].x; d = idxn[i].d;
     idx = 0;
@@ -630,11 +631,11 @@ PetscErrorCode  DMADDASetParameters(DM dm,PetscInt dim, PetscInt *nodes,PetscInt
   dd->dof      = dof;
   dd->periodic = periodic;
 
-  ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->nodes));CHKERRQ(ierr);
+  ierr = PetscMalloc1(dim, &(dd->nodes));CHKERRQ(ierr);
   ierr = PetscMemcpy(dd->nodes, nodes, dim*sizeof(PetscInt));CHKERRQ(ierr);
 
   /* procs */
-  ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->procs));CHKERRQ(ierr);
+  ierr = PetscMalloc1(dim, &(dd->procs));CHKERRQ(ierr);
   /* create distribution of nodes to processors */
   if (procs == NULL) {
     procs = dd->procs;
@@ -700,8 +701,8 @@ PetscErrorCode  DMSetUp_ADDA(DM dm)
 
 
   /* find out local region */
-  ierr      = PetscMalloc(dim*sizeof(PetscInt), &(dd->lcs));CHKERRQ(ierr);
-  ierr      = PetscMalloc(dim*sizeof(PetscInt), &(dd->lce));CHKERRQ(ierr);
+  ierr      = PetscMalloc1(dim, &(dd->lcs));CHKERRQ(ierr);
+  ierr      = PetscMalloc1(dim, &(dd->lce));CHKERRQ(ierr);
   procsdimi = size;
   ranki     = rank;
   for (i=0; i<dim; i++) {
@@ -727,8 +728,8 @@ PetscErrorCode  DMSetUp_ADDA(DM dm)
   dd->lsize *= dof;
 
   /* find out ghost points */
-  ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->lgs));CHKERRQ(ierr);
-  ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->lge));CHKERRQ(ierr);
+  ierr = PetscMalloc1(dim, &(dd->lgs));CHKERRQ(ierr);
+  ierr = PetscMalloc1(dim, &(dd->lge));CHKERRQ(ierr);
   for (i=0; i<dim; i++) {
     if (periodic[i]) {
       dd->lgs[i] = dd->lcs[i] - s;
@@ -753,7 +754,7 @@ PetscErrorCode  DMSetUp_ADDA(DM dm)
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dof,dd->lgsize,0,&(dd->local));CHKERRQ(ierr);
 #endif
 
-  ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->refine));CHKERRQ(ierr);
+  ierr = PetscMalloc1(dim, &(dd->refine));CHKERRQ(ierr);
   for (i=0; i<dim; i++) dd->refine[i] = 3;
   dd->dofrefine = 1;
   PetscFunctionReturn(0);
@@ -767,7 +768,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_ADDA(DM dm)
   DM_ADDA        *dd;
 
   PetscFunctionBegin;
-  ierr     = PetscNewLog(dm,DM_ADDA,&dd);CHKERRQ(ierr);
+  ierr     = PetscNewLog(dm,&dd);CHKERRQ(ierr);
   dm->data = (void*)dd;
 
   dm->ops->view                = DMView;

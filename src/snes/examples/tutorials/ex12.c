@@ -11,7 +11,7 @@ domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\n\n";
 #define NUM_FIELDS 1
 PetscInt spatialDim = 0;
 
-typedef enum {NEUMANN, DIRICHLET} BCType;
+typedef enum {NEUMANN, DIRICHLET, NONE} BCType;
 typedef enum {RUN_FULL, RUN_TEST, RUN_PERF} RunType;
 typedef enum {COEFF_NONE, COEFF_ANALYTIC, COEFF_FIELD} CoeffType;
 
@@ -65,14 +65,14 @@ void zero(const PetscReal coords[], PetscScalar *u)
 
   For Neumann conditions, we have
 
-    \nabla u \cdot -\hat y |_{y=0} = -(2y)|_{y=0} = 0 (bottom)
-    \nabla u \cdot  \hat y |_{y=1} =  (2y)|_{y=1} = 2 (top)
-    \nabla u \cdot -\hat x |_{x=0} = -(2x)|_{x=0} = 0 (left)
-    \nabla u \cdot  \hat x |_{x=1} =  (2x)|_{x=1} = 2 (right)
+    -\nabla u \cdot -\hat y |_{y=0} =  (2y)|_{y=0} =  0 (bottom)
+    -\nabla u \cdot  \hat y |_{y=1} = -(2y)|_{y=1} = -2 (top)
+    -\nabla u \cdot -\hat x |_{x=0} =  (2x)|_{x=0} =  0 (left)
+    -\nabla u \cdot  \hat x |_{x=1} = -(2x)|_{x=1} = -2 (right)
 
   Which we can express as
 
-    \nabla u \cdot  \hat n|_\Gamma = 2 (x + y)
+    \nabla u \cdot  \hat n|_\Gamma = {2 x, 2 y} \cdot \hat n = 2 (x + y)
 */
 void quadratic_u_2d(const PetscReal x[], PetscScalar *u)
 {
@@ -86,10 +86,8 @@ void f0_u(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[
 
 void f0_bd_u(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], const PetscReal n[], PetscScalar f0[])
 {
-  PetscScalar val = 0.0;
-
-  if ((fabs(x[0] - 1.0) < 1.0e-9) || (fabs(x[1] - 1.0) < 1.0e-9)) {val = -2.0;}
-  f0[0] = val;
+  PetscInt  d;
+  for (d = 0, f0[0] = 0.0; d < spatialDim; ++d) f0[0] += -n[d]*2.0*x[d];
 }
 
 void f0_bd_zero(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], const PetscReal n[], PetscScalar f0[])
@@ -173,7 +171,7 @@ void g3_field_uu(const PetscScalar u[], const PetscScalar gradU[], const PetscSc
 }
 
 /*
-  In 3D we use exact solution:
+  In 3D for Dirichlet conditions we use exact solution:
 
     u = x^2 + y^2 + z^2
     f = 6
@@ -181,6 +179,19 @@ void g3_field_uu(const PetscScalar u[], const PetscScalar gradU[], const PetscSc
   so that
 
     -\Delta u + f = -6 + 6 = 0
+
+  For Neumann conditions, we have
+
+    -\nabla u \cdot -\hat z |_{z=0} =  (2z)|_{z=0} =  0 (bottom)
+    -\nabla u \cdot  \hat z |_{z=1} = -(2z)|_{z=1} = -2 (top)
+    -\nabla u \cdot -\hat y |_{y=0} =  (2y)|_{y=0} =  0 (front)
+    -\nabla u \cdot  \hat y |_{y=1} = -(2y)|_{y=1} = -2 (back)
+    -\nabla u \cdot -\hat x |_{x=0} =  (2x)|_{x=0} =  0 (left)
+    -\nabla u \cdot  \hat x |_{x=1} = -(2x)|_{x=1} = -2 (right)
+
+  Which we can express as
+
+    \nabla u \cdot  \hat n|_\Gamma = {2 x, 2 y, 2z} \cdot \hat n = 2 (x + y + z)
 */
 void quadratic_u_3d(const PetscReal x[], PetscScalar *u)
 {
@@ -191,7 +202,7 @@ void quadratic_u_3d(const PetscReal x[], PetscScalar *u)
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  const char    *bcTypes[2]  = {"neumann", "dirichlet"};
+  const char    *bcTypes[3]  = {"neumann", "dirichlet", "none"};
   const char    *runTypes[3] = {"full", "test", "perf"};
   const char    *coeffTypes[3] = {"none", "analytic", "field"};
   PetscInt       bc, run, coeff;
@@ -209,7 +220,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->variableCoefficient = COEFF_NONE;
   options->jacobianMF      = PETSC_FALSE;
   options->showInitial     = PETSC_FALSE;
-  options->showSolution    = PETSC_TRUE;
+  options->showSolution    = PETSC_FALSE;
 
   options->fem.f0Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->f0Funcs;
   options->fem.f1Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->f1Funcs;
@@ -225,7 +236,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex12.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   run  = options->runType;
-  ierr = PetscOptionsEList("-run_type", "The run type", "ex12.c", runTypes, 2, runTypes[options->runType], &run, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-run_type", "The run type", "ex12.c", runTypes, 3, runTypes[options->runType], &run, NULL);CHKERRQ(ierr);
 
   options->runType = (RunType) run;
 
@@ -240,7 +251,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
   ierr = PetscOptionsString("-partitioner", "The graph partitioner", "pflotran.cxx", options->partitioner, options->partitioner, 2048, NULL);CHKERRQ(ierr);
   bc   = options->bcType;
-  ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex12.c",bcTypes,2,bcTypes[options->bcType],&bc,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex12.c",bcTypes,3,bcTypes[options->bcType],&bc,NULL);CHKERRQ(ierr);
   options->bcType = (BCType) bc;
   coeff = options->variableCoefficient;
   ierr = PetscOptionsEList("-variable_coefficient","Type of variable coefficent","ex12.c",coeffTypes,3,coeffTypes[options->variableCoefficient],&coeff,NULL);CHKERRQ(ierr);
@@ -517,12 +528,11 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
   switch (user->dim) {
   case 2:
     user->exactFuncs[0] = quadratic_u_2d;
-    if (user->bcType == NEUMANN) {
-      fem->f0BdFuncs[0] = f0_bd_u;
-    }
+    if (user->bcType == NEUMANN) fem->f0BdFuncs[0] = f0_bd_u;
     break;
   case 3:
     user->exactFuncs[0] = quadratic_u_3d;
+    if (user->bcType == NEUMANN) fem->f0BdFuncs[0] = f0_bd_u;
     break;
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
@@ -554,8 +564,9 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
     ierr = DMPlexCreateLabel(dm, bdLabel);CHKERRQ(ierr);
     ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
     ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
-    if (user->bcType == DIRICHLET) {ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);}
   }
+  ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
+  ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
   if (user->bcType == DIRICHLET) {ierr  = DMPlexGetStratumIS(dm, bdLabel, 1, &bcPoints[0]);CHKERRQ(ierr);}
   ierr = DMPlexCreateSection(dm, dim, NUM_FIELDS, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldName(section, 0, "potential");CHKERRQ(ierr);
@@ -755,27 +766,6 @@ int main(int argc, char **argv)
       ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Linear L_2 Residual: %g\n", res);CHKERRQ(ierr);
     }
-  }
-
-  if (user.runType == RUN_FULL) {
-    PetscViewer viewer;
-    Vec         uLocal;
-    const char *name;
-
-    ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, "ex12_sol.vtk");CHKERRQ(ierr);
-
-    ierr = DMGetLocalVector(dm, &uLocal);CHKERRQ(ierr);
-    ierr = PetscObjectGetName((PetscObject) u, &name);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) uLocal, name);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalBegin(dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd(dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
-    ierr = VecView(uLocal, viewer);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(dm, &uLocal);CHKERRQ(ierr);
-
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
   if (user.bcType == NEUMANN) {

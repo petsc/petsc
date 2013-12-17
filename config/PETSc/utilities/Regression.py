@@ -22,11 +22,11 @@ class Configure(config.base.Configure):
     config.base.Configure.setupDependencies(self, framework)
     self.arch          = framework.require('PETSc.utilities.arch', self)
     self.scalartypes   = framework.require('PETSc.utilities.scalarTypes', self)
-    self.bmake         = framework.require('PETSc.utilities.bmakeDir', self)
     self.datafilespath = framework.require('PETSc.utilities.dataFilesPath', self)
     self.compilers     = framework.require('config.compilers', self)
     self.mpi           = framework.require('config.packages.MPI', self)
     self.x             = framework.require('PETSc.packages.X', self)
+    self.fortrancpp    = framework.require('PETSc.utilities.fortranCPP', self)
     return
 
   def configureRegression(self):
@@ -42,7 +42,9 @@ class Configure(config.base.Configure):
       jobs.append('C')
       if self.x.found:
         jobs.append('C_X')
-      if hasattr(self.compilers, 'FC'):
+      if hasattr(self.compilers, 'FC') and self.fortrancpp.fortranDatatypes:
+        jobs.append('F90_DataTypes')
+      elif hasattr(self.compilers, 'FC'):
         jobs.append('Fortran')
         if self.compilers.fortranIsF90:
           rjobs.append('F90')

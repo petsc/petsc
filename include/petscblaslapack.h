@@ -11,7 +11,7 @@
 
 /* Do not use PetscStackPush/PetscStackPop because  */
 #define PetscStackCallBLAS(name,routine) do {                   \
-    PetscStackPushNoCheck(name,PETSC_FALSE);                    \
+    PetscStackPushNoCheck(name,PETSC_FALSE,PETSC_TRUE);         \
     routine;                                                    \
     PetscStackPop;                                              \
   } while(0)

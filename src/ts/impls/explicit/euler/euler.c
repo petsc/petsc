@@ -128,7 +128,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Euler(TS ts)
   ts->ops->interpolate     = TSInterpolate_Euler;
   ts->ops->linearstability = TSComputeLinearStability_Euler;
 
-  ierr = PetscNewLog(ts,TS_Euler,&euler);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&euler);CHKERRQ(ierr);
   ts->data = (void*)euler;
   PetscFunctionReturn(0);
 }

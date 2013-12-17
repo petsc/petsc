@@ -125,7 +125,7 @@ PETSC_EXTERN void PETSC_STDCALL petscbagregisterbool_(PetscBag *bag,void *ptr,Pe
   FREECHAR(s2,t2);
 }
 
-void PETSC_STDCALL petscbagregisterboolarray_(PetscBag *bag,void *ptr,PetscInt *msize,CHAR s1 PETSC_MIXED_LEN(l1),
+PETSC_EXTERN void PETSC_STDCALL petscbagregisterboolarray_(PetscBag *bag,void *ptr,PetscInt *msize,CHAR s1 PETSC_MIXED_LEN(l1),
                                               CHAR s2 PETSC_MIXED_LEN(l2),PetscErrorCode *ierr PETSC_END_LEN(l1) PETSC_END_LEN(l2))
 {
   char       *t1,*t2;

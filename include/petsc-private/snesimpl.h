@@ -221,13 +221,13 @@ PETSC_STATIC_INLINE PetscErrorCode SNESLogConvergenceHistory(SNES snes,PetscReal
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   if (snes->conv_hist && snes->conv_hist_max > snes->conv_hist_len) {
     if (snes->conv_hist)     snes->conv_hist[snes->conv_hist_len]     = res;
     if (snes->conv_hist_its) snes->conv_hist_its[snes->conv_hist_len] = its;
     snes->conv_hist_len++;
   }
-  ierr = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

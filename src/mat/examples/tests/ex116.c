@@ -67,8 +67,8 @@ PetscInt main(PetscInt argc,char **args)
 
   ierr = PetscBLASIntCast(8*n,&lwork);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscScalar),&evals);CHKERRQ(ierr);
-  ierr = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&evals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lwork,&work);CHKERRQ(ierr);
   ierr = MatDenseGetArray(A_dense,&arrayA);CHKERRQ(ierr);
 
   if (!TestSYEVX) { /* test syev() */
@@ -82,8 +82,8 @@ PetscInt main(PetscInt argc,char **args)
     il   = 1;
     ierr = PetscBLASIntCast((0.2*m,&iu));CHKERRQ(ierr);
     printf(" LAPACKsyevx: compute %d to %d-th eigensolutions...\n",il,iu);
-    ierr  = PetscMalloc((m*n+1)*sizeof(PetscScalar),&evecs_array);CHKERRQ(ierr);
-    ierr  = PetscMalloc((6*n+1)*sizeof(PetscBLASInt),&iwork);CHKERRQ(ierr);
+    ierr  = PetscMalloc1((m*n+1),&evecs_array);CHKERRQ(ierr);
+    ierr  = PetscMalloc1((6*n+1),&iwork);CHKERRQ(ierr);
     ifail = iwork + 5*n;
 
     /* in the case "I", vl and vu are not referenced */
@@ -102,7 +102,7 @@ PetscInt main(PetscInt argc,char **args)
   }
 
   /* Check residuals and orthogonality */
-  ierr = PetscMalloc((nevs+1)*sizeof(Vec),&evecs);CHKERRQ(ierr);
+  ierr = PetscMalloc1((nevs+1),&evecs);CHKERRQ(ierr);
   for (i=0; i<nevs; i++) {
     ierr = VecCreate(PETSC_COMM_SELF,&evecs[i]);CHKERRQ(ierr);
     ierr = VecSetSizes(evecs[i],PETSC_DECIDE,n);CHKERRQ(ierr);
@@ -136,7 +136,7 @@ PetscInt main(PetscInt argc,char **args)
     minMN = PetscMin(m,n);
     maxMN = PetscMax(m,n);
     lwork = 5*minMN + maxMN;
-    ierr  = PetscMalloc4(m*minMN,PetscScalar,&arrayU,m*minMN,PetscScalar,&arrayVT,m*minMN,PetscScalar,&arrayErr,lwork,PetscScalar,&work);CHKERRQ(ierr);
+    ierr  = PetscMalloc4(m*minMN,&arrayU,m*minMN,&arrayVT,m*minMN,&arrayErr,lwork,&work);CHKERRQ(ierr);
 
     /* Create matrix Err for checking error */
     ierr = MatCreate(PETSC_COMM_WORLD,&Err);CHKERRQ(ierr);

@@ -55,7 +55,7 @@ class Configure(PETSc.package.NewPackage):
       self.framework.logPrint("Not checking c2html on user request\n")
       return
 
-    if self.petscdir.isClone:
+    if self.petscclone.isClone:
       self.framework.logPrint('PETSc clone, checking for c2html\n')
       self.getExecutable('c2html', getFullPath = 1)
 

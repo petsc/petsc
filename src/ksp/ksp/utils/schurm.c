@@ -603,7 +603,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SchurComplement(Mat N)
   Mat_SchurComplement *Na;
 
   PetscFunctionBegin;
-  ierr    = PetscNewLog(N,Mat_SchurComplement,&Na);CHKERRQ(ierr);
+  ierr    = PetscNewLog(N,&Na);CHKERRQ(ierr);
   N->data = (void*) Na;
 
   N->ops->destroy        = MatDestroy_SchurComplement;

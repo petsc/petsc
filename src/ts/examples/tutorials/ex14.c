@@ -502,7 +502,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   }
   ierr = PetscHeaderCreate(thi,_p_THI,0,THI_CLASSID,"THI","Toy Hydrostatic Ice","THI",comm,THIDestroy,0);CHKERRQ(ierr);
 
-  ierr = PetscNew(struct _n_Units,&thi->units);CHKERRQ(ierr);
+  ierr = PetscNew(&thi->units);CHKERRQ(ierr);
 
   units           = thi->units;
   units->meter    = 1e-2;
@@ -603,7 +603,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
     ierr = PetscOptionsReal("-thi_ssa_friction_scale","Scale slip boundary conditions by this factor in SSA (2D) assembly","",thi->ssa_friction_scale,&thi->ssa_friction_scale,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-thi_inertia","Coefficient of accelaration term in velocity system, physical is almost zero",NULL,thi->inertia,&thi->inertia,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-thi_nlevels","Number of levels of refinement","",thi->nlevels,&thi->nlevels,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-thi_mat_type","Matrix type","MatSetType",MatList,mtype,(char*)mtype,sizeof(mtype),NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsFList("-thi_mat_type","Matrix type","MatSetType",MatList,mtype,(char*)mtype,sizeof(mtype),NULL);CHKERRQ(ierr);
     ierr = PetscStrallocpy(mtype,&thi->mattype);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-thi_verbose","Enable verbose output (like matrix sizes and statistics)","",thi->verbose,&thi->verbose,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsString("-thi_monitor","Basename to write state files to",NULL,monitor_basename,monitor_basename,sizeof(monitor_basename),&flg);CHKERRQ(ierr);
@@ -1453,7 +1453,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
   ierr = VecGetArray(X2,&x2);CHKERRQ(ierr);
   if (!rank) {
     PetscScalar *array,*array2;
-    ierr = PetscMalloc2(nmax,PetscScalar,&array,nmax2,PetscScalar,&array2);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nmax,&array,nmax2,&array2);CHKERRQ(ierr);
     for (r=0; r<size; r++) {
       PetscInt i,j,k,f,xs,xm,ys,ym,zs,zm;
       Node     *y3;

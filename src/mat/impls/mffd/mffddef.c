@@ -260,7 +260,7 @@ PETSC_EXTERN PetscErrorCode MatCreateMFFD_DS(MatMFFD ctx)
 
   PetscFunctionBegin;
   /* allocate my own private data structure */
-  ierr      = PetscNewLog(ctx,MatMFFD_DS,&hctx);CHKERRQ(ierr);
+  ierr      = PetscNewLog(ctx,&hctx);CHKERRQ(ierr);
   ctx->hctx = (void*)hctx;
   /* set a default for my parameter */
   hctx->umin = 1.e-6;
