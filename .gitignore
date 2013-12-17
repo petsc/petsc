@@ -9,6 +9,7 @@
 *.dat
 *.vt[ksu]
 *.pvt[ksu]
+*.h5m
 .*_license
 unix/*
 unix-opt/*
