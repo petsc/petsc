@@ -31,6 +31,7 @@ class Configure(config.base.Configure):
     self.languages = framework.require('PETSc.utilities.languages', self)
     self.compilers = framework.require('config.compilers', self)
     self.libraries = framework.require('config.libraries',self)
+    self.mpi       = framework.require('config.packages.MPI',self)
     return
 
 

@@ -157,7 +157,7 @@ PetscErrorCode ISGetIndices_Stride(IS in,const PetscInt *idx[])
   PetscInt       i,**dx = (PetscInt**)idx;
 
   PetscFunctionBegin;
-  ierr      = PetscMalloc(sub->n*sizeof(PetscInt),idx);CHKERRQ(ierr);
+  ierr      = PetscMalloc1(sub->n,idx);CHKERRQ(ierr);
   if (sub->n) {
     (*dx)[0] = sub->first;
     for (i=1; i<sub->n; i++) (*dx)[i] = (*dx)[i-1] + sub->step;
@@ -429,7 +429,7 @@ PETSC_EXTERN PetscErrorCode ISCreate_Stride(IS is)
 
   PetscFunctionBegin;
   ierr = PetscMemcpy(is->ops,&myops,sizeof(myops));CHKERRQ(ierr);
-  ierr = PetscNewLog(is,IS_Stride,&sub);CHKERRQ(ierr);
+  ierr = PetscNewLog(is,&sub);CHKERRQ(ierr);
   is->bs   = 1;
   is->data = sub;
   ierr = PetscObjectComposeFunction((PetscObject)is,"ISStrideSetStride_C",ISStrideSetStride_Stride);CHKERRQ(ierr);

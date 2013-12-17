@@ -1,136 +1,14 @@
-  0 SNES Function norm 27.5941 
+0 SNES Function norm 27.5941 
     0 KSP Residual norm 27.5941 
-    1 KSP Residual norm 0.0249414 
-    2 KSP Residual norm 0.016128 
-    3 KSP Residual norm 0.00745759 
-    4 KSP Residual norm 0.00570825 
-    5 KSP Residual norm 0.00377924 
-    6 KSP Residual norm 0.00242364 
-    7 KSP Residual norm 0.00169636 
-    8 KSP Residual norm 0.00134936 
-    9 KSP Residual norm 0.0010006 
-   10 KSP Residual norm 0.000637574 
-   11 KSP Residual norm 0.000466272 
-   12 KSP Residual norm 0.000364325 
-   13 KSP Residual norm 0.000315911 
-   14 KSP Residual norm 0.000239127 
-   15 KSP Residual norm 0.000218311 
-   16 KSP Residual norm 0.000188152 
-   17 KSP Residual norm 0.000170259 
-   18 KSP Residual norm 0.000131627 
-   19 KSP Residual norm 0.000110037 
-   20 KSP Residual norm 9.17161e-05 
-   21 KSP Residual norm 6.97081e-05 
-   22 KSP Residual norm 4.65672e-05 
-   23 KSP Residual norm 3.21254e-05 
-   24 KSP Residual norm 1.99508e-05 
-   25 KSP Residual norm 1.26202e-05 
-   26 KSP Residual norm 9.3471e-06 
-   27 KSP Residual norm 7.41737e-06 
-   28 KSP Residual norm 6.19123e-06 
-   29 KSP Residual norm 5.42307e-06 
-   30 KSP Residual norm 4.88688e-06 
-   31 KSP Residual norm 4.48366e-06 
-   32 KSP Residual norm 4.1655e-06 
-   33 KSP Residual norm 3.90551e-06 
-   34 KSP Residual norm 3.68831e-06 
-   35 KSP Residual norm 3.50343e-06 
-   36 KSP Residual norm 3.34378e-06 
-   37 KSP Residual norm 3.2041e-06 
-   38 KSP Residual norm 3.08059e-06 
-   39 KSP Residual norm 2.97033e-06 
-   40 KSP Residual norm 2.87113e-06 
-   41 KSP Residual norm 2.78124e-06 
-   42 KSP Residual norm 2.6993e-06 
-   43 KSP Residual norm 2.6242e-06 
-   44 KSP Residual norm 2.55504e-06 
-   45 KSP Residual norm 2.49108e-06 
-   46 KSP Residual norm 2.43169e-06 
-   47 KSP Residual norm 2.37635e-06 
-   48 KSP Residual norm 2.32463e-06 
-   49 KSP Residual norm 2.27614e-06 
-   50 KSP Residual norm 2.23057e-06 
-   51 KSP Residual norm 2.18763e-06 
-   52 KSP Residual norm 2.14707e-06 
-   53 KSP Residual norm 2.1087e-06 
-   54 KSP Residual norm 2.07231e-06 
-   55 KSP Residual norm 2.03774e-06 
-   56 KSP Residual norm 2.00484e-06 
-   57 KSP Residual norm 1.97349e-06 
-   58 KSP Residual norm 1.94356e-06 
-   59 KSP Residual norm 1.91496e-06 
-   60 KSP Residual norm 1.88758e-06 
-   61 KSP Residual norm 1.86134e-06 
-   62 KSP Residual norm 1.83617e-06 
-   63 KSP Residual norm 1.812e-06 
-   64 KSP Residual norm 1.78875e-06 
-   65 KSP Residual norm 1.76638e-06 
-   66 KSP Residual norm 1.74482e-06 
-   67 KSP Residual norm 1.72404e-06 
-   68 KSP Residual norm 1.70398e-06 
-   69 KSP Residual norm 1.6846e-06 
-   70 KSP Residual norm 1.66587e-06 
-   71 KSP Residual norm 1.64775e-06 
-   72 KSP Residual norm 1.63022e-06 
-   73 KSP Residual norm 1.61322e-06 
-   74 KSP Residual norm 1.59675e-06 
-   75 KSP Residual norm 1.58078e-06 
-   76 KSP Residual norm 1.56527e-06 
-   77 KSP Residual norm 1.55021e-06 
-   78 KSP Residual norm 1.53558e-06 
-   79 KSP Residual norm 1.52136e-06 
-   80 KSP Residual norm 1.50752e-06 
-   81 KSP Residual norm 1.49405e-06 
-   82 KSP Residual norm 1.48094e-06 
-   83 KSP Residual norm 1.46817e-06 
-   84 KSP Residual norm 1.45572e-06 
-   85 KSP Residual norm 1.44359e-06 
-   86 KSP Residual norm 1.43175e-06 
-   87 KSP Residual norm 1.4202e-06 
-   88 KSP Residual norm 1.40892e-06 
-   89 KSP Residual norm 1.39791e-06 
-   90 KSP Residual norm 1.38715e-06 
-   91 KSP Residual norm 1.37664e-06 
-   92 KSP Residual norm 1.36636e-06 
-   93 KSP Residual norm 1.35631e-06 
-   94 KSP Residual norm 1.34648e-06 
-   95 KSP Residual norm 1.33686e-06 
-   96 KSP Residual norm 1.32744e-06 
-   97 KSP Residual norm 1.31822e-06 
-   98 KSP Residual norm 1.30919e-06 
-   99 KSP Residual norm 1.30034e-06 
-  100 KSP Residual norm 1.12165e-05 
-  101 KSP Residual norm 1.02758e-05 
-  102 KSP Residual norm 6.67087e-06 
-  103 KSP Residual norm 6.19803e-06 
-  104 KSP Residual norm 3.05416e-06 
-  105 KSP Residual norm 2.88187e-06 
-  106 KSP Residual norm 1.70363e-06 
-  107 KSP Residual norm 1.63706e-06 
-  108 KSP Residual norm 8.16637e-07 
-  109 KSP Residual norm 7.29328e-07 
-  110 KSP Residual norm 4.44948e-07 
-  111 KSP Residual norm 3.98293e-07 
-  112 KSP Residual norm 2.97788e-07 
-  113 KSP Residual norm 2.66165e-07 
-  114 KSP Residual norm 2.17064e-07 
-  115 KSP Residual norm 2.04716e-07 
-  116 KSP Residual norm 1.70914e-07 
-  117 KSP Residual norm 1.47955e-07 
-  118 KSP Residual norm 1.18419e-07 
-  119 KSP Residual norm 1.00764e-07 
-  120 KSP Residual norm 7.26784e-08 
-  121 KSP Residual norm 5.76272e-08 
-  122 KSP Residual norm 3.90343e-08 
-  123 KSP Residual norm 2.73272e-08 
-  1 SNES Function norm 2.73264e-08 
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+    1 KSP Residual norm < 1.e-11
+  Linear solve converged due to CONVERGED_ATOL iterations 1
+Nonlinear solve did not converge due to DIVERGED_LOCAL_MIN iterations 0
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=123
-  total number of function evaluations=2
+  total number of linear solver iterations=1
+  total number of function evaluations=1
   SNESLineSearch Object:   1 MPI processes
     type: bt
       interpolation: cubic
@@ -195,16 +73,19 @@ SNES Object: 1 MPI processes
           rows=145, cols=145
           total: nonzeros=945, allocated nonzeros=945
           total number of mallocs used during MatSetValues calls =0
+            has attached null space
             not using I-node routines
     linear system matrix followed by preconditioner matrix:
     Mat Object:     1 MPI processes
       type: shell
       rows=1107, cols=1107
+        has attached null space
     Mat Object:     1 MPI processes
       type: seqaij
       rows=1107, cols=1107
       total: nonzeros=29785, allocated nonzeros=29785
       total number of mallocs used during MatSetValues calls =0
+        has attached null space
         using I-node routines: found 513 nodes, limit used is 5
-Number of SNES iterations = 1
-L_2 Error: 1.03e-06
+Number of SNES iterations = 0
+L_2 Error: 0.975

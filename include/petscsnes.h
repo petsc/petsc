@@ -59,6 +59,9 @@ PETSC_EXTERN PetscErrorCode SNESSetType(SNES,SNESType);
 PETSC_EXTERN PetscErrorCode SNESMonitor(SNES,PetscInt,PetscReal);
 PETSC_EXTERN PetscErrorCode SNESMonitorSet(SNES,PetscErrorCode(*)(SNES,PetscInt,PetscReal,void*),void *,PetscErrorCode (*)(void**));
 PETSC_EXTERN PetscErrorCode SNESMonitorCancel(SNES);
+PETSC_EXTERN PetscErrorCode SNESMonitorSAWs(SNES,PetscInt,PetscReal,void*);
+PETSC_EXTERN PetscErrorCode SNESMonitorSAWsCreate(SNES,void**);
+PETSC_EXTERN PetscErrorCode SNESMonitorSAWsDestroy(void**);
 PETSC_EXTERN PetscErrorCode SNESSetConvergenceHistory(SNES,PetscReal[],PetscInt[],PetscInt,PetscBool );
 PETSC_EXTERN PetscErrorCode SNESGetConvergenceHistory(SNES,PetscReal*[],PetscInt *[],PetscInt *);
 PETSC_EXTERN PetscErrorCode SNESSetUp(SNES);
@@ -83,6 +86,7 @@ PETSC_EXTERN PetscErrorCode SNESGetSolutionUpdate(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESGetRhs(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESView(SNES,PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESLoad(SNES,PetscViewer);
+PETSC_STATIC_INLINE PetscErrorCode SNESViewFromOptions(SNES A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 
 #define SNES_FILE_CLASSID 1211224
 

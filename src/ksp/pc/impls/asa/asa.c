@@ -738,7 +738,7 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscBool construct
   /* determine local range */
   ierr = MPI_Comm_size(asa_lev->comm, &comm_size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(asa_lev->comm, &comm_rank);CHKERRQ(ierr);
-  ierr = PetscMalloc(comm_size*sizeof(PetscInt), &loc_cols);CHKERRQ(ierr);
+  ierr = PetscMalloc1(comm_size, &loc_cols);CHKERRQ(ierr);
   ierr = MPI_Allgather(&total_loc_cols, 1, MPIU_INT, loc_cols, 1, MPIU_INT, asa_lev->comm);CHKERRQ(ierr);
 
   mat_loc_col_start = 0;
@@ -1865,22 +1865,22 @@ static PetscErrorCode PCSetFromOptions_ASA(PC pc)
   ierr = PetscOptionsInt("-pc_asa_direct_solver","For which matrix size should we use the direct solver?","No manual page yet",asa->direct_solver,&(asa->direct_solver),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_asa_scale_diag","Should we scale the matrix with the inverse of its diagonal?","No manual page yet",asa->scale_diag,&(asa->scale_diag),&flg);CHKERRQ(ierr);
   /* type of smoother used */
-  ierr = PetscOptionsList("-pc_asa_smoother_ksp_type","The type of KSP to be used in the smoothers","No manual page yet",KSPList,asa->ksptype_smooth,type,20,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-pc_asa_smoother_ksp_type","The type of KSP to be used in the smoothers","No manual page yet",KSPList,asa->ksptype_smooth,type,20,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscFree(asa->ksptype_smooth);CHKERRQ(ierr);
     ierr = PetscStrallocpy(type,&(asa->ksptype_smooth));CHKERRQ(ierr);
   }
-  ierr = PetscOptionsList("-pc_asa_smoother_pc_type","The type of PC to be used in the smoothers","No manual page yet",PCList,asa->pctype_smooth,type,20,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-pc_asa_smoother_pc_type","The type of PC to be used in the smoothers","No manual page yet",PCList,asa->pctype_smooth,type,20,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscFree(asa->pctype_smooth);CHKERRQ(ierr);
     ierr = PetscStrallocpy(type,&(asa->pctype_smooth));CHKERRQ(ierr);
   }
-  ierr = PetscOptionsList("-pc_asa_direct_ksp_type","The type of KSP to be used in the direct solver","No manual page yet",KSPList,asa->ksptype_direct,type,20,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-pc_asa_direct_ksp_type","The type of KSP to be used in the direct solver","No manual page yet",KSPList,asa->ksptype_direct,type,20,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscFree(asa->ksptype_direct);CHKERRQ(ierr);
     ierr = PetscStrallocpy(type,&(asa->ksptype_direct));CHKERRQ(ierr);
   }
-  ierr = PetscOptionsList("-pc_asa_direct_pc_type","The type of PC to be used in the direct solver","No manual page yet",PCList,asa->pctype_direct,type,20,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-pc_asa_direct_pc_type","The type of PC to be used in the direct solver","No manual page yet",PCList,asa->pctype_direct,type,20,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscFree(asa->pctype_direct);CHKERRQ(ierr);
     ierr = PetscStrallocpy(type,&(asa->pctype_direct));CHKERRQ(ierr);
@@ -1992,7 +1992,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASA(PC pc)
   }
 
   /* Create new PC_ASA object */
-  ierr     = PetscNewLog(pc,PC_ASA,&asa);CHKERRQ(ierr);
+  ierr     = PetscNewLog(pc,&asa);CHKERRQ(ierr);
   pc->data = (void*)asa;
 
   /* WORK: find some better initial values  */

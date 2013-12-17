@@ -83,7 +83,7 @@ PETSC_EXTERN PetscErrorCode PFCreate_Matlab(PF pf,void *value)
   PF_Matlab      *matlab;
 
   PetscFunctionBegin;
-  ierr           = PetscNewLog(pf,PF_Matlab,&matlab);CHKERRQ(ierr);
+  ierr           = PetscNewLog(pf,&matlab);CHKERRQ(ierr);
   matlab->dimin  = pf->dimin;
   matlab->dimout = pf->dimout;
 

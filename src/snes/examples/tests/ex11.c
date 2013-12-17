@@ -300,7 +300,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
         u      = x[row];
         uxx    = (two*u - x[row-1] - x[row+1])*hydhx;
         uyy    = (two*u - x[row-Xm] - x[row+Xm])*hxdhy;
-        f[row] = uxx + uyy - sc*exp(u);
+        f[row] = uxx + uyy - sc*PetscExpScalar(u);
       } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)) {
         f[row] = .5*two*(hydhx + hxdhy)*x[row];
       } else {
@@ -327,7 +327,8 @@ PetscErrorCode FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B
 {
   Mat            jac = *J;
   PetscErrorCode ierr;
-  PetscInt       i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym, col[5], nloc, *ltog, grow;
+  PetscInt       i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym, col[5], nloc, grow;
+  const PetscInt *ltog;
   PetscScalar    two    = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x, value;
   Vec            localX = grid->localX;
 
@@ -352,7 +353,7 @@ PetscErrorCode FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B
       if (i > 0 && i < mx-1 && j > 0 && j < my-1) {
         v[0] = -hxdhy; col[0] = ltog[row - Xm];
         v[1] = -hydhx; col[1] = ltog[row - 1];
-        v[2] = two*(hydhx + hxdhy) - sc*lambda*exp(x[row]); col[2] = grow;
+        v[2] = two*(hydhx + hxdhy) - sc*lambda*PetscExpScalar(x[row]); col[2] = grow;
         v[3] = -hydhx; col[3] = ltog[row + 1];
         v[4] = -hxdhy; col[4] = ltog[row + Xm];
         ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
@@ -365,6 +366,7 @@ PetscErrorCode FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B
       }
     }
   }
+  ierr = DMDARestoreGlobalIndices(grid->da,&nloc,&ltog);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -404,7 +406,7 @@ PetscErrorCode FormJacobian_Coarse(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat 
       if (i > 0 && i < mx-1 && j > 0 && j < my-1) {
         v[0] = -hxdhy; col[0] = row - mx;
         v[1] = -hydhx; col[1] = row - 1;
-        v[2] = two*(hydhx + hxdhy) - sc*lambda*exp(x[row]); col[2] = row;
+        v[2] = two*(hydhx + hxdhy) - sc*lambda*PetscExpScalar(x[row]); col[2] = row;
         v[3] = -hydhx; col[3] = row + 1;
         v[4] = -hxdhy; col[4] = row + mx;
         ierr = MatSetValues(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
@@ -478,8 +480,9 @@ coarse grid to fine.
 PetscErrorCode FormInterpolation(AppCtx *user)
 {
   PetscErrorCode ierr;
-  PetscInt       i,j,i_start,m_fine,j_start,m,n,*idx;
-  PetscInt       m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,m_coarse;
+  PetscInt       i,j,i_start,m_fine,j_start,m,n;
+  const PetscInt *idx,*idx_c;
+  PetscInt       m_ghost,n_ghost,m_ghost_c,n_ghost_c,m_coarse;
   PetscInt       row,i_start_ghost,j_start_ghost,cols[4], m_c;
   PetscInt       nc,ratio = user->ratio,m_c_local,m_fine_local;
   PetscInt       i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c,col;
@@ -544,6 +547,8 @@ PetscErrorCode FormInterpolation(AppCtx *user)
       ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
+  ierr = DMDARestoreGlobalIndices(user->fine.da,NULL,&idx);CHKERRQ(ierr);
+  ierr = DMDARestoreGlobalIndices(user->fine.da,NULL,&idx_c);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 

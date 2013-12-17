@@ -84,7 +84,7 @@ static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf,MPI_Datatype unit,con
   ierr = PetscSFGetRanks(sf,&nranks,&ranks,&roffset,&rmine,&rremote);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
   ierr = MPI_Type_dup(unit,&link->unit);CHKERRQ(ierr);
-  ierr = PetscMalloc2(nranks,MPI_Datatype,&link->mine,nranks,MPI_Datatype,&link->remote);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nranks,&link->mine,nranks,&link->remote);CHKERRQ(ierr);
   for (i=0; i<nranks; i++) {
     PETSC_UNUSED PetscInt rcount = roffset[i+1] - roffset[i];
     PetscMPIInt           *rmine,*rremote;
@@ -93,7 +93,7 @@ static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf,MPI_Datatype unit,con
     rremote = sf->rremote + sf->roffset[i];
 #else
     PetscInt j;
-    ierr = PetscMalloc2(rcount,PetscMPIInt,&rmine,rcount,PetscMPIInt,&rremote);CHKERRQ(ierr);
+    ierr = PetscMalloc2(rcount,&rmine,rcount,&rremote);CHKERRQ(ierr);
     for (j=0; j<rcount; j++) {
       ierr = PetscMPIIntCast(sf->rmine[sf->roffset[i]+j],rmine+j);CHKERRQ(ierr);
       ierr = PetscMPIIntCast(sf->rremote[sf->roffset[i]+j],rremote+j);CHKERRQ(ierr);
@@ -608,7 +608,7 @@ PETSC_EXTERN PetscErrorCode PetscSFCreate_Window(PetscSF sf)
   sf->ops->FetchAndOpBegin = PetscSFFetchAndOpBegin_Window;
   sf->ops->FetchAndOpEnd   = PetscSFFetchAndOpEnd_Window;
 
-  ierr     = PetscNewLog(sf,PetscSF_Window,&w);CHKERRQ(ierr);
+  ierr     = PetscNewLog(sf,&w);CHKERRQ(ierr);
   sf->data = (void*)w;
   w->sync  = PETSCSF_WINDOW_SYNC_FENCE;
 

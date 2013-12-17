@@ -82,17 +82,17 @@ PetscErrorCode test_view(void)
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
 
   ierr = VecMax(b, &index, &val);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD, "(max-b) = %f : index = %d \n", val, index);
+  PetscPrintf(PETSC_COMM_WORLD, "(max-b) = %f : index = %d \n",(double) val, index);
 
   ierr = VecMin(b, &index, &val);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD, "(min-b) = %f : index = %d \n", val, index);
+  PetscPrintf(PETSC_COMM_WORLD, "(min-b) = %f : index = %d \n",(double) val, index);
 
   ierr = VecDestroy(&b);CHKERRQ(ierr);
 
   ierr = VecMax(X, &index, &val);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD, "(max-X) = %f : index = %d \n", val, index);
+  PetscPrintf(PETSC_COMM_WORLD, "(max-X) = %f : index = %d \n",(double) val, index);
   ierr = VecMin(X, &index, &val);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD, "(min-X) = %f : index = %d \n", val, index);
+  PetscPrintf(PETSC_COMM_WORLD, "(min-X) = %f : index = %d \n",(double) val, index);
 
   ierr = VecView(X, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
@@ -159,7 +159,7 @@ PetscErrorCode test_vec_ops(void)
   /*VecView(X, PETSC_VIEWER_STDOUT_WORLD);*/
 
   ierr = VecDot(X,X, &val);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD, "X.X = %f \n", val);
+  PetscPrintf(PETSC_COMM_WORLD, "X.X = %f \n",(double) val);
   PetscFunctionReturn(0);
 }
 #endif
@@ -168,17 +168,17 @@ PetscErrorCode test_vec_ops(void)
 #define __FUNCT__ "gen_test_vector"
 PetscErrorCode gen_test_vector(MPI_Comm comm, PetscInt length, PetscInt start_value, PetscInt stride, Vec *_v)
 {
-  int            nproc;
+  int            size;
   Vec            v;
   PetscInt       i;
   PetscScalar    vx;
   PetscErrorCode ierr;
 
-  MPI_Comm_size(comm, &nproc);
+  MPI_Comm_size(comm, &size);
 
   ierr = VecCreate(comm, &v);CHKERRQ(ierr);
   ierr = VecSetSizes(v, PETSC_DECIDE, length);CHKERRQ(ierr);
-  if (nproc == 1) { ierr = VecSetType(v, VECSEQ);CHKERRQ(ierr); }
+  if (size == 1) { ierr = VecSetType(v, VECSEQ);CHKERRQ(ierr); }
   else { ierr = VecSetType(v, VECMPI);CHKERRQ(ierr); }
 
   for (i=0; i<length; i++) {
@@ -271,9 +271,9 @@ PetscErrorCode test_axpy_dot_max(void)
 
 
   ierr = VecMax(X, &index, &real);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD, "(max-X) = %f : index = %d \n", real, index);
+  PetscPrintf(PETSC_COMM_WORLD, "(max-X) = %f : index = %d \n",(double) real, index);
   ierr = VecMin(X, &index, &real);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD, "(min-X) = %f : index = %d \n", real, index);
+  PetscPrintf(PETSC_COMM_WORLD, "(min-X) = %f : index = %d \n",(double) real, index);
 
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&Y);CHKERRQ(ierr);

@@ -208,4 +208,10 @@ typedef enum {TS_STEP_INCOMPLETE, /* vec_sol, ptime, etc point to beginning of s
               TS_STEP_COMPLETE    /* step accepted and ptime, steps, etc have been advanced */
 } TSStepStatus;
 
+struct _n_TSMonitorLGCtx {
+  PetscDrawLG lg;
+  PetscInt    howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
+  PetscInt    ksp_its,snes_its;
+};
+
 #endif

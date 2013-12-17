@@ -49,7 +49,7 @@ int main(int argc,char **args)
     }
     PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n");
   }
-  PetscSynchronizedFlush(PETSC_COMM_WORLD);
+  PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);
   ierr = MatDenseRestoreArray(A,&array);CHKERRQ(ierr);
 
   /*

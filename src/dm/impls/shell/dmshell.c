@@ -662,7 +662,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
   DM_Shell       *shell;
 
   PetscFunctionBegin;
-  ierr     = PetscNewLog(dm,DM_Shell,&shell);CHKERRQ(ierr);
+  ierr     = PetscNewLog(dm,&shell);CHKERRQ(ierr);
   dm->data = shell;
 
   ierr = PetscObjectChangeTypeName((PetscObject)dm,DMSHELL);CHKERRQ(ierr);

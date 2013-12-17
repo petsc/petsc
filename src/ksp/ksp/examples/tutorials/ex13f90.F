@@ -146,9 +146,8 @@
          cnorm = 0.0
          do 90 j=1,n
             do 80 i=1,m
-               cnorm = cnorm +                                           &
-     &    PetscConj(solution(i,j)-userx(i,j))*                                            &
-     &                             (solution(i,j)-userx(i,j))
+              cnorm = cnorm +                                              &
+     &    PetscConj(solution(i,j)-userx(i,j))*(solution(i,j)-userx(i,j))
  80         continue
  90      continue
          enorm =  PetscRealPart(cnorm*hx*hy)

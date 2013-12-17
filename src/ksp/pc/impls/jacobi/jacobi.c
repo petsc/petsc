@@ -399,7 +399,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr     = PetscNewLog(pc,PC_Jacobi,&jac);CHKERRQ(ierr);
+  ierr     = PetscNewLog(pc,&jac);CHKERRQ(ierr);
   pc->data = (void*)jac;
 
   /*

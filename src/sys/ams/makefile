@@ -1,5 +1,5 @@
 
-#requirespackage 'PETSC_HAVE_AMS'
+#requirespackage 'PETSC_HAVE_SAWS'
 
 ALL: lib
 SOURCEH   =

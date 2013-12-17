@@ -30,8 +30,8 @@ int main(int argc,char **args)
   if (size != 4) SETERRQ(PETSC_COMM_WORLD,1,"Must run with 4 processors");
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(5*sizeof(PetscInt),&ia);CHKERRQ(ierr);
-  ierr = PetscMalloc(16*sizeof(PetscInt),&ja);CHKERRQ(ierr);
+  ierr = PetscMalloc1(5,&ia);CHKERRQ(ierr);
+  ierr = PetscMalloc1(16,&ja);CHKERRQ(ierr);
   if (!rank) {
     ja[0] = 1; ja[1] = 4; ja[2] = 0; ja[3] = 2; ja[4] = 5; ja[5] = 1; ja[6] = 3; ja[7] = 6;
     ja[8] = 2; ja[9] = 7;

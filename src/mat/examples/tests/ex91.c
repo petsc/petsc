@@ -32,10 +32,10 @@ int main(int argc,char **args)
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(bs*sizeof(PetscInt),&rows);CHKERRQ(ierr);
-  ierr = PetscMalloc(bs*sizeof(PetscInt),&cols);CHKERRQ(ierr);
-  ierr = PetscMalloc(bs*bs*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
-  ierr = PetscMalloc(M*sizeof(PetscScalar),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bs,&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bs,&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bs*bs,&vals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(M,&idx);CHKERRQ(ierr);
 
   /* Now set blocks of random values */
   /* first, set diagonal blocks as zero */
@@ -104,8 +104,8 @@ int main(int argc,char **args)
   }
 
   /* Test MatIncreaseOverlap() */
-  ierr = PetscMalloc(nd*sizeof(IS **),&is1);CHKERRQ(ierr);
-  ierr = PetscMalloc(nd*sizeof(IS **),&is2);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nd,&is1);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nd,&is2);CHKERRQ(ierr);
 
 
   for (i=0; i<nd; i++) {

@@ -374,10 +374,10 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   is   = info.xs;          ie   = info.xs+info.xm;
   js   = info.ys;          je   = info.ys+info.ym;
   /* Allocation */
-  ierr = PetscMalloc(dim*sizeof(PetscScalar),                &interpIndices);CHKERRQ(ierr);
-  ierr = PetscMalloc(c->numVelocityComp*sizeof(PetscScalar), &velocityValues);CHKERRQ(ierr);
-  ierr = PetscMalloc(c->numVelocityComp*sizeof(PetscScalar), &velocityValuesOld);CHKERRQ(ierr);
-  ierr = PetscMalloc(c->numFieldComp*sizeof(PetscScalar),    &fieldValues);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dim,                &interpIndices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(c->numVelocityComp, &velocityValues);CHKERRQ(ierr);
+  ierr = PetscMalloc1(c->numVelocityComp, &velocityValuesOld);CHKERRQ(ierr);
+  ierr = PetscMalloc1(c->numFieldComp,    &fieldValues);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(CHARACTERISTIC_Solve,0,0,0,0);CHKERRQ(ierr);
 
   /* -----------------------------------------------------------------------
@@ -584,7 +584,7 @@ PetscErrorCode CharacteristicSetNeighbors(Characteristic c, PetscInt numNeighbor
   PetscFunctionBegin;
   c->numNeighbors = numNeighbors;
   ierr = PetscFree(c->neighbors);CHKERRQ(ierr);
-  ierr = PetscMalloc(numNeighbors * sizeof(PetscMPIInt), &c->neighbors);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numNeighbors, &c->neighbors);CHKERRQ(ierr);
   ierr = PetscMemcpy(c->neighbors, neighbors, numNeighbors * sizeof(PetscMPIInt));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

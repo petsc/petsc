@@ -271,7 +271,7 @@ PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer
     ierr = PetscViewerFileSetName(*lab,name);CHKERRQ(ierr);
   }
   /* save viewer into communicator if needed later */
-  ierr       = PetscNew(PetscViewerLink,&nv);CHKERRQ(ierr);
+  ierr       = PetscNew(&nv);CHKERRQ(ierr);
   nv->viewer = *lab;
   if (!flg) {
     ierr = MPI_Attr_put(comm,Petsc_Viewer_keyval,nv);CHKERRQ(ierr);

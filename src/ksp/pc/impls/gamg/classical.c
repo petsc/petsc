@@ -1114,7 +1114,7 @@ PetscErrorCode  PCCreateGAMG_Classical(PC pc)
   }
 
   /* create sub context for SA */
-  ierr = PetscNewLog(pc, PC_GAMG_Classical, &pc_gamg_classical);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&pc_gamg_classical);CHKERRQ(ierr);
   pc_gamg->subctx = pc_gamg_classical;
   pc->ops->setfromoptions = PCGAMGSetFromOptions_Classical;
   /* reset does not do anything; setup not virtual */

@@ -33,6 +33,8 @@ typedef struct {
   PetscInt    max_up_it;                       /* number of pre-smooths */
   PetscInt    max_down_it;                     /* number of post-smooth cycles */
   PetscBool   usedmfornumberoflevels;          /* uses a DM to generate a number of the levels */
+  PetscBool   full_downsweep;                  /* smooth on the initial full downsweep */
+  PetscInt    full_stage;                      /* stage of the full cycle -- 0 is the upswing, 1 is the downsweep and final V-cycle */
 
   /* Galerkin FAS state */
   PetscBool galerkin;                          /* use Galerkin formation of the coarse problem */
@@ -44,6 +46,7 @@ typedef struct {
   PetscLogEvent eventsmoothsolve;              /* level smoother solves */
   PetscLogEvent eventresidual;                 /* level residual evaluation */
   PetscLogEvent eventinterprestrict;           /* level interpolation and restriction */
+
 
 } SNES_FAS;
 

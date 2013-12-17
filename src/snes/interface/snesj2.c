@@ -25,7 +25,7 @@
 .notes: If the coloring is not provided through the context, this will first try to get the
         coloring from the DM.  If the DM type has no coloring routine, then it will try to
         get the coloring from the matrix.  This requires that the matrix have nonzero entries
-        precomputed.  This is discouraged, as MatGetColoring() is not parallel.
+        precomputed.  This is discouraged, as MatColoringApply() is not parallel by default.
 
 .keywords: SNES, finite differences, Jacobian, coloring, sparse
 
@@ -42,9 +42,10 @@ PetscErrorCode  SNESComputeJacobianDefaultColor(SNES snes,Vec x1,Mat *J,Mat *B,M
   PetscErrorCode (*func)(SNES,Vec,Vec,void*);
   Vec            F;
   void           *funcctx;
+  MatColoring    mc;
   ISColoring     iscoloring;
   PetscBool      hascolor;
-  PetscBool      solvec;
+  PetscBool      solvec,matcolor = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (color) PetscValidHeaderSpecific(color,MAT_FDCOLORING_CLASSID,6);
@@ -54,7 +55,8 @@ PetscErrorCode  SNESComputeJacobianDefaultColor(SNES snes,Vec x1,Mat *J,Mat *B,M
   if (!color) {
     ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
     ierr = DMHasColoring(dm,&hascolor);CHKERRQ(ierr);
-    if (hascolor) {
+    ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_fd_color_use_mat",&matcolor,NULL);CHKERRQ(ierr);
+    if (hascolor && !matcolor) {
       ierr = DMCreateColoring(dm,IS_COLORING_GLOBAL,&iscoloring);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(*B,iscoloring,&color);CHKERRQ(ierr);
       ierr = MatFDColoringSetFunction(color,(PetscErrorCode (*)(void))func,funcctx);CHKERRQ(ierr);
@@ -62,7 +64,12 @@ PetscErrorCode  SNESComputeJacobianDefaultColor(SNES snes,Vec x1,Mat *J,Mat *B,M
       ierr = MatFDColoringSetUp(*B,iscoloring,color);CHKERRQ(ierr);
       ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     } else {
-      ierr = MatGetColoring(*B,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
+      ierr = MatColoringCreate(*B,&mc);CHKERRQ(ierr);
+      ierr = MatColoringSetDistance(mc,2);CHKERRQ(ierr);
+      ierr = MatColoringSetType(mc,MATCOLORINGSL);CHKERRQ(ierr);
+      ierr = MatColoringSetFromOptions(mc);CHKERRQ(ierr);
+      ierr = MatColoringApply(mc,&iscoloring);CHKERRQ(ierr);
+      ierr = MatColoringDestroy(&mc);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(*B,iscoloring,&color);CHKERRQ(ierr);
       ierr = MatFDColoringSetFunction(color,(PetscErrorCode (*)(void))func,(void*)funcctx);CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(color);CHKERRQ(ierr);

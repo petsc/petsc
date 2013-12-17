@@ -141,7 +141,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
      xs is the first local node number, x is the number of local nodes
   */
   if (!lx) {
-    ierr = PetscMalloc(m*sizeof(PetscInt), &dd->lx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m, &dd->lx);CHKERRQ(ierr);
     ierr = PetscOptionsGetBool(NULL,"-da_partition_blockcomm",&flg1,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetBool(NULL,"-da_partition_nodes_at_end",&flg2,NULL);CHKERRQ(ierr);
     if (flg1) {      /* Block Comm type Distribution */
@@ -226,7 +226,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   /* global to local must retrieve ghost points */
   ierr = ISCreateStride(comm,(IXe-IXs),IXs-Xs,1,&to);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((x+2*(sDist))*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1((x+2*(sDist)),&idx);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)da,(x+2*(sDist))*sizeof(PetscInt));CHKERRQ(ierr);
 
   for (i=0; i<IXs-Xs; i++) idx[i] = -1; /* prepend with -1s if needed for ghosted case*/
@@ -300,12 +300,10 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   */
   for (i=0; i<Xe-IXe; i++) idx[nn++] = -1; /* pad with -1s if needed for ghosted case*/
 
-  ierr = ISLocalToGlobalMappingCreate(comm,nn,idx,PETSC_COPY_VALUES,&da->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,nn,idx,PETSC_OWN_POINTER,&da->ltogmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingBlock(da->ltogmap,dd->w,&da->ltogmapb);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)da->ltogmap);CHKERRQ(ierr);
 
-  dd->idx = idx;
-  dd->Nl  = nn;
   PetscFunctionReturn(0);
 }
 
@@ -370,6 +368,5 @@ PetscErrorCode  DMDACreate1d(MPI_Comm comm, DMDABoundaryType bx, PetscInt M, Pet
   /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
   ierr = DMSetFromOptions(*da);CHKERRQ(ierr);
   ierr = DMSetUp(*da);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*da,NULL,"-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

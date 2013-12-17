@@ -583,8 +583,8 @@ PetscErrorCode SetUpMatrices(AppCtx *user)
   ierr = MatGetLocalSize(M,&n,NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(user->da1,NULL,&Mda,&Nda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((Mda+1)*(Nda+1)*sizeof(PetscInt),&nodes);CHKERRQ(ierr);
-  ierr = PetscMalloc(Mda*Nda*2*3*sizeof(PetscInt),&connect);CHKERRQ(ierr);
+  ierr = PetscMalloc1((Mda+1)*(Nda+1),&nodes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Mda*Nda*2*3,&connect);CHKERRQ(ierr);
   hx   = (user->xmax-user->xmin)/Mda;
   hy   = (user->ymax-user->ymin)/Nda;
   for (j=0; j < Nda; j++) {
@@ -811,8 +811,8 @@ PetscErrorCode UpdateMatrices(AppCtx *user)
   ierr = VecGetArray(user->ci,&ci_p);CHKERRQ(ierr);
   ierr = DMDAGetInfo(user->da1,NULL,&Mda,&Nda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((Mda+1)*(Nda+1)*sizeof(PetscInt),&nodes);CHKERRQ(ierr);
-  ierr = PetscMalloc(Mda*Nda*2*3*sizeof(PetscInt),&connect);CHKERRQ(ierr);
+  ierr = PetscMalloc1((Mda+1)*(Nda+1),&nodes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Mda*Nda*2*3,&connect);CHKERRQ(ierr);
 
   h = 100.0/Mda;
 
