@@ -187,7 +187,7 @@ PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is),&size);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = PetscMalloc(n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) ii[idx[i]] = i;
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,PETSC_OWN_POINTER,isout);CHKERRQ(ierr);
     ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
@@ -246,7 +246,7 @@ PetscErrorCode ISView_General_Binary(IS is,PetscViewer viewer)
   if (!rank) {
     ierr = PetscBinaryWrite(fdes,isa->idx,isa->n,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
 
-    ierr = PetscMalloc(len*sizeof(PetscInt),&values);CHKERRQ(ierr);
+    ierr = PetscMalloc1(len,&values);CHKERRQ(ierr);
     ierr = PetscMPIIntCast(len,&mesgsize);CHKERRQ(ierr);
     /* receive and save messages */
     for (j=1; j<size; j++) {
@@ -371,7 +371,6 @@ PetscErrorCode ISCreateGeneral_Private(IS is)
   PetscInt       n      = sub->n,i,min,max;
   const PetscInt *idx   = sub->idx;
   PetscBool      sorted = PETSC_TRUE;
-  PetscBool      flg    = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
@@ -389,12 +388,7 @@ PetscErrorCode ISCreateGeneral_Private(IS is)
   is->max        = max;
   is->isperm     = PETSC_FALSE;
   is->isidentity = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-is_view",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)is),&viewer);CHKERRQ(ierr);
-    ierr = ISView(is,viewer);CHKERRQ(ierr);
-  }
+  ierr = ISViewFromOptions(is,NULL,"-is_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -483,7 +477,7 @@ PetscErrorCode  ISGeneralSetIndices_General(IS is,PetscInt n,const PetscInt idx[
   if (sub->allocated) {ierr = PetscFree(sub->idx);CHKERRQ(ierr);}
   sub->n = n;
   if (mode == PETSC_COPY_VALUES) {
-    ierr           = PetscMalloc(n*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);
+    ierr           = PetscMalloc1(n,&sub->idx);CHKERRQ(ierr);
     ierr           = PetscLogObjectMemory((PetscObject)is,n*sizeof(PetscInt));CHKERRQ(ierr);
     ierr           = PetscMemcpy(sub->idx,idx,n*sizeof(PetscInt));CHKERRQ(ierr);
     sub->allocated = PETSC_TRUE;
@@ -507,7 +501,7 @@ PETSC_EXTERN PetscErrorCode ISCreate_General(IS is)
 
   PetscFunctionBegin;
   ierr = PetscMemcpy(is->ops,&myops,sizeof(myops));CHKERRQ(ierr);
-  ierr = PetscNewLog(is,IS_General,&sub);CHKERRQ(ierr);
+  ierr = PetscNewLog(is,&sub);CHKERRQ(ierr);
   is->data = (void*)sub;
   is->bs   = 1;
   ierr = PetscObjectComposeFunction((PetscObject)is,"ISGeneralSetIndices_C",ISGeneralSetIndices_General);CHKERRQ(ierr);

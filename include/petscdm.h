@@ -73,7 +73,7 @@ PETSC_EXTERN PetscErrorCode DMRefineHookAdd(DM,PetscErrorCode (*)(DM,DM,void*),P
 PETSC_EXTERN PetscErrorCode DMRestrict(DM,Mat,Vec,Mat,DM);
 PETSC_EXTERN PetscErrorCode DMInterpolate(DM,Mat,DM);
 PETSC_EXTERN PetscErrorCode DMSetFromOptions(DM);
-PETSC_EXTERN PetscErrorCode DMViewFromOptions(DM,const char[], const char[]);
+PETSC_STATIC_INLINE PetscErrorCode DMViewFromOptions(DM A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 
 PETSC_EXTERN PetscErrorCode DMSetUp(DM);
 PETSC_EXTERN PetscErrorCode DMCreateInterpolationScale(DM,DM,Mat,Vec*);
@@ -89,6 +89,8 @@ PETSC_EXTERN PetscErrorCode DMConvert(DM,DMType,DM*);
 
 PETSC_EXTERN PetscErrorCode DMGetCoordinateDM(DM,DM*);
 PETSC_EXTERN PetscErrorCode DMSetCoordinateDM(DM,DM);
+PETSC_EXTERN PetscErrorCode DMGetCoordinateSection(DM,PetscSection*);
+PETSC_EXTERN PetscErrorCode DMSetCoordinateSection(DM,PetscSection);
 PETSC_EXTERN PetscErrorCode DMGetCoordinates(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMSetCoordinates(DM,Vec);
 PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocal(DM,Vec*);

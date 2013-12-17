@@ -77,8 +77,8 @@ int main(int argc, char * argv[]) {
     ierr = ISStrideSetStride(toISStrided,n,toFirst,toStep);CHKERRQ(ierr);
     
     /* Build the general index sets */
-    ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-    ierr = PetscMalloc(n*sizeof(PetscInt),&idy);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&idx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&idy);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       idx[i] = i % m;
       idy[i] = (i+m) % m;

@@ -12,7 +12,7 @@ static PetscErrorCode CheckPoints(const char *name,PetscInt npoints,const PetscR
   PetscInt       i,j;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc3(npoints*ndegrees,PetscReal,&B,npoints*ndegrees,PetscReal,&D,npoints*ndegrees,PetscReal,&D2);CHKERRQ(ierr);
+  ierr = PetscMalloc3(npoints*ndegrees,&B,npoints*ndegrees,&D,npoints*ndegrees,&D2);CHKERRQ(ierr);
   ierr = PetscDTLegendreEval(npoints,points,ndegrees,degrees,B,D,D2);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s\n",name);CHKERRQ(ierr);
   for (i=0; i<npoints; i++) {

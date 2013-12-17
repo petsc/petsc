@@ -102,7 +102,7 @@ class Configure(PETSc.package.NewPackage):
     # If download option is specified always build sowing
     if self.framework.argDB['download-sowing']:
       PETSc.package.NewPackage.configure(self)
-      if self.petscdir.isClone:
+      if self.petscclone.isClone:
         self.framework.logPrint('PETSc clone, Building FortranStubs [with download-sowing=1]\n')
         self.buildFortranStubs()
       else:
@@ -110,7 +110,7 @@ class Configure(PETSc.package.NewPackage):
       return
 
     # autodetect if sowing/bfort is required
-    if self.petscdir.isClone:
+    if self.petscclone.isClone:
       self.framework.logPrint('PETSc clone, checking for Sowing or if it is needed\n')
 
       self.getExecutable('bfort', getFullPath = 1)

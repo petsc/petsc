@@ -1149,7 +1149,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
       alloc_local = fftw_mpi_local_size_2d(dim[0],dim[1],comm,&local_n0,&local_0_start);
       /*
        PetscSynchronizedPrintf(comm,"[%d] MatCreateSeqFFTW: local_n0, local_0_start %d %d, N %d,dim %d, %d\n",rank,(PetscInt)local_n0*dim[1],(PetscInt)local_0_start,m,dim[0],dim[1]);
-       PetscSynchronizedFlush(comm);
+       PetscSynchronizedFlush(comm,PETSC_STDOUT);
        */
       n    = (PetscInt)local_n0*dim[1];
       ierr = MatSetSizes(A,n,n,N,N);CHKERRQ(ierr);
@@ -1197,14 +1197,14 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
     }
   }
   ierr      = PetscObjectChangeTypeName((PetscObject)A,MATFFTW);CHKERRQ(ierr);
-  ierr      = PetscNewLog(A,Mat_FFTW,&fftw);CHKERRQ(ierr);
+  ierr      = PetscNewLog(A,&fftw);CHKERRQ(ierr);
   fft->data = (void*)fftw;
 
   fft->n            = n;
   fftw->ndim_fftw   = (ptrdiff_t)ndim; /* This is dimension of fft */
   fftw->partial_dim = partial_dim;
 
-  ierr = PetscMalloc(ndim*sizeof(ptrdiff_t), (ptrdiff_t*)&(fftw->dim_fftw));CHKERRQ(ierr);
+  ierr = PetscMalloc1(ndim, &(fftw->dim_fftw));CHKERRQ(ierr);
 
   for (ctr=0;ctr<ndim;ctr++) (fftw->dim_fftw)[ctr]=dim[ctr];
 

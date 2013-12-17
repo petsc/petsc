@@ -202,10 +202,10 @@ PetscErrorCode  PetscLogBegin_Private(void)
   ierr = PetscOptionsHasName(NULL, "-log_exclude_objects", &opt);CHKERRQ(ierr);
   if (opt) petsc_logObjects = PETSC_FALSE;
   if (petsc_logActions) {
-    ierr = PetscMalloc(petsc_maxActions * sizeof(Action), &petsc_actions);CHKERRQ(ierr);
+    ierr = PetscMalloc1(petsc_maxActions, &petsc_actions);CHKERRQ(ierr);
   }
   if (petsc_logObjects) {
-    ierr = PetscMalloc(petsc_maxObjects * sizeof(Object), &petsc_objects);CHKERRQ(ierr);
+    ierr = PetscMalloc1(petsc_maxObjects, &petsc_objects);CHKERRQ(ierr);
   }
   PetscLogPHC = PetscLogObjCreateDefault;
   PetscLogPHD = PetscLogObjDestroyDefault;
@@ -1412,10 +1412,10 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
        This seems best accomplished by assoicating a communicator with each stage.
   */
   ierr = MPI_Allreduce(&stageLog->numStages, &numStages, 1, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
-  ierr = PetscMalloc(numStages * sizeof(PetscBool), &localStageUsed);CHKERRQ(ierr);
-  ierr = PetscMalloc(numStages * sizeof(PetscBool), &stageUsed);CHKERRQ(ierr);
-  ierr = PetscMalloc(numStages * sizeof(PetscBool), &localStageVisible);CHKERRQ(ierr);
-  ierr = PetscMalloc(numStages * sizeof(PetscBool), &stageVisible);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numStages, &localStageUsed);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numStages, &stageUsed);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numStages, &localStageVisible);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numStages, &stageVisible);CHKERRQ(ierr);
   if (numStages > 0) {
     stageInfo = stageLog->stageInfo;
     for (stage = 0; stage < numStages; stage++) {
@@ -1791,8 +1791,8 @@ PetscErrorCode  PetscLogPrintDetailed(MPI_Comm comm, const char filename[])
 
 
   numStages = stageLog->numStages;
-  ierr      = PetscMalloc(numStages * sizeof(PetscBool), &stageUsed);CHKERRQ(ierr);
-  ierr      = PetscMalloc(numStages * sizeof(PetscBool), &stageVisible);CHKERRQ(ierr);
+  ierr      = PetscMalloc1(numStages, &stageUsed);CHKERRQ(ierr);
+  ierr      = PetscMalloc1(numStages, &stageVisible);CHKERRQ(ierr);
   if (numStages > 0) {
     stageInfo = stageLog->stageInfo;
     for (stage = 0; stage < numStages; stage++) {
@@ -1854,7 +1854,7 @@ PetscErrorCode  PetscLogPrintDetailed(MPI_Comm comm, const char filename[])
       }
     }
   }
-  ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(comm,fd);CHKERRQ(ierr);
 
   ierr = PetscFree(stageUsed);CHKERRQ(ierr);
   ierr = PetscFree(stageVisible);CHKERRQ(ierr);
@@ -2102,8 +2102,8 @@ PetscErrorCode  PetscLogViewPython(PetscViewer viewer)
   if (!PetscLogBegin_PrivateCalled) SETERRQ(comm, PETSC_ERR_ORDER, "No call to PetscLogBegin() before PetscLogViewPython()");
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = PetscMalloc(size*sizeof(PetscLogDouble), &mydata);CHKERRQ(ierr);
-  ierr = PetscMalloc(size*sizeof(PetscMPIInt), &mycount);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size, &mydata);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size, &mycount);CHKERRQ(ierr);
   ierr = PetscViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
 
   /* Pop off any stages the user forgot to remove */
@@ -2222,10 +2222,10 @@ PetscErrorCode  PetscLogViewPython(PetscViewer viewer)
        This seems best accomplished by assoicating a communicator with each stage.
   */
   ierr = MPI_Allreduce(&stageLog->numStages, &numStages, 1, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
-  ierr = PetscMalloc(numStages * sizeof(PetscBool), &localStageUsed);CHKERRQ(ierr);
-  ierr = PetscMalloc(numStages * sizeof(PetscBool), &stageUsed);CHKERRQ(ierr);
-  ierr = PetscMalloc(numStages * sizeof(PetscBool), &localStageVisible);CHKERRQ(ierr);
-  ierr = PetscMalloc(numStages * sizeof(PetscBool), &stageVisible);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numStages, &localStageUsed);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numStages, &stageUsed);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numStages, &localStageVisible);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numStages, &stageVisible);CHKERRQ(ierr);
   if (numStages > 0) {
     stageInfo = stageLog->stageInfo;
     for (stage = 0; stage < numStages; stage++) {

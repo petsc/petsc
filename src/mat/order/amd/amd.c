@@ -56,7 +56,7 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_AMD(Mat mat,MatOrderingType type,IS *
 
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr   = PetscMalloc(nrow*sizeof(PetscInt),&perm);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(nrow,&perm);CHKERRQ(ierr);
   status = amd_AMD_order(nrow,ia,ja,perm,Control,Info);
   switch (status) {
   case AMD_OK: break;

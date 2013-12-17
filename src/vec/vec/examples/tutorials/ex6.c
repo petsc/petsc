@@ -26,7 +26,7 @@ int main(int argc,char **args)
   /* ---------------------------------------------------------------------- */
 
   /* Allocate array and set values */
-  ierr = PetscMalloc(m*sizeof(PetscScalar),&array);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&array);CHKERRQ(ierr);
   for (i=0; i<m; i++) array[i] = i*10.0;
 
   /* Open viewer for binary output */

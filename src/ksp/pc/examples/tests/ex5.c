@@ -55,7 +55,7 @@ int main(int Argc,char **Args)
   ierr = PetscOptionsHasName(NULL,"-j",&flg);CHKERRQ(ierr);
   if (flg) use_jacobi = 1;
 
-  ierr = PetscMalloc(levels*sizeof(PetscInt),&N);CHKERRQ(ierr);
+  ierr = PetscMalloc1(levels,&N);CHKERRQ(ierr);
   N[0] = x_mesh;
   for (i=1; i<levels; i++) {
     N[i] = N[i-1]/2;

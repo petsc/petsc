@@ -274,9 +274,9 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
     adj  = (Mat_MPIAdj*)mat->data;
   }
 
-  ierr = PetscMalloc((mat->rmap->n+1)*sizeof(SCOTCH_Num),&locals);CHKERRQ(ierr);
-  ierr = PetscMalloc(nparts*sizeof(PetscReal),&vwgttab);CHKERRQ(ierr);
-  ierr = PetscMalloc(nparts*sizeof(SCOTCH_Num),&velotab);CHKERRQ(ierr);
+  ierr = PetscMalloc1((mat->rmap->n+1),&locals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nparts,&vwgttab);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nparts,&velotab);CHKERRQ(ierr);
   for (j=0; j<nparts; j++) {
     if (part->part_weights) vwgttab[j] = part->part_weights[j]*nparts;
     else vwgttab[j] = 1.0;
@@ -320,7 +320,7 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
 
   if (bs > 1) {
     PetscInt *newlocals;
-    ierr = PetscMalloc(bs*mat->rmap->n*sizeof(PetscInt),&newlocals);CHKERRQ(ierr);
+    ierr = PetscMalloc1(bs*mat->rmap->n,&newlocals);CHKERRQ(ierr);
     for (i=0;i<mat->rmap->n;i++) {
       for (j=0;j<bs;j++) {
         newlocals[bs*i+j] = locals[i];
@@ -375,7 +375,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning part)
   MatPartitioning_PTScotch *scotch;
 
   PetscFunctionBegin;
-  ierr       = PetscNewLog(part,MatPartitioning_PTScotch,&scotch);CHKERRQ(ierr);
+  ierr       = PetscNewLog(part,&scotch);CHKERRQ(ierr);
   part->data = (void*)scotch;
 
   scotch->imbalance = 0.01;

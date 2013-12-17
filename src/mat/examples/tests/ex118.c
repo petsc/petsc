@@ -34,12 +34,12 @@ int main(int argc,char **args)
 
   n      = 100;
   nevs   = iu - il;
-  ierr   = PetscMalloc((3*n+1)*sizeof(PetscScalar),&D);CHKERRQ(ierr);
+  ierr   = PetscMalloc1((3*n+1),&D);CHKERRQ(ierr);
   E      = D + n;
   evals  = E + n;
-  ierr   = PetscMalloc((5*n+1)*sizeof(PetscReal),&work);CHKERRQ(ierr);
-  ierr   = PetscMalloc((3*n+1)*sizeof(PetscBLASInt),&iwork);CHKERRQ(ierr);
-  ierr   = PetscMalloc((3*n+1)*sizeof(PetscBLASInt),&iblock);CHKERRQ(ierr);
+  ierr   = PetscMalloc1((5*n+1),&work);CHKERRQ(ierr);
+  ierr   = PetscMalloc1((3*n+1),&iwork);CHKERRQ(ierr);
+  ierr   = PetscMalloc1((3*n+1),&iblock);CHKERRQ(ierr);
   isplit = iblock + n;
 
   /* Set symmetric tridiagonal matrix */
@@ -58,8 +58,8 @@ int main(int argc,char **args)
 #endif
 
   printf(" LAPACKstein_: compute %d found eigenvectors...\n",nevs);
-  ierr = PetscMalloc(n*nevs*sizeof(PetscScalar),&evecs_array);CHKERRQ(ierr);
-  ierr = PetscMalloc(nevs*sizeof(PetscBLASInt),&ifail);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n*nevs,&evecs_array);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nevs,&ifail);CHKERRQ(ierr);
 #if defined(PETSC_MISSING_LAPACK_STEIN)
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"STEIN - Lapack routine is unavailable.");
 #else
@@ -89,7 +89,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(T,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(T,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((nevs+1)*sizeof(Vec),&evecs);CHKERRQ(ierr);
+  ierr = PetscMalloc1((nevs+1),&evecs);CHKERRQ(ierr);
   for (i=0; i<nevs; i++) {
     ierr = VecCreate(PETSC_COMM_SELF,&evecs[i]);CHKERRQ(ierr);
     ierr = VecSetSizes(evecs[i],PETSC_DECIDE,n);CHKERRQ(ierr);
@@ -183,7 +183,7 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
       tmp  = -eval[i];
       ierr = VecAXPY(vt1,tmp,vt2);CHKERRQ(ierr);
       ierr = VecNorm(vt1, NORM_INFINITY, &norm);CHKERRQ(ierr);
-      norm = PetscAbsScalar(norm);
+      norm = PetscAbsReal(norm);
       if (norm > norm_max) norm_max = norm;
 #if defined(DEBUG_CkEigenSolutions)
       /* sniff, and bark if necessary */

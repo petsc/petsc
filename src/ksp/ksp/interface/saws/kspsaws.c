@@ -31,7 +31,7 @@ PetscErrorCode KSPMonitorSAWsCreate(KSP ksp,void **ctx)
   KSPMonitor_SAWs *mon;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,KSPMonitor_SAWs,&mon);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,&mon);CHKERRQ(ierr);
   mon->viewer = PETSC_VIEWER_SAWS_(PetscObjectComm((PetscObject)ksp));
   if (!mon->viewer) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Cannot create SAWs default viewer");CHKERRQ(ierr);
   *ctx = (void*)mon;
@@ -96,7 +96,7 @@ PetscErrorCode KSPMonitorSAWs(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
   ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin);CHKERRQ(ierr);
 
   ierr = PetscFree2(mon->eigr,mon->eigi);CHKERRQ(ierr);
-  ierr = PetscMalloc2(n,PetscReal,&mon->eigr,n,PetscReal,&mon->eigi);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,&mon->eigr,n,&mon->eigi);CHKERRQ(ierr);
   if (n) {
     ierr = KSPComputeEigenvalues(ksp,n,mon->eigr,mon->eigi,&mon->neigs);CHKERRQ(ierr);
 

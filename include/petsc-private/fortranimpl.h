@@ -12,8 +12,8 @@
 
 PETSC_EXTERN PetscErrorCode PetscScalarAddressToFortran(PetscObject,PetscInt,PetscScalar*,PetscScalar*,PetscInt,size_t*);
 PETSC_EXTERN PetscErrorCode PetscScalarAddressFromFortran(PetscObject,PetscScalar*,size_t,PetscInt,PetscScalar **);
-PETSC_EXTERN size_t         PetscIntAddressToFortran(PetscInt*,PetscInt*);
-PETSC_EXTERN PetscInt        *PetscIntAddressFromFortran(PetscInt*,size_t);
+PETSC_EXTERN size_t         PetscIntAddressToFortran(const PetscInt*,const PetscInt*);
+PETSC_EXTERN PetscInt        *PetscIntAddressFromFortran(const PetscInt*,size_t);
 PETSC_EXTERN char   *PETSC_NULL_CHARACTER_Fortran;
 PETSC_EXTERN void    *PETSC_NULL_INTEGER_Fortran;
 PETSC_EXTERN void    *PETSC_NULL_SCALAR_Fortran;
@@ -76,12 +76,16 @@ if (flg) {                                   \
   for (; __i<n; __i++) a[__i] = ' ' ; \
 }
 
-#define FORTRANNULLINTEGER(a)  (((void*)a) == PETSC_NULL_INTEGER_Fortran)
-#define FORTRANNULLSCALAR(a)   (((void*)a) == PETSC_NULL_SCALAR_Fortran)
-#define FORTRANNULLDOUBLE(a)   (((void*)a) == PETSC_NULL_DOUBLE_Fortran)
-#define FORTRANNULLREAL(a)     (((void*)a) == PETSC_NULL_REAL_Fortran)
-#define FORTRANNULLOBJECT(a)   (((void*)a) == PETSC_NULL_OBJECT_Fortran)
-#define FORTRANNULLBOOL(a)    (((void*)a) == PETSC_NULL_BOOL_Fortran)
+/*
+    The cast through PETSC_UINTPTR_T is so that compilers that warn about casting to/from void * to void(*)(void)
+    will not complain about these comparisons. It is now know if this works for all compilers
+*/
+#define FORTRANNULLINTEGER(a)  (((void*)(PETSC_UINTPTR_T)a) == PETSC_NULL_INTEGER_Fortran)
+#define FORTRANNULLSCALAR(a)   (((void*)(PETSC_UINTPTR_T)a) == PETSC_NULL_SCALAR_Fortran)
+#define FORTRANNULLDOUBLE(a)   (((void*)(PETSC_UINTPTR_T)a) == PETSC_NULL_DOUBLE_Fortran)
+#define FORTRANNULLREAL(a)     (((void*)(PETSC_UINTPTR_T)a) == PETSC_NULL_REAL_Fortran)
+#define FORTRANNULLOBJECT(a)   (((void*)(PETSC_UINTPTR_T)a) == PETSC_NULL_OBJECT_Fortran)
+#define FORTRANNULLBOOL(a)    (((void*)(PETSC_UINTPTR_T)a) == PETSC_NULL_BOOL_Fortran)
 #define FORTRANNULLFUNCTION(a) (((void(*)(void))(PETSC_UINTPTR_T)a) == PETSC_NULL_FUNCTION_Fortran)
 
 

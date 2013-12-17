@@ -51,8 +51,8 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
       PetscInt k,*tindicesSends,*sindicesSends,*tindicesRecvs,*sindicesRecvs;
       PetscInt ns = sstartsSends[nsends],nr = sstartsRecvs[nrecvs];
       /* Here we create indices for both the senders and receivers. */
-      ierr = PetscMalloc(ns*sizeof(PetscInt),&tindicesSends);CHKERRQ(ierr);
-      ierr = PetscMalloc(nr*sizeof(PetscInt),&tindicesRecvs);CHKERRQ(ierr);
+      ierr = PetscMalloc1(ns,&tindicesSends);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nr,&tindicesRecvs);CHKERRQ(ierr);
 
       ierr = PetscMemcpy(tindicesSends,indices,ns*sizeof(PetscInt));CHKERRQ(ierr);
       ierr = PetscMemcpy(tindicesRecvs,from->indices,nr*sizeof(PetscInt));CHKERRQ(ierr);
@@ -60,8 +60,8 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
       ierr = PetscSortRemoveDupsInt(&ns,tindicesSends);CHKERRQ(ierr);
       ierr = PetscSortRemoveDupsInt(&nr,tindicesRecvs);CHKERRQ(ierr);
 
-      ierr = PetscMalloc(bs*ns*sizeof(PetscInt),&sindicesSends);CHKERRQ(ierr);
-      ierr = PetscMalloc(from->bs*nr*sizeof(PetscInt),&sindicesRecvs);CHKERRQ(ierr);
+      ierr = PetscMalloc1(bs*ns,&sindicesSends);CHKERRQ(ierr);
+      ierr = PetscMalloc1(from->bs*nr,&sindicesRecvs);CHKERRQ(ierr);
 
       /* sender indices */
       for (i=0; i<ns; i++) {

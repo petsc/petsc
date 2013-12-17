@@ -1,15 +1,13 @@
 #!/bin/sh
 #
-# This script makes a Apple Mac OS X dmg from the PETSc framework
+# This script makes a Apple Mac OS X dmg from the PETSc framework and docset, see ./makeall
 #
 # Make sure that "Enable access for assistive devices" is checked in System Preferences>>Universal Access. It is required for the AppleScript to work.
 #
-#  Before runningt this script follow the directions in ./systems/Apple/OSX/bin/makeframework  to make the Apple PETSc Framework 
-#
-echo "Creating ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg from ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework"
+echo "Creating ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg from ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework and ${PETSC_DIR}/${PETSC_ARCH}/PETSc.docset"
 rm -rf pack.temp.dmg tempsource ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg
 mkdir tempsource
-cp -r ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework tempsource
+cp -r ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework ${PETSC_DIR}/${PETSC_ARCH}/PETSc.docset tempsource
 let size=`du  -c tempsource | tail -1 | cut -f1`
 let size=2*$size
 
@@ -28,9 +26,8 @@ echo '
            set theViewOptions to the icon view options of container window
            set arrangement of theViewOptions to not arranged
            set icon size of theViewOptions to 72
-           make new alias file at container window to POSIX file "/Library/Frameworks" with properties {name:"Frameworks"}
-           set position of item "'PETSc.framework'" of container window to {100, 100}
-           set position of item "Frameworks" of container window to {375, 100}
+           make new alias file at container window to POSIX file "/Library/Frameworks" with properties {name:"Copy in PETSc.frameworks"}
+           make new alias file at container window to POSIX file "/Applications/Xcode.app/Contents/Developer/Documentation/DocSets" with properties {name:"Copy in PETSc.docset"}
            eject
      end tell
    end tell
@@ -42,3 +39,4 @@ echo 'Completed osascript'
 #hdiutil detach ${device}
 hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg
 rm -rf pack.temp.dmg tempsource
+hdiutil detach /Volumes/PETSc

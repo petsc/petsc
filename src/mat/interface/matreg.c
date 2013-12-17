@@ -167,7 +167,7 @@ PetscErrorCode  MatRegisterBaseName(const char bname[],const char sname[],const 
   MatBaseName    names;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _p_MatBaseName,&names);CHKERRQ(ierr);
+  ierr = PetscNew(&names);CHKERRQ(ierr);
   ierr = PetscStrallocpy(bname,&names->bname);CHKERRQ(ierr);
   ierr = PetscStrallocpy(sname,&names->sname);CHKERRQ(ierr);
   ierr = PetscStrallocpy(mname,&names->mname);CHKERRQ(ierr);

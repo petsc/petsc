@@ -27,13 +27,12 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering(Mat C,Mat A,c
 
   PetscFunctionBegin;
   /* initialization */
-  ierr = PetscMalloc(36*mbs*sizeof(MatScalar),&w);CHKERRQ(ierr);
-  ierr = PetscMemzero(w,36*mbs*sizeof(MatScalar));CHKERRQ(ierr);
-  ierr = PetscMalloc2(mbs,PetscInt,&il,mbs,PetscInt,&jl);CHKERRQ(ierr);
+  ierr = PetscCalloc1(36*mbs,&w);CHKERRQ(ierr);
+  ierr = PetscMalloc2(mbs,&il,mbs,&jl);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     jl[i] = mbs; il[0] = 0;
   }
-  ierr = PetscMalloc2(36,MatScalar,&dk,36,MatScalar,&uik);CHKERRQ(ierr);
+  ierr = PetscMalloc2(36,&dk,36,&uik);CHKERRQ(ierr);
   ai   = a->i; aj = a->j; aa = a->a;
 
   /* for each row k */

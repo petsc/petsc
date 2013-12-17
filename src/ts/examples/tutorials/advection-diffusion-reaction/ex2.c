@@ -34,7 +34,7 @@ PetscScalar k1(AppCtx *ctx,PetscReal t)
   PetscReal th    = t/3600.0;
   PetscReal barth = th - 24.0*floor(th/24.0);
   if (((((PetscInt)th) % 24) < 4)               || ((((PetscInt)th) % 24) >= 20)) return(1.0e-40);
-  else return(ctx->k1*PetscExpScalar(7.0*PetscPowScalar(PetscSinScalar(.0625*PETSC_PI*(barth - 4.0)),.2)));
+  else return(ctx->k1*PetscExpReal(7.0*PetscPowReal(PetscSinReal(.0625*PETSC_PI*(barth - 4.0)),.2)));
 }
 
 #undef __FUNCT__

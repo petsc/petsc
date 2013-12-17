@@ -424,10 +424,10 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 
   bsize=mx+2; lsize=my+2; rsize=my+2; tsize=mx+2;
 
-  info = PetscMalloc(bsize*sizeof(PetscScalar), &user->bottom);CHKERRQ(info);
-  info = PetscMalloc(tsize*sizeof(PetscScalar), &user->top);CHKERRQ(info);
-  info = PetscMalloc(lsize*sizeof(PetscScalar), &user->left);CHKERRQ(info);
-  info = PetscMalloc(rsize*sizeof(PetscScalar), &user->right);CHKERRQ(info);
+  info = PetscMalloc1(bsize, &user->bottom);CHKERRQ(info);
+  info = PetscMalloc1(tsize, &user->top);CHKERRQ(info);
+  info = PetscMalloc1(lsize, &user->left);CHKERRQ(info);
+  info = PetscMalloc1(rsize, &user->right);CHKERRQ(info);
 
   hx= (r-l)/(mx+1); hy=(t-b)/(my+1);
 

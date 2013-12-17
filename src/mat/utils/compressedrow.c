@@ -57,7 +57,7 @@ PETSC_EXTERN PetscErrorCode MatCheckCompressedRow(Mat A,PetscInt nrows,Mat_Compr
 
     /* set compressed row format */
     nrows  = mbs - nrows; /* num of non-zero rows */
-    ierr   = PetscMalloc2(nrows+1,PetscInt,&cpi,nrows,PetscInt,&ridx);CHKERRQ(ierr);
+    ierr   = PetscMalloc2(nrows+1,&cpi,nrows,&ridx);CHKERRQ(ierr);
     row    = 0;
     cpi[0] = 0;
     for (i=0; i<mbs; i++) {

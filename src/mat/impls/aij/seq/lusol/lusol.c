@@ -273,7 +273,7 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
 
     if (nnz > lusol->nnz) {
       ierr       = PetscFree3(lusol->data,lusol->indc,lusol->indr);CHKERRQ(ierr);
-      ierr       = PetscMalloc3(nnz,double,&lusol->data,nnz,PetscInt,&lusol->indc,nnz,PetscInt,&lusol->indr);CHKERRQ(ierr);
+      ierr       = PetscMalloc3(nnz,&lusol->data,nnz,&lusol->indc,nnz,&lusol->indr);CHKERRQ(ierr);
       lusol->nnz = nnz;
     }
 
@@ -414,7 +414,7 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactor
   ierr = PetscMalloc(sizeof(double)*n,&lusol->mnsw);
   ierr = PetscMalloc(sizeof(double)*n,&lusol->mnsv);
 
-  ierr = PetscMalloc3(nnz,double,&lusol->data,nnz,PetscInt,&lusol->indc,nnz,PetscInt,&lusol->indr);CHKERRQ(ierr);
+  ierr = PetscMalloc3(nnz,&lusol->data,nnz,&lusol->indc,nnz,&lusol->indr);CHKERRQ(ierr);
 
   lusol->CleanUpLUSOL     = PETSC_TRUE;
   F->ops->lufactornumeric = MatLUFactorNumeric_LUSOL;
@@ -446,7 +446,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
 
-  ierr     = PetscNewLog(B,Mat_LUSOL,&lusol);CHKERRQ(ierr);
+  ierr     = PetscNewLog(B,&lusol);CHKERRQ(ierr);
   B->spptr = lusol;
 
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_LUSOL;
