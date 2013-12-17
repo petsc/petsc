@@ -28,10 +28,10 @@ $(document).on('change', '.pcLists', function(){
 	parent=$("#"+parent).parent().get(0).id;
     parent = parent.substring(1, parent.length);  //parent=matrix recursion counter b/c resursion counter is not in this scope
     //alert('parentDiv '+ parentDiv + '; parent '+parent + '; pcValue '+pcValue +'; this.id '+ this.id);
-    //alert('logstruc='+matrixInformation[parent].logstruc);
+    //alert('logstruc='+matInfo[parent].logstruc);
 
     // if pcValue is changed to !fieldsplit for logically structured matrix
-    if (pcValue != "fieldsplit" && matrixInformation[parent].logstruc) {
+    if (pcValue != "fieldsplit" && matInfo[parent].logstruc) {
         // find indices of all its children, remove all the options of its children
 	var children = [];
         var numChildren = matGetChildren(parent, maxMatricies, children);
@@ -111,7 +111,7 @@ $(document).on('change', '.pcLists', function(){
 
 	//set defaults for redundant
 	$("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
-        if (matrixInformation[parent].symm) {
+        if (matInfo[parent].symm) {
             $("#pcList"+parent+myendtag).find("option[value='cholesky']").attr("selected","selected");
         } else {
 	    $("#pcList"+parent+myendtag).find("option[value='lu']").attr("selected","selected");
@@ -138,7 +138,7 @@ $(document).on('change', '.pcLists', function(){
 
 	//set defaults for bjacobi
 	$("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
-        if (matrixInformation[parent].symm) {
+        if (matInfo[parent].symm) {
             $("#pcList"+parent+myendtag).find("option[value='icc']").attr("selected","selected");
         } else {
 	    $("#pcList"+parent+myendtag).find("option[value='ilu']").attr("selected","selected");
@@ -172,7 +172,7 @@ $(document).on('change', '.pcLists', function(){
 
 	//set defaults for asm
 	$("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
-        if (matrixInformation[parent].symm) {
+        if (matInfo[parent].symm) {
             $("#pcList"+parent+myendtag).find("option[value='icc']").attr("selected","selected");
         } else {
 	    $("#pcList"+parent+myendtag).find("option[value='ilu']").attr("selected","selected");
@@ -214,7 +214,7 @@ $(document).on('change', '.pcLists', function(){
 
     if (pcValue == "fieldsplit") {
         //------------------------------------------------------
-        if (!matrixInformation[parent].logstruc) {
+        if (!matInfo[parent].logstruc) {
             alert("Error: Preconditioner fieldsplit cannot be used for non-logically blocked matrix!");
             //how to throw an error???
         } else {

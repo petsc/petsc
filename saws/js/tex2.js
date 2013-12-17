@@ -1,6 +1,6 @@
 //This array stores the tex, and MathJax interprets it on the fly. Each arrqy element refers to one
 // specific matrix, highlighting and all.
-function tex2(matrixInformation, recursionCounter)
+function tex2(matInfo, recursionCounter)
 {
     var tex
 
@@ -36,7 +36,7 @@ function tex2(matrixInformation, recursionCounter)
     if(matGetLevel(recursionCounter) == 2)
     {
 	//A1 (index 1) is logstruc and A2 is not logstruc
-	if(matrixInformation[1].logstruc && !matrixInformation[2].logstruc)
+	if(matInfo[1].logstruc && !matInfo[2].logstruc)
 	{
 	    //switch on highligting	
 	    //highlight A11 (index 3)
@@ -64,7 +64,7 @@ A_{1_{1}} & * \\\\ \
 	}
 	
 	//A2 (index 2) is logstruc and A1 is not logstruc
-	if(matrixInformation[2].logstruc && !matrixInformation[1].logstruc)
+	if(matInfo[2].logstruc && !matInfo[1].logstruc)
 	{
 	    //switch on highligting
 	    //highligh A21 (index 5)
@@ -92,7 +92,7 @@ A_{2_{1}} & * \\\\ \
 
 
 	//A2 (index 2) is logstruc and A1 is also logstruc
-	if(matrixInformation[2].logstruc && matrixInformation[1].logstruc)
+	if(matInfo[2].logstruc && matInfo[1].logstruc)
 	{
 	    //switch on highligting
 	    //highlight A11 (index 3)	
@@ -159,10 +159,10 @@ A_{2_{1}} & * \\\\ \
     if(matGetLevel(recursionCounter) == 3)
     {
 	//A1 (index 1) is logstruc and A2 is not logstruc
-	if(matrixInformation[1].logstruc && !matrixInformation[2].logstruc)
+	if(matInfo[1].logstruc && !matInfo[2].logstruc)
 	{
 	    //A11 (index 3) is log struc and A12 (index 4) is not log struc
-	    if(matrixInformation[3].logstruc && !matrixInformation[4].logstruc)
+	    if(matInfo[3].logstruc && !matInfo[4].logstruc)
 	    {
 		//switch on highlighting
 		//highlight A111 (index 7)
@@ -196,7 +196,7 @@ A_{1_{1_{1}}} & * \\\\ \
 
 
 	    //A12 (index 4) is log struc and A11 (index 3) is not log struc
-	    if(matrixInformation[4].logstruc && !matrixInformation[3].logstruc)
+	    if(matInfo[4].logstruc && !matInfo[3].logstruc)
 	    {
 
 		//switch on highlighting
@@ -231,7 +231,7 @@ A_{1_{2_{1}}} & * \\\\ \
 	    }
 
 	    //A11 (index 3) is log struc and A12 (index 4) is also log struc
-	    if(matrixInformation[3].logstruc && matrixInformation[4].logstruc)
+	    if(matInfo[3].logstruc && matInfo[4].logstruc)
 	    {
 		//switch on highlighting
 		//highlight A111 (index 7)
@@ -306,10 +306,10 @@ A_{1_{2_{1}}} & * \\\\ \
 	}
 
 	//A2 (index 2) is logstruc and A1 (index 1) is not logstruc
-	if(matrixInformation[2].logstruc && !matrixInformation[1].logstruc)
+	if(matInfo[2].logstruc && !matInfo[1].logstruc)
 	{
 	    //A21 (index 5) is log struc and A22 (index 6) is not log struc
-	    if(matrixInformation[5].logstruc && !matrixInformation[6].logstruc)
+	    if(matInfo[5].logstruc && !matInfo[6].logstruc)
 	    {
 		//switch on highlighting
 		//highlight A211 (index 11)
@@ -343,7 +343,7 @@ A_{2_{1_{1}}} & * \\\\ \
 
 
 	    //A22 (index 6) is log struc and A21 (index 5) is not log struc
-	    if(matrixInformation[6].logstruc && !matrixInformation[5].logstruc)
+	    if(matInfo[6].logstruc && !matInfo[5].logstruc)
 	    {
 
 		//switch on highlighting	
@@ -379,7 +379,7 @@ A_{2_{2_{1}}} & * \\\\ \
 	    }
 
 	    //A21 (index 5) is log struc and A22 (index 6) is also log struc
-	    if(matrixInformation[5].logstruc && matrixInformation[6].logstruc)
+	    if(matInfo[5].logstruc && matInfo[6].logstruc)
 	    {
 		//switch on highlighting
 		//highlight A211 (index 11)
@@ -454,11 +454,11 @@ A_{2_{2_{1}}} & * \\\\ \
 	}
 
 	//A2 (index 2) is logstruc and A1 (index 1) is also logstruc
-	if(matrixInformation[2].logstruc && matrixInformation[1].logstruc)
+	if(matInfo[2].logstruc && matInfo[1].logstruc)
 	{
 	    
 	    //A11 (index 3) is log struc and A12 (index 4), A21 (index 5), and A22 (index 6) are not log struc
-	    if(matrixInformation[3].logstruc && !matrixInformation[4].logstruc && !matrixInformation[5].logstruc && !matrixInformation[6].logstruc)
+	    if(matInfo[3].logstruc && !matInfo[4].logstruc && !matInfo[5].logstruc && !matInfo[6].logstruc)
 	    {
 		//switch on highlighting
 		//highlight A111 (index 7)
@@ -498,7 +498,7 @@ A_{2_{1}} & * \\\\ \
 
 
 	    //A12 (index 4) is log struc and A11 (index 3), A21 (index 5), and A22 (index 6) are not log struc
-	    if(matrixInformation[4].logstruc && !matrixInformation[3].logstruc && !matrixInformation[5].logstruc && !matrixInformation[6].logstruc)
+	    if(matInfo[4].logstruc && !matInfo[3].logstruc && !matInfo[5].logstruc && !matInfo[6].logstruc)
 	    {
 		//switch on highlighting
 		//highlight A121 (index 9)
@@ -537,7 +537,7 @@ A_{2_{1}} & * \\\\ \
 	    }
 
 	    //A21 (index 5) is log struc and A11 (index 3), A12 (index 4), and A22 (index 6) are not log struc
-	    if(matrixInformation[5].logstruc && !matrixInformation[4].logstruc && !matrixInformation[3].logstruc && !matrixInformation[6].logstruc)
+	    if(matInfo[5].logstruc && !matInfo[4].logstruc && !matInfo[3].logstruc && !matInfo[6].logstruc)
 	    {
 		//switch on highlighting
 		//highlight A211 (index 11)
@@ -576,7 +576,7 @@ A_{2_{1_{1}}} & * \\\\ \
 	    }
 
 	    //A22 (index 6) is log struc and A11 (index 3), A12 (index 4), and A22 (index 6) are not log struc
-	    if(matrixInformation[6].logstruc && !matrixInformation[3].logstruc && !matrixInformation[5].logstruc && !matrixInformation[4].logstruc)
+	    if(matInfo[6].logstruc && !matInfo[3].logstruc && !matInfo[5].logstruc && !matInfo[4].logstruc)
 	    {
 		//switch on highlighting
 		//highlight A221 (index 13)
@@ -616,7 +616,7 @@ A_{2_{2_{1}}} & * \\\\ \
 
 
 	    //A11 (index 3) and A12 (index 4) are log struc, A21 (index 5) and A22 (index 6) are not log struc
-	    if(matrixInformation[3].logstruc && matrixInformation[4].logstruc && !matrixInformation[5].logstruc && !matrixInformation[6].logstruc)
+	    if(matInfo[3].logstruc && matInfo[4].logstruc && !matInfo[5].logstruc && !matInfo[6].logstruc)
 	    {
 		//switch on highlighting
 		//highlight A111 (index 7)
@@ -702,7 +702,7 @@ A_{2_{1}} & * \\\\ \
 	    }
 
 	    //A11 (index 3) and A21 (index 5) are log struc, A12 (index 4) and A22 (index 6) are not log struc
-	    if(matrixInformation[3].logstruc && matrixInformation[5].logstruc && !matrixInformation[4].logstruc && !matrixInformation[6].logstruc)
+	    if(matInfo[3].logstruc && matInfo[5].logstruc && !matInfo[4].logstruc && !matInfo[6].logstruc)
 	    {
 		//switch on highlighting
 		//highlight A111 (index 7)
@@ -790,7 +790,7 @@ A_{2_{1_{1}}} & * \\\\ \
 	    }
 
 	    //A11 (index 3) and A22 (index 6) are log struc, A12 (index 4) and A21 (index 5) are not log struc
-	    if(matrixInformation[3].logstruc && matrixInformation[6].logstruc && !matrixInformation[4].logstruc && !matrixInformation[5].logstruc)
+	    if(matInfo[3].logstruc && matInfo[6].logstruc && !matInfo[4].logstruc && !matInfo[5].logstruc)
 	    {
 		//switch on highlighting
 		//highlight A111 (index 7)
@@ -880,7 +880,7 @@ A_{2_{2_{1}}} & * \\\\ \
 
 
 	    //A12 (index 4) and A21 (index 5) are log struc, A11 (index 3) and A22 (index 6) are not log struc
-	    if(matrixInformation[4].logstruc && matrixInformation[5].logstruc && !matrixInformation[3].logstruc && !matrixInformation[6].logstruc)
+	    if(matInfo[4].logstruc && matInfo[5].logstruc && !matInfo[3].logstruc && !matInfo[6].logstruc)
 	    {
 		//switch on highlighting
 		//highlight A121 (index 9)
@@ -969,7 +969,7 @@ A_{2_{1_{1}}} & * \\\\ \
 	    }
 
 	    //A12 (index 4) and A22 (index 6) are log struc, A11 (index 3) and A21 (index 5) are not log struc
-	    if(matrixInformation[4].logstruc && matrixInformation[6].logstruc && !matrixInformation[3].logstruc && !matrixInformation[5].logstruc)
+	    if(matInfo[4].logstruc && matInfo[6].logstruc && !matInfo[3].logstruc && !matInfo[5].logstruc)
 	    {
 		//switch on highlighting
 		//highlight A121 (index 9)
@@ -1056,7 +1056,7 @@ A_{2_{2_{1}}} & * \\\\ \
 
 
 	    //A11 (index 3), A12 (index 4), A21 (index 5) are log struc and A22 (index 6) is not log struc
-	    if(matrixInformation[3].logstruc && matrixInformation[4].logstruc && matrixInformation[5].logstruc && !matrixInformation[6].logstruc)
+	    if(matInfo[3].logstruc && matInfo[4].logstruc && matInfo[5].logstruc && !matInfo[6].logstruc)
 	    {
 		//switch on highlighting
 		//highlight A111 (index 7)
@@ -1201,7 +1201,7 @@ A_{2_{1_{1}}} & * \\\\ \
 	    }
 
 	    //A11 (index 3), A12 (index 4), A22 (index 6) are log struc and A21 (index 5) is not log struc
-	    if(matrixInformation[3].logstruc && matrixInformation[4].logstruc && matrixInformation[6].logstruc && !matrixInformation[5].logstruc)
+	    if(matInfo[3].logstruc && matInfo[4].logstruc && matInfo[6].logstruc && !matInfo[5].logstruc)
 	    {
 		//switch on highlighting
 		//highlight A111 (index 7)
@@ -1346,7 +1346,7 @@ A_{2_{2_{1}}} & * \\\\ \
 	    }
 
 	    //A11 (index 3), A21 (index 5), A22 (index 6) are log struc and A12 (index 4) is not log struc
-	    if(matrixInformation[3].logstruc && matrixInformation[5].logstruc && matrixInformation[6].logstruc && !matrixInformation[4].logstruc)
+	    if(matInfo[3].logstruc && matInfo[5].logstruc && matInfo[6].logstruc && !matInfo[4].logstruc)
 	    {
 		//switch on highlighting
 		//highlight A111 (index 7)
@@ -1492,7 +1492,7 @@ A_{2_{2_{1}}} & * \\\\ \
 	    }
 
 	    //A12 (index 4), A21 (index 5), A22 (index 6) are log struc and A11 (index 3) is not log struc
-	    if(matrixInformation[4].logstruc && matrixInformation[5].logstruc && matrixInformation[6].logstruc && !matrixInformation[3].logstruc)
+	    if(matInfo[4].logstruc && matInfo[5].logstruc && matInfo[6].logstruc && !matInfo[3].logstruc)
 	    {
 		//switch on highlighting
 		//highlight A121 (index 9)
@@ -1636,7 +1636,7 @@ A_{2_{2_{1}}} & * \\\\ \
 	    }
 
 	    //A11 (index 3), A12 (index 4), A21 (index 5), A22 (index 6) are all log struc
-	    if(matrixInformation[3].logstruc && matrixInformation[4].logstruc && matrixInformation[5].logstruc && matrixInformation[6].logstruc)
+	    if(matInfo[3].logstruc && matInfo[4].logstruc && matInfo[5].logstruc && matInfo[6].logstruc)
 	    {
 		//switch on highlighting
 		//highlight A111 (index 7)

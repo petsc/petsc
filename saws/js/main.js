@@ -1,5 +1,5 @@
-//Make an array. Each array element (matrixInformation[0]. etc) will have all of the information of the questions. Each array element represents one part of the matrix. [0] will be the big array, [1] will be the second recursion, etc, etc. All the information is stored in the array and accessed via for symmetric matrixInformation[recursion].symm
-var matrixInformation = [];
+//Make an array. Each array element (matInfo[0]. etc) will have all of the information of the questions. Each array element represents one part of the matrix. [0] will be the big array, [1] will be the second recursion, etc, etc. All the information is stored in the array and accessed via for symmetric matInfo[recursion].symm
+var matInfo = [];
 
 //Change the max amount of allowed matricies here
 //based on how many levels of blocking there are
@@ -115,10 +115,10 @@ HandlePCOptions = function(){
     recursionCounter = -1;
 
     //reset the form
-    formSet(recursionCounter,matrixInformation);
+    formSet(recursionCounter,matInfo);
    
     //must define these parameters before setting default pcVal, see populatePcList() and listLogic.js!
-    matrixInformation[recursionCounter] = {
+    matInfo[recursionCounter] = {
         posdef:  0,
         symm:    0,
         logstruc:0,
@@ -132,13 +132,13 @@ HandlePCOptions = function(){
     
     //When the button "Logically Block Structured" is clicked...
     $("#logstruc, #nlogstruc").change(function(){ //why still say !logstruc ???
-        matrixInformation[recursionCounter] = {
+        matInfo[recursionCounter] = {
             posdef:  document.getElementById("posdef").checked,
             symm:    document.getElementById("symm").checked,
             logstruc:document.getElementById("logstruc").checked,
         }
-        alert('logstruc='+matrixInformation[recursionCounter].logstruc);
-        DisplayPCType("fieldsplit"); //why matrixInformation[recursionCounter].logstruc is not input into $(document).on('change', '.pcLists', function()???
+        alert('logstruc='+matInfo[recursionCounter].logstruc);
+        DisplayPCType("fieldsplit"); //why matInfo[recursionCounter].logstruc is not input into $(document).on('change', '.pcLists', function()???
     });
     
     recursionCounter++;
@@ -151,8 +151,8 @@ HandlePCOptions = function(){
 	var matrixLevel = matGetLevel(recursionCounter);
 	
 	//The data from the form input is saved here
-	//Also add a flag to the matrixInformation to know if it is on screen or was skipped
-	matrixInformation[recursionCounter] = {
+	//Also add a flag to the matInfo to know if it is on screen or was skipped
+	matInfo[recursionCounter] = {
             posdef:  document.getElementById("posdef").checked,
             symm:    document.getElementById("symm").checked,
             logstruc:document.getElementById("logstruc").checked,
@@ -172,18 +172,18 @@ HandlePCOptions = function(){
         $("#o" + (recursionCounter)).append("<br><br> <font size=3 color=\"#B91A1A\"><b>Matrix \\(" + (nameOfMatrix[recursionCounter]) + "\\)</b></font>")
 	
 	//Writes more results to screen (&nbsp; is a space; they are added for typesetting purposes)
-        if (matrixInformation[recursionCounter].symm) {
+        if (matInfo[recursionCounter].symm) {
 	    $("#o" + (recursionCounter)).append("<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Symmetric");
 	} else $("#o" + (recursionCounter)).append("<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Non Symmetric");
 
-	if (matrixInformation[recursionCounter].posdef) {
+	if (matInfo[recursionCounter].posdef) {
 	    $("#o" + (recursionCounter)).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Positive Definite");
 	} else $("#o" + (recursionCounter)).append("<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Non Positive Definite");
 
-	if (matrixInformation[recursionCounter].logstruc) {
-            if (matrixInformation[recursionCounter].matLevel >= maxMatriciesLevel -1) {
-                alert("Warning: Logically block structured is not supported at matrix level "+ matrixInformation[recursionCounter].matLevel);
-                matrixInformation[recursionCounter].logstruc = false;
+	if (matInfo[recursionCounter].logstruc) {
+            if (matInfo[recursionCounter].matLevel >= maxMatriciesLevel -1) {
+                alert("Warning: Logically block structured is not supported at matrix level "+ matInfo[recursionCounter].matLevel);
+                matInfo[recursionCounter].logstruc = false;
                 $("#o" + (recursionCounter)).append("<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Not Logically Block Structured ");
             } else {
 	        $("#o" + (recursionCounter)).append("<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Logically Block Structured ");
@@ -217,7 +217,7 @@ HandlePCOptions = function(){
 	$("#pcList"+recursionCounter).trigger("change"); 
 
 	//If the matrix is logically structured, set its two children to be true, so the children will be processed
-	if (matrixInformation[recursionCounter].logstruc == true  && 2*recursionCounter+2 < maxMatricies) {
+	if (matInfo[recursionCounter].logstruc == true  && 2*recursionCounter+2 < maxMatricies) {
 	    matNode[2 * recursionCounter + 1] = true;
 	    matNode[2 * recursionCounter + 2] = true;  
 	}
@@ -232,18 +232,18 @@ HandlePCOptions = function(){
         matTreeGetNextNode(matNode);
 
         //Assign the children of a parent its inherited qualities (posdef and symm) 
-        matTreeSetChildren(currentRecursionCounter,matrixInformation);
+        matTreeSetChildren(currentRecursionCounter,matInfo);
 
         //reset the form
-        formSet(recursionCounter,matrixInformation);
+        formSet(recursionCounter,matInfo);
  
 	//If we are at the max number of matricies, hide the questions. 
 	if (recursionCounter == maxMatricies) {
-	    $("#matrixPic").html("<center>" + finalTex(matrixInformation, currentRecursionCounter) + "</center>");
+	    $("#matrixPic").html("<center>" + finalTex(matInfo, currentRecursionCounter) + "</center>");
 	    $("#questions").hide();
 	} else { // If we are not at the finish
 	    //produce the tex of the next matrix to screen
-	    $("#matrixPic").html("<center>" + tex2(matrixInformation, recursionCounter) + "</center>");
+	    $("#matrixPic").html("<center>" + tex2(matInfo, recursionCounter) + "</center>");
 	      
 	    //Change the question to ask about the specific matrix at hand
 	    $("#isYourMatrix").html("<span><b>Is your matrix \\(" + nameOfMatrix[recursionCounter] + "\\)</b ></span>");
@@ -297,11 +297,11 @@ function matGetLevel(number)
   formSet - Set Form 
   input:
     recursionCounter
-    matrixInformation
+    matInfo
   ouput:
     Form asking questions for matrix[recursionCounter]
 */
-function formSet(recursionCounter,matrixInformation)
+function formSet(recursionCounter,matInfo)
 {
     $("#posdefRow").hide();
     $("#symm").removeAttr("checked");
@@ -317,13 +317,13 @@ function formSet(recursionCounter,matrixInformation)
 
     //fill in the form if the information was previously set
     //if symmetric, fill in bubble and show posdef
-    if (matrixInformation[recursionCounter] != undefined) {
-	if (matrixInformation[recursionCounter].symm) {
+    if (matInfo[recursionCounter] != undefined) {
+	if (matInfo[recursionCounter].symm) {
 	    $("#posdefRow").show();
 	    $("#symm").prop("checked", "true");
 	}
 	//if posdef, fill in bubble
-	if (matrixInformation[recursionCounter].posdef) {
+	if (matInfo[recursionCounter].posdef) {
 	    $("#posdef").prop("checked", "true");
 	}
     }
@@ -373,10 +373,10 @@ function matSetName(maxMatricies, nameOfMatrix)
     prefix - prefix of the options in the solverTree
     recursionCounter
   output:
-    matrixInformation.string
-    matrixInformation.stringshort
+    matInfo.string
+    matInfo.stringshort
 */
-function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matrixInformation) 
+function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matInfo) 
 {
     var pcSelectedValue=$("#"+pcListID).val();
     var info      = "";
@@ -398,8 +398,8 @@ function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matrixInformation)
         var mgLevels     = $("#mglevels" + recursionCounter + myendtag).val();
 	info   += "<br />"+prefix+"pc_mg_type " + mgType + "<br />"+prefix+"pc_mg_levels " + mgLevels;
         prefix += "mg_";
-        matrixInformation[recursionCounter].string      += info;
-        matrixInformation[recursionCounter].stringshort += infoshort;
+        matInfo[recursionCounter].string      += info;
+        matInfo[recursionCounter].stringshort += infoshort;
 
         var smoothingKSP;
         var smoothingPC;
@@ -440,10 +440,10 @@ function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matrixInformation)
                     alert("Error: mg level cannot be "+level);
                 }
 
-                matrixInformation[recursionCounter].string      += info;
-                matrixInformation[recursionCounter].stringshort += infoshort;
+                matInfo[recursionCounter].string      += info;
+                matInfo[recursionCounter].stringshort += infoshort;
 
-                pcGetDetailedInfo(childID,myprefix,recursionCounter,matrixInformation);
+                pcGetDetailedInfo(childID,myprefix,recursionCounter,matInfo);
                 level--;
 	    }
         }
@@ -498,8 +498,8 @@ function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matrixInformation)
     }
 
     if  (info.length == 0) return ""; //is not a composite pc. no extra info needs to be added
-    matrixInformation[recursionCounter].string      += info;
-    matrixInformation[recursionCounter].stringshort += infoshort;
+    matInfo[recursionCounter].string      += info;
+    matInfo[recursionCounter].stringshort += infoshort;
 
     //is a composite pc so there will be a div in the next position
     var generatedDiv="";
@@ -508,7 +508,7 @@ function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matrixInformation)
     for (var i=0; i<$("#"+generatedDiv).children().length; i++) { //loop over all pcLists under this Div
 	var childID = $("#"+generatedDiv).children().get(i).id;
 	if ($("#"+childID).is(".pcLists")) {//has more pc lists that need to be taken care of recursively
-            pcGetDetailedInfo(childID,prefix,recursionCounter,matrixInformation);
+            pcGetDetailedInfo(childID,prefix,recursionCounter,matInfo);
 	}
     }
 }
@@ -540,35 +540,35 @@ function matTreeAddNode(matrixLevel, matDivCounter,recursionCounter,nameOfMatrix
 /*
   matTreeSetChildren - set the children of mat[currentRecursion] its inherited qualities (posdef and symm) 
   input:
-    recursionCounter - index of  matrixInformation
-    matrixInformation 
+    recursionCounter - index of  matInfo
+    matInfo 
   output:
-    matrixInformation 
+    matInfo 
 */
-function matTreeSetChildren(recursionCounter, matrixInformation)
+function matTreeSetChildren(recursionCounter, matInfo)
 {
-    if (matrixInformation[recursionCounter].logstruc == true && 2*recursionCounter+2 < maxMatricies) {
+    if (matInfo[recursionCounter].logstruc == true && 2*recursionCounter+2 < maxMatricies) {
         var childleft  = 2 * recursionCounter + 1;
         var childright = 2 * recursionCounter + 2;
-	matrixInformation[childleft] = {};
-	matrixInformation[childright] = {};
+	matInfo[childleft] = {};
+	matInfo[childright] = {};
 
 	//if symmetric, all children are symmetric
-	if (matrixInformation[recursionCounter].symm) {
-	    matrixInformation[childleft].symm = true;
-	    matrixInformation[childright].symm = true;
+	if (matInfo[recursionCounter].symm) {
+	    matInfo[childleft].symm = true;
+	    matInfo[childright].symm = true;
 	} else {
-            matrixInformation[childleft].symm = false;
-	    matrixInformation[childright].symm = false;
+            matInfo[childleft].symm = false;
+	    matInfo[childright].symm = false;
         }
 
 	//if positive definite, all children are positive definite
-	if (matrixInformation[recursionCounter].posdef) {
-	    matrixInformation[childleft].posdef = true;
-	    matrixInformation[childright].posdef = true;
+	if (matInfo[recursionCounter].posdef) {
+	    matInfo[childleft].posdef = true;
+	    matInfo[childright].posdef = true;
 	} else {
-            matrixInformation[childleft].posdef = false;
-	    matrixInformation[childright].posdef = false;
+            matInfo[childleft].posdef = false;
+	    matInfo[childright].posdef = false;
         }
     }
 }
@@ -598,17 +598,17 @@ function matTreeGetNextNode(matNode)
 /*
   solverGetOptions - get the options from the drop-down lists
   input:
-    matrixInformation
+    matInfo
   output:
-    matrixInformation[].string stores collected solver options
-    matrixInformation[].stringshort
+    matInfo[].string stores collected solver options
+    matInfo[].stringshort
 */
-function solverGetOptions(matrixInformation)
+function solverGetOptions(matInfo)
 {
     var prefix,kspSelectedValue,pcSelectedValue,level;
 
     for (var i = 0; i<maxMatricies; i++) {
-	if (typeof matrixInformation[i] != 'undefined') {
+	if (typeof matInfo[i] != 'undefined') {
 	    //get the ksp and pc options at the topest solver-level
 	    kspSelectedValue = $("#kspList" + i).val();
 	    pcSelectedValue  = $("#pcList" + i).val();
@@ -616,9 +616,9 @@ function solverGetOptions(matrixInformation)
             //get prefix 
             prefix = "-";
             // for pc=fieldsplit
-            for (level=1; level<=matrixInformation[i].matLevel; level++) {
-                if (level == matrixInformation[i].matLevel) {
-                    prefix += "fieldsplit_A"+i+"_"; // matrixInformation[i].name
+            for (level=1; level<=matInfo[i].matLevel; level++) {
+                if (level == matInfo[i].matLevel) {
+                    prefix += "fieldsplit_A"+i+"_"; // matInfo[i].name
                 } else { 
                     var parent = Math.floor((i-1)/2);
                     var parentLevel = matGetLevel(parent);
@@ -631,11 +631,11 @@ function solverGetOptions(matrixInformation)
             }
 
 	    //together, with the name, make a full string for printing
-            matrixInformation[i].string = ("\\(" + matrixInformation[i].name + "\\) <br /> "+prefix+"ksp_type " + kspSelectedValue + "<br />"+prefix+"pc_type " + pcSelectedValue);
-            matrixInformation[i].stringshort = ("\\(" + matrixInformation[i].name + "\\) <br /> KSP: " + kspSelectedValue + "; PC: " + pcSelectedValue);
+            matInfo[i].string = ("\\(" + matInfo[i].name + "\\) <br /> "+prefix+"ksp_type " + kspSelectedValue + "<br />"+prefix+"pc_type " + pcSelectedValue);
+            matInfo[i].stringshort = ("\\(" + matInfo[i].name + "\\) <br /> KSP: " + kspSelectedValue + "; PC: " + pcSelectedValue);
 
             // for composite pc, get additional info from the rest of pcLists
-            pcGetDetailedInfo("pcList"+ i,prefix,i,matrixInformation);
+            pcGetDetailedInfo("pcList"+ i,prefix,i,matInfo);
 	}
     }
 }

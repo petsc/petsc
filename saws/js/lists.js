@@ -71,9 +71,12 @@ function populateKspList(listId,listVals,defaultVal)
         $(list).find("option[value=" + defaultVal +"]").attr("selected","selected"); 
     } else {
         var recursionCounter = oDivGetRecursionCounter(listId);
-        if (recursionCounter >-1 && matrixInformation[recursionCounter].symm && !matrixInformation[recursionCounter].posdef) {
+        if (matInfo[recursionCounter].symm == undefined) {
+            alert("Warning: matInfo["+recursionCounter+"].symm is undefined!");
+            $(list).find("option[value='gmres']").attr("selected","selected");
+        } else if (matInfo[recursionCounter].symm && !matInfo[recursionCounter].posdef) {
 	    $(list).find("option[value='minres']").attr("selected","selected");
-        } else if (recursionCounter >-1 && matrixInformation[recursionCounter].symm && matrixInformation[recursionCounter].posdef) {
+        } else if (matInfo[recursionCounter].symm && matInfo[recursionCounter].posdef) {
 	    $(list).find("option[value='cg']").attr("selected","selected");
         } else {
 	    $(list).find("option[value='gmres']").attr("selected","selected");
@@ -133,17 +136,22 @@ function populatePcList(listId,listVals,defaultVal)
 
     //set default pc_type
     var recursionCounter = oDivGetRecursionCounter(listId);
-    if (matrixInformation[recursionCounter] === undefined || !matrixInformation[recursionCounter].logstruc) {
-        if (matrixInformation[recursionCounter] === undefined) 
-            alert("Warning: matrixInformation["+recursionCounter+"] is undefined!");
+    if (matInfo[recursionCounter].logstruc == undefined) {
+        alert("Warning: matInfo["+recursionCounter+"].logstruc is undefined!");
         if (defaultVal == "null") {
 	    $(list).find("option[value='bjacobi']").attr("selected","selected");  
         } else {
             $(list).find("option[value=" + defaultVal +"]").attr("selected","selected"); 
         }
-    } else if (matrixInformation[recursionCounter].logstruc) {
+    } else if (matInfo[recursionCounter].logstruc) {
 	$(list).find("option[value='fieldsplit']").attr("selected","selected");
-    } 
+    } else { //!matInfo[recursionCounter].logstruc
+        if (defaultVal == "null") {
+	    $(list).find("option[value='bjacobi']").attr("selected","selected");  
+        } else {
+            $(list).find("option[value=" + defaultVal +"]").attr("selected","selected"); 
+        }
+    }
 }
 
 /*
