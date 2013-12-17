@@ -48,7 +48,7 @@ PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *d
     *dm  = interpolatedMesh;
   }
   ierr = PetscObjectSetName((PetscObject) *dm, "Input Mesh");CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -82,8 +82,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     ierr = DMPlexGetDimension(options->dm, &dim);CHKERRQ(ierr);
     ierr = DMPlexGetHeightStratum(options->dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
     numCells = cEnd-cStart;
-    ierr = PetscMalloc7(numCells*dim,PetscReal,&options->v0,numCells*dim*dim,PetscReal,&options->J,numCells*dim*dim,PetscReal,&options->invJ,numCells,PetscReal,&options->detJ,
-                        numCells*dim,PetscReal,&options->centroid,numCells*dim,PetscReal,&options->normal,numCells,PetscReal,&options->vol);CHKERRQ(ierr);
+    ierr = PetscMalloc7(numCells*dim,&options->v0,numCells*dim*dim,&options->J,numCells*dim*dim,&options->invJ,numCells,&options->detJ,
+                        numCells*dim,&options->centroid,numCells*dim,&options->normal,numCells,&options->vol);CHKERRQ(ierr);
     n    = numCells*dim;
     ierr = PetscOptionsRealArray("-v0", "Input v0 for each cell", "ex8.c", options->v0, &n, &flag);CHKERRQ(ierr);
     if (flag && n != numCells*dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid size of v0 %d should be %d", n, numCells*dim);
@@ -124,7 +124,7 @@ PetscErrorCode ChangeCoordinates(DM dm, PetscInt spaceDim, PetscScalar vertexCoo
 
   PetscFunctionBegin;
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldComponents(coordSection, 0, spaceDim);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(coordSection, vStart, vEnd);CHKERRQ(ierr);
@@ -150,7 +150,7 @@ PetscErrorCode ChangeCoordinates(DM dm, PetscInt spaceDim, PetscScalar vertexCoo
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dm, coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -234,7 +234,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
       ierr = DMDestroy(&dm);CHKERRQ(ierr);
       dm   = idm;
     }
-    ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+    ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
   }
   /* Check reference geometry: determinant is scaled by reference volume (2.0) */
   {
@@ -500,7 +500,7 @@ PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool
       ierr = DMDestroy(&dm);CHKERRQ(ierr);
       dm   = idm;
     }
-    ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+    ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
   }
   /* Check reference geometry: determinant is scaled by reference volume (2.0) */
   {
@@ -751,7 +751,7 @@ PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool t
       ierr = DMDestroy(&dm);CHKERRQ(ierr);
       dm   = idm;
     }
-    ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+    ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
   }
   /* Check reference geometry: determinant is scaled by reference volume (4/3) */
   {
@@ -895,7 +895,7 @@ PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, PetscBool tr
       ierr = DMDestroy(&dm);CHKERRQ(ierr);
       dm   = idm;
     }
-    ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+    ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
   }
   /* Check reference geometry: determinant is scaled by reference volume 8.0 */
   {
