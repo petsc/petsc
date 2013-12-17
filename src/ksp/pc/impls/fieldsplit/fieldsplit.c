@@ -1804,10 +1804,11 @@ PetscErrorCode  PCFieldSplitGetDMSplits(PC pc,PetscBool* flg)
 $     For the Schur complement preconditioner if J = ( A00 A01 )
 $                                                    ( A10 A11 )
 $     the preconditioner using full factorization is
-$              ( I   -A10 ksp(A00) ) ( inv(A00)     0  ) (     I          0  )
+$              ( I   -ksp(A00) A01 ) ( inv(A00)     0  ) (     I          0  )
 $              ( 0         I       ) (   0      ksp(S) ) ( -A10 ksp(A00)  I  )
-     where the action of inv(A00) is applied using the KSP solver with prefix -fieldsplit_0_. The action of
-     ksp(S) is computed using the KSP solver with prefix -fieldsplit_splitname_ (where splitname was given
+     where the action of inv(A00) is applied using the KSP solver with prefix -fieldsplit_0_.  S is the Schur complement
+$              S = A11 - A10 ksp(A00) A01
+     which is usually dense and not stored explicitly.  The action of ksp(S) is computed using the KSP solver with prefix -fieldsplit_splitname_ (where splitname was given
      in providing the SECOND split or 1 if not give). For PCFieldSplitGetKSP() when field number is 0,
      it returns the KSP associated with -fieldsplit_0_ while field number 1 gives -fieldsplit_1_ KSP. By default
      A11 is used to construct a preconditioner for S, use PCFieldSplitSchurPrecondition() to turn on or off this
