@@ -27,6 +27,11 @@ var matrixPicFlag = 0;
 var currentRecursionCounter = 0;
 var recursionCounter        = 0;
 
+//counter of SAWs recursions for '-pc_type'
+var recursionCounterSAWs = 0;
+var currentRrecursionCounterSAWs = 0;
+var sawsInfo = [];
+
 //Counter for creating the new divs for the tree
 var matDivCounter = 0;
 
@@ -51,9 +56,10 @@ DisplayPCType = function(defl) {
 
 //GetAndDisplayDirectory: modified from PETSc.getAndDisplayDirectory 
 GetAndDisplayDirectory = function(names,divEntry){
-    //alert("1. GetAndDisplayDirectory: name="+name+"; divEntry="+divEntry);
+    //alert("1_start. GetAndDisplayDirectory: name="+name+"; divEntry="+divEntry+"; recursionCounterSAWs="+recursionCounterSAWs);
     jQuery(divEntry).html(""); //Get the HTML contents of the first element in the set of matched elements
-    SAWs.getDirectory(names,DisplayDirectory,divEntry)
+    SAWs.getDirectory(names,DisplayDirectory,divEntry);
+    //alert("1_end. recursionCounterSAWs "+recursionCounterSAWs);
 }
 
 //DisplayDirectory: modified from PETSc.displayDirectory
@@ -86,6 +92,12 @@ DisplayDirectory = function(sub,divEntry)
         populatePcList("pcList-1"+SAWs_prefix,SAWs_alternatives,SAWs_pcVal);
         //alert("Preconditioner (PC) options, SAWs_pcVal "+SAWs_pcVal+", SAWs_prefix "+SAWs_prefix);
 
+        sawsInfo[recursionCounterSAWs] = {
+            prefix: SAWs_prefix
+        }
+        recursionCounterSAWs++;
+        //alert("pc: recursionCounterSAWs "+recursionCounterSAWs);
+
         if (SAWs_pcVal == 'bjacobi') {
             var SAWs_bjacobi_blocks = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_bjacobi_blocks"].data[0];
             //alert("SAWs_bjacobi_blocks "+SAWs_bjacobi_blocks);
@@ -107,6 +119,7 @@ DisplayDirectory = function(sub,divEntry)
 
     //alert('call SAWs.displayDirectoryRecursive...');
     SAWs.displayDirectoryRecursive(sub.directories,divEntry,0,"")
+    
 }
 
 //When pcoptions.html is loaded ...
@@ -127,8 +140,10 @@ HandlePCOptions = function(){
     //create div 'o-1' for displaying SAWs options
     $("#divPc").append("<div id=\"o"+recursionCounter+"\"> </div>");
     
-    // get SAWs options 
+    // get and display SAWs options 
+    recursionCounterSAWs = 0;
     GetAndDisplayDirectory("","#variablesInfo"); //interfere $("#logstruc, #nlogstruc").change(function() ???
+    //alert("after GetAndDisplayDirectory, recursionCounterSAWs "+recursionCounterSAWs);
     
     //When the button "Logically Block Structured" is clicked...
     $("#logstruc, #nlogstruc").change(function(){ //why still say !logstruc ???
@@ -144,7 +159,8 @@ HandlePCOptions = function(){
     recursionCounter++;
 
     $("#continueButton").click(function(){
-        //alert(recursionCounter);
+        //alert("recursionCounter "+recursionCounter);
+        //alert("recursionCounterSAWs "+recursionCounterSAWs+"; prefix="+sawsInfo[0].prefix+" "+sawsInfo[recursionCounterSAWs-1].prefix);
 
 	//matrixLevel is how many matrices deep the data is. 0 is the overall matrix, 
 	// 1 would be 4 blocks, 2 would be 10 blocks, 3 would be 20 blocks, etc
@@ -205,11 +221,17 @@ HandlePCOptions = function(){
 	$("#pcList" + recursionCounter).data("parentFieldSplit",true);
 
 	//populate the kspList[recursionCounter] and pclist[recursionCounter] with default options
-        populateKspList("kspList"+recursionCounter,null,"null");
-        if (recursionCounter == 0) {
-            var pcVal = $("#pcList-1").val(); //Get pctype from the drop-down pcList-1
-	    populatePcList("pcList"+recursionCounter,null,pcVal);
+        if (recursionCounter == 0) { //use SAWs options
+            var SAWs_kspVal = $("#kspList-1").val(); 
+            //SAWs_alternatives ???
+            populateKspList("kspList"+recursionCounter,null,SAWs_kspVal);
+
+            var SAWs_pcVal = $("#pcList-1").val(); //Get pctype from the drop-down pcList-1
+            //SAWs_alternatives ???
+	    populatePcList("pcList"+recursionCounter,null,SAWs_pcVal);
+            currentRecursionCounterSAWs = 1;
         } else {
+            populateKspList("kspList"+recursionCounter,null,"null");
             populatePcList("pcList"+recursionCounter,null,"null");
         }
 

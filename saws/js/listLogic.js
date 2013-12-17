@@ -27,7 +27,7 @@ $(document).on('change', '.pcLists', function(){
     while (parent.indexOf('_') != -1)
 	parent=$("#"+parent).parent().get(0).id;
     parent = parent.substring(1, parent.length);  //parent=matrix recursion counter b/c resursion counter is not in this scope
-    //alert('parentDiv '+ parentDiv + '; parent '+parent + '; pcValue '+pcValue +'; this.id '+ this.id);
+    //alert('parentDiv '+ parentDiv + '; parent '+parent + '; pcValue '+pcValue +'; this.id '+ this.id+'; recursionCounterSAWs '+recursionCounterSAWs);
     //alert('logstruc='+matInfo[parent].logstruc);
 
     // if pcValue is changed to !fieldsplit for logically structured matrix
@@ -133,15 +133,30 @@ $(document).on('change', '.pcLists', function(){
 	$("#"+newDiv).append("<b>Bjacobi blocks </b><input type='text' id='bjacobiBlocks"+parent+myendtag+"\' value='np' maxlength='4' class='processorInput'>"); // use style='margin-left:30px;'
 	$("#"+newDiv).append("<br><b>Bjacobi KSP   &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+parent+myendtag+"\"></select>");
 	$("#"+newDiv).append("<br><b>Bjacobi PC   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList"+parent+myendtag+"\"></select>");
-	populateKspList("kspList"+parent+myendtag,null,"null");
-        populatePcList("pcList"+parent+myendtag,null,"null");
+        if (recursionCounter == 0) { //use SAWs options
+            var prefix = sawsInfo[currentRecursionCounterSAWs].prefix;
+            var SAWs_kspVal = $("#kspList-1"+prefix).val(); 
+            var SAWs_pcVal = $("#pcList-1"+prefix).val(); 
+            //alternative???
+            populateKspList("kspList"+parent+myendtag,null,SAWs_kspVal);
+            populatePcList("pcList"+parent+myendtag,null,SAWs_pcVal);
+            //alert("bjacobi: prefix="+prefix+"; SAWs_kspVal="+SAWs_kspVal+"; SAWs_pcVal="+SAWs_pcVal+"; currentRecursionCounterSAWs="+currentRecursionCounterSAWs);
+            currentRecursionCounterSAWs++;
+            //manually trigger pclist once 
+	    $("#pcList"+parent+myendtag).trigger("change");
+        } else {
+	    populateKspList("kspList"+parent+myendtag,null,"null");
+            populatePcList("pcList"+parent+myendtag,null,"null");
+        }
 
 	//set defaults for bjacobi
-	$("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
-        if (matInfo[parent].symm) {
-            $("#pcList"+parent+myendtag).find("option[value='icc']").attr("selected","selected");
-        } else {
-	    $("#pcList"+parent+myendtag).find("option[value='ilu']").attr("selected","selected");
+        if (recursionCounter){
+	    $("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
+            if (matInfo[parent].symm) {
+                $("#pcList"+parent+myendtag).find("option[value='icc']").attr("selected","selected");
+            } else {
+	        $("#pcList"+parent+myendtag).find("option[value='ilu']").attr("selected","selected");
+            }
         }
 
         // if parentDiv = bjacobi, it is a Hierarchical Krylov method, display an image for illustration
