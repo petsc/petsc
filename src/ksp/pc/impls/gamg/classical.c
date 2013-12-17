@@ -1038,7 +1038,7 @@ PetscErrorCode PCGAMGSetFromOptions_Classical(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("GAMG-Classical options");CHKERRQ(ierr);
-  ierr = PetscOptionsList("-pc_gamg_classical_type","Type of Classical AMG prolongation",
+  ierr = PetscOptionsFList("-pc_gamg_classical_type","Type of Classical AMG prolongation",
                           "PCGAMGClassicalSetType",PCGAMGClassicalProlongatorList,cls->prolongtype, tname, sizeof(tname), &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCGAMGClassicalSetType(pc,tname);CHKERRQ(ierr);
