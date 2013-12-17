@@ -164,7 +164,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
         uy      = (x[j+1][i] - x[j][i])/hy;
         uxx     = (2.0*u - x[j][i-1] - x[j][i+1])*hydhx;
         uyy     = (2.0*u - x[j-1][i] - x[j+1][i])*hxdhy;
-        f[j][i] = D*(uxx + uyy) - (K*funcA(x[j][i], user)*sqrt(ux*ux + uy*uy) + funcU(&coords[j][i]))*hx*hy;
+        f[j][i] = D*(uxx + uyy) - (K*funcA(x[j][i], user)*PetscSqrtScalar(ux*ux + uy*uy) + funcU(&coords[j][i]))*hx*hy;
         if (PetscIsInfOrNanScalar(f[j][i])) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FP, "Invalid residual: %g", PetscRealPart(f[j][i]));
       }
     }
@@ -217,7 +217,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
         /* interior grid points */
         ux        = (x[j][i+1] - x[j][i])/hx;
         uy        = (x[j+1][i] - x[j][i])/hy;
-        normGradZ = PetscRealPart(sqrt(ux*ux + uy*uy));
+        normGradZ = PetscRealPart(PetscSqrtScalar(ux*ux + uy*uy));
         /* PetscPrintf(PETSC_COMM_SELF, "i: %d j: %d normGradZ: %g\n", i, j, normGradZ); */
         if (normGradZ < 1.0e-8) normGradZ = 1.0e-8;
         A = funcA(x[j][i], user);

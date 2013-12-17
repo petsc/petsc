@@ -688,7 +688,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts)
   ierr = SNESGetType(snes,&stype);CHKERRQ(ierr);
   if (!stype) {ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);}
 
-  ierr = PetscNewLog(ts,TS_Pseudo,&pseudo);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&pseudo);CHKERRQ(ierr);
   ts->data = (void*)pseudo;
 
   pseudo->dt_increment                 = 1.1;

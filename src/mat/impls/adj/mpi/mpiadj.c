@@ -120,7 +120,7 @@ PetscErrorCode MatMarkDiagonal_MPIAdj(Mat A)
   PetscInt       i,j,m = A->rmap->n;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(m*sizeof(PetscInt),&a->diag);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&a->diag);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)A,m*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<A->rmap->n; i++) {
     for (j=a->i[i]; j<a->i[i+1]; j++) {
@@ -151,7 +151,7 @@ PetscErrorCode MatGetRow_MPIAdj(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,P
     if (a->rowvalues_alloc < *nz) {
       ierr = PetscFree(a->rowvalues);CHKERRQ(ierr);
       a->rowvalues_alloc = PetscMax(a->rowvalues_alloc*2, *nz);
-      ierr = PetscMalloc(a->rowvalues_alloc*sizeof(PetscScalar),&a->rowvalues);CHKERRQ(ierr);
+      ierr = PetscMalloc1(a->rowvalues_alloc,&a->rowvalues);CHKERRQ(ierr);
     }
     for (j=0; j<*nz; j++) a->rowvalues[j] = a->values[a->i[row]+j];
     *v = (*nz) ? a->rowvalues : NULL;
@@ -261,9 +261,9 @@ PetscErrorCode  MatConvertFrom_MPIAdj(Mat A,MatType type,MatReuse reuse,Mat *new
   }
 
   /* malloc space for nonzeros */
-  ierr = PetscMalloc((nzeros+1)*sizeof(PetscInt),&a);CHKERRQ(ierr);
-  ierr = PetscMalloc((N+1)*sizeof(PetscInt),&ia);CHKERRQ(ierr);
-  ierr = PetscMalloc((nzeros+1)*sizeof(PetscInt),&ja);CHKERRQ(ierr);
+  ierr = PetscMalloc1((nzeros+1),&a);CHKERRQ(ierr);
+  ierr = PetscMalloc1((N+1),&ia);CHKERRQ(ierr);
+  ierr = PetscMalloc1((nzeros+1),&ja);CHKERRQ(ierr);
 
   nzeros = 0;
   ia[0]  = 0;
@@ -505,7 +505,7 @@ static PetscErrorCode MatMPIAdjCreateNonemptySubcommMat_MPIAdj(Mat A,Mat *B)
     PetscFunctionReturn(0);
   }
 
-  ierr = PetscMalloc(nranks*sizeof(PetscMPIInt),&ranks);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nranks,&ranks);CHKERRQ(ierr);
   for (i=0,nranks=0; i<size; i++) {
     if (ranges[i+1] - ranges[i] > 0) ranks[nranks++] = i;
   }
@@ -577,7 +577,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscNewLog(B,Mat_MPIAdj,&b);CHKERRQ(ierr);
+  ierr         = PetscNewLog(B,&b);CHKERRQ(ierr);
   B->data      = (void*)b;
   ierr         = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->assembled = PETSC_FALSE;

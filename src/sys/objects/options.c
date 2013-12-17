@@ -199,6 +199,7 @@ PetscErrorCode  PetscOptionsStringToScalar(const char name[],PetscScalar *a)
       ierr = PetscTokenFind(token,&tvalue);CHKERRQ(ierr);
       if (!tvalue) {
         *a = re;
+        ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }
       ierr = PetscStrlen(tvalue,&len);CHKERRQ(ierr);
@@ -206,7 +207,6 @@ PetscErrorCode  PetscOptionsStringToScalar(const char name[],PetscScalar *a)
       tvalue[len-1] = 0;
       ierr = PetscOptionsStringToReal(tvalue,&im);CHKERRQ(ierr);
       if (negim) im = -im;
-      ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
     } else {
       ierr = PetscStrstr(name,"i",&tvalue);CHKERRQ(ierr);
       if (tvalue) {
@@ -216,6 +216,7 @@ PetscErrorCode  PetscOptionsStringToScalar(const char name[],PetscScalar *a)
         ierr = PetscOptionsStringToReal(name,&re);CHKERRQ(ierr);
       }
     }
+    ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
     *a = re + im*PETSC_i;
 #else
@@ -545,7 +546,7 @@ destroy:
       ierr = PetscMPIIntCast(bytes,&cnt);CHKERRQ(ierr);
       ierr = PetscSegBufferGet(vseg,1,&vstring);CHKERRQ(ierr);
       vstring[0] = 0;
-      ierr = PetscMalloc((2+acnt+cnt)*sizeof(char),&packed);CHKERRQ(ierr);
+      ierr = PetscMalloc1((2+acnt+cnt),&packed);CHKERRQ(ierr);
       ierr = PetscSegBufferExtractTo(aseg,packed);CHKERRQ(ierr);
       ierr = PetscSegBufferExtractTo(vseg,packed+acnt+1);CHKERRQ(ierr);
       ierr = PetscSegBufferDestroy(&aseg);CHKERRQ(ierr);
@@ -559,7 +560,7 @@ destroy:
   acnt = counts[0];
   cnt = counts[1];
   if (rank) {
-    ierr = PetscMalloc((2+acnt+cnt)*sizeof(char),&packed);CHKERRQ(ierr);
+    ierr = PetscMalloc1((2+acnt+cnt),&packed);CHKERRQ(ierr);
   }
   if (acnt || cnt) {
     ierr = MPI_Bcast(packed,2+acnt+cnt,MPI_CHAR,0,comm);CHKERRQ(ierr);
@@ -728,7 +729,7 @@ PetscErrorCode  PetscOptionsInsert(int *argc,char ***args,const char file[])
     } else {
       ierr = MPI_Bcast(&len,1,MPIU_SIZE_T,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
       if (len) {
-        ierr = PetscMalloc((len+1)*sizeof(char*),&eoptions);CHKERRQ(ierr);
+        ierr = PetscMalloc1((len+1),&eoptions);CHKERRQ(ierr);
       }
     }
     if (len) {
@@ -838,7 +839,7 @@ PetscErrorCode  PetscOptionsGetAll(char *copts[])
       len += 1 + lent;
     }
   }
-  ierr = PetscMalloc(len*sizeof(char),&coptions);CHKERRQ(ierr);
+  ierr = PetscMalloc1(len,&coptions);CHKERRQ(ierr);
   coptions[0] = 0;
   for (i=0; i<options->N; i++) {
     ierr = PetscStrcat(coptions,"-");CHKERRQ(ierr);
@@ -1507,7 +1508,7 @@ PetscErrorCode  PetscOptionsGetEList(const char pre[],const char opt[],const cha
     if (alen > len) len = alen;
   }
   len += 5; /* a little extra space for user mistypes */
-  ierr = PetscMalloc(len*sizeof(char),&svalue);CHKERRQ(ierr);
+  ierr = PetscMalloc1(len,&svalue);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(pre,opt,svalue,len,&aset);CHKERRQ(ierr);
   if (aset) {
     ierr = PetscEListFind(ntext,list,svalue,value,&flg);CHKERRQ(ierr);
@@ -2490,5 +2491,46 @@ PetscErrorCode  PetscOptionsMonitorCancel(void)
     }
   }
   options->numbermonitors = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectViewFromOptions"
+/*
+  PetscObjectViewFromOptions - Processes command line options to determine if/how a PetscObject is to be viewed. 
+
+  Collective on PetscObject
+
+  Input Parameters:
++ obj   - the object
+. prefix - prefix to use for viewing, or NULL to use the prefix of obj
+- optionname - option to activate viewing
+
+  Level: intermediate
+
+*/
+PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,const char prefix[],const char optionname[])
+{
+  PetscErrorCode    ierr;
+  PetscViewer       viewer;
+  PetscBool         flg;
+  static PetscBool  incall = PETSC_FALSE;
+  PetscViewerFormat format;
+
+  PetscFunctionBegin;
+  if (incall) PetscFunctionReturn(0);
+  incall = PETSC_TRUE;
+  if (prefix) {
+    ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  } else {
+    ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),((PetscObject)obj)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  }
+  if (flg) {
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+    ierr = PetscObjectView(obj,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+  incall = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

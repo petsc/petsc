@@ -222,7 +222,7 @@ PETSC_EXTERN PetscErrorCode MatCreateMFFD_WP(MatMFFD ctx)
 
   PetscFunctionBegin;
   /* allocate my own private data structure */
-  ierr               = PetscNewLog(ctx,MatMFFD_WP,&hctx);CHKERRQ(ierr);
+  ierr               = PetscNewLog(ctx,&hctx);CHKERRQ(ierr);
   ctx->hctx          = (void*)hctx;
   hctx->computenormU = PETSC_FALSE;
 

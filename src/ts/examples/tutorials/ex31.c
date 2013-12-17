@@ -36,6 +36,9 @@ List of cases and their names in the code:-
 */
 
 #include <petscts.h>
+#if defined(PETSC_HAVE_STRING_H)
+#include <string.h>             /* strcmp */
+#endif
 
 /* Function declarations */
 PetscErrorCode (*RHSFunction) (TS,PetscReal,Vec,Vec,void*);
@@ -45,7 +48,7 @@ PetscErrorCode (*IJacobian)   (TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStruc
 #undef __FUNCT__
 #define __FUNCT__ "GetSize"
 /* Returns the size of the system of equations depending on problem specification */
-PetscInt GetSize(char *p)
+PetscInt GetSize(const char *p)
 {
   PetscFunctionBegin;
   if      ((!strcmp(p,"hull1972a1"))
@@ -414,7 +417,7 @@ PetscErrorCode RHSFunction_Hull1972B2(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = -y[0] + y[1];
-  f[1] = y[0] - 2*y[1] + y[2];
+  f[1] = y[0] - 2.0*y[1] + y[2];
   f[2] = y[1] - y[2];
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
@@ -432,7 +435,7 @@ PetscErrorCode IFunction_Hull1972B2(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = -y[0] + y[1];
-  f[1] = y[0] - 2*y[1] + y[2];
+  f[1] = y[0] - 2.0*y[1] + y[2];
   f[2] = y[1] - y[2];
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
@@ -535,9 +538,9 @@ PetscErrorCode RHSFunction_Hull1972B4(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  f[0] = -y[1] - y[0]*y[2]/PetscSqrtReal(y[0]*y[0]+y[1]*y[1]);
-  f[1] =  y[0] - y[1]*y[2]/PetscSqrtReal(y[0]*y[0]+y[1]*y[1]);
-  f[2] = y[0]/PetscSqrtReal(y[0]*y[0]+y[1]*y[1]);
+  f[0] = -y[1] - y[0]*y[2]/PetscSqrtScalar(y[0]*y[0]+y[1]*y[1]);
+  f[1] =  y[0] - y[1]*y[2]/PetscSqrtScalar(y[0]*y[0]+y[1]*y[1]);
+  f[2] = y[0]/PetscSqrtScalar(y[0]*y[0]+y[1]*y[1]);
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -553,9 +556,9 @@ PetscErrorCode IFunction_Hull1972B4(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  f[0] = -y[1] - y[0]*y[2]/PetscSqrtReal(y[0]*y[0]+y[1]*y[1]);
-  f[1] =  y[0] - y[1]*y[2]/PetscSqrtReal(y[0]*y[0]+y[1]*y[1]);
-  f[2] = y[0]/PetscSqrtReal(y[0]*y[0]+y[1]*y[1]);
+  f[0] = -y[1] - y[0]*y[2]/PetscSqrtScalar(y[0]*y[0]+y[1]*y[1]);
+  f[1] =  y[0] - y[1]*y[2]/PetscSqrtScalar(y[0]*y[0]+y[1]*y[1]);
+  f[2] = y[0]/PetscSqrtScalar(y[0]*y[0]+y[1]*y[1]);
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   /* Left hand side = ydot - f(y) */
@@ -574,8 +577,8 @@ PetscErrorCode IJacobian_Hull1972B4(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
 
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-  fac  = PetscPowReal(y[0]*y[0]+y[1]*y[1],-1.5);
-  fac2 = PetscPowReal(y[0]*y[0]+y[1]*y[1],-0.5);
+  fac  = PetscPowScalar(y[0]*y[0]+y[1]*y[1],-1.5);
+  fac2 = PetscPowScalar(y[0]*y[0]+y[1]*y[1],-0.5);
   value[0][0] = a + (y[1]*y[1]*y[2])*fac;
   value[0][1] = 1.0 - (y[0]*y[1]*y[2])*fac;
   value[0][2] = y[0]*fac2;
@@ -827,9 +830,9 @@ PetscErrorCode RHSFunction_Hull1972C34(TS ts, PetscReal t, Vec Y, Vec F, void *s
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = -2.0*y[0] + y[1];
   for (i = 1; i < N-1; i++) {
-    f[i] = y[i-1] - 2*y[i] + y[i+1];
+    f[i] = y[i-1] - 2.0*y[i] + y[i+1];
   }
-  f[N-1] = y[N-2] - 2*y[N-1];
+  f[N-1] = y[N-2] - 2.0*y[N-1];
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -849,9 +852,9 @@ PetscErrorCode IFunction_Hull1972C34(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F,
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = -2.0*y[0] + y[1];
   for (i = 1; i < N-1; i++) {
-    f[i] = y[i-1] - 2*y[i] + y[i+1];
+    f[i] = y[i-1] - 2.0*y[i] + y[i+1];
   }
-  f[N-1] = y[N-2] - 2*y[N-1];
+  f[N-1] = y[N-2] - 2.0*y[N-1];
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   /* Left hand side = ydot - f(y) */
@@ -902,7 +905,7 @@ PetscErrorCode Initialize(Vec Y, void* s)
   PetscErrorCode ierr;
   char          *p = (char*) s;
   PetscScalar   *y;
-  PetscInt      N = GetSize(s);
+  PetscInt      N = GetSize((const char *)s);
   PetscBool     flg;
 
   PetscFunctionBegin;
@@ -985,8 +988,8 @@ PetscErrorCode Initialize(Vec Y, void* s)
     IJacobian   = IJacobian_Hull1972C34;
   }
   ierr = PetscOptionsGetScalarArray(PETSC_NULL,"-yinit",y,&N,&flg);CHKERRQ(ierr);
-  if ((N != GetSize(s)) && flg) {
-    printf("Error: number of initial values %d does not match problem size %d.\n",N,GetSize(s));
+  if ((N != GetSize((const char*)s)) && flg) {
+    printf("Error: number of initial values %d does not match problem size %d.\n",(int)N,(int)GetSize((const char*)s));
   }
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1004,22 +1007,22 @@ PetscErrorCode ExactSolution(Vec Y, void* s, PetscReal t, PetscBool *flag)
   PetscFunctionBegin;
   if (!strcmp(p,"hull1972a1")) {
     ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    y[0] = PetscExpReal(-t);
+    y[0] = PetscExpScalar(-t);
     *flag = PETSC_TRUE;
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else if (!strcmp(p,"hull1972a2")) {
     ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    y[0] = 1.0/PetscSqrtReal(t+1);
+    y[0] = 1.0/PetscSqrtScalar(t+1);
     *flag = PETSC_TRUE;
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else if (!strcmp(p,"hull1972a3")) {
     ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    y[0] = PetscExpReal(sin(t));
+    y[0] = PetscExpScalar(sin(t));
     *flag = PETSC_TRUE;
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else if (!strcmp(p,"hull1972a4")) {
     ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    y[0] = 20.0/(1+19.0*PetscExpReal(-t/4.0));
+    y[0] = 20.0/(1+19.0*PetscExpScalar(-t/4.0));
     *flag = PETSC_TRUE;
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else {
@@ -1043,7 +1046,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   Mat             Jac = NULL;       /* Jacobian matrix                        */
 
   PetscFunctionBegin;
-  N = GetSize(&ptype[0]);
+  N = GetSize((const char *)&ptype[0]);
   if (N < 0) {
     printf("Error: Illegal problem specification.\n");
     return(0);
@@ -1111,13 +1114,13 @@ int main(int argc, char **argv)
   PetscErrorCode  ierr;                       /* Error code                                           */
   char            ptype[256] = "hull1972a1";  /* Problem specification                                */
   PetscInt        n_refine   = 1;             /* Number of refinement levels for convergence analysis */
-  PetscReal     refine_fac = 2.0;           /* Refinement factor for dt                             */
+  PetscReal       refine_fac = 2.0;           /* Refinement factor for dt                             */
   PetscReal       dt_initial = 0.01;          /* Initial default value of dt                          */
   PetscReal       dt;
   PetscReal       tfinal     = 20.0;          /* Final time for the time-integration                  */
   PetscInt        maxiter    = 100000;        /* Maximum number of time-integration iterations        */
   PetscReal       *error;                     /* Array to store the errors for convergence analysis   */
-  PetscInt        nproc;                      /* No of processors                                     */
+  PetscMPIInt     size;                      /* No of processors                                     */
   PetscBool       flag;                       /* Flag denoting availability of exact solution         */
   PetscInt        r;
 
@@ -1125,8 +1128,8 @@ int main(int argc, char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* Check if running with only 1 proc */
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
-  if (nproc>1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size>1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
   ierr = PetscOptionsString("-problem","Problem specification","<hull1972a1>",
                             ptype,ptype,sizeof(ptype),PETSC_NULL);CHKERRQ(ierr);
@@ -1139,7 +1142,7 @@ int main(int argc, char **argv)
   ierr = PetscOptionsReal("-final_time","Final time for the time-integration","<20.0>",
                           tfinal,&tfinal,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(n_refine*sizeof(PetscReal),&error);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n_refine,&error);CHKERRQ(ierr);
   for (r = 0,dt = dt_initial; r < n_refine; r++) {
     error[r] = 0;
     if (r > 0) dt /= refine_fac;

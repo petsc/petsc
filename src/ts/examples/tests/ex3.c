@@ -95,7 +95,7 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(appctx.Amat);CHKERRQ(ierr);
   ierr = MatSetUp(appctx.Amat);CHKERRQ(ierr);
   /* set space grid points - interio points only! */
-  ierr = PetscMalloc((nz+1)*sizeof(PetscScalar),&z);CHKERRQ(ierr);
+  ierr = PetscMalloc1((nz+1),&z);CHKERRQ(ierr);
   for (i=0; i<nz; i++) z[i]=(i)*((zFinal-zInitial)/(nz-1));
   appctx.z = z;
   femA(&appctx,nz,z);
@@ -166,7 +166,7 @@ int main(int argc,char **argv)
   stepsz[0] = 1.0/(2.0*(nz-1)*(nz-1)); /* (mesh_size)^2/2.0 */
   ftime     = 0.0;
   for (k=0; k<nphase; k++) {
-    if (nphase > 1) printf("Phase %d: initial time %g, stepsz %g, duration: %g\n",k,ftime,stepsz[k],(k+1)*T);
+    if (nphase > 1) printf("Phase %d: initial time %g, stepsz %g, duration: %g\n",(int)k,ftime,stepsz[k],(k+1)*T);
     ierr = TSSetInitialTimeStep(ts,ftime,stepsz[k]);CHKERRQ(ierr);
     ierr = TSSetDuration(ts,max_steps,(k+1)*T);CHKERRQ(ierr);
 

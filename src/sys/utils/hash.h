@@ -696,7 +696,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJCreate(PetscHashIJ *h)
 
   PetscFunctionBegin;
   PetscValidPointer(h,1);
-  _15_ierr          = PetscNew(struct _PetscHashIJ, (h));CHKERRQ(_15_ierr);
+  _15_ierr          = PetscNew((h));CHKERRQ(_15_ierr);
   (*h)->ht          = kh_init(HASHIJ);
   (*h)->multivalued = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -845,7 +845,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJAdd(PetscHashIJ h,PetscHashIJKey i
   }
   if (!_11_r && !(h)->multivalued) _11_ijval->head->k = (ii);
   else {
-    ierr          = PetscNew(IJNode, &_11_ijnode);CHKERRQ(ierr);
+    ierr          = PetscNew(&_11_ijnode);CHKERRQ(ierr);
     _11_ijnode->k = (ii);
     _11_ijval     = &(kh_val((h)->ht,_11_hi));
     if (!_11_ijval->tail) {
@@ -1049,7 +1049,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKLCreate(PetscHashIJKL *h)
 
   PetscFunctionBegin;
   PetscValidPointer(h, 1);
-  ierr = PetscNew(struct _PetscHashIJKL, (h));CHKERRQ(ierr);
+  ierr = PetscNew((h));CHKERRQ(ierr);
   (*h)->ht = kh_init(HASHIJKL);
   PetscFunctionReturn(0);
 }

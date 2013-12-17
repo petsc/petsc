@@ -63,19 +63,19 @@ PetscErrorCode MISInitialize_Private(MatColoring mc)
   ierr = MatColoringCreateBipartiteGraph(mc,&mis->etoc,&mis->etor);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(mis->etoc,&croot,&cleaf,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(mis->etor,&rroot,&rleaf,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc7(croot,PetscReal,&mis->wts,
-                      croot,PetscReal,&mis->wtsinit,
-                      croot,PetscReal,&mis->wtscol,
-                      rroot,PetscReal,&mis->wtsrow,
-                      croot,PetscReal,&mis->wtsspread,
-                      cleaf,PetscReal,&mis->wtsleafcol,
-                      rleaf,PetscReal,&mis->wtsleafrow);CHKERRQ(ierr);
-  ierr = PetscMalloc6(croot,PetscInt,&mis->state,
-                      croot,PetscInt,&mis->statecol,
-                      rroot,PetscInt,&mis->staterow,
-                      croot,PetscInt,&mis->statespread,
-                      cleaf,PetscInt,&mis->stateleafcol,
-                      rleaf,PetscInt,&mis->stateleafrow);CHKERRQ(ierr);
+  ierr = PetscMalloc7(croot,&mis->wts,
+                      croot,&mis->wtsinit,
+                      croot,&mis->wtscol,
+                      rroot,&mis->wtsrow,
+                      croot,&mis->wtsspread,
+                      cleaf,&mis->wtsleafcol,
+                      rleaf,&mis->wtsleafrow);CHKERRQ(ierr);
+  ierr = PetscMalloc6(croot,&mis->state,
+                      croot,&mis->statecol,
+                      rroot,&mis->staterow,
+                      croot,&mis->statespread,
+                      cleaf,&mis->stateleafcol,
+                      rleaf,&mis->stateleafrow);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(ISColoringValue)*croot,&mis->color);CHKERRQ(ierr);
   for (i=0;i<croot;i++) {
     mis->color[i] = IS_COLORING_MAX;
@@ -407,7 +407,7 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_MIS(MatColoring mc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr                    = PetscNewLog(mc,MC_MIS,&mis);CHKERRQ(ierr);
+  ierr                    = PetscNewLog(mc,&mis);CHKERRQ(ierr);
   mc->data                = mis;
   mc->ops->apply          = MatColoringApply_MIS;
   mc->ops->view           = NULL;

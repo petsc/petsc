@@ -104,9 +104,9 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,80,NULL,&mat);CHKERRQ(ierr);
 
   /* Form stiffness for element */
-  ierr = PetscMalloc(81*sizeof(PetscReal*),&K);CHKERRQ(ierr);
+  ierr = PetscMalloc1(81,&K);CHKERRQ(ierr);
   for (i=0; i<81; i++) {
-    ierr = PetscMalloc(81*sizeof(PetscReal),&K[i]);CHKERRQ(ierr);
+    ierr = PetscMalloc1(81,&K[i]);CHKERRQ(ierr);
   }
   ierr = Elastic20Stiff(K);CHKERRQ(ierr);
 
@@ -150,7 +150,7 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
   /* Exclude any superfluous rows and columns */
   nstart = 3*(2*m+1)*(2*m+1);
   ict    = 0;
-  ierr   = PetscMalloc((N-nstart)*sizeof(PetscInt),&rowkeep);CHKERRQ(ierr);
+  ierr   = PetscMalloc1((N-nstart),&rowkeep);CHKERRQ(ierr);
   for (i=nstart; i<N; i++) {
     ierr = MatGetRow(mat,i,&nz,0,0);CHKERRQ(ierr);
     if (nz) rowkeep[ict++] = i;

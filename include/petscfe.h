@@ -93,8 +93,9 @@ PETSC_EXTERN PetscClassId PETSCFE_CLASSID;
 .seealso: PetscFESetType(), PetscFE
 J*/
 typedef const char *PetscFEType;
-#define PETSCFEBASIC  "basic"
-#define PETSCFEOPENCL "opencl"
+#define PETSCFEBASIC     "basic"
+#define PETSCFENONAFFINE "nonaffine"
+#define PETSCFEOPENCL    "opencl"
 
 PETSC_EXTERN PetscFunctionList PetscFEList;
 PETSC_EXTERN PetscBool         PetscFERegisterAllCalled;

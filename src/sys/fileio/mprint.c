@@ -123,7 +123,7 @@ PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *f
     oldLength = 8*1024-1;
   } else {
     oldLength = PETSC_MAX_LENGTH_FORMAT(oldLength);
-    ierr      = PetscMalloc(oldLength * sizeof(char), &newformat);CHKERRQ(ierr);
+    ierr      = PetscMalloc1(oldLength, &newformat);CHKERRQ(ierr);
   }
   PetscFormatConvert(format,newformat,oldLength);
   ierr = PetscStrlen(newformat, &length);CHKERRQ(ierr);
@@ -197,7 +197,7 @@ PetscErrorCode  PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
     oldLength = 8*1024-1;
   } else {
     oldLength = PETSC_MAX_LENGTH_FORMAT(oldLength);
-    ierr      = PetscMalloc(oldLength * sizeof(char), &newformat);CHKERRQ(ierr);
+    ierr      = PetscMalloc1(oldLength, &newformat);CHKERRQ(ierr);
   }
   ierr = PetscFormatConvert(format,newformat,oldLength);CHKERRQ(ierr);
 
@@ -327,7 +327,7 @@ PetscErrorCode  PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
     PrintfQueue next;
     size_t      fullLength = 8191;
 
-    ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
+    ierr = PetscNew(&next);CHKERRQ(ierr);
     if (petsc_printfqueue) {
       petsc_printfqueue->next = next;
       petsc_printfqueue       = next;
@@ -338,7 +338,7 @@ PetscErrorCode  PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
     while ((PetscInt)fullLength >= next->size) {
       next->size = fullLength+1;
 
-      ierr = PetscMalloc(next->size * sizeof(char), &next->string);CHKERRQ(ierr);
+      ierr = PetscMalloc1(next->size, &next->string);CHKERRQ(ierr);
       va_start(Argp,format);
       ierr = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
       ierr = PetscVSNPrintf(next->string,next->size,format, &fullLength,Argp);CHKERRQ(ierr);
@@ -395,7 +395,7 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char forma
     va_list     Argp;
     PrintfQueue next;
     size_t      fullLength = 8191;
-    ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
+    ierr = PetscNew(&next);CHKERRQ(ierr);
     if (petsc_printfqueue) {
       petsc_printfqueue->next = next;
       petsc_printfqueue       = next;
@@ -405,7 +405,7 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char forma
     next->size = -1;
     while ((PetscInt)fullLength >= next->size) {
       next->size = fullLength+1;
-      ierr = PetscMalloc(next->size * sizeof(char), &next->string);CHKERRQ(ierr);
+      ierr = PetscMalloc1(next->size, &next->string);CHKERRQ(ierr);
       va_start(Argp,format);
       ierr = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
       ierr = PetscVSNPrintf(next->string,next->size,format,&fullLength,Argp);CHKERRQ(ierr);
@@ -459,7 +459,7 @@ PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm,FILE *fd)
         PetscMPIInt size = 0;
 
         ierr = MPI_Recv(&size,1,MPI_INT,i,tag,comm,&status);CHKERRQ(ierr);
-        ierr = PetscMalloc(size * sizeof(char), &message);CHKERRQ(ierr);
+        ierr = PetscMalloc1(size, &message);CHKERRQ(ierr);
         ierr = MPI_Recv(message,size,MPI_CHAR,i,tag,comm,&status);CHKERRQ(ierr);
         ierr = PetscFPrintf(comm,fd,"%s",message);CHKERRQ(ierr);
         ierr = PetscFree(message);CHKERRQ(ierr);

@@ -95,9 +95,9 @@ int main(int argc,char **args)
   if (flg) {
     ierr  = MatGetOwnershipRange(C,&mystart,&myend);CHKERRQ(ierr);
     nrsub = myend - mystart; ncsub = 4;
-    ierr  = PetscMalloc(nrsub*ncsub*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
-    ierr  = PetscMalloc(nrsub*sizeof(PetscInt),&rsub);CHKERRQ(ierr);
-    ierr  = PetscMalloc(ncsub*sizeof(PetscInt),&csub);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(nrsub*ncsub,&vals);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(nrsub,&rsub);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(ncsub,&csub);CHKERRQ(ierr);
     for (i=myend-1; i>=mystart; i--) rsub[myend-i-1] = i;
     for (i=0; i<ncsub; i++) csub[i] = 2*(ncsub-i) + mystart;
     ierr = MatGetValues(C,nrsub,rsub,ncsub,csub,vals);CHKERRQ(ierr);

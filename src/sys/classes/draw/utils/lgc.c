@@ -179,7 +179,7 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outct
   lg->xmax    = -1.e20;
   lg->ymax    = -1.e20;
 
-  ierr = PetscMalloc2(dim*CHUNCKSIZE,PetscReal,&lg->x,dim*CHUNCKSIZE,PetscReal,&lg->y);CHKERRQ(ierr);
+  ierr = PetscMalloc2(dim*CHUNCKSIZE,&lg->x,dim*CHUNCKSIZE,&lg->y);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)lg,2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
 
   lg->len     = dim*CHUNCKSIZE;
@@ -217,7 +217,7 @@ PetscErrorCode  PetscDrawLGSetColors(PetscDrawLG lg,const int *colors)
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
   ierr = PetscFree(lg->colors);CHKERRQ(ierr);
-  ierr = PetscMalloc(lg->dim*sizeof(int),&lg->colors);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lg->dim,&lg->colors);CHKERRQ(ierr);
   ierr = PetscMemcpy(lg->colors,colors,lg->dim*sizeof(int));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -255,7 +255,7 @@ PetscErrorCode  PetscDrawLGSetLegend(PetscDrawLG lg,const char *const *names)
     ierr = PetscFree(lg->legend);CHKERRQ(ierr);
   }
   if (names) {
-    ierr = PetscMalloc(lg->dim*sizeof(char**),&lg->legend);CHKERRQ(ierr);
+    ierr = PetscMalloc1(lg->dim,&lg->legend);CHKERRQ(ierr);
     for (i=0; i<lg->dim; i++) {
       ierr = PetscStrallocpy(names[i],&lg->legend[i]);CHKERRQ(ierr);
     }
@@ -326,7 +326,7 @@ PetscErrorCode  PetscDrawLGSetDimension(PetscDrawLG lg,PetscInt dim)
   }
   ierr    = PetscFree(lg->colors);CHKERRQ(ierr);
   lg->dim = dim;
-  ierr    = PetscMalloc2(dim*CHUNCKSIZE,PetscReal,&lg->x,dim*CHUNCKSIZE,PetscReal,&lg->y);CHKERRQ(ierr);
+  ierr    = PetscMalloc2(dim*CHUNCKSIZE,&lg->x,dim*CHUNCKSIZE,&lg->y);CHKERRQ(ierr);
   ierr    = PetscLogObjectMemory((PetscObject)lg,2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
   lg->len = dim*CHUNCKSIZE;
   PetscFunctionReturn(0);
@@ -492,7 +492,7 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
         else cl = PETSC_DRAW_BLACK+i;
         ierr = PetscDrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],lg->x[j*dim+i],lg->y[j*dim+i],cl);CHKERRQ(ierr);
         if (lg->use_dots) {
-          ierr = PetscDrawString(draw,lg->x[j*dim+i],lg->y[(j-1)*dim+i],cl,"x");CHKERRQ(ierr);
+          ierr = PetscDrawString(draw,lg->x[j*dim+i],lg->y[j*dim+i],cl,"x");CHKERRQ(ierr);
         }
       }
     }

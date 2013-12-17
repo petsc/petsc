@@ -29,7 +29,7 @@ PetscErrorCode SNESMonitorSAWsCreate(SNES snes,void **ctx)
   SNESMonitor_SAWs *mon;
 
   PetscFunctionBegin;
-  ierr      = PetscNewLog(snes,SNESMonitor_SAWs,&mon);CHKERRQ(ierr);
+  ierr      = PetscNewLog(snes,&mon);CHKERRQ(ierr);
   mon->viewer = PETSC_VIEWER_SAWS_(PetscObjectComm((PetscObject)snes));
   if (!mon->viewer) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_PLIB,"Cannot create SAWs default viewer");CHKERRQ(ierr);
   *ctx = (void*)mon;

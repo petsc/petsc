@@ -68,7 +68,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES snes)
     snes->max_its   = 10000;
   }
 
-  ierr = PetscNewLog(snes, SNES_FAS, &fas);CHKERRQ(ierr);
+  ierr = PetscNewLog(snes,&fas);CHKERRQ(ierr);
 
   snes->data                  = (void*) fas;
   fas->level                  = 0;

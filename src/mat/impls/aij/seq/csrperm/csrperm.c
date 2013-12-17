@@ -128,9 +128,9 @@ PetscErrorCode MatDuplicate_SeqAIJPERM(Mat A, MatDuplicateOption op, Mat *M)
    * necessary.  But at this point, we know how large they need to be, and
    * allocate only the necessary amount of memory.  So the duplicated matrix
    * may actually use slightly less storage than the original! */
-  ierr = PetscMalloc(A->rmap->n*sizeof(PetscInt), aijperm_dest->iperm);CHKERRQ(ierr);
-  ierr = PetscMalloc((aijperm->ngroup+1)*sizeof(PetscInt), aijperm_dest->xgroup);CHKERRQ(ierr);
-  ierr = PetscMalloc((aijperm->ngroup)*sizeof(PetscInt), aijperm_dest->nzgroup);CHKERRQ(ierr);
+  ierr = PetscMalloc1(A->rmap->n, &aijperm_dest->iperm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(aijperm->ngroup+1, &aijperm_dest->xgroup);CHKERRQ(ierr);
+  ierr = PetscMalloc1(aijperm->ngroup, &aijperm_dest->nzgroup);CHKERRQ(ierr);
   ierr = PetscMemcpy(aijperm_dest->iperm,aijperm->iperm,sizeof(PetscInt)*A->rmap->n);CHKERRQ(ierr);
   ierr = PetscMemcpy(aijperm_dest->xgroup,aijperm->xgroup,sizeof(PetscInt)*(aijperm->ngroup+1));CHKERRQ(ierr);
   ierr = PetscMemcpy(aijperm_dest->nzgroup,aijperm->nzgroup,sizeof(PetscInt)*aijperm->ngroup);CHKERRQ(ierr);
@@ -167,13 +167,13 @@ PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
   ia = a->i;
 
   /* Allocate the arrays that will hold the permutation vector. */
-  ierr = PetscMalloc(m*sizeof(PetscInt), &aijperm->iperm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m, &aijperm->iperm);CHKERRQ(ierr);
 
   /* Allocate some temporary work arrays that will be used in
    * calculating the permuation vector and groupings. */
-  ierr = PetscMalloc((m+1)*sizeof(PetscInt), &rows_in_bucket);CHKERRQ(ierr);
-  ierr = PetscMalloc((m+1)*sizeof(PetscInt), &ipnz);CHKERRQ(ierr);
-  ierr = PetscMalloc(m*sizeof(PetscInt), &nz_in_row);CHKERRQ(ierr);
+  ierr = PetscMalloc1((m+1), &rows_in_bucket);CHKERRQ(ierr);
+  ierr = PetscMalloc1((m+1), &ipnz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m, &nz_in_row);CHKERRQ(ierr);
 
   /* Now actually figure out the permutation and grouping. */
 
@@ -202,8 +202,8 @@ PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
    * We allocate space for the maximum number of groups;
    * that is potentially a little wasteful, but not too much so.
    * Perhaps I should fix it later. */
-  ierr = PetscMalloc((maxnz+2)*sizeof(PetscInt), &aijperm->xgroup);CHKERRQ(ierr);
-  ierr = PetscMalloc((maxnz+1)*sizeof(PetscInt), &aijperm->nzgroup);CHKERRQ(ierr);
+  ierr = PetscMalloc1((maxnz+2), &aijperm->xgroup);CHKERRQ(ierr);
+  ierr = PetscMalloc1((maxnz+1), &aijperm->nzgroup);CHKERRQ(ierr);
 
   /* Second pass.  Look at what is in the buckets and create the groupings.
    * Note that it is OK to have a group of rows with no non-zero values. */
@@ -598,7 +598,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat A,MatType type,MatR
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr     = PetscNewLog(B,Mat_SeqAIJPERM,&aijperm);CHKERRQ(ierr);
+  ierr     = PetscNewLog(B,&aijperm);CHKERRQ(ierr);
   B->spptr = (void*) aijperm;
 
   /* Set function pointers for methods that we inherit from AIJ but override. */

@@ -147,7 +147,7 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, PetscInt *nlocal, DM **sdm)
   ierr = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
   ierr = DMDAGetOverlap(dm,&xol,&yol,&zol);CHKERRQ(ierr);
   ierr = DMDAGetNumLocalSubDomains(dm,&size);CHKERRQ(ierr);
-  ierr = PetscMalloc(size*sizeof(DM),&da);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&da);CHKERRQ(ierr);
 
   if (nlocal) *nlocal = size;
 
@@ -307,9 +307,9 @@ PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM dm,PetscInt nsubdms,DM 
   PetscFunctionBegin;
 
   /* allocate the arrays of scatters */
-  if (iscat) {ierr = PetscMalloc(nsubdms*sizeof(VecScatter*),iscat);CHKERRQ(ierr);}
-  if (oscat) {ierr = PetscMalloc(nsubdms*sizeof(VecScatter*),oscat);CHKERRQ(ierr);}
-  if (lscat) {ierr = PetscMalloc(nsubdms*sizeof(VecScatter*),lscat);CHKERRQ(ierr);}
+  if (iscat) {ierr = PetscMalloc1(nsubdms,iscat);CHKERRQ(ierr);}
+  if (oscat) {ierr = PetscMalloc1(nsubdms,oscat);CHKERRQ(ierr);}
+  if (lscat) {ierr = PetscMalloc1(nsubdms,lscat);CHKERRQ(ierr);}
 
   ierr  = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
   for (i = 0; i < nsubdms; i++) {
@@ -383,8 +383,8 @@ PetscErrorCode DMDASubDomainIS_Private(DM dm,PetscInt n,DM *subdm,IS **iis,IS **
 
   PetscFunctionBegin;
   ierr = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
-  if (iis) {ierr = PetscMalloc(n*sizeof(IS*),iis);CHKERRQ(ierr);}
-  if (ois) {ierr = PetscMalloc(n*sizeof(IS*),ois);CHKERRQ(ierr);}
+  if (iis) {ierr = PetscMalloc1(n,iis);CHKERRQ(ierr);}
+  if (ois) {ierr = PetscMalloc1(n,ois);CHKERRQ(ierr);}
 
   for (i = 0;i < n; i++) {
     ierr = DMDAGetLocalInfo(subdm[i],&subinfo);CHKERRQ(ierr);
@@ -424,7 +424,7 @@ PetscErrorCode DMCreateDomainDecomposition_DA(DM dm,PetscInt *len,char ***names,
   PetscFunctionBegin;
   ierr = DMDASubDomainDA_Private(dm,&n,&sdm);CHKERRQ(ierr);
   if (names) {
-    ierr = PetscMalloc(n*sizeof(char*),names);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,names);CHKERRQ(ierr);
     for (i=0;i<n;i++) (*names)[i] = 0;
   }
   ierr = DMDASubDomainIS_Private(dm,n,sdm,iis,ois);CHKERRQ(ierr);

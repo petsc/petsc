@@ -89,13 +89,18 @@ Downloaded package %s from: %s is not a tarball.
         tf  = tarfile.open(os.path.join(root, localFile))
       except tarfile.ReadError, e:
         raise RuntimeError(str(e)+'\n'+failureMessage)
-      # some tarfiles list packagename/ but some list packagename/filename in the first entry
       if not tf: raise RuntimeError(failureMessage)
-      if not tf.firstmember: raise RuntimeError(failureMessage)
-      if tf.firstmember.isdir():
-        dirname = tf.firstmember.name
+      #git puts 'pax_global_header' as the first entry and some tar utils process this as a file
+      firstname = tf.getnames()[0]
+      if firstname == 'pax_global_header':
+        firstmember = tf.getmembers()[1]
       else:
-        dirname = os.path.dirname(tf.firstmember.name)
+        firstmember = tf.getmembers()[0]
+      # some tarfiles list packagename/ but some list packagename/filename in the first entry
+      if firstmember.isdir():
+        dirname = firstmember.name
+      else:
+        dirname = os.path.dirname(firstmember.name)
       if hasattr(tf,'extractall'): #python 2.5+
         tf.extractall(root)
       else:
@@ -105,7 +110,11 @@ Downloaded package %s from: %s is not a tarball.
 
     # fix file permissions for the untared tarballs.
     try:
-      config.base.Configure.executeShellCommand('cd '+root+'; chmod -R a+r '+dirname+';find  '+dirname + ' -type d -name "*" -exec chmod a+rx {} \;', log = self.log)
+      # check if 'dirname' is set'
+      if dirname:
+        config.base.Configure.executeShellCommand('cd '+root+'; chmod -R a+r '+dirname+';find  '+dirname + ' -type d -name "*" -exec chmod a+rx {} \;', log = self.log)
+      else:
+        self.logPrintBox('WARNING: Could not determine dirname extracted by '+localFile+' to fix file permissions')
     except RuntimeError, e:
       raise RuntimeError('Error changing permissions for '+dirname+' obtained from '+localFile+ ' : '+str(e))
     os.unlink(localFile)

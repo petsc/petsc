@@ -16,7 +16,7 @@ PetscErrorCode  PetscSSEHardwareTest(PetscBool  *flag)
   char           AMD[13]  ="AuthenticAMD";
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(13*sizeof(char),&vendor);CHKERRQ(ierr);
+  ierr = PetscMalloc1(13,&vendor);CHKERRQ(ierr);
   strcpy(vendor,"************");
   CPUID_GET_VENDOR(vendor);
   if (!strcmp(vendor,Intel) || !strcmp(vendor,AMD)) {

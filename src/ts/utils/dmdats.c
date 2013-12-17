@@ -35,7 +35,7 @@ static PetscErrorCode DMTSDuplicate_DMDA(DMTS oldsdm,DMTS sdm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(sdm,DMTS_DA,&sdm->data);CHKERRQ(ierr);
+  ierr = PetscNewLog(sdm,(DMTS_DA**)&sdm->data);CHKERRQ(ierr);
   if (oldsdm->data) {ierr = PetscMemcpy(sdm->data,oldsdm->data,sizeof(DMTS_DA));CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -49,7 +49,7 @@ static PetscErrorCode DMDATSGetContext(DM dm,DMTS sdm,DMTS_DA **dmdats)
   PetscFunctionBegin;
   *dmdats = NULL;
   if (!sdm->data) {
-    ierr = PetscNewLog(dm,DMTS_DA,&sdm->data);CHKERRQ(ierr);
+    ierr = PetscNewLog(dm,(DMTS_DA**)&sdm->data);CHKERRQ(ierr);
     sdm->ops->destroy   = DMTSDestroy_DMDA;
     sdm->ops->duplicate = DMTSDuplicate_DMDA;
   }
@@ -480,7 +480,7 @@ PetscErrorCode  TSMonitorLGDMDARay(TS ts, PetscInt step, PetscReal ptime, Vec u,
     PetscReal *areal;
     PetscInt   i,n;
     ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
-    ierr = PetscMalloc(n * sizeof(PetscReal), &areal);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n, &areal);CHKERRQ(ierr);
     for (i = 0; i < n; ++i) areal[i] = PetscRealPart(a[i]);
     ierr = PetscDrawLGAddCommonPoint(lgctx->lg, ptime, areal);CHKERRQ(ierr);
     ierr = PetscFree(areal);CHKERRQ(ierr);

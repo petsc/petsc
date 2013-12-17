@@ -48,10 +48,9 @@
       type(bag_data_type)          :: dummydata
       character(len=1),pointer     :: dummychar(:)
       PetscViewer viewer
-      PetscSizeT sizeofbag,sizeofint
-      PetscSizeT sizeofscalar,sizeoftruth
-      PetscSizeT sizeofchar,sizeofreal
+      PetscSizeT sizeofbag
       Character(len=99) list(6)
+      PetscInt three
 
       Call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       list(1) = 'a123'
@@ -60,22 +59,12 @@
       list(4) = 'list'
       list(5) = 'prefix_'
       list(6) = ''
+!     cannot just pass a 3 to PetscBagRegisterXXXArray() because it is expecting a PetscInt
+      three   = 3
 
 !   compute size of the data
-!      call PetscDataTypeGetSize(PETSC_INT,sizeofint,ierr)
-!      call PetscDataTypeGetSize(PETSC_SCALAR,sizeofscalar,ierr)
-!      call PetscDataTypeGetSize(PETSC_BOOL,sizeoftruth,ierr)
-       call PetscDataTypeGetSize(PETSC_CHAR,sizeofchar,ierr)
-!      call PetscDataTypeGetSize(PETSC_REAL,sizeofreal,ierr)
-
-!     really need a sizeof(data) operator here. There could be padding inside the
-!     structure due to alignment issues - so, this computed value cold be wrong.
-!      sizeofbag = sizeofint + sizeofscalar + sizeoftruth + sizeofchar*80 &
-!     &       + 3*sizeofreal+3*sizeofreal
-!     That is correct... unless the sequence keyword is used in the derived
-!     types, this length will be wrong because of padding
-!     this is a situation where the transfer function is very helpful...
-      sizeofbag = size(transfer(dummydata,dummychar))*sizeofchar
+!
+      sizeofbag = size(transfer(dummydata,dummychar))
 
 
 ! create the bag
@@ -88,13 +77,13 @@
 ! register the data within the bag, grabbing values from the options database
       call PetscBagRegisterInt(bag,data%nxc ,56,'nxc',                   &
      &      'nxc_variable help message',ierr)
-      call PetscBagRegisterRealArray(bag,data%rarray,3,'rarray',         &
+      call PetscBagRegisterRealArray(bag,data%rarray,three,'rarray',         &
      &      'rarray help message',ierr)
       call PetscBagRegisterScalar(bag,data%x ,103.2d0,'x',               &
      &      'x variable help message',ierr)
       call PetscBagRegisterBool(bag,data%t ,PETSC_TRUE,'t',              &
      &      't boolean help message',ierr)
-      call PetscBagRegisterBoolArray(bag,data%tarray,3,'tarray',         &
+      call PetscBagRegisterBoolArray(bag,data%tarray,three,'tarray',         &
      &      'tarray help message',ierr)
       call PetscBagRegisterString(bag,data%c,'hello','c',                &
      &      'string help message',ierr)

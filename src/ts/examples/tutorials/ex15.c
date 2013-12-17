@@ -338,8 +338,8 @@ PetscErrorCode FormInitialSolution(Vec U,void *ptr)
     y = j*hy;
     for (i=xs; i<xs+xm; i++) {
       x = i*hx;
-      r = PetscSqrtScalar((x-.5)*(x-.5) + (y-.5)*(y-.5));
-      if (r < .125) u[j][i] = PetscExpScalar(c*r*r*r);
+      r = PetscSqrtReal((x-.3)*(x-.5) + (y-.5)*(y-.5));
+      if (r < .125) u[j][i] = PetscExpReal(c*r*r*r);
       else u[j][i] = 0.0;
     }
   }

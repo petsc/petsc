@@ -59,6 +59,45 @@ PetscErrorCode  ISColoringDestroy(ISColoring *iscoloring)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ISColoringViewFromOptions"
+/*
+  ISColoringViewFromOptions - Processes command line options to determine if/how an ISColoring object is to be viewed. 
+
+  Collective on ISColoring
+
+  Input Parameters:
++ obj   - the ISColoring object
+. prefix - prefix to use for viewing, or NULL to use prefix of 'mat'
+- optionname - option to activate viewing
+
+  Level: intermediate
+
+  Developer Note: This cannot use PetscObjectViewFromOptions() because ISColoring is not a PetscObject
+
+*/
+PetscErrorCode ISColoringViewFromOptions(ISColoring obj,const char prefix[],const char optionname[])
+{
+  PetscErrorCode    ierr;
+  PetscViewer       viewer;
+  PetscBool         flg;
+  static PetscBool  incall = PETSC_FALSE;
+  PetscViewerFormat format;
+
+  PetscFunctionBegin;
+  if (incall) PetscFunctionReturn(0);
+  incall = PETSC_TRUE;
+  ierr   = PetscOptionsGetViewer(obj->comm,prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+    ierr = ISColoringView(obj,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+  incall = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ISColoringView"
 /*@C
    ISColoringView - Views a coloring context.
@@ -146,12 +185,11 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
 #endif
 
       /* generate the lists of nodes for each color */
-      ierr = PetscMalloc(nc*sizeof(PetscInt),&mcolors);CHKERRQ(ierr);
-      ierr = PetscMemzero(mcolors,nc*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscCalloc1(nc,&mcolors);CHKERRQ(ierr);
       for (i=0; i<n; i++) mcolors[colors[i]]++;
 
-      ierr = PetscMalloc(nc*sizeof(PetscInt*),&ii);CHKERRQ(ierr);
-      ierr = PetscMalloc(n*sizeof(PetscInt),&ii[0]);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nc,&ii);CHKERRQ(ierr);
+      ierr = PetscMalloc1(n,&ii[0]);CHKERRQ(ierr);
       for (i=1; i<nc; i++) ii[i] = ii[i-1] + mcolors[i-1];
       ierr = PetscMemzero(mcolors,nc*sizeof(PetscInt));CHKERRQ(ierr);
 
@@ -163,7 +201,7 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
         for (i=0; i<n; i++) ii[colors[i]][mcolors[colors[i]]++] = i;   /* local idx */
       } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not provided for this ISColoringType type");
 
-      ierr = PetscMalloc(nc*sizeof(IS),&is);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nc,&is);CHKERRQ(ierr);
       for (i=0; i<nc; i++) {
         ierr = ISCreateGeneral(iscoloring->comm,mcolors[i],ii[i],PETSC_COPY_VALUES,is+i);CHKERRQ(ierr);
       }
@@ -238,7 +276,6 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
   PetscMPIInt    size,rank,tag;
   PetscInt       base,top,i;
   PetscInt       nc,ncwork;
-  PetscBool      flg = PETSC_FALSE;
   MPI_Status     status;
 
   PetscFunctionBegin;
@@ -246,7 +283,7 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
     if (ncolors > 65535) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Max color value exeeds 65535 limit. This number is unrealistic. Perhaps a bug in code?\nCurrent max: %d user rewuested: %d",IS_COLORING_MAX,ncolors);
     else                 SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Max color value exeeds limit. Perhaps reconfigure PETSc with --with-is-color-value-type=short?\n Current max: %d user rewuested: %d",IS_COLORING_MAX,ncolors);
   }
-  ierr = PetscNew(struct _n_ISColoring,iscoloring);CHKERRQ(ierr);
+  ierr = PetscNew(iscoloring);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(comm,&(*iscoloring)->comm,&tag);CHKERRQ(ierr);
   comm = (*iscoloring)->comm;
 
@@ -280,13 +317,7 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
   (*iscoloring)->N      = n;
   (*iscoloring)->refct  = 1;
   (*iscoloring)->ctype  = IS_COLORING_GLOBAL;
-
-  ierr = PetscOptionsGetBool(NULL,"-is_coloring_view",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout((*iscoloring)->comm,&viewer);CHKERRQ(ierr);
-    ierr = ISColoringView(*iscoloring,viewer);CHKERRQ(ierr);
-  }
+  ierr = ISColoringViewFromOptions(*iscoloring,NULL,"-is_coloring_view");CHKERRQ(ierr);
   ierr = PetscInfo1(0,"Number of colors %D\n",nc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -336,7 +367,7 @@ PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
         sums - total number of "previous" nodes for any particular partition
         starts - global number of first element in each partition on this processor
   */
-  ierr = PetscMalloc3(np,PetscInt,&lsizes,np,PetscInt,&starts,np,PetscInt,&sums);CHKERRQ(ierr);
+  ierr = PetscMalloc3(np,&lsizes,np,&starts,np,&sums);CHKERRQ(ierr);
   ierr = PetscMemzero(lsizes,np*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<n; i++) lsizes[indices[i]]++;
   ierr = MPI_Allreduce(lsizes,sums,np,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
@@ -350,7 +381,7 @@ PetscErrorCode  ISPartitioningToNumbering(IS part,IS *is)
   /*
       For each local index give it the new global number
   */
-  ierr = PetscMalloc(n*sizeof(PetscInt),&newi);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&newi);CHKERRQ(ierr);
   for (i=0; i<n; i++) newi[i] = starts[indices[i]]++;
   ierr = PetscFree3(lsizes,starts,sums);CHKERRQ(ierr);
 
@@ -424,8 +455,7 @@ PetscErrorCode  ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
         sums - total number of "previous" nodes for any particular partition
         starts - global number of first element in each partition on this processor
   */
-  ierr = PetscMalloc(len*sizeof(PetscInt),&lsizes);CHKERRQ(ierr);
-  ierr = PetscMemzero(lsizes,len*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(len,&lsizes);CHKERRQ(ierr);
   for (i=0; i<n; i++) lsizes[indices[i]]++;
   ierr = ISRestoreIndices(part,&indices);CHKERRQ(ierr);
   ierr = PetscMPIIntCast(len,&npp);CHKERRQ(ierr);
@@ -489,7 +519,7 @@ PetscErrorCode  ISAllGather(IS is,IS *isout)
     ierr = ISStrideGetInfo(is,&first,&step);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,n,first,step,isout);CHKERRQ(ierr);
   } else {
-    ierr = PetscMalloc2(size,PetscMPIInt,&sizes,size,PetscMPIInt,&offsets);CHKERRQ(ierr);
+    ierr = PetscMalloc2(size,&sizes,size,&offsets);CHKERRQ(ierr);
 
     ierr       = PetscMPIIntCast(n,&nn);CHKERRQ(ierr);
     ierr       = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
@@ -497,7 +527,7 @@ PetscErrorCode  ISAllGather(IS is,IS *isout)
     for (i=1; i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
     N = offsets[size-1] + sizes[size-1];
 
-    ierr = PetscMalloc(N*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+    ierr = PetscMalloc1(N,&indices);CHKERRQ(ierr);
     ierr = ISGetIndices(is,&lindices);CHKERRQ(ierr);
     ierr = MPI_Allgatherv((void*)lindices,nn,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr);
     ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);
@@ -546,7 +576,7 @@ PetscErrorCode  ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lind
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscMalloc2(size,PetscMPIInt,&sizes,size,PetscMPIInt,&offsets);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,&sizes,size,&offsets);CHKERRQ(ierr);
 
   ierr       = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
   offsets[0] = 0;
@@ -554,7 +584,7 @@ PetscErrorCode  ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lind
   N    = offsets[size-1] + sizes[size-1];
   ierr = PetscFree2(sizes,offsets);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((N+1)*sizeof(ISColoringValue),&indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1((N+1),&indices);CHKERRQ(ierr);
   ierr = MPI_Allgatherv(lindices,(PetscMPIInt)n,MPIU_COLORING_VALUE,indices,sizes,offsets,MPIU_COLORING_VALUE,comm);CHKERRQ(ierr);
 
   *outindices = indices;
@@ -621,7 +651,7 @@ PetscErrorCode  ISComplement(IS is,PetscInt nmin,PetscInt nmax,IS *isout)
   for (i=0; i<n-1; i++) {
     if (indices[i+1] != indices[i]) unique++;
   }
-  ierr = PetscMalloc((nmax-nmin-unique)*sizeof(PetscInt),&nindices);CHKERRQ(ierr);
+  ierr = PetscMalloc1((nmax-nmin-unique),&nindices);CHKERRQ(ierr);
   cnt  = 0;
   for (i=nmin,j=0; i<nmax; i++) {
     if (j<n && i==indices[j]) do { j++; } while (j<n && i==indices[j]);

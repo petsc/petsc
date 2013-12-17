@@ -260,7 +260,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
   /* If using __float128 precision we still read in doubles from file */
   if (type == PETSC_SCALAR) {
     m    = m/2;
-    ierr = PetscMalloc(n*sizeof(double),&ppp);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&ppp);CHKERRQ(ierr);
     pp   = (char*)ppp;
   }
 #endif

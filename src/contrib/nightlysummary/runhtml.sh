@@ -109,7 +109,12 @@ generate_section()
 {
   echo "<h3>$1</h3>" >> $OUTFILE
   echo "<center><table>" >> $OUTFILE
-  echo "<tr><th>Test</th><th>Warnings</th><th>Errors</th></tr>" >> $OUTFILE
+  if [ $3 -gt "0" ]
+  then
+    echo "<tr><th>Test</th><th>Warnings</th><th>Errors</th></tr>" >> $OUTFILE
+  else
+    echo "<tr><th>Test</th><th>Possible Problems</th><th>Exec Time</th></tr>" >> $OUTFILE
+  fi
 
   for f in `ls $LOGDIR/${2}_${BRANCH}*.log`
   do
@@ -147,20 +152,66 @@ generate_section()
       echo "$filtered_errors"        >> $LOGDIR/filtered-${f#$LOGDIR/}
     fi
 
-    # Write number of warnings:
-    if [ "$filtered_warnings_num" -gt "0" ]
+    if [ $3 -gt "0" ]
     then
-	  echo "</td><td class=\"yellow\">$filtered_warnings_num</td>" >> $OUTFILE
-    else
-	  echo "</td><td class=\"green\">$filtered_warnings_num</td>" >> $OUTFILE
-    fi
+      # Write number of warnings:
+      if [ "$filtered_warnings_num" -gt "0" ]
+      then
+	    echo "</td><td class=\"yellow\">$filtered_warnings_num</td>" >> $OUTFILE
+      else
+	    echo "</td><td class=\"green\">$filtered_warnings_num</td>" >> $OUTFILE
+      fi
 
-    # Write number of errors:
-    if [ "$filtered_errors_num" -gt "0" ]
-    then
-	  echo "</td><td class=\"red\">$filtered_errors_num</td></tr>" >> $OUTFILE
-    else
-	  echo "</td><td class=\"green\">$filtered_errors_num</td></tr>" >> $OUTFILE
+      # Write number of errors:
+      if [ "$filtered_errors_num" -gt "0" ]
+      then
+	    echo "</td><td class=\"red\">$filtered_errors_num</td></tr>" >> $OUTFILE
+      else
+	    echo "</td><td class=\"green\">$filtered_errors_num</td></tr>" >> $OUTFILE
+      fi
+    else # do not count warnings and errors separately, only report possible problems:
+      possible_problems=`grep -i "Possible problem" $f | wc -l`
+      if [ "$possible_problems" -gt "0" ]
+      then
+	    echo "</td><td class=\"yellow\">$possible_problems</td>" >> $OUTFILE
+      else
+	    echo "</td><td class=\"green\">$possible_problems</td>" >> $OUTFILE
+      fi
+
+      # Parse start and end time stamps from log file and convert to seconds since begin of that day
+      starttime_sec=`grep "TESTMODE" $f | sed 's/.* \([0-9]*[0-9]\):\([0-9][0-9]\):\([0-9][0-9]\).*/\3/'`
+      starttime_min=`grep "TESTMODE" $f | sed 's/.* \([0-9]*[0-9]\):\([0-9][0-9]\):\([0-9][0-9]\).*/\2/'`
+      starttime_hour=`grep "TESTMODE" $f | sed 's/.* \([0-9]*[0-9]\):\([0-9][0-9]\):\([0-9][0-9]\).*/\1/'`
+      starttime=$(($((10#$starttime_sec))+$((10#$starttime_min))*60+$((10#$starttime_hour))*3600))
+
+      endtime_sec=`grep "Finished Build on" $f | sed 's/.* \([0-9]*[0-9]\):\([0-9][0-9]\):\([0-9][0-9]\).*/\3/'`
+      endtime_min=`grep "Finished Build on" $f | sed 's/.* \([0-9]*[0-9]\):\([0-9][0-9]\):\([0-9][0-9]\).*/\2/'`
+      endtime_hour=`grep "Finished Build on" $f | sed 's/.* \([0-9]*[0-9]\):\([0-9][0-9]\):\([0-9][0-9]\).*/\1/'`
+      endtime=$(($((10#$endtime_sec))+$((10#$endtime_min))*60+$((10#$endtime_hour))*3600))
+
+      # Take into account that test might run over midnight or noon
+      if [ $((starttime)) -gt $((endtime)) ]
+      then
+        if [ $starttime_hour -lt 13 ]   # check for 12 or 24 hour format
+        then
+          endtime=$((endtime+12*3600))
+        else
+          endtime=$((endtime+24*3600))
+        fi
+      fi
+
+      # Compute time taken and print output of the form HH:MM:SS
+      timetaken=$((endtime - starttime))
+      timetaken_hour=`printf '%02d' $((timetaken / 3600))`
+      timetaken_min=`printf '%02d' $(((timetaken - timetaken_hour * 3600) / 60))`
+      timetaken_sec=`printf '%02d' $((timetaken - timetaken_hour * 3600 - timetaken_min * 60))`
+
+      if [ $timetaken -gt 1800 ]  #Consider everything longer than 30 minutes to be a lengthy test
+      then
+	    echo "</td><td class=\"yellow\">$timetaken_hour:$timetaken_min:$timetaken_sec</td></tr>" >> $OUTFILE
+      else
+	    echo "</td><td class=\"green\">$timetaken_hour:$timetaken_min:$timetaken_sec</td></tr>" >> $OUTFILE
+      fi
     fi
   done
   echo "</table></center>" >> $OUTFILE
@@ -192,11 +243,10 @@ generate_configure_section()
 }
 
 ############ Part 1: Build ####################
-#generate_section Configure configure  #Note: Current grep-driven extraction is not suitable for configure*.log files
-generate_configure_section
-generate_section Build     build     1
-generate_section Examples  examples  0
+#generate_section Build     build     1  # Considered duplicative by Barry
 generate_section Make      make      1
+generate_section Examples  examples  0
+generate_configure_section
 
 
 echo "</div></body></html>" >> $OUTFILE

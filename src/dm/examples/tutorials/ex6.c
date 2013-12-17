@@ -58,7 +58,7 @@ PetscErrorCode FAGetLocalArray(FA fa,Vec v,PetscInt j,Field ***f)
   PetscFunctionBeginUser;
   if (fa->comm[j]) {
     ierr = VecGetArray(v,&va);CHKERRQ(ierr);
-    ierr = PetscMalloc(fa->nl[j]*sizeof(Field*),&a);CHKERRQ(ierr);
+    ierr = PetscMalloc1(fa->nl[j],&a);CHKERRQ(ierr);
     for (i=0; i<fa->nl[j]; i++) (a)[i] = (Field*) (va + 2*fa->offl[j] + i*2*fa->ml[j] - 2*fa->xl[j]);
     *f   = a - fa->yl[j];
     ierr = VecRestoreArray(v,&va);CHKERRQ(ierr);
@@ -91,7 +91,7 @@ PetscErrorCode FAGetGlobalArray(FA fa,Vec v,PetscInt j,Field ***f)
   PetscFunctionBeginUser;
   if (fa->comm[j]) {
     ierr = VecGetArray(v,&va);CHKERRQ(ierr);
-    ierr = PetscMalloc(fa->ng[j]*sizeof(Field*),&a);CHKERRQ(ierr);
+    ierr = PetscMalloc1(fa->ng[j],&a);CHKERRQ(ierr);
     for (i=0; i<fa->ng[j]; i++) (a)[i] = (Field*) (va + 2*fa->offg[j] + i*2*fa->mg[j] - 2*fa->xg[j]);
     *f   = a - fa->yg[j];
     ierr = VecRestoreArray(v,&va);CHKERRQ(ierr);
@@ -187,7 +187,7 @@ PetscErrorCode FACreate(FA *infa)
   VecScatter  vscat;
   PetscScalar *globalarray,*localarray,*toarray;
 
-  ierr = PetscNew(struct _p_FA,&fa);CHKERRQ(ierr);
+  ierr = PetscNew(&fa);CHKERRQ(ierr);
   /*
       fa->sw is the stencil width
 
@@ -266,7 +266,7 @@ PetscErrorCode FACreate(FA *infa)
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   /* Get tonatural number for each node */
-  ierr      = PetscMalloc((tonglobal+1)*sizeof(PetscInt),&tonatural);CHKERRQ(ierr);
+  ierr      = PetscMalloc1((tonglobal+1),&tonatural);CHKERRQ(ierr);
   tonglobal = 0;
   if (fa->comm[1]) {
     ierr = DMDAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
@@ -333,7 +333,7 @@ PetscErrorCode FACreate(FA *infa)
   ierr          = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   /* Get fromnatural number for each node */
-  ierr        = PetscMalloc((fromnglobal+1)*sizeof(PetscInt),&fromnatural);CHKERRQ(ierr);
+  ierr        = PetscMalloc1((fromnglobal+1),&fromnatural);CHKERRQ(ierr);
   fromnglobal = 0;
   if (fa->comm[1]) {
     ierr = DMDAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
@@ -377,8 +377,8 @@ PetscErrorCode FACreate(FA *infa)
   /* ---------------------------------------------------*/
   /* Create the scatter that updates 1 from 2 and 3 and 3 and 2 from 1 */
   /* currently handles stencil width of 1 ONLY */
-  ierr  = PetscMalloc(tonglobal*sizeof(PetscInt),&to);CHKERRQ(ierr);
-  ierr  = PetscMalloc(tonglobal*sizeof(PetscInt),&from);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(tonglobal,&to);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(tonglobal,&from);CHKERRQ(ierr);
   nscat = 0;
   if (fa->comm[1]) {
     ierr = DMDAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
@@ -487,7 +487,7 @@ PetscErrorCode FACreate(FA *infa)
 
   /* Create final scatter that goes directly from globalvec to localvec */
   /* this is the one to be used in the application code */
-  ierr = PetscMalloc(nlocal*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nlocal,&indices);CHKERRQ(ierr);
   ierr = VecGetArray(localvec,&localarray);CHKERRQ(ierr);
   for (i=0; i<nlocal; i++) {
     indices[i] = (PetscInt) (localarray[i]);

@@ -7,7 +7,7 @@ PetscErrorCode DMLabelCreate(const char name[], DMLabel *label)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_DMLabel, label);CHKERRQ(ierr);
+  ierr = PetscNew(label);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name, &(*label)->name);CHKERRQ(ierr);
 
   (*label)->refct          = 1;
@@ -34,7 +34,7 @@ static PetscErrorCode DMLabelMakeValid_Private(DMLabel label)
 
   if (label->arrayValid) return 0;
   PetscFunctionBegin;
-  ierr = PetscMalloc2(label->numStrata,PetscInt,&label->stratumSizes,label->numStrata+1,PetscInt,&label->stratumOffsets);CHKERRQ(ierr);
+  ierr = PetscMalloc2(label->numStrata,&label->stratumSizes,label->numStrata+1,&label->stratumOffsets);CHKERRQ(ierr);
   for (v = 0; v < label->numStrata; ++v) {
     PetscInt size = 0;
     PetscHashISize(label->ht[v], size);
@@ -43,7 +43,7 @@ static PetscErrorCode DMLabelMakeValid_Private(DMLabel label)
     off += size;
   }
   label->stratumOffsets[v] = off;
-  ierr = PetscMalloc(off * sizeof(PetscInt), &label->points);CHKERRQ(ierr);
+  ierr = PetscMalloc1(off, &label->points);CHKERRQ(ierr);
   off = 0;
   for (v = 0; v < label->numStrata; ++v) {
     ierr = PetscHashIGetKeys(label->ht[v], &off, label->points);CHKERRQ(ierr);
@@ -76,7 +76,7 @@ static PetscErrorCode DMLabelMakeInvalid_Private(DMLabel label)
 
   if (!label->arrayValid) return 0;
   PetscFunctionBegin;
-  ierr = PetscMalloc(label->numStrata * sizeof(PetscHashI), &label->ht);CHKERRQ(ierr);
+  ierr = PetscMalloc1(label->numStrata, &label->ht);CHKERRQ(ierr);
   for (v = 0; v < label->numStrata; ++v) {
     PETSC_UNUSED PetscHashIIter ret, iter;
     PetscInt                    p;
@@ -175,16 +175,16 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
 
   PetscFunctionBegin;
   ierr = DMLabelMakeValid_Private(label);CHKERRQ(ierr);
-  ierr = PetscNew(struct _n_DMLabel, labelnew);CHKERRQ(ierr);
+  ierr = PetscNew(labelnew);CHKERRQ(ierr);
   ierr = PetscStrallocpy(label->name, &(*labelnew)->name);CHKERRQ(ierr);
 
   (*labelnew)->refct      = 1;
   (*labelnew)->numStrata  = label->numStrata;
   (*labelnew)->arrayValid = PETSC_TRUE;
   if (label->numStrata) {
-    ierr = PetscMalloc(label->numStrata * sizeof(PetscInt), &(*labelnew)->stratumValues);CHKERRQ(ierr);
-    ierr = PetscMalloc2(label->numStrata,PetscInt,&(*labelnew)->stratumSizes,label->numStrata+1,PetscInt,&(*labelnew)->stratumOffsets);CHKERRQ(ierr);
-    ierr = PetscMalloc(label->stratumOffsets[label->numStrata] * sizeof(PetscInt), &(*labelnew)->points);CHKERRQ(ierr);
+    ierr = PetscMalloc1(label->numStrata, &(*labelnew)->stratumValues);CHKERRQ(ierr);
+    ierr = PetscMalloc2(label->numStrata,&(*labelnew)->stratumSizes,label->numStrata+1,&(*labelnew)->stratumOffsets);CHKERRQ(ierr);
+    ierr = PetscMalloc1(label->stratumOffsets[label->numStrata], &(*labelnew)->points);CHKERRQ(ierr);
     /* Could eliminate unused space here */
     for (v = 0; v < label->numStrata; ++v) {
       (*labelnew)->stratumValues[v]  = label->stratumValues[v];
@@ -354,8 +354,8 @@ PetscErrorCode DMLabelSetValue(DMLabel label, PetscInt point, PetscInt value)
     PetscInt   *tmpV;
     PetscHashI *tmpH;
 
-    ierr = PetscMalloc((label->numStrata+1) * sizeof(PetscInt), &tmpV);CHKERRQ(ierr);
-    ierr = PetscMalloc((label->numStrata+1) * sizeof(PetscHashI), &tmpH);CHKERRQ(ierr);
+    ierr = PetscMalloc1((label->numStrata+1), &tmpV);CHKERRQ(ierr);
+    ierr = PetscMalloc1((label->numStrata+1), &tmpH);CHKERRQ(ierr);
     for (v = 0; v < label->numStrata; ++v) {
       tmpV[v] = label->stratumValues[v];
       tmpH[v] = label->ht[v];
@@ -628,8 +628,8 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSection partSection, IS par
   /* Bcast numStrata */
   if (!rank) (*labelNew)->numStrata = label->numStrata;
   ierr = MPI_Bcast(&(*labelNew)->numStrata, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-  ierr = PetscMalloc((*labelNew)->numStrata * sizeof(PetscInt), &(*labelNew)->stratumValues);CHKERRQ(ierr);
-  ierr = PetscMalloc2((*labelNew)->numStrata,PetscInt,&(*labelNew)->stratumSizes,(*labelNew)->numStrata+1,PetscInt,&(*labelNew)->stratumOffsets);CHKERRQ(ierr);
+  ierr = PetscMalloc1((*labelNew)->numStrata, &(*labelNew)->stratumValues);CHKERRQ(ierr);
+  ierr = PetscMalloc2((*labelNew)->numStrata,&(*labelNew)->stratumSizes,(*labelNew)->numStrata+1,&(*labelNew)->stratumOffsets);CHKERRQ(ierr);
   /* Bcast stratumValues */
   if (!rank) {ierr = PetscMemcpy((*labelNew)->stratumValues, label->stratumValues, label->numStrata * sizeof(PetscInt));CHKERRQ(ierr);}
   ierr = MPI_Bcast((*labelNew)->stratumValues, (*labelNew)->numStrata, MPIU_INT, 0, comm);CHKERRQ(ierr);
@@ -639,8 +639,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSection partSection, IS par
     PetscInt        proc;
 
     ierr = ISGetIndices(part, &partArray);CHKERRQ(ierr);
-    ierr = PetscMalloc(numProcs*label->numStrata * sizeof(PetscInt), &stratumSizes);CHKERRQ(ierr);
-    ierr = PetscMemzero(stratumSizes, numProcs*label->numStrata * sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscCalloc1(numProcs*label->numStrata, &stratumSizes);CHKERRQ(ierr);
     /* TODO We should switch to using binary search if the label is a lot smaller than partitions */
     for (proc = 0; proc < numProcs; ++proc) {
       PetscInt dof, off;
@@ -674,7 +673,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSection partSection, IS par
     const PetscInt *partArray;
 
     ierr = ISGetIndices(part, &partArray);CHKERRQ(ierr);
-    ierr = PetscMalloc3(numProcs,PetscMPIInt,&sendcnts,numProcs,PetscMPIInt,&offsets,numProcs+1,PetscMPIInt,&displs);CHKERRQ(ierr);
+    ierr = PetscMalloc3(numProcs,&sendcnts,numProcs,&offsets,numProcs+1,&displs);CHKERRQ(ierr);
     displs[0] = 0;
     for (p = 0; p < numProcs; ++p) {
       sendcnts[p] = 0;
@@ -682,7 +681,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSection partSection, IS par
       offsets[p]  = displs[p];
       displs[p+1] = displs[p] + sendcnts[p];
     }
-    ierr = PetscMalloc(displs[numProcs] * sizeof(PetscInt), &points);CHKERRQ(ierr);
+    ierr = PetscMalloc1(displs[numProcs], &points);CHKERRQ(ierr);
     /* TODO We should switch to using binary search if the label is a lot smaller than partitions */
     for (proc = 0; proc < numProcs; ++proc) {
       PetscInt dof, off;
@@ -707,7 +706,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSection partSection, IS par
     }
     ierr = ISRestoreIndices(part, &partArray);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc((*labelNew)->stratumOffsets[(*labelNew)->numStrata] * sizeof(PetscInt), &(*labelNew)->points);CHKERRQ(ierr);
+  ierr = PetscMalloc1((*labelNew)->stratumOffsets[(*labelNew)->numStrata], &(*labelNew)->points);CHKERRQ(ierr);
   ierr = MPI_Scatterv(points, sendcnts, displs, MPIU_INT, (*labelNew)->points, (*labelNew)->stratumOffsets[(*labelNew)->numStrata], MPIU_INT, 0, comm);CHKERRQ(ierr);
   ierr = PetscFree(points);CHKERRQ(ierr);
   ierr = PetscFree3(sendcnts,offsets,displs);CHKERRQ(ierr);

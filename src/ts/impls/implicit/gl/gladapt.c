@@ -292,7 +292,7 @@ PetscErrorCode  TSGLAdaptCreate_None(TSGLAdapt adapt)
   TSGLAdapt_None *a;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(adapt,TSGLAdapt_None,&a);CHKERRQ(ierr);
+  ierr = PetscNewLog(adapt,&a);CHKERRQ(ierr);
   adapt->data         = (void*)a;
   adapt->ops->choose  = TSGLAdaptChoose_None;
   adapt->ops->destroy = TSGLAdaptDestroy_JustFree;
@@ -339,7 +339,7 @@ PetscErrorCode  TSGLAdaptCreate_Size(TSGLAdapt adapt)
   TSGLAdapt_Size *a;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(adapt,TSGLAdapt_Size,&a);CHKERRQ(ierr);
+  ierr = PetscNewLog(adapt,&a);CHKERRQ(ierr);
   adapt->data         = (void*)a;
   adapt->ops->choose  = TSGLAdaptChoose_Size;
   adapt->ops->destroy = TSGLAdaptDestroy_JustFree;
@@ -407,7 +407,7 @@ PetscErrorCode TSGLAdaptCreate_Both(TSGLAdapt adapt)
   TSGLAdapt_Both *a;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(adapt,TSGLAdapt_Both,&a);CHKERRQ(ierr);
+  ierr = PetscNewLog(adapt,&a);CHKERRQ(ierr);
   adapt->data         = (void*)a;
   adapt->ops->choose  = TSGLAdaptChoose_Both;
   adapt->ops->destroy = TSGLAdaptDestroy_JustFree;
