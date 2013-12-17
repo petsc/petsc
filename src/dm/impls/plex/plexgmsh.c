@@ -151,11 +151,13 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
         dim  = 3;
         numCorners = 4;
         snum = fscanf(fd, "%d %d %d %d\n", &cone[0], &cone[1], &cone[2], &cone[3]);CHKERRQ(snum != numCorners);
+        ierr = DMPlexInvertCell(dim, numCorners, cone);CHKERRQ(ierr);
         break;
       case 5: /* 8-node hexahedron */
         dim = 3;
         numCorners = 8;
         snum = fscanf(fd, "%d %d %d %d %d %d %d %d\n", &cone[0], &cone[1], &cone[2], &cone[3], &cone[4], &cone[5], &cone[6], &cone[7]);CHKERRQ(snum != numCorners);
+        ierr = DMPlexInvertCell(dim, numCorners, cone);CHKERRQ(ierr);
         break;
       default:
         SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported Gmsh element type %d", cellType);
