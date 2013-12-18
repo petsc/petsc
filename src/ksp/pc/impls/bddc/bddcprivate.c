@@ -1424,10 +1424,15 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     pcbddc->use_vertices = PETSC_TRUE;
   }
   ierr = PCBDDCGraphGetCandidatesIS(pcbddc->mat_graph,pcbddc->use_faces,pcbddc->use_edges,pcbddc->use_vertices,&n_ISForFaces,&ISForFaces,&n_ISForEdges,&ISForEdges,&ISForVertices);
-  /* HACK: provide functions to set change of basis */
+  /* HACKS (the two following code branches) */
   if (!ISForVertices && pcbddc->NullSpace) {
     pcbddc->use_change_of_basis = PETSC_TRUE;
     pcbddc->use_change_on_faces = PETSC_FALSE;
+  }
+  if (pcbddc->NullSpace) {
+    /* use_change_of_basis should be consistent among processors */
+    PetscBool tbool = pcbddc->use_change_of_basis;
+    ierr = MPI_Allreduce(&tbool,&(pcbddc->use_change_of_basis),1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
   }
   /* print some info */
   if (pcbddc->dbg_flag) {
@@ -2134,7 +2139,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
               }
             }
           }
-          ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"\t-> using standard change of basis\n");CHKERRQ(ierr);
+          if (pcbddc->dbg_flag) {
+            ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"\t-> using standard change of basis\n");CHKERRQ(ierr);
+          }
         }
         /* increment primal counter */
         primal_counter += primal_dofs;
@@ -3747,22 +3754,21 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   }
   ierr = PetscFree(isarray);CHKERRQ(ierr);
 
-/* temporary disabled code */
-#if 0
   /* Compute coarse null space (special handling by BDDC only) */
   if (pcbddc->NullSpace) {
     ierr = PCBDDCNullSpaceAssembleCoarse(pc,coarse_mat,&CoarseNullSpace);CHKERRQ(ierr);
-    if (isbddc) {
-      ierr = PCBDDCSetNullSpace(pc_temp,CoarseNullSpace);CHKERRQ(ierr);
-    } else {
-      ierr = KSPSetNullSpace(pcbddc->coarse_ksp,CoarseNullSpace);CHKERRQ(ierr);
-    }
   }
-#endif
 
   if (pcbddc->coarse_ksp) {
     Vec crhs,csol;
     PetscBool ispreonly;
+    if (CoarseNullSpace) {
+      if (isbddc) {
+        ierr = PCBDDCSetNullSpace(pc_temp,CoarseNullSpace);CHKERRQ(ierr);
+      } else {
+        ierr = KSPSetNullSpace(pcbddc->coarse_ksp,CoarseNullSpace);CHKERRQ(ierr);
+      }
+    }
     /* setup coarse ksp */
     ierr = KSPSetUp(pcbddc->coarse_ksp);CHKERRQ(ierr);
     ierr = KSPGetSolution(pcbddc->coarse_ksp,&csol);CHKERRQ(ierr);
