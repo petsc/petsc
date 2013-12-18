@@ -838,6 +838,14 @@ runex19_ngmres_fas: #test ex19 with NGMRES preconditioned by FAS with pointwise 
 	   ${DIFF} output/ex19_ngmres_fas.out ex19_ngmres_fas.tmp || printf "${PWD}\nPossible problem with ex19_ngmres_fas, diffs above\n=========================================\n"; \
            ${RM} -f ex19_ngmres_fas.tmp
 
+runex19_ngmres_fas_gssecant: #test ex19 with NGMRES preconditioned by FAS with pointwise GS smoother
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_monitor_short -snes_type ngmres -npc_snes_type fas \
+        -npc_fas_levels_snes_type gs -npc_fas_levels_snes_max_it 6 -npc_fas_levels_snes_gs_secant -npc_fas_levels_snes_gs_max_it 1 -npc_fas_coarse_snes_max_it 1 \
+        -lidvelocity 100 -grashof 4e4 \
+         > ex19_ngmres_fas_gssecant.tmp 2>&1; \
+	   ${DIFF} output/ex19_ngmres_fas_gssecant.out ex19_ngmres_fas_gssecant.tmp || echo  ${PWD} "\nPossible problem with ex19_ngmres_fas_gssecant, diffs above \n========================================="; \
+           ${RM} -f ex19_ngmres_fas_gssecant.tmp
+
 runex19_ngmres_fas_ms: #test ex19 with NGMRES preconditioned by FAS with multi-stage smoother
 	-@${MPIEXEC} -n 2 ./ex19 -snes_grid_sequence 2 -lidvelocity 200 -grashof 1e4 -snes_monitor_short -snes_view -snes_converged_reason -snes_type ngmres -npc_snes_type fas -npc_fas_coarse_snes_type newtonls -npc_fas_coarse_ksp_type preonly -npc_snes_max_it 1 -npc_fas_snes_type ms -npc_fas_snes_max_it 1 -npc_fas_ksp_type preonly -npc_fas_pc_type none -npc_fas_snes_ms_type m62 -npc_fas_snes_max_it 1 -npc_fas_snes_ms_damping 0.22 > ex19_ngmres_fas_ms.tmp 2>&1; \
 	   ${DIFF} output/ex19_ngmres_fas_ms.out ex19_ngmres_fas_ms.tmp || printf "${PWD}\nPossible problem with ex19_ngmres_fas_ms, diffs above\n=========================================\n"; \
