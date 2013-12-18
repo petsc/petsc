@@ -3271,7 +3271,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
   ierr = MatAssemblyBegin(*mat_n,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat_n,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-#if 1
+#if 0
   if (!restrict_comm) { /* check */
     Vec       lvec,rvec;
     PetscReal infty_error;
