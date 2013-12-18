@@ -23,8 +23,12 @@ See also PetscBinaryIO.__doc__ and methods therein.
 """
 
 import numpy as np
-import types
 import functools
+
+try:
+    basestring                  # Python-2 has basestring as a common parent of unicode and str
+except NameError:
+    basestring = str            # Python-3 is unicode through and through
 
 def update_wrapper_with_doc(wrapper, wrapped):
     """Similar to functools.update_wrapper, but also gets the wrapper's __doc__ string"""
@@ -386,7 +390,7 @@ class PetscBinaryIO(object):
 
         close = False
 
-        if type(fid) is types.StringType:
+        if isinstance(fid, basestring):
             fid = open(fid, 'rb')
             close = True
 
@@ -431,7 +435,7 @@ class PetscBinaryIO(object):
                     which must be of type Vec, IS, MatSparse, or MatSciPy.
         """
         close = False
-        if type(fid) is types.StringType:
+        if isinstance(fid, basestring):
             fid = open(fid, 'wb')
             close = True
 
