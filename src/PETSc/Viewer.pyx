@@ -11,7 +11,7 @@ class ViewerType(object):
     HDF5        = S_(PETSCVIEWERHDF5)
     NETCDF      = S_(PETSCVIEWERNETCDF)
     MATLAB      = S_(PETSCVIEWERMATLAB)
-    AMS         = S_(PETSCVIEWERAMS)
+    SAWS        = S_(PETSCVIEWERSAWS)
 
 class ViewerFormat(object):
     DEFAULT           = PETSC_VIEWER_DEFAULT

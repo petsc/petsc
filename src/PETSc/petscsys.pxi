@@ -39,9 +39,12 @@ cdef extern from * nogil:
     int PetscSplitOwnership(MPI_Comm,PetscInt*,PetscInt*)
     int PetscSplitOwnershipBlock(MPI_Comm,PetscInt,PetscInt*,PetscInt*)
 
+    FILE *PETSC_STDOUT
+    FILE *PETSC_STDERR
+
     int PetscPrintf(MPI_Comm,char[],...)
     int PetscSynchronizedPrintf(MPI_Comm,char[],...)
-    int PetscSynchronizedFlush(MPI_Comm)
+    int PetscSynchronizedFlush(MPI_Comm,FILE*)
 
     int PetscSequentialPhaseBegin(MPI_Comm,int)
     int PetscSequentialPhaseEnd(MPI_Comm,int)

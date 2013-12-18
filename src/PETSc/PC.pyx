@@ -29,7 +29,6 @@ class PCType(object):
     ML           = S_(PCML)
     GALERKIN     = S_(PCGALERKIN)
     EXOTIC       = S_(PCEXOTIC)
-    HMPI         = S_(PCHMPI)
     ASA          = S_(PCASA)
     CP           = S_(PCCP)
     BFBT         = S_(PCBFBT)

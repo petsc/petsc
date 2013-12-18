@@ -10,6 +10,7 @@
 #include "petsc-private/snesimpl.h"
 #include "petsc-private/tsimpl.h"
 
+#include "petsc-34/petsc.h"
 #include "petsc-34/petscmat.h"
 #include "petsc-34/petscksp.h"
 #include "petsc-34/petscsnes.h"

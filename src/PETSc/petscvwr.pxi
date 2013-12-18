@@ -11,7 +11,7 @@ cdef extern from * nogil:
     PetscViewerType PETSCVIEWERNETCDF
     PetscViewerType PETSCVIEWERHDF5
     PetscViewerType PETSCVIEWERMATLAB
-    PetscViewerType PETSCVIEWERAMS
+    PetscViewerType PETSCVIEWERSAWS
 
     ctypedef enum PetscViewerFormat:
         PETSC_VIEWER_DEFAULT

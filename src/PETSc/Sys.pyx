@@ -107,12 +107,12 @@ cdef class Sys:
         cdef const_char *m = NULL
         message = str2bytes(message, &m)
         CHKERR( PetscSynchronizedPrintf(ccomm, m) )
-        if flush: CHKERR( PetscSynchronizedFlush(ccomm) )
+        if flush: CHKERR( PetscSynchronizedFlush(ccomm, PETSC_STDOUT) )
 
     @classmethod
     def syncFlush(cls, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        CHKERR( PetscSynchronizedFlush(ccomm) )
+        CHKERR( PetscSynchronizedFlush(ccomm, PETSC_STDOUT) )
 
     # --- xxx ---
 
