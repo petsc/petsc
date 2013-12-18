@@ -27,7 +27,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeGSDefaultSecant(SNES snes,Vec X,Vec B,voi
   PetscScalar    h=gs->h;
   IS             *coloris;
   PetscScalar    f,g,x,w,d;
-  PetscReal      dxt,xt,ft,ft1;
+  PetscReal      dxt,xt,ft,ft1=0;
   const PetscInt *idx;
   PetscInt       size,s;
   PetscReal      atol,rtol,stol;
