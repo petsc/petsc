@@ -29,7 +29,7 @@ var recursionCounter        = 0;
 
 //counter of SAWs recursions for '-pc_type'
 var recursionCounterSAWs = 0;
-var currentRrecursionCounterSAWs = 0;
+var currentRecursionCounterSAWs = 0;
 var sawsInfo = [];
 
 //Counter for creating the new divs for the tree
@@ -118,8 +118,7 @@ DisplayDirectory = function(sub,divEntry)
     }
 
     //alert('call SAWs.displayDirectoryRecursive...');
-    SAWs.displayDirectoryRecursive(sub.directories,divEntry,0,"")
-    
+    SAWs.displayDirectoryRecursive(sub.directories,divEntry,0,"");   
 }
 
 //When pcoptions.html is loaded ...
@@ -152,8 +151,13 @@ HandlePCOptions = function(){
             symm:    document.getElementById("symm").checked,
             logstruc:document.getElementById("logstruc").checked,
         }
-        alert('logstruc='+matInfo[recursionCounter].logstruc);
-        DisplayPCType("fieldsplit"); //why matInfo[recursionCounter].logstruc is not input into $(document).on('change', '.pcLists', function()???
+        if (matInfo[recursionCounter].logstruc) {
+            alert('logstruc='+matInfo[recursionCounter].logstruc);
+            //DisplayPCType(0);
+            //DisplayPCType("fieldsplit"); //why matInfo[recursionCounter].logstruc is not input into $(document).on('change', '.pcLists', function()???
+            //SAWs_alternatives ???
+            populatePcList("pcList-1",null,"fieldsplit");
+        }
     });
     
     recursionCounter++;

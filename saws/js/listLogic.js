@@ -23,12 +23,13 @@ $(document).on('change', '.pcLists', function(){
     var parentDiv = $(this).parent().get(0).id;
     
     //new way of finding parent (the number after o in the o div): parent=listRecursionCounter, but listRecursionCounter may not be defined, so cannot be used :-(
-    parent = parentDiv;
+    var parent = parentDiv;
     while (parent.indexOf('_') != -1)
 	parent=$("#"+parent).parent().get(0).id;
     parent = parent.substring(1, parent.length);  //parent=matrix recursion counter b/c resursion counter is not in this scope
     //alert('parentDiv '+ parentDiv + '; parent '+parent + '; pcValue '+pcValue +'; this.id '+ this.id+'; recursionCounterSAWs '+recursionCounterSAWs);
     //alert('logstruc='+matInfo[parent].logstruc);
+    if (parent < 0) return; //endtag for o-1 and other oparent are not consistent yet???
 
     // if pcValue is changed to !fieldsplit for logically structured matrix
     if (pcValue != "fieldsplit" && matInfo[parent].logstruc) {
@@ -64,8 +65,9 @@ $(document).on('change', '.pcLists', function(){
         // Smoothing (Level>0)
         $("#"+newDiv).append("<br><br><b id=\"text_smoothing"+parent+endtag+"\">Smoothing   </b>")
         var mgLevels = $("#mglevels" + parent + myendtag).val();
+        //get mgLevels from SAWs???
        
-        if (mgLevels > 1) {
+        if (mgLevels > 1) { //use SAWs options???
             for (var level=mgLevels-1; level>0; level--) {
                 myendtag = endtag+level;
                 $("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id=\"text_kspList"+parent+myendtag+"\">KSP Level "+level+" &nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+ parent+myendtag +"\"></select>")
@@ -83,13 +85,26 @@ $(document).on('change', '.pcLists', function(){
 	$("#"+newDiv).append("<br><br><b>Coarse Grid Solver (Level 0)  </b>")
         $("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList" + parent+myendtag +"\"></select>")
 	$("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent+myendtag +"\"></select>")
-	populateKspList("kspList"+parent+myendtag,null,"null");
-	populatePcList("pcList"+parent+myendtag,null,"null");
-	//set defaults
-	$("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
-	$("#pcList"+parent+myendtag).find("option[value='redundant']").attr("selected","selected");
-	//redundant has to have extra dropdown menus so manually trigger
-	$("#pcList"+parent+myendtag).trigger("change");
+
+        if (recursionCounter == 0) { //use SAWs options
+            var prefix = sawsInfo[currentRecursionCounterSAWs].prefix;
+            var SAWs_kspVal = $("#kspList-1"+prefix).val(); 
+            var SAWs_pcVal = $("#pcList-1"+prefix).val(); 
+            //alternative???
+            populateKspList("kspList"+parent+myendtag,null,SAWs_kspVal);
+            populatePcList("pcList"+parent+myendtag,null,SAWs_pcVal);
+            //alert("bjacobi: prefix="+prefix+"; SAWs_kspVal="+SAWs_kspVal+"; SAWs_pcVal="+SAWs_pcVal+"; currentRecursionCounterSAWs="+currentRecursionCounterSAWs);
+            currentRecursionCounterSAWs++;
+	    $("#pcList"+parent+myendtag).trigger("change");
+        } else {
+	    populateKspList("kspList"+parent+myendtag,null,"null");
+	    populatePcList("pcList"+parent+myendtag,null,"null");
+	    //set defaults
+	    $("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
+	    $("#pcList"+parent+myendtag).find("option[value='redundant']").attr("selected","selected");
+	    //redundant has to have extra dropdown menus so manually trigger
+	    $("#pcList"+parent+myendtag).trigger("change");
+        }
     } else { //if not mg, remove the options that mg might have added
 	var newDiv=generateDivName(this.id,parent,"mg");
 	$("#"+newDiv).remove();
@@ -147,10 +162,8 @@ $(document).on('change', '.pcLists', function(){
         } else {
 	    populateKspList("kspList"+parent+myendtag,null,"null");
             populatePcList("pcList"+parent+myendtag,null,"null");
-        }
-
-	//set defaults for bjacobi
-        if (recursionCounter){
+        
+	    //set defaults for bjacobi
 	    $("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
             if (matInfo[parent].symm) {
                 $("#pcList"+parent+myendtag).find("option[value='icc']").attr("selected","selected");
@@ -208,14 +221,26 @@ $(document).on('change', '.pcLists', function(){
         var myendtag = endtag+"0";
 	$("#"+newDiv).append("<b>KSP KSP   </b><select class=\"kspLists\" id=\"kspList" + parent +myendtag+"\"></select>");
 	$("#"+newDiv).append("<br><b>KSP PC &nbsp;&nbsp; </b><select class=\"pcLists\" id=\"pcList" + parent +myendtag+"\"></select>");
-	populateKspList("kspList"+parent+myendtag,null,"null");
-	populatePcList("pcList"+parent+myendtag,null,"null");
 
-	//set defaults for ksp
-	$("#kspList"+parent+myendtag).find("option[value='gmres']").attr("selected","selected");
-	$("#pcList"+parent+myendtag).find("option[value='bjacobi']").attr("selected","selected");
-	//bjacobi has extra dropdown menus so manually trigger once
-	$("#pcList"+parent+myendtag).trigger("change");
+        if (recursionCounter == 0) { //use SAWs options
+            var prefix = sawsInfo[currentRecursionCounterSAWs].prefix;
+            var SAWs_kspVal = $("#kspList-1"+prefix).val(); 
+            var SAWs_pcVal = $("#pcList-1"+prefix).val(); 
+            //alternative???
+            populateKspList("kspList"+parent+myendtag,null,SAWs_kspVal);
+            populatePcList("pcList"+parent+myendtag,null,SAWs_pcVal);
+            currentRecursionCounterSAWs++;
+            $("#pcList"+parent+myendtag).trigger("change");
+        } else {
+	    populateKspList("kspList"+parent+myendtag,null,"null");
+	    populatePcList("pcList"+parent+myendtag,null,"null");
+
+	    //set defaults for ksp
+	    $("#kspList"+parent+myendtag).find("option[value='gmres']").attr("selected","selected");
+	    $("#pcList"+parent+myendtag).find("option[value='bjacobi']").attr("selected","selected");
+	    //bjacobi has extra dropdown menus so manually trigger once
+	    $("#pcList"+parent+myendtag).trigger("change");
+        }
 
         // if parentDiv = ksp, it is a Nested Krylov method, display an image for illustration
         var parentDiv_str = parentDiv.substring(0,3);
