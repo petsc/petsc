@@ -484,7 +484,7 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
   PetscCellGeometry geom;
   PetscSection      section, sectionAux;
   PetscReal        *v0, *J, *invJ, *detJ;
-  PetscScalar      *elemVec, *u, *a;
+  PetscScalar      *elemVec, *u, *a = NULL;
   PetscInt          dim, Nf, NfAux = 0, f, numCells, cStart, cEnd, c;
   PetscInt          cellDof = 0, numComponents = 0;
   PetscInt          cellDofAux = 0, numComponentsAux = 0;
