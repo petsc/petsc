@@ -1551,7 +1551,7 @@ PetscErrorCode  PCFieldSplitSchurGetS(PC pc,Mat *S)
 .seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSchurPreType, PCFieldSplitSchurPrecondition(), MatSchurComplement, PCFieldSplitSchurGetS()
 
 @*/
-PetscErrorCode  PCFieldSplitSchurRestoreS(PC pc,Mat S)
+PetscErrorCode  PCFieldSplitSchurRestoreS(PC pc,Mat *S)
 {
   PetscErrorCode ierr;
   const char*    t;
@@ -1565,7 +1565,7 @@ PetscErrorCode  PCFieldSplitSchurRestoreS(PC pc,Mat S)
   if (!isfs) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected PC of type PCFIELDSPLIT, got %s instead",t);
   jac = (PC_FieldSplit*)pc->data;
   if (jac->type != PC_COMPOSITE_SCHUR) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected PCFIELDSPLIT of type SCHUR, got %D instead",jac->type);
-  if (S != jac->schur) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MatSchurComplement restored is not the same as gotten");
+  if (!S || *S != jac->schur) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MatSchurComplement restored is not the same as gotten");
   PetscFunctionReturn(0);
 }
 

@@ -127,7 +127,7 @@ PetscErrorCode MatSetFromOptions_SchurComplement(Mat N)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("MatSchurComplementOptions");CHKERRQ(ierr);
   Na->ainvtype = MAT_SCHUR_COMPLEMENT_AINV_DIAG;
-  ierr = PetscOptionsEnum("-mat_schur_complement_ainv_type","Type of approximation for inv(A00) used when assembling Sp = A11 - A10 inv(A00) A01","MatSchurComplementSetAinvType",Na->invtype,Na->ainvtype,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-mat_schur_complement_ainv_type","Type of approximation for inv(A00) used when assembling Sp = A11 - A10 inv(A00) A01","MatSchurComplementSetAinvType",MatSchurComplementAinvTypes,(PetscEnum)Na->ainvtype,(PetscEnum*)&Na->ainvtype,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = KSPSetFromOptions(Na->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -641,7 +641,7 @@ $                      MAT_SCHUR_COMPLEMENT_AINV_DIAG or MAT_SCHUR_COMPLEMENT_AI
 
 .seealso: MatSchurComplementAinvType, MatCreateSchurComplement(), MatGetSchurComplement(), MatSchurComplementGetPmat(), MatSchurComplementSetAinvType()
 @*/
-PetscErrorCode  MatSchurComplementGetPmatLumping(Mat S,MatSchurComplementAinvType *ainvtype)
+PetscErrorCode  MatSchurComplementGetAinvType(Mat S,MatSchurComplementAinvType *ainvtype)
 {
   PetscErrorCode      ierr;
   const char*         t;
