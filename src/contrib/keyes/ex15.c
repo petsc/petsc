@@ -34,8 +34,7 @@ options are:\n\
 
 */
 
-#include "snes.h"
-#include <petsctime.h>
+#include <snes.h"
 #include "da.h"
 #include "mg.h"
 

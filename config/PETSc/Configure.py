@@ -28,8 +28,6 @@ class Configure(config.base.Configure):
       build_type = 'legacy build'
     desc.append(' Configure stage complete. Now build PETSc libraries with (%s):' % build_type)
     desc.append('   make PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' all')
-    desc.append(' or (experimental with python):')
-    desc.append('   PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' ./config/builder.py')
     desc.append('xxx=========================================================================xxx')
     return '\n'.join(desc)+'\n'
 
@@ -46,7 +44,7 @@ class Configure(config.base.Configure):
     config.base.Configure.setupDependencies(self, framework)
     self.setCompilers  = framework.require('config.setCompilers',       self)
     self.arch          = framework.require('PETSc.utilities.arch',      self.setCompilers)
-    self.petscdir      = framework.require('PETSc.utilities.petscdir',  self.setCompilers)
+    self.petscdir      = framework.require('PETSc.utilities.petscdir',  self.arch)
     self.installdir    = framework.require('PETSc.utilities.installDir',self)
     self.languages     = framework.require('PETSc.utilities.languages', self.setCompilers)
     self.debugging     = framework.require('PETSc.utilities.debugging', self.setCompilers)
@@ -821,10 +819,13 @@ prepend-path PATH %s
       self.addDefine('DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('REPLACE_DIR_SEPARATOR','\'/\'')
       self.addDefine('CANNOT_START_DEBUGGER',1)
+      (petscdir,error,status) = self.executeShellCommand('cygpath -w '+self.petscdir.dir)
+      self.addDefine('DIR','"'+petscdir.replace('\\','\\\\')+'"')
     else:
       self.addDefine('PATH_SEPARATOR','\':\'')
       self.addDefine('REPLACE_DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('DIR_SEPARATOR','\'/\'')
+      self.addDefine('DIR', '"'+self.petscdir.dir+'"')
 
     return
 

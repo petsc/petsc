@@ -35,7 +35,9 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  {'numProcs': 2, 'args': '-dim 2 -cell_simplex 0 -refinement_uniform 1 -interpolate 1 -dm_view ::ascii_latex'},
                                                                  # CGNS tests 10-11 (need to find smaller test meshes)
                                                                  {'numProcs': 1, 'args': '-filename %(meshes)s/tut21.cgns -interpolate 1 -dm_view', 'requires': ['CGNS']},
-                                                                 {'numProcs': 1, 'args': '-filename %(meshes)s/StaticMixer.cgns -interpolate 1 -dm_view', 'requires': ['CGNS']}],
+                                                                 {'numProcs': 1, 'args': '-filename %(meshes)s/StaticMixer.cgns -interpolate 1 -dm_view', 'requires': ['CGNS']},
+                                                                 # Gmsh tests 12-
+                                                                 {'numProcs': 1, 'args': '-filename %(meshes)s/doublet-tet.msh -interpolate 1 -dm_view'}],
                         'src/dm/impls/plex/examples/tests/ex3': [# 0-2 2D P_1 on a triangle
                                                                  {'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1'},
                                                                  {'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1 -porder 1'},
@@ -62,37 +64,40 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -petscspace_poly_tensor -num_comp 2 -qorder 1 -porder 2'}],
                         'src/dm/impls/plex/examples/tests/ex4': [# 2D Simplex 0-3
                                                                  {'numProcs': 1, 'args': '-dim 2 -cell_hybrid 0 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 1, 'args': '-dim 2 -cell_hybrid 0 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 2 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 2, 'args': '-dim 2 -cell_hybrid 0 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 2, 'args': '-dim 2 -cell_hybrid 0 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 2 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
                                                                  # 2D Hybrid Simplex 4-7
-                                                                 {'numProcs': 1, 'args': '-dim 2 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 1, 'args': '-dim 2 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 2, 'args': '-dim 2 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 2, 'args': '-dim 2 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 2 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
+                                                                 {'numProcs': 1, 'args': '-dim 2 -num_refinements 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
+                                                                 {'numProcs': 2, 'args': '-dim 2 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
+                                                                 {'numProcs': 2, 'args': '-dim 2 -num_refinements 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
                                                                  # 3D Simplex 8-11
-                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_hybrid 0 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 2, 'args': '-dim 3 -cell_hybrid 0 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_hybrid 0 -test_num 1 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 2, 'args': '-dim 3 -cell_hybrid 0 -test_num 1 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 3 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_hybrid 0 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 3 -cell_hybrid 0 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail'},
                                                                  # 2D Quad 12-13
-                                                                 {'numProcs': 1, 'args': '-dim 2 -cell_simplex 0 -cell_hybrid 0 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 2, 'args': '-dim 2 -cell_simplex 0 -cell_hybrid 0 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 2 -cell_simplex 0 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 2 -cell_simplex 0 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
                                                                  # 3D Hex 14-15
-                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -cell_hybrid 0 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 2, 'args': '-dim 3 -cell_simplex 0 -cell_hybrid 0 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 3 -cell_simplex 0 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
                                                                  # 3D Hybrid Simplex 16-19
-                                                                 {'numProcs': 1, 'args': '-dim 3 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 2, 'args': '-dim 3 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 1, 'args': '-dim 3 -test_num 1 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 2, 'args': '-dim 3 -test_num 1 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -num_refinements 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
+                                                                 {'numProcs': 2, 'args': '-dim 3 -num_refinements 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
+                                                                 {'numProcs': 2, 'args': '-dim 3 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
                                                                  # 3D Hybrid Hex 20-23
-                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -refinement_uniform 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
-                                                                 {'numProcs': 2, 'args': '-dim 3 -cell_simplex 0 -refinement_uniform 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
-                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -test_num 1 -refinement_uniform 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
-                                                                 {'numProcs': 2, 'args': '-dim 3 -cell_simplex 0 -test_num 1 -refinement_uniform 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
-                                                                 # 2D Hybrid Simplex 24-
-                                                                 {'numProcs': 1, 'args': '-dim 2 -test_num 1 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -num_refinements 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
+                                                                 {'numProcs': 2, 'args': '-dim 3 -cell_simplex 0 -num_refinements 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
+                                                                 {'numProcs': 2, 'args': '-dim 3 -cell_simplex 0 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
+                                                                 # 2D Hybrid Simplex 24-24
+                                                                 {'numProcs': 1, 'args': '-dim 2 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail', 'requires': 'Broken'},
+                                                                 # 3D Multiple Refinement 25-26
+                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_hybrid 0 -test_num 2 -num_refinements 2 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -cell_hybrid 0 -test_num 1 -num_refinements 2 -dm_view ::ascii_info_detail'},
 ],
                         'src/dm/impls/plex/examples/tests/ex5': [# 2D Simplex 0-1
                                                                  {'numProcs': 1, 'args': '-dim 2 -dm_view ::ascii_info_detail'},
@@ -106,11 +111,12 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  # 3D Hex 6-7
                                                                  {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 2, 'args': '-dim 3 -cell_simplex 0 -dm_view ::ascii_info_detail'},
-                                                                 # Examples from PyLith 8-11
+                                                                 # Examples from PyLith 8-12
                                                                  {'numProcs': 1, 'args': '-dim 2 -test_num 1 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 1, 'args': '-dim 3 -test_num 1 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -test_num 1 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 1, 'args': '-dim 2 -cell_simplex 0 -test_num 1 -dm_view ::ascii_info_detail'},],
+                                                                 {'numProcs': 1, 'args': '-dim 2 -cell_simplex 0 -test_num 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -test_num 2 -dm_view ::ascii_info_detail'},],
                         'src/dm/impls/plex/examples/tests/ex6': [{'numProcs': 1, 'args': '-malloc_dump'},
                                                                  {'numProcs': 1, 'args': '-malloc_dump -pend 10000'},
                                                                  {'numProcs': 1, 'args': '-malloc_dump -pend 10000 -fill 0.05'},
@@ -186,12 +192,25 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                   {'numProcs': 1, 'args': '-dim 3 -interpolate 1 -cell_simplex 0 -refinement_uniform       -num_dof 1,0,0,0'},
                                                                   # Parallel tests
                                                                   ],
+                        'src/dm/impls/plex/examples/tests/ex11': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tests/ex1f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tests/ex2f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tutorials/ex1': [{'numProcs': 1, 'args': ''},
                                                                      {'numProcs': 1, 'args': '-dim 3'},],
                         'src/dm/impls/plex/examples/tutorials/ex1f90': [{'numProcs': 1, 'args': ''},
                                                                         {'numProcs': 1, 'args': '-dim 3'},],
+                        'src/dm/impls/plex/examples/tutorials/ex2': [# CGNS meshes 0-1
+                                                                     {'numProcs': 1, 'args': '-filename %(meshes)s/tut21.cgns -interpolate 1', 'requires': ['CGNS']},
+                                                                     {'numProcs': 1, 'args': '-filename %(meshes)s/StaticMixer.cgns -interpolate 1', 'requires': ['CGNS']},
+                                                                     # Gmsh meshes 2-2
+                                                                     {'numProcs': 1, 'args': '-filename %(meshes)s/doublet-tet.msh -interpolate 1'},
+                                                                     # Exodus meshes 3-7
+                                                                     {'numProcs': 1, 'args': '-filename %(meshes)s/sevenside-quad.exo -interpolate 1', 'requires': ['exodusii']},
+                                                                     {'numProcs': 1, 'args': '-filename %(meshes)s/sevenside-quad-15.exo -interpolate 1', 'requires': ['exodusii']},
+                                                                     {'numProcs': 1, 'args': '-filename %(meshes)s/squaremotor-30.exo -interpolate 1', 'requires': ['exodusii']},
+                                                                     {'numProcs': 1, 'args': '-filename %(meshes)s/blockcylinder-50.exo -interpolate 1', 'requires': ['exodusii']},
+                                                                     {'numProcs': 1, 'args': '-filename %(meshes)s/simpleblock-100.exo -interpolate 1', 'requires': ['exodusii']},
+                                                                     ],
                         'src/snes/examples/tutorials/ex12':   [# 2D serial P1 test 0-4
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
@@ -207,8 +226,7 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -dm_view'},
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -dm_view'},
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -dm_view'},
-                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_order 1 -bd_petscspace_order 1 -snes_fd -show_initial -dm_plex_print_fem 1 -dm_view',
-                                                                'requires': ['Broken']},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_order 1 -bd_petscspace_order 1 -snes_fd -show_initial -dm_plex_print_fem 1 -dm_view'},
                                                                # Analytic variable coefficient 13-20
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -variable_coefficient analytic -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -variable_coefficient analytic -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
@@ -238,9 +256,9 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient field    -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1'},
                                                                # Using ExodusII mesh 37-38 BROKEN
                                                                {'numProcs': 1, 'args': '-run_type test -f %(meshes)s/sevenside.exo -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1 -dm_view',
-                                                                'requires': ['Exodus', 'Broken']},
+                                                                'requires': ['exodusii', 'Broken']},
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -f /Users/knepley/Downloads/kis_modell_tet2.exo -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1 -dm_view',
-                                                                'requires': ['Exodus', 'Broken']}],
+                                                                'requires': ['exodusii', 'Broken']}],
                         'src/snes/examples/tutorials/ex31':   [# Decoupled field Dirichlet tests 0-6
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0     -forcing_type constant -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1',
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 laplacian 2 1 1 1 gradient 2 1 1 1 identity src/snes/examples/tutorials/ex31.h'},
@@ -1664,7 +1682,7 @@ class PETScMaker(script.Script):
    except ValueError:
      args   = params.get('args', '')
    hosts    = ','.join(['localhost']*int(numProcs))
-   return ' '.join([self.configInfo.mpi.mpiexec, '-hosts', hosts, '-n', str(numProcs), os.path.abspath(executable), args])
+   return ' '.join([self.configInfo.mpi.mpiexec, '-host', hosts, '-n', str(numProcs), os.path.abspath(executable), args])
 
  def runTest(self, testDir, executable, testNum, replace, **params):
    '''testNum can be any string'''

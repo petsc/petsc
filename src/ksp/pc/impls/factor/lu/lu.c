@@ -276,7 +276,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_LU(PC pc)
   PC_LU          *dir;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_LU,&dir);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&dir);CHKERRQ(ierr);
 
   ierr = MatFactorInfoInitialize(&((PC_Factor*)dir)->info);CHKERRQ(ierr);
 

@@ -64,24 +64,38 @@ PetscErrorCode DMTSView(DMTS kdm,PetscViewer viewer)
   } else if (isbinary) {
     struct {
       TSIFunction ifunction;
+    } funcstruct;
+    struct {
       PetscErrorCode (*ifunctionview)(void*,PetscViewer);
+    } funcviewstruct;
+    struct {
       PetscErrorCode (*ifunctionload)(void**,PetscViewer);
-    } funcstruct = {kdm->ops->ifunction,
-                    kdm->ops->ifunctionview,
-                    kdm->ops->ifunctionload};
+    } funcloadstruct;
     struct {
       TSIJacobian ijacobian;
+    } jacstruct;
+    struct {
       PetscErrorCode (*ijacobianview)(void*,PetscViewer);
+    } jacviewstruct;
+    struct {
       PetscErrorCode (*ijacobianload)(void**,PetscViewer);
-    } jacstruct = {kdm->ops->ijacobian,
-                   kdm->ops->ijacobianview,
-                   kdm->ops->ijacobianload};
+    } jacloadstruct;
 
-    ierr = PetscViewerBinaryWrite(viewer,&funcstruct,3,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    funcstruct.ifunction         = kdm->ops->ifunction;
+    funcviewstruct.ifunctionview = kdm->ops->ifunctionview;
+    funcloadstruct.ifunctionload = kdm->ops->ifunctionload;
+    ierr = PetscViewerBinaryWrite(viewer,&funcstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&funcviewstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&funcloadstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
     if (kdm->ops->ifunctionview) {
       ierr = (*kdm->ops->ifunctionview)(kdm->ifunctionctx,viewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerBinaryWrite(viewer,&jacstruct,3,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    jacstruct.ijacobian = kdm->ops->ijacobian;
+    jacviewstruct.ijacobianview = kdm->ops->ijacobianview;
+    jacloadstruct.ijacobianload = kdm->ops->ijacobianload;
+    ierr = PetscViewerBinaryWrite(viewer,&jacstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&jacviewstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&jacloadstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
     if (kdm->ops->ijacobianview) {
       ierr = (*kdm->ops->ijacobianview)(kdm->ijacobianctx,viewer);CHKERRQ(ierr);
     }

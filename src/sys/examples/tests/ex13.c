@@ -2,6 +2,8 @@ static char help[] = "Demonstrates PETSc path routines.\n";
 
 #include <petscsys.h>
 
+#if defined(PETSC_HAVE_POPEN)
+
 #undef __FUNCT__
 #define __FUNCT__ "RealpathPhonyFile"
 /* realpath(3) requires the path to exist, but GNU coreutils' realpath(1) only needs the containing directory to exist.
@@ -87,15 +89,19 @@ static PetscErrorCode Check(const char *path)
   ierr = CheckLen(path,used-1,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
+#if defined(PETSC_HAVE_POPEN)
   PetscErrorCode ierr;
   char           user[256],buf[512];
+#endif
 
   PetscInitialize(&argc,&argv,(char*)0,help);
+#if defined(PETSC_HAVE_POPEN)
   ierr = Check("~/file-name");CHKERRQ(ierr);
   ierr = PetscGetUserName(user,256);CHKERRQ(ierr);
   ierr = PetscSNPrintf(buf,sizeof buf,"~%s/file-name",user);CHKERRQ(ierr);
@@ -103,6 +109,7 @@ int main(int argc,char **argv)
   ierr = Check("/dev/null");CHKERRQ(ierr);
   ierr = Check("./this-dir");CHKERRQ(ierr);
   ierr = Check("also-this-dir");CHKERRQ(ierr);
+#endif
   ierr = PetscFinalize();
   return 0;
 }

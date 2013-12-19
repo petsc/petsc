@@ -39,13 +39,14 @@ PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
       ierr = DMView_DA_VTK(da,viewer);CHKERRQ(ierr);
     }
   } else if (isdraw) {
-    PetscDraw draw;
-    double    ymin = -1*dd->s-1,ymax = dd->N+dd->s;
-    double    xmin = -1*dd->s-1,xmax = dd->M+dd->s;
-    double    x,y;
-    PetscInt  base,*idx;
-    char      node[10];
-    PetscBool isnull;
+    PetscDraw      draw;
+    double         ymin = -1*dd->s-1,ymax = dd->N+dd->s;
+    double         xmin = -1*dd->s-1,xmax = dd->M+dd->s;
+    double         x,y;
+    PetscInt       base;
+    const PetscInt *idx;
+    char           node[10];
+    PetscBool      isnull;
 
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
@@ -90,17 +91,19 @@ PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
     /* overlay ghost numbers, useful for error checking */
     /* put in numbers */
 
-    base = 0; idx = dd->idx;
+    base = 0;
+    ierr = ISLocalToGlobalMappingGetIndices(da->ltogmapb,&idx);CHKERRQ(ierr);
     ymin = dd->Ys; ymax = dd->Ye; xmin = dd->Xs; xmax = dd->Xe;
     for (y=ymin; y<ymax; y++) {
       for (x=xmin; x<xmax; x++) {
         if ((base % dd->w) == 0) {
-          sprintf(node,"%d",(int)(idx[base]/dd->w));
+          sprintf(node,"%d",(int)(idx[base]));
           ierr = PetscDrawString(draw,x/dd->w,y,PETSC_DRAW_BLUE,node);CHKERRQ(ierr);
         }
         base++;
       }
     }
+    ierr = ISLocalToGlobalMappingRestoreIndices(da->ltogmapb,&idx);
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   } else if (isbinary) {
@@ -152,7 +155,7 @@ PetscErrorCode  DMDASplitComm2d(MPI_Comm comm,PetscInt M,PetscInt N,PetscInt sw,
     PetscMPIInt i,*groupies;
 
     ierr = MPI_Comm_group(comm,&entire_group);CHKERRQ(ierr);
-    ierr = PetscMalloc(csize*sizeof(PetscInt),&groupies);CHKERRQ(ierr);
+    ierr = PetscMalloc1(csize,&groupies);CHKERRQ(ierr);
     for (i=0; i<csize; i++) {
       groupies[i] = (rank/csize)*csize + i;
     }
@@ -234,8 +237,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   MPI_Comm         comm;
   PetscMPIInt      rank,size;
   PetscInt         xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,start,end,IXs,IXe,IYs,IYe;
-  PetscInt         up,down,left,right,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn,*idx_cpy;
-  const PetscInt   *idx_full;
+  PetscInt         up,down,left,right,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
   PetscInt         xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count;
   PetscInt         s_x,s_y; /* s proportionalized to w */
   PetscInt         sn0 = 0,sn2 = 0,sn6 = 0,sn8 = 0;
@@ -293,7 +295,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
      xs is the first local node number, x is the number of local nodes
   */
   if (!lx) {
-    ierr = PetscMalloc(m*sizeof(PetscInt), &dd->lx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m, &dd->lx);CHKERRQ(ierr);
     lx   = dd->lx;
     for (i=0; i<m; i++) {
       lx[i] = M/m + ((M % m) > i);
@@ -317,7 +319,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
      ys is the first local node number, y is the number of local nodes
   */
   if (!ly) {
-    ierr = PetscMalloc(n*sizeof(PetscInt), &dd->ly);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n, &dd->ly);CHKERRQ(ierr);
     ly   = dd->ly;
     for (i=0; i<n; i++) {
       ly[i] = N/n + ((N % n) > i);
@@ -408,7 +410,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 
   /* determine starting point of each processor */
   nn       = x*y;
-  ierr     = PetscMalloc2(size+1,PetscInt,&bases,size,PetscInt,&ldims);CHKERRQ(ierr);
+  ierr     = PetscMalloc2(size+1,&bases,size,&ldims);CHKERRQ(ierr);
   ierr     = MPI_Allgather(&nn,1,MPIU_INT,ldims,1,MPIU_INT,comm);CHKERRQ(ierr);
   bases[0] = 0;
   for (i=1; i<=size; i++) {
@@ -430,7 +432,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   ierr = VecGetOwnershipRange(global,&start,&end);CHKERRQ(ierr);
   ierr = ISCreateStride(comm,x*y*dof,start,1,&to);CHKERRQ(ierr);
 
-  ierr  = PetscMalloc(x*y*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(x*y,&idx);CHKERRQ(ierr);
   left  = xs - Xs; right = left + x;
   down  = ys - Ys; up = down + y;
   count = 0;
@@ -450,7 +452,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
      but not ghost points outside the domain that aren't periodic */
   if (stencil_type == DMDA_STENCIL_BOX) {
     count = (IXe-IXs)*(IYe-IYs);
-    ierr  = PetscMalloc(count*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(count,&idx);CHKERRQ(ierr);
 
     left  = IXs - Xs; right = left + (IXe-IXs);
     down  = IYs - Ys; up = down + (IYe-IYs);
@@ -474,7 +476,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
             -----------
          Xs xs        xe Xe */
     count = (ys-IYs)*x + y*(IXe-IXs) + (IYe-ye)*x;
-    ierr  = PetscMalloc(count*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(count,&idx);CHKERRQ(ierr);
 
     left  = xs - Xs; right = left + x;
     down  = ys - Ys; up = down + y;
@@ -567,7 +569,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     if ((n7 >= 0) && (n8 < 0)) n8 = rank+1;
   }
 
-  ierr = PetscMalloc(9*sizeof(PetscInt),&dd->neighbors);CHKERRQ(ierr);
+  ierr = PetscMalloc1(9,&dd->neighbors);CHKERRQ(ierr);
 
   dd->neighbors[0] = n0;
   dd->neighbors[1] = n1;
@@ -585,7 +587,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     n0  = n2 = n6 = n8 = -1;
   }
 
-  ierr = PetscMalloc((Xe-Xs)*(Ye-Ys)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1((Xe-Xs)*(Ye-Ys),&idx);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)da,(Xe-Xs)*(Ye-Ys)*sizeof(PetscInt));CHKERRQ(ierr);
 
   nn = 0;
@@ -779,11 +781,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
      of VecSetValuesLocal().
   */
   ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_OWN_POINTER,&ltogis);CHKERRQ(ierr);
-  ierr = PetscMalloc(nn*dof*sizeof(PetscInt),&idx_cpy);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory((PetscObject)da,nn*dof*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = ISGetIndices(ltogis, &idx_full);CHKERRQ(ierr);
-  ierr = PetscMemcpy(idx_cpy,idx_full,nn*dof*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = ISRestoreIndices(ltogis, &idx_full);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateIS(ltogis,&da->ltogmap);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)da->ltogmap);CHKERRQ(ierr);
   ierr = ISDestroy(&ltogis);CHKERRQ(ierr);
@@ -801,8 +798,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 
   dd->gtol      = gtol;
   dd->ltog      = ltog;
-  dd->idx       = idx_cpy;
-  dd->Nl        = nn*dof;
   dd->base      = base;
   da->ops->view = DMView_DA_2d;
   dd->ltol      = NULL;
@@ -886,6 +881,5 @@ PetscErrorCode  DMDACreate2d(MPI_Comm comm,DMDABoundaryType bx,DMDABoundaryType 
   /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
   ierr = DMSetFromOptions(*da);CHKERRQ(ierr);
   ierr = DMSetUp(*da);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*da,NULL,"-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

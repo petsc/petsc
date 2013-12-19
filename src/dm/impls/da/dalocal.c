@@ -714,7 +714,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numDof[], P
     }
   }
   ierr = PetscBTMemzero(pEnd-pStart, isLeaf);CHKERRQ(ierr);
-  ierr = PetscMalloc2(nleaves,PetscInt,&localPoints,nleaves,PetscSFNode,&remotePoints);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nleaves,&localPoints,nleaves,&remotePoints);CHKERRQ(ierr);
   for (zn = 0; zn < (dim > 2 ? 3 : 1); ++zn) {
     for (yn = 0; yn < (dim > 1 ? 3 : 1); ++yn) {
       for (xn = 0; xn < 3; ++xn) {
@@ -1189,8 +1189,10 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
   ierr = VecCreateSeq(PETSC_COMM_SELF, size, &coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   for (k = 0; k < nVz; ++k) {
-    PetscInt ind[3] = {0, 0, 0}, d, off;
+    PetscInt ind[3], d, off;
 
+    ind[0] = 0;
+    ind[1] = 0;
     ind[2] = k + da->zs;
     for (j = 0; j < nVy; ++j) {
       ind[1] = j + da->ys;
@@ -1241,7 +1243,7 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, PetscFE fe[], void (**funcs)(cons
   ierr = DMDAVecGetClosure(dm, section, localX, cStart, &numValues, NULL);CHKERRQ(ierr);
   if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The section cell closure size %d != dual space dimension %d", numValues, totDim);
   ierr = DMGetWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
-  ierr = PetscMalloc3(dim*q.numPoints,PetscReal,&v0,dim*dim*q.numPoints,PetscReal,&J,q.numPoints,PetscReal,&detJ);CHKERRQ(ierr);
+  ierr = PetscMalloc3(dim*q.numPoints,&v0,dim*dim*q.numPoints,&J,q.numPoints,&detJ);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscCellGeometry geom;
 
@@ -1342,11 +1344,11 @@ PetscErrorCode DMDAComputeL2Diff(DM dm, PetscFE fe[], void (**funcs)(const Petsc
     numComponents += Nc;
   }
   /* There are no BC values in DAs right now: ierr = DMDAProjectFunctionLocal(dm, fe, funcs, INSERT_BC_VALUES, localX);CHKERRQ(ierr); */
-  ierr = PetscMalloc5(numComponents,PetscScalar,&funcVal,dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
+  ierr = PetscMalloc5(numComponents,&funcVal,dim,&coords,dim,&v0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
   ierr = DMDAGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe[0], &quad);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    const PetscScalar *x = NULL;
+    PetscScalar *x = NULL;
     PetscReal    elemDiff = 0.0;
 
     ierr = DMDAComputeCellGeometry(dm, c, &quad, v0, J, invJ, &detJ);CHKERRQ(ierr);

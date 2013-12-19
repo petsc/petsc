@@ -69,14 +69,14 @@ int main(int argc,char **args)
      the context of a larger application these would be provided by
      other (non-PETSc) parts of the application code.
   */
-  ierr = PetscMalloc(N*sizeof(PetscScalar),&userx);CHKERRQ(ierr);
-  ierr = PetscMalloc(N*sizeof(PetscScalar),&userb);CHKERRQ(ierr);
-  ierr = PetscMalloc(N*sizeof(PetscScalar),&solution);CHKERRQ(ierr);
+  ierr = PetscMalloc1(N,&userx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(N,&userb);CHKERRQ(ierr);
+  ierr = PetscMalloc1(N,&solution);CHKERRQ(ierr);
 
   /*
       Allocate an array to hold the coefficients in the elliptic operator
   */
-  ierr = PetscMalloc(N*sizeof(PetscScalar),&rho);CHKERRQ(ierr);
+  ierr = PetscMalloc1(N,&rho);CHKERRQ(ierr);
 
   /*
      Fill up the array rho[] with the function rho(x,y) = x; fill the

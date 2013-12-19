@@ -32,14 +32,13 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse 
   /* create a map of comm_rank from subComm to comm - should commRankMap and garrayCMap be kept for reused? */
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&commRank);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(subComm,&subCommRank);CHKERRQ(ierr);
-  ierr = PetscMalloc(subCommSize*sizeof(PetscMPIInt),&commRankMap);CHKERRQ(ierr);
+  ierr = PetscMalloc1(subCommSize,&commRankMap);CHKERRQ(ierr);
   ierr = MPI_Allgather(&commRank,1,MPI_INT,commRankMap,1,MPI_INT,subComm);CHKERRQ(ierr);
 
   /* Traverse garray and identify column indices [of offdiag mat] that
    should be discarded. For the ones not discarded, store the newCol+1
    value in garrayCMap */
-  ierr = PetscMalloc(aij->B->cmap->n*sizeof(PetscInt),&garrayCMap);CHKERRQ(ierr);
-  ierr = PetscMemzero(garrayCMap,aij->B->cmap->n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(aij->B->cmap->n,&garrayCMap);CHKERRQ(ierr);
   for (i=0; i<aij->B->cmap->n; i++) {
     col = aij->garray[i];
     for (subRank=0; subRank<subCommSize; subRank++) {
@@ -53,8 +52,7 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse 
 
   if (scall == MAT_INITIAL_MATRIX) {
     /* Now compute preallocation for the offdiag mat */
-    ierr = PetscMalloc(aij->B->rmap->n*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
-    ierr = PetscMemzero(nnz,aij->B->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscCalloc1(aij->B->rmap->n,&nnz);CHKERRQ(ierr);
     for (i=0; i<aij->B->rmap->n; i++) {
       for (j=aijB->i[i]; j<aijB->i[i+1]; j++) {
         if (garrayCMap[aijB->j[j]]) nnz[i]++;

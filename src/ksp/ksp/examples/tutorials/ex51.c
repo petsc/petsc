@@ -73,17 +73,17 @@ int main(int argc,char **args)
   num1Dnodes = (p+1);
   num2Dnodes = num1Dnodes*num1Dnodes;
 
-  ierr = PetscMalloc((num1Dnodes*num1Dnodes)*sizeof(PetscScalar),&Me1D);CHKERRQ(ierr);
-  ierr = PetscMalloc((num1Dnodes*num1Dnodes)*sizeof(PetscScalar),&Ke1D);CHKERRQ(ierr);
-  ierr = PetscMalloc((num2Dnodes*num2Dnodes)*sizeof(PetscScalar),&Me2D);CHKERRQ(ierr);
-  ierr = PetscMalloc((num2Dnodes*num2Dnodes)*sizeof(PetscScalar),&Ke2D);CHKERRQ(ierr);
-  ierr = PetscMalloc(num2Dnodes*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-  ierr = PetscMalloc(num2Dnodes*sizeof(PetscScalar),&r);CHKERRQ(ierr);
-  ierr = PetscMalloc(num2Dnodes*sizeof(PetscScalar),&ue);CHKERRQ(ierr);
+  ierr = PetscMalloc1((num1Dnodes*num1Dnodes),&Me1D);CHKERRQ(ierr);
+  ierr = PetscMalloc1((num1Dnodes*num1Dnodes),&Ke1D);CHKERRQ(ierr);
+  ierr = PetscMalloc1((num2Dnodes*num2Dnodes),&Me2D);CHKERRQ(ierr);
+  ierr = PetscMalloc1((num2Dnodes*num2Dnodes),&Ke2D);CHKERRQ(ierr);
+  ierr = PetscMalloc1(num2Dnodes,&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(num2Dnodes,&r);CHKERRQ(ierr);
+  ierr = PetscMalloc1(num2Dnodes,&ue);CHKERRQ(ierr);
 
   /* Allocate quadrature and create stiffness matrices */
-  ierr = PetscMalloc((p+1)*sizeof(PetscReal),&gllNode);CHKERRQ(ierr);
-  ierr = PetscMalloc((p+1)*sizeof(PetscReal),&gllWgts);CHKERRQ(ierr);
+  ierr = PetscMalloc1((p+1),&gllNode);CHKERRQ(ierr);
+  ierr = PetscMalloc1((p+1),&gllWgts);CHKERRQ(ierr);
   leggaulob(0.0,1.0,gllNode,gllWgts,p); /* Get GLL nodes and weights */
   ierr = Form1DElementMass(h,p,gllNode,gllWgts,Me1D);CHKERRQ(ierr);
   ierr = Form1DElementStiffness(h,p,gllNode,gllWgts,Ke1D);CHKERRQ(ierr);
@@ -153,9 +153,9 @@ int main(int argc,char **args)
   ierr = MatMult(Mass,q,b);CHKERRQ(ierr);
 
   /* Modify matrix and right-hand-side for Dirichlet boundary conditions */
-  ierr = PetscMalloc(4*p*m*sizeof(PetscInt),&rows);CHKERRQ(ierr);
-  ierr = PetscMalloc(4*p*m*sizeof(PetscReal),&rowsx);CHKERRQ(ierr);
-  ierr = PetscMalloc(4*p*m*sizeof(PetscReal),&rowsy);CHKERRQ(ierr);
+  ierr = PetscMalloc1(4*p*m,&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc1(4*p*m,&rowsx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(4*p*m,&rowsy);CHKERRQ(ierr);
   for (i=0; i<p*m+1; i++) {
     rows[i]          = i; /* bottom */
     rowsx[i]         = (i/p)*h+gllNode[i%p]*h;

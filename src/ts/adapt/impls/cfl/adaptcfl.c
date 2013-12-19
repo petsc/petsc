@@ -86,7 +86,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_CFL(TSAdapt adapt)
   TSAdapt_CFL    *a;
 
   PetscFunctionBegin;
-  ierr                       = PetscNewLog(adapt,TSAdapt_CFL,&a);CHKERRQ(ierr);
+  ierr                       = PetscNewLog(adapt,&a);CHKERRQ(ierr);
   adapt->data                = (void*)a;
   adapt->ops->choose         = TSAdaptChoose_CFL;
   adapt->ops->setfromoptions = TSAdaptSetFromOptions_CFL;

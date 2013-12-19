@@ -7,6 +7,7 @@
 #include <petscdmdatypes.h>
 #include <petscpf.h>
 #include <petscao.h>
+#include <petscfe.h>
 
 /*MC
      DMDA_STENCIL_STAR - "Star"-type stencil. In logical grid coordinates, only (i,j,k), (i+s,j,k), (i,j+s,k),
@@ -65,7 +66,8 @@ PETSC_EXTERN PetscErrorCode DMDAGetRay(DM,DMDADirection,PetscInt,Vec*,VecScatter
 PETSC_EXTERN PetscErrorCode DMDAGlobalToNaturalAllCreate(DM,VecScatter*);
 PETSC_EXTERN PetscErrorCode DMDANaturalAllToGlobalCreate(DM,VecScatter*);
 
-PETSC_EXTERN PetscErrorCode DMDAGetGlobalIndices(DM,PetscInt*,PetscInt**);
+PETSC_EXTERN PetscErrorCode DMDAGetGlobalIndices(DM,PetscInt*,const PetscInt*[]);
+PETSC_EXTERN PetscErrorCode DMDARestoreGlobalIndices(DM,PetscInt*,const PetscInt*[]);
 
 PETSC_EXTERN PetscErrorCode DMDAGetScatter(DM,VecScatter*,VecScatter*,VecScatter*);
 PETSC_EXTERN PetscErrorCode DMDAGetNeighbors(DM,const PetscMPIInt**);
@@ -194,13 +196,13 @@ PETSC_EXTERN PetscErrorCode DMDACreateSection(DM, PetscInt[], PetscInt[], PetscI
 PETSC_EXTERN PetscErrorCode DMDAComputeCellGeometry(DM, PetscInt, PetscQuadrature *, PetscReal [], PetscReal [], PetscReal [], PetscReal []);
 PETSC_EXTERN PetscErrorCode DMDAGetTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, PetscInt **);
 PETSC_EXTERN PetscErrorCode DMDARestoreTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, PetscInt **);
-PETSC_EXTERN PetscErrorCode DMDAVecGetClosure(DM, PetscSection, Vec, PetscInt, PetscInt *, const PetscScalar **);
-PETSC_EXTERN PetscErrorCode DMDAVecRestoreClosure(DM, PetscSection, Vec, PetscInt, PetscInt *, const PetscScalar **);
+PETSC_EXTERN PetscErrorCode DMDAVecGetClosure(DM, PetscSection, Vec, PetscInt, PetscInt *, PetscScalar **);
+PETSC_EXTERN PetscErrorCode DMDAVecRestoreClosure(DM, PetscSection, Vec, PetscInt, PetscInt *, PetscScalar **);
 PETSC_EXTERN PetscErrorCode DMDAVecSetClosure(DM, PetscSection, Vec, PetscInt, const PetscScalar *, InsertMode);
 PETSC_EXTERN PetscErrorCode DMDAGetClosure(DM, PetscSection, PetscInt, PetscInt*, const PetscInt**);
 PETSC_EXTERN PetscErrorCode DMDARestoreClosure(DM, PetscSection, PetscInt, PetscInt*, const PetscInt**);
-PETSC_EXTERN PetscErrorCode DMDAGetClosureScalar(DM, PetscSection, PetscInt, PetscScalar*, PetscInt*, const PetscScalar**);
-PETSC_EXTERN PetscErrorCode DMDARestoreClosureScalar(DM, PetscSection, PetscInt, PetscScalar*, PetscInt*, const PetscScalar**);
+PETSC_EXTERN PetscErrorCode DMDAGetClosureScalar(DM, PetscSection, PetscInt, PetscScalar*, PetscInt*, PetscScalar**);
+PETSC_EXTERN PetscErrorCode DMDARestoreClosureScalar(DM, PetscSection, PetscInt, PetscScalar*, PetscInt*, PetscScalar**);
 PETSC_EXTERN PetscErrorCode DMDASetClosureScalar(DM,PetscSection,PetscInt,PetscScalar*,const PetscScalar*,InsertMode);
 PETSC_EXTERN PetscErrorCode DMDAConvertToCell(DM, MatStencil, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDASetVertexCoordinates(DM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);

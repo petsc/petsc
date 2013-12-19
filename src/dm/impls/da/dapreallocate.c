@@ -155,7 +155,7 @@ PetscErrorCode DMDAPreallocateOperator(DM dm, PetscInt bs, PetscSection section,
   maxClosureSize = 2*PetscMax(PetscPowInt(maxConeSize,depth+1),PetscPowInt(maxSupportSize,depth+1));
   maxAdjSize     = PetscPowInt(maxConeSize,depth+1) * PetscPowInt(maxSupportSize,depth+1) + 1;
 
-  ierr = PetscMalloc2(maxClosureSize,PetscInt,&tmpClosure,maxAdjSize,PetscInt,&tmpAdj);CHKERRQ(ierr);
+  ierr = PetscMalloc2(maxClosureSize,&tmpClosure,maxAdjSize,&tmpAdj);CHKERRQ(ierr);
 
   /*
    ** The bootstrapping process involves six rounds with similar structure of visiting neighbors of each point.

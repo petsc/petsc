@@ -12,8 +12,8 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,0,0);
 
-  ierr = PetscMalloc(8000000*sizeof(PetscScalar),&A);CHKERRQ(ierr);
-  ierr = PetscMalloc(8000000*sizeof(PetscScalar),&B);CHKERRQ(ierr);
+  ierr = PetscMalloc1(8000000,&A);CHKERRQ(ierr);
+  ierr = PetscMalloc1(8000000,&B);CHKERRQ(ierr);
 
   for (i=0; i<8000000; i++) {
     A[i] = i%61897;

@@ -169,7 +169,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Mathematica(PetscViewer v)
   PetscFunctionBegin;
   ierr = PetscViewerMathematicaInitializePackage();CHKERRQ(ierr);
 
-  ierr            = PetscNewLog(v,PetscViewer_Mathematica, &vmath);CHKERRQ(ierr);
+  ierr            = PetscNewLog(v,&vmath);CHKERRQ(ierr);
   v->data         = (void*) vmath;
   v->ops->destroy = PetscViewerDestroy_Mathematica;
   v->ops->flush   = 0;
@@ -234,7 +234,7 @@ PetscErrorCode  PetscViewerMathematicaSetFromOptions(PetscViewer v)
   }
   /* Get link port */
   numPorts = size;
-  ierr     = PetscMalloc(size*sizeof(int), &ports);CHKERRQ(ierr);
+  ierr     = PetscMalloc1(size, &ports);CHKERRQ(ierr);
   ierr     = PetscOptionsGetIntArray("viewer_", "-math_linkport", ports, &numPorts, &opt);CHKERRQ(ierr);
   if (opt) {
     if (numPorts > rank) snprintf(linkname, 255, "%6d", ports[rank]);
@@ -244,7 +244,7 @@ PetscErrorCode  PetscViewerMathematicaSetFromOptions(PetscViewer v)
   ierr = PetscFree(ports);CHKERRQ(ierr);
   /* Get link host */
   numHosts = size;
-  ierr     = PetscMalloc(size*sizeof(char*), &hosts);CHKERRQ(ierr);
+  ierr     = PetscMalloc1(size, &hosts);CHKERRQ(ierr);
   ierr     = PetscOptionsGetStringArray("viewer_", "-math_linkhost", hosts, &numHosts, &opt);CHKERRQ(ierr);
   if (opt) {
     if (numHosts > rank) {

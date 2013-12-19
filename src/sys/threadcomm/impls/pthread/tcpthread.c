@@ -48,7 +48,7 @@ PetscErrorCode PetscThreadCommSetPThreadAttributes(PetscThreadComm tcomm)
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-  ierr = PetscMalloc(tcomm->nworkThreads*sizeof(cpu_set_t),&cpuset);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tcomm->nworkThreads,&cpuset);CHKERRQ(ierr);
   ptcomm->cpuset = cpuset;
   PetscGetNCores(&ncores);
 #endif
@@ -113,7 +113,7 @@ PETSC_EXTERN PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
   PetscFunctionBegin;
   ptcommcrtct++;
   ierr = PetscStrcpy(tcomm->type,PTHREAD);CHKERRQ(ierr);
-  ierr = PetscNew(struct _p_PetscThreadComm_PThread,&ptcomm);CHKERRQ(ierr);
+  ierr = PetscNew(&ptcomm);CHKERRQ(ierr);
 
   tcomm->data              = (void*)ptcomm;
   ptcomm->nthreads         = 0;
@@ -127,7 +127,7 @@ PETSC_EXTERN PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
   tcomm->ops->barrier      = PetscThreadCommBarrier_PThread_LockFree;
   tcomm->ops->getrank      = PetscThreadCommGetRank_PThread;
 
-  ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&ptcomm->granks);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tcomm->nworkThreads,&ptcomm->granks);CHKERRQ(ierr);
 
   if (!PetscPThreadCommInitializeCalled) { /* Only done for PETSC_THREAD_COMM_WORLD */
     PetscBool flg1,flg2,flg3,flg4;
@@ -177,9 +177,9 @@ PETSC_EXTERN PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
     }
 
     /* Create array holding pthread ids */
-    ierr = PetscMalloc(tcomm->nworkThreads*sizeof(pthread_t),&ptcomm->tid);CHKERRQ(ierr);
+    ierr = PetscMalloc1(tcomm->nworkThreads,&ptcomm->tid);CHKERRQ(ierr);
     /* Create thread attributes */
-    ierr = PetscMalloc(tcomm->nworkThreads*sizeof(pthread_attr_t),&ptcomm->attr);CHKERRQ(ierr);
+    ierr = PetscMalloc1(tcomm->nworkThreads,&ptcomm->attr);CHKERRQ(ierr);
     ierr = PetscThreadCommSetPThreadAttributes(tcomm);CHKERRQ(ierr);
     if (ptcomm->ismainworker) {
       /* Pin main thread */

@@ -100,7 +100,7 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, PetscInt
         }
       }
     }
-    ierr = PetscMalloc(subSize * sizeof(PetscInt), &subIndices);CHKERRQ(ierr);
+    ierr = PetscMalloc1(subSize, &subIndices);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       PetscInt gdof, goff;
 

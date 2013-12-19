@@ -54,9 +54,14 @@ PetscErrorCode DMSNESView(DMSNES kdm,PetscViewer viewer)
   } else if (isbinary) {
     struct {
       PetscErrorCode (*func)(SNES,Vec,Vec,void*);
+    } funcstruct;
+    struct {
       PetscErrorCode (*jac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-    } funcstruct = {kdm->ops->computefunction,kdm->ops->computejacobian};
-    ierr = PetscViewerBinaryWrite(viewer,&funcstruct,2,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    } jacstruct;
+    funcstruct.func = kdm->ops->computefunction;
+    jacstruct.jac   = kdm->ops->computejacobian;
+    ierr = PetscViewerBinaryWrite(viewer,&funcstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&jacstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -26,7 +26,7 @@ static PetscErrorCode DMSNESDuplicate_DMLocal(DMSNES oldsdm,DMSNES sdm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(sdm,DMSNES_Local,&sdm->data);CHKERRQ(ierr);
+  ierr = PetscNewLog(sdm,(DMSNES_Local**)&sdm->data);CHKERRQ(ierr);
   if (oldsdm->data) {
     ierr = PetscMemcpy(sdm->data,oldsdm->data,sizeof(DMSNES_Local));CHKERRQ(ierr);
   }
@@ -42,7 +42,7 @@ static PetscErrorCode DMLocalSNESGetContext(DM dm,DMSNES sdm,DMSNES_Local **dmlo
   PetscFunctionBegin;
   *dmlocalsnes = NULL;
   if (!sdm->data) {
-    ierr = PetscNewLog(dm,DMSNES_Local,&sdm->data);CHKERRQ(ierr);
+    ierr = PetscNewLog(dm,(DMSNES_Local**)&sdm->data);CHKERRQ(ierr);
 
     sdm->ops->destroy   = DMSNESDestroy_DMLocal;
     sdm->ops->duplicate = DMSNESDuplicate_DMLocal;

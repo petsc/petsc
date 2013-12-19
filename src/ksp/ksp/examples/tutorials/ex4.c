@@ -69,7 +69,7 @@ PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt **elem
   ne   = 2 * nxe * nye;
   *Ne  = ne;
   *Nl  = nl;
-  ierr = PetscMalloc2(ne*nl, PetscInt, elemRows, ne*nl*nl, PetscScalar, elemMats);CHKERRQ(ierr);
+  ierr = PetscMalloc2(ne*nl, elemRows, ne*nl*nl, elemMats);CHKERRQ(ierr);
   er   = *elemRows;
   em   = *elemMats;
   /* Proc 0        Proc 1                                               */

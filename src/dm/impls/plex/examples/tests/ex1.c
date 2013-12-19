@@ -68,18 +68,34 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (len) {
-#if defined(PETSC_HAVE_CGNS)
-    int cgid = -1;
+    const char *extGmsh = ".msh";
+    size_t      slen;
+    PetscBool   isGmsh;
 
-    if (!rank) {
-      ierr = cg_open(filename, CG_MODE_READ, &cgid);CHKERRQ(ierr);
-      if (cgid <= 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "cg_open(\"%s\",...) did not return a valid file ID", filename);
-    }
-    ierr = DMPlexCreateCGNS(comm, cgid, interpolate, dm);CHKERRQ(ierr);
-    if (!rank) {ierr = cg_close(cgid);CHKERRQ(ierr);}
+    ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extGmsh, 4, &isGmsh);CHKERRQ(ierr);
+    if (isGmsh) {
+      PetscViewer viewer;
+
+      ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
+      ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+      ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+      ierr = DMPlexCreateGmsh(comm, viewer, interpolate, dm);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    } else {
+#if defined(PETSC_HAVE_CGNS)
+      int cgid = -1;
+
+      if (!rank) {
+        ierr = cg_open(filename, CG_MODE_READ, &cgid);CHKERRQ(ierr);
+        if (cgid <= 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "cg_open(\"%s\",...) did not return a valid file ID", filename);
+      }
+      ierr = DMPlexCreateCGNS(comm, cgid, interpolate, dm);CHKERRQ(ierr);
+      if (!rank) {ierr = cg_close(cgid);CHKERRQ(ierr);}
 #else
-    SETERRQ(comm, PETSC_ERR_SUP, "Loading meshes requires CGNS support. Reconfigure using --with-cgns-dir");
+      SETERRQ(comm, PETSC_ERR_SUP, "Loading meshes requires CGNS support. Reconfigure using --with-cgns-dir");
 #endif
+    }
   } else if (cellSimplex) {
     ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
   } else {

@@ -72,7 +72,7 @@ PetscErrorCode LoadTestMatrices(Mat *_A,Vec *_x,Vec *_b,IS *_isu,IS *_isp)
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] s_p = %D | e_p = %D \n", rank, start_p, end_p);CHKERRQ(ierr);
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] is_u (offset) = %D \n", rank, start_u+start_p);CHKERRQ(ierr);
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] is_p (offset) = %D \n", rank, start_u+start_p+lnu);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   ierr = ISCreateStride(PETSC_COMM_WORLD,lnu,start_u+start_p,1,&is_u);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_WORLD,lnp,start_u+start_p+lnu,1,&is_p);CHKERRQ(ierr);

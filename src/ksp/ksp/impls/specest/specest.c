@@ -64,7 +64,7 @@ static PetscErrorCode  KSPSolve_SpecEst(KSP ksp)
     ierr = KSPComputeExtremeSingularValues(spec->kspest,&spec->max,&spec->min);CHKERRQ(ierr);
 
     ierr = KSPGetIterationNumber(spec->kspest,&its);CHKERRQ(ierr);
-    ierr = PetscMalloc2(its,PetscReal,&real,its,PetscReal,&imag);CHKERRQ(ierr);
+    ierr = PetscMalloc2(its,&real,its,&imag);CHKERRQ(ierr);
     ierr = KSPComputeEigenvalues(spec->kspest,its,real,imag,&neig);CHKERRQ(ierr);
     for (i=0; i<neig; i++) {
       /* We would really like to compute w (nominally 1/radius) to minimize |1-wB|.  Empirically it
@@ -200,7 +200,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_SpecEst(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
 
-  ierr = PetscNewLog(ksp,KSP_SpecEst,&spec);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,&spec);CHKERRQ(ierr);
 
   ksp->data                = (void*)spec;
   ksp->ops->setup          = KSPSetUp_SpecEst;

@@ -317,13 +317,16 @@ PETSC_EXTERN PetscErrorCode DMDATSSetRHSJacobianLocal(DM,PetscErrorCode (*)(DMDA
 PETSC_EXTERN PetscErrorCode DMDATSSetIFunctionLocal(DM,InsertMode,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,void*,void*),void *);
 PETSC_EXTERN PetscErrorCode DMDATSSetIJacobianLocal(DM,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,PetscReal,Mat,Mat,MatStructure*,void*),void *);
 
+typedef struct _n_TSMonitorLGCtx*  TSMonitorLGCtx;
 typedef struct {
-  Vec         ray;
-  VecScatter  scatter;
-  PetscViewer viewer;
+  Vec            ray;
+  VecScatter     scatter;
+  PetscViewer    viewer;
+  TSMonitorLGCtx lgctx;
 } TSMonitorDMDARayCtx;
 PETSC_EXTERN PetscErrorCode TSMonitorDMDARayDestroy(void**);
 PETSC_EXTERN PetscErrorCode TSMonitorDMDARay(TS,PetscInt,PetscReal,Vec,void*);
+PETSC_EXTERN PetscErrorCode TSMonitorLGDMDARay(TS,PetscInt,PetscReal,Vec,void*);
 
 
 /* Dynamic creation and loading functions */
@@ -340,13 +343,13 @@ PETSC_EXTERN PetscErrorCode TSGetKSP(TS,KSP*);
 
 PETSC_EXTERN PetscErrorCode TSView(TS,PetscViewer);
 PETSC_EXTERN PetscErrorCode TSLoad(TS,PetscViewer);
+PETSC_STATIC_INLINE PetscErrorCode TSViewFromOptions(TS A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 
 #define TS_FILE_CLASSID 1211225
 
 PETSC_EXTERN PetscErrorCode TSSetApplicationContext(TS,void *);
 PETSC_EXTERN PetscErrorCode TSGetApplicationContext(TS,void *);
 
-typedef struct _n_TSMonitorLGCtx*  TSMonitorLGCtx;
 PETSC_EXTERN PetscErrorCode TSMonitorLGCtxCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscInt,TSMonitorLGCtx *);
 PETSC_EXTERN PetscErrorCode TSMonitorLGCtxDestroy(TSMonitorLGCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorLGTimeStep(TS,PetscInt,PetscReal,Vec,void *);

@@ -274,10 +274,10 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = PetscOptionsString("-ts_monitor_dmda_ray","Display a ray of the solution","None","y=0",dir,16,&flg);CHKERRQ(ierr);
   if (flg) {
     TSMonitorDMDARayCtx *rayctx;
-    int                 ray = 0;
-    DMDADirection       ddir;
-    DM                  da;
-    PetscMPIInt         rank;
+    int                  ray = 0;
+    DMDADirection        ddir;
+    DM                   da;
+    PetscMPIInt          rank;
 
     if (dir[1] != '=') SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONG,"Unknown ray %s",dir);
     if (dir[0] == 'x') ddir = DMDA_X;
@@ -286,14 +286,36 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     sscanf(dir+2,"%d",&ray);
 
     ierr = PetscInfo2(((PetscObject)ts),"Displaying DMDA ray %c = %D\n",dir[0],ray);CHKERRQ(ierr);
-    ierr = PetscNew(TSMonitorDMDARayCtx,&rayctx);CHKERRQ(ierr);
+    ierr = PetscNew(&rayctx);CHKERRQ(ierr);
     ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
     ierr = DMDAGetRay(da,ddir,ray,&rayctx->ray,&rayctx->scatter);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ts),&rank);CHKERRQ(ierr);
     if (!rank) {
       ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,0,0,0,600,300,&rayctx->viewer);CHKERRQ(ierr);
     }
+    rayctx->lgctx = NULL;
     ierr = TSMonitorSet(ts,TSMonitorDMDARay,rayctx,TSMonitorDMDARayDestroy);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsString("-ts_monitor_lg_dmda_ray","Display a ray of the solution","None","x=0",dir,16,&flg);CHKERRQ(ierr);
+  if (flg) {
+    TSMonitorDMDARayCtx *rayctx;
+    int                 ray = 0;
+    DMDADirection       ddir;
+    DM                  da;
+    PetscInt            howoften = 1;
+
+    if (dir[1] != '=') SETERRQ1(PetscObjectComm((PetscObject) ts), PETSC_ERR_ARG_WRONG, "Malformed ray %s", dir);
+    if      (dir[0] == 'x') ddir = DMDA_X;
+    else if (dir[0] == 'y') ddir = DMDA_Y;
+    else SETERRQ1(PetscObjectComm((PetscObject) ts), PETSC_ERR_ARG_WRONG, "Unknown ray direction %s", dir);
+    sscanf(dir+2, "%d", &ray);
+
+    ierr = PetscInfo2(((PetscObject) ts),"Displaying LG DMDA ray %c = %D\n", dir[0], ray);CHKERRQ(ierr);
+    ierr = PetscNew(&rayctx);CHKERRQ(ierr);
+    ierr = TSGetDM(ts, &da);CHKERRQ(ierr);
+    ierr = DMDAGetRay(da, ddir, ray, &rayctx->ray, &rayctx->scatter);CHKERRQ(ierr);
+    ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&rayctx->lgctx);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts, TSMonitorLGDMDARay, rayctx, TSMonitorDMDARayDestroy);CHKERRQ(ierr);
   }
 
   /*
@@ -2678,11 +2700,8 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec U,PetscBool *done)
 @*/
 PetscErrorCode TSSolve(TS ts,Vec u)
 {
-  PetscBool         flg;
-  PetscViewer       viewer;
   Vec               solution;
   PetscErrorCode    ierr;
-  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -2707,13 +2726,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   ts->reject            = 0;
   ts->reason            = TS_CONVERGED_ITERATING;
 
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ts),((PetscObject)ts)->prefix,"-ts_view_pre",&viewer,&format,&flg);CHKERRQ(ierr);
-  if (flg && !PetscPreLoadingOn) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = TSView(ts,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
+  ierr = TSViewFromOptions(ts,NULL,"-ts_view_pre");CHKERRQ(ierr);
 
   if (ts->ops->solve) {         /* This private interface is transitional and should be removed when all implementations are updated. */
     ierr = (*ts->ops->solve)(ts);CHKERRQ(ierr);
@@ -2739,13 +2752,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     }
     ierr = TSMonitor(ts,ts->steps,ts->solvetime,solution);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ts),((PetscObject)ts)->prefix,"-ts_view",&viewer,&format,&flg);CHKERRQ(ierr);
-  if (flg && !PetscPreLoadingOn) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = TSView(ts,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
+  ierr = TSViewFromOptions(ts,NULL,"-ts_view");CHKERRQ(ierr);
   ierr = PetscObjectSAWsBlock((PetscObject)ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2786,13 +2793,6 @@ PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u)
 }
 
 /* ------------------------------------------------------------------------*/
-struct _n_TSMonitorLGCtx {
-  PetscDrawLG lg;
-  PetscInt    howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
-  PetscInt    ksp_its,snes_its;
-};
-
-
 #undef __FUNCT__
 #define __FUNCT__ "TSMonitorLGCtxCreate"
 /*@C
@@ -2833,18 +2833,15 @@ PetscErrorCode  TSMonitorLGCtxCreate(MPI_Comm comm,const char host[],const char 
 {
   PetscDraw      win;
   PetscErrorCode ierr;
-  PetscBool      flg = PETSC_TRUE;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_TSMonitorLGCtx,ctx);CHKERRQ(ierr);
+  ierr = PetscNew(ctx);CHKERRQ(ierr);
   ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&win);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(win);CHKERRQ(ierr);
   ierr = PetscDrawLGCreate(win,1,&(*ctx)->lg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-lg_indicate_data_points",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscDrawLGIndicateDataPoints((*ctx)->lg);CHKERRQ(ierr);
-  }
   ierr = PetscLogObjectParent((PetscObject)(*ctx)->lg,(PetscObject)win);CHKERRQ(ierr);
+  ierr = PetscDrawLGIndicateDataPoints((*ctx)->lg,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetFromOptions((*ctx)->lg);CHKERRQ(ierr);
   (*ctx)->howoften = howoften;
   PetscFunctionReturn(0);
 }
@@ -2863,6 +2860,7 @@ PetscErrorCode TSMonitorLGTimeStep(TS ts,PetscInt step,PetscReal ptime,Vec v,voi
     ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLabels(axis,"Timestep as function of time","Time","Time step");CHKERRQ(ierr);
     ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGIndicateDataPoints(ctx->lg,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = TSGetTimeStep(ts,&y);CHKERRQ(ierr);
   ierr = PetscDrawLGAddPoint(ctx->lg,&x,&y);CHKERRQ(ierr);
@@ -3339,7 +3337,7 @@ PetscErrorCode  TSMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const cha
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_TSMonitorDrawCtx,ctx);CHKERRQ(ierr);
+  ierr = PetscNew(ctx);CHKERRQ(ierr);
   ierr = PetscViewerDrawOpen(comm,host,label,x,y,m,n,&(*ctx)->viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetFromOptions((*ctx)->viewer);CHKERRQ(ierr);
 
@@ -4777,7 +4775,7 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
     PetscReal *yreal;
     PetscInt  i,n;
     ierr = VecGetLocalSize(u,&n);CHKERRQ(ierr);
-    ierr = PetscMalloc(n*sizeof(PetscReal),&yreal);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&yreal);CHKERRQ(ierr);
     for (i=0; i<n; i++) yreal[i] = PetscRealPart(yy[i]);
     ierr = PetscDrawLGAddCommonPoint(ctx->lg,ptime,yreal);CHKERRQ(ierr);
     ierr = PetscFree(yreal);CHKERRQ(ierr);
@@ -4846,7 +4844,7 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
     PetscReal *yreal;
     PetscInt  i,n;
     ierr = VecGetLocalSize(y,&n);CHKERRQ(ierr);
-    ierr = PetscMalloc(n*sizeof(PetscReal),&yreal);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&yreal);CHKERRQ(ierr);
     for (i=0; i<n; i++) yreal[i] = PetscRealPart(yy[i]);
     ierr = PetscDrawLGAddCommonPoint(ctx->lg,ptime,yreal);CHKERRQ(ierr);
     ierr = PetscFree(yreal);CHKERRQ(ierr);

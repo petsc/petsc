@@ -119,7 +119,8 @@ int FormJacobian_Grid(GridCtx *grid,Mat *J)
   Mat            jac = *J;
   PetscErrorCode ierr;
   PetscInt       i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym,col[5];
-  PetscInt       nloc,*ltog,grow;
+  PetscInt       nloc,grow;
+  const PetscInt *ltog;
   PetscScalar    two = 2.0,one = 1.0,v[5],hx,hy,hxdhy,hydhx,value;
 
   mx    = grid->mx;            my = grid->my;
@@ -153,6 +154,7 @@ int FormJacobian_Grid(GridCtx *grid,Mat *J)
       }
     }
   }
+  ierr = DMDARestoreGlobalIndices(grid->da,&nloc,&ltog);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   return 0;

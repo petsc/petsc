@@ -158,7 +158,7 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   for (k=0; k<n; k++) {
     if (marked[k] != 0.0) cnt++;
   }
-  ierr = PetscMalloc(cnt*sizeof(PetscInt),&coarseindex);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cnt,&coarseindex);CHKERRQ(ierr);
   cnt  = 0;
   for (k=0; k<n; k++) {
     if (marked[k] != 0.0) coarseindex[cnt++] = k + rstart;
@@ -220,7 +220,7 @@ PetscErrorCode  DMSetVI(DM dm,IS inactive)
   if (!isnes) {
     ierr = PetscContainerCreate(PetscObjectComm((PetscObject)dm),&isnes);CHKERRQ(ierr);
     ierr = PetscContainerSetUserDestroy(isnes,(PetscErrorCode (*)(void*))DMDestroy_SNESVI);CHKERRQ(ierr);
-    ierr = PetscNew(DM_SNESVI,&dmsnesvi);CHKERRQ(ierr);
+    ierr = PetscNew(&dmsnesvi);CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(isnes,(void*)dmsnesvi);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)dm,"VI",(PetscObject)isnes);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&isnes);CHKERRQ(ierr);
@@ -440,7 +440,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
         ierr = ISGetLocalSize(keptrows,&cnt);CHKERRQ(ierr);
         ierr = ISGetIndices(keptrows,&krows);CHKERRQ(ierr);
         ierr = ISGetIndices(IS_inact,&inact);CHKERRQ(ierr);
-        ierr = PetscMalloc(cnt*sizeof(PetscInt),&nrows);CHKERRQ(ierr);
+        ierr = PetscMalloc1(cnt,&nrows);CHKERRQ(ierr);
         for (k=0; k<cnt; k++) nrows[k] = inact[krows[k]-rstart];
         ierr = ISRestoreIndices(keptrows,&krows);CHKERRQ(ierr);
         ierr = ISRestoreIndices(IS_inact,&inact);CHKERRQ(ierr);
@@ -734,7 +734,7 @@ PetscErrorCode SNESSetUp_VINEWTONRSLS(SNES snes)
 
   ierr = VecGetOwnershipRange(snes->vec_sol,&rstart,&rend);CHKERRQ(ierr);
   ierr = VecGetLocalSize(snes->vec_sol,&n);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&indices);CHKERRQ(ierr);
   for (i=0; i < n; i++) indices[i] = rstart + i;
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)snes),n,indices,PETSC_OWN_POINTER,&vi->IS_inact_prev);CHKERRQ(ierr);
 
@@ -797,7 +797,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONRSLS(SNES snes)
   snes->usesksp = PETSC_TRUE;
   snes->usespc  = PETSC_FALSE;
 
-  ierr                = PetscNewLog(snes,SNES_VINEWTONRSLS,&vi);CHKERRQ(ierr);
+  ierr                = PetscNewLog(snes,&vi);CHKERRQ(ierr);
   snes->data          = (void*)vi;
   vi->checkredundancy = NULL;
 

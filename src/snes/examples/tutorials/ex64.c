@@ -663,7 +663,7 @@ PetscErrorCode CheckRedundancy(SNES snes, IS act, IS *outact, DM da)
 
   printf("Number of active constraints after applying redundancy %d\n",cnt);
 
-  ierr = PetscMalloc(cnt*sizeof(PetscInt),&outindex);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cnt,&outindex);CHKERRQ(ierr);
   cnt  = 0;
 
   for (i=xs; i < xs+xm;i++) {

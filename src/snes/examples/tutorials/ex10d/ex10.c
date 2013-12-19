@@ -176,7 +176,7 @@ int main(int argc,char **argv)
   sprintf(part_name,"output.%d",rank);
   fptr1 = fopen(part_name,"w");
   if (!fptr1) SETERRQ(PETSC_COMM_SELF,0,"Could no open output file");
-  ierr = PetscMalloc(user.Nvglobal*sizeof(PetscInt),&user.gloInd);
+  ierr = PetscMalloc1(user.Nvglobal,&user.gloInd);
   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"Rank is %D\n",rank);CHKERRQ(ierr);
   for (inode = 0; inode < user.Nvglobal; inode++) {
     if (!fgets(str,256,fptr)) SETERRQ(PETSC_COMM_SELF,1,"fgets read failed");
@@ -221,7 +221,7 @@ int main(int argc,char **argv)
   */
   ierr    = MPI_Scan(&user.Nvlocal,&rstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   rstart -= user.Nvlocal;
-  ierr    = PetscMalloc(user.Nvlocal*sizeof(PetscInt),&pordering);CHKERRQ(ierr);
+  ierr    = PetscMalloc1(user.Nvlocal,&pordering);CHKERRQ(ierr);
 
   for (i=0; i < user.Nvlocal; i++) pordering[i] = rstart + i;
 
@@ -234,8 +234,8 @@ int main(int argc,char **argv)
   /*
     Keep the global indices for later use
   */
-  ierr = PetscMalloc(user.Nvlocal*sizeof(PetscInt),&user.locInd);CHKERRQ(ierr);
-  ierr = PetscMalloc(Nvneighborstotal*sizeof(PetscInt),&tmp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(user.Nvlocal,&user.locInd);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nvneighborstotal,&tmp);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Demonstrate the use of AO functionality
@@ -304,8 +304,8 @@ int main(int argc,char **argv)
     number of processors. Importantly, it allows us to use NO SEARCHING
     in setting up the data structures.
   */
-  ierr      = PetscMalloc(user.Nvglobal*sizeof(PetscInt),&vertices);CHKERRQ(ierr);
-  ierr      = PetscMalloc(user.Nvglobal*sizeof(PetscInt),&verticesmask);CHKERRQ(ierr);
+  ierr      = PetscMalloc1(user.Nvglobal,&vertices);CHKERRQ(ierr);
+  ierr      = PetscMalloc1(user.Nvglobal,&verticesmask);CHKERRQ(ierr);
   ierr      = PetscMemzero(verticesmask,user.Nvglobal*sizeof(PetscInt));CHKERRQ(ierr);
   nvertices = 0;
 

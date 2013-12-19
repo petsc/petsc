@@ -179,7 +179,7 @@ PetscErrorCode DMDASelectFields(DM da,PetscInt *outfields,PetscInt **fields)
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da,0,0,0,0,0,0,0,&step,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscMalloc(step*sizeof(PetscInt),&displayfields);CHKERRQ(ierr);
+  ierr = PetscMalloc1(step,&displayfields);CHKERRQ(ierr);
   for (k=0; k<step; k++) displayfields[k] = k;
   ndisplayfields = step;
   ierr           = PetscOptionsGetIntArray(NULL,"-draw_fields",displayfields,&ndisplayfields,&flg);CHKERRQ(ierr);
@@ -188,7 +188,7 @@ PetscErrorCode DMDASelectFields(DM da,PetscInt *outfields,PetscInt **fields)
     char       **fields;
     const char *fieldname;
     PetscInt   nfields = step;
-    ierr = PetscMalloc(step*sizeof(char*),&fields);CHKERRQ(ierr);
+    ierr = PetscMalloc1(step,&fields);CHKERRQ(ierr);
     ierr = PetscOptionsGetStringArray(NULL,"-draw_fields_by_name",fields,&nfields,&flg);CHKERRQ(ierr);
     if (flg) {
       ndisplayfields = 0;

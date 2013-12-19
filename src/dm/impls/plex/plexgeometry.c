@@ -154,7 +154,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
   if (bs != dim) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Block size for point vector %d must be the mesh coordinate dimension %d", bs, dim);
   numPoints /= bs;
-  ierr       = PetscMalloc(numPoints * sizeof(PetscInt), &cells);CHKERRQ(ierr);
+  ierr       = PetscMalloc1(numPoints, &cells);CHKERRQ(ierr);
   for (p = 0; p < numPoints; ++p) {
     const PetscScalar *point = &a[p*bs];
 
@@ -182,7 +182,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
         case 4:
           ierr = DMPlexLocatePoint_Simplex_3D_Internal(dm, point, c, &cell);CHKERRQ(ierr);
           break;
-        case 8:
+        case 6:
           ierr = DMPlexLocatePoint_General_3D_Internal(dm, point, c, &cell);CHKERRQ(ierr);
           break;
         default:
@@ -213,8 +213,8 @@ static PetscErrorCode DMPlexComputeProjection2Dto1D_Internal(PetscScalar coords[
   const PetscReal r = sqrt(x*x + y*y), c = x/r, s = y/r;
 
   PetscFunctionBegin;
-  R[0] =  c; R[1] = s;
-  R[2] = -s; R[3] = c;
+  R[0] = c; R[1] = -s;
+  R[2] = s; R[3] =  c;
   coords[0] = 0.0;
   coords[1] = r;
   PetscFunctionReturn(0);
@@ -704,7 +704,7 @@ static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e
   Since it returns arrays, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
 
-.seealso: DMGetCoordinateSection(), DMPlexGetCoordinateVec()
+.seealso: DMGetCoordinateSection(), DMGetCoordinateVec()
 @*/
 PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, PetscReal *J, PetscReal *invJ, PetscReal *detJ)
 {
@@ -806,8 +806,13 @@ static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt dim, 
     centroid[1] = 0.5*PetscRealPart(coords[1] + coords[dim+1]);
   }
   if (normal) {
-    normal[0] =  PetscRealPart(coords[1] - coords[dim+1]);
-    normal[1] = -PetscRealPart(coords[0] - coords[dim+0]);
+    PetscReal norm;
+
+    normal[0] = -PetscRealPart(coords[1] - coords[dim+1]);
+    normal[1] =  PetscRealPart(coords[0] - coords[dim+0]);
+    norm = PetscSqrtReal(normal[0]*normal[0] + normal[1]*normal[1]);
+    normal[0] /= norm;
+    normal[1] /= norm;
   }
   if (vol) {
     *vol = sqrt(PetscSqr(PetscRealPart(coords[0] - coords[dim+0])) + PetscSqr(PetscRealPart(coords[1] - coords[dim+1])));
@@ -990,7 +995,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
   Since it returns arrays, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
 
-.seealso: DMGetCoordinateSection(), DMPlexGetCoordinateVec()
+.seealso: DMGetCoordinateSection(), DMGetCoordinateVec()
 @*/
 PetscErrorCode DMPlexComputeCellGeometryFVM(DM dm, PetscInt cell, PetscReal *vol, PetscReal centroid[], PetscReal normal[])
 {

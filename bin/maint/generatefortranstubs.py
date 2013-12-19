@@ -161,7 +161,10 @@ def processDir(arg,dirname,names):
     (status,output) = commands.getstatusoutput(cmd)
     if status:
       raise RuntimeError('Error running bfort\n'+cmd+'\n'+output)
-    FixDir(petscdir,outdir,verbose)
+    try:
+      FixDir(petscdir,outdir,verbose)
+    except:
+      print 'Error! with FixDir('+outdir+')'
 
   # remove from list of subdirectories all directories without source code
   rmnames=[]

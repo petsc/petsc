@@ -280,7 +280,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   ierr = VecGetSize(global,&n);CHKERRQ(ierr);
 
   /* Set the index sets */
-  ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&idx);CHKERRQ(ierr);
   for (i=0; i<n; i++) idx[i]=i;
 
   /* Create local sequential vectors */
@@ -431,7 +431,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   ierr = VecGetSize(globalin,&len);CHKERRQ(ierr);
 
   /* Set the index sets */
-  ierr = PetscMalloc(len*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(len,&idx);CHKERRQ(ierr);
   for (i=0; i<len; i++) idx[i]=i;
 
   /* Create local sequential vectors */

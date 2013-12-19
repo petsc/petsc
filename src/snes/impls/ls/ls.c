@@ -442,7 +442,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES snes)
   snes->pcside  = PC_RIGHT;
   snes->usesksp = PETSC_TRUE;
   snes->usespc  = PETSC_TRUE;
-  ierr          = PetscNewLog(snes,SNES_NEWTONLS,&neP);CHKERRQ(ierr);
+  ierr          = PetscNewLog(snes,&neP);CHKERRQ(ierr);
   snes->data    = (void*)neP;
   PetscFunctionReturn(0);
 }

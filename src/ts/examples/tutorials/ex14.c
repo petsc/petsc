@@ -502,7 +502,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   }
   ierr = PetscHeaderCreate(thi,_p_THI,0,THI_CLASSID,"THI","Toy Hydrostatic Ice","THI",comm,THIDestroy,0);CHKERRQ(ierr);
 
-  ierr = PetscNew(struct _n_Units,&thi->units);CHKERRQ(ierr);
+  ierr = PetscNew(&thi->units);CHKERRQ(ierr);
 
   units           = thi->units;
   units->meter    = 1e-2;
@@ -1453,7 +1453,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
   ierr = VecGetArray(X2,&x2);CHKERRQ(ierr);
   if (!rank) {
     PetscScalar *array,*array2;
-    ierr = PetscMalloc2(nmax,PetscScalar,&array,nmax2,PetscScalar,&array2);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nmax,&array,nmax2,&array2);CHKERRQ(ierr);
     for (r=0; r<size; r++) {
       PetscInt i,j,k,f,xs,xm,ys,ym,zs,zm;
       Node     *y3;

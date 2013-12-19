@@ -50,12 +50,12 @@ PetscErrorCode ProcessOptions(AppCtx *options)
   ierr = PetscOptionsInt("-num_fields", "The number of section fields", "ex9.c", options->numFields, &options->numFields, NULL);CHKERRQ(ierr);
   if (options->numFields) {
     len  = options->numFields;
-    ierr = PetscMalloc(len * sizeof(PetscInt), &options->numComponents);CHKERRQ(ierr);
+    ierr = PetscMalloc1(len, &options->numComponents);CHKERRQ(ierr);
     ierr = PetscOptionsIntArray("-num_components", "The number of components per field", "ex9.c", options->numComponents, &len, &flg);CHKERRQ(ierr);
     if (flg && (len != options->numFields)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of components array is %d should be %d", len, options->numFields);
   }
   len  = (options->dim+1) * PetscMax(1, options->numFields);
-  ierr = PetscMalloc(len * sizeof(PetscInt), &options->numDof);CHKERRQ(ierr);
+  ierr = PetscMalloc1(len, &options->numDof);CHKERRQ(ierr);
   ierr = PetscOptionsIntArray("-num_dof", "The dof signature for the section", "ex9.c", options->numDof, &len, &flg);CHKERRQ(ierr);
   if (flg && (len != (options->dim+1) * PetscMax(1, options->numFields))) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of dof array is %d should be %d", len, (options->dim+1) * PetscMax(1, options->numFields));
 

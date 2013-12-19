@@ -68,7 +68,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES snes)
     snes->max_its   = 10000;
   }
 
-  ierr = PetscNewLog(snes, SNES_FAS, &fas);CHKERRQ(ierr);
+  ierr = PetscNewLog(snes,&fas);CHKERRQ(ierr);
 
   snes->data                  = (void*) fas;
   fas->level                  = 0;
@@ -110,7 +110,11 @@ PetscErrorCode SNESReset_FAS(SNES snes)
   ierr = MatDestroy(&fas->interpolate);CHKERRQ(ierr);
   ierr = MatDestroy(&fas->restrct);CHKERRQ(ierr);
   ierr = VecDestroy(&fas->rscale);CHKERRQ(ierr);
-  if (fas->next) ierr = SNESReset(fas->next);CHKERRQ(ierr);
+  if (fas->galerkin) {
+    ierr = VecDestroy(&fas->Xg);CHKERRQ(ierr);
+    ierr = VecDestroy(&fas->Fg);CHKERRQ(ierr);
+  }
+  if (fas->next) {ierr = SNESReset(fas->next);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

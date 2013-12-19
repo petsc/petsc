@@ -774,7 +774,8 @@ the global node number of each local node
 including the ghost nodes. This number may be determined by using the
 command
 \begin{tabbing}
-  DMDAGetGlobalIndices(DM da,int *n,int *idx[]);
+  DMDAGetGlobalIndices(DM da,int *n,const int *idx[]);
+  DMDARestoreGlobalIndices(DM da,int *n,const int *idx[]);
 \end{tabbing}
 The output argument \trl{n} contains the number of
 local nodes, including ghost nodes, while \trl{idx} contains a list of length
@@ -6544,7 +6545,7 @@ possibly user-defined routines as well) with
 \end{tabbing}
 Likewise, all memory allocations should be checked with
 \begin{tabbing}
-  ierr = PetscMalloc(n*sizeof(double),\&ptr);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,\&ptr);CHKERRQ(ierr);
 \end{tabbing}
 If this procedure is followed throughout all of the user's libraries
 and codes, any error will by default generate a clean traceback of
@@ -6840,7 +6841,7 @@ To use PETSc from MS Visual Studio - one would have to compile a PETSc example w
 
 \subsection{Mac OSX}
 
-Follow the instructions in systems/Apple/OSX/bin/makeframework to build the PETSc framework.
+Follow the instructions in systems/Apple/OSX/bin/makeall to build the PETSc framework and documentation suitable for use in Xcode.
 
 You can then use the PETSc framework in \$\{PETSC\_DIR\}/arch-osx/PETSc.framework in the usual manner for Apple framworks, see the examples in systems/Apple/OSX/examples.  When working in xcode things like function name completion should work for all PETSc functions as well as MPI functions. You must also link against the Apple Accelerate.framework.
 

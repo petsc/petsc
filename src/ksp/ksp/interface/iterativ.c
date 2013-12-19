@@ -561,7 +561,7 @@ PetscErrorCode  KSPConvergedDefaultCreate(void **ctx)
   KSPConvergedDefaultCtx *cctx;
 
   PetscFunctionBegin;
-  ierr = PetscNew(KSPConvergedDefaultCtx,&cctx);CHKERRQ(ierr);
+  ierr = PetscNew(&cctx);CHKERRQ(ierr);
   *ctx = cctx;
   PetscFunctionReturn(0);
 }

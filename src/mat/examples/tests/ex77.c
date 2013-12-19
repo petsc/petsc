@@ -237,7 +237,7 @@ int main(int argc,char **args)
   if (reorder) {
     IS       nip;
     PetscInt *nip_ptr;
-    ierr = PetscMalloc(mbs*sizeof(PetscInt),&nip_ptr);CHKERRQ(ierr);
+    ierr = PetscMalloc1(mbs,&nip_ptr);CHKERRQ(ierr);
     ierr = ISGetIndices(ip,&ip_ptr);CHKERRQ(ierr);
     ierr = PetscMemcpy(nip_ptr,ip_ptr,mbs*sizeof(PetscInt));CHKERRQ(ierr);
     i    = nip_ptr[1]; nip_ptr[1] = nip_ptr[mbs-2]; nip_ptr[mbs-2] = i;

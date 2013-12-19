@@ -560,8 +560,8 @@ PetscErrorCode PCGAMGSetData_Classical(PC pc, Mat A)
   PetscFunctionBegin;
   /* no data for classical AMG */
   pc_gamg->data           = NULL;
-  pc_gamg->data_cell_cols = 1;
-  pc_gamg->data_cell_rows = 1;
+  pc_gamg->data_cell_cols = 0;
+  pc_gamg->data_cell_rows = 0;
   pc_gamg->data_sz = 0;
   PetscFunctionReturn(0);
 }
@@ -587,7 +587,7 @@ PetscErrorCode  PCCreateGAMG_Classical(PC pc)
   }
 
   /* create sub context for SA */
-  ierr = PetscNewLog(pc, PC_GAMG_Classical, &pc_gamg_classical);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&pc_gamg_classical);CHKERRQ(ierr);
   pc_gamg->subctx = pc_gamg_classical;
   pc->ops->setfromoptions = PCGAMGSetFromOptions_Classical;
   /* reset does not do anything; setup not virtual */

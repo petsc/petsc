@@ -228,7 +228,7 @@ PetscErrorCode SNESMSRegister(SNESMSType name,PetscInt nstages,PetscInt nregiste
   t->nregisters = nregisters;
   t->stability  = stability;
 
-  ierr = PetscMalloc3(nstages*nregisters,PetscReal,&t->gamma,nstages,PetscReal,&t->delta,nstages,PetscReal,&t->betasub);CHKERRQ(ierr);
+  ierr = PetscMalloc3(nstages*nregisters,&t->gamma,nstages,&t->delta,nstages,&t->betasub);CHKERRQ(ierr);
   ierr = PetscMemcpy(t->gamma,gamma,nstages*nregisters*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemcpy(t->delta,delta,nstages*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemcpy(t->betasub,betasub,nstages*sizeof(PetscReal));CHKERRQ(ierr);
@@ -448,7 +448,7 @@ static PetscErrorCode SNESSetFromOptions_MS(SNES snes)
 
     ierr = PetscStrncpy(mstype,SNESMSDefault,sizeof(mstype));CHKERRQ(ierr);
     for (link=SNESMSTableauList,count=0; link; link=link->next,count++) ;
-    ierr = PetscMalloc(count*sizeof(char*),&namelist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(count,&namelist);CHKERRQ(ierr);
     for (link=SNESMSTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
     ierr = PetscOptionsEList("-snes_ms_type","Multistage smoother type","SNESMSSetType",(const char*const*)namelist,count,mstype,&choice,&flg);CHKERRQ(ierr);
     ierr = SNESMSSetType(snes,flg ? namelist[choice] : mstype);CHKERRQ(ierr);
@@ -561,7 +561,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes)
   snes->usespc  = PETSC_FALSE;
   snes->usesksp = PETSC_TRUE;
 
-  ierr        = PetscNewLog(snes,SNES_MS,&ms);CHKERRQ(ierr);
+  ierr        = PetscNewLog(snes,&ms);CHKERRQ(ierr);
   snes->data  = (void*)ms;
   ms->damping = 0.9;
   ms->norms   = PETSC_FALSE;
