@@ -177,7 +177,7 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
 
           A00 and  A11 must be square matrices.
 
-.seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatSchurComplementUpdate(), MatCreateTranspose(), MatGetSchurComplement()
+.seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatSchurComplementUpdateSubMatrices(), MatCreateTranspose(), MatGetSchurComplement()
 
 @*/
 PetscErrorCode  MatCreateSchurComplement(Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A11,Mat *S)
@@ -188,14 +188,14 @@ PetscErrorCode  MatCreateSchurComplement(Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A1
   ierr = KSPInitializePackage();CHKERRQ(ierr);
   ierr = MatCreate(((PetscObject)A00)->comm,S);CHKERRQ(ierr);
   ierr = MatSetType(*S,MATSCHURCOMPLEMENT);CHKERRQ(ierr);
-  ierr = MatSchurComplementSet(*S,A00,Ap00,A01,A10,A11);CHKERRQ(ierr);
+  ierr = MatSchurComplementSetSubMatrices(*S,A00,Ap00,A01,A10,A11);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSchurComplementSet"
+#define __FUNCT__ "MatSchurComplementSetSubMatrices"
 /*@
-      MatSchurComplementSet - Sets the matrices that define the Schur complement
+      MatSchurComplementSetSubMatrices - Sets the matrices that define the Schur complement
 
    Collective on Mat
 
@@ -214,17 +214,17 @@ PetscErrorCode  MatCreateSchurComplement(Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A1
 
           A00 and  A11 must be square matrices.
 
-.seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatSchurComplementUpdate(), MatCreateTranspose(), MatCreateSchurComplement(), MatGetSchurComplement()
+.seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatSchurComplementUpdateSubMatrices(), MatCreateTranspose(), MatCreateSchurComplement(), MatGetSchurComplement()
 
 @*/
-PetscErrorCode  MatSchurComplementSet(Mat S,Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A11)
+PetscErrorCode  MatSchurComplementSetSubMatrices(Mat S,Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A11)
 {
   PetscErrorCode      ierr;
   PetscInt            m,n;
   Mat_SchurComplement *Na = (Mat_SchurComplement*)S->data;
 
   PetscFunctionBegin;
-  if (S->assembled) SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONGSTATE,"Use MatSchurComplementUpdate() for already used matrix");
+  if (S->assembled) SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONGSTATE,"Use MatSchurComplementUpdateSubMatrices() for already used matrix");
   PetscValidHeaderSpecific(A00,MAT_CLASSID,1);
   PetscValidHeaderSpecific(Ap00,MAT_CLASSID,2);
   PetscValidHeaderSpecific(A01,MAT_CLASSID,3);
@@ -335,9 +335,9 @@ PetscErrorCode MatSchurComplementSetKSP(Mat S, KSP ksp)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSchurComplementUpdate"
+#define __FUNCT__ "MatSchurComplementUpdateSubMatrices"
 /*@
-      MatSchurComplementUpdate - Updates the Schur complement matrix object with new submatrices
+      MatSchurComplementUpdateSubMatrices - Updates the Schur complement matrix object with new submatrices
 
    Collective on Mat
 
@@ -354,19 +354,19 @@ PetscErrorCode MatSchurComplementSetKSP(Mat S, KSP ksp)
 
           A00 and  A11 must be square matrices
 
-          All of the matrices provided must have the same sizes as was used with MatCreateSchurComplement() or MatSchurComplementSet()
+          All of the matrices provided must have the same sizes as was used with MatCreateSchurComplement() or MatSchurComplementSetSubMatrices()
           though they need not be the same matrices.
 
 .seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatCreateSchurComplement()
 
 @*/
-PetscErrorCode  MatSchurComplementUpdate(Mat S,Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A11,MatStructure str)
+PetscErrorCode  MatSchurComplementUpdateSubMatrices(Mat S,Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A11,MatStructure str)
 {
   PetscErrorCode      ierr;
   Mat_SchurComplement *Na = (Mat_SchurComplement*)S->data;
 
   PetscFunctionBegin;
-  if (!S->assembled) SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONGSTATE,"Use MatSchurComplementSet() for a new matrix");
+  if (!S->assembled) SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONGSTATE,"Use MatSchurComplementSetSubMatrices() for a new matrix");
   PetscValidHeaderSpecific(A00,MAT_CLASSID,1);
   PetscValidHeaderSpecific(A01,MAT_CLASSID,2);
   PetscValidHeaderSpecific(A10,MAT_CLASSID,3);
@@ -411,9 +411,9 @@ PetscErrorCode  MatSchurComplementUpdate(Mat S,Mat A00,Mat Ap00,Mat A01,Mat A10,
 
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSchurComplementGetSubmatrices"
+#define __FUNCT__ "MatSchurComplementGetSubMatrices"
 /*@C
-  MatSchurComplementGetSubmatrices - Get the individual submatrices in the Schur complement
+  MatSchurComplementGetSubMatrices - Get the individual submatrices in the Schur complement
 
   Collective on Mat
 
@@ -428,9 +428,9 @@ PetscErrorCode  MatSchurComplementUpdate(Mat S,Mat A00,Mat Ap00,Mat A01,Mat A10,
 
   Level: intermediate
 
-.seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatCreateSchurComplement(), MatSchurComplementUpdate()
+.seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatCreateSchurComplement(), MatSchurComplementUpdateSubMatrices()
 @*/
-PetscErrorCode  MatSchurComplementGetSubmatrices(Mat S,Mat *A00,Mat *Ap00,Mat *A01,Mat *A10,Mat *A11)
+PetscErrorCode  MatSchurComplementGetSubMatrices(Mat S,Mat *A00,Mat *Ap00,Mat *A01,Mat *A10,Mat *A11)
 {
   Mat_SchurComplement *Na = (Mat_SchurComplement*) S->data;
   PetscErrorCode      ierr;
@@ -477,7 +477,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
   if (mreuse != MAT_IGNORE_MATRIX) {
     /* Use MatSchurComplement */
     if (mreuse == MAT_REUSE_MATRIX) {
-      ierr = MatSchurComplementGetSubmatrices(*newmat,&A,&Ap,&B,&C,&D);CHKERRQ(ierr);
+      ierr = MatSchurComplementGetSubMatrices(*newmat,&A,&Ap,&B,&C,&D);CHKERRQ(ierr);
       if (!A || !Ap || !B || !C) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Attempting to reuse matrix but Schur complement matrices unset");
       if (A != Ap) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Preconditioning matrix does not match operator");
       ierr = MatDestroy(&Ap);CHKERRQ(ierr); /* get rid of extra reference */
@@ -491,7 +491,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
       ierr = MatCreateSchurComplement(A,A,B,C,D,newmat);CHKERRQ(ierr);
       break;
     case MAT_REUSE_MATRIX:
-      ierr = MatSchurComplementUpdate(*newmat,A,A,B,C,D,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatSchurComplementUpdateSubMatrices(*newmat,A,A,B,C,D,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       break;
     default:
       SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Unrecognized value of mreuse");
@@ -739,7 +739,7 @@ PetscErrorCode  MatSchurComplementGetPmat_Basic(Mat S,MatReuse preuse,Mat *Spmat
   PetscFunctionBegin;
   if (preuse == MAT_IGNORE_MATRIX) PetscFunctionReturn(0);
 
-  ierr = MatSchurComplementGetSubmatrices(S,&A,NULL,&B,&C,&D);CHKERRQ(ierr);
+  ierr = MatSchurComplementGetSubMatrices(S,&A,NULL,&B,&C,&D);CHKERRQ(ierr);
   if (!A) SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONGSTATE,"Schur complement component matrices unset");
   ierr = MatCreateSchurComplementPmat(A,B,C,D,schur->ainvtype,preuse,Spmat);CHKERRQ(ierr);
   PetscFunctionReturn(0);

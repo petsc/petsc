@@ -26,7 +26,7 @@ static PetscErrorCode PCLSCAllocate_Private(PC pc)
   ierr = KSPSetOptionsPrefix(lsc->kspL,((PetscObject)pc)->prefix);CHKERRQ(ierr);
   ierr = KSPAppendOptionsPrefix(lsc->kspL,"lsc_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(lsc->kspL);CHKERRQ(ierr);
-  ierr = MatSchurComplementGetSubmatrices(pc->mat,&A,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = MatSchurComplementGetSubMatrices(pc->mat,&A,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = MatGetVecs(A,&lsc->x0,&lsc->y0);CHKERRQ(ierr);
   ierr = MatGetVecs(pc->pmat,&lsc->x1,NULL);CHKERRQ(ierr);
   if (lsc->scalediag) {
@@ -51,7 +51,7 @@ static PetscErrorCode PCSetUp_LSC(PC pc)
   ierr = PetscObjectQuery((PetscObject)pc->pmat,"LSC_Lp",(PetscObject*)&Lp);CHKERRQ(ierr);
   if (!Lp) {ierr = PetscObjectQuery((PetscObject)pc->mat,"LSC_Lp",(PetscObject*)&Lp);CHKERRQ(ierr);}
   if (!L) {
-    ierr = MatSchurComplementGetSubmatrices(pc->mat,NULL,NULL,&B,&C,NULL);CHKERRQ(ierr);
+    ierr = MatSchurComplementGetSubMatrices(pc->mat,NULL,NULL,&B,&C,NULL);CHKERRQ(ierr);
     if (!lsc->L) {
       ierr = MatMatMult(C,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&lsc->L);CHKERRQ(ierr);
     } else {
@@ -61,7 +61,7 @@ static PetscErrorCode PCSetUp_LSC(PC pc)
   }
   if (lsc->scale) {
     Mat Ap;
-    ierr = MatSchurComplementGetSubmatrices(pc->mat,NULL,&Ap,NULL,NULL,NULL);CHKERRQ(ierr);
+    ierr = MatSchurComplementGetSubMatrices(pc->mat,NULL,&Ap,NULL,NULL,NULL);CHKERRQ(ierr);
     ierr = MatGetDiagonal(Ap,lsc->scale);CHKERRQ(ierr); /* Should be the mass matrix, but we don't have plumbing for that yet */
     ierr = VecReciprocal(lsc->scale);CHKERRQ(ierr);
   }
@@ -78,7 +78,7 @@ static PetscErrorCode PCApply_LSC(PC pc,Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatSchurComplementGetSubmatrices(pc->mat,&A,NULL,&B,&C,NULL);CHKERRQ(ierr);
+  ierr = MatSchurComplementGetSubMatrices(pc->mat,&A,NULL,&B,&C,NULL);CHKERRQ(ierr);
   ierr = KSPSolve(lsc->kspL,x,lsc->x1);CHKERRQ(ierr);
   ierr = MatMult(B,lsc->x1,lsc->x0);CHKERRQ(ierr);
   if (lsc->scale) {
