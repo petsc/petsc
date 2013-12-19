@@ -2,6 +2,7 @@
 
 typedef struct {
   PetscReal  lambda; /* damping parameter */
+  PetscBool  symmetric; /* apply the projections symmetrically */
 } PC_Kaczmarz;
 
 #undef __FUNCT__
@@ -32,22 +33,21 @@ static PetscErrorCode PCApply_Kaczmarz(PC pc,Vec x,Vec y)
   PetscFunctionBegin;
   ierr = MatGetOwnershipRange(pc->pmat,&xs,&xe);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(pc->pmat,&ys,&ye);CHKERRQ(ierr);
-  ierr = VecSet(y,0);CHKERRQ(ierr);
+  ierr = VecSet(y,0.);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
   ierr = VecGetArray(y,&yarray);CHKERRQ(ierr);
   for (i=xs;i<xe;i++) {
     /* get the maximum row width and row norms */
     ierr = MatGetRow(pc->pmat,i,&ncols,&cols,&vals);CHKERRQ(ierr);
-    /* form the full residual */
     r = xarray[i-xs];
     anrm = 0.;
     for (j=0;j<ncols;j++) {
       if (cols[j] >= ys && cols[j] < ye) {
         r -= yarray[cols[j]-ys]*vals[j];
       }
-      anrm += PetscRealPart(PetscPowScalar(vals[j],2));
+      anrm += PetscRealPart(PetscSqr(vals[j]));
     }
-    if (anrm > 0) {
+    if (anrm > 0.) {
       for (j=0;j<ncols;j++) {
         if (cols[j] >= ys && cols[j] < ye) {
           yarray[cols[j]-ys] += vals[j]*lambda*r/anrm;
@@ -55,6 +55,27 @@ static PetscErrorCode PCApply_Kaczmarz(PC pc,Vec x,Vec y)
       }
     }
     ierr = MatRestoreRow(pc->pmat,i,&ncols,&cols,&vals);CHKERRQ(ierr);
+  }
+  if (jac->symmetric) {
+    for (i=xe-1;i>=xs;i--) {
+      ierr = MatGetRow(pc->pmat,i,&ncols,&cols,&vals);CHKERRQ(ierr);
+      r = xarray[i-xs];
+      anrm = 0.;
+      for (j=0;j<ncols;j++) {
+        if (cols[j] >= ys && cols[j] < ye) {
+          r -= yarray[cols[j]-ys]*vals[j];
+        }
+        anrm += PetscRealPart(PetscSqr(vals[j]));
+      }
+      if (anrm > 0.) {
+        for (j=0;j<ncols;j++) {
+          if (cols[j] >= ys && cols[j] < ye) {
+            yarray[cols[j]-ys] -= vals[j]*lambda*r/anrm;
+          }
+        }
+      }
+      ierr = MatRestoreRow(pc->pmat,i,&ncols,&cols,&vals);CHKERRQ(ierr);
+    }
   }
   ierr = VecRestoreArray(y,&yarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
@@ -71,6 +92,7 @@ PetscErrorCode PCSetFromOptions_Kaczmarz(PC pc)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Kaczmarz options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-pc_kaczmarz_lambda","relaxation factor (0 < lambda)","",jac->lambda,&jac->lambda,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_kaczmarz_symmetric","apply row projections symmetrically","",jac->symmetric,&jac->symmetric,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -101,7 +123,11 @@ PetscErrorCode PCView_Kaczmarz(PC pc,PetscViewer viewer)
 
    Concepts: Kaczmarz, preconditioners, row projection
 
-   Notes: In parallel this computes off-processor updates at the end of every local sweep
+   Notes: In parallel this is block-Jacobi with Kaczmarz inner solve.
+
+   References:
+   S. Kaczmarz, “Angenaherte Auflosing von Systemen Linearer Gleichungen”,
+   Bull. Internat. Acad. Polon. Sci. C1. A, pp.335-357, 1937.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 
@@ -124,5 +150,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Kaczmarz(PC pc)
   pc->ops->destroy         = PCDestroy_Kaczmarz;
   pc->data                 = (void*)jac;
   jac->lambda              = 1.0;
+  jac->symmetric           = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
