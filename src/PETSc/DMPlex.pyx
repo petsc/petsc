@@ -42,11 +42,10 @@ cdef class DMPlex(DM):
 
     def createCohesiveSubmesh(self,hasLagrange,value):
         cdef PetscBool hasL = hasLagrange
-        cdef PetscInt  cvalue = asInt(value)
-        cdef PetscDM   subdm = NULL
-        CHKERR( DMPlexCreateCohesiveSubmesh(self.dm,hasL,NULL,cvalue,&subdm) )
-        # how do I return it?
-        return 
+        cdef PetscInt cvalue = asInt(value)
+        cdef DM subdm = DMPlex()
+        CHKERR( DMPlexCreateCohesiveSubmesh(self.dm,hasL,NULL,cvalue,&subdm.dm) )
+        return subdm
     
     def getDimension(self):
         cdef PetscInt dim = 0
