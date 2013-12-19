@@ -21,11 +21,10 @@ matSetName(maxMatricies, nameOfMatrix);
 //Used to refer to whether the left top block should be highighted or the right bottom bloc	
 var matrixPicFlag = 0;
 
-//currentRecursionCounter is used to remember the current counter so that it can be used
-//to set children to symm and posdef if parent is symm and posdef without
-//breaking other code
-var currentRecursionCounter = 0;
-var recursionCounter        = 0;
+//preRecursionCounter is used to remember the previous counter; 
+//recursionCounter is either the active counter or count the next matrix node to be moved to
+var preRecursionCounter = -1;
+var recursionCounter    = -1;
 
 //counter of SAWs recursions for '-pc_type'
 var recursionCounterSAWs = 0;
@@ -124,7 +123,8 @@ DisplayDirectory = function(sub,divEntry)
 //When pcoptions.html is loaded ...
 HandlePCOptions = function(){
     
-    recursionCounter = -1;
+    recursionCounter    = -1;
+    preRecursionCounter = recursionCounter;
 
     //reset the form
     formSet(recursionCounter,matInfo);
@@ -160,10 +160,9 @@ HandlePCOptions = function(){
         }
     });
     
-    recursionCounter++;
+    recursionCounter++; //recursionCounter=1, preRecursionCounter=-1
 
     $("#continueButton").click(function(){
-        //alert("recursionCounter "+recursionCounter);
         //alert("recursionCounterSAWs "+recursionCounterSAWs+"; prefix="+sawsInfo[0].prefix+" "+sawsInfo[recursionCounterSAWs-1].prefix);
 
 	//matrixLevel is how many matrices deep the data is. 0 is the overall matrix, 
@@ -248,24 +247,24 @@ HandlePCOptions = function(){
 	    matNode[2 * recursionCounter + 2] = true;  
 	}
 
-	//save the current counter
-	currentRecursionCounter = recursionCounter;
+        //Assign the children of a parent its inherited qualities (posdef and symm) 
+        matTreeSetChildren(recursionCounter,matInfo);
+
 	//move the counter forward
+        //------------------------------
+        preRecursionCounter = recursionCounter; //save the current counter
 	recursionCounter++;
 
 	//Find next child node - Skip any children from a non-logically structured parent 
         //Note: this routine changes global variables 'recursionCounter' and 'matDivCounter'!
         matTreeGetNextNode(matNode);
 
-        //Assign the children of a parent its inherited qualities (posdef and symm) 
-        matTreeSetChildren(currentRecursionCounter,matInfo);
-
         //reset the form
         formSet(recursionCounter,matInfo);
  
 	//If we are at the max number of matricies, hide the questions. 
 	if (recursionCounter == maxMatricies) {
-	    $("#matrixPic").html("<center>" + finalTex(matInfo, currentRecursionCounter) + "</center>");
+	    $("#matrixPic").html("<center>" + finalTex(matInfo, preRecursionCounter) + "</center>");
 	    $("#questions").hide();
 	} else { // If we are not at the finish
 	    //produce the tex of the next matrix to screen

@@ -29,6 +29,7 @@ $(document).on('change', '.pcLists', function(){
     parent = parent.substring(1, parent.length);  //parent=matrix recursion counter b/c resursion counter is not in this scope
     //alert('parentDiv '+ parentDiv + '; parent '+parent + '; pcValue '+pcValue +'; this.id '+ this.id+'; recursionCounterSAWs '+recursionCounterSAWs);
     //alert('logstruc='+matInfo[parent].logstruc);
+    //alert('currentRecursionCounter '+currentRecursionCounter+' parent '+parent + '; pcValue '+pcValue +'; recursionCounter '+recursionCounter);
     if (parent < 0) return; //endtag for o-1 and other oparent are not consistent yet???
 
     // if pcValue is changed to !fieldsplit for logically structured matrix
@@ -50,50 +51,35 @@ $(document).on('change', '.pcLists', function(){
 	var newDiv = generateDivName(this.id,parent,"mg");
         var endtag = newDiv.substring(newDiv.indexOf('_'));
         var myendtag;
-        //alert("mg: newDiv "+newDiv+"; endtag "+endtag);
+        var mgLevels;
 
 	$("#"+this.id).after("<div id=\""+newDiv+"\" style='margin-left:50px;'></div>");
         myendtag = endtag+"0";
 	$("#"+newDiv).append("<b>MG Type &nbsp;&nbsp;</b><select class=\"mgList\" id=\"mgList" + parent +myendtag+"\"></select>")  
         populateMgList("mgList"+parent+myendtag);
-
-        // mglevels determines how many ksp/pc at this solve level
+        
+        // mglevels determines how many ksp/pc at this solve level  
         $("#"+newDiv).append("<br><b>MG Levels </b><input type='text' id=\'mglevels"+parent+myendtag+"\' maxlength='4' class='mgLevels'>");
-        $("#mglevels"+parent+myendtag).val(2); // set default mgLevels
-        //$("#mglevels"+parent+endtag).trigger("change");
-
-        // Smoothing (Level>0)
-        $("#"+newDiv).append("<br><br><b id=\"text_smoothing"+parent+endtag+"\">Smoothing   </b>")
-        var mgLevels = $("#mglevels" + parent + myendtag).val();
-        //get mgLevels from SAWs???
-       
-        if (mgLevels > 1) { //use SAWs options???
-            for (var level=mgLevels-1; level>0; level--) {
-                myendtag = endtag+level;
-                $("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id=\"text_kspList"+parent+myendtag+"\">KSP Level "+level+" &nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+ parent+myendtag +"\"></select>")
-	        $("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id=\"text_pcList"+parent+myendtag+"\">PC Level "+level+" &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList"+ parent+myendtag+"\"></select>")
-                populateKspList("kspList"+parent+myendtag,null,"null");
-	        populatePcList("pcList"+parent+myendtag,null,"null"); 
-                // set defaults
-                $("#kspList"+parent+myendtag).find("option[value='chebyshev']").attr("selected","selected");
-	        $("#pcList"+parent+myendtag).find("option[value='sor']").attr("selected","selected");
-            }
-        } 
+        mgLevels = 2; //default
+        if (preRecursionCounter == -1) 
+            mgLevels = 3; //RecursionCounterSAWs???; //get mgLevels from SAWs 
+        $("#mglevels"+parent+myendtag).val(mgLevels); // set default mgLevels -- when reset mglevels to 4, gives order 3, 2, 1 below???
 
         // Coarse Grid Solver (Level 0)
         myendtag = endtag+"0";
 	$("#"+newDiv).append("<br><br><b>Coarse Grid Solver (Level 0)  </b>")
         $("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList" + parent+myendtag +"\"></select>")
 	$("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent+myendtag +"\"></select>")
-
-        if (recursionCounter == 0) { //use SAWs options
-            var prefix = sawsInfo[currentRecursionCounterSAWs].prefix;
+      
+        var prefix = "";
+        if (preRecursionCounter == -1) 
+            prefix = sawsInfo[currentRecursionCounterSAWs].prefix;
+        if (prefix == "mg_coarse_") { //use SAWs options;
             var SAWs_kspVal = $("#kspList-1"+prefix).val(); 
             var SAWs_pcVal = $("#pcList-1"+prefix).val(); 
             //alternative???
             populateKspList("kspList"+parent+myendtag,null,SAWs_kspVal);
             populatePcList("pcList"+parent+myendtag,null,SAWs_pcVal);
-            //alert("bjacobi: prefix="+prefix+"; SAWs_kspVal="+SAWs_kspVal+"; SAWs_pcVal="+SAWs_pcVal+"; currentRecursionCounterSAWs="+currentRecursionCounterSAWs);
             currentRecursionCounterSAWs++;
 	    $("#pcList"+parent+myendtag).trigger("change");
         } else {
@@ -105,6 +91,38 @@ $(document).on('change', '.pcLists', function(){
 	    //redundant has to have extra dropdown menus so manually trigger
 	    $("#pcList"+parent+myendtag).trigger("change");
         }
+
+        // Smoothing (Level>0)
+        $("#"+newDiv).append("<br><br><b id=\"text_smoothing"+parent+endtag+"\">Smoothing   </b>")
+        mgLevels = $("#mglevels" + parent + myendtag).val();
+       
+        if (mgLevels > 1) { 
+            for (var level=1; level<mgLevels; level++) { 
+                myendtag = endtag+level;
+                $("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id=\"text_kspList"+parent+myendtag+"\">KSP Level "+level+" &nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+ parent+myendtag +"\"></select>")
+	        $("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id=\"text_pcList"+parent+myendtag+"\">PC Level "+level+" &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList"+ parent+myendtag+"\"></select>")
+                prefix = "";
+                if (preRecursionCounter == -1) 
+                    prefix = sawsInfo[currentRecursionCounterSAWs].prefix;
+                if (prefix == "mg_levels_"+level+"_") { //use SAWs options
+                    alert("prefix "+prefix+" match");
+                    var SAWs_kspVal = $("#kspList-1"+prefix).val(); 
+                    var SAWs_pcVal = $("#pcList-1"+prefix).val(); 
+                    //alternative???
+                    populateKspList("kspList"+parent+myendtag,null,SAWs_kspVal);
+                    populatePcList("pcList"+parent+myendtag,null,SAWs_pcVal);
+                    currentRecursionCounterSAWs++;
+	            $("#pcList"+parent+myendtag).trigger("change");
+                } else {
+                    populateKspList("kspList"+parent+myendtag,null,"null");
+	            populatePcList("pcList"+parent+myendtag,null,"null"); 
+                    // set defaults
+                    $("#kspList"+parent+myendtag).find("option[value='chebyshev']").attr("selected","selected");
+	            $("#pcList"+parent+myendtag).find("option[value='sor']").attr("selected","selected");
+                }
+            }
+        } 
+
     } else { //if not mg, remove the options that mg might have added
 	var newDiv=generateDivName(this.id,parent,"mg");
 	$("#"+newDiv).remove();
@@ -148,7 +166,7 @@ $(document).on('change', '.pcLists', function(){
 	$("#"+newDiv).append("<b>Bjacobi blocks </b><input type='text' id='bjacobiBlocks"+parent+myendtag+"\' value='np' maxlength='4' class='processorInput'>"); // use style='margin-left:30px;'
 	$("#"+newDiv).append("<br><b>Bjacobi KSP   &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+parent+myendtag+"\"></select>");
 	$("#"+newDiv).append("<br><b>Bjacobi PC   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList"+parent+myendtag+"\"></select>");
-        if (recursionCounter == 0) { //use SAWs options
+        if (preRecursionCounter == -1) { //use SAWs options
             var prefix = sawsInfo[currentRecursionCounterSAWs].prefix;
             var SAWs_kspVal = $("#kspList-1"+prefix).val(); 
             var SAWs_pcVal = $("#pcList-1"+prefix).val(); 
@@ -222,7 +240,7 @@ $(document).on('change', '.pcLists', function(){
 	$("#"+newDiv).append("<b>KSP KSP   </b><select class=\"kspLists\" id=\"kspList" + parent +myendtag+"\"></select>");
 	$("#"+newDiv).append("<br><b>KSP PC &nbsp;&nbsp; </b><select class=\"pcLists\" id=\"pcList" + parent +myendtag+"\"></select>");
 
-        if (recursionCounter == 0) { //use SAWs options
+        if (preRecursionCounter == -1) { //use SAWs options
             var prefix = sawsInfo[currentRecursionCounterSAWs].prefix;
             var SAWs_kspVal = $("#kspList-1"+prefix).val(); 
             var SAWs_pcVal = $("#pcList-1"+prefix).val(); 
