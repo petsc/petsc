@@ -1,22 +1,22 @@
-ALL: 
+ALL:
 
-CFLAGS		 = 
-FFLAGS		 = 
+CFLAGS		 =
+FFLAGS		 =
 CPPFLAGS         =
 FPPFLAGS         =
 EXAMPLESC        = minsurf1.c blackscholes.c
-EXAMPLESF        = 
+EXAMPLESF        =
 EXAMPLESCH       =
-EXAMPLESFH       = 
+EXAMPLESFH       =
 TUTORIALS        = minsurf1.c blackscholes.c
 LOCDIR		 = src/tao/complementarity/examples/tutorials/
 MANSEC		 =
-DOCS		 = 
-DIRS		 = 
+DOCS		 =
+DIRS		 =
+CLEANFILES       = minsurf1 blackscholes
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
 
 minsurf1: minsurf1.o chkopts
 	-${CLINKER} -o minsurf1 minsurf1.o ${PETSC_TAO_LIB}
@@ -25,4 +25,63 @@ minsurf1: minsurf1.o chkopts
 blackscholes: blackscholes.o chkopts
 	-${CLINKER} -o blackscholes blackscholes.o ${PETSC_TAO_LIB}
 	${RM} blackscholes.o
+
+runblackscholes:
+	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_method tao_ssils > blackscholes_1.tmp 2>&1; \
+	${DIFF} output/blackscholes_1.out blackscholes_1.tmp || printf '\nPossible problem with blackscholes_1 stdout, diffs above \n=========================================\n';\
+	${RM} -f blackscholes_1.tmp
+
+runblackscholes_2:
+	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_method tao_ssfls > blackscholes_2.tmp 2>&1; \
+	${DIFF} output/blackscholes_2.out blackscholes_2.tmp || printf '\nPossible problem with blackscholes_2 stdout, diffs above \n=========================================\n';\
+	${RM} -f blackscholes_2.tmp
+
+runblackscholes_3:
+	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_method tao_asils -tao_subset_type subvec > blackscholes_3.tmp 2>&1; \
+	${DIFF} output/blackscholes_3.out blackscholes_3.tmp || printf '\nPossible problem with blackscholes_3 stdout, diffs above \n=========================================\n';\
+	${RM} -f blackscholes_3.tmp
+
+runblackscholes_4:
+	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_method tao_asils -tao_subset_type mask > blackscholes_4.tmp 2>&1; \
+	${DIFF} output/blackscholes_4.out blackscholes_4.tmp || printf '\nPossible problem with blackscholes_4 stdout, diffs above \n=========================================\n';\
+	${RM} -f blackscholes_4.tmp
+
+runblackscholes_5:
+	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_method tao_asils -tao_subset_type matrixfree -pc_type jacobi > blackscholes_5.tmp 2>&1; \
+	${DIFF} output/blackscholes_5.out blackscholes_5.tmp || printf '\nPossible problem with blackscholes_5 stdout, diffs above \n=========================================\n';\
+	${RM} -f blackscholes_5.tmp
+
+runblackscholes_6:
+	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_method tao_asfls -tao_subset_type subvec > blackscholes_6.tmp 2>&1; \
+	${DIFF} output/blackscholes_6.out blackscholes_6.tmp || printf '\nPossible problem with blackscholes_6 stdout, diffs above \n=========================================\n';\
+	${RM} -f blackscholes_6.tmp
+
+runblackscholes_7:
+	-@${MPIEXEC} -n 1 ./blackscholes -tao_monitor -tao_method tao_asfls -tao_subset_type mask > blackscholes_7.tmp 2>&1; \
+	${DIFF} output/blackscholes_7.out blackscholes_7.tmp || printf '\nPossible problem with blackscholes_7 stdout, diffs above \n=========================================\n';\
+	${RM} -f blackscholes_7.tmp
+
+runminsurf1:
+	-@${MPIEXEC} -n 1 ./minsurf1 -tao_monitor -tao_view  -tao_method tao_ssils > minsurf1_1.tmp 2>&1; \
+	${DIFF} output/minsurf1_1.out minsurf1_1.tmp || printf '\nPossible problem with minsurf1_1 stdout, diffs above \n=========================================\n';\
+	${RM} -f minsurf1_1.tmp
+
+runminsurf1_2:
+	-@${MPIEXEC} -n 1 ./minsurf1 -tao_monitor -tao_view -tao_method tao_ssfls > minsurf1_2.tmp 2>&1; \
+	${DIFF} output/minsurf1_2.out minsurf1_2.tmp || printf '\nPossible problem with minsurf1_2 stdout, diffs above \n=========================================\n';\
+	${RM} -f minsurf1_2.tmp
+
+TESTEXAMPLES_C           = blackscholes.PETSc runblackscholes runblackscholes_2\
+	                   runblackscholes_3 runblackscholes_4 \
+	                   runblackscholes_5 runblackscholes_6 \
+	                   runblackscholes_7 blackscholes.rm \
+                           minsurf1.PETSc runminsurf1 runminsurf1_2 minsurf1.rm
+TESTEXAMPLES_C_X_MPIUNI  = blackscholes.PETSc runblackscholes runblackscholes_2\
+	                   runblackscholes_3 runblackscholes_4 \
+	                   runblackscholes_5 runblackscholes_6 \
+	                   runblackscholes_7 blackscholes.rm \
+                           minsurf1.PETSc runminsurf1 runminsurf1_2 minsurf1.rm
+
+
+include ${PETSC_DIR}/conf/test
 

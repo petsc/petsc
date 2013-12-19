@@ -1,23 +1,21 @@
-ALL: 
+ALL:
 
-CFLAGS		 = 
-FFLAGS		 = 
+CFLAGS		 =
+FFLAGS		 =
 CPPFLAGS         =
 FPPFLAGS         =
 EXAMPLESC        = eptorsion1.c eptorsion2.c minsurf2.c rosenbrock1.c
 EXAMPLESF        = eptorsion2f.F rosenbrock1f.F
 EXAMPLESCH       =
 EXAMPLESFH       = eptorsion2f.h rosenbrock1f.h
-TUTORIALS        = rosenbrock1.c eptorsion1.c minsurf1.c eptorsion2.c\
-                   minsurf2.c eptorsion2f.F
 LOCDIR		 = src/tao/unconstrained/examples/tutorials/
 MANSEC		 =
-DOCS		 = 
-DIRS		 = 
+DOCS		 =
+DIRS		 =
+CLEANFILES       = eptorsion1 eptorsion2 minsurf2 rosenbrock1 eptorsion2f rosenbrock1f
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
 
 rosenbrock1: rosenbrock1.o chkopts
 	-${CLINKER} -o rosenbrock1 rosenbrock1.o ${PETSC_TAO_LIB}
@@ -32,7 +30,7 @@ eptorsion1: eptorsion1.o chkopts
 	${RM} eptorsion1.o
 
 rosenbrock1f: rosenbrock1f.o chkopts
-	-${FLINKER} -o rosenbrock1f rosenbrock1f.o ${PETSC_TAO_LIB} 
+	-${FLINKER} -o rosenbrock1f rosenbrock1f.o ${PETSC_TAO_LIB}
 	${RM} rosenbrock1f.o
 
 eptorsion2f: eptorsion2f.o chkopts
@@ -46,5 +44,129 @@ minsurf1: minsurf1.o chkopts
 minsurf2: minsurf2.o chkopts
 	-${CLINKER} -o minsurf2 minsurf2.o ${PETSC_TAO_LIB}
 	${RM} minsurf2.o
+
+runrosenbrock1:
+	-@${MPIEXEC} -n 1 ./rosenbrock1 -tao_smonitor -tao_method tao_nls > rosenbrock1_1.tmp 2>&1;\
+	${DIFF} output/rosenbrock1_1.out rosenbrock1_1.tmp || printf '\nPossible problem with rosenbrock1 stdout, diffs above \n=========================================\n';\
+	${RM} -f rosenbrock1_1.tmp
+
+runrosenbrock1_2:
+	-@${MPIEXEC} -n 1 ./rosenbrock1_2 -tao_smonitor -tao_method tao_lmvm > rosenbrock1_2.tmp 2>&1;\
+        ${DIFF} output/rosenbrock1_2.out rosenbrock1_2.tmp || printf '\nPossible problem with rosenbrock1_2 stdout, diffs above \n=========================================\n';\
+        ${RM} -f rosenbrock1_2.tmp
+
+runrosenbrock1_3:
+	-@${MPIEXEC} -n 1 ./rosenbrock1_3 -tao_smonitor -tao_method tao_ntr > rosenbrock1_3.tmp 2>&1;\
+        ${DIFF} output/rosenbrock1_3.out rosenbrock1_3.tmp || printf '\nPossible problem with rosenbrock1_3 stdout, diffs above \n=========================================\n';\
+        ${RM} -f rosenbrock1_3.tmp
+
+runrosenbrock1f:
+	-@${MPIEXEC} -n 1 -tao_smonitor -tao_method tao_ntr ./rosenbrock1f > rosenbrock1f_1.tmp 2>&1; \
+        ${DIFF} output/rosenbrock1f_1.out rosenbrock1f_1.tmp || printf '\nPossible problem with rosenbrock1f_1 stdout, diffs above \n=========================================\n';\
+        ${RM} -f rosenbrock1f_1.tmp
+
+
+runminsurf1:
+	-@${MPIEXEC} -n 1 ./minsurf1 -tao_smonitor -tao_method tao_nls -mx 10 -my 8 > minsurf1_1.tmp 2>&1;\
+	${DIFF} output/minsurf1_1.out minsurf1_1.tmp || printf '\nPossible problem with minsurf1 stdout, diffs above \n=========================================\n';\
+	${RM} -f minsurf1_1.tmp
+
+runminsurf1_2:
+	-@${MPIEXEC} -n 1 ./minsurf1 -tao_smonitor -tao_method tao_bmrm -mx 10 -my 8 > minsurf1_2.tmp 2>&1;\
+	${DIFF} output/minsurf1_2.out minsurf1_2.tmp || printf '\nPossible problem with minsurf1_2 stdout, diffs above \n=========================================\n';\
+	${RM} -f minsurf1_2.tmp
+
+runminsurf1_3:
+	-@${MPIEXEC} -n 1 ./minsurf1 -tao_smonitor -tao_method tao_lmvm -mx 10 -my 8 > minsurf1_3.tmp 2>&1;\
+	${DIFF} output/minsurf1_3.out minsurf1_3.tmp || printf '\nPossible problem with minsurf1_3 stdout, diffs above \n=========================================\n';\
+	${RM} -f minsurf1_3.tmp
+
+runminsurf2:
+	-@${MPIEXEC} -n 1 ./minsurf2 -tao_smonitor -tao_method tao_lmvm -mx 10 -my 8 > minsurf2_1.tmp 2>&1;\
+	${DIFF} output/minsurf2_1.out minsurf2_1.tmp || printf '\nPossible problem with minsurf2 stdout, diffs above \n=========================================\n';\
+	${RM} -f minsurf2_1.tmp
+
+runminsurf2_2:
+	-@${MPIEXEC} -n 2 ./minsurf2 -tao_smonitor -tao_method tao_nls > minsurf2_2.tmp 2>&1;\
+	${DIFF} output/minsurf2_2.out minsurf2_2.tmp || printf '\nPossible problem with minsurf2_2 stdout, diffs above \n=========================================\n';\
+	${RM} -f minsurf2_2.tmp
+
+runminsurf2_3:
+	-@${MPIEXEC} -n 3 ./minsurf2 -tao_smonitor -tao_method tao_cg -tao_cg_type fr -mx 10 -my 10 > minsurf2_3.tmp 2>&1;\
+	${DIFF} output/minsurf2_3.out minsurf2_3.tmp || printf '\nPossible problem with minsurf2_3 stdout, diffs above \n=========================================\n';\
+	${RM} -f minsurf2_3.tmp
+
+runminsurf2_4:
+	-@${MPIEXEC} -n 2 ./minsurf2 -tao_smonitor -tao_method tao_ntr -mx 6 -my 8 -random 2 > minsurf2_4.tmp 2>&1;\
+	${DIFF} output/minsurf2_4.out minsurf2_4.tmp || printf '\nPossible problem with minsurf2_4 stdout, diffs above \n=========================================\n';\
+	${RM} -f minsurf2_4.tmp
+
+runminsurf2_5:
+	-@${MPIEXEC} -n 2 ./minsurf2 -tao_smonitor -tao_method tao_bmrm -mx 10 -my 8 > minsurf2_5.tmp 2>&1;\
+	${DIFF} output/minsurf2_5.out minsurf2_5.tmp || printf '\nPossible problem with minsurf2_5 stdout, diffs above \n=========================================\n';\
+	${RM} -f minsurf2_5.tmp
+
+
+runeptorsion1:
+	-@${MPIEXEC} -n 1 ./eptorsion1 -tao_smonitor -tao_method tao_lmvm > eptorsion1_1.tmp 2>&1;\
+	${DIFF} output/eptorsion1_1.out eptorsion1_1.tmp || printf '\nPossible problem with eptorsion1_1 stdout, diffs above \n=========================================\n';\
+	${RM} -f eptorsion1_1.tmp
+
+runeptorsion1_2:
+	-@${MPIEXEC} -n 1 ./eptorsion1 -tao_smonitor -tao_method tao_ntl > eptorsion1_2.tmp 2>&1;\
+	${DIFF} output/eptorsion1_2.out eptorsion1_2.tmp || printf '\nPossible problem with eptorsion1_2 stdout, diffs above \n=========================================\n';\
+	${RM} -f eptorsion1_2.tmp
+
+runeptorsion1_3:
+	-@${MPIEXEC} -n 1 ./eptorsion1 -tao_smonitor -tao_method tao_ntr > eptorsion1_3.tmp 2>&1;\
+	${DIFF} output/eptorsion1_3.out eptorsion1_3.tmp || printf '\nPossible problem with eptorsion1_3 stdout, diffs above \n=========================================\n';\
+	${RM} -f eptorsion1_3.tmp
+
+runeptorsion2:
+	-@${MPIEXEC} -n 1 ./eptorsion2 -tao_smonitor -tao_method tao_lmvm > eptorsion2_1.tmp 2>&1;\
+	${DIFF} output/eptorsion2_1.out eptorsion2_1.tmp || printf '\nPossible problem with eptorsion2_1 stdout, diffs above \n=========================================\n';\
+	${RM} -f eptorsion2_1.tmp
+
+
+runeptorsion2_2:
+	-@${MPIEXEC} -n 2 ./eptorsion2 -tao_smonitor -tao_method tao_nls -mx 16 -my 16 > eptorsion2_2.tmp 2>&1;\
+	${DIFF} output/eptorsion2_2.out eptorsion2_2.tmp || printf '\nPossible problem with eptorsion2_2 stdout, diffs above \n=========================================\n';\
+	${RM} -f eptorsion2_2.tmp
+
+
+runeptorsion2f:
+	-@${MPIEXEC} -n 1 ./eptorsion2f -tao_smonitor -tao_method tao_nls > eptorsion2f_1.tmp 2>&1;\
+	${DIFF} output/eptorsion2f_1.out eptorsion2f_1.tmp || printf '\nPossible problem with eptorsion2f_1 stdout, diffs above \n=========================================\n';\
+	${RM} -f eptorsion2f_1.tmp
+
+runeptorsion2f_2:
+	-@${MPIEXEC} -n 2 ./eptorsion2f -tao_smonitor -tao_method tao_lmvm > eptorsion2f_2.tmp 2>&1;\
+	${DIFF} output/eptorsion2f_2.out eptorsion2f_2.tmp || printf '\nPossible problem with eptorsion2f_2 stdout, diffs above \n=========================================\n';\
+	${RM} -f eptorsion2f_2.tmp
+
+
+TESTEXAMPLES_C    = rosenbrock1.PETSc runrosenbrock1 runrosenbrock1_2 runrosenbrock1_3 rosenbrock1.rm \
+                    minsurf1.PETSc runminsurf1 runminsurf1_2 runminsurf1_3 minsurf1.rm \
+                    minsurf2.PETSc runminsurf2 runminsurf2_2 runminsurf2_3 runminsurf2_4 runminsurf2_5 minsurf2.rm \
+                    eptorsion1.PETSc runeptorsion1 runeptorsion1_2 runeptorsion1_3 eptorsion1.rm \
+                    eptorsion2.PETSc runeptorsion2 runeptorsion2_2 eptorsion2.rm
+
+TESTEXAMPLES_FORTRAN =  rosenbrock1f.PETSc runrosenbrock1f rosenbrock1f.rm \
+                        eptorsion2f.PETSc runeptorsion2f runeptorsion2f_2 eptorsion2f.rm
+
+TESTEXAMPLES_C_X_MPIUNI = rosenbrock1.PETSc runrosenbrock1 runrosenbrock1_2 runrosenbrock1_3 rosenbrock1.rm \
+                    minsurf1.PETSc runminsurf1 runminsurf1_2 runminsurf1_3 minsurf1.rm \
+                    eptorsion2.PETSc runeptorsion2 eptorsion2.rm
+
+TESTEXAMPLES_FORTRAN_MPIUNI = rosenbrock1f.PETSc runrosenbrock1f rosenbrock1f.rm \
+                        eptorsion2f.PETSc runeptorsion2f eptorsion2f.rm
+
+
+include ${PETSC_DIR}/conf/test
+
+
+
+
+
 
 

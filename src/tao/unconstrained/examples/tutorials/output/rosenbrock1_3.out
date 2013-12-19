@@ -1,0 +1,8 @@
+[proxy:0:0@stokes] HYDU_create_process (./utils/launch/launch.c:75): execvp error on file ./rosenbrock1_3 (No such file or directory)
+
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   EXIT CODE: 255
+=   CLEANING UP REMAINING PROCESSES
+=   YOU CAN IGNORE THE BELOW CLEANUP MESSAGES
+===================================================================================
