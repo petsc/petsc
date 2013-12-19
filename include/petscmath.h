@@ -443,6 +443,10 @@ PETSC_STATIC_INLINE PetscInt PetscPowInt(PetscInt base,PetscInt power) {
 }
 PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power) {
   PetscReal result = 1;
+  if (power < 0) {
+    power = -power;
+    if (base != 0.0) base  = 1./base;
+  }
   while (power) {
     if (power & 1) result *= base;
     power >>= 1;
