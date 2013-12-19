@@ -331,5 +331,8 @@ cdef class DMPlex(DM):
         cdef PetscInt  numPoints = 0
         cdef PetscInt *points = NULL
         CHKERR( DMPlexGetTransitiveClosure(self.dm,cp,cuseCone,&numPoints,&points) )
-        out = array_i(2*numPoints,points)
-        return out[::2],out[1::2]
+        try:
+            out = array_i(2*numPoints,points)
+            return out[::2],out[1::2]
+        finally:
+            CHKERR( DMPlexRestoreTransitiveClosure(self.dm,cp,cuseCone,&numPoints,&points) )
