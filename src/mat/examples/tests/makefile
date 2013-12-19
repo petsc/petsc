@@ -99,6 +99,10 @@ ex17: ex17.o chkopts
 	-${CLINKER} -o ex17 ex17.o ${PETSC_MAT_LIB}
 	${RM} ex17.o
 
+ex18: ex18.o chkopts
+	-${CLINKER} -o ex18 ex18.o ${PETSC_MAT_LIB}
+	${RM} ex18.o
+
 ex19: ex19.o chkopts
 	-${CLINKER} -o ex19 ex19.o ${PETSC_MAT_LIB}
 	${RM} ex19.o
@@ -922,6 +926,21 @@ runex17:
 	   if (${DIFF} output/ex17_1.out ex17_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex17_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex17_1.tmp
+runex18:
+	-@${MPIEXEC}  -n 1 ./ex18 > ex18_0.tmp 2>&1;   \
+	   if (${DIFF} output/ex18_0.out ex18_0.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex18_0, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex18_0.tmp
+runex18_1:
+	-@${MPIEXEC}  -n 2 ./ex18 > ex18_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex18_1.out ex18_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex18_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex18_1.tmp
+runex18_2:
+	-@${MPIEXEC}  -n 7 ./ex18 > ex18_2.tmp 2>&1;   \
+	   if (${DIFF} output/ex18_2.out ex18_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex18_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex18_2.tmp
 runex19:
 	-@${MPIEXEC}  -n 4 ./ex19 > ex19_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
