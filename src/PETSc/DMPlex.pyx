@@ -46,7 +46,7 @@ cdef class DMPlex(DM):
         cdef DM subdm = DMPlex()
         CHKERR( DMPlexCreateCohesiveSubmesh(self.dm,hasL,NULL,cvalue,&subdm.dm) )
         return subdm
-    
+
     def getDimension(self):
         cdef PetscInt dim = 0
         CHKERR( DMPlexGetDimension(self.dm, &dim) )
@@ -110,7 +110,7 @@ cdef class DMPlex(DM):
         cdef PetscInt *iorie = NULL
         if orientation is not None:
             orientation = iarray_i(orientation, &norie, &iorie)
-            assert norie == ncone 
+            assert norie == ncone
             CHKERR( DMPlexSetConeOrientation(self.dm, cp, iorie) )
 
     def insertCone(self, p, conePos, conePoint):
@@ -146,9 +146,9 @@ cdef class DMPlex(DM):
         cdef PetscInt  norie = 0
         cdef PetscInt *iorie = NULL
         orientation = iarray_i(orientation, &norie, &iorie)
-        assert norie == ncone 
+        assert norie == ncone
         CHKERR( DMPlexSetConeOrientation(self.dm, cp, iorie) )
-        
+
     def getSupportSize(self, p):
         cdef PetscInt cp = asInt(p)
         cdef PetscInt pStart = 0, pEnd = 0
@@ -198,7 +198,7 @@ cdef class DMPlex(DM):
 
     def stratify(self):
         CHKERR( DMPlexStratify(self.dm) )
-        
+
     def orient(self):
         CHKERR( DMPlexOrient(self.dm) )
 
@@ -234,7 +234,7 @@ cdef class DMPlex(DM):
         name = str2bytes(name, &cname)
         CHKERR( DMPlexGetLabelValue(self.dm,cname,cn,&value) )
         return toInt(value)
-    
+
     def setLabelValue(self, name, n, value):
         cdef PetscInt cn = asInt(n), cvalue = asInt(value)
         cdef const_char *cname = NULL
@@ -253,14 +253,14 @@ cdef class DMPlex(DM):
         name = str2bytes(name, &cname)
         CHKERR( DMPlexGetLabelSize(self.dm,cname,&size) )
         return toInt(size)
-    
+
     def getLabelIdIS(self, name):
         cdef const_char *cname = NULL
         name = str2bytes(name, &cname)
         cdef IS lis = IS()
         CHKERR( DMPlexGetLabelIdIS(self.dm,cname,&lis.iset) )
         return lis
-    
+
     def getStratumSize(self, name, n):
         cdef PetscInt size = 0
         cdef PetscInt cn = asInt(n)
@@ -268,7 +268,7 @@ cdef class DMPlex(DM):
         name = str2bytes(name, &cname)
         CHKERR( DMPlexGetStratumSize(self.dm,cname,n,&size) )
         return toInt(size)
-    
+
     def getStratumIS(self, name, n):
         cdef PetscInt cn = asInt(n)
         cdef const_char *cname = NULL
@@ -276,7 +276,7 @@ cdef class DMPlex(DM):
         cdef IS sis = IS()
         CHKERR( DMPlexGetStratumIS(self.dm,cname,n,&sis.iset) )
         return sis
-    
+
     def clearLabelStratum(self, name, n):
         cdef PetscInt cn = asInt(n)
         cdef const_char *cname = NULL
@@ -287,12 +287,12 @@ cdef class DMPlex(DM):
         cdef PetscInt depth = 0
         CHKERR( DMPlexGetDepth(self.dm,&depth) )
         return toInt(depth)
-    
+
     def getDepthStratum(self,svalue):
         cdef PetscInt csvalue = asInt(svalue),sStart,sEnd
         CHKERR( DMPlexGetDepthStratum(self.dm,csvalue,&sStart,&sEnd) )
         return (toInt(sStart),toInt(sEnd))
-    
+
     def getHeightStratum(self,svalue):
         cdef PetscInt csvalue = asInt(svalue),sStart,sEnd
         CHKERR( DMPlexGetHeightStratum(self.dm,csvalue,&sStart,&sEnd) )
@@ -305,7 +305,10 @@ cdef class DMPlex(DM):
         cdef const_PetscInt *coveringPoints = NULL
         points = iarray_i(points, &numPoints, &ipoints)
         CHKERR( DMPlexGetMeet(self.dm,numPoints,ipoints,&numCoveringPoints,&coveringPoints) )
-        return array_i(numCoveringPoints,coveringPoints)
+        try:
+            return array_i(numCoveringPoints,coveringPoints)
+        finally:
+            CHKERR( DMPlexRestoreMeet(self.dm,numPoints,ipoints,&numCoveringPoints,&coveringPoints) )
 
     def getJoin(self,points):
         cdef PetscInt  numPoints = 0
@@ -314,7 +317,10 @@ cdef class DMPlex(DM):
         cdef const_PetscInt *coveringPoints = NULL
         points = iarray_i(points, &numPoints, &ipoints)
         CHKERR( DMPlexGetJoin(self.dm,numPoints,ipoints,&numCoveringPoints,&coveringPoints) )
-        return array_i(numCoveringPoints,coveringPoints)
+        try:
+            return array_i(numCoveringPoints,coveringPoints)
+        finally:
+            CHKERR( DMPlexRestoreJoin(self.dm,numPoints,ipoints,&numCoveringPoints,&coveringPoints) )
 
     def getTransitiveClosure(self,p,useCone=True):
         cdef PetscInt cp = asInt(p)
