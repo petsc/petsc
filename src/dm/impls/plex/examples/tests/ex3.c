@@ -57,7 +57,7 @@ void quadratic(const PetscReal coords[], PetscScalar *u)
 }
 void quadraticDer(const PetscReal coords[], const PetscReal n[], PetscScalar *u)
 {
-  if (spdim > 2)      {u[0] = coords[1]*n[0] + coords[2]*n[2]; u[1] = coords[0]*n[0] + coords[2]*n[1]; u[2] = coords[1]*n[1] + coords[0]*n[2];}
+  if (spdim > 2)      {u[0] = coords[1]*n[0] + coords[0]*n[1]; u[1] = coords[2]*n[1] + coords[1]*n[2]; u[2] = coords[2]*n[0] + coords[0]*n[2];}
   else if (spdim > 1) {u[0] = 2.0*coords[0]*n[0]; u[1] = coords[1]*n[0] + coords[0]*n[1];}
   else if (spdim > 0) {u[0] = 2.0*coords[0]*n[0];}
 }
