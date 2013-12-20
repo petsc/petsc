@@ -4994,9 +4994,9 @@ PetscErrorCode  MatMPIAIJGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
 {
   PetscErrorCode ierr;
   Mat_MPIAIJ     *mpimat=(Mat_MPIAIJ*)A->data;
-  Mat_SeqAIJ     *mat,*a=(Mat_SeqAIJ*)(mpimat->A)->data,*b=(Mat_SeqAIJ*)(mpimat->B)->data;
-  PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*cmap=mpimat->garray;
-  MatScalar      *aa=a->a,*ba=b->a,*cam;
+  Mat_SeqAIJ     *mat,*a,*b;
+  PetscInt       *ai,*aj,*bi,*bj,*cmap=mpimat->garray;
+  MatScalar      *aa,*ba,*cam;
   PetscScalar    *ca;
   PetscInt       am=A->rmap->n,i,j,k,cstart=A->cmap->rstart;
   PetscInt       *ci,*cj,col,ncols_d,ncols_o,jo;
@@ -5006,6 +5006,10 @@ PetscErrorCode  MatMPIAIJGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
   ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&match);CHKERRQ(ierr);
   if (!match) SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP,"Requires MPIAIJ matrix as input");
   ierr = PetscLogEventBegin(MAT_Getlocalmat,A,0,0,0);CHKERRQ(ierr);
+  a = (Mat_SeqAIJ*)(mpimat->A)->data;
+  b = (Mat_SeqAIJ*)(mpimat->B)->data;
+  ai = a->i; aj = a->j; bi = b->i; bj = b->j;
+  aa = a->a; ba = b->a;
   if (scall == MAT_INITIAL_MATRIX) {
     ierr  = PetscMalloc((1+am)*sizeof(PetscInt),&ci);CHKERRQ(ierr);
     ci[0] = 0;
