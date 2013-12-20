@@ -184,9 +184,9 @@ generate_section()
       starttime_hour=`grep "TESTMODE" $f | sed 's/.* \([0-9]*[0-9]\):\([0-9][0-9]\):\([0-9][0-9]\).*/\1/'`
       starttime=$(($((10#$starttime_sec))+$((10#$starttime_min))*60+$((10#$starttime_hour))*3600))
 
-      endtime_sec=`grep "Finished Build on" $f | sed 's/.* \([0-9]*[0-9]\):\([0-9][0-9]\):\([0-9][0-9]\).*/\3/'`
-      endtime_min=`grep "Finished Build on" $f | sed 's/.* \([0-9]*[0-9]\):\([0-9][0-9]\):\([0-9][0-9]\).*/\2/'`
-      endtime_hour=`grep "Finished Build on" $f | sed 's/.* \([0-9]*[0-9]\):\([0-9][0-9]\):\([0-9][0-9]\).*/\1/'`
+      endtime_sec=`grep "Finished Build on" $f | tail -1 | sed 's/.* \([0-9]*[0-9]\):\([0-9][0-9]\):\([0-9][0-9]\).*/\3/'`
+      endtime_min=`grep "Finished Build on" $f | tail -1 | sed 's/.* \([0-9]*[0-9]\):\([0-9][0-9]\):\([0-9][0-9]\).*/\2/'`
+      endtime_hour=`grep "Finished Build on" $f | tail -1 | sed 's/.* \([0-9]*[0-9]\):\([0-9][0-9]\):\([0-9][0-9]\).*/\1/'`
       endtime=$(($((10#$endtime_sec))+$((10#$endtime_min))*60+$((10#$endtime_hour))*3600))
 
       # Take into account that test might run over midnight or noon
