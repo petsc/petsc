@@ -118,7 +118,6 @@ int main(int argc,char **args)
   ierr = PetscFree(ifail);CHKERRQ(ierr);
   ierr = PetscFinalize();
 #endif
-  return 0;
 }
 /*------------------------------------------------
   Check the accuracy of the eigen solution
