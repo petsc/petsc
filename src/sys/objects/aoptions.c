@@ -373,14 +373,9 @@ PetscErrorCode PetscOptionsSAWsDestroy(void)
   PetscFunctionReturn(0);
 }
 
-/*
-                                   "<script jowererw type=\"text/javascript\" src=\"https://bitbucket.org/saws/saws/raw/master/js/jquery-1.9.1.js\"></script>\n"
-                                   "<script type=\"text/javascript\" src=\"https://bitbucket.org/saws/saws/raw/master/js/jsSAWs.js\"></script>\n"
- */
-
 static const char *OptionsHeader = "<head>\n"
-                                   "<script type=\"text/javascript\" src=\"js/jquery-1.9.1.js\"></script>\n"
-                                   "<script type=\"text/javascript\" src=\"js/jsSAWs.js\"></script>\n"
+                                   "<script type=\"text/javascript\" src=\"http://www.mcs.anl.gov/research/projects/saws/js/jquery-1.9.1.js\"></script>\n"
+                                   "<script type=\"text/javascript\" src=\"http://www.mcs.anl.gov/research/projects/saws/js/SAWs.js\"></script>\n"
                                    "<script type=\"text/javascript\" src=\"js/PETSc.js\"></script>\n"
                                    "<script>\n"
                                       "jQuery(document).ready(function() {\n"
