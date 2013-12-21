@@ -691,8 +691,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     ierr = PetscMemcpy(global_indices,is_indices,graph->nvtxs*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = ISRestoreIndices(from,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     /* allocate space for mirrors */
-    ierr = PetscMalloc2(graph->nvtxs,PetscInt,&graph->mirrors,
-                        graph->nvtxs,PetscInt*,&graph->mirrors_set);CHKERRQ(ierr);
+    ierr = PetscMalloc2(graph->nvtxs,&graph->mirrors,graph->nvtxs,&graph->mirrors_set);CHKERRQ(ierr);
     ierr = PetscMemzero(graph->mirrors,graph->nvtxs*sizeof(PetscInt));CHKERRQ(ierr);
     graph->mirrors_set[0] = 0;
 
@@ -1018,13 +1017,13 @@ PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap)
   graph->nvtxs = n;
   /* allocate used space */
   ierr = PetscBTCreate(graph->nvtxs,&graph->touched);CHKERRQ(ierr);
-  ierr = PetscMalloc7(graph->nvtxs,PetscInt,&graph->count,
-                      graph->nvtxs,PetscInt*,&graph->neighbours_set,
-                      graph->nvtxs,PetscInt,&graph->subset,
-                      graph->nvtxs,PetscInt,&graph->which_dof,
-                      graph->nvtxs+1,PetscInt,&graph->cptr,
-                      graph->nvtxs,PetscInt,&graph->queue,
-                      graph->nvtxs,PetscInt,&graph->special_dof);CHKERRQ(ierr);
+  ierr = PetscMalloc7(graph->nvtxs,&graph->count,
+                      graph->nvtxs,&graph->neighbours_set,
+                      graph->nvtxs,&graph->subset,
+                      graph->nvtxs,&graph->which_dof,
+                      graph->nvtxs+1,&graph->cptr,
+                      graph->nvtxs,&graph->queue,
+                      graph->nvtxs,&graph->special_dof);CHKERRQ(ierr);
   /* zeroes memory */
   ierr = PetscMemzero(graph->count,graph->nvtxs*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(graph->subset,graph->nvtxs*sizeof(PetscInt));CHKERRQ(ierr);
