@@ -260,7 +260,15 @@ int main(int argc,char **args)
   if (use_nearnullspace) {
     MatNullSpace matnull;
     Vec vec_coords;
-    ierr = VecCreateSeqWithArray(MPI_COMM_SELF,3,m,coords,&vec_coords);CHKERRQ(ierr);
+    PetscScalar *c;
+
+    ierr = VecCreate(MPI_COMM_WORLD,&vec_coords);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(vec_coords,3);CHKERRQ(ierr);
+    ierr = VecSetSizes(vec_coords,m,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetUp(vec_coords);CHKERRQ(ierr);
+    ierr = VecGetArray(vec_coords,&c);CHKERRQ(ierr);
+    for (i=0; i<m; i++) c[i] = coords[i]; /* Copy since Scalar type might be Complex */
+    ierr = VecRestoreArray(vec_coords,&c);CHKERRQ(ierr);
     ierr = MatNullSpaceCreateRigidBody(vec_coords,&matnull);CHKERRQ(ierr);
     ierr = MatSetNearNullSpace(Amat,matnull);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&matnull);CHKERRQ(ierr);
