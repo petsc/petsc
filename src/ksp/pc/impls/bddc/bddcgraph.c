@@ -698,7 +698,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     k=0;
     for (i=0;i<n_shared[0];i++) {
       j=shared[0][i];
-      if (graph->count[j] > 1) { 
+      if (graph->count[j] > 1) {
         graph->mirrors[j]++;
         k++;
       }
@@ -1006,9 +1006,9 @@ PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap)
   PetscFunctionBegin;
   PetscValidPointer(graph,1);
   PetscValidHeaderSpecific(l2gmap,IS_LTOGM_CLASSID,2);
-  /* reset graph if already allocated */
+  /* raise an error if already allocated */
   if (graph->nvtxs) {
-    ierr = PCBDDCGraphReset(graph);CHKERRQ(ierr);
+    SETERRQ(PetscObjectComm((PetscObject)l2gmap),PETSC_ERR_PLIB,"BDDCGraph already initialized");
   }
   /* set number of vertices */
   ierr = PetscObjectReference((PetscObject)l2gmap);CHKERRQ(ierr);
