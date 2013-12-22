@@ -2675,21 +2675,21 @@ PetscErrorCode DMPlexPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
 PetscErrorCode DMPlexPartition_ParMetis(DM dm, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection *partSection, IS *partition)
 {
   MPI_Comm       comm;
-  PetscInt       nvtxs      = numVertices; // The number of vertices in full graph
-  PetscInt      *vtxdist;                  // Distribution of vertices across processes
-  PetscInt      *xadj       = start;       // Start of edge list for each vertex
-  PetscInt      *adjncy     = adjacency;   // Edge lists for all vertices
-  PetscInt      *vwgt       = NULL;        // Vertex weights
-  PetscInt      *adjwgt     = NULL;        // Edge weights
-  PetscInt       wgtflag    = 0;           // Indicates which weights are present
-  PetscInt       numflag    = 0;           // Indicates initial offset (0 or 1)
-  PetscInt       ncon       = 1;           // The number of weights per vertex
-  PetscInt       nparts;                   // The number of partitions
-  PetscReal     *tpwgts;                   // The fraction of vertex weights assigned to each partition
-  PetscReal     *ubvec;                    // The balance intolerance for vertex weights
-  PetscInt       options[5];               // Options
-  // Outputs
-  PetscInt       edgeCut;                  // The number of edges cut by the partition
+  PetscInt       nvtxs      = numVertices; /* The number of vertices in full graph */
+  PetscInt      *vtxdist;                  /* Distribution of vertices across processes */
+  PetscInt      *xadj       = start;       /* Start of edge list for each vertex */
+  PetscInt      *adjncy     = adjacency;   /* Edge lists for all vertices */
+  PetscInt      *vwgt       = NULL;        /* Vertex weights */
+  PetscInt      *adjwgt     = NULL;        /* Edge weights */
+  PetscInt       wgtflag    = 0;           /* Indicates which weights are present */
+  PetscInt       numflag    = 0;           /* Indicates initial offset (0 or 1) */
+  PetscInt       ncon       = 1;           /* The number of weights per vertex */
+  PetscInt       nparts;                   /* The number of partitions */
+  PetscReal     *tpwgts;                   /* The fraction of vertex weights assigned to each partition */
+  PetscReal     *ubvec;                    /* The balance intolerance for vertex weights */
+  PetscInt       options[5];               /* Options */
+  /* Outputs */
+  PetscInt       edgeCut;                  /* The number of edges cut by the partition */
   PetscInt      *assignment, *points;
   PetscMPIInt    commSize, rank, p, v, i;
   PetscErrorCode ierr;
