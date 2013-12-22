@@ -390,7 +390,7 @@ PetscErrorCode TaoCreate_GPCG(TaoSolver tao)
   gpcg->n_upper=0;
   gpcg->n_lower=0;
   gpcg->subset_type = TAO_SUBSET_MASK;
-  //gpcg->ksp_type = GPCG_KSP_STCG;
+  /* gpcg->ksp_type = GPCG_KSP_STCG; */
 
 
       

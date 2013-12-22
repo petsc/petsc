@@ -101,11 +101,10 @@ typedef struct {
 
 PetscErrorCode TaoPounders_formquad(TAO_POUNDERS *mfqP,PetscBool checkonly)
 PetscErrorCode TaoPounders_solvequadratic(TaoSolver tao,PetscReal *gnorm, PetscReal *qmin);
-//PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi);
-//PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP);
-//PetscErrorCode morepoints(TAO_POUNDERS *mfqP);
-//PetscErrorCode addpoint(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt index);
-//PetscErrorCode modelimprove(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt addallpoints);
-//PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin, PetscReal c);
-
+/* PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi);
+PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP);
+PetscErrorCode morepoints(TAO_POUNDERS *mfqP);
+PetscErrorCode addpoint(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt index);
+PetscErrorCode modelimprove(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt addallpoints);
+PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin, PetscReal c); */
 #endif /* ifndef __TAO_MFQNLS */

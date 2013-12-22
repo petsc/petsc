@@ -492,7 +492,7 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
 
       /* Recover the full space direction */ 
       ierr = MatMult(tao->jacobian_design,lclP->s,lclP->WU); CHKERRQ(ierr);
-      //ierr = VecSet(lclP->r,0.0); CHKERRQ(ierr); /*  Initial guess in CG */
+      /* ierr = VecSet(lclP->r,0.0); CHKERRQ(ierr); */ /*  Initial guess in CG */
       lclP->solve_type = LCL_FORWARD2;
       if (tao->jacobian_state_inv) {
 	ierr = MatMult(tao->jacobian_state_inv,lclP->WU,lclP->r); CHKERRQ(ierr);
