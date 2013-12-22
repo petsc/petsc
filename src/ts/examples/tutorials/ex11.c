@@ -964,7 +964,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
     ierr = PetscSectionSetFieldDof(newCoordSection, v, 0, dim);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(newCoordSection);CHKERRQ(ierr);
-  ierr = DMPlexSetCoordinateSection(sdm, newCoordSection);CHKERRQ(ierr);
+  ierr = DMSetCoordinateSection(sdm, newCoordSection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&newCoordSection);CHKERRQ(ierr); /* relinquish our reference */
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(sdm, coordinates);CHKERRQ(ierr);
@@ -1261,7 +1261,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
 
   /* Make cell centroids and volumes */
   ierr = DMClone(dm, &dmCell);CHKERRQ(ierr);
-  ierr = DMPlexSetCoordinateSection(dmCell, coordSection);CHKERRQ(ierr);
+  ierr = DMSetCoordinateSection(dmCell, coordSection);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dmCell, coordinates);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionCell);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
@@ -1410,7 +1410,7 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
   ierr = DMClone(dm, dmCell);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
   ierr = DMSetPointSF(*dmCell, sfPoint);CHKERRQ(ierr);
-  ierr = DMPlexSetCoordinateSection(*dmCell, coordSection);CHKERRQ(ierr);
+  ierr = DMSetCoordinateSection(*dmCell, coordSection);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(*dmCell, coordinates);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionCell);CHKERRQ(ierr);
@@ -1452,7 +1452,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMClone(dm, &dmMass);CHKERRQ(ierr);
-  ierr = DMPlexSetCoordinateSection(dmMass, coordSection);CHKERRQ(ierr);
+  ierr = DMSetCoordinateSection(dmMass, coordSection);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dmMass, coordinates);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionMass);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
