@@ -6216,16 +6216,16 @@ PetscErrorCode DMPlexCheckSymmetry(DM dm)
 @*/
 PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscBool isSimplex, PetscInt cellHeight)
 {
-  PetscInt       dim, numCorners, vStart, vEnd, cStart, cEnd, cMax, c;
+  PetscInt       dim, numCorners, numHybridCorners, vStart, vEnd, cStart, cEnd, cMax, c;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   switch (dim) {
-  case 1: numCorners = isSimplex ? 2 : 2; break;
-  case 2: numCorners = isSimplex ? 3 : 4; break;
-  case 3: numCorners = isSimplex ? 4 : 8; break;
+  case 1: numCorners = isSimplex ? 2 : 2; numHybridCorners = isSimplex ? 2 : 2; break;
+  case 2: numCorners = isSimplex ? 3 : 4; numHybridCorners = isSimplex ? 4 : 4; break;
+  case 3: numCorners = isSimplex ? 4 : 8; numHybridCorners = isSimplex ? 6 : 8; break;
   default:
     SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle meshes of dimension %d", dim);
   }
@@ -6243,6 +6243,17 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscBool isSimplex, PetscInt cellHeig
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     if (coneSize != numCorners) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %d has  %d vertices != %d", c, coneSize, numCorners);
+  }
+  for (c = cMax; c < cEnd; ++c) {
+    PetscInt *closure = NULL, closureSize, cl, coneSize = 0;
+
+    ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    for (cl = 0; cl < closureSize*2; cl += 2) {
+      const PetscInt p = closure[cl];
+      if ((p >= vStart) && (p < vEnd)) ++coneSize;
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    if (coneSize > numHybridCorners) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Hybrid cell %d has  %d vertices > %d", c, coneSize, numHybridCorners);
   }
   PetscFunctionReturn(0);
 }

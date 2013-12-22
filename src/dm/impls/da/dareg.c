@@ -26,6 +26,7 @@ PetscErrorCode  DMSetUp_DA(DM da)
   } else if (dd->dim == 3) {
     ierr = DMSetUp_DA_3D(da);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"DMs only supported for 1, 2, and 3d");
+  ierr = DMViewFromOptions(da,NULL,"-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
