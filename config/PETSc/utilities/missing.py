@@ -22,7 +22,18 @@ class Configure(config.base.Configure):
     self.compilers = framework.require('config.compilers', self)
     self.functions = framework.require('config.functions', self)
     self.libraries = framework.require('config.libraries', self)
+    self.petscConf = framework.require('PETSc.Configure', self)
     return
+
+  def featureTestMacros(self):
+    features = ''
+    if self.petscConf.defines.get('_POSIX_C_SOURCE_200112L'):
+      features += '#define _POSIX_C_SOURCE 200112L\n'
+    if self.petscConf.defines.get('_BSD_SOURCE'):
+      features += '#define _BSD_SOURCE\n'
+    if self.petscConf.defines.get('_GNU_SOURCE'):
+      features += '#define _GNU_SOURCE\n'
+    return features
 
 #-------------------------------------------------------
   def configureMissingDefines(self):
@@ -79,7 +90,7 @@ class Configure(config.base.Configure):
 
 
   def configureMissingGetdomainnamePrototype(self):
-    head ='''
+    head = self.featureTestMacros() + '''
 #ifdef PETSC_HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -102,7 +113,7 @@ if (getdomainname_ptr(test,10)) return 1;
     return
 
   def configureMissingSrandPrototype(self):
-    head ='''
+    head = self.featureTestMacros() + '''
 #ifdef PETSC_HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
