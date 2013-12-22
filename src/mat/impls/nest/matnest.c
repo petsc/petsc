@@ -465,11 +465,9 @@ static PetscErrorCode MatDiagonalScale_Nest(Mat A,Vec l,Vec r)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(bA->nc,&br);CHKERRQ(ierr);
+  ierr = PetscCalloc1(bA->nc,&br);CHKERRQ(ierr);
   if (r) {
     for (j=0; j<bA->nc; j++) {ierr = VecGetSubVector(r,bA->isglobal.col[j],&br[j]);CHKERRQ(ierr);}
-  } else {
-    PetscMemzero(br, bA->nc*sizeof(Vec));
   }
   bl = NULL;
   for (i=0; i<bA->nr; i++) {
