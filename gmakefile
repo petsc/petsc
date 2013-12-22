@@ -107,7 +107,7 @@ $(LIBDIR)/libpetscsnes.$(SL_LINKER_SUFFIX) : libdep := $(call libpkg,ksp dm mat 
 $(LIBDIR)/libpetscts.$(SL_LINKER_SUFFIX)   : obj    := $(call concatlang,ts)
 $(LIBDIR)/libpetscts.$(SL_LINKER_SUFFIX)   : libdep := $(call libpkg,snes ksp dm mat vec sys)
 $(LIBDIR)/libpetsctao.$(SL_LINKER_SUFFIX)  : obj    := $(call concatlang,tao)
-$(LIBDIR)/libpetsctao.$(SL_LINKER_SUFFIX)  : libdep := $(call libpkg,ts snes ksp dm mat vec sys)
+$(LIBDIR)/libpetsctao.$(SL_LINKER_SUFFIX)  : libdep := $(call libpkg,snes ksp dm mat vec sys)
 $(LIBDIR)/libpetscsys.$(AR_LIB_SUFFIX)  : $(call concatlang,sys)
 $(LIBDIR)/libpetscvec.$(AR_LIB_SUFFIX)  : $(call concatlang,vec)
 $(LIBDIR)/libpetscmat.$(AR_LIB_SUFFIX)  : $(call concatlang,mat)

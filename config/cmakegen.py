@@ -256,7 +256,7 @@ def main(petscdir, log=StdoutLogger(), verbose=False):
                ('ksp'            , 'dm mat vec sys'),
                ('snes'           , 'ksp dm mat vec sys'),
                ('ts'             , 'snes ksp dm mat vec sys'),
-               ('tao'            , 'ts snes ksp dm mat vec sys')]
+               ('tao'            , 'snes ksp dm mat vec sys')]
     for pkg,deps in pkglist:
       writePackage(f,pkg,deps.split(),mistakes)
     f.write ('''
