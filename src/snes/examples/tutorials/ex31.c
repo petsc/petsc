@@ -578,7 +578,7 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
   ierr   = ISCreateGeneral(comm, (*numBoundaryConstraints)[left], idx, PETSC_OWN_POINTER, &(*constraintIndices)[left]);CHKERRQ(ierr);
 
   /* Count points on each boundary */
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = DMPlexGetStratumIS(dm, "marker", 1, &bcPoints);CHKERRQ(ierr);
