@@ -67,8 +67,8 @@
 !  See the Fortran section of the PETSc users manual for details.
 !
       PetscReal       norm
-      PetscInt        i,j,II,JJ,m,n,its,icntl,ival
-      PetscInt        Istart,Iend,ione
+      PetscInt i,j,II,JJ,m,n,its,icntl,ival
+      PetscInt Istart,Iend,ione
       PetscErrorCode  ierr
       PetscMPIInt     rank,size
       PetscBool       flg
@@ -167,7 +167,7 @@
 !   Check if A is symmetric
       if (size == 1) then
         call MatIsSymmetric(A,0.0,flg,ierr)
-        if (flg .eq. PETSC_FALSE) then
+        if (flg .eqv. PETSC_FALSE) then
           write(6,120)
         endif
       endif
@@ -321,7 +321,7 @@
       PetscErrorCode ierr
       PetscInt n,dummy
       PetscMPIInt rank
-      double precision rnorm
+      PetscReal rnorm
 
 !  Build the solution vector
 
@@ -365,7 +365,7 @@
       PetscErrorCode ierr
       PetscInt n,dummy
       KSPConvergedReason flag
-      double precision rnorm
+      PetscReal rnorm
 
       if (rnorm .le. .05) then
         flag = 1

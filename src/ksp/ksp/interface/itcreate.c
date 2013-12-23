@@ -739,7 +739,11 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->max_it  = 10000;
   ksp->pc_side = PC_SIDE_DEFAULT;
   ksp->rtol    = 1.e-5;
+#if defined(PETSC_USE_REAL_SINGLE)
+  ksp->abstol  = 1.e-25;
+#else
   ksp->abstol  = 1.e-50;
+#endif
   ksp->divtol  = 1.e4;
 
   ksp->chknorm        = -1;

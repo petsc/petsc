@@ -62,7 +62,7 @@
       Mat              A
       Vec              x,b,u
       PetscRandom      rctx
-      double precision norm,h2,sigma1
+      PetscReal norm,h2,sigma1
       PetscScalar  none,sigma2,v,pfive,czero
       PetscScalar  cone
       PetscInt dim,its,n,Istart
