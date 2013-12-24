@@ -98,16 +98,18 @@ class Configure(config.base.Configure):
 #include <netdb.h>
 #endif
 '''
-    code = '''
-int (*getdomainname_ptr)(char*,size_t) = getdomainname;
+    def code(t):
+      """The type of the len parameter is size_t on Linux and int on BSD, so we'll have to try both."""
+      return '''
+int (*getdomainname_ptr)(char*,%s) = getdomainname;
 char test[10];
 if (getdomainname_ptr(test,10)) return 1;
-'''
-    if not self.checkCompile(head,code):
+''' % (t,)
+    if not (self.checkCompile(head,code('size_t')) or self.checkCompile(head,code('int'))):
       self.addPrototype('#include <stddef.h>\nint getdomainname(char *, size_t);', 'C')
     if hasattr(self.compilers, 'CXX'):
       self.pushLanguage('C++')
-      if not self.checkLink(head,code):
+      if not (self.checkLink(head,code('size_t')) or self.checkLink(head,code('int'))):
         self.addPrototype('#include <stddef.h>\nint getdomainname(char *, size_t);', 'extern C')
       self.popLanguage()
     return
