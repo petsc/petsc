@@ -177,7 +177,7 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
       if (norm > norm_max) norm_max = norm;
 #if defined(DEBUG_CkEigenSolutions)
       if (norm > tols[0]) {
-        ierr = PetscPrintf(PETSC_COMM_SELF("  residual violation: %d, resi: %g\n",i, norm);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"  residual violation: %d, resi: %g\n",i, norm);CHKERRQ(ierr);
       }
 #endif
     }
