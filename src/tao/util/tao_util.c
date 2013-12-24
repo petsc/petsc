@@ -554,7 +554,7 @@ PetscErrorCode D_Fischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU,
   ierr = VecRestoreArray(XU,&u); CHKERRQ(ierr);
   ierr = VecRestoreArray(T2,&t2); CHKERRQ(ierr);
   PetscFunctionReturn(0);
-};
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "D_SFischer"
