@@ -66,7 +66,7 @@ PetscErrorCode TaoInitialize(int *argc, char ***args, const char file[],
 
 .seealso: TaoInitialize(), PetscFinalize()
 @*/
-PetscErrorCode TaoFinalize()
+PetscErrorCode TaoFinalize(void)
 {
   if (TaoBeganPetsc) {
     PetscFinalize();

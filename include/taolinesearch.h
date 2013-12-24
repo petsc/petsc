@@ -66,8 +66,8 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchComputeObjectiveAndGradient(TaoLineSear
 PETSC_EXTERN PetscErrorCode TaoLineSearchComputeObjectiveAndGTS(TaoLineSearch, Vec, PetscReal*, PetscReal*);
 PETSC_EXTERN PetscErrorCode TaoLineSearchSetVariableBounds(TaoLineSearch, Vec, Vec);
 
-PETSC_EXTERN PetscErrorCode TaoLineSearchInitializePackage();
-PETSC_EXTERN PetscErrorCode TaoLineSearchFinalizePackage();
+PETSC_EXTERN PetscErrorCode TaoLineSearchInitializePackage(void);
+PETSC_EXTERN PetscErrorCode TaoLineSearchFinalizePackage(void);
 
 PETSC_EXTERN PetscErrorCode TaoLineSearchRegister(const char[], PetscErrorCode (*)(TaoLineSearch));
 

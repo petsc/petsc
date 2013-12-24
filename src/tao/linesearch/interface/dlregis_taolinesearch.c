@@ -47,7 +47,7 @@ PetscErrorCode TaoLineSearchFinalizePackage(void)
 
 .seealso: TaoLineSearchCreate()
 @*/
-PetscErrorCode TaoLineSearchInitializePackage()
+PetscErrorCode TaoLineSearchInitializePackage(void)
 {
     PetscErrorCode ierr;
 

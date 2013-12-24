@@ -35,7 +35,7 @@ PetscErrorCode TaoFinalizePackage(void)
 
 .seealso: TaoCreate()
 @*/
-PetscErrorCode TaoInitializePackage()
+PetscErrorCode TaoInitializePackage(void)
 {
   PetscErrorCode ierr;
 
