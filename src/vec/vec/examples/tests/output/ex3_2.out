@@ -1,7 +1,7 @@
 Vec Object: 2 MPI processes
   type: mpi
   length=10
-Vec Object:Vec_0x84000005_0 2 MPI processes
+Vec Object: 2 MPI processes
   type: mpi
 Process [0]
 1

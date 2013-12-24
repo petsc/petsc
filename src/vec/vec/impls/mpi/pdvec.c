@@ -51,7 +51,6 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
   ierr = MPI_Reduce(&work,&len,1,MPIU_INT,MPI_MAX,0,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin),&size);CHKERRQ(ierr);
 
-  ierr = PetscObjectGetName((PetscObject)xin,&name);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscMalloc1(len,&values);CHKERRQ(ierr);
@@ -60,6 +59,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         MATLAB uses %18.16e format while ASCII uses %g
     */
     if (format == PETSC_VIEWER_ASCII_MATLAB) {
+      ierr = PetscObjectGetName((PetscObject)xin,&name);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"%s = [\n",name);CHKERRQ(ierr);
       for (i=0; i<xin->map->n; i++) {
 #if defined(PETSC_USE_COMPLEX)
@@ -134,6 +134,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       ierr = PetscObjectComposedDataGetInt((PetscObject) viewer, stateId, outputState, hasState);CHKERRQ(ierr);
       if (!hasState) outputState = 0;
 
+      ierr = PetscObjectGetName((PetscObject)xin,&name);CHKERRQ(ierr);
       ierr = VecGetLocalSize(xin, &nLen);CHKERRQ(ierr);
       ierr = PetscMPIIntCast(nLen,&n);CHKERRQ(ierr);
       ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
@@ -326,6 +327,10 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       /* Rank 0 is not trying to receive anything, so don't send anything */
     } else {
+      if (format == PETSC_VIEWER_ASCII_MATLAB || format == PETSC_VIEWER_ASCII_VTK || format == PETSC_VIEWER_ASCII_VTK_CELL) {
+        /* this may be a collective operation so make sure everyone calls it */
+        ierr = PetscObjectGetName((PetscObject)xin,&name);CHKERRQ(ierr);
+      }
       ierr = MPI_Send((void*)xarray,xin->map->n,MPIU_SCALAR,0,tag,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
     }
   }
