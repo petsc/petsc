@@ -34,12 +34,15 @@ PetscInt divWork(PetscMPIInt id, PetscInt num, PetscMPIInt size);
 #define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
-  /* double         payoff; */
+#if defined(PETSC_USE_COMPLEX) || !defined(PETSC_USE_REAL_DOUBLE)
+  PetscInitialize(&argc,&argv,(char*)0,help);
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This example works only for real numbers with precision of double\n");
+#else
   double         r,dt;
-  PetscInt            n;
+  PetscInt       n;
   unsigned long  i,myNumSim,totalNumSim,numdim;
   double         *vol, *St0, x, totalx;
-  PetscMPIInt   size,rank;
+  PetscMPIInt    size,rank;
   double         *eps;
   himaInfo       hinfo;
   PetscRandom    ran;
@@ -47,9 +50,6 @@ int main(int argc, char *argv[])
   PetscBool      flg;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-#if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This example does not work for scalar type complex\n");
-#endif
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&ran);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SPRNG)
   ierr = PetscRandomSetType(ran,PETSCSPRNG);CHKERRQ(ierr);
@@ -109,6 +109,7 @@ int main(int argc, char *argv[])
   ierr = PetscRandomDestroy(&ran);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
+#endif
 }
 
 void stdNormalArray(double *eps, PetscInt numdim, PetscRandom ran)

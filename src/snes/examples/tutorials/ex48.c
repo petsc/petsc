@@ -279,9 +279,9 @@ static void PrmHexGetZ(const PrmNode pn[],PetscInt k,PetscInt zm,PetscReal zn[])
 static void THIInitialize_HOM_A(THI thi,PetscReal x,PetscReal y,PrmNode *p)
 {
   Units     units = thi->units;
-  PetscReal s     = -x*sin(thi->alpha);
+  PetscReal s     = -x*PetscSinReal(thi->alpha);
 
-  p->b     = s - 1000*units->meter + 500*units->meter * sin(x*2*PETSC_PI/thi->Lx) * sin(y*2*PETSC_PI/thi->Ly);
+  p->b     = s - 1000*units->meter + 500*units->meter * PetscSinReal(x*2*PETSC_PI/thi->Lx) * PetscSinReal(y*2*PETSC_PI/thi->Ly);
   p->h     = s - p->b;
   p->beta2 = 1e30;
 }
@@ -289,12 +289,12 @@ static void THIInitialize_HOM_A(THI thi,PetscReal x,PetscReal y,PrmNode *p)
 static void THIInitialize_HOM_C(THI thi,PetscReal x,PetscReal y,PrmNode *p)
 {
   Units     units = thi->units;
-  PetscReal s     = -x*sin(thi->alpha);
+  PetscReal s     = -x*PetscSinReal(thi->alpha);
 
   p->b = s - 1000*units->meter;
   p->h = s - p->b;
   /* tau_b = beta2 v   is a stress (Pa) */
-  p->beta2 = 1000 * (1 + sin(x*2*PETSC_PI/thi->Lx)*sin(y*2*PETSC_PI/thi->Ly)) * units->Pascal * units->year / units->meter;
+  p->beta2 = 1000 * (1 + PetscSinReal(x*2*PETSC_PI/thi->Lx)*PetscSinReal(y*2*PETSC_PI/thi->Ly)) * units->Pascal * units->year / units->meter;
 }
 
 /* These are just toys */
@@ -305,7 +305,7 @@ static void THIInitialize_HOM_X(THI thi,PetscReal xx,PetscReal yy,PrmNode *p)
   Units     units = thi->units;
   PetscReal x     = xx*2*PETSC_PI/thi->Lx - PETSC_PI,y = yy*2*PETSC_PI/thi->Ly - PETSC_PI; /* [-pi,pi] */
   PetscReal r     = PetscSqrtReal(x*x + y*y),s = -x*PetscSinReal(thi->alpha);
-  p->b     = s - 1000*units->meter + 500*units->meter*sin(x + PETSC_PI) * sin(y + PETSC_PI);
+  p->b     = s - 1000*units->meter + 500*units->meter*PetscSinReal(x + PETSC_PI) * PetscSinReal(y + PETSC_PI);
   p->h     = s - p->b;
   p->beta2 = 1000 * (r < 1 ? 2 : 0) * units->Pascal * units->year / units->meter;
 }
@@ -317,10 +317,10 @@ static void THIInitialize_HOM_Y(THI thi,PetscReal xx,PetscReal yy,PrmNode *p)
   PetscReal x     = xx*2*PETSC_PI/thi->Lx - PETSC_PI,y = yy*2*PETSC_PI/thi->Ly - PETSC_PI; /* [-pi,pi] */
   PetscReal r     = PetscSqrtReal(x*x + y*y),s = -x*PetscSinReal(thi->alpha);
 
-  p->b = s - 1000*units->meter + 500*units->meter * sin(x + PETSC_PI) * sin(y + PETSC_PI);
+  p->b = s - 1000*units->meter + 500*units->meter * PetscSinReal(x + PETSC_PI) * PetscSinReal(y + PETSC_PI);
   if (PetscRealPart(p->b) > -700*units->meter) p->b += 200*units->meter;
   p->h     = s - p->b;
-  p->beta2 = 1000 * (1. + sin(sqrt(16*r))/sqrt(1e-2 + 16*r)*cos(x*3/2)*cos(y*3/2)) * units->Pascal * units->year / units->meter;
+  p->beta2 = 1000 * (1. + PetscSinReal(PetscSqrtReal(16*r))/PetscSqrtReal(1e-2 + 16*r)*PetscCosReal(x*3/2)*PetscCosReal(y*3/2)) * units->Pascal * units->year / units->meter;
 }
 
 /* Same bed as A, smoothly varying slipperiness, similar to MATLAB's "sombrero" (uncorrelated with bathymetry) */
@@ -330,9 +330,9 @@ static void THIInitialize_HOM_Z(THI thi,PetscReal xx,PetscReal yy,PrmNode *p)
   PetscReal x     = xx*2*PETSC_PI/thi->Lx - PETSC_PI,y = yy*2*PETSC_PI/thi->Ly - PETSC_PI; /* [-pi,pi] */
   PetscReal r     = PetscSqrtReal(x*x + y*y),s = -x*PetscSinReal(thi->alpha);
 
-  p->b     = s - 1000*units->meter + 500*units->meter * sin(x + PETSC_PI) * sin(y + PETSC_PI);
+  p->b     = s - 1000*units->meter + 500*units->meter * PetscSinReal(x + PETSC_PI) * PetscSinReal(y + PETSC_PI);
   p->h     = s - p->b;
-  p->beta2 = 1000 * (1. + sin(sqrt(16*r))/sqrt(1e-2 + 16*r)*cos(x*3/2)*cos(y*3/2)) * units->Pascal * units->year / units->meter;
+  p->beta2 = 1000 * (1. + PetscSinReal(PetscSqrtReal(16*r))/PetscSqrtReal(1e-2 + 16*r)*PetscCosReal(x*3/2)*PetscCosReal(y*3/2)) * units->Pascal * units->year / units->meter;
 }
 
 static void THIFriction(THI thi,PetscReal rbeta2,PetscReal gam,PetscReal *beta2,PetscReal *dbeta2)
@@ -540,7 +540,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
               gradu   = u / (100*units->meter),eta,deta,
               rho     = 910 * units->kilogram/pow(units->meter,3),
               grav    = 9.81 * units->meter/PetscSqr(units->second),
-              driving = rho * grav * sin(thi->alpha) * 1000*units->meter;
+              driving = rho * grav * PetscSinReal(thi->alpha) * 1000*units->meter;
     THIViscosity(thi,0.5*gradu*gradu,&eta,&deta);
     thi->rhog = rho * grav;
     if (thi->verbose) {
@@ -817,7 +817,7 @@ static PetscErrorCode THIFunctionLocal(DMDALocalInfo *info,Node ***x,Node ***f,T
           if (q == 0) etabase = eta;
           RangeUpdate(&etamin,&etamax,eta);
           for (l=ls; l<8; l++) { /* test functions */
-            const PetscReal ds[2] = {-sin(thi->alpha),0};
+            const PetscReal ds[2] = {-PetscSinReal(thi->alpha),0};
             const PetscReal pp    = phi[l],*dp = dphi[l];
             fn[l]->u += dp[0]*jw*eta*(4.*du[0]+2.*dv[1]) + dp[1]*jw*eta*(du[1]+dv[0]) + dp[2]*jw*eta*du[2] + pp*jw*thi->rhog*ds[0];
             fn[l]->v += dp[1]*jw*eta*(2.*du[0]+4.*dv[1]) + dp[0]*jw*eta*(du[1]+dv[0]) + dp[2]*jw*eta*dv[2] + pp*jw*thi->rhog*ds[1];

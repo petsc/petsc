@@ -913,8 +913,8 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   param->toggle_kspmon = PETSC_FALSE;
 
   /* derived parameters for slab angle */
-  param->sb = sin(param->slab_dip);
-  param->cb = cos(param->slab_dip);
+  param->sb = PetscSinReal(param->slab_dip);
+  param->cb = PetscCosReal(param->slab_dip);
   param->c  =  param->slab_dip*param->sb/(param->slab_dip*param->slab_dip-param->sb*param->sb);
   param->d  = (param->slab_dip*param->cb-param->sb)/(param->slab_dip*param->slab_dip-param->sb*param->sb);
 

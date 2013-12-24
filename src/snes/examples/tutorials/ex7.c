@@ -274,8 +274,8 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
         ierr = ExactSolution(i*hx, j*hy, &x[j][i]);CHKERRQ(ierr);
       } else {
         PetscReal temp = (PetscReal)(PetscMin(j,My-j-1))*hy;
-        x[j][i].u = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
-        x[j][i].v = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
+        x[j][i].u = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
+        x[j][i].v = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
         x[j][i].p = 1.0;
       }
 #endif
