@@ -62,11 +62,11 @@ PetscErrorCode TestInsertion()
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  //AppCtx         user;                 /* user-defined work context */
+  /*AppCtx         user;                 /* user-defined work context */
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
-  //ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
+  /*ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);*/
   ierr = TestInsertion();CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
