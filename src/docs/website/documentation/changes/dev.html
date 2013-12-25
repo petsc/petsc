@@ -96,6 +96,8 @@
 
       <h4>General:</h4>
       <ul>
+        <li>PETSc built with --with-precision=__float128 will now by default read in binary files that have all 128 bits stored in the file, to read in files with 64 bit double 
+            use the option -binary_read_double</li>
         <li>PETSc options of complex numbers must be passed as [+/-][realnumber][+/-]realnumberi with no spaces, you can no longer pass the real and complex part with a comma between them</li>
         <li>PetscSynchronizedFlush() takes an additional argument, the file pointer on rank 0</li>
         <li>PetscObjectStateQuery() is now corrected with PetscObjectStateGet()</li>

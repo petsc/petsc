@@ -2246,7 +2246,7 @@ static void evaluate_solCx(PetscReal pos[],PetscReal _eta_A,PetscReal _eta_B,   
 
   if (0) {
     mag=PetscSqrtReal(sum1*sum1+sum2*sum2);
-    printf("%0.7f %0.7f %0.7f %0.7f %0.7f %0.7f %0.7f %0.7f %0.7f\n",x,z,sum1,sum2,sum3,sum4,sum5,sum6,mag);
+    printf("%0.7f %0.7f %0.7f %0.7f %0.7f %0.7f %0.7f %0.7f %0.7f\n",(double)x,(double)z,(double)sum1,(double)sum2,(double)sum3,(double)sum4,(double)sum5,(double)sum6,(double)mag);
   }
 
   /* Output */
