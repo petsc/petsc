@@ -93,10 +93,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
 
   /* evaluate communication - mesg to who,length of mesg, and buffer space
      required. Based on this, buffers are allocated, and data copied into them*/
-  ierr = PetscMalloc4(size,&w1,size,&w2,size,&w3,size,&w4);CHKERRQ(ierr);
-  ierr = PetscMemzero(w1,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(w2,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(w3,size*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc4(size,&w1,size,&w2,size,&w3,size,&w4);CHKERRQ(ierr);
   for (i=0; i<imax; i++) {
     ierr  = PetscMemzero(w4,size*sizeof(PetscInt));CHKERRQ(ierr); /* initialise work vector*/
     idx_i = idx[i];
@@ -250,8 +247,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
   {
     PetscMPIInt *rw1;
 
-    ierr = PetscMalloc1(size,&rw1);CHKERRQ(ierr);
-    ierr = PetscMemzero(rw1,size*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscCalloc1(size,&rw1);CHKERRQ(ierr);
 
     for (i=0; i<nrqr; ++i) {
       proc = recv_status[i].MPI_SOURCE;
@@ -696,10 +692,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
 
   /* evaluate communication - mesg to who,length of mesg,and buffer space
      required. Based on this, buffers are allocated, and data copied into them*/
-  ierr = PetscMalloc4(size,&w1,size,&w2,size,&w3,size,&w4);CHKERRQ(ierr);
-  ierr = PetscMemzero(w1,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(w2,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(w3,size*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc4(size,&w1,size,&w2,size,&w3,size,&w4);CHKERRQ(ierr);
   for (i=0; i<ismax; i++) {
     ierr   = PetscMemzero(w4,size*sizeof(PetscInt));CHKERRQ(ierr); /* initialise work vector*/
     jmax   = nrow[i];
@@ -1002,8 +995,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
     ierr = PetscMalloc1(ismax,&cmap);CHKERRQ(ierr);
     for (i=0; i<ismax; i++) {
       if (!allcolumns[i]) {
-        ierr   = PetscMalloc1(c->Nbs,&cmap[i]);CHKERRQ(ierr);
-        ierr   = PetscMemzero(cmap[i],c->Nbs*sizeof(PetscInt));CHKERRQ(ierr);
+        ierr   = PetscCalloc1(c->Nbs,&cmap[i]);CHKERRQ(ierr);
         jmax   = ncol[i];
         icol_i = icol[i];
         cmap_i = cmap[i];
@@ -1019,7 +1011,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
 
   /* Create lens which is required for MatCreate... */
   for (i=0,j=0; i<ismax; i++) j += nrow[i];
-  ierr    = PetscMalloc1((1+ismax)*sizeof(PetscInt*)+ j,&lens);CHKERRQ(ierr);
+  ierr    = PetscMalloc((1+ismax)*sizeof(PetscInt*)+ j*sizeof(PetscInt),&lens);CHKERRQ(ierr);
   lens[0] = (PetscInt*)(lens + ismax);
   ierr    = PetscMemzero(lens[0],j*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=1; i<ismax; i++) lens[i] = lens[i-1] + nrow[i-1];
@@ -1077,7 +1069,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
   }
 #else
   /* Create row map*/
-  ierr    = PetscMalloc1((1+ismax)*sizeof(PetscInt*)+ ismax*Mbs,&rmap);CHKERRQ(ierr);
+  ierr    = PetscMalloc((1+ismax)*sizeof(PetscInt*)+ ismax*Mbs*sizeof(PetscInt),&rmap);CHKERRQ(ierr);
   rmap[0] = (PetscInt*)(rmap + ismax);
   ierr    = PetscMemzero(rmap[0],ismax*Mbs*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=1; i<ismax; i++) rmap[i] = rmap[i-1] + Mbs;
