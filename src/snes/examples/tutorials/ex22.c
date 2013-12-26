@@ -230,7 +230,8 @@ PetscErrorCode ExactSolution(DM packer,Vec U)
   ierr = DMCompositeGetEntries(packer,&m,&da);CHKERRQ(ierr);
 
   ierr = PFCreate(PETSC_COMM_WORLD,1,2,&pf);CHKERRQ(ierr);
-  ierr = PFSetType(pf,PFQUICK,(void*)u_solution);CHKERRQ(ierr);
+  /* The cast through PETSC_UINTPTR_T is so that compilers will warn about casting to void * from void(*)(void) */
+  ierr = PFSetType(pf,PFQUICK,(void*)(PETSC_UINTPTR_T)u_solution);CHKERRQ(ierr);
   ierr = DMGetCoordinates(da,&x);CHKERRQ(ierr);
   if (!x) {
     ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
