@@ -109,6 +109,7 @@ PETSC_EXTERN PetscErrorCode PetscFESetFromOptions(PetscFE);
 PETSC_EXTERN PetscErrorCode PetscFERegister(const char [], PetscErrorCode (*)(PetscFE));
 PETSC_EXTERN PetscErrorCode PetscFERegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscFERegisterDestroy(void);
+PETSC_EXTERN PetscErrorCode PetcsFECreateDefault(DM, const PetscInt, const char [], const PetscInt, PetscFE *);
 
 PETSC_EXTERN PetscErrorCode PetscFEGetDimension(PetscFE, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscFEGetSpatialDimension(PetscFE, PetscInt *);
