@@ -36,10 +36,10 @@ int main(int argc, char *argv[])
 {
   /* double         payoff; */
   double         r,dt;
-  PetscInt            n;
+  PetscInt       n;
   unsigned long  i,myNumSim,totalNumSim,numdim;
   double         *vol, *St0, x, totalx;
-  PetscMPIInt   size,rank;
+  PetscMPIInt    size,rank;
   double         *eps;
   himaInfo       hinfo;
   PetscRandom    ran;

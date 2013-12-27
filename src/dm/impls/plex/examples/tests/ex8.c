@@ -270,8 +270,8 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
 
       ierr = PetscRandomGetValueReal(r, &scale);CHKERRQ(ierr);
       ierr = PetscRandomGetValueReal(ang, &phi);CHKERRQ(ierr);
-      R[0] = cos(phi); R[1] = -sin(phi);
-      R[2] = sin(phi); R[3] =  cos(phi);
+      R[0] = PetscCosReal(phi); R[1] = -PetscSinReal(phi);
+      R[2] = PetscSinReal(phi); R[3] =  PetscCosReal(phi);
       for (p = 0; p < 3; ++p) {
         for (d = 0; d < dim; ++d) {
           for (e = 0, rot[d] = 0.0; e < dim; ++e) {
@@ -406,9 +406,9 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
           volEx  *= scale;
         }
       }
-      R[0] = cos(theta)*cos(psi); R[1] = sin(phi)*sin(theta)*cos(psi) - cos(phi)*sin(psi); R[2] = sin(phi)*sin(psi) + cos(phi)*sin(theta)*cos(psi);
-      R[3] = cos(theta)*sin(psi); R[4] = cos(phi)*cos(psi) + sin(phi)*sin(theta)*sin(psi); R[5] = cos(phi)*sin(theta)*sin(psi) - sin(phi)*cos(psi);
-      R[6] = -sin(theta);         R[7] = sin(phi)*cos(theta);                              R[8] = cos(phi)*cos(theta);
+      R[0] = PetscCosReal(theta)*PetscCosReal(psi); R[1] = PetscSinReal(phi)*PetscSinReal(theta)*PetscCosReal(psi) - PetscCosReal(phi)*PetscSinReal(psi); R[2] = PetscSinReal(phi)*PetscSinReal(psi) + PetscCosReal(phi)*PetscSinReal(theta)*PetscCosReal(psi);
+      R[3] = PetscCosReal(theta)*PetscSinReal(psi); R[4] = PetscCosReal(phi)*PetscCosReal(psi) + PetscSinReal(phi)*PetscSinReal(theta)*PetscSinReal(psi); R[5] = PetscCosReal(phi)*PetscSinReal(theta)*PetscSinReal(psi) - PetscSinReal(phi)*PetscCosReal(psi);
+      R[6] = -PetscSinReal(theta);         R[7] = PetscSinReal(phi)*PetscCosReal(theta);                              R[8] = PetscCosReal(phi)*PetscCosReal(theta);
       for (p = 0; p < 3; ++p) {
         for (d = 0; d < dim; ++d) {
           for (e = 0, rot[d] = 0.0; e < dim; ++e) {
@@ -536,8 +536,8 @@ PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool
 
       ierr = PetscRandomGetValueReal(r, &scale);CHKERRQ(ierr);
       ierr = PetscRandomGetValueReal(ang, &phi);CHKERRQ(ierr);
-      R[0] = cos(phi); R[1] = -sin(phi);
-      R[2] = sin(phi); R[3] =  cos(phi);
+      R[0] = PetscCosReal(phi); R[1] = -PetscSinReal(phi);
+      R[2] = PetscSinReal(phi); R[3] =  PetscCosReal(phi);
       for (p = 0; p < 4; ++p) {
         for (d = 0; d < dim; ++d) {
           for (e = 0, rot[d] = 0.0; e < dim; ++e) {
@@ -657,9 +657,9 @@ PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool
           volEx  *= scale;
         }
       }
-      R[0] = cos(theta)*cos(psi); R[1] = sin(phi)*sin(theta)*cos(psi) - cos(phi)*sin(psi); R[2] = sin(phi)*sin(psi) + cos(phi)*sin(theta)*cos(psi);
-      R[3] = cos(theta)*sin(psi); R[4] = cos(phi)*cos(psi) + sin(phi)*sin(theta)*sin(psi); R[5] = cos(phi)*sin(theta)*sin(psi) - sin(phi)*cos(psi);
-      R[6] = -sin(theta);         R[7] = sin(phi)*cos(theta);                              R[8] = cos(phi)*cos(theta);
+      R[0] = PetscCosReal(theta)*PetscCosReal(psi); R[1] = PetscSinReal(phi)*PetscSinReal(theta)*PetscCosReal(psi) - PetscCosReal(phi)*PetscSinReal(psi); R[2] = PetscSinReal(phi)*PetscSinReal(psi) + PetscCosReal(phi)*PetscSinReal(theta)*PetscCosReal(psi);
+      R[3] = PetscCosReal(theta)*PetscSinReal(psi); R[4] = PetscCosReal(phi)*PetscCosReal(psi) + PetscSinReal(phi)*PetscSinReal(theta)*PetscSinReal(psi); R[5] = PetscCosReal(phi)*PetscSinReal(theta)*PetscSinReal(psi) - PetscSinReal(phi)*PetscCosReal(psi);
+      R[6] = -PetscSinReal(theta);         R[7] = PetscSinReal(phi)*PetscCosReal(theta);                              R[8] = PetscCosReal(phi)*PetscCosReal(theta);
       for (p = 0; p < 4; ++p) {
         for (d = 0; d < dim; ++d) {
           for (e = 0, rot[d] = 0.0; e < dim; ++e) {
@@ -806,9 +806,9 @@ PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool t
         detJEx *= scale;
         volEx  *= scale;
       }
-      R[0] = cos(theta)*cos(psi); R[1] = sin(phi)*sin(theta)*cos(psi) - cos(phi)*sin(psi); R[2] = sin(phi)*sin(psi) + cos(phi)*sin(theta)*cos(psi);
-      R[3] = cos(theta)*sin(psi); R[4] = cos(phi)*cos(psi) + sin(phi)*sin(theta)*sin(psi); R[5] = cos(phi)*sin(theta)*sin(psi) - sin(phi)*cos(psi);
-      R[6] = -sin(theta);         R[7] = sin(phi)*cos(theta);                              R[8] = cos(phi)*cos(theta);
+      R[0] = PetscCosReal(theta)*PetscCosReal(psi); R[1] = PetscSinReal(phi)*PetscSinReal(theta)*PetscCosReal(psi) - PetscCosReal(phi)*PetscSinReal(psi); R[2] = PetscSinReal(phi)*PetscSinReal(psi) + PetscCosReal(phi)*PetscSinReal(theta)*PetscCosReal(psi);
+      R[3] = PetscCosReal(theta)*PetscSinReal(psi); R[4] = PetscCosReal(phi)*PetscCosReal(psi) + PetscSinReal(phi)*PetscSinReal(theta)*PetscSinReal(psi); R[5] = PetscCosReal(phi)*PetscSinReal(theta)*PetscSinReal(psi) - PetscSinReal(phi)*PetscCosReal(psi);
+      R[6] = -PetscSinReal(theta);         R[7] = PetscSinReal(phi)*PetscCosReal(theta);                              R[8] = PetscCosReal(phi)*PetscCosReal(theta);
       for (p = 0; p < 4; ++p) {
         for (d = 0; d < dim; ++d) {
           for (e = 0, rot[d] = 0.0; e < dim; ++e) {
@@ -951,9 +951,9 @@ PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, PetscBool tr
         detJEx *= scale;
         volEx  *= scale;
       }
-      R[0] = cos(theta)*cos(psi); R[1] = sin(phi)*sin(theta)*cos(psi) - cos(phi)*sin(psi); R[2] = sin(phi)*sin(psi) + cos(phi)*sin(theta)*cos(psi);
-      R[3] = cos(theta)*sin(psi); R[4] = cos(phi)*cos(psi) + sin(phi)*sin(theta)*sin(psi); R[5] = cos(phi)*sin(theta)*sin(psi) - sin(phi)*cos(psi);
-      R[6] = -sin(theta);         R[7] = sin(phi)*cos(theta);                              R[8] = cos(phi)*cos(theta);
+      R[0] = PetscCosReal(theta)*PetscCosReal(psi); R[1] = PetscSinReal(phi)*PetscSinReal(theta)*PetscCosReal(psi) - PetscCosReal(phi)*PetscSinReal(psi); R[2] = PetscSinReal(phi)*PetscSinReal(psi) + PetscCosReal(phi)*PetscSinReal(theta)*PetscCosReal(psi);
+      R[3] = PetscCosReal(theta)*PetscSinReal(psi); R[4] = PetscCosReal(phi)*PetscCosReal(psi) + PetscSinReal(phi)*PetscSinReal(theta)*PetscSinReal(psi); R[5] = PetscCosReal(phi)*PetscSinReal(theta)*PetscSinReal(psi) - PetscSinReal(phi)*PetscCosReal(psi);
+      R[6] = -PetscSinReal(theta);         R[7] = PetscSinReal(phi)*PetscCosReal(theta);                              R[8] = PetscCosReal(phi)*PetscCosReal(theta);
       for (p = 0; p < 8; ++p) {
         for (d = 0; d < dim; ++d) {
           for (e = 0, rot[d] = 0.0; e < dim; ++e) {

@@ -1,10 +1,50 @@
 #include <petscsys.h>
 /*@C
-      PetscIsInfOrNan - Returns 1 if the input double has an infinity for Not-a-number (Nan) value, otherwise 0.
+      PetscIsNormal - Returns PETSC_TRUE if the input value satisfies isnormal()
 
     Input Parameter:
-.     a - the double
+.     a - the PetscRealValue
 
+     Notes: uses the C99 standard isnormal() on systems where they exist.
+      Uses isnormalq() with __float128
+      Otherwises always returns true
+
+     Level: beginner
+@*/
+#if defined(PETSC_USE_REAL___FLOAT128)
+PetscBool PetscIsNormalScalar(PetscScalar a)
+{
+  return isnormalq(PetscAbsScalar(a));
+}
+PetscBool PetscIsNormalReal(PetscReal a)
+{
+  return isnormalq(a);
+}
+#elif defined(PETSC_HAVE_ISNORMAL)
+PetscBool PetscIsNormalScalar(PetscScalar a)
+{
+  return isnormal(PetscAbsScalar(a));
+}
+PetscBool PetscIsNormalReal(PetscReal a)
+{
+  return isnormal(a);
+}
+#else
+PetscBool PetscIsNormalScalar(PetscScalar a)
+{
+  return PETSC_TRUE;
+}
+PetscBool PetscIsNormalReal(PetscReal a)
+{
+  return PETSC_TRUE;
+}
+#endif
+
+/*@C
+      PetscIsInfOrNan - Returns an error code if the input double has an infinity for Not-a-number (Nan) value, otherwise 0.
+
+    Input Parameter:
+.     a - the floating point number
 
      Notes: uses the C99 standard isinf() and isnan() on systems where they exist.
       Otherwises uses ((a - a) != 0.0), note that some optimizing compiles compile

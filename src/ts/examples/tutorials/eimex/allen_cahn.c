@@ -205,15 +205,15 @@ static PetscErrorCode FormInitialSolution(TS ts,Vec U,void *ctx)
   for(i=0;i<user->mx;i++) {
     x_map = user->xleft + i*hx;
     if(x_map >= 0.7065) {
-      x[i] = tanh((x_map-0.8)/(2.*sqrt(user->param)));
+      x[i] = tanh((x_map-0.8)/(2.*PetscSqrtReal(user->param)));
     } else if(x_map >= 0.4865) {
-      x[i] = tanh((0.613-x_map)/(2.*sqrt(user->param)));
+      x[i] = tanh((0.613-x_map)/(2.*PetscSqrtReal(user->param)));
     } else if(x_map >= 0.28) {
-      x[i] = tanh((x_map-0.36)/(2.*sqrt(user->param)));
+      x[i] = tanh((x_map-0.36)/(2.*PetscSqrtReal(user->param)));
     } else if(x_map >= -0.7) {
-      x[i] = tanh((0.2-x_map)/(2.*sqrt(user->param)));
+      x[i] = tanh((0.2-x_map)/(2.*PetscSqrtReal(user->param)));
     } else if(x_map >= -1) {
-      x[i] = tanh((x_map+0.9)/(2.*sqrt(user->param)));
+      x[i] = tanh((x_map+0.9)/(2.*PetscSqrtReal(user->param)));
     }
   }
   ierr = VecRestoreArray(U,&x);CHKERRQ(ierr);

@@ -214,7 +214,7 @@ PetscReal f_ini(PetscReal x,PetscReal y)
 {
   PetscReal f;
 
-  f=exp(-20.0*(pow(x-0.5,2.0)+pow(y-0.5,2.0)));
+  f=PetscExpReal(-20.0*(PetscPowRealInt(x-0.5,2)+PetscPowRealInt(y-0.5,2)));
   return f;
 }
 

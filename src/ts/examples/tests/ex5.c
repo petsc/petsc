@@ -337,7 +337,7 @@ int main(int argc,char **argv)
 PetscErrorCode calcfluxs(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar emma, PetscScalar fract, PetscScalar cloudTemp, PetscScalar *flux)
 {
   PetscFunctionBeginUser;
-  *flux = SIG*((EMMSFC*emma*pow(airtemp,4)) + (EMMSFC*fract*(1 - emma)*pow(cloudTemp,4)) - (EMMSFC*pow(sfctemp,4)));   /* calculates flux using Stefan-Boltzmann relation */
+  *flux = SIG*((EMMSFC*emma*PetscPowScalarInt(airtemp,4)) + (EMMSFC*fract*(1 - emma)*PetscPowScalarInt(cloudTemp,4)) - (EMMSFC*PetscPowScalarInt(sfctemp,4)));   /* calculates flux using Stefan-Boltzmann relation */
   PetscFunctionReturn(0);
 }
 
@@ -348,7 +348,7 @@ PetscErrorCode calcfluxa(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar e
   PetscScalar emm = 0.001;
 
   PetscFunctionBeginUser;
-  *flux = SIG*(-emm*(pow(airtemp,4)));      /* calculates flux usinge Stefan-Boltzmann relation */
+  *flux = SIG*(-emm*(PetscPowScalarInt(airtemp,4)));      /* calculates flux usinge Stefan-Boltzmann relation */
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -409,7 +409,7 @@ PetscErrorCode potential_temperature(PetscScalar temp, PetscScalar pressure1, Pe
   kmoist = 0.2854*(1 - 0.24*mixratio);
 
   pavg     = ((0.7*pressure1)+pressure2)/2;     /* calculates simple average press */
-  *pottemp = temp*(pow((pressure1/pavg),kdry)); /* calculates potential temperature */
+  *pottemp = temp*(PetscPowScalar((pressure1/pavg),kdry)); /* calculates potential temperature */
   PetscFunctionReturn(0);
 }
 extern PetscScalar calcmixingr(PetscScalar dtemp, PetscScalar pressure1)
@@ -418,7 +418,7 @@ extern PetscScalar calcmixingr(PetscScalar dtemp, PetscScalar pressure1)
   PetscScalar mixratio; /* mixing ratio */
 
   dtemp    = dtemp - 273;                                /* converts from Kelvin to Celsuis */
-  e        = 6.11*(pow(10,((7.5*dtemp)/(237.7+dtemp)))); /* converts from dew point temp to vapor pressure */
+  e        = 6.11*(PetscPowScalar(10,((7.5*dtemp)/(237.7+dtemp)))); /* converts from dew point temp to vapor pressure */
   e        = e*100;                                      /* converts from hPa to Pa */
   mixratio = (0.622*e)/(pressure1 - e);                  /* computes mixing ratio */
   mixratio = mixratio*1;                                 /* convert to g/Kg */
@@ -629,7 +629,7 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
   PetscScalar    Cp             = 1005.7;               /* specific heat of air at constant pressure */
   PetscScalar    Rd             = 287.058;              /* gas constant for dry air */
   PetscScalar    diffconst      = 1000;                 /* diffusion coefficient */
-  PetscScalar    f              = 2*0.0000727*sin(lat); /* coriolis force */
+  PetscScalar    f              = 2*0.0000727*PetscSinScalar(lat); /* coriolis force */
   PetscScalar    deep_grnd_temp = user->deep_grnd_temp; /* temp in lowest ground layer */
   PetscScalar    Ts,u,v,p,P;
   PetscScalar    u_abs,u_plus,u_minus,v_abs,v_plus,v_minus;
