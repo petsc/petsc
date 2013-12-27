@@ -312,7 +312,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   if (refinementLimit > 0.0) {
-    cells[0] = cells[1] = cells[2] = ceil(pow(1.0/refinementLimit, 1.0/dim));
+    cells[0] = cells[1] = cells[2] = ceil(PetscPowReal(1.0/refinementLimit, 1.0/dim));
   }
   ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, dm);CHKERRQ(ierr);
   {

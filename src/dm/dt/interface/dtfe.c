@@ -4281,7 +4281,7 @@ PetscErrorCode PetscFEOpenCLCalculateGrid(PetscFE fem, PetscInt N, PetscInt bloc
   PetscFunctionBegin;
   if (N % blockSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid block size %d for %d elements", blockSize, N);
   *z = 1;
-  for (*x = (int) (sqrt(Nblocks) + 0.5); *x > 0; --*x) {
+  for (*x = (size_t) (PetscSqrtReal(Nblocks) + 0.5); *x > 0; --*x) {
     *y = Nblocks / *x;
     if (*x * *y == Nblocks) break;
   }

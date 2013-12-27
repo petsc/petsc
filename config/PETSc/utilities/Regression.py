@@ -20,13 +20,14 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
-    self.arch          = framework.require('PETSc.utilities.arch', self)
-    self.scalartypes   = framework.require('PETSc.utilities.scalarTypes', self)
-    self.datafilespath = framework.require('PETSc.utilities.dataFilesPath', self)
-    self.compilers     = framework.require('config.compilers', self)
-    self.mpi           = framework.require('config.packages.MPI', self)
-    self.x             = framework.require('PETSc.packages.X', self)
-    self.fortrancpp    = framework.require('PETSc.utilities.fortranCPP', self)
+    self.arch           = framework.require('PETSc.utilities.arch', self)
+    self.scalartypes    = framework.require('PETSc.utilities.scalarTypes', self)
+    self.datafilespath  = framework.require('PETSc.utilities.dataFilesPath', self)
+    self.compilers      = framework.require('config.compilers', self)
+    self.mpi            = framework.require('config.packages.MPI', self)
+    self.x              = framework.require('PETSc.packages.X', self)
+    self.fortrancpp     = framework.require('PETSc.utilities.fortranCPP', self)
+    self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
     return
 
   def configureRegression(self):
@@ -62,7 +63,7 @@ class Configure(config.base.Configure):
         rjobs.append('C_Complex')
       else:
         rjobs.append('C_NoComplex')
-        if self.datafilespath.datafilespath and self.scalartypes.precision == 'double':
+        if self.datafilespath.datafilespath and self.scalartypes.precision == 'double' and self.libraryOptions.integerSize == 32:
           rjobs.append('DATAFILESPATH')
       # add jobs for each external package BUGBUGBUG may be run before all packages
       # Note: do these tests only for non-complex builds

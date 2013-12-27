@@ -126,7 +126,7 @@ int main(int argc, char **argv)
 
 static PetscReal p(PetscReal xi, PetscReal ecc)
 {
-  PetscReal t=1.0+ecc*cos(xi);
+  PetscReal t=1.0+ecc*PetscCosReal(xi);
   return(t*t*t);
 }
 
@@ -157,7 +157,7 @@ PetscErrorCode ComputeB(AppCtx *user)
 
   /* Compute the linear term in the objective function */
   for (i=xs; i<xs+xm; i++) {
-    temp=sin((i+1)*hx);
+    temp=PetscSinReal((i+1)*hx);
     for (j=ys; j<ys+ym; j++) b[j][i] = -ehxhy*temp;
   }
   /* Restore vectors */

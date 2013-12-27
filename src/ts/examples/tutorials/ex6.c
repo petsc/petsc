@@ -286,7 +286,7 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
      directly into the array locations.  Alternatively, we could use
      VecSetValues() or VecSetValuesLocal().
   */
-  for (i=0; i<appctx->m; i++) u_localptr[i] = sin(PETSC_PI*i*6.*appctx->h) + 3.*sin(PETSC_PI*i*2.*appctx->h);
+  for (i=0; i<appctx->m; i++) u_localptr[i] = PetscSinReal(PETSC_PI*i*6.*appctx->h) + 3.*PetscSinReal(PETSC_PI*i*2.*appctx->h);
 
   /*
      Restore vector
@@ -331,9 +331,9 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
      Simply write the solution directly into the array locations.
      Alternatively, we culd use VecSetValues() or VecSetValuesLocal().
   */
-  ex1 = exp(-36.*PETSC_PI*PETSC_PI*t); ex2 = exp(-4.*PETSC_PI*PETSC_PI*t);
+  ex1 = PetscExpReal(-36.*PETSC_PI*PETSC_PI*t); ex2 = PetscExpReal(-4.*PETSC_PI*PETSC_PI*t);
   sc1 = PETSC_PI*6.*h;                 sc2 = PETSC_PI*2.*h;
-  for (i=0; i<appctx->m; i++) s_localptr[i] = sin(PetscRealPart(sc1)*(PetscReal)i)*ex1 + 3.*sin(PetscRealPart(sc2)*(PetscReal)i)*ex2;
+  for (i=0; i<appctx->m; i++) s_localptr[i] = PetscSinReal(PetscRealPart(sc1)*(PetscReal)i)*ex1 + 3.*PetscSinReal(PetscRealPart(sc2)*(PetscReal)i)*ex2;
 
   /*
      Restore vector

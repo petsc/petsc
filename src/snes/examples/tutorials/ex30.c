@@ -507,11 +507,11 @@ PETSC_STATIC_INLINE PetscScalar XMomentumResidual(Field **x, PetscInt i, PetscIn
   z_scale = param->z_scale;
 
   if (param->ivisc==VISC_DIFN || param->ivisc>=VISC_DISL) { /* viscosity is T-dependent */
-    TS = param->potentialT * TInterp(x,i,j-1) * exp((j-1.0)*dz*z_scale);
+    TS = param->potentialT * TInterp(x,i,j-1) * PetscExpScalar((j-1.0)*dz*z_scale);
     if (j==jlim) TN = TS;
-    else         TN = param->potentialT * TInterp(x,i,j) * exp(j*dz*z_scale);
-    TW = param->potentialT * x[j][i].T        * exp((j-0.5)*dz*z_scale);
-    TE = param->potentialT * x[j][i+1].T      * exp((j-0.5)*dz*z_scale);
+    else         TN = param->potentialT * TInterp(x,i,j) * PetscExpScalar(j*dz*z_scale);
+    TW = param->potentialT * x[j][i].T        * PetscExpScalar((j-0.5)*dz*z_scale);
+    TE = param->potentialT * x[j][i+1].T      * PetscExpScalar((j-0.5)*dz*z_scale);
     if (param->ivisc>=VISC_DISL) { /* olivine dislocation creep */
       epsN = CalcSecInv(x,i,j,  CELL_CORNER,user);
       epsS = CalcSecInv(x,i,j-1,CELL_CORNER,user);
@@ -565,11 +565,11 @@ PETSC_STATIC_INLINE PetscScalar ZMomentumResidual(Field **x, PetscInt i, PetscIn
 
   /* viscosity */
   if (param->ivisc==VISC_DIFN || param->ivisc>=VISC_DISL) { /* viscosity is T-dependent */
-    TN = param->potentialT * x[j+1][i].T      * exp((j+0.5)*dz*z_scale);
-    TS = param->potentialT * x[j][i].T        * exp((j-0.5)*dz*z_scale);
-    TW = param->potentialT * TInterp(x,i-1,j) * exp(j*dz*z_scale);
+    TN = param->potentialT * x[j+1][i].T      * PetscExpScalar((j+0.5)*dz*z_scale);
+    TS = param->potentialT * x[j][i].T        * PetscExpScalar((j-0.5)*dz*z_scale);
+    TW = param->potentialT * TInterp(x,i-1,j) * PetscExpScalar(j*dz*z_scale);
     if (i==ilim) TE = TW;
-    else         TE = param->potentialT * TInterp(x,i,j) * exp(j*dz*z_scale);
+    else         TE = param->potentialT * TInterp(x,i,j) * PetscExpScalar(j*dz*z_scale);
     if (param->ivisc>=VISC_DISL) { /* olivine dislocation creep */
       epsN = CalcSecInv(x,i,j+1,CELL_CENTER,user);
       epsS = CalcSecInv(x,i,j,  CELL_CENTER,user);
@@ -737,7 +737,7 @@ PETSC_STATIC_INLINE PetscScalar XNormalStress(Field **x, PetscInt i, PetscInt j,
 
   if (ipos==CELL_CENTER) { /* on cell center */
 
-    TC = param->potentialT * x[j][i].T * exp((j-0.5)*dz*z_scale);
+    TC = param->potentialT * x[j][i].T * PetscExpScalar((j-0.5)*dz*z_scale);
     if (ivisc>=VISC_DISL) epsC = CalcSecInv(x,i,j,CELL_CENTER,user);
     etaC = Viscosity(TC,epsC,dz*j,param);
 
@@ -747,7 +747,7 @@ PETSC_STATIC_INLINE PetscScalar XNormalStress(Field **x, PetscInt i, PetscInt j,
   } else { /* on cell corner */
     if (i==ilim || j==jlim) return EPS_ZERO;
 
-    TC = param->potentialT * TInterp(x,i,j) * exp(j*dz*z_scale);
+    TC = param->potentialT * TInterp(x,i,j) * PetscExpScalar(j*dz*z_scale);
     if (ivisc>=VISC_DISL) epsC = CalcSecInv(x,i,j,CELL_CORNER,user);
     etaC = Viscosity(TC,epsC,dz*(j+0.5),param);
 
@@ -778,7 +778,7 @@ PETSC_STATIC_INLINE PetscScalar ZNormalStress(Field **x, PetscInt i, PetscInt j,
 
   if (ipos==CELL_CENTER) { /* on cell center */
 
-    TC = param->potentialT * x[j][i].T * exp((j-0.5)*dz*z_scale);
+    TC = param->potentialT * x[j][i].T * PetscExpScalar((j-0.5)*dz*z_scale);
     if (ivisc>=VISC_DISL) epsC = CalcSecInv(x,i,j,CELL_CENTER,user);
     etaC = Viscosity(TC,epsC,dz*j,param);
     wN   = x[j][i].w; wS = x[j-1][i].w; pC = x[j][i].p;
@@ -786,7 +786,7 @@ PETSC_STATIC_INLINE PetscScalar ZNormalStress(Field **x, PetscInt i, PetscInt j,
   } else { /* on cell corner */
     if ((i==ilim) || (j==jlim)) return EPS_ZERO;
 
-    TC = param->potentialT * TInterp(x,i,j) * exp(j*dz*z_scale);
+    TC = param->potentialT * TInterp(x,i,j) * PetscExpScalar(j*dz*z_scale);
     if (ivisc>=VISC_DISL) epsC = CalcSecInv(x,i,j,CELL_CORNER,user);
     etaC = Viscosity(TC,epsC,dz*(j+0.5),param);
     if (i==j) wN = param->sb;
@@ -1196,9 +1196,9 @@ PetscErrorCode ViscosityField(DM da, Vec X, Vec V)
   ierr = DMDAGetCorners(da,&is,&js,NULL,&im,&jm,NULL);CHKERRQ(ierr);
   for (j=js; j<js+jm; j++) {
     for (i=is; i<is+im; i++) {
-      T = PetscRealPart(param->potentialT * x[j][i].T * exp((j-0.5)*dz*param->z_scale));
+      T = PetscRealPart(param->potentialT * x[j][i].T * PetscExpScalar((j-0.5)*dz*param->z_scale));
       if (i<ilim && j<jlim) {
-        TC = PetscRealPart(param->potentialT * TInterp(x,i,j) * exp(j*dz*param->z_scale));
+        TC = PetscRealPart(param->potentialT * TInterp(x,i,j) * PetscExpScalar(j*dz*param->z_scale));
       } else {
         TC = T;
       }

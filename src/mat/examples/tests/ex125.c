@@ -150,8 +150,8 @@ int main(int argc,char **args)
         ierr = VecAXPY(u,-1.0,x);CHKERRQ(ierr);  /* u <- (-1.0)x + u */
         ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
         if (norm > tol) {
-          ierr = MatMult(A,x,u);CHKERRQ(ierr); /* u = A*x */
           PetscReal resi;
+          ierr = MatMult(A,x,u);CHKERRQ(ierr); /* u = A*x */
           ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);  /* u <- (-1.0)b + u */
           ierr = VecNorm(u,NORM_2,&resi);CHKERRQ(ierr);
           if (!rank) {

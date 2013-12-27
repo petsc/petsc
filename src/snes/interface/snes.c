@@ -4275,7 +4275,7 @@ PetscErrorCode  SNESTestLocalMin(SNES snes)
     ierr = VecCopy(u,uh);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"i = %D\n",i);CHKERRQ(ierr);
     for (j=-10; j<11; j++) {
-      value = PetscSign(j)*exp(PetscAbs(j)-10.0);
+      value = PetscSign(j)*PetscExpReal(PetscAbs(j)-10.0);
       ierr  = VecSetValue(uh,i,value,ADD_VALUES);CHKERRQ(ierr);
       ierr  = SNESComputeFunction(snes,uh,fh);CHKERRQ(ierr);
       ierr  = VecNorm(fh,NORM_2,&norm);CHKERRQ(ierr);

@@ -7,20 +7,19 @@ static char help[] = "Tests PetscRandom functions.\n\n";
 
 struct himaInfoTag {
   PetscInt    n;
-  double      r;
-  double      dt;
+  PetscReal   r;
+  PetscReal   dt;
   PetscInt    totalNumSim;
-  double      *St0;
-  double      *vol;
+  PetscReal   *St0;
+  PetscReal   *vol;
 };
 typedef struct himaInfoTag himaInfo;
 
-/* function protype */
 PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo);
-double mcVal(double St, double r, double vol, double dt, double eps);
-void exchange(double *a, double *b);
-double basketPayoff(double vol[], double St0[], PetscInt n, double r,double dt, double eps[]);
-void stdNormalArray(double *eps, PetscInt numdim,PetscRandom ran);
+PetscReal mcVal(PetscReal St, PetscReal r, PetscReal vol, PetscReal dt, PetscReal eps);
+void exchange(PetscReal *a, PetscReal *b);
+PetscReal basketPayoff(PetscReal vol[], PetscReal St0[], PetscInt n, PetscReal r,PetscReal dt, PetscReal eps[]);
+void stdNormalArray(PetscReal *eps, PetscInt numdim,PetscRandom ran);
 PetscInt divWork(PetscMPIInt id, PetscInt num, PetscMPIInt size);
 
 /*
@@ -34,16 +33,12 @@ PetscInt divWork(PetscMPIInt id, PetscInt num, PetscMPIInt size);
 #define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
-#if defined(PETSC_USE_COMPLEX) || !defined(PETSC_USE_REAL_DOUBLE)
-  PetscInitialize(&argc,&argv,(char*)0,help);
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This example works only for real numbers with precision of double\n");
-#else
-  double         r,dt;
+  PetscReal      r,dt;
   PetscInt       n;
   unsigned long  i,myNumSim,totalNumSim,numdim;
-  double         *vol, *St0, x, totalx;
+  PetscReal      *vol, *St0, x, totalx;
   PetscMPIInt    size,rank;
-  double         *eps;
+  PetscReal      *eps;
   himaInfo       hinfo;
   PetscRandom    ran;
   PetscErrorCode ierr;
@@ -83,13 +78,13 @@ int main(int argc, char *argv[])
   r           = hinfo.r;
   dt          = hinfo.dt;
   totalNumSim = hinfo.totalNumSim;
-  vol         = hinfo.vol = (double*)malloc(sizeof(double)*(2*n+1));
+  vol         = hinfo.vol = (PetscReal*)malloc(sizeof(PetscReal)*(2*n+1));
   St0         = hinfo.St0 = hinfo.vol + n;
   ierr        = readData(PETSC_COMM_WORLD,&hinfo);CHKERRQ(ierr);
 
   numdim = n*(n+1)/2;
   if (numdim%2 == 1) numdim++;
-  eps = (double*)malloc(sizeof(double)*numdim);
+  eps = (PetscReal*)malloc(sizeof(PetscReal)*numdim);
 
   myNumSim = divWork(rank,totalNumSim,size);
 
@@ -99,7 +94,7 @@ int main(int argc, char *argv[])
     x += basketPayoff(vol,St0,n,r,dt,eps);
   }
 
-  ierr = MPI_Reduce(&x, &totalx, 1, MPI_DOUBLE, MPI_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&x, &totalx, 1, MPIU_REAL, MPIU_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   /* payoff = exp(-r*dt*n)*(totalx/totalNumSim);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Option price = $%.3f using %ds of %s computation with %d %s for %d stocks, %d trading period per year, %.2f%% interest rate\n",
    payoff,(int)(stop - start),"parallel",size,"processors",n,(int)(1/dt),r);CHKERRQ(ierr); */
@@ -112,29 +107,29 @@ int main(int argc, char *argv[])
 #endif
 }
 
-void stdNormalArray(double *eps, PetscInt numdim, PetscRandom ran)
+void stdNormalArray(PetscReal *eps, PetscInt numdim, PetscRandom ran)
 {
-  int            i;
-  double         u1,u2,t;
+  PetscInt       i;
+  PetscReal      u1,u2,t;
   PetscErrorCode ierr;
 
   for (i=0; i<numdim; i+=2) {
     ierr = PetscRandomGetValue(ran,(PetscScalar*)&u1);CHKERRABORT(PETSC_COMM_WORLD,ierr);
     ierr = PetscRandomGetValue(ran,(PetscScalar*)&u2);CHKERRABORT(PETSC_COMM_WORLD,ierr);
 
-    t        = sqrt(-2*log(u1));
-    eps[i]   = t * cos(2*PETSC_PI*u2);
-    eps[i+1] = t * sin(2*PETSC_PI*u2);
+    t        = PetscSqrtReal(-2*PetscLogReal(u1));
+    eps[i]   = t * PetscCosReal(2*PETSC_PI*u2);
+    eps[i+1] = t * PetscSinReal(2*PETSC_PI*u2);
   }
 }
 
 
-double basketPayoff(double vol[], double St0[], PetscInt n, double r,double dt, double eps[])
+PetscReal basketPayoff(PetscReal vol[], PetscReal St0[], PetscInt n, PetscReal r,PetscReal dt, PetscReal eps[])
 {
-  double Stk[PETSC_MAXBSIZE], temp;
-  double payoff;
-  PetscInt    maxk,i,j;
-  PetscInt    pointcount=0;
+  PetscReal Stk[PETSC_MAXBSIZE], temp;
+  PetscReal payoff;
+  PetscInt  maxk,i,j;
+  PetscInt  pointcount=0;
 
   for (i=0;i<n;i++) Stk[i] = St0[i];
 
@@ -161,45 +156,50 @@ double basketPayoff(double vol[], double St0[], PetscInt n, double r,double dt, 
 #define __FUNCT__ "readData"
 PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo)
 {
-  int            i;
+  PetscInt       i;
   FILE           *fd;
   char           temp[50];
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  double         *v = hinfo->vol, *t = hinfo->St0;
-  int            num=hinfo->n;
+  PetscReal      *v = hinfo->vol, *t = hinfo->St0;
+  PetscInt       num=hinfo->n;
 
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscFOpen(PETSC_COMM_SELF,DATAFILENAME,"r",&fd);CHKERRQ(ierr);
-    for (i=0;i<num;i++) fscanf(fd,"%s%lf%lf",temp,v+i,t+i);
+    for (i=0;i<num;i++) {
+      double vv,tt;
+      fscanf(fd,"%s%lf%lf",temp,&vv,&tt);
+      v[i] = vv;
+      t[i] = tt;
+    }
     fclose(fd);
   }
-  ierr = MPI_Bcast(v,2*num,MPI_DOUBLE,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Bcast(v,2*num,MPIU_REAL,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] vol %g, ... %g; St0 %g, ... %g\n",rank,hinfo->vol[0],hinfo->vol[num-1],hinfo->St0 [0],hinfo->St0[num-1]); */
   PetscFunctionReturn(0);
 }
 
-void exchange(double *a, double *b)
+void exchange(PetscReal *a, PetscReal *b)
 {
-  double t;
+  PetscReal t;
 
   t  = *a;
   *a = *b;
   *b = t;
 }
 
-double mcVal(double St, double r, double vol, double dt, double eps)
+PetscReal mcVal(PetscReal St, PetscReal r, PetscReal vol, PetscReal dt, PetscReal eps)
 {
-  return (St * exp((r-0.5*vol*vol)*dt + vol*sqrt(dt)*eps));
+  return (St * PetscExpReal((r-0.5*vol*vol)*dt + vol*PetscSqrtReal(dt)*eps));
 }
 
 PetscInt divWork(PetscMPIInt id, PetscInt num, PetscMPIInt size)
 {
   PetscInt numit;
 
-  numit = (PetscInt)(((double)num)/size);
+  numit = (PetscInt)(((PetscReal)num)/size);
   numit++;
   return numit;
 }

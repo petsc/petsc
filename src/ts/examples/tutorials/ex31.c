@@ -1017,7 +1017,7 @@ PetscErrorCode ExactSolution(Vec Y, void* s, PetscReal t, PetscBool *flag)
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else if (!strcmp(p,"hull1972a3")) {
     ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    y[0] = PetscExpScalar(sin(t));
+    y[0] = PetscExpScalar(PetscSinReal(t));
     *flag = PETSC_TRUE;
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else if (!strcmp(p,"hull1972a4")) {

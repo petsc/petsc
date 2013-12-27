@@ -94,7 +94,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   ierr = DMDAVecGetArray(da, b, &array);CHKERRQ(ierr);
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
-      array[j][i] = -PetscCosScalar(uu*pi*((PetscReal)i+0.5)*Hx)*cos(tt*pi*((PetscReal)j+0.5)*Hy)*Hx*Hy;
+      array[j][i] = -PetscCosScalar(uu*pi*((PetscReal)i+0.5)*Hx)*PetscCosScalar(tt*pi*((PetscReal)j+0.5)*Hy)*Hx*Hy;
     }
   }
   ierr = DMDAVecRestoreArray(da, b, &array);CHKERRQ(ierr);

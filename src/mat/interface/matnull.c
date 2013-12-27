@@ -86,7 +86,7 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
 {
   PetscErrorCode    ierr;
   const PetscScalar *x;
-  PetscScalar       *v[6],dots[3];
+  PetscScalar       *v[6],dots[6];
   Vec               vec[6];
   PetscInt          n,N,dim,nmodes,i,j;
 

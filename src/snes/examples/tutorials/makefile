@@ -921,7 +921,7 @@ runex20:
 	   else  printf "${PWD}\nPossible problem with with ex20_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex20_1.tmp
 runex21:
-	-@${MPIEXEC} -n 4 ./ex21 -snes_linesearch_monitor -snes_mf -snes_monitor_short -nox -ksp_monitor -snes_converged_reason > ex21_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex21 -snes_linesearch_monitor -snes_mf -snes_monitor_short -nox -ksp_monitor_short -snes_converged_reason > ex21_1.tmp 2>&1; \
 	   if (${DIFF} output/ex21_1.out ex21_1.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with with ex21_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex21_1.tmp
@@ -1092,7 +1092,7 @@ runex58_2:
 	   ${DIFF} output/ex58_2.out ex58.tmp || printf "${PWD}\nPossible problem with ex58_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex58.tmp
 runex73f90t:
-	-@${MPIEXEC} -n 4 ./ex73f90t -par 5.0 -da_grid_x 10 -da_grid_y 10 -snes_monitor -snes_linesearch_type basic -snes_converged_reason -ksp_type fgmres -ksp_norm_type unpreconditioned -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type upper -ksp_monitor -fieldsplit_lambda_ksp_type preonly -fieldsplit_lambda_pc_type jacobi -fieldsplit_lambda_ksp_monitor -fieldsplit_phi_pc_type gamg -fieldsplit_phi_pc_gamg_agg_nsmooths 1 -fieldsplit_phi_pc_gamg_threshold 0. -fieldsplit_phi_pc_gamg_verbose 2 -fieldsplit_phi_gamg_est_ksp_type cg
+	-@${MPIEXEC} -n 4 ./ex73f90t -par 5.0 -da_grid_x 10 -da_grid_y 10 -snes_monitor -snes_linesearch_type basic -snes_converged_reason -ksp_type fgmres -ksp_norm_type unpreconditioned -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type upper -ksp_monitor_short -fieldsplit_lambda_ksp_type preonly -fieldsplit_lambda_pc_type jacobi -fieldsplit_lambda_ksp_monitor_short -fieldsplit_phi_pc_type gamg -fieldsplit_phi_pc_gamg_agg_nsmooths 1 -fieldsplit_phi_pc_gamg_threshold 0. -fieldsplit_phi_pc_gamg_verbose 2 -fieldsplit_phi_gamg_est_ksp_type cg
 
 # This is way too slow  ex30.PETSc runex30 ex30.rm
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \

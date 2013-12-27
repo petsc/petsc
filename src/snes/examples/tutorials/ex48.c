@@ -346,7 +346,7 @@ static void THIFriction(THI thi,PetscReal rbeta2,PetscReal gam,PetscReal *beta2,
     *beta2  = rbeta2;
     *dbeta2 = 0;
   } else {
-    *beta2  = rbeta2 * pow(thi->friction.eps2 + gam*thi->friction.irefgam,thi->friction.exponent);
+    *beta2  = rbeta2 * PetscPowReal(thi->friction.eps2 + gam*thi->friction.irefgam,thi->friction.exponent);
     *dbeta2 = thi->friction.exponent * *beta2 / (thi->friction.eps2 + gam*thi->friction.irefgam) * thi->friction.irefgam;
   }
 }
@@ -359,8 +359,8 @@ static void THIViscosity(THI thi,PetscReal gam,PetscReal *eta,PetscReal *deta)
     const PetscReal
       n = 3.,                                           /* Glen exponent */
       p = 1. + 1./n,                                    /* for Stokes */
-      A = 1.e-16 * pow(units->Pascal,-n) / units->year, /* softness parameter (Pa^{-n}/s) */
-      B = pow(A,-1./n);                                 /* hardness parameter */
+      A = 1.e-16 * PetscPowReal(units->Pascal,-n) / units->year, /* softness parameter (Pa^{-n}/s) */
+      B = PetscPowReal(A,-1./n);                                 /* hardness parameter */
     thi->viscosity.Bd2      = B/2;
     thi->viscosity.exponent = (p-2)/2;
     thi->viscosity.eps      = 0.5*PetscSqr(1e-5 / units->year);
@@ -368,7 +368,7 @@ static void THIViscosity(THI thi,PetscReal gam,PetscReal *eta,PetscReal *deta)
   Bd2      = thi->viscosity.Bd2;
   exponent = thi->viscosity.exponent;
   eps      = thi->viscosity.eps;
-  *eta     = Bd2 * pow(eps + gam,exponent);
+  *eta     = Bd2 * PetscPowReal(eps + gam,exponent);
   *deta    = exponent * (*eta) / (eps + gam);
 }
 
@@ -538,7 +538,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   {
     PetscReal u       = 1000*units->meter/(3e7*units->second),
               gradu   = u / (100*units->meter),eta,deta,
-              rho     = 910 * units->kilogram/pow(units->meter,3),
+              rho     = 910 * units->kilogram/PetscPowReal(units->meter,3),
               grav    = 9.81 * units->meter/PetscSqr(units->second),
               driving = rho * grav * PetscSinReal(thi->alpha) * 1000*units->meter;
     THIViscosity(thi,0.5*gradu*gradu,&eta,&deta);
