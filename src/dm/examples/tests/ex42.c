@@ -178,11 +178,11 @@ PetscErrorCode test_3d_nocoord(const char filename[])
 int main(int argc, char *argv[])
 {
   PetscErrorCode ierr;
-  ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
-  test_3d("3d.vtr");
-  test_2d("2d.vtr");
-  test_2d_nocoord("2d_nocoord.vtr");
-  test_3d_nocoord("3d_nocoord.vtr");
+  PetscInitialize(&argc,&argv,0,help);
+  ierr = test_3d("3d.vtr");CHKERRQ(ierr);
+  ierr = test_2d("2d.vtr");CHKERRQ(ierr);
+  ierr = test_2d_nocoord("2d_nocoord.vtr");CHKERRQ(ierr);
+  ierr = test_3d_nocoord("3d_nocoord.vtr");CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

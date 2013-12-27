@@ -14,11 +14,11 @@
 #if defined(PETSC_USE_REAL___FLOAT128)
 PetscBool PetscIsNormalScalar(PetscScalar a)
 {
-  return isnormalq(PetscAbsScalar(a));
+  return PETSC_TRUE;
 }
 PetscBool PetscIsNormalReal(PetscReal a)
 {
-  return isnormalq(a);
+  return PETSC_TRUE;
 }
 #elif defined(PETSC_HAVE_ISNORMAL)
 PetscBool PetscIsNormalScalar(PetscScalar a)
