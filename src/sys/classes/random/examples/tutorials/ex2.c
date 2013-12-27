@@ -104,7 +104,6 @@ int main(int argc, char *argv[])
   ierr = PetscRandomDestroy(&ran);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
-#endif
 }
 
 void stdNormalArray(PetscReal *eps, PetscInt numdim, PetscRandom ran)
