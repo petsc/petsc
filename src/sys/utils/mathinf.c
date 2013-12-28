@@ -23,11 +23,11 @@ PetscBool PetscIsNormalReal(PetscReal a)
 #elif defined(PETSC_HAVE_ISNORMAL)
 PetscBool PetscIsNormalScalar(PetscScalar a)
 {
-  return isnormal(PetscAbsScalar(a));
+  return isnormal(PetscAbsScalar(a)) ? PETSC_TRUE : PETSC_FALSE;
 }
 PetscBool PetscIsNormalReal(PetscReal a)
 {
-  return isnormal(a);
+  return isnormal(a) ? PETSC_TRUE : PETSC_FALSE;
 }
 #else
 PetscBool PetscIsNormalScalar(PetscScalar a)
