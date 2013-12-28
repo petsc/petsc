@@ -4,7 +4,7 @@
       subroutine GenerateErr(line,ierr)
 #include <finclude/petscsys.h>
       PetscErrorCode  ierr
-      PetscInt line
+      integer line
 
       call PetscError(PETSC_COMM_SELF,1,line,1,'Error message',ierr)
 
