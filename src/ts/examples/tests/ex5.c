@@ -397,16 +397,16 @@ PetscErrorCode latentflux(PetscScalar sfctemp, PetscScalar dewtemp, PetscScalar 
 PetscErrorCode potential_temperature(PetscScalar temp, PetscScalar pressure1, PetscScalar pressure2, PetscScalar sfctemp, PetscScalar *pottemp)
 {
   PetscScalar kdry;     /* poisson constant for dry atmosphere */
-  PetscScalar kmoist;   /* poisson constant for moist atmosphere */
   PetscScalar pavg;     /* average atmospheric pressure */
   PetscScalar mixratio; /* mixing ratio */
+  /* PetscScalar kmoist;   poisson constant for moist atmosphere */
 
   PetscFunctionBeginUser;
   mixratio = calcmixingr(sfctemp,pressure1);
 
 /* initialize poisson constant */
   kdry   = 0.2854;
-  kmoist = 0.2854*(1 - 0.24*mixratio);
+  /* kmoist = 0.2854*(1 - 0.24*mixratio); */
 
   pavg     = ((0.7*pressure1)+pressure2)/2;     /* calculates simple average press */
   *pottemp = temp*(PetscPowScalar((pressure1/pavg),kdry)); /* calculates potential temperature */
@@ -539,21 +539,10 @@ PetscErrorCode FormInitialSolution(DM da,Vec Xglobal,void *ctx)
   AppCtx         *user = (AppCtx*)ctx;       /* user-defined application context */
   PetscInt       i,j,xs,ys,xm,ym,Mx,My;
   Field          **X;
-  PetscScalar    deltT;
-  PetscReal      hx,hy;
-  FILE           *ifp;
-  FILE           *ofp;
 
   PetscFunctionBeginUser;
-  ofp   = fopen("swing", "w");
-  ifp   = fopen("grid.in", "r");
-  deltT = 0.8;
-
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
-
-  hx = 1/(PetscReal)(Mx-1);
-  hy = 1/(PetscReal)(My-1);
 
   /* Get pointers to vector data */
   ierr = DMDAVecGetArray(da,Xglobal,&X);CHKERRQ(ierr);
@@ -631,7 +620,7 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
   PetscScalar    diffconst      = 1000;                 /* diffusion coefficient */
   PetscScalar    f              = 2*0.0000727*PetscSinScalar(lat); /* coriolis force */
   PetscScalar    deep_grnd_temp = user->deep_grnd_temp; /* temp in lowest ground layer */
-  PetscScalar    Ts,u,v,p,P;
+  PetscScalar    Ts,u,v,p;
   PetscScalar    u_abs,u_plus,u_minus,v_abs,v_plus,v_minus;
 
   PetscScalar sfctemp1,fsfc1,Ra;
@@ -691,7 +680,7 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
       v_minus = .5*(v - v_abs); /* v if v <0; 0 if v>0 */
 
       /* Solve governing equations */
-      P = p*Rd*Ts;
+      /* P = p*Rd*Ts; */
 
       /* du/dt -> time change of east-west component of the wind */
       Frhs[j][i].u = - u_plus*(u - X[j][i-1].u)*dhx - u_minus*(X[j][i+1].u - u)*dhx       /* - u(du/dx) */
