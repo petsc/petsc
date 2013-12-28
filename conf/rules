@@ -436,6 +436,7 @@ getautoconfargs:
           grep -v "f90 continuing despite warning messages" | \
           grep -v "symbol if the" | \
           grep -v "ignoring symbol version info" | \
+          grep -v "warning: initializer element is not computable at load time" | \
           grep -v "warning, duplicate dylib" | \
           grep -v "warning: duplicate dylib" | \
           grep -v "preempts that definition" | \
