@@ -171,6 +171,9 @@ int main(int argc,char **argv)
   Mat            J;              /* Jacobian matrix */
   PetscReal      ftime,dt;
   PetscInt       steps,dof = 5;
+  PetscBool      use_coloring  = PETSC_TRUE;
+  MatFDColoring  matfdcoloring = 0;
+  PetscBool      monitor_off = PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -267,8 +270,6 @@ int main(int argc,char **argv)
   ierr = TSSetRHSFunction(ts,rhs,RhsFunc,&user);CHKERRQ(ierr);
 
   /* Set Jacobian evaluation routine - use coloring to compute finite difference Jacobian efficiently */
-  PetscBool     use_coloring  = PETSC_TRUE;
-  MatFDColoring matfdcoloring = 0;
   ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da,&J);CHKERRQ(ierr);
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
@@ -286,7 +287,6 @@ int main(int argc,char **argv)
   }
 
   /* Define what to print for ts_monitor option */
-  PetscBool monitor_off = PETSC_FALSE;
   ierr = PetscOptionsHasName(NULL,"-monitor_off",&monitor_off);CHKERRQ(ierr);
   if (!monitor_off) {
     ierr = TSMonitorSet(ts,Monitor,&usermonitor,NULL);CHKERRQ(ierr);
