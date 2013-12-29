@@ -236,7 +236,7 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
     for (i=xs; i<xs+xm; i++) {
 
       if (i == 0 || j == 0 || i == Mx-1 || j == My-1) x[j][i] = 0.0; /* boundary conditions are all zero Dirichlet */
-      else x[j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
+      else x[j][i] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
     }
   }
 

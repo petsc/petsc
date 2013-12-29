@@ -200,9 +200,9 @@ PetscScalar exact(PetscScalar z,PetscReal t)
 {
   PetscScalar val, ex1, ex2;
 
-  ex1 = exp(-36.*PETSC_PI*PETSC_PI*t);
-  ex2 = exp(-4.*PETSC_PI*PETSC_PI*t);
-  val = sin(6*PETSC_PI*z)*ex1 + 3.*sin(2*PETSC_PI*z)*ex2;
+  ex1 = PetscExpReal(-36.*PETSC_PI*PETSC_PI*t);
+  ex2 = PetscExpReal(-4.*PETSC_PI*PETSC_PI*t);
+  val = PetscSinScalar(6*PETSC_PI*z)*ex1 + 3.*PetscSinScalar(2*PETSC_PI*z)*ex2;
   return val;
 }
 

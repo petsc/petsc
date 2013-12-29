@@ -1007,22 +1007,22 @@ PetscErrorCode ExactSolution(Vec Y, void* s, PetscReal t, PetscBool *flag)
   PetscFunctionBegin;
   if (!strcmp(p,"hull1972a1")) {
     ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    y[0] = PetscExpScalar(-t);
+    y[0] = PetscExpReal(-t);
     *flag = PETSC_TRUE;
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else if (!strcmp(p,"hull1972a2")) {
     ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    y[0] = 1.0/PetscSqrtScalar(t+1);
+    y[0] = 1.0/PetscSqrtReal(t+1);
     *flag = PETSC_TRUE;
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else if (!strcmp(p,"hull1972a3")) {
     ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    y[0] = PetscExpScalar(sin(t));
+    y[0] = PetscExpReal(PetscSinReal(t));
     *flag = PETSC_TRUE;
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else if (!strcmp(p,"hull1972a4")) {
     ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    y[0] = 20.0/(1+19.0*PetscExpScalar(-t/4.0));
+    y[0] = 20.0/(1+19.0*PetscExpReal(-t/4.0));
     *flag = PETSC_TRUE;
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else {

@@ -325,8 +325,8 @@ static void PrmNodeGetFaceMeasure(const PrmNode **p,PetscInt i,PetscInt j,PetscS
 static void THIInitialize_HOM_A(THI thi,PetscReal x,PetscReal y,PrmNode *p)
 {
   Units units = thi->units;
-  PetscReal s = -x*sin(thi->alpha);
-  p->b = s - 1000*units->meter + 500*units->meter * sin(x*2*PETSC_PI/thi->Lx) * sin(y*2*PETSC_PI/thi->Ly);
+  PetscReal s = -x*PetscSinReal(thi->alpha);
+  p->b = s - 1000*units->meter + 500*units->meter * PetscSinReal(x*2*PETSC_PI/thi->Lx) * PetscSinReal(y*2*PETSC_PI/thi->Ly);
   p->h = s - p->b;
   p->beta2 = -1e-10;             /* This value is not used, but it should not be huge because that would change the finite difference step size  */
 }
@@ -334,12 +334,12 @@ static void THIInitialize_HOM_A(THI thi,PetscReal x,PetscReal y,PrmNode *p)
 static void THIInitialize_HOM_C(THI thi,PetscReal x,PetscReal y,PrmNode *p)
 {
   Units units = thi->units;
-  PetscReal s = -x*sin(thi->alpha);
+  PetscReal s = -x*PetscSinReal(thi->alpha);
   p->b = s - 1000*units->meter;
   p->h = s - p->b;
   /* tau_b = beta2 v   is a stress (Pa).
    * This is a big number in our units (it needs to balance the driving force from the surface), so we scale it by 1/rhog, just like the residual. */
-  p->beta2 = 1000 * (1 + sin(x*2*PETSC_PI/thi->Lx)*sin(y*2*PETSC_PI/thi->Ly)) * units->Pascal * units->year / units->meter / thi->rhog;
+  p->beta2 = 1000 * (1 + PetscSinReal(x*2*PETSC_PI/thi->Lx)*PetscSinReal(y*2*PETSC_PI/thi->Ly)) * units->Pascal * units->year / units->meter / thi->rhog;
 }
 
 /* These are just toys */
@@ -348,8 +348,8 @@ static void THIInitialize_HOM_C(THI thi,PetscReal x,PetscReal y,PrmNode *p)
 static void THIInitialize_HOM_F(THI thi,PetscReal x,PetscReal y,PrmNode *p)
 {
   Units units = thi->units;
-  PetscReal s = -x*sin(thi->alpha);
-  p->b = s - 1000*units->meter + 100*units->meter * sin(x*2*PETSC_PI/thi->Lx);/* * sin(y*2*PETSC_PI/thi->Ly); */
+  PetscReal s = -x*PetscSinReal(thi->alpha);
+  p->b = s - 1000*units->meter + 100*units->meter * PetscSinReal(x*2*PETSC_PI/thi->Lx);/* * sin(y*2*PETSC_PI/thi->Ly); */
   p->h = s - p->b;
   p->h = (1-(atan((x-thi->Lx/2)/1.)+PETSC_PI/2.)/PETSC_PI)*500*units->meter+1*units->meter;
   s = PetscRealPart(p->b + p->h);
@@ -362,8 +362,8 @@ static void THIInitialize_HOM_X(THI thi,PetscReal xx,PetscReal yy,PrmNode *p)
 {
   Units units = thi->units;
   PetscReal x = xx*2*PETSC_PI/thi->Lx - PETSC_PI,y = yy*2*PETSC_PI/thi->Ly - PETSC_PI; /* [-pi,pi] */
-  PetscReal r = PetscSqrtReal(x*x + y*y),s = -x*sin(thi->alpha);
-  p->b = s - 1000*units->meter + 500*units->meter * sin(x + PETSC_PI) * sin(y + PETSC_PI);
+  PetscReal r = PetscSqrtReal(x*x + y*y),s = -x*PetscSinReal(thi->alpha);
+  p->b = s - 1000*units->meter + 500*units->meter * PetscSinReal(x + PETSC_PI) * PetscSinReal(y + PETSC_PI);
   p->h = s - p->b;
   p->beta2 = 1000 * (r < 1 ? 2 : 0) * units->Pascal * units->year / units->meter / thi->rhog;
 }
@@ -373,11 +373,11 @@ static void THIInitialize_HOM_Y(THI thi,PetscReal xx,PetscReal yy,PrmNode *p)
 {
   Units units = thi->units;
   PetscReal x = xx*2*PETSC_PI/thi->Lx - PETSC_PI,y = yy*2*PETSC_PI/thi->Ly - PETSC_PI; /* [-pi,pi] */
-  PetscReal r = PetscSqrtReal(x*x + y*y),s = -x*sin(thi->alpha);
-  p->b = s - 1000*units->meter + 500*units->meter * sin(x + PETSC_PI) * sin(y + PETSC_PI);
+  PetscReal r = PetscSqrtReal(x*x + y*y),s = -x*PetscSinReal(thi->alpha);
+  p->b = s - 1000*units->meter + 500*units->meter * PetscSinReal(x + PETSC_PI) * PetscSinReal(y + PETSC_PI);
   if (PetscRealPart(p->b) > -700*units->meter) p->b += 200*units->meter;
   p->h = s - p->b;
-  p->beta2 = 1000 * (1. + sin(PetscSqrtReal(16*r))/PetscSqrtReal(1e-2 + 16*r)*cos(x*3/2)*cos(y*3/2)) * units->Pascal * units->year / units->meter / thi->rhog;
+  p->beta2 = 1000 * (1. + PetscSinReal(PetscSqrtReal(16*r))/PetscSqrtReal(1e-2 + 16*r)*PetscCosReal(x*3/2)*PetscCosReal(y*3/2)) * units->Pascal * units->year / units->meter / thi->rhog;
 }
 
 /* Same bed as A, smoothly varying slipperiness, similar to MATLAB's "sombrero" (uncorrelated with bathymetry) */
@@ -385,10 +385,10 @@ static void THIInitialize_HOM_Z(THI thi,PetscReal xx,PetscReal yy,PrmNode *p)
 {
   Units units = thi->units;
   PetscReal x = xx*2*PETSC_PI/thi->Lx - PETSC_PI,y = yy*2*PETSC_PI/thi->Ly - PETSC_PI; /* [-pi,pi] */
-  PetscReal r = PetscSqrtReal(x*x + y*y),s = -x*sin(thi->alpha);
-  p->b = s - 1000*units->meter + 500*units->meter * sin(x + PETSC_PI) * sin(y + PETSC_PI);
+  PetscReal r = PetscSqrtReal(x*x + y*y),s = -x*PetscSinReal(thi->alpha);
+  p->b = s - 1000*units->meter + 500*units->meter * PetscSinReal(x + PETSC_PI) * PetscSinReal(y + PETSC_PI);
   p->h = s - p->b;
-  p->beta2 = 1000 * (1. + sin(PetscSqrtReal(16*r))/PetscSqrtReal(1e-2 + 16*r)*cos(x*3/2)*cos(y*3/2)) * units->Pascal * units->year / units->meter / thi->rhog;
+  p->beta2 = 1000 * (1. + PetscSinReal(PetscSqrtReal(16*r))/PetscSqrtReal(1e-2 + 16*r)*PetscCosReal(x*3/2)*PetscCosReal(y*3/2)) * units->Pascal * units->year / units->meter / thi->rhog;
 }
 
 static void THIFriction(THI thi,PetscReal rbeta2,PetscReal gam,PetscReal *beta2,PetscReal *dbeta2)
@@ -402,7 +402,7 @@ static void THIFriction(THI thi,PetscReal rbeta2,PetscReal gam,PetscReal *beta2,
     *beta2  = rbeta2;
     *dbeta2 = 0;
   } else {
-    *beta2  = rbeta2 * pow(thi->friction.eps2 + gam*thi->friction.irefgam,thi->friction.exponent);
+    *beta2  = rbeta2 * PetscPowReal(thi->friction.eps2 + gam*thi->friction.irefgam,thi->friction.exponent);
     *dbeta2 = thi->friction.exponent * *beta2 / (thi->friction.eps2 + gam*thi->friction.irefgam) * thi->friction.irefgam;
   }
 }
@@ -415,8 +415,8 @@ static void THIViscosity(THI thi,PetscReal gam,PetscReal *eta,PetscReal *deta)
     const PetscReal
       n = thi->viscosity.glen_n,                        /* Glen exponent */
       p = 1. + 1./n,                                    /* for Stokes */
-      A = 1.e-16 * pow(units->Pascal,-n) / units->year, /* softness parameter (Pa^{-n}/s) */
-      B = pow(A,-1./n);                                 /* hardness parameter */
+      A = 1.e-16 * PetscPowReal(units->Pascal,-n) / units->year, /* softness parameter (Pa^{-n}/s) */
+      B = PetscPowReal(A,-1./n);                                 /* hardness parameter */
     thi->viscosity.Bd2      = B/2;
     thi->viscosity.exponent = (p-2)/2;
     thi->viscosity.eps      = 0.5*PetscSqr(1e-5 / units->year);
@@ -424,7 +424,7 @@ static void THIViscosity(THI thi,PetscReal gam,PetscReal *eta,PetscReal *deta)
   Bd2      = thi->viscosity.Bd2;
   exponent = thi->viscosity.exponent;
   eps      = thi->viscosity.eps;
-  *eta     = Bd2 * pow(eps + gam,exponent);
+  *eta     = Bd2 * PetscPowReal(eps + gam,exponent);
   *deta    = exponent * (*eta) / (eps + gam);
 }
 
@@ -627,9 +627,9 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   {
     PetscReal u       = 1000*units->meter/(3e7*units->second),
               gradu   = u / (100*units->meter),eta,deta,
-              rho     = 910 * units->kilogram/pow(units->meter,3),
+              rho     = 910 * units->kilogram/PetscPowRealInt(units->meter,3),
               grav    = 9.81 * units->meter/PetscSqr(units->second),
-              driving = rho * grav * sin(thi->alpha) * 1000*units->meter;
+              driving = rho * grav * PetscSinReal(thi->alpha) * 1000*units->meter;
     THIViscosity(thi,0.5*gradu*gradu,&eta,&deta);
     thi->rhog = rho * grav;
     if (thi->verbose) {
@@ -664,7 +664,7 @@ static PetscErrorCode THIFixGhosts(THI thi,DM da3,DM da2,Vec X3,Vec X2)
   for (i=info.gzs; i<info.gzs+info.gzm; i++) {
     if (i > -1 && i < info.mz) continue;
     for (j=info.gys; j<info.gys+info.gym; j++) {
-      x2[i][j].b += sin(thi->alpha) * thi->Lx * (i<0 ? 1.0 : -1.0);
+      x2[i][j].b += PetscSinReal(thi->alpha) * thi->Lx * (i<0 ? 1.0 : -1.0);
     }
   }
   ierr = DMDAVecRestoreArray(da2,X2,&x2);CHKERRQ(ierr);

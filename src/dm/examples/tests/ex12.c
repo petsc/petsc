@@ -50,7 +50,7 @@ int main(int argc,char **argv)
   for (i=1; i<localsize-1; i++) {
     j = (i-1) + mybase;
 
-    localptr[i] = sin((PETSC_PI*j*6)/((PetscReal)M) + 1.2 * sin((PETSC_PI*j*2)/((PetscReal)M))) * 4+4;
+    localptr[i] = PetscSinReal((PETSC_PI*j*6)/((PetscReal)M) + 1.2 * PetscSinReal((PETSC_PI*j*2)/((PetscReal)M))) * 4+4;
   }
 
   ierr = VecRestoreArray (copy,&copyptr);CHKERRQ(ierr);

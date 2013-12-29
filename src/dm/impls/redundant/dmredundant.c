@@ -135,7 +135,7 @@ static PetscErrorCode DMLocalToGlobalBegin_Redundant(DM dm,Vec l,InsertMode imod
       if (imode == MAX_VALUES) for (i=0; i<red->N; i++) buffer[i] = PetscMax(gv[i],lv[i]);
 #endif
     } else source = (void*)lv;
-    ierr = MPI_Reduce(source,gv,red->N,MPIU_SCALAR,(imode == ADD_VALUES) ? MPI_SUM : MPI_MAX,red->rank,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    ierr = MPI_Reduce(source,gv,red->N,MPIU_SCALAR,(imode == ADD_VALUES) ? MPIU_SUM : MPIU_MAX,red->rank,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
 #if !defined(PETSC_HAVE_MPI_IN_PLACE)
     if (rank == red->rank) {ierr = PetscFree(buffer);CHKERRQ(ierr);}
 #endif

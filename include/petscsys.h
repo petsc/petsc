@@ -331,11 +331,6 @@ M*/
 #endif
 
 /*
-    Defines some elementary mathematics functions and constants.
-*/
-#include <petscmath.h>
-
-/*
     Declare extern C stuff after including external header files
 */
 
@@ -356,6 +351,11 @@ E*/
 typedef enum { PETSC_FALSE,PETSC_TRUE } PetscBool;
 PETSC_EXTERN const char *const PetscBools[];
 PETSC_EXTERN MPI_Datatype MPIU_BOOL PetscAttrMPITypeTag(PetscBool);
+
+/*
+    Defines some elementary mathematics functions and constants.
+*/
+#include <petscmath.h>
 
 /*E
     PetscCopyMode  - Determines how an array passed to certain functions is copied or retained

@@ -489,8 +489,8 @@ PetscErrorCode  PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
     Collective on PetscViewer
 
     Input Parameters:
-+   N - number of doubles in array
-.   idx - array of doubles
++   N - number of PetscReal in array
+.   idx - array of PetscReal
 -   viewer - location to print array,  PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_STDOUT_SELF or 0
 
   Level: intermediate
@@ -519,13 +519,13 @@ PetscErrorCode  PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewe
     for (i=0; i<n; i++) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%2d:",5*i);CHKERRQ(ierr);
       for (j=0; j<5; j++) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer," %12.4e",idx[i*5+j]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer," %12.4e",(double)idx[i*5+j]);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     if (p) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%2d:",5*n);CHKERRQ(ierr);
-      for (i=0; i<p; i++) { PetscViewerASCIISynchronizedPrintf(viewer," %12.4e",idx[5*n+i]);CHKERRQ(ierr);}
+      for (i=0; i<p; i++) { PetscViewerASCIISynchronizedPrintf(viewer," %12.4e",(double)idx[5*n+i]);CHKERRQ(ierr);}
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -609,9 +609,9 @@ PetscErrorCode  PetscScalarView(PetscInt N,const PetscScalar idx[],PetscViewer v
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%2d:",3*i);CHKERRQ(ierr);
       for (j=0; j<3; j++) {
 #if defined(PETSC_USE_COMPLEX)
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer," (%12.4e,%12.4e)", PetscRealPart(idx[i*3+j]),PetscImaginaryPart(idx[i*3+j]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer," (%12.4e,%12.4e)", (double)PetscRealPart(idx[i*3+j]),(double)PetscImaginaryPart(idx[i*3+j]));CHKERRQ(ierr);
 #else
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer," %12.4e",idx[i*3+j]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer," %12.4e",(double)idx[i*3+j]);CHKERRQ(ierr);
 #endif
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
@@ -620,9 +620,9 @@ PetscErrorCode  PetscScalarView(PetscInt N,const PetscScalar idx[],PetscViewer v
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%2d:",3*n);CHKERRQ(ierr);
       for (i=0; i<p; i++) {
 #if defined(PETSC_USE_COMPLEX)
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer," (%12.4e,%12.4e)", PetscRealPart(idx[n*3+i]),PetscImaginaryPart(idx[n*3+i]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer," (%12.4e,%12.4e)", (double)PetscRealPart(idx[n*3+i]),(double)PetscImaginaryPart(idx[n*3+i]));CHKERRQ(ierr);
 #else
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer," %12.4e",idx[3*n+i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer," %12.4e",(double)idx[3*n+i]);CHKERRQ(ierr);
 #endif
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
