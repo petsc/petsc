@@ -398,11 +398,11 @@ PetscErrorCode potential_temperature(PetscScalar temp, PetscScalar pressure1, Pe
 {
   PetscScalar kdry;     /* poisson constant for dry atmosphere */
   PetscScalar pavg;     /* average atmospheric pressure */
-  PetscScalar mixratio; /* mixing ratio */
+  /* PetscScalar mixratio; mixing ratio */
   /* PetscScalar kmoist;   poisson constant for moist atmosphere */
 
   PetscFunctionBeginUser;
-  mixratio = calcmixingr(sfctemp,pressure1);
+  /* mixratio = calcmixingr(sfctemp,pressure1); */
 
 /* initialize poisson constant */
   kdry   = 0.2854;
