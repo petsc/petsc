@@ -162,7 +162,7 @@ static PetscErrorCode ourtaomondestroy(void **ctx)
     PetscErrorCode ierr = 0;
     TaoSolver tao = *(TaoSolver*)ctx;
     (*(void (PETSC_STDCALL *)(void*,PetscErrorCode*))(((PetscObject)tao)->fortran_func_pointers[MONDESTROY]))
-      ((void*)((PetscObject)tao)->fortran_func_pointers[MONCTX],&ierr);
+      ((void*)(PETSC_UINTPTR_T)((PetscObject)tao)->fortran_func_pointers[MONCTX],&ierr);
     CHKERRQ(ierr);
     return 0;
 }
