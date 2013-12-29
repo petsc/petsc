@@ -307,7 +307,7 @@ PetscErrorCode TaoDestroy(TaoSolver *tao)
   ierr = MatDestroy(&(*tao)->jacobian_state_pre); CHKERRQ(ierr);
   ierr = MatDestroy(&(*tao)->jacobian_state); CHKERRQ(ierr);
   ierr = MatDestroy(&(*tao)->jacobian_state_inv); CHKERRQ(ierr);
-  ierr = MatDestroy(&(*tao)->jacobian_design_pre); CHKERRQ(ierr);
+  ierr = MatDestroy(&(*tao)->jacobian_design); CHKERRQ(ierr);
   ierr = MatDestroy(&(*tao)->jacobian_equality); CHKERRQ(ierr);
   ierr = MatDestroy(&(*tao)->jacobian_equality_pre); CHKERRQ(ierr);
   ierr = MatDestroy(&(*tao)->jacobian_inequality); CHKERRQ(ierr);
