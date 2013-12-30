@@ -61,7 +61,7 @@ runrosenbrock1_3:
         ${RM} -f rosenbrock1_3.tmp
 
 runrosenbrock1f:
-	-@${MPIEXEC} -n 1 -tao_smonitor -tao_method tao_ntr ./rosenbrock1f > rosenbrock1f_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./rosenbrock1f -tao_smonitor -tao_method tao_ntr  > rosenbrock1f_1.tmp 2>&1; \
         ${DIFF} output/rosenbrock1f_1.out rosenbrock1f_1.tmp || printf '\nPossible problem with rosenbrock1f_1 stdout, diffs above \n=========================================\n';\
         ${RM} -f rosenbrock1f_1.tmp
 
