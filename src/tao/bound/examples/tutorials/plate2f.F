@@ -469,7 +469,7 @@
 
 ! ----------------------------------------------------------------------------
 ! 
-!/*
+!
 !   FormHessian - Evaluates Hessian matrix.
 !
 !   Input Parameters:
@@ -506,7 +506,7 @@
 !           MatSetValues()
 !   Option (A) seems cleaner/easier in many cases, and is the procedure
 !   used in this example.
-*/
+
       subroutine FormHessian(tao, X, Hessian, Hpc, flg, dummy, ierr)
       implicit none
 
