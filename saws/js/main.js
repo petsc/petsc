@@ -91,17 +91,18 @@ DisplayDirectory = function(sub,divEntry)
         populatePcList("pcList-1"+SAWs_prefix,SAWs_alternatives,SAWs_pcVal);
         //alert("Preconditioner (PC) options, SAWs_pcVal "+SAWs_pcVal+", SAWs_prefix "+SAWs_prefix);
 
-        sawsInfo[recursionCounterSAWs] = {
-            prefix: SAWs_prefix
-        }
-        recursionCounterSAWs++;
-        //alert("pc: recursionCounterSAWs "+recursionCounterSAWs);
-
         if (SAWs_pcVal == 'bjacobi') {
             var SAWs_bjacobi_blocks = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_bjacobi_blocks"].data[0];
             //alert("SAWs_bjacobi_blocks "+SAWs_bjacobi_blocks);
             //set SAWs_bjacobi_blocks to #bjacobiBlocks-1_0.processorInput ???
         }
+
+        sawsInfo[recursionCounterSAWs] = {
+            prefix: SAWs_prefix,
+            bjacobi_blocks: SAWs_bjacobi_blocks
+        }
+        recursionCounterSAWs++;
+        //alert("pc: recursionCounterSAWs "+recursionCounterSAWs);
 
     } else if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Krylov Method (KSP) options") {
         var SAWs_kspVal = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-ksp_type"].data[0];

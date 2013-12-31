@@ -173,6 +173,9 @@ $(document).on('change', '.pcLists', function(){
             //alternative???
             populateKspList("kspList"+parent+myendtag,null,SAWs_kspVal);
             populatePcList("pcList"+parent+myendtag,null,SAWs_pcVal);
+            //surtai added
+            //alert(""+sawsInfo[currentRecursionCounterSAWs].bjacobi_blocks);
+            $("#bjacobiBlocks"+parent+myendtag).attr("value",sawsInfo[currentRecursionCounterSAWs].bjacobi_blocks);
             //alert("bjacobi: prefix="+prefix+"; SAWs_kspVal="+SAWs_kspVal+"; SAWs_pcVal="+SAWs_pcVal+"; currentRecursionCounterSAWs="+currentRecursionCounterSAWs);
             currentRecursionCounterSAWs++;
             //manually trigger pclist once 
