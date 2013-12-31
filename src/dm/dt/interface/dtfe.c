@@ -1547,6 +1547,24 @@ PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceApply"
+/*@C
+  PetscDualSpaceApply - Apply a functional from the dual space basis to an input function
+
+  Input Parameters:
++ sp      - The PetscDualSpace object
+. f       - The basis functional index
+. geom    - A context with geometric information for this cell, we use v0 (the initial vertex) and J (the Jacobian)
+. numComp - The number of components for the function
+. func    - The input function
+- ctx     - A context for the function
+
+  Output Parameter:
+. value   - numComp output values
+
+  Level: developer
+
+.seealso: PetscDualSpaceCreate()
+@*/
 PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscCellGeometry geom, PetscInt numComp, void (*func)(const PetscReal [], PetscScalar *, void *), void *ctx, PetscScalar *value)
 {
   DM               dm;
