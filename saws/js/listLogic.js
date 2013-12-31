@@ -174,7 +174,8 @@ $(document).on('change', '.pcLists', function(){
             populateKspList("kspList"+parent+myendtag,null,SAWs_kspVal);
             populatePcList("pcList"+parent+myendtag,null,SAWs_pcVal);
             //surtai added
-            //alert(""+sawsInfo[currentRecursionCounterSAWs].bjacobi_blocks);
+            if(typeof sawsInfo[currentRecursionCounterSAWs].bjacobi_blocks == "undefined")//sometimes SAWs will fail to come up with a default
+                sawsInfo[currentRecursionCounterSAWs].bjacobi_blocks = "undefined";//this makes sure the program doesn't crash
             $("#bjacobiBlocks"+parent+myendtag).attr("value",sawsInfo[currentRecursionCounterSAWs].bjacobi_blocks);
             //alert("bjacobi: prefix="+prefix+"; SAWs_kspVal="+SAWs_kspVal+"; SAWs_pcVal="+SAWs_pcVal+"; currentRecursionCounterSAWs="+currentRecursionCounterSAWs);
             currentRecursionCounterSAWs++;
