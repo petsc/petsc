@@ -72,7 +72,7 @@ testexamples_PTHREADCLASSES:
 testexamples_OPENMP:
 testexamples_NETCDF:
 testexamples_EXODUSII:
-testexamples_PCBDDC:
+testexamples_PCBDDC: ${TESTEXAMPLES_PCBDDC}
 
 buildexamples_C:
 	-@${OMAKE} testexamples_C TESTEXAMPLES_C=`echo ${TESTEXAMPLES_C} | sed s/runex[0-9]*[a-z0-9_]*//g`
@@ -184,6 +184,8 @@ buildexamples_CMAKE:
 buildexamples_AFTERIMAGE:
 buildexamples_PTHREADCLASSES:
 buildexamples_OPENMP:
+buildexamples_PCBDDC:
+	-@${OMAKE} testexamples_PCBDDC TESTEXAMPLES_PCBDDC=`echo ${TESTEXAMPLES_PCBDDC} | sed s/runex[0-9]*[a-z0-9_]*//g`
 
 TESTMODE = testexamples
 

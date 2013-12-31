@@ -1109,6 +1109,19 @@ runex58_sbaij:
 	${DIFF} output/ex58.out ex58.tmp || printf "${PWD}\nPossible problem with with ex58_sbaij, diffs above\n=========================================\n"; \
 	${RM} -f ex58.tmp
 
+runex59:
+	-@${MPIEXEC} -n 4 ./ex59 -nex 7 > ex59.tmp 2>&1;         \
+	${DIFF} output/ex59_1.out ex59.tmp || printf "${PWD}\nPossible problem with with ex59, diffs above\n=========================================\n"; \
+	${RM} -f ex59.tmp
+runex59_2:
+	-@${MPIEXEC} -n 4 ./ex59 -npx 2 -npy 2 -nex 2 -ney 2 > ex59_2.tmp 2>&1;         \
+	${DIFF} output/ex59_2.out ex59_2.tmp || printf "${PWD}\nPossible problem with with ex59_2, diffs above\n=========================================\n"; \
+	${RM} -f ex59_2.tmp
+runex59_3:
+	-@${MPIEXEC} -n 4 ./ex59 -npx 2 -npy 2 -npz 1 -nex 2 -ney 2 -nez 1 > ex59_3.tmp 2>&1;         \
+	${DIFF} output/ex59_3.out ex59_3.tmp || printf "${PWD}\nPossible problem with with ex59_3, diffs above\n=========================================\n"; \
+	${RM} -f ex59_3.tmp
+
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 runex2_specest_1 runex2_specest_2 \
                                  runex2_chebyest_1 runex2_chebyest_2 runex2_chebyest_3 runex2_chebyest_4 runex2_fbcgs runex2_fbcgs_2 ex2.rm \
@@ -1156,6 +1169,7 @@ TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_
 TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm ex52.PETSc runex52_superlu ex52.rm
 TESTEXAMPLES_FFTW              =
 TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm
-TESTEXAMPLES_CUDA              = ex10.PETSc runex10_aijcusparse ex10.rm 
+TESTEXAMPLES_CUDA              = ex10.PETSc runex10_aijcusparse ex10.rm
+TESTEXAMPLES_PCBDDC            = ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm
 
 include ${PETSC_DIR}/conf/test
