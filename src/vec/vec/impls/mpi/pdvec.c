@@ -81,9 +81,9 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         for (i=0; i<n; i++) {
 #if defined(PETSC_USE_COMPLEX)
           if (PetscImaginaryPart(values[i]) > 0.0) {
-            ierr = PetscViewerASCIIPrintf(viewer,"%18.16e + %18.16e i\n",(double)PetscRealPart(values[i]),(double)PetscImaginaryPart(values[i]));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer,"%18.16e + %18.16ei\n",(double)PetscRealPart(values[i]),(double)PetscImaginaryPart(values[i]));CHKERRQ(ierr);
           } else if (PetscImaginaryPart(values[i]) < 0.0) {
-            ierr = PetscViewerASCIIPrintf(viewer,"%18.16e - %18.16e i\n",(double)PetscRealPart(values[i]),-(double)PetscImaginaryPart(values[i]));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer,"%18.16e - %18.16ei\n",(double)PetscRealPart(values[i]),-(double)PetscImaginaryPart(values[i]));CHKERRQ(ierr);
           } else {
             ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",(double)PetscRealPart(values[i]));CHKERRQ(ierr);
           }
