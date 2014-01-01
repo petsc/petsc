@@ -374,9 +374,9 @@ runex33:
 	   ${RM} -f ex33_1.tmp
 runex34:
 	-@${MPIEXEC} -n 1 ./ex34 > ex34_1.tmp 2>&1;
-	-@cat ex34_1.tmp | sed s/e-00/e+00/g | awk '{ $$1=""; if (v!="") { if (v!=$$0) {print "  orig <" v "> \n  cached <" $$0 ">"}; v=""} else {v=$$0} }' > ex34_1.dif
-	-@if [ ` cat ex34_1.dif | wc -l ` -gt 0 ] ; then \
-	    printf "${PWD}\nPossible problem with ex34_1\n=========================================\n"; cat ex34_1.dif; fi; \
+	-@cat ex34_1.tmp | sed s/e-00/e+00/g | awk '{ if (v!="") { if (v!=$$2) {print "  orig <" v "> \n  cached <" $$0 ">"}; v=""} else {v=$$2} }' > ex34_1.dif
+	-@if [ ` cat ex34_1.dif | wc -l ` -gt 0 ] ; then  cat ex34_1.dif ;\
+	    printf "${PWD}\nPossible problem with ex34_1\n=========================================\n"; fi; \
 	   ${RM} -f ex34_1.tmp ex34_1.dif
 runex35:
 	-@${MPIEXEC} -n 1 ./ex35 > ex35_1.tmp 2>&1;\
