@@ -35,5 +35,4 @@ class Configure(config.base.Configure):
 
   def configure(self):
     self.executeTest(self.configureCLanguage)
-    self.executeTest(self.configureFortranLanguage)
     return
