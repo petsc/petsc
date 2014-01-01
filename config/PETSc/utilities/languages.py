@@ -17,8 +17,7 @@ class Configure(config.base.Configure):
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-clanguage=<C or C++>', nargs.Arg(None, 'C', 'Specify C or C++ language'))
-    help.addArgument('PETSc', '-with-fortran=<bool>', nargs.ArgBool(None, 1, 'Create and install the Fortran wrappers'))
+    help.addArgument('PETSc', '-with-clanguage=<C or C++>', nargs.Arg(None, 'C', 'Specify C (recommended) or C++ to compile PETSc. You can use C++ in either case.'))
     return
 
   def setupDependencies(self, framework):
@@ -33,15 +32,6 @@ class Configure(config.base.Configure):
     self.framework.logPrint('C language is '+str(self.clanguage))
     self.addDefine('CLANGUAGE_'+self.clanguage.upper(),'1')
     self.framework.require('config.setCompilers', None).mainLanguage = self.clanguage
-
-  def configureFortranLanguage(self):
-    '''Turn on Fortran bindings'''
-    if not self.framework.argDB['with-fortran']:
-      self.framework.argDB['with-fc'] = '0'
-      self.framework.logPrint('Not using Fortran')
-    else:
-      self.framework.logPrint('Using Fortran')
-    return
 
   def configure(self):
     self.executeTest(self.configureCLanguage)
