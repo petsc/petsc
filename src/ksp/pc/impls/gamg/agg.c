@@ -1210,6 +1210,7 @@ PetscErrorCode PCGAMGProlongator_AGG(PC pc,const Mat Amat,const Mat Gmat,PetscCo
   ierr = PetscFree(flid_fgid);CHKERRQ(ierr);
 
   *a_P_out = Prol;  /* out */
+
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventEnd(PC_GAMGProlongator_AGG,0,0,0,0);CHKERRQ(ierr);
 #endif
