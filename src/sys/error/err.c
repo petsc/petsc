@@ -298,6 +298,7 @@ PetscErrorCode  PetscErrorMessage(int errnum,const char *text[],char **specific)
  * in "C++ Coding Standards" by Sutter and Alexandrescu. (This accounts for part of the ongoing C++ binary interface
  * instability.) Having PETSc raise errors as C++ exceptions was probably misguided and should eventually be removed.
  */
+#include <sstream>
 static void PetscCxxErrorThrow() {
   const char *str;
   if (eh && eh->ctx) {
