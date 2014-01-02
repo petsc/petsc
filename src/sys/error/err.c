@@ -307,7 +307,7 @@ static void PetscCxxErrorThrow() {
     str = msg->str().c_str();
   } else str = "Error detected in C PETSc";
 
-  throw PETSc::Exception(str);
+  throw std::exception(str);
 }
 #endif
 
