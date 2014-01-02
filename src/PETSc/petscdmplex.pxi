@@ -84,7 +84,7 @@ cdef extern from * nogil:
     #int DMPlexCopyLabels(PetscDM,PetscDM)
     #int DMPlexCreateDoublet(MPI_Comm,PetscInt,PetscBool,PetscBool,PetscBool,PetscReal,PetscDM*)
     #int DMPlexCreateCubeBoundary(PetscDM,const PetscReal [],const PetscReal [],const PetscInt [])
-    #int DMPlexCreateBoxMesh(MPI_Comm,PetscInt,PetscBool,PetscDM*)
+    int DMPlexCreateBoxMesh(MPI_Comm,PetscInt,PetscBool,PetscDM*)
     #int DMPlexCreateHexBoxMesh(MPI_Comm,PetscInt,const PetscInt[],PetscDM*)
     #int DMPlexCreateConeSection(PetscDM,PetscSection *)
     #int DMPlexInvertCell(PetscInt,PetscInt,int [])

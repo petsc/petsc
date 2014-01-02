@@ -40,7 +40,16 @@ cdef class DMPlex(DM):
         PetscCLEAR(self.obj); self.dm = newdm
         return self
 
-    def createCohesiveSubmesh(self,hasLagrange,value):
+    def createBoxMesh(self, dim, interpolate=True, comm=None):
+        cdef PetscInt  cdim = asInt(dim)
+        cdef PetscBool interp = interpolate
+        cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscDM   newdm = NULL
+        CHKERR( DMPlexCreateBoxMesh(ccomm,cdim,interp,&newdm) )
+        PetscCLEAR(self.obj); self.dm = newdm
+        return self
+
+    def createCohesiveSubmesh(self, hasLagrange, value):
         cdef PetscBool hasL = hasLagrange
         cdef PetscInt cvalue = asInt(value)
         cdef DM subdm = DMPlex()
