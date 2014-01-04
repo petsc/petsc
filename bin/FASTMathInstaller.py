@@ -1291,8 +1291,15 @@ can also install additional packages that are used by the FASTMath packages."""
              if f > 0: i = i[0:f]
              args.append('--download-'+i+'=1')
 
-        reply = indexbox('Compiler to use for PETSc?\n\nC is recommended even if you plan to program in C++',title,['C','C++'])
-        if reply == 1: args.append( '--with-clanguage=c++')
+        result = buttonbox('Compiler to use for compiling PETSc?\n\nC is recommended even if you plan to program in C++',title,choices = ['C','C++'])
+        args.append( '--with-clanguage='+result)
+
+        reply = indexbox('Use complex numbers; select only if needed',title,['Yes','No'])
+        if reply == 1: args.append( '--with-scalar-type=complex')
+        else: args.append( '--with-scalar-type=real')
+
+        result = buttonbox('Precision of floating point numbers',title,choices = ['double','__float128','single'])
+        args.append( '--with-precision='+result)
 
         reply = ynbox('Compile libraries so they may be used from Fortran?',title)
         if not reply: args.append( '--with-fc=0')
@@ -1335,12 +1342,13 @@ can also install additional packages that are used by the FASTMath packages."""
            if not reply: sys.exit()
            args.append('--with-mpi-dir='+reply)
 
-        reply = ynbox('Do MPI jobs need to be submitted with a batch system?',title)
-        if reply: args.append('--with-batch=1')
+        if reply == 4:
+          reply = ynbox('Do MPI jobs need to be submitted with a batch system?',title)
+          if reply: args.append('--with-batch=1')
 
         arch = ''
         while not arch:
-           arch = enterbox("Name of this configuration",title)
+           arch = enterbox("Name of this configuration",title,"arch-")
         args.append('-PETSC_ARCH='+arch)
 
         reply = diropenbox("Location of PETSc directory or where to download and compile packages","Location of PETSc directory or where to download and compile andpackages")
@@ -1349,23 +1357,45 @@ can also install additional packages that are used by the FASTMath packages."""
         import os.path
         import sys
 
-        if not reply.endswith('petsc'):  petscroot = os.path.join(reply,'petsc')
-        else: petscroot = reply
-        if not os.path.isfile(os.path.join(petscroot,'include','petscsys.h')):
-          y = ynbox('Could not locate PETSc directory, should I download it?',title)
-          if not y: sys.exit()
-          # download PETSc
-          import urllib
-          try:
-            urllib.urlretrieve('http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.4.3.tar.gz', os.path.join(reply,'petsc.tar.gz'))
-          except Exception, e:
-            raise RuntimeError('Unable to download PETSc')
-          import commands
-          try:
-            commands.getoutput('cd '+reply+'; gunzip petsc.tar.gz ; tar xf petsc.tar')
-          except RuntimeError, e:
-            raise RuntimeError('Error unzipping petsc.tar.gz'+str(e))
-          os.unlink(os.path.join(reply, 'petsc.tar'))
+        petscroot = None
+        if os.path.isfile(os.path.join(reply,'include','petscsys.h')):
+          petscroot = os.path.join(reply,'petsc')
+        else:
+          ldir = os.listdir(reply)
+          for i in ldir:
+            if i.startswith('petsc') and os.path.isfile(os.path.join(reply,i,'include','petscsys.h')):
+              y = ynbox('There is a subdirectory called '+os.path.join(reply,i)+'.Do you wish to use that?',title)
+              if y: 
+                petscroot = os.path.join(reply,i)
+                break
+          if not petscroot:
+            y = ynbox('Could not locate PETSc directory, should I download it\nand install it in the directory '+reply+'?',title)
+            if not y: sys.exit()
+
+            result = buttonbox('Which version of PETSc should I download?\n\nPlease be patient after making your selection\nthis may take several minutes.'+reply,title,choices = ['Release','Development'])
+            if result == 'Release':
+              # download PETSc
+              import urllib
+              try:
+                urllib.urlretrieve('http://ftp.mcs.anl.gov/pub/petsc/petsc.tar.gz', os.path.join(reply,'petsc.tar.gz'))
+              except Exception, e:
+                raise RuntimeError('Unable to download PETSc')
+              import commands
+              try:
+                commands.getoutput('cd '+reply+'; gunzip petsc.tar.gz ; tar xf petsc.tar')
+              except RuntimeError, e:
+                raise RuntimeError('Error unzipping petsc.tar.gz'+str(e))
+              os.unlink(os.path.join(reply, 'petsc.tar'))
+            else:
+              import commands
+              try:
+                commands.getoutput('cd '+reply+'; git clone https://bitbucket.org/petsc/petsc.git')
+              except RuntimeError, e:
+                raise RuntimeError('Error trying to obtain development version of PETSc with git'+str(e))
+            ldir = os.listdir(reply)
+            for i in ldir:
+              # wrong because will pick up old petsc directories in this directory
+              if i.startswith('petsc') and os.path.isfile(os.path.join(reply,i,'include','petscsys.h')): petscroot = os.path.join(reply,i)
 
 
         args.append('--with-shared-libraries=1')
