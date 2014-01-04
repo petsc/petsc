@@ -1,6 +1,15 @@
 #!/usr/bin/env python
 """
-FASTMath software installer. This is written using the EasyGui.py python module
+FASTMath software installer.
+
+This can be run from the command line with:
+
+curl --silent https://bitbucket.org/petsc/petsc/raw/60658920ec66ea33cc584d568c1da6e3ed8d2bf9/bin/FASTMathInstaller.py | python
+
+I still cannot come up with a simple portable browser-based click to install to have this run due to people's security concerns.
+
+
+This is written using the EasyGui.py python module
 which is, for simplicity, included in this file
 
 EasyGui provides an easy-to-use interface for simple GUI interaction
@@ -1415,3 +1424,6 @@ can also install additional packages that are used by the FASTMath packages."""
         f.close()
         os.chmod(configfile,0755)
         msgbox('After hitting OK run\n\n cd '+petscroot+'\npython config-'+arch+'.py\n\nto continue the install')
+        print("Execute the following two commands and follow the directions")
+        print('cd '+petscroot)
+        print('python config-'+arch+'.py')
