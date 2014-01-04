@@ -245,8 +245,8 @@
 !      ptype = PCJACOBI
 !      call PCSetType(pc,ptype,ierr)
 !      tol = 1.e-7
-!      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL_PRECISION,
-!     &     PETSC_DEFAULT_REAL_PRECISION,PETSC_DEFAULT_INTEGER,ierr)
+!      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,
+!     &     PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
 
 !  Set user-defined monitoring routine if desired
 

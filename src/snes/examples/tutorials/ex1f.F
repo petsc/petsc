@@ -138,8 +138,8 @@
       call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,PCNONE,ierr)
       tol = 1.e-4
-      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL_PRECISION,        &
-     &                      PETSC_DEFAULT_REAL_PRECISION,i20,ierr)
+      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,                  &
+     &                      PETSC_DEFAULT_REAL,i20,ierr)
 
 !  Set SNES/KSP/KSP/PC runtime options, e.g.,
 !      -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>

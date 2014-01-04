@@ -28,8 +28,8 @@
       PetscInt  PETSC_DEFAULT_INTEGER
       parameter (PETSC_DEFAULT_INTEGER = -2)
 
-      PetscReal PETSC_DEFAULT_REAL_PRECISION
-      parameter (PETSC_DEFAULT_REAL_PRECISION=-2.0d0)
+      PetscReal PETSC_DEFAULT_REAL
+      parameter (PETSC_DEFAULT_REAL=-2.0d0)
 
       PetscEnum PETSC_FP_TRAP_OFF
       PetscEnum PETSC_FP_TRAP_ON

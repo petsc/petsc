@@ -456,7 +456,7 @@ M*/
 
    Level: beginner
 
-   Fortran Notes: You need to use PETSC_DEFAULT_INTEGER or PETSC_DEFAULT_REAL_PRECISION.
+   Fortran Notes: You need to use PETSC_DEFAULT_INTEGER or PETSC_DEFAULT_REAL.
 
 .seealso: PETSC_DECIDE, PETSC_IGNORE, PETSC_DETERMINE
 
