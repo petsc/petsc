@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-TOPS software installer. This is written using the EasyGui.py python module
+FASTMath software installer. This is written using the EasyGui.py python module
 which is, for simplicity, included in this file
 
 EasyGui provides an easy-to-use interface for simple GUI interaction
@@ -1260,24 +1260,23 @@ for someItem in myListOfStuff:
 
 if __name__ == '__main__':
         args = []
-        title = "TOPS Software Installer"
-        message1 = """SciDAC TOPS Software Installer"""
-        message2 = """The DOE Mathematics SciDAC TOPS ISIC develops software for the
-scalable solution of optimizations, eigenvalues and algebraic systems. More
-information on TOPS may be found at http://www.tops-scidac.org. \n\n
+        title = "FASTMat Software Installer"
+        message1 = """SciDAC FASTMath Software Installer"""
+        message2 = """The DOE Mathematics SciDAC FASTMath develops software for the
+scalable solution of optimizations, eigenvalues and algebraic systems.  \n\n
 The software installed is covered by a variety of licenses, please refer to
 each package's license information before redistributing it. This installer
-can also install additional packages that are used by the TOPS packages."""
+can also install additional packages that are used by the FASTMath packages."""
 
-	result = buttonbox(message=message1, title="TOPS Software Installer", choices = ["Cancel", "Continue"],fontSize = 20,message2=message2)
+	result = buttonbox(message=message1, title="FASTMath Software Installer", choices = ["Cancel", "Continue"],fontSize = 20,message2=message2)
         if result == "Cancel": sys.exit()
 
-	result = buttonbox(message='This preview version of the installer uses\nthe nightly snapshot of the development\nversion of PETSc.\n\nShould you encounter problems please send email\nto petsc-maint@mcs.anl.gov with all output\n', title="TOPS Software Installer", choices = ["Cancel", "Continue"])
+	result = buttonbox(message='Should you encounter problems please send email\nto petsc-maint@mcs.anl.gov with all output\n', title="FASTMath Software Installer", choices = ["Cancel", "Continue"])
         if result == "Cancel": sys.exit()
 
         options = []
         packages = ["hypre (parallel preconditioners)","SuperLU_dist (parallel sparse direct solver)", "SuperLU","Sundials (parallel ODE integrators)"]
-        reply = multchoicebox("Pick the optional TOPS packages to install. PETSc will \nalways be installed. \n\nNote: many of these packages are not portable\nfor all machines, hence select only the packages you truly need.",title, packages)
+        reply = multchoicebox("Pick the optional FASTMath packages to install. PETSc will \nalways be installed. \n\nNote: many of these packages are not portable\nfor all machines, hence select only the packages you truly need.",title, packages)
         for i in reply:
              i = i.lower().replace(' ','')
              f = i.find('(')
@@ -1292,12 +1291,11 @@ can also install additional packages that are used by the TOPS packages."""
              if f > 0: i = i[0:f]
              args.append('--download-'+i+'=1')
 
-        reply = indexbox('Compiler to use for PETSc?',title,['C','C++'])
+        reply = indexbox('Compiler to use for PETSc?\n\nC is recommended even if you plan to program in C++',title,['C','C++'])
         if reply == 1: args.append( '--with-clanguage=c++')
 
         reply = ynbox('Compile libraries so they may be used from Fortran?',title)
-        if reply: args.append( '--with-fortran=1')
-        else: args.append('--with-fc=0')
+        if not reply: args.append( '--with-fc=0')
 
         reply = ynbox('Compile libraries so they may be used from Python?',title)
         if reply:
@@ -1312,7 +1310,7 @@ can also install additional packages that are used by the TOPS packages."""
              if '--with-clanguage=c++' in args:
                  reply = fileopenbox("Location of C++ compiler","Location of C++ compiler")
                  args.append('--with-cxx='+reply)
-             if '--with-fortran=1' in args:
+             if not '--with-fc=0' in args:
                  reply = fileopenbox("Location of Fortran compiler","Location of Fortran compiler")
                  args.append('--with-fc='+reply)
 
@@ -1321,7 +1319,7 @@ can also install additional packages that are used by the TOPS packages."""
 
         reply = indexbox('Which version of BLAS and LAPACK do you wish to use?',title,['Have installer locate it', 'Install it',"I'll indicate its location"])
         if reply == 1:
-             if '--with-fortran=1' in args: args.append('--download-f-blas-lapack')
+             if not '--with-fc=0' in args: args.append('--download-f-blas-lapack')
              else: args.append('--download-f2cblaslapack')
         elif reply == 2:
            reply = diropenbox("Directory of BLAS and LAPACK libraries","Directory of BLAS and LAPACK libraries")
@@ -1337,16 +1335,6 @@ can also install additional packages that are used by the TOPS packages."""
            if not reply: sys.exit()
            args.append('--with-mpi-dir='+reply)
 
-        reply = buttonbox('Install TOPS Solver Components?',title,['Yes','No'],message2="You must have CCAFE and BABEL\n already installed to use them.")
-        if reply == 'Yes':
-           reply = diropenbox("Directory of Babel","Directory of Babel")
-           if not reply: sys.exit()
-           args.append('--with-babel-dir='+reply)
-           reply = diropenbox("Directory of CCafe","Directory of CCAFE")
-           if not reply: sys.exit()
-           args.append('--with-ccafe-dir='+reply)
-
-
         reply = ynbox('Do MPI jobs need to be submitted with a batch system?',title)
         if reply: args.append('--with-batch=1')
 
@@ -1355,21 +1343,21 @@ can also install additional packages that are used by the TOPS packages."""
            arch = enterbox("Name of this configuration",title)
         args.append('-PETSC_ARCH='+arch)
 
-        reply = diropenbox("Location to compile and install packages","Location to compile and install packages")
+        reply = diropenbox("Location of PETSc directory or where to download and compile packages","Location of PETSc directory or where to download and compile andpackages")
         if not reply: sys.exit()
 
         import os.path
         import sys
 
-
-        petscroot = os.path.join(reply,'petsc-dev')
+        if not reply.endswith('petsc'):  petscroot = os.path.join(reply,'petsc')
+        else: petscroot = reply
         if not os.path.isfile(os.path.join(petscroot,'include','petscsys.h')):
           y = ynbox('Could not locate PETSc directory, should I download it?',title)
           if not y: sys.exit()
           # download PETSc
           import urllib
           try:
-            urllib.urlretrieve('http://ftp.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz', os.path.join(reply,'petsc.tar.gz'))
+            urllib.urlretrieve('http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.4.3.tar.gz', os.path.join(reply,'petsc.tar.gz'))
           except Exception, e:
             raise RuntimeError('Unable to download PETSc')
           import commands
@@ -1381,7 +1369,7 @@ can also install additional packages that are used by the TOPS packages."""
 
 
         args.append('--with-shared-libraries=1')
-        args.append('--with-external-packages-dir='+reply)
+        args.append('--with-external-packages-dir='+os.path.join(petscroot,arch,'externalpackages'))
         args = multenterbox("Configure options you have selected.", title, None, args)
         if not args: sys.exit()
 
