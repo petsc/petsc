@@ -289,6 +289,32 @@ PetscErrorCode  PetscErrorMessage(int errnum,const char *text[],char **specific)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_CLANGUAGE_CXX)
+/* C++ exceptions are formally not allowed to propagate through extern "C" code. In practice, far too much software
+ * would be broken if implementations did not handle it it some common cases. However, keep in mind
+ *
+ *   Rule 62. Don't allow exceptions to propagate across module boundaries
+ *
+ * in "C++ Coding Standards" by Sutter and Alexandrescu. (This accounts for part of the ongoing C++ binary interface
+ * instability.) Having PETSc raise errors as C++ exceptions was probably misguided and should eventually be removed.
+ *
+ * Here is the problem: You have a C++ function call a PETSc function, and you would like to maintain the error message
+ * and stack information from the PETSc error. You could make everyone write exactly this code in their C++, but that
+ * seems crazy to me.
+ */
+#include <sstream>
+static void PetscCxxErrorThrow() {
+  const char *str;
+  if (eh && eh->ctx) {
+    std::ostringstream *msg;
+    msg = (std::ostringstream*) eh->ctx;
+    str = msg->str().c_str();
+  } else str = "Error detected in C PETSc";
+
+  throw std::runtime_error(str);
+}
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscError"
 /*@C
