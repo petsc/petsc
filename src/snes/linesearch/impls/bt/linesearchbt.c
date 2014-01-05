@@ -194,7 +194,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
     /* Since the full step didn't work and the step is tiny, quit */
     if (stol*xnorm > ynorm) {
       ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
-      ierr = PetscInfo2(monitor,"Aborted due to ynorm < stol*xnorm (%14.12e < %14.12e) and inadequate full step.\n",ynorm,stol*xnorm);CHKERRQ(ierr);
+      ierr = PetscInfo2(monitor,"Aborted due to ynorm < stol*xnorm (%14.12e < %14.12e) and inadequate full step.\n",(double)ynorm,(double)stol*xnorm);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
     /* Fit points with quadratic */
@@ -422,7 +422,7 @@ PetscErrorCode SNESLineSearchView_BT(SNESLineSearch linesearch, PetscViewer view
     } else if (linesearch->order == SNES_LINESEARCH_ORDER_QUADRATIC) {
       ierr = PetscViewerASCIIPrintf(viewer, "  interpolation: quadratic\n");CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer, "  alpha=%e\n", bt->alpha);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  alpha=%e\n", (double)bt->alpha);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
