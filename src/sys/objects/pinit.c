@@ -700,7 +700,6 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
         hangs without running in the debugger).  See PetscLogTraceBegin().
 .  -log_summary [filename] - Prints summary of flop and timing information to screen. If the filename is specified the
         summary is written to the file.  See PetscLogView().
-.  -log_summary_python [filename] - Prints data on of flop and timing usage to a file or screen. See PetscLogPrintSViewPython().
 .  -log_all [filename] - Logs extensive profiling information  See PetscLogDump().
 .  -log [filename] - Logs basic profiline information  See PetscLogDump().
 -  -log_mpe [filename] - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
@@ -1078,6 +1077,7 @@ PetscErrorCode  PetscFinalize(void)
 #endif
   mname[0] = 0;
 
+  ierr = PetscLogViewFromOptions();CHKERRQ(ierr);  
   ierr = PetscOptionsGetString(NULL,"-log_summary",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   if (flg1) {
     PetscViewer viewer;
@@ -1090,28 +1090,6 @@ PetscErrorCode  PetscFinalize(void)
       ierr   = PetscLogView(viewer);CHKERRQ(ierr);
     }
   }
-
-  mname[0] = 0;
-
-  ierr = PetscOptionsGetString(NULL,"-log_summary_python",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    PetscViewer viewer;
-    if (mname[0]) {
-      ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,mname,&viewer);CHKERRQ(ierr);
-      ierr = PetscLogViewPython(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    } else {
-      viewer = PETSC_VIEWER_STDOUT_WORLD;
-      ierr   = PetscLogViewPython(viewer);CHKERRQ(ierr);
-    }
-  }
-
-  ierr = PetscOptionsGetString(NULL,"-log_detailed",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    if (mname[0])  {ierr = PetscLogPrintDetailed(PETSC_COMM_WORLD,mname);CHKERRQ(ierr);}
-    else           {ierr = PetscLogPrintDetailed(PETSC_COMM_WORLD,0);CHKERRQ(ierr);}
-  }
-
   mname[0] = 0;
 
   ierr = PetscOptionsGetString(NULL,"-log_all",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
