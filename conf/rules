@@ -437,6 +437,8 @@ getautoconfargs:
           grep -v "symbol if the" | \
           grep -v "ignoring symbol version info" | \
           grep -v "warning: initializer element is not computable at load time" | \
+          grep -v "warning: ISO C90 forbids mixed declarations and code" | \
+          grep -v "warning: ISO C90 does not support ‘static’ or type qualifiers in parameter array declarators" | \
           grep -v "warning, duplicate dylib" | \
           grep -v "warning: duplicate dylib" | \
           grep -v "preempts that definition" | \
