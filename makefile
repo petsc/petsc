@@ -41,6 +41,7 @@ all: chk_makej
 	 else \
 	  ${OMAKE} shared_install PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log ;\
         fi #solaris make likes to print the whole command that gave error. So split this up into the smallest chunk below
+	@echo "Finishing at: `date`" >> ${PETSC_ARCH}/conf/make.log
 	@if test -s ${PETSC_ARCH}/conf/error.log; then exit 1; fi
 
 all-gnumake:
@@ -75,7 +76,7 @@ info: chk_makej
 	-@echo "  http://www.mcs.anl.gov/petsc/miscellaneous/mailing-lists.html"
 	-@echo " "
 	-@echo "=========================================="
-	-@echo On `date` on `hostname`
+	-@echo Starting on `hostname` at `date`
 	-@echo Machine characteristics: `uname -a`
 	-@echo "-----------------------------------------"
 	-@echo "Using PETSc directory: ${PETSC_DIR}"
