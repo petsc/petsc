@@ -1173,17 +1173,17 @@ PetscErrorCode  PetscFinalize(void)
     } else {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"There are %D unused database options. They are:\n",nopt);CHKERRQ(ierr);
     }
+  }
 #if defined(PETSC_USE_DEBUG)
-    if (nopt && !flg3 && !flg1) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! There are options you set that were not used!\n");CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! could be spelling mistake, etc!\n");CHKERRQ(ierr);
-      ierr = PetscOptionsLeft();CHKERRQ(ierr);
-    } else if (nopt && flg3) {
+  if (nopt && !flg3 && !flg1) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! There are options you set that were not used!\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! could be spelling mistake, etc!\n");CHKERRQ(ierr);
+    ierr = PetscOptionsLeft();CHKERRQ(ierr);
+  } else if (nopt && flg3) {
 #else
-    if (nopt && flg3) {
+  if (nopt && flg3) {
 #endif
-      ierr = PetscOptionsLeft();CHKERRQ(ierr);
-    }
+    ierr = PetscOptionsLeft();CHKERRQ(ierr);
   }
 
 #if defined(PETSC_HAVE_SAWS)
