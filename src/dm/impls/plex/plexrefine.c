@@ -2889,13 +2889,13 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
       ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
       ierr = DMPlexGetConeOrientation(dm, c, &ornt);CHKERRQ(ierr);
       for (r = 0; r < 3; ++r) {
-        coneNew[0] = eStartNew + (eMax - eStart)*2 + (cone[0] - fStart)*3 + GetTriSubface_Static(ornt[0], (r+2)%3);
+        coneNew[0] = eStartNew + (eMax - eStart)*2 + (cone[0] - fStart)*3 + (r+2)%3;
         orntNew[0] = 0;
-        coneNew[1] = eStartNew + (eMax - eStart)*2 + (cone[1] - fStart)*3 + GetTriSubface_Static(ornt[1], (r+2)%3);
+        coneNew[1] = eStartNew + (eMax - eStart)*2 + (cone[1] - fStart)*3 + (r+2)%3;
         orntNew[1] = 0;
-        coneNew[2] = eStartNew + (eMax - eStart)*2 + (fMax - fStart)*3 + (cMax - cStart) + (eEnd - eMax) + (cone[2+GetTriSubface_Static(ornt[0], (r+2)%3)] - fMax);
+        coneNew[2] = eStartNew + (eMax - eStart)*2 + (fMax - fStart)*3 + (cMax - cStart) + (eEnd - eMax) + (cone[2+(r+2)%3] - fMax);
         orntNew[2] = 0;
-        coneNew[3] = eStartNew + (eMax - eStart)*2 + (fMax - fStart)*3 + (cMax - cStart) + (eEnd - eMax) + (cone[2+GetTriSubface_Static(ornt[0], r)]       - fMax);
+        coneNew[3] = eStartNew + (eMax - eStart)*2 + (fMax - fStart)*3 + (cMax - cStart) + (eEnd - eMax) + (cone[2+r]       - fMax);
         orntNew[3] = 0;
         ierr = DMPlexSetCone(rdm, newp+r, coneNew);CHKERRQ(ierr);
         ierr = DMPlexSetConeOrientation(rdm, newp+r, orntNew);CHKERRQ(ierr);
@@ -3003,7 +3003,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
               supportRef[2+intFaces++] = fStartNew + (fMax - fStart)*4 + (support[s] - cStart)*8 + fint[(c*3 + er)*2 + 1];
             }
           } else {
-            supportRef[2+intFaces++] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (fEnd - fMax)*2 + (support[s] - cMax)*3 + (GetTriSubfaceInverse_Static(ornt[c], r) + 1)%3;
+            supportRef[2+intFaces++] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (fEnd - fMax)*2 + (support[s] - cMax)*3 + (r + 1)%3;
           }
         }
         ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
@@ -3107,8 +3107,8 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
         ierr = DMPlexGetConeOrientation(dm, support[s], &cornt);CHKERRQ(ierr);
         for (c = 0; c < csize; ++c) if (ccone[c] == f) break;
         if ((c < 2) || (c >= csize)) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Hybrid face %d is not in cone of hybrid cell %d", f, support[s]);
-        supportRef[2+s*2+0] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (fEnd - fMax)*2 + (support[s] - cMax)*3 + GetTriSubfaceInverse_Static(cornt[0], c-2);
-        supportRef[2+s*2+1] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (fEnd - fMax)*2 + (support[s] - cMax)*3 + (GetTriSubfaceInverse_Static(cornt[0], c-2) + 1)%3;
+        supportRef[2+s*2+0] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (fEnd - fMax)*2 + (support[s] - cMax)*3 + c-2;
+        supportRef[2+s*2+1] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (fEnd - fMax)*2 + (support[s] - cMax)*3 + (c-1)%3;
       }
       ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
 #if 1
