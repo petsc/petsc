@@ -81,11 +81,17 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
 @*/
 PetscErrorCode  DMDAGetAO(DM da,AO *ao)
 {
-  DM_DA *dd = (DM_DA*)da->data;
+  DM_DA          *dd;
+  PetscBool      isdmda;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(ao,2);
+  ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isdmda);CHKERRQ(ierr);
+  if (!isdmda) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Requires a DMDA as input");
+  /* now we can safely dereference */
+  dd = (DM_DA*)da->data;
 
   /*
      Build the natural ordering to PETSc ordering mappings.
