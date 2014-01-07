@@ -211,6 +211,45 @@ static PetscErrorCode PCApply_Redundant(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCApplyTranspose_Redundant"
+static PetscErrorCode PCApplyTranspose_Redundant(PC pc,Vec x,Vec y)
+{
+  PC_Redundant   *red = (PC_Redundant*)pc->data;
+  PetscErrorCode ierr;
+  PetscScalar    *array;
+
+  PetscFunctionBegin;
+  if (!red->useparallelmat) {
+    ierr = KSPSolveTranspose(red->ksp,x,y);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  /* scatter x to xdup */
+  ierr = VecScatterBegin(red->scatterin,x,red->xdup,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(red->scatterin,x,red->xdup,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+  /* place xdup's local array into xsub */
+  ierr = VecGetArray(red->xdup,&array);CHKERRQ(ierr);
+  ierr = VecPlaceArray(red->xsub,(const PetscScalar*)array);CHKERRQ(ierr);
+
+  /* apply preconditioner on each processor */
+  ierr = KSPSolveTranspose(red->ksp,red->xsub,red->ysub);CHKERRQ(ierr);
+  ierr = VecResetArray(red->xsub);CHKERRQ(ierr);
+  ierr = VecRestoreArray(red->xdup,&array);CHKERRQ(ierr);
+
+  /* place ysub's local array into ydup */
+  ierr = VecGetArray(red->ysub,&array);CHKERRQ(ierr);
+  ierr = VecPlaceArray(red->ydup,(const PetscScalar*)array);CHKERRQ(ierr);
+
+  /* scatter ydup to y */
+  ierr = VecScatterBegin(red->scatterout,red->ydup,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(red->scatterout,red->ydup,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecResetArray(red->ydup);CHKERRQ(ierr);
+  ierr = VecRestoreArray(red->ysub,&array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCReset_Redundant"
 static PetscErrorCode PCReset_Redundant(PC pc)
 {
@@ -489,7 +528,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Redundant(PC pc)
   pc->data            = (void*)red;
 
   pc->ops->apply          = PCApply_Redundant;
-  pc->ops->applytranspose = 0;
+  pc->ops->applytranspose = PCApplyTranspose_Redundant;
   pc->ops->setup          = PCSetUp_Redundant;
   pc->ops->destroy        = PCDestroy_Redundant;
   pc->ops->reset          = PCReset_Redundant;
