@@ -2465,19 +2465,22 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
     for (c = cMax; c < cEnd; ++c) {
       const PetscInt  newp = cStartNew + (cMax - cStart)*8 + (c - cMax)*4;
       const PetscInt *cone, *ornt, *fornt;
-      PetscInt        coneNew[5], orntNew[5];
+      PetscInt        coneNew[5], orntNew[5], o, of;
 
       ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
       ierr = DMPlexGetConeOrientation(dm, c, &ornt);CHKERRQ(ierr);
       ierr = DMPlexGetConeOrientation(dm, cone[0], &fornt);CHKERRQ(ierr);
+      o = ornt[0] < 0 ? -1 : 1;
       for (r = 0; r < 3; ++r) {
         coneNew[0] = fStartNew + (cone[0] - fStart)*4 + GetTriSubface_Static(ornt[0], r);
         orntNew[0] = ornt[0];
         coneNew[1] = fStartNew + (cone[1] - fStart)*4 + GetTriSubface_Static(ornt[1], r);
         orntNew[1] = ornt[1];
-        coneNew[2] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (cone[2+GetTriEdge_Static(ornt[0], (r+2)%3)] - fMax)*2 + (fornt[GetTriEdge_Static(ornt[0], (r+2)%3)] < 0 ? 0 : 1);
+        of = fornt[GetTriEdge_Static(ornt[0], (r+2)%3)] < 0 ? -1 : 1;
+        coneNew[2] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (cone[2+GetTriEdge_Static(ornt[0], (r+2)%3)] - fMax)*2 + (o*of < 0 ? 0 : 1);
         orntNew[2] = 0;
-        coneNew[3] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (cone[2+GetTriEdge_Static(ornt[0], r)]       - fMax)*2 + (fornt[GetTriEdge_Static(ornt[0], r)]       < 0 ? 1 : 0);
+        of = fornt[GetTriEdge_Static(ornt[0], r)]       < 0 ? -1 : 1;
+        coneNew[3] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (cone[2+GetTriEdge_Static(ornt[0], r)]       - fMax)*2 + (o*of < 0 ? 1 : 0);
         orntNew[3] = 0;
         coneNew[4] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*8 + (fEnd - fMax)*2 + (c - cMax)*3 + GetTriSubface_Static(ornt[0], r);
         orntNew[4] = 0;
@@ -2856,13 +2859,16 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
 #endif
         for (s = 0; s < size; ++s) {
           const PetscInt *coneCell, *orntCell, *fornt;
+          PetscInt        o, of;
 
           ierr = DMPlexGetCone(dm, support[s], &coneCell);CHKERRQ(ierr);
           ierr = DMPlexGetConeOrientation(dm, support[s], &orntCell);CHKERRQ(ierr);
+          o = orntCell[0] < 0 ? -1 : 1;
           for (c = 2; c < 5; ++c) if (coneCell[c] == f) break;
           if (c >= 5) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not find face %d in cone of cell %d", f, support[s]);
           ierr = DMPlexGetConeOrientation(dm, coneCell[0], &fornt);CHKERRQ(ierr);
-          supportNew[s] = cStartNew + (cMax - cStart)*8 + (support[s] - cMax)*4 + (GetTriEdgeInverse_Static(orntCell[0], c-2) + (fornt[c-2] < 0 ? 1-r : r))%3;
+          of = fornt[c-2] < 0 ? -1 : 1;
+          supportNew[s] = cStartNew + (cMax - cStart)*8 + (support[s] - cMax)*4 + (GetTriEdgeInverse_Static(orntCell[0], c-2) + (o*of < 0 ? 1-r : r))%3;
         }
         ierr = DMPlexSetSupport(rdm, newp, supportNew);CHKERRQ(ierr);
 #if 1
