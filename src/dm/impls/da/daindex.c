@@ -103,7 +103,9 @@ PetscErrorCode  DMDAGetAO(DM da,AO *ao)
 
     ierr = DMDAGetNatural_Private(da,&Nlocal,&isnatural);CHKERRQ(ierr);
     ierr = ISCreateStride(PetscObjectComm((PetscObject)da),Nlocal,dd->base,1,&ispetsc);CHKERRQ(ierr);
-    ierr = AOCreateBasicIS(isnatural,ispetsc,&dd->ao);CHKERRQ(ierr);
+    ierr = AOCreate(PetscObjectComm((PetscObject)da),&dd->ao);CHKERRQ(ierr);
+    ierr = AOSetIS(dd->ao,isnatural,ispetsc);CHKERRQ(ierr);
+    ierr = AOSetType(dd->ao,AOBASIC);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)dd->ao);CHKERRQ(ierr);
     ierr = ISDestroy(&ispetsc);CHKERRQ(ierr);
     ierr = ISDestroy(&isnatural);CHKERRQ(ierr);
