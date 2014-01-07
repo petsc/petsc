@@ -303,6 +303,7 @@ PetscErrorCode  PetscErrorMessage(int errnum,const char *text[],char **specific)
  * seems crazy to me.
  */
 #include <sstream>
+#include <stdexcept>
 static void PetscCxxErrorThrow() {
   const char *str;
   if (eh && eh->ctx) {
