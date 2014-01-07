@@ -336,11 +336,13 @@ docsetdate: chk_petscdir
         fi; \
         datestr=`git log -1 --pretty=format:%ci | cut -d ' ' -f 1`; \
         export datestr; \
+        gitver=`git describe`; \
+        export gitver; \
         find * -type d -wholename src/docs/website -prune -o -type d -wholename src/benchmarks/results -prune -o \
           -type d -wholename config/BuildSystem/docs/website -prune -o -type d -wholename include/web -prune -o \
           -type d -wholename 'arch-*' -prune -o -type d -wholename src/tops -prune -o -type d -wholename externalpackages -prune -o \
           -type f -wholename tutorials/multiphysics/tutorial.html -prune -o -type f -name \*.html \
-          -exec perl -pi -e 's^(<body.*>)^$$1\n   <div id=\"version\" align=right><b>$$ENV{petscversion} $$ENV{datestr}</b></div>^i' {} \; \
+          -exec perl -pi -e 's^(<body.*>)^$$1\n   <div id=\"version\" align=right><b>$$ENV{petscversion} $$ENV{datestr}</b></div>\n   <div id="bugreport" align=right><a href="mailto:petsc-maint\@mcs.anl.gov?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: $$ENV{petscversion} $$ENV{gitver} {} "><small>Report Typos and Errors</small></a></div>^i' {} \; \
           -exec perl -pi -e 's^(<head>)^$$1 <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/{}" />^i' {} \; ; \
         echo "Done fixing version number, date, canonical URL info"
 
