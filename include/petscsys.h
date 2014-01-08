@@ -2230,11 +2230,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
 #  define PETSC_MAX_PATH_LEN     4096
 #endif
 
-/* Special support for C++ */
-#if defined(PETSC_CLANGUAGE_CXX) && defined(__cplusplus)
-#include <petscsys.hh>
-#endif
-
 /*MC
 
     UsingFortran - Fortran can be used with PETSc in four distinct approaches

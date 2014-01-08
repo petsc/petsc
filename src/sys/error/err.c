@@ -297,7 +297,13 @@ PetscErrorCode  PetscErrorMessage(int errnum,const char *text[],char **specific)
  *
  * in "C++ Coding Standards" by Sutter and Alexandrescu. (This accounts for part of the ongoing C++ binary interface
  * instability.) Having PETSc raise errors as C++ exceptions was probably misguided and should eventually be removed.
+ *
+ * Here is the problem: You have a C++ function call a PETSc function, and you would like to maintain the error message
+ * and stack information from the PETSc error. You could make everyone write exactly this code in their C++, but that
+ * seems crazy to me.
  */
+#include <sstream>
+#include <stdexcept>
 static void PetscCxxErrorThrow() {
   const char *str;
   if (eh && eh->ctx) {
@@ -306,7 +312,7 @@ static void PetscCxxErrorThrow() {
     str = msg->str().c_str();
   } else str = "Error detected in C PETSc";
 
-  throw PETSc::Exception(str);
+  throw std::runtime_error(str);
 }
 #endif
 
