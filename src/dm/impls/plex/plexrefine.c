@@ -57,7 +57,7 @@ static PetscErrorCode CellRefinerGetSizes(CellRefiner refiner, DM dm, PetscInt d
     break;
   case 2:
     /* Hex 2D */
-    depthSize[0] = vEnd - vStart + cEnd - cStart + fEnd - fStart; /* Add a vertex on every face and cell */
+    depthSize[0] = vEnd - vStart + fEnd - fStart + cEnd - cStart; /* Add a vertex on every face and cell */
     depthSize[1] = 2*(fEnd - fStart) + 4*(cEnd - cStart);         /* Every face is split into 2 faces and 4 faces are added for each cell */
     depthSize[2] = 4*(cEnd - cStart);                             /* Every cell split into 4 cells */
     break;
@@ -223,7 +223,7 @@ static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscI
     /* All cells have 4 faces */
     for (c = cStart; c < cEnd; ++c) {
       for (r = 0; r < 4; ++r) {
-        const PetscInt newp = (c - cStart)*4 + r;
+        const PetscInt newp = cStartNew + (c - cStart)*4 + r;
 
         ierr = DMPlexSetConeSize(rdm, newp, 4);CHKERRQ(ierr);
       }
@@ -1335,10 +1335,12 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
     ierr = PetscFree(supportRef);CHKERRQ(ierr);
     break;
   case 3:
+    /* Hybrid Simplicial 2D */
     if (cMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No cell maximum specified in hybrid mesh");
     cMax = PetscMin(cEnd, cMax);
     if (fMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No face maximum specified in hybrid mesh");
     fMax = PetscMin(fEnd, fMax);
+    ierr = DMPlexGetHybridBounds(rdm, &cMaxNew, &fMaxNew, NULL, NULL);CHKERRQ(ierr);
     /* Interior cells have 3 faces */
     for (c = cStart; c < cMax; ++c) {
       const PetscInt  newp = cStartNew + (c - cStart)*4;
@@ -1357,9 +1359,9 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
       ierr       = DMPlexSetCone(rdm, newp+0, coneNew);CHKERRQ(ierr);
       ierr       = DMPlexSetConeOrientation(rdm, newp+0, orntNew);CHKERRQ(ierr);
 #if 1
-      if ((newp+0 < cStartNew) || (newp+0 >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", newp+0, cStartNew, cEndNew);
+      if ((newp+0 < cStartNew) || (newp+0 >= cMaxNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not an interior cell [%d, %d)", newp+0, cStartNew, cMaxNew);
       for (p = 0; p < 3; ++p) {
-        if ((coneNew[p] < fStartNew) || (coneNew[p] >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", coneNew[p], fStartNew, fEndNew);
+        if ((coneNew[p] < fStartNew) || (coneNew[p] >= fMaxNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not an interior face [%d, %d)", coneNew[p], fStartNew, fMaxNew);
       }
 #endif
       /* B triangle */
@@ -5240,8 +5242,8 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
           remotePointsNew[m].rank  = rrank;
         }
         for (r = 0; r < 1; ++r, ++m) {
-          localPointsNew[m]        = vStartNew     + (fEnd - fStart)                    + (p  - cStart)     + r;
-          remotePointsNew[m].index = rvStartNew[n] + rdepthSizeOld[n*(depth+1)+depth-1] + (rp - rcStart[n]) + r;
+          localPointsNew[m]        = vStartNew     + (vEnd - vStart)               + (fEnd - fStart)                    + (p  - cStart)     + r;
+          remotePointsNew[m].index = rvStartNew[n] + rdepthSizeOld[n*(depth+1)+0]  + rdepthSizeOld[n*(depth+1)+depth-1] + (rp - rcStart[n]) + r;
           remotePointsNew[m].rank  = rrank;
         }
       }
