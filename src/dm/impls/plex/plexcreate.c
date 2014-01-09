@@ -408,7 +408,7 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
   |     |     |
  16--4-17--5--18
 */
-PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[])
+PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[], PetscBool periodicX, PetscBool periodicY)
 {
   PetscInt       markerTop      = 1;
   PetscInt       markerBottom   = 1;
@@ -430,8 +430,8 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
   {
     const PetscInt numXEdges    = !rank ? edges[0]   : 0;
     const PetscInt numYEdges    = !rank ? edges[1]   : 0;
-    const PetscInt numXVertices = !rank ? edges[0]+1 : 0;
-    const PetscInt numYVertices = !rank ? edges[1]+1 : 0;
+    const PetscInt numXVertices = !rank ? (periodicX ? edges[0] : edges[0]+1) : 0;
+    const PetscInt numYVertices = !rank ? (periodicY ? edges[1] : edges[1]+1) : 0;
     const PetscInt numTotXEdges = numXEdges*numYVertices;
     const PetscInt numTotYEdges = numYEdges*numXVertices;
     const PetscInt numVertices  = numXVertices*numYVertices;
@@ -442,7 +442,7 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
     const PetscInt firstYEdge   = numFaces + numVertices + numTotXEdges;
     Vec            coordinates;
     PetscSection   coordSection;
-    PetscScalar    *coords;
+    PetscScalar   *coords;
     PetscInt       coordSize;
     PetscInt       v, vx, vy;
     PetscInt       f, fx, fy, e, ex, ey;
@@ -459,12 +459,14 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
     for (fy = 0; fy < numYEdges; fy++) {
       for (fx = 0; fx < numXEdges; fx++) {
         const PetscInt face    = fy*numXEdges + fx;
-        const PetscInt edgeL   = firstYEdge + fx*numYEdges + fy;
-        const PetscInt edgeB   = firstXEdge + fy*numXEdges + fx;
-        const PetscInt ornt[4] = {0,     0,               -2,              -2};
+        const PetscInt edgeL   = firstYEdge +   fx                 *numYEdges + fy;
+        const PetscInt edgeR   = firstYEdge + ((fx+1)%numXVertices)*numYEdges + fy;
+        const PetscInt edgeB   = firstXEdge +   fy                 *numXEdges + fx;
+        const PetscInt edgeT   = firstXEdge + ((fy+1)%numYVertices)*numXEdges + fx;
+        const PetscInt ornt[4] = {0, 0, -2, -2};
         PetscInt       cone[4];
 
-        cone[0] = edgeB; cone[1] = edgeL+numYEdges; cone[2] = edgeB+numXEdges; cone[3] = edgeL;
+        cone[0] = edgeB; cone[1] = edgeR; cone[2] = edgeT; cone[3] = edgeL;
         ierr    = DMPlexSetCone(dm, face, cone);CHKERRQ(ierr);
         ierr    = DMPlexSetConeOrientation(dm, face, ornt);CHKERRQ(ierr);
       }
@@ -472,12 +474,13 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
     /* Build Y edges*/
     for (vx = 0; vx < numXVertices; vx++) {
       for (ey = 0; ey < numYEdges; ey++) {
-        const PetscInt edge   = firstYEdge  + vx*numYEdges + ey;
-        const PetscInt vertex = firstVertex + ey*numXVertices + vx;
+        const PetscInt edge    = firstYEdge  + vx*numYEdges + ey;
+        const PetscInt vertexB = firstVertex +   ey                 *numXVertices + vx;
+        const PetscInt vertexT = firstVertex + ((ey+1)%numYVertices)*numXVertices + vx;
         PetscInt       cone[2];
 
-        cone[0] = vertex; cone[1] = vertex+numXVertices;
-        ierr    = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
+        cone[0] = vertexB; cone[1] = vertexT;
+        ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
         if (vx == numXVertices-1) {
           ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerRight);CHKERRQ(ierr);
           ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerRight);CHKERRQ(ierr);
@@ -496,12 +499,13 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
     /* Build X edges*/
     for (vy = 0; vy < numYVertices; vy++) {
       for (ex = 0; ex < numXEdges; ex++) {
-        const PetscInt edge   = firstXEdge  + vy*numXEdges + ex;
-        const PetscInt vertex = firstVertex + vy*numXVertices + ex;
+        const PetscInt edge    = firstXEdge  + vy*numXEdges + ex;
+        const PetscInt vertexL = firstVertex + vy*numXVertices + ex;
+        const PetscInt vertexR = firstVertex + vy*numXVertices + (ex+1)%numXVertices;
         PetscInt       cone[2];
 
-        cone[0] = vertex; cone[1] = vertex+1;
-        ierr    = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
+        cone[0] = vertexL; cone[1] = vertexR;
+        ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
         if (vy == numYVertices-1) {
           ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerTop);CHKERRQ(ierr);
           ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerTop);CHKERRQ(ierr);
@@ -604,7 +608,7 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interp
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateHexBoxMesh"
-PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscInt cells[], DM *dm)
+PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscInt cells[], PetscBool periodicX, PetscBool periodicY, PetscBool periodicZ, DM *dm)
 {
   PetscErrorCode ierr;
 
@@ -620,7 +624,7 @@ PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscIn
     PetscReal lower[2] = {0.0, 0.0};
     PetscReal upper[2] = {1.0, 1.0};
 
-    ierr = DMPlexCreateSquareMesh(*dm, lower, upper, cells);CHKERRQ(ierr);
+    ierr = DMPlexCreateSquareMesh(*dm, lower, upper, cells, periodicX, periodicY);CHKERRQ(ierr);
     break;
   }
 #if 0
@@ -629,7 +633,7 @@ PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscIn
     PetscReal lower[3] = {0.0, 0.0, 0.0};
     PetscReal upper[3] = {1.0, 1.0, 1.0};
 
-    ierr = DMPlexCreateCubeMesh(boundary, lower, upper, cells);CHKERRQ(ierr);
+    ierr = DMPlexCreateCubeMesh(boundary, lower, upper, cells, periodicX, periodicY, periodicZ);CHKERRQ(ierr);
     break;
   }
 #endif
