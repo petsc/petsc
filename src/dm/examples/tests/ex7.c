@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscInt         M=8,dof=1,stencil_width=1,i,start,end,P=5,N = 6,m=PETSC_DECIDE,n=PETSC_DECIDE,p=PETSC_DECIDE,pt = 0,st = 0;
   PetscErrorCode   ierr;
   PetscBool        flg = PETSC_FALSE,flg2,flg3;
-  DMDABoundaryType periodic;
+  DMBoundaryType   periodic;
   DMDAStencilType  stencil_type;
   DM               da;
   Vec              local,global,local_copy;
@@ -29,7 +29,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,"-stencil_width",&stencil_width,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-periodic",&pt,NULL);CHKERRQ(ierr);
 
-  periodic = (DMDABoundaryType) pt;
+  periodic = (DMBoundaryType) pt;
 
   ierr = PetscOptionsGetInt(NULL,"-stencil_type",&st,NULL);CHKERRQ(ierr);
 

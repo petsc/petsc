@@ -59,7 +59,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create distributed array (DMDA) to manage parallel grid and vectors
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,im11,i2,i2, &
+      call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,im11,i2,i2, &
      &     PETSC_NULL_INTEGER,da,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

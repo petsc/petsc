@@ -26,7 +26,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,"-Z",&Z,NULL);CHKERRQ(ierr);
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,
                       X,Y,Z,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetMatType(da,MATMPIAIJ);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);

@@ -232,17 +232,17 @@ PetscErrorCode FACreate(FA *infa)
   if (!((fa->p2 - fa->p1) % 2)) SETERRQ(PETSC_COMM_SELF,1,"width of region 3 must NOT be divisible by 2");
 
   if (fa->comm[1]) {
-    ierr = DMDACreate2d(fa->comm[1],DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,fa->p2,fa->r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,NULL,NULL,&da2);CHKERRQ(ierr);
+    ierr = DMDACreate2d(fa->comm[1],DM_BOUNDARY_PERIODIC,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,fa->p2,fa->r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,NULL,NULL,&da2);CHKERRQ(ierr);
     ierr = DMGetLocalVector(da2,&vl2);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(da2,&vg2);CHKERRQ(ierr);
   }
   if (fa->comm[2]) {
-    ierr = DMDACreate2d(fa->comm[2],DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,fa->p1-fa->p2,fa->r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,NULL,NULL,&da3);CHKERRQ(ierr);
+    ierr = DMDACreate2d(fa->comm[2],DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,fa->p1-fa->p2,fa->r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,NULL,NULL,&da3);CHKERRQ(ierr);
     ierr = DMGetLocalVector(da3,&vl3);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(da3,&vg3);CHKERRQ(ierr);
   }
   if (fa->comm[0]) {
-    ierr = DMDACreate2d(fa->comm[0],DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,fa->p1,fa->r1g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,NULL,NULL,&da1);CHKERRQ(ierr);
+    ierr = DMDACreate2d(fa->comm[0],DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,fa->p1,fa->r1g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,NULL,NULL,&da1);CHKERRQ(ierr);
     ierr = DMGetLocalVector(da1,&vl1);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(da1,&vg1);CHKERRQ(ierr);
   }

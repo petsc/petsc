@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscInt         stencil_width = 2;
   PetscErrorCode   ierr;
   PetscMPIInt      rank;
-  DMDABoundaryType bx           = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE,bz = DMDA_BOUNDARY_NONE;
+  DMBoundaryType   bx           = DM_BOUNDARY_NONE,by = DM_BOUNDARY_NONE,bz = DM_BOUNDARY_NONE;
   DMDAStencilType  stencil_type = DMDA_STENCIL_STAR;
   DM               da;
   Vec              global,local;

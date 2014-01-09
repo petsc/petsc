@@ -134,7 +134,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   PetscBool          isnull,useports = PETSC_FALSE;
   MPI_Comm           comm;
   Vec                xlocal,xcoor,xcoorl;
-  DMDABoundaryType   bx,by;
+  DMBoundaryType     bx,by;
   DMDAStencilType    st;
   ZoomCtx            zctx;
   PetscDrawViewPorts *ports = NULL;
@@ -166,12 +166,12 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   */
   ierr = PetscObjectQuery((PetscObject)da,"GraphicsGhosted",(PetscObject*)&xlocal);CHKERRQ(ierr);
   if (!xlocal) {
-    if (bx !=  DMDA_BOUNDARY_NONE || by !=  DMDA_BOUNDARY_NONE || s != 1 || st != DMDA_STENCIL_BOX) {
+    if (bx !=  DM_BOUNDARY_NONE || by !=  DM_BOUNDARY_NONE || s != 1 || st != DMDA_STENCIL_BOX) {
       /*
          if original da is not of stencil width one, or periodic or not a box stencil then
          create a special DMDA to handle one level of ghost points for graphics
       */
-      ierr = DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,w,1,lx,ly,&dac);CHKERRQ(ierr);
+      ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,w,1,lx,ly,&dac);CHKERRQ(ierr);
       ierr = PetscInfo(da,"Creating auxilary DMDA for managing graphics ghost points\n");CHKERRQ(ierr);
     } else {
       /* otherwise we can use the da we already have */
@@ -191,7 +191,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsGhosted",(PetscObject)xlocal);CHKERRQ(ierr);
     ierr = PetscObjectDereference((PetscObject)xlocal);CHKERRQ(ierr);
   } else {
-    if (bx !=  DMDA_BOUNDARY_NONE || by !=  DMDA_BOUNDARY_NONE || s != 1 || st != DMDA_STENCIL_BOX) {
+    if (bx !=  DM_BOUNDARY_NONE || by !=  DM_BOUNDARY_NONE || s != 1 || st != DMDA_STENCIL_BOX) {
       ierr = VecGetDM(xlocal, &dac);CHKERRQ(ierr);
     } else {
       dac = da;
@@ -231,7 +231,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = PetscObjectQuery((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject*)&xcoorl);CHKERRQ(ierr);
   if (!xcoorl) {
     /* create DMDA to get local version of graphics */
-    ierr = DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,2,1,lx,ly,&dag);CHKERRQ(ierr);
+    ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,2,1,lx,ly,&dag);CHKERRQ(ierr);
     ierr = PetscInfo(dag,"Creating auxilary DMDA for managing graphics coordinates ghost points\n");CHKERRQ(ierr);
     ierr = DMCreateLocalVector(dag,&xcoorl);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject)xcoorl);CHKERRQ(ierr);

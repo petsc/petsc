@@ -223,7 +223,7 @@ int main(int argc, char **argv)
   PetscErrorCode    ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, -11, 3, 1, NULL, &dm);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, -11, 3, 1, NULL, &dm);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(dm, 0.0, 20.0, 0.0, 0.0, 0.0, 0.0);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dm, &X);CHKERRQ(ierr);
 

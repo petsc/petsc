@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   PetscViewer      viewer;
   Vec              local,global;
   PetscScalar      value;
-  DMDABoundaryType bx           = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE,bz = DMDA_BOUNDARY_NONE;
+  DMBoundaryType   bx           = DM_BOUNDARY_NONE,by = DM_BOUNDARY_NONE,bz = DM_BOUNDARY_NONE;
   DMDAStencilType  stencil_type = DMDA_STENCIL_BOX;
   AO               ao;
   PetscBool        flg = PETSC_FALSE;
@@ -44,28 +44,28 @@ int main(int argc,char **argv)
 
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-xperiodic",&flg,NULL);CHKERRQ(ierr);
-  if (flg) bx = DMDA_BOUNDARY_PERIODIC;
+  if (flg) bx = DM_BOUNDARY_PERIODIC;
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-xghosted",&flg,NULL);CHKERRQ(ierr);
-  if (flg) bx = DMDA_BOUNDARY_GHOSTED;
+  if (flg) bx = DM_BOUNDARY_GHOSTED;
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-xnonghosted",&flg,NULL);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-yperiodic",&flg,NULL);CHKERRQ(ierr);
-  if (flg) by = DMDA_BOUNDARY_PERIODIC;
+  if (flg) by = DM_BOUNDARY_PERIODIC;
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-yghosted",&flg,NULL);CHKERRQ(ierr);
-  if (flg) by = DMDA_BOUNDARY_GHOSTED;
+  if (flg) by = DM_BOUNDARY_GHOSTED;
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-ynonghosted",&flg,NULL);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-zperiodic",&flg,NULL);CHKERRQ(ierr);
-  if (flg) bz = DMDA_BOUNDARY_PERIODIC;
+  if (flg) bz = DM_BOUNDARY_PERIODIC;
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-zghosted",&flg,NULL);CHKERRQ(ierr);
-  if (flg) bz = DMDA_BOUNDARY_GHOSTED;
+  if (flg) bz = DM_BOUNDARY_GHOSTED;
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-znonghosted",&flg,NULL);CHKERRQ(ierr);
 

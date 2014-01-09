@@ -129,7 +129,7 @@
       Ny = PETSC_DECIDE
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
-      call DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,      &
+      call DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,      &
      &     DMDA_STENCIL_STAR,mx,my,Nx,Ny,one,one,                        &
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
 

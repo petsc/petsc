@@ -39,8 +39,8 @@ typedef struct {
   PetscScalar disper_coe; /* Dispersion coefficient */
   DM          da;
   PetscInt    st_width; /* Stencil width */
-  DMDABoundaryType bx; /* x boundary type */
-  DMDABoundaryType by; /* y boundary type */
+  DMBoundaryType bx; /* x boundary type */
+  DMBoundaryType by; /* y boundary type */
   PetscBool        nonoiseinitial;
 } AppCtx;
 
@@ -391,8 +391,8 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   user->rho    = 0.0;
   user->xmin   = -PETSC_PI;
   user->xmax   =  PETSC_PI;
-  user->bx     = DMDA_BOUNDARY_PERIODIC;
-  user->by     = DMDA_BOUNDARY_MIRROR;
+  user->bx     = DM_BOUNDARY_PERIODIC;
+  user->by     = DM_BOUNDARY_MIRROR;
   user->nonoiseinitial = PETSC_FALSE;
 
   /*
@@ -422,8 +422,8 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   ierr = PetscOptionsGetScalar(NULL,"-ymin",&user->ymin,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(NULL,"-ymax",&user->ymax,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-stencil_width",&user->st_width,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetEnum(NULL,"-bx",DMDABoundaryTypes,(PetscEnum*)&user->bx,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetEnum(NULL,"-by",DMDABoundaryTypes,(PetscEnum*)&user->by,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum(NULL,"-bx",DMBoundaryTypes,(PetscEnum*)&user->bx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum(NULL,"-by",DMBoundaryTypes,(PetscEnum*)&user->by,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-nonoiseinitial",&user->nonoiseinitial,&flg);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

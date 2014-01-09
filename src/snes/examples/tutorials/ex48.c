@@ -596,7 +596,7 @@ static PetscErrorCode THISetUpDM(THI thi,DM dm)
   ierr  = DMGetRefineLevel(dm,&refinelevel);CHKERRQ(ierr);
   ierr  = DMGetCoarsenLevel(dm,&coarsenlevel);CHKERRQ(ierr);
   level = refinelevel - coarsenlevel;
-  ierr  = DMDACreate2d(PetscObjectComm((PetscObject)thi),DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,st,My,Mx,my,mx,sizeof(PrmNode)/sizeof(PetscScalar),s,0,0,&da2prm);CHKERRQ(ierr);
+  ierr  = DMDACreate2d(PetscObjectComm((PetscObject)thi),DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,st,My,Mx,my,mx,sizeof(PrmNode)/sizeof(PetscScalar),s,0,0,&da2prm);CHKERRQ(ierr);
   ierr  = DMCreateLocalVector(da2prm,&X);CHKERRQ(ierr);
   {
     PetscReal Lx = thi->Lx / thi->units->meter,Ly = thi->Ly / thi->units->meter,Lz = thi->Lz / thi->units->meter;
@@ -1312,7 +1312,7 @@ static PetscErrorCode DMRefineHierarchy_THI(DM dac0,PetscInt nlevels,DM hierarch
   if (dim != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"This function can only refine 2D DMDAs");
 
   /* Creates a 3D DMDA with the same map-plane layout as the 2D one, with contiguous columns */
-  ierr = DMDACreate3d(PetscObjectComm((PetscObject)dac),DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,st,thi->zlevels,N,M,1,n,m,dof,s,NULL,NULL,NULL,&daf);CHKERRQ(ierr);
+  ierr = DMDACreate3d(PetscObjectComm((PetscObject)dac),DM_BOUNDARY_NONE,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,st,thi->zlevels,N,M,1,n,m,dof,s,NULL,NULL,NULL,&daf);CHKERRQ(ierr);
 
   daf->ops->creatematrix        = dac->ops->creatematrix;
   daf->ops->createinterpolation = dac->ops->createinterpolation;
@@ -1529,14 +1529,14 @@ int main(int argc,char *argv[])
     }
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     if (thi->coarse2d) {
-      ierr = DMDACreate2d(comm,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,-N,-M,PETSC_DETERMINE,PETSC_DETERMINE,sizeof(Node)/sizeof(PetscScalar),1,0,0,&da);CHKERRQ(ierr);
+      ierr = DMDACreate2d(comm,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,-N,-M,PETSC_DETERMINE,PETSC_DETERMINE,sizeof(Node)/sizeof(PetscScalar),1,0,0,&da);CHKERRQ(ierr);
 
       da->ops->refinehierarchy     = DMRefineHierarchy_THI;
       da->ops->createinterpolation = DMCreateInterpolation_DA_THI;
 
       ierr = PetscObjectCompose((PetscObject)da,"THI",(PetscObject)thi);CHKERRQ(ierr);
     } else {
-      ierr = DMDACreate3d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC, DMDA_STENCIL_BOX,-P,-N,-M,1,PETSC_DETERMINE,PETSC_DETERMINE,sizeof(Node)/sizeof(PetscScalar),1,0,0,0,&da);CHKERRQ(ierr);
+      ierr = DMDACreate3d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC, DMDA_STENCIL_BOX,-P,-N,-M,1,PETSC_DETERMINE,PETSC_DETERMINE,sizeof(Node)/sizeof(PetscScalar),1,0,0,0,&da);CHKERRQ(ierr);
     }
     ierr = DMDASetFieldName(da,0,"x-velocity");CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,1,"y-velocity");CHKERRQ(ierr);

@@ -105,7 +105,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_MIRROR,-8,dof,1,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_MIRROR,-8,dof,1,NULL,&da);CHKERRQ(ierr);
 
   /* The only spatial coupling in the Jacobian (diffusion) is for the first 5 He, the first V, and the first I.
      The ofill (thought of as a dof by dof 2d (row-oriented) array represents the nonzero coupling between degrees
@@ -788,7 +788,7 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(da,&lx,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,PETSC_DETERMINE,1,2,1,lx,NULL,&ctx->da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,PETSC_DETERMINE,1,2,1,lx,NULL,&ctx->da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(ctx->da,0,"He");CHKERRQ(ierr);
   ierr = DMDASetFieldName(ctx->da,1,"V");CHKERRQ(ierr);
   ierr = DMDASetCoordinateName(ctx->da,0,"X coordinate direction");CHKERRQ(ierr);

@@ -408,7 +408,7 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
   |     |     |
  16--4-17--5--18
 */
-PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[], PetscBool periodicX, PetscBool periodicY)
+PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[], DMBoundaryType bdX, DMBoundaryType bdY)
 {
   PetscInt       markerTop      = 1;
   PetscInt       markerBottom   = 1;
@@ -430,8 +430,8 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
   {
     const PetscInt numXEdges    = !rank ? edges[0]   : 0;
     const PetscInt numYEdges    = !rank ? edges[1]   : 0;
-    const PetscInt numXVertices = !rank ? (periodicX ? edges[0] : edges[0]+1) : 0;
-    const PetscInt numYVertices = !rank ? (periodicY ? edges[1] : edges[1]+1) : 0;
+    const PetscInt numXVertices = !rank ? (bdX == DM_BOUNDARY_PERIODIC ? edges[0] : edges[0]+1) : 0;
+    const PetscInt numYVertices = !rank ? (bdY == DM_BOUNDARY_PERIODIC ? edges[1] : edges[1]+1) : 0;
     const PetscInt numTotXEdges = numXEdges*numYVertices;
     const PetscInt numTotYEdges = numYEdges*numXVertices;
     const PetscInt numVertices  = numXVertices*numYVertices;
@@ -608,7 +608,7 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interp
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateHexBoxMesh"
-PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscInt cells[], PetscBool periodicX, PetscBool periodicY, PetscBool periodicZ, DM *dm)
+PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscInt cells[], DMBoundaryType periodicX, DMBoundaryType periodicY, DMBoundaryType periodicZ, DM *dm)
 {
   PetscErrorCode ierr;
 

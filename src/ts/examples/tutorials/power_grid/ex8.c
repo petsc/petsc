@@ -19,7 +19,7 @@ static char help[] = "Time-dependent PDE in 2d for calculating joint PDF. \n";
 #include <petscdmda.h>
 #include <petscts.h>
 
-static const char *const BoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","DMDABoundaryType","DMDA_BOUNDARY_",0};
+static const char *const BoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","DMBoundaryType","DM_BOUNDARY_",0};
 
 /*
    User-defined data structures and routines
@@ -46,8 +46,8 @@ typedef struct {
   PetscScalar disper_coe; /* Dispersion coefficient */
   DM          da;
   PetscInt    st_width; /* Stencil width */
-  DMDABoundaryType bx; /* x boundary type */
-  DMDABoundaryType by; /* y boundary type */
+  DMBoundaryType bx; /* x boundary type */
+  DMBoundaryType by; /* y boundary type */
   PetscReal        tf,tcl; /* Fault incidence and clearing times */
 } AppCtx;
 
@@ -369,8 +369,8 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   user->rho    = 0.0;
   user->xmin   = -PETSC_PI;
   user->xmax   = PETSC_PI;
-  user->bx     = DMDA_BOUNDARY_PERIODIC;
-  user->by     = DMDA_BOUNDARY_GHOSTED;
+  user->bx     = DM_BOUNDARY_PERIODIC;
+  user->by     = DM_BOUNDARY_GHOSTED;
   user->tf = user->tcl = -1;
   user->ymin   = -2.0;
   user->ymax   = 2.0;

@@ -46,7 +46,7 @@ int main(int Argc,char **Args)
   rho *= 1./(2.*h);
 
   /* Geometry info */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC, DMDA_STENCIL_STAR, n, n,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC, DMDA_STENCIL_STAR, n, n,
                       PETSC_DECIDE, PETSC_DECIDE, 2 /* this is the # of dof's */,
                       1, NULL, NULL, &da);CHKERRQ(ierr);
 

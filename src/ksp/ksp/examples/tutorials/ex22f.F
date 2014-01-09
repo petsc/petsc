@@ -39,8 +39,8 @@
       i3 = -3
       i1 = 1
       call KSPCreate(MPI_COMM_WORLD,ksp,ierr)
-      call DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,            &
-     &    DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,                               &
+      call DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,            &
+     &    DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,                               &
      &    DMDA_STENCIL_STAR,i3,i3,i3,PETSC_DECIDE,PETSC_DECIDE,                        &
      &    PETSC_DECIDE,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                        &
      &                PETSC_NULL_INTEGER,da,ierr)

@@ -28,9 +28,9 @@ int main(int argc,char **argv)
 
   /* Set up the array */
   if (dim == 2) {
-    ierr = DMDACreate2d(comm_c,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,M,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,&da_c);CHKERRQ(ierr);
+    ierr = DMDACreate2d(comm_c,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,M,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,&da_c);CHKERRQ(ierr);
     M    = ratio*(M-1) + 1;
-    ierr = DMDACreate2d(comm_f,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,M,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,&da_f);CHKERRQ(ierr);
+    ierr = DMDACreate2d(comm_f,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,M,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,&da_f);CHKERRQ(ierr);
   } 
 
   ierr = DMCreateGlobalVector(da_c,&v_c);CHKERRQ(ierr);
