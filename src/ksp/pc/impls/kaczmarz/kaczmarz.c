@@ -70,7 +70,7 @@ static PetscErrorCode PCApply_Kaczmarz(PC pc,Vec x,Vec y)
       if (anrm > 0.) {
         for (j=0;j<ncols;j++) {
           if (cols[j] >= ys && cols[j] < ye) {
-            yarray[cols[j]-ys] -= vals[j]*lambda*r/anrm;
+            yarray[cols[j]-ys] += vals[j]*lambda*r/anrm;
           }
         }
       }
