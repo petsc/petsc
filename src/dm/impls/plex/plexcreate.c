@@ -430,8 +430,8 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
   {
     const PetscInt numXEdges    = !rank ? edges[0]   : 0;
     const PetscInt numYEdges    = !rank ? edges[1]   : 0;
-    const PetscInt numXVertices = !rank ? (bdX == DM_BOUNDARY_PERIODIC ? edges[0] : edges[0]+1) : 0;
-    const PetscInt numYVertices = !rank ? (bdY == DM_BOUNDARY_PERIODIC ? edges[1] : edges[1]+1) : 0;
+    const PetscInt numXVertices = !rank ? (bdX == DM_BOUNDARY_PERIODIC || bdX == DM_BOUNDARY_TWIST ? edges[0] : edges[0]+1) : 0;
+    const PetscInt numYVertices = !rank ? (bdY == DM_BOUNDARY_PERIODIC || bdY == DM_BOUNDARY_TWIST ? edges[1] : edges[1]+1) : 0;
     const PetscInt numTotXEdges = numXEdges*numYVertices;
     const PetscInt numTotYEdges = numYEdges*numXVertices;
     const PetscInt numVertices  = numXVertices*numYVertices;
@@ -474,9 +474,10 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
     /* Build Y edges*/
     for (vx = 0; vx < numXVertices; vx++) {
       for (ey = 0; ey < numYEdges; ey++) {
+        const PetscInt nextv   = (bdY == DM_BOUNDARY_TWIST && ey == numYEdges-1) ? (numXVertices-vx-1) : ((ey+1)%numYVertices)*numXVertices + vx;
         const PetscInt edge    = firstYEdge  + vx*numYEdges + ey;
-        const PetscInt vertexB = firstVertex +   ey                 *numXVertices + vx;
-        const PetscInt vertexT = firstVertex + ((ey+1)%numYVertices)*numXVertices + vx;
+        const PetscInt vertexB = firstVertex + ey*numXVertices + vx;
+        const PetscInt vertexT = firstVertex + nextv;
         PetscInt       cone[2];
 
         cone[0] = vertexB; cone[1] = vertexT;
@@ -499,9 +500,10 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
     /* Build X edges*/
     for (vy = 0; vy < numYVertices; vy++) {
       for (ex = 0; ex < numXEdges; ex++) {
+        const PetscInt nextv   = (bdX == DM_BOUNDARY_TWIST && ex == numXEdges-1) ? (numYVertices-vy-1)*numXVertices : vy*numXVertices + (ex+1)%numXVertices;
         const PetscInt edge    = firstXEdge  + vy*numXEdges + ex;
         const PetscInt vertexL = firstVertex + vy*numXVertices + ex;
-        const PetscInt vertexR = firstVertex + vy*numXVertices + (ex+1)%numXVertices;
+        const PetscInt vertexR = firstVertex + nextv;
         PetscInt       cone[2];
 
         cone[0] = vertexL; cone[1] = vertexR;
