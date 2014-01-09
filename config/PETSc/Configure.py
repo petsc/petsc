@@ -89,7 +89,7 @@ class Configure(config.base.Configure):
     self.mpi.headerPrefix        = self.headerPrefix
     headersC = map(lambda name: name+'.h', ['setjmp','dos', 'endian', 'fcntl', 'float', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
                                             'unistd', 'sys/sysinfo', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
-                                            'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib','memory',
+                                            'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
                                             'WindowsX', 'cxxabi','float','ieeefp','stdint','sched','pthread','mathimf'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname',
