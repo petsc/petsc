@@ -18,7 +18,7 @@ class Configure(config.base.Configure):
       self.isClone = 1
       if os.path.exists(os.path.join(self.petscdir.dir, '.git')):
         if hasattr(self.sourceControl,'git'):
-          self.addDefine('VERSION_GIT','"'+os.popen("cd "+self.petscdir.dir+" && "+self.sourceControl.git+" log -1 --pretty=format:%H").read()+'"')
+          self.addDefine('VERSION_GIT','"'+os.popen("cd "+self.petscdir.dir+" && "+self.sourceControl.git+" describe").read().strip()+'"')
           self.addDefine('VERSION_DATE_GIT','"'+os.popen("cd "+self.petscdir.dir+" && "+self.sourceControl.git+" log -1 --pretty=format:%ci").read()+'"')
         else:
           self.logPrintBox('\n*****WARNING: PETSC_DIR appears to be a Git clone - but git is not found in PATH********\n')

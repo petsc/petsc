@@ -180,6 +180,13 @@ def move_configure_log(framework):
       if os.path.isfile(new_bkp): os.symlink(new_bkp,curr_bkp)
   return
 
+def print_final_timestamp(framework):
+  import time
+  framework.log.write(('='*80)+'\n')
+  framework.log.write('Finishing Configure Run at '+time.ctime(time.time())+'\n')
+  framework.log.write(('='*80)+'\n')
+  return
+
 def petsc_configure(configure_options):
   try:
     petscdir = os.environ['PETSC_DIR']
@@ -268,6 +275,7 @@ def petsc_configure(configure_options):
     framework.printSummary()
     framework.argDB.save(force = True)
     framework.logClear()
+    print_final_timestamp(framework)
     framework.closeLog()
     try:
       move_configure_log(framework)
@@ -337,6 +345,7 @@ def petsc_configure(configure_options):
       try:
         framework.log.write(msg+se)
         traceback.print_tb(sys.exc_info()[2], file = framework.log)
+        print_final_timestamp(framework)
         if hasattr(framework,'log'): framework.log.close()
         move_configure_log(framework)
       except:

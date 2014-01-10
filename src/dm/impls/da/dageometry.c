@@ -92,6 +92,132 @@ PETSC_STATIC_INLINE PetscErrorCode RestorePointArray_Private(DM dm,PetscInt *rn,
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMDAGetTransitiveClosure"
+PetscErrorCode DMDAGetTransitiveClosure(DM dm, PetscInt p, PetscBool useClosure, PetscInt *closureSize, PetscInt **closure)
+{
+  DM_DA         *da = (DM_DA *) dm->data;
+  PetscInt       dim = da->dim;
+  PetscInt       nVx, nVy, nVz, nxF, nXF, nyF, nYF, nzF, nZF;
+  PetscInt       pStart, pEnd, cStart, cEnd, vStart, vEnd, fStart, fEnd, xfStart, xfEnd, yfStart;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!useClosure) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Star operation is not yet supported");
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMDAGetHeightStratum(dm, -1,  &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = DMDAGetHeightStratum(dm,  0,  &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMDAGetHeightStratum(dm,  1,  &fStart, &fEnd);CHKERRQ(ierr);
+  ierr = DMDAGetHeightStratum(dm, dim, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMDAGetNumVertices(dm, &nVx, &nVy, &nVz, NULL);CHKERRQ(ierr);
+  ierr = DMDAGetNumFaces(dm, &nxF, &nXF, &nyF, &nYF, &nzF, &nZF);CHKERRQ(ierr);
+  xfStart = fStart; xfEnd = xfStart+nXF;
+  yfStart = xfEnd;
+  if ((p < pStart) || (p >= pEnd)) SETERRQ3(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid point %d should be in [%d, %d)", p, pStart, pEnd);
+  if ((p >= cStart) || (p < cEnd)) {
+    /* Cell */
+    if (dim == 1) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented");
+    else if (dim == 2) {
+      /* 4 faces, 4 vertices
+         Bottom-left vertex follows same order as cells
+         Bottom y-face same order as cells
+         Left x-face follows same order as cells
+         We number the quad:
+
+           8--3--7
+           |     |
+           4  0  2
+           |     |
+           5--1--6
+      */
+      PetscInt c  = p - cStart, cx = c % (nVx-1), cy = c / (nVx-1);
+      PetscInt v  = cy*nVx + cx +  vStart;
+      PetscInt xf = cy*nxF + cx + xfStart;
+      PetscInt yf = c + yfStart;
+
+      if (closureSize) {PetscValidPointer(closureSize, 4); *closureSize = 9;}
+      if (!(*closure)) {ierr = DMGetWorkArray(dm, *closureSize, PETSC_INT, closure);CHKERRQ(ierr);}
+      (*closure)[0] = p; (*closure)[1] = yf; (*closure)[2] = xf+1; (*closure)[3] = yf+nyF; (*closure)[4] = xf+0; (*closure)[5] = v+0; (*closure)[6]= v+1; (*closure)[7] = v+nVx+1; (*closure)[8] = v+nVx+0;
+    } else {
+      /* 6 faces, 12 edges, 8 vertices
+         Bottom-left vertex follows same order as cells
+         Bottom y-face same order as cells
+         Left x-face follows same order as cells
+         We number the quad:
+
+           8--3--7
+           |     |
+           4  0  2
+           |     |
+           5--1--6
+      */
+#if 0
+      PetscInt c  = p - cStart, cx = c % (nVx-1), cy = c / (nVx-1), cz = c / ((nVx-1)*(nVy-1));
+      PetscInt v  = cy*nVx + cx +  vStart;
+      PetscInt xf = cy*nxF + cx + xfStart;
+      PetscInt yf = c + yfStart;
+
+      if (closureSize) {PetscValidPointer(closureSize, 4); *closureSize = 26;}
+      if (!(*closure)) {ierr = DMGetWorkArray(dm, *closureSize, PETSC_INT, closure);CHKERRQ(ierr);}
+#endif
+      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented");
+    }
+  } else if ((p >= vStart) || (p < vEnd)) {
+    /* Vertex */
+    if (closureSize) {PetscValidPointer(closureSize, 4); *closureSize = 1;}
+    if (!(*closure)) {ierr = DMGetWorkArray(dm, *closureSize, PETSC_INT, closure);CHKERRQ(ierr);}
+    (*closure)[0] = p;
+  } else if ((p >= fStart) || (p < fStart + nXF)) {
+    /* X Face */
+    if (dim == 1) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "There are no faces in 1D");
+    else if (dim == 2) {
+      /* 2 vertices: The bottom vertex has the same numbering as the face */
+      PetscInt f = p - xfStart;
+
+      if (closureSize) {PetscValidPointer(closureSize, 4); *closureSize = 3;}
+      if (!(*closure)) {ierr = DMGetWorkArray(dm, *closureSize, PETSC_INT, closure);CHKERRQ(ierr);}
+      (*closure)[0] = p; (*closure)[1] = f; (*closure)[2] = f+nVx;
+    } else if (dim == 3) {
+      /* 4 vertices */
+      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented");
+    }
+  } else if ((p >= fStart + nXF) || (p < fStart + nXF + nYF)) {
+    /* Y Face */
+    if (dim == 1) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "There are no faces in 1D");
+    else if (dim == 2) {
+      /* 2 vertices: The left vertex has the same numbering as the face */
+      PetscInt f = p - yfStart;
+
+      if (closureSize) {PetscValidPointer(closureSize, 4); *closureSize = 3;}
+      if (!(*closure)) {ierr = DMGetWorkArray(dm, *closureSize, PETSC_INT, closure);CHKERRQ(ierr);}
+      (*closure)[0] = p; (*closure)[1] = f; (*closure)[2]= f+1;
+    } else if (dim == 3) {
+      /* 4 vertices */
+      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented");
+    }
+  } else {
+    /* Z Face */
+    if (dim == 1) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "There are no faces in 1D");
+    else if (dim == 2) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "There are no z-faces in 2D");
+    else if (dim == 3) {
+      /* 4 vertices */
+      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented");
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDARestoreTransitiveClosure"
+PetscErrorCode DMDARestoreTransitiveClosure(DM dm, PetscInt p, PetscBool useClosure, PetscInt *closureSize, PetscInt **closure)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, closure);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetClosure"
 PetscErrorCode DMDAGetClosure(DM dm, PetscSection section, PetscInt p,PetscInt *n,const PetscInt **closure)
 {

@@ -230,7 +230,8 @@ PetscErrorCode ExactSolution(DM packer,Vec U)
   ierr = DMCompositeGetEntries(packer,&m,&da);CHKERRQ(ierr);
 
   ierr = PFCreate(PETSC_COMM_WORLD,1,2,&pf);CHKERRQ(ierr);
-  ierr = PFSetType(pf,PFQUICK,(void*)u_solution);CHKERRQ(ierr);
+  /* The cast through PETSC_UINTPTR_T is so that compilers will warn about casting to void * from void(*)(void) */
+  ierr = PFSetType(pf,PFQUICK,(void*)(PETSC_UINTPTR_T)u_solution);CHKERRQ(ierr);
   ierr = DMGetCoordinates(da,&x);CHKERRQ(ierr);
   if (!x) {
     ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
@@ -277,7 +278,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
   ierr = VecAXPY(Uexact,-1.0,U);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(packer,Uexact,&dw,&u_lambda);CHKERRQ(ierr);
   ierr = VecStrideNorm(u_lambda,0,NORM_2,&norm);CHKERRQ(ierr);
-  norm = norm/sqrt(N-1.);
+  norm = norm/PetscSqrtReal((PetscReal)N-1.);
   if (dw) ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G Error at x = 0 %G\n",norm,PetscRealPart(dw[0]));CHKERRQ(ierr);
   ierr = VecView(u_lambda,user->fu_lambda_viewer);
   ierr = DMCompositeRestoreAccess(packer,Uexact,&dw,&u_lambda);CHKERRQ(ierr);

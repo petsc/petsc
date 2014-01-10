@@ -1272,6 +1272,7 @@ PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
 
    Input Parameter:
 +  comm - the communicator, should be PETSC_COMM_SELF
+.  bs - the block size
 .  n - the vector length
 -  array - memory where the vector elements are to be stored.
 

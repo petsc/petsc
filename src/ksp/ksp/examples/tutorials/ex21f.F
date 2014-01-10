@@ -46,7 +46,7 @@
       PC               pc
       KSP              ksp
       PetscScalar      v,one,neg_one
-      double precision norm,tol
+      PetscReal norm,tol
       PetscInt i,j,II,JJ,Istart
       PetscInt Iend,m,n,its,ione
       PetscMPIInt rank
@@ -176,8 +176,8 @@
 
       call KSPGetPC(ksp,pc,ierr)
       tol = 1.e-7
-      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,     &
-     &     PETSC_DEFAULT_DOUBLE_PRECISION,PETSC_DEFAULT_INTEGER,ierr)
+      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,                           &
+     &     PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
 
 !
 !  Set a user-defined shell preconditioner

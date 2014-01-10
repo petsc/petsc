@@ -1497,7 +1497,7 @@ PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceApply"
-PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscCellGeometry geom, PetscInt numComp, void (*func)(const PetscReal [], PetscScalar *), PetscScalar *value)
+PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscCellGeometry geom, PetscInt numComp, void (*func)(const PetscReal [], PetscScalar *, void *), void *ctx, PetscScalar *value)
 {
   DM               dm;
   PetscQuadrature  quad;
@@ -1523,7 +1523,7 @@ PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscCellGeome
         x[d] += J[d*dim+d2]*(quad.points[q*dim+d2] + 1.0);
       }
     }
-    (*func)(x, val);
+    (*func)(x, val, ctx);
     for (c = 0; c < numComp; ++c) {
       value[c] += val[c]*quad.weights[q];
     }
@@ -1548,8 +1548,6 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDualSpaceGetDimension(sp, &pdim);CHKERRQ(ierr);
-  ierr = PetscMalloc1(pdim, &sp->functional);CHKERRQ(ierr);
   /* Classify element type */
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
@@ -1566,7 +1564,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support simplices and tensor product cells");
   lag->simplex = simplex;
   ierr = PetscDualSpaceGetDimension(sp, &pdim);CHKERRQ(ierr);
-  ierr = PetscMalloc(pdim * sizeof(PetscQuadrature), &sp->functional);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pdim, &sp->functional);CHKERRQ(ierr);
   if (!dim) {
     sp->functional[f].numPoints = 1;
     ierr = PetscMalloc1(sp->functional[f].numPoints, &qpoints);CHKERRQ(ierr);
@@ -3846,6 +3844,8 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   PetscInt        op            = ocl->op;
   PetscBool       useField      = PETSC_FALSE;
   PetscBool       useFieldDer   = PETSC_TRUE;
+  PetscBool       useFieldAux   = useAux;
+  PetscBool       useFieldDerAux= PETSC_FALSE;
   PetscBool       useF0         = PETSC_TRUE;
   PetscBool       useF1         = PETSC_TRUE;
   PetscReal      *basis, *basisDer;
@@ -3879,12 +3879,10 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
                        &count, numeric_str, numeric_str, numeric_str, numeric_str, numeric_str);STRING_ERROR_CHECK("Message to short");
   /* Quadrature */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
-"  const int numQuadraturePoints = %d;\n"
-"\n"
 "  /* Quadrature points\n"
 "   - (x1,y1,x2,y2,...) */\n"
 "  const %s points[%d] = {\n",
-                       &count, N_q, numeric_str, N_q*dim);STRING_ERROR_CHECK("Message to short");
+                       &count, numeric_str, N_q*dim);STRING_ERROR_CHECK("Message to short");
   for (p = 0; p < N_q; ++p) {
     for (d = 0; d < dim; ++d) {
       ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, q.points[p*dim+d]);STRING_ERROR_CHECK("Message to short");
@@ -3903,13 +3901,10 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   /* Basis Functions */
   ierr = PetscFEGetDefaultTabulation(fem, &basis, &basisDer, NULL);CHKERRQ(ierr);
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
-"  const int numBasisFunctions  = %d;\n"
-"  const int numBasisComponents = %d;\n"
-"\n"
 "  /* Nodal basis function evaluations\n"
 "    - basis component is fastest varying, the basis function, then point */\n"
 "  const %s Basis[%d] = {\n",
-                       &count, N_b, N_c, numeric_str, N_q*N_b*N_c);STRING_ERROR_CHECK("Message to short");
+                       &count, numeric_str, N_q*N_b*N_c);STRING_ERROR_CHECK("Message to short");
   for (p = 0; p < N_q; ++p) {
     for (b = 0; b < N_b; ++b) {
       for (c = 0; c < N_c; ++c) {
@@ -3942,20 +3937,18 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "};\n", &count);STRING_ERROR_CHECK("Message to short");
   /* Sizes */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
-"  /* Number of concurrent blocks */\n"
-"  const int N_bl = %d;\n"
-"\n"
-"  const int dim    = %d;\n"
-"  const int N_b    = numBasisFunctions;             // The number of basis functions\n"
-"  const int N_comp = numBasisComponents;            // The number of basis function components\n"
+"  const int dim    = %d;                           // The spatial dimension\n"
+"  const int N_bl   = %d;                           // The number of concurrent blocks\n"
+"  const int N_b    = %d;                           // The number of basis functions\n"
+"  const int N_comp = %d;                           // The number of basis function components\n"
 "  const int N_bt   = N_b*N_comp;                    // The total number of scalar basis functions\n"
-"  const int N_q    = numQuadraturePoints;           // The number of quadrature points\n"
+"  const int N_q    = %d;                           // The number of quadrature points\n"
 "  const int N_bst  = N_bt*N_q;                      // The block size, LCM(N_b*N_comp, N_q), Notice that a block is not processed simultaneously\n"
 "  const int N_t    = N_bst*N_bl;                    // The number of threads, N_bst * N_bl\n"
 "  const int N_bc   = N_t/N_comp;                    // The number of cells per batch (N_b*N_q*N_bl)\n"
-"  const int N_c    = N_cb * N_bc;\n"
 "  const int N_sbc  = N_bst / (N_q * N_comp);\n"
 "  const int N_sqc  = N_bst / N_bt;\n"
+"  /*const int N_c    = N_cb * N_bc;*/\n"
 "\n"
 "  /* Calculated indices */\n"
 "  /*const int tidx    = get_local_id(0) + get_local_size(0)*get_local_id(1);*/\n"
@@ -3966,16 +3959,8 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
 "  const int qidx    = tidx %% N_q;                    // Quadrature point mapped to this thread\n"
 "  const int blbidx  = tidx %% N_q + blidx*N_q;        // Cell mapped to this thread in the basis phase\n"
 "  const int blqidx  = tidx %% N_b + blidx*N_b;        // Cell mapped to this thread in the quadrature phase\n"
-"  const int gidx    = get_group_id(1)*get_num_groups(0) + get_group_id(0);\n"
-"  const int Goffset = gidx*N_c;\n"
-"  const int Coffset = gidx*N_c*N_bt;\n"
-"  const int Eoffset = gidx*N_c*N_bt;\n",
-                       &count, N_bl, dim);STRING_ERROR_CHECK("Message to short");
-  if (useAux) {
-    ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
-"  const int Aoffset = gidx*N_c;\n",
-                              &count);STRING_ERROR_CHECK("Message to short");
-  }
+"  const int gidx    = get_group_id(1)*get_num_groups(0) + get_group_id(0);\n",
+                            &count, dim, N_bl, N_b, N_c, N_q);STRING_ERROR_CHECK("Message to short");
   /* Local memory */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "\n"
@@ -4026,6 +4011,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   /* Batch loads */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "  for (int batch = 0; batch < N_cb; ++batch) {\n"
+"    const int Goffset = gidx*N_cb*N_bc;\n"
 "    /* Load geometry */\n"
 "    detJ[tidx] = jacobianDeterminants[Goffset+batch*N_bc+tidx];\n"
 "    for (int n = 0; n < dim*dim; ++n) {\n"
@@ -4035,13 +4021,14 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
 "    /* Load coefficients u_i for this cell */\n"
 "    for (int n = 0; n < N_bt; ++n) {\n"
 "      const int offset = n*N_t;\n"
-"      u_i[offset+tidx] = coefficients[Coffset+batch*N_t*N_b+offset+tidx];\n"
+"      u_i[offset+tidx] = coefficients[(Goffset*N_bt)+batch*N_t*N_b+offset+tidx];\n"
 "    }\n",
                        &count);STRING_ERROR_CHECK("Message to short");
   if (useAux) {
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "    /* Load coefficients a_i for this cell */\n"
-"    a_i[tidx] = coefficientsAux[Aoffset+batch*N_t+tidx];\n",
+"    /* TODO: This should not be N_t here, it should be N_bc*N_comp_aux */\n"
+"    a_i[tidx] = coefficientsAux[Goffset+batch*N_t+tidx];\n",
                             &count);STRING_ERROR_CHECK("Message to short");
   }
   /* Quadrature phase */
@@ -4062,10 +4049,12 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
 "      %s%d   gradU[%d]; //[N_comp]; // $\\nabla u(x_q)$, Value of the field gradient at $x_q$\n",
                               &count, numeric_str, dim, N_c);STRING_ERROR_CHECK("Message to short");
   }
-  if (useAux) {
+  if (useFieldAux) {
     ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "      %s  a[%d]; //[1];     // $a(x_q)$, Value of the auxiliary fields at $x_q$\n",
                               &count, numeric_str, 1);STRING_ERROR_CHECK("Message to short");
+  }
+  if (useFieldDerAux) {
     ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "      %s%d   gradA[%d]; //[1]; // $\\nabla a(x_q)$, Value of the auxiliary field gradient at $x_q$\n",
                               &count, numeric_str, dim, 1);STRING_ERROR_CHECK("Message to short");
@@ -4088,8 +4077,10 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "      }\n",
                             &count);STRING_ERROR_CHECK("Message to short");
-  if (useAux) {
+  if (useFieldAux) {
     ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      a[0] = 0.0;\n", &count);STRING_ERROR_CHECK("Message to short");
+  }
+  if (useFieldDerAux) {
     switch (dim) {
     case 1:
       ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      gradA[0].x = 0.0;\n", &count);STRING_ERROR_CHECK("Message to short");break;
@@ -4133,7 +4124,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
 "        }\n"
 "      }\n",
                             &count);STRING_ERROR_CHECK("Message to short");
-  if (useAux) {
+  if (useFieldAux) {
     ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,"          a[0] += a_i[cell];\n", &count);STRING_ERROR_CHECK("Message to short");
   }
   /* Calculate residual at quadrature points: Should be generated by an weak form egine */
@@ -4242,7 +4233,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "      }\n"
 "      /* Write element vector for N_{cbc} cells at a time */\n"
-"      elemVec[Eoffset+(batch*N_sbc+c)*N_t+tidx] = e_i;\n"
+"      elemVec[(gidx*N_cb*N_bc*N_bt)+(batch*N_sbc+c)*N_t+tidx] = e_i;\n"
 "    }\n"
 "    /* ==== Could do one write per batch ==== */\n"
 "  }\n"
@@ -4290,7 +4281,7 @@ PetscErrorCode PetscFEOpenCLCalculateGrid(PetscFE fem, PetscInt N, PetscInt bloc
   PetscFunctionBegin;
   if (N % blockSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid block size %d for %d elements", blockSize, N);
   *z = 1;
-  for (*x = (int) (sqrt(Nblocks) + 0.5); *x > 0; --*x) {
+  for (*x = (size_t) (PetscSqrtReal(Nblocks) + 0.5); *x > 0; --*x) {
     *y = Nblocks / *x;
     if (*x * *y == Nblocks) break;
   }
@@ -4340,6 +4331,12 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscInt Ne, PetscIn
   PetscInt          N_bl;   /* The number of blocks */
   PetscInt          N_bc;   /* The batch size, N_bl*N_q*N_b */
   PetscInt          N_cb;   /* The number of batches */
+  PetscInt          numFlops, f0Flops, f1Flops;
+  PetscBool         useAux      = coefficientsAux ? PETSC_TRUE : PETSC_FALSE;
+  PetscBool         useField    = PETSC_FALSE;
+  PetscBool         useFieldDer = PETSC_TRUE;
+  PetscBool         useF0       = PETSC_TRUE;
+  PetscBool         useF1       = PETSC_TRUE;
   /* OpenCL variables */
   cl_program        ocl_prog;
   cl_kernel         ocl_kernel;
@@ -4392,7 +4389,7 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscInt Ne, PetscIn
       if (order > 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Can only handle P0 coefficient fields");
     }
   }
-  ierr = PetscFEOpenCLGetIntegrationKernel(fem, coefficientsAux ? PETSC_TRUE : PETSC_FALSE, &ocl_prog, &ocl_kernel);CHKERRQ(ierr);
+  ierr = PetscFEOpenCLGetIntegrationKernel(fem, useAux, &ocl_prog, &ocl_kernel);CHKERRQ(ierr);
   /* Create buffers on the device and send data over */
   ierr = PetscDataTypeGetSize(ocl->realType, &realSize);CHKERRQ(ierr);
   if (sizeof(PetscReal) != realSize) {
@@ -4525,7 +4522,23 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscInt Ne, PetscIn
   /* Log performance */
   ierr = clGetEventProfilingInfo(ocl_ev, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &ns_start, NULL);CHKERRQ(ierr);
   ierr = clGetEventProfilingInfo(ocl_ev, CL_PROFILING_COMMAND_END,   sizeof(cl_ulong), &ns_end,   NULL);CHKERRQ(ierr);
-  ierr = PetscFEOpenCLLogResidual(fem, (ns_end - ns_start)*1.0e-9, (((2+(2+2*dim)*dim)*N_comp*N_b+(2+2)*dim*N_comp)*N_q + (2+2*dim)*dim*N_q*N_comp*N_b)*Ne);CHKERRQ(ierr);
+  f0Flops = 0;
+  switch (ocl->op) {
+  case LAPLACIAN:
+    f1Flops = useAux ? dim : 0;break;
+  case ELASTICITY:
+    f1Flops = 2*dim*dim;break;
+  }
+  numFlops = Ne*(
+    N_q*(
+      N_b*N_comp*((useField ? 2 : 0) + (useFieldDer ? 2*dim*(dim + 1) : 0))
+      /*+
+       N_ba*N_compa*((useFieldAux ? 2 : 0) + (useFieldDerAux ? 2*dim*(dim + 1) : 0))*/
+      +
+      N_comp*((useF0 ? f0Flops + 2 : 0) + (useF1 ? f1Flops + 2*dim : 0)))
+    +
+    N_b*((useF0 ? 2 : 0) + (useF1 ? 2*dim*(dim + 1) : 0)));
+  ierr = PetscFEOpenCLLogResidual(fem, (ns_end - ns_start)*1.0e-9, numFlops);CHKERRQ(ierr);
   /* Cleanup */
   ierr = clReleaseMemObject(o_coefficients);CHKERRQ(ierr);
   ierr = clReleaseMemObject(o_coefficientsAux);CHKERRQ(ierr);

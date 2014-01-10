@@ -44,7 +44,6 @@ testexamples_HYPRE: ${TESTEXAMPLES_HYPRE}
 testexamples_HDF5: ${TESTEXAMPLES_HDF5}
 testexamples_CHACO: ${TESTEXAMPLES_CHACO}
 testexamples_TRIANGLE: ${TESTEXAMPLES_TRIANGLE}
-testexamples_SIEVE: ${TESTEXAMPLES_SIEVE}
 
 testexamples_BOOST: ${TESTEXAMPLES_BOOST}
 testexamples_TETGEN: ${TESTEXAMPLES_TETGEN}
@@ -72,7 +71,7 @@ testexamples_PTHREADCLASSES:
 testexamples_OPENMP:
 testexamples_NETCDF:
 testexamples_EXODUSII:
-testexamples_PCBDDC:
+testexamples_PCBDDC: ${TESTEXAMPLES_PCBDDC}
 
 buildexamples_C:
 	-@${OMAKE} testexamples_C TESTEXAMPLES_C=`echo ${TESTEXAMPLES_C} | sed s/runex[0-9]*[a-z0-9_]*//g`
@@ -147,8 +146,6 @@ buildexamples_CHACO:
 	-@${OMAKE} testexamples_CHACO TESTEXAMPLES_CHACO=`echo ${TESTEXAMPLES_CHACO} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_TRIANGLE:
 	-@${OMAKE} testexamples_TRIANGLE TESTEXAMPLES_TRIANGLE=`echo ${TESTEXAMPLES_TRIANGLE} | sed s/runex[0-9]*[a-z0-9_]*//g`
-buildexamples_SIEVE:
-	-@${OMAKE} testexamples_SIEVE TESTEXAMPLES_SIEVE=`echo ${TESTEXAMPLES_SIEVE} | sed s/runex[0-9]*[a-z0-9_]*//g`
 
 buildexamples_BOOST:
 	-@${OMAKE} testexamples_BOOST TESTEXAMPLES_BOOST=`echo ${TESTEXAMPLES_BOOST} | sed s/runex[0-9]*[a-z0-9_]*//g`
@@ -184,6 +181,8 @@ buildexamples_CMAKE:
 buildexamples_AFTERIMAGE:
 buildexamples_PTHREADCLASSES:
 buildexamples_OPENMP:
+buildexamples_PCBDDC:
+	-@${OMAKE} testexamples_PCBDDC TESTEXAMPLES_PCBDDC=`echo ${TESTEXAMPLES_PCBDDC} | sed s/runex[0-9]*[a-z0-9_]*//g`
 
 TESTMODE = testexamples
 

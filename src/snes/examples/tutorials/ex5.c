@@ -228,7 +228,7 @@ PetscErrorCode FormInitialGuess(DM da,AppCtx *user,Vec X)
         /* boundary conditions are all zero Dirichlet */
         x[j][i] = 0.0;
       } else {
-        x[j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
+        x[j][i] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
       }
     }
   }

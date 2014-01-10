@@ -58,12 +58,15 @@
 #define MATCOLORINGMIS 'mis'
 #define MATCOLORINGJP  'jp'
 
-#define MATORDERINGNATURAL 'natural'
-#define MATORDERINGND 'nd'
-#define MATORDERING1WD '1wd'
-#define MATORDERINGRCM 'rcm'
-#define MATORDERINGQMD 'qmd'
+#define MATORDERINGNATURAL   'natural'
+#define MATORDERINGND        'nd'
+#define MATORDERING1WD       '1wd'
+#define MATORDERINGRCM       'rcm'
+#define MATORDERINGQMD       'qmd'
 #define MATORDERINGROWLENGTH 'rowlength'
+#define MATORDERINGWBM       'wbm'
+#define MATORDERINGSPECTRAL  'spectral'
+#define MATORDERINGAMD       'amd'
 !
 !  Matrix types
 !

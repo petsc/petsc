@@ -163,7 +163,7 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
   /* Point mass at (mux,muy) */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Original user->mux = %f, user->muy = %f\n",user->mux,user->muy);CHKERRQ(ierr);
   ierr = DMDAGetLogicalCoordinate(user->da,user->mux,user->muy,0.0,&I,&J,NULL,&user->mux,&user->muy,NULL);CHKERRQ(ierr);
-  user->PM_min = user->Pmax*sin(user->mux);
+  user->PM_min = user->Pmax*PetscSinScalar(user->mux);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Corrected user->mux = %f, user->muy = %f user->PM_min = %f,user->dx = %f\n",user->mux,user->muy,user->PM_min,user->dx);CHKERRQ(ierr);
   if (I > -1 && J > -1) {
     p[J][I] = 1.0;
@@ -202,7 +202,7 @@ PetscErrorCode adv2(PetscScalar **p,PetscScalar x,PetscScalar y,PetscInt i,Petsc
 {
   PetscScalar f,fpos,fneg;
   PetscFunctionBegin;
-  f   = (user->ws/(2*user->H))*(user->PM_min - user->Pmax*sin(x) - user->D*(y - user->ws));
+  f   = (user->ws/(2*user->H))*(user->PM_min - user->Pmax*PetscSinScalar(x) - user->D*(y - user->ws));
   fpos = PetscMax(f,0);
   fneg = PetscMin(f,0);
   if (user->st_width == 1) {
@@ -321,7 +321,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J,Mat
       c1        = (yi-user->ws)/user->dx;
       c1pos    = PetscMax(c1,0);
       c1neg    = PetscMin(c1,0);
-      c3        = (user->ws/(2.0*user->H))*(user->PM_min - user->Pmax*sin(xi) - user->D*(yi - user->ws))/user->dy;
+      c3        = (user->ws/(2.0*user->H))*(user->PM_min - user->Pmax*PetscSinScalar(xi) - user->D*(yi - user->ws))/user->dy;
       c3pos    = PetscMax(c3,0);
       c3neg    = PetscMin(c3,0);
       c5        = (PetscPowScalar((user->lambda*user->ws)/(2*user->H),2)*user->q*(1.0-PetscExpScalar(-t/user->lambda)))/(user->dy*user->dy);

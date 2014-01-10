@@ -838,6 +838,14 @@ runex19_ngmres_fas: #test ex19 with NGMRES preconditioned by FAS with pointwise 
 	   ${DIFF} output/ex19_ngmres_fas.out ex19_ngmres_fas.tmp || printf "${PWD}\nPossible problem with ex19_ngmres_fas, diffs above\n=========================================\n"; \
            ${RM} -f ex19_ngmres_fas.tmp
 
+runex19_ngmres_fas_gssecant: #test ex19 with NGMRES preconditioned by FAS with pointwise GS smoother
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_monitor_short -snes_type ngmres -npc_snes_type fas \
+        -npc_fas_levels_snes_type gs -npc_fas_levels_snes_max_it 6 -npc_fas_levels_snes_gs_secant -npc_fas_levels_snes_gs_max_it 1 -npc_fas_coarse_snes_max_it 1 \
+        -lidvelocity 100 -grashof 4e4 \
+         > ex19_ngmres_fas_gssecant.tmp 2>&1; \
+	   ${DIFF} output/ex19_ngmres_fas_gssecant.out ex19_ngmres_fas_gssecant.tmp || echo  ${PWD} "\nPossible problem with ex19_ngmres_fas_gssecant, diffs above \n========================================="; \
+           ${RM} -f ex19_ngmres_fas_gssecant.tmp
+
 runex19_ngmres_fas_ms: #test ex19 with NGMRES preconditioned by FAS with multi-stage smoother
 	-@${MPIEXEC} -n 2 ./ex19 -snes_grid_sequence 2 -lidvelocity 200 -grashof 1e4 -snes_monitor_short -snes_view -snes_converged_reason -snes_type ngmres -npc_snes_type fas -npc_fas_coarse_snes_type newtonls -npc_fas_coarse_ksp_type preonly -npc_snes_max_it 1 -npc_fas_snes_type ms -npc_fas_snes_max_it 1 -npc_fas_ksp_type preonly -npc_fas_pc_type none -npc_fas_snes_ms_type m62 -npc_fas_snes_max_it 1 -npc_fas_snes_ms_damping 0.22 > ex19_ngmres_fas_ms.tmp 2>&1; \
 	   ${DIFF} output/ex19_ngmres_fas_ms.out ex19_ngmres_fas_ms.tmp || printf "${PWD}\nPossible problem with ex19_ngmres_fas_ms, diffs above\n=========================================\n"; \
@@ -913,7 +921,7 @@ runex20:
 	   else  printf "${PWD}\nPossible problem with with ex20_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex20_1.tmp
 runex21:
-	-@${MPIEXEC} -n 4 ./ex21 -snes_linesearch_monitor -snes_mf -snes_monitor_short -nox -ksp_monitor -snes_converged_reason > ex21_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex21 -snes_linesearch_monitor -snes_mf -snes_monitor_short -nox -ksp_monitor_short -snes_converged_reason > ex21_1.tmp 2>&1; \
 	   if (${DIFF} output/ex21_1.out ex21_1.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with with ex21_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex21_1.tmp
@@ -1084,7 +1092,7 @@ runex58_2:
 	   ${DIFF} output/ex58_2.out ex58.tmp || printf "${PWD}\nPossible problem with ex58_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex58.tmp
 runex73f90t:
-	-@${MPIEXEC} -n 4 ./ex73f90t -par 5.0 -da_grid_x 10 -da_grid_y 10 -snes_monitor -snes_linesearch_type basic -snes_converged_reason -ksp_type fgmres -ksp_norm_type unpreconditioned -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type upper -ksp_monitor -fieldsplit_lambda_ksp_type preonly -fieldsplit_lambda_pc_type jacobi -fieldsplit_lambda_ksp_monitor -fieldsplit_phi_pc_type gamg -fieldsplit_phi_pc_gamg_agg_nsmooths 1 -fieldsplit_phi_pc_gamg_threshold 0. -fieldsplit_phi_pc_gamg_verbose 2 -fieldsplit_phi_gamg_est_ksp_type cg
+	-@${MPIEXEC} -n 4 ./ex73f90t -par 5.0 -da_grid_x 10 -da_grid_y 10 -snes_monitor -snes_linesearch_type basic -snes_converged_reason -ksp_type fgmres -ksp_norm_type unpreconditioned -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type upper -ksp_monitor_short -fieldsplit_lambda_ksp_type preonly -fieldsplit_lambda_pc_type jacobi -fieldsplit_lambda_ksp_monitor_short -fieldsplit_phi_pc_type gamg -fieldsplit_phi_pc_gamg_agg_nsmooths 1 -fieldsplit_phi_pc_gamg_threshold 0. -fieldsplit_phi_pc_gamg_verbose 2 -fieldsplit_phi_gamg_est_ksp_type cg
 
 # This is way too slow  ex30.PETSc runex30 ex30.rm
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \

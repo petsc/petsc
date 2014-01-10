@@ -39,7 +39,7 @@
 !  FormFunction(). We use a double precision array with three
 !  entries indexed by param, lmx, lmy.
 !
-      double precision user(3)
+      PetscReal user(3)
       PetscInt          param,lmx,lmy,i5
       parameter (param = 1,lmx = 2,lmy = 3)
 !
@@ -55,8 +55,9 @@
       PetscInt           its,N,i1000
       PetscBool  flg
       PetscErrorCode      ierr
-      double precision  param_max,param_min,dt,tmax,zero
-      double precision  ftime
+      PetscReal  param_max,param_min,dt
+      PetscReal  tmax,zero
+      PetscReal  ftime
       TSConvergedReason reason
 
       i5 = 5
@@ -207,12 +208,12 @@
 #include <finclude/petscpc.h>
 #include <finclude/petscts.h>
       Vec              X
-      double precision user(3)
+      PetscReal user(3)
       PetscInt  i,j,row,mx,my
       PetscErrorCode ierr
       PetscOffset      xidx
-      double precision one,lambda
-      double precision temp1,temp,hx,hy
+      PetscReal one,lambda
+      PetscReal temp1,temp,hx,hy
       PetscScalar      xx(1)
       PetscInt          param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)
@@ -229,7 +230,7 @@
       call VecGetArray(X,xx,xidx,ierr)
       temp1 = lambda/(lambda + one)
       do 10, j=1,my
-        temp = dble(min(j-1,my-j))*hy
+        temp = min(j-1,my-j)*hy
         do 20 i=1,mx
           row = i + (j-1)*mx
           if (i .eq. 1 .or. j .eq. 1 .or.                               &
@@ -237,7 +238,7 @@
             xx(row+xidx) = 0.0
           else
             xx(row+xidx) =                                              &
-     &        temp1*sqrt(min(dble(min(i-1,mx-i))*hx,temp))
+     &        temp1*sqrt(min(min(i-1,mx-i)*hx,temp))
           endif
  20     continue
  10   continue
@@ -255,14 +256,14 @@
 #include <finclude/petscpc.h>
 #include <finclude/petscts.h>
       TS       ts
-      double precision  t
+      PetscReal  t
       Vec               X,F
-      double precision  user(3)
+      PetscReal  user(3)
       PetscErrorCode     ierr
       PetscInt         i,j,row,mx,my
       PetscOffset       xidx,fidx
-      double precision  two,lambda
-      double precision  hx,hy,hxdhy,hydhx
+      PetscReal  two,lambda
+      PetscReal  hx,hy,hxdhy,hydhx
       PetscScalar  ut,ub,ul,ur,u
       PetscScalar  uxx,uyy,sc
       PetscScalar  xx(1),ff(1)
@@ -275,8 +276,8 @@
       my     = int(user(lmy))
       lambda = user(param)
 
-      hx    = 1.0 / dble(mx-1)
-      hy    = 1.0 / dble(my-1)
+      hx    = 1.0 / (mx-1)
+      hy    = 1.0 / (my-1)
       sc    = hx*hy
       hxdhy = hx/hy
       hydhx = hy/hx
@@ -321,7 +322,7 @@
       Vec              X
       Mat              JJ,B
       MatStructure     flag
-      double precision user(3),ctime
+      PetscReal user(3),ctime
       PetscErrorCode   ierr
       Mat              jac
       PetscOffset xidx
@@ -329,7 +330,7 @@
       PetscInt    col(5),i1,i5
       PetscScalar two,one,lambda
       PetscScalar v(5),sc,xx(1)
-      double precision hx,hy,hxdhy,hydhx
+      PetscReal hx,hy,hxdhy,hydhx
 
       PetscInt  param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)
@@ -344,8 +345,8 @@
       my     = int(user(lmy))
       lambda = user(param)
 
-      hx    = 1.0 / dble(mx-1)
-      hy    = 1.0 / dble(my-1)
+      hx    = 1.0 / (mx-1)
+      hy    = 1.0 / (my-1)
       sc    = hx*hy
       hxdhy = hx/hy
       hydhx = hy/hx

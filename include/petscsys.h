@@ -331,11 +331,6 @@ M*/
 #endif
 
 /*
-    Defines some elementary mathematics functions and constants.
-*/
-#include <petscmath.h>
-
-/*
     Declare extern C stuff after including external header files
 */
 
@@ -356,6 +351,11 @@ E*/
 typedef enum { PETSC_FALSE,PETSC_TRUE } PetscBool;
 PETSC_EXTERN const char *const PetscBools[];
 PETSC_EXTERN MPI_Datatype MPIU_BOOL PetscAttrMPITypeTag(PetscBool);
+
+/*
+    Defines some elementary mathematics functions and constants.
+*/
+#include <petscmath.h>
 
 /*E
     PetscCopyMode  - Determines how an array passed to certain functions is copied or retained
@@ -456,7 +456,7 @@ M*/
 
    Level: beginner
 
-   Fortran Notes: You need to use PETSC_DEFAULT_INTEGER or PETSC_DEFAULT_DOUBLE_PRECISION.
+   Fortran Notes: You need to use PETSC_DEFAULT_INTEGER or PETSC_DEFAULT_REAL.
 
 .seealso: PETSC_DECIDE, PETSC_IGNORE, PETSC_DETERMINE
 
@@ -2228,11 +2228,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
 #  define PETSC_MAX_PATH_LEN     _MAX_PATH
 #else
 #  define PETSC_MAX_PATH_LEN     4096
-#endif
-
-/* Special support for C++ */
-#if defined(PETSC_CLANGUAGE_CXX) && defined(__cplusplus)
-#include <petscsys.hh>
 #endif
 
 /*MC

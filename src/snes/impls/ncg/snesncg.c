@@ -455,7 +455,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
       break;
     }
     if (ncg->monitor) {
-      ierr = PetscViewerASCIIPrintf(ncg->monitor, "beta = %e\n", beta);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(ncg->monitor, "beta = %e\n", (double)beta);CHKERRQ(ierr);
     }
     ierr = VecAYPX(lX, beta, dX);CHKERRQ(ierr);
   }

@@ -543,7 +543,6 @@ PetscErrorCode  DMSetUp(DM dm)
     ierr = (*dm->ops->setup)(dm);CHKERRQ(ierr);
   }
   dm->setupcalled = PETSC_TRUE;
-  ierr = DMViewFromOptions(dm,NULL,"-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

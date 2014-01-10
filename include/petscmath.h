@@ -410,6 +410,8 @@ M*/
 
 PETSC_EXTERN PetscErrorCode PetscIsInfOrNanScalar(PetscScalar);
 PETSC_EXTERN PetscErrorCode PetscIsInfOrNanReal(PetscReal);
+PETSC_EXTERN PetscBool PetscIsNormalScalar(PetscScalar);
+PETSC_EXTERN PetscBool PetscIsNormalReal(PetscReal);
 
 /* ----------------------------------------------------------------------------*/
 #define PassiveReal   PetscReal
@@ -443,6 +445,24 @@ PETSC_STATIC_INLINE PetscInt PetscPowInt(PetscInt base,PetscInt power) {
 }
 PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power) {
   PetscReal result = 1;
+  if (power < 0) {
+    power = -power;
+    if (base != 0.0) base  = 1./base;
+  }
+  while (power) {
+    if (power & 1) result *= base;
+    power >>= 1;
+    base *= base;
+  }
+  return result;
+}
+
+PETSC_STATIC_INLINE PetscScalar PetscPowScalarInt(PetscScalar base,PetscInt power) {
+  PetscScalar result = 1;
+  if (power < 0) {
+    power = -power;
+    if (base != 0.0) base  = 1./base;
+  }
   while (power) {
     if (power & 1) result *= base;
     power >>= 1;

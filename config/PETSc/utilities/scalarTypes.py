@@ -51,6 +51,8 @@ class Configure(config.base.Configure):
     # On apple isinf() and isnan() do not work when <complex> is included
     self.pushLanguage(self.languages.clanguage)
     if self.scalartype == 'complex' and self.languages.clanguage == 'Cxx':
+      if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = isnormal(b);\n'):
+        self.addDefine('HAVE_ISNORMAL',1)
       if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = isnan(b);\n'):
         self.addDefine('HAVE_ISNAN',1)
       if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = isinf(b);\n'):
@@ -60,6 +62,8 @@ class Configure(config.base.Configure):
       if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = _finite(b);\n'):
         self.addDefine('HAVE__FINITE',1)
     else:
+      if self.checkLink('#include <math.h>\n','double b = 2.0; int a = isnormal(b);\n'):
+        self.addDefine('HAVE_ISNORMAL',1)
       if self.checkLink('#include <math.h>\n','double b = 2.0; int a = isnan(b);\n'):
         self.addDefine('HAVE_ISNAN',1)
       if self.checkLink('#include <math.h>\n','double b = 2.0; int a = isinf(b);\n'):
