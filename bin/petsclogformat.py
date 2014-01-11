@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 Sorted = ["PetscBarrier",
 
@@ -289,5 +290,12 @@ def PrintPercentTable(localTimes,localFlops,localMessages,localMessageLens,local
         if max(values) > .5:
           print ename.ljust(26),'%6.0f' % sumStages[stage][event]["count"],"   ",'%5.0f' % values[0],'%5.0f' % values[1],"   ",'%8.0f' % ((sumStages[stage][event]["flops"]/sumStages[stage][event]["time"])/1000000.0)
 
-import joe
-PrintPercentTable(joe.LocalTimes,joe.LocalFlops,joe.LocalMessages,joe.LocalMessageLens,joe.LocalReductions,joe.Stages)
+if __name__ == '__main__':
+  import sys
+  import os
+  sys.path.append(os.getcwd())
+  datafile = sys.argv[1]
+  if datafile.endswith('.py'): datafile = datafile[0:-3]
+  exec('import '+datafile+' as data')
+
+  PrintPercentTable(data.LocalTimes,data.LocalFlops,data.LocalMessages,data.LocalMessageLens,data.LocalReductions,data.Stages)
