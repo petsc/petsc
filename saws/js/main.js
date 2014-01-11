@@ -82,7 +82,9 @@ DisplayDirectory = function(sub,divEntry)
     if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Preconditioner (PC) options") {
         var SAWs_pcVal = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].data[0];
         var SAWs_alternatives = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].alternatives;
-        var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables.prefix.data[0];
+        //var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables.prefix.data[0];
+        var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["prefix"].data[0];//more accurate I believe
+        //alert("saws prefix:"+SAWs_prefix);
         
         if (SAWs_prefix == "(null)") SAWs_prefix = ""; //"(null)" fails populatePcList(), don't know why???
         //create <select> "pcList-1"+SAWs_prefix+" when it is not defined ???
@@ -93,8 +95,13 @@ DisplayDirectory = function(sub,divEntry)
         }
         //alert("Preconditioner (PC) options, SAWs_pcVal "+SAWs_pcVal+", SAWs_prefix "+SAWs_prefix);
 
+        var SAWs_bjacobi_blocks="";
         if (SAWs_pcVal == 'bjacobi') {
-            var SAWs_bjacobi_blocks = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_bjacobi_blocks"].data[0];
+            
+            SAWs_bjacobi_blocks = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_bjacobi_blocks"].data[0];
+
+            //else if(SAWs_prefix == "sub_")...
+
             //alert("SAWs_bjacobi_blocks "+SAWs_bjacobi_blocks);
             //set SAWs_bjacobi_blocks to #bjacobiBlocks-1_0.processorInput ???
         }
@@ -257,7 +264,7 @@ HandlePCOptions = function(){
 	//move the counter forward
         //------------------------------
         preRecursionCounter = recursionCounter; //save the current counter
-	recursionCounter++;
+	recursionCounter++;// alert("forward"); counter is moved forward each oDiv I'm assuming
 
 	//Find next child node - Skip any children from a non-logically structured parent 
         //Note: this routine changes global variables 'recursionCounter' and 'matDivCounter'!

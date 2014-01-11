@@ -15,6 +15,11 @@ $(document).on("keyup", '.processorInput', function() {
 */
 $(document).on('change', '.pcLists', function(){
 
+    //if(preRecursionCounter != -1)
+        //alert("preRecursionCounter is not -1"); //preRecursionCounter is always -1 in the beginning when pulling data from SAWs
+
+    //alert("beginning current:"+currentRecursionCounterSAWs);
+
     //get the pc option
     var pcValue = $(this).val();
     if (pcValue == null) alert("Warning: pcValue = null!");
@@ -167,19 +172,21 @@ $(document).on('change', '.pcLists', function(){
 	$("#"+newDiv).append("<br><b>Bjacobi KSP   &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+parent+myendtag+"\"></select>");
 	$("#"+newDiv).append("<br><b>Bjacobi PC   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList"+parent+myendtag+"\"></select>");
         if (preRecursionCounter == -1) { //use SAWs options
-            var prefix = sawsInfo[currentRecursionCounterSAWs].prefix;
-            var SAWs_kspVal = $("#kspList-1"+prefix).val(); 
-            var SAWs_pcVal = $("#pcList-1"+prefix).val(); 
+            var prefix = sawsInfo[currentRecursionCounterSAWs].prefix;//not minus one because we need to skip one (already did the first ksp/pc in main.js)
+            var SAWs_kspVal = $("#kspList-1"+prefix).val();
+            var SAWs_pcVal = $("#pcList-1"+prefix).val();
+            alert("using prefix:"+prefix+", using ksp:"+SAWs_kspVal+", using pc:"+SAWs_pcVal);
             //alternative???
             populateKspList("kspList"+parent+myendtag,null,SAWs_kspVal);
             populatePcList("pcList"+parent+myendtag,null,SAWs_pcVal);
             //surtai added
-            if(typeof sawsInfo[currentRecursionCounterSAWs].bjacobi_blocks == "undefined")//sometimes SAWs will fail to come up with a default
-                sawsInfo[currentRecursionCounterSAWs].bjacobi_blocks = "undefined";//this makes sure the program doesn't crash
-            $("#bjacobiBlocks"+parent+myendtag).attr("value",sawsInfo[currentRecursionCounterSAWs].bjacobi_blocks);
+            //alert("current saw"+currentRecursionCounterSAWs);
+            if(typeof sawsInfo[currentRecursionCounterSAWs-1].bjacobi_blocks == "undefined")//sometimes SAWs will fail to come up with a default
+                sawsInfo[currentRecursionCounterSAWs-1].bjacobi_blocks = "saws undefined";//this makes sure the program doesn't crash
+            $("#bjacobiBlocks"+parent+myendtag).attr("value",sawsInfo[currentRecursionCounterSAWs-1].bjacobi_blocks);//minus 1 because array starts from 0 while currentRecursionCounter starts from 1
             //alert("bjacobi: prefix="+prefix+"; SAWs_kspVal="+SAWs_kspVal+"; SAWs_pcVal="+SAWs_pcVal+"; currentRecursionCounterSAWs="+currentRecursionCounterSAWs);
             currentRecursionCounterSAWs++;
-            //manually trigger pclist once 
+            //manually trigger pclist once
 	    $("#pcList"+parent+myendtag).trigger("change");
         } else {
 	    populateKspList("kspList"+parent+myendtag,null,"null");
@@ -200,7 +207,7 @@ $(document).on('change', '.pcLists', function(){
             alert("parentDiv_str "+ parentDiv_str +" = pcValue, Hierarchical Krylov Method - display an image of the sovler!");
         }
     }
-    else {//not bjacobi - why generate, then remove???
+    else {//not bjacobi - why generate, then remove???(this is because if someone JUST switched from bjacobi to something else, then bjacobi would be removed)
 	var newDiv = generateDivName(this.id,parent,"bjacobi");
 	$("#"+newDiv).remove();
     }
