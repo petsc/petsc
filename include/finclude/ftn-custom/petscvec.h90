@@ -40,7 +40,8 @@
       End Interface
 
       Interface
-        Subroutine VecSetValuesSectionF90(v,section,point,values,mode,ierr)
+        Subroutine VecSetValuesSectionF90(v,section,point,values,mode,  &
+     &      ierr)
           USE_VEC_HIDE
           PetscScalar, pointer :: values(:)
           PetscErrorCode ierr
