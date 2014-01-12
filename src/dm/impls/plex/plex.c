@@ -5025,11 +5025,11 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
       PetscFunctionReturn(0);
     }
     ierr = DMGetWorkArray(dm, size, PETSC_SCALAR, &array);CHKERRQ(ierr);
+    for (f = 1; f < numFields; ++f) offsets[f+1] += offsets[f];
+    if (numFields && offsets[numFields] != size) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Invalid size for closure %d should be %d", offsets[numFields], size);
   } else {
     array = *values;
   }
-  for (f = 1; f < numFields; ++f) offsets[f+1] += offsets[f];
-  if (numFields && offsets[numFields] != size) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Invalid size for closure %d should be %d", offsets[numFields], size);
   ierr = VecGetArray(v, &vArray);CHKERRQ(ierr);
   for (p = 0; p < numPoints*2; p += 2) {
     PetscInt     o = points[p+1];
@@ -5039,7 +5039,7 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
     ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, points[p], &off);CHKERRQ(ierr);
     varr = &vArray[off];
-    if (numFields) {
+    if (numFields > 1) {
       PetscInt fdof, foff, fcomp, f, c;
 
       for (f = 0, foff = 0; f < numFields; ++f) {
@@ -5428,17 +5428,17 @@ PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt 
     ierr = ISGetIndices(clPoints, &clp);CHKERRQ(ierr);
     points = (PetscInt *) &clp[off];
   }
-  for (p = 0; p < numPoints*2; p += 2) {
-    PetscInt fdof;
-
-    for (f = 0; f < numFields; ++f) {
-      ierr          = PetscSectionGetFieldDof(section, points[p], f, &fdof);CHKERRQ(ierr);
-      offsets[f+1] += fdof;
-    }
-  }
-  for (f = 1; f < numFields; ++f) offsets[f+1] += offsets[f];
   ierr = VecGetArray(v, &array);CHKERRQ(ierr);
-  if (numFields) {
+  if (numFields > 1) {
+    for (p = 0; p < numPoints*2; p += 2) {
+      PetscInt fdof;
+
+      for (f = 0; f < numFields; ++f) {
+        ierr          = PetscSectionGetFieldDof(section, points[p], f, &fdof);CHKERRQ(ierr);
+        offsets[f+1] += fdof;
+      }
+    }
+    for (f = 1; f < numFields; ++f) offsets[f+1] += offsets[f];
     switch (mode) {
     case INSERT_VALUES:
       for (p = 0; p < numPoints*2; p += 2) {
