@@ -58,7 +58,7 @@
       call DMDestroy(ada,ierr)
 
       call DMDACreate2d(PETSC_COMM_WORLD,                                   &
-     &      DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,                      &
+     &      DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,                           &
      &      DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,s,                 &
      &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr)
       call DMGetGlobalVector(ada,g,ierr)
@@ -125,7 +125,7 @@
 
       dof = 2
       call DMDACreate2d(PETSC_COMM_WORLD,                               &
-     &     DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,                       &
+     &     DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,                           &
      &     DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,s,                 &
      &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr)
       call DMGetGlobalVector(ada,g,ierr)
