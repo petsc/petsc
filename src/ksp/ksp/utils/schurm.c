@@ -1,13 +1,16 @@
 
 #include <petsc-private/matimpl.h>
 #include <petscksp.h>                 /*I "petscksp.h" I*/
+const char *const MatSchurComplementAinvTypes[] = {"SELF","LUMP","MatSchurComplementAinvType","MAT_SCHUR_COMPLEMENT_AINV_",0};
 
 typedef struct {
-  Mat       A,Ap,B,C,D;
-  KSP       ksp;
-  Vec       work1,work2;
-  PetscBool Alump;
+  Mat                        A,Ap,B,C,D;
+  KSP                        ksp;
+  Vec                        work1,work2;
+  MatSchurComplementAinvType ainvtype;
 } Mat_SchurComplement;
+
+
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetVecs_SchurComplement"
@@ -122,6 +125,10 @@ PetscErrorCode MatSetFromOptions_SchurComplement(Mat N)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsHead("MatSchurComplementOptions");CHKERRQ(ierr);
+  Na->ainvtype = MAT_SCHUR_COMPLEMENT_AINV_DIAG;
+  ierr = PetscOptionsEnum("-mat_schur_complement_ainv_type","Type of approximation for inv(A00) used when assembling Sp = A11 - A10 inv(A00) A01","MatSchurComplementSetAinvType",Na->invtype,Na->ainvtype,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = KSPSetFromOptions(Na->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -451,7 +458,7 @@ PetscErrorCode  MatSchurComplementGetSubmatrices(Mat S,Mat *A00,Mat *Ap00,Mat *A
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSchurComplement_Basic"
 /* Developer Notes: This should be implemented with a MatCreate_SchurComplement() as that is the standard design for new Mat classes. */
-PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *newmat,PetscBool plump, MatReuse preuse,Mat *newpmat)
+PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *newmat,MatSchurComplementAinvType ainvtype, MatReuse preuse,Mat *newpmat)
 {
   PetscErrorCode ierr;
   Mat            A=0,Ap=0,B=0,C=0,D=0;
@@ -491,7 +498,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
     }
   }
   if (preuse != MAT_IGNORE_MATRIX) {
-    ierr = MatCreateSchurComplementPmat(A,B,C,D,plump,preuse,newpmat);CHKERRQ(ierr);
+    ierr = MatCreateSchurComplementPmat(A,B,C,D,ainvtype,preuse,newpmat);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -514,7 +521,8 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
 .   isrow1 - rows in which the Schur complement is formed
 .   iscol1 - columns in which the Schur complement is formed
 .   mreuse - MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX, use MAT_IGNORE_MATRIX to put nothing in newmat
-.   plump  - whether to lump A00 when assembling preconditioning matrix Sp
+.   plump  - the type of approximation used for the inverse of the (0,0) block used in forming Sp:
+$                        MAT_SCHUR_COMPLEMENT_AINV_DIAG | MAT_SCHUR_COMPLEMENT_AINV_LUMP
 -   preuse - MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX, use MAT_IGNORE_MATRIX to put nothing in newpmat
 
     Output Parameters:
@@ -536,9 +544,9 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
 
     Concepts: matrices^submatrices
 
-.seealso: MatGetSubMatrix(), PCFIELDSPLIT, MatCreateSchurComplement()
+.seealso: MatGetSubMatrix(), PCFIELDSPLIT, MatCreateSchurComplement(), MatSchurComplementAinvType
 @*/
-PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *S,PetscBool plump,MatReuse preuse,Mat *Sp)
+PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *S,MatSchurComplementAinvType ainvtype,MatReuse preuse,Mat *Sp)
 {
   PetscErrorCode ierr,(*f)(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatReuse,Mat*);
 
@@ -557,21 +565,25 @@ PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS isc
   if (f) {
     ierr = (*f)(A,isrow0,iscol0,isrow1,iscol1,mreuse,S,preuse,Sp);CHKERRQ(ierr);
   } else {
-    ierr = MatGetSchurComplement_Basic(A,isrow0,iscol0,isrow1,iscol1,mreuse,S,plump,preuse,Sp);CHKERRQ(ierr);
+    ierr = MatGetSchurComplement_Basic(A,isrow0,iscol0,isrow1,iscol1,mreuse,S,ainvtype,preuse,Sp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSchurComplementSetPmatLumping"
+#define __FUNCT__ "MatSchurComplementSetAinvType"
 /*@
-    MatSchurComplementSetPmatLumping - whether in MatSchurComplementGetPmat() the (0,0) block should be lumped to form Sp.
+    MatSchurComplementSetAinvType - set the type of approximation used for the inverse of the (0,0) block used in forming Sp in MatSchurComplementGetPmat()
 
     Not collective.
 
     Input Parameters:
-+   S      - matrix obtained with MatCreateSchurComplement() (or equivalent) and implementing the action of A11 - A10 ksp(A00,Ap00) A01
--   lump   - whether to lump A00 when forming Sp = A11 - A10 inv(diag(A00)) A01
++   S        - matrix obtained with MatCreateSchurComplement() (or equivalent) and implementing the action of A11 - A10 ksp(A00,Ap00) A01
+-   ainvtype - type of approximation used to form A00inv from A00 when assembling Sp = A11 - A10 A00inv A01:
+$                      MAT_SCHUR_COMPLEMENT_AINV_DIAG or MAT_SCHUR_COMPLEMENT_AINV_LUMP
+
+    Options database:
+    -mat_schur_complement_ainv_type diag | lump
 
     Note:
     Since the real Schur complement is usually dense, providing a good approximation to newpmat usually requires
@@ -583,9 +595,9 @@ PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS isc
 
     Concepts: matrices^submatrices
 
-.seealso: MatCreateSchurComplement(), MatSchurComplementGetPmat(), MatSchurComplementGetPmatLumping()
+.seealso: MatSchurComplementAinvType, MatCreateSchurComplement(), MatGetSchurComplement(), MatSchurComplementGetPmat(), MatSchurComplementGetAinvType()
 @*/
-PetscErrorCode  MatSchurComplementSetPmatLumping(Mat S,PetscBool lump)
+PetscErrorCode  MatSchurComplementSetAinvType(Mat S,MatSchurComplementAinvType ainvtype)
 {
   PetscErrorCode      ierr;
   const char*         t;
@@ -598,14 +610,15 @@ PetscErrorCode  MatSchurComplementSetPmatLumping(Mat S,PetscBool lump)
   ierr = PetscStrcmp(t,MATSCHURCOMPLEMENT,&isschur);CHKERRQ(ierr);
   if (!isschur) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected Mat of type MATSCHURCOMPLEMENT, got %s instead",t);
   schur = (Mat_SchurComplement*)S->data;
-  schur->Alump = lump;
+  if (ainvtype != MAT_SCHUR_COMPLEMENT_AINV_DIAG && ainvtype != MAT_SCHUR_COMPLEMENT_AINV_LUMP) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown MatSchurComplementAinvType: %D",ainvtype);
+  schur->ainvtype = ainvtype;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSchurComplementGetPmatLumping"
+#define __FUNCT__ "MatSchurComplementGetAinvType"
 /*@
-    MatSchurComplementGetPmatLumping - returns flag indicating whether in MatSchurComplementGetPmat() the (0,0) block should be lumped to form Sp.
+    MatSchurComplementGetAinvType - get the type of approximation for the inverse of the (0,0) block used in forming Sp in MatSchurComplementGetPmat()
 
     Not collective.
 
@@ -613,7 +626,8 @@ PetscErrorCode  MatSchurComplementSetPmatLumping(Mat S,PetscBool lump)
 .   S      - matrix obtained with MatCreateSchurComplement() (or equivalent) and implementing the action of A11 - A10 ksp(A00,Ap00) A01
 
     Output Parameter:
-.   lump   - whether to lump A00 when forming Sp = A11 - A10 inv(diag(A00)) A01
+.   ainvtype - type of approximation used to form A00inv from A00 when assembling Sp = A11 - A10 A00inv A01:
+$                      MAT_SCHUR_COMPLEMENT_AINV_DIAG or MAT_SCHUR_COMPLEMENT_AINV_LUMP
 
     Note:
     Since the real Schur complement is usually dense, providing a good approximation to newpmat usually requires
@@ -625,9 +639,9 @@ PetscErrorCode  MatSchurComplementSetPmatLumping(Mat S,PetscBool lump)
 
     Concepts: matrices^submatrices
 
-.seealso: MatCreateSchurComplement(), MatSchurComplementGetPmat(), MatSchurComplementSetPmatLumping()
+.seealso: MatSchurComplementAinvType, MatCreateSchurComplement(), MatGetSchurComplement(), MatSchurComplementGetPmat(), MatSchurComplementSetAinvType()
 @*/
-PetscErrorCode  MatSchurComplementGetPmatLumping(Mat S,PetscBool *lump)
+PetscErrorCode  MatSchurComplementGetPmatLumping(Mat S,MatSchurComplementAinvType *ainvtype)
 {
   PetscErrorCode      ierr;
   const char*         t;
@@ -640,7 +654,7 @@ PetscErrorCode  MatSchurComplementGetPmatLumping(Mat S,PetscBool *lump)
   ierr = PetscStrcmp(t,MATSCHURCOMPLEMENT,&isschur);CHKERRQ(ierr);
   if (!isschur) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected Mat of type MATSCHURCOMPLEMENT, got %s instead",t);
   schur = (Mat_SchurComplement*)S->data;
-  if (lump) *lump = schur->Alump;
+  if (ainvtype) *ainvtype = schur->ainvtype;
   PetscFunctionReturn(0);
 }
 
@@ -653,7 +667,7 @@ PetscErrorCode  MatSchurComplementGetPmatLumping(Mat S,PetscBool *lump)
 
     Input Parameters:
 +   A00,A01,A10,A11      - the four parts of the original matrix A = [A00 A01; A10 A11] (A01,A10, and A11 are optional, implying zero matrices)
-.   plump                - whether to lump A00 in inv(diag(A00)); this amounts to replacing diag(A00) by the row sums of A00
+.   ainvtype             - type of approximation for inv(A00) used when forming Sp = A11 - A10 inv(A00) A01
 -   preuse               - MAT_INITIAL_MATRIX for a new Sp, or MAT_REUSE_MATRIX to reuse an existing Sp, or MAT_IGNORE_MATRIX to put nothing in Sp
 
     Output Parameter:
@@ -669,15 +683,15 @@ PetscErrorCode  MatSchurComplementGetPmatLumping(Mat S,PetscBool *lump)
 
     Concepts: matrices^submatrices
 
-.seealso: MatCreateSchurComplement(), MatGetSchurComplement(), MatSchurComplementGetPmat()
+.seealso: MatCreateSchurComplement(), MatGetSchurComplement(), MatSchurComplementGetPmat(), MatSchurComplementAinvType
 @*/
-PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,PetscBool plump,MatReuse preuse,Mat *Spmat)
+PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,MatSchurComplementAinvType ainvtype,MatReuse preuse,Mat *Spmat)
 {
 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Use the diagonal part of A00 to form A11 - A10 inv(diag(A00)) A01; a NULL A01, A10 or A11 indicates a zero matrix. */
+  /* Use an appropriate approximate inverse of A00 to form A11 - A10 inv(diag(A00)) A01; a NULL A01, A10 or A11 indicates a zero matrix. */
   /* TODO: Perhaps should create an appropriately-sized zero matrix of the same type as A00? */
   if ((!A01 || !A10) & !A11) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot assemble Spmat: A01, A10 and A11 are all NULL.");
 
@@ -693,11 +707,11 @@ PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,Pet
     Vec         diag;
 
     ierr = MatGetVecs(A00,&diag,NULL);CHKERRQ(ierr);
-    if (plump) {
+    if (ainvtype == MAT_SCHUR_COMPLEMENT_AINV_DIAG) {
       ierr = MatGetRowSum(A00,diag);CHKERRQ(ierr);
-    } else {
+    } else if (ainvtype == MAT_SCHUR_COMPLEMENT_AINV_LUMP) {
       ierr = MatGetDiagonal(A00,diag);CHKERRQ(ierr);
-    }
+    } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown MatSchurComplementAinvType: %D", ainvtype);
     ierr = VecReciprocal(diag);CHKERRQ(ierr);
     ierr = MatDuplicate(A01,MAT_COPY_VALUES,&AdB);CHKERRQ(ierr);
     ierr = MatDiagonalScale(AdB,diag,NULL);CHKERRQ(ierr);
@@ -727,7 +741,7 @@ PetscErrorCode  MatSchurComplementGetPmat_Basic(Mat S,MatReuse preuse,Mat *Spmat
 
   ierr = MatSchurComplementGetSubmatrices(S,&A,NULL,&B,&C,&D);CHKERRQ(ierr);
   if (!A) SETERRQ(PetscObjectComm((PetscObject)S),PETSC_ERR_ARG_WRONGSTATE,"Schur complement component matrices unset");
-  ierr = MatCreateSchurComplementPmat(A,B,C,D,schur->Alump,preuse,Spmat);CHKERRQ(ierr);
+  ierr = MatCreateSchurComplementPmat(A,B,C,D,schur->ainvtype,preuse,Spmat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -760,7 +774,7 @@ PetscErrorCode  MatSchurComplementGetPmat_Basic(Mat S,MatReuse preuse,Mat *Spmat
 
     Concepts: matrices^submatrices
 
-.seealso: MatGetSubMatrix(), PCFIELDSPLIT, MatGetSchurComplement(), MatCreateSchurComplement(), MatSchurComplementSetPmatLumping()
+.seealso: MatGetSubMatrix(), PCFIELDSPLIT, MatGetSchurComplement(), MatCreateSchurComplement(), MatSchurComplementSetAinvType()
 @*/
 PetscErrorCode  MatSchurComplementGetPmat(Mat S,MatReuse preuse,Mat *Sp)
 {
