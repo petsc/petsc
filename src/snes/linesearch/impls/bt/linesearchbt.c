@@ -193,6 +193,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
   } else {
     /* Since the full step didn't work and the step is tiny, quit */
     if (stol*xnorm > ynorm) {
+      ierr = SNESLineSearchSetNorms(linesearch,xnorm,fnorm,ynorm);CHKERRQ(ierr);
       ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
       ierr = PetscInfo2(monitor,"Aborted due to ynorm < stol*xnorm (%14.12e < %14.12e) and inadequate full step.\n",ynorm,stol*xnorm);CHKERRQ(ierr);
       PetscFunctionReturn(0);
