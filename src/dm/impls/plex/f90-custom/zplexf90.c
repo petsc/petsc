@@ -116,6 +116,7 @@ PETSC_EXTERN void PETSC_STDCALL dmplexvecgetclosure_(DM *dm, PetscSection *secti
   PetscScalar *v = NULL;
   PetscInt     n;
 
+  CHKFORTRANNULLOBJECT(section);
   *ierr = DMPlexVecGetClosure(*dm, *section, *x, *point, &n, &v);if (*ierr) return;
   *ierr = F90Array1dCreate((void*) v, PETSC_SCALAR, 1, n, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
@@ -124,6 +125,7 @@ PETSC_EXTERN void PETSC_STDCALL dmplexvecrestoreclosure_(DM *dm, PetscSection *s
 {
   PetscScalar *array;
 
+  CHKFORTRANNULLOBJECT(section);
   *ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void **) &array PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
   *ierr = DMPlexVecRestoreClosure(*dm, *section, *v, *point, NULL, &array);if (*ierr) return;
   *ierr = F90Array1dDestroy(ptr, PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
@@ -133,6 +135,7 @@ PETSC_EXTERN void PETSC_STDCALL dmplexvecsetclosure_(DM *dm, PetscSection *secti
 {
   PetscScalar *array;
 
+  CHKFORTRANNULLOBJECT(section);
   *ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void**) &array PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
   *ierr = DMPlexVecSetClosure(*dm, *section, *v, *point, array, *mode);
 }
@@ -141,6 +144,8 @@ PETSC_EXTERN void PETSC_STDCALL dmplexmatsetclosure_(DM *dm, PetscSection *secti
 {
   PetscScalar *array;
 
+  CHKFORTRANNULLOBJECT(section);
+  CHKFORTRANNULLOBJECT(globalSection);
   *ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void**) &array PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
   *ierr = DMPlexMatSetClosure(*dm, *section, *globalSection, *A, *point, array, *mode);
 }
