@@ -390,8 +390,11 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
       /* use compressed row format */
       CUSPMATRIX *mat = (CUSPMATRIX*)cuspstruct->mat;
       cusp::multiply(*mat,*xarray,*cuspstruct->tempvec);
-      ierr = VecSet_SeqCUSP(yy,0.0);CHKERRQ(ierr);
-      thrust::copy(cuspstruct->tempvec->begin(),cuspstruct->tempvec->end(),thrust::make_permutation_iterator(yarray->begin(),cuspstruct->indices->begin()));
+      thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(cuspstruct->tempvec->begin(),
+                                                                    thrust::make_permutation_iterator(zarray->begin(), cuspstruct->indices->begin()))),
+                       thrust::make_zip_iterator(thrust::make_tuple(cuspstruct->tempvec->end(),
+                                                                    thrust::make_permutation_iterator(zarray->end(),cuspstruct->indices->end()))),
+                       VecCUSPPlusEquals());
     } else { 
 
       if (cuspstruct->format==MAT_CUSP_ELL) {
