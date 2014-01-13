@@ -6,28 +6,6 @@ import user
 extraLogs = []
 petsc_arch = ''
 
-import urllib
-import tarfile
-
-def untar(tar, path = '.', leading = ''):
-  if leading:
-    entries = [t.name for t in tar.getmembers()]
-    prefix = os.path.commonprefix(entries)
-    if prefix:
-      for tarinfo in tar.getmembers():
-        tail = tarinfo.name.split(prefix, 1)[1]
-        tarinfo.name = os.path.join(leading, tail)
-  for tarinfo in tar.getmembers():
-    tar.extract(tarinfo, path)
-  return
-
-def downloadPackage(url, filename, targetDirname):
-  '''Download the tarball for a package at url, save it as filename, and untar it into targetDirname'''
-  filename, headers = urllib.urlretrieve(url, filename)
-  tar = tarfile.open(filename, 'r:gz')
-  untar(tar, targetDirname, leading = filename.split('.')[0])
-  return
-
 # Use en_US as language so that BuildSystem parses compiler messages in english
 if 'LC_LOCAL' in os.environ and os.environ['LC_LOCAL'] != '' and os.environ['LC_LOCAL'] != 'en_US' and os.environ['LC_LOCAL']!= 'en_US.UTF-8': os.environ['LC_LOCAL'] = 'en_US.UTF-8'
 if 'LANG' in os.environ and os.environ['LANG'] != '' and os.environ['LANG'] != 'en_US' and os.environ['LANG'] != 'en_US.UTF-8': os.environ['LANG'] = 'en_US.UTF-8'
@@ -93,29 +71,13 @@ def chkwinf90():
   return 0
 
 def chkdosfiles():
-  if not os.path.exists('/usr/bin/cygcheck.exe'): return
-  if os.path.exists('.hg'):
-    (status,output) = commands.getstatusoutput('hg showconfig paths.default')
-    if not status and output: return
-  if os.path.exists('.git'):
-    (status,output) = commands.getstatusoutput('git rev-parse')
-    if not status: return
-  # cygwin - but not a hg clone - so check files in bin dir
-  (status,output) = commands.getstatusoutput('file bin/*')
-  if status:
+  # cygwin - but not a hg clone - so check one of files in bin dir
+  if "\r\n" in open(os.path.join('bin','petscmpiexec'),"rb").read():
     print '==============================================================================='
-    print ' *** Incomplete cygwin install? command "file" not found!                    **'
+    print ' *** Scripts are in DOS mode. Was winzip used to extract petsc sources?    ****'
+    print ' *** Please restart with a fresh tarball and use "tar -xzf petsc.tar.gz"   ****'
     print '==============================================================================='
-    return
-  if output.find('with CRLF line terminators') >= 0:
-    print '==============================================================================='
-    print ' *** Scripts are in DOS mode. Was winzip used instead of tar? Converting.......'
-    print '==============================================================================='
-    (status,output) = commands.getstatusoutput('dos2unix bin/*')
-    if status:
-      print '==============================================================================='
-      print ' *** Incomplete cygwin install? command "dos2unix" not found!                **'
-      print '==============================================================================='
+    sys.exit(3)
   return
 
 def chkcygwinlink():
@@ -139,6 +101,14 @@ def chkbrokencygwin():
       print ' *** be done by running cygwin-setup, selecting "next" all the way.***'
       print '==============================================================================='
       sys.exit(3)
+  return 0
+
+def chkusingwindowspython():
+  if sys.platform == 'win32':
+    print '==============================================================================='
+    print ' *** Windows python detected. Please rerun ./configure with cygwin-python. ***'
+    print '==============================================================================='
+    sys.exit(3)
   return 0
 
 def chkcygwinpython():
@@ -210,6 +180,13 @@ def move_configure_log(framework):
       if os.path.isfile(new_bkp): os.symlink(new_bkp,curr_bkp)
   return
 
+def print_final_timestamp(framework):
+  import time
+  framework.log.write(('='*80)+'\n')
+  framework.log.write('Finishing Configure Run at '+time.ctime(time.time())+'\n')
+  framework.log.write(('='*80)+'\n')
+  return
+
 def petsc_configure(configure_options):
   try:
     petscdir = os.environ['PETSC_DIR']
@@ -269,6 +246,8 @@ def petsc_configure(configure_options):
   chkbrokencygwin()
   # Disable threads on RHL9
   chkrhl9()
+  # Make sure cygwin-python is used on windows
+  chkusingwindowspython()
   # Threads don't work for cygwin & python...
   chkcygwinpython()
   chkcygwinlink()
@@ -296,6 +275,7 @@ def petsc_configure(configure_options):
     framework.printSummary()
     framework.argDB.save(force = True)
     framework.logClear()
+    print_final_timestamp(framework)
     framework.closeLog()
     try:
       move_configure_log(framework)
@@ -353,16 +333,19 @@ def petsc_configure(configure_options):
     framework.logClear()
     if hasattr(framework, 'log'):
       try:
-        framework.log.write('**** Configure header '+framework.compilerDefines+' ****\n')
-        framework.outputHeader(framework.log)
-        framework.log.write('**** C specific Configure header '+framework.compilerFixes+' ****\n')
-        framework.outputCHeader(framework.log)
+        if hasattr(framework,'compilerDefines'):
+          framework.log.write('**** Configure header '+framework.compilerDefines+' ****\n')
+          framework.outputHeader(framework.log)
+        if hasattr(framework,'compilerFixes'):
+          framework.log.write('**** C specific Configure header '+framework.compilerFixes+' ****\n')
+          framework.outputCHeader(framework.log)
       except Exception, e:
         framework.log.write('Problem writing headers to log: '+str(e))
       import traceback
       try:
         framework.log.write(msg+se)
         traceback.print_tb(sys.exc_info()[2], file = framework.log)
+        print_final_timestamp(framework)
         if hasattr(framework,'log'): framework.log.close()
         move_configure_log(framework)
       except:

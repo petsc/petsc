@@ -5,8 +5,10 @@
 #include <petsc-private/petscimpl.h>  /*I   "petscsys.h"    I*/
 #include <petscviewer.h>
 
+#if defined(PETSC_USE_LOG)
 PetscObject *PetscObjects      = 0;
 PetscInt    PetscObjectsCounts = 0, PetscObjectsMaxCounts = 0;
+#endif
 
 extern PetscErrorCode PetscObjectGetComm_Petsc(PetscObject,MPI_Comm*);
 extern PetscErrorCode PetscObjectCompose_Petsc(PetscObject,const char[],PetscObject);
@@ -25,8 +27,10 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
 {
   static PetscInt idcnt = 1;
   PetscErrorCode  ierr;
+#if defined(PETSC_USE_LOG)
   PetscObject     *newPetscObjects;
   PetscInt         newPetscObjectsMaxCounts,i;
+#endif
 
   PetscFunctionBegin;
   h->classid               = classid;
@@ -36,8 +40,8 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
   h->mansec                = (char*)mansec;
   h->prefix                = 0;
   h->refct                 = 1;
-#if defined(PETSC_HAVE_AMS)
-  h->amsmem                = -1;
+#if defined(PETSC_HAVE_SAWS)
+  h->amsmem                = PETSC_FALSE;
 #endif
   h->id                    = idcnt++;
   h->parentid              = 0;
@@ -54,6 +58,7 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
 
   ierr = PetscCommDuplicate(comm,&h->comm,&h->tag);CHKERRQ(ierr);
 
+#if defined(PETSC_USE_LOG)
   /* Keep a record of object created */
   PetscObjectsCounts++;
   for (i=0; i<PetscObjectsMaxCounts; i++) {
@@ -65,7 +70,7 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
   /* Need to increase the space for storing PETSc objects */
   if (!PetscObjectsMaxCounts) newPetscObjectsMaxCounts = 100;
   else                        newPetscObjectsMaxCounts = 2*PetscObjectsMaxCounts;
-  ierr = PetscMalloc(newPetscObjectsMaxCounts*sizeof(PetscObject),&newPetscObjects);CHKERRQ(ierr);
+  ierr = PetscMalloc1(newPetscObjectsMaxCounts,&newPetscObjects);CHKERRQ(ierr);
   ierr = PetscMemcpy(newPetscObjects,PetscObjects,PetscObjectsMaxCounts*sizeof(PetscObject));CHKERRQ(ierr);
   ierr = PetscMemzero(newPetscObjects+PetscObjectsMaxCounts,(newPetscObjectsMaxCounts - PetscObjectsMaxCounts)*sizeof(PetscObject));CHKERRQ(ierr);
   ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
@@ -73,6 +78,7 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
   PetscObjects                        = newPetscObjects;
   PetscObjects[PetscObjectsMaxCounts] = h;
   PetscObjectsMaxCounts               = newPetscObjectsMaxCounts;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -88,11 +94,9 @@ extern PetscLogDouble PetscMemoryMaximumUsage;
 PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
 {
   PetscErrorCode ierr;
-  PetscInt       i;
 
   PetscFunctionBegin;
   PetscValidHeader(h,1);
-  ierr = PetscObjectAMSViewOff(h);CHKERRQ(ierr);
   ierr = PetscLogObjectDestroy(h);CHKERRQ(ierr);
   ierr = PetscComposedQuantitiesDestroy(h);
   if (PetscMemoryCollectMaximumUsage) {
@@ -124,6 +128,9 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
   ierr = PetscFree(h->fortrancallback[PETSC_FORTRAN_CALLBACK_CLASS]);CHKERRQ(ierr);
   ierr = PetscFree(h->fortrancallback[PETSC_FORTRAN_CALLBACK_SUBTYPE]);CHKERRQ(ierr);
 
+#if defined(PETSC_USE_LOG)
+  {
+  PetscInt i;
   /* Record object removal from list of all objects */
   for (i=0; i<PetscObjectsMaxCounts; i++) {
     if (PetscObjects[i] == h) {
@@ -136,6 +143,8 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
     ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
     PetscObjectsMaxCounts = 0;
   }
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -174,8 +183,7 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObjec
   ierr = PetscFortranCallbackGetSizes(src->classid,&numcb[PETSC_FORTRAN_CALLBACK_CLASS],&numcb[PETSC_FORTRAN_CALLBACK_SUBTYPE]);CHKERRQ(ierr);
   for (cbtype=PETSC_FORTRAN_CALLBACK_CLASS; cbtype<PETSC_FORTRAN_CALLBACK_MAXTYPE; cbtype++) {
     ierr = PetscFree(dest->fortrancallback[cbtype]);CHKERRQ(ierr);
-    ierr = PetscMalloc(numcb[cbtype]*sizeof(PetscFortranCallback),&dest->fortrancallback[cbtype]);CHKERRQ(ierr);
-    ierr = PetscMemzero(dest->fortrancallback[cbtype],numcb[cbtype]*sizeof(PetscFortranCallback));CHKERRQ(ierr);
+    ierr = PetscCalloc1(numcb[cbtype],&dest->fortrancallback[cbtype]);CHKERRQ(ierr);
     ierr = PetscMemcpy(dest->fortrancallback[cbtype],src->fortrancallback[cbtype],src->num_fortrancallback[cbtype]*sizeof(PetscFortranCallback));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -211,7 +219,7 @@ PetscErrorCode PetscObjectSetFortranCallback(PetscObject obj,PetscFortranCallbac
   if (*cid >= PETSC_SMALLEST_FORTRAN_CALLBACK+obj->num_fortrancallback[cbtype]) {
     PetscInt             oldnum = obj->num_fortrancallback[cbtype],newnum = PetscMax(1,2*oldnum);
     PetscFortranCallback *callback;
-    ierr = PetscMalloc(newnum*sizeof(callback[0]),&callback);CHKERRQ(ierr);
+    ierr = PetscMalloc1(newnum,&callback);CHKERRQ(ierr);
     ierr = PetscMemcpy(callback,obj->fortrancallback[cbtype],oldnum*sizeof(*obj->fortrancallback[cbtype]));CHKERRQ(ierr);
     ierr = PetscFree(obj->fortrancallback[cbtype]);CHKERRQ(ierr);
 
@@ -257,6 +265,7 @@ PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj,PetscFortranCallbac
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_USE_LOG)
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectsDump"
 /*@C
@@ -278,7 +287,7 @@ PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
   PetscErrorCode ierr;
   PetscInt       i;
 #if defined(PETSC_USE_DEBUG)
-  PetscInt       j,k;
+  PetscInt       j,k=0;
 #endif
   PetscObject    h;
 
@@ -318,7 +327,7 @@ PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
         ierr = PetscMallocGetStack(h,&stack);CHKERRQ(ierr);
         if (stack) {
           for (j=k; j>=0; j--) {
-            fprintf(fd,"      [%d]  %s() in %s%s\n",PetscGlobalRank,stack->function[j],stack->directory[j],stack->file[j]);
+            fprintf(fd,"      [%d]  %s() in %s\n",PetscGlobalRank,stack->function[j],stack->file[j]);
           }
         }
 #endif
@@ -328,7 +337,9 @@ PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
   }
   PetscFunctionReturn(0);
 }
+#endif
 
+#if defined(PETSC_USE_LOG)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectsView"
@@ -424,6 +435,7 @@ char *PetscObjectsGetObjectMatlab(const char* name,PetscObject *obj)
   }
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectAddOptionsHandler"
@@ -1015,6 +1027,7 @@ PetscErrorCode  PetscContainerCreate(MPI_Comm comm,PetscContainer *container)
 
   PetscFunctionBegin;
   PetscValidPointer(container,2);
+  ierr = PetscSysInitializePackage();CHKERRQ(ierr);
   ierr = PetscHeaderCreate(contain,_p_PetscContainer,PetscInt,PETSC_CONTAINER_CLASSID,"PetscContainer","Container","Sys",comm,PetscContainerDestroy,0);CHKERRQ(ierr);
   *container = contain;
   PetscFunctionReturn(0);

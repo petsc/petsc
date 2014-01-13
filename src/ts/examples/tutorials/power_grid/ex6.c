@@ -76,7 +76,8 @@ int main(int argc, char **argv)
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   /* Get Jacobian matrix structure from the da */
-  ierr = DMCreateMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da,&J);CHKERRQ(ierr);
 
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
@@ -206,7 +207,7 @@ PetscErrorCode adv2(PetscScalar **p,PetscScalar x,PetscInt i,PetscInt j,PetscInt
 
     *p2 = 0.1*s1 + 0.6*s2 + 0.3*s3;
     } else *p2 = 0.0; */
-  f   = (user->ws/(2*user->H))*(user->PM_min - user->Pmax*sin(x));
+  f   = (user->ws/(2*user->H))*(user->PM_min - user->Pmax*PetscSinScalar(x));
   *p2 = f*(p[j+1][i] - p[j-1][i])/(2*user->dy);
   PetscFunctionReturn(0);
 }
@@ -233,7 +234,7 @@ PetscErrorCode BoundaryConditions(PetscScalar **p,DMDACoor2d **coors,PetscInt i,
   if (user->bc == 0) { /* Natural boundary condition */
     f[j][i] = p[j][i];
   } else { /* Steady state boundary condition */
-    fthetac = user->ws/(2*user->H)*(user->PM_min - user->Pmax*sin(theta));
+    fthetac = user->ws/(2*user->H)*(user->PM_min - user->Pmax*PetscSinScalar(theta));
     fwc = (w*w/2.0 - user->ws*w);
     if (i == 0 && j == 0) { /* left bottom corner */
       f[j][i] = fwc*(p[j][i+1] - p[j][i])/user->dx + fthetac*p[j][i] - user->disper_coe*(p[j+1][i] - p[j][i])/user->dy;
@@ -346,7 +347,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J,Mat
           col[nc].i = i; col[nc].j = j; val[nc++] = 1.0;
         } else {
           PetscScalar fthetac,fwc;
-          fthetac = user->ws/(2*user->H)*(user->PM_min - user->Pmax*sin(xi));
+          fthetac = user->ws/(2*user->H)*(user->PM_min - user->Pmax*PetscSinScalar(xi));
           fwc     = (yi*yi/2.0 - user->ws*yi);
           if (i==0 && j==0) {
             col[nc].i = i+1; col[nc].j = j;   val[nc++] = fwc/user->dx;
@@ -388,7 +389,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J,Mat
         }
       } else {
         c1        = (yi-user->ws)/(2*user->dx);
-        c3        = (user->ws/(2.0*user->H))*(user->PM_min - user->Pmax*sin(xi))/(2*user->dy);
+        c3        = (user->ws/(2.0*user->H))*(user->PM_min - user->Pmax*PetscSinScalar(xi))/(2*user->dy);
         c5        = (PetscPowScalar((user->lambda*user->ws)/(2*user->H),2)*user->q*(1.0-PetscExpScalar(-t/user->lambda)))/(user->dy*user->dy);
         col[nc].i = i-1; col[nc].j = j;   val[nc++] = c1;
         col[nc].i = i+1; col[nc].j = j;   val[nc++] = -c1;

@@ -45,7 +45,7 @@ PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
     ierr = KSPSetComputeEigenvalues(cheb->kspest,PETSC_TRUE);CHKERRQ(ierr);
 
     /* Estimate with a fixed number of iterations */
-    ierr = KSPSetConvergenceTest(cheb->kspest,KSPSkipConverged,0,0);CHKERRQ(ierr);
+    ierr = KSPSetConvergenceTest(cheb->kspest,KSPConvergedSkip,0,0);CHKERRQ(ierr);
     ierr = KSPSetNormType(cheb->kspest,KSP_NORM_NONE);CHKERRQ(ierr);
     ierr = KSPSetTolerances(cheb->kspest,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,cheb->eststeps);CHKERRQ(ierr);
 
@@ -99,7 +99,7 @@ static PetscErrorCode KSPChebyshevSetEstimateEigenvalues_Chebyshev(KSP ksp,Petsc
       ierr = KSPSetComputeEigenvalues(cheb->kspest,PETSC_TRUE);CHKERRQ(ierr);
 
       /* Estimate with a fixed number of iterations */
-      ierr = KSPSetConvergenceTest(cheb->kspest,KSPSkipConverged,0,0);CHKERRQ(ierr);
+      ierr = KSPSetConvergenceTest(cheb->kspest,KSPConvergedSkip,0,0);CHKERRQ(ierr);
       ierr = KSPSetNormType(cheb->kspest,KSP_NORM_NONE);CHKERRQ(ierr);
       ierr = KSPSetTolerances(cheb->kspest,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,cheb->eststeps);CHKERRQ(ierr);
     }
@@ -357,7 +357,7 @@ static PetscErrorCode KSPChebyshevComputeExtremeEigenvalues_Private(KSP kspest,P
 
   PetscFunctionBegin;
   ierr = KSPGetIterationNumber(kspest,&n);CHKERRQ(ierr);
-  ierr = PetscMalloc2(n,PetscReal,&re,n,PetscReal,&im);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,&re,n,&im);CHKERRQ(ierr);
   ierr = KSPComputeEigenvalues(kspest,n,re,im,&neig);CHKERRQ(ierr);
   min  = PETSC_MAX_REAL;
   max  = PETSC_MIN_REAL;
@@ -458,7 +458,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   ierr = VecAYPX(p[k],scale,p[km1]);CHKERRQ(ierr);
 
   for (i=0; i<maxit; i++) {
-    ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     if (hybrid && cheb->its && (cheb->its%cheb->chebysteps==0)) {
       /* Adaptive step: update eigenvalue estimate - does not seem to improve convergence */
       PetscReal max,min;
@@ -497,7 +497,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
 
     ksp->its++;
     cheb->its++;
-    ierr   = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr   = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
     c[kp1] = 2.0*mu*c[k] - c[km1];
     omega  = omegaprod*c[k]/c[kp1];
 
@@ -513,9 +513,9 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
       } else {
         ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
       }
-      ierr         = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+      ierr         = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
       ksp->rnorm   = rnorm;
-      ierr = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+      ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
       ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
       ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
       ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -540,9 +540,9 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
         ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr); /* p[kp1] = B^{-1}r */
         ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
       }
-      ierr         = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+      ierr         = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
       ksp->rnorm   = rnorm;
-      ierr         = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+      ierr         = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
       ksp->vec_sol = p[k];
       ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
       ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
@@ -645,7 +645,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Chebyshev(KSP ksp)
   KSP_Chebyshev  *chebyshevP;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,KSP_Chebyshev,&chebyshevP);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,&chebyshevP);CHKERRQ(ierr);
 
   ksp->data = (void*)chebyshevP;
   ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);

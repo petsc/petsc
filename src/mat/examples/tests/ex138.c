@@ -27,9 +27,23 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   ierr = MatGetSize(A,NULL,&n);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscReal),&norms);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&norms);CHKERRQ(ierr);
+
   ierr = MatGetColumnNorms(A,NORM_2,norms);CHKERRQ(ierr);
   if (!rank) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"NORM_2:\n");CHKERRQ(ierr);
+    ierr = PetscRealView(n,norms,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  }
+
+  ierr = MatGetColumnNorms(A,NORM_1,norms);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"NORM_1:\n");CHKERRQ(ierr);
+    ierr = PetscRealView(n,norms,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  }
+
+  ierr = MatGetColumnNorms(A,NORM_INFINITY,norms);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"NORM_INFINITY:\n");CHKERRQ(ierr);
     ierr = PetscRealView(n,norms,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 

@@ -108,7 +108,8 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Set Jacobian evaluation routine
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr  = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+  ierr  = DMCreateMatrix(da,&J);CHKERRQ(ierr);
   Jtype = 0;
   ierr  = PetscOptionsGetInt(NULL, "-Jtype",&Jtype,NULL);CHKERRQ(ierr);
   if (Jtype == 0) { /* use user provided Jacobian evaluation routine */
@@ -337,8 +338,8 @@ PetscErrorCode FormInitialSolution(Vec U,void *ptr)
     y = j*hy;
     for (i=xs; i<xs+xm; i++) {
       x = i*hx;
-      r = PetscSqrtScalar((x-.5)*(x-.5) + (y-.5)*(y-.5));
-      if (r < .125) u[j][i] = PetscExpScalar(c*r*r*r);
+      r = PetscSqrtReal((x-.3)*(x-.5) + (y-.5)*(y-.5));
+      if (r < .125) u[j][i] = PetscExpReal(c*r*r*r);
       else u[j][i] = 0.0;
     }
   }

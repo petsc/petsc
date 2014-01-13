@@ -9,27 +9,22 @@ class Configure(config.base.Configure):
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.useShared    = 0
-    self.useDynamic   = 0
     return
 
   def __str1__(self):
-    if not hasattr(self, 'useShared') or not hasattr(self, 'useDynamic'):
+    if not hasattr(self, 'useShared'):
       return ''
     txt = ''
     if self.useShared:
       txt += '  shared libraries: enabled\n'
     else:
       txt += '  shared libraries: disabled\n'
-    if self.useDynamic:
-      txt += '  dynamic loading: enabled\n'
-    else:
-      txt += '  dynamic loading: disabled\n'
     return txt
 
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-shared-libraries=<bool>', nargs.ArgBool(None, 1, 'Make PETSc libraries shared -- libpetsc.so (Unix/Linux) or libpetsc.dylib (Mac)'))
-    help.addArgument('PETSc', '-with-dynamic-loading=<bool>', nargs.ArgBool(None, 0, 'Make PETSc libraries dynamic -- uses dlopen() to access libraries, rarely needed'))
+    help.addArgument('PETSc', '-with-serialize-functions=<bool>', nargs.ArgBool(None, 0, 'Allows function pointers to be serialized to binary files with string representations'))
     return
 
   def setupDependencies(self, framework):
@@ -43,22 +38,17 @@ class Configure(config.base.Configure):
     # uf user specified 'with-shared' or 'with-dynamic' - flag an error
     if 'with-shared' in self.framework.argDB:
       raise RuntimeError('Option "--with-shared" no longer exists. Use "--with-shared-libraries".')
-    if 'with-dynamic' in self.framework.argDB:
-      raise RuntimeError('Option "--with-dynamic" no longer exists. Use "--with-dynamic-loading".')
+    if 'with-dynamic' in self.framework.argDB or 'with-dynamic-loading' in self.framework.argDB:
+      raise RuntimeError('Option "--with-dynamic" and "--with-dynamic-loading" no longer exist.')
     # if user specifies inconsistant 'with-dynamic-loading with-shared-libraries with-pic' options - flag error
-    if self.framework.argDB['with-dynamic-loading'] and not self.framework.argDB['with-shared-libraries'] and 'with-shared-libraries' in self.framework.clArgDB:
-      raise RuntimeError('If you use --with-dynamic-loading you cannot disable --with-shared-libraries')
-    if self.framework.argDB['with-dynamic-loading'] and not self.framework.argDB['with-pic'] and 'with-pic' in self.framework.clArgDB:
-      raise RuntimeError('If you use --with-dynamic-loading you cannot disable --with-pic')
     if self.framework.argDB['with-shared-libraries'] and not self.framework.argDB['with-pic'] and 'with-pic' in self.framework.clArgDB:
       raise RuntimeError('If you use --with-shared-libraries you cannot disable --with-pic')
 
-    # default with-dynamic-loading=1 => with-shared-libraries=1 --with-pic=1
     # default with-shared-libraries=1 => --with-pic=1
     # Note: there is code in setCompilers.py that uses this as default.
-    if self.framework.argDB['with-dynamic-loading'] and not self.framework.argDB['with-shared-libraries']: self.framework.argDB['with-shared-libraries'] = 1
     if self.framework.argDB['with-shared-libraries'] and not self.framework.argDB['with-pic']: self.framework.argDB['with-pic'] = 1
     return
+
 
   def configureSharedLibraries(self):
     '''Checks whether shared libraries should be used, for which you must
@@ -100,21 +90,26 @@ class Configure(config.base.Configure):
     return
 
   def configureDynamicLibraries(self):
-    '''Checks whether dynamic loading should be used, for which you must
-      - Specify --with-dynamic-loading
-      - Have found a working dynamic linker (with dlfcn.h and libdl)
-    Defines PETSC_USE_DYNAMIC_LIBRARIES if they are used'''
+    '''Checks whether dynamic loading is available (with dlfcn.h and libdl)'''
     if self.setCompilers.dynamicLibraries:
       self.addDefine('HAVE_DYNAMIC_LIBRARIES', 1)
-    self.useDynamic = self.framework.argDB['with-dynamic-loading'] and self.useShared and self.setCompilers.dynamicLibraries
-    if self.useDynamic:
-      self.addDefine('USE_DYNAMIC_LIBRARIES', 1)
-    else:
-      self.logPrint('Dynamic loading - disabled')
     return
 
+  def configureSerializedFunctions(self):
+    '''
+    Defines PETSC_SERIALIZE_FUNCTIONS if they are used
+    Requires shared libraries'''
+    import sys
+
+    if self.framework.argDB['with-serialize-functions'] and self.setCompilers.dynamicLibraries:
+      self.addDefine('SERIALIZE_FUNCTIONS', 1)
+
+
   def configure(self):
+    # on windows use with-shared-libraries=0 as default
+    if self.setCompilers.isCygwin() and 'with-shared-libraries' not in self.framework.clArgDB: self.framework.argDB['with-shared-libraries'] = 0
     self.executeTest(self.checkSharedDynamicPicOptions)
     self.executeTest(self.configureSharedLibraries)
     self.executeTest(self.configureDynamicLibraries)
+    self.executeTest(self.configureSerializedFunctions)
     return

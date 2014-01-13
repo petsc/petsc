@@ -115,11 +115,11 @@ int main(int argc,char **argv)
      The ofill (thought of as a DOF by DOF 2d (row-oriented) array) represents the nonzero coupling between degrees
      of freedom at one point with degrees of freedom on the adjacent point to the left or right. A 1 at i,j in the
      ofill array indicates that the degree of freedom i at a point is coupled to degree of freedom j at the
-     adjacent point. In this case ofill has only a few diagonal entries since the only spatial coupling is regular diffusion */
-  ierr = PetscMalloc(DOF*DOF*sizeof(PetscInt),&ofill);CHKERRQ(ierr);
-  ierr = PetscMemzero(ofill,DOF*DOF*sizeof(PetscInt));CHKERRQ(ierr);
-  for (He=0; He<PetscMin(NHe,5); He++) ofill[He*DOF + He] = 1;
-  ofill[NHe*DOF + NHe] = ofill[(NHe+NV)*DOF + NHe + NV] = 1;
+     adjacent point. In this case ofill has only a few diagonal entries since the only spatial coupling is regular diffusion. */
+  ierr = PetscMalloc1(dof*dof,&ofill);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dof*dof,&dfill);CHKERRQ(ierr);
+  ierr = PetscMemzero(ofill,dof*dof*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(dfill,dof*dof*sizeof(PetscInt));CHKERRQ(ierr);
 
   /*
     dfil (thought of as a DOF by DOF 2d (row-oriented) array) repesents the nonzero coupling between degrees of
@@ -1269,6 +1269,8 @@ PetscErrorCode MyMonitorSetUp(TS ts)
 
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = PetscNew(MyMonitorCtx,&ctx);CHKERRQ(ierr);
+  ierr = PetscNew(&ctx);CHKERRQ(ierr);
+  ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)da),NULL,"",PETSC_DECIDE,PETSC_DECIDE,600,400,&ctx->viewer);CHKERRQ(ierr);
 
   /* setup visualization for He */
   ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)da),NULL,"",PETSC_DECIDE,PETSC_DECIDE,600,400,&ctx->Heviewer);CHKERRQ(ierr);
@@ -1307,6 +1309,8 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   ierr = DMDASetCoordinateName(ctx->Vda,1,ycoor);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(ctx->Vda,&ctx->V);CHKERRQ(ierr);
   ierr = PetscMalloc(NV*xm*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(ctx->da,&ctx->He);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2*N*xm,&idx);CHKERRQ(ierr);
   cnt  = 0;
   for (xj=0; xj<NV; xj++) {
     for (xi=xs; xi<xs+xm; xi++) {

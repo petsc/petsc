@@ -126,7 +126,7 @@ int main(int argc,char **args)
 
       Note: The default decomposition is 1 block per processor.
   */
-  ierr = PetscMalloc(m*sizeof(PetscInt),&blks);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&blks);CHKERRQ(ierr);
   for (i=0; i<m; i++) blks[i] = n;
   ierr = PCBJacobiSetTotalBlocks(pc,m,blks);CHKERRQ(ierr);
   ierr = PetscFree(blks);CHKERRQ(ierr);

@@ -185,7 +185,7 @@ PetscErrorCode  PetscStrallocpy(const char s[],char *t[])
   PetscFunctionBegin;
   if (s) {
     ierr = PetscStrlen(s,&len);CHKERRQ(ierr);
-    ierr = PetscMalloc((1+len)*sizeof(char),&tmp);CHKERRQ(ierr);
+    ierr = PetscMalloc1((1+len),&tmp);CHKERRQ(ierr);
     ierr = PetscStrcpy(tmp,s);CHKERRQ(ierr);
   }
   *t = tmp;
@@ -222,7 +222,7 @@ PetscErrorCode  PetscStrArrayallocpy(const char *const *list,char ***t)
 
   PetscFunctionBegin;
   while (list[n++]) ;
-  ierr = PetscMalloc((n+1)*sizeof(char**),t);CHKERRQ(ierr);
+  ierr = PetscMalloc1((n+1),t);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = PetscStrallocpy(list[i],(*t)+i);CHKERRQ(ierr);
   }
@@ -925,7 +925,7 @@ PetscErrorCode  PetscTokenCreate(const char a[],const char b,PetscToken *t)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _p_PetscToken,t);CHKERRQ(ierr);
+  ierr = PetscNew(t);CHKERRQ(ierr);
   ierr = PetscStrallocpy(a,&(*t)->array);CHKERRQ(ierr);
 
   (*t)->current = (*t)->array;
@@ -1024,17 +1024,17 @@ PetscErrorCode  PetscStrreplace(MPI_Comm comm,const char aa[],char b[],size_t le
   if (aa == b) {
     ierr = PetscStrallocpy(aa,(char**)&a);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc(len*sizeof(char*),&work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(len,&work);CHKERRQ(ierr);
 
   /* get values for replaced variables */
   ierr = PetscStrallocpy(PETSC_ARCH,(char**)&r[0]);CHKERRQ(ierr);
   ierr = PetscStrallocpy(PETSC_DIR,(char**)&r[1]);CHKERRQ(ierr);
   ierr = PetscStrallocpy(PETSC_LIB_DIR,(char**)&r[2]);CHKERRQ(ierr);
-  ierr = PetscMalloc(256*sizeof(char),&r[3]);CHKERRQ(ierr);
-  ierr = PetscMalloc(PETSC_MAX_PATH_LEN*sizeof(char),&r[4]);CHKERRQ(ierr);
-  ierr = PetscMalloc(PETSC_MAX_PATH_LEN*sizeof(char),&r[5]);CHKERRQ(ierr);
-  ierr = PetscMalloc(256*sizeof(char),&r[6]);CHKERRQ(ierr);
-  ierr = PetscMalloc(256*sizeof(char),&r[7]);CHKERRQ(ierr);
+  ierr = PetscMalloc1(256,&r[3]);CHKERRQ(ierr);
+  ierr = PetscMalloc1(PETSC_MAX_PATH_LEN,&r[4]);CHKERRQ(ierr);
+  ierr = PetscMalloc1(PETSC_MAX_PATH_LEN,&r[5]);CHKERRQ(ierr);
+  ierr = PetscMalloc1(256,&r[6]);CHKERRQ(ierr);
+  ierr = PetscMalloc1(256,&r[7]);CHKERRQ(ierr);
   ierr = PetscGetDisplay((char*)r[3],256);CHKERRQ(ierr);
   ierr = PetscGetHomeDirectory((char*)r[4],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscGetWorkingDirectory((char*)r[5],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);

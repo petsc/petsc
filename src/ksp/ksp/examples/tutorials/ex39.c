@@ -58,11 +58,8 @@ int main(int Argc,char **Args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&comm_size);CHKERRQ(ierr);
 
   /* construct matrix */
-  if (comm_size == 1) {
-    ierr = DMCreateMatrix(da, MATSEQAIJ, &H);CHKERRQ(ierr);
-  } else {
-    ierr = DMCreateMatrix(da, MATMPIAIJ, &H);CHKERRQ(ierr);
-  }
+  ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da, &H);CHKERRQ(ierr);
 
   /* get local corners for this processor */
   ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
@@ -145,7 +142,7 @@ int main(int Argc,char **Args)
 
   /* permutation matrix to check whether H and HtH are identical to the ones in the paper */
 /*   Mat perm; */
-/*   ierr = DMCreateMatrix(da, MATSEQAIJ, &perm);CHKERRQ(ierr); */
+/*   ierr = DMCreateMatrix(da, &perm);CHKERRQ(ierr); */
 /*   PetscInt row, col; */
 /*   PetscScalar one = 1.0; */
 /*   for (PetscInt i=0; i<n; i++) { */

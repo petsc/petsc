@@ -16,97 +16,7 @@ class Configure(config.base.Configure):
 
   def setupHelp(self, help):
     import nargs
-    import nargs
-    help.addArgument('PETSc', '-with-make=<prog>', nargs.Arg(None, 'make', 'Specify make'))
-    help.addArgument('PETSc', '-with-make-np=<np>', nargs.ArgInt(None, None, min=1, help='Default number of threads to use for parallel builds'))
     help.addArgument('PETSc', '-with-autoreconf=<prog>', nargs.Arg(None, 'autoreconf', 'Specify autoreconf'))
-    return
-
-  def configureMake(self):
-    '''Check various things about make'''
-    self.getExecutable(self.framework.argDB['with-make'], getFullPath = 1,resultName = 'make')
-
-    if not hasattr(self,'make'):
-      import os
-      if os.path.exists('/usr/bin/cygcheck.exe') and not os.path.exists('/usr/bin/make'):
-        raise RuntimeError('''\
-*** Incomplete cygwin install detected . /usr/bin/make is missing. **************
-*** Please rerun cygwin-setup and select module "make" for install.**************''')
-      else:
-        raise RuntimeError('Could not locate the make utility on your system, make sure\n it is in your path or use --with-make=/fullpathnameofmake\n and run ./configure again')
-    # Check for GNU make
-    haveGNUMake = 0
-    self.getExecutable('strings', getFullPath = 1)
-    if hasattr(self, 'strings'):
-      try:
-        (output, error, status) = config.base.Configure.executeShellCommand(self.strings+' '+self.make, log = self.framework.log)
-        if not status and output.find('GNU Make') >= 0:
-          haveGNUMake = 1
-      except RuntimeError, e:
-        self.framework.log.write('Make check failed: '+str(e)+'\n')
-      if not haveGNUMake:
-        try:
-          (output, error, status) = config.base.Configure.executeShellCommand(self.strings+' '+self.make+'.exe', log = self.framework.log)
-          if not status and output.find('GNU Make') >= 0:
-            haveGNUMake = 1
-        except RuntimeError, e:
-          self.framework.log.write('Make check failed: '+str(e)+'\n')
-    # mac has fat binaries where 'string' check fails
-    if not haveGNUMake:
-      try:
-        (output, error, status) = config.base.Configure.executeShellCommand(self.make+' -v dummy-foobar', log = self.framework.log)
-        if not status and output.find('GNU Make') >= 0:
-          haveGNUMake = 1
-      except RuntimeError, e:
-        self.framework.log.write('Make check failed: '+str(e)+'\n')
-
-    # Setup make flags
-    self.flags = ''
-    if haveGNUMake:
-      self.flags += ' --no-print-directory'
-    self.addMakeMacro('OMAKE ', self.make+' '+self.flags)
-
-    # Check to see if make allows rules which look inside archives
-    if haveGNUMake:
-      self.addMakeRule('libc','${LIBNAME}(${OBJSC})')
-      self.addMakeRule('libcu','${LIBNAME}(${OBJSCU})')
-    else:
-      self.addMakeRule('libc','${OBJSC}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC}')
-      self.addMakeRule('libcu','${OBJSCU}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSCU}')
-    self.addMakeRule('libf','${OBJSF}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}')
-
-    # check no of cores on the build machine [perhaps to do make '-j ncores']
-    make_np = self.framework.argDB.get('with-make-np')
-    if make_np is not None:
-      self.framework.logPrint('using user-provided make_np = %d' % make_np)
-    else:
-      try:
-        import multiprocessing
-        cores = multiprocessing.cpu_count()
-        make_np = max(min(cores+1,5),cores/3)
-        self.framework.logPrint('module multiprocessing found %d cores: using make_np = %d' % (cores,make_np))
-      except (ImportError), e:
-        make_np = 2
-        self.framework.logPrint('module multiprocessing *not* found: using default make_np = %d' % make_np)
-      try:
-        import os
-        import pwd
-        if 'barrysmith' == pwd.getpwuid(os.getuid()).pw_name:
-          # Barry wants to use exactly the number of physical cores (not logical cores) because it breaks otherwise.
-          # Since this works for everyone else who uses a Mac, something must be wrong with their systems. ;-)
-          try:
-            (output, error, status) = config.base.Configure.executeShellCommand('/usr/sbin/system_profiler -detailLevel full SPHardwareDataType', log = self.framework.log)
-            import re
-            match = re.search(r'.*Total Number Of Cores: (\d+)', output)
-            if match:
-              make_np = int(match.groups()[0])
-              self.framework.logPrint('Found number of cores using system_profiler: make_np = %d' % (make_np,))
-          except:
-            pass
-      except:
-        pass
-    self.make_np = make_np
-    self.addMakeMacro('MAKE_NP',str(make_np))
     return
 
   def configureMkdir(self):
@@ -228,9 +138,7 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    if not self.framework.argDB['with-make'] == '0':
-      self.executeTest(self.configureMake)
-      self.executeTest(self.configureMkdir)
-      self.executeTest(self.configureAutoreconf)
-      self.executeTest(self.configurePrograms)
+    self.executeTest(self.configureMkdir)
+    self.executeTest(self.configureAutoreconf)
+    self.executeTest(self.configurePrograms)
     return

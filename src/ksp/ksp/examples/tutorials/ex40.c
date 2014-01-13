@@ -67,18 +67,15 @@ int main(int Argc,char **Args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&comm_size);CHKERRQ(ierr);
 
   /* construct matrix */
-  if (comm_size == 1) {
-    ierr = DMCreateMatrix(adda, MATSEQAIJ, &H);CHKERRQ(ierr);
-  } else {
-    ierr = DMCreateMatrix(adda, MATMPIAIJ, &H);CHKERRQ(ierr);
-  }
+  ierr = DMSetMatType(adda,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(adda, &H);CHKERRQ(ierr);
 
   /* get local corners for this processor, user is responsible for freeing lcs,lce */
   ierr = DMADDAGetCorners(adda, &lcs, &lce);CHKERRQ(ierr);
 
   /* Allocate space for the indices that we use to construct the matrix */
-  ierr = PetscMalloc(2*sizeof(PetscInt), &(sxy.x));CHKERRQ(ierr);
-  ierr = PetscMalloc(2*sizeof(PetscInt), &(sxy_m.x));CHKERRQ(ierr);
+  ierr = PetscMalloc1(2, &(sxy.x));CHKERRQ(ierr);
+  ierr = PetscMalloc1(2, &(sxy_m.x));CHKERRQ(ierr);
 
   /* Assemble the matrix */
   for (x=lcs[0]; x<lce[0]; x++) {

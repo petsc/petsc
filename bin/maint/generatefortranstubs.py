@@ -13,8 +13,8 @@ def FixFile(filename):
   ff.close()
 
   # gotta be a better way to do this
-  data = re.subn('\nvoid ','\nvoid PETSC_STDCALL ',data)[0]
-  data = re.subn('\nPetscErrorCode ','\nvoid PETSC_STDCALL ',data)[0]
+  data = re.subn('\nvoid ','\nPETSC_EXTERN void PETSC_STDCALL ',data)[0]
+  data = re.subn('\nPetscErrorCode ','\nPETSC_EXTERN void PETSC_STDCALL ',data)[0]
   data = re.subn('Petsc([ToRm]*)Pointer\(int\)','Petsc\\1Pointer(void*)',data)[0]	
   data = re.subn('PetscToPointer\(a\) \(a\)','PetscToPointer(a) (*(long *)(a))',data)[0]
   data = re.subn('PetscFromPointer\(a\) \(int\)\(a\)','PetscFromPointer(a) (long)(a)',data)[0]
@@ -161,7 +161,10 @@ def processDir(arg,dirname,names):
     (status,output) = commands.getstatusoutput(cmd)
     if status:
       raise RuntimeError('Error running bfort\n'+cmd+'\n'+output)
-    FixDir(petscdir,outdir,verbose)
+    try:
+      FixDir(petscdir,outdir,verbose)
+    except:
+      print 'Error! with FixDir('+outdir+')'
 
   # remove from list of subdirectories all directories without source code
   rmnames=[]

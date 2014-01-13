@@ -13,10 +13,10 @@
 /*
      These are defined in mal.c and ensure that malloced space is PetscScalar aligned
 */
-extern PetscErrorCode  PetscMallocAlign(size_t,int,const char[],const char[],const char[],void**);
-extern PetscErrorCode  PetscFreeAlign(void*,int,const char[],const char[],const char[]);
-extern PetscErrorCode  PetscTrMallocDefault(size_t,int,const char[],const char[],const char[],void**);
-extern PetscErrorCode  PetscTrFreeDefault(void*,int,const char[],const char[],const char[]);
+extern PetscErrorCode  PetscMallocAlign(size_t,int,const char[],const char[],void**);
+extern PetscErrorCode  PetscFreeAlign(void*,int,const char[],const char[]);
+extern PetscErrorCode  PetscTrMallocDefault(size_t,int,const char[],const char[],void**);
+extern PetscErrorCode  PetscTrFreeDefault(void*,int,const char[],const char[]);
 
 
 #define CLASSID_VALUE   ((PetscClassId) 0xf0e0d0c9)
@@ -28,7 +28,6 @@ typedef struct _trSPACE {
   int          lineno;
   const char   *filename;
   const char   *functionname;
-  const char   *dirname;
   PetscClassId classid;
 #if defined(PETSC_USE_DEBUG)
   PetscStack   stack;
@@ -64,7 +63,7 @@ static size_t    TRMaxMem     = 0;
 static int        PetscLogMallocMax       = 10000,PetscLogMalloc = -1;
 static size_t     PetscLogMallocThreshold = 0;
 static size_t     *PetscLogMallocLength;
-static const char **PetscLogMallocDirectory,**PetscLogMallocFile,**PetscLogMallocFunction;
+static const char **PetscLogMallocFile,**PetscLogMallocFunction;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSetUseTrMalloc_Private"
@@ -95,8 +94,7 @@ PetscErrorCode PetscSetUseTrMalloc_Private(void)
    Input Parameter:
 +  line - line number where call originated.
 .  function - name of function calling
-.  file - file where function is
--  dir - directory where function is
+-  file - file where function is
 
    Return value:
    The number of errors detected.
@@ -110,8 +108,8 @@ PetscErrorCode PetscSetUseTrMalloc_Private(void)
     You should generally use CHKMEMQ as a short cut for calling this
     routine.
 
-    The line, function, file and dir are given by the C preprocessor as
-    __LINE__, __FUNCT__, __FILE__, and __DIR__
+    The line, function, file are given by the C preprocessor as
+    __LINE__, __FUNCT__, __FILE__
 
     The Fortran calling sequence is simply PetscMallocValidate(ierr)
 
@@ -120,7 +118,7 @@ PetscErrorCode PetscSetUseTrMalloc_Private(void)
 .seealso: CHKMEMQ
 
 @*/
-PetscErrorCode  PetscMallocValidate(int line,const char function[],const char file[],const char dir[])
+PetscErrorCode  PetscMallocValidate(int line,const char function[],const char file[])
 {
   TRSPACE      *head,*lasthead;
   char         *a;
@@ -130,22 +128,22 @@ PetscErrorCode  PetscMallocValidate(int line,const char function[],const char fi
   head = TRhead; lasthead = NULL;
   while (head) {
     if (head->classid != CLASSID_VALUE) {
-      (*PetscErrorPrintf)("PetscMallocValidate: error detected at  %s() line %d in %s%s\n",function,line,dir,file);
+      (*PetscErrorPrintf)("PetscMallocValidate: error detected at  %s() line %d in %s\n",function,line,file);
       (*PetscErrorPrintf)("Memory at address %p is corrupted\n",head);
       (*PetscErrorPrintf)("Probably write past beginning or end of array\n");
-      if (lasthead) (*PetscErrorPrintf)("Last intact block allocated in %s() line %d in %s%s\n",lasthead->functionname,lasthead->lineno,lasthead->dirname,lasthead->filename);
+      if (lasthead) (*PetscErrorPrintf)("Last intact block allocated in %s() line %d in %s\n",lasthead->functionname,lasthead->lineno,lasthead->filename);
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC," ");
     }
     a    = (char*)(((TrSPACE*)head) + 1);
     nend = (PetscClassId*)(a + head->size);
     if (*nend != CLASSID_VALUE) {
-      (*PetscErrorPrintf)("PetscMallocValidate: error detected at %s() line %d in %s%s\n",function,line,dir,file);
+      (*PetscErrorPrintf)("PetscMallocValidate: error detected at %s() line %d in %s\n",function,line,file);
       if (*nend == ALREADY_FREED) {
         (*PetscErrorPrintf)("Memory [id=%d(%.0f)] at address %p already freed\n",head->id,(PetscLogDouble)head->size,a);
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC," ");
       } else {
         (*PetscErrorPrintf)("Memory [id=%d(%.0f)] at address %p is corrupted (probably write past end of array)\n",head->id,(PetscLogDouble)head->size,a);
-        (*PetscErrorPrintf)("Memory originally allocated in %s() line %d in %s%s\n",head->functionname,head->lineno,head->dirname,head->filename);
+        (*PetscErrorPrintf)("Memory originally allocated in %s() line %d in %s\n",head->functionname,head->lineno,head->filename);
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC," ");
       }
     }
@@ -164,14 +162,13 @@ PetscErrorCode  PetscMallocValidate(int line,const char function[],const char fi
 +   a   - number of bytes to allocate
 .   lineno - line number where used.  Use __LINE__ for this
 .   function - function calling routine. Use __FUNCT__ for this
-.   filename  - file name where used.  Use __FILE__ for this
--   dir - directory where file is. Use __SDIR__ for this
+-   filename  - file name where used.  Use __FILE__ for this
 
     Returns:
     double aligned pointer to requested storage, or null if not
     available.
  */
-PetscErrorCode  PetscTrMallocDefault(size_t a,int lineno,const char function[],const char filename[],const char dir[],void **result)
+PetscErrorCode  PetscTrMallocDefault(size_t a,int lineno,const char function[],const char filename[],void **result)
 {
   TRSPACE        *head;
   char           *inew;
@@ -182,11 +179,11 @@ PetscErrorCode  PetscTrMallocDefault(size_t a,int lineno,const char function[],c
   if (!a) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to malloc zero size array");
 
   if (TRdebugLevel) {
-    ierr = PetscMallocValidate(lineno,function,filename,dir); if (ierr) PetscFunctionReturn(ierr);
+    ierr = PetscMallocValidate(lineno,function,filename); if (ierr) PetscFunctionReturn(ierr);
   }
 
   nsize = (a + (PETSC_MEMALIGN-1)) & ~(PETSC_MEMALIGN-1);
-  ierr  = PetscMallocAlign(nsize+sizeof(TrSPACE)+sizeof(PetscClassId),lineno,function,filename,dir,(void**)&inew);CHKERRQ(ierr);
+  ierr  = PetscMallocAlign(nsize+sizeof(TrSPACE)+sizeof(PetscClassId),lineno,function,filename,(void**)&inew);CHKERRQ(ierr);
 
   head  = (TRSPACE*)inew;
   inew += sizeof(TrSPACE);
@@ -201,7 +198,6 @@ PetscErrorCode  PetscTrMallocDefault(size_t a,int lineno,const char function[],c
 
   head->filename                 = filename;
   head->functionname             = function;
-  head->dirname                  = dir;
   head->classid                  = CLASSID_VALUE;
   *(PetscClassId*)(inew + nsize) = CLASSID_VALUE;
 
@@ -225,9 +221,6 @@ PetscErrorCode  PetscTrMallocDefault(size_t a,int lineno,const char function[],c
       PetscLogMallocLength = (size_t*)malloc(PetscLogMallocMax*sizeof(size_t));
       if (!PetscLogMallocLength) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM," ");
 
-      PetscLogMallocDirectory = (const char**)malloc(PetscLogMallocMax*sizeof(char*));
-      if (!PetscLogMallocDirectory) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM," ");
-
       PetscLogMallocFile = (const char**)malloc(PetscLogMallocMax*sizeof(char*));
       if (!PetscLogMallocFile) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM," ");
 
@@ -235,7 +228,6 @@ PetscErrorCode  PetscTrMallocDefault(size_t a,int lineno,const char function[],c
       if (!PetscLogMallocFunction) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM," ");
     }
     PetscLogMallocLength[PetscLogMalloc]     = nsize;
-    PetscLogMallocDirectory[PetscLogMalloc]  = dir;
     PetscLogMallocFile[PetscLogMalloc]       = filename;
     PetscLogMallocFunction[PetscLogMalloc++] = function;
   }
@@ -254,9 +246,8 @@ PetscErrorCode  PetscTrMallocDefault(size_t a,int lineno,const char function[],c
 .   lineno - line number where used.  Use __LINE__ for this
 .   function - function calling routine. Use __FUNCT__ for this
 .   file  - file name where used.  Use __FILE__ for this
-.   dir - directory where file is. Use __SDIR__ for this
  */
-PetscErrorCode  PetscTrFreeDefault(void *aa,int line,const char function[],const char file[],const char dir[])
+PetscErrorCode  PetscTrFreeDefault(void *aa,int line,const char function[],const char file[])
 {
   char           *a = (char*)aa;
   TRSPACE        *head;
@@ -267,12 +258,12 @@ PetscErrorCode  PetscTrFreeDefault(void *aa,int line,const char function[],const
   PetscFunctionBegin;
   /* Do not try to handle empty blocks */
   if (!a) {
-    (*PetscErrorPrintf)("PetscTrFreeDefault called from %s() line %d in %s%s\n",function,line,dir,file);
-    SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to free null block: Free called from %s() line %d in %s%s\n",function,line,dir,file);
+    (*PetscErrorPrintf)("PetscTrFreeDefault called from %s() line %d in %s\n",function,line,file);
+    SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to free null block: Free called from %s() line %d in %s\n",function,line,file);
   }
 
   if (TRdebugLevel) {
-    ierr = PetscMallocValidate(line,function,file,dir);CHKERRQ(ierr);
+    ierr = PetscMallocValidate(line,function,file);CHKERRQ(ierr);
   }
 
   ahead = a;
@@ -280,26 +271,26 @@ PetscErrorCode  PetscTrFreeDefault(void *aa,int line,const char function[],const
   head  = (TRSPACE*)a;
 
   if (head->classid != CLASSID_VALUE) {
-    (*PetscErrorPrintf)("PetscTrFreeDefault() called from %s() line %d in %s%s\n",function,line,dir,file);
+    (*PetscErrorPrintf)("PetscTrFreeDefault() called from %s() line %d in %s\n",function,line,file);
     (*PetscErrorPrintf)("Block at address %p is corrupted; cannot free;\nmay be block not allocated with PetscMalloc()\n",a);
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"Bad location or corrupted memory");
   }
   nend = (PetscClassId*)(ahead + head->size);
   if (*nend != CLASSID_VALUE) {
     if (*nend == ALREADY_FREED) {
-      (*PetscErrorPrintf)("PetscTrFreeDefault() called from %s() line %d in %s%s\n",function,line,dir,file);
+      (*PetscErrorPrintf)("PetscTrFreeDefault() called from %s() line %d in %s\n",function,line,file);
       (*PetscErrorPrintf)("Block [id=%d(%.0f)] at address %p was already freed\n",head->id,(PetscLogDouble)head->size,a + sizeof(TrSPACE));
       if (head->lineno > 0 && head->lineno < 50000 /* sanity check */) {
-        (*PetscErrorPrintf)("Block freed in %s() line %d in %s%s\n",head->functionname,head->lineno,head->dirname,head->filename);
+        (*PetscErrorPrintf)("Block freed in %s() line %d in %s\n",head->functionname,head->lineno,head->filename);
       } else {
-        (*PetscErrorPrintf)("Block allocated in %s() line %d in %s%s\n",head->functionname,-head->lineno,head->dirname,head->filename);
+        (*PetscErrorPrintf)("Block allocated in %s() line %d in %s\n",head->functionname,-head->lineno,head->filename);
       }
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Memory already freed");
     } else {
       /* Damaged tail */
-      (*PetscErrorPrintf)("PetscTrFreeDefault() called from %s() line %d in %s%s\n",function,line,dir,file);
+      (*PetscErrorPrintf)("PetscTrFreeDefault() called from %s() line %d in %s\n",function,line,file);
       (*PetscErrorPrintf)("Block [id=%d(%.0f)] at address %p is corrupted (probably write past end of array)\n",head->id,(PetscLogDouble)head->size,a);
-      (*PetscErrorPrintf)("Block allocated in %s() line %d in %s%s\n",head->functionname,head->lineno,head->dirname,head->filename);
+      (*PetscErrorPrintf)("Block allocated in %s() line %d in %s\n",head->functionname,head->lineno,head->filename);
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEMC,"Corrupted memory");
     }
   }
@@ -310,7 +301,6 @@ PetscErrorCode  PetscTrFreeDefault(void *aa,int line,const char function[],const
     head->lineno       = line;
     head->filename     = file;
     head->functionname = function;
-    head->dirname      = dir;
   } else {
     head->lineno = -head->lineno;
   }
@@ -323,7 +313,7 @@ PetscErrorCode  PetscTrFreeDefault(void *aa,int line,const char function[],const
   else TRhead = head->next;
 
   if (head->next) head->next->prev = head->prev;
-  ierr = PetscFreeAlign(a,line,function,file,dir);CHKERRQ(ierr);
+  ierr = PetscFreeAlign(a,line,function,file);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -510,7 +500,7 @@ PetscErrorCode  PetscMallocDump(FILE *fp)
   if (TRallocated > 0) fprintf(fp,"[%d]Total space allocated %.0f bytes\n",rank,(PetscLogDouble)TRallocated);
   head = TRhead;
   while (head) {
-    fprintf(fp,"[%2d]%.0f bytes %s() line %d in %s%s\n",rank,(PetscLogDouble)head->size,head->functionname,head->lineno,head->dirname,head->filename);
+    fprintf(fp,"[%2d]%.0f bytes %s() line %d in %s\n",rank,(PetscLogDouble)head->size,head->functionname,head->lineno,head->filename);
 #if defined(PETSC_USE_DEBUG)
     ierr = PetscStackPrint(&head->stack,fp);CHKERRQ(ierr);
 #endif

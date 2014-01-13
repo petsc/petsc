@@ -180,8 +180,7 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
 
    See also KSPPIPECR, where the reduction is only overlapped with the matrix-vector product.
 
-   Level:
-   beginner
+   Level: beginner
 
    Notes:
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.

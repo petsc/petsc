@@ -179,7 +179,7 @@ PetscErrorCode DMDASelectFields(DM da,PetscInt *outfields,PetscInt **fields)
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da,0,0,0,0,0,0,0,&step,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscMalloc(step*sizeof(PetscInt),&displayfields);CHKERRQ(ierr);
+  ierr = PetscMalloc1(step,&displayfields);CHKERRQ(ierr);
   for (k=0; k<step; k++) displayfields[k] = k;
   ndisplayfields = step;
   ierr           = PetscOptionsGetIntArray(NULL,"-draw_fields",displayfields,&ndisplayfields,&flg);CHKERRQ(ierr);
@@ -188,7 +188,7 @@ PetscErrorCode DMDASelectFields(DM da,PetscInt *outfields,PetscInt **fields)
     char       **fields;
     const char *fieldname;
     PetscInt   nfields = step;
-    ierr = PetscMalloc(step*sizeof(char*),&fields);CHKERRQ(ierr);
+    ierr = PetscMalloc1(step,&fields);CHKERRQ(ierr);
     ierr = PetscOptionsGetStringArray(NULL,"-draw_fields_by_name",fields,&nfields,&flg);CHKERRQ(ierr);
     if (flg) {
       ndisplayfields = 0;
@@ -224,7 +224,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   PetscMPIInt       rank,size,tag1,tag2;
   PetscInt          i,n,N,step,istart,isize,j,nbounds;
   MPI_Status        status;
-  PetscReal         coors[4],ymin,ymax,min,max,xmin,xmax,tmp,xgtmp;
+  PetscReal         coors[4],ymin,ymax,min,max,xmin = 0.0,xmax = 0.0,tmp = 0.0,xgtmp = 0.0;
   const PetscScalar *array,*xg;
   PetscDraw         draw;
   PetscBool         isnull,showpoints = PETSC_FALSE;

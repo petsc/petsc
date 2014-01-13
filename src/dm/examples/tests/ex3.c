@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   */
   ierr = PetscOptionsGetBool(NULL,"-distribute",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscMalloc(size*sizeof(PetscInt),&localnodes);CHKERRQ(ierr);
+    ierr = PetscMalloc1(size,&localnodes);CHKERRQ(ierr);
     for (i=0; i<size-1; i++) localnodes[i] = 2;
     localnodes[size-1] = M - 2*(size-1);
   }
@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   localptr[localsize-1] = 0.0;
   for (i=1; i<localsize-1; i++) {
     j           = (i-1)+mybase;
-    localptr[i] = sin((PETSC_PI*j*6)/((PetscReal)M) + 1.2 * sin((PETSC_PI*j*2)/((PetscReal)M))) * 2;
+    localptr[i] = PetscSinReal((PETSC_PI*j*6)/((PetscReal)M) + 1.2 * PetscSinReal((PETSC_PI*j*2)/((PetscReal)M))) * 2;
   }
 
   ierr = VecRestoreArray(local,&localptr);CHKERRQ(ierr);

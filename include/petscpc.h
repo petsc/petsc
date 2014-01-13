@@ -64,8 +64,6 @@ typedef const char* PCType;
 #define PCML              "ml"
 #define PCGALERKIN        "galerkin"
 #define PCEXOTIC          "exotic"
-#define PCHMPI            "hmpi"
-#define PCSUPPORTGRAPH    "supportgraph"
 #define PCASA             "asa"
 #define PCCP              "cp"
 #define PCBFBT            "bfbt"
@@ -152,6 +150,7 @@ PETSC_EXTERN PetscErrorCode PCGetOperatorsSet(PC,PetscBool *,PetscBool *);
 
 PETSC_EXTERN PetscErrorCode PCView(PC,PetscViewer);
 PETSC_EXTERN PetscErrorCode PCLoad(PC,PetscViewer);
+PETSC_STATIC_INLINE PetscErrorCode PCViewFromOptions(PC A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 
 PETSC_EXTERN PetscErrorCode PCSetOptionsPrefix(PC,const char[]);
 PETSC_EXTERN PetscErrorCode PCAppendOptionsPrefix(PC,const char[]);
@@ -428,6 +427,13 @@ PETSC_EXTERN PetscErrorCode PCPARMSSetSolveRestart(PC pc,PetscInt restart);
 PETSC_EXTERN PetscErrorCode PCPARMSSetNonsymPerm(PC pc,PetscBool nonsym);
 PETSC_EXTERN PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2);
 
+/*E
+    PCGAMGType - type of generalized algebraic multigrid (PCGAMG) method
+
+    Level: intermediate
+
+.seealso: PCMG, PCSetType(), PCGAMGSetThreshold(), PCGAMGSetThreshold(), PCGAMGSetReuseProl()
+E*/
 typedef const char *PCGAMGType;
 #define PCGAMGAGG         "agg"
 #define PCGAMGGEO         "geo"
@@ -446,6 +452,11 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetSquareGraph(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetReuseProl(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PCGAMGInitializePackage(void);
+
+typedef const char *PCGAMGClassicalType;
+#define PCGAMGCLASSICALDIRECT   "direct"
+#define PCGAMGCLASSICALSTANDARD "standard"
+PETSC_EXTERN PetscErrorCode PCGAMGClassicalSetType(PC,PCGAMGClassicalType);
 
 #if defined(PETSC_HAVE_PCBDDC)
 PETSC_EXTERN PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PC,IS);

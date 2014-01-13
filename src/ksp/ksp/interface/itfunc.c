@@ -204,7 +204,7 @@ PetscErrorCode  KSPSetUp(KSP ksp)
     /* first time in so build matrix and vector data structures using DM */
     if (!ksp->vec_rhs) {ierr = DMCreateGlobalVector(ksp->dm,&ksp->vec_rhs);CHKERRQ(ierr);}
     if (!ksp->vec_sol) {ierr = DMCreateGlobalVector(ksp->dm,&ksp->vec_sol);CHKERRQ(ierr);}
-    ierr = DMCreateMatrix(ksp->dm,MATAIJ,&A);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(ksp->dm,&A);CHKERRQ(ierr);
     ierr = KSPSetOperators(ksp,A,A,stflg);CHKERRQ(ierr);
     ierr = PetscObjectDereference((PetscObject)A);CHKERRQ(ierr);
   }
@@ -329,7 +329,7 @@ PetscErrorCode  KSPSetUp(KSP ksp)
 
    If using a direct method (e.g., via the KSP solver
    KSPPREONLY and a preconditioner such as PCLU/PCILU),
-   then its=1.  See KSPSetTolerances() and KSPDefaultConverged()
+   then its=1.  See KSPSetTolerances() and KSPConvergedDefault()
    for more details.
 
    Understanding Convergence:
@@ -341,7 +341,7 @@ PetscErrorCode  KSPSetUp(KSP ksp)
 
 .keywords: KSP, solve, linear system
 
-.seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged(),
+.seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPConvergedDefault(),
           KSPSolveTranspose(), KSPGetIterationNumber()
 @*/
 PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
@@ -349,9 +349,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   PetscErrorCode    ierr;
   PetscMPIInt       rank;
   PetscBool         flag1,flag2,flag3,flg = PETSC_FALSE,inXisinB=PETSC_FALSE,guess_zero;
-  PetscViewer       viewer;
   Mat               mat,premat;
-  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -373,14 +371,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr         = VecDestroy(&ksp->vec_sol);CHKERRQ(ierr);
     ksp->vec_sol = x;
   }
-
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,"-ksp_view_pre",&viewer,&format,&flg);CHKERRQ(ierr);
-  if (flg && !PetscPreLoadingOn) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
+  ierr = KSPViewFromOptions(ksp,NULL,"-ksp_view_pre");CHKERRQ(ierr);
 
   if (ksp->presolve) {
     ierr = (*ksp->presolve)(ksp,ksp->vec_rhs,ksp->vec_sol,ksp->prectx);CHKERRQ(ierr);
@@ -501,7 +492,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     if (!nits) {
       ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Zero iterations in solver, cannot approximate any eigenvalues\n");CHKERRQ(ierr);
     } else {
-      ierr = PetscMalloc2(n,PetscReal,&r,n,PetscReal,&c);CHKERRQ(ierr);
+      ierr = PetscMalloc2(n,&r,n,&c);CHKERRQ(ierr);
       ierr = KSPComputeEigenvalues(ksp,n,r,c,&neig);CHKERRQ(ierr);
       if (flag1) {
         ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Iteratively computed eigenvalues\n");CHKERRQ(ierr);
@@ -561,7 +552,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     PetscInt  n,i;
     PetscReal *r,*c;
     ierr = VecGetSize(ksp->vec_sol,&n);CHKERRQ(ierr);
-    ierr = PetscMalloc2(n,PetscReal,&r,n,PetscReal,&c);CHKERRQ(ierr);
+    ierr = PetscMalloc2(n,&r,n,&c);CHKERRQ(ierr);
     ierr = KSPComputeEigenvaluesExplicitly(ksp,n,r,c);CHKERRQ(ierr);
     if (flag1) {
       ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Explicitly computed eigenvalues\n");CHKERRQ(ierr);
@@ -607,13 +598,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = MatViewFromOptions(B,((PetscObject)ksp)->prefix,"-ksp_view_preconditioned_operator_explicit");CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,"-ksp_view",&viewer,&format,&flg);CHKERRQ(ierr);
-  if (flg && !PetscPreLoadingOn) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
+  ierr = KSPViewFromOptions(ksp,NULL,"-ksp_view");CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_final_residual",&flg,NULL);CHKERRQ(ierr);
@@ -636,7 +621,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = VecCopy(x,b);CHKERRQ(ierr);
     ierr = VecDestroy(&x);CHKERRQ(ierr);
   }
-  ierr = PetscObjectAMSBlock((PetscObject)ksp);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsBlock((PetscObject)ksp);CHKERRQ(ierr);
   if (ksp->errorifnotconverged && ksp->reason < 0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged");
   PetscFunctionReturn(0);
 }
@@ -661,7 +646,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
 
 .keywords: KSP, solve, linear system
 
-.seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged(),
+.seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPConvergedDefault(),
           KSPSolve()
 @*/
 
@@ -771,7 +756,7 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
   PetscValidHeaderSpecific((*ksp),KSP_CLASSID,1);
   if (--((PetscObject)(*ksp))->refct > 0) {*ksp = 0; PetscFunctionReturn(0);}
 
-  ierr = PetscObjectAMSViewOff((PetscObject)*ksp);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsViewOff((PetscObject)*ksp);CHKERRQ(ierr);
   /*
    Avoid a cascading call to PCReset(ksp->pc) from the following call:
    PCReset() shouldn't be called from KSPDestroy() as it is unprotected by pc's
@@ -926,7 +911,7 @@ PetscErrorCode  KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *abstol,Petsc
 .  abstol - the absolute convergence tolerance
    (absolute size of the residual norm)
 .  dtol - the divergence tolerance
-   (amount residual can increase before KSPDefaultConverged()
+   (amount residual can increase before KSPConvergedDefault()
    concludes that the method is diverging)
 -  maxits - maximum number of iterations to use
 
@@ -939,7 +924,7 @@ PetscErrorCode  KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *abstol,Petsc
    Notes:
    Use PETSC_DEFAULT to retain the default value of any of the tolerances.
 
-   See KSPDefaultConverged() for details on the use of these parameters
+   See KSPConvergedDefault() for details on the use of these parameters
    in the default convergence test.  See also KSPSetConvergenceTest()
    for setting user-defined stopping criteria.
 
@@ -948,7 +933,7 @@ PetscErrorCode  KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *abstol,Petsc
 .keywords: KSP, set, tolerance, absolute, relative, divergence,
            convergence, maximum, iterations
 
-.seealso: KSPGetTolerances(), KSPDefaultConverged(), KSPSetConvergenceTest()
+.seealso: KSPGetTolerances(), KSPConvergedDefault(), KSPSetConvergenceTest()
 @*/
 PetscErrorCode  KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt maxits)
 {
@@ -1652,7 +1637,7 @@ PetscErrorCode  KSPSetResidualHistory(KSP ksp,PetscReal a[],PetscInt na,PetscBoo
   } else {
     if (na != PETSC_DECIDE && na != PETSC_DEFAULT) ksp->res_hist_max = na;
     else                                           ksp->res_hist_max = 10000; /* like default ksp->max_it */
-    ierr = PetscMalloc(ksp->res_hist_max*sizeof(PetscReal),&ksp->res_hist_alloc);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ksp->res_hist_max,&ksp->res_hist_alloc);CHKERRQ(ierr);
 
     ksp->res_hist = ksp->res_hist_alloc;
   }
@@ -1729,7 +1714,7 @@ $     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,voi
    Must be called after the KSP type has been set so put this after
    a call to KSPSetType(), or KSPSetFromOptions().
 
-   The default convergence test, KSPDefaultConverged(), aborts if the
+   The default convergence test, KSPConvergedDefault(), aborts if the
    residual grows to more than 10000 times the initial residual.
 
    The default is a combination of relative and absolute tolerances.
@@ -1743,7 +1728,7 @@ $     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,voi
 
 .keywords: KSP, set, convergence, test, context
 
-.seealso: KSPDefaultConverged(), KSPGetConvergenceContext(), KSPSetTolerances()
+.seealso: KSPConvergedDefault(), KSPGetConvergenceContext(), KSPSetTolerances()
 @*/
 PetscErrorCode  KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *cctx,PetscErrorCode (*destroy)(void*))
 {
@@ -1778,7 +1763,7 @@ PetscErrorCode  KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,Pet
 
 .keywords: KSP, get, convergence, test, context
 
-.seealso: KSPDefaultConverged(), KSPSetConvergenceTest()
+.seealso: KSPConvergedDefault(), KSPSetConvergenceTest()
 @*/
 PetscErrorCode  KSPGetConvergenceContext(KSP ksp,void **ctx)
 {

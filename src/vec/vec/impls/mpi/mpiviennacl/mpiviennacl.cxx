@@ -96,7 +96,7 @@ PetscErrorCode VecMDot_MPIViennaCL(Vec xin,PetscInt nv,const Vec y[],PetscScalar
 
   PetscFunctionBegin;
   if (nv > 128) {
-    ierr = PetscMalloc(nv*sizeof(PetscScalar),&work);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nv,&work);CHKERRQ(ierr);
   }
   ierr = VecMDot_SeqViennaCL(xin,nv,y,work);CHKERRQ(ierr);
   ierr = MPI_Allreduce(work,z,nv,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
@@ -215,7 +215,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_MPIViennaCL(Vec vv)
      reset array?
      get values?
   */
-  ierr = VecSetFromOptions_SeqViennaCL(vv);CHKERRQ(ierr); /* Allows to set device type before allocating any objects */
   ierr = VecViennaCLAllocateCheck(vv);CHKERRQ(ierr);
   vv->valid_GPU_array      = PETSC_VIENNACL_GPU;
   ierr = VecSet(vv,0.0);CHKERRQ(ierr);

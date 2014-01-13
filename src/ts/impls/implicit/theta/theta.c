@@ -184,6 +184,7 @@ static PetscErrorCode TSStep_Theta(TS ts)
     ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
     ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
+    ierr = TSPostStage(ts,th->stage_time,0,&(th->X));CHKERRQ(ierr);
     ts->snes_its += its; ts->ksp_its += lits;
     ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
     ierr = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
@@ -515,7 +516,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
   ts->ops->linearstability = TSComputeLinearStability_Theta;
 #endif
 
-  ierr = PetscNewLog(ts,TS_Theta,&th);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;
 
   th->extrapolate = PETSC_FALSE;

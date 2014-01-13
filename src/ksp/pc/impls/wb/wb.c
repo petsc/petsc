@@ -143,8 +143,8 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
        IIint and IIsurf are the same as the Iint, Isurf except they are in the global numbering
   */
 #define Endpoint(a,start,b) (a == 0 || a == (b-1-start))
-  ierr = PetscMalloc3(N,PetscInt,&II,Nint,PetscInt,&Iint,Nsurf,PetscInt,&Isurf);CHKERRQ(ierr);
-  ierr = PetscMalloc2(Nint,PetscInt,&IIint,Nsurf,PetscInt,&IIsurf);CHKERRQ(ierr);
+  ierr = PetscMalloc3(N,&II,Nint,&Iint,Nsurf,&Isurf);CHKERRQ(ierr);
+  ierr = PetscMalloc2(Nint,&IIint,Nsurf,&IIsurf);CHKERRQ(ierr);
   for (k=0; k<p-kstart; k++) {
     for (j=0; j<n-jstart; j++) {
       for (i=0; i<m-istart; i++) {
@@ -256,7 +256,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   /* convert that to global numbering and get them on all processes */
   ierr = ISLocalToGlobalMappingApply(ltg,26,gl,gl);CHKERRQ(ierr);
   /* PetscIntView(26,gl,PETSC_VIEWER_STDOUT_WORLD); */
-  ierr = PetscMalloc(26*mp*np*pp*sizeof(PetscInt),&globals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(26*mp*np*pp,&globals);CHKERRQ(ierr);
   ierr = MPI_Allgather(gl,26,MPIU_INT,globals,26,MPIU_INT,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
 
   /* Number the coarse grid points from 0 to Ntotal */
@@ -424,8 +424,8 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
        IIint and IIsurf are the same as the Iint, Isurf except they are in the global numbering
   */
 #define Endpoint(a,start,b) (a == 0 || a == (b-1-start))
-  ierr = PetscMalloc3(N,PetscInt,&II,Nint,PetscInt,&Iint,Nsurf,PetscInt,&Isurf);CHKERRQ(ierr);
-  ierr = PetscMalloc2(Nint,PetscInt,&IIint,Nsurf,PetscInt,&IIsurf);CHKERRQ(ierr);
+  ierr = PetscMalloc3(N,&II,Nint,&Iint,Nsurf,&Isurf);CHKERRQ(ierr);
+  ierr = PetscMalloc2(Nint,&IIint,Nsurf,&IIsurf);CHKERRQ(ierr);
   for (k=0; k<p-kstart; k++) {
     for (j=0; j<n-jstart; j++) {
       for (i=0; i<m-istart; i++) {
@@ -534,7 +534,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   /* convert that to global numbering and get them on all processes */
   ierr = ISLocalToGlobalMappingApply(ltg,6,gl,gl);CHKERRQ(ierr);
   /* PetscIntView(6,gl,PETSC_VIEWER_STDOUT_WORLD); */
-  ierr = PetscMalloc(6*mp*np*pp*sizeof(PetscInt),&globals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(6*mp*np*pp,&globals);CHKERRQ(ierr);
   ierr = MPI_Allgather(gl,6,MPIU_INT,globals,6,MPIU_INT,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
 
   /* Number the coarse grid points from 0 to Ntotal */
@@ -830,7 +830,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Exotic(PC pc)
   ierr         = PCSetType(pc,PCMG);CHKERRQ(ierr);
   ierr         = PCMGSetLevels(pc,2,NULL);CHKERRQ(ierr);
   ierr         = PCMGSetGalerkin(pc,PETSC_TRUE);CHKERRQ(ierr);
-  ierr         = PetscNew(PC_Exotic,&ex);CHKERRQ(ierr); \
+  ierr         = PetscNew(&ex);CHKERRQ(ierr); \
   ex->type     = PC_EXOTIC_FACE;
   mg           = (PC_MG*) pc->data;
   mg->innerctx = ex;

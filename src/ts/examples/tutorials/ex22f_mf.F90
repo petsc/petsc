@@ -149,7 +149,8 @@ program main
 #endif
 
   call TSSetIFunction(ts,PETSC_NULL_OBJECT,FormIFunction,user,ierr)
-  call DMCreateMatrix(da,MATAIJ,J,ierr)
+  call DMSetMatType(da,MATAIJ,ierr)
+  call DMCreateMatrix(da,J,ierr)
 
 #ifdef MF_EX22F_MF
   Jmat=J

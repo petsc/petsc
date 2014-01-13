@@ -14,7 +14,6 @@
 .  line - the line number of the error (indicated by __LINE__)
 .  func - the function where error is detected (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
-.  dir - the directory of the file (indicated by __SDIR__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
 .  p - specific error number
@@ -39,7 +38,7 @@ $     SETERRQ(comm,number,p,mess)
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(),
           PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
  @*/
-PetscErrorCode  PetscIgnoreErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
+PetscErrorCode  PetscIgnoreErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(n);
@@ -138,7 +137,6 @@ PetscErrorCode  PetscErrorPrintfDefault(const char format[],...)
 .  line - the line number of the error (indicated by __LINE__)
 .  func - the function where error is detected (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
-.  dir - the directory of the file (indicated by __SDIR__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
 .  p - PETSC_ERROR_INITIAL if this is the first call the the error handler, otherwise PETSC_ERROR_REPEAT
@@ -163,7 +161,7 @@ $     SETERRQ(comm,number,n,mess)
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(),
           PetscAbortErrorHandler()
  @*/
-PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
+PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscLogDouble mem,rss;
   PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE;
@@ -209,7 +207,7 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
       (*PetscErrorPrintf)("------------------------------------------------------------------------\n");
     }
     /* print line of stack trace */
-    (*PetscErrorPrintf)("%s() line %d in %s%s\n",fun,line,dir,file);
+    (*PetscErrorPrintf)("%s() line %d in %s\n",fun,line,file);
   } else {
     /* do not print error messages since process 0 will print them, sleep before aborting so will not accidently kill process 0*/
     PetscSleep(10.0);

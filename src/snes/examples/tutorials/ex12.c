@@ -11,8 +11,8 @@ domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\n\n";
 #define NUM_FIELDS 1
 PetscInt spatialDim = 0;
 
-typedef enum {NEUMANN, DIRICHLET} BCType;
-typedef enum {RUN_FULL, RUN_TEST} RunType;
+typedef enum {NEUMANN, DIRICHLET, NONE} BCType;
+typedef enum {RUN_FULL, RUN_TEST, RUN_PERF} RunType;
 typedef enum {COEFF_NONE, COEFF_ANALYTIC, COEFF_FIELD} CoeffType;
 
 typedef struct {
@@ -29,6 +29,8 @@ typedef struct {
   char          filename[2048];    /* The optional ExodusII file */
   PetscBool     interpolate;       /* Generate intermediate mesh elements */
   PetscReal     refinementLimit;   /* The largest allowable cell volume */
+  PetscBool     refinementUniform; /* Uniformly refine the mesh */
+  PetscInt      refinementRounds;  /* The number of uniform refinements */
   char          partitioner[2048]; /* The graph partitioner */
   /* Element definition */
   PetscFE       fe[NUM_FIELDS];
@@ -41,14 +43,14 @@ typedef struct {
   void (*g1Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g1[]); /* g1_uu(x,y,z), g1_up(x,y,z), g1_pu(x,y,z), and g1_pp(x,y,z) */
   void (*g2Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g2[]); /* g2_uu(x,y,z), g2_up(x,y,z), g2_pu(x,y,z), and g2_pp(x,y,z) */
   void (*g3Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g3[]); /* g3_uu(x,y,z), g3_up(x,y,z), g3_pu(x,y,z), and g3_pp(x,y,z) */
-  void (**exactFuncs)(const PetscReal x[], PetscScalar *u); /* The exact solution function u(x,y,z), v(x,y,z), and p(x,y,z) */
+  void (**exactFuncs)(const PetscReal x[], PetscScalar *u, void *ctx); /* The exact solution function u(x,y,z), v(x,y,z), and p(x,y,z) */
   void (*f0BdFuncs[NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], const PetscReal n[], PetscScalar f0[]); /* f0_u(x,y,z), and f0_p(x,y,z) */
   void (*f1BdFuncs[NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], const PetscReal n[], PetscScalar f1[]); /* f1_u(x,y,z), and f1_p(x,y,z) */
   BCType    bcType;
   CoeffType variableCoefficient;
 } AppCtx;
 
-void zero(const PetscReal coords[], PetscScalar *u)
+void zero(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
   *u = 0.0;
 }
@@ -65,16 +67,16 @@ void zero(const PetscReal coords[], PetscScalar *u)
 
   For Neumann conditions, we have
 
-    \nabla u \cdot -\hat y |_{y=0} = -(2y)|_{y=0} = 0 (bottom)
-    \nabla u \cdot  \hat y |_{y=1} =  (2y)|_{y=1} = 2 (top)
-    \nabla u \cdot -\hat x |_{x=0} = -(2x)|_{x=0} = 0 (left)
-    \nabla u \cdot  \hat x |_{x=1} =  (2x)|_{x=1} = 2 (right)
+    -\nabla u \cdot -\hat y |_{y=0} =  (2y)|_{y=0} =  0 (bottom)
+    -\nabla u \cdot  \hat y |_{y=1} = -(2y)|_{y=1} = -2 (top)
+    -\nabla u \cdot -\hat x |_{x=0} =  (2x)|_{x=0} =  0 (left)
+    -\nabla u \cdot  \hat x |_{x=1} = -(2x)|_{x=1} = -2 (right)
 
   Which we can express as
 
-    \nabla u \cdot  \hat n|_\Gamma = 2 (x + y)
+    \nabla u \cdot  \hat n|_\Gamma = {2 x, 2 y} \cdot \hat n = 2 (x + y)
 */
-void quadratic_u_2d(const PetscReal x[], PetscScalar *u)
+void quadratic_u_2d(const PetscReal x[], PetscScalar *u, void *ctx)
 {
   *u = x[0]*x[0] + x[1]*x[1];
 }
@@ -86,10 +88,8 @@ void f0_u(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[
 
 void f0_bd_u(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], const PetscReal n[], PetscScalar f0[])
 {
-  PetscScalar val = 0.0;
-
-  if ((fabs(x[0] - 1.0) < 1.0e-9) || (fabs(x[1] - 1.0) < 1.0e-9)) {val = -2.0;}
-  f0[0] = val;
+  PetscInt  d;
+  for (d = 0, f0[0] = 0.0; d < spatialDim; ++d) f0[0] += -n[d]*2.0*x[d];
 }
 
 void f0_bd_zero(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], const PetscReal n[], PetscScalar f0[])
@@ -133,7 +133,7 @@ void g3_uu(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a
 
     -\div \nu \grad u + f = -6 (x + y) + 6 (x + y) = 0
 */
-void nu_2d(const PetscReal x[], PetscScalar *u)
+void nu_2d(const PetscReal x[], PetscScalar *u, void *ctx)
 {
   *u = x[0] + x[1];
 }
@@ -173,7 +173,7 @@ void g3_field_uu(const PetscScalar u[], const PetscScalar gradU[], const PetscSc
 }
 
 /*
-  In 3D we use exact solution:
+  In 3D for Dirichlet conditions we use exact solution:
 
     u = x^2 + y^2 + z^2
     f = 6
@@ -181,8 +181,21 @@ void g3_field_uu(const PetscScalar u[], const PetscScalar gradU[], const PetscSc
   so that
 
     -\Delta u + f = -6 + 6 = 0
+
+  For Neumann conditions, we have
+
+    -\nabla u \cdot -\hat z |_{z=0} =  (2z)|_{z=0} =  0 (bottom)
+    -\nabla u \cdot  \hat z |_{z=1} = -(2z)|_{z=1} = -2 (top)
+    -\nabla u \cdot -\hat y |_{y=0} =  (2y)|_{y=0} =  0 (front)
+    -\nabla u \cdot  \hat y |_{y=1} = -(2y)|_{y=1} = -2 (back)
+    -\nabla u \cdot -\hat x |_{x=0} =  (2x)|_{x=0} =  0 (left)
+    -\nabla u \cdot  \hat x |_{x=1} = -(2x)|_{x=1} = -2 (right)
+
+  Which we can express as
+
+    \nabla u \cdot  \hat n|_\Gamma = {2 x, 2 y, 2z} \cdot \hat n = 2 (x + y + z)
 */
-void quadratic_u_3d(const PetscReal x[], PetscScalar *u)
+void quadratic_u_3d(const PetscReal x[], PetscScalar *u, void *ctx)
 {
   *u = x[0]*x[0] + x[1]*x[1] + x[2]*x[2];
 }
@@ -191,25 +204,27 @@ void quadratic_u_3d(const PetscReal x[], PetscScalar *u)
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  const char    *bcTypes[2]  = {"neumann", "dirichlet"};
-  const char    *runTypes[2] = {"full", "test"};
+  const char    *bcTypes[3]  = {"neumann", "dirichlet", "none"};
+  const char    *runTypes[3] = {"full", "test", "perf"};
   const char    *coeffTypes[3] = {"none", "analytic", "field"};
   PetscInt       bc, run, coeff;
   PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->debug           = 0;
-  options->runType         = RUN_FULL;
-  options->dim             = 2;
-  options->filename[0]     = '\0';
-  options->interpolate     = PETSC_FALSE;
-  options->refinementLimit = 0.0;
-  options->bcType          = DIRICHLET;
+  options->debug               = 0;
+  options->runType             = RUN_FULL;
+  options->dim                 = 2;
+  options->filename[0]         = '\0';
+  options->interpolate         = PETSC_FALSE;
+  options->refinementLimit     = 0.0;
+  options->refinementUniform   = PETSC_FALSE;
+  options->refinementRounds    = 1;
+  options->bcType              = DIRICHLET;
   options->variableCoefficient = COEFF_NONE;
-  options->jacobianMF      = PETSC_FALSE;
-  options->showInitial     = PETSC_FALSE;
-  options->showSolution    = PETSC_TRUE;
+  options->jacobianMF          = PETSC_FALSE;
+  options->showInitial         = PETSC_FALSE;
+  options->showSolution        = PETSC_FALSE;
 
   options->fem.f0Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->f0Funcs;
   options->fem.f1Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->f1Funcs;
@@ -225,7 +240,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex12.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   run  = options->runType;
-  ierr = PetscOptionsEList("-run_type", "The run type", "ex12.c", runTypes, 2, runTypes[options->runType], &run, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-run_type", "The run type", "ex12.c", runTypes, 3, runTypes[options->runType], &run, NULL);CHKERRQ(ierr);
 
   options->runType = (RunType) run;
 
@@ -237,10 +252,12 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 #endif
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex12.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex12.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-refinement_uniform", "Uniformly refine the mesh", "ex52.c", options->refinementUniform, &options->refinementUniform, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-refinement_rounds", "The number of uniform refinements", "ex52.c", options->refinementRounds, &options->refinementRounds, NULL);CHKERRQ(ierr);
   ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
   ierr = PetscOptionsString("-partitioner", "The graph partitioner", "pflotran.cxx", options->partitioner, options->partitioner, 2048, NULL);CHKERRQ(ierr);
   bc   = options->bcType;
-  ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex12.c",bcTypes,2,bcTypes[options->bcType],&bc,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex12.c",bcTypes,3,bcTypes[options->bcType],&bc,NULL);CHKERRQ(ierr);
   options->bcType = (BCType) bc;
   coeff = options->variableCoefficient;
   ierr = PetscOptionsEList("-variable_coefficient","Type of variable coefficent","ex12.c",coeffTypes,3,coeffTypes[options->variableCoefficient],&coeff,NULL);CHKERRQ(ierr);
@@ -259,11 +276,13 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscInt       dim             = user->dim;
-  const char    *filename        = user->filename;
-  PetscBool      interpolate     = user->interpolate;
-  PetscReal      refinementLimit = user->refinementLimit;
-  const char    *partitioner     = user->partitioner;
+  PetscInt       dim               = user->dim;
+  const char    *filename          = user->filename;
+  PetscBool      interpolate       = user->interpolate;
+  PetscReal      refinementLimit   = user->refinementLimit;
+  PetscBool      refinementUniform = user->refinementUniform;
+  PetscInt       refinementRounds  = user->refinementRounds;
+  const char    *partitioner       = user->partitioner;
   size_t         len;
   PetscErrorCode ierr;
 
@@ -274,6 +293,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     DMLabel label;
 
     ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
     ierr = DMPlexGetLabel(*dm, "marker", &label);CHKERRQ(ierr);
     if (label) {ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);}
   } else {
@@ -301,14 +321,31 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
     ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
     if (refinedMesh) {
+      const char *name;
+
+      ierr = PetscObjectGetName((PetscObject) *dm,         &name);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) refinedMesh,  name);CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = refinedMesh;
     }
     /* Distribute mesh over processes */
-    ierr = DMPlexDistribute(*dm, partitioner, 0, &distributedMesh);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, partitioner, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
+    }
+    /* Use regular refinement in parallel */
+    if (refinementUniform) {
+      PetscInt r;
+
+      ierr = DMPlexSetRefinementUniform(*dm, refinementUniform);CHKERRQ(ierr);
+      for (r = 0; r < refinementRounds; ++r) {
+        ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
+        if (refinedMesh) {
+          ierr = DMDestroy(dm);CHKERRQ(ierr);
+          *dm  = refinedMesh;
+        }
+      }
     }
   }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
@@ -512,12 +549,11 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
   switch (user->dim) {
   case 2:
     user->exactFuncs[0] = quadratic_u_2d;
-    if (user->bcType == NEUMANN) {
-      fem->f0BdFuncs[0] = f0_bd_u;
-    }
+    if (user->bcType == NEUMANN) fem->f0BdFuncs[0] = f0_bd_u;
     break;
   case 3:
     user->exactFuncs[0] = quadratic_u_3d;
+    if (user->bcType == NEUMANN) fem->f0BdFuncs[0] = f0_bd_u;
     break;
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
@@ -549,8 +585,9 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
     ierr = DMPlexCreateLabel(dm, bdLabel);CHKERRQ(ierr);
     ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
     ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
-    if (user->bcType == DIRICHLET) {ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);}
   }
+  ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
+  ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
   if (user->bcType == DIRICHLET) {ierr  = DMPlexGetStratumIS(dm, bdLabel, 1, &bcPoints[0]);CHKERRQ(ierr);}
   ierr = DMPlexCreateSection(dm, dim, NUM_FIELDS, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldName(section, 0, "potential");CHKERRQ(ierr);
@@ -585,14 +622,14 @@ PetscErrorCode SetupMaterialSection(DM dm, AppCtx *user)
 #define __FUNCT__ "SetupMaterial"
 PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
 {
-  void (*matFuncs[1])(const PetscReal x[], PetscScalar *u) = {nu_2d};
+  void (*matFuncs[1])(const PetscReal x[], PetscScalar *u, void *ctx) = {nu_2d};
   Vec            nu;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (user->variableCoefficient != COEFF_FIELD) PetscFunctionReturn(0);
   ierr = DMCreateLocalVector(dmAux, &nu);CHKERRQ(ierr);
-  ierr = DMPlexProjectFunctionLocal(dmAux, user->feAux, matFuncs, INSERT_ALL_VALUES, nu);CHKERRQ(ierr);
+  ierr = DMPlexProjectFunctionLocal(dmAux, user->feAux, matFuncs, NULL, INSERT_ALL_VALUES, nu);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) nu);CHKERRQ(ierr);
   ierr = VecDestroy(&nu);CHKERRQ(ierr);
@@ -627,8 +664,9 @@ int main(int argc, char **argv)
   ierr = SetupElement(dm, &user);CHKERRQ(ierr);
   ierr = SetupBdElement(dm, &user);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(user.fe[0], &numComponents);CHKERRQ(ierr);
-  ierr = PetscMalloc(NUM_FIELDS * sizeof(void (*)(const PetscReal[], PetscScalar *)), &user.exactFuncs);CHKERRQ(ierr);
-  user.fem.bcFuncs = (void (**)(const PetscReal[], PetscScalar *)) user.exactFuncs;
+  ierr = PetscMalloc(NUM_FIELDS * sizeof(void (*)(const PetscReal[], PetscScalar *, void *)), &user.exactFuncs);CHKERRQ(ierr);
+  user.fem.bcFuncs = user.exactFuncs;
+  user.fem.bcCtxs = NULL;
   ierr = SetupExactSolution(dm, &user);CHKERRQ(ierr);
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
   ierr = SetupMaterialElement(dmAux, &user);CHKERRQ(ierr);
@@ -639,7 +677,8 @@ int main(int argc, char **argv)
   ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
 
-  ierr = DMCreateMatrix(dm, MATAIJ, &J);CHKERRQ(ierr);
+  ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
   if (user.jacobianMF) {
     PetscInt M, m, N, n;
 
@@ -658,7 +697,7 @@ int main(int argc, char **argv)
     userJ.user = &user;
 
     ierr = DMCreateLocalVector(dm, &userJ.u);CHKERRQ(ierr);
-    ierr = DMPlexProjectFunctionLocal(dm, user.fe, user.exactFuncs, INSERT_BC_VALUES, userJ.u);CHKERRQ(ierr);
+    ierr = DMPlexProjectFunctionLocal(dm, user.fe, user.exactFuncs, NULL, INSERT_BC_VALUES, userJ.u);CHKERRQ(ierr);
     ierr = MatShellSetContext(A, &userJ);CHKERRQ(ierr);
   } else {
     A = J;
@@ -677,7 +716,7 @@ int main(int argc, char **argv)
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  ierr = DMPlexProjectFunction(dm, user.fe, user.exactFuncs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = DMPlexProjectFunction(dm, user.fe, user.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   if (user.showInitial) {
     Vec lv;
     ierr = DMGetLocalVector(dm, &lv);CHKERRQ(ierr);
@@ -687,11 +726,11 @@ int main(int argc, char **argv)
     ierr = DMRestoreLocalVector(dm, &lv);CHKERRQ(ierr);
   }
   if (user.runType == RUN_FULL) {
-    void (*initialGuess[numComponents])(const PetscReal x[], PetscScalar *);
+    void (*initialGuess[numComponents])(const PetscReal x[], PetscScalar *, void *ctx);
     PetscInt c;
 
     for (c = 0; c < numComponents; ++c) initialGuess[c] = zero;
-    ierr = DMPlexProjectFunction(dm, user.fe, initialGuess, INSERT_VALUES, u);CHKERRQ(ierr);
+    ierr = DMPlexProjectFunction(dm, user.fe, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
     if (user.debug) {
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial guess\n");CHKERRQ(ierr);
       ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -699,7 +738,7 @@ int main(int argc, char **argv)
     ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
-    ierr = DMPlexComputeL2Diff(dm, user.fe, user.exactFuncs, u, &error);CHKERRQ(ierr);
+    ierr = DMPlexComputeL2Diff(dm, user.fe, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
     if (error < 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
     else                 {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error);CHKERRQ(ierr);}
     if (user.showSolution) {
@@ -707,13 +746,21 @@ int main(int argc, char **argv)
       ierr = VecChop(u, 3.0e-9);CHKERRQ(ierr);
       ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
+  } else if (user.runType == RUN_PERF) {
+    PetscReal res = 0.0;
+
+    ierr = SNESComputeFunction(snes, u, r);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial Residual\n");CHKERRQ(ierr);
+    ierr = VecChop(r, 1.0e-10);CHKERRQ(ierr);
+    ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", res);CHKERRQ(ierr);
   } else {
     PetscReal res = 0.0;
 
     /* Check discretization error */
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial guess\n");CHKERRQ(ierr);
     ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = DMPlexComputeL2Diff(dm, user.fe, user.exactFuncs, u, &error);CHKERRQ(ierr);
+    ierr = DMPlexComputeL2Diff(dm, user.fe, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
     if (error < 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
     else                 {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error);CHKERRQ(ierr);}
     /* Check residual */
@@ -741,27 +788,6 @@ int main(int argc, char **argv)
       ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Linear L_2 Residual: %g\n", res);CHKERRQ(ierr);
     }
-  }
-
-  if (user.runType == RUN_FULL) {
-    PetscViewer viewer;
-    Vec         uLocal;
-    const char *name;
-
-    ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, "ex12_sol.vtk");CHKERRQ(ierr);
-
-    ierr = DMGetLocalVector(dm, &uLocal);CHKERRQ(ierr);
-    ierr = PetscObjectGetName((PetscObject) u, &name);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) uLocal, name);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalBegin(dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd(dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
-    ierr = VecView(uLocal, viewer);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(dm, &uLocal);CHKERRQ(ierr);
-
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
   if (user.bcType == NEUMANN) {

@@ -53,7 +53,6 @@ class PETScMaker(script.Script):
    self.petscdir      = self.framework.require('PETSc.utilities.petscdir',    None)
    self.languages     = self.framework.require('PETSc.utilities.languages',   None)
    self.debugging     = self.framework.require('PETSc.utilities.debugging',   None)
-   self.make          = self.framework.require('config.programs',        None)
    self.cmake         = self.framework.require('PETSc.packages.cmake',       None)
    self.CHUD          = self.framework.require('PETSc.utilities.CHUD',        None)
    self.compilers     = self.framework.require('config.compilers',            None)
@@ -82,15 +81,15 @@ class PETScMaker(script.Script):
    import re
    m = re.match(r'cmake version (.+)$', output)
    if not m:
-       self.logPrintBox('Could not parse CMake version: %s, falling back to legacy build' % output)
+       self.logPrint('Could not parse CMake version: %s, disabling cmake build option' % output)
        return False
    from distutils.version import LooseVersion
    version = LooseVersion(m.groups()[0])
    if version < LooseVersion('2.6.2'):
-       self.logPrintBox('CMake version %s < 2.6.2, falling back to legacy build' % version.vstring)
+       self.logPrint('CMake version %s < 2.6.2, disabling cmake build option' % version.vstring)
        return False
    if self.languages.clanguage == 'Cxx' and version < LooseVersion('2.8'):
-       self.logPrintBox('Cannot use --with-clanguage=C++ with CMake version %s < 2.8, falling back to legacy build' % version.vstring)
+       self.logPrint('Cannot use --with-clanguage=C++ with CMake version %s < 2.8, disabling cmake build option' % version.vstring)
        return False # no support for: set_source_files_properties(${file} PROPERTIES LANGUAGE CXX)
 
    langlist = [('C','C')]
@@ -161,7 +160,7 @@ class PETScMaker(script.Script):
    log.write('Invoking: %s\n' % cmd)
    output,error,retcode = self.executeShellCommand(cmd, checkCommand = noCheck, log=log, cwd=archdir,timeout=300)
    if retcode:
-     self.logPrintBox('CMake setup incomplete (status %d), falling back to legacy build' % (retcode,))
+     self.logPrint('CMake setup incomplete (status %d), disabling cmake build option' % (retcode,))
      self.logPrint('Output: '+output+'\nError: '+error)
      cachetxt = os.path.join(archdir, 'CMakeCache.txt')
      try:

@@ -72,7 +72,7 @@
 !  However, local vector data can be easily accessed via VecGetArray().
 !  See the Fortran section of the PETSc users manual for details.
 !
-      double precision  norm
+      PetscReal  norm
       PetscInt  i,j,II,JJ,m,n,its
       PetscInt  Istart,Iend,ione
       PetscErrorCode ierr
@@ -87,7 +87,7 @@
 !  These variables are not currently used.
 !      PC          pc
 !      PCType      ptype
-!      double precision tol
+!      PetscReal tol
 
 
 !  Note: Any user-defined Fortran routines (such as MyKSPMonitor)
@@ -245,8 +245,8 @@
 !      ptype = PCJACOBI
 !      call PCSetType(pc,ptype,ierr)
 !      tol = 1.e-7
-!      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,
-!     &     PETSC_DEFAULT_DOUBLE_PRECISION,PETSC_DEFAULT_INTEGER,ierr)
+!      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,
+!     &     PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
 
 !  Set user-defined monitoring routine if desired
 
@@ -341,7 +341,7 @@
       PetscErrorCode ierr
       PetscInt n,dummy
       PetscMPIInt rank
-      double precision rnorm
+      PetscReal rnorm
 
 !  Build the solution vector
 
@@ -385,7 +385,7 @@
       PetscErrorCode ierr
       PetscInt n,dummy
       KSPConvergedReason flag
-      double precision rnorm
+      PetscReal rnorm
 
       if (rnorm .le. .05) then
         flag = 1

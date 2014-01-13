@@ -84,7 +84,8 @@ int main(int argc,char **argv)
   ierr = TSThetaSetTheta(ts,1.0);CHKERRQ(ierr); /* Make the Theta method behave like backward Euler */
   ierr = TSSetIFunction(ts,NULL,FormIFunction,&user);CHKERRQ(ierr);
 
-  ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,&J);CHKERRQ(ierr);
   jacType = JACOBIAN_ANALYTIC; /* use user-provide Jacobian */
 
   ierr = TSSetDM(ts,da);CHKERRQ(ierr); /* Use TSGetDM() to access. Setting here allows easy use of geometric multigrid. */
@@ -290,8 +291,8 @@ PetscErrorCode FormInitialSolution(TS ts,Vec U,void *ptr)
   /* Compute function over the locally owned part of the grid */
   for (i=xs; i<xs+xm; i++) {
     x = i*hx;
-    r = PetscSqrtScalar((x-.5)*(x-.5));
-    if (r < .125) u[i] = PetscExpScalar(c*r*r*r);
+    r = PetscSqrtReal((x-.5)*(x-.5));
+    if (r < .125) u[i] = PetscExpReal(c*r*r*r);
     else          u[i] = 0.0;
   }
 

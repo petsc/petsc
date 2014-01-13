@@ -17,18 +17,6 @@ struct Mat_SeqAIJViennaCL {
   ViennaCLAIJMatrix      *mat;  /* pointer to the matrix on the GPU */
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetFromOptions_SeqViennaCL"
-static PetscErrorCode MatSetFromOptions_SeqViennaCL(Mat A)
-{
-  PetscErrorCode       ierr;
-  PetscBool            flg;
-
-  PetscFunctionBegin;
-  ViennaCLSetFromOptions((PetscObject)A);
-  PetscFunctionReturn(0);
-}
-
 PETSC_INTERN PetscErrorCode MatViennaCLCopyToGPU(Mat);
 PETSC_INTERN PetscErrorCode MatViennaCLCopyFromGPU(Mat, ViennaCLAIJMatrix*);
 #endif

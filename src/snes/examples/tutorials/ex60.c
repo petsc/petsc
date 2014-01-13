@@ -120,9 +120,11 @@ int main(int argc, char **argv)
 
 
   /* Get Jacobian matrix structure from the da for the entire thing, da1 */
-  ierr = DMCreateMatrix(user.da1,MATAIJ,&user.M);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.da1,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da1,&user.M);CHKERRQ(ierr);
   /* Get the (usual) mass matrix structure from da2 */
-  ierr = DMCreateMatrix(user.da2,MATAIJ,&user.M_0);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.da2,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da2,&user.M_0);CHKERRQ(ierr);
   ierr = SetInitialGuess(x,&user);CHKERRQ(ierr);
   /* Form the jacobian matrix and M_0 */
   ierr = SetUpMatrices(&user);CHKERRQ(ierr);
@@ -581,8 +583,8 @@ PetscErrorCode SetUpMatrices(AppCtx *user)
   ierr = MatGetLocalSize(M,&n,NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(user->da1,NULL,&Mda,&Nda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((Mda+1)*(Nda+1)*sizeof(PetscInt),&nodes);CHKERRQ(ierr);
-  ierr = PetscMalloc(Mda*Nda*2*3*sizeof(PetscInt),&connect);CHKERRQ(ierr);
+  ierr = PetscMalloc1((Mda+1)*(Nda+1),&nodes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Mda*Nda*2*3,&connect);CHKERRQ(ierr);
   hx   = (user->xmax-user->xmin)/Mda;
   hy   = (user->ymax-user->ymin)/Nda;
   for (j=0; j < Nda; j++) {
@@ -809,8 +811,8 @@ PetscErrorCode UpdateMatrices(AppCtx *user)
   ierr = VecGetArray(user->ci,&ci_p);CHKERRQ(ierr);
   ierr = DMDAGetInfo(user->da1,NULL,&Mda,&Nda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((Mda+1)*(Nda+1)*sizeof(PetscInt),&nodes);CHKERRQ(ierr);
-  ierr = PetscMalloc(Mda*Nda*2*3*sizeof(PetscInt),&connect);CHKERRQ(ierr);
+  ierr = PetscMalloc1((Mda+1)*(Nda+1),&nodes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Mda*Nda*2*3,&connect);CHKERRQ(ierr);
 
   h = 100.0/Mda;
 

@@ -107,7 +107,7 @@ static void RDMaterialEnergy_Saha(RD rd,const RDNode *n,PetscScalar *inEm,RDNode
               chi_t = -chi / T * T_t,
               a     = 1.,
               a_t   = 0,
-              b     = 4. * rd->m_p / rd->rho * pow(2. * PETSC_PI * rd->m_e * rd->I_H / PetscSqr(rd->h),1.5) * PetscExpScalar(-chi) * PetscPowScalar(chi,1.5), /* Eq 7 */
+              b     = 4. * rd->m_p / rd->rho * PetscPowScalar(2. * PETSC_PI * rd->m_e * rd->I_H / PetscSqr(rd->h),1.5) * PetscExpScalar(-chi) * PetscPowScalar(chi,1.5), /* Eq 7 */
               b_t   = -b*chi_t + 1.5*b/chi*chi_t,
               c     = -b,
               c_t   = -b_t;
@@ -195,7 +195,7 @@ static PetscErrorCode RDStateView(RD rd,Vec X,Vec Xdot,Vec F)
   ierr = DMDAVecRestoreArray(rd->da,X,&x);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(rd->da,Xdot,&xdot);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(rd->da,F,&f);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(comm,PETSC_STDOUT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -762,7 +762,7 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
 }
 
 /* Temperature that is in equilibrium with the radiation density */
-static PetscScalar RDRadiationTemperature(RD rd,PetscScalar E) { return pow(E*rd->c/(4.*rd->sigma_b),0.25); }
+static PetscScalar RDRadiationTemperature(RD rd,PetscScalar E) { return PetscPowScalar(E*rd->c/(4.*rd->sigma_b),0.25); }
 
 #undef __FUNCT__
 #define __FUNCT__ "RDInitialState"
@@ -784,11 +784,11 @@ static PetscErrorCode RDInitialState(RD rd,Vec X)
       x[i].T = RDRadiationTemperature(rd,x[i].E);
       break;
     case 2:
-      x[i].E = 0.001 + 100.*PetscExpScalar(-PetscSqr(coord/0.1));
+      x[i].E = 0.001 + 100.*PetscExpReal(-PetscSqr(coord/0.1));
       x[i].T = RDRadiationTemperature(rd,x[i].E);
       break;
     case 3:
-      x[i].E = 7.56e-2 * rd->unit.Joule / pow(rd->unit.meter,3);
+      x[i].E = 7.56e-2 * rd->unit.Joule / PetscPowScalar(rd->unit.meter,3);
       x[i].T = RDRadiationTemperature(rd,x[i].E);
       break;
     default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No initial state %D",rd->initial);
@@ -926,7 +926,7 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
 
   PetscFunctionBeginUser;
   *inrd = 0;
-  ierr  = PetscNew(struct _n_RD,&rd);CHKERRQ(ierr);
+  ierr  = PetscNew(&rd);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm,NULL,"Options for nonequilibrium radiation-diffusion with RD ionization",NULL);CHKERRQ(ierr);
   {
@@ -974,7 +974,7 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
     switch (rd->initial) {
     case 1:
       rd->leftbc     = BC_ROBIN;
-      rd->Eapplied   = 4 * rd->unit.Joule / pow(rd->unit.meter,3.);
+      rd->Eapplied   = 4 * rd->unit.Joule / PetscPowRealInt(rd->unit.meter,3);
       rd->L          = 1. * rd->unit.meter;
       rd->beta       = 3.0;
       rd->gamma      = 3.0;
@@ -990,7 +990,7 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
       break;
     case 3:
       rd->leftbc     = BC_ROBIN;
-      rd->Eapplied   = 7.503e6 * rd->unit.Joule / pow(rd->unit.meter,3);
+      rd->Eapplied   = 7.503e6 * rd->unit.Joule / PetscPowRealInt(rd->unit.meter,3);
       rd->L          = 5. * rd->unit.meter;
       rd->beta       = 3.5;
       rd->gamma      = 3.5;
@@ -1024,15 +1024,15 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
   case 3:
     /* Table 2 */
     rd->rho     = 1.17e-3 * kilogram / (meter*meter*meter);                      /* density */
-    rd->K_R     = 7.44e18 * pow(meter,5.) * pow(Kelvin,3.5) * pow(kilogram,-2.); /*  */
-    rd->K_p     = 2.33e20 * pow(meter,5.) * pow(Kelvin,3.5) * pow(kilogram,-2.); /*  */
+    rd->K_R     = 7.44e18 * PetscPowRealInt(meter,5) * PetscPowReal(Kelvin,3.5) * PetscPowRealInt(kilogram,-2); /*  */
+    rd->K_p     = 2.33e20 * PetscPowRealInt(meter,5) * PetscPowReal(Kelvin,3.5) * PetscPowRealInt(kilogram,-2); /*  */
     rd->I_H     = 2.179e-18 * Joule;                                             /* Hydrogen ionization potential */
     rd->m_p     = 1.673e-27 * kilogram;                                          /* proton mass */
     rd->m_e     = 9.109e-31 * kilogram;                                          /* electron mass */
     rd->h       = 6.626e-34 * Joule * second;                                    /* Planck's constant */
     rd->k       = 1.381e-23 * Joule / Kelvin;                                    /* Boltzman constant */
     rd->c       = 3.00e8 * meter / second;                                       /* speed of light */
-    rd->sigma_b = 5.67e-8 * Watt * pow(meter,-2.) * pow(Kelvin,-4.);             /* Stefan-Boltzman constant */
+    rd->sigma_b = 5.67e-8 * Watt * PetscPowRealInt(meter,-2) * PetscPowRealInt(Kelvin,-4);             /* Stefan-Boltzman constant */
     rd->MaterialEnergy = RDMaterialEnergy_Saha;
     break;
   }
@@ -1062,7 +1062,8 @@ int main(int argc, char *argv[])
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   ierr = RDCreate(PETSC_COMM_WORLD,&rd);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(rd->da,&X);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(rd->da,MATAIJ,&B);CHKERRQ(ierr);
+  ierr = DMSetMatType(rd->da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(rd->da,&B);CHKERRQ(ierr);
   ierr = RDInitialState(rd,X);CHKERRQ(ierr);
 
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);

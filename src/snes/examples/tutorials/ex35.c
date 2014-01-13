@@ -155,7 +155,8 @@ PetscErrorCode MyComputeFunction(SNES snes,Vec x,Vec F,void *ctx)
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dm,&J);CHKERRQ(ierr);
   if (!J) {
-    ierr = DMCreateMatrix(dm,MATAIJ,&J);CHKERRQ(ierr);
+    ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dm,&J);CHKERRQ(ierr);
     ierr = MatSetDM(J, NULL);CHKERRQ(ierr);
     ierr = FormMatrix(dm,J);CHKERRQ(ierr);
     ierr = DMSetApplicationContext(dm,J);CHKERRQ(ierr);
@@ -196,7 +197,7 @@ PetscErrorCode FormMatrix(DM da,Mat jac)
   hxdhy = hx/hy;
   hydhx = hy/hx;
 
-  ierr = PetscMalloc(info.ym*info.xm*sizeof(MatStencil),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc1(info.ym*info.xm,&rows);CHKERRQ(ierr);
   /*
      Compute entries for the locally owned part of the Jacobian.
       - Currently, all PETSc parallel matrix formats are partitioned by

@@ -58,6 +58,7 @@ static PetscErrorCode TSStep_Alpha(TS ts)
     /* V1 = (1-1/Gamma)*V0 + 1/(Gamma*dT)*(X1-X0) */
     ierr = VecWAXPY(th->V1,-1,th->X0,th->X1);CHKERRQ(ierr);
     ierr = VecAXPBY(th->V1,1-1/th->Gamma,1/(th->Gamma*ts->time_step),th->V0);CHKERRQ(ierr);
+    ierr = TSPostStage(ts,th->stage_time,0,&(th->V1));CHKERRQ(ierr);
     /* nonlinear solve convergence */
     ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
     if (snesreason < 0 && !th->adapt) break;
@@ -340,7 +341,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha(TS ts)
   ts->ops->snesfunction   = SNESTSFormFunction_Alpha;
   ts->ops->snesjacobian   = SNESTSFormJacobian_Alpha;
 
-  ierr = PetscNewLog(ts,TS_Alpha,&th);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;
 
   th->Alpha_m = 0.5;

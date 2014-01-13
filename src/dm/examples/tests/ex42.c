@@ -36,7 +36,7 @@ PetscErrorCode test_3d(const char filename[])
         PetscScalar x = (Lx*i)/M;
         PetscScalar y = (Ly*j)/N;
         PetscScalar z = (Lz*k)/P;
-        va[k][j][i] = pow(x-0.5*Lx,2)+pow(y-0.5*Ly,2)+pow(z-0.5*Lz,2);
+        va[k][j][i] = PetscPowScalarInt(x-0.5*Lx,2)+PetscPowScalarInt(y-0.5*Ly,2)+PetscPowScalarInt(z-0.5*Lz,2);
       }
     }
   }
@@ -78,7 +78,7 @@ PetscErrorCode test_2d(const char filename[])
     for (i=info.xs; i<info.xs+info.xm; i++) {
       PetscScalar x = (Lx*i)/M;
       PetscScalar y = (Ly*j)/N;
-      va[j][i] = pow(x-0.5*Lx,2)+pow(y-0.5*Ly,2);
+      va[j][i] = PetscPowScalarInt(x-0.5*Lx,2)+PetscPowScalarInt(y-0.5*Ly,2);
     }
   }
   ierr = DMDAVecRestoreArray(da,v,&va);CHKERRQ(ierr);
@@ -119,7 +119,7 @@ PetscErrorCode test_2d_nocoord(const char filename[])
     for (i=info.xs; i<info.xs+info.xm; i++) {
       PetscScalar x = (Lx*i)/M;
       PetscScalar y = (Ly*j)/N;
-      va[j][i] = pow(x-0.5*Lx,2)+pow(y-0.5*Ly,2);
+      va[j][i] = PetscPowScalarInt(x-0.5*Lx,2)+PetscPowScalarInt(y-0.5*Ly,2);
     }
   }
   ierr = DMDAVecRestoreArray(da,v,&va);CHKERRQ(ierr);
@@ -162,7 +162,7 @@ PetscErrorCode test_3d_nocoord(const char filename[])
         PetscScalar x = (Lx*i)/M;
         PetscScalar y = (Ly*j)/N;
         PetscScalar z = (Lz*k)/P;
-        va[k][j][i] = pow(x-0.5*Lx,2)+pow(y-0.5*Ly,2)+pow(z-0.5*Lz,2);
+        va[k][j][i] = PetscPowScalarInt(x-0.5*Lx,2)+PetscPowScalarInt(y-0.5*Ly,2)+PetscPowScalarInt(z-0.5*Lz,2);
       }
     }
   }
@@ -178,11 +178,11 @@ PetscErrorCode test_3d_nocoord(const char filename[])
 int main(int argc, char *argv[])
 {
   PetscErrorCode ierr;
-  ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
-  test_3d("3d.vtr");
-  test_2d("2d.vtr");
-  test_2d_nocoord("2d_nocoord.vtr");
-  test_3d_nocoord("3d_nocoord.vtr");
+  PetscInitialize(&argc,&argv,0,help);
+  ierr = test_3d("3d.vtr");CHKERRQ(ierr);
+  ierr = test_2d("2d.vtr");CHKERRQ(ierr);
+  ierr = test_2d_nocoord("2d_nocoord.vtr");CHKERRQ(ierr);
+  ierr = test_3d_nocoord("3d_nocoord.vtr");CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

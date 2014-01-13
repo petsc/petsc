@@ -89,7 +89,7 @@ version_subminor=`grep '^#define PETSC_VERSION_SUBMINOR ' include/petscversion.h
 
 #generated a couple of more values
 version_date=`date +"%b, %d, %Y"`
-version_git=`git log -1 --pretty=format:%H`
+version_git=`git describe`
 version_date_git=`git log -1 --pretty=format:%ci`
 if [ ${version}foo = foo ]; then
   if  [ ${version_release} = 0 ]; then

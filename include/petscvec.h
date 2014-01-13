@@ -97,7 +97,6 @@ typedef const char* VecType;
 #define VECMPI         "mpi"
 #define VECSTANDARD    "standard"   /* seq on one process and mpi on several */
 #define VECSHARED      "shared"
-#define VECSIEVE       "sieve"
 #define VECSEQCUSP     "seqcusp"
 #define VECMPICUSP     "mpicusp"
 #define VECCUSP        "cusp"       /* seqcusp on one process and mpicusp on several */
@@ -126,7 +125,7 @@ PETSC_EXTERN PetscErrorCode VecCreateSeqWithArray(MPI_Comm,PetscInt,PetscInt,con
 PETSC_EXTERN PetscErrorCode VecCreateMPIWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar[],Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateShared(MPI_Comm,PetscInt,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecSetFromOptions(Vec);
-PETSC_EXTERN PetscErrorCode VecViewFromOptions(Vec,const char[],const char[]);
+PETSC_STATIC_INLINE PetscErrorCode VecViewFromOptions(Vec A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 
 PETSC_EXTERN PetscErrorCode VecSetUp(Vec);
 PETSC_EXTERN PetscErrorCode VecDestroy(Vec*);
@@ -271,6 +270,7 @@ PETSC_EXTERN PetscErrorCode VecAssemblyBegin(Vec);
 PETSC_EXTERN PetscErrorCode VecAssemblyEnd(Vec);
 PETSC_EXTERN PetscErrorCode VecStashSetInitialSize(Vec,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode VecStashView(Vec,PetscViewer);
+PETSC_EXTERN PetscErrorCode VecStashViewFromOptions(Vec,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode VecStashGetInfo(Vec,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 
 /*MC
@@ -324,6 +324,7 @@ PETSC_EXTERN PetscErrorCode VecScatterEnd(VecScatter,Vec,Vec,InsertMode,ScatterM
 PETSC_EXTERN PetscErrorCode VecScatterDestroy(VecScatter*);
 PETSC_EXTERN PetscErrorCode VecScatterCopy(VecScatter,VecScatter *);
 PETSC_EXTERN PetscErrorCode VecScatterView(VecScatter,PetscViewer);
+PETSC_STATIC_INLINE PetscErrorCode VecScatterViewFromOptions(VecScatter A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 PETSC_EXTERN PetscErrorCode VecScatterRemap(VecScatter,PetscInt *,PetscInt*);
 PETSC_EXTERN PetscErrorCode VecScatterGetMerged(VecScatter,PetscBool *);
 
@@ -469,8 +470,8 @@ PETSC_EXTERN PetscErrorCode VecsDuplicate(Vecs,Vecs*);
 
 #if defined(PETSC_HAVE_CUSP)
 typedef struct _p_PetscCUSPIndices* PetscCUSPIndices;
-PETSC_EXTERN PetscErrorCode PetscCUSPIndicesCreate(PetscInt, PetscInt*,PetscInt, PetscInt*,PetscCUSPIndices*);
-PETSC_EXTERN PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices*);
+typedef struct _p_VecScatterCUSPIndices_StoS* VecScatterCUSPIndices_StoS;
+typedef struct _p_VecScatterCUSPIndices_PtoP* VecScatterCUSPIndices_PtoP;
 PETSC_EXTERN PetscErrorCode VecCUSPCopyToGPUSome_Public(Vec,PetscCUSPIndices);
 PETSC_EXTERN PetscErrorCode VecCUSPCopyFromGPUSome_Public(Vec,PetscCUSPIndices);
 PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter,Vec,ScatterMode);

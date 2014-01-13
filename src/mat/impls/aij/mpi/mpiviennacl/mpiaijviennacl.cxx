@@ -8,7 +8,6 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJViennaCL(Mat B,PetscInt d_nz,con
 {
   Mat_MPIAIJ *b = (Mat_MPIAIJ*)B->data;
   PetscErrorCode ierr;
-  PetscInt       i;
 
   PetscFunctionBegin;
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
@@ -77,7 +76,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJViennaCL(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",MatMPIAIJSetPreallocation_MPIAIJViennaCL);CHKERRQ(ierr);
   A->ops->getvecs        = MatGetVecs_MPIAIJViennaCL;
 
-  ierr = MatSetFromOptions_SeqViennaCL(A);CHKERRQ(ierr); /* Allows to set device type before allocating any objects */
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIAIJVIENNACL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -74,4 +74,7 @@ PETSC_INTERN PetscErrorCode MatGetSubMatrix_MPIBAIJ_Private(Mat,IS,IS,PetscInt,M
 PETSC_INTERN PetscErrorCode MatGetMultiProcBlock_MPIBAIJ(Mat,MPI_Comm,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat,PetscInt,IS[],PetscInt);
 PETSC_INTERN PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat,PetscInt,IS*);
+PETSC_INTERN PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat,ISColoring,MatFDColoring);
+PETSC_INTERN PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat,ISColoring,MatFDColoring);
+PETSC_INTERN PetscErrorCode MatFDColoringApply_BAIJ(Mat,MatFDColoring,Vec,MatStructure*,void*);
 #endif

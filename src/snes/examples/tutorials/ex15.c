@@ -191,7 +191,7 @@ int main(int argc,char **argv)
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /* B can be type of MATAIJ,MATBAIJ or MATSBAIJ */
-  ierr = DMCreateMatrix(alloc_star ? dastar : da,MATAIJ,&B);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(alloc_star ? dastar : da,&B);CHKERRQ(ierr);
   A    = B;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -333,7 +333,7 @@ static PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
       } else {
         if (user->initial == -1) {
           if (user->lambda != 0) {
-            x[j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
+            x[j][i] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
           } else {
             /* The solution above is an exact solution for lambda=0, this avoids "accidentally" starting
              * with an exact solution. */
@@ -351,9 +351,9 @@ static PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
           x[j][i] = (1 - xx*xx) * (1-yy*yy) * xx * yy;
         } else {
           if (user->lambda != 0) {
-            x[j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
+            x[j][i] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
           } else {
-            x[j][i] = 0.5*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
+            x[j][i] = 0.5*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
           }
         }
       }

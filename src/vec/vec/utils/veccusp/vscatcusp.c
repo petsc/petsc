@@ -1,6 +1,8 @@
 #include <petsc-private/isimpl.h>
 #include <petsc-private/vecimpl.h>             /*I "petscvec.h" I*/
 
+PETSC_INTERN PetscErrorCode VecScatterCUSPIndicesCreate_PtoP(PetscInt, PetscInt*,PetscInt, PetscInt*,PetscCUSPIndices*);
+
 #undef __FUNCT__
 #define __FUNCT__ "VecScatterInitializeForGPU"
 /*@
@@ -49,8 +51,8 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
       PetscInt k,*tindicesSends,*sindicesSends,*tindicesRecvs,*sindicesRecvs;
       PetscInt ns = sstartsSends[nsends],nr = sstartsRecvs[nrecvs];
       /* Here we create indices for both the senders and receivers. */
-      ierr = PetscMalloc(ns*sizeof(PetscInt),&tindicesSends);CHKERRQ(ierr);
-      ierr = PetscMalloc(nr*sizeof(PetscInt),&tindicesRecvs);CHKERRQ(ierr);
+      ierr = PetscMalloc1(ns,&tindicesSends);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nr,&tindicesRecvs);CHKERRQ(ierr);
 
       ierr = PetscMemcpy(tindicesSends,indices,ns*sizeof(PetscInt));CHKERRQ(ierr);
       ierr = PetscMemcpy(tindicesRecvs,from->indices,nr*sizeof(PetscInt));CHKERRQ(ierr);
@@ -58,8 +60,8 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
       ierr = PetscSortRemoveDupsInt(&ns,tindicesSends);CHKERRQ(ierr);
       ierr = PetscSortRemoveDupsInt(&nr,tindicesRecvs);CHKERRQ(ierr);
 
-      ierr = PetscMalloc(bs*ns*sizeof(PetscInt),&sindicesSends);CHKERRQ(ierr);
-      ierr = PetscMalloc(from->bs*nr*sizeof(PetscInt),&sindicesRecvs);CHKERRQ(ierr);
+      ierr = PetscMalloc1(bs*ns,&sindicesSends);CHKERRQ(ierr);
+      ierr = PetscMalloc1(from->bs*nr,&sindicesRecvs);CHKERRQ(ierr);
 
       /* sender indices */
       for (i=0; i<ns; i++) {
@@ -74,7 +76,7 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
       ierr = PetscFree(tindicesRecvs);CHKERRQ(ierr);
 
       /* create GPU indices, work vectors, ... */
-      ierr = PetscCUSPIndicesCreate(ns*bs,sindicesSends,nr*from->bs,sindicesRecvs,(PetscCUSPIndices*)&inctx->spptr);CHKERRQ(ierr);
+      ierr = VecScatterCUSPIndicesCreate_PtoP(ns*bs,sindicesSends,nr*from->bs,sindicesRecvs,(PetscCUSPIndices*)&inctx->spptr);CHKERRQ(ierr);
       ierr = PetscFree(sindicesSends);CHKERRQ(ierr);
       ierr = PetscFree(sindicesRecvs);CHKERRQ(ierr);
     }

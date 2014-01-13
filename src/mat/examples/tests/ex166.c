@@ -63,6 +63,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerASCIIPrintf(viewer,"Row permutation\n");CHKERRQ(ierr);
   ierr = ISView(isrow,viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Column permutation\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
   ierr = ISView(iscol,sviewer);CHKERRQ(ierr);
   ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);

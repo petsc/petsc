@@ -22,7 +22,7 @@ PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal rnorm,K
   PetscErrorCode           ierr;
 
   PetscFunctionBegin;
-  ierr = KSPDefaultConverged(ksp,n,rnorm,reason,ctx->ctx);CHKERRQ(ierr);
+  ierr = KSPConvergedDefault(ksp,n,rnorm,reason,ctx->ctx);CHKERRQ(ierr);
   if (*reason) {
     ierr = PetscInfo2(snes,"default convergence test KSP iterations=%D, rnorm=%G\n",n,rnorm);CHKERRQ(ierr);
   }
@@ -44,7 +44,7 @@ PetscErrorCode SNES_TR_KSPConverged_Destroy(void *cctx)
   PetscErrorCode           ierr;
 
   PetscFunctionBegin;
-  ierr = KSPDefaultConvergedDestroy(ctx->ctx);CHKERRQ(ierr);
+  ierr = KSPConvergedDefaultDestroy(ctx->ctx);CHKERRQ(ierr);
   ierr = PetscFree(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -105,9 +105,9 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   G      = snes->work[1];
   Ytmp   = snes->work[2];
 
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter = 0;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
 
   if (!snes->vec_func_init_set) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);          /* F(X) */
@@ -124,16 +124,14 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
     PetscFunctionReturn(0);
   }
 
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   delta      = neP->delta0*fnorm;
   neP->delta = delta;
   ierr       = SNESLogConvergenceHistory(snes,fnorm,0);CHKERRQ(ierr);
   ierr       = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
 
-  /* set parameter for default relative tolerance convergence test */
-  snes->ttol = fnorm*snes->rtol;
   /* test convergence */
   ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
@@ -143,9 +141,9 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   if (!conv) {
     SNES_TR_KSPConverged_Ctx *ctx;
     ierr      = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-    ierr      = PetscNew(SNES_TR_KSPConverged_Ctx,&ctx);CHKERRQ(ierr);
+    ierr      = PetscNew(&ctx);CHKERRQ(ierr);
     ctx->snes = snes;
-    ierr      = KSPDefaultConvergedCreate(&ctx->ctx);CHKERRQ(ierr);
+    ierr      = KSPConvergedDefaultCreate(&ctx->ctx);CHKERRQ(ierr);
     ierr      = KSPSetConvergenceTest(ksp,SNES_TR_KSPConverged_Private,ctx,SNES_TR_KSPConverged_Destroy);CHKERRQ(ierr);
     ierr      = PetscInfo(snes,"Using Krylov convergence test SNES_TR_KSPConverged_Private\n");CHKERRQ(ierr);
   }
@@ -221,15 +219,15 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
       ierr  = VecCopy(G,F);CHKERRQ(ierr);
       ierr  = VecCopy(Y,X);CHKERRQ(ierr);
       /* Monitor convergence */
-      ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+      ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
       snes->iter = i+1;
       snes->norm = fnorm;
-      ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+      ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
       ierr       = SNESLogConvergenceHistory(snes,snes->norm,lits);CHKERRQ(ierr);
       ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
       /* Test for convergence, xnorm = || X || */
       neP->itflag = PETSC_TRUE;
-      if (snes->ops->converged != SNESSkipConverged) { ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); }
+      if (snes->ops->converged != SNESConvergedSkip) { ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); }
       ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
       if (reason) break;
     } else break;
@@ -238,9 +236,9 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
     ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",maxits);CHKERRQ(ierr);
     if (!reason) reason = SNES_DIVERGED_MAX_IT;
   }
-  ierr         = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr         = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->reason = reason;
-  ierr         = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr         = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -360,7 +358,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTR(SNES snes)
   snes->usesksp = PETSC_TRUE;
   snes->usespc  = PETSC_FALSE;
 
-  ierr        = PetscNewLog(snes,SNES_NEWTONTR,&neP);CHKERRQ(ierr);
+  ierr        = PetscNewLog(snes,&neP);CHKERRQ(ierr);
   snes->data  = (void*)neP;
   neP->mu     = 0.25;
   neP->eta    = 0.75;

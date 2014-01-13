@@ -117,7 +117,7 @@ PetscErrorCode  PetscObjectListAdd(PetscObjectList *fl,const char name[],PetscOb
   }
 
   /* add it to list, because it was not already there */
-  ierr        = PetscNew(struct _n_PetscObjectList,&olist);CHKERRQ(ierr);
+  ierr        = PetscNew(&olist);CHKERRQ(ierr);
   olist->next = 0;
   olist->obj  = obj;
 

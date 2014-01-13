@@ -356,7 +356,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ILU(PC pc)
   PC_ILU         *ilu;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_ILU,&ilu);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&ilu);CHKERRQ(ierr);
 
   ((PC_Factor*)ilu)->fact               = 0;
   ierr                                  = MatFactorInfoInitialize(&((PC_Factor*)ilu)->info);CHKERRQ(ierr);

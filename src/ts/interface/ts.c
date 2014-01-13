@@ -38,7 +38,7 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
   else defaultType = TSEULER;
 
   if (!TSRegisterAllCalled) {ierr = TSRegisterAll();CHKERRQ(ierr);}
-  ierr = PetscOptionsList("-ts_type", "TS method"," TSSetType", TSList, defaultType, typeName, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-ts_type", "TS method"," TSSetType", TSList, defaultType, typeName, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = TSSetType(ts, typeName);CHKERRQ(ierr);
   } else {
@@ -126,6 +126,17 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = PetscOptionsBool("-ts_error_if_step_fails","Error if no step succeeds","TSSetErrorIfStepFails",ts->errorifstepfailed,&ts->errorifstepfailed,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_rtol","Relative tolerance for local truncation error","TSSetTolerances",ts->rtol,&ts->rtol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_atol","Absolute tolerance for local truncation error","TSSetTolerances",ts->atol,&ts->atol,NULL);CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_SAWS)
+  {
+  PetscBool set;
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsBool("-ts_saws_block","Block for SAWs memory snooper at end of TSSolve","PetscObjectSAWsBlock",((PetscObject)ts)->amspublishblock,&flg,&set);CHKERRQ(ierr);
+  if (set) {
+    ierr = PetscObjectSAWsSetBlock((PetscObject)ts,flg);CHKERRQ(ierr);
+  }
+  }
+#endif
 
   /* Monitor options */
   ierr = PetscOptionsString("-ts_monitor","Monitor timestep size","TSMonitorDefault","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -263,10 +274,10 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = PetscOptionsString("-ts_monitor_dmda_ray","Display a ray of the solution","None","y=0",dir,16,&flg);CHKERRQ(ierr);
   if (flg) {
     TSMonitorDMDARayCtx *rayctx;
-    int                 ray = 0;
-    DMDADirection       ddir;
-    DM                  da;
-    PetscMPIInt         rank;
+    int                  ray = 0;
+    DMDADirection        ddir;
+    DM                   da;
+    PetscMPIInt          rank;
 
     if (dir[1] != '=') SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONG,"Unknown ray %s",dir);
     if (dir[0] == 'x') ddir = DMDA_X;
@@ -275,16 +286,42 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     sscanf(dir+2,"%d",&ray);
 
     ierr = PetscInfo2(((PetscObject)ts),"Displaying DMDA ray %c = %D\n",dir[0],ray);CHKERRQ(ierr);
-    ierr = PetscNew(TSMonitorDMDARayCtx,&rayctx);CHKERRQ(ierr);
+    ierr = PetscNew(&rayctx);CHKERRQ(ierr);
     ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
     ierr = DMDAGetRay(da,ddir,ray,&rayctx->ray,&rayctx->scatter);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ts),&rank);CHKERRQ(ierr);
     if (!rank) {
       ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,0,0,0,600,300,&rayctx->viewer);CHKERRQ(ierr);
     }
+    rayctx->lgctx = NULL;
     ierr = TSMonitorSet(ts,TSMonitorDMDARay,rayctx,TSMonitorDMDARayDestroy);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsString("-ts_monitor_lg_dmda_ray","Display a ray of the solution","None","x=0",dir,16,&flg);CHKERRQ(ierr);
+  if (flg) {
+    TSMonitorDMDARayCtx *rayctx;
+    int                 ray = 0;
+    DMDADirection       ddir;
+    DM                  da;
+    PetscInt            howoften = 1;
 
+    if (dir[1] != '=') SETERRQ1(PetscObjectComm((PetscObject) ts), PETSC_ERR_ARG_WRONG, "Malformed ray %s", dir);
+    if      (dir[0] == 'x') ddir = DMDA_X;
+    else if (dir[0] == 'y') ddir = DMDA_Y;
+    else SETERRQ1(PetscObjectComm((PetscObject) ts), PETSC_ERR_ARG_WRONG, "Unknown ray direction %s", dir);
+    sscanf(dir+2, "%d", &ray);
+
+    ierr = PetscInfo2(((PetscObject) ts),"Displaying LG DMDA ray %c = %D\n", dir[0], ray);CHKERRQ(ierr);
+    ierr = PetscNew(&rayctx);CHKERRQ(ierr);
+    ierr = TSGetDM(ts, &da);CHKERRQ(ierr);
+    ierr = DMDAGetRay(da, ddir, ray, &rayctx->ray, &rayctx->scatter);CHKERRQ(ierr);
+    ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&rayctx->lgctx);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts, TSMonitorLGDMDARay, rayctx, TSMonitorDMDARayDestroy);CHKERRQ(ierr);
+  }
+
+  /*
+     This code is all wrong. One is creating objects inside the TSSetFromOptions() so if run with the options gui
+     will bleed memory. Also one is using a PetscOptionsBegin() inside a PetscOptionsBegin()
+  */
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   ierr = TSAdaptSetFromOptions(adapt);CHKERRQ(ierr);
 
@@ -337,7 +374,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat *A,Mat *B,MatStructure *flg)
 {
   PetscErrorCode ierr;
-  PetscInt       Ustate;
+  PetscObjectState Ustate;
   DM             dm;
   DMTS           tsdm;
   TSRHSJacobian  rhsjacobianfunc;
@@ -352,7 +389,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat *A,Mat *B,MatSt
   ierr = DMGetDMTS(dm,&tsdm);CHKERRQ(ierr);
   ierr = DMTSGetRHSJacobian(dm,&rhsjacobianfunc,&ctx);CHKERRQ(ierr);
   ierr = DMTSGetIJacobian(dm,&ijacobianfunc,NULL);CHKERRQ(ierr);
-  ierr = PetscObjectStateQuery((PetscObject)U,&Ustate);CHKERRQ(ierr);
+  ierr = PetscObjectStateGet((PetscObject)U,&Ustate);CHKERRQ(ierr);
   if (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->rhsjacobian.X == U && ts->rhsjacobian.Xstate == Ustate))) {
     *flg = ts->rhsjacobian.mstructure;
     PetscFunctionReturn(0);
@@ -388,7 +425,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat *A,Mat *B,MatSt
   }
   ts->rhsjacobian.time       = t;
   ts->rhsjacobian.X          = U;
-  ierr                       = PetscObjectStateQuery((PetscObject)U,&ts->rhsjacobian.Xstate);CHKERRQ(ierr);
+  ierr                       = PetscObjectStateGet((PetscObject)U,&ts->rhsjacobian.Xstate);CHKERRQ(ierr);
   ts->rhsjacobian.mstructure = *flg;
   PetscFunctionReturn(0);
 }
@@ -1281,8 +1318,8 @@ PetscErrorCode  TSLoad(TS ts, PetscViewer viewer)
 }
 
 #include <petscdraw.h>
-#if defined(PETSC_HAVE_AMS)
-#include <petscviewerams.h>
+#if defined(PETSC_HAVE_SAWS)
+#include <petscviewersaws.h>
 #endif
 #undef __FUNCT__
 #define __FUNCT__ "TSView"
@@ -1321,7 +1358,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
   TSType         type;
   PetscBool      iascii,isstring,isundials,isbinary,isdraw;
   DMTS           sdm;
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   PetscBool      isams;
 #endif
 
@@ -1337,8 +1374,8 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERAMS,&isams);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SAWS)
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
 #endif
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ts,viewer);CHKERRQ(ierr);
@@ -1396,14 +1433,21 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
       ierr = (*ts->ops->view)(ts,viewer);CHKERRQ(ierr);
     }
     ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   } else if (isams) {
-    if (((PetscObject)ts)->amsmem == -1) {
-      ierr = PetscObjectViewAMS((PetscObject)ts,viewer);CHKERRQ(ierr);
-      PetscStackCallAMS(AMS_Memory_take_access,(((PetscObject)ts)->amsmem));
-      PetscStackCallAMS(AMS_Memory_add_field,(((PetscObject)ts)->amsmem,"time step",&ts->steps,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
-      PetscStackCallAMS(AMS_Memory_add_field,(((PetscObject)ts)->amsmem,"time",&ts->ptime,1,AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
-      PetscStackCallAMS(AMS_Memory_grant_access,(((PetscObject)ts)->amsmem));
+    PetscMPIInt rank;
+    const char  *name;
+
+    ierr = PetscObjectGetName((PetscObject)ts,&name);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    if (!((PetscObject)ts)->amsmem && !rank) {
+      char       dir[1024];
+
+      ierr = PetscObjectViewSAWs((PetscObject)ts,viewer);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/time_step",name);CHKERRQ(ierr);
+      PetscStackCallSAWs(SAWs_Register,(dir,&ts->steps,1,SAWs_READ,SAWs_INT));
+      ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/time",name);CHKERRQ(ierr);
+      PetscStackCallSAWs(SAWs_Register,(dir,&ts->ptime,1,SAWs_READ,SAWs_DOUBLE));
     }
     if (ts->ops->view) {
       ierr = (*ts->ops->view)(ts,viewer);CHKERRQ(ierr);
@@ -1488,7 +1532,7 @@ PetscErrorCode  TSGetApplicationContext(TS ts,void *usrP)
    Level: intermediate
 
 .keywords: TS, timestep, get, iteration, number
-.seealso: TSGetTime(), TSGetTimeStep(), TSSetPreStep(), TSSetPreStage(), TSSetPostStep()
+.seealso: TSGetTime(), TSGetTimeStep(), TSSetPreStep(), TSSetPreStage(), TSSetPostStage(), TSSetPostStep()
 @*/
 PetscErrorCode  TSGetTimeStepNumber(TS ts,PetscInt *iter)
 {
@@ -1867,8 +1911,8 @@ PetscErrorCode  TSDestroy(TS *ts)
 
   ierr = TSReset((*ts));CHKERRQ(ierr);
 
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSViewOff((PetscObject)*ts);CHKERRQ(ierr);
+  /* if memory was published with SAWs then destroy it */
+  ierr = PetscObjectSAWsViewOff((PetscObject)*ts);CHKERRQ(ierr);
   if ((*ts)->ops->destroy) {ierr = (*(*ts)->ops->destroy)((*ts));CHKERRQ(ierr);}
 
   ierr = TSAdaptDestroy(&(*ts)->adapt);CHKERRQ(ierr);
@@ -2135,7 +2179,7 @@ PetscErrorCode  TSSetSolution(TS ts,Vec u)
   size of the step being attempted can be obtained using TSGetTimeStep().
 
 .keywords: TS, timestep
-.seealso: TSSetPreStage(), TSSetPostStep(), TSStep()
+.seealso: TSSetPreStage(), TSSetPostStage(), TSSetPostStep(), TSStep()
 @*/
 PetscErrorCode  TSSetPreStep(TS ts, PetscErrorCode (*func)(TS))
 {
@@ -2162,7 +2206,7 @@ PetscErrorCode  TSSetPreStep(TS ts, PetscErrorCode (*func)(TS))
   Level: developer
 
 .keywords: TS, timestep
-.seealso: TSSetPreStep(), TSPreStage(), TSPostStep()
+.seealso: TSSetPreStep(), TSPreStage(), TSPostStage(), TSPostStep()
 @*/
 PetscErrorCode  TSPreStep(TS ts)
 {
@@ -2199,13 +2243,46 @@ PetscErrorCode  TSPreStep(TS ts)
   attempted can be obtained using TSGetTimeStep(). The time at the start of the step is available via TSGetTime().
 
 .keywords: TS, timestep
-.seealso: TSSetPreStep(), TSSetPostStep(), TSGetApplicationContext()
+.seealso: TSSetPostStage(), TSSetPreStep(), TSSetPostStep(), TSGetApplicationContext()
 @*/
 PetscErrorCode  TSSetPreStage(TS ts, PetscErrorCode (*func)(TS,PetscReal))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
   ts->prestage = func;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetPostStage"
+/*@C
+  TSSetPostStage - Sets the general-purpose function
+  called once at the end of each stage.
+
+  Logically Collective on TS
+
+  Input Parameters:
++ ts   - The TS context obtained from TSCreate()
+- func - The function
+
+  Calling sequence of func:
+. PetscErrorCode func(TS ts, PetscReal stagetime, PetscInt stageindex, Vec* Y);
+
+  Level: intermediate
+
+  Note:
+  There may be several stages per time step. If the solve for a given stage fails, the step may be rejected and retried.
+  The time step number being computed can be queried using TSGetTimeStepNumber() and the total size of the step being
+  attempted can be obtained using TSGetTimeStep(). The time at the start of the step is available via TSGetTime().
+
+.keywords: TS, timestep
+.seealso: TSSetPreStage(), TSSetPreStep(), TSSetPostStep(), TSGetApplicationContext()
+@*/
+PetscErrorCode  TSSetPostStage(TS ts, PetscErrorCode (*func)(TS,PetscReal,PetscInt,Vec*))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+  ts->poststage = func;
   PetscFunctionReturn(0);
 }
 
@@ -2217,7 +2294,8 @@ PetscErrorCode  TSSetPreStage(TS ts, PetscErrorCode (*func)(TS,PetscReal))
   Collective on TS
 
   Input Parameters:
-. ts   - The TS context obtained from TSCreate()
+. ts          - The TS context obtained from TSCreate()
+  stagetime   - The absolute time of the current stage
 
   Notes:
   TSPreStage() is typically used within time stepping implementations,
@@ -2226,7 +2304,7 @@ PetscErrorCode  TSSetPreStage(TS ts, PetscErrorCode (*func)(TS,PetscReal))
   Level: developer
 
 .keywords: TS, timestep
-.seealso: TSSetPreStep(), TSPreStep(), TSPostStep()
+.seealso: TSPostStage(), TSSetPreStep(), TSPreStep(), TSPostStep()
 @*/
 PetscErrorCode  TSPreStage(TS ts, PetscReal stagetime)
 {
@@ -2236,6 +2314,41 @@ PetscErrorCode  TSPreStage(TS ts, PetscReal stagetime)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->prestage) {
     PetscStackCallStandard((*ts->prestage),(ts,stagetime));
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSPostStage"
+/*@
+  TSPostStage - Runs the user-defined post-stage function set using TSSetPostStage()
+
+  Collective on TS
+
+  Input Parameters:
+. ts          - The TS context obtained from TSCreate()
+  stagetime   - The absolute time of the current stage
+  stageindex  - Stage number
+  Y           - Array of vectors (of size = total number
+                of stages) with the stage solutions
+
+  Notes:
+  TSPostStage() is typically used within time stepping implementations,
+  most users would not generally call this routine themselves.
+
+  Level: developer
+
+.keywords: TS, timestep
+.seealso: TSPreStage(), TSSetPreStep(), TSPreStep(), TSPostStep()
+@*/
+PetscErrorCode  TSPostStage(TS ts, PetscReal stagetime, PetscInt stageindex, Vec *Y)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (ts->prestage) {
+    PetscStackCallStandard((*ts->poststage),(ts,stagetime,stageindex,Y));
   }
   PetscFunctionReturn(0);
 }
@@ -2494,7 +2607,7 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec U)
 
 .keywords: TS, timestep, solve
 
-.seealso: TSCreate(), TSSetUp(), TSDestroy(), TSSolve(), TSSetPreStep(), TSSetPreStage(), TSInterpolate()
+.seealso: TSCreate(), TSSetUp(), TSDestroy(), TSSolve(), TSSetPreStep(), TSSetPreStage(), TSSetPostStage(), TSInterpolate()
 @*/
 PetscErrorCode  TSStep(TS ts)
 {
@@ -2587,11 +2700,8 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec U,PetscBool *done)
 @*/
 PetscErrorCode TSSolve(TS ts,Vec u)
 {
-  PetscBool         flg;
-  PetscViewer       viewer;
   Vec               solution;
   PetscErrorCode    ierr;
-  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -2616,13 +2726,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   ts->reject            = 0;
   ts->reason            = TS_CONVERGED_ITERATING;
 
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ts),((PetscObject)ts)->prefix,"-ts_view_pre",&viewer,&format,&flg);CHKERRQ(ierr);
-  if (flg && !PetscPreLoadingOn) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = TSView(ts,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
+  ierr = TSViewFromOptions(ts,NULL,"-ts_view_pre");CHKERRQ(ierr);
 
   if (ts->ops->solve) {         /* This private interface is transitional and should be removed when all implementations are updated. */
     ierr = (*ts->ops->solve)(ts);CHKERRQ(ierr);
@@ -2648,13 +2752,8 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     }
     ierr = TSMonitor(ts,ts->steps,ts->solvetime,solution);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ts),((PetscObject)ts)->prefix,"-ts_view",&viewer,&format,&flg);CHKERRQ(ierr);
-  if (flg && !PetscPreLoadingOn) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = TSView(ts,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
+  ierr = TSViewFromOptions(ts,NULL,"-ts_view");CHKERRQ(ierr);
+  ierr = PetscObjectSAWsBlock((PetscObject)ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2694,13 +2793,6 @@ PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u)
 }
 
 /* ------------------------------------------------------------------------*/
-struct _n_TSMonitorLGCtx {
-  PetscDrawLG lg;
-  PetscInt    howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
-  PetscInt    ksp_its,snes_its;
-};
-
-
 #undef __FUNCT__
 #define __FUNCT__ "TSMonitorLGCtxCreate"
 /*@C
@@ -2741,18 +2833,15 @@ PetscErrorCode  TSMonitorLGCtxCreate(MPI_Comm comm,const char host[],const char 
 {
   PetscDraw      win;
   PetscErrorCode ierr;
-  PetscBool      flg = PETSC_TRUE;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_TSMonitorLGCtx,ctx);CHKERRQ(ierr);
+  ierr = PetscNew(ctx);CHKERRQ(ierr);
   ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&win);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(win);CHKERRQ(ierr);
   ierr = PetscDrawLGCreate(win,1,&(*ctx)->lg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-lg_indicate_data_points",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscDrawLGIndicateDataPoints((*ctx)->lg);CHKERRQ(ierr);
-  }
   ierr = PetscLogObjectParent((PetscObject)(*ctx)->lg,(PetscObject)win);CHKERRQ(ierr);
+  ierr = PetscDrawLGIndicateDataPoints((*ctx)->lg,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetFromOptions((*ctx)->lg);CHKERRQ(ierr);
   (*ctx)->howoften = howoften;
   PetscFunctionReturn(0);
 }
@@ -2771,6 +2860,7 @@ PetscErrorCode TSMonitorLGTimeStep(TS ts,PetscInt step,PetscReal ptime,Vec v,voi
     ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLabels(axis,"Timestep as function of time","Time","Time step");CHKERRQ(ierr);
     ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGIndicateDataPoints(ctx->lg,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = TSGetTimeStep(ts,&y);CHKERRQ(ierr);
   ierr = PetscDrawLGAddPoint(ctx->lg,&x,&y);CHKERRQ(ierr);
@@ -2827,7 +2917,7 @@ PetscErrorCode  TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
 
    Note:
    When called during time step evaluation (e.g. during residual evaluation or via hooks set using TSSetPreStep(),
-   TSSetPreStage(), or TSSetPostStep()), the time is the time at the start of the step being evaluated.
+   TSSetPreStage(), TSSetPostStage(), or TSSetPostStep()), the time is the time at the start of the step being evaluated.
 
 .seealso: TSSetInitialTimeStep(), TSGetTimeStep()
 
@@ -3247,7 +3337,7 @@ PetscErrorCode  TSMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const cha
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_TSMonitorDrawCtx,ctx);CHKERRQ(ierr);
+  ierr = PetscNew(ctx);CHKERRQ(ierr);
   ierr = PetscViewerDrawOpen(comm,host,label,x,y,m,n,&(*ctx)->viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetFromOptions((*ctx)->viewer);CHKERRQ(ierr);
 
@@ -3946,7 +4036,7 @@ PetscErrorCode TSSetMaxSNESFailures(TS ts,PetscInt fails)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetErrorIfStepFails()"
+#define __FUNCT__ "TSSetErrorIfStepFails"
 /*@
    TSSetErrorIfStepFails - Error if no step succeeds
 
@@ -4685,7 +4775,7 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
     PetscReal *yreal;
     PetscInt  i,n;
     ierr = VecGetLocalSize(u,&n);CHKERRQ(ierr);
-    ierr = PetscMalloc(n*sizeof(PetscReal),&yreal);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&yreal);CHKERRQ(ierr);
     for (i=0; i<n; i++) yreal[i] = PetscRealPart(yy[i]);
     ierr = PetscDrawLGAddCommonPoint(ctx->lg,ptime,yreal);CHKERRQ(ierr);
     ierr = PetscFree(yreal);CHKERRQ(ierr);
@@ -4754,7 +4844,7 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
     PetscReal *yreal;
     PetscInt  i,n;
     ierr = VecGetLocalSize(y,&n);CHKERRQ(ierr);
-    ierr = PetscMalloc(n*sizeof(PetscReal),&yreal);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&yreal);CHKERRQ(ierr);
     for (i=0; i<n; i++) yreal[i] = PetscRealPart(yy[i]);
     ierr = PetscDrawLGAddCommonPoint(ctx->lg,ptime,yreal);CHKERRQ(ierr);
     ierr = PetscFree(yreal);CHKERRQ(ierr);

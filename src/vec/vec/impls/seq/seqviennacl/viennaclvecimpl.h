@@ -16,6 +16,7 @@
 
 typedef viennacl::vector<PetscScalar>    ViennaCLVector;
 
+PETSC_EXTERN PetscErrorCode PetscObjectSetFromOptions_ViennaCL(PetscObject obj);
 
 PETSC_INTERN PetscErrorCode VecDotNorm2_SeqViennaCL(Vec,Vec,PetscScalar*, PetscScalar*);
 PETSC_INTERN PetscErrorCode VecPointwiseDivide_SeqViennaCL(Vec,Vec,Vec);
@@ -53,58 +54,6 @@ struct Vec_ViennaCL {
   viennacl::vector<PetscScalar> *GPUarray;        // this always holds the GPU data
 };
 
-
-#undef __FUNCT__
-#define __FUNCT__ "ViennaCLSetFromOptions"
-static PetscErrorCode ViennaCLSetFromOptions(PetscObject obj)
-{
-  PetscErrorCode       ierr;
-  PetscBool            flg;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectOptionsBegin(obj);
-
-  ierr = PetscOptionsHasName(NULL,"-viennacl_device_cpu",&flg);CHKERRQ(ierr);
-  if (flg) {
-    try {
-      viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_CPU);
-    } catch (std::exception const & ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
-    }
-  }
-  ierr = PetscOptionsHasName(NULL,"-viennacl_device_gpu",&flg);CHKERRQ(ierr);
-  if (flg) {
-    try {
-      viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_GPU);
-    } catch (std::exception const & ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
-    }
-  }
-  ierr = PetscOptionsHasName(NULL,"-viennacl_device_accelerator",&flg);CHKERRQ(ierr);
-  if (flg) {
-    try {
-      viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_ACCELERATOR);
-    } catch (std::exception const & ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
-    }
-  }
-
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "VecSetFromOptions_SeqViennaCL"
-static PetscErrorCode VecSetFromOptions_SeqViennaCL(Vec v)
-{
-  PetscErrorCode       ierr;
-  PetscBool            flg;
-
-  PetscFunctionBegin;
-  ViennaCLSetFromOptions((PetscObject)v);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "VecViennaCLGetArrayReadWrite"

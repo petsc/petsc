@@ -27,7 +27,7 @@ const char *const*TSConvergedReasons = TSConvergedReasons_Shifted + 2;
   Level: beginner
 
 .keywords: TS, create
-.seealso: TSSetType(), TSSetUp(), TSDestroy(), MeshCreate(), TSSetProblemType()
+.seealso: TSSetType(), TSSetUp(), TSDestroy(), TSSetProblemType()
 @*/
 PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)
 {
@@ -37,9 +37,7 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)
   PetscFunctionBegin;
   PetscValidPointer(ts,1);
   *ts = NULL;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = TSInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(t, _p_TS, struct _TSOps, TS_CLASSID, "TS", "Time stepping", "TS", comm, TSDestroy, TSView);CHKERRQ(ierr);
   ierr = PetscMemzero(t->ops, sizeof(struct _TSOps));CHKERRQ(ierr);

@@ -246,7 +246,7 @@ PetscErrorCode  VecFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
 #undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_petscvec"
 /*
@@ -268,4 +268,4 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscvec(void)
   PetscFunctionReturn(0);
 }
 
-#endif /* PETSC_USE_DYNAMIC_LIBRARIES */
+#endif /* PETSC_HAVE_DYNAMIC_LIBRARIES */

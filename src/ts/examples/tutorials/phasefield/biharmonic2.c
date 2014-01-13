@@ -113,12 +113,14 @@ int main(int argc,char **argv)
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,&iscoloring);CHKERRQ(ierr);
+  ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,&J);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
   ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
   ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+  ierr = MatFDColoringSetUp(J,iscoloring,matfdcoloring);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,matfdcoloring);CHKERRQ(ierr);
 
   {
@@ -249,9 +251,9 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
         f[i].w += x[i].u;
         break;
       case 3: /* logarithmic */
-        if (PetscRealPart(x[i].u) < -1.0 + 2.0*ctx->tol)     f[i].w += .5*ctx->theta*(-log(ctx->tol) + log((1.0-x[i].u)/2.0)) + ctx->theta_c*x[i].u;
-        else if (PetscRealPart(x[i].u) > 1.0 - 2.0*ctx->tol) f[i].w += .5*ctx->theta*(-log((1.0+x[i].u)/2.0) + log(ctx->tol)) + ctx->theta_c*x[i].u;
-        else                                                 f[i].w += .5*ctx->theta*(-log((1.0+x[i].u)/2.0) + log((1.0-x[i].u)/2.0)) + ctx->theta_c*x[i].u;
+        if (PetscRealPart(x[i].u) < -1.0 + 2.0*ctx->tol)     f[i].w += .5*ctx->theta*(-PetscLogReal(ctx->tol) + PetscLogScalar((1.0-x[i].u)/2.0)) + ctx->theta_c*x[i].u;
+        else if (PetscRealPart(x[i].u) > 1.0 - 2.0*ctx->tol) f[i].w += .5*ctx->theta*(-PetscLogScalar((1.0+x[i].u)/2.0) + PetscLogReal(ctx->tol)) + ctx->theta_c*x[i].u;
+        else                                                 f[i].w += .5*ctx->theta*(-PetscLogScalar((1.0+x[i].u)/2.0) + PetscLogScalar((1.0-x[i].u)/2.0)) + ctx->theta_c*x[i].u;
         break;
       }
     }
@@ -301,7 +303,7 @@ PetscErrorCode FormInitialSolution(DM da,Vec X,PetscReal kappa)
   */
   for (i=xs; i<xs+xm; i++) {
     xx = i*hx;
-    r = PetscSqrtScalar((xx-.5)*(xx-.5));
+    r = PetscSqrtReal((xx-.5)*(xx-.5));
     if (r < .125) x[i].u = 1.0;
     else          x[i].u = -.50;
     /*  u[i] = PetscPowScalar(x - .5,4.0); */

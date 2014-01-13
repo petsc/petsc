@@ -37,7 +37,7 @@ configure module for HYPRE requires information about MPI, and thus contains
 Notice that passing self for the last arguments means that the MPI module will
 run before the HYPRE module. Furthermore, we save the resulting object as
 self.mpi so that we may interogate it later. HYPRE can initially test whether
-MPI was indeed found using self.mpi.foundMPI. When HYPRE requires the list of
+MPI was indeed found using self.mpi.found. When HYPRE requires the list of
 MPI libraries in order to link a test object, the module can use self.mpi.lib.
 '''
 import user
@@ -138,7 +138,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       for dir in files:
         if re.match(nextDirs[0], dir):
           if nextDirs[1:]:
-            rest = apply(os.path.join, nextDirs[1:])
+            rest = os.path.join(*nextDirs[1:])
           else:
             rest = None
           dirs.extend(self.listDirs(os.path.join(base, dir),rest ))
@@ -295,7 +295,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
           config.setupDependencies(self)
           break
     if config is None:
-      config = apply(type, [self], keywordArgs)
+      config = type(self, *keywordArgs)
       self.addChild(config)
       config.showHelp = 0
       config.logName  = self.logName
@@ -410,7 +410,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return output
 
   def filterCompileOutput(self, output):
-    if self.argDB['ignoreCompileOutput']:
+    if output.find('warning:  attribute "deprecated" is unknown, ignored') >= 0: return output
+    if output.find('warning: ISO C90 does not support complex types') >= 0: return output
+    elif self.argDB['ignoreCompileOutput']:
       output = ''
     elif output:
       lines = output.splitlines()

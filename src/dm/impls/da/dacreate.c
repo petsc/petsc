@@ -7,7 +7,7 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
 {
   PetscErrorCode ierr;
   DM_DA          *dd         = (DM_DA*)da->data;
-  PetscInt       refine      = 0,maxnlevels = 100,*refx,*refy,*refz,n,i;
+  PetscInt       refine      = 0,maxnlevels = 100,refx[100],refy[100],refz[100],n,i;
   PetscBool      negativeMNP = PETSC_FALSE,bM = PETSC_FALSE,bN = PETSC_FALSE, bP = PETSC_FALSE,flg;
 
   PetscFunctionBegin;
@@ -54,7 +54,6 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
   dd->coarsen_x = dd->refine_x; dd->coarsen_y = dd->refine_y; dd->coarsen_z = dd->refine_z;
 
   /* Get refinement factors, defaults taken from the coarse DMDA */
-  ierr = PetscMalloc3(maxnlevels,PetscInt,&refx,maxnlevels,PetscInt,&refy,maxnlevels,PetscInt,&refz);CHKERRQ(ierr);
   ierr = DMDAGetRefinementFactor(da,&refx[0],&refy[0],&refz[0]);CHKERRQ(ierr);
   for (i=1; i<maxnlevels; i++) {
     refx[i] = refx[0];
@@ -109,7 +108,6 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
       dd->coarsen_z = refz[da->levelup - da->leveldown - 1];
     }
   }
-  ierr = PetscFree3(refx,refy,refz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -122,8 +120,8 @@ extern PetscErrorCode  DMLocalToGlobalEnd_DA(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode  DMLocalToLocalBegin_DA(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode  DMLocalToLocalEnd_DA(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode  DMCreateInterpolation_DA(DM,DM,Mat*,Vec*);
-extern PetscErrorCode  DMCreateColoring_DA(DM,ISColoringType,MatType,ISColoring*);
-extern PetscErrorCode  DMCreateMatrix_DA(DM,MatType,Mat*);
+extern PetscErrorCode  DMCreateColoring_DA(DM,ISColoringType,ISColoring*);
+extern PetscErrorCode  DMCreateMatrix_DA(DM,Mat*);
 extern PetscErrorCode  DMCreateCoordinateDM_DA(DM,DM*);
 extern PetscErrorCode  DMRefine_DA(DM,MPI_Comm,DM*);
 extern PetscErrorCode  DMCoarsen_DA(DM,MPI_Comm,DM*);
@@ -224,7 +222,7 @@ PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, PetscInt fields[], IS
     if (is) {
       PetscInt *indices, cnt = 0, dof = da->w, i, j;
 
-      ierr = PetscMalloc(da->Nlocal*numFields/dof * sizeof(PetscInt), &indices);CHKERRQ(ierr);
+      ierr = PetscMalloc1(da->Nlocal*numFields/dof, &indices);CHKERRQ(ierr);
       for (i = da->base/dof; i < (da->base+da->Nlocal)/dof; ++i) {
         for (j = 0; j < numFields; ++j) {
           indices[cnt++] = dof*i + fields[j];
@@ -256,13 +254,13 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***nameli
     ierr = VecGetOwnershipRange(v,&rstart,NULL);CHKERRQ(ierr);
     ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm,&v);CHKERRQ(ierr);
-    ierr = PetscMalloc(dof*sizeof(IS),islist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(dof,islist);CHKERRQ(ierr);
     for (i=0; i<dof; i++) {
       ierr = ISCreateStride(PetscObjectComm((PetscObject)dm),n/dof,rstart+i,dof,&(*islist)[i]);CHKERRQ(ierr);
     }
   }
   if (namelist) {
-    ierr = PetscMalloc(dof*sizeof(const char*), namelist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(dof, namelist);CHKERRQ(ierr);
     if (dd->fieldname) {
       for (i=0; i<dof; i++) {
         ierr = PetscStrallocpy(dd->fieldname[i],&(*namelist)[i]);CHKERRQ(ierr);
@@ -281,7 +279,7 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***nameli
     ierr = DMDASetStencilType(da, dd->stencil_type);CHKERRQ(ierr);
     ierr = DMDASetStencilWidth(da, dd->s);CHKERRQ(ierr);
     ierr = DMSetUp(da);CHKERRQ(ierr);
-    ierr = PetscMalloc(dof*sizeof(DM),dmlist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(dof,dmlist);CHKERRQ(ierr);
     for (i=0; i<dof-1; i++) {ierr = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);}
     for (i=0; i<dof; i++) (*dmlist)[i] = da;
   }
@@ -333,7 +331,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
 
   PetscFunctionBegin;
   PetscValidPointer(da,1);
-  ierr     = PetscNewLog(da,DM_DA,&dd);CHKERRQ(ierr);
+  ierr     = PetscNewLog(da,&dd);CHKERRQ(ierr);
   da->data = dd;
 
   dd->dim        = -1;
@@ -380,15 +378,11 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   dd->bz           = DMDA_BOUNDARY_NONE;
   dd->stencil_type = DMDA_STENCIL_BOX;
   dd->interptype   = DMDA_Q1;
-  dd->idx          = NULL;
-  dd->Nl           = -1;
   dd->lx           = NULL;
   dd->ly           = NULL;
   dd->lz           = NULL;
 
   dd->elementtype = DMDA_ELEMENT_Q1;
-
-  ierr = PetscStrallocpy(VECSTANDARD,(char**)&da->vectype);CHKERRQ(ierr);
 
   da->ops->globaltolocalbegin          = DMGlobalToLocalBegin_DA;
   da->ops->globaltolocalend            = DMGlobalToLocalEnd_DA;

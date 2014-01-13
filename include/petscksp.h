@@ -248,9 +248,9 @@ PETSC_EXTERN PetscErrorCode KSPMonitorTrueResidualNorm(KSP,PetscInt,PetscReal,vo
 PETSC_EXTERN PetscErrorCode KSPMonitorTrueResidualMaxNorm(KSP,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode KSPMonitorDefaultShort(KSP,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode KSPMonitorSolution(KSP,PetscInt,PetscReal,void *);
-PETSC_EXTERN PetscErrorCode KSPMonitorAMS(KSP,PetscInt,PetscReal,void*);
-PETSC_EXTERN PetscErrorCode KSPMonitorAMSCreate(KSP,const char*,void**);
-PETSC_EXTERN PetscErrorCode KSPMonitorAMSDestroy(void**);
+PETSC_EXTERN PetscErrorCode KSPMonitorSAWs(KSP,PetscInt,PetscReal,void*);
+PETSC_EXTERN PetscErrorCode KSPMonitorSAWsCreate(KSP,void**);
+PETSC_EXTERN PetscErrorCode KSPMonitorSAWsDestroy(void**);
 PETSC_EXTERN PetscErrorCode KSPGMRESMonitorKrylov(KSP,PetscInt,PetscReal,void *);
 
 PETSC_EXTERN PetscErrorCode KSPUnwindPreconditioner(KSP,Vec,Vec);
@@ -272,6 +272,7 @@ PETSC_EXTERN PetscErrorCode KSPGetDiagonalScaleFix(KSP,PetscBool *);
 
 PETSC_EXTERN PetscErrorCode KSPView(KSP,PetscViewer);
 PETSC_EXTERN PetscErrorCode KSPLoad(KSP,PetscViewer);
+PETSC_STATIC_INLINE PetscErrorCode KSPViewFromOptions(KSP A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 
 #define KSP_FILE_CLASSID 1211223
 
@@ -438,7 +439,7 @@ M*/
 
 /*MC
      KSP_CONVERGED_ITS - Used by the KSPPREONLY solver after the single iteration of
-           the preconditioner is applied. Also used when the KSPSkipConverged() convergence
+           the preconditioner is applied. Also used when the KSPConvergedSkip() convergence
            test routine is set in KSP.
 
 
@@ -508,14 +509,27 @@ M*/
 
 PETSC_EXTERN PetscErrorCode KSPSetConvergenceTest(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *,PetscErrorCode (*)(void*));
 PETSC_EXTERN PetscErrorCode KSPGetConvergenceContext(KSP,void **);
-PETSC_EXTERN PetscErrorCode KSPDefaultConverged(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
+PETSC_EXTERN PetscErrorCode KSPConvergedDefault(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
 PETSC_EXTERN PetscErrorCode KSPConvergedLSQR(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
-PETSC_EXTERN PetscErrorCode KSPDefaultConvergedDestroy(void *);
-PETSC_EXTERN PetscErrorCode KSPDefaultConvergedCreate(void **);
-PETSC_EXTERN PetscErrorCode KSPDefaultConvergedSetUIRNorm(KSP);
-PETSC_EXTERN PetscErrorCode KSPDefaultConvergedSetUMIRNorm(KSP);
-PETSC_EXTERN PetscErrorCode KSPSkipConverged(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
+PETSC_EXTERN PetscErrorCode KSPConvergedDefaultDestroy(void *);
+PETSC_EXTERN PetscErrorCode KSPConvergedDefaultCreate(void **);
+PETSC_EXTERN PetscErrorCode KSPConvergedDefaultSetUIRNorm(KSP);
+PETSC_EXTERN PetscErrorCode KSPConvergedDefaultSetUMIRNorm(KSP);
+PETSC_EXTERN PetscErrorCode KSPConvergedSkip(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
 PETSC_EXTERN PetscErrorCode KSPGetConvergedReason(KSP,KSPConvergedReason *);
+
+PETSC_DEPRECATED("Use KSPConvergedDefault()") PETSC_STATIC_INLINE void KSPDefaultConverged(void) { /* never called */ }
+#define KSPDefaultConverged (KSPDefaultConverged, KSPConvergedDefault)
+PETSC_DEPRECATED("Use KSPConvergedDefaultDestroy()") PETSC_STATIC_INLINE void KSPDefaultConvergedDestroy(void) { /* never called */ }
+#define KSPDefaultConvergedDestroy (KSPDefaultConvergedDestroy, KSPConvergedDefaultDestroy)
+PETSC_DEPRECATED("Use KSPConvergedDefaultCreate()") PETSC_STATIC_INLINE void KSPDefaultConvergedCreate(void) { /* never called */ }
+#define KSPDefaultConvergedCreate (KSPDefaultConvergedCreate, KSPConvergedDefaultCreate)
+PETSC_DEPRECATED("Use KSPConvergedDefaultSetUIRNorm()") PETSC_STATIC_INLINE void KSPDefaultConvergedSetUIRNorm(void) { /* never called */ }
+#define KSPDefaultConvergedSetUIRNorm (KSPDefaultConvergedSetUIRNorm, KSPConvergedDefaultSetUIRNorm)
+PETSC_DEPRECATED("Use KSPConvergedDefaultSetUMIRNorm()") PETSC_STATIC_INLINE void KSPDefaultConvergedSetUMIRNorm(void) { /* never called */ }
+#define KSPDefaultConvergedSetUMIRNorm (KSPDefaultConvergedSetUMIRNorm, KSPConvergedDefaultSetUMIRNorm)
+PETSC_DEPRECATED("Use KSPConvergedSkip()") PETSC_STATIC_INLINE void KSPSkipConverged(void) { /* never called */ }
+#define KSPSkipConverged (KSPSkipConverged, KSPConvergedSkip)
 
 PETSC_EXTERN PetscErrorCode KSPComputeExplicitOperator(KSP,Mat *);
 

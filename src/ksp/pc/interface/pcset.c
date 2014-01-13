@@ -161,7 +161,7 @@ PetscErrorCode  PCSetFromOptions(PC pc)
     def = ((PetscObject)pc)->type_name;
   }
 
-  ierr = PetscOptionsList("-pc_type","Preconditioner","PCSetType",PCList,def,type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-pc_type","Preconditioner","PCSetType",PCList,def,type,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCSetType(pc,type);CHKERRQ(ierr);
   } else if (!((PetscObject)pc)->type_name) {

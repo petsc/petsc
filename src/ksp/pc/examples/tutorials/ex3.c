@@ -71,8 +71,8 @@ int main(int argc,char **args)
 
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
   nloc = Iend-Istart;
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%D] A Istart,Iend: %D %D; nloc %D\n",rank,Istart,Iend,nloc);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] A Istart,Iend: %D %D; nloc %D\n",rank,Istart,Iend,nloc);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   ierr = PetscLogStageRegister("Assembly", &stage);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);

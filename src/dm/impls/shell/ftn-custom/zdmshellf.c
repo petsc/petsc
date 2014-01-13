@@ -36,20 +36,10 @@ static struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "ourcreatematrix"
-static PetscErrorCode ourcreatematrix(DM dm,MatType type,Mat *A)
+static PetscErrorCode ourcreatematrix(DM dm,Mat *A)
 {
-  int  len;
-  char *ftype = (char*)type;
-  if (type) {
-    size_t slen;
-    PetscStrlen(type,&slen);
-    len = (int)slen;
-  } else {
-    type = PETSC_NULL_CHARACTER_Fortran;
-    len  = 0;
-  }
-  PetscObjectUseFortranCallbackSubType(dm,_cb.creatematrix,(DM*,CHAR PETSC_MIXED_LEN_PROTO,Mat*,PetscErrorCode* PETSC_END_LEN_PROTO),
-                                       (&dm,ftype PETSC_MIXED_LEN_CALL(len),A,&ierr PETSC_END_LEN_CALL(len)));
+  PetscObjectUseFortranCallbackSubType(dm,_cb.creatematrix,(DM*,Mat*,PetscErrorCode*),
+                                       (&dm,A,&ierr));
   return 0;
 }
 
@@ -118,7 +108,7 @@ static PetscErrorCode ourlocaltolocalend(DM dm,Vec g,InsertMode mode,Vec l)
 }
 
 
-PETSC_EXTERN void PETSC_STDCALL dmshellsetcreatematrix_(DM *dm,void (PETSC_STDCALL *func)(DM*,CHAR type PETSC_MIXED_LEN(len),Mat*,PetscErrorCode* PETSC_END_LEN(len)),PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmshellsetcreatematrix_(DM *dm,void (PETSC_STDCALL *func)(DM*,Mat*,PetscErrorCode* PETSC_END_LEN(len)),PetscErrorCode *ierr)
 {
   *ierr = PetscObjectSetFortranCallback((PetscObject)*dm,PETSC_FORTRAN_CALLBACK_SUBTYPE,&_cb.creatematrix,(PetscVoidFunction)func,NULL);
   if (*ierr) return;

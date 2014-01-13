@@ -50,13 +50,6 @@ For tensor product meshes, see SNES ex67, ex72
 #include <petscfe.h>
 #include <petscsnes.h>
 
-#ifdef PETSC_HAVE_GENERATOR
-/*------------------------------------------------------------------------------
-  This code can be generated using 'bin/pythonscripts/PetscGenerateFEMQuadrature.py dim order dim 1 laplacian dim order 1 1 gradient src/snes/examples/tutorials/ex62.h'
- -----------------------------------------------------------------------------*/
-#include "ex62.h"
-#endif
-
 #define NUM_FIELDS 2
 PetscInt spatialDim = 0;
 
@@ -90,20 +83,20 @@ typedef struct {
   void (*g1Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g1[]); /* g1_uu(x,y,z), g1_up(x,y,z), g1_pu(x,y,z), and g1_pp(x,y,z) */
   void (*g2Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g2[]); /* g2_uu(x,y,z), g2_up(x,y,z), g2_pu(x,y,z), and g2_pp(x,y,z) */
   void (*g3Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g3[]); /* g3_uu(x,y,z), g3_up(x,y,z), g3_pu(x,y,z), and g3_pp(x,y,z) */
-  void (**exactFuncs)(const PetscReal x[], PetscScalar *u); /* The exact solution function u(x,y,z), v(x,y,z), and p(x,y,z) */
-  void (*initialGuess[NUM_FIELDS])(const PetscReal x[], PetscScalar *u);
+  void (**exactFuncs)(const PetscReal x[], PetscScalar *u, void *ctx); /* The exact solution function u(x,y,z), v(x,y,z), and p(x,y,z) */
+  void (*initialGuess[NUM_FIELDS])(const PetscReal x[], PetscScalar *u, void* ctx);
   BCType bcType;
 } AppCtx;
 
-void zero_1d(const PetscReal coords[], PetscScalar *u)
+void zero_1d(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
   u[0] = 0.0;
 }
-void zero_2d(const PetscReal coords[], PetscScalar *u)
+void zero_2d(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
   u[0] = 0.0; u[1] = 0.0;
 }
-void zero_3d(const PetscReal coords[], PetscScalar *u)
+void zero_3d(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
   u[0] = 0.0; u[1] = 0.0; u[2] = 0.0;
 }
@@ -121,13 +114,13 @@ void zero_3d(const PetscReal coords[], PetscScalar *u)
     -\Delta u + \nabla p + f = <-4, -4> + <1, 1> + <3, 3> = 0
     \nabla \cdot u           = 2x - 2x                    = 0
 */
-void quadratic_u_2d(const PetscReal x[], PetscScalar *u)
+void quadratic_u_2d(const PetscReal x[], PetscScalar *u, void *ctx)
 {
   u[0] = x[0]*x[0] + x[1]*x[1];
   u[1] = 2.0*x[0]*x[0] - 2.0*x[0]*x[1];
 }
 
-void linear_p_2d(const PetscReal x[], PetscScalar *p)
+void linear_p_2d(const PetscReal x[], PetscScalar *p, void *ctx)
 {
   *p = x[0] + x[1] - 1.0;
 }
@@ -224,14 +217,14 @@ void g3_uu(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a
     -\Delta u + \nabla p + f = <-4, -4, -4> + <1, 1, 1> + <3, 3, 3> = 0
     \nabla \cdot u           = 2x + 2y - 2(x + y)                   = 0
 */
-void quadratic_u_3d(const PetscReal x[], PetscScalar *u)
+void quadratic_u_3d(const PetscReal x[], PetscScalar *u, void *ctx)
 {
   u[0] = x[0]*x[0] + x[1]*x[1];
   u[1] = x[1]*x[1] + x[2]*x[2];
   u[2] = x[0]*x[0] + x[1]*x[1] - 2.0*(x[0] + x[1])*x[2];
 }
 
-void linear_p_3d(const PetscReal x[], PetscScalar *p)
+void linear_p_3d(const PetscReal x[], PetscScalar *p, void *ctx)
 {
   *p = x[0] + x[1] + x[2] - 1.5;
 }
@@ -348,7 +341,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = refinedMesh;
     }
     /* Distribute mesh over processes */
-    ierr = DMPlexDistribute(*dm, partitioner, 0, &distributedMesh);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, partitioner, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
@@ -456,7 +449,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   ierr = PetscFEGetNumComponents(user->fe[1], &numComp[1]);CHKERRQ(ierr);
   ierr = PetscFEGetNumDof(user->fe[0], &numFieldDof[0]);CHKERRQ(ierr);
   ierr = PetscFEGetNumDof(user->fe[1], &numFieldDof[1]);CHKERRQ(ierr);
-  ierr = PetscMalloc(NUM_FIELDS*(dim+1) * sizeof(PetscInt), &numDof);CHKERRQ(ierr);
+  ierr = PetscMalloc1(NUM_FIELDS*(dim+1), &numDof);CHKERRQ(ierr);
   for (f = 0; f < NUM_FIELDS; ++f) {
     for (d = 0; d <= dim; ++d) {
       numDof[f*(dim+1)+d] = numFieldDof[f][d];
@@ -690,15 +683,18 @@ int main(int argc, char **argv)
     ierr = PetscFEGetNumComponents(user.fe[f], &numComp);CHKERRQ(ierr);
     numComponents += numComp;
   }
-  ierr = PetscMalloc(NUM_FIELDS * sizeof(void (*)(const PetscReal[], PetscScalar *)), &user.exactFuncs);CHKERRQ(ierr);
-  user.fem.bcFuncs = (void (**)(const PetscReal[], PetscScalar *)) user.exactFuncs;
+  ierr = PetscMalloc(NUM_FIELDS * sizeof(void (*)(const PetscReal[], PetscScalar *, void *)), &user.exactFuncs);CHKERRQ(ierr);
+  user.fem.bcFuncs = user.exactFuncs;
+  user.fem.bcCtxs  = NULL;
   ierr = SetupExactSolution(dm, &user);CHKERRQ(ierr);
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
+  ierr = DMPlexCreateClosureIndex(dm, NULL);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
 
-  ierr = DMCreateMatrix(dm, MATAIJ, &J);CHKERRQ(ierr);
+  ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
   if (user.jacobianMF) {
     PetscInt M, m, N, n;
 
@@ -715,7 +711,7 @@ int main(int argc, char **argv)
     userJ.user = &user;
 
     ierr = DMCreateLocalVector(dm, &userJ.u);CHKERRQ(ierr);
-    ierr = DMPlexProjectFunctionLocal(dm, user.fe, user.exactFuncs, INSERT_BC_VALUES, userJ.u);CHKERRQ(ierr);
+    ierr = DMPlexProjectFunctionLocal(dm, user.fe, user.exactFuncs, NULL, INSERT_BC_VALUES, userJ.u);CHKERRQ(ierr);
     ierr = MatShellSetContext(A, &userJ);CHKERRQ(ierr);
   } else {
     A = J;
@@ -732,10 +728,10 @@ int main(int argc, char **argv)
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  ierr = DMPlexProjectFunction(dm, user.fe, user.exactFuncs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = DMPlexProjectFunction(dm, user.fe, user.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   if (user.showInitial) {ierr = DMVecViewLocal(dm, u, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
   if (user.runType == RUN_FULL) {
-    ierr = DMPlexProjectFunction(dm, user.fe, user.initialGuess, INSERT_VALUES, u);CHKERRQ(ierr);
+    ierr = DMPlexProjectFunction(dm, user.fe, user.initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
     if (user.showInitial) {ierr = DMVecViewLocal(dm, u, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
     if (user.debug) {
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial guess\n");CHKERRQ(ierr);
@@ -744,7 +740,7 @@ int main(int argc, char **argv)
     ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
-    ierr = DMPlexComputeL2Diff(dm, user.fe, user.exactFuncs, u, &error);CHKERRQ(ierr);
+    ierr = DMPlexComputeL2Diff(dm, user.fe, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %.3g\n", error);CHKERRQ(ierr);
     if (user.showSolution) {
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution\n");CHKERRQ(ierr);
@@ -757,7 +753,7 @@ int main(int argc, char **argv)
     /* Check discretization error */
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial guess\n");CHKERRQ(ierr);
     ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = DMPlexComputeL2Diff(dm, user.fe, user.exactFuncs, u, &error);CHKERRQ(ierr);
+    ierr = DMPlexComputeL2Diff(dm, user.fe, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
     if (error >= 1.0e-11) {
       ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error);CHKERRQ(ierr);
     } else {

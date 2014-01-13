@@ -76,6 +76,7 @@
 !     draw        - drawing context
 !
       SNES               snes
+      MatColoring        mc
       Vec                x,r
       PetscDraw               draw
       Mat                J
@@ -190,8 +191,11 @@
 !       Color the matrix, i.e. determine groups of columns that share no common
 !      rows. These columns in the Jacobian can all be computed simulataneously.
 !
-        call MatGetColoring(J,MATCOLORINGNATURAL,iscoloring,ierr)
-
+        call MatColoringCreate(J,mc,ierr)
+        call MatColoringSetType(mc,MATCOLORINGNATURAL,ierr)
+        call MatColoringSetFromOptions(mc,ierr)
+        call MatColoringApply(mc,iscoloring,ierr)
+        call MatColoringDestroy(mc,ierr)
 !
 !       Create the data structure that SNESComputeJacobianDefaultColor() uses
 !       to compute the actual Jacobians via finite differences.
@@ -200,6 +204,7 @@
         call MatFDColoringSetFunction(fdcoloring,FormFunction,                &
      &                                PETSC_NULL_OBJECT,ierr)
         call MatFDColoringSetFromOptions(fdcoloring,ierr)
+        call MatFDColoringSetUp(J,iscoloring,fdcoloring,ierr)
 !
 !        Tell SNES to use the routine SNESComputeJacobianDefaultColor()
 !      to compute Jacobians.
@@ -260,8 +265,8 @@
       call PetscDrawSetFromOptions(draw,ierr)
 
       call VecGetArray(x,lx_v,lx_i,ierr)
-      call PetscDrawTensorContour(draw,mx,my,PETSC_NULL_DOUBLE,              &
-     &     PETSC_NULL_DOUBLE,lx_v(lx_i+1),ierr)
+      call PetscDrawTensorContour(draw,mx,my,PETSC_NULL_REAL,              &
+     &     PETSC_NULL_REAL,lx_v(lx_i+1),ierr)
       call VecRestoreArray(x,lx_v,lx_i,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

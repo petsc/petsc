@@ -16,7 +16,6 @@ typedef struct {
   PetscInt              xs,xe,ys,ye,zs,ze;     /* range of local values */
   PetscInt              Xs,Xe,Ys,Ye,Zs,Ze;     /* range including ghost values
                                                    values above already scaled by w */
-  PetscInt              *idx,Nl;               /* local to global map */
   PetscInt              base;                  /* global number of 1st local node, includes the * w term */
   DMDABoundaryType      bx,by,bz;              /* indicates type of ghost nodes at boundary */
   VecScatter            gtol,ltog,ltol;        /* scatters, see below for details */
@@ -68,6 +67,7 @@ typedef struct {
 
   /* used by DMDASetMatPreallocateOnly() */
   PetscBool             prealloc_only;
+  PetscInt              preallocCenterDim; /* Dimension of the points which connect adjacent points for preallocation */
 } DM_DA;
 
 /*

@@ -458,7 +458,7 @@ PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
 {
   PetscErrorCode ierr;
   Vec            localX = user->localX;   /* local vector */
-  PetscInt       *ltog;                   /* local-to-global mapping */
+  const PetscInt *ltog;                   /* local-to-global mapping */
   PetscInt       i,j,row,mx,my,col[5];
   PetscInt       nloc,xs,ys,xm,ym,gxs,gys,gxm,gym,grow;
   PetscScalar    two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
@@ -523,6 +523,7 @@ PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
       ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
+  ierr = DMDARestoreGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
 
   /*
      Assemble matrix, using the 2-step process:

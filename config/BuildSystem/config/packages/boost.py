@@ -7,7 +7,6 @@ class Configure(config.package.Package):
     self.download        = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/boost_minimal_1_42_0.tar.gz']
     self.includes        = ['boost/multi_index_container.hpp']
     self.cxx             = 1
-    self.archIndependent = 1
     self.worksonWindows  = 1
     self.downloadonWindows = 1
     return

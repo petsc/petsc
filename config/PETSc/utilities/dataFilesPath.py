@@ -38,7 +38,8 @@ class Configure(config.base.Configure):
       self.datafilespath = os.path.join('/home','petsc','datafiles')
     elif os.path.isdir(os.path.join(self.petscdir.dir, '..', 'datafiles')) &  os.path.isdir(os.path.join(self.petscdir.dir, '..', 'datafiles', 'matrices')):
       self.datafilespath = os.path.join(self.petscdir.dir, '..', 'datafiles')
-    self.addMakeMacro('DATAFILESPATH',self.datafilespath)
+    if self.datafilespath is not None:
+      self.addMakeMacro('DATAFILESPATH',self.datafilespath)
     return
 
   def configure(self):

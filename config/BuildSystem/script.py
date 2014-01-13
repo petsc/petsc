@@ -222,10 +222,14 @@ class Script(logger.Logger):
     def logOutput(log, output):
       import re
       # get rid of multiple blank lines
-      output = re.sub('\n[\n]*','\n', output)
-      if lineLimit:
-        output = '\n'.join(output.split('\n')[:lineLimit])
-      log.write('sh: '+output+'\n')
+      output = re.sub('\n[\n]*','\n', output).strip()
+      if output:
+        if lineLimit:
+          output = '\n'.join(output.split('\n')[:lineLimit])
+        if '\n' in output:      # multi-line output
+          log.write('stdout:\n'+output+'\n')
+        else:
+          log.write('stdout: '+output+'\n')
       return output
     def runInShell(command, log, cwd):
       if useThreads:
@@ -250,7 +254,6 @@ class Script(logger.Logger):
       else:
         return Script.runShellCommand(command, log, cwd)
 
-    log.write('sh: %s\n' % (command,))
     (output, error, status) = runInShell(command, log, cwd)
     output = logOutput(log, output)
     checkCommand(command, status, output, error)

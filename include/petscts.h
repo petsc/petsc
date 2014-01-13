@@ -256,9 +256,11 @@ PETSC_EXTERN PetscErrorCode TSComputeForcingFunction(TS,PetscReal,Vec);
 
 PETSC_EXTERN PetscErrorCode TSSetPreStep(TS, PetscErrorCode (*)(TS));
 PETSC_EXTERN PetscErrorCode TSSetPreStage(TS, PetscErrorCode (*)(TS,PetscReal));
+PETSC_EXTERN PetscErrorCode TSSetPostStage(TS, PetscErrorCode (*)(TS,PetscReal,PetscInt,Vec*));
 PETSC_EXTERN PetscErrorCode TSSetPostStep(TS, PetscErrorCode (*)(TS));
 PETSC_EXTERN PetscErrorCode TSPreStep(TS);
 PETSC_EXTERN PetscErrorCode TSPreStage(TS,PetscReal);
+PETSC_EXTERN PetscErrorCode TSPostStage(TS,PetscReal,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode TSPostStep(TS);
 PETSC_EXTERN PetscErrorCode TSSetRetainStages(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSInterpolate(TS,PetscReal,Vec);
@@ -315,13 +317,16 @@ PETSC_EXTERN PetscErrorCode DMDATSSetRHSJacobianLocal(DM,PetscErrorCode (*)(DMDA
 PETSC_EXTERN PetscErrorCode DMDATSSetIFunctionLocal(DM,InsertMode,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,void*,void*),void *);
 PETSC_EXTERN PetscErrorCode DMDATSSetIJacobianLocal(DM,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,PetscReal,Mat,Mat,MatStructure*,void*),void *);
 
+typedef struct _n_TSMonitorLGCtx*  TSMonitorLGCtx;
 typedef struct {
-  Vec         ray;
-  VecScatter  scatter;
-  PetscViewer viewer;
+  Vec            ray;
+  VecScatter     scatter;
+  PetscViewer    viewer;
+  TSMonitorLGCtx lgctx;
 } TSMonitorDMDARayCtx;
 PETSC_EXTERN PetscErrorCode TSMonitorDMDARayDestroy(void**);
 PETSC_EXTERN PetscErrorCode TSMonitorDMDARay(TS,PetscInt,PetscReal,Vec,void*);
+PETSC_EXTERN PetscErrorCode TSMonitorLGDMDARay(TS,PetscInt,PetscReal,Vec,void*);
 
 
 /* Dynamic creation and loading functions */
@@ -338,13 +343,13 @@ PETSC_EXTERN PetscErrorCode TSGetKSP(TS,KSP*);
 
 PETSC_EXTERN PetscErrorCode TSView(TS,PetscViewer);
 PETSC_EXTERN PetscErrorCode TSLoad(TS,PetscViewer);
+PETSC_STATIC_INLINE PetscErrorCode TSViewFromOptions(TS A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 
 #define TS_FILE_CLASSID 1211225
 
 PETSC_EXTERN PetscErrorCode TSSetApplicationContext(TS,void *);
 PETSC_EXTERN PetscErrorCode TSGetApplicationContext(TS,void *);
 
-typedef struct _n_TSMonitorLGCtx*  TSMonitorLGCtx;
 PETSC_EXTERN PetscErrorCode TSMonitorLGCtxCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscInt,TSMonitorLGCtx *);
 PETSC_EXTERN PetscErrorCode TSMonitorLGCtxDestroy(TSMonitorLGCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorLGTimeStep(TS,PetscInt,PetscReal,Vec,void *);
@@ -500,6 +505,30 @@ PETSC_EXTERN PetscErrorCode TSEIMEXSetRowCol(TS ts,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode TSEIMEXSetOrdAdapt(TS,PetscBool);
 
 /*J
+    TSRKType - String with the name of a Runge-Kutta method.
+
+   Level: beginner
+
+.seealso: TSRKSetType(), TS, TSRK, TSRKRegister()
+J*/
+typedef const char* TSRKType;
+#define TSRK1FE   "1fe"
+#define TSRK2A    "2a"
+#define TSRK3     "3"
+#define TSRK3BS   "3bs"
+#define TSRK4     "4"
+#define TSRK5F    "5f"
+#define TSRK5DP   "5dp"
+PETSC_EXTERN PetscErrorCode TSRKGetType(TS ts,TSRKType*);
+PETSC_EXTERN PetscErrorCode TSRKSetType(TS ts,TSRKType);
+PETSC_EXTERN PetscErrorCode TSRKSetFullyImplicit(TS,PetscBool);
+PETSC_EXTERN PetscErrorCode TSRKRegister(TSRKType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSRKFinalizePackage(void);
+PETSC_EXTERN PetscErrorCode TSRKInitializePackage(void);
+PETSC_EXTERN PetscErrorCode TSRKRegisterDestroy(void);
+PETSC_EXTERN PetscErrorCode TSRKRegisterAll(void);
+
+/*J
     TSARKIMEXType - String with the name of an Additive Runge-Kutta IMEX method.
 
    Level: beginner
@@ -585,8 +614,6 @@ PETSC_EXTERN PetscErrorCode TSSundialsMonitorInternalSteps(TS,PetscBool );
 PETSC_EXTERN PetscErrorCode TSSundialsGetParameters(TS,PetscInt *,long*[],double*[]);
 PETSC_EXTERN PetscErrorCode TSSundialsSetMaxl(TS,PetscInt);
 #endif
-
-PETSC_EXTERN PetscErrorCode TSRKSetTolerance(TS,PetscReal);
 
 PETSC_EXTERN PetscErrorCode TSThetaSetTheta(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSThetaGetTheta(TS,PetscReal*);

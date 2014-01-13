@@ -284,7 +284,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Richardson(KSP ksp)
   KSP_Richardson *richardsonP;
 
   PetscFunctionBegin;
-  ierr      = PetscNewLog(ksp,KSP_Richardson,&richardsonP);CHKERRQ(ierr);
+  ierr      = PetscNewLog(ksp,&richardsonP);CHKERRQ(ierr);
   ksp->data = (void*)richardsonP;
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);

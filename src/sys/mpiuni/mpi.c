@@ -9,10 +9,7 @@
 #if !defined(PETSC_STDCALL)
 #define PETSC_STDCALL
 #endif
-#include <stdio.h>
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
+#include <petscsys.h>
 
 #define MPI_SUCCESS 0
 #define MPI_FAILURE 1
@@ -362,172 +359,172 @@ int MPI_Finalized(int *flag)
 /* Do not build fortran interface if MPI namespace colision is to be avoided */
 #if !defined(MPIUNI_AVOID_MPI_NAMESPACE)
 
-void PETSC_STDCALL  mpi_init_(int *ierr)
+PETSC_EXTERN void PETSC_STDCALL   mpi_init_(int *ierr)
 {
   *ierr = MPI_Init((int*)0, (char***)0);
 }
 
-void PETSC_STDCALL  mpi_finalize_(int *ierr)
+PETSC_EXTERN void PETSC_STDCALL   mpi_finalize_(int *ierr)
 {
   *ierr = MPI_Finalize();
 }
 
-void PETSC_STDCALL mpi_comm_size_(MPI_Comm *comm,int *size,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_comm_size_(MPI_Comm *comm,int *size,int *ierr)
 {
   *size = 1;
   *ierr = 0;
 }
 
-void PETSC_STDCALL mpi_comm_rank_(MPI_Comm *comm,int *rank,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_comm_rank_(MPI_Comm *comm,int *rank,int *ierr)
 {
   *rank=0;
   *ierr=MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_comm_split_(MPI_Comm *comm,int *color,int *key, MPI_Comm *newcomm, int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_comm_split_(MPI_Comm *comm,int *color,int *key, MPI_Comm *newcomm, int *ierr)
 {
   *newcomm = *comm;
   *ierr    =MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_abort_(MPI_Comm *comm,int *errorcode,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_abort_(MPI_Comm *comm,int *errorcode,int *ierr)
 {
   abort();
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_reduce_(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *root,int *comm,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_reduce_(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *root,int *comm,int *ierr)
 {
   MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_allreduce_(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *comm,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_allreduce_(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *comm,int *ierr)
 {
   MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_barrier_(MPI_Comm *comm,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_barrier_(MPI_Comm *comm,int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_bcast_(void *buf,int *count,int *datatype,int *root,int *comm,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_bcast_(void *buf,int *count,int *datatype,int *root,int *comm,int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }
 
 
-void PETSC_STDCALL mpi_gather_(void *sendbuf,int *scount,int *sdatatype, void *recvbuf, int *rcount, int *rdatatype, int *root,int *comm,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_gather_(void *sendbuf,int *scount,int *sdatatype, void *recvbuf, int *rcount, int *rdatatype, int *root,int *comm,int *ierr)
 {
   MPIUNI_Memcpy(recvbuf,sendbuf,(*scount)*MPIUNI_DATASIZE[*sdatatype]);
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_allgather_(void *sendbuf,int *scount,int *sdatatype, void *recvbuf, int *rcount, int *rdatatype,int *comm,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_allgather_(void *sendbuf,int *scount,int *sdatatype, void *recvbuf, int *rcount, int *rdatatype,int *comm,int *ierr)
 {
   MPIUNI_Memcpy(recvbuf,sendbuf,(*scount)*MPIUNI_DATASIZE[*sdatatype]);
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_scan_(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *comm,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_scan_(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *comm,int *ierr)
 {
   MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_send_(void *buf,int *count,int *datatype,int *dest,int *tag,int *comm,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_send_(void *buf,int *count,int *datatype,int *dest,int *tag,int *comm,int *ierr)
 {
   *ierr = MPI_Abort(MPI_COMM_WORLD,0);
 }
 
-void PETSC_STDCALL mpi_recv_(void *buf,int *count,int *datatype,int *source,int *tag,int *comm,int status,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_recv_(void *buf,int *count,int *datatype,int *source,int *tag,int *comm,int status,int *ierr)
 {
   *ierr = MPI_Abort(MPI_COMM_WORLD,0);
 }
 
-void PETSC_STDCALL mpi_reduce_scatter_(void *sendbuf,void *recvbuf,int *recvcounts,int *datatype,int *op,int *comm,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_reduce_scatter_(void *sendbuf,void *recvbuf,int *recvcounts,int *datatype,int *op,int *comm,int *ierr)
 {
   *ierr = MPI_Abort(MPI_COMM_WORLD,0);
 }
 
-void PETSC_STDCALL mpi_irecv_(void *buf,int *count, int *datatype, int *source, int *tag, int *comm, int *request, int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_irecv_(void *buf,int *count, int *datatype, int *source, int *tag, int *comm, int *request, int *ierr)
 {
   *ierr = MPI_Abort(MPI_COMM_WORLD,0);
 }
 
-void PETSC_STDCALL mpi_isend_(void *buf,int *count,int *datatype,int *dest,int *tag,int *comm,int *request, int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_isend_(void *buf,int *count,int *datatype,int *dest,int *tag,int *comm,int *request, int *ierr)
 {
   *ierr = MPI_Abort(MPI_COMM_WORLD,0);
 }
 
-void PETSC_STDCALL mpi_sendrecv_(void *sendbuf,int *sendcount,int *sendtype,int *dest,int *sendtag,void *recvbuf,int *recvcount,int *recvtype,int *source,int *recvtag,int *comm,int *status,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_sendrecv_(void *sendbuf,int *sendcount,int *sendtype,int *dest,int *sendtag,void *recvbuf,int *recvcount,int *recvtype,int *source,int *recvtag,int *comm,int *status,int *ierr)
 {
   MPIUNI_Memcpy(recvbuf,sendbuf,(*sendcount)*MPIUNI_DATASIZE[*sendtype]);
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_test_(int *request,int *flag,int *status,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_test_(int *request,int *flag,int *status,int *ierr)
 {
   *ierr = MPI_Abort(MPI_COMM_WORLD,0);
 }
 
-void PETSC_STDCALL mpi_waitall_(int *count,int *array_of_requests,int *array_of_statuses,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_waitall_(int *count,int *array_of_requests,int *array_of_statuses,int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_waitany_(int *count,int *array_of_requests,int * index, int *status,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_waitany_(int *count,int *array_of_requests,int * index, int *status,int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_allgatherv_(void *sendbuf,int *sendcount,int *sendtype,void *recvbuf,int *recvcounts,int *displs,int *recvtype,int *comm,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_allgatherv_(void *sendbuf,int *sendcount,int *sendtype,void *recvbuf,int *recvcounts,int *displs,int *recvtype,int *comm,int *ierr)
 {
   MPIUNI_Memcpy(recvbuf,sendbuf,(*sendcount)*MPIUNI_DATASIZE[*sendtype]);
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_alltoallv_(void *sendbuf,int *sendcounts,int *sdispls,int *sendtype,void *recvbuf,int *recvcounts,int *rdispls,int *recvtype,int *comm,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_alltoallv_(void *sendbuf,int *sendcounts,int *sdispls,int *sendtype,void *recvbuf,int *recvcounts,int *rdispls,int *recvtype,int *comm,int *ierr)
 {
   MPIUNI_Memcpy(recvbuf,sendbuf,(*sendcounts)*MPIUNI_DATASIZE[*sendtype]);
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_comm_create_(int *comm,int *group,int *newcomm,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_comm_create_(int *comm,int *group,int *newcomm,int *ierr)
 {
   *newcomm =  *comm;
   *ierr    = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_address_(void *location,MPIUNI_INTPTR *address,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_address_(void *location,MPIUNI_INTPTR *address,int *ierr)
 {
   *address =  (MPIUNI_INTPTR) location;
   *ierr    = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_pack_(void *inbuf,int *incount,int *datatype,void *outbuf,int *outsize,int *position,int *comm,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_pack_(void *inbuf,int *incount,int *datatype,void *outbuf,int *outsize,int *position,int *comm,int *ierr)
 {
   *ierr = MPI_Abort(MPI_COMM_WORLD,0);
 }
 
-void PETSC_STDCALL mpi_unpack_(void *inbuf,int *insize,int *position,void *outbuf,int *outcount,int *datatype,int *comm,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_unpack_(void *inbuf,int *insize,int *position,void *outbuf,int *outcount,int *datatype,int *comm,int *ierr)
 {
   *ierr = MPI_Abort(MPI_COMM_WORLD,0);
 }
 
-void PETSC_STDCALL mpi_pack_size_(int *incount,int *datatype,int *comm,int *size,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_pack_size_(int *incount,int *datatype,int *comm,int *size,int *ierr)
 {
   *ierr = MPI_Abort(MPI_COMM_WORLD,0);
 }
 
-void PETSC_STDCALL mpi_type_struct_(int *count,int *array_of_blocklengths,int * array_of_displaments,int *array_of_types,int *newtype,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_type_struct_(int *count,int *array_of_blocklengths,int * array_of_displaments,int *array_of_types,int *newtype,int *ierr)
 {
   *ierr = MPI_Abort(MPI_COMM_WORLD,0);
 }
 
-void PETSC_STDCALL mpi_type_commit_(int *datatype,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_type_commit_(int *datatype,int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }
@@ -537,23 +534,23 @@ double PETSC_STDCALL mpi_wtime_(void)
   return 0.0;
 }
 
-void PETSC_STDCALL mpi_cancel_(int *request,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_cancel_(int *request,int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_comm_dup_(int *comm,int *out,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_comm_dup_(int *comm,int *out,int *ierr)
 {
   *out  = *comm;
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_comm_free_(int *comm,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_comm_free_(int *comm,int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_get_count_(int *status,int *datatype,int *count,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_get_count_(int *status,int *datatype,int *count,int *ierr)
 {
   *ierr = MPI_Abort(MPI_COMM_WORLD,0);
 }
@@ -567,50 +564,50 @@ void PETSC_STDCALL mpi_get_count_(int *status,int *datatype,int *count,int *ierr
 #define PETSC_END_LEN(len)   ,int len
 #endif
 
-void PETSC_STDCALL mpi_get_processor_name_(char *name PETSC_MIXED_LEN(len),int *result_len,int *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL  mpi_get_processor_name_(char *name PETSC_MIXED_LEN(len),int *result_len,int *ierr PETSC_END_LEN(len))
 {
   MPIUNI_Memcpy(name,"localhost",9*sizeof(char));
   *result_len = 9;
   *ierr       = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_initialized_(int *flag,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_initialized_(int *flag,int *ierr)
 {
   *flag = MPI_was_initialized;
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_iprobe_(int *source,int *tag,int *comm,int *glag,int *status,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_iprobe_(int *source,int *tag,int *comm,int *glag,int *status,int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_probe_(int *source,int *tag,int *comm,int *flag,int *status,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_probe_(int *source,int *tag,int *comm,int *flag,int *status,int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_request_free_(int *request,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_request_free_(int *request,int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_ssend_(void *buf,int *count,int *datatype,int *dest,int *tag,int *comm,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_ssend_(void *buf,int *count,int *datatype,int *dest,int *tag,int *comm,int *ierr)
 {
   *ierr = MPI_Abort(MPI_COMM_WORLD,0);
 }
 
-void PETSC_STDCALL mpi_wait_(int *request,int *status,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_wait_(int *request,int *status,int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_comm_group_(int *comm,int *group,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_comm_group_(int *comm,int *group,int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_exscan_(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *comm,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL  mpi_exscan_(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *comm,int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }

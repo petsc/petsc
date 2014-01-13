@@ -90,8 +90,10 @@ int main(int argc,char **argv)
 
   /* Test DMCreateMatrix()                                         */
   /*------------------------------------------------------------*/
-  ierr = DMCreateMatrix(user.fine.da,MATAIJ,&A);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(user.fine.da,MATBAIJ,&C);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.fine.da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.fine.da,&A);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.fine.da,MATBAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.fine.da,&C);CHKERRQ(ierr);
 
   ierr = MatConvert(C,MATAIJ,MAT_INITIAL_MATRIX,&A_tmp);CHKERRQ(ierr); /* not work for mpisbaij matrix! */
   ierr = MatEqual(A,A_tmp,&flg);CHKERRQ(ierr);

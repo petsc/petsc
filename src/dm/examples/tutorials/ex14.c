@@ -211,7 +211,8 @@ int main(int argc,char **argv)
       if (i == rank) {
         Mat m;
         ierr = PetscPrintf(PETSC_COMM_SELF,"Processor %d: \n",i);CHKERRQ(ierr);
-        ierr = DMCreateMatrix(subda[0],"mpiaij",&m);CHKERRQ(ierr);
+        ierr = DMSetMatType(subda[0],MATAIJ);CHKERRQ(ierr);
+        ierr = DMCreateMatrix(subda[0],&m);CHKERRQ(ierr);
         ierr = MatView(m,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
         ierr = MatDestroy(&m);CHKERRQ(ierr);
       }

@@ -70,8 +70,8 @@ PetscErrorCode  KSPLoad(KSP newdm, PetscViewer viewer)
 }
 
 #include <petscdraw.h>
-#if defined(PETSC_HAVE_AMS)
-#include <petscviewerams.h>
+#if defined(PETSC_HAVE_SAWS)
+#include <petscviewersaws.h>
 #endif
 #undef __FUNCT__
 #define __FUNCT__ "KSPView"
@@ -108,7 +108,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      iascii,isbinary,isdraw;
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   PetscBool      isams;
 #endif
 
@@ -121,8 +121,8 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERAMS,&isams);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SAWS)
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
 #endif
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ksp,viewer);CHKERRQ(ierr);
@@ -184,17 +184,24 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
       bottom = y;
     }
     ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   } else if (isams) {
-    if (((PetscObject)ksp)->amsmem == -1) {
-      ierr = PetscObjectViewAMS((PetscObject)ksp,viewer);CHKERRQ(ierr);
-      PetscStackCallAMS(AMS_Memory_take_access,(((PetscObject)ksp)->amsmem));
-      PetscStackCallAMS(AMS_Memory_add_field,(((PetscObject)ksp)->amsmem,"its",&ksp->its,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
+    PetscMPIInt rank;
+    const char  *name;
+
+    ierr = PetscObjectGetName((PetscObject)ksp,&name);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    if (!((PetscObject)ksp)->amsmem && !rank) {
+      char       dir[1024];
+
+      ierr = PetscObjectViewSAWs((PetscObject)ksp,viewer);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/its",name);CHKERRQ(ierr);
+      PetscStackCallSAWs(SAWs_Register,(dir,&ksp->its,1,SAWs_READ,SAWs_INT));
       if (!ksp->res_hist) {
-        ierr = KSPSetResidualHistory(ksp,NULL,PETSC_DECIDE,PETSC_FALSE);CHKERRQ(ierr);
+        ierr = KSPSetResidualHistory(ksp,NULL,PETSC_DECIDE,PETSC_TRUE);CHKERRQ(ierr);
       }
-      PetscStackCallAMS(AMS_Memory_add_field,(((PetscObject)ksp)->amsmem,"res_hist",ksp->res_hist,10,AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
-      PetscStackCallAMS(AMS_Memory_grant_access,(((PetscObject)ksp)->amsmem));
+      ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/res_hist",name);CHKERRQ(ierr);
+      PetscStackCallSAWs(SAWs_Register,(dir,ksp->res_hist,10,SAWs_READ,SAWs_DOUBLE));
     }
 #endif
   } else if (ksp->ops->view) {
@@ -223,7 +230,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 -  normtype - one of
 $   KSP_NORM_NONE - skips computing the norm, this should only be used if you are using
 $                 the Krylov method as a smoother with a fixed small number of iterations.
-$                 Implicitly sets KSPSkipConverged as KSP convergence test.
+$                 Implicitly sets KSPConvergedSkip as KSP convergence test.
 $                 Supported only by CG, Richardson, Bi-CG-stab, CR, and CGS methods.
 $   KSP_NORM_PRECONDITIONED - the default for left preconditioned solves, uses the l2 norm
 $                 of the preconditioned residual
@@ -243,7 +250,7 @@ $   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
 
 .keywords: KSP, create, context, norms
 
-.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged(), KSPSetCheckNormIteration()
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPConvergedSkip(), KSPSetCheckNormIteration()
 @*/
 PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
 {
@@ -254,9 +261,9 @@ PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
   PetscValidLogicalCollectiveEnum(ksp,normtype,2);
   ksp->normtype = normtype;
   if (normtype == KSP_NORM_NONE) {
-    ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,0,0);CHKERRQ(ierr);
+    ierr = KSPSetConvergenceTest(ksp,KSPConvergedSkip,0,0);CHKERRQ(ierr);
     ierr = PetscInfo(ksp,"Warning: setting KSPNormType to skip computing the norm\n\
- KSP convergence test is implicitly set to KSPSkipConverged\n");CHKERRQ(ierr);
+ KSP convergence test is implicitly set to KSPConvergedSkip\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -284,7 +291,7 @@ PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
 
 .keywords: KSP, create, context, norms
 
-.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged(), KSPSetNormType()
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPConvergedSkip(), KSPSetNormType()
 @*/
 PetscErrorCode  KSPSetCheckNormIteration(KSP ksp,PetscInt it)
 {
@@ -322,7 +329,7 @@ PetscErrorCode  KSPSetCheckNormIteration(KSP ksp,PetscInt it)
 
 .keywords: KSP, create, context, norms
 
-.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged(), KSPSetNormType(), KSPSetCheckNormIteration()
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPConvergedSkip(), KSPSetNormType(), KSPSetCheckNormIteration()
 @*/
 PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool flg)
 {
@@ -430,7 +437,7 @@ PetscErrorCode KSPSetUpNorms_Private(KSP ksp,KSPNormType *normtype,PCSide *pcsid
 
 .keywords: KSP, create, context, norms
 
-.seealso: KSPNormType, KSPSetNormType(), KSPSkipConverged()
+.seealso: KSPNormType, KSPSetNormType(), KSPConvergedSkip()
 @*/
 PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype)
 {
@@ -444,8 +451,8 @@ PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_AMS)
-#include <petscviewerams.h>
+#if defined(PETSC_HAVE_SAWS)
+#include <petscviewersaws.h>
 #endif
 
 #undef __FUNCT__
@@ -725,16 +732,18 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   PetscFunctionBegin;
   PetscValidPointer(inksp,2);
   *inksp = 0;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = KSPInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_CLASSID,"KSP","Krylov Method","KSP",comm,KSPDestroy,KSPView);CHKERRQ(ierr);
 
   ksp->max_it  = 10000;
   ksp->pc_side = PC_SIDE_DEFAULT;
   ksp->rtol    = 1.e-5;
+#if defined(PETSC_USE_REAL_SINGLE)
+  ksp->abstol  = 1.e-25;
+#else
   ksp->abstol  = 1.e-50;
+#endif
   ksp->divtol  = 1.e4;
 
   ksp->chknorm        = -1;
@@ -750,8 +759,8 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->res_hist_reset = PETSC_TRUE;
   ksp->numbermonitors = 0;
 
-  ierr                    = KSPDefaultConvergedCreate(&ctx);CHKERRQ(ierr);
-  ierr                    = KSPSetConvergenceTest(ksp,KSPDefaultConverged,ctx,KSPDefaultConvergedDestroy);CHKERRQ(ierr);
+  ierr                    = KSPConvergedDefaultCreate(&ctx);CHKERRQ(ierr);
+  ierr                    = KSPSetConvergenceTest(ksp,KSPConvergedDefault,ctx,KSPConvergedDefaultDestroy);CHKERRQ(ierr);
   ksp->ops->buildsolution = KSPBuildSolutionDefault;
   ksp->ops->buildresidual = KSPBuildResidualDefault;
 

@@ -996,7 +996,7 @@ static PetscErrorCode DMDACreateSolCx(PetscReal eta0,PetscReal eta1,PetscReal xc
   ierr = DMDAGetGhostCorners(da,&si,&sj,0,&ei,&ej,0);CHKERRQ(ierr);
   for (j = sj; j < sj+ej; j++) {
     for (i = si; i < si+ei; i++) {
-      double pos[2],pressure,vel[2],total_stress[3],strain_rate[3];
+      PetscReal pos[2],pressure,vel[2],total_stress[3],strain_rate[3];
 
       pos[0] = PetscRealPart(_coords[j][i].x);
       pos[1] = PetscRealPart(_coords[j][i].y);
@@ -1083,7 +1083,7 @@ static PetscErrorCode DMDAIntegrateErrors(DM stokes_da,Vec X,Vec X_analytic)
   ierr = DMDAGetInfo(stokes_da,0,&M,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetBoundingBox(stokes_da,xymin,xymax);CHKERRQ(ierr);
 
-  h = (xymax[0]-xymin[0])/((double)M);
+  h = (xymax[0]-xymin[0])/((PetscReal)M);
 
   tp_L2 = tu_L2 = tu_H1 = 0.0;
 
@@ -1300,7 +1300,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
           if (coord_x > opts_xc) element_props[j][i].eta[p] = opts_eta1;
 
           element_props[j][i].fx[p] = 0.0;
-          element_props[j][i].fy[p] = sin((double)opts_nz*PETSC_PI*coord_y)*cos(1.0*PETSC_PI*coord_x);
+          element_props[j][i].fy[p] = PetscSinReal(opts_nz*PETSC_PI*coord_y)*PetscCosReal(1.0*PETSC_PI*coord_x);
         }
       } else if (coefficient_structure == 1) { /* square sinker */
         PetscReal opts_eta0,opts_eta1,opts_dx,opts_dy;
@@ -1406,8 +1406,8 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
 
           radius2 = PetscSqr(coord_x - opts_c0x) + PetscSqr(coord_y - opts_c0y);
           if (radius2 < opts_r*opts_r
-              || (PetscAbs(+(coord_x - opts_s0x)*cos(opts_phi) + (coord_y - opts_s0y)*sin(opts_phi)) < opts_dx/2
-                  && PetscAbs(-(coord_x - opts_s0x)*sin(opts_phi) + (coord_y - opts_s0y)*cos(opts_phi)) < opts_dy/2)) {
+              || (PetscAbs(+(coord_x - opts_s0x)*PetscCosReal(opts_phi) + (coord_y - opts_s0y)*PetscSinReal(opts_phi)) < opts_dx/2
+                  && PetscAbs(-(coord_x - opts_s0x)*PetscSinReal(opts_phi) + (coord_y - opts_s0y)*PetscCosReal(opts_phi)) < opts_dy/2)) {
             element_props[j][i].eta[p] =  opts_eta1;
             element_props[j][i].fx[p]  =  0.0;
             element_props[j][i].fy[p]  = -1.0;
@@ -1430,8 +1430,9 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
 
 
   /* Generate a matrix with the correct non-zero pattern of type AIJ. This will work in parallel and serial */
-  ierr = DMCreateMatrix(da_Stokes,MATAIJ,&A);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da_Stokes,MATAIJ,&B);CHKERRQ(ierr);
+  ierr = DMSetMatType(da_Stokes,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da_Stokes,&A);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da_Stokes,&B);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da_Stokes,&f);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da_Stokes,&X);CHKERRQ(ierr);
 
@@ -1470,9 +1471,11 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   if (set) {
     char        *ext;
     PetscViewer viewer;
+    PetscBool   flg;
     ierr = PetscViewerCreate(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
     ierr = PetscStrrchr(filename,'.',&ext);CHKERRQ(ierr);
-    if (!strcmp("vts",ext)) {
+    ierr = PetscStrcmp("vts",ext,&flg);CHKERRQ(ierr);
+    if (flg) {
       ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerSetType(viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
@@ -1592,7 +1595,7 @@ static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
   PetscInt       si,sj,nx,ny,i,j;
   PetscInt       M,N;
   DMDACoor2d     **_coords;
-  PetscInt       *g_idx;
+  const PetscInt *g_idx;
   PetscInt       *bc_global_ids;
   PetscScalar    *bc_vals;
   PetscInt       nbcs;
@@ -1627,6 +1630,7 @@ static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
 
     bc_vals[j] =  bc_val;
   }
+  ierr = DMDARestoreGlobalIndices(da,NULL,&g_idx);CHKERRQ(ierr);
   nbcs = 0;
   if ((si+nx) == (M)) nbcs = ny;
 
@@ -1656,7 +1660,7 @@ static PetscErrorCode BCApply_WEST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
   PetscInt       si,sj,nx,ny,i,j;
   PetscInt       M,N;
   DMDACoor2d     **_coords;
-  PetscInt       *g_idx;
+  const PetscInt *g_idx;
   PetscInt       *bc_global_ids;
   PetscScalar    *bc_vals;
   PetscInt       nbcs;
@@ -1691,6 +1695,7 @@ static PetscErrorCode BCApply_WEST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
 
     bc_vals[j] =  bc_val;
   }
+  ierr = DMDARestoreGlobalIndices(da,NULL,&g_idx);CHKERRQ(ierr);
   nbcs = 0;
   if (si == 0) nbcs = ny;
 
@@ -1720,7 +1725,7 @@ static PetscErrorCode BCApply_NORTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat 
   PetscInt       si,sj,nx,ny,i,j;
   PetscInt       M,N;
   DMDACoor2d     **_coords;
-  PetscInt       *g_idx;
+  const PetscInt *g_idx;
   PetscInt       *bc_global_ids;
   PetscScalar    *bc_vals;
   PetscInt       nbcs;
@@ -1755,6 +1760,7 @@ static PetscErrorCode BCApply_NORTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat 
 
     bc_vals[i] =  bc_val;
   }
+  ierr = DMDARestoreGlobalIndices(da,NULL,&g_idx);CHKERRQ(ierr);
   nbcs = 0;
   if ((sj+ny) == (N)) nbcs = nx;
 
@@ -1784,7 +1790,7 @@ static PetscErrorCode BCApply_SOUTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat 
   PetscInt       si,sj,nx,ny,i,j;
   PetscInt       M,N;
   DMDACoor2d     **_coords;
-  PetscInt       *g_idx;
+  const PetscInt *g_idx;
   PetscInt       *bc_global_ids;
   PetscScalar    *bc_vals;
   PetscInt       nbcs;
@@ -1819,6 +1825,7 @@ static PetscErrorCode BCApply_SOUTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat 
 
     bc_vals[i] =  bc_val;
   }
+  ierr = DMDARestoreGlobalIndices(da,NULL,&g_idx);CHKERRQ(ierr);
   nbcs = 0;
   if (sj == 0) nbcs = nx;
 

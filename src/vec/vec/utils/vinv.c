@@ -671,7 +671,7 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
   bs   = v->map->bs;
   if (bs < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Input vector does not have a valid blocksize set");
 
-  ierr = PetscMalloc2(bs,PetscReal*,&y,bs,PetscInt,&bss);CHKERRQ(ierr);
+  ierr = PetscMalloc2(bs,&y,bs,&bss);CHKERRQ(ierr);
   nv   = 0;
   nvc  = 0;
   for (i=0; i<bs; i++) {
@@ -768,7 +768,7 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
   bs   = v->map->bs;
   if (bs < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Input vector does not have a valid blocksize set");
 
-  ierr = PetscMalloc2(bs,PetscScalar**,&y,bs,PetscInt,&bss);CHKERRQ(ierr);
+  ierr = PetscMalloc2(bs,&y,bs,&bss);CHKERRQ(ierr);
   nv   = 0;
   nvc  = 0;
   for (i=0; i<bs; i++) {
@@ -1320,7 +1320,7 @@ PetscErrorCode  VecPermute(Vec x, IS row, PetscBool inv)
   ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
   ierr = ISGetIndices(row, &idx);CHKERRQ(ierr);
   ierr = VecGetArray(x, &array);CHKERRQ(ierr);
-  ierr = PetscMalloc(x->map->n*sizeof(PetscScalar), &newArray);CHKERRQ(ierr);
+  ierr = PetscMalloc1(x->map->n, &newArray);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
   for (i = 0; i < x->map->n; i++) {
     if ((idx[i] < rstart) || (idx[i] >= rend)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT, "Permutation index %D is out of bounds: %D", i, idx[i]);
@@ -1361,11 +1361,10 @@ PetscErrorCode  VecPermute(Vec x, IS row, PetscBool inv)
 @*/
 PetscErrorCode  VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)
 {
-  PetscScalar    *v1,*v2;
-  PetscErrorCode ierr;
-  PetscInt       n1,n2,N1,N2;
-  PetscInt       state1,state2;
-  PetscBool      flg1;
+  const PetscScalar  *v1,*v2;
+  PetscErrorCode     ierr;
+  PetscInt           n1,n2,N1,N2;
+  PetscBool          flg1;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec1,VEC_CLASSID,1);
@@ -1381,28 +1380,11 @@ PetscErrorCode  VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)
       ierr = VecGetLocalSize(vec2,&n2);CHKERRQ(ierr);
       if (n1 != n2) flg1 = PETSC_FALSE;
       else {
-        ierr = PetscObjectStateQuery((PetscObject) vec1,&state1);CHKERRQ(ierr);
-        ierr = PetscObjectStateQuery((PetscObject) vec2,&state2);CHKERRQ(ierr);
-        ierr = VecGetArray(vec1,&v1);CHKERRQ(ierr);
-        ierr = VecGetArray(vec2,&v2);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-        {
-          PetscInt k;
-          flg1 = PETSC_TRUE;
-          for (k=0; k<n1; k++) {
-            if (PetscRealPart(v1[k]) != PetscRealPart(v2[k]) || PetscImaginaryPart(v1[k]) != PetscImaginaryPart(v2[k])) {
-              flg1 = PETSC_FALSE;
-              break;
-            }
-          }
-        }
-#else
+        ierr = VecGetArrayRead(vec1,&v1);CHKERRQ(ierr);
+        ierr = VecGetArrayRead(vec2,&v2);CHKERRQ(ierr);
         ierr = PetscMemcmp(v1,v2,n1*sizeof(PetscScalar),&flg1);CHKERRQ(ierr);
-#endif
-        ierr = VecRestoreArray(vec1,&v1);CHKERRQ(ierr);
-        ierr = VecRestoreArray(vec2,&v2);CHKERRQ(ierr);
-        ierr = PetscObjectSetState((PetscObject) vec1,state1);CHKERRQ(ierr);
-        ierr = PetscObjectSetState((PetscObject) vec2,state2);CHKERRQ(ierr);
+        ierr = VecRestoreArrayRead(vec1,&v1);CHKERRQ(ierr);
+        ierr = VecRestoreArrayRead(vec2,&v2);CHKERRQ(ierr);
       }
     }
     /* combine results from all processors */
@@ -1442,7 +1424,7 @@ PetscErrorCode  VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e)
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject) vec), &size);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec, &m);CHKERRQ(ierr);
   ierr = VecGetArray(vec, &v);CHKERRQ(ierr);
-  ierr = PetscMalloc2(m,PetscScalar,&tmp,size,PetscMPIInt,&N);CHKERRQ(ierr);
+  ierr = PetscMalloc2(m,&tmp,size,&N);CHKERRQ(ierr);
   for (i = 0, j = 0, l = 0; i < m; ++i) {
     /* Can speed this up with sorting */
     for (j = 0; j < l; ++j) {
@@ -1458,7 +1440,7 @@ PetscErrorCode  VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e)
   for (p = 0, ng = 0; p < size; ++p) {
     ng += N[p];
   }
-  ierr = PetscMalloc2(ng,PetscScalar,&vals,size+1,PetscMPIInt,&displs);CHKERRQ(ierr);
+  ierr = PetscMalloc2(ng,&vals,size+1,&displs);CHKERRQ(ierr);
   for (p = 1, displs[0] = 0; p <= size; ++p) {
     displs[p] = displs[p-1] + N[p-1];
   }
@@ -1472,7 +1454,7 @@ PetscErrorCode  VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e)
 #endif
   if (e) {
     PetscValidPointer(e,3);
-    ierr = PetscMalloc((*n) * sizeof(PetscScalar), e);CHKERRQ(ierr);
+    ierr = PetscMalloc1((*n), e);CHKERRQ(ierr);
     for (i = 0; i < *n; ++i) {
       (*e)[i] = vals[i];
     }

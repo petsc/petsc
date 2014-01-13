@@ -24,6 +24,6 @@
 #define PETSCVIEWERHDF5 'hdf5'
 #define PETSCVIEWERVTK 'vtk'
 #define PETSCVIEWERMATLAB 'matlab'
-#define PETSCVIEWERAMS 'ams'
+#define PETSCVIEWERSAWS 'saws'
 
 #endif

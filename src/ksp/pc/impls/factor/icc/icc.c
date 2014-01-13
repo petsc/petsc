@@ -180,7 +180,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ICC(PC pc)
   PC_ICC         *icc;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_ICC,&icc);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&icc);CHKERRQ(ierr);
 
   ((PC_Factor*)icc)->fact = 0;
 

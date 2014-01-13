@@ -146,7 +146,7 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd)
   }
 
   if (!PetscRandomRegisterAllCalled) {ierr = PetscRandomRegisterAll();CHKERRQ(ierr);}
-  ierr = PetscOptionsList("-random_type","PetscRandom type","PetscRandomSetType",PetscRandomList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-random_type","PetscRandom type","PetscRandomSetType",PetscRandomList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscRandomSetType(rnd, typeName);CHKERRQ(ierr);
   } else {
@@ -204,8 +204,8 @@ PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_AMS)
-#include <petscviewerams.h>
+#if defined(PETSC_HAVE_SAWS)
+#include <petscviewersaws.h>
 #endif
 #undef __FUNCT__
 #define __FUNCT__ "PetscRandomView"
@@ -237,7 +237,7 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      iascii;
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   PetscBool      isams;
 #endif
 
@@ -250,8 +250,8 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(rnd,1,viewer,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERAMS,&isams);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SAWS)
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
 #endif
   if (iascii) {
     PetscMPIInt rank;
@@ -260,52 +260,21 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%D] Random type %s, seed %D\n",rank,((PetscObject)rnd)->type_name,rnd->seed);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   } else if (isams) {
-    if (((PetscObject)rnd)->amsmem == -1) {
-      ierr = PetscObjectViewAMS((PetscObject)rnd,viewer);CHKERRQ(ierr);
-      PetscStackCallAMS(AMS_Memory_add_field,(((PetscObject)rnd)->amsmem,"Low",&rnd->low,1,AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
+    PetscMPIInt rank;
+    const char  *name;
+
+    ierr = PetscObjectGetName((PetscObject)rnd,&name);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    if (!((PetscObject)rnd)->amsmem && !rank) {
+      char       dir[1024];
+
+      ierr = PetscObjectViewSAWs((PetscObject)rnd,viewer);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Low",name);CHKERRQ(ierr);
+      PetscStackCallSAWs(SAWs_Register,(dir,&rnd->low,1,SAWs_READ,SAWs_DOUBLE));
     }
 #endif
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef  __FUNCT__
-#define __FUNCT__ "PetscRandomViewFromOptions"
-/*
-  PetscRandomViewFromOptions - This function visualizes the type and the seed of the generated random numbers based upon user options.
-
-  Collective on PetscRandom
-
-  Input Parameters:
-+ rnd   - The random number generator context
-. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
-- optionname - option to activate viewing
-
-  Level: intermediate
-
-.keywords: PetscRandom, view, options, database
-.seealso: PetscRandomSetFromOptions()
-*/
-PetscErrorCode  PetscRandomViewFromOptions(PetscRandom rnd, const char prefix[], const char optionname[])
-{
-  PetscBool         flg;
-  PetscViewer       viewer;
-  PetscErrorCode    ierr;
-  PetscViewerFormat format;
-
-  PetscFunctionBegin;
-  if (prefix) {
-    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)rnd),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
-  } else {
-    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)rnd),((PetscObject)rnd)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
-  }
-  if (flg) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = PetscRandomView(rnd,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -364,9 +333,7 @@ PetscErrorCode  PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
   PetscFunctionBegin;
   PetscValidPointer(r,3);
   *r = NULL;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscRandomInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(rr,_p_PetscRandom,struct _PetscRandomOps,PETSC_RANDOM_CLASSID,"PetscRandom","Random number generator","Sys",comm,PetscRandomDestroy,0);CHKERRQ(ierr);
 

@@ -126,13 +126,15 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetBool(NULL,"-snes_mf",&matrix_free,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-fdcoloring",&coloring,NULL);CHKERRQ(ierr);
   if (!matrix_free) {
-    ierr = DMCreateMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
+    ierr = DMSetMatType(user.da,MATAIJ);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(user.da,&J);CHKERRQ(ierr);
     if (coloring) {
       ISColoring iscoloring;
-      ierr = DMCreateColoring(user.da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
+      ierr = DMCreateColoring(user.da,IS_COLORING_GLOBAL,&iscoloring);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
       ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,&user);
       ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+      ierr = MatFDColoringSetUp(J,iscoloring,matfdcoloring);CHKERRQ(ierr);
       ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,matfdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     } else {

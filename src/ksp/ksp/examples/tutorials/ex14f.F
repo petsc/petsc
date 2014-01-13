@@ -81,8 +81,8 @@
       external mymult
 
 !     --------------- Data to define nonlinear solver --------------
-      double precision   rtol,ttol
-      double precision   fnorm,ynorm,xnorm
+      PetscReal   rtol,ttol
+      PetscReal   fnorm,ynorm,xnorm
       PetscInt            max_nonlin_its,one
       PetscInt            lin_its
       PetscInt           i,m
@@ -315,7 +315,7 @@
       PetscInt  i,j,row,mx
       PetscInt  my, xs,ys,xm
       PetscInt  ym,gxm,gym,gxs,gys
-      double precision one,lambda,temp1,temp,hx,hy
+      PetscReal one,lambda,temp1,temp,hx,hy
       PetscScalar      xx(1)
       DM               da
       Mat              B
@@ -401,8 +401,8 @@
       PetscOffset      idx,idf
       PetscErrorCode ierr
       PetscInt i,j,row,mx,my,xs,ys,xm,ym,gxs
-      double precision two,one,lambda,hx
-      double precision hy,hxdhy,hydhx,sc
+      PetscReal two,one,lambda,hx
+      PetscReal hy,hxdhy,hydhx,sc
       PetscScalar      u,uxx,uyy,xx(1),ff(1)
       DM               da
       Mat              B
@@ -592,6 +592,8 @@
      &                      ierr)
  20     continue
  10   continue
+
+      call DMDARestoreGlobalIndices(da,nloc,ltog,idltog,ierr)
 
 !  Assemble matrix, using the 2-step process:
 !    MatAssemblyBegin(), MatAssemblyEnd().

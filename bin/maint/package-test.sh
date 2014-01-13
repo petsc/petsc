@@ -2,8 +2,8 @@
 set -x
 ECHO=
 
-OPT1='--with-shared-libraries=1 --with-dynamic-loading=1 --with-debugging=0'
-OPT2='--with-clanguage=cxx --with-sieve=1 --with-log=0'
+OPT1='--with-shared-libraries=1 --with-debugging=0'
+OPT2='--with-clanguage=cxx --with-log=0'
 OPT3='--with-scalar-type=complex --with-clanguage=cxx --with-pic=0 --with-log=0'
 
 DATAFILESPATH=/home/petsc/datafiles

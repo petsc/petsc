@@ -19,8 +19,27 @@ PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(q->quadPoints);CHKERRQ(ierr);
-  ierr = PetscFree(q->quadWeights);CHKERRQ(ierr);
+  ierr = PetscFree(q->points);CHKERRQ(ierr);
+  ierr = PetscFree(q->weights);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscQuadratureView"
+PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
+{
+  PetscInt       q, d;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerASCIIPrintf(viewer, "Quadrature on %d points\n  (", quad.numPoints);CHKERRQ(ierr);
+  for (q = 0; q < quad.numPoints; ++q) {
+    for (d = 0; d < quad.dim; ++d) {
+      if (d) ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "%g\n", quad.points[q*quad.dim+d]);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer, ") %g\n", quad.weights[q]);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -129,7 +148,7 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
     if (i) w[i-1] = 0.5 / PetscSqrtReal(1 - 1./PetscSqr(2*i));
   }
   ierr = PetscRealView(npoints-1,w,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = PetscMalloc2(npoints*npoints,PetscScalar,&Z,PetscMax(1,2*npoints-2),PetscReal,&work);CHKERRQ(ierr);
+  ierr = PetscMalloc2(npoints*npoints,&Z,PetscMax(1,2*npoints-2),&work);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(npoints,&N);CHKERRQ(ierr);
   LDZ  = N;
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
@@ -245,7 +264,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
 
   PetscFunctionBegin;
 
-  a1      = pow(2, a+b+1);
+  a1      = PetscPowReal(2.0, a+b+1);
 #if defined(PETSC_HAVE_TGAMMA)
   a2      = tgamma(a + npoints + 1);
   a3      = tgamma(b + npoints + 1);
@@ -259,7 +278,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
   /* Computes the m roots of P_{m}^{a,b} on [-1,1] by Newton's method with Chebyshev points as initial guesses.
    Algorithm implemented from the pseudocode given by Karniadakis and Sherwin and Python in FIAT */
   for (k = 0; k < npoints; ++k) {
-    PetscReal r = -cos((2.0*k + 1.0) * PETSC_PI / (2.0 * npoints)), dP;
+    PetscReal r = -PetscCosReal((2.0*k + 1.0) * PETSC_PI / (2.0 * npoints)), dP;
     PetscInt  j;
 
     if (k > 0) r = 0.5 * (r + x[k-1]);
@@ -314,14 +333,22 @@ PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt order, PetscR
 
   PetscFunctionBegin;
   if ((a != -1.0) || (b != 1.0)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must use default internal right now");
-  ierr = PetscMalloc(npoints*dim * sizeof(PetscReal), &x);CHKERRQ(ierr);
-  ierr = PetscMalloc(npoints     * sizeof(PetscReal), &w);CHKERRQ(ierr);
+  ierr = PetscMalloc1(npoints*dim, &x);CHKERRQ(ierr);
+  ierr = PetscMalloc1(npoints, &w);CHKERRQ(ierr);
   switch (dim) {
+  case 0:
+    ierr = PetscFree(x);CHKERRQ(ierr);
+    ierr = PetscFree(w);CHKERRQ(ierr);
+    ierr = PetscMalloc1(1, &x);CHKERRQ(ierr);
+    ierr = PetscMalloc1(1, &w);CHKERRQ(ierr);
+    x[0] = 0.0;
+    w[0] = 1.0;
+    break;
   case 1:
     ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 0.0, 0.0, x, w);CHKERRQ(ierr);
     break;
   case 2:
-    ierr = PetscMalloc4(order,PetscReal,&px,order,PetscReal,&wx,order,PetscReal,&py,order,PetscReal,&wy);CHKERRQ(ierr);
+    ierr = PetscMalloc4(order,&px,order,&wx,order,&py,order,&wy);CHKERRQ(ierr);
     ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 0.0, 0.0, px, wx);CHKERRQ(ierr);
     ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 1.0, 0.0, py, wy);CHKERRQ(ierr);
     for (i = 0; i < order; ++i) {
@@ -333,7 +360,7 @@ PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt order, PetscR
     ierr = PetscFree4(px,wx,py,wy);CHKERRQ(ierr);
     break;
   case 3:
-    ierr = PetscMalloc6(order,PetscReal,&px,order,PetscReal,&wx,order,PetscReal,&py,order,PetscReal,&wy,order,PetscReal,&pz,order,PetscReal,&wz);CHKERRQ(ierr);
+    ierr = PetscMalloc6(order,&px,order,&wx,order,&py,order,&wy,order,&pz,order,&wz);CHKERRQ(ierr);
     ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 0.0, 0.0, px, wx);CHKERRQ(ierr);
     ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 1.0, 0.0, py, wy);CHKERRQ(ierr);
     ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 2.0, 0.0, pz, wz);CHKERRQ(ierr);
@@ -350,9 +377,10 @@ PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt order, PetscR
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct quadrature rule for dimension %d", dim);
   }
-  q->numQuadPoints = npoints;
-  q->quadPoints    = x;
-  q->quadWeights   = w;
+  q->dim       = dim;
+  q->numPoints = npoints;
+  q->points    = x;
+  q->weights   = w;
   PetscFunctionReturn(0);
 }
 
@@ -374,7 +402,7 @@ static PetscErrorCode PetscDTPseudoInverseQR(PetscInt m,PetscInt mstride,PetscIn
 #if defined(PETSC_USE_COMPLEX)
   {
     PetscInt i,j;
-    ierr = PetscMalloc2(m*n,PetscScalar,&A,m*n,PetscScalar,&Ainv);CHKERRQ(ierr);
+    ierr = PetscMalloc2(m*n,&A,m*n,&Ainv);CHKERRQ(ierr);
     for (j=0; j<n; j++) {
       for (i=0; i<m; i++) A[i+m*j] = A_in[i+mstride*j];
     }
@@ -428,7 +456,7 @@ static PetscErrorCode PetscDTLegendreIntegrate(PetscInt ninterval,const PetscRea
   PetscInt i,j;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc((ninterval+1)*ndegree*sizeof(PetscReal),&Bv);CHKERRQ(ierr);
+  ierr = PetscMalloc1((ninterval+1)*ndegree,&Bv);CHKERRQ(ierr);
   /* Point evaluation of L_p on all the source vertices */
   ierr = PetscDTLegendreEval(ninterval+1,x,ndegree,degrees,Bv,NULL,NULL);CHKERRQ(ierr);
   /* Integral over each interval: \int_a^b L_p' = L_p(b)-L_p(a) */
@@ -488,8 +516,8 @@ PetscErrorCode PetscDTReconstructPoly(PetscInt degree,PetscInt nsource,const Pet
   center = (xmin + xmax)/2;
   hscale = (xmax - xmin)/2;
   worksize = nsource;
-  ierr = PetscMalloc4(degree+1,PetscInt,&bdegrees,nsource+1,PetscReal,&sourcey,nsource*(degree+1),PetscReal,&Bsource,worksize,PetscScalar,&work);CHKERRQ(ierr);
-  ierr = PetscMalloc4(nsource,PetscScalar,&tau,nsource*(degree+1),PetscReal,&Bsinv,ntarget+1,PetscReal,&targety,ntarget*(degree+1),PetscReal,&Btarget);CHKERRQ(ierr);
+  ierr = PetscMalloc4(degree+1,&bdegrees,nsource+1,&sourcey,nsource*(degree+1),&Bsource,worksize,&work);CHKERRQ(ierr);
+  ierr = PetscMalloc4(nsource,&tau,nsource*(degree+1),&Bsinv,ntarget+1,&targety,ntarget*(degree+1),&Btarget);CHKERRQ(ierr);
   for (i=0; i<=nsource; i++) sourcey[i] = (sourcex[i]-center)/hscale;
   for (i=0; i<=degree; i++) bdegrees[i] = i+1;
   ierr = PetscDTLegendreIntegrate(nsource,sourcey,degree+1,bdegrees,PETSC_TRUE,Bsource);CHKERRQ(ierr);

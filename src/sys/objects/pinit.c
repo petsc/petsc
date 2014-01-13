@@ -15,13 +15,14 @@
 #if defined(PETSC_USE_LOG)
 extern PetscErrorCode PetscLogBegin_Private(void);
 #endif
-extern PetscBool PetscHMPIWorker;
-
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
 PetscFPT PetscFPTData = 0;
 #endif
 
+#if defined(PETSC_HAVE_SAWS)
+#include <petscviewersaws.h>
+#endif
 /* -----------------------------------------------------------------------------------------*/
 
 extern FILE *petsc_history;
@@ -50,6 +51,8 @@ const char *const PetscDataTypes[] = {"INT","DOUBLE","COMPLEX","LONG","SHORT","F
 
 PetscBool PetscPreLoadingUsed = PETSC_FALSE;
 PetscBool PetscPreLoadingOn   = PETSC_FALSE;
+
+PetscInt PetscHotRegionDepth;
 
 /*
        Checks the options database for initializations related to the
@@ -208,7 +211,7 @@ there would be no place to store the both needed results.
 */
 #undef __FUNCT__
 #define __FUNCT__ "PetscMaxSum"
-PetscErrorCode  PetscMaxSum(MPI_Comm comm,const PetscInt nprocs[],PetscInt *max,PetscInt *sum)
+PetscErrorCode  PetscMaxSum(MPI_Comm comm,const PetscInt sizes[],PetscInt *max,PetscInt *sum)
 {
   PetscMPIInt    size,rank;
   struct {PetscInt max,sum;} *work;
@@ -217,8 +220,8 @@ PetscErrorCode  PetscMaxSum(MPI_Comm comm,const PetscInt nprocs[],PetscInt *max,
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = PetscMalloc(size*sizeof(*work),&work);CHKERRQ(ierr);
-  ierr = MPI_Allreduce((void*)nprocs,work,size,MPIU_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&work);CHKERRQ(ierr);
+  ierr = MPI_Allreduce((void*)sizes,work,size,MPIU_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
   *max = work[rank].max;
   *sum = work[rank].sum;
   ierr = PetscFree(work);CHKERRQ(ierr);
@@ -513,7 +516,7 @@ PetscErrorCode  PetscGetArguments(char ***args)
   PetscFunctionBegin;
   if (!PetscInitializeCalled && PetscFinalizeCalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"You must call after PetscInitialize() but before PetscFinalize()");
   if (!argc) {*args = 0; PetscFunctionReturn(0);}
-  ierr = PetscMalloc(argc*sizeof(char*),args);CHKERRQ(ierr);
+  ierr = PetscMalloc1(argc,args);CHKERRQ(ierr);
   for (i=0; i<argc-1; i++) {
     ierr = PetscStrallocpy(PetscGlobalArgs[i+1],&(*args)[i]);CHKERRQ(ierr);
   }
@@ -553,6 +556,92 @@ PetscErrorCode  PetscFreeArguments(char **args)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_SAWS)
+#include <petscconfiginfo.h>
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscInitializeSAWs"
+PetscErrorCode  PetscInitializeSAWs(const char help[])
+{
+  if (!PetscGlobalRank) {
+    char           cert[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN],*intro,programname[64],*appline,*options,version[64];
+    int            port;
+    PetscBool      flg,rootlocal = PETSC_FALSE,flg2;
+    size_t         applinelen,introlen;
+    PetscErrorCode ierr;
+
+    ierr = PetscOptionsHasName(NULL,"-saws_log",&flg);CHKERRQ(ierr);
+    if (flg) {
+      char  sawslog[PETSC_MAX_PATH_LEN];
+
+      ierr = PetscOptionsGetString(NULL,"-saws_log",sawslog,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+      if (sawslog[0]) {
+        PetscStackCallSAWs(SAWs_Set_Use_Logfile,(sawslog));
+      } else {
+        PetscStackCallSAWs(SAWs_Set_Use_Logfile,(NULL));
+      }
+    }
+    ierr = PetscOptionsGetString(NULL,"-saws_https",cert,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg) {
+      PetscStackCallSAWs(SAWs_Set_Use_HTTPS,(cert));
+    }
+    ierr = PetscOptionsGetInt(NULL,"-saws_port",&port,&flg);CHKERRQ(ierr);
+    if (flg) {
+      PetscStackCallSAWs(SAWs_Set_Port,(port));
+    }
+    ierr = PetscOptionsGetString(NULL,"-saws_root",root,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg) {
+      PetscStackCallSAWs(SAWs_Set_Document_Root,(root));CHKERRQ(ierr);
+      ierr = PetscStrcmp(root,".",&rootlocal);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsHasName(NULL,"-saws_local",&flg2);CHKERRQ(ierr);
+    if (flg2) {
+      char jsdir[PETSC_MAX_PATH_LEN];
+      if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"-saws_local option requires -saws_root option");
+      ierr = PetscSNPrintf(jsdir,PETSC_MAX_PATH_LEN,"%s/js",root);CHKERRQ(ierr);
+      ierr = PetscTestDirectory(jsdir,'r',&flg);CHKERRQ(ierr);
+      if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"-saws_local option requires js directory in root directory");
+      PetscStackCallSAWs(SAWs_Push_Local_Header,());CHKERRQ(ierr);
+    }
+    ierr = PetscGetProgramName(programname,64);CHKERRQ(ierr);
+    ierr = PetscStrlen(help,&applinelen);CHKERRQ(ierr);
+    introlen   = 4096 + applinelen;
+    applinelen += 256;
+    ierr = PetscMalloc(applinelen,&appline);CHKERRQ(ierr);
+    ierr = PetscMalloc(introlen,&intro);CHKERRQ(ierr);
+
+    if (rootlocal) {
+      ierr = PetscSNPrintf(appline,applinelen,"%s.c.html",programname);CHKERRQ(ierr);
+      ierr = PetscTestFile(appline,'r',&rootlocal);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsGetAll(&options);CHKERRQ(ierr);
+    if (rootlocal && help) {
+      ierr = PetscSNPrintf(appline,applinelen,"<center> Running <a href=\"%s.c.html\">%s</a> %s</center><br><center><pre>%s</pre></center><br>\n",programname,programname,options,help);
+    } else if (help) {
+      ierr = PetscSNPrintf(appline,applinelen,"<center>Running %s %s</center><br><center><pre>%s</pre></center><br>\n",programname,options,help);
+    } else {
+      ierr = PetscSNPrintf(appline,applinelen,"<center> Running %s %s</center><br>\n",programname,options);
+    }
+    ierr = PetscFree(options);CHKERRQ(ierr);
+    ierr = PetscGetVersion(version,sizeof(version));CHKERRQ(ierr);
+    ierr = PetscSNPrintf(intro,introlen,"<body>\n"
+                                    "<center><h2> <a href=\"http://www.mcs.anl.gov/petsc\">PETSc</a> Application Web server powered by <a href=\"https://bitbucket.org/saws/saws\">SAWs</a> </h2></center>\n"
+                                    "<center>This is the default PETSc application dashboard, from it you can access any published PETSc objects or logging data</center><br><center>%s configured at %s with %s</center><br>\n"
+                         "%s",version,petscconfigureruntime,petscconfigureoptions,appline);
+    PetscStackCallSAWs(SAWs_Push_Body,("index.html",0,intro));
+    ierr = PetscFree(intro);CHKERRQ(ierr);
+    ierr = PetscFree(appline);CHKERRQ(ierr);
+    PetscStackCallSAWs(SAWs_Initialize,());
+    ierr = PetscCitationsRegister("@TechReport{ saws,"
+                                  "Author = {Matt Otten and Jed Brown and Barry Smith},"
+                                  "Title  = {Scientific Application Web Server (SAWs) Users Manual},"
+                                  "Institution = {Argonne National Laboratory},"
+                                  "Year   = 2013}",NULL);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscInitialize"
 /*@C
@@ -591,6 +680,7 @@ PetscErrorCode  PetscFreeArguments(char **args)
 .  -malloc - Indicates use of PETSc error-checking malloc (on by default for debug version of libraries)
 .  -malloc no - Indicates not to use error-checking malloc
 .  -malloc_debug - check for memory corruption at EVERY malloc or free
+.  -malloc_dump - prints a list of all unfreed memory at the end of the run
 .  -malloc_test - like -malloc_dump -malloc_debug, but only active for debugging builds
 .  -fp_trap - Stops on floating point exceptions (Note that on the
               IBM RS6000 this slows code by at least a factor of 10.)
@@ -599,8 +689,7 @@ PetscErrorCode  PetscFreeArguments(char **args)
 .  -not_shared_tmp - each processor has own /tmp
 .  -tmp - alternative name of /tmp directory
 .  -get_total_flops - returns total flops done by all processors
-.  -memory_info - Print memory usage at end of run
--  -server <port> - start PETSc webserver (default port is 8080)
+-  -memory_info - Print memory usage at end of run
 
    Options Database Keys for Profiling:
    See the <a href="../../docs/manual.pdf#nameddest=ch_profiling">profiling chapter of the users manual</a> for details.
@@ -657,7 +746,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 {
   PetscErrorCode ierr;
   PetscMPIInt    flag, size;
-  PetscInt       nodesize;
   PetscBool      flg;
   char           hostname[256];
 
@@ -765,6 +853,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Type_commit(&MPIU_2INT);CHKERRQ(ierr);
 #endif
 
+
   /*
      Attributes to be set on PETSc communicators
   */
@@ -786,6 +875,12 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
     ierr = PetscPrintf(PETSC_COMM_WORLD,help);CHKERRQ(ierr);
   }
   ierr = PetscOptionsCheckInitial_Private();CHKERRQ(ierr);
+
+  ierr = PetscCitationsInitialize();CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_SAWS)
+  ierr = PetscInitializeSAWs(help);CHKERRQ(ierr);
+#endif
 
   /* SHOULD PUT IN GUARDS: Make sure logging is initialized, even if we do not print it out */
 #if defined(PETSC_USE_LOG)
@@ -817,24 +912,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Register_datarep((char*)"petsc",PetscDataRep_read_conv_fn,PetscDataRep_write_conv_fn,PetscDataRep_extent_fn,NULL);CHKERRQ(ierr);
 #endif
 #endif
-
-  ierr = PetscOptionsGetInt(NULL,"-hmpi_spawn_size",&nodesize,&flg);CHKERRQ(ierr);
-  if (flg) {
-#if defined(PETSC_HAVE_MPI_COMM_SPAWN)
-    ierr = PetscHMPISpawn((PetscMPIInt) nodesize);CHKERRQ(ierr); /* worker nodes never return from here; they go directly to PetscEnd() */
-#else
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"PETSc built without MPI 2 (MPI_Comm_spawn) support, use -hmpi_merge_size instead");
-#endif
-  } else {
-    ierr = PetscOptionsGetInt(NULL,"-hmpi_merge_size",&nodesize,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PetscHMPIMerge((PetscMPIInt) nodesize,NULL,NULL);CHKERRQ(ierr);
-      if (PetscHMPIWorker) { /* if worker then never enter user code */
-        PetscInitializeCalled = PETSC_TRUE;
-        PetscEnd();
-      }
-    }
-  }
 
 #if defined(PETSC_HAVE_CUDA)
   flg  = PETSC_TRUE;
@@ -868,7 +945,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscFPTCreate(10000);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscCitationsInitialize();CHKERRQ(ierr);
 
   /*
       Once we are completedly initialized then we can set this variables
@@ -877,8 +953,10 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_USE_LOG)
 extern PetscObject *PetscObjects;
 extern PetscInt    PetscObjectsCounts, PetscObjectsMaxCounts;
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFinalize"
@@ -951,24 +1029,22 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
 
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-options_gui",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-saw_options",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscOptionsAMSDestroy();CHKERRQ(ierr);
+    ierr = PetscOptionsSAWsDestroy();CHKERRQ(ierr);
   }
 #endif
 
-#if defined(PETSC_HAVE_SERVER)
+#if defined(PETSC_HAVE_X)
   flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-server",&flg1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-x_virtual",&flg1,NULL);CHKERRQ(ierr);
   if (flg1) {
     /*  this is a crude hack, but better than nothing */
-    ierr = PetscPOpen(PETSC_COMM_WORLD,NULL,"pkill -9 petscwebserver","r",NULL);CHKERRQ(ierr);
+    ierr = PetscPOpen(PETSC_COMM_WORLD,NULL,"pkill -9 Xvfb","r",NULL);CHKERRQ(ierr);
   }
 #endif
-
-  ierr = PetscHMPIFinalize();CHKERRQ(ierr);
 
   ierr = PetscOptionsGetBool(NULL,"-malloc_info",&flg2,NULL);CHKERRQ(ierr);
   if (!flg2) {
@@ -1080,37 +1156,42 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscOptionsHasName(NULL,"-nox",&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,"-nox_warning",&flg1);CHKERRQ(ierr);
 
-  if (!PetscHMPIWorker) { /* worker processes skip this because they do not usually process options */
-    flg3 = PETSC_FALSE; /* default value is required */
-    ierr = PetscOptionsGetBool(NULL,"-options_left",&flg3,&flg1);CHKERRQ(ierr);
-    ierr = PetscOptionsAllUsed(&nopt);CHKERRQ(ierr);
-    if (flg3) {
-      if (!flg2) { /* have not yet printed the options */
-        PetscViewer viewer;
-        ierr = PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
-        ierr = PetscOptionsView(viewer);CHKERRQ(ierr);
-        ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-      }
-      if (!nopt) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"There are no unused options.\n");CHKERRQ(ierr);
-      } else if (nopt == 1) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"There is one unused database option. It is:\n");CHKERRQ(ierr);
-      } else {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"There are %D unused database options. They are:\n",nopt);CHKERRQ(ierr);
-      }
+  flg3 = PETSC_FALSE; /* default value is required */
+  ierr = PetscOptionsGetBool(NULL,"-options_left",&flg3,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsAllUsed(&nopt);CHKERRQ(ierr);
+  if (flg3) {
+    if (!flg2) { /* have not yet printed the options */
+      PetscViewer viewer;
+      ierr = PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
+      ierr = PetscOptionsView(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
-#if defined(PETSC_USE_DEBUG)
-    if (nopt && !flg3 && !flg1) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! There are options you set that were not used!\n");CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! could be spelling mistake, etc!\n");CHKERRQ(ierr);
-      ierr = PetscOptionsLeft();CHKERRQ(ierr);
-    } else if (nopt && flg3) {
-#else
-    if (nopt && flg3) {
-#endif
-      ierr = PetscOptionsLeft();CHKERRQ(ierr);
+    if (!nopt) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"There are no unused options.\n");CHKERRQ(ierr);
+    } else if (nopt == 1) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"There is one unused database option. It is:\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"There are %D unused database options. They are:\n",nopt);CHKERRQ(ierr);
     }
   }
+#if defined(PETSC_USE_DEBUG)
+  if (nopt && !flg3 && !flg1) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! There are options you set that were not used!\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! could be spelling mistake, etc!\n");CHKERRQ(ierr);
+    ierr = PetscOptionsLeft();CHKERRQ(ierr);
+  } else if (nopt && flg3) {
+#else
+  if (nopt && flg3) {
+#endif
+    ierr = PetscOptionsLeft();CHKERRQ(ierr);
+  }
+
+#if defined(PETSC_HAVE_SAWS)
+  if (!PetscGlobalRank) {
+    ierr = PetscStackSAWsViewOff();CHKERRQ(ierr);
+    PetscStackCallSAWs(SAWs_Finalize,());
+  }
+#endif
 
   {
     PetscThreadComm tcomm_world;
@@ -1119,6 +1200,7 @@ PetscErrorCode  PetscFinalize(void)
     ierr = PetscThreadCommDestroy(&tcomm_world);CHKERRQ(ierr);
   }
 
+#if defined(PETSC_USE_LOG)
   /*
        List all objects the user may have forgot to free
   */
@@ -1134,10 +1216,13 @@ PetscErrorCode  PetscFinalize(void)
     ierr = PetscSequentialPhaseEnd_Private(local_comm,1);CHKERRQ(ierr);
     ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
   }
+#endif
+
+#if defined(PETSC_USE_LOG)
   PetscObjectsCounts    = 0;
   PetscObjectsMaxCounts = 0;
-
   ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
+#endif
 
 #if defined(PETSC_USE_LOG)
   ierr = PetscLogDestroy();CHKERRQ(ierr);

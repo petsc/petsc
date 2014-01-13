@@ -52,7 +52,7 @@ PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype a,MPI_Datatype b,PetscBool *ma
     MPI_Aint     *aaddrs,*baddrs;
     MPI_Datatype *atypes,*btypes;
     PetscBool    same;
-    ierr = PetscMalloc6(aintcount,PetscMPIInt,&aints,bintcount,PetscMPIInt,&bints,aaddrcount,MPI_Aint,&aaddrs,baddrcount,MPI_Aint,&baddrs,atypecount,MPI_Datatype,&atypes,btypecount,MPI_Datatype,&btypes);CHKERRQ(ierr);
+    ierr = PetscMalloc6(aintcount,&aints,bintcount,&bints,aaddrcount,&aaddrs,baddrcount,&baddrs,atypecount,&atypes,btypecount,&btypes);CHKERRQ(ierr);
     ierr = MPI_Type_get_contents(atype,aintcount,aaddrcount,atypecount,aints,aaddrs,atypes);CHKERRQ(ierr);
     ierr = MPI_Type_get_contents(btype,bintcount,baddrcount,btypecount,bints,baddrs,btypes);CHKERRQ(ierr);
     ierr = PetscMemcmp(aints,bints,aintcount*sizeof(aints[0]),&same);CHKERRQ(ierr);

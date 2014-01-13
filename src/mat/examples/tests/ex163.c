@@ -55,9 +55,8 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(Bdense);CHKERRQ(ierr);
   ierr = MatSetUp(Bdense);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Bdense,&rstart,&rend);CHKERRQ(ierr);
-  //printf("[%d] rstart/end %d %d; local size %d %d\n",rank,rstart,rend,m,n);
-
-  ierr = PetscMalloc3(m,PetscInt,&rows,BN,PetscInt,&cols,m*BN,PetscScalar,&array);CHKERRQ(ierr);
+ 
+  ierr = PetscMalloc3(m,&rows,BN,&cols,m*BN,&array);CHKERRQ(ierr);
   for (i=0; i<m; i++) rows[i] = rstart + i;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);

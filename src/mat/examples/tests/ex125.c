@@ -11,7 +11,7 @@ int main(int argc,char **args)
   Mat            A,RHS,C,F,X;
   Vec            u,x,b;
   PetscErrorCode ierr;
-  PetscMPIInt    rank,nproc;
+  PetscMPIInt    rank,size;
   PetscInt       i,m,n,nfact,nsolve,nrhs,ipack=0;
   PetscScalar    *array,rval;
   PetscReal      norm,tol=1.e-12;
@@ -24,7 +24,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &nproc);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
 
   /* Determine file from which we read the matrix A */
   ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -150,8 +150,8 @@ int main(int argc,char **args)
         ierr = VecAXPY(u,-1.0,x);CHKERRQ(ierr);  /* u <- (-1.0)x + u */
         ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
         if (norm > tol) {
-          ierr = MatMult(A,x,u);CHKERRQ(ierr); /* u = A*x */
           PetscReal resi;
+          ierr = MatMult(A,x,u);CHKERRQ(ierr); /* u = A*x */
           ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);  /* u <- (-1.0)b + u */
           ierr = VecNorm(u,NORM_2,&resi);CHKERRQ(ierr);
           if (!rank) {

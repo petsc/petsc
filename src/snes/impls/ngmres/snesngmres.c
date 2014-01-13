@@ -60,16 +60,12 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
     hsize = msize * msize;
 
     /* explicit least squares minimization solve */
-    ierr = PetscMalloc5(hsize,PetscScalar,&ngmres->h,
-                        msize,PetscScalar,&ngmres->beta,
-                        msize,PetscScalar,&ngmres->xi,
-                        msize,PetscReal, &ngmres->fnorms,
-                        hsize,PetscScalar,&ngmres->q);CHKERRQ(ierr);
-    ierr = PetscMalloc(msize*sizeof(PetscReal),&ngmres->xnorms);CHKERRQ(ierr);
+    ierr = PetscMalloc5(hsize,&ngmres->h, msize,&ngmres->beta, msize,&ngmres->xi, msize,&ngmres->fnorms, hsize,&ngmres->q);CHKERRQ(ierr);
+    ierr = PetscMalloc1(msize,&ngmres->xnorms);CHKERRQ(ierr);
     ngmres->nrhs  = 1;
     ngmres->lda   = msize;
     ngmres->ldb   = msize;
-    ierr          = PetscMalloc(msize*sizeof(PetscScalar),&ngmres->s);CHKERRQ(ierr);
+    ierr          = PetscMalloc1(msize,&ngmres->s);CHKERRQ(ierr);
     ierr          = PetscMemzero(ngmres->h,   hsize*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr          = PetscMemzero(ngmres->q,   hsize*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr          = PetscMemzero(ngmres->xi,  msize*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -197,10 +193,10 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   XM = snes->work[3];
   FM = snes->work[4];
 
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter = 0;
   snes->norm = 0.;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
 
   /* initialization */
 
@@ -229,9 +225,9 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   }
   fminnorm = fnorm;
 
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   ierr       = SNESLogConvergenceHistory(snes,fnorm,0);CHKERRQ(ierr);
   ierr       = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
   ierr       = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
@@ -329,10 +325,10 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
       }
     }
 
-    ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
     snes->iter = k;
     snes->norm = fnorm;
-    ierr = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr = SNESLogConvergenceHistory(snes,snes->norm,snes->iter);CHKERRQ(ierr);
     ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     ierr = (*snes->ops->converged)(snes,snes->iter,0,0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
@@ -489,7 +485,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes)
   snes->usesksp  = PETSC_FALSE;
   snes->pcside   = PC_RIGHT;
 
-  ierr          = PetscNewLog(snes,SNES_NGMRES,&ngmres);CHKERRQ(ierr);
+  ierr          = PetscNewLog(snes,&ngmres);CHKERRQ(ierr);
   snes->data    = (void*) ngmres;
   ngmres->msize = 30;
 

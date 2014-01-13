@@ -86,7 +86,7 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
 {
   PetscErrorCode    ierr;
   const PetscScalar *x;
-  PetscScalar       *v[6],dots[3];
+  PetscScalar       *v[6],dots[5];
   Vec               vec[6];
   PetscInt          n,N,dim,nmodes,i,j;
 
@@ -144,7 +144,7 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
     for (i=0; i<nmodes; i++) {ierr = VecRestoreArray(vec[i],&v[i]);CHKERRQ(ierr);}
     ierr = VecRestoreArrayRead(coords,&x);CHKERRQ(ierr);
     for (i=dim; i<nmodes; i++) {
-      /* Orthonormalize vec[i] against vec[0:dim] */
+      /* Orthonormalize vec[i] against vec[0:i-1] */
       ierr = VecMDot(vec[i],i,vec,dots);CHKERRQ(ierr);
       for (j=0; j<i; j++) dots[j] *= -1.;
       ierr = VecMAXPY(vec[i],i,dots,vec);CHKERRQ(ierr);
@@ -251,9 +251,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
   PetscValidPointer(SP,5);
 
   *SP = NULL;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_CLASSID,"MatNullSpace","Null space","Mat",comm,MatNullSpaceDestroy,MatNullSpaceView);CHKERRQ(ierr);
 
@@ -265,8 +263,8 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
   sp->rmctx    = 0;
 
   if (n) {
-    ierr = PetscMalloc(n*sizeof(Vec),&sp->vecs);CHKERRQ(ierr);
-    ierr = PetscMalloc(n*sizeof(PetscScalar),&sp->alpha);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&sp->vecs);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&sp->alpha);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)sp,n*(sizeof(Vec)+sizeof(PetscScalar)));CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       ierr        = PetscObjectReference((PetscObject)vecs[i]);CHKERRQ(ierr);

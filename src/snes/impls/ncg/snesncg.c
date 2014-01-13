@@ -9,7 +9,7 @@ PetscErrorCode SNESReset_NCG(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#define SNESLINESEARCHNCGLINEAR "linear"
+#define SNESLINESEARCHNCGLINEAR "ncglinear"
 
 /*
   SNESDestroy_NCG - Destroys the private SNES_NCG context that was created with SNESCreate_NCG().
@@ -51,10 +51,8 @@ PetscErrorCode SNESSetUp_NCG(SNES snes)
 
   PetscFunctionBegin;
   ierr = SNESSetWorkVecs(snes,2);CHKERRQ(ierr);
-  ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
   if (snes->pcside == PC_RIGHT) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNESNCG only supports left preconditioning");
   if (snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_UNPRECONDITIONED;
-  ierr = SNESLineSearchRegister(SNESLINESEARCHNCGLINEAR, SNESLineSearchCreate_NCGLinear);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*
@@ -92,6 +90,7 @@ static PetscErrorCode SNESSetFromOptions_NCG(SNES snes)
       ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHL2);CHKERRQ(ierr);
     }
   }
+  ierr = SNESLineSearchRegister(SNESLINESEARCHNCGLINEAR, SNESLineSearchCreate_NCGLinear);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -139,6 +138,10 @@ PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
   xnorm = &linesearch->xnorm;
   ynorm = &linesearch->ynorm;
 
+  if (!snes->jacobian) {
+    ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
+  }
+
   /*
 
    The exact step size for unpreconditioned linear CG is just:
@@ -149,13 +152,12 @@ PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
   ierr  = MatMult(snes->jacobian, Y, W);CHKERRQ(ierr);
   ierr  = VecDot(Y, W, &ptAp);CHKERRQ(ierr);
   alpha = alpha / ptAp;
-  ierr  = PetscPrintf(PetscObjectComm((PetscObject)snes), "alpha: %G\n", PetscRealPart(alpha));CHKERRQ(ierr);
-  ierr  = VecAXPY(X, alpha, Y);CHKERRQ(ierr);
-  ierr  = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
+  ierr  = VecAXPY(X,-alpha,Y);CHKERRQ(ierr);
+  ierr  = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
 
-  ierr = VecNorm(F, NORM_2, fnorm);CHKERRQ(ierr);
-  ierr = VecNorm(X, NORM_2, xnorm);CHKERRQ(ierr);
-  ierr = VecNorm(Y, NORM_2, ynorm);CHKERRQ(ierr);
+  ierr = VecNorm(F,NORM_2,fnorm);CHKERRQ(ierr);
+  ierr = VecNorm(X,NORM_2,xnorm);CHKERRQ(ierr);
+  ierr = VecNorm(Y,NORM_2,ynorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -283,10 +285,10 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
 
   ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
 
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter = 0;
   snes->norm = 0.;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
 
   /* compute the initial function and preconditioned update dX */
 
@@ -331,14 +333,12 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   ierr = VecDot(dX, dX, &dXdotdX);CHKERRQ(ierr);
 
 
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   ierr       = SNESLogConvergenceHistory(snes,fnorm,0);CHKERRQ(ierr);
   ierr       = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
 
-  /* set parameter for default relative tolerance convergence test */
-  snes->ttol = fnorm*snes->rtol;
   /* test convergence */
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
@@ -374,10 +374,10 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
     }
     ierr = SNESLineSearchGetNorms(linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
     /* Monitor convergence */
-    ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
     snes->iter = i;
     snes->norm = fnorm;
-    ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
     ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
 
@@ -455,7 +455,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
       break;
     }
     if (ncg->monitor) {
-      ierr = PetscViewerASCIIPrintf(ncg->monitor, "beta = %e\n", beta);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(ncg->monitor, "beta = %e\n", (double)beta);CHKERRQ(ierr);
     }
     ierr = VecAYPX(lX, beta, dX);CHKERRQ(ierr);
   }
@@ -508,7 +508,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NCG(SNES snes)
     snes->stol      = 1e-20;
   }
 
-  ierr         = PetscNewLog(snes, SNES_NCG, &neP);CHKERRQ(ierr);
+  ierr         = PetscNewLog(snes,&neP);CHKERRQ(ierr);
   snes->data   = (void*) neP;
   neP->monitor = NULL;
   neP->type    = SNES_NCG_PRP;

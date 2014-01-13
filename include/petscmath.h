@@ -62,7 +62,7 @@ typedef __float128 PetscReal;
 /*
     Complex number definitions
  */
-#if defined(PETSC_CLANGUAGE_CXX) && defined(PETSC_HAVE_CXX_COMPLEX)
+#if defined(PETSC_CLANGUAGE_CXX) && defined(PETSC_HAVE_CXX_COMPLEX) && !defined(PETSC_USE_REAL___FLOAT128)
 #if defined(PETSC_USE_COMPLEX) || defined(PETSC_DESIRE_COMPLEX)
 #define PETSC_HAVE_COMPLEX 1
 /* C++ support of complex number */
@@ -92,7 +92,7 @@ typedef complexlib::complex<double> PetscComplex;
 #elif defined(PETSC_USE_REAL___FLOAT128)
 typedef complexlib::complex<__float128> PetscComplex; /* Notstandard and not expected to work, use __complex128 */
 #endif  /* PETSC_USE_REAL_ */
-#endif  /* PETSC_USE_COMPLEX && PETSC_DESIRE_COMPLEX */
+#endif  /* PETSC_USE_COMPLEX || PETSC_DESIRE_COMPLEX */
 
 #elif defined(PETSC_CLANGUAGE_C) && defined(PETSC_HAVE_C99_COMPLEX)
 /* Use C99 _Complex for the type. Do not include complex.h by default to define "complex" because of symbol conflicts in Hypre. */
@@ -410,6 +410,8 @@ M*/
 
 PETSC_EXTERN PetscErrorCode PetscIsInfOrNanScalar(PetscScalar);
 PETSC_EXTERN PetscErrorCode PetscIsInfOrNanReal(PetscReal);
+PETSC_EXTERN PetscBool PetscIsNormalScalar(PetscScalar);
+PETSC_EXTERN PetscBool PetscIsNormalReal(PetscReal);
 
 /* ----------------------------------------------------------------------------*/
 #define PassiveReal   PetscReal
@@ -443,6 +445,24 @@ PETSC_STATIC_INLINE PetscInt PetscPowInt(PetscInt base,PetscInt power) {
 }
 PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power) {
   PetscReal result = 1;
+  if (power < 0) {
+    power = -power;
+    if (base != 0.0) base  = 1./base;
+  }
+  while (power) {
+    if (power & 1) result *= base;
+    power >>= 1;
+    base *= base;
+  }
+  return result;
+}
+
+PETSC_STATIC_INLINE PetscScalar PetscPowScalarInt(PetscScalar base,PetscInt power) {
+  PetscScalar result = 1;
+  if (power < 0) {
+    power = -power;
+    if (base != 0.0) base  = 1./base;
+  }
   while (power) {
     if (power & 1) result *= base;
     power >>= 1;

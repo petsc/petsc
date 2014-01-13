@@ -80,6 +80,7 @@
       PetscErrorCode ierr
       PetscInt  time_steps_max,i1,steps
       PetscReal dt,time_total_max,ftime,norm
+      PetscReal zero
 
 !  Note: Any user-defined Fortran routines (such as RHSFunction)
 !  MUST be declared as external.
@@ -174,7 +175,8 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       dt = h/two_d0
-      call TSSetInitialTimeStep(ts,0.d0,dt,ierr)
+      zero = 0.0
+      call TSSetInitialTimeStep(ts,zero,dt,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Customize timestepping solver:

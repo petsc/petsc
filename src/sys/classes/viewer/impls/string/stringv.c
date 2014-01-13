@@ -146,7 +146,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)
   v->ops->flush            = 0;
   v->ops->getsingleton     = PetscViewerGetSingleton_String;
   v->ops->restoresingleton = PetscViewerRestoreSingleton_String;
-  ierr                     = PetscNewLog(v,PetscViewer_String,&vstr);CHKERRQ(ierr);
+  ierr                     = PetscNewLog(v,&vstr);CHKERRQ(ierr);
   v->data                  = (void*)vstr;
   vstr->string             = 0;
   PetscFunctionReturn(0);
