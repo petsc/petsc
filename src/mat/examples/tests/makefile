@@ -941,6 +941,21 @@ runex18_2:
 	   if (${DIFF} output/ex18_2.out ex18_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex18_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex18_2.tmp
+runex18_3:
+	-@${MPIEXEC}  -n 1 ./ex18 -mat_type baij > ex18_3.tmp 2>&1;   \
+	   if (${DIFF} output/ex18_3.out ex18_3.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex18_3, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex18_3.tmp
+runex18_4:
+	-@${MPIEXEC}  -n 2 ./ex18 -mat_type baij > ex18_4.tmp 2>&1;   \
+	   if (${DIFF} output/ex18_4.out ex18_4.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex18_4, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex18_4.tmp
+runex18_5:
+	-@${MPIEXEC}  -n 7 ./ex18 -mat_type baij > ex18_5.tmp 2>&1;   \
+	   if (${DIFF} output/ex18_5.out ex18_5.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex18_5, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex18_5.tmp
 runex19:
 	-@${MPIEXEC}  -n 4 ./ex19 > ex19_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
