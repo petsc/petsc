@@ -53,6 +53,7 @@ static const char help[] = "Steady-state 2D subduction flow, pressure and temper
   ------------------------------------------------------------------------F*/
 
 #include <petscsnes.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #define VISC_CONST   0

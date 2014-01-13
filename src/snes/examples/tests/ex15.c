@@ -1,4 +1,5 @@
 #include <petscsnes.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <../src/snes/impls/vi/viimpl.h>
 

@@ -35,6 +35,7 @@ static char help[] = "Demonstrates Pattern Formation with Reaction-Diffusion Equ
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 

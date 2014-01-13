@@ -1,6 +1,7 @@
 
 static char help[] = "Demonstrates using 3 DMDA's to manage a slightly non-trivial grid";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdraw.h>
 

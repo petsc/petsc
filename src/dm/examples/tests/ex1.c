@@ -1,6 +1,7 @@
 
 static char help[] = "Tests various DM routines.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__

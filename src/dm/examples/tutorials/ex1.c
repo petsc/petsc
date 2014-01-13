@@ -30,6 +30,7 @@ Use the options
      -da_processors_y <MY> number of processors in x direction
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__

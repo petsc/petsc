@@ -42,6 +42,7 @@ timestepping.  Runtime options include:\n\
    structures to manage the parallel grid.
 */
 #include <petscts.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdraw.h>
 

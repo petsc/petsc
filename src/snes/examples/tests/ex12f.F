@@ -27,6 +27,7 @@
 
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
+#include <petscdm.h>
 #include <finclude/petscdmda.h>
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
@@ -140,6 +141,7 @@
       PetscScalar      h,d,vf2(1),vxx(1),vff(1)
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
+#include <petscdm.h>
 #include <finclude/petscdmda.h>
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
@@ -229,6 +231,7 @@
       implicit none
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
+#include <petscdm.h>
 #include <finclude/petscdmda.h>
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>

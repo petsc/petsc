@@ -19,6 +19,7 @@ with boundary conditions
 static char help[] = "Solves 3D Laplacian using multigrid.\n\n";
 
 #include <petscksp.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,MatStructure*,void*);

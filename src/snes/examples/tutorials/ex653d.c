@@ -16,6 +16,7 @@ Runtime options include:\n\
 /* cv, eta two variables, i.e. one Cahn-Hillard and one Allen-Cahn with constant mobility */
 
 #include "petscsnes.h"
+#include <petscdm.h>
 #include "petscdmda.h"
 
 typedef struct {

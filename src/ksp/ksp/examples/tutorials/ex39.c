@@ -7,6 +7,7 @@ static char help[] = "Lattice Gauge 2D model.\n"
 
 #include <petscksp.h>
 #include <petscpcasa.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 PetscErrorCode computeMaxEigVal(Mat A, PetscInt its, PetscScalar *eig);

@@ -1,5 +1,6 @@
 static char help[] = "Tests DMDA ghost coordinates\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__

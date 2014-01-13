@@ -13,6 +13,7 @@ static char help[] = "Time-Dependent Allan-Cahn example in 2D with Varying Coeff
    Processors: n
 T*/
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
 #include <petscts.h>

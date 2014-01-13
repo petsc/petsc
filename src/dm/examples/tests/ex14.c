@@ -5,6 +5,7 @@ static char help[] = "Tests saving DMDA vectors to files.\n\n";
     ex13.c reads in the DMDA and vector written by this program.
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__

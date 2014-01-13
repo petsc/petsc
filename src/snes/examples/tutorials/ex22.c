@@ -1,6 +1,7 @@
 
 static const char help[] = "Solves PDE optimization problem using full-space method, interlaces state and adjoint variables.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdmredundant.h>
 #include <petscdmcomposite.h>

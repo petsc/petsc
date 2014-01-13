@@ -1,5 +1,6 @@
 static char help[] = "Tests MAIJ matrix for large DOF\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__

@@ -34,6 +34,7 @@ T*/
 */
 #include <petscsys.h>
 #include <petscbag.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
 

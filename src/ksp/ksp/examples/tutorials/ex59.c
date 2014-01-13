@@ -15,6 +15,7 @@ In the latter case, in order to avoid runtime errors during factorization, pleas
 
 #include <petscksp.h>
 #include <petscpc.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscblaslapack.h>
 #define DEBUG 0

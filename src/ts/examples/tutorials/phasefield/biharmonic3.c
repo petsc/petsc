@@ -24,6 +24,7 @@ Evolve the Cahn-Hillard equations:
 
 
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 #include <petscdraw.h>

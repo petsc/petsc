@@ -21,6 +21,7 @@ static char help[] = "Solves C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirt
 
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 

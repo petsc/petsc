@@ -1,6 +1,7 @@
 static char help[] = "Check that a particular FIAT-style header gives accurate function representations\n\n";
 
 #include <petscdmplex.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscfe.h>
 

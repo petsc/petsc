@@ -48,6 +48,7 @@ Evolve the Cahn-Hillard equations: logarithmic +  double obstacle (never shrinks
 
 
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 #include <petscdraw.h>

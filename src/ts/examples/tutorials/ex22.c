@@ -18,6 +18,7 @@ static const char help[] = "Time-dependent advection-reaction PDE in 1d, demonst
    -ts_type rosw - use Rosenbrock-W method (linearly implicit IMEX, amortizes assembly and preconditioner setup)
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 

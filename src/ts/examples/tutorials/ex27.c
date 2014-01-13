@@ -38,6 +38,7 @@ The following options are available:
 
  */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
 #include <petscts.h>

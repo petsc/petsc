@@ -21,6 +21,7 @@ static const char help[] = "Call PetscInitialize multiple times.\n";
    v(0,t) = v(1,t) = 3
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 

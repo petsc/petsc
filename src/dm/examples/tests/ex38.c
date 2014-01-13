@@ -1,6 +1,7 @@
 
 static char help[] = "Tests DMGlobalToLocal() for 3d DA with stencil width of 2.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__

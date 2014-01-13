@@ -68,6 +68,7 @@ T*/
      petscksp.h   - linear solvers         petscsnes.h - nonlinear solvers
 */
 #include <petscts.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 /*

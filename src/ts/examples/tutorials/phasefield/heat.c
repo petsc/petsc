@@ -25,6 +25,7 @@ The option -square_initial indicates it should use a square wave initial conditi
 to generate binaryoutput then do mv binaryoutput InitialSolution.heat to obtain the initial solution file
 
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 #include <petscdraw.h>

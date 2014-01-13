@@ -10,6 +10,7 @@ static char help[] = ".\n";
       ex9.c is the 2d version of this code
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 

@@ -36,6 +36,7 @@ With finite difference evaluation of Jacobian using coloring:
 
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
 

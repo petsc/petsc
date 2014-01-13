@@ -12,6 +12,7 @@ which can be reduced to a first order system,
   \theta_t = -(v + 1) (\theta + (1 + \epsilon) \ln(v+1))
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 

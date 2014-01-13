@@ -1,5 +1,6 @@
 static const char help[] = "Test DMDAGetOwnershipRanges()\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__

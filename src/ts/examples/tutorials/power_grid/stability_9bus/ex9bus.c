@@ -39,6 +39,7 @@ in current balance form using rectangular coordiantes.\n\n";
      petscksp.h   - linear solvers
 */
 #include <petscts.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdmcomposite.h>
 

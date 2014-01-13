@@ -19,6 +19,7 @@ T*/
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscksp.h>
 

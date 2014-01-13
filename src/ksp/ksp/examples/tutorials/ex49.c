@@ -64,6 +64,7 @@ Options: \n\
 /* Contributed by Dave May */
 
 #include <petscksp.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 static PetscErrorCode DMDABCApplyCompression(DM,Mat,Vec);

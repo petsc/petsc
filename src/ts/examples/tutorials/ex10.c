@@ -12,6 +12,7 @@ static const char help[] = "1D nonequilibrium radiation diffusion with Saha ioni
 */
 
 #include <petscts.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 typedef enum {BC_DIRICHLET,BC_NEUMANN,BC_ROBIN} BCType;

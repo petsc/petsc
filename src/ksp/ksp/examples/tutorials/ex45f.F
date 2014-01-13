@@ -7,6 +7,7 @@
 #include <finclude/petscpc.h>
 #include <finclude/petscksp.h>
 #include <finclude/petscdm.h>
+#include <petscdm.h>
 #include <finclude/petscdmda.h>
 
        PetscInt is,js,iw,jw

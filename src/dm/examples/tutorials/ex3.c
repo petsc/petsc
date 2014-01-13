@@ -1,6 +1,7 @@
 
 static char help[] = "Tests DMCreateInterpolation() for nonuniform DMDA coordinates.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__

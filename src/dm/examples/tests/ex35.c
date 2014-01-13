@@ -5,6 +5,7 @@ static char help[] = "MatLoad test for loading matrices that are created by DMCr
                       natural ordering and then permute it back to the application ordering.This\n\
                       example is used for testing the subroutine MatLoad_MPI_DA\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__

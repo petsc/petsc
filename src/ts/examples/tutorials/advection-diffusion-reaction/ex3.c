@@ -27,6 +27,7 @@ static char help[] ="Model Equations for Advection-Diffusion\n";
 */
 
 #include <petscts.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 /*

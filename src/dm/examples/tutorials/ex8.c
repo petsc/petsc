@@ -1,6 +1,7 @@
 
 static char help[] = "Tests imbedding DMComposites inside DMComposites.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdmcomposite.h>
 

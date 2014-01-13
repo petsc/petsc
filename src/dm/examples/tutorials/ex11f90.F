@@ -15,8 +15,10 @@
 #if !defined(PETSC_USE_FORTRAN_MODULES) && !defined(PETSC_USE_FORTRAN_DATATYPES)
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
+#include <petscdm.h>
 #include <finclude/petscdmda.h>
 #include <finclude/petscvec.h90>
+#include <petscdm.h>
 #include <finclude/petscdmda.h90>
 #include <finclude/petscviewer.h>
 #endif

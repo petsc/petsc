@@ -9,6 +9,7 @@ TODO for Mantle Convection:
   - Visualize output
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
 

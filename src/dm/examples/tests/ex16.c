@@ -2,6 +2,7 @@
 static char help[] = "Tests DMComposite routines.\n\n";
 
 #include <petscdmredundant.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdmcomposite.h>
 #include <petscpf.h>

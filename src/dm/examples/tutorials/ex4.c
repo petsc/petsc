@@ -12,6 +12,7 @@ T*/
 */
 
 #include <petscpf.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__

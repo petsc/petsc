@@ -9,6 +9,7 @@ T*/
 
 
 #include <petscsnes.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 /*

@@ -1,6 +1,7 @@
 
 static char help[] = "Checks the functionality of DMGetInterpolation() on deformed grids.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 typedef struct _n_CCmplx CCmplx;

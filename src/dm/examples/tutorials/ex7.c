@@ -6,6 +6,7 @@ static char help[] = "Demonstrates using PetscViewerSetFormat(viewer,PETSC_FORMA
    Processors: n
 T*/
 #include <petscsys.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscbag.h>
 

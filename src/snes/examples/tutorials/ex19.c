@@ -68,6 +68,7 @@ T*/
 #import <PETSc/petscdmda.h>
 #else
 #include <petscsnes.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #endif
 

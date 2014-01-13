@@ -10,6 +10,7 @@ all boundaries are free-slip, i.e. zero normal flow and zero tangential stress \
 /* Contributed by Dave May */
 
 #include "petscksp.h"
+#include <petscdm.h>
 #include "petscdmda.h"
 
 #define PROFILE_TIMING

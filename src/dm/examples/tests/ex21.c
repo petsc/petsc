@@ -2,6 +2,7 @@ static const char help[] = "Test DMCreateInjection() for mapping coordinates in 
 
 #include <petscvec.h>
 #include <petscmat.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__

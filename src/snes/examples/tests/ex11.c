@@ -33,6 +33,7 @@ options are:\n\
 */
 
 #include <petscsnes.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 /* User-defined application contexts */

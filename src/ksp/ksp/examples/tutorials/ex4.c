@@ -1,5 +1,6 @@
 static char help[] = "Test MatSetValuesBatch: setting batches of elements using the GPU.\n\
 This works with SeqAIJCUSP and MPIAIJCUSP matrices.\n\n";
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscksp.h>
 

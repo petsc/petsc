@@ -21,6 +21,7 @@ static char help[] = "Chemo-taxis Problems from Mathematical Biology.\n";
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 

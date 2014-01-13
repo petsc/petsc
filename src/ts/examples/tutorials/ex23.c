@@ -12,6 +12,7 @@ Runtime options include:\n\
  */
 
 #include "petscts.h"
+#include <petscdm.h>
 #include "petscdmda.h"
 
 typedef struct {

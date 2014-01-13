@@ -1,4 +1,5 @@
 #include <petscsnes.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 static const char help[] = "Parallel version of the minimum surface area problem in 2D using DMDA.\n\

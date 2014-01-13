@@ -3,6 +3,7 @@
 
 static char help[] = "Solves the one dimensional heat equation.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdraw.h>
 

@@ -47,6 +47,7 @@ T*/
   ------------------------------------------------------------------------F*/
 
 #include <petscsnes.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #define QP0 0.2113248654051871

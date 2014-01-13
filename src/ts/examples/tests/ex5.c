@@ -66,6 +66,7 @@ static char help[] = "Nonlinear, time-dependent. Developed from radiative_surfac
 */
 
 #include <petscts.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 /* stefan-boltzmann constant */

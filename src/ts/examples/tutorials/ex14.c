@@ -44,6 +44,7 @@ use compatible domain decomposition relative to the 3D DMDAs.
 */
 
 #include <petscts.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdmcomposite.h>
 #include <ctype.h>              /* toupper() */

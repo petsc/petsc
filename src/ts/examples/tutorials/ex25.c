@@ -14,6 +14,7 @@ static const char help[] = "Time-dependent Brusselator reaction-diffusion PDE in
    v(0,t) = v(1,t) = 3
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 

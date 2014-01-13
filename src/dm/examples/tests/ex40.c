@@ -1,6 +1,7 @@
 
 static char help[] = "Tests mirror boundary conditions in 2-d.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__

@@ -74,6 +74,7 @@
 
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
+#include <petscdm.h>
 #include <finclude/petscdmda.h>
 #include <finclude/petscis.h>
 #include <finclude/petscmat.h>
@@ -162,6 +163,7 @@
 !
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
+#include <petscdm.h>
 #include <finclude/petscdmda.h>
 #include <finclude/petscis.h>
 #include <finclude/petscmat.h>
@@ -169,6 +171,7 @@
 #include <finclude/petscpc.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscvec.h90>
+#include <petscdm.h>
 #include <finclude/petscdmda.h90>
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -372,6 +375,7 @@
 #include <finclude/petscvec.h90>
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
+#include <petscdm.h>
 #include <finclude/petscdmda.h>
 #include <finclude/petscis.h>
 #include <finclude/petscmat.h>
@@ -439,6 +443,7 @@
 
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
+#include <petscdm.h>
 #include <finclude/petscdmda.h>
 #include <finclude/petscis.h>
 #include <finclude/petscmat.h>
@@ -595,6 +600,7 @@
 
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
+#include <petscdm.h>
 #include <finclude/petscdmda.h>
 #include <finclude/petscis.h>
 #include <finclude/petscmat.h>
@@ -722,6 +728,7 @@
 
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
+#include <petscdm.h>
 #include <finclude/petscdmda.h>
 #include <finclude/petscis.h>
 #include <finclude/petscmat.h>

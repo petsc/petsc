@@ -47,6 +47,7 @@ T*/
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
 #include <petscmatlab.h>
