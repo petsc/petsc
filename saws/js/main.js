@@ -78,7 +78,7 @@ DisplayDirectory = function(sub,divEntry)
             window.setTimeout(GetAndDisplayDirectory,1000,null,divEntry);
         //})
     }
-   
+
     if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Preconditioner (PC) options") {
         var SAWs_pcVal = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].data[0];
         var SAWs_alternatives = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].alternatives;
@@ -89,7 +89,8 @@ DisplayDirectory = function(sub,divEntry)
         if (SAWs_prefix == "(null)") SAWs_prefix = ""; //"(null)" fails populatePcList(), don't know why???
         //create <select> "pcList-1"+SAWs_prefix+" when it is not defined ???
         //$("#pcList-1"+SAWs_prefix).remove();
-        if (typeof $("#pcList-1"+SAWs_prefix+"text").attr("title") == "undefined") {
+
+        if (typeof $("#pcList-1"+SAWs_prefix+"text").attr("title") == "undefined" && SAWs_prefix.indexOf("est")==-1) {//it doesn't exist already and doesn't contain 'est'
             $("#o-1").append("<br><b style='margin-left:20px;' title=\"Preconditioner\" id=\"pcList-1"+SAWs_prefix+"text\">-"+SAWs_prefix+"pc_type &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList-1"+SAWs_prefix+"\"></select>");
             populatePcList("pcList-1"+SAWs_prefix,SAWs_alternatives,SAWs_pcVal);
         }
@@ -120,7 +121,7 @@ DisplayDirectory = function(sub,divEntry)
         
         if (SAWs_prefix == "(null)") SAWs_prefix = "";
         //$("#kspList-1"+SAWs_prefix).remove();
-        if (typeof $("#kspList-1"+SAWs_prefix+"text").attr("title") == "undefined") {
+        if (typeof $("#kspList-1"+SAWs_prefix+"text").attr("title") == "undefined" && SAWs_prefix.indexOf("est")==-1) {//it doesn't exist already and doesn't contain 'est'
             $("#o-1").append("<br><b style='margin-left:20px;' title=\"Krylov method\" id=\"kspList-1"+SAWs_prefix+"text\">-"+SAWs_prefix+"ksp_type &nbsp;</b><select class=\"kspLists\" id=\"kspList-1"+SAWs_prefix+"\"></select>");//giving an html element a title creates a tooltip
             populateKspList("kspList-1"+SAWs_prefix,SAWs_alternatives,SAWs_kspVal);
         }
