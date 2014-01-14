@@ -7,6 +7,8 @@ Sorted = ["PetscBarrier",
 
          "TSSetUp",
          "TSStep",
+         "TSFunctionEval",
+         "TSJacobianEval",
 
          "SNESSolve",
          "SNESFunctionEval",
@@ -245,50 +247,87 @@ def ComputeSums(Stages):
 
   for stages in Stages:
     for events in Stages[stages]:
-      if not sumStages[stages][events]["count"] or events.startswith('Thread'):
+      if not sumStages[stages][events]["count"] or events.startswith('Thread') or events == 'TSFunctionEval' or events == 'TSJacobianEval':
         sumStages[stages].pop(events,None)
   return sumStages
 
 def ObjectsCompare(a,b):
   return Sorted.index(a) - Sorted.index(b)
 
-def PrintPercentTable(localTimes,localFlops,localMessages,localMessageLens,localReductions,Stages):
+def PrintPercentTable(localTimes,localFlops,localMessages,localMessageLens,localReductions,Stages,Latex = False):
   ''' Prints a simple table that displays the percent of time, flops, etc for each event in each stage'''
-  if len(localTimes) > 1:
-     print "                                                  Percent of"
-     print "Event                       Count     Time  Flops Messages Reductions     Flop rate"
-     print "============================================================================"
+  if Latex:
+    print "\documentclass{article}"
+    print "\\begin{document}"
+    print "\\begin{table}[!htbp]"
+    print "\centering"
+    if len(localTimes) > 1:
+      print "\\begin{tabular}{lcccccc}"
+      print " &  & \multicolumn{4}{c}{--------------- Percent of -------------} &  \\\\"
+      print "Event & Count & Time & Flops & Messages & Reductions & Flop rate \\\\"
+      print "\hline"
   else:
-     print "                                      Percent of"
-     print "Event                       Count     Time  Flops      Flop rate"
-     print "========================================================="
+    if len(localTimes) > 1:
+       print "                                       ---------  Percent of  ------"
+       print "Event                       Count     Time  Flops Messages Reductions     Flop rate"
+       print "============================================================================"
+    else:
+       print "                                      Percent of"
+       print "Event                       Count     Time  Flops      Flop rate"
+       print "========================================================="
 
   time,flops,numMessages,numMessageLen,numReductions  = ComputeTotals(localTimes,localFlops,localMessages,localMessageLens,localReductions)
   if not numMessages: numMessages = 1
   if not numReductions: numReductions = 1
   sumStages = ComputeSums(Stages)
   for stage in sumStages:
-    if len(sumStages) > 1: print("Stage: "+stage)
+    if len(sumStages) > 1: 
+      if Latex:
+        pass
+      else:
+        print("Stage: "+stage)
     L = sumStages[stage].keys()
     L.sort(cmp=ObjectsCompare)
+    seperatoradded = False
     for i in xrange(len(L)):
       event  = L[i]
-      ename  = event
-      if event.startswith("SNESSolve"):        ename = "  "+event
-      elif event.startswith("SNES"):           ename = "    "+event
-      elif event.startswith("KSPGMRESOrthog"): ename = "      "+event
-      elif event.startswith("KSP"):            ename = "    "+event
-      elif event.startswith("PC"):             ename = "      "+event
-      elif event.startswith("Mat"):            ename = "        "+event
-      elif event.startswith("Vec"):            ename = "          "+event
+      space  = 0
+      if event.startswith("SNESSolve"):        space = 1
+      elif event.startswith("SNES"):           space = 2
+      elif event.startswith("KSPGMRESOrthog"): space = 3
+      elif event.startswith("KSP"):            space = 2
+      elif event.startswith("PC"):             space = 3
+      elif event.startswith("MatMult"):        space = 3
+      elif event.startswith("Mat"):            space = 4
+      elif event.startswith("Vec"):            space = 5
+      if Sorted.index(event) > Sorted.index("PCGAMGPOpt_AGG"):
+        space = 2
+        if not seperatoradded: 
+          if Latex:
+            print "--Overlapping events---\\\\"
+          else:
+            print "--Overlapping events---"
+          seperatoradded = True
+
       if len(localTimes) > 1:
         values = [100*sumStages[stage][event]["time"]/time,100*sumStages[stage][event]["flops"]/flops,100*sumStages[stage][event]["numMessages"]/numMessages,100*sumStages[stage][event]["numReductions"]/numReductions]
         if max(values) > .5:
-          print ename.ljust(26),'%6.0f' % sumStages[stage][event]["count"],"   ",'%5.0f' % values[0],'%5.0f' % values[1],'%5.0f' % values[2],'%5.0f' % values[3],"        ",'%8.0f' % ((sumStages[stage][event]["flops"]/sumStages[stage][event]["time"])/1000000.0)
+          if Latex:
+            print '\\hspace{%1dem}' % space,event,"&",'%6.0f' % sumStages[stage][event]["count"],"&",'%5.0f' % values[0],"&",'%5.0f' % values[1],"&",'%5.0f' % values[2],"&",'%5.0f' % values[3],"&",'%8.0f' % ((sumStages[stage][event]["flops"]/sumStages[stage][event]["time"])/1000000.0),"\\\\"
+          else:
+            print "            "[0:space],event.ljust(26-space),'%6.0f' % sumStages[stage][event]["count"],"   ",'%5.0f' % values[0],'%5.0f' % values[1],'%5.0f' % values[2],'%5.0f' % values[3],"        ",'%8.0f' % ((sumStages[stage][event]["flops"]/sumStages[stage][event]["time"])/1000000.0)
       else:
         values = [100*sumStages[stage][event]["time"]/time,100*sumStages[stage][event]["flops"]/flops]
         if max(values) > .5:
-          print ename.ljust(26),'%6.0f' % sumStages[stage][event]["count"],"   ",'%5.0f' % values[0],'%5.0f' % values[1],"   ",'%8.0f' % ((sumStages[stage][event]["flops"]/sumStages[stage][event]["time"])/1000000.0)
+          if Latex:
+            print '\\hspace{%1dem}' % space,event,"&",'%6.0f' % sumStages[stage][event]["count"],"&",'%5.0f' % values[0],"&",'%5.0f' % values[1],"&",'%8.0f' % ((sumStages[stage][event]["flops"]/sumStages[stage][event]["time"])/1000000.0),"\\\\"
+          else:
+            print "  ",event.ljust(24),'%6.0f' % sumStages[stage][event]["count"],"   ",'%5.0f' % values[0],'%5.0f' % values[1],"   ",'%8.0f' % ((sumStages[stage][event]["flops"]/sumStages[stage][event]["time"])/1000000.0)
+
+  if Latex:
+    print "\end{tabular}"
+    print "\end{table}"
+    print "\end{document}"
 
 if __name__ == '__main__':
   import sys
@@ -297,5 +336,7 @@ if __name__ == '__main__':
   datafile = sys.argv[1]
   if datafile.endswith('.py'): datafile = datafile[0:-3]
   exec('import '+datafile+' as data')
+  latex = False
+  if len(sys.argv) > 2: latex = True
 
-  PrintPercentTable(data.LocalTimes,data.LocalFlops,data.LocalMessages,data.LocalMessageLens,data.LocalReductions,data.Stages)
+  PrintPercentTable(data.LocalTimes,data.LocalFlops,data.LocalMessages,data.LocalMessageLens,data.LocalReductions,data.Stages,Latex = latex)
