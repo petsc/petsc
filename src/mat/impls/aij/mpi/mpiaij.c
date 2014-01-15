@@ -816,7 +816,7 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
   Mat_MPIAIJ        *l = (Mat_MPIAIJ*)A->data;
   PetscErrorCode    ierr;
   PetscMPIInt       size = l->size,n = A->rmap->n,lastidx = -1;
-  PetscInt          i,j,r,m,p = 0,len;
+  PetscInt          i,j,r,m,p = 0,len = 0;
   PetscInt          *lrows,*owners = A->rmap->range;
   PetscSFNode       *rrows;
   PetscSF           sf;
