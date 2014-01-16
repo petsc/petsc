@@ -28,8 +28,8 @@ PetscErrorCode DMPlexCreateClosureIndex(DM dm, PetscSection section)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 2);
   if (!section) {ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);}
+  PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 2);
   ierr = PetscSectionGetChart(section, &sStart, &sEnd);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) section), &closureSection);CHKERRQ(ierr);
