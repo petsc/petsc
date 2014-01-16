@@ -94,6 +94,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
     }
   }
   aij->B->cmap->n = aij->B->cmap->N = ec;
+  aij->B->cmap->bs = 1;
 
   ierr = PetscLayoutSetUp((aij->B->cmap));CHKERRQ(ierr);
   ierr = PetscFree(indices);CHKERRQ(ierr);
