@@ -24,7 +24,7 @@ var matrixPicFlag = 0;
 //preRecursionCounter is used to remember the previous counter; 
 //recursionCounter is either the active counter or count the next matrix node to be moved to
 var preRecursionCounter = -1;
-var recursionCounter    = -1;
+ var recursionCounter    = -1;
 
 //counter of SAWs recursions for '-pc_type'
 var recursionCounterSAWs = 0;
@@ -33,6 +33,9 @@ var sawsInfo = [];
 
 //Counter for creating the new divs for the tree
 var matDivCounter = 0;
+
+var highestMg=0;//highest mg level encountered so far
+var mgLevelLocation=-1;//where to put the mg level data once the highest level is determined. -1 means not yet recorded
 
 //Call the "Tex" function which populates an array with TeX to be used instead of images
 //var texMatrices = tex(maxMatricies)
@@ -96,6 +99,20 @@ DisplayDirectory = function(sub,divEntry)
         }
         //alert("Preconditioner (PC) options, SAWs_pcVal "+SAWs_pcVal+", SAWs_prefix "+SAWs_prefix);
 
+        if(SAWs_pcVal == 'mg' && mgLevelLocation==-1)
+            mgLevelLocation=recursionCounterSAWs;
+
+        var SAWs_mgLevels="";
+        if(SAWs_prefix.indexOf("levels")!=-1) {
+            SAWs_mgLevels=SAWs_prefix.substring(10,12);//position 10 and 11. mg levels might be 2 digits long (e.g. greater than 9)
+
+            if(SAWs_mgLevels.indexOf('_')>0)
+                SAWs_mgLevels=SAWs_mgLevels.charAt(0);//mg levels is only 1 digit long. remove the extra '_'
+
+            if(SAWs_mgLevels > highestMg)
+                highestMg=SAWs_mgLevels;
+        }
+
         var SAWs_bjacobi_blocks="";
         if (SAWs_pcVal == 'bjacobi') {
             
@@ -111,6 +128,10 @@ DisplayDirectory = function(sub,divEntry)
             prefix: SAWs_prefix,
             bjacobi_blocks: SAWs_bjacobi_blocks
         }
+        
+        if(mgLevelLocation!=-1)
+            sawsInfo[mgLevelLocation].mg_levels=parseInt(highestMg)+1;//need to add 1
+
         recursionCounterSAWs++;
         //alert("pc: recursionCounterSAWs "+recursionCounterSAWs);
 

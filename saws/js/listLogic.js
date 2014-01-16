@@ -66,8 +66,9 @@ $(document).on('change', '.pcLists', function(){
         // mglevels determines how many ksp/pc at this solve level  
         $("#"+newDiv).append("<br><b>MG Levels </b><input type='text' id=\'mglevels"+parent+myendtag+"\' maxlength='4' class='mgLevels'>");
         mgLevels = 2; //default
-        if (preRecursionCounter == -1) 
-            mgLevels = 3; //RecursionCounterSAWs???; //get mgLevels from SAWs 
+        if (preRecursionCounter == -1) {
+            mgLevels=sawsInfo[currentRecursionCounterSAWs-1].mg_levels;//need to minus one because currentRecCounter starts at 1 while array starts at 0
+        }
         $("#mglevels"+parent+myendtag).val(mgLevels); // set default mgLevels -- when reset mglevels to 4, gives order 3, 2, 1 below???
 
         // Coarse Grid Solver (Level 0)
