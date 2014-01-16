@@ -267,7 +267,7 @@ int main(int argc,char **args)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-print_error",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %G\n", e);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %g\n",(double) e);CHKERRQ(ierr);
   }
 
   /*

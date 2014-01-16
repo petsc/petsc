@@ -1565,7 +1565,7 @@ static PetscErrorCode THITSMonitor(TS ts,PetscInt step,PetscReal t,Vec X,void *c
   char           filename3[PETSC_MAX_PATH_LEN],filename2[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBeginUser;
-  ierr = PetscPrintf(PetscObjectComm((PetscObject)ts),"%3D: t=%G\n",step,t);CHKERRQ(ierr);
+  ierr = PetscPrintf(PetscObjectComm((PetscObject)ts),"%3D: t=%g\n",step,(double)t);CHKERRQ(ierr);
   if (thi->monitor_interval && step % thi->monitor_interval) PetscFunctionReturn(0);
   ierr = TSGetDM(ts,&pack);CHKERRQ(ierr);
   ierr = PetscSNPrintf(filename3,sizeof(filename3),"%s-3d-%03d.vts",thi->monitor_basename,step);CHKERRQ(ierr);
@@ -1672,7 +1672,7 @@ int main(int argc,char *argv[])
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Steps %D  final time %G\n",steps,ftime);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Steps %D  final time %g\n",steps,(double)ftime);CHKERRQ(ierr);
 
   if (0) {ierr = THISolveStatistics(thi,ts,0,"Full");CHKERRQ(ierr);}
 

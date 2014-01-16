@@ -234,7 +234,7 @@ int main(int argc,char **args)
   ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
   r1  -= r2;
   if (r1<-tol || r1>tol) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatDiagonalScale() or MatGetDiagonal(), r1=%G \n",rank,r1);CHKERRQ(ierr);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatDiagonalScale() or MatGetDiagonal(), r1=%g \n",rank,(double)r1);CHKERRQ(ierr);
     ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
   }
 
@@ -274,7 +274,7 @@ int main(int argc,char **args)
     ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
     r1  -= r2;
     if (r1<-tol || r1>tol) {
-      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMult() or MatScale(), err=%G\n",rank,r1);CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMult() or MatScale(), err=%g\n",rank,(double)r1);CHKERRQ(ierr);
       ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
     }
   }
@@ -287,7 +287,7 @@ int main(int argc,char **args)
     ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
     r1  -= r2;
     if (r1<-tol || r1>tol) {
-      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMultAdd(), err=%G \n",rank,r1);CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMultAdd(), err=%g \n",rank,(double)r1);CHKERRQ(ierr);
       ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
     }
   }

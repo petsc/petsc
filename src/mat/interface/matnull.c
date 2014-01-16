@@ -419,7 +419,7 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
       } else {
         ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"Constants are unlikely null vector ");CHKERRQ(ierr);
       }
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"|| A * 1/N || = %G\n",nrm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"|| A * 1/N || = %g\n",(double)nrm);CHKERRQ(ierr);
     }
     if (!consistent && flg1) {ierr = VecView(r,viewer);CHKERRQ(ierr);}
     if (!consistent && flg2) {ierr = VecView(r,viewer);CHKERRQ(ierr);}
@@ -437,7 +437,7 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
         ierr       = PetscPrintf(PetscObjectComm((PetscObject)sp),"Null vector %D unlikely null vector ",j);CHKERRQ(ierr);
         consistent = PETSC_FALSE;
       }
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"|| A * v[%D] || = %G\n",j,nrm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"|| A * v[%D] || = %g\n",j,(double)nrm);CHKERRQ(ierr);
     }
     if (!consistent && flg1) {ierr = VecView(l,viewer);CHKERRQ(ierr);}
     if (!consistent && flg2) {ierr = VecView(l,viewer);CHKERRQ(ierr);}

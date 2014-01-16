@@ -297,7 +297,7 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
 
   epsdiag *= epsdiag_in / nrows;
 
-  ierr = PetscInfo2(NULL,"   Dimensioned Manteuffel shift %G Drop tolerance %G\n", PetscRealPart(epsdiag),droptol);CHKERRQ(ierr);
+  ierr = PetscInfo2(NULL,"   Dimensioned Manteuffel shift %g Drop tolerance %g\n", (double)PetscRealPart(epsdiag),(double)droptol);CHKERRQ(ierr);
 
   if (droptol<1e-10) droptol=1e-10;
 

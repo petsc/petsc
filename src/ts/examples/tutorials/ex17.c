@@ -137,7 +137,7 @@ int main(int argc,char **argv)
   ierr = VecMin(u,NULL,&vmin);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
   ierr = TSGetTime(ts,&ftime);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"timestep %D: time %G, solution norm %G, max %G, min %G\n",nsteps,ftime,norm,vmax,vmin);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"timestep %D: time %g, solution norm %g, max %g, min %g\n",nsteps,(double)ftime,(double)norm,(double)vmax,(double)vmin);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.

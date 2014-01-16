@@ -107,7 +107,7 @@ PetscErrorCode PCView_SOR(PC pc,PetscViewer viewer)
     else if (sym & SOR_LOCAL_FORWARD_SWEEP)                                  sortype = "local_forward";
     else if (sym & SOR_LOCAL_BACKWARD_SWEEP)                                 sortype = "local_backward";
     else                                                                     sortype = "unknown";
-    ierr = PetscViewerASCIIPrintf(viewer,"  SOR: type = %s, iterations = %D, local iterations = %D, omega = %G\n",sortype,jac->its,jac->lits,jac->omega);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  SOR: type = %s, iterations = %D, local iterations = %D, omega = %g\n",sortype,jac->its,jac->lits,(double)jac->omega);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

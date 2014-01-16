@@ -498,9 +498,9 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
         ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Iteratively computed eigenvalues\n");CHKERRQ(ierr);
         for (i=0; i<neig; i++) {
           if (c[i] >= 0.0) {
-            ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"%G + %Gi\n",r[i],c[i]);CHKERRQ(ierr);
+            ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"%g + %gi\n",(double)r[i],(double)c[i]);CHKERRQ(ierr);
           } else {
-            ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"%G - %Gi\n",r[i],-c[i]);CHKERRQ(ierr);
+            ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"%g - %gi\n",(double)r[i],-(double)c[i]);CHKERRQ(ierr);
           }
         }
       }
@@ -539,7 +539,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
       PetscReal emax,emin;
 
       ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin);CHKERRQ(ierr);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Iteratively computed extreme singular values: max %G min %G max/min %G\n",emax,emin,emax/emin);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Iteratively computed extreme singular values: max %g min %g max/min %g\n",(double)emax,(double)emin,(double)emax/emin);CHKERRQ(ierr);
     }
   }
 
@@ -558,9 +558,9 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
       ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Explicitly computed eigenvalues\n");CHKERRQ(ierr);
       for (i=0; i<n; i++) {
         if (c[i] >= 0.0) {
-          ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"%G + %Gi\n",r[i],c[i]);CHKERRQ(ierr);
+          ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"%g + %gi\n",(double)r[i],(double)c[i]);CHKERRQ(ierr);
         } else {
-          ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"%G - %Gi\n",r[i],-c[i]);CHKERRQ(ierr);
+          ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"%g - %gi\n",(double)r[i],-(double)c[i]);CHKERRQ(ierr);
         }
       }
     }
@@ -613,7 +613,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = VecAYPX(t, -1.0, ksp->vec_rhs);CHKERRQ(ierr);
     ierr = VecNorm(t,NORM_2,&norm);CHKERRQ(ierr);
     ierr = VecDestroy(&t);CHKERRQ(ierr);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"KSP final norm of residual %G\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"KSP final norm of residual %g\n",(double)norm);CHKERRQ(ierr);
   }
   ierr = VecViewFromOptions(ksp->vec_sol,((PetscObject)ksp)->prefix,"-ksp_view_solution");CHKERRQ(ierr);
 
@@ -945,15 +945,15 @@ PetscErrorCode  KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal abstol,PetscRe
   PetscValidLogicalCollectiveInt(ksp,maxits,5);
 
   if (rtol != PETSC_DEFAULT) {
-    if (rtol < 0.0 || 1.0 <= rtol) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Relative tolerance %G must be non-negative and less than 1.0",rtol);
+    if (rtol < 0.0 || 1.0 <= rtol) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Relative tolerance %g must be non-negative and less than 1.0",(double)rtol);
     ksp->rtol = rtol;
   }
   if (abstol != PETSC_DEFAULT) {
-    if (abstol < 0.0) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Absolute tolerance %G must be non-negative",abstol);
+    if (abstol < 0.0) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Absolute tolerance %g must be non-negative",(double)abstol);
     ksp->abstol = abstol;
   }
   if (dtol != PETSC_DEFAULT) {
-    if (dtol < 0.0) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Divergence tolerance %G must be larger than 1.0",dtol);
+    if (dtol < 0.0) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Divergence tolerance %g must be larger than 1.0",(double)dtol);
     ksp->divtol = dtol;
   }
   if (maxits != PETSC_DEFAULT) {

@@ -221,7 +221,7 @@ int main(int argc,char **argv)
      View timestepping solver info
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"avg. error (2 norm) = %G, avg. error (max norm) = %G\n",appctx.norm_2/steps,appctx.norm_max/steps);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"avg. error (2 norm) = %g, avg. error (max norm) = %g\n",(double)appctx.norm_2/steps,(double)appctx.norm_max/steps);CHKERRQ(ierr);
   ierr = TSView(ts,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -393,7 +393,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   ierr   = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Timestep %3D: step size = %-11g, time = %-11g, 2-norm error = %-11g, max norm error = %-11g\n",step,dt,time,norm_2,norm_max);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Timestep %3D: step size = %-11g, time = %-11g, 2-norm error = %-11g, max norm error = %-11g\n",step,(double)dt,(double)time,(double)norm_2,(double)norm_max);CHKERRQ(ierr);
 
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;

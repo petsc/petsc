@@ -252,8 +252,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   norm_2 = PetscSqrtReal(h)*norm_2;
   ierr   = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Timestep %D: time = %G, 2-norm error = %6.4f, max norm error = %6.4f\n",
-                     step,time,norm_2,norm_max);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Timestep %D: time = %g, 2-norm error = %6.4f, max norm error = %6.4f\n",step,(double)time,(double)norm_2,(double)norm_max);CHKERRQ(ierr);
 
   /*
      Print debugging information if desired
