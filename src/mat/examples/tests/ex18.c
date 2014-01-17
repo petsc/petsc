@@ -80,12 +80,16 @@ int main(int argc,char **args)
       ierr = PetscMalloc1(nboundary_nodes,&boundary_nodes);CHKERRQ(ierr);
       k = 0;
       for (i=size; i<m; i++,k++) {boundary_nodes[k] = n*i;};
-    } else {
+    } else if (rank < m) {
       nboundary_nodes = nlocal+1;
       ierr = PetscMalloc1(nboundary_nodes,&boundary_nodes);CHKERRQ(ierr);
       boundary_nodes[0] = rank*n;
       k = 1;
-    };
+    } else {
+      nboundary_nodes = nlocal;
+      ierr = PetscMalloc1(nboundary_nodes,&boundary_nodes);CHKERRQ(ierr);
+      k = 0;
+    }
     for (j=nlocal*rank; j<nlocal*(rank+1); j++,k++) {boundary_nodes[k] = j;};
   } else {
     /*version where boundary conditions are set by the node owners only */
