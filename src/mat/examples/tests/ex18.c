@@ -14,12 +14,15 @@ int main(int argc,char **args)
   PetscMPIInt    rank,size;
   PetscErrorCode ierr;
   PetscScalar    v,v0,v1,v2,a0=0.1,a,rhsval, *boundary_values;
-  PetscBool      upwind = PETSC_FALSE, nonlocalBC;
+  PetscBool      upwind = PETSC_FALSE, nonlocalBC = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n = nlocal*size;
+
+  ierr = PetscOptionsGetInt(NULL, "-bs", &bs, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL, "-nonlocal_bc", &nonlocalBC, NULL);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n*bs,m*n*bs);CHKERRQ(ierr);
