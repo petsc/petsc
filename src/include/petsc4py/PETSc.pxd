@@ -56,6 +56,9 @@ cdef extern from "petsc.h":
     struct _p_DM
     ctypedef _p_DM* PetscDM "DM"
 
+    struct _p_PetscSF
+    ctypedef _p_PetscSF* PetscSF "PetscSF"
+
 # --------------------------------------------------------------------
 
 ctypedef public api class Comm [
@@ -173,6 +176,12 @@ ctypedef public api class DMDA(DM) [
     object PyPetscDMDAObject,
     ]:
     pass
+
+ctypedef public api class SF(Object) [
+    type   PyPetscSF_Type,
+    object PyPetscSFObject,
+    ]:
+    cdef PetscSF sf
 
 # --------------------------------------------------------------------
 

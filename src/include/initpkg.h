@@ -36,6 +36,7 @@ static PetscErrorCode PetscInitializePackageAll(void)
   ierr = TSInitializePackage();CHKERRQ(ierr);
   ierr = AOInitializePackage();CHKERRQ(ierr);
   ierr = DMInitializePackage();CHKERRQ(ierr);
+  ierr = PetscSFInitializePackage();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef  __FUNCT__
