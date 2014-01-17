@@ -5562,10 +5562,12 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   Collective on DM
 
   Input Parameters:
-+ dm     - The underlying DM for the domain
-. dim    - The spatial dimension
-. prefix - The options prefix, or NULL
-- qorder - The quadrature order
++ dm        - The underlying DM for the domain
+. dim       - The spatial dimension
+. numComp   - The number of components
+. isSimplex - Flag for simplex reference cell, otherwise its a tensor product
+. prefix    - The options prefix, or NULL
+- qorder    - The quadrature order
 
   Output Parameter:
 . fem - The PetscFE object
@@ -5575,7 +5577,7 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
 .keywords: PetscFE, finite element
 .seealso: PetscFECreate(), PetscSpaceCreate(), PetscDualSpaceCreate()
 @*/
-PetscErrorCode PetscFECreateDefault(DM dm, const PetscInt dim, const char prefix[], const PetscInt qorder, PetscFE *fem)
+PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt numComp, PetscBool isSimplex, const char prefix[], PetscInt qorder, PetscFE *fem)
 {
   PetscQuadrature q;
   DM              K;
@@ -5595,7 +5597,7 @@ PetscErrorCode PetscFECreateDefault(DM dm, const PetscInt dim, const char prefix
   /* Create dual space */
   ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) dm), &Q);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject) Q, prefix);CHKERRQ(ierr);
-  ierr = PetscDualSpaceCreateReferenceCell(Q, dim, PETSC_TRUE, &K);CHKERRQ(ierr);
+  ierr = PetscDualSpaceCreateReferenceCell(Q, dim, isSimplex, &K);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
   ierr = DMDestroy(&K);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetOrder(Q, order);CHKERRQ(ierr);
@@ -5607,7 +5609,7 @@ PetscErrorCode PetscFECreateDefault(DM dm, const PetscInt dim, const char prefix
   ierr = PetscFESetFromOptions(*fem);CHKERRQ(ierr);
   ierr = PetscFESetBasisSpace(*fem, P);CHKERRQ(ierr);
   ierr = PetscFESetDualSpace(*fem, Q);CHKERRQ(ierr);
-  ierr = PetscFESetNumComponents(*fem, 1);CHKERRQ(ierr);
+  ierr = PetscFESetNumComponents(*fem, numComp);CHKERRQ(ierr);
   ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
   ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
   /* Create quadrature (with specified order if given) */
