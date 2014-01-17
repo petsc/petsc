@@ -188,7 +188,7 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, PetscFE fe[], void (**funcs)(co
   PetscSection    section;
   PetscScalar    *values;
   PetscReal      *v0, *J, detJ;
-  PetscInt        numFields, numComp, dim, spDim, totDim = 0, numValues, cStart, cEnd, c, f, d, v;
+  PetscInt        numFields, numComp, dim, spDim, totDim = 0, numValues, cStart, cEnd, c, f, d, v, comp;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -219,7 +219,11 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, PetscFE fe[], void (**funcs)(co
       ierr = PetscFEGetNumComponents(fe[f], &numComp);CHKERRQ(ierr);
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
       for (d = 0; d < spDim; ++d) {
-        ierr = PetscDualSpaceApply(sp[f], d, geom, numComp, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
+        if (funcs[f]) {
+          ierr = PetscDualSpaceApply(sp[f], d, geom, numComp, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
+        } else {
+          for (comp = 0; comp < numComp; ++comp) values[v+comp] = 0.0;
+        }
         v += numComp;
       }
     }
