@@ -2047,3 +2047,30 @@ PetscErrorCode PetscSectionGetClosureIndex(PetscSection section, PetscObject obj
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetField"
+/*@
+  PetscSectionGetField - Get the subsection associated with a single field
+
+  Input Parameters:
++ s     - The PetscSection
+- field - The field number
+
+  Output Parameter:
+. subs  - The subsection for the given field
+
+  Level: intermediate
+
+.seealso: PetscSectionSetNumFields()
+@*/
+PetscErrorCode PetscSectionGetField(PetscSection s, PetscInt field, PetscSection *subs)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(s,PETSC_SECTION_CLASSID,1);
+  PetscValidPointer(subs,3);
+  if ((field < 0) || (field >= s->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
+  ierr = PetscObjectReference((PetscObject) s->field[field]);CHKERRQ(ierr);
+  *subs = s->field[field];
+  PetscFunctionReturn(0);
+}
