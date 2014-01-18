@@ -52,6 +52,7 @@
       Character(len=99) list(6)
       PetscInt three
       PetscReal value
+      PetscScalar svalue
 
       Call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       list(1) = 'a123'
@@ -80,7 +81,9 @@
      &      'nxc_variable help message',ierr)
       call PetscBagRegisterRealArray(bag,data%rarray,three,'rarray',         &
      &      'rarray help message',ierr)
-      call PetscBagRegisterScalar(bag,data%x ,103.2d0,'x',               &
+!     Need to put the value into a variable to pass correctly for 128 bit quad precision numbers
+      svalue = 103.2d0
+      call PetscBagRegisterScalar(bag,data%x ,svalue,'x',                &
      &      'x variable help message',ierr)
       call PetscBagRegisterBool(bag,data%t ,PETSC_TRUE,'t',              &
      &      't boolean help message',ierr)
@@ -88,7 +91,6 @@
      &      'tarray help message',ierr)
       call PetscBagRegisterString(bag,data%c,'hello','c',                &
      &      'string help message',ierr)
-!     Need to put the value into a variable to pass correctly for 128 bit quad precision numbers
       value = -11.0d0
       call PetscBagRegisterReal(bag,data%y ,value,'y',                   &
      &       'y variable help message',ierr)
