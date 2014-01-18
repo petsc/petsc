@@ -1,5 +1,5 @@
 $(document).on("keyup", '.processorInput', function() {
-    if ($(this).val().match(/[^0-9]/)) {
+    if ($(this).val().match(/[^0-9]/) || $(this).val()==0) {//problem is that integer only bubble still displays when nothing is entered
 	$(this).attr("title","hello");//set a random title (this will be overwritten)
 	$(this).tooltip();//create a tooltip from jquery UI
 	$(this).tooltip({ content: "Integer only!" });//edit displayed text
@@ -111,7 +111,7 @@ $(document).on('change', '.pcLists', function(){
                 if (preRecursionCounter == -1) 
                     prefix = sawsInfo[currentRecursionCounterSAWs].prefix;
                 if (prefix == "mg_levels_"+level+"_") { //use SAWs options
-                    alert("prefix "+prefix+" match");
+                    //alert("prefix "+prefix+" match");
                     var SAWs_kspVal = $("#kspList-1"+prefix).val(); 
                     var SAWs_pcVal = $("#pcList-1"+prefix).val(); 
                     //alternative???
@@ -176,7 +176,7 @@ $(document).on('change', '.pcLists', function(){
             var prefix = sawsInfo[currentRecursionCounterSAWs].prefix;//not minus one because we need to skip one (already did the first ksp/pc in main.js)
             var SAWs_kspVal = $("#kspList-1"+prefix).val();
             var SAWs_pcVal = $("#pcList-1"+prefix).val();
-            alert("using prefix:"+prefix+", using ksp:"+SAWs_kspVal+", using pc:"+SAWs_pcVal);
+            //alert("using prefix:"+prefix+", using ksp:"+SAWs_kspVal+", using pc:"+SAWs_pcVal);
             //alternative???
             populateKspList("kspList"+parent+myendtag,null,SAWs_kspVal);
             populatePcList("pcList"+parent+myendtag,null,SAWs_pcVal);
