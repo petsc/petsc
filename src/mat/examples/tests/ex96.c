@@ -191,7 +191,7 @@ int main(int argc,char **argv)
       if (norm_tmp > norm) norm = norm_tmp;
     }
     if (norm >= tol && !rank) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMatMult(), |v1 - v2|/|v2|: %g\n",(double)nnorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMatMult(), |v1 - v2|/|v2|: %g\n",(double)norm);CHKERRQ(ierr);
     }
 
     ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -247,7 +247,7 @@ int main(int argc,char **argv)
       if (norm_tmp > norm) norm = norm_tmp;
     }
     if (norm >= tol && !rank) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatPtAP(), |v3 - v4|/|v3|: %g\n",(double)nnorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatPtAP(), |v3 - v4|/|v3|: %g\n",(double)norm);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&C);CHKERRQ(ierr);
     ierr = VecDestroy(&v3);CHKERRQ(ierr);

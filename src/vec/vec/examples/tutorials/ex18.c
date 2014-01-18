@@ -94,7 +94,7 @@ int main(int argc,char **argv)
   /*
       Return the value of the integral.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"ln(2) is %G\n",result);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"ln(2) is %g\n",(double)result);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&xend);CHKERRQ(ierr);
 
