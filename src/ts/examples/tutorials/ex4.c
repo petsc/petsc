@@ -255,7 +255,7 @@ int main(int argc,char **argv)
      View timestepping solver info
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Total timesteps %D, Final time %g\n",steps,(double)ftime);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Avg. error (2 norm) = %g Avg. error (max norm) = %g\n",(double)appctx.norm_2/steps,(double)appctx.norm_max/steps);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Avg. error (2 norm) = %g Avg. error (max norm) = %g\n",(double)(appctx.norm_2/steps),(double)(appctx.norm_max/steps));CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

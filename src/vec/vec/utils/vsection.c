@@ -30,7 +30,7 @@ PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscViewer view
         if (PetscImaginaryPart(v) > 0.0) {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer," %g + %g i", (double)PetscRealPart(v), (double)PetscImaginaryPart(v));CHKERRQ(ierr);
         } else if (PetscImaginaryPart(v) < 0.0) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %g - %g i", (double)PetscRealPart(v),(double)-PetscImaginaryPart(v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %g - %g i", (double)PetscRealPart(v),(double)(-PetscImaginaryPart(v)));CHKERRQ(ierr);
         } else {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)PetscRealPart(v));CHKERRQ(ierr);
         }
@@ -51,7 +51,7 @@ PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscViewer view
         if (PetscImaginaryPart(v) > 0.0) {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer," %g + %g i", (double)PetscRealPart(v), (double)PetscImaginaryPart(v));CHKERRQ(ierr);
         } else if (PetscImaginaryPart(v) < 0.0) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %g - %g i", (double)PetscRealPart(v),(double)-PetscImaginaryPart(v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %g - %g i", (double)PetscRealPart(v),(double)(-PetscImaginaryPart(v)));CHKERRQ(ierr);
         } else {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)PetscRealPart(v));CHKERRQ(ierr);
         }

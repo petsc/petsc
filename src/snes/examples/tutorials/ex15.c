@@ -738,13 +738,13 @@ PetscErrorCode PreCheckFunction(SNESLineSearch linesearch,Vec X,Vec Y,PetscBool 
     ierr  = VecCopy(Y,Ylast);CHKERRQ(ierr);
     ierr  = VecScale(Y,alpha);CHKERRQ(ierr);
     if (precheck->monitor) {
-      ierr = PetscViewerASCIIPrintf(precheck->monitor,"Angle %E degrees less than threshold %g, corrected step by alpha=%g\n",(double)theta*180./PETSC_PI,(double)precheck->angle,(double)alpha);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(precheck->monitor,"Angle %E degrees less than threshold %g, corrected step by alpha=%g\n",(double)(theta*180./PETSC_PI),(double)precheck->angle,(double)alpha);CHKERRQ(ierr);
     }
   } else {
     ierr     = VecCopy(Y,Ylast);CHKERRQ(ierr);
     *changed = PETSC_FALSE;
     if (precheck->monitor) {
-      ierr = PetscViewerASCIIPrintf(precheck->monitor,"Angle %E degrees exceeds threshold %g, no correction applied\n",(double)theta*180./PETSC_PI,(double)precheck->angle);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(precheck->monitor,"Angle %E degrees exceeds threshold %g, no correction applied\n",(double)(theta*180./PETSC_PI),(double)precheck->angle);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

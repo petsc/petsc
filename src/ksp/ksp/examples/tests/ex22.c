@@ -46,10 +46,10 @@ PetscErrorCode test_solve(void)
 
   for (i=0; i<n; i++) {
     for (j=0; j<np; j++) {
-      ierr = MatSetValue(A12, i,j, (double)(i+j*n), INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValue(A12, i,j, (PetscScalar)(i+j*n), INSERT_VALUES);CHKERRQ(ierr);
     }
   }
-  ierr = MatSetValue(A12, 2,1, (double)(4), INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValue(A12, 2,1, (PetscScalar)(4), INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A12, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A12, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -164,10 +164,10 @@ PetscErrorCode test_solve_matgetvecs(void)
 
   for (i=0; i<n; i++) {
     for (j=0; j<np; j++) {
-      ierr = MatSetValue(A12, i,j, (double)(i+j*n), INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValue(A12, i,j, (PetscScalar)(i+j*n), INSERT_VALUES);CHKERRQ(ierr);
     }
   }
-  ierr = MatSetValue(A12, 2,1, (double)(4), INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValue(A12, 2,1, (PetscScalar)(4), INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A12, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A12, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 

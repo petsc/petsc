@@ -219,7 +219,7 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, "(");CHKERRQ(ierr);
       for (d = 0; d < dof; ++d) {
         if (d > 0) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, ",");CHKERRQ(ierr);}
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%g", (double)scale*PetscRealPart(coords[off+d]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%g", (double)(scale*PetscRealPart(coords[off+d])));CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, ") node(%D_%D) [draw,shape=circle,color=%s] {%D} --\n", v, rank, colors[rank%numColors], v);CHKERRQ(ierr);
     }
@@ -243,7 +243,7 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, "(");CHKERRQ(ierr);
       for (d = 0; d < dof; ++d) {
         if (d > 0) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, ",");CHKERRQ(ierr);}
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%g", (double)scale*0.5*PetscRealPart(coords[offA+d]+coords[offB+d]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%g", (double)(scale*0.5*PetscRealPart(coords[offA+d]+coords[offB+d])));CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, ") node(%D_%D) [draw,shape=circle,color=%s] {%D} --\n", e, rank, colors[rank%numColors], e);CHKERRQ(ierr);
     }

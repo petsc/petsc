@@ -703,7 +703,7 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
           if (PetscImaginaryPart(a->a[j]) > 0.0) {
             ierr = PetscViewerASCIIPrintf(viewer," (%D, %g + %g i)",a->j[j],(double)PetscRealPart(a->a[j]),(double)PetscImaginaryPart(a->a[j]));CHKERRQ(ierr);
           } else if (PetscImaginaryPart(a->a[j]) < 0.0) {
-            ierr = PetscViewerASCIIPrintf(viewer," (%D, %g - %g i)",a->j[j],(double)PetscRealPart(a->a[j]),(double)-PetscImaginaryPart(a->a[j]));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer," (%D, %g - %g i)",a->j[j],(double)PetscRealPart(a->a[j]),(double)(-PetscImaginaryPart(a->a[j])));CHKERRQ(ierr);
           } else {
             ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",a->j[j],(double)PetscRealPart(a->a[j]));CHKERRQ(ierr);
           }
@@ -717,7 +717,7 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
         if (PetscImaginaryPart(a->a[j]) > 0.0) {
           ierr = PetscViewerASCIIPrintf(viewer," (%D, %g + %g i)",a->j[j],(double)PetscRealPart(1.0/a->a[j]),(double)PetscImaginaryPart(1.0/a->a[j]));CHKERRQ(ierr);
         } else if (PetscImaginaryPart(a->a[j]) < 0.0) {
-          ierr = PetscViewerASCIIPrintf(viewer," (%D, %g - %g i)",a->j[j],(double)PetscRealPart(1.0/a->a[j]),(double)-PetscImaginaryPart(1.0/a->a[j]));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," (%D, %g - %g i)",a->j[j],(double)PetscRealPart(1.0/a->a[j]),(double)(-PetscImaginaryPart(1.0/a->a[j])));CHKERRQ(ierr);
         } else {
           ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",a->j[j],(double)PetscRealPart(1.0/a->a[j]));CHKERRQ(ierr);
         }
@@ -731,7 +731,7 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
           if (PetscImaginaryPart(a->a[j]) > 0.0) {
             ierr = PetscViewerASCIIPrintf(viewer," (%D, %g + %g i)",a->j[j],(double)PetscRealPart(a->a[j]),(double)PetscImaginaryPart(a->a[j]));CHKERRQ(ierr);
           } else if (PetscImaginaryPart(a->a[j]) < 0.0) {
-            ierr = PetscViewerASCIIPrintf(viewer," (%D, %g - %g i)",a->j[j]t,(double)PetscRealPart(a->a[j]),(double)-PetscImaginaryPart(a->a[j]));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer," (%D, %g - %g i)",a->j[j]t,(double)PetscRealPart(a->a[j]),(double)(-PetscImaginaryPart(a->a[j])));CHKERRQ(ierr);
           } else {
             ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",a->j[j],(double)PetscRealPart(a->a[j]));CHKERRQ(ierr);
           }
@@ -941,7 +941,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
 
   A->info.mallocs    += a->reallocs;
   a->reallocs         = 0;
-  A->info.nz_unneeded = (double)fshift;
+  A->info.nz_unneeded = (PetscReal)fshift;
   a->rmax             = rmax;
 
   ierr = MatCheckCompressedRow(A,a->nonzerorowcnt,&a->compressedrow,a->i,m,ratio);CHKERRQ(ierr);
@@ -2764,7 +2764,7 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
       ierr    = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
     }
     for (i=0; i<x->nz; i++) y->a[y->xtoy[i]] += a*(x->a[i]);
-    ierr = PetscInfo3(Y,"ratio of nnz(X)/nnz(Y): %D/%D = %g\n",x->nz,y->nz,(double)(PetscReal)(x->nz)/(y->nz+1));CHKERRQ(ierr);
+    ierr = PetscInfo3(Y,"ratio of nnz(X)/nnz(Y): %D/%D = %g\n",x->nz,y->nz,(double)((PetscReal)(x->nz)/(y->nz+1)));CHKERRQ(ierr);
   } else {
     Mat      B;
     PetscInt *nnz;

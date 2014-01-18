@@ -643,18 +643,18 @@ PetscErrorCode StokesCalcError(Stokes *s)
   /* error in velocity */
   ierr = VecGetSubVector(s->y, s->isg[0], &y0);CHKERRQ(ierr);
   ierr = VecNorm(y0, NORM_2, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," discretization error u = %g\n",(double)val/scale);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," discretization error u = %g\n",(double)(val/scale));CHKERRQ(ierr);
   ierr = VecRestoreSubVector(s->y, s->isg[0], &y0);CHKERRQ(ierr);
 
   /* error in pressure */
   ierr = VecGetSubVector(s->y, s->isg[1], &y1);CHKERRQ(ierr);
   ierr = VecNorm(y1, NORM_2, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," discretization error p = %g\n",(double)val/scale);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," discretization error p = %g\n",(double)(val/scale));CHKERRQ(ierr);
   ierr = VecRestoreSubVector(s->y, s->isg[1], &y1);CHKERRQ(ierr);
 
   /* total error */
   ierr = VecNorm(s->y, NORM_2, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," discretization error [u,p] = %g\n", (double)val/scale);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," discretization error [u,p] = %g\n", (double)(val/scale));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

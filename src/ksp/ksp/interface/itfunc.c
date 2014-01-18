@@ -539,7 +539,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
       PetscReal emax,emin;
 
       ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin);CHKERRQ(ierr);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Iteratively computed extreme singular values: max %g min %g max/min %g\n",(double)emax,(double)emin,(double)emax/emin);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Iteratively computed extreme singular values: max %g min %g max/min %g\n",(double)emax,(double)emin,(double)(emax/emin));CHKERRQ(ierr);
     }
   }
 

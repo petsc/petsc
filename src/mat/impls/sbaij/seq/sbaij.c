@@ -416,7 +416,7 @@ static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",a->j[diag[i]],(double)PetscRealPart(1.0/a->a[diag[i]]));CHKERRQ(ierr);
         }
 #else
-        ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",a->j[diag[i]],(double)1.0/a->a[diag[i]]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",a->j[diag[i]],(double)(1.0/a->a[diag[i]]));CHKERRQ(ierr);
 #endif
         /* off-diagonal entries */
         for (k=a->i[i]; k<a->i[i+1]-1; k++) {
@@ -1228,7 +1228,7 @@ PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
         j++;
       }
     }
-    ierr = PetscInfo3(Y,"ratio of nnz_s(X)/nnz_s(Y): %D/%D = %g\n",bs2*x->nz,bs2*y->nz,(double)(bs2*x->nz)/(bs2*y->nz));CHKERRQ(ierr);
+    ierr = PetscInfo3(Y,"ratio of nnz_s(X)/nnz_s(Y): %D/%D = %g\n",bs2*x->nz,bs2*y->nz,(double)((PetscReal)(bs2*x->nz)/(PetscReal)(bs2*y->nz)));CHKERRQ(ierr);
   } else {
     ierr = MatGetRowUpperTriangular(X);CHKERRQ(ierr);
     ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);

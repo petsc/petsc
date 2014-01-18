@@ -148,7 +148,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
   }
   ierr = spbas_delete(Pattern);CHKERRQ(ierr);
 
-  ierr = PetscInfo1(NULL,"    memory_usage for  spbas_incomplete_cholesky  %g bytes per row\n", (double)(PetscReal) spbas_memory_requirement(matrix_LT)/ (PetscReal) mbs);CHKERRQ(ierr);
+  ierr = PetscInfo1(NULL,"    memory_usage for  spbas_incomplete_cholesky  %g bytes per row\n", (double)(PetscReal) (spbas_memory_requirement(matrix_LT)/ (PetscReal) mbs));CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(ip,&rip);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iip,&riip);CHKERRQ(ierr);
