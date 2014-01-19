@@ -731,7 +731,7 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
           if (PetscImaginaryPart(a->a[j]) > 0.0) {
             ierr = PetscViewerASCIIPrintf(viewer," (%D, %g + %g i)",a->j[j],(double)PetscRealPart(a->a[j]),(double)PetscImaginaryPart(a->a[j]));CHKERRQ(ierr);
           } else if (PetscImaginaryPart(a->a[j]) < 0.0) {
-            ierr = PetscViewerASCIIPrintf(viewer," (%D, %g - %g i)",a->j[j]t,(double)PetscRealPart(a->a[j]),(double)(-PetscImaginaryPart(a->a[j])));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer," (%D, %g - %g i)",a->j[j],(double)PetscRealPart(a->a[j]),(double)(-PetscImaginaryPart(a->a[j])));CHKERRQ(ierr);
           } else {
             ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",a->j[j],(double)PetscRealPart(a->a[j]));CHKERRQ(ierr);
           }

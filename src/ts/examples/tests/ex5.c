@@ -294,7 +294,7 @@ int main(int argc,char **argv)
   ierr  = FormInitialSolution(da,T,&user);CHKERRQ(ierr);
   dt    = TIMESTEP; /* initial time step */
   ftime = TIMESTEP*time;
-  if (!rank) printf("time %d, ftime %g hour, TIMESTEP %g\n",time,(double)ftime/3600,dt);
+  if (!rank) printf("time %d, ftime %g hour, TIMESTEP %g\n",time,(double)(ftime/3600),(double)dt);
 
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,time,ftime);CHKERRQ(ierr);

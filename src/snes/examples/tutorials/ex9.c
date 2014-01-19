@@ -129,7 +129,7 @@ int main(int argc,char **argv)
   ierr    = VecNorm(r,NORM_1,&error1);CHKERRQ(ierr);
   error1 /= (PetscReal)Mx * (PetscReal)My;
   ierr    = VecNorm(r,NORM_INFINITY,&errorinf);CHKERRQ(ierr);
-  ierr    = PetscPrintf(PETSC_COMM_WORLD,"errors:    av |u-uexact|  = %.3e\n           |u-uexact|_inf = %.3e\n",error1,errorinf);CHKERRQ(ierr);
+  ierr    = PetscPrintf(PETSC_COMM_WORLD,"errors:    av |u-uexact|  = %.3e\n           |u-uexact|_inf = %.3e\n",(double)error1,(double)errorinf);CHKERRQ(ierr);
 
   /* Free work space.  */
   ierr = VecDestroy(&u);CHKERRQ(ierr);
