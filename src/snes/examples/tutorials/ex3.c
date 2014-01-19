@@ -613,7 +613,7 @@ PetscErrorCode PostCheck(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,Pets
         xa[i]      = .5*(xa[i] + xa_last[i]);
         *changed_x = PETSC_TRUE;
         ierr       = PetscPrintf(PETSC_COMM_WORLD,"  Altering entry %D: x=%g, x_last=%g, diff=%g, x_new=%g\n",
-                                 i,(double)PetscAbsScalar(tmp),(double)PetscAbsScalar(xa_last[i]),(double)rdiff,PetscAbsScalar(xa[i]));CHKERRQ(ierr);
+                                 i,(double)PetscAbsScalar(tmp),(double)PetscAbsScalar(xa_last[i]),(double)rdiff,(double)PetscAbsScalar(xa[i]));CHKERRQ(ierr);
       }
     }
     ierr = DMDAVecRestoreArray(da,check->last_step,&xa_last);CHKERRQ(ierr);
