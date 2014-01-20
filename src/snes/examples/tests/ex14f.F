@@ -36,7 +36,7 @@
 #include <finclude/petscpc.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscis.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
       end module Petscmod
 
@@ -244,7 +244,7 @@ c      call flush(6)
       PetscScalar      h,d,vf2(1),vxx(1),vff(1)
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>

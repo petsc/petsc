@@ -21,7 +21,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 !
 !  Create an application context to contain data needed by the
@@ -144,7 +144,7 @@
       subroutine GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
       implicit none
 #include <finclude/petscsys.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
       DM da
       PetscInt mx,xs,xe,gxs,gxe
@@ -190,7 +190,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
       TS ts
       PetscReal t
@@ -279,7 +279,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
       TS ts
       PetscReal t
@@ -329,7 +329,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
       TS ts
       PetscReal t,shift
@@ -402,7 +402,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
       TS ts
       Vec X

@@ -63,7 +63,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscpc.h>
 #include <finclude/petscksp.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 
       MPI_Comm comm
@@ -309,7 +309,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscpc.h>
 #include <finclude/petscksp.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
       PetscErrorCode    ierr
       PetscOffset      idx
@@ -396,7 +396,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscpc.h>
 #include <finclude/petscksp.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 
       Vec              X,F,localX,localF
@@ -505,7 +505,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscpc.h>
 #include <finclude/petscksp.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 
       Vec         X

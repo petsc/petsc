@@ -25,7 +25,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscpc.h>
 #include <finclude/petscksp.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
       PetscErrorCode   ierr
       DM               da
@@ -64,7 +64,7 @@
 
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 
       PetscErrorCode  ierr
@@ -95,7 +95,7 @@
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
 #include <finclude/petscmat.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 
       Mat          jac,JJ
