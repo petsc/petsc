@@ -40,7 +40,7 @@ program main
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
   !
   !     Create an application context to contain data needed by the
@@ -209,7 +209,7 @@ end program main
 subroutine GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
   implicit none
 #include <finclude/petscsys.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
   DM da
   PetscInt mx,xs,xe,gxs,gxe
@@ -255,7 +255,7 @@ subroutine FormIFunction(ts,t,X,Xdot,F,user,ierr)
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
   TS ts
   PetscReal t
@@ -353,7 +353,7 @@ subroutine FormRHSFunction(ts,t,X,F,user,ierr)
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
   TS ts
   PetscReal t
@@ -404,7 +404,7 @@ subroutine FormIJacobian(ts,t,X,Xdot,shift,J,Jpre,mstr,user,ierr)
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
   TS ts
   PetscReal t,shift
@@ -478,7 +478,7 @@ subroutine FormInitialSolution(ts,X,user,ierr)
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
   TS ts
   PetscReal t
@@ -519,7 +519,7 @@ subroutine FormIJacobianMF(ts,t,X,Xdot,shift,J,Jpre,mstr,user,ierr)
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
   TS ts
   PetscReal t,shift
@@ -620,7 +620,7 @@ subroutine SaveSolutionToDisk(da,X,gdof,xs,xe)
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
-#include <petscdm.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 
   Vec X,Xloc
