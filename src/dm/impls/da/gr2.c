@@ -320,9 +320,10 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_HDF5)
 #undef __FUNCT__
 #define __FUNCT__ "VecGetHDF5ChunkSize"
-PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt timestep, hsize_t *chunkDims)
+static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt timestep, hsize_t *chunkDims)
 {
-  int comm_size;
+  PetscMPIInt comm_size;
+  PetscErrorCode ierr;
   hsize_t chunk_size, target_size, dim,
     vec_size = sizeof(PetscScalar)*da->M*da->N*da->P*da->w,
     avg_local_vec_size,
@@ -335,8 +336,7 @@ PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt timestep, hsize_
     zslices=da->p, yslices=da->n, xslices=da->m;
 
   PetscFunctionBegin;
-
-  MPI_Comm_size(PetscObjectComm(xin), &comm_size);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin), &comm_size);CHKERRQ(ierr);
   avg_local_vec_size = (hsize_t) ceil(vec_size*1.0/comm_size);      /* we will attempt to use this as the chunk size */
 
   target_size = (hsize_t) ceil(PetscMin(vec_size,
