@@ -3,7 +3,7 @@
 */
 
 #if !defined(__VDRAW_H)
-#define __VDRAWL_H
+#define __VDRAW_H
 
 #include <petscdraw.h>
 #include <petsc-private/viewerimpl.h>
