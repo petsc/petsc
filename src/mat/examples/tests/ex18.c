@@ -14,6 +14,7 @@ int main(int argc,char **args)
   PetscMPIInt    rank,size;
   PetscErrorCode ierr;
   PetscScalar    v,v0,v1,v2,a0=0.1,a,rhsval, *boundary_values;
+  PetscReal      norm;
   PetscBool      upwind = PETSC_FALSE, nonlocalBC = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
@@ -143,9 +144,9 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD, "*** Vector rhs returned by MatZeroRowsColumns\n");CHKERRQ(ierr);
   ierr = VecView(rhs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecAXPY(y, -1.0, rhs);CHKERRQ(ierr);
-  ierr = VecNorm(y, NORM_INFINITY, &v);CHKERRQ(ierr);
-  if (v > 1.0e-10) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "*** Difference between rhs and y, inf-norm: %f\n", v);CHKERRQ(ierr);
+  ierr = VecNorm(y, NORM_INFINITY, &norm);CHKERRQ(ierr);
+  if (norm > 1.0e-10) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "*** Difference between rhs and y, inf-norm: %f\n", norm);CHKERRQ(ierr);
     ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Bug in MatZeroRowsColumns");
   }
