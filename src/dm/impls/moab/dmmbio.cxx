@@ -5,27 +5,31 @@
 #define __FUNCT__ "DMMoab_GetWriteOptions_Private"
 static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt numproc, PetscInt dim, MoabWriteMode mode, PetscInt dbglevel, const char* dm_opts, const char* extra_opts, const char** write_opts)
 {
-  std::ostringstream str;
+  PetscErrorCode ierr;
+  char wopts[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
 
   // do parallel read unless only one processor
   if (numproc > 1) {
-    str << "PARALLEL=" << MoabWriteModes[mode] << ";";
-    if (fsetid>=0) str << "PARALLEL_COMM=" << fsetid << ";";
+    ierr = PetscSNPrintf(wopts, sizeof(wopts), "PARALLEL=%s;",MoabWriteModes[mode]);CHKERRQ(ierr);
+    if (fsetid>=0) {
+      ierr = PetscSNPrintf(wopts, sizeof(wopts), "%sPARALLEL_COMM=%d;",wopts,fsetid);CHKERRQ(ierr);
+    }
   }
 
   if (strlen(dm_opts)) {
-    str << dm_opts << ";";
+    ierr = PetscSNPrintf(wopts, sizeof(wopts), "%s%s;",wopts,dm_opts);CHKERRQ(ierr);
   }
 
-  if (dbglevel)
-    str << "CPUTIME;DEBUG_IO=" << dbglevel << ";";
+  if (dbglevel) {
+    ierr = PetscSNPrintf(wopts, sizeof(wopts), "%sCPUTIME;DEBUG_IO=%d;",wopts,dbglevel);CHKERRQ(ierr);
+  }
 
-  if (extra_opts)
-    str << extra_opts ;
-
-  *write_opts = str.str().c_str();
+  if (extra_opts) {
+    ierr = PetscSNPrintf(wopts, sizeof(wopts), "%s%s;",wopts,extra_opts);CHKERRQ(ierr);
+  }
+  *write_opts=wopts;
   PetscFunctionReturn(0);
 }
 

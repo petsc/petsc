@@ -398,31 +398,34 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, const PetscReal*
 #define __FUNCT__ "DMMoab_GetReadOptions_Private"
 PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc, PetscInt dim, MoabReadMode mode, PetscInt dbglevel, const char* dm_opts, const char* extra_opts, const char** read_opts)
 {
-  std::ostringstream str;
+  char           ropts[PETSC_MAX_PATH_LEN];
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* do parallel read unless using only one processor */
   if (numproc > 1) {
-    str << "PARALLEL=" << MoabReadModes[mode] << ";PARTITION=PARALLEL_PARTITION;PARTITION_DISTRIBUTE;";
-    str << "PARALLEL_RESOLVE_SHARED_ENTS;PARALLEL_GHOSTS=" << dim << ".0.1;";
-    if (by_rank)
-      str << "PARTITION_BY_RANK;";
+    ierr = PetscSNPrintf(ropts, sizeof(ropts), "PARALLEL=%s;PARTITION=PARALLEL_PARTITION;PARTITION_DISTRIBUTE;PARALLEL_RESOLVE_SHARED_ENTS;PARALLEL_GHOSTS=%d.0.1;",MoabReadModes[mode],dim);CHKERRQ(ierr);
+    if (by_rank) {
+      ierr = PetscSNPrintf(ropts, sizeof(ropts), "%sPARTITION_BY_RANK;",ropts);CHKERRQ(ierr);
+    }
   }
 
   if (strlen(dm_opts)) {
-    str << dm_opts << ";";
+    ierr = PetscSNPrintf(ropts, sizeof(ropts), "%s%s;",dm_opts);CHKERRQ(ierr);
   }
 
   if (dbglevel) {
-    str << "CPUTIME;DEBUG_IO=" << dbglevel << ";";
-    if (numproc>1)
-      str << "DEBUG_PIO=" << dbglevel << ";";
+    ierr = PetscSNPrintf(ropts, sizeof(ropts), "%sCPUTIME;DEBUG_IO=%d;",ropts,dbglevel);CHKERRQ(ierr);
+    if (numproc>1) {
+      ierr = PetscSNPrintf(ropts, sizeof(ropts), "%sDEBUG_PIO=%d;",ropts,dbglevel);CHKERRQ(ierr);
+    }
   }
 
-  if (extra_opts)
-    str << extra_opts;
+  if (extra_opts) {
+    ierr = PetscSNPrintf(ropts, sizeof(ropts), "%s%s;",ropts,extra_opts);CHKERRQ(ierr);
+  }
 
-  *read_opts = str.str().c_str();
+  *read_opts = ropts;
   PetscFunctionReturn(0);
 }
 

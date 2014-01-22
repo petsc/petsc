@@ -1064,7 +1064,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = PetscNewLog(dm,DM_Moab,&dm->data);CHKERRQ(ierr);
+  ierr = PetscNewLog(dm,(DM_Moab**)&dm->data);CHKERRQ(ierr);
 
   ((DM_Moab*)dm->data)->bs = 1;
   ((DM_Moab*)dm->data)->numFields = 1;

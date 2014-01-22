@@ -461,7 +461,7 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm,moab::Tag tag,const moab::Range
   ierr = MPI_Allreduce(&lnative_vec, &gnative_vec, 1, MPI_INT, MPI_MAX, pcomm->comm());CHKERRQ(ierr);
 
   /* Create the MOAB internal data object */
-  ierr = PetscNew(Vec_MOAB,&vmoab);CHKERRQ(ierr);
+  ierr = PetscNew(&vmoab);CHKERRQ(ierr);
   vmoab->is_native_vec=(gnative_vec>0?PETSC_TRUE:PETSC_FALSE);
 
   if (!vmoab->is_native_vec) {
