@@ -254,8 +254,6 @@ struct _n_Units {
   PetscReal year;
 };
 
-typedef PetscErrorCode (*DMDASNESJacobianLocal)(DMDALocalInfo*,void*,Mat,Mat,MatStructure*,void*);
-typedef PetscErrorCode (*DMDASNESFunctionLocal)(DMDALocalInfo*,void*,void*,void*);
 static PetscErrorCode THIJacobianLocal_3D_Full(DMDALocalInfo*,Node***,Mat,Mat,MatStructure*,THI);
 static PetscErrorCode THIJacobianLocal_3D_Tridiagonal(DMDALocalInfo*,Node***,Mat,THI);
 static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo*,Node**,Mat,THI);
@@ -608,10 +606,10 @@ static PetscErrorCode THISetUpDM(THI thi,DM dm)
   }
   ierr = THIInitializePrm(thi,da2prm,X);CHKERRQ(ierr);
   if (thi->tridiagonal) {       /* Reset coarse Jacobian evaluation */
-    ierr = DMDASNESSetJacobianLocal(dm,(DMDASNESJacobianLocal)THIJacobianLocal_3D_Full,thi);CHKERRQ(ierr);
+    ierr = DMDASNESSetJacobianLocal(dm,(DMDASNESJacobian)THIJacobianLocal_3D_Full,thi);CHKERRQ(ierr);
   }
   if (thi->coarse2d) {
-    ierr = DMDASNESSetJacobianLocal(dm,(DMDASNESJacobianLocal)THIJacobianLocal_2D,thi);CHKERRQ(ierr);
+    ierr = DMDASNESSetJacobianLocal(dm,(DMDASNESJacobian)THIJacobianLocal_2D,thi);CHKERRQ(ierr);
   }
   ierr = PetscObjectCompose((PetscObject)dm,"DMDA2Prm",(PetscObject)da2prm);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)dm,"DMDA2Prm_Vec",(PetscObject)X);CHKERRQ(ierr);
@@ -1551,11 +1549,11 @@ int main(int argc,char *argv[])
     if (rlevel - clevel > 0) {ierr = DMSetMatType(da,thi->mattype);CHKERRQ(ierr);}
   }
 
-  ierr = DMDASNESSetFunctionLocal(da,ADD_VALUES,(DMDASNESFunctionLocal)THIFunctionLocal,thi);CHKERRQ(ierr);
+  ierr = DMDASNESSetFunctionLocal(da,ADD_VALUES,(DMDASNESFunction)THIFunctionLocal,thi);CHKERRQ(ierr);
   if (thi->tridiagonal) {
-    ierr = DMDASNESSetJacobianLocal(da,(DMDASNESJacobianLocal)THIJacobianLocal_3D_Tridiagonal,thi);CHKERRQ(ierr);
+    ierr = DMDASNESSetJacobianLocal(da,(DMDASNESJacobian)THIJacobianLocal_3D_Tridiagonal,thi);CHKERRQ(ierr);
   } else {
-    ierr = DMDASNESSetJacobianLocal(da,(DMDASNESJacobianLocal)THIJacobianLocal_3D_Full,thi);CHKERRQ(ierr);
+    ierr = DMDASNESSetJacobianLocal(da,(DMDASNESJacobian)THIJacobianLocal_3D_Full,thi);CHKERRQ(ierr);
   }
   ierr = DMCoarsenHookAdd(da,DMCoarsenHook_THI,NULL,thi);CHKERRQ(ierr);
   ierr = DMRefineHookAdd(da,DMRefineHook_THI,NULL,thi);CHKERRQ(ierr);
