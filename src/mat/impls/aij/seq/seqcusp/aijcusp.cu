@@ -130,7 +130,6 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
 	  delete (CUSPMATRIXDIA *) cuspstruct->mat;
 	else
 	  delete (CUSPMATRIX *) cuspstruct->mat;
-        if (cuspstruct->tempvec) delete cuspstruct->tempvec;
 
       } catch(char *ex) {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
@@ -184,6 +183,7 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
       }
 
       /* assign the compressed row indices */
+      if (cuspstruct->indices) delete (CUSPINTARRAYGPU*)cuspstruct->indices;
       cuspstruct->indices = new CUSPINTARRAYGPU;
       cuspstruct->indices->assign(ridx,ridx+m);
 
@@ -192,6 +192,7 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
         ierr = PetscFree(ii);CHKERRQ(ierr);
         ierr = PetscFree(ridx);CHKERRQ(ierr);
       }
+      if (cuspstruct->tempvec) delete (CUSPARRAY*)cuspstruct->tempvec;
       cuspstruct->tempvec = new CUSPARRAY;
       cuspstruct->tempvec->resize(m);
     } catch(char *ex) {
@@ -389,8 +390,11 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
       /* use compressed row format */
       CUSPMATRIX *mat = (CUSPMATRIX*)cuspstruct->mat;
       cusp::multiply(*mat,*xarray,*cuspstruct->tempvec);
-      ierr = VecSet_SeqCUSP(yy,0.0);CHKERRQ(ierr);
-      thrust::copy(cuspstruct->tempvec->begin(),cuspstruct->tempvec->end(),thrust::make_permutation_iterator(yarray->begin(),cuspstruct->indices->begin()));
+      thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(cuspstruct->tempvec->begin(),
+                                                                    thrust::make_permutation_iterator(zarray->begin(), cuspstruct->indices->begin()))),
+                       thrust::make_zip_iterator(thrust::make_tuple(cuspstruct->tempvec->end(),
+                                                                    thrust::make_permutation_iterator(zarray->end(),cuspstruct->indices->end()))),
+                       VecCUSPPlusEquals());
     } else { 
 
       if (cuspstruct->format==MAT_CUSP_ELL) {
@@ -523,6 +527,9 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
 	delete (CUSPMATRIXDIA*)(cuspcontainer->mat);
       else
 	delete (CUSPMATRIX*)(cuspcontainer->mat);
+
+      if (cuspcontainer->indices) delete (CUSPINTARRAYGPU*)cuspcontainer->indices;
+      if (cuspcontainer->tempvec) delete (CUSPARRAY*)cuspcontainer->tempvec;
     }
     delete cuspcontainer;
     A->valid_GPU_matrix = PETSC_CUSP_UNALLOCATED;
