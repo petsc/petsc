@@ -1421,7 +1421,7 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   if (!flg) PetscFunctionReturn(0);
 
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = PetscNew(MyMonitorCtx,&ctx);CHKERRQ(ierr);
+  ierr = PetscNew(&ctx);CHKERRQ(ierr);
 
   /* create the replica 1-D DMDA object */
   ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_MIRROR,-8,DOF,1,NULL,&da);CHKERRQ(ierr);

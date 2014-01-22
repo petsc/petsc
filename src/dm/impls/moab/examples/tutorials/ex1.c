@@ -56,7 +56,7 @@ PetscErrorCode Initialize_AppContext(UserCtx *puser)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct pUserCtx, &user);CHKERRQ(ierr);
+  ierr = PetscNew(&user);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Advection-reaction options","");
   {
