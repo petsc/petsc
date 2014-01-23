@@ -12,6 +12,9 @@ endif
 
 set valgrind=0
 set debugger=0
+if ! $?PETSCVALGRIND_OPTIONS then
+  set PETSCVALGRIND_OPTIONS=
+endif
 if ( x$1 == x"-valgrind" ) then
   set valgrind = 1
   echo $2
