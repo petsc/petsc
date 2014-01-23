@@ -111,6 +111,7 @@ static PetscErrorCode MatDestroy_KLU(Mat A)
   if (lu && lu->CleanUpKLU) {
     klu_K_free_symbolic(&lu->Symbolic,&lu->Common);
     klu_K_free_numeric(&lu->Numeric,&lu->Common);
+    ierr = PetscFree2(lu->perm_r,lu->perm_c);CHKERRQ(ierr);
     ierr = PetscFree(lu->perm_r);CHKERRQ(ierr);
     ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
   }
