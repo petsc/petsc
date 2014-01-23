@@ -14,6 +14,7 @@ configure_options = [
   '--download-parmetis=1',
   '--download-ptscotch=1',
   '--download-umfpack=1',
+  '--download-klu=1',
   '--download-triangle=1',
   '--download-superlu=1',
   '--download-superlu_dist=1',
