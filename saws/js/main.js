@@ -1,30 +1,14 @@
 //Make an array. Each array element (matInfo[0]. etc) will have all of the information of the questions. Each array element represents one part of the matrix. [0] will be the big array, [1] will be the second recursion, etc, etc. All the information is stored in the array and accessed via for symmetric matInfo[recursion].symm
 var matInfo = [];
+var matInfoWriteCounter = 0;//next available space to write to.
+var currentAsk = "0";//start at id=0. then 00 01, then 000 001 010 011 etc if splitting two every time.
+var askedA0 = false;//a one-way flag to record if A0 was asked
 
-//Change the max amount of allowed matricies here
-//based on how many levels of blocking there are
-var maxMatriciesLevel = 4;
-var maxMatricies      = Math.pow(2, maxMatriciesLevel) - 1;
-
-//The matNode (submatrix) gets its value from whether or not the parent is logically structured. If the parent is not logically structured, the value remains false. If the parent is logically structured, the value is changed to true. The program skips any questions on any recursionCounter whose matNode[] is false
-var matNode = [];
-for (var i = 0; i < maxMatricies; i++) {
-    matNode[i] = false;
-}
-//Set the first value to true to start the program
-matNode[0] = true;
-
-//This array turns the abstract counter into a concret name of the matrix element
-var nameOfMatrix = [];
-matSetName(maxMatricies, nameOfMatrix);
-
-//Used to refer to whether the left top block should be highighted or the right bottom bloc	
+//Used to refer to whether the left top block should be highighted or the right bottom bloc
 var matrixPicFlag = 0;
 
-//preRecursionCounter is used to remember the previous counter; 
-//recursionCounter is either the active counter or count the next matrix node to be moved to
+//preRecursionCounter is used to remember the previous counter;
 var preRecursionCounter = -1;
- var recursionCounter    = -1;
 
 //counter of SAWs recursions for '-pc_type'
 var recursionCounterSAWs = 0;
@@ -38,7 +22,7 @@ var highestMg=0;//highest mg level encountered so far
 var mgLevelLocation=-1;//where to put the mg level data once the highest level is determined. -1 means not yet recorded
 
 //Call the "Tex" function which populates an array with TeX to be used instead of images
-//var texMatrices = tex(maxMatricies)
+//var texMatrices = tex(maxMatricies) //unfortunately, cannot use anymore
 
 DisplayPCType = function(defl) {
     SAWs.getDirectory("PETSc/Options/-pc_type",function(data,indef){
@@ -155,272 +139,190 @@ DisplayDirectory = function(sub,divEntry)
 
 //When pcoptions.html is loaded ...
 HandlePCOptions = function(){
-    
-    recursionCounter    = -1;
-    preRecursionCounter = recursionCounter;
+
+    preRecursionCounter="-1";//A matricies have string id's unlike the previous numerical recursionCounter
 
     //reset the form
-    formSet(recursionCounter,matInfo);
-   
+    formSet(currentAsk);
+
+    //hide at first
+    $("#fieldsplitBlocks_text").hide();
+    $("#fieldsplitBlocks").hide();
+
     //must define these parameters before setting default pcVal, see populatePcList() and listLogic.js!
-    matInfo[recursionCounter] = {
-        posdef:  0,
-        symm:    0,
-        logstruc:0,
+    matInfo[-1] = {
+        posdef:  false,
+        symm:    false,
+        logstruc:false,
+        blocks: 0,
+        matLevel: 0,
+        id: "0"
     }
-   
+
+    matInfo[0] = {//surtai added
+        posdef:  false,
+        symm:    false,
+        logstruc:false,
+        blocks: 0,
+        matLevel: 0,
+        id: "0"
+    }
+
     //create div 'o-1' for displaying SAWs options
-    $("#divPc").append("<div id=\"o"+recursionCounter+"\"> </div>");
-    
-    // get and display SAWs options 
+    $("#divPc").append("<div id=\"o-1\"> </div>");
+
+    // get and display SAWs options
     recursionCounterSAWs = 0;
-    GetAndDisplayDirectory("","#variablesInfo"); //interfere $("#logstruc, #nlogstruc").change(function() ???
+    GetAndDisplayDirectory("","#variablesInfo");
     //alert("after GetAndDisplayDirectory, recursionCounterSAWs "+recursionCounterSAWs);
-    
-    //When the button "Logically Block Structured" is clicked...
-    $("#logstruc, #nlogstruc").change(function(){ //why still say !logstruc ???
-        matInfo[recursionCounter] = {
-            posdef:  document.getElementById("posdef").checked,
-            symm:    document.getElementById("symm").checked,
-            logstruc:document.getElementById("logstruc").checked,
-        }
-        if (matInfo[recursionCounter].logstruc) {
-            alert('logstruc='+matInfo[recursionCounter].logstruc);
-            //DisplayPCType(0);
-            //DisplayPCType("fieldsplit"); //why matInfo[recursionCounter].logstruc is not input into $(document).on('change', '.pcLists', function()???
-            //SAWs_alternatives ???
-            populatePcList("pcList-1",null,"fieldsplit");
-        }
-    });
-    
-    recursionCounter++; //recursionCounter=1, preRecursionCounter=-1
 
     $("#continueButton").click(function(){
         //alert("recursionCounterSAWs "+recursionCounterSAWs+"; prefix="+sawsInfo[0].prefix+" "+sawsInfo[recursionCounterSAWs-1].prefix);
 
-	//matrixLevel is how many matrices deep the data is. 0 is the overall matrix, 
-	// 1 would be 4 blocks, 2 would be 10 blocks, 3 would be 20 blocks, etc
-	var matrixLevel = matGetLevel(recursionCounter);
-	
-	//The data from the form input is saved here
-	//Also add a flag to the matInfo to know if it is on screen or was skipped
-	matInfo[recursionCounter] = {
+        //todo: DOUBLE CHECK IF VALID INPUT IS PROVIDED. IF NOT, DO NOT CONTINUE
+
+	//matrixLevel is how many matrices deep the data is. 0 is the overall matrix,
+        var matrixLevel = currentAsk.length-1;//minus one because A0 is length 1 but level 0
+        var fieldsplitBlocks = $("#fieldsplitBlocks").val();
+
+	//Write the form data to matInfo
+	matInfo[matInfoWriteCounter] = {
             posdef:  document.getElementById("posdef").checked,
             symm:    document.getElementById("symm").checked,
             logstruc:document.getElementById("logstruc").checked,
-
-	    recursCount:recursionCounter,
-	    matLevel:   matrixLevel,
-	    name:       nameOfMatrix[recursionCounter]
+            blocks: fieldsplitBlocks,
+            matLevel:   matrixLevel,
+            id:       currentAsk
 	}
 
-        //Add a node to the matrix block structure tree
-        //matDivCounter = matTreeAddNode(matrixLevel, matDivCounter,recursionCounter,nameOfMatrix);
+        //increment write counter immediately after data is written
+        matInfoWriteCounter++;
 
-        //append to table of two columns holding o and oCmdOptions in each column
-        $("#oContainer").append("<tr> <td> <div id=\"o"+ recursionCounter + "\"> </div></td> <td> <div id=\"oCmdOptions" + recursionCounter + "\"></div> </td> </tr>");
-	
-	//Writes the results to screen in that generated matrix block element
-        $("#o" + (recursionCounter)).append("<br><br> <font size=3 color=\"#B91A1A\"><b>Matrix \\(" + (nameOfMatrix[recursionCounter]) + "\\)</b></font>")
-	
-	//Writes more results to screen (&nbsp; is a space; they are added for typesetting purposes)
-        if (matInfo[recursionCounter].symm) {
-	    $("#o" + (recursionCounter)).append("<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Symmetric");
-	} else $("#o" + (recursionCounter)).append("<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Non Symmetric");
+        //append to table of two columns holding A and oCmdOptions in each column (should now be changed to simply cmdOptions)
+        //tooltip contains all information previously in big letter format (e.g posdef, symm, logstruc, etc)
+        var indentation=matrixLevel*30; //according to the length of currentAsk (aka matrix level), add margins of 30 pixels accordingly
+        $("#oContainer").append("<tr> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ currentAsk + "\" title=\"A"+ currentAsk + " Symm:"+matInfo[matInfoWriteCounter-1].symm+" Posdef:"+matInfo[matInfoWriteCounter-1].posdef+" Logstruc:"+matInfo[matInfoWriteCounter-1].logstruc+"\"> </div></td> <td> <div id=\"oCmdOptions" + currentAsk + "\"></div> </td> </tr>");
 
-	if (matInfo[recursionCounter].posdef) {
-	    $("#o" + (recursionCounter)).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Positive Definite");
-	} else $("#o" + (recursionCounter)).append("<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Non Positive Definite");
+        //Create drop-down lists. '&nbsp;' indicates a space
+	$("#A" + currentAsk).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + currentAsk +"\"></select>");
+	$("#A" + currentAsk).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + currentAsk +"\"></select>");
 
-	if (matInfo[recursionCounter].logstruc) {
-            if (matInfo[recursionCounter].matLevel >= maxMatriciesLevel -1) {
-                alert("Warning: Logically block structured is not supported at matrix level "+ matInfo[recursionCounter].matLevel);
-                matInfo[recursionCounter].logstruc = false;
-                $("#o" + (recursionCounter)).append("<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Not Logically Block Structured ");
-            } else {
-	        $("#o" + (recursionCounter)).append("<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Logically Block Structured ");
-            }
-	} else $("#o" + (recursionCounter)).append("<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Not Logically Block Structured ");
-
-        $(function() { //needed for jqueryUI tool tip to override native javascript tooltip
-            $( document ).tooltip();
-        });
-
-        //Create drop-down lists
-	$("#o" + (recursionCounter)).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b title=\"Krylov method\">KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + recursionCounter +"\"></select>");//giving an html element a title creates a tooltip
-	$("#o" + (recursionCounter)).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + recursionCounter +"\"></select>");
-       
-	//store the recursion counter in the div as a data() - for solverTree - (seems never been used)???
-	$("#kspList" + recursionCounter).data("listRecursionCounter", recursionCounter);
-	$("#pcList" + recursionCounter).data("listRecursionCounter", recursionCounter);
+	//store the recursion counter in the div as a data() - for solverTree and referenced occasionally in listLogic.js although there are other ways to do this
+	//$("#kspList" + currentAsk).data("listRecursionCounter", currentAsk);  HAD THIS BEFORE. WILL ADDRESS THIS LATER
+	//$("#pcList" + currentAsk).data("listRecursionCounter", currentAsk);
         //set parentFieldSplit:true as default - ugly???
-	$("#pcList" + recursionCounter).data("parentFieldSplit",true);
+	//$("#pcList" + currentAsk).data("parentFieldSplit",true);
 
-	//populate the kspList[recursionCounter] and pclist[recursionCounter] with default options
-        if (recursionCounter == 0) { //use SAWs options
-            var SAWs_kspVal = $("#kspList-1").val(); 
+	//populate the kspList and pclist with default options
+        if (currentAsk == "0") { //use SAWs options
+            var SAWs_kspVal = $("#kspList-1").val();
             //SAWs_alternatives ???
-            populateKspList("kspList"+recursionCounter,null,SAWs_kspVal);
+            populateKspList("kspList"+currentAsk,null,SAWs_kspVal);
 
             var SAWs_pcVal = $("#pcList-1").val(); //Get pctype from the drop-down pcList-1
             //SAWs_alternatives ???
-	    populatePcList("pcList"+recursionCounter,null,SAWs_pcVal);
+	    populatePcList("pcList"+currentAsk,null,SAWs_pcVal);
             currentRecursionCounterSAWs = 1;
         } else {
-            populateKspList("kspList"+recursionCounter,null,"null");
-            populatePcList("pcList"+recursionCounter,null,"null");
+            populateKspList("kspList"+currentAsk,null,"null");
+            populatePcList("pcList"+currentAsk,null,"null");
         }
 
         //manually trigger pclist once because additional options, e.g., detailed info may need to be added
-	$("#pcList"+recursionCounter).trigger("change"); 
+	$("#pcList"+currentAsk).trigger("change");
 
-	//If the matrix is logically structured, set its two children to be true, so the children will be processed
-	if (matInfo[recursionCounter].logstruc == true  && 2*recursionCounter+2 < maxMatricies) {
-	    matNode[2 * recursionCounter + 1] = true;
-	    matNode[2 * recursionCounter + 2] = true;  
-	}
+        preRecursionCounter = currentAsk; //save the current counter
 
-        //Assign the children of a parent its inherited qualities (posdef and symm) 
-        matTreeSetChildren(recursionCounter,matInfo);
+        currentAsk=matTreeGetNextNode(currentAsk);
+        alert("new current ask:"+currentAsk);
 
-	//move the counter forward
-        //------------------------------
-        preRecursionCounter = recursionCounter; //save the current counter
-	recursionCounter++;// alert("forward"); counter is moved forward each oDiv I'm assuming
-
-	//Find next child node - Skip any children from a non-logically structured parent 
-        //Note: this routine changes global variables 'recursionCounter' and 'matDivCounter'!
-        matTreeGetNextNode(matNode);
-
-        //reset the form
-        formSet(recursionCounter,matInfo);
- 
-	//If we are at the max number of matricies, hide the questions. 
-	if (recursionCounter == maxMatricies) {
-	    $("#matrixPic").html("<center>" + finalTex(matInfo, preRecursionCounter) + "</center>");
-	    $("#questions").hide();
-	} else { // If we are not at the finish
-	    //produce the tex of the next matrix to screen
-	    $("#matrixPic").html("<center>" + tex2(matInfo, recursionCounter) + "</center>");
-	      
-	    //Change the question to ask about the specific matrix at hand
-	    $("#isYourMatrix").html("<span><b>Is your matrix \\(" + nameOfMatrix[recursionCounter] + "\\)</b ></span>");
-	}
+        formSet(currentAsk); //reset the form
 
 	//Tell mathJax to re compile the tex data
-	MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-    })
-
-    //Toggles the output on and off
-    //-------------------------------------------------------
-    $('#matrixButtons').on('click', ".removeBtn", function () {
-        var count = $(this).data("recurs");
-        $("#o" + count).toggle();
-    })
-
-    //Only show positive definite if symmetric 
-    //-------------------------------------------------------
-    $("#posdefRow").hide();
-    $("#symm").change(function(){
-	$("#posdefRow").show();
-    })
-   
+	//MathJax.Hub.Queue(["Typeset",MathJax.Hub]); //unfortunately, cannot use this anymore
+    });
 }
 
 
 //  This function is run when the page is first visited
-$(document).ready(function(){HandlePCOptions();})
+$(document).ready(function(){
+$(function() { //needed for jqueryUI tool tip to override native javascript tooltip
+    $(document).tooltip();
+});
 
-//------------------------------------------------------------------------------
-/*
-  matLevelComput - Computes which matrix level (how many blocks deep) the data is
-  input:
-    number - matrix index
-  output: 
-    matrixLevel - the level that this matrix 
-*/
-function matGetLevel(number)
-{
-    number = number + 1;
-    var matrixLevel = 0;
-    while (number >= Math.pow(2,matrixLevel))
-    {
-	matrixLevel = matrixLevel + 1;
+//When the button "Logically Block Structured" is clicked...
+$("#logstruc").change(function(){
+    if (document.getElementById("logstruc").checked) {
+        $("#fieldsplitBlocks_text").show();
+        $("#fieldsplitBlocks").show();
+        //populatePcList("pcList-1",null,"fieldsplit");//HAD THIS ORIGINALLY
     }
-    matrixLevel = matrixLevel - 1;
-    return matrixLevel;
-}
+    else {
+        $("#fieldsplitBlocks_text").hide();
+        $("#fieldsplitBlocks").hide();
+    }
+});
+
+$(document).on("keyup", '.fieldsplitBlocksInput', function() {//alerts user with a tooltip when an invalid input is provided
+    if ($(this).val().match(/[^0-9]/) || $(this).val()==0 || $(this).val()==1) {//problem is that integer only bubble still displays when nothing is entered
+	$(this).attr("title","hello");//set a random title (this will be overwritten)
+	$(this).tooltip();//create a tooltip from jquery UI
+	$(this).tooltip({content: "At least 2 blocks!"});//edit displayed text
+	$(this).tooltip("open");//manually open once
+    } else {
+	$(this).removeAttr("title");//remove title attribute
+	$(this).tooltip("destroy");
+    }
+});
+
+//Only show positive definite if symmetric
+$("#symm").change(function(){
+    if(document.getElementById("symm").checked)
+        $("#posdefRow").show();
+    else {
+        $("#posdefRow").hide();
+        $("#posdef").removeAttr("checked");
+    }
+});
+    HandlePCOptions();//big function is called here
+});
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------------------------------------
 
 /*
-  formSet - Set Form 
+  formSet - Set Form (hide form if needed)
   input:
-    recursionCounter
-    matInfo
+    currentAsk
   ouput:
-    Form asking questions for matrix[recursionCounter]
+    Form asking questions for currentAsk
 */
-function formSet(recursionCounter,matInfo)
+function formSet(current)//-1 input for current means that program has finished
 {
+    if(current=="-1"){
+        $("#questions").hide();
+        return;
+    }
+
+    $("#currentAskText").html("<b id='currentAskText'>Currently Asking for Matrix A"+current+"</b>");
     $("#posdefRow").hide();
+    $("#fieldsplitBlocks").hide();
+    $("#fieldsplitBlocks_text").hide();
     $("#symm").removeAttr("checked");
-    $("#nsymm").removeAttr("checked");
     $("#posdef").removeAttr("checked");
-    $("#nposdef").removeAttr("checked");
     $("#logstruc").removeAttr("checked");
-    $("#nlogstruc").removeAttr("checked");
 
-    //$("#mg").removeAttr("checked");
-    //$("#submitFormButton").removeAttr("checked");
-    //$("#submitButton").removeAttr("checked");
+    if(current == "0")//special case for first node since no defaults were set yet
+        return;
 
-    //fill in the form if the information was previously set
-    //if symmetric, fill in bubble and show posdef
-    if (matInfo[recursionCounter] != undefined) {
-	if (matInfo[recursionCounter].symm) {
-	    $("#posdefRow").show();
-	    $("#symm").prop("checked", "true");
-	}
-	//if posdef, fill in bubble
-	if (matInfo[recursionCounter].posdef) {
-	    $("#posdef").prop("checked", "true");
-	}
+    //fill in the form according to defaults set by matTreeGetNextNode
+    if (matInfo[getMatIndex(current)].symm) {//if symmetric
+        $("#posdefRow").show();
+        $("#symm").prop("checked", "true");
     }
-}
-
-/*
-  matSetName - Name matrix elements 
-  input:  
-    maxMatricies - max number of matrices
-  output: Name of matrix elements are set as
-    nameOfMatrix[0]='A', 
-    nameOfMatrix[1]='A_{1}', nameOfMatrix[2]='A_{2}', 
-    nameOfMatrix[3]='A_{1_{1}}',...,nameOfMatrix[6]='A_{2_{2}}',
-    ...
-*/
-function matSetName(maxMatricies, nameOfMatrix)
-{
-    //Counter adds '1' or '2' to the A
-    var counter = 1;
-    //parentCounter is used to make sure that the child always inherits its parents name
-    var parentCounter = 1;
-    //The first matrix is A; the rest are just added numbers
-    nameOfMatrix[0] = 'A';
-    for(var i = 1; i<maxMatricies; i++)
-    {
-        nameOfMatrix[i] = nameOfMatrix[i - parentCounter] + '_{' + String(counter);
-        counter = counter + 1;
-        if (counter == 2)
-	    parentCounter = parentCounter + 1;
-        if (counter == 3)
-	    counter = 1;   
-    }
-
-    //Add the end brackets
-    for (var i = 1; i<maxMatricies; i++)
-    {
-        var matLevel = matGetLevel(i);
-        for (var j = 0; j<matLevel; j++)
-	    nameOfMatrix[i] = nameOfMatrix[i] + '}';
+    //if posdef, fill in bubble
+    if (matInfo[getMatIndex(current)].posdef) {
+        $("#posdef").prop("checked", "true");
     }
 }
 
@@ -448,16 +350,17 @@ function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matInfo)
         endtag = pcListID.substring(loc); // endtag of input pcListID, eg. _, _0, _00, _10
     }
     //alert("pcGetDetailedInfo: pcListID="+pcListID+"; pcSelectedValue= "+pcSelectedValue+"; endtag= "+endtag);
-    
+
     switch(pcSelectedValue) {
-    case "mg" :  
+    case "mg" :
         myendtag = endtag+"0";
 	var mgType       = $("#mgList" + recursionCounter + myendtag).val();
         var mgLevels     = $("#mglevels" + recursionCounter + myendtag).val();
 	info   += "<br />"+prefix+"pc_mg_type " + mgType + "<br />"+prefix+"pc_mg_levels " + mgLevels;
         prefix += "mg_";
-        matInfo[recursionCounter].string      += info;
-        matInfo[recursionCounter].stringshort += infoshort;
+        var index=getMatIndex(recursionCounter);
+        matInfo[index].string      += info;
+        matInfo[index].stringshort += infoshort;
 
         var smoothingKSP;
         var smoothingPC;
@@ -476,7 +379,6 @@ function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matInfo)
                 info      = "";
                 infoshort = "";
                 if (level) {
-		    
 		    if(level<10)//still using numbers
 			myendtag = endtag+level;
 		    else
@@ -497,9 +399,9 @@ function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matInfo)
                 } else {
                     alert("Error: mg level cannot be "+level);
                 }
-
-                matInfo[recursionCounter].string      += info;
-                matInfo[recursionCounter].stringshort += infoshort;
+                var index=getMatIndex(recursionCounter);
+                matInfo[index].string      += info;
+                matInfo[index].stringshort += infoshort;
 
                 pcGetDetailedInfo(childID,myprefix,recursionCounter,matInfo);
                 level--;
@@ -556,8 +458,9 @@ function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matInfo)
     }
 
     if  (info.length == 0) return ""; //is not a composite pc. no extra info needs to be added
-    matInfo[recursionCounter].string      += info;
-    matInfo[recursionCounter].stringshort += infoshort;
+    var index=getMatIndex(recursionCounter);
+    matInfo[index].string      += info;
+    matInfo[index].stringshort += infoshort;
 
     //is a composite pc so there will be a div in the next position
     var generatedDiv="";
@@ -571,86 +474,47 @@ function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matInfo)
     }
 }
 
-/*
-  matTreeAddNode - add a node to the matrix block structure tree
-  input:
-    matrixLevel, matDivCounter,recursionCounter,nameOfMatrix
-  output:
-    matDivCounter
-*/
-function matTreeAddNode(matrixLevel, matDivCounter,recursionCounter,nameOfMatrix)
-{
-    //add a line break for each new level
-    if (matrixLevel != matDivCounter)
-    {
-	matDivCounter = matDivCounter+1;
-	$("l1").append("<br>");
+//input: currentAsk
+//output: id of the next node that should be asked
+function matTreeGetNextNode(current)//uses matInfo to find and return the id of the next node to ask about SKIP ANY CHILDREN FROM NON-LOG STRUC PARENT
+{//important to remember that writeCounter is already pointing at an empty space at this point. this method also initializes the next object if needed.
+    if(current=="0" && askedA0)
+        return -1;//sort of base case. this only occurs when the tree has completely finished
+
+    if(current=="0")
+        askedA0=true;
+
+    var parentID=current.substring(0,current.length-1);//simply knock off the last digit of the id
+    var lastDigit=current.charAt(current.length-1);
+    lastDigit=parseInt(lastDigit);
+
+    var currentBlocks=matInfo[getMatIndex(current)].blocks;
+    var possibleChild=current+""+(currentBlocks-1);
+
+    //case 1: current node needs more child nodes
+    if(matInfo[getMatIndex(current)].logstruc && currentBlocks!=0 && getMatIndex(possibleChild)==-1) {//CHECK TO MAKE SURE CHILDREN DON'T ALREADY EXIST
+        alert("needs more children");
+        matInfo[matInfoWriteCounter]=new Object();
+        matInfo[matInfoWriteCounter].symm=matInfo[getMatIndex(current)].symm;//set defaults for the new node
+        matInfo[matInfoWriteCounter].posdef=matInfo[getMatIndex(current)].posdef;
+        return current+"0";//move onto first child
     }
-	
-    //Add a button to allow the toggle of the output resuls. The tree is made via style on the .html page. The style just centers the multiple elements across the pane
-    $("l1").append("<u1><button class=\"removeBtn\" id=\"recursion" + recursionCounter + "\">" + "\\(" + nameOfMatrix[recursionCounter] + "\\) </button></u1>")
-	
-    //Attach the recursion number to the html element to allow better inspection of resutls
-    $("#recursion" + recursionCounter).data("recurs", recursionCounter);
-    return matDivCounter;
-}
 
-/*
-  matTreeSetChildren - set the children of mat[currentRecursion] its inherited qualities (posdef and symm) 
-  input:
-    recursionCounter - index of  matInfo
-    matInfo 
-  output:
-    matInfo 
-*/
-function matTreeSetChildren(recursionCounter, matInfo)
-{
-    if (matInfo[recursionCounter].logstruc == true && 2*recursionCounter+2 < maxMatricies) {
-        var childleft  = 2 * recursionCounter + 1;
-        var childright = 2 * recursionCounter + 2;
-	matInfo[childleft] = {};
-	matInfo[childright] = {};
-
-	//if symmetric, all children are symmetric
-	if (matInfo[recursionCounter].symm) {
-	    matInfo[childleft].symm = true;
-	    matInfo[childright].symm = true;
-	} else {
-            matInfo[childleft].symm = false;
-	    matInfo[childright].symm = false;
-        }
-
-	//if positive definite, all children are positive definite
-	if (matInfo[recursionCounter].posdef) {
-	    matInfo[childleft].posdef = true;
-	    matInfo[childright].posdef = true;
-	} else {
-            matInfo[childleft].posdef = false;
-	    matInfo[childright].posdef = false;
-        }
+    //case 2: current node's child nodes completed. move on to sister nodes if any
+    if(current!="0" && lastDigit+1 < matInfo[getMatIndex(parentID)].blocks) {
+        alert("needs more sister nodes");
+        matInfo[matInfoWriteCounter]=new Object();
+        matInfo[matInfoWriteCounter].symm=matInfo[getMatIndex(current)].symm;//set defaults for the new node
+        matInfo[matInfoWriteCounter].posdef=matInfo[getMatIndex(current)].posdef;
+        var newEnding=parseInt(lastDigit)+1;
+        return ""+parentID+newEnding;
     }
-}
 
-/*
-  matTreeGetNextNode - Find next child node - Skip any children from a non-logically structured parent
-  input:
-    matNode
-  output:
-    global variables 'recursionCounter' and 'matDivCounter' are changed by this function!
-*/
-function matTreeGetNextNode(matNode)
-{
-    while (matNode[recursionCounter] == false && recursionCounter < maxMatricies) {   
-	recursionCounter += 1;
-	//add some blank elements to the tree to give it a better structure
-	matrixLevel = matGetLevel(recursionCounter);
-	//add a line break for new level
-	if (matrixLevel != matDivCounter) {
-	    matDivCounter += 1;
-	    $("l1").append("<br>");
-	}
-	$("l1").append("<u1 style=\"width:20px\"></u1>");
-    }
+    if(parentID=="")//only happens when there is only one A matrix
+        return -1;
+
+    //case 3: recursive case. both current node's child nodes and sister nodes completed. recursive search starting on parent again
+    return matTreeGetNextNode(parentID);
 }
 
 /*
@@ -696,4 +560,16 @@ function solverGetOptions(matInfo)
             pcGetDetailedInfo("pcList"+ i,prefix,i,matInfo);
 	}
     }
+}
+
+//input: desired id in string format. (for example, "01001")
+//output: index in matInfo where information on that id is located
+function getMatIndex(id)
+{
+    for(var i=0; i<matInfoWriteCounter; i++) {
+        if(matInfo[i].id == id)
+            return i;//return index where information is located.
+    }
+
+    return -1;//invalid id.
 }

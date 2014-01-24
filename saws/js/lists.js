@@ -70,13 +70,15 @@ function populateKspList(listId,listVals,defaultVal)
     if (defaultVal != "null") {
         $(list).find("option[value=" + defaultVal +"]").attr("selected","selected"); 
     } else {
-        var recursionCounter = oDivGetRecursionCounter(listId);
-        if (matInfo[recursionCounter].symm == undefined) {
-            alert("Warning: matInfo["+recursionCounter+"].symm is undefined!");
+        var matrixID = getMatrix(listId);
+        var matIndex = getMatIndex(matrixID);
+
+        if (typeof matInfo[matIndex].symm == undefined) {
+            alert("Warning: matInfo["+matIndex+"].symm is undefined!");
             $(list).find("option[value='gmres']").attr("selected","selected");
-        } else if (matInfo[recursionCounter].symm && !matInfo[recursionCounter].posdef) {
+        } else if (matInfo[matIndex].symm && !matInfo[matIndex].posdef) {
 	    $(list).find("option[value='minres']").attr("selected","selected");
-        } else if (matInfo[recursionCounter].symm && matInfo[recursionCounter].posdef) {
+        } else if (matInfo[matIndex].symm && matInfo[matIndex].posdef) {
 	    $(list).find("option[value='cg']").attr("selected","selected");
         } else {
 	    $(list).find("option[value='gmres']").attr("selected","selected");
@@ -135,43 +137,45 @@ function populatePcList(listId,listVals,defaultVal)
     }
 
     //set default pc_type
-    var recursionCounter = oDivGetRecursionCounter(listId);
-    if (matInfo[recursionCounter].logstruc == undefined) {
-        alert("Warning: matInfo["+recursionCounter+"].logstruc is undefined!");
+    var matrixID = getMatrix(listId);
+    var matIndex = getMatIndex(matrixID);
+
+    if (matInfo[matIndex].logstruc == undefined) {
+        alert("Warning: matInfo["+matIndex+"].logstruc is undefined!");
         if (defaultVal == "null") {
-	    $(list).find("option[value='bjacobi']").attr("selected","selected");  
+	    $(list).find("option[value='bjacobi']").attr("selected","selected");
         } else {
-            $(list).find("option[value=" + defaultVal +"]").attr("selected","selected"); 
+            $(list).find("option[value=" + defaultVal +"]").attr("selected","selected");
         }
-    } else if (matInfo[recursionCounter].logstruc) {
+    } else if (matInfo[matIndex].logstruc) {
 	$(list).find("option[value='fieldsplit']").attr("selected","selected");
     } else { //!matInfo[recursionCounter].logstruc
         if (defaultVal == "null") {
-	    $(list).find("option[value='bjacobi']").attr("selected","selected");  
+	    $(list).find("option[value='bjacobi']").attr("selected","selected");
         } else {
-            $(list).find("option[value=" + defaultVal +"]").attr("selected","selected"); 
+            $(list).find("option[value=" + defaultVal +"]").attr("selected","selected");
         }
     }
 }
 
 /*
-  oDivGetRecursionCounter - get recursionCounter of oDiv that contains the input object (copied from listLogic.js)
+  getMatrix - get id of matrix that contains the input object
   input:
     objId
   output:
-    recursionCounter of oDiv that contains the input object
+    id of matrix that contains the input object
 */
-function oDivGetRecursionCounter(objId) 
+function getMatrix(objId)
 {
     var parentDiv = $("#"+objId).parent().get(0).id;
-    var recursionCounter = parentDiv;
-    //alert('recursionCounter='+recursionCounter);
-    if (recursionCounter == "") {
-        recursionCounter = -1;
+    var id = parentDiv;
+
+    if (id == "") {//this only happens at the very start
+        id = "-1";
     } else {
-        while (recursionCounter.indexOf('_') != -1)
-	    recursionCounter=$("#"+recursionCounter).parent().get(0).id;
-        recursionCounter = recursionCounter.substring(1, recursionCounter.length);
+        while (id.indexOf('_') != -1)
+	    id=$("#"+id).parent().get(0).id;
+        id = id.substring(1, id.length);//A1010 etc...so knock off the first character
     }
-    return recursionCounter;
+    return id;
 }

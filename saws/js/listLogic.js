@@ -26,30 +26,30 @@ $(document).on('change', '.pcLists', function(){
 
     //.parent() returns a weird object so we need to use .get(0)
     var parentDiv = $(this).parent().get(0).id;
-    
-    //new way of finding parent (the number after o in the o div): parent=listRecursionCounter, but listRecursionCounter may not be defined, so cannot be used :-(
+
+    //first, find parent (the number after the A)
     var parent = parentDiv;
     while (parent.indexOf('_') != -1)
 	parent=$("#"+parent).parent().get(0).id;
-    parent = parent.substring(1, parent.length);  //parent=matrix recursion counter b/c resursion counter is not in this scope
+    parent = parent.substring(1, parent.length);
+
     //alert('parentDiv '+ parentDiv + '; parent '+parent + '; pcValue '+pcValue +'; this.id '+ this.id+'; recursionCounterSAWs '+recursionCounterSAWs);
-    //alert('logstruc='+matInfo[parent].logstruc);
-    //alert('currentRecursionCounter '+currentRecursionCounter+' parent '+parent + '; pcValue '+pcValue +'; recursionCounter '+recursionCounter);
-    if (parent < 0) return; //endtag for o-1 and other oparent are not consistent yet???
+
+    if (parent == "-1") return; //endtag for o-1 and other oparent are not consistent yet???
 
     // if pcValue is changed to !fieldsplit for logically structured matrix
-    if (pcValue != "fieldsplit" && matInfo[parent].logstruc) {
+    /*if (pcValue != "fieldsplit" && matInfo[parent].logstruc) {
         // find indices of all its children, remove all the options of its children
 	var children = [];
         var numChildren = matGetChildren(parent, maxMatricies, children);
 
 	// set parentFieldSplit as false for its children
         for (var i=0; i< numChildren; i++) {
-            if ($("#pcList" + children[i]).data("parentFieldSplit")) {
+            if ($("#pcList" + children[i]).data("parentFieldSplit")) {  COMMENT ALL OF THIS OUT FOR NOW. ORIGINALLY HAD.
                 $("#pcList" + children[i]).data("parentFieldSplit",false);
             }
         }
-    }
+    }*/
 
     if (pcValue == "mg") {
         //------------------------------------------------------
@@ -150,7 +150,8 @@ $(document).on('change', '.pcLists', function(){
 
 	//set defaults for redundant
 	$("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
-        if (matInfo[parent].symm) {
+        var index=getMatIndex(parent);
+        if (matInfo[index].symm) {
             $("#pcList"+parent+myendtag).find("option[value='cholesky']").attr("selected","selected");
         } else {
 	    $("#pcList"+parent+myendtag).find("option[value='lu']").attr("selected","selected");
@@ -180,8 +181,6 @@ $(document).on('change', '.pcLists', function(){
             //alternative???
             populateKspList("kspList"+parent+myendtag,null,SAWs_kspVal);
             populatePcList("pcList"+parent+myendtag,null,SAWs_pcVal);
-            //surtai added
-            //alert("current saw"+currentRecursionCounterSAWs);
             if(typeof sawsInfo[currentRecursionCounterSAWs-1].bjacobi_blocks == "undefined")//sometimes SAWs will fail to come up with a default
                 sawsInfo[currentRecursionCounterSAWs-1].bjacobi_blocks = "saws undefined";//this makes sure the program doesn't crash
             $("#bjacobiBlocks"+parent+myendtag).attr("value",sawsInfo[currentRecursionCounterSAWs-1].bjacobi_blocks);//minus 1 because array starts from 0 while currentRecursionCounter starts from 1
@@ -195,7 +194,8 @@ $(document).on('change', '.pcLists', function(){
         
 	    //set defaults for bjacobi
 	    $("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
-            if (matInfo[parent].symm) {
+            var index=getMatIndex(parent);
+            if (matInfo[index].symm) {
                 $("#pcList"+parent+myendtag).find("option[value='icc']").attr("selected","selected");
             } else {
 	        $("#pcList"+parent+myendtag).find("option[value='ilu']").attr("selected","selected");
@@ -230,7 +230,8 @@ $(document).on('change', '.pcLists', function(){
 
 	//set defaults for asm
 	$("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
-        if (matInfo[parent].symm) {
+        var index=getMatIndex(parent);
+        if (matInfo[index].symm) {
             $("#pcList"+parent+myendtag).find("option[value='icc']").attr("selected","selected");
         } else {
 	    $("#pcList"+parent+myendtag).find("option[value='ilu']").attr("selected","selected");
@@ -282,7 +283,7 @@ $(document).on('change', '.pcLists', function(){
 	$("#"+newDiv).remove();
     }
 
-    if (pcValue == "fieldsplit") {
+    /*if (pcValue == "fieldsplit") { //HAD THIS BEFORE WILL EDIT LATER
         //------------------------------------------------------
         if (!matInfo[parent].logstruc) {
             alert("Error: Preconditioner fieldsplit cannot be used for non-logically blocked matrix!");
@@ -306,13 +307,13 @@ $(document).on('change', '.pcLists', function(){
 	$("#"+newDiv).append("<b>Fieldsplit Type &nbsp;&nbsp;</b><select class=\"fieldsplitList\" id=\"fieldsplitList" + parent +myendtag+"\"></select>")  
         populateFieldsplitList("fieldsplitList"+parent+myendtag,null,"null");
 
-    } else { //not fieldsplit 
+    } else { //not fieldsplit
 	var newDiv = generateDivName(this.id,parent,"fieldsplit");
 	$("#"+newDiv).remove();
-    }
+    }*/
 
-    // if parentFieldSplit is false, disable kspList and pcList 
-    for (var i=0; i<maxMatricies; i++) {
+    // if parentFieldSplit is false, disable kspList and pcList  HAD THIS BEFORE WILL EDIT LATER
+    /*for (var i=0; i<maxMatricies; i++) {
 	if (!$("#pcList" + i).data("parentFieldSplit")) {
 	    $("#pcList" + i).attr("disabled", true)
 	    $("#kspList" + i).attr("disabled", true)
@@ -320,7 +321,7 @@ $(document).on('change', '.pcLists', function(){
 	    $("#pcList" + i).attr("disabled", false)
 	    $("#kspList" + i).attr("disabled", false)
 	}
-    } 
+    } */
 });
 
 /*
@@ -339,42 +340,13 @@ function generateDivName(id,matRecursion,pcValue)
     var endtag = id.substring(id.lastIndexOf("_"), id.length);
     //alert("generateDivName, pcValue "+pcValue+"; id "+id+"; endtag "+endtag);
 	
-    if (id.indexOf("_") == -1) { //o div -- fix afer we replace pcList0 with pcList0_???
+    if (id.indexOf("_") == -1) { //A div
         newDiv = pcValue + matRecursion + "_";
     } else {
         newDiv = pcValue + matRecursion + endtag;
     } 
     //alert("newDiv "+newDiv);
     return newDiv;
-}
-
-/*
-  matGetChildren - get all of children of the parent
-  input:
-    parent - recursionCounter of the parent matrix
-    maxMatricies
-  output:
-    children - array holding the recursionCounter of chidren
-    numChildren - number of children
-*/
-function matGetChildren(parent, maxMatricies, children)
-{
-    var numChildren = 0;
-    if (2 * parent + 2 > maxMatricies) return numChildren;
-
-    //think of a way to code this in an iteration calculate the direct children
-    children[0] = 2 * parent + 1;
-    children[1] = 2 * parent + 2;
-    numChildren += 2;
-
-    //calculate the rest of the children
-    var i = 0;
-    while (2*children[i] + 2 < maxMatricies) {
-	children[numChildren++] = 2 * children[i] + 1
-	children[numChildren++] = 2 * children[i] + 2;
-        i++;
-    }
-    return numChildren;
 }
 
 /*
@@ -390,18 +362,18 @@ $(document).on('change', '.mgLevels', function()
     var newDiv           = $(this).parent().get(0).id; //eg., mg0_
     var loc              = newDiv.indexOf('_');
 
-    //new way of finding parent (the number after o in the o div):  (parent=recursion counter)
+    //new way of finding parent (the id of the A matrix)
     var parentDiv = $(this).parent().get(0).id;
     while (parentDiv.indexOf('_') != -1)
 	parentDiv=$("#"+parentDiv).parent().get(0).id;
-    var recursionCounter = parentDiv.substring(1, parentDiv.length); //same as recursionCounter. will work when there is more than 1 digit after 'o'
+    var recursionCounter = parentDiv.substring(1, parentDiv.length); //will work when there is more than 1 digit after 'A'
 
     var endtag = newDiv.substring(loc);
     //alert("newDiv "+newDiv+"; endtag "+endtag+"; recursionCounter "+recursionCounter);
 
     //instead of removing entire div, only remove the necessary smoothing options
     var ksp = $('b[id^="text_kspList'+recursionCounter+endtag+'"]').filter(function() {
-	return this.id.substring(this.id.lastIndexOf('_'),this.id.length).length > endtag.length; //used to prevent removing options from higher levels since the first few characters would indeed match 
+	return this.id.substring(this.id.lastIndexOf('_'),this.id.length).length > endtag.length; //used to prevent removing options from higher levels since the first few characters would indeed match
     });
 
     ksp.next().next().remove();//remove br
@@ -409,7 +381,7 @@ $(document).on('change', '.mgLevels', function()
     ksp.remove();//remove text itself
 
     var pc = $('b[id^="text_pcList'+recursionCounter+endtag+'"]').filter(function() {
-	return this.id.substring(this.id.lastIndexOf('_'),this.id.length).length > endtag.length; 
+	return this.id.substring(this.id.lastIndexOf('_'),this.id.length).length > endtag.length;
     });
 
     pc.next().next().remove();//remove br
@@ -429,21 +401,34 @@ $(document).on('change', '.mgLevels', function()
     mgLevels = $("#mglevels" + recursionCounter + myendtag).val();
     if (mgLevels > 1) {
         for (var level=1; level<mgLevels; level++) { // must input text_smoothing in reverse order, i.e., PC, KSP, ..., PC, KSP - don't know why???
-	    
+
 	    if (level<10)//still using numbers
 		myendtag = endtag+level;
 	    else
 		myendtag = endtag+'abcdefghijklmnopqrstuvwxyz'.charAt(level-10);//add the correct char
-            
+
 	    $("#text_smoothing"+recursionCounter+endtag).after("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id=\"text_pcList"+recursionCounter+myendtag+"\">PC Level "+level+" &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList"+ recursionCounter+myendtag+"\"></select>");
             $("#text_smoothing"+recursionCounter+endtag).after("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id=\"text_kspList"+recursionCounter+myendtag+"\">KSP Level "+level+" &nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+ recursionCounter+myendtag +"\"></select>");
-            
+
             populateKspList("kspList"+recursionCounter+myendtag,null,"null");
-	    populatePcList("pcList"+recursionCounter+myendtag,null,"null"); 
+	    populatePcList("pcList"+recursionCounter+myendtag,null,"null");
             // set defaults
             $("#kspList"+recursionCounter+myendtag).find("option[value='chebyshev']").attr("selected","selected");
 	    $("#pcList"+recursionCounter+myendtag).find("option[value='sor']").attr("selected","selected");
         }
-    } 
+    }
 });
 
+//copied from main.js
+//input: desired id in string format. (for example, "01001")
+//output: index in matInfo where information on that id is located
+function getMatIndex(id)
+{
+    //matInfo and matInfoWriteCounter are visible here although declared in main.js
+    for(var i=0; i<matInfoWriteCounter; i++) {
+        if(matInfo[i].id == id)
+            return i;//return index where information is located.
+    }
+
+    return -1;//invalid id.
+}

@@ -58,17 +58,17 @@ nav a {text-decoration:none;color:#344873;font-family: Georgia, serif;}
 <br>
 <div id="matrixPic" style="width:540px;height:220px; float:left;background-color:#90C7E3;padding:5px;"></div>
 
-<div id="parameters" style="width:740px;height:220px;background-color:#90C7E3;padding:5px;">
+<div id="parameters" style="width:940px;height:220px;background-color:#90C7E3;padding:5px;">
 <FORM NAME="parameters" id="questions" >
-  <br>
+<b id="currentAskText">Currently Asking for Matrix A0</b>
   <TABLE cellspacing="5" >
     <colgroup>
       <col span="1" style="background-color:#90C7E3">
     </colgroup>
-    <TR> <!-- 1st row -->
-	<TH id="isYourMatrix"><span>Is your matrix A &nbsp </span></TH>
-        <TH></TH>
-    </TR>
+    <!-- <TR> <!-- 1st row -->
+	<!-- <TH id="isYourMatrix"><span>Is your matrix A &nbsp </span></TH> -->
+        <!-- <TH></TH> -->
+    <!-- </TR> -->
     <TR> <!-- 2nd row -->
       <TD><span>Symmetric?</span></TD>
       <TD><INPUT TYPE="checkbox" id="symm" name="symmOpt"></TD>
@@ -84,14 +84,12 @@ nav a {text-decoration:none;color:#344873;font-family: Georgia, serif;}
     <TR><TD COLSPAN=2>
     </TD></TR>
   </TABLE>
-  
+  <b id="fieldsplitBlocks_text">Fieldsplit Blocks </b><input type="text" id="fieldsplitBlocks" value="2" maxlength="2" class="fieldsplitBlocksInput">
   <br>
-  <input type="button" value="Continue" id="continueButton" style="float:right;">
-  
+  <input type="button" value="Continue" id="continueButton">
 </FORM>
 <br><br>
-
-</div> <!-- endof div id="parameters"-->
+</div> <!-- endof div id="parameters" -->
 
 <br><br><br><br><br><br>
 <!--
