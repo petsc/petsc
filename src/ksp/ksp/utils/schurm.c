@@ -715,6 +715,7 @@ PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,Mat
     ierr = VecReciprocal(diag);CHKERRQ(ierr);
     ierr = MatDuplicate(A01,MAT_COPY_VALUES,&AdB);CHKERRQ(ierr);
     ierr = MatDiagonalScale(AdB,diag,NULL);CHKERRQ(ierr);
+    ierr = VecDestroy(&diag);CHKERRQ(ierr);
     Sp       = (preuse == MAT_REUSE_MATRIX) ? *Spmat : (Mat)0;
     ierr     = MatMatMult(A10,AdB,preuse,PETSC_DEFAULT,&Sp);CHKERRQ(ierr);
     if (!A11) {
