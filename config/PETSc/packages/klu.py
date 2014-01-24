@@ -5,7 +5,7 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.__init__(self, framework)
     self.download = ['http://www.cise.ufl.edu/research/sparse/SuiteSparse/SuiteSparse-4.2.1.tar.gz']
     self.downloadfilename = 'SuiteSparse'
-    self.liblist   = [['libklu.a','libamd.a','libsuitesparseconfig.a','libbtf.a','libcolamd.a']]
+    self.liblist   = [['libklu.a','libamd.a','libbtf.a','libcolamd.a']]
     self.functions = ['klu_l_defaults','klu_l_analyze','klu_l_solve','klu_l_factor']
     self.includes  = ['klu.h']
     self.complex   = 1
