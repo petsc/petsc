@@ -47,7 +47,10 @@ PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t siz
 
   PetscFunctionBegin;
   while (format[i] && j < (PetscInt)size-1) {
-    if (format[i] == '%' && format[i+1] != '%') {
+    if (format[i] == '%' && format[i+1] == '%') {
+      newformat[j++] = format[i++];
+      newformat[j++] = format[i++];
+    } else if (format[i] == '%') {
       /* Find the letter */
       for (; format[i] && format[i] <= '9'; i++) newformat[j++] = format[i];
       switch (format[i]) {
@@ -61,10 +64,10 @@ PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t siz
 #endif
         break;
       case 'G':
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"%G format is no longer supported, use %g and caste the argument to double");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"%%G format is no longer supported, use %%g and caste the argument to double");
         break;
       case 'F':
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"%F format is no longer supported, use %g and caste the argument to double");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"%%F format is no longer supported, use $%g and caste the argument to double");
         break;
       default:
         newformat[j++] = format[i];
