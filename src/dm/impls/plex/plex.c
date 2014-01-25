@@ -5799,8 +5799,8 @@ PetscErrorCode indicesPointFields_private(PetscSection section, PetscInt point, 
 
   Input Parameters:
 + dm - The DM
-. section - The section describing the layout in v
-. globalSection - The section describing the layout in v
+. section - The section describing the layout in v, or NULL to use the default section
+. globalSection - The section describing the layout in v, or NULL to use the default global section
 . A - The matrix
 . point - The sieve point in the DM
 . values - The array of values
@@ -5824,7 +5824,9 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (!section) {ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 2);
+  if (!globalSection) {ierr = DMGetDefaultGlobalSection(dm, &globalSection);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(globalSection, PETSC_SECTION_CLASSID, 3);
   PetscValidHeaderSpecific(A, MAT_CLASSID, 4);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);

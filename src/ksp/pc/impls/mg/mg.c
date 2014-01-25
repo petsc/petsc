@@ -951,7 +951,7 @@ PetscErrorCode  PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
 #define __FUNCT__ "PCMGSetGalerkin"
 /*@
    PCMGSetGalerkin - Causes the coarser grid matrices to be computed from the
-      finest grid via the Galerkin process: A_i-1 = r_i * A_i * r_i^t
+      finest grid via the Galerkin process: A_i-1 = r_i * A_i * p_i
 
    Logically Collective on PC
 
@@ -983,7 +983,7 @@ PetscErrorCode PCMGSetGalerkin(PC pc,PetscBool use)
 #define __FUNCT__ "PCMGGetGalerkin"
 /*@
    PCMGGetGalerkin - Checks if Galerkin multigrid is being used, i.e.
-      A_i-1 = r_i * A_i * r_i^t
+      A_i-1 = r_i * A_i * p_i
 
    Not Collective
 
