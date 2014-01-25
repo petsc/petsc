@@ -812,7 +812,10 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
       *flg = PetscMin(*flg,flg2);
     }
   }
-
+  if (t > .0005) {
+    ierr = MatView(*A,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
+    PetscEnd();
+  }
   ierr = PetscLogEventEnd(TS_JacobianEval,ts,U,*A,*B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -414,7 +414,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
 
         ierr = MatGetOwnershipRange(pc->mat,&nmin,&nmax);CHKERRQ(ierr);
         ierr = MatFindOffBlockDiagonalEntries(pc->mat,&coupling);CHKERRQ(ierr);
-        ierr = ISComplement(coupling,nmin,nmax,&rest);CHKERRQ(ierr);
+        ierr = ISCreateStride(PetscObjectComm((PetscObject)pc->mat),nmax-nmin,nmin,1,&rest);CHKERRQ(ierr);
         if (jac->reset) {
           jac->head->is       = coupling;
           jac->head->next->is = rest;
