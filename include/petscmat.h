@@ -553,6 +553,7 @@ PETSC_EXTERN PetscErrorCode MatGetVecs(Mat,Vec*,Vec*);
 PETSC_EXTERN PetscErrorCode MatGetRedundantMatrix(Mat,PetscInt,MPI_Comm,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetMultiProcBlock(Mat,MPI_Comm,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatFindZeroDiagonals(Mat,IS*);
+PETSC_EXTERN PetscErrorCode MatFindOffBlockDiagonalEntries(Mat,IS*);
 
 /*MC
    MatSetValue - Set a single entry into a matrix.

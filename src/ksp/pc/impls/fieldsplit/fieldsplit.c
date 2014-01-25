@@ -307,7 +307,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
   PC_FieldSplitLink ilink              = jac->head;
-  PetscBool         fieldsplit_default = PETSC_FALSE,stokes = PETSC_FALSE;
+  PetscBool         fieldsplit_default = PETSC_FALSE,stokes = PETSC_FALSE,coupling = PETSC_FALSE;
   PetscInt          i;
 
   PetscFunctionBegin;
@@ -317,7 +317,8 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
    */
   if (!ilink || jac->reset) {
     ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,NULL);CHKERRQ(ierr);
-    if (pc->dm && jac->dm_splits && !stokes) {
+    ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_coupling",&coupling,NULL);CHKERRQ(ierr);
+    if (pc->dm && jac->dm_splits && !stokes && !coupling) {
       PetscInt  numFields, f, i, j;
       char      **fieldNames;
       IS        *fields;
@@ -406,6 +407,22 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
           ierr = PCFieldSplitSetIS(pc,"1",zerodiags);CHKERRQ(ierr);
         }
         ierr = ISDestroy(&zerodiags);CHKERRQ(ierr);
+        ierr = ISDestroy(&rest);CHKERRQ(ierr);
+      } else if (coupling) {
+        IS       coupling,rest;
+        PetscInt nmin,nmax;
+
+        ierr = MatGetOwnershipRange(pc->mat,&nmin,&nmax);CHKERRQ(ierr);
+        ierr = MatFindOffBlockDiagonalEntries(pc->mat,&coupling);CHKERRQ(ierr);
+        ierr = ISComplement(coupling,nmin,nmax,&rest);CHKERRQ(ierr);
+        if (jac->reset) {
+          jac->head->is       = coupling;
+          jac->head->next->is = rest;
+        } else {
+          ierr = PCFieldSplitSetIS(pc,"0",coupling);CHKERRQ(ierr);
+          ierr = PCFieldSplitSetIS(pc,"1",rest);CHKERRQ(ierr);
+        }
+        ierr = ISDestroy(&coupling);CHKERRQ(ierr);
         ierr = ISDestroy(&rest);CHKERRQ(ierr);
       } else {
         if (jac->reset) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cases not yet handled when PCReset() was used");
@@ -524,7 +541,11 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
           ierr = PetscObjectReference((PetscObject) jac->schur_user);CHKERRQ(ierr);
         }
       } else {
+        const char *prefix;
         ierr = MatGetSubMatrix(pc->pmat,ilink->is,ilink->is_col,MAT_INITIAL_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
+        ierr = KSPGetOptionsPrefix(ilink->ksp,&prefix);CHKERRQ(ierr);
+        ierr = MatSetOptionsPrefix(jac->pmat[i],prefix);CHKERRQ(ierr);
+        ierr = MatViewFromOptions(jac->pmat[i],NULL,"-mat_view");CHKERRQ(ierr);
       }
       /* create work vectors for each split */
       ierr     = MatGetVecs(jac->pmat[i],&jac->x[i],&jac->y[i]);CHKERRQ(ierr);
