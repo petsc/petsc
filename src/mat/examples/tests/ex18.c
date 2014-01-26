@@ -119,7 +119,7 @@ int main(int argc,char **args)
     for (b=0; b<bs; b++, Ii++) {
       boundary_indices[k*bs+b] = Ii;
       boundary_values[k*bs+b] = v;
-      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d %d %f\n", rank, Ii, v);CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d %D %f\n", rank, Ii, (double)PetscRealPart(v));CHKERRQ(ierr);
       v += 0.1;
     }
   }
@@ -146,7 +146,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(y, -1.0, rhs);CHKERRQ(ierr);
   ierr = VecNorm(y, NORM_INFINITY, &norm);CHKERRQ(ierr);
   if (norm > 1.0e-10) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "*** Difference between rhs and y, inf-norm: %f\n", norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "*** Difference between rhs and y, inf-norm: %f\n", (double)norm);CHKERRQ(ierr);
     ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Bug in MatZeroRowsColumns");
   }
