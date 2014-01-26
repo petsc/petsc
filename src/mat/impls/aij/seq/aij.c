@@ -471,13 +471,17 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"%% Size = %D %D \n",m,A->cmap->n);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"%% Nonzeros = %D \n",a->nz);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+    ierr = PetscViewerASCIIPrintf(viewer,"zzz = zeros(%D,4);\n",a->nz+nofinalvalue);CHKERRQ(ierr);
+#else
     ierr = PetscViewerASCIIPrintf(viewer,"zzz = zeros(%D,3);\n",a->nz+nofinalvalue);CHKERRQ(ierr);
+#endif
     ierr = PetscViewerASCIIPrintf(viewer,"zzz = [\n");CHKERRQ(ierr);
 
     for (i=0; i<m; i++) {
       for (j=a->i[i]+shift; j<a->i[i+1]+shift; j++) {
 #if defined(PETSC_USE_COMPLEX)
-        ierr = PetscViewerASCIIPrintf(viewer,"%D %D  %18.16e + %18.16ei \n",i+1,a->j[j]+!shift,PetscRealPart(a->a[j]),PetscImaginaryPart(a->a[j]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%D %D  %18.16e %18.16e\n",i+1,a->j[j]+!shift,PetscRealPart(a->a[j]),PetscImaginaryPart(a->a[j]));CHKERRQ(ierr);
 #else
         ierr = PetscViewerASCIIPrintf(viewer,"%D %D  %18.16e\n",i+1,a->j[j]+!shift,a->a[j]);CHKERRQ(ierr);
 #endif
