@@ -265,8 +265,8 @@
       call PetscDrawSetFromOptions(draw,ierr)
 
       call VecGetArray(x,lx_v,lx_i,ierr)
-      call PetscDrawTensorContour(draw,mx,my,PETSC_NULL_DOUBLE,              &
-     &     PETSC_NULL_DOUBLE,lx_v(lx_i+1),ierr)
+      call PetscDrawTensorContour(draw,mx,my,PETSC_NULL_REAL,              &
+     &     PETSC_NULL_REAL,lx_v(lx_i+1),ierr)
       call VecRestoreArray(x,lx_v,lx_i,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

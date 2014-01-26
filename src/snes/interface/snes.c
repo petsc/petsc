@@ -1490,11 +1490,23 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->norm              = 0.0;
   snes->normschedule      = SNES_NORM_ALWAYS;
   snes->functype          = SNES_FUNCTION_DEFAULT;
+#if defined(PETSC_USE_REAL_SINGLE)
+  snes->rtol              = 1.e-5;
+#else
   snes->rtol              = 1.e-8;
+#endif
   snes->ttol              = 0.0;
+#if defined(PETSC_USE_REAL_SINGLE)
+  snes->abstol            = 1.e-25;
+#else
   snes->abstol            = 1.e-50;
+#endif
   snes->stol              = 1.e-8;
+#if defined(PETSC_USE_REAL_SINGLE)
+  snes->deltatol          = 1.e-6;
+#else
   snes->deltatol          = 1.e-12;
+#endif
   snes->nfuncs            = 0;
   snes->numFailures       = 0;
   snes->maxFailures       = 1;
@@ -4263,7 +4275,7 @@ PetscErrorCode  SNESTestLocalMin(SNES snes)
     ierr = VecCopy(u,uh);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"i = %D\n",i);CHKERRQ(ierr);
     for (j=-10; j<11; j++) {
-      value = PetscSign(j)*exp(PetscAbs(j)-10.0);
+      value = PetscSign(j)*PetscExpReal(PetscAbs(j)-10.0);
       ierr  = VecSetValue(uh,i,value,ADD_VALUES);CHKERRQ(ierr);
       ierr  = SNESComputeFunction(snes,uh,fh);CHKERRQ(ierr);
       ierr  = VecNorm(fh,NORM_2,&norm);CHKERRQ(ierr);

@@ -928,7 +928,7 @@ $        3
 
   Level: beginner
 
-.seealso: DMPlexCreate()
+.seealso: DMPlexCreateFromDAG(), DMPlexCreate()
 @*/
 PetscErrorCode DMPlexCreateFromCellList(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, PetscBool interpolate, const int cells[], PetscInt spaceDim, const double vertexCoords[], DM *dm)
 {
@@ -952,9 +952,44 @@ PetscErrorCode DMPlexCreateFromCellList(MPI_Comm comm, PetscInt dim, PetscInt nu
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateFromDAG"
-/*
-  This takes as input the raw Hasse Diagram data
-*/
+/*@
+  DMPlexCreateFromDAG - This takes as input the adjacency-list representation of the Directed Acyclic Graph (Hasse Diagram) encoding a mesh, and produces a DM
+
+  Input Parameters:
++ dm - The empty DM object, usually from DMCreate() and DMPlexSetDimension()
+. depth - The depth of the DAG
+. numPoints - The number of points at each depth
+. coneSize - The cone size of each point
+. cones - The concatenation of the cone points for each point, the cone list must be oriented correctly for each point
+. coneOrientations - The orientation of each cone point
+- vertexCoords - An array of numVertices*dim numbers, the coordinates of each vertex
+
+  Output Parameter:
+. dm - The DM
+
+  Note: Two triangles sharing a face would have input
+$  depth = 1, numPoints = [4 2], coneSize = [3 3 0 0 0 0]
+$  cones = [2 3 4  3 5 4], coneOrientations = [0 0 0  0 0 0]
+$ vertexCoords = [-1.0 0.0  0.0 -1.0  0.0 1.0  1.0 0.0]
+$
+which would result in the DMPlex
+$
+$        4
+$      / | \
+$     /  |  \
+$    /   |   \
+$   2  0 | 1  5
+$    \   |   /
+$     \  |  /
+$      \ | /
+$        3
+$
+$ Notice that all points are numbered consecutively, unlikely DMPlexCreateFromCellList()
+
+  Level: advanced
+
+.seealso: DMPlexCreateFromCellList(), DMPlexCreate()
+@*/
 PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoints[], const PetscInt coneSize[], const PetscInt cones[], const PetscInt coneOrientations[], const PetscScalar vertexCoords[])
 {
   Vec            coordinates;

@@ -989,7 +989,7 @@ PetscErrorCode Initialize(Vec Y, void* s)
   }
   ierr = PetscOptionsGetScalarArray(PETSC_NULL,"-yinit",y,&N,&flg);CHKERRQ(ierr);
   if ((N != GetSize((const char*)s)) && flg) {
-    printf("Error: number of initial values %d does not match problem size %d.\n",(int)N,(int)GetSize((const char*)s));
+    SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Number of initial values %D does not match problem size %D.\n",N,GetSize((const char*)s));
   }
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1007,22 +1007,22 @@ PetscErrorCode ExactSolution(Vec Y, void* s, PetscReal t, PetscBool *flag)
   PetscFunctionBegin;
   if (!strcmp(p,"hull1972a1")) {
     ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    y[0] = PetscExpScalar(-t);
+    y[0] = PetscExpReal(-t);
     *flag = PETSC_TRUE;
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else if (!strcmp(p,"hull1972a2")) {
     ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    y[0] = 1.0/PetscSqrtScalar(t+1);
+    y[0] = 1.0/PetscSqrtReal(t+1);
     *flag = PETSC_TRUE;
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else if (!strcmp(p,"hull1972a3")) {
     ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    y[0] = PetscExpScalar(sin(t));
+    y[0] = PetscExpReal(PetscSinReal(t));
     *flag = PETSC_TRUE;
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else if (!strcmp(p,"hull1972a4")) {
     ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    y[0] = 20.0/(1+19.0*PetscExpScalar(-t/4.0));
+    y[0] = 20.0/(1+19.0*PetscExpReal(-t/4.0));
     *flag = PETSC_TRUE;
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else {
@@ -1047,10 +1047,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
 
   PetscFunctionBegin;
   N = GetSize((const char *)&ptype[0]);
-  if (N < 0) {
-    printf("Error: Illegal problem specification.\n");
-    return(0);
-  }
+  if (N < 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Illegal problem specification.\n");
   ierr = VecCreate(PETSC_COMM_WORLD,&Y);CHKERRQ(ierr);
   ierr = VecSetSizes(Y,N,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetUp(Y);CHKERRQ(ierr);
@@ -1147,19 +1144,19 @@ int main(int argc, char **argv)
     error[r] = 0;
     if (r > 0) dt /= refine_fac;
 
-    PetscPrintf(PETSC_COMM_WORLD,"Solving ODE \"%s\" with dt %f, final time %f and system size %d.\n",ptype,dt,tfinal,GetSize(&ptype[0]));
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Solving ODE \"%s\" with dt %f, final time %f and system size %D.\n",ptype,(double)dt,(double)tfinal,GetSize(&ptype[0]));
     ierr = SolveODE(&ptype[0],dt,tfinal,maxiter,&error[r],&flag);
     if (flag) {
       /* If exact solution available for the specified ODE */
       if (r > 0) {
         PetscReal conv_rate = (PetscLogReal(error[r]) - PetscLogReal(error[r-1])) / (-PetscLogReal(refine_fac));
-        printf("Error = %E,\tConvergence rate = %f\n.",error[r],conv_rate);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Error = %E,\tConvergence rate = %f\n.",(double)error[r],(double)conv_rate);CHKERRQ(ierr);
       } else {
-        printf("Error = %E.\n",error[r]);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Error = %E.\n",error[r]);CHKERRQ(ierr);
       }
     }
   }
-  PetscFree(error);CHKERRQ(ierr);
+  ierr = PetscFree(error);CHKERRQ(ierr);
 
   /* Exit */
   PetscFinalize();

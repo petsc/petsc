@@ -184,7 +184,7 @@ PetscErrorCode FormPsiAndInitialGuess(DM da,Vec U0,PetscBool feasible)
 
       if (feasible) {
         if (i == 0 || j == 0 || i == Mx-1 || j == My-1) u0[j][i] = uexact[j][i];
-        else u0[j][i] = uexact[j][i] + cos(pi * x / 4) * cos(pi * y / 4); /* initial guess is admissible: it is above the obstacle */
+        else u0[j][i] = uexact[j][i] + PetscCosReal(pi * x / 4) * PetscCosReal(pi * y / 4); /* initial guess is admissible: it is above the obstacle */
       } else u0[j][i] = 0.;
     }
   }

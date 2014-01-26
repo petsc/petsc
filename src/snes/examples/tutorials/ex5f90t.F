@@ -44,7 +44,7 @@
         PetscInt ys,ye,ym,gys,gye,gym
         PetscInt mx,my
         PetscMPIInt rank
-        double precision lambda
+        PetscReal lambda
       end type userctx
 
       contains
@@ -173,7 +173,7 @@
       PetscInt         its
       PetscBool        flg,matrix_free
       PetscInt         ione,nfour
-      double precision lambda_max,lambda_min
+      PetscReal lambda_max,lambda_min
       type(userctx)    user
       type(userctx), pointer:: puser
 

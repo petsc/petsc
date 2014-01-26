@@ -45,7 +45,7 @@ $     FEM:   Two points p and q are adjacent if q \in closure(star(p)), prealloc
 $     FVM:   Two points p and q are adjacent if q \in star(cone(p)),    preallocCenterDim = dim-1
 $     FVM++: Two points p and q are adjacent if q \in star(closure(p)), preallocCenterDim = 0
 
-.seealso: DMCreateMatrix(), DMPlexPreallocateOperator()
+.seealso: DMCreateMatrix(), DMPlexPreallocateOperator(), DMPlexGetPreallocationCenterDimension()
 @*/
 PetscErrorCode DMPlexSetPreallocationCenterDimension(DM dm, PetscInt preallocCenterDim)
 {
@@ -58,10 +58,40 @@ PetscErrorCode DMPlexSetPreallocationCenterDimension(DM dm, PetscInt preallocCen
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexGetPreallocationCenterDimension"
+/*@
+  DMPlexGetPreallocationCenterDimension - Return the topology used to determine adjacency
+
+  Input Parameter:
+. dm - The DM object
+
+  Output Parameter:
+. preallocCenterDim - The dimension of points which connect adjacent entries
+
+  Level: developer
+
+  Notes:
+$     FEM:   Two points p and q are adjacent if q \in closure(star(p)), preallocCenterDim = dim
+$     FVM:   Two points p and q are adjacent if q \in star(cone(p)),    preallocCenterDim = dim-1
+$     FVM++: Two points p and q are adjacent if q \in star(closure(p)), preallocCenterDim = 0
+
+.seealso: DMCreateMatrix(), DMPlexPreallocateOperator(), DMPlexSetPreallocationCenterDimension()
+@*/
+PetscErrorCode DMPlexGetPreallocationCenterDimension(DM dm, PetscInt *preallocCenterDim)
+{
+  DM_Plex *mesh = (DM_Plex*) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(preallocCenterDim, 2);
+  *preallocCenterDim = mesh->preallocCenterDim;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexPreallocateOperator"
 PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection section, PetscSection sectionGlobal, PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[], Mat A, PetscBool fillMatrix)
 {
-  DM_Plex           *mesh = (DM_Plex*) dm->data;
   MPI_Comm           comm;
   MatType            mtype;
   PetscSF            sf, sfDof, sfAdj;
@@ -71,7 +101,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   const PetscSFNode *remotes;
   PetscInt           dim, pStart, pEnd, numDof, globalOffStart, globalOffEnd, numCols;
   PetscInt          *tmpClosure, *tmpAdj, *adj, *rootAdj, *cols, *remoteOffsets;
-  PetscInt           depth, maxConeSize, maxSupportSize, maxClosureSize, maxAdjSize, adjSize;
+  PetscInt           depth, centerDim, maxConeSize, maxSupportSize, maxClosureSize, maxAdjSize, adjSize;
   PetscLayout        rLayout;
   PetscInt           locRows, rStart, rEnd, r;
   PetscMPIInt        size;
@@ -107,11 +137,12 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   /*   FEM:   Two points p and q are adjacent if q \in closure(star(p)), preallocCenterDim = dim   */
   /*   FVM:   Two points p and q are adjacent if q \in star(cone(p)),    preallocCenterDim = dim-1 */
   /*   FVM++: Two points p and q are adjacent if q \in star(closure(p)), preallocCenterDim = 0     */
-  if (mesh->preallocCenterDim == dim) {
+  ierr = DMPlexGetPreallocationCenterDimension(dm, &centerDim);CHKERRQ(ierr);
+  if (centerDim == dim) {
     useClosure = PETSC_FALSE;
-  } else if (mesh->preallocCenterDim == 0) {
+  } else if (centerDim == 0) {
     useClosure = PETSC_TRUE;
-  } else SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Do not support preallocation with center points of dimension %d", mesh->preallocCenterDim);
+  } else SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Do not support preallocation with center points of dimension %d", centerDim);
 
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(section, &numDof);CHKERRQ(ierr);
@@ -124,8 +155,8 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
 
-  maxClosureSize = 2*PetscMax(PetscPowInt(mesh->maxConeSize,depth+1),PetscPowInt(mesh->maxSupportSize,depth+1));
-  maxAdjSize     = PetscPowInt(mesh->maxConeSize,depth+1) * PetscPowInt(mesh->maxSupportSize,depth+1) + 1;
+  maxClosureSize = 2*PetscMax(PetscPowInt(maxConeSize,depth+1),PetscPowInt(maxSupportSize,depth+1));
+  maxAdjSize     = PetscPowInt(maxConeSize,depth+1) * PetscPowInt(maxSupportSize,depth+1) + 1;
 
   ierr = PetscMalloc2(maxClosureSize,&tmpClosure,maxAdjSize,&tmpAdj);CHKERRQ(ierr);
 

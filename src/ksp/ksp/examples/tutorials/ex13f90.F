@@ -67,7 +67,7 @@
       PetscScalar,ALLOCATABLE :: solution(:,:)
       PetscScalar,ALLOCATABLE :: rho(:,:)
 
-      double precision hx2,hy2
+      PetscReal hx2,hy2
       common /param/ hx2,hy2
 
       tmax = 2
@@ -180,7 +180,7 @@
       PetscFortranAddr userctx(*)
 
       common /param/ hx2,hy2
-      double precision hx2,hy2
+      PetscReal hx2,hy2
 
 !  Local variable declararions
       Mat     A
@@ -250,7 +250,7 @@
 
 
       common /param/ hx2,hy2
-      double precision hx2,hy2
+      PetscReal hx2,hy2
 
       PC   pc
       KSP ksp

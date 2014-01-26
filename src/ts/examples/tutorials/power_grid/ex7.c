@@ -186,7 +186,7 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
     }
   } else {
     /* Change PM_min accordingly */
-    user->PM_min = user->Pmax*sin(mux);
+    user->PM_min = user->Pmax*PetscSinScalar(mux);
     for (i=xs; i < xs+xm; i++) {
       for (j=ys; j < ys+ym; j++) {
         xi = coors[j][i].x; yi = coors[j][i].y;
@@ -229,7 +229,7 @@ PetscErrorCode adv2(PetscScalar **p,PetscScalar x,PetscInt i,PetscInt j,PetscInt
 {
   PetscScalar f,fpos,fneg;
   PetscFunctionBegin;
-  f   = (user->ws/(2*user->H))*(user->PM_min - user->Pmax*sin(x));
+  f   = (user->ws/(2*user->H))*(user->PM_min - user->Pmax*PetscSinScalar(x));
   fpos = PetscMax(f,0);
   fneg = PetscMin(f,0);
   if (user->st_width == 1) {
@@ -344,7 +344,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J,Mat
       c1        = (yi-user->ws)/user->dx;
       c1pos    = PetscMax(c1,0);
       c1neg    = PetscMin(c1,0);
-      c3        = (user->ws/(2.0*user->H))*(user->PM_min - user->Pmax*sin(xi))/user->dy;
+      c3        = (user->ws/(2.0*user->H))*(user->PM_min - user->Pmax*PetscSinScalar(xi))/user->dy;
       c3pos    = PetscMax(c3,0);
       c3neg    = PetscMin(c3,0);
       c5        = (PetscPowScalar((user->lambda*user->ws)/(2*user->H),2)*user->q*(1.0-PetscExpScalar(-t/user->lambda)))/(user->dy*user->dy);

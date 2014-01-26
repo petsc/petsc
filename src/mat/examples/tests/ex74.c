@@ -13,7 +13,7 @@ int main(int argc,char **args)
   Mat            A;                    /* linear system matrix */
   Mat            sA,sB,sC;             /* symmetric part of the matrices */
   PetscInt       n,mbs=16,bs=1,nz=3,prob=1,i,j,k1,k2,col[3],lf,block, row,Ii,J,n1,inc;
-  PetscReal      norm1,norm2,rnorm,tol=1.e-10;
+  PetscReal      norm1,norm2,rnorm,tol=PETSC_SMALL;
   PetscScalar    neg_one = -1.0,four=4.0,value[3];
   IS             perm, iscol;
   PetscRandom    rdm;
@@ -76,7 +76,7 @@ int main(int argc,char **args)
       ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
 
     } else if (prob ==2) { /* matrix for the five point stencil */
-      n1 = (int) (PetscSqrtReal((PetscReal)n) + 0.001);
+      n1 = (PetscInt) (PetscSqrtReal((PetscReal)n) + 0.001);
       if (n1*n1 - n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"sqrt(n) must be a positive interger!");
       for (i=0; i<n1; i++) {
         for (j=0; j<n1; j++) {
@@ -174,19 +174,19 @@ int main(int argc,char **args)
   /* Test MatNorm() */
   ierr  = MatNorm(A,NORM_FROBENIUS,&norm1);CHKERRQ(ierr);
   ierr  = MatNorm(sB,NORM_FROBENIUS,&norm2);CHKERRQ(ierr);
-  rnorm = PetscAbsScalar(norm1-norm2)/norm2;
+  rnorm = PetscAbsReal(norm1-norm2)/norm2;
   if (rnorm > tol) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_FROBENIUS, NormA=%16.14e NormsB=%16.14e\n",norm1,norm2);CHKERRQ(ierr);
   }
   ierr  = MatNorm(A,NORM_INFINITY,&norm1);CHKERRQ(ierr);
   ierr  = MatNorm(sB,NORM_INFINITY,&norm2);CHKERRQ(ierr);
-  rnorm = PetscAbsScalar(norm1-norm2)/norm2;
+  rnorm = PetscAbsReal(norm1-norm2)/norm2;
   if (rnorm > tol) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_INFINITY(), NormA=%16.14e NormsB=%16.14e\n",norm1,norm2);CHKERRQ(ierr);
   }
   ierr  = MatNorm(A,NORM_1,&norm1);CHKERRQ(ierr);
   ierr  = MatNorm(sB,NORM_1,&norm2);CHKERRQ(ierr);
-  rnorm = PetscAbsScalar(norm1-norm2)/norm2;
+  rnorm = PetscAbsReal(norm1-norm2)/norm2;
   if (rnorm > tol) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_INFINITY(), NormA=%16.14e NormsB=%16.14e\n",norm1,norm2);CHKERRQ(ierr);
   }

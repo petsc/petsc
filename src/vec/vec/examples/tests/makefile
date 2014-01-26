@@ -374,9 +374,9 @@ runex33:
 	   ${RM} -f ex33_1.tmp
 runex34:
 	-@${MPIEXEC} -n 1 ./ex34 > ex34_1.tmp 2>&1;
-	-@cat ex34_1.tmp | sed s/e-00/e+00/g | awk '{ $$1=""; if (v!="") { if (v!=$$0) {print "  orig <" v "> \n  cached <" $$0 ">"}; v=""} else {v=$$0} }' > ex34_1.dif
-	-@if [ ` cat ex34_1.dif | wc -l ` -gt 0 ] ; then \
-	    printf "${PWD}\nPossible problem with ex34_1\n=========================================\n"; cat ex34_1.dif; fi; \
+	-@cat ex34_1.tmp | sed s/e-00/e+00/g | awk '{ if (v!="") { if (v!=$$2) {print "  orig <" v "> \n  cached <" $$0 ">"}; v=""} else {v=$$2} }' > ex34_1.dif
+	-@if [ ` cat ex34_1.dif | wc -l ` -gt 0 ] ; then  cat ex34_1.dif ;\
+	    printf "${PWD}\nPossible problem with ex34_1\n=========================================\n"; fi; \
 	   ${RM} -f ex34_1.tmp ex34_1.dif
 runex35:
 	-@${MPIEXEC} -n 1 ./ex35 > ex35_1.tmp 2>&1;\
@@ -394,19 +394,19 @@ runex37:
 	    ${DIFF} output/ex37_1.out ex37_1.tmp || printf "${PWD}\nPossible problem with ex37_1, diffs above\n=========================================\n"; \
 	    ${RM} -f ex37_1.tmp
 
-runex37_1:
+runex37_2:
 	-@${MPIEXEC} -n 1 ./ex37 -explicit_is 1 > ex37_1.tmp 2>&1;\
-	    ${DIFF} output/ex37_1.out ex37_1.tmp || printf "${PWD}\nPossible problem with ex37_1, diffs above\n=========================================\n"; \
+	    ${DIFF} output/ex37_1.out ex37_1.tmp || printf "${PWD}\nPossible problem with ex37_2, diffs above\n=========================================\n"; \
 	    ${RM} -f ex37_1.tmp
 
-runex37_2:
+runex37_3:
 	-@${MPIEXEC} -n 2 ./ex37 -explicit_is 0 > ex37_2.tmp 2>&1;\
-	    ${DIFF} output/ex37_2.out ex37_2.tmp || printf "${PWD}\nPossible problem with ex37_2, diffs above\n=========================================\n"; \
+	    ${DIFF} output/ex37_2.out ex37_2.tmp || printf "${PWD}\nPossible problem with ex37_3, diffs above\n=========================================\n"; \
 	    ${RM} -f ex37_2.tmp
 
-runex37_3:
+runex37_4:
 	-@${MPIEXEC} -n 2 ./ex37 -explicit_is 1 > ex37_2.tmp 2>&1;\
-	    ${DIFF} output/ex37_2.out ex37_2.tmp || printf "${PWD}\nPossible problem with ex37_2, diffs above\n=========================================\n"; \
+	    ${DIFF} output/ex37_2.out ex37_2.tmp || printf "${PWD}\nPossible problem with ex37_4, diffs above\n=========================================\n"; \
 	    ${RM} -f ex37_2.tmp
 
 runex38:
@@ -436,7 +436,7 @@ TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc 
                               ex14.rm ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm ex17.PETSc runex17 \
                               ex17.rm ex21.PETSc runex21 runex21_2 ex21.rm ex25.PETSc runex25 ex25.rm ex29.PETSc \
                               runex29 ex29.rm ex34.PETSc runex34 ex34.rm ex36.PETSc runex36 ex36.rm \
-                              ex37.PETSc runex37 runex37_1 runex37_2 ex37.rm ex38.PETSc runex38 ex38.rm
+                              ex37.PETSc runex37 runex37_2 runex37_3 runex37_4  ex37.rm ex38.PETSc runex38 ex38.rm
 TESTEXAMPLES_C_X	    = ex10.PETSc runex10 ex10.rm ex22.PETSc runex22 ex22.rm ex23.PETSc runex23 ex23.rm \
                               ex24.PETSc runex24 ex24.rm ex28.PETSc runex28 runex28_2 ex28.rm ex33.PETSc runex33 ex33.rm
 TESTEXAMPLES_FORTRAN	    = ex17f.PETSc runex17f ex17f.rm ex19f.PETSc ex19f.rm ex20f.PETSc ex20f.rm ex30f.PETSc \

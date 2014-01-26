@@ -20,7 +20,11 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool beg
   const PetscScalar *x;
 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_CUSP)
+  if ((vec->petscnative || vec->ops->getarray) && vec->valid_GPU_array != PETSC_CUSP_GPU) {
+#else
   if (vec->petscnative || vec->ops->getarray) {
+#endif
     ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
     ierr = VecGetArrayRead(vec,&x);CHKERRQ(ierr);
     for (i=0; i<n; i++) {

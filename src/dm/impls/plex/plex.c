@@ -2675,21 +2675,21 @@ PetscErrorCode DMPlexPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
 PetscErrorCode DMPlexPartition_ParMetis(DM dm, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection *partSection, IS *partition)
 {
   MPI_Comm       comm;
-  PetscInt       nvtxs      = numVertices; // The number of vertices in full graph
-  PetscInt      *vtxdist;                  // Distribution of vertices across processes
-  PetscInt      *xadj       = start;       // Start of edge list for each vertex
-  PetscInt      *adjncy     = adjacency;   // Edge lists for all vertices
-  PetscInt      *vwgt       = NULL;        // Vertex weights
-  PetscInt      *adjwgt     = NULL;        // Edge weights
-  PetscInt       wgtflag    = 0;           // Indicates which weights are present
-  PetscInt       numflag    = 0;           // Indicates initial offset (0 or 1)
-  PetscInt       ncon       = 1;           // The number of weights per vertex
-  PetscInt       nparts;                   // The number of partitions
-  PetscReal     *tpwgts;                   // The fraction of vertex weights assigned to each partition
-  PetscReal     *ubvec;                    // The balance intolerance for vertex weights
-  PetscInt       options[5];               // Options
-  // Outputs
-  PetscInt       edgeCut;                  // The number of edges cut by the partition
+  PetscInt       nvtxs      = numVertices; /* The number of vertices in full graph */
+  PetscInt      *vtxdist;                  /* Distribution of vertices across processes */
+  PetscInt      *xadj       = start;       /* Start of edge list for each vertex */
+  PetscInt      *adjncy     = adjacency;   /* Edge lists for all vertices */
+  PetscInt      *vwgt       = NULL;        /* Vertex weights */
+  PetscInt      *adjwgt     = NULL;        /* Edge weights */
+  PetscInt       wgtflag    = 0;           /* Indicates which weights are present */
+  PetscInt       numflag    = 0;           /* Indicates initial offset (0 or 1) */
+  PetscInt       ncon       = 1;           /* The number of weights per vertex */
+  PetscInt       nparts;                   /* The number of partitions */
+  PetscReal     *tpwgts;                   /* The fraction of vertex weights assigned to each partition */
+  PetscReal     *ubvec;                    /* The balance intolerance for vertex weights */
+  PetscInt       options[5];               /* Options */
+  /* Outputs */
+  PetscInt       edgeCut;                  /* The number of edges cut by the partition */
   PetscInt      *assignment, *points;
   PetscMPIInt    commSize, rank, p, v, i;
   PetscErrorCode ierr;
@@ -4588,8 +4588,8 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
 PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numFields,const PetscInt numComp[],const PetscInt numDof[], PetscSection *section)
 {
   PetscInt      *numDofTot;
-  PetscInt       pStart = 0, pEnd = 0;
-  PetscInt       p, d, f;
+  PetscInt       depth, pStart = 0, pEnd = 0;
+  PetscInt       p, d, dep, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -4609,8 +4609,10 @@ PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numField
   }
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*section, pStart, pEnd);CHKERRQ(ierr);
-  for (d = 0; d <= dim; ++d) {
-    ierr = DMPlexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  for (dep = 0; dep <= depth; ++dep) {
+    d    = dim == depth ? dep : (!dep ? 0 : dim);
+    ierr = DMPlexGetDepthStratum(dm, dep, &pStart, &pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       for (f = 0; f < numFields; ++f) {
         ierr = PetscSectionSetFieldDof(*section, p, f, numDof[f*(dim+1)+d]);CHKERRQ(ierr);
@@ -5797,8 +5799,8 @@ PetscErrorCode indicesPointFields_private(PetscSection section, PetscInt point, 
 
   Input Parameters:
 + dm - The DM
-. section - The section describing the layout in v
-. globalSection - The section describing the layout in v
+. section - The section describing the layout in v, or NULL to use the default section
+. globalSection - The section describing the layout in v, or NULL to use the default global section
 . A - The matrix
 . point - The sieve point in the DM
 . values - The array of values
@@ -5822,7 +5824,9 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (!section) {ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 2);
+  if (!globalSection) {ierr = DMGetDefaultGlobalSection(dm, &globalSection);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(globalSection, PETSC_SECTION_CLASSID, 3);
   PetscValidHeaderSpecific(A, MAT_CLASSID, 4);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
@@ -6214,16 +6218,16 @@ PetscErrorCode DMPlexCheckSymmetry(DM dm)
 @*/
 PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscBool isSimplex, PetscInt cellHeight)
 {
-  PetscInt       dim, numCorners, vStart, vEnd, cStart, cEnd, cMax, c;
+  PetscInt       dim, numCorners, numHybridCorners, vStart, vEnd, cStart, cEnd, cMax, c;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   switch (dim) {
-  case 1: numCorners = isSimplex ? 2 : 2; break;
-  case 2: numCorners = isSimplex ? 3 : 4; break;
-  case 3: numCorners = isSimplex ? 4 : 8; break;
+  case 1: numCorners = isSimplex ? 2 : 2; numHybridCorners = isSimplex ? 2 : 2; break;
+  case 2: numCorners = isSimplex ? 3 : 4; numHybridCorners = isSimplex ? 4 : 4; break;
+  case 3: numCorners = isSimplex ? 4 : 8; numHybridCorners = isSimplex ? 6 : 8; break;
   default:
     SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle meshes of dimension %d", dim);
   }
@@ -6241,6 +6245,17 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscBool isSimplex, PetscInt cellHeig
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     if (coneSize != numCorners) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %d has  %d vertices != %d", c, coneSize, numCorners);
+  }
+  for (c = cMax; c < cEnd; ++c) {
+    PetscInt *closure = NULL, closureSize, cl, coneSize = 0;
+
+    ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    for (cl = 0; cl < closureSize*2; cl += 2) {
+      const PetscInt p = closure[cl];
+      if ((p >= vStart) && (p < vEnd)) ++coneSize;
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    if (coneSize > numHybridCorners) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Hybrid cell %d has  %d vertices > %d", c, coneSize, numHybridCorners);
   }
   PetscFunctionReturn(0);
 }
