@@ -236,8 +236,7 @@ PETSC_EXTERN PetscErrorCode PetscLogSet(PetscErrorCode (*)(int, int, PetscObject
 PETSC_EXTERN PetscErrorCode PetscLogObjectState(PetscObject, const char[], ...);
 /* Output functions */
 PETSC_EXTERN PetscErrorCode PetscLogView(PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscLogViewPython(PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscLogPrintDetailed(MPI_Comm, const char[]);
+PETSC_EXTERN PetscErrorCode PetscLogViewFromOptions(void);
 PETSC_EXTERN PetscErrorCode PetscLogDump(const char[]);
 
 PETSC_EXTERN PetscErrorCode PetscGetFlops(PetscLogDouble *);
@@ -428,7 +427,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm, PetscLogD
 #define PetscLogStageRegister(a,b)          0
 #define PetscLogStagePrint(a,flg)           0
 #define PetscLogView(viewer)                0
-#define PetscLogViewPython(viewer)          0
+#define PetscLogViewFromOptions()           0
 #define PetscLogPrintDetailed(comm,file)    0
 #define PetscLogBegin()                     0
 #define PetscLogTraceBegin(file)            0
