@@ -324,15 +324,11 @@ static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt timestep,
 {
   PetscMPIInt comm_size;
   PetscErrorCode ierr;
-  hsize_t chunk_size, target_size, dim,
-    vec_size = sizeof(PetscScalar)*da->M*da->N*da->P*da->w,
-    avg_local_vec_size,
-    KiB = 1024,
-    MiB = KiB*KiB,
-    GiB = MiB*KiB,
-    min_size = MiB,
-    max_chunks = 64*KiB,                                              /* HDF5 internal limitation */
-    max_chunk_size = 4*GiB;                                           /* HDF5 internal limitation */
+  hsize_t chunk_size, target_size, dim;
+  hsize_t vec_size = sizeof(PetscScalar)*da->M*da->N*da->P*da->w;
+  hsize_t avg_local_vec_size,KiB = 1024,MiB = KiB*KiB,GiB = MiB*KiB,min_size = MiB;
+  hsize_t max_chunks = 64*KiB;                                              /* HDF5 internal limitation */
+  hsize_t max_chunk_size = 4*GiB;                                           /* HDF5 internal limitation */
   PetscInt zslices=da->p, yslices=da->n, xslices=da->m;
 
   PetscFunctionBegin;
@@ -343,11 +339,7 @@ static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt timestep,
                                         PetscMin(max_chunk_size,
                                                  PetscMax(avg_local_vec_size,
                                                           PetscMax(ceil(vec_size*1.0/max_chunks),
-                                                                   min_size)
-                                                          )
-                                                 )
-                                        )
-                               );
+                                                                   min_size)))));
   chunk_size = (hsize_t) PetscMax(1,chunkDims[0])*PetscMax(1,chunkDims[1])*PetscMax(1,chunkDims[2])*PetscMax(1,chunkDims[3])*PetscMax(1,chunkDims[4])*PetscMax(1,chunkDims[5])*sizeof(PetscScalar);
 
   /*
