@@ -50,7 +50,7 @@
       PetscViewer viewer
       PetscSizeT sizeofbag
       Character(len=99) list(6)
-      PetscInt three
+      PetscInt three,int56
       PetscReal value
       PetscScalar svalue
 
@@ -77,7 +77,9 @@
       call PetscBagSetOptionsPrefix(bag, 'pbag_', ierr)
 
 ! register the data within the bag, grabbing values from the options database
-      call PetscBagRegisterInt(bag,data%nxc ,56,'nxc',                   &
+!     Need to put the value into a variable for 64 bit indices
+      int56 = 56
+      call PetscBagRegisterInt(bag,data%nxc ,int56,'nxc',                   &
      &      'nxc_variable help message',ierr)
       call PetscBagRegisterRealArray(bag,data%rarray,three,'rarray',         &
      &      'rarray help message',ierr)
