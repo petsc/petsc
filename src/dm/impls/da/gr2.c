@@ -332,8 +332,8 @@ static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt timestep,
     GiB = MiB*KiB,
     min_size = MiB,
     max_chunks = 64*KiB,                                              /* HDF5 internal limitation */
-    max_chunk_size = 4*GiB,                                           /* HDF5 internal limitation */
-    zslices=da->p, yslices=da->n, xslices=da->m;
+    max_chunk_size = 4*GiB;                                           /* HDF5 internal limitation */
+  PetscInt zslices=da->p, yslices=da->n, xslices=da->m;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin), &comm_size);CHKERRQ(ierr);
@@ -361,15 +361,15 @@ static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt timestep,
    */
   if (avg_local_vec_size > max_chunk_size) {
     /* check if we can just split local z-axis: is that enough? */
-    zslices=(hsize_t) ceil(vec_size*1.0/(da->p*max_chunk_size))*zslices;
+    zslices = (PetscInt)ceil(vec_size*1.0/(da->p*max_chunk_size))*zslices;
     if (zslices > da->P) {
       /* lattice is too large in xy-directions, splitting z only is not enough */
       zslices = da->P;
-      yslices=(hsize_t) ceil(vec_size*1.0/(zslices*da->n*max_chunk_size))*yslices;
+      yslices= (PetscInt)ceil(vec_size*1.0/(zslices*da->n*max_chunk_size))*yslices;
       if (yslices > da->N) {
 	/* lattice is too large in x-direction, splitting along z, y is not enough */
 	yslices = da->N;
-	xslices=(hsize_t) ceil(vec_size*1.0/(zslices*yslices*da->m*max_chunk_size))*xslices;
+	xslices= (PetscInt)ceil(vec_size*1.0/(zslices*yslices*da->m*max_chunk_size))*xslices;
       }
     }
     dim = 0;
