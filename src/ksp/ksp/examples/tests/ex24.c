@@ -109,10 +109,10 @@ int main(int argc,char **args)
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
     if (res_norm > res_tol) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G;",res_norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g;",(double)res_norm);CHKERRQ(ierr);
     }
     if (err_norm > err_tol) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm %G.\n",err_norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm %g.\n",(double)err_norm);CHKERRQ(ierr);
     }
     ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   }

@@ -264,7 +264,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
 
   PetscFunctionBegin;
 
-  a1      = pow(2, a+b+1);
+  a1      = PetscPowReal(2.0, a+b+1);
 #if defined(PETSC_HAVE_TGAMMA)
   a2      = tgamma(a + npoints + 1);
   a3      = tgamma(b + npoints + 1);
@@ -278,7 +278,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
   /* Computes the m roots of P_{m}^{a,b} on [-1,1] by Newton's method with Chebyshev points as initial guesses.
    Algorithm implemented from the pseudocode given by Karniadakis and Sherwin and Python in FIAT */
   for (k = 0; k < npoints; ++k) {
-    PetscReal r = -cos((2.0*k + 1.0) * PETSC_PI / (2.0 * npoints)), dP;
+    PetscReal r = -PetscCosReal((2.0*k + 1.0) * PETSC_PI / (2.0 * npoints)), dP;
     PetscInt  j;
 
     if (k > 0) r = 0.5 * (r + x[k-1]);
@@ -505,10 +505,10 @@ PetscErrorCode PetscDTReconstructPoly(PetscInt degree,PetscInt nsource,const Pet
   if (degree >= nsource) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Reconstruction degree %D must be less than number of source intervals %D",degree,nsource);
 #if defined(PETSC_USE_DEBUG)
   for (i=0; i<nsource; i++) {
-    if (sourcex[i] >= sourcex[i+1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Source interval %D has negative orientation (%G,%G)",i,sourcex[i],sourcex[i+1]);
+    if (sourcex[i] >= sourcex[i+1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Source interval %D has negative orientation (%g,%g)",i,(double)sourcex[i],(double)sourcex[i+1]);
   }
   for (i=0; i<ntarget; i++) {
-    if (targetx[i] >= targetx[i+1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Target interval %D has negative orientation (%G,%G)",i,targetx[i],targetx[i+1]);
+    if (targetx[i] >= targetx[i+1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Target interval %D has negative orientation (%g,%g)",i,(double)targetx[i],(double)targetx[i+1]);
   }
 #endif
   xmin = PetscMin(sourcex[0],targetx[0]);

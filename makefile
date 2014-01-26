@@ -41,6 +41,7 @@ all: chk_makej
 	 else \
 	  ${OMAKE} shared_install PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log ;\
         fi #solaris make likes to print the whole command that gave error. So split this up into the smallest chunk below
+	@echo "Finishing at: `date`" >> ${PETSC_ARCH}/conf/make.log
 	@if test -s ${PETSC_ARCH}/conf/error.log; then exit 1; fi
 
 all-gnumake:
@@ -68,19 +69,14 @@ info: chk_makej
 	-@echo "=========================================="
 	-@echo " "
 	-@echo "See documentation/faq.html and documentation/bugreporting.html"
-	-@echo "for help with installation problems. Please send EVERYTHING"
-	-@echo "printed out below when reporting problems"
+	-@echo "for help with installation problems.  Please send EVERYTHING"
+	-@echo "printed out below when reporting problems.  Please check the"
+	-@echo "mailing list archives and consider subscribing."
 	-@echo " "
-	-@echo "To subscribe to the PETSc announcement list, send mail to "
-	-@echo "majordomo@mcs.anl.gov with the message: "
-	-@echo "subscribe petsc-announce"
-	-@echo " "
-	-@echo "To subscribe to the PETSc users mailing list, send mail to "
-	-@echo "majordomo@mcs.anl.gov with the message: "
-	-@echo "subscribe petsc-users"
+	-@echo "  http://www.mcs.anl.gov/petsc/miscellaneous/mailing-lists.html"
 	-@echo " "
 	-@echo "=========================================="
-	-@echo On `date` on `hostname`
+	-@echo Starting on `hostname` at `date`
 	-@echo Machine characteristics: `uname -a`
 	-@echo "-----------------------------------------"
 	-@echo "Using PETSc directory: ${PETSC_DIR}"
@@ -341,11 +337,13 @@ docsetdate: chk_petscdir
         fi; \
         datestr=`git log -1 --pretty=format:%ci | cut -d ' ' -f 1`; \
         export datestr; \
+        gitver=`git describe`; \
+        export gitver; \
         find * -type d -wholename src/docs/website -prune -o -type d -wholename src/benchmarks/results -prune -o \
           -type d -wholename config/BuildSystem/docs/website -prune -o -type d -wholename include/web -prune -o \
           -type d -wholename 'arch-*' -prune -o -type d -wholename src/tops -prune -o -type d -wholename externalpackages -prune -o \
           -type f -wholename tutorials/multiphysics/tutorial.html -prune -o -type f -name \*.html \
-          -exec perl -pi -e 's^(<body.*>)^$$1\n   <div id=\"version\" align=right><b>$$ENV{petscversion} $$ENV{datestr}</b></div>^i' {} \; \
+          -exec perl -pi -e 's^(<body.*>)^$$1\n   <div id=\"version\" align=right><b>$$ENV{petscversion} $$ENV{datestr}</b></div>\n   <div id="bugreport" align=right><a href="mailto:petsc-maint\@mcs.anl.gov?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: $$ENV{petscversion} $$ENV{gitver} {} "><small>Report Typos and Errors</small></a></div>^i' {} \; \
           -exec perl -pi -e 's^(<head>)^$$1 <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/{}" />^i' {} \; ; \
         echo "Done fixing version number, date, canonical URL info"
 

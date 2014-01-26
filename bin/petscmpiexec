@@ -3,6 +3,7 @@
 #
 #    Uses PETSC_ARCH and PETSC_DIR plus the MPIEXEC command in
 #  packages to run mpiexec
+#    Also use PETSCVALGRIND_OPTIONS from env
 #
 if ($1 == '-h' | $1 == '--help') then
   echo "Usage: petscmpiexec <-valgrind> <-debugger> -n <numberprocessors> programname <programopions>"
@@ -11,6 +12,9 @@ endif
 
 set valgrind=0
 set debugger=0
+if ! $?PETSCVALGRIND_OPTIONS then
+  set PETSCVALGRIND_OPTIONS=
+endif
 if ( x$1 == x"-valgrind" ) then
   set valgrind = 1
   echo $2
@@ -50,17 +54,17 @@ set qrun = `echo ${nrun} | sed -e sz\$PETSC_DIRz${PETSC_DIR}z`
 if ( ${valgrind} == "1" ) then
   if ( ${debugger} == "1" ) then
     if ( `uname` == 'Darwin') then
-      $qrun -n $np xterm -e `which valgrind` --db-attach=yes -q --tool=memcheck --dsymutil=yes --num-callers=20  $*
+      $qrun -n $np xterm -e `which valgrind` --db-attach=yes -q --tool=memcheck --dsymutil=yes --num-callers=20 ${PETSCVALGRIND_OPTIONS} $*
       rm -rf *.dSYM
     else 
-      $qrun -n $np xterm -e `which valgrind` --db-attach=yes -q --tool=memcheck --num-callers=20  $*
+      $qrun -n $np xterm -e `which valgrind` --db-attach=yes -q --tool=memcheck --num-callers=20  ${PETSCVALGRIND_OPTIONS} $*
     endif
   else 
     if ( `uname` == 'Darwin') then
-      $qrun -n $np `which valgrind` -q --tool=memcheck --dsymutil=yes --num-callers=20  $*
+      $qrun -n $np `which valgrind` -q --tool=memcheck --dsymutil=yes --num-callers=20  ${PETSCVALGRIND_OPTIONS} $*
       rm -rf *.dSYM
     else 
-      $qrun -n $np `which valgrind` -q --tool=memcheck --num-callers=20  $*
+      $qrun -n $np `which valgrind` -q --tool=memcheck --num-callers=20  ${PETSCVALGRIND_OPTIONS} $*
     endif
   endif
 else

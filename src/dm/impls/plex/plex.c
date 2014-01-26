@@ -219,7 +219,7 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, "(");CHKERRQ(ierr);
       for (d = 0; d < dof; ++d) {
         if (d > 0) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, ",");CHKERRQ(ierr);}
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%G", scale*PetscRealPart(coords[off+d]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%g", (double)(scale*PetscRealPart(coords[off+d])));CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, ") node(%D_%D) [draw,shape=circle,color=%s] {%D} --\n", v, rank, colors[rank%numColors], v);CHKERRQ(ierr);
     }
@@ -243,7 +243,7 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, "(");CHKERRQ(ierr);
       for (d = 0; d < dof; ++d) {
         if (d > 0) {ierr = PetscViewerASCIISynchronizedPrintf(viewer, ",");CHKERRQ(ierr);}
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%G", scale*0.5*PetscRealPart(coords[offA+d]+coords[offB+d]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%g", (double)(scale*0.5*PetscRealPart(coords[offA+d]+coords[offB+d])));CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, ") node(%D_%D) [draw,shape=circle,color=%s] {%D} --\n", e, rank, colors[rank%numColors], e);CHKERRQ(ierr);
     }
@@ -2675,21 +2675,21 @@ PetscErrorCode DMPlexPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
 PetscErrorCode DMPlexPartition_ParMetis(DM dm, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection *partSection, IS *partition)
 {
   MPI_Comm       comm;
-  PetscInt       nvtxs      = numVertices; // The number of vertices in full graph
-  PetscInt      *vtxdist;                  // Distribution of vertices across processes
-  PetscInt      *xadj       = start;       // Start of edge list for each vertex
-  PetscInt      *adjncy     = adjacency;   // Edge lists for all vertices
-  PetscInt      *vwgt       = NULL;        // Vertex weights
-  PetscInt      *adjwgt     = NULL;        // Edge weights
-  PetscInt       wgtflag    = 0;           // Indicates which weights are present
-  PetscInt       numflag    = 0;           // Indicates initial offset (0 or 1)
-  PetscInt       ncon       = 1;           // The number of weights per vertex
-  PetscInt       nparts;                   // The number of partitions
-  PetscReal     *tpwgts;                   // The fraction of vertex weights assigned to each partition
-  PetscReal     *ubvec;                    // The balance intolerance for vertex weights
-  PetscInt       options[5];               // Options
-  // Outputs
-  PetscInt       edgeCut;                  // The number of edges cut by the partition
+  PetscInt       nvtxs      = numVertices; /* The number of vertices in full graph */
+  PetscInt      *vtxdist;                  /* Distribution of vertices across processes */
+  PetscInt      *xadj       = start;       /* Start of edge list for each vertex */
+  PetscInt      *adjncy     = adjacency;   /* Edge lists for all vertices */
+  PetscInt      *vwgt       = NULL;        /* Vertex weights */
+  PetscInt      *adjwgt     = NULL;        /* Edge weights */
+  PetscInt       wgtflag    = 0;           /* Indicates which weights are present */
+  PetscInt       numflag    = 0;           /* Indicates initial offset (0 or 1) */
+  PetscInt       ncon       = 1;           /* The number of weights per vertex */
+  PetscInt       nparts;                   /* The number of partitions */
+  PetscReal     *tpwgts;                   /* The fraction of vertex weights assigned to each partition */
+  PetscReal     *ubvec;                    /* The balance intolerance for vertex weights */
+  PetscInt       options[5];               /* Options */
+  /* Outputs */
+  PetscInt       edgeCut;                  /* The number of edges cut by the partition */
   PetscInt      *assignment, *points;
   PetscMPIInt    commSize, rank, p, v, i;
   PetscErrorCode ierr;
@@ -3222,8 +3222,8 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
     Vec          originalCoordinates, newCoordinates;
     const char  *name;
 
-    ierr = DMPlexGetCoordinateSection(dm, &originalCoordSection);CHKERRQ(ierr);
-    ierr = DMPlexGetCoordinateSection(*dmParallel, &newCoordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(dm, &originalCoordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(*dmParallel, &newCoordSection);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &originalCoordinates);CHKERRQ(ierr);
     ierr = VecCreate(comm, &newCoordinates);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) originalCoordinates, &name);CHKERRQ(ierr);
@@ -3517,7 +3517,7 @@ PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
     ierr = PetscMalloc1(in.numberofpoints*dim, &in.pointlist);CHKERRQ(ierr);
     ierr = PetscMalloc1(in.numberofpoints, &in.pointmarkerlist);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(boundary, &coordinates);CHKERRQ(ierr);
-    ierr = DMPlexGetCoordinateSection(boundary, &coordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(boundary, &coordSection);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &array);CHKERRQ(ierr);
     for (v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
@@ -3648,7 +3648,7 @@ PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
     ierr = PetscMalloc1(in.numberofpoints*dim, &in.pointlist);CHKERRQ(ierr);
     ierr = PetscMalloc1(in.numberofpoints, &in.pointmarkerlist);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-    ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &array);CHKERRQ(ierr);
     for (v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
@@ -3780,7 +3780,7 @@ PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
     in.pointmarkerlist = new int[in.numberofpoints];
 
     ierr = DMGetCoordinatesLocal(boundary, &coordinates);CHKERRQ(ierr);
-    ierr = DMPlexGetCoordinateSection(boundary, &coordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(boundary, &coordSection);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &array);CHKERRQ(ierr);
     for (v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
@@ -3908,7 +3908,7 @@ PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
     in.pointmarkerlist = new int[in.numberofpoints];
 
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-    ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &array);CHKERRQ(ierr);
     for (v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
@@ -4033,7 +4033,7 @@ PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm
     ierr = PetscMalloc1(in->numberofpoints*dim, &in->pointlist);CHKERRQ(ierr);
     ierr = PetscMalloc1(in->numberofpoints,       &in->pointmarkerlist);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(boundary, &coordinates);CHKERRQ(ierr);
-    ierr = DMPlexGetCoordinateSection(boundary, &coordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(boundary, &coordSection);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &array);CHKERRQ(ierr);
     for (v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
@@ -4180,7 +4180,7 @@ PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
     ierr = PetscMalloc1(in->numberofpoints*dim, &in->pointlist);CHKERRQ(ierr);
     ierr = PetscMalloc1(in->numberofpoints,       &in->pointmarkerlist);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-    ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &array);CHKERRQ(ierr);
     for (v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
@@ -4588,8 +4588,8 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
 PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numFields,const PetscInt numComp[],const PetscInt numDof[], PetscSection *section)
 {
   PetscInt      *numDofTot;
-  PetscInt       pStart = 0, pEnd = 0;
-  PetscInt       p, d, f;
+  PetscInt       depth, pStart = 0, pEnd = 0;
+  PetscInt       p, d, dep, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -4609,8 +4609,10 @@ PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numField
   }
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*section, pStart, pEnd);CHKERRQ(ierr);
-  for (d = 0; d <= dim; ++d) {
-    ierr = DMPlexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  for (dep = 0; dep <= depth; ++dep) {
+    d    = dim == depth ? dep : (!dep ? 0 : dim);
+    ierr = DMPlexGetDepthStratum(dm, dep, &pStart, &pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       for (f = 0; f < numFields; ++f) {
         ierr = PetscSectionSetFieldDof(*section, p, f, numDof[f*(dim+1)+d]);CHKERRQ(ierr);
@@ -4872,66 +4874,6 @@ PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &section);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(*cdm, section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetCoordinateSection"
-/*@
-  DMPlexGetCoordinateSection - Retrieve the layout of coordinate values over the mesh.
-
-  Not Collective
-
-  Input Parameter:
-. dm - The DMPlex object
-
-  Output Parameter:
-. section - The PetscSection object
-
-  Level: intermediate
-
-.keywords: mesh, coordinates
-.seealso: DMGetCoordinateDM(), DMPlexGetDefaultSection(), DMPlexSetDefaultSection()
-@*/
-PetscErrorCode DMPlexGetCoordinateSection(DM dm, PetscSection *section)
-{
-  DM             cdm;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(section, 2);
-  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(cdm, section);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetCoordinateSection"
-/*@
-  DMPlexSetCoordinateSection - Set the layout of coordinate values over the mesh.
-
-  Not Collective
-
-  Input Parameters:
-+ dm      - The DMPlex object
-- section - The PetscSection object
-
-  Level: intermediate
-
-.keywords: mesh, coordinates
-.seealso: DMPlexGetCoordinateSection(), DMPlexGetDefaultSection(), DMPlexSetDefaultSection()
-@*/
-PetscErrorCode DMPlexSetCoordinateSection(DM dm, PetscSection section)
-{
-  DM             cdm;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,2);
-  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  ierr = DMSetDefaultSection(cdm, section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5732,9 +5674,9 @@ PetscErrorCode DMPlexPrintMatSetValues(PetscViewer viewer, Mat A, PetscInt point
     ierr = PetscViewerASCIIPrintf(viewer, "[%D]", rank);CHKERRQ(ierr);
     for (j = 0; j < numIndices; j++) {
 #if defined(PETSC_USE_COMPLEX)
-      ierr = PetscViewerASCIIPrintf(viewer, " (%G,%G)", PetscRealPart(values[i*numIndices+j]), PetscImaginaryPart(values[i*numIndices+j]));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, " (%g,%g)", (double)PetscRealPart(values[i*numIndices+j]), (double)PetscImaginaryPart(values[i*numIndices+j]));CHKERRQ(ierr);
 #else
-      ierr = PetscViewerASCIIPrintf(viewer, " %G", values[i*numIndices+j]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, " %g", (double)values[i*numIndices+j]);CHKERRQ(ierr);
 #endif
     }
     ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
@@ -5857,8 +5799,8 @@ PetscErrorCode indicesPointFields_private(PetscSection section, PetscInt point, 
 
   Input Parameters:
 + dm - The DM
-. section - The section describing the layout in v
-. globalSection - The section describing the layout in v
+. section - The section describing the layout in v, or NULL to use the default section
+. globalSection - The section describing the layout in v, or NULL to use the default global section
 . A - The matrix
 . point - The sieve point in the DM
 . values - The array of values
@@ -5882,7 +5824,9 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (!section) {ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 2);
+  if (!globalSection) {ierr = DMGetDefaultGlobalSection(dm, &globalSection);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(globalSection, PETSC_SECTION_CLASSID, 3);
   PetscValidHeaderSpecific(A, MAT_CLASSID, 4);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
@@ -6274,16 +6218,16 @@ PetscErrorCode DMPlexCheckSymmetry(DM dm)
 @*/
 PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscBool isSimplex, PetscInt cellHeight)
 {
-  PetscInt       dim, numCorners, vStart, vEnd, cStart, cEnd, cMax, c;
+  PetscInt       dim, numCorners, numHybridCorners, vStart, vEnd, cStart, cEnd, cMax, c;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   switch (dim) {
-  case 1: numCorners = isSimplex ? 2 : 2; break;
-  case 2: numCorners = isSimplex ? 3 : 4; break;
-  case 3: numCorners = isSimplex ? 4 : 8; break;
+  case 1: numCorners = isSimplex ? 2 : 2; numHybridCorners = isSimplex ? 2 : 2; break;
+  case 2: numCorners = isSimplex ? 3 : 4; numHybridCorners = isSimplex ? 4 : 4; break;
+  case 3: numCorners = isSimplex ? 4 : 8; numHybridCorners = isSimplex ? 6 : 8; break;
   default:
     SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle meshes of dimension %d", dim);
   }
@@ -6301,6 +6245,17 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscBool isSimplex, PetscInt cellHeig
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     if (coneSize != numCorners) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %d has  %d vertices != %d", c, coneSize, numCorners);
+  }
+  for (c = cMax; c < cEnd; ++c) {
+    PetscInt *closure = NULL, closureSize, cl, coneSize = 0;
+
+    ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    for (cl = 0; cl < closureSize*2; cl += 2) {
+      const PetscInt p = closure[cl];
+      if ((p >= vStart) && (p < vEnd)) ++coneSize;
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    if (coneSize > numHybridCorners) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Hybrid cell %d has  %d vertices > %d", c, coneSize, numHybridCorners);
   }
   PetscFunctionReturn(0);
 }

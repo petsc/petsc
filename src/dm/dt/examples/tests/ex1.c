@@ -17,7 +17,7 @@ static PetscErrorCode CheckPoints(const char *name,PetscInt npoints,const PetscR
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s\n",name);CHKERRQ(ierr);
   for (i=0; i<npoints; i++) {
     for (j=0; j<ndegrees; j++) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"degree %D at %12.4G: B=%12.4G  D=%12.4G  D2=%12.4G\n",degrees[j],points[i],B[i*ndegrees+j],D[i*ndegrees+j],D2[i*ndegrees+j]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"degree %D at %12.4g: B=%12.4g  D=%12.4g  D2=%12.4g\n",degrees[j],(double)points[i],(double)B[i*ndegrees+j],(double)D[i*ndegrees+j],(double)D2[i*ndegrees+j]);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree3(B,D,D2);CHKERRQ(ierr);
@@ -74,7 +74,7 @@ int main(int argc,char **argv)
       first  -= weights[i] * points[i];
       second -= weights[i] * PetscSqr(points[i]);
     }
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Moment error: zeroth=%G, first=%G, second=%G\n",-zeroth,-first,-second);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Moment error: zeroth=%g, first=%g, second=%g\n",(double)(-zeroth),(double)(-first),(double)(-second));CHKERRQ(ierr);
   }
   ierr = CheckPoints("Gauss points",npoints,points,ndegrees,degrees);CHKERRQ(ierr);
   ierr = PetscFinalize();

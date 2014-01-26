@@ -174,7 +174,7 @@ int main(int Argc,char **Args)
 
   PetscScalar mineval;
   ierr = computeMinEigVal(HtH, 1000, &mineval);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Minimum eigenvalue of H^{dag} H is %f\n", PetscAbsScalar(mineval));CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Minimum eigenvalue of H^{dag} H is %f\n", (double)PetscAbsScalar(mineval));CHKERRQ(ierr);
 
   /* permutation matrix to check whether H and HtH are identical to the ones in the paper */
 /*   Mat perm; */

@@ -145,7 +145,7 @@ int main(int argc,char **argv)
   ierr = TSSetInitialTimeStep(ts,0.0,user.cfl_initial/(user.lidvelocity*mx));CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%Dx%D grid, lid velocity = %G, prandtl # = %G, grashof # = %G\n",mx,my,user.lidvelocity,user.prandtl,user.grashof);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%Dx%D grid, lid velocity = %g, prandtl # = %g, grashof # = %g\n",mx,my,(double)user.lidvelocity,(double)user.prandtl,(double)user.grashof);CHKERRQ(ierr);
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -160,7 +160,7 @@ int main(int argc,char **argv)
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %G after %D steps\n",TSConvergedReasons[reason],ftime,steps);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,steps);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

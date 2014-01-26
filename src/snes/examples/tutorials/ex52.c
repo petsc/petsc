@@ -35,15 +35,15 @@ typedef struct {
   void (*g1Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g1[]);
   void (*g2Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g2[]);
   void (*g3Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g3[]);
-  void (**exactFuncs)(const PetscReal x[], PetscScalar *u);
+  void (**exactFuncs)(const PetscReal x[], PetscScalar *u, void *ctx);
 } AppCtx;
 
-void quadratic_2d(const PetscReal x[], PetscScalar u[])
+void quadratic_2d(const PetscReal x[], PetscScalar u[], void *ctx)
 {
   u[0] = x[0]*x[0] + x[1]*x[1];
 };
 
-void quadratic_2d_elas(const PetscReal x[], PetscScalar u[])
+void quadratic_2d_elas(const PetscReal x[], PetscScalar u[], void *ctx)
 {
   u[0] = x[0]*x[0] + x[1]*x[1];
   u[1] = x[0]*x[0] + x[1]*x[1];
@@ -382,7 +382,7 @@ int main(int argc, char **argv)
   ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
   ierr = SetupMaterialElement(dmAux, &user);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(user.fe[0], &numComp);CHKERRQ(ierr);
-  ierr = PetscMalloc(numComp * sizeof(void (*)(const PetscReal[], PetscScalar *)), &user.exactFuncs);CHKERRQ(ierr);
+  ierr = PetscMalloc(numComp * sizeof(void (*)(const PetscReal[], PetscScalar *, void *)), &user.exactFuncs);CHKERRQ(ierr);
   switch (user.op) {
   case LAPLACIAN:
     user.f0Funcs[0]    = f0_lap;
@@ -411,7 +411,8 @@ int main(int argc, char **argv)
   user.fem.g1Funcs = user.g1Funcs;
   user.fem.g2Funcs = user.g2Funcs;
   user.fem.g3Funcs = user.g3Funcs;
-  user.fem.bcFuncs = (void (**)(const PetscReal[], PetscScalar *)) user.exactFuncs;
+  user.fem.bcFuncs = user.exactFuncs;
+  user.fem.bcCtxs  = NULL;
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
   ierr = SetupSection(dmAux, &user);CHKERRQ(ierr);
   ierr = SetupMaterial(dm, dmAux, &user);CHKERRQ(ierr);
@@ -423,7 +424,7 @@ int main(int argc, char **argv)
 
     ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(dm, &F);CHKERRQ(ierr);
-    ierr = DMPlexProjectFunction(dm, user.fe, user.exactFuncs, INSERT_VALUES, X);CHKERRQ(ierr);
+    ierr = DMPlexProjectFunction(dm, user.fe, user.exactFuncs, NULL, INSERT_VALUES, X);CHKERRQ(ierr);
     ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &F);CHKERRQ(ierr);

@@ -96,6 +96,8 @@
 
       <h4>General:</h4>
       <ul>
+        <li>PETSc built with --with-precision=__float128 will now by default read in binary files that have all 128 bits stored in the file, to read in files with 64 bit double 
+            use the option -binary_read_double</li>
         <li>PETSc options of complex numbers must be passed as [+/-][realnumber][+/-]realnumberi with no spaces, you can no longer pass the real and complex part with a comma between them</li>
         <li>PetscSynchronizedFlush() takes an additional argument, the file pointer on rank 0</li>
         <li>PetscObjectStateQuery() is now corrected with PetscObjectStateGet()</li>
@@ -162,14 +164,18 @@
       <ul>
         <li>The MatType argument is removed from DMCreateMatrix(), you can use DMSetMatType() to indicate the type you want used with a DM, defaults to MATAIJ</li>
       </ul>
-      <h4>DMComplex/DMPlex:</h4>
-      <h4>DMMesh:</h4>
-      <h4>DMMG:</h4>
+      <h4>DMPlex:</h4>
       <h4>PetscViewer:</h4>
       <h4>SYS:</h4>
       <h4>AO:</h4>
       <h4>Sieve:</h4>
+      <ul>
+        <li>Sieve/DMMesh has been removed entirely.  Use DMPlex.</li>
+      </ul>
       <h4>Fortran:</h4>
+      <ul>
+        <li>PETSC_DEFAULT_DOUBLE_PRECISION has been replaced with PETSC_DEFAULT_REAL</li>
+      </ul>
       <h4>ExternalPackages:</h4>
     </div>
 

@@ -143,7 +143,7 @@ int Brusselator(int argc,char **argv,PetscInt cycle)
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
   ierr = VecMin(X,NULL,&xmin);CHKERRQ(ierr);
   ierr = VecMax(X,NULL,&xmax);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %G after % 3D steps. Range [%6.4f,%6.4f]\n",TSConvergedReasons[reason],ftime,steps,(double)xmin,(double)xmax);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after % 3D steps. Range [%6.4f,%6.4f]\n",TSConvergedReasons[reason],(double)ftime,steps,(double)xmin,(double)xmax);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.
@@ -321,7 +321,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   /* Compute function over the locally owned part of the grid */
   for (i=info.xs; i<info.xs+info.xm; i++) {
     PetscReal xi = i*hx;
-    x[i].u = user->uleft*(1.-xi) + user->uright*xi + sin(2.*PETSC_PI*xi);
+    x[i].u = user->uleft*(1.-xi) + user->uright*xi + PetscSinReal(2.*PETSC_PI*xi);
     x[i].v = user->vleft*(1.-xi) + user->vright*xi;
   }
   ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);

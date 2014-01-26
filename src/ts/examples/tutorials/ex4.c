@@ -254,8 +254,8 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      View timestepping solver info
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Total timesteps %D, Final time %G\n",steps,ftime);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Avg. error (2 norm) = %G Avg. error (max norm) = %G\n",appctx.norm_2/steps,appctx.norm_max/steps);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Total timesteps %D, Final time %g\n",steps,(double)ftime);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Avg. error (2 norm) = %g Avg. error (max norm) = %g\n",(double)(appctx.norm_2/steps),(double)(appctx.norm_max/steps));CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -374,7 +374,7 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
      Simply write the solution directly into the array locations.
      Alternatively, we culd use VecSetValues() or VecSetValuesLocal().
   */
-  ex1 = exp(-36.*PETSC_PI*PETSC_PI*t); ex2 = exp(-4.*PETSC_PI*PETSC_PI*t);
+  ex1 = PetscExpReal(-36.*PETSC_PI*PETSC_PI*t); ex2 = PetscExpReal(-4.*PETSC_PI*PETSC_PI*t);
   sc1 = PETSC_PI*6.*h;                 sc2 = PETSC_PI*2.*h;
   for (i=mybase; i<myend; i++) s_localptr[i-mybase] = PetscSinScalar(sc1*(PetscReal)i)*ex1 + 3.*PetscSinScalar(sc2*(PetscReal)i)*ex2;
 
@@ -441,8 +441,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
      PetscPrintf() causes only the first processor in this
      communicator to print the timestep information.
   */
-  ierr = PetscPrintf(appctx->comm,"Timestep %D: time = %G 2-norm error = %G max norm error = %G\n",
-                     step,time,norm_2,norm_max);CHKERRQ(ierr);
+  ierr = PetscPrintf(appctx->comm,"Timestep %D: time = %g 2-norm error = %g max norm error = %g\n",step,(double)time,(double)norm_2,(double)norm_max);CHKERRQ(ierr);
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;
 

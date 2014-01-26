@@ -93,10 +93,10 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field *u, Field *f, AppCtx
       f[i].p = u[i].p - user->pl;
     } else {
       PetscScalar K          = 2*dx/(dx/Kappa[i] + dx/Kappa[i-1]);
-      PetscReal   lambdaWet  = kappaWet*pow(u[i].s, alpha);
-      PetscReal   lambda     = lambdaWet + kappaNoWet*pow(1-u[i].s, beta);
-      PetscReal   lambdaWetL = kappaWet*pow(u[i-1].s, alpha);
-      PetscReal   lambdaL    = lambdaWetL + kappaNoWet*pow(1-u[i-1].s, beta);
+      PetscReal   lambdaWet  = kappaWet*PetscPowScalar(u[i].s, alpha);
+      PetscReal   lambda     = lambdaWet + kappaNoWet*PetscPowScalar(1-u[i].s, beta);
+      PetscReal   lambdaWetL = kappaWet*PetscPowScalar(u[i-1].s, alpha);
+      PetscReal   lambdaL    = lambdaWetL + kappaNoWet*PetscPowScalar(1-u[i-1].s, beta);
 
       f[i].s = phi*(u[i].s - uold[i].s) + (dt/dx)*((lambdaWet/lambda)*u[i].v - (lambdaWetL/lambdaL)*u[i-1].v);
 

@@ -497,7 +497,7 @@ PetscErrorCode DMTSSetSolutionFunction(DM dm,TSSolutionFunction func,void *ctx)
 
    Input Arguments:
 +  dm - DM to be used with TS
-.  TSForcingFunction - forcing function evaluation function
+.  f - forcing function evaluation function; see TSForcingFunction
 -  ctx - context for solution evaluation
 
    Level: advanced
@@ -509,7 +509,7 @@ PetscErrorCode DMTSSetSolutionFunction(DM dm,TSSolutionFunction func,void *ctx)
 
 .seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian(), TSSetForcingFunction(), DMTSGetForcingFunction()
 @*/
-PetscErrorCode DMTSSetForcingFunction(DM dm,PetscErrorCode (*TSForcingFunction)(TS,PetscReal,Vec,void*),void *ctx)
+PetscErrorCode DMTSSetForcingFunction(DM dm,PetscErrorCode (*f)(TS,PetscReal,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DMTS           tsdm;
@@ -517,7 +517,7 @@ PetscErrorCode DMTSSetForcingFunction(DM dm,PetscErrorCode (*TSForcingFunction)(
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMTSWrite(dm,&tsdm);CHKERRQ(ierr);
-  if (TSForcingFunction) tsdm->ops->forcing = TSForcingFunction;
+  if (f) tsdm->ops->forcing = f;
   if (ctx)  tsdm->forcingctx   = ctx;
   PetscFunctionReturn(0);
 }
@@ -534,7 +534,7 @@ PetscErrorCode DMTSSetForcingFunction(DM dm,PetscErrorCode (*TSForcingFunction)(
 .   dm - DM to be used with TS
 
    Output Arguments:
-+  TSForcingFunction - forcing function evaluation function
++  f - forcing function evaluation function; see TSForcingFunction for details
 -  ctx - context for solution evaluation
 
    Level: advanced
@@ -546,7 +546,7 @@ PetscErrorCode DMTSSetForcingFunction(DM dm,PetscErrorCode (*TSForcingFunction)(
 
 .seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian(), TSSetForcingFunction(), DMTSGetForcingFunction()
 @*/
-PetscErrorCode DMTSGetForcingFunction(DM dm,PetscErrorCode (**TSForcingFunction)(TS,PetscReal,Vec,void*),void **ctx)
+PetscErrorCode DMTSGetForcingFunction(DM dm,PetscErrorCode (**f)(TS,PetscReal,Vec,void*),void **ctx)
 {
   PetscErrorCode ierr;
   DMTS           tsdm;
@@ -554,7 +554,7 @@ PetscErrorCode DMTSGetForcingFunction(DM dm,PetscErrorCode (**TSForcingFunction)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMTSWrite(dm,&tsdm);CHKERRQ(ierr);
-  if (TSForcingFunction) *TSForcingFunction = tsdm->ops->forcing;
+  if (f) *f = tsdm->ops->forcing;
   if (ctx) *ctx = tsdm->forcingctx;
   PetscFunctionReturn(0);
 }

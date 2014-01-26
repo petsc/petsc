@@ -137,8 +137,8 @@ PetscInt main(PetscInt argc,char **args)
     ierr = MatDestroy(&A_sp);CHKERRQ(ierr);
 
     ratio = (PetscReal)nzeros[0]/sbaij->nz;
-    ierr  = PetscPrintf(PETSC_COMM_SELF," %d matrix entries < %e, ratio %G of %d nonzeros\n",nzeros[0],tols[0],ratio,sbaij->nz);CHKERRQ(ierr);
-    ierr  = PetscPrintf(PETSC_COMM_SELF," %d matrix entries < %e\n",nzeros[1],tols[1]);CHKERRQ(ierr);
+    ierr  = PetscPrintf(PETSC_COMM_SELF," %D matrix entries < %g, ratio %g of %d nonzeros\n",nzeros[0],(double)ntols[0],(double)ratio,sbaij->nz);CHKERRQ(ierr);
+    ierr  = PetscPrintf(PETSC_COMM_SELF," %D matrix entries < %g\n",nzeros[1],(double)ntols[1]);CHKERRQ(ierr);
   }
 
   /* Convert aij matrix to MatSeqDense for LAPACK */
@@ -183,7 +183,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscOptionsHasName(NULL, "-eig_view", &flg);CHKERRQ(ierr);
   if (flg) {
     printf(" %d evals: \n",nevs);
-    for (i=0; i<nevs; i++) printf("%d  %G\n",i+il,evals[i]);
+    for (i=0; i<nevs; i++) printf("%D  %g\n",i+il,(double)nevals[i]);
   }
 
   /* Check residuals and orthogonality */
@@ -272,12 +272,12 @@ PetscErrorCode CkEigenSolutions(PetscInt *fcklvl,Mat *mats,PetscReal *eval,Vec *
 #if defined(DEBUG_CkEigenSolutions)
         if (dot > tols[1]) {
           ierr = VecNorm(evec[i],NORM_INFINITY,&norm);
-          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%d,%d)|: %G, norm: %G\n",i,j,dot,norm);
+          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%D,%D)|: %g, norm: %g\n",i,j,(double)ndot,(double)nnorm);
         }
 #endif
       } /* for (j=i; j<nev_loc; j++) */
     }
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j*B*x_i) - delta_ji|: %G\n",dot_max);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j*B*x_i) - delta_ji|: %g\n",(double)ndot_max);
 
   case 1:
     norm_max = 0.0;
@@ -292,16 +292,16 @@ PetscErrorCode CkEigenSolutions(PetscInt *fcklvl,Mat *mats,PetscReal *eval,Vec *
 #if defined(DEBUG_CkEigenSolutions)
       /* sniff, and bark if necessary */
       if (norm > tols[0]) {
-        printf("  residual violation: %d, resi: %g\n",i, norm);
+        printf("  residual violation: %D, resi: %g\n",i, (double)nnorm);
       }
 #endif
     }
 
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %G\n", norm_max);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %g\n", (double)nnorm_max);
 
     break;
   default:
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%d is not supported \n",cklvl);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%D is not supported \n",cklvl);
   }
   ierr = VecDestroy(&vt2);
   ierr = VecDestroy(&vt1);

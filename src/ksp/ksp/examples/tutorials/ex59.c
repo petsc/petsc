@@ -509,6 +509,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
 
   glldata->rhoGL[0]=2.0/(PetscScalar)(p*(p+1.0));
   glldata->rhoGL[p]=glldata->rhoGL[0];
+  z2 = -1;                      /* Dummy value to avoid -Wmaybe-initialized */
   for (i=1; i<p; i++) {
     x  = glldata->zGL[i];
     z0 = 1.0;

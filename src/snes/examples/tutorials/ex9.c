@@ -129,7 +129,7 @@ int main(int argc,char **argv)
   ierr    = VecNorm(r,NORM_1,&error1);CHKERRQ(ierr);
   error1 /= (PetscReal)Mx * (PetscReal)My;
   ierr    = VecNorm(r,NORM_INFINITY,&errorinf);CHKERRQ(ierr);
-  ierr    = PetscPrintf(PETSC_COMM_WORLD,"errors:    av |u-uexact|  = %.3e\n           |u-uexact|_inf = %.3e\n",error1,errorinf);CHKERRQ(ierr);
+  ierr    = PetscPrintf(PETSC_COMM_WORLD,"errors:    av |u-uexact|  = %.3e\n           |u-uexact|_inf = %.3e\n",(double)error1,(double)errorinf);CHKERRQ(ierr);
 
   /* Free work space.  */
   ierr = VecDestroy(&u);CHKERRQ(ierr);
@@ -184,7 +184,7 @@ PetscErrorCode FormPsiAndInitialGuess(DM da,Vec U0,PetscBool feasible)
 
       if (feasible) {
         if (i == 0 || j == 0 || i == Mx-1 || j == My-1) u0[j][i] = uexact[j][i];
-        else u0[j][i] = uexact[j][i] + cos(pi * x / 4) * cos(pi * y / 4); /* initial guess is admissible: it is above the obstacle */
+        else u0[j][i] = uexact[j][i] + PetscCosReal(pi * x / 4) * PetscCosReal(pi * y / 4); /* initial guess is admissible: it is above the obstacle */
       } else u0[j][i] = 0.;
     }
   }

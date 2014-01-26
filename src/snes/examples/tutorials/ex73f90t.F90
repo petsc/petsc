@@ -50,7 +50,7 @@
 !     temp A block stuff 
         PetscInt mx,my
         PetscMPIInt rank
-        double precision lambda
+        PetscReal lambda
 !     Mats
         type(Mat) Amat,AmatLin,Bmat,CMat,Dmat
         type(IS)  isPhi,isLambda
@@ -113,7 +113,7 @@
       PetscInt         its,N1,N2,i,j,row,low,high,lamlow,lamhigh
       PetscBool        flg
       PetscInt         ione,nfour,itwo,nloc,nloclam
-      double precision lambda_max,lambda_min
+      PetscReal lambda_max,lambda_min
       type(petsc_kkt_solver)  solver
       PetscScalar      bval,cval,one
 

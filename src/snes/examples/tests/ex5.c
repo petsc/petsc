@@ -99,7 +99,7 @@ int main(int argc,char **argv)
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   ierr = PetscOptionsGetReal(NULL,"-kappa",&user.param2,NULL);CHKERRQ(ierr);
   if (user.param2 >= bratu_kappa_max || user.param2 < bratu_kappa_min) SETERRQ(PETSC_COMM_SELF,1,"Kappa is out of range");
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Solving the Bratu problem with lambda=%G, kappa=%G\n",user.param,user.param2);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Solving the Bratu problem with lambda=%g, kappa=%g\n",(double)user.param,(double)user.param2);CHKERRQ(ierr);
 
   N = user.mx*user.my;
 
@@ -359,7 +359,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
       ux     = (x[row+1] - x[row-1])*half*hy;
       uxx    = (two*u - x[row-1] - x[row+1])*hydhx;
       uyy    = (two*u - x[row-gxm] - x[row+gxm])*hxdhy;
-      f[row] = uxx + uyy - kappa*ux - sc*exp(u);
+      f[row] = uxx + uyy - kappa*ux - sc*PetscExpScalar(u);
     }
   }
 
@@ -465,7 +465,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
       /* interior grid points */
       v[0] = -hxdhy; col[0] = ltog[row - gxm];
       v[1] = -hydhx; col[1] = ltog[row - 1];
-      v[2] = two*(hydhx + hxdhy) - sc*lambda*exp(x[row]); col[2] = grow;
+      v[2] = two*(hydhx + hxdhy) - sc*lambda*PetscExpScalar(x[row]); col[2] = grow;
       v[3] = -hydhx; col[3] = ltog[row + 1];
       v[4] = -hxdhy; col[4] = ltog[row + gxm];
       ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);

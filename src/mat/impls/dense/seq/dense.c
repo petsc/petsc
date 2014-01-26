@@ -905,13 +905,13 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
       for (j=0; j<A->cmap->n; j++) {
 #if defined(PETSC_USE_COMPLEX)
         if (PetscRealPart(*v) != 0.0 && PetscImaginaryPart(*v) != 0.0) {
-          ierr = PetscViewerASCIIPrintf(viewer," (%D, %G + %G i) ",j,PetscRealPart(*v),PetscImaginaryPart(*v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," (%D, %g + %g i) ",j,(double)PetscRealPart(*v),(double)PetscImaginaryPart(*v));CHKERRQ(ierr);
         } else if (PetscRealPart(*v)) {
-          ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",j,PetscRealPart(*v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",j,(double)PetscRealPart(*v));CHKERRQ(ierr);
         }
 #else
         if (*v) {
-          ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",j,*v);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",j,(double)*v);CHKERRQ(ierr);
         }
 #endif
         v += a->lda;

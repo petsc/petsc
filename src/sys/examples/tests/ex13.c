@@ -110,7 +110,7 @@ int main(int argc,char **argv)
   ierr = Check("./this-dir");CHKERRQ(ierr);
   ierr = Check("also-this-dir");CHKERRQ(ierr);
 #endif
-  ierr = PetscFinalize();
+  PetscFinalize();
   return 0;
 }
 

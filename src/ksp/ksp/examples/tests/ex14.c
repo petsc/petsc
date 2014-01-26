@@ -191,7 +191,7 @@ int main(int argc,char **argv)
   ierr = ComputeFunction(&user,X,F);CHKERRQ(ierr);   /* Compute F(X)    */
   ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);     /* fnorm = || F || */
   ttol = fnorm*rtol;
-  if (!no_output) PetscPrintf(comm,"Initial function norm = %G\n",fnorm);
+  if (!no_output) PetscPrintf(comm,"Initial function norm = %g\n",(double)fnorm);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system with a user-defined method
@@ -236,7 +236,7 @@ int main(int argc,char **argv)
     ierr = VecCopy(Y,X);CHKERRQ(ierr);                   /* X <- Y          */
     ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);       /* xnorm = || X || */
     if (!no_output) {
-      ierr = PetscPrintf(comm,"   linear solve iterations = %D, xnorm=%G, ynorm=%G\n",lin_its,xnorm,ynorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"   linear solve iterations = %D, xnorm=%g, ynorm=%g\n",lin_its,(double)xnorm,(double)ynorm);CHKERRQ(ierr);
     }
 
     /*
@@ -245,7 +245,7 @@ int main(int argc,char **argv)
     ierr = ComputeFunction(&user,X,F);CHKERRQ(ierr);     /* Compute F(X)    */
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);       /* fnorm = || F || */
     if (!no_output) {
-      ierr = PetscPrintf(comm,"Iteration %D, function norm = %G\n",i+1,fnorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"Iteration %D, function norm = %g\n",i+1,(double)fnorm);CHKERRQ(ierr);
     }
 
     /*
@@ -253,13 +253,13 @@ int main(int argc,char **argv)
      */
     if (fnorm <= ttol) {
       if (!no_output) {
-        ierr = PetscPrintf(comm,"Converged due to function norm %G < %G (relative tolerance)\n",fnorm,ttol);CHKERRQ(ierr);
+        ierr = PetscPrintf(comm,"Converged due to function norm %g < %g (relative tolerance)\n",(double)fnorm,(double)ttol);CHKERRQ(ierr);
       }
       break;
     }
     if (ynorm < xtol*(xnorm)) {
       if (!no_output) {
-        ierr = PetscPrintf(comm,"Converged due to small update length: %G < %G * %G\n",ynorm,xtol,xnorm);CHKERRQ(ierr);
+        ierr = PetscPrintf(comm,"Converged due to small update length: %g < %g * %g\n",(double)ynorm,(double)xtol,(double)xnorm);CHKERRQ(ierr);
       }
       break;
     }

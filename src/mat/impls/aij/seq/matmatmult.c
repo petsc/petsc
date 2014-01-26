@@ -148,8 +148,8 @@ static PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat A,Mat B,P
 
 #if defined(PETSC_USE_INFO)
   if (ci[am]) {
-    ierr = PetscInfo3((*C),"Reallocs %D; Fill ratio: given %G needed %G.\n",ndouble,fill,afill);CHKERRQ(ierr);
-    ierr = PetscInfo1((*C),"Use MatMatMult(A,B,MatReuse,%G,&C) for best performance.;\n",afill);CHKERRQ(ierr);
+    ierr = PetscInfo3((*C),"Reallocs %D; Fill ratio: given %g needed %g.\n",ndouble,(double)fill,(double)afill);CHKERRQ(ierr);
+    ierr = PetscInfo1((*C),"Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n",(double)afill);CHKERRQ(ierr);
   } else {
     ierr = PetscInfo((*C),"Empty matrix product\n");CHKERRQ(ierr);
   }
@@ -367,8 +367,8 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(Mat A,Mat B,PetscR
 
 #if defined(PETSC_USE_INFO)
   if (ci[am]) {
-    ierr = PetscInfo3((*C),"Reallocs %D; Fill ratio: given %G needed %G.\n",ndouble,fill,afill);CHKERRQ(ierr);
-    ierr = PetscInfo1((*C),"Use MatMatMult(A,B,MatReuse,%G,&C) for best performance.;\n",afill);CHKERRQ(ierr);
+    ierr = PetscInfo3((*C),"Reallocs %D; Fill ratio: given %g needed %g.\n",ndouble,(double)fill,(double)afill);CHKERRQ(ierr);
+    ierr = PetscInfo1((*C),"Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n",(double)afill);CHKERRQ(ierr);
   } else {
     ierr = PetscInfo((*C),"Empty matrix product\n");CHKERRQ(ierr);
   }
@@ -474,8 +474,8 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,PetscReal f
 
 #if defined(PETSC_USE_INFO)
   if (ci[am]) {
-    ierr = PetscInfo3((*C),"Reallocs %D; Fill ratio: given %G needed %G.\n",ndouble,fill,afill);CHKERRQ(ierr);
-    ierr = PetscInfo1((*C),"Use MatMatMult(A,B,MatReuse,%G,&C) for best performance.;\n",afill);CHKERRQ(ierr);
+    ierr = PetscInfo3((*C),"Reallocs %D; Fill ratio: given %g needed %g.\n",ndouble,(double)fill,(double)afill);CHKERRQ(ierr);
+    ierr = PetscInfo1((*C),"Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n",(double)afill);CHKERRQ(ierr);
   } else {
     ierr = PetscInfo((*C),"Empty matrix product\n");CHKERRQ(ierr);
   }
@@ -584,8 +584,8 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(Mat A,Mat B,PetscReal fill,
 
 #if defined(PETSC_USE_INFO)
   if (ci[am]) {
-    ierr = PetscInfo3((*C),"Reallocs %D; Fill ratio: given %G needed %G.\n",ndouble,fill,afill);CHKERRQ(ierr);
-    ierr = PetscInfo1((*C),"Use MatMatMult(A,B,MatReuse,%G,&C) for best performance.;\n",afill);CHKERRQ(ierr);
+    ierr = PetscInfo3((*C),"Reallocs %D; Fill ratio: given %g needed %g.\n",ndouble,(double)fill,(double)afill);CHKERRQ(ierr);
+    ierr = PetscInfo1((*C),"Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n",(double)afill);CHKERRQ(ierr);
   } else {
     ierr = PetscInfo((*C),"Empty matrix product\n");CHKERRQ(ierr);
   }
@@ -708,8 +708,8 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(Mat A,Mat B,PetscReal fil
 
 #if defined(PETSC_USE_INFO)
   if (ci[am]) {
-    ierr = PetscInfo3((*C),"Reallocs %D; Fill ratio: given %G needed %G.\n",ndouble,fill,afill);CHKERRQ(ierr);
-    ierr = PetscInfo1((*C),"Use MatMatMult(A,B,MatReuse,%G,&C) for best performance.;\n",afill);CHKERRQ(ierr);
+    ierr = PetscInfo3((*C),"Reallocs %D; Fill ratio: given %g needed %g.\n",ndouble,(double)fill,(double)afill);CHKERRQ(ierr);
+    ierr = PetscInfo1((*C),"Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n",(double)afill);CHKERRQ(ierr);
   } else {
     ierr = PetscInfo((*C),"Empty matrix product\n");CHKERRQ(ierr);
   }
@@ -800,8 +800,8 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
 
 #if defined(PETSC_USE_INFO)
   if (ci[am]) {
-    ierr = PetscInfo3((*C),"Reallocs %D; Fill ratio: given %G needed %G.\n",ndouble,fill,afill);CHKERRQ(ierr);
-    ierr = PetscInfo1((*C),"Use MatMatMult(A,B,MatReuse,%G,&C) for best performance.;\n",afill);CHKERRQ(ierr);
+    ierr = PetscInfo3((*C),"Reallocs %D; Fill ratio: given %g needed %g.\n",ndouble,(double)fill,(double)afill);CHKERRQ(ierr);
+    ierr = PetscInfo1((*C),"Use MatMatMult(A,B,MatReuse,%g,&C) for best performance.;\n",(double)afill);CHKERRQ(ierr);
   } else {
     ierr = PetscInfo((*C),"Empty matrix product\n");CHKERRQ(ierr);
   }

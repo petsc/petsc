@@ -87,7 +87,7 @@ int main(int argc,char **args)
   ierr = MatMult(C,u,b);CHKERRQ(ierr);
   ierr = VecNorm(b,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > 1.e-10 || norm < -1.e-10) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error b %G should be near 0\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error b %g should be near 0\n",(double)norm);CHKERRQ(ierr);
   }
 
   /* Now test MatGetValues() */
@@ -106,9 +106,9 @@ int main(int argc,char **args)
     for (i=0; i<nrsub; i++) {
       for (j=0; j<ncsub; j++) {
         if (PetscImaginaryPart(vals[i*ncsub+j]) != 0.0) {
-          ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%D, %D] = %G + %G i\n",rsub[i],csub[j],PetscRealPart(vals[i*ncsub+j]),PetscImaginaryPart(vals[i*ncsub+j]));CHKERRQ(ierr);
+          ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%D, %D] = %g + %g i\n",rsub[i],csub[j],(double)PetscRealPart(vals[i*ncsub+j]),(double)PetscImaginaryPart(vals[i*ncsub+j]));CHKERRQ(ierr);
         } else {
-          ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%D, %D] = %G\n",rsub[i],csub[j],PetscRealPart(vals[i*ncsub+j]));CHKERRQ(ierr);
+          ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%D, %D] = %g\n",rsub[i],csub[j],(double)PetscRealPart(vals[i*ncsub+j]));CHKERRQ(ierr);
         }
       }
     }

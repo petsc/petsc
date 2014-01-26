@@ -20,7 +20,11 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool beg
   const PetscScalar *x;
 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_CUSP)
+  if ((vec->petscnative || vec->ops->getarray) && vec->valid_GPU_array != PETSC_CUSP_GPU) {
+#else
   if (vec->petscnative || vec->ops->getarray) {
+#endif
     ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
     ierr = VecGetArrayRead(vec,&x);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
@@ -576,7 +580,7 @@ PetscErrorCode  VecSet(Vec x,PetscScalar alpha)
   val  = PetscAbsScalar(alpha);
   ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_1],x->map->N * val);CHKERRQ(ierr);
   ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_INFINITY],val);CHKERRQ(ierr);
-  val  = PetscSqrtReal((double)x->map->N) * val;
+  val  = PetscSqrtReal((PetscReal)x->map->N) * val;
   ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_2],val);CHKERRQ(ierr);
   ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_FROBENIUS],val);CHKERRQ(ierr);
   PetscFunctionReturn(0);

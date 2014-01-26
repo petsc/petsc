@@ -77,7 +77,7 @@ static PetscErrorCode  KSPSolve_SpecEst(KSP ksp)
 
     ierr = KSPChebyshevSetEigenvalues(spec->kspcheap,spec->max*spec->maxfactor,spec->min*spec->minfactor);CHKERRQ(ierr);
     ierr = KSPRichardsonSetScale(spec->kspcheap,spec->richfactor/spec->radius);CHKERRQ(ierr);
-    ierr = PetscInfo3(ksp,"Estimated singular value min=%G max=%G, spectral radius=%G",spec->min,spec->max,spec->radius);CHKERRQ(ierr);
+    ierr = PetscInfo3(ksp,"Estimated singular value min=%g max=%g, spectral radius=%g",(double)spec->min,(double)spec->max,(double)spec->radius);CHKERRQ(ierr);
 
     spec->current = PETSC_TRUE;
   }
@@ -95,8 +95,8 @@ static PetscErrorCode KSPView_SpecEst(KSP ksp,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  SpecEst: last singular value estimate min=%G max=%G rad=%G\n",spec->min,spec->max,spec->radius);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Using scaling factors min=%G max=%G rich=%G\n",spec->minfactor,spec->maxfactor,spec->richfactor);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  SpecEst: last singular value estimate min=%g max=%g rad=%g\n",(double)spec->min,(double)spec->max,(double)spec->radius);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Using scaling factors min=%g max=%g rich=%g\n",(double)spec->minfactor,(double)spec->maxfactor,(double)spec->richfactor);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Sub KSP used for estimating spectrum:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = KSPView(spec->kspest,viewer);CHKERRQ(ierr);

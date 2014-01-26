@@ -56,7 +56,7 @@ int main(int argc,char **argv)
   ierr = MatMult(A,x,r);CHKERRQ(ierr);
   ierr = VecAXPY(r,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(r,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm);CHKERRQ(ierr);
 
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);

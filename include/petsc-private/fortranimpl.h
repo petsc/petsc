@@ -78,7 +78,7 @@ if (flg) {                                   \
 
 /*
     The cast through PETSC_UINTPTR_T is so that compilers that warn about casting to/from void * to void(*)(void)
-    will not complain about these comparisons. It is now know if this works for all compilers
+    will not complain about these comparisons. It is not know if this works for all compilers
 */
 #define FORTRANNULLINTEGER(a)  (((void*)(PETSC_UINTPTR_T)a) == PETSC_NULL_INTEGER_Fortran)
 #define FORTRANNULLSCALAR(a)   (((void*)(PETSC_UINTPTR_T)a) == PETSC_NULL_SCALAR_Fortran)

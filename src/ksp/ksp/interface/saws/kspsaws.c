@@ -111,7 +111,7 @@ PetscErrorCode KSPMonitorSAWs(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
         PetscStackCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/eigr",mon->eigr,mon->neigs,SAWs_READ,SAWs_DOUBLE));
         PetscStackCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/eigi",mon->eigi,mon->neigs,SAWs_READ,SAWs_DOUBLE));
       }
-      ierr = PetscInfo2(ksp,"KSP extreme singular values min=%G max=%G\n",emin,emax);CHKERRQ(ierr);
+      ierr = PetscInfo2(ksp,"KSP extreme singular values min=%g max=%g\n",(double)emin,(double)emax);CHKERRQ(ierr);
       ierr = PetscSAWsBlock();CHKERRQ(ierr);
     }
   }

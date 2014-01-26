@@ -369,7 +369,7 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
   Note: This is typically used when adding pieces other than vertices to a mesh
 
 .keywords: mesh
-.seealso: DMCopyLabels(), DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMPlexGetCoordinateSection()
+.seealso: DMCopyLabels(), DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMGetCoordinateSection()
 @*/
 PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
 {
@@ -384,8 +384,8 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   ierr = DMPlexGetDepthStratum(dmA, 0, &vStartA, &vEndA);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dmB, 0, &vStartB, &vEndB);CHKERRQ(ierr);
   if ((vEndA-vStartA) != (vEndB-vStartB)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of vertices in first DM %d != %d in the second DM", vEndA-vStartA, vEndB-vStartB);
-  ierr = DMPlexGetCoordinateSection(dmA, &coordSectionA);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateSection(dmB, &coordSectionB);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dmA, &coordSectionA);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dmB, &coordSectionB);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(coordSectionB, 1);CHKERRQ(ierr);
   ierr = PetscSectionGetFieldComponents(coordSectionA, 0, &spaceDim);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldComponents(coordSectionB, 0, spaceDim);CHKERRQ(ierr);
@@ -433,7 +433,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   Note: This is typically used when interpolating or otherwise adding to a mesh
 
 .keywords: mesh
-.seealso: DMCopyCoordinates(), DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMPlexGetCoordinateSection()
+.seealso: DMCopyCoordinates(), DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMGetCoordinateSection()
 @*/
 PetscErrorCode DMPlexCopyLabels(DM dmA, DM dmB)
 {

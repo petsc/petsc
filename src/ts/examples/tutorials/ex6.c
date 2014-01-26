@@ -227,8 +227,7 @@ int main(int argc,char **argv)
      View timestepping solver info
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscPrintf(PETSC_COMM_SELF,"avg. error (2 norm) = %G, avg. error (max norm) = %G\n",
-              appctx.norm_2/steps,appctx.norm_max/steps);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"avg. error (2 norm) = %g, avg. error (max norm) = %g\n",(double)(appctx.norm_2/steps),(double)(appctx.norm_max/steps));CHKERRQ(ierr);
   ierr = TSView(ts,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -287,7 +286,7 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
      directly into the array locations.  Alternatively, we could use
      VecSetValues() or VecSetValuesLocal().
   */
-  for (i=0; i<appctx->m; i++) u_localptr[i] = sin(PETSC_PI*i*6.*appctx->h) + 3.*sin(PETSC_PI*i*2.*appctx->h);
+  for (i=0; i<appctx->m; i++) u_localptr[i] = PetscSinReal(PETSC_PI*i*6.*appctx->h) + 3.*PetscSinReal(PETSC_PI*i*2.*appctx->h);
 
   /*
      Restore vector
@@ -298,7 +297,6 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
      Print debugging information if desired
   */
   if (appctx->debug) {
-     printf("initial guess vector\n");
      ierr = VecView(u,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
@@ -333,9 +331,9 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
      Simply write the solution directly into the array locations.
      Alternatively, we culd use VecSetValues() or VecSetValuesLocal().
   */
-  ex1 = exp(-36.*PETSC_PI*PETSC_PI*t); ex2 = exp(-4.*PETSC_PI*PETSC_PI*t);
+  ex1 = PetscExpReal(-36.*PETSC_PI*PETSC_PI*t); ex2 = PetscExpReal(-4.*PETSC_PI*PETSC_PI*t);
   sc1 = PETSC_PI*6.*h;                 sc2 = PETSC_PI*2.*h;
-  for (i=0; i<appctx->m; i++) s_localptr[i] = sin(PetscRealPart(sc1)*(PetscReal)i)*ex1 + 3.*sin(PetscRealPart(sc2)*(PetscReal)i)*ex2;
+  for (i=0; i<appctx->m; i++) s_localptr[i] = PetscSinReal(PetscRealPart(sc1)*(PetscReal)i)*ex1 + 3.*PetscSinReal(PetscRealPart(sc2)*(PetscReal)i)*ex2;
 
   /*
      Restore vector
@@ -385,9 +383,9 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal crtime,Vec u,void *ctx)
      Print debugging information if desired
   */
   if (appctx->debug) {
-    printf("Computed solution vector\n");
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Computed solution vector\n");CHKERRQ(ierr);
     ierr = VecView(u,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    printf("Exact solution vector\n");
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Exact solution vector\n");CHKERRQ(ierr);
     ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
@@ -401,8 +399,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal crtime,Vec u,void *ctx)
 
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
   if (norm_2 > 1.e-2) {
-    printf("Timestep %d: step size = %G, time = %G, 2-norm error = %G, max norm error = %G\n",
-         (int)step,dt,crtime,norm_2,norm_max);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Timestep %D: step size = %g, time = %g, 2-norm error = %g, max norm error = %g\n",step,(double)dt,(double)crtime,(double)norm_2,(double)norm_max);CHKERRQ(ierr);
   }
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;
@@ -423,7 +420,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal crtime,Vec u,void *ctx)
      Print debugging information if desired
   */
   if (appctx->debug) {
-    printf("Error vector\n");
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error vector\n");CHKERRQ(ierr);
     ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
@@ -547,7 +544,7 @@ PetscErrorCode MyBCRoutine(TS ts,PetscReal t,Vec f,void *ctx)
   fa[0]   = 0.0;
   fa[m-1] = 1.0;
   ierr    = VecRestoreArray(f,&fa);CHKERRQ(ierr);
-  printf("t=%g\n",t);
+  ierr    = PetscPrintf(PETSC_COMM_SELF,"t=%g\n",(double)t);CHKERRQ(ierr);
 
   return 0;
 }

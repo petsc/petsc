@@ -265,7 +265,7 @@ int main(int argc, char **argv)
   ierr = TSGetSolveTime(ts, &ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts, &steps);CHKERRQ(ierr);
   ierr = TSGetConvergedReason(ts, &reason);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "%s at time %G after %D steps\n", TSConvergedReasons[reason], ftime, steps);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "%s at time %g after %D steps\n", TSConvergedReasons[reason], (double)ftime, steps);CHKERRQ(ierr);
 
   ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);

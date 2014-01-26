@@ -5,6 +5,7 @@
 
 PetscClassId IS_LTOGM_CLASSID;
 
+
 #undef __FUNCT__
 #define __FUNCT__ "ISG2LMapApply"
 PetscErrorCode ISG2LMapApply(ISLocalToGlobalMapping mapping,PetscInt n,const PetscInt in[],PetscInt out[])
@@ -92,7 +93,7 @@ PetscErrorCode  ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,PetscV
   if (iascii) {
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
     for (i=0; i<mapping->n; i++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %d %d\n",rank,i,mapping->indices[i]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D %D\n",rank,i,mapping->indices[i]);CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
@@ -402,7 +403,7 @@ PetscErrorCode  ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS 
 
   ierr = PetscMalloc1(n,&idxout);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    if (idxin[i] >= Nmax) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local index %d too large %d (max) at %d",idxin[i],Nmax-1,i);
+    if (idxin[i] >= Nmax) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local index %D too large %D (max) at %D",idxin[i],Nmax-1,i);
     idxout[i] = idxmap[idxin[i]];
   }
   ierr = ISRestoreIndices(is,&idxin);CHKERRQ(ierr);
@@ -685,11 +686,11 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
     nprocs[2*proc]++;                     /* count of how many that processor globally owns of ours */
   }
   nsends = 0; for (i=0; i<size; i++) nsends += nprocs[2*i+1];
-  ierr = PetscInfo1(mapping,"Number of global owners for my local data %d\n",nsends);CHKERRQ(ierr);
+  ierr = PetscInfo1(mapping,"Number of global owners for my local data %D\n",nsends);CHKERRQ(ierr);
 
   /* inform other processors of number of messages and max length*/
   ierr = PetscMaxSum(comm,nprocs,&nmax,&nrecvs);CHKERRQ(ierr);
-  ierr = PetscInfo1(mapping,"Number of local owners for my global data %d\n",nrecvs);CHKERRQ(ierr);
+  ierr = PetscInfo1(mapping,"Number of local owners for my global data %D\n",nrecvs);CHKERRQ(ierr);
 
   /* post receives for owned rows */
   ierr = PetscMalloc1((2*nrecvs+1)*(nmax+1),&recvs);CHKERRQ(ierr);
@@ -774,9 +775,9 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
     }
     for (i=0; i<ng; i++) {
       if (nownedsenders[i] > 1) {
-        ierr = PetscSynchronizedPrintf(comm,"[%d] global node %d local owner processors: ",rank,i+rstart);CHKERRQ(ierr);
+        ierr = PetscSynchronizedPrintf(comm,"[%d] global node %D local owner processors: ",rank,i+rstart);CHKERRQ(ierr);
         for (j=0; j<nownedsenders[i]; j++) {
-          ierr = PetscSynchronizedPrintf(comm,"%d ",ownedsenders[starts[i]+j]);CHKERRQ(ierr);
+          ierr = PetscSynchronizedPrintf(comm,"%D ",ownedsenders[starts[i]+j]);CHKERRQ(ierr);
         }
         ierr = PetscSynchronizedPrintf(comm,"\n");CHKERRQ(ierr);
       }
@@ -895,9 +896,9 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
     for (i=0; i<nrecvs2; i++) {
       nt = recvs2[cnt++];
       for (j=0; j<nt; j++) {
-        ierr = PetscSynchronizedPrintf(comm,"[%d] local node %d number of subdomains %d: ",rank,recvs2[cnt],recvs2[cnt+1]);CHKERRQ(ierr);
+        ierr = PetscSynchronizedPrintf(comm,"[%d] local node %D number of subdomains %D: ",rank,recvs2[cnt],recvs2[cnt+1]);CHKERRQ(ierr);
         for (k=0; k<recvs2[cnt+1]; k++) {
-          ierr = PetscSynchronizedPrintf(comm,"%d ",recvs2[cnt+2+k]);CHKERRQ(ierr);
+          ierr = PetscSynchronizedPrintf(comm,"%D ",recvs2[cnt+2+k]);CHKERRQ(ierr);
         }
         cnt += 2 + recvs2[cnt+1];
         ierr = PetscSynchronizedPrintf(comm,"\n");CHKERRQ(ierr);
@@ -960,9 +961,9 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
   if (debug) { /* -----------------------------------  */
     nt = *nproc;
     for (i=0; i<nt; i++) {
-      ierr = PetscSynchronizedPrintf(comm,"[%d] subdomain %d number of indices %d: ",rank,(*procs)[i],(*numprocs)[i]);CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf(comm,"[%d] subdomain %D number of indices %D: ",rank,(*procs)[i],(*numprocs)[i]);CHKERRQ(ierr);
       for (j=0; j<(*numprocs)[i]; j++) {
-        ierr = PetscSynchronizedPrintf(comm,"%d ",(*indices)[i][j]);CHKERRQ(ierr);
+        ierr = PetscSynchronizedPrintf(comm,"%D ",(*indices)[i][j]);CHKERRQ(ierr);
       }
       ierr = PetscSynchronizedPrintf(comm,"\n");CHKERRQ(ierr);
     }
@@ -1145,3 +1146,5 @@ PetscErrorCode ISLocalToGlobalMappingConcatenate(MPI_Comm comm,PetscInt n,const 
   ierr = ISLocalToGlobalMappingCreate(comm,cnt,idx,PETSC_OWN_POINTER,ltogcat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+

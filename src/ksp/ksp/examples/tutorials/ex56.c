@@ -56,7 +56,7 @@ int main(int argc,char **args)
     ierr = PetscLogStageRegister("3rd Setup", &stage[4]);CHKERRQ(ierr);
     ierr = PetscLogStageRegister("3rd Solve", &stage[5]);CHKERRQ(ierr);
   } else {
-    for (i=0; i<sizeof(stage)/sizeof(stage[0]); i++) stage[i] = -1;
+    for (i=0; i<(PetscInt)(sizeof(stage)/sizeof(stage[0])); i++) stage[i] = -1;
   }
 
   h = 1./ne; nn = ne+1;
@@ -260,7 +260,15 @@ int main(int argc,char **args)
   if (use_nearnullspace) {
     MatNullSpace matnull;
     Vec vec_coords;
-    ierr = VecCreateSeqWithArray(MPI_COMM_SELF,3,m,coords,&vec_coords);CHKERRQ(ierr);
+    PetscScalar *c;
+
+    ierr = VecCreate(MPI_COMM_WORLD,&vec_coords);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(vec_coords,3);CHKERRQ(ierr);
+    ierr = VecSetSizes(vec_coords,m,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetUp(vec_coords);CHKERRQ(ierr);
+    ierr = VecGetArray(vec_coords,&c);CHKERRQ(ierr);
+    for (i=0; i<m; i++) c[i] = coords[i]; /* Copy since Scalar type might be Complex */
+    ierr = VecRestoreArray(vec_coords,&c);CHKERRQ(ierr);
     ierr = MatNullSpaceCreateRigidBody(vec_coords,&matnull);CHKERRQ(ierr);
     ierr = MatSetNearNullSpace(Amat,matnull);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&matnull);CHKERRQ(ierr);
@@ -331,7 +339,7 @@ int main(int argc,char **args)
     ierr = VecAXPY(bb, -1.0, res);CHKERRQ(ierr);
     ierr = VecDestroy(&res);CHKERRQ(ierr);
     ierr = VecNorm(bb, NORM_2, &norm);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e, emax=%e\n",0,__FUNCT__,norm/norm2,norm2,emax);
+    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e, emax=%e\n",0,__FUNCT__,(double)norm/norm2,(double)norm2,(double)emax);
     /*ierr = PetscViewerASCIIOpen(comm, "residual.m", &viewer);CHKERRQ(ierr);
      ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
      ierr = VecView(bb,viewer);CHKERRQ(ierr);

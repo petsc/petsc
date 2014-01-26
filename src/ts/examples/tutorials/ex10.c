@@ -107,7 +107,7 @@ static void RDMaterialEnergy_Saha(RD rd,const RDNode *n,PetscScalar *inEm,RDNode
               chi_t = -chi / T * T_t,
               a     = 1.,
               a_t   = 0,
-              b     = 4. * rd->m_p / rd->rho * pow(2. * PETSC_PI * rd->m_e * rd->I_H / PetscSqr(rd->h),1.5) * PetscExpScalar(-chi) * PetscPowScalar(chi,1.5), /* Eq 7 */
+              b     = 4. * rd->m_p / rd->rho * PetscPowScalar(2. * PETSC_PI * rd->m_e * rd->I_H / PetscSqr(rd->h),1.5) * PetscExpScalar(-chi) * PetscPowScalar(chi,1.5), /* Eq 7 */
               b_t   = -b*chi_t + 1.5*b/chi*chi_t,
               c     = -b,
               c_t   = -b_t;
@@ -325,7 +325,7 @@ static PetscErrorCode RDCheckDomain_Private(RD rd,TS ts,Vec X,PetscBool  *in)
     *in  = PETSC_FALSE;
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = SNESSetFunctionDomainError(snes);CHKERRQ(ierr);
-    ierr = PetscInfo3(ts,"Domain violation at %D field %D value %G\n",minloc/2,minloc%2,min);CHKERRQ(ierr);
+    ierr = PetscInfo3(ts,"Domain violation at %D field %D value %g\n",minloc/2,minloc%2,(double)min);CHKERRQ(ierr);
   } else *in = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -788,7 +788,7 @@ static PetscErrorCode RDInitialState(RD rd,Vec X)
       x[i].T = RDRadiationTemperature(rd,x[i].E);
       break;
     case 3:
-      x[i].E = 7.56e-2 * rd->unit.Joule / pow(rd->unit.meter,3);
+      x[i].E = 7.56e-2 * rd->unit.Joule / PetscPowScalar(rd->unit.meter,3);
       x[i].T = RDRadiationTemperature(rd,x[i].E);
       break;
     default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No initial state %D",rd->initial);
@@ -865,8 +865,8 @@ static PetscErrorCode RDTestDifferentiation(RD rd)
     n.T = T1;
     rd->MaterialEnergy(rd,&n,&Em1,0);
     fdEm.T = (Em1-Em0)/(T0*epsilon);
-    ierr = PetscPrintf(comm,"dEm {%G,%G}, fdEm {%G,%G}, diff {%G,%G}\n",PetscRealPart(dEm.E),PetscRealPart(dEm.T),
-                       PetscRealPart(fdEm.E),PetscRealPart(fdEm.T),PetscRealPart(dEm.E-fdEm.E),PetscRealPart(dEm.T-fdEm.T));CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"dEm {%g,%g}, fdEm {%g,%g}, diff {%g,%g}\n",(double)PetscRealPart(dEm.E),(double)PetscRealPart(dEm.T),
+                       (double)PetscRealPart(fdEm.E),(double)PetscRealPart(fdEm.T),(double)PetscRealPart(dEm.E-fdEm.E),(double)PetscRealPart(dEm.T-fdEm.T));CHKERRQ(ierr);
   }
   {
     PetscScalar D0,D;
@@ -881,10 +881,10 @@ static PetscErrorCode RDTestDifferentiation(RD rd)
     RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D,0,0); fdxD.E = (D-D0)/epsilon;
     n.E = 1;           n.T = 1.;           nx.E = 1.;          n.T = 1.+epsilon;
     RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D,0,0); fdxD.T = (D-D0)/epsilon;
-    ierr = PetscPrintf(comm,"dD {%G,%G}, fdD {%G,%G}, diff {%G,%G}\n",PetscRealPart(dD.E),PetscRealPart(dD.T),
-                       PetscRealPart(fdD.E),PetscRealPart(fdD.T),PetscRealPart(dD.E-fdD.E),PetscRealPart(dD.T-fdD.T));CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"dxD {%G,%G}, fdxD {%G,%G}, diffx {%G,%G}\n",PetscRealPart(dxD.E),PetscRealPart(dxD.T),
-                       PetscRealPart(fdxD.E),PetscRealPart(fdxD.T),PetscRealPart(dxD.E-fdxD.E),PetscRealPart(dxD.T-fdxD.T));CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"dD {%g,%g}, fdD {%g,%g}, diff {%g,%g}\n",(double)PetscRealPart(dD.E),(double)PetscRealPart(dD.T),
+                       (double)PetscRealPart(fdD.E),(double)PetscRealPart(fdD.T),(double)PetscRealPart(dD.E-fdD.E),(double)PetscRealPart(dD.T-fdD.T));CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"dxD {%g,%g}, fdxD {%g,%g}, diffx {%g,%g}\n",(double)PetscRealPart(dxD.E),(double)PetscRealPart(dxD.T),
+                       (double)PetscRealPart(fdxD.E),(double)PetscRealPart(fdxD.T),(double)PetscRealPart(dxD.E-fdxD.E),(double)PetscRealPart(dxD.T-fdxD.T));CHKERRQ(ierr);
   }
   {
     PetscInt    i;
@@ -897,8 +897,8 @@ static PetscErrorCode RDTestDifferentiation(RD rd)
       fd[i].E = (RDDiffusion(rd,hx,n1,1,0)-a0)/epsilon;
       ierr    = PetscMemcpy(n1,n0,sizeof(n0));CHKERRQ(ierr); n1[i].T += epsilon;
       fd[i].T = (RDDiffusion(rd,hx,n1,1,0)-a0)/epsilon;
-      ierr    = PetscPrintf(comm,"ddiff[%D] {%G,%G}, fd {%G %G}, diff {%G,%G}\n",i,PetscRealPart(d[i].E),PetscRealPart(d[i].T),
-                            PetscRealPart(fd[i].E),PetscRealPart(fd[i].T),PetscRealPart(d[i].E-fd[i].E),PetscRealPart(d[i].T-fd[i].T));CHKERRQ(ierr);
+      ierr    = PetscPrintf(comm,"ddiff[%D] {%g,%g}, fd {%g %g}, diff {%g,%g}\n",i,(double)PetscRealPart(d[i].E),(double)PetscRealPart(d[i].T),
+                            (double)PetscRealPart(fd[i].E),(double)PetscRealPart(fd[i].T),(double)PetscRealPart(d[i].E-fd[i].E),(double)PetscRealPart(d[i].T-fd[i].T));CHKERRQ(ierr);
     }
   }
   {
@@ -910,8 +910,8 @@ static PetscErrorCode RDTestDifferentiation(RD rd)
     rad  = RDRadiation(rd,&n,0); fdrad.E = (rad-rad0)/epsilon;
     n.E  = 1.;         n.T = 1.+epsilon;
     rad  = RDRadiation(rd,&n,0); fdrad.T = (rad-rad0)/epsilon;
-    ierr = PetscPrintf(comm,"drad {%G,%G}, fdrad {%G,%G}, diff {%G,%G}\n",PetscRealPart(drad.E),PetscRealPart(drad.T),
-                       PetscRealPart(fdrad.E),PetscRealPart(fdrad.T),PetscRealPart(drad.E-drad.E),PetscRealPart(drad.T-fdrad.T));CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"drad {%g,%g}, fdrad {%g,%g}, diff {%g,%g}\n",(double)PetscRealPart(drad.E),(double)PetscRealPart(drad.T),
+                       (double)PetscRealPart(fdrad.E),(double)PetscRealPart(fdrad.T),(double)PetscRealPart(drad.E-drad.E),(double)PetscRealPart(drad.T-fdrad.T));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -974,7 +974,7 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
     switch (rd->initial) {
     case 1:
       rd->leftbc     = BC_ROBIN;
-      rd->Eapplied   = 4 * rd->unit.Joule / pow(rd->unit.meter,3.);
+      rd->Eapplied   = 4 * rd->unit.Joule / PetscPowRealInt(rd->unit.meter,3);
       rd->L          = 1. * rd->unit.meter;
       rd->beta       = 3.0;
       rd->gamma      = 3.0;
@@ -990,7 +990,7 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
       break;
     case 3:
       rd->leftbc     = BC_ROBIN;
-      rd->Eapplied   = 7.503e6 * rd->unit.Joule / pow(rd->unit.meter,3);
+      rd->Eapplied   = 7.503e6 * rd->unit.Joule / PetscPowRealInt(rd->unit.meter,3);
       rd->L          = 5. * rd->unit.meter;
       rd->beta       = 3.5;
       rd->gamma      = 3.5;
@@ -1024,15 +1024,15 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
   case 3:
     /* Table 2 */
     rd->rho     = 1.17e-3 * kilogram / (meter*meter*meter);                      /* density */
-    rd->K_R     = 7.44e18 * pow(meter,5.) * pow(Kelvin,3.5) * pow(kilogram,-2.); /*  */
-    rd->K_p     = 2.33e20 * pow(meter,5.) * pow(Kelvin,3.5) * pow(kilogram,-2.); /*  */
+    rd->K_R     = 7.44e18 * PetscPowRealInt(meter,5) * PetscPowReal(Kelvin,3.5) * PetscPowRealInt(kilogram,-2); /*  */
+    rd->K_p     = 2.33e20 * PetscPowRealInt(meter,5) * PetscPowReal(Kelvin,3.5) * PetscPowRealInt(kilogram,-2); /*  */
     rd->I_H     = 2.179e-18 * Joule;                                             /* Hydrogen ionization potential */
     rd->m_p     = 1.673e-27 * kilogram;                                          /* proton mass */
     rd->m_e     = 9.109e-31 * kilogram;                                          /* electron mass */
     rd->h       = 6.626e-34 * Joule * second;                                    /* Planck's constant */
     rd->k       = 1.381e-23 * Joule / Kelvin;                                    /* Boltzman constant */
     rd->c       = 3.00e8 * meter / second;                                       /* speed of light */
-    rd->sigma_b = 5.67e-8 * Watt * pow(meter,-2.) * pow(Kelvin,-4.);             /* Stefan-Boltzman constant */
+    rd->sigma_b = 5.67e-8 * Watt * PetscPowRealInt(meter,-2) * PetscPowRealInt(Kelvin,-4);             /* Stefan-Boltzman constant */
     rd->MaterialEnergy = RDMaterialEnergy_Saha;
     break;
   }
@@ -1105,7 +1105,7 @@ int main(int argc, char *argv[])
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Steps %D  final time %G\n",steps,ftime);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Steps %D  final time %g\n",steps,(double)ftime);CHKERRQ(ierr);
   if (rd->view_draw) {
     ierr = RDView(rd,X,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   }

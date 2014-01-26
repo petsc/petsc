@@ -194,11 +194,13 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
       }
       ilink = ilink->next;
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"KSP solver for A00 block \n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"KSP solver for A00 block\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = KSPView(jac->head->ksp,viewer);CHKERRQ(ierr);
+    if (jac->head) {
+      ierr = KSPView(jac->head->ksp,viewer);CHKERRQ(ierr);
+    } else  {ierr = PetscViewerASCIIPrintf(viewer,"  not yet available\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-    if (jac->kspupper != jac->head->ksp) {
+    if (jac->head && jac->kspupper != jac->head->ksp) {
       ierr = PetscViewerASCIIPrintf(viewer,"KSP solver for upper A00 in upper triangular factor \n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       if (jac->kspupper) {ierr = KSPView(jac->kspupper,viewer);CHKERRQ(ierr);}
@@ -214,7 +216,7 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-  } else if (isdraw) {
+  } else if (isdraw && jac->head) {
     PetscDraw draw;
     PetscReal x,y,w,wd,h;
     PetscInt  cnt = 2;
@@ -1804,10 +1806,11 @@ PetscErrorCode  PCFieldSplitGetDMSplits(PC pc,PetscBool* flg)
 $     For the Schur complement preconditioner if J = ( A00 A01 )
 $                                                    ( A10 A11 )
 $     the preconditioner using full factorization is
-$              ( I   -A10 ksp(A00) ) ( inv(A00)     0  ) (     I          0  )
+$              ( I   -ksp(A00) A01 ) ( inv(A00)     0  ) (     I          0  )
 $              ( 0         I       ) (   0      ksp(S) ) ( -A10 ksp(A00)  I  )
-     where the action of inv(A00) is applied using the KSP solver with prefix -fieldsplit_0_. The action of
-     ksp(S) is computed using the KSP solver with prefix -fieldsplit_splitname_ (where splitname was given
+     where the action of inv(A00) is applied using the KSP solver with prefix -fieldsplit_0_.  S is the Schur complement
+$              S = A11 - A10 ksp(A00) A01
+     which is usually dense and not stored explicitly.  The action of ksp(S) is computed using the KSP solver with prefix -fieldsplit_splitname_ (where splitname was given
      in providing the SECOND split or 1 if not give). For PCFieldSplitGetKSP() when field number is 0,
      it returns the KSP associated with -fieldsplit_0_ while field number 1 gives -fieldsplit_1_ KSP. By default
      A11 is used to construct a preconditioner for S, use PCFieldSplitSchurPrecondition() to turn on or off this

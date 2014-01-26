@@ -40,7 +40,7 @@
 !
       Vec              x,y,w
       Vec, pointer :: z(:)
-      double precision norm,v,v1,v2
+      PetscReal norm,v,v1,v2
       PetscInt         n,ithree
       PetscErrorCode   ierr
       PetscMPIInt      rank

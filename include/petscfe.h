@@ -79,7 +79,7 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceGetDM(PetscDualSpace, DM *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetFunctional(PetscDualSpace, PetscInt, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace, PetscInt, PetscBool, DM *);
 
-PETSC_EXTERN PetscErrorCode PetscDualSpaceApply(PetscDualSpace, PetscInt, PetscCellGeometry, PetscInt, void (*)(const PetscReal [], PetscScalar *), PetscScalar *);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceApply(PetscDualSpace, PetscInt, PetscCellGeometry, PetscInt, void (*)(const PetscReal [], PetscScalar *, void *), void *, PetscScalar *);
 
 PETSC_EXTERN PetscClassId PETSCFE_CLASSID;
 
@@ -163,7 +163,8 @@ typedef struct {
   void (**g1Funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_1 functions for each field pair */
   void (**g2Funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_2 functions for each field pair */
   void (**g3Funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_3 functions for each field pair */
-  void (**bcFuncs)(const PetscReal[], PetscScalar *); /* The boundary condition function for each field component */
+  void (**bcFuncs)(const PetscReal[], PetscScalar *, void *); /* The boundary condition function for each field component */
+  void **bcCtxs; /* Contexts for each boundary condition function, or null if all contexts are null */
   PetscFE         *feBd;
   void (**f0BdFuncs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]); /* The f_0 functions for each field */
   void (**f1BdFuncs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]); /* The f_1 functions for each field */

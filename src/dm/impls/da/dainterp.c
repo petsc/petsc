@@ -108,7 +108,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
        nonzero. Note this is very important for final grid lines
        in x direction; since they have no right neighbor
        */
-      x  = ((double)(i - i_c*ratio))/((double)ratio);
+      x  = ((PetscReal)(i - i_c*ratio))/((PetscReal)ratio);
       nc = 0;
       /* one left and below; or we are right on it */
       col      = (i_c-i_start_ghost_c);
@@ -236,7 +236,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
          nonzero. Note this is very important for final grid lines
          in x direction; since they have no right neighbor
     */
-    x  = ((double)(i - i_c*ratio))/((double)ratio);
+    x  = ((PetscReal)(i - i_c*ratio))/((PetscReal)ratio);
     nc = 0;
     /* one left and below; or we are right on it */
     col      = (i_c-i_start_ghost_c);
@@ -375,8 +375,8 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
          nonzero. Note this is very important for final grid lines
          in x and y directions; since they have no right/top neighbors
          */
-        x = ((double)(i - i_c*ratioi))/((double)ratioi);
-        y = ((double)(j - j_c*ratioj))/((double)ratioj);
+        x = ((PetscReal)(i - i_c*ratioi))/((PetscReal)ratioi);
+        y = ((PetscReal)(j - j_c*ratioj))/((PetscReal)ratioj);
 
         nc = 0;
         /* one left and below; or we are right on it */
@@ -862,9 +862,9 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
            nonzero. Note this is very important for final grid lines
            in x and y directions; since they have no right/top neighbors
            */
-          x = ((double)(i - i_c*ratioi))/((double)ratioi);
-          y = ((double)(j - j_c*ratioj))/((double)ratioj);
-          z = ((double)(l - l_c*ratiok))/((double)ratiok);
+          x = ((PetscReal)(i - i_c*ratioi))/((PetscReal)ratioi);
+          y = ((PetscReal)(j - j_c*ratioj))/((PetscReal)ratioj);
+          z = ((PetscReal)(l - l_c*ratiok))/((PetscReal)ratiok);
 
           nc = 0;
           /* one left and below; or we are right on it */

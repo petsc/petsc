@@ -28,8 +28,8 @@
       PetscInt  PETSC_DEFAULT_INTEGER
       parameter (PETSC_DEFAULT_INTEGER = -2)
 
-      PetscFortranDouble PETSC_DEFAULT_DOUBLE_PRECISION
-      parameter (PETSC_DEFAULT_DOUBLE_PRECISION=-2.0d0)
+      PetscReal PETSC_DEFAULT_REAL
+      parameter (PETSC_DEFAULT_REAL=-2.0d0)
 
       PetscEnum PETSC_FP_TRAP_OFF
       PetscEnum PETSC_FP_TRAP_ON
@@ -125,16 +125,23 @@
 !
 !     Basic constants
 !
-      PetscFortranDouble PETSC_PI
-      PetscFortranDouble PETSC_MAX_REAL
-      PetscFortranDouble PETSC_MIN_REAL
+      PetscReal PETSC_PI
+      PetscReal PETSC_MAX_REAL
+      PetscReal PETSC_MIN_REAL
 
+#if defined(PETSC_USE_REAL_SINGLE)
+      parameter (PETSC_PI = 3.1415926)
+      parameter (PETSC_MAX_REAL = 3.40282346638528860e+38)
+      parameter (PETSC_MIN_REAL = -3.40282346638528860e+38)
+#else
       parameter (PETSC_PI = 3.14159265358979323846264d0)
-      parameter (PETSC_MAX_REAL = 1.d300,PETSC_MIN_REAL = -1.d300)
+      parameter (PETSC_MAX_REAL = 1.7976931348623157d308)
+      parameter (PETSC_MIN_REAL = -1.7976931348623157d308)
+#endif
 
-      PetscFortranDouble PETSC_MACHINE_EPSILON
-      PetscFortranDouble PETSC_SQRT_MACHINE_EPSILON
-      PetscFortranDouble PETSC_SMALL
+      PetscReal PETSC_MACHINE_EPSILON
+      PetscReal PETSC_SQRT_MACHINE_EPSILON
+      PetscReal PETSC_SMALL
 
 #if defined(PETSC_USE_REAL_SINGLE)
       parameter (PETSC_MACHINE_EPSILON = 1.e-7)

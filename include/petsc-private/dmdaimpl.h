@@ -67,6 +67,7 @@ typedef struct {
 
   /* used by DMDASetMatPreallocateOnly() */
   PetscBool             prealloc_only;
+  PetscInt              preallocCenterDim; /* Dimension of the points which connect adjacent points for preallocation */
 } DM_DA;
 
 /*
