@@ -545,10 +545,10 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
     thi->rhog = rho * grav;
     if (thi->verbose) {
       ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Units: meter %8.2g  second %8.2g  kg %8.2g  Pa %8.2g\n",(double)units->meter,(double)units->second,(double)units->kilogram,(double)units->Pascal);CHKERRQ(ierr);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Domain (%6.2g,%6.2g,%6.2g), pressure %8.2g, driving stress %8.2g\n",(double)thi->Lx,(double)thi->Ly,(double)thi->Lz,(double)rho*grav*1e3*units->meter,(double)driving);CHKERRQ(ierr);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Large velocity 1km/a %8.2g, velocity gradient %8.2g, eta %8.2g, stress %8.2g, ratio %8.2g\n",(double)u,(double)gradu,(double)eta,(double)2*eta*gradu,(double)2*eta*gradu/driving);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Domain (%6.2g,%6.2g,%6.2g), pressure %8.2g, driving stress %8.2g\n",(double)thi->Lx,(double)thi->Ly,(double)thi->Lz,(double)(rho*grav*1e3*units->meter),(double)driving);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Large velocity 1km/a %8.2g, velocity gradient %8.2g, eta %8.2g, stress %8.2g, ratio %8.2g\n",(double)u,(double)gradu,(double)eta,(double)(2*eta*gradu),(double)(2*eta*gradu/driving));CHKERRQ(ierr);
       THIViscosity(thi,0.5*PetscSqr(1e-3*gradu),&eta,&deta);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Small velocity 1m/a  %8.2g, velocity gradient %8.2g, eta %8.2g, stress %8.2g, ratio %8.2g\n",(double)1e-3*u,(double)1e-3*gradu,(double)eta,(double)2*eta*1e-3*gradu,(double)2*eta*1e-3*gradu/driving);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Small velocity 1m/a  %8.2g, velocity gradient %8.2g, eta %8.2g, stress %8.2g, ratio %8.2g\n",(double)(1e-3*u),(double)(1e-3*gradu),(double)eta,(double)(2*eta*1e-3*gradu),(double)(2*eta*1e-3*gradu/driving));CHKERRQ(ierr);
     }
   }
 
@@ -601,9 +601,9 @@ static PetscErrorCode THISetUpDM(THI thi,DM dm)
   {
     PetscReal Lx = thi->Lx / thi->units->meter,Ly = thi->Ly / thi->units->meter,Lz = thi->Lz / thi->units->meter;
     if (dim == 2) {
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Level %D domain size (m) %8.2g x %8.2g, num elements %D x %D (%D), size (m) %g x %g\n",level,(double)Lx,(double)Ly,Mx,My,Mx*My,(double)Lx/Mx,(double)Ly/My);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Level %D domain size (m) %8.2g x %8.2g, num elements %D x %D (%D), size (m) %g x %g\n",level,(double)Lx,(double)Ly,Mx,My,Mx*My,(double)(Lx/Mx),(double)(Ly/My));CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Level %D domain size (m) %8.2g x %8.2g x %8.2g, num elements %D x %D x %D (%D), size (m) %g x %g x %g\n",level,(double)Lx,(double)Ly,(double)Lz,Mx,My,Mz,Mx*My*Mz,(double)Lx/Mx,(double)Ly/My,(double)1000./(Mz-1));CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Level %D domain size (m) %8.2g x %8.2g x %8.2g, num elements %D x %D x %D (%D), size (m) %g x %g x %g\n",level,(double)Lx,(double)Ly,(double)Lz,Mx,My,Mz,Mx*My*Mz,(double)(Lx/Mx),(double)(Ly/My),(double)(1000./(Mz-1)));CHKERRQ(ierr);
     }
   }
   ierr = THIInitializePrm(thi,da2prm,X);CHKERRQ(ierr);
@@ -1475,7 +1475,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM da,Vec X,const char filena
       ierr = PetscViewerASCIIPrintf(viewer,"      <PointData>\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"        <DataArray type=\"Float32\" Name=\"velocity\" NumberOfComponents=\"3\" format=\"ascii\">\n");CHKERRQ(ierr);
       for (i=0; i<nn; i+=dof) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%f %f %f\n",(double)PetscRealPart(ptr[i])*units->year/units->meter,(double)PetscRealPart(ptr[i+1])*units->year/units->meter,0.0);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%f %f %f\n",(double)(PetscRealPart(ptr[i])*units->year/units->meter),(double)(PetscRealPart(ptr[i+1])*units->year/units->meter),0.0);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer,"        </DataArray>\n");CHKERRQ(ierr);
 

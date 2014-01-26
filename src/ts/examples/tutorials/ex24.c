@@ -80,7 +80,7 @@ int main(int argc,char **argv)
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = TSGetSNESIterations(ts,&nits);CHKERRQ(ierr);
   ierr = TSGetKSPIterations(ts,&lits);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Time integrator took (%D,%D,%D) iterations to reach final time %G\n",steps,nits,lits,ftime);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Time integrator took (%D,%D,%D) iterations to reach final time %g\n",steps,nits,lits,(double)ftime);CHKERRQ(ierr);
   if (view_final) {
     ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }

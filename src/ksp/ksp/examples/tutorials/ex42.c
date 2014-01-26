@@ -1860,7 +1860,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
             cell->eta[p] = 1.0;
 
             cell->fx[p] = 0.0*coord_x;
-            cell->fy[p] = -PetscSinReal((double)2.2*PETSC_PI*coord_y)*PetscCosReal(1.0*PETSC_PI*coord_x);
+            cell->fy[p] = -PetscSinReal(2.2*PETSC_PI*coord_y)*PetscCosReal(1.0*PETSC_PI*coord_x);
             cell->fz[p] = 0.0*coord_z;
             cell->hc[p] = 0.0;
           }
@@ -1914,7 +1914,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
             cell->eta[p] = 1.0;
 
             cell->fx[p] = 0.0;
-            cell->fy[p] = -PetscSinReal((double)3*PETSC_PI*coord_y)*PetscCosReal(1.0*PETSC_PI*coord_x);
+            cell->fy[p] = -PetscSinReal(3.0*PETSC_PI*coord_y)*PetscCosReal(1.0*PETSC_PI*coord_x);
             cell->fz[p] = 0.0*coord_z;
             cell->hc[p] = 0.0;
           }

@@ -342,11 +342,11 @@ static PetscErrorCode DMDACoordViewGnuplot2d(DM da,const char prefix[])
   ierr = DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0);CHKERRQ(ierr);
   for (j = sj; j < sj+ny-1; j++) {
     for (i = si; i < si+nx-1; i++) {
-      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",PetscRealPart(_coords[j][i].x),PetscRealPart(_coords[j][i].y));CHKERRQ(ierr);
-      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",PetscRealPart(_coords[j+1][i].x),PetscRealPart(_coords[j+1][i].y));CHKERRQ(ierr);
-      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",PetscRealPart(_coords[j+1][i+1].x),PetscRealPart(_coords[j+1][i+1].y));CHKERRQ(ierr);
-      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",PetscRealPart(_coords[j][i+1].x),PetscRealPart(_coords[j][i+1].y));CHKERRQ(ierr);
-      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n\n",PetscRealPart(_coords[j][i].x),PetscRealPart(_coords[j][i].y));CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",(double)PetscRealPart(_coords[j][i].x),(double)PetscRealPart(_coords[j][i].y));CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",(double)PetscRealPart(_coords[j+1][i].x),(double)PetscRealPart(_coords[j+1][i].y));CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",(double)PetscRealPart(_coords[j+1][i+1].x),(double)PetscRealPart(_coords[j+1][i+1].y));CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n",(double)PetscRealPart(_coords[j][i+1].x),(double)PetscRealPart(_coords[j][i+1].y));CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n\n",(double)PetscRealPart(_coords[j][i].x),(double)PetscRealPart(_coords[j][i].y));CHKERRQ(ierr);
     }
   }
   ierr = DMDAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
@@ -406,10 +406,10 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da,Vec fields,const char comment[],co
       coord_x = _coords[j][i].x;
       coord_y = _coords[j][i].y;
 
-      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e ",PetscRealPart(coord_x),PetscRealPart(coord_y));CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e ",(double)PetscRealPart(coord_x),(double)PetscRealPart(coord_y));CHKERRQ(ierr);
       for (d = 0; d < n_dofs; d++) {
         field_d = _fields[n_dofs*((i-si)+(j-sj)*(nx))+d];
-        ierr    = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e ",PetscRealPart(field_d));CHKERRQ(ierr);
+        ierr    = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e ",(double)PetscRealPart(field_d));CHKERRQ(ierr);
       }
       ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"\n");CHKERRQ(ierr);
     }
@@ -471,9 +471,9 @@ static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da,Vec fields,const char 
         coord_x = _coefficients[j][i].gp_coords[2*p];
         coord_y = _coefficients[j][i].gp_coords[2*p+1];
 
-        ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e ",PetscRealPart(coord_x),PetscRealPart(coord_y));CHKERRQ(ierr);
+        ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e ",(double)PetscRealPart(coord_x),(double)PetscRealPart(coord_y));CHKERRQ(ierr);
 
-        ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e %1.6e",PetscRealPart(_coefficients[j][i].eta[p]),PetscRealPart(_coefficients[j][i].fx[p]),PetscRealPart(_coefficients[j][i].fy[p]));CHKERRQ(ierr);
+        ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e %1.6e",(double)PetscRealPart(_coefficients[j][i].eta[p]),(double)PetscRealPart(_coefficients[j][i].fx[p]),(double)PetscRealPart(_coefficients[j][i].fy[p]));CHKERRQ(ierr);
         ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"\n");CHKERRQ(ierr);
       }
     }
@@ -1133,7 +1133,7 @@ static PetscErrorCode DMDAIntegrateErrors(DM stokes_da,Vec X,Vec X_analytic)
   u_L2 = PetscSqrtScalar(u_L2);
   u_H1 = PetscSqrtScalar(u_H1);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%1.4e   %1.4e   %1.4e   %1.4e \n",PetscRealPart(h),PetscRealPart(p_L2),PetscRealPart(u_L2),PetscRealPart(u_H1));CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%1.4e   %1.4e   %1.4e   %1.4e \n",(double)PetscRealPart(h),(double)PetscRealPart(p_L2),(double)PetscRealPart(u_L2),(double)PetscRealPart(u_H1));CHKERRQ(ierr);
 
 
   ierr = DMDAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);

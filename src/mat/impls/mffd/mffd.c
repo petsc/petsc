@@ -271,7 +271,7 @@ PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"Matrix-free approximation:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"err=%G (relative error in function evaluation)\n",ctx->error_rel);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"err=%g (relative error in function evaluation)\n",(double)ctx->error_rel);CHKERRQ(ierr);
     if (!((PetscObject)ctx)->type_name) {
       ierr = PetscViewerASCIIPrintf(viewer,"The compute h routine has not yet been set\n");CHKERRQ(ierr);
     } else {
@@ -370,7 +370,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   /* keep a record of the current differencing parameter h */
   ctx->currenth = h;
 #if defined(PETSC_USE_COMPLEX)
-  ierr = PetscInfo2(mat,"Current differencing parameter: %G + %G i\n",PetscRealPart(h),PetscImaginaryPart(h));CHKERRQ(ierr);
+  ierr = PetscInfo2(mat,"Current differencing parameter: %g + %g i\n",(double)PetscRealPart(h),(double)PetscImaginaryPart(h));CHKERRQ(ierr);
 #else
   ierr = PetscInfo1(mat,"Current differencing parameter: %15.12e\n",h);CHKERRQ(ierr);
 #endif
@@ -1260,7 +1260,7 @@ PetscErrorCode  MatMFFDCheckPositivity(void *dummy,Vec U,Vec a,PetscScalar *h)
   ierr = VecRestoreArray(a,&a_vec);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&minval,&val,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
   if (val <= PetscAbsScalar(*h)) {
-    ierr = PetscInfo2(U,"Scaling back h from %G to %G\n",PetscRealPart(*h),.99*val);CHKERRQ(ierr);
+    ierr = PetscInfo2(U,"Scaling back h from %g to %g\n",(double)PetscRealPart(*h),(double)(.99*val));CHKERRQ(ierr);
     if (PetscRealPart(*h) > 0.0) *h =  0.99*val;
     else                         *h = -0.99*val;
   }

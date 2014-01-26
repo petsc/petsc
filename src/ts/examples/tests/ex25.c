@@ -143,7 +143,7 @@ int Brusselator(int argc,char **argv,PetscInt cycle)
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
   ierr = VecMin(X,NULL,&xmin);CHKERRQ(ierr);
   ierr = VecMax(X,NULL,&xmax);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %G after % 3D steps. Range [%6.4f,%6.4f]\n",TSConvergedReasons[reason],ftime,steps,(double)xmin,(double)xmax);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after % 3D steps. Range [%6.4f,%6.4f]\n",TSConvergedReasons[reason],(double)ftime,steps,(double)xmin,(double)xmax);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.

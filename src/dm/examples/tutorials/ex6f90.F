@@ -54,7 +54,8 @@
 
       LOGICAL, PARAMETER :: diagnose=.FALSE.
       INTEGER :: ierr
-      REAL(8), PARAMETER :: pi=3.1415926535897932385_8,twopi=2*pi
+      PetscReal,PARAMETER::pi=3.1415926535897932385_8
+      PetscReal,Parameter::twopi=2*pi
 
       CONTAINS
 !-----------------------------------------------------------------------
@@ -681,7 +682,7 @@
       Vec, INTENT(IN) :: v
 
       INTEGER :: iv,vn,ln,j,offset
-      REAL(8), DIMENSION(1) :: va
+      PetscReal, DIMENSION(1) :: va
       TYPE(patch_type), DIMENSION(0:2) :: patch
       PetscDraw :: draw
       PetscReal :: xmin,xmax,ymin,ymax
@@ -782,8 +783,9 @@
       Vec, INTENT(INOUT) :: g
 
       INTEGER :: i,j,k,x,y,m,n,ig
-      REAL(8) :: r0=1,theta0=pi/6,r,theta,dr,dt
-      REAL(8), DIMENSION(1) :: ga
+      PetscReal :: r0=1,theta0=pi/6,r,theta
+      PetscReal :: dr,dt
+      PetscReal, DIMENSION(1) :: ga
 !-----------------------------------------------------------------------
 !     format statements.
 !-----------------------------------------------------------------------
@@ -834,8 +836,9 @@
       Vec, INTENT(INOUT) :: g
 
       INTEGER :: i,j,k,x,y,m,n,ig
-      REAL(8) :: r0=1,theta0=-pi/2,r,theta,dr,dt
-      REAL(8), DIMENSION(1) :: ga
+      PetscReal :: r0=1,theta0=-pi/2,r,theta
+      PetscReal :: dr,dt
+      PetscReal, DIMENSION(1) :: ga
 !-----------------------------------------------------------------------
 !     format statements.
 !-----------------------------------------------------------------------
@@ -886,8 +889,8 @@
       Vec, INTENT(INOUT) :: g
 
       INTEGER :: i,j,k,x,y,m,n,ig
-      REAL(8) :: r0=1,r,theta,dr,dt1,dt3
-      REAL(8), DIMENSION(1) :: ga
+      PetscReal :: r0=1,r,theta,dr,dt1,dt3
+      PetscReal, DIMENSION(1) :: ga
 !-----------------------------------------------------------------------
 !     format statements.
 !-----------------------------------------------------------------------

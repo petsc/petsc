@@ -51,6 +51,8 @@
       PetscSizeT sizeofbag
       Character(len=99) list(6)
       PetscInt three
+      PetscReal value
+      PetscScalar svalue
 
       Call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       list(1) = 'a123'
@@ -79,7 +81,9 @@
      &      'nxc_variable help message',ierr)
       call PetscBagRegisterRealArray(bag,data%rarray,three,'rarray',         &
      &      'rarray help message',ierr)
-      call PetscBagRegisterScalar(bag,data%x ,103.2d0,'x',               &
+!     Need to put the value into a variable to pass correctly for 128 bit quad precision numbers
+      svalue = 103.2d0
+      call PetscBagRegisterScalar(bag,data%x ,svalue,'x',                &
      &      'x variable help message',ierr)
       call PetscBagRegisterBool(bag,data%t ,PETSC_TRUE,'t',              &
      &      't boolean help message',ierr)
@@ -87,11 +91,14 @@
      &      'tarray help message',ierr)
       call PetscBagRegisterString(bag,data%c,'hello','c',                &
      &      'string help message',ierr)
-      call PetscBagRegisterReal(bag,data%y ,-11.0d0,'y',                 &
+      value = -11.0d0
+      call PetscBagRegisterReal(bag,data%y ,value,'y',                   &
      &       'y variable help message',ierr)
-      call PetscBagRegisterReal(bag,data%pos%x1 ,1.0d0,'pos_x1',         &
+      value = 1.0d0
+      call PetscBagRegisterReal(bag,data%pos%x1 ,value,'pos_x1',         &
      &      'tuple value 1 help message',ierr)
-      call PetscBagRegisterReal(bag,data%pos%x2 ,2.0d0,'pos_x2',         &
+      value = 2.0d0
+      call PetscBagRegisterReal(bag,data%pos%x2 ,value,'pos_x2',         &
      &      'tuple value 2 help message',ierr)
       call PetscBagRegisterEnum(bag,data%enum ,list,1,'enum',            &
      &      'tuple value 2 help message',ierr)

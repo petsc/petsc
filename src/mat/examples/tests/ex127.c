@@ -159,7 +159,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecAXPY(y,-1.0,ys);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_INFINITY,&norm);CHKERRQ(ierr);
   if (norm > 1.e-12 || disp_vec) {
-    printf("|| A*x - As*x || = %G\n",norm);
+    printf("|| A*x - As*x || = %g\n",(double)norm);
   }
 
   /* Free spaces */
