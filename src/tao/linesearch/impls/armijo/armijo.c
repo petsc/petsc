@@ -18,13 +18,8 @@ static PetscErrorCode TaoLineSearchDestroy_Armijo(TaoLineSearch ls)
   PetscErrorCode           ierr;
 
   PetscFunctionBegin;
-  if (armP->memory != PETSC_NULL) {
-    ierr = PetscFree(armP->memory);CHKERRQ(ierr);
-    armP->memory = PETSC_NULL;
-  }
-  if (armP->x) {
-    ierr = PetscObjectDereference((PetscObject)armP->x);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(armP->memory);CHKERRQ(ierr);
+  ierr = VecDestroy(&armP->x);CHKERRQ(ierr);
   ierr = VecDestroy(&armP->work);CHKERRQ(ierr);
   ierr = PetscFree(ls->data);CHKERRQ(ierr);
   ls->data = PETSC_NULL;

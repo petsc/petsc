@@ -270,7 +270,6 @@ PetscErrorCode TaoDestroy(TaoSolver *tao)
     ierr = (*(*tao)->ops->convergencedestroy)((*tao)->cnvP);CHKERRQ(ierr);
     if ((*tao)->jacobian_state_inv) {
       ierr = MatDestroy(&(*tao)->jacobian_state_inv);CHKERRQ(ierr);
-      (*tao)->jacobian_state_inv = NULL;
     }
   }
   ierr = VecDestroy(&(*tao)->solution);CHKERRQ(ierr);
