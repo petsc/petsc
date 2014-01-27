@@ -209,7 +209,7 @@ static PetscErrorCode MatLUFactorSymbolic_KLU(Mat F,Mat A,IS r,IS c,const MatFac
   if (lu->PetscMatOrdering) {
     ierr = ISGetIndices(r,&ra);CHKERRQ(ierr);
     ierr = ISGetIndices(c,&ca);CHKERRQ(ierr);
-    ierr = PetscMalloc2(m,&lu->perm_c,n,&lu->perm_r);CHKERRQ(ierr);
+    ierr = PetscMalloc2(m,&lu->perm_r,n,&lu->perm_c);CHKERRQ(ierr);
     /* we cannot simply memcpy on 64 bit archs */
     for (i = 0; i < m; i++) lu->perm_r[i] = ra[i];
     for (i = 0; i < n; i++) lu->perm_c[i] = ca[i];
