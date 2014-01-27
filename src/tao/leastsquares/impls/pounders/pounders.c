@@ -487,8 +487,7 @@ PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,PetscReal c)
     BLAScopy_(&blasn,mfqP->work,&ione,mfqP->work2,&ione);
     normd = BLASnrm2_(&blasn,mfqP->work,&ione);
     if (normd <= c*c) {
-      blasj=(mfqP->n - mfqP->nmodelpoints);
-      if (blasj < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"cannot be negative %d\n",blasj);
+      blasj=PetscMax((mfqP->n - mfqP->nmodelpoints),0);
       if (!mfqP->q_is_I) {
         /* project D onto null */
         blask=(mfqP->nmodelpoints);

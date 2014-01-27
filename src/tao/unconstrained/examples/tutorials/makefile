@@ -51,7 +51,7 @@ runrosenbrock1:
 	${RM} -f rosenbrock1_1.tmp
 
 runrosenbrock1_2:
-	${MPIEXEC} -n 1 ./rosenbrock1 -tao_smonitor -tao_method tao_lmvm > rosenbrock1_2.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./rosenbrock1 -tao_smonitor -tao_method tao_lmvm > rosenbrock1_2.tmp 2>&1;\
         ${DIFF} output/rosenbrock1_2.out rosenbrock1_2.tmp || printf '${PWD}\nPossible problem with rosenbrock1_2 stdout, diffs above \n=========================================\n';\
         ${RM} -f rosenbrock1_2.tmp
 
