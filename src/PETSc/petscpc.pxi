@@ -62,6 +62,17 @@ cdef extern from * nogil:
         PC_COMPOSITE_SPECIAL
         PC_COMPOSITE_SCHUR
 
+    ctypedef enum PetscPCFieldSplitSchurPreType "PCFieldSplitSchurPreType":
+        PC_FIELDSPLIT_SCHUR_PRE_SELF
+        PC_FIELDSPLIT_SCHUR_PRE_A11
+        PC_FIELDSPLIT_SCHUR_PRE_USER
+
+    ctypedef enum PetscPCFieldSplitSchurFactType "PCFieldSplitSchurFactType":
+        PC_FIELDSPLIT_SCHUR_FACT_DIAG
+        PC_FIELDSPLIT_SCHUR_FACT_LOWER
+        PC_FIELDSPLIT_SCHUR_FACT_UPPER
+        PC_FIELDSPLIT_SCHUR_FACT_FULL
+
     int PCCreate(MPI_Comm,PetscPC*)
     int PCDestroy(PetscPC*)
     int PCView(PetscPC,PetscViewer)
@@ -133,7 +144,8 @@ cdef extern from * nogil:
     int PCFieldSplitSetFields(PetscPC,char[],PetscInt,PetscInt*,PetscInt*)
     int PCFieldSplitSetIS(PetscPC,char[],PetscIS)
     int PCFieldSplitGetSubKSP(PetscPC,PetscInt*,PetscKSP*[])
-    #int PCFieldSplitSchurPrecondition(PetscPC,PCFieldSplitSchurPreType,PetscMat)
+    int PCFieldSplitSchurPrecondition(PetscPC,PetscPCFieldSplitSchurPreType,PetscMat)
+    int PCFieldSplitSetSchurFactType(PetscPC,PetscPCFieldSplitSchurFactType)
     #int PCFieldSplitGetSchurBlocks(PetscPC,PetscMat*,PetscMat*,PetscMat*,PetscMat*)
 
     int PCKSPGetKSP(PetscPC,PetscKSP*)

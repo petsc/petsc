@@ -69,6 +69,17 @@ class PCCompositeType(object):
     SPECIAL                  = PC_COMPOSITE_SPECIAL
     SCHUR                    = PC_COMPOSITE_SCHUR
 
+class PCFieldSplitSchurPreType(object):
+    SELF                     = PC_FIELDSPLIT_SCHUR_PRE_SELF
+    A11                      = PC_FIELDSPLIT_SCHUR_PRE_A11
+    USER                     = PC_FIELDSPLIT_SCHUR_PRE_USER
+
+class PCFieldSplitSchurFactType(object):
+    DIAG                     = PC_FIELDSPLIT_SCHUR_FACT_DIAG
+    LOWER                    = PC_FIELDSPLIT_SCHUR_FACT_LOWER
+    UPPER                    = PC_FIELDSPLIT_SCHUR_FACT_UPPER
+    FULL                     = PC_FIELDSPLIT_SCHUR_FACT_FULL
+
 # --------------------------------------------------------------------
 
 cdef class PC(Object):
@@ -78,6 +89,8 @@ cdef class PC(Object):
 
     ASMType       = PCASMType
     CompositeType = PCCompositeType
+    SchurFactType = PCFieldSplitSchurFactType
+    SchurPreType  = PCFieldSplitSchurPreType
 
     # --- xxx ---
 
@@ -321,6 +334,16 @@ cdef class PC(Object):
             CHKERR( PetscFree(p) )
         return subksp
 
+    def setFieldSplitSchurFactType(self, ctype):
+        cdef PetscPCFieldSplitSchurFactType cval = ctype
+        CHKERR( PCFieldSplitSetSchurFactType(self.pc, cval) )
+
+    def setFieldSplitSchurPrecondition(self, ptype, Mat pre=None):
+        cdef PetscPCFieldSplitSchurPreType pval = ptype
+        cdef PetscMat pmat=NULL
+        if pre is not None: pmat = pre.mat
+        CHKERR( PCFieldSplitSchurPrecondition(self.pc, pval, pmat) )
+
     # --- KSP ---
 
     def getKSP(self):
@@ -335,5 +358,7 @@ del PCType
 del PCSide
 del PCASMType
 del PCCompositeType
+del PCFieldSplitSchurPreType
+del PCFieldSplitSchurFactType
 
 # --------------------------------------------------------------------
