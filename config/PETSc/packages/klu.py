@@ -8,6 +8,7 @@ class Configure(PETSc.package.NewPackage):
     self.liblist   = [['libklu.a','libamd.a','libbtf.a','libcolamd.a']]
     self.functions = ['klu_l_defaults','klu_l_analyze','klu_l_solve','klu_l_factor']
     self.includes  = ['klu.h']
+    self.needsMath = 1
     self.complex   = 1
     self.requires32bitint = 0
     return
