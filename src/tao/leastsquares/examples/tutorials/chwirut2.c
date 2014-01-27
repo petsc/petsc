@@ -22,12 +22,8 @@ Reference:     Chwirut, D., NIST (197?).
                Ultrasonic Reference Block Study. 
 */
 
-
-
 static char help[]="Finds the nonlinear least-squares solution to the model \n\
             y = exp[-b1*x]/(b2+b3*x)  +  e \n";
-
-
 
 /* T
    Concepts: TAO - Solving a system of nonlinear equations, nonlinear ;east squares
@@ -49,12 +45,11 @@ T*/
 #define DIE_TAG 2000
 #define IDLE_TAG 1000
 
-
 /* User-defined application context */
 typedef struct {
   /* Working space */
-  PetscReal t[NOBSERVATIONS];   /* array of independent variables of observation */
-  PetscReal y[NOBSERVATIONS];   /* array of dependent variables */
+  PetscReal   t[NOBSERVATIONS];   /* array of independent variables of observation */
+  PetscReal   y[NOBSERVATIONS];   /* array of dependent variables */
   PetscMPIInt size,rank;
 } AppCtx;
 
@@ -73,9 +68,9 @@ PetscErrorCode RunSimulation(PetscReal *x, PetscInt i, PetscReal*f, AppCtx *user
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;           /* used to check for functions returning nonzeros */
-  Vec        x, f;               /* solution, function */
-  TaoSolver  tao;                /* TaoSolver solver context */
-  AppCtx     user;               /* user-defined work context */
+  Vec            x, f;               /* solution, function */
+  TaoSolver      tao;                /* TaoSolver solver context */
+  AppCtx         user;               /* user-defined work context */
 
    /* Initialize TAO and PETSc */
   PetscInitialize(&argc,&argv,(char *)0,help);
@@ -83,87 +78,79 @@ int main(int argc,char **argv)
 
   MPI_Comm_size(MPI_COMM_WORLD,&user.size);
   MPI_Comm_rank(MPI_COMM_WORLD,&user.rank);
-  ierr = InitializeData(&user); CHKERRQ(ierr);
+  ierr = InitializeData(&user);CHKERRQ(ierr);
 
   /* Run optimization on rank 0 */
   if (user.rank == 0) {
     /* Allocate vectors */
-    ierr = VecCreateSeq(PETSC_COMM_SELF,NPARAMETERS,&x); CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,NOBSERVATIONS,&f); CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,NPARAMETERS,&x);CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,NOBSERVATIONS,&f);CHKERRQ(ierr);
 
     /* TAO code begins here */
 
     /* Create TAO solver and set desired solution method */
     ierr = TaoCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
-    ierr = TaoSetType(tao,"tao_pounders"); CHKERRQ(ierr);
+    ierr = TaoSetType(tao,"tao_pounders");CHKERRQ(ierr);
 
     /* Set the function and Jacobian routines. */
-    ierr = FormStartingPoint(x); CHKERRQ(ierr);
-    ierr = TaoSetInitialVector(tao,x); CHKERRQ(ierr);
-    ierr = TaoSetSeparableObjectiveRoutine(tao,f,EvaluateFunction,(void*)&user); CHKERRQ(ierr);
-    ierr = TaoSetMonitor(tao,MyMonitor,&user,PETSC_NULL); CHKERRQ(ierr);
+    ierr = FormStartingPoint(x);CHKERRQ(ierr);
+    ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
+    ierr = TaoSetSeparableObjectiveRoutine(tao,f,EvaluateFunction,(void*)&user);CHKERRQ(ierr);
+    ierr = TaoSetMonitor(tao,MyMonitor,&user,PETSC_NULL);CHKERRQ(ierr);
 
     
     /* Check for any TAO command line arguments */
-    ierr = TaoSetFromOptions(tao); CHKERRQ(ierr);
+    ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
     /* Perform the Solve */
-    ierr = TaoSolve(tao); CHKERRQ(ierr);
+    ierr = TaoSolve(tao);CHKERRQ(ierr);
     
     /* Free TAO data structures */
-    ierr = TaoDestroy(&tao); CHKERRQ(ierr);
+    ierr = TaoDestroy(&tao);CHKERRQ(ierr);
 
     /* Free PETSc data structures */
-    ierr = VecDestroy(&x); CHKERRQ(ierr);
-    ierr = VecDestroy(&f); CHKERRQ(ierr);
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
+    ierr = VecDestroy(&f);CHKERRQ(ierr);
     StopWorkers(&user);
   } else {
     TaskWorker(&user);
   }
-
-    /* Finalize TAO */
   TaoFinalize();
   PetscFinalize();
-  
   return 0;     
 }
-
-
-
 
 /*--------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "EvaluateFunction"
 PetscErrorCode EvaluateFunction(TaoSolver tao, Vec X, Vec F, void *ptr)
 {
-  AppCtx *user = (AppCtx *)ptr;
-  PetscInt i;
-  PetscReal *x,*f;
+  AppCtx         *user = (AppCtx *)ptr;
+  PetscInt       i;
+  PetscReal      *x,*f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f); CHKERRQ(ierr);
-
-
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   if (user->size == 1) {
     /* Single processor */
     for (i=0;i<NOBSERVATIONS;i++) {
-      ierr = RunSimulation(x,i,&f[i],user); CHKERRQ(ierr);
+      ierr = RunSimulation(x,i,&f[i],user);CHKERRQ(ierr);
     }
   } else {
     /* Multiprocessor master */
     PetscMPIInt tag; 
-    PetscInt finishedtasks,next_task,checkedin;
-    PetscReal f_i;
-    MPI_Status status;
+    PetscInt    finishedtasks,next_task,checkedin;
+    PetscReal   f_i;
+    MPI_Status  status;
     
     next_task=0;
     finishedtasks=0;
     checkedin=0;
     
     while(finishedtasks < NOBSERVATIONS || checkedin < user->size-1) {
-      ierr = MPI_Recv(&f_i,1,MPIU_REAL,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&status); CHKERRQ(ierr);
+      ierr = MPI_Recv(&f_i,1,MPIU_REAL,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
       if (status.MPI_TAG == IDLE_TAG) {
 	checkedin++;
       } else {
@@ -174,18 +161,17 @@ PetscErrorCode EvaluateFunction(TaoSolver tao, Vec X, Vec F, void *ptr)
       }
 
       if (next_task<NOBSERVATIONS) {
-	ierr = MPI_Send(x,NPARAMETERS,MPIU_REAL,status.MPI_SOURCE,next_task,PETSC_COMM_WORLD); CHKERRQ(ierr);
+	ierr = MPI_Send(x,NPARAMETERS,MPIU_REAL,status.MPI_SOURCE,next_task,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	next_task++;
 
       } else {
 	/* Send idle message */
-	ierr = MPI_Send(x,NPARAMETERS,MPIU_REAL,status.MPI_SOURCE,IDLE_TAG,PETSC_COMM_WORLD); CHKERRQ(ierr);
+	ierr = MPI_Send(x,NPARAMETERS,MPIU_REAL,status.MPI_SOURCE,IDLE_TAG,PETSC_COMM_WORLD);CHKERRQ(ierr);
       }	  
     } 
   }
-  
-  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f); CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscLogFlops(6*NOBSERVATIONS);
   PetscFunctionReturn(0);
 }
@@ -195,22 +181,17 @@ PetscErrorCode EvaluateFunction(TaoSolver tao, Vec X, Vec F, void *ptr)
 #define __FUNCT__ "FormStartingPoint"
 PetscErrorCode FormStartingPoint(Vec X)
 {
-  PetscReal *x;
+  PetscReal      *x;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
-
-  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
-
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   x[0] = 0.15;
   x[1] = 0.008;
   x[2] = 0.010;
-
-  VecRestoreArray(X,&x); CHKERRQ(ierr);
-
+  VecRestoreArray(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /* ---------------------------------------------------------------------- */
 #undef __FUNCT__
@@ -218,11 +199,9 @@ PetscErrorCode FormStartingPoint(Vec X)
 PetscErrorCode InitializeData(AppCtx *user)
 {
   PetscReal *t=user->t,*y=user->y;
-  PetscInt i=0;
+  PetscInt  i=0;
 
   PetscFunctionBegin;
-
-
   y[i] =   92.9000;   t[i++] =  0.5000;
   y[i] =    78.7000;  t[i++] =   0.6250;
   y[i] =    64.2000;  t[i++] =   0.7500;
@@ -437,7 +416,6 @@ PetscErrorCode InitializeData(AppCtx *user)
   y[i] =    10.0500;  t[i++] =   3.7500;
   y[i] =    28.9000;  t[i++] =   1.7500;
   y[i] =    28.9500;  t[i++] =   1.7500;
-
   PetscFunctionReturn(0);
 }
 
@@ -445,24 +423,22 @@ PetscErrorCode InitializeData(AppCtx *user)
 #define __FUNCT__ "MyMonitor"
 PetscErrorCode MyMonitor(TaoSolver tao, void *ptr) 
 {
-  PetscReal fc,gnorm;
-  PetscInt its;
-  PetscViewer viewer = PETSC_VIEWER_STDOUT_SELF;
+  PetscReal      fc,gnorm;
+  PetscInt       its;
+  PetscViewer    viewer = PETSC_VIEWER_STDOUT_SELF;
   PetscErrorCode ierr;
-
 
   PetscFunctionBegin;
   ierr = TaoGetSolutionStatus(tao,&its,&fc,&gnorm,0,0,0);
-  ierr=PetscViewerASCIIPrintf(viewer,"iter = %3D,",its); CHKERRQ(ierr);
-  ierr=PetscViewerASCIIPrintf(viewer," Function value %G,",fc); CHKERRQ(ierr);
+  ierr=PetscViewerASCIIPrintf(viewer,"iter = %3D,",its);CHKERRQ(ierr);
+  ierr=PetscViewerASCIIPrintf(viewer," Function value %g,",(double)fc);CHKERRQ(ierr);
   if (gnorm > 1.e-6) {
-    ierr=PetscViewerASCIIPrintf(viewer," Residual: %G \n",gnorm);CHKERRQ(ierr);
+    ierr=PetscViewerASCIIPrintf(viewer," Residual: %G \n",(double)gnorm);CHKERRQ(ierr);
   } else if (gnorm > 1.e-11) {
-    ierr=PetscViewerASCIIPrintf(viewer," Residual: < 1.0e-6 \n"); CHKERRQ(ierr);
+    ierr=PetscViewerASCIIPrintf(viewer," Residual: < 1.0e-6 \n");CHKERRQ(ierr);
   } else {
     ierr=PetscViewerASCIIPrintf(viewer," Residual: < 1.0e-11 \n");CHKERRQ(ierr);
   }
-  
   PetscFunctionReturn(0);
 }
   
@@ -470,25 +446,24 @@ PetscErrorCode MyMonitor(TaoSolver tao, void *ptr)
 #define __FUNCT__ "TaskWorker"
 PetscErrorCode TaskWorker(AppCtx *user) 
 {
-  PetscReal x[NPARAMETERS],f;
-  PetscMPIInt  tag=IDLE_TAG;
-  PetscInt     index;
-  MPI_Status   status;
+  PetscReal      x[NPARAMETERS],f;
+  PetscMPIInt    tag=IDLE_TAG;
+  PetscInt       index;
+  MPI_Status     status;
   PetscErrorCode ierr;
-  
   
   PetscFunctionBegin;
   /* Send check-in message to master */
 
-  ierr = MPI_Send(&f,1,MPIU_REAL,0,IDLE_TAG,PETSC_COMM_WORLD); CHKERRQ(ierr);
+  ierr = MPI_Send(&f,1,MPIU_REAL,0,IDLE_TAG,PETSC_COMM_WORLD);CHKERRQ(ierr);
   while (tag != DIE_TAG) {
-    ierr = MPI_Recv(x,NPARAMETERS,MPIU_REAL,0,MPI_ANY_TAG,PETSC_COMM_WORLD,&status); CHKERRQ(ierr);
+    ierr = MPI_Recv(x,NPARAMETERS,MPIU_REAL,0,MPI_ANY_TAG,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
     tag = status.MPI_TAG;
     if (tag == IDLE_TAG) {
       ierr = MPI_Send(&f,1,MPIU_REAL,0,IDLE_TAG,PETSC_COMM_WORLD);CHKERRQ(ierr);
     } else if (tag != DIE_TAG) {
       index = (PetscInt)tag;
-      ierr=RunSimulation(x,index,&f,user); CHKERRQ(ierr);
+      ierr=RunSimulation(x,index,&f,user);CHKERRQ(ierr);
       ierr=MPI_Send(&f,1,MPIU_REAL,0,tag,PETSC_COMM_WORLD);CHKERRQ(ierr);
     }
   }
@@ -509,17 +484,17 @@ PetscErrorCode RunSimulation(PetscReal *x, PetscInt i, PetscReal*f, AppCtx *user
 #define __FUNCT__ "StopWorkers"
 PetscErrorCode StopWorkers(AppCtx *user)
 {
-  PetscInt checkedin;
-  MPI_Status status;
-  PetscReal f,x[NPARAMETERS];
+  PetscInt       checkedin;
+  MPI_Status     status;
+  PetscReal      f,x[NPARAMETERS];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   checkedin=0;
   while(checkedin < user->size-1) {
-    ierr = MPI_Recv(&f,1,MPIU_REAL,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&status); CHKERRQ(ierr);
+    ierr = MPI_Recv(&f,1,MPIU_REAL,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
     checkedin++;
-    ierr = MPI_Send(x,NPARAMETERS,MPIU_REAL,status.MPI_SOURCE,DIE_TAG,PETSC_COMM_WORLD); CHKERRQ(ierr);
+    ierr = MPI_Send(x,NPARAMETERS,MPIU_REAL,status.MPI_SOURCE,DIE_TAG,PETSC_COMM_WORLD);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

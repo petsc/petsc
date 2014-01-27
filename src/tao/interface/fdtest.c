@@ -26,11 +26,11 @@ PetscErrorCode TaoSolve_FD(TaoSolver tao)
   PetscFunctionBegin;
   comm = ((PetscObject)tao)->comm;
   if (fd->check_gradient) {
-    ierr = VecDuplicate(x,&g1); CHKERRQ(ierr);
-    ierr = VecDuplicate(x,&g2); CHKERRQ(ierr);
+    ierr = VecDuplicate(x,&g1);CHKERRQ(ierr);
+    ierr = VecDuplicate(x,&g2);CHKERRQ(ierr);
 
-    ierr = PetscPrintf(comm,"Testing hand-coded gradient (hc) against finite difference gradient (fd), if the ratio ||fd - hc|| / ||hc|| is\n"); CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"0 (1.e-8), the hand-coded gradient is probably correct.\n"); CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"Testing hand-coded gradient (hc) against finite difference gradient (fd), if the ratio ||fd - hc|| / ||hc|| is\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"0 (1.e-8), the hand-coded gradient is probably correct.\n");CHKERRQ(ierr);
     
     if (!fd->complete_print) {
       ierr = PetscPrintf(comm,"Run with -tao_fd_test_display to show difference\n");CHKERRQ(ierr);
@@ -41,36 +41,33 @@ PetscErrorCode TaoSolve_FD(TaoSolver tao)
       else if (i == 2) {ierr = VecSet(x,1.0);CHKERRQ(ierr);}
     
       /* Compute both version of gradient */
-      ierr = TaoComputeGradient(tao,x,g1); CHKERRQ(ierr);
-      ierr = TaoDefaultComputeGradient(tao,x,g2,PETSC_NULL); CHKERRQ(ierr);
+      ierr = TaoComputeGradient(tao,x,g1);CHKERRQ(ierr);
+      ierr = TaoDefaultComputeGradient(tao,x,g2,PETSC_NULL);CHKERRQ(ierr);
       if (fd->complete_print) {
 	MPI_Comm gcomm;
 	PetscViewer viewer;
-	ierr = PetscPrintf(comm,"Finite difference gradient\n"); CHKERRQ(ierr);
-	ierr = PetscObjectGetComm((PetscObject)g2,&gcomm); CHKERRQ(ierr);
+	ierr = PetscPrintf(comm,"Finite difference gradient\n");CHKERRQ(ierr);
+	ierr = PetscObjectGetComm((PetscObject)g2,&gcomm);CHKERRQ(ierr);
 	ierr = PetscViewerASCIIGetStdout(gcomm,&viewer);CHKERRQ(ierr);
-	ierr = VecView(g2,viewer); CHKERRQ(ierr);
-	ierr = PetscPrintf(comm,"Hand-coded gradient\n"); CHKERRQ(ierr);
-	ierr = PetscObjectGetComm((PetscObject)g1,&gcomm); CHKERRQ(ierr);
+	ierr = VecView(g2,viewer);CHKERRQ(ierr);
+	ierr = PetscPrintf(comm,"Hand-coded gradient\n");CHKERRQ(ierr);
+	ierr = PetscObjectGetComm((PetscObject)g1,&gcomm);CHKERRQ(ierr);
 	ierr = PetscViewerASCIIGetStdout(gcomm,&viewer);CHKERRQ(ierr);
-	ierr = VecView(g1,viewer); CHKERRQ(ierr);
-	ierr = PetscPrintf(comm,"\n"); CHKERRQ(ierr);
+	ierr = VecView(g1,viewer);CHKERRQ(ierr);
+	ierr = PetscPrintf(comm,"\n");CHKERRQ(ierr);
       }
       
-      ierr = VecAXPY(g2,-1.0,g1); CHKERRQ(ierr);
-      ierr = VecNorm(g1,NORM_2,&hcnorm); CHKERRQ(ierr);
-      ierr = VecNorm(g2,NORM_2,&fdnorm); CHKERRQ(ierr);
+      ierr = VecAXPY(g2,-1.0,g1);CHKERRQ(ierr);
+      ierr = VecNorm(g1,NORM_2,&hcnorm);CHKERRQ(ierr);
+      ierr = VecNorm(g2,NORM_2,&fdnorm);CHKERRQ(ierr);
       
       if (!hcnorm) hcnorm=1.0e-20;
-      ierr = PetscPrintf(comm,"ratio ||fd-hc||/||hc|| = %G, difference ||fd-hc|| = %G\n", fdnorm/hcnorm, fdnorm); CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"ratio ||fd-hc||/||hc|| = %g, difference ||fd-hc|| = %g\n", (double)(fdnorm/hcnorm), (double)fdnorm);CHKERRQ(ierr);
 
     }
-    ierr = VecDestroy(&g1); CHKERRQ(ierr);
-    ierr = VecDestroy(&g2); CHKERRQ(ierr);
+    ierr = VecDestroy(&g1);CHKERRQ(ierr);
+    ierr = VecDestroy(&g2);CHKERRQ(ierr);
   }
-
-
-
 
   if (fd->check_hessian) {
     if (A != tao->hessian_pre) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot test with alternative preconditioner");
@@ -110,7 +107,7 @@ PetscErrorCode TaoSolve_FD(TaoSolver tao)
 	ierr = MatView(B,viewer);CHKERRQ(ierr);
       }
       if (!gnorm) gnorm = 1.0e-20; 
-      ierr = PetscPrintf(comm,"ratio ||fd-hc||/||hc|| = %G, difference ||fd-hc|| = %G\n",nrm/gnorm,nrm);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"ratio ||fd-hc||/||hc|| = %g, difference ||fd-hc|| = %g\n",(double)(nrm/gnorm),(double)nrm);CHKERRQ(ierr);
     }
 
     ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -124,6 +121,7 @@ PetscErrorCode TaoSolve_FD(TaoSolver tao)
 PetscErrorCode TaoDestroy_FD(TaoSolver tao)
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -133,20 +131,18 @@ PetscErrorCode TaoDestroy_FD(TaoSolver tao)
 #define __FUNCT__ "TaoSetFromOptions_FD"
 static PetscErrorCode TaoSetFromOptions_FD(TaoSolver tao)
 {
-  FD_Test      *fd = (FD_Test *)tao->data;
+  FD_Test        *fd = (FD_Test *)tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   ierr = PetscOptionsHead("Hand-coded Hessian tester options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-tao_fd_test_display","Display difference between hand-coded and finite difference Hessians","None",fd->complete_print,&fd->complete_print,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_fd_test_gradient","Test Hand-coded gradient against finite-difference gradient","None",fd->check_gradient,&fd->check_gradient,PETSC_NULL); CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_fd_test_hessian","Test Hand-coded hessian against finite-difference hessian","None",fd->check_hessian,&fd->check_hessian,PETSC_NULL); CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_fd_test_gradient","Test Hand-coded gradient against finite-difference gradient","None",fd->check_gradient,&fd->check_gradient,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_fd_test_hessian","Test Hand-coded hessian against finite-difference hessian","None",fd->check_hessian,&fd->check_hessian,PETSC_NULL);CHKERRQ(ierr);
   if (fd->check_gradient == PETSC_FALSE && fd->check_hessian == PETSC_FALSE) {
     fd->check_gradient = PETSC_TRUE;
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  
   PetscFunctionReturn(0);
 }
 
@@ -167,7 +163,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "TaoCreate_FD"
 PetscErrorCode  TaoCreate_FD(TaoSolver  tao)
 {
-  FD_Test      *fd;
+  FD_Test        *fd;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -176,8 +172,6 @@ PetscErrorCode  TaoCreate_FD(TaoSolver  tao)
   tao->ops->destroy	     = TaoDestroy_FD;
   tao->ops->setfromoptions  = TaoSetFromOptions_FD;
   tao->ops->view            = 0;
-
-  
   ierr			= PetscNewLog(tao,&fd);CHKERRQ(ierr);
   tao->data    	= (void*)fd;
   fd->complete_print   = PETSC_FALSE;
