@@ -461,7 +461,7 @@
       PetscErrorCode ierr
       PetscReal x(n),f
       integer tag
-      integer index
+      PetscInt index
       integer status(MPI_STATUS_SIZE)
       
       tag = IDLE_TAG
