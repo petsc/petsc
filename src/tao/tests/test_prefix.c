@@ -26,7 +26,7 @@ T*/
    gradient, and hessian.
 */
 typedef struct {
-  PetscInt n;          /* dimension */
+  PetscInt  n;          /* dimension */
   PetscReal alpha;   /* condition parameter */
 } AppCtx;
 
@@ -38,28 +38,22 @@ PetscErrorCode FormHessian(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;                  /* used to check for functions returning nonzeros */
-  PetscReal zero=0.0;
-  Vec        x;                     /* solution vector */
-  Mat        H;
-  TaoSolver  tao;                   /* TaoSolver solver context */
-  PetscBool  flg;
-  int        size,rank;                  /* number of processes running */
+  PetscErrorCode             ierr;                  /* used to check for functions returning nonzeros */
+  PetscReal                  zero=0.0;
+  Vec                        x;                     /* solution vector */
+  Mat                        H;
+  TaoSolver                  tao;                   /* TaoSolver solver context */
+  PetscBool                  flg;
+  PetscMPIInt                size,rank;                  /* number of processes running */
   TaoSolverTerminationReason reason;
-  AppCtx     user;                  /* user-defined application context */
+  AppCtx                     user;                  /* user-defined application context */
 
   /* Initialize TAO and PETSc */
   TaoInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size); CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank); CHKERRQ(ierr);
 
-  if (size >1) {
-      if (rank == 0) {
-	  PetscPrintf(PETSC_COMM_SELF,"This example is intended for single processor use!\n"); 
-	  SETERRQ(PETSC_COMM_SELF,1,"Incorrect number of processors");
-      }
-  }
-
+  if (size >1) SETERRQ(PETSC_COMM_WORLD,1,"Incorrect number of processors");
 
   /* Initialize problem parameters */
   user.n = 2; user.alpha = 99.0;
@@ -71,8 +65,6 @@ int main(int argc,char **argv)
   /* Allocate vectors for the solution and gradient */
   ierr = VecCreateSeq(PETSC_COMM_SELF,user.n,&x); CHKERRQ(ierr);
   ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,2,user.n,user.n,1,NULL,&H); CHKERRQ(ierr);
-
-  /* The TAO code begins here */
 
   /* Create TAO solver with desired solution method */
   ierr = TaoCreate(PETSC_COMM_SELF,&tao); CHKERRQ(ierr);
@@ -96,9 +88,9 @@ int main(int argc,char **argv)
 
   /* Get termination information */
   ierr = TaoGetTerminationReason(tao,&reason); CHKERRQ(ierr);
-  if (reason <= 0)
-    PetscPrintf(MPI_COMM_WORLD,"Try a different TAO type, adjust some parameters, or check the function evaluation routines\n");
-
+  if (reason <= 0){
+    ierr = PetscPrintf(MPI_COMM_WORLD,"Try a different TAO type, adjust some parameters, or check the function evaluation routines\n");CHKERRQ(ierr);
+  }
 
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao); CHKERRQ(ierr);
@@ -108,7 +100,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&H); CHKERRQ(ierr);
 
   TaoFinalize();
-
+  PetscFinalize();
   return 0;
 }
 
@@ -134,11 +126,11 @@ int main(int argc,char **argv)
 */
 PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,PetscReal *f, Vec G,void *ptr)
 {
-  AppCtx *user = (AppCtx *) ptr;  
+  AppCtx         *user = (AppCtx *) ptr;  
   PetscErrorCode ierr;
-  PetscInt    i,nn=user->n/2;
-  PetscReal ff=0,t1,t2,alpha=user->alpha;
-  PetscReal *x,*g;
+  PetscInt       i,nn=user->n/2;
+  PetscReal      ff=0,t1,t2,alpha=user->alpha;
+  PetscReal      *x,*g;
 
   /* Get pointers to vector data */
   ierr = VecGetArray(X,&x); CHKERRQ(ierr);
@@ -180,18 +172,17 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,PetscReal *f, Vec G,void
 */
 PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *HH, Mat *Hpre, MatStructure *flag,void *ptr)
 {
-  AppCtx  *user = (AppCtx*)ptr;
+  AppCtx         *user = (AppCtx*)ptr;
   PetscErrorCode ierr;
-  PetscInt     i, nn=user->n/2, ind[2];
-  PetscReal  alpha=user->alpha;
-  PetscReal  v[2][2],*x;
-  Mat H=*HH;
-  PetscBool assembled;
+  PetscInt       i, nn=user->n/2, ind[2];
+  PetscReal      alpha=user->alpha;
+  PetscReal      v[2][2],*x;
+  Mat            H=*HH;
+  PetscBool      assembled;
 
   /* Zero existing matrix entries */
   ierr = MatAssembled(H,&assembled); CHKERRQ(ierr);
   if (assembled){ierr = MatZeroEntries(H);  CHKERRQ(ierr);}
-
 
   /* Get a pointer to vector data */
   ierr = VecGetArray(X,&x); CHKERRQ(ierr);

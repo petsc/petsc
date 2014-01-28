@@ -22,8 +22,8 @@
 PetscErrorCode VecPow(Vec v, PetscReal p)
 {
   PetscErrorCode ierr;
-  PetscInt n,i;
-  PetscReal *v1;
+  PetscInt       n,i;
+  PetscReal      *v1;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1); 
@@ -32,13 +32,11 @@ PetscErrorCode VecPow(Vec v, PetscReal p)
   ierr = VecGetLocalSize(v, &n); CHKERRQ(ierr);
 
   if (1.0 == p) {
-  }
-  else if (-1.0 == p) {
+  } else if (-1.0 == p) {
     for (i = 0; i < n; ++i){
       v1[i] = 1.0 / v1[i];
     }
-  }
-  else if (0.0 == p) {
+  } else if (0.0 == p) {
     for (i = 0; i < n; ++i){
       /*  Not-a-number left alone
 	  Infinity set to one  */
@@ -46,48 +44,39 @@ PetscErrorCode VecPow(Vec v, PetscReal p)
         v1[i] = 1.0;
       }
     }
-  }
-  else if (0.5 == p) {
+  } else if (0.5 == p) {
     for (i = 0; i < n; ++i) {
       if (v1[i] >= 0) {
         v1[i] = PetscSqrtScalar(v1[i]);
-      }
-      else {
+      } else {
         v1[i] = TAO_INFINITY;
       }
     }
-  }
-  else if (-0.5 == p) {
+  } else if (-0.5 == p) {
     for (i = 0; i < n; ++i) {
       if (v1[i] >= 0) {
         v1[i] = 1.0 / PetscSqrtScalar(v1[i]);
-      }
-      else {
+      } else {
         v1[i] = TAO_INFINITY;
       }
     }
-  }
-  else if (2.0 == p) {
+  } else if (2.0 == p) {
     for (i = 0; i < n; ++i){
       v1[i] *= v1[i];
     }
-  }
-  else if (-2.0 == p) {
+  } else if (-2.0 == p) {
     for (i = 0; i < n; ++i){
       v1[i] = 1.0 / (v1[i] * v1[i]);
     }
-  }
-  else {
+  } else {
     for (i = 0; i < n; ++i) {
       if (v1[i] >= 0) {
         v1[i] = PetscPowScalar(v1[i], p);
-      }
-      else {
+      } else {
         v1[i] = TAO_INFINITY;
       }
     }
   }
-
   ierr = VecRestoreArray(v,&v1); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -112,8 +101,8 @@ PetscErrorCode VecPow(Vec v, PetscReal p)
 PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
 {
   PetscErrorCode ierr;
-  PetscInt i,n,low1,low2,low3,low4,high1,high2,high3,high4;
-  PetscReal *v1,*v2,*v3,*vmed;
+  PetscInt       i,n,low1,low2,low3,low4,high1,high2,high3,high4;
+  PetscReal      *v1,*v2,*v3,*vmed;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Vec1,VEC_CLASSID,1); 
@@ -140,9 +129,7 @@ PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
   ierr = VecGetOwnershipRange(Vec2, &low2, &high2); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(Vec3, &low3, &high3); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(VMedian, &low4, &high4); CHKERRQ(ierr);
-  if ( low1!= low2 || low1!= low3 || low1!= low4 ||
-       high1!= high2 || high1!= high3 || high1!= high4)
-    SETERRQ(PETSC_COMM_SELF,1,"InCompatible vector local lengths");
+  if ( low1!= low2 || low1!= low3 || low1!= low4 || high1!= high2 || high1!= high3 || high1!= high4) SETERRQ(PETSC_COMM_SELF,1,"InCompatible vector local lengths");
 
   ierr = VecGetArray(Vec1,&v1); CHKERRQ(ierr);
   ierr = VecGetArray(Vec2,&v2); CHKERRQ(ierr);
@@ -171,7 +158,6 @@ PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
   if (VMedian!=Vec1 && VMedian != Vec2 && VMedian != Vec3){
     ierr = VecRestoreArray(VMedian,&vmed); CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -219,10 +205,10 @@ $        phi(a,b) := sqrt(a*a + b*b) - a - b
 @*/
 PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FB)
 {
-  PetscReal *x, *f, *l, *u, *fb;
-  PetscReal xval, fval, lval, uval;
+  PetscReal      *x, *f, *l, *u, *fb;
+  PetscReal      xval, fval, lval, uval;
   PetscErrorCode ierr;
-  PetscInt low[5], high[5], n, i;
+  PetscInt       low[5], high[5], n, i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X, VEC_CLASSID,1); 
@@ -238,8 +224,7 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FB)
   ierr = VecGetOwnershipRange(FB, low + 4, high + 4); CHKERRQ(ierr);
 
   for (i = 1; i < 4; ++i) {
-    if (low[0] != low[i] || high[0] != high[i])
-      SETERRQ(PETSC_COMM_SELF,1,"Vectors must be identically loaded over processors");
+    if (low[0] != low[i] || high[0] != high[i]) SETERRQ(PETSC_COMM_SELF,1,"Vectors must be identically loaded over processors");
   }
 
   ierr = VecGetArray(X, &x); CHKERRQ(ierr);
@@ -256,17 +241,13 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FB)
 
     if ((lval <= -TAO_INFINITY) && (uval >= TAO_INFINITY)) {
       fb[i] = -fval;
-    } 
-    else if (lval <= -TAO_INFINITY) {
+    } else if (lval <= -TAO_INFINITY) {
       fb[i] = -Fischer(uval - xval, -fval);
-    } 
-    else if (uval >=  TAO_INFINITY) {
+    } else if (uval >=  TAO_INFINITY) {
       fb[i] =  Fischer(xval - lval,  fval);
-    } 
-    else if (lval == uval) {
+    } else if (lval == uval) {
       fb[i] = lval - xval;
-    }
-    else {
+    } else {
       fval  =  Fischer(uval - xval, -fval);
       fb[i] =  Fischer(xval - lval,  fval);
     }
@@ -277,7 +258,6 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FB)
   ierr = VecRestoreArray(L, &l); CHKERRQ(ierr);
   ierr = VecRestoreArray(U, &u); CHKERRQ(ierr);
   ierr = VecRestoreArray(FB, &fb); CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -327,10 +307,10 @@ $        phi(a,b) := sqrt(a*a + b*b + 2*mu*mu) - a - b
 @*/
 PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FB)
 {
-  PetscReal *x, *f, *l, *u, *fb;
-  PetscReal xval, fval, lval, uval;
+  PetscReal      *x, *f, *l, *u, *fb;
+  PetscReal      xval, fval, lval, uval;
   PetscErrorCode ierr;
-  PetscInt low[5], high[5], n, i;
+  PetscInt       low[5], high[5], n, i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X, VEC_CLASSID,1);
@@ -346,8 +326,7 @@ PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FB)
   ierr = VecGetOwnershipRange(FB, low + 4, high + 4); CHKERRQ(ierr);
 
   for (i = 1; i < 4; ++i) {
-    if (low[0] != low[i] || high[0] != high[i])
-      SETERRQ(PETSC_COMM_SELF,1,"Vectors must be identically loaded over processors");
+    if (low[0] != low[i] || high[0] != high[i]) SETERRQ(PETSC_COMM_SELF,1,"Vectors must be identically loaded over processors");
   }
 
   ierr = VecGetArray(X, &x); CHKERRQ(ierr);
@@ -364,17 +343,13 @@ PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FB)
 
     if ((lval <= -TAO_INFINITY) && (uval >= TAO_INFINITY)) {
       (*fb++) = -fval - mu*xval;
-    } 
-    else if (lval <= -TAO_INFINITY) {
+    } else if (lval <= -TAO_INFINITY) {
       (*fb++) = -SFischer(uval - xval, -fval, mu);
-    } 
-    else if (uval >=  TAO_INFINITY) {
+    } else if (uval >=  TAO_INFINITY) {
       (*fb++) =  SFischer(xval - lval,  fval, mu);
-    } 
-    else if (lval == uval) {
+    } else if (lval == uval) {
       (*fb++) = lval - xval;
-    } 
-    else {
+    } else {
       fval    =  SFischer(uval - xval, -fval, mu);
       (*fb++) =  SFischer(xval - lval,  fval, mu);
     }
@@ -424,18 +399,15 @@ PETSC_STATIC_INLINE PetscReal fischsnorm(PetscReal a, PetscReal b, PetscReal c)
 
 .seealso: VecFischer()
 @*/
-PetscErrorCode D_Fischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, 
-		      Vec T1, Vec T2, Vec Da, Vec Db)
+PetscErrorCode D_Fischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec T2, Vec Da, Vec Db)
 {
   PetscErrorCode ierr;
-  PetscInt i,nn;
-  PetscReal *x,*f,*l,*u,*da,*db,*t1,*t2;
-  PetscReal ai,bi,ci,di,ei;
+  PetscInt       i,nn;
+  PetscReal      *x,*f,*l,*u,*da,*db,*t1,*t2;
+  PetscReal      ai,bi,ci,di,ei;
 
   PetscFunctionBegin;
-
   ierr = VecGetLocalSize(X,&nn); CHKERRQ(ierr);
-  
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Con,&f);CHKERRQ(ierr);
   ierr = VecGetArray(XL,&l);CHKERRQ(ierr);
@@ -472,15 +444,13 @@ PetscErrorCode D_Fischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU,
     if ((l[i] <= TAO_NINFINITY) && (u[i] >= TAO_INFINITY)) {
       da[i] = 0;
       db[i] = -1;
-    } 
-    else if (l[i] <= TAO_NINFINITY) {
+    } else if (l[i] <= TAO_NINFINITY) {
       if (db[i] >= 1) {
         ai = fischnorm(1, t2[i]);
 
         da[i] = -1/ai - 1;
         db[i] = -t2[i]/ai - 1;
-      } 
-      else {
+      } else {
         bi = u[i] - x[i];
         ai = fischnorm(bi, f[i]);
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
@@ -488,15 +458,13 @@ PetscErrorCode D_Fischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU,
         da[i] = bi / ai - 1;
         db[i] = -f[i] / ai - 1;
       }
-    } 
-    else if (u[i] >=  TAO_INFINITY) {
+    } else if (u[i] >=  TAO_INFINITY) {
       if (da[i] >= 1) {
         ai = fischnorm(1, t2[i]);
 
         da[i] = 1 / ai - 1;
         db[i] = t2[i] / ai - 1;
-      } 
-      else {
+      } else {
         bi = x[i] - l[i];
         ai = fischnorm(bi, f[i]);
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
@@ -504,19 +472,16 @@ PetscErrorCode D_Fischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU,
         da[i] = bi / ai - 1;
         db[i] = f[i] / ai - 1;
       }
-    } 
-    else if (l[i] == u[i]) {
+    } else if (l[i] == u[i]) {
       da[i] = -1;
       db[i] = 0;
-    } 
-    else {
+    } else {
       if (db[i] >= 1) {
         ai = fischnorm(1, t2[i]);
 
         ci = 1 / ai + 1;
         di = t2[i] / ai + 1;
-      } 
-      else {
+      } else {
         bi = x[i] - u[i];
         ai = fischnorm(bi, f[i]);
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
@@ -531,8 +496,7 @@ PetscErrorCode D_Fischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU,
 
         bi = bi / ai - 1;
         ai = 1 / ai - 1;
-      } 
-      else {
+      } else {
         ei = Fischer(u[i] - x[i], -f[i]);
         ai = fischnorm(x[i] - l[i], ei);
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
@@ -583,23 +547,18 @@ PetscErrorCode D_Fischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU,
 
 .seealso D_Fischer()
 @*/
-PetscErrorCode D_SFischer(Mat jac, Vec X, Vec Con, 
-                       Vec XL, Vec XU, PetscReal mu, 
-                       Vec T1, Vec T2, 
-                       Vec Da, Vec Db, Vec Dm)
+PetscErrorCode D_SFischer(Mat jac, Vec X, Vec Con,Vec XL, Vec XU, PetscReal mu,Vec T1, Vec T2,Vec Da, Vec Db, Vec Dm)
 {
   PetscErrorCode ierr;
-  PetscInt i,nn;
-  PetscReal *x, *f, *l, *u, *da, *db, *dm;
-  PetscReal ai, bi, ci, di, ei, fi;
+  PetscInt       i,nn;
+  PetscReal      *x, *f, *l, *u, *da, *db, *dm;
+  PetscReal      ai, bi, ci, di, ei, fi;
 
   PetscFunctionBegin;
-
   if (PetscAbsReal(mu) <= PETSC_MACHINE_EPSILON) {
     ierr = VecZeroEntries(Dm); CHKERRQ(ierr);
     ierr = D_Fischer(jac, X, Con, XL, XU, T1, T2, Da, Db); CHKERRQ(ierr);
-  } 
-  else {
+  } else {
     ierr = VecGetLocalSize(X,&nn); CHKERRQ(ierr);
     ierr = VecGetArray(X,&x); CHKERRQ(ierr);
     ierr = VecGetArray(Con,&f); CHKERRQ(ierr);
@@ -614,8 +573,7 @@ PetscErrorCode D_SFischer(Mat jac, Vec X, Vec Con,
         da[i] = -mu;
         db[i] = -1;
         dm[i] = -x[i];
-      } 
-      else if (l[i] <= TAO_NINFINITY) {
+      } else if (l[i] <= TAO_NINFINITY) {
         bi = u[i] - x[i];
         ai = fischsnorm(bi, f[i], mu);
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
@@ -623,8 +581,7 @@ PetscErrorCode D_SFischer(Mat jac, Vec X, Vec Con,
         da[i] = bi / ai - 1;
         db[i] = -f[i] / ai - 1;
         dm[i] = 2.0 * mu / ai;
-      } 
-      else if (u[i] >=  TAO_INFINITY) {
+      } else if (u[i] >=  TAO_INFINITY) {
         bi = x[i] - l[i];
         ai = fischsnorm(bi, f[i], mu);
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
@@ -632,13 +589,11 @@ PetscErrorCode D_SFischer(Mat jac, Vec X, Vec Con,
         da[i] = bi / ai - 1;
         db[i] = f[i] / ai - 1;
         dm[i] = 2.0 * mu / ai;
-      } 
-      else if (l[i] == u[i]) {
+      } else if (l[i] == u[i]) {
         da[i] = -1;
         db[i] = 0;
         dm[i] = 0;
-      } 
-      else {
+      } else {
         bi = x[i] - u[i];
         ai = fischsnorm(bi, f[i], mu);
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
@@ -668,7 +623,6 @@ PetscErrorCode D_SFischer(Mat jac, Vec X, Vec Con,
     ierr = VecRestoreArray(Da,&da); CHKERRQ(ierr);
     ierr = VecRestoreArray(Db,&db); CHKERRQ(ierr);
     ierr = VecRestoreArray(Dm,&dm); CHKERRQ(ierr);
-
   }
   PetscFunctionReturn(0);
 }

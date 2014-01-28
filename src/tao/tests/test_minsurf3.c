@@ -21,9 +21,9 @@ The command line options are:\n\
    and FormHessian().
 */
 typedef struct {
-  PetscInt    mx, my;                 /* discretization in x, y directions */
+  PetscInt   mx, my;                 /* discretization in x, y directions */
   PetscReal *bottom, *top, *left, *right;             /* boundary values */
-  Mat         H;
+  Mat        H;
 } AppCtx;
 
 /* -------- User-defined Routines --------- */
@@ -37,25 +37,21 @@ PetscErrorCode FormSeparableFunction(TaoSolver,Vec,Vec,void*);
 #define __FUNCT__ "main"
 int main( int argc, char **argv )
 {
-  PetscErrorCode    ierr;              /* used to check for functions returning nonzeros */
-  PetscInt          N;                 /* Size of vector */
-  PetscMPIInt       size;              /* Number of processors */
-  Vec             F,x;                 /* solution, gradient vectors */
-  PetscBool       flg;               /* A return value when checking for user options */
+  PetscErrorCode             ierr;              /* used to check for functions returning nonzeros */
+  PetscInt                   N;                 /* Size of vector */
+  PetscMPIInt                size;              /* Number of processors */
+  Vec                        F,x;                 /* solution, gradient vectors */
+  PetscBool                  flg;               /* A return value when checking for user options */
   TaoSolverTerminationReason reason;
-  TaoSolver       tao;               /* TaoSolver solver context */
-  AppCtx          user;              /* user-defined work context */
+  TaoSolver                  tao;               /* TaoSolver solver context */
+  AppCtx                     user;              /* user-defined work context */
 
   /* Initialize TAO,PETSc */
   PetscInitialize( &argc, &argv,(char *)0,help );
   TaoInitialize( &argc, &argv,(char *)0,help );
 
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
-  if (size >1) {
-    PetscPrintf(PETSC_COMM_SELF,"This example is intended for single processor use!\n");
-    PetscPrintf(PETSC_COMM_SELF,"Try the example minsurf2!\n");
-    SETERRQ(PETSC_COMM_SELF,1,"Incorrect number of processors");
-  }
+  ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size >1) SETERRQ(PETSC_COMM_WORLD,1,"Incorrect number of processors");
 
   /* Specify default dimension of the problem */
   user.mx = 4; user.my = 4;
@@ -92,14 +88,14 @@ int main( int argc, char **argv )
   /* Check for any TAO command line options */
   ierr = TaoSetFromOptions(tao); CHKERRQ(ierr);
 
-
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao); CHKERRQ(ierr);
 
   /* Get information on termination */
   ierr = TaoGetTerminationReason(tao,&reason); CHKERRQ(ierr);
-  if (reason <= 0)
-    PetscPrintf(MPI_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");
+  if (reason <= 0){
+    ierr = PetscPrintf(MPI_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");CHKERRQ(ierr);
+  }
 
   /*
     To View TAO solver information use
@@ -120,7 +116,6 @@ int main( int argc, char **argv )
   /* Finalize TAO */
   TaoFinalize();
   PetscFinalize();
-  
   return 0;
 }
 
@@ -142,19 +137,18 @@ int main( int argc, char **argv )
 */
 PetscErrorCode FormSeparableFunction(TaoSolver tao,Vec X,Vec F,void *userCtx) {
 
-  AppCtx * user = (AppCtx *) userCtx;
+  AppCtx         *user = (AppCtx *) userCtx;
   PetscErrorCode ierr;
-  PetscInt i,j,row;
-  PetscInt mx=user->mx, my=user->my;
-  PetscReal rhx=mx+1, rhy=my+1,fcn;
-  PetscReal hx=1.0/(mx+1),hy=1.0/(my+1), hydhx=hy/hx, hxdhy=hx/hy, area=0.5*hx*hy, ft=0;
-  PetscReal f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
-  PetscReal df1dxc,df2dxc,df3dxc,df4dxc,df5dxc,df6dxc;
-  PetscReal *x;
+  PetscInt       i,j,row;
+  PetscInt       mx=user->mx, my=user->my;
+  PetscReal      rhx=mx+1, rhy=my+1,fcn;
+  PetscReal      hx=1.0/(mx+1),hy=1.0/(my+1), hydhx=hy/hx, hxdhy=hx/hy, area=0.5*hx*hy, ft=0;
+  PetscReal      f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
+  PetscReal      df1dxc,df2dxc,df3dxc,df4dxc,df5dxc,df6dxc;
+  PetscReal      *x;
 
   /* Get pointers to vector data */
   ierr = VecGetArray(X,&x); CHKERRQ(ierr);
-
   /* Compute function over the locally owned part of the mesh */
   for (j=0; j<my; j++){
     for (i=0; i< mx; i++){
@@ -298,15 +292,15 @@ PetscErrorCode FormSeparableFunction(TaoSolver tao,Vec X,Vec F,void *userCtx) {
 static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 {
   PetscErrorCode ierr;
-  PetscInt     i,j,k,limit=0;
-  PetscInt     maxits=5;
-  PetscInt     mx=user->mx,my=user->my;
-  PetscInt     bsize=0, lsize=0, tsize=0, rsize=0;
-  PetscReal     one=1.0, two=2.0, three=3.0, tol=1e-10;
-  PetscReal     fnorm,det,hx,hy,xt=0,yt=0;
-  PetscReal     u1,u2,nf1,nf2,njac11,njac12,njac21,njac22;
-  PetscReal     b=-0.5, t=0.5, l=-0.5, r=0.5;
-  PetscReal     *boundary;
+  PetscInt       i,j,k,limit=0;
+  PetscInt       maxits=5;
+  PetscInt       mx=user->mx,my=user->my;
+  PetscInt       bsize=0, lsize=0, tsize=0, rsize=0;
+  PetscReal      one=1.0, two=2.0, three=3.0, tol=1e-10;
+  PetscReal      fnorm,det,hx,hy,xt=0,yt=0;
+  PetscReal      u1,u2,nf1,nf2,njac11,njac12,njac21,njac22;
+  PetscReal      b=-0.5, t=0.5, l=-0.5, r=0.5;
+  PetscReal      *boundary;
 
   bsize=mx+2; lsize=my+2; rsize=my+2; tsize=mx+2;
 
@@ -363,11 +357,8 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
       } else { /* if (j==2 || j==3) */
 	yt=yt+hy;
       }
-      
     }
-    
   }
-
   return 0;
 }
 
@@ -386,24 +377,19 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 */
 static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
 {
-  PetscInt      start=-1,i,j;
+  PetscInt       start=-1,i,j;
   PetscErrorCode ierr;
-  PetscReal   zero=0.0;
-  PetscBool flg;
+  PetscReal      zero=0.0;
+  PetscBool      flg;
 
   ierr = VecSet(X, zero); CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-start",&start,&flg); CHKERRQ(ierr);
 
   if (flg && start==0){ /* The zero vector is reasonable */
- 
     ierr = VecSet(X, zero); CHKERRQ(ierr);
-    /* PetscLogInfo((user,"Min. Surface Area Problem: Start with 0 vector \n")); */
-
-
   } else { /* Take an average of the boundary conditions */
-
-    PetscInt    row;
-    PetscInt    mx=user->mx,my=user->my;
+    PetscInt   row;
+    PetscInt   mx=user->mx,my=user->my;
     PetscReal *x;
     
     /* Get pointers to vector data */
@@ -413,14 +399,11 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     for (j=0; j<my; j++){
       for (i=0; i< mx; i++){
 	row=(j)*mx + (i);
-	x[row] = ( ((j+1)*user->bottom[i+1]+(my-j+1)*user->top[i+1])/(my+2)+
-		   ((i+1)*user->left[j+1]+(mx-i+1)*user->right[j+1])/(mx+2))/2.0;
+	x[row] = ( ((j+1)*user->bottom[i+1]+(my-j+1)*user->top[i+1])/(my+2)+((i+1)*user->left[j+1]+(mx-i+1)*user->right[j+1])/(mx+2))/2.0;
       }
     }
-    
     /* Restore vectors */
     ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
-    
   }
   return 0;
 }
