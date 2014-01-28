@@ -21,22 +21,19 @@ PETSC_CUDA_EXTERN_C_END
 PetscErrorCode VecCUSPAllocateCheckHost(Vec v)
 {
   PetscErrorCode ierr;
-  cudaError_t    err;
   PetscScalar    *array;
-  Vec_Seq        *s;
+  Vec_Seq        *s = (Vec_Seq*)v->data;
   PetscInt       n = v->map->n;
+  Vec_CUSP       *veccusp;
 
   PetscFunctionBegin;
-  s    = (Vec_Seq*)v->data;
-  ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
-  if (s->array == 0) {
+  if (!s->array) {
     ierr               = PetscMalloc1(n,&array);CHKERRQ(ierr);
     ierr               = PetscLogObjectMemory((PetscObject)v,n*sizeof(PetscScalar));CHKERRQ(ierr);
     s->array           = array;
     s->array_allocated = array;
-    err = cudaHostRegister(s->array, n*sizeof(PetscScalar),cudaHostRegisterMapped);CHKERRCUSP(err);
-    ((Vec_CUSP*)v->spptr)->hostDataRegisteredAsPageLocked = PETSC_TRUE;
   }
+  ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -54,28 +51,26 @@ PetscErrorCode VecCUSPAllocateCheck(Vec v)
   cudaError_t    err;
   cudaStream_t   stream;
   Vec_Seq        *s = (Vec_Seq*)v->data;
+  Vec_CUSP       *veccusp;
 
   PetscFunctionBegin;
-  // First allocate memory on the GPU if needed
   if (!v->spptr) {
     try {
-      v->spptr                        = new Vec_CUSP;
-      ((Vec_CUSP*)v->spptr)->GPUarray = new CUSPARRAY;
-      ((Vec_CUSP*)v->spptr)->GPUarray->resize((PetscBLASInt)v->map->n);
+      v->spptr = new Vec_CUSP;
+      veccusp = (Vec_CUSP*)v->spptr;
+      veccusp->GPUarray = new CUSPARRAY;
+      veccusp->GPUarray->resize((PetscBLASInt)v->map->n);
       err = cudaStreamCreate(&stream);CHKERRCUSP(err);
-      ((Vec_CUSP*)v->spptr)->stream = stream;
-
-      ((Vec_CUSP*)v->spptr)->hostDataRegisteredAsPageLocked = PETSC_FALSE;
-      /* If the array is already allocated, one can register it as (page-locked) mapped.
-	 This can substantially accelerate data transfer across the PCI Express */
-      if (s->array) {
-	err = cudaHostRegister(s->array, v->map->n*sizeof(PetscScalar),cudaHostRegisterMapped);CHKERRCUSP(err);
-	((Vec_CUSP*)v->spptr)->hostDataRegisteredAsPageLocked = PETSC_TRUE;
-      }
+      veccusp->stream = stream;
+      veccusp->hostDataRegisteredAsPageLocked = PETSC_FALSE;
       v->ops->destroy = VecDestroy_SeqCUSP;
     } catch(char *ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
     }
+  }
+  if (s->array && !veccusp->hostDataRegisteredAsPageLocked) {
+    err = cudaHostRegister(s->array,v->map->n*sizeof(PetscScalar),cudaHostRegisterMapped);CHKERRCUSP(err);
+    veccusp->hostDataRegisteredAsPageLocked = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
@@ -1845,13 +1840,10 @@ PetscErrorCode VecDestroy_SeqCUSP(Vec v)
     if (v->spptr) {
       delete ((Vec_CUSP*)v->spptr)->GPUarray;
       err = cudaStreamDestroy(((Vec_CUSP*)v->spptr)->stream);CHKERRCUSP(err);
-
-      /* If the host array has been registered as (page-locked) mapped,
-	 one must unregister the buffer */
       if (((Vec_CUSP*)v->spptr)->hostDataRegisteredAsPageLocked) {
-	err = cudaHostUnregister(s->array);CHKERRCUSP(err);
+        err = cudaHostUnregister(s->array);CHKERRCUSP(err);
       }
-      delete (Vec_CUSP*) v->spptr;
+      delete (Vec_CUSP*)v->spptr;
     }
   } catch(char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
