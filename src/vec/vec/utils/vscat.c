@@ -1945,3 +1945,21 @@ PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt *rto,PetscInt *rfrom)
   scat->to_n   = -1;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "VecScatterIsSequential_Private"
+/*
+  Returns true if the scatter is sequential.
+*/
+PetscErrorCode  VecScatterIsSequential_Private(VecScatter_MPI_General *scatter,PetscBool *flag)
+{
+  VecScatterType scatterType = scatter->type;
+
+  PetscFunctionBegin;
+  if (scatterType == VEC_SCATTER_SEQ_GENERAL || scatterType == VEC_SCATTER_SEQ_STRIDE) {
+    *flag = PETSC_TRUE;
+  } else {
+    *flag = PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}

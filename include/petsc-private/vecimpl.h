@@ -256,6 +256,8 @@ typedef struct {
 #endif
 } VecScatter_MPI_General;
 
+PETSC_INTERN PetscErrorCode VecScatterIsSequential_Private(VecScatter_MPI_General*,PetscBool*);
+
 struct _p_VecScatter {
   PETSCHEADER(int);
   PetscInt       to_n,from_n;
