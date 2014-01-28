@@ -30,25 +30,15 @@
 #define NTL_UPDATE_INTERPOLATION  1
 #define NTL_UPDATE_TYPES          2
 
-static const char *NTL_KSP[64] = {
-  "nash", "stcg", "gltr"
-};
+static const char *NTL_KSP[64] = {"nash", "stcg", "gltr"};
 
-static const char *NTL_PC[64] = {
-  "none", "ahess", "bfgs", "petsc"
-};
+static const char *NTL_PC[64] = {"none", "ahess", "bfgs", "petsc"};
 
-static const char *BFGS_SCALE[64] = {
-  "ahess", "bfgs"
-};
+static const char *BFGS_SCALE[64] = {"ahess", "bfgs"};
 
-static const char *NTL_INIT[64] = {
-  "constant", "direction", "interpolation"
-};
+static const char *NTL_INIT[64] = {"constant", "direction", "interpolation"};
 
-static const char *NTL_UPDATE[64] = {
-  "reduction", "interpolation"
-};
+static const char *NTL_UPDATE[64] = {"reduction", "interpolation"};
 
 /* Routine for BFGS preconditioner */
 
@@ -57,7 +47,7 @@ static const char *NTL_UPDATE[64] = {
 static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
 {
   PetscErrorCode ierr;
-  Mat M;
+  Mat            M;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -82,15 +72,14 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
 #define __FUNCT__ "TaoSolve_NTL"
 static PetscErrorCode TaoSolve_NTL(TaoSolver tao)
 {
-  TAO_NTL *tl = (TAO_NTL *)tao->data;
-
-  PC pc;
-  KSPConvergedReason ksp_reason;
-  TaoSolverTerminationReason reason;
+  TAO_NTL                        *tl = (TAO_NTL *)tao->data;
+  PC                             pc;
+  KSPConvergedReason             ksp_reason;
+  TaoSolverTerminationReason     reason;
   TaoLineSearchTerminationReason ls_reason;
 
-  PetscReal fmin, ftrial, prered, actred, kappa, sigma;
-  PetscReal tau, tau_1, tau_2, tau_max, tau_min, max_radius;
+  PetscReal                      fmin, ftrial, prered, actred, kappa, sigma;
+  PetscReal                      tau, tau_1, tau_2, tau_max, tau_min, max_radius;
   PetscReal f, fold, gdx, gnorm;
   PetscReal step = 1.0;
 
@@ -921,7 +910,7 @@ static PetscErrorCode TaoSetUp_NTL(TaoSolver tao)
 #define __FUNCT__ "TaoDestroy_NTL"
 static PetscErrorCode TaoDestroy_NTL(TaoSolver tao)
 {
-  TAO_NTL *tl = (TAO_NTL *)tao->data;
+  TAO_NTL        *tl = (TAO_NTL *)tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -930,18 +919,9 @@ static PetscErrorCode TaoDestroy_NTL(TaoSolver tao)
     ierr = VecDestroy(&tl->Xold); CHKERRQ(ierr);
     ierr = VecDestroy(&tl->Gold); CHKERRQ(ierr);
   }
-  if (tl->Diag) {
-    ierr = VecDestroy(&tl->Diag); CHKERRQ(ierr);
-    tl->Diag = PETSC_NULL;
-  }
-  if (tl->M) {
-    ierr = MatDestroy(&tl->M); CHKERRQ(ierr);
-    tl->M = PETSC_NULL;
-  }
-
+  ierr = VecDestroy(&tl->Diag); CHKERRQ(ierr);
+  ierr = MatDestroy(&tl->M); CHKERRQ(ierr);
   ierr = PetscFree(tao->data); CHKERRQ(ierr);
-  tao->data = PETSC_NULL;
-  
   PetscFunctionReturn(0);
 }
 

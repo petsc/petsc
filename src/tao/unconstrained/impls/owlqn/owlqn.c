@@ -321,8 +321,7 @@ static PetscErrorCode TaoSetUp_OWLQN(TaoSolver tao)
 #define __FUNCT__ "TaoDestroy_OWLQN"
 static PetscErrorCode TaoDestroy_OWLQN(TaoSolver tao)
 {
-
-  TAO_OWLQN *lmP = (TAO_OWLQN *)tao->data;
+  TAO_OWLQN      *lmP = (TAO_OWLQN *)tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -334,8 +333,6 @@ static PetscErrorCode TaoDestroy_OWLQN(TaoSolver tao)
     ierr = VecDestroy(&lmP->GV);CHKERRQ(ierr);
   }
   ierr = PetscFree(tao->data); CHKERRQ(ierr);
-  tao->data = PETSC_NULL;
-
   PetscFunctionReturn(0); 
 }
 
@@ -344,9 +341,8 @@ static PetscErrorCode TaoDestroy_OWLQN(TaoSolver tao)
 #define __FUNCT__ "TaoSetFromOptions_OWLQN"
 static PetscErrorCode TaoSetFromOptions_OWLQN(TaoSolver tao)
 {
-
-  TAO_OWLQN *lmP = (TAO_OWLQN *)tao->data;
-  PetscBool flg;
+  TAO_OWLQN      *lmP = (TAO_OWLQN *)tao->data;
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

@@ -2105,7 +2105,7 @@ PetscErrorCode TaoSetType(TaoSolver tao, const TaoSolverType type)
 {
     PetscErrorCode ierr;
     PetscErrorCode (*create_xxx)(TaoSolver);
-    PetscBool     issame;
+    PetscBool      issame;
 
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);

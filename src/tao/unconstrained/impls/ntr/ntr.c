@@ -675,24 +675,16 @@ static PetscErrorCode TaoSetUp_NTR(TaoSolver tao)
 #define __FUNCT__ "TaoDestroy_NTR"
 static PetscErrorCode TaoDestroy_NTR(TaoSolver tao)
 {
-  TAO_NTR *tr = (TAO_NTR *)tao->data;
+  TAO_NTR        *tr = (TAO_NTR *)tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (tao->setupcalled) {
     ierr = VecDestroy(&tr->W); CHKERRQ(ierr);
   }
-  if (tr->M) {
-    ierr = MatDestroy(&tr->M); CHKERRQ(ierr);
-    tr->M = PETSC_NULL;
-  }
-  if (tr->Diag) {
-    ierr = VecDestroy(&tr->Diag); CHKERRQ(ierr);
-    tr->Diag = PETSC_NULL;
-  }
+  ierr = MatDestroy(&tr->M); CHKERRQ(ierr);
+  ierr = VecDestroy(&tr->Diag); CHKERRQ(ierr);
   ierr = PetscFree(tao->data); CHKERRQ(ierr);
-  tao->data = PETSC_NULL;
-
   PetscFunctionReturn(0);
 }
 
