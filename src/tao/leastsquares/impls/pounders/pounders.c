@@ -605,7 +605,7 @@ static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
   /* (Column oriented for blas calls) */
   ii=0;
 
-  if (mfqP->mpisize == 1) {
+  if (mfqP->size == 1) {
     ierr = VecGetArray(mfqP->Xhist[mfqP->minindex],&xmint);CHKERRQ(ierr);
     for (i=0;i<mfqP->n;i++) mfqP->xmin[i] = xmint[i]; 
     ierr = VecRestoreArray(mfqP->Xhist[mfqP->minindex],&xmint);CHKERRQ(ierr);
@@ -927,8 +927,8 @@ static PetscErrorCode TaoSetUp_POUNDERS(TaoSolver tao)
   for (i=0;i<PetscMax(mfqP->m,mfqP->n);i++) {
     mfqP->indices[i] = i;
   }
-  ierr = MPI_Comm_size(((PetscObject)tao)->comm,&mfqP->mpisize);CHKERRQ(ierr);
-  if (mfqP->mpisize > 1) {
+  ierr = MPI_Comm_size(((PetscObject)tao)->comm,&mfqP->size);CHKERRQ(ierr);
+  if (mfqP->size > 1) {
     VecCreateSeq(PETSC_COMM_SELF,mfqP->n,&mfqP->localx);CHKERRQ(ierr);
     VecCreateSeq(PETSC_COMM_SELF,mfqP->n,&mfqP->localxmin);CHKERRQ(ierr);
     VecCreateSeq(PETSC_COMM_SELF,mfqP->m,&mfqP->localf);CHKERRQ(ierr);
@@ -1042,7 +1042,7 @@ static PetscErrorCode TaoDestroy_POUNDERS(TaoSolver tao)
   ierr = PetscFree(mfqP->Xhist);CHKERRQ(ierr);
   ierr = PetscFree(mfqP->Fhist);CHKERRQ(ierr);
 
-  if (mfqP->mpisize > 1) {
+  if (mfqP->size > 1) {
     ierr = VecDestroy(&mfqP->localx);CHKERRQ(ierr);
     ierr = VecDestroy(&mfqP->localxmin);CHKERRQ(ierr);
     ierr = VecDestroy(&mfqP->localf);CHKERRQ(ierr);

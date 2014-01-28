@@ -324,8 +324,8 @@ static PetscErrorCode TaoSetUp_POUNDERS(TaoSolver tao)
   for (i=0;i<PetscMax(mfqP->m,mfqP->n);i++) {
     mfqP->indices[i] = i;
   }
-  ierr = MPI_Comm_size(((PetscObject)tao)->comm,&mfqP->mpisize);CHKERRQ(ierr);
-  if (mfqP->mpisize > 1) {
+  ierr = MPI_Comm_size(((PetscObject)tao)->comm,&mfqP->size);CHKERRQ(ierr);
+  if (mfqP->size > 1) {
     VecCreateSeq(PETSC_COMM_SELF,mfqP->n,&mfqP->localx);CHKERRQ(ierr);
     VecCreateSeq(PETSC_COMM_SELF,mfqP->n,&mfqP->localxmin);CHKERRQ(ierr);
     VecCreateSeq(PETSC_COMM_SELF,mfqP->m,&mfqP->localf);CHKERRQ(ierr);
@@ -408,7 +408,7 @@ static PetscErrorCode TaoDestroy_POUNDERS(TaoSolver tao)
   }
 #endif
 
-  if (mfqP->mpisize > 1) {
+  if (mfqP->size > 1) {
     ierr = VecDestroy(&mfqP->localx); CHKERRQ(ierr);
     ierr = VecDestroy(&mfqP->localxmin); CHKERRQ(ierr);
     ierr = VecDestroy(&mfqP->localf); CHKERRQ(ierr);

@@ -39,7 +39,7 @@ typedef struct {
   VecScatter scatterf,scatterx; 
   Vec localf, localx, localfmin, localxmin;
   Vec workxvec;
-  PetscMPIInt mpisize;
+  PetscMPIInt size;
 
 
   PetscReal delta; /* Trust region radius (>0) */

@@ -4,29 +4,25 @@
 #define __FUNCT__ "TaoSolve_POUNDER"
 static PetscErrorCode TaoSolve_POUNDER(TaoSolver tao)
 {
-  TAO_POUNDERS *mfqP = (TAO_POUNDERS *)tao->data;
-
-  PetscInt i,ii,j,k,l,iter=0;
-  PetscReal step=1.0;
+  TAO_POUNDERS               *mfqP = (TAO_POUNDERS *)tao->data;
+  PetscInt                   i,ii,j,k,l,iter=0;
+  PetscReal                  step=1.0;
   TaoSolverTerminationReason reason = TAO_CONTINUE_ITERATING;
-
-  PetscInt low,high;
-  PetscReal minnorm;
-  PetscReal *x,*f,*fmin,*xmint;
-  PetscReal cres,deltaold;
-  PetscReal gnorm;
-  PetscBLASInt info,ione=1,iblas;
-  PetscBool valid;
-  PetscReal mdec, rho, normxsp;
-  PetscReal one=1.0,zero=0.0,ratio;
-  PetscReal objvalue;
-  PetscBLASInt blasm,blasn,blasnpmax;
-  PetscErrorCode ierr;
-  
+  PetscInt                   low,high;
+  PetscReal                  minnorm;
+  PetscReal                  *x,*f,*fmin,*xmint;
+  PetscReal                  cres,deltaold;
+  PetscReal                  gnorm;
+  PetscBLASInt               info,ione=1,iblas;
+  PetscBool                  valid;
+  PetscReal                  mdec, rho, normxsp;
+  PetscReal                  one=1.0,zero=0.0,ratio;
+  PetscReal                  objvalue;
+  PetscBLASInt               blasm,blasn,blasnpmax;
+  PetscErrorCode             ierr;
   
   /* n = # of parameters 
      m = dimension (components) of function  */
-  
   PetscFunctionBegin;
   if (tao->XL || tao->XU || tao->ops->computebounds) {
     ierr = PetscPrintf(((PetscObject)tao)->comm,"WARNING: Variable bounds have been set but will be ignored by pounder algorithm\n"); CHKERRQ(ierr);
@@ -81,7 +77,7 @@ static PetscErrorCode TaoSolve_POUNDER(TaoSolver tao)
   /* (Column oriented for blas calls) */
   ii=0;
 
-  if (mfqP->mpisize == 1) {
+  if (mfqP->size == 1) {
       ierr = VecGetArray(mfqP->Xhist[mfqP->minindex],&xmint); CHKERRQ(ierr);
       for (i=0;i<mfqP->n;i++) mfqP->xmin[i] = xmint[i]; 
       ierr = VecRestoreArray(mfqP->Xhist[mfqP->minindex],&xmint); CHKERRQ(ierr);
@@ -425,8 +421,8 @@ static PetscErrorCode TaoSetUp_POUNDER(TaoSolver tao)
     for (i=0;i<PetscMax(mfqP->m,mfqP->n);i++) {
 	mfqP->indices[i] = i;
     }
-    ierr = MPI_Comm_size(((PetscObject)tao)->comm,&mfqP->mpisize); CHKERRQ(ierr);
-    if (mfqP->mpisize > 1) {
+    ierr = MPI_Comm_size(((PetscObject)tao)->comm,&mfqP->size); CHKERRQ(ierr);
+    if (mfqP->size > 1) {
       VecCreateSeq(PETSC_COMM_SELF,mfqP->n,&mfqP->localx); CHKERRQ(ierr);
       VecCreateSeq(PETSC_COMM_SELF,mfqP->n,&mfqP->localxmin); CHKERRQ(ierr);
       VecCreateSeq(PETSC_COMM_SELF,mfqP->m,&mfqP->localf); CHKERRQ(ierr);
@@ -496,8 +492,8 @@ static PetscErrorCode TaoDestroy_POUNDER(TaoSolver tao)
   ierr = PetscFree(mfqP->iwork); CHKERRQ(ierr);
   
   for (i=0;i<mfqP->nHist;i++) {
-      ierr = VecDestroy(&mfqP->Xhist[i]); CHKERRQ(ierr);
-      ierr = VecDestroy(&mfqP->Fhist[i]); CHKERRQ(ierr);
+    ierr = VecDestroy(&mfqP->Xhist[i]); CHKERRQ(ierr);
+    ierr = VecDestroy(&mfqP->Fhist[i]); CHKERRQ(ierr);
   }
   if (mfqP->workxvec) {
     ierr = VecDestroy(&mfqP->workxvec); CHKERRQ(ierr);
@@ -505,17 +501,13 @@ static PetscErrorCode TaoDestroy_POUNDER(TaoSolver tao)
   ierr = PetscFree(mfqP->Xhist); CHKERRQ(ierr);
   ierr = PetscFree(mfqP->Fhist); CHKERRQ(ierr);
 
-  if (mfqP->mpisize > 1) {
-      ierr = VecDestroy(&mfqP->localx);  CHKERRQ(ierr);
-      ierr = VecDestroy(&mfqP->localxmin);  CHKERRQ(ierr);
-      ierr = VecDestroy(&mfqP->localf);  CHKERRQ(ierr);
-      ierr = VecDestroy(&mfqP->localfmin);  CHKERRQ(ierr);
+  if (mfqP->size > 1) {
+    ierr = VecDestroy(&mfqP->localx);  CHKERRQ(ierr);
+    ierr = VecDestroy(&mfqP->localxmin);  CHKERRQ(ierr);
+    ierr = VecDestroy(&mfqP->localf);  CHKERRQ(ierr);
+    ierr = VecDestroy(&mfqP->localfmin);  CHKERRQ(ierr);
   }
-
-
-
   ierr = PetscFree(tao->data); CHKERRQ(ierr);
-  tao->data = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -523,7 +515,7 @@ static PetscErrorCode TaoDestroy_POUNDER(TaoSolver tao)
 #define __FUNCT__ "TaoSetFromOptions_POUNDER"
 static PetscErrorCode TaoSetFromOptions_POUNDER(TaoSolver tao)
 {
-  TAO_POUNDERS *mfqP = (TAO_POUNDERS*)tao->data;
+  TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -537,20 +529,17 @@ static PetscErrorCode TaoSetFromOptions_POUNDER(TaoSolver tao)
 #define __FUNCT__ "TaoView_POUNDER"
 static PetscErrorCode TaoView_POUNDER(TaoSolver tao, PetscViewer viewer)
 {
-  TAO_POUNDERS *mfqP = (TAO_POUNDERS*)tao->data;
-  PetscBool isascii;
+  TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
+  PetscBool      isascii;
   PetscErrorCode ierr;
+
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"points in model: %D\n",mfqP->nmodelpoints); 
     ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);
-
-  } else {
-    SETERRQ1(((PetscObject)tao)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for TAO POUNDER",((PetscObject)viewer)->type_name);
-  }    
+  }
   PetscFunctionReturn(0);
-
 }
 
 EXTERN_C_BEGIN
@@ -558,17 +547,15 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "TaoCreate_POUNDER"
 PetscErrorCode TaoCreate_POUNDER(TaoSolver tao)
 {
-  TAO_POUNDERS *mfqP = (TAO_POUNDERS*)tao->data;
+  TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
-
   tao->ops->setup = TaoSetUp_POUNDER;
   tao->ops->solve = TaoSolve_POUNDER;
   tao->ops->view = TaoView_POUNDER;
   tao->ops->setfromoptions = TaoSetFromOptions_POUNDER;
   tao->ops->destroy = TaoDestroy_POUNDER;
-
 
   ierr = PetscNewLog(tao,&mfqP); CHKERRQ(ierr);
   tao->data = (void*)mfqP;

@@ -61,7 +61,7 @@ typedef struct {
   PetscInt sizemdir;
   Vec localf, localx, localfmin, localxmin;
   Vec workxvec;
-  PetscMPIInt mpisize;
+  PetscMPIInt size;
 #ifdef PETSC_HAVE_MATLAB_ENGINE  
   PetscMatlabEngine me;
 #endif
