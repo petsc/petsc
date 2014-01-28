@@ -87,7 +87,7 @@ PetscErrorCode main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size); CHKERRQ(ierr);
   /* Specify default parameters for the problem, check for command-line overrides */
   ierr = PetscStrncpy(user.name,"HS21",8); CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-cutername",user.name,24,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-cutername",user.name,24,&flg);CHKERRQ(ierr);
 
   PetscPrintf(PETSC_COMM_WORLD,"\n---- MAROS Problem %s -----\n",user.name);CHKERRQ(ierr);
   ierr = InitializeProblem(&user);CHKERRQ(ierr);
@@ -102,7 +102,7 @@ PetscErrorCode main(int argc,char **argv)
   ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*)&user);CHKERRQ(ierr);
   ierr = TaoSetEqualityConstraintsRoutine(tao,ceq,FormEqualityConstraints,(void*)&user);CHKERRQ(ierr);
   ierr = TaoSetInequalityConstraintsRoutine(tao,cin,FormInequalityConstraints,(void*)&user);CHKERRQ(ierr);
-  ierr = TaoSetInequalityBounds(tao,user.bin,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TaoSetInequalityBounds(tao,user.bin,NULL);CHKERRQ(ierr);
   ierr = TaoSetJacobianEqualityRoutine(tao,user.Aeq,user.Aeq,FormEqualityJacobian,(void*)&user);CHKERRQ(ierr);
   ierr = TaoSetJacobianInequalityRoutine(tao,user.Ain,user.Ain,FormInequalityJacobian,(void*)&user);CHKERRQ(ierr);
   ierr = TaoSetHessianRoutine(tao,user.H,user.H,FormHessian,(void*)&user);CHKERRQ(ierr);
@@ -244,8 +244,8 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   ierr = MatSetType(user->Ain,MATAIJ); CHKERRQ(ierr);
   ierr = MatSetSizes(user->Ain,PETSC_DECIDE,PETSC_DECIDE,user->mi,user->mi);CHKERRQ(ierr);
 
-  ierr = MatMPIAIJSetPreallocation(user->Ain,1,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(user->Ain,1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(user->Ain,1,NULL,0,NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(user->Ain,1,NULL);CHKERRQ(ierr);
 
   for (i=0;i<user->mi;i++) {
     ierr = MatSetValues(user->Ain,1,&i,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);

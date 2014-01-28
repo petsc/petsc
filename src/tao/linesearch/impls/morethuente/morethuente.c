@@ -30,7 +30,6 @@ static PetscErrorCode TaoLineSearchDestroy_MT(TaoLineSearch ls)
     ierr = VecDestroy(&mt->work); CHKERRQ(ierr);
   }
   ierr = PetscFree(ls->data);
-  ls->data = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 

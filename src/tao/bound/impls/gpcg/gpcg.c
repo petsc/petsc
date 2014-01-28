@@ -26,7 +26,7 @@ static PetscErrorCode TaoDestroy_GPCG(TaoSolver tao)
   ierr = MatDestroy(&gpcg->Hsub_pre);CHKERRQ(ierr);
   ierr = ISDestroy(&gpcg->Free_Local);CHKERRQ(ierr);
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
-  tao->data = PETSC_NULL;
+  tao->data = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -156,8 +156,8 @@ static PetscErrorCode TaoSolve_GPCG(TaoSolver tao)
   TaoLineSearchTerminationReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
   PetscFunctionBegin;
-  gpcg->Hsub=PETSC_NULL;
-  gpcg->Hsub_pre=PETSC_NULL;
+  gpcg->Hsub=NULL;
+  gpcg->Hsub_pre=NULL;
   
   ierr = TaoComputeVariableBounds(tao);CHKERRQ(ierr);
   ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution);CHKERRQ(ierr);

@@ -85,8 +85,8 @@ int main(int argc,char **argv)
   MPI_Comm_rank(MPI_COMM_WORLD,&user.rank);
   lb = TAO_NINFINITY;
   ub = TAO_INFINITY;
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-lb",&lb,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-ub",&ub,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-lb",&lb,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-ub",&ub,NULL);CHKERRQ(ierr);
   ierr = InitializeData(&user);CHKERRQ(ierr);
 
   /* Run optimization on rank 0 */
@@ -110,7 +110,7 @@ int main(int argc,char **argv)
     
     ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
     ierr = TaoSetSeparableObjectiveRoutine(tao,f,EvaluateFunction,(void*)&user);CHKERRQ(ierr);
-    ierr = TaoSetMonitor(tao,MyMonitor,&user,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TaoSetMonitor(tao,MyMonitor,&user,NULL);CHKERRQ(ierr);
 
     /* Check for any TAO command line arguments */
     ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);

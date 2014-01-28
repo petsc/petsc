@@ -271,7 +271,7 @@ PetscErrorCode MatGetRowMax_SMF(Mat M, Vec D)
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(M,(void **)&ctx);CHKERRQ(ierr);
-  ierr = MatGetRowMax(ctx->A,D,PETSC_NULL);
+  ierr = MatGetRowMax(ctx->A,D,NULL);
   PetscFunctionReturn(0);
 } 
 

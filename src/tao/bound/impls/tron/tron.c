@@ -26,7 +26,6 @@ static PetscErrorCode TaoDestroy_TRON(TaoSolver tao)
   ierr = MatDestroy(&tron->H_sub);CHKERRQ(ierr);
   ierr = MatDestroy(&tron->Hpre_sub);CHKERRQ(ierr);
   ierr = PetscFree(tao->data);
-  tao->data = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -123,7 +122,6 @@ static PetscErrorCode TaoSolve_TRON(TaoSolver tao)
   ierr = TaoComputeObjectiveAndGradient(tao,tao->solution,&tron->f,tao->gradient);CHKERRQ(ierr);
   if (tron->Free_Local) {
     ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
-    tron->Free_Local = PETSC_NULL;
   }
   ierr = VecWhichBetween(tao->XL,tao->solution,tao->XU,&tron->Free_Local);CHKERRQ(ierr);
   
@@ -233,7 +231,6 @@ static PetscErrorCode TaoSolve_TRON(TaoSolver tao)
 	ierr = VecBoundGradientProjection(tron->G_New,tron->X_New, tao->XL, tao->XU, tao->gradient);CHKERRQ(ierr);
 	if (tron->Free_Local) {
 	  ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
-	  tron->Free_Local=PETSC_NULL;
 	}
 	ierr = VecWhichBetween(tao->XL, tron->X_New, tao->XU, &tron->Free_Local);CHKERRQ(ierr);
 	f=f_new;
@@ -278,7 +275,6 @@ static PetscErrorCode TronGradientProjections(TaoSolver tao,TAO_TRON *tron)
   PetscFunctionBegin;
   if (tron->Free_Local) {
     ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
-    tron->Free_Local = PETSC_NULL;
   }
   ierr = VecWhichBetween(tao->XL,tao->solution,tao->XU,&tron->Free_Local);CHKERRQ(ierr);
 
@@ -303,7 +299,6 @@ static PetscErrorCode TronGradientProjections(TaoSolver tao,TAO_TRON *tron)
     tron->f = f_new;
     if (tron->Free_Local) {
       ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
-      tron->Free_Local = PETSC_NULL;
     }
     ierr = VecWhichBetween(tao->XL,tao->solution,tao->XU,&tron->Free_Local);CHKERRQ(ierr);
   }
@@ -382,14 +377,14 @@ PetscErrorCode TaoCreate_TRON(TaoSolver tao)
   tron->total_gp_its = 0;
   tron->n_free       = 0;
 
-  tron->DXFree=PETSC_NULL;
-  tron->R=PETSC_NULL;
-  tron->X_New=PETSC_NULL;
-  tron->G_New=PETSC_NULL;
-  tron->Work=PETSC_NULL;
-  tron->Free_Local=PETSC_NULL;
-  tron->H_sub=PETSC_NULL;
-  tron->Hpre_sub=PETSC_NULL;
+  tron->DXFree=NULL;
+  tron->R=NULL;
+  tron->X_New=NULL;
+  tron->G_New=NULL;
+  tron->Work=NULL;
+  tron->Free_Local=NULL;
+  tron->H_sub=NULL;
+  tron->Hpre_sub=NULL;
   tao->subset_type = TAO_SUBSET_SUBVEC;
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);

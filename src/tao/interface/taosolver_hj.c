@@ -13,7 +13,7 @@
 .  Hpre - Matrix that will be used operated on by preconditioner, can be same as H
 .  hess - Hessian evaluation routine
 -  ctx - [optional] user-defined context for private data for the 
-         Hessian evaluation routine (may be PETSC_NULL)
+         Hessian evaluation routine (may be NULL)
 
    Calling sequence of hess:
 $    hess (TaoSolver tao,Vec x,Mat *H,Mat *Hpre,MatStructure *flag,void *ctx);
@@ -304,13 +304,13 @@ PetscErrorCode TaoComputeJacobianDesign(TaoSolver tao, Vec X, Mat *J)
 	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobianDesign() first");
     }
     ++tao->njac_design;
-    ierr = PetscLogEventBegin(TaoSolver_JacobianEval,tao,X,*J,PETSC_NULL); CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(TaoSolver_JacobianEval,tao,X,*J,NULL); CHKERRQ(ierr);
     PetscStackPush("TaoSolver user Jacobian(design) function");
     CHKMEMQ;
     ierr = (*tao->ops->computejacobiandesign)(tao,X,J,tao->user_jac_designP); CHKERRQ(ierr);
     CHKMEMQ;
     PetscStackPop;
-    ierr = PetscLogEventEnd(TaoSolver_JacobianEval,tao,X,*J,PETSC_NULL); CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(TaoSolver_JacobianEval,tao,X,*J,NULL); CHKERRQ(ierr);
     
     PetscFunctionReturn(0);
 }
@@ -330,7 +330,7 @@ PetscErrorCode TaoComputeJacobianDesign(TaoSolver tao, Vec X, Mat *J)
 .  Jpre - Matrix that will be used operated on by preconditioner, can be same as J
 .  jac - Jacobian evaluation routine
 -  ctx - [optional] user-defined context for private data for the 
-         Jacobian evaluation routine (may be PETSC_NULL)
+         Jacobian evaluation routine (may be NULL)
 
    Calling sequence of jac:
 $    jac (TaoSolver tao,Vec x,Mat *J,Mat *Jpre,MatStructure *flag,void *ctx);
@@ -428,11 +428,11 @@ PetscErrorCode TaoSetJacobianRoutine(TaoSolver tao, Mat J, Mat Jpre, PetscErrorC
    Input Parameters:
 +  tao - the TaoSolver context
 .  J - Matrix used for the jacobian
-.  Jpre - Matrix that will be used operated on by PETSc preconditioner, can be same as J.  Only used if Jinv is PETSC_NULL
-.  Jinv - [optional] Matrix used to apply the inverse of the state jacobian. Use PETSC_NULL to default to PETSc KSP solvers to apply the inverse.
+.  Jpre - Matrix that will be used operated on by PETSc preconditioner, can be same as J.  Only used if Jinv is NULL
+.  Jinv - [optional] Matrix used to apply the inverse of the state jacobian. Use NULL to default to PETSc KSP solvers to apply the inverse.
 .  jac - Jacobian evaluation routine
 -  ctx - [optional] user-defined context for private data for the 
-         Jacobian evaluation routine (may be PETSC_NULL)
+         Jacobian evaluation routine (may be NULL)
 
    Calling sequence of jac:
 $    jac (TaoSolver tao,Vec x,Mat *J,Mat *Jpre,MatStructure *flag,void *ctx);
@@ -544,7 +544,7 @@ PetscErrorCode TaoSetJacobianStateRoutine(TaoSolver tao, Mat J, Mat Jpre, Mat Ji
 .  J - Matrix used for the jacobian
 .  jac - Jacobian evaluation routine
 -  ctx - [optional] user-defined context for private data for the 
-         Jacobian evaluation routine (may be PETSC_NULL)
+         Jacobian evaluation routine (may be NULL)
 
    Calling sequence of jac:
 $    jac (TaoSolver tao,Vec x,Mat *J,void *ctx);
@@ -748,7 +748,7 @@ PetscErrorCode TaoComputeJacobianInequality(TaoSolver tao, Vec X, Mat *J, Mat *J
 .  Jpre - Matrix that will be used operated on by PETSc preconditioner, can be same as J.  
 .  jac - Jacobian evaluation routine
 -  ctx - [optional] user-defined context for private data for the 
-         Jacobian evaluation routine (may be PETSC_NULL)
+         Jacobian evaluation routine (may be NULL)
 
    Calling sequence of jac:
 $    jac (TaoSolver tao,Vec x,Mat *J,Mat *Jpre,MatStructure *flag,void *ctx);
@@ -851,7 +851,7 @@ PetscErrorCode TaoSetJacobianEqualityRoutine(TaoSolver tao, Mat J, Mat Jpre, Pet
 .  Jpre - Matrix that will be used operated on by PETSc preconditioner, can be same as J.  
 .  jac - Jacobian evaluation routine
 -  ctx - [optional] user-defined context for private data for the 
-         Jacobian evaluation routine (may be PETSC_NULL)
+         Jacobian evaluation routine (may be NULL)
 
    Calling sequence of jac:
 $    jac (TaoSolver tao,Vec x,Mat *J,Mat *Jpre,MatStructure *flag,void *ctx);

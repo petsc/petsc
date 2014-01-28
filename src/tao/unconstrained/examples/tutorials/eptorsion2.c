@@ -98,17 +98,15 @@ int main(int argc, char **argv)
     Nx = Ny = PETSC_DECIDE;
 
     /* Check for any command line arguments that override defaults */
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,&flg); CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,&flg); CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg); CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,"-par",&user.param,&flg); CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,"-my",&user.my,&flg); CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,"-mx",&user.mx,&flg); CHKERRQ(ierr);
 
     PetscPrintf(PETSC_COMM_WORLD,"\n---- Elastic-Plastic Torsion Problem -----\n");
     PetscPrintf(PETSC_COMM_WORLD,"mx: %D     my: %D   \n\n",user.mx,user.my);  
 
     /* Set up distributed array */
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,
-			DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
-			user.mx,user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,NULL,NULL,
 			&user.dm); CHKERRQ(ierr);
 
     /* Create vectors */
@@ -196,8 +194,8 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
 
   PetscFunctionBegin;
   /* Get local mesh boundaries */
-  ierr = DMDAGetCorners(user->dm,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL); CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,NULL,&gxm,&gym,NULL); CHKERRQ(ierr);
 
   /* Compute initial guess over locally owned part of mesh */
   xe = xs+xm;
@@ -265,8 +263,8 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,PetscReal *f,Vec G,void 
   ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
 
   /* Get local mesh boundaries */
-  ierr = DMDAGetCorners(user->dm,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL); CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,NULL,&gxm,&gym,NULL); CHKERRQ(ierr);
 
   /* Set local loop dimensions */
   xe = xs+xm;
@@ -381,8 +379,8 @@ PetscErrorCode FormHessian(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, MatStructure
   */
 
   PetscFunctionBegin;
-  ierr = DMDAGetCorners(user->dm,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL); CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,NULL,&gxm,&gym,NULL); CHKERRQ(ierr);
 
   for (j=ys; j<ys+ym; j++){
     

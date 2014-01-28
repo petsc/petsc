@@ -81,10 +81,10 @@ int main(int argc, char **argv) {
   user.ecc = 0.1;
   user.b = 10.0;
   user.mx = user.my = 11;
-  ierr = PetscOptionsGetReal(PETSC_NULL, "-ecc", &user.ecc, &flg); CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL, "-b", &user.b, &flg); CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-mx", &user.mx, &flg); CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-my", &user.my, &flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL, "-ecc", &user.ecc, &flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL, "-b", &user.b, &flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-mx", &user.mx, &flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-my", &user.my, &flg); CHKERRQ(ierr);
 
   PetscPrintf(MPI_COMM_WORLD,"\n---- Journal Bearing Problem -----\n\n");
 
@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
   
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,
 		      DMDA_STENCIL_BOX,user.mx,user.my,Nx,Ny,1,1,
-		      PETSC_NULL,PETSC_NULL,&dm); CHKERRQ(ierr);
+		      NULL,NULL,&dm); CHKERRQ(ierr);
   ierr = TaoDMSetDM(taodm,dm); CHKERRQ(ierr);
   ierr = DMDestroy(&dm); CHKERRQ(ierr);
   ierr = TaoDMSetTolerances(taodm,0,0,0,0,0);
@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
   */
   ierr = TaoDMSetInitialGuessRoutine(taodm,FormInitialGuess); CHKERRQ(ierr);
   ierr = TaoDMSetVariableBoundsRoutine(taodm,FormBounds); CHKERRQ(ierr);
-  ierr = TaoDMSetPreLevelMonitor(taodm,Monitor,PETSC_NULL); CHKERRQ(ierr);
+  ierr = TaoDMSetPreLevelMonitor(taodm,Monitor,NULL); CHKERRQ(ierr);
   ierr = TaoDMSetFromOptions(taodm); CHKERRQ(ierr);
   ierr = TaoDMSolve(taodm); CHKERRQ(ierr);
   

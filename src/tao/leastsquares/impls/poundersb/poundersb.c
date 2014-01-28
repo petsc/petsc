@@ -278,7 +278,7 @@ static PetscErrorCode TaoSetUp_POUNDERS(TaoSolver tao)
   ierr = PetscMalloc((tao->max_funcs+10)*sizeof(Vec),&mfqP->Fhist);CHKERRQ(ierr);
   ierr = PetscMalloc(mfqP->m*sizeof(Mat),&mfqP->Hres);CHKERRQ(ierr);
   for (i=0;i<mfqP->m;i++) {
-    ierr = MatCreateSeqDense(PETSC_COMM_SELF,mfqP->n,mfqP->n,PETSC_NULL,&mfqP->Hres[i]);CHKERRQ(ierr);
+    ierr = MatCreateSeqDense(PETSC_COMM_SELF,mfqP->n,mfqP->n,NULL,&mfqP->Hres[i]);CHKERRQ(ierr);
   }
   ierr = VecDuplicate(tao->solution,&mfqP->Xhist[0]);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->sep_objective,&mfqP->Fhist[0]);CHKERRQ(ierr);
@@ -418,7 +418,7 @@ static PetscErrorCode TaoDestroy_POUNDERS(TaoSolver tao)
   if (tao->data) {
     ierr = PetscFree(tao->data);CHKERRQ(ierr);
   }
-  tao->data = PETSC_NULL;
+  tao->data = NULL;
   PetscFunctionReturn(0);
 }
 

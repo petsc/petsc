@@ -806,7 +806,7 @@ extern PetscErrorCode MatLMVMSetScale(Mat m, Vec s)
     if (s) {
       ierr = VecDuplicate(s,&ctx->scale); CHKERRQ(ierr);
     } else {
-      ctx->scale = PETSC_NULL;
+      ctx->scale = NULL;
     }
     PetscFunctionReturn(0);
 }

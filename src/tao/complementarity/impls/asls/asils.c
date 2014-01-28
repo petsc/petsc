@@ -69,15 +69,15 @@ PetscErrorCode TaoSetUp_ASILS(TaoSolver tao)
   ierr = VecDuplicate(tao->solution,&asls->db);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution,&asls->t1);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution,&asls->t2);CHKERRQ(ierr);
-  asls->fixed = PETSC_NULL;
-  asls->free = PETSC_NULL;
-  asls->J_sub = PETSC_NULL;
-  asls->Jpre_sub = PETSC_NULL;
-  asls->w = PETSC_NULL;
-  asls->r1 = PETSC_NULL;
-  asls->r2 = PETSC_NULL;
-  asls->r3 = PETSC_NULL;
-  asls->dxfree = PETSC_NULL;
+  asls->fixed = NULL;
+  asls->free = NULL;
+  asls->J_sub = NULL;
+  asls->Jpre_sub = NULL;
+  asls->w = NULL;
+  asls->r1 = NULL;
+  asls->r2 = NULL;
+  asls->r3 = NULL;
+  asls->dxfree = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -298,17 +298,17 @@ PetscErrorCode TaoCreate_ASILS(TaoSolver tao)
   tao->subset_type = TAO_SUBSET_SUBVEC;
   asls->delta = 1e-10;
   asls->rho = 2.1;
-  asls->fixed = PETSC_NULL;
-  asls->free = PETSC_NULL;
-  asls->J_sub = PETSC_NULL;
-  asls->Jpre_sub = PETSC_NULL;
-  asls->w = PETSC_NULL;
-  asls->r1 = PETSC_NULL;
-  asls->r2 = PETSC_NULL;
-  asls->r3 = PETSC_NULL;
-  asls->t1 = PETSC_NULL;
-  asls->t2 = PETSC_NULL;
-  asls->dxfree = PETSC_NULL;
+  asls->fixed = NULL;
+  asls->free = NULL;
+  asls->J_sub = NULL;
+  asls->Jpre_sub = NULL;
+  asls->w = NULL;
+  asls->r1 = NULL;
+  asls->r2 = NULL;
+  asls->r3 = NULL;
+  asls->t1 = NULL;
+  asls->t2 = NULL;
+  asls->dxfree = NULL;
   
   asls->identifier = 1e-5;
 

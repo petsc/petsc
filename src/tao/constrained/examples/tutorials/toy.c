@@ -143,13 +143,13 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   user->ni = 2;
   ierr = VecCreateSeq(PETSC_COMM_SELF,user->ni,&user->ci); CHKERRQ(ierr);
 
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user->ne,user->n,user->n,PETSC_NULL,&user->Ae); CHKERRQ(ierr);
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user->ni,user->n,user->n,PETSC_NULL,&user->Ai); CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user->ne,user->n,user->n,NULL,&user->Ae); CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user->ni,user->n,user->n,NULL,&user->Ai); CHKERRQ(ierr);
   ierr = MatSetFromOptions(user->Ae); CHKERRQ(ierr);
   ierr = MatSetFromOptions(user->Ai); CHKERRQ(ierr);
 
 
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user->n,user->n,1,PETSC_NULL,&user->H);  ierr = MatSetFromOptions(user->H); CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user->n,user->n,1,NULL,&user->H);  ierr = MatSetFromOptions(user->H); CHKERRQ(ierr);
  CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

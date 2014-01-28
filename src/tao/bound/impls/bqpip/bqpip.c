@@ -185,7 +185,7 @@ static PetscErrorCode TaoDestroy_BQPIP(TaoSolver tao)
     ierr = VecDestroy(&qp->C0); CHKERRQ(ierr);
   }
   ierr = PetscFree(tao->data); CHKERRQ(ierr);
-  tao->data = PETSC_NULL;
+  tao->data = NULL;
 
   PetscFunctionReturn(0);
 }

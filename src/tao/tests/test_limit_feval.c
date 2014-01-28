@@ -65,12 +65,12 @@ int main(int argc,char **argv)
   user.n = 2; user.alpha = 99.0;
 
   /* Check for command line arguments to override defaults */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&user.n,&flg); CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-alpha",&user.alpha,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&user.n,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-alpha",&user.alpha,&flg); CHKERRQ(ierr);
 
   /* Allocate vectors for the solution and gradient */
   ierr = VecCreateSeq(PETSC_COMM_SELF,user.n,&x); CHKERRQ(ierr);
-  ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,2,user.n,user.n,1,PETSC_NULL,&H); CHKERRQ(ierr);
+  ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,2,user.n,user.n,1,NULL,&H); CHKERRQ(ierr);
 
   /* The TAO code begins here */
 

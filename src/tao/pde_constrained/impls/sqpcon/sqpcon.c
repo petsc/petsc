@@ -37,8 +37,6 @@ static PetscErrorCode TaoDestroy_SQPCON(TaoSolver tao)
     ierr = ISDestroy(&sqpconP->UIM); CHKERRQ(ierr);
   }
   ierr = PetscFree(tao->data);
-  tao->data = PETSC_NULL;
-
   PetscFunctionReturn(0);
 }
 

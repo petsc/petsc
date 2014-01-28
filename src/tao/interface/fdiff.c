@@ -67,7 +67,7 @@ PetscErrorCode TaoDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *dummy)
   PetscReal h=PETSC_SQRT_MACHINE_EPSILON;
   PetscFunctionBegin;
   ierr = TaoComputeObjective(tao, X,&f); CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-tao_fd_delta",&h,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-tao_fd_delta",&h,&flg); CHKERRQ(ierr);
   ierr = VecGetSize(X,&N); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(X,&low,&high); CHKERRQ(ierr);
   ierr = VecGetArray(G,&g); CHKERRQ(ierr);

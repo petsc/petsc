@@ -82,26 +82,26 @@ PetscErrorCode gqtwrap(TaoSolver tao,PetscReal *gnorm, PetscReal *qmin)
     /* Make sure xu > xl */
     ierr = VecCopy(mfqP->subxl,mfqP->subpdel);CHKERRQ(ierr);
     ierr = VecAXPY(mfqP->subpdel,-1.0,mfqP->subxu);CHKERRQ(ierr);
-    ierr = VecMax(mfqP->subpdel,PETSC_NULL,&maxval);CHKERRQ(ierr);
+    ierr = VecMax(mfqP->subpdel,NULL,&maxval);CHKERRQ(ierr);
     if (maxval > 1e-10) SETERRQ(PETSC_COMM_WORLD,1,"upper bound < lower bound in subproblem");
     /* Make sure xu > tao->solution > xl */
     ierr = VecCopy(mfqP->subxl,mfqP->subpdel);CHKERRQ(ierr);
     ierr = VecAXPY(mfqP->subpdel,-1.0,mfqP->subx);CHKERRQ(ierr);
-    ierr = VecMax(mfqP->subpdel,PETSC_NULL,&maxval);CHKERRQ(ierr);
+    ierr = VecMax(mfqP->subpdel,NULL,&maxval);CHKERRQ(ierr);
     if (maxval > 1e-10) SETERRQ(PETSC_COMM_WORLD,1,"initial guess < lower bound in subproblem");
 
     ierr = VecCopy(mfqP->subx,mfqP->subpdel);CHKERRQ(ierr);
     ierr = VecAXPY(mfqP->subpdel,-1.0,mfqP->subxu);CHKERRQ(ierr);
-    ierr = VecMax(mfqP->subpdel,PETSC_NULL,&maxval);CHKERRQ(ierr);
+    ierr = VecMax(mfqP->subpdel,NULL,&maxval);CHKERRQ(ierr);
     if (maxval > 1e-10) SETERRQ(PETSC_COMM_WORLD,1,"initial guess > upper bound in subproblem");
 
     ierr = TaoSolve(mfqP->subtao);CHKERRQ(ierr);
-    ierr = TaoGetSolutionStatus(mfqP->subtao,PETSC_NULL,qmin,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TaoGetSolutionStatus(mfqP->subtao,NULL,qmin,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
     /* test bounds post-solution*/
     ierr = VecCopy(mfqP->subxl,mfqP->subpdel);CHKERRQ(ierr);
     ierr = VecAXPY(mfqP->subpdel,-1.0,mfqP->subx);CHKERRQ(ierr);
-    ierr = VecMax(mfqP->subpdel,PETSC_NULL,&maxval);CHKERRQ(ierr);
+    ierr = VecMax(mfqP->subpdel,NULL,&maxval);CHKERRQ(ierr);
     if (maxval > 1e-5) {
       ierr = PetscInfo(tao,"subproblem solution < lower bound");CHKERRQ(ierr);
       tao->reason = TAO_DIVERGED_TR_REDUCTION;
@@ -109,7 +109,7 @@ PetscErrorCode gqtwrap(TaoSolver tao,PetscReal *gnorm, PetscReal *qmin)
     
     ierr = VecCopy(mfqP->subx,mfqP->subpdel);CHKERRQ(ierr);
     ierr = VecAXPY(mfqP->subpdel,-1.0,mfqP->subxu);CHKERRQ(ierr);
-    ierr = VecMax(mfqP->subpdel,PETSC_NULL,&maxval);CHKERRQ(ierr);
+    ierr = VecMax(mfqP->subpdel,NULL,&maxval);CHKERRQ(ierr);
     if (maxval > 1e-5) {
       ierr = PetscInfo(tao,"subproblem solution > upper bound");
       tao->reason = TAO_DIVERGED_TR_REDUCTION;
@@ -544,13 +544,13 @@ static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
     PetscReal val;
     ierr = VecCopy(tao->solution,mfqP->Xhist[0]);CHKERRQ(ierr);
     ierr = VecAXPY(mfqP->Xhist[0],-1.0,tao->XU);CHKERRQ(ierr);
-    ierr = VecMax(mfqP->Xhist[0],PETSC_NULL,&val);CHKERRQ(ierr);
+    ierr = VecMax(mfqP->Xhist[0],NULL,&val);CHKERRQ(ierr);
     if (val > 1e-10) SETERRQ(PETSC_COMM_WORLD,1,"X0 > upper bound");
 
     /* Check x0 >= xl */
     ierr = VecCopy(tao->XL,mfqP->Xhist[0]);CHKERRQ(ierr);
     ierr = VecAXPY(mfqP->Xhist[0],-1.0,tao->solution);CHKERRQ(ierr);
-    ierr = VecMax(mfqP->Xhist[0],PETSC_NULL,&val);CHKERRQ(ierr);
+    ierr = VecMax(mfqP->Xhist[0],NULL,&val);CHKERRQ(ierr);
     if (val > 1e-10) SETERRQ(PETSC_COMM_WORLD,1,"X0 < lower bound");
 
     /* Check x0 + delta < XU  -- should be able to get around this eventually */
@@ -558,7 +558,7 @@ static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
     ierr = VecSet(mfqP->Xhist[0],mfqP->delta);CHKERRQ(ierr);
     ierr = VecAXPY(mfqP->Xhist[0],1.0,tao->solution);CHKERRQ(ierr);
     ierr = VecAXPY(mfqP->Xhist[0],-1.0,tao->XU);CHKERRQ(ierr);
-    ierr = VecMax(mfqP->Xhist[0],PETSC_NULL,&val);CHKERRQ(ierr);
+    ierr = VecMax(mfqP->Xhist[0],NULL,&val);CHKERRQ(ierr);
     if (val > 1e-10) SETERRQ(PETSC_COMM_WORLD,1,"X0 + delta > upper bound");
   }
 

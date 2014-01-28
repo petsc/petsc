@@ -477,7 +477,7 @@ PetscErrorCode VecGetSubVec(Vec vfull, IS is, PetscInt reduced_type, PetscReal m
 	case TAO_SUBSET_MATRIXFREE:
 	  /* vr[i] = vf[i]   if i in is
              vr[i] = 0       otherwise */
-	  if (*vreduced == PETSC_NULL) {
+	  if (*vreduced == NULL) {
 	    ierr = VecDuplicate(vfull,vreduced); CHKERRQ(ierr);
 	  }
 
@@ -685,7 +685,7 @@ PetscErrorCode MatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, Mat
 	 Msub[i,j] = M[i,j] if i,j in Free_Local or i==j
 	 Msub[i,j] = 0      if i!=j and i or j not in Free_Local
       */
-      ierr = PetscOptionsBool("-different_submatrix","use separate hessian matrix when computing submatrices","TaoSubsetType",PETSC_FALSE,&flg,PETSC_NULL);
+      ierr = PetscOptionsBool("-different_submatrix","use separate hessian matrix when computing submatrices","TaoSubsetType",PETSC_FALSE,&flg,NULL);
       if (flg == PETSC_TRUE) {
 	ierr = MatDuplicate(M, MAT_COPY_VALUES, Msub); CHKERRQ(ierr);
       } else {

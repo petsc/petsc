@@ -66,7 +66,7 @@ int main(int argc,char **argv)
 
   /* Initialize TAO and PETSc */
   TaoInitialize(&argc,&argv,(char*)0,(char*)0);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-test",&testnumber,PETSC_NULL);
+  ierr = PetscOptionsGetInt(NULL,"-test",&testnumber,NULL);
   if (testnumber == 4) {
     ierr = VecCreateSeq(PETSC_COMM_SELF,2,&x); CHKERRQ(ierr);
   } else {

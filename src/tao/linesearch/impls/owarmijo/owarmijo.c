@@ -51,17 +51,12 @@ static PetscErrorCode TaoLineSearchDestroy_OWArmijo(TaoLineSearch ls)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
-  if (armP->memory != PETSC_NULL) {
-    ierr = PetscFree(armP->memory); CHKERRQ(ierr);
-    armP->memory = PETSC_NULL;
-  }
+  ierr = PetscFree(armP->memory); CHKERRQ(ierr);
   if (armP->x) {
     ierr = PetscObjectDereference((PetscObject)armP->x); CHKERRQ(ierr);
   }
   ierr = VecDestroy(&armP->work); CHKERRQ(ierr);
   ierr = PetscFree(ls->data); CHKERRQ(ierr);
-  ls->data = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -226,7 +221,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
   /* Check to see of the memory has been allocated.  If not, allocate
      the historical array and populate it with the initial function
      values. */
-  if (armP->memory == PETSC_NULL) {
+  if (!armP->memory) {
     ierr = PetscMalloc(sizeof(PetscReal)*armP->memorySize, &armP->memory ); CHKERRQ(ierr);
   }
 
@@ -371,7 +366,7 @@ PetscErrorCode TaoLineSearchCreate_OWArmijo(TaoLineSearch ls)
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
   ierr = PetscNewLog(ls,&armP);CHKERRQ(ierr);
 
-  armP->memory = PETSC_NULL;
+  armP->memory = NULL;
   armP->alpha = 1.0;
   armP->beta = 0.25;
   armP->beta_inf = 0.25;

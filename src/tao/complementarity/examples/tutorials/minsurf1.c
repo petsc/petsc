@@ -68,8 +68,8 @@ int main(int argc, char **argv)
   user.mx = 4; user.my = 4;
 
   /* Check for any command line arguments that override defaults */
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-mx", &user.mx, &flg); CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-my", &user.my, &flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-mx", &user.mx, &flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-my", &user.my, &flg); CHKERRQ(ierr);
 
   /* Calculate any derived values from parameters */
   N = user.mx*user.my;
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
   /* Create appropriate vectors and matrices */
   ierr = VecCreateSeq(MPI_COMM_SELF, N, &x);
   ierr = VecDuplicate(x, &c); CHKERRQ(ierr);
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF, N, N, 7, PETSC_NULL, &J); CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF, N, N, 7, NULL, &J); CHKERRQ(ierr);
 
   /* The TAO code begins here */
 
@@ -540,7 +540,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   PetscBool     flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-start",&start,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-start",&start,&flg); CHKERRQ(ierr);
 
   if (flg && start==0){ /* The zero vector is reasonable */
  

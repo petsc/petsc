@@ -96,7 +96,7 @@ int main(int argc,char **argv)
     ierr = FormStartingPoint(x);CHKERRQ(ierr);
     ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
     ierr = TaoSetSeparableObjectiveRoutine(tao,f,EvaluateFunction,(void*)&user);CHKERRQ(ierr);
-    ierr = TaoSetMonitor(tao,MyMonitor,&user,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TaoSetMonitor(tao,MyMonitor,&user,NULL);CHKERRQ(ierr);
 
     
     /* Check for any TAO command line arguments */

@@ -89,9 +89,9 @@ int main( int argc, char **argv )
   user.mx = 4; user.my = 4; user.param = 6.0;
 
   /* check for any command line arguments that override defaults */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg); CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,&flg); CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-mx",&user.mx,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-my",&user.my,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-par",&user.param,&flg); CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   }
@@ -106,7 +106,7 @@ int main( int argc, char **argv )
 
   /* Create distributed array (DA) to manage parallel grid and vectors  */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,
-                    user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da); CHKERRQ(ierr);
+                    user.my,Nx,Ny,1,1,NULL,NULL,&user.da); CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DA; then duplicate for remaining
@@ -118,7 +118,7 @@ int main( int argc, char **argv )
   ierr = VecDuplicate(user.localX,&user.localF); CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(x,&m); CHKERRQ(ierr);
-  ierr = MatCreateAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J); CHKERRQ(ierr);
+  ierr = MatCreateAIJ(PETSC_COMM_WORLD,m,m,N,N,5,NULL,3,NULL,&J); CHKERRQ(ierr);
 
   /*
     Get the global node numbers for all local nodes, including ghost points.
@@ -221,8 +221,8 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
        gxs, gys - starting grid indices (including ghost points)
        gxm, gym - widths of local grid (including ghost points)
   */
-  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL); CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&gxs,&gys,NULL,&gxm,&gym,NULL); CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -299,8 +299,8 @@ PetscErrorCode FormFunction(TaoSolver tao,Vec X,Vec F,void *ptr)
   /*
      Get local grid boundaries
   */
-  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL); CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&gxs,&gys,NULL,&gxm,&gym,NULL); CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid
@@ -409,8 +409,8 @@ PetscErrorCode FormJacobian(TaoSolver tao,Vec X,Mat *JJ,Mat *Jpre,MatStructure *
   /*
      Get local grid boundaries
   */
-  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL); CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&gxs,&gys,NULL,&gxm,&gym,NULL); CHKERRQ(ierr);
 
   /* 
      Compute entries for the locally owned part of the Jacobian.

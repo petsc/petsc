@@ -42,7 +42,7 @@ PetscErrorCode TaoSolve_FD(TaoSolver tao)
     
       /* Compute both version of gradient */
       ierr = TaoComputeGradient(tao,x,g1);CHKERRQ(ierr);
-      ierr = TaoDefaultComputeGradient(tao,x,g2,PETSC_NULL);CHKERRQ(ierr);
+      ierr = TaoDefaultComputeGradient(tao,x,g2,NULL);CHKERRQ(ierr);
       if (fd->complete_print) {
 	MPI_Comm gcomm;
 	PetscViewer viewer;
@@ -136,9 +136,9 @@ static PetscErrorCode TaoSetFromOptions_FD(TaoSolver tao)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Hand-coded Hessian tester options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_fd_test_display","Display difference between hand-coded and finite difference Hessians","None",fd->complete_print,&fd->complete_print,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_fd_test_gradient","Test Hand-coded gradient against finite-difference gradient","None",fd->check_gradient,&fd->check_gradient,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_fd_test_hessian","Test Hand-coded hessian against finite-difference hessian","None",fd->check_hessian,&fd->check_hessian,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_fd_test_display","Display difference between hand-coded and finite difference Hessians","None",fd->complete_print,&fd->complete_print,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_fd_test_gradient","Test Hand-coded gradient against finite-difference gradient","None",fd->check_gradient,&fd->check_gradient,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_fd_test_hessian","Test Hand-coded hessian against finite-difference hessian","None",fd->check_hessian,&fd->check_hessian,NULL);CHKERRQ(ierr);
   if (fd->check_gradient == PETSC_FALSE && fd->check_hessian == PETSC_FALSE) {
     fd->check_gradient = PETSC_TRUE;
   }

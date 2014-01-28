@@ -195,7 +195,7 @@ static PetscErrorCode TaoDestroy_BLMVM(TaoSolver tao)
     ierr = VecDestroy(&blmP->Gold); CHKERRQ(ierr);
   }
   ierr = PetscFree(tao->data); CHKERRQ(ierr);
-  tao->data = PETSC_NULL;
+  tao->data = NULL;
 
   PetscFunctionReturn(0);
 }

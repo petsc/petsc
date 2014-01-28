@@ -34,7 +34,6 @@ PetscErrorCode TaoDestroy_SSILS(TaoSolver tao)
   ierr = VecDestroy(&ssls->t1);CHKERRQ(ierr);
   ierr = VecDestroy(&ssls->t2);CHKERRQ(ierr);
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
-  tao->data = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 

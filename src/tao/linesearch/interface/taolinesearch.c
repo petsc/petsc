@@ -3,7 +3,7 @@
 #include "tao-private/taolinesearch_impl.h"
 
 PetscBool TaoLineSearchInitialized = PETSC_FALSE;
-PetscFunctionList TaoLineSearchList              = PETSC_NULL;
+PetscFunctionList TaoLineSearchList              = NULL;
 
 PetscClassId TAOLINESEARCH_CLASSID=0;
 PetscLogEvent TaoLineSearch_ApplyEvent = 0, TaoLineSearch_EvalEvent=0;
@@ -128,7 +128,7 @@ PetscErrorCode TaoLineSearchCreate(MPI_Comm comm, TaoLineSearch *newls)
 
   PetscFunctionBegin;
   PetscValidPointer(newls,2);
-  *newls = PETSC_NULL;
+  *newls = NULL;
 
  #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = TaoLineSearchInitializePackage();CHKERRQ(ierr);
@@ -278,13 +278,13 @@ PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
   if (!*ls) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*ls,TAOLINESEARCH_CLASSID,1);
   if (--((PetscObject)*ls)->refct > 0) {*ls=0; PetscFunctionReturn(0);}
-  if ((*ls)->stepdirection!=PETSC_NULL) {
+  if ((*ls)->stepdirection!=NULL) {
     ierr = PetscObjectDereference((PetscObject)(*ls)->stepdirection);CHKERRQ(ierr);
-    (*ls)->stepdirection = PETSC_NULL;
+    (*ls)->stepdirection = NULL;
   }
-  if ((*ls)->start_x != PETSC_NULL) {
+  if ((*ls)->start_x != NULL) {
     ierr = PetscObjectDereference((PetscObject)(*ls)->start_x);CHKERRQ(ierr);
-    (*ls)->start_x = PETSC_NULL;
+    (*ls)->start_x = NULL;
   }
   if ((*ls)->ops->destroy) {
     ierr = (*(*ls)->ops->destroy)(*ls);CHKERRQ(ierr);
@@ -554,7 +554,7 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
   ierr = PetscOptionsReal("-tao_ls_rtol","relative tol for acceptable step","",ls->rtol,&ls->rtol,0);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_ls_stepmin","lower bound for step","",ls->stepmin,&ls->stepmin,0);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_ls_stepmax","upper bound for step","",ls->stepmax,&ls->stepmax,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_ls_view","view TaoLineSearch info after each line search has completed","TaoLineSearchView",PETSC_FALSE,&ls->viewls,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_ls_view","view TaoLineSearch info after each line search has completed","TaoLineSearchView",PETSC_FALSE,&ls->viewls,NULL);CHKERRQ(ierr);
   if (ls->ops->setfromoptions) {
     ierr = (*ls->ops->setfromoptions)(ls);CHKERRQ(ierr);
   }

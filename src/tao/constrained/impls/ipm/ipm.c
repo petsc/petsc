@@ -106,8 +106,8 @@ static PetscErrorCode TaoSolve_IPM(TaoSolver tao)
 #endif
      /* Find distance along step direction to closest bound */
     if (ipmP->nb > 0) {
-      ierr = VecStepBoundInfo(ipmP->s,ipmP->Zero_nb,ipmP->Inf_nb,ipmP->ds,&step_s,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-      ierr = VecStepBoundInfo(ipmP->lamdai,ipmP->Zero_nb,ipmP->Inf_nb,ipmP->dlamdai,&step_l,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = VecStepBoundInfo(ipmP->s,ipmP->Zero_nb,ipmP->Inf_nb,ipmP->ds,&step_s,NULL,NULL);CHKERRQ(ierr);
+      ierr = VecStepBoundInfo(ipmP->lamdai,ipmP->Zero_nb,ipmP->Inf_nb,ipmP->dlamdai,&step_l,NULL,NULL);CHKERRQ(ierr);
       alpha = PetscMin(step_s,step_l);
       alpha = PetscMin(alpha,1.0);
       ipmP->alpha1 = alpha;
@@ -163,7 +163,7 @@ static PetscErrorCode TaoSolve_IPM(TaoSolver tao)
       ierr = VecScale(ipmP->rhs_s,-1.0);CHKERRQ(ierr);
       ierr = VecShift(ipmP->rhs_s,sigma*ipmP->mu);CHKERRQ(ierr);
     }
-    ierr = IPMGatherRHS(tao,ipmP->bigrhs,PETSC_NULL,PETSC_NULL,PETSC_NULL,ipmP->rhs_s);CHKERRQ(ierr);
+    ierr = IPMGatherRHS(tao,ipmP->bigrhs,NULL,NULL,NULL,ipmP->rhs_s);CHKERRQ(ierr);
 
     /* solve K * step = rhs */
     ierr = KSPSetOperators(tao->ksp,ipmP->K,ipmP->K,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -187,8 +187,8 @@ static PetscErrorCode TaoSolve_IPM(TaoSolver tao)
 	ierr = VecScale(ipmP->s,tau);CHKERRQ(ierr);
 	ierr = VecScale(ipmP->lamdai,tau);CHKERRQ(ierr);
       }
-      ierr = VecStepBoundInfo(ipmP->s,ipmP->Zero_nb,ipmP->Inf_nb,ipmP->ds,&step_s,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-      ierr = VecStepBoundInfo(ipmP->lamdai,ipmP->Zero_nb,ipmP->Inf_nb,ipmP->dlamdai,&step_l,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = VecStepBoundInfo(ipmP->s,ipmP->Zero_nb,ipmP->Inf_nb,ipmP->ds,&step_s,NULL,NULL);CHKERRQ(ierr);
+      ierr = VecStepBoundInfo(ipmP->lamdai,ipmP->Zero_nb,ipmP->Inf_nb,ipmP->dlamdai,&step_l,NULL,NULL);CHKERRQ(ierr);
       if (tau != 1.0) {
 	ierr = VecCopy(ipmP->save_s,ipmP->s);CHKERRQ(ierr);
 	ierr = VecCopy(ipmP->save_lamdai,ipmP->lamdai);CHKERRQ(ierr);
@@ -608,7 +608,7 @@ static PetscErrorCode TaoDestroy_IPM(TaoSolver tao)
   ierr = ISDestroy(&ipmP->isxu);CHKERRQ(ierr);  
   ierr = ISDestroy(&ipmP->isxl);CHKERRQ(ierr);  
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
-  tao->data = PETSC_NULL;
+  tao->data = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -622,9 +622,9 @@ static PetscErrorCode TaoSetFromOptions_IPM(TaoSolver tao)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("IPM method for constrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ipm_monitorkkt","monitor kkt status",PETSC_NULL,ipmP->monitorkkt,&ipmP->monitorkkt,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ipm_pushs","parameter to push initial slack variables away from bounds",PETSC_NULL,ipmP->pushs,&ipmP->pushs,&flg);
-  ierr = PetscOptionsReal("-ipm_pushnu","parameter to push initial (inequality) dual variables away from bounds",PETSC_NULL,ipmP->pushnu,&ipmP->pushnu,&flg);
+  ierr = PetscOptionsBool("-ipm_monitorkkt","monitor kkt status",NULL,ipmP->monitorkkt,&ipmP->monitorkkt,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ipm_pushs","parameter to push initial slack variables away from bounds",NULL,ipmP->pushs,&ipmP->pushs,&flg);
+  ierr = PetscOptionsReal("-ipm_pushnu","parameter to push initial (inequality) dual variables away from bounds",NULL,ipmP->pushnu,&ipmP->pushnu,&flg);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr =KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -853,9 +853,9 @@ PetscErrorCode IPMUpdateAi(TaoSolver tao)
     ierr = MPI_Comm_size(comm,&size);
     if (size == 1) {
       for (i=0;i<ipmP->mi;i++) {
-	ierr = MatGetRow(tao->jacobian_inequality,i,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+	ierr = MatGetRow(tao->jacobian_inequality,i,&ncols,NULL,NULL);CHKERRQ(ierr);
 	nonzeros[i] = ncols;
-	ierr = MatRestoreRow(tao->jacobian_inequality,i,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+	ierr = MatRestoreRow(tao->jacobian_inequality,i,&ncols,NULL,NULL);CHKERRQ(ierr);
       }
       for (i=r2;i<r4;i++) {
 	nonzeros[i] = 1;
@@ -865,7 +865,7 @@ PetscErrorCode IPMUpdateAi(TaoSolver tao)
     ierr = MatSetType(ipmP->Ai,MATAIJ);CHKERRQ(ierr);
     ierr = MatSetSizes(ipmP->Ai,PETSC_DECIDE,PETSC_DECIDE,ipmP->nb,ipmP->n);CHKERRQ(ierr);
     ierr = MatSetFromOptions(ipmP->Ai);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(ipmP->Ai,ipmP->nb,PETSC_NULL,ipmP->nb,PETSC_NULL);
+    ierr = MatMPIAIJSetPreallocation(ipmP->Ai,ipmP->nb,NULL,ipmP->nb,NULL);
     ierr = MatSeqAIJSetPreallocation(ipmP->Ai,PETSC_DEFAULT,nonzeros);CHKERRQ(ierr);
     if (size ==1) {
       ierr = PetscFree(nonzeros);CHKERRQ(ierr);
@@ -1017,9 +1017,9 @@ PetscErrorCode IPMUpdateK(TaoSolver tao)
       ierr = PetscMalloc((kend-kstart)*sizeof(PetscInt),&nonzeros);CHKERRQ(ierr);
       for (i=0;i<bigsize;i++) {
 	if (i<r1) {
-	  ierr = MatGetRow(tao->hessian,i,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+	  ierr = MatGetRow(tao->hessian,i,&ncols,NULL,NULL);CHKERRQ(ierr);
 	  nonzeros[i] = ncols;
-	  ierr = MatRestoreRow(tao->hessian,i,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+	  ierr = MatRestoreRow(tao->hessian,i,&ncols,NULL,NULL);CHKERRQ(ierr);
 	  nonzeros[i] += ipmP->me+ipmP->nb;
 	} else if (i<r2) {
 	  nonzeros[i-kstart] = ipmP->n;

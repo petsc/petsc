@@ -39,8 +39,8 @@ int main(int argc, char **argv)
   
   ierr = VecCreateSeq(PETSC_COMM_SELF,user.n,&x); CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,user.m,&c); CHKERRQ(ierr);
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF, user.m, 2, 2, PETSC_NULL,&Js); CHKERRQ(ierr);
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF, user.m, 1, 1, PETSC_NULL,&Jd); CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF, user.m, 2, 2, NULL,&Js); CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF, user.m, 1, 1, NULL,&Jd); CHKERRQ(ierr);
   ierr = MatAssemblyBegin(Js,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Js,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyBegin(Jd,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);

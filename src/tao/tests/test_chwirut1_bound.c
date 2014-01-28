@@ -84,18 +84,18 @@ int main(int argc,char **argv)
   TaoInitialize(&argc,&argv,(char *)0,help);
 
   printhistory = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-printhistory",&printhistory,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-printhistory",&printhistory,0);CHKERRQ(ierr);
   lb = TAO_NINFINITY;
   ub = TAO_INFINITY;
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-lb",&lb,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-ub",&ub,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-lb",&lb,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-ub",&ub,NULL);CHKERRQ(ierr);
 
   /* Allocate vectors */
   ierr = VecCreateSeq(MPI_COMM_SELF,NPARAMETERS,&x);CHKERRQ(ierr);
   ierr = VecCreateSeq(MPI_COMM_SELF,NOBSERVATIONS,&f);CHKERRQ(ierr);
 
   /* Create the Jacobian matrix. */
-  ierr = MatCreateSeqDense(MPI_COMM_SELF,NOBSERVATIONS,NPARAMETERS,PETSC_NULL,&J);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(MPI_COMM_SELF,NOBSERVATIONS,NPARAMETERS,NULL,&J);CHKERRQ(ierr);
 
   for (i=0;i<NOBSERVATIONS;i++) user.idm[i] = i;
   for (i=0;i<NPARAMETERS;i++) user.idn[i] = i;

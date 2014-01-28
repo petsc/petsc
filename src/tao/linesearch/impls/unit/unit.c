@@ -9,7 +9,6 @@ static PetscErrorCode TaoLineSearchDestroy_Unit(TaoLineSearch ls)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscFree(ls->data); CHKERRQ(ierr);
-  ls->data = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -36,8 +35,6 @@ static PetscErrorCode TaoLineSearchView_Unit(TaoLineSearch ls,PetscViewer viewer
   ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
   if (isascii) {
       ierr=PetscViewerASCIIPrintf(viewer,"  Line Search: Unit Step.\n");CHKERRQ(ierr);
-  } else {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for Unit TaoLineSearch.",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

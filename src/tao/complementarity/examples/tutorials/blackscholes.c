@@ -163,34 +163,34 @@ int main(int argc, char **argv)
   user.es = 100.0;
   
   /* Read in alternative values for the American option to price */
-  ierr = PetscOptionsGetReal(PETSC_NULL, "-alpha", &user.alpha, &flg); 
+  ierr = PetscOptionsGetReal(NULL, "-alpha", &user.alpha, &flg); 
          CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL, "-delta", &user.delta, &flg); 
+  ierr = PetscOptionsGetReal(NULL, "-delta", &user.delta, &flg); 
          CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL, "-es", &user.es, &flg); 
+  ierr = PetscOptionsGetReal(NULL, "-es", &user.es, &flg); 
          CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL, "-expiry", &user.expiry, &flg); 
+  ierr = PetscOptionsGetReal(NULL, "-expiry", &user.expiry, &flg); 
          CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-ms", &user.ms, &flg); 
+  ierr = PetscOptionsGetInt(NULL, "-ms", &user.ms, &flg); 
          CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-mt", &user.mt, &flg); 
+  ierr = PetscOptionsGetInt(NULL, "-mt", &user.mt, &flg); 
          CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL, "-rate", &user.rate, &flg); 
+  ierr = PetscOptionsGetReal(NULL, "-rate", &user.rate, &flg); 
          CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL, "-sigma", &user.sigma, &flg); 
+  ierr = PetscOptionsGetReal(NULL, "-sigma", &user.sigma, &flg); 
          CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL, "-strike", &user.strike, &flg); 
+  ierr = PetscOptionsGetReal(NULL, "-strike", &user.strike, &flg); 
          CHKERRQ(ierr);
 
   /* Check that the options set are allowable (needs to be done) */
 
   user.ms++;
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,user.ms,1,1,
-                    PETSC_NULL,&user.dm); CHKERRQ(ierr);
+                    NULL,&user.dm); CHKERRQ(ierr);
   /* Create appropriate vectors and matrices */
 
-  ierr = DMDAGetCorners(user.dm,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user.dm,&gxs,PETSC_NULL,PETSC_NULL,&gxm,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user.dm,&xs,NULL,NULL,&xm,NULL,NULL); CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user.dm,&gxs,NULL,NULL,&gxm,NULL,NULL); CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(user.dm,&x);CHKERRQ(ierr);
   /* 
@@ -304,7 +304,7 @@ PetscErrorCode ComputeVariableBounds(TaoSolver tao, Vec xl, Vec xu, void*ctx)
 
   /* Set the variable bounds */
   ierr = VecSet(xu, ub); CHKERRQ(ierr);
-  ierr = DMDAGetCorners(user->dm,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->dm,&xs,NULL,NULL,&xm,NULL,NULL); CHKERRQ(ierr);
 
   ierr = VecGetArray(xl,&xl_array); CHKERRQ(ierr);
   for (i = 0; i < xm; i++){
@@ -358,8 +358,8 @@ PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec F, void *ptr)
   ierr = DMGetLocalVector(user->dm,&localF);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(user->dm,X,INSERT_VALUES,localX); CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(user->dm,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-  ierr = DMDAGetCorners(user->dm,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->dm,&gxs,PETSC_NULL,PETSC_NULL,&gxm,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->dm,&xs,NULL,NULL,&xm,NULL,NULL); CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->dm,&gxs,NULL,NULL,&gxm,NULL,NULL); CHKERRQ(ierr);
   ierr = VecSet(F, zero);CHKERRQ(ierr);
   /* 
      The problem size is smaller than the discretization because of the
@@ -443,7 +443,7 @@ PetscErrorCode FormJacobian(TaoSolver tao, Vec X, Mat *tJ, Mat *tJPre, MatStruct
   if (assembled){ierr = MatZeroEntries(J);  CHKERRQ(ierr);}
 
 
-  ierr = DMDAGetGhostCorners(user->dm,&gxs,PETSC_NULL,PETSC_NULL,&gxm,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->dm,&gxs,NULL,NULL,&gxm,NULL,NULL); CHKERRQ(ierr);
 
   if (gxs==0){
     i = 0;

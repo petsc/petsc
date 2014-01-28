@@ -132,7 +132,7 @@ PetscErrorCode MatDiagonalSet_ADA(Vec D, Mat M)
   PetscFunctionBegin;
   ierr = MatShellGetContext(M,(void **)&ctx);CHKERRQ(ierr);
 
-  if (ctx->D2==PETSC_NULL){
+  if (ctx->D2==NULL){
     ierr = VecDuplicate(D,&ctx->D2);CHKERRQ(ierr);
     ierr = VecSet(ctx->D2, zero);CHKERRQ(ierr);
   }
@@ -376,7 +376,7 @@ PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll,
     ierr=VecDuplicate(ctx->D1,&D1);CHKERRQ(ierr);
     ierr=VecCopy(ctx->D1,D1);CHKERRQ(ierr);
   } else {
-    D1=PETSC_NULL;
+    D1=NULL;
   }
 
   if (ctx->D2){
@@ -398,7 +398,7 @@ PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll,
     ierr=VecRestoreArray(ctx->D2, &dptr); CHKERRQ(ierr);
    
   } else {
-    D2=PETSC_NULL;
+    D2=NULL;
   }
 
   ierr = MatCreateADA(Atemp,D1,D2,newmat);CHKERRQ(ierr);
@@ -427,8 +427,8 @@ PetscErrorCode MatGetRowADA(Mat mat,PetscInt row,PetscInt *ncols,PetscInt **cols
     ierr = PetscMalloc( (*ncols)*sizeof(PetscInt),cols );CHKERRQ(ierr);
     ierr = PetscMalloc( (*ncols)*sizeof(PetscReal),vals );CHKERRQ(ierr);
   } else {
-    *cols=PETSC_NULL;
-    *vals=PETSC_NULL;
+    *cols=NULL;
+    *vals=NULL;
   }
   
   PetscFunctionReturn(0);
@@ -444,8 +444,8 @@ PetscErrorCode MatRestoreRowADA(Mat mat,PetscInt row,PetscInt *ncols,PetscInt **
     ierr = PetscFree(*cols);  CHKERRQ(ierr);
     ierr = PetscFree(*vals);  CHKERRQ(ierr);
   }
-  *cols=PETSC_NULL;
-  *vals=PETSC_NULL;
+  *cols=NULL;
+  *vals=NULL;
   PetscFunctionReturn(0);
 }
 
@@ -500,7 +500,7 @@ PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
     ierr = VecDuplicate(ctx->D2,&X);CHKERRQ(ierr);
     ierr=MatGetSize(mat,&M,&N);CHKERRQ(ierr);
     ierr=MatGetLocalSize(mat,&m,&n);CHKERRQ(ierr);
-    ierr = MatCreateDense(((PetscObject)mat)->comm,m,m,N,N,PETSC_NULL,NewMat);
+    ierr = MatCreateDense(((PetscObject)mat)->comm,m,m,N,N,NULL,NewMat);
     CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(*NewMat,&low,&high);CHKERRQ(ierr);
     for (i=0;i<M;i++){
@@ -524,7 +524,7 @@ PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
     ierr = VecDuplicate(ctx->D2,&X);CHKERRQ(ierr);
     ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
     ierr = MatGetLocalSize(mat,&m,&n);CHKERRQ(ierr);
-    ierr = MatCreateSeqDense(((PetscObject)mat)->comm,N,N,PETSC_NULL,NewMat);
+    ierr = MatCreateSeqDense(((PetscObject)mat)->comm,N,N,NULL,NewMat);
     CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(*NewMat,&low,&high);CHKERRQ(ierr);
     for (i=0;i<M;i++){

@@ -73,7 +73,7 @@ PetscErrorCode Tao_SSLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscReal *fcn
   ierr = D_Fischer(tao->jacobian, tao->solution, tao->constraints, 
 		   tao->XL, tao->XU, ssls->t1, ssls->t2, 
 		   ssls->da, ssls->db); CHKERRQ(ierr);
-  ierr = MatDiagonalScale(tao->jacobian,ssls->db,PETSC_NULL); CHKERRQ(ierr);
+  ierr = MatDiagonalScale(tao->jacobian,ssls->db,NULL); CHKERRQ(ierr);
   ierr = MatDiagonalSet(tao->jacobian,ssls->da,ADD_VALUES); CHKERRQ(ierr);
   ierr = MatMultTranspose(tao->jacobian,ssls->ff,G); CHKERRQ(ierr);
 

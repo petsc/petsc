@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
   ierr = TaoLineSearchSetObjectiveAndGradient(ls,MyFuncGrad,(void*)&user);CHKERRQ(ierr);
   
   usebounds = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-bounded",&usebounds,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-bounded",&usebounds,&flg);CHKERRQ(ierr);
   if (usebounds == PETSC_TRUE) {
     ierr = VecDuplicate(x,&xl);CHKERRQ(ierr);
     ierr = VecDuplicate(x,&xu);CHKERRQ(ierr);

@@ -232,21 +232,17 @@ static PetscErrorCode TaoSetUp_CG(TaoSolver tao)
 #define __FUNCT__ "TaoDestroy_CG"
 static PetscErrorCode TaoDestroy_CG(TaoSolver tao)
 {
-    TAO_CG *cgP = (TAO_CG*) tao->data;
-    PetscErrorCode ierr;
+  TAO_CG         *cgP = (TAO_CG*) tao->data;
+  PetscErrorCode ierr;
 
-    PetscFunctionBegin;
-
-    if (tao->setupcalled) {
-      ierr = VecDestroy(&cgP->X_old); CHKERRQ(ierr);
-      ierr = VecDestroy(&cgP->G_old); CHKERRQ(ierr);
-    }
-    ierr = TaoLineSearchDestroy(&tao->linesearch); CHKERRQ(ierr);
-
-    ierr = PetscFree(tao->data); CHKERRQ(ierr);
-    tao->data = PETSC_NULL;
-	
-    PetscFunctionReturn(0);
+  PetscFunctionBegin;
+  if (tao->setupcalled) {
+    ierr = VecDestroy(&cgP->X_old); CHKERRQ(ierr);
+    ierr = VecDestroy(&cgP->G_old); CHKERRQ(ierr);
+  }
+  ierr = TaoLineSearchDestroy(&tao->linesearch); CHKERRQ(ierr);
+  ierr = PetscFree(tao->data); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -261,10 +257,8 @@ static PetscErrorCode TaoSetFromOptions_CG(TaoSolver tao)
     ierr = PetscOptionsHead("Nonlinear Conjugate Gradient method for unconstrained optimization"); CHKERRQ(ierr);
     ierr = PetscOptionsReal("-tao_cg_eta","restart tolerance", "", cgP->eta,&cgP->eta,0);CHKERRQ(ierr);
     ierr = PetscOptionsEList("-tao_cg_type","cg formula", "", CG_Table, CG_Types, CG_Table[cgP->cg_type], &cgP->cg_type, 0); CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_cg_delta_min","minimum delta value", "", cgP->
-delta_min,&cgP->delta_min,0); CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_cg_delta_max","maximum delta value", "", cgP->
-delta_max,&cgP->delta_max,0); CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-tao_cg_delta_min","minimum delta value", "", cgP->delta_min,&cgP->delta_min,0); CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-tao_cg_delta_max","maximum delta value", "", cgP->delta_max,&cgP->delta_max,0); CHKERRQ(ierr);
     ierr = PetscOptionsTail(); CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }       

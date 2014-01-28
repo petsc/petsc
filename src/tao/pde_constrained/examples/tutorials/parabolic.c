@@ -382,7 +382,7 @@ PetscErrorCode FormJacobianState(TaoSolver tao, Vec X, Mat *J, Mat* JPre, Mat* J
   ierr = VecCopy(user->Av_u,user->Swork);CHKERRQ(ierr); 
   ierr = VecReciprocal(user->Swork);CHKERRQ(ierr);
   ierr = MatCopy(user->Div,user->Divwork,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatDiagonalScale(user->Divwork,PETSC_NULL,user->Swork);CHKERRQ(ierr);
+  ierr = MatDiagonalScale(user->Divwork,NULL,user->Swork);CHKERRQ(ierr);
   if (user->dsg_formed) {
     ierr = MatMatMultNumeric(user->Divwork,user->Grad,user->DSG);CHKERRQ(ierr);
   } else {
@@ -909,8 +909,8 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = MatCreate(PETSC_COMM_WORLD,&user->Grad);CHKERRQ(ierr);
   ierr = MatSetSizes(user->Grad,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(user->Grad);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(user->Grad,2,PETSC_NULL,2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(user->Grad,2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(user->Grad,2,NULL,2,NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(user->Grad,2,NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(user->Grad,&istart,&iend);CHKERRQ(ierr);
 
   for (i=istart; i<iend; i++){
@@ -944,8 +944,8 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = MatCreate(PETSC_COMM_WORLD,&user->Av);CHKERRQ(ierr);
   ierr = MatSetSizes(user->Av,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(user->Av);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(user->Av,2,PETSC_NULL,2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(user->Av,2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(user->Av,2,NULL,2,NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(user->Av,2,NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(user->Av,&istart,&iend);CHKERRQ(ierr);
 
   for (i=istart; i<iend; i++){
@@ -980,8 +980,8 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = MatCreate(PETSC_COMM_WORLD,&user->L);CHKERRQ(ierr);
   ierr = MatSetSizes(user->L,PETSC_DECIDE,PETSC_DECIDE,m+n,n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(user->L);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(user->L,2,PETSC_NULL,2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(user->L,2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(user->L,2,NULL,2,NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(user->L,2,NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(user->L,&istart,&iend);
 
   for (i=istart; i<iend; i++){
@@ -1154,7 +1154,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
 
   /* Next form DSG = Div*S*Grad */
   ierr = MatCopy(user->Div,user->Divwork,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatDiagonalScale(user->Divwork,PETSC_NULL,user->Av_u);CHKERRQ(ierr);
+  ierr = MatDiagonalScale(user->Divwork,NULL,user->Av_u);CHKERRQ(ierr);
   if (user->dsg_formed) {
     ierr = MatMatMultNumeric(user->Divwork,user->Grad,user->DSG);CHKERRQ(ierr);
   } else {
@@ -1179,7 +1179,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
 
   /* Next form DSG = Div*S*Grad */
   ierr = MatCopy(user->Div,user->Divwork,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatDiagonalScale(user->Divwork,PETSC_NULL,user->Av_u);CHKERRQ(ierr);
+  ierr = MatDiagonalScale(user->Divwork,NULL,user->Av_u);CHKERRQ(ierr);
   if (user->dsg_formed) {
     ierr = MatMatMultNumeric(user->Divwork,user->Grad,user->DSG);CHKERRQ(ierr);
   } else {
@@ -1199,8 +1199,8 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = MatCreate(PETSC_COMM_WORLD,&user->Qblock);CHKERRQ(ierr);
   ierr = MatSetSizes(user->Qblock,PETSC_DECIDE,PETSC_DECIDE,user->ndata,n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(user->Qblock);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(user->Qblock,8,PETSC_NULL,8,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(user->Qblock,8,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(user->Qblock,8,NULL,8,NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(user->Qblock,8,NULL);CHKERRQ(ierr);
  
   for (i=0; i<user->mx; i++){
     x[i] = h*(i+0.5);

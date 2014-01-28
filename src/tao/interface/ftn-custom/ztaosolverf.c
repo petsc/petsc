@@ -347,7 +347,7 @@ void PETSC_STDCALL taosetmonitor_(TaoSolver *tao, void (PETSC_STDCALL *func)(Tao
     if (func) {
 	((PetscObject)*tao)->fortran_func_pointers[MON] = (PetscVoidFunction)func;
 	if (FORTRANNULLFUNCTION(mondestroy)){
-	  *ierr = TaoSetMonitor(*tao,ourtaomonitor,*tao,PETSC_NULL);
+	  *ierr = TaoSetMonitor(*tao,ourtaomonitor,*tao,NULL);
 	} else {
 	  *ierr = TaoSetMonitor(*tao,ourtaomonitor,*tao,ourtaomondestroy);
 	}

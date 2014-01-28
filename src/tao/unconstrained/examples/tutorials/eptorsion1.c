@@ -108,9 +108,9 @@ PetscErrorCode main(int argc,char **argv)
 
   /* Specify default parameters for the problem, check for command-line overrides */
   user.param = 5.0;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,&flg); CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,&flg); CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-my",&my,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-mx",&mx,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-par",&user.param,&flg); CHKERRQ(ierr);
 
 
   PetscPrintf(PETSC_COMM_SELF,"\n---- Elastic-Plastic Torsion Problem -----\n");
@@ -139,12 +139,10 @@ PetscErrorCode main(int argc,char **argv)
   ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&user); CHKERRQ(ierr);
 
   /* From command line options, determine if using matrix-free hessian */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-my_tao_mf",&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-my_tao_mf",&flg); CHKERRQ(ierr);
   if (flg) {
-    ierr = MatCreateShell(PETSC_COMM_SELF,user.ndim,user.ndim,user.ndim,
-                          user.ndim,(void*)&user,&H); CHKERRQ(ierr);
-    ierr = MatShellSetOperation(H,MATOP_MULT,(void(*)(void))HessianProductMat); CHKERRQ
-(ierr);
+    ierr = MatCreateShell(PETSC_COMM_SELF,user.ndim,user.ndim,user.ndim,user.ndim,(void*)&user,&H); CHKERRQ(ierr);
+    ierr = MatShellSetOperation(H,MATOP_MULT,(void(*)(void))HessianProductMat); CHKERRQ(ierr);
     ierr = MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE); CHKERRQ(ierr);
 
     ierr = TaoSetHessianRoutine(tao,H,H,MatrixFreeHessian,(void *)&user); CHKERRQ(ierr);
@@ -156,7 +154,7 @@ PetscErrorCode main(int argc,char **argv)
 
   } else {
 
-    ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user.ndim,user.ndim,5,PETSC_NULL,&H); CHKERRQ(ierr);
+    ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user.ndim,user.ndim,5,NULL,&H); CHKERRQ(ierr);
     ierr = MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE); CHKERRQ(ierr);
 
     ierr = TaoSetHessianRoutine(tao,H,H,FormHessian,(void *)&user); CHKERRQ(ierr);

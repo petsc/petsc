@@ -74,8 +74,8 @@ int main( int argc, char **argv )
   user.mx = 4; user.my = 4;
 
   /* Check for any command line arguments that override defaults */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg); CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-mx",&user.mx,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-my",&user.my,&flg); CHKERRQ(ierr);
 
   PetscPrintf(PETSC_COMM_SELF,"\n---- Minimum Surface Area Problem -----\n");
   PetscPrintf(PETSC_COMM_SELF,"mx: %D     my: %D   \n\n",user.mx,user.my);
@@ -102,7 +102,7 @@ int main( int argc, char **argv )
   ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&user); CHKERRQ(ierr);
 
   /* Create a matrix data structure to store the Hessian.  This structure will be used by TAO */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,7,PETSC_NULL,&(user.H));        /* PETSc routine */
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,7,NULL,&(user.H));        /* PETSc routine */
   ierr = MatSetOption(user.H,MAT_SYMMETRIC,PETSC_TRUE); CHKERRQ(ierr);           
   ierr = TaoSetHessianRoutine(tao,user.H,user.H,FormHessian,(void *)&user); CHKERRQ(ierr);
 
@@ -625,7 +625,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   PetscBool flg;
 
   ierr = VecSet(X, zero); CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-start",&start,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-start",&start,&flg); CHKERRQ(ierr);
 
   if (flg && start==0){ /* The zero vector is reasonable */
  

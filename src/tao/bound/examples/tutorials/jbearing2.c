@@ -87,10 +87,10 @@ int main( int argc, char **argv )
   user.nx = 50; user.ny = 50; user.ecc = 0.1; user.b = 10.0;
 
   /* Check for any command line arguments that override defaults */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.nx,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.ny,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-ecc",&user.ecc,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-b",&user.b,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-mx",&user.nx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-my",&user.ny,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-ecc",&user.ecc,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-b",&user.b,&flg);CHKERRQ(ierr);
 
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n---- Journal Bearing Problem SHB-----\n");CHKERRQ(ierr);
@@ -105,7 +105,7 @@ int main( int argc, char **argv )
      the distributed array, Create the vectors.
   */
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
-		      user.nx,user.ny,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,
+		      user.nx,user.ny,Nx,Ny,1,1,NULL,NULL,
 		      &user.dm);CHKERRQ(ierr);
 
   /*
@@ -156,11 +156,11 @@ int main( int argc, char **argv )
     ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-testmonitor",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-testmonitor",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = TaoSetMonitor(tao,Monitor,&user,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TaoSetMonitor(tao,Monitor,&user,NULL);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(PETSC_NULL,"-testconvergence",&flg);
+  ierr = PetscOptionsHasName(NULL,"-testconvergence",&flg);
   if (flg) {
     ierr = TaoSetConvergenceTest(tao,ConvergenceTest,&user);CHKERRQ(ierr);
   }
@@ -222,8 +222,8 @@ PetscErrorCode ComputeB(AppCtx* user)
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(user->dm,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
 
   /* Compute the linear term in the objective function */
   ierr = VecGetArray(user->B,&b);CHKERRQ(ierr);
@@ -274,8 +274,8 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
   /*
     Get local grid boundaries
   */
-  ierr = DMDAGetCorners(user->dm,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
   
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
   ierr = VecGetArray(G,&g);CHKERRQ(ierr);
@@ -379,8 +379,8 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *H, Mat *Hpre, MatStructure *
   /*
     Get local grid boundaries
   */
-  ierr = DMDAGetCorners(user->dm,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
   ierr = MatAssembled(hes,&assembled);CHKERRQ(ierr);
   if (assembled){ierr = MatZeroEntries(hes);CHKERRQ(ierr);}
 

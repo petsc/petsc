@@ -31,7 +31,7 @@ static PetscErrorCode make_grad_node(Vec X, Vec_Chain **p)
   ierr = PetscMalloc(sizeof(Vec_Chain), p); CHKERRQ(ierr);
   ierr = VecDuplicate(X, &(*p)->V); CHKERRQ(ierr);
   ierr = VecCopy(X, (*p)->V); CHKERRQ(ierr);
-  (*p)->next = PETSC_NULL;
+  (*p)->next = NULL;
 
   PetscFunctionReturn(0);
 }
@@ -51,7 +51,7 @@ static PetscErrorCode destroy_grad_list(Vec_Chain *head)
     ierr = PetscFree(p); CHKERRQ(ierr);
     p = q;
   }
-  head->next = PETSC_NULL;
+  head->next = NULL;
 
   PetscFunctionReturn(0);
 }
@@ -238,13 +238,10 @@ static PetscErrorCode TaoSetup_BMRM(TaoSolver tao) {
 #define __FUNCT__ "TaoDestroy_BMRM"
 static PetscErrorCode TaoDestroy_BMRM(TaoSolver tao)
 {
-  PetscErrorCode      ierr;
+  PetscErrorCode ierr;
 
-  /* Free allocated memory in custom BMRM structure */
   PetscFunctionBegin;
   ierr = PetscFree(tao->data); CHKERRQ(ierr);
-  tao->data = PETSC_NULL;
-
   PetscFunctionReturn(0);
 }
 
@@ -253,9 +250,9 @@ static PetscErrorCode TaoDestroy_BMRM(TaoSolver tao)
 #define __FUNCT__ "TaoSetFromOptions_BMRM"
 static PetscErrorCode TaoSetFromOptions_BMRM(TaoSolver tao)
 {
-  PetscErrorCode      ierr;
-  TAO_BMRM*           bmrm = (TAO_BMRM*)tao->data;
-  PetscBool           flg;
+  PetscErrorCode ierr;
+  TAO_BMRM*      bmrm = (TAO_BMRM*)tao->data;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("BMRM for regularized risk minimization");CHKERRQ(ierr);
@@ -473,76 +470,32 @@ PetscErrorCode ensure_df_space(PetscInt dim, TAO_DF *df)
 PetscErrorCode destroy_df_solver(TAO_DF *df)
 {
   PetscErrorCode ierr;
-  PetscInt i;
+  PetscInt       i;
+
   PetscFunctionBegin;
+  ierr = PetscFree(df->f);  CHKERRQ(ierr);
+  ierr = PetscFree(df->a);  CHKERRQ(ierr);
+  ierr = PetscFree(df->l);  CHKERRQ(ierr);
+  ierr = PetscFree(df->u);  CHKERRQ(ierr);
+  ierr = PetscFree(df->x);  CHKERRQ(ierr);
 
-  if (df->f)   {
-    ierr = PetscFree(df->f);  CHKERRQ(ierr);    df->f = PETSC_NULL;
-  }
-
-  if (df->a)   {
-    ierr = PetscFree(df->a);  CHKERRQ(ierr);    df->a = PETSC_NULL;
-  }
-
-  if (df->l)   {
-    ierr = PetscFree(df->l);  CHKERRQ(ierr);    df->l = PETSC_NULL;
-  }
-
-  if (df->u)   {
-    ierr = PetscFree(df->u);  CHKERRQ(ierr);    df->u = PETSC_NULL;
-  }
-
-  if (df->x)   {
-    ierr = PetscFree(df->x);  CHKERRQ(ierr);    df->x = PETSC_NULL;
-  }
-
-  for (i = 0; i < df->cur_num_cp; i ++)
-  {
+  for (i = 0; i < df->cur_num_cp; i ++) {
     ierr = PetscFree(df->Q[i]);  CHKERRQ(ierr);
   }
   ierr = PetscFree(df->Q);  CHKERRQ(ierr);
-
-
-  if (df->ipt)   {
-    ierr = PetscFree(df->ipt);  CHKERRQ(ierr);    df->ipt = PETSC_NULL;
-  }
-  if (df->ipt2)   {
-    ierr = PetscFree(df->ipt2);  CHKERRQ(ierr);    df->ipt2 = PETSC_NULL;
-  }
-  if (df->uv)   {
-    ierr = PetscFree(df->uv);  CHKERRQ(ierr);    df->uv = PETSC_NULL;
-  }
-  if (df->g)   {
-    ierr = PetscFree(df->g);  CHKERRQ(ierr);    df->g = PETSC_NULL;
-  }
-  if (df->y)   {
-    ierr = PetscFree(df->y);  CHKERRQ(ierr);    df->y = PETSC_NULL;
-  }
-  if (df->tempv)   {
-    ierr = PetscFree(df->tempv);  CHKERRQ(ierr);    df->tempv = PETSC_NULL;
-  }
-  if (df->d)   {
-    ierr = PetscFree(df->d);  CHKERRQ(ierr);    df->d = PETSC_NULL;
-  }
-  if (df->Qd)   {
-    ierr = PetscFree(df->Qd);  CHKERRQ(ierr);    df->Qd = PETSC_NULL;
-  }
-  if (df->t)   {
-    ierr = PetscFree(df->t);  CHKERRQ(ierr);    df->t = PETSC_NULL;
-  }
-  if (df->xplus)   {
-    ierr = PetscFree(df->xplus);  CHKERRQ(ierr);    df->xplus = PETSC_NULL;
-  }
-  if (df->tplus)   {
-    ierr = PetscFree(df->tplus);  CHKERRQ(ierr);    df->tplus = PETSC_NULL;
-  }
-  if (df->sk)   {
-    ierr = PetscFree(df->sk);  CHKERRQ(ierr);    df->sk = PETSC_NULL;
-  }
-  if (df->yk)   {
-    ierr = PetscFree(df->yk);  CHKERRQ(ierr);    df->yk = PETSC_NULL;
-  }
-
+  ierr = PetscFree(df->ipt);  CHKERRQ(ierr);
+  ierr = PetscFree(df->ipt2);  CHKERRQ(ierr);
+  ierr = PetscFree(df->uv);  CHKERRQ(ierr);
+  ierr = PetscFree(df->g);  CHKERRQ(ierr);
+  ierr = PetscFree(df->y);  CHKERRQ(ierr);
+  ierr = PetscFree(df->tempv);  CHKERRQ(ierr);
+  ierr = PetscFree(df->d);  CHKERRQ(ierr);
+  ierr = PetscFree(df->Qd);  CHKERRQ(ierr);
+  ierr = PetscFree(df->t);  CHKERRQ(ierr);
+  ierr = PetscFree(df->xplus);  CHKERRQ(ierr);
+  ierr = PetscFree(df->tplus);  CHKERRQ(ierr);
+  ierr = PetscFree(df->sk);  CHKERRQ(ierr);
+  ierr = PetscFree(df->yk);  CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -550,30 +503,19 @@ PetscErrorCode destroy_df_solver(TAO_DF *df)
 /* Piecewise linear monotone target function for the Dai-Fletcher projector */
 #undef __FUNCT__  
 #define __FUNCT__ "phi"
-PetscReal phi(PetscReal *x, 
-           PetscInt n, 
-           PetscReal lambda, 
-           PetscReal *a, 
-           PetscReal b, 
-           PetscReal *c, 
-           PetscReal *l, 
-           PetscReal *u)
+PetscReal phi(PetscReal *x,PetscInt n,PetscReal lambda,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,PetscReal *u)
 {
   PetscReal r = 0.0;
-  PetscInt i;
+  PetscInt  i;
 
   for (i = 0; i < n; i++){
     x[i] = -c[i] + lambda*a[i];
-    if (x[i] > u[i]) 
-      x[i] = u[i];
-    else if(x[i] < l[i]) 
-      x[i] = l[i];
+    if (x[i] > u[i])     x[i] = u[i];
+    else if(x[i] < l[i]) x[i] = l[i];
     r += a[i]*x[i];
   }
   return r - b;
 }
-
-
 
 /** Modified Dai-Fletcher QP projector solves the problem:
  *
@@ -585,21 +527,12 @@ PetscReal phi(PetscReal *x,
  */ 
 #undef __FUNCT__  
 #define __FUNCT__ "project"
-PetscInt project(PetscInt n, 
-            PetscReal *a, 
-            PetscReal b, 
-            PetscReal *c, 
-            PetscReal *l, 
-            PetscReal *u, 
-            PetscReal *x, 
-            PetscReal *lam_ext, 
-            TAO_DF *df)
+PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,PetscReal *u,PetscReal *x,PetscReal *lam_ext,TAO_DF *df)
 {  
   PetscReal lambda, lambdal, lambdau, dlambda, lambda_new;
   PetscReal r, rl, ru, s;
-  PetscInt    innerIter;
+  PetscInt  innerIter;
   PetscBool nonNegativeSlack = PETSC_FALSE;
-/*   PetscBool nonNegativeSlack = PETSC_TRUE; */
 
   *lam_ext = 0;
   lambda  = 0;
@@ -618,14 +551,11 @@ PetscInt project(PetscInt n,
   /* Bracketing Phase */
   r = phi(x, n, lambda, a, b, c, l, u);
 
-  if(nonNegativeSlack)
-  {
+  if(nonNegativeSlack) {
     /* inequality constraint, i.e., with \xi >= 0 constraint */
     if (r < TOL_R) 
       return 0;
-  }
-  else
-  {
+  } else  {
     /* equality constraint ,i.e., without \xi >= 0 constraint */
     if (fabs(r) < TOL_R) 
       return 0;
@@ -647,8 +577,7 @@ PetscInt project(PetscInt n,
     }
     lambdau = lambda;
     ru      = r;
-  } 
-  else {
+  } else {
     lambdau = lambda;
     ru      = r;
     lambda  = lambda - dlambda;
@@ -666,10 +595,7 @@ PetscInt project(PetscInt n,
     rl      = r;
   }
   
-  if(fabs(dlambda) > BMRM_INFTY) {  
-    PetscPrintf(PETSC_COMM_SELF, "ERROR: L2N2_DaiFletcherPGM detected Infeasible QP problem!\n");
-    exit(0);
-  }
+  if(fabs(dlambda) > BMRM_INFTY) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"L2N2_DaiFletcherPGM detected Infeasible QP problem!");
 
   if(ru == 0){
     lambda = lambdau;

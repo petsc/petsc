@@ -85,13 +85,13 @@ int main( int argc, char **argv )
   user.mx = 10; user.my = 10; user.bheight=0.1;
 
   /* Check for any command line arguments that override defaults */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-bheight",&user.bheight,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-mx",&user.mx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-my",&user.my,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-bheight",&user.bheight,&flg);CHKERRQ(ierr);
 
   user.bmx = user.mx/2; user.bmy = user.my/2;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-bmx",&user.bmx,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-bmy",&user.bmy,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-bmx",&user.bmx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-bmy",&user.bmy,&flg);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n---- Minimum Surface Area With Plate Problem -----\n");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"mx:%D, my:%D, bmx:%D, bmy:%D, height:%g\n",user.mx,user.my,user.bmx,user.bmy,(double)user.bheight);CHKERRQ(ierr);
@@ -109,7 +109,7 @@ int main( int argc, char **argv )
   */
   ierr = DMDACreate2d(MPI_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,
 		      DMDA_STENCIL_BOX,user.mx,user.my,Nx,Ny,1,1,
-		      PETSC_NULL,PETSC_NULL,&user.dm);CHKERRQ(ierr);
+		      NULL,NULL,&user.dm);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DM; The local vectors are
@@ -145,12 +145,12 @@ int main( int argc, char **argv )
   ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*) &user);CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(x,&m);CHKERRQ(ierr);
-  ierr = MatCreateAIJ(MPI_COMM_WORLD,m,m,N,N,7,PETSC_NULL,3,PETSC_NULL,&(user.H));CHKERRQ(ierr);
+  ierr = MatCreateAIJ(MPI_COMM_WORLD,m,m,N,N,7,NULL,3,NULL,&(user.H));CHKERRQ(ierr);
   ierr = MatSetOption(user.H,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   
   ierr = DMGetLocalToGlobalMapping(user.dm,&isltog);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(user.H,isltog,isltog);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-matrixfree",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-matrixfree",&flg);CHKERRQ(ierr);
   if (flg) {
       ierr = MatCreateShell(PETSC_COMM_WORLD,m,m,N,N,(void*)&user,&H_shell);
       ierr = MatShellSetOperation(H_shell,MATOP_MULT,(void(*)())MyMatMult);CHKERRQ(ierr);
@@ -240,8 +240,8 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn, Vec G,
   Vec            localX = user->localX, localG = user->localV;
 
   /* Get local mesh boundaries */
-  ierr = DMDAGetCorners(user->dm,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
 
   /* Scatter ghost points to local vector */
   ierr = DMGlobalToLocalBegin(user->dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
@@ -478,8 +478,8 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *Hptr, Mat *Hpc, MatStructure
   if (assembled){ierr = MatZeroEntries(Hessian);CHKERRQ(ierr);}
 
   /* Get local mesh boundaries */
-  ierr = DMDAGetCorners(user->dm,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
 
   /* Scatter ghost points to local vector */
   ierr = DMGlobalToLocalBegin(user->dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
@@ -656,8 +656,8 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
   Vec        Bottom,Top,Right,Left;
 
   /* Get local mesh boundaries */
-  ierr = DMDAGetCorners(user->dm,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
 
 
   bsize=xm+2;
@@ -737,20 +737,20 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 
   /* Scale the boundary if desired */
 
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-bottom",&scl,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-bottom",&scl,&flg);CHKERRQ(ierr);
   if (flg){
     ierr = VecScale(Bottom, scl);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-top",&scl,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-top",&scl,&flg);CHKERRQ(ierr);
   if (flg){
     ierr = VecScale(Top, scl);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-right",&scl,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-right",&scl,&flg);CHKERRQ(ierr);
   if (flg){
     ierr = VecScale(Right, scl);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-left",&scl,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-left",&scl,&flg);CHKERRQ(ierr);
   if (flg){
     ierr = VecScale(Left, scl);CHKERRQ(ierr);
   }
@@ -785,14 +785,14 @@ static PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx){
   user->bmx = PetscMax(0,user->bmx);user->bmx = PetscMin(mx,user->bmx);
   bmy=user->bmy, bmx=user->bmx;
 
-  ierr = DMDAGetCorners(user->dm,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   ierr = VecSet(XL, lb);CHKERRQ(ierr);
   ierr = VecSet(XU, ub);CHKERRQ(ierr);
 
   ierr = VecGetArray(XL,&xl);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-cylinder",&cylinder);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-cylinder",&cylinder);CHKERRQ(ierr);
   /* Compute the optional lower box */
   if (cylinder){
     for (i=xs; i< xs+xm; i++){    
@@ -844,7 +844,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   PetscReal      zero=0.0;
   PetscBool      flg;
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-start",&start,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-start",&start,&flg);CHKERRQ(ierr);
   if (flg && start==0){ /* The zero vector is reasonable */
     ierr = VecSet(X, zero);CHKERRQ(ierr);
   } else if (flg && start>0){ /* Try a random start between -0.5 and 0.5 */
@@ -865,8 +865,8 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     Vec    localX = user->localX;
     
     /* Get local mesh boundaries */
-    ierr = DMDAGetCorners(user->dm,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-    ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+    ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
     
     /* Get pointers to vector data */
     ierr = VecGetArray(user->Top,&top);CHKERRQ(ierr);
