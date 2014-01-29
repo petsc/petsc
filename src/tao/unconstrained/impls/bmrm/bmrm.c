@@ -309,7 +309,7 @@ PetscErrorCode init_df_solver(TAO_DF *df)
   ierr = PetscMalloc1(n, &df->l); CHKERRQ(ierr);
   ierr = PetscMalloc1(n, &df->u); CHKERRQ(ierr);
   ierr = PetscMalloc1(n, &df->x); CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscReal*)*n, &df->Q); CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->Q); CHKERRQ(ierr);
 
   for (i = 0; i < n; i ++) {
     ierr = PetscMalloc1(n, &df->Q[i]); CHKERRQ(ierr);
@@ -326,9 +326,9 @@ PetscErrorCode init_df_solver(TAO_DF *df)
   ierr = PetscMalloc1(n, &df->sk); CHKERRQ(ierr);
   ierr = PetscMalloc1(n, &df->yk); CHKERRQ(ierr);
 
-  ierr = PetscMalloc(sizeof(PetscInt)*n, &df->ipt); CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*n, &df->ipt2); CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*n, &df->uv); CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->ipt); CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->ipt2); CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->uv); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -374,7 +374,7 @@ PetscErrorCode ensure_df_space(PetscInt dim, TAO_DF *df)
   ierr = PetscFree(df->x); CHKERRQ(ierr);
   df->x = tmp;
 
-  ierr = PetscMalloc(sizeof(PetscReal*)*n, &tmp_Q); CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &tmp_Q); CHKERRQ(ierr);
   for (i = 0; i < n; i ++) {
     ierr = PetscMalloc1(n, &tmp_Q[i]); CHKERRQ(ierr);
     if (i < old_n) {
@@ -417,7 +417,7 @@ PetscErrorCode ensure_df_space(PetscInt dim, TAO_DF *df)
   ierr = PetscMalloc1(n, &df->yk); CHKERRQ(ierr);
 
   ierr = PetscFree(df->ipt); CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*n, &df->ipt); CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &df->ipt); CHKERRQ(ierr);
 
   ierr = PetscFree(df->ipt2); CHKERRQ(ierr);
   ierr = PetscMalloc1(n, &df->ipt2); CHKERRQ(ierr);

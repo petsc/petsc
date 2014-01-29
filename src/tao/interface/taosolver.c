@@ -8,11 +8,7 @@ PetscFunctionList TaoSolverList = NULL;
 PetscClassId TAOSOLVER_CLASSID;
 PetscLogEvent TaoSolver_Solve, TaoSolver_ObjectiveEval, TaoSolver_GradientEval, TaoSolver_ObjGradientEval, TaoSolver_HessianEval, TaoSolver_ConstraintsEval, TaoSolver_JacobianEval;
 
-
-
-static const char *TAO_SUBSET[64] = {
-  "subvec","mask","matrixfree"
-};
+const char *TaoSubSetTypes[] = {  "subvec","mask","matrixfree","TaoSubSetType""TAO_SUBSET",0};
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate"
@@ -471,7 +467,7 @@ PetscErrorCode TaoSetFromOptions(TaoSolver tao)
     if (flg) {
       ierr = TaoSetGradientRoutine(tao,TaoDefaultComputeGradient,NULL);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsEList("-tao_subset_type","subset type", "", TAO_SUBSET, TAO_SUBSET_TYPES,TAO_SUBSET[tao->subset_type], &tao->subset_type, 0);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-tao_subset_type","subset type", "", TaoSubSetTypes,(PetscEnum)tao->subset_type, (PetscEnum*)&tao->subset_type, 0);CHKERRQ(ierr);
 
     if (tao->ops->setfromoptions) {
       ierr = (*tao->ops->setfromoptions)(tao);CHKERRQ(ierr);
@@ -540,7 +536,7 @@ PetscErrorCode TaoView(TaoSolver tao, PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"total KSP iterations: %D\n",tao->ksp_its);CHKERRQ(ierr);
     }
     if (tao->XL || tao->XU) {
-      ierr = PetscViewerASCIIPrintf(viewer,"Active Set subset type: %s\n",TAO_SUBSET[tao->subset_type]);
+      ierr = PetscViewerASCIIPrintf(viewer,"Active Set subset type: %s\n",TaoSubSetTypes[tao->subset_type]);
     }
 
     ierr=PetscViewerASCIIPrintf(viewer,"convergence tolerances: fatol=%g,",(double)tao->fatol);CHKERRQ(ierr);
