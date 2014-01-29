@@ -84,23 +84,23 @@ int main(int argc,char **argv)
 
   MPI_Comm_size(PETSC_COMM_WORLD,&np);
 
-  ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMqq");
+  ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "ex3.c");
   user.dim    = 2;
-  ierr        = PetscOptionsInt("-dim", "The dimension of the problem", "ex4.c", user.dim, &user.dim, NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsInt("-dim", "The dimension of the problem", "ex3.c", user.dim, &user.dim, NULL);CHKERRQ(ierr);
   user.n      = 2;
-  ierr        = PetscOptionsInt("-n", "The elements in each direction", "ex4.c", user.n, &user.n, NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsInt("-n", "The elements in each direction", "ex3.c", user.n, &user.n, NULL);CHKERRQ(ierr);
   user.rho    = 0.5;
-  ierr        = PetscOptionsReal("-rho", "The conductivity", "ex4.c", user.rho, &user.rho, NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsReal("-rho", "The conductivity", "ex3.c", user.rho, &user.rho, NULL);CHKERRQ(ierr);
   user.xref   = 0.5;
-  ierr        = PetscOptionsReal("-xref", "The x-coordinate of Gaussian center", "ex4.c", user.xref, &user.xref, NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsReal("-xref", "The x-coordinate of Gaussian center", "ex3.c", user.xref, &user.xref, NULL);CHKERRQ(ierr);
   user.yref   = 0.5;
-  ierr        = PetscOptionsReal("-yref", "The y-coordinate of Gaussian center", "ex4.c", user.yref, &user.yref, NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsReal("-yref", "The y-coordinate of Gaussian center", "ex3.c", user.yref, &user.yref, NULL);CHKERRQ(ierr);
   user.nu     = 0.05;
-  ierr        = PetscOptionsReal("-nu", "The width of the Gaussian source", "ex4.c", user.nu, &user.nu, NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsReal("-nu", "The width of the Gaussian source", "ex3.c", user.nu, &user.nu, NULL);CHKERRQ(ierr);
   bc          = (PetscInt)DIRICHLET;
-  ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex4.c",bcTypes,2,bcTypes[0],&bc,NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex3.c",bcTypes,2,bcTypes[0],&bc,NULL);CHKERRQ(ierr);
   user.bcType = (BCType)bc;
-  ierr        = PetscOptionsString("-file", "The mesh file for the problem", "ex4.c", "",user.filename,PETSC_MAX_PATH_LEN,&use_extfile);CHKERRQ(ierr);
+  ierr        = PetscOptionsString("-file", "The mesh file for the problem", "ex3.c", "",user.filename,PETSC_MAX_PATH_LEN,&use_extfile);CHKERRQ(ierr);
   ierr        = PetscOptionsEnd();
 
   /* Create the DM object from either a mesh file or from in-memory structured grid */
