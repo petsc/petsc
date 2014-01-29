@@ -10,6 +10,18 @@ $(document).on("keyup", '.processorInput', function() {
     }
 });
 
+$(document).on("keyup", '.fieldsplitBlocks', function() {//alerts user with a tooltip when an invalid input is provided
+    if ($(this).val().match(/[^0-9]/) || $(this).val()==0 || $(this).val()==1) {
+	$(this).attr("title","hello");//set a random title (this will be overwritten)
+	$(this).tooltip();//create a tooltip from jquery UI
+	$(this).tooltip({content: "At least 2 blocks!"});//edit displayed text
+	$(this).tooltip("open");//manually open once
+    } else {
+	$(this).removeAttr("title");//remove title attribute
+	$(this).tooltip("destroy");
+    }
+});
+
 /*
   This function is called when the drop-down menu of .pcLists is excuted
 */
@@ -37,20 +49,6 @@ $(document).on('change', '.pcLists', function(){
 
     if (parent == "-1") return; //endtag for o-1 and other oparent are not consistent yet???
 
-    // if pcValue is changed to !fieldsplit for logically structured matrix
-    /*if (pcValue != "fieldsplit" && matInfo[parent].logstruc) {
-        // find indices of all its children, remove all the options of its children
-	var children = [];
-        var numChildren = matGetChildren(parent, maxMatricies, children);
-
-	// set parentFieldSplit as false for its children
-        for (var i=0; i< numChildren; i++) {
-            if ($("#pcList" + children[i]).data("parentFieldSplit")) {  COMMENT ALL OF THIS OUT FOR NOW. ORIGINALLY HAD.
-                $("#pcList" + children[i]).data("parentFieldSplit",false);
-            }
-        }
-    }*/
-
     if (pcValue == "mg") {
         //------------------------------------------------------
 	var newDiv = generateDivName(this.id,parent,"mg");
@@ -60,9 +58,9 @@ $(document).on('change', '.pcLists', function(){
 
 	$("#"+this.id).after("<div id=\""+newDiv+"\" style='margin-left:50px;'></div>");
         myendtag = endtag+"0";
-	$("#"+newDiv).append("<b>MG Type &nbsp;&nbsp;</b><select class=\"mgList\" id=\"mgList" + parent +myendtag+"\"></select>")  
+	$("#"+newDiv).append("<b>MG Type &nbsp;&nbsp;</b><select class=\"mgList\" id=\"mgList" + parent +myendtag+"\"></select>");
         populateMgList("mgList"+parent+myendtag);
-        
+
         // mglevels determines how many ksp/pc at this solve level  
         $("#"+newDiv).append("<br><b>MG Levels </b><input type='text' id=\'mglevels"+parent+myendtag+"\' maxlength='4' class='mgLevels'>");
         mgLevels = 2; //default
@@ -73,10 +71,10 @@ $(document).on('change', '.pcLists', function(){
 
         // Coarse Grid Solver (Level 0)
         myendtag = endtag+"0";
-	$("#"+newDiv).append("<br><br><b>Coarse Grid Solver (Level 0)  </b>")
-        $("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList" + parent+myendtag +"\"></select>")
-	$("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent+myendtag +"\"></select>")
-      
+	$("#"+newDiv).append("<br><br><b>Coarse Grid Solver (Level 0)  </b>");
+        $("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList" + parent+myendtag +"\"></select>");
+	$("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent+myendtag +"\"></select>");
+
         var prefix = "";
         if (preRecursionCounter == -1) 
             prefix = sawsInfo[currentRecursionCounterSAWs].prefix;
@@ -101,19 +99,19 @@ $(document).on('change', '.pcLists', function(){
         // Smoothing (Level>0)
         $("#"+newDiv).append("<br><br><b id=\"text_smoothing"+parent+endtag+"\">Smoothing   </b>")
         mgLevels = $("#mglevels" + parent + myendtag).val();
-       
-        if (mgLevels > 1) { 
+
+        if (mgLevels > 1) {
             for (var level=1; level<mgLevels; level++) { 
                 myendtag = endtag+level;
-                $("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id=\"text_kspList"+parent+myendtag+"\">KSP Level "+level+" &nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+ parent+myendtag +"\"></select>")
-	        $("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id=\"text_pcList"+parent+myendtag+"\">PC Level "+level+" &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList"+ parent+myendtag+"\"></select>")
+                $("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id=\"text_kspList"+parent+myendtag+"\">KSP Level "+level+" &nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+ parent+myendtag +"\"></select>");
+	        $("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id=\"text_pcList"+parent+myendtag+"\">PC Level "+level+" &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList"+ parent+myendtag+"\"></select>");
                 prefix = "";
-                if (preRecursionCounter == -1) 
+                if (preRecursionCounter == -1)
                     prefix = sawsInfo[currentRecursionCounterSAWs].prefix;
                 if (prefix == "mg_levels_"+level+"_") { //use SAWs options
                     //alert("prefix "+prefix+" match");
-                    var SAWs_kspVal = $("#kspList-1"+prefix).val(); 
-                    var SAWs_pcVal = $("#pcList-1"+prefix).val(); 
+                    var SAWs_kspVal = $("#kspList-1"+prefix).val();
+                    var SAWs_pcVal = $("#pcList-1"+prefix).val();
                     //alternative???
                     populateKspList("kspList"+parent+myendtag,null,SAWs_kspVal);
                     populatePcList("pcList"+parent+myendtag,null,SAWs_pcVal);
@@ -191,7 +189,7 @@ $(document).on('change', '.pcLists', function(){
         } else {
 	    populateKspList("kspList"+parent+myendtag,null,"null");
             populatePcList("pcList"+parent+myendtag,null,"null");
-        
+
 	    //set defaults for bjacobi
 	    $("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
             var index=getMatIndex(parent);
@@ -243,7 +241,6 @@ $(document).on('change', '.pcLists', function(){
 
     if (pcValue == "ksp") {
         //------------------------------------------------------
-	/*$("#o" + parent).append("<div id=\"ksp"+parent+"\"></div>");*/
 	var newDiv = generateDivName(this.id,parent,"ksp");
 	var endtag = newDiv.substring(newDiv.lastIndexOf('_'), newDiv.length);
 	$("#"+this.id).after("<div id=\""+newDiv+"\" style='margin-left:50px;'></div>");
@@ -255,8 +252,8 @@ $(document).on('change', '.pcLists', function(){
 
         if (preRecursionCounter == -1) { //use SAWs options
             var prefix = sawsInfo[currentRecursionCounterSAWs].prefix;
-            var SAWs_kspVal = $("#kspList-1"+prefix).val(); 
-            var SAWs_pcVal = $("#pcList-1"+prefix).val(); 
+            var SAWs_kspVal = $("#kspList-1"+prefix).val();
+            var SAWs_pcVal = $("#pcList-1"+prefix).val();
             //alternative???
             populateKspList("kspList"+parent+myendtag,null,SAWs_kspVal);
             populatePcList("pcList"+parent+myendtag,null,SAWs_pcVal);
@@ -283,46 +280,54 @@ $(document).on('change', '.pcLists', function(){
 	$("#"+newDiv).remove();
     }
 
-    /*if (pcValue == "fieldsplit") { //HAD THIS BEFORE WILL EDIT LATER
+    if (pcValue == "fieldsplit") {
         //------------------------------------------------------
-        if (!matInfo[parent].logstruc) {
-            alert("Error: Preconditioner fieldsplit cannot be used for non-logically blocked matrix!");
-            //how to throw an error???
-        } else {
-            //set all of its children to parentFieldSplit = true - shall we only set two direct children???
-	    var children = []
-	    var numChildren = matGetChildren(parent, maxMatricies, children);
-
-	    //set an element of the pclist of the parents children to true
-	    for (var i=0; i< numChildren; i++) {
-	        $("#pcList" + children[i]).data("parentFieldSplit", true);
-            }
+        var index=getMatIndex(parent);
+        if (!matInfo[index].logstruc) {
+            alert("Error: Preconditioner fieldsplit cannot be used for non-logically blocked matrix!");//how to throw an error???
+            return;//no new divs will be generated
         }
 
         var newDiv = generateDivName(this.id,parent,"fieldsplit");
 	var endtag = newDiv.substring(newDiv.lastIndexOf('_'), newDiv.length);
-        //alert("fieldsplit: newDiv="+newDiv);
 	$("#"+this.id).after("<div id=\""+newDiv+"\" style='margin-left:50px;'></div>");
         myendtag = endtag+"0";
-	$("#"+newDiv).append("<b>Fieldsplit Type &nbsp;&nbsp;</b><select class=\"fieldsplitList\" id=\"fieldsplitList" + parent +myendtag+"\"></select>")  
+	$("#"+newDiv).append("<b>Fieldsplit Type &nbsp;&nbsp;</b><select class=\"fieldsplitList\" id=\"fieldsplitList" + parent +myendtag+"\"></select>");
+        $("#"+newDiv).append("<br><b>Fieldsplit Blocks </b><input type='text' id='fieldsplitBlocks"+parent+myendtag+"\' value='2' maxlength='2' class='fieldsplitBlocksInput'>");
         populateFieldsplitList("fieldsplitList"+parent+myendtag,null,"null");
 
-    } else { //not fieldsplit
+        //add and remove A divs as necessary PUT THIS IN THE FUNCTION THAT REACTS TO CHANGE IN FIELDSPLIT BLOCKS
+        //todo: this needs a lot of work
+    }
+    else { //not fieldsplit
 	var newDiv = generateDivName(this.id,parent,"fieldsplit");
 	$("#"+newDiv).remove();
-    }*/
 
-    // if parentFieldSplit is false, disable kspList and pcList  HAD THIS BEFORE WILL EDIT LATER
-    /*for (var i=0; i<maxMatricies; i++) {
-	if (!$("#pcList" + i).data("parentFieldSplit")) {
-	    $("#pcList" + i).attr("disabled", true)
-	    $("#kspList" + i).attr("disabled", true)
-	} else {
-	    $("#pcList" + i).attr("disabled", false)
-	    $("#kspList" + i).attr("disabled", false)
-	}
-    } */
+        // for the whole thing, remove A divs as necessary since not fieldsplit
+        var index=getMatIndex(parent);
+        if($(this).attr("id").indexOf('_')==-1 && matInfo[index].logstruc) {//if top level pclist AND the A matrix is logically structured...needs removal
+            removeChildren(parent);//recursive function that removes all children of a particular A div
+        }
+    }
+
 });
+
+//input: id of A matrix
+//output: divs of children of that A matrix are removed. places in matInfo where they are stored are wasted (e.g. -1 is put into the 'id' so that slot can never be used again)
+function removeChildren(id) {
+
+    var index=getMatIndex(id);
+    var numChildren=matInfo[index].blocks;
+    for(var i=0; i<numChildren; i++) {
+        var child=""+id+i;
+        index=getMatIndex(child);
+        if(matInfo[index].fieldsplitBlocks>0)//this child has more children
+        {
+            removeChildren(child);//recursive call to remove all children of that child
+        }
+        $("#A"+child).remove();//remove that child itself
+    }
+}
 
 /*
   generateDivName - generate a div name
@@ -339,7 +344,7 @@ function generateDivName(id,matRecursion,pcValue)
     var newDiv;
     var endtag = id.substring(id.lastIndexOf("_"), id.length);
     //alert("generateDivName, pcValue "+pcValue+"; id "+id+"; endtag "+endtag);
-	
+
     if (id.indexOf("_") == -1) { //A div
         newDiv = pcValue + matRecursion + "_";
     } else {
@@ -348,6 +353,13 @@ function generateDivName(id,matRecursion,pcValue)
     //alert("newDiv "+newDiv);
     return newDiv;
 }
+
+//called when text input "fieldsplitBlocks" is changed
+$(document).on('change', '.fieldSplitBlocksInput', function() {
+
+//todo: this needs a lot of work
+
+});
 
 /*
   This function is called when the text input "MG Levels" is changed  

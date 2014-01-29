@@ -185,6 +185,9 @@ HandlePCOptions = function(){
         var matrixLevel = currentAsk.length-1;//minus one because A0 is length 1 but level 0
         var fieldsplitBlocks = $("#fieldsplitBlocks").val();
 
+        if(!document.getElementById("logstruc").checked)
+            fieldsplitBlocks=0;//sometimes will be left over garbage value from previous submits
+
 	//Write the form data to matInfo
 	matInfo[matInfoWriteCounter] = {
             posdef:  document.getElementById("posdef").checked,
@@ -263,6 +266,7 @@ $("#logstruc").change(function(){
     }
 });
 
+//this is ONLY for the input box in the beginning form. NOT the inputs in the A divs (those have class='fieldsplitBlocks')
 $(document).on("keyup", '.fieldsplitBlocksInput', function() {//alerts user with a tooltip when an invalid input is provided
     if ($(this).val().match(/[^0-9]/) || $(this).val()==0 || $(this).val()==1) {//problem is that integer only bubble still displays when nothing is entered
 	$(this).attr("title","hello");//set a random title (this will be overwritten)
