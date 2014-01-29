@@ -1,6 +1,6 @@
 #include "petscvec.h"
 #include "taosolver.h"
-#include "tao-private/taolinesearch_impl.h"
+#include "petsc-private/taolinesearchimpl.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchDestroy_Unit"

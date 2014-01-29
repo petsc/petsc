@@ -1,7 +1,7 @@
 #define TAOSOLVER_DLL
 
-#include "tao-private/taosolver_impl.h"
-#include "tao-private/taodm_impl.h"
+#include "petsc-private/taosolverimpl.h"
+#include "petsc-private/taodmimpl.h"
 
 static PetscBool TaoPackageInitialized = PETSC_FALSE;
 

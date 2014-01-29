@@ -18,14 +18,13 @@ typedef enum {
     TAOLINESEARCH_HALTED_USER = 8
 } TaoLineSearchTerminationReason;
 
-
 #define TaoLineSearchType  char*
-#define TAOLINESEARCH_UNIT "unit"
-#define TAOLINESEARCH_MT "more-thuente"
-#define TAOLINESEARCH_GPCG "gpcg"
-#define TAOLINESEARCH_ARMIJO "armijo"
+#define TAOLINESEARCH_UNIT     "unit"
+#define TAOLINESEARCH_MT       "more-thuente"
+#define TAOLINESEARCH_GPCG     "gpcg"
+#define TAOLINESEARCH_ARMIJO   "armijo"
 #define TAOLINESEARCH_OWARMIJO "owarmijo"
-#define TAOLINESEARCH_IPM "ipm"
+#define TAOLINESEARCH_IPM      "ipm"
 
 PETSC_EXTERN PetscClassId TAOLINESEARCH_CLASSID;
 PETSC_EXTERN PetscFunctionList TaoLineSearchList;

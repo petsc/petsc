@@ -6,7 +6,7 @@
 #ifndef __TAO_CG_H
 #define __TAO_CG_H
 
-#include "tao-private/taosolver_impl.h"
+#include "petsc-private/taosolverimpl.h"
 
 typedef struct {
     Vec G_old;

@@ -47,7 +47,6 @@ struct _p_TaoDM {
   PetscErrorCode (*postlevelmonitor[MAXTAODMMONITORS])(TaoDM,PetscInt,void*);
   PetscInt npremonitors;
   PetscInt npostmonitors;
-  
 };
 
 #endif

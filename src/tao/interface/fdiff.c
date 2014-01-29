@@ -1,5 +1,5 @@
 #include "taosolver.h"         /*I  "taosolver.h"  I*/
-#include "tao-private/taosolver_impl.h"
+#include "petsc-private/taosolverimpl.h"
 #include "petscsnes.h"
 
 

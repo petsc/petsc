@@ -1,7 +1,7 @@
 #ifndef __TAO_SQPCON_H
 #define __TAO_SQPCON_H
 
-#include "private/taosolver_impl.h"
+#include "private/taosolverimpl.h"
 #include "petscis.h"
 
 typedef struct {

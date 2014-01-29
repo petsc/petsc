@@ -5,7 +5,6 @@
 #include "taosolver.h"
 #include "taolinesearch.h"
 
-    
 typedef struct _TaoLineSearchOps *TaoLineSearchOps;
 struct _TaoLineSearchOps {
     PetscErrorCode (*computeobjective)(TaoLineSearch, Vec, PetscReal*, void*);
@@ -64,7 +63,6 @@ struct _p_TaoLineSearch {
     PetscBool viewls;    /* print out information if true */
 
     TaoSolver taosolver;
-    
 };
 
 extern PetscLogEvent TaoLineSearch_ApplyEvent, TaoLineSearch_EvalEvent;

@@ -1,6 +1,6 @@
 #ifndef __TAO_MFQNLS_H
 #define __TAO_MFQNLS_H
-#include "tao-private/taosolver_impl.h"
+#include "petsc-private/taosolverimpl.h"
 #include "petsc.h"
 #include "petscblaslapack.h"
 #include "taolapack.h"

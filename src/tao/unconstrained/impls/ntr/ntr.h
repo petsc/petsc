@@ -4,7 +4,7 @@
 
 #ifndef __TAO_NTR_H
 #define __TAO_NTR_H
-#include "tao-private/taosolver_impl.h"
+#include "petsc-private/taosolverimpl.h"
 
 typedef struct {
   Mat M;

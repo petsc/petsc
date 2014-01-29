@@ -1,6 +1,6 @@
 #define TAOSOLVER_DLL
 
-#include "tao-private/taosolver_impl.h" /*I "taosolver.h" I*/
+#include "petsc-private/taosolverimpl.h" /*I "taosolver.h" I*/
 
 PetscBool TaoSolverRegisterAllCalled = PETSC_FALSE;
 PetscFunctionList TaoSolverList = NULL;
@@ -8,7 +8,7 @@ PetscFunctionList TaoSolverList = NULL;
 PetscClassId TAOSOLVER_CLASSID;
 PetscLogEvent TaoSolver_Solve, TaoSolver_ObjectiveEval, TaoSolver_GradientEval, TaoSolver_ObjGradientEval, TaoSolver_HessianEval, TaoSolver_ConstraintsEval, TaoSolver_JacobianEval;
 
-const char *TaoSubSetTypes[] = {  "subvec","mask","matrixfree","TaoSubSetType""TAO_SUBSET",0};
+const char *TaoSubSetTypes[] = {  "subvec","mask","matrixfree","TaoSubSetType","TAO_SUBSET_",0};
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate"

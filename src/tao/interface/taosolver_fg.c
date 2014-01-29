@@ -1,4 +1,4 @@
-#include "tao-private/taosolver_impl.h" /*I "taosolver.h" I*/
+#include "petsc-private/taosolverimpl.h" /*I "taosolver.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetInitialVector"

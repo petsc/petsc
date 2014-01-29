@@ -28,7 +28,7 @@ PetscErrorCode VecStepMax(Vec, Vec, PetscReal *);
                        TAO will directly alter the hessian operator.
 
 E*/
-typedef enum {TAO_SUBSET_SUBVEC,TAO_SUBSET_MASK,TAO_SUBSET_MATRIXFREE,TAO_SUBSET_TYPES} TaoSubsetType;
+typedef enum {TAO_SUBSET_SUBVEC,TAO_SUBSET_MASK,TAO_SUBSET_MATRIXFREE} TaoSubsetType;
 PETSC_EXTERN const char *const TaoSubsetTypes[];
 
 PetscErrorCode VecWhichBetween(Vec, Vec, Vec, IS *);

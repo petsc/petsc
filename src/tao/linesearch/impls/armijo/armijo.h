@@ -60,7 +60,7 @@
     Grippo, Lampariello, and Lucidi, "A Class of Nonmonotone Stabilization
       Methods in Unconstrained Optimization," Numerische Mathematik, volume 59,
       pages 779-805, 1991. */
-#include "tao-private/taolinesearch_impl.h"
+#include "petsc-private/taolinesearchimpl.h"
 typedef struct {
   PetscReal *memory;
 

@@ -1,7 +1,7 @@
 #ifndef __TAO_TRON_H
 #define __TAO_TRON_H
 
-#include "tao-private/taosolver_impl.h"
+#include "petsc-private/taosolverimpl.h"
 #include "petscis.h"
 
 typedef struct {

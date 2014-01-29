@@ -4,7 +4,6 @@
 #include "petscdm.h"
 #include "tao.h"
 
-
 typedef struct _p_TaoDM* TaoDM;
 PETSC_EXTERN PetscClassId TAODM_CLASSID;
 
@@ -37,7 +36,6 @@ PETSC_EXTERN PetscErrorCode TaoDMSetLocalObjectiveRoutine(TaoDM*,PetscErrorCode(
 PETSC_EXTERN PetscErrorCode TaoDMSetLocalGradientRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscReal**,PetscReal**,void*));
 PETSC_EXTERN PetscErrorCode TaoDMSetLocalObjectiveAndGradientRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscReal**,PetscReal*,PetscReal**,void*));
 PETSC_EXTERN PetscErrorCode TaoDMSetLocalHessianRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscReal**,Mat,void*));
-
 
 PETSC_EXTERN PetscErrorCode TaoDMFormFunctionLocal(TaoSolver, Vec, PetscReal *, void*);
 PETSC_EXTERN PetscErrorCode TaoDMFormGradientLocal(TaoSolver, Vec, Vec, void*);

@@ -1,5 +1,5 @@
 #define TAOLINESEARCH_DLL
-#include "tao-private/taolinesearch_impl.h"
+#include "petsc-private/taolinesearchimpl.h"
 
 
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Unit(TaoLineSearch);

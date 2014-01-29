@@ -1,6 +1,6 @@
 #ifndef __TAO_GPCG_H
 #define __TAO_GPCG_H
-#include "tao-private/taosolver_impl.h"
+#include "petsc-private/taosolverimpl.h"
 #include "taolinesearch.h"
 #include "tao_util.h"
 
