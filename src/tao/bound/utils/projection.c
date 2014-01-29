@@ -1,12 +1,12 @@
 #include "petsc-private/petscimpl.h"
 #include "taosolver.h"
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecBoundGradientProjection"
 /*@C
   VecBoundGradientProjection - Projects  vector according to this definition.
   If XL[i] < X[i] < XU[i], then GP[i] = G[i];
-  If X[i]<=XL[i], then GP[i] = min(G[i],0);   
+  If X[i]<=XL[i], then GP[i] = min(G[i],0);
   If X[i]>=XU[i], then GP[i] = max(G[i],0);
 
   Input Parameters:
@@ -46,7 +46,7 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP){
   } else { gpptr=gptr; }
 
   for (i=0; i<n; ++i){
-    gpval = gptr[i]; xval = xptr[i]; 
+    gpval = gptr[i]; xval = xptr[i];
 
     if (gpval>0 && xval<=xlptr[i]){
       gpval = 0;
@@ -147,16 +147,16 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec XL, Vec XU, Vec DX, PetscReal *boundm
   ierr=VecRestoreArray(XU,&xu);CHKERRQ(ierr);
   ierr=VecRestoreArray(DX,&dx);CHKERRQ(ierr);
   ierr=PetscObjectGetComm((PetscObject)X,&comm);CHKERRQ(ierr);
-  
-  if (boundmin){ 
+
+  if (boundmin){
     ierr = MPI_Allreduce(&localmin,boundmin,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
     ierr = PetscInfo1(X,"Step Bound Info: Closest Bound: %g \n",(double)*boundmin);CHKERRQ(ierr);
   }
-  if (wolfemin){ 
+  if (wolfemin){
     ierr = MPI_Allreduce(&localwolfemin,wolfemin,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
     ierr = PetscInfo1(X,"Step Bound Info: Wolfe: %g \n",(double)*wolfemin);CHKERRQ(ierr);
   }
-  if (boundmax) { 
+  if (boundmax) {
     ierr = MPI_Allreduce(&localmax,boundmax,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
     ierr = PetscInfo1(X,"Step Bound Info: Max: %g \n",(double)*boundmax);CHKERRQ(ierr);
   }

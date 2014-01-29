@@ -58,8 +58,8 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
   PetscFunctionReturn(0);
 }
 
-/* Implements Newton's Method with a trust-region, line-search approach for 
-   solving unconstrained minimization problems.  A More'-Thuente line search 
+/* Implements Newton's Method with a trust-region, line-search approach for
+   solving unconstrained minimization problems.  A More'-Thuente line search
    is used to guarantee that the bfgs preconditioner remains positive
    definite. */
 
@@ -68,7 +68,7 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
 #define NTL_SCALED_GRADIENT     2
 #define NTL_GRADIENT            3
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoSolve_NTL"
 static PetscErrorCode TaoSolve_NTL(TaoSolver tao)
 {
@@ -192,7 +192,7 @@ static PetscErrorCode TaoSolve_NTL(TaoSolver tao)
     break;
   }
 
-  /* Initialize trust-region radius.  The initialization is only performed 
+  /* Initialize trust-region radius.  The initialization is only performed
      when we are using Steihaug-Toint or the Generalized Lanczos method. */
   switch(tl->init_type) {
   case NTL_INIT_CONSTANT:
@@ -202,16 +202,16 @@ static PetscErrorCode TaoSolve_NTL(TaoSolver tao)
   case NTL_INIT_INTERPOLATION:
     /* Use the initial radius specified */
     max_radius = 0.0;
-  
+
     for (j = 0; j < j_max; ++j) {
       fmin = f;
       sigma = 0.0;
-  
+
       if (needH) {
         ierr = TaoComputeHessian(tao, tao->solution, &tao->hessian, &tao->hessian_pre, &matflag);CHKERRQ(ierr);
         needH = 0;
       }
-  
+
       for (i = 0; i < i_max; ++i) {
         ierr = VecCopy(tao->solution, tl->W);CHKERRQ(ierr);
         ierr = VecAXPY(tl->W, -tao->trust/gnorm, tao->gradient);CHKERRQ(ierr);
@@ -286,7 +286,7 @@ static PetscErrorCode TaoSolve_NTL(TaoSolver tao)
         }
         tao->trust = tau * tao->trust;
       }
-  
+
       if (fmin < f) {
         f = fmin;
         ierr = VecAXPY(tao->solution, sigma, tao->gradient);CHKERRQ(ierr);
@@ -295,7 +295,7 @@ static PetscErrorCode TaoSolve_NTL(TaoSolver tao)
         ierr = VecNorm(tao->gradient, NORM_2, &gnorm);CHKERRQ(ierr);
         if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
         needH = 1;
-  
+
         ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
         if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
       }
@@ -386,7 +386,7 @@ static PetscErrorCode TaoSolve_NTL(TaoSolver tao)
         tao->trust = PetscMax(tao->trust, tl->min_radius);
         tao->trust = PetscMin(tao->trust, tl->max_radius);
       } else {
-        /* The direction was bad; set radius to default value and re-solve 
+        /* The direction was bad; set radius to default value and re-solve
            the trust-region subproblem to get a direction */
         tao->trust = tao->trust0;
 
@@ -585,7 +585,7 @@ static PetscErrorCode TaoSolve_NTL(TaoSolver tao)
       ierr = VecDot(tao->stepdirection, tao->gradient, &gdx);CHKERRQ(ierr);
       if ((gdx >= 0.0) || PetscIsInfOrNanReal(gdx)) {
         /* Newton step is not descent or direction produced Inf or NaN */
-        
+
         if (NTL_PC_BFGS != tl->pc_type) {
           /* We don't have the bfgs matrix around and updated
              Must use gradient direction in this case */
@@ -597,7 +597,7 @@ static PetscErrorCode TaoSolve_NTL(TaoSolver tao)
           /* Attempt to use the BFGS direction */
           ierr = MatLMVMSolve(tl->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
           ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
-          
+
           /* Check for success (descent direction) */
           ierr = VecDot(tao->stepdirection, tao->gradient, &gdx);CHKERRQ(ierr);
           if ((gdx >= 0) || PetscIsInfOrNanReal(gdx)) {
@@ -605,7 +605,7 @@ static PetscErrorCode TaoSolve_NTL(TaoSolver tao)
                We can assert bfgsUpdates > 1 in this case because
                the first solve produces the scaled gradient direction,
                which is guaranteed to be descent */
-            
+
             /* Use steepest descent direction (scaled) */
             if (f != 0.0) {
               delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
@@ -617,7 +617,7 @@ static PetscErrorCode TaoSolve_NTL(TaoSolver tao)
             ierr = MatLMVMUpdate(tl->M, tao->solution, tao->gradient);CHKERRQ(ierr);
             ierr = MatLMVMSolve(tl->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
             ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
-            
+
             bfgsUpdates = 1;
             ++tl->sgrad;
             stepType = NTL_SCALED_GRADIENT;
@@ -637,7 +637,7 @@ static PetscErrorCode TaoSolve_NTL(TaoSolver tao)
         ++tl->newt;
         stepType = NTL_NEWTON;
       }
-      
+
       /* Perform the linesearch */
       fold = f;
       ierr = VecCopy(tao->solution, tl->Xold);CHKERRQ(ierr);
@@ -652,7 +652,7 @@ static PetscErrorCode TaoSolve_NTL(TaoSolver tao)
         f = fold;
         ierr = VecCopy(tl->Xold, tao->solution);CHKERRQ(ierr);
         ierr = VecCopy(tl->Gold, tao->gradient);CHKERRQ(ierr);
-        
+
         switch(stepType) {
         case NTL_NEWTON:
           /* Failed to obtain acceptable iterate with Newton step */
@@ -667,14 +667,14 @@ static PetscErrorCode TaoSolve_NTL(TaoSolver tao)
             /* Attempt to use the BFGS direction */
             ierr = MatLMVMSolve(tl->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
 
-            
+
             /* Check for success (descent direction) */
             ierr = VecDot(tao->stepdirection, tao->gradient, &gdx);CHKERRQ(ierr);
             if ((gdx <= 0) || PetscIsInfOrNanReal(gdx)) {
-              /* BFGS direction is not descent or direction produced 
+              /* BFGS direction is not descent or direction produced
                  not a number.  We can assert bfgsUpdates > 1 in this case
                  Use steepest descent direction (scaled) */
-    
+
               if (f != 0.0) {
                 delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
               } else {
@@ -684,7 +684,7 @@ static PetscErrorCode TaoSolve_NTL(TaoSolver tao)
               ierr = MatLMVMReset(tl->M);CHKERRQ(ierr);
               ierr = MatLMVMUpdate(tl->M, tao->solution, tao->gradient);CHKERRQ(ierr);
               ierr = MatLMVMSolve(tl->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-              
+
               bfgsUpdates = 1;
               ++tl->sgrad;
               stepType = NTL_SCALED_GRADIENT;
@@ -705,7 +705,7 @@ static PetscErrorCode TaoSolve_NTL(TaoSolver tao)
           /* Can only enter if pc_type == NTL_PC_BFGS
              Failed to obtain acceptable iterate with BFGS step
              Attempt to use the scaled gradient direction */
-          
+
           if (f != 0.0) {
             delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
           } else {
@@ -720,7 +720,7 @@ static PetscErrorCode TaoSolve_NTL(TaoSolver tao)
           ++tl->sgrad;
           stepType = NTL_SCALED_GRADIENT;
           break;
-          
+
         case NTL_SCALED_GRADIENT:
           /* Can only enter if pc_type == NTL_PC_BFGS
              The scaled gradient step did not produce a new iterate;
@@ -731,7 +731,7 @@ static PetscErrorCode TaoSolve_NTL(TaoSolver tao)
           ierr = MatLMVMReset(tl->M);CHKERRQ(ierr);
           ierr = MatLMVMUpdate(tl->M, tao->solution, tao->gradient);CHKERRQ(ierr);
           ierr = MatLMVMSolve(tl->M, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-          
+
           bfgsUpdates = 1;
           ++tl->grad;
           stepType = NTL_GRADIENT;
@@ -796,14 +796,14 @@ static PetscErrorCode TaoSolve_NTL(TaoSolver tao)
     ierr = VecNorm(tao->gradient, NORM_2, &gnorm);CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1,"User provided compute function generated Not-a-Number");
     needH = 1;
-    
+
     ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, tao->trust, &reason);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoSetUp_NTL"
 static PetscErrorCode TaoSetUp_NTL(TaoSolver tao)
 {
@@ -822,7 +822,7 @@ static PetscErrorCode TaoSetUp_NTL(TaoSolver tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_NTL"
 static PetscErrorCode TaoDestroy_NTL(TaoSolver tao)
 {
@@ -842,7 +842,7 @@ static PetscErrorCode TaoDestroy_NTL(TaoSolver tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_NTL"
 static PetscErrorCode TaoSetFromOptions_NTL(TaoSolver tao)
 {
@@ -898,7 +898,7 @@ static PetscErrorCode TaoSetFromOptions_NTL(TaoSolver tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoView_NTL"
 static PetscErrorCode TaoView_NTL(TaoSolver tao, PetscViewer viewer)
 {
@@ -927,7 +927,7 @@ static PetscErrorCode TaoView_NTL(TaoSolver tao, PetscViewer viewer)
 
 /* ---------------------------------------------------------- */
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoCreate_NTL"
 PetscErrorCode TaoCreate_NTL(TaoSolver tao)
 {
@@ -942,12 +942,12 @@ PetscErrorCode TaoCreate_NTL(TaoSolver tao)
   tao->ops->view = TaoView_NTL;
   tao->ops->setfromoptions = TaoSetFromOptions_NTL;
   tao->ops->destroy = TaoDestroy_NTL;
-  
+
   tao->max_it = 50;
   tao->fatol = 1e-10;
   tao->frtol = 1e-10;
   tao->data = (void*)tl;
-  
+
   tao->trust0 = 100.0;
 
 
@@ -994,7 +994,7 @@ PetscErrorCode TaoCreate_NTL(TaoSolver tao)
   tl->gamma2_i = 0.5;
   tl->gamma3_i = 2.0;
   tl->gamma4_i = 5.0;
-  
+
   tl->theta_i = 0.25;
 
   /* Remaining parameters */

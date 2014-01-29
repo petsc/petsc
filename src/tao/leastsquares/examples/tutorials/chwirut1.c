@@ -1,4 +1,4 @@
-/* 
+/*
    Include "tao.h" so that we can use TAO solvers.  Note that this
    file automatically includes libraries such as:
      petsc.h       - base PETSc routines   petscvec.h - vectors
@@ -16,8 +16,8 @@ Description:   These data are the result of a NIST study involving
                ultrasonic response, and the predictor variable is
                metal distance.
 
-Reference:     Chwirut, D., NIST (197?).  
-               Ultrasonic Reference Block Study. 
+Reference:     Chwirut, D., NIST (197?).
+               Ultrasonic Reference Block Study.
 */
 
 
@@ -27,16 +27,16 @@ static char help[]="Finds the nonlinear least-squares solution to the model \n\
 
 /*T
    Concepts: TAO - Solving a system of nonlinear equations, nonlinear ;east squares
-   Routines: TaoInitialize(); TaoFinalize(); 
+   Routines: TaoInitialize(); TaoFinalize();
    Routines: TaoCreate();
-   Routines: TaoSetType(); 
+   Routines: TaoSetType();
    Routines: TaoSetSeparableObjectiveRoutine();
    Routines: TaoSetJacobianRoutine();
    Routines: TaoSetInitialVector();
    Routines: TaoSetFromOptions();
    Routines: TaoSetHistory(); TaoGetHistory();
    Routines: TaoSolve();
-   Routines: TaoView(); TaoDestroy(); 
+   Routines: TaoView(); TaoDestroy();
    Processors: 1
 T*/
 
@@ -67,7 +67,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;           /* used to check for functions returning nonzeros */
   Vec            x, f;               /* solution, function */
-  Mat            J;                  /* Jacobian matrix */ 
+  Mat            J;                  /* Jacobian matrix */
   TaoSolver      tao;                /* TaoSolver solver context */
   PetscInt       i;               /* iteration information */
   PetscReal      hist[100],resid[100];
@@ -104,14 +104,14 @@ int main(int argc,char **argv)
 
   /* Check for any TAO command line arguments */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
-  
+
   ierr = TaoSetHistory(tao,hist,resid,0,100,PETSC_TRUE);CHKERRQ(ierr);
   /* Perform the Solve */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
   if (printhistory) {
     ierr = TaoGetHistory(tao,0,0,0,&nhist);CHKERRQ(ierr);
     for (i=0;i<nhist;i++) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%g\t%g\n",(double)hist[i],(double)resid[i]);CHKERRQ(ierr); 
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%g\t%g\n",(double)hist[i],(double)resid[i]);CHKERRQ(ierr);
     }
   }
   ierr = TaoView(tao,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
@@ -127,7 +127,7 @@ int main(int argc,char **argv)
   /* Finalize TAO */
   TaoFinalize();
   PetscFinalize();
-  return 0;     
+  return 0;
 }
 
 /*--------------------------------------------------------------------*/
@@ -179,7 +179,7 @@ PetscErrorCode EvaluateJacobian(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, MatStru
   ierr = MatSetValues(*J,NOBSERVATIONS,user->idm, NPARAMETERS, user->idn,(PetscReal *)user->j,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
+
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   PetscLogFlops(NOBSERVATIONS * 13);
   PetscFunctionReturn(0);
@@ -192,7 +192,7 @@ PetscErrorCode FormStartingPoint(Vec X)
 {
   PetscReal      *x;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   x[0] = 0.15;

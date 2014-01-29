@@ -3,7 +3,7 @@
 /*  Include "tao.h" so we can use TAO solvers.  */
 #include "taosolver.h"
 
-static char  help[] = 
+static char  help[] =
 "This example demonstrates use of the TAO package to \n\
 solve an unconstrained minimization problem.  This example is based on a \n\
 problem from the MINPACK-2 test suite.  Given a rectangular 2-D domain and \n\
@@ -18,7 +18,7 @@ The command line options are:\n\
    Concepts: TAO - Solving an unconstrained minimization problem
    Routines: TaoInitialize(); TaoFinalize();
    Routines: TaoCreate(); TaoSetType();
-   Routines: TaoSetInitialVector(); 
+   Routines: TaoSetInitialVector();
    Routines: TaoSetObjectiveAndGradientRoutine();
    Routines: TaoSetHessianRoutine(); TaoSetFromOptions();
    Routines: TaoGetKSP(); TaoSolve();
@@ -26,9 +26,9 @@ The command line options are:\n\
    Processors: 1
 T*/
 
-/* 
-   User-defined application context - contains data needed by the 
-   application-provided call-back routines, FormFunctionGradient() 
+/*
+   User-defined application context - contains data needed by the
+   application-provided call-back routines, FormFunctionGradient()
    and FormHessian().
 */
 typedef struct {
@@ -99,7 +99,7 @@ int main( int argc, char **argv )
 
   /* Create a matrix data structure to store the Hessian.  This structure will be used by TAO */
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,7,NULL,&(user.H));        /* PETSc routine */
-  ierr = MatSetOption(user.H,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);           
+  ierr = MatSetOption(user.H,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   ierr = TaoSetHessianRoutine(tao,user.H,user.H,FormHessian,(void *)&user);CHKERRQ(ierr);
 
   /* Check for any TAO command line options */
@@ -107,7 +107,7 @@ int main( int argc, char **argv )
 
   /* Limit the number of iterations in the KSP linear solver */
   ierr = TaoGetKSP(tao,&ksp);CHKERRQ(ierr);
-  if (ksp) {                                            
+  if (ksp) {
     ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,user.mx*user.my);CHKERRQ(ierr);
   }
 
@@ -137,18 +137,18 @@ int main( int argc, char **argv )
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionGradient"
 
-/*  FormFunctionGradient - Evaluates function and corresponding gradient.             
+/*  FormFunctionGradient - Evaluates function and corresponding gradient.
 
     Input Parameters:
 .   tao     - the TaoSolver context
 .   X       - input vector
 .   userCtx - optional user-defined context, as set by TaoSetFunctionGradient()
-    
+
     Output Parameters:
 .   fcn     - the newly evaluated function
 .   G       - vector containing the newly evaluated gradient
 */
-PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,PetscReal *fcn,Vec G,void *userCtx) 
+PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,PetscReal *fcn,Vec G,void *userCtx)
 {
   AppCtx         *user = (AppCtx *) userCtx;
   PetscErrorCode ierr;
@@ -367,7 +367,7 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
 
       row=(j)*mx + (i);
 
-      xc = x[row]; 
+      xc = x[row];
       xlt=xrb=xl=xr=xb=xt=xc;
 
       /* Left side */
@@ -435,10 +435,10 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
       hc = hydhx*(1.0+d7*d7)/(f1*f1*f1) + hxdhy*(1.0+d8*d8)/(f3*f3*f3) + hydhx*(1.0+d5*d5)/(f5*f5*f5) + hxdhy*(1.0+d6*d6)/(f6*f6*f6) +
            (hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-2*d1*d4)/(f2*f2*f2) +  (hxdhy*(1.0+d2*d2)+hydhx*(1.0+d3*d3)-2*d2*d3)/(f4*f4*f4);
 
-      hl*=0.5; hr*=0.5; ht*=0.5; hb*=0.5; hbr*=0.5; htl*=0.5;  hc*=0.5; 
+      hl*=0.5; hr*=0.5; ht*=0.5; hb*=0.5; hbr*=0.5; htl*=0.5;  hc*=0.5;
 
       k=0;
-      if (j>0){ 
+      if (j>0){
         v[k]=hb; col[k]=row - mx; k++;
       }
 
@@ -464,7 +464,7 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
         v[k]= ht; col[k] = row+mx; k++;
       }
 
-      /* 
+      /*
          Set matrix values using local numbering, which was defined
          earlier, in the main routine.
       */
@@ -486,7 +486,7 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "MSA_BoundaryConditions"
-/* 
+/*
    MSA_BoundaryConditions -  Calculates the boundary conditions for
    the region.
 
@@ -573,7 +573,7 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 #undef __FUNCT__
 #define __FUNCT__ "MSA_InitialPoint"
 /*
-   MSA_InitialPoint - Calculates the initial guess in one of three ways. 
+   MSA_InitialPoint - Calculates the initial guess in one of three ways.
 
    Input Parameters:
 .  user - user-defined application context
@@ -601,7 +601,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
 
     /* Get pointers to vector data */
     ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-    /* Perform local computations */    
+    /* Perform local computations */
     for (j=0; j<my; j++){
       for (i=0; i< mx; i++){
         row=(j)*mx + (i);

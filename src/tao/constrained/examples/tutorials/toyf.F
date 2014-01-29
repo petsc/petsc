@@ -1,11 +1,11 @@
-! Program usage: mpirun -np 1 toyf[-help] [all TAO options] 
+! Program usage: mpirun -np 1 toyf[-help] [all TAO options]
 
 !
 !min f=(x1-x2)^2 + (x2-2)^2 -2*x1-2*x2
 !s.t.     x1^2 + x2 = 2
 !      0 <= x1^2 - x2 <= 1
 !      -1 <= x1,x2 <= 2
-!---------------------------------------------------------------------- 
+!----------------------------------------------------------------------
 
       program toyf
       implicit none
@@ -22,7 +22,7 @@
 
 
       call TaoInitialize(PETSC_NULL_CHARACTER,ierr)
-      
+
       call PetscPrintf(PETSC_COMM_SELF,                                 &
      &           '\n---- TOY Problem -----\n',                          &
      &           ierr)
@@ -70,10 +70,10 @@
       call TaoSetHessianRoutine(tao,Hess,Hess,FormHessian,               &
      &     PETSC_NULL_OBJECT,ierr)
       CHKERRQ(ierr)
-      
+
       call TaoSetTolerances(tao,1.0d-12,0,0,0,0,ierr)
       CHKERRQ(ierr)
-      
+
       call TaoSetFromOptions(tao,ierr)
       CHKERRQ(ierr)
 
@@ -82,35 +82,35 @@
 
       call KSPGetPC(ksp,pc,ierr)
       CHKERRQ(ierr)
-      
+
 !      call PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU)
 !      CHKERRQ(ierr)
 
       call PetscOptionsSetValue('-pc_factor_mat_solver_package',         &
      &     'superlu',ierr)
       CHKERRQ(ierr)
-      
+
       call PCSetType(pc,PCLU,ierr)
       CHKERRQ(ierr)
 
       call KSPSetType(ksp,KSPPREONLY,ierr)
       CHKERRQ(ierr)
-      
+
       call KSPSetFromOptions(ksp,ierr)
       CHKERRQ(ierr)
 
       call TaoSetTolerances(tao,1.0d-12,0.0d0,0.0d0,0.0d0,0.0d0,ierr)
       CHKERRQ(ierr)
 
-      ! Solve 
+      ! Solve
       call TaoSolve(tao,ierr)
       CHKERRQ(ierr)
 
 
-      ! Analyze solution 
+      ! Analyze solution
       call TaoGetTerminationReason(tao,reason,ierr)
       CHKERRQ(ierr)
-      
+
 !      if (reason .lt. 0) then
 !         call PetscPrintf(MPI_COMM_WORLD, "TAO failed to converge.\n"!,  &
 !     &         ierr)
@@ -119,14 +119,14 @@
 !     &         "Optimization terminated with status %D.\n", reason,ierr)
 !      end if
 
-      ! Finalize Memory 
+      ! Finalize Memory
       call DestroyProblem(ierr)
       CHKERRQ(ierr)
 
       call TaoDestroy(tao,ierr)
       CHKERRQ(ierr)
 
-      ! Finalize TAO, PETSc 
+      ! Finalize TAO, PETSc
       call TaoFinalize(ierr)
 
       stop
@@ -155,7 +155,7 @@
       CHKERRQ(ierr)
       call VecSet(xu,two,ierr)
       CHKERRQ(ierr)
-  
+
       ne = 1
       call VecCreateSeq(PETSC_COMM_SELF,ne,ce,ierr)
       CHKERRQ(ierr)
@@ -187,10 +187,10 @@
 
       subroutine DestroyProblem(ierr)
       implicit none
-#include "toyf.h"      
+#include "toyf.h"
 
       PetscErrorCode ierr
-      
+
       call MatDestroy(Ae,ierr)
       CHKERRQ(ierr)
       call MatDestroy(Ai,ierr)
@@ -223,7 +223,7 @@
       PetscScalar x_v(0:1),g_v(0:1)
       PetscOffset x_i,g_i
 
- 
+
       call VecGetArray(X,x_v,x_i,ierr)
       CHKERRQ(ierr)
       call VecGetArray(G,g_v,g_i,ierr)
@@ -250,7 +250,7 @@
       MatStructure     flag
       PetscErrorCode   ierr
       PetscInt         dummy
-      
+
       PetscScalar      de_v(0:1),di_v(0:1)
       PetscOffset      de_i,di_i
       PetscInt         zero(1)
@@ -266,7 +266,7 @@
       ! fix indices on matsetvalues
       call TaoGetDualVariables(tao,DE,DI,ierr)
       CHKERRQ(ierr)
-      
+
       call VecGetArray(DE,de_v,de_i,ierr)
       CHKERRQ(ierr)
       call VecGetArray(DI,di_v,di_i,ierr)
@@ -282,13 +282,13 @@
       call MatSetValues(H,1,zero,1,zero,val,INSERT_VALUES,ierr)
       CHKERRQ(ierr)
       call MatSetValues(H,1,one,1,one,two,INSERT_VALUES,ierr)
-      CHKERRQ(ierr)  
-  
+      CHKERRQ(ierr)
+
       call MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY,ierr)
       CHKERRQ(ierr)
       call MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY,ierr)
       CHKERRQ(ierr)
-  
+
       flag = SAME_NONZERO_PATTERN
       ierr = 0
       end subroutine FormHessian

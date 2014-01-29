@@ -9,7 +9,7 @@
 
   Input Parameters:
 + tao - the TaoSolver context
-. XL  - vector of lower bounds 
+. XL  - vector of lower bounds
 - XU  - vector of upper bounds
 
   Level: beginner
@@ -35,11 +35,11 @@ PetscErrorCode TaoSetVariableBounds(TaoSolver tao, Vec XL, Vec XU)
     }
     if (tao->XU) {
         ierr = VecDestroy(&tao->XU);CHKERRQ(ierr);
-    }   
+    }
 
     tao->XL = XL;
     tao->XU = XU;
-        
+
     PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -53,12 +53,12 @@ PetscErrorCode TaoSetVariableBounds(TaoSolver tao, Vec XL, Vec XU)
 + tao - the TaoSolver context
 . func - the bounds computation routine
 - ctx - [optional] user-defined context for private data for the bounds computation (may be NULL)
- 
+
   Calling sequence of func:
 $      func (TaoSolver tao, Vec xl, Vec xu);
 
 + tao - the TaoSolver
-. xl  - vector of lower bounds 
+. xl  - vector of lower bounds
 . xu  - vector of upper bounds
 - ctx - the (optional) user-defined function context
 
@@ -66,7 +66,7 @@ $      func (TaoSolver tao, Vec xl, Vec xu);
 
 .seealso: TaoSetObjectiveRoutine(), TaoSetHessianRoutine() TaoSetObjectiveAndGradientRoutine(), TaoSetVariableBounds()
 
-Note: The func passed in to TaoSetVariableBoundsRoutine() takes 
+Note: The func passed in to TaoSetVariableBoundsRoutine() takes
 precedence over any values set in TaoSetVariableBounds().
 
 @*/
@@ -98,7 +98,7 @@ PetscErrorCode TaoGetVariableBounds(TaoSolver tao, Vec *XL, Vec *XU)
 #define __FUNCT__ "TaoComputeVariableBounds"
 /*@C
    TaoComputeVariableBounds - Compute the variable bounds using the
-   routine set by TaoSetVariableBoundsRoutine(). 
+   routine set by TaoSetVariableBoundsRoutine().
 
    Collective on TaoSolver
 
@@ -123,7 +123,7 @@ PetscErrorCode TaoComputeVariableBounds(TaoSolver tao)
     ierr = VecSet(tao->XL, TAO_NINFINITY);CHKERRQ(ierr);
     ierr = VecDuplicate(tao->solution, &tao->XU);CHKERRQ(ierr);
     ierr = VecSet(tao->XU, TAO_INFINITY);CHKERRQ(ierr);
-  }     
+  }
   ierr = (*tao->ops->computebounds)(tao,tao->XL,tao->XU,tao->user_boundsP);CHKERRQ(ierr);
   CHKMEMQ;
   PetscFunctionReturn(0);
@@ -138,7 +138,7 @@ PetscErrorCode TaoComputeVariableBounds(TaoSolver tao)
 
   Input Parameters:
 + tao - the TaoSolver context
-. IL  - vector of lower bounds 
+. IL  - vector of lower bounds
 - IU  - vector of upper bounds
 
   Level: beginner
@@ -164,11 +164,11 @@ PetscErrorCode TaoSetInequalityBounds(TaoSolver tao, Vec IL, Vec IU)
     }
     if (tao->IU) {
         ierr = VecDestroy(&tao->IU);CHKERRQ(ierr);
-    }   
+    }
 
     tao->IL = IL;
     tao->IU = IU;
-        
+
     PetscFunctionReturn(0);
 }
 
@@ -192,7 +192,7 @@ PetscErrorCode TaoGetInequalityBounds(TaoSolver tao, Vec *IL, Vec *IU)
 #define __FUNCT__ "TaoComputeConstraints"
 /*@C
    TaoComputeConstraints - Compute the variable bounds using the
-   routine set by TaoSetConstraintsRoutine(). 
+   routine set by TaoSetConstraintsRoutine().
 
    Collective on TaoSolver
 
@@ -238,10 +238,10 @@ PetscErrorCode TaoComputeConstraints(TaoSolver tao, Vec X, Vec C)
 
   Input Parameters:
 + tao - the TaoSolver context
-. c   - A vector that will be used to store constraint evaluation 
+. c   - A vector that will be used to store constraint evaluation
 . func - the bounds computation routine
 - ctx - [optional] user-defined context for private data for the constraints computation (may be NULL)
- 
+
   Calling sequence of func:
 $      func (TaoSolver tao, Vec x, Vec c, void *ctx);
 
@@ -282,16 +282,16 @@ PetscErrorCode TaoSetConstraintsRoutine(TaoSolver tao, Vec c, PetscErrorCode (*f
 
   Level: advanced
 
-  Note: 
+  Note:
   DL and DU should be created before calling this routine.  If calling
-  this routine after using an unconstrained solver, DL and DU are set to all 
+  this routine after using an unconstrained solver, DL and DU are set to all
   zeros.
 
   Level: advanced
 
 .seealso: TaoComputeObjective(), TaoSetVariableBounds()
 @*/
-PetscErrorCode TaoComputeDualVariables(TaoSolver tao, Vec DL, Vec DU) 
+PetscErrorCode TaoComputeDualVariables(TaoSolver tao, Vec DL, Vec DU)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -333,12 +333,12 @@ PetscErrorCode TaoGetDualVariables(TaoSolver tao, Vec *DE, Vec *DI)
      PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
     if (DE) {
       *DE = tao->DE;
-    } 
+    }
     if (DI) {
       *DI = tao->DI;
     }
     PetscFunctionReturn(0);
-} 
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetEqualityConstraintsRoutine"
@@ -349,10 +349,10 @@ PetscErrorCode TaoGetDualVariables(TaoSolver tao, Vec *DE, Vec *DI)
 
   Input Parameters:
 + tao - the TaoSolver context
-. ce   - A vector that will be used to store equality constraint evaluation 
+. ce   - A vector that will be used to store equality constraint evaluation
 . func - the bounds computation routine
 - ctx - [optional] user-defined context for private data for the equality constraints computation (may be NULL)
- 
+
   Calling sequence of func:
 $      func (TaoSolver tao, Vec x, Vec ce, void *ctx);
 
@@ -394,10 +394,10 @@ PetscErrorCode TaoSetEqualityConstraintsRoutine(TaoSolver tao, Vec ce, PetscErro
 
   Input Parameters:
 + tao - the TaoSolver context
-. ci   - A vector that will be used to store inequality constraint evaluation 
+. ci   - A vector that will be used to store inequality constraint evaluation
 . func - the bounds computation routine
 - ctx - [optional] user-defined context for private data for the inequality constraints computation (may be NULL)
- 
+
   Calling sequence of func:
 $      func (TaoSolver tao, Vec x, Vec ci, void *ctx);
 
@@ -434,7 +434,7 @@ PetscErrorCode TaoSetInequalityConstraintsRoutine(TaoSolver tao, Vec ci, PetscEr
 #define __FUNCT__ "TaoComputeEqualityConstraints"
 /*@C
    TaoComputeEqualityConstraints - Compute the variable bounds using the
-   routine set by TaoSetEqualityConstraintsRoutine(). 
+   routine set by TaoSetEqualityConstraintsRoutine().
 
    Collective on TaoSolver
 
@@ -475,7 +475,7 @@ PetscErrorCode TaoComputeEqualityConstraints(TaoSolver tao, Vec X, Vec CE)
 #define __FUNCT__ "TaoComputeInequalityConstraints"
 /*@C
    TaoComputeInequalityConstraints - Compute the variable bounds using the
-   routine set by TaoSetInequalityConstraintsRoutine(). 
+   routine set by TaoSetInequalityConstraintsRoutine().
 
    Collective on TaoSolver
 

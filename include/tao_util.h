@@ -26,7 +26,7 @@ PetscErrorCode VecStepMax(Vec, Vec, PetscReal *);
   Options database keys:
 . -different_hessian - TAO will use a copy of the hessian operator for masking.  By default
                        TAO will directly alter the hessian operator.
-                     
+
 E*/
 typedef PetscInt TaoSubsetType;
 #define TAO_SUBSET_SUBVEC          0
@@ -42,7 +42,7 @@ PetscErrorCode VecWhichLessThan(Vec, Vec, IS *);
 PetscErrorCode VecWhichEqual(Vec, Vec, IS *);
 
 PetscErrorCode VecGetSubVec(Vec, IS, PetscInt, PetscReal, Vec*);
-PetscErrorCode VecReducedXPY(Vec, Vec, IS); 
+PetscErrorCode VecReducedXPY(Vec, Vec, IS);
 PetscErrorCode ISCreateComplement(IS, Vec, IS *);
 PetscErrorCode VecISSetToConstant(IS, PetscReal, Vec);
 PetscErrorCode MatGetSubMat(Mat, IS, Vec, TaoSubsetType, Mat*);

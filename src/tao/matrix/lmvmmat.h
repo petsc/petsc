@@ -31,7 +31,7 @@ typedef struct{
     PetscInt limitType;
     PetscInt scaleType;
     PetscInt rScaleType;
-    
+
     PetscReal s_alpha;  /*  Factor for scalar scaling */
     PetscReal r_alpha;  /*  Factor on scalar for rescaling diagonal matrix */
     PetscReal r_beta;   /*  Factor on diagonal for rescaling diagonal matrix */
@@ -79,7 +79,7 @@ typedef struct{
 
   PetscBool useScale;
   Vec scale;
-     
+
 
 } MatLMVMCtx;
 

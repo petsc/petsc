@@ -4,7 +4,7 @@
 #include "petsc.h"
 #include "petscblaslapack.h"
 #include "taolapack.h"
-#ifdef PETSC_HAVE_MATLAB_ENGINE  
+#ifdef PETSC_HAVE_MATLAB_ENGINE
 #include "engine.h"
 #endif
 
@@ -20,7 +20,7 @@ typedef struct {
   PetscReal par2; /* delta multiplier for all interp. points */
   PetscReal par3; /* Pivot threshold for validity */
   PetscReal par4; /* Pivot threshold for additional points */
-  
+
 
 
   /* Workspace */
@@ -56,19 +56,19 @@ typedef struct {
   PetscInt *interp_indices; /* n */
   PetscBLASInt *iwork; /* n */
   PetscInt nHist;
-  VecScatter scatterf,scatterx; 
+  VecScatter scatterf,scatterx;
   Vec *Mdir;
   PetscInt sizemdir;
   Vec localf, localx, localfmin, localxmin;
   Vec workxvec;
   PetscMPIInt size;
-#ifdef PETSC_HAVE_MATLAB_ENGINE  
+#ifdef PETSC_HAVE_MATLAB_ENGINE
   PetscMatlabEngine me;
 #endif
 
   Mat Hs;
   Vec b;
-  
+
   PetscReal deltamax;
   PetscReal deltamin;
   PetscReal subproblem_rtol;   /* parameter used by quadratic subproblem */
@@ -93,8 +93,8 @@ typedef struct {
   PetscReal *omega; /* npmax - np - 1 */
 
 
-    
-       
+
+
 } TAO_POUNDERS;
 
 

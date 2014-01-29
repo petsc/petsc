@@ -7,7 +7,7 @@
 #undef __FUNCT__
 #define __FUNCT__ "VecWhichEqual"
 /*@
-  VecWhichEqual - Creates an index set containing the indices 
+  VecWhichEqual - Creates an index set containing the indices
              where the vectors Vec1 and Vec2 have identical elements.
 
   Collective on Vec
@@ -30,8 +30,8 @@ PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS * S)
   MPI_Comm        comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(Vec1,VEC_CLASSID,1); 
-  PetscValidHeaderSpecific(Vec2,VEC_CLASSID,2); 
+  PetscValidHeaderSpecific(Vec1,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(Vec2,VEC_CLASSID,2);
   PetscCheckSameComm(Vec1,1,Vec2,2);
 
   ierr = VecGetOwnershipRange(Vec1, &low, &high);CHKERRQ(ierr);
@@ -69,7 +69,7 @@ PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS * S)
 #undef __FUNCT__
 #define __FUNCT__ "VecWhichLessThan"
 /*@
-  VecWhichLessThan - Creates an index set containing the indices 
+  VecWhichLessThan - Creates an index set containing the indices
   where the vectors Vec1 < Vec2
 
   Collective on S
@@ -129,8 +129,8 @@ PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS * S)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecWhichGreaterThan"
-/*@ 
-  VecWhichGreaterThan - Creates an index set containing the indices 
+/*@
+  VecWhichGreaterThan - Creates an index set containing the indices
   where the vectors Vec1 > Vec2
 
   Collective on S
@@ -152,8 +152,8 @@ PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS * S)
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(Vec1,VEC_CLASSID,1); 
-  PetscValidHeaderSpecific(Vec2,VEC_CLASSID,2); 
+  PetscValidHeaderSpecific(Vec1,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(Vec2,VEC_CLASSID,2);
   PetscCheckSameComm(Vec1,1,Vec2,2);
 
   ierr = VecGetOwnershipRange(Vec1, &low, &high);CHKERRQ(ierr);
@@ -193,7 +193,7 @@ PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS * S)
 #undef __FUNCT__
 #define __FUNCT__ "VecWhichBetween"
 /*@
-  VecWhichBetween - Creates an index set containing the indices 
+  VecWhichBetween - Creates an index set containing the indices
                where  VecLow < V < VecHigh
 
   Collective on S
@@ -217,7 +217,7 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S)
   PetscReal      *v1,*v2,*vmiddle;
   MPI_Comm       comm;
 
-  PetscValidHeaderSpecific(V,VEC_CLASSID,2); 
+  PetscValidHeaderSpecific(V,VEC_CLASSID,2);
   PetscCheckSameComm(V,2,VecLow,1); PetscCheckSameComm(V,2,VecHigh,3);
 
   ierr = VecGetOwnershipRange(VecLow, &low, &high);CHKERRQ(ierr);
@@ -242,7 +242,7 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S)
     }
 
     ierr = PetscMalloc( n*sizeof(PetscInt), &vm );CHKERRQ(ierr);
-    
+
     for (i=0; i<n; i++){
       if (v1[i] < vmiddle[i] && vmiddle[i] < v2[i]) {vm[n_vm]=low+i; n_vm++;}
     }
@@ -264,7 +264,7 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S)
 #undef __FUNCT__
 #define __FUNCT__ "VecWhichBetweenOrEqual"
 /*@
-  VecWhichBetweenOrEqual - Creates an index set containing the indices 
+  VecWhichBetweenOrEqual - Creates an index set containing the indices
   where  VecLow <= V <= VecHigh
 
   Collective on S
@@ -288,7 +288,7 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
   PetscReal      *v1,*v2,*vmiddle;
   MPI_Comm       comm;
 
-  PetscValidHeaderSpecific(V,VEC_CLASSID,2); 
+  PetscValidHeaderSpecific(V,VEC_CLASSID,2);
   PetscCheckSameComm(V,2,VecLow,1); PetscCheckSameComm(V,2,VecHigh,3);
 
   ierr = VecGetOwnershipRange(VecLow, &low, &high);CHKERRQ(ierr);
@@ -335,11 +335,11 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecGetSubVec"
-/*@ 
+/*@
   VecGetSubVec - Gets a subvector using the IS
 
   Input Parameters:
-+ vfull - the full matrix 
++ vfull - the full matrix
 . is - the index set for the subvector
 . reduced_type - the method TAO is using for subsetting (TAO_SUBSET_SUBVEC, TAO_SUBSET_MASK,  TAO_SUBSET_MATRIXFREE)
 - maskvalue - the value to set the unused vector elements to (for TAO_SUBSET_MASK or TAO_SUBSET_MATRIXFREE)
@@ -350,7 +350,7 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
   Note:
   maskvalue should usually be 0.0, unless a pointwise divide will be used.
 @*/
-PetscErrorCode VecGetSubVec(Vec vfull, IS is, PetscInt reduced_type, PetscReal maskvalue, Vec *vreduced) 
+PetscErrorCode VecGetSubVec(Vec vfull, IS is, PetscInt reduced_type, PetscReal maskvalue, Vec *vreduced)
 {
   PetscErrorCode ierr;
   PetscInt       nfull,nreduced,nreduced_local,rlow,rhigh,flow,fhigh;
@@ -395,7 +395,7 @@ PetscErrorCode VecGetSubVec(Vec vfull, IS is, PetscInt reduced_type, PetscReal m
       ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
       ierr = ISDestroy(&ident);CHKERRQ(ierr);
       break;
-      
+
     case TAO_SUBSET_MASK:
     case TAO_SUBSET_MATRIXFREE:
       /* vr[i] = vf[i]   if i in is
@@ -403,7 +403,7 @@ PetscErrorCode VecGetSubVec(Vec vfull, IS is, PetscInt reduced_type, PetscReal m
       if (*vreduced == NULL) {
         ierr = VecDuplicate(vfull,vreduced);CHKERRQ(ierr);
       }
-      
+
       ierr = VecSet(*vreduced,maskvalue);CHKERRQ(ierr);
       ierr = ISGetLocalSize(is,&nlocal);CHKERRQ(ierr);
       ierr = VecGetOwnershipRange(vfull,&flow,&fhigh);CHKERRQ(ierr);
@@ -425,7 +425,7 @@ PetscErrorCode VecGetSubVec(Vec vfull, IS is, PetscInt reduced_type, PetscReal m
 
 #undef __FUNCT__
 #define __FUNCT__ "VecReducedXPY"
-/*@ 
+/*@
   VecReducedXPY - Adds a reduced vector to the appropriate elements of a full-space vector.
 
   Input Parameters:
@@ -467,7 +467,7 @@ PetscErrorCode VecReducedXPY(Vec vfull, Vec vreduced, IS is)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISCreateComplement"
 /*@
    ISCreateComplement - Creates the complement of the the index set
@@ -495,8 +495,8 @@ PetscErrorCode ISCreateComplement(IS S, Vec V, IS *T)
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(S,IS_CLASSID,1); 
-  PetscValidHeaderSpecific(V,VEC_CLASSID,2); 
+  PetscValidHeaderSpecific(S,IS_CLASSID,1);
+  PetscValidHeaderSpecific(V,VEC_CLASSID,2);
 
   ierr = VecGetOwnershipRange(V,&low,&high);CHKERRQ(ierr);
   ierr = VecGetLocalSize(V,&nloc);CHKERRQ(ierr);
@@ -520,7 +520,7 @@ PetscErrorCode ISCreateComplement(IS S, Vec V, IS *T)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecISSetToConstant"
 /*@
    VecISSetToConstant - Sets the elements of a vector, specified by an index set, to a constant
@@ -542,8 +542,8 @@ PetscErrorCode VecISSetToConstant(IS S, PetscReal c, Vec V)
   PetscReal      *v;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(V,VEC_CLASSID,3); 
-  PetscValidHeaderSpecific(S,IS_CLASSID,1); 
+  PetscValidHeaderSpecific(V,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(S,IS_CLASSID,1);
   PetscValidType(V,3);
   PetscCheckSameComm(V,3,S,1);
 
@@ -561,7 +561,7 @@ PetscErrorCode VecISSetToConstant(IS S, PetscReal c, Vec V)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSubMat"
-/*@ 
+/*@
   MatGetSubMat - Gets a submatrix using the IS
 
   Input Parameters:
@@ -588,9 +588,9 @@ PetscErrorCode MatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, Mat
   case TAO_SUBSET_SUBVEC:
     ierr = MatGetSubMatrix(M, is, is, MAT_INITIAL_MATRIX, Msub);CHKERRQ(ierr);
     break;
-    
+
   case TAO_SUBSET_MASK:
-    /* Get Reduced Hessian 
+    /* Get Reduced Hessian
      Msub[i,j] = M[i,j] if i,j in Free_Local or i==j
      Msub[i,j] = 0      if i!=j and i or j not in Free_Local
      */

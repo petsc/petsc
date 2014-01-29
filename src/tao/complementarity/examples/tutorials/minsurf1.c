@@ -26,8 +26,8 @@ The command line options are:\n\
 T*/
 
 
-/* 
-   User-defined application context - contains data needed by the 
+/*
+   User-defined application context - contains data needed by the
    application-provided call-back routines, FormFunctionGradient(),
    FormHessian().
 */
@@ -74,7 +74,7 @@ int main(int argc, char **argv)
   /* Calculate any derived values from parameters */
   N = user.mx*user.my;
 
-  
+
   PetscPrintf(PETSC_COMM_SELF,"\n---- Minimum Surface Area Problem -----\n");
   PetscPrintf(PETSC_COMM_SELF,"mx:%d, my:%d\n", user.mx,user.my);
 
@@ -95,7 +95,7 @@ int main(int argc, char **argv)
 
   /*  Set routines for constraints function and Jacobian evaluation */
   ierr = TaoSetConstraintsRoutine(tao, c, FormConstraints, (void *)&user);CHKERRQ(ierr);
-  ierr = TaoSetJacobianRoutine(tao, J, J, FormJacobian, (void *)&user);CHKERRQ(ierr); 
+  ierr = TaoSetJacobianRoutine(tao, J, J, FormJacobian, (void *)&user);CHKERRQ(ierr);
 
   /* Set the variable bounds */
   ierr = MSA_BoundaryConditions(&user);CHKERRQ(ierr);
@@ -143,13 +143,13 @@ int main(int argc, char **argv)
 #undef __FUNCT__
 #define __FUNCT__ "FormConstraints"
 
-/*  FormConstraints - Evaluates gradient of f.             
+/*  FormConstraints - Evaluates gradient of f.
 
     Input Parameters:
 .   tao  - the TAO_APPLICATION context
 .   X    - input vector
 .   ptr  - optional user-defined context, as set by TaoSetConstraintsRoutine()
-    
+
     Output Parameters:
 .   G - vector containing the newly evaluated gradient
 */
@@ -177,10 +177,10 @@ PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec G, void *ptr){
   for (j=0; j<my; j++){
     for (i=0; i< mx; i++){
       row= j*mx + i;
-      
+
       xc = x[row];
       xlt=xrb=xl=xr=xb=xt=xc;
-      
+
       if (i==0){ /* left side */
         xl= user->left[j+1];
         xlt = user->left[j+2];
@@ -194,7 +194,7 @@ PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec G, void *ptr){
       } else {
         xb = x[row-mx];
       }
-      
+
       if (i+1 == mx){ /* right side */
         xr=user->right[j+1];
         xrb = user->right[j];
@@ -224,7 +224,7 @@ PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec G, void *ptr){
       d6 = (xrb-xb);
       d7 = (xlt-xl);
       d8 = (xt-xlt);
-      
+
       df1dxc = d1*hydhx;
       df2dxc = ( d1*hydhx + d4*hxdhy );
       df3dxc = d3*hxdhy;
@@ -247,7 +247,7 @@ PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec G, void *ptr){
       f4 = PetscSqrtScalar( 1.0 + d3*d3 + d2*d2);
       f5 = PetscSqrtScalar( 1.0 + d2*d2 + d5*d5);
       f6 = PetscSqrtScalar( 1.0 + d4*d4 + d6*d6);
-      
+
       df1dxc /= f1;
       df2dxc /= f2;
       df3dxc /= f3;
@@ -256,10 +256,10 @@ PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec G, void *ptr){
       df6dxc /= f6;
 
       g[row] = (df1dxc+df2dxc+df3dxc+df4dxc+df5dxc+df6dxc )/2.0;
-      
+
     }
   }
-  
+
   /* Restore vectors */
   ierr = VecRestoreArray(X, &x);CHKERRQ(ierr);
   ierr = VecRestoreArray(G, &g);CHKERRQ(ierr);
@@ -283,7 +283,7 @@ PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec G, void *ptr){
 
 */
 PetscErrorCode FormJacobian(TaoSolver tao, Vec X, Mat *tH, Mat* tHPre, MatStructure* flag, void *ptr)
-{ 
+{
   AppCtx *user = (AppCtx *) ptr;
   Mat H = *tH;
   PetscErrorCode ierr;
@@ -309,8 +309,8 @@ PetscErrorCode FormJacobian(TaoSolver tao, Vec X, Mat *tH, Mat* tHPre, MatStruct
   for (i=0; i< mx; i++){
     for (j=0; j<my; j++){
       row= j*mx + i;
-      
-      xc = x[row]; 
+
+      xc = x[row];
       xlt=xrb=xl=xr=xb=xt=xc;
 
       /* Left side */
@@ -320,14 +320,14 @@ PetscErrorCode FormJacobian(TaoSolver tao, Vec X, Mat *tH, Mat* tHPre, MatStruct
       } else {
         xl = x[row-1];
       }
-      
+
       if (j==0){
         xb=user->bottom[i+1];
         xrb = user->bottom[i+2];
       } else {
         xb = x[row-mx];
       }
-      
+
       if (i+1 == mx){
         xr=user->right[j+1];
         xrb = user->right[j];
@@ -358,7 +358,7 @@ PetscErrorCode FormJacobian(TaoSolver tao, Vec X, Mat *tH, Mat* tHPre, MatStruct
       d6 = (xrb-xb)/hx;
       d7 = (xlt-xl)/hy;
       d8 = (xlt-xt)/hx;
-      
+
       f1 = PetscSqrtScalar( 1.0 + d1*d1 + d7*d7);
       f2 = PetscSqrtScalar( 1.0 + d1*d1 + d4*d4);
       f3 = PetscSqrtScalar( 1.0 + d3*d3 + d8*d8);
@@ -384,44 +384,44 @@ PetscErrorCode FormJacobian(TaoSolver tao, Vec X, Mat *tH, Mat* tHPre, MatStruct
         (hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-2*d1*d4)/(f2*f2*f2) +
         (hxdhy*(1.0+d2*d2)+hydhx*(1.0+d3*d3)-2*d2*d3)/(f4*f4*f4);
 
-      hl/=2.0; hr/=2.0; ht/=2.0; hb/=2.0; hbr/=2.0; htl/=2.0;  hc/=2.0; 
+      hl/=2.0; hr/=2.0; ht/=2.0; hb/=2.0; hbr/=2.0; htl/=2.0;  hc/=2.0;
 
       k=0;
-      if (j>0){ 
+      if (j>0){
         v[k]=hb; col[k]=row - mx; k++;
       }
-      
+
       if (j>0 && i < mx -1){
         v[k]=hbr; col[k]=row - mx+1; k++;
       }
-      
+
       if (i>0){
         v[k]= hl; col[k]=row - 1; k++;
       }
-      
+
       v[k]= hc; col[k]=row; k++;
-      
+
       if (i < mx-1 ){
         v[k]= hr; col[k]=row+1; k++;
       }
-      
+
       if (i>0 && j < my-1 ){
         v[k]= htl; col[k] = row+mx-1; k++;
       }
-      
+
       if (j < my-1 ){
         v[k]= ht; col[k] = row+mx; k++;
       }
-      
-      /* 
+
+      /*
          Set matrix values using local numbering, which was defined
          earlier, in the main routine.
       */
-      ierr = MatSetValues(H,1,&row,k,col,v,INSERT_VALUES); 
+      ierr = MatSetValues(H,1,&row,k,col,v,INSERT_VALUES);
      CHKERRQ(ierr);
     }
   }
-  
+
   /* Restore vectors */
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
@@ -435,7 +435,7 @@ PetscErrorCode FormJacobian(TaoSolver tao, Vec X, Mat *tH, Mat* tHPre, MatStruct
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "MSA_BoundaryConditions"
-/* 
+/*
    MSA_BoundaryConditions -  Calculates the boundary conditions for
    the region.
 
@@ -523,7 +523,7 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 #undef __FUNCT__
 #define __FUNCT__ "MSA_InitialPoint"
 /*
-   MSA_InitialPoint - Calculates the initial guess in one of three ways. 
+   MSA_InitialPoint - Calculates the initial guess in one of three ways.
 
    Input Parameters:
 .  user - user-defined application context
@@ -543,7 +543,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   ierr = PetscOptionsGetInt(NULL,"-start",&start,&flg);CHKERRQ(ierr);
 
   if (flg && start==0){ /* The zero vector is reasonable */
- 
+
     ierr = VecSet(X, zero);CHKERRQ(ierr);
     /* PLogInfo(user,"Min. Surface Area Problem: Start with 0 vector \n"); */
 
@@ -553,11 +553,11 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     PetscInt    row;
     PetscInt    mx=user->mx,my=user->my;
     PetscScalar *x;
-    
+
     /* Get pointers to vector data */
     ierr = VecGetArray(X,&x);CHKERRQ(ierr);
 
-    /* Perform local computations */    
+    /* Perform local computations */
     for (j=0; j<my; j++){
       for (i=0; i< mx; i++){
         row=(j)*mx + (i);
@@ -565,10 +565,10 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
                    ((i+1)*user->left[j+1]+(mx-i+1)*user->right[j+1])/(mx+2))/2.0;
       }
     }
-    
+
     /* Restore vectors */
     ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-    
+
   }
   PetscFunctionReturn(0);
 }

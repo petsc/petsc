@@ -46,11 +46,11 @@ static const char *NLS_INIT[64] = {"constant", "direction", "interpolation"};
 static const char *NLS_UPDATE[64] = {"step", "reduction", "interpolation"};
 
 static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x);
-/* Routine for BFGS preconditioner 
+/* Routine for BFGS preconditioner
 
 
  Implements Newton's Method with a line search approach for solving
- unconstrained minimization problems.  A More'-Thuente line search 
+ unconstrained minimization problems.  A More'-Thuente line search
  is used to guarantee that the bfgs preconditioner remains positive
  definite.
 
@@ -66,7 +66,7 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x);
 #define NLS_SCALED_GRADIENT     2
 #define NLS_GRADIENT            3
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoSolve_NLS"
 static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
 {
@@ -76,7 +76,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
   KSPConvergedReason             ksp_reason;
   TaoLineSearchTerminationReason ls_reason;
   TaoSolverTerminationReason     reason;
-  
+
   PetscReal                      fmin, ftrial, f_full, prered, actred, kappa, sigma;
   PetscReal                      tau, tau_1, tau_2, tau_max, tau_min, max_radius;
   PetscReal                      f, fold, gdx, gnorm, pert;
@@ -91,7 +91,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
   PetscInt                       bfgsUpdates = 0;
   PetscInt                       n,N,kspits;
   PetscInt                       needH;
-  
+
   PetscInt                       i_max = 5;
   PetscInt                       j_max = 1;
   PetscInt                       i, j;
@@ -156,7 +156,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
   } else if (NLS_KSP_GLTR == nlsP->ksp_type) {
     ierr = KSPGLTRSetRadius(tao->ksp,nlsP->max_radius);CHKERRQ(ierr);
   }
-  
+
   if (NLS_KSP_NASH == nlsP->ksp_type || NLS_KSP_STCG == nlsP->ksp_type || NLS_KSP_GLTR == nlsP->ksp_type) {
     tao->trust = tao->trust0;
 
@@ -224,7 +224,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
     break;
   }
 
-  /* Initialize trust-region radius.  The initialization is only performed 
+  /* Initialize trust-region radius.  The initialization is only performed
      when we are using Nash, Steihaug-Toint or the Generalized Lanczos method. */
   if (NLS_KSP_NASH == nlsP->ksp_type || NLS_KSP_STCG == nlsP->ksp_type || NLS_KSP_GLTR == nlsP->ksp_type) {
     switch(nlsP->init_type) {
@@ -235,16 +235,16 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
     case NLS_INIT_INTERPOLATION:
       /* Use the initial radius specified */
       max_radius = 0.0;
-  
+
       for (j = 0; j < j_max; ++j) {
         fmin = f;
         sigma = 0.0;
-  
+
         if (needH) {
           ierr = TaoComputeHessian(tao, tao->solution, &tao->hessian, &tao->hessian_pre, &matflag);CHKERRQ(ierr);
           needH = 0;
         }
-  
+
         for (i = 0; i < i_max; ++i) {
           ierr = VecCopy(tao->solution,nlsP->W);CHKERRQ(ierr);
           ierr = VecAXPY(nlsP->W,-tao->trust/gnorm,tao->gradient);CHKERRQ(ierr);
@@ -256,10 +256,10 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
               fmin = ftrial;
               sigma = -tao->trust / gnorm;
             }
-            
+
             ierr = MatMult(tao->hessian, tao->gradient, nlsP->D);CHKERRQ(ierr);
             ierr = VecDot(tao->gradient, nlsP->D, &prered);CHKERRQ(ierr);
-  
+
             prered = tao->trust * (gnorm - 0.5 * tao->trust * prered / (gnorm * gnorm));
             actred = f - ftrial;
             if ((PetscAbsScalar(actred) <= nlsP->epsilon) && (PetscAbsScalar(prered) <= nlsP->epsilon)) {
@@ -267,16 +267,16 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
             } else {
               kappa = actred / prered;
             }
-  
+
             tau_1 = nlsP->theta_i * gnorm * tao->trust / (nlsP->theta_i * gnorm * tao->trust + (1.0 - nlsP->theta_i) * prered - actred);
             tau_2 = nlsP->theta_i * gnorm * tao->trust / (nlsP->theta_i * gnorm * tao->trust - (1.0 + nlsP->theta_i) * prered + actred);
             tau_min = PetscMin(tau_1, tau_2);
             tau_max = PetscMax(tau_1, tau_2);
-  
+
             if (PetscAbsScalar(kappa - 1.0) <= nlsP->mu1_i) {
               /* Great agreement */
               max_radius = PetscMax(max_radius, tao->trust);
-  
+
               if (tau_max < 1.0) {
                 tau = nlsP->gamma3_i;
               } else if (tau_max > nlsP->gamma4_i) {
@@ -291,7 +291,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
             } else if (PetscAbsScalar(kappa - 1.0) <= nlsP->mu2_i) {
               /* Good agreement */
               max_radius = PetscMax(max_radius, tao->trust);
-              
+
               if (tau_max < nlsP->gamma2_i) {
                 tau = nlsP->gamma2_i;
               } else if (tau_max > nlsP->gamma3_i) {
@@ -318,7 +318,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
           }
           tao->trust = tau * tao->trust;
         }
-  
+
         if (fmin < f) {
           f = fmin;
           ierr = VecAXPY(tao->solution,sigma,tao->gradient);CHKERRQ(ierr);
@@ -327,7 +327,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
           ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
           if (PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute gradient generated Inf or NaN");
           needH = 1;
-  
+
           ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
           if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
         }
@@ -344,7 +344,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
       tao->trust = 0.0;
       break;
     }
-  } 
+  }
 
   /* Set initial scaling for the BFGS preconditioner
      This step is done after computing the initial trust-region radius
@@ -381,7 +381,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
       ierr = VecReciprocal(nlsP->Diag);CHKERRQ(ierr);
       ierr = MatLMVMSetScale(nlsP->M,nlsP->Diag);CHKERRQ(ierr);
     }
- 
+
     /* Shift the Hessian matrix */
     if (pert > 0) {
       ierr = MatShift(tao->hessian, pert);
@@ -414,7 +414,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
       } else if (NLS_KSP_GLTR == nlsP->ksp_type) {
         ierr = KSPGLTRSetRadius(tao->ksp,nlsP->max_radius);CHKERRQ(ierr);
       }
-        
+
       ierr = KSPSolve(tao->ksp, tao->gradient, nlsP->D);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
       tao->ksp_its+=kspits;
@@ -436,7 +436,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
           tao->trust = PetscMax(tao->trust, nlsP->min_radius);
           tao->trust = PetscMin(tao->trust, nlsP->max_radius);
         } else {
-          /* The direction was bad; set radius to default value and re-solve 
+          /* The direction was bad; set radius to default value and re-solve
              the trust-region subproblem to get a direction */
           tao->trust = tao->trust0;
 
@@ -451,7 +451,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
           } else if (NLS_KSP_GLTR == nlsP->ksp_type) {
             ierr = KSPGLTRSetRadius(tao->ksp,nlsP->max_radius);CHKERRQ(ierr);
           }
-        
+
           ierr = KSPSolve(tao->ksp, tao->gradient, nlsP->D);CHKERRQ(ierr);
           ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
           tao->ksp_its+=kspits;
@@ -474,7 +474,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
     ierr = VecScale(nlsP->D, -1.0);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(tao->ksp, &ksp_reason);CHKERRQ(ierr);
     if ((KSP_DIVERGED_INDEFINITE_PC == ksp_reason) &&  (NLS_PC_BFGS == nlsP->pc_type) && (bfgsUpdates > 1)) {
-      /* Preconditioner is numerically indefinite; reset the 
+      /* Preconditioner is numerically indefinite; reset the
          approximate if using BFGS preconditioning. */
 
       if (f != 0.0) {
@@ -502,7 +502,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
       ++nlsP->ksp_iter;
     } else {
       ++nlsP->ksp_othr;
-    } 
+    }
 
     /* Check for success (descent direction) */
     ierr = VecDot(nlsP->D, tao->gradient, &gdx);CHKERRQ(ierr);
@@ -553,7 +553,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
           ierr = MatLMVMUpdate(nlsP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
           ierr = MatLMVMSolve(nlsP->M, tao->gradient, nlsP->D);CHKERRQ(ierr);
           ierr = VecScale(nlsP->D, -1.0);CHKERRQ(ierr);
-  
+
           bfgsUpdates = 1;
           ++nlsP->sgrad;
           stepType = NLS_SCALED_GRADIENT;
@@ -596,7 +596,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
         if (pert < nlsP->pmin) {
           pert = 0.0;
         }
-        break; 
+        break;
       }
 
       ++nlsP->newt;
@@ -647,7 +647,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
             /* BFGS direction is not descent or direction produced not a number
                We can assert bfgsUpdates > 1 in this case
                Use steepest descent direction (scaled) */
-    
+
             if (f != 0.0) {
               delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
             } else {
@@ -657,7 +657,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
             ierr = MatLMVMReset(nlsP->M);CHKERRQ(ierr);
             ierr = MatLMVMUpdate(nlsP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
             ierr = MatLMVMSolve(nlsP->M, tao->gradient, nlsP->D);CHKERRQ(ierr);
-  
+
             bfgsUpdates = 1;
             ++nlsP->sgrad;
             stepType = NLS_SCALED_GRADIENT;
@@ -699,13 +699,13 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
            The scaled gradient step did not produce a new iterate;
            attemp to use the gradient direction.
            Need to make sure we are not using a different diagonal scaling */
-        
+
         ierr = MatLMVMSetScale(nlsP->M,0);CHKERRQ(ierr);
         ierr = MatLMVMSetDelta(nlsP->M,1.0);CHKERRQ(ierr);
         ierr = MatLMVMReset(nlsP->M);CHKERRQ(ierr);
         ierr = MatLMVMUpdate(nlsP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
         ierr = MatLMVMSolve(nlsP->M, tao->gradient, nlsP->D);CHKERRQ(ierr);
-        
+
         bfgsUpdates = 1;
         ++nlsP->grad;
         stepType = NLS_GRADIENT;
@@ -745,14 +745,14 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
             if (nlsP->omega3 < 1.0) {
               tao->trust = nlsP->omega3 * PetscMin(norm_d, tao->trust);
             } else if (nlsP->omega3 > 1.0) {
-              tao->trust = PetscMax(nlsP->omega3 * norm_d, tao->trust);  
+              tao->trust = PetscMax(nlsP->omega3 * norm_d, tao->trust);
             }
           } else if (step < nlsP->nu4) {
             /*  Full step taken; increase the radius */
-            tao->trust = PetscMax(nlsP->omega4 * norm_d, tao->trust);  
+            tao->trust = PetscMax(nlsP->omega4 * norm_d, tao->trust);
           } else {
             /*  More than full step taken; increase the radius */
-            tao->trust = PetscMax(nlsP->omega5 * norm_d, tao->trust);  
+            tao->trust = PetscMax(nlsP->omega5 * norm_d, tao->trust);
           }
         } else {
           /*  Newton step was not good; reduce the radius */
@@ -784,13 +784,13 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
               /*  Compute and actual reduction */
               actred = fold - f_full;
               prered = -prered;
-              if ((PetscAbsScalar(actred) <= nlsP->epsilon) && 
+              if ((PetscAbsScalar(actred) <= nlsP->epsilon) &&
                   (PetscAbsScalar(prered) <= nlsP->epsilon)) {
                 kappa = 1.0;
               } else {
                 kappa = actred / prered;
               }
-  
+
               /*  Accept of reject the step and update radius */
               if (kappa < nlsP->eta1) {
                 /*  Very bad step */
@@ -803,7 +803,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
                 if (nlsP->alpha3 < 1.0) {
                   tao->trust = nlsP->alpha3 * PetscMin(norm_d, tao->trust);
                 } else if (nlsP->alpha3 > 1.0) {
-                  tao->trust = PetscMax(nlsP->alpha3 * norm_d, tao->trust);  
+                  tao->trust = PetscMax(nlsP->alpha3 * norm_d, tao->trust);
                 }
               } else if (kappa < nlsP->eta4) {
                 /*  Good step */
@@ -889,7 +889,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
                   tao->trust = tau_max * PetscMin(tao->trust, norm_d);
                 }
               }
-            } 
+            }
           }
         } else {
           /*  Newton step was not good; reduce the radius */
@@ -912,7 +912,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
 }
 
 /* ---------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoSetUp_NLS"
 static PetscErrorCode TaoSetUp_NLS(TaoSolver tao)
 {
@@ -932,7 +932,7 @@ static PetscErrorCode TaoSetUp_NLS(TaoSolver tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_NLS"
 static PetscErrorCode TaoDestroy_NLS(TaoSolver tao)
 {
@@ -953,7 +953,7 @@ static PetscErrorCode TaoDestroy_NLS(TaoSolver tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_NLS"
 static PetscErrorCode TaoSetFromOptions_NLS(TaoSolver tao)
 {
@@ -1020,7 +1020,7 @@ static PetscErrorCode TaoSetFromOptions_NLS(TaoSolver tao)
 
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoView_NLS"
 static PetscErrorCode TaoView_NLS(TaoSolver tao, PetscViewer viewer)
 {
@@ -1056,7 +1056,7 @@ static PetscErrorCode TaoView_NLS(TaoSolver tao, PetscViewer viewer)
 
 /* ---------------------------------------------------------- */
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoCreate_NLS"
 PetscErrorCode TaoCreate_NLS(TaoSolver tao)
 {
@@ -1134,7 +1134,7 @@ PetscErrorCode TaoCreate_NLS(TaoSolver tao)
   nlsP->gamma2_i = 0.5;
   nlsP->gamma3_i = 2.0;
   nlsP->gamma4_i = 5.0;
-  
+
   nlsP->theta_i = 0.25;
 
   /*  Remaining parameters */
@@ -1160,7 +1160,7 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLMVMSolveShell"
-static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x) 
+static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
 {
   PetscErrorCode ierr;
   Mat            M;

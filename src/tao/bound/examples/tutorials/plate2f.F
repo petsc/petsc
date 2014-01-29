@@ -1,4 +1,4 @@
-!  Program usage: mpirun -np <proc> plate2f [all TAO options] 
+!  Program usage: mpirun -np <proc> plate2f [all TAO options]
 !
 !  This example demonstrates use of the TAO package to solve a bound constrained
 !  minimization problem.  This example is based on a problem from the
@@ -18,11 +18,11 @@
 !   Routines: TaoCreate();
 !   Routines: TaoSetType(); TaoSetObjectiveAndGradientRoutine();
 !   Routines: TaoSetHessianRoutine();
-!   Routines: TaoSetVariableBoundsRoutine();      
+!   Routines: TaoSetVariableBoundsRoutine();
 !   Routines: TaoSetInitialVector();
 !   Routines: TaoSetFromOptions();
 !   Routines: TaoSolve();
-!   Routines: TaoDestroy(); 
+!   Routines: TaoDestroy();
 !   Processors: n
 !T*/
 
@@ -32,9 +32,9 @@
 
 #include "plate2f.h"
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  Variables:
 !    (common from plate2f.h):
@@ -68,20 +68,20 @@
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       CHKERRQ(ierr)
       call TaoInitialize(PETSC_NULL_CHARACTER,ierr)
-      
+
 
 ! Specify default dimensions of the problem
       mx = 10
       my = 10
       bheight = 0.1
 
-! Check for any command line arguments that override defaults      
-      
+! Check for any command line arguments that override defaults
+
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,"-mx",mx,flg,ierr)
       CHKERRQ(ierr)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,"-my",my,flg,ierr)
       CHKERRQ(ierr)
-      
+
       bmx = mx/2
       bmy = my/2
 
@@ -92,17 +92,17 @@
       call PetscOptionsGetReal(PETSC_NULL_CHARACTER,"-bheight",bheight,   &
      &      flg,ierr)
       CHKERRQ(ierr)
-      
+
 
 ! Calculate any derived values from parameters
       N = mx*my
 
-! Let Petsc determine the dimensions of the local vectors 
+! Let Petsc determine the dimensions of the local vectors
       Nx = PETSC_DECIDE
       NY = PETSC_DECIDE
 
 ! A two dimensional distributed array will help define this problem, which
-! derives from an elliptic PDE on a two-dimensional domain.  From the 
+! derives from an elliptic PDE on a two-dimensional domain.  From the
 ! distributed array, create the vectors
 
       call DMDACreate2d(MPI_COMM_WORLD,DMDA_BOUNDARY_NONE,                    &
@@ -110,11 +110,11 @@
      &     mx,my,Nx,Ny,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,           &
      &     dm,ierr)
       CHKERRQ(ierr)
-      
+
 
 ! Extract global and local vectors from DM; The local vectors are
-! used solely as work space for the evaluation of the function, 
-! gradient, and Hessian.  Duplicate for remaining vectors that are 
+! used solely as work space for the evaluation of the function,
+! gradient, and Hessian.  Duplicate for remaining vectors that are
 ! the same types.
 
       call DMCreateGlobalVector(dm,x,ierr)
@@ -141,7 +141,7 @@
       CHKERRQ(ierr)
       call MatSetLocalToGlobalMapping(H,isltog,isltog,ierr)
       CHKERRQ(ierr)
-      
+
 
 ! The Tao code begins here
 ! Create TAO solver and set desired solution method.
@@ -163,7 +163,7 @@
      &     PETSC_NULL_OBJECT, ierr)
       CHKERRQ(ierr)
 
-! Set Variable bounds 
+! Set Variable bounds
       call MSA_BoundaryConditions(ierr)
       CHKERRQ(ierr)
       call TaoSetVariableBoundsRoutine(tao,MSA_Plate,                   &
@@ -199,7 +199,7 @@
       call VecDestroy(localV,ierr)
       call DMDestroy(dm,ierr)
 
-! Finalize TAO 
+! Finalize TAO
 
       call TaoFinalize(ierr)
       call PetscFinalize(ierr)
@@ -208,11 +208,11 @@
 
 ! ---------------------------------------------------------------------
 !
-!  FormFunctionGradient - Evaluates function f(X). 
-!    
+!  FormFunctionGradient - Evaluates function f(X).
+!
 !  Input Parameters:
 !  tao   - the TaoSolver context
-!  X     - the input vector 
+!  X     - the input vector
 !  dummy - optional user-defined context, as set by TaoSetFunction()
 !          (not used here)
 !
@@ -228,7 +228,7 @@
 
 ! dm, localX, localG, Top, Bottom, Left, Right defined in plate2f.h
 #include "plate2f.h"
-      
+
 ! Input/output variables
 
       TaoSolver        tao
@@ -236,7 +236,7 @@
       Vec              X, G
       PetscErrorCode   ierr
       PetscInt         dummy
-      
+
       PetscInt         i,j,row
       PetscInt         xs, xm
       PetscInt         gxs, gxm
@@ -294,7 +294,7 @@
       call VecGetArray(Left,left_v,left_i,ierr)
       call VecGetArray(Right,right_v,right_i,ierr)
 
-! Compute function over the locally owned part of the mesh       
+! Compute function over the locally owned part of the mesh
       do j = ys,ys+ym-1
          do i = xs,xs+xm-1
             row = (j-gys)*gxm + (i-gxs)
@@ -388,7 +388,7 @@
          enddo
       enddo
 
-! Compute triangular areas along the border of the domain. 
+! Compute triangular areas along the border of the domain.
       if (xs .eq. 0) then  ! left side
          do j=ys,ys+ym-1
             d3 = (left_v(j-ys+1+left_i) - left_v(j-ys+2+left_i))         &
@@ -399,7 +399,7 @@
          enddo
       endif
 
-      
+
       if (ys .eq. 0) then !bottom side
          do i=xs,xs+xm-1
             d2 = (bottom_v(i+1-xs+bottom_i)-bottom_v(i-xs+2+bottom_i))    &
@@ -409,7 +409,7 @@
          enddo
       endif
 
-      
+
       if (xs + xm .eq. mx) then ! right side
          do j=ys,ys+ym-1
             d1 = (x_v((j+1-gys)*gxm-1+x_i)-right_v(j-ys+1+right_i))*rhx
@@ -418,7 +418,7 @@
          enddo
       endif
 
-      
+
       if (ys + ym .eq. my) then
          do i=xs,xs+xm-1
             d1 = (x_v((gym-1)*gxm+i-gxs+x_i) - top_v(i-xs+1+top_i))*rhy
@@ -427,7 +427,7 @@
          enddo
       endif
 
-      
+
       if ((ys .eq. 0) .and. (xs .eq. 0)) then
          d1 = (left_v(0 + left_i) - left_v(1 + left_i)) * rhy
          d2 = (bottom_v(0+bottom_i)-bottom_v(1+bottom_i))*rhx
@@ -462,20 +462,20 @@
 
       return
       end  !FormFunctionGradient
-      
+
 
 
 
 
 ! ----------------------------------------------------------------------------
-! 
+!
 !
 !   FormHessian - Evaluates Hessian matrix.
 !
 !   Input Parameters:
 !.  tao  - the TaoSolver context
 !.  X    - input vector
-!.  dummy  - not used 
+!.  dummy  - not used
 !
 !   Output Parameters:
 !.  Hessian    - Hessian matrix
@@ -486,7 +486,7 @@
 !   Due to mesh point reordering with DMs, we must always work
 !   with the local mesh points, and then transform them to the new
 !   global numbering with the local-to-global mapping.  We cannot work
-!   directly with the global numbers for the original uniprocessor mesh!  
+!   directly with the global numbers for the original uniprocessor mesh!
 !
 !   Two methods are available for imposing this transformation
 !   when setting matrix entries:
@@ -496,10 +496,10 @@
 !           - Use DMDAGetISLocalToGlobalMapping() to extract the
 !             local-to-global map from the DM
 !           - Associate this map with the matrix by calling
-!             MatSetLocalToGlobalMapping() 
+!             MatSetLocalToGlobalMapping()
 !         - Then set matrix entries using the local ordering
 !           by calling MatSetValuesLocal()
-!     (B) MatSetValues(), using the global ordering 
+!     (B) MatSetValues(), using the global ordering
 !         - Use DMDAGetGlobalIndices() to extract the local-to-global map
 !         - Then apply this map explicitly yourself
 !         - Set matrix entries using the global ordering by calling
@@ -512,7 +512,7 @@
 
 ! dm,Top,Left,Right,Bottom,mx,my,localX defined in plate2f.h
 #include "plate2f.h"
-      
+
       TaoSolver     tao
       Vec            X
       Mat            Hessian,Hpc
@@ -543,10 +543,10 @@
       PetscReal   v(0:6)
       PetscBool     assembled
       PetscInt      i1
- 
+
       i1=1
-      
-! Set various matrix options 
+
+! Set various matrix options
       call MatSetOption(Hessian,MAT_IGNORE_OFF_PROC_ENTRIES,              &
      &                  PETSC_TRUE,ierr)
 
@@ -583,7 +583,7 @@
       do  i=xs,xs+xm-1
          do  j=ys,ys+ym-1
             row = (j-gys)*gxm + (i-gxs)
-            
+
             xc = x_v(row + x_i)
             xt = xc
             xb = xc
@@ -623,7 +623,7 @@
             if ((i .gt. gxs) .and. (j+1 .lt. gys+gym)) then
                xlt = x_v(x_i + row - 1 + gxm)
             endif
-            
+
             if ((i+1 .lt. gxs+gxm) .and. (j .gt. gys)) then
                xrb = x_v(x_i + row + 1 - gxm)
             endif
@@ -636,15 +636,15 @@
             d6 = (xrb-xb)*rhx
             d7 = (xlt-xl)*rhy
             d8 = (xlt-xt)*rhx
-            
+
             f1 = sqrt( 1.0d0 + d1*d1 + d7*d7)
             f2 = sqrt( 1.0d0 + d1*d1 + d4*d4)
             f3 = sqrt( 1.0d0 + d3*d3 + d8*d8)
             f4 = sqrt( 1.0d0 + d3*d3 + d2*d2)
             f5 = sqrt( 1.0d0 + d2*d2 + d5*d5)
             f6 = sqrt( 1.0d0 + d4*d4 + d6*d6)
-            
-            
+
+
             hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+                 &
      &              (-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2)
 
@@ -656,25 +656,25 @@
 
             hb = (-hxdhy*(1.0+d6*d6)+d4*d6)/(f6*f6*f6)+                 &
      &              (-hxdhy*(1.0+d1*d1)+d1*d4)/(f2*f2*f2)
-            
+
             hbr = -d2*d5/(f5*f5*f5) - d4*d6/(f6*f6*f6)
             htl = -d1*d7/(f1*f1*f1) - d3*d8/(f3*f3*f3)
-            
+
             hc = hydhx*(1.0+d7*d7)/(f1*f1*f1) +                         &
      &              hxdhy*(1.0+d8*d8)/(f3*f3*f3) +                      &
      &              hydhx*(1.0+d5*d5)/(f5*f5*f5) +                      &
      &              hxdhy*(1.0+d6*d6)/(f6*f6*f6) +                      &
      &              (hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-               &
      &              2*d1*d4)/(f2*f2*f2) +  (hxdhy*(1.0+d2*d2)+          &
-     &              hydhx*(1.0+d3*d3)-2*d2*d3)/(f4*f4*f4)               
-            
+     &              hydhx*(1.0+d3*d3)-2*d2*d3)/(f4*f4*f4)
+
             hl = hl * 0.5
             hr = hr * 0.5
             ht = ht * 0.5
             hb = hb * 0.5
             hbr = hbr * 0.5
             htl = htl * 0.5
-            hc = hc * 0.5 
+            hc = hc * 0.5
 
             k = 0
 
@@ -722,11 +722,11 @@
             call MatSetValuesLocal(Hessian,i1,row,k,col,v,INSERT_VALUES,      &
      &                              ierr)
 
-            
+
 
          enddo
       enddo
-      
+
 ! restore vectors
       call VecRestoreArray(localX,x_v,x_i,ierr)
       call VecRestoreArray(Left,left_v,left_i,ierr)
@@ -742,9 +742,9 @@
       call PetscLogFlops(199.0d0*xm*ym,ierr)
 
       return
-      end  
-      
-      
+      end
+
+
 
 
 
@@ -803,7 +803,7 @@
       lsize = ym + 2
       rsize = ym + 2
       tsize = xm + 2
-      
+
 
       call VecCreateMPI(MPI_COMM_WORLD,bsize,PETSC_DECIDE,Bottom,ierr)
       call VecCreateMPI(MPI_COMM_WORLD,tsize,PETSC_DECIDE,Top,ierr)
@@ -814,13 +814,13 @@
       hy= (t-b)/(my+1)
 
       do j=0,3
-         
+
          if (j.eq.0) then
             yt=b
             xt=l+hx*xs
             limit=bsize
             call VecGetArray(Bottom,boundary_v,boundary_i,ierr)
-            
+
 
          elseif (j.eq.1) then
             yt=t
@@ -840,10 +840,10 @@
             limit=rsize
             call VecGetArray(Right,boundary_v,boundary_i,ierr)
          endif
-         
+
 
          do i=0,limit-1
-            
+
             u1=xt
             u2=-yt
             k = 0
@@ -861,7 +861,7 @@
                   det = njac11*njac22-njac21*njac12
                   u1 = u1-(njac22*nf1-njac12*nf2)/det
                   u2 = u2-(njac11*nf2-njac21*nf1)/det
-               else 
+               else
                   exitloop = .true.
                endif
                k=k+1
@@ -875,7 +875,7 @@
             endif
 
          enddo
-               
+
 
          if (j.eq.0) then
             call VecRestoreArray(Bottom,boundary_v,boundary_i,ierr)
@@ -886,7 +886,7 @@
          elseif (j.eq.3) then
             call VecRestoreArray(Right,boundary_v,boundary_i,ierr)
          endif
-         
+
       enddo
 
 
@@ -914,8 +914,8 @@
       if (flg .eqv. PETSC_TRUE) then
          call VecScale(scl,Left,ierr)
       endif
-         
-      
+
+
       return
       end
 
@@ -959,7 +959,7 @@
       if (bmy .gt. my) bmy = my
       if (bmx .lt. 0) bmx = 0
       if (bmx .gt. mx) bmx = mx
-      
+
 
       call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,               &
      &             PETSC_NULL_INTEGER,ierr)
@@ -968,16 +968,16 @@
       call VecSet(xu,ub,ierr)
 
       call VecGetArray(xl,xl_v,xl_i,ierr)
-      
+
 
       do i=xs,xs+xm-1
 
          do j=ys,ys+ym-1
-            
+
             row=(j-ys)*xm + (i-xs)
 
             if (i.ge.((mx-bmx)/2) .and. i.lt.(mx-(mx-bmx)/2) .and.           &
-     &          j.ge.((my-bmy)/2) .and. j.lt.(my-(my-bmy)/2)) then  
+     &          j.ge.((my-bmy)/2) .and. j.lt.(my-(my-bmy)/2)) then
                xl_v(xl_i+row) = bheight
 
             endif
@@ -987,14 +987,14 @@
 
 
       call VecRestoreArray(xl,xl_v,xl_i,ierr)
-      
+
       return
       end
 
 
 
-      
-      
+
+
 ! ----------------------------------------------------------------------------
 !
 !/*
@@ -1030,7 +1030,7 @@
       PetscOffset   bottom_i,x_i
       PetscBool     flg
       PetscRandom   rctx
-      
+
       zero = 0.0d0
       np5 = -0.5d0
 
@@ -1040,7 +1040,7 @@
       if ((flg .eqv. PETSC_TRUE) .and. (start .eq. 0)) then  ! the zero vector is reasonable
          call VecSet(X,zero,ierr)
 
-      elseif ((flg .eqv. PETSC_TRUE) .and. (start .gt. 0)) then  ! random start -0.5 < xi < 0.5 
+      elseif ((flg .eqv. PETSC_TRUE) .and. (start .gt. 0)) then  ! random start -0.5 < xi < 0.5
          call PetscRandomCreate(MPI_COMM_WORLD,rctx,ierr)
          do i=0,start-1
             call VecSetRandom(X,rctx,ierr)
@@ -1050,10 +1050,10 @@
          call VecShift(X,np5,ierr)
 
       else   ! average of boundary conditions
-         
+
 !        Get Local mesh boundaries
          call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,             &
-     &                     PETSC_NULL_INTEGER,ierr) 
+     &                     PETSC_NULL_INTEGER,ierr)
          call DMDAGetGhostCorners(dm,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,    &
      &                     PETSC_NULL_INTEGER,ierr)
 
@@ -1064,10 +1064,10 @@
          call VecGetArray(Bottom,bottom_v,bottom_i,ierr)
          call VecGetArray(Left,left_v,left_i,ierr)
          call VecGetArray(Right,right_v,right_i,ierr)
-         
+
          call VecGetArray(localX,x_v,x_i,ierr)
-      
-!        Perform local computations 
+
+!        Perform local computations
          do  j=ys,ys+ym-1
             do i=xs,xs+xm-1
                row = (j-gys)*gxm  + (i-gxs)

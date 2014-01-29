@@ -31,15 +31,15 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient);CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
-    
+
   ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
   if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
-    
+
   /*  Set initial direction to -gradient */
   ierr = VecCopy(tao->gradient, tao->stepdirection);CHKERRQ(ierr);
   ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
   gnorm2 = gnorm*gnorm;
-    
+
   /*  Set initial scaling for the function */
   if (f != 0.0) {
     delta = 2.0*PetscAbsScalar(f) / gnorm2;
@@ -53,7 +53,7 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
   /*  Set counter for gradient and reset steps */
   cgP->ngradsteps = 0;
   cgP->nresetsteps = 0;
-    
+
   while (1) {
     /*  Save the current gradient information */
     f_old = f;
@@ -72,11 +72,11 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
         delta = PetscMax(delta,cgP->delta_min);
         delta = PetscMin(delta,cgP->delta_max);
       }
-      
+
       ierr = VecCopy(tao->gradient, tao->stepdirection);CHKERRQ(ierr);
       ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
     }
-    
+
     /*  Search direction for improving point */
     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_status);CHKERRQ(ierr);
@@ -89,7 +89,7 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
       gnorm2 = gnorm2_old;
       ierr = VecCopy(cgP->X_old, tao->solution);CHKERRQ(ierr);
       ierr = VecCopy(cgP->G_old, tao->gradient);CHKERRQ(ierr);
-            
+
       if (f != 0.0) {
         delta = 2.0*PetscAbsScalar(f) / gnorm2;
         delta = PetscMax(delta,cgP->delta_min);
@@ -99,10 +99,10 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
         delta = PetscMax(delta,cgP->delta_min);
         delta = PetscMin(delta,cgP->delta_max);
       }
-      
+
       ierr = VecCopy(tao->gradient, tao->stepdirection);CHKERRQ(ierr);
       ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
-      
+
       ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);
       ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_status);CHKERRQ(ierr);
       ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
@@ -123,7 +123,7 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
         ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
         if (ls_status != TAOLINESEARCH_SUCCESS &&
             ls_status != TAOLINESEARCH_SUCCESS_USER) {
-                  
+
           /*  Line search failed for last time -- give up */
           f = f_old;
           gnorm2 = gnorm2_old;
@@ -135,7 +135,7 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
         }
       }
     }
-        
+
     /*  Check for bad value */
     ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1,"User-provided compute function generated Inf or NaN");
@@ -159,36 +159,36 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
       case CG_FletcherReeves:
         beta = gnorm2 / gnorm2_old;
         break;
-        
+
       case CG_PolakRibiere:
         beta = (gnorm2 - ginner) / gnorm2_old;
         break;
-        
+
       case CG_PolakRibierePlus:
         beta = PetscMax((gnorm2-ginner)/gnorm2_old, 0.0);
         break;
-        
+
       case CG_HestenesStiefel:
         ierr = VecDot(tao->gradient, tao->stepdirection, &gd);CHKERRQ(ierr);
         ierr = VecDot(cgP->G_old, tao->stepdirection, &gd_old);CHKERRQ(ierr);
         beta = (gnorm2 - ginner) / (gd - gd_old);
         break;
-        
+
       case CG_DaiYuan:
         ierr = VecDot(tao->gradient, tao->stepdirection, &gd);CHKERRQ(ierr);
         ierr = VecDot(cgP->G_old, tao->stepdirection, &gd_old);CHKERRQ(ierr);
         beta = gnorm2 / (gd - gd_old);
         break;
-        
+
       default:
         beta = 0.0;
         break;
       }
     }
-    
+
     /*  Compute the direction d=-g + beta*d */
     ierr = VecAXPBY(tao->stepdirection, -1.0, beta, tao->gradient);CHKERRQ(ierr);
-    
+
     /*  update initial steplength choice */
     delta = 1.0;
     delta = PetscMax(delta, cgP->delta_min);
@@ -203,7 +203,7 @@ static PetscErrorCode TaoSetUp_CG(TaoSolver tao)
 {
   TAO_CG         *cgP = (TAO_CG*)tao->data;
   PetscErrorCode ierr;
-    
+
   PetscFunctionBegin;
   if (!tao->gradient) {ierr = VecDuplicate(tao->solution,&tao->gradient);CHKERRQ(ierr);}
   if (!tao->stepdirection) {ierr = VecDuplicate(tao->solution,&tao->stepdirection);CHKERRQ(ierr); }
@@ -235,7 +235,7 @@ static PetscErrorCode TaoSetFromOptions_CG(TaoSolver tao)
 {
    TAO_CG         *cgP = (TAO_CG*)tao->data;
    PetscErrorCode ierr;
-    
+
    PetscFunctionBegin;
    ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
    ierr = PetscOptionsHead("Nonlinear Conjugate Gradient method for unconstrained optimization");CHKERRQ(ierr);
@@ -283,7 +283,7 @@ PetscErrorCode TaoCreate_CG(TaoSolver tao)
   tao->ops->view = TaoView_CG;
   tao->ops->setfromoptions = TaoSetFromOptions_CG;
   tao->ops->destroy = TaoDestroy_CG;
-    
+
   tao->max_it = 2000;
   tao->max_funcs = 4000;
   tao->fatol = 1e-4;
@@ -296,7 +296,7 @@ PetscErrorCode TaoCreate_CG(TaoSolver tao)
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoSolverRoutines(tao->linesearch, tao);CHKERRQ(ierr);
-    
+
   ierr = PetscNewLog(tao,&cgP);CHKERRQ(ierr);
   tao->data = (void*)cgP;
   cgP->eta = 0.1;

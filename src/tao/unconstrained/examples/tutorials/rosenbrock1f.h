@@ -1,6 +1,6 @@
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !             Include file for program rosenbrock1f.F
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  This program uses CPP for preprocessing, as indicated by the use of
 !  TAO include files in the directories $TAO_DIR/include/finclude and
@@ -31,14 +31,14 @@
 #include "finclude/taosolver.h"
 
 !  Common blocks:
-!  In this example we use common blocks to store data needed by the 
+!  In this example we use common blocks to store data needed by the
 !  application-provided call-back routines, FormMinimizationFunction(),
 !  FormFunctionGradient(), and FormHessian().  Note that we can store
-!  (pointers to) TAO objects within these common blocks. 
+!  (pointers to) TAO objects within these common blocks.
 !
-!  common /params/ - contains parameters that help to define the application 
+!  common /params/ - contains parameters that help to define the application
 !
-!     alpha, n - define the extended Rosenbrock function: 
+!     alpha, n - define the extended Rosenbrock function:
 !       sum_{i=0}^{n/2-1} ( alpha*(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2 )
 
       PetscReal        alpha
@@ -46,4 +46,4 @@
 
       common /params/ alpha, n
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

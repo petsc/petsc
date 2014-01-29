@@ -30,7 +30,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ASFLS(TaoSolver);
 
 PETSC_EXTERN PetscErrorCode TaoCreate_IPM(TaoSolver);
 
-/* 
+/*
    Offset the convergence reasons so negative number represent diverged and
    positive represent converged.
 */
@@ -42,9 +42,9 @@ const char *TaoSolverTerminationReasons_Shifted[] = {
     "DIVERGED_NAN",
     "DIVERGED_MAXITS",
     "DIVERGED_FUNCTION_DOMAIN",
- 
+
     "CONTINUE_ITERATING",
-    
+
     "CONVERGED_FATOL",
     "CONVERGED_FRTOL",
     "CONVERGED_GATOL",
@@ -55,7 +55,7 @@ const char *TaoSolverTerminationReasons_Shifted[] = {
     "CONVERGED_USER" };
 const char **TaoSolverTerminationReasons = TaoSolverTerminationReasons_Shifted + 7;
 
-                                                   
+
 
 
 extern PetscBool TaoSolverRegisterAllCalled;
@@ -75,10 +75,10 @@ extern PetscBool TaoSolverRegisterAllCalled;
 PetscErrorCode TaoSolverRegisterAll()
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   TaoSolverRegisterAllCalled = PETSC_TRUE;
-  
+
   ierr = TaoSolverRegister("tao_lmvm",TaoCreate_LMVM);CHKERRQ(ierr);
   ierr = TaoSolverRegister("tao_nls",TaoCreate_NLS);CHKERRQ(ierr);
   ierr = TaoSolverRegister("tao_ntr",TaoCreate_NTR);CHKERRQ(ierr);
@@ -112,8 +112,8 @@ PetscErrorCode TaoSolverRegisterAll()
   ierr = TaoSolverRegister("tao_fd_test",TaoCreate_FD);CHKERRQ(ierr);
 
 
-  
+
   PetscFunctionReturn(0);
 }
-    
+
 

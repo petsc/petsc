@@ -1,6 +1,6 @@
 #include "tao-private/taosolver_impl.h" /*I "taosolver.h" I*/
 
-#undef __FUNCT__ 
+#undef __FUNCT__
 #define __FUNCT__ "TaoSetHessianRoutine"
 /*@C
    TaoSetHessianRoutine - Sets the function to compute the Hessian as well as the location to store the matrix.
@@ -12,7 +12,7 @@
 .  H - Matrix used for the hessian
 .  Hpre - Matrix that will be used operated on by preconditioner, can be same as H
 .  hess - Hessian evaluation routine
--  ctx - [optional] user-defined context for private data for the 
+-  ctx - [optional] user-defined context for private data for the
          Hessian evaluation routine (may be NULL)
 
    Calling sequence of hess:
@@ -27,15 +27,15 @@ $    hess (TaoSolver tao,Vec x,Mat *H,Mat *Hpre,MatStructure *flag,void *ctx);
 -  ctx - [optional] user-defined Hessian context
 
 
-   Notes: 
+   Notes:
 
-   The function hess() takes Mat * as the matrix arguments rather than Mat.  
-   This allows the Hessian evaluation routine to replace A and/or B with a 
+   The function hess() takes Mat * as the matrix arguments rather than Mat.
+   This allows the Hessian evaluation routine to replace A and/or B with a
    completely new new matrix structure (not just different matrix elements)
    when appropriate, for instance, if the nonzero structure is changing
    throughout the global iterations.
 
-   The flag can be used to eliminate unnecessary work in the preconditioner 
+   The flag can be used to eliminate unnecessary work in the preconditioner
    during the repeated solution of linear systems of the same size.  The
    available options are
 $    SAME_PRECONDITIONER -
@@ -47,7 +47,7 @@ $      saves work by not recomputing incomplete factorization
 $      for ILU/ICC preconditioners.
 $    SAME_NONZERO_PATTERN -
 $      Hpre has the same nonzero structure during
-$      successive linear solves. 
+$      successive linear solves.
 $    DIFFERENT_NONZERO_PATTERN -
 $      Hpre does not have the same nonzero structure.
 
@@ -114,9 +114,9 @@ PetscErrorCode TaoSetHessianRoutine(TaoSolver tao, Mat H, Mat Hpre, PetscErrorCo
 .  Hpre - Preconditioning matrix
 -  flag - flag indicating matrix structure (SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN, or SAME_PRECONDITIONER)
 
-   Notes: 
+   Notes:
    Most users should not need to explicitly call this routine, as it
-   is used internally within the minimization solvers. 
+   is used internally within the minimization solvers.
 
    TaoComputeHessian() is typically used within minimization
    implementations, so most users would not generally call this routine
@@ -136,7 +136,7 @@ PetscErrorCode TaoComputeHessian(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, MatStr
   PetscValidHeaderSpecific(X, VEC_CLASSID,2);
   PetscValidPointer(flg,5);
   PetscCheckSameComm(tao,1,X,2);
-    
+
   if (!tao->ops->computehessian) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetHessian() first");
   *flg = DIFFERENT_NONZERO_PATTERN;
   ++tao->nhess;
@@ -167,9 +167,9 @@ PetscErrorCode TaoComputeHessian(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, MatStr
 .  Hpre - Preconditioning matrix
 -  flag - flag indicating matrix structure (SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN, or SAME_PRECONDITIONER)
 
-   Notes: 
+   Notes:
    Most users should not need to explicitly call this routine, as it
-   is used internally within the minimization solvers. 
+   is used internally within the minimization solvers.
 
    TaoComputeJacobian() is typically used within minimization
    implementations, so most users would not generally call this routine
@@ -189,7 +189,7 @@ PetscErrorCode TaoComputeJacobian(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, MatSt
   PetscValidHeaderSpecific(X, VEC_CLASSID,2);
   PetscValidPointer(flg,5);
   PetscCheckSameComm(tao,1,X,2);
-    
+
   if (!tao->ops->computejacobian) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobian() first");
   *flg = DIFFERENT_NONZERO_PATTERN;
   ++tao->njac;
@@ -220,9 +220,9 @@ PetscErrorCode TaoComputeJacobian(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, MatSt
 .  Hpre - Preconditioning matrix
 -  flag - flag indicating matrix structure (SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN, or SAME_PRECONDITIONER)
 
-   Notes: 
+   Notes:
    Most users should not need to explicitly call this routine, as it
-   is used internally within the minimization solvers. 
+   is used internally within the minimization solvers.
 
    TaoComputeJacobianState() is typically used within minimization
    implementations, so most users would not generally call this routine
@@ -241,7 +241,7 @@ PetscErrorCode TaoComputeJacobianState(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, 
   PetscValidHeaderSpecific(X, VEC_CLASSID,2);
   PetscValidPointer(flg,5);
   PetscCheckSameComm(tao,1,X,2);
-    
+
   if (!tao->ops->computejacobianstate) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobianState() first");
   *flg = DIFFERENT_NONZERO_PATTERN;
   ++tao->njac_state;
@@ -270,9 +270,9 @@ PetscErrorCode TaoComputeJacobianState(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, 
    Output Parameters:
 .  H - Jacobian matrix
 
-   Notes: 
+   Notes:
    Most users should not need to explicitly call this routine, as it
-   is used internally within the minimization solvers. 
+   is used internally within the minimization solvers.
 
    TaoComputeJacobianDesign() is typically used within minimization
    implementations, so most users would not generally call this routine
@@ -291,7 +291,7 @@ PetscErrorCode TaoComputeJacobianDesign(TaoSolver tao, Vec X, Mat *J)
   PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
   PetscValidHeaderSpecific(X, VEC_CLASSID,2);
   PetscCheckSameComm(tao,1,X,2);
-    
+
   if (!tao->ops->computejacobiandesign) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobianDesign() first");
   ++tao->njac_design;
   ierr = PetscLogEventBegin(TaoSolver_JacobianEval,tao,X,*J,NULL);CHKERRQ(ierr);
@@ -306,7 +306,7 @@ PetscErrorCode TaoComputeJacobianDesign(TaoSolver tao, Vec X, Mat *J)
 
 
 
-#undef __FUNCT__ 
+#undef __FUNCT__
 #define __FUNCT__ "TaoSetJacobianRoutine"
 /*@C
    TaoSetJacobianRoutine - Sets the function to compute the Jacobian as well as the location to store the matrix.
@@ -318,7 +318,7 @@ PetscErrorCode TaoComputeJacobianDesign(TaoSolver tao, Vec X, Mat *J)
 .  J - Matrix used for the jacobian
 .  Jpre - Matrix that will be used operated on by preconditioner, can be same as J
 .  jac - Jacobian evaluation routine
--  ctx - [optional] user-defined context for private data for the 
+-  ctx - [optional] user-defined context for private data for the
          Jacobian evaluation routine (may be NULL)
 
    Calling sequence of jac:
@@ -333,15 +333,15 @@ $    jac (TaoSolver tao,Vec x,Mat *J,Mat *Jpre,MatStructure *flag,void *ctx);
 -  ctx - [optional] user-defined Jacobian context
 
 
-   Notes: 
+   Notes:
 
-   The function jac() takes Mat * as the matrix arguments rather than Mat.  
-   This allows the Jacobian evaluation routine to replace A and/or B with a 
+   The function jac() takes Mat * as the matrix arguments rather than Mat.
+   This allows the Jacobian evaluation routine to replace A and/or B with a
    completely new new matrix structure (not just different matrix elements)
    when appropriate, for instance, if the nonzero structure is changing
    throughout the global iterations.
 
-   The flag can be used to eliminate unnecessary work in the preconditioner 
+   The flag can be used to eliminate unnecessary work in the preconditioner
    during the repeated solution of linear systems of the same size.  The
    available options are
 $    SAME_PRECONDITIONER -
@@ -353,7 +353,7 @@ $      saves work by not recomputing incomplete factorization
 $      for ILU/ICC preconditioners.
 $    SAME_NONZERO_PATTERN -
 $      Jpre has the same nonzero structure during
-$      successive linear solves. 
+$      successive linear solves.
 $    DIFFERENT_NONZERO_PATTERN -
 $      Jpre does not have the same nonzero structure.
 
@@ -390,7 +390,7 @@ PetscErrorCode TaoSetJacobianRoutine(TaoSolver tao, Mat J, Mat Jpre, PetscErrorC
         tao->ops->computejacobian = func;
     }
 
-    
+
     if (J) {
         ierr = PetscObjectReference((PetscObject)J);CHKERRQ(ierr);
         if (tao->jacobian) {   ierr = MatDestroy(&tao->jacobian);CHKERRQ(ierr);}
@@ -405,10 +405,10 @@ PetscErrorCode TaoSetJacobianRoutine(TaoSolver tao, Mat J, Mat Jpre, PetscErrorC
 }
 
 
-#undef __FUNCT__ 
+#undef __FUNCT__
 #define __FUNCT__ "TaoSetJacobianStateRoutine"
 /*@C
-   TaoSetJacobianStateRoutine - Sets the function to compute the Jacobian 
+   TaoSetJacobianStateRoutine - Sets the function to compute the Jacobian
    (and its inverse) of the constraint function with respect to the state variables.
    Used only for pde-constrained optimization.
 
@@ -420,7 +420,7 @@ PetscErrorCode TaoSetJacobianRoutine(TaoSolver tao, Mat J, Mat Jpre, PetscErrorC
 .  Jpre - Matrix that will be used operated on by PETSc preconditioner, can be same as J.  Only used if Jinv is NULL
 .  Jinv - [optional] Matrix used to apply the inverse of the state jacobian. Use NULL to default to PETSc KSP solvers to apply the inverse.
 .  jac - Jacobian evaluation routine
--  ctx - [optional] user-defined context for private data for the 
+-  ctx - [optional] user-defined context for private data for the
          Jacobian evaluation routine (may be NULL)
 
    Calling sequence of jac:
@@ -437,17 +437,17 @@ $    jac (TaoSolver tao,Vec x,Mat *J,Mat *Jpre,MatStructure *flag,void *ctx);
 
 
    Notes:
-   Because of the structure of the jacobian matrix, 
-   It may be more efficient for a pde-constrained application to provide 
+   Because of the structure of the jacobian matrix,
+   It may be more efficient for a pde-constrained application to provide
    its own Jinv matrix.
 
-   The function jac() takes Mat * as the matrix arguments rather than Mat.  
-   This allows the Jacobian evaluation routine to replace A and/or B with a 
+   The function jac() takes Mat * as the matrix arguments rather than Mat.
+   This allows the Jacobian evaluation routine to replace A and/or B with a
    completely new new maitrix structure (not just different matrix elements)
    when appropriate, for instance, if the nonzero structure is changing
    throughout the global iterations.
 
-   The flag can be used to eliminate unnecessary work in the preconditioner 
+   The flag can be used to eliminate unnecessary work in the preconditioner
    during the repeated solution of linear systems of the same size.  The
    available options are
 $    SAME_PRECONDITIONER -
@@ -459,7 +459,7 @@ $      saves work by not recomputing incomplete factorization
 $      for ILU/ICC preconditioners.
 $    SAME_NONZERO_PATTERN -
 $      Jpre has the same nonzero structure during
-$      successive linear solves. 
+$      successive linear solves.
 $    DIFFERENT_NONZERO_PATTERN -
 $      Jpre does not have the same nonzero structure.
 
@@ -492,7 +492,7 @@ PetscErrorCode TaoSetJacobianStateRoutine(TaoSolver tao, Mat J, Mat Jpre, Mat Ji
     if (Jinv) {
       PetscValidHeaderSpecific(Jinv,MAT_CLASSID,4);
       PetscCheckSameComm(tao,1,Jinv,4);
-    } 
+    }
     if (ctx) {
         tao->user_jac_stateP = ctx;
     }
@@ -500,7 +500,7 @@ PetscErrorCode TaoSetJacobianStateRoutine(TaoSolver tao, Mat J, Mat Jpre, Mat Ji
         tao->ops->computejacobianstate = func;
     }
 
-    
+
     if (J) {
         ierr = PetscObjectReference((PetscObject)J);CHKERRQ(ierr);
         if (tao->jacobian_state) {   ierr = MatDestroy(&tao->jacobian_state);CHKERRQ(ierr);}
@@ -519,11 +519,11 @@ PetscErrorCode TaoSetJacobianStateRoutine(TaoSolver tao, Mat J, Mat Jpre, Mat Ji
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__ 
+#undef __FUNCT__
 #define __FUNCT__ "TaoSetJacobianDesignRoutine"
 /*@C
-   TaoSetJacobianDesignRoutine - Sets the function to compute the Jacobian of 
-   the constraint function with respect to the design variables.  Used only for 
+   TaoSetJacobianDesignRoutine - Sets the function to compute the Jacobian of
+   the constraint function with respect to the design variables.  Used only for
    pde-constrained optimization.
 
    Logically collective on TaoSolver
@@ -532,7 +532,7 @@ PetscErrorCode TaoSetJacobianStateRoutine(TaoSolver tao, Mat J, Mat Jpre, Mat Ji
 +  tao - the TaoSolver context
 .  J - Matrix used for the jacobian
 .  jac - Jacobian evaluation routine
--  ctx - [optional] user-defined context for private data for the 
+-  ctx - [optional] user-defined context for private data for the
          Jacobian evaluation routine (may be NULL)
 
    Calling sequence of jac:
@@ -544,10 +544,10 @@ $    jac (TaoSolver tao,Vec x,Mat *J,void *ctx);
 -  ctx - [optional] user-defined Jacobian context
 
 
-   Notes: 
+   Notes:
 
-   The function jac() takes Mat * as the matrix arguments rather than Mat.  
-   This allows the Jacobian evaluation routine to replace A and/or B with a 
+   The function jac() takes Mat * as the matrix arguments rather than Mat.
+   This allows the Jacobian evaluation routine to replace A and/or B with a
    completely new new matrix structure (not just different matrix elements)
    when appropriate, for instance, if the nonzero structure is changing
    throughout the global iterations.
@@ -571,7 +571,7 @@ PetscErrorCode TaoSetJacobianDesignRoutine(TaoSolver tao, Mat J, PetscErrorCode 
         tao->ops->computejacobiandesign = func;
     }
 
-    
+
     if (J) {
         ierr = PetscObjectReference((PetscObject)J);CHKERRQ(ierr);
         if (tao->jacobian_design) {   ierr = MatDestroy(&tao->jacobian_design);CHKERRQ(ierr);}
@@ -583,7 +583,7 @@ PetscErrorCode TaoSetJacobianDesignRoutine(TaoSolver tao, Mat J, PetscErrorCode 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetStateDesignIS"
 /*@
-   TaoSetStateDesignIS - Indicate to the TaoSolver which variables in the 
+   TaoSetStateDesignIS - Indicate to the TaoSolver which variables in the
    solution vector are state variables and which are design.  Only applies to
    pde-constrained optimization.
 
@@ -593,7 +593,7 @@ PetscErrorCode TaoSetJacobianDesignRoutine(TaoSolver tao, Mat J, PetscErrorCode 
 +  tao - The TaoSolver context
 .  s_is - the index set corresponding to the state variables
 -  d_is - the index set corresponding to the design variables
-  
+
    Level: intermediate
 
 .seealso: TaoSetJacobianStateRoutine(), TaoSetJacobianDesignRoutine()
@@ -636,9 +636,9 @@ PetscErrorCode TaoSetStateDesignIS(TaoSolver tao, IS s_is, IS d_is)
 .  Hpre - Preconditioning matrix
 -  flag - flag indicating matrix structure (SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN, or SAME_PRECONDITIONER)
 
-   Notes: 
+   Notes:
    Most users should not need to explicitly call this routine, as it
-   is used internally within the minimization solvers. 
+   is used internally within the minimization solvers.
 
    Level: developer
 
@@ -653,7 +653,7 @@ PetscErrorCode TaoComputeJacobianEquality(TaoSolver tao, Vec X, Mat *J, Mat *Jpr
   PetscValidHeaderSpecific(X, VEC_CLASSID,2);
   PetscValidPointer(flg,5);
   PetscCheckSameComm(tao,1,X,2);
-    
+
   if (!tao->ops->computejacobianequality) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobianEquality() first");
   *flg = DIFFERENT_NONZERO_PATTERN;
   ++tao->njac_equality;
@@ -684,9 +684,9 @@ PetscErrorCode TaoComputeJacobianEquality(TaoSolver tao, Vec X, Mat *J, Mat *Jpr
 .  Hpre - Preconditioning matrix
 -  flag - flag indicating matrix structure (SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN, or SAME_PRECONDITIONER)
 
-   Notes: 
+   Notes:
    Most users should not need to explicitly call this routine, as it
-   is used internally within the minimization solvers. 
+   is used internally within the minimization solvers.
 
    Level: developer
 
@@ -702,7 +702,7 @@ PetscErrorCode TaoComputeJacobianInequality(TaoSolver tao, Vec X, Mat *J, Mat *J
   PetscValidHeaderSpecific(X, VEC_CLASSID,2);
   PetscValidPointer(flg,5);
   PetscCheckSameComm(tao,1,X,2);
-    
+
   if (!tao->ops->computejacobianinequality) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobianInequality() first");
   *flg = DIFFERENT_NONZERO_PATTERN;
   ++tao->njac_inequality;
@@ -716,10 +716,10 @@ PetscErrorCode TaoComputeJacobianInequality(TaoSolver tao, Vec X, Mat *J, Mat *J
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__ 
+#undef __FUNCT__
 #define __FUNCT__ "TaoSetJacobianEqualityRoutine"
 /*@C
-   TaoSetJacobianEqualityRoutine - Sets the function to compute the Jacobian 
+   TaoSetJacobianEqualityRoutine - Sets the function to compute the Jacobian
    (and its inverse) of the constraint function with respect to the equality variables.
    Used only for pde-constrained optimization.
 
@@ -728,9 +728,9 @@ PetscErrorCode TaoComputeJacobianInequality(TaoSolver tao, Vec X, Mat *J, Mat *J
    Input Parameters:
 +  tao - the TaoSolver context
 .  J - Matrix used for the jacobian
-.  Jpre - Matrix that will be used operated on by PETSc preconditioner, can be same as J.  
+.  Jpre - Matrix that will be used operated on by PETSc preconditioner, can be same as J.
 .  jac - Jacobian evaluation routine
--  ctx - [optional] user-defined context for private data for the 
+-  ctx - [optional] user-defined context for private data for the
          Jacobian evaluation routine (may be NULL)
 
    Calling sequence of jac:
@@ -746,17 +746,17 @@ $    jac (TaoSolver tao,Vec x,Mat *J,Mat *Jpre,MatStructure *flag,void *ctx);
 
 
    Notes:
-   Because of the structure of the jacobian matrix, 
-   It may be more efficient for a pde-constrained application to provide 
+   Because of the structure of the jacobian matrix,
+   It may be more efficient for a pde-constrained application to provide
    its own Jinv matrix.
 
-   The function jac() takes Mat * as the matrix arguments rather than Mat.  
-   This allows the Jacobian evaluation routine to replace A and/or B with a 
+   The function jac() takes Mat * as the matrix arguments rather than Mat.
+   This allows the Jacobian evaluation routine to replace A and/or B with a
    completely new new maitrix structure (not just different matrix elements)
    when appropriate, for instance, if the nonzero structure is changing
    throughout the global iterations.
 
-   The flag can be used to eliminate unnecessary work in the preconditioner 
+   The flag can be used to eliminate unnecessary work in the preconditioner
    during the repeated solution of linear systems of the same size.  The
    available options are
 $    SAME_PRECONDITIONER -
@@ -768,7 +768,7 @@ $      saves work by not recomputing incomplete factorization
 $      for ILU/ICC preconditioners.
 $    SAME_NONZERO_PATTERN -
 $      Jpre has the same nonzero structure during
-$      successive linear solves. 
+$      successive linear solves.
 $    DIFFERENT_NONZERO_PATTERN -
 $      Jpre does not have the same nonzero structure.
 
@@ -805,7 +805,7 @@ PetscErrorCode TaoSetJacobianEqualityRoutine(TaoSolver tao, Mat J, Mat Jpre, Pet
         tao->ops->computejacobianequality = func;
     }
 
-    
+
     if (J) {
         ierr = PetscObjectReference((PetscObject)J);CHKERRQ(ierr);
         if (tao->jacobian_equality) {   ierr = MatDestroy(&tao->jacobian_equality);CHKERRQ(ierr);}
@@ -819,10 +819,10 @@ PetscErrorCode TaoSetJacobianEqualityRoutine(TaoSolver tao, Mat J, Mat Jpre, Pet
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__ 
+#undef __FUNCT__
 #define __FUNCT__ "TaoSetJacobianInequalityRoutine"
 /*@C
-   TaoSetJacobianInequalityRoutine - Sets the function to compute the Jacobian 
+   TaoSetJacobianInequalityRoutine - Sets the function to compute the Jacobian
    (and its inverse) of the constraint function with respect to the inequality variables.
    Used only for pde-constrained optimization.
 
@@ -831,9 +831,9 @@ PetscErrorCode TaoSetJacobianEqualityRoutine(TaoSolver tao, Mat J, Mat Jpre, Pet
    Input Parameters:
 +  tao - the TaoSolver context
 .  J - Matrix used for the jacobian
-.  Jpre - Matrix that will be used operated on by PETSc preconditioner, can be same as J.  
+.  Jpre - Matrix that will be used operated on by PETSc preconditioner, can be same as J.
 .  jac - Jacobian evaluation routine
--  ctx - [optional] user-defined context for private data for the 
+-  ctx - [optional] user-defined context for private data for the
          Jacobian evaluation routine (may be NULL)
 
    Calling sequence of jac:
@@ -849,17 +849,17 @@ $    jac (TaoSolver tao,Vec x,Mat *J,Mat *Jpre,MatStructure *flag,void *ctx);
 
 
    Notes:
-   Because of the structure of the jacobian matrix, 
-   It may be more efficient for a pde-constrained application to provide 
+   Because of the structure of the jacobian matrix,
+   It may be more efficient for a pde-constrained application to provide
    its own Jinv matrix.
 
-   The function jac() takes Mat * as the matrix arguments rather than Mat.  
-   This allows the Jacobian evaluation routine to replace A and/or B with a 
+   The function jac() takes Mat * as the matrix arguments rather than Mat.
+   This allows the Jacobian evaluation routine to replace A and/or B with a
    completely new new maitrix structure (not just different matrix elements)
    when appropriate, for instance, if the nonzero structure is changing
    throughout the global iterations.
 
-   The flag can be used to eliminate unnecessary work in the preconditioner 
+   The flag can be used to eliminate unnecessary work in the preconditioner
    during the repeated solution of linear systems of the same size.  The
    available options are
 $    SAME_PRECONDITIONER -
@@ -871,7 +871,7 @@ $      saves work by not recomputing incomplete factorization
 $      for ILU/ICC preconditioners.
 $    SAME_NONZERO_PATTERN -
 $      Jpre has the same nonzero structure during
-$      successive linear solves. 
+$      successive linear solves.
 $    DIFFERENT_NONZERO_PATTERN -
 $      Jpre does not have the same nonzero structure.
 
@@ -908,7 +908,7 @@ PetscErrorCode TaoSetJacobianInequalityRoutine(TaoSolver tao, Mat J, Mat Jpre, P
         tao->ops->computejacobianinequality = func;
     }
 
-    
+
     if (J) {
         ierr = PetscObjectReference((PetscObject)J);CHKERRQ(ierr);
         if (tao->jacobian_inequality) {   ierr = MatDestroy(&tao->jacobian_inequality);CHKERRQ(ierr);}

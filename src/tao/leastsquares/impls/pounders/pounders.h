@@ -36,7 +36,7 @@ typedef struct {
   PetscInt *interp_indices; /* n */
   PetscBLASInt *iwork; /* n */
   PetscInt nHist;
-  VecScatter scatterf,scatterx; 
+  VecScatter scatterf,scatterx;
   Vec localf, localx, localfmin, localxmin;
   Vec workxvec;
   PetscMPIInt size;
@@ -81,7 +81,7 @@ typedef struct {
   TaoSolver subtao;
   Vec       subxl,subxu,subx,subpdel,subndel,subb;
   Mat       subH;
-       
+
 } TAO_POUNDERS;
 
 

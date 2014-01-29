@@ -19,12 +19,12 @@ typedef struct{
   Vec local_w;
   PetscReal lambda;
 }TAO_BMRM;
- 
+
 typedef struct Vec_Chain{
-  Vec V;  
+  Vec V;
   struct Vec_Chain *next;
 }Vec_Chain;
- 
+
 
 /* Context for Dai-Fletcher solver */
 typedef struct{
@@ -32,7 +32,7 @@ typedef struct{
   PetscInt maxPGMIter;
   PetscInt *ipt, *ipt2, *uv;
   PetscReal *g, *y, *tempv, *d, *Qd, *t, *xplus, *tplus, *sk, *yk;
-  
+
   PetscInt dim;
 
   PetscInt cur_num_cp;

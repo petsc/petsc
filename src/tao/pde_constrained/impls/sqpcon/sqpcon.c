@@ -167,7 +167,7 @@ static PetscErrorCode TaoSolve_SQPCON(TaoSolver tao)
     ierr = VecScale(sqpconP->Tbar, -1.0);CHKERRQ(ierr);
 
     /* aqwac =  A'\(Q*Tbar + c) */
-    if (iter > 0) { 
+    if (iter > 0) {
       ierr = MatMult(sqpconP->Q,sqpconP->Tbar,sqpconP->WV);CHKERRQ(ierr);
     } else {
       ierr = VecCopy(sqpconP->Tbar, sqpconP->WV);CHKERRQ(ierr);
@@ -191,7 +191,7 @@ static PetscErrorCode TaoSolve_SQPCON(TaoSolver tao)
     /* Backsolve for u =  A\(g - B*dv)  = tbar - A\(B*dv)*/
     ierr = MatMult(tao->jacobian_design, sqpconP->DV, sqpconP->WL);CHKERRQ(ierr);
     ierr = MatMult(tao->jacobian_state_inv, sqpconP->WL, sqpconP->DU);CHKERRQ(ierr);
-    ierr = VecScale(sqpconP->DU, -1.0);CHKERRQ(ierr); 
+    ierr = VecScale(sqpconP->DU, -1.0);CHKERRQ(ierr);
     ierr = VecAXPY(sqpconP->DU, 1.0, sqpconP->Tbar);CHKERRQ(ierr);
 
     /* Assemble Big D */
@@ -225,7 +225,7 @@ static PetscErrorCode TaoSolve_SQPCON(TaoSolver tao)
     ierr = VecScatterBegin(sqpconP->design_scatter, tao->solution, sqpconP->V, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(sqpconP->design_scatter, tao->solution, sqpconP->V, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
 
-    
+
     /* Evaluate Function, Gradient, Constraints, and Jacobian */
     ierr = TaoComputeObjectiveAndGradient(tao,tao->solution,&f,tao->gradient);CHKERRQ(ierr);
     ierr = TaoComputeConstraints(tao,tao->solution, tao->constraints);CHKERRQ(ierr);
@@ -238,7 +238,7 @@ static PetscErrorCode TaoSolve_SQPCON(TaoSolver tao)
     ierr = VecScatterBegin(sqpconP->design_scatter, tao->gradient, sqpconP->GV, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(sqpconP->design_scatter, tao->gradient, sqpconP->GV, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
 
-    /* Update approx to hessian of the Lagrangian wrt state (Q) 
+    /* Update approx to hessian of the Lagrangian wrt state (Q)
           with u_k+1, gu_k+1 */
     if (use_update) {
       ierr = MatApproxUpdate(sqpconP->Q,sqpconP->U,sqpconP->GU);CHKERRQ(ierr);

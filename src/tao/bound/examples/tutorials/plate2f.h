@@ -1,6 +1,6 @@
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !             Include file for program plate.f
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  This program uses CPP for preprocessing, as indicated by the use of
 !  TAO include files in the directories $TAO_DIR/include/finclude and
@@ -25,7 +25,7 @@
 !  In addition, we need the following for use of distributed arrays
 !     petscdm.h    - distributed arrays (DMs)
 
-#include "finclude/petscsys.h"     
+#include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscksp.h"
@@ -36,12 +36,12 @@
 #include "finclude/petscis.h"
 #include "finclude/taosolver.h"
 !  Common blocks:
-!  In this example we use common blocks to store data needed by the 
+!  In this example we use common blocks to store data needed by the
 !  application-provided call-back routines, FormFunction(), FormGradient(),
 !  and FormHessian().  Note that we can store (pointers to) TAO objects
-!  within these common blocks. 
+!  within these common blocks.
 !
-!  common /params/ - contains parameters for the global application 
+!  common /params/ - contains parameters for the global application
 !     mx, my     - global discretization in x- and y-directions
 !     hx, hy     - mesh spacing in x- and y-directions
 !     N          - dimension of global vectorn
@@ -56,7 +56,7 @@
 !     dm         - distributed array
 
       Vec              localX, localV
-      Vec              Top, Left 
+      Vec              Top, Left
       Vec              Right, Bottom
       DM               dm
       PetscReal      bheight
@@ -68,6 +68,6 @@
       common /pdata/  dm,localX,localV,Nx,Ny
       common /pdata/  Left, Top, Right, Bottom
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 

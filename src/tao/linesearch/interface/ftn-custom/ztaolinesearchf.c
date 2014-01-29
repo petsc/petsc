@@ -4,7 +4,7 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define taolinesearchsetobjectiveroutine_            TAOLINESEARCHSETOBJECTIVEROUTINE
 #define taolinesearchsetgradientroutine_             TAOLINESEARCHSETGRADIENTROUTINE
-#define taolinesearchsetobjectiveandgradientroutine_ TAOLINESEARCHSETOBJECTIVEANDGRADIENTROUTINE 
+#define taolinesearchsetobjectiveandgradientroutine_ TAOLINESEARCHSETOBJECTIVEANDGRADIENTROUTINE
 #define taolinesearchsetobjectiveandgtsroutine_      TAOLINESEARCHSETOBJECTIVEANDGTSROUTINE
 #define taolinesearchview_                           TAOLINESEARCHVIEW
 #define taolinesearchsettype_                        TAOLINESEARCHSETTYPE
@@ -13,7 +13,7 @@
 
 #define taolinesearchsetobjectiveroutine_            taolinesearchsetobjectiveroutine
 #define taolinesearchsetgradientroutine_             taolinesearchsetgradientroutine
-#define taolinesearchsetobjectiveandgradientroutine_ taolinesearchsetobjectiveandgradientroutine 
+#define taolinesearchsetobjectiveandgradientroutine_ taolinesearchsetobjectiveandgradientroutine
 #define taolinesearchsetobjectiveandgtsroutine_      taolinesearchsetobjectiveandgtsroutine
 #define taolinesearchview_                           taolinesearchview
 #define taolinesearchsettype_                        taolinesearchsettype
@@ -42,7 +42,7 @@ static PetscErrorCode ourtaolinesearchgradientroutine(TaoLineSearch ls, Vec x, V
        (((PetscObject)ls)->fortran_func_pointers[GRAD]))(&ls,&x,&g,ctx,&ierr);
     CHKERRQ(ierr);
     return 0;
-    
+
 }
 
 static PetscErrorCode ourtaolinesearchobjectiveandgradientroutine(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, void* ctx)
@@ -118,17 +118,17 @@ void PETSC_STDCALL taolinesearchsetobjectiveandgtsroutine_(TaoLineSearch *ls, vo
     }
 }
 
-    
+
 
 void PETSC_STDCALL taolinesearchsettype_(TaoLineSearch *ls, CHAR type_name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 
 {
     char *t;
-    
+
     FIXCHAR(type_name,len,t);
     *ierr = TaoLineSearchSetType(*ls,t);
     FREECHAR(type_name,t);
-        
+
 }
 
 void PETSC_STDCALL taolinesearchview_(TaoLineSearch *ls, PetscViewer *viewer, PetscErrorCode *ierr)
@@ -169,6 +169,6 @@ void PETSC_STDCALL taolinesearchgettype_(TaoLineSearch *ls, CHAR name PETSC_MIXE
   *ierr = TaoLineSearchGetType(*ls,&tname);
   *ierr = PetscStrncpy(name,tname,len); if (*ierr) return;
   FIXRETURNCHAR(PETSC_TRUE,name,len);
-  
+
 }
 EXTERN_C_END

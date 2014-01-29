@@ -43,6 +43,6 @@ PETSC_EXTERN PetscErrorCode TaoDMFormFunctionLocal(TaoSolver, Vec, PetscReal *, 
 PETSC_EXTERN PetscErrorCode TaoDMFormGradientLocal(TaoSolver, Vec, Vec, void*);
 PETSC_EXTERN PetscErrorCode TaoDMFormFunctionGradientLocal(TaoSolver, Vec, PetscReal *, Vec, void*);
 PETSC_EXTERN PetscErrorCode TaoDMFormHessianLocal(TaoSolver, Vec, Mat*, Mat*, MatStructure*,void*);
-PETSC_EXTERN PetscErrorCode TaoDMFormBounds(TaoSolver, Vec, Vec, void*); 
+PETSC_EXTERN PetscErrorCode TaoDMFormBounds(TaoSolver, Vec, Vec, void*);
 
 #endif

@@ -1,4 +1,4 @@
-/* 
+/*
    Include "tao.h" so that we can use TAO solvers.  Note that this
    file automatically includes libraries such as:
      petsc.h       - base PETSc routines   petscvec.h - vectors
@@ -18,8 +18,8 @@ Description:   These data are the result of a NIST study involving
                ultrasonic response, and the predictor variable is
                metal distance.
 
-Reference:     Chwirut, D., NIST (197?).  
-               Ultrasonic Reference Block Study. 
+Reference:     Chwirut, D., NIST (197?).
+               Ultrasonic Reference Block Study.
 */
 
 static char help[]="Finds the nonlinear least-squares solution to the model \n\
@@ -27,15 +27,15 @@ static char help[]="Finds the nonlinear least-squares solution to the model \n\
 
 /* T
    Concepts: TAO - Solving a system of nonlinear equations, nonlinear ;east squares
-   Routines: TaoInitialize(); TaoFinalize(); 
+   Routines: TaoInitialize(); TaoFinalize();
    Routines: TaoCreate();
-   Routines: TaoSetType(); 
+   Routines: TaoSetType();
    Routines: TaoSetSeparableObjectiveRoutine();
    Routines: TaoSetMonitor();
    Routines: TaoSetInitialVector();
    Routines: TaoSetFromOptions();
    Routines: TaoSolve();
-   Routines: TaoDestroy(); 
+   Routines: TaoDestroy();
    Processors: n
 T*/
 
@@ -98,13 +98,13 @@ int main(int argc,char **argv)
     ierr = TaoSetSeparableObjectiveRoutine(tao,f,EvaluateFunction,(void*)&user);CHKERRQ(ierr);
     ierr = TaoSetMonitor(tao,MyMonitor,&user,NULL);CHKERRQ(ierr);
 
-    
+
     /* Check for any TAO command line arguments */
     ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
     /* Perform the Solve */
     ierr = TaoSolve(tao);CHKERRQ(ierr);
-    
+
     /* Free TAO data structures */
     ierr = TaoDestroy(&tao);CHKERRQ(ierr);
 
@@ -117,7 +117,7 @@ int main(int argc,char **argv)
   }
   TaoFinalize();
   PetscFinalize();
-  return 0;     
+  return 0;
 }
 
 /*--------------------------------------------------------------------*/
@@ -140,15 +140,15 @@ PetscErrorCode EvaluateFunction(TaoSolver tao, Vec X, Vec F, void *ptr)
     }
   } else {
     /* Multiprocessor master */
-    PetscMPIInt tag; 
+    PetscMPIInt tag;
     PetscInt    finishedtasks,next_task,checkedin;
     PetscReal   f_i;
     MPI_Status  status;
-    
+
     next_task=0;
     finishedtasks=0;
     checkedin=0;
-    
+
     while(finishedtasks < NOBSERVATIONS || checkedin < user->size-1) {
       ierr = MPI_Recv(&f_i,1,MPIU_REAL,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
       if (status.MPI_TAG == IDLE_TAG) {
@@ -167,8 +167,8 @@ PetscErrorCode EvaluateFunction(TaoSolver tao, Vec X, Vec F, void *ptr)
       } else {
         /* Send idle message */
         ierr = MPI_Send(x,NPARAMETERS,MPIU_REAL,status.MPI_SOURCE,IDLE_TAG,PETSC_COMM_WORLD);CHKERRQ(ierr);
-      }   
-    } 
+      }
+    }
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
@@ -183,7 +183,7 @@ PetscErrorCode FormStartingPoint(Vec X)
 {
   PetscReal      *x;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   x[0] = 0.15;
@@ -421,7 +421,7 @@ PetscErrorCode InitializeData(AppCtx *user)
 
 #undef __FUNCT__
 #define __FUNCT__ "MyMonitor"
-PetscErrorCode MyMonitor(TaoSolver tao, void *ptr) 
+PetscErrorCode MyMonitor(TaoSolver tao, void *ptr)
 {
   PetscReal      fc,gnorm;
   PetscInt       its;
@@ -441,17 +441,17 @@ PetscErrorCode MyMonitor(TaoSolver tao, void *ptr)
   }
   PetscFunctionReturn(0);
 }
-  
+
 #undef __FUNCT__
 #define __FUNCT__ "TaskWorker"
-PetscErrorCode TaskWorker(AppCtx *user) 
+PetscErrorCode TaskWorker(AppCtx *user)
 {
   PetscReal      x[NPARAMETERS],f;
   PetscMPIInt    tag=IDLE_TAG;
   PetscInt       index;
   MPI_Status     status;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   /* Send check-in message to master */
 

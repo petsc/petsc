@@ -4,9 +4,9 @@
 
 /*T
    Concepts: TAO - Solving a system of nonlinear equations, nonlinear ;east squares
-   Routines: TaoInitialize(); TaoFinalize(); 
+   Routines: TaoInitialize(); TaoFinalize();
    Routines: TaoCreate();
-   Routines: TaoSetType(); 
+   Routines: TaoSetType();
    Routines: TaoSetInitialVector();
    Routines: TaoSetObjectiveRoutine();
    Routines: TaoSetGradientRoutine();
@@ -17,7 +17,7 @@
    Routines: TaoSetFromOptions();
    Routines: TaoSetHistory(); TaoGetHistory();
    Routines: TaoSolve();
-   Routines: TaoGetTerminationReason(); TaoDestroy(); 
+   Routines: TaoGetTerminationReason(); TaoDestroy();
    Processors: n
 T*/
 
@@ -71,7 +71,7 @@ typedef struct {
   Vec js_diag;
   Vec c; /*  constraint vector */
   Vec cwork;
-  
+
   Vec lwork;
   Vec S;
   Vec Rwork,Swork,Twork;
@@ -102,7 +102,7 @@ PetscErrorCode ParabolicMonitor(TaoSolver, void*);
 PetscErrorCode StateMatMult(Mat,Vec,Vec);
 PetscErrorCode StateMatBlockMult(Mat,Vec,Vec);
 PetscErrorCode StateMatMultTranspose(Mat,Vec,Vec);
-PetscErrorCode StateMatGetDiagonal(Mat,Vec); 
+PetscErrorCode StateMatGetDiagonal(Mat,Vec);
 PetscErrorCode StateMatDuplicate(Mat,MatDuplicateOption,Mat*);
 PetscErrorCode StateMatInvMult(Mat,Vec,Vec);
 PetscErrorCode StateMatInvTransposeMult(Mat,Vec,Vec);
@@ -165,17 +165,17 @@ int main(int argc, char **argv)
   ierr = VecSetFromOptions(user.c);CHKERRQ(ierr);
 
   /* Create scatters for reduced spaces.
-     If the state vector y and design vector u are partitioned as 
+     If the state vector y and design vector u are partitioned as
      [y_1; y_2; ...; y_np] and [u_1; u_2; ...; u_np] (with np = # of processors),
      then the solution vector x is organized as
-     [y_1; u_1; y_2; u_2; ...; y_np; u_np]. 
+     [y_1; u_1; y_2; u_2; ...; y_np; u_np].
      The index sets user.s_is and user.d_is correspond to the indices of the
      state and design variables owned by the current processor.
   */
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
 
   ierr = VecGetOwnershipRange(user.y,&lo,&hi);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(user.u,&lo2,&hi2);CHKERRQ(ierr); 
+  ierr = VecGetOwnershipRange(user.u,&lo2,&hi2);CHKERRQ(ierr);
 
   ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo,1,&is_allstate);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo+lo2,1,&user.s_is);CHKERRQ(ierr);
@@ -194,7 +194,7 @@ int main(int argc, char **argv)
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,"tao_lcl");CHKERRQ(ierr);
-  user.lcl = (TAO_LCL*)(tao->data); 
+  user.lcl = (TAO_LCL*)(tao->data);
   /* Set up initial vectors and matrices */
   ierr = ParabolicInitialize(&user);CHKERRQ(ierr);
 
@@ -208,7 +208,7 @@ int main(int argc, char **argv)
   ierr = TaoSetGradientRoutine(tao, FormGradient, (void *)&user);CHKERRQ(ierr);
   ierr = TaoSetConstraintsRoutine(tao, user.c, FormConstraints, (void *)&user);CHKERRQ(ierr);
 
-  ierr = TaoSetJacobianStateRoutine(tao, user.Js, user.JsBlockPrec, user.JsInv, FormJacobianState, (void *)&user);CHKERRQ(ierr); 
+  ierr = TaoSetJacobianStateRoutine(tao, user.Js, user.JsBlockPrec, user.JsInv, FormJacobianState, (void *)&user);CHKERRQ(ierr);
   ierr = TaoSetJacobianDesignRoutine(tao, user.Jd, FormJacobianDesign, (void *)&user);CHKERRQ(ierr);
 
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
@@ -253,8 +253,8 @@ int main(int argc, char **argv)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-/* 
-   dwork = Qy - d  
+/*
+   dwork = Qy - d
    lwork = L*(u-ur)
    f = 1/2 * (dwork.dork + alpha*lwork.lwork)
 */
@@ -287,7 +287,7 @@ PetscErrorCode FormFunction(TaoSolver tao,Vec X,PetscReal *f,void *ptr)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormGradient"
-/*  
+/*
     state: g_s = Q' *(Qy - d)
     design: g_d = alpha*L'*L*(u-ur)
 */
@@ -314,7 +314,7 @@ PetscErrorCode FormGradient(TaoSolver tao,Vec X,Vec G,void *ptr)
     ierr = MatMult(user->QblockT,user->di[j],user->yiwork[i]);CHKERRQ(ierr);
   }
   ierr = Gather_i(user->ywork,user->yiwork,user->yi_scatter,user->nt);CHKERRQ(ierr);
-  
+
   ierr = VecWAXPY(user->uwork,-1.0,user->ur,user->u);CHKERRQ(ierr);
   ierr = MatMult(user->L,user->uwork,user->lwork);CHKERRQ(ierr);
   ierr = MatMult(user->LT,user->lwork,user->uwork);CHKERRQ(ierr);
@@ -356,8 +356,8 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *f, Vec G, v
   ierr = VecDot(user->lwork,user->lwork,&d2);CHKERRQ(ierr);
   ierr = MatMult(user->LT,user->lwork,user->uwork);CHKERRQ(ierr);
   ierr = VecScale(user->uwork, user->alpha);CHKERRQ(ierr);
-  *f = 0.5 * (d1 + user->alpha*d2); 
-  
+  *f = 0.5 * (d1 + user->alpha*d2);
+
   ierr = Gather(G,user->ywork,user->state_scatter,user->uwork,user->design_scatter);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -365,7 +365,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *f, Vec G, v
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianState"
-/* A 
+/* A
 MatShell object
 */
 PetscErrorCode FormJacobianState(TaoSolver tao, Vec X, Mat *J, Mat* JPre, Mat* JInv, MatStructure* flag, void *ptr)
@@ -379,7 +379,7 @@ PetscErrorCode FormJacobianState(TaoSolver tao, Vec X, Mat *J, Mat* JPre, Mat* J
   ierr = VecAXPY(user->uwork,-1.0,user->u);CHKERRQ(ierr);
   ierr = VecExp(user->uwork);CHKERRQ(ierr);
   ierr = MatMult(user->Av,user->uwork,user->Av_u);CHKERRQ(ierr);
-  ierr = VecCopy(user->Av_u,user->Swork);CHKERRQ(ierr); 
+  ierr = VecCopy(user->Av_u,user->Swork);CHKERRQ(ierr);
   ierr = VecReciprocal(user->Swork);CHKERRQ(ierr);
   ierr = MatCopy(user->Div,user->Divwork,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatDiagonalScale(user->Divwork,NULL,user->Swork);CHKERRQ(ierr);
@@ -390,7 +390,7 @@ PetscErrorCode FormJacobianState(TaoSolver tao, Vec X, Mat *J, Mat* JPre, Mat* J
     ierr = MatMatMultNumeric(user->Divwork,user->Grad,user->DSG);CHKERRQ(ierr);
     user->dsg_formed = PETSC_TRUE;
   }
-  
+
   /* B = speye(nx^3) + ht*DSG; */
   ierr = MatScale(user->DSG,user->ht);CHKERRQ(ierr);
   ierr = MatShift(user->DSG,1.0);CHKERRQ(ierr);
@@ -415,7 +415,7 @@ PetscErrorCode FormJacobianDesign(TaoSolver tao, Vec X, Mat *J, void *ptr)
 
 #undef __FUNCT__
 #define __FUNCT__ "StateMatMult"
-PetscErrorCode StateMatMult(Mat J_shell, Vec X, Vec Y) 
+PetscErrorCode StateMatMult(Mat J_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -435,7 +435,7 @@ PetscErrorCode StateMatMult(Mat J_shell, Vec X, Vec Y)
 
 #undef __FUNCT__
 #define __FUNCT__ "StateMatMultTranspose"
-PetscErrorCode StateMatMultTranspose(Mat J_shell, Vec X, Vec Y) 
+PetscErrorCode StateMatMultTranspose(Mat J_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -456,23 +456,23 @@ PetscErrorCode StateMatMultTranspose(Mat J_shell, Vec X, Vec Y)
 
 #undef __FUNCT__
 #define __FUNCT__ "StateMatBlockMult"
-PetscErrorCode StateMatBlockMult(Mat J_shell, Vec X, Vec Y) 
+PetscErrorCode StateMatBlockMult(Mat J_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
   AppCtx         *user;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
-  ierr = MatMult(user->Grad,X,user->Swork);CHKERRQ(ierr); 
+  ierr = MatMult(user->Grad,X,user->Swork);CHKERRQ(ierr);
   ierr = VecPointwiseDivide(user->Swork,user->Swork,user->Av_u);CHKERRQ(ierr);
-  ierr = MatMult(user->Div,user->Swork,Y);CHKERRQ(ierr); 
+  ierr = MatMult(user->Div,user->Swork,Y);CHKERRQ(ierr);
   ierr = VecAYPX(Y,user->ht,X);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DesignMatMult"
-PetscErrorCode DesignMatMult(Mat J_shell, Vec X, Vec Y) 
+PetscErrorCode DesignMatMult(Mat J_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -480,31 +480,31 @@ PetscErrorCode DesignMatMult(Mat J_shell, Vec X, Vec Y)
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
- 
-  /* sdiag(1./v) */ 
+
+  /* sdiag(1./v) */
   ierr = VecSet(user->uwork,0);CHKERRQ(ierr);
   ierr = VecAXPY(user->uwork,-1.0,user->u);CHKERRQ(ierr);
-  ierr = VecExp(user->uwork);CHKERRQ(ierr);  
+  ierr = VecExp(user->uwork);CHKERRQ(ierr);
 
   /* sdiag(1./((Av*(1./v)).^2)) */
   ierr = MatMult(user->Av,user->uwork,user->Swork);CHKERRQ(ierr);
   ierr = VecPointwiseMult(user->Swork,user->Swork,user->Swork);CHKERRQ(ierr);
-  ierr = VecReciprocal(user->Swork);CHKERRQ(ierr); 
+  ierr = VecReciprocal(user->Swork);CHKERRQ(ierr);
 
-  /* (Av * (sdiag(1./v) * b)) */ 
+  /* (Av * (sdiag(1./v) * b)) */
   ierr = VecPointwiseMult(user->uwork,user->uwork,X);CHKERRQ(ierr);
   ierr = MatMult(user->Av,user->uwork,user->Twork);CHKERRQ(ierr);
 
   /* (sdiag(1./((Av*(1./v)).^2)) * (Av * (sdiag(1./v) * b))) */
-  ierr = VecPointwiseMult(user->Swork,user->Twork,user->Swork);CHKERRQ(ierr); 
+  ierr = VecPointwiseMult(user->Swork,user->Twork,user->Swork);CHKERRQ(ierr);
 
   ierr = Scatter_i(user->y,user->yi,user->yi_scatter,user->nt);CHKERRQ(ierr);
   for (i=0; i<user->nt; i++){
     /* (sdiag(Grad*y(:,i)) */
     ierr = MatMult(user->Grad,user->yi[i],user->Twork);CHKERRQ(ierr);
-  
+
     /* ht * Div * (sdiag(Grad*y(:,i)) * (sdiag(1./((Av*(1./v)).^2)) * (Av * (sdiag(1./v) * b)))) */
-    ierr = VecPointwiseMult(user->Twork,user->Twork,user->Swork);CHKERRQ(ierr); 
+    ierr = VecPointwiseMult(user->Twork,user->Twork,user->Swork);CHKERRQ(ierr);
     ierr = MatMult(user->Div,user->Twork,user->yiwork[i]);CHKERRQ(ierr);
     ierr = VecScale(user->yiwork[i],user->ht);CHKERRQ(ierr);
   }
@@ -515,7 +515,7 @@ PetscErrorCode DesignMatMult(Mat J_shell, Vec X, Vec Y)
 
 #undef __FUNCT__
 #define __FUNCT__ "DesignMatMultTranspose"
-PetscErrorCode DesignMatMultTranspose(Mat J_shell, Vec X, Vec Y) 
+PetscErrorCode DesignMatMultTranspose(Mat J_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -550,7 +550,7 @@ PetscErrorCode DesignMatMultTranspose(Mat J_shell, Vec X, Vec Y)
 
     /* (Av' * (sdiag(1./((Av*(1./v)).^2)) * (sdiag(Grad*y(:,i)) * (Div' * b(:,i))))) */
     ierr = MatMult(user->AvT,user->Twork,user->yiwork[i]);CHKERRQ(ierr);
-  
+
     /* sdiag(1./v) * (Av' * (sdiag(1./((Av*(1./v)).^2)) * (sdiag(Grad*y(:,i)) * (Div' * b(:,i))))) */
     ierr = VecPointwiseMult(user->yiwork[i],user->uwork,user->yiwork[i]);CHKERRQ(ierr);
     ierr = VecAXPY(Y,user->ht,user->yiwork[i]);CHKERRQ(ierr);
@@ -560,7 +560,7 @@ PetscErrorCode DesignMatMultTranspose(Mat J_shell, Vec X, Vec Y)
 
 #undef __FUNCT__
 #define __FUNCT__ "StateMatBlockPrecMult"
-PetscErrorCode StateMatBlockPrecMult(PC PC_shell, Vec X, Vec Y) 
+PetscErrorCode StateMatBlockPrecMult(PC PC_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
   AppCtx         *user;
@@ -624,10 +624,10 @@ PetscErrorCode StateMatInvTransposeMult(Mat J_shell, Vec X, Vec Y)
     ierr = KSPSetTolerances(user->solver,tau,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   }
   ierr = Scatter_i(X,user->yi,user->yi_scatter,user->nt);CHKERRQ(ierr);
-  
+
   i = user->nt - 1;
   ierr = KSPSolve(user->solver,user->yi[i],user->yiwork[i]);CHKERRQ(ierr);
- 
+
   ierr = KSPGetIterationNumber(user->solver,&its);CHKERRQ(ierr);
   user->ksp_its = user->ksp_its + its;
 
@@ -673,18 +673,18 @@ PetscErrorCode StateMatGetDiagonal(Mat J_shell, Vec X)
   ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
   ierr =  VecCopy(user->js_diag,X);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-  
+
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "FormConstraints"
 PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec C, void *ptr)
 {
-  /* con = Ay - q, A = [B  0  0 ... 0; 
-                       -I  B  0 ... 0; 
+  /* con = Ay - q, A = [B  0  0 ... 0;
+                       -I  B  0 ... 0;
                         0 -I  B ... 0;
                              ...     ;
-                        0    ... -I B] 
+                        0    ... -I B]
      B = ht * Div * Sigma * Grad + eye */
   PetscErrorCode ierr;
   PetscInt       i;
@@ -696,7 +696,7 @@ PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec C, void *ptr)
   ierr = MatMult(user->JsBlock,user->yi[0],user->yiwork[0]);CHKERRQ(ierr);
   for (i=1; i<user->nt; i++){
     ierr = MatMult(user->JsBlock,user->yi[i],user->yiwork[i]);CHKERRQ(ierr);
-    ierr = VecAXPY(user->yiwork[i],-1.0,user->yi[i-1]);CHKERRQ(ierr);               
+    ierr = VecAXPY(user->yiwork[i],-1.0,user->yi[i-1]);CHKERRQ(ierr);
   }
   ierr = Gather_i(C,user->yiwork,user->yi_scatter,user->nt);CHKERRQ(ierr);
   ierr = VecAXPY(C,-1.0,user->q);CHKERRQ(ierr);
@@ -778,31 +778,31 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   PetscScalar    v,vx,vy,vz;
   IS             is_from_y,is_to_yi,is_from_d,is_to_di;
   /* Data locations */
-  PetscScalar xr[64] = {0.4970,     0.8498,     0.7814,     0.6268,     0.7782,     0.6402,     0.3617,     0.3160,     
-                        0.3610,     0.5298,     0.6987,     0.3331,     0.7962,     0.5596,     0.3866,     0.6774,     
-                        0.5407,     0.4518,     0.6702,     0.6061,     0.7580,     0.8997,     0.5198,     0.8326,     
-                        0.2138,     0.9198,     0.3000,     0.2833,     0.8288,     0.7076,     0.1820,     0.0728,     
-                        0.8447,     0.2367,     0.3239,     0.6413,     0.3114,     0.4731,     0.1192,     0.9273,     
-                        0.5724,     0.4331,     0.5136,     0.3547,     0.4413,     0.2602,     0.5698,     0.7278,     
-                        0.5261,     0.6230,     0.2454,     0.3948,     0.7479,     0.6582,     0.4660,     0.5594,     
+  PetscScalar xr[64] = {0.4970,     0.8498,     0.7814,     0.6268,     0.7782,     0.6402,     0.3617,     0.3160,
+                        0.3610,     0.5298,     0.6987,     0.3331,     0.7962,     0.5596,     0.3866,     0.6774,
+                        0.5407,     0.4518,     0.6702,     0.6061,     0.7580,     0.8997,     0.5198,     0.8326,
+                        0.2138,     0.9198,     0.3000,     0.2833,     0.8288,     0.7076,     0.1820,     0.0728,
+                        0.8447,     0.2367,     0.3239,     0.6413,     0.3114,     0.4731,     0.1192,     0.9273,
+                        0.5724,     0.4331,     0.5136,     0.3547,     0.4413,     0.2602,     0.5698,     0.7278,
+                        0.5261,     0.6230,     0.2454,     0.3948,     0.7479,     0.6582,     0.4660,     0.5594,
                         0.7574,     0.1143,     0.5900,     0.1065,     0.4260,     0.3294,     0.8276,     0.0756};
-  
-  PetscScalar yr[64] = {0.7345,     0.9120,     0.9288,     0.7528,     0.4463,     0.4985,     0.2497,     0.6256,     
-                        0.3425,     0.9026,     0.6983,     0.4230,     0.7140,     0.2970,     0.4474,     0.8792,     
-                        0.6604,     0.2485,     0.7968,     0.6127,     0.1796,     0.2437,     0.5938,     0.6137,     
-                        0.3867,     0.5658,     0.4575,     0.1009,     0.0863,     0.3361,     0.0738,     0.3985,     
-                        0.6602,     0.1437,     0.0934,     0.5983,     0.5950,     0.0763,     0.0768,     0.2288,     
-                        0.5761,     0.1129,     0.3841,     0.6150,     0.6904,     0.6686,     0.1361,     0.4601,     
-                        0.4491,     0.3716,     0.1969,     0.6537,     0.6743,     0.6991,     0.4811,     0.5480,     
+
+  PetscScalar yr[64] = {0.7345,     0.9120,     0.9288,     0.7528,     0.4463,     0.4985,     0.2497,     0.6256,
+                        0.3425,     0.9026,     0.6983,     0.4230,     0.7140,     0.2970,     0.4474,     0.8792,
+                        0.6604,     0.2485,     0.7968,     0.6127,     0.1796,     0.2437,     0.5938,     0.6137,
+                        0.3867,     0.5658,     0.4575,     0.1009,     0.0863,     0.3361,     0.0738,     0.3985,
+                        0.6602,     0.1437,     0.0934,     0.5983,     0.5950,     0.0763,     0.0768,     0.2288,
+                        0.5761,     0.1129,     0.3841,     0.6150,     0.6904,     0.6686,     0.1361,     0.4601,
+                        0.4491,     0.3716,     0.1969,     0.6537,     0.6743,     0.6991,     0.4811,     0.5480,
                         0.1684,     0.4569,     0.6889,     0.8437,     0.3015,     0.2854,     0.8199,     0.2658};
-  
-  PetscScalar zr[64] = {0.7668,     0.8573,     0.2654,     0.2719,     0.1060,     0.1311,     0.6232,     0.2295,     
-                        0.8009,     0.2147,     0.2119,     0.9325,     0.4473,     0.3600,     0.3374,     0.3819,     
-                        0.4066,     0.5801,     0.1673,     0.0959,     0.4638,     0.8236,     0.8800,     0.2939,     
-                        0.2028,     0.8262,     0.2706,     0.6276,     0.9085,     0.6443,     0.8241,     0.0712,     
-                        0.1824,     0.7789,     0.4389,     0.8415,     0.7055,     0.6639,     0.3653,     0.2078,     
-                        0.1987,     0.2297,     0.4321,     0.8115,     0.4915,     0.7764,     0.4657,     0.4627,     
-                        0.4569,     0.4232,     0.8514,     0.0674,     0.3227,     0.1055,     0.6690,     0.6313,     
+
+  PetscScalar zr[64] = {0.7668,     0.8573,     0.2654,     0.2719,     0.1060,     0.1311,     0.6232,     0.2295,
+                        0.8009,     0.2147,     0.2119,     0.9325,     0.4473,     0.3600,     0.3374,     0.3819,
+                        0.4066,     0.5801,     0.1673,     0.0959,     0.4638,     0.8236,     0.8800,     0.2939,
+                        0.2028,     0.8262,     0.2706,     0.6276,     0.9085,     0.6443,     0.8241,     0.0712,
+                        0.1824,     0.7789,     0.4389,     0.8415,     0.7055,     0.6639,     0.3653,     0.2078,
+                        0.1987,     0.2297,     0.4321,     0.8115,     0.4915,     0.7764,     0.4657,     0.4627,
+                        0.4569,     0.4232,     0.8514,     0.0674,     0.3227,     0.1055,     0.6690,     0.6313,
                         0.9226,     0.5461,     0.4126,     0.2364,     0.6096,     0.7042,     0.3914,     0.0711};
 
   PetscFunctionBegin;
@@ -842,10 +842,10 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = VecDuplicate(XX,&bc);CHKERRQ(ierr);
 
   /* Generate 3D grid, and collect ns (1<=ns<=8) right-hand-side vectors into user->q */
-  h = 1.0/user->mx; 
+  h = 1.0/user->mx;
   hinv = user->mx;
   neg_hinv = -hinv;
- 
+
   ierr = VecGetOwnershipRange(XX,&istart,&iend);CHKERRQ(ierr);
   for (linear_index=istart; linear_index<iend; linear_index++){
     i = linear_index % user->mx;
@@ -853,7 +853,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
     k = ((linear_index-i)/user->mx-j) / user->mx;
     vx = h*(i+0.5);
     vy = h*(j+0.5);
-    vz = h*(k+0.5);     
+    vz = h*(k+0.5);
     ierr = VecSetValues(XX,1,&linear_index,&vx,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecSetValues(YY,1,&linear_index,&vy,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecSetValues(ZZ,1,&linear_index,&vz,INSERT_VALUES);CHKERRQ(ierr);
@@ -870,7 +870,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = VecAssemblyBegin(ZZ);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(ZZ);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(bc);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(bc);CHKERRQ(ierr);  
+  ierr = VecAssemblyEnd(bc);CHKERRQ(ierr);
 
   /* Compute true parameter function
      ut = 0.5 + exp(-10*((x-0.5)^2+(y-0.5)^2+(z-0.5)^2)) */
@@ -900,7 +900,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = VecDestroy(&YYwork);CHKERRQ(ierr);
   ierr = VecDestroy(&ZZwork);CHKERRQ(ierr);
   ierr = VecDestroy(&UTwork);CHKERRQ(ierr);
- 
+
   /* Initial guess and reference model */
   ierr = VecDuplicate(user->utrue,&user->ur);CHKERRQ(ierr);
   ierr = VecSet(user->ur,0.0);CHKERRQ(ierr);
@@ -1025,7 +1025,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = VecSetFromOptions(user->S);CHKERRQ(ierr);
 
   ierr = VecCreate(PETSC_COMM_WORLD,&user->lwork);CHKERRQ(ierr);
-  ierr = VecSetSizes(user->lwork,PETSC_DECIDE,m+user->mx*user->mx*user->mx);CHKERRQ(ierr); 
+  ierr = VecSetSizes(user->lwork,PETSC_DECIDE,m+user->mx*user->mx*user->mx);CHKERRQ(ierr);
   ierr = VecSetFromOptions(user->lwork);CHKERRQ(ierr);
 
   ierr = MatDuplicate(user->Div,MAT_SHARE_NONZERO_PATTERN,&user->Divwork);CHKERRQ(ierr);
@@ -1062,11 +1062,11 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
      D is diagonal, L is strictly lower triangular, and U is strictly upper triangular.
      This is an SSOR preconditioner for user->JsBlock. */
   ierr = MatCreateShell(PETSC_COMM_WORLD,PETSC_DETERMINE,PETSC_DETERMINE,user->m,user->m,user,&user->JsBlockPrec);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(user->JsBlockPrec,MATOP_MULT,(void(*)(void))StateMatBlockPrecMult);CHKERRQ(ierr); 
+  ierr = MatShellSetOperation(user->JsBlockPrec,MATOP_MULT,(void(*)(void))StateMatBlockPrecMult);CHKERRQ(ierr);
   /* JsBlockPrec is symmetric */
   ierr = MatShellSetOperation(user->JsBlockPrec,MATOP_MULT_TRANSPOSE,(void(*)(void))StateMatBlockPrecMult);CHKERRQ(ierr);
   ierr = MatSetOption(user->JsBlockPrec,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr);
-  
+
   /* Create a matrix-free shell user->Jd for computing B*x */
   ierr = MatCreateShell(PETSC_COMM_WORLD,PETSC_DETERMINE,PETSC_DETERMINE,user->m*user->nt,user->m,user,&user->Jd);CHKERRQ(ierr);
   ierr = MatShellSetOperation(user->Jd,MATOP_MULT,(void(*)(void))DesignMatMult);CHKERRQ(ierr);
@@ -1194,20 +1194,20 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   /* Now solve for y */
   user->lcl->solve_type = LCL_FORWARD1;
   ierr = StateMatInvMult(user->Js,user->q,user->y);CHKERRQ(ierr);
-  
+
   /* Construct projection matrix Q, a block diagonal matrix consisting of nt copies of Qblock along the diagonal */
   ierr = MatCreate(PETSC_COMM_WORLD,&user->Qblock);CHKERRQ(ierr);
   ierr = MatSetSizes(user->Qblock,PETSC_DECIDE,PETSC_DECIDE,user->ndata,n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(user->Qblock);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(user->Qblock,8,NULL,8,NULL);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(user->Qblock,8,NULL);CHKERRQ(ierr);
- 
+
   for (i=0; i<user->mx; i++){
     x[i] = h*(i+0.5);
     y[i] = h*(i+0.5);
     z[i] = h*(i+0.5);
   }
-  
+
   ierr = MatGetOwnershipRange(user->Qblock,&istart,&iend);
   nx = user->mx; ny = user->mx; nz = user->mx;
   for (i=istart; i<iend; i++){
@@ -1234,7 +1234,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
     indy2 = im;
     dy1 = yri - y[indy1];
     dy2 = y[indy2] - yri;
-    
+
     zri = zr[i];
     im = 0;
     zim = z[im];

@@ -3,7 +3,7 @@
 #include "blmvm.h"
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoSolve_BLMVM"
 static PetscErrorCode TaoSolve_BLMVM(TaoSolver tao)
 {
@@ -121,7 +121,7 @@ static PetscErrorCode TaoSolve_BLMVM(TaoSolver tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoSetup_BLMVM"
 static PetscErrorCode TaoSetup_BLMVM(TaoSolver tao)
 {
@@ -158,7 +158,7 @@ static PetscErrorCode TaoSetup_BLMVM(TaoSolver tao)
 }
 
 /* ---------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_BLMVM"
 static PetscErrorCode TaoDestroy_BLMVM(TaoSolver tao)
 {
@@ -177,7 +177,7 @@ static PetscErrorCode TaoDestroy_BLMVM(TaoSolver tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_BLMVM"
 static PetscErrorCode TaoSetFromOptions_BLMVM(TaoSolver tao)
 {
@@ -192,7 +192,7 @@ static PetscErrorCode TaoSetFromOptions_BLMVM(TaoSolver tao)
 
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoView_BLMVM"
 static int TaoView_BLMVM(TaoSolver tao, PetscViewer viewer)
 {
@@ -210,8 +210,8 @@ static int TaoView_BLMVM(TaoSolver tao, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "TaoComputeDual_BLMVM" 
+#undef __FUNCT__
+#define __FUNCT__ "TaoComputeDual_BLMVM"
 static PetscErrorCode TaoComputeDual_BLMVM(TaoSolver tao, Vec DXL, Vec DXU)
 {
   TAO_BLMVM      *blm = (TAO_BLMVM *) tao->data;
@@ -236,7 +236,7 @@ static PetscErrorCode TaoComputeDual_BLMVM(TaoSolver tao, Vec DXL, Vec DXU)
 
 /* ---------------------------------------------------------- */
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoCreate_BLMVM"
 PetscErrorCode TaoCreate_BLMVM(TaoSolver tao)
 {

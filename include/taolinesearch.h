@@ -17,7 +17,7 @@ typedef enum {
     TAOLINESEARCH_HALTED_RTOL = 7,
     TAOLINESEARCH_HALTED_USER = 8
 } TaoLineSearchTerminationReason;
-              
+
 
 #define TaoLineSearchType  char*
 #define TAOLINESEARCH_UNIT "unit"

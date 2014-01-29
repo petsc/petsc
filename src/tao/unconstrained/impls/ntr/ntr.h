@@ -25,7 +25,7 @@ typedef struct {
   PetscReal alpha3;     /*  factor used for trust-region update */
   PetscReal alpha4;     /*  factor used for trust-region update */
   PetscReal alpha5;     /*  factor used for trust-region update */
-  
+
   /*
      kappa = ared / pred
      if   kappa < eta1          (very bad step)

@@ -1,7 +1,7 @@
 #include "petscdmda.h"   /*I "petscdmda.h" I*/
 #include "taosolver.h" /*I "taosolver.h" I*/
 
-static  char help[] = 
+static  char help[] =
 "This example demonstrates use of the TAO package to \n\
 solve an unconstrained minimization problem.  This example is based on a \n\
 problem from the MINPACK-2 test suite.  Given a rectangular 2-D domain, \n\
@@ -17,7 +17,7 @@ The command line options are:\n\
   -start <st>, where <st> =0 for zero vector, <st> >0 for random start, and <st> <0 \n\
                for an average of the boundary conditions\n\n";
 
-/*T 
+/*T
    Concepts: TAO - Solving a bound constrained minimization problem
    Routines: TaoInitialize(); TaoFinalize();
    Routines: TaoCreate();
@@ -27,13 +27,13 @@ The command line options are:\n\
    Routines: TaoSetVariableBounds();
    Routines: TaoSetFromOptions();
    Routines: TaoSolve(); TaoView();
-   Routines: TaoGetTerminationReason(); TaoDestroy(); 
+   Routines: TaoGetTerminationReason(); TaoDestroy();
    Processors: n
-T*/ 
+T*/
 
 
-/* 
-   User-defined application context - contains data needed by the 
+/*
+   User-defined application context - contains data needed by the
    application-provided call-back routines, FormFunctionGradient(),
    FormHessian().
 */
@@ -43,7 +43,7 @@ typedef struct {
   PetscInt       mx, my;                   /* discretization in x, y directions */
   PetscInt       bmx,bmy;                  /* Size of plate under the surface */
   Vec            Bottom, Top, Left, Right; /* boundary values */
-  
+
   /* Working space */
   Vec         localX, localV;           /* ghosted local vector */
   DM          dm;                       /* distributed array data structure */
@@ -113,8 +113,8 @@ int main( int argc, char **argv )
 
   /*
      Extract global and local vectors from DM; The local vectors are
-     used solely as work space for the evaluation of the function, 
-     gradient, and Hessian.  Duplicate for remaining vectors that are 
+     used solely as work space for the evaluation of the function,
+     gradient, and Hessian.  Duplicate for remaining vectors that are
      the same types.
   */
   ierr = DMCreateGlobalVector(user.dm,&x);CHKERRQ(ierr); /* Solution */
@@ -128,8 +128,8 @@ int main( int argc, char **argv )
 
   /* The TAO code begins here */
 
-  /* 
-     Create TAO solver and set desired solution method 
+  /*
+     Create TAO solver and set desired solution method
      The method must either be 'tao_tron' or 'tao_blmvm'
      If blmvm is used, then hessian function is not called.
   */
@@ -140,14 +140,14 @@ int main( int argc, char **argv )
   ierr = MSA_BoundaryConditions(&user);CHKERRQ(ierr);
   ierr = MSA_InitialPoint(&user,x);CHKERRQ(ierr);
   ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
-  
+
   /* Set routines for function, gradient and hessian evaluation */
   ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*) &user);CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(x,&m);CHKERRQ(ierr);
   ierr = MatCreateAIJ(MPI_COMM_WORLD,m,m,N,N,7,NULL,3,NULL,&(user.H));CHKERRQ(ierr);
   ierr = MatSetOption(user.H,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-  
+
   ierr = DMGetLocalToGlobalMapping(user.dm,&isltog);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(user.H,isltog,isltog);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,"-matrixfree",&flg);CHKERRQ(ierr);
@@ -157,7 +157,7 @@ int main( int argc, char **argv )
       ierr = MatSetOption(H_shell,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
       ierr = TaoSetHessianRoutine(tao,H_shell,H_shell,MatrixFreeHessian,(void*)&user);CHKERRQ(ierr);
   } else {
-      ierr = TaoSetHessianRoutine(tao,user.H,user.H,FormHessian,(void*)&user);CHKERRQ(ierr); 
+      ierr = TaoSetHessianRoutine(tao,user.H,user.H,FormHessian,(void*)&user);CHKERRQ(ierr);
   }
 
   /* Set Variable bounds */
@@ -184,7 +184,7 @@ int main( int argc, char **argv )
   ierr = VecDestroy(&xl);CHKERRQ(ierr);
   ierr = VecDestroy(&xu);CHKERRQ(ierr);
   ierr = MatDestroy(&user.H);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.localX);CHKERRQ(ierr); 
+  ierr = VecDestroy(&user.localX);CHKERRQ(ierr);
   ierr = VecDestroy(&user.localV);CHKERRQ(ierr);
   ierr = VecDestroy(&user.Bottom);CHKERRQ(ierr);
   ierr = VecDestroy(&user.Top);CHKERRQ(ierr);
@@ -202,22 +202,22 @@ int main( int argc, char **argv )
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionGradient"
-/*  FormFunctionGradient - Evaluates f(x) and gradient g(x).             
+/*  FormFunctionGradient - Evaluates f(x) and gradient g(x).
 
     Input Parameters:
 .   tao     - the TaoSolver context
 .   X      - input vector
 .   userCtx - optional user-defined context, as set by TaoSetObjectiveAndGradientRoutine()
-    
+
     Output Parameters:
 .   fcn     - the function value
 .   G      - vector containing the newly evaluated gradient
 
    Notes:
-   In this case, we discretize the domain and Create triangles. The 
-   surface of each triangle is planar, whose surface area can be easily 
-   computed.  The total surface area is found by sweeping through the grid 
-   and computing the surface area of the two triangles that have their 
+   In this case, we discretize the domain and Create triangles. The
+   surface of each triangle is planar, whose surface area can be easily
+   computed.  The total surface area is found by sweeping through the grid
+   and computing the surface area of the two triangles that have their
    right angle at the grid point.  The diagonal line segments on the
    grid that define the triangles run from top left to lower right.
    The numbering of points starts at the lower left and runs left to
@@ -262,10 +262,10 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn, Vec G,
   for (j=ys; j<ys+ym; j++){
     for (i=xs; i< xs+xm; i++){
       row=(j-gys)*gxm + (i-gxs);
-      
+
       xc = x[row];
       xlt=xrb=xl=xr=xb=xt=xc;
-      
+
       if (i==0){ /* left side */
         xl= left[j-ys+1];
         xlt = left[j-ys+2];
@@ -279,7 +279,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn, Vec G,
       } else {
         xb = x[row-gxm];
       }
-      
+
       if (i+1 == gxs+gxm){ /* right side */
         xr=right[j-ys+1];
         xrb = right[j-ys];
@@ -309,7 +309,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn, Vec G,
       d6 = (xrb-xb);
       d7 = (xlt-xl);
       d8 = (xt-xlt);
-      
+
       df1dxc = d1*hydhx;
       df2dxc = ( d1*hydhx + d4*hxdhy );
       df3dxc = d3*hxdhy;
@@ -332,7 +332,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn, Vec G,
       f4 = PetscSqrtScalar( 1.0 + d3*d3 + d2*d2);
       f5 = PetscSqrtScalar( 1.0 + d2*d2 + d5*d5);
       f6 = PetscSqrtScalar( 1.0 + d4*d4 + d6*d6);
-      
+
       ft = ft + (f2 + f4);
 
       df1dxc /= f1;
@@ -343,7 +343,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn, Vec G,
       df6dxc /= f6;
 
       g[row] = (df1dxc+df2dxc+df3dxc+df4dxc+df5dxc+df6dxc ) * 0.5;
-      
+
     }
   }
 
@@ -393,7 +393,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn, Vec G,
   ft=ft*area;
   ierr = MPI_Allreduce(&ft,fcn,1,MPIU_REAL,MPIU_SUM,MPI_COMM_WORLD);CHKERRQ(ierr);
 
-  
+
   /* Restore vectors */
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(localG,&g);CHKERRQ(ierr);
@@ -431,7 +431,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn, Vec G,
    Due to mesh point reordering with DMs, we must always work
    with the local mesh points, and then transform them to the new
    global numbering with the local-to-global mapping.  We cannot work
-   directly with the global numbers for the original uniprocessor mesh!  
+   directly with the global numbers for the original uniprocessor mesh!
 
    Two methods are available for imposing this transformation
    when setting matrix entries:
@@ -441,10 +441,10 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn, Vec G,
            - Use DMGetISLocalToGlobalMapping() to extract the
              local-to-global map from the DM
            - Associate this map with the matrix by calling
-             MatSetLocalToGlobalMapping() 
+             MatSetLocalToGlobalMapping()
          - Then set matrix entries using the local ordering
            by calling MatSetValuesLocal()
-     (B) MatSetValues(), using the global ordering 
+     (B) MatSetValues(), using the global ordering
          - Use DMGetGlobalIndices() to extract the local-to-global map
          - Then apply this map explicitly yourself
          - Set matrix entries using the global ordering by calling
@@ -453,7 +453,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn, Vec G,
    used in this example.
 */
 PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *Hptr, Mat *Hpc, MatStructure *flag, void *ptr)
-{ 
+{
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx *) ptr;
   Mat            Hessian = *Hpc;
@@ -499,8 +499,8 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *Hptr, Mat *Hpc, MatStructure
     for (j=ys; j<ys+ym; j++){
 
       row=(j-gys)*gxm + (i-gxs);
-      
-      xc = x[row]; 
+
+      xc = x[row];
       xlt=xrb=xl=xr=xb=xt=xc;
 
       /* Left side */
@@ -510,14 +510,14 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *Hptr, Mat *Hpc, MatStructure
       } else {
         xl = x[row-1];
       }
-      
+
       if (j==gys){
         xb=bottom[i-xs+1];
         xrb = bottom[i-xs+2];
       } else {
         xb = x[row-gxm];
       }
-      
+
       if (i+1 == gxs+gxm){
         xr=right[j-ys+1];
         xrb = right[j-ys];
@@ -548,7 +548,7 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *Hptr, Mat *Hpc, MatStructure
       d6 = (xrb-xb)*rhx;
       d7 = (xlt-xl)*rhy;
       d8 = (xlt-xt)*rhx;
-      
+
       f1 = PetscSqrtScalar( 1.0 + d1*d1 + d7*d7);
       f2 = PetscSqrtScalar( 1.0 + d1*d1 + d4*d4);
       f3 = PetscSqrtScalar( 1.0 + d3*d3 + d8*d8);
@@ -574,44 +574,44 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *Hptr, Mat *Hpc, MatStructure
         (hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-2*d1*d4)/(f2*f2*f2) +
         (hxdhy*(1.0+d2*d2)+hydhx*(1.0+d3*d3)-2*d2*d3)/(f4*f4*f4);
 
-      hl*=0.5; hr*=0.5; ht*=0.5; hb*=0.5; hbr*=0.5; htl*=0.5;  hc*=0.5; 
+      hl*=0.5; hr*=0.5; ht*=0.5; hb*=0.5; hbr*=0.5; htl*=0.5;  hc*=0.5;
 
       k=0;
-      if (j>0){ 
+      if (j>0){
         v[k]=hb; col[k]=row - gxm; k++;
       }
-      
+
       if (j>0 && i < mx -1){
         v[k]=hbr; col[k]=row - gxm+1; k++;
       }
-      
+
       if (i>0){
         v[k]= hl; col[k]=row - 1; k++;
       }
-      
+
       v[k]= hc; col[k]=row; k++;
-      
+
       if (i < mx-1 ){
         v[k]= hr; col[k]=row+1; k++;
       }
-      
+
       if (i>0 && j < my-1 ){
         v[k]= htl; col[k] = row+gxm-1; k++;
       }
-      
+
       if (j < my-1 ){
         v[k]= ht; col[k] = row+gxm; k++;
       }
-      
-      /* 
+
+      /*
          Set matrix values using local numbering, which was defined
          earlier, in the main routine.
       */
       ierr = MatSetValuesLocal(Hessian,1,&row,k,col,v,INSERT_VALUES);CHKERRQ(ierr);
-      
+
     }
   }
-  
+
   /* Restore vectors */
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->Left,&left);CHKERRQ(ierr);
@@ -630,7 +630,7 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *Hptr, Mat *Hpc, MatStructure
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "MSA_BoundaryConditions"
-/* 
+/*
    MSA_BoundaryConditions -  Calculates the boundary conditions for
    the region.
 
@@ -761,7 +761,7 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "MSA_Plate"
-/* 
+/*
    MSA_Plate -  Calculates an obstacle for surface to stretch over.
 
    Input Parameter:
@@ -795,7 +795,7 @@ static PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx){
   ierr = PetscOptionsHasName(NULL,"-cylinder",&cylinder);CHKERRQ(ierr);
   /* Compute the optional lower box */
   if (cylinder){
-    for (i=xs; i< xs+xm; i++){    
+    for (i=xs; i< xs+xm; i++){
       for (j=ys; j<ys+ym; j++){
         row=(j-ys)*xm + (i-xs);
         t1=(2.0*i-mx)*bmy;
@@ -808,10 +808,10 @@ static PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx){
     }
   } else {
     /* Compute the optional lower box */
-    for (i=xs; i< xs+xm; i++){    
+    for (i=xs; i< xs+xm; i++){
       for (j=ys; j<ys+ym; j++){
         row=(j-ys)*xm + (i-xs);
-        if (i>=(mx-bmx)/2 && i<mx-(mx-bmx)/2 && 
+        if (i>=(mx-bmx)/2 && i<mx-(mx-bmx)/2 &&
             j>=(my-bmy)/2 && j<my-(my-bmy)/2 ){
           xl[row] = user->bheight;
         }
@@ -828,7 +828,7 @@ static PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx){
 #undef __FUNCT__
 #define __FUNCT__ "MSA_InitialPoint"
 /*
-   MSA_InitialPoint - Calculates the initial guess in one of three ways. 
+   MSA_InitialPoint - Calculates the initial guess in one of three ways.
 
    Input Parameters:
 .  user - user-defined application context
@@ -863,11 +863,11 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     PetscInt mx=user->mx,my=user->my;
     PetscReal *x,*left,*right,*bottom,*top;
     Vec    localX = user->localX;
-    
+
     /* Get local mesh boundaries */
     ierr = DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
     ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
-    
+
     /* Get pointers to vector data */
     ierr = VecGetArray(user->Top,&top);CHKERRQ(ierr);
     ierr = VecGetArray(user->Bottom,&bottom);CHKERRQ(ierr);
@@ -875,15 +875,15 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     ierr = VecGetArray(user->Right,&right);CHKERRQ(ierr);
 
     ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
-    /* Perform local computations */    
+    /* Perform local computations */
     for (j=ys; j<ys+ym; j++){
       for (i=xs; i< xs+xm; i++){
         row=(j-gys)*gxm + (i-gxs);
         x[row] = ( (j+1)*bottom[i-xs+1]/my + (my-j+1)*top[i-xs+1]/(my+2)+
-                   (i+1)*left[j-ys+1]/mx + (mx-i+1)*right[j-ys+1]/(mx+2))/2.0; 
+                   (i+1)*left[j-ys+1]/mx + (mx-i+1)*right[j-ys+1]/(mx+2))/2.0;
       }
     }
-    
+
     /* Restore vectors */
     ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
 
@@ -891,11 +891,11 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     ierr = VecRestoreArray(user->Top,&top);CHKERRQ(ierr);
     ierr = VecRestoreArray(user->Bottom,&bottom);CHKERRQ(ierr);
     ierr = VecRestoreArray(user->Right,&right);CHKERRQ(ierr);
-    
+
     /* Scatter values into global vector */
     ierr = DMLocalToGlobalBegin(user->dm,localX,INSERT_VALUES,X);CHKERRQ(ierr);
     ierr = DMLocalToGlobalEnd(user->dm,localX,INSERT_VALUES,X);CHKERRQ(ierr);
-    
+
   }
   return 0;
 }

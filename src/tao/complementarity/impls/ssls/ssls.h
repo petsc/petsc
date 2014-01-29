@@ -7,10 +7,10 @@
    -- feasible (F)    - iterates guaranteed to remain within bounds
    -- linesearch (LS) - Armijo rule on direction
 
- Many other reformulations are possible and combinations of 
+ Many other reformulations are possible and combinations of
  feasible/infeasible and linesearch/trust region are possible.
 
- Basic theory 
+ Basic theory
    Fischer-Burmeister reformulation is semismooth with a continuously
    differentiable merit function and strongly semismooth if the F has
    lipschitz continuous derivatives.
@@ -55,7 +55,7 @@
 typedef struct {
   Vec ff;       /* fischer function */
   Vec dpsi;     /* gradient of psi */
-  
+
   Vec da;       /* work vector for subdifferential calculation (diag pert) */
   Vec db;       /* work vector for subdifferential calculation (row scale) */
   Vec dm;   /* work vector for subdifferential calculation (mu vector) */
@@ -87,9 +87,9 @@ typedef struct {
   PetscReal g_mucon; /* gradient of merit function with respect to mu */
 
   Mat J_sub, Jpre_sub; /* subset of jacobian */
-  MatStructure matflag; 
+  MatStructure matflag;
   Vec f;        /* constraint function */
-  
+
   IS fixed;
   IS free;
 } TAO_SSLS;

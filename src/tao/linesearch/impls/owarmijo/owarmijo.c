@@ -37,7 +37,7 @@ static PetscErrorCode ProjWork_OWLQN(Vec w,Vec x,Vec gv,PetscReal *gdx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchDestroy_OWArmijo"
 static PetscErrorCode TaoLineSearchDestroy_OWArmijo(TaoLineSearch ls)
 {
@@ -54,7 +54,7 @@ static PetscErrorCode TaoLineSearchDestroy_OWArmijo(TaoLineSearch ls)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchSetFromOptions_OWArmijo"
 static PetscErrorCode TaoLineSearchSetFromOptions_OWArmijo(TaoLineSearch ls)
 {
@@ -75,7 +75,7 @@ static PetscErrorCode TaoLineSearchSetFromOptions_OWArmijo(TaoLineSearch ls)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchView_OWArmijo"
 static PetscErrorCode TaoLineSearchView_OWArmijo(TaoLineSearch ls, PetscViewer pv)
 {
@@ -98,7 +98,7 @@ static PetscErrorCode TaoLineSearchView_OWArmijo(TaoLineSearch ls, PetscViewer p
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchApply_OWArmijo"
 /* @ TaoApply_OWArmijo - This routine performs a linesearch. It
    backtracks until the (nonmonotone) OWArmijo conditions are satisfied.
@@ -123,7 +123,7 @@ static PetscErrorCode TaoLineSearchView_OWArmijo(TaoLineSearch ls, PetscViewer p
    condition and the directional derivative condition hold
 
    negative number if an input parameter is invalid
--   -1 -  step < 0 
+-   -1 -  step < 0
 
    positive number > 1 if the line search otherwise terminates
 +    1 -  Step is at the lower bound, stepmin.
@@ -224,7 +224,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
   }
 
   if (armP->nondescending) {
-    fact = armP->sigma; 
+    fact = armP->sigma;
   }
 
   ierr = VecDuplicate(g,&g_old);CHKERRQ(ierr);
@@ -306,7 +306,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchCreate_OWArmijo"
 PetscErrorCode TaoLineSearchCreate_OWArmijo(TaoLineSearch ls)
 {

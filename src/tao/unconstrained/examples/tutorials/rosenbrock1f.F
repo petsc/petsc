@@ -1,8 +1,8 @@
-!  Program usage: mpirun -np 1 rosenbrock1f [-help] [all TAO options] 
+!  Program usage: mpirun -np 1 rosenbrock1f [-help] [all TAO options]
 !
 !  Description:  This example demonstrates use of the TAO package to solve an
-!  unconstrained minimization problem on a single processor.  We minimize the 
-!  extended Rosenbrock function: 
+!  unconstrained minimization problem on a single processor.  We minimize the
+!  extended Rosenbrock function:
 !       sum_{i=0}^{n/2-1} ( alpha*(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2 )
 !
 !  The C version of this code is rosenbrock1.c
@@ -16,20 +16,20 @@
 !  Routines: TaoSetInitialVector();
 !  Routines: TaoSetFromOptions();
 !  Routines: TaoSolve();
-!  Routines: TaoGetTerminationReason(); TaoDestroy(); 
+!  Routines: TaoGetTerminationReason(); TaoDestroy();
 !  Processors: 1
-!T*/ 
+!T*/
 !
 
-! ---------------------------------------------------------------------- 
+! ----------------------------------------------------------------------
 !
       implicit none
 
 #include "rosenbrock1f.h"
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  See additional variable declarations in the file rosenbrock1f.h
 
@@ -37,12 +37,12 @@
       Vec              x       ! solution vector
       Mat              H       ! hessian matrix
       TaoSolver        tao     ! TAO_SOVER context
-      PetscBool       flg     
+      PetscBool       flg
       PetscInt         i2,i1
       integer          size,rank    ! number of processes running
       PetscReal      zero
       TaoSolverTerminationReason reason
-      
+
 
 
 !  Note: Any user-defined Fortran routines (such as FormGradient)
@@ -73,7 +73,7 @@
 
 
 
-! Check for command line arguments to override defaults        
+! Check for command line arguments to override defaults
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,           &
      &                        ierr)
       call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-alpha',            &
@@ -82,14 +82,14 @@
 !  Allocate vectors for the solution and gradient
       call VecCreateSeq(PETSC_COMM_SELF,n,x,ierr)
 
-!  Allocate storage space for Hessian; 
+!  Allocate storage space for Hessian;
       call MatCreateSeqBAIJ(PETSC_COMM_SELF,i2,n,n,i1,                   &
      &     PETSC_NULL_INTEGER, H,ierr)
 
       call MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE,ierr)
 
 
-!  The TAO code begins here 
+!  The TAO code begins here
 
 !  Create TAO solver
       call TaoCreate(PETSC_COMM_SELF,tao,ierr)
@@ -97,7 +97,7 @@
       call TaoSetType(tao,"tao_lmvm",ierr)
       CHKERRQ(ierr)
 
-!  Set routines for function, gradient, and hessian evaluation 
+!  Set routines for function, gradient, and hessian evaluation
       call TaoSetObjectiveAndGradientRoutine(tao,                       &
      &      FormFunctionGradient,PETSC_NULL_OBJECT,ierr)
       CHKERRQ(ierr)
@@ -126,19 +126,19 @@
       endif
 
 !  TaoView() prints ierr about the TAO solver; the option
-!      -tao_view 
+!      -tao_view
 !  can alternatively be used to activate this at runtime.
 !      call TaoView(tao,PETSC_VIEWER_STDOUT_SELF,ierr)
-      
+
 
 !  Free TAO data structures
       call TaoDestroy(tao,ierr)
 
-!  Free PETSc data structures 
+!  Free PETSc data structures
       call VecDestroy(x,ierr)
       call MatDestroy(H,ierr)
 
-!  Finalize TAO 
+!  Finalize TAO
       call TaoFinalize(ierr)
       call PetscFinalize(ierr)
 
@@ -156,7 +156,7 @@
 !  Output Parameters:
 !  G - vector containing the newly evaluated gradient
 !  f - function value
-      
+
       subroutine FormFunctionGradient(tao, X, f, G, dummy, ierr)
       implicit none
 
@@ -205,11 +205,11 @@
 
       f = ff
       call PetscLogFlops(nn*15.0d0,ierr)
-      
+
       return
       end
 
-!  
+!
 ! ---------------------------------------------------------------------
 !
 !  FormHessian - Evaluates Hessian matrix.
@@ -241,7 +241,7 @@
       MatStructure     flag
       PetscErrorCode   ierr
       PetscInt         dummy
-      
+
       PetscReal        v(0:1,0:1)
       PetscBool assembled
 

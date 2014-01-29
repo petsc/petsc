@@ -1,36 +1,36 @@
 /**********************************************************************
     American Put Options Pricing using the Black-Scholes Equation
-  
+
    Background (European Options):
      The standard European option is a contract where the holder has the right
-     to either buy (call option) or sell (put option) an underlying asset at 
+     to either buy (call option) or sell (put option) an underlying asset at
      a designated future time and price.
-  
+
      The classic Black-Scholes model begins with an assumption that the
-     price of the underlying asset behaves as a lognormal random walk.  
+     price of the underlying asset behaves as a lognormal random walk.
      Using this assumption and a no-arbitrage argument, the following
      linear parabolic partial differential equation for the value of the
      option results:
-  
+
        dV/dt + 0.5(sigma**2)(S**alpha)(d2V/dS2) + (r - D)S(dV/dS) - rV = 0.
-  
+
      Here, sigma is the volatility of the underling asset, alpha is a
      measure of elasticity (typically two), D measures the dividend payments
      on the underling asset, and r is the interest rate.
-  
+
      To completely specify the problem, we need to impose some boundary
      conditions.  These are as follows:
-  
+
        V(S, T) = max(E - S, 0)
        V(0, t) = E for all 0 <= t <= T
        V(s, t) = 0 for all 0 <= t <= T and s->infinity
-  
+
      where T is the exercise time time and E the strike price (price paid
      for the contract).
-  
+
      An explicit formula for the value of an European option can be
      found.  See the references for examples.
-  
+
    Background (American Options):
      The American option is similar to its European counterpart.  The
      difference is that the holder of the American option can excercise
@@ -38,25 +38,25 @@
      expiration.  This additional ability introduce a free boundary into
      the Black-Scholes equation which can be modeled as a linear
      complementarity problem.
-  
+
        0 <= -(dV/dt + 0.5(sigma**2)(S**alpha)(d2V/dS2) + (r - D)S(dV/dS) - rV)
-         complements 
+         complements
        V(S,T) >= max(E-S,0)
-  
+
      where the variables are the same as before and we have the same boundary
      conditions.
-  
+
      There is not explicit formula for calculating the value of an American
      option.  Therefore, we discretize the above problem and solve the
      resulting linear complementarity problem.
-  
+
      We will use backward differences for the time variables and central
      differences for the space variables.  Crank-Nicholson averaging will
      also be used in the discretization.  The algorithm used by the code
      solves for V(S,t) for a fixed t and then uses this value in the
      calculation of V(S,t - dt).  The method stops when V(S,0) has been
      found.
-  
+
    References:
      Huang and Pang, "Options Pricing and Linear Complementarity,"
        Journal of Computational Finance, volume 2, number 3, 1998.
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
   PetscBool  flg;         /* A return variable when checking for user options */
   TaoSolver tao;          /* TaoSolver solver context */
   AppCtx user;            /* user-defined work context */
-  PetscInt i, j;               
+  PetscInt i, j;
   PetscInt    xs,xm,gxs,gxm;
   PetscReal sval = 0;
   PetscReal *x_array;
@@ -148,9 +148,9 @@ int main(int argc, char **argv)
   PetscInitialize(&argc, &argv, (char *)0, help);
   TaoInitialize(&argc, &argv, (char *)0, help);
 
-  /* 
-     Initialize the user-defined application context with reasonable 
-     values for the American option to price 
+  /*
+     Initialize the user-defined application context with reasonable
+     values for the American option to price
   */
   user.rate = 0.04;
   user.sigma = 0.40;
@@ -161,7 +161,7 @@ int main(int argc, char **argv)
   user.mt = 10;
   user.ms = 150;
   user.es = 100.0;
-  
+
   /* Read in alternative values for the American option to price */
   ierr = PetscOptionsGetReal(NULL, "-alpha", &user.alpha, &flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL, "-delta", &user.delta, &flg);CHKERRQ(ierr);
@@ -183,9 +183,9 @@ int main(int argc, char **argv)
   ierr = DMDAGetGhostCorners(user.dm,&gxs,NULL,NULL,&gxm,NULL,NULL);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(user.dm,&x);CHKERRQ(ierr);
-  /* 
+  /*
      Finish filling in the user-defined context with the values for
-     dS, dt, and allocating space for the constants 
+     dS, dt, and allocating space for the constants
   */
   user.ds = user.es / (user.ms-1);
   user.dt = user.expiry / user.mt;
@@ -194,9 +194,9 @@ int main(int argc, char **argv)
   ierr = PetscMalloc((gxm)*sizeof(double),&(user.c));CHKERRQ(ierr);
   ierr = PetscMalloc((gxm)*sizeof(double),&(user.d));CHKERRQ(ierr);
 
-  /* 
-     Calculate the values for the constant.  Vt1 begins with the ending 
-     boundary condition.  
+  /*
+     Calculate the values for the constant.  Vt1 begins with the ending
+     boundary condition.
   */
   for (i=0; i<gxm; i++) {
     sval = (gxs+i)*user.ds;
@@ -210,12 +210,12 @@ int main(int argc, char **argv)
 
   ierr = VecDuplicate(x, &c);CHKERRQ(ierr);
 
-  /* 
+  /*
      Allocate the matrix used by TAO for the Jacobian.  Each row of
      the Jacobian matrix will have at most three elements.
   */
   ierr = DMCreateMatrix(user.dm,&J);CHKERRQ(ierr);
-         
+
   /* The TAO code begins here */
 
   /* Create TAO solver and set desired solution method  */
@@ -224,17 +224,17 @@ int main(int argc, char **argv)
 
   /* Set routines for constraints function and Jacobian evaluation */
   ierr = TaoSetConstraintsRoutine(tao, c, FormConstraints, (void *)&user);CHKERRQ(ierr);
-  ierr = TaoSetJacobianRoutine(tao, J, J, FormJacobian, (void *)&user);CHKERRQ(ierr); 
-    
+  ierr = TaoSetJacobianRoutine(tao, J, J, FormJacobian, (void *)&user);CHKERRQ(ierr);
+
   /* Set the variable bounds */
   ierr = TaoSetVariableBoundsRoutine(tao,ComputeVariableBounds,(void*)&user);CHKERRQ(ierr);
 
   /* Set initial solution guess */
   ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
-  for (i=0; i< xm; i++) 
+  for (i=0; i< xm; i++)
     x_array[i] = user.Vt1[i-gxs+xs];
   ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
-  /* Set data structure */ 
+  /* Set data structure */
   ierr = TaoSetInitialVector(tao, x);CHKERRQ(ierr);
 
   /* Set routines for function and Jacobian evaluation */
@@ -318,18 +318,18 @@ PetscErrorCode ComputeVariableBounds(TaoSolver tao, Vec xl, Vec xu, void*ctx)
 #undef __FUNCT__
 #define __FUNCT__ "FormConstraints"
 
-/*  
-    FormFunction - Evaluates gradient of f.             
+/*
+    FormFunction - Evaluates gradient of f.
 
     Input Parameters:
 .   tao  - the TaoSolver context
 .   X    - input vector
 .   ptr  - optional user-defined context, as set by TaoAppSetConstraintRoutine()
-    
+
     Output Parameters:
 .   F - vector containing the newly evaluated gradient
 */
-PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec F, void *ptr) 
+PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec F, void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
   PetscReal *x, *f;
@@ -349,7 +349,7 @@ PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec F, void *ptr)
   ierr = DMDAGetCorners(user->dm,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(user->dm,&gxs,NULL,NULL,&gxm,NULL,NULL);CHKERRQ(ierr);
   ierr = VecSet(F, zero);CHKERRQ(ierr);
-  /* 
+  /*
      The problem size is smaller than the discretization because of the
      two fixed elements (V(0,T) = E and V(Send,T) = 0.
   */
@@ -357,9 +357,9 @@ PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec F, void *ptr)
   /* Get pointers to the vector data */
   ierr = VecGetArray(localX, &x);CHKERRQ(ierr);
   ierr = VecGetArray(localF, &f);CHKERRQ(ierr);
-  
+
   /* Left Boundary */
-  if (gxs==0){ 
+  if (gxs==0){
     f[0] = x[0]-user->strike;
   } else {
     f[0] = 0;
@@ -370,12 +370,12 @@ PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec F, void *ptr)
   for (i=1;i<gxm-1;i++){
     f[i] = (1.0/dt + rate)*x[i] - Vt1[i]/dt +
       (c[i]/(4*ds))*(x[i+1] - x[i-1] + Vt1[i+1] - Vt1[i-1]) +
-      (d[i]/(2*ds*ds))*(x[i+1] -2*x[i] + x[i-1] + 
+      (d[i]/(2*ds*ds))*(x[i+1] -2*x[i] + x[i-1] +
                         Vt1[i+1] - 2*Vt1[i] + Vt1[i-1]);
   }
 
   /* Right boundary */
-  if (gxs+gxm==ms){ 
+  if (gxs+gxm==ms){
     f[xm-1]=x[gxm-1];
   } else {
     f[xm-1]=0;
@@ -410,7 +410,7 @@ PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec F, void *ptr)
 .  J    - Jacobian matrix
 */
 PetscErrorCode FormJacobian(TaoSolver tao, Vec X, Mat *tJ, Mat *tJPre, MatStructure *flag, void *ptr)
-{ 
+{
   AppCtx *user = (AppCtx *) ptr;
   Mat J = *tJ;
   PetscReal *c = user->c, *d = user->d;

@@ -8,7 +8,7 @@ static char* tao_executable = (char*)"tao";
 static char** tao_executablePtr = &tao_executable;
 #undef __FUNCT__
 #define __FUNCT__ "TaoInitialize"
-/*@C 
+/*@C
   TaoInitialize - Initializes the TAO component and many of the packages associated with it.
 
    Collective on MPI_COMM_WORLD
@@ -21,7 +21,7 @@ static char** tao_executablePtr = &tao_executable;
 -  help - [optional] Help message to print, use NULL for no message
 
    Note:
-   TaoInitialize() should always be called near the beginning of your 
+   TaoInitialize() should always be called near the beginning of your
    program.  This routine will call PetscInitialize() if it has not yet been
    called.
 
@@ -29,7 +29,7 @@ static char** tao_executablePtr = &tao_executable;
 
 .seealso: TaoFinalize(), PetscInitialize()
 @*/
-PetscErrorCode TaoInitialize(int *argc, char ***args, const char file[], 
+PetscErrorCode TaoInitialize(int *argc, char ***args, const char file[],
                              const char help[])
 {
   PetscErrorCode ierr;
@@ -41,9 +41,9 @@ PetscErrorCode TaoInitialize(int *argc, char ***args, const char file[],
     ierr=PetscInfo(0,"TAO successfully initialized.\n");CHKERRQ(ierr);
   } else {
     if (argc&&args) {
-      PetscInitialize(argc,args,file,help); 
+      PetscInitialize(argc,args,file,help);
     } else {
-      PetscInitialize(&tao_one,&tao_executablePtr,0,0); 
+      PetscInitialize(&tao_one,&tao_executablePtr,0,0);
     }
     TaoBeganPetsc=PETSC_TRUE;
   }
@@ -70,7 +70,7 @@ PetscErrorCode TaoFinalize(void)
 {
   if (TaoBeganPetsc) {
     PetscFinalize();
-  } 
+  }
   return(0);
 }
 

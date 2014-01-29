@@ -1,7 +1,7 @@
 #include "bqpip.h"
 #include "petscksp.h"
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoSetUp_BQPIP"
 static PetscErrorCode TaoSetUp_BQPIP(TaoSolver tao)
 {
@@ -58,7 +58,7 @@ static PetscErrorCode TaoSetUp_BQPIP(TaoSolver tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "QPIPSetInitialPoint"
 static PetscErrorCode  QPIPSetInitialPoint(TAO_BQPIP *qp, TaoSolver tao)
 {
@@ -135,11 +135,11 @@ static PetscErrorCode  QPIPSetInitialPoint(TAO_BQPIP *qp, TaoSolver tao)
     ierr = VecNorm(qp->R3, NORM_INFINITY, &gap1);CHKERRQ(ierr);
     ierr = VecNorm(qp->R5, NORM_INFINITY, &gap2);CHKERRQ(ierr);
     qp->pinfeas=PetscMax(gap1,gap2);
-    
+
     /* Compute the duality gap */
     ierr = VecDot(qp->G, qp->Z, &gap1);CHKERRQ(ierr);
     ierr = VecDot(qp->T, qp->S, &gap2);CHKERRQ(ierr);
-    
+
     qp->gap = (gap1+gap2);
     qp->dobj = qp->pobj - qp->gap;
     if (qp->m>0) qp->mu=qp->gap/(qp->m); else qp->mu=0.0;
@@ -150,7 +150,7 @@ static PetscErrorCode  QPIPSetInitialPoint(TAO_BQPIP *qp, TaoSolver tao)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_BQPIP"
 static PetscErrorCode TaoDestroy_BQPIP(TaoSolver tao)
 {
@@ -188,7 +188,7 @@ static PetscErrorCode TaoDestroy_BQPIP(TaoSolver tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoSolve_BQPIP"
 static PetscErrorCode TaoSolve_BQPIP(TaoSolver tao)
 {
@@ -201,7 +201,7 @@ static PetscErrorCode TaoSolve_BQPIP(TaoSolver tao)
   PetscReal    gap[4];
   TaoSolverTerminationReason reason;
   MatStructure matflag;
-  
+
   PetscFunctionBegin;
   qp->dobj           = 0.0;
   qp->pobj           = 1.0;
@@ -215,7 +215,7 @@ static PetscErrorCode TaoSolve_BQPIP(TaoSolver tao)
 
 
   /* Tighten infinite bounds, things break when we don't do this
-    -- see test_bqpip.c 
+    -- see test_bqpip.c
   */
   ierr = VecSet(qp->XU,1.0e20);CHKERRQ(ierr);
   ierr = VecSet(qp->XL,-1.0e20);CHKERRQ(ierr);
@@ -233,7 +233,7 @@ static PetscErrorCode TaoSolve_BQPIP(TaoSolver tao)
 
   ierr = QPIPSetInitialPoint(qp,tao);CHKERRQ(ierr);
   ierr = QPIPComputeResidual(qp,tao);CHKERRQ(ierr);
-  
+
   /* Enter main loop */
   while (1){
 
@@ -242,9 +242,9 @@ static PetscErrorCode TaoSolve_BQPIP(TaoSolver tao)
                             qp->pinfeas, step, &reason);CHKERRQ(ierr);
     if (reason != TAO_CONTINUE_ITERATING) break;
 
-    /* 
+    /*
        Dual Infeasibility Direction should already be in the right
-       hand side from computing the residuals 
+       hand side from computing the residuals
     */
 
     ierr = QPIPComputeNormFromCentralPath(qp,&d1);CHKERRQ(ierr);
@@ -268,9 +268,9 @@ static PetscErrorCode TaoSolve_BQPIP(TaoSolver tao)
     }
 
 
-    /* 
-       Compute the Primal Infeasiblitiy RHS and the 
-       Diagonal Matrix to be added to H and store in Work 
+    /*
+       Compute the Primal Infeasiblitiy RHS and the
+       Diagonal Matrix to be added to H and store in Work
     */
     ierr = VecPointwiseDivide(qp->DiagAxpy, qp->Z, qp->G);CHKERRQ(ierr);
     ierr = VecPointwiseMult(qp->GZwork, qp->DiagAxpy, qp->R3);CHKERRQ(ierr);
@@ -287,7 +287,7 @@ static PetscErrorCode TaoSolve_BQPIP(TaoSolver tao)
     ksptol = PetscMin(ksptol,0.001);
 
     ierr = MatDiagonalSet(tao->hessian, qp->DiagAxpy, ADD_VALUES);CHKERRQ(ierr);
-    
+
     ierr = KSPSetOperators(tao->ksp, tao->hessian, tao->hessian_pre, matflag);CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp, qp->RHS, tao->stepdirection);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
@@ -310,24 +310,24 @@ static PetscErrorCode TaoSolve_BQPIP(TaoSolver tao)
     ierr = VecDot(qp->DS, qp->DT, gap+1);CHKERRQ(ierr);
 
     qp->rnorm=(qp->dinfeas+qp->psteplength*qp->pinfeas)/(qp->m+qp->n);
-    pstep = qp->psteplength; dstep = qp->dsteplength;    
+    pstep = qp->psteplength; dstep = qp->dsteplength;
     step = PetscMin(qp->psteplength,qp->dsteplength);
     sigmamu= ( pstep*pstep*(gap[0]+gap[1]) +
                (1 - pstep + pstep*sigma)*qp->gap  )/qp->m;
 
     if (qp->predcorr && step < 0.9){
-      if (sigmamu < qp->mu){ 
+      if (sigmamu < qp->mu){
         sigmamu=sigmamu/qp->mu;
         sigmamu=sigmamu*sigmamu*sigmamu;
       } else {sigmamu = 1.0;}
       sigmamu = sigmamu*qp->mu;
-      
+
       /* Compute Corrector Step */
       ierr = VecPointwiseMult(qp->DZ, qp->DG, qp->DZ);CHKERRQ(ierr);
       ierr = VecScale(qp->DZ, -1.0);CHKERRQ(ierr);
       ierr = VecShift(qp->DZ, sigmamu);CHKERRQ(ierr);
       ierr = VecPointwiseDivide(qp->DZ, qp->DZ, qp->G);CHKERRQ(ierr);
-      
+
       ierr = VecPointwiseMult(qp->DS, qp->DS, qp->DT);CHKERRQ(ierr);
       ierr = VecScale(qp->DS, -1.0);CHKERRQ(ierr);
       ierr = VecShift(qp->DS, sigmamu);CHKERRQ(ierr);
@@ -342,7 +342,7 @@ static PetscErrorCode TaoSolve_BQPIP(TaoSolver tao)
       ierr = KSPSolve(tao->ksp, qp->RHS2, tao->stepdirection);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
       tao->ksp_its+=its;
-      
+
       ierr = MatDiagonalSet(tao->hessian, qp->HDiag, INSERT_VALUES);CHKERRQ(ierr);
       ierr = QPComputeStepDirection(qp,tao);CHKERRQ(ierr);
       ierr = QPStepLength(qp);CHKERRQ(ierr);
@@ -381,7 +381,7 @@ static PetscErrorCode TaoSolve_BQPIP(TaoSolver tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "QPComputeStepDirection"
 static PetscErrorCode QPComputeStepDirection(TAO_BQPIP *qp, TaoSolver tao)
 {
@@ -414,7 +414,7 @@ static PetscErrorCode QPComputeStepDirection(TAO_BQPIP *qp, TaoSolver tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "QPIPComputeResidual"
 static PetscErrorCode QPIPComputeResidual(TAO_BQPIP *qp, TaoSolver tao)
 {
@@ -432,7 +432,7 @@ static PetscErrorCode QPIPComputeResidual(TAO_BQPIP *qp, TaoSolver tao)
 
   ierr = VecCopy(qp->S, tao->gradient);CHKERRQ(ierr);
   ierr = VecAXPY(tao->gradient, -1.0, qp->Z);CHKERRQ(ierr);
-  
+
   ierr = MatMult(tao->hessian, tao->solution, qp->RHS);CHKERRQ(ierr);
   ierr = VecScale(qp->RHS, -1.0);CHKERRQ(ierr);
   ierr = VecAXPY(qp->RHS, -1.0, qp->C0);CHKERRQ(ierr);
@@ -440,11 +440,11 @@ static PetscErrorCode QPIPComputeResidual(TAO_BQPIP *qp, TaoSolver tao)
 
   ierr = VecNorm(tao->gradient, NORM_1, &qp->dinfeas);CHKERRQ(ierr);
   qp->rnorm=(qp->dinfeas+qp->pinfeas)/(qp->m+qp->n);
-  
+
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "QPStepLength"
 static PetscErrorCode QPStepLength(TAO_BQPIP *qp)
 {
@@ -458,7 +458,7 @@ static PetscErrorCode QPStepLength(TAO_BQPIP *qp)
   ierr = VecStepMax(qp->S, qp->DS, &tstep3);CHKERRQ(ierr);
   ierr = VecStepMax(qp->Z, qp->DZ, &tstep4);CHKERRQ(ierr);
 
-  
+
   tstep = PetscMin(tstep1,tstep2);
   qp->psteplength = PetscMin(0.95*tstep,1.0);
 
@@ -487,13 +487,13 @@ PetscErrorCode TaoComputeDual_BQPIP(TaoSolver tao,Vec DXL, Vec DXU)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "QPIPComputeNormFromCentralPath"
 PetscErrorCode QPIPComputeNormFromCentralPath(TAO_BQPIP *qp, PetscReal *norm)
 {
   PetscErrorCode       ierr;
   PetscReal    gap[2],mu[2], nmu;
-  
+
   PetscFunctionBegin;
   ierr = VecPointwiseMult(qp->GZwork, qp->G, qp->Z);CHKERRQ(ierr);
   ierr = VecPointwiseMult(qp->TSwork, qp->T, qp->S);CHKERRQ(ierr);
@@ -518,9 +518,9 @@ PetscErrorCode QPIPComputeNormFromCentralPath(TAO_BQPIP *qp, PetscReal *norm)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_BQPIP"
-static PetscErrorCode TaoSetFromOptions_BQPIP(TaoSolver tao) 
+static PetscErrorCode TaoSetFromOptions_BQPIP(TaoSolver tao)
 {
   TAO_BQPIP *qp = (TAO_BQPIP*)tao->data;
   PetscErrorCode       ierr;
@@ -535,7 +535,7 @@ static PetscErrorCode TaoSetFromOptions_BQPIP(TaoSolver tao)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoView_BQPIP"
 static PetscErrorCode TaoView_BQPIP(TaoSolver tao, PetscViewer viewer)
 {
@@ -546,7 +546,7 @@ static PetscErrorCode TaoView_BQPIP(TaoSolver tao, PetscViewer viewer)
 
 /* --------------------------------------------------------- */
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoCreate_BQPIP"
 PetscErrorCode TaoCreate_BQPIP(TaoSolver tao)
 {
@@ -584,7 +584,7 @@ PetscErrorCode TaoCreate_BQPIP(TaoSolver tao)
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp, KSPCG);CHKERRQ(ierr);
   ierr = KSPSetTolerances(tao->ksp, 1e-14, 1e-30, 1e30, PetscMax(10,qp->n));CHKERRQ(ierr);
-  
+
 
 
   PetscFunctionReturn(0);

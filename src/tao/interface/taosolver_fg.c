@@ -6,11 +6,11 @@
   TaoSetInitialVector - Sets the initial guess for the solve
 
   Logically collective on TaoSolver
-  
+
   Input Parameters:
 + tao - the TaoSolver context
-- x0  - the initial guess 
- 
+- x0  - the initial guess
+
   Level: beginner
 .seealso: TaoCreate(), TaoSolve()
 @*/
@@ -43,7 +43,7 @@ PetscErrorCode TaoSetInitialVector(TaoSolver tao, Vec x0) {
 - X - input vector
 
   Output Parameter:
-. G - gradient vector  
+. G - gradient vector
 
   Notes: TaoComputeGradient() is typically used within minimization implementations,
   so most users would not generally call this routine themselves.
@@ -52,7 +52,7 @@ PetscErrorCode TaoSetInitialVector(TaoSolver tao, Vec x0) {
 
 .seealso: TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetGradientRoutine()
 @*/
-PetscErrorCode TaoComputeGradient(TaoSolver tao, Vec X, Vec G) 
+PetscErrorCode TaoComputeGradient(TaoSolver tao, Vec X, Vec G)
 {
   PetscErrorCode ierr;
   PetscReal      dummy;
@@ -107,7 +107,7 @@ PetscErrorCode TaoComputeGradient(TaoSolver tao, Vec X, Vec G)
 
 .seealso: TaoComputeGradient(), TaoComputeObjectiveAndGradient(), TaoSetObjectiveRoutine()
 @*/
-PetscErrorCode TaoComputeObjective(TaoSolver tao, Vec X, PetscReal *f) 
+PetscErrorCode TaoComputeObjective(TaoSolver tao, Vec X, PetscReal *f)
 {
   PetscErrorCode ierr;
   Vec            temp;
@@ -138,7 +138,7 @@ PetscErrorCode TaoComputeObjective(TaoSolver tao, Vec X, PetscReal *f)
     ierr = VecDestroy(&temp);CHKERRQ(ierr);
     tao->nfuncgrads++;
   }  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetObjectiveRoutine() has not been called");
-  ierr = PetscInfo1(tao,"TAO Function evaluation: %14.12e\n",*f);CHKERRQ(ierr);    
+  ierr = PetscInfo1(tao,"TAO Function evaluation: %14.12e\n",*f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -207,7 +207,7 @@ PetscErrorCode TaoComputeObjectiveAndGradient(TaoSolver tao, Vec X, PetscReal *f
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetObjectiveRoutine() or TaoSetGradientRoutine() not set");
   ierr = PetscInfo1(tao,"TAO Function evaluation: %14.12e\n",*f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-} 
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetObjectiveRoutine"
@@ -233,7 +233,7 @@ $      func (TaoSolver tao, Vec x, PetscReal *f, void *ctx);
 
 .seealso: TaoSetGradientRoutine(), TaoSetHessianRoutine() TaoSetObjectiveAndGradientRoutine()
 @*/
-PetscErrorCode TaoSetObjectiveRoutine(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, Vec, PetscReal*,void*),void *ctx) 
+PetscErrorCode TaoSetObjectiveRoutine(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, Vec, PetscReal*,void*),void *ctx)
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
@@ -259,7 +259,7 @@ PetscErrorCode TaoSetObjectiveRoutine(TaoSolver tao, PetscErrorCode (*func)(TaoS
 $      func (TaoSolver tao, Vec x, Vec f, void *ctx);
 
 + x - input vector
-. f - function value vector 
+. f - function value vector
 - ctx - [optional] user-defined function context
 
   Level: beginner
@@ -298,7 +298,7 @@ PetscErrorCode TaoSetSeparableObjectiveRoutine(TaoSolver tao, Vec sepobj, PetscE
 
 .seealso: TaoSetSeparableObjectiveRoutine()
 @*/
-PetscErrorCode TaoComputeSeparableObjective(TaoSolver tao, Vec X, Vec F) 
+PetscErrorCode TaoComputeSeparableObjective(TaoSolver tao, Vec X, Vec F)
 {
   PetscErrorCode ierr;
 
@@ -346,7 +346,7 @@ $      func (TaoSolver tao, Vec x, Vec g, void *ctx);
 
 .seealso: TaoSetObjectiveRoutine(), TaoSetHessianRoutine() TaoSetObjectiveAndGradientRoutine()
 @*/
-PetscErrorCode TaoSetGradientRoutine(TaoSolver tao,  PetscErrorCode (*func)(TaoSolver, Vec, Vec, void*),void *ctx) 
+PetscErrorCode TaoSetGradientRoutine(TaoSolver tao,  PetscErrorCode (*func)(TaoSolver, Vec, Vec, void*),void *ctx)
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
@@ -388,20 +388,20 @@ PetscErrorCode TaoSetObjectiveAndGradientRoutine(TaoSolver tao, PetscErrorCode (
     tao->ops->computeobjectiveandgradient = func;
     PetscFunctionReturn(0);
 }
-  
+
 #undef __FUNCT__
 #define __FUNCT__ "TaoIsObjectiveDefined"
 /*@
   TaoIsObjectiveDefined -- Checks to see if the user has
   declared an objective-only routine.  Useful for determining when
-  it is appropriate to call TaoComputeObjective() or 
+  it is appropriate to call TaoComputeObjective() or
   TaoComputeObjectiveAndGradient()
 
   Collective on TaoSolver
 
   Input Parameter:
 + tao - the TaoSolver context
-- ctx - PETSC_TRUE if objective function routine is set by user, 
+- ctx - PETSC_TRUE if objective function routine is set by user,
         PETSC_FALSE otherwise
   Level: developer
 
@@ -411,7 +411,7 @@ PetscErrorCode TaoIsObjectiveDefined(TaoSolver tao, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
-  if (tao->ops->computeobjective == 0) 
+  if (tao->ops->computeobjective == 0)
     *flg = PETSC_FALSE;
   else
     *flg = PETSC_TRUE;
@@ -423,7 +423,7 @@ PetscErrorCode TaoIsObjectiveDefined(TaoSolver tao, PetscBool *flg)
 /*@
   TaoIsGradientDefined -- Checks to see if the user has
   declared an objective-only routine.  Useful for determining when
-  it is appropriate to call TaoComputeGradient() or 
+  it is appropriate to call TaoComputeGradient() or
   TaoComputeGradientAndGradient()
 
   Not Collective
@@ -439,7 +439,7 @@ PetscErrorCode TaoIsGradientDefined(TaoSolver tao, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
-  if (tao->ops->computegradient == 0) 
+  if (tao->ops->computegradient == 0)
     *flg = PETSC_FALSE;
   else
     *flg = PETSC_TRUE;
@@ -452,7 +452,7 @@ PetscErrorCode TaoIsGradientDefined(TaoSolver tao, PetscBool *flg)
 /*@
   TaoIsObjectiveAndGradientDefined -- Checks to see if the user has
   declared a joint objective/gradient routine.  Useful for determining when
-  it is appropriate to call TaoComputeObjective() or 
+  it is appropriate to call TaoComputeObjective() or
   TaoComputeObjectiveAndGradient()
 
   Not Collective
@@ -468,7 +468,7 @@ PetscErrorCode TaoIsObjectiveAndGradientDefined(TaoSolver tao, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
-  if (tao->ops->computeobjectiveandgradient == 0) 
+  if (tao->ops->computeobjectiveandgradient == 0)
     *flg = PETSC_FALSE;
   else
     *flg = PETSC_TRUE;

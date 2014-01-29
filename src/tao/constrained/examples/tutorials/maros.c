@@ -8,11 +8,11 @@ TODO Explain maros example
 
 static  char help[]="";
 
-/*T 
+/*T
    Concepts: TAO - Solving an unconstrained minimization problem
-   Routines: TaoInitialize(); TaoFinalize(); 
+   Routines: TaoInitialize(); TaoFinalize();
    Routines: TaoCreate(); TaoSetType();
-   Routines: TaoSetInitialVector(); 
+   Routines: TaoSetInitialVector();
    Routines: TaoSetObjectiveAndGradientRoutine();
    Routines: TaoSetEqualityConstraintsRoutine();
    Routines: TaoSetInequalityConstraintsRoutine();
@@ -22,15 +22,15 @@ static  char help[]="";
    Routines: TaoGetKSP(); TaoSolve();
    Routines: TaoGetTerminationReason(); TaoDestroy();
    Processors: 1
-T*/ 
+T*/
 
-/* 
-   User-defined application context - contains data needed by the 
+/*
+   User-defined application context - contains data needed by the
    application-provided call-back routines, FormFunction(),
    FormGradient(), and FormHessian().
 */
 
-/* 
+/*
    x,d in R^n
    f in R
    bin in R^mi
@@ -38,7 +38,7 @@ T*/
    Aeq in R^(me x n)
    Ain in R^(mi x n)
    H in R^(n x n)
-   min f=(1/2)*x'*H*x + d'*x   
+   min f=(1/2)*x'*H*x + d'*x
    s.t.  Aeq*x == beq
          Ain*x >= bin
 */
@@ -75,7 +75,7 @@ PetscErrorCode main(int argc,char **argv)
   Vec                        ceq,cin;
   PetscBool                  flg;                 /* A return value when checking for use options */
   TaoSolver                  tao;                 /* TaoSolver solver context */
-  TaoSolverTerminationReason reason;        
+  TaoSolverTerminationReason reason;
   AppCtx                     user;                /* application context */
 
   /* Initialize TAO,PETSc */

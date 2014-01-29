@@ -33,7 +33,7 @@ typedef struct {
   Vec U0;    /* State variable */
   Vec V0;    /* Design variable */
   Vec V1;    /* Design variable */
-  
+
   Vec DU;   /* State step */
   Vec DV;   /* Design step */
   Vec DL;   /* Multipliers step */
@@ -48,8 +48,8 @@ typedef struct {
   Vec G0;
   Vec WU;   /* state work vector */
   Vec WV;   /* design work vector */
-  Vec r; 
-  Vec s; 
+  Vec r;
+  Vec s;
   Vec g1,g2;
   Vec con1;
 
@@ -79,7 +79,7 @@ typedef struct {
   PetscInt phase2_niter;
   PetscBool verbose;
   PetscReal tau[4];
-  
+
 
 } TAO_LCL;
 

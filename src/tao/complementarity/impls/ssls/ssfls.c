@@ -1,6 +1,6 @@
 #include "ssls.h"
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoSetUp_SSFLS"
 PetscErrorCode TaoSetUp_SSFLS(TaoSolver tao)
 {
@@ -27,7 +27,7 @@ PetscErrorCode TaoSetUp_SSFLS(TaoSolver tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoSolve_SSFLS"
 static PetscErrorCode TaoSolve_SSFLS(TaoSolver tao)
 {
@@ -51,7 +51,7 @@ static PetscErrorCode TaoSolve_SSFLS(TaoSolver tao)
   ierr = TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch,Tao_SSLS_FunctionGradient,tao);CHKERRQ(ierr);
   ierr = TaoLineSearchSetObjectiveRoutine(tao->linesearch,Tao_SSLS_Function,tao);CHKERRQ(ierr);
 
-  /* Calculate the function value and fischer function value at the 
+  /* Calculate the function value and fischer function value at the
      current iterate */
   ierr = TaoLineSearchComputeObjectiveAndGradient(tao->linesearch,tao->solution,&psi,ssls->dpsi);CHKERRQ(ierr);
   ierr = VecNorm(ssls->dpsi,NORM_2,&ndpsi);CHKERRQ(ierr);
@@ -66,13 +66,13 @@ static PetscErrorCode TaoSolve_SSFLS(TaoSolver tao)
        rest of the code uses -d.) */
     ierr = KSPSetOperators(tao->ksp,tao->jacobian,tao->jacobian_pre,ssls->matflag);CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp,ssls->ff,tao->stepdirection);CHKERRQ(ierr);
-    ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr); 
+    ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
     tao->ksp_its+=kspits;
-    
+
     ierr = VecCopy(tao->stepdirection,ssls->w);CHKERRQ(ierr);
     ierr = VecScale(ssls->w,-1.0);CHKERRQ(ierr);
     ierr = VecBoundGradientProjection(ssls->w,tao->solution,tao->XL,tao->XU,ssls->w);CHKERRQ(ierr);
-    
+
     ierr = VecNorm(ssls->w,NORM_2,&normd);CHKERRQ(ierr);
     ierr = VecDot(ssls->w,ssls->dpsi,&innerd);CHKERRQ(ierr);
 
@@ -93,7 +93,7 @@ static PetscErrorCode TaoSolve_SSFLS(TaoSolver tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_SSFLS"
 PetscErrorCode TaoDestroy_SSFLS(TaoSolver tao)
 {
@@ -114,7 +114,7 @@ PetscErrorCode TaoDestroy_SSFLS(TaoSolver tao)
 
 /* ---------------------------------------------------------- */
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoCreate_SSFLS"
 PetscErrorCode TaoCreate_SSFLS(TaoSolver tao)
 {
@@ -139,7 +139,7 @@ PetscErrorCode TaoCreate_SSFLS(TaoSolver tao)
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);
   /* Linesearch objective and objectivegradient routines are  set in solve routine */
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
-  
+
   tao->max_it = 2000;
   tao->max_funcs = 4000;
   tao->fatol = 0; tao->frtol = 0; tao->grtol=0; tao->grtol=0;

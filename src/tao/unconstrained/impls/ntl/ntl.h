@@ -1,5 +1,5 @@
 /*
-  Context for a Newton trust-region, line-search method for unconstrained 
+  Context for a Newton trust-region, line-search method for unconstrained
   minimization
 */
 
@@ -66,7 +66,7 @@ typedef struct {
        radius = max(alpha5 * norm(d), radius)
      fi
   */
- 
+
   /* Parameters when updating the trust-region radius based on interpolation */
   PetscReal mu1;                /* used for model agreement in interpolation */
   PetscReal mu2;                /* used for model agreement in interpolation */
@@ -78,7 +78,7 @@ typedef struct {
 
   PetscReal theta;              /* factor used for interpolation */
 
-  /* kappa = ared / pred 
+  /* kappa = ared / pred
      if   kappa >= 1.0 - mu1    (very good step)
        choose tau in [gamma3, gamma4]
        radius = max(tau * norm(d), radius)
@@ -94,7 +94,7 @@ typedef struct {
        radius = tau * min(norm(d), radius)
      fi
   */
- 
+
   /* Parameters when initializing trust-region radius based on interpolation */
   PetscReal mu1_i;              /* used for model agreement in interpolation */
   PetscReal mu2_i;              /* used for model agreement in interpolation */
@@ -123,5 +123,5 @@ typedef struct {
   PetscInt init_type;   /* Trust-region initialization method */
   PetscInt update_type;      /* Trust-region update method */
 } TAO_NTL;
- 
+
 #endif /* ifndef __TAO_NTL_H */

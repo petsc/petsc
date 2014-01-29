@@ -1,6 +1,6 @@
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !             Include file for program chwirut2f.F
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  This program uses CPP for preprocessing, as indicated by the use of
 !  TAO include files in the directories $TAO_DIR/include/finclude and
@@ -29,12 +29,12 @@
 #include "finclude/taosolver.h"
 
 !  Common blocks:
-!  In this example we use common blocks to store data needed by the 
+!  In this example we use common blocks to store data needed by the
 !  application-provided call-back routines, FormMinimizationFunction(),
 !  FormFunctionGradient(), and FormHessian().  Note that we can store
-!  (pointers to) TAO objects within these common blocks. 
+!  (pointers to) TAO objects within these common blocks.
 !
-!  common /params/ - contains parameters that help to define the application 
+!  common /params/ - contains parameters that help to define the application
 !
       PetscReal t(0:213)
       PetscReal y(0:213)
@@ -42,11 +42,11 @@
       PetscInt  rank
       PetscInt  size
       PetscInt  idle_tag, die_tag
-      parameter (m=214) 
+      parameter (m=214)
       parameter (n=3)
       parameter (idle_tag=2000)
       parameter (die_tag=3000)
-  
+
       common /params/ t,y,rank,size
-  
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -33,12 +33,12 @@ The command line options are:\n\
    Routines: TaoSetInitialVector();
    Routines: TaoSetFromOptions();
    Routines: TaoSolve();
-   Routines: TaoGetTerminationReason(); TaoDestroy(); 
+   Routines: TaoGetTerminationReason(); TaoDestroy();
    Processors: n
 T*/
 
-/* 
-   User-defined application context - contains data needed by the 
+/*
+   User-defined application context - contains data needed by the
    application-provided call-back routines, FormFunctionGradient(),
    FormHessian().
 */
@@ -110,8 +110,8 @@ int main( int argc, char **argv )
 
   /*
      Extract global and local vectors from DM; the vector user.B is
-     used solely as work space for the evaluation of the function, 
-     gradient, and Hessian.  Duplicate for remaining vectors that are 
+     used solely as work space for the evaluation of the function,
+     gradient, and Hessian.  Duplicate for remaining vectors that are
      the same types.
   */
   ierr = DMCreateGlobalVector(user.dm,&x);CHKERRQ(ierr); /* Solution */
@@ -127,9 +127,9 @@ int main( int argc, char **argv )
 
   /* The TAO code begins here */
 
-  /* 
-     Create the optimization solver, Petsc application 
-     Suitable methods: "tao_gpcg","tao_bqpip","tao_tron","tao_blmvm" 
+  /*
+     Create the optimization solver, Petsc application
+     Suitable methods: "tao_gpcg","tao_bqpip","tao_tron","tao_blmvm"
   */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,"tao_blmvm");CHKERRQ(ierr);
@@ -141,7 +141,7 @@ int main( int argc, char **argv )
 
   /* Set the user function, gradient, hessian evaluation routines and data structures */
   ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*) &user);CHKERRQ(ierr);
-  
+
   ierr = TaoSetHessianRoutine(tao,user.A,user.A,FormHessian,(void*)&user);CHKERRQ(ierr);
 
   /* Set a routine that defines the bounds */
@@ -152,7 +152,7 @@ int main( int argc, char **argv )
   ierr = TaoSetVariableBounds(tao,xl,xu);CHKERRQ(ierr);
 
   ierr = TaoGetKSP(tao,&ksp);CHKERRQ(ierr);
-  if (ksp) {                                         
+  if (ksp) {
     ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
   }
 
@@ -177,11 +177,11 @@ int main( int argc, char **argv )
   }
 
   /* Free PETSc data structures */
-  ierr = VecDestroy(&x);CHKERRQ(ierr); 
-  ierr = VecDestroy(&xl);CHKERRQ(ierr); 
-  ierr = VecDestroy(&xu);CHKERRQ(ierr); 
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&xl);CHKERRQ(ierr);
+  ierr = VecDestroy(&xu);CHKERRQ(ierr);
   ierr = MatDestroy(&user.A);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.B);CHKERRQ(ierr); 
+  ierr = VecDestroy(&user.B);CHKERRQ(ierr);
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
 
@@ -195,9 +195,9 @@ int main( int argc, char **argv )
 
 
 static PetscReal p(PetscReal xi, PetscReal ecc)
-{ 
-  PetscReal t=1.0+ecc*PetscCosScalar(xi); 
-  return (t*t*t); 
+{
+  PetscReal t=1.0+ecc*PetscCosScalar(xi);
+  return (t*t*t);
 }
 
 #undef __FUNCT__
@@ -276,7 +276,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
   */
   ierr = DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
-  
+
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
   ierr = VecGetArray(G,&g);CHKERRQ(ierr);
 
@@ -296,25 +296,25 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
     vmiddle=(hxhx)*(trule1+trule2+trule3+trule4)+hyhy*(trule1+trule2+trule5+trule6);
 
     for (j=ys; j<ys+ym; j++){
-      
+
       row=(j-gys)*gxm + (i-gxs);
        v[0]=0; v[1]=0; v[2]=0; v[3]=0; v[4]=0;
-       
+
        k=0;
-       if (j>gys){ 
+       if (j>gys){
          v[k]=vdown; col[k]=row - gxm; k++;
        }
-       
+
        if (i>gxs){
          v[k]= vleft; col[k]=row - 1; k++;
        }
 
        v[k]= vmiddle; col[k]=row; k++;
-       
+
        if (i+1 < gxs+gxm){
          v[k]= vright; col[k]=row+1; k++;
        }
-       
+
        if (j+1 <gys+gym){
          v[k]= vup; col[k] = row+gxm; k++;
        }
@@ -338,7 +338,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
   ierr = VecDot(user->B,X,&f2);CHKERRQ(ierr);
   ierr = VecAXPY(G, one, user->B);CHKERRQ(ierr);
   *fcn = f1/2.0 + f2;
-  
+
 
   ierr = PetscLogFlops((91 + 10*ym) * xm);CHKERRQ(ierr);
   return 0;
@@ -348,8 +348,8 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
 
 #undef __FUNCT__
 #define __FUNCT__ "FormHessian"
-/* 
-   FormHessian computes the quadratic term in the quadratic objective function 
+/*
+   FormHessian computes the quadratic term in the quadratic objective function
    Notice that the objective function in this problem is quadratic (therefore a constant
    hessian).  If using a nonquadratic solver, then you might want to reconsider this function
 */
@@ -402,32 +402,32 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *H, Mat *Hpre, MatStructure *
 
     for (j=ys; j<ys+ym; j++){
       row=(j-gys)*gxm + (i-gxs);
-       
+
       k=0;
-      if (j>gys){ 
+      if (j>gys){
         v[k]=vdown; col[k]=row - gxm; k++;
       }
-       
+
       if (i>gxs){
         v[k]= vleft; col[k]=row - 1; k++;
       }
 
       v[k]= vmiddle; col[k]=row; k++;
-       
+
       if (i+1 < gxs+gxm){
         v[k]= vright; col[k]=row+1; k++;
       }
-       
+
       if (j+1 <gys+gym){
         v[k]= vup; col[k] = row+gxm; k++;
       }
       ierr = MatSetValuesLocal(hes,1,&row,k,col,v,INSERT_VALUES);CHKERRQ(ierr);
-       
+
     }
 
   }
 
-  /* 
+  /*
      Assemble matrix, using the 2-step process:
      MatAssemblyBegin(), MatAssemblyEnd().
      By placing code between these two statements, computations can be
@@ -480,5 +480,5 @@ PetscErrorCode ConvergenceTest(TaoSolver tao, void *ctx)
     TaoSetTerminationReason(tao,TAO_DIVERGED_MAXITS);
   }
   PetscFunctionReturn(0);
-  
+
 }

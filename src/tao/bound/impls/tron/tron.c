@@ -7,7 +7,7 @@
 /* TRON Routines */
 static PetscErrorCode TronGradientProjections(TaoSolver,TAO_TRON*);
 /*------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_TRON"
 static PetscErrorCode TaoDestroy_TRON(TaoSolver tao)
 {
@@ -30,7 +30,7 @@ static PetscErrorCode TaoDestroy_TRON(TaoSolver tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_TRON"
 static PetscErrorCode TaoSetFromOptions_TRON(TaoSolver tao)
 {
@@ -48,7 +48,7 @@ static PetscErrorCode TaoSetFromOptions_TRON(TaoSolver tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoView_TRON"
 static PetscErrorCode TaoView_TRON(TaoSolver tao, PetscViewer viewer)
 {
@@ -69,7 +69,7 @@ static PetscErrorCode TaoView_TRON(TaoSolver tao, PetscViewer viewer)
 
 
 /* ---------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoSetup_TRON"
 static PetscErrorCode TaoSetup_TRON(TaoSolver tao)
 {
@@ -98,7 +98,7 @@ static PetscErrorCode TaoSetup_TRON(TaoSolver tao)
 
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoSolve_TRON"
 static PetscErrorCode TaoSolve_TRON(TaoSolver tao)
 {
@@ -136,7 +136,7 @@ static PetscErrorCode TaoSolve_TRON(TaoSolver tao)
   while (reason==TAO_CONTINUE_ITERATING){
 
     ierr = TronGradientProjections(tao,tron);CHKERRQ(ierr);
-    f=tron->f; delta=tao->trust; 
+    f=tron->f; delta=tao->trust;
     tron->n_free_last = tron->n_free;
     ierr = TaoComputeHessian(tao,tao->solution,&tao->hessian, &tao->hessian_pre, &tron->matflag);CHKERRQ(ierr);
 
@@ -172,29 +172,29 @@ static PetscErrorCode TaoSolve_TRON(TaoSolver tao)
       ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
       tao->ksp_its+=its;
       ierr = VecSet(tao->stepdirection,0.0);CHKERRQ(ierr);
-      
+
       /* Add dxfree matrix to compute step direction vector */
       ierr = VecReducedXPY(tao->stepdirection,tron->DXFree,tron->Free_Local);CHKERRQ(ierr);
-      if (0) { 
+      if (0) {
         PetscReal rhs,stepnorm;
         ierr = VecNorm(tron->R,NORM_2,&rhs);CHKERRQ(ierr);
         ierr = VecNorm(tron->DXFree,NORM_2,&stepnorm);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD,"|rhs|=%g\t|s|=%g\n",rhs,stepnorm);CHKERRQ(ierr);
       }
-      
-      
+
+
       ierr = VecDot(tao->gradient, tao->stepdirection, &gdx);CHKERRQ(ierr);
       ierr = PetscInfo1(tao,"Expected decrease in function value: %14.12e\n",gdx);CHKERRQ(ierr);
-      
+
       ierr = VecCopy(tao->solution, tron->X_New);CHKERRQ(ierr);
       ierr = VecCopy(tao->gradient, tron->G_New);CHKERRQ(ierr);
-      
+
       stepsize=1.0;f_new=f;
 
       ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);CHKERRQ(ierr);
       ierr = TaoLineSearchApply(tao->linesearch, tron->X_New, &f_new, tron->G_New, tao->stepdirection,&stepsize,&ls_reason);CHKERRQ(ierr);CHKERRQ(ierr);
       ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
-      
+
       ierr = MatMult(tao->hessian, tao->stepdirection, tron->Work);CHKERRQ(ierr);
       ierr = VecAYPX(tron->Work, 0.5, tao->gradient);CHKERRQ(ierr);
       ierr = VecDot(tao->stepdirection, tron->Work, &prered);CHKERRQ(ierr);
@@ -204,13 +204,13 @@ static PetscErrorCode TaoSolve_TRON(TaoSolver tao)
       } else {
         rhok=0.0;
       }
-      
+
       /* Compare actual improvement to the quadratic model */
       if (rhok > tron->eta1) { /* Accept the point */
         /* d = x_new - x */
         ierr = VecCopy(tron->X_New, tao->stepdirection);CHKERRQ(ierr);
         ierr = VecAXPY(tao->stepdirection, -1.0, tao->solution);CHKERRQ(ierr);
-        
+
         ierr = VecNorm(tao->stepdirection, NORM_2, &xdiff);CHKERRQ(ierr);
         xdiff *= stepsize;
 
@@ -232,7 +232,7 @@ static PetscErrorCode TaoSolve_TRON(TaoSolver tao)
         ierr = VecCopy(tron->X_New, tao->solution);CHKERRQ(ierr);
         ierr = VecCopy(tron->G_New, tao->gradient);CHKERRQ(ierr);
         break;
-      } 
+      }
       else if (delta <= 1e-30) {
         break;
       }
@@ -251,7 +251,7 @@ static PetscErrorCode TaoSolve_TRON(TaoSolver tao)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TronGradientProjections"
 static PetscErrorCode TronGradientProjections(TaoSolver tao,TAO_TRON *tron)
 {
@@ -263,7 +263,7 @@ static PetscErrorCode TronGradientProjections(TaoSolver tao,TAO_TRON *tron)
   /*
      The gradient and function value passed into and out of this
      routine should be current and correct.
-     
+
      The free, active, and binding variables should be already identified
   */
   PetscFunctionBegin;
@@ -275,8 +275,8 @@ static PetscErrorCode TronGradientProjections(TaoSolver tao,TAO_TRON *tron)
   for (i=0;i<tron->maxgpits;i++){
 
     if ( -actred <= (tron->pg_ftol)*actred_max) break;
-  
-    tron->gp_iterates++; tron->total_gp_its++;      
+
+    tron->gp_iterates++; tron->total_gp_its++;
     f_new=tron->f;
 
     ierr = VecCopy(tao->gradient, tao->stepdirection);CHKERRQ(ierr);
@@ -296,12 +296,12 @@ static PetscErrorCode TronGradientProjections(TaoSolver tao,TAO_TRON *tron)
     }
     ierr = VecWhichBetween(tao->XL,tao->solution,tao->XU,&tron->Free_Local);CHKERRQ(ierr);
   }
-  
+
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "TaoComputeDual_TRON" 
+#undef __FUNCT__
+#define __FUNCT__ "TaoComputeDual_TRON"
 static PetscErrorCode TaoComputeDual_TRON(TaoSolver tao, Vec DXL, Vec DXU) {
 
   TAO_TRON       *tron = (TAO_TRON *)tao->data;
@@ -328,7 +328,7 @@ static PetscErrorCode TaoComputeDual_TRON(TaoSolver tao, Vec DXL, Vec DXU) {
 
 /*------------------------------------------------------------*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoCreate_TRON"
 PetscErrorCode TaoCreate_TRON(TaoSolver tao)
 {

@@ -1,34 +1,34 @@
-!  Program usage: mpirun -np 1 chwirut1f [-help] [all TAO options] 
+!  Program usage: mpirun -np 1 chwirut1f [-help] [all TAO options]
 !
 !  Description:  This example demonstrates use of the TAO package to solve a
-!  nonlinear least-squares problem on a single processor.  We minimize the 
-!  Chwirut function: 
+!  nonlinear least-squares problem on a single processor.  We minimize the
+!  Chwirut function:
 !       sum_{i=0}^{n/2-1} ( alpha*(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2 )
 !
 !  The C version of this code is chwirut1.c
 !
 !/*T
 !  Concepts: TAO - Solving an unconstrained minimization problem
-!  Routines: TaoInitialize(); TaoFinalize(); 
+!  Routines: TaoInitialize(); TaoFinalize();
 !  Routines: TaoCreate();
-!  Routines: TaoSetType(); 
+!  Routines: TaoSetType();
 !  Routines: TaoSetSeparableObjectiveRoutine();
 !  Routines: TaoSetInitialVector();
 !  Routines: TaoSetFromOptions();
 !  Routines: TaoSolve();
-!  Routines: TaoDestroy(); 
+!  Routines: TaoDestroy();
 !  Processors: n
-!T*/ 
+!T*/
 !
-! ---------------------------------------------------------------------- 
+! ----------------------------------------------------------------------
 !
       implicit none
 
 #include "chwirut2f.h"
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  See additional variable declarations in the file chwirut2f.h
 
@@ -38,7 +38,7 @@
       TaoSolver        tao     ! TaoSolver context
       PetscInt         i
 
-      
+
 
 
 !  Note: Any user-defined Fortran routines (such as FormGradient)
@@ -57,7 +57,7 @@
 
 !  Initialize problem parameters
       call InitializeData()
-      
+
       if (rank .eq. 0) then
 !  Allocate vectors for the solution and gradient
          call VecCreateSeq(PETSC_COMM_SELF,n,x,ierr)
@@ -66,7 +66,7 @@
          CHKERRQ(ierr)
 
 
-!     The TAO code begins here 
+!     The TAO code begins here
 
 !     Create TAO solver
          call TaoCreate(PETSC_COMM_SELF,tao,ierr)
@@ -74,7 +74,7 @@
          call TaoSetType(tao,'tao_pounders',ierr)
          CHKERRQ(ierr)
 
-!     Set routines for function, gradient, and hessian evaluation 
+!     Set routines for function, gradient, and hessian evaluation
          call TaoSetSeparableObjectiveRoutine(tao,f,                    &
      &        FormFunction,PETSC_NULL_OBJECT,ierr)
          CHKERRQ(ierr)
@@ -96,20 +96,20 @@
          call TaoDestroy(tao,ierr)
          CHKERRQ(ierr)
 
-!     Free PETSc data structures 
+!     Free PETSc data structures
          call VecDestroy(x,ierr)
          CHKERRQ(ierr)
          call VecDestroy(f,ierr)
          CHKERRQ(ierr)
          call StopWorkers(ierr)
          CHKERRQ(ierr)
-      
+
       else
          call TaskWorker(ierr)
          CHKERRQ(ierr)
       endif
 
-!  Finalize TAO 
+!  Finalize TAO
       call TaoFinalize(ierr)
       call PetscFinalize(ierr)
 
@@ -126,7 +126,7 @@
 !
 !  Output Parameters:
 !  f - function vector
-      
+
       subroutine FormFunction(tao, x, f, dummy, ierr)
       implicit none
 
@@ -165,12 +165,12 @@
          do i=0,m-1
             call RunSimulation(x_v(x_i),i,f_v(i+f_i),ierr)
          enddo
-      else 
+      else
          ! Multiprocessor master
          next_task = 0
          finished_tasks = 0
          checkedin = 0
-         
+
          do while (finished_tasks .lt. m .or. checkedin .lt. size-1)
             call MPI_Recv(fval,1,MPIU_SCALAR,MPI_ANY_SOURCE,               &
      &           MPI_ANY_TAG,PETSC_COMM_WORLD,status,ierr)
@@ -216,7 +216,7 @@
       PetscReal       x_v(0:1)
       PetscOffset     x_i
       PetscErrorCode  ierr
-      
+
       call VecGetArray(x,x_v,x_i,ierr)
       CHKERRQ(ierr)
       x_v(x_i) = 0.15d0
@@ -449,12 +449,12 @@
       y(i) =    10.0500;  t(i) =   3.7500; i=i+1
       y(i) =    28.9000;  t(i) =   1.7500; i=i+1
       y(i) =    28.9500;  t(i) =   1.7500; i=i+1
-      
+
       return
       end
 
- 
-    
+
+
       subroutine TaskWorker(ierr)
       implicit none
 #include "chwirut2f.h"
@@ -463,7 +463,7 @@
       integer tag
       PetscInt index
       integer status(MPI_STATUS_SIZE)
-      
+
       tag = IDLE_TAG
       ! Send check-in message to master
       call MPI_Send(f,1,MPIU_SCALAR,0,IDLE_TAG,PETSC_COMM_WORLD,ierr)
@@ -482,7 +482,7 @@
             ! Compute local part of residual
             call RunSimulation(x,index,f,ierr)
             CHKERRQ(ierr)
-            
+
             ! Return residual to master
             call MPI_Send(f,1,MPIU_SCALAR,0,tag,PETSC_COMM_WORLD,ierr)
             CHKERRQ(ierr)
@@ -531,4 +531,4 @@
 
 
 
-      
+

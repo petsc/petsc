@@ -10,7 +10,7 @@ typedef struct {
   PetscReal pg_ftol;
   PetscReal actred;
   PetscReal f_new;
- 
+
   PetscReal eta1,eta2,eta3,eta4;
   PetscReal sigma1,sigma2,sigma3;
 
@@ -34,7 +34,7 @@ typedef struct {
   Vec X_New;
   Vec G_New;
   Vec Work;
-  
+
   /* Subvectors and submatrices */
   Vec DXFree;
   Vec R;
@@ -43,7 +43,7 @@ typedef struct {
   Mat H_sub;
   Mat Hpre_sub;
   MatStructure matflag;
-  
+
   IS Free_Local;  /* Indices of local variables equal to lower bound */
   VecScatter scatter;
 

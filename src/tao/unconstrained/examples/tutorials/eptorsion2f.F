@@ -1,7 +1,7 @@
-!  Program usage: mpirun -np <proc> eptorsion2f [all TAO options] 
+!  Program usage: mpirun -np <proc> eptorsion2f [all TAO options]
 !
 !  Description:  This example demonstrates use of the TAO package to solve
-!  unconstrained minimization problems in parallel.  This example is based 
+!  unconstrained minimization problems in parallel.  This example is based
 !  on the Elastic-Plastic Torsion (dept) problem from the MINPACK-2 test suite.
 !  The command line options are:
 !    -mx <xg>, where <xg> = number of grid points in the 1st coordinate direction
@@ -10,9 +10,9 @@
 !
 !/*T
 !   Concepts: TAO - Solving an unconstrained minimization problem
-!   Routines: TaoInitialize(); TaoFinalize(); 
+!   Routines: TaoInitialize(); TaoFinalize();
 !   Routines: TaoCreate(); TaoSetType();
-!   Routines: TaoSetInitialVector(); 
+!   Routines: TaoSetInitialVector();
 !   Routines: TaoSetObjectiveAndGradientRoutine();
 !   Routines: TaoSetHessianRoutine(); TaoSetFromOptions();
 !   Routines: TaoSetMonitor(); TaoSetConvergenceTest()
@@ -22,11 +22,11 @@
 !   Processors: n
 !T*/
 !
-! ---------------------------------------------------------------------- 
+! ----------------------------------------------------------------------
 !
-!  Elastic-plastic torsion problem.  
+!  Elastic-plastic torsion problem.
 !
-!  The elastic plastic torsion problem arises from the determination 
+!  The elastic plastic torsion problem arises from the determination
 !  of the stress field on an infinitely long cylindrical bar, which is
 !  equivalent to the solution of the following problem:
 !     min{ .5 * integral(||gradient(v(x))||^2 dx) - C * integral(v(x) dx)}
@@ -34,14 +34,14 @@
 !
 !  The C version of this code is eptorsion2.c
 !
-! ---------------------------------------------------------------------- 
+! ----------------------------------------------------------------------
 
       implicit none
 #include "eptorsion2f.h"
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  See additional variable declarations in the file eptorsion2f.h
 !
@@ -56,7 +56,7 @@
       PetscReal      ff,gnorm,cnorm,xdiff
       PetscInt         i1
       PetscInt         dummy
-      
+
 
 !  Note: Any user-defined Fortran routines (such as FormGradient)
 !  MUST be declared as external.
@@ -70,7 +70,7 @@
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call TaoInitialize(PETSC_NULL_CHARACTER,ierr)
 
-!     Specify default parameters 
+!     Specify default parameters
       param = 5.0d0
       mx = 10
       my = 10
@@ -83,7 +83,7 @@
       call PetscOptionsGetReal(PETSC_NULL_CHARACTER,"-par",              &
      &                         param,flg,ierr)
 
-      
+
 !     Set up distributed array and vectors
       call DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,             &
      &     DMDA_BOUNDARY_NONE,                                           &
@@ -143,12 +143,12 @@
      &        'TAO did not terminate successfully\n',ierr)
       endif
 
-      
+
 !     Free TAO data structures
       call TaoDestroy(tao,ierr)
 
-  
-!     Free PETSc data structures 
+
+!     Free PETSc data structures
       call VecDestroy(x,ierr)
       call VecDestroy(localX,ierr)
       call MatDestroy(H,ierr)
@@ -196,7 +196,7 @@
 
 !  Get corner information
       call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,               &
-     &                  PETSC_NULL_INTEGER,ierr) 
+     &                  PETSC_NULL_INTEGER,ierr)
       call DMDAGetGhostCorners(dm,gxs,gys,PETSC_NULL_INTEGER,              &
      &                   gxm,gym,PETSC_NULL_INTEGER,ierr)
 
@@ -221,13 +221,13 @@
 
 ! ---------------------------------------------------------------------
 !
-!  FormFunctionGradient - Evaluates gradient G(X). 
+!  FormFunctionGradient - Evaluates gradient G(X).
 !
 !  Input Parameters:
 !  tao   - the TaoSolver context
 !  X     - input vector
 !  dummy - optional user-defined context (not used here)
-!    
+!
 !  Output Parameters:
 !  f     - the function value at X
 !  G     - vector containing the newly evaluated gradient
@@ -235,7 +235,7 @@
 !
 !  Notes:
 !  This routine serves as a wrapper for the lower-level routine
-!  "ApplicationGradient", where the actual computations are 
+!  "ApplicationGradient", where the actual computations are
 !  done using the standard Fortran style of treating the local
 !  input vector data as an array over the local mesh.
 !
@@ -270,7 +270,7 @@
       PetscReal      dvdy, hx, hy
       PetscInt         xe, ye, xsm, ysm
       PetscInt         xep, yep, i, j, k, ind
-      PetscInt         xs, ys, xm, ym 
+      PetscInt         xs, ys, xm, ym
       PetscInt         gxs, gys, gxm, gym
       PetscInt         i1
 
@@ -327,7 +327,7 @@
       endif
 
 !     Compute local gradient contributions over the lower triangular elements
-     
+
       do j = ysm, ye-1
          do i = xsm, xe-1
             k  = (j-gys)*gxm + i-gxs
@@ -399,7 +399,7 @@
       call VecAssemblyBegin(G,ierr)
       call VecAssemblyEnd(G,ierr)
 
-! Scale the gradient      
+! Scale the gradient
       area = p5*hx*hy
       floc = area *(p5*fquad+flin)
       call VecScale(G,area,ierr)
@@ -421,7 +421,7 @@
 
       subroutine ComputeHessian(tao, X, H, Hpre, flag, dummy, ierr)
       implicit none
-#include "eptorsion2f.h"      
+#include "eptorsion2f.h"
       TaoSolver       tao
       Vec             X
       Mat             H,Hpre
@@ -429,7 +429,7 @@
       PetscErrorCode  ierr
       PetscInt        dummy
 
-      
+
       PetscInt i,j,k
       PetscInt col(0:4),row
       PetscInt xs,xm,gxs,gxm
@@ -482,7 +482,7 @@
          enddo
       enddo
 
-      
+
 !     Assemble matrix
       call MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY,ierr)
@@ -498,14 +498,14 @@
       call PetscLogFlops(9.0d0*xm*ym + 49.0d0*xm,ierr)
 
       ierr = 0
-      return 
+      return
       end
-      
-               
-      
+
+
+
       subroutine Monitor(tao, dummy, ierr)
       implicit none
-#include "eptorsion2f.h"      
+#include "eptorsion2f.h"
       TaoSolver tao
       PetscInt dummy
       PetscErrorCode ierr
@@ -513,14 +513,14 @@
       PetscInt its
       PetscReal f,gnorm,cnorm,xdiff
       TaoSolverTerminationReason reason
-      
+
       call TaoGetSolutionStatus(tao,its,f,gnorm,cnorm,xdiff,             &
      &     reason,ierr)
       if (mod(its,5) .ne. 0) then
          call PetscPrintf(PETSC_COMM_WORLD,"iteration multiple of 5\n",  &
      &        ierr)
       endif
-      
+
       ierr = 0
 
       return
@@ -528,7 +528,7 @@
 
       subroutine ConvergenceTest(tao, dummy, ierr)
       implicit none
-#include "eptorsion2f.h"      
+#include "eptorsion2f.h"
       TaoSolver tao
       PetscInt dummy
       PetscErrorCode ierr
@@ -536,14 +536,14 @@
       PetscInt its
       PetscReal f,gnorm,cnorm,xdiff
       TaoSolverTerminationReason reason
-      
+
       call TaoGetSolutionStatus(tao,its,f,gnorm,cnorm,xdiff,            &
      &     reason,ierr)
       if (its .eq. 7) then
          call TaoSetTerminationReason(tao,TAO_DIVERGED_MAXITS,          &
      &        ierr)
       endif
-      
+
       ierr = 0
 
       return

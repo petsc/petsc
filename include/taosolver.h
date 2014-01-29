@@ -24,7 +24,7 @@ typedef enum {/* converged */
   TAO_CONVERGED_FRTOL          =  2, /* |F(X) - f(X*)|/|f(X)| < frtol */
   TAO_CONVERGED_GATOL          =  3, /* ||g(X)|| < gatol */
   TAO_CONVERGED_GRTOL          =  4, /* ||g(X)|| / f(X)  < grtol */
-  TAO_CONVERGED_GTTOL          =  5, /* ||g(X)|| / ||g(X0)|| < gttol */ 
+  TAO_CONVERGED_GTTOL          =  5, /* ||g(X)|| / ||g(X0)|| < gttol */
   TAO_CONVERGED_STEPTOL        =  6, /* step size small */
   TAO_CONVERGED_MINF          =  7, /* F < F_min */
   TAO_CONVERGED_USER          =  8, /* User defined */
@@ -170,7 +170,7 @@ PETSC_EXTERN PetscErrorCode TaoSetConvergenceTest(TaoSolver, PetscErrorCode (*)(
 
 PETSC_EXTERN PetscErrorCode TaoSQPCONSetStateDesignIS(TaoSolver, IS, IS);
 PETSC_EXTERN PetscErrorCode TaoLCLSetStateDesignIS(TaoSolver, IS, IS);
-PetscErrorCode TaoMonitor(TaoSolver, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, TaoSolverTerminationReason*); 
+PetscErrorCode TaoMonitor(TaoSolver, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, TaoSolverTerminationReason*);
 
 
 #endif /* ifndef __TAOSOLVER_H */

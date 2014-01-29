@@ -29,7 +29,7 @@ PetscErrorCode TaoPounders_formquad(TAO_POUNDERS *mfqP,PetscBool checkonly)
   char name[12];
   Vec Mind_real;
 
-#ifdef PETSC_HAVE_MATLAB_ENGINE  
+#ifdef PETSC_HAVE_MATLAB_ENGINE
   if (!mfqP->me) {
     ierr = PetscMatlabEngineCreate(PETSC_COMM_SELF,machine,&mfqP->me);CHKERRQ(ierr);
   }
@@ -84,7 +84,7 @@ PetscErrorCode TaoPounders_formquad(TAO_POUNDERS *mfqP,PetscBool checkonly)
       ierr = PetscObjectSetName((PetscObject)(mfqP->Gdel[i]),name);CHKERRQ(ierr);
       ierr = PetscMatlabEngineEvaluate(me,"%s = G(%d+1,:);",name,i);CHKERRQ(ierr);
       ierr = PetscMatlabEngineGet(me,mfqP->Gdel[i]);CHKERRQ(ierr);
-    }  
+    }
     /* Get Hdel */
     for (i=0;i<mfqP->m;i++) {
       snprintf(name,12,"h%010d",i);
@@ -96,7 +96,7 @@ PetscErrorCode TaoPounders_formquad(TAO_POUNDERS *mfqP,PetscBool checkonly)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__ 
+#undef __FUNCT__
 #define __FUNCT__ "pounders_h"
 static PetscErrorCode pounders_h(TaoSolver subtao, Vec v, Mat *H, Mat *Hpre, MatStructure *flag, void *ctx)
 {
@@ -104,7 +104,7 @@ static PetscErrorCode pounders_h(TaoSolver subtao, Vec v, Mat *H, Mat *Hpre, Mat
   *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__ 
+#undef __FUNCT__
 #define __FUNCT__ "pounders_fg"
 static PetscErrorCode  pounders_fg(TaoSolver subtao, Vec x, PetscReal *f, Vec g, void *ctx)
 {
@@ -129,7 +129,7 @@ static PetscErrorCode  pounders_fg(TaoSolver subtao, Vec x, PetscReal *f, Vec g,
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoPounders_solvequadratic"
-PetscErrorCode TaoPounders_solvequadratic(TaoSolver tao,PetscReal *gnorm, PetscReal *qmin) 
+PetscErrorCode TaoPounders_solvequadratic(TaoSolver tao,PetscReal *gnorm, PetscReal *qmin)
 {
     PetscErrorCode ierr;
     PetscReal atol=1.0e-10;
@@ -137,7 +137,7 @@ PetscErrorCode TaoPounders_solvequadratic(TaoSolver tao,PetscReal *gnorm, PetscR
     TAO_POUNDERS *mfqP = (TAO_POUNDERS*)tao->data;
     PetscReal maxval;
     PetscInt i,j;
-                                                                    
+
     PetscFunctionBegin;
 
     ierr = VecCopy(mfqP->Gres, mfqP->subb);CHKERRQ(ierr);
@@ -148,7 +148,7 @@ PetscErrorCode TaoPounders_solvequadratic(TaoSolver tao,PetscReal *gnorm, PetscR
     ierr = VecSet(mfqP->subpdel,mfqP->delta);CHKERRQ(ierr);
 
     ierr = MatCopy(mfqP->Hres,mfqP->subH,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      
+
     ierr = TaoResetStatistics(mfqP->subtao);CHKERRQ(ierr);
     ierr = TaoSetTolerances(mfqP->subtao,NULL,NULL,*gnorm,*gnorm,NULL);CHKERRQ(ierr);
     /* enforce bound constraints -- experimental */
@@ -159,7 +159,7 @@ PetscErrorCode TaoPounders_solvequadratic(TaoSolver tao,PetscReal *gnorm, PetscR
       ierr = VecCopy(tao->XL,mfqP->subxl);CHKERRQ(ierr);
       ierr = VecAXPY(mfqP->subxl,-1.0,tao->solution);CHKERRQ(ierr);
       ierr = VecScale(mfqP->subxl,1.0/mfqP->delta);CHKERRQ(ierr);
-        
+
       ierr = VecPointwiseMin(mfqP->subxu,mfqP->subxu,mfqP->subpdel);CHKERRQ(ierr);
       ierr = VecPointwiseMax(mfqP->subxl,mfqP->subxl,mfqP->subndel);CHKERRQ(ierr);
     } else {
@@ -208,7 +208,7 @@ PetscErrorCode TaoPounders_solvequadratic(TaoSolver tao,PetscReal *gnorm, PetscR
       ierr = PetscInfo(tao,"subproblem solution > upper bound");
       tao->reason = TAO_DIVERGED_TR_REDUCTION;
     }
-      
+
 
     *qmin *= -1;
     PetscFunctionReturn(0);
@@ -221,9 +221,9 @@ PetscErrorCode TaoPounders_bmpts(TaoSolver tao)
   PetscErrorCode ierr;
   PetscInt i,low,high;
   PetscReal minnorm,*t1,*t2;
-  TAO_POUNDERS *mfqP = (TAO_POUNDERS*)tao->data; 
+  TAO_POUNDERS *mfqP = (TAO_POUNDERS*)tao->data;
   PetscFunctionBegin;
-  
+
   ierr = PetscMalloc(sizeof(PetscReal)*mfqP->nmodelpoints,&t1);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscReal)*mfqP->nmodelpoints,&t2);CHKERRQ(ierr);
   /* For each ray, find largest t to remain feasible */
@@ -239,7 +239,7 @@ PetscErrorCode TaoPounders_bmpts(TaoSolver tao)
     maxt = PetscMax(maxt,t1);
     maxt = PetscMax(maxt,t2);
   }
-  
+
   /* Compute objective at x+delta*e_i, i=1..n*/
   ierr = VecGetOwnershipRange(mfqP->Xhist[0],&low,&high);CHKERRQ(ierr);
   for (i=1;i<=mfqP->n;i++) {
@@ -262,7 +262,7 @@ PetscErrorCode TaoPounders_bmpts(TaoSolver tao)
   }
   ierr = PetscFree(t1);CHKERRQ(ierr);
   ierr = PetscFree(t2);CHKERRQ(ierr);
-  
+
 
   PetscFunctionReturn(0);
 }
@@ -274,11 +274,11 @@ PetscErrorCode phi2eval(Vec *X, Vec *Phi, PetscInt n) {
   PetscErrorCode ierr;
   PetscReal sqrt2;
 
-  PetscFunctionBegin;  
+  PetscFunctionBegin;
   sqrt = PetscSqrtReal(2.0);
   ierr = VecGetOwnershipRange(X,&lo,&hi);CHKERRQ(ierr);
 PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi) {
-// Phi = .5*[x(1)^2  sqrt(2)*x(1)*x(2) ... sqrt(2)*x(1)*x(n) ... x(2)^2 sqrt(2)*x(2)*x(3) .. x(n)^2] 
+// Phi = .5*[x(1)^2  sqrt(2)*x(1)*x(2) ... sqrt(2)*x(1)*x(n) ... x(2)^2 sqrt(2)*x(2)*x(3) .. x(n)^2]
     PetscInt i,j,k;
     PetscReal sqrt2 = PetscSqrtReal(2.0);
     PetscFunctionBegin;
@@ -291,7 +291,7 @@ PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi) {
             phi[j]  = x[i]*x[k]/sqrt2;
             j++;
         }
-        
+
     }
 
     PetscFunctionReturn(0);

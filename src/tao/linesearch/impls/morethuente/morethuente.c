@@ -5,7 +5,7 @@
 
 /*
    This algorithm is taken from More' and Thuente, "Line search algorithms
-   with guaranteed sufficient decrease", Argonne National Laboratory, 
+   with guaranteed sufficient decrease", Argonne National Laboratory,
    Technical Report MCS-P330-1092.
 */
 
@@ -22,7 +22,7 @@ static PetscErrorCode TaoLineSearchDestroy_MT(TaoLineSearch ls)
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
   mt = (TAOLINESEARCH_MT_CTX*)(ls->data);
   if (mt->x) {
-    ierr = PetscObjectDereference((PetscObject)mt->x);CHKERRQ(ierr); 
+    ierr = PetscObjectDereference((PetscObject)mt->x);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&mt->work);CHKERRQ(ierr);
   ierr = PetscFree(ls->data);
@@ -98,7 +98,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     ierr = VecDuplicate(x,&mt->work);CHKERRQ(ierr);
     mt->x = x;
     ierr = PetscObjectReference((PetscObject)mt->x);CHKERRQ(ierr);
-  } else if (x != mt->x) { 
+  } else if (x != mt->x) {
     ierr = VecDestroy(&mt->work);CHKERRQ(ierr);
     ierr = VecDuplicate(x,&mt->work);CHKERRQ(ierr);
     ierr = PetscObjectDereference((PetscObject)mt->x);CHKERRQ(ierr);
@@ -143,25 +143,25 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
   width = ls->stepmax - ls->stepmin;
   width1 = width * 2.0;
   ierr = VecCopy(x,mt->work);CHKERRQ(ierr);
-  /* Variable dictionary:  
+  /* Variable dictionary:
    stx, fx, dgx - the step, function, and derivative at the best step
-   sty, fy, dgy - the step, function, and derivative at the other endpoint 
+   sty, fy, dgy - the step, function, and derivative at the other endpoint
    of the interval of uncertainty
    step, f, dg - the step, function, and derivative at the current step */
-  
+
   stx = 0.0;
   fx  = finit;
   dgx = dginit;
   sty = 0.0;
   fy  = finit;
   dgy = dginit;
-  
+
   ls->step=ls->initstep;
   for (i=0; i< ls->max_funcs; i++) {
     /* Set min and max steps to correspond to the interval of uncertainty */
     if (mt->bracket) {
-      ls->stepmin = PetscMin(stx,sty); 
-      ls->stepmax = PetscMax(stx,sty); 
+      ls->stepmin = PetscMin(stx,sty);
+      ls->stepmax = PetscMax(stx,sty);
     } else {
       ls->stepmin = stx;
       ls->stepmax = ls->step + xtrapf * (ls->step - stx);
@@ -170,7 +170,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     /* Force the step to be within the bounds */
     ls->step = PetscMax(ls->step,ls->stepmin);
     ls->step = PetscMin(ls->step,ls->stepmax);
-    
+
     /* If an unusual termination is to occur, then let step be the lowest
      point obtained thus far */
     if ((stx!=0) && (((mt->bracket) && (ls->step <= ls->stepmin || ls->step >= ls->stepmax)) || ((mt->bracket) && (ls->stepmax - ls->stepmin <= ls->rtol * ls->stepmax)) ||
@@ -185,7 +185,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
       ierr = VecMedian(ls->lower, mt->work, ls->upper, mt->work);CHKERRQ(ierr);
     }
     if (ls->usegts) {
-      ierr = TaoLineSearchComputeObjectiveAndGTS(ls,mt->work,f,&dg);CHKERRQ(ierr); 
+      ierr = TaoLineSearchComputeObjectiveAndGTS(ls,mt->work,f,&dg);CHKERRQ(ierr);
       g_computed=PETSC_FALSE;
     } else {
       ierr = TaoLineSearchComputeObjectiveAndGradient(ls,mt->work,f,g);CHKERRQ(ierr);
@@ -204,7 +204,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     }
 
     if (PetscIsInfOrNanReal(*f) || PetscIsInfOrNanReal(dg)) {
-      /* User provided compute function generated Not-a-Number, assume 
+      /* User provided compute function generated Not-a-Number, assume
        domain violation and set function value and directional
        derivative to infinity. */
       *f = TAO_INFINITY;
@@ -258,11 +258,11 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     }
 
     /* A modified function is used to predict the step only if we
-     have not obtained a step for which the modified function has a 
+     have not obtained a step for which the modified function has a
      nonpositive function value and nonnegative derivative, and if a
      lower function value has been obtained but the decrease is not
      sufficient */
-    
+
     if ((stage1) && (*f <= fx) && (*f > ftest1)) {
       fm   = *f - ls->step * dgtest;    /* Define modified function */
       fxm  = fx - stx * dgtest;         /* and derivatives */
@@ -270,20 +270,20 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
       dgm  = dg - dgtest;
       dgxm = dgx - dgtest;
       dgym = dgy - dgtest;
-      
+
       /* if (dgxm * (ls->step - stx) >= 0.0) */
       /* Update the interval of uncertainty and compute the new step */
       ierr = Tao_mcstep(ls,&stx,&fxm,&dgxm,&sty,&fym,&dgym,&ls->step,&fm,&dgm);CHKERRQ(ierr);
-      
+
       fx  = fxm + stx * dgtest; /* Reset the function and */
       fy  = fym + sty * dgtest; /* gradient values */
-      dgx = dgxm + dgtest; 
-      dgy = dgym + dgtest; 
+      dgx = dgxm + dgtest;
+      dgy = dgym + dgtest;
     } else {
       /* Update the interval of uncertainty and compute the new step */
       ierr = Tao_mcstep(ls,&stx,&fx,&dgx,&sty,&fy,&dgy,&ls->step,f,&dg);CHKERRQ(ierr);
     }
-    
+
     /* Force a sufficient decrease in the interval of uncertainty */
     if (mt->bracket) {
       if (PetscAbsReal(sty - stx) >= 0.66 * width1) ls->step = stx + 0.5*(sty - stx);
@@ -295,10 +295,10 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     ierr = PetscInfo2(ls,"Number of line search function evals (%D) > maximum (%D)\n",(ls->nfeval+ls->nfgeval),ls->max_funcs);CHKERRQ(ierr);
     ls->reason = TAOLINESEARCH_HALTED_MAXFCN;
   }
-  
+
   /* Finish computations */
   ierr = PetscInfo2(ls,"%D function evals in line search, step = %g\n",(ls->nfeval+ls->nfgeval),(double)ls->step);CHKERRQ(ierr);
-  
+
   /* Set new solution vector and compute gradient if needed */
   ierr = VecCopy(mt->work,x);CHKERRQ(ierr);
   if (!g_computed) {
@@ -322,7 +322,7 @@ PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
   ctx->infoc=1;
   ls->data = (void*)ctx;
   ls->initstep = 1.0;
-  ls->ops->setup=0; 
+  ls->ops->setup=0;
   ls->ops->apply=TaoLineSearchApply_MT;
   ls->ops->view =TaoLineSearchView_MT;
   ls->ops->destroy=TaoLineSearchDestroy_MT;
@@ -393,7 +393,7 @@ EXTERN_C_END
 
 */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "Tao_mcstep"
 static PetscErrorCode Tao_mcstep(TaoLineSearch ls,PetscReal *stx,PetscReal *fx,PetscReal *dx,PetscReal *sty,PetscReal *fy,PetscReal *dy,PetscReal *stp,PetscReal *fp,PetscReal *dp)
 {

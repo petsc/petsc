@@ -8,7 +8,7 @@ solve an unconstrained minimization problem on a single processor.  We \n\
 minimize the extended Rosenbrock function: \n\
    sum_{i=0}^{n/2-1} ( alpha*(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2 ) \n";
 
-/*T 
+/*T
    Concepts: TAO - Solving an unconstrained minimization problem
    Routines: TaoInitialize(); TaoFinalize();
    Routines: TaoCreate();
@@ -17,13 +17,13 @@ minimize the extended Rosenbrock function: \n\
    Routines: TaoSetInitialVector();
    Routines: TaoSetFromOptions();
    Routines: TaoSolve();
-   Routines: TaoGetTerminationReason(); TaoDestroy(); 
+   Routines: TaoGetTerminationReason(); TaoDestroy();
    Processors: 1
-T*/ 
+T*/
 
 
-/* 
-   User-defined application context - contains data needed by the 
+/*
+   User-defined application context - contains data needed by the
    application-provided call-back routines that evaluate the function,
    gradient, and hessian.
 */
@@ -74,12 +74,12 @@ int main(int argc,char **argv)
 
   /* Set solution vec and an initial guess */
   ierr = VecSet(x, zero);CHKERRQ(ierr);
-  ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr); 
+  ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
 
   /* Set routines for function, gradient, hessian evaluation */
   ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,&user);CHKERRQ(ierr);
   ierr = TaoSetHessianRoutine(tao,H,H,FormHessian,&user);CHKERRQ(ierr);
-    
+
   /* Check for TAO command line options */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
@@ -103,14 +103,14 @@ int main(int argc,char **argv)
 /* -------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionGradient"
-/*  
-    FormFunctionGradient - Evaluates the function, f(X), and gradient, G(X). 
+/*
+    FormFunctionGradient - Evaluates the function, f(X), and gradient, G(X).
 
     Input Parameters:
 .   tao  - the TaoSolver context
 .   X    - input vector
 .   ptr  - optional user-defined context, as set by TaoSetFunctionGradient()
-    
+
     Output Parameters:
 .   G - vector containing the newly evaluated gradient
 .   f - function value
@@ -118,11 +118,11 @@ int main(int argc,char **argv)
     Note:
     Some optimization methods ask for the function and the gradient evaluation
     at the same time.  Evaluating both at once may be more efficient that
-    evaluating each separately. 
+    evaluating each separately.
 */
 PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,PetscReal *f, Vec G,void *ptr)
 {
-  AppCtx         *user = (AppCtx *) ptr;  
+  AppCtx         *user = (AppCtx *) ptr;
   PetscInt       i,nn=user->n/2;
   PetscErrorCode ierr;
   PetscReal      ff=0,t1,t2,alpha=user->alpha;

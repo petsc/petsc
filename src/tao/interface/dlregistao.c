@@ -8,7 +8,7 @@ static PetscBool TaoPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
 #define __FUNCT__ "TaoFinalizePackage"
 /*@C
-  TaoFinalizePackage - This function destroys everything in the PETSc/TAO 
+  TaoFinalizePackage - This function destroys everything in the PETSc/TAO
   interface to the TaoSolver package. It is called from PetscFinalize().
 
   Level: developer
@@ -26,7 +26,7 @@ PetscErrorCode TaoFinalizePackage(void)
 #undef __FUNCT__
 #define __FUNCT__ "TaoInitializePackage"
 /*@C
-  TaoInitializePackage - This function sets up PETSc to use the TaoSolver 
+  TaoInitializePackage - This function sets up PETSc to use the TaoSolver
   package.  When using static libraries, this function is called from the
   first entry to TaoCreate(); when using shared libraries, it is called
   from PetscDLLibraryRegister()
@@ -45,7 +45,7 @@ PetscErrorCode TaoInitializePackage(void)
   TaoPackageInitialized = PETSC_TRUE;
 
   ierr = PetscClassIdRegister("TaoSolver",&TAOSOLVER_CLASSID);CHKERRQ(ierr);
-  
+
   /* Tell PETSc what solvers are available */
   ierr = TaoSolverRegisterAll();CHKERRQ(ierr);
 

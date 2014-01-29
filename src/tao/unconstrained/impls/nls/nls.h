@@ -1,4 +1,4 @@
-/* 
+/*
 Context for a Newton line search method (unconstrained minimization)
 */
 
@@ -18,7 +18,7 @@ typedef struct {
 
   /*  Parameters when updating the perturbation added to the Hessian matrix */
   PetscReal sval;          /*  Starting perturbation value, default zero */
-                        
+
   PetscReal imin;          /*  Minimum perturbation added during initialization  */
   PetscReal imax;          /*  Maximum perturbation added during initialization */
   PetscReal imfac;         /*  Merit function factor during initialization */
@@ -32,16 +32,16 @@ typedef struct {
 
   /* The perturbation to the Hessian matrix is initialized and updated
      according to the following scheme:
-    
+
        pert = sval;
-    
+
        do until convergence
          shift Hessian by pert
          solve Newton system
-    
+
          if (linear solver failed or did not compute a descent direction)
            use steepest descent direction and increase perturbation
-    
+
            if (0 == pert)
              initialize perturbation
              pert = min(imax, max(imin, imfac * norm(G)))
@@ -51,17 +51,17 @@ typedef struct {
            fi
          else
            use linear solver direction and decrease perturbation
-    
+
            pert = min(psfac * pert, pmsfac * norm(G))
            if (pert < pmin)
              pert = 0
            fi
          fi
-    
+
          perform line search
          function and gradient evaluation
          check convergence
-       od 
+       od
   */
 
   /*  Parameters when updating the trust-region radius based on steplength */
@@ -88,7 +88,7 @@ typedef struct {
        radius = max(omega5 * norm(d), radius)
      fi
   */
- 
+
   /*  Parameters when updating the trust-region radius based on reduction */
   PetscReal eta1;               /*  used to compute trust-region radius */
   PetscReal eta2;               /*  used to compute trust-region radius */
@@ -114,7 +114,7 @@ typedef struct {
        radius = max(alpha5 * norm(d), radius)
      fi
   */
- 
+
   /*  Parameters when updating the trust-region radius based on interpolation */
   PetscReal mu1;                /*  used for model agreement in interpolation */
   PetscReal mu2;                /*  used for model agreement in interpolation */
@@ -170,7 +170,7 @@ typedef struct {
   PetscInt bfgs_scale_type;     /*  Scaling matrix to used for the bfgs preconditioner */
   PetscInt init_type;   /*  Trust-region initialization method */
   PetscInt update_type;      /*  Trust-region update method */
-    
+
   PetscInt ksp_atol;
   PetscInt ksp_rtol;
   PetscInt ksp_ctol;

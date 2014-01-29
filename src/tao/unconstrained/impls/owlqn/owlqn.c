@@ -6,7 +6,7 @@
 #define OWLQN_SCALED_GRADIENT     1
 #define OWLQN_GRADIENT            2
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ProjDirect_OWLQN"
 static PetscErrorCode ProjDirect_OWLQN(Vec d, Vec g)
 {
@@ -25,12 +25,12 @@ static PetscErrorCode ProjDirect_OWLQN(Vec d, Vec g)
       dptr[i] = 0.0;
     }
   }
-  ierr = VecRestoreArray(d,&dptr);CHKERRQ(ierr);  
-  ierr = VecRestoreArray(g,&gptr);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(d,&dptr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(g,&gptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ComputePseudoGrad_OWLQN"
 static PetscErrorCode ComputePseudoGrad_OWLQN(Vec x, Vec gv, PetscReal lambda)
 {
@@ -51,12 +51,12 @@ static PetscErrorCode ComputePseudoGrad_OWLQN(Vec x, Vec gv, PetscReal lambda)
     else if (gptr[i] - lambda > 0.0) gptr[i] = gptr[i] - lambda;
     else                             gptr[i] = 0.0;
   }
-  ierr = VecRestoreArray(gv,&gptr);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(gv,&gptr);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&xptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoSolve_OWLQN"
 static PetscErrorCode TaoSolve_OWLQN(TaoSolver tao)
 {
@@ -109,7 +109,7 @@ static PetscErrorCode TaoSolve_OWLQN(TaoSolver tao)
     ierr = MatLMVMUpdate(lmP->M,tao->solution,tao->gradient);CHKERRQ(ierr);
     ierr = MatLMVMSolve(lmP->M, lmP->GV, lmP->D);CHKERRQ(ierr);
 
-    ierr = ProjDirect_OWLQN(lmP->D,lmP->GV);CHKERRQ(ierr); 
+    ierr = ProjDirect_OWLQN(lmP->D,lmP->GV);CHKERRQ(ierr);
 
     ++lmP->bfgs;
 
@@ -121,7 +121,7 @@ static PetscErrorCode TaoSolve_OWLQN(TaoSolver tao)
          We can assert bfgsUpdates > 1 in this case because
          the first solve produces the scaled gradient direction,
          which is guaranteed to be descent
-  
+
          Use steepest descent direction (scaled) */
       ++lmP->grad;
 
@@ -135,7 +135,7 @@ static PetscErrorCode TaoSolve_OWLQN(TaoSolver tao)
       ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
       ierr = MatLMVMSolve(lmP->M,lmP->GV, lmP->D);CHKERRQ(ierr);
 
-      ierr = ProjDirect_OWLQN(lmP->D,lmP->GV);CHKERRQ(ierr); 
+      ierr = ProjDirect_OWLQN(lmP->D,lmP->GV);CHKERRQ(ierr);
 
       lmP->bfgs = 1;
       ++lmP->sgrad;
@@ -150,9 +150,9 @@ static PetscErrorCode TaoSolve_OWLQN(TaoSolver tao)
         stepType = OWLQN_BFGS;
       }
     }
-    
+
     ierr = VecScale(lmP->D, -1.0);CHKERRQ(ierr);
-    
+
     /* Perform the linesearch */
     fold = f;
     ierr = VecCopy(tao->solution, lmP->Xold);CHKERRQ(ierr);
@@ -160,17 +160,17 @@ static PetscErrorCode TaoSolve_OWLQN(TaoSolver tao)
 
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, lmP->GV, lmP->D, &step,&ls_status);CHKERRQ(ierr);
     ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
-    
+
     while (((int)ls_status < 0) && (stepType != OWLQN_GRADIENT)) {
 
       /* Reset factors and use scaled gradient step */
       f = fold;
       ierr = VecCopy(lmP->Xold, tao->solution);CHKERRQ(ierr);
       ierr = VecCopy(lmP->Gold, tao->gradient);CHKERRQ(ierr);
-      ierr = VecCopy(tao->gradient, lmP->GV);CHKERRQ(ierr);  
+      ierr = VecCopy(tao->gradient, lmP->GV);CHKERRQ(ierr);
 
       ierr = ComputePseudoGrad_OWLQN(tao->solution,lmP->GV,lmP->lambda);CHKERRQ(ierr);
-      
+
       switch(stepType) {
       case OWLQN_BFGS:
         /* Failed to obtain acceptable iterate with BFGS step
@@ -186,8 +186,8 @@ static PetscErrorCode TaoSolve_OWLQN(TaoSolver tao)
         ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
         ierr = MatLMVMSolve(lmP->M, lmP->GV, lmP->D);CHKERRQ(ierr);
 
-        ierr = ProjDirect_OWLQN(lmP->D,lmP->GV);CHKERRQ(ierr); 
-  
+        ierr = ProjDirect_OWLQN(lmP->D,lmP->GV);CHKERRQ(ierr);
+
         lmP->bfgs = 1;
         ++lmP->sgrad;
         stepType = OWLQN_SCALED_GRADIENT;
@@ -202,7 +202,7 @@ static PetscErrorCode TaoSolve_OWLQN(TaoSolver tao)
         ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
         ierr = MatLMVMSolve(lmP->M, lmP->GV, lmP->D);CHKERRQ(ierr);
 
-        ierr = ProjDirect_OWLQN(lmP->D,lmP->GV);CHKERRQ(ierr); 
+        ierr = ProjDirect_OWLQN(lmP->D,lmP->GV);CHKERRQ(ierr);
 
         lmP->bfgs = 1;
         ++lmP->grad;
@@ -211,12 +211,12 @@ static PetscErrorCode TaoSolve_OWLQN(TaoSolver tao)
       }
       ierr = VecScale(lmP->D, -1.0);CHKERRQ(ierr);
 
-        
+
       /* Perform the linesearch */
       ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, lmP->GV, lmP->D, &step, &ls_status);CHKERRQ(ierr);
       ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
-    }    
-    
+    }
+
     if ((int)ls_status < 0) {
       /* Failed to find an improving point*/
       f = fold;
@@ -226,13 +226,13 @@ static PetscErrorCode TaoSolve_OWLQN(TaoSolver tao)
       step = 0.0;
     } else {
       /* a little hack here, because that gv is used to store g */
-      ierr = VecCopy(lmP->GV, tao->gradient);CHKERRQ(ierr); 
+      ierr = VecCopy(lmP->GV, tao->gradient);CHKERRQ(ierr);
     }
-    
+
     ierr = ComputePseudoGrad_OWLQN(tao->solution,lmP->GV,lmP->lambda);CHKERRQ(ierr);
-    
+
     /* Check for termination */
-   
+
     ierr = VecNorm(lmP->GV,NORM_2,&gnorm);CHKERRQ(ierr);
 
     iter++;
@@ -243,7 +243,7 @@ static PetscErrorCode TaoSolve_OWLQN(TaoSolver tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoSetUp_OWLQN"
 static PetscErrorCode TaoSetUp_OWLQN(TaoSolver tao)
 {
@@ -269,7 +269,7 @@ static PetscErrorCode TaoSetUp_OWLQN(TaoSolver tao)
 }
 
 /* ---------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_OWLQN"
 static PetscErrorCode TaoDestroy_OWLQN(TaoSolver tao)
 {
@@ -285,11 +285,11 @@ static PetscErrorCode TaoDestroy_OWLQN(TaoSolver tao)
     ierr = VecDestroy(&lmP->GV);CHKERRQ(ierr);
   }
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
+  PetscFunctionReturn(0);
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_OWLQN"
 static PetscErrorCode TaoSetFromOptions_OWLQN(TaoSolver tao)
 {
@@ -306,7 +306,7 @@ static PetscErrorCode TaoSetFromOptions_OWLQN(TaoSolver tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoView_OWLQN"
 static PetscErrorCode TaoView_OWLQN(TaoSolver tao, PetscViewer viewer)
 {
@@ -329,7 +329,7 @@ static PetscErrorCode TaoView_OWLQN(TaoSolver tao, PetscViewer viewer)
 /* ---------------------------------------------------------- */
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoCreate_OWLQN"
 PetscErrorCode TaoCreate_OWLQN(TaoSolver tao)
 {

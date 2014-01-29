@@ -1,10 +1,10 @@
 #include "adamat.h"                /*I  "mat.h"  I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateADA"
 /*@C
    MatCreateADA - Creates a matrix M=A^T D1 A + D2 where D1, D2 are diagonal
-   
+
    Collective on matrix
 
    Input Parameters:
@@ -15,11 +15,11 @@
    Output Parameters:
 .  J - New matrix whose operations are defined in terms of mat, D1, and D2.
 
-   Notes: 
+   Notes:
    The user provides the input data and is responsible for destroying
-   this data after matrix J has been destroyed.  
+   this data after matrix J has been destroyed.
    The operation MatMult(A,D2,D1) must be well defined.
-   Before calling the operation MatGetDiagonal(), the function 
+   Before calling the operation MatGetDiagonal(), the function
    MatADAComputeDiagonal() must be called.  The matrices A and D1 must
    be the same during calls to MatADAComputeDiagonal() and
    MatGetDiagonal().
@@ -84,10 +84,10 @@ PetscErrorCode MatCreateADA(Mat mat,Vec d1, Vec d2, Mat *J)
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)(*J));CHKERRQ(ierr);
 
   ierr = MatSetOption(*J,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-  PetscFunctionReturn(0);  
+  PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMult_ADA"
 PetscErrorCode MatMult_ADA(Mat mat,Vec a,Vec y)
 {
@@ -108,9 +108,9 @@ PetscErrorCode MatMult_ADA(Mat mat,Vec a,Vec y)
     ierr = VecAXPY(y, one, ctx->W2);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
-} 
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_ADA"
 PetscErrorCode MatMultTranspose_ADA(Mat mat,Vec a,Vec y)
 {
@@ -119,9 +119,9 @@ PetscErrorCode MatMultTranspose_ADA(Mat mat,Vec a,Vec y)
   PetscFunctionBegin;
   ierr = MatMult_ADA(mat,a,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-} 
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDiagonalSet_ADA"
 PetscErrorCode MatDiagonalSet_ADA(Vec D, Mat M)
 {
@@ -139,9 +139,9 @@ PetscErrorCode MatDiagonalSet_ADA(Vec D, Mat M)
   ierr = VecAXPY(ctx->D2, one, D);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
-} 
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_ADA"
 PetscErrorCode MatDestroy_ADA(Mat mat)
 {
@@ -172,7 +172,7 @@ PetscErrorCode MatDestroy_ADA(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatView_ADA"
 PetscErrorCode MatView_ADA(Mat mat,PetscViewer viewer)
 {
@@ -181,7 +181,7 @@ PetscErrorCode MatView_ADA(Mat mat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatShift_ADA"
 PetscErrorCode MatShift_ADA(Mat Y, PetscReal a)
 {
@@ -194,7 +194,7 @@ PetscErrorCode MatShift_ADA(Mat Y, PetscReal a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_ADA"
 PetscErrorCode MatDuplicate_ADA(Mat mat,MatDuplicateOption op,Mat *M)
 {
@@ -222,7 +222,7 @@ PetscErrorCode MatDuplicate_ADA(Mat mat,MatDuplicateOption op,Mat *M)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatEqual_ADA"
 PetscErrorCode MatEqual_ADA(Mat A,Mat B,PetscBool *flg)
 {
@@ -242,7 +242,7 @@ PetscErrorCode MatEqual_ADA(Mat A,Mat B,PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatScale_ADA"
 PetscErrorCode MatScale_ADA(Mat mat, PetscReal a)
 {
@@ -258,7 +258,7 @@ PetscErrorCode MatScale_ADA(Mat mat, PetscReal a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatTranspose_ADA"
 PetscErrorCode MatTranspose_ADA(Mat mat,Mat *B)
 {
@@ -273,7 +273,7 @@ PetscErrorCode MatTranspose_ADA(Mat mat,Mat *B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatADAComputeDiagonal"
 PetscErrorCode MatADAComputeDiagonal(Mat mat)
 {
@@ -287,7 +287,7 @@ PetscErrorCode MatADAComputeDiagonal(Mat mat)
 
   ierr = MatGetOwnershipRange(mat, &low, &high);CHKERRQ(ierr);
   ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
-  
+
   ierr = PetscMalloc( n*sizeof(PetscReal),&dtemp );CHKERRQ(ierr);
 
   for (i=0; i<n; i++){
@@ -297,7 +297,7 @@ PetscErrorCode MatADAComputeDiagonal(Mat mat)
   }
   for (i=0; i<n; i++){
     ierr = VecDotEnd(ctx->D1, ctx->W,dtemp+i);CHKERRQ(ierr);
-  } 
+  }
 
   ierr = VecGetArray(ctx->ADADiag,&dptr);CHKERRQ(ierr);
   for (i=low; i<high; i++){
@@ -310,7 +310,7 @@ PetscErrorCode MatADAComputeDiagonal(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetDiagonal_ADA"
 PetscErrorCode MatGetDiagonal_ADA(Mat mat,Vec v)
 {
@@ -329,7 +329,7 @@ PetscErrorCode MatGetDiagonal_ADA(Mat mat,Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetSubMatrices_ADA"
 PetscErrorCode MatGetSubMatrices_ADA(Mat A,PetscInt n, IS *irow,IS *icol,MatReuse scall,Mat **B)
 {
@@ -347,7 +347,7 @@ PetscErrorCode MatGetSubMatrices_ADA(Mat A,PetscInt n, IS *irow,IS *icol,MatReus
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetSubMatrix_ADA"
 PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll,
                         Mat *newmat)
@@ -396,7 +396,7 @@ PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll,
     ierr=ISRestoreIndices(isrow,&iptr);CHKERRQ(ierr);
     ierr=VecRestoreArray(D2, &ddptr);CHKERRQ(ierr);
     ierr=VecRestoreArray(ctx->D2, &dptr);CHKERRQ(ierr);
-   
+
   } else {
     D2=NULL;
   }
@@ -413,7 +413,7 @@ PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetRowADA"
 PetscErrorCode MatGetRowADA(Mat mat,PetscInt row,PetscInt *ncols,PetscInt **cols,PetscReal **vals)
 {
@@ -430,11 +430,11 @@ PetscErrorCode MatGetRowADA(Mat mat,PetscInt row,PetscInt *ncols,PetscInt **cols
     *cols=NULL;
     *vals=NULL;
   }
-  
+
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatRestoreRowADA"
 PetscErrorCode MatRestoreRowADA(Mat mat,PetscInt row,PetscInt *ncols,PetscInt **cols,PetscReal **vals)
 {
@@ -449,7 +449,7 @@ PetscErrorCode MatRestoreRowADA(Mat mat,PetscInt row,PetscInt *ncols,PetscInt **
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetColumnVectorADA"
 PetscErrorCode MatGetColumnVector_ADA(Mat mat,Vec Y, PetscInt col)
 {
@@ -534,7 +534,7 @@ PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatNorm_ADA"
 PetscErrorCode MatNorm_ADA(Mat mat,NormType type,PetscReal *norm)
 {

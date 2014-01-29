@@ -3,7 +3,7 @@
 #include "tao-private/taosolver_impl.h"
 
 /*
- Context for limited memory variable metric method for bound constrained 
+ Context for limited memory variable metric method for bound constrained
  optimization.
 */
 typedef struct {

@@ -7,10 +7,10 @@ typedef struct {
 } FD_Test;
 
 /*
-     TaoSolve_FD - Tests whether a hand computed Hessian 
+     TaoSolve_FD - Tests whether a hand computed Hessian
      matches one compute via finite differences.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoSolve_FD"
 PetscErrorCode TaoSolve_FD(TaoSolver tao)
 {
@@ -31,7 +31,7 @@ PetscErrorCode TaoSolve_FD(TaoSolver tao)
 
     ierr = PetscPrintf(comm,"Testing hand-coded gradient (hc) against finite difference gradient (fd), if the ratio ||fd - hc|| / ||hc|| is\n");CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"0 (1.e-8), the hand-coded gradient is probably correct.\n");CHKERRQ(ierr);
-    
+
     if (!fd->complete_print) {
       ierr = PetscPrintf(comm,"Run with -tao_fd_test_display to show difference\n");CHKERRQ(ierr);
       ierr = PetscPrintf(comm,"between hand-coded and finite difference gradient.\n");CHKERRQ(ierr);
@@ -39,7 +39,7 @@ PetscErrorCode TaoSolve_FD(TaoSolver tao)
     for (i=0; i<3; i++) {
       if (i == 1) {ierr = VecSet(x,-1.0);CHKERRQ(ierr);}
       else if (i == 2) {ierr = VecSet(x,1.0);CHKERRQ(ierr);}
-    
+
       /* Compute both version of gradient */
       ierr = TaoComputeGradient(tao,x,g1);CHKERRQ(ierr);
       ierr = TaoDefaultComputeGradient(tao,x,g2,NULL);CHKERRQ(ierr);
@@ -56,11 +56,11 @@ PetscErrorCode TaoSolve_FD(TaoSolver tao)
         ierr = VecView(g1,viewer);CHKERRQ(ierr);
         ierr = PetscPrintf(comm,"\n");CHKERRQ(ierr);
       }
-      
+
       ierr = VecAXPY(g2,-1.0,g1);CHKERRQ(ierr);
       ierr = VecNorm(g1,NORM_2,&hcnorm);CHKERRQ(ierr);
       ierr = VecNorm(g2,NORM_2,&fdnorm);CHKERRQ(ierr);
-      
+
       if (!hcnorm) hcnorm=1.0e-20;
       ierr = PetscPrintf(comm,"ratio ||fd-hc||/||hc|| = %g, difference ||fd-hc|| = %g\n", (double)(fdnorm/hcnorm), (double)fdnorm);CHKERRQ(ierr);
 
@@ -74,7 +74,7 @@ PetscErrorCode TaoSolve_FD(TaoSolver tao)
 
     ierr = PetscPrintf(comm,"Testing hand-coded Hessian (hc) against finite difference Hessian (fd). If the ratio is\n");CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"O (1.e-8), the hand-coded Hessian is probably correct.\n");CHKERRQ(ierr);
-  
+
     if (!fd->complete_print) {
       ierr = PetscPrintf(comm,"Run with -tao_fd_test_display to show difference\n");CHKERRQ(ierr);
       ierr = PetscPrintf(comm,"of hand-coded and finite difference Hessian.\n");CHKERRQ(ierr);
@@ -106,7 +106,7 @@ PetscErrorCode TaoSolve_FD(TaoSolver tao)
         ierr = PetscPrintf(comm,"Hand-coded minus finite difference Hessian\n");CHKERRQ(ierr);
         ierr = MatView(B,viewer);CHKERRQ(ierr);
       }
-      if (!gnorm) gnorm = 1.0e-20; 
+      if (!gnorm) gnorm = 1.0e-20;
       ierr = PetscPrintf(comm,"ratio ||fd-hc||/||hc|| = %g, difference ||fd-hc|| = %g\n",(double)(nrm/gnorm),(double)nrm);CHKERRQ(ierr);
     }
 
@@ -116,7 +116,7 @@ PetscErrorCode TaoSolve_FD(TaoSolver tao)
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------ */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_FD"
 PetscErrorCode TaoDestroy_FD(TaoSolver tao)
 {
@@ -127,7 +127,7 @@ PetscErrorCode TaoDestroy_FD(TaoSolver tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_FD"
 static PetscErrorCode TaoSetFromOptions_FD(TaoSolver tao)
 {
@@ -159,7 +159,7 @@ static PetscErrorCode TaoSetFromOptions_FD(TaoSolver tao)
 
 */
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TaoCreate_FD"
 PetscErrorCode  TaoCreate_FD(TaoSolver  tao)
 {

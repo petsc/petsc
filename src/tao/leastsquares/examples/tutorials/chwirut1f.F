@@ -1,35 +1,35 @@
-!  Program usage: mpirun -np 1 chwirut1f [-help] [all TAO options] 
+!  Program usage: mpirun -np 1 chwirut1f [-help] [all TAO options]
 !
 !  Description:  This example demonstrates use of the TAO package to solve a
-!  nonlinear least-squares problem on a single processor.  We minimize the 
-!  Chwirut function: 
+!  nonlinear least-squares problem on a single processor.  We minimize the
+!  Chwirut function:
 !       sum_{i=0}^{n/2-1} ( alpha*(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2 )
 !
 !  The C version of this code is test_chwirut1.c
 !
 !/*T
 !  Concepts: TAO - Solving an unconstrained minimization problem
-!  Routines: TaoInitialize(); TaoFinalize(); 
+!  Routines: TaoInitialize(); TaoFinalize();
 !  Routines: TaoCreate();
-!  Routines: TaoSetType(); 
+!  Routines: TaoSetType();
 !  Routines: TaoSetInitialVector();
 !  Routines: TaoSetSeparableObjectiveRoutine();
 !  Routines: TaoSetMonitor();
 !  Routines: TaoSetFromOptions();
 !  Routines: TaoSolve();
-!  Routines: TaoDestroy(); 
+!  Routines: TaoDestroy();
 !  Processors: 1
-!T*/ 
+!T*/
 !
-! ---------------------------------------------------------------------- 
+! ----------------------------------------------------------------------
 !
       implicit none
 
 #include "chwirut1f.h"
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  See additional variable declarations in the file chwirut1f.h
 
@@ -37,7 +37,7 @@
       Vec              x       ! solution vector
       Vec              f       ! vector of functions
       TaoSolver        tao     ! TaoSolver context
-      PetscBool       flg     
+      PetscBool       flg
       PetscInt         i,nhist
       integer          size,rank    ! number of processes running
       PetscReal      zero
@@ -46,7 +46,7 @@
       PetscReal      cnorm(100)! cnorm history
       TaoSolverTerminationReason reason
 
-      
+
 
 
 !  Note: Any user-defined Fortran routines (such as FormGradient)
@@ -79,14 +79,14 @@
       call VecCreateSeq(PETSC_COMM_SELF,m,f,ierr)
 
 
-!  The TAO code begins here 
+!  The TAO code begins here
 
 !  Create TAO solver
       call TaoCreate(PETSC_COMM_SELF,tao,ierr)
       CHKERRQ(ierr)
       call TaoSetType(tao,'tao_pounders',ierr)
       CHKERRQ(ierr)
-!  Set routines for function, gradient, and hessian evaluation 
+!  Set routines for function, gradient, and hessian evaluation
 
       call TaoSetSeparableObjectiveRoutine(tao,f,                       &
      &      FormFunction,PETSC_NULL_OBJECT,ierr)
@@ -119,19 +119,19 @@
          print *,'or check the function evaluation routines.'
       endif
 !  TaoView() prints ierr about the TAO solver; the option
-!      -tao_view 
+!      -tao_view
 !  can alternatively be used to activate this at runtime.
       call TaoView(tao,PETSC_VIEWER_STDOUT_SELF,ierr)
-      
+
 
 !  Free TAO data structures
       call TaoDestroy(tao,ierr)
 
-!  Free PETSc data structures 
+!  Free PETSc data structures
       call VecDestroy(x,ierr)
       call VecDestroy(f,ierr)
 
-!  Finalize TAO 
+!  Finalize TAO
       call TaoFinalize(ierr)
       call PetscFinalize(ierr)
 
@@ -148,7 +148,7 @@
 !
 !  Output Parameters:
 !  f - function vector
-      
+
       subroutine FormFunction(tao, x, f, dummy, ierr)
       implicit none
 
@@ -192,8 +192,8 @@
       CHKERRQ(ierr)
       call VecRestoreArray(F,f_v,f_i,ierr)
       CHKERRQ(ierr)
-      
-      
+
+
       return
       end
 
@@ -210,7 +210,7 @@
       PetscReal       x_v(0:1)
       PetscOffset     x_i
       PetscErrorCode  ierr
-      
+
       call VecGetArray(x,x_v,x_i,ierr)
       x_v(x_i) = 0.15d0
       x_v(x_i+1) = 0.008d0
@@ -441,8 +441,8 @@
       y(i) =    10.0500;  t(i) =   3.7500; i=i+1
       y(i) =    28.9000;  t(i) =   1.7500; i=i+1
       y(i) =    28.9500;  t(i) =   1.7500; i=i+1
-      
+
       return
       end
 
-      
+

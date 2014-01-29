@@ -3,7 +3,7 @@
 #include "petsc.h"
 #include "petsc-private/fortranimpl.h"
 
-#if defined(PETSC_BLASLAPACK_STDCALL) 
+#if defined(PETSC_BLASLAPACK_STDCALL)
 # if defined(PETSC_USE_FORTRAN_SINGLE) || defined(PETSC_USE_REAL_SINGLE)
 PETSC_EXTERN_CXX_BEGIN
 EXTERN_C_BEGIN

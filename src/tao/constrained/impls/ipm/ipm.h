@@ -2,7 +2,7 @@
 #define __TAO_IPM_H
 #include "tao-private/taosolver_impl.h"
 
-/* 
+/*
  Context for Interior-Point Method
 */
 
@@ -13,7 +13,7 @@ typedef struct {
   PetscScalar sig,mu,taumin,dec;
   PetscScalar muaff;
   TaoLineSearch lag_ls;
-  Vec work, rhs_x,save_x; 
+  Vec work, rhs_x,save_x;
   Vec lamdai, dlamdai, rhs_lamdai, save_lamdai;
   Vec lamdae, dlamdae, rhs_lamdae, save_lamdae;
   Vec s,ds,rhs_s,save_s;
@@ -33,9 +33,9 @@ typedef struct {
               -JacI (ub)
               I (xlb)
               -I (xub) */
-  Mat K; /* [ H , 0,   Ae',-Ai']; 
+  Mat K; /* [ H , 0,   Ae',-Ai'];
             [Ae , 0,   0  , 0];
-            [Ai ,-Imi, 0 ,  0];  
+            [Ai ,-Imi, 0 ,  0];
             [ 0 , L ,  0 ,  Y ];  */
 
   Vec bigrhs; /* rhs [x; lamdae; yi; lamdai] */
