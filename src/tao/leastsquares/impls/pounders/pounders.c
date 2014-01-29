@@ -757,6 +757,7 @@ static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
     /* Evaluate at a model-improving point if necessary */
     if (valid == PETSC_FALSE) {
       mfqP->q_is_I = 1;
+      mfqP->nmodelpoints = 0;
       ierr = affpoints(mfqP,mfqP->xmin,mfqP->c1);CHKERRQ(ierr);
       if (mfqP->nmodelpoints < mfqP->n) {
         ierr = PetscInfo(tao,"Model not valid -- model-improving");
