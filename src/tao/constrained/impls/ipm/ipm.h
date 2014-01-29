@@ -30,11 +30,11 @@ typedef struct {
   Mat L; /* diag(lamdai) */
   Mat Y; /* diag(yi) */
   Mat Ai;  /* JacI (lb)
-	      -JacI (ub)
-	      I (xlb)
-	      -I (xub) */
+              -JacI (ub)
+              I (xlb)
+              -I (xub) */
   Mat K; /* [ H , 0,   Ae',-Ai']; 
-	    [Ae , 0,   0  , 0];
+            [Ae , 0,   0  , 0];
             [Ai ,-Imi, 0 ,  0];  
             [ 0 , L ,  0 ,  Y ];  */
 

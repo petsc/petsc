@@ -258,7 +258,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
     } else {
       /* Check descent condition */
       if (armP->nondescending && *f <= ref - ls->step*fact*ref)
-	break;
+        break;
       if (!armP->nondescending && *f <= ref + ls->step*fact) {
         break;
       }

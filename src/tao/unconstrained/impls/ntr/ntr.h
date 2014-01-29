@@ -20,11 +20,11 @@ typedef struct {
   PetscReal eta3;          /*  used to compute trust-region radius */
   PetscReal eta4;          /*  used to compute trust-region radius */
 
-  PetscReal alpha1;	/*  factor used for trust-region update */
-  PetscReal alpha2;	/*  factor used for trust-region update */
-  PetscReal alpha3;	/*  factor used for trust-region update */
-  PetscReal alpha4;	/*  factor used for trust-region update */
-  PetscReal alpha5;	/*  factor used for trust-region update */
+  PetscReal alpha1;     /*  factor used for trust-region update */
+  PetscReal alpha2;     /*  factor used for trust-region update */
+  PetscReal alpha3;     /*  factor used for trust-region update */
+  PetscReal alpha4;     /*  factor used for trust-region update */
+  PetscReal alpha5;     /*  factor used for trust-region update */
   
   /*
      kappa = ared / pred
@@ -41,15 +41,15 @@ typedef struct {
      fi
   */
   /*  Parameters when updating the trust-region radius based on interpolation */
-  PetscReal mu1;		/*  used for model agreement in radius update */
-  PetscReal mu2;		/*  used for model agreement in radius update */
+  PetscReal mu1;                /*  used for model agreement in radius update */
+  PetscReal mu2;                /*  used for model agreement in radius update */
 
-  PetscReal gamma1;	/*  factor used for radius update */
-  PetscReal gamma2;	/*  factor used for radius update */
-  PetscReal gamma3;	/*  factor used for radius update */
-  PetscReal gamma4;	/*  factor used for radius update */
+  PetscReal gamma1;     /*  factor used for radius update */
+  PetscReal gamma2;     /*  factor used for radius update */
+  PetscReal gamma3;     /*  factor used for radius update */
+  PetscReal gamma4;     /*  factor used for radius update */
 
-  PetscReal theta;		/*  factor used for radius update */
+  PetscReal theta;              /*  factor used for radius update */
 
   /*
      kappa = ared / pred
@@ -80,15 +80,15 @@ typedef struct {
 
   PetscReal theta_i;       /*  factor used for interpolation */
 
-  PetscReal min_radius;	/*  lower bound on initial radius value */
-  PetscReal max_radius;	/*  upper bound on trust region radius */
-  PetscReal epsilon;	/*  tolerance used when computing actred/prered */
+  PetscReal min_radius; /*  lower bound on initial radius value */
+  PetscReal max_radius; /*  upper bound on trust region radius */
+  PetscReal epsilon;    /*  tolerance used when computing actred/prered */
 
   PetscInt ksp_type;         /*  KSP method for the code */
   PetscInt pc_type;          /*  Preconditioner for the code */
   PetscInt bfgs_scale_type;  /*  Scaling matrix for the bfgs preconditioner */
-  PetscInt init_type;	/*  Trust-region initialization method */
-  PetscInt update_type;	/*  Trust-region update method */
+  PetscInt init_type;   /*  Trust-region initialization method */
+  PetscInt update_type; /*  Trust-region update method */
 } TAO_NTR;
 
 #endif /* ifndef __TAO_NTR_H */

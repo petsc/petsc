@@ -29,7 +29,7 @@ typedef struct {
   PetscInt ndesign;
   PetscInt mx; /* grid points in each direction */
   PetscInt ns; /* Number of data samples (1<=ns<=8) 
-		  Currently only ns=1 is supported */
+                  Currently only ns=1 is supported */
   PetscInt ndata; /* Number of data points per sample */
   IS       s_is;
   IS       d_is;
@@ -646,31 +646,31 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   PetscInt       offset,subindex,subvec,nrank,kk;
 
   PetscScalar xr[64] = {0.4970,     0.8498,     0.7814,     0.6268,     0.7782,     0.6402,     0.3617,     0.3160,     
-			0.3610,     0.5298,     0.6987,     0.3331,     0.7962,     0.5596,     0.3866,     0.6774,     
-			0.5407,     0.4518,     0.6702,     0.6061,     0.7580,     0.8997,     0.5198,     0.8326,     
-			0.2138,     0.9198,     0.3000,     0.2833,     0.8288,     0.7076,     0.1820,     0.0728,     
-			0.8447,     0.2367,     0.3239,     0.6413,     0.3114,     0.4731,     0.1192,     0.9273,     
-			0.5724,     0.4331,     0.5136,     0.3547,     0.4413,     0.2602,     0.5698,     0.7278,     
-			0.5261,     0.6230,     0.2454,     0.3948,     0.7479,     0.6582,     0.4660,     0.5594,     
-			0.7574,     0.1143,     0.5900,     0.1065,     0.4260,     0.3294,     0.8276,     0.0756};
+                        0.3610,     0.5298,     0.6987,     0.3331,     0.7962,     0.5596,     0.3866,     0.6774,     
+                        0.5407,     0.4518,     0.6702,     0.6061,     0.7580,     0.8997,     0.5198,     0.8326,     
+                        0.2138,     0.9198,     0.3000,     0.2833,     0.8288,     0.7076,     0.1820,     0.0728,     
+                        0.8447,     0.2367,     0.3239,     0.6413,     0.3114,     0.4731,     0.1192,     0.9273,     
+                        0.5724,     0.4331,     0.5136,     0.3547,     0.4413,     0.2602,     0.5698,     0.7278,     
+                        0.5261,     0.6230,     0.2454,     0.3948,     0.7479,     0.6582,     0.4660,     0.5594,     
+                        0.7574,     0.1143,     0.5900,     0.1065,     0.4260,     0.3294,     0.8276,     0.0756};
   
   PetscScalar yr[64] = {0.7345,     0.9120,     0.9288,     0.7528,     0.4463,     0.4985,     0.2497,     0.6256,     
-			0.3425,     0.9026,     0.6983,     0.4230,     0.7140,     0.2970,     0.4474,     0.8792,     
-			0.6604,     0.2485,     0.7968,     0.6127,     0.1796,     0.2437,     0.5938,     0.6137,     
-			0.3867,     0.5658,     0.4575,     0.1009,     0.0863,     0.3361,     0.0738,     0.3985,     
-			0.6602,     0.1437,     0.0934,     0.5983,     0.5950,     0.0763,     0.0768,     0.2288,     
-			0.5761,     0.1129,     0.3841,     0.6150,     0.6904,     0.6686,     0.1361,     0.4601,     
-			0.4491,     0.3716,     0.1969,     0.6537,     0.6743,     0.6991,     0.4811,     0.5480,     
-			0.1684,     0.4569,     0.6889,     0.8437,     0.3015,     0.2854,     0.8199,     0.2658};
+                        0.3425,     0.9026,     0.6983,     0.4230,     0.7140,     0.2970,     0.4474,     0.8792,     
+                        0.6604,     0.2485,     0.7968,     0.6127,     0.1796,     0.2437,     0.5938,     0.6137,     
+                        0.3867,     0.5658,     0.4575,     0.1009,     0.0863,     0.3361,     0.0738,     0.3985,     
+                        0.6602,     0.1437,     0.0934,     0.5983,     0.5950,     0.0763,     0.0768,     0.2288,     
+                        0.5761,     0.1129,     0.3841,     0.6150,     0.6904,     0.6686,     0.1361,     0.4601,     
+                        0.4491,     0.3716,     0.1969,     0.6537,     0.6743,     0.6991,     0.4811,     0.5480,     
+                        0.1684,     0.4569,     0.6889,     0.8437,     0.3015,     0.2854,     0.8199,     0.2658};
   
   PetscScalar zr[64] = {0.7668,     0.8573,     0.2654,     0.2719,     0.1060,     0.1311,     0.6232,     0.2295,     
-			0.8009,     0.2147,     0.2119,     0.9325,     0.4473,     0.3600,     0.3374,     0.3819,     
-			0.4066,     0.5801,     0.1673,     0.0959,     0.4638,     0.8236,     0.8800,     0.2939,     
-			0.2028,     0.8262,     0.2706,     0.6276,     0.9085,     0.6443,     0.8241,     0.0712,     
-			0.1824,     0.7789,     0.4389,     0.8415,     0.7055,     0.6639,     0.3653,     0.2078,     
-			0.1987,     0.2297,     0.4321,     0.8115,     0.4915,     0.7764,     0.4657,     0.4627,     
-			0.4569,     0.4232,     0.8514,     0.0674,     0.3227,     0.1055,     0.6690,     0.6313,     
-			0.9226,     0.5461,     0.4126,     0.2364,     0.6096,     0.7042,     0.3914,     0.0711};
+                        0.8009,     0.2147,     0.2119,     0.9325,     0.4473,     0.3600,     0.3374,     0.3819,     
+                        0.4066,     0.5801,     0.1673,     0.0959,     0.4638,     0.8236,     0.8800,     0.2939,     
+                        0.2028,     0.8262,     0.2706,     0.6276,     0.9085,     0.6443,     0.8241,     0.0712,     
+                        0.1824,     0.7789,     0.4389,     0.8415,     0.7055,     0.6639,     0.3653,     0.2078,     
+                        0.1987,     0.2297,     0.4321,     0.8115,     0.4915,     0.7764,     0.4657,     0.4627,     
+                        0.4569,     0.4232,     0.8514,     0.0674,     0.3227,     0.1055,     0.6690,     0.6313,     
+                        0.9226,     0.5461,     0.4126,     0.2364,     0.6096,     0.7042,     0.3914,     0.0711};
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -807,30 +807,30 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
     k = ((linear_index-i)/user->mx-j) / user->mx;
     vx = h*(i+0.5);
     vy = h*(j+0.5);
-    vz = h*(k+0.5);	
+    vz = h*(k+0.5);     
     ierr = VecSetValues(XX,1,&linear_index,&vx,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecSetValues(YY,1,&linear_index,&vy,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecSetValues(ZZ,1,&linear_index,&vz,INSERT_VALUES);CHKERRQ(ierr);
     for (is=0; is<2; is++){
       for (js=0; js<2; js++){
-	for (ks=0; ks<2; ks++){
-	  ls = is*4 + js*2 + ks;
-	  if (ls<user->ns){
-	    l =ls*n + linear_index;
-	    /* remap */
-	    subindex = l%n;
-	    subvec = l/n;
-	    nrank=0;
-	    while (subindex >= subranges[nrank+1]) nrank++;
-	    offset = subindex - subranges[nrank];
-	    istart=0;
-	    for (kk=0;kk<nrank;kk++) istart+=user->ns*(subranges[kk+1]-subranges[kk]);
-	    istart += (subranges[nrank+1]-subranges[nrank])*subvec;
-	    l = istart+offset;
-	    v = 100*PetscSinScalar(2*PETSC_PI*(vx+0.25*is))*sin(2*PETSC_PI*(vy+0.25*js))*sin(2*PETSC_PI*(vz+0.25*ks));
-	    ierr = VecSetValues(user->q,1,&l,&v,INSERT_VALUES);CHKERRQ(ierr);
-	  }
-	}
+        for (ks=0; ks<2; ks++){
+          ls = is*4 + js*2 + ks;
+          if (ls<user->ns){
+            l =ls*n + linear_index;
+            /* remap */
+            subindex = l%n;
+            subvec = l/n;
+            nrank=0;
+            while (subindex >= subranges[nrank+1]) nrank++;
+            offset = subindex - subranges[nrank];
+            istart=0;
+            for (kk=0;kk<nrank;kk++) istart+=user->ns*(subranges[kk+1]-subranges[kk]);
+            istart += (subranges[nrank+1]-subranges[nrank])*subvec;
+            l = istart+offset;
+            v = 100*PetscSinScalar(2*PETSC_PI*(vx+0.25*is))*sin(2*PETSC_PI*(vy+0.25*js))*sin(2*PETSC_PI*(vz+0.25*ks));
+            ierr = VecSetValues(user->q,1,&l,&v,INSERT_VALUES);CHKERRQ(ierr);
+          }
+        }
       }
     }
   }
@@ -1017,24 +1017,24 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
 
     for (i=istart; i<iend; i++){
       if (i<m/3){
-	iblock = i / (user->mx-1);
-	j = iblock*user->mx + (i % (user->mx-1));
-	ierr = MatSetValues(user->Div,1,&j,1,&i,&neg_hinv,INSERT_VALUES);CHKERRQ(ierr);
-	j = j+1;
-	ierr = MatSetValues(user->Div,1,&j,1,&i,&hinv,INSERT_VALUES);CHKERRQ(ierr);
+        iblock = i / (user->mx-1);
+        j = iblock*user->mx + (i % (user->mx-1));
+        ierr = MatSetValues(user->Div,1,&j,1,&i,&neg_hinv,INSERT_VALUES);CHKERRQ(ierr);
+        j = j+1;
+        ierr = MatSetValues(user->Div,1,&j,1,&i,&hinv,INSERT_VALUES);CHKERRQ(ierr);
       }
       if (i>=m/3 && i<2*m/3){
-	iblock = (i-m/3) / (user->mx*(user->mx-1));
-	j = iblock*user->mx*user->mx + ((i-m/3) % (user->mx*(user->mx-1)));
-	ierr = MatSetValues(user->Div,1,&j,1,&i,&neg_hinv,INSERT_VALUES);CHKERRQ(ierr);
-	j = j + user->mx;
-	ierr = MatSetValues(user->Div,1,&j,1,&i,&hinv,INSERT_VALUES);CHKERRQ(ierr);
+        iblock = (i-m/3) / (user->mx*(user->mx-1));
+        j = iblock*user->mx*user->mx + ((i-m/3) % (user->mx*(user->mx-1)));
+        ierr = MatSetValues(user->Div,1,&j,1,&i,&neg_hinv,INSERT_VALUES);CHKERRQ(ierr);
+        j = j + user->mx;
+        ierr = MatSetValues(user->Div,1,&j,1,&i,&hinv,INSERT_VALUES);CHKERRQ(ierr);
       }
       if (i>=2*m/3){
-	j = i-2*m/3;
-	ierr = MatSetValues(user->Div,1,&j,1,&i,&neg_hinv,INSERT_VALUES);CHKERRQ(ierr);
-	j = j + user->mx*user->mx;
-	ierr = MatSetValues(user->Div,1,&j,1,&i,&hinv,INSERT_VALUES);CHKERRQ(ierr);
+        j = i-2*m/3;
+        ierr = MatSetValues(user->Div,1,&j,1,&i,&neg_hinv,INSERT_VALUES);CHKERRQ(ierr);
+        j = j + user->mx*user->mx;
+        ierr = MatSetValues(user->Div,1,&j,1,&i,&hinv,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
 

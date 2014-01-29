@@ -350,7 +350,7 @@ PetscErrorCode MatGetSubMatrices_ADA(Mat A,PetscInt n, IS *irow,IS *icol,MatReus
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrix_ADA"
 PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll,
-			Mat *newmat)
+                        Mat *newmat)
 {
   PetscErrorCode          ierr;
   PetscInt low,high;

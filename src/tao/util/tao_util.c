@@ -39,7 +39,7 @@ PetscErrorCode VecPow(Vec v, PetscReal p)
   } else if (0.0 == p) {
     for (i = 0; i < n; ++i){
       /*  Not-a-number left alone
-	  Infinity set to one  */
+          Infinity set to one  */
       if (v1[i] == v1[i]) {
         v1[i] = 1.0;
       }

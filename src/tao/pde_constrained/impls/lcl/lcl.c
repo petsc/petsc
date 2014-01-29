@@ -315,7 +315,7 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
     if (rWU < adec) {
       ierr = PetscInfo(tao,"Newton direction not descent for constraint, feasibility phase required");CHKERRQ(ierr);
       if (lclP->verbose) {
-	ierr = PetscPrintf(PETSC_COMM_WORLD,"Newton direction not descent for constraint: %g -- using steepest descent\n",(double)descent);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Newton direction not descent for constraint: %g -- using steepest descent\n",(double)descent);CHKERRQ(ierr);
       }
 
       ierr = PetscInfo(tao,"Using steepest descent direction instead.\n");CHKERRQ(ierr);
@@ -333,9 +333,9 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
        Check descent for aug. lagrangian 
        r' (GUk - Ak'*yk - rho*Ak'*con) <= -eps1 ||r||^(2+eps2)
           GL_U = GUk - Ak'*yk
-	  WU   = Ak'*con   
-	                                 adec=eps1||r||^(2+eps2)
-					 
+          WU   = Ak'*con   
+                                         adec=eps1||r||^(2+eps2)
+                                         
        ==>
        Check r'GL_U - rho*r'WU <= adec
     */
@@ -344,16 +344,16 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
     aldescent =  rGL_U - lclP->rho*rWU;
     if (aldescent > -adec) {
       if (lclP->verbose) {
-	ierr = PetscPrintf(PETSC_COMM_WORLD," Newton direction not descent for augmented Lagrangian: %g",(double)aldescent);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD," Newton direction not descent for augmented Lagrangian: %g",(double)aldescent);CHKERRQ(ierr);
       }
       ierr = PetscInfo1(tao,"Newton direction not descent for augmented Lagrangian: %g",(double)aldescent);CHKERRQ(ierr);
       lclP->rho =  (rGL_U - adec)/rWU;
       if (lclP->rho > lclP->rhomax) {
-	lclP->rho = lclP->rhomax;
-	SETERRQ1(PETSC_COMM_WORLD,0,"rho=%g > rhomax, case not implemented.  Increase rhomax (-tao_lcl_rhomax)",(double)lclP->rho);
+        lclP->rho = lclP->rhomax;
+        SETERRQ1(PETSC_COMM_WORLD,0,"rho=%g > rhomax, case not implemented.  Increase rhomax (-tao_lcl_rhomax)",(double)lclP->rho);
       }
       if (lclP->verbose) {
-	ierr = PetscPrintf(PETSC_COMM_WORLD,"  Increasing penalty parameter to %g\n",(double)lclP->rho);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"  Increasing penalty parameter to %g\n",(double)lclP->rho);CHKERRQ(ierr);
       }
       ierr = PetscInfo1(tao,"  Increasing penalty parameter to %g",(double)lclP->rho);
     }
@@ -396,14 +396,14 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
     /* TODO: use a heuristic to choose how many iterations should be performed within phase 2 */
     for (phase2_iter=0; phase2_iter<lclP->phase2_niter; phase2_iter++){
       /* We now minimize the objective function starting from the fraction of
-	 the Newton point accepted by applying one step of a reduced-space
-	 method.  The optimization problem is:
+         the Newton point accepted by applying one step of a reduced-space
+         method.  The optimization problem is:
        
          minimize f(u+du, v+dv)
          s. t.    A(u0,v0)du + B(u0,v0)du = -alpha g(u0,v0)
 
-	 In particular, we have that
-	 du = -inv(A)*(Bdv + alpha g) */
+         In particular, we have that
+         du = -inv(A)*(Bdv + alpha g) */
 
       ierr = TaoComputeJacobianState(tao,lclP->X0,&tao->jacobian_state,&tao->jacobian_state_pre,&tao->jacobian_state_inv,&lclP->statematflag);CHKERRQ(ierr);
       ierr = TaoComputeJacobianDesign(tao,lclP->X0,&tao->jacobian_design);CHKERRQ(ierr);
@@ -418,43 +418,43 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
       lclP->solve_type = LCL_ADJOINT1;
       ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag);CHKERRQ(ierr);
       if (tao->jacobian_state_pre) {
-	ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag);CHKERRQ(ierr);
+        ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag);CHKERRQ(ierr);
       } else {
-	pset = pflag = PETSC_TRUE;
+        pset = pflag = PETSC_TRUE;
       }
-      if (set && pset && flag && pflag)	symmetric = PETSC_TRUE;
+      if (set && pset && flag && pflag) symmetric = PETSC_TRUE;
       else symmetric = PETSC_FALSE;
       
       if (tao->jacobian_state_inv) {
-	if (symmetric) {
-	  ierr = MatMult(tao->jacobian_state_inv, lclP->GAugL_U, lclP->lamda);CHKERRQ(ierr);
-	} else {
-	  ierr = MatMultTranspose(tao->jacobian_state_inv, lclP->GAugL_U, lclP->lamda);CHKERRQ(ierr);
-	}
+        if (symmetric) {
+          ierr = MatMult(tao->jacobian_state_inv, lclP->GAugL_U, lclP->lamda);CHKERRQ(ierr);
+        } else {
+          ierr = MatMultTranspose(tao->jacobian_state_inv, lclP->GAugL_U, lclP->lamda);CHKERRQ(ierr);
+        }
       } else {
-	if (symmetric) {
-	  ierr = KSPSolve(tao->ksp, lclP->GAugL_U,  lclP->lamda);CHKERRQ(ierr);
-	} else {
-	  ierr = KSPSolveTranspose(tao->ksp, lclP->GAugL_U,  lclP->lamda);CHKERRQ(ierr);
-	}
-	ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-	tao->ksp_its += its;
+        if (symmetric) {
+          ierr = KSPSolve(tao->ksp, lclP->GAugL_U,  lclP->lamda);CHKERRQ(ierr);
+        } else {
+          ierr = KSPSolveTranspose(tao->ksp, lclP->GAugL_U,  lclP->lamda);CHKERRQ(ierr);
+        }
+        ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
+        tao->ksp_its += its;
       }
       ierr = MatMultTranspose(tao->jacobian_design,lclP->lamda,lclP->g1);CHKERRQ(ierr);
       ierr = VecAXPY(lclP->g1,-1.0,lclP->GAugL_V);CHKERRQ(ierr);
     
       /* Compute the limited-memory quasi-newton direction */
       if (iter > 0) {
-	ierr = MatLMVMSolve(lclP->R,lclP->g1,lclP->s);CHKERRQ(ierr);
-	ierr = VecDot(lclP->s,lclP->g1,&descent);CHKERRQ(ierr);
-	if (descent < 0e-8) {
-	  if (lclP->verbose) {
-	    ierr = PetscPrintf(PETSC_COMM_WORLD,"Reduced-space direction not descent: %g\n",(double)descent);CHKERRQ(ierr);
-	  }
-	  ierr = VecCopy(lclP->g1,lclP->s);CHKERRQ(ierr);
-	}
+        ierr = MatLMVMSolve(lclP->R,lclP->g1,lclP->s);CHKERRQ(ierr);
+        ierr = VecDot(lclP->s,lclP->g1,&descent);CHKERRQ(ierr);
+        if (descent < 0e-8) {
+          if (lclP->verbose) {
+            ierr = PetscPrintf(PETSC_COMM_WORLD,"Reduced-space direction not descent: %g\n",(double)descent);CHKERRQ(ierr);
+          }
+          ierr = VecCopy(lclP->g1,lclP->s);CHKERRQ(ierr);
+        }
       } else {
-	ierr = VecCopy(lclP->g1,lclP->s);CHKERRQ(ierr);
+        ierr = VecCopy(lclP->g1,lclP->s);CHKERRQ(ierr);
       }
       ierr = VecScale(lclP->g1,-1.0);CHKERRQ(ierr);
 
@@ -463,11 +463,11 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
       /* ierr = VecSet(lclP->r,0.0);CHKERRQ(ierr); */ /*  Initial guess in CG */
       lclP->solve_type = LCL_FORWARD2;
       if (tao->jacobian_state_inv) {
-	ierr = MatMult(tao->jacobian_state_inv,lclP->WU,lclP->r);CHKERRQ(ierr);
+        ierr = MatMult(tao->jacobian_state_inv,lclP->WU,lclP->r);CHKERRQ(ierr);
       } else {
-	ierr = KSPSolve(tao->ksp, lclP->WU, lclP->r);CHKERRQ(ierr);
-	ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-	tao->ksp_its += its;
+        ierr = KSPSolve(tao->ksp, lclP->WU, lclP->r);CHKERRQ(ierr);
+        ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
+        tao->ksp_its += its;
       }
 
       /* We now minimize the augmented Lagrangian along the direction -r,s */
@@ -481,7 +481,7 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
       ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
       ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &lclP->aug, lclP->GAugL, tao->stepdirection,&step,&ls_reason);CHKERRQ(ierr);
       if (lclP->verbose){
-	ierr = PetscPrintf(PETSC_COMM_WORLD,"Reduced-space steplength =  %g\n",(double)step);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Reduced-space steplength =  %g\n",(double)step);CHKERRQ(ierr);
       }
 
       ierr = LCLScatter(lclP,tao->solution,lclP->U,lclP->V);CHKERRQ(ierr);
@@ -498,35 +498,35 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
       /* p2 */
       /* Compute multipliers, using lamda-rho*con as an initial guess in PCG */
       if (phase2_iter==0){
-	ierr = VecWAXPY(lclP->lamda,-lclP->rho,lclP->con1,lclP->lamda0);CHKERRQ(ierr);
+        ierr = VecWAXPY(lclP->lamda,-lclP->rho,lclP->con1,lclP->lamda0);CHKERRQ(ierr);
       } else {
-	ierr = VecAXPY(lclP->lamda,-lclP->rho,tao->constraints);CHKERRQ(ierr);
+        ierr = VecAXPY(lclP->lamda,-lclP->rho,tao->constraints);CHKERRQ(ierr);
       }
 
       ierr = MatIsSymmetricKnown(tao->jacobian_state,&set,&flag);CHKERRQ(ierr);
       if (tao->jacobian_state_pre) {
-	ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag);CHKERRQ(ierr);
+        ierr = MatIsSymmetricKnown(tao->jacobian_state_pre,&pset,&pflag);CHKERRQ(ierr);
       } else {
-	pset = pflag = PETSC_TRUE;
+        pset = pflag = PETSC_TRUE;
       }
-      if (set && pset && flag && pflag)	symmetric = PETSC_TRUE;
+      if (set && pset && flag && pflag) symmetric = PETSC_TRUE;
       else symmetric = PETSC_FALSE;
 
       lclP->solve_type = LCL_ADJOINT2;
       if (tao->jacobian_state_inv) {
-	if (symmetric) {
-	  ierr = MatMult(tao->jacobian_state_inv, lclP->GU, lclP->lamda);CHKERRQ(ierr);
-	} else {
-	  ierr = MatMultTranspose(tao->jacobian_state_inv, lclP->GU, lclP->lamda);CHKERRQ(ierr);
-	}
+        if (symmetric) {
+          ierr = MatMult(tao->jacobian_state_inv, lclP->GU, lclP->lamda);CHKERRQ(ierr);
+        } else {
+          ierr = MatMultTranspose(tao->jacobian_state_inv, lclP->GU, lclP->lamda);CHKERRQ(ierr);
+        }
       } else {
-	if (symmetric) {
-	  ierr = KSPSolve(tao->ksp, lclP->GU,  lclP->lamda);CHKERRQ(ierr);
-	} else {
-	  ierr = KSPSolveTranspose(tao->ksp, lclP->GU,  lclP->lamda);CHKERRQ(ierr);
-	}
-	ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-	tao->ksp_its += its;
+        if (symmetric) {
+          ierr = KSPSolve(tao->ksp, lclP->GU,  lclP->lamda);CHKERRQ(ierr);
+        } else {
+          ierr = KSPSolveTranspose(tao->ksp, lclP->GU,  lclP->lamda);CHKERRQ(ierr);
+        }
+        ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
+        tao->ksp_its += its;
       }
 
       ierr = MatMultTranspose(tao->jacobian_design,lclP->lamda,lclP->g2);CHKERRQ(ierr);  
@@ -536,7 +536,7 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
 
       /* Update the quasi-newton approximation */
       if (phase2_iter >= 0){
-	ierr = MatLMVMSetPrev(lclP->R,lclP->V1,lclP->g1);
+        ierr = MatLMVMSetPrev(lclP->R,lclP->V1,lclP->g1);
       }
       ierr = MatLMVMUpdate(lclP->R,lclP->V,lclP->g2);CHKERRQ(ierr);
       /* Use "-tao_ls_type gpcg -tao_ls_ftol 0 -tao_lmm_broyden_phi 0.0 -tao_lmm_scale_type scalar" to obtain agreement with Matlab code */

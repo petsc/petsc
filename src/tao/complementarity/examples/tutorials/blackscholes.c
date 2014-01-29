@@ -108,15 +108,15 @@ T*/
 typedef struct {
   PetscReal *Vt1;                /* Value of the option at time T + dt */
   PetscReal *c;                  /* Constant -- (r - D)S */
-  PetscReal *d;	                 /* Constant -- -0.5(sigma**2)(S**alpha) */
+  PetscReal *d;                  /* Constant -- -0.5(sigma**2)(S**alpha) */
 
   PetscReal rate;                /* Interest rate */
   PetscReal sigma, alpha, delta; /* Underlying asset properties */
   PetscReal strike, expiry;      /* Option contract properties */
 
-  PetscReal es;		         /* Finite value used for maximum asset value */
-  PetscReal ds, dt;	         /* Discretization properties */
-  PetscInt ms, mt;		 /* Number of elements */
+  PetscReal es;                  /* Finite value used for maximum asset value */
+  PetscReal ds, dt;              /* Discretization properties */
+  PetscInt ms, mt;               /* Number of elements */
 
   DM dm;
 } AppCtx;
@@ -134,10 +134,10 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;    /* used to check for functions returning nonzeros */
   Vec      x;             /* solution vector */
   Vec      c;             /* Constraints function vector */
-  Mat J;		  /* jacobian matrix */
-  PetscBool  flg;	  /* A return variable when checking for user options */
-  TaoSolver tao;	  /* TaoSolver solver context */
-  AppCtx user;		  /* user-defined work context */
+  Mat J;                  /* jacobian matrix */
+  PetscBool  flg;         /* A return variable when checking for user options */
+  TaoSolver tao;          /* TaoSolver solver context */
+  AppCtx user;            /* user-defined work context */
   PetscInt i, j;               
   PetscInt    xs,xm,gxs,gxm;
   PetscReal sval = 0;
@@ -215,7 +215,7 @@ int main(int argc, char **argv)
      the Jacobian matrix will have at most three elements.
   */
   ierr = DMCreateMatrix(user.dm,&J);CHKERRQ(ierr);
-	 
+         
   /* The TAO code begins here */
 
   /* Create TAO solver and set desired solution method  */
@@ -371,7 +371,7 @@ PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec F, void *ptr)
     f[i] = (1.0/dt + rate)*x[i] - Vt1[i]/dt +
       (c[i]/(4*ds))*(x[i+1] - x[i-1] + Vt1[i+1] - Vt1[i-1]) +
       (d[i]/(2*ds*ds))*(x[i+1] -2*x[i] + x[i-1] + 
-			Vt1[i+1] - 2*Vt1[i] + Vt1[i-1]);
+                        Vt1[i+1] - 2*Vt1[i] + Vt1[i-1]);
   }
 
   /* Right boundary */

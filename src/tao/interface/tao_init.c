@@ -30,7 +30,7 @@ static char** tao_executablePtr = &tao_executable;
 .seealso: TaoFinalize(), PetscInitialize()
 @*/
 PetscErrorCode TaoInitialize(int *argc, char ***args, const char file[], 
-			     const char help[])
+                             const char help[])
 {
   PetscErrorCode ierr;
 

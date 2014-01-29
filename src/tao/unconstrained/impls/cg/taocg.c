@@ -89,7 +89,7 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
       gnorm2 = gnorm2_old;
       ierr = VecCopy(cgP->X_old, tao->solution);CHKERRQ(ierr);
       ierr = VecCopy(cgP->G_old, tao->gradient);CHKERRQ(ierr);
-	    
+            
       if (f != 0.0) {
         delta = 2.0*PetscAbsScalar(f) / gnorm2;
         delta = PetscMax(delta,cgP->delta_min);
@@ -123,7 +123,7 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
         ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
         if (ls_status != TAOLINESEARCH_SUCCESS &&
             ls_status != TAOLINESEARCH_SUCCESS_USER) {
-		  
+                  
           /*  Line search failed for last time -- give up */
           f = f_old;
           gnorm2 = gnorm2_old;
@@ -135,7 +135,7 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
         }
       }
     }
-	
+        
     /*  Check for bad value */
     ierr = VecNorm(tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1,"User-provided compute function generated Inf or NaN");
@@ -159,11 +159,11 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
       case CG_FletcherReeves:
         beta = gnorm2 / gnorm2_old;
         break;
-	
+        
       case CG_PolakRibiere:
         beta = (gnorm2 - ginner) / gnorm2_old;
         break;
-	
+        
       case CG_PolakRibierePlus:
         beta = PetscMax((gnorm2-ginner)/gnorm2_old, 0.0);
         break;

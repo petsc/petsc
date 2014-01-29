@@ -4,9 +4,9 @@ static PetscErrorCode init_df_solver(TAO_DF*);
 static PetscErrorCode ensure_df_space(PetscInt, TAO_DF*);
 static PetscErrorCode destroy_df_solver(TAO_DF*);
 static PetscReal phi(PetscReal*,PetscInt,PetscReal,PetscReal*,
-		     PetscReal,PetscReal*,PetscReal*,PetscReal*);
+                     PetscReal,PetscReal*,PetscReal*,PetscReal*);
 static PetscInt project(PetscInt,PetscReal*,PetscReal,PetscReal*,
-			PetscReal*,PetscReal*,PetscReal*,PetscReal*,TAO_DF*);
+                        PetscReal*,PetscReal*,PetscReal*,PetscReal*,TAO_DF*);
 
 static PetscErrorCode solve(TAO_DF*);
 
@@ -14,7 +14,7 @@ static PetscErrorCode solve(TAO_DF*);
 /*------------------------------------------------------------*/
 /* The main solver function
 
-   f = Remp(W)		This is what the user provides us from the application layer
+   f = Remp(W)          This is what the user provides us from the application layer
    So the ComputeGradient function for instance should get us back the subgradient of Remp(W)
 
    Regularizer assumed to be L2 norm = lambda*0.5*W'W ()
@@ -111,8 +111,8 @@ static PetscErrorCode TaoSolve_BMRM(TaoSolver tao)
   ierr = VecAssemblyBegin(bmrm->local_w);CHKERRQ(ierr); 
   ierr = VecAssemblyEnd(bmrm->local_w);CHKERRQ(ierr); 
     
-	/* NOTE: In application pass the sub-gradient of Remp(W) */
-  ierr = TaoComputeObjectiveAndGradient(tao, W, &f, G);CHKERRQ(ierr);	
+        /* NOTE: In application pass the sub-gradient of Remp(W) */
+  ierr = TaoComputeObjectiveAndGradient(tao, W, &f, G);CHKERRQ(ierr);   
   ierr = TaoMonitor(tao,iter,f,1.0,0.0,tao->step,&reason);CHKERRQ(ierr);
   while (reason == TAO_CONTINUE_ITERATING) {
     /* compute bt = Remp(Wt-1) - <Wt-1, At> */
@@ -148,8 +148,8 @@ static PetscErrorCode TaoSolve_BMRM(TaoSolver tao)
         ierr = solve(&df); CHKERRQ(ierr);
       }
       else
-	df.x[0] = 1.0;
-	  
+        df.x[0] = 1.0;
+          
       /* now computing Jt*(alpha_t) which should be = Jt(wt) to check convergence */
       jtwt = 0.0;
       ierr = VecSet(bmrm->local_w, 0.0); CHKERRQ(ierr);
@@ -159,7 +159,7 @@ static PetscErrorCode TaoSolve_BMRM(TaoSolver tao)
         ierr = VecAXPY(bmrm->local_w, -df.x[i] / lambda, pgrad->V); CHKERRQ(ierr);
         pgrad = pgrad->next;
       }
-	  	
+                
       ierr = VecNorm(bmrm->local_w, NORM_2, &reg); CHKERRQ(ierr);
       reg = 0.5*lambda*reg*reg;
       jtwt -= reg;
@@ -174,7 +174,7 @@ static PetscErrorCode TaoSolve_BMRM(TaoSolver tao)
     MPI_Bcast(&jtwt,1,MPI_DOUBLE,0,PETSC_COMM_WORLD);  
     MPI_Bcast(&reg,1,MPI_DOUBLE,0,PETSC_COMM_WORLD);
     
-    jw = reg + f;					/* J(w) = regularizer + Remp(w) */
+    jw = reg + f;                                       /* J(w) = regularizer + Remp(w) */
     if (jw < min_jw)
       min_jw = jw;
     if (jtwt > max_jtwt)
@@ -202,7 +202,7 @@ static PetscErrorCode TaoSolve_BMRM(TaoSolver tao)
 
   /* free all the memory */
   if (rank == 0) {
-    ierr = destroy_grad_list(&grad_list); 	CHKERRQ(ierr);
+    ierr = destroy_grad_list(&grad_list);       CHKERRQ(ierr);
     ierr = destroy_df_solver(&df);CHKERRQ(ierr);
   }
 

@@ -1,8 +1,8 @@
 #include "../src/tao/complementarity/impls/ssls/ssls.h"
 /*
    Context for ASXLS
-     -- active-set	- reduced matrices formed
-  			  - inherit properties of original system
+     -- active-set      - reduced matrices formed
+                          - inherit properties of original system
      -- semismooth (S)  - function not differentiable
                         - merit function continuously differentiable
                         - Fischer-Burmeister reformulation of complementarity
@@ -277,7 +277,7 @@ static PetscErrorCode TaoSolve_ASFLS(TaoSolver tao)
        find the new iterate. */
     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch, 1.0);CHKERRQ(ierr);
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &psi,
-		      asls->dpsi, tao->stepdirection, &t, &ls_reason);CHKERRQ(ierr);
+                      asls->dpsi, tao->stepdirection, &t, &ls_reason);CHKERRQ(ierr);
     ierr = VecNorm(asls->dpsi, NORM_2, &ndpsi);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

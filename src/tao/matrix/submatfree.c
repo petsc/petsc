@@ -287,7 +287,7 @@ PetscErrorCode MatGetSubMatrices_SMF(Mat A,PetscInt n, IS *irow,IS *icol,MatReus
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrix_SMF"
 PetscErrorCode MatGetSubMatrix_SMF(Mat mat,IS isrow,IS iscol,MatReuse cll,
-			Mat *newmat)
+                        Mat *newmat)
 {
   PetscErrorCode   ierr;
   MatSubMatFreeCtx ctx;

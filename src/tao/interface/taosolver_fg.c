@@ -21,11 +21,11 @@ PetscErrorCode TaoSetInitialVector(TaoSolver tao, Vec x0) {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
     if (x0) {
-	PetscValidHeaderSpecific(x0,VEC_CLASSID,2);
-	PetscObjectReference((PetscObject)x0);
+        PetscValidHeaderSpecific(x0,VEC_CLASSID,2);
+        PetscObjectReference((PetscObject)x0);
     }
     if (tao->solution) {
-	ierr = VecDestroy(&tao->solution);CHKERRQ(ierr);
+        ierr = VecDestroy(&tao->solution);CHKERRQ(ierr);
     }
     tao->solution = x0;
     PetscFunctionReturn(0);

@@ -152,22 +152,22 @@ PetscErrorCode EvaluateFunction(TaoSolver tao, Vec X, Vec F, void *ptr)
     while(finishedtasks < NOBSERVATIONS || checkedin < user->size-1) {
       ierr = MPI_Recv(&f_i,1,MPIU_REAL,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
       if (status.MPI_TAG == IDLE_TAG) {
-	checkedin++;
+        checkedin++;
       } else {
 
-	tag = status.MPI_TAG;
-	f[tag] = (PetscReal)f_i;
-	finishedtasks++;
+        tag = status.MPI_TAG;
+        f[tag] = (PetscReal)f_i;
+        finishedtasks++;
       }
 
       if (next_task<NOBSERVATIONS) {
-	ierr = MPI_Send(x,NPARAMETERS,MPIU_REAL,status.MPI_SOURCE,next_task,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	next_task++;
+        ierr = MPI_Send(x,NPARAMETERS,MPIU_REAL,status.MPI_SOURCE,next_task,PETSC_COMM_WORLD);CHKERRQ(ierr);
+        next_task++;
 
       } else {
-	/* Send idle message */
-	ierr = MPI_Send(x,NPARAMETERS,MPIU_REAL,status.MPI_SOURCE,IDLE_TAG,PETSC_COMM_WORLD);CHKERRQ(ierr);
-      }	  
+        /* Send idle message */
+        ierr = MPI_Send(x,NPARAMETERS,MPIU_REAL,status.MPI_SOURCE,IDLE_TAG,PETSC_COMM_WORLD);CHKERRQ(ierr);
+      }   
     } 
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);

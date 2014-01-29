@@ -105,8 +105,8 @@ int main( int argc, char **argv )
      the distributed array, Create the vectors.
   */
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
-		      user.nx,user.ny,Nx,Ny,1,1,NULL,NULL,
-		      &user.dm);CHKERRQ(ierr);
+                      user.nx,user.ny,Nx,Ny,1,1,NULL,NULL,
+                      &user.dm);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DM; the vector user.B is
@@ -302,25 +302,25 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
        
        k=0;
        if (j>gys){ 
-	 v[k]=vdown; col[k]=row - gxm; k++;
+         v[k]=vdown; col[k]=row - gxm; k++;
        }
        
        if (i>gxs){
-	 v[k]= vleft; col[k]=row - 1; k++;
+         v[k]= vleft; col[k]=row - 1; k++;
        }
 
        v[k]= vmiddle; col[k]=row; k++;
        
        if (i+1 < gxs+gxm){
-	 v[k]= vright; col[k]=row+1; k++;
+         v[k]= vright; col[k]=row+1; k++;
        }
        
        if (j+1 <gys+gym){
-	 v[k]= vup; col[k] = row+gxm; k++;
+         v[k]= vup; col[k] = row+gxm; k++;
        }
        tt=0;
        for (kk=0;kk<k;kk++){
-	 tt+=v[kk]*x[col[kk]];
+         tt+=v[kk]*x[col[kk]];
        }
        row=(j-ys)*xm + (i-xs);
        g[row]=tt;
@@ -405,21 +405,21 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *H, Mat *Hpre, MatStructure *
        
       k=0;
       if (j>gys){ 
-	v[k]=vdown; col[k]=row - gxm; k++;
+        v[k]=vdown; col[k]=row - gxm; k++;
       }
        
       if (i>gxs){
-	v[k]= vleft; col[k]=row - 1; k++;
+        v[k]= vleft; col[k]=row - 1; k++;
       }
 
       v[k]= vmiddle; col[k]=row; k++;
        
       if (i+1 < gxs+gxm){
-	v[k]= vright; col[k]=row+1; k++;
+        v[k]= vright; col[k]=row+1; k++;
       }
        
       if (j+1 <gys+gym){
-	v[k]= vup; col[k] = row+gxm; k++;
+        v[k]= vup; col[k] = row+gxm; k++;
       }
       ierr = MatSetValuesLocal(hes,1,&row,k,col,v,INSERT_VALUES);CHKERRQ(ierr);
        

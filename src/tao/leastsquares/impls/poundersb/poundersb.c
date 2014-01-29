@@ -39,8 +39,8 @@ static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
     minnorm=TAO_INFINITY;
     for (i=0;i<nHist;i++) {
       if (mfqP->Fres[i] < minnorm) {
-	mfqP->minindex = i;
-	minnorm = mfqP->Fres[i];
+        mfqP->minindex = i;
+        minnorm = mfqP->Fres[i];
       }
     }
   }
@@ -66,9 +66,9 @@ static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
       ierr = VecAXPY(mfqP->D[i], -1.0, mfqP->Xhist[mfqP->minindex]);CHKERRQ(ierr);
       /* HD = .5*D*Hres(j)*D' */      
       for (j=0;j<mfqP->m;j++) {
-	ierr = MatMult(mfqP->Hres[j],mfqP->D[i], mfqP->work);CHKERRQ(ierr);
-	ierr = VecDot(mfqP->D[i],mfqP->D[i],&dhd);CHKERRQ(ierr);
-	ierr = VecSetValue(mfqP->DH,j,dhd,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatMult(mfqP->Hres[j],mfqP->D[i], mfqP->work);CHKERRQ(ierr);
+        ierr = VecDot(mfqP->D[i],mfqP->D[i],&dhd);CHKERRQ(ierr);
+        ierr = VecSetValue(mfqP->DH,j,dhd,INSERT_VALUES);CHKERRQ(ierr);
       }
       ierr = VecAssemblyBegin(mfqP->DH);CHKERRQ(ierr);
       ierr = VecAssemblyEnd(mfqP->DH);CHKERRQ(ierr);
@@ -191,8 +191,8 @@ static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
       valid = PETSC_FALSE;
       ierr = affpoints(mfqP,mfqP->xmin,mfqP->c2);CHKERRQ(ierr);
       if (mfqP->n > mfqP->nmodelpoints) {
-	ierr = PetscInfo(tao,"Model not valid -- adding geometry points");
-	ierr = modelimprove(tao,mfqP,mfqP->n - mfqP->nmodelpoints);CHKERRQ(ierr);
+        ierr = PetscInfo(tao,"Model not valid -- adding geometry points");
+        ierr = modelimprove(tao,mfqP,mfqP->n - mfqP->nmodelpoints);CHKERRQ(ierr);
       }
     }
     for (i=mfqP->nmodelpoints;i>0;i--) {

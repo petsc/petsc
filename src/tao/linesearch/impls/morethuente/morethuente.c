@@ -264,8 +264,8 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
      sufficient */
     
     if ((stage1) && (*f <= fx) && (*f > ftest1)) {
-      fm   = *f - ls->step * dgtest;	/* Define modified function */
-      fxm  = fx - stx * dgtest;	        /* and derivatives */
+      fm   = *f - ls->step * dgtest;    /* Define modified function */
+      fxm  = fx - stx * dgtest;         /* and derivatives */
       fym  = fy - sty * dgtest;
       dgm  = dg - dgtest;
       dgxm = dgx - dgtest;
@@ -275,8 +275,8 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
       /* Update the interval of uncertainty and compute the new step */
       ierr = Tao_mcstep(ls,&stx,&fxm,&dgxm,&sty,&fym,&dgym,&ls->step,&fm,&dgm);CHKERRQ(ierr);
       
-      fx  = fxm + stx * dgtest;	/* Reset the function and */
-      fy  = fym + sty * dgtest;	/* gradient values */
+      fx  = fxm + stx * dgtest; /* Reset the function and */
+      fy  = fym + sty * dgtest; /* gradient values */
       dgx = dgxm + dgtest; 
       dgy = dgym + dgtest; 
     } else {
@@ -492,15 +492,15 @@ static PetscErrorCode Tao_mcstep(TaoLineSearch ls,PetscReal *stx,PetscReal *fx,P
 
     if (mtP->bracket) {
       if (PetscAbsReal(*stp-stpc) < PetscAbsReal(*stp-stpq)) {
-	stpf = stpc;
+        stpf = stpc;
       } else {
-	stpf = stpq;
+        stpf = stpq;
       }
     } else {
       if (PetscAbsReal(*stp-stpc) > PetscAbsReal(*stp-stpq)) {
-	stpf = stpc;
+        stpf = stpc;
       } else {
-	stpf = stpq;
+        stpf = stpq;
       }
     }
   } else {

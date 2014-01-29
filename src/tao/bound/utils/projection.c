@@ -130,14 +130,14 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec XL, Vec XU, Vec DX, PetscReal *boundm
       t=(xu[i]-x[i])/dx[i];
       localmin=PetscMin(t,localmin);
       if (localmin>0){
-	  localwolfemin = PetscMin(t,localwolfemin);
+          localwolfemin = PetscMin(t,localwolfemin);
       }
       localmax = PetscMax(t,localmax);
     } else if (dx[i]<0){
       t=(xl[i]-x[i])/dx[i];
       localmin = PetscMin(t,localmin);
       if (localmin>0){
-	localwolfemin = PetscMin(t,localwolfemin);
+        localwolfemin = PetscMin(t,localwolfemin);
       }
       localmax = PetscMax(t,localmax);
     }

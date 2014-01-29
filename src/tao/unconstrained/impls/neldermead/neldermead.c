@@ -167,9 +167,9 @@ PetscErrorCode TaoSolve_NM(TaoSolver tao)
       ierr = VecAXPBYPCZ(Xmue,1+nm->mu_e,-nm->mu_e,0,Xbar,nm->simplex[nm->indices[nm->N]]);CHKERRQ(ierr);
       ierr = TaoComputeObjective(tao,Xmue,&fe);CHKERRQ(ierr);
       if (fe < fr) {
-	ierr = NelderMeadReplace(nm,nm->indices[nm->N],Xmue,fe);CHKERRQ(ierr);
+        ierr = NelderMeadReplace(nm,nm->indices[nm->N],Xmue,fe);CHKERRQ(ierr);
       } else {
-	ierr = NelderMeadReplace(nm,nm->indices[nm->N],Xmur,fr);CHKERRQ(ierr);
+        ierr = NelderMeadReplace(nm,nm->indices[nm->N],Xmur,fr);CHKERRQ(ierr);
       }
     } else if (nm->f_values[nm->indices[nm->N-1]] <= fr && fr < nm->f_values[nm->indices[nm->N]]) {
       /* outside contraction */
@@ -179,8 +179,8 @@ PetscErrorCode TaoSolve_NM(TaoSolver tao)
 
       ierr = TaoComputeObjective(tao,Xmuc,&fc);CHKERRQ(ierr);
       if (fc <= fr) {
-	ierr = NelderMeadReplace(nm,nm->indices[nm->N],Xmuc,fc);CHKERRQ(ierr);
-      }	else shrink=1;
+        ierr = NelderMeadReplace(nm,nm->indices[nm->N],Xmuc,fc);CHKERRQ(ierr);
+      } else shrink=1;
     } else {
       /* inside contraction */
       nm->nincontract++;
@@ -188,7 +188,7 @@ PetscErrorCode TaoSolve_NM(TaoSolver tao)
       ierr = VecAXPBYPCZ(Xmuc,1+nm->mu_ic,-nm->mu_ic,0,Xbar,nm->simplex[nm->indices[nm->N]]);CHKERRQ(ierr);
       ierr = TaoComputeObjective(tao,Xmuc,&fc);CHKERRQ(ierr);
       if (fc < nm->f_values[nm->indices[nm->N]]) {
-	ierr = NelderMeadReplace(nm,nm->indices[nm->N],Xmuc,fc);CHKERRQ(ierr);
+        ierr = NelderMeadReplace(nm,nm->indices[nm->N],Xmuc,fc);CHKERRQ(ierr);
       } else shrink = 1;
     }
 
@@ -198,7 +198,7 @@ PetscErrorCode TaoSolve_NM(TaoSolver tao)
 
       for (i=1;i<nm->N+1;i++) {
         ierr = VecAXPBY(nm->simplex[nm->indices[i]],1.5,-0.5,nm->simplex[nm->indices[0]]);
-	ierr = TaoComputeObjective(tao,nm->simplex[nm->indices[i]], &nm->f_values[nm->indices[i]]);CHKERRQ(ierr);
+        ierr = TaoComputeObjective(tao,nm->simplex[nm->indices[i]], &nm->f_values[nm->indices[i]]);CHKERRQ(ierr);
       }
       ierr = VecAXPBY(Xbar,1.5*nm->oneOverN,-0.5,nm->simplex[nm->indices[0]]);CHKERRQ(ierr);
 

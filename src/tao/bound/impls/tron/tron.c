@@ -176,10 +176,10 @@ static PetscErrorCode TaoSolve_TRON(TaoSolver tao)
       /* Add dxfree matrix to compute step direction vector */
       ierr = VecReducedXPY(tao->stepdirection,tron->DXFree,tron->Free_Local);CHKERRQ(ierr);
       if (0) { 
-	PetscReal rhs,stepnorm;
-	ierr = VecNorm(tron->R,NORM_2,&rhs);CHKERRQ(ierr);
-	ierr = VecNorm(tron->DXFree,NORM_2,&stepnorm);CHKERRQ(ierr);
-	ierr = PetscPrintf(PETSC_COMM_WORLD,"|rhs|=%g\t|s|=%g\n",rhs,stepnorm);CHKERRQ(ierr);
+        PetscReal rhs,stepnorm;
+        ierr = VecNorm(tron->R,NORM_2,&rhs);CHKERRQ(ierr);
+        ierr = VecNorm(tron->DXFree,NORM_2,&stepnorm);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"|rhs|=%g\t|s|=%g\n",rhs,stepnorm);CHKERRQ(ierr);
       }
       
       
@@ -200,44 +200,44 @@ static PetscErrorCode TaoSolve_TRON(TaoSolver tao)
       ierr = VecDot(tao->stepdirection, tron->Work, &prered);CHKERRQ(ierr);
       actred = f_new - f;
       if (actred<0) {
-	rhok=PetscAbs(-actred/prered);
+        rhok=PetscAbs(-actred/prered);
       } else {
-	rhok=0.0;
+        rhok=0.0;
       }
       
       /* Compare actual improvement to the quadratic model */
       if (rhok > tron->eta1) { /* Accept the point */
-	/* d = x_new - x */
-	ierr = VecCopy(tron->X_New, tao->stepdirection);CHKERRQ(ierr);
-	ierr = VecAXPY(tao->stepdirection, -1.0, tao->solution);CHKERRQ(ierr);
-	
-	ierr = VecNorm(tao->stepdirection, NORM_2, &xdiff);CHKERRQ(ierr);
-	xdiff *= stepsize;
+        /* d = x_new - x */
+        ierr = VecCopy(tron->X_New, tao->stepdirection);CHKERRQ(ierr);
+        ierr = VecAXPY(tao->stepdirection, -1.0, tao->solution);CHKERRQ(ierr);
+        
+        ierr = VecNorm(tao->stepdirection, NORM_2, &xdiff);CHKERRQ(ierr);
+        xdiff *= stepsize;
 
-	/* Adjust trust region size */
-	if (rhok < tron->eta2 ){
-	  delta = PetscMin(xdiff,delta)*tron->sigma1;
-	} else if (rhok > tron->eta4 ){
-	  delta= PetscMin(xdiff,delta)*tron->sigma3;
-	} else if (rhok > tron->eta3 ){
-	  delta=PetscMin(xdiff,delta)*tron->sigma2;
-	}
-	ierr = VecBoundGradientProjection(tron->G_New,tron->X_New, tao->XL, tao->XU, tao->gradient);CHKERRQ(ierr);
-	if (tron->Free_Local) {
-	  ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
-	}
-	ierr = VecWhichBetween(tao->XL, tron->X_New, tao->XU, &tron->Free_Local);CHKERRQ(ierr);
-	f=f_new;
-	ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm);CHKERRQ(ierr);
-	ierr = VecCopy(tron->X_New, tao->solution);CHKERRQ(ierr);
-	ierr = VecCopy(tron->G_New, tao->gradient);CHKERRQ(ierr);
-	break;
+        /* Adjust trust region size */
+        if (rhok < tron->eta2 ){
+          delta = PetscMin(xdiff,delta)*tron->sigma1;
+        } else if (rhok > tron->eta4 ){
+          delta= PetscMin(xdiff,delta)*tron->sigma3;
+        } else if (rhok > tron->eta3 ){
+          delta=PetscMin(xdiff,delta)*tron->sigma2;
+        }
+        ierr = VecBoundGradientProjection(tron->G_New,tron->X_New, tao->XL, tao->XU, tao->gradient);CHKERRQ(ierr);
+        if (tron->Free_Local) {
+          ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
+        }
+        ierr = VecWhichBetween(tao->XL, tron->X_New, tao->XU, &tron->Free_Local);CHKERRQ(ierr);
+        f=f_new;
+        ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm);CHKERRQ(ierr);
+        ierr = VecCopy(tron->X_New, tao->solution);CHKERRQ(ierr);
+        ierr = VecCopy(tron->G_New, tao->gradient);CHKERRQ(ierr);
+        break;
       } 
       else if (delta <= 1e-30) {
-	break;
+        break;
       }
       else {
-	delta /= 4.0;
+        delta /= 4.0;
       }
     } /* end linear solve loop */
 
@@ -283,7 +283,7 @@ static PetscErrorCode TronGradientProjections(TaoSolver tao,TAO_TRON *tron)
     ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,tron->pgstepsize);CHKERRQ(ierr);
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f_new, tao->gradient, tao->stepdirection,
-			      &tron->pgstepsize, &ls_reason);CHKERRQ(ierr);
+                              &tron->pgstepsize, &ls_reason);CHKERRQ(ierr);
     ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
 
 

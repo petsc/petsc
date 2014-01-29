@@ -137,7 +137,7 @@ PetscErrorCode TaoPounders_solvequadratic(TaoSolver tao,PetscReal *gnorm, PetscR
     TAO_POUNDERS *mfqP = (TAO_POUNDERS*)tao->data;
     PetscReal maxval;
     PetscInt i,j;
-								    
+                                                                    
     PetscFunctionBegin;
 
     ierr = VecCopy(mfqP->Gres, mfqP->subb);CHKERRQ(ierr);
@@ -159,7 +159,7 @@ PetscErrorCode TaoPounders_solvequadratic(TaoSolver tao,PetscReal *gnorm, PetscR
       ierr = VecCopy(tao->XL,mfqP->subxl);CHKERRQ(ierr);
       ierr = VecAXPY(mfqP->subxl,-1.0,tao->solution);CHKERRQ(ierr);
       ierr = VecScale(mfqP->subxl,1.0/mfqP->delta);CHKERRQ(ierr);
-	
+        
       ierr = VecPointwiseMin(mfqP->subxu,mfqP->subxu,mfqP->subpdel);CHKERRQ(ierr);
       ierr = VecPointwiseMax(mfqP->subxl,mfqP->subxl,mfqP->subndel);CHKERRQ(ierr);
     } else {
@@ -245,19 +245,19 @@ PetscErrorCode TaoPounders_bmpts(TaoSolver tao)
   for (i=1;i<=mfqP->n;i++) {
       ierr = VecCopy(tao->solution,mfqP->Xhist[i]);CHKERRQ(ierr);
       if (i-1 >= low && i-1 < high) {
-	  ierr = VecGetArray(mfqP->Xhist[i],&x);CHKERRQ(ierr);
-	  x[i-1-low] += mfqP->delta;
-	  ierr = VecRestoreArray(mfqP->Xhist[i],&x);CHKERRQ(ierr);
+          ierr = VecGetArray(mfqP->Xhist[i],&x);CHKERRQ(ierr);
+          x[i-1-low] += mfqP->delta;
+          ierr = VecRestoreArray(mfqP->Xhist[i],&x);CHKERRQ(ierr);
       }
       ierr = TaoComputeSeparableObjective(tao,mfqP->Xhist[i],mfqP->Fhist[i]);CHKERRQ(ierr);
       ierr = VecNorm(mfqP->Fhist[i],NORM_2,&mfqP->Fres[i]);CHKERRQ(ierr);
       if (PetscIsInfOrNanReal(mfqP->Fres[i])) {
-	SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
+        SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
       }
       mfqP->Fres[i]*=mfqP->Fres[i];
       if (mfqP->Fres[i] < minnorm) {
-	  mfqP->minindex = i;
-	  minnorm = mfqP->Fres[i];
+          mfqP->minindex = i;
+          minnorm = mfqP->Fres[i];
       }
   }
   ierr = PetscFree(t1);CHKERRQ(ierr);
@@ -285,13 +285,13 @@ PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi) {
     j=0;
 
     for (i=0;i<n;i++) {
-	phi[j] = 0.5 * x[i]*x[i];
-	j++;
-	for (k=i+1;k<n;k++) {
-	    phi[j]  = x[i]*x[k]/sqrt2;
-	    j++;
-	}
-	
+        phi[j] = 0.5 * x[i]*x[i];
+        j++;
+        for (k=i+1;k<n;k++) {
+            phi[j]  = x[i]*x[k]/sqrt2;
+            j++;
+        }
+        
     }
 
     PetscFunctionReturn(0);

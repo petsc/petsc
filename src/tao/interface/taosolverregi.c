@@ -55,7 +55,7 @@ const char *TaoSolverTerminationReasons_Shifted[] = {
     "CONVERGED_USER" };
 const char **TaoSolverTerminationReasons = TaoSolverTerminationReasons_Shifted + 7;
 
-						   
+                                                   
 
 
 extern PetscBool TaoSolverRegisterAllCalled;

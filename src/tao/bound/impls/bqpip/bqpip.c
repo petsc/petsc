@@ -239,7 +239,7 @@ static PetscErrorCode TaoSolve_BQPIP(TaoSolver tao)
 
     /* Check Stopping Condition      */
     ierr = TaoMonitor(tao,iter++,qp->pobj,PetscSqrtScalar(qp->gap + qp->dinfeas),
-			    qp->pinfeas, step, &reason);CHKERRQ(ierr);
+                            qp->pinfeas, step, &reason);CHKERRQ(ierr);
     if (reason != TAO_CONTINUE_ITERATING) break;
 
     /* 
@@ -313,12 +313,12 @@ static PetscErrorCode TaoSolve_BQPIP(TaoSolver tao)
     pstep = qp->psteplength; dstep = qp->dsteplength;    
     step = PetscMin(qp->psteplength,qp->dsteplength);
     sigmamu= ( pstep*pstep*(gap[0]+gap[1]) +
-	       (1 - pstep + pstep*sigma)*qp->gap  )/qp->m;
+               (1 - pstep + pstep*sigma)*qp->gap  )/qp->m;
 
     if (qp->predcorr && step < 0.9){
       if (sigmamu < qp->mu){ 
-	sigmamu=sigmamu/qp->mu;
-	sigmamu=sigmamu*sigmamu*sigmamu;
+        sigmamu=sigmamu/qp->mu;
+        sigmamu=sigmamu*sigmamu*sigmamu;
       } else {sigmamu = 1.0;}
       sigmamu = sigmamu*qp->mu;
       

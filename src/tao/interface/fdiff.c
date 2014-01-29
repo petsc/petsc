@@ -83,7 +83,7 @@ PetscErrorCode TaoDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *dummy)
       ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
       
       if (i>=low && i<high) {
-	  g[i-low]=(f2-f)/h;
+          g[i-low]=(f2-f)/h;
       }
   }
   ierr = VecRestoreArray(G,&g);CHKERRQ(ierr);
@@ -126,7 +126,7 @@ PetscErrorCode TaoDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *dummy)
 
 @*/
 PetscErrorCode TaoDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,
-			     MatStructure *flag,void *dummy){
+                             MatStructure *flag,void *dummy){
   PetscErrorCode       ierr;
   MPI_Comm             comm;
   Vec                  G;

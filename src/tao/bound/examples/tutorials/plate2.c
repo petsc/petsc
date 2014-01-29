@@ -108,8 +108,8 @@ int main( int argc, char **argv )
      the distributed array, Create the vectors.
   */
   ierr = DMDACreate2d(MPI_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,
-		      DMDA_STENCIL_BOX,user.mx,user.my,Nx,Ny,1,1,
-		      NULL,NULL,&user.dm);CHKERRQ(ierr);
+                      DMDA_STENCIL_BOX,user.mx,user.my,Nx,Ny,1,1,
+                      NULL,NULL,&user.dm);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DM; The local vectors are
@@ -558,54 +558,54 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *Hptr, Mat *Hpc, MatStructure
 
 
       hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+
-	(-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2);
+        (-hydhx*(1.0+d4*d4)+d1*d4)/(f2*f2*f2);
       hr = (-hydhx*(1.0+d5*d5)+d2*d5)/(f5*f5*f5)+
-	(-hydhx*(1.0+d3*d3)+d2*d3)/(f4*f4*f4);
+        (-hydhx*(1.0+d3*d3)+d2*d3)/(f4*f4*f4);
       ht = (-hxdhy*(1.0+d8*d8)+d3*d8)/(f3*f3*f3)+
-	(-hxdhy*(1.0+d2*d2)+d2*d3)/(f4*f4*f4);
+        (-hxdhy*(1.0+d2*d2)+d2*d3)/(f4*f4*f4);
       hb = (-hxdhy*(1.0+d6*d6)+d4*d6)/(f6*f6*f6)+
-	(-hxdhy*(1.0+d1*d1)+d1*d4)/(f2*f2*f2);
+        (-hxdhy*(1.0+d1*d1)+d1*d4)/(f2*f2*f2);
 
       hbr = -d2*d5/(f5*f5*f5) - d4*d6/(f6*f6*f6);
       htl = -d1*d7/(f1*f1*f1) - d3*d8/(f3*f3*f3);
 
       hc = hydhx*(1.0+d7*d7)/(f1*f1*f1) + hxdhy*(1.0+d8*d8)/(f3*f3*f3) +
-	hydhx*(1.0+d5*d5)/(f5*f5*f5) + hxdhy*(1.0+d6*d6)/(f6*f6*f6) +
-	(hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-2*d1*d4)/(f2*f2*f2) +
-	(hxdhy*(1.0+d2*d2)+hydhx*(1.0+d3*d3)-2*d2*d3)/(f4*f4*f4);
+        hydhx*(1.0+d5*d5)/(f5*f5*f5) + hxdhy*(1.0+d6*d6)/(f6*f6*f6) +
+        (hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-2*d1*d4)/(f2*f2*f2) +
+        (hxdhy*(1.0+d2*d2)+hydhx*(1.0+d3*d3)-2*d2*d3)/(f4*f4*f4);
 
       hl*=0.5; hr*=0.5; ht*=0.5; hb*=0.5; hbr*=0.5; htl*=0.5;  hc*=0.5; 
 
       k=0;
       if (j>0){ 
-	v[k]=hb; col[k]=row - gxm; k++;
+        v[k]=hb; col[k]=row - gxm; k++;
       }
       
       if (j>0 && i < mx -1){
-	v[k]=hbr; col[k]=row - gxm+1; k++;
+        v[k]=hbr; col[k]=row - gxm+1; k++;
       }
       
       if (i>0){
-	v[k]= hl; col[k]=row - 1; k++;
+        v[k]= hl; col[k]=row - 1; k++;
       }
       
       v[k]= hc; col[k]=row; k++;
       
       if (i < mx-1 ){
-	v[k]= hr; col[k]=row+1; k++;
+        v[k]= hr; col[k]=row+1; k++;
       }
       
       if (i>0 && j < my-1 ){
-	v[k]= htl; col[k] = row+gxm-1; k++;
+        v[k]= htl; col[k] = row+gxm-1; k++;
       }
       
       if (j < my-1 ){
-	v[k]= ht; col[k] = row+gxm; k++;
+        v[k]= ht; col[k] = row+gxm; k++;
       }
       
       /* 
-	 Set matrix values using local numbering, which was defined
-	 earlier, in the main routine.
+         Set matrix values using local numbering, which was defined
+         earlier, in the main routine.
       */
       ierr = MatSetValuesLocal(Hessian,1,&row,k,col,v,INSERT_VALUES);CHKERRQ(ierr);
       
@@ -704,24 +704,24 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
       u1=xt;
       u2=-yt;
       for (k=0; k<maxits; k++){
-	nf1=u1 + u1*u2*u2 - u1*u1*u1/three-xt;
-	nf2=-u2 - u1*u1*u2 + u2*u2*u2/three-yt;
-	fnorm=PetscSqrtScalar(nf1*nf1+nf2*nf2);
-	if (fnorm <= tol) break;
-	njac11=one+u2*u2-u1*u1;
-	njac12=two*u1*u2;
-	njac21=-two*u1*u2;
-	njac22=-one - u1*u1 + u2*u2;
-	det = njac11*njac22-njac21*njac12;
-	u1 = u1-(njac22*nf1-njac12*nf2)/det;
-	u2 = u2-(njac11*nf2-njac21*nf1)/det;
+        nf1=u1 + u1*u2*u2 - u1*u1*u1/three-xt;
+        nf2=-u2 - u1*u1*u2 + u2*u2*u2/three-yt;
+        fnorm=PetscSqrtScalar(nf1*nf1+nf2*nf2);
+        if (fnorm <= tol) break;
+        njac11=one+u2*u2-u1*u1;
+        njac12=two*u1*u2;
+        njac21=-two*u1*u2;
+        njac22=-one - u1*u1 + u2*u2;
+        det = njac11*njac22-njac21*njac12;
+        u1 = u1-(njac22*nf1-njac12*nf2)/det;
+        u2 = u2-(njac11*nf2-njac21*nf1)/det;
       }
 
       boundary[i]=u1*u1-u2*u2;
       if (j==0 || j==1) {
-	xt=xt+hx;
+        xt=xt+hx;
       } else if (j==2 || j==3){
-	yt=yt+hy;
+        yt=yt+hy;
       }
     }
     if (j==0){
@@ -797,24 +797,24 @@ static PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx){
   if (cylinder){
     for (i=xs; i< xs+xm; i++){    
       for (j=ys; j<ys+ym; j++){
-	row=(j-ys)*xm + (i-xs);
-	t1=(2.0*i-mx)*bmy;
-	t2=(2.0*j-my)*bmx;
-	t3=bmx*bmx*bmy*bmy;
-	if ( t1*t1 + t2*t2 <= t3 ){
-	  xl[row] = user->bheight;
-	}
+        row=(j-ys)*xm + (i-xs);
+        t1=(2.0*i-mx)*bmy;
+        t2=(2.0*j-my)*bmx;
+        t3=bmx*bmx*bmy*bmy;
+        if ( t1*t1 + t2*t2 <= t3 ){
+          xl[row] = user->bheight;
+        }
       }
     }
   } else {
     /* Compute the optional lower box */
     for (i=xs; i< xs+xm; i++){    
       for (j=ys; j<ys+ym; j++){
-	row=(j-ys)*xm + (i-xs);
-	if (i>=(mx-bmx)/2 && i<mx-(mx-bmx)/2 && 
-	    j>=(my-bmy)/2 && j<my-(my-bmy)/2 ){
-	  xl[row] = user->bheight;
-	}
+        row=(j-ys)*xm + (i-xs);
+        if (i>=(mx-bmx)/2 && i<mx-(mx-bmx)/2 && 
+            j>=(my-bmy)/2 && j<my-(my-bmy)/2 ){
+          xl[row] = user->bheight;
+        }
       }
     }
   }
@@ -878,9 +878,9 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     /* Perform local computations */    
     for (j=ys; j<ys+ym; j++){
       for (i=xs; i< xs+xm; i++){
-	row=(j-gys)*gxm + (i-gxs);
-	x[row] = ( (j+1)*bottom[i-xs+1]/my + (my-j+1)*top[i-xs+1]/(my+2)+
-		   (i+1)*left[j-ys+1]/mx + (mx-i+1)*right[j-ys+1]/(mx+2))/2.0; 
+        row=(j-gys)*gxm + (i-gxs);
+        x[row] = ( (j+1)*bottom[i-xs+1]/my + (my-j+1)*top[i-xs+1]/(my+2)+
+                   (i+1)*left[j-ys+1]/mx + (mx-i+1)*right[j-ys+1]/(mx+2))/2.0; 
       }
     }
     

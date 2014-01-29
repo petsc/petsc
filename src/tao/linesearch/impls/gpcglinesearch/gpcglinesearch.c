@@ -50,11 +50,11 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
   PetscFunctionBegin;
   /* ls->stepmin - lower bound for step */
   /* ls->stepmax - upper bound for step */
-  /* ls->rtol 	  - relative tolerance for an acceptable step */
-  /* ls->ftol 	  - tolerance for sufficient decrease condition */
-  /* ls->gtol 	  - tolerance for curvature condition */
-  /* ls->nfeval	  - number of function evaluations */
-  /* ls->nfeval	  - number of function/gradient evaluations */
+  /* ls->rtol     - relative tolerance for an acceptable step */
+  /* ls->ftol     - tolerance for sufficient decrease condition */
+  /* ls->gtol     - tolerance for curvature condition */
+  /* ls->nfeval   - number of function evaluations */
+  /* ls->nfeval   - number of function/gradient evaluations */
   /* ls->max_funcs  - maximum number of function evaluations */
 
   ls->reason = TAOLINESEARCH_CONTINUE_ITERATING;
@@ -128,7 +128,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
     }
 
     if (0 == i) {
-	ls->f_fullstep = *f;
+        ls->f_fullstep = *f;
     }
 
     actred = *f - finit;
@@ -201,17 +201,17 @@ PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch ls)
   TAOLINESEARCH_GPCG_CTX *neP;
 
   PetscFunctionBegin;
-  ls->ftol		  = 0.05;
-  ls->rtol		  = 0.0;
-  ls->gtol		  = 0.0;
-  ls->stepmin		  = 1.0e-20;
-  ls->stepmax		  = 1.0e+20;
-  ls->nfeval		  = 0; 
-  ls->max_funcs		  = 30;
+  ls->ftol                = 0.05;
+  ls->rtol                = 0.0;
+  ls->gtol                = 0.0;
+  ls->stepmin             = 1.0e-20;
+  ls->stepmax             = 1.0e+20;
+  ls->nfeval              = 0; 
+  ls->max_funcs           = 30;
   ls->step                = 1.0;
 
   ierr = PetscNewLog(ls,&neP);CHKERRQ(ierr);
-  neP->bracket		  = 0; 
+  neP->bracket            = 0; 
   neP->infoc              = 1;
   ls->data = (void*)neP;
 

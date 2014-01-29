@@ -127,14 +127,14 @@ static PetscErrorCode TaoSetup_GPCG(TaoSolver tao)
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   /*
     if (gpcg->ksp_type == GPCG_KSP_NASH) {
-	ierr = KSPSetType(tao->ksp,KSPNASH);CHKERRQ(ierr);
-      }	else if (gpcg->ksp_type == GPCG_KSP_STCG) {
-	ierr = KSPSetType(tao->ksp,KSPSTCG);CHKERRQ(ierr);
+        ierr = KSPSetType(tao->ksp,KSPNASH);CHKERRQ(ierr);
+      } else if (gpcg->ksp_type == GPCG_KSP_STCG) {
+        ierr = KSPSetType(tao->ksp,KSPSTCG);CHKERRQ(ierr);
       } else {
-	ierr = KSPSetType(tao->ksp,KSPGLTR);CHKERRQ(ierr);
-      }	  
+        ierr = KSPSetType(tao->ksp,KSPGLTR);CHKERRQ(ierr);
+      }   
       if (tao->ksp->ops->setfromoptions) {
-	(*tao->ksp->ops->setfromoptions)(tao->ksp);
+        (*tao->ksp->ops->setfromoptions)(tao->ksp);
       }
       
     }
@@ -208,10 +208,10 @@ static PetscErrorCode TaoSolve_GPCG(TaoSolver tao)
       ierr = MatGetSubMat(tao->hessian, gpcg->Free_Local, gpcg->Work, tao->subset_type, &gpcg->Hsub);CHKERRQ(ierr);
 
       if (tao->hessian_pre == tao->hessian) {
-	ierr = MatDestroy(&gpcg->Hsub_pre);CHKERRQ(ierr);
-	ierr = PetscObjectReference((PetscObject)gpcg->Hsub);CHKERRQ(ierr);
-	gpcg->Hsub_pre = gpcg->Hsub;
-      }	 else {
+        ierr = MatDestroy(&gpcg->Hsub_pre);CHKERRQ(ierr);
+        ierr = PetscObjectReference((PetscObject)gpcg->Hsub);CHKERRQ(ierr);
+        gpcg->Hsub_pre = gpcg->Hsub;
+      }  else {
         ierr = MatGetSubMat(tao->hessian, gpcg->Free_Local, gpcg->Work, tao->subset_type, &gpcg->Hsub_pre);CHKERRQ(ierr);
       }
 

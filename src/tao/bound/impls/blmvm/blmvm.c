@@ -54,13 +54,13 @@ static PetscErrorCode TaoSolve_BLMVM(TaoSolver tao)
     ierr = VecDot(blmP->unprojected_gradient, tao->gradient, &gdx);CHKERRQ(ierr);
     if (gdx <= 0) {
       /* Step is not descent or solve was not successful
-	 Use steepest descent direction (scaled) */
+         Use steepest descent direction (scaled) */
       ++blmP->grad;
 
       if (f != 0.0) {
-	delta = 2.0*PetscAbsScalar(f) / (gnorm*gnorm);
+        delta = 2.0*PetscAbsScalar(f) / (gnorm*gnorm);
       } else {
-	delta = 2.0 / (gnorm*gnorm);
+        delta = 2.0 / (gnorm*gnorm);
       }
       ierr = MatLMVMSetDelta(blmP->M,delta);CHKERRQ(ierr);
       ierr = MatLMVMReset(blmP->M);CHKERRQ(ierr);
@@ -79,7 +79,7 @@ static PetscErrorCode TaoSolve_BLMVM(TaoSolver tao)
 
     if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER) {
       /* Linesearch failed
-	 Reset factors and use scaled (projected) gradient step */
+         Reset factors and use scaled (projected) gradient step */
       ++blmP->reset;
 
       f = fold;
@@ -87,9 +87,9 @@ static PetscErrorCode TaoSolve_BLMVM(TaoSolver tao)
       ierr = VecCopy(blmP->Gold, blmP->unprojected_gradient);CHKERRQ(ierr);
 
       if (f != 0.0) {
-	delta = 2.0* PetscAbsScalar(f) / (gnorm*gnorm);
+        delta = 2.0* PetscAbsScalar(f) / (gnorm*gnorm);
       } else {
-	delta = 2.0/ (gnorm*gnorm);
+        delta = 2.0/ (gnorm*gnorm);
       }
       ierr = MatLMVMSetDelta(blmP->M,delta);CHKERRQ(ierr);
       ierr = MatLMVMReset(blmP->M);CHKERRQ(ierr);
@@ -98,14 +98,14 @@ static PetscErrorCode TaoSolve_BLMVM(TaoSolver tao)
       ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
       /* This may be incorrect; linesearch has values fo stepmax and stepmin
-	 that should be reset. */
+         that should be reset. */
       ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);
       ierr = TaoLineSearchApply(tao->linesearch,tao->solution,&f, blmP->unprojected_gradient, tao->stepdirection,  &stepsize, &ls_status);CHKERRQ(ierr);
       ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
 
       if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER) {
-	tao->reason = TAO_DIVERGED_LS_FAILURE;
-	break;
+        tao->reason = TAO_DIVERGED_LS_FAILURE;
+        break;
       }
     }
 

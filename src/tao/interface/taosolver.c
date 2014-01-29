@@ -190,9 +190,9 @@ PetscErrorCode TaoSolve(TaoSolver tao)
 
   if (tao->printreason) { 
       if (tao->reason > 0) {
-	  ierr = PetscPrintf(((PetscObject)tao)->comm,"TAO solve converged due to %s\n",TaoSolverTerminationReasons[tao->reason]);CHKERRQ(ierr);
+          ierr = PetscPrintf(((PetscObject)tao)->comm,"TAO solve converged due to %s\n",TaoSolverTerminationReasons[tao->reason]);CHKERRQ(ierr);
       } else {
-	  ierr = PetscPrintf(((PetscObject)tao)->comm,"TAO solve did not converge due to %s\n",TaoSolverTerminationReasons[tao->reason]);CHKERRQ(ierr);
+          ierr = PetscPrintf(((PetscObject)tao)->comm,"TAO solve did not converge due to %s\n",TaoSolverTerminationReasons[tao->reason]);CHKERRQ(ierr);
       }
   }
   PetscFunctionReturn(0);
@@ -587,7 +587,7 @@ PetscErrorCode TaoView(TaoSolver tao, PetscViewer viewer)
     if (tao->nhess>0){
       ierr = PetscViewerASCIIPrintf(viewer,"total number of Hessian evaluations=%D\n",tao->nhess);CHKERRQ(ierr);
     }
-    /*	if (tao->linear_its>0){
+    /*  if (tao->linear_its>0){
      ierr = PetscViewerASCIIPrintf(viewer,"  total Krylov method iterations=%D\n",tao->linear_its);CHKERRQ(ierr);
      }*/
     if (tao->nconstraints>0){
@@ -627,7 +627,7 @@ PetscErrorCode TaoView(TaoSolver tao, PetscViewer viewer)
       default:
         ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
         break;
-      }		
+      }         
       
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"Solver terminated: %D",tao->reason);CHKERRQ(ierr);
@@ -2118,7 +2118,7 @@ PetscErrorCode TaoSetType(TaoSolver tao, const TaoSolverType type)
 
     /* Destroy the existing solver information */
     if (tao->ops->destroy) {
-	ierr = (*tao->ops->destroy)(tao);CHKERRQ(ierr);
+        ierr = (*tao->ops->destroy)(tao);CHKERRQ(ierr);
     }
     ierr = KSPDestroy(&tao->ksp);CHKERRQ(ierr);
     ierr = TaoLineSearchDestroy(&tao->linesearch);CHKERRQ(ierr);

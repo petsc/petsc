@@ -264,7 +264,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
       ls->step *= armP->beta_inf;
     } else {
       /* Check descent condition */
-      if (armP->nondescending && *f <= ref - ls->step*fact*ref)	break;
+      if (armP->nondescending && *f <= ref - ls->step*fact*ref) break;
       if (!armP->nondescending && *f <= ref + armP->sigma * gdx) break;
       ls->step *= armP->beta;
     }

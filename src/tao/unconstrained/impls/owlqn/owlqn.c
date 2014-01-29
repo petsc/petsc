@@ -118,11 +118,11 @@ static PetscErrorCode TaoSolve_OWLQN(TaoSolver tao)
     if ((gdx <= 0.0) || PetscIsInfOrNanReal(gdx)) {
 
       /* Step is not descent or direction produced not a number
-	 We can assert bfgsUpdates > 1 in this case because
-	 the first solve produces the scaled gradient direction,
-	 which is guaranteed to be descent
+         We can assert bfgsUpdates > 1 in this case because
+         the first solve produces the scaled gradient direction,
+         which is guaranteed to be descent
   
-	 Use steepest descent direction (scaled) */
+         Use steepest descent direction (scaled) */
       ++lmP->grad;
 
       if (f != 0.0) {
@@ -174,35 +174,35 @@ static PetscErrorCode TaoSolve_OWLQN(TaoSolver tao)
       switch(stepType) {
       case OWLQN_BFGS:
         /* Failed to obtain acceptable iterate with BFGS step
-	   Attempt to use the scaled gradient direction */
+           Attempt to use the scaled gradient direction */
 
         if (f != 0.0) {
           delta = 2.0 * PetscAbsScalar(f) / (gnorm*gnorm);
         } else {
           delta = 2.0 / (gnorm*gnorm);
         }
-	ierr = MatLMVMSetDelta(lmP->M, delta);CHKERRQ(ierr);
-	ierr = MatLMVMReset(lmP->M);CHKERRQ(ierr);
-	ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-	ierr = MatLMVMSolve(lmP->M, lmP->GV, lmP->D);CHKERRQ(ierr);
+        ierr = MatLMVMSetDelta(lmP->M, delta);CHKERRQ(ierr);
+        ierr = MatLMVMReset(lmP->M);CHKERRQ(ierr);
+        ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
+        ierr = MatLMVMSolve(lmP->M, lmP->GV, lmP->D);CHKERRQ(ierr);
 
         ierr = ProjDirect_OWLQN(lmP->D,lmP->GV);CHKERRQ(ierr); 
   
-	lmP->bfgs = 1;
-	++lmP->sgrad;
-	stepType = OWLQN_SCALED_GRADIENT;
-	break;
+        lmP->bfgs = 1;
+        ++lmP->sgrad;
+        stepType = OWLQN_SCALED_GRADIENT;
+        break;
 
       case OWLQN_SCALED_GRADIENT:
         /* The scaled gradient step did not produce a new iterate;
-	   attempt to use the gradient direction.
-	   Need to make sure we are not using a different diagonal scaling */
-	ierr = MatLMVMSetDelta(lmP->M, 1.0);CHKERRQ(ierr);
-	ierr = MatLMVMReset(lmP->M);CHKERRQ(ierr);
-	ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-	ierr = MatLMVMSolve(lmP->M, lmP->GV, lmP->D);CHKERRQ(ierr);
+           attempt to use the gradient direction.
+           Need to make sure we are not using a different diagonal scaling */
+        ierr = MatLMVMSetDelta(lmP->M, 1.0);CHKERRQ(ierr);
+        ierr = MatLMVMReset(lmP->M);CHKERRQ(ierr);
+        ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
+        ierr = MatLMVMSolve(lmP->M, lmP->GV, lmP->D);CHKERRQ(ierr);
 
-	ierr = ProjDirect_OWLQN(lmP->D,lmP->GV);CHKERRQ(ierr); 
+        ierr = ProjDirect_OWLQN(lmP->D,lmP->GV);CHKERRQ(ierr); 
 
         lmP->bfgs = 1;
         ++lmP->grad;

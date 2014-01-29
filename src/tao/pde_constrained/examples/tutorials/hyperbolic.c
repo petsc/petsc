@@ -303,7 +303,7 @@ PetscErrorCode FormGradient(TaoSolver tao,Vec X,Vec G,void *ptr)
   ierr = VecPointwiseMult(user->vwork,user->vwork,user->vwork);CHKERRQ(ierr);
   ierr = MatMult(user->L,user->vwork,user->lwork);CHKERRQ(ierr);
   ierr = VecAXPY(user->ywork,0.5*user->alpha,user->lwork);CHKERRQ(ierr);
-		      
+                      
   ierr = Gather(G,user->ywork,user->state_scatter,user->uwork,user->design_scatter);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -694,7 +694,7 @@ PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec C, void *ptr)
     user->block_index = i;
     ierr = MatMult(user->JsBlock,user->yi[i],user->yiwork[i]);CHKERRQ(ierr);
     ierr = MatMult(user->M,user->yi[i-1],user->ziwork[i-1]);CHKERRQ(ierr);
-    ierr = VecAXPY(user->yiwork[i],-1.0,user->ziwork[i-1]);CHKERRQ(ierr);		    
+    ierr = VecAXPY(user->yiwork[i],-1.0,user->ziwork[i-1]);CHKERRQ(ierr);                   
   }
 
   ierr = Gather_yi(C,user->yiwork,user->yi_scatter,user->nt);CHKERRQ(ierr);

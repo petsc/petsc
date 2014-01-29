@@ -78,7 +78,7 @@ static PetscErrorCode TaoSolve_LMVM(TaoSolver tao)
       ierr = MatLMVMSolve(lmP->M,tao->gradient, lmP->D);CHKERRQ(ierr);
 
       /* On a reset, the direction cannot be not a number; it is a 
-	 scaled gradient step.  No need to check for this condition. */
+         scaled gradient step.  No need to check for this condition. */
 
       lmP->bfgs = 1;
       ++lmP->sgrad;
@@ -120,27 +120,27 @@ static PetscErrorCode TaoSolve_LMVM(TaoSolver tao)
         } else {
           delta = 2.0 / (gnorm*gnorm);
         }
-	ierr = MatLMVMSetDelta(lmP->M, delta);CHKERRQ(ierr);
-	ierr = MatLMVMReset(lmP->M);CHKERRQ(ierr);
-	ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-	ierr = MatLMVMSolve(lmP->M, tao->gradient, lmP->D);CHKERRQ(ierr);
+        ierr = MatLMVMSetDelta(lmP->M, delta);CHKERRQ(ierr);
+        ierr = MatLMVMReset(lmP->M);CHKERRQ(ierr);
+        ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
+        ierr = MatLMVMSolve(lmP->M, tao->gradient, lmP->D);CHKERRQ(ierr);
 
         /* On a reset, the direction cannot be not a number; it is a 
-	   scaled gradient step.  No need to check for this condition. */
+           scaled gradient step.  No need to check for this condition. */
   
-	lmP->bfgs = 1;
-	++lmP->sgrad;
-	stepType = LMVM_SCALED_GRADIENT;
-	break;
+        lmP->bfgs = 1;
+        ++lmP->sgrad;
+        stepType = LMVM_SCALED_GRADIENT;
+        break;
 
       case LMVM_SCALED_GRADIENT:
         /* The scaled gradient step did not produce a new iterate;
-	   attempt to use the gradient direction.
-	   Need to make sure we are not using a different diagonal scaling */
-	ierr = MatLMVMSetDelta(lmP->M, 1.0);CHKERRQ(ierr);
-	ierr = MatLMVMReset(lmP->M);CHKERRQ(ierr);
-	ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
-	ierr = MatLMVMSolve(lmP->M, tao->gradient, lmP->D);CHKERRQ(ierr);
+           attempt to use the gradient direction.
+           Need to make sure we are not using a different diagonal scaling */
+        ierr = MatLMVMSetDelta(lmP->M, 1.0);CHKERRQ(ierr);
+        ierr = MatLMVMReset(lmP->M);CHKERRQ(ierr);
+        ierr = MatLMVMUpdate(lmP->M, tao->solution, tao->gradient);CHKERRQ(ierr);
+        ierr = MatLMVMSolve(lmP->M, tao->gradient, lmP->D);CHKERRQ(ierr);
 
         lmP->bfgs = 1;
         ++lmP->grad;

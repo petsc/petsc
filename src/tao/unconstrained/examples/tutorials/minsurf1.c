@@ -439,34 +439,34 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
 
       k=0;
       if (j>0){ 
-	v[k]=hb; col[k]=row - mx; k++;
+        v[k]=hb; col[k]=row - mx; k++;
       }
 
       if (j>0 && i < mx -1){
-	v[k]=hbr; col[k]=row - mx+1; k++;
+        v[k]=hbr; col[k]=row - mx+1; k++;
       }
 
       if (i>0){
-	v[k]= hl; col[k]=row - 1; k++;
+        v[k]= hl; col[k]=row - 1; k++;
       }
 
       v[k]= hc; col[k]=row; k++;
 
       if (i < mx-1 ){
-	v[k]= hr; col[k]=row+1; k++;
+        v[k]= hr; col[k]=row+1; k++;
       }
 
       if (i>0 && j < my-1 ){
-	v[k]= htl; col[k] = row+mx-1; k++;
+        v[k]= htl; col[k] = row+mx-1; k++;
       }
 
       if (j < my-1 ){
-	v[k]= ht; col[k] = row+mx; k++;
+        v[k]= ht; col[k] = row+mx; k++;
       }
 
       /* 
-	 Set matrix values using local numbering, which was defined
-	 earlier, in the main routine.
+         Set matrix values using local numbering, which was defined
+         earlier, in the main routine.
       */
       ierr = MatSetValues(Hessian,1,&row,k,col,v,INSERT_VALUES);CHKERRQ(ierr);
     }
@@ -545,24 +545,24 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
       u1=xt;
       u2=-yt;
       for (k=0; k<maxits; k++){
-	nf1=u1 + u1*u2*u2 - u1*u1*u1/three-xt;
-	nf2=-u2 - u1*u1*u2 + u2*u2*u2/three-yt;
-	fnorm=PetscSqrtScalar(nf1*nf1+nf2*nf2);
-	if (fnorm <= tol) break;
-	njac11=one+u2*u2-u1*u1;
-	njac12=two*u1*u2;
-	njac21=-two*u1*u2;
-	njac22=-one - u1*u1 + u2*u2;
-	det = njac11*njac22-njac21*njac12;
-	u1 = u1-(njac22*nf1-njac12*nf2)/det;
-	u2 = u2-(njac11*nf2-njac21*nf1)/det;
+        nf1=u1 + u1*u2*u2 - u1*u1*u1/three-xt;
+        nf2=-u2 - u1*u1*u2 + u2*u2*u2/three-yt;
+        fnorm=PetscSqrtScalar(nf1*nf1+nf2*nf2);
+        if (fnorm <= tol) break;
+        njac11=one+u2*u2-u1*u1;
+        njac12=two*u1*u2;
+        njac21=-two*u1*u2;
+        njac22=-one - u1*u1 + u2*u2;
+        det = njac11*njac22-njac21*njac12;
+        u1 = u1-(njac22*nf1-njac12*nf2)/det;
+        u2 = u2-(njac11*nf2-njac21*nf1)/det;
       }
 
       boundary[i]=u1*u1-u2*u2;
       if (j==0 || j==1) {
-	xt=xt+hx;
+        xt=xt+hx;
       } else { /*  if (j==2 || j==3) */
-	yt=yt+hy;
+        yt=yt+hy;
       }
     }
   }
@@ -604,8 +604,8 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     /* Perform local computations */    
     for (j=0; j<my; j++){
       for (i=0; i< mx; i++){
-	row=(j)*mx + (i);
-	x[row] = ( ((j+1)*user->bottom[i+1]+(my-j+1)*user->top[i+1])/(my+2)+ ((i+1)*user->left[j+1]+(mx-i+1)*user->right[j+1])/(mx+2))/2.0;
+        row=(j)*mx + (i);
+        x[row] = ( ((j+1)*user->bottom[i+1]+(my-j+1)*user->top[i+1])/(my+2)+ ((i+1)*user->left[j+1]+(mx-i+1)*user->right[j+1])/(mx+2))/2.0;
       }
     }
     /* Restore vectors */

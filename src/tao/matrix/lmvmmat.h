@@ -5,24 +5,24 @@
 #include "petsc-private/matimpl.h"
 #include "tao_sys.h"
 
-#define MatLMVM_Scale_None		0
-#define MatLMVM_Scale_Scalar		1
-#define MatLMVM_Scale_Broyden		2
+#define MatLMVM_Scale_None              0
+#define MatLMVM_Scale_Scalar            1
+#define MatLMVM_Scale_Broyden           2
 #define MatLMVM_Scale_Types             3
 
-#define MatLMVM_Rescale_None		0
-#define MatLMVM_Rescale_Scalar		1
-#define MatLMVM_Rescale_GL		2
-#define MatLMVM_Rescale_Types          	3
+#define MatLMVM_Rescale_None            0
+#define MatLMVM_Rescale_Scalar          1
+#define MatLMVM_Rescale_GL              2
+#define MatLMVM_Rescale_Types           3
 
-#define MatLMVM_Limit_None		0
-#define MatLMVM_Limit_Average		1
-#define MatLMVM_Limit_Relative		2
-#define MatLMVM_Limit_Absolute		3
-#define MatLMVM_Limit_Types		4
+#define MatLMVM_Limit_None              0
+#define MatLMVM_Limit_Average           1
+#define MatLMVM_Limit_Relative          2
+#define MatLMVM_Limit_Absolute          3
+#define MatLMVM_Limit_Types             4
 
-#define TAO_ZERO_SAFEGUARD	1e-8
-#define TAO_INF_SAFEGUARD	1e+8
+#define TAO_ZERO_SAFEGUARD      1e-8
+#define TAO_INF_SAFEGUARD       1e+8
 
 typedef struct{
     PetscBool allocated;
@@ -32,25 +32,25 @@ typedef struct{
     PetscInt scaleType;
     PetscInt rScaleType;
     
-    PetscReal s_alpha;	/*  Factor for scalar scaling */
-    PetscReal r_alpha;	/*  Factor on scalar for rescaling diagonal matrix */
-    PetscReal r_beta;	/*  Factor on diagonal for rescaling diagonal matrix */
-    PetscReal mu;		/*  Factor for using historical information */
-    PetscReal nu;		/*  Factor for using historical information */
-    PetscReal phi;		/*  Factor for Broyden scaling */
+    PetscReal s_alpha;  /*  Factor for scalar scaling */
+    PetscReal r_alpha;  /*  Factor on scalar for rescaling diagonal matrix */
+    PetscReal r_beta;   /*  Factor on diagonal for rescaling diagonal matrix */
+    PetscReal mu;               /*  Factor for using historical information */
+    PetscReal nu;               /*  Factor for using historical information */
+    PetscReal phi;              /*  Factor for Broyden scaling */
 
-  PetscInt scalar_history;	/*  Amount of history to keep for scalar scaling */
-  PetscReal *yy_history;	/*  Past information for scalar scaling */
-  PetscReal *ys_history;	/*  Past information for scalar scaling */
-  PetscReal *ss_history;	/*  Past information for scalar scaling */
+  PetscInt scalar_history;      /*  Amount of history to keep for scalar scaling */
+  PetscReal *yy_history;        /*  Past information for scalar scaling */
+  PetscReal *ys_history;        /*  Past information for scalar scaling */
+  PetscReal *ss_history;        /*  Past information for scalar scaling */
 
   PetscInt rescale_history;  /*  Amount of history to keep for rescaling diagonal */
-  PetscReal *yy_rhistory;	/*  Past information for scalar rescaling */
-  PetscReal *ys_rhistory;	/*  Past information for scalar rescaling */
-  PetscReal *ss_rhistory;	/*  Past information for scalar rescaling */
+  PetscReal *yy_rhistory;       /*  Past information for scalar rescaling */
+  PetscReal *ys_rhistory;       /*  Past information for scalar rescaling */
+  PetscReal *ss_rhistory;       /*  Past information for scalar rescaling */
 
-  PetscReal delta_max;	/*  Maximum value for delta */
-  PetscReal delta_min;	/*  Minimum value for delta */
+  PetscReal delta_max;  /*  Maximum value for delta */
+  PetscReal delta_min;  /*  Minimum value for delta */
 
   PetscInt lmnow;
   PetscInt iter;

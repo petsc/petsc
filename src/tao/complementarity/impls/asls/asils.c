@@ -1,8 +1,8 @@
 #include "../src/tao/complementarity/impls/ssls/ssls.h"
 /*
    Context for ASXLS
-     -- active-set	- reduced matrices formed
-  			  - inherit properties of original system
+     -- active-set      - reduced matrices formed
+                          - inherit properties of original system
      -- semismooth (S)  - function not differentiable
                         - merit function continuously differentiable
                         - Fischer-Burmeister reformulation of complementarity
