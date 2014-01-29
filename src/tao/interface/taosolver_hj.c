@@ -66,36 +66,35 @@ $      Hpre does not have the same nonzero structure.
 @*/
 PetscErrorCode TaoSetHessianRoutine(TaoSolver tao, Mat H, Mat Hpre, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, Mat *, MatStructure *, void*), void *ctx)
 {
-    PetscErrorCode ierr;
-    PetscFunctionBegin;
-    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
-    if (H) {
-	PetscValidHeaderSpecific(H,MAT_CLASSID,2);
-	PetscCheckSameComm(tao,1,H,2);
-    }
-    if (Hpre) {
-	PetscValidHeaderSpecific(Hpre,MAT_CLASSID,3);
-	PetscCheckSameComm(tao,1,Hpre,3);
-    }
-    if (ctx) {
-	tao->user_hessP = ctx;
-    }
-    if (func) {
-	tao->ops->computehessian = func;
-    }
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  if (H) {
+    PetscValidHeaderSpecific(H,MAT_CLASSID,2);
+    PetscCheckSameComm(tao,1,H,2);
+  }
+  if (Hpre) {
+    PetscValidHeaderSpecific(Hpre,MAT_CLASSID,3);
+    PetscCheckSameComm(tao,1,Hpre,3);
+  }
+  if (ctx) {
+    tao->user_hessP = ctx;
+  }
+  if (func) {
+    tao->ops->computehessian = func;
+  }
 
-    
-    if (H) {
-	ierr = PetscObjectReference((PetscObject)H); CHKERRQ(ierr);
-	if (tao->hessian) {   ierr = MatDestroy(&tao->hessian); CHKERRQ(ierr);}
-	tao->hessian = H;
-    }
-    if (Hpre) {
-	ierr = PetscObjectReference((PetscObject)Hpre); CHKERRQ(ierr);
-	if (tao->hessian_pre) { ierr = MatDestroy(&tao->hessian_pre); CHKERRQ(ierr);}
-	tao->hessian_pre=Hpre;
-    }
-    PetscFunctionReturn(0);
+  if (H) {
+    ierr = PetscObjectReference((PetscObject)H);CHKERRQ(ierr);
+    if (tao->hessian) {   ierr = MatDestroy(&tao->hessian);CHKERRQ(ierr);}
+    tao->hessian = H;
+  }
+  if (Hpre) {
+    ierr = PetscObjectReference((PetscObject)Hpre);CHKERRQ(ierr);
+    if (tao->hessian_pre) { ierr = MatDestroy(&tao->hessian_pre);CHKERRQ(ierr);}
+    tao->hessian_pre=Hpre;
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -141,13 +140,13 @@ PetscErrorCode TaoComputeHessian(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, MatStr
   if (!tao->ops->computehessian) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetHessian() first");
   *flg = DIFFERENT_NONZERO_PATTERN;
   ++tao->nhess;
-  ierr = PetscLogEventBegin(TaoSolver_HessianEval,tao,X,*H,*Hpre); CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TaoSolver_HessianEval,tao,X,*H,*Hpre);CHKERRQ(ierr);
   PetscStackPush("TaoSolver user Hessian function");
   CHKMEMQ;
-  ierr = (*tao->ops->computehessian)(tao,X,H,Hpre,flg,tao->user_hessP); CHKERRQ(ierr);
+  ierr = (*tao->ops->computehessian)(tao,X,H,Hpre,flg,tao->user_hessP);CHKERRQ(ierr);
   CHKMEMQ;
   PetscStackPop;
-  ierr = PetscLogEventEnd(TaoSolver_HessianEval,tao,X,*H,*Hpre); CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TaoSolver_HessianEval,tao,X,*H,*Hpre);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -194,13 +193,13 @@ PetscErrorCode TaoComputeJacobian(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, MatSt
   if (!tao->ops->computejacobian) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobian() first");
   *flg = DIFFERENT_NONZERO_PATTERN;
   ++tao->njac;
-  ierr = PetscLogEventBegin(TaoSolver_JacobianEval,tao,X,*J,*Jpre); CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TaoSolver_JacobianEval,tao,X,*J,*Jpre);CHKERRQ(ierr);
   PetscStackPush("TaoSolver user Jacobian function");
   CHKMEMQ;
-  ierr = (*tao->ops->computejacobian)(tao,X,J,Jpre,flg,tao->user_jacP); CHKERRQ(ierr);
+  ierr = (*tao->ops->computejacobian)(tao,X,J,Jpre,flg,tao->user_jacP);CHKERRQ(ierr);
   CHKMEMQ;
   PetscStackPop;
-  ierr = PetscLogEventEnd(TaoSolver_JacobianEval,tao,X,*J,*Jpre); CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TaoSolver_JacobianEval,tao,X,*J,*Jpre);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -246,13 +245,13 @@ PetscErrorCode TaoComputeJacobianState(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, 
   if (!tao->ops->computejacobianstate) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobianState() first");
   *flg = DIFFERENT_NONZERO_PATTERN;
   ++tao->njac_state;
-  ierr = PetscLogEventBegin(TaoSolver_JacobianEval,tao,X,*J,*Jpre); CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TaoSolver_JacobianEval,tao,X,*J,*Jpre);CHKERRQ(ierr);
   PetscStackPush("TaoSolver user Jacobian(state) function");
   CHKMEMQ;
-  ierr = (*tao->ops->computejacobianstate)(tao,X,J,Jpre,Jinv,flg,tao->user_jac_stateP); CHKERRQ(ierr);
+  ierr = (*tao->ops->computejacobianstate)(tao,X,J,Jpre,Jinv,flg,tao->user_jac_stateP);CHKERRQ(ierr);
   CHKMEMQ;
   PetscStackPop;
-  ierr = PetscLogEventEnd(TaoSolver_JacobianEval,tao,X,*J,*Jpre); CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TaoSolver_JacobianEval,tao,X,*J,*Jpre);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -295,13 +294,13 @@ PetscErrorCode TaoComputeJacobianDesign(TaoSolver tao, Vec X, Mat *J)
     
   if (!tao->ops->computejacobiandesign) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobianDesign() first");
   ++tao->njac_design;
-  ierr = PetscLogEventBegin(TaoSolver_JacobianEval,tao,X,*J,NULL); CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TaoSolver_JacobianEval,tao,X,*J,NULL);CHKERRQ(ierr);
   PetscStackPush("TaoSolver user Jacobian(design) function");
   CHKMEMQ;
-  ierr = (*tao->ops->computejacobiandesign)(tao,X,J,tao->user_jac_designP); CHKERRQ(ierr);
+  ierr = (*tao->ops->computejacobiandesign)(tao,X,J,tao->user_jac_designP);CHKERRQ(ierr);
   CHKMEMQ;
   PetscStackPop;
-  ierr = PetscLogEventEnd(TaoSolver_JacobianEval,tao,X,*J,NULL); CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TaoSolver_JacobianEval,tao,X,*J,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -393,13 +392,13 @@ PetscErrorCode TaoSetJacobianRoutine(TaoSolver tao, Mat J, Mat Jpre, PetscErrorC
 
     
     if (J) {
-	ierr = PetscObjectReference((PetscObject)J); CHKERRQ(ierr);
-	if (tao->jacobian) {   ierr = MatDestroy(&tao->jacobian); CHKERRQ(ierr);}
+	ierr = PetscObjectReference((PetscObject)J);CHKERRQ(ierr);
+	if (tao->jacobian) {   ierr = MatDestroy(&tao->jacobian);CHKERRQ(ierr);}
 	tao->jacobian = J;
     }
     if (Jpre) {
-	ierr = PetscObjectReference((PetscObject)Jpre); CHKERRQ(ierr);
-	if (tao->jacobian_pre) { ierr = MatDestroy(&tao->jacobian_pre); CHKERRQ(ierr);}
+	ierr = PetscObjectReference((PetscObject)Jpre);CHKERRQ(ierr);
+	if (tao->jacobian_pre) { ierr = MatDestroy(&tao->jacobian_pre);CHKERRQ(ierr);}
 	tao->jacobian_pre=Jpre;
     }
     PetscFunctionReturn(0);
@@ -503,18 +502,18 @@ PetscErrorCode TaoSetJacobianStateRoutine(TaoSolver tao, Mat J, Mat Jpre, Mat Ji
 
     
     if (J) {
-	ierr = PetscObjectReference((PetscObject)J); CHKERRQ(ierr);
-	if (tao->jacobian_state) {   ierr = MatDestroy(&tao->jacobian_state); CHKERRQ(ierr);}
+	ierr = PetscObjectReference((PetscObject)J);CHKERRQ(ierr);
+	if (tao->jacobian_state) {   ierr = MatDestroy(&tao->jacobian_state);CHKERRQ(ierr);}
 	tao->jacobian_state = J;
     }
     if (Jpre) {
-	ierr = PetscObjectReference((PetscObject)Jpre); CHKERRQ(ierr);
-	if (tao->jacobian_state_pre) { ierr = MatDestroy(&tao->jacobian_state_pre); CHKERRQ(ierr);}
+	ierr = PetscObjectReference((PetscObject)Jpre);CHKERRQ(ierr);
+	if (tao->jacobian_state_pre) { ierr = MatDestroy(&tao->jacobian_state_pre);CHKERRQ(ierr);}
 	tao->jacobian_state_pre=Jpre;
     }
     if (Jinv) {
-      ierr = PetscObjectReference((PetscObject)Jinv); CHKERRQ(ierr);
-      if (tao->jacobian_state_inv) {ierr = MatDestroy(&tao->jacobian_state_inv); CHKERRQ(ierr);}
+      ierr = PetscObjectReference((PetscObject)Jinv);CHKERRQ(ierr);
+      if (tao->jacobian_state_inv) {ierr = MatDestroy(&tao->jacobian_state_inv);CHKERRQ(ierr);}
       tao->jacobian_state_inv=Jinv;
     }
     PetscFunctionReturn(0);
@@ -574,8 +573,8 @@ PetscErrorCode TaoSetJacobianDesignRoutine(TaoSolver tao, Mat J, PetscErrorCode 
 
     
     if (J) {
-	ierr = PetscObjectReference((PetscObject)J); CHKERRQ(ierr);
-	if (tao->jacobian_design) {   ierr = MatDestroy(&tao->jacobian_design); CHKERRQ(ierr);}
+	ierr = PetscObjectReference((PetscObject)J);CHKERRQ(ierr);
+	if (tao->jacobian_design) {   ierr = MatDestroy(&tao->jacobian_design);CHKERRQ(ierr);}
 	tao->jacobian_design = J;
     }
     PetscFunctionReturn(0);
@@ -603,18 +602,18 @@ PetscErrorCode TaoSetStateDesignIS(TaoSolver tao, IS s_is, IS d_is)
 {
   PetscErrorCode ierr;
   if (tao->state_is) {
-    ierr = PetscObjectDereference((PetscObject)(tao->state_is)); CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)(tao->state_is));CHKERRQ(ierr);
   }
   if (tao->design_is) {
-    ierr = PetscObjectDereference((PetscObject)(tao->design_is)); CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)(tao->design_is));CHKERRQ(ierr);
   }
   tao->state_is = s_is;
   tao->design_is = d_is;
   if (s_is) {
-    ierr = PetscObjectReference((PetscObject)(tao->state_is)); CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)(tao->state_is));CHKERRQ(ierr);
   }
   if (d_is) {
-    ierr = PetscObjectReference((PetscObject)(tao->design_is)); CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)(tao->design_is));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -658,13 +657,13 @@ PetscErrorCode TaoComputeJacobianEquality(TaoSolver tao, Vec X, Mat *J, Mat *Jpr
   if (!tao->ops->computejacobianequality) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobianEquality() first");
   *flg = DIFFERENT_NONZERO_PATTERN;
   ++tao->njac_equality;
-  ierr = PetscLogEventBegin(TaoSolver_JacobianEval,tao,X,*J,*Jpre); CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TaoSolver_JacobianEval,tao,X,*J,*Jpre);CHKERRQ(ierr);
   PetscStackPush("TaoSolver user Jacobian(equality) function");
   CHKMEMQ;
-  ierr = (*tao->ops->computejacobianequality)(tao,X,J,Jpre,flg,tao->user_jac_equalityP); CHKERRQ(ierr);
+  ierr = (*tao->ops->computejacobianequality)(tao,X,J,Jpre,flg,tao->user_jac_equalityP);CHKERRQ(ierr);
   CHKMEMQ;
   PetscStackPop;
-  ierr = PetscLogEventEnd(TaoSolver_JacobianEval,tao,X,*J,*Jpre); CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TaoSolver_JacobianEval,tao,X,*J,*Jpre);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -707,13 +706,13 @@ PetscErrorCode TaoComputeJacobianInequality(TaoSolver tao, Vec X, Mat *J, Mat *J
   if (!tao->ops->computejacobianinequality) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobianInequality() first");
   *flg = DIFFERENT_NONZERO_PATTERN;
   ++tao->njac_inequality;
-  ierr = PetscLogEventBegin(TaoSolver_JacobianEval,tao,X,*J,*Jpre); CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TaoSolver_JacobianEval,tao,X,*J,*Jpre);CHKERRQ(ierr);
   PetscStackPush("TaoSolver user Jacobian(inequality) function");
   CHKMEMQ;
-  ierr = (*tao->ops->computejacobianinequality)(tao,X,J,Jpre,flg,tao->user_jac_inequalityP); CHKERRQ(ierr);
+  ierr = (*tao->ops->computejacobianinequality)(tao,X,J,Jpre,flg,tao->user_jac_inequalityP);CHKERRQ(ierr);
   CHKMEMQ;
   PetscStackPop;
-  ierr = PetscLogEventEnd(TaoSolver_JacobianEval,tao,X,*J,*Jpre); CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TaoSolver_JacobianEval,tao,X,*J,*Jpre);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -808,13 +807,13 @@ PetscErrorCode TaoSetJacobianEqualityRoutine(TaoSolver tao, Mat J, Mat Jpre, Pet
 
     
     if (J) {
-	ierr = PetscObjectReference((PetscObject)J); CHKERRQ(ierr);
-	if (tao->jacobian_equality) {   ierr = MatDestroy(&tao->jacobian_equality); CHKERRQ(ierr);}
+	ierr = PetscObjectReference((PetscObject)J);CHKERRQ(ierr);
+	if (tao->jacobian_equality) {   ierr = MatDestroy(&tao->jacobian_equality);CHKERRQ(ierr);}
 	tao->jacobian_equality = J;
     }
     if (Jpre) {
-	ierr = PetscObjectReference((PetscObject)Jpre); CHKERRQ(ierr);
-	if (tao->jacobian_equality_pre) { ierr = MatDestroy(&tao->jacobian_equality_pre); CHKERRQ(ierr);}
+	ierr = PetscObjectReference((PetscObject)Jpre);CHKERRQ(ierr);
+	if (tao->jacobian_equality_pre) { ierr = MatDestroy(&tao->jacobian_equality_pre);CHKERRQ(ierr);}
 	tao->jacobian_equality_pre=Jpre;
     }
     PetscFunctionReturn(0);
@@ -911,13 +910,13 @@ PetscErrorCode TaoSetJacobianInequalityRoutine(TaoSolver tao, Mat J, Mat Jpre, P
 
     
     if (J) {
-	ierr = PetscObjectReference((PetscObject)J); CHKERRQ(ierr);
-	if (tao->jacobian_inequality) {   ierr = MatDestroy(&tao->jacobian_inequality); CHKERRQ(ierr);}
+	ierr = PetscObjectReference((PetscObject)J);CHKERRQ(ierr);
+	if (tao->jacobian_inequality) {   ierr = MatDestroy(&tao->jacobian_inequality);CHKERRQ(ierr);}
 	tao->jacobian_inequality = J;
     }
     if (Jpre) {
-	ierr = PetscObjectReference((PetscObject)Jpre); CHKERRQ(ierr);
-	if (tao->jacobian_inequality_pre) { ierr = MatDestroy(&tao->jacobian_inequality_pre); CHKERRQ(ierr);}
+	ierr = PetscObjectReference((PetscObject)Jpre);CHKERRQ(ierr);
+	if (tao->jacobian_inequality_pre) { ierr = MatDestroy(&tao->jacobian_inequality_pre);CHKERRQ(ierr);}
 	tao->jacobian_inequality_pre=Jpre;
     }
     PetscFunctionReturn(0);

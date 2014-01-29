@@ -8,9 +8,9 @@
 #define __FUNCT__ "VecWhichEqual"
 /*@
   VecWhichEqual - Creates an index set containing the indices 
-  where the vectors Vec1 and Vec2 have identical elements.
-  
-  Collective on S
+             where the vectors Vec1 and Vec2 have identical elements.
+
+  Collective on Vec
 
   Input Parameters:
 . Vec1, Vec2 - the two vectors to compare
@@ -22,63 +22,47 @@
 @*/
 PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS * S)
 {
-  PetscErrorCode    ierr;
-  PetscInt i,n_same=0;
-  PetscInt n,low,high,low2,high2;
-  PetscInt    *same;
-  PetscReal *v1,*v2;
-  MPI_Comm comm;
+  PetscErrorCode  ierr;
+  PetscInt        i,n_same = 0;
+  PetscInt        n,low,high,low2,high2;
+  PetscInt        *same = NULL;
+  PetscReal       *v1,*v2;
+  MPI_Comm        comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Vec1,VEC_CLASSID,1); 
   PetscValidHeaderSpecific(Vec2,VEC_CLASSID,2); 
   PetscCheckSameComm(Vec1,1,Vec2,2);
 
+  ierr = VecGetOwnershipRange(Vec1, &low, &high);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(Vec2, &low2, &high2);CHKERRQ(ierr);
+  if ( low != low2 || high != high2 ) SETERRQ(PETSC_COMM_SELF,1,"Vectors must have identical layout");
 
-  ierr = VecGetOwnershipRange(Vec1, &low, &high); CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(Vec2, &low2, &high2); CHKERRQ(ierr);
-
-  if ( low != low2 || high != high2 )
-    SETERRQ(PETSC_COMM_SELF,1,"Vectors must be identically loaded over processors");
-
-  ierr = VecGetLocalSize(Vec1,&n); CHKERRQ(ierr);
-
+  ierr = VecGetLocalSize(Vec1,&n);CHKERRQ(ierr);
   if (n>0){
-    
     if (Vec1 == Vec2){
-      ierr = VecGetArray(Vec1,&v1); CHKERRQ(ierr);
+      ierr = VecGetArray(Vec1,&v1);CHKERRQ(ierr);
       v2=v1;
     } else {
-      ierr = VecGetArray(Vec1,&v1); CHKERRQ(ierr);
-      ierr = VecGetArray(Vec2,&v2); CHKERRQ(ierr);
+      ierr = VecGetArray(Vec1,&v1);CHKERRQ(ierr);
+      ierr = VecGetArray(Vec2,&v2);CHKERRQ(ierr);
     }
 
-    ierr = PetscMalloc( n*sizeof(PetscInt),&same ); CHKERRQ(ierr);
-    
+    ierr = PetscMalloc( n*sizeof(PetscInt),&same );CHKERRQ(ierr);
+
     for (i=0; i<n; i++){
       if (v1[i] == v2[i]) {same[n_same]=low+i; n_same++;}
     }
-    
+
     if (Vec1 == Vec2){
-      ierr = VecRestoreArray(Vec1,&v1); CHKERRQ(ierr);
+      ierr = VecRestoreArray(Vec1,&v1);CHKERRQ(ierr);
     } else {
-      ierr = VecRestoreArray(Vec1,&v1); CHKERRQ(ierr);
-      ierr = VecRestoreArray(Vec2,&v2); CHKERRQ(ierr);
+      ierr = VecRestoreArray(Vec1,&v1);CHKERRQ(ierr);
+      ierr = VecRestoreArray(Vec2,&v2);CHKERRQ(ierr);
     }
-
-  } else {
-
-    n_same = 0; same=NULL;
-
   }
-
   ierr = PetscObjectGetComm((PetscObject)Vec1,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,n_same,same,PETSC_COPY_VALUES,S);CHKERRQ(ierr);
-
-  if (same) {
-    ierr = PetscFree(same); CHKERRQ(ierr);
-  }
-
+  ierr = ISCreateGeneral(comm,n_same,same,PETSC_OWN_POINTER,S);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -87,7 +71,7 @@ PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS * S)
 /*@
   VecWhichLessThan - Creates an index set containing the indices 
   where the vectors Vec1 < Vec2
-  
+
   Collective on S
 
   Input Parameters:
@@ -100,59 +84,46 @@ PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS * S)
 @*/
 PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS * S)
 {
-  int ierr;
-  PetscInt i;
-  PetscInt n,low,high,low2,high2,n_lt=0;
-  PetscInt *lt;
-  PetscReal *v1,*v2;
-  MPI_Comm comm;
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscInt       n,low,high,low2,high2,n_lt=0;
+  PetscInt       *lt = NULL;
+  PetscReal      *v1,*v2;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(Vec1,VEC_CLASSID,1); 
-  PetscValidHeaderSpecific(Vec2,VEC_CLASSID,2); 
+  PetscValidHeaderSpecific(Vec1,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(Vec2,VEC_CLASSID,2);
   PetscCheckSameComm(Vec1,1,Vec2,2);
 
-  ierr = VecGetOwnershipRange(Vec1, &low, &high); CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(Vec2, &low2, &high2); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(Vec1, &low, &high);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(Vec2, &low2, &high2);CHKERRQ(ierr);
+  if ( low != low2 || high != high2 ) SETERRQ(PETSC_COMM_SELF,1,"Vectors must haveidentical layout");
 
-  if ( low != low2 || high != high2 )
-    SETERRQ(PETSC_COMM_SELF,1,"Vectors must be identically loaded over processors");
-
-  ierr = VecGetLocalSize(Vec1,&n); CHKERRQ(ierr);
-
+  ierr = VecGetLocalSize(Vec1,&n);CHKERRQ(ierr);
   if (n>0){
-
     if (Vec1 == Vec2){
-      ierr = VecGetArray(Vec1,&v1); CHKERRQ(ierr);
+      ierr = VecGetArray(Vec1,&v1);CHKERRQ(ierr);
       v2=v1;
     } else {
-      ierr = VecGetArray(Vec1,&v1); CHKERRQ(ierr);
-      ierr = VecGetArray(Vec2,&v2); CHKERRQ(ierr);
+      ierr = VecGetArray(Vec1,&v1);CHKERRQ(ierr);
+      ierr = VecGetArray(Vec2,&v2);CHKERRQ(ierr);
     }
-    ierr = PetscMalloc( n*sizeof(PetscInt),&lt ); CHKERRQ(ierr);
-    
+    ierr = PetscMalloc( n*sizeof(PetscInt),&lt );CHKERRQ(ierr);
+
     for (i=0; i<n; i++){
       if (v1[i] < v2[i]) {lt[n_lt]=low+i; n_lt++;}
     }
 
     if (Vec1 == Vec2){
-      ierr = VecRestoreArray(Vec1,&v1); CHKERRQ(ierr);
+      ierr = VecRestoreArray(Vec1,&v1);CHKERRQ(ierr);
     } else {
-      ierr = VecRestoreArray(Vec1,&v1); CHKERRQ(ierr);
-      ierr = VecRestoreArray(Vec2,&v2); CHKERRQ(ierr);
+      ierr = VecRestoreArray(Vec1,&v1);CHKERRQ(ierr);
+      ierr = VecRestoreArray(Vec2,&v2);CHKERRQ(ierr);
     }
-      
-  } else {
-    n_lt=0; lt=NULL;
   }
-
   ierr = PetscObjectGetComm((PetscObject)Vec1,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,n_lt,lt,PETSC_COPY_VALUES,S);CHKERRQ(ierr);
-
-  if (lt) {
-    ierr = PetscFree(lt); CHKERRQ(ierr);
-  }
-
+  ierr = ISCreateGeneral(comm,n_lt,lt,PETSC_OWN_POINTER,S);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -161,7 +132,7 @@ PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS * S)
 /*@ 
   VecWhichGreaterThan - Creates an index set containing the indices 
   where the vectors Vec1 > Vec2
-  
+
   Collective on S
 
   Input Parameters:
@@ -174,60 +145,48 @@ PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS * S)
 @*/
 PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS * S)
 {
-  int    ierr;
-  PetscInt n,low,high,low2,high2,n_gt=0,i;
-  PetscInt    *gt=NULL;
-  PetscReal *v1,*v2;
-  MPI_Comm comm;
+  PetscErrorCode ierr;
+  PetscInt       n,low,high,low2,high2,n_gt=0,i;
+  PetscInt       *gt=NULL;
+  PetscReal      *v1,*v2;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Vec1,VEC_CLASSID,1); 
   PetscValidHeaderSpecific(Vec2,VEC_CLASSID,2); 
   PetscCheckSameComm(Vec1,1,Vec2,2);
 
-  ierr = VecGetOwnershipRange(Vec1, &low, &high); CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(Vec2, &low2, &high2); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(Vec1, &low, &high);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(Vec2, &low2, &high2);CHKERRQ(ierr);
+  if ( low != low2 || high != high2 ) SETERRQ(PETSC_COMM_SELF,1,"Vectors must be have identical layout");
 
-  if ( low != low2 || high != high2 )
-    SETERRQ(PETSC_COMM_SELF,1,"Vectors must be identically loaded over processors");
-
-  ierr = VecGetLocalSize(Vec1,&n); CHKERRQ(ierr);
+  ierr = VecGetLocalSize(Vec1,&n);CHKERRQ(ierr);
 
   if (n>0){
 
     if (Vec1 == Vec2){
-      ierr = VecGetArray(Vec1,&v1); CHKERRQ(ierr);
+      ierr = VecGetArray(Vec1,&v1);CHKERRQ(ierr);
       v2=v1;
     } else {
-      ierr = VecGetArray(Vec1,&v1); CHKERRQ(ierr);
-      ierr = VecGetArray(Vec2,&v2); CHKERRQ(ierr);
-    }    
+      ierr = VecGetArray(Vec1,&v1);CHKERRQ(ierr);
+      ierr = VecGetArray(Vec2,&v2);CHKERRQ(ierr);
+    }
 
-    ierr = PetscMalloc( n*sizeof(PetscInt), &gt ); CHKERRQ(ierr);
-    
+    ierr = PetscMalloc( n*sizeof(PetscInt), &gt );CHKERRQ(ierr);
+
     for (i=0; i<n; i++){
       if (v1[i] > v2[i]) {gt[n_gt]=low+i; n_gt++;}
     }
 
     if (Vec1 == Vec2){
-      ierr = VecRestoreArray(Vec1,&v1); CHKERRQ(ierr);
+      ierr = VecRestoreArray(Vec1,&v1);CHKERRQ(ierr);
     } else {
-      ierr = VecRestoreArray(Vec1,&v1); CHKERRQ(ierr);
-      ierr = VecRestoreArray(Vec2,&v2); CHKERRQ(ierr);
+      ierr = VecRestoreArray(Vec1,&v1);CHKERRQ(ierr);
+      ierr = VecRestoreArray(Vec2,&v2);CHKERRQ(ierr);
     }
-    
-  } else{
-    
-    n_gt=0; gt=NULL;
-
   }
-
   ierr = PetscObjectGetComm((PetscObject)Vec1,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,n_gt,gt,PETSC_COPY_VALUES,S);CHKERRQ(ierr);
-
-  if (gt) {
-    ierr = PetscFree(gt); CHKERRQ(ierr);
-  }
+  ierr = ISCreateGeneral(comm,n_gt,gt,PETSC_OWN_POINTER,S);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -235,8 +194,8 @@ PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS * S)
 #define __FUNCT__ "VecWhichBetween"
 /*@
   VecWhichBetween - Creates an index set containing the indices 
-  where  VecLow < V < VecHigh
-  
+               where  VecLow < V < VecHigh
+
   Collective on S
 
   Input Parameters:
@@ -253,76 +212,61 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S)
 {
 
   PetscErrorCode ierr;
-  PetscInt n,low,high,low2,high2,low3,high3,n_vm=0;
-  PetscInt *vm,i;
-  PetscReal *v1,*v2,*vmiddle;
-  MPI_Comm comm;
+  PetscInt       n,low,high,low2,high2,low3,high3,n_vm=0;
+  PetscInt       *vm,i;
+  PetscReal      *v1,*v2,*vmiddle;
+  MPI_Comm       comm;
 
   PetscValidHeaderSpecific(V,VEC_CLASSID,2); 
   PetscCheckSameComm(V,2,VecLow,1); PetscCheckSameComm(V,2,VecHigh,3);
 
-  ierr = VecGetOwnershipRange(VecLow, &low, &high); CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(VecHigh, &low2, &high2); CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(V, &low3, &high3); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(VecLow, &low, &high);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(VecHigh, &low2, &high2);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(V, &low3, &high3);CHKERRQ(ierr);
+  if ( low!=low2 || high!=high2 || low!=low3 || high!=high3) SETERRQ(PETSC_COMM_SELF,1,"Vectors must have identical layout");
 
-  if ( low!=low2 || high!=high2 || low!=low3 || high!=high3 )
-    SETERRQ(PETSC_COMM_SELF,1,"Vectors must be identically loaded over processors");
-
-  ierr = VecGetLocalSize(VecLow,&n); CHKERRQ(ierr);
-
+  ierr = VecGetLocalSize(VecLow,&n);CHKERRQ(ierr);
   if (n>0){
-
-    ierr = VecGetArray(VecLow,&v1); CHKERRQ(ierr);
+    ierr = VecGetArray(VecLow,&v1);CHKERRQ(ierr);
     if (VecLow != VecHigh){
-      ierr = VecGetArray(VecHigh,&v2); CHKERRQ(ierr);
+      ierr = VecGetArray(VecHigh,&v2);CHKERRQ(ierr);
     } else {
       v2=v1;
     }
     if ( V != VecLow && V != VecHigh){
-      ierr = VecGetArray(V,&vmiddle); CHKERRQ(ierr);
+      ierr = VecGetArray(V,&vmiddle);CHKERRQ(ierr);
     } else if ( V==VecLow ){
       vmiddle=v1;
     } else {
       vmiddle =v2;
     }
 
-    ierr = PetscMalloc( n*sizeof(PetscInt), &vm ); CHKERRQ(ierr);
+    ierr = PetscMalloc( n*sizeof(PetscInt), &vm );CHKERRQ(ierr);
     
     for (i=0; i<n; i++){
       if (v1[i] < vmiddle[i] && vmiddle[i] < v2[i]) {vm[n_vm]=low+i; n_vm++;}
     }
 
-    ierr = VecRestoreArray(VecLow,&v1); CHKERRQ(ierr);
+    ierr = VecRestoreArray(VecLow,&v1);CHKERRQ(ierr);
     if (VecLow != VecHigh){
-      ierr = VecRestoreArray(VecHigh,&v2); CHKERRQ(ierr);
+      ierr = VecRestoreArray(VecHigh,&v2);CHKERRQ(ierr);
     }
     if ( V != VecLow && V != VecHigh){
-      ierr = VecRestoreArray(V,&vmiddle); CHKERRQ(ierr);
+      ierr = VecRestoreArray(V,&vmiddle);CHKERRQ(ierr);
     }
-
-  } else {
-
-    n_vm=0; vm=NULL;
-
   }
-
   ierr = PetscObjectGetComm((PetscObject)V,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,n_vm,vm,PETSC_COPY_VALUES,S);CHKERRQ(ierr);
-
-  if (vm) {
-    ierr = PetscFree(vm); CHKERRQ(ierr);
-  }
-
+  ierr = ISCreateGeneral(comm,n_vm,vm,PETSC_OWN_POINTER,S);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNCT__
 #define __FUNCT__ "VecWhichBetweenOrEqual"
-/*@  
+/*@
   VecWhichBetweenOrEqual - Creates an index set containing the indices 
   where  VecLow <= V <= VecHigh
-  
+
   Collective on S
 
   Input Parameters:
@@ -339,66 +283,52 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S)
 PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
 {
   PetscErrorCode ierr;
-  PetscInt n,low,high,low2,high2,low3,high3,n_vm=0,i;
-  PetscInt *vm;
-  PetscReal *v1,*v2,*vmiddle;
-  MPI_Comm comm;
+  PetscInt       n,low,high,low2,high2,low3,high3,n_vm=0,i;
+  PetscInt       *vm = NULL;
+  PetscReal      *v1,*v2,*vmiddle;
+  MPI_Comm       comm;
 
   PetscValidHeaderSpecific(V,VEC_CLASSID,2); 
   PetscCheckSameComm(V,2,VecLow,1); PetscCheckSameComm(V,2,VecHigh,3);
 
-  ierr = VecGetOwnershipRange(VecLow, &low, &high); CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(VecHigh, &low2, &high2); CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(V, &low3, &high3); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(VecLow, &low, &high);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(VecHigh, &low2, &high2);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(V, &low3, &high3);CHKERRQ(ierr);
+  if ( low!=low2 || high!=high2 || low!=low3 || high!=high3 ) SETERRQ(PETSC_COMM_SELF,1,"Vectors must have identical layout");
 
-  if ( low!=low2 || high!=high2 || low!=low3 || high!=high3 )
-    SETERRQ(PETSC_COMM_SELF,1,"Vectors must be identically loaded over processors");
-
-  ierr = VecGetLocalSize(VecLow,&n); CHKERRQ(ierr);
+  ierr = VecGetLocalSize(VecLow,&n);CHKERRQ(ierr);
 
   if (n>0){
-
-    ierr = VecGetArray(VecLow,&v1); CHKERRQ(ierr);
+    ierr = VecGetArray(VecLow,&v1);CHKERRQ(ierr);
     if (VecLow != VecHigh){
-      ierr = VecGetArray(VecHigh,&v2); CHKERRQ(ierr);
+      ierr = VecGetArray(VecHigh,&v2);CHKERRQ(ierr);
     } else {
       v2=v1;
     }
     if ( V != VecLow && V != VecHigh){
-      ierr = VecGetArray(V,&vmiddle); CHKERRQ(ierr);
+      ierr = VecGetArray(V,&vmiddle);CHKERRQ(ierr);
     } else if ( V==VecLow ){
       vmiddle=v1;
     } else {
       vmiddle =v2;
     }
 
-    ierr = PetscMalloc( n*sizeof(PetscInt), &vm ); CHKERRQ(ierr);
-    
+    ierr = PetscMalloc( n*sizeof(PetscInt), &vm );CHKERRQ(ierr);
+
     for (i=0; i<n; i++){
       if (v1[i] <= vmiddle[i] && vmiddle[i] <= v2[i]) {vm[n_vm]=low+i; n_vm++;}
     }
 
-    ierr = VecRestoreArray(VecLow,&v1); CHKERRQ(ierr);
+    ierr = VecRestoreArray(VecLow,&v1);CHKERRQ(ierr);
     if (VecLow != VecHigh){
-      ierr = VecRestoreArray(VecHigh,&v2); CHKERRQ(ierr);
+      ierr = VecRestoreArray(VecHigh,&v2);CHKERRQ(ierr);
     }
     if ( V != VecLow && V != VecHigh){
-      ierr = VecRestoreArray(V,&vmiddle); CHKERRQ(ierr);
+      ierr = VecRestoreArray(V,&vmiddle);CHKERRQ(ierr);
     }
-
-  } else {
-
-    n_vm=0; vm=NULL;
-
   }
-
   ierr = PetscObjectGetComm((PetscObject)V,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,n_vm,vm,PETSC_COPY_VALUES,S);CHKERRQ(ierr);
-
-  if (vm) {
-    ierr = PetscFree(vm); CHKERRQ(ierr);
-  }
-
+  ierr = ISCreateGeneral(comm,n_vm,vm,PETSC_OWN_POINTER,S);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -414,7 +344,6 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
 . reduced_type - the method TAO is using for subsetting (TAO_SUBSET_SUBVEC, TAO_SUBSET_MASK,  TAO_SUBSET_MATRIXFREE)
 - maskvalue - the value to set the unused vector elements to (for TAO_SUBSET_MASK or TAO_SUBSET_MATRIXFREE)
 
-
   Output Parameters:
 . vreduced - the subvector
 
@@ -423,84 +352,75 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
 @*/
 PetscErrorCode VecGetSubVec(Vec vfull, IS is, PetscInt reduced_type, PetscReal maskvalue, Vec *vreduced) 
 {
-    PetscErrorCode ierr;
-    PetscInt nfull,nreduced,nreduced_local,rlow,rhigh,flow,fhigh;
-    PetscInt i,nlocal;
-    PetscReal *fv,*rv;
-    const PetscInt *s;
-    IS ident;
-    VecType vtype;
-    VecScatter scatter;
-    MPI_Comm comm;
-    
-    PetscFunctionBegin;
-    PetscValidHeaderSpecific(vfull,VEC_CLASSID,1);
-    PetscValidHeaderSpecific(is,IS_CLASSID,2);
-	
-    ierr = VecGetSize(vfull, &nfull); CHKERRQ(ierr);
-    ierr = ISGetSize(is, &nreduced); CHKERRQ(ierr);
+  PetscErrorCode ierr;
+  PetscInt       nfull,nreduced,nreduced_local,rlow,rhigh,flow,fhigh;
+  PetscInt       i,nlocal;
+  PetscReal      *fv,*rv;
+  const PetscInt *s;
+  IS             ident;
+  VecType        vtype;
+  VecScatter     scatter;
+  MPI_Comm       comm;
 
-    if (nreduced == nfull) {
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(vfull,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,2);
 
-      ierr = VecDestroy(vreduced); CHKERRQ(ierr);
-      ierr = VecDuplicate(vfull,vreduced); CHKERRQ(ierr);
-      ierr = VecCopy(vfull,*vreduced); CHKERRQ(ierr);
+  ierr = VecGetSize(vfull, &nfull);CHKERRQ(ierr);
+  ierr = ISGetSize(is, &nreduced);CHKERRQ(ierr);
 
-    } else { 
-     
-	switch (reduced_type) {
-	case TAO_SUBSET_SUBVEC:
-	  ierr = VecGetType(vfull,&vtype); CHKERRQ(ierr);
-	  ierr = VecGetOwnershipRange(vfull,&flow,&fhigh); CHKERRQ(ierr);
-	  ierr = ISGetLocalSize(is,&nreduced_local); CHKERRQ(ierr);
-	  ierr = PetscObjectGetComm((PetscObject)vfull,&comm); CHKERRQ(ierr);
-	  if (*vreduced) {
-	    ierr = VecDestroy(vreduced); CHKERRQ(ierr);
-	  }
-	  ierr = VecCreate(comm,vreduced); CHKERRQ(ierr);
-	  ierr = VecSetType(*vreduced,vtype); CHKERRQ(ierr);
+  if (nreduced == nfull) {
+    ierr = VecDestroy(vreduced);CHKERRQ(ierr);
+    ierr = VecDuplicate(vfull,vreduced);CHKERRQ(ierr);
+    ierr = VecCopy(vfull,*vreduced);CHKERRQ(ierr);
+  } else {
+    switch (reduced_type) {
+    case TAO_SUBSET_SUBVEC:
+      ierr = VecGetType(vfull,&vtype);CHKERRQ(ierr);
+      ierr = VecGetOwnershipRange(vfull,&flow,&fhigh);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(is,&nreduced_local);CHKERRQ(ierr);
+      ierr = PetscObjectGetComm((PetscObject)vfull,&comm);CHKERRQ(ierr);
+      if (*vreduced) {
+        ierr = VecDestroy(vreduced);CHKERRQ(ierr);
+      }
+      ierr = VecCreate(comm,vreduced);CHKERRQ(ierr);
+      ierr = VecSetType(*vreduced,vtype);CHKERRQ(ierr);
 
-	  
-	  ierr = VecSetSizes(*vreduced,nreduced_local,nreduced); CHKERRQ(ierr);
-	
-	  ierr = VecGetOwnershipRange(*vreduced,&rlow,&rhigh); CHKERRQ(ierr);
-	
-	  ierr = ISCreateStride(comm,nreduced_local,rlow,1,&ident); CHKERRQ(ierr);
-	  ierr = VecScatterCreate(vfull,is,*vreduced,ident,&scatter); CHKERRQ(ierr);
-	  ierr = VecScatterBegin(scatter,vfull,*vreduced,INSERT_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
-	  ierr = VecScatterEnd(scatter,vfull,*vreduced,INSERT_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
-	  ierr = VecScatterDestroy(&scatter); CHKERRQ(ierr);
-	  ierr = ISDestroy(&ident); CHKERRQ(ierr);
-	  break;
-
-	case TAO_SUBSET_MASK:
-	case TAO_SUBSET_MATRIXFREE:
-	  /* vr[i] = vf[i]   if i in is
-             vr[i] = 0       otherwise */
-	  if (*vreduced == NULL) {
-	    ierr = VecDuplicate(vfull,vreduced); CHKERRQ(ierr);
-	  }
-
-	  ierr = VecSet(*vreduced,maskvalue); CHKERRQ(ierr);
-	  ierr = ISGetLocalSize(is,&nlocal); CHKERRQ(ierr);
-	  ierr = VecGetOwnershipRange(vfull,&flow,&fhigh); CHKERRQ(ierr);
-	  ierr = VecGetArray(vfull,&fv); CHKERRQ(ierr);
-	  ierr = VecGetArray(*vreduced,&rv); CHKERRQ(ierr);
-	  ierr = ISGetIndices(is,&s); CHKERRQ(ierr);
-	  if (nlocal > (fhigh-flow)) {
-	    SETERRQ2(PETSC_COMM_WORLD,1,"IS local size %d > Vec local size %d",nlocal,fhigh-flow);
-	  }
-	  for (i=0;i<nlocal;i++) {
-	    rv[s[i]-flow] = fv[s[i]-flow];
-	  }
-	  ierr = ISRestoreIndices(is,&s); CHKERRQ(ierr);
-	  ierr = VecRestoreArray(vfull,&fv); CHKERRQ(ierr);
-	  ierr = VecRestoreArray(*vreduced,&rv); CHKERRQ(ierr);
-	  break;
-	}
+      ierr = VecSetSizes(*vreduced,nreduced_local,nreduced);CHKERRQ(ierr);
+      ierr = VecGetOwnershipRange(*vreduced,&rlow,&rhigh);CHKERRQ(ierr);
+      ierr = ISCreateStride(comm,nreduced_local,rlow,1,&ident);CHKERRQ(ierr);
+      ierr = VecScatterCreate(vfull,is,*vreduced,ident,&scatter);CHKERRQ(ierr);
+      ierr = VecScatterBegin(scatter,vfull,*vreduced,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(scatter,vfull,*vreduced,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
+      ierr = ISDestroy(&ident);CHKERRQ(ierr);
+      break;
+      
+    case TAO_SUBSET_MASK:
+    case TAO_SUBSET_MATRIXFREE:
+      /* vr[i] = vf[i]   if i in is
+       vr[i] = 0       otherwise */
+      if (*vreduced == NULL) {
+        ierr = VecDuplicate(vfull,vreduced);CHKERRQ(ierr);
+      }
+      
+      ierr = VecSet(*vreduced,maskvalue);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(is,&nlocal);CHKERRQ(ierr);
+      ierr = VecGetOwnershipRange(vfull,&flow,&fhigh);CHKERRQ(ierr);
+      ierr = VecGetArray(vfull,&fv);CHKERRQ(ierr);
+      ierr = VecGetArray(*vreduced,&rv);CHKERRQ(ierr);
+      ierr = ISGetIndices(is,&s);CHKERRQ(ierr);
+      if (nlocal > (fhigh-flow)) SETERRQ2(PETSC_COMM_WORLD,1,"IS local size %d > Vec local size %d",nlocal,fhigh-flow);
+      for (i=0;i<nlocal;i++) {
+        rv[s[i]-flow] = fv[s[i]-flow];
+      }
+      ierr = ISRestoreIndices(is,&s);CHKERRQ(ierr);
+      ierr = VecRestoreArray(vfull,&fv);CHKERRQ(ierr);
+      ierr = VecRestoreArray(*vreduced,&rv);CHKERRQ(ierr);
+      break;
     }
-    PetscFunctionReturn(0);
-    
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -518,33 +438,32 @@ PetscErrorCode VecGetSubVec(Vec vfull, IS is, PetscInt reduced_type, PetscReal m
 @*/
 PetscErrorCode VecReducedXPY(Vec vfull, Vec vreduced, IS is)
 {
-    VecScatter scatter;
-    IS ident;
-    PetscInt nfull,nreduced,rlow,rhigh;
-    MPI_Comm comm;
-    PetscErrorCode ierr;
+  VecScatter     scatter;
+  IS             ident;
+  PetscInt       nfull,nreduced,rlow,rhigh;
+  MPI_Comm       comm;
+  PetscErrorCode ierr;
 
-    PetscFunctionBegin;
-    PetscValidHeaderSpecific(vfull,VEC_CLASSID,1);
-    PetscValidHeaderSpecific(vreduced,VEC_CLASSID,2);
-    PetscValidHeaderSpecific(is,IS_CLASSID,3);
-    ierr = VecGetSize(vfull,&nfull); CHKERRQ(ierr);
-    ierr = VecGetSize(vreduced,&nreduced); CHKERRQ(ierr);
-    
-    if (nfull == nreduced) { /* Also takes care of masked vectors */
-      ierr = VecAXPY(vfull,1.0,vreduced); CHKERRQ(ierr);
-    } else {
-      ierr = PetscObjectGetComm((PetscObject)vfull,&comm); CHKERRQ(ierr);
-      ierr = VecGetOwnershipRange(vreduced,&rlow,&rhigh); CHKERRQ(ierr);
-      ierr = ISCreateStride(comm,rhigh-rlow,rlow,1,&ident); CHKERRQ(ierr);
-      ierr = VecScatterCreate(vreduced,ident,vfull,is,&scatter); CHKERRQ(ierr);
-      ierr = VecScatterBegin(scatter,vreduced,vfull,ADD_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
-      ierr = VecScatterEnd(scatter,vreduced,vfull,ADD_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
-      ierr = VecScatterDestroy(&scatter); CHKERRQ(ierr);
-      ierr = ISDestroy(&ident); CHKERRQ(ierr);
-    }
-    
-    PetscFunctionReturn(0);
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(vfull,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(vreduced,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(is,IS_CLASSID,3);
+  ierr = VecGetSize(vfull,&nfull);CHKERRQ(ierr);
+  ierr = VecGetSize(vreduced,&nreduced);CHKERRQ(ierr);
+
+  if (nfull == nreduced) { /* Also takes care of masked vectors */
+    ierr = VecAXPY(vfull,1.0,vreduced);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectGetComm((PetscObject)vfull,&comm);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(vreduced,&rlow,&rhigh);CHKERRQ(ierr);
+    ierr = ISCreateStride(comm,rhigh-rlow,rlow,1,&ident);CHKERRQ(ierr);
+    ierr = VecScatterCreate(vreduced,ident,vfull,is,&scatter);CHKERRQ(ierr);
+    ierr = VecScatterBegin(scatter,vreduced,vfull,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scatter,vreduced,vfull,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
+    ierr = ISDestroy(&ident);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 
 
@@ -567,44 +486,37 @@ PetscErrorCode VecReducedXPY(Vec vfull, Vec vreduced, IS is)
 
    Level: advanced
 @*/
-PetscErrorCode ISCreateComplement(IS S, Vec V, IS *T){
+PetscErrorCode ISCreateComplement(IS S, Vec V, IS *T)
+{
   PetscErrorCode ierr;
-  PetscInt i,nis,nloc,high,low,n=0;
+  PetscInt       i,nis,nloc,high,low,n=0;
   const PetscInt *s;
-  PetscInt *tt,*ss;
-  MPI_Comm comm;
+  PetscInt       *tt,*ss;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(S,IS_CLASSID,1); 
   PetscValidHeaderSpecific(V,VEC_CLASSID,2); 
 
-  ierr = VecGetOwnershipRange(V,&low,&high); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(V,&nloc); CHKERRQ(ierr);
-  ierr = ISGetLocalSize(S,&nis); CHKERRQ(ierr);
-  ierr = ISGetIndices(S, &s); CHKERRQ(ierr);
-  ierr = PetscMalloc( nloc*sizeof(PetscInt),&tt ); CHKERRQ(ierr);
-  ierr = PetscMalloc( nloc*sizeof(PetscInt),&ss ); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(V,&low,&high);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(V,&nloc);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(S,&nis);CHKERRQ(ierr);
+  ierr = PetscMalloc( nloc*sizeof(PetscInt),&tt );CHKERRQ(ierr);
+  ierr = PetscMalloc( nloc*sizeof(PetscInt),&ss );CHKERRQ(ierr);
 
+  ierr = ISGetIndices(S, &s);CHKERRQ(ierr);
   for (i=low; i<high; i++){ tt[i-low]=i; }
-
   for (i=0; i<nis; i++){ tt[s[i]-low] = -2; }
-  
+
   for (i=0; i<nloc; i++){
     if (tt[i]>-1){ ss[n]=tt[i]; n++; }
   }
+  ierr = ISRestoreIndices(S, &s);CHKERRQ(ierr);
 
-  ierr = ISRestoreIndices(S, &s); CHKERRQ(ierr);
-  
   ierr = PetscObjectGetComm((PetscObject)S,&comm);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,n,ss,PETSC_COPY_VALUES,T);CHKERRQ(ierr);
-  
-  if (tt) {
-    ierr = PetscFree(tt); CHKERRQ(ierr);
-  }
-  if (ss) {
-    ierr = PetscFree(ss); CHKERRQ(ierr);
-  }
-
+  ierr = PetscFree(tt);CHKERRQ(ierr);
+  ierr = PetscFree(ss);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -622,31 +534,29 @@ PetscErrorCode ISCreateComplement(IS S, Vec V, IS *T){
 
    Level: advanced
 @*/
-PetscErrorCode VecISSetToConstant(IS S, PetscReal c, Vec V){
+PetscErrorCode VecISSetToConstant(IS S, PetscReal c, Vec V)
+{
   PetscErrorCode ierr;
-  PetscInt nloc,low,high,i;
+  PetscInt       nloc,low,high,i;
   const PetscInt *s;
-  PetscReal *v;
+  PetscReal      *v;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(V,VEC_CLASSID,3); 
   PetscValidHeaderSpecific(S,IS_CLASSID,1); 
   PetscValidType(V,3);
   PetscCheckSameComm(V,3,S,1);
 
-  ierr = VecGetOwnershipRange(V, &low, &high); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(V, &low, &high);CHKERRQ(ierr);
   ierr = ISGetLocalSize(S,&nloc);CHKERRQ(ierr);
-
-  ierr = ISGetIndices(S, &s); CHKERRQ(ierr);
-  ierr = VecGetArray(V,&v); CHKERRQ(ierr);
+  ierr = ISGetIndices(S, &s);CHKERRQ(ierr);
+  ierr = VecGetArray(V,&v);CHKERRQ(ierr);
   for (i=0; i<nloc; i++){
     v[s[i]-low] = c;
   }
-  
-  ierr = ISRestoreIndices(S, &s); CHKERRQ(ierr);
-  ierr = VecRestoreArray(V,&v); CHKERRQ(ierr);
-
+  ierr = ISRestoreIndices(S, &s);CHKERRQ(ierr);
+  ierr = VecRestoreArray(V,&v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-
 }
 
 #undef __FUNCT__
@@ -667,48 +577,47 @@ PetscErrorCode VecISSetToConstant(IS S, PetscReal c, Vec V){
 PetscErrorCode MatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, Mat *Msub)
 {
   PetscErrorCode ierr;
-  IS iscomp;
-  PetscBool flg;
+  IS             iscomp;
+  PetscBool      flg;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(M,MAT_CLASSID,1);
   PetscValidHeaderSpecific(is,IS_CLASSID,2);
-  if (*Msub) {
-    ierr = MatDestroy(Msub); CHKERRQ(ierr);
-  }
+  ierr = MatDestroy(Msub);CHKERRQ(ierr);
   switch (subset_type) {
-    case TAO_SUBSET_SUBVEC:
-      ierr = MatGetSubMatrix(M, is, is, MAT_INITIAL_MATRIX, Msub); CHKERRQ(ierr);
-      break;
-
-    case TAO_SUBSET_MASK:
-      /* Get Reduced Hessian 
-	 Msub[i,j] = M[i,j] if i,j in Free_Local or i==j
-	 Msub[i,j] = 0      if i!=j and i or j not in Free_Local
-      */
-      ierr = PetscOptionsBool("-different_submatrix","use separate hessian matrix when computing submatrices","TaoSubsetType",PETSC_FALSE,&flg,NULL);
-      if (flg == PETSC_TRUE) {
-	ierr = MatDuplicate(M, MAT_COPY_VALUES, Msub); CHKERRQ(ierr);
-      } else {
-	/* Act on hessian directly (default) */
-	ierr = PetscObjectReference((PetscObject)M); CHKERRQ(ierr);
-	*Msub = M;
-      }
-      /* Save the diagonal to temporary vector */
-      ierr = MatGetDiagonal(*Msub,v1); CHKERRQ(ierr);
+  case TAO_SUBSET_SUBVEC:
+    ierr = MatGetSubMatrix(M, is, is, MAT_INITIAL_MATRIX, Msub);CHKERRQ(ierr);
+    break;
     
-      /* Zero out rows and columns */
-      ierr = ISCreateComplement(is,v1,&iscomp); CHKERRQ(ierr);
+  case TAO_SUBSET_MASK:
+    /* Get Reduced Hessian 
+     Msub[i,j] = M[i,j] if i,j in Free_Local or i==j
+     Msub[i,j] = 0      if i!=j and i or j not in Free_Local
+     */
+    ierr = PetscOptionsBool("-different_submatrix","use separate hessian matrix when computing submatrices","TaoSubsetType",PETSC_FALSE,&flg,NULL);
+    if (flg == PETSC_TRUE) {
+      ierr = MatDuplicate(M, MAT_COPY_VALUES, Msub);CHKERRQ(ierr);
+    } else {
+      /* Act on hessian directly (default) */
+      ierr = PetscObjectReference((PetscObject)M);CHKERRQ(ierr);
+      *Msub = M;
+    }
+    /* Save the diagonal to temporary vector */
+    ierr = MatGetDiagonal(*Msub,v1);CHKERRQ(ierr);
 
-      /* Use v1 instead of 0 here because of PETSc bug */
-      ierr = MatZeroRowsColumnsIS(*Msub,iscomp,1.0,v1,v1); CHKERRQ(ierr);
+    /* Zero out rows and columns */
+    ierr = ISCreateComplement(is,v1,&iscomp);CHKERRQ(ierr);
 
-      ierr = ISDestroy(&iscomp); CHKERRQ(ierr);
-      break;
-    case TAO_SUBSET_MATRIXFREE:
-      ierr = ISCreateComplement(is,v1,&iscomp); CHKERRQ(ierr);
-      ierr = MatCreateSubMatrixFree(M,iscomp,iscomp,Msub); CHKERRQ(ierr);
-      ierr = ISDestroy(&iscomp); CHKERRQ(ierr);
-      break;
-  }      
+    /* Use v1 instead of 0 here because of PETSc bug */
+    ierr = MatZeroRowsColumnsIS(*Msub,iscomp,1.0,v1,v1);CHKERRQ(ierr);
+
+    ierr = ISDestroy(&iscomp);CHKERRQ(ierr);
+    break;
+  case TAO_SUBSET_MATRIXFREE:
+    ierr = ISCreateComplement(is,v1,&iscomp);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrixFree(M,iscomp,iscomp,Msub);CHKERRQ(ierr);
+    ierr = ISDestroy(&iscomp);CHKERRQ(ierr);
+    break;
+  }
   PetscFunctionReturn(0);
 }

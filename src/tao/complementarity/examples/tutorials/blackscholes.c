@@ -163,34 +163,24 @@ int main(int argc, char **argv)
   user.es = 100.0;
   
   /* Read in alternative values for the American option to price */
-  ierr = PetscOptionsGetReal(NULL, "-alpha", &user.alpha, &flg); 
-         CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL, "-delta", &user.delta, &flg); 
-         CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL, "-es", &user.es, &flg); 
-         CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL, "-expiry", &user.expiry, &flg); 
-         CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, "-ms", &user.ms, &flg); 
-         CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, "-mt", &user.mt, &flg); 
-         CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL, "-rate", &user.rate, &flg); 
-         CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL, "-sigma", &user.sigma, &flg); 
-         CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL, "-strike", &user.strike, &flg); 
-         CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL, "-alpha", &user.alpha, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL, "-delta", &user.delta, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL, "-es", &user.es, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL, "-expiry", &user.expiry, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-ms", &user.ms, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-mt", &user.mt, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL, "-rate", &user.rate, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL, "-sigma", &user.sigma, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL, "-strike", &user.strike, &flg);CHKERRQ(ierr);
 
   /* Check that the options set are allowable (needs to be done) */
 
   user.ms++;
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,user.ms,1,1,
-                    NULL,&user.dm); CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,user.ms,1,1,NULL,&user.dm);CHKERRQ(ierr);
   /* Create appropriate vectors and matrices */
 
-  ierr = DMDAGetCorners(user.dm,&xs,NULL,NULL,&xm,NULL,NULL); CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user.dm,&gxs,NULL,NULL,&gxm,NULL,NULL); CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user.dm,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user.dm,&gxs,NULL,NULL,&gxm,NULL,NULL);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(user.dm,&x);CHKERRQ(ierr);
   /* 
@@ -200,9 +190,9 @@ int main(int argc, char **argv)
   user.ds = user.es / (user.ms-1);
   user.dt = user.expiry / user.mt;
 
-  ierr = PetscMalloc((gxm)*sizeof(double),&(user.Vt1)); CHKERRQ(ierr);
-  ierr = PetscMalloc((gxm)*sizeof(double),&(user.c)); CHKERRQ(ierr);
-  ierr = PetscMalloc((gxm)*sizeof(double),&(user.d)); CHKERRQ(ierr);
+  ierr = PetscMalloc((gxm)*sizeof(double),&(user.Vt1));CHKERRQ(ierr);
+  ierr = PetscMalloc((gxm)*sizeof(double),&(user.c));CHKERRQ(ierr);
+  ierr = PetscMalloc((gxm)*sizeof(double),&(user.d));CHKERRQ(ierr);
 
   /* 
      Calculate the values for the constant.  Vt1 begins with the ending 
@@ -218,7 +208,7 @@ int main(int argc, char **argv)
     user.Vt1[gxm-1] = 0;
   }
 
-  ierr = VecDuplicate(x, &c); CHKERRQ(ierr);
+  ierr = VecDuplicate(x, &c);CHKERRQ(ierr);
 
   /* 
      Allocate the matrix used by TAO for the Jacobian.  Each row of
@@ -229,59 +219,57 @@ int main(int argc, char **argv)
   /* The TAO code begins here */
 
   /* Create TAO solver and set desired solution method  */
-  ierr = TaoCreate(PETSC_COMM_WORLD, &tao); CHKERRQ(ierr);
-  ierr = TaoSetType(tao,"tao_ssils"); CHKERRQ(ierr);
+  ierr = TaoCreate(PETSC_COMM_WORLD, &tao);CHKERRQ(ierr);
+  ierr = TaoSetType(tao,"tao_ssils");CHKERRQ(ierr);
 
   /* Set routines for constraints function and Jacobian evaluation */
-  ierr = TaoSetConstraintsRoutine(tao, c, FormConstraints, (void *)&user); 
-  CHKERRQ(ierr);
-  ierr = TaoSetJacobianRoutine(tao, J, J, FormJacobian, (void *)&user); CHKERRQ(ierr); 
+  ierr = TaoSetConstraintsRoutine(tao, c, FormConstraints, (void *)&user);CHKERRQ(ierr);
+  ierr = TaoSetJacobianRoutine(tao, J, J, FormJacobian, (void *)&user);CHKERRQ(ierr); 
     
   /* Set the variable bounds */
-  ierr = TaoSetVariableBoundsRoutine(tao,ComputeVariableBounds,(void*)&user); 
-  CHKERRQ(ierr);
+  ierr = TaoSetVariableBoundsRoutine(tao,ComputeVariableBounds,(void*)&user);CHKERRQ(ierr);
 
   /* Set initial solution guess */
-  ierr = VecGetArray(x,&x_array); CHKERRQ(ierr);
+  ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
   for (i=0; i< xm; i++) 
     x_array[i] = user.Vt1[i-gxs+xs];
-  ierr = VecRestoreArray(x,&x_array); CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
   /* Set data structure */ 
-  ierr = TaoSetInitialVector(tao, x); CHKERRQ(ierr);
+  ierr = TaoSetInitialVector(tao, x);CHKERRQ(ierr);
 
   /* Set routines for function and Jacobian evaluation */
-  ierr = TaoSetFromOptions(tao); CHKERRQ(ierr);
+  ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
   /* Iteratively solve the linear complementarity problems  */
   for (i = 1; i < user.mt; i++) {
 
     /* Solve the current version */
-    ierr = TaoSolve(tao);  CHKERRQ(ierr);
+    ierr = TaoSolve(tao); CHKERRQ(ierr);
 
     /* Update Vt1 with the solution */
     ierr = DMGetLocalVector(user.dm,&localX);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalBegin(user.dm,x,INSERT_VALUES,localX); CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd(user.dm,x,INSERT_VALUES,localX); CHKERRQ(ierr);
-    ierr = VecGetArray(localX,&x_array); CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(user.dm,x,INSERT_VALUES,localX);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(user.dm,x,INSERT_VALUES,localX);CHKERRQ(ierr);
+    ierr = VecGetArray(localX,&x_array);CHKERRQ(ierr);
     for (j = 0; j < gxm; j++) {
       user.Vt1[j] = x_array[j];
     }
-    ierr = VecRestoreArray(x,&x_array); CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(user.dm,&localX); CHKERRQ(ierr);
+    ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(user.dm,&localX);CHKERRQ(ierr);
   }
 
   /* Free TAO data structures */
-  ierr = TaoDestroy(&tao); CHKERRQ(ierr);
+  ierr = TaoDestroy(&tao);CHKERRQ(ierr);
 
   /* Free PETSc data structures */
-  ierr = VecDestroy(&x); CHKERRQ(ierr);
-  ierr = VecDestroy(&c); CHKERRQ(ierr);
-  ierr = MatDestroy(&J); CHKERRQ(ierr);
-  ierr = DMDestroy(&user.dm); CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&c);CHKERRQ(ierr);
+  ierr = MatDestroy(&J);CHKERRQ(ierr);
+  ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
   /* Free user-defined workspace */
-  ierr = PetscFree(user.Vt1); CHKERRQ(ierr);
-  ierr = PetscFree(user.c); CHKERRQ(ierr);
-  ierr = PetscFree(user.d); CHKERRQ(ierr);
+  ierr = PetscFree(user.Vt1);CHKERRQ(ierr);
+  ierr = PetscFree(user.c);CHKERRQ(ierr);
+  ierr = PetscFree(user.d);CHKERRQ(ierr);
 
   /* Finalize TAO and PETSc */
   PetscFinalize();
@@ -303,25 +291,25 @@ PetscErrorCode ComputeVariableBounds(TaoSolver tao, Vec xl, Vec xu, void*ctx)
   PetscReal sval=0.0,*xl_array,ub= TAO_INFINITY;
 
   /* Set the variable bounds */
-  ierr = VecSet(xu, ub); CHKERRQ(ierr);
-  ierr = DMDAGetCorners(user->dm,&xs,NULL,NULL,&xm,NULL,NULL); CHKERRQ(ierr);
+  ierr = VecSet(xu, ub);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->dm,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
-  ierr = VecGetArray(xl,&xl_array); CHKERRQ(ierr);
+  ierr = VecGetArray(xl,&xl_array);CHKERRQ(ierr);
   for (i = 0; i < xm; i++){
     sval = (xs+i)*user->ds;
     xl_array[i] = PetscMax(user->strike - sval, 0);
   }
-  ierr = VecRestoreArray(xl,&xl_array); CHKERRQ(ierr);
+  ierr = VecRestoreArray(xl,&xl_array);CHKERRQ(ierr);
 
   if (xs==0){
-    ierr = VecGetArray(xu,&xl_array); CHKERRQ(ierr);
+    ierr = VecGetArray(xu,&xl_array);CHKERRQ(ierr);
     xl_array[0] = PetscMax(user->strike, 0);
-    ierr = VecRestoreArray(xu,&xl_array); CHKERRQ(ierr);
+    ierr = VecRestoreArray(xu,&xl_array);CHKERRQ(ierr);
   }
   if (xs+xm==ms){
-    ierr = VecGetArray(xu,&xl_array); CHKERRQ(ierr);
+    ierr = VecGetArray(xu,&xl_array);CHKERRQ(ierr);
     xl_array[xm-1] = 0;
-    ierr = VecRestoreArray(xu,&xl_array); CHKERRQ(ierr);
+    ierr = VecRestoreArray(xu,&xl_array);CHKERRQ(ierr);
   }
 
   return 0;
@@ -356,10 +344,10 @@ PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec F, void *ptr)
 
   ierr = DMGetLocalVector(user->dm,&localX);CHKERRQ(ierr);
   ierr = DMGetLocalVector(user->dm,&localF);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(user->dm,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(user->dm,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-  ierr = DMDAGetCorners(user->dm,&xs,NULL,NULL,&xm,NULL,NULL); CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->dm,&gxs,NULL,NULL,&gxm,NULL,NULL); CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(user->dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(user->dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->dm,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->dm,&gxs,NULL,NULL,&gxm,NULL,NULL);CHKERRQ(ierr);
   ierr = VecSet(F, zero);CHKERRQ(ierr);
   /* 
      The problem size is smaller than the discretization because of the
@@ -367,8 +355,8 @@ PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec F, void *ptr)
   */
 
   /* Get pointers to the vector data */
-  ierr = VecGetArray(localX, &x); CHKERRQ(ierr);
-  ierr = VecGetArray(localF, &f); CHKERRQ(ierr);
+  ierr = VecGetArray(localX, &x);CHKERRQ(ierr);
+  ierr = VecGetArray(localF, &f);CHKERRQ(ierr);
   
   /* Left Boundary */
   if (gxs==0){ 
@@ -394,13 +382,13 @@ PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec F, void *ptr)
   }
 
   /* Restore vectors */
-  ierr = VecRestoreArray(localX, &x); CHKERRQ(ierr);
-  ierr = VecRestoreArray(localF, &f); CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(user->dm,localF,INSERT_VALUES,F); CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(user->dm,localF,INSERT_VALUES,F); CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(user->dm,&localX); CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(user->dm,&localF); CHKERRQ(ierr);
-  ierr = PetscLogFlops(24*(gxm-2)); CHKERRQ(ierr);
+  ierr = VecRestoreArray(localX, &x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(localF, &f);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(user->dm,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(user->dm,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(user->dm,&localX);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(user->dm,&localF);CHKERRQ(ierr);
+  ierr = PetscLogFlops(24*(gxm-2));CHKERRQ(ierr);
   /*
   info=VecView(F,PETSC_VIEWER_STDOUT_WORLD);
   */
@@ -438,18 +426,18 @@ PetscErrorCode FormJacobian(TaoSolver tao, Vec X, Mat *tJ, Mat *tJPre, MatStruct
 
   /* Set various matrix options */
   *flag=SAME_NONZERO_PATTERN;
-  ierr = MatSetOption(J,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE); CHKERRQ(ierr);
-  ierr = MatAssembled(J,&assembled); CHKERRQ(ierr);
-  if (assembled){ierr = MatZeroEntries(J);  CHKERRQ(ierr);}
+  ierr = MatSetOption(J,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatAssembled(J,&assembled);CHKERRQ(ierr);
+  if (assembled){ierr = MatZeroEntries(J); CHKERRQ(ierr);}
 
 
-  ierr = DMDAGetGhostCorners(user->dm,&gxs,NULL,NULL,&gxm,NULL,NULL); CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->dm,&gxs,NULL,NULL,&gxm,NULL,NULL);CHKERRQ(ierr);
 
   if (gxs==0){
     i = 0;
     col[0] = 0;
     val[0]=1.0;
-    ierr = MatSetValues(J,1,&i,1,col,val,INSERT_VALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(J,1,&i,1,col,val,INSERT_VALUES);CHKERRQ(ierr);
   }
   for (i=1; i < gxm-1; i++) {
     col[0] = gxs + i - 1;
@@ -458,19 +446,19 @@ PetscErrorCode FormJacobian(TaoSolver tao, Vec X, Mat *tJ, Mat *tJPre, MatStruct
     val[0] = -c[i]/(4*ds) + d[i]/(2*ds*ds);
     val[1] = 1.0/dt + rate - d[i]/(ds*ds);
     val[2] =  c[i]/(4*ds) + d[i]/(2*ds*ds);
-    ierr = MatSetValues(J,1,&col[1],3,col,val,INSERT_VALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(J,1,&col[1],3,col,val,INSERT_VALUES);CHKERRQ(ierr);
   }
   if (gxs+gxm==ms){
     i = ms-1;
     col[0] = i;
     val[0]=1.0;
-    ierr = MatSetValues(J,1,&i,1,col,val,INSERT_VALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(J,1,&i,1,col,val,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /* Assemble the Jacobian matrix */
-  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = PetscLogFlops(18*(gxm)+5); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscLogFlops(18*(gxm)+5);CHKERRQ(ierr);
   return 0;
 }
 

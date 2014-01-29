@@ -38,7 +38,7 @@ PetscErrorCode TaoInitialize(int *argc, char ***args, const char file[],
     return(0);
   }
   if (PetscInitializeCalled) {
-    ierr=PetscInfo(0,"TAO successfully initialized.\n"); CHKERRQ(ierr);
+    ierr=PetscInfo(0,"TAO successfully initialized.\n");CHKERRQ(ierr);
   } else {
     if (argc&&args) {
       PetscInitialize(argc,args,file,help); 

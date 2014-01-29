@@ -93,7 +93,6 @@ static PetscErrorCode TaoSetup_TRON(TaoSolver tao)
       ierr = VecDuplicate(tao->solution, &tao->XU);CHKERRQ(ierr);
       ierr = VecSet(tao->XU, TAO_INFINITY);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -118,21 +117,16 @@ static PetscErrorCode TaoSolve_TRON(TaoSolver tao)
   ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution);CHKERRQ(ierr);
   ierr = TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU);CHKERRQ(ierr);
 
-  
   ierr = TaoComputeObjectiveAndGradient(tao,tao->solution,&tron->f,tao->gradient);CHKERRQ(ierr);
-  if (tron->Free_Local) {
-    ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
-  }
+  ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
+
   ierr = VecWhichBetween(tao->XL,tao->solution,tao->XU,&tron->Free_Local);CHKERRQ(ierr);
-  
+
   /* Project the gradient and calculate the norm */
   ierr = VecBoundGradientProjection(tao->gradient,tao->solution, tao->XL, tao->XU, tao->gradient);CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm);CHKERRQ(ierr);
 
-  if (PetscIsInfOrNanReal(tron->f) || PetscIsInfOrNanReal(tron->gnorm)) {
-    SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf pr NaN");
-  }
-
+  if (PetscIsInfOrNanReal(tron->f) || PetscIsInfOrNanReal(tron->gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf pr NaN");
   if (tao->trust <= 0) {
     tao->trust=PetscMax(tron->gnorm*tron->gnorm,1.0);
   }

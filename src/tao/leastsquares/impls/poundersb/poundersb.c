@@ -409,10 +409,10 @@ static PetscErrorCode TaoDestroy_POUNDERS(TaoSolver tao)
 #endif
 
   if (mfqP->size > 1) {
-    ierr = VecDestroy(&mfqP->localx); CHKERRQ(ierr);
-    ierr = VecDestroy(&mfqP->localxmin); CHKERRQ(ierr);
-    ierr = VecDestroy(&mfqP->localf); CHKERRQ(ierr);
-    ierr = VecDestroy(&mfqP->localfmin); CHKERRQ(ierr);
+    ierr = VecDestroy(&mfqP->localx);CHKERRQ(ierr);
+    ierr = VecDestroy(&mfqP->localxmin);CHKERRQ(ierr);
+    ierr = VecDestroy(&mfqP->localf);CHKERRQ(ierr);
+    ierr = VecDestroy(&mfqP->localfmin);CHKERRQ(ierr);
   }
 
   if (tao->data) {

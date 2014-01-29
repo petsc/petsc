@@ -28,7 +28,6 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP){
   PetscReal      xval,gpval;
 
   /* Project variables at the lower and upper bound */
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(G,VEC_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
@@ -103,6 +102,7 @@ PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepm
   ierr = MPI_Allreduce(&localmax,stepmax,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "VecStepBoundInfo"
 PetscErrorCode VecStepBoundInfo(Vec X, Vec XL, Vec XU, Vec DX, PetscReal *boundmin, PetscReal *wolfemin, PetscReal *boundmax)
@@ -181,10 +181,8 @@ PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step)
   ierr = VecGetArray(X,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(DX,&dx);CHKERRQ(ierr);
   for (i=0;i<nn;i++){
-    if (xx[i] < 0){
-      SETERRQ(PETSC_COMM_SELF,1,"Vector must be positive");
-    } else if (dx[i]<0){ stepmax=PetscMin(stepmax,-xx[i]/dx[i]);
-    }
+    if (xx[i] < 0) SETERRQ(PETSC_COMM_SELF,1,"Vector must be positive");
+    else if (dx[i]<0) stepmax=PetscMin(stepmax,-xx[i]/dx[i]);
   }
   ierr = VecRestoreArray(X,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(DX,&dx);CHKERRQ(ierr);

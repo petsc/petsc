@@ -14,7 +14,7 @@ static PetscErrorCode Fsnes(SNES snes ,Vec X,Vec G,void*ctx){
   TaoSolver tao = (TaoSolver)ctx;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ctx,TAOSOLVER_CLASSID,4);
-  ierr=TaoComputeGradient(tao,X,G); CHKERRQ(ierr);
+  ierr=TaoComputeGradient(tao,X,G);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -66,27 +66,27 @@ PetscErrorCode TaoDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *dummy)
   PetscBool flg;
   PetscReal h=PETSC_SQRT_MACHINE_EPSILON;
   PetscFunctionBegin;
-  ierr = TaoComputeObjective(tao, X,&f); CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-tao_fd_delta",&h,&flg); CHKERRQ(ierr);
-  ierr = VecGetSize(X,&N); CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(X,&low,&high); CHKERRQ(ierr);
-  ierr = VecGetArray(G,&g); CHKERRQ(ierr);
+  ierr = TaoComputeObjective(tao, X,&f);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-tao_fd_delta",&h,&flg);CHKERRQ(ierr);
+  ierr = VecGetSize(X,&N);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(X,&low,&high);CHKERRQ(ierr);
+  ierr = VecGetArray(G,&g);CHKERRQ(ierr);
   for (i=0;i<N;i++) {
-      ierr = VecSetValue(X,i,h,ADD_VALUES); CHKERRQ(ierr);
-      ierr = VecAssemblyBegin(X); CHKERRQ(ierr);
-      ierr = VecAssemblyEnd(X); CHKERRQ(ierr);
+      ierr = VecSetValue(X,i,h,ADD_VALUES);CHKERRQ(ierr);
+      ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
+      ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
 
-      ierr = TaoComputeObjective(tao,X,&f2); CHKERRQ(ierr);
+      ierr = TaoComputeObjective(tao,X,&f2);CHKERRQ(ierr);
 
       ierr = VecSetValue(X,i,-h,ADD_VALUES);
-      ierr = VecAssemblyBegin(X); CHKERRQ(ierr);
-      ierr = VecAssemblyEnd(X); CHKERRQ(ierr);
+      ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
+      ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
       
       if (i>=low && i<high) {
 	  g[i-low]=(f2-f)/h;
       }
   }
-  ierr = VecRestoreArray(G,&g); CHKERRQ(ierr);
+  ierr = VecRestoreArray(G,&g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -136,9 +136,9 @@ PetscErrorCode TaoDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,
   PetscValidHeaderSpecific(V,VEC_CLASSID,2);
   ierr = VecDuplicate(V,&G);CHKERRQ(ierr);
 
-  ierr = PetscInfo(tao,"TAO Using finite differences w/o coloring to compute Hessian matrix\n"); CHKERRQ(ierr);
+  ierr = PetscInfo(tao,"TAO Using finite differences w/o coloring to compute Hessian matrix\n");CHKERRQ(ierr);
 
-  ierr = TaoComputeGradient(tao,V,G); CHKERRQ(ierr);
+  ierr = TaoComputeGradient(tao,V,G);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)(*H),&comm);CHKERRQ(ierr);
   ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
@@ -190,12 +190,12 @@ PetscErrorCode TaoDefaultComputeHessianColor(TaoSolver tao, Vec V, Mat *H,Mat *B
   
   *flag = SAME_NONZERO_PATTERN;
 
-  ierr=PetscInfo(tao,"TAO computing matrix using finite differences Hessian and coloring\n"); CHKERRQ(ierr);
-  ierr = MatFDColoringApply(*B,coloring,V,flag,ctx); CHKERRQ(ierr);
+  ierr=PetscInfo(tao,"TAO computing matrix using finite differences Hessian and coloring\n");CHKERRQ(ierr);
+  ierr = MatFDColoringApply(*B,coloring,V,flag,ctx);CHKERRQ(ierr);
 
   if (*H != *B) {
-      ierr = MatAssemblyBegin(*H, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(*H, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(*H, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(*H, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

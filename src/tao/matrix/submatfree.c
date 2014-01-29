@@ -42,7 +42,7 @@ PetscErrorCode MatCreateSubMatrixFree(Mat mat,IS Rows, IS Cols, Mat *J)
   ierr = MatGetLocalSize(mat,&mloc,&nloc);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);
   if (size == 1) {
-    ierr = VecCreateSeq(comm,n,&ctx->VC); CHKERRQ(ierr);
+    ierr = VecCreateSeq(comm,n,&ctx->VC);CHKERRQ(ierr);
   } else {
     ierr = VecCreateMPI(comm,nloc,n,&ctx->VC);CHKERRQ(ierr);
   }
@@ -52,8 +52,8 @@ PetscErrorCode MatCreateSubMatrixFree(Mat mat,IS Rows, IS Cols, Mat *J)
   
   ctx->Rows = Rows;
   ctx->Cols = Cols;
-  ierr = PetscObjectReference((PetscObject)Rows); CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)Cols); CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)Rows);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)Cols);CHKERRQ(ierr);
   ierr = MatCreateShell(comm,mloc,nloc,m,n,ctx,J);CHKERRQ(ierr);
 
   ierr = MatShellSetOperation(*J,MATOP_MULT,(void(*)(void))MatMult_SMF);CHKERRQ(ierr);
@@ -72,7 +72,7 @@ PetscErrorCode MatCreateSubMatrixFree(Mat mat,IS Rows, IS Cols, Mat *J)
   ierr = MatShellSetOperation(*J,MATOP_GET_SUBMATRIX,(void(*)(void))MatGetSubMatrix_SMF);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_GET_ROW_MAX,(void(*)(void))MatDuplicate_SMF);CHKERRQ(ierr);
 
-  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)(*J)); CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)(*J));CHKERRQ(ierr);
   PetscFunctionReturn(0);  
 }
 
@@ -151,7 +151,7 @@ PetscErrorCode MatDestroy_SMF(Mat mat)
   ierr = ISDestroy(&ctx->Rows);CHKERRQ(ierr);
   ierr = ISDestroy(&ctx->Cols);CHKERRQ(ierr);
   ierr = VecDestroy(&ctx->VC);CHKERRQ(ierr);
-  ierr = PetscFree(ctx); CHKERRQ(ierr);
+  ierr = PetscFree(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
