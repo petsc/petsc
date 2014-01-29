@@ -1,5 +1,5 @@
-#include "bqpip.h"
-#include "petscksp.h"
+#include <../src/tao/bound/impls/bqpip/bqpip.h>
+#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetUp_BQPIP"

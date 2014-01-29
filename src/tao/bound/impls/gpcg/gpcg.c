@@ -1,5 +1,5 @@
-#include "petsc-private/kspimpl.h"
-#include "gpcg.h"        /*I "gpcg.h" I*/
+#include <petsc-private/kspimpl.h>
+#include <../src/tao/bound/impls/gpcg/gpcg.h>        /*I "gpcg.h" I*/
 
 
 static PetscErrorCode GPCGGradProjections(TaoSolver tao);

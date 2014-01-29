@@ -1,7 +1,7 @@
-#include "petscvec.h"
-#include "taosolver.h"
-#include "petsc-private/taolinesearchimpl.h"
-#include "morethuente.h"
+#include <petscvec.h>
+#include <taosolver.h>
+#include <petsc-private/taolinesearchimpl.h>
+#include <../src/tao/linesearch/impls/morethuente/morethuente.h>
 
 /*
    This algorithm is taken from More' and Thuente, "Line search algorithms

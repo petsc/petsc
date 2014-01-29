@@ -287,7 +287,7 @@ PETSC_EXTERN FILE* PETSC_STDERR;
     PetscUnlikely - hints the compiler that the given condition is usually FALSE
 
     Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
     PetscBool  PetscUnlikely(PetscBool  cond)
 
     Not Collective
@@ -307,7 +307,7 @@ M*/
     PetscLikely - hints the compiler that the given condition is usually TRUE
 
     Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
     PetscBool  PetscUnlikely(PetscBool  cond)
 
     Not Collective
@@ -503,7 +503,7 @@ PETSC_EXTERN PetscErrorCode PetscCommDestroy(MPI_Comm*);
    PetscMalloc - Allocates memory
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscMalloc(size_t m,void **result)
 
    Not Collective
@@ -532,7 +532,7 @@ M*/
    PetscAddrAlign - Rounds up an address to PETSC_MEMALIGN alignment
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    void *PetscAddrAlign(void *addr)
 
    Not Collective
@@ -552,7 +552,7 @@ M*/
    PetscMalloc1 - Allocates an array of memory aligned to PETSC_MEMALIGN
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscMalloc1(size_t m1,type **r1)
 
    Not Collective
@@ -576,7 +576,7 @@ M*/
    PetscCalloc1 - Allocates a cleared (zeroed) array of memory aligned to PETSC_MEMALIGN
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscCalloc1(size_t m1,type **r1)
 
    Not Collective
@@ -600,7 +600,7 @@ M*/
    PetscMalloc2 - Allocates 2 arrays of memory both aligned to PETSC_MEMALIGN
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscMalloc2(size_t m1,type **r1,size_t m2,type **r2)
 
    Not Collective
@@ -630,7 +630,7 @@ M*/
    PetscCalloc2 - Allocates 2 cleared (zeroed) arrays of memory both aligned to PETSC_MEMALIGN
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscCalloc2(size_t m1,type **r1,size_t m2,type **r2)
 
    Not Collective
@@ -655,7 +655,7 @@ M*/
    PetscMalloc3 - Allocates 3 arrays of memory, all aligned to PETSC_MEMALIGN
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscMalloc3(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3)
 
    Not Collective
@@ -688,7 +688,7 @@ M*/
    PetscCalloc3 - Allocates 3 cleared (zeroed) arrays of memory, all aligned to PETSC_MEMALIGN
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscCalloc3(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3)
 
    Not Collective
@@ -717,7 +717,7 @@ M*/
    PetscMalloc4 - Allocates 4 arrays of memory, all aligned to PETSC_MEMALIGN
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscMalloc4(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4)
 
    Not Collective
@@ -753,7 +753,7 @@ M*/
    PetscCalloc4 - Allocates 4 cleared (zeroed) arrays of memory, all aligned to PETSC_MEMALIGN
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscCalloc4(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4)
 
    Not Collective
@@ -786,7 +786,7 @@ M*/
    PetscMalloc5 - Allocates 5 arrays of memory, all aligned to PETSC_MEMALIGN
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscMalloc5(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4,size_t m5,type **r5)
 
    Not Collective
@@ -824,7 +824,7 @@ M*/
    PetscCalloc5 - Allocates 5 cleared (zeroed) arrays of memory, all aligned to PETSC_MEMALIGN
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscCalloc5(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4,size_t m5,type **r5)
 
    Not Collective
@@ -859,7 +859,7 @@ M*/
    PetscMalloc6 - Allocates 6 arrays of memory, all aligned to PETSC_MEMALIGN
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscMalloc6(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4,size_t m5,type **r5,size_t m6,type **r6)
 
    Not Collective
@@ -899,7 +899,7 @@ M*/
    PetscCalloc6 - Allocates 6 cleared (zeroed) arrays of memory, all aligned to PETSC_MEMALIGN
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscCalloc6(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4,size_t m5,type **r5,size_t m6,type **r6)
 
    Not Collective
@@ -935,7 +935,7 @@ M*/
    PetscMalloc7 - Allocates 7 arrays of memory, all aligned to PETSC_MEMALIGN
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscMalloc7(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4,size_t m5,type **r5,size_t m6,type **r6,size_t m7,type **r7)
 
    Not Collective
@@ -977,7 +977,7 @@ M*/
    PetscCalloc7 - Allocates 7 cleared (zeroed) arrays of memory, all aligned to PETSC_MEMALIGN
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscCalloc7(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4,size_t m5,type **r5,size_t m6,type **r6,size_t m7,type **r7)
 
    Not Collective
@@ -1016,7 +1016,7 @@ M*/
    PetscNew - Allocates memory of a particular type, zeros the memory! Aligned to PETSC_MEMALIGN
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscNew(type **result)
 
    Not Collective
@@ -1038,7 +1038,7 @@ M*/
          with the given object using PetscLogObjectMemory().
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscNewLog(PetscObject obj,type **result)
 
    Not Collective
@@ -1062,7 +1062,7 @@ M*/
    PetscFree - Frees memory
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscFree(void *memory)
 
    Not Collective
@@ -1085,7 +1085,7 @@ M*/
    PetscFreeVoid - Frees memory
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    void PetscFreeVoid(void *memory)
 
    Not Collective
@@ -1109,7 +1109,7 @@ M*/
    PetscFree2 - Frees 2 chunks of memory obtained with PetscMalloc2()
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscFree2(void *memory1,void *memory2)
 
    Not Collective
@@ -1137,7 +1137,7 @@ M*/
    PetscFree3 - Frees 3 chunks of memory obtained with PetscMalloc3()
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscFree3(void *memory1,void *memory2,void *memory3)
 
    Not Collective
@@ -1166,7 +1166,7 @@ M*/
    PetscFree4 - Frees 4 chunks of memory obtained with PetscMalloc4()
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscFree4(void *m1,void *m2,void *m3,void *m4)
 
    Not Collective
@@ -1196,7 +1196,7 @@ M*/
    PetscFree5 - Frees 5 chunks of memory obtained with PetscMalloc5()
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscFree5(void *m1,void *m2,void *m3,void *m4,void *m5)
 
    Not Collective
@@ -1228,7 +1228,7 @@ M*/
    PetscFree6 - Frees 6 chunks of memory obtained with PetscMalloc6()
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscFree6(void *m1,void *m2,void *m3,void *m4,void *m5,void *m6)
 
    Not Collective
@@ -1261,7 +1261,7 @@ M*/
    PetscFree7 - Frees 7 chunks of memory obtained with PetscMalloc7()
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscFree7(void *m1,void *m2,void *m3,void *m4,void *m5,void *m6,void *m7)
 
    Not Collective
@@ -1720,7 +1720,7 @@ $     PetscBool  flag = PetscNot(a)
     PetscHelpPrintf - Prints help messages.
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
      PetscErrorCode (*PetscHelpPrintf)(const char format[],...);
 
     Not Collective
@@ -1957,7 +1957,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscMemzero(void *a,size_t n)
    PetscPrefetchBlock - Prefetches a block of memory
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
     void PetscPrefetchBlock(const anytype *a,size_t n,int rw,int t)
 
    Not Collective

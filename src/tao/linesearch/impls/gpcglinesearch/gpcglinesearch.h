@@ -1,7 +1,7 @@
 #ifndef __TAO_GPCGLINESEARCH_H
 #define __TAO_GPCGLINESEARCH_H
 
-#include "petscvec.h"
+#include <petscvec.h>
 
 typedef struct {
 

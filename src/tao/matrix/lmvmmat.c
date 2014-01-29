@@ -1,6 +1,6 @@
-#include "lmvmmat.h"   /*I "lmvmmat.h" */
-#include "tao_util.h"  /*I "tao_util.h" */
-#include "petscksp.h"
+#include <../src/tao/matrix/lmvmmat.h>   /*I "lmvmmat.h" */
+#include <tao_util.h>  /*I "tao_util.h" */
+#include <petscksp.h>
 
 #define TaoMid(a,b,c)    (((a) < (b)) ?                    \
                            (((b) < (c)) ? (b) :            \

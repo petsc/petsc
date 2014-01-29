@@ -1,5 +1,5 @@
-#include "tao_util.h"   /*I "tao_util.h" I*/
-#include "submatfree.h" /*I "submatfree.h" I*/
+#include <tao_util.h>   /*I "tao_util.h" I*/
+#include <../src/tao/matrix/submatfree.h> /*I "submatfree.h" I*/
 
 
 

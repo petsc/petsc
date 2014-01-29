@@ -1,4 +1,4 @@
-#include "adamat.h"                /*I  "mat.h"  I*/
+#include <../src/tao/matrix/adamat.h>                /*I  "mat.h"  I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateADA"

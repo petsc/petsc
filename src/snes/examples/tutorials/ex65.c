@@ -12,8 +12,8 @@ Runtime options include:\n\
 ./ex65 -ksp_type fgmres  -snes_atol 1.e-13  -da_refine 6  -VG 10   -pc_type mg -pc_mg_galerkin -log_summary -dt .000001 -mg_coarse_pc_type redundant -mg_coarse_redundant_pc_type svd  -ksp_rtol 1.e-13 -snes_linesearch_type basic -T .0020  -voidgrowth -da_refine 5 -draw_fileds 0,1,2 -dt .0001 -T 1 -da_grid_x 4 -da_grid_y 4 -periodic -snes_rtol 1.e-13 -ksp_atol 1.e-13  -snes_vi_ignore_function_sign -domain 1
  */
 
-#include "petscsnes.h"
-#include "petscdmda.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
 
 typedef struct {
   PetscReal   dt,T; /* Time step and end time */

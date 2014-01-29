@@ -5,9 +5,9 @@
   the parallel mesh.
 */
 
-#include "petscdmda.h"
-#include "petscksp.h"
-#include "taosolver.h"
+#include <petscdmda.h>
+#include <petscksp.h>
+#include <taosolver.h>
 
 static  char help[]=
 "This example demonstrates use of the TAO package to \n\

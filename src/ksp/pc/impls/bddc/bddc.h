@@ -2,7 +2,7 @@
 #define __pcbddc_h
 
 #include <../src/ksp/pc/impls/is/pcis.h>
-#include "bddcstructs.h"
+#include <bddcstructs.h>
 
 //typedef enum {SCATTERS_BDDC,GATHERS_BDDC} CoarseCommunicationsType;
 

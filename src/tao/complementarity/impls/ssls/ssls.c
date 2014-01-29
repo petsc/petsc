@@ -1,5 +1,4 @@
-#include "ssls.h"
-
+#include <../src/tao/complementarity/impls/ssls/ssls.h>
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__

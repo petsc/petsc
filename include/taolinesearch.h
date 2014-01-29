@@ -1,6 +1,6 @@
 #ifndef __TAOLINESEARCH_H
 #define __TAOLINESEARCH_H
-#include "petscvec.h"
+#include <petscvec.h>
 
 typedef struct _p_TaoLineSearch* TaoLineSearch;
 typedef enum {
@@ -29,7 +29,7 @@ typedef enum {
 PETSC_EXTERN PetscClassId TAOLINESEARCH_CLASSID;
 PETSC_EXTERN PetscFunctionList TaoLineSearchList;
 
-#include "taosolver.h"
+#include <taosolver.h>
 
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate(MPI_Comm,TaoLineSearch*);
 PETSC_EXTERN PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch);

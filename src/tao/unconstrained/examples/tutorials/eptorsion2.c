@@ -30,8 +30,8 @@
   the parallel mesh.
 */
 
-#include "taosolver.h"
-#include "petscdmda.h"
+#include <taosolver.h>
+#include <petscdmda.h>
 
 static  char help[] =
 "Demonstrates use of the TAO package to solve \n\

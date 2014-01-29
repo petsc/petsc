@@ -1,5 +1,5 @@
-#include "neldermead.h"
-#include "petscvec.h"
+#include <../src/tao/unconstrained/impls/neldermead/neldermead.h>
+#include <petscvec.h>
 
 static PetscErrorCode NelderMeadSort(TAO_NelderMead *nm);
 static PetscErrorCode NelderMeadReplace(TAO_NelderMead *nm, PetscInt index, Vec Xmu, PetscReal f);

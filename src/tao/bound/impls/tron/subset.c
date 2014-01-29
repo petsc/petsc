@@ -1,6 +1,6 @@
-#include "petscvec.h"
-#include "petscmat.h"
-#include "taosubset.h"
+#include <petscvec.h>
+#include <petscmat.h>
+#include <taosubset.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreateSubset"

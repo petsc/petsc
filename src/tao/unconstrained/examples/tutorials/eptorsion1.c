@@ -26,7 +26,7 @@
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
 
-#include "taosolver.h"
+#include <taosolver.h>
 
 
 static  char help[]=

@@ -5,7 +5,7 @@
 
     Reference: sundials-2.4.0/examples/cvode/parallel/cvDiurnal_kry_p.c
 */
-#include "sundials.h"  /*I "petscts.h" I*/
+#include <sundials.h>  /*I "petscts.h" I*/
 
 /*
       TSPrecond_Sundials - function that we provide to SUNDIALS to

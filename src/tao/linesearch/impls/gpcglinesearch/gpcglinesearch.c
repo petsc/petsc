@@ -1,5 +1,5 @@
-#include "petsc-private/taolinesearchimpl.h"
-#include "gpcglinesearch.h"
+#include <petsc-private/taolinesearchimpl.h>
+#include <../src/tao/linesearch/impls/gpcglinesearch/gpcglinesearch.h>
 
 /* ---------------------------------------------------------- */
 

@@ -1566,7 +1566,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
     SNESFunction - functional form used to convey the nonlinear function to be solved by SNES
 
      Synopsis:
-     #include "petscsnes.h"
+     #include <petscsnes.h>
      SNESFunction(SNES snes,Vec x,Vec f,void *ctx);
 
      Input Parameters:
@@ -1805,7 +1805,7 @@ PetscErrorCode  SNESGetFunctionType(SNES snes, SNESFunctionType *type)
     SNESGSFunction - function used to convey a Gauss-Seidel sweep on the nonlinear function
 
      Synopsis:
-     #include "petscsnes.h"
+     #include <petscsnes.h>
 $    SNESGSFunction(SNES snes,Vec x,Vec b,void *ctx);
 
 +  X   - solution vector
@@ -2439,7 +2439,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
     SNESJacobianFunction - function used to convey the nonlinear Jacobian of the function to be solved by SNES
 
      Synopsis:
-     #include "petscsnes.h"
+     #include <petscsnes.h>
 $     SNESJacobianFunction(SNES snes,Vec x,Mat *Amat,Mat *Pmat,int *flag,void *ctx);
 
 +  x - input vector
@@ -3329,7 +3329,7 @@ PetscErrorCode  SNESMonitor(SNES snes,PetscInt iter,PetscReal rnorm)
     SNESMonitorFunction - functional form passed to SNESMonitorSet() to monitor convergence of nonlinear solver
 
      Synopsis:
-     #include "petscsnes.h"
+     #include <petscsnes.h>
 $    PetscErrorCode SNESMonitorFunction(SNES snes,PetscInt its, PetscReal norm,void *mctx)
 
 +    snes - the SNES context
@@ -3448,7 +3448,7 @@ PetscErrorCode  SNESMonitorCancel(SNES snes)
     SNESConvergenceTestFunction - functional form used for testing of convergence of nonlinear solver
 
      Synopsis:
-     #include "petscsnes.h"
+     #include <petscsnes.h>
 $     PetscErrorCode SNESConvergenceTest(SNES snes,PetscInt it,PetscReal xnorm,PetscReal gnorm,PetscReal f,SNESConvergedReason *reason,void *cctx)
 
 +    snes - the SNES context

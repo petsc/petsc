@@ -1,6 +1,6 @@
-#include "taolinesearch.h"
-#include "../src/tao/matrix/lmvmmat.h"
-#include "owlqn.h"
+#include <taolinesearch.h>
+#include <../src/tao/matrix/lmvmmat.h>
+#include <../src/tao/unconstrained/impls/owlqn/owlqn.h>
 
 #define OWLQN_BFGS                0
 #define OWLQN_SCALED_GRADIENT     1

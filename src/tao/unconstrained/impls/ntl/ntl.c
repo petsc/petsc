@@ -1,10 +1,10 @@
-#include "../src/tao/matrix/lmvmmat.h"
-#include "ntl.h"
+#include <../src/tao/matrix/lmvmmat.h>
+#include <../src/tao/unconstrained/impls/ntl/ntl.h>
 
-#include "petscksp.h"
-#include "petscpc.h"
-#include "petsc-private/kspimpl.h"
-#include "petsc-private/pcimpl.h"
+#include <petscksp.h>
+#include <petscpc.h>
+#include <petsc-private/kspimpl.h>
+#include <petsc-private/pcimpl.h>
 
 #define NTL_KSP_NASH    0
 #define NTL_KSP_STCG    1

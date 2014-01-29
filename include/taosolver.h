@@ -1,11 +1,11 @@
 #ifndef __TAOSOLVER_H
 #define __TAOSOLVER_H
 
-#include "petscsys.h"
-#include "petscvec.h"
-#include "petscmat.h"
-#include "tao_sys.h"
-#include "tao_util.h"
+#include <petscsys.h>
+#include <petscvec.h>
+#include <petscmat.h>
+#include <tao_sys.h>
+#include <tao_util.h>
 
 typedef struct _p_TaoSolver*   TaoSolver;
 #define TaoSolverType char*
@@ -37,7 +37,7 @@ typedef enum {/* converged */
 
 PETSC_EXTERN const char **TaoSolverTerminationReasons;
 
-#include "taolinesearch.h"
+#include <taolinesearch.h>
 
 PETSC_EXTERN PetscErrorCode TaoInitialize(int*,char***,const char[], const char[]);
 PETSC_EXTERN PetscErrorCode TaoFinalize(void);

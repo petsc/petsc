@@ -12,8 +12,8 @@ Runtime options include:\n\
 ./ex63 -ksp_type fgmres -snes_vi_monitor   -snes_atol 1.e-11 -snes_converged_reason -ksp_converged_reason   -snes_linesearch_monitor -VG 10000000 -draw_fields 1,3,4  -pc_type mg -pc_mg_galerkin -log_summary -dt .000001 -mg_coarse_pc_type svd  -ksp_monitor_true_residual -ksp_rtol 1.e-9 -snes_linesearch basic -T .0020 -P_casc .0005 -snes_monitor_solution -da_refine 10
  */
 
-#include "petscsnes.h"
-#include "petscdmda.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
 
 typedef struct {
   PetscReal   dt,T; /* Time step and end time */

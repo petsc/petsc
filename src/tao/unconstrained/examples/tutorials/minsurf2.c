@@ -4,8 +4,8 @@
   Include "taosolver.h" so we can use TAO solvers.
   petscdmda.h for distributed array
 */
-#include "taosolver.h"
-#include "petscdmda.h"
+#include <taosolver.h>
+#include <petscdmda.h>
 
 static  char help[] =
 "This example demonstrates use of the TAO package to \n\

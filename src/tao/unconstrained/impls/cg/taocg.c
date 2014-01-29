@@ -1,5 +1,5 @@
-#include "taolinesearch.h"
-#include "taocg.h"
+#include <taolinesearch.h>
+#include <../src/tao/unconstrained/impls/cg/taocg.h>
 
 #define CG_FletcherReeves       0
 #define CG_PolakRibiere         1

@@ -15,8 +15,8 @@ Runtime options include:\n\
 /* Void grow case only */
 /* cv, eta two variables, i.e. one Cahn-Hillard and one Allen-Cahn with constant mobility */
 
-#include "petscsnes.h"
-#include "petscdmda.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
 
 typedef struct {
   PetscReal   dt,T; /* Time step and end time */

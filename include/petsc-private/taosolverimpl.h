@@ -1,10 +1,10 @@
 #ifndef __TAOSOLVER_IMPL_H
 #define __TAOSOLVER_IMPL_H
 
-#include "taosolver.h"
-#include "taolinesearch.h"
-#include "petsc-private/petscimpl.h"
-#include "petscksp.h"
+#include <taosolver.h>
+#include <taolinesearch.h>
+#include <petsc-private/petscimpl.h>
+#include <petscksp.h>
 
 typedef struct _TaoSolverOps *TaoSolverOps;
 

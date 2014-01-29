@@ -1,7 +1,7 @@
-#include "petscvec.h"
-#include "taosolver.h"
-#include "petsc-private/taolinesearchimpl.h"
-#include "owarmijo.h"
+#include <petscvec.h>
+#include <taosolver.h>
+#include <petsc-private/taolinesearchimpl.h>
+#include <../src/tao/linesearch/impls/owarmijo/owarmijo.h>
 
 #define REPLACE_FIFO 1
 #define REPLACE_MRU  2

@@ -1,7 +1,7 @@
 #ifndef __TAODM_IMPL_H
 #define __TAODM_IMPL_H
-#include "petscdm.h"
-#include "taodm.h"
+#include <petscdm.h>
+#include <taodm.h>
 
 struct _TaoDMOps {
   PetscErrorCode (*computeobjectiveandgradientlocal)(DMDALocalInfo*,PetscReal **, PetscReal *, PetscReal **, void*);

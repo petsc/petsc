@@ -18,8 +18,8 @@ static char help[] = "Solves the Cahn-Hilliard equation u_t = (b(u)( -gamma u_xx
  */
 
 
-#include "petscsnes.h"
-#include "petscdmda.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
 
 typedef struct {
     PetscScalar u,w;

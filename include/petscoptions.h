@@ -62,7 +62,7 @@ PETSC_EXTERN PetscInt PetscOptionsPublishCount;
      displayed on the same window of a GUI that allows the user to set the options interactively.
 
    Synopsis:
-    #include "petscoptions.h"
+    #include <petscoptions.h>
     PetscErrorCode PetscOptionsBegin(MPI_Comm comm,const char prefix[],const char title[],const char mansec[])
 
     Collective on MPI_Comm
@@ -110,7 +110,7 @@ M*/
      displayed on the same window of a GUI that allows the user to set the options interactively.
 
    Synopsis:
-    #include "petscoptions.h"
+    #include <petscoptions.h>
     PetscErrorCode PetscObjectOptionsBegin(PetscObject obj)
 
     Collective on PetscObject
@@ -143,7 +143,7 @@ M*/
     Collective on the MPI_Comm used in PetscOptionsBegin()
 
    Synopsis:
-     #include "petscoptions.h"
+     #include <petscoptions.h>
      PetscErrorCode PetscOptionsEnd(void)
 
   Level: intermediate
@@ -173,7 +173,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsHead(const char[]);
    Collective on the communicator passed in PetscOptionsBegin()
 
    Synopsis:
-     #include "petscoptions.h"
+     #include <petscoptions.h>
      PetscErrorCode PetscOptionsTail(void)
 
   Level: intermediate

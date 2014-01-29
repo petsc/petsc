@@ -1,4 +1,4 @@
-#include "tao.h"
+#include <tao.h>
 
 static char  help[] =
 "This example demonstrates use of the TAO package to\n\

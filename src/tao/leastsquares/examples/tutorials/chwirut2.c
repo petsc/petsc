@@ -8,8 +8,8 @@
 
 */
 
-#include "taosolver.h"
-#include "mpi.h"
+#include <taosolver.h>
+#include <mpi.h>
 
 
 /*

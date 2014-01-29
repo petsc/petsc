@@ -19,7 +19,7 @@
 */
 
 #include <petsc-private/pcimpl.h>        /*I "petscpc.h" I*/
-#include "petscspai.h"
+#include <petscspai.h>
 
 /*
     These are the SPAI include files

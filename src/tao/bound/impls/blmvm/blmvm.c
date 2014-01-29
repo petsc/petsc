@@ -1,6 +1,6 @@
-#include "taolinesearch.h"
-#include "../src/tao/matrix/lmvmmat.h"
-#include "blmvm.h"
+#include <taolinesearch.h>
+#include <../src/tao/matrix/lmvmmat.h>
+#include <../src/tao/bound/impls/blmvm/blmvm.h>
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__

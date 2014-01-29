@@ -1,8 +1,8 @@
 #ifndef __TAO_SQPCON_H
 #define __TAO_SQPCON_H
 
-#include "private/taosolverimpl.h"
-#include "petscis.h"
+#include <private/taosolverimpl.h>
+#include <petscis.h>
 
 typedef struct {
   Mat M;    /* Quasi-newton hessian matrix */

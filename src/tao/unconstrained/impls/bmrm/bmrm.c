@@ -1,4 +1,4 @@
-#include "bmrm.h"
+#include <../src/tao/unconstrained/impls/bmrm/bmrm.h>
 
 static PetscErrorCode init_df_solver(TAO_DF*);
 static PetscErrorCode ensure_df_space(PetscInt, TAO_DF*);

@@ -1,8 +1,8 @@
 #ifndef __TAO_UTIL_H
 #define __TAO_UTIL_H
-#include "petscvec.h"
-#include "petscmat.h"
-#include "petscksp.h"
+#include <petscvec.h>
+#include <petscmat.h>
+#include <petscksp.h>
 
 PetscErrorCode VecPow(Vec, PetscReal);
 PetscErrorCode VecMedian(Vec, Vec, Vec, Vec);

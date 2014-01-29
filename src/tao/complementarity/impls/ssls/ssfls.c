@@ -1,4 +1,4 @@
-#include "ssls.h"
+#include <../src/tao/complementarity/impls/ssls/ssls.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetUp_SSFLS"
