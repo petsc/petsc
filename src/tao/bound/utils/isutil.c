@@ -48,7 +48,7 @@ PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS * S)
       ierr = VecGetArray(Vec2,&v2);CHKERRQ(ierr);
     }
 
-    ierr = PetscMalloc( n*sizeof(PetscInt),&same );CHKERRQ(ierr);
+    ierr = PetscMalloc1( n,&same );CHKERRQ(ierr);
 
     for (i=0; i<n; i++){
       if (v1[i] == v2[i]) {same[n_same]=low+i; n_same++;}
@@ -109,7 +109,7 @@ PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS * S)
       ierr = VecGetArray(Vec1,&v1);CHKERRQ(ierr);
       ierr = VecGetArray(Vec2,&v2);CHKERRQ(ierr);
     }
-    ierr = PetscMalloc( n*sizeof(PetscInt),&lt );CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&lt );CHKERRQ(ierr);
 
     for (i=0; i<n; i++){
       if (v1[i] < v2[i]) {lt[n_lt]=low+i; n_lt++;}
@@ -172,7 +172,7 @@ PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS * S)
       ierr = VecGetArray(Vec2,&v2);CHKERRQ(ierr);
     }
 
-    ierr = PetscMalloc( n*sizeof(PetscInt), &gt );CHKERRQ(ierr);
+    ierr = PetscMalloc1(n, &gt );CHKERRQ(ierr);
 
     for (i=0; i<n; i++){
       if (v1[i] > v2[i]) {gt[n_gt]=low+i; n_gt++;}
@@ -241,7 +241,7 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S)
       vmiddle =v2;
     }
 
-    ierr = PetscMalloc( n*sizeof(PetscInt), &vm );CHKERRQ(ierr);
+    ierr = PetscMalloc1(n, &vm );CHKERRQ(ierr);
 
     for (i=0; i<n; i++){
       if (v1[i] < vmiddle[i] && vmiddle[i] < v2[i]) {vm[n_vm]=low+i; n_vm++;}
@@ -313,7 +313,7 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
       vmiddle =v2;
     }
 
-    ierr = PetscMalloc( n*sizeof(PetscInt), &vm );CHKERRQ(ierr);
+    ierr = PetscMalloc1(n, &vm );CHKERRQ(ierr);
 
     for (i=0; i<n; i++){
       if (v1[i] <= vmiddle[i] && vmiddle[i] <= v2[i]) {vm[n_vm]=low+i; n_vm++;}
@@ -501,8 +501,8 @@ PetscErrorCode ISCreateComplement(IS S, Vec V, IS *T)
   ierr = VecGetOwnershipRange(V,&low,&high);CHKERRQ(ierr);
   ierr = VecGetLocalSize(V,&nloc);CHKERRQ(ierr);
   ierr = ISGetLocalSize(S,&nis);CHKERRQ(ierr);
-  ierr = PetscMalloc( nloc*sizeof(PetscInt),&tt );CHKERRQ(ierr);
-  ierr = PetscMalloc( nloc*sizeof(PetscInt),&ss );CHKERRQ(ierr);
+  ierr = PetscMalloc1(nloc,&tt );CHKERRQ(ierr);
+  ierr = PetscMalloc1(nloc,&ss );CHKERRQ(ierr);
 
   ierr = ISGetIndices(S, &s);CHKERRQ(ierr);
   for (i=low; i<high; i++){ tt[i-low]=i; }

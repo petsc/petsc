@@ -1001,7 +1001,7 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
 
   /* Create scatter from y to y_1,y_2,...,y_nt */
   /*  TODO: Reorder for better parallelism. (This will require reordering Q and L as well.) */
-  ierr = PetscMalloc(user->nt*user->mx*user->mx*sizeof(PetscInt),&user->yi_scatter);
+  ierr = PetscMalloc1(user->nt*user->mx*user->mx,&user->yi_scatter);
   ierr = VecCreate(PETSC_COMM_WORLD,&yi);CHKERRQ(ierr);
   ierr = VecSetSizes(yi,PETSC_DECIDE,user->mx*user->mx);CHKERRQ(ierr);
   ierr = VecSetFromOptions(yi);CHKERRQ(ierr);
@@ -1019,11 +1019,11 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
 
   /* Create scatter from u to ux_1,uy_1,ux_2,uy_2,...,ux_nt,uy_nt */
   /*  TODO: reorder for better parallelism */
-  ierr = PetscMalloc(user->nt*user->mx*user->mx*sizeof(PetscInt),&user->uxi_scatter);CHKERRQ(ierr);
-  ierr = PetscMalloc(user->nt*user->mx*user->mx*sizeof(PetscInt),&user->uyi_scatter);CHKERRQ(ierr);
-  ierr = PetscMalloc(user->nt*user->mx*user->mx*sizeof(PetscInt),&user->ux_scatter);CHKERRQ(ierr);
-  ierr = PetscMalloc(user->nt*user->mx*user->mx*sizeof(PetscInt),&user->uy_scatter);CHKERRQ(ierr);
-  ierr = PetscMalloc(2*user->nt*user->mx*user->mx*sizeof(PetscInt),&user->ui_scatter);CHKERRQ(ierr);
+  ierr = PetscMalloc1(user->nt*user->mx*user->mx,&user->uxi_scatter);CHKERRQ(ierr);
+  ierr = PetscMalloc1(user->nt*user->mx*user->mx,&user->uyi_scatter);CHKERRQ(ierr);
+  ierr = PetscMalloc1(user->nt*user->mx*user->mx,&user->ux_scatter);CHKERRQ(ierr);
+  ierr = PetscMalloc1(user->nt*user->mx*user->mx,&user->uy_scatter);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2*user->nt*user->mx*user->mx,&user->ui_scatter);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&uxi);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&ui);CHKERRQ(ierr);
   ierr = VecSetSizes(uxi,PETSC_DECIDE,user->mx*user->mx);CHKERRQ(ierr);
@@ -1172,8 +1172,8 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
   ierr = Scatter_uxi_uyi(user->u,user->uxi,user->uxi_scatter,user->uyi,user->uyi_scatter,user->nt);CHKERRQ(ierr);
   ierr = MatShift(user->Divxy[0],0.0);CHKERRQ(ierr); /*  Force C[i] and Divxy[0] to share same nonzero pattern */
   ierr = MatAXPY(user->Divxy[0],0.0,user->Divxy[1],DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = PetscMalloc(5*n*sizeof(PetscReal),&user->C);
-  ierr = PetscMalloc(2*n*sizeof(PetscReal),&user->Cwork);
+  ierr = PetscMalloc1(5*n,&user->C);
+  ierr = PetscMalloc1(2*n,&user->Cwork);
   for (i=0; i<user->nt; i++){
     ierr = MatDuplicate(user->Divxy[0],MAT_COPY_VALUES,&user->C[i]);CHKERRQ(ierr);
     ierr = MatDuplicate(user->Divxy[1],MAT_COPY_VALUES,&user->Cwork[i]);CHKERRQ(ierr);

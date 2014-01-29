@@ -1982,7 +1982,7 @@ PetscErrorCode TaoSetDefaultKSPType(TaoSolver tao, KSPType ktype)
   ierr = TaoGetOptionsPrefix(tao,&prefix);CHKERRQ(ierr);
   ierr = PetscStrlen(prefix,&n1);
   ierr = PetscStrlen("_ksp_type",&n2);
-  ierr = PetscMalloc(n1+n2+1,&option);
+  ierr = PetscMalloc1(n1+n2+1,&option);
   ierr = PetscStrncpy(option,prefix,n1+1);
   ierr = PetscStrncat(option,"_ksp_type",n2+1);
   ierr = PetscOptionsSetValue(option,ktype);CHKERRQ(ierr);
@@ -2021,7 +2021,7 @@ PetscErrorCode TaoSetDefaultLineSearchType(TaoSolver tao, TaoLineSearchType lsty
   ierr = TaoGetOptionsPrefix(tao,&prefix);CHKERRQ(ierr);
   ierr = PetscStrlen(prefix,&n1);
   ierr = PetscStrlen("_ls_type",&n2);
-  ierr = PetscMalloc(n1+n2+1,&option);
+  ierr = PetscMalloc1(n1+n2+1,&option);
   ierr = PetscStrncpy(option,prefix,n1+1);
   ierr = PetscStrncat(option,"_ls_type",n2+1);
   ierr = PetscOptionsSetValue(option,lstype);CHKERRQ(ierr);
@@ -2060,7 +2060,7 @@ PetscErrorCode TaoSetDefaultPCType(TaoSolver tao, PCType pctype)
   ierr = TaoGetOptionsPrefix(tao,&prefix);CHKERRQ(ierr);
   ierr = PetscStrlen(prefix,&n1);
   ierr = PetscStrlen("_pc_type",&n2);
-  ierr = PetscMalloc(n1+n2+1,&option);
+  ierr = PetscMalloc1(n1+n2+1,&option);
   ierr = PetscStrncpy(option,prefix,n1+1);
   ierr = PetscStrncat(option,"_pc_type",n2+1);
   ierr = PetscOptionsSetValue(option,pctype);CHKERRQ(ierr);

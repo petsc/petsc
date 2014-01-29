@@ -368,9 +368,9 @@ static PetscErrorCode IPMInitializeBounds(TaoSolver tao)
   comm = ((PetscObject)(tao->solution))->comm;
 
   bigsize = ipmP->n+2*ipmP->nb+ipmP->me;
-  ierr = PetscMalloc(bigsize*sizeof(PetscInt),&stepind);CHKERRQ(ierr);
-  ierr = PetscMalloc(ipmP->n*sizeof(PetscInt),&xind);CHKERRQ(ierr);
-  ierr = PetscMalloc(ipmP->me*sizeof(PetscInt),&uceind);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bigsize,&stepind);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ipmP->n,&xind);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ipmP->me,&uceind);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(tao->solution,&xstart,&xend);CHKERRQ(ierr);
 
   if (ipmP->nb > 0) {
@@ -396,8 +396,8 @@ static PetscErrorCode IPMInitializeBounds(TaoSolver tao)
     ierr = VecDuplicate(ipmP->s,&ipmP->Inf_nb);CHKERRQ(ierr);
     ierr = VecSet(ipmP->Inf_nb,TAO_INFINITY);CHKERRQ(ierr);
 
-    ierr = PetscMalloc(ipmP->nb*sizeof(PetscInt),&cind);CHKERRQ(ierr);
-    ierr = PetscMalloc(ipmP->mi*sizeof(PetscInt),&ucind);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ipmP->nb,&cind);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ipmP->mi,&ucind);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(ipmP->s,&sstart,&send);CHKERRQ(ierr);
 
     if (ipmP->mi > 0) {
@@ -849,7 +849,7 @@ PetscErrorCode IPMUpdateAi(TaoSolver tao)
   /* Create Ai matrix if it doesn't exist yet */
   if (!ipmP->Ai) {
     comm = ((PetscObject)(tao->solution))->comm;
-    ierr = PetscMalloc(ipmP->nb*sizeof(PetscInt),&nonzeros);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ipmP->nb,&nonzeros);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);
     if (size == 1) {
       for (i=0;i<ipmP->mi;i++) {
@@ -999,14 +999,12 @@ PetscErrorCode IPMUpdateK(TaoSolver tao)
   subsize = PetscMax(ipmP->n,ipmP->nb);
   subsize = PetscMax(ipmP->me,subsize);
   subsize = PetscMax(2,subsize);
-  ierr = PetscMalloc(sizeof(PetscInt)*subsize,&indices);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscReal)*subsize,&newvals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(subsize,&indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(subsize,&newvals);CHKERRQ(ierr);
 
   r1 = c1 = ipmP->n;
   r2 = r1 + ipmP->me;  c2 = c1 + ipmP->nb;
   r3 = c3 = r2 + ipmP->nb;
-
-
 
   bigsize = ipmP->n+2*ipmP->nb+ipmP->me;
   ierr = VecGetOwnershipRange(ipmP->bigrhs,&kstart,&kend);CHKERRQ(ierr);
@@ -1014,7 +1012,7 @@ PetscErrorCode IPMUpdateK(TaoSolver tao)
   klocalsize = kend-kstart;
   if (!ipmP->K) {
     if (size == 1) {
-      ierr = PetscMalloc((kend-kstart)*sizeof(PetscInt),&nonzeros);CHKERRQ(ierr);
+      ierr = PetscMalloc1((kend-kstart),&nonzeros);CHKERRQ(ierr);
       for (i=0;i<bigsize;i++) {
         if (i<r1) {
           ierr = MatGetRow(tao->hessian,i,&ncols,NULL,NULL);CHKERRQ(ierr);
@@ -1036,8 +1034,8 @@ PetscErrorCode IPMUpdateK(TaoSolver tao)
       ierr = MatSetFromOptions(ipmP->K);CHKERRQ(ierr);
       ierr = PetscFree(nonzeros);CHKERRQ(ierr);
     } else {
-      ierr = PetscMalloc((kend-kstart)*sizeof(PetscInt),&d_nonzeros);CHKERRQ(ierr);
-      ierr = PetscMalloc((kend-kstart)*sizeof(PetscInt),&o_nonzeros);CHKERRQ(ierr);
+      ierr = PetscMalloc1((kend-kstart),&d_nonzeros);CHKERRQ(ierr);
+      ierr = PetscMalloc1((kend-kstart),&o_nonzeros);CHKERRQ(ierr);
       for (i=kstart;i<kend;i++) {
         if (i<r1) {
           /* TODO fix preallocation for mpi mats */

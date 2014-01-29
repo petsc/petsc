@@ -189,7 +189,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
      the historical array and populate it with the initial function
      values. */
   if (!armP->memory) {
-    ierr = PetscMalloc(sizeof(PetscReal)*armP->memorySize, &armP->memory );CHKERRQ(ierr);
+    ierr = PetscMalloc1(armP->memorySize, &armP->memory );CHKERRQ(ierr);
   }
 
   if (!armP->memorySetup) {

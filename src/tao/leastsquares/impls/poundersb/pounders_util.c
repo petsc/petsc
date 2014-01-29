@@ -224,8 +224,8 @@ PetscErrorCode TaoPounders_bmpts(TaoSolver tao)
   TAO_POUNDERS *mfqP = (TAO_POUNDERS*)tao->data;
   PetscFunctionBegin;
 
-  ierr = PetscMalloc(sizeof(PetscReal)*mfqP->nmodelpoints,&t1);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscReal)*mfqP->nmodelpoints,&t2);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mfqP->nmodelpoints,&t1);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mfqP->nmodelpoints,&t2);CHKERRQ(ierr);
   /* For each ray, find largest t to remain feasible */
   mint = TAO_INFINITY;
   maxt = TAO_NINFINITY;

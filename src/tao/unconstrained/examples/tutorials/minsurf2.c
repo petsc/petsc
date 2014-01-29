@@ -666,10 +666,10 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
   rsize=ym+2;
   tsize=xm+2;
 
-  ierr = PetscMalloc(bsize*sizeof(PetscReal),&user->bottom);CHKERRQ(ierr);
-  ierr = PetscMalloc(tsize*sizeof(PetscReal),&user->top);CHKERRQ(ierr);
-  ierr = PetscMalloc(lsize*sizeof(PetscReal),&user->left);CHKERRQ(ierr);
-  ierr = PetscMalloc(rsize*sizeof(PetscReal),&user->right);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bsize,&user->bottom);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tsize,&user->top);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lsize,&user->left);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rsize,&user->right);CHKERRQ(ierr);
 
   hx= (r-l)/(mx+1); hy=(t-b)/(my+1);
 

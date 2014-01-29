@@ -723,7 +723,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
      Create scatter from y to y_1,y_2,...,y_ns
      *******************************
   */
-  ierr = PetscMalloc(user->ns*sizeof(VecScatter),&user->yi_scatter);
+  ierr = PetscMalloc1(user->ns,&user->yi_scatter);
   ierr = VecDuplicate(user->u,&user->suby);CHKERRQ(ierr);
   ierr = VecDuplicate(user->u,&user->subq);CHKERRQ(ierr);
 
@@ -748,7 +748,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = VecGetLocalSize(user->subd,&dsubnlocal);CHKERRQ(ierr);
   ierr = VecSetSizes(user->d,dsubnlocal*user->ns,user->ndata*user->ns);CHKERRQ(ierr);
   ierr = VecSetFromOptions(user->d);CHKERRQ(ierr);
-  ierr = PetscMalloc(user->ns*sizeof(VecScatter),&user->di_scatter);
+  ierr = PetscMalloc1(user->ns,&user->di_scatter);
 
   ierr = VecGetOwnershipRange(user->d,&lo2,&hi2);CHKERRQ(ierr);
   istart = 0;
@@ -760,9 +760,9 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
     ierr = ISDestroy(&is_from_d);CHKERRQ(ierr);
   }
 
-  ierr = PetscMalloc(user->mx*sizeof(PetscReal),&x);CHKERRQ(ierr);
-  ierr = PetscMalloc(user->mx*sizeof(PetscReal),&y);CHKERRQ(ierr);
-  ierr = PetscMalloc(user->mx*sizeof(PetscReal),&z);CHKERRQ(ierr);
+  ierr = PetscMalloc1(user->mx,&x);CHKERRQ(ierr);
+  ierr = PetscMalloc1(user->mx,&y);CHKERRQ(ierr);
+  ierr = PetscMalloc1(user->mx,&z);CHKERRQ(ierr);
 
   user->ksp_its = 0;
   user->ksp_its_initial = 0;
@@ -788,8 +788,8 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
 
   /* map for striding q */
   /*
-  ierr = PetscMalloc((size+1)*sizeof(PetscInt),&ranges);CHKERRQ(ierr);
-  ierr = PetscMalloc((size+1)*sizeof(PetscInt),&subranges);CHKERRQ(ierr); */
+  ierr = PetscMalloc1((size+1),&ranges);CHKERRQ(ierr);
+  ierr = PetscMalloc1((size+1),&subranges);CHKERRQ(ierr); */
   ierr = VecGetOwnershipRanges(user->q,&ranges);CHKERRQ(ierr);
   ierr = VecGetOwnershipRanges(user->u,&subranges);CHKERRQ(ierr);
 
@@ -1103,7 +1103,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
 
   if (user->use_lrc == PETSC_TRUE) {
     v=PetscSqrtReal(1.0 /user->ndesign);
-    ierr = PetscMalloc(user->ndesign*sizeof(PetscReal),&user->ones);CHKERRQ(ierr);
+    ierr = PetscMalloc1(user->ndesign,&user->ones);CHKERRQ(ierr);
 
     for (i=0;i<user->ndesign;i++) {
       user->ones[i]=v;

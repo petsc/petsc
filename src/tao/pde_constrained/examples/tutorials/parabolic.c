@@ -806,9 +806,9 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
                         0.9226,     0.5461,     0.4126,     0.2364,     0.6096,     0.7042,     0.3914,     0.0711};
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(user->mx*sizeof(PetscReal),&x);CHKERRQ(ierr);
-  ierr = PetscMalloc(user->mx*sizeof(PetscReal),&y);CHKERRQ(ierr);
-  ierr = PetscMalloc(user->mx*sizeof(PetscReal),&z);CHKERRQ(ierr);
+  ierr = PetscMalloc1(user->mx,&x);CHKERRQ(ierr);
+  ierr = PetscMalloc1(user->mx,&y);CHKERRQ(ierr);
+  ierr = PetscMalloc1(user->mx,&z);CHKERRQ(ierr);
   user->jformed = PETSC_FALSE;
   user->dsg_formed = PETSC_FALSE;
 
@@ -820,7 +820,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   user->ksp_its_initial = 0;
 
   stime = (PetscReal)user->nt/user->ns;
-  ierr = PetscMalloc(user->ns*sizeof(PetscInt),&user->sample_times);CHKERRQ(ierr);
+  ierr = PetscMalloc1(user->ns,&user->sample_times);CHKERRQ(ierr);
   for (i=0; i<user->ns; i++){
     user->sample_times[i] = (PetscInt)(stime*((PetscReal)i+1.0)-0.5);
   }
@@ -1091,7 +1091,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = PCShellSetContext(user->prec,user);CHKERRQ(ierr);
 
   /* Create scatter from y to y_1,y_2,...,y_nt */
-  ierr = PetscMalloc(user->nt*user->m*sizeof(PetscInt),&user->yi_scatter);
+  ierr = PetscMalloc1(user->nt*user->m,&user->yi_scatter);
   ierr = VecCreate(PETSC_COMM_WORLD,&yi);CHKERRQ(ierr);
   ierr = VecSetSizes(yi,PETSC_DECIDE,user->mx*user->mx*user->mx);CHKERRQ(ierr);
   ierr = VecSetFromOptions(yi);CHKERRQ(ierr);
@@ -1112,7 +1112,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = VecDestroy(&yi);CHKERRQ(ierr);
 
   /* Create scatter from d to d_1,d_2,...,d_ns */
-  ierr = PetscMalloc(user->ns*user->ndata*sizeof(PetscInt),&user->di_scatter);
+  ierr = PetscMalloc1(user->ns*user->ndata,&user->di_scatter);
   ierr = VecCreate(PETSC_COMM_WORLD,&di);CHKERRQ(ierr);
   ierr = VecSetSizes(di,PETSC_DECIDE,user->ndata);CHKERRQ(ierr);
   ierr = VecSetFromOptions(di);CHKERRQ(ierr);

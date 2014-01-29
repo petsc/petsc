@@ -190,9 +190,9 @@ int main(int argc, char **argv)
   user.ds = user.es / (user.ms-1);
   user.dt = user.expiry / user.mt;
 
-  ierr = PetscMalloc((gxm)*sizeof(double),&(user.Vt1));CHKERRQ(ierr);
-  ierr = PetscMalloc((gxm)*sizeof(double),&(user.c));CHKERRQ(ierr);
-  ierr = PetscMalloc((gxm)*sizeof(double),&(user.d));CHKERRQ(ierr);
+  ierr = PetscMalloc1(gxm,&(user.Vt1));CHKERRQ(ierr);
+  ierr = PetscMalloc1(gxm,&(user.c));CHKERRQ(ierr);
+  ierr = PetscMalloc1(gxm,&(user.d));CHKERRQ(ierr);
 
   /*
      Calculate the values for the constant.  Vt1 begins with the ending

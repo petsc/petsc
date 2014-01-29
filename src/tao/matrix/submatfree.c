@@ -275,7 +275,7 @@ PetscErrorCode MatGetSubMatrices_SMF(Mat A,PetscInt n, IS *irow,IS *icol,MatReus
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscMalloc( (n+1)*sizeof(Mat),B );CHKERRQ(ierr);
+    ierr = PetscMalloc1(n+1,B );CHKERRQ(ierr);
   }
 
   for ( i=0; i<n; i++ ) {

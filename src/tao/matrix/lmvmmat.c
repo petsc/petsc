@@ -9,18 +9,11 @@
                              (((b) < (c)) ? (c) : (b))))
 
 /* These lists are used for setting options */
-static const char *Scale_Table[64] = {
-    "none","scalar","broyden"
-};
+static const char *Scale_Table[64] = {"none","scalar","broyden"};
 
-static const char *Rescale_Table[64] = {
-    "none","scalar","gl"
-};
+static const char *Rescale_Table[64] = {"none","scalar","gl"};
 
-static const char *Limit_Table[64] = {
-    "none","average","relative","absolute"
-};
-
+static const char *Limit_Table[64] = {"none","average","relative","absolute"};
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateLMVM"
@@ -42,166 +35,153 @@ static const char *Limit_Table[64] = {
 @*/
 extern PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *A)
 {
-    MatLMVMCtx *ctx;
-    PetscErrorCode ierr;
-    PetscInt nhistory;
+  MatLMVMCtx     *ctx;
+  PetscErrorCode ierr;
+  PetscInt       nhistory;
 
-    PetscFunctionBegin;
+  PetscFunctionBegin;
+  /*  create data structure and populate with default values */
+  ierr = PetscNew(&ctx);CHKERRQ(ierr);
+  ctx->lm=5;
+  ctx->eps=0.0;
+  ctx->limitType=MatLMVM_Limit_None;
+  ctx->scaleType=MatLMVM_Scale_Broyden;
+  ctx->rScaleType = MatLMVM_Rescale_Scalar;
+  ctx->s_alpha = 1.0;
+  ctx->r_alpha = 1.0;
+  ctx->r_beta = 0.5;
+  ctx->mu = 1.0;
+  ctx->nu = 100.0;
+  
+  ctx->phi = 0.125;
+  
+  ctx->scalar_history = 1;
+  ctx->rescale_history = 1;
+  
+  ctx->delta_min = 1e-7;
+  ctx->delta_max = 100.0;
 
-    /*  create data structure and populate with default values */
-    ierr = PetscMalloc(sizeof(MatLMVMCtx),(void**)&ctx);CHKERRQ(ierr);
-    ctx->lm=5;
-    ctx->eps=0.0;
-    ctx->limitType=MatLMVM_Limit_None;
-    ctx->scaleType=MatLMVM_Scale_Broyden;
-    ctx->rScaleType = MatLMVM_Rescale_Scalar;
-    ctx->s_alpha = 1.0;
-    ctx->r_alpha = 1.0;
-    ctx->r_beta = 0.5;
-    ctx->mu = 1.0;
-    ctx->nu = 100.0;
+  /*  Begin configuration */
+  PetscOptionsInt("-tao_lmm_vectors", "vectors to use for approximation", "", ctx->lm, &ctx->lm, 0);
+  PetscOptionsReal("-tao_lmm_limit_mu", "mu limiting factor", "", ctx->mu, &ctx->mu, 0);
+  PetscOptionsReal("-tao_lmm_limit_nu", "nu limiting factor", "", ctx->nu, &ctx->nu, 0);
+  PetscOptionsReal("-tao_lmm_broyden_phi", "phi factor for Broyden scaling", "", ctx->phi, &ctx->phi, 0);
+  PetscOptionsReal("-tao_lmm_scalar_alpha", "alpha factor for scalar scaling", "",ctx->s_alpha, &ctx->s_alpha, 0);
+  PetscOptionsReal("-tao_lmm_rescale_alpha", "alpha factor for rescaling diagonal", "", ctx->r_alpha, &ctx->r_alpha, 0);
+  PetscOptionsReal("-tao_lmm_rescale_beta", "beta factor for rescaling diagonal", "", ctx->r_beta, &ctx->r_beta, 0);
+  PetscOptionsInt("-tao_lmm_scalar_history", "amount of history for scalar scaling", "", ctx->scalar_history, &ctx->scalar_history, 0);
+  PetscOptionsInt("-tao_lmm_rescale_history", "amount of history for rescaling diagonal", "", ctx->rescale_history, &ctx->rescale_history, 0);
+  PetscOptionsReal("-tao_lmm_eps", "rejection tolerance", "", ctx->eps, &ctx->eps, 0);
+  PetscOptionsEList("-tao_lmm_scale_type", "scale type", "", Scale_Table, MatLMVM_Scale_Types, Scale_Table[ctx->scaleType], &ctx->scaleType, 0);
+  PetscOptionsEList("-tao_lmm_rescale_type", "rescale type", "", Rescale_Table, MatLMVM_Rescale_Types, Rescale_Table[ctx->rScaleType], &ctx->rScaleType, 0);
+  PetscOptionsEList("-tao_lmm_limit_type", "limit type", "", Limit_Table, MatLMVM_Limit_Types, Limit_Table[ctx->limitType], &ctx->limitType, 0);
+  PetscOptionsReal("-tao_lmm_delta_min", "minimum delta value", "", ctx->delta_min, &ctx->delta_min, 0);
+  PetscOptionsReal("-tao_lmm_delta_max", "maximum delta value", "", ctx->delta_max, &ctx->delta_max, 0);
+  
+  /*  Complete configuration */
+  ctx->rescale_history = PetscMin(ctx->rescale_history, ctx->lm);
+  ierr = PetscMalloc1(ctx->lm+1,&ctx->rho);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ctx->lm+1,&ctx->beta);CHKERRQ(ierr);
 
-    ctx->phi = 0.125;
+  nhistory = PetscMax(ctx->scalar_history,1);
+  ierr = PetscMalloc1(nhistory,&ctx->yy_history);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nhistory,&ctx->ys_history);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nhistory,&ctx->ss_history);CHKERRQ(ierr);
 
-    ctx->scalar_history = 1;
-    ctx->rescale_history = 1;
+  nhistory = PetscMax(ctx->rescale_history,1);
+  ierr = PetscMalloc1(nhistory,&ctx->yy_rhistory);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nhistory,&ctx->ys_rhistory);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nhistory,&ctx->ss_rhistory);CHKERRQ(ierr);
 
-    ctx->delta_min = 1e-7;
-    ctx->delta_max = 100.0;
+  /*  Finish initializations */
+  ctx->lmnow = 0;
+  ctx->iter = 0;
+  ctx->nupdates = 0;
+  ctx->nrejects = 0;
+  ctx->delta = 1.0;
 
-    /*  Begin configuration */
-    PetscOptionsInt("-tao_lmm_vectors", "vectors to use for approximation", "", ctx->lm, &ctx->lm, 0);
-    PetscOptionsReal("-tao_lmm_limit_mu", "mu limiting factor", "", ctx->mu, &ctx->mu, 0);
-    PetscOptionsReal("-tao_lmm_limit_nu", "nu limiting factor", "", ctx->nu, &ctx->nu, 0);
-    PetscOptionsReal("-tao_lmm_broyden_phi", "phi factor for Broyden scaling", "", ctx->phi, &ctx->phi, 0);
-    PetscOptionsReal("-tao_lmm_scalar_alpha", "alpha factor for scalar scaling", "",ctx->s_alpha, &ctx->s_alpha, 0);
-    PetscOptionsReal("-tao_lmm_rescale_alpha", "alpha factor for rescaling diagonal", "", ctx->r_alpha, &ctx->r_alpha, 0);
-    PetscOptionsReal("-tao_lmm_rescale_beta", "beta factor for rescaling diagonal", "", ctx->r_beta, &ctx->r_beta, 0);
-    PetscOptionsInt("-tao_lmm_scalar_history", "amount of history for scalar scaling", "", ctx->scalar_history, &ctx->scalar_history, 0);
-    PetscOptionsInt("-tao_lmm_rescale_history", "amount of history for rescaling diagonal", "", ctx->rescale_history, &ctx->rescale_history, 0);
-    PetscOptionsReal("-tao_lmm_eps", "rejection tolerance", "", ctx->eps, &ctx->eps, 0);
-    PetscOptionsEList("-tao_lmm_scale_type", "scale type", "", Scale_Table, MatLMVM_Scale_Types, Scale_Table[ctx->scaleType], &ctx->scaleType, 0);
-    PetscOptionsEList("-tao_lmm_rescale_type", "rescale type", "", Rescale_Table, MatLMVM_Rescale_Types, Rescale_Table[ctx->rScaleType], &ctx->rScaleType, 0);
-    PetscOptionsEList("-tao_lmm_limit_type", "limit type", "", Limit_Table, MatLMVM_Limit_Types, Limit_Table[ctx->limitType], &ctx->limitType, 0);
-    PetscOptionsReal("-tao_lmm_delta_min", "minimum delta value", "", ctx->delta_min, &ctx->delta_min, 0);
-    PetscOptionsReal("-tao_lmm_delta_max", "maximum delta value", "", ctx->delta_max, &ctx->delta_max, 0);
+  ctx->Gprev = 0;
+  ctx->Xprev = 0;
 
-    /*  Complete configuration */
-    ctx->rescale_history = PetscMin(ctx->rescale_history, ctx->lm);
+  ctx->scale = 0;
+  ctx->useScale = PETSC_FALSE;
 
+  ctx->H0 = 0;
+  ctx->useDefaultH0=PETSC_TRUE;
 
-    ierr = PetscMalloc((ctx->lm+1)*sizeof(PetscReal),(void**)&ctx->rho);CHKERRQ(ierr);
-    ierr = PetscMalloc((ctx->lm+1)*sizeof(PetscReal),(void**)&ctx->beta);CHKERRQ(ierr);
-
-    nhistory = PetscMax(ctx->scalar_history,1);
-    ierr = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->yy_history);CHKERRQ(ierr);
-    ierr = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->ys_history);CHKERRQ(ierr);
-    ierr = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->ss_history);CHKERRQ(ierr);
-
-    nhistory = PetscMax(ctx->rescale_history,1);
-    ierr = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->yy_rhistory);CHKERRQ(ierr);
-    ierr = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->ys_rhistory);CHKERRQ(ierr);
-    ierr = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->ss_rhistory);CHKERRQ(ierr);
-
-    /*  Finish initializations */
-    ctx->lmnow = 0;
-    ctx->iter = 0;
-    ctx->nupdates = 0;
-    ctx->nrejects = 0;
-    ctx->delta = 1.0;
-
-    ctx->Gprev = 0;
-    ctx->Xprev = 0;
-
-    ctx->scale = 0;
-    ctx->useScale = PETSC_FALSE;
-
-    ctx->H0 = 0;
-    ctx->useDefaultH0=PETSC_TRUE;
-
-    ierr = MatCreateShell(comm, n, n, N, N, ctx, A);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(*A,MATOP_DESTROY,(void(*)(void))MatDestroy_LMVM);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(*A,MATOP_VIEW,(void(*)(void))MatView_LMVM);CHKERRQ(ierr);
-
-    PetscFunctionReturn(0);
+  ierr = MatCreateShell(comm, n, n, N, N, ctx, A);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*A,MATOP_DESTROY,(void(*)(void))MatDestroy_LMVM);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*A,MATOP_VIEW,(void(*)(void))MatView_LMVM);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
-
-
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLMVMSolve"
 extern PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x)
 {
-    PetscReal      sq, yq, dd;
-    PetscInt       ll;
-    PetscBool     scaled;
-    MatLMVMCtx     *shell;
-    PetscErrorCode ierr;
+  PetscReal      sq, yq, dd;
+  PetscInt       ll;
+  PetscBool      scaled;
+  MatLMVMCtx     *shell;
+  PetscErrorCode ierr;
 
-    PetscFunctionBegin;
-    PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-    PetscValidHeaderSpecific(b,VEC_CLASSID,2);
-    PetscValidHeaderSpecific(x,VEC_CLASSID,3);
-    ierr = MatShellGetContext(A,(void**)&shell);CHKERRQ(ierr);
-    if (shell->lmnow < 1) {
-        shell->rho[0] = 1.0;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(b,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,3);
+  ierr = MatShellGetContext(A,(void**)&shell);CHKERRQ(ierr);
+  if (shell->lmnow < 1) {
+    shell->rho[0] = 1.0;
+  }
+
+  ierr = VecCopy(b,x);CHKERRQ(ierr);
+  for (ll = 0; ll < shell->lmnow; ++ll) {
+    ierr = VecDot(x,shell->S[ll],&sq);CHKERRQ(ierr);
+    shell->beta[ll] = sq * shell->rho[ll];
+    ierr = VecAXPY(x,-shell->beta[ll],shell->Y[ll]);CHKERRQ(ierr);
+  }
+
+  scaled = PETSC_FALSE;
+  if (!scaled && !shell->useDefaultH0 && shell->H0) {
+    ierr = MatSolve(shell->H0,x,shell->U);CHKERRQ(ierr);
+    ierr = VecDot(x,shell->U,&dd);CHKERRQ(ierr);
+    if ((dd > 0.0) && !PetscIsInfOrNanReal(dd)) {
+      /*  Accept Hessian solve */
+      ierr = VecCopy(shell->U,x);CHKERRQ(ierr);
+      scaled = PETSC_TRUE;
     }
+  }
 
-    ierr = VecCopy(b,x);CHKERRQ(ierr);
-    for (ll = 0; ll < shell->lmnow; ++ll) {
-        ierr = VecDot(x,shell->S[ll],&sq);CHKERRQ(ierr);
-        shell->beta[ll] = sq * shell->rho[ll];
-        ierr = VecAXPY(x,-shell->beta[ll],shell->Y[ll]);CHKERRQ(ierr);
+  if (!scaled && shell->useScale) {
+    ierr = VecPointwiseMult(shell->U,x,shell->scale);CHKERRQ(ierr);
+    ierr = VecDot(x,shell->U,&dd);CHKERRQ(ierr);
+    if ((dd > 0.0) && !PetscIsInfOrNanReal(dd)) {
+      /*  Accept scaling */
+      ierr = VecCopy(shell->U,x);CHKERRQ(ierr);
+      scaled = PETSC_TRUE;
     }
+  }
 
-    scaled = PETSC_FALSE;
-    if (!scaled && !shell->useDefaultH0 && shell->H0) {
-        ierr = MatSolve(shell->H0,x,shell->U);CHKERRQ(ierr);
-        ierr = VecDot(x,shell->U,&dd);CHKERRQ(ierr);
-        if ((dd > 0.0) && !PetscIsInfOrNanReal(dd)) {
-            /*  Accept Hessian solve */
-            ierr = VecCopy(shell->U,x);CHKERRQ(ierr);
-            scaled = PETSC_TRUE;
-        }
+  if (!scaled) {
+    switch(shell->scaleType) {
+    case MatLMVM_Scale_None:
+      break;
+
+    case MatLMVM_Scale_Scalar:
+      ierr = VecScale(x,shell->sigma);CHKERRQ(ierr);
+      break;
+
+    case MatLMVM_Scale_Broyden:
+      ierr = VecPointwiseMult(x,x,shell->D);CHKERRQ(ierr);
+      break;
     }
-
-    if (!scaled && shell->useScale) {
-        ierr = VecPointwiseMult(shell->U,x,shell->scale);CHKERRQ(ierr);
-        ierr = VecDot(x,shell->U,&dd);CHKERRQ(ierr);
-        if ((dd > 0.0) && !PetscIsInfOrNanReal(dd)) {
-            /*  Accept scaling */
-            ierr = VecCopy(shell->U,x);CHKERRQ(ierr);
-            scaled = PETSC_TRUE;
-        }
-    }
-
-    if (!scaled) {
-        switch(shell->scaleType) {
-            case MatLMVM_Scale_None:
-                break;
-
-            case MatLMVM_Scale_Scalar:
-                ierr = VecScale(x,shell->sigma);CHKERRQ(ierr);
-                break;
-
-            case MatLMVM_Scale_Broyden:
-                ierr = VecPointwiseMult(x,x,shell->D);CHKERRQ(ierr);
-                break;
-        }
-    }
-
-    for (ll = shell->lmnow-1; ll >= 0; --ll) {
-        ierr = VecDot(x,shell->Y[ll],&yq);CHKERRQ(ierr);
-        ierr = VecAXPY(x,shell->beta[ll]-yq*shell->rho[ll],shell->S[ll]);
-        CHKERRQ(ierr);
-    }
-    PetscFunctionReturn(0);
+  }
+  for (ll = shell->lmnow-1; ll >= 0; --ll) {
+    ierr = VecDot(x,shell->Y[ll],&yq);CHKERRQ(ierr);
+    ierr = VecAXPY(x,shell->beta[ll]-yq*shell->rho[ll],shell->S[ll]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
-
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MatView_LMVM"
@@ -230,92 +210,86 @@ extern PetscErrorCode MatView_LMVM(Mat A, PetscViewer pv)
 #define __FUNCT__ "MatDestroy_LMVM"
 extern PetscErrorCode MatDestroy_LMVM(Mat M)
 {
-    MatLMVMCtx     *ctx;
-    PetscErrorCode ierr;
-    PetscFunctionBegin;
+  MatLMVMCtx     *ctx;
+  PetscErrorCode ierr;
 
-    ierr = MatShellGetContext(M,(void**)&ctx);CHKERRQ(ierr);
-    if (ctx->allocated) {
-      if (ctx->Xprev) {
-        ierr = PetscObjectDereference((PetscObject)ctx->Xprev);CHKERRQ(ierr);
-      }
-      if (ctx->Gprev) {
-        ierr = PetscObjectDereference((PetscObject)ctx->Gprev);CHKERRQ(ierr);
-      }
-
-      ierr = VecDestroyVecs(ctx->lm+1,&ctx->S);CHKERRQ(ierr);
-      ierr = VecDestroyVecs(ctx->lm+1,&ctx->Y);CHKERRQ(ierr);
-      ierr = VecDestroy(&ctx->D);CHKERRQ(ierr);
-      ierr = VecDestroy(&ctx->U);CHKERRQ(ierr);
-      ierr = VecDestroy(&ctx->V);CHKERRQ(ierr);
-      ierr = VecDestroy(&ctx->W);CHKERRQ(ierr);
-      ierr = VecDestroy(&ctx->P);CHKERRQ(ierr);
-      ierr = VecDestroy(&ctx->Q);CHKERRQ(ierr);
-      if (ctx->scale) {
-        ierr = VecDestroy(&ctx->scale);CHKERRQ(ierr);
-      }
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(M,(void**)&ctx);CHKERRQ(ierr);
+  if (ctx->allocated) {
+    if (ctx->Xprev) {
+      ierr = PetscObjectDereference((PetscObject)ctx->Xprev);CHKERRQ(ierr);
     }
-    ierr = PetscFree(ctx->rho);CHKERRQ(ierr);
-    ierr = PetscFree(ctx->beta);CHKERRQ(ierr);
-    ierr = PetscFree(ctx->yy_history);CHKERRQ(ierr);
-    ierr = PetscFree(ctx->ys_history);CHKERRQ(ierr);
-    ierr = PetscFree(ctx->ss_history);CHKERRQ(ierr);
-    ierr = PetscFree(ctx->yy_rhistory);CHKERRQ(ierr);
-    ierr = PetscFree(ctx->ys_rhistory);CHKERRQ(ierr);
-    ierr = PetscFree(ctx->ss_rhistory);CHKERRQ(ierr);
+    if (ctx->Gprev) {
+      ierr = PetscObjectDereference((PetscObject)ctx->Gprev);CHKERRQ(ierr);
+    }
 
-    ierr = PetscFree(ctx);CHKERRQ(ierr);
-
-    PetscFunctionReturn(0);
-
+    ierr = VecDestroyVecs(ctx->lm+1,&ctx->S);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(ctx->lm+1,&ctx->Y);CHKERRQ(ierr);
+    ierr = VecDestroy(&ctx->D);CHKERRQ(ierr);
+    ierr = VecDestroy(&ctx->U);CHKERRQ(ierr);
+    ierr = VecDestroy(&ctx->V);CHKERRQ(ierr);
+    ierr = VecDestroy(&ctx->W);CHKERRQ(ierr);
+    ierr = VecDestroy(&ctx->P);CHKERRQ(ierr);
+    ierr = VecDestroy(&ctx->Q);CHKERRQ(ierr);
+    if (ctx->scale) {
+      ierr = VecDestroy(&ctx->scale);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscFree(ctx->rho);CHKERRQ(ierr);
+  ierr = PetscFree(ctx->beta);CHKERRQ(ierr);
+  ierr = PetscFree(ctx->yy_history);CHKERRQ(ierr);
+  ierr = PetscFree(ctx->ys_history);CHKERRQ(ierr);
+  ierr = PetscFree(ctx->ss_history);CHKERRQ(ierr);
+  ierr = PetscFree(ctx->yy_rhistory);CHKERRQ(ierr);
+  ierr = PetscFree(ctx->ys_rhistory);CHKERRQ(ierr);
+  ierr = PetscFree(ctx->ss_rhistory);CHKERRQ(ierr);
+  ierr = PetscFree(ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLMVMReset"
 extern PetscErrorCode MatLMVMReset(Mat M)
 {
-    PetscErrorCode ierr;
-    MatLMVMCtx *ctx;
-    PetscInt i;
-    PetscFunctionBegin;
-    ierr = MatShellGetContext(M,(void**)&ctx);CHKERRQ(ierr);
-    if (ctx->Gprev) {
-      ierr = PetscObjectDereference((PetscObject)ctx->Gprev);CHKERRQ(ierr);
-    }
-    if (ctx->Xprev) {
-      ierr = PetscObjectDereference((PetscObject)ctx->Xprev);CHKERRQ(ierr);
-    }
-    ctx->Gprev = ctx->Y[ctx->lm];
-    ctx->Xprev = ctx->S[ctx->lm];
-    ierr = PetscObjectReference((PetscObject)ctx->Gprev);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject)ctx->Xprev);CHKERRQ(ierr);
-    for (i=0; i<ctx->lm; ++i) {
-      ctx->rho[i] = 0.0;
-    }
-    ctx->rho[0] = 1.0;
+  PetscErrorCode ierr;
+  MatLMVMCtx     *ctx;
+  PetscInt       i;
 
-    /*  Set the scaling and diagonal scaling matrix */
-    switch(ctx->scaleType) {
-      case MatLMVM_Scale_None:
-        ctx->sigma = 1.0;
-        break;
-      case MatLMVM_Scale_Scalar:
-        ctx->sigma = ctx->delta;
-        break;
-      case MatLMVM_Scale_Broyden:
-        ierr = VecSet(ctx->D,ctx->delta);CHKERRQ(ierr);
-        break;
-    }
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(M,(void**)&ctx);CHKERRQ(ierr);
+  if (ctx->Gprev) {
+    ierr = PetscObjectDereference((PetscObject)ctx->Gprev);CHKERRQ(ierr);
+  }
+  if (ctx->Xprev) {
+    ierr = PetscObjectDereference((PetscObject)ctx->Xprev);CHKERRQ(ierr);
+  }
+  ctx->Gprev = ctx->Y[ctx->lm];
+  ctx->Xprev = ctx->S[ctx->lm];
+  ierr = PetscObjectReference((PetscObject)ctx->Gprev);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)ctx->Xprev);CHKERRQ(ierr);
+  for (i=0; i<ctx->lm; ++i) {
+    ctx->rho[i] = 0.0;
+  }
+  ctx->rho[0] = 1.0;
 
-    ctx->iter=0;
-    ctx->nupdates=0;
-    ctx->lmnow=0;
+  /*  Set the scaling and diagonal scaling matrix */
+  switch(ctx->scaleType) {
+  case MatLMVM_Scale_None:
+    ctx->sigma = 1.0;
+    break;
+  case MatLMVM_Scale_Scalar:
+    ctx->sigma = ctx->delta;
+    break;
+  case MatLMVM_Scale_Broyden:
+    ierr = VecSet(ctx->D,ctx->delta);CHKERRQ(ierr);
+    break;
+  }
 
-
-    PetscFunctionReturn(0);
+  ctx->iter=0;
+  ctx->nupdates=0;
+  ctx->lmnow=0;
+  PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLMVMUpdate"
@@ -332,7 +306,6 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
   PetscReal      yy_sum=0.0, ys_sum=0.0, ss_sum=0.0;
 
   PetscFunctionBegin;
-
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(g,VEC_CLASSID,3);
   ierr = PetscObjectTypeCompare((PetscObject)M,MATSHELL,&same);CHKERRQ(ierr);
@@ -511,7 +484,6 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
         /*  Obtain inverse and ensure positive definite */
         ierr = VecReciprocal(ctx->U);CHKERRQ(ierr);
         ierr = VecAbs(ctx->U);CHKERRQ(ierr);
-
 
         switch(ctx->rScaleType) {
         case MatLMVM_Rescale_None:
@@ -760,7 +732,7 @@ extern PetscErrorCode MatLMVMSetScale(Mat m, Vec s)
 
   ierr = VecDestroy(&ctx->scale);CHKERRQ(ierr);
   if (s) {
-      ierr = VecDuplicate(s,&ctx->scale);CHKERRQ(ierr);
+    ierr = VecDuplicate(s,&ctx->scale);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
