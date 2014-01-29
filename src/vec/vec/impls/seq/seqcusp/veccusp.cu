@@ -1640,7 +1640,7 @@ PetscErrorCode VecPlaceArray_SeqCUSP(Vec vin,const PetscScalar *a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecCUSPCopyFromGPU(vin);CHKERRQ(ierr);
+  ierr = VecCUSPAllocateCheckHost(vin);CHKERRQ(ierr);
   ierr = VecPlaceArray_Seq(vin,a);CHKERRQ(ierr);
   vin->valid_GPU_array = PETSC_CUSP_CPU;
   PetscFunctionReturn(0);
