@@ -476,7 +476,8 @@ runex7_mpiaijcusp_2:
 runex7_mpiaijcusp_simple:
 	-@${MPIEXEC} -n 1 ./ex7 -ksp_monitor_short -mat_type mpiaijcusp -vec_type mpicusp -sub_ksp_type preonly -sub_pc_type ilu > ex7_mpiaijcusp_simple.tmp 2>&1; \
 	   if (${DIFF} output/ex7_mpiaijcusp_simple.out ex7_mpiaijcusp_simple.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with with ex7_mpiaijcusp_simple, diffs above\n=========================================\n"; fi;
+	   else printf "${PWD}\nPossible problem with with ex7_mpiaijcusp_simple, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex7_mpiaijcusp_simple.tmp
 runex7_mpiaijcusparse:
 	-@${MPIEXEC} -n 1 ./ex7 -ksp_monitor_short -nokspview -mat_type mpiaijcusparse -vec_type mpicusp > ex7_mpiaijcusparse.tmp 2>&1; \
 	   if (${DIFF} output/ex7_mpiaijcusparse.out ex7_mpiaijcusparse.tmp) then true; \
