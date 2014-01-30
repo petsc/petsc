@@ -25,7 +25,7 @@ struct _p_TaoLineSearch {
     void *userctx_grad;
     void *userctx_funcgrad;
     void *userctx_funcgts;
-    
+
     PetscBool setupcalled;
     PetscBool usegts;
     PetscBool usetaoroutines;
@@ -45,7 +45,7 @@ struct _p_TaoLineSearch {
     PetscReal new_f;
     Vec new_x;
     Vec new_g;
-  
+
     PetscReal step;
     PetscReal initstep;
 
@@ -55,11 +55,11 @@ struct _p_TaoLineSearch {
     PetscInt nfgeval;
     TaoLineSearchTerminationReason reason;
 
-    PetscReal rtol;	 /* relative tol for acceptable step (rtol>0) */
-    PetscReal ftol;	 /* tol for sufficient decr. condition (ftol>0) */
-    PetscReal gtol;	 /* tol for curvature condition (gtol>0)*/
-    PetscReal stepmin;	 /* lower bound for step */
-    PetscReal stepmax;	 /* upper bound for step */
+    PetscReal rtol;      /* relative tol for acceptable step (rtol>0) */
+    PetscReal ftol;      /* tol for sufficient decr. condition (ftol>0) */
+    PetscReal gtol;      /* tol for curvature condition (gtol>0)*/
+    PetscReal stepmin;   /* lower bound for step */
+    PetscReal stepmax;   /* upper bound for step */
     PetscBool viewls;    /* print out information if true */
 
     TaoSolver taosolver;

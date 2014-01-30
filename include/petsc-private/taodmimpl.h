@@ -22,7 +22,7 @@ struct _p_TaoDM {
   DM             dm;  /* Grid information at this level */
   Vec            x;   /* solution on this level */
   Mat            hessian;   /* Hessian on this level */
-  Mat            hessian_pre;  
+  Mat            hessian_pre;
   Mat            R;   /* Restriction to next coarser level  (not defined for level 0) */
   Vec            Rscale;
   PetscInt       nlevels; /* # of levels above this one (== total levels for level 0) */

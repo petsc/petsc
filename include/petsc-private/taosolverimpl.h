@@ -61,7 +61,7 @@ struct _p_TaoSolver {
     PetscErrorCode (*monitordestroy[MAXTAOMONITORS])(void**);
     void *monitorcontext[MAXTAOMONITORS];
     PetscInt numbermonitors;
-    void *cnvP; 
+    void *cnvP;
     TaoSolverTerminationReason reason;
 
     PetscBool setupcalled;
@@ -93,15 +93,15 @@ struct _p_TaoSolver {
     Mat jacobian_design;
     Mat jacobian_state_pre;
     Mat jacobian_design_pre;
-    IS state_is;   
-    IS design_is;   
+    IS state_is;
+    IS design_is;
     PetscReal step;
     PetscReal residual;
     PetscReal gnorm0;
     PetscReal cnorm;
     PetscReal cnorm0;
     PetscReal fc;
-    
+
 
     PetscInt  max_it;
     PetscInt  max_funcs;
@@ -122,7 +122,7 @@ struct _p_TaoSolver {
 
     PetscInt  ksp_its;
 
-    
+
     TaoLineSearch linesearch;
     PetscBool lsflag; /* goes up when line search fails */
     KSP ksp;
