@@ -22,12 +22,13 @@ PetscClassId PETSC_SECTION_CLASSID;
   Level: developer
 
   Notes: Typical calling sequence
-       PetscSectionCreate(MPI_Comm,PetscSection *);
-       PetscSectionSetChart(PetscSection,low,high);
-       PetscSectionSetDof(PetscSection,point,numdof);
-       PetscSectionSetUp(PetscSection);
-       PetscSectionGetOffset(PetscSection,point,PetscInt *);
-       PetscSectionDestroy(PetscSection);
+$       PetscSectionCreate(MPI_Comm,PetscSection *);
+$       PetscSectionSetNumFields(PetscSection, numFields);
+$       PetscSectionSetChart(PetscSection,low,high);
+$       PetscSectionSetDof(PetscSection,point,numdof);
+$       PetscSectionSetUp(PetscSection);
+$       PetscSectionGetOffset(PetscSection,point,PetscInt *);
+$       PetscSectionDestroy(PetscSection);
 
        The PetscSection object and methods are intended to be used in the PETSc Vec and Mat implementions; it is
        recommended they not be used in user codes unless you really gain something in their use.
