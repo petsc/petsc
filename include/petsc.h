@@ -11,7 +11,6 @@
 #include <petscdraw.h>
 
 #include <petscdmda.h>
-#include <petscdmadda.h>
 #include <petscdmcomposite.h>
 #include <petscdmpatch.h>
 #include <petscdmplex.h>

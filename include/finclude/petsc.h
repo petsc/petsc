@@ -15,7 +15,6 @@
 #include "finclude/petscdm.h"
 #include "finclude/petscdmda.h"
 #include "finclude/petscdmplex.h"
-!#include "finclude/petscdmadda.h"
 !#include "finclude/petscdmcomposite.h"
 !#include "finclude/petscdmsliced.h"
 #include "finclude/petscts.h"
