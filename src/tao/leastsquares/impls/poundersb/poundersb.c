@@ -36,7 +36,7 @@ static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
     mfqP->nHist=1;
   } else {
     /* Starting with nHist predefined parameter/evaluations */
-    minnorm=TAO_INFINITY;
+    minnorm=PETSC_INFINITY;
     for (i=0;i<nHist;i++) {
       if (mfqP->Fres[i] < minnorm) {
         mfqP->minindex = i;

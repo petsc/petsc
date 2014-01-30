@@ -4,7 +4,6 @@
 #include <petscsys.h>
 #include <petscvec.h>
 #include <petscmat.h>
-#include <tao_sys.h>
 #include <tao_util.h>
 
 typedef struct _p_TaoSolver*   TaoSolver;

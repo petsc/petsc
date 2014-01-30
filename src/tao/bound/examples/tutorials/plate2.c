@@ -778,7 +778,7 @@ static PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx){
   PetscInt       xs,ys,xm,ym;
   PetscInt       mx=user->mx, my=user->my, bmy, bmx;
   PetscReal      t1,t2,t3;
-  PetscReal      *xl, lb=TAO_NINFINITY, ub=TAO_INFINITY;
+  PetscReal      *xl, lb=PETSC_NINFINITY, ub=PETSC_INFINITY;
   PetscBool      cylinder;
 
   user->bmy = PetscMax(0,user->bmy);user->bmy = PetscMin(my,user->bmy);

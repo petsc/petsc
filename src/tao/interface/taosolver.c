@@ -117,7 +117,7 @@ PetscErrorCode TaoCreate(MPI_Comm comm, TaoSolver *newtao)
   tao->crtol       = 0.0;
   tao->xtol        = 0.0;
   tao->steptol       = 0.0;
-  tao->trust0      = TAO_INFINITY;
+  tao->trust0      = PETSC_INFINITY;
   tao->fmin        = -1e100;
   tao->hist_reset = PETSC_TRUE;
   tao->hist_max = 0;

@@ -4412,7 +4412,7 @@ PetscErrorCode TSGetCFLTime(TS ts,PetscReal *cfltime)
 
    Notes:
    If this routine is not called then the lower and upper bounds are set to
-   SNES_VI_NINF and SNES_VI_INF respectively during SNESSetUp().
+   PETSC_NINFINITY and PETSC_INFINITY respectively during SNESSetUp().
 
    Level: advanced
 

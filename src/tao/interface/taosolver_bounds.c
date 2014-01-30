@@ -116,9 +116,9 @@ PetscErrorCode TaoComputeVariableBounds(TaoSolver tao)
   if (!tao->XL || !tao->XU) {
     if (!tao->solution) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetInitialVector must be called before TaoComputeVariableBounds");
     ierr = VecDuplicate(tao->solution, &tao->XL);CHKERRQ(ierr);
-    ierr = VecSet(tao->XL, TAO_NINFINITY);CHKERRQ(ierr);
+    ierr = VecSet(tao->XL, PETSC_NINFINITY);CHKERRQ(ierr);
     ierr = VecDuplicate(tao->solution, &tao->XU);CHKERRQ(ierr);
-    ierr = VecSet(tao->XU, TAO_INFINITY);CHKERRQ(ierr);
+    ierr = VecSet(tao->XU, PETSC_INFINITY);CHKERRQ(ierr);
   }
   CHKMEMQ;
   ierr = (*tao->ops->computebounds)(tao,tao->XL,tao->XU,tao->user_boundsP);CHKERRQ(ierr);

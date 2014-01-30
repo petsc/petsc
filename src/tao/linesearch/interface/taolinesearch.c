@@ -1194,7 +1194,7 @@ PetscErrorCode TaoLineSearchGetFullStepObjective(TaoLineSearch ls, PetscReal *f_
 - xu  - vector of upper bounds
 
   Note: If the variable bounds are not set with this routine, then
-  TAO_NINFINITY and TAO_INFINITY are assumed
+  PETSC_NINFINITY and PETSC_INFINITY are assumed
 
   Level: beginner
 

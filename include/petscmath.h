@@ -408,6 +408,9 @@ M*/
 #  define PETSC_SMALL                   1.e-20
 #endif
 
+#define PETSC_INFINITY                PETSC_MAX_REAL/4.0
+#define PETSC_NINFINITY              -PETSC_INFINITY
+
 PETSC_EXTERN PetscErrorCode PetscIsInfOrNanScalar(PetscScalar);
 PETSC_EXTERN PetscErrorCode PetscIsInfOrNanReal(PetscReal);
 PETSC_EXTERN PetscBool PetscIsNormalScalar(PetscScalar);

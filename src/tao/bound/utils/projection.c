@@ -20,7 +20,8 @@
 
   Level: advanced
 @*/
-PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP){
+PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
+{
 
   PetscErrorCode ierr;
   PetscInt       n,i;
@@ -68,6 +69,21 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP){
 
 #undef __FUNCT__
 #define __FUNCT__ "VecStepMaxBounded"
+/*@
+     VecStepMaxBounded - See below
+
+     Collective on Vec
+
+     Input Parameters:
++      X  - vector with no negative entries
+.      XL - lower bounds
+.      XU - upper bounds
+-      DX  - step direction, can have negative, positive or zero entries
+
+     Output Parameter:
+.     stepmax -   minimum value so that X[i] + stepmax*DX[i] <= XL[i]  or  XU[i] <= X[i] + stepmax*DX[i]
+
+@*/
 PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepmax)
 {
   PetscErrorCode ierr;
@@ -105,13 +121,30 @@ PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepm
 
 #undef __FUNCT__
 #define __FUNCT__ "VecStepBoundInfo"
-PetscErrorCode VecStepBoundInfo(Vec X, Vec XL, Vec XU, Vec DX, PetscReal *boundmin, PetscReal *wolfemin, PetscReal *boundmax)
+/*@
+     VecStepBoundInfo - See below
+
+     Collective on Vec
+
+     Input Parameters:
++      X  - vector with no negative entries
+.      XL - lower bounds
+.      XU - upper bounds
+-      DX  - step direction, can have negative, positive or zero entries
+
+     Output Parameter:
++     boundmin -  maximum value so that   XL[i] <= X[i] + boundmax*DX[i] <= XU[i]
+.     wolfemin -
+-     boundmax -   minimum value so that X[i] + boundmax*DX[i] <= XL[i]  or  XU[i] <= X[i] + boundmax*DX[i]
+
+@*/
+PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundmin, PetscReal *wolfemin, PetscReal *boundmax)
 {
   PetscErrorCode ierr;
   PetscInt       n,i;
   PetscReal      *x,*xl,*xu,*dx;
   PetscReal      t;
-  PetscReal      localmin=1.0e300,localwolfemin=1.0e300,localmax=0;
+  PetscReal      localmin=PETSC_INFINITY,localwolfemin=PETSC_INFINITY,localmax=0;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
@@ -130,7 +163,7 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec XL, Vec XU, Vec DX, PetscReal *boundm
       t=(xu[i]-x[i])/dx[i];
       localmin=PetscMin(t,localmin);
       if (localmin>0){
-          localwolfemin = PetscMin(t,localwolfemin);
+        localwolfemin = PetscMin(t,localwolfemin);
       }
       localmax = PetscMax(t,localmax);
     } else if (dx[i]<0){
@@ -165,11 +198,24 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec XL, Vec XU, Vec DX, PetscReal *boundm
 
 #undef __FUNCT__
 #define __FUNCT__ "VecStepMax"
+/*@
+     VecStepMax - Returns the largest value so that x[i] + step*DX[i] >= 0 for all i
+
+     Collective on Vec
+
+     Input Parameters:
++      X  - vector with no negative entries
+-      DX  - a step direction, can have negative, positive or zero entries
+
+     Output Parameter:
+.    step - largest value such that x[i] + step*DX[i] >= 0 for all i
+
+ @*/
 PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step)
 {
   PetscErrorCode ierr;
   PetscInt       i, nn;
-  PetscReal      stepmax=TAO_INFINITY;
+  PetscReal      stepmax=PETSC_INFINITY;
   PetscReal      *xx, *dx;
   MPI_Comm       comm;
 

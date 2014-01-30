@@ -104,8 +104,8 @@ static PetscErrorCode TaoSolve_IPM(TaoSolver tao)
 #endif
      /* Find distance along step direction to closest bound */
     if (ipmP->nb > 0) {
-      ierr = VecStepBoundInfo(ipmP->s,ipmP->Zero_nb,ipmP->Inf_nb,ipmP->ds,&step_s,NULL,NULL);CHKERRQ(ierr);
-      ierr = VecStepBoundInfo(ipmP->lamdai,ipmP->Zero_nb,ipmP->Inf_nb,ipmP->dlamdai,&step_l,NULL,NULL);CHKERRQ(ierr);
+      ierr = VecStepBoundInfo(ipmP->s,ipmP->ds,ipmP->Zero_nb,ipmP->Inf_nb,&step_s,NULL,NULL);CHKERRQ(ierr);
+      ierr = VecStepBoundInfo(ipmP->lamdai,ipmP->dlamdai,ipmP->Zero_nb,ipmP->Inf_nb,&step_l,NULL,NULL);CHKERRQ(ierr);
       alpha = PetscMin(step_s,step_l);
       alpha = PetscMin(alpha,1.0);
       ipmP->alpha1 = alpha;
@@ -183,8 +183,8 @@ static PetscErrorCode TaoSolve_IPM(TaoSolver tao)
         ierr = VecScale(ipmP->s,tau);CHKERRQ(ierr);
         ierr = VecScale(ipmP->lamdai,tau);CHKERRQ(ierr);
       }
-      ierr = VecStepBoundInfo(ipmP->s,ipmP->Zero_nb,ipmP->Inf_nb,ipmP->ds,&step_s,NULL,NULL);CHKERRQ(ierr);
-      ierr = VecStepBoundInfo(ipmP->lamdai,ipmP->Zero_nb,ipmP->Inf_nb,ipmP->dlamdai,&step_l,NULL,NULL);CHKERRQ(ierr);
+      ierr = VecStepBoundInfo(ipmP->s,ipmP->ds,ipmP->Zero_nb,ipmP->Inf_nb,&step_s,NULL,NULL);CHKERRQ(ierr);
+      ierr = VecStepBoundInfo(ipmP->lamdai,ipmP->dlamdai,ipmP->Zero_nb,ipmP->Inf_nb,&step_l,NULL,NULL);CHKERRQ(ierr);
       if (tau != 1.0) {
         ierr = VecCopy(ipmP->save_s,ipmP->s);CHKERRQ(ierr);
         ierr = VecCopy(ipmP->save_lamdai,ipmP->lamdai);CHKERRQ(ierr);
@@ -328,14 +328,14 @@ static PetscErrorCode IPMInitializeBounds(TaoSolver tao)
     ierr = TaoComputeVariableBounds(tao);CHKERRQ(ierr);
   }
   if (tao->XL) {
-    ierr = VecSet(xtmp,TAO_NINFINITY);CHKERRQ(ierr);
+    ierr = VecSet(xtmp,PETSC_NINFINITY);CHKERRQ(ierr);
     ierr = VecWhichGreaterThan(tao->XL,xtmp,&ipmP->isxl);CHKERRQ(ierr);
     ierr = ISGetSize(ipmP->isxl,&ipmP->nxlb);CHKERRQ(ierr);
   } else {
     ipmP->nxlb=0;
   }
   if (tao->XU) {
-    ierr = VecSet(xtmp,TAO_INFINITY);CHKERRQ(ierr);
+    ierr = VecSet(xtmp,PETSC_INFINITY);CHKERRQ(ierr);
     ierr = VecWhichLessThan(tao->XU,xtmp,&ipmP->isxu);CHKERRQ(ierr);
     ierr = ISGetSize(ipmP->isxu,&ipmP->nxub);CHKERRQ(ierr);
   } else {
@@ -389,7 +389,7 @@ static PetscErrorCode IPMInitializeBounds(TaoSolver tao)
     ierr = VecDuplicate(ipmP->s,&ipmP->One_nb);CHKERRQ(ierr);
     ierr = VecSet(ipmP->One_nb,1.0);CHKERRQ(ierr);
     ierr = VecDuplicate(ipmP->s,&ipmP->Inf_nb);CHKERRQ(ierr);
-    ierr = VecSet(ipmP->Inf_nb,TAO_INFINITY);CHKERRQ(ierr);
+    ierr = VecSet(ipmP->Inf_nb,PETSC_INFINITY);CHKERRQ(ierr);
 
     ierr = PetscMalloc1(ipmP->nb,&cind);CHKERRQ(ierr);
     ierr = PetscMalloc1(ipmP->mi,&ucind);CHKERRQ(ierr);

@@ -514,10 +514,10 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
     for (j=ys; j< ys+ym; j++) {
       for (i=xs; i < xs+xm; i++)
       {
-        l[k][j][i][0] = -SNES_VI_INF;
+        l[k][j][i][0] = -PETSC_INFINITY;
         l[k][j][i][1] = 0.0;
         l[k][j][i][2] = 0.0;
-        u[k][j][i][0] = SNES_VI_INF;
+        u[k][j][i][0] = PETSC_INFINITY;
         u[k][j][i][1] = 1.0;
         u[k][j][i][2] = 1.0;
       }

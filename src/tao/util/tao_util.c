@@ -49,7 +49,7 @@ PetscErrorCode VecPow(Vec v, PetscReal p)
       if (v1[i] >= 0) {
         v1[i] = PetscSqrtScalar(v1[i]);
       } else {
-        v1[i] = TAO_INFINITY;
+        v1[i] = PETSC_INFINITY;
       }
     }
   } else if (-0.5 == p) {
@@ -57,7 +57,7 @@ PetscErrorCode VecPow(Vec v, PetscReal p)
       if (v1[i] >= 0) {
         v1[i] = 1.0 / PetscSqrtScalar(v1[i]);
       } else {
-        v1[i] = TAO_INFINITY;
+        v1[i] = PETSC_INFINITY;
       }
     }
   } else if (2.0 == p) {
@@ -73,7 +73,7 @@ PetscErrorCode VecPow(Vec v, PetscReal p)
       if (v1[i] >= 0) {
         v1[i] = PetscPowScalar(v1[i], p);
       } else {
-        v1[i] = TAO_INFINITY;
+        v1[i] = PETSC_INFINITY;
       }
     }
   }
@@ -239,11 +239,11 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FB)
     xval = x[i]; fval = f[i];
     lval = l[i]; uval = u[i];
 
-    if ((lval <= -TAO_INFINITY) && (uval >= TAO_INFINITY)) {
+    if ((lval <= -PETSC_INFINITY) && (uval >= PETSC_INFINITY)) {
       fb[i] = -fval;
-    } else if (lval <= -TAO_INFINITY) {
+    } else if (lval <= -PETSC_INFINITY) {
       fb[i] = -Fischer(uval - xval, -fval);
-    } else if (uval >=  TAO_INFINITY) {
+    } else if (uval >=  PETSC_INFINITY) {
       fb[i] =  Fischer(xval - lval,  fval);
     } else if (lval == uval) {
       fb[i] = lval - xval;
@@ -341,11 +341,11 @@ PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FB)
     xval = (*x++); fval = (*f++);
     lval = (*l++); uval = (*u++);
 
-    if ((lval <= -TAO_INFINITY) && (uval >= TAO_INFINITY)) {
+    if ((lval <= -PETSC_INFINITY) && (uval >= PETSC_INFINITY)) {
       (*fb++) = -fval - mu*xval;
-    } else if (lval <= -TAO_INFINITY) {
+    } else if (lval <= -PETSC_INFINITY) {
       (*fb++) = -SFischer(uval - xval, -fval, mu);
-    } else if (uval >=  TAO_INFINITY) {
+    } else if (uval >=  PETSC_INFINITY) {
       (*fb++) =  SFischer(xval - lval,  fval, mu);
     } else if (lval == uval) {
       (*fb++) = lval - xval;
@@ -423,12 +423,12 @@ PetscErrorCode D_Fischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec T2
     t1[i] = 0;
 
     if (PetscAbsReal(f[i]) <= PETSC_MACHINE_EPSILON) {
-      if (l[i] > TAO_NINFINITY && PetscAbsReal(x[i] - l[i]) <= PETSC_MACHINE_EPSILON) {
+      if (l[i] > PETSC_NINFINITY && PetscAbsReal(x[i] - l[i]) <= PETSC_MACHINE_EPSILON) {
         t1[i] = 1;
         da[i] = 1;
       }
 
-      if (u[i] <  TAO_INFINITY && PetscAbsReal(u[i] - x[i]) <= PETSC_MACHINE_EPSILON) {
+      if (u[i] <  PETSC_INFINITY && PetscAbsReal(u[i] - x[i]) <= PETSC_MACHINE_EPSILON) {
         t1[i] = 1;
         db[i] = 1;
       }
@@ -441,10 +441,10 @@ PetscErrorCode D_Fischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec T2
   ierr = VecGetArray(T2,&t2);CHKERRQ(ierr);
 
   for (i = 0; i < nn; i++) {
-    if ((l[i] <= TAO_NINFINITY) && (u[i] >= TAO_INFINITY)) {
+    if ((l[i] <= PETSC_NINFINITY) && (u[i] >= PETSC_INFINITY)) {
       da[i] = 0;
       db[i] = -1;
-    } else if (l[i] <= TAO_NINFINITY) {
+    } else if (l[i] <= PETSC_NINFINITY) {
       if (db[i] >= 1) {
         ai = fischnorm(1, t2[i]);
 
@@ -458,7 +458,7 @@ PetscErrorCode D_Fischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec T2
         da[i] = bi / ai - 1;
         db[i] = -f[i] / ai - 1;
       }
-    } else if (u[i] >=  TAO_INFINITY) {
+    } else if (u[i] >=  PETSC_INFINITY) {
       if (da[i] >= 1) {
         ai = fischnorm(1, t2[i]);
 
@@ -569,11 +569,11 @@ PetscErrorCode D_SFischer(Mat jac, Vec X, Vec Con,Vec XL, Vec XU, PetscReal mu,V
     ierr = VecGetArray(Dm,&dm);CHKERRQ(ierr);
 
     for (i = 0; i < nn; ++i) {
-      if ((l[i] <= TAO_NINFINITY) && (u[i] >= TAO_INFINITY)) {
+      if ((l[i] <= PETSC_NINFINITY) && (u[i] >= PETSC_INFINITY)) {
         da[i] = -mu;
         db[i] = -1;
         dm[i] = -x[i];
-      } else if (l[i] <= TAO_NINFINITY) {
+      } else if (l[i] <= PETSC_NINFINITY) {
         bi = u[i] - x[i];
         ai = fischsnorm(bi, f[i], mu);
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
@@ -581,7 +581,7 @@ PetscErrorCode D_SFischer(Mat jac, Vec X, Vec Con,Vec XL, Vec XU, PetscReal mu,V
         da[i] = bi / ai - 1;
         db[i] = -f[i] / ai - 1;
         dm[i] = 2.0 * mu / ai;
-      } else if (u[i] >=  TAO_INFINITY) {
+      } else if (u[i] >=  PETSC_INFINITY) {
         bi = x[i] - l[i];
         ai = fischsnorm(bi, f[i], mu);
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);

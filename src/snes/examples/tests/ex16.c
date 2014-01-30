@@ -651,7 +651,7 @@ PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx)
   PetscInt       mx=user->mx, my=user->my, bmy, bmx;
   PetscScalar    t1,t2,t3;
   PetscScalar    **xl;
-  PetscScalar    lb=-SNES_VI_INF, ub=SNES_VI_INF;
+  PetscScalar    lb=-PETSC_INFINITY, ub=PETSC_INFINITY;
   PetscBool      cylinder;
 
   user->bmy = PetscMax(0,user->bmy);user->bmy = PetscMin(my,user->bmy);

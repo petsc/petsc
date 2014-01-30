@@ -288,7 +288,7 @@ PetscErrorCode ComputeVariableBounds(TaoSolver tao, Vec xl, Vec xu, void*ctx)
   PetscInt  i;
   PetscInt  xs,xm;
   PetscInt  ms = user->ms;
-  PetscReal sval=0.0,*xl_array,ub= TAO_INFINITY;
+  PetscReal sval=0.0,*xl_array,ub= PETSC_INFINITY;
 
   /* Set the variable bounds */
   ierr = VecSet(xu, ub);CHKERRQ(ierr);

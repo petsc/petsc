@@ -227,8 +227,8 @@ PetscErrorCode TaoPounders_bmpts(TaoSolver tao)
   ierr = PetscMalloc1(mfqP->nmodelpoints,&t1);CHKERRQ(ierr);
   ierr = PetscMalloc1(mfqP->nmodelpoints,&t2);CHKERRQ(ierr);
   /* For each ray, find largest t to remain feasible */
-  mint = TAO_INFINITY;
-  maxt = TAO_NINFINITY;
+  mint = PETSC_INFINITY;
+  maxt = PETSC_NINFINITY;
   for (i=1;i<=mfqP->nmodelpoints;i++) {
     ierr = VecStepMaxBounded(mfqP->Xhist[mfqP->modelindices[i]],mfqP->Xhist[mfqP->minindex],tao->XL,tao->XU,&t[i]);CHKERRQ(ierr);
     ierr = VecCopy(mfqP->Xhist[mfqP->modelindices[i]],mfqP->workxvec);CHKERRQ(ierr);

@@ -108,11 +108,11 @@ static PetscErrorCode TaoSetup_GPCG(TaoSolver tao)
   }
   if (!tao->XL) {
       ierr = VecDuplicate(tao->solution,&tao->XL);CHKERRQ(ierr);
-      ierr = VecSet(tao->XL,TAO_NINFINITY);CHKERRQ(ierr);
+      ierr = VecSet(tao->XL,PETSC_NINFINITY);CHKERRQ(ierr);
   }
   if (!tao->XU) {
       ierr = VecDuplicate(tao->solution,&tao->XU);CHKERRQ(ierr);
-      ierr = VecSet(tao->XU,TAO_INFINITY);CHKERRQ(ierr);
+      ierr = VecSet(tao->XU,PETSC_INFINITY);CHKERRQ(ierr);
   }
 
   ierr=VecDuplicate(tao->solution,&gpcg->B);CHKERRQ(ierr);

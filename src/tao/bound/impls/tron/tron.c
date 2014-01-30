@@ -87,11 +87,11 @@ static PetscErrorCode TaoSetup_TRON(TaoSolver tao)
   ierr = VecDuplicate(tao->solution, &tao->stepdirection);CHKERRQ(ierr);
   if (!tao->XL) {
       ierr = VecDuplicate(tao->solution, &tao->XL);CHKERRQ(ierr);
-      ierr = VecSet(tao->XL, TAO_NINFINITY);CHKERRQ(ierr);
+      ierr = VecSet(tao->XL, PETSC_NINFINITY);CHKERRQ(ierr);
   }
   if (!tao->XU) {
       ierr = VecDuplicate(tao->solution, &tao->XU);CHKERRQ(ierr);
-      ierr = VecSet(tao->XU, TAO_INFINITY);CHKERRQ(ierr);
+      ierr = VecSet(tao->XU, PETSC_INFINITY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

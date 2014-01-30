@@ -475,7 +475,7 @@ PetscErrorCode FormBoundaryConditions(SNES snes,AppCtx **ouser)
   ierr     = PetscNew(&user);CHKERRQ(ierr);
   *ouser   = user;
   user->lb = .05;
-  user->ub = SNES_VI_INF;
+  user->ub = PETSC_INFINITY;
   ierr     = DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   /* Check if lower and upper bounds are set */

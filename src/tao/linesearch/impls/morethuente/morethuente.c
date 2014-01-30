@@ -118,7 +118,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     ierr = VecScale(s,-1.0);CHKERRQ(ierr);
     ierr = VecBoundGradientProjection(s,x,ls->lower,ls->upper,s);CHKERRQ(ierr);
     ierr = VecScale(s,-1.0);CHKERRQ(ierr);
-    ierr = VecStepBoundInfo(x,ls->lower,ls->upper,s,&bstepmin1,&bstepmin2,&bstepmax);CHKERRQ(ierr);
+    ierr = VecStepBoundInfo(x,s,ls->lower,ls->upper,&bstepmin1,&bstepmin2,&bstepmax);CHKERRQ(ierr);
     ls->stepmax = PetscMin(bstepmax,1.0e15);
   }
 
@@ -207,8 +207,8 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
       /* User provided compute function generated Not-a-Number, assume
        domain violation and set function value and directional
        derivative to infinity. */
-      *f = TAO_INFINITY;
-      dg = TAO_INFINITY;
+      *f = PETSC_INFINITY;
+      dg = PETSC_INFINITY;
     }
 
     ftest1 = finit + ls->step * dgtest;

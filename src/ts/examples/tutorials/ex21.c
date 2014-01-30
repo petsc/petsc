@@ -325,12 +325,12 @@ PetscErrorCode SetBounds(Vec xl, Vec xu, PetscScalar ul, PetscScalar uh,AppCtx *
   ierr = MPI_Comm_rank(appctx->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(appctx->comm,&size);CHKERRQ(ierr);
   if (!rank) {
-    l[0] = -SNES_VI_INF;
-    u[0] =  SNES_VI_INF;
+    l[0] = -PETSC_INFINITY;
+    u[0] =  PETSC_INFINITY;
   }
   if (rank == size-1) {
-    l[localsize-1] = -SNES_VI_INF;
-    u[localsize-1] = SNES_VI_INF;
+    l[localsize-1] = -PETSC_INFINITY;
+    u[localsize-1] = PETSC_INFINITY;
   }
   ierr = VecRestoreArray(xl,&l);CHKERRQ(ierr);
   ierr = VecRestoreArray(xu,&u);CHKERRQ(ierr);

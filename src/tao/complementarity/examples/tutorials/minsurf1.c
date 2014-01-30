@@ -56,8 +56,8 @@ int main(int argc, char **argv)
   TaoSolver      tao;               /* TAO solver context */
   Mat            J;                 /* Jacobian matrix */
   PetscInt       N;                 /* Number of elements in vector */
-  PetscScalar    lb =  TAO_NINFINITY;      /* lower bound constant */
-  PetscScalar    ub =  TAO_INFINITY;      /* upper bound constant */
+  PetscScalar    lb =  PETSC_NINFINITY;      /* lower bound constant */
+  PetscScalar    ub =  PETSC_INFINITY;      /* upper bound constant */
   AppCtx         user;                    /* user-defined work context */
 
   /* Initialize PETSc, TAO */

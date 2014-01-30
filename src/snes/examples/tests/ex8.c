@@ -52,7 +52,7 @@ int main(int argc, char **argv)
   Mat            J;                 /* Jacobian matrix */
   PetscInt       N;                 /* Number of elements in vector */
   PetscScalar    lb = .05;
-  PetscScalar    ub = SNES_VI_INF;
+  PetscScalar    ub = PETSC_INFINITY;
   AppCtx         user;              /* user-defined work context */
   PetscBool      flg;
 
