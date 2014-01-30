@@ -2,16 +2,17 @@
 #include <petsc-private/taosolverimpl.h>
 #include <petscsnes.h>
 
-
 /*
    For finited difference computations of the Hessian, we use PETSc's SNESComputeJacobianDefault
 */
 
 #undef __FUNCT__
 #define __FUNCT__ "Fsnes"
-static PetscErrorCode Fsnes(SNES snes ,Vec X,Vec G,void*ctx){
+static PetscErrorCode Fsnes(SNES snes ,Vec X,Vec G,void*ctx)
+{
   PetscErrorCode ierr;
-  TaoSolver tao = (TaoSolver)ctx;
+  TaoSolver      tao = (TaoSolver)ctx;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ctx,TAOSOLVER_CLASSID,4);
   ierr=TaoComputeGradient(tao,X,G);CHKERRQ(ierr);
@@ -37,9 +38,6 @@ static PetscErrorCode Fsnes(SNES snes ,Vec X,Vec G,void*ctx){
 +  -tao_fd_gradient - Activates TaoDefaultComputeGradient()
 -  -tao_fd_delta <delta> - change in x used to calculate finite differences
 
-
-
-
    Level: advanced
 
    Note:
@@ -59,12 +57,13 @@ static PetscErrorCode Fsnes(SNES snes ,Vec X,Vec G,void*ctx){
 @*/
 PetscErrorCode TaoDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *dummy)
 {
-  PetscReal *g;
-  PetscReal f, f2;
+  PetscReal      *g;
+  PetscReal      f, f2;
   PetscErrorCode ierr;
-  PetscInt low,high,N,i;
-  PetscBool flg;
-  PetscReal h=PETSC_SQRT_MACHINE_EPSILON;
+  PetscInt       low,high,N,i;
+  PetscBool      flg;
+  PetscReal      h=PETSC_SQRT_MACHINE_EPSILON;
+
   PetscFunctionBegin;
   ierr = TaoComputeObjective(tao, X,&f);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-tao_fd_delta",&h,&flg);CHKERRQ(ierr);
@@ -125,8 +124,7 @@ PetscErrorCode TaoDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *dummy)
 .seealso: TaoSetHessianRoutine(), TaoDefaultComputeHessianColor(), SNESComputeJacobianDefault(), TaoSetGradientRoutine(), TaoDefaultComputeGradient()
 
 @*/
-PetscErrorCode TaoDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,
-                             MatStructure *flag,void *dummy){
+PetscErrorCode TaoDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,MatStructure *flag,void *dummy){
   PetscErrorCode       ierr;
   MPI_Comm             comm;
   Vec                  G;
@@ -145,16 +143,10 @@ PetscErrorCode TaoDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,
 
   ierr = SNESSetFunction(snes,G,Fsnes,tao);CHKERRQ(ierr);
   ierr = SNESComputeJacobianDefault(snes,V,H,B,flag,tao);CHKERRQ(ierr);
-
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-
   ierr = VecDestroy(&G);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
-
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDefaultComputeHessianColor"
@@ -179,15 +171,13 @@ PetscErrorCode TaoDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,
 .seealso: TaoSetHessianRoutine(), TaoDefaultComputeHessian(),SNESComputeJacobianDefaultColor(), TaoSetGradientRoutine()
 
 @*/
-PetscErrorCode TaoDefaultComputeHessianColor(TaoSolver tao, Vec V, Mat *H,Mat *B,MatStructure *flag,void *ctx){
+PetscErrorCode TaoDefaultComputeHessianColor(TaoSolver tao, Vec V, Mat *H,Mat *B,MatStructure *flag,void *ctx)
+{
   PetscErrorCode      ierr;
   MatFDColoring       coloring = (MatFDColoring)ctx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ctx,MAT_FDCOLORING_CLASSID,6);
-
-
-
   *flag = SAME_NONZERO_PATTERN;
 
   ierr=PetscInfo(tao,"TAO computing matrix using finite differences Hessian and coloring\n");CHKERRQ(ierr);

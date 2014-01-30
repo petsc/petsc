@@ -1,6 +1,6 @@
 #include <petsc-private/petscimpl.h>
-#include <tao.h> /*I "tao.h" I*/
-#include "tao_util.h" /*I "tao_util.h" I*/
+#include <tao.h>      /*I "tao.h" I*/
+#include <tao_util.h> /*I "tao_util.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "VecPow"

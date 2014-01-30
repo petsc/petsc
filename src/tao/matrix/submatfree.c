@@ -1,8 +1,6 @@
 #include <tao_util.h>   /*I "tao_util.h" I*/
 #include <../src/tao/matrix/submatfree.h> /*I "submatfree.h" I*/
 
-
-
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateSubMatrixFree"
 /*@C
