@@ -815,15 +815,11 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
 {
   Mat_MPIAIJ        *l = (Mat_MPIAIJ*)A->data;
   PetscErrorCode    ierr;
-  PetscMPIInt       size = l->size,imdex,n,rank = l->rank,tag = ((PetscObject)A)->tag,lastidx = -1;
-  PetscInt          i,*owners = A->rmap->range;
-  PetscInt          *sizes,j,idx,nsends;
-  PetscInt          nmax,*svalues,*starts,*owner,nrecvs;
-  PetscInt          *rvalues,count,base,slen,*source;
-  PetscInt          *lens,*lrows,*values,m;
-  MPI_Comm          comm;
-  MPI_Request       *send_waits,*recv_waits;
-  MPI_Status        recv_status,*send_status;
+  PetscMPIInt       size = l->size,n = A->rmap->n,lastidx = -1;
+  PetscInt          i,j,r,m,p = 0,len = 0;
+  PetscInt          *lrows,*owners = A->rmap->range;
+  PetscSFNode       *rrows;
+  PetscSF           sf;
   const PetscScalar *xx;
   PetscScalar       *bb,*mask;
   Vec               xmask,lmask;
@@ -835,120 +831,57 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
 #endif
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  /*  first count number of contributors to each processor */
-  ierr = PetscCalloc1(2*size,&sizes);CHKERRQ(ierr);
-  ierr = PetscMalloc1(N+1,&owner);CHKERRQ(ierr); /* see note*/
-  j    = 0;
-  for (i=0; i<N; i++) {
-    if (lastidx > (idx = rows[i])) j = 0;
+  /* Create SF where leaves are input rows and roots are owned rows */
+  ierr = PetscMalloc1(n, &lrows);CHKERRQ(ierr);
+  for (r = 0; r < n; ++r) lrows[r] = -1;
+  ierr = PetscMalloc1(N, &rrows);CHKERRQ(ierr);
+  for (r = 0; r < N; ++r) {
+    const PetscInt idx   = rows[r];
+    PetscBool      found = PETSC_FALSE;
+    /* Trick for efficient searching for sorted rows */
+    if (lastidx > idx) p = 0;
     lastidx = idx;
-    for (; j<size; j++) {
-      if (idx >= owners[j] && idx < owners[j+1]) {
-        sizes[2*j]++;
-        sizes[2*j+1] = 1;
-        owner[i]      = j;
-#if defined(PETSC_DEBUG)
+    for (; p < size; ++p) {
+      if (idx >= owners[p] && idx < owners[p+1]) {
+        rrows[r].rank  = p;
+        rrows[r].index = rows[r] - owners[p];
         found = PETSC_TRUE;
-#endif
         break;
       }
     }
-#if defined(PETSC_DEBUG)
-    if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index out of range");
-    found = PETSC_FALSE;
-#endif
+    if (!found) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row %d not found in matrix distribution", idx);
   }
-  nsends = 0;  for (i=0; i<size; i++) nsends += sizes[2*i+1];
-
-  /* inform other processors of number of messages and max length*/
-  ierr = PetscMaxSum(comm,sizes,&nmax,&nrecvs);CHKERRQ(ierr);
-
-  /* post receives:   */
-  ierr = PetscMalloc1((nrecvs+1)*(nmax+1),&rvalues);CHKERRQ(ierr);
-  ierr = PetscMalloc1((nrecvs+1),&recv_waits);CHKERRQ(ierr);
-  for (i=0; i<nrecvs; i++) {
-    ierr = MPI_Irecv(rvalues+nmax*i,nmax,MPIU_INT,MPI_ANY_SOURCE,tag,comm,recv_waits+i);CHKERRQ(ierr);
-  }
-
-  /* do sends:
-      1) starts[i] gives the starting index in svalues for stuff going to
-         the ith processor
-  */
-  ierr = PetscMalloc1((N+1),&svalues);CHKERRQ(ierr);
-  ierr = PetscMalloc1((nsends+1),&send_waits);CHKERRQ(ierr);
-  ierr = PetscMalloc1((size+1),&starts);CHKERRQ(ierr);
-
-  starts[0] = 0;
-  for (i=1; i<size; i++) starts[i] = starts[i-1] + sizes[2*i-2];
-  for (i=0; i<N; i++) svalues[starts[owner[i]]++] = rows[i];
-
-  starts[0] = 0;
-  for (i=1; i<size+1; i++) starts[i] = starts[i-1] + sizes[2*i-2];
-  count = 0;
-  for (i=0; i<size; i++) {
-    if (sizes[2*i+1]) {
-      ierr = MPI_Isend(svalues+starts[i],sizes[2*i],MPIU_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
-    }
-  }
-  ierr = PetscFree(starts);CHKERRQ(ierr);
-
-  base = owners[rank];
-
-  /*  wait on receives */
-  ierr  = PetscMalloc2(nrecvs,&lens,nrecvs,&source);CHKERRQ(ierr);
-  count = nrecvs; slen = 0;
-  while (count) {
-    ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
-    /* unpack receives into our local space */
-    ierr = MPI_Get_count(&recv_status,MPIU_INT,&n);CHKERRQ(ierr);
-
-    source[imdex] = recv_status.MPI_SOURCE;
-    lens[imdex]   = n;
-    slen         += n;
-    count--;
-  }
-  ierr = PetscFree(recv_waits);CHKERRQ(ierr);
-
-  /* move the data into the send scatter */
-  ierr  = PetscMalloc1((slen+1),&lrows);CHKERRQ(ierr);
-  count = 0;
-  for (i=0; i<nrecvs; i++) {
-    values = rvalues + i*nmax;
-    for (j=0; j<lens[i]; j++) lrows[count++] = values[j] - base;
-  }
-  ierr = PetscFree(rvalues);CHKERRQ(ierr);
-  ierr = PetscFree2(lens,source);CHKERRQ(ierr);
-  ierr = PetscFree(owner);CHKERRQ(ierr);
-  ierr = PetscFree(sizes);CHKERRQ(ierr);
-  /* lrows are the local rows to be zeroed, slen is the number of local rows */
-
+  ierr = PetscSFCreate(PetscObjectComm((PetscObject) A), &sf);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(sf, n, N, NULL, PETSC_OWN_POINTER, rrows, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  /* Collect flags for rows to be zeroed */
+  ierr = PetscSFReduceBegin(sf, MPIU_INT, (PetscInt *) rows, lrows, MPI_LOR);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sf, MPIU_INT, (PetscInt *) rows, lrows, MPI_LOR);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+  /* Compress and put in row numbers */
+  for (r = 0; r < n; ++r) if (lrows[r] >= 0) lrows[len++] = r;
   /* zero diagonal part of matrix */
-  ierr = MatZeroRowsColumns(l->A,slen,lrows,diag,x,b);CHKERRQ(ierr);
-
+  ierr = MatZeroRowsColumns(l->A,len,lrows,diag,x,b);CHKERRQ(ierr);
   /* handle off diagonal part of matrix */
   ierr = MatGetVecs(A,&xmask,NULL);CHKERRQ(ierr);
   ierr = VecDuplicate(l->lvec,&lmask);CHKERRQ(ierr);
   ierr = VecGetArray(xmask,&bb);CHKERRQ(ierr);
-  for (i=0; i<slen; i++) bb[lrows[i]] = 1;
+  for (i=0; i<len; i++) bb[lrows[i]] = 1;
   ierr = VecRestoreArray(xmask,&bb);CHKERRQ(ierr);
   ierr = VecScatterBegin(l->Mvctx,xmask,lmask,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(l->Mvctx,xmask,lmask,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecDestroy(&xmask);CHKERRQ(ierr);
   if (x) {
-    ierr = VecScatterBegin(l->Mvctx,x,l->lvec,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(l->Mvctx,x,l->lvec,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterBegin(l->Mvctx,x,l->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(l->Mvctx,x,l->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGetArrayRead(l->lvec,&xx);CHKERRQ(ierr);
     ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
   }
   ierr = VecGetArray(lmask,&mask);CHKERRQ(ierr);
-
   /* remove zeroed rows of off diagonal matrix */
   ii = aij->i;
-  for (i=0; i<slen; i++) {
+  for (i=0; i<len; i++) {
     ierr = PetscMemzero(aij->a + ii[lrows[i]],(ii[lrows[i]+1] - ii[lrows[i]])*sizeof(PetscScalar));CHKERRQ(ierr);
   }
-
   /* loop over all elements of off process part of matrix zeroing removed columns*/
   if (aij->compressedrow.use) {
     m    = aij->compressedrow.nrows;
@@ -992,15 +925,6 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
   ierr = VecRestoreArray(lmask,&mask);CHKERRQ(ierr);
   ierr = VecDestroy(&lmask);CHKERRQ(ierr);
   ierr = PetscFree(lrows);CHKERRQ(ierr);
-
-  /* wait on sends */
-  if (nsends) {
-    ierr = PetscMalloc1(nsends,&send_status);CHKERRQ(ierr);
-    ierr = MPI_Waitall(nsends,send_waits,send_status);CHKERRQ(ierr);
-    ierr = PetscFree(send_status);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(send_waits);CHKERRQ(ierr);
-  ierr = PetscFree(svalues);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
