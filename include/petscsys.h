@@ -1136,7 +1136,7 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscFree2(m1,m2)   (PetscFree(m2) || PetscFree(m1))
 #else
-#define PetscFree2(m1,m2)   ((m2)=0, PetscFree(m1))
+#define PetscFree2(m1,m2)   ((m1) ? ((m2)=0,PetscFree(m1)) : ((m1)=0,PetscFree(m2)))
 #endif
 
 /*MC
@@ -1165,7 +1165,7 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscFree3(m1,m2,m3)   (PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
-#define PetscFree3(m1,m2,m3)   ((m3)=0,(m2)=0,PetscFree(m1))
+#define PetscFree3(m1,m2,m3)   ((m1) ? ((m3)=0,(m2)=0,PetscFree(m1)) : ((m2) ? ((m3)=0,(m1)=0,PetscFree(m2)) : ((m2)=0,(m1)=0,PetscFree(m3))))
 #endif
 
 /*MC
@@ -1195,7 +1195,7 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscFree4(m1,m2,m3,m4)   (PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
-#define PetscFree4(m1,m2,m3,m4)   ((m4)=0,(m3)=0,(m2)=0,PetscFree(m1))
+#define PetscFree4(m1,m2,m3,m4)   ((m1) ? ((m4)=0,(m3)=0,(m2)=0,PetscFree(m1)) : ((m2) ? ((m4)=0,(m3)=0,(m1)=0,PetscFree(m2)) : ((m3) ? ((m4)=0,(m2)=0,(m1)=0,PetscFree(m3)) : ((m3)=0,(m2)=0,(m1)=0,PetscFree(m4)))))
 #endif
 
 /*MC
@@ -1226,7 +1226,8 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscFree5(m1,m2,m3,m4,m5)   (PetscFree(m5) || PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
-#define PetscFree5(m1,m2,m3,m4,m5)   ((m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1))
+#define PetscFree5(m1,m2,m3,m4,m5)   ((m1) ? ((m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1)) : ((m2) ? ((m5)=0,(m4)=0,(m3)=0,(m1)=0,PetscFree(m2)) : ((m3) ? ((m5)=0,(m4)=0,(m2)=0,(m1)=0,PetscFree(m3)) : \
+                                     ((m4) ? ((m5)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m4)) : ((m4)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m5))))))
 #endif
 
 
@@ -1260,7 +1261,9 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscFree6(m1,m2,m3,m4,m5,m6)   (PetscFree(m6) || PetscFree(m5) || PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
-#define PetscFree6(m1,m2,m3,m4,m5,m6)   ((m6)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1))
+#define PetscFree6(m1,m2,m3,m4,m5,m6)   ((m1) ? ((m6)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1)) : ((m2) ? ((m6)=0,(m5)=0,(m4)=0,(m3)=0,(m1)=0,PetscFree(m2)) : \
+                                        ((m3) ? ((m6)=0,(m5)=0,(m4)=0,(m2)=0,(m1)=0,PetscFree(m3)) : ((m4) ? ((m6)=0,(m5)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m4)) : \
+                                        ((m5) ? ((m6)=0,(m4)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m5)) : ((m5)=0,(m4)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m6)))))))
 #endif
 
 /*MC
@@ -1295,7 +1298,10 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscFree7(m1,m2,m3,m4,m5,m6,m7)   (PetscFree(m7) || PetscFree(m6) || PetscFree(m5) || PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
-#define PetscFree7(m1,m2,m3,m4,m5,m6,m7)   ((m7)=0,(m6)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1))
+#define PetscFree7(m1,m2,m3,m4,m5,m6,m7)   ((m1) ? ((m7)=0,(m6)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1)) : ((m2) ? ((m7)=0,(m6)=0,(m5)=0,(m4)=0,(m3)=0,(m1)=0,PetscFree(m2)) : \
+                                           ((m3) ? ((m7)=0,(m6)=0,(m5)=0,(m4)=0,(m2)=0,(m1)=0,PetscFree(m3)) : ((m4) ? ((m7)=0,(m6)=0,(m5)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m4)) : \
+                                           ((m5) ? ((m7)=0,(m6)=0,(m4)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m5)) : ((m6) ? ((m7)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m6)) :
+                                                   ((m6)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m7))))))))
 #endif
 
 PETSC_EXTERN PetscErrorCode (*PetscTrMalloc)(size_t,int,const char[],const char[],void**);
