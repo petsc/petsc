@@ -625,7 +625,11 @@ PetscErrorCode PCSetUp_MG(PC pc)
     ierr = KSPGetOperators(mglevels[n-1]->smoothd,&dA,&dB,&uflag);CHKERRQ(ierr);
     if (!pc->setupcalled) {
       for (i=n-2; i>-1; i--) {
-        ierr = MatPtAP(dB,mglevels[i+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
+        if (mglevels[i+1]->interpolate == mglevels[i+1]->restrct) {
+          ierr = MatPtAP(dB,mglevels[i+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
+        } else {
+          ierr = MatMatMatMult(mglevels[i+1]->restrct,dB,mglevels[i+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
+        }
         ierr = KSPSetOperators(mglevels[i]->smoothd,B,B,uflag);CHKERRQ(ierr);
         if (i != n-2) {ierr = PetscObjectDereference((PetscObject)dB);CHKERRQ(ierr);}
         dB = B;
@@ -634,7 +638,11 @@ PetscErrorCode PCSetUp_MG(PC pc)
     } else {
       for (i=n-2; i>-1; i--) {
         ierr = KSPGetOperators(mglevels[i]->smoothd,NULL,&B,NULL);CHKERRQ(ierr);
-        ierr = MatPtAP(dB,mglevels[i+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
+        if (mglevels[i+1]->interpolate == mglevels[i+1]->restrct) {
+          ierr = MatPtAP(dB,mglevels[i+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
+        } else {
+          ierr = MatMatMatMult(mglevels[i+1]->restrct,dB,mglevels[i+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
+        }
         ierr = KSPSetOperators(mglevels[i]->smoothd,B,B,uflag);CHKERRQ(ierr);
         dB   = B;
       }
