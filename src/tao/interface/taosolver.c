@@ -185,15 +185,14 @@ PetscErrorCode TaoSolve(TaoSolver tao)
   }
 
   if (tao->printreason) {
-      if (tao->reason > 0) {
-          ierr = PetscPrintf(((PetscObject)tao)->comm,"TAO solve converged due to %s\n",TaoSolverTerminationReasons[tao->reason]);CHKERRQ(ierr);
-      } else {
-          ierr = PetscPrintf(((PetscObject)tao)->comm,"TAO solve did not converge due to %s\n",TaoSolverTerminationReasons[tao->reason]);CHKERRQ(ierr);
-      }
+    if (tao->reason > 0) {
+      ierr = PetscPrintf(((PetscObject)tao)->comm,"TAO solve converged due to %s\n",TaoSolverTerminationReasons[tao->reason]);CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(((PetscObject)tao)->comm,"TAO solve did not converge due to %s\n",TaoSolverTerminationReasons[tao->reason]);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetUp"

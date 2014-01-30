@@ -37,6 +37,7 @@ PetscErrorCode TaoSetVariableBounds(TaoSolver tao, Vec XL, Vec XU)
   tao->XU = XU;
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetVariableBoundsRoutine"
 /*@C
