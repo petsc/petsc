@@ -3,7 +3,6 @@
 #include <include/private/taosolverimpl.h>
 #include <petsc.h>
 #include <petscblaslapack.h>
-#include <taolapack.h>
 #ifdef PETSC_HAVE_MATLAB_ENGINE
 #include <engine.h>
 #endif

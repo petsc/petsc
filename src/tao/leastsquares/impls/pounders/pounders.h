@@ -3,8 +3,6 @@
 #include <petsc-private/taosolverimpl.h>
 #include <petsc.h>
 #include <petscblaslapack.h>
-#include <taolapack.h>
-
 
 typedef struct {
   PetscInt npmax;  /* Max number of interpolation points (>n+1) (def: 2n+1) */

@@ -1,6 +1,5 @@
 #include <petsc.h>
 #include <petscblaslapack.h>
-#include <taolapack.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "estsv"
