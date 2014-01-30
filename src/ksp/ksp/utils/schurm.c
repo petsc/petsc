@@ -442,6 +442,87 @@ PetscErrorCode  MatSchurComplementGetSubmatrices(Mat N,Mat *A,Mat *Ap,Mat *B,Mat
   PetscFunctionReturn(0);
 }
 
+#include <petsc-private/kspimpl.h>
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSchurComplementComputeExplicitOperator"
+/*@
+  MatSchurComplementComputeExplicitOperator - Compute the Schur complement matrix explicitly
+
+  Collective on Mat
+
+  Input Parameter:
+. M - the matrix obtained with MatCreateSchurComplement()
+
+  Output Parameter:
+. S - the Schur complement matrix
+
+  Note: This can be expensive, so it is mainly for testing
+
+  Level: advanced
+
+.seealso: MatCreateSchurComplement(), MatSchurComplementUpdate()
+@*/
+PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat M, Mat *S)
+{
+  Mat            B, C, D;
+  KSP            ksp;
+  PC             pc;
+  PetscBool      isLU, isILU;
+  PetscReal      fill = 2.0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSchurComplementGetSubmatrices(M, NULL, NULL, &B, &C, &D);CHKERRQ(ierr);
+  ierr = MatSchurComplementGetKSP(M, &ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) pc, PCLU, &isLU);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) pc, PCILU, &isILU);CHKERRQ(ierr);
+  if (isLU || isILU) {
+    Mat       fact, Bd, AinvB, AinvBd;
+    PetscReal eps = 1.0e-10;
+
+    /* This can be sped up for banded LU */
+    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+    ierr = PCFactorGetMatrix(pc, &fact);CHKERRQ(ierr);
+    ierr = MatConvert(B, MATDENSE, MAT_INITIAL_MATRIX, &Bd);CHKERRQ(ierr);
+    ierr = MatDuplicate(Bd, MAT_DO_NOT_COPY_VALUES, &AinvBd);CHKERRQ(ierr);
+    ierr = MatMatSolve(fact, Bd, AinvBd);CHKERRQ(ierr);
+    ierr = MatDestroy(&Bd);CHKERRQ(ierr);
+    ierr = MatChop(AinvBd, eps);CHKERRQ(ierr);
+    ierr = MatConvert(AinvBd, MATAIJ, MAT_INITIAL_MATRIX, &AinvB);CHKERRQ(ierr);
+    ierr = MatDestroy(&AinvBd);CHKERRQ(ierr);
+    ierr = MatMatMult(C, AinvB, MAT_INITIAL_MATRIX, fill, S);CHKERRQ(ierr);
+    ierr = MatDestroy(&AinvB);CHKERRQ(ierr);
+  } else {
+    Mat Ainvd, Ainv;
+
+    ierr = PCComputeExplicitOperator(pc, &Ainvd);CHKERRQ(ierr);
+    ierr = MatConvert(Ainvd, MATAIJ, MAT_INITIAL_MATRIX, &Ainv);CHKERRQ(ierr);
+    ierr = MatDestroy(&Ainvd);CHKERRQ(ierr);
+#if 0
+    /* Symmetric version */
+    ierr = MatPtAP(Ainv, B, MAT_INITIAL_MATRIX, fill, S);CHKERRQ(ierr);
+#else
+    /* Nonsymmetric version */
+    ierr = MatMatMatMult(C, Ainv, B, MAT_INITIAL_MATRIX, fill, S);CHKERRQ(ierr);
+#endif
+    ierr = MatDestroy(&Ainv);CHKERRQ(ierr);
+  }
+
+  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+  ierr = MatView(*S, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  if (D) {
+    MatInfo info;
+
+    ierr = MatGetInfo(D, MAT_GLOBAL_SUM, &info);CHKERRQ(ierr);
+    if (info.nz_used) SETERRQ(PetscObjectComm((PetscObject) M), PETSC_ERR_SUP, "Not yet implemented");
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSchurComplement_Basic"
 /* Developer Notes: This should be implemented with a MatCreate_SchurComplement() as that is the standard design for new Mat classes. */
