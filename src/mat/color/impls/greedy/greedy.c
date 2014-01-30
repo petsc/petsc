@@ -51,16 +51,15 @@ PetscErrorCode MatColoringDestroy_Greedy(MatColoring mc)
 #define __FUNCT__ "GreedyColoringLocalDistanceOne_Private"
 PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc,PetscReal *wts,PetscInt *lperm,ISColoringValue *colors)
 {
-  PetscInt        i,j,s,e,n,nd,nd_global,n_global,idx,ncols,maxcols,maxcolors;
+  PetscInt        i,j,s,e,n,nd,nd_global,n_global,idx,ncols,maxcolors,nneighbors,*mask;
   PetscErrorCode  ierr;
   Mat             m=mc->mat;
   Mat_MPIAIJ      *aij = (Mat_MPIAIJ*)m->data;
   Mat             md=NULL,mo=NULL;
   PetscBool       isMPIAIJ,isSEQAIJ;
-  /* MC_Greedy       *gr=(MC_Greedy*)mc->data; */
-  ISColoringValue *mask;
+  ISColoringValue pcol,ncol;
   const PetscInt  *cidx;
-  Vec             wtvec,owtvec,colvec,ocolvec,confvec,oconfvec;
+  Vec             wtvec,owtvec,colvec,ocolvec;
   VecScatter      oscatter;
   PetscScalar     *wtar,*owtar,*colar,*ocolar;
 
@@ -85,32 +84,20 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
   /* create the vectors and communication structures if necessary */
   ierr = MatGetVecs(m,&wtvec,NULL);CHKERRQ(ierr);
   ierr = VecDuplicate(wtvec,&colvec);CHKERRQ(ierr);
-  ierr = VecDuplicate(wtvec,&confvec);CHKERRQ(ierr);
   owtvec=NULL;
   ocolvec=NULL;
-  oconfvec=NULL;
   oscatter=NULL;
   if (mo) {
     ierr = VecDuplicate(aij->lvec,&owtvec);CHKERRQ(ierr);
     ierr = VecDuplicate(aij->lvec,&ocolvec);CHKERRQ(ierr);
-    ierr = VecDuplicate(aij->lvec,&oconfvec);CHKERRQ(ierr);
     oscatter=aij->Mvctx;
   }
-  /* get the maximum possible number of colors and allocate the mask */
-  for (i=s;i<e;i++) {
-    ierr = MatGetRow(m,i,&ncols,NULL,NULL);CHKERRQ(ierr);
-    if (ncols>maxcols) maxcols=ncols;
-    ierr = MatRestoreRow(m,i,&ncols,NULL,NULL);CHKERRQ(ierr);
-  }
-  maxcols++;
-if ((maxcols > mc->maxcolors) && mc->maxcolors) maxcols=mc->maxcolors;
-  /* setup the initial colors for on and off processors in the vectors, for ease of use */
   ierr = VecSet(colvec,(PetscScalar)IS_COLORING_MAX);CHKERRQ(ierr);
   if (ocolvec) {ierr = VecSet(ocolvec,(PetscScalar)IS_COLORING_MAX);CHKERRQ(ierr);}
 
-  maxcolors=0;
-  ierr = MPI_Allreduce(&maxcols,&maxcolors,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
-  ierr = PetscMalloc1(maxcolors,&mask);CHKERRQ(ierr);
+  maxcolors=IS_COLORING_MAX;
+  if (mc->maxcolors) maxcolors=mc->maxcolors;
+  ierr = PetscMalloc1(n,&mask);CHKERRQ(ierr);
 
   /* transfer neighbor weights */
   ierr = VecGetArray(wtvec,&wtar);CHKERRQ(ierr);
@@ -133,11 +120,12 @@ if ((maxcols > mc->maxcolors) && mc->maxcolors) maxcols=mc->maxcolors;
     for (i=0;i<n;i++) {
       idx=n-lperm[i]-1;
       if (colar[idx] == IS_COLORING_MAX) {
-        for (j=0;j<maxcolors;j++) mask[j]=0;
         ierr = MatGetRow(md,idx,&ncols,&cidx,NULL);CHKERRQ(ierr);
+        nneighbors=0;
         for (j=0;j<ncols;j++) {
           if ((PetscInt)colar[cidx[j]] != IS_COLORING_MAX) {
-            mask[(PetscInt)colar[cidx[j]]] = 1;
+            mask[nneighbors] = (PetscInt)colar[cidx[j]];
+            nneighbors++;
           }
         }
         ierr = MatRestoreRow(md,idx,&ncols,&cidx,NULL);CHKERRQ(ierr);
@@ -145,18 +133,25 @@ if ((maxcols > mc->maxcolors) && mc->maxcolors) maxcols=mc->maxcolors;
           ierr = MatGetRow(mo,idx,&ncols,&cidx,NULL);CHKERRQ(ierr);
           for (j=0;j<ncols;j++) {
             if ((PetscInt)ocolar[cidx[j]] != IS_COLORING_MAX) {
-              mask[(PetscInt)ocolar[cidx[j]]] = 1;
+              mask[nneighbors] = (PetscInt)ocolar[cidx[j]];
+              nneighbors++;
             }
           }
           ierr = MatRestoreRow(mo,idx,&ncols,&cidx,NULL);CHKERRQ(ierr);
         }
-        /* assign this one the lowest color possible */
-        for (j=0;j<maxcolors;j++) {
-          if (!mask[j]) {
+        ierr = PetscSortInt(nneighbors,mask);CHKERRQ(ierr);
+        /* assign this one the lowest color possible by seeing if there's a gap in the sequence of sorted neighbor colors */
+        pcol=0;
+        for (j=0;j<nneighbors;j++) {
+          ncol=mask[j];
+          if (ncol-pcol > 0) {
             break;
+          } else {
+            pcol=ncol+1;
           }
         }
-        colar[idx]=j;
+        if (pcol > maxcolors) pcol=maxcolors;
+        colar[idx]=pcol;
       }
     }
     ierr = VecRestoreArray(colvec,&colar);CHKERRQ(ierr);
@@ -196,6 +191,13 @@ if ((maxcols > mc->maxcolors) && mc->maxcolors) maxcols=mc->maxcolors;
     colors[i]=(PetscInt)colar[i];
   }
   ierr = VecRestoreArray(colvec,&colar);CHKERRQ(ierr);
+  ierr = PetscFree(mask);CHKERRQ(ierr);
+  ierr = VecDestroy(&wtvec);CHKERRQ(ierr);
+  ierr = VecDestroy(&colvec);CHKERRQ(ierr);
+  if (mo) {
+    ierr = VecDestroy(&owtvec);CHKERRQ(ierr);
+    ierr = VecDestroy(&ocolvec);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -241,6 +243,8 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *i
   finalcolor_global=0;
   ierr = MPI_Allreduce(&finalcolor,&finalcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
   ierr = ISColoringCreate(PetscObjectComm((PetscObject)mc),finalcolor_global+1,ncols,colors,iscoloring);CHKERRQ(ierr);
+  ierr = PetscFree(wts);CHKERRQ(ierr);
+  ierr = PetscFree(lperm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
