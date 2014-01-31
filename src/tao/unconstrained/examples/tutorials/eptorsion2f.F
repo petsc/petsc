@@ -48,8 +48,8 @@
       Vec              x              ! solution vector
       Mat              H              ! hessian matrix
       PetscInt         Nx, Ny         ! number of processes in x- and y- directions
-      TaoSolver        tao            ! TaoSolver solver context
-      TaoSolverTerminationReason reason
+      Tao        tao            ! Tao solver context
+      TaoTerminationReason reason
       PetscBool        flg
       PetscInt         iter           ! iteration information
       PetscReal      ff,gnorm,cnorm,xdiff
@@ -220,7 +220,7 @@
 !  FormFunctionGradient - Evaluates gradient G(X).
 !
 !  Input Parameters:
-!  tao   - the TaoSolver context
+!  tao   - the Tao context
 !  X     - input vector
 !  dummy - optional user-defined context (not used here)
 !
@@ -242,7 +242,7 @@
 #include "eptorsion2f.h"
 
 !  Input/output variables:
-      TaoSolver        tao
+      Tao        tao
       Vec              X, G
       PetscReal      f
       PetscErrorCode   ierr
@@ -418,7 +418,7 @@
       subroutine ComputeHessian(tao, X, H, Hpre, flag, dummy, ierr)
       implicit none
 #include "eptorsion2f.h"
-      TaoSolver       tao
+      Tao       tao
       Vec             X
       Mat             H,Hpre
       MatStructure    flag
@@ -502,13 +502,13 @@
       subroutine Monitor(tao, dummy, ierr)
       implicit none
 #include "eptorsion2f.h"
-      TaoSolver tao
+      Tao tao
       PetscInt dummy
       PetscErrorCode ierr
 
       PetscInt its
       PetscReal f,gnorm,cnorm,xdiff
-      TaoSolverTerminationReason reason
+      TaoTerminationReason reason
 
       call TaoGetSolutionStatus(tao,its,f,gnorm,cnorm,xdiff,             &
      &     reason,ierr)
@@ -525,13 +525,13 @@
       subroutine ConvergenceTest(tao, dummy, ierr)
       implicit none
 #include "eptorsion2f.h"
-      TaoSolver tao
+      Tao tao
       PetscInt dummy
       PetscErrorCode ierr
 
       PetscInt its
       PetscReal f,gnorm,cnorm,xdiff
-      TaoSolverTerminationReason reason
+      TaoTerminationReason reason
 
       call TaoGetSolutionStatus(tao,its,f,gnorm,cnorm,xdiff,            &
      &     reason,ierr)

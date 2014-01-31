@@ -80,7 +80,7 @@ iter =  40, Function value 2384.48, Residual: 5.48164e-06
    2384.4769959665441       4.87712725433312941E-003
    2384.4769959665441       1.72855507566622491E-004
    2384.4769950856239       5.48163666544335195E-006
-TaoSolver Object: 1 MPI processes
+Tao Object: 1 MPI processes
   type: tao_pounders
       Subproblem solver: tron
   convergence tolerances: fatol=0,   frtol=0

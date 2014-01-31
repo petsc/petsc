@@ -55,7 +55,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetUp_ASFLS"
-PetscErrorCode TaoSetUp_ASFLS(TaoSolver tao)
+PetscErrorCode TaoSetUp_ASFLS(Tao tao)
 {
   TAO_SSLS       *asls = (TAO_SSLS *)tao->data;
   PetscErrorCode ierr;
@@ -85,7 +85,7 @@ PetscErrorCode TaoSetUp_ASFLS(TaoSolver tao)
 #define __FUNCT__ "Tao_ASLS_FunctionGradient"
 static PetscErrorCode Tao_ASLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscReal *fcn,  Vec G, void *ptr)
 {
-  TaoSolver      tao = (TaoSolver)ptr;
+  Tao            tao = (Tao)ptr;
   TAO_SSLS       *asls = (TAO_SSLS *)tao->data;
   PetscErrorCode ierr;
 
@@ -106,7 +106,7 @@ static PetscErrorCode Tao_ASLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscRe
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_ASFLS"
-static PetscErrorCode TaoDestroy_ASFLS(TaoSolver tao)
+static PetscErrorCode TaoDestroy_ASFLS(Tao tao)
 {
   TAO_SSLS       *ssls = (TAO_SSLS *)tao->data;
   PetscErrorCode ierr;
@@ -134,13 +134,13 @@ static PetscErrorCode TaoDestroy_ASFLS(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolve_ASFLS"
-static PetscErrorCode TaoSolve_ASFLS(TaoSolver tao)
+static PetscErrorCode TaoSolve_ASFLS(Tao tao)
 {
   TAO_SSLS                       *asls = (TAO_SSLS *)tao->data;
   PetscReal                      psi,ndpsi, normd, innerd, t=0;
   PetscInt                       iter=0, nf;
   PetscErrorCode                 ierr;
-  TaoSolverTerminationReason     reason;
+  TaoTerminationReason     reason;
   TaoLineSearchTerminationReason ls_reason;
 
   PetscFunctionBegin;
@@ -287,7 +287,7 @@ static PetscErrorCode TaoSolve_ASFLS(TaoSolver tao)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_ASFLS"
-PetscErrorCode TaoCreate_ASFLS(TaoSolver tao)
+PetscErrorCode TaoCreate_ASFLS(Tao tao)
 {
   TAO_SSLS       *asls;
   PetscErrorCode ierr;

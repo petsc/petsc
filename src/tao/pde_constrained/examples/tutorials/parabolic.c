@@ -84,18 +84,18 @@ typedef struct {
 } AppCtx;
 
 
-PetscErrorCode FormFunction(TaoSolver, Vec, PetscReal*, void*);
-PetscErrorCode FormGradient(TaoSolver, Vec, Vec, void*);
-PetscErrorCode FormFunctionGradient(TaoSolver, Vec, PetscReal*, Vec, void*);
-PetscErrorCode FormJacobianState(TaoSolver, Vec, Mat*, Mat*, Mat*, MatStructure*,void*);
-PetscErrorCode FormJacobianDesign(TaoSolver, Vec, Mat*, void*);
-PetscErrorCode FormConstraints(TaoSolver, Vec, Vec, void*);
-PetscErrorCode FormHessian(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
+PetscErrorCode FormFunction(Tao, Vec, PetscReal*, void*);
+PetscErrorCode FormGradient(Tao, Vec, Vec, void*);
+PetscErrorCode FormFunctionGradient(Tao, Vec, PetscReal*, Vec, void*);
+PetscErrorCode FormJacobianState(Tao, Vec, Mat*, Mat*, Mat*, MatStructure*,void*);
+PetscErrorCode FormJacobianDesign(Tao, Vec, Mat*, void*);
+PetscErrorCode FormConstraints(Tao, Vec, Vec, void*);
+PetscErrorCode FormHessian(Tao, Vec, Mat*, Mat*, MatStructure*, void*);
 PetscErrorCode Gather(Vec x, Vec state, VecScatter s_scat, Vec design, VecScatter d_scat);
 PetscErrorCode Scatter(Vec x, Vec state, VecScatter s_scat, Vec design, VecScatter d_scat);
 PetscErrorCode ParabolicInitialize(AppCtx *user);
 PetscErrorCode ParabolicDestroy(AppCtx *user);
-PetscErrorCode ParabolicMonitor(TaoSolver, void*);
+PetscErrorCode ParabolicMonitor(Tao, void*);
 
 PetscErrorCode StateMatMult(Mat,Vec,Vec);
 PetscErrorCode StateMatBlockMult(Mat,Vec,Vec);
@@ -118,17 +118,17 @@ static  char help[]="";
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  PetscErrorCode             ierr;
-  Vec                        x,x0;
-  TaoSolver                  tao;
-  TaoSolverTerminationReason reason;
-  AppCtx                     user;
-  IS                         is_allstate,is_alldesign;
-  PetscInt                   lo,hi,hi2,lo2,ksp_old;
-  PetscBool                  flag;
-  PetscInt                   ntests = 1;
-  PetscInt                   i;
-  int                        stages[1];
+  PetscErrorCode       ierr;
+  Vec                  x,x0;
+  Tao                  tao;
+  TaoTerminationReason reason;
+  AppCtx               user;
+  IS                   is_allstate,is_alldesign;
+  PetscInt             lo,hi,hi2,lo2,ksp_old;
+  PetscBool            flag;
+  PetscInt             ntests = 1;
+  PetscInt             i;
+  int                  stages[1];
 
   PetscInitialize(&argc, &argv, (char*)0,help);
 
@@ -254,7 +254,7 @@ int main(int argc, char **argv)
    lwork = L*(u-ur)
    f = 1/2 * (dwork.dork + alpha*lwork.lwork)
 */
-PetscErrorCode FormFunction(TaoSolver tao,Vec X,PetscReal *f,void *ptr)
+PetscErrorCode FormFunction(Tao tao,Vec X,PetscReal *f,void *ptr)
 {
   PetscErrorCode ierr;
   PetscReal      d1=0,d2=0;
@@ -287,7 +287,7 @@ PetscErrorCode FormFunction(TaoSolver tao,Vec X,PetscReal *f,void *ptr)
     state: g_s = Q' *(Qy - d)
     design: g_d = alpha*L'*L*(u-ur)
 */
-PetscErrorCode FormGradient(TaoSolver tao,Vec X,Vec G,void *ptr)
+PetscErrorCode FormGradient(Tao tao,Vec X,Vec G,void *ptr)
 {
   PetscErrorCode ierr;
   PetscInt       i,j;
@@ -321,7 +321,7 @@ PetscErrorCode FormGradient(TaoSolver tao,Vec X,Vec G,void *ptr)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionGradient"
-PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *f, Vec G, void *ptr)
+PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *ptr)
 {
   PetscErrorCode ierr;
   PetscReal      d1,d2;
@@ -364,7 +364,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *f, Vec G, v
 /* A
 MatShell object
 */
-PetscErrorCode FormJacobianState(TaoSolver tao, Vec X, Mat *J, Mat* JPre, Mat* JInv, MatStructure* flag, void *ptr)
+PetscErrorCode FormJacobianState(Tao tao, Vec X, Mat *J, Mat* JPre, Mat* JInv, MatStructure* flag, void *ptr)
 {
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx*)ptr;
@@ -398,7 +398,7 @@ PetscErrorCode FormJacobianState(TaoSolver tao, Vec X, Mat *J, Mat* JPre, Mat* J
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianDesign"
 /* B */
-PetscErrorCode FormJacobianDesign(TaoSolver tao, Vec X, Mat *J, void *ptr)
+PetscErrorCode FormJacobianDesign(Tao tao, Vec X, Mat *J, void *ptr)
 {
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx*)ptr;
@@ -674,7 +674,7 @@ PetscErrorCode StateMatGetDiagonal(Mat J_shell, Vec X)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormConstraints"
-PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec C, void *ptr)
+PetscErrorCode FormConstraints(Tao tao, Vec X, Vec C, void *ptr)
 {
   /* con = Ay - q, A = [B  0  0 ... 0;
                        -I  B  0 ... 0;
@@ -1371,7 +1371,7 @@ PetscErrorCode ParabolicDestroy(AppCtx *user)
 
 #undef __FUNCT__
 #define __FUNCT__ "ParabolicMonitor"
-PetscErrorCode ParabolicMonitor(TaoSolver tao, void *ptr)
+PetscErrorCode ParabolicMonitor(Tao tao, void *ptr)
 {
   PetscErrorCode ierr;
   Vec            X;

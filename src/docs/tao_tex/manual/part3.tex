@@ -14,7 +14,7 @@ a wide variety of options associated with them, TAO allows the user to
 access the linear solver with the
 \findex{TaoGetKSP()}
 \begin{verbatim}
-   TaoGetKSP(TaoSolver, KSP *);
+   TaoGetKSP(Tao, KSP *);
 \end{verbatim}
 command. 
 With access to the KSP object, users can customize it for their application
@@ -28,8 +28,8 @@ By default the TAO solvers run silently without displaying information
 about the iterations. The user can initiate monitoring with the
 command \findex{TaoSetMonitor()} 
 \begin{verbatim}
-   TaoSetMonitor(TaoSolver,
-                     PetscErrorCode (*mon)(TaoSolver,void*),
+   TaoSetMonitor(Tao,
+                     PetscErrorCode (*mon)(Tao,void*),
                      void*);
 \end{verbatim}
 \noindent
@@ -65,7 +65,7 @@ the user can specify a customized test\sindex{convergence tests}.
 
 Users can set their own customized convergence tests of the form
 \begin{verbatim}
-   PetscErrorCode  conv(TaoSolver, void*);
+   PetscErrorCode  conv(Tao, void*);
 \end{verbatim}
 \noindent
 The second argument is a pointer to a structure defined by the user.
@@ -77,8 +77,8 @@ or other statistic at the current iteration through routines such as
 To use this convergence test within a TAO solver, one uses
 the command \findex{TaoSetConvergenceTest()}
 \begin{verbatim}
-   TaoSetConvergenceTest(TaoSolver,
-                     PetscErrorCode (*conv)(TaoSolver,void*),
+   TaoSetConvergenceTest(Tao,
+                     PetscErrorCode (*conv)(Tao,void*),
                      void*);
 \end{verbatim}
 \noindent
@@ -89,7 +89,7 @@ The convergence routine receives the TAO solver and this private data
 structure. 
 The termination flag can be set by using the routine
 \begin{verbatim}
-   TaoSetTerminationReason(TaoSolver, TaoSolverTerminationReason);
+   TaoSetTerminationReason(Tao, TaoTerminationReason);
 \end{verbatim}
 \noindent
 
@@ -102,7 +102,7 @@ Many solvers in TAO require a line search.  While these solvers always
 offer a default line search, other line searches can be applied by
 using the function
 \begin{verbatim}
-   TaoSetDefaultLineSearchType(TaoSolver, LineSearchType);
+   TaoSetDefaultLineSearchType(Tao, LineSearchType);
 \end{verbatim}
 or by using the command line option  {\tt -tao\_ls\_type}.  
 Available line searches 

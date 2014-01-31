@@ -5,7 +5,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_SQPCON"
-static PetscErrorCode TaoDestroy_SQPCON(TaoSolver tao)
+static PetscErrorCode TaoDestroy_SQPCON(Tao tao)
 {
   TAO_SQPCON     *sqpconP = (TAO_SQPCON*)tao->data;
   PetscErrorCode ierr;
@@ -41,7 +41,7 @@ static PetscErrorCode TaoDestroy_SQPCON(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_SQPCON"
-static PetscErrorCode TaoSetFromOptions_SQPCON(TaoSolver tao)
+static PetscErrorCode TaoSetFromOptions_SQPCON(Tao tao)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -51,7 +51,7 @@ static PetscErrorCode TaoSetFromOptions_SQPCON(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoView_SQPCON"
-static PetscErrorCode TaoView_SQPCON(TaoSolver tao, PetscViewer viewer)
+static PetscErrorCode TaoView_SQPCON(Tao tao, PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -59,7 +59,7 @@ static PetscErrorCode TaoView_SQPCON(TaoSolver tao, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetup_SQPCON"
-static PetscErrorCode TaoSetup_SQPCON(TaoSolver tao)
+static PetscErrorCode TaoSetup_SQPCON(Tao tao)
 {
   TAO_SQPCON     *sqpconP = (TAO_SQPCON*)tao->data;
   PetscInt       lo, hi, nlocal;
@@ -124,11 +124,11 @@ static PetscErrorCode TaoSetup_SQPCON(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolve_SQPCON"
-static PetscErrorCode TaoSolve_SQPCON(TaoSolver tao)
+static PetscErrorCode TaoSolve_SQPCON(Tao tao)
 {
   TAO_SQPCON                     *sqpconP = (TAO_SQPCON*)tao->data;
   PetscInt                       iter=0;
-  TaoSolverTerminationReason     reason = TAO_CONTINUE_ITERATING;
+  TaoTerminationReason     reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchTerminationReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                      step=1.0,f,fm, fold;
   PetscReal                      cnorm, mnorm;
@@ -258,7 +258,7 @@ static PetscErrorCode TaoSolve_SQPCON(TaoSolver tao)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_SQPCON"
-PetscErrorCode TaoCreate_SQPCON(TaoSolver tao)
+PetscErrorCode TaoCreate_SQPCON(Tao tao)
 {
   TAO_SQPCON     *sqpconP;
   PetscErrorCode ierr;

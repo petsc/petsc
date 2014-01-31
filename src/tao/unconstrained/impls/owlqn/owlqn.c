@@ -58,7 +58,7 @@ static PetscErrorCode ComputePseudoGrad_OWLQN(Vec x, Vec gv, PetscReal lambda)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolve_OWLQN"
-static PetscErrorCode TaoSolve_OWLQN(TaoSolver tao)
+static PetscErrorCode TaoSolve_OWLQN(Tao tao)
 {
   TAO_OWLQN                      *lmP = (TAO_OWLQN *)tao->data;
   PetscReal                      f, fold, gdx, gnorm;
@@ -67,7 +67,7 @@ static PetscErrorCode TaoSolve_OWLQN(TaoSolver tao)
   PetscErrorCode                 ierr;
   PetscInt                       stepType;
   PetscInt                       iter = 0;
-  TaoSolverTerminationReason     reason = TAO_CONTINUE_ITERATING;
+  TaoTerminationReason     reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchTerminationReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
   PetscFunctionBegin;
@@ -245,14 +245,14 @@ static PetscErrorCode TaoSolve_OWLQN(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetUp_OWLQN"
-static PetscErrorCode TaoSetUp_OWLQN(TaoSolver tao)
+static PetscErrorCode TaoSetUp_OWLQN(Tao tao)
 {
   TAO_OWLQN      *lmP = (TAO_OWLQN *)tao->data;
   PetscInt       n,N;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Existence of tao->solution checked in TaoSolverSetUp() */
+  /* Existence of tao->solution checked in TaoSetUp() */
   if (!tao->gradient) {ierr = VecDuplicate(tao->solution,&tao->gradient);CHKERRQ(ierr);  }
   if (!tao->stepdirection) {ierr = VecDuplicate(tao->solution,&tao->stepdirection);CHKERRQ(ierr);  }
   if (!lmP->D) {ierr = VecDuplicate(tao->solution,&lmP->D);CHKERRQ(ierr);  }
@@ -271,7 +271,7 @@ static PetscErrorCode TaoSetUp_OWLQN(TaoSolver tao)
 /* ---------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_OWLQN"
-static PetscErrorCode TaoDestroy_OWLQN(TaoSolver tao)
+static PetscErrorCode TaoDestroy_OWLQN(Tao tao)
 {
   TAO_OWLQN      *lmP = (TAO_OWLQN *)tao->data;
   PetscErrorCode ierr;
@@ -291,7 +291,7 @@ static PetscErrorCode TaoDestroy_OWLQN(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_OWLQN"
-static PetscErrorCode TaoSetFromOptions_OWLQN(TaoSolver tao)
+static PetscErrorCode TaoSetFromOptions_OWLQN(Tao tao)
 {
   TAO_OWLQN      *lmP = (TAO_OWLQN *)tao->data;
   PetscBool      flg;
@@ -308,7 +308,7 @@ static PetscErrorCode TaoSetFromOptions_OWLQN(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoView_OWLQN"
-static PetscErrorCode TaoView_OWLQN(TaoSolver tao, PetscViewer viewer)
+static PetscErrorCode TaoView_OWLQN(Tao tao, PetscViewer viewer)
 {
   TAO_OWLQN      *lm = (TAO_OWLQN *)tao->data;
   PetscBool      isascii;
@@ -331,7 +331,7 @@ static PetscErrorCode TaoView_OWLQN(TaoSolver tao, PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_OWLQN"
-PetscErrorCode TaoCreate_OWLQN(TaoSolver tao)
+PetscErrorCode TaoCreate_OWLQN(Tao tao)
 {
   TAO_OWLQN      *lmP;
   const char     *owarmijo_type = TAOLINESEARCH_OWARMIJO;
@@ -360,7 +360,7 @@ PetscErrorCode TaoCreate_OWLQN(TaoSolver tao)
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,owarmijo_type);CHKERRQ(ierr);
-  ierr = TaoLineSearchUseTaoSolverRoutines(tao->linesearch,tao);CHKERRQ(ierr);
+  ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

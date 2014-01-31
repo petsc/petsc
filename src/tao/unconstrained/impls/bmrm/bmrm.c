@@ -52,10 +52,10 @@ static PetscErrorCode destroy_grad_list(Vec_Chain *head)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolve_BMRM"
-static PetscErrorCode TaoSolve_BMRM(TaoSolver tao)
+static PetscErrorCode TaoSolve_BMRM(Tao tao)
 {
   PetscErrorCode             ierr;
-  TaoSolverTerminationReason reason;
+  TaoTerminationReason reason;
   TAO_DF                     df;
   TAO_BMRM                   *bmrm = (TAO_BMRM*)tao->data;
 
@@ -200,7 +200,7 @@ static PetscErrorCode TaoSolve_BMRM(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetup_BMRM"
-static PetscErrorCode TaoSetup_BMRM(TaoSolver tao) 
+static PetscErrorCode TaoSetup_BMRM(Tao tao) 
 {
 
   PetscErrorCode ierr;
@@ -216,7 +216,7 @@ static PetscErrorCode TaoSetup_BMRM(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_BMRM"
-static PetscErrorCode TaoDestroy_BMRM(TaoSolver tao)
+static PetscErrorCode TaoDestroy_BMRM(Tao tao)
 {
   PetscErrorCode ierr;
 
@@ -227,7 +227,7 @@ static PetscErrorCode TaoDestroy_BMRM(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_BMRM"
-static PetscErrorCode TaoSetFromOptions_BMRM(TaoSolver tao)
+static PetscErrorCode TaoSetFromOptions_BMRM(Tao tao)
 {
   PetscErrorCode ierr;
   TAO_BMRM*      bmrm = (TAO_BMRM*)tao->data;
@@ -243,7 +243,7 @@ static PetscErrorCode TaoSetFromOptions_BMRM(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoView_BMRM"
-static PetscErrorCode TaoView_BMRM(TaoSolver tao, PetscViewer viewer)
+static PetscErrorCode TaoView_BMRM(Tao tao, PetscViewer viewer)
 {
   PetscBool      isascii;
   PetscErrorCode ierr;
@@ -261,7 +261,7 @@ static PetscErrorCode TaoView_BMRM(TaoSolver tao, PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_BMRM"
-PetscErrorCode TaoCreate_BMRM(TaoSolver tao)
+PetscErrorCode TaoCreate_BMRM(Tao tao)
 {
   TAO_BMRM       *bmrm;
   PetscErrorCode ierr;

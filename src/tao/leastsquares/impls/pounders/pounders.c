@@ -2,7 +2,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "pounders_h"
-static PetscErrorCode pounders_h(TaoSolver subtao, Vec v, Mat *H, Mat *Hpre, MatStructure *flag, void *ctx)
+static PetscErrorCode pounders_h(Tao subtao, Vec v, Mat *H, Mat *Hpre, MatStructure *flag, void *ctx)
 {
   PetscFunctionBegin;
   *flag = SAME_NONZERO_PATTERN;
@@ -10,7 +10,7 @@ static PetscErrorCode pounders_h(TaoSolver subtao, Vec v, Mat *H, Mat *Hpre, Mat
 }
 #undef __FUNCT__
 #define __FUNCT__ "pounders_fg"
-static PetscErrorCode  pounders_fg(TaoSolver subtao, Vec x, PetscReal *f, Vec g, void *ctx)
+static PetscErrorCode  pounders_fg(Tao subtao, Vec x, PetscReal *f, Vec g, void *ctx)
 {
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)ctx;
   PetscReal      d1,d2;
@@ -32,7 +32,7 @@ static PetscErrorCode  pounders_fg(TaoSolver subtao, Vec x, PetscReal *f, Vec g,
 
 #undef __FUNCT__
 #define __FUNCT__ "gqtwrap"
-PetscErrorCode gqtwrap(TaoSolver tao,PetscReal *gnorm, PetscReal *qmin)
+PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
 {
   PetscErrorCode ierr;
   PetscReal      atol=1.0e-10;
@@ -381,7 +381,7 @@ PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
 #undef __FUNCT__
 #define __FUNCT__ "addpoint"
 /* Only call from modelimprove, addpoint() needs ->Q_tmp and ->work to be set */
-PetscErrorCode addpoint(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt index)
+PetscErrorCode addpoint(Tao tao, TAO_POUNDERS *mfqP, PetscInt index)
 {
   PetscErrorCode ierr;
 
@@ -415,7 +415,7 @@ PetscErrorCode addpoint(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt index)
 
 #undef __FUNCT__
 #define __FUNCT__ "modelimprove"
-PetscErrorCode modelimprove(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt addallpoints)
+PetscErrorCode modelimprove(Tao tao, TAO_POUNDERS *mfqP, PetscInt addallpoints)
 {
   /* modeld = Q(:,np+1:n)' */
   PetscErrorCode ierr;
@@ -518,12 +518,12 @@ PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,PetscReal c)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolve_POUNDERS"
-static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
+static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
 {
   TAO_POUNDERS               *mfqP = (TAO_POUNDERS *)tao->data;
   PetscInt                   i,ii,j,k,l,iter=0;
   PetscReal                  step=1.0;
-  TaoSolverTerminationReason reason = TAO_CONTINUE_ITERATING;
+  TaoTerminationReason reason = TAO_CONTINUE_ITERATING;
   PetscInt                   low,high;
   PetscReal                  minnorm;
   PetscReal                  *x,*f,*fmin,*xmint;
@@ -860,7 +860,7 @@ static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetUp_POUNDERS"
-static PetscErrorCode TaoSetUp_POUNDERS(TaoSolver tao)
+static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
 {
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
   PetscInt       i;
@@ -980,7 +980,7 @@ static PetscErrorCode TaoSetUp_POUNDERS(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_POUNDERS"
-static PetscErrorCode TaoDestroy_POUNDERS(TaoSolver tao)
+static PetscErrorCode TaoDestroy_POUNDERS(Tao tao)
 {
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
   PetscInt       i;
@@ -1055,7 +1055,7 @@ static PetscErrorCode TaoDestroy_POUNDERS(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_POUNDERS"
-static PetscErrorCode TaoSetFromOptions_POUNDERS(TaoSolver tao)
+static PetscErrorCode TaoSetFromOptions_POUNDERS(Tao tao)
 {
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
   PetscErrorCode ierr;
@@ -1073,7 +1073,7 @@ static PetscErrorCode TaoSetFromOptions_POUNDERS(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoView_POUNDERS"
-static PetscErrorCode TaoView_POUNDERS(TaoSolver tao, PetscViewer viewer)
+static PetscErrorCode TaoView_POUNDERS(Tao tao, PetscViewer viewer)
 {
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS *)tao->data;
   PetscBool      isascii;
@@ -1096,7 +1096,7 @@ static PetscErrorCode TaoView_POUNDERS(TaoSolver tao, PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_POUNDERS"
-PetscErrorCode TaoCreate_POUNDERS(TaoSolver tao)
+PetscErrorCode TaoCreate_POUNDERS(Tao tao)
 {
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
   PetscErrorCode ierr;

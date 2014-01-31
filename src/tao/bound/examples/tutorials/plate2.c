@@ -54,27 +54,27 @@ typedef struct {
 static PetscErrorCode MSA_BoundaryConditions(AppCtx*);
 static PetscErrorCode MSA_InitialPoint(AppCtx*,Vec);
 static PetscErrorCode MSA_Plate(Vec,Vec,void*);
-PetscErrorCode FormFunctionGradient(TaoSolver,Vec,PetscReal*,Vec,void*);
-PetscErrorCode FormHessian(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
+PetscErrorCode FormHessian(Tao,Vec,Mat*,Mat*,MatStructure*,void*);
 
 /* For testing matrix free submatrices */
-PetscErrorCode MatrixFreeHessian(TaoSolver,Vec,Mat*, Mat*,MatStructure*,void*);
+PetscErrorCode MatrixFreeHessian(Tao,Vec,Mat*, Mat*,MatStructure*,void*);
 PetscErrorCode MyMatMult(Mat,Vec,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main( int argc, char **argv )
 {
-  PetscErrorCode             ierr;                 /* used to check for functions returning nonzeros */
-  PetscInt                   Nx, Ny;               /* number of processors in x- and y- directions */
-  PetscInt                   m, N;                 /* number of local and global elements in vectors */
-  Vec                        x,xl,xu;               /* solution vector  and bounds*/
-  PetscBool                  flg;                /* A return variable when checking for user options */
-  TaoSolver                  tao;                  /* TaoSolver solver context */
-  ISLocalToGlobalMapping     isltog;   /* local-to-global mapping object */
-  TaoSolverTerminationReason reason;
-  Mat                        H_shell;                  /* to test matrix-free submatrices */
-  AppCtx                     user;                 /* user-defined work context */
+  PetscErrorCode         ierr;                 /* used to check for functions returning nonzeros */
+  PetscInt               Nx, Ny;               /* number of processors in x- and y- directions */
+  PetscInt               m, N;                 /* number of local and global elements in vectors */
+  Vec                    x,xl,xu;               /* solution vector  and bounds*/
+  PetscBool              flg;                /* A return variable when checking for user options */
+  Tao                    tao;                  /* Tao solver context */
+  ISLocalToGlobalMapping isltog;   /* local-to-global mapping object */
+  TaoTerminationReason   reason;
+  Mat                    H_shell;                  /* to test matrix-free submatrices */
+  AppCtx                 user;                 /* user-defined work context */
 
   /* Initialize PETSc, TAO */
   PetscInitialize( &argc, &argv,(char *)0,help );
@@ -201,7 +201,7 @@ int main( int argc, char **argv )
 /*  FormFunctionGradient - Evaluates f(x) and gradient g(x).
 
     Input Parameters:
-.   tao     - the TaoSolver context
+.   tao     - the Tao context
 .   X      - input vector
 .   userCtx - optional user-defined context, as set by TaoSetObjectiveAndGradientRoutine()
 
@@ -219,7 +219,7 @@ int main( int argc, char **argv )
    The numbering of points starts at the lower left and runs left to
    right, then bottom to top.
 */
-PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn, Vec G,void *userCtx)
+PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G,void *userCtx)
 {
   AppCtx         *user = (AppCtx *) userCtx;
   PetscErrorCode ierr;
@@ -414,7 +414,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn, Vec G,
    FormHessian - Evaluates Hessian matrix.
 
    Input Parameters:
-.  tao  - the TaoSolver context
+.  tao  - the Tao context
 .  x    - input vector
 .  ptr  - optional user-defined context, as set by TaoSetHessianRoutine()
 
@@ -448,7 +448,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn, Vec G,
    Option (A) seems cleaner/easier in many cases, and is the procedure
    used in this example.
 */
-PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *Hptr, Mat *Hpc, MatStructure *flag, void *ptr)
+PetscErrorCode FormHessian(Tao tao,Vec X,Mat *Hptr, Mat *Hpc, MatStructure *flag, void *ptr)
 {
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx *) ptr;
@@ -899,7 +899,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
 /* For testing matrix free submatrices */
 #undef __FUNCT__
 #define __FUNCT__ "MatrixFreeHessian"
-PetscErrorCode MatrixFreeHessian(TaoSolver tao, Vec x, Mat *H, Mat *Hpre, MatStructure *flg, void *ptr)
+PetscErrorCode MatrixFreeHessian(Tao tao, Vec x, Mat *H, Mat *Hpre, MatStructure *flg, void *ptr)
 {
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx*)ptr;

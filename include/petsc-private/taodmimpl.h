@@ -9,10 +9,10 @@ struct _TaoDMOps {
   PetscErrorCode (*computeobjectivelocal)(DMDALocalInfo*,PetscReal**, PetscReal*, void*);
   PetscErrorCode (*computegradientlocal)(DMDALocalInfo*,PetscReal**, PetscReal**, void*);
   PetscErrorCode (*computehessianlocal)(DMDALocalInfo*,PetscReal**,Mat,void*);
-  PetscErrorCode (*computeobjectiveandgradient)(TaoSolver,Vec,PetscReal*,Vec,void*);
-  PetscErrorCode (*computeobjective)(TaoSolver,Vec,PetscReal*,void*);
-  PetscErrorCode (*computegradient)(TaoSolver,Vec,Vec,void*);
-  PetscErrorCode (*computehessian)(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*);
+  PetscErrorCode (*computeobjectiveandgradient)(Tao,Vec,PetscReal*,Vec,void*);
+  PetscErrorCode (*computeobjective)(Tao,Vec,PetscReal*,void*);
+  PetscErrorCode (*computegradient)(Tao,Vec,Vec,void*);
+  PetscErrorCode (*computehessian)(Tao,Vec,Mat*,Mat*,MatStructure*,void*);
   PetscErrorCode (*computebounds)(TaoDM, Vec, Vec);
   PetscErrorCode (*computeinitialguess)(TaoDM, Vec);
 };
@@ -29,25 +29,25 @@ struct _p_TaoDM {
   PetscInt       nlevels; /* # of levels above this one (== total levels for level 0) */
   void           *user; /* user context */
   MatType        mtype;
-  TaoSolverType  ttype;
+  TaoType        ttype;
   ISColoringType isctype;
-  TaoSolver      tao; /* TaoSolver at this level */
-  PetscReal fatol;
-  PetscReal frtol;
-  PetscReal gatol;
-  PetscReal grtol;
-  PetscReal gttol;
-  PetscInt ksp_its;
-  void *userfctx;
-  void *usergctx;
-  void *userhctx;
-  void *userfgctx;
-  void *userpremonitor[MAXTAODMMONITORS];
-  void *userpostmonitor[MAXTAODMMONITORS];
+  Tao            tao; /* Tao at this level */
+  PetscReal      fatol;
+  PetscReal      frtol;
+  PetscReal      gatol;
+  PetscReal      grtol;
+  PetscReal      gttol;
+  PetscInt       ksp_its;
+  void           *userfctx;
+  void           *usergctx;
+  void           *userhctx;
+  void           *userfgctx;
+  void           *userpremonitor[MAXTAODMMONITORS];
+  void           *userpostmonitor[MAXTAODMMONITORS];
   PetscErrorCode (*prelevelmonitor[MAXTAODMMONITORS])(TaoDM,PetscInt,void*);
   PetscErrorCode (*postlevelmonitor[MAXTAODMMONITORS])(TaoDM,PetscInt,void*);
-  PetscInt npremonitors;
-  PetscInt npostmonitors;
+  PetscInt       npremonitors;
+  PetscInt       npostmonitors;
 };
 
 #endif

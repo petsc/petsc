@@ -70,8 +70,8 @@ typedef struct {
 
 
 PetscErrorCode FormInitialGuess(AppCtx*, Vec);
-PetscErrorCode FormFunctionGradient(TaoSolver,Vec,PetscReal*,Vec,void*);
-PetscErrorCode FormHessian(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
+PetscErrorCode FormHessian(Tao,Vec,Mat*,Mat*,MatStructure*,void*);
 
 
 #undef __FUNCT__
@@ -82,8 +82,8 @@ int main(int argc, char **argv)
     Vec x;
     Mat H;
     PetscInt Nx, Ny;
-    TaoSolver tao;
-    TaoSolverTerminationReason reason;
+    Tao tao;
+    TaoTerminationReason reason;
     PetscBool flg;
     KSP ksp; PC pc;
     AppCtx user;
@@ -215,7 +215,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
    FormFunctionGradient - Evaluates the function and corresponding gradient.
 
    Input Parameters:
-   tao - the TaoSolver context
+   tao - the Tao context
    X   - the input vector
    ptr - optional user-defined context, as set by TaoSetObjectiveAndGradientRoutine()
 
@@ -223,7 +223,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
    f   - the newly evaluated function
    G   - the newly evaluated gradient
 */
-PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,PetscReal *f,Vec G,void *ptr){
+PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f,Vec G,void *ptr){
 
   AppCtx *user = (AppCtx *)ptr;
   PetscErrorCode    ierr;
@@ -355,7 +355,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,PetscReal *f,Vec G,void 
 
 #undef __FUNCT__
 #define __FUNCT__ "FormHessian"
-PetscErrorCode FormHessian(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, MatStructure *flag, void*ctx){
+PetscErrorCode FormHessian(Tao tao, Vec X, Mat *H, Mat *Hpre, MatStructure *flag, void*ctx){
 
   AppCtx *user= (AppCtx*) ctx;
   PetscErrorCode ierr;

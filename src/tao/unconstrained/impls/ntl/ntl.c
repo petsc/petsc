@@ -70,12 +70,12 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolve_NTL"
-static PetscErrorCode TaoSolve_NTL(TaoSolver tao)
+static PetscErrorCode TaoSolve_NTL(Tao tao)
 {
   TAO_NTL                        *tl = (TAO_NTL *)tao->data;
   PC                             pc;
   KSPConvergedReason             ksp_reason;
-  TaoSolverTerminationReason     reason;
+  TaoTerminationReason     reason;
   TaoLineSearchTerminationReason ls_reason;
 
   PetscReal                      fmin, ftrial, prered, actred, kappa, sigma;
@@ -805,7 +805,7 @@ static PetscErrorCode TaoSolve_NTL(TaoSolver tao)
 /* ---------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetUp_NTL"
-static PetscErrorCode TaoSetUp_NTL(TaoSolver tao)
+static PetscErrorCode TaoSetUp_NTL(Tao tao)
 {
   TAO_NTL        *tl = (TAO_NTL *)tao->data;
   PetscErrorCode ierr;
@@ -824,7 +824,7 @@ static PetscErrorCode TaoSetUp_NTL(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_NTL"
-static PetscErrorCode TaoDestroy_NTL(TaoSolver tao)
+static PetscErrorCode TaoDestroy_NTL(Tao tao)
 {
   TAO_NTL        *tl = (TAO_NTL *)tao->data;
   PetscErrorCode ierr;
@@ -844,7 +844,7 @@ static PetscErrorCode TaoDestroy_NTL(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_NTL"
-static PetscErrorCode TaoSetFromOptions_NTL(TaoSolver tao)
+static PetscErrorCode TaoSetFromOptions_NTL(Tao tao)
 {
   TAO_NTL        *tl = (TAO_NTL *)tao->data;
   PetscErrorCode ierr;
@@ -900,7 +900,7 @@ static PetscErrorCode TaoSetFromOptions_NTL(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoView_NTL"
-static PetscErrorCode TaoView_NTL(TaoSolver tao, PetscViewer viewer)
+static PetscErrorCode TaoView_NTL(Tao tao, PetscViewer viewer)
 {
   TAO_NTL        *tl = (TAO_NTL *)tao->data;
   PetscInt       nrejects;
@@ -929,7 +929,7 @@ static PetscErrorCode TaoView_NTL(TaoSolver tao, PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_NTL"
-PetscErrorCode TaoCreate_NTL(TaoSolver tao)
+PetscErrorCode TaoCreate_NTL(Tao tao)
 {
   TAO_NTL        *tl;
   PetscErrorCode ierr;
@@ -1010,7 +1010,7 @@ PetscErrorCode TaoCreate_NTL(TaoSolver tao)
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type);CHKERRQ(ierr);
-  ierr = TaoLineSearchUseTaoSolverRoutines(tao->linesearch, tao);CHKERRQ(ierr);
+  ierr = TaoLineSearchUseTaoRoutines(tao->linesearch, tao);CHKERRQ(ierr);
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

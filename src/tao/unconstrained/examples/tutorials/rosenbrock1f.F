@@ -35,12 +35,12 @@
       PetscErrorCode   ierr    ! used to check for functions returning nonzeros
       Vec              x       ! solution vector
       Mat              H       ! hessian matrix
-      TaoSolver        tao     ! TAO_SOVER context
+      Tao        tao     ! TAO_SOVER context
       PetscBool       flg
       PetscInt         i2,i1
       integer          size,rank    ! number of processes running
       PetscReal      zero
-      TaoSolverTerminationReason reason
+      TaoTerminationReason reason
 
 
 
@@ -144,7 +144,7 @@
 !  FormFunctionGradient - Evaluates the function f(X) and gradient G(X)
 !
 !  Input Parameters:
-!  tao - the TaoSolver context
+!  tao - the Tao context
 !  X   - input vector
 !  dummy - not used
 !
@@ -158,7 +158,7 @@
 ! n,alpha defined in rosenbrock1f.h
 #include "rosenbrock1f.h"
 
-      TaoSolver        tao
+      Tao        tao
       Vec              X,G
       PetscReal        f
       PetscErrorCode   ierr
@@ -210,7 +210,7 @@
 !  FormHessian - Evaluates Hessian matrix.
 !
 !  Input Parameters:
-!  tao     - the TaoSolver context
+!  tao     - the Tao context
 !  X       - input vector
 !  dummy   - optional user-defined context, as set by SNESSetHessian()
 !            (not used here)
@@ -230,7 +230,7 @@
 #include "rosenbrock1f.h"
 
 !  Input/output variables:
-      TaoSolver        tao
+      Tao        tao
       Vec              X
       Mat              H, PrecH
       MatStructure     flag

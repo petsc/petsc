@@ -59,9 +59,9 @@ typedef struct{
 
 }TAO_BQPIP;
 
-static PetscErrorCode QPIPSetInitialPoint(TAO_BQPIP *, TaoSolver);
-static PetscErrorCode QPComputeStepDirection(TAO_BQPIP *, TaoSolver);
-static PetscErrorCode QPIPComputeResidual(TAO_BQPIP *, TaoSolver);
+static PetscErrorCode QPIPSetInitialPoint(TAO_BQPIP *, Tao);
+static PetscErrorCode QPComputeStepDirection(TAO_BQPIP *, Tao);
+static PetscErrorCode QPIPComputeResidual(TAO_BQPIP *, Tao);
 static PetscErrorCode QPStepLength(TAO_BQPIP *);
 static PetscErrorCode QPIPComputeNormFromCentralPath(TAO_BQPIP *,PetscReal *);
 

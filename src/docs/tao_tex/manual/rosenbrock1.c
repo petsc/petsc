@@ -6,16 +6,16 @@ typedef struct {
 } AppCtx;
 
 /* -------------- User-defined routines ---------- */
-PetscErrorCode FormFunctionGradient(TaoSolver,Vec,PetscReal*,Vec,void*);
-PetscErrorCode FormHessian(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
+PetscErrorCode FormHessian(Tao,Vec,Mat*,Mat*,MatStructure*,void*);
 
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;  /* used to check for functions returning nonzeros */
-  Vec        x;         /* solution vector */
-  Mat        H;         /* Hessian matrix */
-  TaoSolver  tao;       /* TaoSolver context */
-  AppCtx     user;      /* user-defined application context */
+  Vec            x;         /* solution vector */
+  Mat            H;         /* Hessian matrix */
+  Tao            tao;       /* Tao context */
+  AppCtx         user;      /* user-defined application context */
 
   PetscInitialize(&argc,&argv,(char*)0,0);
 

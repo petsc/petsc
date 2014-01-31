@@ -2,7 +2,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetUp_SSFLS"
-PetscErrorCode TaoSetUp_SSFLS(TaoSolver tao)
+PetscErrorCode TaoSetUp_SSFLS(Tao tao)
 {
   TAO_SSLS       *ssls = (TAO_SSLS *)tao->data;
   PetscErrorCode ierr;
@@ -29,13 +29,13 @@ PetscErrorCode TaoSetUp_SSFLS(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolve_SSFLS"
-static PetscErrorCode TaoSolve_SSFLS(TaoSolver tao)
+static PetscErrorCode TaoSolve_SSFLS(Tao tao)
 {
   TAO_SSLS                       *ssls = (TAO_SSLS *)tao->data;
   PetscReal                      psi, ndpsi, normd, innerd, t=0;
   PetscReal                      delta, rho;
   PetscInt                       iter=0,kspits;
-  TaoSolverTerminationReason     reason;
+  TaoTerminationReason     reason;
   TaoLineSearchTerminationReason ls_reason;
   PetscErrorCode                 ierr;
 
@@ -95,7 +95,7 @@ static PetscErrorCode TaoSolve_SSFLS(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_SSFLS"
-PetscErrorCode TaoDestroy_SSFLS(TaoSolver tao)
+PetscErrorCode TaoDestroy_SSFLS(Tao tao)
 {
   TAO_SSLS       *ssls = (TAO_SSLS *)tao->data;
   PetscErrorCode ierr;
@@ -116,7 +116,7 @@ PetscErrorCode TaoDestroy_SSFLS(TaoSolver tao)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_SSFLS"
-PetscErrorCode TaoCreate_SSFLS(TaoSolver tao)
+PetscErrorCode TaoCreate_SSFLS(Tao tao)
 {
   TAO_SSLS       *ssls;
   PetscErrorCode ierr;

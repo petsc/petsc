@@ -98,7 +98,7 @@ PetscErrorCode TaoPounders_formquad(TAO_POUNDERS *mfqP,PetscBool checkonly)
 
 #undef __FUNCT__
 #define __FUNCT__ "pounders_h"
-static PetscErrorCode pounders_h(TaoSolver subtao, Vec v, Mat *H, Mat *Hpre, MatStructure *flag, void *ctx)
+static PetscErrorCode pounders_h(Tao subtao, Vec v, Mat *H, Mat *Hpre, MatStructure *flag, void *ctx)
 {
   PetscFunctionBegin;
   *flag = SAME_NONZERO_PATTERN;
@@ -106,7 +106,7 @@ static PetscErrorCode pounders_h(TaoSolver subtao, Vec v, Mat *H, Mat *Hpre, Mat
 }
 #undef __FUNCT__
 #define __FUNCT__ "pounders_fg"
-static PetscErrorCode  pounders_fg(TaoSolver subtao, Vec x, PetscReal *f, Vec g, void *ctx)
+static PetscErrorCode  pounders_fg(Tao subtao, Vec x, PetscReal *f, Vec g, void *ctx)
 {
   TAO_POUNDERS *mfqP = (TAO_POUNDERS*)ctx;
   PetscReal d1,d2;
@@ -129,7 +129,7 @@ static PetscErrorCode  pounders_fg(TaoSolver subtao, Vec x, PetscReal *f, Vec g,
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoPounders_solvequadratic"
-PetscErrorCode TaoPounders_solvequadratic(TaoSolver tao,PetscReal *gnorm, PetscReal *qmin)
+PetscErrorCode TaoPounders_solvequadratic(Tao tao,PetscReal *gnorm, PetscReal *qmin)
 {
     PetscErrorCode ierr;
     PetscReal atol=1.0e-10;
@@ -215,7 +215,7 @@ PetscErrorCode TaoPounders_solvequadratic(TaoSolver tao,PetscReal *gnorm, PetscR
 }
 #undef __FUNCT__
 #define __FUNCT__ "TaoPounders_bpmts"
-PetscErrorCode TaoPounders_bmpts(TaoSolver tao)
+PetscErrorCode TaoPounders_bmpts(Tao tao)
 {
   /* TODO: set t1,t2 as data members of TAO_POUNDERS */
   PetscErrorCode ierr;

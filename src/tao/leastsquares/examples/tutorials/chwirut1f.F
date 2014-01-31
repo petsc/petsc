@@ -35,7 +35,7 @@
       PetscErrorCode   ierr    ! used to check for functions returning nonzeros
       Vec              x       ! solution vector
       Vec              f       ! vector of functions
-      TaoSolver        tao     ! TaoSolver context
+      Tao        tao     ! Tao context
       PetscBool       flg
       PetscInt         i,nhist
       integer          size,rank    ! number of processes running
@@ -43,7 +43,7 @@
       PetscReal      hist(100) ! objective value history
       PetscReal      resid(100)! residual history
       PetscReal      cnorm(100)! cnorm history
-      TaoSolverTerminationReason reason
+      TaoTerminationReason reason
 
 
 
@@ -138,7 +138,7 @@
 !  FormFunction - Evaluates the function f(X) and gradient G(X)
 !
 !  Input Parameters:
-!  tao - the TaoSolver context
+!  tao - the Tao context
 !  X   - input vector
 !  dummy - not used
 !
@@ -151,7 +151,7 @@
 ! n,alpha defined in chwirut1f.h
 #include "chwirut1f.h"
 
-      TaoSolver        tao
+      Tao        tao
       Vec              x,f
       PetscErrorCode   ierr
       PetscInt         dummy

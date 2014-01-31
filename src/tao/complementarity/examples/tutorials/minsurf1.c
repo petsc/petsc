@@ -40,8 +40,8 @@ typedef struct {
 
 static PetscErrorCode MSA_BoundaryConditions(AppCtx *);
 static PetscErrorCode MSA_InitialPoint(AppCtx *, Vec);
-PetscErrorCode FormConstraints(TaoSolver, Vec, Vec, void *);
-PetscErrorCode FormJacobian(TaoSolver, Vec, Mat *, Mat*, MatStructure*,void *);
+PetscErrorCode FormConstraints(Tao, Vec, Vec, void *);
+PetscErrorCode FormJacobian(Tao, Vec, Mat *, Mat*, MatStructure*,void *);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -52,7 +52,7 @@ int main(int argc, char **argv)
   Vec            c;                 /* Constraints function vector */
   Vec            xl,xu;             /* Bounds on the variables */
   PetscBool      flg;               /* A return variable when checking for user options */
-  TaoSolver      tao;               /* TAO solver context */
+  Tao            tao;               /* TAO solver context */
   Mat            J;                 /* Jacobian matrix */
   PetscInt       N;                 /* Number of elements in vector */
   PetscScalar    lb =  PETSC_NINFINITY;      /* lower bound constant */
@@ -146,7 +146,7 @@ int main(int argc, char **argv)
     Output Parameters:
 .   G - vector containing the newly evaluated gradient
 */
-PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec G, void *ptr)
+PetscErrorCode FormConstraints(Tao tao, Vec X, Vec G, void *ptr)
 {
   AppCtx         *user = (AppCtx *) ptr;
   PetscErrorCode ierr;
@@ -274,7 +274,7 @@ PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec G, void *ptr)
 .  tH    - Jacobian matrix
 
 */
-PetscErrorCode FormJacobian(TaoSolver tao, Vec X, Mat *tH, Mat* tHPre, MatStructure* flag, void *ptr)
+PetscErrorCode FormJacobian(Tao tao, Vec X, Mat *tH, Mat* tHPre, MatStructure* flag, void *ptr)
 {
   AppCtx         *user = (AppCtx *) ptr;
   Mat            H = *tH;

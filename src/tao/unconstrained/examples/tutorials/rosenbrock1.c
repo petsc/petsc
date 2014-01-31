@@ -32,22 +32,22 @@ typedef struct {
 } AppCtx;
 
 /* -------------- User-defined routines ---------- */
-PetscErrorCode FormFunctionGradient(TaoSolver,Vec,PetscReal*,Vec,void*);
-PetscErrorCode FormHessian(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
+PetscErrorCode FormHessian(Tao,Vec,Mat*,Mat*,MatStructure*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscErrorCode             ierr;                  /* used to check for functions returning nonzeros */
-  PetscReal                  zero=0.0;
-  Vec                        x;                     /* solution vector */
-  Mat                        H;
-  TaoSolver                  tao;                   /* TaoSolver solver context */
-  PetscBool                  flg;
-  PetscMPIInt                size,rank;                  /* number of processes running */
-  TaoSolverTerminationReason reason;
-  AppCtx                     user;                  /* user-defined application context */
+  PetscErrorCode       ierr;                  /* used to check for functions returning nonzeros */
+  PetscReal            zero=0.0;
+  Vec                  x;                     /* solution vector */
+  Mat                  H;
+  Tao                  tao;                   /* Tao solver context */
+  PetscBool            flg;
+  PetscMPIInt          size,rank;                  /* number of processes running */
+  TaoTerminationReason reason;
+  AppCtx               user;                  /* user-defined application context */
 
   /* Initialize TAO and PETSc */
   PetscInitialize(&argc,&argv,(char*)0,help);
@@ -105,7 +105,7 @@ int main(int argc,char **argv)
     FormFunctionGradient - Evaluates the function, f(X), and gradient, G(X).
 
     Input Parameters:
-.   tao  - the TaoSolver context
+.   tao  - the Tao context
 .   X    - input vector
 .   ptr  - optional user-defined context, as set by TaoSetFunctionGradient()
 
@@ -118,7 +118,7 @@ int main(int argc,char **argv)
     at the same time.  Evaluating both at once may be more efficient that
     evaluating each separately.
 */
-PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,PetscReal *f, Vec G,void *ptr)
+PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f, Vec G,void *ptr)
 {
   AppCtx         *user = (AppCtx *) ptr;
   PetscInt       i,nn=user->n/2;
@@ -154,7 +154,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,PetscReal *f, Vec G,void
    FormHessian - Evaluates Hessian matrix.
 
    Input Parameters:
-.  tao   - the TaoSolver context
+.  tao   - the Tao context
 .  x     - input vector
 .  ptr   - optional user-defined context, as set by TaoSetHessian()
 
@@ -164,7 +164,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,PetscReal *f, Vec G,void
    Note:  Providing the Hessian may not be necessary.  Only some solvers
    require this matrix.
 */
-PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *HH, Mat *Hpre, MatStructure *flag,void *ptr)
+PetscErrorCode FormHessian(Tao tao,Vec X,Mat *HH, Mat *Hpre, MatStructure *flag,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;
   PetscErrorCode ierr;

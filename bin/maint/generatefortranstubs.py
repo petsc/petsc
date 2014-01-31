@@ -22,8 +22,8 @@ def FixFile(filename):
   data = re.subn('MPI_Comm comm','MPI_Comm *comm',data)[0]
   data = re.subn('\(MPI_Comm\)PetscToPointer\( \(comm\) \)','MPI_Comm_f2c(*(MPI_Fint*)(comm))',data)[0]
   data = re.subn('\(PetscInt\* \)PetscToPointer','',data)[0]
-  data = re.subn('\(TaoSolver\* \)PetscToPointer','',data)[0]
-  data = re.subn('\(TaoSolverTerminationReason\* \)PetscToPointer','',data)[0]
+  data = re.subn('\(Tao\* \)PetscToPointer','',data)[0]
+  data = re.subn('\(TaoTerminationReason\* \)PetscToPointer','',data)[0]
   data = re.subn('\(TaoLineSearch\* \)PetscToPointer','',data)[0]
   data = re.subn('\(TaoLineSearchTerminationReason\* \)PetscToPointer','',data)[0]
   match = re.compile(r"""\b(PETSC|TAO)(_DLL|VEC_DLL|MAT_DLL|DM_DLL|KSP_DLL|SNES_DLL|TS_DLL|FORTRAN_DLL)(EXPORT)""")

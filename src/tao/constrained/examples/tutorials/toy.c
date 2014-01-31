@@ -45,12 +45,12 @@ typedef struct {
 
 PetscErrorCode InitializeProblem(AppCtx *);
 PetscErrorCode DestroyProblem(AppCtx *);
-PetscErrorCode FormFunctionGradient(TaoSolver,Vec,PetscReal *,Vec,void *);
-PetscErrorCode FormHessian(TaoSolver,Vec,Mat*,Mat*, MatStructure *,void*);
-PetscErrorCode FormInequalityConstraints(TaoSolver,Vec,Vec,void*);
-PetscErrorCode FormEqualityConstraints(TaoSolver,Vec,Vec,void*);
-PetscErrorCode FormInequalityJacobian(TaoSolver,Vec,Mat*,Mat*, MatStructure *,void*);
-PetscErrorCode FormEqualityJacobian(TaoSolver,Vec,Mat*,Mat*, MatStructure *,void*);
+PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal *,Vec,void *);
+PetscErrorCode FormHessian(Tao,Vec,Mat*,Mat*, MatStructure *,void*);
+PetscErrorCode FormInequalityConstraints(Tao,Vec,Vec,void*);
+PetscErrorCode FormEqualityConstraints(Tao,Vec,Vec,void*);
+PetscErrorCode FormInequalityJacobian(Tao,Vec,Mat*,Mat*, MatStructure *,void*);
+PetscErrorCode FormEqualityJacobian(Tao,Vec,Mat*,Mat*, MatStructure *,void*);
 
 
 
@@ -59,8 +59,8 @@ PetscErrorCode FormEqualityJacobian(TaoSolver,Vec,Mat*,Mat*, MatStructure *,void
 PetscErrorCode main(int argc,char **argv)
 {
   PetscErrorCode ierr;                /* used to check for functions returning nonzeros */
-  TaoSolver tao;
-  TaoSolverTerminationReason reason;
+  Tao tao;
+  TaoTerminationReason reason;
   KSP ksp;
   PC  pc;
   AppCtx      user;                /* application context */
@@ -173,7 +173,7 @@ PetscErrorCode DestroyProblem(AppCtx *user)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionGradient"
-PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *f, Vec G, void *ctx)
+PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *ctx)
 {
   PetscScalar *x,*g;
   PetscErrorCode ierr;
@@ -191,7 +191,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *f, Vec G, v
 
 #undef __FUNCT__
 #define __FUNCT__ "FormHessian"
-PetscErrorCode FormHessian(TaoSolver tao, Vec x, Mat *H, Mat *Hpre, MatStructure *ms, void *ctx)
+PetscErrorCode FormHessian(Tao tao, Vec x, Mat *H, Mat *Hpre, MatStructure *ms, void *ctx)
 {
   AppCtx *user = (AppCtx*)ctx;
   Vec DE,DI;
@@ -222,7 +222,7 @@ PetscErrorCode FormHessian(TaoSolver tao, Vec x, Mat *H, Mat *Hpre, MatStructure
 
 #undef __FUNCT__
 #define __FUNCT__ "FormInequalityConstraints"
-PetscErrorCode FormInequalityConstraints(TaoSolver tao, Vec X, Vec CI, void *ctx)
+PetscErrorCode FormInequalityConstraints(Tao tao, Vec X, Vec CI, void *ctx)
 {
   PetscScalar *x,*c;
   PetscErrorCode ierr;
@@ -240,7 +240,7 @@ PetscErrorCode FormInequalityConstraints(TaoSolver tao, Vec X, Vec CI, void *ctx
 
 #undef __FUNCT__
 #define __FUNCT__ "FormEqualityConstraints"
-PetscErrorCode FormEqualityConstraints(TaoSolver tao, Vec X, Vec CE,void *ctx)
+PetscErrorCode FormEqualityConstraints(Tao tao, Vec X, Vec CE,void *ctx)
 {
   PetscScalar *x,*c;
   PetscErrorCode ierr;
@@ -257,7 +257,7 @@ PetscErrorCode FormEqualityConstraints(TaoSolver tao, Vec X, Vec CE,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormInequalityJacobian"
-PetscErrorCode FormInequalityJacobian(TaoSolver tao, Vec X, Mat *JI, Mat *JIpre,  MatStructure *ms, void *ctx)
+PetscErrorCode FormInequalityJacobian(Tao tao, Vec X, Mat *JI, Mat *JIpre,  MatStructure *ms, void *ctx)
 {
   PetscInt rows[2];
   PetscInt cols[2];
@@ -281,7 +281,7 @@ PetscErrorCode FormInequalityJacobian(TaoSolver tao, Vec X, Mat *JI, Mat *JIpre,
 
 #undef __FUNCT__
 #define __FUNCT__ "FormEqualityJacobian"
-PetscErrorCode FormEqualityJacobian(TaoSolver tao, Vec X, Mat *JE, Mat *JEpre, MatStructure *ms, void *ctx)
+PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat *JE, Mat *JEpre, MatStructure *ms, void *ctx)
 {
   PetscInt rows[2];
   PetscScalar vals[2],*x;

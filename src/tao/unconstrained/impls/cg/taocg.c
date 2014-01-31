@@ -12,11 +12,11 @@ static const char *CG_Table[64] = {"fr", "pr", "prp", "hs", "dy"};
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolve_CG"
-static PetscErrorCode TaoSolve_CG(TaoSolver tao)
+static PetscErrorCode TaoSolve_CG(Tao tao)
 {
   TAO_CG                         *cgP = (TAO_CG*)tao->data;
   PetscErrorCode                 ierr;
-  TaoSolverTerminationReason     reason = TAO_CONTINUE_ITERATING;
+  TaoTerminationReason     reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchTerminationReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                      step=1.0,f,gnorm,gnorm2,delta,gd,ginner,beta;
   PetscReal                      gd_old,gnorm2_old,f_old;
@@ -199,7 +199,7 @@ static PetscErrorCode TaoSolve_CG(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetUp_CG"
-static PetscErrorCode TaoSetUp_CG(TaoSolver tao)
+static PetscErrorCode TaoSetUp_CG(Tao tao)
 {
   TAO_CG         *cgP = (TAO_CG*)tao->data;
   PetscErrorCode ierr;
@@ -214,7 +214,7 @@ static PetscErrorCode TaoSetUp_CG(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_CG"
-static PetscErrorCode TaoDestroy_CG(TaoSolver tao)
+static PetscErrorCode TaoDestroy_CG(Tao tao)
 {
   TAO_CG         *cgP = (TAO_CG*) tao->data;
   PetscErrorCode ierr;
@@ -231,7 +231,7 @@ static PetscErrorCode TaoDestroy_CG(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_CG"
-static PetscErrorCode TaoSetFromOptions_CG(TaoSolver tao)
+static PetscErrorCode TaoSetFromOptions_CG(Tao tao)
 {
    TAO_CG         *cgP = (TAO_CG*)tao->data;
    PetscErrorCode ierr;
@@ -249,7 +249,7 @@ static PetscErrorCode TaoSetFromOptions_CG(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoView_CG"
-static PetscErrorCode TaoView_CG(TaoSolver tao, PetscViewer viewer)
+static PetscErrorCode TaoView_CG(Tao tao, PetscViewer viewer)
 {
   PetscBool      isascii;
   TAO_CG         *cgP = (TAO_CG*)tao->data;
@@ -271,7 +271,7 @@ static PetscErrorCode TaoView_CG(TaoSolver tao, PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_CG"
-PetscErrorCode TaoCreate_CG(TaoSolver tao)
+PetscErrorCode TaoCreate_CG(Tao tao)
 {
   TAO_CG         *cgP;
   const char     *morethuente_type = TAOLINESEARCH_MT;
@@ -295,7 +295,7 @@ PetscErrorCode TaoCreate_CG(TaoSolver tao)
   /*  linesearch because it seems to work better. */
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type);CHKERRQ(ierr);
-  ierr = TaoLineSearchUseTaoSolverRoutines(tao->linesearch, tao);CHKERRQ(ierr);
+  ierr = TaoLineSearchUseTaoRoutines(tao->linesearch, tao);CHKERRQ(ierr);
 
   ierr = PetscNewLog(tao,&cgP);CHKERRQ(ierr);
   tao->data = (void*)cgP;

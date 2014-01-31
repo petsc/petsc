@@ -15,7 +15,7 @@ iter =  10, Function value 1.4943, Residual: 0.0235433
 iter =  11, Function value 1.49422, Residual: 0.0222582 
 iter =  12, Function value 1.49416, Residual: 0.0127717 
 iter =  13, Function value 1.49412, Residual: 0.00948284 
-TaoSolver Object: 3 MPI processes
+Tao Object: 3 MPI processes
   type: tao_blmvm
       Gradient steps: 0
   TaoLineSearch Object:   3 MPI processes

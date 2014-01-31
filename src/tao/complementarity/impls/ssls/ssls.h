@@ -94,8 +94,8 @@ typedef struct {
   IS free;
 } TAO_SSLS;
 
-PetscErrorCode TaoSetFromOptions_SSLS(TaoSolver);
-PetscErrorCode TaoView_SSLS(TaoSolver,PetscViewer);
+PetscErrorCode TaoSetFromOptions_SSLS(Tao);
+PetscErrorCode TaoView_SSLS(Tao,PetscViewer);
 
 PetscErrorCode Tao_SSLS_Function(TaoLineSearch, Vec, PetscReal *, void *);
 PetscErrorCode Tao_SSLS_FunctionGradient(TaoLineSearch, Vec, PetscReal *, Vec, void *);

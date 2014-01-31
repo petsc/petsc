@@ -49,7 +49,7 @@ iter =  43, Function value 1.52715, Residual: < 1.0e-6
 iter =  44, Function value 1.52715, Residual: < 1.0e-6 
 iter =  45, Function value 1.52715, Residual: < 1.0e-6 
 iter =  46, Function value 1.52715, Residual: < 1.0e-6 
-TaoSolver Object: 2 MPI processes
+Tao Object: 2 MPI processes
   type: tao_bmrm
   convergence tolerances: fatol=1e-20,   frtol=1e-25
   convergence tolerances: gatol=1e-25,   steptol=0,   gttol=0

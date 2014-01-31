@@ -54,28 +54,28 @@ typedef struct {
 
 /* User-defined routines */
 static PetscReal p(PetscReal xi, PetscReal ecc);
-static PetscErrorCode FormFunctionGradient(TaoSolver, Vec, PetscReal *,Vec,void *);
-static PetscErrorCode FormHessian(TaoSolver,Vec,Mat *, Mat *, MatStructure *, void *);
+static PetscErrorCode FormFunctionGradient(Tao, Vec, PetscReal *,Vec,void *);
+static PetscErrorCode FormHessian(Tao,Vec,Mat *, Mat *, MatStructure *, void *);
 static PetscErrorCode ComputeB(AppCtx*);
-static PetscErrorCode Monitor(TaoSolver, void*);
-static PetscErrorCode ConvergenceTest(TaoSolver, void*);
+static PetscErrorCode Monitor(Tao, void*);
+static PetscErrorCode ConvergenceTest(Tao, void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main( int argc, char **argv )
 {
-  PetscErrorCode             ierr;               /* used to check for functions returning nonzeros */
-  PetscInt                   Nx, Ny;             /* number of processors in x- and y- directions */
-  PetscInt                   m;               /* number of local elements in vectors */
-  Vec                        x;                  /* variables vector */
-  Vec                        xl,xu;                  /* bounds vectors */
-  PetscReal                  d1000 = 1000;
-  PetscBool                  flg;              /* A return variable when checking for user options */
-  TaoSolver                  tao;                /* TaoSolver solver context */
-  TaoSolverTerminationReason reason;
-  KSP                        ksp;
-  AppCtx                     user;               /* user-defined work context */
-  PetscReal                  zero=0.0;           /* lower bound on all variables */
+  PetscErrorCode       ierr;               /* used to check for functions returning nonzeros */
+  PetscInt             Nx, Ny;             /* number of processors in x- and y- directions */
+  PetscInt             m;               /* number of local elements in vectors */
+  Vec                  x;                  /* variables vector */
+  Vec                  xl,xu;                  /* bounds vectors */
+  PetscReal            d1000 = 1000;
+  PetscBool            flg;              /* A return variable when checking for user options */
+  Tao                  tao;                /* Tao solver context */
+  TaoTerminationReason reason;
+  KSP                  ksp;
+  AppCtx               user;               /* user-defined work context */
+  PetscReal            zero=0.0;           /* lower bound on all variables */
 
   /* Initialize PETSC and TAO */
   PetscInitialize( &argc, &argv,(char *)0,help );
@@ -238,7 +238,7 @@ PetscErrorCode ComputeB(AppCtx* user)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionGradient"
-PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,void *ptr)
+PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *ptr)
 {
   AppCtx*        user=(AppCtx*)ptr;
   PetscErrorCode ierr;
@@ -349,7 +349,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
    Notice that the objective function in this problem is quadratic (therefore a constant
    hessian).  If using a nonquadratic solver, then you might want to reconsider this function
 */
-PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *H, Mat *Hpre, MatStructure *flg, void *ptr)
+PetscErrorCode FormHessian(Tao tao,Vec X,Mat *H, Mat *Hpre, MatStructure *flg, void *ptr)
 {
   AppCtx*        user=(AppCtx*)ptr;
   PetscErrorCode ierr;
@@ -446,12 +446,12 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *H, Mat *Hpre, MatStructure *
 
 #undef __FUNCT__
 #define __FUNCT__ "Monitor"
-PetscErrorCode Monitor(TaoSolver tao, void *ctx)
+PetscErrorCode Monitor(Tao tao, void *ctx)
 {
   PetscErrorCode             ierr;
   PetscInt                   its;
   PetscReal                  f,gnorm,cnorm,xdiff;
-  TaoSolverTerminationReason reason;
+  TaoTerminationReason reason;
 
   PetscFunctionBegin;
   ierr = TaoGetSolutionStatus(tao, &its, &f, &gnorm, &cnorm, &xdiff, &reason);CHKERRQ(ierr);
@@ -463,12 +463,12 @@ PetscErrorCode Monitor(TaoSolver tao, void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "ConvergenceTest"
-PetscErrorCode ConvergenceTest(TaoSolver tao, void *ctx)
+PetscErrorCode ConvergenceTest(Tao tao, void *ctx)
 {
   PetscErrorCode             ierr;
   PetscInt                   its;
   PetscReal                  f,gnorm,cnorm,xdiff;
-  TaoSolverTerminationReason reason;
+  TaoTerminationReason reason;
 
   PetscFunctionBegin;
   ierr = TaoGetSolutionStatus(tao, &its, &f, &gnorm, &cnorm, &xdiff, &reason);CHKERRQ(ierr);

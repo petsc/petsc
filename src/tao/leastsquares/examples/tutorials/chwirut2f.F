@@ -34,7 +34,7 @@
       PetscErrorCode   ierr    ! used to check for functions returning nonzeros
       Vec              x       ! solution vector
       Vec              f       ! vector of functions
-      TaoSolver        tao     ! TaoSolver context
+      Tao        tao     ! Tao context
       PetscInt         i
 
 
@@ -115,7 +115,7 @@
 !  FormFunction - Evaluates the function f(X) and gradient G(X)
 !
 !  Input Parameters:
-!  tao - the TaoSolver context
+!  tao - the Tao context
 !  X   - input vector
 !  dummy - not used
 !
@@ -128,7 +128,7 @@
 ! n,alpha defined in chwirut2f.h
 #include "chwirut2f.h"
 
-      TaoSolver        tao
+      Tao        tao
       Vec              x,f
       PetscErrorCode   ierr
       PetscInt         dummy

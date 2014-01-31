@@ -29,14 +29,14 @@ PETSC_EXTERN const char *const TaoSubsetTypes[];
 PetscErrorCode VecGetSubVec(Vec, IS, PetscInt, PetscReal, Vec*);
 PetscErrorCode MatGetSubMat(Mat, IS, Vec, TaoSubsetType, Mat*);
 
-typedef struct _p_TaoSolver*   TaoSolver;
-#define TaoSolverType char*
-PETSC_EXTERN PetscClassId TAOSOLVER_CLASSID;
-PETSC_EXTERN PetscFunctionList TaoSolverList;
+typedef struct _p_Tao*   Tao;
+#define TaoType char*
+PETSC_EXTERN PetscClassId TAO_CLASSID;
+PETSC_EXTERN PetscFunctionList TaoList;
 
 /*  Convergence flags.
     Be sure to check that these match the flags in
-    $TAO_DIR/include/finclude/tao_solver.h
+    include/finclude/petsctao.h
 */
 typedef enum {/* converged */
   TAO_CONVERGED_FATOL          =  1, /* f(X)-f(X*) <= fatol */
@@ -55,133 +55,133 @@ typedef enum {/* converged */
   TAO_DIVERGED_TR_REDUCTION   = -7,
   TAO_DIVERGED_USER           = -8, /* User defined */
   /* keep going */
-  TAO_CONTINUE_ITERATING      =  0} TaoSolverTerminationReason;
+  TAO_CONTINUE_ITERATING      =  0} TaoTerminationReason;
 
-PETSC_EXTERN const char **TaoSolverTerminationReasons;
+PETSC_EXTERN const char **TaoTerminationReasons;
 
 #include <petsctaolinesearch.h>
 
 PETSC_EXTERN PetscErrorCode TaoInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TaoFinalizePackage(void);
-PETSC_EXTERN PetscErrorCode TaoCreate(MPI_Comm,TaoSolver*);
-PETSC_EXTERN PetscErrorCode TaoSetFromOptions(TaoSolver);
-PETSC_EXTERN PetscErrorCode TaoSetFiniteDifferencesOptions(TaoSolver);
-PETSC_EXTERN PetscErrorCode TaoSetUp(TaoSolver);
-PETSC_EXTERN PetscErrorCode TaoSetType(TaoSolver, const TaoSolverType);
-PETSC_EXTERN PetscErrorCode TaoGetType(TaoSolver, const TaoSolverType *);
-PETSC_EXTERN PetscErrorCode TaoSetApplicationContext(TaoSolver, void*);
-PETSC_EXTERN PetscErrorCode TaoGetApplicationContext(TaoSolver, void*);
-PETSC_EXTERN PetscErrorCode TaoDestroy(TaoSolver*);
+PETSC_EXTERN PetscErrorCode TaoCreate(MPI_Comm,Tao*);
+PETSC_EXTERN PetscErrorCode TaoSetFromOptions(Tao);
+PETSC_EXTERN PetscErrorCode TaoSetFiniteDifferencesOptions(Tao);
+PETSC_EXTERN PetscErrorCode TaoSetUp(Tao);
+PETSC_EXTERN PetscErrorCode TaoSetType(Tao, const TaoType);
+PETSC_EXTERN PetscErrorCode TaoGetType(Tao, const TaoType *);
+PETSC_EXTERN PetscErrorCode TaoSetApplicationContext(Tao, void*);
+PETSC_EXTERN PetscErrorCode TaoGetApplicationContext(Tao, void*);
+PETSC_EXTERN PetscErrorCode TaoDestroy(Tao*);
 
-PETSC_EXTERN PetscErrorCode TaoSetOptionsPrefix(TaoSolver,const char []);
-PETSC_EXTERN PetscErrorCode TaoView(TaoSolver, PetscViewer);
+PETSC_EXTERN PetscErrorCode TaoSetOptionsPrefix(Tao,const char []);
+PETSC_EXTERN PetscErrorCode TaoView(Tao, PetscViewer);
 
-PETSC_EXTERN PetscErrorCode TaoSolve(TaoSolver);
+PETSC_EXTERN PetscErrorCode TaoSolve(Tao);
 
-PETSC_EXTERN PetscErrorCode TaoSolverRegister(const char [],PetscErrorCode (*)(TaoSolver));
-PETSC_EXTERN PetscErrorCode TaoSolverRegisterAll(void);
-PETSC_EXTERN PetscErrorCode TaoSolverRegisterDestroy(void);
+PETSC_EXTERN PetscErrorCode TaoRegister(const char [],PetscErrorCode (*)(Tao));
+PETSC_EXTERN PetscErrorCode TaoRegisterAll(void);
+PETSC_EXTERN PetscErrorCode TaoRegisterDestroy(void);
 
-PETSC_EXTERN PetscErrorCode TaoGetTerminationReason(TaoSolver,TaoSolverTerminationReason*);
-PETSC_EXTERN PetscErrorCode TaoGetSolutionStatus(TaoSolver, PetscInt*, PetscReal*, PetscReal*, PetscReal*, PetscReal*, TaoSolverTerminationReason*);
-PETSC_EXTERN PetscErrorCode TaoSetTerminationReason(TaoSolver,TaoSolverTerminationReason);
-PETSC_EXTERN PetscErrorCode TaoSetInitialVector(TaoSolver, Vec);
-PETSC_EXTERN PetscErrorCode TaoGetSolutionVector(TaoSolver, Vec*);
-PETSC_EXTERN PetscErrorCode TaoGetGradientVector(TaoSolver, Vec*);
-PETSC_EXTERN PetscErrorCode TaoSetObjectiveRoutine(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, PetscReal*,void*), void*);
-PETSC_EXTERN PetscErrorCode TaoSetGradientRoutine(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
-PETSC_EXTERN PetscErrorCode TaoSetObjectiveAndGradientRoutine(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, PetscReal*, Vec, void*), void*);
-PETSC_EXTERN PetscErrorCode TaoSetHessianMat(TaoSolver, Mat, Mat);
-PETSC_EXTERN PetscErrorCode TaoSetHessianRoutine(TaoSolver,Mat,Mat, PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, MatStructure*, void*), void*);
-PETSC_EXTERN PetscErrorCode TaoSetSeparableObjectiveRoutine(TaoSolver, Vec, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
-PETSC_EXTERN PetscErrorCode TaoSetConstraintsRoutine(TaoSolver, Vec, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
-PETSC_EXTERN PetscErrorCode TaoSetInequalityConstraintsRoutine(TaoSolver, Vec, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
-PETSC_EXTERN PetscErrorCode TaoSetEqualityConstraintsRoutine(TaoSolver, Vec, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
-PETSC_EXTERN PetscErrorCode TaoSetJacobianRoutine(TaoSolver,Mat,Mat, PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, MatStructure*, void*), void*);
-PETSC_EXTERN PetscErrorCode TaoSetJacobianStateRoutine(TaoSolver,Mat,Mat,Mat, PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, Mat*, MatStructure*, void*), void*);
-PETSC_EXTERN PetscErrorCode TaoSetJacobianDesignRoutine(TaoSolver,Mat,PetscErrorCode(*)(TaoSolver,Vec, Mat*, void*), void*);
-PETSC_EXTERN PetscErrorCode TaoSetJacobianInequalityRoutine(TaoSolver,Mat,Mat,PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, MatStructure*, void*), void*);
-PETSC_EXTERN PetscErrorCode TaoSetJacobianEqualityRoutine(TaoSolver,Mat,Mat,PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, MatStructure*, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoGetTerminationReason(Tao,TaoTerminationReason*);
+PETSC_EXTERN PetscErrorCode TaoGetSolutionStatus(Tao, PetscInt*, PetscReal*, PetscReal*, PetscReal*, PetscReal*, TaoTerminationReason*);
+PETSC_EXTERN PetscErrorCode TaoSetTerminationReason(Tao,TaoTerminationReason);
+PETSC_EXTERN PetscErrorCode TaoSetInitialVector(Tao, Vec);
+PETSC_EXTERN PetscErrorCode TaoGetSolutionVector(Tao, Vec*);
+PETSC_EXTERN PetscErrorCode TaoGetGradientVector(Tao, Vec*);
+PETSC_EXTERN PetscErrorCode TaoSetObjectiveRoutine(Tao, PetscErrorCode(*)(Tao, Vec, PetscReal*,void*), void*);
+PETSC_EXTERN PetscErrorCode TaoSetGradientRoutine(Tao, PetscErrorCode(*)(Tao, Vec, Vec, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoSetObjectiveAndGradientRoutine(Tao, PetscErrorCode(*)(Tao, Vec, PetscReal*, Vec, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoSetHessianMat(Tao, Mat, Mat);
+PETSC_EXTERN PetscErrorCode TaoSetHessianRoutine(Tao,Mat,Mat, PetscErrorCode(*)(Tao,Vec, Mat*, Mat*, MatStructure*, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoSetSeparableObjectiveRoutine(Tao, Vec, PetscErrorCode(*)(Tao, Vec, Vec, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoSetConstraintsRoutine(Tao, Vec, PetscErrorCode(*)(Tao, Vec, Vec, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao, Vec, PetscErrorCode(*)(Tao, Vec, Vec, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoSetEqualityConstraintsRoutine(Tao, Vec, PetscErrorCode(*)(Tao, Vec, Vec, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoSetJacobianRoutine(Tao,Mat,Mat, PetscErrorCode(*)(Tao,Vec, Mat*, Mat*, MatStructure*, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoSetJacobianStateRoutine(Tao,Mat,Mat,Mat, PetscErrorCode(*)(Tao,Vec, Mat*, Mat*, Mat*, MatStructure*, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoSetJacobianDesignRoutine(Tao,Mat,PetscErrorCode(*)(Tao,Vec, Mat*, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoSetJacobianInequalityRoutine(Tao,Mat,Mat,PetscErrorCode(*)(Tao,Vec, Mat*, Mat*, MatStructure*, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoSetJacobianEqualityRoutine(Tao,Mat,Mat,PetscErrorCode(*)(Tao,Vec, Mat*, Mat*, MatStructure*, void*), void*);
 
-PETSC_EXTERN PetscErrorCode TaoSetStateDesignIS(TaoSolver, IS, IS);
+PETSC_EXTERN PetscErrorCode TaoSetStateDesignIS(Tao, IS, IS);
 
-PETSC_EXTERN PetscErrorCode TaoComputeObjective(TaoSolver, Vec, PetscReal*);
-PETSC_EXTERN PetscErrorCode TaoComputeSeparableObjective(TaoSolver, Vec, Vec);
-PETSC_EXTERN PetscErrorCode TaoComputeGradient(TaoSolver, Vec, Vec);
-PETSC_EXTERN PetscErrorCode TaoComputeObjectiveAndGradient(TaoSolver, Vec, PetscReal*, Vec);
-PETSC_EXTERN PetscErrorCode TaoComputeConstraints(TaoSolver, Vec, Vec);
-PETSC_EXTERN PetscErrorCode TaoComputeInequalityConstraints(TaoSolver, Vec, Vec);
-PETSC_EXTERN PetscErrorCode TaoComputeEqualityConstraints(TaoSolver, Vec, Vec);
-PETSC_EXTERN PetscErrorCode TaoDefaultComputeGradient(TaoSolver, Vec, Vec, void*);
-PETSC_EXTERN PetscErrorCode TaoIsObjectiveDefined(TaoSolver,PetscBool*);
-PETSC_EXTERN PetscErrorCode TaoIsGradientDefined(TaoSolver,PetscBool*);
-PETSC_EXTERN PetscErrorCode TaoIsObjectiveAndGradientDefined(TaoSolver,PetscBool*);
+PETSC_EXTERN PetscErrorCode TaoComputeObjective(Tao, Vec, PetscReal*);
+PETSC_EXTERN PetscErrorCode TaoComputeSeparableObjective(Tao, Vec, Vec);
+PETSC_EXTERN PetscErrorCode TaoComputeGradient(Tao, Vec, Vec);
+PETSC_EXTERN PetscErrorCode TaoComputeObjectiveAndGradient(Tao, Vec, PetscReal*, Vec);
+PETSC_EXTERN PetscErrorCode TaoComputeConstraints(Tao, Vec, Vec);
+PETSC_EXTERN PetscErrorCode TaoComputeInequalityConstraints(Tao, Vec, Vec);
+PETSC_EXTERN PetscErrorCode TaoComputeEqualityConstraints(Tao, Vec, Vec);
+PETSC_EXTERN PetscErrorCode TaoDefaultComputeGradient(Tao, Vec, Vec, void*);
+PETSC_EXTERN PetscErrorCode TaoIsObjectiveDefined(Tao,PetscBool*);
+PETSC_EXTERN PetscErrorCode TaoIsGradientDefined(Tao,PetscBool*);
+PETSC_EXTERN PetscErrorCode TaoIsObjectiveAndGradientDefined(Tao,PetscBool*);
 
-PETSC_EXTERN PetscErrorCode TaoComputeHessian(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
-PETSC_EXTERN PetscErrorCode TaoComputeJacobian(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
-PETSC_EXTERN PetscErrorCode TaoComputeJacobianState(TaoSolver, Vec, Mat*, Mat*, Mat*, MatStructure*);
-PETSC_EXTERN PetscErrorCode TaoComputeJacobianEquality(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
-PETSC_EXTERN PetscErrorCode TaoComputeJacobianInequality(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
-PETSC_EXTERN PetscErrorCode TaoComputeJacobianDesign(TaoSolver, Vec, Mat*);
+PETSC_EXTERN PetscErrorCode TaoComputeHessian(Tao, Vec, Mat*, Mat*, MatStructure*);
+PETSC_EXTERN PetscErrorCode TaoComputeJacobian(Tao, Vec, Mat*, Mat*, MatStructure*);
+PETSC_EXTERN PetscErrorCode TaoComputeJacobianState(Tao, Vec, Mat*, Mat*, Mat*, MatStructure*);
+PETSC_EXTERN PetscErrorCode TaoComputeJacobianEquality(Tao, Vec, Mat*, Mat*, MatStructure*);
+PETSC_EXTERN PetscErrorCode TaoComputeJacobianInequality(Tao, Vec, Mat*, Mat*, MatStructure*);
+PETSC_EXTERN PetscErrorCode TaoComputeJacobianDesign(Tao, Vec, Mat*);
 
-PETSC_EXTERN PetscErrorCode TaoDefaultComputeHessian(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
+PETSC_EXTERN PetscErrorCode TaoDefaultComputeHessian(Tao, Vec, Mat*, Mat*, MatStructure*, void*);
 
-PETSC_EXTERN PetscErrorCode TaoDefaultComputeHessianColor(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
-PETSC_EXTERN PetscErrorCode TaoComputeDualVariables(TaoSolver, Vec, Vec);
-PETSC_EXTERN PetscErrorCode TaoComputeDualVariables(TaoSolver, Vec, Vec);
-PETSC_EXTERN PetscErrorCode TaoSetVariableBounds(TaoSolver, Vec, Vec);
-PETSC_EXTERN PetscErrorCode TaoGetVariableBounds(TaoSolver, Vec*, Vec*);
-PETSC_EXTERN PetscErrorCode TaoGetDualVariables(TaoSolver, Vec*, Vec*);
-PETSC_EXTERN PetscErrorCode TaoSetInequalityBounds(TaoSolver, Vec, Vec);
-PETSC_EXTERN PetscErrorCode TaoGetInequalityBounds(TaoSolver, Vec*, Vec*);
-PETSC_EXTERN PetscErrorCode TaoSetVariableBoundsRoutine(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
-PETSC_EXTERN PetscErrorCode TaoComputeVariableBounds(TaoSolver);
+PETSC_EXTERN PetscErrorCode TaoDefaultComputeHessianColor(Tao, Vec, Mat*, Mat*, MatStructure*, void*);
+PETSC_EXTERN PetscErrorCode TaoComputeDualVariables(Tao, Vec, Vec);
+PETSC_EXTERN PetscErrorCode TaoComputeDualVariables(Tao, Vec, Vec);
+PETSC_EXTERN PetscErrorCode TaoSetVariableBounds(Tao, Vec, Vec);
+PETSC_EXTERN PetscErrorCode TaoGetVariableBounds(Tao, Vec*, Vec*);
+PETSC_EXTERN PetscErrorCode TaoGetDualVariables(Tao, Vec*, Vec*);
+PETSC_EXTERN PetscErrorCode TaoSetInequalityBounds(Tao, Vec, Vec);
+PETSC_EXTERN PetscErrorCode TaoGetInequalityBounds(Tao, Vec*, Vec*);
+PETSC_EXTERN PetscErrorCode TaoSetVariableBoundsRoutine(Tao, PetscErrorCode(*)(Tao, Vec, Vec, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoComputeVariableBounds(Tao);
 
-PETSC_EXTERN PetscErrorCode TaoGetTolerances(TaoSolver, PetscReal*, PetscReal*, PetscReal*, PetscReal*, PetscReal*);
-PETSC_EXTERN PetscErrorCode TaoSetTolerances(TaoSolver, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
-PETSC_EXTERN PetscErrorCode TaoGetConstraintTolerances(TaoSolver, PetscReal*, PetscReal*);
-PETSC_EXTERN PetscErrorCode TaoSetConstraintTolerances(TaoSolver, PetscReal, PetscReal);
-PETSC_EXTERN PetscErrorCode TaoSetFunctionLowerBound(TaoSolver, PetscReal);
-PETSC_EXTERN PetscErrorCode TaoSetInitialTrustRegionRadius(TaoSolver, PetscReal);
-PETSC_EXTERN PetscErrorCode TaoSetMaximumIterations(TaoSolver, PetscInt);
-PETSC_EXTERN PetscErrorCode TaoSetMaximumFunctionEvaluations(TaoSolver, PetscInt);
-PETSC_EXTERN PetscErrorCode TaoGetFunctionLowerBound(TaoSolver, PetscReal*);
-PETSC_EXTERN PetscErrorCode TaoGetInitialTrustRegionRadius(TaoSolver, PetscReal*);
-PETSC_EXTERN PetscErrorCode TaoGetCurrentTrustRegionRadius(TaoSolver, PetscReal*);
-PETSC_EXTERN PetscErrorCode TaoGetMaximumIterations(TaoSolver, PetscInt*);
-PETSC_EXTERN PetscErrorCode TaoGetMaximumFunctionEvaluations(TaoSolver, PetscInt*);
-PETSC_EXTERN PetscErrorCode TaoSetDefaultKSPType(TaoSolver, KSPType);
-PETSC_EXTERN PetscErrorCode TaoSetDefaultPCType(TaoSolver, PCType);
-PETSC_EXTERN PetscErrorCode TaoSetDefaultLineSearchType(TaoSolver, TaoLineSearchType);
-PETSC_EXTERN PetscErrorCode TaoSetOptionsPrefix(TaoSolver, const char p[]);
-PETSC_EXTERN PetscErrorCode TaoAppendOptionsPrefix(TaoSolver, const char p[]);
-PETSC_EXTERN PetscErrorCode TaoGetOptionsPrefix(TaoSolver, const char *p[]);
-PETSC_EXTERN PetscErrorCode TaoResetStatistics(TaoSolver);
+PETSC_EXTERN PetscErrorCode TaoGetTolerances(Tao, PetscReal*, PetscReal*, PetscReal*, PetscReal*, PetscReal*);
+PETSC_EXTERN PetscErrorCode TaoSetTolerances(Tao, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
+PETSC_EXTERN PetscErrorCode TaoGetConstraintTolerances(Tao, PetscReal*, PetscReal*);
+PETSC_EXTERN PetscErrorCode TaoSetConstraintTolerances(Tao, PetscReal, PetscReal);
+PETSC_EXTERN PetscErrorCode TaoSetFunctionLowerBound(Tao, PetscReal);
+PETSC_EXTERN PetscErrorCode TaoSetInitialTrustRegionRadius(Tao, PetscReal);
+PETSC_EXTERN PetscErrorCode TaoSetMaximumIterations(Tao, PetscInt);
+PETSC_EXTERN PetscErrorCode TaoSetMaximumFunctionEvaluations(Tao, PetscInt);
+PETSC_EXTERN PetscErrorCode TaoGetFunctionLowerBound(Tao, PetscReal*);
+PETSC_EXTERN PetscErrorCode TaoGetInitialTrustRegionRadius(Tao, PetscReal*);
+PETSC_EXTERN PetscErrorCode TaoGetCurrentTrustRegionRadius(Tao, PetscReal*);
+PETSC_EXTERN PetscErrorCode TaoGetMaximumIterations(Tao, PetscInt*);
+PETSC_EXTERN PetscErrorCode TaoGetMaximumFunctionEvaluations(Tao, PetscInt*);
+PETSC_EXTERN PetscErrorCode TaoSetDefaultKSPType(Tao, KSPType);
+PETSC_EXTERN PetscErrorCode TaoSetDefaultPCType(Tao, PCType);
+PETSC_EXTERN PetscErrorCode TaoSetDefaultLineSearchType(Tao, TaoLineSearchType);
+PETSC_EXTERN PetscErrorCode TaoSetOptionsPrefix(Tao, const char p[]);
+PETSC_EXTERN PetscErrorCode TaoAppendOptionsPrefix(Tao, const char p[]);
+PETSC_EXTERN PetscErrorCode TaoGetOptionsPrefix(Tao, const char *p[]);
+PETSC_EXTERN PetscErrorCode TaoResetStatistics(Tao);
 
-PETSC_EXTERN PetscErrorCode TaoGetKSP(TaoSolver, KSP*);
-PETSC_EXTERN PetscErrorCode TaoGetLineSearch(TaoSolver, TaoLineSearch*);
+PETSC_EXTERN PetscErrorCode TaoGetKSP(Tao, KSP*);
+PETSC_EXTERN PetscErrorCode TaoGetLineSearch(Tao, TaoLineSearch*);
 
-PETSC_EXTERN PetscErrorCode TaoSetHistory(TaoSolver,PetscReal*,PetscReal*,PetscReal*,PetscInt,PetscBool);
-PETSC_EXTERN PetscErrorCode TaoGetHistory(TaoSolver,PetscReal**,PetscReal**,PetscReal**,PetscInt*);
-PETSC_EXTERN PetscErrorCode TaoSetMonitor(TaoSolver, PetscErrorCode (*)(TaoSolver,void*),void *,PetscErrorCode (*)(void**));
-PETSC_EXTERN PetscErrorCode TaoCancelMonitors(TaoSolver);
-PETSC_EXTERN PetscErrorCode TaoDefaultMonitor(TaoSolver, void*);
-PETSC_EXTERN PetscErrorCode TaoDefaultSMonitor(TaoSolver, void*);
-PETSC_EXTERN PetscErrorCode TaoDefaultCMonitor(TaoSolver, void*);
-PETSC_EXTERN PetscErrorCode TaoSolutionMonitor(TaoSolver, void*);
-PETSC_EXTERN PetscErrorCode TaoSeparableObjectiveMonitor(TaoSolver, void*);
-PETSC_EXTERN PetscErrorCode TaoGradientMonitor(TaoSolver, void*);
-PETSC_EXTERN PetscErrorCode TaoStepDirectionMonitor(TaoSolver, void*);
-PETSC_EXTERN PetscErrorCode TaoDrawSolutionMonitor(TaoSolver, void*);
-PETSC_EXTERN PetscErrorCode TaoDrawStepMonitor(TaoSolver, void*);
-PETSC_EXTERN PetscErrorCode TaoDrawGradientMonitor(TaoSolver, void*);
-PETSC_EXTERN PetscErrorCode TaoAddLineSearchCounts(TaoSolver);
+PETSC_EXTERN PetscErrorCode TaoSetHistory(Tao,PetscReal*,PetscReal*,PetscReal*,PetscInt,PetscBool);
+PETSC_EXTERN PetscErrorCode TaoGetHistory(Tao,PetscReal**,PetscReal**,PetscReal**,PetscInt*);
+PETSC_EXTERN PetscErrorCode TaoSetMonitor(Tao, PetscErrorCode (*)(Tao,void*),void *,PetscErrorCode (*)(void**));
+PETSC_EXTERN PetscErrorCode TaoCancelMonitors(Tao);
+PETSC_EXTERN PetscErrorCode TaoDefaultMonitor(Tao, void*);
+PETSC_EXTERN PetscErrorCode TaoDefaultSMonitor(Tao, void*);
+PETSC_EXTERN PetscErrorCode TaoDefaultCMonitor(Tao, void*);
+PETSC_EXTERN PetscErrorCode TaoSolutionMonitor(Tao, void*);
+PETSC_EXTERN PetscErrorCode TaoSeparableObjectiveMonitor(Tao, void*);
+PETSC_EXTERN PetscErrorCode TaoGradientMonitor(Tao, void*);
+PETSC_EXTERN PetscErrorCode TaoStepDirectionMonitor(Tao, void*);
+PETSC_EXTERN PetscErrorCode TaoDrawSolutionMonitor(Tao, void*);
+PETSC_EXTERN PetscErrorCode TaoDrawStepMonitor(Tao, void*);
+PETSC_EXTERN PetscErrorCode TaoDrawGradientMonitor(Tao, void*);
+PETSC_EXTERN PetscErrorCode TaoAddLineSearchCounts(Tao);
 
-PETSC_EXTERN PetscErrorCode TaoDefaultConvergenceTest(TaoSolver,void*);
-PETSC_EXTERN PetscErrorCode TaoSetConvergenceTest(TaoSolver, PetscErrorCode (*)(TaoSolver, void*),void *);
+PETSC_EXTERN PetscErrorCode TaoDefaultConvergenceTest(Tao,void*);
+PETSC_EXTERN PetscErrorCode TaoSetConvergenceTest(Tao, PetscErrorCode (*)(Tao, void*),void *);
 
-PETSC_EXTERN PetscErrorCode TaoSQPCONSetStateDesignIS(TaoSolver, IS, IS);
-PETSC_EXTERN PetscErrorCode TaoLCLSetStateDesignIS(TaoSolver, IS, IS);
-PetscErrorCode TaoMonitor(TaoSolver, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, TaoSolverTerminationReason*);
+PETSC_EXTERN PetscErrorCode TaoSQPCONSetStateDesignIS(Tao, IS, IS);
+PETSC_EXTERN PetscErrorCode TaoLCLSetStateDesignIS(Tao, IS, IS);
+PetscErrorCode TaoMonitor(Tao, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, TaoTerminationReason*);
 
 #endif

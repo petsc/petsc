@@ -6,7 +6,7 @@ static PetscErrorCode NelderMeadReplace(TAO_NelderMead *nm, PetscInt index, Vec 
 /* ---------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetUp_NM"
-static PetscErrorCode TaoSetUp_NM(TaoSolver tao)
+static PetscErrorCode TaoSetUp_NM(Tao tao)
 {
   PetscErrorCode ierr;
   TAO_NelderMead *nm = (TAO_NelderMead *)tao->data;
@@ -32,7 +32,7 @@ static PetscErrorCode TaoSetUp_NM(TaoSolver tao)
 /* ---------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_NM"
-PetscErrorCode TaoDestroy_NM(TaoSolver tao)
+PetscErrorCode TaoDestroy_NM(Tao tao)
 {
   TAO_NelderMead *nm = (TAO_NelderMead*)tao->data;
   PetscErrorCode ierr;
@@ -55,7 +55,7 @@ PetscErrorCode TaoDestroy_NM(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_NM"
-PetscErrorCode TaoSetFromOptions_NM(TaoSolver tao)
+PetscErrorCode TaoSetFromOptions_NM(Tao tao)
 {
   TAO_NelderMead *nm = (TAO_NelderMead*)tao->data;
   PetscBool      flg;
@@ -75,7 +75,7 @@ PetscErrorCode TaoSetFromOptions_NM(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoView_NM"
-PetscErrorCode TaoView_NM(TaoSolver tao,PetscViewer viewer)
+PetscErrorCode TaoView_NM(Tao tao,PetscViewer viewer)
 {
   TAO_NelderMead *nm = (TAO_NelderMead*)tao->data;
   PetscBool      isascii;
@@ -98,11 +98,11 @@ PetscErrorCode TaoView_NM(TaoSolver tao,PetscViewer viewer)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolve_NM"
-PetscErrorCode TaoSolve_NM(TaoSolver tao)
+PetscErrorCode TaoSolve_NM(Tao tao)
 {
   PetscErrorCode             ierr;
   TAO_NelderMead             *nm = (TAO_NelderMead*)tao->data;
-  TaoSolverTerminationReason reason;
+  TaoTerminationReason reason;
   PetscReal                  *x;
   PetscInt                   iter=0,i;
   Vec                        Xmur=nm->Xmur, Xmue=nm->Xmue, Xmuc=nm->Xmuc, Xbar=nm->Xbar;
@@ -216,7 +216,7 @@ PetscErrorCode TaoSolve_NM(TaoSolver tao)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_NM"
-PetscErrorCode TaoCreate_NM(TaoSolver tao)
+PetscErrorCode TaoCreate_NM(Tao tao)
 {
   TAO_NelderMead *nm;
   PetscErrorCode ierr;

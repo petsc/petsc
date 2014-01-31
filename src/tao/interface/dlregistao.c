@@ -1,4 +1,4 @@
-#define TAOSOLVER_DLL
+#define TAO_DLL
 
 #include <petsc-private/taoimpl.h>
 #include <petsc-private/taodmimpl.h>
@@ -9,7 +9,7 @@ static PetscBool TaoPackageInitialized = PETSC_FALSE;
 #define __FUNCT__ "TaoFinalizePackage"
 /*@C
   TaoFinalizePackage - This function destroys everything in the PETSc/TAO
-  interface to the TaoSolver package. It is called from PetscFinalize().
+  interface to the Tao package. It is called from PetscFinalize().
 
   Level: developer
 @*/
@@ -18,7 +18,7 @@ PetscErrorCode TaoFinalizePackage(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&TaoSolverList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&TaoList);CHKERRQ(ierr);
   TaoPackageInitialized = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -26,7 +26,7 @@ PetscErrorCode TaoFinalizePackage(void)
 #undef __FUNCT__
 #define __FUNCT__ "TaoInitializePackage"
 /*@C
-  TaoInitializePackage - This function sets up PETSc to use the TaoSolver
+  TaoInitializePackage - This function sets up PETSc to use the Tao
   package.  When using static libraries, this function is called from the
   first entry to TaoCreate(); when using shared libraries, it is called
   from PetscDLLibraryRegister()
@@ -44,18 +44,18 @@ PetscErrorCode TaoInitializePackage(void)
   if (TaoPackageInitialized) PetscFunctionReturn(0);
   TaoPackageInitialized = PETSC_TRUE;
 
-  ierr = PetscClassIdRegister("TaoSolver",&TAOSOLVER_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Tao",&TAO_CLASSID);CHKERRQ(ierr);
 
   /* Tell PETSc what solvers are available */
-  ierr = TaoSolverRegisterAll();CHKERRQ(ierr);
+  ierr = TaoRegisterAll();CHKERRQ(ierr);
 
-  /* Tell PETSc what events are associated with TaoSolver */
-  ierr = PetscLogEventRegister("TaoSolve",TAOSOLVER_CLASSID,&TaoSolver_Solve);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoObjectiveEval",TAOSOLVER_CLASSID,&TaoSolver_ObjectiveEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoGradientEval",TAOSOLVER_CLASSID,&TaoSolver_GradientEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoHessianEval",TAOSOLVER_CLASSID,&TaoSolver_HessianEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoConstraintsEval",TAOSOLVER_CLASSID,&TaoSolver_ConstraintsEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoJacobianEval",TAOSOLVER_CLASSID,&TaoSolver_JacobianEval);CHKERRQ(ierr);
+  /* Tell PETSc what events are associated with Tao */
+  ierr = PetscLogEventRegister("TaoSolve",TAO_CLASSID,&Tao_Solve);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoObjectiveEval",TAO_CLASSID,&Tao_ObjectiveEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoGradientEval",TAO_CLASSID,&Tao_GradientEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoHessianEval",TAO_CLASSID,&Tao_HessianEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoConstraintsEval",TAO_CLASSID,&Tao_ConstraintsEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoJacobianEval",TAO_CLASSID,&Tao_JacobianEval);CHKERRQ(ierr);
 
   ierr = PetscRegisterFinalize(TaoFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -68,7 +68,7 @@ PetscErrorCode TaoInitializePackage(void)
   PetscDLLibraryRegister - this function is called when the dynamic library it
   is in is opened.
 
-  This registers all of the TaoSolver methods that are in the libtaosolver
+  This registers all of the Tao methods that are in the libtao
   library.
 
   Input Parameter:

@@ -73,85 +73,85 @@ static int CONINEQ=16;
 static int CONEQ=17;
 static int NFUNCS=18;
 
-static PetscErrorCode ourtaoobjectiveroutine(TaoSolver tao, Vec x, PetscReal *f, void *ctx)
+static PetscErrorCode ourtaoobjectiveroutine(Tao tao, Vec x, PetscReal *f, void *ctx)
 {
     PetscErrorCode ierr = 0;
-    (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,PetscReal*,void*,PetscErrorCode*))
+    (*(void (PETSC_STDCALL *)(Tao*,Vec*,PetscReal*,void*,PetscErrorCode*))
         (((PetscObject)tao)->fortran_func_pointers[OBJ]))(&tao,&x,f,ctx,&ierr);
     CHKERRQ(ierr);
     return 0;
 }
 
-static PetscErrorCode ourtaogradientroutine(TaoSolver tao, Vec x, Vec g, void *ctx)
+static PetscErrorCode ourtaogradientroutine(Tao tao, Vec x, Vec g, void *ctx)
 {
     PetscErrorCode ierr = 0;
-    (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,Vec*,void*,PetscErrorCode*))
+    (*(void (PETSC_STDCALL *)(Tao*,Vec*,Vec*,void*,PetscErrorCode*))
        (((PetscObject)tao)->fortran_func_pointers[GRAD]))(&tao,&x,&g,ctx,&ierr);
     CHKERRQ(ierr);
     return 0;
 
 }
 
-static PetscErrorCode ourtaoobjectiveandgradientroutine(TaoSolver tao, Vec x, PetscReal *f, Vec g, void* ctx)
+static PetscErrorCode ourtaoobjectiveandgradientroutine(Tao tao, Vec x, PetscReal *f, Vec g, void* ctx)
 {
     PetscErrorCode ierr = 0;
-    (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,PetscReal*,Vec*,void*,PetscErrorCode*))
+    (*(void (PETSC_STDCALL *)(Tao*,Vec*,PetscReal*,Vec*,void*,PetscErrorCode*))
      (((PetscObject)tao)->fortran_func_pointers[OBJGRAD]))(&tao,&x,f,&g,ctx,&ierr);
     CHKERRQ(ierr);
     return 0;
 }
 
-static PetscErrorCode ourtaohessianroutine(TaoSolver tao, Vec x, Mat *H, Mat *Hpre, MatStructure *type, void *ctx)
+static PetscErrorCode ourtaohessianroutine(Tao tao, Vec x, Mat *H, Mat *Hpre, MatStructure *type, void *ctx)
 {
     PetscErrorCode ierr = 0;
-    (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))
+    (*(void (PETSC_STDCALL *)(Tao*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))
      (((PetscObject)tao)->fortran_func_pointers[HESS]))(&tao,&x,H,Hpre,type,ctx,&ierr); CHKERRQ(ierr);
     return 0;
 }
 
-static PetscErrorCode ourtaojacobianroutine(TaoSolver tao, Vec x, Mat *H, Mat *Hpre, MatStructure *type, void *ctx)
+static PetscErrorCode ourtaojacobianroutine(Tao tao, Vec x, Mat *H, Mat *Hpre, MatStructure *type, void *ctx)
 {
     PetscErrorCode ierr = 0;
-    (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))
+    (*(void (PETSC_STDCALL *)(Tao*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))
      (((PetscObject)tao)->fortran_func_pointers[JAC]))(&tao,&x,H,Hpre,type,ctx,&ierr); CHKERRQ(ierr);
     return 0;
 }
 
-static PetscErrorCode ourtaojacobianstateroutine(TaoSolver tao, Vec x, Mat *H, Mat *Hpre, Mat *Hinv, MatStructure *type, void *ctx)
+static PetscErrorCode ourtaojacobianstateroutine(Tao tao, Vec x, Mat *H, Mat *Hpre, Mat *Hinv, MatStructure *type, void *ctx)
 {
     PetscErrorCode ierr = 0;
-    (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,Mat*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))
+    (*(void (PETSC_STDCALL *)(Tao*,Vec*,Mat*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))
      (((PetscObject)tao)->fortran_func_pointers[JACSTATE]))(&tao,&x,H,Hpre,Hinv,type,ctx,&ierr); CHKERRQ(ierr);
     return 0;
 }
 
-static PetscErrorCode ourtaojacobiandesignroutine(TaoSolver tao, Vec x, Mat *H, void *ctx)
+static PetscErrorCode ourtaojacobiandesignroutine(Tao tao, Vec x, Mat *H, void *ctx)
 {
     PetscErrorCode ierr = 0;
-    (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,Mat*,void*,PetscErrorCode*))
+    (*(void (PETSC_STDCALL *)(Tao*,Vec*,Mat*,void*,PetscErrorCode*))
      (((PetscObject)tao)->fortran_func_pointers[JACDESIGN]))(&tao,&x,H,ctx,&ierr); CHKERRQ(ierr);
     return 0;
 }
 
-static PetscErrorCode ourtaoboundsroutine(TaoSolver tao, Vec xl, Vec xu, void *ctx)
+static PetscErrorCode ourtaoboundsroutine(Tao tao, Vec xl, Vec xu, void *ctx)
 {
     PetscErrorCode ierr = 0;
-    (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,Vec*,void*,PetscErrorCode*))
+    (*(void (PETSC_STDCALL *)(Tao*,Vec*,Vec*,void*,PetscErrorCode*))
      (((PetscObject)tao)->fortran_func_pointers[BOUNDS]))(&tao,&xl,&xu,ctx,&ierr); CHKERRQ(ierr);
     return 0;
 }
-static PetscErrorCode ourtaoseparableobjectiveroutine(TaoSolver tao, Vec x, Vec f, void *ctx)
+static PetscErrorCode ourtaoseparableobjectiveroutine(Tao tao, Vec x, Vec f, void *ctx)
 {
     PetscErrorCode ierr = 0;
-    (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,Vec*,void*,PetscErrorCode*))
+    (*(void (PETSC_STDCALL *)(Tao*,Vec*,Vec*,void*,PetscErrorCode*))
      (((PetscObject)tao)->fortran_func_pointers[SEPOBJ]))(&tao,&x,&f,ctx,&ierr);
     return 0;
 }
 
-static PetscErrorCode ourtaomonitor(TaoSolver tao, void *ctx)
+static PetscErrorCode ourtaomonitor(Tao tao, void *ctx)
 {
     PetscErrorCode ierr = 0;
-    (*(void (PETSC_STDCALL *)(TaoSolver *, void*, PetscErrorCode*))
+    (*(void (PETSC_STDCALL *)(Tao *, void*, PetscErrorCode*))
      (((PetscObject)tao)->fortran_func_pointers[MON]))(&tao,ctx,&ierr);
     CHKERRQ(ierr);
     return 0;
@@ -160,62 +160,62 @@ static PetscErrorCode ourtaomonitor(TaoSolver tao, void *ctx)
 static PetscErrorCode ourtaomondestroy(void **ctx)
 {
     PetscErrorCode ierr = 0;
-    TaoSolver tao = *(TaoSolver*)ctx;
+    Tao tao = *(Tao*)ctx;
     (*(void (PETSC_STDCALL *)(void*,PetscErrorCode*))(((PetscObject)tao)->fortran_func_pointers[MONDESTROY]))
       ((void*)(PETSC_UINTPTR_T)((PetscObject)tao)->fortran_func_pointers[MONCTX],&ierr);
     CHKERRQ(ierr);
     return 0;
 }
-static PetscErrorCode ourtaoconvergencetest(TaoSolver tao, void *ctx)
+static PetscErrorCode ourtaoconvergencetest(Tao tao, void *ctx)
 {
     PetscErrorCode ierr = 0;
-    (*(void (PETSC_STDCALL *)(TaoSolver *, void*, PetscErrorCode*))
+    (*(void (PETSC_STDCALL *)(Tao *, void*, PetscErrorCode*))
      (((PetscObject)tao)->fortran_func_pointers[CONVTEST]))(&tao,ctx,&ierr);
     CHKERRQ(ierr);
     return 0;
 }
 
 
-static PetscErrorCode ourtaoconstraintsroutine(TaoSolver tao, Vec x, Vec c, void *ctx)
+static PetscErrorCode ourtaoconstraintsroutine(Tao tao, Vec x, Vec c, void *ctx)
 {
     PetscErrorCode ierr = 0;
-    (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,Vec*,void*,PetscErrorCode*))
+    (*(void (PETSC_STDCALL *)(Tao*,Vec*,Vec*,void*,PetscErrorCode*))
        (((PetscObject)tao)->fortran_func_pointers[CONSTRAINTS]))(&tao,&x,&c,ctx,&ierr);
     CHKERRQ(ierr);
     return 0;
 
 }
 
-static PetscErrorCode ourtaojacobianinequalityroutine(TaoSolver tao, Vec x, Mat *J, Mat *Jpre, MatStructure *type, void *ctx)
+static PetscErrorCode ourtaojacobianinequalityroutine(Tao tao, Vec x, Mat *J, Mat *Jpre, MatStructure *type, void *ctx)
 {
     PetscErrorCode ierr = 0;
-    (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))
+    (*(void (PETSC_STDCALL *)(Tao*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))
      (((PetscObject)tao)->fortran_func_pointers[JACINEQ]))(&tao,&x,J,Jpre,type,ctx,&ierr); CHKERRQ(ierr);
     return 0;
 }
 
-static PetscErrorCode ourtaojacobianequalityroutine(TaoSolver tao, Vec x, Mat *J, Mat *Jpre, MatStructure *type, void *ctx)
+static PetscErrorCode ourtaojacobianequalityroutine(Tao tao, Vec x, Mat *J, Mat *Jpre, MatStructure *type, void *ctx)
 {
     PetscErrorCode ierr = 0;
-    (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))
+    (*(void (PETSC_STDCALL *)(Tao*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))
      (((PetscObject)tao)->fortran_func_pointers[JACEQ]))(&tao,&x,J,Jpre,type,ctx,&ierr); CHKERRQ(ierr);
     return 0;
 }
 
-static PetscErrorCode ourtaoinequalityconstraintsroutine(TaoSolver tao, Vec x, Vec c, void *ctx)
+static PetscErrorCode ourtaoinequalityconstraintsroutine(Tao tao, Vec x, Vec c, void *ctx)
 {
     PetscErrorCode ierr = 0;
-    (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,Vec*,void*,PetscErrorCode*))
+    (*(void (PETSC_STDCALL *)(Tao*,Vec*,Vec*,void*,PetscErrorCode*))
        (((PetscObject)tao)->fortran_func_pointers[CONINEQ]))(&tao,&x,&c,ctx,&ierr);
     CHKERRQ(ierr);
     return 0;
 
 }
 
-static PetscErrorCode ourtaoequalityconstraintsroutine(TaoSolver tao, Vec x, Vec c, void *ctx)
+static PetscErrorCode ourtaoequalityconstraintsroutine(Tao tao, Vec x, Vec c, void *ctx)
 {
     PetscErrorCode ierr = 0;
-    (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,Vec*,void*,PetscErrorCode*))
+    (*(void (PETSC_STDCALL *)(Tao*,Vec*,Vec*,void*,PetscErrorCode*))
        (((PetscObject)tao)->fortran_func_pointers[CONEQ]))(&tao,&x,&c,ctx,&ierr);
     CHKERRQ(ierr);
     return 0;
@@ -226,7 +226,7 @@ static PetscErrorCode ourtaoequalityconstraintsroutine(TaoSolver tao, Vec x, Vec
 EXTERN_C_BEGIN
 
 
-void PETSC_STDCALL taosetobjectiveroutine_(TaoSolver *tao, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, PetscReal *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+void PETSC_STDCALL taosetobjectiveroutine_(Tao *tao, void (PETSC_STDCALL *func)(Tao*, Vec *, PetscReal *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
@@ -238,7 +238,7 @@ void PETSC_STDCALL taosetobjectiveroutine_(TaoSolver *tao, void (PETSC_STDCALL *
     }
 }
 
-void PETSC_STDCALL taosetgradientroutine_(TaoSolver *tao, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+void PETSC_STDCALL taosetgradientroutine_(Tao *tao, void (PETSC_STDCALL *func)(Tao*, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
@@ -250,7 +250,7 @@ void PETSC_STDCALL taosetgradientroutine_(TaoSolver *tao, void (PETSC_STDCALL *f
     }
 }
 
-void PETSC_STDCALL taosetobjectiveandgradientroutine_(TaoSolver *tao, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, PetscReal *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+void PETSC_STDCALL taosetobjectiveandgradientroutine_(Tao *tao, void (PETSC_STDCALL *func)(Tao*, Vec *, PetscReal *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
@@ -265,7 +265,7 @@ void PETSC_STDCALL taosetobjectiveandgradientroutine_(TaoSolver *tao, void (PETS
 
 
 
-void PETSC_STDCALL taosetseparableobjectiveroutine_(TaoSolver *tao, Vec *F, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+void PETSC_STDCALL taosetseparableobjectiveroutine_(Tao *tao, Vec *F, void (PETSC_STDCALL *func)(Tao*, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
@@ -279,7 +279,7 @@ void PETSC_STDCALL taosetseparableobjectiveroutine_(TaoSolver *tao, Vec *F, void
 
 
 
-void PETSC_STDCALL taosetjacobianroutine_(TaoSolver *tao, Mat *J, Mat *Jp, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Mat *, Mat *, MatStructure *,void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+void PETSC_STDCALL taosetjacobianroutine_(Tao *tao, Mat *J, Mat *Jp, void (PETSC_STDCALL *func)(Tao*, Vec *, Mat *, Mat *, MatStructure *,void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
@@ -291,7 +291,7 @@ void PETSC_STDCALL taosetjacobianroutine_(TaoSolver *tao, Mat *J, Mat *Jp, void 
     }
 }
 
-void PETSC_STDCALL taosetjacobianstateroutine_(TaoSolver *tao, Mat *J, Mat *Jp, Mat*Jinv, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Mat *, Mat *, Mat*, MatStructure *,void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+void PETSC_STDCALL taosetjacobianstateroutine_(Tao *tao, Mat *J, Mat *Jp, Mat*Jinv, void (PETSC_STDCALL *func)(Tao*, Vec *, Mat *, Mat *, Mat*, MatStructure *,void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
@@ -303,7 +303,7 @@ void PETSC_STDCALL taosetjacobianstateroutine_(TaoSolver *tao, Mat *J, Mat *Jp, 
     }
 }
 
-void PETSC_STDCALL taosetjacobiandesignroutine_(TaoSolver *tao, Mat *J, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Mat *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+void PETSC_STDCALL taosetjacobiandesignroutine_(Tao *tao, Mat *J, void (PETSC_STDCALL *func)(Tao*, Vec *, Mat *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
@@ -316,7 +316,7 @@ void PETSC_STDCALL taosetjacobiandesignroutine_(TaoSolver *tao, Mat *J, void (PE
 }
 
 
-void PETSC_STDCALL taosethessianroutine_(TaoSolver *tao, Mat *J, Mat *Jp, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Mat *, Mat *, MatStructure *,void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+void PETSC_STDCALL taosethessianroutine_(Tao *tao, Mat *J, Mat *Jp, void (PETSC_STDCALL *func)(Tao*, Vec *, Mat *, Mat *, MatStructure *,void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
@@ -328,7 +328,7 @@ void PETSC_STDCALL taosethessianroutine_(TaoSolver *tao, Mat *J, Mat *Jp, void (
     }
 }
 
-void PETSC_STDCALL taosetvariableboundsroutine_(TaoSolver *tao, void (PETSC_STDCALL *func)(TaoSolver*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx, PetscErrorCode *ierr)
+void PETSC_STDCALL taosetvariableboundsroutine_(Tao *tao, void (PETSC_STDCALL *func)(Tao*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
@@ -340,7 +340,7 @@ void PETSC_STDCALL taosetvariableboundsroutine_(TaoSolver *tao, void (PETSC_STDC
     }
 
 }
-void PETSC_STDCALL taosetmonitor_(TaoSolver *tao, void (PETSC_STDCALL *func)(TaoSolver*,void*,PetscErrorCode*),void *ctx, void (PETSC_STDCALL *mondestroy)(void*,PetscErrorCode*),PetscErrorCode *ierr)
+void PETSC_STDCALL taosetmonitor_(Tao *tao, void (PETSC_STDCALL *func)(Tao*,void*,PetscErrorCode*),void *ctx, void (PETSC_STDCALL *mondestroy)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
@@ -354,7 +354,7 @@ void PETSC_STDCALL taosetmonitor_(TaoSolver *tao, void (PETSC_STDCALL *func)(Tao
     }
 }
 
-void PETSC_STDCALL taosetconvergencetest_(TaoSolver *tao, void (PETSC_STDCALL *func)(TaoSolver*,void*,PetscErrorCode*),void *ctx, PetscErrorCode *ierr)
+void PETSC_STDCALL taosetconvergencetest_(Tao *tao, void (PETSC_STDCALL *func)(Tao*,void*,PetscErrorCode*),void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
@@ -367,7 +367,7 @@ void PETSC_STDCALL taosetconvergencetest_(TaoSolver *tao, void (PETSC_STDCALL *f
 }
 
 
-void PETSC_STDCALL taosetconstraintsroutine_(TaoSolver *tao, Vec *C, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+void PETSC_STDCALL taosetconstraintsroutine_(Tao *tao, Vec *C, void (PETSC_STDCALL *func)(Tao*, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
@@ -380,7 +380,7 @@ void PETSC_STDCALL taosetconstraintsroutine_(TaoSolver *tao, Vec *C, void (PETSC
 }
 
 
-void PETSC_STDCALL taosettype_(TaoSolver *tao, CHAR type_name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL taosettype_(Tao *tao, CHAR type_name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 
 {
     char *t;
@@ -391,20 +391,20 @@ void PETSC_STDCALL taosettype_(TaoSolver *tao, CHAR type_name PETSC_MIXED_LEN(le
 
 }
 
-void PETSC_STDCALL taoview_(TaoSolver *tao, PetscViewer *viewer, PetscErrorCode *ierr)
+void PETSC_STDCALL taoview_(Tao *tao, PetscViewer *viewer, PetscErrorCode *ierr)
 {
     PetscViewer v;
     PetscPatchDefaultViewers_Fortran(viewer,v);
     *ierr = TaoView(*tao,v);
 }
 
-void PETSC_STDCALL taogethistory_(TaoSolver *tao, PetscInt *nhist, PetscErrorCode *ierr)
+void PETSC_STDCALL taogethistory_(Tao *tao, PetscInt *nhist, PetscErrorCode *ierr)
 {
   *nhist  = (*tao)->hist_len;
   *ierr = 0;
 }
 
-void PETSC_STDCALL taogetoptionsprefix_(TaoSolver *tao, CHAR prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL taogetoptionsprefix_(Tao *tao, CHAR prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *name;
   *ierr = TaoGetOptionsPrefix(*tao,&name);
@@ -413,7 +413,7 @@ void PETSC_STDCALL taogetoptionsprefix_(TaoSolver *tao, CHAR prefix PETSC_MIXED_
 
 }
 
-void PETSC_STDCALL taoappendoptionsprefix_(TaoSolver *tao, CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL taoappendoptionsprefix_(Tao *tao, CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *name;
   FIXCHAR(prefix,len,name);
@@ -421,7 +421,7 @@ void PETSC_STDCALL taoappendoptionsprefix_(TaoSolver *tao, CHAR prefix PETSC_MIX
   FREECHAR(prefix,name);
 }
 
-void PETSC_STDCALL taosetoptionsprefix_(TaoSolver *tao, CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL taosetoptionsprefix_(Tao *tao, CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(prefix,len,t);
@@ -429,7 +429,7 @@ void PETSC_STDCALL taosetoptionsprefix_(TaoSolver *tao, CHAR prefix PETSC_MIXED_
   FREECHAR(prefix,t);
 }
 
-void PETSC_STDCALL taogettype_(TaoSolver *tao, CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr  PETSC_END_LEN(len))
+void PETSC_STDCALL taogettype_(Tao *tao, CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr  PETSC_END_LEN(len))
 {
   const char *tname;
   *ierr = TaoGetType(*tao,&tname);
@@ -439,7 +439,7 @@ void PETSC_STDCALL taogettype_(TaoSolver *tao, CHAR name PETSC_MIXED_LEN(len), P
 }
 
 
-void PETSC_STDCALL taosetjacobianinequalityroutine_(TaoSolver *tao, Mat *J, Mat *Jp, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Mat *, Mat *, MatStructure *,void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+void PETSC_STDCALL taosetjacobianinequalityroutine_(Tao *tao, Mat *J, Mat *Jp, void (PETSC_STDCALL *func)(Tao*, Vec *, Mat *, Mat *, MatStructure *,void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
@@ -451,7 +451,7 @@ void PETSC_STDCALL taosetjacobianinequalityroutine_(TaoSolver *tao, Mat *J, Mat 
     }
 }
 
-void PETSC_STDCALL taosetjacobianequalityroutine_(TaoSolver *tao, Mat *J, Mat *Jp, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Mat *, Mat *, MatStructure *,void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+void PETSC_STDCALL taosetjacobianequalityroutine_(Tao *tao, Mat *J, Mat *Jp, void (PETSC_STDCALL *func)(Tao*, Vec *, Mat *, Mat *, MatStructure *,void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
@@ -464,7 +464,7 @@ void PETSC_STDCALL taosetjacobianequalityroutine_(TaoSolver *tao, Mat *J, Mat *J
 }
 
 
-void PETSC_STDCALL taosetinequalityconstraintsroutine_(TaoSolver *tao, Vec *C, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+void PETSC_STDCALL taosetinequalityconstraintsroutine_(Tao *tao, Vec *C, void (PETSC_STDCALL *func)(Tao*, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
@@ -476,7 +476,7 @@ void PETSC_STDCALL taosetinequalityconstraintsroutine_(TaoSolver *tao, Vec *C, v
     }
 }
 
-void PETSC_STDCALL taosetequalityconstraintsroutine_(TaoSolver *tao, Vec *C, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+void PETSC_STDCALL taosetequalityconstraintsroutine_(Tao *tao, Vec *C, void (PETSC_STDCALL *func)(Tao*, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);

@@ -9,7 +9,7 @@ iter =   3, Function value 1.42074, Residual: 0.103371
 iter =   4, Function value 1.41874, Residual: 0.0179884 
 iter =   5, Function value 1.41862, Residual: 0.0198601 
 iter =   6, Function value 1.41855, Residual: 0.0102512 
-TaoSolver Object: 3 MPI processes
+Tao Object: 3 MPI processes
   type: tao_cg
       CG Type: fr
       Gradient steps: 0

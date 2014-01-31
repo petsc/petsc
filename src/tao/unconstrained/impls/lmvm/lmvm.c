@@ -8,7 +8,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolve_LMVM"
-static PetscErrorCode TaoSolve_LMVM(TaoSolver tao)
+static PetscErrorCode TaoSolve_LMVM(Tao tao)
 {
   TAO_LMVM                       *lmP = (TAO_LMVM *)tao->data;
   PetscReal                      f, fold, gdx, gnorm;
@@ -17,7 +17,7 @@ static PetscErrorCode TaoSolve_LMVM(TaoSolver tao)
   PetscErrorCode                 ierr;
   PetscInt                       stepType;
   PetscInt                       iter = 0;
-  TaoSolverTerminationReason     reason = TAO_CONTINUE_ITERATING;
+  TaoTerminationReason     reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchTerminationReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
   PetscFunctionBegin;
@@ -173,7 +173,7 @@ static PetscErrorCode TaoSolve_LMVM(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetUp_LMVM"
-static PetscErrorCode TaoSetUp_LMVM(TaoSolver tao)
+static PetscErrorCode TaoSetUp_LMVM(Tao tao)
 {
   TAO_LMVM       *lmP = (TAO_LMVM *)tao->data;
   PetscInt       n,N;
@@ -198,7 +198,7 @@ static PetscErrorCode TaoSetUp_LMVM(TaoSolver tao)
 /* ---------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_LMVM"
-static PetscErrorCode TaoDestroy_LMVM(TaoSolver tao)
+static PetscErrorCode TaoDestroy_LMVM(Tao tao)
 {
   TAO_LMVM       *lmP = (TAO_LMVM *)tao->data;
   PetscErrorCode ierr;
@@ -217,7 +217,7 @@ static PetscErrorCode TaoDestroy_LMVM(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_LMVM"
-static PetscErrorCode TaoSetFromOptions_LMVM(TaoSolver tao)
+static PetscErrorCode TaoSetFromOptions_LMVM(Tao tao)
 {
   PetscErrorCode ierr;
 
@@ -232,7 +232,7 @@ static PetscErrorCode TaoSetFromOptions_LMVM(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoView_LMVM"
-static PetscErrorCode TaoView_LMVM(TaoSolver tao, PetscViewer viewer)
+static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
 {
   TAO_LMVM       *lm = (TAO_LMVM *)tao->data;
   PetscBool      isascii;
@@ -255,7 +255,7 @@ static PetscErrorCode TaoView_LMVM(TaoSolver tao, PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_LMVM"
-PetscErrorCode TaoCreate_LMVM(TaoSolver tao)
+PetscErrorCode TaoCreate_LMVM(Tao tao)
 {
   TAO_LMVM       *lmP;
   const char     *morethuente_type = TAOLINESEARCH_MT;
@@ -282,7 +282,7 @@ PetscErrorCode TaoCreate_LMVM(TaoSolver tao)
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,morethuente_type);CHKERRQ(ierr);
-  ierr = TaoLineSearchUseTaoSolverRoutines(tao->linesearch,tao);CHKERRQ(ierr);
+  ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -11,10 +11,10 @@
 static PetscErrorCode Fsnes(SNES snes ,Vec X,Vec G,void*ctx)
 {
   PetscErrorCode ierr;
-  TaoSolver      tao = (TaoSolver)ctx;
+  Tao            tao = (Tao)ctx;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ctx,TAOSOLVER_CLASSID,4);
+  PetscValidHeaderSpecific(ctx,TAO_CLASSID,4);
   ierr=TaoComputeGradient(tao,X,G);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -24,10 +24,10 @@ static PetscErrorCode Fsnes(SNES snes ,Vec X,Vec G,void*ctx)
 /*@C
   TaoDefaultComputeGradient - computes the gradient using finite differences.
 
-  Collective on TaoSolver
+  Collective on Tao
 
   Input Parameters:
-+ tao - the TaoSolver context
++ tao - the Tao context
 . X - compute gradient at this point
 - dummy - not used
 
@@ -55,7 +55,7 @@ static PetscErrorCode Fsnes(SNES snes ,Vec X,Vec G,void*ctx)
 .seealso: TaoSetGradientRoutine()
 
 @*/
-PetscErrorCode TaoDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *dummy)
+PetscErrorCode TaoDefaultComputeGradient(Tao tao,Vec X,Vec G,void *dummy)
 {
   PetscReal      *g;
   PetscReal      f, f2;
@@ -94,10 +94,10 @@ PetscErrorCode TaoDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *dummy)
 /*@C
    TaoDefaultComputeHessian - Computes the Hessian using finite differences.
 
-   Collective on TaoSolver
+   Collective on Tao
 
    Input Parameters:
-+  tao - the TaoSolver context
++  tao - the Tao context
 .  V - compute Hessian at this point
 -  dummy - not used
 
@@ -124,7 +124,7 @@ PetscErrorCode TaoDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *dummy)
 .seealso: TaoSetHessianRoutine(), TaoDefaultComputeHessianColor(), SNESComputeJacobianDefault(), TaoSetGradientRoutine(), TaoDefaultComputeGradient()
 
 @*/
-PetscErrorCode TaoDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,MatStructure *flag,void *dummy){
+PetscErrorCode TaoDefaultComputeHessian(Tao tao,Vec V,Mat *H,Mat *B,MatStructure *flag,void *dummy){
   PetscErrorCode       ierr;
   MPI_Comm             comm;
   Vec                  G;
@@ -153,10 +153,10 @@ PetscErrorCode TaoDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,MatStr
 /*@C
    TaoDefaultComputeHessianColor - Computes the Hessian using colored finite differences.
 
-   Collective on TaoSolver
+   Collective on Tao
 
    Input Parameters:
-+  tao - the TaoSolver context
++  tao - the Tao context
 .  V - compute Hessian at this point
 -  ctx - the PetscColoring object (must be of type MatFDColoring)
 
@@ -171,7 +171,7 @@ PetscErrorCode TaoDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,MatStr
 .seealso: TaoSetHessianRoutine(), TaoDefaultComputeHessian(),SNESComputeJacobianDefaultColor(), TaoSetGradientRoutine()
 
 @*/
-PetscErrorCode TaoDefaultComputeHessianColor(TaoSolver tao, Vec V, Mat *H,Mat *B,MatStructure *flag,void *ctx)
+PetscErrorCode TaoDefaultComputeHessianColor(Tao tao, Vec V, Mat *H,Mat *B,MatStructure *flag,void *ctx)
 {
   PetscErrorCode      ierr;
   MatFDColoring       coloring = (MatFDColoring)ctx;

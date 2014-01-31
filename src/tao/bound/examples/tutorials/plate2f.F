@@ -45,7 +45,7 @@
       Vec              x             ! solution vector
       Vec              xl, xu        ! lower and upper bounds vectorsp
       PetscInt         m             ! number of local elements in vector
-      TaoSolver        tao           ! TaoSolver solver context
+      Tao              tao           ! Tao solver context
       Mat              H             ! Hessian matrix
       ISLocalToGlobalMapping isltog  ! local to global mapping object
       PetscBool        flg
@@ -206,7 +206,7 @@
 !  FormFunctionGradient - Evaluates function f(X).
 !
 !  Input Parameters:
-!  tao   - the TaoSolver context
+!  tao   - the Tao context
 !  X     - the input vector
 !  dummy - optional user-defined context, as set by TaoSetFunction()
 !          (not used here)
@@ -226,7 +226,7 @@
 
 ! Input/output variables
 
-      TaoSolver        tao
+      Tao        tao
       PetscReal      fcn
       Vec              X, G
       PetscErrorCode   ierr
@@ -468,7 +468,7 @@
 !   FormHessian - Evaluates Hessian matrix.
 !
 !   Input Parameters:
-!.  tao  - the TaoSolver context
+!.  tao  - the Tao context
 !.  X    - input vector
 !.  dummy  - not used
 !
@@ -508,7 +508,7 @@
 ! dm,Top,Left,Right,Bottom,mx,my,localX defined in plate2f.h
 #include "plate2f.h"
 
-      TaoSolver     tao
+      Tao     tao
       Vec            X
       Mat            Hessian,Hpc
       MatStructure   flg
@@ -929,7 +929,7 @@
       implicit none
 ! mx,my,bmx,bmy,dm,bheight defined in plate2f.h
 #include "plate2f.h"
-      TaoSolver        tao
+      Tao        tao
       Vec              xl,xu
       PetscErrorCode   ierr
       PetscInt         i,j,row

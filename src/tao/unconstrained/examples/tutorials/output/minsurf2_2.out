@@ -7,7 +7,7 @@ iter =   0, Function value 1.43581, Residual: 0.187715
 iter =   1, Function value 1.41867, Residual: 0.0159523 
 iter =   2, Function value 1.41847, Residual: 0.00014867 
 iter =   3, Function value 1.41847, Residual: < 1.0e-6 
-TaoSolver Object: 2 MPI processes
+Tao Object: 2 MPI processes
   type: tao_nls
       Rejected matrix updates: 0
       Newton steps: 3

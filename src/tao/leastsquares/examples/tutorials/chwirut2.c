@@ -55,8 +55,8 @@ typedef struct {
 /* User provided Routines */
 PetscErrorCode InitializeData(AppCtx *user);
 PetscErrorCode FormStartingPoint(Vec);
-PetscErrorCode EvaluateFunction(TaoSolver, Vec, Vec, void *);
-PetscErrorCode MyMonitor(TaoSolver, void*);
+PetscErrorCode EvaluateFunction(Tao, Vec, Vec, void *);
+PetscErrorCode MyMonitor(Tao, void*);
 PetscErrorCode TaskWorker(AppCtx *user);
 PetscErrorCode StopWorkers(AppCtx *user);
 PetscErrorCode RunSimulation(PetscReal *x, PetscInt i, PetscReal*f, AppCtx *user);
@@ -68,7 +68,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;           /* used to check for functions returning nonzeros */
   Vec            x, f;               /* solution, function */
-  TaoSolver      tao;                /* TaoSolver solver context */
+  Tao            tao;                /* Tao solver context */
   AppCtx         user;               /* user-defined work context */
 
    /* Initialize TAO and PETSc */
@@ -120,7 +120,7 @@ int main(int argc,char **argv)
 /*--------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "EvaluateFunction"
-PetscErrorCode EvaluateFunction(TaoSolver tao, Vec X, Vec F, void *ptr)
+PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
 {
   AppCtx         *user = (AppCtx *)ptr;
   PetscInt       i;
@@ -418,7 +418,7 @@ PetscErrorCode InitializeData(AppCtx *user)
 
 #undef __FUNCT__
 #define __FUNCT__ "MyMonitor"
-PetscErrorCode MyMonitor(TaoSolver tao, void *ptr)
+PetscErrorCode MyMonitor(Tao tao, void *ptr)
 {
   PetscReal      fc,gnorm;
   PetscInt       its;

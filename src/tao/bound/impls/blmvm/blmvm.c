@@ -5,11 +5,11 @@
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolve_BLMVM"
-static PetscErrorCode TaoSolve_BLMVM(TaoSolver tao)
+static PetscErrorCode TaoSolve_BLMVM(Tao tao)
 {
   PetscErrorCode                 ierr;
   TAO_BLMVM                      *blmP = (TAO_BLMVM *)tao->data;
-  TaoSolverTerminationReason     reason = TAO_CONTINUE_ITERATING;
+  TaoTerminationReason     reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchTerminationReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                      f, fold, gdx, gnorm;
   PetscReal                      stepsize = 1.0,delta;
@@ -123,7 +123,7 @@ static PetscErrorCode TaoSolve_BLMVM(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetup_BLMVM"
-static PetscErrorCode TaoSetup_BLMVM(TaoSolver tao)
+static PetscErrorCode TaoSetup_BLMVM(Tao tao)
 {
   TAO_BLMVM      *blmP = (TAO_BLMVM *)tao->data;
   PetscInt       n,N;
@@ -160,7 +160,7 @@ static PetscErrorCode TaoSetup_BLMVM(TaoSolver tao)
 /* ---------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_BLMVM"
-static PetscErrorCode TaoDestroy_BLMVM(TaoSolver tao)
+static PetscErrorCode TaoDestroy_BLMVM(Tao tao)
 {
   TAO_BLMVM      *blmP = (TAO_BLMVM *)tao->data;
   PetscErrorCode ierr;
@@ -179,7 +179,7 @@ static PetscErrorCode TaoDestroy_BLMVM(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_BLMVM"
-static PetscErrorCode TaoSetFromOptions_BLMVM(TaoSolver tao)
+static PetscErrorCode TaoSetFromOptions_BLMVM(Tao tao)
 {
   PetscErrorCode ierr;
 
@@ -194,7 +194,7 @@ static PetscErrorCode TaoSetFromOptions_BLMVM(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoView_BLMVM"
-static int TaoView_BLMVM(TaoSolver tao, PetscViewer viewer)
+static int TaoView_BLMVM(Tao tao, PetscViewer viewer)
 {
   TAO_BLMVM      *lmP = (TAO_BLMVM *)tao->data;
   PetscBool      isascii;
@@ -212,13 +212,13 @@ static int TaoView_BLMVM(TaoSolver tao, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoComputeDual_BLMVM"
-static PetscErrorCode TaoComputeDual_BLMVM(TaoSolver tao, Vec DXL, Vec DXU)
+static PetscErrorCode TaoComputeDual_BLMVM(Tao tao, Vec DXL, Vec DXU)
 {
   TAO_BLMVM      *blm = (TAO_BLMVM *) tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(DXL,VEC_CLASSID,2);
   PetscValidHeaderSpecific(DXU,VEC_CLASSID,3);
   if (!tao->gradient || !blm->unprojected_gradient) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Dual variables don't exist yet or no longer exist.\n");
@@ -238,7 +238,7 @@ static PetscErrorCode TaoComputeDual_BLMVM(TaoSolver tao, Vec DXL, Vec DXU)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_BLMVM"
-PetscErrorCode TaoCreate_BLMVM(TaoSolver tao)
+PetscErrorCode TaoCreate_BLMVM(Tao tao)
 {
   TAO_BLMVM      *blmP;
   const char     *morethuente_type = TAOLINESEARCH_MT;
@@ -261,7 +261,7 @@ PetscErrorCode TaoCreate_BLMVM(TaoSolver tao)
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type);CHKERRQ(ierr);
-  ierr = TaoLineSearchUseTaoSolverRoutines(tao->linesearch,tao);CHKERRQ(ierr);
+  ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

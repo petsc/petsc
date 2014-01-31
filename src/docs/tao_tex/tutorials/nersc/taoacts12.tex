@@ -612,7 +612,7 @@ will need.  For example:
 \end{verbatim}
 The objective function evaluation routine should look like:
 \begin{verbatim}
-   PetscErrorCode MyFunction(TaoSolver tao, Vec x, 
+   PetscErrorCode MyFunction(Tao tao, Vec x, 
                        PetscReal *fcnval, void *userCtx){
      UserContext *user = (UserContext *)userCtx;
      ...
@@ -625,12 +625,12 @@ The objective function evaluation routine should look like:
 \frametitle{TAO Applications}
 The routines for computing the gradient and Hessians look similar:
 \begin{verbatim}
-  PetscErrorCode MyGradient(TaoSolver tao, Vec x, Vec g, 
+  PetscErrorCode MyGradient(Tao tao, Vec x, Vec g, 
                        void *userCtx){
      UserContext *user = (UserContext *)userCtx;
      ...
   }
-  PetscErrorCode MyHessian(TaoSolver tao, Vec x, Mat *H, 
+  PetscErrorCode MyHessian(Tao tao, Vec x, Mat *H, 
                   Mat *Hpre, MatStructure *flag, void *userCtx){
      UserContext *user = (UserContext *)userCtx;
      ...
@@ -657,7 +657,7 @@ This driver performs the following steps:
 \frametitle{TAO Applications}
 \begin{center}Create the TAO Solver\end{center}
 \begin{verbatim}
- TaoSolver       tao;  /* TAO Optimization solver     */
+ Tao       tao;  /* TAO Optimization solver     */
  UserContext     user; /* user-defined structure      */
  Vec             x;    /* solution vector             */
  Mat             H;    /* Hessian Matrix              */
@@ -676,7 +676,7 @@ This driver performs the following steps:
 \begin{center}Create storage for the solution vector and Hessian 
 matrix\end{center}
 \begin{verbatim}
- TaoSolver       tao; /* TAO Optimization solver     */
+ Tao       tao; /* TAO Optimization solver     */
  UserContext     user;/* user-defined structure      */
  Vec             x;   /* solution vector             */
  Mat             H;   /* Hessian Matrix              */
@@ -693,7 +693,7 @@ matrix\end{center}
 \frametitle{TAO Applications}
 \begin{center}Hook up the application to TAO\end{center}
 \begin{verbatim}
- TaoSolver       tao;  /* TAO Optimization solver     */
+ Tao       tao;  /* TAO Optimization solver     */
  UserContext     user; /* user-defined structure      */
  Vec             x;    /* solution vector             */
  Mat             H;    /* Hessian Matrix              */
@@ -713,7 +713,7 @@ matrix\end{center}
 \frametitle{TAO Applications}
 \begin{center}Solve the application\end{center}
 \begin{verbatim}
- TaoSolver       tao;  /* TAO Optimization solver     */
+ Tao       tao;  /* TAO Optimization solver     */
  UserContext     user; /* user-defined structure      */
  Vec             x;    /* solution vector             */
  Mat             H;    /* Hessian Matrix              */

@@ -55,8 +55,8 @@ typedef struct {
 /* User provided Routines */
 PetscErrorCode InitializeData(AppCtx *user);
 PetscErrorCode FormStartingPoint(Vec);
-PetscErrorCode EvaluateFunction(TaoSolver, Vec, Vec, void *);
-PetscErrorCode EvaluateJacobian(TaoSolver, Vec, Mat*, Mat*, MatStructure*,void *);
+PetscErrorCode EvaluateFunction(Tao, Vec, Vec, void *);
+PetscErrorCode EvaluateJacobian(Tao, Vec, Mat*, Mat*, MatStructure*,void *);
 
 
 /*--------------------------------------------------------------------*/
@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;           /* used to check for functions returning nonzeros */
   Vec            x, f;               /* solution, function */
   Mat            J;                  /* Jacobian matrix */
-  TaoSolver      tao;                /* TaoSolver solver context */
+  Tao            tao;                /* Tao solver context */
   PetscInt       i;               /* iteration information */
   PetscReal      hist[100],resid[100];
   PetscInt       nhist;
@@ -129,7 +129,7 @@ int main(int argc,char **argv)
 /*--------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "EvaluateFunction"
-PetscErrorCode EvaluateFunction(TaoSolver tao, Vec X, Vec F, void *ptr)
+PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
 {
   AppCtx         *user = (AppCtx *)ptr;
   PetscInt       i;
@@ -153,7 +153,7 @@ PetscErrorCode EvaluateFunction(TaoSolver tao, Vec X, Vec F, void *ptr)
 /* J[i][j] = df[i]/dt[j] */
 #undef __FUNCT__
 #define __FUNCT__ "EvaluateJacobian"
-PetscErrorCode EvaluateJacobian(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, MatStructure*matstruct,void *ptr)
+PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat *J, Mat *Jpre, MatStructure*matstruct,void *ptr)
 {
   AppCtx         *user = (AppCtx *)ptr;
   PetscInt       i;

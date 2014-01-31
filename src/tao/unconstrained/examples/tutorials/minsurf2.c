@@ -37,8 +37,8 @@ T*/
    and FormHessian().
 */
 typedef struct {
-  PetscInt      mx, my;                 /* discretization in x, y directions */
-  PetscReal      *bottom, *top, *left, *right;             /* boundary values */
+  PetscInt    mx, my;                 /* discretization in x, y directions */
+  PetscReal   *bottom, *top, *left, *right;             /* boundary values */
   DM          dm;                      /* distributed array data structure */
   Mat         H;                       /* Hessian */
 } AppCtx;
@@ -49,25 +49,25 @@ typedef struct {
 static PetscErrorCode MSA_BoundaryConditions(AppCtx*);
 static PetscErrorCode MSA_InitialPoint(AppCtx*,Vec);
 PetscErrorCode QuadraticH(AppCtx*,Vec,Mat);
-PetscErrorCode FormFunctionGradient(TaoSolver,Vec,PetscReal *,Vec,void*);
-PetscErrorCode FormGradient(TaoSolver,Vec,Vec,void*);
-PetscErrorCode FormHessian(TaoSolver,Vec,Mat*,Mat*,MatStructure *,void*);
-PetscErrorCode My_Monitor(TaoSolver, void *);
+PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal *,Vec,void*);
+PetscErrorCode FormGradient(Tao,Vec,Vec,void*);
+PetscErrorCode FormHessian(Tao,Vec,Mat*,Mat*,MatStructure *,void*);
+PetscErrorCode My_Monitor(Tao, void *);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main( int argc, char **argv )
 {
-  PetscErrorCode    ierr;                /* used to check for functions returning nonzeros */
-  PetscInt          Nx, Ny;              /* number of processors in x- and y- directions */
-  Vec             x;                   /* solution, gradient vectors */
-  PetscBool      flg, viewmat;        /* flags */
-  PetscBool      fddefault, fdcoloring;   /* flags */
-  TaoSolverTerminationReason reason;
-  TaoSolver       tao;                 /* TAO solver context */
-  AppCtx          user;                /* user-defined work context */
-  ISColoring     iscoloring;
-  MatFDColoring  matfdcoloring;
+  PetscErrorCode       ierr;                /* used to check for functions returning nonzeros */
+  PetscInt             Nx, Ny;              /* number of processors in x- and y- directions */
+  Vec                  x;                   /* solution, gradient vectors */
+  PetscBool            flg, viewmat;        /* flags */
+  PetscBool            fddefault, fdcoloring;   /* flags */
+  TaoTerminationReason reason;
+  Tao                  tao;                 /* TAO solver context */
+  AppCtx               user;                /* user-defined work context */
+  ISColoring           iscoloring;
+  MatFDColoring        matfdcoloring;
 
   /* Initialize TAO */
   PetscInitialize( &argc, &argv,(char *)0,help );
@@ -194,7 +194,7 @@ int main( int argc, char **argv )
 
 #undef __FUNCT__
 #define __FUNCT__ "FormGradient"
-PetscErrorCode FormGradient(TaoSolver tao, Vec X, Vec G,void *userCtx){
+PetscErrorCode FormGradient(Tao tao, Vec X, Vec G,void *userCtx){
   PetscErrorCode ierr;
   PetscReal fcn;
   PetscFunctionBegin;
@@ -208,7 +208,7 @@ PetscErrorCode FormGradient(TaoSolver tao, Vec X, Vec G,void *userCtx){
 /*  FormFunctionGradient - Evaluates the function and corresponding gradient.
 
     Input Parameters:
-.   tao     - the TaoSolver context
+.   tao     - the Tao context
 .   XX      - input vector
 .   userCtx - optional user-defined context, as set by TaoSetObjectiveAndGradientRoutine()
 
@@ -216,20 +216,20 @@ PetscErrorCode FormGradient(TaoSolver tao, Vec X, Vec G,void *userCtx){
 .   fcn     - the newly evaluated function
 .   GG       - vector containing the newly evaluated gradient
 */
-PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,void *userCtx){
+PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *userCtx){
 
-  AppCtx * user = (AppCtx *) userCtx;
-  PetscErrorCode    ierr;
-  PetscInt i,j;
-  PetscInt mx=user->mx, my=user->my;
-  PetscInt xs,xm,gxs,gxm,ys,ym,gys,gym;
-  PetscReal ft=0.0;
-  PetscReal hx=1.0/(mx+1),hy=1.0/(my+1), hydhx=hy/hx, hxdhy=hx/hy, area=0.5*hx*hy;
-  PetscReal rhx=mx+1, rhy=my+1;
-  PetscReal f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
-  PetscReal df1dxc,df2dxc,df3dxc,df4dxc,df5dxc,df6dxc;
-  PetscReal **g, **x;
-  Vec    localX;
+  AppCtx         *user = (AppCtx *) userCtx;
+  PetscErrorCode ierr;
+  PetscInt       i,j;
+  PetscInt       mx=user->mx, my=user->my;
+  PetscInt       xs,xm,gxs,gxm,ys,ym,gys,gym;
+  PetscReal      ft=0.0;
+  PetscReal      hx=1.0/(mx+1),hy=1.0/(my+1), hydhx=hy/hx, hxdhy=hx/hy, area=0.5*hx*hy;
+  PetscReal      rhx=mx+1, rhy=my+1;
+  PetscReal      f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
+  PetscReal      df1dxc,df2dxc,df3dxc,df4dxc,df5dxc,df6dxc;
+  PetscReal      **g, **x;
+  Vec            localX;
 
   PetscFunctionBegin;
   /* Get local mesh boundaries */
@@ -401,7 +401,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
    FormHessian - Evaluates Hessian matrix.
 
    Input Parameters:
-.  tao  - the TaoSolver context
+.  tao  - the Tao context
 .  x    - input vector
 .  ptr  - optional user-defined context, as set by TaoSetHessianRoutine()
 
@@ -411,10 +411,10 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
 .  flg  - flag indicating matrix structure
 
 */
-PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *H, Mat *Hpre, MatStructure *flg, void *ptr)
+PetscErrorCode FormHessian(Tao tao,Vec X,Mat *H, Mat *Hpre, MatStructure *flg, void *ptr)
 {
-  PetscErrorCode    ierr;
-  AppCtx *user = (AppCtx *) ptr;
+  PetscErrorCode ierr;
+  AppCtx         *user = (AppCtx *) ptr;
 
   PetscFunctionBegin;
   /* Evaluate the Hessian entries*/
@@ -824,7 +824,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
 /*-----------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "My_Monitor"
-PetscErrorCode My_Monitor(TaoSolver tao, void *ctx){
+PetscErrorCode My_Monitor(Tao tao, void *ctx){
   PetscErrorCode ierr;
   Vec X;
   PetscFunctionBegin;

@@ -118,13 +118,13 @@ within this high-level file.
 
 Many TAO applications will follow an ordered set of procedures for 
 solving an optimization problem:
-The user creates a \texttt{TaoSolver} context and selects a default algorithm. 
+The user creates a \texttt{Tao} context and selects a default algorithm. 
 Call-back routines as well as vector (\texttt{Vec}) and matrix (\texttt{Mat}) 
 data structures are then set.  These call-back routines will be used for 
 evaluating the objective function, gradient, and perhaps the Hessian 
 matrix.  The user then invokes TAO to solve the optimization problem and 
 finally destroys
-the \texttt{TaoSolver} context. A list of the necessary functions for 
+the \texttt{Tao} context. A list of the necessary functions for 
 performing these steps
 using TAO are shown in Figure \ref{fig:tao_commands}.  Details of these commands are presented in
 Chapter~\ref{chapter:tao_solver}.
@@ -134,17 +134,17 @@ Chapter~\ref{chapter:tao_solver}.
 \findex{TaoDestroy()} \findex{TaoSetInitialVector()}
 \begin{figure}[H]
 \begin{verbatim}
-   TaoCreate(MPI_Comm comm, TaoSolver *tao); 
-   TaoSetType(TaoSolver tao, TaoSolverType type);
-   TaoSetInitialVector(TaoSolver tao, Vec x);
-   TaoSetObjectiveAndGradientRoutine(TaoSolver tao, 
-        PetscErrorCode (*FormFGradient)(TaoSolver,Vec,PetscReal*,Vec,void*), 
+   TaoCreate(MPI_Comm comm, Tao *tao); 
+   TaoSetType(Tao tao, TaoType type);
+   TaoSetInitialVector(Tao tao, Vec x);
+   TaoSetObjectiveAndGradientRoutine(Tao tao, 
+        PetscErrorCode (*FormFGradient)(Tao,Vec,PetscReal*,Vec,void*), 
         void *user);
-   TaoSetHessianRoutine(TaoSolver tao, Mat H, Mat Hpre,
-        PetscErrorCode (*FormHessian)(TaoSolver,Vec,Mat*,Mat*,MatStructure*,
+   TaoSetHessianRoutine(Tao tao, Mat H, Mat Hpre,
+        PetscErrorCode (*FormHessian)(Tao,Vec,Mat*,Mat*,MatStructure*,
         void*), void *user);
-   TaoSolve(TaoSolver tao);
-   TaoDestroy(TaoSolver tao);
+   TaoSolve(Tao tao);
+   TaoDestroy(Tao tao);
 \end{verbatim}
 \caption{Commands for Solving an Unconstrained Optimization Problem
 \label{fig:tao_commands}}
@@ -305,7 +305,7 @@ information about error handling in Fortran.
 [0]PETSC ERROR: ------------------------------------------------------------------------
 [0]PETSC ERROR: MatMult() line 2110 in petsc-dev/src/mat/interface/matrix.c
 [0]PETSC ERROR: TaoSolve_NLS() line 291 in src/unconstrained/impls/nls/nls.c
-[0]PETSC ERROR: TaoSolve() line 154 in src/interface/taosolver.c
+[0]PETSC ERROR: TaoSolve() line 154 in src/interface/tao.c
 [0]PETSC ERROR: main() line 94 in src/unconstrained/examples/tutorials/rosenbrock1.c
 application called MPI_Abort(MPI_COMM_WORLD, 73) - process 0
 \end{verbatim}
@@ -346,7 +346,7 @@ are as follows.
 \begin{verbatim}
    ierr = MatCreate(MPI_Comm comm,Mat *H);
    ierr = VecCreate(MPI_Comm comm,Vec *x);
-   ierr = TaoCreate(MPI_Comm comm,TaoSolver *tao); 
+   ierr = TaoCreate(MPI_Comm comm,Tao *tao); 
 \end{verbatim}
 \noindent
 In most cases, the value for \texttt{comm} will be either 

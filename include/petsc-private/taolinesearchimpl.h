@@ -61,7 +61,7 @@ struct _p_TaoLineSearch {
     PetscReal stepmax;   /* upper bound for step */
     PetscBool viewls;    /* print out information if true */
 
-    TaoSolver taosolver;
+    Tao tao;
 };
 
 extern PetscLogEvent TaoLineSearch_ApplyEvent, TaoLineSearch_EvalEvent;

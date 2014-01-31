@@ -115,33 +115,33 @@ typedef struct {
 
   PetscReal es;                  /* Finite value used for maximum asset value */
   PetscReal ds, dt;              /* Discretization properties */
-  PetscInt ms, mt;               /* Number of elements */
+  PetscInt  ms, mt;               /* Number of elements */
 
-  DM dm;
+  DM        dm;
 } AppCtx;
 
 /* -------- User-defined Routines --------- */
 
-PetscErrorCode FormConstraints(TaoSolver, Vec, Vec, void *);
-PetscErrorCode FormJacobian(TaoSolver, Vec, Mat *, Mat*, MatStructure*, void *);
-PetscErrorCode ComputeVariableBounds(TaoSolver, Vec, Vec, void*);
+PetscErrorCode FormConstraints(Tao, Vec, Vec, void *);
+PetscErrorCode FormJacobian(Tao, Vec, Mat *, Mat*, MatStructure*, void *);
+PetscErrorCode ComputeVariableBounds(Tao, Vec, Vec, void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   PetscErrorCode ierr;    /* used to check for functions returning nonzeros */
-  Vec      x;             /* solution vector */
-  Vec      c;             /* Constraints function vector */
-  Mat J;                  /* jacobian matrix */
-  PetscBool  flg;         /* A return variable when checking for user options */
-  TaoSolver tao;          /* TaoSolver solver context */
-  AppCtx user;            /* user-defined work context */
-  PetscInt i, j;
-  PetscInt    xs,xm,gxs,gxm;
-  PetscReal sval = 0;
-  PetscReal *x_array;
-  Vec    localX;
+  Vec            x;             /* solution vector */
+  Vec            c;             /* Constraints function vector */
+  Mat            J;                  /* jacobian matrix */
+  PetscBool      flg;         /* A return variable when checking for user options */
+  Tao            tao;          /* Tao solver context */
+  AppCtx         user;            /* user-defined work context */
+  PetscInt       i, j;
+  PetscInt       xs,xm,gxs,gxm;
+  PetscReal      sval = 0;
+  PetscReal      *x_array;
+  Vec            localX;
 
   /* Initialize PETSc, TAO */
   PetscInitialize(&argc, &argv, (char *)0, help);
@@ -276,7 +276,7 @@ int main(int argc, char **argv)
 /* -------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "ComputeVariableBounds"
-PetscErrorCode ComputeVariableBounds(TaoSolver tao, Vec xl, Vec xu, void*ctx)
+PetscErrorCode ComputeVariableBounds(Tao tao, Vec xl, Vec xu, void*ctx)
 {
   AppCtx *user = (AppCtx *) ctx;
   PetscErrorCode ierr;
@@ -317,25 +317,25 @@ PetscErrorCode ComputeVariableBounds(TaoSolver tao, Vec xl, Vec xu, void*ctx)
     FormFunction - Evaluates gradient of f.
 
     Input Parameters:
-.   tao  - the TaoSolver context
+.   tao  - the Tao context
 .   X    - input vector
 .   ptr  - optional user-defined context, as set by TaoAppSetConstraintRoutine()
 
     Output Parameters:
 .   F - vector containing the newly evaluated gradient
 */
-PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec F, void *ptr)
+PetscErrorCode FormConstraints(Tao tao, Vec X, Vec F, void *ptr)
 {
-  AppCtx *user = (AppCtx *) ptr;
-  PetscReal *x, *f;
-  PetscReal *Vt1 = user->Vt1, *c = user->c, *d = user->d;
-  PetscReal rate = user->rate;
-  PetscReal dt = user->dt, ds = user->ds;
-  PetscInt ms = user->ms;
-  PetscErrorCode    ierr;
-  PetscInt i, xs,xm,gxs,gxm;
-  Vec    localX,localF;
-  PetscReal zero=0.0;
+  AppCtx         *user = (AppCtx *) ptr;
+  PetscReal      *x, *f;
+  PetscReal      *Vt1 = user->Vt1, *c = user->c, *d = user->d;
+  PetscReal      rate = user->rate;
+  PetscReal      dt = user->dt, ds = user->ds;
+  PetscInt       ms = user->ms;
+  PetscErrorCode ierr;
+  PetscInt       i, xs,xm,gxs,gxm;
+  Vec            localX,localF;
+  PetscReal      zero=0.0;
 
   ierr = DMGetLocalVector(user->dm,&localX);CHKERRQ(ierr);
   ierr = DMGetLocalVector(user->dm,&localF);CHKERRQ(ierr);
@@ -397,27 +397,27 @@ PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec F, void *ptr)
    FormJacobian - Evaluates Jacobian matrix.
 
    Input Parameters:
-.  tao  - the TaoSolver context
+.  tao  - the Tao context
 .  X    - input vector
 .  ptr  - optional user-defined context, as set by TaoSetJacobian()
 
    Output Parameters:
 .  J    - Jacobian matrix
 */
-PetscErrorCode FormJacobian(TaoSolver tao, Vec X, Mat *tJ, Mat *tJPre, MatStructure *flag, void *ptr)
+PetscErrorCode FormJacobian(Tao tao, Vec X, Mat *tJ, Mat *tJPre, MatStructure *flag, void *ptr)
 {
-  AppCtx *user = (AppCtx *) ptr;
-  Mat J = *tJ;
-  PetscReal *c = user->c, *d = user->d;
-  PetscReal rate = user->rate;
-  PetscReal dt = user->dt, ds = user->ds;
-  PetscInt ms = user->ms;
-  PetscReal val[3];
+  AppCtx         *user = (AppCtx *) ptr;
+  Mat            J = *tJ;
+  PetscReal      *c = user->c, *d = user->d;
+  PetscReal      rate = user->rate;
+  PetscReal      dt = user->dt, ds = user->ds;
+  PetscInt       ms = user->ms;
+  PetscReal      val[3];
   PetscErrorCode ierr;
-  PetscInt col[3];
-  PetscInt i;
-  PetscInt gxs,gxm;
-  PetscBool  assembled;
+  PetscInt       col[3];
+  PetscInt       i;
+  PetscInt       gxs,gxm;
+  PetscBool      assembled;
 
   /* Set various matrix options */
   *flag=SAME_NONZERO_PATTERN;

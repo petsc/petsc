@@ -7,7 +7,7 @@ static PetscErrorCode LCLGather(TAO_LCL*,Vec,Vec,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_LCL"
-static PetscErrorCode TaoDestroy_LCL(TaoSolver tao)
+static PetscErrorCode TaoDestroy_LCL(Tao tao)
 {
   TAO_LCL        *lclP = (TAO_LCL*)tao->data;
   PetscErrorCode ierr;
@@ -64,7 +64,7 @@ static PetscErrorCode TaoDestroy_LCL(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_LCL"
-static PetscErrorCode TaoSetFromOptions_LCL(TaoSolver tao)
+static PetscErrorCode TaoSetFromOptions_LCL(Tao tao)
 {
   TAO_LCL        *lclP = (TAO_LCL*)tao->data;
   PetscBool      flg;
@@ -92,14 +92,14 @@ static PetscErrorCode TaoSetFromOptions_LCL(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoView_LCL"
-static PetscErrorCode TaoView_LCL(TaoSolver tao, PetscViewer viewer)
+static PetscErrorCode TaoView_LCL(Tao tao, PetscViewer viewer)
 {
   return 0;
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetup_LCL"
-static PetscErrorCode TaoSetup_LCL(TaoSolver tao)
+static PetscErrorCode TaoSetup_LCL(Tao tao)
 {
   TAO_LCL        *lclP = (TAO_LCL*)tao->data;
   PetscInt       lo, hi, nlocalstate, nlocaldesign;
@@ -181,11 +181,11 @@ static PetscErrorCode TaoSetup_LCL(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolve_LCL"
-static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
+static PetscErrorCode TaoSolve_LCL(Tao tao)
 {
   TAO_LCL                        *lclP = (TAO_LCL*)tao->data;
   PetscInt                       iter=0,phase2_iter,nlocal,its;
-  TaoSolverTerminationReason     reason = TAO_CONTINUE_ITERATING;
+  TaoTerminationReason     reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchTerminationReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                      step=1.0,f, descent, aldescent;
   PetscReal                      cnorm, mnorm;
@@ -572,7 +572,7 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_LCL"
-PetscErrorCode TaoCreate_LCL(TaoSolver tao)
+PetscErrorCode TaoCreate_LCL(Tao tao)
 {
   TAO_LCL        *lclP;
   PetscErrorCode ierr;
@@ -615,7 +615,7 @@ EXTERN_C_END
 #define __FUNCT__ "LCLComputeLagrangianAndGradient"
 static PetscErrorCode LCLComputeLagrangianAndGradient(TaoLineSearch ls, Vec X, PetscReal *f, Vec G, void *ptr)
 {
-  TaoSolver      tao = (TaoSolver)ptr;
+  Tao            tao = (Tao)ptr;
   TAO_LCL        *lclP = (TAO_LCL*)tao->data;
   PetscBool      set,pset,flag,pflag,symmetric;
   PetscReal      cdotl;
@@ -665,7 +665,7 @@ static PetscErrorCode LCLComputeLagrangianAndGradient(TaoLineSearch ls, Vec X, P
 #define __FUNCT__ "LCLComputeAugmentedLagrangianAndGradient"
 static PetscErrorCode LCLComputeAugmentedLagrangianAndGradient(TaoLineSearch ls, Vec X, PetscReal *f, Vec G, void *ptr)
 {
-  TaoSolver      tao = (TaoSolver)ptr;
+  Tao            tao = (Tao)ptr;
   TAO_LCL        *lclP = (TAO_LCL*)tao->data;
   PetscReal      con2;
   PetscBool      flag,pflag,set,pset,symmetric;

@@ -66,11 +66,11 @@ EXTERN_C_BEGIN
    TaoCreateUnitLineSearch - Always use step length of 1.0
 
    Input Parameters:
-.  tao - TaoSolver context
+.  tao - Tao context
 
    Level: advanced
 
-.keywords: TaoSolver, linesearch
+.keywords: Tao, linesearch
 @*/
 PetscErrorCode TaoLineSearchCreate_Unit(TaoLineSearch ls)
 {

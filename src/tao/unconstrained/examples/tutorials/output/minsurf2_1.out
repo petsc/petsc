@@ -11,7 +11,7 @@ iter =   5, Function value 1.41792, Residual: 0.0208106
 iter =   6, Function value 1.41784, Residual: 0.0155354 
 iter =   7, Function value 1.4178, Residual: 0.0136601 
 iter =   8, Function value 1.41778, Residual: 0.00799915 
-TaoSolver Object: 1 MPI processes
+Tao Object: 1 MPI processes
   type: tao_lmvm
       BFGS steps: 15
       Scaled gradient steps: 1

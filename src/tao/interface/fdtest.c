@@ -12,7 +12,7 @@ typedef struct {
 */
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolve_FD"
-PetscErrorCode TaoSolve_FD(TaoSolver tao)
+PetscErrorCode TaoSolve_FD(Tao tao)
 {
   Mat            A = tao->hessian,B;
   Vec            x = tao->solution,g1,g2;
@@ -118,7 +118,7 @@ PetscErrorCode TaoSolve_FD(TaoSolver tao)
 /* ------------------------------------------------------------ */
 #undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_FD"
-PetscErrorCode TaoDestroy_FD(TaoSolver tao)
+PetscErrorCode TaoDestroy_FD(Tao tao)
 {
   PetscErrorCode ierr;
 
@@ -129,7 +129,7 @@ PetscErrorCode TaoDestroy_FD(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_FD"
-static PetscErrorCode TaoSetFromOptions_FD(TaoSolver tao)
+static PetscErrorCode TaoSetFromOptions_FD(Tao tao)
 {
   FD_Test        *fd = (FD_Test *)tao->data;
   PetscErrorCode ierr;
@@ -161,7 +161,7 @@ static PetscErrorCode TaoSetFromOptions_FD(TaoSolver tao)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_FD"
-PetscErrorCode  TaoCreate_FD(TaoSolver  tao)
+PetscErrorCode  TaoCreate_FD(Tao  tao)
 {
   FD_Test        *fd;
   PetscErrorCode ierr;

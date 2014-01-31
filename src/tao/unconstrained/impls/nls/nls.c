@@ -68,14 +68,14 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x);
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolve_NLS"
-static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
+static PetscErrorCode TaoSolve_NLS(Tao tao)
 {
   PetscErrorCode                 ierr;
   TAO_NLS                        *nlsP = (TAO_NLS *)tao->data;
   PC                             pc;
   KSPConvergedReason             ksp_reason;
   TaoLineSearchTerminationReason ls_reason;
-  TaoSolverTerminationReason     reason;
+  TaoTerminationReason     reason;
 
   PetscReal                      fmin, ftrial, f_full, prered, actred, kappa, sigma;
   PetscReal                      tau, tau_1, tau_2, tau_max, tau_min, max_radius;
@@ -914,7 +914,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
 /* ---------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetUp_NLS"
-static PetscErrorCode TaoSetUp_NLS(TaoSolver tao)
+static PetscErrorCode TaoSetUp_NLS(Tao tao)
 {
   TAO_NLS        *nlsP = (TAO_NLS *)tao->data;
   PetscErrorCode ierr;
@@ -934,7 +934,7 @@ static PetscErrorCode TaoSetUp_NLS(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_NLS"
-static PetscErrorCode TaoDestroy_NLS(TaoSolver tao)
+static PetscErrorCode TaoDestroy_NLS(Tao tao)
 {
   TAO_NLS        *nlsP = (TAO_NLS *)tao->data;
   PetscErrorCode ierr;
@@ -955,7 +955,7 @@ static PetscErrorCode TaoDestroy_NLS(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_NLS"
-static PetscErrorCode TaoSetFromOptions_NLS(TaoSolver tao)
+static PetscErrorCode TaoSetFromOptions_NLS(Tao tao)
 {
   TAO_NLS        *nlsP = (TAO_NLS *)tao->data;
   PetscErrorCode ierr;
@@ -1022,7 +1022,7 @@ static PetscErrorCode TaoSetFromOptions_NLS(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoView_NLS"
-static PetscErrorCode TaoView_NLS(TaoSolver tao, PetscViewer viewer)
+static PetscErrorCode TaoView_NLS(Tao tao, PetscViewer viewer)
 {
   TAO_NLS        *nlsP = (TAO_NLS *)tao->data;
   PetscInt       nrejects;
@@ -1058,7 +1058,7 @@ static PetscErrorCode TaoView_NLS(TaoSolver tao, PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_NLS"
-PetscErrorCode TaoCreate_NLS(TaoSolver tao)
+PetscErrorCode TaoCreate_NLS(Tao tao)
 {
   TAO_NLS        *nlsP;
   const char     *morethuente_type = TAOLINESEARCH_MT;
@@ -1150,7 +1150,7 @@ PetscErrorCode TaoCreate_NLS(TaoSolver tao)
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,morethuente_type);CHKERRQ(ierr);
-  ierr = TaoLineSearchUseTaoSolverRoutines(tao->linesearch,tao);CHKERRQ(ierr);
+  ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
 
   /*  Set linear solver to default for symmetric matrices */
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);

@@ -12,8 +12,8 @@
 #include "toyf.h"
 
       PetscErrorCode               ierr
-      TaoSolver                    tao
-      TaoSolverTerminationReason   reason
+      Tao                    tao
+      TaoTerminationReason   reason
       KSP                          ksp
       PC                           pc
       external FormFunctionGradient,FormHessian
@@ -217,7 +217,7 @@
       PetscErrorCode ierr
       PetscInt dummy
       Vec X,G
-      TaoSolver tao
+      Tao tao
       PetscScalar f
       PetscScalar x_v(0:1),g_v(0:1)
       PetscOffset x_i,g_i
@@ -243,7 +243,7 @@
       implicit none
 #include "toyf.h"
 
-      TaoSolver        tao
+      Tao        tao
       Vec              X
       Mat              H, Hpre
       MatStructure     flag
@@ -295,7 +295,7 @@
       subroutine FormInequalityConstraints(tao,X,C,dummy,ierr)
       implicit none
 #include "toyf.h"
-      TaoSolver      tao
+      Tao      tao
       Vec            X,C
       PetscInt       dummy
       PetscErrorCode ierr
@@ -320,7 +320,7 @@
       subroutine FormEqualityConstraints(tao,X,C,dummy,ierr)
       implicit none
 #include "toyf.h"
-      TaoSolver      tao
+      Tao      tao
       Vec            X,C
       PetscInt       dummy
       PetscErrorCode ierr
@@ -343,7 +343,7 @@
       implicit none
 #include "toyf.h"
 
-      TaoSolver       tao
+      Tao       tao
       Vec             X
       Mat             JI,JIpre
       MatStructure    flag
@@ -381,7 +381,7 @@
       implicit none
 #include "toyf.h"
 
-      TaoSolver       tao
+      Tao       tao
       Vec             X
       Mat             JE,JEpre
       MatStructure    flag

@@ -7,7 +7,7 @@ SOURCEC  = lmvmmat.c adamat.c submatfree.c
 SOURCEF  = 
 SOURCEH  = lmvmmat.h adamat.h submatfree.h
 LIBBASE  = libpetsctao
-MANSEC   = TaoSolver
+MANSEC   = Tao
 LOCDIR   = src/tao/matrix/
 
 include ${PETSC_DIR}/conf/variables

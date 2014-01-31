@@ -56,7 +56,7 @@ static PetscErrorCode TaoLineSearchView_MT(TaoLineSearch ls, PetscViewer pv)
 /* @ TaoApply_LineSearch - This routine takes step length of 1.0.
 
    Input Parameters:
-+  tao - TaoSolver context
++  tao - Tao context
 .  X - current iterate (on output X contains new iterate, X + step*S)
 .  f - objective function evaluated at X
 .  G - gradient evaluated at X

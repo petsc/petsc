@@ -49,9 +49,9 @@ method for setting options at runtime, performance profiling, and debugging.
 \end{enumerate}
 
 \section{Header File}
-TAO solver implementation files must include the TAO implementation file \texttt{taosolver\_impl.h}:
+TAO solver implementation files must include the TAO implementation file \texttt{taoimpl.h}:
 \begin{verbatim}
-   #include "private/taosolver_impl.h"
+   #include "petsc-private/taoimpl.h"
 \end{verbatim}
 This file contains data elements that are generally kept hidden from application
 programmers, but may be necessary for solver implementations to access.
@@ -99,7 +99,7 @@ the following code that solves an unconstrained minimization problem
 using the conjugate gradient method.
 
 \begin{verbatim}
-PetscErrorCode TaoSolve_CG(TaoSolver tao){
+PetscErrorCode TaoSolve_CG(Tao tao){
 
   TAO_CG  *cg = (TAO_CG *) tao->data;
   Vec x = tao->solution;
@@ -108,7 +108,7 @@ PetscErrorCode TaoSolve_CG(TaoSolver tao){
   PetscInt     iter=0;
   PetscReal  gnormPrev,gdx,f,gnorm,steplength=0;
   TaoLineSearchTerminationReason lsflag=TAO_LINESEARCH_CONTINUE_ITERATING;
-  TaoSolverTerminationReason reason=TAO_CONTINUE_ITERATING;
+  TaoTerminationReason reason=TAO_CONTINUE_ITERATING;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -172,7 +172,7 @@ The solver will pass this quantity, the current
 function value, the current iteration number, and a measure of
 infeasibility to TAO with the routine
 \begin{verbatim}
-   PetscErrorCode TaoMonitor(TaoSolver tao, PetscInt iter, PetscReal f,
+   PetscErrorCode TaoMonitor(Tao tao, PetscInt iter, PetscReal f,
                   PetscReal res, PetscReal cnorm, PetscReal steplength,
                   TaoTerminationReason *reason);
 \end{verbatim}
@@ -231,7 +231,7 @@ conjugate gradient algorithm shown above can be implemented as follows.
 
 \begin{verbatim}
 EXTERN_C_BEGIN
-PetscErrorCode TaoCreate_CG(TaoSolver tao)
+PetscErrorCode TaoCreate_CG(Tao tao)
 {
   TAO_CG *cg = (TAO_CG*)tao->data;
   const char *morethuente_type = TAOLINESEARCH_MT;
@@ -260,7 +260,7 @@ PetscErrorCode TaoCreate_CG(TaoSolver tao)
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);
   CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type); CHKERRQ(ierr);
-  ierr = TaoLineSearchUseTaoSolverRoutines(tao->linesearch, tao); CHKERRQ(ierr);
+  ierr = TaoLineSearchUseTaoRoutines(tao->linesearch, tao); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -268,7 +268,7 @@ EXTERN_C_END
 \end{verbatim}
 
 \noindent This routine declares some variables and then allocates memory for the 
-{\tt TAO\_CG} data structure. Notice that the \texttt{TaoSolver} object 
+{\tt TAO\_CG} data structure. Notice that the \texttt{Tao} object 
 now has a pointer to this data structure (\texttt{tao->data}) so it can be 
 accessed by the other functions written for this solver implementation.
 
@@ -323,7 +323,7 @@ the gradient vector, work vectors, and other data structures
 required by the solver.
 It should have the following form.
 \begin{verbatim}
-PetscErrorCode TaoSetUp_CG(TaoSolver tao)
+PetscErrorCode TaoSetUp_CG(Tao tao)
 {
   PetscErrorCode ierr;
   TAO_CG *cg = (TAO_CG*)tao->data;
@@ -344,7 +344,7 @@ algorithm-specific options set
 by the user and will be called when the application makes a call
 to {\tt TaoSetFromOptions()}.  It should have the following form.
 \begin{verbatim}
-PetscErrorCode TaoSetFromOptions_CG(TaoSolver tao, void *solver);
+PetscErrorCode TaoSetFromOptions_CG(Tao tao, void *solver);
 {
   PetscErrorCode ierr;
   TAO_CG *cg = (TAO_CG*)solver;
@@ -366,7 +366,7 @@ This routine will be called when the application makes a call to
 {\tt TaoView()} or when the command line option {\tt -tao\_view} is used.
 It should have the following form.
 \begin{verbatim}
-PetscErrorCode TaoView_CG(TaoSolver tao, PetscViewer viewer)
+PetscErrorCode TaoView_CG(Tao tao, PetscViewer viewer)
 { 
   TAO_CG *cg = (TAO_CG*)tao->data;
   PetscErrorCode ierr;
@@ -386,10 +386,10 @@ Once a new solver is implemented, TAO needs to know the name of
 the solver and what function to use to create the solver.  To this end, one
 can use the routine
 \begin{verbatim}
-  TaoSolverRegister(const char *name, 
+  TaoRegister(const char *name, 
                   const char *path,
                   const char *cname, 
-                  PetscErrorCode (*create) (TaoSolver));
+                  PetscErrorCode (*create) (Tao));
 \end{verbatim}
 \noindent
 where {\tt name} is the name of the solver (i.e., {\tt tao\_blmvm}), {\tt

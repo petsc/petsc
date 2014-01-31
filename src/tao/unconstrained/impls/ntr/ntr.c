@@ -70,12 +70,12 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec xin, Vec xout);
 */
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolve_NTR"
-static PetscErrorCode TaoSolve_NTR(TaoSolver tao)
+static PetscErrorCode TaoSolve_NTR(Tao tao)
 {
   TAO_NTR                    *tr = (TAO_NTR *)tao->data;
   PC                         pc;
   KSPConvergedReason         ksp_reason;
-  TaoSolverTerminationReason reason;
+  TaoTerminationReason reason;
   MatStructure               matflag;
   PetscReal                  fmin, ftrial, prered, actred, kappa, sigma, beta;
   PetscReal                  tau, tau_1, tau_2, tau_max, tau_min, max_radius;
@@ -627,7 +627,7 @@ static PetscErrorCode TaoSolve_NTR(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetUp_NTR"
-static PetscErrorCode TaoSetUp_NTR(TaoSolver tao)
+static PetscErrorCode TaoSetUp_NTR(Tao tao)
 {
   TAO_NTR *tr = (TAO_NTR *)tao->data;
   PetscErrorCode ierr;
@@ -648,7 +648,7 @@ static PetscErrorCode TaoSetUp_NTR(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_NTR"
-static PetscErrorCode TaoDestroy_NTR(TaoSolver tao)
+static PetscErrorCode TaoDestroy_NTR(Tao tao)
 {
   TAO_NTR        *tr = (TAO_NTR *)tao->data;
   PetscErrorCode ierr;
@@ -666,7 +666,7 @@ static PetscErrorCode TaoDestroy_NTR(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_NTR"
-static PetscErrorCode TaoSetFromOptions_NTR(TaoSolver tao)
+static PetscErrorCode TaoSetFromOptions_NTR(Tao tao)
 {
   TAO_NTR *tr = (TAO_NTR *)tao->data;
   PetscErrorCode ierr;
@@ -712,7 +712,7 @@ static PetscErrorCode TaoSetFromOptions_NTR(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoView_NTR"
-static PetscErrorCode TaoView_NTR(TaoSolver tao, PetscViewer viewer)
+static PetscErrorCode TaoView_NTR(Tao tao, PetscViewer viewer)
 {
   TAO_NTR        *tr = (TAO_NTR *)tao->data;
   PetscErrorCode ierr;
@@ -736,7 +736,7 @@ static PetscErrorCode TaoView_NTR(TaoSolver tao, PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_NTR"
-PetscErrorCode TaoCreate_NTR(TaoSolver tao)
+PetscErrorCode TaoCreate_NTR(Tao tao)
 {
   TAO_NTR *tr;
   PetscErrorCode ierr;

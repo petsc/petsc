@@ -3,7 +3,7 @@
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_SSLS"
-PetscErrorCode TaoSetFromOptions_SSLS(TaoSolver tao)
+PetscErrorCode TaoSetFromOptions_SSLS(Tao tao)
 {
   TAO_SSLS       *ssls = (TAO_SSLS *)tao->data;
   PetscErrorCode ierr;
@@ -22,7 +22,7 @@ PetscErrorCode TaoSetFromOptions_SSLS(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoView_SSLS"
-PetscErrorCode TaoView_SSLS(TaoSolver tao, PetscViewer pv)
+PetscErrorCode TaoView_SSLS(Tao tao, PetscViewer pv)
 {
   /*PetscErrorCode ierr; */
 
@@ -35,7 +35,7 @@ PetscErrorCode TaoView_SSLS(TaoSolver tao, PetscViewer pv)
 #define __FUNCT__ "Tao_SSLS_Function"
 PetscErrorCode Tao_SSLS_Function(TaoLineSearch ls, Vec X, PetscReal *fcn, void *ptr)
 {
-  TaoSolver tao = (TaoSolver)ptr;
+  Tao tao = (Tao)ptr;
   TAO_SSLS *ssls = (TAO_SSLS *)tao->data;
   PetscErrorCode ierr;
 
@@ -53,7 +53,7 @@ PetscErrorCode Tao_SSLS_Function(TaoLineSearch ls, Vec X, PetscReal *fcn, void *
 #define __FUNCT__ "Tao_SSLS_FunctionGradient"
 PetscErrorCode Tao_SSLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscReal *fcn,  Vec G, void *ptr)
 {
-  TaoSolver tao = (TaoSolver)ptr;
+  Tao tao = (Tao)ptr;
   TAO_SSLS *ssls = (TAO_SSLS *)tao->data;
   PetscErrorCode ierr;
 

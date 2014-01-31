@@ -5,11 +5,11 @@
 
 
 /* TRON Routines */
-static PetscErrorCode TronGradientProjections(TaoSolver,TAO_TRON*);
+static PetscErrorCode TronGradientProjections(Tao,TAO_TRON*);
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_TRON"
-static PetscErrorCode TaoDestroy_TRON(TaoSolver tao)
+static PetscErrorCode TaoDestroy_TRON(Tao tao)
 {
   TAO_TRON       *tron = (TAO_TRON *)tao->data;
   PetscErrorCode ierr;
@@ -32,7 +32,7 @@ static PetscErrorCode TaoDestroy_TRON(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_TRON"
-static PetscErrorCode TaoSetFromOptions_TRON(TaoSolver tao)
+static PetscErrorCode TaoSetFromOptions_TRON(Tao tao)
 {
   TAO_TRON       *tron = (TAO_TRON *)tao->data;
   PetscErrorCode ierr;
@@ -50,7 +50,7 @@ static PetscErrorCode TaoSetFromOptions_TRON(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoView_TRON"
-static PetscErrorCode TaoView_TRON(TaoSolver tao, PetscViewer viewer)
+static PetscErrorCode TaoView_TRON(Tao tao, PetscViewer viewer)
 {
   TAO_TRON         *tron = (TAO_TRON *)tao->data;
   PetscBool        isascii;
@@ -71,7 +71,7 @@ static PetscErrorCode TaoView_TRON(TaoSolver tao, PetscViewer viewer)
 /* ---------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetup_TRON"
-static PetscErrorCode TaoSetup_TRON(TaoSolver tao)
+static PetscErrorCode TaoSetup_TRON(Tao tao)
 {
   PetscErrorCode ierr;
   TAO_TRON       *tron = (TAO_TRON *)tao->data;
@@ -100,12 +100,12 @@ static PetscErrorCode TaoSetup_TRON(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolve_TRON"
-static PetscErrorCode TaoSolve_TRON(TaoSolver tao)
+static PetscErrorCode TaoSolve_TRON(Tao tao)
 {
   TAO_TRON                       *tron = (TAO_TRON *)tao->data;
   PetscErrorCode                 ierr;
   PetscInt                       iter=0,its;
-  TaoSolverTerminationReason     reason = TAO_CONTINUE_ITERATING;
+  TaoTerminationReason     reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchTerminationReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                      prered,actred,delta,f,f_new,rhok,gdx,xdiff,stepsize;
 
@@ -253,7 +253,7 @@ static PetscErrorCode TaoSolve_TRON(TaoSolver tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TronGradientProjections"
-static PetscErrorCode TronGradientProjections(TaoSolver tao,TAO_TRON *tron)
+static PetscErrorCode TronGradientProjections(Tao tao,TAO_TRON *tron)
 {
   PetscErrorCode                 ierr;
   PetscInt                       i;
@@ -302,13 +302,13 @@ static PetscErrorCode TronGradientProjections(TaoSolver tao,TAO_TRON *tron)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoComputeDual_TRON"
-static PetscErrorCode TaoComputeDual_TRON(TaoSolver tao, Vec DXL, Vec DXU) {
+static PetscErrorCode TaoComputeDual_TRON(Tao tao, Vec DXL, Vec DXU) {
 
   TAO_TRON       *tron = (TAO_TRON *)tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(DXL,VEC_CLASSID,2);
   PetscValidHeaderSpecific(DXU,VEC_CLASSID,3);
   if (!tron->Work || !tao->gradient) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Dual variables don't exist yet or no longer exist.\n");
@@ -330,7 +330,7 @@ static PetscErrorCode TaoComputeDual_TRON(TaoSolver tao, Vec DXL, Vec DXU) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_TRON"
-PetscErrorCode TaoCreate_TRON(TaoSolver tao)
+PetscErrorCode TaoCreate_TRON(Tao tao)
 {
   TAO_TRON       *tron;
   PetscErrorCode ierr;
@@ -383,7 +383,7 @@ PetscErrorCode TaoCreate_TRON(TaoSolver tao)
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,morethuente_type);CHKERRQ(ierr);
-  ierr = TaoLineSearchUseTaoSolverRoutines(tao->linesearch,tao);CHKERRQ(ierr);
+  ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp,KSPSTCG);CHKERRQ(ierr);
