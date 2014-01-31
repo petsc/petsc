@@ -192,7 +192,7 @@ static PetscErrorCode TaoSolve_ASILS(TaoSolver tao)
     ierr = ISDestroy(&asls->fixed);CHKERRQ(ierr);
     ierr = ISDestroy(&asls->free);CHKERRQ(ierr);
     ierr = VecWhichBetweenOrEqual(asls->t1, asls->db, asls->t2, &asls->fixed);CHKERRQ(ierr);
-    ierr = ISCreateComplement(asls->fixed,asls->t1, &asls->free);CHKERRQ(ierr);
+    ierr = ISComplementVec(asls->fixed,asls->t1, &asls->free);CHKERRQ(ierr);
 
     ierr = ISGetSize(asls->fixed,&nf);CHKERRQ(ierr);
     ierr = PetscInfo1(tao,"Number of fixed variables: %d\n", nf);CHKERRQ(ierr);
@@ -203,7 +203,7 @@ static PetscErrorCode TaoSolve_ASILS(TaoSolver tao)
     ierr = VecGetSubVec(asls->da, asls->fixed, tao->subset_type, 1.0, &asls->r2);
     ierr = VecPointwiseDivide(asls->r1,asls->r1,asls->r2);CHKERRQ(ierr);
     ierr = VecSet(tao->stepdirection,0.0);CHKERRQ(ierr);
-    ierr = VecReducedXPY(tao->stepdirection,asls->r1, asls->fixed);CHKERRQ(ierr);
+    ierr = VecISAXPY(tao->stepdirection, asls->fixed,1.0,asls->r1);CHKERRQ(ierr);
 
     /* Our direction in the Fixed Variable Set is fixed.  Calculate the
        information needed for the step in the Free Variable Set.  To
@@ -251,7 +251,7 @@ static PetscErrorCode TaoSolve_ASILS(TaoSolver tao)
     ierr = KSPSolve(tao->ksp, asls->r2, asls->dxfree);CHKERRQ(ierr);
 
     /* Add the direction in the free variables back into the real direction. */
-    ierr = VecReducedXPY(tao->stepdirection, asls->dxfree, asls->free);CHKERRQ(ierr);
+    ierr = VecISAXPY(tao->stepdirection, asls->free, 1.0,asls->dxfree);CHKERRQ(ierr);
 
     /* Check the real direction for descent and if not, use the negative
        gradient direction. */

@@ -174,7 +174,7 @@ static PetscErrorCode TaoSolve_TRON(TaoSolver tao)
       ierr = VecSet(tao->stepdirection,0.0);CHKERRQ(ierr);
 
       /* Add dxfree matrix to compute step direction vector */
-      ierr = VecReducedXPY(tao->stepdirection,tron->DXFree,tron->Free_Local);CHKERRQ(ierr);
+      ierr = VecISAXPY(tao->stepdirection,tron->Free_Local,1.0,tron->DXFree);CHKERRQ(ierr);
       if (0) {
         PetscReal rhs,stepnorm;
         ierr = VecNorm(tron->R,NORM_2,&rhs);CHKERRQ(ierr);

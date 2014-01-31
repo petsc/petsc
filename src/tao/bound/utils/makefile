@@ -2,7 +2,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = projection.c  isutil.c
+SOURCEC  = isutil.c
 SOURCEF  = 
 SOURCEH  = 
 LIBBASE  = libpetsctao

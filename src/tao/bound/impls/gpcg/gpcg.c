@@ -223,7 +223,7 @@ static PetscErrorCode TaoSolve_GPCG(TaoSolver tao)
       tao->ksp_its+=its;
 
       ierr = VecSet(tao->stepdirection,0.0);CHKERRQ(ierr);
-      ierr = VecReducedXPY(tao->stepdirection,gpcg->DXFree,gpcg->Free_Local);CHKERRQ(ierr);
+      ierr = VecISAXPY(tao->stepdirection,gpcg->Free_Local,1.0,gpcg->DXFree);CHKERRQ(ierr);
 
       ierr = VecDot(tao->stepdirection,tao->gradient,&gdx);CHKERRQ(ierr);
       ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);CHKERRQ(ierr);

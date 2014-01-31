@@ -101,9 +101,9 @@ PetscErrorCode MatMult_SMF(Mat mat,Vec a,Vec y)
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   ierr = VecCopy(a,ctx->VR);CHKERRQ(ierr);
-  ierr = VecISSetToConstant(ctx->Cols,0.0,ctx->VR);CHKERRQ(ierr);
+  ierr = VecISSet(ctx->VR,ctx->Cols,0.0);CHKERRQ(ierr);
   ierr = MatMult(ctx->A,ctx->VR,y);CHKERRQ(ierr);
-  ierr = VecISSetToConstant(ctx->Rows,0.0,y);CHKERRQ(ierr);
+  ierr = VecISSet(y,ctx->Rows,0.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -117,9 +117,9 @@ PetscErrorCode MatMultTranspose_SMF(Mat mat,Vec a,Vec y)
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   ierr = VecCopy(a,ctx->VC);CHKERRQ(ierr);
-  ierr = VecISSetToConstant(ctx->Rows,0.0,ctx->VC);CHKERRQ(ierr);
+  ierr = VecISSet(ctx->VC,ctx->Rows,0.0);CHKERRQ(ierr);
   ierr = MatMultTranspose(ctx->A,ctx->VC,y);CHKERRQ(ierr);
-  ierr = VecISSetToConstant(ctx->Cols,0.0,y);CHKERRQ(ierr);
+  ierr = VecISSet(y,ctx->Cols,0.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

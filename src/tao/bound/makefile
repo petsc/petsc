@@ -1,7 +1,7 @@
 ALL: lib
 
 SOURCEH  = 
-DIRS     = impls  utils examples
+DIRS     = impls utils examples
 LOCDIR   = src/tao/bound/
 
 include ${PETSC_DIR}/conf/variables
