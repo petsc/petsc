@@ -1,7 +1,7 @@
 #ifndef __TAOSOLVER_IMPL_H
 #define __TAOSOLVER_IMPL_H
 
-#include <taolinesearch.h>
+#include <petsctaolinesearch.h>
 #include <petsc-private/petscimpl.h>
 #include <petscksp.h>
 
