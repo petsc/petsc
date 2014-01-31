@@ -2462,18 +2462,19 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscInt Ne, PetscInt
   PetscQuadrature quad;
   PetscScalar    *f0, *f1, *u, *gradU, *a, *gradA = NULL;
   PetscReal      *x, *realSpaceDer;
-  PetscInt        dim, numComponents = 0, numComponentsAux = 0, cOffset = 0, cOffsetAux = 0, eOffset = 0, e, f;
+  PetscInt        dim, Ncomp, numComponents = 0, numComponentsAux = 0, cOffset = 0, cOffsetAux = 0, eOffset = 0, e, f;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFEGetSpatialDimension(fe[0], &dim);CHKERRQ(ierr);
+  ierr = PetscFEGetSpatialDimension(fe[field], &dim);CHKERRQ(ierr);
+  ierr = PetscFEGetNumComponents(fe[field], &Ncomp);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
     PetscInt Nc;
     ierr = PetscFEGetNumComponents(fe[f], &Nc);CHKERRQ(ierr);
     numComponents += Nc;
   }
   ierr = PetscFEGetQuadrature(fe[field], &quad);CHKERRQ(ierr);
-  ierr = PetscMalloc6(quad.numPoints*dim,&f0,quad.numPoints*dim*dim,&f1,numComponents,&u,numComponents*dim,&gradU,dim,&x,dim,&realSpaceDer);
+  ierr = PetscMalloc6(quad.numPoints*Ncomp,&f0,quad.numPoints*dim*Ncomp,&f1,numComponents,&u,numComponents*dim,&gradU,dim,&x,dim,&realSpaceDer);
   for (f = 0; f < NfAux; ++f) {
     PetscInt Nc;
     ierr = PetscFEGetNumComponents(feAux[f], &Nc);CHKERRQ(ierr);
@@ -2499,10 +2500,9 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscInt Ne, PetscInt
     for (q = 0; q < Nq; ++q) {
       PetscInt         fOffset = 0,       fOffsetAux = 0;
       PetscInt         dOffset = cOffset, dOffsetAux = cOffsetAux;
-      PetscInt         Ncomp, d, d2, f, i;
+      PetscInt         d, d2, f, i;
 
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
-      ierr = PetscFEGetNumComponents(fe[field], &Ncomp);CHKERRQ(ierr);
       for (d = 0; d < numComponents; ++d)       {u[d]     = 0.0;}
       for (d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0;}
       for (d = 0; d < dim; ++d) {
