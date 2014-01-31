@@ -976,6 +976,14 @@ cdef class Mat(Object):
         CHKERR( MatGetDiagonal(self.mat, result.vec) )
         return result
 
+    def getRowSum(self, Vec result=None):
+        if result is None:
+            result = Vec()
+        if result.vec == NULL:
+            CHKERR( MatGetVecs(self.mat, NULL, &result.vec) )
+        CHKERR( MatGetRowSum(self.mat, result.vec) )
+        return result
+
     def setDiagonal(self, Vec diag not None, addv=None):
         cdef PetscInsertMode caddv = insertmode(addv)
         CHKERR( MatDiagonalSet(self.mat, diag.vec, caddv) )
