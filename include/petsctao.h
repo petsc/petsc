@@ -61,9 +61,6 @@ PETSC_EXTERN const char **TaoSolverTerminationReasons;
 
 #include <petsctaolinesearch.h>
 
-PETSC_EXTERN PetscErrorCode TaoInitialize(int*,char***,const char[], const char[]);
-PETSC_EXTERN PetscErrorCode TaoFinalize(void);
-
 PETSC_EXTERN PetscErrorCode TaoInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TaoFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TaoCreate(MPI_Comm,TaoSolver*);

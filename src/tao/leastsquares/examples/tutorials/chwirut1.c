@@ -27,7 +27,6 @@ static char help[]="Finds the nonlinear least-squares solution to the model \n\
 
 /*T
    Concepts: TAO - Solving a system of nonlinear equations, nonlinear ;east squares
-   Routines: TaoInitialize(); TaoFinalize();
    Routines: TaoCreate();
    Routines: TaoSetType();
    Routines: TaoSetSeparableObjectiveRoutine();
@@ -76,7 +75,6 @@ int main(int argc,char **argv)
   AppCtx         user;               /* user-defined work context */
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  TaoInitialize(&argc,&argv,(char *)0,help);
 
   printhistory = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-printhistory",&printhistory,0);CHKERRQ(ierr);
@@ -124,8 +122,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&f);CHKERRQ(ierr);
   ierr = MatDestroy(&J);CHKERRQ(ierr);
 
-  /* Finalize TAO */
-  TaoFinalize();
   PetscFinalize();
   return 0;
 }

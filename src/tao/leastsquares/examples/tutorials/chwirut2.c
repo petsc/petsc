@@ -27,7 +27,6 @@ static char help[]="Finds the nonlinear least-squares solution to the model \n\
 
 /* T
    Concepts: TAO - Solving a system of nonlinear equations, nonlinear ;east squares
-   Routines: TaoInitialize(); TaoFinalize();
    Routines: TaoCreate();
    Routines: TaoSetType();
    Routines: TaoSetSeparableObjectiveRoutine();
@@ -74,7 +73,6 @@ int main(int argc,char **argv)
 
    /* Initialize TAO and PETSc */
   PetscInitialize(&argc,&argv,(char *)0,help);
-  TaoInitialize(&argc,&argv,(char *)0,help);
 
   MPI_Comm_size(MPI_COMM_WORLD,&user.size);
   MPI_Comm_rank(MPI_COMM_WORLD,&user.rank);
@@ -115,7 +113,6 @@ int main(int argc,char **argv)
   } else {
     TaskWorker(&user);
   }
-  TaoFinalize();
   PetscFinalize();
   return 0;
 }

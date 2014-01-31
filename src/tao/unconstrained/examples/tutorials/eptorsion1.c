@@ -41,7 +41,6 @@ The command line options are:\n\
 
 /*T
    Concepts: TAO - Solving an unconstrained minimization problem
-   Routines: TaoInitialize(); TaoFinalize();
    Routines: TaoCreate(); TaoSetType();
    Routines: TaoSetInitialVector();
    Routines: TaoSetObjectiveAndGradientRoutine();
@@ -95,7 +94,6 @@ PetscErrorCode main(int argc,char **argv)
 
   /* Initialize TAO,PETSc */
   PetscInitialize(&argc,&argv,(char *)0,help);
-  TaoInitialize(&argc,&argv,(char *)0,help);
 
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size >1) SETERRQ(PETSC_COMM_SELF,1,"Incorrect number of processors");
@@ -174,7 +172,6 @@ PetscErrorCode main(int argc,char **argv)
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = MatDestroy(&H);CHKERRQ(ierr);
 
-  TaoFinalize();
   PetscFinalize();
   return 0;
 }

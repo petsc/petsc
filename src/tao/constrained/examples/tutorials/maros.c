@@ -10,7 +10,6 @@ static  char help[]="";
 
 /*T
    Concepts: TAO - Solving an unconstrained minimization problem
-   Routines: TaoInitialize(); TaoFinalize();
    Routines: TaoCreate(); TaoSetType();
    Routines: TaoSetInitialVector();
    Routines: TaoSetObjectiveAndGradientRoutine();
@@ -80,7 +79,6 @@ PetscErrorCode main(int argc,char **argv)
 
   /* Initialize TAO,PETSc */
   PetscInitialize(&argc,&argv,(char *)0,help);
-  TaoInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   /* Specify default parameters for the problem, check for command-line overrides */
   ierr = PetscStrncpy(user.name,"HS21",8);CHKERRQ(ierr);
@@ -134,7 +132,7 @@ PetscErrorCode main(int argc,char **argv)
   ierr = VecDestroy(&ceq);CHKERRQ(ierr);
   ierr = VecDestroy(&cin);CHKERRQ(ierr);
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
-  TaoFinalize();
+
   PetscFinalize();
   return 0;
 }

@@ -90,7 +90,6 @@ space.  The command line options are:\n\
 
 /*T
    Concepts: TAO - Solving a complementarity problem
-   Routines: TaoInitialize(); TaoFinalize();
    Routines: TaoCreate(); TaoDestroy();
    Routines: TaoSetJacobianRoutine(); TaoAppSetConstraintRoutine();
    Routines: TaoSetFromOptions();
@@ -146,7 +145,6 @@ int main(int argc, char **argv)
 
   /* Initialize PETSc, TAO */
   PetscInitialize(&argc, &argv, (char *)0, help);
-  TaoInitialize(&argc, &argv, (char *)0, help);
 
   /*
      Initialize the user-defined application context with reasonable
@@ -271,10 +269,7 @@ int main(int argc, char **argv)
   ierr = PetscFree(user.c);CHKERRQ(ierr);
   ierr = PetscFree(user.d);CHKERRQ(ierr);
 
-  /* Finalize TAO and PETSc */
   PetscFinalize();
-  TaoFinalize();
-
   return 0;
 }
 

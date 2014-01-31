@@ -21,7 +21,7 @@
       external FormInequalityJacobian,FormEqualityJacobian
 
 
-      call TaoInitialize(PETSC_NULL_CHARACTER,ierr)
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
       call PetscPrintf(PETSC_COMM_SELF,                                 &
      &           '\n---- TOY Problem -----\n',                          &
@@ -126,8 +126,7 @@
       call TaoDestroy(tao,ierr)
       CHKERRQ(ierr)
 
-      ! Finalize TAO, PETSc
-      call TaoFinalize(ierr)
+      call PetscFinalize(ierr)
 
       stop
       end program toyf

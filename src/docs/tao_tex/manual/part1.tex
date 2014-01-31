@@ -114,50 +114,6 @@ The include file for TAO should be used via the statement
 The required lower-level include files are automatically included
 within this high-level file.
 
-\section{TAO Initialization and Finalization}
-\label{sec:initialization}
-
-All TAO programs contain a call to \findex{TaoInitialize()}
-\begin{verbatim}
-   ierr = TaoInitialize(int *argc,char ***argv,char *file_name, 
-                        char *help_message);
-\end{verbatim}
-\noindent 
-This command initializes TAO (and also MPI and PETSc if these have not
-yet been initialized elsewhere).  The arguments \texttt{argc} and
-\texttt{argv} are the command line arguments delivered in all C and
-C++ programs. \sindex{command line arguments} The argument
-\texttt{file\_name} optionally indicates an alternative name for an
-options file, which by default is called \texttt{.petscrc} and resides
-in the user's home directory.  See the PETSc users manual 
-\cite{petsc-user-ref} for details
-regarding runtime option specification.  The final argument,
-\texttt{help\_message}, is an optional character string that will be
-printed if the program is run with the \texttt{-help} option.
-
-As illustrated by the \texttt{TaoInitialize()} statement above, TAO
-routines return an integer indicating whether an error has occurred
-during the call.  The error code is set to be nonzero if an error has
-been detected; otherwise, it is zero.  For the C or C++ interface, the
-error variable is the routine's return value, while for the Fortran
-version, each TAO routine has as its final argument an integer error
-variable.  Error tracebacks are discussed in
-Section~\ref{sec:tao_programming}.
-
-
-All TAO programs should call \texttt{TaoFinalize()}
-\findex{TaoFinalize()} as their final (or nearly final) statement.
-\findex{TaoFinalize()}
-\begin{verbatim}
-   TaoFinalize();
-\end{verbatim}
-\noindent
-This routine handles options to be called at the conclusion of the
-program, and calls \texttt{PetscFinalize()} %\findex{PetscFinalize()}
-if \texttt{TaoInitialize()} began PETSc. If PETSc was initiated
-externally from TAO (by either the user or another software package),
-the user is responsible for calling \texttt{PetscFinalize()}.
-
 \section{TAO Solvers}
 
 Many TAO applications will follow an ordered set of procedures for 

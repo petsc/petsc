@@ -3,7 +3,6 @@
 
 /*T
    Concepts: TAO - Solving a system of nonlinear equations, nonlinear ;east squares
-   Routines: TaoInitialize(); TaoFinalize();
    Routines: TaoCreate();
    Routines: TaoSetType();
    Routines: TaoSetInitialVector();
@@ -132,7 +131,6 @@ int main(int argc, char **argv)
   int                        stages[1];
 
   PetscInitialize(&argc, &argv, (char*)0,help);
-  TaoInitialize(&argc, &argv, (char*)0,help);
 
   user.mx = 8;
   ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,&flag);CHKERRQ(ierr);
@@ -245,7 +243,6 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&x0);CHKERRQ(ierr);
   ierr = ParabolicDestroy(&user);CHKERRQ(ierr);
 
-  TaoFinalize();
   PetscFinalize();
   return 0;
 }

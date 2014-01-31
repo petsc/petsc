@@ -646,7 +646,6 @@ This driver performs the following steps:
  Mat             H;    /* Hessian Matrix              */
 
  PetscInitizialize(&argc,&argv,0,0);
- TaoInitialize(&argc,&argv,0,0);
  TaoCreate(PETSC_COMM_SELF,"tao_lmvm",&tao);
  TaoApplicationCreate(PETSC_COMM_SELF,&app);
  ... 

@@ -44,7 +44,6 @@ The command line options are:\n\
 
 /*T
    Concepts: TAO - Solving an unconstrained minimization problem
-   Routines: TaoInitialize(); TaoFinalize();
    Routines: TaoCreate(); TaoSetType();
    Routines: TaoSetInitialVector();
    Routines: TaoSetObjectiveAndGradientRoutine();
@@ -91,7 +90,6 @@ int main(int argc, char **argv)
 
     /* Initialize PETSc, TAO */
     PetscInitialize(&argc, &argv, (char *)0, help);
-    TaoInitialize(&argc, &argv, (char *)0, help);
 
     /* Specify default dimension of the problem */
     user.param = 5.0; user.mx = 10; user.my = 10;
@@ -163,11 +161,7 @@ int main(int argc, char **argv)
     ierr = VecDestroy(&user.localX);CHKERRQ(ierr);
     ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
 
-
-    /* Finalize TAO and PETSc*/
-    TaoFinalize();
     PetscFinalize();
-
     return 0;
 }
 

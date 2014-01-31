@@ -67,7 +67,6 @@ PetscErrorCode main(int argc,char **argv)
 
   /* Initialize TAO,PETSc */
   PetscInitialize(&argc,&argv,(char *)0,help);
-  TaoInitialize(&argc,&argv,(char *)0,help);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n---- TOY Problem -----\n");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Solution should be f(1,1)=-2\n");CHKERRQ(ierr);
@@ -115,10 +114,8 @@ PetscErrorCode main(int argc,char **argv)
   /* Finalize Memory */
   ierr = DestroyProblem(&user);CHKERRQ(ierr);
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
-  /* Finalize TAO, PETSc */
-  TaoFinalize();
-  PetscFinalize();
 
+  PetscFinalize();
   return 0;
 }
 

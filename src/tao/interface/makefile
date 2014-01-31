@@ -2,7 +2,7 @@ ALL: lib
 
 CFLAGS   =-DTAO_LIB_DIR='"${TAO_LIB_DIR}"'
 FFLAGS   =
-SOURCEC  = taosolver.c taosolver_fg.c taosolverregi.c taosolver_hj.c taosolver_bounds.c dlregistao.c tao_init.c fdiff.c fdtest.c
+SOURCEC  = taosolver.c taosolver_fg.c taosolverregi.c taosolver_hj.c taosolver_bounds.c dlregistao.c fdiff.c fdtest.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetsctao

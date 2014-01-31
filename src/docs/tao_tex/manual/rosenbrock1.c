@@ -17,8 +17,7 @@ int main(int argc,char **argv)
   TaoSolver  tao;       /* TaoSolver context */
   AppCtx     user;      /* user-defined application context */
 
-  /* Initialize TAO */
-  TaoInitialize(&argc,&argv,(char*)0,0);
+  PetscInitialize(&argc,&argv,(char*)0,0);
 
   /* Initialize problem parameters */
   user.n = 2; user.alpha = 99.0;
@@ -50,5 +49,5 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&x); CHKERRQ(ierr);
   ierr = MatDestroy(&H); CHKERRQ(ierr);
 
-  TaoFinalize();
+  PetscFinalize();
 }

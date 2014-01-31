@@ -9,7 +9,6 @@
 !
 !/*T
 !  Concepts: TAO - Solving an unconstrained minimization problem
-!  Routines: TaoInitialize(); TaoFinalize();
 !  Routines: TaoCreate();
 !  Routines: TaoSetType();
 !  Routines: TaoSetSeparableObjectiveRoutine();
@@ -48,7 +47,6 @@
 
 !  Initialize TAO and PETSc
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call TaoInitialize(PETSC_NULL_CHARACTER,ierr)
 
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       CHKERRQ(ierr)
@@ -109,10 +107,7 @@
          CHKERRQ(ierr)
       endif
 
-!  Finalize TAO
-      call TaoFinalize(ierr)
       call PetscFinalize(ierr)
-
       end
 
 

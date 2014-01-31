@@ -9,7 +9,6 @@
 !
 !/*T
 !  Concepts: TAO - Solving an unconstrained minimization problem
-!  Routines: TaoInitialize(); TaoFinalize();
 !  Routines: TaoCreate();
 !  Routines: TaoSetType(); TaoSetObjectiveAndGradientRoutine();
 !  Routines: TaoSetHessianRoutine();
@@ -56,7 +55,6 @@
 
 !  Initialize TAO and PETSc
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call TaoInitialize(PETSC_NULL_CHARACTER,ierr)
 
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
@@ -138,10 +136,7 @@
       call VecDestroy(x,ierr)
       call MatDestroy(H,ierr)
 
-!  Finalize TAO
-      call TaoFinalize(ierr)
       call PetscFinalize(ierr)
-
       end
 
 

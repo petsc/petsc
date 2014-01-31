@@ -35,46 +35,6 @@ TAO applications written in C/C++ should have the statement
 in each file that uses a routine in the TAO libraries.
 
 
-\section{Initialize and Finalize}
-
-The first TAO routine in any application should be {\tt TaoInitialize()}.
-Most TAO programs begin with a call to
-\findex{TaoInitialize()}
-\begin{verbatim}
-   TaoInitialize(int *argc,char ***argv,char *filename, 
-                        char *help_message);
-\end{verbatim}
-which initializes TAO, as well as MPI, PETSc, and other packages
-to which TAO applications may link (if these have not yet
-been initialized elsewhere).  
-In particular, the arguments {\tt argc} and 
-{\tt argv} are the command line arguments delivered in all C and C++
-programs; these arguments initialize the options database.  
-\sindex{command line arguments} The argument {\tt filename}
-optionally indicates an alternative name for an options file, which by
-default is called {\tt .petscrc} and resides in the user's home directory.
-
-One of the last routines\findex{TaoFinalize()} that all TAO programs should 
-call is 
-\begin{verbatim}
-   TaoFinalize();
-\end{verbatim}
-which finalizes TAO and any other libraries that may have been
-initialized during the {\tt TaoInitialize()} phase.
-For example, {\tt TaoFinalize()}
-calls {\tt PetscFinalize()} 
-if {\tt TaoInitialize()}
-began PETSc. If PETSc was initiated externally from TAO (by either
-the user or another software package), then the user is
-responsible for calling {\tt PetscFinalize()}. 
-
-In Fortran, the initialization and finalization commands are
-\begin{verbatim}
-  call TaoInitialize(filename, ierr)
-  call TaoFinalize(ierr)
-\end{verbatim}
-respectively. 
-
 \section{Creation and Destruction}
 
 A TAO solver can be created by calling the
@@ -834,10 +794,8 @@ command line options are fully supported. The routine arguments follow
 the usual Fortran conventions; the user need not worry about passing
 pointers or values.  The calling sequences for the Fortran version are
 in most cases identical to the C version, except for the error
-checking variable discussed in Section \ref{sec:fortran_errors}.  In
-addition, the Fortran routines {\tt TaoInitialize(character(*) filename,int ierr)} and {\tt TaoGetConvergenceHistory()}
-differ slightly from their C counterparts; see the manual page for
-details.
+checking variable discussed in Section \ref{sec:fortran_errors}.  
+
 
 \subsection{Include Files}
 \label{sec:fortran_includes}

@@ -14,7 +14,6 @@
 !
 !/*T
 !   Concepts: TAO - Solving a bound constrained minimization problem
-!   Routines: TaoInitialize(); TaoFinalize();
 !   Routines: TaoCreate();
 !   Routines: TaoSetType(); TaoSetObjectiveAndGradientRoutine();
 !   Routines: TaoSetHessianRoutine();
@@ -66,9 +65,6 @@
 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      CHKERRQ(ierr)
-      call TaoInitialize(PETSC_NULL_CHARACTER,ierr)
-
 
 ! Specify default dimensions of the problem
       mx = 10
@@ -201,7 +197,6 @@
 
 ! Finalize TAO
 
-      call TaoFinalize(ierr)
       call PetscFinalize(ierr)
 
       end

@@ -10,7 +10,6 @@ minimize the extended Rosenbrock function: \n\
 
 /*T
    Concepts: TAO - Solving an unconstrained minimization problem
-   Routines: TaoInitialize(); TaoFinalize();
    Routines: TaoCreate();
    Routines: TaoSetType(); TaoSetObjectiveAndGradientRoutine();
    Routines: TaoSetHessianRoutine();
@@ -51,7 +50,7 @@ int main(int argc,char **argv)
   AppCtx                     user;                  /* user-defined application context */
 
   /* Initialize TAO and PETSc */
-  TaoInitialize(&argc,&argv,(char*)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (size >1) SETERRQ(PETSC_COMM_SELF,1,"Incorrect number of processors");
@@ -96,7 +95,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = MatDestroy(&H);CHKERRQ(ierr);
 
-  TaoFinalize();
   return 0;
 }
 
