@@ -266,19 +266,26 @@ typedef struct {
 
 PETSC_INTERN PetscErrorCode VecScatterIsSequential_Private(VecScatter_Common*,PetscBool*);
 
+typedef struct _VecScatterOps *VecScatterOps;
+struct _VecScatterOps {
+  PetscErrorCode (*begin)(VecScatter,Vec,Vec,InsertMode,ScatterMode);
+  PetscErrorCode (*end)(VecScatter,Vec,Vec,InsertMode,ScatterMode);
+  PetscErrorCode (*copy)(VecScatter,VecScatter);
+  PetscErrorCode (*destroy)(VecScatter);
+  PetscErrorCode (*view)(VecScatter,PetscViewer);
+  PetscErrorCode (*viewfromoptions)(VecScatter,const char prefix[],const char name[]); 
+  PetscErrorCode (*remap)(VecScatter,PetscInt *,PetscInt*);
+  PetscErrorCode (*getmerged)(VecScatter,PetscBool *);
+};
+
 struct _p_VecScatter {
-  PETSCHEADER(int);
+  PETSCHEADER(struct _VecScatterOps);
   PetscInt       to_n,from_n;
   PetscBool      inuse;                /* prevents corruption from mixing two scatters */
   PetscBool      beginandendtogether;  /* indicates that the scatter begin and end  function are called together, VecScatterEnd()
                                           is then treated as a nop */
   PetscBool      packtogether;         /* packs all the messages before sending, same with receive */
   PetscBool      reproduce;            /* always receive the ghost points in the same order of processes */
-  PetscErrorCode (*begin)(VecScatter,Vec,Vec,InsertMode,ScatterMode);
-  PetscErrorCode (*end)(VecScatter,Vec,Vec,InsertMode,ScatterMode);
-  PetscErrorCode (*copy)(VecScatter,VecScatter);
-  PetscErrorCode (*destroy)(VecScatter);
-  PetscErrorCode (*view)(VecScatter,PetscViewer);
   void           *fromdata,*todata;
   void           *spptr;
 };
