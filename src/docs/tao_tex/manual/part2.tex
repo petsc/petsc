@@ -29,7 +29,7 @@ running a program with the {\tt -help} option.
 
 TAO applications written in C/C++ should have the statement 
 \begin{verbatim}
-   #include <tao.h>
+   #include <petsctao.h>
 \end{verbatim}
 \noindent
 in each file that uses a routine in the TAO libraries.
@@ -862,7 +862,7 @@ in a Fortran routine, application programmers must manually include
 each file needed for the various TAO (or other supplementary)
 components within their program.  This approach differs from the TAO
 C interface, where the user need include only the highest-level
-file, for example, {\tt tao.h}, which then automatically
+file, for example, {\tt petsctao.h}, which then automatically
 includes all of the required lower-level files.  As shown in the
 various Fortran example programs in the TAO distribution, in Fortran
 one must explicitly list {\em each} of the include files.

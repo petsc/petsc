@@ -1,4 +1,4 @@
-#include <tao_util.h>   /*I "tao_util.h" I*/
+#include <petsctao.h>   /*I "petsctao.h" I*/
 #include <../src/tao/matrix/submatfree.h> /*I "submatfree.h" I*/
 
 #undef __FUNCT__

@@ -1,4 +1,4 @@
-#include <taolinesearch.h> /*I "taolinesearch.h" I*/
+#include <petsctaolinesearch.h> /*I "petsctaolinesearch.h" I*/
 #include <petsc-private/taolinesearchimpl.h>
 
 PetscBool TaoLineSearchInitialized = PETSC_FALSE;

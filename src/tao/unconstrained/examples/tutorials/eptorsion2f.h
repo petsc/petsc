@@ -36,7 +36,7 @@
 #include "finclude/petscdmda.h"
 #include "finclude/petscdm.h"
 #include "finclude/petscis.h"
-#include "finclude/tao.h"
+#include "finclude/petsctao.h"
 
 !  Common blocks:
 !  In this example we use common blocks to store data needed by the

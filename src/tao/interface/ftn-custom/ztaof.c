@@ -1,5 +1,5 @@
 #include <petsc-private/fortranimpl.h>
-#include <tao.h>
+#include <petsctao.h>
 
 extern PetscBool TaoBeganPetsc;
 extern PetscBool   TaoInitializeCalled;

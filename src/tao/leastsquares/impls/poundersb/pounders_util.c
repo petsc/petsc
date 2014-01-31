@@ -1,4 +1,4 @@
-#include <private/taosolverimpl.h>
+#include <petsc-private/taoimpl.h>
 #include <poundersb.h>
 #undef __FUNCT__
 #define __FUNCT__ "TaoPounders_formquad"

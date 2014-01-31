@@ -4,7 +4,7 @@
 TODO Explain maros example
 ---------------------------------------------------------------------- */
 
-#include <tao.h>
+#include <petsctao.h>
 
 static  char help[]="";
 

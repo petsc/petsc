@@ -3,7 +3,7 @@
 #include "finclude/petscmat.h"
 #include "finclude/petscksp.h"
 #include "finclude/petscpc.h"
-#include "finclude/tao.h"
+#include "finclude/petsctao.h"
 
       Vec x0,xl,xu
       Vec ce,ci,bl,bu

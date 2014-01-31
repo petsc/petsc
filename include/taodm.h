@@ -2,7 +2,7 @@
 #define __TAODM_H
 #include <petscmat.h>
 #include <petscdm.h>
-#include <tao.h>
+#include <petsctao.h>
 
 typedef struct _p_TaoDM* TaoDM;
 PETSC_EXTERN PetscClassId TAODM_CLASSID;

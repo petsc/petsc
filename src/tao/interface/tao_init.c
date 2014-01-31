@@ -1,4 +1,4 @@
-#include <tao.h>   /*I "tao.h" I*/
+#include <petsctao.h>   /*I "petsctao.h" I*/
 
 PetscBool TaoInitializeCalled = PETSC_FALSE;
 PetscBool TaoBeganPetsc = PETSC_FALSE;

@@ -1,4 +1,4 @@
-#include <petsc-private/taosolverimpl.h> /*I "tao.h" I*/
+#include <petsc-private/taoimpl.h> /*I "petsctao.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetVariableBounds"

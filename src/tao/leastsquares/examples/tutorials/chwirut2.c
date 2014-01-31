@@ -1,5 +1,5 @@
 /*
-   Include "tao.h" so that we can use TAO solvers.  Note that this
+   Include "petsctao.h" so that we can use TAO solvers.  Note that this
    file automatically includes libraries such as:
      petsc.h       - base PETSc routines   petscvec.h - vectors
      petscsys.h    - sysem routines        petscmat.h - matrices
@@ -8,7 +8,7 @@
 
 */
 
-#include <tao.h>
+#include <petsctao.h>
 #include <mpi.h>
 
 

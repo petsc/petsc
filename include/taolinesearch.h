@@ -29,7 +29,7 @@ typedef enum {
 PETSC_EXTERN PetscClassId TAOLINESEARCH_CLASSID;
 PETSC_EXTERN PetscFunctionList TaoLineSearchList;
 
-#include <tao.h>
+#include <petsctao.h>
 
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate(MPI_Comm,TaoLineSearch*);
 PETSC_EXTERN PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch);

@@ -1,7 +1,7 @@
 /* Program usage: mpirun -np 1 minsurf1 [-help] [all TAO options] */
 
-/*  Include "tao.h" so we can use TAO solvers.  */
-#include <tao.h>
+/*  Include "petsctao.h" so we can use TAO solvers.  */
+#include <petsctao.h>
 
 static char  help[] =
 "This example demonstrates use of the TAO package to \n\

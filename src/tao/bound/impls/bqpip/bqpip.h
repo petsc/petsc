@@ -1,7 +1,7 @@
 #ifndef __TAO_BQPIP_H
 #define __TAO_BQPIP_H
 
-#include <petsc-private/taosolverimpl.h>
+#include <petsc-private/taoimpl.h>
 
 typedef struct{
 

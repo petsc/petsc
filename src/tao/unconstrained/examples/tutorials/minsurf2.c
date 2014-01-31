@@ -1,10 +1,10 @@
 /* Program usage: mpirun -np <proc> minsurf2 [-help] [all TAO options] */
 
 /*
-  Include "tao.h" so we can use TAO solvers.
+  Include "petsctao.h" so we can use TAO solvers.
   petscdmda.h for distributed array
 */
-#include <tao.h>
+#include <petsctao.h>
 #include <petscdmda.h>
 
 static  char help[] =
