@@ -34,7 +34,7 @@
 #include "finclude/petscdmda.h"
 #include "finclude/petscdm.h"
 #include "finclude/petscis.h"
-#include "finclude/taosolver.h"
+#include "finclude/tao.h"
 !  Common blocks:
 !  In this example we use common blocks to store data needed by the
 !  application-provided call-back routines, FormFunction(), FormGradient(),

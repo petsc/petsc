@@ -1,4 +1,4 @@
-#include <taosolver.h>         /*I  "taosolver.h"  I*/
+#include <tao.h>         /*I  "tao.h"  I*/
 #include <petsc-private/taosolverimpl.h>
 #include <petscsnes.h>
 

@@ -3,7 +3,7 @@
 #include "finclude/petscmat.h"
 #include "finclude/petscksp.h"
 #include "finclude/petscpc.h"
-#include "finclude/taosolver.h"
+#include "finclude/tao.h"
 
       Vec x0,xl,xu
       Vec ce,ci,bl,bu

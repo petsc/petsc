@@ -8,7 +8,7 @@
 
 */
 
-#include <taosolver.h>
+#include <tao.h>
 #include <mpi.h>
 
 

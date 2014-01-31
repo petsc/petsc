@@ -374,7 +374,6 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha,Vec vreduced)
     if (m != n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"IS local length not equal to Vec local length");
     ierr = VecGetOwnershipRange(vfull,&rstart,NULL);CHKERRQ(ierr);
     y -= rstart;
-    CHKMEMQ;
     if (alpha == 1.0) {
       for (i=0; i<n; i++) {
         y[id[i]] += x[i];
@@ -384,7 +383,6 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha,Vec vreduced)
         y[id[i]] += alpha*x[i];
       }
     }
-    CHKMEMQ;
     y += rstart;
     ierr = ISRestoreIndices(is,&id);CHKERRQ(ierr);
     ierr = VecRestoreArray(vfull,&y);CHKERRQ(ierr);

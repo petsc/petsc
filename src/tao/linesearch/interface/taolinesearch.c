@@ -1,4 +1,3 @@
-#include <taosolver.h>
 #include <taolinesearch.h> /*I "taolinesearch.h" I*/
 #include <petsc-private/taolinesearchimpl.h>
 

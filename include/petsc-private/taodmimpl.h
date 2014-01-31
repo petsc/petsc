@@ -1,6 +1,7 @@
 #ifndef __TAODM_IMPL_H
 #define __TAODM_IMPL_H
 #include <petscdm.h>
+#include <petscdmda.h>
 #include <taodm.h>
 
 struct _TaoDMOps {

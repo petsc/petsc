@@ -2,7 +2,6 @@
 #define __TAOLINESEARCH_IMPL_H
 #include <petscvec.h>
 #include <petsc-private/petscimpl.h>
-#include <taosolver.h>
 #include <taolinesearch.h>
 
 typedef struct _TaoLineSearchOps *TaoLineSearchOps;

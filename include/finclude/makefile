@@ -13,7 +13,7 @@ SOURCEH   = petsc.h petscsys.h petsclog.h petscvec.h petscsnes.h petscdm.h petsc
             petscdef.h  petscsysdef.h petsclogdef.h petscvecdef.h petscsnesdef.h petscdmdef.h petscdmdadef.h \
             petscdrawdef.h petscmatdef.h petsckspdef.h petscpcdef.h petscviewerdef.h petscisdef.h petscaodef.h \
 	    petsctsdef.h \
-            taosolver.h
+            tao.h
 LIBBASE   = libpetscvec
 DIRS      =
 MANSEC    = Sys

@@ -4,7 +4,7 @@
 TODO Explain maros example
 ---------------------------------------------------------------------- */
 
-#include <taosolver.h>
+#include <tao.h>
 
 static  char help[]="";
 

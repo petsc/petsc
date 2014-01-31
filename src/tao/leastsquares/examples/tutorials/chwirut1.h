@@ -28,7 +28,7 @@
 #include "finclude/petscmat.h"
 #include "finclude/petscksp.h"
 #include "finclude/petscpc.h"
-#include "finclude/taosolver.h"
+#include "finclude/tao.h"
 
 !  Common blocks:
 !  In this example we use common blocks to store data needed by the

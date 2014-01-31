@@ -30,7 +30,7 @@
   the parallel mesh.
 */
 
-#include <taosolver.h>
+#include <tao.h>
 #include <petscdmda.h>
 
 static  char help[] =

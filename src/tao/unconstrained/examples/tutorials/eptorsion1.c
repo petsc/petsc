@@ -17,7 +17,7 @@
 ---------------------------------------------------------------------- */
 
 /*
-  Include "taosolver.h" so that we can use TAO solvers.  Note that this
+  Include "tao.h" so that we can use TAO solvers.  Note that this
   file automatically includes files for lower-level support, such as those
   provided by the PETSc library:
      petsc.h       - base PETSc routines   petscvec.h - vectors
@@ -26,7 +26,7 @@
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
 
-#include <taosolver.h>
+#include <tao.h>
 
 
 static  char help[]=

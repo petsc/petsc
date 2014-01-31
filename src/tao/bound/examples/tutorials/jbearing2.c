@@ -1,5 +1,5 @@
 /*
-  Include "taosolver.h" so we can use TAO solvers
+  Include "tao.h" so we can use TAO solvers
   Include "petscdmda.h" so that we can use distributed arrays (DMs) for managing
   Include "petscksp.h" so we can set KSP type
   the parallel mesh.
@@ -7,7 +7,7 @@
 
 #include <petscdmda.h>
 #include <petscksp.h>
-#include <taosolver.h>
+#include <tao.h>
 
 static  char help[]=
 "This example demonstrates use of the TAO package to \n\

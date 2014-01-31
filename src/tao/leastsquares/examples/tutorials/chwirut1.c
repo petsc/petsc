@@ -8,7 +8,7 @@
 
 */
 
-#include <taosolver.h>
+#include <tao.h>
 
 /*
 Description:   These data are the result of a NIST study involving

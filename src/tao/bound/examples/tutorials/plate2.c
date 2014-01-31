@@ -1,5 +1,5 @@
-#include <petscdmda.h>   /*I "petscdmda.h" I*/
-#include <taosolver.h> /*I "taosolver.h" I*/
+#include <petscdmda.h>
+#include <tao.h>
 
 static  char help[] =
 "This example demonstrates use of the TAO package to \n\
