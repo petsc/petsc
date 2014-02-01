@@ -55,7 +55,7 @@ static PetscErrorCode destroy_grad_list(Vec_Chain *head)
 static PetscErrorCode TaoSolve_BMRM(Tao tao)
 {
   PetscErrorCode             ierr;
-  TaoTerminationReason reason;
+  TaoTerminationReason       reason;
   TAO_DF                     df;
   TAO_BMRM                   *bmrm = (TAO_BMRM*)tao->data;
 
@@ -74,9 +74,11 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
   PetscReal                  reg;
   PetscReal                  jtwt, max_jtwt, pre_epsilon, epsilon, jw, min_jw;
   PetscReal                  innerSolverTol;
+  MPI_Comm                   comm;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)tao,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   lambda = bmrm->lambda;
 
   /* Check Stopping Condition */
@@ -160,8 +162,8 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
 
     ierr = TaoComputeObjectiveAndGradient(tao, W, &f, G);CHKERRQ(ierr);
 
-    MPI_Bcast(&jtwt,1,MPI_DOUBLE,0,PETSC_COMM_WORLD);
-    MPI_Bcast(&reg,1,MPI_DOUBLE,0,PETSC_COMM_WORLD);
+    ierr = MPI_Bcast(&jtwt,1,MPIU_REAL,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&reg,1,MPIU_REAL,0,comm);CHKERRQ(ierr);
 
     jw = reg + f;                                       /* J(w) = regularizer + Remp(w) */
     if (jw < min_jw) min_jw = jw;

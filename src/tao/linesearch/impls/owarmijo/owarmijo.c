@@ -138,8 +138,10 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
   Vec                        g_old;
   PetscReal                  owlqn_minstep=0.005;
   PetscReal                  partgdx;
+  MPI_Comm                   comm;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)ls,&comm);CHKERRQ(ierr);
   fact = 0.0;
   ls->nfeval=0;
   ls->reason = TAOLINESEARCH_CONTINUE_ITERATING;
@@ -237,7 +239,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
 
     partgdx=0.0;
     ierr = ProjWork_OWLQN(armP->work,x,g_old,&partgdx);
-    ierr = MPI_Allreduce(&partgdx,&gdx,1,MPI_DOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&partgdx,&gdx,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
 
     /* Check the condition of gdx */
     if (PetscIsInfOrNanReal(gdx)) {

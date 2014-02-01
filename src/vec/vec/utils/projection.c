@@ -22,7 +22,7 @@ PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS * S)
   PetscInt        i,n_same = 0;
   PetscInt        n,low,high,low2,high2;
   PetscInt        *same = NULL;
-  PetscReal       *v1,*v2;
+  PetscScalar     *v1,*v2;
   MPI_Comm        comm;
 
   PetscFunctionBegin;
@@ -84,7 +84,7 @@ PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS * S)
   PetscInt       i;
   PetscInt       n,low,high,low2,high2,n_lt=0;
   PetscInt       *lt = NULL;
-  PetscReal      *v1,*v2;
+  PetscScalar    *v1,*v2;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
@@ -108,7 +108,7 @@ PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS * S)
     ierr = PetscMalloc1(n,&lt );CHKERRQ(ierr);
 
     for (i=0; i<n; i++){
-      if (v1[i] < v2[i]) {lt[n_lt]=low+i; n_lt++;}
+      if (PetscRealPart(v1[i]) < PetscRealPart(v2[i])) {lt[n_lt]=low+i; n_lt++;}
     }
 
     if (Vec1 == Vec2){
@@ -144,7 +144,7 @@ PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS * S)
   PetscErrorCode ierr;
   PetscInt       n,low,high,low2,high2,n_gt=0,i;
   PetscInt       *gt=NULL;
-  PetscReal      *v1,*v2;
+  PetscScalar    *v1,*v2;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
@@ -171,7 +171,7 @@ PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS * S)
     ierr = PetscMalloc1(n, &gt );CHKERRQ(ierr);
 
     for (i=0; i<n; i++){
-      if (v1[i] > v2[i]) {gt[n_gt]=low+i; n_gt++;}
+      if (PetscRealPart(v1[i]) > PetscRealPart(v2[i])) {gt[n_gt]=low+i; n_gt++;}
     }
 
     if (Vec1 == Vec2){
@@ -210,7 +210,7 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S)
   PetscErrorCode ierr;
   PetscInt       n,low,high,low2,high2,low3,high3,n_vm=0;
   PetscInt       *vm,i;
-  PetscReal      *v1,*v2,*vmiddle;
+  PetscScalar    *v1,*v2,*vmiddle;
   MPI_Comm       comm;
 
   PetscValidHeaderSpecific(V,VEC_CLASSID,2);
@@ -240,7 +240,7 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S)
     ierr = PetscMalloc1(n, &vm );CHKERRQ(ierr);
 
     for (i=0; i<n; i++){
-      if (v1[i] < vmiddle[i] && vmiddle[i] < v2[i]) {vm[n_vm]=low+i; n_vm++;}
+      if (PetscRealPart(v1[i]) < PetscRealPart(vmiddle[i]) && PetscRealPart(vmiddle[i]) < PetscRealPart(v2[i])) {vm[n_vm]=low+i; n_vm++;}
     }
 
     ierr = VecRestoreArray(VecLow,&v1);CHKERRQ(ierr);
@@ -281,7 +281,7 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
   PetscErrorCode ierr;
   PetscInt       n,low,high,low2,high2,low3,high3,n_vm=0,i;
   PetscInt       *vm = NULL;
-  PetscReal      *v1,*v2,*vmiddle;
+  PetscScalar    *v1,*v2,*vmiddle;
   MPI_Comm       comm;
 
   PetscValidHeaderSpecific(V,VEC_CLASSID,2);
@@ -312,7 +312,7 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
     ierr = PetscMalloc1(n, &vm );CHKERRQ(ierr);
 
     for (i=0; i<n; i++){
-      if (v1[i] <= vmiddle[i] && vmiddle[i] <= v2[i]) {vm[n_vm]=low+i; n_vm++;}
+      if (PetscRealPart(v1[i]) <= PetscRealPart(vmiddle[i]) && PetscRealPart(vmiddle[i]) <= PetscRealPart(v2[i])) {vm[n_vm]=low+i; n_vm++;}
     }
 
     ierr = VecRestoreArray(VecLow,&v1);CHKERRQ(ierr);
@@ -434,12 +434,12 @@ PetscErrorCode ISComplementVec(IS S, Vec V, IS *T)
 
    Level: advanced
 @*/
-PetscErrorCode VecISSet(Vec V,IS S, PetscReal c)
+PetscErrorCode VecISSet(Vec V,IS S, PetscScalar c)
 {
   PetscErrorCode ierr;
   PetscInt       nloc,low,high,i;
   const PetscInt *s;
-  PetscReal      *v;
+  PetscScalar    *v;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(V,VEC_CLASSID,1);
@@ -459,6 +459,7 @@ PetscErrorCode VecISSet(Vec V,IS S, PetscReal c)
   PetscFunctionReturn(0);
 }
 
+#if !defined(PETSC_USE_COMPLEX)
 #undef __FUNCT__
 #define __FUNCT__ "VecBoundGradientProjection"
 /*@C
@@ -477,7 +478,7 @@ PetscErrorCode VecISSet(Vec V,IS S, PetscReal c)
 . GP - gradient projection vector
 
   Level: advanced
-@*/
+C@*/
 PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
 {
 
@@ -524,6 +525,7 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
   }
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "VecStepMaxBounded"
@@ -546,7 +548,7 @@ PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepm
 {
   PetscErrorCode ierr;
   PetscInt       i,nn;
-  PetscReal      *xx,*dx,*xl,*xu;
+  PetscScalar    *xx,*dx,*xl,*xu;
   PetscReal      localmax=0;
   MPI_Comm       comm;
 
@@ -562,10 +564,10 @@ PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepm
   ierr = VecGetArray(DX,&dx);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&nn);CHKERRQ(ierr);
   for (i=0;i<nn;i++){
-    if (dx[i] > 0){
-      localmax=PetscMax(localmax,(xu[i]-xx[i])/dx[i]);
-    } else if (dx[i]<0){
-      localmax=PetscMax(localmax,(xl[i]-xx[i])/dx[i]);
+    if (PetscRealPart(dx[i]) > 0){
+      localmax=PetscMax(localmax,PetscRealPart((xu[i]-xx[i])/dx[i]));
+    } else if (PetscRealPart(dx[i])<0){
+      localmax=PetscMax(localmax,PetscRealPart((xl[i]-xx[i])/dx[i]));
     }
   }
   ierr = VecRestoreArray(X,&xx);CHKERRQ(ierr);
@@ -600,7 +602,7 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
 {
   PetscErrorCode ierr;
   PetscInt       n,i;
-  PetscReal      *x,*xl,*xu,*dx;
+  PetscScalar    *x,*xl,*xu,*dx;
   PetscReal      t;
   PetscReal      localmin=PETSC_INFINITY,localwolfemin=PETSC_INFINITY,localmax=0;
   MPI_Comm       comm;
@@ -617,15 +619,15 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
   ierr=VecGetArray(DX,&dx);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   for (i=0;i<n;i++){
-    if (dx[i]>0){
-      t=(xu[i]-x[i])/dx[i];
+    if (PetscRealPart(dx[i])>0){
+      t=PetscRealPart((xu[i]-x[i])/dx[i]);
       localmin=PetscMin(t,localmin);
       if (localmin>0){
         localwolfemin = PetscMin(t,localwolfemin);
       }
       localmax = PetscMax(t,localmax);
-    } else if (dx[i]<0){
-      t=(xl[i]-x[i])/dx[i];
+    } else if (PetscRealPart(dx[i])<0){
+      t=PetscRealPart((xl[i]-x[i])/dx[i]);
       localmin = PetscMin(t,localmin);
       if (localmin>0){
         localwolfemin = PetscMin(t,localwolfemin);
@@ -674,7 +676,7 @@ PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step)
   PetscErrorCode ierr;
   PetscInt       i, nn;
   PetscReal      stepmax=PETSC_INFINITY;
-  PetscReal      *xx, *dx;
+  PetscScalar    *xx, *dx;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
@@ -685,8 +687,8 @@ PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step)
   ierr = VecGetArray(X,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(DX,&dx);CHKERRQ(ierr);
   for (i=0;i<nn;i++){
-    if (xx[i] < 0) SETERRQ(PETSC_COMM_SELF,1,"Vector must be positive");
-    else if (dx[i]<0) stepmax=PetscMin(stepmax,-xx[i]/dx[i]);
+    if (PetscRealPart(xx[i]) < 0) SETERRQ(PETSC_COMM_SELF,1,"Vector must be positive");
+    else if (PetscRealPart(dx[i])<0) stepmax=PetscMin(stepmax,PetscRealPart(-xx[i]/dx[i]));
   }
   ierr = VecRestoreArray(X,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(DX,&dx);CHKERRQ(ierr);
@@ -716,7 +718,7 @@ PetscErrorCode VecPow(Vec v, PetscScalar p)
 {
   PetscErrorCode ierr;
   PetscInt       n,i;
-  PetscReal      *v1;
+  PetscScalar    *v1;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
@@ -739,7 +741,7 @@ PetscErrorCode VecPow(Vec v, PetscScalar p)
     }
   } else if (0.5 == p) {
     for (i = 0; i < n; ++i) {
-      if (v1[i] >= 0) {
+      if (PetscRealPart(v1[i]) >= 0) {
         v1[i] = PetscSqrtScalar(v1[i]);
       } else {
         v1[i] = PETSC_INFINITY;
@@ -747,7 +749,7 @@ PetscErrorCode VecPow(Vec v, PetscScalar p)
     }
   } else if (-0.5 == p) {
     for (i = 0; i < n; ++i) {
-      if (v1[i] >= 0) {
+      if (PetscRealPart(v1[i]) >= 0) {
         v1[i] = 1.0 / PetscSqrtScalar(v1[i]);
       } else {
         v1[i] = PETSC_INFINITY;
@@ -763,7 +765,7 @@ PetscErrorCode VecPow(Vec v, PetscScalar p)
     }
   } else {
     for (i = 0; i < n; ++i) {
-      if (v1[i] >= 0) {
+      if (PetscRealPart(v1[i]) >= 0) {
         v1[i] = PetscPowScalar(v1[i], p);
       } else {
         v1[i] = PETSC_INFINITY;
@@ -795,7 +797,7 @@ PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
 {
   PetscErrorCode ierr;
   PetscInt       i,n,low1,low2,low3,low4,high1,high2,high3,high4;
-  PetscReal      *v1,*v2,*v3,*vmed;
+  PetscScalar    *v1,*v2,*v3,*vmed;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Vec1,VEC_CLASSID,1);
@@ -841,7 +843,7 @@ PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
   ierr=VecGetLocalSize(Vec1,&n);CHKERRQ(ierr);
 
   for (i=0;i<n;i++){
-    vmed[i]=PetscMax(PetscMax(PetscMin(v1[i],v2[i]),PetscMin(v1[i],v3[i])),PetscMin(v2[i],v3[i]));
+    vmed[i]=PetscMax(PetscMax(PetscMin(PetscRealPart(v1[i]),PetscRealPart(v2[i])),PetscMin(PetscRealPart(v1[i]),PetscRealPart(v3[i]))),PetscMin(PetscRealPart(v2[i]),PetscRealPart(v3[i])));
   }
 
   ierr = VecRestoreArray(Vec1,&v1);CHKERRQ(ierr);
