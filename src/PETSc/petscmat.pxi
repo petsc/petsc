@@ -256,6 +256,7 @@ cdef extern from * nogil:
     int MatZeroRowsColumnsIS(PetscMat,PetscIS,PetscScalar,PetscVec,PetscVec)
 
     int MatGetDiagonal(PetscMat,PetscVec)
+    int MatGetRowSum(PetscMat,PetscVec)
     int MatInvertBlockDiagonal(PetscMat,const_PetscScalar**)
     int MatGetRowMax(PetscMat,PetscVec,PetscInt[])
     int MatGetRowMaxAbs(PetscMat,PetscVec,PetscInt[])
