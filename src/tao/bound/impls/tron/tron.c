@@ -347,10 +347,16 @@ PetscErrorCode TaoCreate_TRON(Tao tao)
   ierr = PetscNewLog(tao,&tron);CHKERRQ(ierr);
 
   tao->max_it = 50;
+#if defined(PETSC_USE_REAL_SINGLE)
+  tao->fatol = 1e-5;
+  tao->frtol = 1e-5;
+  tao->steptol = 1e-6;
+#else
   tao->fatol = 1e-10;
   tao->frtol = 1e-10;
-  tao->data = (void*)tron;
   tao->steptol = 1e-12;
+#endif
+  tao->data = (void*)tron;
   tao->trust0       = 1.0;
 
   /* Initialize pointers and variables */

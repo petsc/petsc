@@ -85,14 +85,14 @@ static PetscErrorCode TaoLineSearchView_OWArmijo(TaoLineSearch ls, PetscViewer p
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pv, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = PetscViewerASCIIPrintf(pv,"  maxf=%d, ftol=%g, gtol=%g\n",ls->max_funcs, ls->rtol, ls->ftol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"  maxf=%D, ftol=%g, gtol=%g\n",ls->max_funcs, (double)ls->rtol, (double)ls->ftol);CHKERRQ(ierr);
     ierr=PetscViewerASCIIPrintf(pv,"  OWArmijo linesearch",armP->alpha);CHKERRQ(ierr);
     if (armP->nondescending) {
       ierr = PetscViewerASCIIPrintf(pv, " (nondescending)");CHKERRQ(ierr);
     }
-    ierr=PetscViewerASCIIPrintf(pv,": alpha=%g beta=%g ",armP->alpha,armP->beta);CHKERRQ(ierr);
-    ierr=PetscViewerASCIIPrintf(pv,"sigma=%g ",armP->sigma);CHKERRQ(ierr);
-    ierr=PetscViewerASCIIPrintf(pv,"memsize=%d\n",armP->memorySize);CHKERRQ(ierr);
+    ierr=PetscViewerASCIIPrintf(pv,": alpha=%g beta=%g ",(double)armP->alpha,(double)armP->beta);CHKERRQ(ierr);
+    ierr=PetscViewerASCIIPrintf(pv,"sigma=%g ",(double)armP->sigma);CHKERRQ(ierr);
+    ierr=PetscViewerASCIIPrintf(pv,"memsize=%D\n",armP->memorySize);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -280,7 +280,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
     ierr = PetscInfo(ls, "Step length is below tolerance.\n");CHKERRQ(ierr);
     ls->reason = TAOLINESEARCH_HALTED_RTOL;
   } else if (ls->nfeval >= ls->max_funcs) {
-    ierr = PetscInfo2(ls, "Number of line search function evals (%d) > maximum allowed (%d)\n",ls->nfeval, ls->max_funcs);CHKERRQ(ierr);
+    ierr = PetscInfo2(ls, "Number of line search function evals (%D) > maximum allowed (%D)\n",ls->nfeval, ls->max_funcs);CHKERRQ(ierr);
     ls->reason = TAOLINESEARCH_HALTED_MAXFCN;
   }
   if (ls->reason) PetscFunctionReturn(0);

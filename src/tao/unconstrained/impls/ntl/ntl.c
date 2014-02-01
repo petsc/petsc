@@ -944,8 +944,13 @@ PetscErrorCode TaoCreate_NTL(Tao tao)
   tao->ops->destroy = TaoDestroy_NTL;
 
   tao->max_it = 50;
+#if defined(PETSC_USE_REAL_SINGLE)
+  tao->fatol = 1e-5;
+  tao->frtol = 1e-5;
+#else
   tao->fatol = 1e-10;
   tao->frtol = 1e-10;
+#endif
   tao->data = (void*)tl;
 
   tao->trust0 = 100.0;

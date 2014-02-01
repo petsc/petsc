@@ -192,15 +192,15 @@ static PetscErrorCode TaoDestroy_BQPIP(Tao tao)
 #define __FUNCT__ "TaoSolve_BQPIP"
 static PetscErrorCode TaoSolve_BQPIP(Tao tao)
 {
-  TAO_BQPIP *qp = (TAO_BQPIP*)tao->data;
-  PetscErrorCode ierr;
-  PetscInt    iter=0,its;
-  PetscReal    d1,d2,ksptol,sigma;
-  PetscReal    sigmamu;
-  PetscReal    dstep,pstep,step=0;
-  PetscReal    gap[4];
+  TAO_BQPIP            *qp = (TAO_BQPIP*)tao->data;
+  PetscErrorCode       ierr;
+  PetscInt             iter=0,its;
+  PetscReal            d1,d2,ksptol,sigma;
+  PetscReal            sigmamu;
+  PetscReal            dstep,pstep,step=0;
+  PetscReal            gap[4];
   TaoTerminationReason reason;
-  MatStructure matflag;
+  MatStructure         matflag;
 
   PetscFunctionBegin;
   qp->dobj           = 0.0;
@@ -564,12 +564,19 @@ PetscErrorCode TaoCreate_BQPIP(Tao tao)
 
   tao->max_it=100;
   tao->max_funcs = 500;
+#if defined(PETSC_USE_REAL_SINGLE)
+  tao->fatol=1e-6;
+  tao->frtol=1e-6;
+  tao->gatol=1e-6;
+  tao->grtol=1e-6;
+  tao->catol=1e-6;
+#else
   tao->fatol=1e-12;
   tao->frtol=1e-12;
   tao->gatol=1e-12;
   tao->grtol=1e-12;
   tao->catol=1e-12;
-
+#endif
 
   /* Initialize pointers and variables */
   qp->n              = 0;
@@ -577,16 +584,11 @@ PetscErrorCode TaoCreate_BQPIP(Tao tao)
   qp->ksp_tol       = 0.1;
 
   qp->predcorr       = 1;
-
-
   tao->data = (void*)qp;
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp, KSPCG);CHKERRQ(ierr);
   ierr = KSPSetTolerances(tao->ksp, 1e-14, 1e-30, 1e30, PetscMax(10,qp->n));CHKERRQ(ierr);
-
-
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

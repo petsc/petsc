@@ -35,7 +35,11 @@ static PetscErrorCode  pounders_fg(Tao subtao, Vec x, PetscReal *f, Vec g, void 
 PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
 {
   PetscErrorCode ierr;
+#if defined(PETSC_USE_REAL_SINGLE)
+  PetscReal      atol=1.0e-5;
+#else
   PetscReal      atol=1.0e-10;
+#endif
   PetscInt       info,its;
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
 
@@ -1112,11 +1116,17 @@ PetscErrorCode TaoCreate_POUNDERS(Tao tao)
   tao->data = (void*)mfqP;
   tao->max_it = 2000;
   tao->max_funcs = 4000;
+#if defined(PETSC_USE_REAL_SINGLE)
+  tao->fatol = 1e-4;
+  tao->frtol = 1e-4;
+  mfqP->deltamin=1e-3;
+#else
   tao->fatol = 1e-8;
   tao->frtol = 1e-8;
+  mfqP->deltamin=1e-6;
+#endif
   mfqP->delta = 0.1;
   mfqP->deltamax=1e3;
-  mfqP->deltamin=1e-6;
   mfqP->c2 = 100.0;
   mfqP->theta1=1e-5;
   mfqP->theta2=1e-4;

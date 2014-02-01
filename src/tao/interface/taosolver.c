@@ -108,17 +108,24 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
 
   tao->max_it     = 10000;
   tao->max_funcs   = 10000;
+#if defined(PETSC_USE_REAL_SINGLE)
+  tao->fatol       = 1e-5;
+  tao->frtol       = 1e-5;
+  tao->gatol       = 1e-5;
+  tao->grtol       = 1e-5;
+#else
   tao->fatol       = 1e-8;
   tao->frtol       = 1e-8;
   tao->gatol       = 1e-8;
   tao->grtol       = 1e-8;
+#endif
   tao->gttol       = 0.0;
   tao->catol       = 0.0;
   tao->crtol       = 0.0;
   tao->xtol        = 0.0;
-  tao->steptol       = 0.0;
+  tao->steptol     = 0.0;
   tao->trust0      = PETSC_INFINITY;
-  tao->fmin        = -1e100;
+  tao->fmin        = PETSC_NINFINITY;
   tao->hist_reset = PETSC_TRUE;
   tao->hist_max = 0;
   tao->hist_len = 0;
@@ -344,13 +351,13 @@ PetscErrorCode TaoDestroy(Tao *tao)
 @*/
 PetscErrorCode TaoSetFromOptions(Tao tao)
 {
-  PetscErrorCode      ierr;
-  const TaoType default_type = "tao_lmvm";
-  const char          *prefix;
-  char                type[256], monfilename[PETSC_MAX_PATH_LEN];
-  PetscViewer         monviewer;
-  PetscBool           flg;
-  MPI_Comm            comm;
+  PetscErrorCode ierr;
+  const TaoType  default_type = "tao_lmvm";
+  const char     *prefix;
+  char           type[256], monfilename[PETSC_MAX_PATH_LEN];
+  PetscViewer    monviewer;
+  PetscBool      flg;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
@@ -390,9 +397,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
     ierr = PetscOptionsReal("-tao_gatol","Stop if norm of gradient less than","TaoSetTolerances",tao->gatol,&tao->gatol,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-tao_grtol","Stop if norm of gradient divided by the function value is less than","TaoSetTolerances",tao->grtol,&tao->grtol,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-tao_gttol","Stop if the norm of the gradient is less than the norm of the initial gradient times tol","TaoSetTolerances",tao->gttol,&tao->gttol,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-tao_max_it","Stop if iteration number exceeds",
-                           "TaoSetMaximumIterations",tao->max_it,&tao->max_it,
-                           &flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-tao_max_it","Stop if iteration number exceeds","TaoSetMaximumIterations",tao->max_it,&tao->max_it,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-tao_max_funcs","Stop if number of function evaluations exceeds","TaoSetMaximumFunctionEvaluations",tao->max_funcs,&tao->max_funcs,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-tao_fmin","Stop if function less than","TaoSetFunctionLowerBound",tao->fmin,&tao->fmin,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-tao_steptol","Stop if step size or trust region radius less than","",tao->steptol,&tao->steptol,&flg);CHKERRQ(ierr);
@@ -1062,7 +1067,6 @@ PetscErrorCode TaoGetTolerances(Tao tao, PetscReal *fatol, PetscReal *frtol, Pet
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "TaoGetKSP"
 /*@
@@ -1146,7 +1150,6 @@ PetscErrorCode TaoAddLineSearchCounts(Tao tao)
   }
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoGetSolutionVector"
@@ -1773,16 +1776,16 @@ PetscErrorCode TaoSeparableObjectiveMonitor(Tao tao, void *ctx)
 
 PetscErrorCode TaoDefaultConvergenceTest(Tao tao,void *dummy)
 {
-  PetscInt                   niter=tao->niter, nfuncs=PetscMax(tao->nfuncs,tao->nfuncgrads);
-  PetscInt                   max_funcs=tao->max_funcs;
-  PetscReal                  gnorm=tao->residual, gnorm0=tao->gnorm0;
-  PetscReal                  f=tao->fc, steptol=tao->steptol,trradius=tao->step;
-  PetscReal                  gatol=tao->gatol,grtol=tao->grtol,gttol=tao->gttol;
-  PetscReal                  fatol=tao->fatol,frtol=tao->frtol,catol=tao->catol,crtol=tao->crtol;
-  PetscReal                  fmin=tao->fmin, cnorm=tao->cnorm, cnorm0=tao->cnorm0;
-  PetscReal                  gnorm2;
+  PetscInt             niter=tao->niter, nfuncs=PetscMax(tao->nfuncs,tao->nfuncgrads);
+  PetscInt             max_funcs=tao->max_funcs;
+  PetscReal            gnorm=tao->residual, gnorm0=tao->gnorm0;
+  PetscReal            f=tao->fc, steptol=tao->steptol,trradius=tao->step;
+  PetscReal            gatol=tao->gatol,grtol=tao->grtol,gttol=tao->gttol;
+  PetscReal            fatol=tao->fatol,frtol=tao->frtol,catol=tao->catol,crtol=tao->crtol;
+  PetscReal            fmin=tao->fmin, cnorm=tao->cnorm, cnorm0=tao->cnorm0;
+  PetscReal            gnorm2;
   TaoTerminationReason reason=tao->reason;
-  PetscErrorCode             ierr;
+  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID,1);

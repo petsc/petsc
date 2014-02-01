@@ -329,8 +329,14 @@ PetscErrorCode TaoCreate_ASFLS(Tao tao)
   tao->frtol = 0;
   tao->gttol = 0;
   tao->grtol = 0;
+#if defined(PETSC_USE_REAL_SINGLE)
+  tao->gatol = 1.0e-6;
+  tao->fmin = 1.0e-4;
+#else
   tao->gatol = 1.0e-16;
   tao->fmin = 1.0e-8;
+#endif
+
 
   PetscFunctionReturn(0);
 }

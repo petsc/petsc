@@ -342,8 +342,14 @@ PetscErrorCode TaoCreate_GPCG(Tao tao)
 
   tao->max_it = 500;
   tao->max_funcs = 100000;
+
+#if defined(PETSC_USE_REAL_SINGLE)
+  tao->fatol = 1e-6;
+  tao->frtol = 1e-6;
+#else
   tao->fatol = 1e-12;
   tao->frtol = 1e-12;
+#endif
 
   /* Initialize pointers and variables */
   gpcg->n=0;

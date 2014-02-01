@@ -132,11 +132,15 @@ static PetscErrorCode  pounders_fg(Tao subtao, Vec x, PetscReal *f, Vec g, void 
 PetscErrorCode TaoPounders_solvequadratic(Tao tao,PetscReal *gnorm, PetscReal *qmin)
 {
     PetscErrorCode ierr;
-    PetscReal atol=1.0e-10;
-    PetscInt info,its;
-    TAO_POUNDERS *mfqP = (TAO_POUNDERS*)tao->data;
-    PetscReal maxval;
-    PetscInt i,j;
+#if defined(PETSC_USE_REAL_SINGLE)
+    PetscReal      atol=1.0e-5;
+#else
+    PetscReal      atol=1.0e-10;
+#endif
+    PetscInt       info,its;
+    TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
+    PetscReal      maxval;
+    PetscInt       i,j;
 
     PetscFunctionBegin;
 

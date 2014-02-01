@@ -588,8 +588,13 @@ PetscErrorCode TaoCreate_LCL(Tao tao)
   tao->data = (void*)lclP;
 
   tao->max_it=200;
+#if defined(PETSC_USE_REAL_SINGLE)
+  tao->fatol=1e-5;
+  tao->frtol=1e-5;
+#else
   tao->fatol=1e-8;
   tao->frtol=1e-8;
+#endif
   tao->catol=1e-4;
   tao->crtol=1e-4;
   tao->gttol=1e-4;

@@ -233,8 +233,13 @@ PetscErrorCode TaoCreate_NM(Tao tao)
 
   tao->max_it = 2000;
   tao->max_funcs = 4000;
+#if defined(PETSC_USE_REAL_SINGLE)
+  tao->fatol = 1e-5;
+  tao->frtol = 1e-5;
+#else
   tao->fatol = 1e-8;
   tao->frtol = 1e-8;
+#endif
 
   nm->simplex = 0;
   nm->lamda = 1;
