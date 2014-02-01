@@ -10,6 +10,7 @@ cdef extern from * nogil:
     PetscViewerType PETSCVIEWERMATHEMATICA
     PetscViewerType PETSCVIEWERNETCDF
     PetscViewerType PETSCVIEWERHDF5
+    PetscViewerType PETSCVIEWERVTK
     PetscViewerType PETSCVIEWERMATLAB
     PetscViewerType PETSCVIEWERSAWS
 
