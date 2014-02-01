@@ -152,7 +152,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
   ierr = VecGetLocalSize(v, &numPoints);CHKERRQ(ierr);
   ierr = VecGetBlockSize(v, &bs);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
-  if (bs != dim) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Block size for point vector %d must be the mesh coordinate dimension %d", bs, dim);
+  if (bs != dim) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Block size for point vector %D must be the mesh coordinate dimension %D", bs, dim);
   numPoints /= bs;
   ierr       = PetscMalloc1(numPoints, &cells);CHKERRQ(ierr);
   for (p = 0; p < numPoints; ++p) {
@@ -170,7 +170,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
           ierr = DMPlexLocatePoint_General_2D_Internal(dm, point, c, &cell);CHKERRQ(ierr);
           break;
         default:
-          SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No point location for cell with cone size %d", coneSize);
+          SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No point location for cell with cone size %D", coneSize);
         }
         if (cell >= 0) break;
       }
@@ -186,13 +186,13 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
           ierr = DMPlexLocatePoint_General_3D_Internal(dm, point, c, &cell);CHKERRQ(ierr);
           break;
         default:
-          SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No point location for cell with cone size %d", coneSize);
+          SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No point location for cell with cone size %D", coneSize);
         }
         if (cell >= 0) break;
       }
       break;
     default:
-      SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No point location for mesh dimension %d", dim);
+      SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No point location for mesh dimension %D", dim);
     }
     cells[p] = cell;
   }
@@ -495,7 +495,7 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
       PetscLogFlops(2.0);
     }
     if (invJ) {invJ[0] = 1.0/J[0]; PetscLogFlops(1.0);}
-  } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this segment is %d != 2", numCoords);
+  } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this segment is %D != 2", numCoords);
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -556,7 +556,7 @@ static PetscErrorCode DMPlexComputeTriangleGeometry_Internal(DM dm, PetscInt e, 
       Det2D_Internal(detJ, J);
     }
     if (invJ) {Invert2D_Internal(invJ, J, *detJ);}
-  } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this triangle is %d != 6,9", numCoords);
+  } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this triangle is %D != 6 or 9", numCoords);
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -615,7 +615,7 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
       Det2D_Internal(detJ, J);
     }
     if (invJ) {Invert2D_Internal(invJ, J, *detJ);}
-  } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this quadrilateral is %d != 6", numCoords);
+  } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this quadrilateral is %D != 8 or 12", numCoords);
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -965,7 +965,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
       }
       break;
     default:
-      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle faces with %d vertices", numCorners);
+      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle faces with %D vertices", numCorners);
     }
     ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, faces[f], &coordSize, &coords);CHKERRQ(ierr);
   }
