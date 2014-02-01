@@ -57,7 +57,7 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
 #if defined(DEBUG_IPM)
   ierr = VecNorm(tao->solution,NORM_2,&tau);CHKERRQ(ierr);
   ierr = VecView(tao->solution,0);CHKERRQ(ierr);
-  /*  PetscPrintf(PETSC_COMM_WORLD,"||x0|| = %g\n",tau); */
+  /*  PetscPrintf(PETSC_COMM_WORLD,"||x0|| = %g\n",(double)tau); */
 #endif
   ierr = VecCopy(tao->solution,ipmP->rhs_x);CHKERRQ(ierr);
   ierr = IPMEvaluate(tao);CHKERRQ(ierr);
@@ -100,7 +100,7 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
     PetscScalar norm1,norm2;
     ierr = VecNorm(ipmP->bigrhs,NORM_2,&norm1);
     ierr = VecNorm(ipmP->bigstep,NORM_2,&norm2);
-    PetscPrintf(PETSC_COMM_WORLD,"||rhs|| = %g\t ||step|| = %g\n",norm1,norm2);
+    PetscPrintf(PETSC_COMM_WORLD,"||rhs|| = %g\t ||step|| = %g\n",(double)norm1,(double)norm2);
 #endif
      /* Find distance along step direction to closest bound */
     if (ipmP->nb > 0) {
@@ -199,7 +199,7 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
     phi_target = ipmP->dec * ipmP->phi;
     for (i=0; i<11;i++) {
 #if defined DEBUG_KKT2
-    PetscPrintf(PETSC_COMM_WORLD,"alpha2=%g\n",alpha);
+    PetscPrintf(PETSC_COMM_WORLD,"alpha2=%g\n",(double)alpha);
       PetscPrintf(PETSC_COMM_WORLD,"old point:\n");
       VecView(tao->solution,0);
       VecView(ipmP->lamdae,0);

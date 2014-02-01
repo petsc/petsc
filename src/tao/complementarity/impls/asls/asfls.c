@@ -199,7 +199,7 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
     ierr = ISComplementVec(asls->fixed,asls->t1, &asls->free);CHKERRQ(ierr);
 
     ierr = ISGetSize(asls->fixed,&nf);CHKERRQ(ierr);
-    ierr = PetscInfo1(tao,"Number of fixed variables: %d\n", nf);CHKERRQ(ierr);
+    ierr = PetscInfo1(tao,"Number of fixed variables: %D\n", nf);CHKERRQ(ierr);
 
     /* We now have our partition.  Now calculate the direction in the
        fixed variable space. */
@@ -264,8 +264,8 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
     ierr = VecDot(asls->w, asls->dpsi, &innerd);CHKERRQ(ierr);
 
     if (innerd >= -asls->delta*pow(normd, asls->rho)) {
-      ierr = PetscInfo1(tao,"Gradient direction: %5.4e.\n", innerd);CHKERRQ(ierr);
-      ierr = PetscInfo1(tao, "Iteration %d: newton direction not descent\n", iter);CHKERRQ(ierr);
+      ierr = PetscInfo1(tao,"Gradient direction: %5.4e.\n", (double)innerd);CHKERRQ(ierr);
+      ierr = PetscInfo1(tao, "Iteration %D: newton direction not descent\n", iter);CHKERRQ(ierr);
       ierr = VecCopy(asls->dpsi, tao->stepdirection);CHKERRQ(ierr);
       ierr = VecDot(asls->dpsi, tao->stepdirection, &innerd);CHKERRQ(ierr);
     }

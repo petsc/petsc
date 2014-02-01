@@ -23,11 +23,11 @@
 PetscErrorCode TaoPounders_formquad(TAO_POUNDERS *mfqP,PetscBool checkonly)
 {
   PetscErrorCode ierr;
-  PetscScalar *h,tempx[1];
-  PetscInt i,j,*ind;
-  const char *machine="localhost";
-  char name[12];
-  Vec Mind_real;
+  PetscScalar    *h,tempx[1];
+  PetscInt       i,j,*ind;
+  const char     *machine="localhost";
+  char           name[12];
+  Vec            Mind_real;
 
 #ifdef PETSC_HAVE_MATLAB_ENGINE
   if (!mfqP->me) {
@@ -37,11 +37,11 @@ PetscErrorCode TaoPounders_formquad(TAO_POUNDERS *mfqP,PetscBool checkonly)
   ierr = PetscMatlabEngineEvaluate(me,"Xhist = zeros(%d,%d);",mfqP->nHist,mfqP->n);CHKERRQ(ierr);
   ierr = PetscMatlabEngineEvaluate(me,"Fhist = zeros(%d,%d);",mfqP->nHist,mfqP->n);CHKERRQ(ierr);
   for (i=0;i<mfqP->nHist;i++) {
-    snprintf(name,12,"x%010d",i);
+    snprintf(name,12,"x%010d",(int)i);
     ierr = PetscObjectSetName((PetscObject)(mfqP->Xhist[i]),name);CHKERRQ(ierr);
     ierr = PetscMatlabEnginePut(me,mfqP->Xhist[i]);CHKERRQ(ierr);
     ierr = PetscMatlabEngineEvaluate(me,"Xhist(%d+1,:) = %s;",i,name);CHKERRQ(ierr);
-    snprintf(name,12,"f%010d",i);
+    snprintf(name,12,"f%010d",(int)i);
     ierr = PetscObjectSetName((PetscObject)(mfqP->Fhist[i]),name);CHKERRQ(ierr);
     ierr = PetscMatlabEnginePut(me,mfqP->Fhist[i]);CHKERRQ(ierr);
     ierr = PetscMatlabEngineEvaluate(me,"Fhist(%d,:) = %s;",i,name);CHKERRQ(ierr);
@@ -80,14 +80,14 @@ PetscErrorCode TaoPounders_formquad(TAO_POUNDERS *mfqP,PetscBool checkonly)
   if (!checkonly) {
     /* Get Gdel */
     for (i=0;i<mfqP->m;i++) {
-      snprintf(name,12,"g%010d",i);
+      snprintf(name,12,"g%010d",(int)i);
       ierr = PetscObjectSetName((PetscObject)(mfqP->Gdel[i]),name);CHKERRQ(ierr);
       ierr = PetscMatlabEngineEvaluate(me,"%s = G(%d+1,:);",name,i);CHKERRQ(ierr);
       ierr = PetscMatlabEngineGet(me,mfqP->Gdel[i]);CHKERRQ(ierr);
     }
     /* Get Hdel */
     for (i=0;i<mfqP->m;i++) {
-      snprintf(name,12,"h%010d",i);
+      snprintf(name,12,"h%010d",(int)i);
       ierr = PetscMatlabeEngineEvaluate(me,"%s = H(:,:,%d+1);",name,i);CHKERRQ(ierr);
       ierr = PetscMatlabEngineGetArray(me,);
     }

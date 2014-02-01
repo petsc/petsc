@@ -79,8 +79,8 @@ int main( int argc, char **argv )
   ierr = PetscOptionsGetInt(NULL,"-mx",&user.mx,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-my",&user.my,&flg);CHKERRQ(ierr);
 
-  PetscPrintf(MPI_COMM_WORLD,"\n---- Minimum Surface Area Problem -----\n");
-  PetscPrintf(MPI_COMM_WORLD,"mx: %D     my: %D   \n\n",user.mx,user.my);
+  ierr = PetscPrintf(MPI_COMM_WORLD,"\n---- Minimum Surface Area Problem -----\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(MPI_COMM_WORLD,"mx: %D     my: %D   \n\n",user.mx,user.my);CHKERRQ(ierr);
 
 
   /* Let PETSc determine the vector distribution */
@@ -169,7 +169,7 @@ int main( int argc, char **argv )
   /* Get information on termination */
   ierr = TaoGetTerminationReason(tao,&reason);CHKERRQ(ierr);
   if (reason <= 0 ){
-      PetscPrintf(MPI_COMM_WORLD,"Try a different TAO method \n");
+      ierr = PetscPrintf(MPI_COMM_WORLD,"Try a different TAO method \n");CHKERRQ(ierr);
   }
 
 

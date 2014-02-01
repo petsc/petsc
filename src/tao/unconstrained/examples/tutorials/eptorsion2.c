@@ -100,8 +100,8 @@ int main(int argc, char **argv)
     ierr = PetscOptionsGetInt(NULL,"-my",&user.my,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(NULL,"-mx",&user.mx,&flg);CHKERRQ(ierr);
 
-    PetscPrintf(PETSC_COMM_WORLD,"\n---- Elastic-Plastic Torsion Problem -----\n");
-    PetscPrintf(PETSC_COMM_WORLD,"mx: %D     my: %D   \n\n",user.mx,user.my);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n---- Elastic-Plastic Torsion Problem -----\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"mx: %D     my: %D   \n\n",user.mx,user.my);CHKERRQ(ierr);
 
     /* Set up distributed array */
     ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,NULL,NULL,
@@ -147,8 +147,7 @@ int main(int argc, char **argv)
     /* Get information on termination */
     ierr = TaoGetTerminationReason(tao,&reason);CHKERRQ(ierr);
     if (reason <= 0){
-        ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");
-        CHKERRQ(ierr);
+        ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");CHKERRQ(ierr);
     }
 
     /* Free TAO data structures */

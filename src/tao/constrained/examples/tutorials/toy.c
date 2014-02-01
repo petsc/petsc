@@ -106,8 +106,7 @@ PetscErrorCode main(int argc,char **argv)
   ierr = TaoGetTerminationReason(tao,&reason);CHKERRQ(ierr);
   if (reason < 0) {
     PetscPrintf(MPI_COMM_WORLD, "TAO failed to converge.\n");
-  }
-  else {
+  } else {
     PetscPrintf(MPI_COMM_WORLD, "Optimization terminated with status %D.\n", reason);
   }
 

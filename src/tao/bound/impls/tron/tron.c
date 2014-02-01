@@ -179,12 +179,12 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
         PetscReal rhs,stepnorm;
         ierr = VecNorm(tron->R,NORM_2,&rhs);CHKERRQ(ierr);
         ierr = VecNorm(tron->DXFree,NORM_2,&stepnorm);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"|rhs|=%g\t|s|=%g\n",rhs,stepnorm);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"|rhs|=%g\t|s|=%g\n",(double)rhs,(double)stepnorm);CHKERRQ(ierr);
       }
 
 
       ierr = VecDot(tao->gradient, tao->stepdirection, &gdx);CHKERRQ(ierr);
-      ierr = PetscInfo1(tao,"Expected decrease in function value: %14.12e\n",gdx);CHKERRQ(ierr);
+      ierr = PetscInfo1(tao,"Expected decrease in function value: %14.12e\n",(double)gdx);CHKERRQ(ierr);
 
       ierr = VecCopy(tao->solution, tron->X_New);CHKERRQ(ierr);
       ierr = VecCopy(tao->gradient, tron->G_New);CHKERRQ(ierr);
