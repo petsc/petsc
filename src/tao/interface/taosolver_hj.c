@@ -142,9 +142,7 @@ PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat *H, Mat *Hpre, MatStructure
   ++tao->nhess;
   ierr = PetscLogEventBegin(Tao_HessianEval,tao,X,*H,*Hpre);CHKERRQ(ierr);
   PetscStackPush("Tao user Hessian function");
-  CHKMEMQ;
   ierr = (*tao->ops->computehessian)(tao,X,H,Hpre,flg,tao->user_hessP);CHKERRQ(ierr);
-  CHKMEMQ;
   PetscStackPop;
   ierr = PetscLogEventEnd(Tao_HessianEval,tao,X,*H,*Hpre);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -195,9 +193,7 @@ PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat *J, Mat *Jpre, MatStructur
   ++tao->njac;
   ierr = PetscLogEventBegin(Tao_JacobianEval,tao,X,*J,*Jpre);CHKERRQ(ierr);
   PetscStackPush("Tao user Jacobian function");
-  CHKMEMQ;
   ierr = (*tao->ops->computejacobian)(tao,X,J,Jpre,flg,tao->user_jacP);CHKERRQ(ierr);
-  CHKMEMQ;
   PetscStackPop;
   ierr = PetscLogEventEnd(Tao_JacobianEval,tao,X,*J,*Jpre);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -248,9 +244,7 @@ PetscErrorCode TaoComputeJacobianState(Tao tao, Vec X, Mat *J, Mat *Jpre, Mat *J
   ++tao->njac_state;
   ierr = PetscLogEventBegin(Tao_JacobianEval,tao,X,*J,*Jpre);CHKERRQ(ierr);
   PetscStackPush("Tao user Jacobian(state) function");
-  CHKMEMQ;
   ierr = (*tao->ops->computejacobianstate)(tao,X,J,Jpre,Jinv,flg,tao->user_jac_stateP);CHKERRQ(ierr);
-  CHKMEMQ;
   PetscStackPop;
   ierr = PetscLogEventEnd(Tao_JacobianEval,tao,X,*J,*Jpre);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -297,9 +291,7 @@ PetscErrorCode TaoComputeJacobianDesign(Tao tao, Vec X, Mat *J)
   ++tao->njac_design;
   ierr = PetscLogEventBegin(Tao_JacobianEval,tao,X,*J,NULL);CHKERRQ(ierr);
   PetscStackPush("Tao user Jacobian(design) function");
-  CHKMEMQ;
   ierr = (*tao->ops->computejacobiandesign)(tao,X,J,tao->user_jac_designP);CHKERRQ(ierr);
-  CHKMEMQ;
   PetscStackPop;
   ierr = PetscLogEventEnd(Tao_JacobianEval,tao,X,*J,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -645,9 +637,7 @@ PetscErrorCode TaoComputeJacobianEquality(Tao tao, Vec X, Mat *J, Mat *Jpre, Mat
   ++tao->njac_equality;
   ierr = PetscLogEventBegin(Tao_JacobianEval,tao,X,*J,*Jpre);CHKERRQ(ierr);
   PetscStackPush("Tao user Jacobian(equality) function");
-  CHKMEMQ;
   ierr = (*tao->ops->computejacobianequality)(tao,X,J,Jpre,flg,tao->user_jac_equalityP);CHKERRQ(ierr);
-  CHKMEMQ;
   PetscStackPop;
   ierr = PetscLogEventEnd(Tao_JacobianEval,tao,X,*J,*Jpre);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -694,9 +684,7 @@ PetscErrorCode TaoComputeJacobianInequality(Tao tao, Vec X, Mat *J, Mat *Jpre, M
   ++tao->njac_inequality;
   ierr = PetscLogEventBegin(Tao_JacobianEval,tao,X,*J,*Jpre);CHKERRQ(ierr);
   PetscStackPush("Tao user Jacobian(inequality) function");
-  CHKMEMQ;
   ierr = (*tao->ops->computejacobianinequality)(tao,X,J,Jpre,flg,tao->user_jac_inequalityP);CHKERRQ(ierr);
-  CHKMEMQ;
   PetscStackPop;
   ierr = PetscLogEventEnd(Tao_JacobianEval,tao,X,*J,*Jpre);CHKERRQ(ierr);
   PetscFunctionReturn(0);

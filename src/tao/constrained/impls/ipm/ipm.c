@@ -826,13 +826,11 @@ PetscErrorCode IPMUpdateAi(Tao tao)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  CHKMEMQ;
   r2 = ipmP->mi;
   r3 = r2 + ipmP->nxlb;
   r4 = r3 + ipmP->nxub;
 
   if (!ipmP->nb) PetscFunctionReturn(0);
-  CHKMEMQ;
 
   /* Create Ai matrix if it doesn't exist yet */
   if (!ipmP->Ai) {
