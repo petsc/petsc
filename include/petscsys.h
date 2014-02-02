@@ -1007,10 +1007,10 @@ M*/
   Concepts: memory allocation
 M*/
 #define PetscCalloc7(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6,m7,r7)         \
-  (PetscMalloc6(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6,m7,r7)              \
+  (PetscMalloc7(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6,m7,r7)              \
    || PetscMemzero(*(r1),(m1)*sizeof(**(r1))) || PetscMemzero(*(r2),(m2)*sizeof(**(r2))) || PetscMemzero(*(r3),(m3)*sizeof(**(r3))) \
    || PetscMemzero(*(r4),(m4)*sizeof(**(r4))) || PetscMemzero(*(r5),(m5)*sizeof(**(r5))) || PetscMemzero(*(r6),(m6)*sizeof(**(r6))) \
-   || PetscMemzero(*(r6),(m6)*sizeof(**(r6))))
+   || PetscMemzero(*(r7),(m7)*sizeof(**(r7))))
 
 /*MC
    PetscNew - Allocates memory of a particular type, zeros the memory! Aligned to PETSC_MEMALIGN
