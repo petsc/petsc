@@ -11,17 +11,7 @@ their needs.  The current version of TAO and the most recent help
 concerning installation and usage can be found at  
 \url{http://www.mcs.anl.gov/tao}.
 
-TAO version 2.2.0 requires an ANSI C or C++ compiler and version 3.4 of PETSc, 
-available at \url{http://www.mcs.anl.gov/petsc}.  PETSc must be configured 
-without complex variables, but TAO now can work when PETSc 
-is configured without a C++ compiler or with single- or quad-precision 
-arithmetic.
-
-During setup, the user must set an environmental variable, 
-\texttt{TAO\_DIR}\findex{TAO_DIR}, indicating the full path to 
-the TAO home directory; this variable is used by the build
-system when compiling TAO source code.  We use this variable in the
-manual to refer to the location of files.
+See the PETSc users manual and \url{http://www.mcs.anl.gov/petsc} for how to install and start using PETSc/TAO.
 
 \section{Writing Application Codes with TAO}
 
@@ -29,26 +19,16 @@ Examples throughout the library demonstrate the software usage and
 can serve as templates for developing custom applications.  We suggest
 that new TAO users examine programs in
 \begin{verbatim}
-   ${TAO_DIR}/src/examples
-\end{verbatim} % Needed to fool the xemacs coloring algorithm $
-\noindent
-Additional examples are available on our website and in
-\begin{verbatim}
-   ${TAO_DIR}/src/<unconstrained,bound,..>/examples/tutorials
+   ${PETSC_DIR}/src/tao/<unconstrained,bound,..>/examples/tutorials.
 \end{verbatim} 
-% $
-\noindent
-where \texttt{<component>}
-denotes any of the TAO components, such as 
-\texttt{bound} or \texttt{unconstrained}.
 The HTML version of the manual pages located at
 \begin{verbatim}
-   ${TAO_DIR}/docs/manpages/index.html
+   ${PETSC_DIR}/docs/manpages/index.html
 \end{verbatim} % To fool the coloring algorithm $
 \noindent
 and
 \begin{verbatim}
-   http://www.mcs.anl.gov/tao/documentation/index.html
+   http://www.mcs.anl.gov/petsc/documentation/index.html
 \end{verbatim}
 \noindent
 provides indices (organized by both routine names and concepts) to the
@@ -58,11 +38,13 @@ We suggest the following procedure for writing a new application
 program using TAO:
 
 \begin{enumerate}
-\item Install TAO according to the instructions in
-  \url{http://www.mcs.anl.gov/tao/documentation/installation.html}.
-\item Copy the examples and makefile from the directory
-  \url{${TAO\_DIR}/examples}, %$
-  compile the examples, and run the programs. 
+\item Install PETSc/TAO according to the instructions in
+  \url{http://www.mcs.anl.gov/petsc/documentation/installation.html}.
+\item Copy an example and makefile from the directories
+\begin{verbatim}
+   ${PETSC_DIR}/src/tao/<unconstrained,bound,..>/examples/tutorials.
+\end{verbatim} 
+  compile the example, and run the program. 
 \item Select the example program matching the application most
   closely, and use it as a starting point for developing a customized
   code.
@@ -357,149 +339,6 @@ communicator; thus, all processors in the communicator {\em must} call
 the creation routine.  In addition, if a sequence of collective
 routines is being used, the routines {\em must} be called in the same
 order on each processor.
-
-\section{Compiling and Running TAO}
-\label{sec:running}
-
-Compilation of the TAO numerical libraries and TAO application codes
-requires three environmental variables to be set. \texttt{PETSC\_ARCH} and \texttt{PETSC\_DIR} must be identical to the values used when compiling PETSc, \texttt{TAO\_DIR} must be set to top level of the TAO directory tree. These three
-variables are discussed in greater detail in the TAO installation 
-instructions (\url{http:\\www.mcs.anl.gov/tao/documentation/installation.html}).
-
-TAO uses a portable makefile system provided by the
-PETSc~\cite{petsc-web-page,petsc-user-ref} library, which is discussed
-further in Section~\ref{sec:makefiles}.  The TAO library can be
-compiled with the command
-\begin{verbatim}
-   make
-\end{verbatim}
-\noindent
-from the \texttt{TAO\_DIR} directory.  
-
-A TAO application on a single processor can be run in the
-usual way by entering the name of the executable and any command line
-options.  Running programs in parallel, however, requires use of the
-Message Passing Interface (MPI) library \cite{MPI-final}.  
-All TAO programs use the MPI
-standard for message-passing communication.  Thus, to
-execute TAO programs, users must know the procedure for beginning MPI
-jobs on their selected computer system(s).  For instance, when using
-the MPICH implementation of MPI \cite{mpich-web-page} and many others,
-the following command initiates a program that uses eight processors.
-%\findex{mpiexec} \sindex{running TAO programs} 
-\begin{verbatim}
-  mpiexec -np 8 tao_program_name tao_options
-\end{verbatim}
-
-
-
-\subsection*{Makefiles}
-\label{sec:makefiles}
-
-To manage code portability across a wide variety of UNIX systems, TAO
-uses a makefile system that is integrated with the PETSc makefile system.  This
-section briefly discusses makefile usage from the perspective of
-application programmers; see the ``makefiles'' chapter of the PETSc
-users manual  \cite{petsc-user-ref} for additional
-details.
-
-In Figure \ref{fig:make3} we present a sample makefile.
-
-\begin{figure}[tbh]
-{\footnotesize
-\begin{verbatim}   
-       CFLAGS    = 
-       FFLAGS    = 
-       CPPFLAGS  =
-       FPPFLAGS  =
-       
-       include ${TAO_DIR}/conf/tao_base
-   
-       minsurf1: minsurf1.o tao_chkopts
-            -${CLINKER} -o minsurf1 minsurf1.o ${TAO_LIB} ${PETSC_LIB}
-            ${RM} minsurf1.o
-\end{verbatim} 
-% $
-\noindent
-}
-\caption{Sample TAO Makefile for a C Application}
-\label{fig:make3}
-\end{figure}
-This small makefile is suitable for maintaining a  program that
-uses the TAO library.  The most important line in this makefile is the
-line starting with {\tt include}.
-\findex{TAO_LIB}
-\begin{verbatim}
-   include ${TAO_DIR}/conf/tao_base
-\end{verbatim}
-\noindent % $
-This line includes other makefiles that provide the needed definitions
-and rules for the particular base software installations (specified by
-{\tt TAO\_DIR} and {\tt PETSC\_DIR}) and architecture
-(specified by {\tt PETSC\_ARCH}), which are typically set as
-environmental variables prior to compiling TAO source or programs.
- 
-Some additional variables that can be used in the makefile are defined
-as follows:
-\begin{itemize}
-\item \texttt{CFLAGS, FFLAGS} - user-specified additional options for the
-  C/C++ compiler and Fortran compiler.
-\item \texttt{CPPFLAGS, FPPFLAGS} - user-specified additional flags
-        for the C/C++ preprocessor and Fortran preprocesor.
-\item \texttt{CLINKER, FLINKER} - the C/C++ and Fortran linkers. 
-\item \texttt{RM} - the remove command for deleting files.
-\item \texttt{TAO\_LIB} - the TAO library flags.
-             \findex{TAO_LIB}
-\item \texttt{PETSC\_LIB} - the PETSc library flags.
-\end{itemize}
-
-\section{Directory Structure}
-
-The home directory of TAO contains the following subdirectories:
-
-\begin{itemize}
-\item \texttt{docs} - All documentation for TAO. The files \texttt{tao\_manual.pdf}
-                   and \texttt{manual/manual.html} contain the users manual in
-                   PDF and HTML formats, respectively. Includes
-                   the subdirectory
- \subitem - \texttt{manpages} (manual pages for individual TAO routines).
-% \item \texttt{bin} - Utilities and short scripts for use with TAO, including
-\item \texttt{conf} - Base TAO makefile directory.  
-\item \texttt{include} - All include files for TAO that are visible to the user.
-\item \texttt{examples} - Example problems and makefile.
-% \item \texttt{include/finclude}    - TAO include files for Fortran programmers using 
-%                                   the .F suffix (recommended).
-% \item \texttt{include/pinclude}    - Private TAO include files that should {\em not} 
-%                                  be used by application programmers.
-\item \texttt{src} - Source code for all TAO components, which
-                  includes the following:
- \begin{itemize}
- \item \texttt{unconstrained} - unconstrained minimization.
- \item \texttt{bound} - bound-constrained minimization.
- \item \texttt{least\_squares} - nonlinear least squares.
- \item \texttt{complementarity} - mixed complementarity solvers.
- \item \texttt{pde\_constrained} - PDE-constrained solvers.
- \end{itemize}
-\end{itemize}
-
-\noindent
-Each TAO source code component directory has the following subdirectories.
-\begin{itemize}
-\item  \texttt{examples} - Example programs for the component, including the
-following.
-  \begin{itemize}
-  \item \texttt{tutorials} - Programs designed to teach users about TAO.  These
-          codes can serve as templates for the design of custom
-applications.
-  \end{itemize}
-\item  \texttt{interface} - The calling sequences for the abstract interface  
-        to the component.
-        Code here does not know about particular implementations.
-\item  \texttt{impls} - Source code for one or more implementations.
-\item  \texttt{utils} - Utility routines.  Source here may know about the 
-          implementations but ideally will not know about implementations
-          for other components.
-\end{itemize}
 
 %%% Local Variables: 
 %%% mode: latex
