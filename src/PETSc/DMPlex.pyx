@@ -357,7 +357,7 @@ cdef class DMPlex(DM):
             CHKERR( DMPlexVecRestoreClosure(self.dm, sec.sec, vec.vec, cp, &csize, &cvals) )
         return closure
 
-    def createSection(self, numFields, numComp, numDof):
+    def createSection(self, numFields, numComp, numDof, numBC=0, bcField=None, bcPoints=None):
         cdef PetscInt dim = 0
         CHKERR( DMPlexGetDimension(self.dm, &dim) )
         cdef PetscInt nfield = asInt(numFields)
@@ -365,6 +365,23 @@ cdef class DMPlex(DM):
         cdef PetscInt *icomp = NULL, *idof = NULL
         numComp = iarray_i(numComp, &ncomp, &icomp)
         numDof = iarray_i(numDof, &ndof, &idof)
+
+        cdef PetscInt nbcfield = 0
+        cdef PetscInt *ibcfield = NULL
+        cdef PetscInt nbc = asInt(numBC)
+        cdef PetscIS* cbcpoints = NULL
+
+        if numBC != 0:
+          assert numBC > 0
+          assert numBC == len(bcField)
+          assert numBC == len(bcPoints)
+          bcField = iarray_i(bcField, &nbcfield, &ibcfield)
+          tmp = oarray_p(empty_p(nbc), NULL, <void**>&cbcpoints)
+          for i from 0 <= i < nbc: cbcpoints[i] = (<IS?>bcPoints[i]).iset
+        else:
+          assert bcField is None
+          assert bcPoints is None
+
         cdef Section sec = Section()
-        CHKERR( DMPlexCreateSection(self.dm, dim, nfield, icomp, idof, 0, NULL, NULL, &sec.sec) )
+        CHKERR( DMPlexCreateSection(self.dm, dim, nfield, icomp, idof, nbc, ibcfield, cbcpoints, &sec.sec) )
         return sec
