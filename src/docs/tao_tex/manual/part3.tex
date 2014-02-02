@@ -98,13 +98,7 @@ The termination flag can be set by using the routine
 \section{Line Searches} \sindex{line search}
 \label{sec:TaoLineSearch}
 
-Many solvers in TAO require a line search.  While these solvers always
-offer a default line search, other line searches can be applied by
-using the function
-\begin{verbatim}
-   TaoSetDefaultLineSearchType(Tao, LineSearchType);
-\end{verbatim}
-or by using the command line option  {\tt -tao\_ls\_type}.  
+By using the command line option  {\tt -tao\_ls\_type}.  
 Available line searches 
 include Mor\'{e}-Thuente \cite{more:92}, Armijo, gpcg, and unit.
 

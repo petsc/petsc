@@ -5,10 +5,10 @@
 #define __FUNCT__ "TaoSetUp_BQPIP"
 static PetscErrorCode TaoSetUp_BQPIP(Tao tao)
 {
-  TAO_BQPIP *qp =(TAO_BQPIP*)tao->data;
+  TAO_BQPIP      *qp =(TAO_BQPIP*)tao->data;
   PetscErrorCode ierr;
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   /* Set pointers to Data */
   ierr = VecGetSize(tao->solution,&qp->n);CHKERRQ(ierr);
 
@@ -27,7 +27,6 @@ static PetscErrorCode TaoSetUp_BQPIP(Tao tao)
       ierr = VecDuplicate(tao->solution, &tao->XU);CHKERRQ(ierr);
       ierr = VecSet(tao->XU, 1.0e20);CHKERRQ(ierr);
   }
-
 
   ierr = VecDuplicate(tao->solution, &qp->Work);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution, &qp->XU);CHKERRQ(ierr);
@@ -51,10 +50,7 @@ static PetscErrorCode TaoSetUp_BQPIP(Tao tao)
   ierr = VecDuplicate(tao->solution, &qp->DS);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution, &qp->TSwork);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution, &qp->R5);CHKERRQ(ierr);
-
-
   qp->m=2*qp->n;
-
   PetscFunctionReturn(0);
 }
 
@@ -62,9 +58,9 @@ static PetscErrorCode TaoSetUp_BQPIP(Tao tao)
 #define __FUNCT__ "QPIPSetInitialPoint"
 static PetscErrorCode  QPIPSetInitialPoint(TAO_BQPIP *qp, Tao tao)
 {
-  PetscErrorCode       ierr;
-  PetscReal    two=2.0,p01=1;
-  PetscReal    gap1,gap2,fff,mu;
+  PetscErrorCode ierr;
+  PetscReal      two=2.0,p01=1;
+  PetscReal      gap1,gap2,fff,mu;
 
   PetscFunctionBegin;
   /* Compute function, Gradient R=Hx+b, and Hessian */
@@ -145,19 +141,16 @@ static PetscErrorCode  QPIPSetInitialPoint(TAO_BQPIP *qp, Tao tao)
     if (qp->m>0) qp->mu=qp->gap/(qp->m); else qp->mu=0.0;
     qp->rgap=qp->gap/( PetscAbsReal(qp->dobj) + PetscAbsReal(qp->pobj) + 1.0 );
   }
-
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_BQPIP"
 static PetscErrorCode TaoDestroy_BQPIP(Tao tao)
 {
-  TAO_BQPIP *qp = (TAO_BQPIP*)tao->data;
+  TAO_BQPIP      *qp = (TAO_BQPIP*)tao->data;
   PetscErrorCode ierr;
 
-  /* Free allocated memory in BQPIP structure */
   PetscFunctionBegin;
   if (tao->setupcalled) {
     ierr = VecDestroy(&qp->G);CHKERRQ(ierr);
@@ -183,8 +176,6 @@ static PetscErrorCode TaoDestroy_BQPIP(Tao tao)
     ierr = VecDestroy(&qp->C0);CHKERRQ(ierr);
   }
   ierr = PetscFree(tao->data);CHKERRQ(ierr);
-  tao->data = NULL;
-
   PetscFunctionReturn(0);
 }
 
@@ -212,7 +203,6 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
   qp->dinfeas        = 1.0;
   qp->psteplength    = 0.0;
   qp->dsteplength    = 0.0;
-
 
   /* Tighten infinite bounds, things break when we don't do this
     -- see test_bqpip.c
@@ -517,23 +507,20 @@ PetscErrorCode QPIPComputeNormFromCentralPath(TAO_BQPIP *qp, PetscReal *norm)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_BQPIP"
 static PetscErrorCode TaoSetFromOptions_BQPIP(Tao tao)
 {
-  TAO_BQPIP *qp = (TAO_BQPIP*)tao->data;
-  PetscErrorCode       ierr;
+  TAO_BQPIP      *qp = (TAO_BQPIP*)tao->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Interior point method for bound constrained quadratic optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-predcorr","Use a predictor-corrector method","",qp->predcorr,&qp->predcorr,0);
- CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-predcorr","Use a predictor-corrector method","",qp->predcorr,&qp->predcorr,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoView_BQPIP"
@@ -543,15 +530,14 @@ static PetscErrorCode TaoView_BQPIP(Tao tao, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-
 /* --------------------------------------------------------- */
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_BQPIP"
 PetscErrorCode TaoCreate_BQPIP(Tao tao)
 {
-  TAO_BQPIP *qp;
-  PetscErrorCode       ierr;
+  TAO_BQPIP      *qp;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscNewLog(tao,&qp);CHKERRQ(ierr);

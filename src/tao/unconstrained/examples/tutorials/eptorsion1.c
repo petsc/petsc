@@ -136,14 +136,14 @@ PetscErrorCode main(int argc,char **argv)
 
     /* Set null preconditioner.  Alternatively, set user-provided
        preconditioner or explicitly form preconditioning matrix */
-    ierr = PetscOptionsSetValue("-tao_pc_type","none");CHKERRQ(ierr);
+    ierr = PetscOptionsSetValue("-pc_type","none");CHKERRQ(ierr);
   } else {
     ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user.ndim,user.ndim,5,NULL,&H);CHKERRQ(ierr);
     ierr = MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
     ierr = TaoSetHessianRoutine(tao,H,H,FormHessian,(void *)&user);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsSetValue("-tao_ksp_type","cg");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-ksp_type","cg");CHKERRQ(ierr);
 
   /* Check for any TAO command line options */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);

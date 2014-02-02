@@ -364,8 +364,6 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
   ierr = PetscObjectGetComm((PetscObject)tao,&comm);CHKERRQ(ierr);
   ierr = TaoGetOptionsPrefix(tao,&prefix);
   /* So no warnings are given about unused options */
-  ierr = PetscOptionsHasName(prefix,"-tao_ksp_type",&flg);
-  ierr = PetscOptionsHasName(prefix,"-tao_pc_type",&flg);
   ierr = PetscOptionsHasName(prefix,"-tao_ls_type",&flg);
 
   ierr = PetscObjectOptionsBegin((PetscObject)tao);CHKERRQ(ierr);
@@ -1946,123 +1944,6 @@ PetscErrorCode TaoAppendOptionsPrefix(Tao tao, const char p[])
 PetscErrorCode TaoGetOptionsPrefix(Tao tao, const char *p[])
 {
    return PetscObjectGetOptionsPrefix((PetscObject)tao,p);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetDefaultKSPType"
-/*@
-  TaoSetDefaultKSPType - Sets the default KSP type if a KSP object
-  is created.
-
-  Logically Collective on Tao
-
-  InputParameters:
-+ tao - the Tao context
-- ktype - the KSP type TAO will use by default
-
-  Note: Some solvers may require a particular KSP type and will not work
-  correctly if the default value is changed
-
-  Options Database Key:
-- tao_ksp_type
-
-  Level: advanced
-@*/
-PetscErrorCode TaoSetDefaultKSPType(Tao tao, KSPType ktype)
-{
-  const char     *prefix=0;
-  char           *option=0;
-  size_t         n1,n2;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  ierr = TaoGetOptionsPrefix(tao,&prefix);CHKERRQ(ierr);
-  ierr = PetscStrlen(prefix,&n1);
-  ierr = PetscStrlen("_ksp_type",&n2);
-  ierr = PetscMalloc1(n1+n2+1,&option);
-  ierr = PetscStrncpy(option,prefix,n1+1);
-  ierr = PetscStrncat(option,"_ksp_type",n2+1);
-  ierr = PetscOptionsSetValue(option,ktype);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetDefaulLineSearchType"
-/*@
-  TaoSetDefaultLineSearchType - Sets the default LineSearch type if a LineSearch object
-  is created.
-
-  Logically Collective on Tao
-
-  InputParameters:
-+ tao - the Tao context
-- lstype - the line search type TAO will use by default
-
-  Note: Some solvers may require a particular line search type and will not work
-  correctly if the default value is changed
-
-  Options Database Key:
-- tao_ls_type
-
-  Level: advanced
-@*/
-PetscErrorCode TaoSetDefaultLineSearchType(Tao tao, TaoLineSearchType lstype)
-{
-  const char     *prefix=0;
-  char           *option=0;
-  size_t         n1,n2;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  ierr = TaoGetOptionsPrefix(tao,&prefix);CHKERRQ(ierr);
-  ierr = PetscStrlen(prefix,&n1);
-  ierr = PetscStrlen("_ls_type",&n2);
-  ierr = PetscMalloc1(n1+n2+1,&option);
-  ierr = PetscStrncpy(option,prefix,n1+1);
-  ierr = PetscStrncat(option,"_ls_type",n2+1);
-  ierr = PetscOptionsSetValue(option,lstype);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetDefaultPCType"
-/*@
-  TaoSetDefaultPCType - Sets the default PC type if a PC object
-  is created.
-
-  Logically Collective on Tao
-
-  InputParameters:
-+ tao - the Tao context
-- pctype - the preconditioner type TAO will use by default
-
-  Note: Some solvers may require a particular PC type and will not work
-  correctly if the default value is changed
-
-  Options Database Key:
-- tao_pc_type
-
-  Level: advanced
-@*/
-PetscErrorCode TaoSetDefaultPCType(Tao tao, PCType pctype)
-{
-  const char     *prefix=0;
-  char           *option=0;
-  size_t         n1,n2;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  ierr = TaoGetOptionsPrefix(tao,&prefix);CHKERRQ(ierr);
-  ierr = PetscStrlen(prefix,&n1);
-  ierr = PetscStrlen("_pc_type",&n2);
-  ierr = PetscMalloc1(n1+n2+1,&option);
-  ierr = PetscStrncpy(option,prefix,n1+1);
-  ierr = PetscStrncat(option,"_pc_type",n2+1);
-  ierr = PetscOptionsSetValue(option,pctype);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__

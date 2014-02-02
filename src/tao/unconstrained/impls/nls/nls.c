@@ -116,30 +116,22 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   switch(nlsP->ksp_type) {
   case NLS_KSP_CG:
     ierr = KSPSetType(tao->ksp, KSPCG);CHKERRQ(ierr);
-    if (tao->ksp->ops->setfromoptions) {
-      (*tao->ksp->ops->setfromoptions)(tao->ksp);
-    }
+    ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
     break;
 
   case NLS_KSP_NASH:
     ierr = KSPSetType(tao->ksp, KSPNASH);CHKERRQ(ierr);
-    if (tao->ksp->ops->setfromoptions) {
-      (*tao->ksp->ops->setfromoptions)(tao->ksp);
-    }
+    ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
     break;
 
   case NLS_KSP_STCG:
     ierr = KSPSetType(tao->ksp, KSPSTCG);CHKERRQ(ierr);
-    if (tao->ksp->ops->setfromoptions) {
-      (*tao->ksp->ops->setfromoptions)(tao->ksp);
-    }
+    ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
     break;
 
   case NLS_KSP_GLTR:
     ierr = KSPSetType(tao->ksp, KSPGLTR);CHKERRQ(ierr);
-    if (tao->ksp->ops->setfromoptions) {
-      (*tao->ksp->ops->setfromoptions)(tao->ksp);
-    }
+    ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
     break;
 
   default:
