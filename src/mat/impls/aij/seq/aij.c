@@ -375,6 +375,59 @@ PetscErrorCode MatSetValuesRow_SeqAIJ(Mat A,PetscInt row,const PetscScalar v[])
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatSeqAIJSetValuesLocalFast"
+/*
+    MatSeqAIJSetValuesLocalFast - An optimized version of MatSetValuesLocal() for SeqAIJ matrices with several assumptions
+
+      -   a single row of values is set with each call
+      -   the local to global mapping is the identity
+      -   no row or column indices are negative or (in error) larger than the number of rows or columns
+      -   the values are always added to the matrix, not set
+      -   the columns indices on each call are sorted
+      -   no new locations are introduced in the nonzero structure of the matrix
+
+*/
+PetscErrorCode MatSeqAIJSetValuesLocalFast(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
+{
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscInt       low,high,t,row,nrow,i,col,l;
+  const PetscInt *rp,*ai = a->i,*ailen = a->ilen;
+  const PetscInt *aj = a->j;
+  MatScalar      *ap,*aa = a->a;
+PetscBool      found;
+
+  PetscFunctionBegin;
+if (m >1) printf("trouble1\n");
+  row = im[0];
+  rp   = aj + ai[row];
+  ap   = aa + ai[row];
+  nrow = ailen[row];
+  low  = 0;
+  for (l=0; l<n; l++) { /* loop over added columns */
+    col = in[l];
+    high = nrow;
+found = PETSC_FALSE;
+printf("%d %d %d %d %d %d\n",l,low,high-1,rp[low],rp[high-1],col);
+if (l > 0 && in[l] < in[l-1]) printf("trouble3 %d %d\n",in[l-1],in[l]);
+    while (high-low > 5) {
+      t = (low+high)/2;
+      if (rp[t] > col) high = t;
+      else low = t;
+    }
+    for (i=low; i<high; i++) {
+      if (rp[i] == col) {
+        ap[i] += v[l];
+        low = i + 1;
+found = PETSC_TRUE;
+        break;
+      }
+    }
+if (!found) printf("trouble2 %d %d %d %d %d\n",low,high-1,rp[low],rp[high-1],col);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatSetValues_SeqAIJ"
 PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {
