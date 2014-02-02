@@ -22,7 +22,6 @@
 
         module petsc
         use petscdmda
-        use petscdmadda
         use petscdmcomposite
         use petscts
         end module
