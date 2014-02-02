@@ -8,7 +8,7 @@
 !  The C version of this code is rosenbrock1.c
 !
 !/*T
-!  Concepts: TAO - Solving an unconstrained minimization problem
+!  Concepts: TAO^Solving an unconstrained minimization problem
 !  Routines: TaoCreate();
 !  Routines: TaoSetType(); TaoSetObjectiveAndGradientRoutine();
 !  Routines: TaoSetHessianRoutine();

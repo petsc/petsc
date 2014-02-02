@@ -9,7 +9,7 @@ minimize the extended Rosenbrock function: \n\
    sum_{i=0}^{n/2-1} ( alpha*(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2 ) \n";
 
 /*T
-   Concepts: TAO - Solving an unconstrained minimization problem
+   Concepts: TAO^Solving an unconstrained minimization problem
    Routines: TaoCreate();
    Routines: TaoSetType(); TaoSetObjectiveAndGradientRoutine();
    Routines: TaoSetHessianRoutine();

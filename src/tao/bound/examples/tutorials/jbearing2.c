@@ -22,7 +22,7 @@ The command line options are:\n\
  \n";
 
 /*T
-   Concepts: TAO - Solving a bound constrained minimization problem
+   Concepts: TAO^Solving a bound constrained minimization problem
    Routines: TaoCreate();
    Routines: TaoSetType(); TaoSetObjectiveAndGradientRoutine();
    Routines: TaoSetHessianRoutine();

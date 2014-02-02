@@ -15,7 +15,7 @@ The command line options are:\n\
   -start <st>, where <st> =0 for zero vector, and an average of the boundary conditions otherwise \n\n";
 
 /*T
-   Concepts: TAO - Solving an unconstrained minimization problem
+   Concepts: TAO^Solving an unconstrained minimization problem
    Routines: TaoCreate(); TaoSetType();
    Routines: TaoSetInitialVector();
    Routines: TaoSetObjectiveAndGradientRoutine();

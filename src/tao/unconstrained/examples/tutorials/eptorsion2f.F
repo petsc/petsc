@@ -9,7 +9,7 @@
 !    -par <param>, where <param> = angle of twist per unit length
 !
 !/*T
-!   Concepts: TAO - Solving an unconstrained minimization problem
+!   Concepts: TAO^Solving an unconstrained minimization problem
 !   Routines: TaoCreate(); TaoSetType();
 !   Routines: TaoSetInitialVector();
 !   Routines: TaoSetObjectiveAndGradientRoutine();

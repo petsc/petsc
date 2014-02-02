@@ -2,7 +2,7 @@
 #include "../src/tao/pde_constrained/impls/lcl/lcl.h"
 
 /*T
-   Concepts: TAO - Solving a system of nonlinear equations, nonlinear ;east squares
+   Concepts: TAO^Solving a system of nonlinear equations, nonlinear least squares
    Routines: TaoCreate();
    Routines: TaoSetType();
    Routines: TaoSetInitialVector();

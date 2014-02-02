@@ -20,7 +20,7 @@ The command line options are:\n\
                for an average of the boundary conditions\n\n";
 
 /*T
-   Concepts: TAO - Solving an unconstrained minimization problem
+   Concepts: TAO^Solving an unconstrained minimization problem
    Routines: TaoCreate(); TaoSetType();
    Routines: TaoSetInitialVector();
    Routines: TaoSetObjectiveAndGradientRoutine();

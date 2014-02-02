@@ -18,7 +18,7 @@ The command line options are:\n\
   -start <st>, where <st> =0 for zero vector, and an average of the boundary conditions otherwise \n\n";
 
 /*T
-   Concepts: TAO - Solving a complementarity problem
+   Concepts: TAO^Solving a complementarity problem
    Routines: TaoCreate(); TaoDestroy();
 
    Processors: 1

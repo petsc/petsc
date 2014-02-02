@@ -18,7 +18,7 @@ The command line options are:\n\
                for an average of the boundary conditions\n\n";
 
 /*T
-   Concepts: TAO - Solving a bound constrained minimization problem
+   Concepts: TAO^Solving a bound constrained minimization problem
    Routines: TaoCreate();
    Routines: TaoSetType(); TaoSetObjectiveAndGradientRoutine();
    Routines: TaoSetHessianRoutine();

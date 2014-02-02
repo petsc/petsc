@@ -13,7 +13,7 @@
 !    -bheight <ht>, where <ht> = height of the plate
 !
 !/*T
-!   Concepts: TAO - Solving a bound constrained minimization problem
+!   Concepts: TAO^Solving a bound constrained minimization problem
 !   Routines: TaoCreate();
 !   Routines: TaoSetType(); TaoSetObjectiveAndGradientRoutine();
 !   Routines: TaoSetHessianRoutine();

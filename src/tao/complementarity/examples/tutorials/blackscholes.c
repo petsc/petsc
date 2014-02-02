@@ -89,7 +89,7 @@ space.  The command line options are:\n\
   -es <se>, where <se> = ending point of the space discretization\n\n";
 
 /*T
-   Concepts: TAO - Solving a complementarity problem
+   Concepts: TAO^Solving a complementarity problem
    Routines: TaoCreate(); TaoDestroy();
    Routines: TaoSetJacobianRoutine(); TaoAppSetConstraintRoutine();
    Routines: TaoSetFromOptions();

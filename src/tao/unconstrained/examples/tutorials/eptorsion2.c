@@ -43,7 +43,7 @@ The command line options are:\n\
   -par <param>, where <param> = angle of twist per unit length\n\n";
 
 /*T
-   Concepts: TAO - Solving an unconstrained minimization problem
+   Concepts: TAO^Solving an unconstrained minimization problem
    Routines: TaoCreate(); TaoSetType();
    Routines: TaoSetInitialVector();
    Routines: TaoSetObjectiveAndGradientRoutine();
