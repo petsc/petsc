@@ -1833,6 +1833,76 @@ PetscErrorCode VecConjugate_SeqCUSP(Vec xin)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "VecGetLocalVector_SeqCUSP"
+PetscErrorCode VecGetLocalVector_SeqCUSP(Vec v,Vec *w)
+{
+  VecType        t;
+  PetscErrorCode ierr;
+  cudaError_t    err;
+  PetscBool      flg;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidPointer(w,2);
+  PetscValidHeaderSpecific(v,VEC_CLASSID,2);
+  ierr = VecGetType(*w,&t);CHKERRQ(ierr);
+  ierr = PetscStrcmp(t,VECSEQCUSP,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector of type %s passed to argument #2. Should be %s.\n",t,VECSEQCUSP);
+  
+  if ((*w)->data) PetscFree((*w)->data);
+  if ((Vec_CUSP*)(*w)->spptr) {
+    if (((Vec_CUSP*)(*w)->spptr)->GPUarray) delete ((Vec_CUSP*)(*w)->spptr)->GPUarray;
+    err = cudaStreamDestroy(((Vec_CUSP*)(*w)->spptr)->stream);CHKERRCUSP(err);
+    delete (Vec_CUSP*)(*w)->spptr;
+    (*w)->spptr = 0;
+  } 
+
+  if (v->petscnative) {
+    (*w)->data = v->data;
+    (*w)->valid_GPU_array = v->valid_GPU_array;
+    (*w)->spptr = v->spptr;
+  } else {
+    ierr = VecGetArray(v,(PetscScalar**)(*w)->data);CHKERRQ(ierr);
+    (*w)->valid_GPU_array = PETSC_CUSP_CPU;
+    ierr = VecCUSPAllocateCheck(*w);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecRestoreLocalVector_SeqCUSP"
+PetscErrorCode VecRestoreLocalVector_SeqCUSP(Vec v,Vec *w)
+{
+  VecType        t;
+  PetscErrorCode ierr;
+  cudaError_t    err;
+  PetscBool      flg;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidPointer(w,2);
+  PetscValidHeaderSpecific(v,VEC_CLASSID,2);
+  ierr = VecGetType(*w,&t);CHKERRQ(ierr);
+  ierr = PetscStrcmp(t,VECSEQCUSP,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector of type %s passed to argument #2. Should be %s.\n",t,VECSEQCUSP);
+
+  v->valid_GPU_array = (*w)->valid_GPU_array;
+  if (v->petscnative) {
+    (*w)->data = 0;
+    (*w)->valid_GPU_array = PETSC_CUSP_UNALLOCATED;
+    (*w)->spptr = 0;
+  } else {
+    ierr = VecRestoreArray(v,(PetscScalar**)(*w)->data);CHKERRQ(ierr);
+    if ((Vec_CUSP*)(*w)->spptr) {
+      delete ((Vec_CUSP*)(*w)->spptr)->GPUarray;
+      err = cudaStreamDestroy(((Vec_CUSP*)(*w)->spptr)->stream);CHKERRCUSP(err);
+      delete (Vec_CUSP*)(*w)->spptr;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "VecCreate_SeqCUSP"
 PETSC_EXTERN PetscErrorCode VecCreate_SeqCUSP(Vec V)
 {
@@ -1845,34 +1915,38 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqCUSP(Vec V)
   ierr = VecCreate_Seq_Private(V,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)V,VECSEQCUSP);CHKERRQ(ierr);
 
-  V->ops->dot             = VecDot_SeqCUSP;
-  V->ops->norm            = VecNorm_SeqCUSP;
-  V->ops->tdot            = VecTDot_SeqCUSP;
-  V->ops->scale           = VecScale_SeqCUSP;
-  V->ops->copy            = VecCopy_SeqCUSP;
-  V->ops->set             = VecSet_SeqCUSP;
-  V->ops->swap            = VecSwap_SeqCUSP;
-  V->ops->axpy            = VecAXPY_SeqCUSP;
-  V->ops->axpby           = VecAXPBY_SeqCUSP;
-  V->ops->axpbypcz        = VecAXPBYPCZ_SeqCUSP;
-  V->ops->pointwisemult   = VecPointwiseMult_SeqCUSP;
-  V->ops->pointwisedivide = VecPointwiseDivide_SeqCUSP;
-  V->ops->setrandom       = VecSetRandom_SeqCUSP;
-  V->ops->dot_local       = VecDot_SeqCUSP;
-  V->ops->tdot_local      = VecTDot_SeqCUSP;
-  V->ops->norm_local      = VecNorm_SeqCUSP;
-  V->ops->mdot_local      = VecMDot_SeqCUSP;
-  V->ops->maxpy           = VecMAXPY_SeqCUSP;
-  V->ops->mdot            = VecMDot_SeqCUSP;
-  V->ops->aypx            = VecAYPX_SeqCUSP;
-  V->ops->waxpy           = VecWAXPY_SeqCUSP;
-  V->ops->dotnorm2        = VecDotNorm2_SeqCUSP;
-  V->ops->placearray      = VecPlaceArray_SeqCUSP;
-  V->ops->replacearray    = VecReplaceArray_SeqCUSP;
-  V->ops->resetarray      = VecResetArray_SeqCUSP;
-  V->ops->destroy         = VecDestroy_SeqCUSP;
-  V->ops->duplicate       = VecDuplicate_SeqCUSP;
-  V->ops->conjugate       = VecConjugate_SeqCUSP;
+  V->ops->dot                    = VecDot_SeqCUSP;
+  V->ops->norm                   = VecNorm_SeqCUSP;
+  V->ops->tdot                   = VecTDot_SeqCUSP;
+  V->ops->scale                  = VecScale_SeqCUSP;
+  V->ops->copy                   = VecCopy_SeqCUSP;
+  V->ops->set                    = VecSet_SeqCUSP;
+  V->ops->swap                   = VecSwap_SeqCUSP;
+  V->ops->axpy                   = VecAXPY_SeqCUSP;
+  V->ops->axpby                  = VecAXPBY_SeqCUSP;
+  V->ops->axpbypcz               = VecAXPBYPCZ_SeqCUSP;
+  V->ops->pointwisemult          = VecPointwiseMult_SeqCUSP;
+  V->ops->pointwisedivide        = VecPointwiseDivide_SeqCUSP;
+  V->ops->setrandom              = VecSetRandom_SeqCUSP;
+  V->ops->dot_local              = VecDot_SeqCUSP;
+  V->ops->tdot_local             = VecTDot_SeqCUSP;
+  V->ops->norm_local             = VecNorm_SeqCUSP;
+  V->ops->mdot_local             = VecMDot_SeqCUSP;
+  V->ops->maxpy                  = VecMAXPY_SeqCUSP;
+  V->ops->mdot                   = VecMDot_SeqCUSP;
+  V->ops->aypx                   = VecAYPX_SeqCUSP;
+  V->ops->waxpy                  = VecWAXPY_SeqCUSP;
+  V->ops->dotnorm2               = VecDotNorm2_SeqCUSP;
+  V->ops->placearray             = VecPlaceArray_SeqCUSP;
+  V->ops->replacearray           = VecReplaceArray_SeqCUSP;
+  V->ops->resetarray             = VecResetArray_SeqCUSP;
+  V->ops->destroy                = VecDestroy_SeqCUSP;
+  V->ops->duplicate              = VecDuplicate_SeqCUSP;
+  V->ops->conjugate              = VecConjugate_SeqCUSP;
+  V->ops->getlocalvector         = VecGetLocalVector_SeqCUSP;
+  V->ops->restorelocalvector     = VecRestoreLocalVector_SeqCUSP;
+  V->ops->getlocalvectorread     = VecGetLocalVector_SeqCUSP;
+  V->ops->restorelocalvectorread = VecRestoreLocalVector_SeqCUSP;
 
   ierr = VecCUSPAllocateCheck(V);CHKERRQ(ierr);
   V->valid_GPU_array      = PETSC_CUSP_GPU;
