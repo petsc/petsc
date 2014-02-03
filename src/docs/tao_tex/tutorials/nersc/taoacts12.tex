@@ -683,7 +683,7 @@ matrix\end{center}
 
  ...
  VecCreateSeq(PETSC_COMM_SELF,n,&x);
- MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,nz,PETSC_NULL,&H);
+ MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,nz,NULL,&H);
  ... 
 \end{verbatim}
 }
@@ -738,7 +738,7 @@ Once that is done, it is trivial to get TAO to run in parallel:
  ...
  TaoCreate(PETSC_COMM_WORLD,&tao);
  VecCreateMPI(PETSC_COMM_WORLD,n,&x);
- MatCreateMPIAIJ(PETSC_COMM_WORLD,n,n,nz,PETSC_NULL,&H);
+ MatCreateMPIAIJ(PETSC_COMM_WORLD,n,n,nz,NULL,&H);
  ...
 \end{verbatim}
 }

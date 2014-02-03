@@ -303,7 +303,7 @@ PetscErrorCode TaoDestroy_CG(TAO_SOLVER tao)
   ierr = VecDestroy(&cg->G_old);CHKERRQ(ierr);
 
   PetscFree(tao->data);
-  tao->data = PETSC_NULL;
+  tao->data = NULL;
 
   PetscFunctionReturn(0);
 }

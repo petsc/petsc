@@ -39,7 +39,7 @@ int main(int argc,char **argv)
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
 
   /* Build the vectors */
-  ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
   ierr = VecSetSizes(B,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&X);CHKERRQ(ierr);

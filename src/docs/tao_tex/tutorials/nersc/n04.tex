@@ -789,7 +789,7 @@ algorithmic options and tolerances.}
   Mat             H;                /* Hessian Matrix                   */}
 
   \textcolor{red}{VecCreateSeq(PETSC_COMM_SELF,n,&x);
-  MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,nz,PETSC_NULL,&H);}
+  MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,nz,NULL,&H);}
   TaoCreate(PETSC_COMM_SELF,''tao_lmvm'',&tao);
   TaoApplicationCreate(PETSC_COMM_SELF,&app);
   TaoAppSetInitialSolutionVec(app,x);
@@ -855,7 +855,7 @@ algorithmic options and tolerances.}
   Mat             H;                /* Hessian Matrix                   */
 
   VecCreateSeq(PETSC_COMM_SELF,n,&x);
-  MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,nz,PETSC_NULL,&H);
+  MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,nz,NULL,&H);
   TaoCreate(PETSC_COMM_SELF,"tao_lmvm",&tao);
   \textcolor{green}{TaoApplicationCreate(}\textcolor{blue}{PETSC_COMM_SELF},\textcolor{green}{&app});
   \textcolor{green}{TaoAppSetInitialSolutionVec(app},\textcolor{red}{x});
@@ -885,7 +885,7 @@ algorithmic options and tolerances.}
   Mat             H;                /* Hessian Matrix                   */
 
   VecCreateSeq(PETSC_COMM_SELF,n,&x);
-  MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,nz,PETSC_NULL,&H);
+  MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,nz,NULL,&H);
   \textcolor{green}{TaoCreate(PETSC_COMM_SELF,}\textcolor{green}{"tao_lmvm"},\textcolor{green}{&tao});
   TaoApplicationCreate(PETSC_COMM_SELF,&app);
   TaoAppSetInitialSolutionVec(app,x);
@@ -914,7 +914,7 @@ algorithmic options and tolerances.}
   Mat             H;                /* Hessian Matrix                   */}
 
   \textcolor{red}{VecCreateSeq(PETSC_COMM_SELF,n,&x);
-  MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,nz,PETSC_NULL,&H);}
+  MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,nz,NULL,&H);}
   \textcolor{green}{TaoCreate(}\textcolor{green}{PETSC_COMM_SELF},\textcolor{green}{"tao_lmvm",&tao);}
   \textcolor{green}{TaoApplicationCreate(}\textcolor{green}{PETSC_COMM_SELF},\textcolor{green}{&app);
   TaoAppSetInitialSolutionVec(app},\textcolor{red}{x});
