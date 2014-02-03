@@ -21,7 +21,7 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool beg
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_CUSP)
-  if ((vec->petscnative || vec->ops->getarray) && vec->valid_GPU_array != PETSC_CUSP_GPU) {
+  if ((vec->petscnative || vec->ops->getarray) && (vec->valid_GPU_array == PETSC_CUSP_CPU || vec->valid_GPU_array == PETSC_CUSP_BOTH)) {
 #else
   if (vec->petscnative || vec->ops->getarray) {
 #endif
