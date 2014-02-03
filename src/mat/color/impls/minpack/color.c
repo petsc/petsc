@@ -232,7 +232,7 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring mc)
     PetscFunctionBegin;
     mc->dist                = 2;
     mc->data                = NULL;
-    mc->ops->apply          = MatColoringApply_SL;
+    mc->ops->apply          = MatColoringApply_LF;
     mc->ops->view           = NULL;
     mc->ops->destroy        = NULL;
     mc->ops->setfromoptions = NULL;
@@ -258,7 +258,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscol
   PetscBool       flg1,flg2;
 
   PetscFunctionBegin;
-  if (mc->dist != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"LF may only do distance 2 coloring");
+  if (mc->dist != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"IDO may only do distance 2 coloring");
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);

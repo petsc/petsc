@@ -383,8 +383,8 @@ PetscErrorCode MatColoringApply(MatColoring mc,ISColoring *coloring)
     ierr = MatColoringView(mc,viewer);CHKERRQ(ierr);
     ierr = MatGetSize(mc->mat,NULL,&nc);CHKERRQ(ierr);
     ierr = ISColoringGetIS(*coloring,&ncolors,NULL);CHKERRQ(ierr);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)mc),"  Number of colors %d\n",ncolors);CHKERRQ(ierr);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)mc),"  Number of total columns %d\n",nc);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Number of colors %d\n",ncolors);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Number of total columns %d\n",nc);CHKERRQ(ierr);
     if (nc <= 1000) {ierr = ISColoringView(*coloring,viewer);CHKERRQ(ierr);}
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
