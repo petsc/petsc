@@ -662,21 +662,11 @@ PetscErrorCode PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PetscScalar            *x_array,*y_array;
 
   PetscFunctionBegin;
-  /*
-      The VecPlaceArray() is to avoid having to copy the
-    y vector into the bjac->x vector. The reason for
-    the bjac->x vector is that we need a sequential vector
-    for the sequential solve.
-  */
-  ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
-  ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
-  ierr = VecPlaceArray(bjac->x,x_array);CHKERRQ(ierr);
-  ierr = VecPlaceArray(bjac->y,y_array);CHKERRQ(ierr);
+  ierr = VecGetLocalVector(x, &bjac->x);CHKERRQ(ierr);
+  ierr = VecGetLocalVectorRead(y, &bjac->y);CHKERRQ(ierr);
   ierr = KSPSolve(jac->ksp[0],bjac->x,bjac->y);CHKERRQ(ierr);
-  ierr = VecResetArray(bjac->x);CHKERRQ(ierr);
-  ierr = VecResetArray(bjac->y);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
-  ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr);
+  ierr = VecRestoreLocalVector(x, &bjac->x);CHKERRQ(ierr);
+  ierr = VecRestoreLocalVectorRead(y, &bjac->y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
