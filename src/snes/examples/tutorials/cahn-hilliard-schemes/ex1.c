@@ -19,6 +19,7 @@ static char help[] = "Solves the Cahn-Hilliard equation u_t = (b(u)( -gamma u_xx
 
 
 #include "petscsnes.h"
+#include <petscdm.h>
 #include "petscdmda.h"
 
 typedef struct {
@@ -55,7 +56,7 @@ int main(int argc, char **argv)
     
     /* Get physics and time parameters */
     ierr = GetParams(&user);CHKERRQ(ierr);
-    ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,-8,2,1,PETSC_NULL,&da);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE,-8,2,1,PETSC_NULL,&da);CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,0,"u");CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,1,"w");CHKERRQ(ierr);
     

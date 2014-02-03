@@ -13,6 +13,7 @@ Runtime options include:\n\
  */
 
 #include "petscsnes.h"
+#include <petscdm.h>
 #include "petscdmda.h"
 
 typedef struct {
@@ -63,13 +64,13 @@ int main(int argc, char **argv)
   ierr = GetParams(&user);CHKERRQ(ierr);
 
   if (user.periodic) {
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, -4, 3, 1,NULL,&user.da1);CHKERRQ(ierr);
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, -4, 3, 1,NULL,&user.da1_clone);CHKERRQ(ierr);
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, -4, 1, 1,NULL,&user.da2);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC, -4, 3, 1,NULL,&user.da1);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC, -4, 3, 1,NULL,&user.da1_clone);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC, -4, 1, 1,NULL,&user.da2);CHKERRQ(ierr);
   } else {
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE, -4, 3, 1,NULL,&user.da1);CHKERRQ(ierr);
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE, -4, 3, 1,NULL,&user.da1_clone);CHKERRQ(ierr);
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE, -4, 1, 1,NULL,&user.da2);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, -4, 3, 1,NULL,&user.da1);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, -4, 3, 1,NULL,&user.da1_clone);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, -4, 1, 1,NULL,&user.da2);CHKERRQ(ierr);
 
   }
   /* Set Element type (triangular) */

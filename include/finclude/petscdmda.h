@@ -11,18 +11,6 @@
       PetscEnum DMDA_STENCIL_BOX
 
       parameter (DMDA_STENCIL_STAR = 0,DMDA_STENCIL_BOX = 1)
-!
-!  Types of periodicity
-!
-      PetscEnum DMDA_BOUNDARY_NONE
-      PetscEnum DMDA_BOUNDARY_GHOSTED
-      PetscEnum DMDA_BOUNDARY_MIRROR
-      PetscEnum DMDA_BOUNDARY_PERIODIC
-
-      parameter (DMDA_BOUNDARY_NONE = 0)
-      parameter (DMDA_BOUNDARY_GHOSTED = 1)
-      parameter (DMDA_BOUNDARY_MIRROR = 2)
-      parameter (DMDA_BOUNDARY_PERIODIC = 3)
 
 !
 ! DMDAInterpolationType

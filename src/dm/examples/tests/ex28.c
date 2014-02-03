@@ -10,6 +10,7 @@ static char help[] = "Test sequential USFFT interface on a 3-dof field over a un
 #define DOF 3
 
 #include <petscmat.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -49,14 +50,14 @@ PetscInt main(PetscInt argc,char **args)
   ierr     = PetscOptionsGetIntArray(NULL,"-dim",dim,&ndim,NULL);CHKERRQ(ierr);
 
   /* DMDA with the correct fiber dimension */
-  ierr = DMDACreate3d(PETSC_COMM_SELF,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
+  ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,
                       dim[0], dim[1], dim[2],
                       PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
                       dof, stencil,
                       NULL, NULL, NULL,
                       &da);CHKERRQ(ierr);
   /* DMDA with fiber dimension 1 for split fields */
-  ierr = DMDACreate3d(PETSC_COMM_SELF,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
+  ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,
                       dim[0], dim[1], dim[2],
                       PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
                       1, stencil,

@@ -315,7 +315,7 @@ PetscErrorCode  DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
   DM_DA            *dd = (DM_DA*)da->data;
   PetscInt         s,m,n,p,M,N,P,dim,Mo,No,Po;
   const PetscInt   *lx,*ly,*lz;
-  DMDABoundaryType bx,by,bz;
+  DMBoundaryType   bx,by,bz;
   DMDAStencilType  stencil_type;
   PetscInt         ox,oy,oz;
   PetscInt         cl,rl;

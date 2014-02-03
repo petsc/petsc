@@ -3,6 +3,7 @@ static char help[] = "Tests the aSA multigrid code.\n"
                      "Parameters:\n"
                      "-n n          to use a matrix size of n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscksp.h>
 #include <petscpcasa.h>
@@ -42,7 +43,7 @@ int main(int Argc,char **Args)
 
   ierr = KSPSetOperators(kspmg,cmat,cmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, n, 1, 1, 0, &da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, n, 1, 1, 0, &da);CHKERRQ(ierr);
   ierr = DMDASetRefinementFactor(da, 3, 3, 3);CHKERRQ(ierr);
   ierr = PCSetDM(pcmg, (DM) da);CHKERRQ(ierr);
 

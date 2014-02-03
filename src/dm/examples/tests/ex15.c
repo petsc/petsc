@@ -1,6 +1,7 @@
 
 static char help[] = "Tests DMDA interpolation.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__
@@ -14,7 +15,7 @@ int main(int argc,char **argv)
   Mat              Interp;
   PetscScalar      one = 1.0;
   PetscBool        pt;
-  DMDABoundaryType bx = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE,bz = DMDA_BOUNDARY_NONE;
+  DMBoundaryType bx = DM_BOUNDARY_NONE,by = DM_BOUNDARY_NONE,bz = DM_BOUNDARY_NONE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
@@ -26,11 +27,11 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetBool(NULL,"-periodic",(PetscBool*)&pt,NULL);CHKERRQ(ierr);
 
   if (pt) {
-    if (dim > 0) bx = DMDA_BOUNDARY_PERIODIC;
-    if (dim > 1) by = DMDA_BOUNDARY_PERIODIC;
-    if (dim > 2) bz = DMDA_BOUNDARY_PERIODIC;
+    if (dim > 0) bx = DM_BOUNDARY_PERIODIC;
+    if (dim > 1) by = DM_BOUNDARY_PERIODIC;
+    if (dim > 2) bz = DM_BOUNDARY_PERIODIC;
   }
-  if (bx == DMDA_BOUNDARY_NONE) {
+  if (bx == DM_BOUNDARY_NONE) {
     M2 = ratio*(M1-1) + 1;
   } else {
     M2 = ratio*M1;

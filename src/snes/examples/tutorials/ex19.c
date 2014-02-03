@@ -68,6 +68,7 @@ T*/
 #import <PETSc/petscdmda.h>
 #else
 #include <petscsnes.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #endif
 
@@ -110,7 +111,7 @@ int main(int argc,char **argv)
       Create distributed array object to manage parallel grid and vectors
       for principal unknowns (x) and governing residuals (f)
   */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,(DM)da);CHKERRQ(ierr);
   ierr = SNESSetGS(snes, NonlinearGS, (void*)&user);CHKERRQ(ierr);
 

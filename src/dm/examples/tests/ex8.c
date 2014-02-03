@@ -89,7 +89,7 @@ int main(int argc,char **argv)
   DM               da;
   Vec              local,global,vslice;
   PetscScalar      value;
-  DMDABoundaryType wrap         = DMDA_XYPERIODIC;
+  DMBoundaryType   wrap         = DM_XYPERIODIC;
   DMDAStencilType  stencil_type = DMDA_STENCIL_BOX;
   VecScatter       scatter;
 
