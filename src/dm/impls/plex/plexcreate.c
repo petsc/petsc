@@ -5,7 +5,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Plex"
-PetscErrorCode  DMSetFromOptions_Plex(DM dm)
+PetscErrorCode DMSetFromOptions_Plex(DM dm)
 {
   DM_Plex        *mesh = (DM_Plex*) dm->data;
   PetscErrorCode ierr;
@@ -172,19 +172,36 @@ PetscErrorCode DMPlexCreateDoublet(MPI_Comm comm, PetscInt dim, PetscBool simple
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateSquareBoundary"
-/*
- Simple square boundary:
+/*@
+  DMPlexCreateSquareBoundary - Creates a 1D mesh the is the boundary of a square lattice.
 
- 18--5-17--4--16
-  |     |     |
-  6    10     3
-  |     |     |
- 19-11-20--9--15
-  |     |     |
-  7     8     2
-  |     |     |
- 12--0-13--1--14
-*/
+  Collective on MPI_Comm
+
+  Input Parameters:
++ comm  - The communicator for the DM object
+. lower - The lower left corner coordinates
+. upper - The upper right corner coordinates
+- edges - The number of cells in each direction
+
+  Output Parameter:
+. dm  - The DM object
+
+  Note: Here is the numbering returned for 2 cells in each direction:
+$ 18--5-17--4--16
+$  |     |     |
+$  6    10     3
+$  |     |     |
+$ 19-11-20--9--15
+$  |     |     |
+$  7     8     2
+$  |     |     |
+$ 12--0-13--1--14
+
+  Level: beginner
+
+.keywords: DM, create
+.seealso: DMPlexCreateBoxMesh(), DMPlexCreateCubeBoundary(), DMSetType(), DMCreate()
+@*/
 PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[])
 {
   PetscInt       numVertices    = (edges[0]+1)*(edges[1]+1);
@@ -294,17 +311,25 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateCubeBoundary"
-/*
- Simple cubic boundary:
+/*@
+  DMPlexCreateCubeBoundary - Creates a 2D mesh the is the boundary of a cubic lattice.
 
-     2-------3
-    /|      /|
-   6-------7 |
-   | |     | |
-   | 0-----|-1
-   |/      |/
-   4-------5
-*/
+  Collective on MPI_Comm
+
+  Input Parameters:
++ comm  - The communicator for the DM object
+. lower - The lower left front corner coordinates
+. upper - The upper right back corner coordinates
+- edges - The number of cells in each direction
+
+  Output Parameter:
+. dm  - The DM object
+
+  Level: beginner
+
+.keywords: DM, create
+.seealso: DMPlexCreateBoxMesh(), DMPlexCreateSquareBoundary(), DMSetType(), DMCreate()
+@*/
 PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt faces[])
 {
   PetscInt       numVertices = (faces[0]+1)*(faces[1]+1)*(faces[2]+1);
@@ -395,19 +420,36 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateSquareMesh"
-/*
- Simple square mesh:
+/*@
+  DMPlexCreateSquareMesh - Creates a 2D mesh for a square lattice.
 
- 22--8-23--9--24
-  |     |     |
- 13  2 14  3  15
-  |     |     |
- 19--6-20--7--21
-  |     |     |
- 10  0 11  1 12
-  |     |     |
- 16--4-17--5--18
-*/
+  Collective on MPI_Comm
+
+  Input Parameters:
++ comm  - The communicator for the DM object
+. lower - The lower left corner coordinates
+. upper - The upper right corner coordinates
+- edges - The number of cells in each direction
+
+  Output Parameter:
+. dm  - The DM object
+
+  Note: Here is the numbering returned for 2 cells in each direction:
+$ 22--8-23--9--24
+$  |     |     |
+$ 13  2 14  3  15
+$  |     |     |
+$ 19--6-20--7--21
+$  |     |     |
+$ 10  0 11  1 12
+$  |     |     |
+$ 16--4-17--5--18
+
+  Level: beginner
+
+.keywords: DM, create
+.seealso: DMPlexCreateBoxMesh(), DMPlexCreateSquareBoundary(), DMPlexCreateCubeBoundary(), DMSetType(), DMCreate()
+@*/
 PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[])
 {
   PetscInt       markerTop      = 1;
@@ -547,7 +589,7 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateBoxMesh"
 /*@
-  DMPlexCreateBoxMesh - Creates a mesh on the tensor product of unit intervals (box).
+  DMPlexCreateBoxMesh - Creates a mesh on the tensor product of unit intervals (box) using simplices.
 
   Collective on MPI_Comm
 
@@ -562,7 +604,7 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
   Level: beginner
 
 .keywords: DM, create
-.seealso: DMSetType(), DMCreate()
+.seealso: DMPlexCreateHexBoxMesh(), DMSetType(), DMCreate()
 @*/
 PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interpolate, DM *dm)
 {
@@ -604,6 +646,24 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interp
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateHexBoxMesh"
+/*@
+  DMPlexCreateHexBoxMesh - Creates a mesh on the tensor product of unit intervals (box) using hexahedra.
+
+  Collective on MPI_Comm
+
+  Input Parameters:
++ comm  - The communicator for the DM object
+. dim   - The spatial dimension
+- cells - The number of cells in each direction
+
+  Output Parameter:
+. dm  - The DM object
+
+  Level: beginner
+
+.keywords: DM, create
+.seealso: DMPlexCreateBoxMesh(), DMSetType(), DMCreate()
+@*/
 PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscInt cells[], DM *dm)
 {
   PetscErrorCode ierr;
