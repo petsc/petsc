@@ -417,6 +417,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
             pcol=ncol+1;
           }
         }
+        if (pcol<=bad[idx]) pcol=bad[idx]+1;
         if (pcol > maxcolors) pcol=maxcolors;
         colar[idx]=pcol;
         if (pcol > mcol) mcol = pcol;
