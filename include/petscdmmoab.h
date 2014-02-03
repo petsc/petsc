@@ -43,6 +43,7 @@ PETSC_EXTERN PetscErrorCode DMMoabSetBlockSize(DM dm,PetscInt bs);
 PETSC_EXTERN PetscErrorCode DMMoabGetBlockSize(DM dm,PetscInt *bs);
 PETSC_EXTERN PetscErrorCode DMMoabGetDimension(DM dm,PetscInt *dim);
 PETSC_EXTERN PetscErrorCode DMMoabGetBoundaryEntities(DM dm,moab::Range *bdvtx,moab::Range* bdfaces,moab::Range* bdelems);
+PETSC_EXTERN PetscErrorCode DMMoabGetMaterialBlock(DM dm,const moab::EntityHandle ehandle, PetscInt *mat);
 
 PETSC_EXTERN PetscErrorCode DMMoabGetSize(DM dm,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMMoabGetLocalSize(DM dm,PetscInt*,PetscInt*,PetscInt*,PetscInt*);

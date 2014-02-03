@@ -37,6 +37,7 @@ typedef struct {
   moab::Interface         *mbiface;                       /* MOAB Interface/Core reference */
   moab::ParallelComm      *pcomm;                         /* MOAB ParallelComm reference */
   moab::Tag               ltog_tag;                       /* MOAB supports "global id" tags */
+  moab::Tag               material_tag;                   /* MOAB supports "material_set" tags */
   moab::Range             *vowned, *vghost, *vlocal;      /* Vertex entities: strictly owned, strictly ghosted, owned+ghosted */
   moab::Range             *elocal, *eghost;               /* Topological dimensional entities: strictly owned, strictly ghosted */
   moab::Range             *bndyvtx,*bndyfaces,*bndyelems; /* Boundary entities: skin vertices, skin faces and elements on the outer skin */

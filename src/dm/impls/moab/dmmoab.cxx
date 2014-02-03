@@ -131,6 +131,8 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
     if (ltog_tag) *ltog_tag = dmmoab->ltog_tag;
   }
 
+  merr = dmmoab->mbiface->tag_get_handle(MATERIAL_SET_TAG_NAME, dmmoab->material_tag);MBERRNM(merr);
+
   /* set the local range of entities (vertices) of interest */
   if (range) {
     ierr = DMMoabSetLocalVertices(*dmb, range);CHKERRQ(ierr);
@@ -608,7 +610,7 @@ PetscErrorCode DMMoabGetOffset(DM dm,PetscInt *offset)
   Collective on MPI_Comm
 
   Input Parameter:
-. dm - The DMMoab object being set
+. dm - The DMMoab object 
 
   Output Parameter:
 . dim - The dimension of DM
@@ -625,6 +627,38 @@ PetscErrorCode DMMoabGetDimension(DM dm,PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabGetMaterialBlock"
+/*@
+  DMMoabGetMaterialBlock - Get the material ID corresponding to the current entity of the DM Mesh
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm - The DMMoab object 
+. ehandle - The element entity handle
+
+  Output Parameter:
+. mat - The material ID for the current entity
+
+  Level: beginner
+
+.keywords: DMMoab, create
+@*/
+PetscErrorCode DMMoabGetMaterialBlock(DM dm,const moab::EntityHandle ehandle, PetscInt *mat)
+{
+  DM_Moab         *dmmoab;
+  moab::ErrorCode merr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (*mat) {
+    dmmoab = (DM_Moab*)(dm)->data;
+    dmmoab->mbiface->tag_get_data(dmmoab->material_tag, &ehandle, 1, mat);MBERRNM(merr);
+  }
+  PetscFunctionReturn(0);
+}
 
 
 #undef __FUNCT__
