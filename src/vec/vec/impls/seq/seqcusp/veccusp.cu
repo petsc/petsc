@@ -26,9 +26,11 @@ PetscErrorCode VecCUSPAllocateCheckHost(Vec v)
   PetscInt       n = v->map->n;
 
   PetscFunctionBegin;
-  if (!s) PetscNew(&s);
+  if (!s) {
+    ierr = PetscNew(&s);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)v,sizeof(*s));CHKERRQ(ierr);
+  }
   if (!s->array) {
-
     ierr               = PetscMalloc1(n,&array);CHKERRQ(ierr);
     ierr               = PetscLogObjectMemory((PetscObject)v,n*sizeof(PetscScalar));CHKERRQ(ierr);
     s->array           = array;
@@ -1875,7 +1877,6 @@ PetscErrorCode VecGetLocalVector_SeqCUSP(Vec v,Vec *w)
     (*w)->data = v->data;
     (*w)->valid_GPU_array = v->valid_GPU_array;
     (*w)->spptr = v->spptr;
-    PetscPrintf(PETSC_COMM_WORLD,"(*w)->valid_GPU_array == %d\n",(*w)->valid_GPU_array);
     ierr = PetscObjectStateIncrease((PetscObject)*w);CHKERRQ(ierr);
   } else {
     ierr = VecGetArray(v,(PetscScalar**)(*w)->data);CHKERRQ(ierr);
@@ -1904,7 +1905,6 @@ PetscErrorCode VecRestoreLocalVector_SeqCUSP(Vec v,Vec *w)
 
   v->valid_GPU_array = (*w)->valid_GPU_array;
   ierr = VecCUSPCopyFromGPU(v);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"v->valid_GPU_array=%d\n",v->valid_GPU_array);
   if (v->petscnative) {
     (*w)->data = 0;
     (*w)->valid_GPU_array = PETSC_CUSP_UNALLOCATED;
