@@ -26,7 +26,9 @@ PetscErrorCode VecCUSPAllocateCheckHost(Vec v)
   PetscInt       n = v->map->n;
 
   PetscFunctionBegin;
-  if (!s) {
+  if (!s) PetscNew(&s);
+  if (!s->array) {
+
     ierr               = PetscMalloc1(n,&array);CHKERRQ(ierr);
     ierr               = PetscLogObjectMemory((PetscObject)v,n*sizeof(PetscScalar));CHKERRQ(ierr);
     s->array           = array;

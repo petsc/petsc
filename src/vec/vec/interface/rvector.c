@@ -1568,7 +1568,6 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   if (x->petscnative) {
 #if defined(PETSC_HAVE_CUSP)
-    ierr = VecCUSPAllocateCheckHost(x);CHKERRQ(ierr);
     if (x->valid_GPU_array == PETSC_CUSP_GPU) {
       ierr = VecCUSPCopyFromGPU(x);CHKERRQ(ierr);
     }
@@ -1578,7 +1577,7 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
       ierr = VecViennaCLCopyFromGPU(x);CHKERRQ(ierr);
     }
 #endif
-    *a = *((PetscScalar **)x->data);
+    *a = *((PetscScalar**)x->data);
   } else {
     ierr = (*x->ops->getarray)(x,a);CHKERRQ(ierr);
   }
