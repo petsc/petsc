@@ -22,7 +22,8 @@ class DMBoundaryType(object):
 
 cdef class DM(Object):
 
-    Type = DMType
+    Type         = DMType
+    BoundaryType = DMBoundaryType
 
     #
 
@@ -249,5 +250,6 @@ cdef class DM(Object):
 # --------------------------------------------------------------------
 
 del DMType
+del DMBoundaryType
 
 # --------------------------------------------------------------------

@@ -16,7 +16,6 @@ class DMDAElementType(object):
 
 cdef class DMDA(DM):
 
-    BoundaryType      = DMBoundaryType
     StencilType       = DMDAStencilType
     InterpolationType = DMDAInterpolationType
     ElementType       = DMDAElementType
@@ -520,7 +519,6 @@ DA = DMDA
 
 # --------------------------------------------------------------------
 
-del DMBoundaryType
 del DMDAStencilType
 del DMDAInterpolationType
 del DMDAElementType
