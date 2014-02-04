@@ -13,7 +13,7 @@ PetscInt spatialDim = 0;
 
 typedef enum {NEUMANN, DIRICHLET, NONE} BCType;
 typedef enum {RUN_FULL, RUN_TEST, RUN_PERF} RunType;
-typedef enum {COEFF_NONE, COEFF_ANALYTIC, COEFF_FIELD} CoeffType;
+typedef enum {COEFF_NONE, COEFF_ANALYTIC, COEFF_FIELD, COEFF_NONLINEAR} CoeffType;
 
 typedef struct {
   PetscFEM      fem;               /* REQUIRED to use DMPlexComputeResidualFEM() */
@@ -173,6 +173,52 @@ void g3_field_uu(const PetscScalar u[], const PetscScalar gradU[], const PetscSc
 }
 
 /*
+  In 2D for Dirichlet conditions with a nonlinear coefficient (p-Laplacian with p = 4), we use exact solution:
+
+    u  = x^2 + y^2
+    f  = 16 (x^2 + y^2)
+    nu = 1/2 |grad u|^2
+
+  so that
+
+    -\div \nu \grad u + f = -16 (x^2 + y^2) + 16 (x^2 + y^2) = 0
+*/
+void f0_analytic_nonlinear_u(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f0[])
+{
+  f0[0] = 16.0*(x[0]*x[0] + x[1]*x[1]);
+}
+
+/* gradU[comp*dim+d] = {u_x, u_y} or {u_x, u_y, u_z} */
+void f1_analytic_nonlinear_u(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f1[])
+{
+  PetscScalar nu = 0.0;
+  PetscInt    d;
+  for (d = 0; d < spatialDim; ++d) nu += gradU[d]*gradU[d];
+  for (d = 0; d < spatialDim; ++d) f1[d] = 0.5*nu*gradU[d];
+}
+
+/*
+  grad (u + eps w) - grad u = eps grad w
+
+  1/2 |grad (u + eps w)|^2 grad (u + eps w) - 1/2 |grad u|^2 grad u
+= 1/2 (|grad u|^2 + 2 eps <grad u,grad w>) (grad u + eps grad w) - 1/2 |grad u|^2 grad u
+= 1/2 (eps |grad u|^2 grad w + 2 eps <grad u,grad w> grad u)
+= eps (1/2 |grad u|^2 grad w + grad u <grad u,grad w>)
+*/
+void g3_analytic_nonlinear_uu(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g3[])
+{
+  PetscScalar nu = 0.0;
+  PetscInt    d, e;
+  for (d = 0; d < spatialDim; ++d) nu += gradU[d]*gradU[d];
+  for (d = 0; d < spatialDim; ++d) {
+    g3[d*spatialDim+d] = 0.5*nu;
+    for (e = 0; e < spatialDim; ++e) {
+      g3[d*spatialDim+e] += gradU[d]*gradU[e];
+    }
+  }
+}
+
+/*
   In 3D for Dirichlet conditions we use exact solution:
 
     u = x^2 + y^2 + z^2
@@ -206,7 +252,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *bcTypes[3]  = {"neumann", "dirichlet", "none"};
   const char    *runTypes[3] = {"full", "test", "perf"};
-  const char    *coeffTypes[3] = {"none", "analytic", "field"};
+  const char    *coeffTypes[4] = {"none", "analytic", "field", "nonlinear"};
   PetscInt       bc, run, coeff;
   PetscBool      flg;
   PetscErrorCode ierr;
@@ -260,7 +306,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex12.c",bcTypes,3,bcTypes[options->bcType],&bc,NULL);CHKERRQ(ierr);
   options->bcType = (BCType) bc;
   coeff = options->variableCoefficient;
-  ierr = PetscOptionsEList("-variable_coefficient","Type of variable coefficent","ex12.c",coeffTypes,3,coeffTypes[options->variableCoefficient],&coeff,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-variable_coefficient","Type of variable coefficent","ex12.c",coeffTypes,4,coeffTypes[options->variableCoefficient],&coeff,NULL);CHKERRQ(ierr);
   options->variableCoefficient = (CoeffType) coeff;
 
   ierr = PetscOptionsBool("-jacobian_mf", "Calculate the action of the Jacobian on the fly", "ex12.c", options->jacobianMF, &options->jacobianMF, NULL);CHKERRQ(ierr);
@@ -541,7 +587,15 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
     fem->g0Funcs[0] = NULL;
     fem->g1Funcs[0] = NULL;
     fem->g2Funcs[0] = NULL;
-    fem->g3Funcs[0] = g3_analytic_uu /*g3_field_uu*/;
+    fem->g3Funcs[0] = g3_field_uu;
+    break;
+  case COEFF_NONLINEAR:
+    fem->f0Funcs[0] = f0_analytic_nonlinear_u;
+    fem->f1Funcs[0] = f1_analytic_nonlinear_u;
+    fem->g0Funcs[0] = NULL;
+    fem->g1Funcs[0] = NULL;
+    fem->g2Funcs[0] = NULL;
+    fem->g3Funcs[0] = g3_analytic_nonlinear_uu;
     break;
   default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid variable coefficient type %d", user->variableCoefficient);
   }
