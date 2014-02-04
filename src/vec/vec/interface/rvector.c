@@ -1570,6 +1570,8 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
 #if defined(PETSC_HAVE_CUSP)
     if (x->valid_GPU_array == PETSC_CUSP_GPU) {
       ierr = VecCUSPCopyFromGPU(x);CHKERRQ(ierr);
+    } else if (x->valid_GPU_array == PETSC_CUSP_UNALLOCATED) {
+      ierr = VecCUSPAllocateCheckHost(x); CHKERRQ(ierr);
     }
 #endif
 #if defined(PETSC_HAVE_VIENNACL)
