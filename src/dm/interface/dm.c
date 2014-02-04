@@ -2800,7 +2800,7 @@ PetscErrorCode DMPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, P
   for (f = 0; f < rows; ++f) {
     ierr = PetscPrintf(PETSC_COMM_SELF, "  |");CHKERRQ(ierr);
     for (g = 0; g < cols; ++g) {
-      ierr = PetscPrintf(PETSC_COMM_SELF, " % 9.5G", PetscRealPart(A[f*cols+g]));CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF, " % 9.5g", PetscRealPart(A[f*cols+g]));CHKERRQ(ierr);
     }
     ierr = PetscPrintf(PETSC_COMM_SELF, " |\n");CHKERRQ(ierr);
   }
