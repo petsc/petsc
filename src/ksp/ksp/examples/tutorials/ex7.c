@@ -189,7 +189,7 @@ int main(int argc,char **args)
       } else {
         ierr = PCSetType(subpc,PCJACOBI);CHKERRQ(ierr);
         ierr = KSPSetType(subksp[i],KSPGMRES);CHKERRQ(ierr);
-        ierr = KSPSetTolerances(subksp[i],1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+        ierr = KSPSetTolerances(subksp[i],1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
       }
     }
   }
