@@ -238,19 +238,20 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
 #define __FUNCT__ "GreedyColoringLocalDistanceTwo_Private"
 PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,PetscReal *wts,PetscInt *lperm,ISColoringValue *colors)
 {
-  PetscInt        i,j,k,l,s,e,n,nd,nd_global,n_global,idx,ncols,maxcolors,mcol,mcol_global,nmask,nd1cols,*mask,*d1cols,*bad,maxmask,ccol;
+  PetscInt        i,j,k,l,s,e,n,nd,nd_global,n_global,idx,ncols,maxcolors,mcol,mcol_global,nd1cols,*mask,*d1cols,*bad,masksize,ccol,no;
   PetscErrorCode  ierr;
   Mat             m=mc->mat;
   Mat_MPIAIJ      *aij = (Mat_MPIAIJ*)m->data;
   Mat             md=NULL,mo=NULL;
   /* Mat             mtd=NULL,mto=NULL; */
   PetscBool       isMPIAIJ,isSEQAIJ;
-  ISColoringValue pcol,ncol;
+  ISColoringValue pcol,*ocolors;
   const PetscInt  *cidx;
-  Vec             wtvec,owtvec,colvec,ocolvec,confvec,oconfvec;
+  Vec             wvec,owvec;
   VecScatter      oscatter;
-  PetscScalar     *wtar,*owtar,*colar,*ocolar,*confar,*oconfar;
-  PetscReal       *colorweights;
+  PetscScalar     *war,*owar;
+  PetscReal       *owts,*colorweights;
+  PetscBool       *oconf,*conf;
 
   PetscFunctionBegin;
   ierr = MatGetSize(m,&n_global,NULL);CHKERRQ(ierr);
@@ -270,40 +271,47 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
     SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_WRONG,"Matrix must be AIJ for greedy coloring");
   }
   /* create the vectors and communication structures if necessary */
-  ierr = MatGetVecs(m,&wtvec,NULL);CHKERRQ(ierr);
-  ierr = VecDuplicate(wtvec,&colvec);CHKERRQ(ierr);
-  ierr = VecDuplicate(wtvec,&confvec);CHKERRQ(ierr);
-  owtvec=NULL;
-  ocolvec=NULL;
-  oscatter=NULL;
-  oconfvec=NULL;
+  ierr = MatGetVecs(m,&wvec,NULL);CHKERRQ(ierr);
+  no=0;
+  owvec=NULL;
   if (mo) {
-    ierr = VecDuplicate(aij->lvec,&owtvec);CHKERRQ(ierr);
-    ierr = VecDuplicate(aij->lvec,&ocolvec);CHKERRQ(ierr);
-    ierr = VecDuplicate(aij->lvec,&oconfvec);CHKERRQ(ierr);
+    owvec=aij->lvec;
     oscatter=aij->Mvctx;
+    ierr = VecGetLocalSize(owvec,&no);CHKERRQ(ierr);
   }
-  ierr = VecSet(colvec,(PetscScalar)IS_COLORING_MAX);CHKERRQ(ierr);
-  if (ocolvec) {ierr = VecSet(ocolvec,(PetscScalar)IS_COLORING_MAX);CHKERRQ(ierr);}
-
   maxcolors=IS_COLORING_MAX;
   if (mc->maxcolors) maxcolors=mc->maxcolors;
-  maxmask=n;
+  masksize=n;
   ierr = PetscMalloc1(n,&d1cols);CHKERRQ(ierr);
-  ierr = PetscMalloc1(maxmask,&mask);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,&bad);CHKERRQ(ierr);
-
-  /* transfer neighbor weights */
-  ierr = VecGetArray(wtvec,&wtar);CHKERRQ(ierr);
-  for (i=0;i<n;i++) {
-    wtar[i]=wts[i];
+  ierr = PetscMalloc1(masksize,&mask);CHKERRQ(ierr);
+  for(i=0;i<masksize;i++) {
+    mask[i]=-1;
   }
-  ierr = VecRestoreArray(wtvec,&wtar);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&bad);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&conf);CHKERRQ(ierr);
+  /* transfer neighbor weights */
+  ierr = VecGetArray(wvec,&war);CHKERRQ(ierr);
+  for (i=0;i<n;i++) {
+    colors[i]=IS_COLORING_MAX;
+  }
+  ierr = VecRestoreArray(wvec,&war);CHKERRQ(ierr);
   if (mo) {
+    ierr = VecGetArray(wvec,&war);CHKERRQ(ierr);
+    for (i=0;i<n;i++) {
+      war[i]=wts[i];
+    }
+    ierr = VecRestoreArray(wvec,&war);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
-    ierr = VecScatterBegin(oscatter,wtvec,owtvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(oscatter,wtvec,owtvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterBegin(oscatter,wvec,owvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(oscatter,wvec,owvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
+    ierr = VecGetArray(owvec,&owar);CHKERRQ(ierr);
+    ierr = PetscMalloc3(no,&ocolors,no,&owts,no,&oconf);CHKERRQ(ierr);
+    for (i=0;i<no;i++) {
+      owts[i]=PetscRealPart(owar[i]);
+      ocolors[i]=IS_COLORING_MAX;
+    }
+    ierr = VecRestoreArray(owvec,&owar);CHKERRQ(ierr);
   }
   /* values below "bad" are verboten for a given column due to being nixed at the parallel level */
   for (i=0;i<n;i++) {
@@ -312,36 +320,34 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
   mcol=0;
   while (nd_global < n_global) {
     nd=n;
-    ierr = VecGetArray(colvec,&colar);CHKERRQ(ierr);
-    if (mo) {
-      ierr = VecGetArray(ocolvec,&ocolar);CHKERRQ(ierr);
-    }
     /* assign lowest possible color to each local vertex */
     mcol_global=0;
     ierr = PetscLogEventBegin(Mat_Coloring_Local,mc,0,0,0);CHKERRQ(ierr);
     for (i=0;i<n;i++) {
       idx=n-lperm[i]-1;
-      if ((PetscInt)PetscRealPart(colar[idx]) == IS_COLORING_MAX) {
-        nmask=0;
+      if (colors[idx] == IS_COLORING_MAX) {
         nd1cols=0;
         /* diagonal distance-one rows */
         ierr = MatGetRow(md,idx,&ncols,&cidx,NULL);CHKERRQ(ierr);
         for (j=0;j<ncols;j++) {
           d1cols[nd1cols] = cidx[j];
           nd1cols++;
-          if ((PetscInt)PetscRealPart(colar[cidx[j]]) != IS_COLORING_MAX) {
-            mask[nmask] = (PetscInt)PetscRealPart(colar[cidx[j]]);
-            nmask++;
-            if (nmask>=maxmask) {
+          ccol=colors[cidx[j]];
+          if (ccol != IS_COLORING_MAX) {
+            if (ccol>=masksize) {
               PetscInt *newmask;
-              ierr = PetscMalloc1(maxmask*2,&newmask);CHKERRQ(ierr);
-              for(k=0;k<maxmask;k++) {
+              ierr = PetscMalloc1(masksize*2,&newmask);CHKERRQ(ierr);
+              for(k=0;k<2*masksize;k++) {
+                newmask[k]=-1;
+              }
+              for(k=0;k<masksize;k++) {
                 newmask[k]=mask[k];
               }
               ierr = PetscFree(mask);CHKERRQ(ierr);
               mask=newmask;
-              maxmask*=2;
+              masksize*=2;
             }
+            mask[ccol]=idx;
           }
         }
         ierr = MatRestoreRow(md,idx,&ncols,&cidx,NULL);CHKERRQ(ierr);
@@ -349,19 +355,22 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
         if (mo) {
           ierr = MatGetRow(mo,idx,&ncols,&cidx,NULL);CHKERRQ(ierr);
           for (j=0;j<ncols;j++) {
-            if ((PetscInt)PetscRealPart(ocolar[cidx[j]]) != IS_COLORING_MAX) {
-              mask[nmask] = (PetscInt)PetscRealPart(ocolar[cidx[j]]);
-              nmask++;
-              if (nmask>=maxmask) {
+            ccol=colors[cidx[j]];
+            if (ccol != IS_COLORING_MAX) {
+              if (ccol>=masksize) {
                 PetscInt *newmask;
-                ierr = PetscMalloc1(maxmask*2,&newmask);CHKERRQ(ierr);
-                for(k=0;k<maxmask;k++) {
+                ierr = PetscMalloc1(masksize*2,&newmask);CHKERRQ(ierr);
+                for(k=0;k<2*masksize;k++) {
+                  newmask[k]=-1;
+                }
+                for(k=0;k<masksize;k++) {
                   newmask[k]=mask[k];
                 }
                 ierr = PetscFree(mask);CHKERRQ(ierr);
                 mask=newmask;
-                maxmask*=2;
+                masksize*=2;
               }
+              mask[ccol]=idx;
             }
           }
           ierr = MatRestoreRow(mo,idx,&ncols,&cidx,NULL);CHKERRQ(ierr);
@@ -370,19 +379,22 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
         for (j=0;j<nd1cols;j++) {
           ierr = MatGetRow (md,d1cols[j],&ncols,&cidx,NULL);CHKERRQ(ierr);
           for (l=0;l<ncols;l++) {
-            if ((PetscInt)PetscRealPart(colar[cidx[l]]) != IS_COLORING_MAX) {
-              mask[nmask] = (PetscInt)PetscRealPart(colar[cidx[l]]);
-              nmask++;
-              if (nmask>=maxmask) {
+            ccol=colors[cidx[l]];
+            if (ccol != IS_COLORING_MAX) {
+              if (ccol>=masksize) {
                 PetscInt *newmask;
-                ierr = PetscMalloc1(maxmask*2,&newmask);CHKERRQ(ierr);
-                for(k=0;k<maxmask;k++) {
+                ierr = PetscMalloc1(masksize*2,&newmask);CHKERRQ(ierr);
+                for(k=0;k<2*masksize;k++) {
+                  newmask[k]=-1;
+                }
+                for(k=0;k<masksize;k++) {
                   newmask[k]=mask[k];
                 }
                 ierr = PetscFree(mask);CHKERRQ(ierr);
                 mask=newmask;
-                maxmask*=2;
+                masksize*=2;
               }
+              mask[ccol]=idx;
             }
           }
           ierr = MatRestoreRow(md,d1cols[j],&ncols,&cidx,NULL);CHKERRQ(ierr);
@@ -392,64 +404,68 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
           for (j=0;j<nd1cols;j++) {
             ierr = MatGetRow (mo,d1cols[j],&ncols,&cidx,NULL);CHKERRQ(ierr);
             for (l=0;l<ncols;l++) {
-              if ((PetscInt)PetscRealPart(ocolar[cidx[l]]) != IS_COLORING_MAX) {
-                mask[nmask] = (PetscInt)PetscRealPart(ocolar[cidx[l]]);
-                nmask++;
-                if (nmask>=maxmask) {
+              ccol=ocolors[cidx[l]];
+              if (ccol != IS_COLORING_MAX) {
+                if (ccol>=masksize) {
                   PetscInt *newmask;
-                  ierr = PetscMalloc1(maxmask*2,&newmask);CHKERRQ(ierr);
-                  for(k=0;k<maxmask;k++) {
+                  ierr = PetscMalloc1(masksize*2,&newmask);CHKERRQ(ierr);
+                  for(k=0;k<2*masksize;k++) {
+                    newmask[k]=-1;
+                  }
+                  for(k=0;k<masksize;k++) {
                     newmask[k]=mask[k];
                   }
                   ierr = PetscFree(mask);CHKERRQ(ierr);
                   mask=newmask;
-                  maxmask*=2;
+                  masksize*=2;
                 }
+                mask[ccol]=idx;
               }
             }
             ierr = MatRestoreRow(mo,d1cols[j],&ncols,&cidx,NULL);CHKERRQ(ierr);
           }
         }
-        ierr = PetscSortInt(nmask,mask);CHKERRQ(ierr);
         /* assign this one the lowest color possible by seeing if there's a gap in the sequence of sorted neighbor colors */
         pcol=0;
-        for (j=0;j<nmask;j++) {
-          ncol=mask[j];
-          if (ncol-pcol > 0 && pcol>bad[idx]) {
+        for (j=0;j<masksize;j++) {
+          if (mask[j]!=idx && j>bad[idx]) {
             break;
-          } else {
-            pcol=ncol+1;
           }
         }
+        pcol=j;
         if (pcol<=bad[idx]) pcol=bad[idx]+1;
-        if (pcol > maxcolors) pcol=maxcolors;
-        colar[idx]=pcol;
-        if (pcol > mcol) mcol = pcol;
+        if (pcol>maxcolors) pcol=maxcolors;
+        colors[idx]=pcol;
+        if (pcol>mcol) mcol=pcol;
       }
     }
     ierr = PetscLogEventEnd(Mat_Coloring_Local,mc,0,0,0);CHKERRQ(ierr);
-    ierr = VecRestoreArray(colvec,&colar);CHKERRQ(ierr);
-    if (mo) {
-      ierr = VecRestoreArray(ocolvec,&ocolar);CHKERRQ(ierr);
-    }
     if (mo) {
       /* transfer neighbor colors */
+      ierr = VecGetArray(wvec,&war);CHKERRQ(ierr);
+      for (i=0;i<n;i++) {
+        war[i]=colors[i];
+      }
+      ierr = VecRestoreArray(wvec,&war);CHKERRQ(ierr);
       ierr = PetscLogEventBegin(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
-      ierr = VecScatterBegin(oscatter,colvec,ocolvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(oscatter,colvec,ocolvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterBegin(oscatter,wvec,owvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(oscatter,wvec,owvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
+      ierr = VecGetArray(owvec,&owar);CHKERRQ(ierr);
+      for (i=0;i<no;i++) {
+        ocolors[i]=PetscRealPart(owar[i]);
+      }
+      ierr = VecRestoreArray(owvec,&owar);CHKERRQ(ierr);
       /* find the maximum color assigned locally and allocate a mask */
       ierr = MPI_Allreduce(&mcol,&mcol_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
       ierr = PetscMalloc1(mcol_global+1,&colorweights);CHKERRQ(ierr);
       /* check for conflicts */
-      ierr = VecGetArray(wtvec,&wtar);CHKERRQ(ierr);
-      ierr = VecGetArray(owtvec,&owtar);CHKERRQ(ierr);
-      ierr = VecGetArray(colvec,&colar);CHKERRQ(ierr);
-      ierr = VecGetArray(ocolvec,&ocolar);CHKERRQ(ierr);
-      ierr = VecSet(confvec,0);CHKERRQ(ierr);
-      ierr = VecSet(oconfvec,0);CHKERRQ(ierr);
-      ierr = VecGetArray(confvec,&confar);CHKERRQ(ierr);
-      ierr = VecGetArray(oconfvec,&oconfar);CHKERRQ(ierr);
+      for (i=0;i<n;i++) {
+        conf[i]=PETSC_FALSE;
+      }
+      for (i=0;i<no;i++) {
+        oconf[i]=PETSC_FALSE;
+      }
       for (i=0;i<n;i++) {
         ierr = MatGetRow(mo,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
         if (ncols > 0) {
@@ -457,22 +473,24 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
           for (j=0;j<mcol_global+1;j++) {
             colorweights[j]=0;
           }
-          colorweights[(PetscInt)PetscRealPart(colar[i])]=PetscRealPart(wtar[i]);
+          colorweights[colors[i]]=wts[i];
           /* fill in the off-diagonal part of the mask */
           for (j=0;j<ncols;j++) {
-            ccol=(PetscInt)PetscRealPart(ocolar[cidx[j]]);
-            if (colorweights[ccol] < PetscRealPart(owtar[cidx[j]])) {
-              colorweights[ccol] = PetscRealPart(owtar[cidx[j]]);
+            ccol=ocolors[cidx[j]];
+            if (ccol < IS_COLORING_MAX) {
+              if (colorweights[ccol] < owts[cidx[j]]) {
+                colorweights[ccol] = owts[cidx[j]];
+              }
             }
           }
           ierr = MatRestoreRow(mo,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
           /* fill in the on-diagonal part of the mask */
           ierr = MatGetRow(md,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
           for (j=0;j<ncols;j++) {
-            ccol=(PetscInt)PetscRealPart(colar[cidx[j]]);
-            if (ccol < maxcolors) {
-              if (colorweights[ccol] < PetscRealPart(wtar[cidx[j]])) {
-                colorweights[ccol] = PetscRealPart(wtar[cidx[j]]);
+            ccol=colors[cidx[j]];
+            if (ccol < IS_COLORING_MAX) {
+              if (colorweights[ccol] < wts[cidx[j]]) {
+                colorweights[ccol] = wts[cidx[j]];
               }
             }
           }
@@ -480,20 +498,20 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
           /* go back through and set up on and off-diagonal conflict vectors */
           ierr = MatGetRow(md,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
           for (j=0;j<ncols;j++) {
-            ccol=(PetscInt)PetscRealPart(colar[cidx[j]]);
-            if (ccol < maxcolors) {
-              if (colorweights[ccol] > PetscRealPart(wtar[cidx[j]])) {
-                confar[cidx[j]]+=1;
+            ccol=colors[cidx[j]];
+            if (ccol < IS_COLORING_MAX) {
+              if (colorweights[ccol] > wts[cidx[j]]) {
+                conf[cidx[j]]=PETSC_TRUE;
               }
             }
           }
           ierr = MatRestoreRow(md,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
           ierr = MatGetRow(mo,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
           for (j=0;j<ncols;j++) {
-            ccol=(PetscInt)PetscRealPart(ocolar[cidx[j]]);
-            if (ccol < maxcolors) {
-              if (colorweights[ccol] > PetscRealPart(owtar[cidx[j]])) {
-                oconfar[cidx[j]]+=1;
+            ccol=ocolors[cidx[j]];
+            if (ccol < IS_COLORING_MAX) {
+              if (colorweights[ccol] > owts[cidx[j]]) {
+                oconf[cidx[j]]=PETSC_TRUE;
               }
             }
           }
@@ -502,50 +520,43 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
           ierr = MatRestoreRow(mo,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
         }
       }
-      ierr = VecRestoreArray(wtvec,&wtar);CHKERRQ(ierr);
-      ierr = VecRestoreArray(owtvec,&owtar);CHKERRQ(ierr);
-      ierr = VecRestoreArray(colvec,&colar);CHKERRQ(ierr);
-      ierr = VecRestoreArray(ocolvec,&ocolar);CHKERRQ(ierr);
-      ierr = VecRestoreArray(confvec,&confar);CHKERRQ(ierr);
-      ierr = VecRestoreArray(oconfvec,&oconfar);CHKERRQ(ierr);
       nd_global=0;
       ierr = PetscFree(colorweights);CHKERRQ(ierr);
-
+      ierr = VecGetArray(wvec,&war);CHKERRQ(ierr);
+      for (i=0;i<n;i++) {
+        war[i]=conf[i]?1.:0.;
+      }
+      ierr = VecRestoreArray(wvec,&war);CHKERRQ(ierr);
+      ierr = VecGetArray(owvec,&owar);CHKERRQ(ierr);
+      for (i=0;i<no;i++) {
+        owar[i]=oconf[i]?1.:0.;
+      }
+      ierr = VecRestoreArray(owvec,&owar);CHKERRQ(ierr);
       ierr = PetscLogEventBegin(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
-      ierr = VecScatterBegin(oscatter,oconfvec,confvec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd(oscatter,oconfvec,confvec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterBegin(oscatter,owvec,wvec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(oscatter,owvec,wvec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
       /* go through and unset local colors that have conflicts */
-      ierr = VecGetArray(confvec,&confar);CHKERRQ(ierr);
-      ierr = VecGetArray(colvec,&colar);CHKERRQ(ierr);
+      ierr = VecGetArray(wvec,&war);CHKERRQ(ierr);
       for (i=0;i<n;i++) {
-        if (PetscRealPart(confar[i]) > 0) {
-          bad[i]=(PetscInt)PetscRealPart(colar[i]);
-          colar[i] = IS_COLORING_MAX;
+        if (PetscRealPart(war[i])>0) {
+          bad[i]=colors[i];
+          colors[i] = IS_COLORING_MAX;
           nd--;
         }
       }
-      ierr = VecRestoreArray(confvec,&confar);CHKERRQ(ierr);
-      ierr = VecRestoreArray(colvec,&colar);CHKERRQ(ierr);
+      ierr = VecRestoreArray(wvec,&war);CHKERRQ(ierr);
     }
     ierr = MPI_Allreduce(&nd,&nd_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
   }
-  ierr = VecGetArray(colvec,&colar);CHKERRQ(ierr);
-  for (i=0;i<n;i++) {
-    colors[i]=(PetscInt)PetscRealPart(colar[i]);
-  }
-  ierr = VecRestoreArray(colvec,&colar);CHKERRQ(ierr);
   ierr = PetscFree(mask);CHKERRQ(ierr);
   ierr = PetscFree(d1cols);CHKERRQ(ierr);
   ierr = PetscFree(bad);CHKERRQ(ierr);
-  ierr = VecDestroy(&wtvec);CHKERRQ(ierr);
-  ierr = VecDestroy(&colvec);CHKERRQ(ierr);
-  ierr = VecDestroy(&confvec);CHKERRQ(ierr);
+  ierr = PetscFree(conf);CHKERRQ(ierr);
   if (mo) {
-    ierr = VecDestroy(&owtvec);CHKERRQ(ierr);
-    ierr = VecDestroy(&ocolvec);CHKERRQ(ierr);
-    ierr = VecDestroy(&oconfvec);CHKERRQ(ierr);
+    ierr = PetscFree3(ocolors,owts,oconf);CHKERRQ(ierr);
   }
+  ierr = VecDestroy(&wvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -593,6 +604,17 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *i
   MATCOLORINGGREEDY - Greedy-with-conflict correction based Matrix Coloring for distance 1 and 2.
 
    Level: beginner
+
+   Notes:
+
+   These algorithms proceed in two phases -- local coloring and conflict resolution.  The local coloring
+   tentatively colors all vertices at the distance required given what's known of the global coloring.  Then,
+   the updated colors are transferred to different processors at distance one.  In the distance one case, each
+   vertex with nonlocal neighbors is then checked to see if it conforms, with the vertex being
+   marked for recoloring if its lower weight than its same colored neighbor.  In the distance two case,
+   each boundary vertex's immediate star is checked for validity of the coloring.  Lower-weight conflict
+   vertices are marked, and then the conflicts are gathered back on owning processors.  In both cases
+   this is done until each column has received a valid color.
 
    References:
 
