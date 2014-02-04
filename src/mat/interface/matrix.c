@@ -5042,8 +5042,7 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
 
    When (re)assembling a matrix, we can restrict the input for
    efficiency/debugging purposes.  These options include
-+    MAT_NEW_NONZERO_LOCATIONS - additional insertions will be
-        allowed if they generate a new nonzero
++    MAT_NEW_NONZERO_LOCATIONS - additional insertions will be allowed if they generate a new nonzero (slow)
 .    MAT_NEW_DIAGONALS - new diagonals will be allowed (for block diagonal format only)
 .    MAT_IGNORE_OFF_PROC_ENTRIES - drops off-processor entries
 .    MAT_NEW_NONZERO_LOCATION_ERR - generates an error for new matrix entry
@@ -5068,19 +5067,19 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
    the entire array is allocated, no entries are ever ignored.
    Set after the first MatAssemblyEnd()
 
-   MAT_NEW_NONZERO_LOCATION_ERR indicates that any add or insertion
+   MAT_NEW_NONZERO_LOCATION_ERR set to PETSC_TRUE indicates that any add or insertion
    that would generate a new entry in the nonzero structure instead produces
    an error. (Currently supported for AIJ and BAIJ formats only.)
    This is a useful flag when using SAME_NONZERO_PATTERN in calling
    KSPSetOperators() to ensure that the nonzero pattern truely does
    remain unchanged. Set after the first MatAssemblyEnd()
 
-   MAT_NEW_NONZERO_ALLOCATION_ERR indicates that any add or insertion
+   MAT_NEW_NONZERO_ALLOCATION_ERR set to PETSC_TRUE indicates that any add or insertion
    that would generate a new entry that has not been preallocated will
    instead produce an error. (Currently supported for AIJ and BAIJ formats
    only.) This is a useful flag when debugging matrix memory preallocation.
 
-   MAT_IGNORE_OFF_PROC_ENTRIES indicates entries destined for
+   MAT_IGNORE_OFF_PROC_ENTRIES set to PETSC_TRUE indicates entries destined for
    other processors should be dropped, rather than stashed.
    This is useful if you know that the "owning" processor is also
    always generating the correct matrix entries, so that PETSc need
