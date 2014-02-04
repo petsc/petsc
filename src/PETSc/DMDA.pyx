@@ -1,11 +1,5 @@
 # --------------------------------------------------------------------
 
-class DMDABoundaryType(object):
-    NONE     = DMDA_BOUNDARY_NONE
-    GHOSTED  = DMDA_BOUNDARY_GHOSTED
-    MIRROR   = DMDA_BOUNDARY_MIRROR
-    PERIODIC = DMDA_BOUNDARY_PERIODIC
-
 class DMDAStencilType(object):
     STAR = DMDA_STENCIL_STAR
     BOX  = DMDA_STENCIL_BOX
@@ -22,7 +16,7 @@ class DMDAElementType(object):
 
 cdef class DMDA(DM):
 
-    BoundaryType      = DMDABoundaryType
+    BoundaryType      = DMBoundaryType
     StencilType       = DMDAStencilType
     InterpolationType = DMDAInterpolationType
     ElementType       = DMDAElementType
@@ -44,9 +38,9 @@ cdef class DMDA(DM):
         cdef PetscInt M = 1, m = PETSC_DECIDE, *lx = NULL
         cdef PetscInt N = 1, n = PETSC_DECIDE, *ly = NULL
         cdef PetscInt P = 1, p = PETSC_DECIDE, *lz = NULL
-        cdef PetscDMDABoundaryType btx = DMDA_BOUNDARY_NONE
-        cdef PetscDMDABoundaryType bty = DMDA_BOUNDARY_NONE
-        cdef PetscDMDABoundaryType btz = DMDA_BOUNDARY_NONE
+        cdef PetscDMBoundaryType btx = DM_BOUNDARY_NONE
+        cdef PetscDMBoundaryType bty = DM_BOUNDARY_NONE
+        cdef PetscDMBoundaryType btz = DM_BOUNDARY_NONE
         cdef PetscDMDAStencilType  stype = DMDA_STENCIL_BOX
         cdef PetscInt            swidth = 0
         # grid and proc sizes
@@ -93,9 +87,9 @@ cdef class DMDA(DM):
         cdef PetscInt ndim = 0, ndof = 0
         cdef PetscInt M = 1, N = 1, P = 1
         cdef PetscInt m = 1, n = 1, p = 1
-        cdef PetscDMDABoundaryType btx = DMDA_BOUNDARY_NONE
-        cdef PetscDMDABoundaryType bty = DMDA_BOUNDARY_NONE
-        cdef PetscDMDABoundaryType btz = DMDA_BOUNDARY_NONE
+        cdef PetscDMBoundaryType btx = DM_BOUNDARY_NONE
+        cdef PetscDMBoundaryType bty = DM_BOUNDARY_NONE
+        cdef PetscDMBoundaryType btz = DM_BOUNDARY_NONE
         cdef PetscDMDAStencilType  stype = DMDA_STENCIL_STAR
         cdef PetscInt            swidth = 0
         CHKERR( DMDAGetInfo(self.dm,
@@ -214,17 +208,17 @@ cdef class DMDA(DM):
         return toDims(dim, m, n, p)
 
     def setBoundaryType(self, boundary_type):
-        cdef PetscDMDABoundaryType btx = DMDA_BOUNDARY_NONE
-        cdef PetscDMDABoundaryType bty = DMDA_BOUNDARY_NONE
-        cdef PetscDMDABoundaryType btz = DMDA_BOUNDARY_NONE
+        cdef PetscDMBoundaryType btx = DM_BOUNDARY_NONE
+        cdef PetscDMBoundaryType bty = DM_BOUNDARY_NONE
+        cdef PetscDMBoundaryType btz = DM_BOUNDARY_NONE
         asBoundary(boundary_type, &btx, &bty, &btz)
         CHKERR( DMDASetBoundaryType(self.dm, btx, bty, btz) )
         
     def getBoundaryType(self):
         cdef PetscInt dim = 0
-        cdef PetscDMDABoundaryType btx = DMDA_BOUNDARY_NONE
-        cdef PetscDMDABoundaryType bty = DMDA_BOUNDARY_NONE
-        cdef PetscDMDABoundaryType btz = DMDA_BOUNDARY_NONE
+        cdef PetscDMBoundaryType btx = DM_BOUNDARY_NONE
+        cdef PetscDMBoundaryType bty = DM_BOUNDARY_NONE
+        cdef PetscDMBoundaryType btz = DM_BOUNDARY_NONE
         CHKERR( DMDAGetInfo(self.dm,
                           &dim,
                           NULL, NULL, NULL,
@@ -526,7 +520,7 @@ DA = DMDA
 
 # --------------------------------------------------------------------
 
-del DMDABoundaryType
+del DMBoundaryType
 del DMDAStencilType
 del DMDAInterpolationType
 del DMDAElementType

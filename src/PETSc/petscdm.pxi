@@ -15,6 +15,12 @@ cdef extern from * nogil:
     PetscDMType DMPATCH
     PetscDMType DMMOAB
 
+    ctypedef enum PetscDMBoundaryType"DMBoundaryType":
+        DM_BOUNDARY_NONE
+        DM_BOUNDARY_GHOSTED
+        DM_BOUNDARY_MIRROR
+        DM_BOUNDARY_PERIODIC
+
     int DMCreate(MPI_Comm,PetscDM*)
     int DMClone(PetscDM,PetscDM*)
     int DMDestroy(PetscDM*)
