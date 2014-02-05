@@ -238,14 +238,14 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
 #define __FUNCT__ "GreedyColoringLocalDistanceTwo_Private"
 PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,PetscReal *wts,PetscInt *lperm,ISColoringValue *colors)
 {
-  PetscInt        i,j,k,l,s,e,n,nd,nd_global,n_global,idx,ncols,maxcolors,mcol,mcol_global,nd1cols,*mask,*d1cols,*bad,masksize,ccol,no;
+  PetscInt        i,j,k,l,s,e,n,nd,nd_global,n_global,idx,ncols,maxcolors,mcol,mcol_global,nd1cols,*mask,masksize,*d1cols,*bad,*badnext,nbad,badsize,ccol,no,cbad;
   PetscErrorCode  ierr;
   Mat             m=mc->mat;
   Mat_MPIAIJ      *aij = (Mat_MPIAIJ*)m->data;
   Mat             md=NULL,mo=NULL;
   /* Mat             mtd=NULL,mto=NULL; */
   PetscBool       isMPIAIJ,isSEQAIJ;
-  ISColoringValue pcol,*ocolors;
+  ISColoringValue pcol,*ocolors,*badidx;
   const PetscInt  *cidx;
   Vec             wvec,owvec;
   VecScatter      oscatter;
@@ -287,14 +287,18 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
   for(i=0;i<masksize;i++) {
     mask[i]=-1;
   }
-  ierr = PetscMalloc1(n,&bad);CHKERRQ(ierr);
   ierr = PetscMalloc1(n,&conf);CHKERRQ(ierr);
-  /* transfer neighbor weights */
-  ierr = VecGetArray(wvec,&war);CHKERRQ(ierr);
+  nbad=0;
+  badsize=n;
+  ierr = PetscMalloc1(n,&bad);CHKERRQ(ierr);
+  ierr = PetscMalloc2(badsize,&badidx,badsize,&badnext);CHKERRQ(ierr);
   for (i=0;i<n;i++) {
     colors[i]=IS_COLORING_MAX;
+    bad[i]=-1;
   }
-  ierr = VecRestoreArray(wvec,&war);CHKERRQ(ierr);
+  for (i=0;i<badsize;i++) {
+    badnext[i]=-1;
+  }
   if (mo) {
     ierr = VecGetArray(wvec,&war);CHKERRQ(ierr);
     for (i=0;i<n;i++) {
@@ -313,10 +317,6 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
     }
     ierr = VecRestoreArray(owvec,&owar);CHKERRQ(ierr);
   }
-  /* values below "bad" are verboten for a given column due to being nixed at the parallel level */
-  for (i=0;i<n;i++) {
-    bad[i]=-1;
-  }
   mcol=0;
   while (nd_global < n_global) {
     nd=n;
@@ -326,8 +326,28 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
     for (i=0;i<n;i++) {
       idx=n-lperm[i]-1;
       if (colors[idx] == IS_COLORING_MAX) {
-        nd1cols=0;
+        /* entries in bad */
+        cbad=bad[idx];
+        while (cbad>=0) {
+          ccol=badidx[cbad];
+          if (ccol>=masksize) {
+            PetscInt *newmask;
+            ierr = PetscMalloc1(masksize*2,&newmask);CHKERRQ(ierr);
+            for(k=0;k<2*masksize;k++) {
+              newmask[k]=-1;
+            }
+            for(k=0;k<masksize;k++) {
+              newmask[k]=mask[k];
+            }
+            ierr = PetscFree(mask);CHKERRQ(ierr);
+            mask=newmask;
+            masksize*=2;
+          }
+          mask[ccol]=idx;
+          cbad=badnext[cbad];
+        }
         /* diagonal distance-one rows */
+        nd1cols=0;
         ierr = MatGetRow(md,idx,&ncols,&cidx,NULL);CHKERRQ(ierr);
         for (j=0;j<ncols;j++) {
           d1cols[nd1cols] = cidx[j];
@@ -428,12 +448,11 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
         /* assign this one the lowest color possible by seeing if there's a gap in the sequence of sorted neighbor colors */
         pcol=0;
         for (j=0;j<masksize;j++) {
-          if (mask[j]!=idx && j>bad[idx]) {
+          if (mask[j]!=idx) {
             break;
           }
         }
         pcol=j;
-        if (pcol<=bad[idx]) pcol=bad[idx]+1;
         if (pcol>maxcolors) pcol=maxcolors;
         colors[idx]=pcol;
         if (pcol>mcol) mcol=pcol;
@@ -540,7 +559,27 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
       ierr = VecGetArray(wvec,&war);CHKERRQ(ierr);
       for (i=0;i<n;i++) {
         if (PetscRealPart(war[i])>0) {
-          bad[i]=colors[i];
+          /* push this color onto the bad stack */
+          badidx[nbad]=colors[i];
+          badnext[nbad]=bad[i];
+          bad[i]=nbad;
+          nbad++;
+          if (nbad>=badsize) {
+            PetscInt *newbadnext;
+            ISColoringValue *newbadidx;
+            ierr = PetscMalloc2(badsize*2,&newbadidx,badsize*2,&newbadnext);CHKERRQ(ierr);
+            for(k=0;k<2*badsize;k++) {
+              newbadnext[k]=-1;
+            }
+            for(k=0;k<badsize;k++) {
+              newbadidx[k]=badidx[k];
+              newbadnext[k]=badnext[k];
+            }
+            ierr = PetscFree2(badidx,badnext);CHKERRQ(ierr);
+            badidx=newbadidx;
+            badnext=newbadnext;
+            badsize*=2;
+          }
           colors[i] = IS_COLORING_MAX;
           nd--;
         }
@@ -552,6 +591,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
   ierr = PetscFree(mask);CHKERRQ(ierr);
   ierr = PetscFree(d1cols);CHKERRQ(ierr);
   ierr = PetscFree(bad);CHKERRQ(ierr);
+  ierr = PetscFree2(badnext,badidx);CHKERRQ(ierr);
   ierr = PetscFree(conf);CHKERRQ(ierr);
   if (mo) {
     ierr = PetscFree3(ocolors,owts,oconf);CHKERRQ(ierr);
