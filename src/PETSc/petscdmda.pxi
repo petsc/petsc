@@ -2,12 +2,6 @@
 
 cdef extern from * nogil:
 
-    ctypedef enum PetscDMDABoundaryType"DMDABoundaryType":
-        DMDA_BOUNDARY_NONE     
-        DMDA_BOUNDARY_GHOSTED  
-        DMDA_BOUNDARY_MIRROR   
-        DMDA_BOUNDARY_PERIODIC 
-
     ctypedef enum PetscDMDAStencilType"DMDAStencilType":
         DMDA_STENCIL_STAR
         DMDA_STENCIL_BOX
@@ -25,9 +19,9 @@ cdef extern from * nogil:
                      PetscInt,PetscInt,PetscInt,       # M, N, P
                      PetscInt,PetscInt,PetscInt,       # m, n, p
                      PetscInt[],PetscInt[],PetscInt[], # lx, ly, lz
-                     PetscDMDABoundaryType,            # bx
-                     PetscDMDABoundaryType,            # by
-                     PetscDMDABoundaryType,            # bz
+                     PetscDMBoundaryType,              # bx
+                     PetscDMBoundaryType,              # by
+                     PetscDMBoundaryType,              # bz
                      PetscDMDAStencilType,             # stencil type
                      PetscInt,                         # stencil width
                      PetscDM*)
@@ -36,7 +30,7 @@ cdef extern from * nogil:
     int DMDASetDof(PetscDM,PetscInt)
     int DMDASetSizes(PetscDM,PetscInt,PetscInt,PetscInt)
     int DMDASetNumProcs(PetscDM,PetscInt,PetscInt,PetscInt)
-    int DMDASetBoundaryType(PetscDM,PetscDMDABoundaryType,PetscDMDABoundaryType,PetscDMDABoundaryType)
+    int DMDASetBoundaryType(PetscDM,PetscDMBoundaryType,PetscDMBoundaryType,PetscDMBoundaryType)
     int DMDASetStencilType(PetscDM,PetscDMDAStencilType)
     int DMDASetStencilWidth(PetscDM,PetscInt)
 
@@ -45,9 +39,9 @@ cdef extern from * nogil:
                     PetscInt*,PetscInt*,PetscInt*,
                     PetscInt*,PetscInt*,PetscInt*,
                     PetscInt*,PetscInt*,
-                    PetscDMDABoundaryType*,
-                    PetscDMDABoundaryType*,
-                    PetscDMDABoundaryType*,
+                    PetscDMBoundaryType*,
+                    PetscDMBoundaryType*,
+                    PetscDMBoundaryType*,
                     PetscDMDAStencilType*)
     int DMDAGetCorners(PetscDM,
                        PetscInt*,PetscInt*,PetscInt*,
@@ -90,27 +84,27 @@ cdef extern from * nogil:
 
 # --------------------------------------------------------------------
 
-cdef inline PetscDMDABoundaryType asBoundaryType(object boundary) \
-    except <PetscDMDABoundaryType>(-1):
+cdef inline PetscDMBoundaryType asBoundaryType(object boundary) \
+    except <PetscDMBoundaryType>(-1):
     if boundary is None:
-        return DMDA_BOUNDARY_NONE
+        return DM_BOUNDARY_NONE
     if isinstance(boundary, str):
         if boundary == 'none':
-            return DMDA_BOUNDARY_NONE
+            return DM_BOUNDARY_NONE
         elif boundary == 'ghosted':
-            return DMDA_BOUNDARY_GHOSTED
+            return DM_BOUNDARY_GHOSTED
         elif boundary == 'mirror':
-            return DMDA_BOUNDARY_MIRROR
+            return DM_BOUNDARY_MIRROR
         elif boundary == 'periodic':
-            return DMDA_BOUNDARY_PERIODIC
+            return DM_BOUNDARY_PERIODIC
         else:
             raise ValueError("unknown boundary type: %s" % boundary)
     return boundary
 
 cdef inline PetscInt asBoundary(object boundary,
-                                PetscDMDABoundaryType *_x,
-                                PetscDMDABoundaryType *_y,
-                                PetscDMDABoundaryType *_z) except? -1:
+                                PetscDMBoundaryType *_x,
+                                PetscDMBoundaryType *_y,
+                                PetscDMBoundaryType *_z) except? -1:
     cdef PetscInt dim = PETSC_DECIDE
     cdef object x, y, z
     if (boundary is None or
@@ -130,9 +124,9 @@ cdef inline PetscInt asBoundary(object boundary,
     return dim
 
 cdef inline object toBoundary(PetscInt dim,
-                              PetscDMDABoundaryType x,
-                              PetscDMDABoundaryType y,
-                              PetscDMDABoundaryType z):
+                              PetscDMBoundaryType x,
+                              PetscDMBoundaryType y,
+                              PetscDMBoundaryType z):
     if   dim == 0: return ()
     elif dim == 1: return (x,)
     elif dim == 2: return (x, y)

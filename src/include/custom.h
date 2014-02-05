@@ -546,7 +546,7 @@ DMDACreateND(MPI_Comm comm,
              PetscInt M,PetscInt N,PetscInt P,
              PetscInt m,PetscInt n,PetscInt p,
              const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],
-             DMDABoundaryType bx,DMDABoundaryType by,DMDABoundaryType bz,
+             DMBoundaryType bx,DMBoundaryType by,DMBoundaryType bz,
              DMDAStencilType stencil_type,PetscInt stencil_width,
              DM *dm)
 {

@@ -12,11 +12,18 @@ class DMType(object):
     PATCH     = S_(DMPATCH)
     MOAB      = S_(DMMOAB)
 
+class DMBoundaryType(object):
+    NONE     = DM_BOUNDARY_NONE
+    GHOSTED  = DM_BOUNDARY_GHOSTED
+    MIRROR   = DM_BOUNDARY_MIRROR
+    PERIODIC = DM_BOUNDARY_PERIODIC
+
 # --------------------------------------------------------------------
 
 cdef class DM(Object):
 
-    Type = DMType
+    Type         = DMType
+    BoundaryType = DMBoundaryType
 
     #
 
@@ -243,5 +250,6 @@ cdef class DM(Object):
 # --------------------------------------------------------------------
 
 del DMType
+del DMBoundaryType
 
 # --------------------------------------------------------------------

@@ -1,3 +1,9 @@
+#define DMBoundaryType DMDABoundaryType
+#define DM_BOUNDARY_NONE DMDA_BOUNDARY_NONE
+#define DM_BOUNDARY_GHOSTED DMDA_BOUNDARY_GHOSTED
+#define DM_BOUNDARY_MIRROR DMDA_BOUNDARY_MIRROR
+#define DM_BOUNDARY_PERIODIC DMDA_BOUNDARY_PERIODIC
+
 #undef  __FUNCT__
 #define __FUNCT__ "DMClone"
 static PetscErrorCode
@@ -17,7 +23,7 @@ DMClone(DM dm, DM *newdm)
     PetscInt M=1,N=1,P=1;
     PetscInt m=1,n=1,p=1;
     const PetscInt *lx=NULL,*ly=NULL,*lz=NULL;
-    DMDABoundaryType btx,bty,btz;
+    DMBoundaryType btx,bty,btz;
     DMDAStencilType  stype = DMDA_STENCIL_STAR;
     /**/
     ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
