@@ -517,6 +517,7 @@ PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,PetscReal c)
       }
     }
   }
+
   PetscFunctionReturn(0);
 }
 
@@ -744,7 +745,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
        Gres += Hres*work'; */
 
       PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&blasn,&blasn,&one,mfqP->Hres,&blasn,mfqP->work,&ione,&zero,mfqP->work2,&ione));
-      for (i=0;j<mfqP->n;j++) {
+      for (i=0;i<mfqP->n;i++) {
         cres += mfqP->work[i]*(mfqP->Gres[i]  + 0.5*mfqP->work2[i]);
         mfqP->Gres[i] += mfqP->work2[i];
       }
