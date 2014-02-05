@@ -40,7 +40,7 @@ int main(int argc,char **args)
   PC             subpc;        /* PC context for subdomain */
   PetscReal      norm;         /* norm of solution error */
   PetscErrorCode ierr;
-  PetscInt       i,j,Ii,J,*blks,m = 2,n;
+  PetscInt       i,j,Ii,J,*blks,m = 4,n;
   PetscMPIInt    rank,size;
   PetscInt       its,nlocal,first,Istart,Iend;
   PetscScalar    v,one = 1.0,none = -1.0;
