@@ -27,8 +27,8 @@ PetscErrorCode VecCUSPAllocateCheckHost(Vec v)
 
   PetscFunctionBegin;
   if (!s) {
-    ierr = PetscNew(&s);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)v,sizeof(*s));CHKERRQ(ierr);
+    ierr = PetscNewLog((PetscObject)v,&s);CHKERRQ(ierr);
+    v->data = s;
   }
   if (!s->array) {
     ierr               = PetscMalloc1(n,&array);CHKERRQ(ierr);
@@ -1870,7 +1870,6 @@ PetscErrorCode VecGetLocalVector_SeqCUSP(Vec v,Vec *w)
     ((Vec_Seq*)(*w)->data)->array_allocated = 0;
     ((Vec_Seq*)(*w)->data)->unplacedarray = 0;
   }
-
   if ((*w)->spptr) {
     if (((Vec_CUSP*)(*w)->spptr)->GPUarray) delete ((Vec_CUSP*)(*w)->spptr)->GPUarray;
     err = cudaStreamDestroy(((Vec_CUSP*)(*w)->spptr)->stream);CHKERRCUSP(err);
@@ -1912,6 +1911,7 @@ PetscErrorCode VecRestoreLocalVector_SeqCUSP(Vec v,Vec *w)
     v->data = (*w)->data;
     v->valid_GPU_array = (*w)->valid_GPU_array;
     v->spptr = (*w)->spptr;
+    ierr = VecCUSPCopyFromGPU(v);CHKERRQ(ierr);
     ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
     (*w)->data = 0;
     (*w)->valid_GPU_array = PETSC_CUSP_UNALLOCATED;
