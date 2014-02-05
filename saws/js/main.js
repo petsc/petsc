@@ -207,6 +207,7 @@ HandlePCOptions = function(){
         $("#oContainer").append("<tr> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ currentAsk + "\" title=\"A"+ currentAsk + " Symm:"+matInfo[matInfoWriteCounter-1].symm+" Posdef:"+matInfo[matInfoWriteCounter-1].posdef+" Logstruc:"+matInfo[matInfoWriteCounter-1].logstruc+"\"> </div></td> <td> <div id=\"oCmdOptions" + currentAsk + "\"></div> </td> </tr>");
 
         //Create drop-down lists. '&nbsp;' indicates a space
+        $("#A" + currentAsk).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>A" + currentAsk +" </b>");
 	$("#A" + currentAsk).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + currentAsk +"\"></select>");
 	$("#A" + currentAsk).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + currentAsk +"\"></select>");
 
@@ -236,8 +237,8 @@ HandlePCOptions = function(){
 
         preRecursionCounter = currentAsk; //save the current counter
 
-        currentAsk=matTreeGetNextNode(currentAsk);
-        alert("new current ask:"+currentAsk);
+        currentAsk = matTreeGetNextNode(currentAsk);
+        //alert("new current ask:"+currentAsk);
 
         formSet(currentAsk); //reset the form
 
