@@ -395,6 +395,7 @@ PetscErrorCode DMDestroy_Plex(DM dm)
     ierr = DMLabelDestroy(&next);CHKERRQ(ierr);
     next = tmp;
   }
+  ierr = DMDestroy(&mesh->coarseMesh);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&mesh->subpointMap);CHKERRQ(ierr);
   ierr = ISDestroy(&mesh->globalVertexNumbers);CHKERRQ(ierr);
   ierr = ISDestroy(&mesh->globalCellNumbers);CHKERRQ(ierr);
@@ -6285,5 +6286,57 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscBool isSimplex, PetscInt cellHeight)
       ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetCoarseDM"
+/*@
+  DMPlexGetCoarseDM - Get the coarse mesh from which this was obtained by refinement
+
+  Input Parameter:
+. dm - The DMPlex object
+
+  Output Parameter:
+. cdm - The coarse DM
+
+  Level: intermediate
+
+.seealso: DMPlexSetCoarseDM()
+@*/
+PetscErrorCode DMPlexGetCoarseDM(DM dm, DM *cdm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(cdm, 2);
+  *cdm = ((DM_Plex *) dm->data)->coarseMesh;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexSetCoarseDM"
+/*@
+  DMPlexSetCoarseDM - Set the coarse mesh from which this was obtained by refinement
+
+  Input Parameters:
++ dm - The DMPlex object
+- cdm - The coarse DM
+
+  Level: intermediate
+
+.seealso: DMPlexGetCoarseDM()
+@*/
+PetscErrorCode DMPlexSetCoarseDM(DM dm, DM cdm)
+{
+  DM_Plex       *mesh;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (cdm) PetscValidHeaderSpecific(cdm, DM_CLASSID, 2);
+  mesh = (DM_Plex *) dm->data;
+  ierr = DMDestroy(&mesh->coarseMesh);CHKERRQ(ierr);
+  mesh->coarseMesh = cdm;
+  ierr = PetscObjectReference((PetscObject) mesh->coarseMesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

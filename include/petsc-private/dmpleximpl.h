@@ -51,6 +51,9 @@ typedef struct {
 
   PetscInt            *facesTmp;          /* Work space for faces operation */
 
+  /* Hierarchy */
+  DM                   coarseMesh;        /* This mesh was obtained from coarse mesh using DMRefineHierarchy() */
+
   /* Submesh */
   DMLabel              subpointMap;       /* Label each original mesh point in the submesh with its depth, subpoint are the implicit numbering */
 
