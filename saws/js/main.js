@@ -18,29 +18,15 @@ var sawsInfo = [];
 //Counter for creating the new divs for the tree
 var matDivCounter = 0;
 
-var highestMg=0;//highest mg level encountered so far
-var mgLevelLocation=-1;//where to put the mg level data once the highest level is determined. -1 means not yet recorded
+//Use for pcmg
+var highestMg       = 0;  //highest mg level encountered so far
+var mgLevelLocation = -1; //where to put the mg level data once the highest level is determined. -1 means not yet recorded
 
 //Call the "Tex" function which populates an array with TeX to be used instead of images
 //var texMatrices = tex(maxMatricies) //unfortunately, cannot use anymore
 
-DisplayPCType = function(defl) {
-    SAWs.getDirectory("PETSc/Options/-pc_type",function(data,indef){
-        if (indef) var def = indef; 
-        else       var def = data.directories.Options.variables["-pc_type"].data[0];
-        alert("-pc_type "+def);
-        var alternatives = data.directories.Options.variables["-pc_type"].alternatives;
-        populatePcList("pcList-1",alternatives,def);
-        $("#pcList-1").data("listRecursionCounter", -1);
-
-        //manually trigger pclist once because additional options, e.g., detailed info may need to be added
-        $("#pcList-1").trigger("change");
-
-        // here it should display all the other PC options available to the PC currently
-    },defl)
-}
-
 //GetAndDisplayDirectory: modified from PETSc.getAndDisplayDirectory 
+//------------------------------------------------------------------
 GetAndDisplayDirectory = function(names,divEntry){
     //alert("1_start. GetAndDisplayDirectory: name="+name+"; divEntry="+divEntry+"; recursionCounterSAWs="+recursionCounterSAWs);
     jQuery(divEntry).html(""); //Get the HTML contents of the first element in the set of matched elements
@@ -49,6 +35,7 @@ GetAndDisplayDirectory = function(names,divEntry){
 }
 
 //DisplayDirectory: modified from PETSc.displayDirectory
+//------------------------------------------------------
 DisplayDirectory = function(sub,divEntry)
 {
     globaldirectory[divEntry] = sub
@@ -138,9 +125,10 @@ DisplayDirectory = function(sub,divEntry)
 }
 
 //When pcoptions.html is loaded ...
+//--------------------------------
 HandlePCOptions = function(){
 
-    preRecursionCounter="-1";//A matricies have string id's unlike the previous numerical recursionCounter
+    preRecursionCounter = "-1";//A matricies have string id's unlike the previous numerical recursionCounter
 
     //reset the form
     formSet(currentAsk);
@@ -154,18 +142,18 @@ HandlePCOptions = function(){
         posdef:  false,
         symm:    false,
         logstruc:false,
-        blocks: 0,
-        matLevel: 0,
-        id: "0"
+        blocks:  0,
+        matLevel:0,
+        id:      "0"
     }
 
     matInfo[0] = {//surtai added
         posdef:  false,
         symm:    false,
         logstruc:false,
-        blocks: 0,
-        matLevel: 0,
-        id: "0"
+        blocks:  0,
+        matLevel:0,
+        id:      "0"
     }
 
     //create div 'o-1' for displaying SAWs options
@@ -185,7 +173,7 @@ HandlePCOptions = function(){
         var matrixLevel = currentAsk.length-1;//minus one because A0 is length 1 but level 0
         var fieldsplitBlocks = $("#fieldsplitBlocks").val();
 
-        if(!document.getElementById("logstruc").checked)
+        if (!document.getElementById("logstruc").checked)
             fieldsplitBlocks=0;//sometimes will be left over garbage value from previous submits
 
 	//Write the form data to matInfo
@@ -193,9 +181,9 @@ HandlePCOptions = function(){
             posdef:  document.getElementById("posdef").checked,
             symm:    document.getElementById("symm").checked,
             logstruc:document.getElementById("logstruc").checked,
-            blocks: fieldsplitBlocks,
-            matLevel:   matrixLevel,
-            id:       currentAsk
+            blocks:  fieldsplitBlocks,
+            matLevel:matrixLevel,
+            id:      currentAsk
 	}
 
         //increment write counter immediately after data is written
@@ -249,25 +237,27 @@ HandlePCOptions = function(){
 
 
 //  This function is run when the page is first visited
+//-----------------------------------------------------
 $(document).ready(function(){
 $(function() { //needed for jqueryUI tool tip to override native javascript tooltip
     $(document).tooltip();
 });
 
 //When the button "Logically Block Structured" is clicked...
+//----------------------------------------------------------
 $("#logstruc").change(function(){
     if (document.getElementById("logstruc").checked) {
         $("#fieldsplitBlocks_text").show();
         $("#fieldsplitBlocks").show();
         //populatePcList("pcList-1",null,"fieldsplit");//HAD THIS ORIGINALLY
-    }
-    else {
+    } else {
         $("#fieldsplitBlocks_text").hide();
         $("#fieldsplitBlocks").hide();
     }
 });
 
 //this is ONLY for the input box in the beginning form. NOT the inputs in the A divs (those have class='fieldsplitBlocks')
+//-------------------------------------------------------------------------------------------------------------------------
 $(document).on("keyup", '.fieldsplitBlocksInput', function() {//alerts user with a tooltip when an invalid input is provided
     if ($(this).val().match(/[^0-9]/) || $(this).val()==0 || $(this).val()==1) {//problem is that integer only bubble still displays when nothing is entered
 	$(this).attr("title","hello");//set a random title (this will be overwritten)
@@ -281,10 +271,11 @@ $(document).on("keyup", '.fieldsplitBlocksInput', function() {//alerts user with
 });
 
 //Only show positive definite if symmetric
+//----------------------------------------
 $("#symm").change(function(){
-    if(document.getElementById("symm").checked)
+    if (document.getElementById("symm").checked) {
         $("#posdefRow").show();
-    else {
+    } else {
         $("#posdefRow").hide();
         $("#posdef").removeAttr("checked");
     }
@@ -292,8 +283,8 @@ $("#symm").change(function(){
     HandlePCOptions();//big function is called here
 });
 
-//---------------------------------------------------------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------------------------------
 
 /*
   formSet - Set Form (hide form if needed)
@@ -304,7 +295,7 @@ $("#symm").change(function(){
 */
 function formSet(current)//-1 input for current means that program has finished
 {
-    if(current=="-1"){
+    if (current=="-1") {
         $("#questions").hide();
         return;
     }
@@ -479,43 +470,49 @@ function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matInfo)
     }
 }
 
-//input: currentAsk
-//output: id of the next node that should be asked
-function matTreeGetNextNode(current)//uses matInfo to find and return the id of the next node to ask about SKIP ANY CHILDREN FROM NON-LOG STRUC PARENT
-{//important to remember that writeCounter is already pointing at an empty space at this point. this method also initializes the next object if needed.
-    if(current=="0" && askedA0)
+/*
+  matTreeGetNextNode - uses matInfo to find and return the id of the next node to ask about SKIP ANY CHILDREN FROM NON-LOG STRUC PARENT
+  input: 
+    currentAsk
+  output: 
+    id of the next node that should be asked
+*/
+function matTreeGetNextNode(current)
+{
+    //important to remember that writeCounter is already pointing at an empty space at this point. this method also initializes the next object if needed.
+    if (current=="0" && askedA0)
         return -1;//sort of base case. this only occurs when the tree has completely finished
 
-    if(current=="0")
-        askedA0=true;
+    if (current=="0")
+        askedA0 = true;
 
-    var parentID=current.substring(0,current.length-1);//simply knock off the last digit of the id
-    var lastDigit=current.charAt(current.length-1);
-    lastDigit=parseInt(lastDigit);
+    var parentID  = current.substring(0,current.length-1);//simply knock off the last digit of the id
+    var lastDigit = current.charAt(current.length-1);
+    lastDigit     = parseInt(lastDigit);
 
-    var currentBlocks=matInfo[getMatIndex(current)].blocks;
-    var possibleChild=current+""+(currentBlocks-1);
+    var currentBlocks = matInfo[getMatIndex(current)].blocks;
+    var possibleChild = current+""+(currentBlocks-1);
 
     //case 1: current node needs more child nodes
-    if(matInfo[getMatIndex(current)].logstruc && currentBlocks!=0 && getMatIndex(possibleChild)==-1) {//CHECK TO MAKE SURE CHILDREN DON'T ALREADY EXIST
+    if (matInfo[getMatIndex(current)].logstruc && currentBlocks!=0 && getMatIndex(possibleChild)==-1) {//CHECK TO MAKE SURE CHILDREN DON'T ALREADY EXIST
         alert("needs more children");
-        matInfo[matInfoWriteCounter]=new Object();
-        matInfo[matInfoWriteCounter].symm=matInfo[getMatIndex(current)].symm;//set defaults for the new node
-        matInfo[matInfoWriteCounter].posdef=matInfo[getMatIndex(current)].posdef;
+        matInfo[matInfoWriteCounter]        = new Object();
+        matInfo[matInfoWriteCounter].symm   = matInfo[getMatIndex(current)].symm;//set defaults for the new node
+        matInfo[matInfoWriteCounter].posdef = matInfo[getMatIndex(current)].posdef;
         return current+"0";//move onto first child
     }
 
     //case 2: current node's child nodes completed. move on to sister nodes if any
-    if(current!="0" && lastDigit+1 < matInfo[getMatIndex(parentID)].blocks) {
+    if (current!="0" && lastDigit+1 < matInfo[getMatIndex(parentID)].blocks) {
         alert("needs more sister nodes");
-        matInfo[matInfoWriteCounter]=new Object();
-        matInfo[matInfoWriteCounter].symm=matInfo[getMatIndex(current)].symm;//set defaults for the new node
-        matInfo[matInfoWriteCounter].posdef=matInfo[getMatIndex(current)].posdef;
-        var newEnding=parseInt(lastDigit)+1;
+        matInfo[matInfoWriteCounter]        = new Object();
+        matInfo[matInfoWriteCounter].symm   = matInfo[getMatIndex(current)].symm;//set defaults for the new node
+        matInfo[matInfoWriteCounter].posdef = matInfo[getMatIndex(current)].posdef;
+        var newEnding                       = parseInt(lastDigit)+1;
         return ""+parentID+newEnding;
     }
 
-    if(parentID=="")//only happens when there is only one A matrix
+    if (parentID=="")//only happens when there is only one A matrix
         return -1;
 
     //case 3: recursive case. both current node's child nodes and sister nodes completed. recursive search starting on parent again
@@ -567,14 +564,18 @@ function solverGetOptions(matInfo)
     }
 }
 
-//input: desired id in string format. (for example, "01001")
-//output: index in matInfo where information on that id is located
+/*
+  getMatIndex - 
+  input: 
+    desired id in string format. (for example, "01001")
+  output: 
+    index in matInfo where information on that id is located
+*/
 function getMatIndex(id)
 {
-    for(var i=0; i<matInfoWriteCounter; i++) {
-        if(matInfo[i].id == id)
+    for (var i=0; i<matInfoWriteCounter; i++) {
+        if (matInfo[i].id == id)
             return i;//return index where information is located.
     }
-
     return -1;//invalid id.
 }
