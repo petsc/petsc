@@ -21,9 +21,9 @@ cdef inline object str2bytes(object s, const_char *p[]):
     p[0] = <const_char*>(<char*>s)
     return s
 
-cdef inline str S_(const_char p[]):
+cdef inline object S_(const_char p[]):
      if p == NULL: return None
-     cdef bytes s = <char*>p
+     cdef object s = <char*>p
      return s if isinstance(s, str) else s.decode()
 
 
