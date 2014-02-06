@@ -399,32 +399,30 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, const PetscReal*
 PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc, PetscInt dim, MoabReadMode mode, PetscInt dbglevel, const char* dm_opts, const char* extra_opts, const char** read_opts)
 {
   char           ropts[PETSC_MAX_PATH_LEN];
+  char           ropts_par[PETSC_MAX_PATH_LEN];
+  char           ropts_dbg[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscMemzero(&ropts,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr = PetscMemzero(&ropts_par,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr = PetscMemzero(&ropts_dbg,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+
   /* do parallel read unless using only one processor */
   if (numproc > 1) {
-    ierr = PetscSNPrintf(ropts, sizeof(ropts), "PARALLEL=%s;PARTITION=PARALLEL_PARTITION;PARTITION_DISTRIBUTE;PARALLEL_RESOLVE_SHARED_ENTS;PARALLEL_GHOSTS=%d.0.1;",MoabReadModes[mode],dim);CHKERRQ(ierr);
-    if (by_rank) {
-      ierr = PetscSNPrintf(ropts, sizeof(ropts), "%sPARTITION_BY_RANK;",ropts);CHKERRQ(ierr);
-    }
-  }
-
-  if (strlen(dm_opts)) {
-    ierr = PetscSNPrintf(ropts, sizeof(ropts), "%s%s;",dm_opts);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(ropts_par, sizeof(ropts_par), "PARALLEL=%s;PARTITION=PARALLEL_PARTITION;PARTITION_DISTRIBUTE;PARALLEL_RESOLVE_SHARED_ENTS;PARALLEL_GHOSTS=%d.0.1%s;",MoabReadModes[mode],dim,(by_rank ? ";PARTITION_BY_RANK":""));CHKERRQ(ierr);
   }
 
   if (dbglevel) {
-    ierr = PetscSNPrintf(ropts, sizeof(ropts), "%sCPUTIME;DEBUG_IO=%d;",ropts,dbglevel);CHKERRQ(ierr);
     if (numproc>1) {
-      ierr = PetscSNPrintf(ropts, sizeof(ropts), "%sDEBUG_PIO=%d;",ropts,dbglevel);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(ropts_dbg, sizeof(ropts_dbg), "%sCPUTIME;DEBUG_IO=%d;DEBUG_PIO=%d;",dbglevel,dbglevel);CHKERRQ(ierr);
+    }
+    else {
+      ierr = PetscSNPrintf(ropts_dbg, sizeof(ropts_dbg), "%sCPUTIME;DEBUG_IO=%d;",dbglevel);CHKERRQ(ierr);
     }
   }
 
-  if (extra_opts) {
-    ierr = PetscSNPrintf(ropts, sizeof(ropts), "%s%s;",ropts,extra_opts);CHKERRQ(ierr);
-  }
-
+  ierr = PetscSNPrintf(ropts, sizeof(ropts), "%s%s%s%s",ropts_par,ropts_dbg,(extra_opts?extra_opts:""),(dm_opts?dm_opts:""));CHKERRQ(ierr);
   *read_opts = ropts;
   PetscFunctionReturn(0);
 }

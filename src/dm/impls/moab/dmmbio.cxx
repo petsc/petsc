@@ -6,29 +6,31 @@
 static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt numproc, PetscInt dim, MoabWriteMode mode, PetscInt dbglevel, const char* dm_opts, const char* extra_opts, const char** write_opts)
 {
   PetscErrorCode ierr;
-  char wopts[PETSC_MAX_PATH_LEN];
-
+  char           wopts[PETSC_MAX_PATH_LEN];
+  char           wopts_par[PETSC_MAX_PATH_LEN];
+  char           wopts_parid[PETSC_MAX_PATH_LEN];
+  char           wopts_dbg[PETSC_MAX_PATH_LEN];
   PetscFunctionBegin;
+
+  ierr = PetscMemzero(&wopts,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr = PetscMemzero(&wopts_par,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr = PetscMemzero(&wopts_parid,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr = PetscMemzero(&wopts_dbg,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
 
   // do parallel read unless only one processor
   if (numproc > 1) {
-    ierr = PetscSNPrintf(wopts, sizeof(wopts), "PARALLEL=%s;",MoabWriteModes[mode]);CHKERRQ(ierr);
-    if (fsetid>=0) {
-      ierr = PetscSNPrintf(wopts, sizeof(wopts), "%sPARALLEL_COMM=%d;",wopts,fsetid);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(wopts_par, sizeof(wopts_par), "PARALLEL=%s;",MoabWriteModes[mode]);CHKERRQ(ierr);
+    if (fsetid >= 0) {
+      ierr = PetscSNPrintf(wopts_parid, sizeof(wopts_parid), "PARALLEL_COMM=%d;",fsetid);CHKERRQ(ierr);
     }
   }
 
-  if (strlen(dm_opts)) {
-    ierr = PetscSNPrintf(wopts, sizeof(wopts), "%s%s;",wopts,dm_opts);CHKERRQ(ierr);
-  }
-
   if (dbglevel) {
-    ierr = PetscSNPrintf(wopts, sizeof(wopts), "%sCPUTIME;DEBUG_IO=%d;",wopts,dbglevel);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(wopts_dbg, sizeof(wopts_dbg), "CPUTIME;DEBUG_IO=%d;",dbglevel);CHKERRQ(ierr);
   }
 
-  if (extra_opts) {
-    ierr = PetscSNPrintf(wopts, sizeof(wopts), "%s%s;",wopts,extra_opts);CHKERRQ(ierr);
-  }
+  ierr = PetscSNPrintf(wopts, sizeof(wopts), "%s%s%s%s%s",wopts_par,wopts_parid,wopts_dbg,(extra_opts?extra_opts:""),(dm_opts?dm_opts:""));CHKERRQ(ierr);
+  
   *write_opts=wopts;
   PetscFunctionReturn(0);
 }
