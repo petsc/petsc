@@ -539,6 +539,7 @@ void readinput(struct in *put)
   for (i=0; i<63; i++) fscanf(ifp, "%c", &x);
   fscanf(ifp, "%lf", &tmp);
   put->init = tmp;
+
 }
 
 /* ------------------------------------------------------------------- */
