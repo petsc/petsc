@@ -607,6 +607,7 @@ PetscErrorCode  PetscObjectDereference(PetscObject obj)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!obj) PetscFunctionReturn(0);
   PetscValidHeader(obj,1);
   if (obj->bops->destroy) {
     ierr = (*obj->bops->destroy)(&obj);CHKERRQ(ierr);
