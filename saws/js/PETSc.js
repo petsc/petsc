@@ -22,10 +22,6 @@ PETSc.displayDirectory = function(sub,divEntry)
                                       window.setTimeout(PETSc.getAndDisplayDirectory,1000,null,divEntry);
                                     })
   }
-    //alert(JSON.stringify(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data))
-    //alert(JSON.stringify(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._man_0.data))
-    //alert(JSON.stringify(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._text_0.data))
-   
     //var SAWs_pcVal = JSON.stringify(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].data[0]);
     //alert("SAWs_pcVal="+SAWs_pcVal);
     //alert(JSON.stringify(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].alternatives)) //pcList

@@ -27,18 +27,18 @@ var mgLevelLocation = -1; //where to put the mg level data once the highest leve
 
 //GetAndDisplayDirectory: modified from PETSc.getAndDisplayDirectory 
 //------------------------------------------------------------------
-GetAndDisplayDirectory = function(names,divEntry){
+SAWsGetAndDisplayDirectory = function(names,divEntry){
     //alert("1_start. GetAndDisplayDirectory: name="+name+"; divEntry="+divEntry+"; recursionCounterSAWs="+recursionCounterSAWs);
     jQuery(divEntry).html(""); //Get the HTML contents of the first element in the set of matched elements
-    SAWs.getDirectory(names,DisplayDirectory,divEntry);
+    SAWs.getDirectory(names,SAWsDisplayDirectory,divEntry);
     //alert("1_end. recursionCounterSAWs "+recursionCounterSAWs);
 }
 
 //DisplayDirectory: modified from PETSc.displayDirectory
 //------------------------------------------------------
-DisplayDirectory = function(sub,divEntry)
+SAWsDisplayDirectory = function(sub,divEntry)
 {
-    globaldirectory[divEntry] = sub
+    globaldirectory[divEntry] = sub;
     //alert("2. DisplayDirectory: sub="+sub+"; divEntry="+divEntry);
     if (sub.directories.SAWs_ROOT_DIRECTORY.variables.hasOwnProperty("__Block") && (sub.directories.SAWs_ROOT_DIRECTORY.variables.__Block.data[0] == "true")) {
         //alert("3. divEntry="+divEntry);
@@ -49,7 +49,7 @@ DisplayDirectory = function(sub,divEntry)
             sub.directories.SAWs_ROOT_DIRECTORY.variables.__Block.data = ["false"];
             SAWs.postDirectory(sub);
             jQuery(divEntry).html("");
-            window.setTimeout(GetAndDisplayDirectory,1000,null,divEntry);
+            window.setTimeout(SAWsGetAndDisplayDirectory,1000,null,divEntry);
         //})
     }
 
@@ -70,27 +70,28 @@ DisplayDirectory = function(sub,divEntry)
         }
         //alert("Preconditioner (PC) options, SAWs_pcVal "+SAWs_pcVal+", SAWs_prefix "+SAWs_prefix);
 
-        if(SAWs_pcVal == 'mg' && mgLevelLocation==-1)
+        // SAWs_pcVal == 'mg'
+        //-----------------------------------------------
+        if (SAWs_pcVal == 'mg' && mgLevelLocation == -1)
             mgLevelLocation=recursionCounterSAWs;
 
         var SAWs_mgLevels="";
-        if(SAWs_prefix.indexOf("levels")!=-1) {
+        if (SAWs_prefix.indexOf("levels") != -1) {
             SAWs_mgLevels=SAWs_prefix.substring(10,12);//position 10 and 11. mg levels might be 2 digits long (e.g. greater than 9)
 
-            if(SAWs_mgLevels.indexOf('_')>0)
+            if (SAWs_mgLevels.indexOf('_')>0)
                 SAWs_mgLevels=SAWs_mgLevels.charAt(0);//mg levels is only 1 digit long. remove the extra '_'
 
-            if(SAWs_mgLevels > highestMg)
+            if (SAWs_mgLevels > highestMg)
                 highestMg=SAWs_mgLevels;
         }
 
+        // SAWs_pcVal == 'bjacobi'
+        //-----------------------------------------------
         var SAWs_bjacobi_blocks="";
         if (SAWs_pcVal == 'bjacobi') {
-            
             SAWs_bjacobi_blocks = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_bjacobi_blocks"].data[0];
-
             //else if(SAWs_prefix == "sub_")...
-
             //alert("SAWs_bjacobi_blocks "+SAWs_bjacobi_blocks);
             //set SAWs_bjacobi_blocks to #bjacobiBlocks-1_0.processorInput ???
         }
@@ -100,16 +101,17 @@ DisplayDirectory = function(sub,divEntry)
             bjacobi_blocks: SAWs_bjacobi_blocks
         }
         
-        if(mgLevelLocation!=-1)
+        // should these two lines be moved to SAWs_pcVal == 'mg' -- cause error somehow???
+        if (mgLevelLocation != -1)
             sawsInfo[mgLevelLocation].mg_levels=parseInt(highestMg)+1;//need to add 1
 
         recursionCounterSAWs++;
         //alert("pc: recursionCounterSAWs "+recursionCounterSAWs);
 
     } else if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Krylov Method (KSP) options") {
-        var SAWs_kspVal = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-ksp_type"].data[0];
+        var SAWs_kspVal       = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-ksp_type"].data[0];
         var SAWs_alternatives = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-ksp_type"].alternatives;
-        var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables.prefix.data[0];
+        var SAWs_prefix       = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables.prefix.data[0];
         
         if (SAWs_prefix == "(null)") SAWs_prefix = "";
         //$("#kspList-1"+SAWs_prefix).remove();
@@ -128,7 +130,7 @@ DisplayDirectory = function(sub,divEntry)
 //--------------------------------
 HandlePCOptions = function(){
 
-    preRecursionCounter = "-1";//A matricies have string id's unlike the previous numerical recursionCounter
+    preRecursionCounter = "-1"; //A matricies have string id's unlike the previous numerical recursionCounter
 
     //reset the form
     formSet(currentAsk);
@@ -161,9 +163,8 @@ HandlePCOptions = function(){
 
     // get and display SAWs options
     recursionCounterSAWs = 0;
-    GetAndDisplayDirectory("","#variablesInfo");
-    //alert("after GetAndDisplayDirectory, recursionCounterSAWs "+recursionCounterSAWs);
-
+    SAWsGetAndDisplayDirectory("","#variablesInfo");
+   
     $("#continueButton").click(function(){
         //alert("recursionCounterSAWs "+recursionCounterSAWs+"; prefix="+sawsInfo[0].prefix+" "+sawsInfo[recursionCounterSAWs-1].prefix);
 
