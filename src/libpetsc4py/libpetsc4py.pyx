@@ -1,5 +1,6 @@
 #cython: cdivision=True
 #cython: autotestdict=False
+#cython: warn.multiple_declarators=False
 cimport cython
 
 # ----------
