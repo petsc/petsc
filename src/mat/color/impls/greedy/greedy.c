@@ -7,29 +7,148 @@ typedef struct {
 } MC_Greedy;
 
 #undef __FUNCT__
+#define __FUNCT__ "GreedyDiscoverDegrees_Private"
+PetscErrorCode GreedyDiscoverDegrees_Private(MatColoring mc,PetscReal **degrees)
+{
+  Mat            G=mc->mat;
+  PetscInt       i,j,k,s,e,n,ncols;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetOwnershipRange(G,&s,&e);CHKERRQ(ierr);
+  n=e-s;
+  ierr = PetscMalloc1(n,degrees);CHKERRQ(ierr);
+  if (mc->dist==1) {
+    for (i=s;i<e;i++) {
+      ierr = MatGetRow(G,i,&ncols,NULL,NULL);CHKERRQ(ierr);
+      (*degrees)[i-s] = ncols;
+      ierr = MatRestoreRow(G,i,&ncols,NULL,NULL);CHKERRQ(ierr);
+    }
+  } else if (mc->dist==2) {
+    Vec            dvec,odvec;
+    PetscScalar    *dar,*odar;
+    VecScatter     oscatter;
+    PetscBool      isMPIAIJ,isSEQAIJ;
+    Mat            gd,go;
+    PetscInt       nd1cols,*d1cols,*seen,*oseen,no;
+    const PetscInt *cidx;
+    ierr = PetscObjectTypeCompare((PetscObject)G,MATMPIAIJ,&isMPIAIJ); CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)G,MATSEQAIJ,&isSEQAIJ); CHKERRQ(ierr);
+    go=NULL;
+    gd=NULL;
+    oscatter=NULL;
+    odvec=NULL;
+    ierr = PetscMalloc1(n,&seen);CHKERRQ(ierr);
+    for (i=0;i<n;i++) {
+      seen[i]=-1;
+    }
+    if (isMPIAIJ) {
+      Mat_MPIAIJ *aij = (Mat_MPIAIJ*)G->data;
+      gd=aij->A;
+      go=aij->B;
+      oscatter=aij->Mvctx;
+      odvec=aij->lvec;
+      ierr = VecGetLocalSize(odvec,&no);CHKERRQ(ierr);
+      ierr = PetscMalloc1(no,&oseen);CHKERRQ(ierr);
+      for (i=0;i<no;i++) {
+        oseen[i]=-1;
+      }
+    } else if (isSEQAIJ) {
+      gd=G;
+    } else {
+      SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_WRONG,"Matrix must be AIJ for greedy coloring");
+    }
+    ierr = PetscMalloc1(n,&d1cols);CHKERRQ(ierr);
+    ierr = MatGetVecs(G,NULL,&dvec);CHKERRQ(ierr);
+    /* the degree is going to be the locally computed on and off-diagonal distance one and on-diagonal distance two with remotely computed off-processor distance-two */
+    ierr = VecSet(dvec,0);CHKERRQ(ierr);
+    if (go) {ierr = VecSet(odvec,0);CHKERRQ(ierr);}
+    ierr = VecGetArray(dvec,&dar);CHKERRQ(ierr);
+    if (go) {ierr = VecGetArray(odvec,&odar);CHKERRQ(ierr);}
+    for (i=0;i<n;i++) {
+      /* on-processor distance one */
+      ierr = MatGetRow(gd,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
+      nd1cols=ncols;
+      for (j=0;j<ncols;j++) {
+        d1cols[j]=cidx[j];
+        seen[cidx[j]]=i;
+      }
+      dar[i]+=ncols;
+      ierr = MatRestoreRow(gd,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
+      /* off-processor distance one */
+      if (go) {
+        ierr = MatGetRow(go,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
+        for (j=0;j<ncols;j++) {
+          oseen[cidx[j]]=i;
+        }
+        ierr = MatRestoreRow(go,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
+      }
+      for (j=0;j<nd1cols;j++) {
+        /* on-processor distance two */
+        ierr = MatGetRow(gd,d1cols[j],&ncols,&cidx,NULL);CHKERRQ(ierr);
+        for (k=0;k<ncols;k++) {
+          if (seen[cidx[k]] != i) {
+            dar[i]+=1;
+            seen[cidx[k]]=i;
+          }
+        }
+        ierr = MatRestoreRow(gd,d1cols[j],&ncols,&cidx,NULL);CHKERRQ(ierr);
+        if (go) {
+          ierr = MatGetRow(go,d1cols[j],&ncols,&cidx,NULL);CHKERRQ(ierr);
+          for (k=0;k<ncols;k++) {
+            if (oseen[cidx[k]] != i) {
+              odar[cidx[k]]+=1;
+              dar[i]+=1;
+              oseen[cidx[k]]=i;
+            }
+          }
+          ierr = MatRestoreRow(go,d1cols[j],&ncols,&cidx,NULL);CHKERRQ(ierr);
+        }
+      }
+    }
+    ierr = VecRestoreArray(dvec,&dar);CHKERRQ(ierr);
+    if (go) {ierr = VecRestoreArray(odvec,&odar);CHKERRQ(ierr);}
+    if (go) {
+      ierr = VecScatterBegin(oscatter,odvec,dvec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(oscatter,odvec,dvec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    }
+    ierr = VecGetArray(dvec,&dar);CHKERRQ(ierr);
+    for (i=0;i<n;i++) {
+      (*degrees)[i]=PetscRealPart(dar[i]);
+    }
+    ierr = VecRestoreArray(dvec,&dar);CHKERRQ(ierr);
+    ierr = PetscFree(d1cols);CHKERRQ(ierr);
+    ierr = PetscFree(seen);CHKERRQ(ierr);
+    if (go) {
+      ierr = PetscFree(oseen);CHKERRQ(ierr);
+    }
+    ierr = VecDestroy(&dvec);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "GreedyCreateWeights_Private"
 PetscErrorCode GreedyCreateWeights_Private(MatColoring mc,PetscReal **wts,PetscInt **perm)
 {
   PetscRandom    rand;
   PetscReal      r;
-  PetscInt       i,s,e,n,ncols;
+  PetscInt       i,s,e,n;
   Mat            G=mc->mat;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatGetOwnershipRange(G,&s,&e);CHKERRQ(ierr);
   n=e-s;
-  ierr = PetscMalloc1(n,wts);CHKERRQ(ierr);
   ierr = PetscMalloc1(n,perm);CHKERRQ(ierr);
   /* each weight should be the degree plus a random perturbation */
   ierr = PetscRandomCreate(PetscObjectComm((PetscObject)mc),&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
+  ierr = GreedyDiscoverDegrees_Private(mc,wts);CHKERRQ(ierr);
   for (i=s;i<e;i++) {
-    ierr = MatGetRow(G,i,&ncols,NULL,NULL);CHKERRQ(ierr);
     ierr = PetscRandomGetValueReal(rand,&r);CHKERRQ(ierr);
-    (*wts)[i-s] = ncols + PetscAbsReal(r);
+    (*wts)[i-s] += PetscAbsReal(r);
     (*perm)[i-s] = i-s;
-    ierr = MatRestoreRow(G,i,&ncols,NULL,NULL);CHKERRQ(ierr);
   }
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   ierr = PetscSortRealWithPermutation(n,*wts,*perm);CHKERRQ(ierr);
