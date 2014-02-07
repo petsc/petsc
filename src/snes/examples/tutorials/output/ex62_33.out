@@ -35,7 +35,7 @@ SNES Object: 1 MPI processes
       Split info:
       Split number 0 Defined by IS
       Split number 1 Defined by IS
-      KSP solver for A00 block 
+      KSP solver for A00 block
         KSP Object:        (fieldsplit_velocity_)         1 MPI processes
           type: gmres
             GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -78,7 +78,7 @@ SNES Object: 1 MPI processes
         PC Object:        (fieldsplit_pressure_)         1 MPI processes
           type: jacobi
           linear system matrix followed by preconditioner matrix:
-          Mat Object:           1 MPI processes
+          Mat Object:          (fieldsplit_pressure_)           1 MPI processes
             type: schurcomplement
             rows=145, cols=145
               has attached null space

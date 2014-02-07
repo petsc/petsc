@@ -555,10 +555,11 @@ Instead of specifying the process layout, one may use
 PETSC\_DECIDE for \trl{m} and \trl{n}
 so that PETSc will determine the partition using MPI. The type of
 periodicity of the array is specified by \trl{xperiod} and \trl{yperiod}, which can be
-DMDA\_BOUNDARY\_NONE \findex{DMDA_BOUNDARY_NONE} (no periodicity),
-DMDA\_BOUNDARY\_PERIODIC \findex{DMDA_BOUNDARY_PERIODIC} (periodic in that direction),
-DMDA\_BOUNDARY\_GHOSTED \findex{DMDA_BOUNDARY_GHOSTED},
-or DMDA\_BOUNDARY\_MIRROR.\findex{DMDA_BOUNDARY_MIRROR}  The argument \trl{dof}
+DMDA\_BOUNDARY\_NONE \findex{DM_BOUNDARY_NONE} (no periodicity),
+DMDA\_BOUNDARY\_PERIODIC \findex{DM_BOUNDARY_PERIODIC} (periodic in that direction),
+DMDA\_BOUNDARY\_TWIST \findex{DM_BOUNDARY_TWIST} (periodic in that direction, but identified in reverse order),
+DMDA\_BOUNDARY\_GHOSTED \findex{DM_BOUNDARY_GHOSTED},
+or DMDA\_BOUNDARY\_MIRROR.\findex{DM_BOUNDARY_MIRROR}  The argument \trl{dof}
 indicates the number of degrees of freedom at each array point,
 and \trl{s} is the stencil width (i.e., the width of the ghost point region).
 The optional arrays \trl{lx} and \trl{ly} may contain the number of nodes

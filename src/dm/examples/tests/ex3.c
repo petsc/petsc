@@ -1,6 +1,7 @@
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdraw.h>
 
@@ -36,7 +37,7 @@ int main(int argc,char **argv)
   }
 
   /* Set up the array */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,M,1,1,localnodes,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,M,1,1,localnodes,&da);CHKERRQ(ierr);
   ierr = PetscFree(localnodes);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);

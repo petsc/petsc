@@ -29,6 +29,7 @@ typedef const char* DMType;
 #define DMPATCH     "patch"
 #define DMMOAB      "moab"
 
+PETSC_EXTERN const char *const DMBoundaryTypes[];
 PETSC_EXTERN PetscFunctionList DMList;
 PETSC_EXTERN PetscBool         DMRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode DMCreate(MPI_Comm,DM*);

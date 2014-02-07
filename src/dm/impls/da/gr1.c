@@ -28,7 +28,7 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
   MPI_Comm         comm;
   PetscSection     section;
   DM               cda;
-  DMDABoundaryType bx,by,bz;
+  DMBoundaryType   bx,by,bz;
   Vec              xcoor;
   PetscScalar      *coors;
   PetscReal        hx,hy,hz_;
@@ -63,11 +63,11 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
     ierr = DMGetDefaultGlobalSection(cda,&csection);CHKERRQ(ierr);
     ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
     ierr = DMDAGetHeightStratum(da, dim, &vStart, &vEnd);CHKERRQ(ierr);
-    if (bx == DMDA_BOUNDARY_PERIODIC) hx  = (xmax-xmin)/(M+1);
+    if (bx == DM_BOUNDARY_PERIODIC) hx  = (xmax-xmin)/(M+1);
     else                              hx  = (xmax-xmin)/(M ? M : 1);
-    if (by == DMDA_BOUNDARY_PERIODIC) hy  = (ymax-ymin)/(N+1);
+    if (by == DM_BOUNDARY_PERIODIC) hy  = (ymax-ymin)/(N+1);
     else                              hy  = (ymax-ymin)/(N ? N : 1);
-    if (bz == DMDA_BOUNDARY_PERIODIC) hz_ = (zmax-zmin)/(P+1);
+    if (bz == DM_BOUNDARY_PERIODIC) hz_ = (zmax-zmin)/(P+1);
     else                              hz_ = (zmax-zmin)/(P ? P : 1);
     switch (dim) {
     case 1:
@@ -122,7 +122,7 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
     PetscFunctionReturn(0);
   }
   if (dim == 1) {
-    if (bx == DMDA_BOUNDARY_PERIODIC) hx = (xmax-xmin)/M;
+    if (bx == DM_BOUNDARY_PERIODIC) hx = (xmax-xmin)/M;
     else hx = (xmax-xmin)/(M-1);
     ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
     for (i=0; i<isize; i++) {
@@ -130,9 +130,9 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else if (dim == 2) {
-    if (bx == DMDA_BOUNDARY_PERIODIC) hx = (xmax-xmin)/(M);
+    if (bx == DM_BOUNDARY_PERIODIC) hx = (xmax-xmin)/(M);
     else hx = (xmax-xmin)/(M-1);
-    if (by == DMDA_BOUNDARY_PERIODIC) hy = (ymax-ymin)/(N);
+    if (by == DM_BOUNDARY_PERIODIC) hy = (ymax-ymin)/(N);
     else hy = (ymax-ymin)/(N-1);
     ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
     cnt  = 0;
@@ -144,11 +144,11 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else if (dim == 3) {
-    if (bx == DMDA_BOUNDARY_PERIODIC) hx = (xmax-xmin)/(M);
+    if (bx == DM_BOUNDARY_PERIODIC) hx = (xmax-xmin)/(M);
     else hx = (xmax-xmin)/(M-1);
-    if (by == DMDA_BOUNDARY_PERIODIC) hy = (ymax-ymin)/(N);
+    if (by == DM_BOUNDARY_PERIODIC) hy = (ymax-ymin)/(N);
     else hy = (ymax-ymin)/(N-1);
-    if (bz == DMDA_BOUNDARY_PERIODIC) hz_ = (zmax-zmin)/(P);
+    if (bz == DM_BOUNDARY_PERIODIC) hz_ = (zmax-zmin)/(P);
     else hz_ = (zmax-zmin)/(P-1);
     ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
     cnt  = 0;
@@ -231,7 +231,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   MPI_Comm          comm;
   PetscDrawAxis     axis;
   Vec               xcoor;
-  DMDABoundaryType  bx;
+  DMBoundaryType    bx;
   const PetscReal   *bounds;
   PetscInt          *displayfields;
   PetscInt          k,ndisplayfields;
@@ -330,7 +330,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
       ierr = MPI_Send((void*)&array[j+(n-1)*step],1,MPIU_REAL,rank+1,tag1,comm);CHKERRQ(ierr);
       ierr = MPI_Send((void*)&xg[n-1],1,MPIU_REAL,rank+1,tag1,comm);CHKERRQ(ierr);
     }
-    if (!rank && bx == DMDA_BOUNDARY_PERIODIC && size > 1) { /* first processor sends first value to last */
+    if (!rank && bx == DM_BOUNDARY_PERIODIC && size > 1) { /* first processor sends first value to last */
       ierr = MPI_Send((void*)&array[j],1,MPIU_REAL,size-1,tag2,comm);CHKERRQ(ierr);
     }
 
@@ -348,7 +348,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
         ierr = PetscDrawPoint(draw,xgtmp,tmp,PETSC_DRAW_BLACK);CHKERRQ(ierr);
       }
     }
-    if (rank == size-1 && bx == DMDA_BOUNDARY_PERIODIC && size > 1) {
+    if (rank == size-1 && bx == DM_BOUNDARY_PERIODIC && size > 1) {
       ierr = MPI_Recv(&tmp,1,MPIU_REAL,0,tag2,comm,&status);CHKERRQ(ierr);
       /* If the mesh is not uniform we do not know the mesh spacing between the last point on the right and the first ghost point */
       ierr = PetscDrawLine(draw,PetscRealPart(xg[n-1]),PetscRealPart(array[j+step*(n-1)]),PetscRealPart(xg[n-1]+(xg[n-1]-xg[n-2])),tmp,PETSC_DRAW_RED);CHKERRQ(ierr);

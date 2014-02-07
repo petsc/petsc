@@ -2,6 +2,7 @@
 static char help[] = "Tests DMComposite routines.\n\n";
 
 #include <petscdmredundant.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdmcomposite.h>
 #include <petscpf.h>
@@ -34,7 +35,7 @@ int main(int argc,char **argv)
   ierr = DMCreateLocalVector(dmred1,&redundant1);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,dmred1);CHKERRQ(ierr);
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,8,1,1,NULL,&da1);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,8,1,1,NULL,&da1);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da1,&local1);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,da1);CHKERRQ(ierr);
 
@@ -42,7 +43,7 @@ int main(int argc,char **argv)
   ierr = DMCreateLocalVector(dmred2,&redundant2);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,dmred2);CHKERRQ(ierr);
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,6,1,1,NULL,&da2);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,6,1,1,NULL,&da2);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da2,&local2);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,da2);CHKERRQ(ierr);
 

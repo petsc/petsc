@@ -126,7 +126,7 @@ int main(int argc, char **argv)
 
   /* Set up distributed array for  each level */
   for (i=0; i<user.nlevels; i++) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.grid[i].mx,
+    ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.grid[i].mx,
                         user.grid[i].my,Nx,Ny,1,1,NULL,NULL,&user.grid[i].da);CHKERRA(ierr);
     ierr = DMCreateGlobalVector(user.grid[i].da,&user.grid[i].x);CHKERRA(ierr);
     ierr = VecDuplicate(user.grid[i].x,&user.grid[i].r);CHKERRA(ierr);

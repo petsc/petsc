@@ -8,7 +8,7 @@
       PetscErrorCode ierr
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-      call DMDACreate1d(MPI_COMM_WORLD,DMDA_BOUNDARY_NONE,8,1,1,        &
+      call DMDACreate1d(MPI_COMM_WORLD,DM_BOUNDARY_NONE,8,1,1,        &
      &  PETSC_NULL_INTEGER,da,ierr)
       call DMCreateGlobalVector(da,x,ierr)
       call VecDuplicate(x,f,ierr)

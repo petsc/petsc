@@ -56,6 +56,7 @@ Input parameters include:\n\
      petscksp.h   - linear solvers        petscsnes.h - nonlinear solvers
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 #include <petscdraw.h>
@@ -131,7 +132,7 @@ int main(int argc,char **argv)
      total grid values spread equally among all the processors.
   */
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,m,1,1,NULL,&appctx.da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,1,1,NULL,&appctx.da);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DMDA; we use these to store the

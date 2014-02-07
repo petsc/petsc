@@ -72,7 +72,7 @@ PetscErrorCode DMPatchZoom(DM dm, Vec X, MatStencil lower, MatStencil upper, MPI
     ierr = DMDASetDim(*dmz, dim);CHKERRQ(ierr);
     ierr = DMDASetSizes(*dmz, rM, rN, rP);CHKERRQ(ierr);
     ierr = DMDASetNumProcs(*dmz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = DMDASetBoundaryType(*dmz, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
+    ierr = DMDASetBoundaryType(*dmz, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE);CHKERRQ(ierr);
     ierr = DMDASetDof(*dmz, dof);CHKERRQ(ierr);
     ierr = DMDASetStencilType(*dmz, st);CHKERRQ(ierr);
     ierr = DMDASetStencilWidth(*dmz, 0);CHKERRQ(ierr);
