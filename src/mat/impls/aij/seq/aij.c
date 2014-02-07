@@ -374,60 +374,17 @@ PetscErrorCode MatSetValuesRow_SeqAIJ(Mat A,PetscInt row,const PetscScalar v[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJSetValuesLocalFast"
 /*
     MatSeqAIJSetValuesLocalFast - An optimized version of MatSetValuesLocal() for SeqAIJ matrices with several assumptions
 
       -   a single row of values is set with each call
-      -   the local to global mapping is the identity
       -   no row or column indices are negative or (in error) larger than the number of rows or columns
       -   the values are always added to the matrix, not set
-      -   the columns indices on each call are sorted
       -   no new locations are introduced in the nonzero structure of the matrix
 
-*/
-PetscErrorCode MatSeqAIJSetValuesLocalFastold(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
-{
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscInt       low,high,t,row,nrow,i,col,l;
-  const PetscInt *rp,*ai = a->i,*ailen = a->ilen;
-  const PetscInt *aj = a->j;
-  MatScalar      *ap,*aa = a->a;
-PetscBool      found;
+     This does NOT assume the global column indices are sorted
 
-  PetscFunctionBegin;
-if (m >1) printf("trouble1\n");
-  row = im[0];
-  rp   = aj + ai[row];
-  ap   = aa + ai[row];
-  nrow = ailen[row];
-  printf("row %d nrow %d\n",row,nrow);
-  if (!nrow) printf("trouble4 %d\n",row);
-  low  = 0;
-  for (l=0; l<n; l++) { /* loop over added columns */
-    col = in[l];
-    high = nrow;
-found = PETSC_FALSE;
-//printf("%d %d %d %d %d %d\n",l,low,high-1,rp[low],rp[high-1],col);
-if (l > 0 && in[l] < in[l-1]) printf("trouble3 %d %d\n",in[l-1],in[l]);
-    while (high-low > 5) {
-      t = (low+high)/2;
-      if (rp[t] > col) high = t;
-      else low = t;
-    }
-    for (i=low; i<high; i++) {
-      if (rp[i] == col) {
-        ap[i] += v[l];
-        low = i + 1;
-found = PETSC_TRUE;
-        break;
-      }
-    }
-    if (!found) printf("trouble2 row %d  %d %d %d %d %d   %d %d\n",row,low,high-1,rp[low],rp[high-1],col,rp[0],rp[nrow-1]);
-  }
-  PetscFunctionReturn(0);
-}
+*/
 
 #include <petsc-private/isimpl.h>
 #undef __FUNCT__
@@ -435,17 +392,16 @@ found = PETSC_TRUE;
 PetscErrorCode MatSeqAIJSetValuesLocalFast(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscInt       *rp,low,high,t,ii,row,nrow,i,col,l,rmax,N;
-  PetscInt       *imax = a->imax,*ai = a->i,*ailen = a->ilen;
-  PetscErrorCode ierr;
-  PetscInt       *aj = a->j,nonew = a->nonew,lastcol = -1;
+  PetscInt       low,high,t,row,nrow,i,col,l;
+  const PetscInt *rp,*ai = a->i,*ailen = a->ilen,*aj = a->j;
+  PetscInt       lastcol = -1;
   MatScalar      *ap,value,*aa = a->a;
-  PetscBool      ignorezeroentries = a->ignorezeroentries;
   const PetscInt *ridx = A->rmap->mapping->indices,*cidx = A->cmap->mapping->indices;
 
   row = ridx[im[0]];
-  rp   = aj + ai[row]; ap = aa + ai[row];
-  rmax = imax[row]; nrow = ailen[row];
+  rp   = aj + ai[row];
+  ap = aa + ai[row];
+  nrow = ailen[row];
   low  = 0;
   high = nrow;
   for (l=0; l<n; l++) { /* loop over added columns */
@@ -461,28 +417,12 @@ PetscErrorCode MatSeqAIJSetValuesLocalFast(Mat A,PetscInt m,const PetscInt im[],
       else low = t;
     }
     for (i=low; i<high; i++) {
-      if (rp[i] > col) break;
       if (rp[i] == col) {
-        if (is == ADD_VALUES) ap[i] += value;
-        else ap[i] = value;
+        ap[i] += value;
         low = i + 1;
-        goto noinsert;
+        break;
       }
     }
-    if (value == 0.0 && ignorezeroentries) goto noinsert;
-    if (nonew == 1) goto noinsert;
-    if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at (%D,%D) in the matrix",row,col);
-    MatSeqXAIJReallocateAIJ(A,A->rmap->n,1,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew,MatScalar);
-    N = nrow++ - 1; a->nz++; high++;
-    /* shift up all the later entries in this row */
-    for (ii=N; ii>=i; ii--) {
-      rp[ii+1] = rp[ii];
-      ap[ii+1] = ap[ii];
-    }
-    rp[i] = col;
-    ap[i] = value;
-    low   = i + 1;
-    noinsert:;
   }
   return 0;
 }
