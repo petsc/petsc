@@ -435,81 +435,56 @@ found = PETSC_TRUE;
 PetscErrorCode MatSeqAIJSetValuesLocalFast(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscInt       *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax,N;
+  PetscInt       *rp,low,high,t,ii,row,nrow,i,col,l,rmax,N;
   PetscInt       *imax = a->imax,*ai = a->i,*ailen = a->ilen;
   PetscErrorCode ierr;
   PetscInt       *aj = a->j,nonew = a->nonew,lastcol = -1;
   MatScalar      *ap,value,*aa = a->a;
   PetscBool      ignorezeroentries = a->ignorezeroentries;
-  PetscBool      roworiented       = a->roworiented;
   const PetscInt *ridx = A->rmap->mapping->indices,*cidx = A->cmap->mapping->indices;
 
-  PetscFunctionBegin;
-  if (v) PetscValidScalarPointer(v,6);
-  for (k=0; k<m; k++) { /* loop over added rows */
-    row = ridx[im[k]];
-    if (row < 0) continue;
-#if defined(PETSC_USE_DEBUG)
-    if (row >= A->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,A->rmap->n-1);
-#endif
-    rp   = aj + ai[row]; ap = aa + ai[row];
-    rmax = imax[row]; nrow = ailen[row];
-    low  = 0;
-    high = nrow;
-    for (l=0; l<n; l++) { /* loop over added columns */
-      col = cidx[in[l]];
-      if (col < 0) continue;
-#if defined(PETSC_USE_DEBUG)
-      if (col >= A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",col,A->cmap->n-1);
-#endif
+  row = ridx[im[0]];
+  rp   = aj + ai[row]; ap = aa + ai[row];
+  rmax = imax[row]; nrow = ailen[row];
+  low  = 0;
+  high = nrow;
+  for (l=0; l<n; l++) { /* loop over added columns */
+    col = cidx[in[l]];
+    value = v[l];
 
-      if (v) {
-        if (roworiented) {
-          value = v[l + k*n];
-        } else {
-          value = v[k + l*m];
-        }
-      } else {
-        value = 0.;
-      }
-      if ((value == 0.0 && ignorezeroentries) && (is == ADD_VALUES)) continue;
-
-      if (col <= lastcol) low = 0;
-      else high = nrow;
-      lastcol = col;
-      while (high-low > 5) {
-        t = (low+high)/2;
-        if (rp[t] > col) high = t;
-        else low = t;
-      }
-      for (i=low; i<high; i++) {
-        if (rp[i] > col) break;
-        if (rp[i] == col) {
-          if (is == ADD_VALUES) ap[i] += value;
-          else ap[i] = value;
-          low = i + 1;
-          goto noinsert;
-        }
-      }
-      if (value == 0.0 && ignorezeroentries) goto noinsert;
-      if (nonew == 1) goto noinsert;
-      if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at (%D,%D) in the matrix",row,col);
-      MatSeqXAIJReallocateAIJ(A,A->rmap->n,1,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew,MatScalar);
-      N = nrow++ - 1; a->nz++; high++;
-      /* shift up all the later entries in this row */
-      for (ii=N; ii>=i; ii--) {
-        rp[ii+1] = rp[ii];
-        ap[ii+1] = ap[ii];
-      }
-      rp[i] = col;
-      ap[i] = value;
-      low   = i + 1;
-noinsert:;
+    if (col <= lastcol) low = 0;
+    else high = nrow;
+    lastcol = col;
+    while (high-low > 5) {
+      t = (low+high)/2;
+      if (rp[t] > col) high = t;
+      else low = t;
     }
-    ailen[row] = nrow;
+    for (i=low; i<high; i++) {
+      if (rp[i] > col) break;
+      if (rp[i] == col) {
+        if (is == ADD_VALUES) ap[i] += value;
+        else ap[i] = value;
+        low = i + 1;
+        goto noinsert;
+      }
+    }
+    if (value == 0.0 && ignorezeroentries) goto noinsert;
+    if (nonew == 1) goto noinsert;
+    if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at (%D,%D) in the matrix",row,col);
+    MatSeqXAIJReallocateAIJ(A,A->rmap->n,1,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew,MatScalar);
+    N = nrow++ - 1; a->nz++; high++;
+    /* shift up all the later entries in this row */
+    for (ii=N; ii>=i; ii--) {
+      rp[ii+1] = rp[ii];
+      ap[ii+1] = ap[ii];
+    }
+    rp[i] = col;
+    ap[i] = value;
+    low   = i + 1;
+    noinsert:;
   }
-  A->same_nonzero = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 #undef __FUNCT__
