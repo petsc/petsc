@@ -159,7 +159,7 @@
 !   These values for __float128 are handled in the common block (below)
 !     and transmitted from the C code
 !
-#if !defined(PETSC_USE___FLOAT128)
+#if !defined(PETSC_USE_REAL___FLOAT128)
       integer MPIU_REAL
 #if defined (PETSC_USE_REAL_SINGLE)
       parameter (MPIU_REAL = MPI_REAL)
@@ -217,7 +217,7 @@
       PetscReal     PETSC_NULL_REAL
       PetscBool     PETSC_NULL_BOOL
 !
-#if defined(PETSC_USE___FLOAT128)
+#if defined(PETSC_USE_REAL___FLOAT128)
       integer MPIU_REAL
       integer MPIU_SCALAR
       integer MPIU_SUM
@@ -238,7 +238,7 @@
       common /petscfortran8/ PETSC_NULL_OBJECT
       common /petscfortran9/ PETSC_COMM_WORLD
       common /petscfortran10/ PETSC_COMM_SELF
-#if defined(PETSC_USE___FLOAT128)
+#if defined(PETSC_USE_REAL___FLOAT128)
       common /petscfortran11/ MPIU_REAL
       common /petscfortran12/ MPIU_SCALAR
       common /petscfortran13/ MPIU_SUM

@@ -31,18 +31,17 @@
       return
       end
 
-#if defined(PETSC_USE___FLOAT128)
-      subroutine PetscSetCommonBlockMPI(freal,fcomplex,fsum)
+#if defined(PETSC_USE_REAL___FLOAT128)
+      subroutine PetscSetCommonBlockMPI(freal,fscalar,fsum)
       implicit none
 
 #include      <finclude/petscsys.h>
 
-      integer freal,fcomplex,fsum
+      integer freal,fscalar,fsum
 
-      MPIU_REAL    = freal
-      MPIU_COMPLEX = fcomplex
-      MPIU_SUM     = fsum
-
+      MPIU_REAL   = freal
+      MPIU_SCALAR = fscalar
+      MPIU_SUM    = fsum
       return
       end
 #endif

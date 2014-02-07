@@ -402,12 +402,10 @@
 
 
 !  Sum function contributions from all processes
-      call MPI_Allreduce(floc,f,1,MPIU_SCALAR,MPI_SUM,                   &
+      call MPI_Allreduce(floc,f,1,MPIU_SCALAR,MPIU_SUM,                   &
      &                   PETSC_COMM_WORLD,ierr)
       call PetscLogFlops((ye-ysm)*(xe-xsm)*20+(xep-xs)*(yep-ys)*16.0d0,     &
      &                    ierr)
-
-
 
       return
       end

@@ -437,7 +437,7 @@
 
       ft = ft * area
       call MPI_Allreduce(ft,fcn,1,MPIU_SCALAR,                            &
-     &             MPI_SUM,MPI_COMM_WORLD,ierr)
+     &             MPIU_SUM,MPI_COMM_WORLD,ierr)
 
 
 

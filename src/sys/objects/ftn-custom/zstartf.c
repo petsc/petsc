@@ -48,13 +48,13 @@ PetscErrorCode PetscInitializeFortran(void)
   c2 =  MPI_Comm_c2f(PETSC_COMM_SELF);
   petscsetcommonblock_(&c1,&c2);
 
-#if defined(PETSC_USE___FLOAT128)
+#if defined(PETSC_USE_REAL___FLOAT128)
   {
     MPI_Fint freal,fscalar,fsum;
-    ierr = MPI_Type_c2f(MPIU_REAL,&freal);CHKERRQ(ierr);
-    ierr = MPI_Type_c2f(MPIU_COMPLEX,&fcomplex);CHKERRQ(ierr);
-    ierr = MPI_Op_c2f(MPIU_SUM,&fsum);CHKERRQ(ierr);
-    petscsetcommonblockmpi_(&freal,&fcomplex,&fsum);
+    freal   = MPI_Type_c2f(MPIU_REAL);
+    fscalar = MPI_Type_c2f(MPIU_SCALAR);
+    fsum    = MPI_Op_c2f(MPIU_SUM);
+    petscsetcommonblockmpi_(&freal,&fscalar,&fsum);
   }
 #endif
   return 0;
