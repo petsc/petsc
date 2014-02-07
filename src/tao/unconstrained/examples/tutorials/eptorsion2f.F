@@ -406,7 +406,6 @@
      &                   PETSC_COMM_WORLD,ierr)
       call PetscLogFlops((ye-ysm)*(xe-xsm)*20+(xep-xs)*(yep-ys)*16.0d0,     &
      &                    ierr)
-
       return
       end
 
