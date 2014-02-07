@@ -87,7 +87,7 @@ int main( int argc, char **argv )
   Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
 
   /* Create distributed array (DM) to manage parallel grid and vectors  */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,user.mx, user.my,Nx,Ny,1,1,NULL,NULL,&user.dm);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,user.mx, user.my,Nx,Ny,1,1,NULL,NULL,&user.dm);CHKERRQ(ierr);
 
 
   /* Create TAO solver and set desired solution method.*/
