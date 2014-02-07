@@ -167,13 +167,22 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
  @*/
 PetscErrorCode TaoSolve(Tao tao)
 {
-  PetscErrorCode ierr;
-  char           filename[PETSC_MAX_PATH_LEN];
-  PetscBool      flg;
-  PetscViewer    viewer;
+  PetscErrorCode   ierr;
+  char             filename[PETSC_MAX_PATH_LEN];
+  PetscBool        flg;
+  PetscViewer      viewer;
+  static PetscBool set = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  ierr = PetscCitationsRegister("@TechReport{tao-user-ref,\n"
+                                "title   = {Toolkit for Advanced Optimization (TAO) Users Manual},\n"
+                                "author  = {Todd Munson and Jason Sarich and Stefan Wild and Steve Benson and Lois Curfman McInnes},\n"
+                                "Institution = {Argonne National Laboratory},\n"
+                                "Year   = 2014,\n"
+                                "Number = {ANL/MCS-TM-322 - Revision 3.5},\n"
+                                "url    = {http://www.mcs.anl.gov/tao}\n}\n",&set);
+
   ierr = TaoSetUp(tao);CHKERRQ(ierr);
   ierr = TaoResetStatistics(tao);CHKERRQ(ierr);
   if (tao->linesearch) {
