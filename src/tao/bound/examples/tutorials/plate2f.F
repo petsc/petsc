@@ -440,7 +440,6 @@
      &             MPIU_SUM,MPI_COMM_WORLD,ierr)
 
 
-
 ! Restore vectors
       call VecRestoreArray(localX,x_v,x_i,ierr)
       call VecRestoreArray(localV,g_v,g_i,ierr)
