@@ -5904,7 +5904,7 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
       } else if ((p >= eMax) && (p < eEnd)) {
         /* Hybrid edges stay the same */
         localPointsNew[m]        = eStartNew     + (eMax                        - eStart)*2     + (fMax                              - fStart)*3     + (cMax                            - cStart)     + (p  - eMax);
-        remotePointsNew[m].index = rvStartNew[n] + (rdepthMaxOld[n*(depth+1)+1] - reStart[n])*2 + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*3 + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n]) + (rp - rdepthMaxOld[n*(depth+1)+1]);
+        remotePointsNew[m].index = reStartNew[n] + (rdepthMaxOld[n*(depth+1)+1] - reStart[n])*2 + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*3 + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n]) + (rp - rdepthMaxOld[n*(depth+1)+1]);
         remotePointsNew[m].rank  = rrank;
         ++m;
       } else if ((p >= fStart) && (p < fMax)) {
@@ -5926,8 +5926,8 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
           remotePointsNew[m].index = rfStartNew[n] + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*4 + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n])*8 + (rp - rdepthMaxOld[n*(depth+1)+depth-1])*2 + r;
           remotePointsNew[m].rank  = rrank;
         }
-        localPointsNew[m]        = eStartNew     + (eMax                        - eStart)*2     + (fMax                              - fStart)*3     + (cMax                            - cStart)     + (p  - fMax);
-        remotePointsNew[m].index = reStartNew[n] + (rdepthMaxOld[n*(depth+1)+1] - reStart[n])*2 + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*3 + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n]) + (rp - rdepthMaxOld[n*(depth+1)+depth-1]);
+        localPointsNew[m]        = eStartNew     + (eMax                        - eStart)*2     + (fMax                              - fStart)*3     + (cMax                            - cStart)     + (eEnd                                    - eMax)                        + (p  - fMax);
+        remotePointsNew[m].index = reStartNew[n] + (rdepthMaxOld[n*(depth+1)+1] - reStart[n])*2 + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*3 + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n]) + (rdepthSizeOld[n*(depth+1)+1]+reStart[n] - rdepthMaxOld[n*(depth+1)+1]) + (rp - rdepthMaxOld[n*(depth+1)+depth-1]);
         remotePointsNew[m].rank  = rrank;
         ++m;
       } else if ((p >= cStart) && (p < cMax)) {
