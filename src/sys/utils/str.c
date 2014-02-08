@@ -1044,6 +1044,7 @@ PetscErrorCode  PetscStrreplace(MPI_Comm comm,const char aa[],char b[],size_t le
   /* replace that are in environment */
   ierr = PetscOptionsGetenv(comm,"PETSC_LIB_DIR",env,1024,&flag);CHKERRQ(ierr);
   if (flag) {
+    ierr = PetscFree(r[2]);CHKERRQ(ierr);
     ierr = PetscStrallocpy(env,(char**)&r[2]);CHKERRQ(ierr);
   }
 
