@@ -2281,7 +2281,69 @@ PetscErrorCode DMPlexOrient(DM dm)
     ierr = PetscBTSet(seenCells, support[0]-cStart);CHKERRQ(ierr);
     ierr = PetscBTSet(seenCells, support[1]-cStart);CHKERRQ(ierr);
   }
+  /* Now all subdomains are oriented, but we need a consistent parallel orientation */
+  {
+    /* Find a representative face (edge) separating pairs of procs */
+    PetscSF            sf;
+    const PetscInt    *lpoints;
+    const PetscSFNode *rpoints;
+    PetscInt          *neighbors;
+    PetscInt           numLeaves, numRoots, numNeighbors = 0, l, n;
+    PetscBool          match;
 
+    ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+    ierr = PetscSFGetGraph(sf, &numRoots, &numLeaves, &lpoints, &rpoints);CHKERRQ(ierr);
+    if (numLeaves >= 0) {
+      ierr = PetscMalloc1(numLeaves,&neighbors);CHKERRQ(ierr);
+      /* I know this is p^2 time in general, but for bounded degree its alright */
+      for (l = 0; l < numLeaves; ++l) {
+        const PetscInt face = lpoints[l];
+        if ((face >= fStart) && (face < fEnd)) {
+          const PetscInt rank = rpoints[l].rank;
+          for (n = 0; n < numNeighbors; ++n) if (rank == rpoints[neighbors[n]].rank) break;
+          if (n >= numNeighbors) {
+            PetscInt supportSize;
+            ierr = DMPlexGetSupportSize(dm, face, &supportSize);CHKERRQ(ierr);
+            if (supportSize != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Boundary faces should see one cell, not %d", supportSize);
+            neighbors[numNeighbors++] = l;
+          }
+        }
+      }
+      const PetscInt *cone, *ornt, *support;
+      PetscInt        coneSize, supportSize;
+      int            *rornt, *lornt; /* PetscSF cannot handle smaller than int */
+
+      ierr = PetscCalloc2(numRoots,&rornt,numRoots,&lornt);CHKERRQ(ierr);
+      for (face = fStart; face < fEnd; ++face) {
+        ierr = DMPlexGetSupportSize(dm, face, &supportSize);CHKERRQ(ierr);
+        if (supportSize != 1) continue;
+        ierr = DMPlexGetSupport(dm, face, &support);CHKERRQ(ierr);
+
+        ierr = DMPlexGetCone(dm, support[0], &cone);CHKERRQ(ierr);
+        ierr = DMPlexGetConeOrientation(dm, support[0], &ornt);CHKERRQ(ierr);
+        for (c = 0; c < coneSize; ++c) if (cone[c] == face) break;
+        if (PetscBTLookup(flippedCells, support[0]-cStart)) rornt[face] = ornt[c] < 0 ? -1 :  1;
+        else                                                rornt[face] = ornt[c] < 0 ?  1 : -1;
+      }
+      /* Mark each edge with match or nomatch */
+      ierr = PetscSFBcastBegin(sf, MPI_INT, rornt, lornt);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sf, MPI_INT, rornt, lornt);CHKERRQ(ierr);
+      for (n = 0; n < numNeighbors; ++n) {
+        const PetscInt face = lpoints[neighbors[n]];
+
+        if (rornt[face]*lornt[face] < 0) match = PETSC_TRUE;
+        else                             match = PETSC_FALSE;
+      }
+      ierr = PetscFree2(rornt,lornt);CHKERRQ(ierr);
+      ierr = PetscFree(neighbors);CHKERRQ(ierr);
+    }
+    /*
+       - Vertex can be flipped, which negates all edges
+       - How do we solve this graph problem? I think we can do the same algorithm, BFS using a FIFO
+    */
+    if (!match) {for (c = cStart; c < cEnd; ++c) {ierr = PetscBTNegate(flippedCells, c-cStart);CHKERRQ(ierr);}}
+  }
+  /* Reverse flipped cells in the mesh */
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, NULL);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, maxConeSize, PETSC_INT, &revcone);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, maxConeSize, PETSC_INT, &revconeO);CHKERRQ(ierr);
