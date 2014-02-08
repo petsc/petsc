@@ -151,7 +151,7 @@ int main( int argc, char **argv )
   ierr = PetscOptionsHasName(NULL,"-matrixfree",&flg);CHKERRQ(ierr);
   if (flg) {
       ierr = MatCreateShell(PETSC_COMM_WORLD,m,m,N,N,(void*)&user,&H_shell);
-      ierr = MatShellSetOperation(H_shell,MATOP_MULT,(void(*)())MyMatMult);CHKERRQ(ierr);
+      ierr = MatShellSetOperation(H_shell,MATOP_MULT,(void(*)(void))MyMatMult);CHKERRQ(ierr);
       ierr = MatSetOption(H_shell,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
       ierr = TaoSetHessianRoutine(tao,H_shell,H_shell,MatrixFreeHessian,(void*)&user);CHKERRQ(ierr);
   } else {
