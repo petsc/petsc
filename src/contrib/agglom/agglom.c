@@ -6,5 +6,5 @@ static char vcid[] = "$Id: agglom.c,v 1.1 1999/03/30 22:50:39 bsmith Exp bsmith 
 
 */
 
-#include "mat.h"
+#include <mat.h>
 

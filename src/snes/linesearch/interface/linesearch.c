@@ -183,7 +183,7 @@ PetscErrorCode  SNESLineSearchSetFunction(SNESLineSearch linesearch, PetscErrorC
     SNESLineSearchPreCheckFunction - functional form passed to check before line search is called
 
      Synopsis:
-     #include "petscsnes.h"
+     #include <petscsnes.h>
      SNESLineSearchPreCheckFunction(SNESLineSearch snes,Vec x,Vec y, PetscBool *changed);
 
        Input Parameters:
@@ -257,7 +257,7 @@ PetscErrorCode  SNESLineSearchGetPreCheck(SNESLineSearch linesearch, PetscErrorC
     SNESLineSearchPostheckFunction - functional form that is called after line search is complete
 
      Synopsis:
-     #include "petscsnes.h"
+     #include <petscsnes.h>
      SNESLineSearchPostheckFunction(SNESLineSearch linesearch,Vec x,Vec y,  Vec w, *changed_y, PetscBool *changed_w);
 
      Input Parameters:

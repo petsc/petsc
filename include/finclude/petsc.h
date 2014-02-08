@@ -18,3 +18,4 @@
 !#include "finclude/petscdmcomposite.h"
 !#include "finclude/petscdmsliced.h"
 #include "finclude/petscts.h"
+#include "finclude/petsctao.h"

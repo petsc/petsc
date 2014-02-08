@@ -1303,7 +1303,7 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(da,&lx,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,NV,PETSC_DETERMINE,1,1,1,lx,NULL,&ctx->Vda);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,NV,PETSC_DETERMINE,1,1,1,lx,NULL,&ctx->Vda);CHKERRQ(ierr);
   ierr = DMDASetFieldName(ctx->Vda,0,"V");CHKERRQ(ierr);
   ierr = DMDASetCoordinateName(ctx->Vda,0,"X coordinate direction");CHKERRQ(ierr);
   ierr = PetscSNPrintf(ycoor,32,"%D ... Cluster size ... 1",NV);CHKERRQ(ierr);
@@ -1330,7 +1330,7 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(da,&lx,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,NHeV[1],PETSC_DETERMINE,1,1,1,lx,NULL,&ctx->HeVda);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,NHeV[1],PETSC_DETERMINE,1,1,1,lx,NULL,&ctx->HeVda);CHKERRQ(ierr);
   ierr = DMDASetFieldName(ctx->HeVda,0,"HeV[1][]");CHKERRQ(ierr);
   ierr = DMDASetCoordinateName(ctx->HeVda,0,"X coordinate direction");CHKERRQ(ierr);
   ierr = PetscSNPrintf(ycoor,32,"%D ... Cluster size ... 1",NHeV[1]);CHKERRQ(ierr);

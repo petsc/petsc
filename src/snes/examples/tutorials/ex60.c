@@ -27,9 +27,8 @@ Runtime options include:\n\
 
  */
 
-#include "petscsnes.h"
-#include <petscdm.h>
-#include "petscdmda.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
 
 typedef struct {
   PetscReal   dt,T; /* Time step and end time */
@@ -507,14 +506,14 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
 
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i < xs+xm; i++) {
-      l[j][i][0] = -SNES_VI_INF;
+      l[j][i][0] = -PETSC_INFINITY;
       l[j][i][1] = 0.0;
-      l[j][i][2] = -SNES_VI_INF;
+      l[j][i][2] = -PETSC_INFINITY;
       l[j][i][3] = 0.0;
       l[j][i][4] = 0.0;
-      u[j][i][0] = SNES_VI_INF;
+      u[j][i][0] = PETSC_INFINITY;
       u[j][i][1] = 1.0;
-      u[j][i][2] = SNES_VI_INF;
+      u[j][i][2] = PETSC_INFINITY;
       u[j][i][3] = 1.0;
       u[j][i][4] = 1.0;
     }

@@ -2,7 +2,7 @@
 #if !defined(__pcbddc_private_h)
 #define __pcbddc_private_h
 
-#include "bddcstructs.h"
+#include <bddcstructs.h>
 
 /* main functions */
 PetscErrorCode PCBDDCAnalyzeInterface(PC);

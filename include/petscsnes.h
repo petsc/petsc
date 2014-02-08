@@ -589,8 +589,6 @@ PETSC_EXTERN PetscErrorCode SNESVIGetInactiveSet(SNES,IS*);
 PETSC_EXTERN PetscErrorCode SNESVIGetActiveSetIS(SNES,Vec,Vec,IS*);
 PETSC_EXTERN PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES,Vec,Vec,PetscReal*);
 PETSC_EXTERN PetscErrorCode SNESVISetRedundancyCheck(SNES,PetscErrorCode(*)(SNES,IS,IS*,void*),void*);
-#define SNES_VI_INF   1.0e20
-#define SNES_VI_NINF -1.0e20
 
 PETSC_EXTERN PetscErrorCode SNESTestLocalMin(SNES);
 

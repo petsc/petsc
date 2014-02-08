@@ -1,4 +1,4 @@
-#include "petscvec.h"
+#include <petscvec.h>
 
 static char help[] = "Tests vecScatter Sequential to Sequential for (CUSP) vectors\n\
   -m # : the size of the vectors\n					\

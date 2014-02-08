@@ -1,6 +1,6 @@
 #include <petsc-private/petscimpl.h>
-#include "bddcprivate.h"
-#include "bddcstructs.h"
+#include <bddcprivate.h>
+#include <bddcstructs.h>
 
 /* special marks: they cannot be enums, since special marks should in principle range from -4 to -max_int */
 #define NEUMANN_MARK -1

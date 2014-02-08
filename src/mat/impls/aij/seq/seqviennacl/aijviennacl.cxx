@@ -5,13 +5,13 @@
   matrix storage format.
 */
 
-#include "petscconf.h"
-#include "../src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
-#include "petscbt.h"
-#include "../src/vec/vec/impls/dvecimpl.h"
-#include "petsc-private/vecimpl.h"
+#include <petscconf.h>
+#include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
+#include <petscbt.h>
+#include <../src/vec/vec/impls/dvecimpl.h>
+#include <petsc-private/vecimpl.h>
 
-#include "../src/mat/impls/aij/seq/seqviennacl/viennaclmatimpl.h"
+#include <../src/mat/impls/aij/seq/seqviennacl/viennaclmatimpl.h>
 
 
 #include <algorithm>

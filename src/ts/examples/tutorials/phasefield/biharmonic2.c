@@ -127,9 +127,9 @@ int main(int argc,char **argv)
   {
     ierr = VecDuplicate(x,&ul);CHKERRQ(ierr);
     ierr = VecDuplicate(x,&uh);CHKERRQ(ierr);
-    ierr = VecStrideSet(ul,0,SNES_VI_NINF);CHKERRQ(ierr);
+    ierr = VecStrideSet(ul,0,PETSC_NINFINITY);CHKERRQ(ierr);
     ierr = VecStrideSet(ul,1,-1.0);CHKERRQ(ierr);
-    ierr = VecStrideSet(uh,0,SNES_VI_INF);CHKERRQ(ierr);
+    ierr = VecStrideSet(uh,0,PETSC_INFINITY);CHKERRQ(ierr);
     ierr = VecStrideSet(uh,1,1.0);CHKERRQ(ierr);
     ierr = TSVISetVariableBounds(ts,ul,uh);CHKERRQ(ierr);
   }

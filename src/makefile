@@ -1,5 +1,5 @@
 
-DIRS     = sys vec mat dm ksp snes ts contrib benchmarks docs
+DIRS     = sys vec mat dm ksp snes ts tao contrib benchmarks docs
 LOCDIR   = src/
 MANSEC   = Sys
 

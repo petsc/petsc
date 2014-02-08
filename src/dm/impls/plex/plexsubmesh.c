@@ -3010,7 +3010,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
   Input Parameters:
 + dm          - The original mesh
 . hasLagrange - The mesh has Lagrange unknowns in the cohesive cells
-. label       - A label name, or PETSC_NULL
+. label       - A label name, or NULL
 - value  - A label value
 
   Output Parameter:

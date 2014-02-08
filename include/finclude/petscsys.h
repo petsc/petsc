@@ -156,6 +156,20 @@
 ! ----------------------------------------------------------------------------
 !    BEGIN PETSc aliases for MPI_ constants
 !
+!   These values for __float128 are handled in the common block (below)
+!     and transmitted from the C code
+!
+#if !defined(PETSC_USE_REAL___FLOAT128)
+      integer MPIU_REAL
+#if defined (PETSC_USE_REAL_SINGLE)
+      parameter (MPIU_REAL = MPI_REAL)
+#else
+      parameter(MPIU_REAL = MPI_DOUBLE_PRECISION)
+#endif
+
+      integer MPIU_SUM
+      parameter (MPIU_SUM = MPI_SUM)
+
       integer MPIU_SCALAR
 #if defined(PETSC_USE_COMPLEX)
 #if defined (PETSC_USE_REAL_SINGLE)
@@ -168,6 +182,7 @@
       parameter (MPIU_SCALAR = MPI_REAL)
 #else
       parameter(MPIU_SCALAR = MPI_DOUBLE_PRECISION)
+#endif
 #endif
 #endif
 
@@ -202,6 +217,12 @@
       PetscReal     PETSC_NULL_REAL
       PetscBool     PETSC_NULL_BOOL
 !
+#if defined(PETSC_USE_REAL___FLOAT128)
+      integer MPIU_REAL
+      integer MPIU_SCALAR
+      integer MPIU_SUM
+#endif
+!
 !     Common Block to store some of the PETSc constants.
 !     which can be set - only at runtime.
 !
@@ -217,6 +238,11 @@
       common /petscfortran8/ PETSC_NULL_OBJECT
       common /petscfortran9/ PETSC_COMM_WORLD
       common /petscfortran10/ PETSC_COMM_SELF
+#if defined(PETSC_USE_REAL___FLOAT128)
+      common /petscfortran11/ MPIU_REAL
+      common /petscfortran12/ MPIU_SCALAR
+      common /petscfortran13/ MPIU_SUM
+#endif
 !
 !     Possible arguments to PetscPushErrorHandler()
 !
@@ -226,10 +252,10 @@
       external PETSCATTACHDEBUGGERERRORHANDLER
       external PETSCIGNOREERRORHANDLER
 !
-      external PetscIsInfOrNanScalar
-      external PetscIsInfOrNanReal
-      PetscBool  PetscIsInfOrNanScalar
-      PetscBool  PetscIsInfOrNanReal
+      external  PetscIsInfOrNanScalar
+      external  PetscIsInfOrNanReal
+      PetscBool PetscIsInfOrNanScalar
+      PetscBool PetscIsInfOrNanReal
 
 
 !    END COMMON-BLOCK VARIABLES

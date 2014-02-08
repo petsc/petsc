@@ -1,7 +1,7 @@
 #define PETSCMAT_DLL
 
-#include "../src/mat/impls/baij/seq/baij.h"
-#include "../src/mat/impls/baij/seq/bstream/bstream.h"
+#include <../src/mat/impls/baij/seq/baij.h>
+#include <../src/mat/impls/baij/seq/bstream/bstream.h>
 
 extern PetscErrorCode MatDestroy_SeqBSTRM(Mat A);
 extern PetscErrorCode MatSeqBSTRM_convert_bstrm(Mat A);

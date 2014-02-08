@@ -19,9 +19,8 @@ Runtime options include:\n\
 
  */
 
-#include "petscsnes.h"
-#include <petscdm.h>
-#include "petscdmda.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
 
 typedef struct {
   PetscReal   dt,T; /* Time step and end time */
@@ -383,11 +382,11 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
       l[j][i][0] = 0.0;
       l[j][i][1] = 0.0;
       l[j][i][2] = 0.0;
-      l[j][i][3] = -SNES_VI_INF;
+      l[j][i][3] = -PETSC_INFINITY;
       u[j][i][0] = 1.0;
       u[j][i][1] = 1.0;
       u[j][i][2] = 1.0;
-      u[j][i][3] = SNES_VI_INF;
+      u[j][i][3] = PETSC_INFINITY;
     }
   }
   ierr = DMDAVecRestoreArrayDOF(da,xl,&l);CHKERRQ(ierr);

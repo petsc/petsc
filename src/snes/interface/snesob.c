@@ -4,7 +4,7 @@
     SNESObjectiveFunction - functional form used to convey the objective function to the nonlinear solver
 
      Synopsis:
-     #include "petscsnes.h"
+     #include <petscsnes.h>
        SNESObjectiveFunction(SNES snes,Vec x,PetscReal *obj,void *ctx);
 
      Input Parameters:

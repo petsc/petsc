@@ -209,7 +209,7 @@ PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu)
   PetscFunctionBeginUser;
   ierr = SNESGetApplicationContext(snes,&user);CHKERRQ(ierr);
   ierr = VecCopy(user->psi,Xl);CHKERRQ(ierr);  /* u >= psi */
-  ierr = VecSet(Xu,SNES_VI_INF);CHKERRQ(ierr);
+  ierr = VecSet(Xu,PETSC_INFINITY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

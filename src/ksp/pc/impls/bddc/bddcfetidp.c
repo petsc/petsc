@@ -1,5 +1,5 @@
-#include "bddc.h"
-#include "bddcprivate.h"
+#include <bddc.h>
+#include <bddcprivate.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCCreateFETIDPMatContext"

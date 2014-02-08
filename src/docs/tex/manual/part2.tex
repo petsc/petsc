@@ -5656,7 +5656,7 @@ The basic steps involved in logging a
 user-defined portion of code, called an {\em event}, are shown in the
 code fragment below:
 \begin{tabbing}
-    \#include "petsclog.h"\\
+    \#include <petsclog.h>\\
     int USER\_EVENT;\\
     PetscLogEventRegister("User event name",0,\&USER\_EVENT);\\
     PetscLogEventBegin(USER\_EVENT,0,0,0,0);\\
