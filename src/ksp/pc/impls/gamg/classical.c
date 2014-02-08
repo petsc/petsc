@@ -120,9 +120,9 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,const Mat A,Mat *G)
 
   ierr = MatGetOwnershipRange(A,&s,&f);CHKERRQ(ierr);
   n=f-s;
-  ierr = PetscMalloc(sizeof(PetscInt)*n,&lsparse);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*n,&gsparse);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscScalar)*n,&Amax);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&lsparse);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&gsparse);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&Amax);CHKERRQ(ierr);
 
   for (r = 0;r < n;r++) {
     lsparse[r] = 0;
@@ -156,8 +156,8 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,const Mat A,Mat *G)
     lsparse[r-s] = lidx;
     gsparse[r-s] = gidx;
   }
-  ierr = PetscMalloc(sizeof(PetscScalar)*cmax,&gval);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*cmax,&gcol);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cmax,&gval);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cmax,&gcol);CHKERRQ(ierr);
 
   ierr = MatCreate(PetscObjectComm((PetscObject)A),G); CHKERRQ(ierr);
   ierr = MatGetType(A,&mtype);CHKERRQ(ierr);
@@ -292,11 +292,11 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, const Mat A, const Mat 
 
   /* get the number of local unknowns and the indices of the local unknowns */
 
-  ierr = PetscMalloc(sizeof(PetscInt)*fn,&lsparse);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*fn,&gsparse);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*fn,&lcid);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscReal)*fn,&Amax_pos);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscReal)*fn,&Amax_neg);CHKERRQ(ierr);
+  ierr = PetscMalloc1(fn,&lsparse);CHKERRQ(ierr);
+  ierr = PetscMalloc1(fn,&gsparse);CHKERRQ(ierr);
+  ierr = PetscMalloc1(fn,&lcid);CHKERRQ(ierr);
+  ierr = PetscMalloc1(fn,&Amax_pos);CHKERRQ(ierr);
+  ierr = PetscMalloc1(fn,&Amax_neg);CHKERRQ(ierr);
 
   /* count the number of coarse unknowns */
   cn = 0;
@@ -343,8 +343,8 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, const Mat A, const Mat 
     if (ncols > cmax) cmax = ncols;
     ierr = MatRestoreRow(A,i,&ncols,&rcol,&rval);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc(sizeof(PetscInt)*cmax,&pcols);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscScalar)*cmax,&pvals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cmax,&pcols);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cmax,&pvals);CHKERRQ(ierr);
 
   /* split the operator into two */
   ierr = PCGAMGClassicalGraphSplitting_Private(A,&lA,&gA);CHKERRQ(ierr);
@@ -355,7 +355,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, const Mat A, const Mat 
 
   if (gA) {
     ierr = VecGetSize(gF,&gn);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscInt)*gn,&gcid);CHKERRQ(ierr);
+    ierr = PetscMalloc1(gn,&gcid);CHKERRQ(ierr);
     for (i=0;i<gn;i++) {
       ierr = VecGetValues(gF,1,&i,&c_scalar);CHKERRQ(ierr);
       gcid[i] = *((PetscInt *)&c_scalar);
@@ -568,8 +568,8 @@ PetscErrorCode PCGAMGTruncateProlongator_Private(PC pc,Mat *P)
   ierr = MatGetOwnershipRangeColumn(*P,&pcs,&pcf);CHKERRQ(ierr);
   pn = pf-ps;
   pcn = pcf-pcs;
-  ierr = PetscMalloc(sizeof(PetscInt)*pn,&lsparse);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*pn,&gsparse);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pn,&lsparse);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pn,&gsparse);CHKERRQ(ierr);
   /* allocate */
   cmax = 0;
   for (i=ps;i<pf;i++) {
@@ -600,8 +600,8 @@ PetscErrorCode PCGAMGTruncateProlongator_Private(PC pc,Mat *P)
     ierr = MatRestoreRow(*P,i,&ncols,&pcol,&pval);CHKERRQ(ierr);
   }
 
-  ierr = PetscMalloc(sizeof(PetscScalar)*cmax,&pnval);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*cmax,&pncol);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cmax,&pnval);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cmax,&pncol);CHKERRQ(ierr);
 
   ierr = MatCreate(PetscObjectComm((PetscObject)*P),&Pnew);CHKERRQ(ierr);
   ierr = MatSetType(Pnew, MATAIJ);CHKERRQ(ierr);
@@ -711,9 +711,9 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, const Mat A, const Ma
   ierr = VecCreateSeq(PETSC_COMM_SELF,nl,&lv);CHKERRQ(ierr);
   ierr = VecScatterCreate(v,lis,lv,NULL,&lscat);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(sizeof(PetscInt)*fn,&lsparse);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*fn,&gsparse);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscScalar)*nl,&pcontrib);CHKERRQ(ierr);
+  ierr = PetscMalloc1(fn,&lsparse);CHKERRQ(ierr);
+  ierr = PetscMalloc1(fn,&gsparse);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nl,&pcontrib);CHKERRQ(ierr);
 
   /* create coarse vector */
   cn = 0;
@@ -805,8 +805,8 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, const Mat A, const Ma
     }
     ierr = MatRestoreRow(lA[0],i,&ncols,&icol,&vcol);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc(sizeof(PetscInt)*maxcols,&picol);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscScalar)*maxcols,&pvcol);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxcols,&picol);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxcols,&pvcol);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)A),P);CHKERRQ(ierr);
   ierr = MatGetType(A,&mtype);CHKERRQ(ierr);
   ierr = MatSetType(*P,mtype);CHKERRQ(ierr);
@@ -962,7 +962,7 @@ PetscErrorCode PCGAMGOptProl_Classical_Jacobi(PC pc,const Mat A,Mat *P)
   ierr = MatGetOwnershipRange(*P,&s,&f);CHKERRQ(ierr);
   n = f-s;
   ierr = MatGetOwnershipRangeColumn(*P,&cs,&cf);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*n,&coarserows);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&coarserows);CHKERRQ(ierr);
   /* identify the rows corresponding to coarse unknowns */
   idx = 0;
   for (i=s;i<f;i++) {

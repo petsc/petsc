@@ -293,8 +293,8 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     if (!rank) {
       ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-      ierr = PetscStrncpy(type,((PetscObject)snes)->type_name,256);CHKERRQ(ierr);
-      ierr = PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscStrncpy(type,((PetscObject)snes)->type_name,sizeof(type));CHKERRQ(ierr);
+      ierr = PetscViewerBinaryWrite(viewer,type,sizeof(type),PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
     }
     if (snes->ops->view) {
       ierr = (*snes->ops->view)(snes,viewer);CHKERRQ(ierr);

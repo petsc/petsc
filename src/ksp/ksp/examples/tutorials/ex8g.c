@@ -174,12 +174,12 @@ int main(int argc,char **args)
       ierr = PetscPrintf(PETSC_COMM_SELF,"Nmesh points: %D x %D; subdomain partition: %D x %D; overlap: %D; Nsub: %D\n",m,n,M,N,overlap,Nsub);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_SELF,"Outer IS:\n");CHKERRQ(ierr);
       for (i=0; i<Nsub; i++) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"  outer IS[%d]\n",i);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"  outer IS[%D]\n",i);CHKERRQ(ierr);
         ierr = ISView(outeris[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       }
       ierr = PetscPrintf(PETSC_COMM_SELF,"Inner IS:\n");CHKERRQ(ierr);
       for (i=0; i<Nsub; i++) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"  inner IS[%d]\n",i);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"  inner IS[%D]\n",i);CHKERRQ(ierr);
         ierr = ISView(inneris[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       }
     }
