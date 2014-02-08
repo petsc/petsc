@@ -1266,13 +1266,17 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
     if (section) {ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);}
     if (section && numFields && dm->ops->createsubdm) {
       *len = numFields;
-      ierr = PetscMalloc3(numFields,namelist,numFields,islist,numFields,dmlist);CHKERRQ(ierr);
+      if (namelist) {ierr = PetscMalloc1(numFields,namelist);CHKERRQ(ierr);}
+      if (islist)   {ierr = PetscMalloc1(numFields,islist);CHKERRQ(ierr);}
+      if (dmlist)   {ierr = PetscMalloc1(numFields,dmlist);CHKERRQ(ierr);}
       for (f = 0; f < numFields; ++f) {
         const char *fieldName;
 
-        ierr = DMCreateSubDM(dm, 1, &f, &(*islist)[f], &(*dmlist)[f]);CHKERRQ(ierr);
-        ierr = PetscSectionGetFieldName(section, f, &fieldName);CHKERRQ(ierr);
-        ierr = PetscStrallocpy(fieldName, (char**) &(*namelist)[f]);CHKERRQ(ierr);
+        ierr = DMCreateSubDM(dm, 1, &f, islist ? &(*islist)[f] : NULL, dmlist ? &(*dmlist)[f] : NULL);CHKERRQ(ierr);
+        if (namelist) {
+          ierr = PetscSectionGetFieldName(section, f, &fieldName);CHKERRQ(ierr);
+          ierr = PetscStrallocpy(fieldName, (char**) &(*namelist)[f]);CHKERRQ(ierr);
+        }
       }
     } else {
       ierr = DMCreateFieldIS(dm, len, namelist, islist);CHKERRQ(ierr);
