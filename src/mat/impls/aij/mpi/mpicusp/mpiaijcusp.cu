@@ -2,7 +2,7 @@
 PETSC_CUDA_EXTERN_C_BEGIN
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
 PETSC_CUDA_EXTERN_C_END
-#include <mpicuspmatimpl.h>
+#include <../src/mat/impls/aij/mpi/mpicusp/mpicuspmatimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJCUSP"
