@@ -246,6 +246,7 @@ PetscErrorCode SNESSolve_GS(SNES snes)
   SNESNormSchedule normschedule;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   X = snes->vec_sol;
   F = snes->vec_func;
   B = snes->vec_rhs;

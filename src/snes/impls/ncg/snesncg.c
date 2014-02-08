@@ -274,6 +274,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   SNESConvergedReason reason;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   snes->reason = SNES_CONVERGED_ITERATING;
 
   maxits = snes->max_its;            /* maximum number of iterations */

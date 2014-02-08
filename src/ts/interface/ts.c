@@ -2611,11 +2611,20 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec U)
 @*/
 PetscErrorCode  TSStep(TS ts)
 {
-  PetscReal      ptime_prev;
-  PetscErrorCode ierr;
+  PetscReal        ptime_prev;
+  PetscErrorCode   ierr;
+  static PetscBool cite = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+  ierr = PetscCitationsRegister("@techreport{tspaper,\n"
+                                "  title       = {{PETSc/TS}: A Modern Scalable {DAE/ODE} Solver Library},\n"
+                                "  author      = {Shrirang Abhyankar and Jed Brown and Emil Constantinescu and Debojyoti Ghosh and Barry F. Smith},\n"
+                                "  type        = {Preprint},\n"
+                                "  number      = {ANL/MCS-P5061-0114},\n"
+                                "  institution = {Argonne National Laboratory},\n"
+                                "  year        = {2014}\n}\n",&cite);
+
   ierr = TSSetUp(ts);CHKERRQ(ierr);
 
   ts->reason = TS_CONVERGED_ITERATING;
