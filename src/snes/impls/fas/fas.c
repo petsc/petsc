@@ -1,5 +1,5 @@
 /* Defines the basic SNES object */
-#include <../src/snes/impls/fas/fasimpls.h>    /*I  "petscsnesfas.h"  I*/
+#include <../src/snes/impls/fas/fasimpls.h>    /*I  "petscsnes.h"  I*/
 
 const char *const SNESFASTypes[] = {"MULTIPLICATIVE","ADDITIVE","FULL","KASKADE","SNESFASType","SNES_FAS",0};
 

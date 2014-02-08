@@ -3,7 +3,7 @@
 */
 #define PETSC_DESIRE_COMPLEX
 #include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
-#include <petscsnesfas.h>
+#include <petscsnes.h>
 #include <petscdm.h>
 
 typedef struct {

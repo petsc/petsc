@@ -23,6 +23,5 @@
 
 #include <petsccharacteristic.h>
 
-#include <petscsnesfas.h>
 
 #include <petscts.h>
