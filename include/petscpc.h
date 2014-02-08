@@ -64,7 +64,6 @@ typedef const char* PCType;
 #define PCML              "ml"
 #define PCGALERKIN        "galerkin"
 #define PCEXOTIC          "exotic"
-#define PCASA             "asa"
 #define PCCP              "cp"
 #define PCBFBT            "bfbt"
 #define PCLSC             "lsc"

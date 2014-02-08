@@ -22,7 +22,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_FieldSplit(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_Galerkin(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_Exotic(PC);
-PETSC_EXTERN PetscErrorCode PCCreate_ASA(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_CP(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_LSC(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC);
@@ -102,7 +101,6 @@ PetscErrorCode  PCRegisterAll(void)
   ierr = PCRegister(PCFIELDSPLIT   ,PCCreate_FieldSplit);CHKERRQ(ierr);
   ierr = PCRegister(PCGALERKIN     ,PCCreate_Galerkin);CHKERRQ(ierr);
   ierr = PCRegister(PCEXOTIC       ,PCCreate_Exotic);CHKERRQ(ierr);
-  ierr = PCRegister(PCASA          ,PCCreate_ASA);CHKERRQ(ierr);
   ierr = PCRegister(PCCP           ,PCCreate_CP);CHKERRQ(ierr);
   ierr = PCRegister(PCLSC          ,PCCreate_LSC);CHKERRQ(ierr);
   ierr = PCRegister(PCREDISTRIBUTE ,PCCreate_Redistribute);CHKERRQ(ierr);
