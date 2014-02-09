@@ -182,7 +182,7 @@ int main(int argc,char **argv)
     }
 
     ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-    u[0] = PetscASinScalar(ctx.Pm/ctx.Pmax);
+    u[0] = PetscAsinScalar(ctx.Pm/ctx.Pmax);
     u[1] = 1.0;
     ierr = PetscOptionsRealArray("-u","Initial solution","",u,&n,&flg1);CHKERRQ(ierr);
     n    = 2;
@@ -226,7 +226,7 @@ int main(int argc,char **argv)
   if (ensemble) {
     for (du[1] = -2.5; du[1] <= .01; du[1] += .1) {
       ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-      u[0] = PetscASinScalar(ctx.Pm/ctx.Pmax);
+      u[0] = PetscAsinScalar(ctx.Pm/ctx.Pmax);
       u[1] = ctx.omega_s;
       u[0] += du[0];
       u[1] += du[1];

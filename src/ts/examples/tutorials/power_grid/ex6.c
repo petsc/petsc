@@ -427,7 +427,7 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   user->ws     = 1.0;
   user->H      = 5.0;  user->Pmax   = 2.1;
   user->PM_min = 1.0;  user->lambda = 0.1;
-  user->q      = 1.0;  user->mux    = PetscASinScalar(user->PM_min/user->Pmax);
+  user->q      = 1.0;  user->mux    = PetscAsinScalar(user->PM_min/user->Pmax);
   user->sigmax = 0.1;
   user->sigmay = 0.1;  user->rho  = 0.0;
   user->t0     = 0.0;  user->tmax = 2.0;
