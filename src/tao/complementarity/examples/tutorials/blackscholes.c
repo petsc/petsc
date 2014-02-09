@@ -200,12 +200,11 @@ int main(int argc, char **argv)
     sval = (gxs+i)*user.ds;
     user.Vt1[i] = PetscMax(user.strike - sval, 0);
     user.c[i] = (user.delta - user.rate)*sval;
-    user.d[i] = -0.5*user.sigma*user.sigma*pow(sval, user.alpha);
+    user.d[i] = -0.5*user.sigma*user.sigma*PetscPowReal(sval, user.alpha);
   }
   if (gxs+gxm==user.ms){
     user.Vt1[gxm-1] = 0;
   }
-
   ierr = VecDuplicate(x, &c);CHKERRQ(ierr);
 
   /*
@@ -278,12 +277,12 @@ int main(int argc, char **argv)
 #define __FUNCT__ "ComputeVariableBounds"
 PetscErrorCode ComputeVariableBounds(Tao tao, Vec xl, Vec xu, void*ctx)
 {
-  AppCtx *user = (AppCtx *) ctx;
+  AppCtx         *user = (AppCtx *) ctx;
   PetscErrorCode ierr;
-  PetscInt  i;
-  PetscInt  xs,xm;
-  PetscInt  ms = user->ms;
-  PetscReal sval=0.0,*xl_array,ub= PETSC_INFINITY;
+  PetscInt       i;
+  PetscInt       xs,xm;
+  PetscInt       ms = user->ms;
+  PetscReal      sval=0.0,*xl_array,ub= PETSC_INFINITY;
 
   /* Set the variable bounds */
   ierr = VecSet(xu, ub);CHKERRQ(ierr);
@@ -363,10 +362,8 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec F, void *ptr)
   /* All points in the interior */
   /*  for (i=gxs+1;i<gxm-1;i++){ */
   for (i=1;i<gxm-1;i++){
-    f[i] = (1.0/dt + rate)*x[i] - Vt1[i]/dt +
-      (c[i]/(4*ds))*(x[i+1] - x[i-1] + Vt1[i+1] - Vt1[i-1]) +
-      (d[i]/(2*ds*ds))*(x[i+1] -2*x[i] + x[i-1] +
-                        Vt1[i+1] - 2*Vt1[i] + Vt1[i-1]);
+    f[i] = (1.0/dt + rate)*x[i] - Vt1[i]/dt + (c[i]/(4*ds))*(x[i+1] - x[i-1] + Vt1[i+1] - Vt1[i-1]) +
+           (d[i]/(2*ds*ds))*(x[i+1] -2*x[i] + x[i-1] + Vt1[i+1] - 2*Vt1[i] + Vt1[i-1]);
   }
 
   /* Right boundary */
@@ -424,7 +421,6 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat *tJ, Mat *tJPre, MatStructure *f
   ierr = MatSetOption(J,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatAssembled(J,&assembled);CHKERRQ(ierr);
   if (assembled){ierr = MatZeroEntries(J); CHKERRQ(ierr);}
-
 
   ierr = DMDAGetGhostCorners(user->dm,&gxs,NULL,NULL,&gxm,NULL,NULL);CHKERRQ(ierr);
 
