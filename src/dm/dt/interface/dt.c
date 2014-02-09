@@ -266,9 +266,9 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
 
   a1      = PetscPowReal(2.0, a+b+1);
 #if defined(PETSC_HAVE_TGAMMA)
-  a2      = tgamma(a + npoints + 1);
-  a3      = tgamma(b + npoints + 1);
-  a4      = tgamma(a + b + npoints + 1);
+  a2      = PetscTGamma(a + npoints + 1);
+  a3      = PetscTGamma(b + npoints + 1);
+  a4      = PetscTGamma(a + b + npoints + 1);
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"tgamma() - math routine is unavailable.");
 #endif

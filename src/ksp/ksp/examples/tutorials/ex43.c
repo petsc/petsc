@@ -1490,23 +1490,6 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
 
   ierr = KSPGetIterationNumber(ksp_S,&its);CHKERRQ(ierr);
 
-  /*
-  {
-  Vec x;
-  PetscInt L;
-  VecDuplicate(f,&x);
-  MatMult(A,X, x);
-  VecAXPY(x, -1.0, f);
-  VecNorm(x, NORM_2, &nrm);
-  PetscPrintf(PETSC_COMM_WORLD, "Its. %1.4d, norm |AX-f| = %1.5e \n", its, nrm);
-  VecDestroy(&x);
-
-  VecNorm(X, NORM_2, &nrm);
-  VecGetSize(X, &L);
-  PetscPrintf(PETSC_COMM_WORLD, "           norm |X|/sqrt{N} = %1.5e \n", nrm/sqrt((PetscScalar)L));
-  }
-  */
-
   if (coefficient_structure == 0) {
     PetscReal opts_eta0,opts_eta1,opts_xc;
     PetscInt  opts_nz,N;
