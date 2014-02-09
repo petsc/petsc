@@ -123,36 +123,6 @@
 #endif
 
 !
-!     Basic constants
-!
-      PetscReal PETSC_PI
-      PetscReal PETSC_MAX_REAL
-      PetscReal PETSC_MIN_REAL
-
-#if defined(PETSC_USE_REAL_SINGLE)
-      parameter (PETSC_PI = 3.1415926)
-      parameter (PETSC_MAX_REAL = 3.40282346638528860e+38)
-      parameter (PETSC_MIN_REAL = -3.40282346638528860e+38)
-#else
-      parameter (PETSC_PI = 3.14159265358979323846264d0)
-      parameter (PETSC_MAX_REAL = 1.7976931348623157d308)
-      parameter (PETSC_MIN_REAL = -1.7976931348623157d308)
-#endif
-
-      PetscReal PETSC_MACHINE_EPSILON
-      PetscReal PETSC_SQRT_MACHINE_EPSILON
-      PetscReal PETSC_SMALL
-
-#if defined(PETSC_USE_REAL_SINGLE)
-      parameter (PETSC_MACHINE_EPSILON = 1.e-7)
-      parameter (PETSC_SQRT_MACHINE_EPSILON = 3.e-4)
-      parameter (PETSC_SMALL = 1.e-5)
-#else
-      parameter (PETSC_MACHINE_EPSILON = 1.d-14)
-      parameter (PETSC_SQRT_MACHINE_EPSILON = 1.d-7)
-      parameter (PETSC_SMALL = 1.d-10)
-#endif
-!
 ! ----------------------------------------------------------------------------
 !    BEGIN PETSc aliases for MPI_ constants
 !
@@ -223,11 +193,22 @@
       integer MPIU_SUM
 #endif
 !
+!
+!
+!     Basic math constants
+!
+      PetscReal PETSC_PI
+      PetscReal PETSC_MAX_REAL
+      PetscReal PETSC_MIN_REAL
+      PetscReal PETSC_MACHINE_EPSILON
+      PetscReal PETSC_SQRT_MACHINE_EPSILON
+      PetscReal PETSC_SMALL
+      PetscReal PETSC_INFINITY
+      PetscReal PETSC_NINFINITY
+
+!
 !     Common Block to store some of the PETSc constants.
 !     which can be set - only at runtime.
-!
-!
-!     A string should be in a different common block
 !
       common /petscfortran1/ PETSC_NULL_CHARACTER
       common /petscfortran2/ PETSC_NULL_INTEGER
@@ -243,6 +224,15 @@
       common /petscfortran12/ MPIU_SCALAR
       common /petscfortran13/ MPIU_SUM
 #endif
+      common /petscfortran14/ PETSC_PI
+      common /petscfortran15/ PETSC_MAX_REAL
+      common /petscfortran16/ PETSC_MIN_REAL
+      common /petscfortran17/ PETSC_MACHINE_EPSILON
+      common /petscfortran18/ PETSC_SQRT_MACHINE_EPSILON
+      common /petscfortran19/ PETSC_SMALL
+      common /petscfortran20/ PETSC_INFINITY
+      common /petscfortran21/ PETSC_NINFINITY
+
 !
 !     Possible arguments to PetscPushErrorHandler()
 !

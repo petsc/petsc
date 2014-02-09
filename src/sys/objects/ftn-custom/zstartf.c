@@ -19,6 +19,7 @@
 
 PETSC_EXTERN void PETSC_STDCALL petscsetcommonblock_(MPI_Fint*,MPI_Fint*);
 PETSC_EXTERN void PETSC_STDCALL petscsetcommonblockmpi_(MPI_Fint*,MPI_Fint*,MPI_Fint*);
+PETSC_EXTERN void PETSC_STDCALL petscsetcommonblocknumeric_(PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
 /*@C
    PetscInitializeFortran - Routine that should be called soon AFTER
@@ -57,6 +58,18 @@ PetscErrorCode PetscInitializeFortran(void)
     petscsetcommonblockmpi_(&freal,&fscalar,&fsum);
   }
 #endif
+
+  {
+    PetscReal pi = PETSC_PI;
+    PetscReal maxreal = PETSC_MAX_REAL;
+    PetscReal minreal = PETSC_MIN_REAL;
+    PetscReal eps = PETSC_MACHINE_EPSILON;
+    PetscReal seps = PETSC_SQRT_MACHINE_EPSILON;
+    PetscReal small = PETSC_SMALL;
+    PetscReal pinf = PETSC_INFINITY;
+    PetscReal pninf = PETSC_NINFINITY;
+    petscsetcommonblocknumeric_(&pi,&maxreal,&minreal,&eps,&seps,&small,&pinf,&pninf);
+  }
   return 0;
 }
 

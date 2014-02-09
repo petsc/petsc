@@ -46,6 +46,28 @@
       end
 #endif
 
+      subroutine PetscSetCommonBlockNumeric(pi,maxreal,minreal,eps,seps,    &
+     &                     small,pinf,pninf)
+      implicit none
+
+#include      <finclude/petscsys.h>
+
+      PetscReal pi,maxreal,minreal,eps,seps
+      PetscReal small,pinf,pninf
+
+      PETSC_PI = pi
+      PETSC_MAX_REAL = maxreal
+      PETSC_MIN_REAL = minreal
+      PETSC_MACHINE_EPSILON = eps
+      PETSC_SQRT_MACHINE_EPSILON = seps
+      PETSC_SMALL = small
+      PETSC_INFINITY = pinf
+      PETSC_NINFINITY = pninf
+
+      return
+      end
+
+
       block data PetscCommInit
       implicit none
 !

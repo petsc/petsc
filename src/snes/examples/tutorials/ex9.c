@@ -157,7 +157,7 @@ PetscErrorCode FormPsiAndInitialGuess(DM da,Vec U0,PetscBool feasible)
   DMDACoor2d     **coords;
   PetscReal      **psi, **u0, **uexact;
   PetscReal      x, y, r;
-  PetscReal      afree = 0.69797, A = 0.68026, B = 0.47152, pi = 3.1415926;
+  PetscReal      afree = 0.69797, A = 0.68026, B = 0.47152;
 
   PetscFunctionBeginUser;
   ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
@@ -185,7 +185,7 @@ PetscErrorCode FormPsiAndInitialGuess(DM da,Vec U0,PetscBool feasible)
 
       if (feasible) {
         if (i == 0 || j == 0 || i == Mx-1 || j == My-1) u0[j][i] = uexact[j][i];
-        else u0[j][i] = uexact[j][i] + PetscCosReal(pi * x / 4) * PetscCosReal(pi * y / 4); /* initial guess is admissible: it is above the obstacle */
+        else u0[j][i] = uexact[j][i] + PetscCosReal(PETSC_PI*x/4.0)*PetscCosReal(PETSC_PI*y/4.0); /* initial guess is admissible: it is above the obstacle */
       } else u0[j][i] = 0.;
     }
   }
