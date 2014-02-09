@@ -33,36 +33,6 @@ SWIG_convert_ptr(PyObject *obj, void **ptr, swig_type_info *ty, int flags) {
 
 /* ---------------------------------------------------------------- */
 
-%runtime %{
-#define SWIG_ArgFail_Fmt(type, name, argn) \
-  "in method '" name"', argument "argn" of type '"type"'"
-#define SWIG_ArgNullRef_Fmt(type, name, argn) \
-  "invalid null reference "SWIG_ArgFail_Fmt(type, name, argn)
-#define SWIG_ArgOut_Fail_Fmt(type, name) \
-  "in method '"name"', output value of type '"type"'"
-#define SWIG_ArgIn_Fail(code, name, type, argn) \
-  SWIG_exception_fail(SWIG_ArgError(code),SWIG_ArgFail_Fmt(type, name, argn))
-#define SWIG_ArgNullRef_Fail(type, name, argn) \
-  SWIG_exception_fail(SWIG_ValueError,SWIG_ArgNullRef_Fmt(type, name, argn))
-#define SWIG_ArgOut_Fail(code,  type, name) \
-  SWIG_exception_fail(SWIG_ArgError(code), SWIG_ArgOut_Fail_Fmt(type, name))
-%}
-
-#undef  %argument_fail
-#undef  %argument_nullref
-#undef  %argout_fail
-#undef  %clear_output
-
-#define %argument_fail(code,_type,_name,_argn) \
-  SWIG_ArgIn_Fail(code,`_type`,`_name`,`_argn`)
-#define %argument_nullref(_type, _name, _argn) \
-  SWIG_ArgNullRef_Fail(`_type`,`_name`,`_argn`)
-#define %argout_fail(code,_type,_name) \
-  SWIG_ArgOut_Fail(code,`_name`,`_type`)
-#define %clear_output() Py_CLEAR($result)
-
-/* ---------------------------------------------------------------- */
-
 
 /* ---------------------------------------------------------------- */
 /* PETSc Error Codes                                                */
