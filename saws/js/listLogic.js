@@ -385,7 +385,7 @@ function generateDivName(id,matRecursion,pcValue)
 }
 
 //called when text input "fieldsplitBlocks" is changed
-$(document).on('change', '.fieldSplitBlocksInput', function() {
+$(document).on('change', '.fieldSplitBlocks', function() {
 
 //todo: this needs a lot of work
 

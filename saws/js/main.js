@@ -168,14 +168,14 @@ HandlePCOptions = function(){
     $("#continueButton").click(function(){
         //alert("recursionCounterSAWs "+recursionCounterSAWs+"; prefix="+sawsInfo[0].prefix+" "+sawsInfo[recursionCounterSAWs-1].prefix);
 
-        //todo: DOUBLE CHECK IF VALID INPUT IS PROVIDED. IF NOT, DO NOT CONTINUE
-
 	//matrixLevel is how many matrices deep the data is. 0 is the overall matrix,
         var matrixLevel = currentAsk.length-1;//minus one because A0 is length 1 but level 0
         var fieldsplitBlocks = $("#fieldsplitBlocks").val();
 
         if (!document.getElementById("logstruc").checked)
             fieldsplitBlocks=0;//sometimes will be left over garbage value from previous submits
+
+        //we don't have to worry about possibility of symmetric and not posdef because when symmetric is unchecked, it not only hides posdef but also removes the checkmark if there was one
 
 	//Write the form data to matInfo
 	matInfo[matInfoWriteCounter] = {
@@ -195,19 +195,19 @@ HandlePCOptions = function(){
         var indentation=matrixLevel*30; //according to the length of currentAsk (aka matrix level), add margins of 30 pixels accordingly
         $("#oContainer").append("<tr id='row"+currentAsk+"'> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ currentAsk + "\" title=\"A"+ currentAsk + " Symm:"+matInfo[matInfoWriteCounter-1].symm+" Posdef:"+matInfo[matInfoWriteCounter-1].posdef+" Logstruc:"+matInfo[matInfoWriteCounter-1].logstruc+"\"> </div></td> <td> <div id=\"oCmdOptions" + currentAsk + "\"></div> </td> </tr>");
 
-        if(matInfo[matInfoWriteCounter-1].logstruc) {//if fieldsplit, need to add the fieldsplit type and fieldsplit blocks
-            var newDiv = generateDivName(this.id,currentAsk,"fieldsplit");//this div contains the two fieldsplit dropdown menus
-	    var endtag = newDiv.substring(newDiv.lastIndexOf('_'), newDiv.length);
-	    $("#"+this.id).after("<div id=\""+newDiv+"\" style='margin-left:"+50+"px;'></div>");//NEEDS LOTS OF WORK
-            myendtag = endtag+"0";
-	    $("#"+newDiv).append("<b>Fieldsplit Type &nbsp;&nbsp;</b><select class=\"fieldsplitList\" id=\"fieldsplitList" + currentAsk +myendtag+"\"></select>");
-            $("#"+newDiv).append("<br><b>Fieldsplit Blocks </b><input type='text' id='fieldsplitBlocks"+currentAsk+myendtag+"\' value='2' maxlength='2' class='fieldsplitBlocks'>");
-        }
-
         //Create drop-down lists. '&nbsp;' indicates a space
         $("#A" + currentAsk).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>A" + currentAsk +" </b>");
 	$("#A" + currentAsk).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + currentAsk +"\"></select>");
 	$("#A" + currentAsk).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + currentAsk +"\"></select>");
+
+        if(matInfo[matInfoWriteCounter-1].logstruc) {//if fieldsplit, need to add the fieldsplit type and fieldsplit blocks
+            var newDiv = generateDivName("",currentAsk,"fieldsplit");//this div contains the two fieldsplit dropdown menus. as long as first param doesn't contain "_", it will generate assuming it is directly under an A-div which it is
+	    var endtag = newDiv.substring(newDiv.lastIndexOf('_'), newDiv.length);
+	    $("#A"+currentAsk).append("<div id=\""+newDiv+"\" style='margin-left:"+50+"px;'></div>");//append to the A-div that we just added to the table
+            myendtag = endtag+"0";
+	    $("#"+newDiv).append("<b>Fieldsplit Type &nbsp;&nbsp;</b><select class=\"fieldsplitList\" id=\"fieldsplitList" + currentAsk +myendtag+"\"></select>");
+            $("#"+newDiv).append("<br><b>Fieldsplit Blocks </b><input type='text' id='fieldsplitBlocks"+currentAsk+myendtag+"\' value='2' maxlength='2' class='fieldsplitBlocks'>");//note that class is fieldsplitBlocks NOT fieldsplitBlocksInput
+        }
 
 	//store the recursion counter in the div as a data() - for solverTree and referenced occasionally in listLogic.js although there are other ways to do this
 	//$("#kspList" + currentAsk).data("listRecursionCounter", currentAsk);  HAD THIS BEFORE. WILL ADDRESS THIS LATER
@@ -507,7 +507,7 @@ function matTreeGetNextNode(current)
     //case 1: current node needs more child nodes
 
     if (matInfo[getMatIndex(current)].logstruc && currentBlocks!=0 && getMatIndex(possibleChild)==-1) {//CHECK TO MAKE SURE CHILDREN DON'T ALREADY EXIST
-        alert("needs more children");
+        //alert("needs more children");
         matInfo[matInfoWriteCounter]        = new Object();
         matInfo[matInfoWriteCounter].symm   = matInfo[getMatIndex(current)].symm;//set defaults for the new node
         matInfo[matInfoWriteCounter].posdef = matInfo[getMatIndex(current)].posdef;
@@ -518,7 +518,7 @@ function matTreeGetNextNode(current)
     //case 2: current node's child nodes completed. move on to sister nodes if any
 
     if (current!="0" && lastDigit+1 < matInfo[getMatIndex(parentID)].blocks) {
-        alert("needs more sister nodes");
+        //alert("needs more sister nodes");
         matInfo[matInfoWriteCounter]        = new Object();
         matInfo[matInfoWriteCounter].symm   = matInfo[getMatIndex(current)].symm;//set defaults for the new node
         matInfo[matInfoWriteCounter].posdef = matInfo[getMatIndex(current)].posdef;
