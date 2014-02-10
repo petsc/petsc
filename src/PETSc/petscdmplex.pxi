@@ -78,6 +78,8 @@ cdef extern from * nogil:
     int DMPlexRestoreJoin(PetscDM,PetscInt,const PetscInt [],PetscInt *,const PetscInt **)
     int DMPlexGetTransitiveClosure(PetscDM,PetscInt,PetscBool,PetscInt *,PetscInt *[])
     int DMPlexRestoreTransitiveClosure(PetscDM,PetscInt,PetscBool,PetscInt *,PetscInt *[])
+    int DMPlexVecGetClosure(PetscDM,PetscSection,PetscVec,PetscInt,PetscInt*,PetscScalar*[])
+    int DMPlexVecRestoreClosure(PetscDM,PetscSection,PetscVec,PetscInt,PetscInt*,PetscScalar*[])
 
     #int DMPlexGenerate(PetscDM,const char [],PetscBool ,PetscDM*)
     #int DMPlexCopyCoordinates(PetscDM,PetscDM)
@@ -119,3 +121,5 @@ cdef extern from * nogil:
 
     #int DMPlexGetNumFaceVertices(PetscDM,PetscInt,PetscInt,PetscInt *)
     #int DMPlexGetOrientedFace(PetscDM,PetscInt,PetscInt,const PetscInt [],PetscInt,PetscInt [],PetscInt [],PetscInt [],PetscBool *)
+
+    int DMPlexCreateSection(PetscDM,PetscInt,PetscInt,const_PetscInt[],const_PetscInt[],PetscInt,const_PetscInt[],const_PetscIS[],PetscSection*)

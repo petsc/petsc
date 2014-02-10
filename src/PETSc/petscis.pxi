@@ -1,5 +1,7 @@
 cdef extern from * nogil:
 
+    ctypedef PetscIS const_PetscIS "const PetscIS"
+
     ctypedef char* PetscISType "const char*"
     PetscISType ISGENERAL
     PetscISType ISSTRIDE

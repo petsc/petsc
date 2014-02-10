@@ -336,12 +336,35 @@ cdef class DMPlex(DM):
         cdef PetscInt pStart = 0, pEnd = 0
         CHKERR( DMPlexGetChart(self.dm, &pStart, &pEnd) )
         assert cp>=pStart and cp<pEnd
-        cdef PetscBool cuseCone = useCone
+        cdef PetscBool cuseCone = PETSC_FALSE
+        if useCone: cuseCone = PETSC_TRUE
         cdef PetscInt  numPoints = 0
         cdef PetscInt *points = NULL
         CHKERR( DMPlexGetTransitiveClosure(self.dm,cp,cuseCone,&numPoints,&points) )
         try:
             out = array_i(2*numPoints,points)
-            return out[::2],out[1::2]
         finally:
             CHKERR( DMPlexRestoreTransitiveClosure(self.dm,cp,cuseCone,&numPoints,&points) )
+        return out[::2],out[1::2]
+
+    def vecGetClosure(self, Section sec, Vec vec, p):
+        cdef PetscInt cp = asInt(p), csize = 0
+        cdef PetscScalar *cvals = NULL
+        CHKERR( DMPlexVecGetClosure(self.dm, sec.sec, vec.vec, cp, &csize, &cvals) )
+        try:
+            closure = array_s(csize, cvals)
+        finally:
+            CHKERR( DMPlexVecRestoreClosure(self.dm, sec.sec, vec.vec, cp, &csize, &cvals) )
+        return closure
+
+    def createSection(self, numFields, numComp, numDof):
+        cdef PetscInt dim = 0
+        CHKERR( DMPlexGetDimension(self.dm, &dim) )
+        cdef PetscInt nfield = asInt(numFields)
+        cdef PetscInt ncomp = 0, ndof = 0
+        cdef PetscInt *icomp = NULL, *idof = NULL
+        numComp = iarray_i(numComp, &ncomp, &icomp)
+        numDof = iarray_i(numDof, &ndof, &idof)
+        cdef Section sec = Section()
+        CHKERR( DMPlexCreateSection(self.dm, dim, nfield, icomp, idof, 0, NULL, NULL, &sec.sec) )
+        return sec
