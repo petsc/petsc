@@ -288,18 +288,46 @@ $(document).on('change', '.pcLists', function(){
             return;//no new divs will be generated
         }
 
-        var newDiv = generateDivName(this.id,parent,"fieldsplit");
+        var newDiv = generateDivName(this.id,parent,"fieldsplit");//this div contains the two fieldsplit dropdown menus
 	var endtag = newDiv.substring(newDiv.lastIndexOf('_'), newDiv.length);
-	$("#"+this.id).after("<div id=\""+newDiv+"\" style='margin-left:50px;'></div>");
+	$("#"+this.id).after("<div id=\""+newDiv+"\" style='margin-left:"+50+"px;'></div>");
         myendtag = endtag+"0";
 	$("#"+newDiv).append("<b>Fieldsplit Type &nbsp;&nbsp;</b><select class=\"fieldsplitList\" id=\"fieldsplitList" + parent +myendtag+"\"></select>");
-        $("#"+newDiv).append("<br><b>Fieldsplit Blocks </b><input type='text' id='fieldsplitBlocks"+parent+myendtag+"\' value='2' maxlength='2' class='fieldsplitBlocksInput'>");
+        $("#"+newDiv).append("<br><b>Fieldsplit Blocks </b><input type='text' id='fieldsplitBlocks"+parent+myendtag+"\' value='2' maxlength='2' class='fieldsplitBlocks'>");//notice that the class is now fieldsplitBlocks instead of fieldsplitBlocksInput
         populateFieldsplitList("fieldsplitList"+parent+myendtag,null,"null");
 
-        //add and remove A divs as necessary PUT THIS IN THE FUNCTION THAT REACTS TO CHANGE IN FIELDSPLIT BLOCKS
-        //todo: this needs a lot of work
+        for(var i=1; i>=0; i--) {//is indeed logstruc so by default append two A divs
+            var index=getMatIndex(parent);//properties (symm, posdef, etc, are inherited from parent). logstruc property is set to false.
+            var newChild=parent+""+i;
+            var indentation = 30 * (newChild.length-1);//minus one because length 1 is level 0
+            $("#row"+parent).after("<tr id='row"+newChild+"'> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ newChild + "\" title=\"A"+ newChild + " Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:"+false+"\"> </div></td> <td> <div id=\"oCmdOptions" + parent + "\"></div> </td> </tr>");
+
+            //todo: write info for the parent A div
+
+            matInfo[matInfoWriteCounter] = {
+            posdef:  matInfo[index].posdef,
+            symm:    matInfo[index].symm,
+            logstruc:false,
+            blocks: 2,
+            matLevel:   newChild.length-1,
+            id:       newChild
+	}
+
+            matInfoWriteCounter++;
+
+            $("#A" + newChild).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + newChild +"\"></select>");
+	    $("#A" + newChild).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + newChild +"\"></select>");
+            populateKspList("kspList"+newChild,null,"null");
+            populatePcList("pcList"+newChild,null,"null");
+            $("#pcList"+newChild).trigger("change");//make sure necessary options are added on
+        }
+
+        //the function that reacts to change in fieldsplit blocks adds and removes A divs as necessary
     }
     else { //not fieldsplit
+
+        //todo: delete info (if any) for this A div
+
 	var newDiv = generateDivName(this.id,parent,"fieldsplit");
 	$("#"+newDiv).remove();
 
@@ -325,7 +353,9 @@ function removeChildren(id) {
         {
             removeChildren(child);//recursive call to remove all children of that child
         }
+        matInfo[index].id="-1";//make sure this location is never accessed again.
         $("#A"+child).remove();//remove that child itself
+        $("#row"+child).remove();//remove the row in the oContainer table
     }
 }
 

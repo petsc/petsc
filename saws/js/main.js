@@ -193,7 +193,16 @@ HandlePCOptions = function(){
         //append to table of two columns holding A and oCmdOptions in each column (should now be changed to simply cmdOptions)
         //tooltip contains all information previously in big letter format (e.g posdef, symm, logstruc, etc)
         var indentation=matrixLevel*30; //according to the length of currentAsk (aka matrix level), add margins of 30 pixels accordingly
-        $("#oContainer").append("<tr> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ currentAsk + "\" title=\"A"+ currentAsk + " Symm:"+matInfo[matInfoWriteCounter-1].symm+" Posdef:"+matInfo[matInfoWriteCounter-1].posdef+" Logstruc:"+matInfo[matInfoWriteCounter-1].logstruc+"\"> </div></td> <td> <div id=\"oCmdOptions" + currentAsk + "\"></div> </td> </tr>");
+        $("#oContainer").append("<tr id='row"+currentAsk+"'> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ currentAsk + "\" title=\"A"+ currentAsk + " Symm:"+matInfo[matInfoWriteCounter-1].symm+" Posdef:"+matInfo[matInfoWriteCounter-1].posdef+" Logstruc:"+matInfo[matInfoWriteCounter-1].logstruc+"\"> </div></td> <td> <div id=\"oCmdOptions" + currentAsk + "\"></div> </td> </tr>");
+
+        if(matInfo[matInfoWriteCounter-1].logstruc) {//if fieldsplit, need to add the fieldsplit type and fieldsplit blocks
+            var newDiv = generateDivName(this.id,currentAsk,"fieldsplit");//this div contains the two fieldsplit dropdown menus
+	    var endtag = newDiv.substring(newDiv.lastIndexOf('_'), newDiv.length);
+	    $("#"+this.id).after("<div id=\""+newDiv+"\" style='margin-left:"+50+"px;'></div>");//NEEDS LOTS OF WORK
+            myendtag = endtag+"0";
+	    $("#"+newDiv).append("<b>Fieldsplit Type &nbsp;&nbsp;</b><select class=\"fieldsplitList\" id=\"fieldsplitList" + currentAsk +myendtag+"\"></select>");
+            $("#"+newDiv).append("<br><b>Fieldsplit Blocks </b><input type='text' id='fieldsplitBlocks"+currentAsk+myendtag+"\' value='2' maxlength='2' class='fieldsplitBlocks'>");
+        }
 
         //Create drop-down lists. '&nbsp;' indicates a space
         $("#A" + currentAsk).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>A" + currentAsk +" </b>");
@@ -222,7 +231,8 @@ HandlePCOptions = function(){
         }
 
         //manually trigger pclist once because additional options, e.g., detailed info may need to be added
-	$("#pcList"+currentAsk).trigger("change");
+        if($("#pcList"+currentAsk).val()!="fieldsplit")//but DON'T trigger change on fieldsplit because that would append the required A divs twice
+	    $("#pcList"+currentAsk).trigger("change");
 
         preRecursionCounter = currentAsk; //save the current counter
 
@@ -495,21 +505,25 @@ function matTreeGetNextNode(current)
     var possibleChild = current+""+(currentBlocks-1);
 
     //case 1: current node needs more child nodes
+
     if (matInfo[getMatIndex(current)].logstruc && currentBlocks!=0 && getMatIndex(possibleChild)==-1) {//CHECK TO MAKE SURE CHILDREN DON'T ALREADY EXIST
         alert("needs more children");
         matInfo[matInfoWriteCounter]        = new Object();
         matInfo[matInfoWriteCounter].symm   = matInfo[getMatIndex(current)].symm;//set defaults for the new node
         matInfo[matInfoWriteCounter].posdef = matInfo[getMatIndex(current)].posdef;
+
         return current+"0";//move onto first child
     }
 
     //case 2: current node's child nodes completed. move on to sister nodes if any
+
     if (current!="0" && lastDigit+1 < matInfo[getMatIndex(parentID)].blocks) {
         alert("needs more sister nodes");
         matInfo[matInfoWriteCounter]        = new Object();
         matInfo[matInfoWriteCounter].symm   = matInfo[getMatIndex(current)].symm;//set defaults for the new node
         matInfo[matInfoWriteCounter].posdef = matInfo[getMatIndex(current)].posdef;
         var newEnding                       = parseInt(lastDigit)+1;
+
         return ""+parentID+newEnding;
     }
 
