@@ -82,11 +82,13 @@ class Configure(config.base.Configure):
         # Check for Mac OSX by the presence of dsymutil
         #   could also check flags: -dynamiclib -single_module -multiply_defined suppress -undefined dynamic_lookup
         self.addMakeRule('shared_arch','shared_darwin')
+        self.addMakeMacro('SL_LINKER_FUNCTION', '-dynamiclib -single_module -multiply_defined suppress -undefined dynamic_lookup')
       else:
         # TODO: check that -Wl,-soname,${LIBNAME}.${SL_LINKER_SUFFIX} can be passed (might fail on Intel)
         # TODO: check whether to use -qmkshrobj or -shared (maybe we can just use self.setCompilers.sharedLibraryFlags)
         # TODO: check whether we need to specify dependent libraries on the link line (long test)
         self.addMakeRule('shared_arch','shared_linux')
+        self.addMakeMacro('SL_LINKER_FUNCTION', '-shared -Wl,-soname,$(1).$(2)')
       self.addMakeMacro('BUILDSHAREDLIB','yes')
     else:
       self.addMakeRule('shared_arch','')

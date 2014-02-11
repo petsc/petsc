@@ -10,6 +10,7 @@ LIBDIR := $(abspath $(PETSC_ARCH)/lib)
 
 pkgs := sys vec mat dm ksp snes ts
 
+libpetsc_abi_version := 0
 libpetsc_shared := $(LIBDIR)/libpetsc.$(SL_LINKER_SUFFIX)
 libpetsc_static := $(LIBDIR)/libpetsc.$(AR_LIB_SUFFIX)
 libpetscpkgs_shared := $(foreach pkg, $(pkgs), $(LIBDIR)/libpetsc$(pkg).$(SL_LINKER_SUFFIX))
@@ -68,7 +69,7 @@ srcs.o := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
 
 # with-single-library=1 (default)
 $(libpetsc_shared) : $(srcs.o) | $$(@D)/.DIR
-	$(call quiet,CLINKER) -shared -o $@ $^ $(PETSC_EXTERNAL_LIB_BASIC)
+	$(call quiet,CLINKER) $(call SL_LINKER_FUNCTION,$(notdir $@),$(libpetsc_abi_version)) -o $@ $^ $(PETSC_EXTERNAL_LIB_BASIC)
 
 $(libpetsc_static) : obj := $(srcs.o)
 
@@ -123,7 +124,7 @@ else
   libdep_order = $$(libdep)
 endif
 $(libpetscpkgs_shared) : $$(obj) $(libdep_true) | $(libdep_order) $$(@D)/.DIR
-	$(call quiet,CLINKER) -shared -o $@ $(obj) $(libdep) $(PETSC_EXTERNAL_LIB_BASIC)
+	$(call quiet,CLINKER) $(call SL_LINKER_FUNCTION,$(notdir $@),$(libpetsc_abi_version)) -o $@ $(obj) $(libdep) $(PETSC_EXTERNAL_LIB_BASIC)
 
 $(OBJDIR)/%.o : %.c | $$(@D)/.DIR
 	$(PETSC_COMPILE.c) $(abspath $<) -o $@
