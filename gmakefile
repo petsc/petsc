@@ -10,6 +10,8 @@ LIBDIR := $(abspath $(PETSC_ARCH)/lib)
 
 pkgs := sys vec mat dm ksp snes ts
 
+SL_LINKER_FUNCTION ?= -shared -Wl,-soname,$(1).$(2)
+
 libpetsc_abi_version := 0
 libpetsc_shared := $(LIBDIR)/libpetsc.$(SL_LINKER_SUFFIX)
 libpetsc_static := $(LIBDIR)/libpetsc.$(AR_LIB_SUFFIX)
