@@ -283,8 +283,8 @@ $(document).on('change', '.pcLists', function(){
     if (pcValue == "fieldsplit") {
         //------------------------------------------------------
         var index=getMatIndex(parent);
-        if (!matInfo[index].logstruc) {
-            alert("Error: Preconditioner fieldsplit cannot be used for non-logically blocked matrix!");//how to throw an error???
+        if (!matInfo[index].logstruc) {//todo: CAN ONLY SET FIELDSPLIT IF IMMEDIATE PARENT IS A-DIV ?
+            alert("Error: Preconditioner fieldsplit cannot be used for non-logically blocked matrix!");//no need to "throw error". simply, nothing will happen
             return;//no new divs will be generated
         }
 
@@ -296,21 +296,22 @@ $(document).on('change', '.pcLists', function(){
         $("#"+newDiv).append("<br><b>Fieldsplit Blocks </b><input type='text' id='fieldsplitBlocks"+parent+myendtag+"\' value='2' maxlength='2' class='fieldsplitBlocks'>");//notice that the class is now fieldsplitBlocks instead of fieldsplitBlocksInput
         populateFieldsplitList("fieldsplitList"+parent+myendtag,null,"null");
 
+        var index=getMatIndex(parent);//no need to write info for the parent A div (the matrix entry never disappeared. simply blocks was set to 0)
+        matInfo[index].blocks=2;//has 2 children by default
+
         for(var i=1; i>=0; i--) {//is indeed logstruc so by default append two A divs
             var index=getMatIndex(parent);//properties (symm, posdef, etc, are inherited from parent). logstruc property is set to false.
             var newChild=parent+""+i;
             var indentation = 30 * (newChild.length-1);//minus one because length 1 is level 0
             $("#row"+parent).after("<tr id='row"+newChild+"'> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ newChild + "\" title=\"A"+ newChild + " Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:"+false+"\"> </div></td> <td> <div id=\"oCmdOptions" + parent + "\"></div> </td> </tr>");
 
-            //todo: write info for the parent A div
-
-            matInfo[matInfoWriteCounter] = {
-            posdef:  matInfo[index].posdef,
-            symm:    matInfo[index].symm,
-            logstruc:false,
-            blocks: 2,
-            matLevel:   newChild.length-1,
-            id:       newChild
+            matInfo[matInfoWriteCounter] = {//write data for the two children
+                posdef:  matInfo[index].posdef,//inherits attributes of parents
+                symm:    matInfo[index].symm,
+                logstruc:false,
+                blocks: 0,//the children do not have further children
+                matLevel:   newChild.length-1,
+                id:       newChild
 	}
 
             matInfoWriteCounter++;
@@ -326,8 +327,6 @@ $(document).on('change', '.pcLists', function(){
     }
     else { //not fieldsplit
 
-        //todo: delete info (if any) for this A div
-
 	var newDiv = generateDivName(this.id,parent,"fieldsplit");
 	$("#"+newDiv).remove();
 
@@ -336,6 +335,8 @@ $(document).on('change', '.pcLists', function(){
         if($(this).attr("id").indexOf('_')==-1 && matInfo[index].logstruc) {//if top level pclist AND the A matrix is logically structured...needs removal
             removeChildren(parent);//recursive function that removes all children of a particular A div
         }
+
+        matInfo[index].blocks=0;//this matrix is not fieldsplit so cannot have blocks
     }
 
 });
@@ -385,14 +386,76 @@ function generateDivName(id,matRecursion,pcValue)
 }
 
 //called when text input "fieldsplitBlocks" is changed
-$(document).on('change', '.fieldSplitBlocks', function() {
+$(document).on('change', '.fieldsplitBlocks', function() {
 
-//todo: this needs a lot of work
+    if($(this).val().match(/[^0-9]/) || $(this).val()<=1) {//if invalid input is provided, do nothing. nothing is changed.
+        alert("At least 2 blocks!");
+        return;
+    }
+
+    if($(this).val() > 10) {//digits range from 0-9 so only 10 children possible without incorporation of letters
+        alert("Sorry, more than 10 blocks is not yet supported.");
+        return;
+    }
+    var currentDiv = $(this).parent().get(0).id;
+    while (currentDiv.indexOf('_') != -1)//while has underscore character
+	currentDiv=$("#"+currentDiv).parent().get(0).id;
+    var parent=currentDiv.substring(1, currentDiv.length); //parent is the id after 'A'
+
+    var index = getMatIndex(parent);
+    var val = $(this).val();
+
+    var lastBlock = matInfo[index].blocks-1;
+    lastBlock = parent + "" + lastBlock;
+
+    alert("called on "+parent);
+
+    //case 1: more A divs need to be added
+    if(val > matInfo[index].blocks) {
+        for(var i=val-1; i>=matInfo[index].blocks; i--) {//insert in backwards order for convenience
+            //add divs and write matInfo
+            
+            var indentation=(parent.length-1+1)*30; //according to the length of currentAsk (aka matrix level), add margins of 30 pixels accordingly
+            $("#row"+lastBlock).after("<tr id='row"+parent+i+"'> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ parent+i + "\" title=\"A"+ parent+i+ " Symm:"+matInfo[matInfoWriteCounter-1].symm+" Posdef:"+matInfo[matInfoWriteCounter-1].posdef+" Logstruc:"+matInfo[matInfoWriteCounter-1].logstruc+"\"> </div></td> <td> <div id=\"oCmdOptions" + parent+i + "\"></div> </td> </tr>");
+
+            //Create drop-down lists. '&nbsp;' indicates a space
+            $("#A" + parent+i).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>A" + parent+i +" </b>");
+	    $("#A" + parent+i).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + parent+i +"\"></select>");
+	    $("#A" + parent+i).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent+i +"\"></select>");
+            populateKspList("kspList"+parent+i,null,"null");
+            populatePcList("pcList"+parent+i,null,"null");
+            $("#pcList"+parent+i).trigger("change");
+
+            matInfo[matInfoWriteCounter] = {//NEEDS WORK !!!!!!!!
+                posdef:  matInfo[index].posdef,//inherits attributes of parents
+                symm:    matInfo[index].symm,
+                logstruc:false,//HOW SHOULD THIS BE ADDRESSED ?????????
+                blocks: 0,//children do not have further children
+                matLevel:   parent.length-1+1,
+                id:       parent+i
+            }
+
+            matInfoWriteCounter++;
+
+        }
+        matInfo[index].blocks=val;
+    }
+
+    //case 2: some A divs need to be removed
+    else if(val < matInfo[index].blocks) {
+        for(var i=val; i<matInfo[index].blocks; i++) {
+            removeChildren(parent+""+i);//remove grandchildren if any exist
+            matInfo[getMatIndex(parent+""+i)].id="-1";//set matInfo id to -1
+            $("#A"+parent+""+i).remove(); //manually remove the extras themselves
+            $("#row"+parent+""+i).remove();
+        }
+        matInfo[index].blocks=val;
+    }
 
 });
 
 /*
-  This function is called when the text input "MG Levels" is changed  
+  This function is called when the text input "MG Levels" is changed
 */
 $(document).on('change', '.mgLevels', function()
 {

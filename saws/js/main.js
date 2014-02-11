@@ -204,9 +204,10 @@ HandlePCOptions = function(){
             var newDiv = generateDivName("",currentAsk,"fieldsplit");//this div contains the two fieldsplit dropdown menus. as long as first param doesn't contain "_", it will generate assuming it is directly under an A-div which it is
 	    var endtag = newDiv.substring(newDiv.lastIndexOf('_'), newDiv.length);
 	    $("#A"+currentAsk).append("<div id=\""+newDiv+"\" style='margin-left:"+50+"px;'></div>");//append to the A-div that we just added to the table
-            myendtag = endtag+"0";
+            var myendtag = endtag+"0";
 	    $("#"+newDiv).append("<b>Fieldsplit Type &nbsp;&nbsp;</b><select class=\"fieldsplitList\" id=\"fieldsplitList" + currentAsk +myendtag+"\"></select>");
             $("#"+newDiv).append("<br><b>Fieldsplit Blocks </b><input type='text' id='fieldsplitBlocks"+currentAsk+myendtag+"\' value='2' maxlength='2' class='fieldsplitBlocks'>");//note that class is fieldsplitBlocks NOT fieldsplitBlocksInput
+            populateFieldsplitList("fieldsplitList"+currentAsk+myendtag);
         }
 
 	//store the recursion counter in the div as a data() - for solverTree and referenced occasionally in listLogic.js although there are other ways to do this
