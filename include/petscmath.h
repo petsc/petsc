@@ -151,7 +151,7 @@ typedef float _Complex PetscComplex;
 #define PetscExpComplex(a)           cexpf(a)
 #define PetscLogComplex(a)           clogf(a)
 #define PetscSinComplex(a)           csinf(a)
-#define PetscCosComplex(a)           ccosf(a
+#define PetscCosComplex(a)           ccosf(a)
 #define PetscTanComplex(a)           ctanf(a)
 #define PetscSinhComplex(a)          csinhf(a)
 #define PetscCoshComplex(a)          ccoshf(a)
