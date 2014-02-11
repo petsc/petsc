@@ -303,7 +303,7 @@ $(document).on('change', '.pcLists', function(){
             var index=getMatIndex(parent);//properties (symm, posdef, etc, are inherited from parent). logstruc property is set to false.
             var newChild=parent+""+i;
             var indentation = 30 * (newChild.length-1);//minus one because length 1 is level 0
-            $("#row"+parent).after("<tr id='row"+newChild+"'> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ newChild + "\" title=\"A"+ newChild + " Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:"+false+"\"> </div></td> <td> <div id=\"oCmdOptions" + parent + "\"></div> </td> </tr>");
+            $("#row"+parent).after("<tr id='row"+newChild+"'> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ newChild + "\"> </div></td> <td> <div id=\"oCmdOptions" + newChild + "\"></div> </td> </tr>");
 
             matInfo[matInfoWriteCounter] = {//write data for the two children
                 posdef:  matInfo[index].posdef,//inherits attributes of parents
@@ -316,6 +316,7 @@ $(document).on('change', '.pcLists', function(){
 
             matInfoWriteCounter++;
 
+            $("#A" + newChild).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id='matrixText"+newChild+"'>A" + newChild + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc: false)</b>");
             $("#A" + newChild).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + newChild +"\"></select>");
 	    $("#A" + newChild).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + newChild +"\"></select>");
             populateKspList("kspList"+newChild,null,"null");
@@ -408,7 +409,7 @@ $(document).on('change', '.fieldsplitBlocks', function() {
     var lastBlock = matInfo[index].blocks-1;
     lastBlock = parent + "" + lastBlock;
 
-    alert("called on "+parent);
+    //alert("called on "+parent);
 
     //case 1: more A divs need to be added
     if(val > matInfo[index].blocks) {
@@ -416,17 +417,17 @@ $(document).on('change', '.fieldsplitBlocks', function() {
             //add divs and write matInfo
             
             var indentation=(parent.length-1+1)*30; //according to the length of currentAsk (aka matrix level), add margins of 30 pixels accordingly
-            $("#row"+lastBlock).after("<tr id='row"+parent+i+"'> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ parent+i + "\" title=\"A"+ parent+i+ " Symm:"+matInfo[matInfoWriteCounter-1].symm+" Posdef:"+matInfo[matInfoWriteCounter-1].posdef+" Logstruc:"+matInfo[matInfoWriteCounter-1].logstruc+"\"> </div></td> <td> <div id=\"oCmdOptions" + parent+i + "\"></div> </td> </tr>");
+            $("#row"+lastBlock).after("<tr id='row"+parent+i+"'> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ parent+i + "\"> </div></td> <td> <div id=\"oCmdOptions" + parent+i + "\"></div> </td> </tr>");
 
             //Create drop-down lists. '&nbsp;' indicates a space
-            $("#A" + parent+i).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>A" + parent+i +" </b>");
+            $("#A" + parent+i).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id='matrixText"+parent+i+"'>A" + parent+i + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
 	    $("#A" + parent+i).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + parent+i +"\"></select>");
 	    $("#A" + parent+i).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent+i +"\"></select>");
             populateKspList("kspList"+parent+i,null,"null");
             populatePcList("pcList"+parent+i,null,"null");
             $("#pcList"+parent+i).trigger("change");
 
-            matInfo[matInfoWriteCounter] = {//NEEDS WORK !!!!!!!!
+            matInfo[matInfoWriteCounter] = {
                 posdef:  matInfo[index].posdef,//inherits attributes of parents
                 symm:    matInfo[index].symm,
                 logstruc:false,//HOW SHOULD THIS BE ADDRESSED ?????????

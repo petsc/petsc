@@ -193,10 +193,10 @@ HandlePCOptions = function(){
         //append to table of two columns holding A and oCmdOptions in each column (should now be changed to simply cmdOptions)
         //tooltip contains all information previously in big letter format (e.g posdef, symm, logstruc, etc)
         var indentation=matrixLevel*30; //according to the length of currentAsk (aka matrix level), add margins of 30 pixels accordingly
-        $("#oContainer").append("<tr id='row"+currentAsk+"'> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ currentAsk + "\" title=\"A"+ currentAsk + " Symm:"+matInfo[matInfoWriteCounter-1].symm+" Posdef:"+matInfo[matInfoWriteCounter-1].posdef+" Logstruc:"+matInfo[matInfoWriteCounter-1].logstruc+"\"> </div></td> <td> <div id=\"oCmdOptions" + currentAsk + "\"></div> </td> </tr>");
+        $("#oContainer").append("<tr id='row"+currentAsk+"'> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ currentAsk + "\"> </div></td> <td> <div id=\"oCmdOptions" + currentAsk + "\"></div> </td> </tr>");
 
         //Create drop-down lists. '&nbsp;' indicates a space
-        $("#A" + currentAsk).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>A" + currentAsk +" </b>");
+        $("#A" + currentAsk).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id='matrixText"+currentAsk+"'>A" + currentAsk + " (Symm:"+matInfo[matInfoWriteCounter-1].symm+" Posdef:"+matInfo[matInfoWriteCounter-1].posdef+" Logstruc:"+matInfo[matInfoWriteCounter-1].logstruc +")</b>");
 	$("#A" + currentAsk).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + currentAsk +"\"></select>");
 	$("#A" + currentAsk).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + currentAsk +"\"></select>");
 
