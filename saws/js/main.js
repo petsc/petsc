@@ -292,6 +292,57 @@ $("#symm").change(function(){
         $("#posdef").removeAttr("checked");
     }
 });
+
+    //surtai restored functionality of buttons
+    //var treeDetailed;
+    $("#solverTreeButton").click(function(){
+	$("#treeContainer").html("<div id='tree'> </div>");
+	
+	//get the options from the drop-down lists
+        solverGetOptions(matInfo);
+
+	//get the number of levels for the tree for scaling purposes
+	//var matLevelForTree = matGetLevel(currentRecursionCounter) + 1;
+
+	//build the tree
+        //treeDetailed = false;
+	//buildTree(matrixInformation,matLevelForTree,treeDetailed);
+
+        //show cmdOptions to the screen
+        for (var i=0; i<matInfoWriteCounter; i++) {
+	    if(typeof matInfo[i]=="undefined" && matInfo[i].id!="-1")//sometimes there will be gaps so we need to make sure program doesn't crash in middle of loop
+		continue;
+	    $("#oCmdOptions" + matInfo[i].id).empty();
+            $("#oCmdOptions" + matInfo[i].id).append("<br><br>" + matInfo[i].string);
+
+            //MathJax.Hub.Queue(["Typeset",MathJax.Hub]); //Tell mathJax to re compile the tex data    
+        }
+    });
+
+    $("#solverTreeButtonDetailed").click(function(){
+	$("#treeContainer").html("<div id='tree'> </div>");
+	
+	//get the options from the drop-down lists
+        solverGetOptions(matInfo);
+
+	//get the number of levels for the tree for scaling purposes
+	//var matLevelForTree = matGetLevel(currentRecursionCounter) + 1;
+
+	//build the tree
+        //treeDetailed = true;
+	//buildTree(matrixInformation,matLevelForTree,treeDetailed);
+    });
+
+    $("#clearOutput").click(function(){
+	for(var i=0; i<matInfoWriteCounter; i++)
+	    $("#oCmdOptions"+matInfo[i].id).empty();//if matInfo has deleted A-divs, its still okay because id will be "-1" and nothing will be changed
+    });
+
+    //Toggles the tree on and off
+    $('#treeToggle').click(function () {
+        $("#tree").toggle();
+    });
+
     HandlePCOptions();//big function is called here
 });
 
@@ -339,7 +390,7 @@ function formSet(current)//-1 input for current means that program has finished
   input:
     pcListID
     prefix - prefix of the options in the solverTree
-    recursionCounter
+    recursionCounter - id of A-div we are currently working in
   output:
     matInfo.string
     matInfo.stringshort
@@ -547,35 +598,35 @@ function solverGetOptions(matInfo)
 {
     var prefix,kspSelectedValue,pcSelectedValue,level;
 
-    for (var i = 0; i<maxMatricies; i++) {
-	if (typeof matInfo[i] != 'undefined') {
+    for (var i = 0; i<matInfoWriteCounter; i++) {
+	if (typeof matInfo[i] != 'undefined' && matInfo[i].id!="-1") {
 	    //get the ksp and pc options at the topest solver-level
-	    kspSelectedValue = $("#kspList" + i).val();
-	    pcSelectedValue  = $("#pcList" + i).val();
+	    kspSelectedValue = $("#kspList" + matInfo[i].id).val();
+	    pcSelectedValue  = $("#pcList" + matInfo[i].id).val();
 
-            //get prefix 
+            //get prefix
             prefix = "-";
             // for pc=fieldsplit
             for (level=1; level<=matInfo[i].matLevel; level++) {
                 if (level == matInfo[i].matLevel) {
-                    prefix += "fieldsplit_A"+i+"_"; // matInfo[i].name
-                } else { 
-                    var parent = Math.floor((i-1)/2);
-                    var parentLevel = matGetLevel(parent);
+                    prefix += "fieldsplit_A"+matInfo[i].id+"_"; // matInfo[i].id
+                } else {
+                    var parent = matInfo[i].id.substring(0,matInfo[i].id.length-1);//take everything except last char
+                    var parentLevel = parent.length-1;//by definition. because A0 is length 1 but level 0
                     while (level < parentLevel) {
-                        parent = Math.floor((parent-1)/2);
-                        parentLevel = matGetLevel(parent);
+                        parent = parent.substring(0,parent.length-1);//take everything except last char
+                        parentLevel = parent.length-1;
                     }
-                    prefix += "fieldsplit_A"+parent+"_"; 
+                    prefix += "fieldsplit_A"+parent+"_";
                 }
             }
 
 	    //together, with the name, make a full string for printing
-            matInfo[i].string = ("\\(" + matInfo[i].name + "\\) <br /> "+prefix+"ksp_type " + kspSelectedValue + "<br />"+prefix+"pc_type " + pcSelectedValue);
-            matInfo[i].stringshort = ("\\(" + matInfo[i].name + "\\) <br /> KSP: " + kspSelectedValue + "; PC: " + pcSelectedValue);
+            matInfo[i].string = ("Matrix A" + matInfo[i].id + "<br /> "+prefix+"ksp_type " + kspSelectedValue + "<br />"+prefix+"pc_type " + pcSelectedValue);
+            matInfo[i].stringshort = ("Matrix A" + matInfo[i].id + "<br /> KSP: " + kspSelectedValue + "; PC: " + pcSelectedValue);
 
             // for composite pc, get additional info from the rest of pcLists
-            pcGetDetailedInfo("pcList"+ i,prefix,i,matInfo);
+            pcGetDetailedInfo("pcList"+ matInfo[i].id,prefix,matInfo[i].id,matInfo);
 	}
     }
 }

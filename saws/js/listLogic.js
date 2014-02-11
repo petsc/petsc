@@ -316,7 +316,7 @@ $(document).on('change', '.pcLists', function(){
 
             matInfoWriteCounter++;
 
-            $("#A" + newChild).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id='matrixText"+newChild+"'>A" + newChild + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc: false)</b>");
+            $("#A" + newChild).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id='matrixText"+newChild+"'>A" + newChild + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
             $("#A" + newChild).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + newChild +"\"></select>");
 	    $("#A" + newChild).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + newChild +"\"></select>");
             populateKspList("kspList"+newChild,null,"null");
