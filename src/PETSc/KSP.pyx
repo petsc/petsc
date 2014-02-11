@@ -149,6 +149,11 @@ cdef class KSP(Object):
     def setDM(self, DM dm not None):
         CHKERR( KSPSetDM(self.ksp, dm.dm) )
 
+    def setDMActive(self, bint flag):
+        cdef PetscBool cflag = PETSC_FALSE
+        if flag: cflag = PETSC_TRUE
+        CHKERR( KSPSetDMActive(self.ksp, cflag) )
+
     # --- operators and preconditioner ---
 
     def setOperators(self, Mat A=None, Mat P=None, structure=None):

@@ -128,6 +128,7 @@ cdef extern from * nogil:
 
     int KSPGetDM(PetscKSP,PetscDM*)
     int KSPSetDM(PetscKSP,PetscDM)
+    int KSPSetDMActive(PetscKSP,PetscBool)
 
     int KSPSetUp(PetscKSP)
     int KSPReset(PetscKSP)
