@@ -9,7 +9,7 @@
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <petsc-private/vecimpl.h>
 #undef VecType
-#include <cusparsematimpl.h>
+#include <../src/mat/impls/aij/seq/seqcusparse/cusparsematimpl.h>
 
 const char *const MatCUSPARSEStorageFormats[] = {"CSR","ELL","HYB","MatCUSPARSEStorageFormat","MAT_CUSPARSE_",0};
 
