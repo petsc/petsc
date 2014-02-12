@@ -64,9 +64,7 @@ class Configure(PETSc.package.NewPackage):
         output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/UMFPACK && make library && make install && make clean', timeout=2500, log=self.framework.log)
         output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/KLU && make library && make install && make clean', timeout=2500, log=self.framework.log)
 
-        self.addDefine('HAVE_UMFPACK',1)
-        self.addDefine('HAVE_CHOLMOD',1)
-        self.addDefine('HAVE_KLU',1)
+        self.addDefine('HAVE_SUITESPARSE',1)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SuiteSparse: '+str(e))
       self.postInstall(output+err, mkfile)

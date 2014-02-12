@@ -1874,7 +1874,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_sbaij_mumps(Mat,MatFactorType,Mat*);
 #if defined(PETSC_HAVE_PASTIX)
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat,MatFactorType,Mat*);
 #endif
-#if defined(PETSC_HAVE_CHOLMOD)
+#if defined(PETSC_HAVE_SUITESPARSE)
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat,MatFactorType,Mat*);
 #endif
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat,MatFactorType,Mat*);
@@ -1958,7 +1958,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
 #if defined(PETSC_HAVE_MUMPS)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_mumps_C",MatGetFactor_sbaij_mumps);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_CHOLMOD)
+#if defined(PETSC_HAVE_SUITESPARSE)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_cholmod_C",MatGetFactor_seqsbaij_cholmod);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactorAvailable_petsc_C",MatGetFactorAvailable_seqsbaij_petsc);CHKERRQ(ierr);
