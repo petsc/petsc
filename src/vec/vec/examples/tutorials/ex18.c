@@ -51,7 +51,8 @@ int main(int argc,char **argv)
   if (!rank) {
     i    = 0;
     ierr = VecSetValues(xend,1,&i,&result,INSERT_VALUES);CHKERRQ(ierr);
-  } else if (rank == size) {
+  }
+  if (rank == size-1) {
     i    = N-1;
     ierr = VecSetValues(xend,1,&i,&result,INSERT_VALUES);CHKERRQ(ierr);
   }
