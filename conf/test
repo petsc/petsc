@@ -38,7 +38,7 @@ testexamples_MATLAB: ${TESTEXAMPLES_MATLAB}
 testexamples_MUMPS: ${TESTEXAMPLES_MUMPS}
 testexamples_SUPERLU: ${TESTEXAMPLES_SUPERLU}
 testexamples_SUNDIALS: ${TESTEXAMPLES_SUNDIALS}
-testexamples_UMFPACK: ${TESTEXAMPLES_UMFPACK}
+testexamples_SUITESPARSE: ${TESTEXAMPLES_SUITESPARSE}
 testexamples_SUPERLU_DIST: ${TESTEXAMPLES_SUPERLU_DIST}
 testexamples_HYPRE: ${TESTEXAMPLES_HYPRE}
 testexamples_HDF5: ${TESTEXAMPLES_HDF5}
@@ -134,8 +134,8 @@ buildexamples_SUPERLU:
 	-@${OMAKE} testexamples_SUPERLU TESTEXAMPLES_SUPERLU=`echo ${TESTEXAMPLES_SUPERLU} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_SUNDIALS:
 	-@${OMAKE} testexamples_SUNDIALS TESTEXAMPLES_SUNDIALS=`echo ${TESTEXAMPLES_SUNDIALS} | sed s/runex[0-9]*[a-z0-9_]*//g`
-buildexamples_UMFPACK:
-	-@${OMAKE} testexamples_UMFPACK TESTEXAMPLES_UMFPACK=`echo ${TESTEXAMPLES_UMFPACK} | sed s/runex[0-9]*[a-z0-9_]*//g`
+buildexamples_SUITESPARSE:
+	-@${OMAKE} testexamples_SUITESPARSE TESTEXAMPLES_SUITESPARSE=`echo ${TESTEXAMPLES_SUITESPARSE} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_SUPERLU_DIST:
 	-@${OMAKE} testexamples_SUPERLU_DIST TESTEXAMPLES_SUPERLU_DIST=`echo ${TESTEXAMPLES_SUPERLU_DIST} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_HYPRE:
