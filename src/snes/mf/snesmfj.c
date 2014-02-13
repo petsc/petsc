@@ -63,15 +63,20 @@ PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
 {
   PetscErrorCode ierr;
   MatMFFD        j    = (MatMFFD)J->data;
-  SNES           snes = (SNES)j->funcctx;
+  SNES           snes = (SNES)j->ctx;
   Vec            u,f;
 
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_MFFD(J,mt);CHKERRQ(ierr);
 
   ierr = SNESGetSolution(snes,&u);CHKERRQ(ierr);
-  ierr = SNESGetFunction(snes,&f,NULL,NULL);CHKERRQ(ierr);
-  ierr = MatMFFDSetBase_MFFD(J,u,f);CHKERRQ(ierr);
+  if (j->func == (PetscErrorCode (*)(void*,Vec,Vec))SNESComputeFunction) {
+    ierr = SNESGetFunction(snes,&f,NULL,NULL);CHKERRQ(ierr);
+    ierr = MatMFFDSetBase_MFFD(J,u,f);CHKERRQ(ierr);
+  } else {
+    /* f value known by SNES is not correct for other differencing function */
+    ierr = MatMFFDSetBase_MFFD(J,u,NULL);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -110,14 +115,22 @@ PetscErrorCode  MatMFFDSetBase_SNESMF(Mat J,Vec U,Vec F)
 
    Level: advanced
 
-   Warning:
-      If MatMFFDSetBase() is ever called on jac then this routine will NO longer get
-    the x from the SNES object and MatMFFDSetBase() must from that point on be used to
-    change the base vector x.
 
-   Notes: The difference between this routine and MatCreateMFFD() is that this matrix
+   Notes:
+     You can call SNESSetJacobian() with MatMFFDComputeJacobian() if you are using matrix and not a different
+     preconditioner matrix
+
+     If you wish to provide a different function to do differencing on to compute the matrix-free operator than
+     that provided to SNESSetFunction() then call MatMFFDSetFunction() with your function after this call.
+
+     The difference between this routine and MatCreateMFFD() is that this matrix
      automatically gets the current base vector from the SNES object and not from an
      explicit call to MatMFFDSetBase().
+
+   Warning:
+     If MatMFFDSetBase() is ever called on jac then this routine will NO longer get
+     the x from the SNES object and MatMFFDSetBase() must from that point on be used to
+     change the base vector x.
 
 .seealso: MatDestroy(), MatMFFDSetFunctionError(), MatMFFDDSSetUmin()
           MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateMFFD(),
@@ -128,6 +141,7 @@ PetscErrorCode  MatCreateSNESMF(SNES snes,Mat *J)
 {
   PetscErrorCode ierr;
   PetscInt       n,N;
+  MatMFFD        mf;
 
   PetscFunctionBegin;
   if (snes->vec_func) {
@@ -141,6 +155,9 @@ PetscErrorCode  MatCreateSNESMF(SNES snes,Mat *J)
     ierr = DMRestoreGlobalVector(snes->dm,&tmp);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() or SNESSetDM() first");
   ierr = MatCreateMFFD(PetscObjectComm((PetscObject)snes),n,n,N,N,J);CHKERRQ(ierr);
+  mf      = (MatMFFD)(*J)->data;
+  mf->ctx = snes;
+
   ierr = MatMFFDSetFunction(*J,(PetscErrorCode (*)(void*,Vec,Vec))SNESComputeFunction,snes);CHKERRQ(ierr);
 
   (*J)->ops->assemblyend = MatAssemblyEnd_SNESMF;
