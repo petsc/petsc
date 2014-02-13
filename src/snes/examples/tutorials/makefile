@@ -1152,7 +1152,7 @@ TESTEXAMPLES_SUPERLU_DIST      = ex19.PETSc runex19_superlu_dist runex19_superlu
 TESTEXAMPLES_PASTIX            = ex19.PETSc runex19_11 runex19_12 ex19.rm  ex19.PETSc runex19_11 runex19_12 ex19.rm
 TESTEXAMPLES_CUSP              = ex19.PETSc runex19_cusp ex19.rm ex47cu.PETSc runex47cu ex47cu.rm
 TESTEXAMPLES_THREADCOMM        = ex19.PETSc runex19_pthread runex19_openmp ex19.rm
-TESTEXAMPLES_KLU               = ex19.PETSc runex19_klu runex19_klu_2 runex19_klu_3 ex19.rm
+TESTEXAMPLES_SUITESPARSE       = ex19.PETSc runex19_klu runex19_klu_2 runex19_klu_3 ex19.rm
 
 
 include ${PETSC_DIR}/conf/test

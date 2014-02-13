@@ -1,5 +1,5 @@
 
-#requirespackage   'PETSC_HAVE_KLU'
+#requirespackage   'PETSC_HAVE_SUITESPARSE'
 #requiresprecision double
 
 ALL: lib
