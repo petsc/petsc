@@ -607,7 +607,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
 .  snes - the SNES context
 
    Options Database Keys:
-+  -snes_type <type> - ls, tr, ngmres, ncg, richardson, qn, vi, fas
++  -snes_type <type> - newtonls, newtontr, ngmres, ncg, nrichardson, qn, vi, fas, SNESType for complete list
 .  -snes_stol - convergence tolerance in terms of the norm
                 of the change in the solution between steps
 .  -snes_atol <abstol> - absolute tolerance of residual norm

@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//IETF//DTD HTML//EN">
+www.m<!DOCTYPE html PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html;charset=utf-8">
@@ -109,6 +109,7 @@
         <li><a href="#carriagereturns">How can I put carriage returns in PetscPrintf() statements from Fortran?</a></li>
         <li><a href="#cxxmethod">How can I implement callbacks using C++ class methods?</a></li>
         <li><a href="#functionjacobian">Everyone knows that when you code Newton's method you should compute the function and its Jacobian at the same time. How can one do this in PETSc?</a></li>
+        <li><a href="#jacobianfree">How can I use Newton's method Jacobian free? Can I difference a different function than provided with SNESSetFunction()?</a></li>
         <li><a href="#conditionnumber">How can I determine the condition number of a matrix?</a></li>
         <li><a href="#invertmatrix">How can I compute the inverse of a PETSc matrix?</a></li>
         <li><a href="#schurcomplement">How can I compute a Schur complement: Kbb - Kba *inverse(Kaa)*Kab?</a></li>
@@ -908,6 +909,32 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
         argument to FormFunction and FormJacobian) and then
         retreive the information in your FormJacobian()
         function.
+      </p>
+
+      <h3><a name="jacobianfree">How can I use Newton's method Jacobian free? Can I difference a different function than provided
+             with <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESSetFunction.html">SNESSetFunction()?</a></h3>
+
+      <p>
+         The simplest way is with the option -snes_mf, this will use finite differencing of the function provided to SNESComputeFunction() to approximate the action of Jacobian. Since no matrix-representation of the
+         Jacobian is provided the -pc_type used with this option must be -pc_type none.  You can provide a custom preconditioner with SNESGetKSP(), KSPGetPC(),
+         PCSetType(pc,<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCSHELL.html">PCSHELL</a>).
+      </p>
+
+      <p>
+        The option -snes_mf_operator will use Jacobian free to apply the Jacobian (in the Krylov solvers) but will use whatever matrix you provided with SNESSetJacobian() (assuming you set one) to compute the preconditioner.
+      </p>
+
+      <p>
+       To write the code (rather than use the options above) use <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/MatCreateSNESMF.html">MatCreateSNESMF()</a> and pass the resulting matrix object to
+       SNESSetJacobian(). For purely matrix-free (like -snes_mf) pass the matrix object for both matrix arguments and pass the function MatMFFDComputeJacobian(). To provide your own approximate Jacobian matrix to compute
+       the preconditioner (like -snes_mf_operator), pass this other matrix as the second matrix argument to SNESSetJacobian(). Make sure your provided computejacobian() function calls MatAssemblyBegin/End() seperately on BOTH
+       matrix arguments to this function. See <a href="http://www.mcs.anl.gov/petsc/petsc-dev/src/snes/examples/tests/ex7.c.html">src/snes/examples/tests/ex7.c</a>
+      </p>
+
+      <p>
+       To difference a different function than that passed to SNESSetJacobian() to compute the matrix-free Jacobian multiply call
+       <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatMFFDSetFunction.html">MatMFFDSetFunction()</a> to set that other function. 
+       See <a href="http://www.mcs.anl.gov/petsc/petsc-dev/src/snes/examples/tests/ex7.c.html">src/snes/examples/tests/ex7.c.h</a>
       </p>
 
       <h3><a name="conditionnumber">How can I determine the condition number of a matrix?</a></h3>

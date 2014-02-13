@@ -136,7 +136,7 @@ PetscErrorCode  MatMFFDSetBase_SNESMF(Mat J,Vec U,Vec F)
      Using a different function for the differencing will not work if you are using non-linear left preconditioning.
 
 
-.seealso: MatDestroy(), MatMFFDSetFunctionError(), MatMFFDDSSetUmin()
+.seealso: MatDestroy(), MatMFFDSetFunction(), MatMFFDSetFunctionError(), MatMFFDDSSetUmin()
           MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateMFFD(),
           MatMFFDGetH(), MatMFFDRegister(), MatMFFDComputeJacobian()
 
