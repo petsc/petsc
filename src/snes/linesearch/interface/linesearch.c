@@ -19,11 +19,15 @@ PetscLogEvent SNESLineSearch_Apply;
    Output Parameters:
 .  outlinesearch - the new linesearch context
 
-   Level: beginner
+   Level: developer
+
+   Notes:
+   The preferred calling sequence for users is to use SNESGetLineSearch() to acquire the SNESLineSearch instance
+   already associated with the SNES.  This function is for developer use.
 
 .keywords: LineSearch, create, context
 
-.seealso: LineSearchDestroy()
+.seealso: LineSearchDestroy(), SNESGetLineSearch()
 @*/
 
 PetscErrorCode SNESLineSearchCreate(MPI_Comm comm, SNESLineSearch *outlinesearch)

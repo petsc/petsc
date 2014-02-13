@@ -4881,10 +4881,10 @@ PetscErrorCode SNESSetLineSearch(SNES snes, SNESLineSearch linesearch)
   Output Parameter:
 . linesearch - linesearch context
 
-  Level: developer
+  Level: beginner
 
 .keywords: SNES, get, linesearch
-.seealso: SNESSetLineSearch()
+.seealso: SNESSetLineSearch(), SNESLineSearchCreate()
 @*/
 PetscErrorCode SNESGetLineSearch(SNES snes, SNESLineSearch *linesearch)
 {
