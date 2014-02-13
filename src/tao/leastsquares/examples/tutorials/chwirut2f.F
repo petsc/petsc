@@ -460,6 +460,7 @@
       integer status(MPI_STATUS_SIZE)
 
       tag = IDLE_TAG
+      f   = 0.0
       ! Send check-in message to master
       call MPI_Send(f,1,MPIU_SCALAR,0,IDLE_TAG,PETSC_COMM_WORLD,ierr)
       CHKERRQ(ierr)
