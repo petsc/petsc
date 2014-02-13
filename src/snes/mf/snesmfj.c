@@ -33,7 +33,7 @@
      when using a completely matrix-free solver,
      that is the B matrix is also the same matrix operator. This is used when you select
      -snes_mf but rarely used directly by users. (All this routine does is call MatAssemblyBegin/End() on
-     the Mat jac.
+     the Mat jac.)
 
 .seealso: MatMFFDGetH(), MatCreateSNESMF(), MatCreateMFFD(), MATMFFD,
           MatMFFDSetHHistory(), MatMFFDSetFunctionError(), MatCreateMFFD(), SNESSetJacobian()
