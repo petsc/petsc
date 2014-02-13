@@ -171,33 +171,33 @@ PetscErrorCode port_lsd_bfbt(void)
 
     PetscPrintf(PETSC_COMM_WORLD,"-- vector vector values --\n");
     ierr = VecMin(uvec,&loc,&max);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Min(u)  = %1.6F [loc=%d]\n",max,loc);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Min(u)  = %1.6f [loc=%D]\n",(double)max,loc);CHKERRQ(ierr);
     ierr = VecMax(uvec,&loc,&max);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Max(u)  = %1.6F [loc=%d]\n",max,loc);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Max(u)  = %1.6f [loc=%D]\n",(double)max,loc);CHKERRQ(ierr);
     ierr = VecNorm(uvec,NORM_2,&norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Norm(u) = %1.6F \n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Norm(u) = %1.6f \n",(double)norm);CHKERRQ(ierr);
     ierr = VecSum(uvec,&sum);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Sum(u)  = %1.6F \n",PetscRealPart(sum));CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Sum(u)  = %1.6f \n",(double)PetscRealPart(sum));CHKERRQ(ierr);
 
     PetscPrintf(PETSC_COMM_WORLD,"-- pressure vector values --\n");
     ierr = VecMin(pvec,&loc,&max);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Min(p)  = %1.6F [loc=%d]\n",max,loc);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Min(p)  = %1.6f [loc=%D]\n",(double)max,loc);CHKERRQ(ierr);
     ierr = VecMax(pvec,&loc,&max);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Max(p)  = %1.6F [loc=%d]\n",max,loc);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Max(p)  = %1.6f [loc=%D]\n",(double)max,loc);CHKERRQ(ierr);
     ierr = VecNorm(pvec,NORM_2,&norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Norm(p) = %1.6F \n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Norm(p) = %1.6f \n",(double)norm);CHKERRQ(ierr);
     ierr = VecSum(pvec,&sum);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Sum(p)  = %1.6F \n",PetscRealPart(sum));CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Sum(p)  = %1.6f \n",(double)PetscRealPart(sum));CHKERRQ(ierr);
 
     PetscPrintf(PETSC_COMM_WORLD,"-- Full vector values --\n");
     ierr = VecMin(x,&loc,&max);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Min(u,p)  = %1.6F [loc=%d]\n",max,loc);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Min(u,p)  = %1.6f [loc=%D]\n",(double)max,loc);CHKERRQ(ierr);
     ierr = VecMax(x,&loc,&max);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Max(u,p)  = %1.6F [loc=%d]\n",max,loc);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Max(u,p)  = %1.6f [loc=%D]\n",(double)max,loc);CHKERRQ(ierr);
     ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Norm(u,p) = %1.6F \n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Norm(u,p) = %1.6f \n",(double)norm);CHKERRQ(ierr);
     ierr = VecSum(x,&sum);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Sum(u,p)  = %1.6F \n",PetscRealPart(sum));CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Sum(u,p)  = %1.6f \n",(double)PetscRealPart(sum));CHKERRQ(ierr);
 
     ierr = VecScatterDestroy(&uscat);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&pscat);CHKERRQ(ierr);
