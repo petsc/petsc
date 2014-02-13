@@ -6,19 +6,20 @@
 #undef __FUNCT__
 #define __FUNCT__ "SNESApplyPC"
 /*@
-   SNESApplyPC - Calls the function that has been set with SNESSetFunction().
+   SNESApplyPC - Runs the nonlinear preconditioner and returns the step.
 
    Collective on SNES
 
    Input Parameters:
 +  snes - the SNES context
--  x - input vector
+.  x - input vector
+-  f - optional; the function evaluation on x
 
    Output Parameter:
 .  y - function vector, as set by SNESSetFunction()
 
    Notes:
-   SNESComputeFunction() should be called on X before SNESApplyPC() is called, as it is
+   SNESComputeFunction() should be called on x before SNESApplyPC() is called, as it is
    with SNESComuteJacobian().
 
    Level: developer
@@ -27,7 +28,7 @@
 
 .seealso: SNESGetPC(),SNESSetPC(),SNESComputeFunction()
 @*/
-PetscErrorCode  SNESApplyPC(SNES snes,Vec x,Vec f,PetscReal *fnorm,Vec y)
+PetscErrorCode  SNESApplyPC(SNES snes,Vec x,Vec f,Vec y)
 {
   PetscErrorCode ierr;
 
@@ -63,7 +64,7 @@ PetscErrorCode SNESComputeFunctionDefaultPC(SNES snes,Vec X,Vec F) {
 
   PetscFunctionBegin;
   if (snes->pc) {
-    ierr = SNESApplyPC(snes,X,NULL,NULL,F);CHKERRQ(ierr);
+    ierr = SNESApplyPC(snes,X,NULL,F);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
     if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
       ierr = SNESSetFunctionDomainError(snes);CHKERRQ(ierr);
