@@ -4,7 +4,6 @@
 #include <petsc-private/snesimpl.h>
 #include <petsc-private/linesearchimpl.h>
 #include <petsc-private/dmimpl.h>
-#include <petscsnesfas.h>
 
 typedef struct {
 

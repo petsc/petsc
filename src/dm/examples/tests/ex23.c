@@ -1,6 +1,7 @@
 
 static char help[] = "Tests VecView()/VecLoad() for DMDA vectors (this tests DMDAGlobalToNatural()).\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__
@@ -11,7 +12,7 @@ int main(int argc,char **argv)
   PetscInt         N = 6,m=PETSC_DECIDE,n=PETSC_DECIDE,p=PETSC_DECIDE,M=8,dof=1,stencil_width=1,P=5,pt = 0,st = 0;
   PetscErrorCode   ierr;
   PetscBool        flg2,flg3;
-  DMDABoundaryType bx           = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE,bz = DMDA_BOUNDARY_NONE;
+  DMBoundaryType   bx           = DM_BOUNDARY_NONE,by = DM_BOUNDARY_NONE,bz = DM_BOUNDARY_NONE;
   DMDAStencilType  stencil_type = DMDA_STENCIL_STAR;
   DM               da;
   Vec              global1,global2,global3,global4;
@@ -28,10 +29,10 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-stencil_width",&stencil_width,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-periodic",&pt,NULL);CHKERRQ(ierr);
-  if (pt == 1) bx = DMDA_BOUNDARY_PERIODIC;
-  if (pt == 2) by = DMDA_BOUNDARY_PERIODIC;
-  if (pt == 3) {bx = DMDA_BOUNDARY_PERIODIC; by = DMDA_BOUNDARY_PERIODIC;}
-  if (pt == 4) bz = DMDA_BOUNDARY_PERIODIC;
+  if (pt == 1) bx = DM_BOUNDARY_PERIODIC;
+  if (pt == 2) by = DM_BOUNDARY_PERIODIC;
+  if (pt == 3) {bx = DM_BOUNDARY_PERIODIC; by = DM_BOUNDARY_PERIODIC;}
+  if (pt == 4) bz = DM_BOUNDARY_PERIODIC;
 
   ierr         = PetscOptionsGetInt(NULL,"-stencil_type",&st,NULL);CHKERRQ(ierr);
   stencil_type = (DMDAStencilType) st;
@@ -70,7 +71,7 @@ int main(int argc,char **argv)
   ierr = VecNorm(global2,NORM_MAX,&norm);CHKERRQ(ierr);
   if (norm != 0.0) {
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"ex23: Norm of difference %G should be zero\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"ex23: Norm of difference %g should be zero\n",(double)norm);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Number of processors %d\n",size);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  M,N,P,dof %D %D %D %D\n",M,N,P,dof);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  stencil_width %D stencil_type %d periodic %d\n",stencil_width,(int)stencil_type,(int)bx);CHKERRQ(ierr);
@@ -80,7 +81,7 @@ int main(int argc,char **argv)
   ierr = VecNorm(global4,NORM_MAX,&norm);CHKERRQ(ierr);
   if (norm != 0.0) {
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"ex23: Norm of difference %G should be zero\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"ex23: Norm of difference %g should be zero\n",(double)norm);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Number of processors %d\n",size);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  M,N,P,dof %D %D %D %D\n",M,N,P,dof);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  stencil_width %D stencil_type %d periodic %d\n",stencil_width,(int)stencil_type,(int)bx);CHKERRQ(ierr);

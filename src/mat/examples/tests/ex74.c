@@ -241,7 +241,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(s2,neg_one,s1);CHKERRQ(ierr);
   ierr = VecNorm(s2,NORM_1,&norm1);CHKERRQ(ierr);
   if (norm1>tol) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatGetDiagonal(), ||s1-s2||=%G\n",norm1);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatGetDiagonal(), ||s1-s2||=%g\n",(double)norm1);CHKERRQ(ierr);
   }
 
   {
@@ -270,7 +270,7 @@ int main(int argc,char **args)
     ierr   = VecNorm(s2,NORM_1,&norm2);CHKERRQ(ierr);
     norm1 -= norm2;
     if (norm1<-tol || norm1>tol) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMult(), norm1-norm2: %G\n",norm1);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMult(), norm1-norm2: %g\n",(double)norm1);CHKERRQ(ierr);
     }
   }
 
@@ -284,7 +284,7 @@ int main(int argc,char **args)
     ierr   = VecNorm(s2,NORM_1,&norm2);CHKERRQ(ierr);
     norm1 -= norm2;
     if (norm1<-tol || norm1>tol) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMultAdd(),  norm1-norm2: %G\n",norm1);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMultAdd(),  norm1-norm2: %g\n",(double)norm1);CHKERRQ(ierr);
     }
   }
 
@@ -332,7 +332,7 @@ int main(int argc,char **args)
       ierr = VecAXPY(s2,neg_one,x);CHKERRQ(ierr);
       ierr = VecNorm(s2,NORM_2,&norm2);CHKERRQ(ierr);
       if (10*norm1 < norm2) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%G, bs=%d\n",norm2,bs);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%g, bs=%D\n",(double)norm2,bs);CHKERRQ(ierr);
       }
     }
 
@@ -342,9 +342,8 @@ int main(int argc,char **args)
     /* Check the error */
     ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-    /* printf("lf: %d, error: %G\n", lf,norm2); */
     if (10*norm1 < norm2 && lf-inc != -1) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%D, %D, Norm of error=%G, %G\n",lf-inc,lf,norm1,norm2);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%D, %D, Norm of error=%g, %g\n",lf-inc,lf,(double)norm1,(double)norm2);CHKERRQ(ierr);
     }
     norm1 = norm2;
     if (norm2 < tol && lf != -1) break;

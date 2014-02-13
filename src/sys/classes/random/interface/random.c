@@ -179,7 +179,7 @@ PetscErrorCode  PetscRandomSetInterval(PetscRandom r,PetscScalar low,PetscScalar
   if (PetscRealPart(low) > PetscRealPart(high))           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"only low < high");
   if (PetscImaginaryPart(low) > PetscImaginaryPart(high)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"only low < high");
 #else
-  if (low >= high) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"only low < high: Instead %G %G",low,high);
+  if (low >= high) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"only low < high: Instead %g %g",(double)low,(double)high);
 #endif
   r->low   = low;
   r->width = high-low;

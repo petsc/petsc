@@ -1,5 +1,5 @@
-#include "bddc.h"
-#include "bddcprivate.h"
+#include <bddc.h>
+#include <bddcprivate.h>
 #include <petscblaslapack.h>
 
 #undef __FUNCT__

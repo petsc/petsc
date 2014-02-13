@@ -40,6 +40,7 @@ program main
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
   !
   !     Create an application context to contain data needed by the
@@ -90,7 +91,7 @@ program main
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  Create distributed array (DMDA) to manage parallel grid and vectors
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  call DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,im11,i2,i2, &
+  call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,im11,i2,i2, &
        PETSC_NULL_INTEGER,da,ierr)
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -208,6 +209,7 @@ end program main
 subroutine GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
   implicit none
 #include <finclude/petscsys.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
   DM da
   PetscInt mx,xs,xe,gxs,gxe
@@ -253,6 +255,7 @@ subroutine FormIFunction(ts,t,X,Xdot,F,user,ierr)
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
   TS ts
   PetscReal t
@@ -350,6 +353,7 @@ subroutine FormRHSFunction(ts,t,X,F,user,ierr)
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
   TS ts
   PetscReal t
@@ -400,6 +404,7 @@ subroutine FormIJacobian(ts,t,X,Xdot,shift,J,Jpre,mstr,user,ierr)
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
   TS ts
   PetscReal t,shift
@@ -473,6 +478,7 @@ subroutine FormInitialSolution(ts,X,user,ierr)
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
   TS ts
   PetscReal t
@@ -513,6 +519,7 @@ subroutine FormIJacobianMF(ts,t,X,Xdot,shift,J,Jpre,mstr,user,ierr)
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
   TS ts
   PetscReal t,shift
@@ -613,6 +620,7 @@ subroutine SaveSolutionToDisk(da,X,gdof,xs,xe)
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 
   Vec X,Xloc

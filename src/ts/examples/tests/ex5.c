@@ -66,6 +66,7 @@ static char help[] = "Nonlinear, time-dependent. Developed from radiative_surfac
 */
 
 #include <petscts.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 /* stefan-boltzmann constant */
@@ -188,7 +189,7 @@ int main(int argc,char **argv)
   airtemp   = put.Ta;
   pwat      = put.pwt;
 
-  if (!rank) PetscPrintf(PETSC_COMM_SELF,"Initial Temperature = %g\n",sfctemp); /* input surface temperature */
+  if (!rank) PetscPrintf(PETSC_COMM_SELF,"Initial Temperature = %g\n",(double)sfctemp); /* input surface temperature */
 
   deep_grnd_temp = sfctemp - 10;   /* set underlying ground layer temperature */
   emma           = emission(pwat); /* accounts for radiative effects of water vapor */
@@ -212,7 +213,7 @@ int main(int argc,char **argv)
   mixratio = calcmixingr(sfctemp,pressure1);
   rh       = (x/mixratio)*100;
 
-  if (!rank) printf("Initial RH = %.1f percent\n\n",rh);   /* prints initial relative humidity */
+  if (!rank) printf("Initial RH = %.1f percent\n\n",(double)rh);   /* prints initial relative humidity */
 
   time = 3600*put.time;                         /* sets amount of timesteps to run model */
 
@@ -220,7 +221,7 @@ int main(int argc,char **argv)
   /*------------------------------------------*/
 
   /* Create grid */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,-20,-20,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,-20,-20,
                       PETSC_DECIDE,PETSC_DECIDE,dof,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
 
@@ -294,7 +295,7 @@ int main(int argc,char **argv)
   ierr  = FormInitialSolution(da,T,&user);CHKERRQ(ierr);
   dt    = TIMESTEP; /* initial time step */
   ftime = TIMESTEP*time;
-  if (!rank) printf("time %d, ftime %g hour, TIMESTEP %g\n",time,ftime/3600,dt);
+  if (!rank) printf("time %d, ftime %g hour, TIMESTEP %g\n",time,(double)(ftime/3600),(double)dt);
 
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,time,ftime);CHKERRQ(ierr);
@@ -312,7 +313,7 @@ int main(int argc,char **argv)
   ierr = TSSolve(ts,T);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  if (!rank) PetscPrintf(PETSC_COMM_WORLD,"Solution T after %g hours %d steps\n",ftime/3600,steps);
+  if (!rank) PetscPrintf(PETSC_COMM_WORLD,"Solution T after %g hours %d steps\n",(double)(ftime/3600),steps);
 
 
   if (matfdcoloring) {ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);}
@@ -493,41 +494,53 @@ extern PetscScalar cel_to_fahr(PetscScalar temp)
 }
 void readinput(struct in *put)
 {
-  int  i;
-  char x;
-  FILE *ifp;
+  int    i;
+  char   x;
+  FILE   *ifp;
+  double tmp;
 
   ifp = fopen("ex5_control.txt", "r");
 
   for (i=0; i<110; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &put->Ts);
+  fscanf(ifp, "%lf", &tmp);
+  put->Ts = tmp;
 
   for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &put->Td);
+  fscanf(ifp, "%lf", &tmp);
+  put->Td = tmp;
 
   for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &put->Ta);
+  fscanf(ifp, "%lf", &tmp);
+  put->Ta = tmp;
 
   for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &put->Tc);
+  fscanf(ifp, "%lf", &tmp);
+  put->Tc = tmp;
 
   for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &put->fr);
+  fscanf(ifp, "%lf", &tmp);
+  put->fr = tmp;
 
   for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &put->wnd);
+  fscanf(ifp, "%lf", &tmp);
+  put->wnd = tmp;
 
   for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &put->pwt);
+  fscanf(ifp, "%lf", &tmp);
+  put->pwt = tmp;
 
   for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &put->wndDir);
+  fscanf(ifp, "%lf", &tmp);
+  put->wndDir = tmp;
 
   for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &put->time);
+  fscanf(ifp, "%lf", &tmp);
+  put->time = tmp;
 
   for (i=0; i<63; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &put->init);
+  fscanf(ifp, "%lf", &tmp);
+  put->init = tmp;
+
 }
 
 /* ------------------------------------------------------------------- */
@@ -735,7 +748,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
 
   if (step%user->interval == 0) {
     ierr = VecGetArray(T,&array);CHKERRQ(ierr);
-    if (!rank) printf("step %4d, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",(int)step,time,(((array[0]-273)*9)/5 + 32),(((array[1]-273)*9)/5 + 32),array[2],array[3],array[4],array[5]);
+    if (!rank) printf("step %4d, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",(int)step,(double)time,(double)(((array[0]-273)*9)/5 + 32),(double)(((array[1]-273)*9)/5 + 32),(double)array[2],(double)array[3],(double)array[4],(double)array[5]);
     ierr = VecRestoreArray(T,&array);CHKERRQ(ierr);
   }
 

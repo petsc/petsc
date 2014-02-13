@@ -145,7 +145,7 @@ static PetscFunctionList dlallhead = 0;
    specified registry.
 
    Synopsis:
-   #include "petscsys.h"
+   #include <petscsys.h>
    PetscErrorCode PetscFunctionListAdd(PetscFunctionList flist,const char name[],void (*fptr)(void))
 
    Not Collective
@@ -287,7 +287,7 @@ PetscErrorCode  PetscFunctionListPrintAll(void)
     PetscFunctionListFind - Find function registered under given name
 
     Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
     PetscErrorCode PetscFunctionListFind(PetscFunctionList flist,const char name[],void (**fptr)(void))
 
     Input Parameters:

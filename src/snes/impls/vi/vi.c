@@ -433,9 +433,9 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
     } else if (!snes->xl && !snes->xu) {
       /* If the lower and upper bound on variables are not set, set it to -Inf and Inf */
       ierr = VecDuplicate(snes->vec_sol, &snes->xl);CHKERRQ(ierr);
-      ierr = VecSet(snes->xl,SNES_VI_NINF);CHKERRQ(ierr);
+      ierr = VecSet(snes->xl,PETSC_NINFINITY);CHKERRQ(ierr);
       ierr = VecDuplicate(snes->vec_sol, &snes->xu);CHKERRQ(ierr);
-      ierr = VecSet(snes->xu,SNES_VI_INF);CHKERRQ(ierr);
+      ierr = VecSet(snes->xu,PETSC_INFINITY);CHKERRQ(ierr);
     } else {
       /* Check if lower bound, upper bound and solution vector distribution across the processors is identical */
       ierr = VecGetOwnershipRange(snes->vec_sol,i_start,i_end);CHKERRQ(ierr);
@@ -497,7 +497,7 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
 
    Notes:
    If this routine is not called then the lower and upper bounds are set to
-   SNES_VI_INF and SNES_VI_NINF respectively during SNESSetUp().
+   PETSC_INFINITY and PETSC_NINFINITY respectively during SNESSetUp().
 
    Level: advanced
 
@@ -546,7 +546,7 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes,Vec xl,Vec xu)
   ierr     = VecGetLocalSize(xl,&n);CHKERRQ(ierr);
   ierr     = VecGetArrayRead(xl,&xxl);CHKERRQ(ierr);
   ierr     = VecGetArrayRead(xu,&xxu);CHKERRQ(ierr);
-  for (i=0; i<n; i++) cnt += ((xxl[i] != SNES_VI_NINF) || (xxu[i] != SNES_VI_INF));
+  for (i=0; i<n; i++) cnt += ((xxl[i] != PETSC_NINFINITY) || (xxu[i] != PETSC_INFINITY));
 
   ierr = MPI_Allreduce(&cnt,&snes->ntruebounds,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xl,&xxl);CHKERRQ(ierr);

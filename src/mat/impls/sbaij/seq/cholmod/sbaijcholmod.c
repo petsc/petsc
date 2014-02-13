@@ -1,6 +1,6 @@
 
 /*
-   Provides an interface to the CHOLMOD 1.7.1 sparse solver
+   Provides an interface to the CHOLMOD sparse solver available through SuiteSparse version 4.2.1
 
    When build with PETSC_USE_64BIT_INDICES this will use UF_Long as the
    integer type in UMFPACK, otherwise it will use int. This means

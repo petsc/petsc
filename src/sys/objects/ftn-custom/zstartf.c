@@ -17,7 +17,8 @@
 #define petsc_null_function_  petsc_null_function__
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscsetcommonblock_(int*,int*);
+PETSC_EXTERN void PETSC_STDCALL petscsetcommonblock_(MPI_Fint*,MPI_Fint*);
+PETSC_EXTERN void PETSC_STDCALL petscsetcommonblockmpi_(MPI_Fint*,MPI_Fint*,MPI_Fint*);
 
 /*@C
    PetscInitializeFortran - Routine that should be called soon AFTER
@@ -41,12 +42,21 @@ PETSC_EXTERN void PETSC_STDCALL petscsetcommonblock_(int*,int*);
 @*/
 PetscErrorCode PetscInitializeFortran(void)
 {
-  PetscMPIInt c1=0,c2=0;
+  MPI_Fint c1=0,c2=0;
 
   if (PETSC_COMM_WORLD) c1 =  MPI_Comm_c2f(PETSC_COMM_WORLD);
-  /* PETSC_COMM_SELF is defined as MPI_COMM_SELF */
   c2 =  MPI_Comm_c2f(PETSC_COMM_SELF);
   petscsetcommonblock_(&c1,&c2);
+
+#if defined(PETSC_USE_REAL___FLOAT128)
+  {
+    MPI_Fint freal,fscalar,fsum;
+    freal   = MPI_Type_c2f(MPIU_REAL);
+    fscalar = MPI_Type_c2f(MPIU_SCALAR);
+    fsum    = MPI_Op_c2f(MPIU_SUM);
+    petscsetcommonblockmpi_(&freal,&fscalar,&fsum);
+  }
+#endif
   return 0;
 }
 

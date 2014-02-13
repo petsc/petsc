@@ -94,7 +94,7 @@ int MatSeqAIJFromMatlab(mxArray*,Mat);
 mxArray* MatSeqAIJToMatlab(Mat);
 
 typedef PetscPointer DM;
-typedef int DMDABoundaryType;
+typedef int DMBoundaryType;
 typedef int DMDAStencilType;
 int DMCreate(MPI_Comm,DM*);
 int DMSetType(DM,const char*);
@@ -104,14 +104,14 @@ int DMSetVecType(DM,const char*);
 int DMSetFromOptions(DM);
 int DMDestroy(DM*);
 int DMView(DM,PetscViewer);
-int DMDASetBoundaryType(DM, DMDABoundaryType,DMDABoundaryType,DMDABoundaryType);
+int DMDASetBoundaryType(DM, DMBoundaryType,DMBoundaryType,DMBoundaryType);
 int DMDASetDof(DM, int);
 int DMSetUp(DM);
 int DMDASetStencilWidth(DM, int);
 int DMDASetStencilType(DM, DMDAStencilType);
 int DMCreateGlobalVector(DM,Vec*);
 int DMCreateMatrix(DM,Mat*);
-int DMDAGetInfo(DM,int*,int*,int*,int*,int*,int*,int*,int*,int*,DMDABoundaryType*,DMDAStencilType*);
+int DMDAGetInfo(DM,int*,int*,int*,int*,int*,int*,int*,int*,int*,DMBoundaryType*,DMDAStencilType*);
 
 typedef PetscPointer PC;
 int PCCreate(MPI_Comm,PC *);

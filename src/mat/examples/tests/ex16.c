@@ -45,7 +45,7 @@ int main(int argc,char **args)
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     for (j=0; j<n; j++) {
-      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%6.4e ",PetscRealPart(array[j*(rend-rstart)+i-rstart]));
+      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%6.4e ",(double)PetscRealPart(array[j*(rend-rstart)+i-rstart]));
     }
     PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n");
   }

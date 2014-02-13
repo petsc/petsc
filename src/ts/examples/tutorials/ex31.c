@@ -987,7 +987,7 @@ PetscErrorCode Initialize(Vec Y, void* s)
     IFunction   = IFunction_Hull1972C34;
     IJacobian   = IJacobian_Hull1972C34;
   }
-  ierr = PetscOptionsGetScalarArray(PETSC_NULL,"-yinit",y,&N,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalarArray(NULL,"-yinit",y,&N,&flg);CHKERRQ(ierr);
   if ((N != GetSize((const char*)s)) && flg) {
     SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Number of initial values %D does not match problem size %D.\n",N,GetSize((const char*)s));
   }
@@ -1071,11 +1071,11 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   ierr = TSGetType(ts,&time_scheme);CHKERRQ(ierr);
   if ((!strcmp(time_scheme,TSEULER)) || (!strcmp(time_scheme,TSRK)) || (!strcmp(time_scheme,TSSSP))) {
     /* Explicit time-integration -> specify right-hand side function ydot = f(y) */
-    ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,&ptype[0]);CHKERRQ(ierr);
+    ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&ptype[0]);CHKERRQ(ierr);
   } else if ((!strcmp(time_scheme,TSBEULER)) || (!strcmp(time_scheme,TSARKIMEX))) {
     /* Implicit time-integration -> specify left-hand side function ydot-f(y) = 0 */
     /* and its Jacobian function                                                 */
-    ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&ptype[0]);CHKERRQ(ierr);
+    ierr = TSSetIFunction(ts,NULL,IFunction,&ptype[0]);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_WORLD,&Jac);CHKERRQ(ierr);
     ierr = MatSetSizes(Jac,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
     ierr = MatSetFromOptions(Jac);CHKERRQ(ierr);
@@ -1129,15 +1129,15 @@ int main(int argc, char **argv)
   if (size>1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
   ierr = PetscOptionsString("-problem","Problem specification","<hull1972a1>",
-                            ptype,ptype,sizeof(ptype),PETSC_NULL);CHKERRQ(ierr);
+                            ptype,ptype,sizeof(ptype),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-refinement_levels","Number of refinement levels for convergence analysis",
-                         "<1>",n_refine,&n_refine,PETSC_NULL);CHKERRQ(ierr);
+                         "<1>",n_refine,&n_refine,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_factor","Refinement factor for dt","<2.0>",
-                          refine_fac,&refine_fac,PETSC_NULL);CHKERRQ(ierr);
+                          refine_fac,&refine_fac,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-dt","Time step size (for convergence analysis, initial time step)",
-                          "<0.01>",dt_initial,&dt_initial,PETSC_NULL);CHKERRQ(ierr);
+                          "<0.01>",dt_initial,&dt_initial,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-final_time","Final time for the time-integration","<20.0>",
-                          tfinal,&tfinal,PETSC_NULL);CHKERRQ(ierr);
+                          tfinal,&tfinal,NULL);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(n_refine,&error);CHKERRQ(ierr);
   for (r = 0,dt = dt_initial; r < n_refine; r++) {

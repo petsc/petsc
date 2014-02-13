@@ -36,6 +36,7 @@ With finite difference evaluation of Jacobian using coloring:
 
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
 
@@ -67,7 +68,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   ierr = DMDACreate2d(PETSC_COMM_WORLD,
-                      DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,
+                      DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
                       DMDA_STENCIL_STAR,     /* nonlinear diffusion but diffusivity depends on soln W not grad W */
                       -11,-11,               /* default to 10x10 grid but override with -da_grid_x, -da_grid_y (or -da_refine) */
                       PETSC_DECIDE,PETSC_DECIDE, /* num of procs in each dim */
@@ -129,7 +130,7 @@ int main(int argc,char **argv)
   ierr    = VecNorm(r,NORM_1,&error1);CHKERRQ(ierr);
   error1 /= (PetscReal)Mx * (PetscReal)My;
   ierr    = VecNorm(r,NORM_INFINITY,&errorinf);CHKERRQ(ierr);
-  ierr    = PetscPrintf(PETSC_COMM_WORLD,"errors:    av |u-uexact|  = %.3e\n           |u-uexact|_inf = %.3e\n",error1,errorinf);CHKERRQ(ierr);
+  ierr    = PetscPrintf(PETSC_COMM_WORLD,"errors:    av |u-uexact|  = %.3e\n           |u-uexact|_inf = %.3e\n",(double)error1,(double)errorinf);CHKERRQ(ierr);
 
   /* Free work space.  */
   ierr = VecDestroy(&u);CHKERRQ(ierr);
@@ -208,7 +209,7 @@ PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu)
   PetscFunctionBeginUser;
   ierr = SNESGetApplicationContext(snes,&user);CHKERRQ(ierr);
   ierr = VecCopy(user->psi,Xl);CHKERRQ(ierr);  /* u >= psi */
-  ierr = VecSet(Xu,SNES_VI_INF);CHKERRQ(ierr);
+  ierr = VecSet(Xu,PETSC_INFINITY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

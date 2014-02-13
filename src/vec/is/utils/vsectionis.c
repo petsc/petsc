@@ -22,12 +22,13 @@ PetscClassId PETSC_SECTION_CLASSID;
   Level: developer
 
   Notes: Typical calling sequence
-       PetscSectionCreate(MPI_Comm,PetscSection *);
-       PetscSectionSetChart(PetscSection,low,high);
-       PetscSectionSetDof(PetscSection,point,numdof);
-       PetscSectionSetUp(PetscSection);
-       PetscSectionGetOffset(PetscSection,point,PetscInt *);
-       PetscSectionDestroy(PetscSection);
+$       PetscSectionCreate(MPI_Comm,PetscSection *);
+$       PetscSectionSetNumFields(PetscSection, numFields);
+$       PetscSectionSetChart(PetscSection,low,high);
+$       PetscSectionSetDof(PetscSection,point,numdof);
+$       PetscSectionSetUp(PetscSection);
+$       PetscSectionGetOffset(PetscSection,point,PetscInt *);
+$       PetscSectionDestroy(PetscSection);
 
        The PetscSection object and methods are intended to be used in the PETSc Vec and Mat implementions; it is
        recommended they not be used in user codes unless you really gain something in their use.
@@ -59,7 +60,7 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
   (*s)->field              = NULL;
   (*s)->clObj              = NULL;
   (*s)->clSection          = NULL;
-  (*s)->clIndices          = NULL;
+  (*s)->clPoints          = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1479,7 +1480,7 @@ PetscErrorCode PetscSectionReset(PetscSection s)
   ierr = PetscFree(s->bcIndices);CHKERRQ(ierr);
   ierr = PetscFree2(s->atlasDof, s->atlasOff);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&s->clSection);CHKERRQ(ierr);
-  ierr = ISDestroy(&s->clIndices);CHKERRQ(ierr);
+  ierr = ISDestroy(&s->clPoints);CHKERRQ(ierr);
 
   s->atlasLayout.pStart = -1;
   s->atlasLayout.pEnd   = -1;
@@ -1987,30 +1988,91 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionSetClosureIndex"
-PetscErrorCode PetscSectionSetClosureIndex(PetscSection section, PetscObject obj, PetscSection clSection, IS clIndices)
+/*@
+  PetscSectionSetClosureIndex - Set a cache of points in the closure of each point in the section
+
+  Input Parameters:
++ section   - The PetscSection
+. obj       - A PetscObject which serves as the key for this index
+. clSection - Section giving the size of the closure of each point
+- clPoints  - IS giving the points in each closure
+
+  Note: We compress out closure points with no dofs in this section
+
+  Level: intermediate
+
+.seealso: PetscSectionGetClosureIndex(), DMPlexCreateClosureIndex()
+@*/
+PetscErrorCode PetscSectionSetClosureIndex(PetscSection section, PetscObject obj, PetscSection clSection, IS clPoints)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   section->clObj     = obj;
   ierr = PetscSectionDestroy(&section->clSection);CHKERRQ(ierr);
-  ierr = ISDestroy(&section->clIndices);CHKERRQ(ierr);
+  ierr = ISDestroy(&section->clPoints);CHKERRQ(ierr);
   section->clSection = clSection;
-  section->clIndices = clIndices;
+  section->clPoints  = clPoints;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetClosureIndex"
-PetscErrorCode PetscSectionGetClosureIndex(PetscSection section, PetscObject obj, PetscSection *clSection, IS *clIndices)
+/*@
+  PetscSectionGetClosureIndex - Get the cache of points in the closure of each point in the section
+
+  Input Parameters:
++ section   - The PetscSection
+- obj       - A PetscObject which serves as the key for this index
+
+  Output Parameters:
++ clSection - Section giving the size of the closure of each point
+- clPoints  - IS giving the points in each closure
+
+  Note: We compress out closure points with no dofs in this section
+
+  Level: intermediate
+
+.seealso: PetscSectionSetClosureIndex(), DMPlexCreateClosureIndex()
+@*/
+PetscErrorCode PetscSectionGetClosureIndex(PetscSection section, PetscObject obj, PetscSection *clSection, IS *clPoints)
 {
   PetscFunctionBegin;
   if (section->clObj == obj) {
     if (clSection) *clSection = section->clSection;
-    if (clIndices) *clIndices = section->clIndices;
+    if (clPoints)  *clPoints  = section->clPoints;
   } else {
     if (clSection) *clSection = NULL;
-    if (clIndices) *clIndices = NULL;
+    if (clPoints)  *clPoints  = NULL;
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetField"
+/*@
+  PetscSectionGetField - Get the subsection associated with a single field
+
+  Input Parameters:
++ s     - The PetscSection
+- field - The field number
+
+  Output Parameter:
+. subs  - The subsection for the given field
+
+  Level: intermediate
+
+.seealso: PetscSectionSetNumFields()
+@*/
+PetscErrorCode PetscSectionGetField(PetscSection s, PetscInt field, PetscSection *subs)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(s,PETSC_SECTION_CLASSID,1);
+  PetscValidPointer(subs,3);
+  if ((field < 0) || (field >= s->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
+  ierr = PetscObjectReference((PetscObject) s->field[field]);CHKERRQ(ierr);
+  *subs = s->field[field];
   PetscFunctionReturn(0);
 }

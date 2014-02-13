@@ -387,6 +387,7 @@ PETSC_STATIC_INLINE void Det3D_Internal(PetscReal *detJ, PetscReal J[])
 
 #undef __FUNCT__
 #define __FUNCT__ "Volume_Triangle_Internal"
+PETSC_UNUSED
 PETSC_STATIC_INLINE void Volume_Triangle_Internal(PetscReal *vol, PetscReal coords[])
 {
   /* Signed volume is 1/2 the determinant
@@ -420,6 +421,7 @@ PETSC_STATIC_INLINE void Volume_Triangle_Origin_Internal(PetscReal *vol, PetscRe
 
 #undef __FUNCT__
 #define __FUNCT__ "Volume_Tetrahedron_Internal"
+PETSC_UNUSED
 PETSC_STATIC_INLINE void Volume_Tetrahedron_Internal(PetscReal *vol, PetscReal coords[])
 {
   /* Signed volume is 1/6th of the determinant

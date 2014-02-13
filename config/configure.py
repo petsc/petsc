@@ -38,7 +38,7 @@ def check_for_option_mistakes(opts):
 
 def check_for_option_changed(opts):
 # Document changes in command line options here.
-  optMap = [('c-blas-lapack','f2cblaslapack')]
+  optMap = [('c-blas-lapack','f2cblaslapack'),('cholmod','suitesparse'),('umfpack','suitesparse')]
   for opt in opts[1:]:
     optname = opt.split('=')[0].strip('-')
     for oldname,newname in optMap:

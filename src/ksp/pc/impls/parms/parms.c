@@ -5,7 +5,7 @@
    Requires pARMS 3.2 or later.
 */
 
-#include "petsc-private/pcimpl.h"          /*I "petscpc.h" I*/
+#include <petsc-private/pcimpl.h>          /*I "petscpc.h" I*/
 
 #if defined(PETSC_USE_COMPLEX)
 #define DBL_CMPLX
@@ -19,7 +19,7 @@
 #include "parms_sys.h"
 #undef FLOAT
 #define FLOAT PetscScalar
-#include "parms.h"
+#include <parms.h>
 
 /*
    Private context (data structure) for the  preconditioner.

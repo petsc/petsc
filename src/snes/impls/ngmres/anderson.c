@@ -41,26 +41,24 @@ PetscErrorCode SNESSetFromOptions_Anderson(SNES snes)
 #define __FUNCT__ "SNESSolve_Anderson"
 PetscErrorCode SNESSolve_Anderson(SNES snes)
 {
-  SNES_NGMRES *ngmres = (SNES_NGMRES*) snes->data;
+  SNES_NGMRES         *ngmres = (SNES_NGMRES*) snes->data;
   /* present solution, residual, and preconditioned residual */
-  Vec X,F,B,D;
-
+  Vec                 X,F,B,D;
   /* candidate linear combination answers */
-  Vec XA,FA,XM,FM;
+  Vec                 XA,FA,XM,FM;
 
   /* coefficients and RHS to the minimization problem */
-  PetscReal fnorm,fMnorm,fAnorm;
-  PetscReal  xnorm,ynorm;
-  PetscReal dnorm,dminnorm=0.0,fminnorm;
-  PetscInt  restart_count=0;
-  PetscInt  k,k_restart,l,ivec;
-
-  PetscBool selectRestart;
-
+  PetscReal           fnorm,fMnorm,fAnorm;
+  PetscReal           xnorm,ynorm;
+  PetscReal           dnorm,dminnorm=0.0,fminnorm;
+  PetscInt            restart_count=0;
+  PetscInt            k,k_restart,l,ivec;
+  PetscBool           selectRestart;
   SNESConvergedReason reason;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   /* variable initialization */
   snes->reason = SNES_CONVERGED_ITERATING;
   X            = snes->vec_sol;

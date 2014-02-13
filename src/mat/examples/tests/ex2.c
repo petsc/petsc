@@ -45,8 +45,7 @@ int main(int argc,char **argv)
   ierr = MatNorm(mat,NORM_FROBENIUS,&normf);CHKERRQ(ierr);
   ierr = MatNorm(mat,NORM_1,&norm1);CHKERRQ(ierr);
   ierr = MatNorm(mat,NORM_INFINITY,&normi);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"original A: Frobenious norm = %G, one norm = %G, infinity norm = %G\n",
-                     normf,norm1,normi);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"original A: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",(double)normf,(double)norm1,(double)normi);CHKERRQ(ierr);
   ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* --------------- Test MatTranspose()  -------------- */
@@ -63,8 +62,7 @@ int main(int argc,char **argv)
   ierr = MatNorm(tmat,NORM_FROBENIUS,&normf);CHKERRQ(ierr);
   ierr = MatNorm(tmat,NORM_1,&norm1);CHKERRQ(ierr);
   ierr = MatNorm(tmat,NORM_INFINITY,&normi);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"B = A^T: Frobenious norm = %G, one norm = %G, infinity norm = %G\n",
-                     normf,norm1,normi);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"B = A^T: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",(double)normf,(double)norm1,(double)normi);CHKERRQ(ierr);
   ierr = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* ----------------- Test MatAXPY(), MatAYPX()  ----------------- */

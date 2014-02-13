@@ -101,7 +101,7 @@
 #define __MPIUNI_H
 
 /* Requred by abort() in mpi.c & for win64 */
-#include "petscconf.h"
+#include <petscconf.h>
 
 #if defined(__cplusplus)
 extern "C" {
@@ -285,6 +285,7 @@ extern int    MPI_Comm_rank(MPI_Comm,int*);
 #define MPI_Comm_c2f(comm) (MPI_Fint)(comm)
 #define MPI_Type_f2c(type) (MPI_Datatype)(type)
 #define MPI_Type_c2f(type) (MPI_Fint)(type)
+#define MPI_Op_c2f(op) (MPI_Fint)(op)
 
 #define MPI_Send(buf,count,datatype,dest,tag,comm)  \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (buf),\
