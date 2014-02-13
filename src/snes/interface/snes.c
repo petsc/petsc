@@ -3353,7 +3353,7 @@ M*/
 
    Input Parameters:
 +  snes - the SNES context
-.  SNESMonitorFunction - monitoring routine
+.  f - the monitor function, see SNESMonitorFunction for the calling sequence
 .  mctx - [optional] user-defined context for private data for the
           monitor routine (use NULL if no context is desired)
 -  monitordestroy - [optional] routine that frees monitor context
@@ -3382,7 +3382,7 @@ M*/
 
 .seealso: SNESMonitorDefault(), SNESMonitorCancel(), SNESMonitorFunction
 @*/
-PetscErrorCode  SNESMonitorSet(SNES snes,PetscErrorCode (*SNESMonitorFunction)(SNES,PetscInt,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void**))
+PetscErrorCode  SNESMonitorSet(SNES snes,PetscErrorCode (*f)(SNES,PetscInt,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void**))
 {
   PetscInt       i;
   PetscErrorCode ierr;
@@ -3391,14 +3391,14 @@ PetscErrorCode  SNESMonitorSet(SNES snes,PetscErrorCode (*SNESMonitorFunction)(S
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   if (snes->numbermonitors >= MAXSNESMONITORS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
   for (i=0; i<snes->numbermonitors;i++) {
-    if (SNESMonitorFunction == snes->monitor[i] && monitordestroy == snes->monitordestroy[i] && mctx == snes->monitorcontext[i]) {
+    if (f == snes->monitor[i] && monitordestroy == snes->monitordestroy[i] && mctx == snes->monitorcontext[i]) {
       if (monitordestroy) {
         ierr = (*monitordestroy)(&mctx);CHKERRQ(ierr);
       }
       PetscFunctionReturn(0);
     }
   }
-  snes->monitor[snes->numbermonitors]          = SNESMonitorFunction;
+  snes->monitor[snes->numbermonitors]          = f;
   snes->monitordestroy[snes->numbermonitors]   = monitordestroy;
   snes->monitorcontext[snes->numbermonitors++] = (void*)mctx;
   PetscFunctionReturn(0);
@@ -5171,7 +5171,7 @@ PetscErrorCode  SNESMonitor_Matlab(SNES snes,PetscInt it, PetscReal fnorm, void 
 
 .seealso: SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESSetFunction()
 */
-PetscErrorCode  SNESMonitorSetMatlab(SNES snes,const char *SNESMonitorFunction,mxArray *ctx)
+PetscErrorCode  SNESMonitorSetMatlab(SNES snes,const char *f,mxArray *ctx)
 {
   PetscErrorCode    ierr;
   SNESMatlabContext *sctx;
@@ -5179,7 +5179,7 @@ PetscErrorCode  SNESMonitorSetMatlab(SNES snes,const char *SNESMonitorFunction,m
   PetscFunctionBegin;
   /* currently sctx is memory bleed */
   ierr = PetscMalloc(sizeof(SNESMatlabContext),&sctx);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(SNESMonitorFunction,&sctx->funcname);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(f,&sctx->funcname);CHKERRQ(ierr);
   /*
      This should work, but it doesn't
   sctx->ctx = ctx;
