@@ -89,6 +89,7 @@
         <li><a href="#with-64-bit-indices">When should/can I use the ./configure option --with-64-bit-indices</a>?</li>
         <li><a href="#install-petsc4py-dev">How do I install petsc4py with the development PETSc</a>?</li>
         <li><a href="#gfortran">What Fortran compiler do you recommend for the Apple Mac OS X?</a></li>
+        <li><a href="#packagelocations">How can I find the URL locations of the packages you install using --download-PACKAGE?</a></li>
       </ul>
 
       <h4><a href="#usage">Usage</a></h4>
@@ -577,6 +578,12 @@
         Please contact Apple at <a
           href="http://www.apple.com/feedback">http://www.apple.com/feedback</a>
         and urge them to bundle gfortran with future versions of Xcode.
+      </p>
+
+      <h3><a name="packagelocations">How can I find the URL locations of the packages you install using --download-PACKAGE??</a></h3>
+
+      <p>
+        grep "self.download " config/PETSc/packages/*.py config/BuildSystem/config/packages/*.py
       </p>
 
       <hr>
