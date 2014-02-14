@@ -20,7 +20,7 @@ PETSC_VERSION_MINOR := $(shell awk '/\#define PETSC_VERSION_MINOR/{print $$3;}' 
 PETSC_VERSION_SUBMINOR := $(shell awk '/\#define PETSC_VERSION_SUBMINOR/{print $$3;}' ./include/petscversion.h)
 PETSC_VERSION_RELEASE := $(shell awk '/\#define PETSC_VERSION_RELEASE/{print $$3;}' ./include/petscversion.h)
 ifeq ($(PETSC_VERSION_RELEASE),0)
-  PETSC_VERSION_MINOR := $(PETSC_VERSION_MINOR)g
+  PETSC_VERSION_MINOR := 0$(PETSC_VERSION_MINOR)
 endif
 
 libpetsc_abi_version := $(PETSC_VERSION_MAJOR).$(PETSC_VERSION_MINOR)
