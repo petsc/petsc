@@ -1610,13 +1610,17 @@ PetscErrorCode MatPermute_MPIAIJ(Mat A,IS rowp,IS colp,Mat *B)
   ierr = MatSeqAIJGetArray(aB,&ba);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     PetscInt *acols = dnnz,*bcols = onnz; /* Repurpose now-unneeded arrays */
-    PetscInt rowlen;
+    PetscInt j0,rowlen;
     rowlen = ai[i+1] - ai[i];
-    for (j=0; j<rowlen; j++) acols[j] = cdest[aj[ai[i]+j]];
-    ierr   = MatSetValues(Aperm,1,&rdest[i],rowlen,acols,aa+ai[i],INSERT_VALUES);CHKERRQ(ierr);
+    for (j0=j=0; j<rowlen; j0=j) { /* rowlen could be larger than number of rows m, so sum in batches */
+      for ( ; j<PetscMin(rowlen,j0+m); j++) acols[j-j0] = cdest[aj[ai[i]+j]];
+      ierr = MatSetValues(Aperm,1,&rdest[i],j-j0,acols,aa+ai[i]+j0,INSERT_VALUES);CHKERRQ(ierr);
+    }
     rowlen = bi[i+1] - bi[i];
-    for (j=0; j<rowlen; j++) bcols[j] = gcdest[bj[bi[i]+j]];
-    ierr = MatSetValues(Aperm,1,&rdest[i],rowlen,bcols,ba+bi[i],INSERT_VALUES);CHKERRQ(ierr);
+    for (j0=j=0; j<rowlen; j0=j) {
+      for ( ; j<PetscMin(rowlen,j0+m); j++) bcols[j-j0] = gcdest[bj[bi[i]+j]];
+      ierr = MatSetValues(Aperm,1,&rdest[i],j-j0,bcols,ba+bi[i]+j0,INSERT_VALUES);CHKERRQ(ierr);
+    }
   }
   ierr = MatAssemblyBegin(Aperm,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Aperm,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
