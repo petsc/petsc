@@ -49,7 +49,7 @@ else
   libpetscall_libname := $(libpetsc_libname)
   libpetscall_static  := $(libpetsc_static)
 endif
-libpetscall := $(if $(filter-out no,$(BUILDSHAREDLIB)),$(libpetscall_shared),$(libpetscall_static))
+libpetscall := $(if $(filter-out no,$(BUILDSHAREDLIB)),$(libpetscall_shared) $(libpetscall_soname),$(libpetscall_static))
 
 generated := $(PETSC_ARCH)/conf/files
 
@@ -150,13 +150,11 @@ ifneq ($(DSYMUTIL),true)
 	$(call quiet,DSYMUTIL) $@
 endif
 
-%.$(SL_LINKER_SUFFIX) : $(call soname_function,%)
+%.$(SL_LINKER_SUFFIX) : $(call libname_function,%)
 	ln -sf $(notdir $<) $@
 
 $(call soname_function,%) : $(call libname_function,%)
 	ln -sf $(notdir $<) $@
-
-.SECONDARY: $(libpetscall_soname)
 
 $(OBJDIR)/%.o : %.c | $$(@D)/.DIR
 	$(PETSC_COMPILE.c) $(abspath $<) -o $@
