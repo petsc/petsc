@@ -151,10 +151,10 @@ ifneq ($(DSYMUTIL),true)
 endif
 
 %.$(SL_LINKER_SUFFIX) : $(call soname_function,%)
-	ln -sf $< $@
+	ln -sf $(notdir $<) $@
 
 $(call soname_function,%) : $(call libname_function,%)
-	ln -sf $< $@
+	ln -sf $(notdir $<) $@
 
 .SECONDARY: $(libpetscall_soname)
 
