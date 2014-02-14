@@ -10,20 +10,44 @@ LIBDIR := $(abspath $(PETSC_ARCH)/lib)
 
 pkgs := sys vec mat dm ksp snes ts
 
-SL_LINKER_FUNCTION ?= -shared -Wl,-soname,$(1).$(2)
+# $(call SONAME_FUNCTION,libfoo,abiversion)
+SONAME_FUNCTION ?= $(1).$(SL_LINKER_SUFFIX).$(2)
+# $(call SL_LINKER_FUNCTION,libfoo,abiversion,libversion)
+SL_LINKER_FUNCTION ?= -shared -Wl,-soname,$(call SONAME_FUNCTION,$(1),$(2))
 
-libpetsc_abi_version := 0
-libpetsc_shared := $(LIBDIR)/libpetsc.$(SL_LINKER_SUFFIX)
-libpetsc_static := $(LIBDIR)/libpetsc.$(AR_LIB_SUFFIX)
-libpetscpkgs_shared := $(foreach pkg, $(pkgs), $(LIBDIR)/libpetsc$(pkg).$(SL_LINKER_SUFFIX))
-libpetscpkgs_static := $(foreach pkg, $(pkgs), $(LIBDIR)/libpetsc$(pkg).$(AR_LIB_SUFFIX))
+PETSC_VERSION_MAJOR := $(shell awk '/\#define PETSC_VERSION_MAJOR/{print $$3;}' ./include/petscversion.h)
+PETSC_VERSION_MINOR := $(shell awk '/\#define PETSC_VERSION_MINOR/{print $$3;}' ./include/petscversion.h)
+PETSC_VERSION_SUBMINOR := $(shell awk '/\#define PETSC_VERSION_SUBMINOR/{print $$3;}' ./include/petscversion.h)
+PETSC_VERSION_RELEASE := $(shell awk '/\#define PETSC_VERSION_RELEASE/{print $$3;}' ./include/petscversion.h)
+ifeq ($(PETSC_VERSION_RELEASE),0)
+  PETSC_VERSION_MINOR := $(PETSC_VERSION_MINOR)g
+endif
+
+libpetsc_abi_version := $(PETSC_VERSION_MAJOR).$(PETSC_VERSION_MINOR)
+libpetsc_lib_version := $(libpetsc_abi_version).$(PETSC_VERSION_SUBMINOR)
+soname_function = $(call SONAME_FUNCTION,$(1),$(libpetsc_abi_version))
+libname_function = $(call SONAME_FUNCTION,$(1),$(libpetsc_lib_version))
+sl_linker_function = $(call SL_LINKER_FUNCTION,$(1),$(libpetsc_abi_version),$(libpetsc_lib_version))
+
+libpetsc_shared  := $(LIBDIR)/libpetsc.$(SL_LINKER_SUFFIX)
+libpetsc_soname  := $(call soname_function,$(LIBDIR)/libpetsc)
+libpetsc_libname := $(call libname_function,$(LIBDIR)/libpetsc)
+libpetsc_static  := $(LIBDIR)/libpetsc.$(AR_LIB_SUFFIX)
+libpetscpkgs_shared  := $(foreach pkg, $(pkgs), $(LIBDIR)/libpetsc$(pkg).$(SL_LINKER_SUFFIX))
+libpetscpkgs_soname  := $(foreach pkg, $(pkgs), $(call soname_function,$(LIBDIR)/libpetsc$(pkg)))
+libpetscpkgs_libname := $(foreach pkg, $(pkgs), $(call libname_function,$(LIBDIR)/libpetsc$(pkg)))
+libpetscpkgs_static  := $(foreach pkg, $(pkgs), $(LIBDIR)/libpetsc$(pkg).$(AR_LIB_SUFFIX))
 
 ifeq ($(PETSC_WITH_EXTERNAL_LIB),)
-  libpetscall_shared := $(libpetscpkgs_shared)
-  libpetscall_static := $(libpetscpkgs_static)
+  libpetscall_shared  := $(libpetscpkgs_shared)
+  libpetscall_soname  := $(libpetscpkgs_soname)
+  libpetscall_libname := $(libpetscpkgs_libname)
+  libpetscall_static  := $(libpetscpkgs_static)
 else
-  libpetscall_shared := $(libpetsc_shared)
-  libpetscall_static := $(libpetsc_static)
+  libpetscall_shared  := $(libpetsc_shared)
+  libpetscall_soname  := $(libpetsc_soname)
+  libpetscall_libname := $(libpetsc_libname)
+  libpetscall_static  := $(libpetsc_static)
 endif
 libpetscall := $(if $(filter-out no,$(BUILDSHAREDLIB)),$(libpetscall_shared),$(libpetscall_static))
 
@@ -70,8 +94,11 @@ concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):%.$(lang)=$(OBJDIR)/%
 srcs.o := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
 
 # with-single-library=1 (default)
-$(libpetsc_shared) : $(srcs.o) | $$(@D)/.DIR
-	$(call quiet,CLINKER) $(call SL_LINKER_FUNCTION,$(notdir $@),$(libpetsc_abi_version)) -o $@ $^ $(PETSC_EXTERNAL_LIB_BASIC)
+$(libpetsc_libname) : $(srcs.o) | $$(@D)/.DIR
+	$(call quiet,CLINKER) $(call sl_linker_function,libpetsc) -o $@ $^ $(PETSC_EXTERNAL_LIB_BASIC)
+ifneq ($(DSYMUTIL),true)
+	$(call quiet,DSYMUTIL) $@
+endif
 
 $(libpetsc_static) : obj := $(srcs.o)
 
@@ -93,26 +120,18 @@ endef
 
 # with-single-library=0
 libpkg = $(foreach pkg, $1, $(LIBDIR)/libpetsc$(pkg).$(SL_LINKER_SUFFIX))
-$(LIBDIR)/libpetscsys.$(SL_LINKER_SUFFIX)  : obj    := $(call concatlang,sys)
-$(LIBDIR)/libpetscvec.$(SL_LINKER_SUFFIX)  : obj    := $(call concatlang,vec)
-$(LIBDIR)/libpetscvec.$(SL_LINKER_SUFFIX)  : libdep := $(call libpkg,sys)
-$(LIBDIR)/libpetscmat.$(SL_LINKER_SUFFIX)  : obj    := $(call concatlang,mat)
-$(LIBDIR)/libpetscmat.$(SL_LINKER_SUFFIX)  : libdep := $(call libpkg,vec sys)
-$(LIBDIR)/libpetscdm.$(SL_LINKER_SUFFIX)   : obj    := $(call concatlang,dm)
-$(LIBDIR)/libpetscdm.$(SL_LINKER_SUFFIX)   : libdep := $(call libpkg,mat vec sys)
-$(LIBDIR)/libpetscksp.$(SL_LINKER_SUFFIX)  : obj    := $(call concatlang,ksp)
-$(LIBDIR)/libpetscksp.$(SL_LINKER_SUFFIX)  : libdep := $(call libpkg,dm mat vec sys)
-$(LIBDIR)/libpetscsnes.$(SL_LINKER_SUFFIX) : obj    := $(call concatlang,snes)
-$(LIBDIR)/libpetscsnes.$(SL_LINKER_SUFFIX) : libdep := $(call libpkg,ksp dm mat vec sys)
-$(LIBDIR)/libpetscts.$(SL_LINKER_SUFFIX)   : obj    := $(call concatlang,ts)
-$(LIBDIR)/libpetscts.$(SL_LINKER_SUFFIX)   : libdep := $(call libpkg,snes ksp dm mat vec sys)
-$(LIBDIR)/libpetscsys.$(AR_LIB_SUFFIX)  : $(call concatlang,sys)
-$(LIBDIR)/libpetscvec.$(AR_LIB_SUFFIX)  : $(call concatlang,vec)
-$(LIBDIR)/libpetscmat.$(AR_LIB_SUFFIX)  : $(call concatlang,mat)
-$(LIBDIR)/libpetscdm.$(AR_LIB_SUFFIX)   : $(call concatlang,dm)
-$(LIBDIR)/libpetscksp.$(AR_LIB_SUFFIX)  : $(call concatlang,ksp)
-$(LIBDIR)/libpetscsnes.$(AR_LIB_SUFFIX) : $(call concatlang,snes)
-$(LIBDIR)/libpetscts.$(AR_LIB_SUFFIX)   : $(call concatlang,ts)
+define pkg_template =
+  $(LIBDIR)/libpetsc$(1).$(AR_LIB_SUFFIX)  : $(call concatlang,$(1))
+  $(call libname_function,$(LIBDIR)/libpetsc$(1)) : obj := $(call concatlang,$(1))
+  $(call libname_function,$(LIBDIR)/libpetsc$(1)) : pkgname := $(1)
+endef
+$(foreach pkg,$(pkgs),$(eval $(call pkg_template,$(pkg))))
+$(call libname_function,$(LIBDIR)/libpetscvec)  : libdep := $(call libpkg,sys)
+$(call libname_function,$(LIBDIR)/libpetscmat)  : libdep := $(call libpkg,vec sys)
+$(call libname_function,$(LIBDIR)/libpetscdm)   : libdep := $(call libpkg,mat vec sys)
+$(call libname_function,$(LIBDIR)/libpetscksp)  : libdep := $(call libpkg,dm mat vec sys)
+$(call libname_function,$(LIBDIR)/libpetscsnes) : libdep := $(call libpkg,ksp dm mat vec sys)
+$(call libname_function,$(LIBDIR)/libpetscts)   : libdep := $(call libpkg,snes ksp dm mat vec sys)
 
 # The package libraries technically depend on each other (not just in an order-only way), but only
 # ABI changes like new or removed symbols requires relinking the dependent libraries.  ABI should
@@ -125,8 +144,19 @@ else
   libdep_true =
   libdep_order = $$(libdep)
 endif
-$(libpetscpkgs_shared) : $$(obj) $(libdep_true) | $(libdep_order) $$(@D)/.DIR
-	$(call quiet,CLINKER) $(call SL_LINKER_FUNCTION,$(notdir $@),$(libpetsc_abi_version)) -o $@ $(obj) $(libdep) $(PETSC_EXTERNAL_LIB_BASIC)
+$(libpetscpkgs_libname) : $$(obj) $(libdep_true) | $(libdep_order) $$(@D)/.DIR
+	$(call quiet,CLINKER) $(call sl_linker_function,libpetsc$(pkgname)) -o $@ $(obj) $(libdep) $(PETSC_EXTERNAL_LIB_BASIC)
+ifneq ($(DSYMUTIL),true)
+	$(call quiet,DSYMUTIL) $@
+endif
+
+%.$(SL_LINKER_SUFFIX) : $(call soname_function,%)
+	ln -sf $< $@
+
+$(call soname_function,%) : $(call libname_function,%)
+	ln -sf $< $@
+
+.SECONDARY: $(libpetscall_soname)
 
 $(OBJDIR)/%.o : %.c | $$(@D)/.DIR
 	$(PETSC_COMPILE.c) $(abspath $<) -o $@
