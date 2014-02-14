@@ -122,7 +122,7 @@ endef
 libpkg = $(foreach pkg, $1, $(LIBDIR)/libpetsc$(pkg).$(SL_LINKER_SUFFIX))
 define pkg_template =
   $(LIBDIR)/libpetsc$(1).$(AR_LIB_SUFFIX)  : $(call concatlang,$(1))
-  $(call libname_function,$(LIBDIR)/libpetsc$(1)) : obj := $(call concatlang,$(1))
+  $(call libname_function,$(LIBDIR)/libpetsc$(1)) : $(call concatlang,$(1))
   $(call libname_function,$(LIBDIR)/libpetsc$(1)) : pkgname := $(1)
 endef
 $(foreach pkg,$(pkgs),$(eval $(call pkg_template,$(pkg))))
@@ -144,8 +144,8 @@ else
   libdep_true =
   libdep_order = $$(libdep)
 endif
-$(libpetscpkgs_libname) : $$(obj) $(libdep_true) | $(libdep_order) $$(@D)/.DIR
-	$(call quiet,CLINKER) $(call sl_linker_function,libpetsc$(pkgname)) -o $@ $(obj) $(libdep) $(PETSC_EXTERNAL_LIB_BASIC)
+$(libpetscpkgs_libname) : $(libdep_true) | $(libdep_order) $$(@D)/.DIR
+	$(call quiet,CLINKER) $(call sl_linker_function,libpetsc$(pkgname)) -o $@ $^ $(PETSC_EXTERNAL_LIB_BASIC)
 ifneq ($(DSYMUTIL),true)
 	$(call quiet,DSYMUTIL) $@
 endif
