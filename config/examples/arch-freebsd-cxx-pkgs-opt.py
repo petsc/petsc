@@ -20,6 +20,7 @@ configure_options = [
   '--download-sundials=1',
   '--download-hypre=1',
   '--download-suitesparse=1',
+  '--download-make=1', # required by suitesparse
   '--download-chaco=1',
   '--download-spai=1',
   '--download-netcdf=1',
