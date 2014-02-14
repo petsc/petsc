@@ -151,10 +151,10 @@ ifneq ($(DSYMUTIL),true)
 endif
 
 %.$(SL_LINKER_SUFFIX) : $(call libname_function,%)
-	ln -sf $(notdir $<) $@
+	@ln -sf $(notdir $<) $@
 
 $(call soname_function,%) : $(call libname_function,%)
-	ln -sf $(notdir $<) $@
+	@ln -sf $(notdir $<) $@
 
 $(OBJDIR)/%.o : %.c | $$(@D)/.DIR
 	$(PETSC_COMPILE.c) $(abspath $<) -o $@
