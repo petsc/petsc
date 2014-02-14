@@ -90,7 +90,7 @@ class Configure(config.base.Configure):
         # TODO: check whether we need to specify dependent libraries on the link line (long test)
         self.addMakeRule('shared_arch','shared_linux')
         self.addMakeMacro('SONAME_FUNCTION', '$(1).so.$(2)')
-        self.addMakeMacro('SL_LINKER_FUNCTION', '-shared -Wl,-soname,$(call SONAME_FUNCTION,$(1),$(2))')
+        self.addMakeMacro('SL_LINKER_FUNCTION', '-shared -Wl,-soname,$(call SONAME_FUNCTION,$(notdir $(1)),$(2))')
       self.addMakeMacro('BUILDSHAREDLIB','yes')
     else:
       self.addMakeRule('shared_arch','')

@@ -13,7 +13,7 @@ pkgs := sys vec mat dm ksp snes ts
 # $(call SONAME_FUNCTION,libfoo,abiversion)
 SONAME_FUNCTION ?= $(1).$(SL_LINKER_SUFFIX).$(2)
 # $(call SL_LINKER_FUNCTION,libfoo,abiversion,libversion)
-SL_LINKER_FUNCTION ?= -shared -Wl,-soname,$(call SONAME_FUNCTION,$(1),$(2))
+SL_LINKER_FUNCTION ?= -shared -Wl,-soname,$(call SONAME_FUNCTION,$(notdir $(1)),$(2))
 
 PETSC_VERSION_MAJOR := $(shell awk '/\#define PETSC_VERSION_MAJOR/{print $$3;}' ./include/petscversion.h)
 PETSC_VERSION_MINOR := $(shell awk '/\#define PETSC_VERSION_MINOR/{print $$3;}' ./include/petscversion.h)
@@ -27,7 +27,8 @@ libpetsc_abi_version := $(PETSC_VERSION_MAJOR).$(PETSC_VERSION_MINOR)
 libpetsc_lib_version := $(libpetsc_abi_version).$(PETSC_VERSION_SUBMINOR)
 soname_function = $(call SONAME_FUNCTION,$(1),$(libpetsc_abi_version))
 libname_function = $(call SONAME_FUNCTION,$(1),$(libpetsc_lib_version))
-sl_linker_function = $(call SL_LINKER_FUNCTION,$(1),$(libpetsc_abi_version),$(libpetsc_lib_version))
+basename_all = $(basename $(basename $(basename $(basename $(1)))))
+sl_linker_args = $(call SL_LINKER_FUNCTION,$(call basename_all,$@),$(libpetsc_abi_version),$(libpetsc_lib_version))
 
 libpetsc_shared  := $(LIBDIR)/libpetsc.$(SL_LINKER_SUFFIX)
 libpetsc_soname  := $(call soname_function,$(LIBDIR)/libpetsc)
@@ -95,7 +96,7 @@ srcs.o := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
 
 # with-single-library=1 (default)
 $(libpetsc_libname) : $(srcs.o) | $$(@D)/.DIR
-	$(call quiet,CLINKER) $(call sl_linker_function,libpetsc) -o $@ $^ $(PETSC_EXTERNAL_LIB_BASIC)
+	$(call quiet,CLINKER) $(sl_linker_args) -o $@ $^ $(PETSC_EXTERNAL_LIB_BASIC)
 ifneq ($(DSYMUTIL),true)
 	$(call quiet,DSYMUTIL) $@
 endif
@@ -123,7 +124,6 @@ libpkg = $(foreach pkg, $1, $(LIBDIR)/libpetsc$(pkg).$(SL_LINKER_SUFFIX))
 define pkg_template =
   $(LIBDIR)/libpetsc$(1).$(AR_LIB_SUFFIX)  : $(call concatlang,$(1))
   $(call libname_function,$(LIBDIR)/libpetsc$(1)) : $(call concatlang,$(1))
-  $(call libname_function,$(LIBDIR)/libpetsc$(1)) : pkgname := $(1)
 endef
 $(foreach pkg,$(pkgs),$(eval $(call pkg_template,$(pkg))))
 $(call libname_function,$(LIBDIR)/libpetscvec)  : libdep := $(call libpkg,sys)
@@ -145,7 +145,7 @@ else
   libdep_order = $$(libdep)
 endif
 $(libpetscpkgs_libname) : $(libdep_true) | $(libdep_order) $$(@D)/.DIR
-	$(call quiet,CLINKER) $(call sl_linker_function,libpetsc$(pkgname)) -o $@ $^ $(PETSC_EXTERNAL_LIB_BASIC)
+	$(call quiet,CLINKER) $(sl_linker_args) -o $@ $^ $(PETSC_EXTERNAL_LIB_BASIC)
 ifneq ($(DSYMUTIL),true)
 	$(call quiet,DSYMUTIL) $@
 endif
