@@ -566,7 +566,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatGetSubMatrixOption flag,MatRe
     */
     ierr  = MatCreate(PETSC_COMM_SELF,&B);CHKERRQ(ierr);
     ierr  = MatSetSizes(B,A->rmap->N,A->cmap->N,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr  = MatSetBlockSizes(B,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
+    ierr  = MatSetBlockSizesFromMats(B,A,A);CHKERRQ(ierr);
     ierr  = MatSetType(B,((PetscObject)a->A)->type_name);CHKERRQ(ierr);
     ierr  = MatSeqAIJSetPreallocation(B,0,lens);CHKERRQ(ierr);
     ierr  = PetscMalloc(sizeof(Mat),Bin);CHKERRQ(ierr);
@@ -1542,11 +1542,11 @@ PetscErrorCode MatCreateMPIAIJFromSeqMatrices_Private(MPI_Comm comm, Mat A, Mat 
   if (!seqaij) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Diagonal matrix is of wrong type");
   ierr = PetscObjectTypeCompare((PetscObject)B, MATSEQAIJ, &seqaij);CHKERRQ(ierr);
   if (!seqaij) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Off-diagonal matrix is of wrong type");
-  if (A->rmap->n != B->rmap->n || A->rmap->bs != B->rmap->bs || A->cmap->bs != B->cmap->bs) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incompatible component matrices of an MPIAIJ matrix");
+  if (PetscAbs(A->rmap->n) != PetscAbs(B->rmap->n) || PetscAbs(A->rmap->bs) != PetscAbs(B->rmap->bs) || PetscAbs(A->cmap->bs) != PetscAbs(B->cmap->bs)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incompatible component matrices of an MPIAIJ matrix");
 
   ierr = MatCreate(comm, C);CHKERRQ(ierr);
   ierr = MatSetSizes(*C,A->rmap->n, A->cmap->n, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(*C,A->rmap->bs, A->cmap->bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSizesFromMats(*C,A,A);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp((*C)->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp((*C)->cmap);CHKERRQ(ierr);
   if ((*C)->cmap->N != A->cmap->n + B->cmap->n) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incompatible component matrices of an MPIAIJ matrix");

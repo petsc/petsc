@@ -112,10 +112,7 @@ PetscErrorCode  MatCreateTranspose(Mat A,Mat *N)
   (*N)->ops->multtransposeadd = MatMultTransposeAdd_Transpose;
   (*N)->assembled             = PETSC_TRUE;
 
-  ierr = PetscLayoutSetBlockSize((*N)->rmap,A->cmap->bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize((*N)->cmap,A->rmap->bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp((*N)->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp((*N)->cmap);CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(*N,PetscAbs(A->cmap->bs),PetscAbs(A->rmap->bs));CHKERRQ(ierr);
   ierr = MatSetUp(*N);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

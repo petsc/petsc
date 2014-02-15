@@ -1965,7 +1965,7 @@ PetscErrorCode MatSetUp_MPIBAIJ(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr =  MatMPIBAIJSetPreallocation(A,A->rmap->bs,PETSC_DEFAULT,0,PETSC_DEFAULT,0);CHKERRQ(ierr);
+  ierr = MatMPIBAIJSetPreallocation(A,A->rmap->bs,PETSC_DEFAULT,0,PETSC_DEFAULT,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2814,8 +2814,7 @@ PetscErrorCode  MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,PetscInt bs,PetscInt d_
   PetscInt       i;
 
   PetscFunctionBegin;
-  ierr = PetscLayoutSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(B,PetscAbs(bs));CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
   ierr = PetscLayoutGetBlockSize(B->rmap,&bs);CHKERRQ(ierr);

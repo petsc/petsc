@@ -1657,7 +1657,8 @@ PetscErrorCode  MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pet
     ierr = (*mat->ops->setvaluesblocked)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
   } else {
     PetscInt buf[8192],*bufr=0,*bufc=0,*iidxm,*iidxn;
-    PetscInt i,j,bs = mat->rmap->bs,cbs = mat->cmap->bs;
+    PetscInt i,j,bs,cbs;
+    ierr = MatGetBlockSizes(mat,&bs,&cbs);CHKERRQ(ierr);
     if (m*bs+n*cbs <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
       iidxm = buf; iidxn = buf + m*bs;
     } else {
@@ -2116,7 +2117,8 @@ PetscErrorCode  MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt ir
       ierr = MatSetValuesBlocked(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
       ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
     } else {
-      PetscInt i,j,bs = mat->rmap->bs,cbs = mat->cmap->bs;
+      PetscInt i,j,bs,cbs;
+      ierr = MatGetBlockSizes(mat,&bs,&cbs);CHKERRQ(ierr);
       if (nrow*bs+ncol*cbs <=(PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
         irowm = buf; icolm = buf + nrow;
       } else {
@@ -6666,7 +6668,7 @@ PetscErrorCode  MatGetBlockSize(Mat mat,PetscInt *bs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidIntPointer(bs,2);
-  *bs = mat->rmap->bs;
+  *bs = PetscAbs(mat->rmap->bs);
   PetscFunctionReturn(0);
 }
 
@@ -6702,8 +6704,8 @@ PetscErrorCode  MatGetBlockSizes(Mat mat,PetscInt *rbs, PetscInt *cbs)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   if (rbs) PetscValidIntPointer(rbs,2);
   if (cbs) PetscValidIntPointer(cbs,3);
-  if (rbs) *rbs = mat->rmap->bs;
-  if (cbs) *cbs = mat->cmap->bs;
+  if (rbs) *rbs = PetscAbs(mat->rmap->bs);
+  if (cbs) *cbs = PetscAbs(mat->cmap->bs);
   PetscFunctionReturn(0);
 }
 
@@ -6770,6 +6772,37 @@ PetscErrorCode  MatSetBlockSizes(Mat mat,PetscInt rbs,PetscInt cbs)
   PetscValidLogicalCollectiveInt(mat,cbs,3);
   ierr = PetscLayoutSetBlockSize(mat->rmap,rbs);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(mat->cmap,cbs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSetBlockSizesFromMats"
+/*@
+   MatSetBlockSizesFromMats - Sets the matrix block row and column sizes to match a pair of matrices
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+.  fromRow - matrix from which to copy row block size
+-  fromCol - matrix from which to copy column block size (can be same as fromRow)
+
+   Level: developer
+
+   Concepts: matrices^block size
+
+.seealso: MatCreateSeqBAIJ(), MatCreateBAIJ(), MatGetBlockSize(), MatSetBlockSizes()
+@*/
+PetscErrorCode  MatSetBlockSizesFromMats(Mat mat,Mat fromRow,Mat fromCol)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(fromRow,MAT_CLASSID,2);
+  PetscValidHeaderSpecific(fromCol,MAT_CLASSID,3);
+  if (fromRow->rmap->bs > 0) {ierr = PetscLayoutSetBlockSize(mat->rmap,fromRow->rmap->bs);CHKERRQ(ierr);}
+  if (fromCol->cmap->bs > 0) {ierr = PetscLayoutSetBlockSize(mat->cmap,fromCol->cmap->bs);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -8226,18 +8259,20 @@ PetscErrorCode  MatGetVecs(Mat mat,Vec *right,Vec *left)
     ierr = (*mat->ops->getvecs)(mat,right,left);CHKERRQ(ierr);
   } else {
     PetscMPIInt size;
+    PetscInt rbs,cbs;
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat), &size);CHKERRQ(ierr);
+    ierr = MatGetBlockSizes(mat,&rbs,&cbs);CHKERRQ(ierr);
     if (right) {
       ierr = VecCreate(PetscObjectComm((PetscObject)mat),right);CHKERRQ(ierr);
       ierr = VecSetSizes(*right,mat->cmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
-      ierr = VecSetBlockSize(*right,mat->rmap->bs);CHKERRQ(ierr);
+      ierr = VecSetBlockSize(*right,cbs);CHKERRQ(ierr);
       ierr = VecSetType(*right,VECSTANDARD);CHKERRQ(ierr);
       ierr = PetscLayoutReference(mat->cmap,&(*right)->map);CHKERRQ(ierr);
     }
     if (left) {
       ierr = VecCreate(PetscObjectComm((PetscObject)mat),left);CHKERRQ(ierr);
       ierr = VecSetSizes(*left,mat->rmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
-      ierr = VecSetBlockSize(*left,mat->rmap->bs);CHKERRQ(ierr);
+      ierr = VecSetBlockSize(*left,rbs);CHKERRQ(ierr);
       ierr = VecSetType(*left,VECSTANDARD);CHKERRQ(ierr);
       ierr = PetscLayoutReference(mat->rmap,&(*left)->map);CHKERRQ(ierr);
     }
@@ -8665,7 +8700,7 @@ PetscErrorCode  MatRARtSymbolic(Mat A,Mat R,PetscReal fill,Mat *C)
   ierr = (*A->ops->rartsymbolic)(A,R,fill,C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_RARtSymbolic,A,R,0,0);CHKERRQ(ierr);
 
-  ierr = MatSetBlockSize(*C,A->rmap->bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(*C,PetscAbs(R->rmap->bs),PetscAbs(R->rmap->bs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

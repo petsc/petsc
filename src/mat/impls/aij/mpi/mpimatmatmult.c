@@ -303,7 +303,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
   /*----------------------------------------------------*/
   ierr = MatCreate(comm,&Cmpi);CHKERRQ(ierr);
   ierr = MatSetSizes(Cmpi,am,pn,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(Cmpi,A->rmap->bs,P->cmap->bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSizesFromMats(Cmpi,A,P);CHKERRQ(ierr);
 
   ierr = MatSetType(Cmpi,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Cmpi,0,dnz,0,onz);CHKERRQ(ierr);
@@ -401,7 +401,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
   PetscFunctionBegin;
   ierr = MatCreate(PetscObjectComm((PetscObject)B),C);CHKERRQ(ierr);
   ierr = MatSetSizes(*C,m,n,A->rmap->N,B->cmap->N);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(*C,A->rmap->bs,B->cmap->bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSizesFromMats(*C,A,B);CHKERRQ(ierr);
   ierr = MatSetType(*C,MATMPIDENSE);CHKERRQ(ierr);
   ierr = MatMPIDenseSetPreallocation(*C,NULL);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -752,7 +752,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   /*----------------------------------------------------*/
   ierr = MatCreate(comm,&Cmpi);CHKERRQ(ierr);
   ierr = MatSetSizes(Cmpi,am,pn,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(Cmpi,A->rmap->bs,P->cmap->bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSizesFromMats(Cmpi,A,P);CHKERRQ(ierr);
   ierr = MatSetType(Cmpi,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Cmpi,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
@@ -1328,7 +1328,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A
 
   ierr = MatCreate(comm,&Cmpi);CHKERRQ(ierr);
   ierr = MatSetSizes(Cmpi,pn,A->cmap->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(Cmpi,P->cmap->bs,A->cmap->bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(Cmpi,PetscAbs(P->cmap->bs),PetscAbs(A->cmap->bs));CHKERRQ(ierr);
   ierr = MatSetType(Cmpi,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Cmpi,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
@@ -1834,7 +1834,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
 
   ierr = MatCreate(comm,&Cmpi);CHKERRQ(ierr);
   ierr = MatSetSizes(Cmpi,pn,A->cmap->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(Cmpi,P->cmap->bs,A->cmap->bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(Cmpi,PetscAbs(P->cmap->bs),PetscAbs(A->cmap->bs));CHKERRQ(ierr);
   ierr = MatSetType(Cmpi,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Cmpi,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);

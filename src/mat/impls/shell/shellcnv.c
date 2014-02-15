@@ -27,7 +27,7 @@ PetscErrorCode MatConvert_Shell(Mat oldmat, MatType newtype,MatReuse reuse,Mat *
   ierr = MatCreate(comm,&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,m,M,M,M);CHKERRQ(ierr);
   ierr = MatSetType(mat,newtype);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(mat,oldmat->rmap->bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSizesFromMats(mat,oldmat,oldmat);CHKERRQ(ierr);
   ierr = MatSetUp(mat);CHKERRQ(ierr);
 
   for (i=0; i<M; i++) {

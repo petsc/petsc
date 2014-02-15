@@ -202,10 +202,7 @@ PETSC_EXTERN PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatCreate(comm,&mat);CHKERRQ(ierr);
     ierr = MatSetSizes(mat,m,m,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-    if (!rank) {
-      bses[0] = gmat->rmap->bs;
-      bses[1] = gmat->cmap->bs;
-    }
+    ierr = MatGetBlockSizes(gmat,&bses[0],&bses[1]);CHKERRQ(ierr);
     ierr = MPI_Bcast(bses,2,MPIU_INT,0,comm);CHKERRQ(ierr);
     ierr = MatSetBlockSizes(mat,bses[0],bses[1]);CHKERRQ(ierr);
     ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
@@ -1265,7 +1262,7 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
   ierr = PetscFree(column_values);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
-  if (file) fprintf(file,"-matload_block_size %d\n",(int)mat->rmap->bs);
+  if (file) fprintf(file,"-matload_block_size %d\n",(int)PetscAbs(mat->rmap->bs));
   PetscFunctionReturn(0);
 }
 
@@ -1943,7 +1940,7 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
 
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,A->cmap->n,A->rmap->n,N,M);CHKERRQ(ierr);
-    ierr = MatSetBlockSizes(B,A->cmap->bs,A->rmap->bs);CHKERRQ(ierr);
+    ierr = MatSetBlockSizes(B,PetscAbs(A->cmap->bs),PetscAbs(A->rmap->bs));CHKERRQ(ierr);
     ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(B,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
     ierr = PetscFree4(d_nnz,o_nnz,g_nnz,oloc);CHKERRQ(ierr);
@@ -2160,7 +2157,7 @@ PetscErrorCode MatAXPY_MPIAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     ierr = MatCreate(PetscObjectComm((PetscObject)Y),&B);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)B,((PetscObject)Y)->name);CHKERRQ(ierr);
     ierr = MatSetSizes(B,Y->rmap->n,Y->cmap->n,Y->rmap->N,Y->cmap->N);CHKERRQ(ierr);
-    ierr = MatSetBlockSizes(B,Y->rmap->bs,Y->cmap->bs);CHKERRQ(ierr);
+    ierr = MatSetBlockSizesFromMats(B,Y,Y);CHKERRQ(ierr);
     ierr = MatSetType(B,MATMPIAIJ);CHKERRQ(ierr);
     ierr = MatAXPYGetPreallocation_SeqAIJ(yy->A,xx->A,nnz_d);CHKERRQ(ierr);
     ierr = MatAXPYGetPreallocation_MPIAIJ(yy->B,yy->garray,xx->B,xx->garray,nnz_o);CHKERRQ(ierr);
@@ -2266,7 +2263,7 @@ PetscErrorCode MatILUFactorSymbolic_MPIAIJ(Mat fact,Mat A, IS isrow, IS iscol, c
   ierr = MatGetLocalSize(A, &m, &n);CHKERRQ(ierr);
   ierr = MatGetSize(A, &M, &N);CHKERRQ(ierr);
   ierr = MatSetSizes(fact, m, n, M, N);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(fact,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSizesFromMats(fact,A,A);CHKERRQ(ierr);
   ierr = MatSetType(fact, ((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(fact, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(fact, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -2666,7 +2663,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ_interlaced(Mat mat,PetscInt nsubcomm
     } else { /* non-square matrix */
       ierr = MatSetSizes(C,mloc_sub,PETSC_DECIDE,PETSC_DECIDE,mat->cmap->N);CHKERRQ(ierr);
     }
-    ierr = MatSetBlockSizes(C,mat->rmap->bs,mat->cmap->bs);CHKERRQ(ierr);
+    ierr = MatSetBlockSizesFromMats(C,mat,mat);CHKERRQ(ierr);
     ierr = MatSetFromOptions(C);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(C,rownz_max,NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(C,rownz_max,NULL,rownz_max,NULL);CHKERRQ(ierr);
@@ -3242,12 +3239,12 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJ(Mat B,PetscInt d_nz,const Petsc
     /* Explicitly create 2 MATSEQAIJ matrices. */
     ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
     ierr = MatSetSizes(b->A,B->rmap->n,B->cmap->n,B->rmap->n,B->cmap->n);CHKERRQ(ierr);
-    ierr = MatSetBlockSizes(b->A,B->rmap->bs,B->cmap->bs);CHKERRQ(ierr);
+    ierr = MatSetBlockSizesFromMats(b->A,B,B);CHKERRQ(ierr);
     ierr = MatSetType(b->A,MATSEQAIJ);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)B,(PetscObject)b->A);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_SELF,&b->B);CHKERRQ(ierr);
     ierr = MatSetSizes(b->B,B->rmap->n,B->cmap->N,B->rmap->n,B->cmap->N);CHKERRQ(ierr);
-    ierr = MatSetBlockSizes(b->B,B->rmap->bs,B->cmap->bs);CHKERRQ(ierr);
+    ierr = MatSetBlockSizesFromMats(b->B,B,B);CHKERRQ(ierr);
     ierr = MatSetType(b->B,MATSEQAIJ);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)B,(PetscObject)b->B);CHKERRQ(ierr);
   }
@@ -3270,14 +3267,12 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *ne
   *newmat = 0;
   ierr    = MatCreate(PetscObjectComm((PetscObject)matin),&mat);CHKERRQ(ierr);
   ierr    = MatSetSizes(mat,matin->rmap->n,matin->cmap->n,matin->rmap->N,matin->cmap->N);CHKERRQ(ierr);
-  ierr    = MatSetBlockSizes(mat,matin->rmap->bs,matin->cmap->bs);CHKERRQ(ierr);
+  ierr    = MatSetBlockSizesFromMats(mat,matin,matin);CHKERRQ(ierr);
   ierr    = MatSetType(mat,((PetscObject)matin)->type_name);CHKERRQ(ierr);
   ierr    = PetscMemcpy(mat->ops,matin->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   a       = (Mat_MPIAIJ*)mat->data;
 
   mat->factortype   = matin->factortype;
-  mat->rmap->bs     = matin->rmap->bs;
-  mat->cmap->bs     = matin->cmap->bs;
   mat->assembled    = PETSC_TRUE;
   mat->insertmode   = NOT_SET_VALUES;
   mat->preallocated = PETSC_TRUE;
@@ -4440,7 +4435,7 @@ PetscErrorCode MatFileSplit(Mat A,char *outfile)
   /* Should this be the type of the diagonal block of A? */
   ierr = MatCreate(PETSC_COMM_SELF,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,N,m,N);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(B,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSizesFromMats(B,A,A);CHKERRQ(ierr);
   ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,0);CHKERRQ(ierr);
@@ -5486,7 +5481,7 @@ PetscErrorCode MatMatMultSymbolic_MPIDense_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat
   if (A->cmap->n != B->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"A->cmap->n %d != B->rmap->n %d\n",A->cmap->n,B->rmap->n);
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&Cmat);CHKERRQ(ierr);
   ierr = MatSetSizes(Cmat,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(Cmat,A->rmap->bs,B->cmap->bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSizesFromMats(Cmat,A,B);CHKERRQ(ierr);
   ierr = MatSetType(Cmat,MATMPIDENSE);CHKERRQ(ierr);
   ierr = MatMPIDenseSetPreallocation(Cmat,NULL);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(Cmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
