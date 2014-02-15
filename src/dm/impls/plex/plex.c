@@ -2289,11 +2289,15 @@ PetscErrorCode DMPlexOrient(DM dm)
     const PetscSFNode *rpoints;
     PetscInt          *neighbors;
     PetscInt           numLeaves, numRoots, numNeighbors = 0, l, n;
-    PetscBool          match;
+    PetscBool          match = PETSC_TRUE;
 
     ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
     ierr = PetscSFGetGraph(sf, &numRoots, &numLeaves, &lpoints, &rpoints);CHKERRQ(ierr);
     if (numLeaves >= 0) {
+      const PetscInt *cone, *ornt, *support;
+      PetscInt        coneSize, supportSize;
+      int            *rornt, *lornt; /* PetscSF cannot handle smaller than int */
+
       ierr = PetscMalloc1(numLeaves,&neighbors);CHKERRQ(ierr);
       /* I know this is p^2 time in general, but for bounded degree its alright */
       for (l = 0; l < numLeaves; ++l) {
@@ -2309,10 +2313,6 @@ PetscErrorCode DMPlexOrient(DM dm)
           }
         }
       }
-      const PetscInt *cone, *ornt, *support;
-      PetscInt        coneSize, supportSize;
-      int            *rornt, *lornt; /* PetscSF cannot handle smaller than int */
-
       ierr = PetscCalloc2(numRoots,&rornt,numRoots,&lornt);CHKERRQ(ierr);
       for (face = fStart; face < fEnd; ++face) {
         ierr = DMPlexGetSupportSize(dm, face, &supportSize);CHKERRQ(ierr);
@@ -2320,6 +2320,7 @@ PetscErrorCode DMPlexOrient(DM dm)
         ierr = DMPlexGetSupport(dm, face, &support);CHKERRQ(ierr);
 
         ierr = DMPlexGetCone(dm, support[0], &cone);CHKERRQ(ierr);
+        ierr = DMPlexGetConeSize(dm, support[0], &coneSize);CHKERRQ(ierr);
         ierr = DMPlexGetConeOrientation(dm, support[0], &ornt);CHKERRQ(ierr);
         for (c = 0; c < coneSize; ++c) if (cone[c] == face) break;
         if (PetscBTLookup(flippedCells, support[0]-cStart)) rornt[face] = ornt[c] < 0 ? -1 :  1;
