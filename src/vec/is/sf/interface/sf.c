@@ -861,7 +861,7 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nroots,const PetscInt
 {
   PetscInt      *rootdata, *leafdata, *ilocal;
   PetscSFNode   *iremote;
-  PetscInt       leafsize = 0, nleaves = 0, i;
+  PetscInt       leafsize = 0, nleaves = 0, n, i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -878,16 +878,17 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nroots,const PetscInt
   for (i = 0; i < leafsize; ++i) nleaves += leafdata[i];
   ierr = PetscMalloc1(nleaves,&ilocal);CHKERRQ(ierr);
   ierr = PetscMalloc1(nleaves,&iremote);CHKERRQ(ierr);
-  for (i = 0, nleaves = 0; i < sf->nleaves; ++i) {
+  for (i = 0, n = 0; i < sf->nleaves; ++i) {
     const PetscInt lidx = sf->mine ? sf->mine[i] : i;
 
     if (leafdata[lidx]) {
-      ilocal[nleaves]        = lidx;
-      iremote[nleaves].rank  = sf->remote[i].rank;
-      iremote[nleaves].index = sf->remote[i].index;
-      ++nleaves;
+      ilocal[n]        = lidx;
+      iremote[n].rank  = sf->remote[i].rank;
+      iremote[n].index = sf->remote[i].index;
+      ++n;
     }
   }
+  if (n != nleaves) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "There is a size mismatch in the SF embedding, %d != %d", n, nleaves);
   ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_RANKS,newsf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(*newsf,sf->nroots,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
