@@ -223,6 +223,10 @@ class TestObjectTS(BaseTestObject, unittest.TestCase):
         self.obj.setProblemType(PETSc.TS.ProblemType.NONLINEAR)
         self.obj.setType(PETSc.TS.Type.BEULER)
 
+class TestObjectTAO(BaseTestObject, unittest.TestCase):
+    CLASS  = PETSc.TAO
+    FACTORY = 'create'
+
 class TestObjectAOBasic(BaseTestObject, unittest.TestCase):
     CLASS  = PETSc.AO
     FACTORY = 'createBasic'

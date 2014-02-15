@@ -4,6 +4,9 @@ cdef extern from * nogil:
     enum: PETSC_DEFAULT
     enum: PETSC_DETERMINE
 
+    PetscReal PETSC_INFINITY
+    PetscReal PETSC_NINFINITY
+
     ctypedef enum PetscBool:
         PETSC_TRUE,  PETSC_YES,
         PETSC_FALSE, PETSC_NO,

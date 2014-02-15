@@ -10,6 +10,7 @@
 #include "petsc-private/pcimpl.h"
 #include "petsc-private/snesimpl.h"
 #include "petsc-private/tsimpl.h"
+#include "petsc-private/taoimpl.h"
 #include "petsc-private/sfimpl.h"
 
 /* ---------------------------------------------------------------- */
@@ -534,6 +535,19 @@ TSSetTimeStepNumber(TS ts, PetscInt step)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ts->steps = step;
+  PetscFunctionReturn(0);
+}
+
+/* ---------------------------------------------------------------- */
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoGetConstraintTolerances"
+PetscErrorCode TaoGetConstraintTolerances(Tao tao,PetscReal *catol,PetscReal *crtol)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  if (catol) *catol=tao->catol;
+  if (crtol) *crtol=tao->crtol;
   PetscFunctionReturn(0);
 }
 
