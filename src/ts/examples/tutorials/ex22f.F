@@ -21,6 +21,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 !
 !  Create an application context to contain data needed by the
@@ -59,7 +60,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create distributed array (DMDA) to manage parallel grid and vectors
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,im11,i2,i2, &
+      call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,im11,i2,i2,   &
      &     PETSC_NULL_INTEGER,da,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -143,6 +144,7 @@
       subroutine GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
       implicit none
 #include <finclude/petscsys.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
       DM da
       PetscInt mx,xs,xe,gxs,gxe
@@ -188,6 +190,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
       TS ts
       PetscReal t
@@ -276,6 +279,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
       TS ts
       PetscReal t
@@ -325,6 +329,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
       TS ts
       PetscReal t,shift
@@ -397,6 +402,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscts.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
       TS ts
       Vec X

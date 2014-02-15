@@ -194,7 +194,7 @@ int main(int argc,char **argv)
   ierr = VecAXPY(c,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(c,NORM_1,&norm);CHKERRQ(ierr);
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: |Aher*x - b| for Cholesky %G\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: |Aher*x - b| for Cholesky %g\n",(double)norm);CHKERRQ(ierr);
   }
 
   /* Check norm(Aher*X - B) */
@@ -202,7 +202,7 @@ int main(int argc,char **argv)
   ierr = MatAXPY(C,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(C,NORM_1,&norm);CHKERRQ(ierr);
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: |Aher*X - B| for Cholesky %G\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: |Aher*X - B| for Cholesky %g\n",(double)norm);CHKERRQ(ierr);
   }
 
   /* LU factorization */
@@ -242,13 +242,13 @@ int main(int argc,char **argv)
   ierr = VecAXPY(c,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(c,NORM_1,&norm);CHKERRQ(ierr);
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: |A*x - b| for LU %G\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: |A*x - b| for LU %g\n",(double)norm);CHKERRQ(ierr);
   }
   ierr = MatMatMult(A,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
   ierr = MatAXPY(C,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(C,NORM_1,&norm);CHKERRQ(ierr);
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: |A*X - B| for LU %G\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: |A*X - B| for LU %g\n",(double)norm);CHKERRQ(ierr);
   }
 
   /* Out-place LU */

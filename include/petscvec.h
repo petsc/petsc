@@ -277,7 +277,7 @@ PETSC_EXTERN PetscErrorCode VecStashGetInfo(Vec,PetscInt*,PetscInt*,PetscInt*,Pe
    VecSetValue - Set a single entry into a vector.
 
    Synopsis:
-   #include "petscvec.h"
+   #include <petscvec.h>
    PetscErrorCode VecSetValue(Vec v,PetscInt row,PetscScalar value, InsertMode mode);
 
    Not Collective
@@ -359,7 +359,7 @@ PETSC_EXTERN PetscErrorCode VecSetValuesLocal(Vec,PetscInt,const PetscInt[],cons
    VecSetValueLocal - Set a single entry into a vector using the local numbering
 
    Synopsis:
-   #include "petscvec.h"
+   #include <petscvec.h>
    PetscErrorCode VecSetValueLocal(Vec v,PetscInt row,PetscScalar value, InsertMode mode);
 
    Not Collective
@@ -442,6 +442,21 @@ PETSC_EXTERN PetscErrorCode VecConjugate(Vec);
 
 PETSC_EXTERN PetscErrorCode VecScatterCreateToAll(Vec,VecScatter*,Vec*);
 PETSC_EXTERN PetscErrorCode VecScatterCreateToZero(Vec,VecScatter*,Vec*);
+
+PETSC_EXTERN PetscErrorCode ISComplementVec(IS,Vec,IS*);
+PETSC_EXTERN PetscErrorCode VecPow(Vec, PetscScalar);
+PETSC_EXTERN PetscErrorCode VecMedian(Vec, Vec, Vec, Vec);
+PETSC_EXTERN PetscErrorCode VecWhichBetween(Vec, Vec, Vec, IS *);
+PETSC_EXTERN PetscErrorCode VecWhichBetweenOrEqual(Vec, Vec, Vec, IS *);
+PETSC_EXTERN PetscErrorCode VecWhichGreaterThan(Vec, Vec, IS * );
+PETSC_EXTERN PetscErrorCode VecWhichLessThan(Vec, Vec, IS *);
+PETSC_EXTERN PetscErrorCode VecWhichEqual(Vec, Vec, IS *);
+PETSC_EXTERN PetscErrorCode VecISAXPY(Vec, IS, PetscScalar,Vec);
+PETSC_EXTERN PetscErrorCode VecISSet(Vec,IS, PetscScalar);
+PETSC_EXTERN PetscErrorCode VecBoundGradientProjection(Vec, Vec, Vec, Vec, Vec);
+PETSC_EXTERN PetscErrorCode VecStepBoundInfo(Vec,Vec,Vec,Vec,PetscReal*, PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode VecStepMax(Vec, Vec, PetscReal *);
+PETSC_EXTERN PetscErrorCode VecStepMaxBounded(Vec,Vec,Vec,Vec,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaGetVector(PetscViewer, Vec);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutVector(PetscViewer, Vec);

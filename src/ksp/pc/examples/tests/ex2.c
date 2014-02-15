@@ -69,7 +69,7 @@ int main(int argc,char **args)
   ierr = VecNorm(u,NORM_2,&norm);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"2 norm of error %G Number of iterations %D\n",norm,its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"2 norm of error %g Number of iterations %D\n",(double)norm,its);CHKERRQ(ierr);
   }
 
   /* Free data structures */

@@ -83,14 +83,14 @@ int main(int argc,char **args)
   {
     /* configureation */
     const PetscInt NP = (PetscInt)(PetscPowReal((PetscReal)npe,1./3.) + .5);
-    if (npe!=NP*NP*NP) SETERRQ1(comm,PETSC_ERR_ARG_WRONG, "npe=%d: npe^{1/3} must be integer",npe);
-    if (nn!=NP*(nn/NP)) SETERRQ1(comm,PETSC_ERR_ARG_WRONG, "-ne %d: (ne+1)%(npe^{1/3}) must equal zero",ne);
     const PetscInt ipx = mype%NP, ipy = (mype%(NP*NP))/NP, ipz = mype/(NP*NP);
     const PetscInt Ni0 = ipx*(nn/NP), Nj0 = ipy*(nn/NP), Nk0 = ipz*(nn/NP);
     const PetscInt Ni1 = Ni0 + (m>0 ? (nn/NP) : 0), Nj1 = Nj0 + (nn/NP), Nk1 = Nk0 + (nn/NP);
     const PetscInt NN  = nn/NP, id0 = ipz*nn*nn*NN + ipy*nn*NN*NN + ipx*NN*NN*NN;
     PetscInt       *d_nnz, *o_nnz,osz[4]={0,9,15,19},nbc;
     PetscScalar    vv[24], v2[24];
+    if (npe!=NP*NP*NP) SETERRQ1(comm,PETSC_ERR_ARG_WRONG, "npe=%d: npe^{1/3} must be integer",npe);
+    if (nn!=NP*(nn/NP)) SETERRQ1(comm,PETSC_ERR_ARG_WRONG, "-ne %d: (ne+1)%(npe^{1/3}) must equal zero",ne);
 
     /* count nnz */
     ierr = PetscMalloc1((m+1), &d_nnz);CHKERRQ(ierr);
@@ -259,8 +259,8 @@ int main(int argc,char **args)
   ierr = KSPSetOperators(ksp, Amat, Amat, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   if (use_nearnullspace) {
     MatNullSpace matnull;
-    Vec vec_coords;
-    PetscScalar *c;
+    Vec          vec_coords;
+    PetscScalar  *c;
 
     ierr = VecCreate(MPI_COMM_WORLD,&vec_coords);CHKERRQ(ierr);
     ierr = VecSetBlockSize(vec_coords,3);CHKERRQ(ierr);
@@ -302,6 +302,9 @@ int main(int argc,char **args)
   /* 2nd solve */
   if (two_solves) {
     PetscReal emax, emin;
+    PetscReal norm,norm2;
+    Vec       res;
+
     ierr = MaybeLogStagePush(stage[2]);CHKERRQ(ierr);
     /* PC setup basically */
     ierr = MatScale(Amat, 100000.0);CHKERRQ(ierr);
@@ -328,9 +331,6 @@ int main(int argc,char **args)
 
     ierr = MaybeLogStagePop();CHKERRQ(ierr);
 
-    PetscReal norm,norm2;
-    /* PetscViewer viewer; */
-    Vec res;
 
     ierr = VecNorm(bb, NORM_2, &norm2);CHKERRQ(ierr);
 
@@ -339,7 +339,7 @@ int main(int argc,char **args)
     ierr = VecAXPY(bb, -1.0, res);CHKERRQ(ierr);
     ierr = VecDestroy(&res);CHKERRQ(ierr);
     ierr = VecNorm(bb, NORM_2, &norm);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e, emax=%e\n",0,__FUNCT__,norm/norm2,norm2,emax);
+    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e, emax=%e\n",0,__FUNCT__,(double)(norm/norm2),(double)norm2,(double)emax);
     /*ierr = PetscViewerASCIIOpen(comm, "residual.m", &viewer);CHKERRQ(ierr);
      ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
      ierr = VecView(bb,viewer);CHKERRQ(ierr);

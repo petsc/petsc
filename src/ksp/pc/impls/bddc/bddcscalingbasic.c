@@ -1,5 +1,5 @@
-#include "bddc.h"
-#include "bddcprivate.h"
+#include <bddc.h>
+#include <bddcprivate.h>
 
 /* prototypes for deluxe public functions */
 #if 0

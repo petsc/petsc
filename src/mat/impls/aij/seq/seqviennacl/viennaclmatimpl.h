@@ -1,7 +1,7 @@
 #if !defined(__VIENNACLMATIMPL)
 #define __VIENNACLMATIMPL
 
-#include "../src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
+#include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
 
 /* Pulls in some ViennaCL includes as well as VIENNACL_WITH_OPENCL: */
 #include <../src/vec/vec/impls/seq/seqviennacl/viennaclvecimpl.h>

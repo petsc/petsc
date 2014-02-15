@@ -1,6 +1,7 @@
 
 static char help[] = "Tests DMCreateInterpolation() for nonuniform DMDA coordinates.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__
@@ -109,7 +110,7 @@ int main(int argc,char **argv)
   PetscInt         M = 5,N = 4,P = 3, m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,dim = 1;
   PetscErrorCode   ierr;
   DM               dac,daf;
-  DMDABoundaryType bx    = DMDA_BOUNDARY_NONE,by=DMDA_BOUNDARY_NONE,bz=DMDA_BOUNDARY_NONE;
+  DMBoundaryType   bx    = DM_BOUNDARY_NONE,by=DM_BOUNDARY_NONE,bz=DM_BOUNDARY_NONE;
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
   Mat              A;
 

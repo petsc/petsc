@@ -102,7 +102,7 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
 
   flg  = PETSC_FALSE;
   ierr = PetscOptionsBool("-pc_factor_diagonal_fill","Allow fill into empty diagonal entry","PCFactorSetAllowDiagonalFill",flg,&flg,NULL);CHKERRQ(ierr);
-  ((PC_Factor*)ilu)->info.diagonal_fill = (double) flg;
+  ((PC_Factor*)ilu)->info.diagonal_fill = (PetscReal) flg;
   /*
   dt[0] = ((PC_Factor*)ilu)->info.dt;
   dt[1] = ((PC_Factor*)ilu)->info.dtcol;

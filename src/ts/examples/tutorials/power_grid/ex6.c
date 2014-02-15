@@ -9,6 +9,7 @@ static char help[] = "Time-dependent PDE in 2d for calculating joint PDF. \n";
    Steady state boundary condition found by setting p_t = 0
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 
@@ -63,7 +64,7 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = Parameter_settings(&user);CHKERRQ(ierr);
   /* Create a 2D DA with dof = 1 */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
   /* Set x and y coordinates */
   ierr = DMDASetUniformCoordinates(user.da,user.xmin,user.xmax,user.ymin,user.ymax,NULL,NULL);CHKERRQ(ierr);
 
@@ -426,7 +427,7 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   user->ws     = 1.0;
   user->H      = 5.0;  user->Pmax   = 2.1;
   user->PM_min = 1.0;  user->lambda = 0.1;
-  user->q      = 1.0;  user->mux    = asin(user->PM_min/user->Pmax);
+  user->q      = 1.0;  user->mux    = PetscAsinScalar(user->PM_min/user->Pmax);
   user->sigmax = 0.1;
   user->sigmay = 0.1;  user->rho  = 0.0;
   user->t0     = 0.0;  user->tmax = 2.0;

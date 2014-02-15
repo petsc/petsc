@@ -1,6 +1,7 @@
 
 static char help[] = "Tests various 1-dimensional DMDA routines.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdraw.h>
 
@@ -10,7 +11,7 @@ int main(int argc,char **argv)
 {
   PetscMPIInt      rank;
   PetscInt         M  = 13,s=1,dof=1;
-  DMDABoundaryType bx = DMDA_BOUNDARY_PERIODIC;
+  DMBoundaryType bx = DM_BOUNDARY_PERIODIC;
   PetscErrorCode   ierr;
   DM               da;
   PetscViewer      viewer;
@@ -28,7 +29,7 @@ int main(int argc,char **argv)
 
   /* Readoptions */
   ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetEnum(NULL,"-wrap",DMDABoundaryTypes,(PetscEnum*)&bx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum(NULL,"-wrap",DMBoundaryTypes,(PetscEnum*)&bx,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-s",&s,NULL);CHKERRQ(ierr);
 

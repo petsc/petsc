@@ -1,5 +1,5 @@
 
-#include "../src/mat/impls/nest/matnestimpl.h" /*I   "petscmat.h"   I*/
+#include <../src/mat/impls/nest/matnestimpl.h> /*I   "petscmat.h"   I*/
 #include <petscsf.h>
 
 static PetscErrorCode MatSetUp_NestIS_Private(Mat,PetscInt,const IS[],PetscInt,const IS[]);

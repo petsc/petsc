@@ -81,17 +81,17 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
   while (refine--) {
-    if (dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
+    if (dd->bx == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
       dd->M = dd->refine_x*dd->M;
     } else {
       dd->M = 1 + dd->refine_x*(dd->M - 1);
     }
-    if (dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
+    if (dd->by == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
       dd->N = dd->refine_y*dd->N;
     } else {
       dd->N = 1 + dd->refine_y*(dd->N - 1);
     }
-    if (dd->bz == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
+    if (dd->bz == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
       dd->P = dd->refine_z*dd->P;
     } else {
       dd->P = 1 + dd->refine_z*(dd->P - 1);
@@ -142,7 +142,7 @@ PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
   PetscErrorCode   ierr;
   PetscInt         dim,m,n,p,dof,swidth;
   DMDAStencilType  stencil;
-  DMDABoundaryType bx,by,bz;
+  DMBoundaryType   bx,by,bz;
   PetscBool        coors;
   DM               dac;
   Vec              c;
@@ -373,9 +373,9 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   dd->ltol         = NULL;
   dd->ao           = NULL;
   dd->base         = -1;
-  dd->bx           = DMDA_BOUNDARY_NONE;
-  dd->by           = DMDA_BOUNDARY_NONE;
-  dd->bz           = DMDA_BOUNDARY_NONE;
+  dd->bx           = DM_BOUNDARY_NONE;
+  dd->by           = DM_BOUNDARY_NONE;
+  dd->bz           = DM_BOUNDARY_NONE;
   dd->stencil_type = DMDA_STENCIL_BOX;
   dd->interptype   = DMDA_Q1;
   dd->lx           = NULL;

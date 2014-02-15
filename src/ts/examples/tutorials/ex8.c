@@ -141,7 +141,7 @@ static PetscErrorCode CEFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ct
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = xdot[0] + l*(x[0] - PetscCosReal(t));
 #if 0
-  ierr = PetscPrintf(PETSC_COMM_WORLD," f(t=%G,x=%G,xdot=%G) = %G\n",t,x[0],xdot[0],f[0]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," f(t=%g,x=%g,xdot=%g) = %g\n",(double)t,(double)x[0],(double)xdot[0],(double)f[0]);CHKERRQ(ierr);
 #endif
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
@@ -334,7 +334,7 @@ static PetscErrorCode MonitorError(TS ts,PetscInt step,PetscReal t,Vec x,void *c
   ierr = VecAYPX(mon->x,-1,x);CHKERRQ(ierr);
   ierr = VecNorm(mon->x,NORM_2,&nrm_diff);CHKERRQ(ierr);
   ierr = TSGetTimeStep(ts,&h);CHKERRQ(ierr);
-  ierr = PetscPrintf(mon->comm,"step %4D t=%12.8e h=% 8.2e  |x|=%9.2e  |x_e|=%9.2e  |x-x_e|=%9.2e\n",step,t,h,nrm_x,nrm_exact,nrm_diff);CHKERRQ(ierr);
+  ierr = PetscPrintf(mon->comm,"step %4D t=%12.8e h=% 8.2e  |x|=%9.2e  |x_e|=%9.2e  |x-x_e|=%9.2e\n",step,(double)t,(double)h,(double)nrm_x,(double)nrm_exact,(double)nrm_diff);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -443,7 +443,7 @@ int main(int argc,char **argv)
   ierr = TSGetStepRejections(ts,&rejects);CHKERRQ(ierr);
   ierr = TSGetSNESIterations(ts,&nonlinits);CHKERRQ(ierr);
   ierr = TSGetKSPIterations(ts,&linits);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"steps %D (%D rejected, %D SNES fails), ftime %G, nonlinits %D, linits %D\n",steps,rejects,snesfails,ftime,nonlinits,linits);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"steps %D (%D rejected, %D SNES fails), ftime %g, nonlinits %D, linits %D\n",steps,rejects,snesfails,(double)ftime,nonlinits,linits);CHKERRQ(ierr);
   if (problem->hasexact) {
     ierr = MonitorError(ts,steps,ftime,x,&mon);CHKERRQ(ierr);
   }

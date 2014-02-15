@@ -90,8 +90,10 @@
 #define PetscFortranLongDouble real(kind=selected_real_kind(19))
 #if defined(PETSC_USE_REAL_SINGLE)
 #define PetscFortranComplex complex(kind=selected_real_kind(5))
-#else
+#elif defined(PETSC_USE_REAL_DOUBLE)
 #define PetscFortranComplex complex(kind=selected_real_kind(10))
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#define PetscFortranComplex complex(kind=selected_real_kind(20))
 #endif
 #define PetscChar(a) character(len = a) ::
 #else
@@ -100,8 +102,10 @@
 #define PetscFortranLongDouble real*16
 #if defined(PETSC_USE_REAL_SINGLE)
 #define PetscFortranComplex complex*8
-#else
+#elif defined(PETSC_USE_REAL_DOUBLE)
 #define PetscFortranComplex complex*16
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#define PetscFortranComplex complex*32
 #endif
 #define PetscChar(a) character*(a)
 #endif

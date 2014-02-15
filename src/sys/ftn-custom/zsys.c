@@ -45,9 +45,8 @@ static char FIXCHARSTRING[1024];
     while ((n > 0) && (a[n-1] == ' ')) n--; \
     if (a[n] != 0) { \
       b = FIXCHARSTRING; \
-      *ierr = PetscStrncpy(b,a,n); \
+      *ierr = PetscStrncpy(b,a,n+1); \
       if (*ierr) return; \
-      b[n] = 0; \
     } else b = a;\
   } \
 }

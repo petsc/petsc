@@ -1,7 +1,7 @@
 #define PETSCMAT_DLL
 
-#include "../src/mat/impls/baij/mpi/mpibaij.h"
-#include "../src/mat/impls/baij/seq/bstream/bstream.h"
+#include <../src/mat/impls/baij/mpi/mpibaij.h>
+#include <../src/mat/impls/baij/seq/bstream/bstream.h>
 
 extern PetscErrorCode MatMult_SeqBSTRM_4(Mat,Vec,Vec);
 extern PetscErrorCode MatMult_SeqBSTRM_5(Mat,Vec,Vec);

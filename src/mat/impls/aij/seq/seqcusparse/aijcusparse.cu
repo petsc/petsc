@@ -3,13 +3,13 @@
   matrix storage format using the CUSPARSE library,
 */
 
-#include "petscconf.h"
-#include "../src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
+#include <petscconf.h>
+#include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
-#include "../src/vec/vec/impls/dvecimpl.h"
-#include "petsc-private/vecimpl.h"
+#include <../src/vec/vec/impls/dvecimpl.h>
+#include <petsc-private/vecimpl.h>
 #undef VecType
-#include "cusparsematimpl.h"
+#include <../src/mat/impls/aij/seq/seqcusparse/cusparsematimpl.h>
 
 const char *const MatCUSPARSEStorageFormats[] = {"CSR","ELL","HYB","MatCUSPARSEStorageFormat","MAT_CUSPARSE_",0};
 
