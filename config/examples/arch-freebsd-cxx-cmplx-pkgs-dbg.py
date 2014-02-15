@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 configure_options = [
+  '--with-cc=gcc46',
+  '--with-cxx=g++46',
+  '--with-fc=gfortran',
   '--with-clanguage=cxx',
   '--with-scalar-type=complex',
 
