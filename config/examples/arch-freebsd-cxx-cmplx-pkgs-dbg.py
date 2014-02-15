@@ -2,8 +2,9 @@
 
 configure_options = [
   '--with-cc=gcc46',
-  '--with-cxx=g++46',
+  '--with-cxx=g++46', # default g++ segfaults with src/ts/examples/tutorials/ex10.c
   '--with-fc=gfortran',
+  'LIBS=-lexecinfo', # for some reason gcc46 requires this library
   '--with-clanguage=cxx',
   '--with-scalar-type=complex',
 
