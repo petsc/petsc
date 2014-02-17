@@ -154,7 +154,7 @@ int main(int argc, char **argv)
 
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
-  ierr = TaoSetType(tao,"tao_lcl");CHKERRQ(ierr);
+  ierr = TaoSetType(tao,TAOLCL);CHKERRQ(ierr);
   user.lcl = (TAO_LCL*)(tao->data);
 
   /* Set up initial vectors and matrices */

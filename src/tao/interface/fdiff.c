@@ -45,7 +45,7 @@ static PetscErrorCode Fsnes(SNES snes ,Vec X,Vec G,void*ctx)
    to take advantage of sparsity in the problem.  Although
    TaoAppDefaultComputeGradient is not recommended for general use
    in large-scale applications, It can be useful in checking the
-   correctness of a user-provided gradient.  Use the tao method "tao_fd_test"
+   correctness of a user-provided gradient.  Use the tao method TAOTEST
    to get an indication of whether your gradient is correct.
 
 

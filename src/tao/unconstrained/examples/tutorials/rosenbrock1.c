@@ -69,7 +69,7 @@ int main(int argc,char **argv)
 
   /* Create TAO solver with desired solution method */
   ierr = TaoCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
-  ierr = TaoSetType(tao,"tao_lmvm");CHKERRQ(ierr);
+  ierr = TaoSetType(tao,TAOLMVM);CHKERRQ(ierr);
 
   /* Set solution vec and an initial guess */
   ierr = VecSet(x, zero);CHKERRQ(ierr);

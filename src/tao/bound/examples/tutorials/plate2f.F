@@ -146,7 +146,7 @@
 
       call TaoCreate(PETSC_COMM_WORLD,tao,ierr)
       CHKERRQ(ierr)
-      call TaoSetType(tao,'tao_blmvm',ierr)
+      call TaoSetType(tao,TAOBLMVM,ierr)
       CHKERRQ(ierr)
 
 !     Set minimization function and gradient, hessian evaluation functions

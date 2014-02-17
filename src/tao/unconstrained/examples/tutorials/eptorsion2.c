@@ -120,7 +120,7 @@ int main(int argc, char **argv)
 
     /* Create TAO solver and set desired solution method */
     ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
-    ierr = TaoSetType(tao,"tao_cg");CHKERRQ(ierr);
+    ierr = TaoSetType(tao,TAOCG);CHKERRQ(ierr);
 
     /* Set initial solution guess */
     ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);

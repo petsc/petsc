@@ -11,7 +11,7 @@ iter =   4, Function value 1.41564, Residual: 0.00970249
 iter =   5, Function value 1.41562, Residual: 0.00011287 
 iter =   6, Function value 1.41562, Residual: < 1.0e-6 
 Tao Object: 2 MPI processes
-  type: tao_ntr
+  type: ntr
       Rejected matrix updates: 0
   KSP Object:   2 MPI processes
     type: stcg

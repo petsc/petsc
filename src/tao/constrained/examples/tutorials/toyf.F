@@ -38,7 +38,7 @@
       call TaoCreate(PETSC_COMM_SELF,tao,ierr)
       CHKERRQ(ierr)
 
-      call TaoSetType(tao,"tao_ipm",ierr)
+      call TaoSetType(tao,TAOIPM,ierr)
       CHKERRQ(ierr)
 
       call TaoSetInitialVector(tao,x0,ierr)

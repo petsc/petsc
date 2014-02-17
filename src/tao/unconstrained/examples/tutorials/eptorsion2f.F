@@ -100,7 +100,7 @@
 
 !     Create TAO solver
       call TaoCreate(PETSC_COMM_WORLD,tao,ierr)
-      call TaoSetType(tao,"tao_cg",ierr)
+      call TaoSetType(tao,TAOCG,ierr)
 
 !     Set routines for function and gradient evaluation
 

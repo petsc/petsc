@@ -88,7 +88,7 @@ int main(int argc,char **argv)
 
     /* Create TAO solver and set desired solution method */
     ierr = TaoCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
-    ierr = TaoSetType(tao,"tao_pounders");CHKERRQ(ierr);
+    ierr = TaoSetType(tao,TAOPOUNDERS);CHKERRQ(ierr);
 
     /* Set the function and Jacobian routines. */
     ierr = FormStartingPoint(x);CHKERRQ(ierr);

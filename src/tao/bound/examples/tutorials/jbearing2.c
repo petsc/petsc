@@ -125,11 +125,11 @@ int main( int argc, char **argv )
   /* The TAO code begins here */
 
   /*
-     Create the optimization solver, Petsc application
-     Suitable methods: "tao_gpcg","tao_bqpip","tao_tron","tao_blmvm"
+     Create the optimization solver
+     Suitable methods: TAOGPCG, TAOBQPIP, TAOTRON, TAOBLMVM
   */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
-  ierr = TaoSetType(tao,"tao_blmvm");CHKERRQ(ierr);
+  ierr = TaoSetType(tao,TAOBLMVM);CHKERRQ(ierr);
 
 
   /* Set the initial vector */

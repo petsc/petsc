@@ -79,7 +79,7 @@ int main( int argc, char **argv )
 
   /* Create TAO solver and set desired solution method  */
   ierr = TaoCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
-  ierr = TaoSetType(tao,"tao_lmvm");CHKERRQ(ierr);
+  ierr = TaoSetType(tao,TAOLMVM);CHKERRQ(ierr);
 
   /* Initialize minsurf application data structure for use in the function evaluations  */
   ierr = MSA_BoundaryConditions(&user);CHKERRQ(ierr);            /* Application specific routine */

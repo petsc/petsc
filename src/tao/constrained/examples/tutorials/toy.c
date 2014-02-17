@@ -72,7 +72,7 @@ PetscErrorCode main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Solution should be f(1,1)=-2\n");CHKERRQ(ierr);
   ierr = InitializeProblem(&user);CHKERRQ(ierr);
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
-  ierr = TaoSetType(tao,"tao_ipm");CHKERRQ(ierr);
+  ierr = TaoSetType(tao,TAOIPM);CHKERRQ(ierr);
   ierr = TaoSetInitialVector(tao,user.x);CHKERRQ(ierr);
   ierr = TaoSetVariableBounds(tao,user.xl,user.xu);CHKERRQ(ierr);
   ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*)&user);CHKERRQ(ierr);

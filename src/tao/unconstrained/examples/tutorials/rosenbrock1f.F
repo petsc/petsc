@@ -92,7 +92,7 @@
 !  Create TAO solver
       call TaoCreate(PETSC_COMM_SELF,tao,ierr)
       CHKERRQ(ierr)
-      call TaoSetType(tao,"tao_lmvm",ierr)
+      call TaoSetType(tao,TAOLMVM,ierr)
       CHKERRQ(ierr)
 
 !  Set routines for function, gradient, and hessian evaluation

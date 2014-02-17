@@ -128,11 +128,11 @@ int main( int argc, char **argv )
 
   /*
      Create TAO solver and set desired solution method
-     The method must either be 'tao_tron' or 'tao_blmvm'
-     If blmvm is used, then hessian function is not called.
+     The method must either be TAOTRON or TAOBLMVM
+     If TAOBLMVM is used, then hessian function is not called.
   */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
-  ierr = TaoSetType(tao,"tao_blmvm");CHKERRQ(ierr);
+  ierr = TaoSetType(tao,TAOBLMVM);CHKERRQ(ierr);
 
   /* Set initial solution guess; */
   ierr = MSA_BoundaryConditions(&user);CHKERRQ(ierr);

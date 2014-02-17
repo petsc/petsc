@@ -24,21 +24,20 @@ const char *TaoSubSetTypes[] = {  "subvec","mask","matrixfree","TaoSubSetType","
 . newtao - the new Tao context
 
   Available methods include:
-+    tao_nls - Newton's method with line search for unconstrained minimization
-.    tao_ntr - Newton's method with trust region for unconstrained minimization
-.    tao_ntl - Newton's method with trust region, line search for unconstrained minimization
-.    tao_lmvm - Limited memory variable metric method for unconstrained minimization
-.    tao_cg - Nonlinear conjugate gradient method for unconstrained minimization
-.    tao_nm - Nelder-Mead algorithm for derivate-free unconstrained minimization
-.    tao_tron - Newton Trust Region method for bound constrained minimization
-.    tao_gpcg - Newton Trust Region method for quadratic bound constrained minimization
-.    tao_blmvm - Limited memory variable metric method for bound constrained minimization
-.    tao_lcl - Linearly constrained Lagrangian method for pde-constrained minimization
--    tao_pounders - Model-based algorithm for nonlinear least squares
++    nls - Newton's method with line search for unconstrained minimization
+.    ntr - Newton's method with trust region for unconstrained minimization
+.    ntl - Newton's method with trust region, line search for unconstrained minimization
+.    lmvm - Limited memory variable metric method for unconstrained minimization
+.    cg - Nonlinear conjugate gradient method for unconstrained minimization
+.    nm - Nelder-Mead algorithm for derivate-free unconstrained minimization
+.    tron - Newton Trust Region method for bound constrained minimization
+.    gpcg - Newton Trust Region method for quadratic bound constrained minimization
+.    blmvm - Limited memory variable metric method for bound constrained minimization
+.    lcl - Linearly constrained Lagrangian method for pde-constrained minimization
+-    pounders - Model-based algorithm for nonlinear least squares
 
    Options Database Keys:
-+   -tao_method - select which method TAO should use
--   -tao_type - identical to -tao_method
+.   -tao_type - select which method TAO should use
 
    Level: beginner
 
@@ -326,7 +325,7 @@ PetscErrorCode TaoDestroy(Tao *tao)
 . tao - the Tao solver context
 
   options Database Keys:
-+ -tao_method <type> - The algorithm that TAO uses (tao_lmvm, tao_nls, etc.)
++ -tao_type <type> - The algorithm that TAO uses (lmvm, nls, etc.)
 . -tao_fatol <fatol> - absolute error tolerance in function value
 . -tao_frtol <frtol> - relative error tolerance in function value
 . -tao_gatol <gatol> - absolute error tolerance for ||gradient||
@@ -361,7 +360,7 @@ PetscErrorCode TaoDestroy(Tao *tao)
 PetscErrorCode TaoSetFromOptions(Tao tao)
 {
   PetscErrorCode ierr;
-  const TaoType  default_type = "tao_lmvm";
+  const TaoType  default_type = TAOLMVM;
   const char     *prefix;
   char           type[256], monfilename[PETSC_MAX_PATH_LEN];
   PetscViewer    monviewer;
@@ -387,13 +386,8 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
     ierr = PetscOptionsFList("-tao_type","Tao Solver type","TaoSetType",TaoList,default_type,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = TaoSetType(tao,type);CHKERRQ(ierr);
-    } else {
-      ierr = PetscOptionsFList("-tao_method","Tao Solver type","TaoSetType",TaoList,default_type,type,256,&flg);CHKERRQ(ierr);
-      if (flg) {
-        ierr = TaoSetType(tao,type);CHKERRQ(ierr);
-      } else if (!((PetscObject)tao)->type_name) {
-        ierr = TaoSetType(tao,default_type);
-      }
+    } else if (!((PetscObject)tao)->type_name) {
+      ierr = TaoSetType(tao,default_type);
     }
 
     ierr = PetscOptionsBool("-tao_view","view Tao info after each minimization has completed","TaoView",PETSC_FALSE,&tao->viewtao,&flg);CHKERRQ(ierr);
@@ -758,8 +752,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetConstraintTolerances"
 /*@
-  TaoSetConstraintTolerances - Sets contraint tolerance parameters used in TAO
-  convergence tests
+  TaoSetConstraintTolerances - Sets constraint tolerance parameters used in TAO  convergence tests
 
   Logically collective on Tao
 
@@ -774,7 +767,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
 
   Level: intermediate
 
-.seealso: TaoGetTolerances()
+.seealso: TaoGetTolerances(), TaoGetConstraintTolerances(), TaoSetTolerances()
 
 @*/
 PetscErrorCode TaoSetConstraintTolerances(Tao tao, PetscReal catol, PetscReal crtol)
@@ -799,6 +792,34 @@ PetscErrorCode TaoSetConstraintTolerances(Tao tao, PetscReal catol, PetscReal cr
       tao->crtol = PetscMax(0,crtol);
     }
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoGetConstraintTolerances"
+/*@
+  TaoGetConstraintTolerances - Gets constraint tolerance parameters used in TAO  convergence tests
+
+  Not ollective
+
+  Input Parameter:
+. tao - the Tao context
+
+  Output Parameter:
++ catol - absolute constraint tolerance, constraint norm must be less than catol for used for fatol, gatol convergence criteria
+- crtol - relative contraint tolerance, constraint norm must be less than crtol for used for fatol, gatol, gttol convergence criteria
+
+  Level: intermediate
+
+.seealso: TaoGetTolerances(), TaoSetTolerances(), TaoSetConstraintTolerances()
+
+@*/
+PetscErrorCode TaoGetConstraintTolerances(Tao tao, PetscReal *catol, PetscReal *crtol)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  if (catol) *catol = tao->catol;
+  if (crtol) *crtol = tao->crtol;
   PetscFunctionReturn(0);
 }
 
@@ -1967,22 +1988,20 @@ PetscErrorCode TaoGetOptionsPrefix(Tao tao, const char *p[])
 -  type - a known method
 
    Options Database Key:
-+  -tao_method <type> - Sets the method; use -help for a list
-   of available methods (for instance, "-tao_method tao_lmvm" or
-   "-tao_method tao_tron")
--  -tao_type <type> - identical to -tao_method
+.  -tao_type <type> - Sets the method; use -help for a list
+   of available methods (for instance, "-tao_type lmvm" or "-tao_type tron")
 
    Available methods include:
-+    tao_nls - Newton's method with line search for unconstrained minimization
-.    tao_ntr - Newton's method with trust region for unconstrained minimization
-.    tao_ntl - Newton's method with trust region, line search for unconstrained minimization
-.    tao_lmvm - Limited memory variable metric method for unconstrained minimization
-.    tao_cg - Nonlinear conjugate gradient method for unconstrained minimization
-.    tao_nm - Nelder-Mead algorithm for derivate-free unconstrained minimization
-.    tao_tron - Newton Trust Region method for bound constrained minimization
-.    tao_gpcg - Newton Trust Region method for quadratic bound constrained minimization
-.    tao_blmvm - Limited memory variable metric method for bound constrained minimization
-+    tao_pounders - Model-based algorithm pounder extended for nonlinear least squares
++    nls - Newton's method with line search for unconstrained minimization
+.    ntr - Newton's method with trust region for unconstrained minimization
+.    ntl - Newton's method with trust region, line search for unconstrained minimization
+.    lmvm - Limited memory variable metric method for unconstrained minimization
+.    cg - Nonlinear conjugate gradient method for unconstrained minimization
+.    nm - Nelder-Mead algorithm for derivate-free unconstrained minimization
+.    tron - Newton Trust Region method for bound constrained minimization
+.    gpcg - Newton Trust Region method for quadratic bound constrained minimization
+.    blmvm - Limited memory variable metric method for bound constrained minimization
++    pounders - Model-based algorithm pounder extended for nonlinear least squares
 
   Level: intermediate
 
@@ -1991,39 +2010,39 @@ PetscErrorCode TaoGetOptionsPrefix(Tao tao, const char *p[])
 @*/
 PetscErrorCode TaoSetType(Tao tao, const TaoType type)
 {
-    PetscErrorCode ierr;
-    PetscErrorCode (*create_xxx)(Tao);
-    PetscBool      issame;
+  PetscErrorCode ierr;
+  PetscErrorCode (*create_xxx)(Tao);
+  PetscBool      issame;
 
-    PetscFunctionBegin;
-    PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
 
-    ierr = PetscObjectTypeCompare((PetscObject)tao,type,&issame);CHKERRQ(ierr);
-    if (issame) PetscFunctionReturn(0);
+  ierr = PetscObjectTypeCompare((PetscObject)tao,type,&issame);CHKERRQ(ierr);
+  if (issame) PetscFunctionReturn(0);
 
-    ierr = PetscFunctionListFind(TaoList, type, (void(**)(void))&create_xxx);CHKERRQ(ierr);
-    if (!create_xxx) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested Tao type %s",type);
+  ierr = PetscFunctionListFind(TaoList, type, (void(**)(void))&create_xxx);CHKERRQ(ierr);
+  if (!create_xxx) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested Tao type %s",type);
 
-    /* Destroy the existing solver information */
-    if (tao->ops->destroy) {
-        ierr = (*tao->ops->destroy)(tao);CHKERRQ(ierr);
-    }
-    ierr = KSPDestroy(&tao->ksp);CHKERRQ(ierr);
-    ierr = TaoLineSearchDestroy(&tao->linesearch);CHKERRQ(ierr);
-    ierr = VecDestroy(&tao->gradient);CHKERRQ(ierr);
-    ierr = VecDestroy(&tao->stepdirection);CHKERRQ(ierr);
+  /* Destroy the existing solver information */
+  if (tao->ops->destroy) {
+    ierr = (*tao->ops->destroy)(tao);CHKERRQ(ierr);
+  }
+  ierr = KSPDestroy(&tao->ksp);CHKERRQ(ierr);
+  ierr = TaoLineSearchDestroy(&tao->linesearch);CHKERRQ(ierr);
+  ierr = VecDestroy(&tao->gradient);CHKERRQ(ierr);
+  ierr = VecDestroy(&tao->stepdirection);CHKERRQ(ierr);
 
-    tao->ops->setup = 0;
-    tao->ops->solve = 0;
-    tao->ops->view  = 0;
-    tao->ops->setfromoptions = 0;
-    tao->ops->destroy = 0;
+  tao->ops->setup = 0;
+  tao->ops->solve = 0;
+  tao->ops->view  = 0;
+  tao->ops->setfromoptions = 0;
+  tao->ops->destroy = 0;
 
-    tao->setupcalled = PETSC_FALSE;
+  tao->setupcalled = PETSC_FALSE;
 
-    ierr = (*create_xxx)(tao);CHKERRQ(ierr);
-    ierr = PetscObjectChangeTypeName((PetscObject)tao,type);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
+  ierr = (*create_xxx)(tao);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)tao,type);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -2051,7 +2070,7 @@ PetscErrorCode TaoSetType(Tao tao, const TaoType type)
    Then, your solver can be chosen with the procedural interface via
 $     TaoSetType(tao,"my_solver")
    or at runtime via the option
-$     -tao_method my_solver
+$     -tao_type my_solver
 
    Level: advanced
 
@@ -2134,7 +2153,6 @@ PetscErrorCode TaoSetTerminationReason(Tao tao, TaoTerminationReason reason)
    Output Parameter:
 .  reason - one of
 
-
 $  TAO_CONVERGED_FATOL (1)           f(X)-f(X*) <= fatol
 $  TAO_CONVERGED_FRTOL (2)           |f(X) - f(X*)|/|f(X)| < frtol
 $  TAO_CONVERGED_GATOL (3)           ||g(X)|| < gatol
@@ -2192,8 +2210,7 @@ PetscErrorCode TaoGetTerminationReason(Tao tao, TaoTerminationReason *reason)
    Output Parameters:
 +  iterate - the current iterate number (>=0)
 .  f - the current function value
-.  gnorm - the square of the gradient norm, duality gap, or other measure
-indicating distance from optimality.
+.  gnorm - the square of the gradient norm, duality gap, or other measure indicating distance from optimality.
 .  cnorm - the infeasibility of the current solution with regard to the constraints.
 .  xdiff - the step length or trust region radius of the most recent iterate.
 -  reason - The termination reason, which can equal TAO_CONTINUE_ITERATING
@@ -2205,7 +2222,6 @@ indicating distance from optimality.
 
    Note:
    If any of the output arguments are set to NULL, no corresponding value will be returned.
-
 
 .seealso: TaoMonitor(), TaoGetTerminationReason()
 @*/
@@ -2220,7 +2236,6 @@ PetscErrorCode TaoGetSolutionStatus(Tao tao, PetscInt *its, PetscReal *f, PetscR
   if (xdiff) *xdiff=tao->step;
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoGetType"
@@ -2258,9 +2273,8 @@ PetscErrorCode TaoGetType(Tao tao, const TaoType *type)
 +  tao - the Tao context
 .  its - the current iterate number (>=0)
 .  f - the current objective function value
-.  res - the gradient norm, square root of the duality gap, or other measure
-indicating distince from optimality.  This measure will be recorded and
-used for some termination tests.
+.  res - the gradient norm, square root of the duality gap, or other measure indicating distince from optimality.  This measure will be recorded and
+          used for some termination tests.
 .  cnorm - the infeasibility of the current solution with regard to the constraints.
 -  steplength - multiple of the step direction added to the previous iterate.
 
@@ -2359,7 +2373,6 @@ PetscErrorCode TaoSetHistory(Tao tao, PetscReal *obj, PetscReal *resid, PetscRea
 .  resid - array used to hold residual history
 .  cnorm - array used to hold constraint violation history
 -  nhist  - size of obj, resid, and cnorm (will be less than or equal to na given in TaoSetHistory)
-
 
    Notes:
     The calling sequence for this routine in Fortran is

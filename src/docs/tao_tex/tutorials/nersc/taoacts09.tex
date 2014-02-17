@@ -474,7 +474,7 @@ This driver performs the following steps:
 
  PetscInitizialize(&argc,&argv,0,0);
  TaoInitialize(&argc,&argv,0,0);
- TaoCreate(PETSC_COMM_SELF,"tao_lmvm",&tao);
+ TaoCreate(PETSC_COMM_SELF,TAOLMVM,&tao);
  TaoApplicationCreate(PETSC_COMM_SELF,&app);
  ... 
 \end{verbatim}
@@ -548,7 +548,7 @@ evaluation routines to run in parallel.
 Once that is done, it is trivial to get TAO to run in parallel:
 \begin{verbatim}
  ...
- TaoCreate(PETSC_COMM_WORLD,"tao_lmvm",&tao);
+ TaoCreate(PETSC_COMM_WORLD,TAOLMVM,&tao);
  TaoApplicationCreate(PETSC_COMM_WORLD,&app);
  VecCreateMPI(PETSC_COMM_WORLD,n,&x);
  MatCreateMPIAIJ(PETSC_COMM_WORLD,n,n,nz,NULL,&H);

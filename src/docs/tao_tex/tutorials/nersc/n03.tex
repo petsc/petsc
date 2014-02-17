@@ -840,7 +840,7 @@ algorithmic options and tolerances.}
 
   VecCreateSeq(PETSC_COMM_SELF,n,&x);
   MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,nz,NULL,&H);
-  TaoCreate(PETSC_COMM_SELF,"tao_lmvm",&tao);
+  TaoCreate(PETSC_COMM_SELF,TAOLMVM,&tao);
   \textcolor{green}{TaoApplicationCreate(}\textcolor{blue}{PETSC_COMM_SELF},\textcolor{green}{&app});
   \textcolor{green}{TaoAppSetInitialSolutionVec(app},\textcolor{red}{x});
   \textcolor{green}{TaoAppSetObjectiveRoutine(app},\textcolor{blue}{FormFunction},\textcolor{blue}{(void *)&user});
@@ -870,7 +870,7 @@ algorithmic options and tolerances.}
 
   VecCreateSeq(PETSC_COMM_SELF,n,&x);
   MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,nz,NULL,&H);
-  \textcolor{green}{TaoCreate(PETSC_COMM_SELF,}\textcolor{green}{"tao_lmvm"},\textcolor{green}{&tao});
+  \textcolor{green}{TaoCreate(PETSC_COMM_SELF,}\textcolor{green}{TAOLMVM},\textcolor{green}{&tao});
   TaoApplicationCreate(PETSC_COMM_SELF,&app);
   TaoAppSetInitialSolutionVec(app,x);
   TaoAppSetObjectiveRoutine(app,FormFunction,(void *)&user);
@@ -899,7 +899,7 @@ algorithmic options and tolerances.}
 
   \textcolor{red}{VecCreateSeq(PETSC_COMM_SELF,n,&x);
   MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,nz,NULL,&H);}
-  \textcolor{green}{TaoCreate(}\textcolor{green}{PETSC_COMM_SELF},\textcolor{green}{"tao_lmvm",&tao);}
+  \textcolor{green}{TaoCreate(}\textcolor{green}{PETSC_COMM_SELF},\textcolor{green}{TAOLMVM,&tao);}
   \textcolor{green}{TaoApplicationCreate(}\textcolor{green}{PETSC_COMM_SELF},\textcolor{green}{&app);
   TaoAppSetInitialSolutionVec(app},\textcolor{red}{x});
   \textcolor{green}{TaoAppSetObjectiveRoutine(app},\textcolor{blue}{FormFunction},\textcolor{blue}{(void *)&user});
@@ -938,7 +938,7 @@ algorithmic options and tolerances.}
 
   VecCreateMPI(PETSC_COMM_WORLD,n,&x);}
   \textcolor{red}{MatCreateMPIAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,d_nz,d_nnz,o_nz,o_nnz,&H);}
-  TaoCreate(\textcolor{red}{PETSC_COMM_WORLD},"tao_lmvm",&tao);
+  TaoCreate(\textcolor{red}{PETSC_COMM_WORLD},TAOLMVM,&tao);
   TaoApplicationCreate(\textcolor{red}{PETSC_COMM_WORLD},&app);
   TaoAppSetInitialSolutionVec(app,x);
   TaoAppSetObjectiveRoutine(app,\textcolor{blue}{FormFunction,(void *)&user});

@@ -5,7 +5,7 @@ iter =   0, Function value 1.58854, Residual: 0.311154
 iter =   1, Function value 1.47104, Residual: 0.113526 
 iter =   2, Function value 1.46694, Residual: < 1.0e-6 
 Tao Object: 3 MPI processes
-  type: tao_gpcg
+  type: gpcg
       Total PG its: 11,      PG tolerance: 0.1 
     TaoLineSearch Object:
       type: gpcg

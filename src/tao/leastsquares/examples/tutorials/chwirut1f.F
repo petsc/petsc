@@ -82,7 +82,7 @@
 !  Create TAO solver
       call TaoCreate(PETSC_COMM_SELF,tao,ierr)
       CHKERRQ(ierr)
-      call TaoSetType(tao,'tao_pounders',ierr)
+      call TaoSetType(tao,TAOPOUNDERS,ierr)
       CHKERRQ(ierr)
 !  Set routines for function, gradient, and hessian evaluation
 
