@@ -5,6 +5,10 @@
 #include "petsc-private/snesimpl.h"
 #include "petsc-private/tsimpl.h"
 
+#if PETSC_VERSION_LT(3,5,0)
+typedef PetscObject Tao;
+#endif
+
 #if PETSC_VERSION_LT(3,4,0)
 #define PetscObjectComposeFunction(o,n,f) \
         PetscObjectComposeFunction(o,n,"",(PetscVoidFunction)(f))

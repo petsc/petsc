@@ -15,6 +15,7 @@
 #include "petsc-34/petscmat.h"
 #include "petsc-34/petscksp.h"
 #include "petsc-34/petscsnes.h"
+#include "petsc-34/petsctao.h"
 #include "petsc-34/petscdm.h"
 
 #endif/*PETSC4PY_COMPAT_34_H*/
