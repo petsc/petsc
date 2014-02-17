@@ -17,13 +17,10 @@
       * mpi4py_: Python bindings for MPI_,
       	the *Message Passing Interface*.
 
-   Other two projects depend on petsc4py:
+   Other projects depends on petsc4py:
 
       * slepc4py_: Python bindings for SLEPc_, 
       	the *Scalable Library for Eigenvalue Problem Computations*.
-
-      * tao4py_: Python bindings for TAO_, 
-      	the *Toolkit for Advanced Optimization*.
 
 .. Local Variables:
 .. mode: rst
