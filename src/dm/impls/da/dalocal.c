@@ -1224,7 +1224,7 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, PetscFE fe[], void (**funcs)(cons
   PetscSection    section;
   PetscScalar    *values;
   PetscReal      *v0, *J, *detJ;
-  PetscInt        numFields, numComp, dim, spDim, totDim = 0, numValues, cStart, cEnd, f, c, v, d;
+  PetscInt        numFields, numComp, numPoints, dim, spDim, totDim = 0, numValues, cStart, cEnd, f, c, v, d;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -1243,11 +1243,12 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, PetscFE fe[], void (**funcs)(cons
   ierr = DMDAVecGetClosure(dm, section, localX, cStart, &numValues, NULL);CHKERRQ(ierr);
   if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The section cell closure size %d != dual space dimension %d", numValues, totDim);
   ierr = DMGetWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
-  ierr = PetscMalloc3(dim*q.numPoints,&v0,dim*dim*q.numPoints,&J,q.numPoints,&detJ);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(q, NULL, &numPoints, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscMalloc3(dim*numPoints,&v0,dim*dim*numPoints,&J,numPoints,&detJ);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscCellGeometry geom;
 
-    ierr = DMDAComputeCellGeometry(dm, c, &q, v0, J, NULL, detJ);CHKERRQ(ierr);
+    ierr = DMDAComputeCellGeometry(dm, c, q, v0, J, NULL, detJ);CHKERRQ(ierr);
     geom.v0   = v0;
     geom.J    = J;
     geom.detJ = detJ;
@@ -1354,18 +1355,17 @@ PetscErrorCode DMDAComputeL2Diff(DM dm, PetscFE fe[], void (**funcs)(const Petsc
     PetscScalar *x = NULL;
     PetscReal    elemDiff = 0.0;
 
-    ierr = DMDAComputeCellGeometry(dm, c, &quad, v0, J, invJ, &detJ);CHKERRQ(ierr);
+    ierr = DMDAComputeCellGeometry(dm, c, quad, v0, J, invJ, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
     ierr = DMDAVecGetClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
 
     for (field = 0, comp = 0, fieldOffset = 0; field < numFields; ++field) {
       void * const ctx = ctxs ? ctxs[field] : NULL;
-      const PetscInt   numQuadPoints = quad.numPoints;
-      const PetscReal *quadPoints    = quad.points;
-      const PetscReal *quadWeights   = quad.weights;
+      const PetscReal *quadPoints, *quadWeights;
       PetscReal       *basis;
-      PetscInt         numBasisFuncs, numBasisComps, q, d, e, fc, f;
+      PetscInt         numQuadPoints, numBasisFuncs, numBasisComps, q, d, e, fc, f;
 
+      ierr = PetscQuadratureGetData(quad, NULL, &numQuadPoints, &quadPoints, &quadWeights);CHKERRQ(ierr);
       ierr = PetscFEGetDimension(fe[field], &numBasisFuncs);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(fe[field], &numBasisComps);CHKERRQ(ierr);
       ierr = PetscFEGetDefaultTabulation(fe[field], &basis, NULL, NULL);CHKERRQ(ierr);

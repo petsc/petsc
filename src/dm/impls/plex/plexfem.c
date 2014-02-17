@@ -322,13 +322,12 @@ PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscFE fe[], void (**funcs)(const Pet
     ierr = DMPlexVecGetClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
 
     for (field = 0, comp = 0, fieldOffset = 0; field < numFields; ++field) {
-      void * const     ctx           = ctxs ? ctxs[field] : NULL;
-      const PetscInt   numQuadPoints = quad.numPoints;
-      const PetscReal *quadPoints    = quad.points;
-      const PetscReal *quadWeights   = quad.weights;
+      void * const     ctx = ctxs ? ctxs[field] : NULL;
+      const PetscReal *quadPoints, *quadWeights;
       PetscReal       *basis;
-      PetscInt         numBasisFuncs, numBasisComps, q, d, e, fc, f;
+      PetscInt         numQuadPoints, numBasisFuncs, numBasisComps, q, d, e, fc, f;
 
+      ierr = PetscQuadratureGetData(quad, NULL, &numQuadPoints, &quadPoints, &quadWeights);CHKERRQ(ierr);
       ierr = PetscFEGetDimension(fe[field], &numBasisFuncs);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(fe[field], &numBasisComps);CHKERRQ(ierr);
       ierr = PetscFEGetDefaultTabulation(fe[field], &basis, NULL, NULL);CHKERRQ(ierr);
@@ -428,13 +427,12 @@ PetscErrorCode DMPlexComputeL2GradientDiff(DM dm, PetscFE fe[], void (**funcs)(c
     ierr = DMPlexVecGetClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
 
     for (field = 0, comp = 0, fieldOffset = 0; field < numFields; ++field) {
-      void * const     ctx           = ctxs ? ctxs[field] : NULL;
-      const PetscInt   numQuadPoints = quad.numPoints;
-      const PetscReal *quadPoints    = quad.points;
-      const PetscReal *quadWeights   = quad.weights;
+      void * const     ctx = ctxs ? ctxs[field] : NULL;
+      const PetscReal *quadPoints, *quadWeights;
       PetscReal       *basisDer;
-      PetscInt         Nb, Ncomp, q, d, e, fc, f, g;
+      PetscInt         numQuadPoints, Nb, Ncomp, q, d, e, fc, f, g;
 
+      ierr = PetscQuadratureGetData(quad, NULL, &numQuadPoints, &quadPoints, &quadWeights);CHKERRQ(ierr);
       ierr = PetscFEGetDimension(fe[field], &Nb);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(fe[field], &Ncomp);CHKERRQ(ierr);
       ierr = PetscFEGetDefaultTabulation(fe[field], NULL, &basisDer, NULL);CHKERRQ(ierr);
@@ -579,7 +577,7 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
   for (f = 0; f < Nf; ++f) {
     void   (*f0)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]) = fem->f0Funcs[f];
     void   (*f1)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]) = fem->f1Funcs[f];
-    PetscInt Nb;
+    PetscInt numQuadPoints, Nb;
     /* Conforming batches */
     PetscInt numChunks, numBatches, numBlocks, Ne, blockSize, batchSize;
     /* Remainder */
@@ -588,7 +586,8 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
     ierr = PetscFEGetQuadrature(fe[f], &q);CHKERRQ(ierr);
     ierr = PetscFEGetDimension(fe[f], &Nb);CHKERRQ(ierr);
     ierr = PetscFEGetTileSizes(fe[f], NULL, &numBlocks, NULL, &numBatches);CHKERRQ(ierr);
-    blockSize = Nb*q.numPoints;
+    ierr = PetscQuadratureGetData(q, NULL, &numQuadPoints, NULL, NULL);CHKERRQ(ierr);
+    blockSize = Nb*numQuadPoints;
     batchSize = numBlocks * blockSize;
     ierr =  PetscFESetTileSizes(fe[f], blockSize, numBlocks, batchSize, numBatches);CHKERRQ(ierr);
     numChunks = numCells / (numBatches*batchSize);
@@ -655,7 +654,7 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
     for (f = 0; f < Nf; ++f) {
       void   (*f0)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]) = fem->f0BdFuncs[f];
       void   (*f1)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]) = fem->f1BdFuncs[f];
-      PetscInt Nb;
+      PetscInt numQuadPoints, Nb;
       /* Conforming batches */
       PetscInt numChunks, numBatches, numBlocks, Ne, blockSize, batchSize;
       /* Remainder */
@@ -664,7 +663,8 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
       ierr = PetscFEGetQuadrature(feBd[f], &q);CHKERRQ(ierr);
       ierr = PetscFEGetDimension(feBd[f], &Nb);CHKERRQ(ierr);
       ierr = PetscFEGetTileSizes(feBd[f], NULL, &numBlocks, NULL, &numBatches);CHKERRQ(ierr);
-      blockSize = Nb*q.numPoints;
+      ierr = PetscQuadratureGetData(q, NULL, &numQuadPoints, NULL, NULL);CHKERRQ(ierr);
+      blockSize = Nb*numQuadPoints;
       batchSize = numBlocks * blockSize;
       ierr =  PetscFESetTileSizes(feBd[f], blockSize, numBlocks, batchSize, numBatches);CHKERRQ(ierr);
       numChunks = numFaces / (numBatches*batchSize);
@@ -772,7 +772,7 @@ PetscErrorCode DMPlexComputeJacobianActionFEM(DM dm, Mat Jac, Vec X, Vec F, void
     ierr = DMPlexVecRestoreClosure(dm, NULL, X, c, NULL, &x);CHKERRQ(ierr);
   }
   for (field = 0; field < numFields; ++field) {
-    PetscInt Nb;
+    PetscInt numQuadPoints, Nb;
     /* Conforming batches */
     PetscInt numBlocks  = 1;
     PetscInt numBatches = 1;
@@ -782,7 +782,8 @@ PetscErrorCode DMPlexComputeJacobianActionFEM(DM dm, Mat Jac, Vec X, Vec F, void
 
     ierr = PetscFEGetQuadrature(fe[field], &quad);CHKERRQ(ierr);
     ierr = PetscFEGetDimension(fe[field], &Nb);CHKERRQ(ierr);
-    blockSize = Nb*quad.numPoints;
+    ierr = PetscQuadratureGetData(quad, NULL, &numQuadPoints, NULL, NULL);CHKERRQ(ierr);
+    blockSize = Nb*numQuadPoints;
     batchSize = numBlocks * blockSize;
     numChunks = numCells / (numBatches*batchSize);
     Ne        = numChunks*numBatches*batchSize;
@@ -915,7 +916,7 @@ PetscErrorCode DMPlexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, MatStru
   }
   ierr = PetscMemzero(elemMat, numCells*cellDof*cellDof * sizeof(PetscScalar));CHKERRQ(ierr);
   for (fieldI = 0; fieldI < Nf; ++fieldI) {
-    PetscInt Nb;
+    PetscInt numQuadPoints, Nb;
     /* Conforming batches */
     PetscInt numChunks, numBatches, numBlocks, Ne, blockSize, batchSize;
     /* Remainder */
@@ -924,7 +925,8 @@ PetscErrorCode DMPlexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, MatStru
     ierr = PetscFEGetQuadrature(fe[fieldI], &quad);CHKERRQ(ierr);
     ierr = PetscFEGetDimension(fe[fieldI], &Nb);CHKERRQ(ierr);
     ierr = PetscFEGetTileSizes(fe[fieldI], NULL, &numBlocks, NULL, &numBatches);CHKERRQ(ierr);
-    blockSize = Nb*quad.numPoints;
+    ierr = PetscQuadratureGetData(quad, NULL, &numQuadPoints, NULL, NULL);CHKERRQ(ierr);
+    blockSize = Nb*numQuadPoints;
     batchSize = numBlocks * blockSize;
     ierr = PetscFESetTileSizes(fe[fieldI], blockSize, numBlocks, batchSize, numBatches);CHKERRQ(ierr);
     numChunks = numCells / (numBatches*batchSize);
