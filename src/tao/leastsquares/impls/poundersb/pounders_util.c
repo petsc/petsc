@@ -247,27 +247,23 @@ PetscErrorCode TaoPounders_bmpts(Tao tao)
   /* Compute objective at x+delta*e_i, i=1..n*/
   ierr = VecGetOwnershipRange(mfqP->Xhist[0],&low,&high);CHKERRQ(ierr);
   for (i=1;i<=mfqP->n;i++) {
-      ierr = VecCopy(tao->solution,mfqP->Xhist[i]);CHKERRQ(ierr);
-      if (i-1 >= low && i-1 < high) {
-          ierr = VecGetArray(mfqP->Xhist[i],&x);CHKERRQ(ierr);
-          x[i-1-low] += mfqP->delta;
-          ierr = VecRestoreArray(mfqP->Xhist[i],&x);CHKERRQ(ierr);
-      }
-      ierr = TaoComputeSeparableObjective(tao,mfqP->Xhist[i],mfqP->Fhist[i]);CHKERRQ(ierr);
-      ierr = VecNorm(mfqP->Fhist[i],NORM_2,&mfqP->Fres[i]);CHKERRQ(ierr);
-      if (PetscIsInfOrNanReal(mfqP->Fres[i])) {
-        SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
-      }
-      mfqP->Fres[i]*=mfqP->Fres[i];
-      if (mfqP->Fres[i] < minnorm) {
-          mfqP->minindex = i;
-          minnorm = mfqP->Fres[i];
-      }
+    ierr = VecCopy(tao->solution,mfqP->Xhist[i]);CHKERRQ(ierr);
+    if (i-1 >= low && i-1 < high) {
+      ierr = VecGetArray(mfqP->Xhist[i],&x);CHKERRQ(ierr);
+      x[i-1-low] += mfqP->delta;
+      ierr = VecRestoreArray(mfqP->Xhist[i],&x);CHKERRQ(ierr);
+    }
+    ierr = TaoComputeSeparableObjective(tao,mfqP->Xhist[i],mfqP->Fhist[i]);CHKERRQ(ierr);
+    ierr = VecNorm(mfqP->Fhist[i],NORM_2,&mfqP->Fres[i]);CHKERRQ(ierr);
+    if (PetscIsInfOrNanReal(mfqP->Fres[i])) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
+    mfqP->Fres[i]*=mfqP->Fres[i];
+    if (mfqP->Fres[i] < minnorm) {
+      mfqP->minindex = i;
+      minnorm = mfqP->Fres[i];
+    }
   }
   ierr = PetscFree(t1);CHKERRQ(ierr);
   ierr = PetscFree(t2);CHKERRQ(ierr);
-
-
   PetscFunctionReturn(0);
 }
 /*
@@ -310,7 +306,6 @@ PetscErrorCode PoundersGramSchmidtReset(TAO_POUNDERS *mfqP, Vec *Q, PetscInt n)
     ierr = VecAssemblyEnd(Q[i]);CHKERRQ(ierr);
   }
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "PoundersGramSchmidtInsert"

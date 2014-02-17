@@ -11,9 +11,10 @@
 
 static PetscErrorCode ProjWork_OWLQN(Vec w,Vec x,Vec gv,PetscReal *gdx)
 {
-  PetscReal      *xptr,*wptr,*gptr;
-  PetscErrorCode ierr;
-  PetscInt       low,high,low1,high1,low2,high2,i;
+  const PetscReal *xptr,*gptr;
+  PetscReal       *wptr;
+  PetscErrorCode  ierr;
+  PetscInt        low,high,low1,high1,low2,high2,i;
 
   PetscFunctionBegin;
   ierr=VecGetOwnershipRange(w,&low,&high);CHKERRQ(ierr);
@@ -21,18 +22,17 @@ static PetscErrorCode ProjWork_OWLQN(Vec w,Vec x,Vec gv,PetscReal *gdx)
   ierr=VecGetOwnershipRange(gv,&low2,&high2);CHKERRQ(ierr);
 
   *gdx=0.0;
-  ierr = VecGetArray(x,&xptr);CHKERRQ(ierr);
   ierr = VecGetArray(w,&wptr);CHKERRQ(ierr);
-  ierr = VecGetArray(gv,&gptr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xptr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(gv,&gptr);CHKERRQ(ierr);
 
   for (i=0;i<high-low;i++) {
-    if (xptr[i]*wptr[i]<0.0)
-      wptr[i]=0.0;
+    if (xptr[i]*wptr[i]<0.0) wptr[i]=0.0;
     *gdx = *gdx + gptr[i]*(wptr[i]-xptr[i]);
   }
   ierr = VecRestoreArray(w,&wptr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&xptr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(gv,&gptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(gv,&gptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
