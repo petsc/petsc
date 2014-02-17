@@ -58,4 +58,4 @@ cdef class SF(Object):
             iremote[i].rank = rank
             iremote[i].index = index
             i += 1
-        CHKERR( PetscSFSetGraph(self.sf, cnroots, cnleaves, ilocal, PETSC_COPY_VALUES, iremote, PETSC_COPY_VALUES) )
+        CHKERR( PetscSFSetGraph(self.sf, cnroots, cnleaves, ilocal, PETSC_COPY_VALUES, iremote, PETSC_OWN_POINTER) )
