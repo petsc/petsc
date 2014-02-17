@@ -258,7 +258,7 @@ EXTERN_C_BEGIN
 PetscErrorCode TaoCreate_LMVM(Tao tao)
 {
   TAO_LMVM       *lmP;
-  const char     *morethuente_type = TAOLINESEARCH_MT;
+  const char     *morethuente_type = TAOLINESEARCHMT;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

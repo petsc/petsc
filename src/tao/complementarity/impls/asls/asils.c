@@ -285,7 +285,7 @@ PetscErrorCode TaoCreate_ASILS(Tao tao)
 {
   TAO_SSLS       *asls;
   PetscErrorCode ierr;
-  const char     *armijo_type = TAOLINESEARCH_ARMIJO;
+  const char     *armijo_type = TAOLINESEARCHARMIJO;
 
   PetscFunctionBegin;
   ierr = PetscNewLog(tao,&asls);CHKERRQ(ierr);

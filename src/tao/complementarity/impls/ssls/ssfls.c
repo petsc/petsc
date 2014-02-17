@@ -120,7 +120,7 @@ PetscErrorCode TaoCreate_SSFLS(Tao tao)
 {
   TAO_SSLS       *ssls;
   PetscErrorCode ierr;
-  const char     *armijo_type = TAOLINESEARCH_ARMIJO;
+  const char     *armijo_type = TAOLINESEARCHARMIJO;
 
   PetscFunctionBegin;
   ierr = PetscNewLog(tao,&ssls);CHKERRQ(ierr);

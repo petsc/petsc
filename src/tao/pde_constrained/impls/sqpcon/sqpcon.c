@@ -262,7 +262,7 @@ PetscErrorCode TaoCreate_SQPCON(Tao tao)
 {
   TAO_SQPCON     *sqpconP;
   PetscErrorCode ierr;
-  const char     *morethuente_type = TAOLINESEARCH_MT;
+  const char     *morethuente_type = TAOLINESEARCHMT;
 
   PetscFunctionBegin;
   tao->ops->setup = TaoSetup_SQPCON;

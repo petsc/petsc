@@ -1053,7 +1053,7 @@ EXTERN_C_BEGIN
 PetscErrorCode TaoCreate_NLS(Tao tao)
 {
   TAO_NLS        *nlsP;
-  const char     *morethuente_type = TAOLINESEARCH_MT;
+  const char     *morethuente_type = TAOLINESEARCHMT;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

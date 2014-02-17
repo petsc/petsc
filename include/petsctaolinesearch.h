@@ -19,12 +19,12 @@ typedef enum {
 } TaoLineSearchConvergedReason;
 
 #define TaoLineSearchType  char*
-#define TAOLINESEARCH_UNIT     "unit"
-#define TAOLINESEARCH_MT       "more-thuente"
-#define TAOLINESEARCH_GPCG     "gpcg"
-#define TAOLINESEARCH_ARMIJO   "armijo"
-#define TAOLINESEARCH_OWARMIJO "owarmijo"
-#define TAOLINESEARCH_IPM      "ipm"
+#define TAOLINESEARCHUNIT     "unit"
+#define TAOLINESEARCHMT       "more-thuente"
+#define TAOLINESEARCHGPCG     "gpcg"
+#define TAOLINESEARCHARMIJO   "armijo"
+#define TAOLINESEARCHOWARMIJO "owarmijo"
+#define TAOLINESEARCHIPM      "ipm"
 
 PETSC_EXTERN PetscClassId TAOLINESEARCH_CLASSID;
 PETSC_EXTERN PetscFunctionList TaoLineSearchList;

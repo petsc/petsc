@@ -15,7 +15,7 @@ typedef struct {
   Vec W2;
   Vec Gold;
 
-} TAOLINESEARCH_GPCG_CTX;
+} TaoLineSearch_GPCG;
 
 
 #endif

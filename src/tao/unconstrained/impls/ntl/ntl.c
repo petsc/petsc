@@ -932,7 +932,7 @@ PetscErrorCode TaoCreate_NTL(Tao tao)
 {
   TAO_NTL        *tl;
   PetscErrorCode ierr;
-  const char     *morethuente_type = TAOLINESEARCH_MT;
+  const char     *morethuente_type = TAOLINESEARCHMT;
 
   PetscFunctionBegin;
   ierr = PetscNewLog(tao,&tl);CHKERRQ(ierr);

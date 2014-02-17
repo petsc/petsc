@@ -191,7 +191,7 @@ PetscErrorCode TaoLineSearchCreate(MPI_Comm comm, TaoLineSearch *newls)
 PetscErrorCode TaoLineSearchSetUp(TaoLineSearch ls)
 {
   PetscErrorCode ierr;
-  const char     *default_type=TAOLINESEARCH_MT;
+  const char     *default_type=TAOLINESEARCHMT;
   PetscBool      flg;
 
   PetscFunctionBegin;
@@ -520,7 +520,7 @@ PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, const TaoLineSearchType ty
 PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
 {
   PetscErrorCode ierr;
-  const char     *default_type=TAOLINESEARCH_MT;
+  const char     *default_type=TAOLINESEARCHMT;
   char           type[256];
   PetscBool      flg;
 

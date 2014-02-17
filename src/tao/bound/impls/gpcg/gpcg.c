@@ -368,7 +368,7 @@ PetscErrorCode TaoCreate_GPCG(Tao tao)
   /* gpcg->ksp_type = GPCG_KSP_STCG; */
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetType(tao->linesearch, TAOLINESEARCH_GPCG);CHKERRQ(ierr);
+  ierr = TaoLineSearchSetType(tao->linesearch, TAOLINESEARCHGPCG);CHKERRQ(ierr);
   ierr = TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch, GPCGObjectiveAndGradient, tao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

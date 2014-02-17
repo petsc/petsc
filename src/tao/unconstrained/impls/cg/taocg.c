@@ -121,8 +121,7 @@ static PetscErrorCode TaoSolve_CG(Tao tao)
         ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);
         ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_status);CHKERRQ(ierr);
         ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
-        if (ls_status != TAOLINESEARCH_SUCCESS &&
-            ls_status != TAOLINESEARCH_SUCCESS_USER) {
+        if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER) {
 
           /*  Line search failed for last time -- give up */
           f = f_old;
@@ -274,7 +273,7 @@ EXTERN_C_BEGIN
 PetscErrorCode TaoCreate_CG(Tao tao)
 {
   TAO_CG         *cgP;
-  const char     *morethuente_type = TAOLINESEARCH_MT;
+  const char     *morethuente_type = TAOLINESEARCHMT;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

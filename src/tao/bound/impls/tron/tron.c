@@ -334,7 +334,7 @@ PetscErrorCode TaoCreate_TRON(Tao tao)
 {
   TAO_TRON       *tron;
   PetscErrorCode ierr;
-  const char     *morethuente_type = TAOLINESEARCH_MT;
+  const char     *morethuente_type = TAOLINESEARCHMT;
 
   PetscFunctionBegin;
   tao->ops->setup = TaoSetup_TRON;

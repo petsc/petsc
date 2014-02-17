@@ -13,12 +13,12 @@ static PetscErrorCode Tao_mcstep(TaoLineSearch ls,PetscReal *stx,PetscReal *fx,P
 #define __FUNCT__ "TaoLineSearchDestroy_MT"
 static PetscErrorCode TaoLineSearchDestroy_MT(TaoLineSearch ls)
 {
-  PetscErrorCode       ierr;
-  TAOLINESEARCH_MT_CTX *mt;
+  PetscErrorCode   ierr;
+  TaoLineSearch_MT *mt;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
-  mt = (TAOLINESEARCH_MT_CTX*)(ls->data);
+  mt = (TaoLineSearch_MT*)(ls->data);
   if (mt->x) {
     ierr = PetscObjectDereference((PetscObject)mt->x);CHKERRQ(ierr);
   }
@@ -69,16 +69,16 @@ static PetscErrorCode TaoLineSearchView_MT(TaoLineSearch ls, PetscViewer pv)
 
 static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, Vec s)
 {
-  PetscErrorCode       ierr;
-  TAOLINESEARCH_MT_CTX *mt;
+  PetscErrorCode   ierr;
+  TaoLineSearch_MT *mt;
 
-  PetscReal            xtrapf = 4.0;
-  PetscReal            finit, width, width1, dginit, fm, fxm, fym, dgm, dgxm, dgym;
-  PetscReal            dgx, dgy, dg, dg2, fx, fy, stx, sty, dgtest;
-  PetscReal            ftest1=0.0, ftest2=0.0;
-  PetscInt             i, stage1,n1,n2,nn1,nn2;
-  PetscReal            bstepmin1, bstepmin2, bstepmax;
-  PetscBool            g_computed=PETSC_FALSE; /* to prevent extra gradient computation */
+  PetscReal        xtrapf = 4.0;
+  PetscReal        finit, width, width1, dginit, fm, fxm, fym, dgm, dgxm, dgym;
+  PetscReal        dgx, dgy, dg, dg2, fx, fy, stx, sty, dgtest;
+  PetscReal        ftest1=0.0, ftest2=0.0;
+  PetscInt         i, stage1,n1,n2,nn1,nn2;
+  PetscReal        bstepmin1, bstepmin2, bstepmax;
+  PetscBool        g_computed=PETSC_FALSE; /* to prevent extra gradient computation */
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
@@ -88,7 +88,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
   PetscValidHeaderSpecific(s,VEC_CLASSID,5);
 
   /* comm,type,size checks are done in interface TaoLineSearchApply */
-  mt = (TAOLINESEARCH_MT_CTX*)(ls->data);
+  mt = (TaoLineSearch_MT*)(ls->data);
   ls->reason = TAOLINESEARCH_CONTINUE_ITERATING;
 
   /* Check work vector */
@@ -310,8 +310,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "TaoLineSearchCreate_MT"
 PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
 {
-  PetscErrorCode       ierr;
-  TAOLINESEARCH_MT_CTX *ctx;
+  PetscErrorCode   ierr;
+  TaoLineSearch_MT *ctx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
@@ -395,9 +395,9 @@ EXTERN_C_END
 #define __FUNCT__ "Tao_mcstep"
 static PetscErrorCode Tao_mcstep(TaoLineSearch ls,PetscReal *stx,PetscReal *fx,PetscReal *dx,PetscReal *sty,PetscReal *fy,PetscReal *dy,PetscReal *stp,PetscReal *fp,PetscReal *dp)
 {
-  TAOLINESEARCH_MT_CTX *mtP = (TAOLINESEARCH_MT_CTX *) ls->data;
-  PetscReal            gamma1, p, q, r, s, sgnd, stpc, stpf, stpq, theta;
-  PetscInt             bound;
+  TaoLineSearch_MT *mtP = (TaoLineSearch_MT *) ls->data;
+  PetscReal        gamma1, p, q, r, s, sgnd, stpc, stpf, stpq, theta;
+  PetscInt         bound;
 
   PetscFunctionBegin;
   /* Check the input parameters for errors */

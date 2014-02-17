@@ -335,7 +335,7 @@ EXTERN_C_BEGIN
 PetscErrorCode TaoCreate_OWLQN(Tao tao)
 {
   TAO_OWLQN      *lmP;
-  const char     *owarmijo_type = TAOLINESEARCH_OWARMIJO;
+  const char     *owarmijo_type = TAOLINESEARCHOWARMIJO;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

@@ -241,7 +241,7 @@ EXTERN_C_BEGIN
 PetscErrorCode TaoCreate_BLMVM(Tao tao)
 {
   TAO_BLMVM      *blmP;
-  const char     *morethuente_type = TAOLINESEARCH_MT;
+  const char     *morethuente_type = TAOLINESEARCHMT;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
