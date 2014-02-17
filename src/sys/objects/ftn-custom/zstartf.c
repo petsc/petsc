@@ -6,11 +6,13 @@
 #define petscsetcommonblock_          PETSCSETCOMMONBLOCK
 #define petscsetfortranbasepointers_  PETSCSETFORTRANBASEPOINTERS
 #define petsc_null_function_          PETSC_NULL_FUNCTION
+#define petscsetcommonblocknumeric_   PETSCSETCOMMONBLOCKNUMERIC
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscinitializefortran_       petscinitializefortran
 #define petscsetcommonblock_          petscsetcommonblock
 #define petscsetfortranbasepointers_  petscsetfortranbasepointers
 #define petsc_null_function_          petsc_null_function
+#define petscsetcommonblocknumeric_   petscsetcommonblocknumeric
 #endif
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
