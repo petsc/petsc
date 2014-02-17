@@ -497,7 +497,7 @@ PetscErrorCode DMPlexComputeL2GradientDiff(DM dm, PetscFE fe[], void (**funcs)(c
 . F  - Local output vector
 
   Note:
-  The second member of the user context must be an FEMContext.
+  The first member of the user context must be an FEMContext.
 
   We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
   like a GPU, or vectorize on a multicore machine.
@@ -717,7 +717,7 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
 . F  - Local output vector
 
   Note:
-  The second member of the user context must be an FEMContext.
+  The first member of the user context must be an FEMContext.
 
   We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
   like a GPU, or vectorize on a multicore machine.
@@ -836,7 +836,7 @@ PetscErrorCode DMPlexComputeJacobianActionFEM(DM dm, Mat Jac, Vec X, Vec F, void
 . Jac  - Jacobian matrix
 
   Note:
-  The second member of the user context must be an FEMContext.
+  The first member of the user context must be an FEMContext.
 
   We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
   like a GPU, or vectorize on a multicore machine.
