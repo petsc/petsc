@@ -66,7 +66,7 @@ x.setFromOptions()
 f.setFromOptions()
 
 tao = PETSc.TAO().create(PETSc.COMM_SELF)
-tao.setType('tao_pounders')
+tao.setType(PETSc.TAO.Type.POUNDERS)
 tao.setSeparableObjective(user.formObjective, f)
 tao.setFromOptions()
 

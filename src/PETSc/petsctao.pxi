@@ -1,26 +1,26 @@
 cdef extern from * nogil:
 
     ctypedef char* PetscTAOType "const char*"
-    PetscTAOType TAOLMVM     '"tao_lmvm"'
-    PetscTAOType TAONLS      '"tao_nls"'
-    PetscTAOType TAONTR      '"tao_ntr"'
-    PetscTAOType TAONTL      '"tao_ntl"'
-    PetscTAOType TAOCG       '"tao_cg"'
-    PetscTAOType TAOTRON     '"tao_tron"'
-    PetscTAOType TAOOWLQN    '"tao_owlqn"'
-    PetscTAOType TAOBMRM     '"tao_bmrm"'
-    PetscTAOType TAOBLMVM    '"tao_blmvm"'
-    PetscTAOType TAOBQPIP    '"tao_bqpip"'
-    PetscTAOType TAOGPCG     '"tao_gpcg"'
-    PetscTAOType TAONM       '"tao_nm"'
-    PetscTAOType TAOPOUNDERS '"tao_pounders"'
-    PetscTAOType TAOLCL      '"tao_lcl"'
-    PetscTAOType TAOSSILS    '"tao_ssils"'
-    PetscTAOType TAOSSFLS    '"tao_ssfls"'
-    PetscTAOType TAOASILS    '"tao_asils"'
-    PetscTAOType TAOASFLS    '"tao_asfls"'
-    PetscTAOType TAOIPM      '"tao_ipm"'
-    PetscTAOType TAOFDTEST   '"tao_fd_test"'
+    PetscTAOType TAOLMVM
+    PetscTAOType TAONLS
+    PetscTAOType TAONTR
+    PetscTAOType TAONTL
+    PetscTAOType TAOCG
+    PetscTAOType TAOTRON
+    PetscTAOType TAOOWLQN
+    PetscTAOType TAOBMRM
+    PetscTAOType TAOBLMVM
+    PetscTAOType TAOBQPIP
+    PetscTAOType TAOGPCG
+    PetscTAOType TAONM
+    PetscTAOType TAOPOUNDERS
+    PetscTAOType TAOLCL
+    PetscTAOType TAOSSILS
+    PetscTAOType TAOSSFLS
+    PetscTAOType TAOASILS
+    PetscTAOType TAOASFLS
+    PetscTAOType TAOIPM
+    PetscTAOType TAOTEST
 
     ctypedef enum PetscTAOTerminationReason "TaoTerminationReason":
         #iterating

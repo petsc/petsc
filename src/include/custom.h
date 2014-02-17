@@ -541,19 +541,6 @@ TSSetTimeStepNumber(TS ts, PetscInt step)
 /* ---------------------------------------------------------------- */
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoGetConstraintTolerances"
-PetscErrorCode TaoGetConstraintTolerances(Tao tao,PetscReal *catol,PetscReal *crtol)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  if (catol) *catol=tao->catol;
-  if (crtol) *crtol=tao->crtol;
-  PetscFunctionReturn(0);
-}
-
-/* ---------------------------------------------------------------- */
-
-#undef __FUNCT__
 #define __FUNCT__ "DMDACreateND"
 static PetscErrorCode
 DMDACreateND(MPI_Comm comm,

@@ -112,7 +112,7 @@ methods = methods.split(',')
 for meth in methods:
     # create TAO Solver
     tao = PETSc.TAO().create(PETSc.COMM_SELF)
-    if meth: tao.setType('tao_'+meth)
+    if meth: tao.setType(meth)
     tao.setFromOptions()
     # solve the problem
     tao.setObjectiveGradient(user.formObjGrad)
