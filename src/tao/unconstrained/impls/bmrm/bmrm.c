@@ -54,27 +54,27 @@ static PetscErrorCode destroy_grad_list(Vec_Chain *head)
 #define __FUNCT__ "TaoSolve_BMRM"
 static PetscErrorCode TaoSolve_BMRM(Tao tao)
 {
-  PetscErrorCode             ierr;
-  TaoTerminationReason       reason;
-  TAO_DF                     df;
-  TAO_BMRM                   *bmrm = (TAO_BMRM*)tao->data;
+  PetscErrorCode     ierr;
+  TaoConvergedReason reason;
+  TAO_DF             df;
+  TAO_BMRM           *bmrm = (TAO_BMRM*)tao->data;
 
   /* Values and pointers to parts of the optimization problem */
-  PetscReal                  f = 0.0;
-  Vec                        W = tao->solution;
-  Vec                        G = tao->gradient;
-  PetscReal                  lambda;
-  PetscReal                  bt;
-  Vec_Chain                  grad_list, *tail_glist, *pgrad;
-  PetscInt                   iter = 0;
-  PetscInt                   i;
-  PetscMPIInt                rank;
+  PetscReal          f = 0.0;
+  Vec                W = tao->solution;
+  Vec                G = tao->gradient;
+  PetscReal          lambda;
+  PetscReal          bt;
+  Vec_Chain          grad_list, *tail_glist, *pgrad;
+  PetscInt           iter = 0;
+  PetscInt           i;
+  PetscMPIInt        rank;
 
-  /* Used in termination criteria check */
-  PetscReal                  reg;
-  PetscReal                  jtwt, max_jtwt, pre_epsilon, epsilon, jw, min_jw;
-  PetscReal                  innerSolverTol;
-  MPI_Comm                   comm;
+  /* Used in converged criteria check */
+  PetscReal          reg;
+  PetscReal          jtwt, max_jtwt, pre_epsilon, epsilon, jw, min_jw;
+  PetscReal          innerSolverTol;
+  MPI_Comm           comm;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)tao,&comm);CHKERRQ(ierr);

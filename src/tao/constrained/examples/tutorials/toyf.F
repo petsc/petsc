@@ -11,11 +11,11 @@
       implicit none
 #include "toyf.h"
 
-      PetscErrorCode               ierr
-      Tao                    tao
-      TaoTerminationReason   reason
-      KSP                          ksp
-      PC                           pc
+      PetscErrorCode       ierr
+      Tao                  tao
+      TaoConvergedReason   reason
+      KSP                  ksp
+      PC                   pc
       external FormFunctionGradient,FormHessian
       external FormInequalityConstraints,FormEqualityConstraints
       external FormInequalityJacobian,FormEqualityJacobian
@@ -108,7 +108,7 @@
 
 
       ! Analyze solution
-      call TaoGetTerminationReason(tao,reason,ierr)
+      call TaoGetConvergedReason(tao,reason,ierr)
       CHKERRQ(ierr)
 
 !      if (reason .lt. 0) then

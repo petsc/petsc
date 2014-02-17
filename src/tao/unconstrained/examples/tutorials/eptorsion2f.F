@@ -16,7 +16,7 @@
 !   Routines: TaoSetHessianRoutine(); TaoSetFromOptions();
 !   Routines: TaoSetMonitor(); TaoSetConvergenceTest()
 !   Routines: TaoSolve(); TaoGetSolutionStatus()
-!   Routines: TaoGetTerminationReason(); TaoDestroy();
+!   Routines: TaoGetConvergedReason(); TaoDestroy();
 
 !   Processors: n
 !T*/
@@ -25,7 +25,7 @@
 !
 !  Elastic-plastic torsion problem.
 !
-!  The elastic plastic torsion problem arises from the determination
+!  The elastic plastic torsion problem arises from the deconverged
 !  of the stress field on an infinitely long cylindrical bar, which is
 !  equivalent to the solution of the following problem:
 !     min{ .5 * integral(||gradient(v(x))||^2 dx) - C * integral(v(x) dx)}
@@ -49,7 +49,7 @@
       Mat              H              ! hessian matrix
       PetscInt         Nx, Ny         ! number of processes in x- and y- directions
       Tao        tao            ! Tao solver context
-      TaoTerminationReason reason
+      TaoConvergedReason reason
       PetscBool        flg
       PetscInt         iter           ! iteration information
       PetscReal      ff,gnorm,cnorm,xdiff
@@ -135,7 +135,7 @@
       call TaoSolve(tao,ierr)
 
 !     Get information on termination
-      call TaoGetTerminationReason(tao,reason,ierr)
+      call TaoGetConvergedReason(tao,reason,ierr)
       if (reason .lt. 0) then
           call PetscPrintF(PETSC_COMM_WORLD,                              &
      &        'TAO did not terminate successfully\n',ierr)
@@ -505,7 +505,7 @@
 
       PetscInt its
       PetscReal f,gnorm,cnorm,xdiff
-      TaoTerminationReason reason
+      TaoConvergedReason reason
 
       call TaoGetSolutionStatus(tao,its,f,gnorm,cnorm,xdiff,             &
      &     reason,ierr)
@@ -528,13 +528,12 @@
 
       PetscInt its
       PetscReal f,gnorm,cnorm,xdiff
-      TaoTerminationReason reason
+      TaoConvergedReason reason
 
       call TaoGetSolutionStatus(tao,its,f,gnorm,cnorm,xdiff,            &
      &     reason,ierr)
       if (its .eq. 7) then
-         call TaoSetTerminationReason(tao,TAO_DIVERGED_MAXITS,          &
-     &        ierr)
+       call TaoSetConvergedReason(tao,TAO_DIVERGED_MAXITS,ierr)
       endif
 
       ierr = 0

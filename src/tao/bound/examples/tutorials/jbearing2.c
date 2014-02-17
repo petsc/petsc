@@ -31,7 +31,7 @@ The command line options are:\n\
    Routines: TaoSetInitialVector();
    Routines: TaoSetFromOptions();
    Routines: TaoSolve();
-   Routines: TaoGetTerminationReason(); TaoDestroy();
+   Routines: TaoGetConvergedReason(); TaoDestroy();
    Processors: n
 T*/
 
@@ -64,18 +64,18 @@ static PetscErrorCode ConvergenceTest(Tao, void*);
 #define __FUNCT__ "main"
 int main( int argc, char **argv )
 {
-  PetscErrorCode       ierr;               /* used to check for functions returning nonzeros */
-  PetscInt             Nx, Ny;             /* number of processors in x- and y- directions */
-  PetscInt             m;               /* number of local elements in vectors */
-  Vec                  x;                  /* variables vector */
-  Vec                  xl,xu;                  /* bounds vectors */
-  PetscReal            d1000 = 1000;
-  PetscBool            flg;              /* A return variable when checking for user options */
-  Tao                  tao;                /* Tao solver context */
-  TaoTerminationReason reason;
-  KSP                  ksp;
-  AppCtx               user;               /* user-defined work context */
-  PetscReal            zero=0.0;           /* lower bound on all variables */
+  PetscErrorCode     ierr;               /* used to check for functions returning nonzeros */
+  PetscInt           Nx, Ny;             /* number of processors in x- and y- directions */
+  PetscInt           m;               /* number of local elements in vectors */
+  Vec                x;                  /* variables vector */
+  Vec                xl,xu;                  /* bounds vectors */
+  PetscReal          d1000 = 1000;
+  PetscBool          flg;              /* A return variable when checking for user options */
+  Tao                tao;                /* Tao solver context */
+  TaoConvergedReason reason;
+  KSP                ksp;
+  AppCtx             user;               /* user-defined work context */
+  PetscReal          zero=0.0;           /* lower bound on all variables */
 
   /* Initialize PETSC and TAO */
   PetscInitialize( &argc, &argv,(char *)0,help );
@@ -168,7 +168,7 @@ int main( int argc, char **argv )
   /* Solve the bound constrained problem */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
-  ierr = TaoGetTerminationReason(tao,&reason);CHKERRQ(ierr);
+  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
   if (reason <= 0) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");CHKERRQ(ierr);
   }
@@ -448,10 +448,10 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat *H, Mat *Hpre, MatStructure *flg, v
 #define __FUNCT__ "Monitor"
 PetscErrorCode Monitor(Tao tao, void *ctx)
 {
-  PetscErrorCode             ierr;
-  PetscInt                   its;
-  PetscReal                  f,gnorm,cnorm,xdiff;
-  TaoTerminationReason reason;
+  PetscErrorCode     ierr;
+  PetscInt           its;
+  PetscReal          f,gnorm,cnorm,xdiff;
+  TaoConvergedReason reason;
 
   PetscFunctionBegin;
   ierr = TaoGetSolutionStatus(tao, &its, &f, &gnorm, &cnorm, &xdiff, &reason);CHKERRQ(ierr);
@@ -465,15 +465,15 @@ PetscErrorCode Monitor(Tao tao, void *ctx)
 #define __FUNCT__ "ConvergenceTest"
 PetscErrorCode ConvergenceTest(Tao tao, void *ctx)
 {
-  PetscErrorCode             ierr;
-  PetscInt                   its;
-  PetscReal                  f,gnorm,cnorm,xdiff;
-  TaoTerminationReason reason;
+  PetscErrorCode     ierr;
+  PetscInt           its;
+  PetscReal          f,gnorm,cnorm,xdiff;
+  TaoConvergedReason reason;
 
   PetscFunctionBegin;
   ierr = TaoGetSolutionStatus(tao, &its, &f, &gnorm, &cnorm, &xdiff, &reason);CHKERRQ(ierr);
   if (its == 100) {
-    TaoSetTerminationReason(tao,TAO_DIVERGED_MAXITS);
+    TaoSetConvergedReason(tao,TAO_DIVERGED_MAXITS);
   }
   PetscFunctionReturn(0);
 

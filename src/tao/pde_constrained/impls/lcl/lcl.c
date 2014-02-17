@@ -183,15 +183,15 @@ static PetscErrorCode TaoSetup_LCL(Tao tao)
 #define __FUNCT__ "TaoSolve_LCL"
 static PetscErrorCode TaoSolve_LCL(Tao tao)
 {
-  TAO_LCL                        *lclP = (TAO_LCL*)tao->data;
-  PetscInt                       iter=0,phase2_iter,nlocal,its;
-  TaoTerminationReason     reason = TAO_CONTINUE_ITERATING;
-  TaoLineSearchTerminationReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
-  PetscReal                      step=1.0,f, descent, aldescent;
-  PetscReal                      cnorm, mnorm;
-  PetscReal                      adec,r2,rGL_U,rWU;
-  PetscBool                      set,pset,flag,pflag,symmetric;
-  PetscErrorCode                 ierr;
+  TAO_LCL                      *lclP = (TAO_LCL*)tao->data;
+  PetscInt                     iter=0,phase2_iter,nlocal,its;
+  TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
+  TaoLineSearchConvergedReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
+  PetscReal                    step=1.0,f, descent, aldescent;
+  PetscReal                    cnorm, mnorm;
+  PetscReal                    adec,r2,rGL_U,rWU;
+  PetscBool                    set,pset,flag,pflag,symmetric;
+  PetscErrorCode               ierr;
 
   PetscFunctionBegin;
   lclP->rho = lclP->rho0;

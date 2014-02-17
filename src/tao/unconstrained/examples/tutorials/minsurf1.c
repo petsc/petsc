@@ -21,7 +21,7 @@ The command line options are:\n\
    Routines: TaoSetObjectiveAndGradientRoutine();
    Routines: TaoSetHessianRoutine(); TaoSetFromOptions();
    Routines: TaoGetKSP(); TaoSolve();
-   Routines: TaoGetTerminationReason(); TaoDestroy();
+   Routines: TaoGetConvergedReason(); TaoDestroy();
    Processors: 1
 T*/
 
@@ -48,15 +48,15 @@ PetscErrorCode FormHessian(Tao,Vec,Mat*,Mat*,MatStructure *,void*);
 #define __FUNCT__ "main"
 int main( int argc, char **argv )
 {
-  PetscErrorCode       ierr;              /* used to check for functions returning nonzeros */
-  PetscInt             N;                 /* Size of vector */
-  PetscMPIInt          size;              /* Number of processors */
-  Vec                  x;                 /* solution, gradient vectors */
-  KSP                  ksp;               /*  PETSc Krylov subspace method */
-  PetscBool            flg;               /* A return value when checking for user options */
-  TaoTerminationReason reason;
-  Tao                  tao;               /* Tao solver context */
-  AppCtx               user;              /* user-defined work context */
+  PetscErrorCode     ierr;              /* used to check for functions returning nonzeros */
+  PetscInt           N;                 /* Size of vector */
+  PetscMPIInt        size;              /* Number of processors */
+  Vec                x;                 /* solution, gradient vectors */
+  KSP                ksp;               /*  PETSc Krylov subspace method */
+  PetscBool          flg;               /* A return value when checking for user options */
+  TaoConvergedReason reason;
+  Tao                tao;               /* Tao solver context */
+  AppCtx             user;              /* user-defined work context */
 
   /* Initialize TAO,PETSc */
   PetscInitialize( &argc, &argv,(char *)0,help );
@@ -113,7 +113,7 @@ int main( int argc, char **argv )
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
   /* Get information on termination */
-  ierr = TaoGetTerminationReason(tao,&reason);CHKERRQ(ierr);
+  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
   if (reason <= 0) {
     ierr = PetscPrintf(MPI_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");CHKERRQ(ierr);
   }

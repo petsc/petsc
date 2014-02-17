@@ -15,7 +15,7 @@
    Routines: TaoSetFromOptions();
    Routines: TaoSetHistory(); TaoGetHistory();
    Routines: TaoSolve();
-   Routines: TaoGetTerminationReason(); TaoDestroy();
+   Routines: TaoGetConvergedReason(); TaoDestroy();
    Processors: n
 T*/
 
@@ -121,14 +121,14 @@ static  char help[]="";
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  PetscErrorCode       ierr;
-  Vec                  x0;
-  Tao                  tao;
-  TaoTerminationReason reason;
-  AppCtx               user;
-  PetscBool            flag;
-  PetscInt             ntests = 1;
-  PetscInt             i;
+  PetscErrorCode     ierr;
+  Vec                x0;
+  Tao                tao;
+  TaoConvergedReason reason;
+  AppCtx             user;
+  PetscBool          flag;
+  PetscInt           ntests = 1;
+  PetscInt           i;
 
   PetscInitialize(&argc, &argv, (char*)0,help);
   user.mx = 8;
@@ -190,7 +190,7 @@ int main(int argc, char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"KSP iterations within initialization: ");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%D\n",user.ksp_its_initial);CHKERRQ(ierr);
 
-  ierr = TaoGetTerminationReason(tao,&reason);CHKERRQ(ierr);
+  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
   if (reason < 0) {
     ierr = PetscPrintf(MPI_COMM_WORLD, "TAO failed to converge.\n");CHKERRQ(ierr);
   } else {

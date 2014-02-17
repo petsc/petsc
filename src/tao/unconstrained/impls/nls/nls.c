@@ -70,31 +70,31 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x);
 #define __FUNCT__ "TaoSolve_NLS"
 static PetscErrorCode TaoSolve_NLS(Tao tao)
 {
-  PetscErrorCode                 ierr;
-  TAO_NLS                        *nlsP = (TAO_NLS *)tao->data;
-  PC                             pc;
-  KSPConvergedReason             ksp_reason;
-  TaoLineSearchTerminationReason ls_reason;
-  TaoTerminationReason     reason;
+  PetscErrorCode               ierr;
+  TAO_NLS                      *nlsP = (TAO_NLS *)tao->data;
+  PC                           pc;
+  KSPConvergedReason           ksp_reason;
+  TaoLineSearchConvergedReason ls_reason;
+  TaoConvergedReason           reason;
 
-  PetscReal                      fmin, ftrial, f_full, prered, actred, kappa, sigma;
-  PetscReal                      tau, tau_1, tau_2, tau_max, tau_min, max_radius;
-  PetscReal                      f, fold, gdx, gnorm, pert;
-  PetscReal                      step = 1.0;
-  PetscReal                      delta;
-  PetscReal                      norm_d = 0.0, e_min;
+  PetscReal                    fmin, ftrial, f_full, prered, actred, kappa, sigma;
+  PetscReal                    tau, tau_1, tau_2, tau_max, tau_min, max_radius;
+  PetscReal                    f, fold, gdx, gnorm, pert;
+  PetscReal                    step = 1.0;
+  PetscReal                    delta;
+  PetscReal                    norm_d = 0.0, e_min;
 
-  MatStructure                   matflag;
+  MatStructure                 matflag;
 
-  PetscInt                       stepType;
-  PetscInt                       iter = 0;
-  PetscInt                       bfgsUpdates = 0;
-  PetscInt                       n,N,kspits;
-  PetscInt                       needH;
+  PetscInt                     stepType;
+  PetscInt                     iter = 0;
+  PetscInt                     bfgsUpdates = 0;
+  PetscInt                     n,N,kspits;
+  PetscInt                     needH;
 
-  PetscInt                       i_max = 5;
-  PetscInt                       j_max = 1;
-  PetscInt                       i, j;
+  PetscInt                     i_max = 5;
+  PetscInt                     j_max = 1;
+  PetscInt                     i, j;
 
   PetscFunctionBegin;
   if (tao->XL || tao->XU || tao->ops->computebounds) {

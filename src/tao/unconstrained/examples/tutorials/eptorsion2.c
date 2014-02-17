@@ -49,7 +49,7 @@ The command line options are:\n\
    Routines: TaoSetObjectiveAndGradientRoutine();
    Routines: TaoSetHessianRoutine(); TaoSetFromOptions();
    Routines: TaoSolve();
-   Routines: TaoGetTerminationReason(); TaoDestroy();
+   Routines: TaoGetConvergedReason(); TaoDestroy();
    Processors: n
 T*/
 
@@ -78,17 +78,17 @@ PetscErrorCode FormHessian(Tao,Vec,Mat*,Mat*,MatStructure*,void*);
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-    PetscErrorCode ierr;
-    Vec x;
-    Mat H;
-    PetscInt Nx, Ny;
-    Tao tao;
-    TaoTerminationReason reason;
-    PetscBool flg;
-    KSP ksp; PC pc;
-    AppCtx user;
+    PetscErrorCode     ierr;
+    Vec                x;
+    Mat                H;
+    PetscInt           Nx, Ny;
+    Tao                tao;
+    TaoConvergedReason reason;
+    PetscBool          flg;
+    KSP                ksp;
+    PC                 pc;
+    AppCtx             user;
 
-    /* Initialize PETSc, TAO */
     PetscInitialize(&argc, &argv, (char *)0, help);
 
     /* Specify default dimension of the problem */
@@ -145,7 +145,7 @@ int main(int argc, char **argv)
     ierr = TaoSolve(tao); CHKERRQ(ierr);
 
     /* Get information on termination */
-    ierr = TaoGetTerminationReason(tao,&reason);CHKERRQ(ierr);
+    ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
     if (reason <= 0){
         ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");CHKERRQ(ierr);
     }

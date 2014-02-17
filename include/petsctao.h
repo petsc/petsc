@@ -74,9 +74,9 @@ typedef enum {/* converged */
   TAO_DIVERGED_TR_REDUCTION   = -7,
   TAO_DIVERGED_USER           = -8, /* User defined */
   /* keep going */
-  TAO_CONTINUE_ITERATING      =  0} TaoTerminationReason;
+  TAO_CONTINUE_ITERATING      =  0} TaoConvergedReason;
 
-PETSC_EXTERN const char **TaoTerminationReasons;
+PETSC_EXTERN const char **TaoConvergedReasons;
 
 #include <petsctaolinesearch.h>
 
@@ -101,9 +101,9 @@ PETSC_EXTERN PetscErrorCode TaoRegister(const char [],PetscErrorCode (*)(Tao));
 PETSC_EXTERN PetscErrorCode TaoRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TaoRegisterDestroy(void);
 
-PETSC_EXTERN PetscErrorCode TaoGetTerminationReason(Tao,TaoTerminationReason*);
-PETSC_EXTERN PetscErrorCode TaoGetSolutionStatus(Tao, PetscInt*, PetscReal*, PetscReal*, PetscReal*, PetscReal*, TaoTerminationReason*);
-PETSC_EXTERN PetscErrorCode TaoSetTerminationReason(Tao,TaoTerminationReason);
+PETSC_EXTERN PetscErrorCode TaoGetConvergedReason(Tao,TaoConvergedReason*);
+PETSC_EXTERN PetscErrorCode TaoGetSolutionStatus(Tao, PetscInt*, PetscReal*, PetscReal*, PetscReal*, PetscReal*, TaoConvergedReason*);
+PETSC_EXTERN PetscErrorCode TaoSetConvergedReason(Tao,TaoConvergedReason);
 PETSC_EXTERN PetscErrorCode TaoSetInitialVector(Tao, Vec);
 PETSC_EXTERN PetscErrorCode TaoGetSolutionVector(Tao, Vec*);
 PETSC_EXTERN PetscErrorCode TaoGetGradientVector(Tao, Vec*);
@@ -198,6 +198,6 @@ PETSC_EXTERN PetscErrorCode TaoSetConvergenceTest(Tao, PetscErrorCode (*)(Tao, v
 
 PETSC_EXTERN PetscErrorCode TaoSQPCONSetStateDesignIS(Tao, IS, IS);
 PETSC_EXTERN PetscErrorCode TaoLCLSetStateDesignIS(Tao, IS, IS);
-PetscErrorCode TaoMonitor(Tao, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, TaoTerminationReason*);
+PetscErrorCode TaoMonitor(Tao, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, TaoConvergedReason*);
 
 #endif

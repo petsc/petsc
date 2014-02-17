@@ -61,7 +61,7 @@ struct _p_Tao {
     void *monitorcontext[MAXTAOMONITORS];
     PetscInt numbermonitors;
     void *cnvP;
-    TaoTerminationReason reason;
+    TaoConvergedReason reason;
 
     PetscBool setupcalled;
     void *data;

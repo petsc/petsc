@@ -6,7 +6,7 @@
 #if !defined(PETSC_USE_FORTRAN_DATATYPES)
 #define Tao PetscFortranAddr
 #define TaoLineSearch PetscFortranAddr
-#define TaoTerminationReason integer
+#define TaoConvergedReason integer
 #endif
 
 #define TAOLMVM     "lmvm"

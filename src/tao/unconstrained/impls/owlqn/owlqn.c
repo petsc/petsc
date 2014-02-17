@@ -60,18 +60,17 @@ static PetscErrorCode ComputePseudoGrad_OWLQN(Vec x, Vec gv, PetscReal lambda)
 #define __FUNCT__ "TaoSolve_OWLQN"
 static PetscErrorCode TaoSolve_OWLQN(Tao tao)
 {
-  TAO_OWLQN                      *lmP = (TAO_OWLQN *)tao->data;
-  PetscReal                      f, fold, gdx, gnorm;
-  PetscReal                      step = 1.0;
-  PetscReal                      delta;
-  PetscErrorCode                 ierr;
-  PetscInt                       stepType;
-  PetscInt                       iter = 0;
-  TaoTerminationReason     reason = TAO_CONTINUE_ITERATING;
-  TaoLineSearchTerminationReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
+  TAO_OWLQN                    *lmP = (TAO_OWLQN *)tao->data;
+  PetscReal                    f, fold, gdx, gnorm;
+  PetscReal                    step = 1.0;
+  PetscReal                    delta;
+  PetscErrorCode               ierr;
+  PetscInt                     stepType;
+  PetscInt                     iter = 0;
+  TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
+  TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
   PetscFunctionBegin;
-
   if (tao->XL || tao->XU || tao->ops->computebounds) {
     ierr = PetscPrintf(((PetscObject)tao)->comm,"WARNING: Variable bounds have been set but will be ignored by owlqn algorithm\n");CHKERRQ(ierr);
   }

@@ -7,13 +7,13 @@
 #define __FUNCT__ "TaoSolve_BLMVM"
 static PetscErrorCode TaoSolve_BLMVM(Tao tao)
 {
-  PetscErrorCode                 ierr;
-  TAO_BLMVM                      *blmP = (TAO_BLMVM *)tao->data;
-  TaoTerminationReason     reason = TAO_CONTINUE_ITERATING;
-  TaoLineSearchTerminationReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
-  PetscReal                      f, fold, gdx, gnorm;
-  PetscReal                      stepsize = 1.0,delta;
-  PetscInt                       iter = 0;
+  PetscErrorCode               ierr;
+  TAO_BLMVM                    *blmP = (TAO_BLMVM *)tao->data;
+  TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
+  TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
+  PetscReal                    f, fold, gdx, gnorm;
+  PetscReal                    stepsize = 1.0,delta;
+  PetscInt                     iter = 0;
 
   PetscFunctionBegin;
   /*  Project initial point onto bounds */
@@ -109,7 +109,7 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
       }
     }
 
-    /* Check for termination */
+    /* Check for converged */
     ierr = VecBoundGradientProjection(blmP->unprojected_gradient, tao->solution, tao->XL, tao->XU, tao->gradient);CHKERRQ(ierr);
     ierr = VecNorm(tao->gradient, NORM_2, &gnorm);CHKERRQ(ierr);
 

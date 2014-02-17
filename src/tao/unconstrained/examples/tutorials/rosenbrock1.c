@@ -16,7 +16,7 @@ minimize the extended Rosenbrock function: \n\
    Routines: TaoSetInitialVector();
    Routines: TaoSetFromOptions();
    Routines: TaoSolve();
-   Routines: TaoGetTerminationReason(); TaoDestroy();
+   Routines: TaoGetConvergedReason(); TaoDestroy();
    Processors: 1
 T*/
 
@@ -39,15 +39,15 @@ PetscErrorCode FormHessian(Tao,Vec,Mat*,Mat*,MatStructure*,void*);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscErrorCode       ierr;                  /* used to check for functions returning nonzeros */
-  PetscReal            zero=0.0;
-  Vec                  x;                     /* solution vector */
-  Mat                  H;
-  Tao                  tao;                   /* Tao solver context */
-  PetscBool            flg;
-  PetscMPIInt          size,rank;                  /* number of processes running */
-  TaoTerminationReason reason;
-  AppCtx               user;                  /* user-defined application context */
+  PetscErrorCode     ierr;                  /* used to check for functions returning nonzeros */
+  PetscReal          zero=0.0;
+  Vec                x;                     /* solution vector */
+  Mat                H;
+  Tao                tao;                   /* Tao solver context */
+  PetscBool          flg;
+  PetscMPIInt        size,rank;                  /* number of processes running */
+  TaoConvergedReason reason;
+  AppCtx             user;                  /* user-defined application context */
 
   /* Initialize TAO and PETSc */
   PetscInitialize(&argc,&argv,(char*)0,help);
@@ -86,7 +86,7 @@ int main(int argc,char **argv)
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
   /* Get termination information */
-  ierr = TaoGetTerminationReason(tao,&reason);CHKERRQ(ierr);
+  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
   if (reason <= 0) {
     ierr = PetscPrintf(MPI_COMM_WORLD,"Try a different TAO type, adjust some parameters, or check the function evaluation routines\n");CHKERRQ(ierr);
   }

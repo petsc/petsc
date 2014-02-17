@@ -135,12 +135,12 @@ static PetscErrorCode TaoDestroy_ASILS(Tao tao)
 #define __FUNCT__ "TaoSolve_ASILS"
 static PetscErrorCode TaoSolve_ASILS(Tao tao)
 {
-  TAO_SSLS                       *asls = (TAO_SSLS *)tao->data;
-  PetscReal                      psi,ndpsi, normd, innerd, t=0;
-  PetscInt                       iter=0, nf;
-  PetscErrorCode                 ierr;
-  TaoTerminationReason     reason;
-  TaoLineSearchTerminationReason ls_reason;
+  TAO_SSLS                     *asls = (TAO_SSLS *)tao->data;
+  PetscReal                    psi,ndpsi, normd, innerd, t=0;
+  PetscInt                     iter=0, nf;
+  PetscErrorCode               ierr;
+  TaoConvergedReason           reason;
+  TaoLineSearchConvergedReason ls_reason;
 
   PetscFunctionBegin;
   /* Assume that Setup has been called!

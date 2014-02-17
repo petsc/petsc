@@ -102,12 +102,12 @@ static PetscErrorCode TaoSetup_TRON(Tao tao)
 #define __FUNCT__ "TaoSolve_TRON"
 static PetscErrorCode TaoSolve_TRON(Tao tao)
 {
-  TAO_TRON                       *tron = (TAO_TRON *)tao->data;
-  PetscErrorCode                 ierr;
-  PetscInt                       iter=0,its;
-  TaoTerminationReason     reason = TAO_CONTINUE_ITERATING;
-  TaoLineSearchTerminationReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
-  PetscReal                      prered,actred,delta,f,f_new,rhok,gdx,xdiff,stepsize;
+  TAO_TRON                     *tron = (TAO_TRON *)tao->data;
+  PetscErrorCode               ierr;
+  PetscInt                     iter=0,its;
+  TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
+  TaoLineSearchConvergedReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
+  PetscReal                    prered,actred,delta,f,f_new,rhok,gdx,xdiff,stepsize;
 
   PetscFunctionBegin;
   tron->pgstepsize=1.0;
@@ -257,7 +257,7 @@ static PetscErrorCode TronGradientProjections(Tao tao,TAO_TRON *tron)
 {
   PetscErrorCode                 ierr;
   PetscInt                       i;
-  TaoLineSearchTerminationReason ls_reason;
+  TaoLineSearchConvergedReason ls_reason;
   PetscReal                      actred=-1.0,actred_max=0.0;
   PetscReal                      f_new;
   /*

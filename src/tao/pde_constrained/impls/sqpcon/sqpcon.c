@@ -126,14 +126,14 @@ static PetscErrorCode TaoSetup_SQPCON(Tao tao)
 #define __FUNCT__ "TaoSolve_SQPCON"
 static PetscErrorCode TaoSolve_SQPCON(Tao tao)
 {
-  TAO_SQPCON                     *sqpconP = (TAO_SQPCON*)tao->data;
-  PetscInt                       iter=0;
-  TaoTerminationReason     reason = TAO_CONTINUE_ITERATING;
-  TaoLineSearchTerminationReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
-  PetscReal                      step=1.0,f,fm, fold;
-  PetscReal                      cnorm, mnorm;
-  PetscBool                      use_update=PETSC_TRUE; /*  don't update Q if line search failed */
-  PetscErrorCode                 ierr;
+  TAO_SQPCON                   *sqpconP = (TAO_SQPCON*)tao->data;
+  PetscInt                     iter=0;
+  TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
+  TaoLineSearchConvergedReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
+  PetscReal                    step=1.0,f,fm, fold;
+  PetscReal                    cnorm, mnorm;
+  PetscBool                    use_update=PETSC_TRUE; /*  don't update Q if line search failed */
+  PetscErrorCode               ierr;
 
   PetscFunctionBegin;
   /* Scatter to U,V */

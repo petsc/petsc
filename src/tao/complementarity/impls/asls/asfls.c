@@ -136,12 +136,12 @@ static PetscErrorCode TaoDestroy_ASFLS(Tao tao)
 #define __FUNCT__ "TaoSolve_ASFLS"
 static PetscErrorCode TaoSolve_ASFLS(Tao tao)
 {
-  TAO_SSLS                       *asls = (TAO_SSLS *)tao->data;
-  PetscReal                      psi,ndpsi, normd, innerd, t=0;
-  PetscInt                       iter=0, nf;
-  PetscErrorCode                 ierr;
-  TaoTerminationReason     reason;
-  TaoLineSearchTerminationReason ls_reason;
+  TAO_SSLS                     *asls = (TAO_SSLS *)tao->data;
+  PetscReal                    psi,ndpsi, normd, innerd, t=0;
+  PetscInt                     iter=0, nf;
+  PetscErrorCode               ierr;
+  TaoConvergedReason           reason;
+  TaoLineSearchConvergedReason ls_reason;
 
   PetscFunctionBegin;
   /* Assume that Setup has been called!
@@ -160,7 +160,7 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
   ierr = VecNorm(asls->dpsi,NORM_2,&ndpsi);CHKERRQ(ierr);
 
   while (1) {
-    /* Check the termination criteria */
+    /* Check the converged criteria */
     ierr = PetscInfo3(tao,"iter %D, merit: %g, ||dpsi||: %g\n",iter, (double)asls->merit,  (double)ndpsi);CHKERRQ(ierr);
     ierr = TaoMonitor(tao, iter++, asls->merit, ndpsi, 0.0, t, &reason);CHKERRQ(ierr);
     if (TAO_CONTINUE_ITERATING != reason) break;

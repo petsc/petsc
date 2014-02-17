@@ -146,14 +146,14 @@ static PetscErrorCode TaoSetup_GPCG(Tao tao)
 #define __FUNCT__ "TaoSolve_GPCG"
 static PetscErrorCode TaoSolve_GPCG(Tao tao)
 {
-  TAO_GPCG                       *gpcg = (TAO_GPCG *)tao->data;
-  PetscErrorCode                 ierr;
-  PetscInt                       iter=0,its;
-  PetscReal                      actred,f,f_new,gnorm,gdx,stepsize,xtb;
-  PetscReal                      xtHx;
-  MatStructure                   structure;
-  TaoTerminationReason     reason = TAO_CONTINUE_ITERATING;
-  TaoLineSearchTerminationReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
+  TAO_GPCG                     *gpcg = (TAO_GPCG *)tao->data;
+  PetscErrorCode               ierr;
+  PetscInt                     iter=0,its;
+  PetscReal                    actred,f,f_new,gnorm,gdx,stepsize,xtb;
+  PetscReal                    xtHx;
+  MatStructure                 structure;
+  TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
+  TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
   PetscFunctionBegin;
   gpcg->Hsub=NULL;
@@ -263,7 +263,7 @@ static PetscErrorCode GPCGGradProjections(Tao tao)
   PetscReal                      f_new,gdx,stepsize;
   Vec                            DX=tao->stepdirection,XL=tao->XL,XU=tao->XU,Work=gpcg->Work;
   Vec                            X=tao->solution,G=tao->gradient;
-  TaoLineSearchTerminationReason lsflag=TAOLINESEARCH_CONTINUE_ITERATING;
+  TaoLineSearchConvergedReason lsflag=TAOLINESEARCH_CONTINUE_ITERATING;
 
   /*
      The free, active, and binding variables should be already identified

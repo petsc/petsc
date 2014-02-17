@@ -201,9 +201,9 @@ PetscErrorCode TaoSolve(Tao tao)
 
   if (tao->printreason) {
     if (tao->reason > 0) {
-      ierr = PetscPrintf(((PetscObject)tao)->comm,"TAO solve converged due to %s\n",TaoTerminationReasons[tao->reason]);CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)tao)->comm,"TAO solve converged due to %s\n",TaoConvergedReasons[tao->reason]);CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(((PetscObject)tao)->comm,"TAO solve did not converge due to %s\n",TaoTerminationReasons[tao->reason]);CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)tao)->comm,"TAO solve did not converge due to %s\n",TaoConvergedReasons[tao->reason]);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -410,7 +410,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
       ierr = TaoSetMonitor(tao,TaoSolutionMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     }
 
-    ierr = PetscOptionsBool("-tao_converged_reason","Print reason for TAO termination","TaoSolve",flg,&flg,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-tao_converged_reason","Print reason for TAO converged","TaoSolve",flg,&flg,NULL);CHKERRQ(ierr);
     if (flg) {
       tao->printreason = PETSC_TRUE;
     }
@@ -1285,11 +1285,11 @@ $   PetscErrorCode conv(Tao tao, void *ctx)
 + tao - the Tao object
 - ctx - [optional] convergence context
 
-  Note: The new convergence testing routine should call TaoSetTerminationReason().
+  Note: The new convergence testing routine should call TaoSetConvergedReason().
 
   Level: advanced
 
-.seealso: TaoSetTerminationReason(), TaoGetSolutionStatus(), TaoGetTolerances(), TaoSetMonitor
+.seealso: TaoSetConvergedReason(), TaoGetSolutionStatus(), TaoGetTolerances(), TaoSetMonitor
 
 @*/
 PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao,void*), void *ctx)
@@ -1799,21 +1799,21 @@ PetscErrorCode TaoSeparableObjectiveMonitor(Tao tao, void *ctx)
 
    Level: developer
 
-.seealso: TaoSetTolerances(),TaoGetTerminationReason(),TaoSetTerminationReason()
+.seealso: TaoSetTolerances(),TaoGetConvergedReason(),TaoSetConvergedReason()
 @*/
 
 PetscErrorCode TaoDefaultConvergenceTest(Tao tao,void *dummy)
 {
-  PetscInt             niter=tao->niter, nfuncs=PetscMax(tao->nfuncs,tao->nfuncgrads);
-  PetscInt             max_funcs=tao->max_funcs;
-  PetscReal            gnorm=tao->residual, gnorm0=tao->gnorm0;
-  PetscReal            f=tao->fc, steptol=tao->steptol,trradius=tao->step;
-  PetscReal            gatol=tao->gatol,grtol=tao->grtol,gttol=tao->gttol;
-  PetscReal            fatol=tao->fatol,frtol=tao->frtol,catol=tao->catol,crtol=tao->crtol;
-  PetscReal            fmin=tao->fmin, cnorm=tao->cnorm, cnorm0=tao->cnorm0;
-  PetscReal            gnorm2;
-  TaoTerminationReason reason=tao->reason;
-  PetscErrorCode       ierr;
+  PetscInt           niter=tao->niter, nfuncs=PetscMax(tao->nfuncs,tao->nfuncgrads);
+  PetscInt           max_funcs=tao->max_funcs;
+  PetscReal          gnorm=tao->residual, gnorm0=tao->gnorm0;
+  PetscReal          f=tao->fc, steptol=tao->steptol,trradius=tao->step;
+  PetscReal          gatol=tao->gatol,grtol=tao->grtol,gttol=tao->gttol;
+  PetscReal          fatol=tao->fatol,frtol=tao->frtol,catol=tao->catol,crtol=tao->crtol;
+  PetscReal          fmin=tao->fmin, cnorm=tao->cnorm, cnorm0=tao->cnorm0;
+  PetscReal          gnorm2;
+  TaoConvergedReason reason=tao->reason;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID,1);
@@ -2107,9 +2107,9 @@ PetscErrorCode TaoRegisterDestroy(void)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSetTerminationReason"
+#define __FUNCT__ "TaoSetConvergedReason"
 /*@
-  TaoSetTerminationReason - Sets the termination flag on a Tao object
+  TaoSetConvergedReason - Sets the termination flag on a Tao object
 
   Logically Collective on Tao
 
@@ -2132,7 +2132,7 @@ $     TAO_CONTINUE_ITERATING (0)
    Level: intermediate
 
 @*/
-PetscErrorCode TaoSetTerminationReason(Tao tao, TaoTerminationReason reason)
+PetscErrorCode TaoSetConvergedReason(Tao tao, TaoConvergedReason reason)
 {
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscFunctionBegin;
@@ -2141,9 +2141,9 @@ PetscErrorCode TaoSetTerminationReason(Tao tao, TaoTerminationReason reason)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoGetTerminationReason"
+#define __FUNCT__ "TaoGetConvergedReason"
 /*@
-   TaoGetTerminationReason - Gets the reason the Tao iteration was stopped.
+   TaoGetConvergedReason - Gets the reason the Tao iteration was stopped.
 
    Not Collective
 
@@ -2187,7 +2187,7 @@ $  TAO_CONTINUE_ITERATING (0)
 .seealso: TaoSetConvergenceTest(), TaoSetTolerances()
 
 @*/
-PetscErrorCode TaoGetTerminationReason(Tao tao, TaoTerminationReason *reason)
+PetscErrorCode TaoGetConvergedReason(Tao tao, TaoConvergedReason *reason)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
@@ -2223,9 +2223,9 @@ PetscErrorCode TaoGetTerminationReason(Tao tao, TaoTerminationReason *reason)
    Note:
    If any of the output arguments are set to NULL, no corresponding value will be returned.
 
-.seealso: TaoMonitor(), TaoGetTerminationReason()
+.seealso: TaoMonitor(), TaoGetConvergedReason()
 @*/
-PetscErrorCode TaoGetSolutionStatus(Tao tao, PetscInt *its, PetscReal *f, PetscReal *gnorm, PetscReal *cnorm, PetscReal *xdiff, TaoTerminationReason *reason)
+PetscErrorCode TaoGetSolutionStatus(Tao tao, PetscInt *its, PetscReal *f, PetscReal *gnorm, PetscReal *cnorm, PetscReal *xdiff, TaoConvergedReason *reason)
 {
   PetscFunctionBegin;
   if (its) *its=tao->niter;
@@ -2284,12 +2284,12 @@ PetscErrorCode TaoGetType(Tao tao, const TaoType *type)
    Options Database Key:
 .  -tao_monitor - Use the default monitor, which prints statistics to standard output
 
-.seealso TaoGetTerminationReason(), TaoDefaultMonitor(), TaoSetMonitor()
+.seealso TaoGetConvergedReason(), TaoDefaultMonitor(), TaoSetMonitor()
 
    Level: developer
 
 @*/
-PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, PetscReal cnorm, PetscReal steplength, TaoTerminationReason *reason)
+PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, PetscReal cnorm, PetscReal steplength, TaoConvergedReason *reason)
 {
   PetscErrorCode ierr;
   PetscInt       i;

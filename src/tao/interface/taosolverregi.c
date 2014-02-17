@@ -28,7 +28,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_IPM(Tao);
    Offset the convergence reasons so negative number represent diverged and
    positive represent converged.
 */
-const char *TaoTerminationReasons_Shifted[] = {
+const char *TaoConvergedReasons_Shifted[] = {
     "DIVERGED_USER",
     "DIVERGED_TR_REDUCTION",
     "DIVERGED_LS_FAILURE",
@@ -47,7 +47,7 @@ const char *TaoTerminationReasons_Shifted[] = {
     "CONVERGED_STEPTOL",
     "CONVERGED_MINF",
     "CONVERGED_USER" };
-const char **TaoTerminationReasons = TaoTerminationReasons_Shifted + 7;
+const char **TaoConvergedReasons = TaoConvergedReasons_Shifted + 7;
 extern PetscBool TaoRegisterAllCalled;
 
 #undef __FUNCT__

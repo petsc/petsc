@@ -525,21 +525,21 @@ PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,PetscReal c)
 #define __FUNCT__ "TaoSolve_POUNDERS"
 static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
 {
-  TAO_POUNDERS               *mfqP = (TAO_POUNDERS *)tao->data;
-  PetscInt                   i,ii,j,k,l,iter=0;
-  PetscReal                  step=1.0;
-  TaoTerminationReason reason = TAO_CONTINUE_ITERATING;
-  PetscInt                   low,high;
-  PetscReal                  minnorm;
-  PetscReal                  *x,*f,*fmin,*xmint;
-  PetscReal                  cres,deltaold;
-  PetscReal                  gnorm;
-  PetscBLASInt               info,ione=1,iblas;
-  PetscBool                  valid;
-  PetscReal                  mdec, rho, normxsp;
-  PetscReal                  one=1.0,zero=0.0,ratio;
-  PetscBLASInt               blasm,blasn,blasnpmax,blasn2;
-  PetscErrorCode             ierr;
+  TAO_POUNDERS       *mfqP = (TAO_POUNDERS *)tao->data;
+  PetscInt           i,ii,j,k,l,iter=0;
+  PetscReal          step=1.0;
+  TaoConvergedReason reason = TAO_CONTINUE_ITERATING;
+  PetscInt           low,high;
+  PetscReal          minnorm;
+  PetscReal          *x,*f,*fmin,*xmint;
+  PetscReal          cres,deltaold;
+  PetscReal          gnorm;
+  PetscBLASInt       info,ione=1,iblas;
+  PetscBool          valid;
+  PetscReal          mdec, rho, normxsp;
+  PetscReal          one=1.0,zero=0.0,ratio;
+  PetscBLASInt       blasm,blasn,blasnpmax,blasn2;
+  PetscErrorCode     ierr;
 
   /* n = # of parameters
      m = dimension (components) of function  */

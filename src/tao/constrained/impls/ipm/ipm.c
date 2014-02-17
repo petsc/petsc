@@ -39,12 +39,12 @@ static PetscErrorCode IPMInitializeBounds(Tao tao);
 #define __FUNCT__ "TaoSolve_IPM"
 static PetscErrorCode TaoSolve_IPM(Tao tao)
 {
-  PetscErrorCode             ierr;
-  TAO_IPM                    *ipmP = (TAO_IPM*)tao->data;
-  TaoTerminationReason reason = TAO_CONTINUE_ITERATING;
-  PetscInt                   iter = 0,its,i;
-  PetscScalar                stepsize=1.0;
-  PetscScalar                step_s,step_l,alpha,tau,sigma,phi_target;
+  PetscErrorCode     ierr;
+  TAO_IPM            *ipmP = (TAO_IPM*)tao->data;
+  TaoConvergedReason reason = TAO_CONTINUE_ITERATING;
+  PetscInt           iter = 0,its,i;
+  PetscScalar        stepsize=1.0;
+  PetscScalar        step_s,step_l,alpha,tau,sigma,phi_target;
 
   PetscFunctionBegin;
   /* Push initial point away from bounds */
