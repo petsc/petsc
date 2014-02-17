@@ -744,6 +744,33 @@ cdef class Vec(Object):
     def restoreSubVector(self, IS iset not None, Vec subvec not None):
         CHKERR( VecRestoreSubVector(self.vec, iset.iset, &subvec.vec) )
 
+    def nestGetSubVecs(self):
+        cdef PetscInt N
+        cdef PetscVec* sx
+        CHKERR( VecNestGetSubVecs(self.vec, &N, &sx) )
+        output = []
+        for i in range(N): 
+          pyvec = Vec()
+          pyvec.vec = sx[i]
+          CHKERR( PetscObjectReference(<PetscObject> pyvec.vec) )
+          output.append(pyvec)
+
+        return output
+
+    def nestSetSubVecs(self, sx, idxm=None):
+        if idxm is None: idxm = range(len(sx))
+        else: assert len(idxm) == len(sx)
+        cdef PetscInt N = 0
+        cdef PetscInt* cidxm = NULL
+        idxm = iarray_i(idxm, &N, &cidxm)
+
+
+        cdef PetscVec* csx = NULL
+        tmp = oarray_p(empty_p(N), NULL, <void**>&csx)
+        for i from 0 <= i < N: csx[i] = (<Vec?>sx[i]).vec
+
+        CHKERR( VecNestSetSubVecs(self.vec, N, cidxm, csx) )
+
     #
 
     property sizes:

@@ -146,6 +146,9 @@ cdef extern from * nogil:
     int VecGetSubVector(PetscVec,PetscIS,PetscVec*)
     int VecRestoreSubVector(PetscVec,PetscIS,PetscVec*)
 
+    int VecNestGetSubVecs(PetscVec,PetscInt*,PetscVec**)
+    int VecNestSetSubVecs(PetscVec,PetscInt,PetscInt*,PetscVec*)
+
 # --------------------------------------------------------------------
 
 cdef inline Vec ref_Vec(PetscVec vec):
