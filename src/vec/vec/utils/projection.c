@@ -342,6 +342,8 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
   Output Parameters:
 . vfull - the sum of the full-space vector and reduced-space vector
 
+  Level: advanced
+
 .seealso:  VecAXPY()
 @*/
 PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha,Vec vreduced)
@@ -597,6 +599,7 @@ PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepm
 .     wolfemin -
 -     boundmax -   minimum value so that X[i] + boundmax*DX[i] <= XL[i]  or  XU[i] <= X[i] + boundmax*DX[i]
 
+  Level: advanced
 @*/
 PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundmin, PetscReal *wolfemin, PetscReal *boundmax)
 {
@@ -670,6 +673,7 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
      Output Parameter:
 .    step - largest value such that x[i] + step*DX[i] >= 0 for all i
 
+  Level: advanced
  @*/
 PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step)
 {
