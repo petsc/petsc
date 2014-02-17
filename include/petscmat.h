@@ -599,7 +599,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,
 +  dnz - the array that will be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
 
-
    Level: intermediate
 
    Notes:
@@ -644,7 +643,6 @@ M*/
 .  dnz - the array that will be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
 
-
    Level: intermediate
 
    Notes:
@@ -686,7 +684,6 @@ M*/
 .  dnz - the array that will be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
 
-
    Level: intermediate
 
    Notes:
@@ -727,7 +724,6 @@ M*/
    Output Parameters:
 +  dnz - the array that will be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
-
 
    Level: intermediate
 
@@ -771,7 +767,6 @@ M*/
 .  dnz - the array that will be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
 
-
    Level: intermediate
 
    Notes:
@@ -811,7 +806,6 @@ M*/
 .  dnz - the array that will be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
 
-
    Level: intermediate
 
    Notes:
@@ -843,7 +837,6 @@ M*/
 +  dnz - the array that was be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
 
-
    Level: intermediate
 
    Notes:
@@ -859,8 +852,6 @@ M*/
           MatPreallocateSymmetricSetLocal()
 M*/
 #define MatPreallocateFinalize(dnz,onz) 0;_4_ierr = PetscFree2(dnz,onz);CHKERRQ(_4_ierr);}
-
-
 
 /* Routines unique to particular data structures */
 PETSC_EXTERN PetscErrorCode MatShellGetContext(Mat,void *);

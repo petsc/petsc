@@ -1380,8 +1380,6 @@ PetscErrorCode  DMGlobalToLocalEnd_Composite(DM dm,Vec gvec,InsertMode mode,Vec 
 /*MC
    DMCOMPOSITE = "composite" - A DM object that is used to manage data for a collection of DMs
 
-
-
   Level: intermediate
 
 .seealso: DMType, DMCOMPOSITE, DMDACreate(), DMCreate(), DMSetType(), DMCompositeCreate()

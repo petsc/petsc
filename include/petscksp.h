@@ -178,7 +178,7 @@ E*/
 typedef enum {KSP_GMRES_CGS_REFINE_NEVER, KSP_GMRES_CGS_REFINE_IFNEEDED, KSP_GMRES_CGS_REFINE_ALWAYS} KSPGMRESCGSRefinementType;
 PETSC_EXTERN const char *const KSPGMRESCGSRefinementTypes[];
 /*MC
-    KSP_GMRES_CGS_REFINE_NEVER - Just do the classical (unmodified) Gram-Schmidt process
+    KSP_GMRES_CGS_REFINE_NEVER - Do the classical (unmodified) Gram-Schmidt process
 
    Level: advanced
 
@@ -307,13 +307,13 @@ PETSC_EXTERN const char *const*const KSPNormTypes;
 
    Level: advanced
 
-    Note: Some Krylov methods need to compute a residual norm and then this option is ignored
+    Note: Some Krylov methods need to compute a residual norm (such as GMRES) and then this option is ignored
 
 .seealso: KSPNormType, KSPSetNormType(), KSP_NORM_PRECONDITIONED, KSP_NORM_UNPRECONDITIONED, KSP_NORM_NATURAL
 M*/
 
 /*MC
-    KSP_NORM_PRECONDITIONED - Compute the norm of the preconditioned residual and pass that to the
+    KSP_NORM_PRECONDITIONED - Compute the norm of the preconditioned residual B*(b - A*x), if left preconditioning, and pass that to the
        convergence test routine.
 
    Level: advanced
@@ -346,8 +346,7 @@ PETSC_EXTERN PetscErrorCode KSPSetCheckNormIteration(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP,PetscBool);
 
 /*E
-    KSPConvergedReason - reason a Krylov method was said to
-         have converged or diverged
+    KSPConvergedReason - reason a Krylov method was said to have converged or diverged
 
    Level: beginner
 
@@ -442,9 +441,7 @@ M*/
            the preconditioner is applied. Also used when the KSPConvergedSkip() convergence
            test routine is set in KSP.
 
-
    Level: beginner
-
 
 .seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
 
@@ -465,9 +462,7 @@ M*/
      KSP_DIVERGED_BREAKDOWN_BICG - A breakdown in the KSPBICG method was detected so the
           method could not continue to enlarge the Krylov space.
 
-
    Level: beginner
-
 
 .seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
 

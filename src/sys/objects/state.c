@@ -80,8 +80,7 @@ PetscInt PetscObjectComposedDataMax = 10;
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectComposedDataRegister"
 /*@C
-   PetscObjectComposedDataRegister - Get an available id for
-   composed data
+   PetscObjectComposedDataRegister - Get an available id for composed data
 
    Not Collective
 
@@ -89,6 +88,9 @@ PetscInt PetscObjectComposedDataMax = 10;
 .  id - an identifier under which data can be stored
 
    Level: developer
+
+   Notes: You must keep this value (for example in a global variable) in order to attach the data to an object or 
+          access in an object.
 
    seealso: PetscObjectComposedDataSetInt()
 

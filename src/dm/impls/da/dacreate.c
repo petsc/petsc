@@ -315,7 +315,6 @@ PetscErrorCode DMClone_DA(DM dm, DM *newdm)
          The vectors can be thought of as either cell centered or vertex centered on the mesh. But some variables cannot be cell centered and others
          vertex centered.
 
-
   Level: intermediate
 
 .seealso: DMType, DMCOMPOSITE, DMDACreate(), DMCreate(), DMSetType()

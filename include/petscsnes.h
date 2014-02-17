@@ -361,6 +361,7 @@ typedef enum {SNES_NORM_DEFAULT            = -1,
               SNES_NORM_FINAL_ONLY         =  3,
               SNES_NORM_INITIAL_FINAL_ONLY =  4} SNESNormSchedule;
 PETSC_EXTERN const char *const*const SNESNormSchedules;
+
 /*MC
     SNES_NORM_NONE - Don't compute function and its L2 norm.
 
@@ -422,7 +423,6 @@ M*/
 
 .seealso: SNESNormSchedule, SNESSetNormSchedule(), SNES_NORM_SNES_NORM_INITIAL_ONLY, SNES_NORM_FINAL_ONLY
 M*/
-
 
 PETSC_EXTERN PetscErrorCode SNESSetNormSchedule(SNES,SNESNormSchedule);
 PETSC_EXTERN PetscErrorCode SNESGetNormSchedule(SNES,SNESNormSchedule*);

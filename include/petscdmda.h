@@ -15,6 +15,9 @@
 
      Level: beginner
 
+     Determines what ghost point values are brought over to each process; in this case the "corner" values are not
+     brought over and hence should not be accessed locally
+
 .seealso: DMDA_STENCIL_BOX, DMDAStencilType, DMDASetStencilType()
 M*/
 
@@ -123,7 +126,7 @@ PETSC_EXTERN PetscErrorCode DMDACreatePatchIS(DM,MatStencil*,MatStencil*,IS*);
       DM       cda;
 
       DMGetCoordinates(da,&vcoors);
-      DMDAGetCoordinateDA(da,&cda);
+      DMGetCoordinateDM(da,&cda);
       DMDAVecGetArray(cda,vcoors,&coors);
       DMDAGetCorners(cda,&mstart,&nstart,0,&m,&n,0)
       for (i=mstart; i<mstart+m; i++) {
@@ -135,7 +138,7 @@ PETSC_EXTERN PetscErrorCode DMDACreatePatchIS(DM,MatStencil*,MatStencil*,IS*);
       }
       DMDAVecRestoreArray(dac,vcoors,&coors);
 
-.seealso: DMDACoor3d, DMDAForEachPointBegin(), DMDAGetCoordinateDA(), DMGetCoordinates(), DMDAGetGhostCoordinates()
+.seealso: DMDACoor3d, DMGetCoordinateDM(), DMGetCoordinates(), DMDAGetGhostCoordinates()
 M*/
 typedef struct {PetscScalar x,y;} DMDACoor2d;
 
@@ -150,7 +153,7 @@ typedef struct {PetscScalar x,y;} DMDACoor2d;
       DM       cda;
 
       DMGetCoordinates(da,&vcoors);
-      DMDAGetCoordinateDA(da,&cda);
+      DMGetCoordinateDM(da,&cda);
       DMDAVecGetArray(cda,vcoors,&coors);
       DMDAGetCorners(cda,&mstart,&nstart,&pstart,&m,&n,&p)
       for (i=mstart; i<mstart+m; i++) {
@@ -164,7 +167,7 @@ typedef struct {PetscScalar x,y;} DMDACoor2d;
       }
       DMDAVecRestoreArray(dac,vcoors,&coors);
 
-.seealso: DMDACoor2d, DMDAForEachPointBegin(), DMDAGetCoordinateDA(), DMGetCoordinates(), DMDAGetGhostCoordinates()
+.seealso: DMDACoor2d, DMGetCoordinateDM(), DMGetCoordinates(), DMDAGetGhostCoordinates()
 M*/
 typedef struct {PetscScalar x,y,z;} DMDACoor3d;
 
