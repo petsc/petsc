@@ -4459,8 +4459,7 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM dmRefined[])
 #define __FUNCT__ "DMCoarsen_Plex"
 PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
 {
-  DM_Plex       *mesh = (DM_Plex*) dm->data;
-  PetscErrorCode ierr;
+  DM_Plex *mesh = (DM_Plex*) dm->data;
 
   PetscFunctionBegin;
   *dmCoarsened = mesh->coarseMesh;
@@ -6321,6 +6320,72 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscBool isSimplex, PetscInt cellHeight)
       ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateInterpolation_Plex"
+/* Pointwise interpolation
+     Just code FEM for now
+     u^f = I u^c
+     sum_k u^f_k phi^f_k = I sum_l u^c_l phi^c_l
+     u^f_i = sum_l int psi^f_i I phi^c_l u^c_l
+     I_{ij} = int psi^f_i phi^c_j
+*/
+PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling)
+{
+  PetscSection   gsc, gsf;
+  PetscInt       m, n;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /*
+  Loop over coarse cells
+    Loop over coarse basis functions
+      Loop over fine cells in coarse cell
+        Loop over fine dual basis functions
+          Evaluate coarse basis on fine dual basis quad points
+          Sum
+          Update local element matrix
+    Accumulate to interpolation matrix
+
+   Can extend PetscFEIntegrateJacobian_Basic() to do a specialized cell loop
+  */
+  *scaling = NULL;
+  ierr = DMGetDefaultGlobalSection(dmFine, &gsf);CHKERRQ(ierr);
+  ierr = PetscSectionGetConstrainedStorageSize(gsf, &m);CHKERRQ(ierr);
+  /* TODO: The coarse DM needs to have the section defined */
+  ierr = DMGetDefaultGlobalSection(dmCoarse, &gsc);CHKERRQ(ierr);
+  ierr = PetscSectionGetConstrainedStorageSize(gsc, &n);CHKERRQ(ierr);
+  /* We need to preallocate properly */
+  ierr = MatCreate(PetscObjectComm((PetscObject) dmCoarse), interpolation);CHKERRQ(ierr);
+  ierr = MatSetSizes(*interpolation, m, n, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetType(*interpolation, dmCoarse->mattype);CHKERRQ(ierr);
+  ierr = MatSetUp(*interpolation);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(*interpolation);CHKERRQ(ierr);
+  ierr = MatSetOption(*interpolation, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);CHKERRQ(ierr);
+
+  ierr = DMPlexComputeInterpolatorFEM(dmCoarse, dmFine, *interpolation, NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateInjection_Plex"
+/* Pointwise restriction:
+     Give up on anything beyond P_0 and P_1 for now
+*/
+PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, VecScatter *ctx)
+{
+  PetscFunctionBegin;
+  SETERRQ(PetscObjectComm((PetscObject) dmCoarse), PETSC_ERR_SUP, "Working as fast as I can");
+  /*
+  Loop over coarse vertices
+    Lookup associated fine vertex
+      map coarse dofs to fine dofs
+  Loop over coarse cells
+    Lookup associated fine cells
+      map coarse dofs to fine dofs
+  */
   PetscFunctionReturn(0);
 }
 

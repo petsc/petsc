@@ -3074,6 +3074,145 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscInt Ne, PetscInt
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscFEIntegrateInterpolator_Basic"
+PetscErrorCode PetscFEIntegrateInterpolator_Basic(PetscFE fem, PetscInt Ne, PetscInt Nf, PetscFE feRef[], PetscInt fieldI, PetscFE fe[], PetscInt fieldJ, PetscCellGeometry geom,
+                                                  void (*g0_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g0[]),
+                                                  PetscScalar elemMat[])
+{
+  const PetscInt  debug      = 0;
+  PetscInt        rCellDof   = 0; /* Total number of dof on a cell */
+  PetscInt        cCellDof   = 0; /* Total number of dof on a cell */
+  PetscInt        eOffset    = 0; /* Offset into elemMat[] for element e */
+  PetscInt        offsetI    = 0; /* Offset into an element vector for fieldI */
+  PetscInt        offsetJ    = 0; /* Offset into an element vector for fieldJ */
+  PetscQuadrature quad;
+  PetscScalar    *g0, *u, *gradU;
+  PetscReal      *x, *realSpaceDerI;
+  PetscReal      *basisI, *basisDerI, *basisJ, *basisDerJ;
+  PetscInt        NbI = 0, NcI = 0, NbJ = 0, NcJ = 0, numComponents = 0;
+  PetscInt        dim, f, e;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFEGetSpatialDimension(fe[fieldI], &dim);CHKERRQ(ierr);
+  ierr = PetscFEGetDefaultTabulation(feRef[fieldI], &basisI, &basisDerI, NULL);CHKERRQ(ierr);
+  ierr = PetscFEGetDefaultTabulation(fe[fieldJ], &basisJ, &basisDerJ, NULL);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {
+    PetscInt rNb, cNb, Nc;
+
+    ierr = PetscFEGetDimension(feRef[f], &rNb);CHKERRQ(ierr);
+    ierr = PetscFEGetDimension(fe[f], &cNb);CHKERRQ(ierr);
+    ierr = PetscFEGetNumComponents(fe[f], &Nc);CHKERRQ(ierr);
+    if (f == fieldI) {offsetI = rCellDof; NbI = rNb; NcI = Nc;}
+    if (f == fieldJ) {offsetJ = cCellDof; NbJ = cNb; NcJ = Nc;}
+    numComponents += Nc;
+    rCellDof += rNb*Nc;
+    cCellDof += cNb*Nc;
+  }
+  ierr = PetscFEGetQuadrature(feRef[fieldI], &quad);CHKERRQ(ierr);
+  ierr = PetscMalloc5(NcI*NcJ,&g0,numComponents,&u,numComponents*dim,&gradU,dim,&x,dim,&realSpaceDerI);
+  for (e = 0; e < Ne; ++e) {
+    const PetscReal  detJ        = geom.detJ[e];
+    const PetscReal *v0          = &geom.v0[e*dim];
+    const PetscReal *J           = &geom.J[e*dim*dim];
+    const PetscReal *invJ        = &geom.invJ[e*dim*dim];
+    const PetscInt   Nq          = quad->numPoints;
+    const PetscReal *quadPoints  = quad->points;
+    const PetscReal *quadWeights = quad->weights;
+    PetscInt         q;
+
+    for (q = 0; q < Nq; ++q) {
+      PetscInt    fOffset = 0;          /* Offset into u[] for field_q (like offsetI) */
+      PetscInt    field_q, d, d2;
+      PetscInt    f, g, fc, gc, c;
+
+      if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
+      for (d = 0; d < numComponents; ++d)     {u[d]     = 0.0;}
+      for (d = 0; d < dim*numComponents; ++d) {gradU[d] = 0.0;}
+      for (d = 0; d < dim; ++d) {
+        x[d] = v0[d];
+        for (d2 = 0; d2 < dim; ++d2) {
+          x[d] += J[d*dim+d2]*(quadPoints[q*dim+d2] + 1.0);
+        }
+      }
+      for (field_q = 0; field_q < Nf; ++field_q) {
+        PetscReal *basis, *basisDer;
+        PetscInt   Nb, Ncomp, b, comp;
+
+        ierr = PetscFEGetDimension(feRef[field_q], &Nb);CHKERRQ(ierr);
+        ierr = PetscFEGetNumComponents(feRef[field_q], &Ncomp);CHKERRQ(ierr);
+        ierr = PetscFEGetDefaultTabulation(feRef[field_q], &basis, &basisDer, NULL);CHKERRQ(ierr);
+        for (b = 0; b < Nb; ++b) {
+          for (comp = 0; comp < Ncomp; ++comp) {
+            const PetscInt cidx = b*Ncomp+comp;
+            PetscInt       d1, d2;
+
+            u[fOffset+comp] += basis[q*Nb*Ncomp+cidx];
+            for (d1 = 0; d1 < dim; ++d1) {
+              realSpaceDerI[d1] = 0.0;
+              for (d2 = 0; d2 < dim; ++d2) {
+                realSpaceDerI[d1] += invJ[d2*dim+d1]*basisDer[(q*Nb*Ncomp+cidx)*dim+d2];
+              }
+              gradU[(fOffset+comp)*dim+d1] += realSpaceDerI[d1];
+            }
+          }
+        }
+        if (debug > 1) {
+          for (comp = 0; comp < Ncomp; ++comp) {
+            ierr = PetscPrintf(PETSC_COMM_SELF, "    u[%d,%d]: %g\n", f, comp, PetscRealPart(u[fOffset+comp]));CHKERRQ(ierr);
+            for (d = 0; d < dim; ++d) {
+              ierr = PetscPrintf(PETSC_COMM_SELF, "    gradU[%d,%d]_%c: %g\n", f, comp, 'x'+d, PetscRealPart(gradU[(fOffset+comp)*dim+d]));CHKERRQ(ierr);
+            }
+          }
+        }
+        fOffset += Ncomp;
+      }
+
+      ierr = PetscMemzero(g0, NcI*NcJ         * sizeof(PetscScalar));CHKERRQ(ierr);
+      if (g0_func) {
+        g0_func(u, gradU, NULL, NULL, x, g0);
+        for (c = 0; c < NcI*NcJ; ++c) {g0[c] *= detJ*quadWeights[q];}
+      }
+
+      for (f = 0; f < NbI; ++f) {
+        for (fc = 0; fc < NcI; ++fc) {
+          const PetscInt fidx = f*NcI+fc; /* Test function basis index */
+          const PetscInt i    = offsetI+fidx; /* Element matrix row */
+          for (g = 0; g < NbJ; ++g) {
+            for (gc = 0; gc < NcJ; ++gc) {
+              const PetscInt gidx = g*NcJ+gc; /* Trial function basis index */
+              const PetscInt j    = offsetJ+gidx; /* Element matrix column */
+
+              elemMat[eOffset+i*cCellDof+j] += basisI[q*NbI*NcI+fidx]*g0[fc*NcJ+gc]*basisJ[q*NbJ*NcJ+gidx];
+            }
+          }
+        }
+      }
+    }
+    if (debug > 1) {
+      PetscInt fc, f, gc, g;
+
+      ierr = PetscPrintf(PETSC_COMM_SELF, "Element matrix for fields %d and %d\n", fieldI, fieldJ);CHKERRQ(ierr);
+      for (fc = 0; fc < NcI; ++fc) {
+        for (f = 0; f < NbI; ++f) {
+          const PetscInt i = offsetI + f*NcI+fc;
+          for (gc = 0; gc < NcJ; ++gc) {
+            for (g = 0; g < NbJ; ++g) {
+              const PetscInt j = offsetJ + g*NcJ+gc;
+              ierr = PetscPrintf(PETSC_COMM_SELF, "    elemMat[%d,%d,%d,%d]: %g\n", f, fc, g, gc, PetscRealPart(elemMat[eOffset+i*cCellDof+j]));CHKERRQ(ierr);
+            }
+          }
+          ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
+        }
+      }
+    }
+    eOffset += rCellDof*cCellDof;
+  }
+  ierr = PetscFree5(g0,u,gradU,x,realSpaceDerI);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscFEInitialize_Basic"
 PetscErrorCode PetscFEInitialize_Basic(PetscFE fem)
 {
@@ -4927,5 +5066,90 @@ PetscErrorCode PetscFEIntegrateJacobian(PetscFE fem, PetscInt Ne, PetscInt Nf, P
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   if (fem->ops->integratejacobian) {ierr = (*fem->ops->integratejacobian)(fem, Ne, Nf, fe, fieldI, fieldJ, geom, coefficients, NfAux, feAux, coefficientsAux, g0_func, g1_func, g2_func, g3_func, elemMat);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFERefine"
+/*@C
+  PetscFERefine - Create a "refined" PetscFE object that refines the reference cell into smaller copies. This is typically used
+  to precondition a higher order method with a lower order method on a refined mesh having the same number of dofs (but more
+  sparsity). It is also used to create an interpolation between regularly refined meshes.
+
+  Input Parameter:
+. fe - The initial PetscFE
+
+  Output Parameter:
+. feRef - The refined PetscFE
+
+  Level: developer
+
+.seealso: PetscFEType, PetscFECreate(), PetscFESetType()
+@*/
+PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
+{
+  PetscSpaceType   typename;
+  PetscSpace       P, Pref;
+  PetscDualSpace   Q, Qref;
+  DM               K, Kref;
+  PetscQuadrature  q, qref;
+  const PetscReal *points,    *weights;
+  PetscReal       *pointsRef, *weightsRef, *jac;
+  PetscInt         dim, order, numComp, numCells, npoints, npointsRef, c, p, d, e;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetType((PetscObject) fe, &typename);CHKERRQ(ierr);
+  ierr = PetscFEGetBasisSpace(fe, &P);CHKERRQ(ierr);
+  ierr = PetscFEGetDualSpace(fe, &Q);CHKERRQ(ierr);
+  ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
+  /* Create space */
+  ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) fe), &Pref);CHKERRQ(ierr);
+  ierr = PetscSpacePolynomialGetNumVariables(P,   &dim);CHKERRQ(ierr);
+  ierr = PetscSpacePolynomialSetNumVariables(Pref, dim);CHKERRQ(ierr);
+  ierr = PetscSpaceGetOrder(P,   &order);CHKERRQ(ierr);
+  ierr = PetscSpaceSetOrder(Pref, order);CHKERRQ(ierr);
+  ierr = PetscSpaceSetUp(Pref);CHKERRQ(ierr);
+  /* Create dual space */
+  ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) fe), &Qref);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
+  ierr = DMRefine(K, PetscObjectComm((PetscObject) fe), &Kref);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(Kref, 0, NULL, &numCells);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetDM(Qref, Kref);CHKERRQ(ierr);
+  ierr = DMDestroy(&Kref);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetOrder(Q,   &order);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetOrder(Qref, order);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetUp(Qref);CHKERRQ(ierr);
+  /* Create element */
+  ierr = PetscFECreate(PetscObjectComm((PetscObject) fe), feRef);CHKERRQ(ierr);
+  ierr = PetscFESetType(*feRef, typename);CHKERRQ(ierr);
+  ierr = PetscFESetBasisSpace(*feRef, Pref);CHKERRQ(ierr);
+  ierr = PetscFESetDualSpace(*feRef, Qref);CHKERRQ(ierr);
+  ierr = PetscFEGetNumComponents(fe,    &numComp);CHKERRQ(ierr);
+  ierr = PetscFESetNumComponents(*feRef, numComp);CHKERRQ(ierr);
+  ierr = PetscSpaceDestroy(&Pref);CHKERRQ(ierr);
+  ierr = PetscDualSpaceDestroy(&Qref);CHKERRQ(ierr);
+  /* Create quadrature */
+  ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &qref);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(q, &dim, &npoints, &points, &weights);CHKERRQ(ierr);
+  ierr = PetscMalloc1(npointsRef*dim,&pointsRef);CHKERRQ(ierr);
+  ierr = PetscMalloc1(npointsRef,&weightsRef);CHKERRQ(ierr);
+  npointsRef = npoints*numCells;
+  for (c = 0; c < numCells; ++c) {
+    for (p = 0; p < npoints; ++p) {
+      for (d = 0; d < dim; ++d) {
+        pointsRef[(c*npoints + p)*dim+d] = 0.0;
+        for (e = 0; e < dim; ++e) {
+          /* TODO: Get subelement jacobians from CellRefiner */
+          pointsRef[(c*npoints + p)*dim+d] += jac[(c*dim + d)*dim+e]*points[p*dim+e];
+        }
+      }
+      weightsRef[c*npoints+p] = weights[p]/numCells;
+    }
+  }
+  ierr = PetscQuadratureSetData(qref, dim, npointsRef, pointsRef, weightsRef);CHKERRQ(ierr);
+  ierr = PetscFESetQuadrature(*feRef, qref);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&qref);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

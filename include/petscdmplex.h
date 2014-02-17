@@ -213,4 +213,5 @@ PETSC_EXTERN PetscErrorCode DMPlexComputeL2GradientDiff(DM, PetscFE[], void (**)
 PETSC_EXTERN PetscErrorCode DMPlexComputeResidualFEM(DM, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeJacobianActionFEM(DM, Mat, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeJacobianFEM(DM, Vec, Mat, Mat, MatStructure*,void *);
+PETSC_EXTERN PetscErrorCode DMPlexComputeInterpolatorFEM(DM, DM, Mat, void *);
 #endif

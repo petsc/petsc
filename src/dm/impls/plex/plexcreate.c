@@ -696,6 +696,7 @@ PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscIn
 
 /* External function declarations here */
 extern PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
+extern PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, VecScatter *ctx);
 extern PetscErrorCode DMCreateMatrix_Plex(DM dm,  Mat *J);
 extern PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm);
 extern PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined);
@@ -857,9 +858,9 @@ PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->createcoordinatedm              = DMCreateCoordinateDM_Plex;
   dm->ops->getcoloring                     = NULL;
   dm->ops->creatematrix                    = DMCreateMatrix_Plex;
-  dm->ops->createinterpolation             = 0;
-  dm->ops->getaggregates                   = 0;
-  dm->ops->getinjection                    = 0;
+  dm->ops->createinterpolation             = DMCreateInterpolation_Plex;
+  dm->ops->getaggregates                   = NULL;
+  dm->ops->getinjection                    = DMCreateInjection_Plex;
   dm->ops->refine                          = DMRefine_Plex;
   dm->ops->coarsen                         = DMCoarsen_Plex;
   dm->ops->refinehierarchy                 = DMRefineHierarchy_Plex;
