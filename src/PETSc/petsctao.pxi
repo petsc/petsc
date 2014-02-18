@@ -22,7 +22,7 @@ cdef extern from * nogil:
     PetscTAOType TAOIPM
     PetscTAOType TAOTEST
 
-    ctypedef enum PetscTAOTerminationReason "TaoTerminationReason":
+    ctypedef enum PetscTAOConvergedReason "TaoConvergedReason":
         #iterating
         TAO_CONTINUE_ITERATING
         # converged
@@ -71,12 +71,12 @@ cdef extern from * nogil:
     ctypedef int TaoConvergenceTest(PetscTAO,void*) except PETSC_ERR_PYTHON
     int TaoDefaultConvergenceTest(PetscTAO tao,void *dummy) except PETSC_ERR_PYTHON
     int TaoSetConvergenceTest(PetscTAO, TaoConvergenceTest*, void*)
-    int TaoSetTerminationReason(PetscTAO,PetscTAOTerminationReason)
-    int TaoGetTerminationReason(PetscTAO,PetscTAOTerminationReason*)
+    int TaoSetConvergedReason(PetscTAO,PetscTAOConvergedReason)
+    int TaoGetConvergedReason(PetscTAO,PetscTAOConvergedReason*)
     int TaoGetSolutionStatus(PetscTAO,PetscInt*,
                              PetscReal*,PetscReal*,
                              PetscReal*,PetscReal*,
-                             PetscTAOTerminationReason*)
+                             PetscTAOConvergedReason*)
 
     ctypedef int TaoMonitor(PetscTAO,void*) except PETSC_ERR_PYTHON
     ctypedef int (*TaoMonitorDestroy)(void**)
@@ -302,7 +302,7 @@ cdef int TAO_Converged(PetscTAO _tao,
     reason = converged(tao, *args, **kargs)
     if reason is None:  return 0
     # handle value of convergence reason
-    cdef PetscTAOTerminationReason creason = TAO_CONTINUE_ITERATING
+    cdef PetscTAOConvergedReason creason = TAO_CONTINUE_ITERATING
     if reason is False or reason == -1:
         creason = TAO_DIVERGED_USER
     elif reason is True or reason == 1:
@@ -311,7 +311,7 @@ cdef int TAO_Converged(PetscTAO _tao,
         creason = reason
         assert creason >= TAO_DIVERGED_USER
         assert creason <= TAO_CONVERGED_USER
-    CHKERR( TaoSetTerminationReason(_tao, creason) )
+    CHKERR( TaoSetConvergedReason(_tao, creason) )
     return 0
 
 cdef int TAO_Monitor(PetscTAO _tao,

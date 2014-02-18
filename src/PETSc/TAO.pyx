@@ -443,14 +443,14 @@ cdef class TAO(Object):
     def setConvergedReason(self, reason):
         """
         """
-        cdef PetscTAOTerminationReason creason = reason
-        CHKERR( TaoSetTerminationReason(self.tao, creason) )
+        cdef PetscTAOConvergedReason creason = reason
+        CHKERR( TaoSetConvergedReason(self.tao, creason) )
 
     def getConvergedReason(self):
         """
         """
-        cdef PetscTAOTerminationReason creason = TAO_CONTINUE_ITERATING
-        CHKERR( TaoGetTerminationReason(self.tao, &creason) )
+        cdef PetscTAOConvergedReason creason = TAO_CONTINUE_ITERATING
+        CHKERR( TaoGetConvergedReason(self.tao, &creason) )
         return creason
 
     def setMonitor(self, monitor, args=None, kargs=None):
@@ -540,11 +540,11 @@ cdef class TAO(Object):
         CHKERR( TaoGetSolutionStatus(self.tao, NULL, NULL, NULL, &cnorm, NULL, NULL) )
         return cnorm
 
-    def getTerminationReason(self):
+    def getConvergedReason(self):
         """
         """
-        cdef PetscTAOTerminationReason reason = TAO_CONTINUE_ITERATING
-        CHKERR( TaoGetTerminationReason(self.tao, &reason) )
+        cdef PetscTAOConvergedReason reason = TAO_CONTINUE_ITERATING
+        CHKERR( TaoGetConvergedReason(self.tao, &reason) )
         return reason
 
     def getSolutionStatus(self):
@@ -552,7 +552,7 @@ cdef class TAO(Object):
         """
         cdef PetscInt its=0
         cdef PetscReal fval=0, gnorm=0, cnorm=0, xdiff=0
-        cdef PetscTAOTerminationReason reason = TAO_CONTINUE_ITERATING
+        cdef PetscTAOConvergedReason reason = TAO_CONTINUE_ITERATING
         CHKERR( TaoGetSolutionStatus(self.tao, &its,
                                      &fval, &gnorm, &cnorm, &xdiff,
                                      &reason) )
