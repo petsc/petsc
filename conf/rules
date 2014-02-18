@@ -52,8 +52,8 @@ chk_c2html:
           printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ;false; fi
 
 lssrc:
-	@if [ "${SOURCEC}"foo != "foo" -o "${SOURCEH}foo" != "foo" ]; then \
-	  ls ${SOURCEC} ${SOURCEH} | cat;\
+	@if [ "${SOURCEALL}" != "" ]; then \
+	  ls ${SOURCEALL} | cat;\
 	 fi
 
 chklib_dir: chk_makej
@@ -132,7 +132,7 @@ lib:  ${SOURCE}
 #
 # Builds library - fast versiong
 
-libfast:  ${SOURCECU} ${SOURCEC} ${SOURCEF}
+libfast:  ${SOURCE}
 	-@if [ "${SPECIALFASTLIB}" = "yes" ] ; then \
 	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  specialfastlib;  \
 	else \
@@ -515,7 +515,7 @@ getautoconfargs:
 
 #--------------------------------------------------------------------------------------
 remote_sshrsync:
-	-@${RSYNC} makefile ${SOURCEC} ${SOURCEF} ${SOURCEH} ${WORKMACHINE}:${WORKSPACE}
+	-@${RSYNC} makefile ${SOURCEALL} ${WORKMACHINE}:${WORKSPACE}
 	-@echo ${SSH} ${WORKMACHINE} "cd ${WORKSPACE}; setenv PETSC_DIR ${WORKPETSCDIR} ; setenv PETSC_ARCH ${WORKPETSCARCH}; make ${EXECUTABLE}"
 	-@${SSH} ${WORKMACHINE} "cd ${WORKSPACE}; setenv PETSC_DIR ${WORKPETSCDIR} ; setenv PETSC_ARCH ${WORKPETSCARCH}; make ${EXECUTABLE}"
 	@IGNORE_THIS_ERROR
@@ -561,7 +561,7 @@ manualpages_buildcite: chk_manualpage_dir
 	  TEXTFILTER_PATH=${PETSC_DIR}/src/docs/tex/doctext; export TEXTFILTER_PATH; \
           ${DOCTEXT} -html -indexdir ../${MANSEC} \
 		-index ${LOC}/docs/manualpages/manualpages.cit \
-		-mpath ${LOC}/docs/manualpages/${MANSEC} ${SOURCEC} ${SOURCEH} ${SOURCECU};  fi
+		-mpath ${LOC}/docs/manualpages/${MANSEC} ${SOURCED};  fi
 #
 #
 manualpages:
@@ -570,8 +570,7 @@ manualpages:
 	  ${DOCTEXT} -html \
 		-mpath ${LOC}/docs/manualpages/${MANSEC} -heading PETSc \
 		-defn ${PETSC_DIR}/src/docs/tex/doctext/html.def \
-		-locdir ${LOCDIR} -mapref ${LOC}/docs/manualpages/manualpages.cit \
-		${SOURCEC} ${SOURCEH} ${SOURCECU}; \
+		-locdir ${LOCDIR} -mapref ${LOC}/docs/manualpages/manualpages.cit ${SOURCED};\
 		chmod -f g+w ${LOC}/docs/manualpages/${MANSEC}/* ; fi
 #
 #   Example usage for manual pages; adds each example that uses a function to that functions
@@ -655,7 +654,7 @@ getexlist:
 #   Rules for generating html code from C and Fortran
 #	
 checkmakefilelist:
-	-@ls makefile ${SOURCEC} ${SOURCEF} ${SOURCEH} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB} 2>/dev/null | grep -v \\.\\. |  sort | uniq > /tmp/$$USER.$$.make ;\
+	-@ls makefile ${SOURCEALL} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB} 2>/dev/null | grep -v \\.\\. |  sort | uniq > /tmp/$$USER.$$.make ;\
 	ls makefile *.c *.h *.F *.m *.h90 2>/dev/null | sort | uniq > /tmp/$$USER.$$.ls; \
 	${DIFF} /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls; \
 	${RM}  /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls
@@ -666,7 +665,7 @@ html: chk_c2html
 	-@ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
           ${MKDIR} -p $${loc} ;\
-          for i in ${SOURCEC} ${SOURCEF} ${SOURCEH} ${SOURCECU} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB} *_Impl.cc *_Impl.hh *.sidl foo ; do\
+          for i in ${SOURCEALL} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB} *_Impl.cc *_Impl.hh *.sidl foo ; do\
 	    if [ -f $$i ]; then \
 	      idir=`dirname $$i`;\
 	      if [ ! -d $${loc}/$${idir} ]; then ${MKDIR} -p $${loc}/$${idir}; fi ; \
@@ -707,7 +706,7 @@ html: chk_c2html
 		 fi; \
                done; \
                echo " " >> $${loc}/index.html; \
-               for file in ${SOURCEH} ${SOURCEC} ${SOURCEF} ${SOURCECU} foo ; do \
+               for file in ${SOURCEALL} foo ; do \
 		 if [ -f $$file ]; then \
                    echo "<a href=\"$${file}.html\">$${file}</a><br>" >> $${loc}/index.html; \
 		 fi; \
@@ -737,19 +736,19 @@ cleangcov:
 countfunctions:
 	-@if [ ! -f ${INSTALL_LIB_DIR}/countfunctions ]; then \
 	  touch ${INSTALL_LIB_DIR}/countfunctions ; fi
-	@-if [ "${SOURCEC}" != "" ]; then \
-          for i in ${SOURCEC} foo; do if [ -f $$i ]; then \
+	@-if [ "${SOURCED}" != "" ]; then \
+          for i in ${SOURCED} foo; do if [ -f $$i ]; then \
            grep "define __FUNCT__" $$i | cut -f2 -d\" >> ${INSTALL_LIB_DIR}/countfunctions ; \
           fi; done ; \
         fi
 
 checkbadPetscFunctionBegin:
-	-@if [ "${SOURCEC}" != "" ] ; then \
+	-@if [ "${SOURCED}" != "" ] ; then \
 	${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  \
 	checkbadPetscFunctionBegin_private ; fi
 
 checkbadPetscFunctionBegin_private:
-	-@for filename in ${SOURCEC} ; do \
+	-@for filename in ${SOURCED} ; do \
 	a=`grep '#define __FUNCT__' $$filename | wc -l`; \
 	b=`grep 'PetscFunctionBegin' $$filename | wc -l`; \
 	if [ $$a -ne $$b ] ; then \
@@ -758,7 +757,7 @@ checkbadPetscFunctionBegin_private:
 	done
 
 checkbadFileHeader:
-	-@for filename in ${SOURCEC} makefile ${SOURCEH} ${SOURCEF} ${EXAMPLESC} ${EXAMPLESF}; do \
+	-@for filename in ${SOURCEALL} makefile ${EXAMPLESC} ${EXAMPLESF}; do \
 	a=`grep 'Id:' $$filename | wc -l`; \
 	if [ $$a -ne 1 ] ; then \
 	echo "$$filename: missing RCS file header" ; \
@@ -766,7 +765,7 @@ checkbadFileHeader:
 	done
 
 checkbadSource:
-	-@for filename in ${SOURCEC} makefile ${SOURCEH} ${SOURCEF} ${EXAMPLESC} ${EXAMPLESF}; do \
+	-@for filename in ${SOURCEALL} makefile ${EXAMPLESC} ${EXAMPLESF}; do \
        a=`grep '( ' $$filename | wc -l`; \
        if [ $$a -ge 1 ] ; then \
        echo "$$filename: extra blank after (" ; \
@@ -849,7 +848,7 @@ hgver:
 	   hg tip    --template 'BuildSystem tip    : {node|short}\n'	
 #
 sourcelist:
-	-@for i in ${SOURCEC}; do \
+	-@for i in ${SOURCEALL}; do \
 	    /bin/echo -n ${LOCDIR}$${i} " " >> ${BASE_DIR}/files; \
         done
 
@@ -960,14 +959,14 @@ shared_nomesg: chk_makej
 #
 #  Remove trailing blanks from source code
 rmtrailingblanks:
-	@for i in ${SOURCEF} ${SOURCEC} ${SOURCEH} ${EXAMPLESC} ${EXAMPLESF}; do \
+	@for i in ${SOURCEALL} ${EXAMPLESC} ${EXAMPLESF}; do \
 	  sed -i '' s"/[ ]*$$//"g $$i; \
 	done
 
 #
 #  Remove trailing blanks from source code
 uncrustify:
-	@for i in ${SOURCEC} ${SOURCEH} ${EXAMPLESC}; do \
+	@for i in ${SOURCED} ${EXAMPLESC}; do \
 	  uncrustify -c ${PETSC_DIR}/bin/uncrustify.cfg $$i; \
 	done
 

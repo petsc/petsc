@@ -54,10 +54,14 @@ OBJSCU     = $(SOURCECU:.cu=.o)
 # LIBNAME    - library name
 # SOURCE     - source files
 # OBJS       - object files
+# SOURCEALL  - sources and includes
+# SOURCED    - sources/includes [but not fortran - for doc parsing?]
 #
 LIBNAME    = ${INSTALL_LIB_DIR}/${LIBBASE}.${AR_LIB_SUFFIX}
 SOURCE     = ${SOURCECU} ${SOURCEC} ${SOURCEF}
 OBJS       = ${OBJSCU} ${OBJSC} ${OBJSF}
+SOURCEALL  = ${SOURCECU} ${SOURCEC} ${SOURCEF} ${SOURCEH}
+SOURCED    = ${SOURCECU} ${SOURCEC} ${SOURCEH}
 
 CLINKER = ${PCC_LINKER} ${PCC_LINKER_FLAGS} ${CFLAGS}
 FLINKER = ${FC_LINKER} ${FC_LINKER_FLAGS} ${FFLAGS}
