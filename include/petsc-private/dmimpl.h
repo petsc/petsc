@@ -142,7 +142,7 @@ struct _p_DM {
   NullSpaceFunc           nullspaceConstructors[10];
   /* Fields are represented by objects */
   PetscInt                numFields;
-  PetscObject             *fields;
+  PetscFE                *fields;
 
   PetscObject             dmksp,dmsnes,dmts;
 };
