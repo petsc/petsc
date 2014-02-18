@@ -20,7 +20,7 @@
   Note:
   maskvalue should usually be 0.0, unless a pointwise divide will be used.
 @*/
-PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, PetscInt reduced_type, PetscReal maskvalue, Vec *vreduced)
+PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, PetscReal maskvalue, Vec *vreduced)
 {
   PetscErrorCode ierr;
   PetscInt       nfull,nreduced,nreduced_local,rlow,rhigh,flow,fhigh;
