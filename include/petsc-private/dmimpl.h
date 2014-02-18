@@ -15,6 +15,7 @@ struct _DMOps {
   PetscErrorCode (*clone)(DM,DM*);
   PetscErrorCode (*setfromoptions)(DM);
   PetscErrorCode (*setup)(DM);
+  PetscErrorCode (*createdefaultsection)(DM);
   PetscErrorCode (*createglobalvector)(DM,Vec*);
   PetscErrorCode (*createlocalvector)(DM,Vec*);
   PetscErrorCode (*getlocaltoglobalmapping)(DM);

@@ -6391,6 +6391,84 @@ PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpola
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMCreateDefaultSection_Plex"
+/* Pointwise interpolation
+     Just code FEM for now
+     u^f = I u^c
+     sum_k u^f_k phi^f_k = I sum_l u^c_l phi^c_l
+     u^f_i = sum_l int psi^f_i I phi^c_l u^c_l
+     I_{ij} = int psi^f_i phi^c_j
+*/
+PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
+{
+  PetscSection   section;
+  IS            *bcPoints;
+  PetscInt      *bcFields, *numComp, *numDofTot;
+  PetscInt       dim, numBd, numBC = 0, numFields, bd, bc, f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Handle boundary conditions */
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
+  for (bd = 0; bd < numBd; ++bd) {
+    PetscBool isEssential;
+    ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+    if (isEssential) ++numBC;
+  }
+  ierr = PetscMalloc2(numBC,&bcFields,numBC,&bcPoints);CHKERRQ(ierr);
+  for (bd = 0, bc = 0; bd < numBd; ++bd) {
+    const char     *bdLabel;
+    DMLabel         label;
+    const PetscInt *values;
+    PetscInt        field, numValues;
+    PetscBool       isEssential, has;
+
+    ierr = DMPlexGetBoundary(dm, bd, &isEssential, &bdLabel, &field, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
+    if (numValues != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Bug me and I will fix this");
+    ierr = DMPlexHasLabel(dm, bdLabel, &has);CHKERRQ(ierr);
+    if (!has) {
+      ierr = DMPlexCreateLabel(dm, bdLabel);CHKERRQ(ierr);
+      ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
+      ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
+    }
+    ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
+    ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
+    if (isEssential) {
+      bcFields[bc] = field;
+      ierr = DMPlexGetStratumIS(dm, bdLabel, values[0], &bcPoints[bc++]);CHKERRQ(ierr);
+    }
+  }
+  /* Handle discretization */
+  ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
+  ierr = PetscMalloc2(numFields,&numComp,numFields*(dim+1),&numDofTot);CHKERRQ(ierr);
+  for (f = 0; f < numFields; ++f) {
+    PetscFE         fe;
+    const PetscInt *numDof;
+    PetscInt        d;
+
+    ierr = DMGetField(dm, f, &fe);CHKERRQ(ierr);
+    ierr = PetscFEGetNumComponents(fe, &numComp[f]);CHKERRQ(ierr);
+    ierr = PetscFEGetNumDof(fe, &numDof);CHKERRQ(ierr);
+    for (d = 0; d < dim+1; ++d) numDofTot[f*(dim+1)+d] = numDof[d];
+  }
+  ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDofTot, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
+  for (f = 0; f < numFields; ++f) {
+    PetscFE     fe;
+    const char *name;
+    ierr = DMGetField(dm, f, &fe);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) fe, &name);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldName(section, f, name);CHKERRQ(ierr);
+  }
+  ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
+  for (bc = 0; bc < numBC; ++bc) {ierr = ISDestroy(&bcPoints[bc]);CHKERRQ(ierr);}
+  ierr = PetscFree2(bcFields,bcPoints);CHKERRQ(ierr);
+  ierr = PetscFree2(numComp,numDofTot);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateInjection_Plex"
 /* Pointwise restriction:
      Give up on anything beyond P_0 and P_1 for now
