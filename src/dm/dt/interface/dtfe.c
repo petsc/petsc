@@ -1416,6 +1416,24 @@ PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt **numDo
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceCreateReferenceCell"
+/*@C
+  PetscDualSpaceCreateReferenceCell - Create a DMPLEX with the appropriate FEM reference cell
+
+  Collective on PetscDualSpace
+
+  Input Parameters:
++ sp      - The PetscDualSpace
+. dim     - The spatial dimension
+- simplex - Flag for simplex, otherwise use a tensor-product cell
+
+  Output Parameter:
+. refdm - The reference cell
+
+  Level: advanced
+
+.keywords: PetscDualSpace, reference cell
+.seealso: PetscDualSpaceCreate(), DMPLEX
+@*/
 PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim, PetscBool simplex, DM *refdm)
 {
   DM             rdm;
