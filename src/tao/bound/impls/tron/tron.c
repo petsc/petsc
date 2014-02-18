@@ -150,17 +150,17 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
 
     }
     /* use free_local to mask/submat gradient, hessian, stepdirection */
-    ierr = VecGetSubVec(tao->gradient,tron->Free_Local,tao->subset_type,0.0,&tron->R);CHKERRQ(ierr);
-    ierr = VecGetSubVec(tao->gradient,tron->Free_Local,tao->subset_type,0.0,&tron->DXFree);CHKERRQ(ierr);
+    ierr = TaoVecGetSubVec(tao->gradient,tron->Free_Local,tao->subset_type,0.0,&tron->R);CHKERRQ(ierr);
+    ierr = TaoVecGetSubVec(tao->gradient,tron->Free_Local,tao->subset_type,0.0,&tron->DXFree);CHKERRQ(ierr);
     ierr = VecSet(tron->DXFree,0.0);CHKERRQ(ierr);
     ierr = VecScale(tron->R, -1.0);CHKERRQ(ierr);
-    ierr = MatGetSubMat(tao->hessian, tron->Free_Local, tron->diag, tao->subset_type, &tron->H_sub);CHKERRQ(ierr);
+    ierr = TaoMatGetSubMat(tao->hessian, tron->Free_Local, tron->diag, tao->subset_type, &tron->H_sub);CHKERRQ(ierr);
     if (tao->hessian == tao->hessian_pre) {
       ierr = MatDestroy(&tron->Hpre_sub);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)(tron->H_sub));CHKERRQ(ierr);
       tron->Hpre_sub = tron->H_sub;
     } else {
-      ierr = MatGetSubMat(tao->hessian_pre, tron->Free_Local, tron->diag, tao->subset_type,&tron->Hpre_sub);CHKERRQ(ierr);
+      ierr = TaoMatGetSubMat(tao->hessian_pre, tron->Free_Local, tron->diag, tao->subset_type,&tron->Hpre_sub);CHKERRQ(ierr);
     }
     ierr = KSPReset(tao->ksp);CHKERRQ(ierr);
     ierr = KSPSetOperators(tao->ksp, tron->H_sub, tron->Hpre_sub, tron->matflag);CHKERRQ(ierr);

@@ -24,9 +24,6 @@ E*/
 typedef enum {TAO_SUBSET_SUBVEC,TAO_SUBSET_MASK,TAO_SUBSET_MATRIXFREE} TaoSubsetType;
 PETSC_EXTERN const char *const TaoSubsetTypes[];
 
-PetscErrorCode VecGetSubVec(Vec, IS, PetscInt, PetscReal, Vec*);
-PetscErrorCode MatGetSubMat(Mat, IS, Vec, TaoSubsetType, Mat*);
-
 typedef struct _p_Tao*   Tao;
 #define TaoType char*
 #define TAOLMVM     "lmvm"

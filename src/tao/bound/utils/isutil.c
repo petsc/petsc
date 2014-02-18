@@ -1,11 +1,12 @@
 #include <petsctao.h> /*I "petsctao.h" I*/
+#include <petsc-private/taoimpl.h>
 #include <petsc-private/matimpl.h>
 #include <../src/tao/matrix/submatfree.h>
 
 #undef __FUNCT__
-#define __FUNCT__ "VecGetSubVec"
-/*@
-  VecGetSubVec - Gets a subvector using the IS
+#define __FUNCT__ "TaoVecGetSubVec"
+/*@C
+  TaoVecGetSubVec - Gets a subvector using the IS
 
   Input Parameters:
 + vfull - the full matrix
@@ -19,7 +20,7 @@
   Note:
   maskvalue should usually be 0.0, unless a pointwise divide will be used.
 @*/
-PetscErrorCode VecGetSubVec(Vec vfull, IS is, PetscInt reduced_type, PetscReal maskvalue, Vec *vreduced)
+PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, PetscInt reduced_type, PetscReal maskvalue, Vec *vreduced)
 {
   PetscErrorCode ierr;
   PetscInt       nfull,nreduced,nreduced_local,rlow,rhigh,flow,fhigh;
@@ -93,9 +94,9 @@ PetscErrorCode VecGetSubVec(Vec vfull, IS is, PetscInt reduced_type, PetscReal m
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetSubMat"
-/*@
-  MatGetSubMat - Gets a submatrix using the IS
+#define __FUNCT__ "TaoMatGetSubMat"
+/*@C
+  TaoMatGetSubMat - Gets a submatrix using the IS
 
   Input Parameters:
 + M - the full matrix (n x n)
@@ -107,7 +108,7 @@ PetscErrorCode VecGetSubVec(Vec vfull, IS is, PetscInt reduced_type, PetscReal m
   Output Parameters:
 . Msub - the submatrix
 @*/
-PetscErrorCode MatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, Mat *Msub)
+PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, Mat *Msub)
 {
   PetscErrorCode ierr;
   IS             iscomp;
