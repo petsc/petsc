@@ -620,35 +620,14 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
 #define __FUNCT__ "SetupSection"
 PetscErrorCode SetupSection(DM dm, AppCtx *user)
 {
-  PetscSection    section;
-  DMLabel         label;
-  PetscInt        dim         = user->dim;
-  const char     *bdLabel     = user->bcType == NEUMANN   ? "boundary" : "marker";
-  PetscInt        numBC       = user->bcType == DIRICHLET ? 1 : 0;
-  PetscInt        bcFields[1] = {0};
-  IS              bcPoints[1] = {NULL};
-  PetscInt        numComp[1];
-  const PetscInt *numDof;
-  PetscBool       has;
-  PetscErrorCode  ierr;
+  const PetscInt id = 1;
+  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscFEGetNumComponents(user->fe[0], &numComp[0]);CHKERRQ(ierr);
-  ierr = PetscFEGetNumDof(user->fe[0], &numDof);CHKERRQ(ierr);
-  ierr = DMPlexHasLabel(dm, bdLabel, &has);CHKERRQ(ierr);
-  if (!has) {
-    ierr = DMPlexCreateLabel(dm, bdLabel);CHKERRQ(ierr);
-    ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
-    ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
-  }
-  ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
-  ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
-  if (user->bcType == DIRICHLET) {ierr  = DMPlexGetStratumIS(dm, bdLabel, 1, &bcPoints[0]);CHKERRQ(ierr);}
-  ierr = DMPlexCreateSection(dm, dim, NUM_FIELDS, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
-  ierr = PetscSectionSetFieldName(section, 0, "potential");CHKERRQ(ierr);
-  ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
-  if (user->bcType == DIRICHLET) {ierr = ISDestroy(&bcPoints[0]);CHKERRQ(ierr);}
+  ierr = PetscObjectSetName((PetscObject) user->fe[0], "potential");CHKERRQ(ierr);
+  ierr = DMSetNumFields(dm, 1);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, user->fe[0]);CHKERRQ(ierr);
+  ierr = DMPlexAddBoundary(dm, user->bcType == DIRICHLET, user->bcType == NEUMANN ? "boundary" : "marker", 0, NULL, 1, &id, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
