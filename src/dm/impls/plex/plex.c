@@ -6447,7 +6447,7 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     const PetscInt *numDof;
     PetscInt        d;
 
-    ierr = DMGetField(dm, f, &fe);CHKERRQ(ierr);
+    ierr = DMGetField(dm, f, (PetscObject *) &fe);CHKERRQ(ierr);
     ierr = PetscFEGetNumComponents(fe, &numComp[f]);CHKERRQ(ierr);
     ierr = PetscFEGetNumDof(fe, &numDof);CHKERRQ(ierr);
     for (d = 0; d < dim+1; ++d) numDofTot[f*(dim+1)+d] = numDof[d];
@@ -6456,7 +6456,8 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
   for (f = 0; f < numFields; ++f) {
     PetscFE     fe;
     const char *name;
-    ierr = DMGetField(dm, f, &fe);CHKERRQ(ierr);
+
+    ierr = DMGetField(dm, f, (PetscObject *) &fe);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) fe, &name);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldName(section, f, name);CHKERRQ(ierr);
   }
