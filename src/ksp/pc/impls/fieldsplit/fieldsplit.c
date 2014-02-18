@@ -610,11 +610,11 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = MatSchurComplementGetKSP(jac->schur, &kspInner);CHKERRQ(ierr);
       ilink = jac->head;
       ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
-      ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
+      ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ilink = ilink->next;
       ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
-      ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
+      ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ierr  = MatSchurComplementUpdateSubMatrices(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1],pc->flag);CHKERRQ(ierr);
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELFP) {
@@ -638,11 +638,11 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       /* extract the A01 and A10 matrices */
       ilink = jac->head;
       ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
-      ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
+      ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ilink = ilink->next;
       ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
-      ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
+      ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
 
       /* Use mat[0] (diagonal block of Amat) preconditioned by pmat[0] to define Schur complement */
