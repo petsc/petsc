@@ -84,7 +84,7 @@ cdef class TAO(Object):
     def create(self, comm=None):
         """
         """
-        cdef MPI_Comm ccomm = def_Comm(comm, GetCommDefault())
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscTAO newtao = NULL
         CHKERR( TaoCreate(ccomm, &newtao) )
         PetscCLEAR(self.obj); self.tao = newtao
