@@ -516,17 +516,17 @@ PETSC_EXTERN PetscErrorCode PetscCommDestroy(MPI_Comm*);
 
    Level: beginner
 
-   Notes: Memory is always allocated at least double aligned
+   Notes:
+   Memory is always allocated at least double aligned
 
-          If you request memory of zero size it will allocate no space and assign the pointer to 0; PetscFree() will
-          properly handle not freeing the null pointer.
+   It is safe to allocate size 0 and pass the resulting pointer (which may or may not be NULL) to PetscFree().
 
 .seealso: PetscFree(), PetscNew()
 
   Concepts: memory allocation
 
 M*/
-#define PetscMalloc(a,b)  ((a != 0) ? (*PetscTrMalloc)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,(void**)(b)) : (*(b) = 0,0) )
+#define PetscMalloc(a,b)  ((*PetscTrMalloc)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,(void**)(b)))
 
 /*MC
    PetscAddrAlign - Rounds up an address to PETSC_MEMALIGN alignment
@@ -1079,14 +1079,16 @@ M*/
 
    Level: beginner
 
-   Notes: Memory must have been obtained with PetscNew() or PetscMalloc()
+   Notes:
+   Memory must have been obtained with PetscNew() or PetscMalloc().
+   It is safe to call PetscFree() on a NULL pointer.
 
 .seealso: PetscNew(), PetscMalloc(), PetscFreeVoid()
 
   Concepts: memory allocation
 
 M*/
-#define PetscFree(a)   ((a) && ((*PetscTrFree)((void*)(a),__LINE__,PETSC_FUNCTION_NAME,__FILE__) || ((a) = 0,0)))
+#define PetscFree(a)   ((*PetscTrFree)((void*)(a),__LINE__,PETSC_FUNCTION_NAME,__FILE__) || ((a) = 0,0))
 
 /*MC
    PetscFreeVoid - Frees memory
