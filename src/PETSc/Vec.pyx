@@ -744,7 +744,7 @@ cdef class Vec(Object):
     def restoreSubVector(self, IS iset not None, Vec subvec not None):
         CHKERR( VecRestoreSubVector(self.vec, iset.iset, &subvec.vec) )
 
-    def nestGetSubVecs(self):
+    def getNestSubVecs(self):
         cdef PetscInt N
         cdef PetscVec* sx
         CHKERR( VecNestGetSubVecs(self.vec, &N, &sx) )
@@ -757,7 +757,7 @@ cdef class Vec(Object):
 
         return output
 
-    def nestSetSubVecs(self, sx, idxm=None):
+    def setNestSubVecs(self, sx, idxm=None):
         if idxm is None: idxm = range(len(sx))
         else: assert len(idxm) == len(sx)
         cdef PetscInt N = 0
