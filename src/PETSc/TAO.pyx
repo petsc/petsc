@@ -216,7 +216,6 @@ cdef class TAO(Object):
         if H is not None: Hmat = H.mat
         cdef PetscMat Pmat = Hmat
         if P is not None: Pmat = P.mat
-
         CHKERR( TaoSetHessianRoutine(self.tao, Hmat, Pmat, TAO_Hessian, NULL) )
         if args is None: args = ()
         if kargs is None: kargs = {}
