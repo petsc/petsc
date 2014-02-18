@@ -200,6 +200,11 @@ PETSC_EXTERN PetscErrorCode DMPlexVTKWriteAll(PetscObject, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMPlexGetScale(DM, PetscUnit, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexSetScale(DM, PetscUnit, PetscReal);
 
+typedef struct _n_Boundary *DMBoundary;
+PETSC_EXTERN PetscErrorCode DMPlexAddBoundary(DM, PetscBool, const char[], PetscInt, void (*)(), PetscInt, const PetscInt *, void *);
+PETSC_EXTERN PetscErrorCode DMPlexGetNumBoundary(DM, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMPlexGetBoundary(DM, PetscInt, PetscBool *, const char **, PetscInt *, void (**)(), PetscInt *, const PetscInt **, void **);
+
 typedef struct {
   DM    dm;
   Vec   u; /* The base vector for the Jacbobian action J(u) x */

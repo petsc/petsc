@@ -33,6 +33,18 @@ struct _n_DMLabel {
   DMLabel     next;           /* Linked list */
 };
 
+
+struct _n_Boundary {
+  const char *name;
+  PetscBool   essential;
+  PetscInt    field;
+  void      (*func)();
+  PetscInt    numids;
+  PetscInt   *ids;
+  void       *ctx;
+  DMBoundary  next;
+};
+
 typedef struct {
   PetscInt             refct;
   PetscInt             dim;               /* Topological mesh dimension */
@@ -69,6 +81,9 @@ typedef struct {
   /* Output */
   PetscInt             vtkCellHeight;            /* The height of cells for output, default is 0 */
   PetscReal            scale[NUM_PETSC_UNITS];   /* The scale for each SI unit */
+
+  /* Problem definition */
+  DMBoundary           boundary;          /* List of boundary conditions */
 
   /* Debugging */
   PetscBool            printSetValues;

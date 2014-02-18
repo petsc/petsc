@@ -1097,3 +1097,86 @@ PetscErrorCode DMPlexComputeInterpolatorFEM(DM dmc, DM dmf, Mat I, void *user)
 #endif
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexAddBoundary"
+/* The ids can be overridden by the command line option -bc_<boundary name> */
+PetscErrorCode DMPlexAddBoundary(DM dm, PetscBool isEssential, const char name[], PetscInt field, void (*bcFunc)(), PetscInt numids, const PetscInt *ids, void *ctx)
+{
+  DM_Plex       *mesh = (DM_Plex *) dm->data;
+  DMBoundary     b;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(&b);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(name, (char **) &b->name);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numids, &b->ids);CHKERRQ(ierr);
+  ierr = PetscMemcpy(b->ids, ids, numids*sizeof(PetscInt));CHKERRQ(ierr);
+  b->essential   = isEssential;
+  b->field       = field;
+  b->func        = bcFunc;
+  b->numids      = numids;
+  b->ctx         = ctx;
+  b->next        = mesh->boundary;
+  mesh->boundary = b;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetNumBoundary"
+PetscErrorCode DMPlexGetNumBoundary(DM dm, PetscInt *numBd)
+{
+  DM_Plex   *mesh = (DM_Plex *) dm->data;
+  DMBoundary b    = mesh->boundary;
+
+  PetscFunctionBegin;
+  *numBd = 0;
+  while (b) {++(*numBd); b = b->next;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetBoundary"
+PetscErrorCode DMPlexGetBoundary(DM dm, PetscInt bd, PetscBool *isEssential, const char **name, PetscInt *field, void (**func)(), PetscInt *numids, const PetscInt **ids, void **ctx)
+{
+  DM_Plex   *mesh = (DM_Plex *) dm->data;
+  DMBoundary b    = mesh->boundary;
+  PetscInt   n    = 0;
+
+  PetscFunctionBegin;
+  while (b) {
+    if (n == bd) break;
+    b = b->next;
+    ++n;
+  }
+  if (n != bd) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boundary %d is not in [0, %d)", bd, n);
+  if (isEssential) {
+    PetscValidPointer(isEssential, 3);
+    *isEssential = b->essential;
+  }
+  if (name) {
+    PetscValidPointer(name, 4);
+    *name = b->name;
+  }
+  if (field) {
+    PetscValidPointer(field, 5);
+    *field = b->field;
+  }
+  if (func) {
+    PetscValidPointer(func, 6);
+    *func = b->func;
+  }
+  if (numids) {
+    PetscValidPointer(numids, 7);
+    *numids = b->numids;
+  }
+  if (ids) {
+    PetscValidPointer(ids, 8);
+    *ids = b->ids;
+  }
+  if (ctx) {
+    PetscValidPointer(ctx, 9);
+    *ctx = b->ctx;
+  }
+  PetscFunctionReturn(0);
+}

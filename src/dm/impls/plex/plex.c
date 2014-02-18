@@ -374,6 +374,26 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "BoundaryDestroy"
+static PetscErrorCode BoundaryDestroy(DMBoundary *boundary)
+{
+  DMBoundary     b, next;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  if (!boundary) PetscFunctionReturn(0);
+  b = *boundary;
+  *boundary = NULL;
+  for (; b; b = next) {
+    next = b->next;
+    ierr = PetscFree(b->ids);CHKERRQ(ierr);
+    ierr = PetscFree(b->name);CHKERRQ(ierr);
+    ierr = PetscFree(b);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDestroy_Plex"
 PetscErrorCode DMDestroy_Plex(DM dm)
 {
@@ -399,6 +419,7 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   ierr = DMLabelDestroy(&mesh->subpointMap);CHKERRQ(ierr);
   ierr = ISDestroy(&mesh->globalVertexNumbers);CHKERRQ(ierr);
   ierr = ISDestroy(&mesh->globalCellNumbers);CHKERRQ(ierr);
+  ierr = BoundaryDestroy(&mesh->boundary);CHKERRQ(ierr);
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   ierr = PetscFree(mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
