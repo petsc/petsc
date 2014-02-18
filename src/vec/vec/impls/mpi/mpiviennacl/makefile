@@ -4,7 +4,7 @@ ALL: lib
 
 CFLAGS   = ${PNETCDF_INCLUDE}
 FFLAGS   =
-SOURCEC  = mpiviennacl.cxx
+SOURCECXX= mpiviennacl.cxx
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscvec

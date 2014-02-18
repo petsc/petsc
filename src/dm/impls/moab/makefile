@@ -6,7 +6,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = dmmoab.cxx
+SOURCECXX= dmmoab.cxx
 SOURCEF  =
 SOURCEH  =
 DIRS     = examples

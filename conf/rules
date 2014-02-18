@@ -120,6 +120,8 @@ lib:  ${SOURCE}
               ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libcu; fi ; \
             if [ "${SOURCEC}" != "" ] ; then \
               ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libc; fi ; \
+            if [ "${SOURCECXX}" != "" ] ; then \
+              ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libcxx; fi ; \
             if [ "${SOURCEF}" != "" ] ; then \
 		${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libf; fi ; \
             if [ "${OBJS}" != " " ] ; then \
@@ -149,6 +151,11 @@ libfastcompile:
                     ${PETSC_COMPILE}; \
 	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSC}; \
 		    ${RM} ${OBJSC} ${OBJSC:.o=.lo}; \
+	    fi; \
+          if [ "${SOURCECXX}" != "" ]; then \
+                    ${PETSC_CXXCOMPILE}; \
+	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSCXX}; \
+		    ${RM} ${OBJSCXX} ${OBJSCXX:.o=.lo}; \
 	    fi; \
 	if [ "${SOURCEF}" != "" ]; then \
                     ${PETSC_FCOMPILE}; \
@@ -389,7 +396,7 @@ getautoconfargs:
 	  fi; \
 	fi
 
-.c.o .cpp.o .cxx.o .cc.o .C.o .ad.o:
+.c.o .ad.o:
 	@if [ "${PETSCPORTABLE}" != "" ]; then \
           ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $< ${SOURCEH};\
         fi
@@ -398,6 +405,19 @@ getautoconfargs:
 	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chk_petscdir;\
         fi
 	${PETSC_COMPILE_SINGLE} `pwd`/$<
+	@if [ "${PETSCPORTABLE}" != "" ]; then \
+          ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $*.o ; \
+        fi
+
+.cpp.o .cxx.o .cc.o .C.o:
+	@if [ "${PETSCPORTABLE}" != "" ]; then \
+          ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $< ${SOURCEH};\
+        fi
+	-@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
+        if [ $${mypwd} != $${newpwd} ]; then \
+	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chk_petscdir;\
+        fi
+	${PETSC_CXXCOMPILE_SINGLE} `pwd`/$<
 	@if [ "${PETSCPORTABLE}" != "" ]; then \
           ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $*.o ; \
         fi
