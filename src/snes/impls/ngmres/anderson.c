@@ -82,7 +82,7 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
   /* r = F(x) */
 
   if (snes->pc && snes->pcside == PC_LEFT) {
-    ierr = SNESApplyPC(snes,X,NULL,NULL,F);CHKERRQ(ierr);
+    ierr = SNESApplyPC(snes,X,NULL,F);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
     if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
