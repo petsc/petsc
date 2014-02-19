@@ -130,7 +130,7 @@
 #endif
 
 /*MC
-    PetscErrorCode - datatype used for return error code from all PETSc functions
+    PetscErrorCode - datatype used for return error code from almost all PETSc functions
 
     Level: beginner
 
@@ -141,11 +141,14 @@ typedef int PetscErrorCode;
 /*MC
 
     PetscClassId - A unique id used to identify each PETSc class.
-         (internal integer in the data structure used for error
-         checking). These are all computed by an offset from the lowest
-         one, PETSC_SMALLEST_CLASSID.
 
-    Level: advanced
+    Notes: Use PetscClassIdRegister() to obtain a new value for a new class being created. Usually
+         XXXInitializePackage() calls it for each class it defines.
+
+    Developer Notes: Internal integer stored in the _p_PetscObject data structure.
+         These are all computed by an offset from the lowest one, PETSC_SMALLEST_CLASSID.
+
+    Level: developer
 
 .seealso: PetscClassIdRegister(), PetscLogEventRegister(), PetscHeaderCreate()
 M*/

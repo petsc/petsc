@@ -364,8 +364,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
   }
 
 /*MC
-   PetscObjectStateIncrease - Increases the state of any PetscObject,
-   regardless of the type.
+   PetscObjectStateIncrease - Increases the state of any PetscObject
 
    Synopsis:
    #include "petsc-private/petscimpl.h"
@@ -379,7 +378,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
          PetscObjectStateIncrease((PetscObject)mat);
 
    Notes: object state is an integer which gets increased every time
-   the object is changed. By saving and later querying the object state
+   the object is changed internally. By saving and later querying the object state
    one can determine whether information about the object is still current.
    Currently, state is maintained for Vec and Mat objects.
 
@@ -424,8 +423,7 @@ PETSC_EXTERN PetscInt         PetscObjectComposedDataMax;
 -  data - the data to  be attached
 
    Notes
-   The data identifier can best be determined through a call to
-   PetscObjectComposedDataRegister()
+   The data identifier can best be created through a call to  PetscObjectComposedDataRegister()
 
    Level: developer
 M*/
