@@ -19,7 +19,7 @@ static  char help[]="";
    Routines: TaoSetInequalityJacobianRoutine();
    Routines: TaoSetHessianRoutine(); TaoSetFromOptions();
    Routines: TaoGetKSP(); TaoSolve();
-   Routines: TaoGetTerminationReason(); TaoDestroy();
+   Routines: TaoGetConvergedReason(); TaoDestroy();
    Processors: 1
 T*/
 
@@ -66,16 +66,16 @@ PetscErrorCode FormEqualityJacobian(Tao,Vec,Mat*,Mat*, MatStructure *,void*);
 #define __FUNCT__ "main"
 PetscErrorCode main(int argc,char **argv)
 {
-  PetscErrorCode       ierr;                /* used to check for functions returning nonzeros */
-  PetscMPIInt          size;
-  Vec                  x;                   /* solution */
-  KSP                  ksp;
-  PC                   pc;
-  Vec                  ceq,cin;
-  PetscBool            flg;                 /* A return value when checking for use options */
-  Tao                  tao;                 /* Tao solver context */
-  TaoTerminationReason reason;
-  AppCtx               user;                /* application context */
+  PetscErrorCode     ierr;                /* used to check for functions returning nonzeros */
+  PetscMPIInt        size;
+  Vec                x;                   /* solution */
+  KSP                ksp;
+  PC                 pc;
+  Vec                ceq,cin;
+  PetscBool          flg;                 /* A return value when checking for use options */
+  Tao                tao;                 /* Tao solver context */
+  TaoConvergedReason reason;
+  AppCtx             user;                /* application context */
 
   /* Initialize TAO,PETSc */
   PetscInitialize(&argc,&argv,(char *)0,help);
@@ -92,7 +92,7 @@ PetscErrorCode main(int argc,char **argv)
   ierr = VecSet(x,1.0);CHKERRQ(ierr);
 
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
-  ierr = TaoSetType(tao,"tao_ipm");CHKERRQ(ierr);
+  ierr = TaoSetType(tao,TAOIPM);CHKERRQ(ierr);
   ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
   ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*)&user);CHKERRQ(ierr);
   ierr = TaoSetEqualityConstraintsRoutine(tao,ceq,FormEqualityConstraints,(void*)&user);CHKERRQ(ierr);
@@ -120,7 +120,7 @@ PetscErrorCode main(int argc,char **argv)
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
   /* Analyze solution */
-  ierr = TaoGetTerminationReason(tao,&reason);CHKERRQ(ierr);
+  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
   if (reason < 0) {
     ierr = PetscPrintf(MPI_COMM_WORLD, "TAO failed to converge.\n");CHKERRQ(ierr);
   } else {

@@ -14,13 +14,13 @@ static const char *CG_Table[64] = {"fr", "pr", "prp", "hs", "dy"};
 #define __FUNCT__ "TaoSolve_CG"
 static PetscErrorCode TaoSolve_CG(Tao tao)
 {
-  TAO_CG                         *cgP = (TAO_CG*)tao->data;
-  PetscErrorCode                 ierr;
-  TaoTerminationReason     reason = TAO_CONTINUE_ITERATING;
-  TaoLineSearchTerminationReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
-  PetscReal                      step=1.0,f,gnorm,gnorm2,delta,gd,ginner,beta;
-  PetscReal                      gd_old,gnorm2_old,f_old;
-  PetscInt                       iter=0;
+  TAO_CG                       *cgP = (TAO_CG*)tao->data;
+  PetscErrorCode               ierr;
+  TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
+  TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
+  PetscReal                    step=1.0,f,gnorm,gnorm2,delta,gd,ginner,beta;
+  PetscReal                    gd_old,gnorm2_old,f_old;
+  PetscInt                     iter=0;
 
   PetscFunctionBegin;
   if (tao->XL || tao->XU || tao->ops->computebounds) {
@@ -121,8 +121,7 @@ static PetscErrorCode TaoSolve_CG(Tao tao)
         ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);
         ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_status);CHKERRQ(ierr);
         ierr = TaoAddLineSearchCounts(tao);CHKERRQ(ierr);
-        if (ls_status != TAOLINESEARCH_SUCCESS &&
-            ls_status != TAOLINESEARCH_SUCCESS_USER) {
+        if (ls_status != TAOLINESEARCH_SUCCESS && ls_status != TAOLINESEARCH_SUCCESS_USER) {
 
           /*  Line search failed for last time -- give up */
           f = f_old;
@@ -274,7 +273,7 @@ EXTERN_C_BEGIN
 PetscErrorCode TaoCreate_CG(Tao tao)
 {
   TAO_CG         *cgP;
-  const char     *morethuente_type = TAOLINESEARCH_MT;
+  const char     *morethuente_type = TAOLINESEARCHMT;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

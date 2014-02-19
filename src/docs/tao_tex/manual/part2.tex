@@ -496,13 +496,13 @@ can be retrieved with the follwing command.
 \begin{verbatim}
    TaoGetSolutionStatus(Tao tao, PetscInt *iterate, PetscReal *f,
                      PetscReal *gnorm, PetscReal *cnorm, PetscReal *xdiff,
-                     TaoTerminationReason *reason)
+                     TaoConvergedReason *reason)
 \end{verbatim}
 The last argument returns a code that indicates the reason that the solver 
 terminated.  Positive 
 numbers indicate that a solution has been found, while negative numbers
 indicate a failure.  A list of reasons can be found in the manual page
-for {\tt Tao\-Get\-Termination\-Reason()}.
+for {\tt Tao\-Get\-Converged\-Reason()}.
 
 \subsection{Obtaining a Solution}
 

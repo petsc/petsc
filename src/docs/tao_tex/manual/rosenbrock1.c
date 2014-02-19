@@ -24,20 +24,20 @@ int main(int argc,char **argv)
 
   /* Allocate vectors for the solution and gradient */
   ierr = VecCreateSeq(PETSC_COMM_SELF,user.n,&x); CHKERRQ(ierr);
-  ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,2,user.n,user.n,1,NULL,&H); 
+  ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,2,user.n,user.n,1,NULL,&H);
 
   /* Create TAO solver with desired solution method */
   ierr = TaoCreate(PETSC_COMM_SELF,&tao); CHKERRQ(ierr);
-  ierr = TaoSetType(tao,"tao_lmvm"); CHKERRQ(ierr);
+  ierr = TaoSetType(tao,TAOLMVM); CHKERRQ(ierr);
 
   /* Set solution vec and an initial guess */
   ierr = VecSet(x, 0); CHKERRQ(ierr);
-  ierr = TaoSetInitialVector(tao,x); CHKERRQ(ierr); 
+  ierr = TaoSetInitialVector(tao,x); CHKERRQ(ierr);
 
   /* Set routines for function, gradient, hessian evaluation */
-  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,&user); 
+  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,&user);
   ierr = TaoSetHessianRoutine(tao,H,H,FormHessian,&user); CHKERRQ(ierr);
-    
+
   /* Check for TAO command line options */
   ierr = TaoSetFromOptions(tao); CHKERRQ(ierr);
 

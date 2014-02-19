@@ -239,21 +239,22 @@ PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
    Finishes adding points to mfqP->model_indices (up to npmax)
    Computes L,Z,M,N
    np is actual number of points in model (should equal npmax?) */
-  PetscInt       point,i,j,offset;
-  PetscInt       reject;
-  PetscBLASInt   blasn=mfqP->n,blasnpmax=mfqP->npmax,blasnplus1=mfqP->n+1,info,blasnmax=mfqP->nmax,blasint,blasint2,blasnp,blasmaxmn;
-  PetscReal      *x,normd;
-  PetscErrorCode ierr;
+  PetscInt        point,i,j,offset;
+  PetscInt        reject;
+  PetscBLASInt    blasn=mfqP->n,blasnpmax=mfqP->npmax,blasnplus1=mfqP->n+1,info,blasnmax=mfqP->nmax,blasint,blasint2,blasnp,blasmaxmn;
+  const PetscReal *x;
+  PetscReal       normd;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   /* Initialize M,N */
   for (i=0;i<mfqP->n+1;i++) {
-    ierr = VecGetArray(mfqP->Xhist[mfqP->model_indices[i]],&x);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(mfqP->Xhist[mfqP->model_indices[i]],&x);CHKERRQ(ierr);
     mfqP->M[(mfqP->n+1)*i] = 1.0;
     for (j=0;j<mfqP->n;j++) {
       mfqP->M[j+1+((mfqP->n+1)*i)] = (x[j]  - mfqP->xmin[j]) / mfqP->delta;
     }
-    ierr = VecRestoreArray(mfqP->Xhist[mfqP->model_indices[i]],&x);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(mfqP->Xhist[mfqP->model_indices[i]],&x);CHKERRQ(ierr);
     ierr = phi2eval(&mfqP->M[1+((mfqP->n+1)*i)],mfqP->n,&mfqP->N[mfqP->n*(mfqP->n+1)/2 * i]);CHKERRQ(ierr);
   }
 
@@ -285,12 +286,12 @@ PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
       continue;
     }
 
-    ierr = VecGetArray(mfqP->Xhist[point],&x);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(mfqP->Xhist[point],&x);CHKERRQ(ierr);
     mfqP->M[(mfqP->n+1)*mfqP->nmodelpoints] = 1.0;
     for (j=0;j<mfqP->n;j++) {
       mfqP->M[j+1+((mfqP->n+1)*mfqP->nmodelpoints)] = (x[j]  - mfqP->xmin[j]) / mfqP->delta;
     }
-    ierr = VecRestoreArray(mfqP->Xhist[point],&x);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(mfqP->Xhist[point],&x);CHKERRQ(ierr);
     ierr = phi2eval(&mfqP->M[1+(mfqP->n+1)*mfqP->nmodelpoints],mfqP->n,&mfqP->N[mfqP->n*(mfqP->n+1)/2 * (mfqP->nmodelpoints)]);CHKERRQ(ierr);
 
     /* Update QR factorization */
@@ -474,20 +475,20 @@ PetscErrorCode modelimprove(Tao tao, TAO_POUNDERS *mfqP, PetscInt addallpoints)
 #define __FUNCT__ "affpoints"
 PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,PetscReal c)
 {
-  PetscInt       i,j;
-  PetscBLASInt   blasm=mfqP->m,blasj,blask,blasn=mfqP->n,ione=1,info;
-  PetscBLASInt   blasnpmax = mfqP->npmax,blasmaxmn;
-  PetscReal      proj,normd;
-  PetscReal      *x;
-  PetscErrorCode ierr;
+  PetscInt        i,j;
+  PetscBLASInt    blasm=mfqP->m,blasj,blask,blasn=mfqP->n,ione=1,info;
+  PetscBLASInt    blasnpmax = mfqP->npmax,blasmaxmn;
+  PetscReal       proj,normd;
+  const PetscReal *x;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   for (i=mfqP->nHist-1;i>=0;i--) {
-    ierr = VecGetArray(mfqP->Xhist[i],&x);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(mfqP->Xhist[i],&x);CHKERRQ(ierr);
     for (j=0;j<mfqP->n;j++) {
       mfqP->work[j] = (x[j] - xmin[j])/mfqP->delta;
     }
-    ierr = VecRestoreArray(mfqP->Xhist[i],&x);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(mfqP->Xhist[i],&x);CHKERRQ(ierr);
     PetscStackCallBLAS("BLAScopy",BLAScopy_(&blasn,mfqP->work,&ione,mfqP->work2,&ione));
     normd = BLASnrm2_(&blasn,mfqP->work,&ione);
     if (normd <= c*c) {
@@ -525,21 +526,22 @@ PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,PetscReal c)
 #define __FUNCT__ "TaoSolve_POUNDERS"
 static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
 {
-  TAO_POUNDERS               *mfqP = (TAO_POUNDERS *)tao->data;
-  PetscInt                   i,ii,j,k,l,iter=0;
-  PetscReal                  step=1.0;
-  TaoTerminationReason reason = TAO_CONTINUE_ITERATING;
-  PetscInt                   low,high;
-  PetscReal                  minnorm;
-  PetscReal                  *x,*f,*fmin,*xmint;
-  PetscReal                  cres,deltaold;
-  PetscReal                  gnorm;
-  PetscBLASInt               info,ione=1,iblas;
-  PetscBool                  valid;
-  PetscReal                  mdec, rho, normxsp;
-  PetscReal                  one=1.0,zero=0.0,ratio;
-  PetscBLASInt               blasm,blasn,blasnpmax,blasn2;
-  PetscErrorCode             ierr;
+  TAO_POUNDERS       *mfqP = (TAO_POUNDERS *)tao->data;
+  PetscInt           i,ii,j,k,l,iter=0;
+  PetscReal          step=1.0;
+  TaoConvergedReason reason = TAO_CONTINUE_ITERATING;
+  PetscInt           low,high;
+  PetscReal          minnorm;
+  PetscReal          *x,*f;
+  const PetscReal    *xmint,*fmin;
+  PetscReal          cres,deltaold;
+  PetscReal          gnorm;
+  PetscBLASInt       info,ione=1,iblas;
+  PetscBool          valid;
+  PetscReal          mdec, rho, normxsp;
+  PetscReal          one=1.0,zero=0.0,ratio;
+  PetscBLASInt       blasm,blasn,blasnpmax,blasn2;
+  PetscErrorCode     ierr;
 
   /* n = # of parameters
      m = dimension (components) of function  */
@@ -611,10 +613,10 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   ii=0;
 
   if (mfqP->size == 1) {
-    ierr = VecGetArray(mfqP->Xhist[mfqP->minindex],&xmint);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(mfqP->Xhist[mfqP->minindex],&xmint);CHKERRQ(ierr);
     for (i=0;i<mfqP->n;i++) mfqP->xmin[i] = xmint[i];
-    ierr = VecRestoreArray(mfqP->Xhist[mfqP->minindex],&xmint);CHKERRQ(ierr);
-    ierr = VecGetArray(mfqP->Fhist[mfqP->minindex],&fmin);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(mfqP->Xhist[mfqP->minindex],&xmint);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(mfqP->Fhist[mfqP->minindex],&fmin);CHKERRQ(ierr);
     for (i=0;i<mfqP->n+1;i++) {
       if (i == mfqP->minindex) continue;
 
@@ -635,17 +637,17 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     for (j=0;j<mfqP->m;j++) {
       mfqP->C[j] = fmin[j];
     }
-    ierr = VecRestoreArray(mfqP->Fhist[mfqP->minindex],&fmin);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(mfqP->Fhist[mfqP->minindex],&fmin);CHKERRQ(ierr);
   } else {
     ierr = VecScatterBegin(mfqP->scatterx,mfqP->Xhist[mfqP->minindex],mfqP->localxmin,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(mfqP->scatterx,mfqP->Xhist[mfqP->minindex],mfqP->localxmin,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecGetArray(mfqP->localxmin,&xmint);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(mfqP->localxmin,&xmint);CHKERRQ(ierr);
     for (i=0;i<mfqP->n;i++) mfqP->xmin[i] = xmint[i];
-    ierr = VecRestoreArray(mfqP->localxmin,&mfqP->xmin);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(mfqP->localxmin,&xmint);CHKERRQ(ierr);
 
     ierr = VecScatterBegin(mfqP->scatterf,mfqP->Fhist[mfqP->minindex],mfqP->localfmin,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(mfqP->scatterf,mfqP->Fhist[mfqP->minindex],mfqP->localfmin,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecGetArray(mfqP->localfmin,&fmin);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(mfqP->localfmin,&fmin);CHKERRQ(ierr);
     for (i=0;i<mfqP->n+1;i++) {
       if (i == mfqP->minindex) continue;
 
@@ -669,7 +671,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     for (j=0;j<mfqP->m;j++) {
       mfqP->C[j] = fmin[j];
     }
-    ierr = VecRestoreArray(mfqP->localfmin,&fmin);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(mfqP->localfmin,&fmin);CHKERRQ(ierr);
   }
 
   /* Determine the initial quadratic models */
@@ -752,11 +754,11 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
       mfqP->minindex = mfqP->nHist-1;
       minnorm = mfqP->Fres[mfqP->minindex];
       /* Change current center */
-      ierr = VecGetArray(mfqP->Xhist[mfqP->minindex],&xmint);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(mfqP->Xhist[mfqP->minindex],&xmint);CHKERRQ(ierr);
       for (i=0;i<mfqP->n;i++) {
         mfqP->xmin[i] = xmint[i];
       }
-      ierr = VecRestoreArray(mfqP->Xhist[mfqP->minindex],&xmint);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(mfqP->Xhist[mfqP->minindex],&xmint);CHKERRQ(ierr);
     }
 
     /* Evaluate at a model-improving point if necessary */
@@ -824,7 +826,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
 
     /* Update the quadratic model */
     ierr = getquadpounders(mfqP);CHKERRQ(ierr);
-    ierr = VecGetArray(mfqP->Fhist[mfqP->minindex],&fmin);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(mfqP->Fhist[mfqP->minindex],&fmin);CHKERRQ(ierr);
     PetscStackCallBLAS("BLAScopy",BLAScopy_(&blasm,fmin,&ione,mfqP->C,&ione));
     /* G = G*(delta/deltaold) + Gdel */
     ratio = mfqP->delta/deltaold;
@@ -964,8 +966,7 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
     ierr = VecDuplicate(mfqP->subxl,&mfqP->subpdel);CHKERRQ(ierr);
     ierr = VecDuplicate(mfqP->subxl,&mfqP->subndel);CHKERRQ(ierr);
     ierr = TaoCreate(PETSC_COMM_SELF,&mfqP->subtao);CHKERRQ(ierr);
-    /* ierr = TaoSetType(mfqP->subtao,"tao_bqpip");CHKERRQ(ierr); */
-    ierr = TaoSetType(mfqP->subtao,"tao_tron");CHKERRQ(ierr);
+    ierr = TaoSetType(mfqP->subtao,TAOTRON);CHKERRQ(ierr);
     ierr = TaoSetOptionsPrefix(mfqP->subtao,"pounders_subsolver_");CHKERRQ(ierr);
     ierr = TaoSetInitialVector(mfqP->subtao,mfqP->subx);CHKERRQ(ierr);
     ierr = TaoSetObjectiveAndGradientRoutine(mfqP->subtao,pounders_fg,(void*)mfqP);CHKERRQ(ierr);

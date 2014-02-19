@@ -52,7 +52,7 @@ struct _p_TaoLineSearch {
     PetscInt nfeval;
     PetscInt ngeval;
     PetscInt nfgeval;
-    TaoLineSearchTerminationReason reason;
+    TaoLineSearchConvergedReason reason;
 
     PetscReal rtol;      /* relative tol for acceptable step (rtol>0) */
     PetscReal ftol;      /* tol for sufficient decr. condition (ftol>0) */

@@ -31,13 +31,13 @@ PetscErrorCode TaoSetUp_SSFLS(Tao tao)
 #define __FUNCT__ "TaoSolve_SSFLS"
 static PetscErrorCode TaoSolve_SSFLS(Tao tao)
 {
-  TAO_SSLS                       *ssls = (TAO_SSLS *)tao->data;
-  PetscReal                      psi, ndpsi, normd, innerd, t=0;
-  PetscReal                      delta, rho;
-  PetscInt                       iter=0,kspits;
-  TaoTerminationReason     reason;
-  TaoLineSearchTerminationReason ls_reason;
-  PetscErrorCode                 ierr;
+  TAO_SSLS                     *ssls = (TAO_SSLS *)tao->data;
+  PetscReal                    psi, ndpsi, normd, innerd, t=0;
+  PetscReal                    delta, rho;
+  PetscInt                     iter=0,kspits;
+  TaoConvergedReason           reason;
+  TaoLineSearchConvergedReason ls_reason;
+  PetscErrorCode               ierr;
 
   PetscFunctionBegin;
   /* Assume that Setup has been called!
@@ -120,7 +120,7 @@ PetscErrorCode TaoCreate_SSFLS(Tao tao)
 {
   TAO_SSLS       *ssls;
   PetscErrorCode ierr;
-  const char     *armijo_type = TAOLINESEARCH_ARMIJO;
+  const char     *armijo_type = TAOLINESEARCHARMIJO;
 
   PetscFunctionBegin;
   ierr = PetscNewLog(tao,&ssls);CHKERRQ(ierr);

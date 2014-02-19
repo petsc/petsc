@@ -107,8 +107,8 @@ PetscErrorCode TaoSolve_CG(Tao tao){
   Vec s = tao->stepdirection;
   PetscInt     iter=0;
   PetscReal  gnormPrev,gdx,f,gnorm,steplength=0;
-  TaoLineSearchTerminationReason lsflag=TAO_LINESEARCH_CONTINUE_ITERATING;
-  TaoTerminationReason reason=TAO_CONTINUE_ITERATING;
+  TaoLineSearchConvergedReason lsflag=TAO_LINESEARCH_CONTINUE_ITERATING;
+  TaoConvergedReason reason=TAO_CONTINUE_ITERATING;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -174,7 +174,7 @@ infeasibility to TAO with the routine
 \begin{verbatim}
    PetscErrorCode TaoMonitor(Tao tao, PetscInt iter, PetscReal f,
                   PetscReal res, PetscReal cnorm, PetscReal steplength,
-                  TaoTerminationReason *reason);
+                  TaoConvergedReason *reason);
 \end{verbatim}
 Most optimization algorithms are iterative, and solvers should
 include this command somewhere in each iteration.  This routine
@@ -208,7 +208,7 @@ The routine
 \begin{verbatim}
    TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
                           TaoVec *s, PetscReal *steplength, 
-                          TaoLineSearchTerminationReason *lsflag)
+                          TaoLineSearchConvergedReason *lsflag)
 \end{verbatim}
 passes the current solution, gradient, and objective value to the
 line search and returns a new solution, gradient, and objective value.  More

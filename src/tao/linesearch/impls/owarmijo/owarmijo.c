@@ -11,9 +11,10 @@
 
 static PetscErrorCode ProjWork_OWLQN(Vec w,Vec x,Vec gv,PetscReal *gdx)
 {
-  PetscReal      *xptr,*wptr,*gptr;
-  PetscErrorCode ierr;
-  PetscInt       low,high,low1,high1,low2,high2,i;
+  const PetscReal *xptr,*gptr;
+  PetscReal       *wptr;
+  PetscErrorCode  ierr;
+  PetscInt        low,high,low1,high1,low2,high2,i;
 
   PetscFunctionBegin;
   ierr=VecGetOwnershipRange(w,&low,&high);CHKERRQ(ierr);
@@ -21,18 +22,17 @@ static PetscErrorCode ProjWork_OWLQN(Vec w,Vec x,Vec gv,PetscReal *gdx)
   ierr=VecGetOwnershipRange(gv,&low2,&high2);CHKERRQ(ierr);
 
   *gdx=0.0;
-  ierr = VecGetArray(x,&xptr);CHKERRQ(ierr);
   ierr = VecGetArray(w,&wptr);CHKERRQ(ierr);
-  ierr = VecGetArray(gv,&gptr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xptr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(gv,&gptr);CHKERRQ(ierr);
 
   for (i=0;i<high-low;i++) {
-    if (xptr[i]*wptr[i]<0.0)
-      wptr[i]=0.0;
+    if (xptr[i]*wptr[i]<0.0) wptr[i]=0.0;
     *gdx = *gdx + gptr[i]*(wptr[i]-xptr[i]);
   }
   ierr = VecRestoreArray(w,&wptr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&xptr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(gv,&gptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(gv,&gptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -40,8 +40,8 @@ static PetscErrorCode ProjWork_OWLQN(Vec w,Vec x,Vec gv,PetscReal *gdx)
 #define __FUNCT__ "TaoLineSearchDestroy_OWArmijo"
 static PetscErrorCode TaoLineSearchDestroy_OWArmijo(TaoLineSearch ls)
 {
-  TAOLINESEARCH_OWARMIJO_CTX *armP = (TAOLINESEARCH_OWARMIJO_CTX *)ls->data;
-  PetscErrorCode             ierr;
+  TaoLineSearch_OWARMIJO *armP = (TaoLineSearch_OWARMIJO *)ls->data;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(armP->memory);CHKERRQ(ierr);
@@ -57,8 +57,8 @@ static PetscErrorCode TaoLineSearchDestroy_OWArmijo(TaoLineSearch ls)
 #define __FUNCT__ "TaoLineSearchSetFromOptions_OWArmijo"
 static PetscErrorCode TaoLineSearchSetFromOptions_OWArmijo(TaoLineSearch ls)
 {
-  TAOLINESEARCH_OWARMIJO_CTX *armP = (TAOLINESEARCH_OWARMIJO_CTX *)ls->data;
-  PetscErrorCode             ierr;
+  TaoLineSearch_OWARMIJO *armP = (TaoLineSearch_OWARMIJO *)ls->data;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("OWArmijo linesearch options");CHKERRQ(ierr);
@@ -78,9 +78,9 @@ static PetscErrorCode TaoLineSearchSetFromOptions_OWArmijo(TaoLineSearch ls)
 #define __FUNCT__ "TaoLineSearchView_OWArmijo"
 static PetscErrorCode TaoLineSearchView_OWArmijo(TaoLineSearch ls, PetscViewer pv)
 {
-  TAOLINESEARCH_OWARMIJO_CTX *armP = (TAOLINESEARCH_OWARMIJO_CTX *)ls->data;
-  PetscBool                  isascii;
-  PetscErrorCode             ierr;
+  TaoLineSearch_OWARMIJO *armP = (TaoLineSearch_OWARMIJO *)ls->data;
+  PetscBool              isascii;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pv, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
@@ -129,16 +129,16 @@ static PetscErrorCode TaoLineSearchView_OWArmijo(TaoLineSearch ls, PetscViewer p
 @ */
 static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, Vec s)
 {
-  TAOLINESEARCH_OWARMIJO_CTX *armP = (TAOLINESEARCH_OWARMIJO_CTX *)ls->data;
-  PetscErrorCode             ierr;
-  PetscInt                   i;
-  PetscReal                  fact, ref, gdx;
-  PetscInt                   idx;
-  PetscBool                  g_computed=PETSC_FALSE; /* to prevent extra gradient computation */
-  Vec                        g_old;
-  PetscReal                  owlqn_minstep=0.005;
-  PetscReal                  partgdx;
-  MPI_Comm                   comm;
+  TaoLineSearch_OWARMIJO *armP = (TaoLineSearch_OWARMIJO *)ls->data;
+  PetscErrorCode         ierr;
+  PetscInt               i;
+  PetscReal              fact, ref, gdx;
+  PetscInt               idx;
+  PetscBool              g_computed=PETSC_FALSE; /* to prevent extra gradient computation */
+  Vec                    g_old;
+  PetscReal              owlqn_minstep=0.005;
+  PetscReal              partgdx;
+  MPI_Comm               comm;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)ls,&comm);CHKERRQ(ierr);
@@ -311,8 +311,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "TaoLineSearchCreate_OWArmijo"
 PetscErrorCode TaoLineSearchCreate_OWArmijo(TaoLineSearch ls)
 {
-  TAOLINESEARCH_OWARMIJO_CTX *armP;
-  PetscErrorCode             ierr;
+  TaoLineSearch_OWARMIJO *armP;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);

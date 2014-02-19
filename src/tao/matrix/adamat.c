@@ -327,11 +327,12 @@ PetscErrorCode MatGetSubMatrices_ADA(Mat A,PetscInt n, IS *irow,IS *icol,MatReus
 #define __FUNCT__ "MatGetSubMatrix_ADA"
 PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll, Mat *newmat)
 {
-  PetscErrorCode ierr;
-  PetscInt       low,high;
-  PetscInt       n,nlocal,i;
-  const PetscInt *iptr;
-  PetscReal       *dptr,*ddptr,zero=0.0;
+  PetscErrorCode  ierr;
+  PetscInt        low,high;
+  PetscInt        n,nlocal,i;
+  const PetscInt  *iptr;
+  const PetscReal *dptr;
+  PetscReal       *ddptr,zero=0.0;
   VecType         type_name;
   IS              ISrow;
   Vec             D1,D2;
@@ -361,7 +362,7 @@ PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll, Mat *
     ierr=VecSetSizes(D2,nlocal,n);CHKERRQ(ierr);
     ierr=VecSetType(D2,type_name);CHKERRQ(ierr);
     ierr=VecSet(D2, zero);CHKERRQ(ierr);
-    ierr=VecGetArray(ctx->D2, &dptr);CHKERRQ(ierr);
+    ierr=VecGetArrayRead(ctx->D2, &dptr);CHKERRQ(ierr);
     ierr=VecGetArray(D2, &ddptr);CHKERRQ(ierr);
     ierr=ISGetIndices(isrow,&iptr);CHKERRQ(ierr);
     for (i=0;i<nlocal;i++){
@@ -369,7 +370,7 @@ PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll, Mat *
     }
     ierr=ISRestoreIndices(isrow,&iptr);CHKERRQ(ierr);
     ierr=VecRestoreArray(D2, &ddptr);CHKERRQ(ierr);
-    ierr=VecRestoreArray(ctx->D2, &dptr);CHKERRQ(ierr);
+    ierr=VecRestoreArrayRead(ctx->D2, &dptr);CHKERRQ(ierr);
   } else {
     D2 = NULL;
   }
@@ -461,9 +462,9 @@ PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
   if (sametype || issame) {
     ierr=MatDuplicate(mat,MAT_COPY_VALUES,NewMat);CHKERRQ(ierr);
   } else if (isdense) {
-    PetscInt  i,j,low,high,m,n,M,N;
-    PetscReal *dptr;
-    Vec       X;
+    PetscInt        i,j,low,high,m,n,M,N;
+    const PetscReal *dptr;
+    Vec             X;
 
     ierr = VecDuplicate(ctx->D2,&X);CHKERRQ(ierr);
     ierr=MatGetSize(mat,&M,&N);CHKERRQ(ierr);
@@ -472,19 +473,19 @@ PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
     ierr = MatGetOwnershipRange(*NewMat,&low,&high);CHKERRQ(ierr);
     for (i=0;i<M;i++){
       ierr = MatGetColumnVector_ADA(mat,X,i);CHKERRQ(ierr);
-      ierr = VecGetArray(X,&dptr);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(X,&dptr);CHKERRQ(ierr);
       for (j=0; j<high-low; j++){
         ierr = MatSetValue(*NewMat,low+j,i,dptr[j],INSERT_VALUES);CHKERRQ(ierr);
       }
-      ierr=VecRestoreArray(X,&dptr);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(X,&dptr);CHKERRQ(ierr);
     }
-    ierr=MatAssemblyBegin(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr=MatAssemblyEnd(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = VecDestroy(&X);CHKERRQ(ierr);
   } else if (isseqdense && size==1){
-    PetscInt   i,j,low,high,m,n,M,N;
-    PetscReal *dptr;
-    Vec       X;
+    PetscInt        i,j,low,high,m,n,M,N;
+    const PetscReal *dptr;
+    Vec             X;
 
     ierr = VecDuplicate(ctx->D2,&X);CHKERRQ(ierr);
     ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
@@ -493,15 +494,15 @@ PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
     ierr = MatGetOwnershipRange(*NewMat,&low,&high);CHKERRQ(ierr);
     for (i=0;i<M;i++){
       ierr = MatGetColumnVector_ADA(mat,X,i);CHKERRQ(ierr);
-      ierr = VecGetArray(X,&dptr);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(X,&dptr);CHKERRQ(ierr);
       for (j=0; j<high-low; j++){
         ierr = MatSetValue(*NewMat,low+j,i,dptr[j],INSERT_VALUES);CHKERRQ(ierr);
       }
-      ierr=VecRestoreArray(X,&dptr);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(X,&dptr);CHKERRQ(ierr);
     }
-    ierr=MatAssemblyBegin(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr=MatAssemblyEnd(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr=VecDestroy(&X);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = VecDestroy(&X);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,1,"No support to convert objects to that type");
   PetscFunctionReturn(0);
 }

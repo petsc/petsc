@@ -191,7 +191,7 @@ PetscErrorCode TaoLineSearchCreate(MPI_Comm comm, TaoLineSearch *newls)
 PetscErrorCode TaoLineSearchSetUp(TaoLineSearch ls)
 {
   PetscErrorCode ierr;
-  const char     *default_type=TAOLINESEARCH_MT;
+  const char     *default_type=TAOLINESEARCHMT;
   PetscBool      flg;
 
   PetscFunctionBegin;
@@ -339,7 +339,7 @@ PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
   .seealso: TaoLineSearchCreate(), TaoLineSearchSetType(), TaoLineSearchSetInitialStepLength(), TaoAddLineSearchCounts()
  @*/
 
-PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, Vec s, PetscReal *steplength, TaoLineSearchTerminationReason *reason)
+PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, Vec s, PetscReal *steplength, TaoLineSearchConvergedReason *reason)
 {
   PetscErrorCode ierr;
   PetscViewer    viewer;
@@ -520,7 +520,7 @@ PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, const TaoLineSearchType ty
 PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
 {
   PetscErrorCode ierr;
-  const char     *default_type=TAOLINESEARCH_MT;
+  const char     *default_type=TAOLINESEARCHMT;
   char           type[256];
   PetscBool      flg;
 
@@ -1087,7 +1087,7 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGTS(TaoLineSearch ls, Vec x, Pets
   Level: developer
 
 @*/
-PetscErrorCode TaoLineSearchGetSolution(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, PetscReal *steplength, TaoLineSearchTerminationReason *reason)
+PetscErrorCode TaoLineSearchGetSolution(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, PetscReal *steplength, TaoLineSearchConvergedReason *reason)
 {
   PetscErrorCode ierr;
 

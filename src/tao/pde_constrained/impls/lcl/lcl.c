@@ -183,15 +183,15 @@ static PetscErrorCode TaoSetup_LCL(Tao tao)
 #define __FUNCT__ "TaoSolve_LCL"
 static PetscErrorCode TaoSolve_LCL(Tao tao)
 {
-  TAO_LCL                        *lclP = (TAO_LCL*)tao->data;
-  PetscInt                       iter=0,phase2_iter,nlocal,its;
-  TaoTerminationReason     reason = TAO_CONTINUE_ITERATING;
-  TaoLineSearchTerminationReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
-  PetscReal                      step=1.0,f, descent, aldescent;
-  PetscReal                      cnorm, mnorm;
-  PetscReal                      adec,r2,rGL_U,rWU;
-  PetscBool                      set,pset,flag,pflag,symmetric;
-  PetscErrorCode                 ierr;
+  TAO_LCL                      *lclP = (TAO_LCL*)tao->data;
+  PetscInt                     iter=0,phase2_iter,nlocal,its;
+  TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
+  TaoLineSearchConvergedReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
+  PetscReal                    step=1.0,f, descent, aldescent;
+  PetscReal                    cnorm, mnorm;
+  PetscReal                    adec,r2,rGL_U,rWU;
+  PetscBool                    set,pset,flag,pflag,symmetric;
+  PetscErrorCode               ierr;
 
   PetscFunctionBegin;
   lclP->rho = lclP->rho0;
@@ -372,7 +372,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
     lclP->recompute_jacobian_flag = PETSC_TRUE;
 
     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);CHKERRQ(ierr);
-    ierr = TaoLineSearchSetType(tao->linesearch, TAOLINESEARCH_MT);CHKERRQ(ierr);
+    ierr = TaoLineSearchSetType(tao->linesearch, TAOLINESEARCHMT);CHKERRQ(ierr);
     ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &lclP->aug, lclP->GAugL, tao->stepdirection, &step, &ls_reason);CHKERRQ(ierr);
     if (lclP->verbose) {
@@ -477,7 +477,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
       lclP->recompute_jacobian_flag = PETSC_TRUE;
 
       ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);CHKERRQ(ierr);
-      ierr = TaoLineSearchSetType(tao->linesearch,TAOLINESEARCH_MT);CHKERRQ(ierr);
+      ierr = TaoLineSearchSetType(tao->linesearch,TAOLINESEARCHMT);CHKERRQ(ierr);
       ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
       ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &lclP->aug, lclP->GAugL, tao->stepdirection,&step,&ls_reason);CHKERRQ(ierr);
       if (lclP->verbose){
@@ -576,7 +576,7 @@ PetscErrorCode TaoCreate_LCL(Tao tao)
 {
   TAO_LCL        *lclP;
   PetscErrorCode ierr;
-  const char     *morethuente_type = TAOLINESEARCH_MT;
+  const char     *morethuente_type = TAOLINESEARCHMT;
 
   PetscFunctionBegin;
   tao->ops->setup = TaoSetup_LCL;

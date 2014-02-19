@@ -100,15 +100,15 @@ PetscErrorCode TaoView_NM(Tao tao,PetscViewer viewer)
 #define __FUNCT__ "TaoSolve_NM"
 PetscErrorCode TaoSolve_NM(Tao tao)
 {
-  PetscErrorCode             ierr;
-  TAO_NelderMead             *nm = (TAO_NelderMead*)tao->data;
-  TaoTerminationReason reason;
-  PetscReal                  *x;
-  PetscInt                   iter=0,i;
-  Vec                        Xmur=nm->Xmur, Xmue=nm->Xmue, Xmuc=nm->Xmuc, Xbar=nm->Xbar;
-  PetscReal                  fr,fe,fc;
-  PetscInt                   shrink;
-  PetscInt                   low,high;
+  PetscErrorCode     ierr;
+  TAO_NelderMead     *nm = (TAO_NelderMead*)tao->data;
+  TaoConvergedReason reason;
+  PetscReal          *x;
+  PetscInt           iter=0,i;
+  Vec                Xmur=nm->Xmur, Xmue=nm->Xmue, Xmuc=nm->Xmuc, Xbar=nm->Xbar;
+  PetscReal          fr,fe,fc;
+  PetscInt           shrink;
+  PetscInt           low,high;
 
   PetscFunctionBegin;
   nm->nshrink =      0;

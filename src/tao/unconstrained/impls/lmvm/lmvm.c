@@ -10,15 +10,15 @@
 #define __FUNCT__ "TaoSolve_LMVM"
 static PetscErrorCode TaoSolve_LMVM(Tao tao)
 {
-  TAO_LMVM                       *lmP = (TAO_LMVM *)tao->data;
-  PetscReal                      f, fold, gdx, gnorm;
-  PetscReal                      step = 1.0;
-  PetscReal                      delta;
-  PetscErrorCode                 ierr;
-  PetscInt                       stepType;
-  PetscInt                       iter = 0;
-  TaoTerminationReason     reason = TAO_CONTINUE_ITERATING;
-  TaoLineSearchTerminationReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
+  TAO_LMVM                     *lmP = (TAO_LMVM *)tao->data;
+  PetscReal                    f, fold, gdx, gnorm;
+  PetscReal                    step = 1.0;
+  PetscReal                    delta;
+  PetscErrorCode               ierr;
+  PetscInt                     stepType;
+  PetscInt                     iter = 0;
+  TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
+  TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
   PetscFunctionBegin;
 
@@ -258,7 +258,7 @@ EXTERN_C_BEGIN
 PetscErrorCode TaoCreate_LMVM(Tao tao)
 {
   TAO_LMVM       *lmP;
-  const char     *morethuente_type = TAOLINESEARCH_MT;
+  const char     *morethuente_type = TAOLINESEARCHMT;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

@@ -45,7 +45,7 @@ static PetscErrorCode Fsnes(SNES snes ,Vec X,Vec G,void*ctx)
    to take advantage of sparsity in the problem.  Although
    TaoAppDefaultComputeGradient is not recommended for general use
    in large-scale applications, It can be useful in checking the
-   correctness of a user-provided gradient.  Use the tao method "tao_fd_test"
+   correctness of a user-provided gradient.  Use the tao method TAOTEST
    to get an indication of whether your gradient is correct.
 
 
@@ -71,19 +71,24 @@ PetscErrorCode TaoDefaultComputeGradient(Tao tao,Vec X,Vec G,void *dummy)
   ierr = VecGetOwnershipRange(X,&low,&high);CHKERRQ(ierr);
   ierr = VecGetArray(G,&g);CHKERRQ(ierr);
   for (i=0;i<N;i++) {
-      ierr = VecSetValue(X,i,h,ADD_VALUES);CHKERRQ(ierr);
-      ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
-      ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
+    if (i>=low && i<high) {
+      PetscScalar *xx;
+      ierr = VecGetArray(X,&xx);CHKERRQ(ierr);
+      xx[i-low] += h;
+      ierr = VecRestoreArray(X,&xx);CHKERRQ(ierr);
+    }
 
-      ierr = TaoComputeObjective(tao,X,&f2);CHKERRQ(ierr);
+    ierr = TaoComputeObjective(tao,X,&f2);CHKERRQ(ierr);
 
-      ierr = VecSetValue(X,i,-h,ADD_VALUES);
-      ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
-      ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
-
-      if (i>=low && i<high) {
-          g[i-low]=(f2-f)/h;
-      }
+    if (i>=low && i<high) {
+      PetscScalar *xx;
+      ierr = VecGetArray(X,&xx);CHKERRQ(ierr);
+      xx[i-low] -= h;
+      ierr = VecRestoreArray(X,&xx);CHKERRQ(ierr);
+    }
+    if (i>=low && i<high) {
+      g[i-low]=(f2-f)/h;
+    }
   }
   ierr = VecRestoreArray(G,&g);CHKERRQ(ierr);
   PetscFunctionReturn(0);

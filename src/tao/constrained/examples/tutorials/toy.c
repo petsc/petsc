@@ -9,9 +9,7 @@ s.t.     x1^2 + x2 = 2
 
 #include <petsctao.h>
 
-
 static  char help[]="";
-
 
 /*
    User-defined application context - contains data needed by the
@@ -35,10 +33,9 @@ typedef struct {
   PetscInt n; /* Length x */
   PetscInt ne; /* number of equality constraints */
   PetscInt ni; /* number of inequality constraints */
-  Vec x,xl,xu;
-  Vec ce,ci,bl,bu;
-  Mat Ae,Ai,H;
-
+  Vec      x,xl,xu;
+  Vec      ce,ci,bl,bu;
+  Mat      Ae,Ai,H;
 } AppCtx;
 
 /* -------- User-defined Routines --------- */
@@ -58,21 +55,19 @@ PetscErrorCode FormEqualityJacobian(Tao,Vec,Mat*,Mat*, MatStructure *,void*);
 #define __FUNCT__ "main"
 PetscErrorCode main(int argc,char **argv)
 {
-  PetscErrorCode ierr;                /* used to check for functions returning nonzeros */
-  Tao tao;
-  TaoTerminationReason reason;
-  KSP ksp;
-  PC  pc;
-  AppCtx      user;                /* application context */
+  PetscErrorCode     ierr;                /* used to check for functions returning nonzeros */
+  Tao                tao;
+  TaoConvergedReason reason;
+  KSP                ksp;
+  PC                 pc;
+  AppCtx             user;                /* application context */
 
-  /* Initialize TAO,PETSc */
   PetscInitialize(&argc,&argv,(char *)0,help);
-
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n---- TOY Problem -----\n");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Solution should be f(1,1)=-2\n");CHKERRQ(ierr);
   ierr = InitializeProblem(&user);CHKERRQ(ierr);
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
-  ierr = TaoSetType(tao,"tao_ipm");CHKERRQ(ierr);
+  ierr = TaoSetType(tao,TAOIPM);CHKERRQ(ierr);
   ierr = TaoSetInitialVector(tao,user.x);CHKERRQ(ierr);
   ierr = TaoSetVariableBounds(tao,user.xl,user.xu);CHKERRQ(ierr);
   ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*)&user);CHKERRQ(ierr);
@@ -98,22 +93,18 @@ PetscErrorCode main(int argc,char **argv)
 
   ierr = TaoSetTolerances(tao,1e-12,0,0,0,0);CHKERRQ(ierr);
 
-  /* Solve */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
-
   /* Analyze solution */
-  ierr = TaoGetTerminationReason(tao,&reason);CHKERRQ(ierr);
+  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
   if (reason < 0) {
-    PetscPrintf(MPI_COMM_WORLD, "TAO failed to converge.\n");
+    ierr = PetscPrintf(MPI_COMM_WORLD, "TAO failed to converge.\n");CHKERRQ(ierr);
   } else {
-    PetscPrintf(MPI_COMM_WORLD, "Optimization terminated with status %D.\n", reason);
+    ierr = PetscPrintf(MPI_COMM_WORLD, "Optimization terminated with status %D.\n", reason);CHKERRQ(ierr);
   }
 
-  /* Finalize Memory */
   ierr = DestroyProblem(&user);CHKERRQ(ierr);
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
-
   PetscFinalize();
   return 0;
 }
@@ -145,8 +136,7 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   ierr = MatSetFromOptions(user->Ai);CHKERRQ(ierr);
 
 
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user->n,user->n,1,NULL,&user->H);  ierr = MatSetFromOptions(user->H);CHKERRQ(ierr);
-CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user->n,user->n,1,NULL,&user->H);  ierr = MatSetFromOptions(user->H);CHKERRQ(ierr);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -174,16 +164,17 @@ PetscErrorCode DestroyProblem(AppCtx *user)
 #define __FUNCT__ "FormFunctionGradient"
 PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *ctx)
 {
-  PetscScalar *x,*g;
-  PetscErrorCode ierr;
+  PetscScalar       *g;
+  const PetscScalar *x;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(G,&g);CHKERRQ(ierr);
   *f = (x[0]-2.0)*(x[0]-2.0) + (x[1]-2.0)*(x[1]-2.0) - 2.0*(x[0]+x[1]);
   g[0] = 2.0*(x[0]-2.0) - 2.0;
   g[1] = 2.0*(x[1]-2.0) - 2.0;
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(G,&g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -192,29 +183,28 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *c
 #define __FUNCT__ "FormHessian"
 PetscErrorCode FormHessian(Tao tao, Vec x, Mat *H, Mat *Hpre, MatStructure *ms, void *ctx)
 {
-  AppCtx *user = (AppCtx*)ctx;
-  Vec DE,DI;
-  PetscScalar *de, *di;
-  PetscInt zero=0,one=1;
-  PetscScalar two=2.0;
-  PetscScalar val;
-  PetscErrorCode ierr;
+  AppCtx            *user = (AppCtx*)ctx;
+  Vec               DE,DI;
+  const PetscScalar *de, *di;
+  PetscInt          zero=0,one=1;
+  PetscScalar       two=2.0;
+  PetscScalar       val;
+  PetscErrorCode    ierr;
+
   PetscFunctionBegin;
-  val = 0.0;
   ierr = TaoGetDualVariables(tao,&DE,&DI);CHKERRQ(ierr);
 
-  ierr = VecGetArray(DE,&de);CHKERRQ(ierr);
-  ierr = VecGetArray(DI,&di);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(DE,&de);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(DI,&di);CHKERRQ(ierr);
   val=2.0 * (1 + de[0] + di[0] - di[1]);
-  ierr = VecRestoreArray(DE,&de);CHKERRQ(ierr);
-  ierr = VecRestoreArray(DI,&di);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(DE,&de);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(DI,&di);CHKERRQ(ierr);
 
   ierr = MatSetValues(*H,1,&zero,1,&zero,&val,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatSetValues(*H,1,&one,1,&one,&two,INSERT_VALUES);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(user->H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(user->H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
   *ms = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
@@ -223,25 +213,25 @@ PetscErrorCode FormHessian(Tao tao, Vec x, Mat *H, Mat *Hpre, MatStructure *ms, 
 #define __FUNCT__ "FormInequalityConstraints"
 PetscErrorCode FormInequalityConstraints(Tao tao, Vec X, Vec CI, void *ctx)
 {
-  PetscScalar *x,*c;
-  PetscErrorCode ierr;
+  const PetscScalar *x;
+  PetscScalar       *c;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(CI,&c);CHKERRQ(ierr);
   c[0] = x[0]*x[0] - x[1];
   c[1] = -x[0]*x[0] + x[1] + 1.0;
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(CI,&c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "FormEqualityConstraints"
 PetscErrorCode FormEqualityConstraints(Tao tao, Vec X, Vec CE,void *ctx)
 {
-  PetscScalar *x,*c;
+  PetscScalar    *x,*c;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -251,25 +241,25 @@ PetscErrorCode FormEqualityConstraints(Tao tao, Vec X, Vec CE,void *ctx)
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(CE,&c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "FormInequalityJacobian"
 PetscErrorCode FormInequalityJacobian(Tao tao, Vec X, Mat *JI, Mat *JIpre,  MatStructure *ms, void *ctx)
 {
-  PetscInt rows[2];
-  PetscInt cols[2];
-  PetscScalar vals[4],*x;
-  PetscErrorCode ierr;
+  PetscInt          rows[2];
+  PetscInt          cols[2];
+  PetscScalar       vals[4];
+  const PetscScalar *x;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   rows[0] = 0;       rows[1] = 1;
   cols[0] = 0;       cols[1] = 1;
   vals[0] = +2*x[0]; vals[1] = -1.0;
   vals[2] = -2*x[0]; vals[3] = +1.0;
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = MatSetValues(*JI,2,rows,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*JI,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*JI,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -282,18 +272,18 @@ PetscErrorCode FormInequalityJacobian(Tao tao, Vec X, Mat *JI, Mat *JIpre,  MatS
 #define __FUNCT__ "FormEqualityJacobian"
 PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat *JE, Mat *JEpre, MatStructure *ms, void *ctx)
 {
-  PetscInt rows[2];
-  PetscScalar vals[2],*x;
-  PetscErrorCode ierr;
+  PetscInt          rows[2];
+  PetscScalar       vals[2];
+  const PetscScalar *x;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   rows[0] = 0;       rows[1] = 1;
   vals[0] = 2*x[0];  vals[1] = 1.0;
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = MatSetValues(*JE,1,rows,2,rows,vals,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*JE,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*JE,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }

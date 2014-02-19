@@ -39,12 +39,12 @@ static PetscErrorCode IPMInitializeBounds(Tao tao);
 #define __FUNCT__ "TaoSolve_IPM"
 static PetscErrorCode TaoSolve_IPM(Tao tao)
 {
-  PetscErrorCode             ierr;
-  TAO_IPM                    *ipmP = (TAO_IPM*)tao->data;
-  TaoTerminationReason reason = TAO_CONTINUE_ITERATING;
-  PetscInt                   iter = 0,its,i;
-  PetscScalar                stepsize=1.0;
-  PetscScalar                step_s,step_l,alpha,tau,sigma,phi_target;
+  PetscErrorCode     ierr;
+  TAO_IPM            *ipmP = (TAO_IPM*)tao->data;
+  TaoConvergedReason reason = TAO_CONTINUE_ITERATING;
+  PetscInt           iter = 0,its,i;
+  PetscScalar        stepsize=1.0;
+  PetscScalar        step_s,step_l,alpha,tau,sigma,phi_target;
 
   PetscFunctionBegin;
   /* Push initial point away from bounds */
@@ -949,7 +949,7 @@ PetscErrorCode IPMUpdateK(Tao tao)
   PetscInt        ncols,newcol,newcols[2],newrow;
   const PetscInt  *cols;
   const PetscReal *vals;
-  PetscReal       *l,*y;
+  const PetscReal *l,*y;
   PetscReal       *newvals;
   PetscReal       newval;
   PetscInt        subsize;
@@ -1106,8 +1106,8 @@ PetscErrorCode IPMUpdateK(Tao tao)
 
     /* Copy L,Y */
     ierr = VecGetOwnershipRange(ipmP->s,&sstart,&send);CHKERRQ(ierr);
-    ierr = VecGetArray(ipmP->lamdai,&l);CHKERRQ(ierr);
-    ierr = VecGetArray(ipmP->s,&y);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(ipmP->lamdai,&l);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(ipmP->s,&y);CHKERRQ(ierr);
 
     for (i=sstart;i<send;i++) {
       newcols[0] = c1+i;
@@ -1118,8 +1118,8 @@ PetscErrorCode IPMUpdateK(Tao tao)
       ierr = MatSetValues(ipmP->K,1,&newrow,2,newcols,newvals,INSERT_VALUES);CHKERRQ(ierr);
     }
 
-    ierr = VecRestoreArray(ipmP->lamdai,&l);CHKERRQ(ierr);
-    ierr = VecRestoreArray(ipmP->s,&y);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(ipmP->lamdai,&l);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(ipmP->s,&y);CHKERRQ(ierr);
   }
 
   ierr = PetscFree(indices);CHKERRQ(ierr);

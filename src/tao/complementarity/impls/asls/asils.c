@@ -135,12 +135,12 @@ static PetscErrorCode TaoDestroy_ASILS(Tao tao)
 #define __FUNCT__ "TaoSolve_ASILS"
 static PetscErrorCode TaoSolve_ASILS(Tao tao)
 {
-  TAO_SSLS                       *asls = (TAO_SSLS *)tao->data;
-  PetscReal                      psi,ndpsi, normd, innerd, t=0;
-  PetscInt                       iter=0, nf;
-  PetscErrorCode                 ierr;
-  TaoTerminationReason     reason;
-  TaoLineSearchTerminationReason ls_reason;
+  TAO_SSLS                     *asls = (TAO_SSLS *)tao->data;
+  PetscReal                    psi,ndpsi, normd, innerd, t=0;
+  PetscInt                     iter=0, nf;
+  PetscErrorCode               ierr;
+  TaoConvergedReason           reason;
+  TaoLineSearchConvergedReason ls_reason;
 
   PetscFunctionBegin;
   /* Assume that Setup has been called!
@@ -199,8 +199,8 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
 
     /* We now have our partition.  Now calculate the direction in the
        fixed variable space. */
-    ierr = VecGetSubVec(asls->ff, asls->fixed, tao->subset_type, 0.0, &asls->r1);
-    ierr = VecGetSubVec(asls->da, asls->fixed, tao->subset_type, 1.0, &asls->r2);
+    ierr = TaoVecGetSubVec(asls->ff, asls->fixed, tao->subset_type, 0.0, &asls->r1);
+    ierr = TaoVecGetSubVec(asls->da, asls->fixed, tao->subset_type, 1.0, &asls->r2);
     ierr = VecPointwiseDivide(asls->r1,asls->r1,asls->r2);CHKERRQ(ierr);
     ierr = VecSet(tao->stepdirection,0.0);CHKERRQ(ierr);
     ierr = VecISAXPY(tao->stepdirection, asls->fixed,1.0,asls->r1);CHKERRQ(ierr);
@@ -210,9 +210,9 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
        do this, we need to know the diagonal perturbation and the
        right hand side. */
 
-    ierr = VecGetSubVec(asls->da, asls->free, tao->subset_type, 0.0, &asls->r1);CHKERRQ(ierr);
-    ierr = VecGetSubVec(asls->ff, asls->free, tao->subset_type, 0.0, &asls->r2);CHKERRQ(ierr);
-    ierr = VecGetSubVec(asls->db, asls->free, tao->subset_type, 1.0, &asls->r3);CHKERRQ(ierr);
+    ierr = TaoVecGetSubVec(asls->da, asls->free, tao->subset_type, 0.0, &asls->r1);CHKERRQ(ierr);
+    ierr = TaoVecGetSubVec(asls->ff, asls->free, tao->subset_type, 0.0, &asls->r2);CHKERRQ(ierr);
+    ierr = TaoVecGetSubVec(asls->db, asls->free, tao->subset_type, 1.0, &asls->r3);CHKERRQ(ierr);
     ierr = VecPointwiseDivide(asls->r1,asls->r1, asls->r3);CHKERRQ(ierr);
     ierr = VecPointwiseDivide(asls->r2,asls->r2, asls->r3);CHKERRQ(ierr);
 
@@ -225,23 +225,23 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
        of t1 and modify r2. */
 
     ierr = MatMult(tao->jacobian, tao->stepdirection, asls->t1);CHKERRQ(ierr);
-    ierr = VecGetSubVec(asls->t1,asls->free,tao->subset_type,0.0,&asls->r3);CHKERRQ(ierr);
+    ierr = TaoVecGetSubVec(asls->t1,asls->free,tao->subset_type,0.0,&asls->r3);CHKERRQ(ierr);
     ierr = VecAXPY(asls->r2, -1.0, asls->r3);CHKERRQ(ierr);
 
     /* Calculate the reduced problem matrix and the direction */
     if (!asls->w && (tao->subset_type == TAO_SUBSET_MASK || tao->subset_type == TAO_SUBSET_MATRIXFREE)) {
       ierr = VecDuplicate(tao->solution, &asls->w);CHKERRQ(ierr);
     }
-    ierr = MatGetSubMat(tao->jacobian, asls->free, asls->w, tao->subset_type,&asls->J_sub);CHKERRQ(ierr);
+    ierr = TaoMatGetSubMat(tao->jacobian, asls->free, asls->w, tao->subset_type,&asls->J_sub);CHKERRQ(ierr);
     if (tao->jacobian != tao->jacobian_pre) {
-      ierr = MatGetSubMat(tao->jacobian_pre, asls->free, asls->w, tao->subset_type, &asls->Jpre_sub);CHKERRQ(ierr);
+      ierr = TaoMatGetSubMat(tao->jacobian_pre, asls->free, asls->w, tao->subset_type, &asls->Jpre_sub);CHKERRQ(ierr);
     } else {
       ierr = MatDestroy(&asls->Jpre_sub);CHKERRQ(ierr);
       asls->Jpre_sub = asls->J_sub;
       ierr = PetscObjectReference((PetscObject)(asls->Jpre_sub));CHKERRQ(ierr);
     }
     ierr = MatDiagonalSet(asls->J_sub, asls->r1,ADD_VALUES);CHKERRQ(ierr);
-    ierr = VecGetSubVec(tao->stepdirection, asls->free, tao->subset_type, 0.0, &asls->dxfree);CHKERRQ(ierr);
+    ierr = TaoVecGetSubVec(tao->stepdirection, asls->free, tao->subset_type, 0.0, &asls->dxfree);CHKERRQ(ierr);
     ierr = VecSet(asls->dxfree, 0.0);CHKERRQ(ierr);
 
     /* Calculate the reduced direction.  (Really negative of Newton
@@ -285,7 +285,7 @@ PetscErrorCode TaoCreate_ASILS(Tao tao)
 {
   TAO_SSLS       *asls;
   PetscErrorCode ierr;
-  const char     *armijo_type = TAOLINESEARCH_ARMIJO;
+  const char     *armijo_type = TAOLINESEARCHARMIJO;
 
   PetscFunctionBegin;
   ierr = PetscNewLog(tao,&asls);CHKERRQ(ierr);

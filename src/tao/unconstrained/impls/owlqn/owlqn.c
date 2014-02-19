@@ -10,15 +10,16 @@
 #define __FUNCT__ "ProjDirect_OWLQN"
 static PetscErrorCode ProjDirect_OWLQN(Vec d, Vec g)
 {
-  PetscErrorCode ierr;
-  PetscReal      *gptr,*dptr;
-  PetscInt       low,high,low1,high1,i;
+  PetscErrorCode  ierr;
+  const PetscReal *gptr;
+  PetscReal       *dptr;
+  PetscInt        low,high,low1,high1,i;
 
   PetscFunctionBegin;
   ierr=VecGetOwnershipRange(d,&low,&high);CHKERRQ(ierr);
   ierr=VecGetOwnershipRange(g,&low1,&high1);CHKERRQ(ierr);
 
-  ierr = VecGetArray(g,&gptr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(g,&gptr);CHKERRQ(ierr);
   ierr = VecGetArray(d,&dptr);CHKERRQ(ierr);
   for (i = 0; i < high-low; i++) {
     if (dptr[i] * gptr[i] <= 0.0 ) {
@@ -26,7 +27,7 @@ static PetscErrorCode ProjDirect_OWLQN(Vec d, Vec g)
     }
   }
   ierr = VecRestoreArray(d,&dptr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(g,&gptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(g,&gptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -34,15 +35,16 @@ static PetscErrorCode ProjDirect_OWLQN(Vec d, Vec g)
 #define __FUNCT__ "ComputePseudoGrad_OWLQN"
 static PetscErrorCode ComputePseudoGrad_OWLQN(Vec x, Vec gv, PetscReal lambda)
 {
-  PetscErrorCode ierr;
-  PetscReal      *xptr,*gptr;
-  PetscInt       low,high,low1,high1,i;
+  PetscErrorCode  ierr;
+  const PetscReal *xptr;
+  PetscReal       *gptr;
+  PetscInt        low,high,low1,high1,i;
 
   PetscFunctionBegin;
   ierr=VecGetOwnershipRange(x,&low,&high);CHKERRQ(ierr);
   ierr=VecGetOwnershipRange(gv,&low1,&high1);CHKERRQ(ierr);
 
-  ierr = VecGetArray(x,&xptr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xptr);CHKERRQ(ierr);
   ierr = VecGetArray(gv,&gptr);CHKERRQ(ierr);
   for (i = 0; i < high-low; i++) {
     if (xptr[i] < 0.0)               gptr[i] = gptr[i] - lambda;
@@ -52,7 +54,7 @@ static PetscErrorCode ComputePseudoGrad_OWLQN(Vec x, Vec gv, PetscReal lambda)
     else                             gptr[i] = 0.0;
   }
   ierr = VecRestoreArray(gv,&gptr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&xptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -60,18 +62,17 @@ static PetscErrorCode ComputePseudoGrad_OWLQN(Vec x, Vec gv, PetscReal lambda)
 #define __FUNCT__ "TaoSolve_OWLQN"
 static PetscErrorCode TaoSolve_OWLQN(Tao tao)
 {
-  TAO_OWLQN                      *lmP = (TAO_OWLQN *)tao->data;
-  PetscReal                      f, fold, gdx, gnorm;
-  PetscReal                      step = 1.0;
-  PetscReal                      delta;
-  PetscErrorCode                 ierr;
-  PetscInt                       stepType;
-  PetscInt                       iter = 0;
-  TaoTerminationReason     reason = TAO_CONTINUE_ITERATING;
-  TaoLineSearchTerminationReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
+  TAO_OWLQN                    *lmP = (TAO_OWLQN *)tao->data;
+  PetscReal                    f, fold, gdx, gnorm;
+  PetscReal                    step = 1.0;
+  PetscReal                    delta;
+  PetscErrorCode               ierr;
+  PetscInt                     stepType;
+  PetscInt                     iter = 0;
+  TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
+  TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
   PetscFunctionBegin;
-
   if (tao->XL || tao->XU || tao->ops->computebounds) {
     ierr = PetscPrintf(((PetscObject)tao)->comm,"WARNING: Variable bounds have been set but will be ignored by owlqn algorithm\n");CHKERRQ(ierr);
   }
@@ -334,7 +335,7 @@ EXTERN_C_BEGIN
 PetscErrorCode TaoCreate_OWLQN(Tao tao)
 {
   TAO_OWLQN      *lmP;
-  const char     *owarmijo_type = TAOLINESEARCH_OWARMIJO;
+  const char     *owarmijo_type = TAOLINESEARCHOWARMIJO;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

@@ -81,7 +81,7 @@ typedef struct {
 
   Vec x;        /* Maintain reference to variable vector to check for changes */
   Vec work;
-} TAOLINESEARCH_OWARMIJO_CTX;
+} TaoLineSearch_OWARMIJO;
 
 static PetscErrorCode ProjWork_OWLQN(Vec w,Vec x,Vec gv,PetscReal *gdx);
 

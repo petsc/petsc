@@ -4,15 +4,15 @@ typedef struct {
   PetscBool  check_gradient;
   PetscBool  check_hessian;
   PetscBool  complete_print;
-} FD_Test;
+} Tao_Test;
 
 /*
-     TaoSolve_FD - Tests whether a hand computed Hessian
+     TaoSolve_Test - Tests whether a hand computed Hessian
      matches one compute via finite differences.
 */
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolve_FD"
-PetscErrorCode TaoSolve_FD(Tao tao)
+#define __FUNCT__ "TaoSolve_Test"
+PetscErrorCode TaoSolve_Test(Tao tao)
 {
   Mat            A = tao->hessian,B;
   Vec            x = tao->solution,g1,g2;
@@ -21,7 +21,7 @@ PetscErrorCode TaoSolve_FD(Tao tao)
   MatStructure   flg;
   PetscReal      nrm,gnorm,hcnorm,fdnorm;
   MPI_Comm       comm;
-  FD_Test        *fd = (FD_Test*)tao->data;
+  Tao_Test        *fd = (Tao_Test*)tao->data;
 
   PetscFunctionBegin;
   comm = ((PetscObject)tao)->comm;
@@ -33,7 +33,7 @@ PetscErrorCode TaoSolve_FD(Tao tao)
     ierr = PetscPrintf(comm,"0 (1.e-8), the hand-coded gradient is probably correct.\n");CHKERRQ(ierr);
 
     if (!fd->complete_print) {
-      ierr = PetscPrintf(comm,"Run with -tao_fd_test_display to show difference\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"Run with -tao_test_display to show difference\n");CHKERRQ(ierr);
       ierr = PetscPrintf(comm,"between hand-coded and finite difference gradient.\n");CHKERRQ(ierr);
     }
     for (i=0; i<3; i++) {
@@ -76,7 +76,7 @@ PetscErrorCode TaoSolve_FD(Tao tao)
     ierr = PetscPrintf(comm,"O (1.e-8), the hand-coded Hessian is probably correct.\n");CHKERRQ(ierr);
 
     if (!fd->complete_print) {
-      ierr = PetscPrintf(comm,"Run with -tao_fd_test_display to show difference\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"Run with -tao_test_display to show difference\n");CHKERRQ(ierr);
       ierr = PetscPrintf(comm,"of hand-coded and finite difference Hessian.\n");CHKERRQ(ierr);
     }
     for (i=0;i<3;i++) {
@@ -117,8 +117,8 @@ PetscErrorCode TaoSolve_FD(Tao tao)
 }
 /* ------------------------------------------------------------ */
 #undef __FUNCT__
-#define __FUNCT__ "TaoDestroy_FD"
-PetscErrorCode TaoDestroy_FD(Tao tao)
+#define __FUNCT__ "TaoDestroy_Test"
+PetscErrorCode TaoDestroy_Test(Tao tao)
 {
   PetscErrorCode ierr;
 
@@ -128,17 +128,17 @@ PetscErrorCode TaoDestroy_FD(Tao tao)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSetFromOptions_FD"
-static PetscErrorCode TaoSetFromOptions_FD(Tao tao)
+#define __FUNCT__ "TaoSetFromOptions_Test"
+static PetscErrorCode TaoSetFromOptions_Test(Tao tao)
 {
-  FD_Test        *fd = (FD_Test *)tao->data;
+  Tao_Test        *fd = (Tao_Test *)tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Hand-coded Hessian tester options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_fd_test_display","Display difference between hand-coded and finite difference Hessians","None",fd->complete_print,&fd->complete_print,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_fd_test_gradient","Test Hand-coded gradient against finite-difference gradient","None",fd->check_gradient,&fd->check_gradient,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_fd_test_hessian","Test Hand-coded hessian against finite-difference hessian","None",fd->check_hessian,&fd->check_hessian,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_test_display","Display difference between hand-coded and finite difference Hessians","None",fd->complete_print,&fd->complete_print,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_test_gradient","Test Hand-coded gradient against finite-difference gradient","None",fd->check_gradient,&fd->check_gradient,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_test_hessian","Test Hand-coded hessian against finite-difference hessian","None",fd->check_hessian,&fd->check_hessian,NULL);CHKERRQ(ierr);
   if (fd->check_gradient == PETSC_FALSE && fd->check_hessian == PETSC_FALSE) {
     fd->check_gradient = PETSC_TRUE;
   }
@@ -151,7 +151,7 @@ static PetscErrorCode TaoSetFromOptions_FD(Tao tao)
       FD_TEST - Test hand-coded Hessian against finite difference Hessian
 
    Options Database:
-.    -tao_fd_test_display  Display difference between approximate and hand-coded Hessian
+.    -tao_test_display  Display difference between approximate and hand-coded Hessian
 
    Level: intermediate
 
@@ -160,23 +160,23 @@ static PetscErrorCode TaoSetFromOptions_FD(Tao tao)
 */
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "TaoCreate_FD"
-PetscErrorCode  TaoCreate_FD(Tao  tao)
+#define __FUNCT__ "TaoCreate_Test"
+PetscErrorCode  TaoCreate_Test(Tao  tao)
 {
-  FD_Test        *fd;
+  Tao_Test        *fd;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  tao->ops->setup            = 0;
-  tao->ops->solve            = TaoSolve_FD;
-  tao->ops->destroy          = TaoDestroy_FD;
-  tao->ops->setfromoptions  = TaoSetFromOptions_FD;
+  tao->ops->setup           = 0;
+  tao->ops->solve           = TaoSolve_Test;
+  tao->ops->destroy         = TaoDestroy_Test;
+  tao->ops->setfromoptions  = TaoSetFromOptions_Test;
   tao->ops->view            = 0;
-  ierr                  = PetscNewLog(tao,&fd);CHKERRQ(ierr);
-  tao->data     = (void*)fd;
-  fd->complete_print   = PETSC_FALSE;
-  fd->check_gradient = PETSC_TRUE;
-  fd->check_hessian = PETSC_FALSE;
+  ierr                      = PetscNewLog(tao,&fd);CHKERRQ(ierr);
+  tao->data                 = (void*)fd;
+  fd->complete_print        = PETSC_FALSE;
+  fd->check_gradient        = PETSC_TRUE;
+  fd->check_hessian         = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

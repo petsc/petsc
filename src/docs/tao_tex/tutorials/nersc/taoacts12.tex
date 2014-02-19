@@ -664,7 +664,7 @@ This driver performs the following steps:
 
  PetscInitizialize(&argc,&argv,0,0);
  TaoCreate(PETSC_COMM_SELF,&tao);
- TaoSetType(tao,"tao_lmvm"); 
+ TaoSetType(tao,TAOLMVM); 
  
  ... 
 \end{verbatim}

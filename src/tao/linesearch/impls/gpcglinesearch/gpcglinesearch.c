@@ -7,8 +7,8 @@
 #define __FUNCT__ "TaoLineSearchDestroy_GPCG"
 static PetscErrorCode TaoLineSearchDestroy_GPCG(TaoLineSearch ls)
 {
-  PetscErrorCode         ierr;
-  TAOLINESEARCH_GPCG_CTX *ctx = (TAOLINESEARCH_GPCG_CTX *)ls->data;
+  PetscErrorCode     ierr;
+  TaoLineSearch_GPCG *ctx = (TaoLineSearch_GPCG *)ls->data;
 
   PetscFunctionBegin;
   ierr = VecDestroy(&ctx->W1);CHKERRQ(ierr);
@@ -41,11 +41,11 @@ static PetscErrorCode TaoLineSearchView_GPCG(TaoLineSearch ls, PetscViewer viewe
 #define __FUNCT__ "TaoLineSearchApply_GPCG"
 static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, Vec s)
 {
-  TAOLINESEARCH_GPCG_CTX *neP = (TAOLINESEARCH_GPCG_CTX *)ls->data;
-  PetscErrorCode         ierr;
-  PetscInt               i;
-  PetscBool              g_computed=PETSC_FALSE; /* to prevent extra gradient computation */
-  PetscReal              d1,finit,actred,prered,rho, gdx;
+  TaoLineSearch_GPCG *neP = (TaoLineSearch_GPCG *)ls->data;
+  PetscErrorCode     ierr;
+  PetscInt           i;
+  PetscBool          g_computed=PETSC_FALSE; /* to prevent extra gradient computation */
+  PetscReal          d1,finit,actred,prered,rho, gdx;
 
   PetscFunctionBegin;
   /* ls->stepmin - lower bound for step */
@@ -197,8 +197,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "TaoLineSearchCreate_GPCG"
 PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch ls)
 {
-  PetscErrorCode         ierr;
-  TAOLINESEARCH_GPCG_CTX *neP;
+  PetscErrorCode     ierr;
+  TaoLineSearch_GPCG *neP;
 
   PetscFunctionBegin;
   ls->ftol                = 0.05;

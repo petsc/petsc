@@ -16,15 +16,15 @@ typedef enum {
     TAOLINESEARCH_HALTED_LOWERBOUND = 6,
     TAOLINESEARCH_HALTED_RTOL = 7,
     TAOLINESEARCH_HALTED_USER = 8
-} TaoLineSearchTerminationReason;
+} TaoLineSearchConvergedReason;
 
 #define TaoLineSearchType  char*
-#define TAOLINESEARCH_UNIT     "unit"
-#define TAOLINESEARCH_MT       "more-thuente"
-#define TAOLINESEARCH_GPCG     "gpcg"
-#define TAOLINESEARCH_ARMIJO   "armijo"
-#define TAOLINESEARCH_OWARMIJO "owarmijo"
-#define TAOLINESEARCH_IPM      "ipm"
+#define TAOLINESEARCHUNIT     "unit"
+#define TAOLINESEARCHMT       "more-thuente"
+#define TAOLINESEARCHGPCG     "gpcg"
+#define TAOLINESEARCHARMIJO   "armijo"
+#define TAOLINESEARCHOWARMIJO "owarmijo"
+#define TAOLINESEARCHIPM      "ipm"
 
 PETSC_EXTERN PetscClassId TAOLINESEARCH_CLASSID;
 PETSC_EXTERN PetscFunctionList TaoLineSearchList;
@@ -40,12 +40,12 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchSetOptionsPrefix(TaoLineSearch,const ch
 PETSC_EXTERN PetscErrorCode TaoLineSearchReset(TaoLineSearch);
 PETSC_EXTERN PetscErrorCode TaoLineSearchAppendOptionsPrefix(TaoLineSearch,const char prefix[]);
 PETSC_EXTERN PetscErrorCode TaoLineSearchGetOptionsPrefix(TaoLineSearch,const char *prefix[]);
-PETSC_EXTERN PetscErrorCode TaoLineSearchApply(TaoLineSearch,Vec,PetscReal *,Vec,Vec, PetscReal *, TaoLineSearchTerminationReason *);
+PETSC_EXTERN PetscErrorCode TaoLineSearchApply(TaoLineSearch,Vec,PetscReal *,Vec,Vec, PetscReal *, TaoLineSearchConvergedReason *);
 PETSC_EXTERN PetscErrorCode TaoLineSearchGetStepLength(TaoLineSearch, PetscReal*);
 PETSC_EXTERN PetscErrorCode TaoLineSearchGetStartingVector(TaoLineSearch,Vec*);
 PETSC_EXTERN PetscErrorCode TaoLineSearchGetStepDirection(TaoLineSearch,Vec*);
 PETSC_EXTERN PetscErrorCode TaoLineSearchSetInitialStepLength(TaoLineSearch, PetscReal);
-PETSC_EXTERN PetscErrorCode TaoLineSearchGetSolution(TaoLineSearch, Vec, PetscReal*, Vec, PetscReal*, TaoLineSearchTerminationReason*);
+PETSC_EXTERN PetscErrorCode TaoLineSearchGetSolution(TaoLineSearch, Vec, PetscReal*, Vec, PetscReal*, TaoLineSearchConvergedReason*);
 PETSC_EXTERN PetscErrorCode TaoLineSearchGetFullStepObjective(TaoLineSearch, PetscReal*);
 PETSC_EXTERN PetscErrorCode TaoLineSearchGetNumberFunctionEvaluations(TaoLineSearch, PetscInt*, PetscInt*, PetscInt*);
 

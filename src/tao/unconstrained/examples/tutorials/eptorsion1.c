@@ -46,7 +46,7 @@ The command line options are:\n\
    Routines: TaoSetObjectiveAndGradientRoutine();
    Routines: TaoSetHessianRoutine(); TaoSetFromOptions();
    Routines: TaoGetKSP(); TaoSolve();
-   Routines: TaoGetTerminationReason(); TaoDestroy();
+   Routines: TaoGetConvergedReason(); TaoDestroy();
    Processors: 1
 T*/
 
@@ -79,18 +79,18 @@ PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal *,Vec,void *);
 #define __FUNCT__ "main"
 PetscErrorCode main(int argc,char **argv)
 {
-  PetscErrorCode       ierr;                /* used to check for functions returning nonzeros */
-  PetscInt             mx=10;               /* discretization in x-direction */
-  PetscInt             my=10;               /* discretization in y-direction */
-  Vec                  x;                   /* solution, gradient vectors */
-  PetscBool            flg;                 /* A return value when checking for use options */
-  Tao                  tao;                 /* Tao solver context */
-  Mat                  H;                   /* Hessian matrix */
-  TaoTerminationReason reason;
-  KSP                  ksp;                 /* PETSc Krylov subspace solver */
-  AppCtx               user;                /* application context */
-  PetscMPIInt          size;                /* number of processes */
-  PetscReal            one=1.0;
+  PetscErrorCode     ierr;                /* used to check for functions returning nonzeros */
+  PetscInt           mx=10;               /* discretization in x-direction */
+  PetscInt           my=10;               /* discretization in y-direction */
+  Vec                x;                   /* solution, gradient vectors */
+  PetscBool          flg;                 /* A return value when checking for use options */
+  Tao                tao;                 /* Tao solver context */
+  Mat                H;                   /* Hessian matrix */
+  TaoConvergedReason reason;
+  KSP                ksp;                 /* PETSc Krylov subspace solver */
+  AppCtx             user;                /* application context */
+  PetscMPIInt        size;                /* number of processes */
+  PetscReal          one=1.0;
 
   /* Initialize TAO,PETSc */
   PetscInitialize(&argc,&argv,(char *)0,help);
@@ -116,7 +116,7 @@ PetscErrorCode main(int argc,char **argv)
 
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
-  ierr = TaoSetType(tao,"tao_lmvm");CHKERRQ(ierr);
+  ierr = TaoSetType(tao,TAOLMVM);CHKERRQ(ierr);
 
   /* Set solution vector with an initial guess */
   ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
@@ -161,7 +161,7 @@ PetscErrorCode main(int argc,char **argv)
   */
 
   /* Get information on termination */
-  ierr = TaoGetTerminationReason(tao,&reason);CHKERRQ(ierr);
+  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
   if (reason <= 0){
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");CHKERRQ(ierr);
   }

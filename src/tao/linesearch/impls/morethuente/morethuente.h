@@ -8,6 +8,6 @@ typedef struct {
   Vec x; /* used to see if work needs to be reformed */
   Vec work;
 
-} TAOLINESEARCH_MT_CTX;
+} TaoLineSearch_MT;
 
 #endif

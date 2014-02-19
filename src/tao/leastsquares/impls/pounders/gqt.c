@@ -422,7 +422,7 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
     /* Use pars to update parl */
     parl = PetscMax(parl,pars);
 
-    /* Test for termination. */
+    /* Test for converged. */
     if (info == 0) {
       if (iter == itmax) info=4;
       if (paru <= (1.0+p5*rtol)*pars) info=3;

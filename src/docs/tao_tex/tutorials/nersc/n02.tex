@@ -796,7 +796,7 @@ algorithmic options and tolerances.}
   \textcolor{red}{VecCreateSeq(PETSC_COMM_SELF,n,&x);
   VecDuplicate(x,&g);
   MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,nz,NULL,&H);}
-  TaoCreate(PETSC_COMM_SELF,"tao_lmvm",&tao);
+  TaoCreate(PETSC_COMM_SELF,TAOLMVM,&tao);
   TaoPetscApplicationCreate(PETSC_COMM_SELF,&app);
   TaoSetPetscFunction(app,\textcolor{red}{x},\textcolor{blue}{FormFunction,(void *)&user});
   TaoSetPetscGradient(app,\textcolor{red}{g},\textcolor{blue}{FormGradient,(void *)&user});
@@ -826,7 +826,7 @@ algorithmic options and tolerances.}
   VecCreateSeq(PETSC_COMM_SELF,n,&x);
   VecDuplicate(x,&g);
   MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,nz,NULL,&H);
-  TaoCreate(PETSC_COMM_SELF,"tao_lmvm",&tao);
+  TaoCreate(PETSC_COMM_SELF,TAOLMVM,&tao);
   \textcolor{green}{TaoPetscApplicationCreate(PETSC_COMM_SELF},\textcolor{green}{&app});
   \textcolor{green}{TaoSetPetscFunction}(\textcolor{green}{app},x,FormFunction,(void *)&user);
   \textcolor{green}{TaoSetPetscGradient}(\textcolor{green}{app},g,FormGradient,(void *)&user);
@@ -856,7 +856,7 @@ algorithmic options and tolerances.}
   VecCreateSeq(PETSC_COMM_SELF,n,&x);
   VecDuplicate(x,&g);
   MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,nz,NULL,&H);
-  \textcolor{green}{TaoCreate(PETSC_COMM_SELF,}\textcolor{green}{"tao_lmvm"},\textcolor{green}{&tao});
+  \textcolor{green}{TaoCreate(PETSC_COMM_SELF,}\textcolor{green}{TAOLMVM},\textcolor{green}{&tao});
   TaoPetscApplicationCreate(PETSC_COMM_SELF,&app);
   TaoSetPetscFunction(app,x,FormFunction,(void *)&user);
   TaoSetPetscGradient(app,g,FormGradient,(void *)&user);
@@ -885,7 +885,7 @@ algorithmic options and tolerances.}
   \textcolor{red}{VecCreateSeq(PETSC_COMM_SELF,n,&x);
   VecDuplicate(x,&g);
   MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,nz,NULL,&H);}
-  \textcolor{green}{TaoCreate(}\textcolor{green}{PETSC_COMM_SELF},\textcolor{green}{"tao_lmvm",&tao);}
+  \textcolor{green}{TaoCreate(}\textcolor{green}{PETSC_COMM_SELF},\textcolor{green}{TAOLMVM,&tao);}
   \textcolor{green}{TaoPetscApplicationCreate(}\textcolor{green}{PETSC_COMM_SELF},\textcolor{green}{&app);
   TaoSetPetscFunction(app},\textcolor{red}{x},\textcolor{blue}{FormFunction},\textcolor{blue}{(void *)&user});
   \textcolor{green}{TaoSetPetscGradient(app},\textcolor{red}{g},\textcolor{blue}{FormGradient},\textcolor{blue}{(void *)&user});
@@ -912,7 +912,7 @@ algorithmic options and tolerances.}
   VecCreateMPI(PETSC_COMM_WORLD,n,&x);}
   VecDuplicate(x,&g);
   \textcolor{red}{MatCreateMPIAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,d_nz,d_nnz,o_nz,o_nnz,&H);}
-  TaoCreate(\textcolor{red}{PETSC_COMM_WORLD},"tao_lmvm",&tao);
+  TaoCreate(\textcolor{red}{PETSC_COMM_WORLD},TAOLMVM,&tao);
   TaoPetscApplicationCreate(\textcolor{red}{PETSC_COMM_WORLD},&app);
   TaoSetPetscFunction(app,x,\textcolor{blue}{FormFunction,(void *)&user});
   TaoSetPetscGradient(app,g,\textcolor{blue}{FormGradient,(void *)&user});

@@ -61,7 +61,7 @@ struct _p_Tao {
     void *monitorcontext[MAXTAOMONITORS];
     PetscInt numbermonitors;
     void *cnvP;
-    TaoTerminationReason reason;
+    TaoConvergedReason reason;
 
     PetscBool setupcalled;
     void *data;
@@ -168,3 +168,6 @@ extern PetscLogEvent Tao_Solve, Tao_ObjectiveEval, Tao_ObjGradientEval, Tao_Grad
   }
 
 #endif
+
+PETSC_INTERN PetscErrorCode TaoVecGetSubVec(Vec, IS, TaoSubsetType, PetscReal, Vec*);
+PETSC_INTERN PetscErrorCode TaoMatGetSubMat(Mat, IS, Vec, TaoSubsetType, Mat*);

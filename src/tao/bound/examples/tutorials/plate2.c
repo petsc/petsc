@@ -26,7 +26,7 @@ The command line options are:\n\
    Routines: TaoSetVariableBounds();
    Routines: TaoSetFromOptions();
    Routines: TaoSolve(); TaoView();
-   Routines: TaoGetTerminationReason(); TaoDestroy();
+   Routines: TaoGetConvergedReason(); TaoDestroy();
    Processors: n
 T*/
 
@@ -72,7 +72,7 @@ int main( int argc, char **argv )
   PetscBool              flg;                /* A return variable when checking for user options */
   Tao                    tao;                  /* Tao solver context */
   ISLocalToGlobalMapping isltog;   /* local-to-global mapping object */
-  TaoTerminationReason   reason;
+  TaoConvergedReason     reason;
   Mat                    H_shell;                  /* to test matrix-free submatrices */
   AppCtx                 user;                 /* user-defined work context */
 
@@ -128,11 +128,11 @@ int main( int argc, char **argv )
 
   /*
      Create TAO solver and set desired solution method
-     The method must either be 'tao_tron' or 'tao_blmvm'
-     If blmvm is used, then hessian function is not called.
+     The method must either be TAOTRON or TAOBLMVM
+     If TAOBLMVM is used, then hessian function is not called.
   */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
-  ierr = TaoSetType(tao,"tao_blmvm");CHKERRQ(ierr);
+  ierr = TaoSetType(tao,TAOBLMVM);CHKERRQ(ierr);
 
   /* Set initial solution guess; */
   ierr = MSA_BoundaryConditions(&user);CHKERRQ(ierr);
@@ -168,8 +168,8 @@ int main( int argc, char **argv )
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
 
-  /* Get ierrrmation on termination */
-  ierr = TaoGetTerminationReason(tao,&reason);CHKERRQ(ierr);
+  /* Get ierrrmation on converged */
+  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
   ierr = TaoView(tao,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   if (reason <= 0){
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");CHKERRQ(ierr);

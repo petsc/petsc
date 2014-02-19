@@ -43,7 +43,7 @@
       PetscReal      hist(100) ! objective value history
       PetscReal      resid(100)! residual history
       PetscReal      cnorm(100)! cnorm history
-      TaoTerminationReason reason
+      TaoConvergedReason reason
 
 
 
@@ -82,7 +82,7 @@
 !  Create TAO solver
       call TaoCreate(PETSC_COMM_SELF,tao,ierr)
       CHKERRQ(ierr)
-      call TaoSetType(tao,'tao_pounders',ierr)
+      call TaoSetType(tao,TAOPOUNDERS,ierr)
       CHKERRQ(ierr)
 !  Set routines for function, gradient, and hessian evaluation
 
@@ -111,7 +111,7 @@
       do i=1,nhist
          print *,hist(i),resid(i)
       enddo
-      call TaoGetTerminationReason(tao, reason, ierr)
+      call TaoGetConvergedReason(tao, reason, ierr)
       if (reason .le. 0) then
          print *,'Try a different TAO method, adjust some parameters,'
          print *,'or check the function evaluation routines.'

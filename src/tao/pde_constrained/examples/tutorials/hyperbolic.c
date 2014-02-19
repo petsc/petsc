@@ -15,7 +15,7 @@
    Routines: TaoSetFromOptions();
    Routines: TaoSetHistory(); TaoGetHistory();
    Routines: TaoSolve();
-   Routines: TaoGetTerminationReason(); TaoDestroy();
+   Routines: TaoGetConvergedReason(); TaoDestroy();
    Processors: 1
 T*/
 
@@ -116,17 +116,17 @@ static  char help[]="";
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  PetscErrorCode       ierr;
-  Vec                  x,x0;
-  Tao                  tao;
-  TaoTerminationReason reason;
-  AppCtx               user;
-  IS                   is_allstate,is_alldesign;
-  PetscInt             lo,hi,hi2,lo2,ksp_old;
-  PetscBool            flag;
-  PetscInt             ntests = 1;
-  PetscInt             i;
-  int                  stages[1];
+  PetscErrorCode     ierr;
+  Vec                x,x0;
+  Tao                tao;
+  TaoConvergedReason reason;
+  AppCtx             user;
+  IS                 is_allstate,is_alldesign;
+  PetscInt           lo,hi,hi2,lo2,ksp_old;
+  PetscBool          flag;
+  PetscInt           ntests = 1;
+  PetscInt           i;
+  int                stages[1];
 
   PetscInitialize(&argc, &argv, (char*)0,help);
 
@@ -185,7 +185,7 @@ int main(int argc, char **argv)
 
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
-  ierr = TaoSetType(tao,"tao_lcl");CHKERRQ(ierr);
+  ierr = TaoSetType(tao,TAOLCL);CHKERRQ(ierr);
   user.lcl = (TAO_LCL*)(tao->data);
 
   /* Set up initial vectors and matrices */
@@ -229,7 +229,7 @@ int main(int argc, char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"KSP iterations per trial: ");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%D\n",(user.ksp_its-user.ksp_its_initial)/ntests);CHKERRQ(ierr);
 
-  ierr = TaoGetTerminationReason(tao,&reason);CHKERRQ(ierr);
+  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
 
   if (reason < 0) {
     ierr = PetscPrintf(MPI_COMM_WORLD, "TAO failed to converge.\n");CHKERRQ(ierr);

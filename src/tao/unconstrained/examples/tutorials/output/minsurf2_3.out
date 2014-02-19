@@ -10,7 +10,7 @@ iter =   4, Function value 1.41874, Residual: 0.0179884
 iter =   5, Function value 1.41862, Residual: 0.0198601 
 iter =   6, Function value 1.41855, Residual: 0.0102512 
 Tao Object: 3 MPI processes
-  type: tao_cg
+  type: cg
       CG Type: fr
       Gradient steps: 0
       Reset steps: 0

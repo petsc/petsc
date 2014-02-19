@@ -102,12 +102,12 @@ static PetscErrorCode TaoSetup_TRON(Tao tao)
 #define __FUNCT__ "TaoSolve_TRON"
 static PetscErrorCode TaoSolve_TRON(Tao tao)
 {
-  TAO_TRON                       *tron = (TAO_TRON *)tao->data;
-  PetscErrorCode                 ierr;
-  PetscInt                       iter=0,its;
-  TaoTerminationReason     reason = TAO_CONTINUE_ITERATING;
-  TaoLineSearchTerminationReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
-  PetscReal                      prered,actred,delta,f,f_new,rhok,gdx,xdiff,stepsize;
+  TAO_TRON                     *tron = (TAO_TRON *)tao->data;
+  PetscErrorCode               ierr;
+  PetscInt                     iter=0,its;
+  TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
+  TaoLineSearchConvergedReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
+  PetscReal                    prered,actred,delta,f,f_new,rhok,gdx,xdiff,stepsize;
 
   PetscFunctionBegin;
   tron->pgstepsize=1.0;
@@ -150,17 +150,17 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
 
     }
     /* use free_local to mask/submat gradient, hessian, stepdirection */
-    ierr = VecGetSubVec(tao->gradient,tron->Free_Local,tao->subset_type,0.0,&tron->R);CHKERRQ(ierr);
-    ierr = VecGetSubVec(tao->gradient,tron->Free_Local,tao->subset_type,0.0,&tron->DXFree);CHKERRQ(ierr);
+    ierr = TaoVecGetSubVec(tao->gradient,tron->Free_Local,tao->subset_type,0.0,&tron->R);CHKERRQ(ierr);
+    ierr = TaoVecGetSubVec(tao->gradient,tron->Free_Local,tao->subset_type,0.0,&tron->DXFree);CHKERRQ(ierr);
     ierr = VecSet(tron->DXFree,0.0);CHKERRQ(ierr);
     ierr = VecScale(tron->R, -1.0);CHKERRQ(ierr);
-    ierr = MatGetSubMat(tao->hessian, tron->Free_Local, tron->diag, tao->subset_type, &tron->H_sub);CHKERRQ(ierr);
+    ierr = TaoMatGetSubMat(tao->hessian, tron->Free_Local, tron->diag, tao->subset_type, &tron->H_sub);CHKERRQ(ierr);
     if (tao->hessian == tao->hessian_pre) {
       ierr = MatDestroy(&tron->Hpre_sub);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)(tron->H_sub));CHKERRQ(ierr);
       tron->Hpre_sub = tron->H_sub;
     } else {
-      ierr = MatGetSubMat(tao->hessian_pre, tron->Free_Local, tron->diag, tao->subset_type,&tron->Hpre_sub);CHKERRQ(ierr);
+      ierr = TaoMatGetSubMat(tao->hessian_pre, tron->Free_Local, tron->diag, tao->subset_type,&tron->Hpre_sub);CHKERRQ(ierr);
     }
     ierr = KSPReset(tao->ksp);CHKERRQ(ierr);
     ierr = KSPSetOperators(tao->ksp, tron->H_sub, tron->Hpre_sub, tron->matflag);CHKERRQ(ierr);
@@ -257,7 +257,7 @@ static PetscErrorCode TronGradientProjections(Tao tao,TAO_TRON *tron)
 {
   PetscErrorCode                 ierr;
   PetscInt                       i;
-  TaoLineSearchTerminationReason ls_reason;
+  TaoLineSearchConvergedReason ls_reason;
   PetscReal                      actred=-1.0,actred_max=0.0;
   PetscReal                      f_new;
   /*
@@ -334,7 +334,7 @@ PetscErrorCode TaoCreate_TRON(Tao tao)
 {
   TAO_TRON       *tron;
   PetscErrorCode ierr;
-  const char     *morethuente_type = TAOLINESEARCH_MT;
+  const char     *morethuente_type = TAOLINESEARCHMT;
 
   PetscFunctionBegin;
   tao->ops->setup = TaoSetup_TRON;

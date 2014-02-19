@@ -183,15 +183,15 @@ static PetscErrorCode TaoDestroy_BQPIP(Tao tao)
 #define __FUNCT__ "TaoSolve_BQPIP"
 static PetscErrorCode TaoSolve_BQPIP(Tao tao)
 {
-  TAO_BQPIP            *qp = (TAO_BQPIP*)tao->data;
-  PetscErrorCode       ierr;
-  PetscInt             iter=0,its;
-  PetscReal            d1,d2,ksptol,sigma;
-  PetscReal            sigmamu;
-  PetscReal            dstep,pstep,step=0;
-  PetscReal            gap[4];
-  TaoTerminationReason reason;
-  MatStructure         matflag;
+  TAO_BQPIP          *qp = (TAO_BQPIP*)tao->data;
+  PetscErrorCode     ierr;
+  PetscInt           iter=0,its;
+  PetscReal          d1,d2,ksptol,sigma;
+  PetscReal          sigmamu;
+  PetscReal          dstep,pstep,step=0;
+  PetscReal          gap[4];
+  TaoConvergedReason reason;
+  MatStructure       matflag;
 
   PetscFunctionBegin;
   qp->dobj           = 0.0;

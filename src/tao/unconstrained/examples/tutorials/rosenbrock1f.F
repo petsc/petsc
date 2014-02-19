@@ -15,7 +15,7 @@
 !  Routines: TaoSetInitialVector();
 !  Routines: TaoSetFromOptions();
 !  Routines: TaoSolve();
-!  Routines: TaoGetTerminationReason(); TaoDestroy();
+!  Routines: TaoGetConvergedReason(); TaoDestroy();
 !  Processors: 1
 !T*/
 !
@@ -40,7 +40,7 @@
       PetscInt         i2,i1
       integer          size,rank    ! number of processes running
       PetscReal      zero
-      TaoTerminationReason reason
+      TaoConvergedReason reason
 
 
 
@@ -92,7 +92,7 @@
 !  Create TAO solver
       call TaoCreate(PETSC_COMM_SELF,tao,ierr)
       CHKERRQ(ierr)
-      call TaoSetType(tao,"tao_lmvm",ierr)
+      call TaoSetType(tao,TAOLMVM,ierr)
       CHKERRQ(ierr)
 
 !  Set routines for function, gradient, and hessian evaluation
@@ -117,7 +117,7 @@
 !  SOLVE THE APPLICATION
       call TaoSolve(tao,ierr)
 
-      call TaoGetTerminationReason(tao, reason, ierr)
+      call TaoGetConvergedReason(tao, reason, ierr)
       if (reason .le. 0) then
          print *,'Try a different TAO method, adjust some parameters,'
          print *,'or check the function evaluation routines.'
