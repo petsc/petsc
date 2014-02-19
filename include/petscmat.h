@@ -173,7 +173,7 @@ PETSC_EXTERN PetscErrorCode MatCreate(MPI_Comm,Mat*);
 PETSC_EXTERN PetscErrorCode MatSetSizes(Mat,PetscInt,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSetType(Mat,MatType);
 PETSC_EXTERN PetscErrorCode MatSetFromOptions(Mat);
-PETSC_EXTERN PetscErrorCode MatViewFromOptions(Mat,const char[],const char[]);
+PETSC_STATIC_INLINE PetscErrorCode MatViewFromOptions(Mat A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 PETSC_EXTERN PetscErrorCode MatRegisterAll(void);
 PETSC_EXTERN PetscErrorCode MatRegister(const char[],PetscErrorCode(*)(Mat));
 PETSC_EXTERN PetscErrorCode MatRegisterBaseName(const char[],const char[],const char[]);
@@ -356,6 +356,7 @@ PETSC_EXTERN PetscErrorCode MatRestoreColumn(Mat,PetscInt,PetscInt *,const Petsc
 PETSC_EXTERN PetscErrorCode MatGetColumnVector(Mat,Vec,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSeqAIJGetArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatSeqAIJRestoreArray(Mat,PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode MatSeqAIJSetValuesLocalFast(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 PETSC_EXTERN PetscErrorCode MatDenseGetArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatDenseRestoreArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatGetBlockSize(Mat,PetscInt *);
@@ -553,6 +554,7 @@ PETSC_EXTERN PetscErrorCode MatGetVecs(Mat,Vec*,Vec*);
 PETSC_EXTERN PetscErrorCode MatGetRedundantMatrix(Mat,PetscInt,MPI_Comm,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetMultiProcBlock(Mat,MPI_Comm,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatFindZeroDiagonals(Mat,IS*);
+PETSC_EXTERN PetscErrorCode MatFindOffBlockDiagonalEntries(Mat,IS*);
 
 /*MC
    MatSetValue - Set a single entry into a matrix.
@@ -585,7 +587,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,
        row in a matrix providing the data that one can use to correctly preallocate the matrix.
 
    Synopsis:
-   #include "petscmat.h"
+   #include <petscmat.h>
    PetscErrorCode MatPreallocateInitialize(MPI_Comm comm, PetscInt nrows, PetscInt ncols, PetscInt *dnz, PetscInt *onz)
 
    Collective on MPI_Comm
@@ -598,7 +600,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,
    Output Parameters:
 +  dnz - the array that will be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
-
 
    Level: intermediate
 
@@ -619,9 +620,8 @@ M*/
 #define MatPreallocateInitialize(comm,nrows,ncols,dnz,onz) 0; \
 { \
   PetscErrorCode _4_ierr; PetscInt __nrows = (nrows),__ctmp = (ncols),__rstart,__start,__end; \
-  _4_ierr = PetscMalloc2(__nrows,PetscInt,&dnz,__nrows,PetscInt,&onz);CHKERRQ(_4_ierr); \
-  _4_ierr = PetscMemzero(dnz,__nrows*sizeof(PetscInt));CHKERRQ(_4_ierr);\
-  _4_ierr = PetscMemzero(onz,__nrows*sizeof(PetscInt));CHKERRQ(_4_ierr); __start = 0; __end = __start; \
+  _4_ierr = PetscCalloc2(__nrows,&dnz,__nrows,&onz);CHKERRQ(_4_ierr); \
+  __start = 0; __end = __start;                                         \
   _4_ierr = MPI_Scan(&__ctmp,&__end,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __start = __end - __ctmp;\
   _4_ierr = MPI_Scan(&__nrows,&__rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __rstart = __rstart - __nrows;
 
@@ -630,7 +630,7 @@ M*/
        inserted using a local number of the rows and columns
 
    Synopsis:
-   #include "petscmat.h"
+   #include <petscmat.h>
    PetscErrorCode MatPreallocateSetLocal(ISLocalToGlobalMappping map,PetscInt nrows, PetscInt *rows,PetscInt ncols, PetscInt *cols,PetscInt *dnz, PetscInt *onz)
 
    Not Collective
@@ -644,7 +644,6 @@ M*/
 .  cols - the columns indicated
 .  dnz - the array that will be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
-
 
    Level: intermediate
 
@@ -673,7 +672,7 @@ M*/
        inserted using a local number of the rows and columns
 
    Synopsis:
-   #include "petscmat.h"
+   #include <petscmat.h>
    PetscErrorCode MatPreallocateSymmetricSetLocal(ISLocalToGlobalMappping map,PetscInt nrows, PetscInt *rows,PetscInt ncols, PetscInt *cols,PetscInt *dnz, PetscInt *onz)
 
    Not Collective
@@ -686,7 +685,6 @@ M*/
 .  cols - the columns indicated
 .  dnz - the array that will be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
-
 
    Level: intermediate
 
@@ -715,7 +713,7 @@ M*/
        inserted using a local number of the rows and columns
 
    Synopsis:
-   #include "petscmat.h"
+   #include <petscmat.h>
    PetscErrorCode MatPreallocateSet(PetscInt nrows, PetscInt *rows,PetscInt ncols, PetscInt *cols,PetscInt *dnz, PetscInt *onz)
 
    Not Collective
@@ -728,7 +726,6 @@ M*/
    Output Parameters:
 +  dnz - the array that will be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
-
 
    Level: intermediate
 
@@ -759,7 +756,7 @@ M*/
        inserted using a local number of the rows and columns
 
    Synopsis:
-   #include "petscmat.h"
+   #include <petscmat.h>
    PetscErrorCode MatPreallocateSymmetricSet(PetscInt nrows, PetscInt *rows,PetscInt ncols, PetscInt *cols,PetscInt *dnz, PetscInt *onz)
 
    Not Collective
@@ -771,7 +768,6 @@ M*/
 .  cols - the columns indicated
 .  dnz - the array that will be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
-
 
    Level: intermediate
 
@@ -799,7 +795,7 @@ M*/
    MatPreallocateLocation -  An alternative to MatPreallocationSet() that puts the nonzero locations into the matrix if it exists
 
    Synopsis:
-   #include "petscmat.h"
+   #include <petscmat.h>
    PetscErrorCode MatPreallocateLocations(Mat A,PetscInt row,PetscInt ncols,PetscInt *cols,PetscInt *dnz,PetscInt *onz)
 
    Not Collective
@@ -811,7 +807,6 @@ M*/
 .  cols - columns with nonzeros
 .  dnz - the array that will be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
-
 
    Level: intermediate
 
@@ -835,7 +830,7 @@ M*/
        row in a matrix providing the data that one can use to correctly preallocate the matrix.
 
    Synopsis:
-   #include "petscmat.h"
+   #include <petscmat.h>
    PetscErrorCode MatPreallocateFinalize(PetscInt *dnz, PetscInt *onz)
 
    Collective on MPI_Comm
@@ -843,7 +838,6 @@ M*/
    Input Parameters:
 +  dnz - the array that was be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
-
 
    Level: intermediate
 
@@ -860,8 +854,6 @@ M*/
           MatPreallocateSymmetricSetLocal()
 M*/
 #define MatPreallocateFinalize(dnz,onz) 0;_4_ierr = PetscFree2(dnz,onz);CHKERRQ(_4_ierr);}
-
-
 
 /* Routines unique to particular data structures */
 PETSC_EXTERN PetscErrorCode MatShellGetContext(Mat,void *);
@@ -924,6 +916,8 @@ typedef const char* MatOrderingType;
 #define MATORDERINGRCM         "rcm"
 #define MATORDERINGQMD         "qmd"
 #define MATORDERINGROWLENGTH   "rowlength"
+#define MATORDERINGWBM         "wbm"
+#define MATORDERINGSPECTRAL    "spectral"
 #define MATORDERINGAMD         "amd"            /* only works if UMFPACK is installed with PETSc */
 
 PETSC_EXTERN PetscErrorCode MatGetOrdering(Mat,MatOrderingType,IS*,IS*);
@@ -934,6 +928,7 @@ PETSC_EXTERN PetscBool         MatOrderingRegisterAllCalled;
 PETSC_EXTERN PetscFunctionList MatOrderingList;
 
 PETSC_EXTERN PetscErrorCode MatReorderForNonzeroDiagonal(Mat,PetscReal,IS,IS);
+PETSC_EXTERN PetscErrorCode MatCreateLaplacian(Mat,PetscReal,PetscBool,Mat*);
 
 /*S
     MatFactorShiftType - Numeric Shift.
@@ -1270,6 +1265,7 @@ PETSC_EXTERN PetscErrorCode MatCoarsenRegisterAll(void);
 PETSC_EXTERN PetscErrorCode MatCoarsenView(MatCoarsen,PetscViewer);
 PETSC_EXTERN PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen);
 PETSC_EXTERN PetscErrorCode MatCoarsenGetType(MatCoarsen,MatCoarsenType*);
+PETSC_STATIC_INLINE PetscErrorCode MatCoarsenViewFromOptions(MatCoarsen A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 
 PETSC_EXTERN PetscErrorCode MatMeshToVertexGraph(Mat,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatMeshToCellGraph(Mat,PetscInt,Mat*);

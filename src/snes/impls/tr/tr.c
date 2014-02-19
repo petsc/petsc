@@ -24,13 +24,13 @@ PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal rnorm,K
   PetscFunctionBegin;
   ierr = KSPConvergedDefault(ksp,n,rnorm,reason,ctx->ctx);CHKERRQ(ierr);
   if (*reason) {
-    ierr = PetscInfo2(snes,"default convergence test KSP iterations=%D, rnorm=%G\n",n,rnorm);CHKERRQ(ierr);
+    ierr = PetscInfo2(snes,"default convergence test KSP iterations=%D, rnorm=%g\n",n,(double)rnorm);CHKERRQ(ierr);
   }
   /* Determine norm of solution */
   ierr = KSPBuildSolution(ksp,0,&x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&nrm);CHKERRQ(ierr);
   if (nrm >= neP->delta) {
-    ierr    = PetscInfo2(snes,"Ending linear iteration early, delta=%G, length=%G\n",neP->delta,nrm);CHKERRQ(ierr);
+    ierr    = PetscInfo2(snes,"Ending linear iteration early, delta=%g, length=%g\n",(double)neP->delta,(double)nrm);CHKERRQ(ierr);
     *reason = KSP_CONVERGED_STEP_LENGTH;
   }
   PetscFunctionReturn(0);
@@ -65,7 +65,7 @@ static PetscErrorCode SNES_TR_Converged_Private(SNES snes,PetscInt it,PetscReal 
   PetscFunctionBegin;
   *reason = SNES_CONVERGED_ITERATING;
   if (neP->delta < xnorm * snes->deltatol) {
-    ierr    = PetscInfo3(snes,"Converged due to trust region param %G<%G*%G\n",neP->delta,xnorm,snes->deltatol);CHKERRQ(ierr);
+    ierr    = PetscInfo3(snes,"Converged due to trust region param %g<%g*%g\n",(double)neP->delta,(double)xnorm,(double)snes->deltatol);CHKERRQ(ierr);
     *reason = SNES_CONVERGED_TR_DELTA;
   } else if (snes->nfuncs >= snes->max_funcs) {
     ierr    = PetscInfo1(snes,"Exceeded maximum number of function evaluations: %D\n",snes->max_funcs);CHKERRQ(ierr);
@@ -141,7 +141,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   if (!conv) {
     SNES_TR_KSPConverged_Ctx *ctx;
     ierr      = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-    ierr      = PetscNew(SNES_TR_KSPConverged_Ctx,&ctx);CHKERRQ(ierr);
+    ierr      = PetscNew(&ctx);CHKERRQ(ierr);
     ctx->snes = snes;
     ierr      = KSPConvergedDefaultCreate(&ctx->ctx);CHKERRQ(ierr);
     ierr      = KSPSetConvergenceTest(ksp,SNES_TR_KSPConverged_Private,ctx,SNES_TR_KSPConverged_Destroy);CHKERRQ(ierr);
@@ -175,7 +175,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
         nrm    = delta/nrm;
         gpnorm = (1.0 - nrm)*fnorm;
         cnorm  = nrm;
-        ierr   = PetscInfo1(snes,"Scaling direction by %G\n",nrm);CHKERRQ(ierr);
+        ierr   = PetscInfo1(snes,"Scaling direction by %g\n",(double)nrm);CHKERRQ(ierr);
         ierr   = VecScale(Y,cnorm);CHKERRQ(ierr);
         nrm    = gpnorm;
         ynorm  = delta;
@@ -195,8 +195,8 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
       if      (rho < neP->mu)  delta *= neP->delta1;
       else if (rho < neP->eta) delta *= neP->delta2;
       else                     delta *= neP->delta3;
-      ierr = PetscInfo3(snes,"fnorm=%G, gnorm=%G, ynorm=%G\n",fnorm,gnorm,ynorm);CHKERRQ(ierr);
-      ierr = PetscInfo3(snes,"gpred=%G, rho=%G, delta=%G\n",gpnorm,rho,delta);CHKERRQ(ierr);
+      ierr = PetscInfo3(snes,"fnorm=%g, gnorm=%g, ynorm=%g\n",(double)fnorm,(double)gnorm,(double)ynorm);CHKERRQ(ierr);
+      ierr = PetscInfo3(snes,"gpred=%g, rho=%g, delta=%g\n",(double)gpnorm,(double)rho,(double)delta);CHKERRQ(ierr);
 
       neP->delta = delta;
       if (rho > neP->sigma) break;
@@ -308,8 +308,8 @@ static PetscErrorCode SNESView_NEWTONTR(SNES snes,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  mu=%G, eta=%G, sigma=%G\n",tr->mu,tr->eta,tr->sigma);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  delta0=%G, delta1=%G, delta2=%G, delta3=%G\n",tr->delta0,tr->delta1,tr->delta2,tr->delta3);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  mu=%g, eta=%g, sigma=%g\n",(double)tr->mu,(double)tr->eta,(double)tr->sigma);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  delta0=%g, delta1=%g, delta2=%g, delta3=%g\n",(double)tr->delta0,(double)tr->delta1,(double)tr->delta2,(double)tr->delta3);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -358,7 +358,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTR(SNES snes)
   snes->usesksp = PETSC_TRUE;
   snes->usespc  = PETSC_FALSE;
 
-  ierr        = PetscNewLog(snes,SNES_NEWTONTR,&neP);CHKERRQ(ierr);
+  ierr        = PetscNewLog(snes,&neP);CHKERRQ(ierr);
   snes->data  = (void*)neP;
   neP->mu     = 0.25;
   neP->eta    = 0.75;

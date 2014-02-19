@@ -7,7 +7,6 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/utils/freespace.h>
 #include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
-#include <petsctime.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqAIJ_RARt"
@@ -58,7 +57,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(Mat A,Mat R,PetscReal fil
   (*C)->ops->rartnumeric = MatRARtNumeric_SeqAIJ_SeqAIJ_colorrart;
 
   /* create a supporting struct */
-  ierr    = PetscNew(Mat_RARt,&rart);CHKERRQ(ierr);
+  ierr    = PetscNew(&rart);CHKERRQ(ierr);
   c       = (Mat_SeqAIJ*)(*C)->data;
   c->rart = rart;
 
@@ -96,7 +95,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(Mat A,Mat R,PetscReal fil
   rart->RARt = RARt_dense;
 
   /* Allocate work array to store columns of A*R^T used in MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense() */
-  ierr = PetscMalloc(A->rmap->n*4*sizeof(PetscScalar),&rart->work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(A->rmap->n*4,&rart->work);CHKERRQ(ierr);
 
   rart->destroy      = (*C)->ops->destroy;
   (*C)->ops->destroy = MatDestroy_SeqAIJ_RARt;
@@ -274,7 +273,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_matmattransposemult(Mat A,Mat R,Pet
   *C                     = RARt;
   RARt->ops->rartnumeric = MatRARtNumeric_SeqAIJ_SeqAIJ_matmattransposemult;
 
-  ierr = PetscNew(Mat_RARt,&rart);CHKERRQ(ierr);
+  ierr = PetscNew(&rart);CHKERRQ(ierr);
   c         = (Mat_SeqAIJ*)(*C)->data;
   c->rart   = rart;
   rart->ARt = ARt;
@@ -314,7 +313,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
   ierr = MatTranspose_SeqAIJ(R,MAT_INITIAL_MATRIX,&Rt);CHKERRQ(ierr);
   ierr = MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(R,A,Rt,fill,C);CHKERRQ(ierr);
 
-  ierr = PetscNew(Mat_RARt,&rart);CHKERRQ(ierr);
+  ierr = PetscNew(&rart);CHKERRQ(ierr);
   rart->Rt = Rt;
   c        = (Mat_SeqAIJ*)(*C)->data;
   c->rart  = rart;

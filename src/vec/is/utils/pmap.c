@@ -50,7 +50,7 @@ PetscErrorCode  PetscLayoutCreate(MPI_Comm comm,PetscLayout *map)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_PetscLayout,map);CHKERRQ(ierr);
+  ierr = PetscNew(map);CHKERRQ(ierr);
 
   (*map)->comm   = comm;
   (*map)->bs     = -1;
@@ -153,7 +153,7 @@ PetscErrorCode  PetscLayoutSetUp(PetscLayout map)
   map->n = map->n*map->bs;
   map->N = map->N*map->bs;
   if (!map->range) {
-    ierr = PetscMalloc((size+1)*sizeof(PetscInt), &map->range);CHKERRQ(ierr);
+    ierr = PetscMalloc1((size+1), &map->range);CHKERRQ(ierr);
   }
   ierr = MPI_Allgather(&map->n, 1, MPIU_INT, map->range+1, 1, MPIU_INT, map->comm);CHKERRQ(ierr);
 
@@ -201,7 +201,7 @@ PetscErrorCode  PetscLayoutDuplicate(PetscLayout in,PetscLayout *out)
   ierr = PetscLayoutCreate(comm,out);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscMemcpy(*out,in,sizeof(struct _n_PetscLayout));CHKERRQ(ierr);
-  ierr = PetscMalloc((size+1)*sizeof(PetscInt),&(*out)->range);CHKERRQ(ierr);
+  ierr = PetscMalloc1((size+1),&(*out)->range);CHKERRQ(ierr);
   ierr = PetscMemcpy((*out)->range,in->range,(size+1)*sizeof(PetscInt));CHKERRQ(ierr);
 
   (*out)->refcnt = 0;
@@ -593,7 +593,7 @@ PetscErrorCode PetscSFSetGraphLayout(PetscSF sf,PetscLayout layout,PetscInt nlea
 
   PetscFunctionBegin;
   ierr = PetscLayoutGetLocalSize(layout,&nroots);CHKERRQ(ierr);
-  ierr = PetscMalloc(nleaves*sizeof(PetscSFNode),&remote);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
   for (i=0; i<nleaves; i++) {
     PetscInt owner = -1;
     ierr = PetscLayoutFindOwner(layout,iremote[i],&owner);CHKERRQ(ierr);

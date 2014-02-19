@@ -137,8 +137,8 @@ PetscInt main(PetscInt argc,char **args)
     ierr = MatDestroy(&A_sp);CHKERRQ(ierr);
 
     ratio = (PetscReal)nzeros[0]/sbaij->nz;
-    ierr  = PetscPrintf(PETSC_COMM_SELF," %d matrix entries < %e, ratio %G of %d nonzeros\n",nzeros[0],tols[0],ratio,sbaij->nz);CHKERRQ(ierr);
-    ierr  = PetscPrintf(PETSC_COMM_SELF," %d matrix entries < %e\n",nzeros[1],tols[1]);CHKERRQ(ierr);
+    ierr  = PetscPrintf(PETSC_COMM_SELF," %D matrix entries < %g, ratio %g of %d nonzeros\n",nzeros[0],(double)ntols[0],(double)ratio,sbaij->nz);CHKERRQ(ierr);
+    ierr  = PetscPrintf(PETSC_COMM_SELF," %D matrix entries < %g\n",nzeros[1],(double)ntols[1]);CHKERRQ(ierr);
   }
 
   /* Convert aij matrix to MatSeqDense for LAPACK */
@@ -153,8 +153,8 @@ PetscInt main(PetscInt argc,char **args)
   /*============================================*/
   ierr = PetscBLASIntCast(8*n,&lwork);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscScalar),&evals);CHKERRQ(ierr);
-  ierr = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&evals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lwork,&work);CHKERRQ(ierr);
   ierr = MatDenseGetArray(A_dense,&arrayA);CHKERRQ(ierr);
   ierr = MatDenseGetArray(B_dense,&arrayB);CHKERRQ(ierr);
 
@@ -166,8 +166,8 @@ PetscInt main(PetscInt argc,char **args)
   } else {   /* test sygvx()  */
     il    = 1;
     ierr  = PetscBLASIntCast(.6*m,&iu);CHKERRQ(ierr);
-    ierr  = PetscMalloc((m*n+1)*sizeof(PetscScalar),&evecs_array);CHKERRQ(ierr);
-    ierr  = PetscMalloc((6*n+1)*sizeof(PetscBLASInt),&iwork);CHKERRQ(ierr);
+    ierr  = PetscMalloc1((m*n+1),&evecs_array);CHKERRQ(ierr);
+    ierr  = PetscMalloc1((6*n+1),&iwork);CHKERRQ(ierr);
     ifail = iwork + 5*n;
     if (PetscPreLoadIt) {ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);}
     /* in the case "I", vl and vu are not referenced */
@@ -183,14 +183,14 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscOptionsHasName(NULL, "-eig_view", &flg);CHKERRQ(ierr);
   if (flg) {
     printf(" %d evals: \n",nevs);
-    for (i=0; i<nevs; i++) printf("%d  %G\n",i+il,evals[i]);
+    for (i=0; i<nevs; i++) printf("%D  %g\n",i+il,(double)nevals[i]);
   }
 
   /* Check residuals and orthogonality */
   if (PetscPreLoadIt) {
     mats[0] = A; mats[1] = B;
     one     = (PetscInt)one;
-    ierr    = PetscMalloc((nevs+1)*sizeof(Vec),&evecs);CHKERRQ(ierr);
+    ierr    = PetscMalloc1((nevs+1),&evecs);CHKERRQ(ierr);
     for (i=0; i<nevs; i++) {
       ierr = VecCreate(PETSC_COMM_SELF,&evecs[i]);CHKERRQ(ierr);
       ierr = VecSetSizes(evecs[i],PETSC_DECIDE,n);CHKERRQ(ierr);
@@ -272,12 +272,12 @@ PetscErrorCode CkEigenSolutions(PetscInt *fcklvl,Mat *mats,PetscReal *eval,Vec *
 #if defined(DEBUG_CkEigenSolutions)
         if (dot > tols[1]) {
           ierr = VecNorm(evec[i],NORM_INFINITY,&norm);
-          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%d,%d)|: %G, norm: %G\n",i,j,dot,norm);
+          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%D,%D)|: %g, norm: %g\n",i,j,(double)ndot,(double)nnorm);
         }
 #endif
       } /* for (j=i; j<nev_loc; j++) */
     }
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j*B*x_i) - delta_ji|: %G\n",dot_max);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j*B*x_i) - delta_ji|: %g\n",(double)ndot_max);
 
   case 1:
     norm_max = 0.0;
@@ -292,16 +292,16 @@ PetscErrorCode CkEigenSolutions(PetscInt *fcklvl,Mat *mats,PetscReal *eval,Vec *
 #if defined(DEBUG_CkEigenSolutions)
       /* sniff, and bark if necessary */
       if (norm > tols[0]) {
-        printf("  residual violation: %d, resi: %g\n",i, norm);
+        printf("  residual violation: %D, resi: %g\n",i, (double)nnorm);
       }
 #endif
     }
 
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %G\n", norm_max);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %g\n", (double)nnorm_max);
 
     break;
   default:
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%d is not supported \n",cklvl);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%D is not supported \n",cklvl);
   }
   ierr = VecDestroy(&vt2);
   ierr = VecDestroy(&vt1);

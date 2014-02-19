@@ -1,6 +1,7 @@
 
 static const char help[] = "Solves PDE optimization problem using full-space method, interlaces state and adjoint variables.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdmredundant.h>
 #include <petscdmcomposite.h>
@@ -95,7 +96,7 @@ int main(int argc,char **argv)
   ierr = DMRedundantCreate(PETSC_COMM_WORLD,0,1,&red);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(red,"red_");CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,red);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-5,2,1,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-5,2,1,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(red,"da_");CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,(DM)da);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(packer,&user);CHKERRQ(ierr);
@@ -230,7 +231,8 @@ PetscErrorCode ExactSolution(DM packer,Vec U)
   ierr = DMCompositeGetEntries(packer,&m,&da);CHKERRQ(ierr);
 
   ierr = PFCreate(PETSC_COMM_WORLD,1,2,&pf);CHKERRQ(ierr);
-  ierr = PFSetType(pf,PFQUICK,(void*)u_solution);CHKERRQ(ierr);
+  /* The cast through PETSC_UINTPTR_T is so that compilers will warn about casting to void * from void(*)(void) */
+  ierr = PFSetType(pf,PFQUICK,(void*)(PETSC_UINTPTR_T)u_solution);CHKERRQ(ierr);
   ierr = DMGetCoordinates(da,&x);CHKERRQ(ierr);
   if (!x) {
     ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
@@ -277,8 +279,8 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
   ierr = VecAXPY(Uexact,-1.0,U);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(packer,Uexact,&dw,&u_lambda);CHKERRQ(ierr);
   ierr = VecStrideNorm(u_lambda,0,NORM_2,&norm);CHKERRQ(ierr);
-  norm = norm/sqrt(N-1.);
-  if (dw) ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G Error at x = 0 %G\n",norm,PetscRealPart(dw[0]));CHKERRQ(ierr);
+  norm = norm/PetscSqrtReal((PetscReal)N-1.);
+  if (dw) ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Error at x = 0 %g\n",(double)norm,(double)PetscRealPart(dw[0]));CHKERRQ(ierr);
   ierr = VecView(u_lambda,user->fu_lambda_viewer);
   ierr = DMCompositeRestoreAccess(packer,Uexact,&dw,&u_lambda);CHKERRQ(ierr);
   ierr = VecDestroy(&Uexact);CHKERRQ(ierr);

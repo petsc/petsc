@@ -39,6 +39,7 @@ in current balance form using rectangular coordiantes.\n\n";
      petscksp.h   - linear solvers
 */
 #include <petscts.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdmcomposite.h>
 
@@ -128,8 +129,8 @@ typedef struct {
 PetscErrorCode dq2ri(PetscScalar Fd,PetscScalar Fq,PetscScalar delta,PetscScalar *Fr, PetscScalar *Fi)
 {
   PetscFunctionBegin;
-  *Fr =  Fd*sin(delta) + Fq*cos(delta);
-  *Fi = -Fd*cos(delta) + Fq*sin(delta);
+  *Fr =  Fd*PetscSinScalar(delta) + Fq*PetscCosScalar(delta);
+  *Fi = -Fd*PetscCosScalar(delta) + Fq*PetscSinScalar(delta);
   PetscFunctionReturn(0);
 }
 
@@ -139,8 +140,8 @@ PetscErrorCode dq2ri(PetscScalar Fd,PetscScalar Fq,PetscScalar delta,PetscScalar
 PetscErrorCode ri2dq(PetscScalar Fr,PetscScalar Fi,PetscScalar delta,PetscScalar *Fd, PetscScalar *Fq)
 {
   PetscFunctionBegin;
-  *Fd =  Fr*sin(delta) - Fi*cos(delta);
-  *Fq =  Fr*cos(delta) + Fi*sin(delta);
+  *Fd =  Fr*PetscSinScalar(delta) - Fi*PetscCosScalar(delta);
+  *Fq =  Fr*PetscCosScalar(delta) + Fi*PetscSinScalar(delta);
   PetscFunctionReturn(0);
 }
 
@@ -209,11 +210,11 @@ PetscErrorCode SetInitialGuess(Vec X,Userctx *user)
 
     theta = PETSC_PI/2.0 - delta;
 
-    Id = IGr*cos(theta) - IGi*sin(theta); /* d-axis stator current */
-    Iq = IGr*sin(theta) + IGi*cos(theta); /* q-axis stator current */
+    Id = IGr*PetscCosScalar(theta) - IGi*PetscSinScalar(theta); /* d-axis stator current */
+    Iq = IGr*PetscSinScalar(theta) + IGi*PetscCosScalar(theta); /* q-axis stator current */
 
-    Vd = Vr*cos(theta) - Vi*sin(theta);
-    Vq = Vr*sin(theta) + Vi*cos(theta);
+    Vd = Vr*PetscCosScalar(theta) - Vi*PetscSinScalar(theta);
+    Vq = Vr*PetscSinScalar(theta) + Vi*PetscCosScalar(theta);
 
     Edp = Vd + Rs[i]*Id - Xqp[i]*Iq; /* d-axis transient EMF */
     Eqp = Vq + Rs[i]*Iq + Xdp[i]*Id; /* q-axis transient EMF */
@@ -451,7 +452,7 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
   PetscInt       i,idx=0,start=0;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(user->neqs_pgrid*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(user->neqs_pgrid,&d_nnz);CHKERRQ(ierr);
   for (i=0; i<user->neqs_pgrid; i++) d_nnz[i] = 0;
   /* Generator subsystem */
   for (i=0; i < ngen; i++) {
@@ -572,10 +573,10 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flag
     Zdq_inv[3] = Rs[i]/det;
 
     PetscScalar dVd_dVr,dVd_dVi,dVq_dVr,dVq_dVi,dVd_ddelta,dVq_ddelta;
-    dVd_dVr    = sin(delta); dVd_dVi = -cos(delta);
-    dVq_dVr    = cos(delta); dVq_dVi = sin(delta);
-    dVd_ddelta = Vr*cos(delta) + Vi*sin(delta);
-    dVq_ddelta = -Vr*sin(delta) + Vi*cos(delta);
+    dVd_dVr    = PetscSinScalar(delta); dVd_dVi = -PetscCosScalar(delta);
+    dVq_dVr    = PetscCosScalar(delta); dVq_dVi = PetscSinScalar(delta);
+    dVd_ddelta = Vr*PetscCosScalar(delta) + Vi*PetscSinScalar(delta);
+    dVq_ddelta = -Vr*PetscSinScalar(delta) + Vi*PetscCosScalar(delta);
 
     /*    fgen[idx+4] = Zdq_inv[0]*(-Edp + Vd) + Zdq_inv[1]*(-Eqp + Vq) + Id; */
     row[0] = idx+4;
@@ -594,10 +595,10 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flag
     ierr   = MatSetValues(J,1,row,6,col,val,INSERT_VALUES);CHKERRQ(ierr);
 
     PetscScalar dIGr_ddelta,dIGi_ddelta,dIGr_dId,dIGr_dIq,dIGi_dId,dIGi_dIq;
-    dIGr_ddelta = Id*cos(delta) - Iq*sin(delta);
-    dIGi_ddelta = Id*sin(delta) + Iq*cos(delta);
-    dIGr_dId    = sin(delta);  dIGr_dIq = cos(delta);
-    dIGi_dId    = -cos(delta); dIGi_dIq = sin(delta);
+    dIGr_ddelta = Id*PetscCosScalar(delta) - Iq*PetscSinScalar(delta);
+    dIGi_ddelta = Id*PetscSinScalar(delta) + Iq*PetscCosScalar(delta);
+    dIGr_dId    = PetscSinScalar(delta);  dIGr_dIq = PetscCosScalar(delta);
+    dIGi_dId    = -PetscCosScalar(delta); dIGi_dIq = PetscSinScalar(delta);
 
     /* fnet[2*gbus[i]]   -= IGi; */
     row[0] = net_start + 2*gbus[i];
@@ -813,7 +814,7 @@ int main(int argc,char **argv)
 
   /* Create indices for differential and algebraic equations */
   PetscInt *idx2;
-  ierr = PetscMalloc(7*ngen*sizeof(PetscInt),&idx2);CHKERRQ(ierr);
+  ierr = PetscMalloc1(7*ngen,&idx2);CHKERRQ(ierr);
   for (i=0; i<ngen; i++) {
     idx2[7*i]   = 9*i;   idx2[7*i+1] = 9*i+1; idx2[7*i+2] = 9*i+2; idx2[7*i+3] = 9*i+3;
     idx2[7*i+4] = 9*i+6; idx2[7*i+5] = 9*i+7; idx2[7*i+6] = 9*i+8;
@@ -857,9 +858,9 @@ int main(int argc,char **argv)
   ierr = PetscViewerDestroy(&Ybusview);CHKERRQ(ierr);
 
   /* Create DMs for generator and network subsystems */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,user.neqs_gen,1,1,NULL,&user.dmgen);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,user.neqs_gen,1,1,NULL,&user.dmgen);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(user.dmgen,"dmgen_");CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,user.neqs_net,1,1,NULL,&user.dmnet);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,user.neqs_net,1,1,NULL,&user.dmnet);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(user.dmnet,"dmnet_");CHKERRQ(ierr);
   /* Create a composite DM packer and add the two DMs */
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&user.dmpgrid);CHKERRQ(ierr);

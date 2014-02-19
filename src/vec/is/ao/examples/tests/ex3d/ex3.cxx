@@ -11,8 +11,7 @@ static char help[] = "AO test contributed by Sebastian Steiger <steiger@purdue.e
 #include <fstream>
 #include <vector>
 #include <assert.h>
-#include <petscao.h>
-#include <mpi.h>
+#include <petsc.h>
 
 using namespace std;
 
@@ -28,7 +27,7 @@ int main(int argc, char** argv)
   int size=-1;   MPI_Comm_size(PETSC_COMM_WORLD, &size);
   int myrank=-1; MPI_Comm_rank(PETSC_COMM_WORLD, &myrank);
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-datafiles",datafiles,sizeof(datafiles),&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-datafiles",datafiles,sizeof(datafiles),&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify -datafiles ${DATAFILESPATH}/ao");
 
   // read in application indices
@@ -46,7 +45,7 @@ int main(int argc, char** argv)
   }
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] has %D indices.\n",
           myrank,myapp.size());CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(PETSC_COMM_WORLD, myapp.size(), &(myapp[0]), PETSC_USE_POINTER, &isapp);CHKERRQ(ierr);
   //ierr = ISView(isapp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

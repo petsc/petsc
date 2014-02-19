@@ -660,11 +660,11 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
     for (i=0; i<n; i++) {
 #if defined(PETSC_USE_COMPLEX)
       if (PetscImaginaryPart(xv[i]) > 0.0) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%18.16e + %18.16ei\n",PetscRealPart(xv[i]),PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%18.16e + %18.16ei\n",(double)PetscRealPart(xv[i]),(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
       } else if (PetscImaginaryPart(xv[i]) < 0.0) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%18.16e - %18.16ei\n",PetscRealPart(xv[i]),-PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%18.16e - %18.16ei\n",(double)PetscRealPart(xv[i]),-(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",PetscRealPart(xv[i]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",(double)PetscRealPart(xv[i]));CHKERRQ(ierr);
       }
 #else
       ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",(double) xv[i]);CHKERRQ(ierr);
@@ -674,7 +674,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
   } else if (format == PETSC_VIEWER_ASCII_SYMMODU) {
     for (i=0; i<n; i++) {
 #if defined(PETSC_USE_COMPLEX)
-      ierr = PetscViewerASCIIPrintf(viewer,"%18.16e %18.16e\n",PetscRealPart(xv[i]),PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%18.16e %18.16e\n",(double)PetscRealPart(xv[i]),(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
 #else
       ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",(double)xv[i]);CHKERRQ(ierr);
 #endif
@@ -749,7 +749,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
         }
 #if !defined(PETSC_USE_COMPLEX)
-        ierr = PetscViewerASCIIPrintf(viewer,"%g",xv[i*bs+b]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%g",(double)xv[i*bs+b]);CHKERRQ(ierr);
 #endif
       }
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
@@ -765,7 +765,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
         }
 #if !defined(PETSC_USE_COMPLEX)
-        ierr = PetscViewerASCIIPrintf(viewer,"%g",xv[i*bs+b]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%g",(double)xv[i*bs+b]);CHKERRQ(ierr);
 #endif
       }
       for (b=bs; b<3; b++) {
@@ -786,7 +786,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
         }
 #if !defined(PETSC_USE_COMPLEX)
-        ierr = PetscViewerASCIIPrintf(viewer,"% 12.5E",xv[i*bs+b]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"% 12.5E",(double)xv[i*bs+b]);CHKERRQ(ierr);
 #endif
       }
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
@@ -800,11 +800,11 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
       }
 #if defined(PETSC_USE_COMPLEX)
       if (PetscImaginaryPart(xv[i]) > 0.0) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%g + %g i\n",PetscRealPart(xv[i]),PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%g + %g i\n",(double)PetscRealPart(xv[i]),(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
       } else if (PetscImaginaryPart(xv[i]) < 0.0) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%g - %g i\n",PetscRealPart(xv[i]),-PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%g - %g i\n",(double)PetscRealPart(xv[i]),-(double)PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"%g\n",PetscRealPart(xv[i]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%g\n",(double)PetscRealPart(xv[i]));CHKERRQ(ierr);
       }
 #else
       ierr = PetscViewerASCIIPrintf(viewer,"%g\n",(double)xv[i]);CHKERRQ(ierr);
@@ -830,8 +830,8 @@ PetscErrorCode VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
   PetscReal         *yy;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(n*sizeof(PetscReal),&xx);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscReal),&yy);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&xx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&yy);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xin,&xv);CHKERRQ(ierr);
   for (c=0; c<bs; c++) {
     ierr = PetscViewerDrawGetDrawLG(v,c,&lg);CHKERRQ(ierr);
@@ -1242,7 +1242,7 @@ PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(v,Vec_Seq,&s);CHKERRQ(ierr);
+  ierr = PetscNewLog(v,&s);CHKERRQ(ierr);
   ierr = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
 
   v->data            = (void*)s;
@@ -1272,6 +1272,7 @@ PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
 
    Input Parameter:
 +  comm - the communicator, should be PETSC_COMM_SELF
+.  bs - the block size
 .  n - the vector length
 -  array - memory where the vector elements are to be stored.
 

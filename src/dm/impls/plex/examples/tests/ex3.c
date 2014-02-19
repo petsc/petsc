@@ -1,14 +1,16 @@
 static char help[] = "Check that a particular FIAT-style header gives accurate function representations\n\n";
 
 #include <petscdmplex.h>
+#include <petscdm.h>
+#include <petscdmda.h>
 #include <petscfe.h>
 
 typedef struct {
-  DM        dm;                /* REQUIRED in order to use SNES evaluation functions */
   PetscFEM  fem;               /* REQUIRED to use DMPlexComputeResidualFEM() */
   PetscInt  debug;             /* The debugging level */
   /* Domain and mesh definition */
   PetscInt  dim;               /* The topological mesh dimension */
+  PetscBool simplex;           /* Flag for simplex or tensor product mesh */
   PetscBool interpolate;       /* Generate intermediate mesh elements */
   PetscReal refinementLimit;   /* The largest allowable cell volume */
   /* Element definition */
@@ -19,39 +21,47 @@ typedef struct {
   PetscInt  porder;            /* Order of polynomials to test */
 } AppCtx;
 
-void constant(const PetscReal coords[], PetscScalar *u)
+static int spdim = 1;
+
+/* u = 1 */
+void constant(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
-  *u = 1.0;
+  PetscInt d;
+  for (d = 0; d < spdim; ++d) u[d] = ((PetscReal *) ctx)[d];
+}
+void constantDer(const PetscReal coords[], const PetscReal n[], PetscScalar *u)
+{
+  PetscInt d;
+  for (d = 0; d < spdim; ++d) u[d] = 0.0;
 }
 
-void linear_x(const PetscReal coords[], PetscScalar *u)
+/* u = x */
+void linear(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
-  *u = coords[0];
+  PetscInt d;
+  for (d = 0; d < spdim; ++d) u[d] = coords[d];
 }
-void linear_y(const PetscReal coords[], PetscScalar *u)
+void linearDer(const PetscReal coords[], const PetscReal n[], PetscScalar *u, void *ctx)
 {
-  *u = coords[1];
-}
-void linear_z(const PetscReal coords[], PetscScalar *u)
-{
-  *u = coords[2];
+  PetscInt d, e;
+  for (d = 0; d < spdim; ++d) {
+    u[d] = 0.0;
+    for (e = 0; e < spdim; ++e) u[d] += (d == e ? 1.0 : 0.0) * n[e];
+  }
 }
 
-void quadratic_xx(const PetscReal coords[], PetscScalar *u)
+/* u = x^2 or u = (x^2, xy) or u = (xy, yz, zx) */
+void quadratic(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
-  *u = coords[0]*coords[0];
+  if (spdim > 2)      {u[0] = coords[0]*coords[1]; u[1] = coords[1]*coords[2]; u[2] = coords[2]*coords[0];}
+  else if (spdim > 1) {u[0] = coords[0]*coords[0]; u[1] = coords[0]*coords[1];}
+  else if (spdim > 0) {u[0] = coords[0]*coords[0];}
 }
-void quadratic_xy(const PetscReal coords[], PetscScalar *u)
+void quadraticDer(const PetscReal coords[], const PetscReal n[], PetscScalar *u, void *ctx)
 {
-  *u = coords[0]*coords[1];
-}
-void quadratic_yz(const PetscReal coords[], PetscScalar *u)
-{
-  *u = coords[1]*coords[2];
-}
-void quadratic_zx(const PetscReal coords[], PetscScalar *u)
-{
-  *u = coords[2]*coords[0];
+  if (spdim > 2)      {u[0] = coords[1]*n[0] + coords[0]*n[1]; u[1] = coords[2]*n[1] + coords[1]*n[2]; u[2] = coords[2]*n[0] + coords[0]*n[2];}
+  else if (spdim > 1) {u[0] = 2.0*coords[0]*n[0]; u[1] = coords[1]*n[0] + coords[0]*n[1];}
+  else if (spdim > 0) {u[0] = 2.0*coords[0]*n[0];}
 }
 
 #undef __FUNCT__
@@ -63,6 +73,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionBegin;
   options->debug           = 0;
   options->dim             = 2;
+  options->simplex         = PETSC_TRUE;
   options->interpolate     = PETSC_FALSE;
   options->refinementLimit = 0.0;
   options->qorder          = 0;
@@ -72,12 +83,15 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBegin(comm, "", "Projection Test Options", "DMPlex");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex3.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex3.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-simplex", "Flag for simplices or hexhedra", "ex3.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex3.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex3.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-qorder", "The quadrature order", "ex3.c", options->qorder, &options->qorder, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-num_comp", "The number of field components", "ex3.c", options->numComponents, &options->numComponents, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-porder", "The order of polynomials to test", "ex3.c", options->porder, &options->porder, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
+
+  spdim = options->dim;
   PetscFunctionReturn(0);
 };
 
@@ -92,11 +106,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
-  {
+  if (user->simplex) {
     DM refinedMesh     = NULL;
     DM distributedMesh = NULL;
 
+    ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
     /* Refine mesh using a volume constraint */
     ierr = DMPlexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
     ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
@@ -110,10 +124,19 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
     }
+    ierr = PetscObjectSetName((PetscObject) *dm, "Simplical Mesh");CHKERRQ(ierr);
+  } else {
+    switch (user->dim) {
+    case 2:
+      ierr = DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, dm);CHKERRQ(ierr);
+      ierr = DMDASetVertexCoordinates(*dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
+      break;
+    default:
+      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot create structured mesh of dimension %d", dim);
+    }
+    ierr = PetscObjectSetName((PetscObject) *dm, "Hexahedral Mesh");CHKERRQ(ierr);
   }
-  ierr     = PetscObjectSetName((PetscObject) *dm, "Simplical Mesh");CHKERRQ(ierr);
-  ierr     = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  user->dm = *dm;
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -140,7 +163,7 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
   ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
   /* Create dual space */
   ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) dm), &Q);CHKERRQ(ierr);
-  ierr = PetscDualSpaceCreateReferenceCell(Q, dim, PETSC_TRUE, &K);CHKERRQ(ierr);
+  ierr = PetscDualSpaceCreateReferenceCell(Q, dim, user->simplex, &K);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
   ierr = DMDestroy(&K);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetOrder(Q, order);CHKERRQ(ierr);
@@ -182,7 +205,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   PetscFunctionBegin;
   ierr = PetscFEGetNumComponents(user->fe, &numComp[0]);CHKERRQ(ierr);
   ierr = PetscFEGetNumDof(user->fe, &numFieldDof[0]);CHKERRQ(ierr);
-  ierr = PetscMalloc(1*(dim+1) * sizeof(PetscInt), &numDof);CHKERRQ(ierr);
+  ierr = PetscMalloc1(1*(dim+1), &numDof);CHKERRQ(ierr);
   for (d = 0; d <= dim; ++d) {
     numDof[0*(dim+1)+d] = numFieldDof[0][d];
   }
@@ -191,7 +214,11 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
       if ((numDof[f*(dim+1)+d] > 0) && !user->interpolate) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
     }
   }
-  ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
+  if (user->simplex) {
+    ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
+  } else {
+    ierr = DMDACreateSection(dm, numComp, numDof, NULL, &section);CHKERRQ(ierr);
+  }
   ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   ierr = PetscFree(numDof);CHKERRQ(ierr);
@@ -202,70 +229,66 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
 #define __FUNCT__ "CheckFunctions"
 PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
 {
-  void          (*exactFuncs[3]) (const PetscReal x[], PetscScalar *u);
+  void          (*exactFuncs[1]) (const PetscReal x[], PetscScalar *u, void *ctx);
+  void          (*exactFuncDers[1]) (const PetscReal x[], const PetscReal n[], PetscScalar *u, void *ctx);
+  PetscReal       n[3]         = {1.0, 1.0, 1.0};
+  PetscReal       constants[3] = {1.0, 2.0, 3.0};
+  void           *exactCtxs[3] = {NULL, NULL, NULL};
   MPI_Comm        comm;
   PetscInt        dim  = user->dim, Nc;
   PetscQuadrature fq;
-  PetscReal       error, tol = 1.0e-10;
+  PetscReal       error, errorDer, tol = 1.0e-10;
+  PetscBool       isPlex, isDA;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) dm, DMPLEX, &isPlex);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) dm, DMDA,   &isDA);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(user->fe, &fq);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(user->fe, &Nc);CHKERRQ(ierr);
   /* Setup functions to approximate */
-  switch (dim) {
-  case 2:
-    switch (order) {
-    case 0:
-      exactFuncs[0] = constant;
-      exactFuncs[1] = constant;
-      break;
-    case 1:
-      exactFuncs[0] = linear_x;
-      exactFuncs[1] = linear_y;
-      break;
-    case 2:
-      exactFuncs[0] = quadratic_xx;
-      exactFuncs[1] = quadratic_xy;
-      break;
-    default:
-      SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for dimension %d order %d", dim, order);
-    }
+  switch (order) {
+  case 0:
+    exactFuncs[0]    = constant;
+    exactFuncDers[0] = constantDer;
+    exactCtxs[0]     = &constants[0];
+    exactCtxs[1]     = &constants[1];
+    exactCtxs[2]     = &constants[2];
     break;
-  case 3:
-    switch (order) {
-    case 0:
-      exactFuncs[0] = constant;
-      exactFuncs[1] = constant;
-      exactFuncs[2] = constant;
-      break;
-    case 1:
-      exactFuncs[0] = linear_x;
-      exactFuncs[1] = linear_y;
-      exactFuncs[2] = linear_z;
-      break;
-    case 2:
-      exactFuncs[0] = quadratic_xy;
-      exactFuncs[1] = quadratic_yz;
-      exactFuncs[2] = quadratic_zx;
-      break;
-    default:
-      SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for dimension %d order %d", dim, order);
-    }
+  case 1:
+    exactFuncs[0]    = linear;
+    exactFuncDers[0] = linearDer;
+    break;
+  case 2:
+    exactFuncs[0]    = quadratic;
+    exactFuncDers[0] = quadraticDer;
     break;
   default:
-    SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for dimension %d", dim);
+    SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for dimension %d order %d", dim, order);
   }
   /* Project function into FE function space */
-  ierr = DMPlexProjectFunction(dm, &user->fe, exactFuncs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  if (isPlex) {
+    ierr = DMPlexProjectFunction(dm, &user->fe, exactFuncs, exactCtxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  } else if (isDA) {
+    ierr = DMDAProjectFunction(dm, &user->fe, exactFuncs, exactCtxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "No FEM projection routine for this type of DM");
   /* Compare approximation to exact in L_2 */
-  ierr = DMPlexComputeL2Diff(dm, &user->fe, exactFuncs, u, &error);CHKERRQ(ierr);
+  if (isPlex) {
+    ierr = DMPlexComputeL2Diff(dm, &user->fe, exactFuncs, exactCtxs, u, &error);CHKERRQ(ierr);
+    ierr = DMPlexComputeL2GradientDiff(dm, &user->fe, exactFuncDers, exactCtxs, u, n, &errorDer);CHKERRQ(ierr);
+  } else if (isDA) {
+    ierr = DMDAComputeL2Diff(dm, &user->fe, exactFuncs, exactCtxs, u, &error);CHKERRQ(ierr);
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "No FEM projection routine for this type of DM");
   if (error > tol) {
     ierr = PetscPrintf(comm, "Tests FAIL for order %d at tolerance %g error %g\n", order, tol, error);CHKERRQ(ierr);
-    /* SETERRQ3(comm, PETSC_ERR_ARG_WRONG, "Input FIAT tabulation cannot resolve functions of order %d, error %g > %g", order, error, tol); */
   } else {
     ierr = PetscPrintf(comm, "Tests pass for order %d at tolerance %g\n", order, tol);CHKERRQ(ierr);
+  }
+  if (errorDer > tol) {
+    ierr = PetscPrintf(comm, "Tests FAIL for order %d derivatives at tolerance %g error %g\n", order, tol, errorDer);CHKERRQ(ierr);
+  } else {
+    ierr = PetscPrintf(comm, "Tests pass for order %d derivatives at tolerance %g\n", order, tol);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -274,20 +297,21 @@ PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
+  DM             dm;
   AppCtx         user;                 /* user-defined work context */
   Vec            u;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &user.dm);CHKERRQ(ierr);
-  ierr = SetupElement(user.dm, &user);CHKERRQ(ierr);
-  ierr = SetupSection(user.dm, &user);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(user.dm, &u);CHKERRQ(ierr);
-  ierr = CheckFunctions(user.dm, user.porder, u, &user);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(user.dm, &u);CHKERRQ(ierr);
+  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
+  ierr = SetupElement(dm, &user);CHKERRQ(ierr);
+  ierr = SetupSection(dm, &user);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
+  ierr = CheckFunctions(dm, user.porder, u, &user);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&user.fe);CHKERRQ(ierr);
-  ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
+  ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

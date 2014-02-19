@@ -34,6 +34,7 @@ T*/
 */
 #include <petscsys.h>
 #include <petscbag.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
 
@@ -97,7 +98,7 @@ int main(int argc,char **argv)
   ierr = PetscBagSetFromOptions(bag);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-alpha",&user->alpha,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-lambda",&user->lambda,NULL);CHKERRQ(ierr);
-  if (user->lambda > lambda_max || user->lambda < lambda_min) SETERRQ3(PETSC_COMM_SELF,1,"Lambda %G is out of range [%G, %G]", user->lambda, lambda_min, lambda_max);
+  if (user->lambda > lambda_max || user->lambda < lambda_min) SETERRQ3(PETSC_COMM_SELF,1,"Lambda %g is out of range [%g, %g]",(double)user->lambda,(double)lambda_min,(double)lambda_max);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create SNES to manage hierarchical solvers
@@ -107,7 +108,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-3,-3,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,-3,-3,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da, 0, "ooblek");CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da,user);CHKERRQ(ierr);
   ierr = SNESSetDM(snes, (DM) da);CHKERRQ(ierr);
@@ -162,7 +163,7 @@ PetscErrorCode PrintVector(DM da, Vec U)
   ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
   for (j = ys+ym-1; j >= ys; j--) {
     for (i = xs; i < xs+xm; i++) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"u[%d][%d] = %G ", j, i, PetscRealPart(u[j][i]));CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"u[%D][%D] = %g ", j, i, (double)PetscRealPart(u[j][i]));CHKERRQ(ierr);
     }
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
   }
@@ -236,7 +237,7 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
     for (i=xs; i<xs+xm; i++) {
 
       if (i == 0 || j == 0 || i == Mx-1 || j == My-1) x[j][i] = 0.0; /* boundary conditions are all zero Dirichlet */
-      else x[j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
+      else x[j][i] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
     }
   }
 

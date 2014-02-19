@@ -1,7 +1,7 @@
 #define PETSCMAT_DLL
 
-#include "../src/mat/impls/sbaij/mpi/mpisbaij.h"
-#include "../src/mat/impls/sbaij/seq/sbstream/sbstream.h"
+#include <../src/mat/impls/sbaij/mpi/mpisbaij.h>
+#include <../src/mat/impls/sbaij/seq/sbstream/sbstream.h>
 
 extern PetscErrorCode MatMult_SeqSBSTRM_4(Mat,Vec,Vec);
 extern PetscErrorCode MatMult_SeqSBSTRM_5(Mat,Vec,Vec);
@@ -44,13 +44,13 @@ PetscErrorCode MPISBSTRM_create_sbstrm(Mat A)
 
   /* printf(" --- blen=%d, slen=%d\n", blen, slen);  */
 
-  ierr         = PetscNewLog(a->A,Mat_SeqSBSTRM,&sbstrmA);CHKERRQ(ierr);
+  ierr         = PetscNewLog(a->A,&sbstrmA);CHKERRQ(ierr);
   a->A->spptr  = (void*) sbstrmA;
   sbstrmA      = (Mat_SeqSBSTRM*) a->A->spptr;
   sbstrmA->rbs = sbstrmA->cbs = bs;
-  ierr         = PetscMalloc(bs2*blen*sizeof(PetscScalar), &sbstrmA->as);CHKERRQ(ierr);
+  ierr         = PetscMalloc1(bs2*blen, &sbstrmA->as);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(rbs*sizeof(PetscScalar*), &asp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rbs, &asp);CHKERRQ(ierr);
 
   for (i=0; i<rbs; i++) asp[i] = sbstrmA->as + i*slen;
 
@@ -79,14 +79,14 @@ PetscErrorCode MPISBSTRM_create_sbstrm(Mat A)
 /*.....*/
   blen         = bi[MROW]-bi[0];
   slen         = blen*bs;
-  ierr         = PetscNewLog(a->B,Mat_SeqSBSTRM,&sbstrmB);CHKERRQ(ierr);
+  ierr         = PetscNewLog(a->B,&sbstrmB);CHKERRQ(ierr);
   a->B->spptr  = (void*) sbstrmB;
   sbstrmB      = (Mat_SeqSBSTRM*) a->B->spptr;
   sbstrmB->rbs = sbstrmB->cbs = bs;
 
-  ierr  = PetscMalloc(bs2*blen*sizeof(PetscScalar), &sbstrmB->as);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(bs2*blen, &sbstrmB->as);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(rbs*sizeof(PetscScalar*), &bsp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rbs, &bsp);CHKERRQ(ierr);
 
   for (i=0; i<rbs; i++) bsp[i] = sbstrmB->as + i*slen;
 
@@ -186,7 +186,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPISBAIJ_MPISBSTRM(Mat A,MatType type,Mat
   }
   /* printf(" --- in MatConvert_MPISBAIJ_MPISBSTRM  -- 1 \n"); */
 
-  ierr     = PetscNewLog(B,   Mat_SeqSBSTRM,&sbstrm);CHKERRQ(ierr);
+  ierr     = PetscNewLog(B,&sbstrm);CHKERRQ(ierr);
   B->spptr = (void*)sbstrm;
 
   /* Set function pointers for methods that we inherit from AIJ but override.

@@ -10,7 +10,6 @@
 #include "finclude/petscmatdef.h"
 #include "finclude/petscdmdef.h"
 
-#define DMDABoundaryType PetscEnum
 #define DMDAStencilType PetscEnum
 #define DMDADirection PetscEnum
 

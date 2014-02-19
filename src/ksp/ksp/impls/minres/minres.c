@@ -70,7 +70,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
   ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);
   if (PetscRealPart(dp) < minres->haptol) {
-    ierr = PetscInfo2(ksp,"Detected indefinite operator %G tolerance %G\n",PetscRealPart(dp),minres->haptol);CHKERRQ(ierr);
+    ierr = PetscInfo2(ksp,"Detected indefinite operator %g tolerance %g\n",(double)PetscRealPart(dp),(double)minres->haptol);CHKERRQ(ierr);
     ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
     PetscFunctionReturn(0);
   }
@@ -113,7 +113,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
     ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);
     if ( PetscRealPart(dp) < minres->haptol) {
-      ierr = PetscInfo2(ksp,"Detected indefinite operator %G tolerance %G\n",PetscRealPart(dp),minres->haptol);CHKERRQ(ierr);
+      ierr = PetscInfo2(ksp,"Detected indefinite operator %g tolerance %g\n",(double)PetscRealPart(dp),(double)minres->haptol);CHKERRQ(ierr);
       ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
       break;
     }
@@ -200,8 +200,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
 
   PetscFunctionBegin;
   ierr           = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr           = PetscNewLog(ksp,KSP_MINRES,&minres);CHKERRQ(ierr);
-  minres->haptol = 1.e-18;
+  ierr           = PetscNewLog(ksp,&minres);CHKERRQ(ierr);
+  minres->haptol = 1.e-50;
   ksp->data      = (void*)minres;
 
   /*

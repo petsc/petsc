@@ -67,7 +67,7 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running configure on HDF5: '+str(e))
       try:
         self.logPrintBox('Compiling HDF5; this may take several minutes')
-        output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean && make && make install', timeout=2500, log = self.framework.log)
+        output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.make.make+' clean && '+self.make.make_jnp+' && '+self.make.make+' install', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on HDF5: '+str(e))
       self.postInstall(output1+err1+output2+err2,'hdf5')

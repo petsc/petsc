@@ -14,12 +14,10 @@
 #define PETSC_DESIRE_COMPLEX
 #include <petsc-private/fortranimpl.h>
 
-#if defined(PETSC_HAVE_CUSP)
+#if defined(PETSC_HAVE_CUDA)
 #include <cublas.h>
 #endif
 #include <petscthreadcomm.h>
-
-extern PetscBool PetscHMPIWorker;
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscinitialize_              PETSCINITIALIZE
@@ -241,12 +239,13 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   int         j;
 #endif
 #endif
+#if defined(PETSC_HAVE_CUDA)
+  PetscBool   flg2;
+#endif
   int         flag;
   PetscMPIInt size;
   char        *t1,name[256],hostname[64];
   PetscMPIInt f_petsc_comm_world;
-  PetscInt    nodesize;
-  PetscBool   flg;
 
   *ierr = PetscMemzero(name,256); if (*ierr) return;
   if (PetscInitializeCalled) {*ierr = 0; return;}
@@ -441,30 +440,10 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscStackCreate()\n");return;}
 #endif
 
-  *ierr = PetscOptionsGetInt(NULL,"-hmpi_spawn_size",&nodesize,&flg);
-  if (flg) {
-#if defined(PETSC_HAVE_MPI_COMM_SPAWN)
-    *ierr = PetscHMPISpawn((PetscMPIInt) nodesize); /* worker nodes never return from here; they go directly to PetscEnd() */
-    if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscHMPIS-pawn()\n");return;}
-#else
-    *ierr = PETSC_ERR_SUP;
-    (*PetscErrorPrintf)("PetscInitialize: PETSc built without MPI 2 (MPI_Comm_spawn) support, use -hmpi_merge_size instead");
-    return;
-#endif
-  } else {
-    *ierr = PetscOptionsGetInt(NULL,"-hmpi_merge_size",&nodesize,&flg);
-    if (flg) {
-      *ierr = PetscHMPIMerge((PetscMPIInt) nodesize,NULL,NULL);
-      if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscHMPIMerge()\n");return;}
-      if (PetscHMPIWorker) { /* if worker then never enter user code */
-        PetscInitializeCalled = PETSC_TRUE;
-        *ierr = PetscEnd();
-      }
-    }
-  }
-
 #if defined(PETSC_HAVE_CUDA)
-  cublasInit();
+  flg2  = PETSC_TRUE;
+  *ierr = PetscOptionsGetBool(NULL,"-cublas",&flg2,NULL);
+  if (flg2) cublasInit();
 #endif
 }
 

@@ -68,11 +68,16 @@ PetscErrorCode  DMInitializePackage(void)
 
   ierr = PetscLogEventRegister("DMDALocalADFunc",        DM_CLASSID,&DMDA_LocalADFunction);CHKERRQ(ierr);
 
+  ierr = PetscLogEventRegister("DMPlexInterpolate",      DM_CLASSID,&DMPLEX_Interpolate);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexPartition",        DM_CLASSID,&DMPLEX_Partition);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexDistribute",       DM_CLASSID,&DMPLEX_Distribute);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexDistributeLabels", DM_CLASSID,&DMPLEX_DistributeLabels);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexDistributeSF",     DM_CLASSID,&DMPLEX_DistributeSF);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexDistribCones",     DM_CLASSID,&DMPLEX_DistributeCones);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexDistribLabels",    DM_CLASSID,&DMPLEX_DistributeLabels);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexDistribSF",        DM_CLASSID,&DMPLEX_DistributeSF);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexDistribField",     DM_CLASSID,&DMPLEX_DistributeField);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexDistribData",      DM_CLASSID,&DMPLEX_DistributeData);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexStratify",         DM_CLASSID,&DMPLEX_Stratify);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexPreallocate",      DM_CLASSID,&DMPLEX_Preallocate);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexResidualFEM",      DM_CLASSID,&DMPLEX_ResidualFEM);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexJacobianFEM",      DM_CLASSID,&DMPLEX_JacobianFEM);CHKERRQ(ierr);
   /* Process info exclusions */

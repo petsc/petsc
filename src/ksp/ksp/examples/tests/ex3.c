@@ -94,7 +94,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
 
   /* Modify matrix and right-hand-side for Dirichlet boundary conditions */
-  ierr = PetscMalloc(4*m*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc1(4*m,&rows);CHKERRQ(ierr);
   for (i=0; i<m+1; i++) {
     rows[i]          = i; /* bottom */
     rows[3*m - 1 +i] = m*(m+1) + i; /* top */
@@ -145,7 +145,7 @@ int main(int argc,char **args)
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G Iterations %D\n",norm*h,its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %D\n",(double)norm*h,its);CHKERRQ(ierr);
   }
 
   /* Free work space */

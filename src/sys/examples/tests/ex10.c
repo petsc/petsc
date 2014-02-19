@@ -10,8 +10,8 @@ int main(int argc,char **argv)
   int i,*a,*b,ierr;
   PetscInitialize(&argc,&argv,(char*)0,help);
 
-  ierr = PetscMalloc(10*sizeof(int),&a);CHKERRQ(ierr);
-  ierr = PetscMalloc(20*sizeof(int),&b);CHKERRQ(ierr);
+  ierr = PetscMalloc1(10,&a);CHKERRQ(ierr);
+  ierr = PetscMalloc1(20,&b);CHKERRQ(ierr);
 
   /*
       Nonoverlapping regions
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
      a       b                   a+20   a+25
                                         b+20
   */
-  ierr = PetscMalloc(25*sizeof(int),&a);CHKERRQ(ierr);
+  ierr = PetscMalloc1(25,&a);CHKERRQ(ierr);
   b    = a + 5;
   for (i=0; i<20; i++) b[i] = i;
   ierr = PetscMemmove(a,b,20*sizeof(int));CHKERRQ(ierr);

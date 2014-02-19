@@ -1,4 +1,5 @@
 #include <petscsnes.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 static char help[] = "Parallel version of the minimum surface area problem using DMs.\n\
@@ -52,7 +53,7 @@ int main(int argc, char **argv)
   Mat            J;                 /* Jacobian matrix */
   PetscInt       N;                 /* Number of elements in vector */
   PetscScalar    lb = .05;
-  PetscScalar    ub = SNES_VI_INF;
+  PetscScalar    ub = PETSC_INFINITY;
   AppCtx         user;              /* user-defined work context */
   PetscBool      flg;
 
@@ -68,7 +69,7 @@ int main(int argc, char **argv)
   ierr = PetscOptionsGetScalar(NULL, "-ub", &ub, &flg_u);CHKERRQ(ierr);
 
   /* Create distributed array to manage the 2d grid */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
   ierr = DMDAGetIerr(user.da,PETSC_IGNORE,&user.mx,&user.my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   /* Extract global vectors from DMDA; */
   ierr = DMCreateGlobalVector(user.da,&x);CHKERRQ(ierr);
@@ -453,10 +454,10 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
   PetscFunctionBeginUser;
   bsize=mx+2; lsize=my+2; rsize=my+2; tsize=mx+2;
 
-  ierr = PetscMalloc(bsize*sizeof(PetscScalar), &user->bottom);CHKERRQ(ierr);
-  ierr = PetscMalloc(tsize*sizeof(PetscScalar), &user->top);CHKERRQ(ierr);
-  ierr = PetscMalloc(lsize*sizeof(PetscScalar), &user->left);CHKERRQ(ierr);
-  ierr = PetscMalloc(rsize*sizeof(PetscScalar), &user->right);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bsize, &user->bottom);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tsize, &user->top);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lsize, &user->left);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rsize, &user->right);CHKERRQ(ierr);
 
   hx= (r-l)/(mx+1); hy=(t-b)/(my+1);
 

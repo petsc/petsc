@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   /* create the orderings */
-  ierr = PetscMalloc2(n,PetscInt,&ispetsc,n,PetscInt,&isapp);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,&ispetsc,n,&isapp);CHKERRQ(ierr);
 
   ierr   = MPI_Scan(&n,&start,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr   = MPI_Allreduce(&n,&N,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);

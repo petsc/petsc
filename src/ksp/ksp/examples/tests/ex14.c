@@ -55,6 +55,7 @@ T*/
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscksp.h>
 
@@ -139,7 +140,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,"-Nx",&Nx,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-Ny",&Ny,NULL);CHKERRQ(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE)) SETERRQ(PETSC_COMM_WORLD,1,"Incompatible number of processors:  Nx * Ny != size");
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DMDA; then duplicate for remaining
@@ -191,7 +192,7 @@ int main(int argc,char **argv)
   ierr = ComputeFunction(&user,X,F);CHKERRQ(ierr);   /* Compute F(X)    */
   ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);     /* fnorm = || F || */
   ttol = fnorm*rtol;
-  if (!no_output) PetscPrintf(comm,"Initial function norm = %G\n",fnorm);
+  if (!no_output) PetscPrintf(comm,"Initial function norm = %g\n",(double)fnorm);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system with a user-defined method
@@ -236,7 +237,7 @@ int main(int argc,char **argv)
     ierr = VecCopy(Y,X);CHKERRQ(ierr);                   /* X <- Y          */
     ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);       /* xnorm = || X || */
     if (!no_output) {
-      ierr = PetscPrintf(comm,"   linear solve iterations = %D, xnorm=%G, ynorm=%G\n",lin_its,xnorm,ynorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"   linear solve iterations = %D, xnorm=%g, ynorm=%g\n",lin_its,(double)xnorm,(double)ynorm);CHKERRQ(ierr);
     }
 
     /*
@@ -245,7 +246,7 @@ int main(int argc,char **argv)
     ierr = ComputeFunction(&user,X,F);CHKERRQ(ierr);     /* Compute F(X)    */
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);       /* fnorm = || F || */
     if (!no_output) {
-      ierr = PetscPrintf(comm,"Iteration %D, function norm = %G\n",i+1,fnorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"Iteration %D, function norm = %g\n",i+1,(double)fnorm);CHKERRQ(ierr);
     }
 
     /*
@@ -253,13 +254,13 @@ int main(int argc,char **argv)
      */
     if (fnorm <= ttol) {
       if (!no_output) {
-        ierr = PetscPrintf(comm,"Converged due to function norm %G < %G (relative tolerance)\n",fnorm,ttol);CHKERRQ(ierr);
+        ierr = PetscPrintf(comm,"Converged due to function norm %g < %g (relative tolerance)\n",(double)fnorm,(double)ttol);CHKERRQ(ierr);
       }
       break;
     }
     if (ynorm < xtol*(xnorm)) {
       if (!no_output) {
-        ierr = PetscPrintf(comm,"Converged due to small update length: %G < %G * %G\n",ynorm,xtol,xnorm);CHKERRQ(ierr);
+        ierr = PetscPrintf(comm,"Converged due to small update length: %g < %g * %g\n",(double)ynorm,(double)xtol,(double)xnorm);CHKERRQ(ierr);
       }
       break;
     }
@@ -458,7 +459,7 @@ PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
 {
   PetscErrorCode ierr;
   Vec            localX = user->localX;   /* local vector */
-  PetscInt       *ltog;                   /* local-to-global mapping */
+  const PetscInt *ltog;                   /* local-to-global mapping */
   PetscInt       i,j,row,mx,my,col[5];
   PetscInt       nloc,xs,ys,xm,ym,gxs,gys,gxm,gym,grow;
   PetscScalar    two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
@@ -523,6 +524,7 @@ PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
       ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
+  ierr = DMDARestoreGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
 
   /*
      Assemble matrix, using the 2-step process:

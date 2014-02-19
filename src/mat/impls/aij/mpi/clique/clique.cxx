@@ -298,7 +298,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Ma
     B->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_Clique;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
 
-  ierr = PetscNewLog(B,Mat_Clique,&cliq);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&cliq);CHKERRQ(ierr);
   B->spptr            = (void*)cliq;
   cliq::mpi::Comm cxxcomm(PetscObjectComm((PetscObject)A));
   ierr = PetscCommDuplicate(cxxcomm,&(cliq->cliq_comm),NULL);CHKERRQ(ierr);

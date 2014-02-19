@@ -13,6 +13,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsGetReal(const char[],const char[],PetscR
 PETSC_EXTERN PetscErrorCode PetscOptionsGetScalar(const char[],const char[],PetscScalar *,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetIntArray(const char[],const char[],PetscInt[],PetscInt *,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetRealArray(const char[],const char[],PetscReal[],PetscInt *,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsGetScalarArray(const char[],const char[],PetscScalar[],PetscInt *,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetBoolArray(const char[],const char[],PetscBool [],PetscInt *,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetString(const char[],const char[],char[],size_t,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetStringArray(const char[],const char[],char*[],PetscInt*,PetscBool *);
@@ -58,10 +59,11 @@ PETSC_EXTERN PetscInt PetscOptionsPublishCount;
 
 /*MC
     PetscOptionsBegin - Begins a set of queries on the options database that are related and should be
-     displayed on the same window of a GUI that allows the user to set the options interactively.
+     displayed on the same window of a GUI that allows the user to set the options interactively. Often one should 
+     use PetscObjectOptionsBegin() rather than this call.
 
    Synopsis:
-    #include "petscoptions.h"
+    #include <petscoptions.h>
     PetscErrorCode PetscOptionsBegin(MPI_Comm comm,const char prefix[],const char title[],const char mansec[])
 
     Collective on MPI_Comm
@@ -109,7 +111,7 @@ M*/
      displayed on the same window of a GUI that allows the user to set the options interactively.
 
    Synopsis:
-    #include "petscoptions.h"
+    #include <petscoptions.h>
     PetscErrorCode PetscObjectOptionsBegin(PetscObject obj)
 
     Collective on PetscObject
@@ -142,12 +144,12 @@ M*/
     Collective on the MPI_Comm used in PetscOptionsBegin()
 
    Synopsis:
-     #include "petscoptions.h"
+     #include <petscoptions.h>
      PetscErrorCode PetscOptionsEnd(void)
 
   Level: intermediate
 
-  Notes: Needs to be preceded by a call to PetscOptionsBegin()
+  Notes: Needs to be preceded by a call to PetscOptionsBegin() or PetscObjectOptionsBegin()
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
@@ -172,12 +174,12 @@ PETSC_EXTERN PetscErrorCode PetscOptionsHead(const char[]);
    Collective on the communicator passed in PetscOptionsBegin()
 
    Synopsis:
-     #include "petscoptions.h"
+     #include <petscoptions.h>
      PetscErrorCode PetscOptionsTail(void)
 
   Level: intermediate
 
-   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+   Notes: Must be between a PetscOptionsBegin()/PetscObjectOptionsBegin() and a PetscOptionsEnd()
 
           Must be preceded by a call to PetscOptionsHead() in the same function.
 

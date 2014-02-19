@@ -381,7 +381,7 @@ static PetscErrorCode PhysicsCreate_Advect(Model mod,Physics phys)
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Advect;
   phys->riemann = PhysicsRiemann_Advect;
-  ierr = PetscNew(Physics_Advect,&phys->data);CHKERRQ(ierr);
+  ierr = PetscNew(&phys->data);CHKERRQ(ierr);
   advect = (Physics_Advect*)phys->data;
   ierr = PetscOptionsHead("Advect options");CHKERRQ(ierr);
   {
@@ -509,7 +509,7 @@ static PetscErrorCode PhysicsSolution_SW(Model mod,PetscReal time,const PetscRea
   PetscReal dx[2],r,sigma;
 
   PetscFunctionBeginUser;
-  if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %G",time);
+  if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
   dx[0] = x[0] - 1.5;
   dx[1] = x[1] - 1.0;
   r     = Norm2(dx);
@@ -549,7 +549,7 @@ static PetscErrorCode PhysicsCreate_SW(Model mod,Physics phys)
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_SW;
   phys->riemann = PhysicsRiemann_SW;
-  ierr          = PetscNew(Physics_SW,&phys->data);CHKERRQ(ierr);
+  ierr          = PetscNew(&phys->data);CHKERRQ(ierr);
   sw            = (Physics_SW*)phys->data;
   ierr          = PetscOptionsHead("SW options");CHKERRQ(ierr);
   {
@@ -695,7 +695,7 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const Petsc
   PetscInt i;
 
   PetscFunctionBeginUser;
-  if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %G",time);
+  if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
   u[0]     = 1.0;
   u[DIM+1] = 1.0+PetscAbsReal(x[0]);
   for (i=1; i<DIM+1; i++) u[i] = 0.0;
@@ -731,7 +731,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys)
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Euler;
   phys->riemann = PhysicsRiemann_Euler_Rusanov;
-  ierr = PetscNew(Physics_Euler,&phys->data);CHKERRQ(ierr);
+  ierr = PetscNew(&phys->data);CHKERRQ(ierr);
   eu   = (Physics_Euler*)phys->data;
   ierr = PetscOptionsHead("Euler options");CHKERRQ(ierr);
   {
@@ -954,7 +954,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   ierr = DMPlexStratify(sdm);CHKERRQ(ierr);
   /* Convert coordinates */
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &newCoordSection);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(newCoordSection, 1);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldComponents(newCoordSection, 0, dim);CHKERRQ(ierr);
@@ -964,7 +964,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
     ierr = PetscSectionSetFieldDof(newCoordSection, v, 0, dim);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(newCoordSection);CHKERRQ(ierr);
-  ierr = DMPlexSetCoordinateSection(sdm, newCoordSection);CHKERRQ(ierr);
+  ierr = DMSetCoordinateSection(sdm, newCoordSection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&newCoordSection);CHKERRQ(ierr); /* relinquish our reference */
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(sdm, coordinates);CHKERRQ(ierr);
@@ -1014,12 +1014,12 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
   if (numRoots >= 0) {
-    ierr = PetscMalloc2(numRoots,PetscInt,&newLocation,pEnd-pStart,PetscInt,&newRemoteLocation);CHKERRQ(ierr);
+    ierr = PetscMalloc2(numRoots,&newLocation,pEnd-pStart,&newRemoteLocation);CHKERRQ(ierr);
     for (l=0; l<numRoots; l++) newLocation[l] = l; /* + (l >= cEnd ? user->numGhostCells : 0); */
     ierr = PetscSFBcastBegin(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
-    ierr = PetscMalloc(numLeaves * sizeof(PetscInt),    &glocalPoints);CHKERRQ(ierr);
-    ierr = PetscMalloc(numLeaves * sizeof(PetscSFNode), &gremotePoints);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numLeaves,    &glocalPoints);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numLeaves, &gremotePoints);CHKERRQ(ierr);
     for (l = 0; l < numLeaves; ++l) {
       glocalPoints[l]        = localPoints[l]; /* localPoints[l] >= cEnd ? localPoints[l] + user->numGhostCells : localPoints[l]; */
       gremotePoints[l].rank  = remotePoints[l].rank;
@@ -1060,7 +1060,7 @@ static PetscErrorCode PseudoInverse(PetscInt m,PetscInt mstride,PetscInt n,Petsc
 
   PetscFunctionBeginUser;
   if (debug) {
-    ierr = PetscMalloc(m*n*sizeof(PetscScalar),&Aback);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m*n,&Aback);CHKERRQ(ierr);
     ierr = PetscMemcpy(Aback,A,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
@@ -1127,7 +1127,7 @@ static PetscErrorCode PseudoInverseSVD(PetscInt m,PetscInt mstride,PetscInt n,Pe
 
   PetscFunctionBeginUser;
   if (debug) {
-    ierr = PetscMalloc(m*n*sizeof(PetscScalar),&Aback);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m*n,&Aback);CHKERRQ(ierr);
     ierr = PetscMemcpy(Aback,A,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
@@ -1174,7 +1174,7 @@ static PetscErrorCode BuildLeastSquares(DM dm,PetscInt cEndInterior,DM dmFace,Pe
   ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetMaxSizes(dm,&maxNumFaces,NULL);CHKERRQ(ierr);
   ierr = PseudoInverseGetWorkRequired(maxNumFaces,&worksize);CHKERRQ(ierr);
-  ierr = PetscMalloc5(maxNumFaces*DIM,PetscScalar,&B,worksize,PetscScalar,&Binv,worksize,PetscScalar,&work,maxNumFaces,PetscScalar,&tau,maxNumFaces,PetscScalar*,&gref);CHKERRQ(ierr);
+  ierr = PetscMalloc5(maxNumFaces*DIM,&B,worksize,&Binv,worksize,&work,maxNumFaces,&tau,maxNumFaces,&gref);CHKERRQ(ierr);
   for (c=cStart; c<cEndInterior; c++) {
     const PetscInt *faces;
     PetscInt       numFaces,usedFaces,f,i,j;
@@ -1256,12 +1256,12 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
   PetscFunctionBeginUser;
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   if (dim != DIM) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"No support for dim %D != DIM %D",dim,DIM);
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
 
   /* Make cell centroids and volumes */
   ierr = DMClone(dm, &dmCell);CHKERRQ(ierr);
-  ierr = DMPlexSetCoordinateSection(dmCell, coordSection);CHKERRQ(ierr);
+  ierr = DMSetCoordinateSection(dmCell, coordSection);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dmCell, coordinates);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionCell);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
@@ -1405,12 +1405,12 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMClone(dm, dmCell);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
   ierr = DMSetPointSF(*dmCell, sfPoint);CHKERRQ(ierr);
-  ierr = DMPlexSetCoordinateSection(*dmCell, coordSection);CHKERRQ(ierr);
+  ierr = DMSetCoordinateSection(*dmCell, coordSection);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(*dmCell, coordinates);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionCell);CHKERRQ(ierr);
@@ -1449,10 +1449,10 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
   PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMClone(dm, &dmMass);CHKERRQ(ierr);
-  ierr = DMPlexSetCoordinateSection(dmMass, coordSection);CHKERRQ(ierr);
+  ierr = DMSetCoordinateSection(dmMass, coordSection);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dmMass, coordinates);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionMass);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
@@ -1540,7 +1540,7 @@ PetscErrorCode SetUpLocalSpace(DM dm, User user)
     ierr = PetscSectionSetConstraintDof(stateSection, c, dof);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(stateSection);CHKERRQ(ierr);
-  ierr = PetscMalloc(dof * sizeof(PetscInt), &cind);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dof, &cind);CHKERRQ(ierr);
   for (d = 0; d < dof; ++d) cind[d] = d;
 #if 0
   for (c = cStart; c < cEnd; ++c) {
@@ -1581,7 +1581,7 @@ PetscErrorCode SetUpBoundaries(DM dm, User user)
       /* TODO: check all IDs to make sure they exist in the mesh */
       ierr      = PetscFree(b->ids);CHKERRQ(ierr);
       b->numids = len;
-      ierr      = PetscMalloc(len*sizeof(PetscInt),&b->ids);CHKERRQ(ierr);
+      ierr      = PetscMalloc1(len,&b->ids);CHKERRQ(ierr);
       ierr      = PetscMemcpy(b->ids,ids,len*sizeof(PetscInt));CHKERRQ(ierr);
     }
   }
@@ -1598,10 +1598,10 @@ static PetscErrorCode ModelBoundaryRegister(Model mod,const char *name,BoundaryF
   BoundaryLink   link;
 
   PetscFunctionBeginUser;
-  ierr          = PetscNew(struct _n_BoundaryLink,&link);CHKERRQ(ierr);
+  ierr          = PetscNew(&link);CHKERRQ(ierr);
   ierr          = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
   link->numids  = numids;
-  ierr          = PetscMalloc(numids*sizeof(PetscInt),&link->ids);CHKERRQ(ierr);
+  ierr          = PetscMalloc1(numids,&link->ids);CHKERRQ(ierr);
   ierr          = PetscMemcpy(link->ids,ids,numids*sizeof(PetscInt));CHKERRQ(ierr);
   link->func    = bcFunc;
   link->ctx     = ctx;
@@ -1672,7 +1672,7 @@ static PetscErrorCode ModelFunctionalRegister(Model mod,const char *name,PetscIn
 
   PetscFunctionBeginUser;
   for (ptr=&mod->functionalRegistry; *ptr; ptr = &(*ptr)->next) lastoffset = (*ptr)->offset;
-  ierr         = PetscNew(struct _n_FunctionalLink,&link);CHKERRQ(ierr);
+  ierr         = PetscNew(&link);CHKERRQ(ierr);
   ierr         = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
   link->offset = lastoffset + 1;
   link->func   = func;
@@ -1696,9 +1696,9 @@ static PetscErrorCode ModelFunctionalSetFromOptions(Model mod)
   mod->numMonitored = ALEN(names);
   ierr = PetscOptionsStringArray("-monitor","list of functionals to monitor","",names,&mod->numMonitored,NULL);CHKERRQ(ierr);
   /* Create list of functionals that will be computed somehow */
-  ierr = PetscMalloc(mod->numMonitored*sizeof(FunctionalLink),&mod->functionalMonitored);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mod->numMonitored,&mod->functionalMonitored);CHKERRQ(ierr);
   /* Create index of calls that we will have to make to compute these functionals (over-allocation in general). */
-  ierr = PetscMalloc(mod->numMonitored*sizeof(FunctionalLink),&mod->functionalCall);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mod->numMonitored,&mod->functionalCall);CHKERRQ(ierr);
   mod->numCall = 0;
   for (i=0; i<mod->numMonitored; i++) {
     for (link=mod->functionalRegistry; link; link=link->next) {
@@ -2093,7 +2093,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     DM                dmCell;
     PetscReal         *fmin,*fmax,*fintegral,*ftmp;
     fcount = mod->maxComputed+1;
-    ierr   = PetscMalloc4(fcount,PetscReal,&fmin,fcount,PetscReal,&fmax,fcount,PetscReal,&fintegral,fcount,PetscReal,&ftmp);CHKERRQ(ierr);
+    ierr   = PetscMalloc4(fcount,&fmin,fcount,&fmax,fcount,&fintegral,fcount,&ftmp);CHKERRQ(ierr);
     for (i=0; i<fcount; i++) {
       fmin[i]      = PETSC_MAX_REAL;
       fmax[i]      = PETSC_MIN_REAL;
@@ -2201,9 +2201,9 @@ int main(int argc, char **argv)
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
 
-  ierr = PetscNew(struct _n_User,&user);CHKERRQ(ierr);
-  ierr = PetscNew(struct _n_Model,&user->model);CHKERRQ(ierr);
-  ierr = PetscNew(struct _n_Physics,&user->model->physics);CHKERRQ(ierr);
+  ierr = PetscNew(&user);CHKERRQ(ierr);
+  ierr = PetscNew(&user->model);CHKERRQ(ierr);
+  ierr = PetscNew(&user->model->physics);CHKERRQ(ierr);
   mod  = user->model;
   phys = mod->physics;
   mod->comm = comm;
@@ -2246,7 +2246,7 @@ int main(int argc, char **argv)
 
     if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
     if (phys->dof <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
-    ierr = PetscMalloc3(phys->dof,PetscScalar,&user->work.flux,phys->dof,PetscScalar,&user->work.state0,phys->dof,PetscScalar,&user->work.state1);CHKERRQ(ierr);
+    ierr = PetscMalloc3(phys->dof,&user->work.flux,phys->dof,&user->work.state0,phys->dof,&user->work.state1);CHKERRQ(ierr);
     user->reconstruct = PETSC_FALSE;
     ierr = PetscOptionsBool("-ufv_reconstruct","Reconstruct gradients for a second order method (grows stencil)","",user->reconstruct,&user->reconstruct,NULL);CHKERRQ(ierr);
     user->RHSFunctionLocal = user->reconstruct ? RHSFunctionLocal_LS : RHSFunctionLocal_Upwind;
@@ -2323,7 +2323,7 @@ int main(int argc, char **argv)
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %G after %D steps\n",TSConvergedReasons[reason],ftime,nsteps);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,nsteps);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = VecDestroy(&user->cellgeom);CHKERRQ(ierr);

@@ -64,8 +64,6 @@ typedef const char* PCType;
 #define PCML              "ml"
 #define PCGALERKIN        "galerkin"
 #define PCEXOTIC          "exotic"
-#define PCHMPI            "hmpi"
-#define PCASA             "asa"
 #define PCCP              "cp"
 #define PCBFBT            "bfbt"
 #define PCLSC             "lsc"
@@ -80,6 +78,7 @@ typedef const char* PCType;
 #define PCBICGSTABCUSP    "bicgstabcusp"
 #define PCAINVCUSP        "ainvcusp"
 #define PCBDDC            "bddc"
+#define PCKACZMARZ        "kaczmarz"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId PC_CLASSID;
@@ -151,6 +150,7 @@ PETSC_EXTERN PetscErrorCode PCGetOperatorsSet(PC,PetscBool *,PetscBool *);
 
 PETSC_EXTERN PetscErrorCode PCView(PC,PetscViewer);
 PETSC_EXTERN PetscErrorCode PCLoad(PC,PetscViewer);
+PETSC_STATIC_INLINE PetscErrorCode PCViewFromOptions(PC A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 
 PETSC_EXTERN PetscErrorCode PCSetOptionsPrefix(PC,const char[]);
 PETSC_EXTERN PetscErrorCode PCAppendOptionsPrefix(PC,const char[]);
@@ -357,7 +357,7 @@ PETSC_EXTERN PetscErrorCode PCFieldSplitGetDMSplits(PC,PetscBool*);
 
 .seealso: PCFieldSplitSchurPrecondition()
 E*/
-typedef enum {PC_FIELDSPLIT_SCHUR_PRE_SELF,PC_FIELDSPLIT_SCHUR_PRE_A11,PC_FIELDSPLIT_SCHUR_PRE_USER} PCFieldSplitSchurPreType;
+typedef enum {PC_FIELDSPLIT_SCHUR_PRE_SELF,PC_FIELDSPLIT_SCHUR_PRE_SELFP,PC_FIELDSPLIT_SCHUR_PRE_A11,PC_FIELDSPLIT_SCHUR_PRE_USER,PC_FIELDSPLIT_SCHUR_PRE_FULL} PCFieldSplitSchurPreType;
 PETSC_EXTERN const char *const PCFieldSplitSchurPreTypes[];
 
 /*E
@@ -378,6 +378,8 @@ PETSC_EXTERN const char *const PCFieldSplitSchurFactTypes[];
 PETSC_EXTERN PetscErrorCode PCFieldSplitSchurPrecondition(PC,PCFieldSplitSchurPreType,Mat);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetSchurFactType(PC,PCFieldSplitSchurFactType);
 PETSC_EXTERN PetscErrorCode PCFieldSplitGetSchurBlocks(PC,Mat*,Mat*,Mat*,Mat*);
+PETSC_EXTERN PetscErrorCode PCFieldSplitSchurGetS(PC,Mat *S);
+PETSC_EXTERN PetscErrorCode PCFieldSplitSchurRestoreS(PC,Mat *S);
 
 PETSC_EXTERN PetscErrorCode PCGalerkinSetRestriction(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCGalerkinSetInterpolation(PC,Mat);
@@ -452,6 +454,11 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetSquareGraph(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetReuseProl(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PCGAMGInitializePackage(void);
+
+typedef const char *PCGAMGClassicalType;
+#define PCGAMGCLASSICALDIRECT   "direct"
+#define PCGAMGCLASSICALSTANDARD "standard"
+PETSC_EXTERN PetscErrorCode PCGAMGClassicalSetType(PC,PCGAMGClassicalType);
 
 #if defined(PETSC_HAVE_PCBDDC)
 PETSC_EXTERN PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PC,IS);

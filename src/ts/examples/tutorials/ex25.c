@@ -14,6 +14,7 @@ static const char help[] = "Time-dependent Brusselator reaction-diffusion PDE in
    v(0,t) = v(1,t) = 3
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 
@@ -53,7 +54,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-11,2,2,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-11,2,2,NULL,&da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA;
@@ -118,7 +119,7 @@ int main(int argc,char **argv)
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %G after %D steps\n",TSConvergedReasons[reason],ftime,steps);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,steps);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.
@@ -296,7 +297,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   /* Compute function over the locally owned part of the grid */
   for (i=info.xs; i<info.xs+info.xm; i++) {
     PetscReal xi = i*hx;
-    x[i].u = user->uleft*(1.-xi) + user->uright*xi + sin(2.*PETSC_PI*xi);
+    x[i].u = user->uleft*(1.-xi) + user->uright*xi + PetscSinReal(2.*PETSC_PI*xi);
     x[i].v = user->vleft*(1.-xi) + user->vright*xi;
   }
   ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);

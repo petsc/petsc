@@ -859,7 +859,7 @@ PetscErrorCode  MatView(Mat mat,PetscViewer viewer)
       if (mat->ops->getinfo) {
         MatInfo info;
         ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"total: nonzeros=%lld, allocated nonzeros=%lld\n",(Petsc64bitInt)info.nz_used,(Petsc64bitInt)info.nz_allocated);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"total: nonzeros=%g, allocated nonzeros=%g\n",info.nz_used,info.nz_allocated);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"total number of mallocs used during MatSetValues calls =%D\n",(PetscInt)info.mallocs);CHKERRQ(ierr);
       }
       if (mat->nullsp) {ierr = PetscViewerASCIIPrintf(viewer,"  has attached null space\n");CHKERRQ(ierr);}
@@ -1029,7 +1029,6 @@ PetscErrorCode  MatDestroy(Mat *A)
   PetscValidHeaderSpecific(*A,MAT_CLASSID,1);
   if (--((PetscObject)(*A))->refct > 0) {*A = NULL; PetscFunctionReturn(0);}
 
-  ierr = PetscViewerDestroy(&(*A)->viewonassembly);CHKERRQ(ierr);
   /* if memory was published with SAWs then destroy it */
   ierr = PetscObjectSAWsViewOff((PetscObject)*A);CHKERRQ(ierr);
   if ((*A)->ops->destroy) {
@@ -1118,9 +1117,9 @@ PetscErrorCode  MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n
       for (j=0; j<n; j++) {
         if (PetscIsInfOrNanScalar(v[i*n+j]))
 #if defined(PETSC_USE_COMPLEX)
-          SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_FP,"Inserting %G+iG at matrix entry (%D,%D)",PetscRealPart(v[i*n+j]),PetscImaginaryPart(v[i*n+j]),idxm[i],idxn[j]);
+          SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_FP,"Inserting %g+ig at matrix entry (%D,%D)",(double)PetscRealPart(v[i*n+j]),(double)PetscImaginaryPart(v[i*n+j]),idxm[i],idxn[j]);
 #else
-          SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FP,"Inserting %G at matrix entry (%D,%D)",(PetscReal)v[i*n+j],idxm[i],idxn[j]);
+          SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FP,"Inserting %g at matrix entry (%D,%D)",(double)v[i*n+j],idxm[i],idxn[j]);
 #endif
       }
     }
@@ -1320,7 +1319,7 @@ $    idxm(MatStencil_c,1) = c
    For periodic boundary conditions use negative indices for values to the left (below 0; that are to be
    obtained by wrapping values from right edge). For values to the right of the last entry using that index plus one
    etc to obtain values that obtained by wrapping the values from the left edge. This does not work for anything but the
-   DMDA_BOUNDARY_PERIODIC boundary type.
+   DM_BOUNDARY_PERIODIC boundary type.
 
    For indices that don't mean anything for your case (like the k index when working in 2d) or the c index when you have
    a single value per point) you can skip filling those indices.
@@ -1357,7 +1356,7 @@ PetscErrorCode  MatSetValuesStencil(Mat mat,PetscInt m,const MatStencil idxm[],P
   if ((m+n) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
     jdxm = buf; jdxn = buf+m;
   } else {
-    ierr = PetscMalloc2(m,PetscInt,&bufm,n,PetscInt,&bufn);CHKERRQ(ierr);
+    ierr = PetscMalloc2(m,&bufm,n,&bufn);CHKERRQ(ierr);
     jdxm = bufm; jdxn = bufn;
   }
   for (i=0; i<m; i++) {
@@ -1387,7 +1386,7 @@ PetscErrorCode  MatSetValuesStencil(Mat mat,PetscInt m,const MatStencil idxm[],P
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetValuesBlockedStencil"
-/*@C
+/*@
    MatSetValuesBlockedStencil - Inserts or adds a block of values into a matrix.
      Using structured grid indexing
 
@@ -1470,7 +1469,7 @@ PetscErrorCode  MatSetValuesBlockedStencil(Mat mat,PetscInt m,const MatStencil i
   if ((m+n) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
     jdxm = buf; jdxn = buf+m;
   } else {
-    ierr = PetscMalloc2(m,PetscInt,&bufm,n,PetscInt,&bufn);CHKERRQ(ierr);
+    ierr = PetscMalloc2(m,&bufm,n,&bufn);CHKERRQ(ierr);
     jdxm = bufm; jdxn = bufn;
   }
   for (i=0; i<m; i++) {
@@ -1662,7 +1661,7 @@ PetscErrorCode  MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pet
     if (m*bs+n*cbs <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
       iidxm = buf; iidxn = buf + m*bs;
     } else {
-      ierr  = PetscMalloc2(m*bs,PetscInt,&bufr,n*cbs,PetscInt,&bufc);CHKERRQ(ierr);
+      ierr  = PetscMalloc2(m*bs,&bufr,n*cbs,&bufc);CHKERRQ(ierr);
       iidxm = bufr; iidxn = bufc;
     }
     for (i=0; i<m; i++) {
@@ -2015,7 +2014,7 @@ PetscErrorCode  MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pe
     if ((nrow+ncol) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
       irowm = buf; icolm = buf+nrow;
     } else {
-      ierr  = PetscMalloc2(nrow,PetscInt,&bufr,ncol,PetscInt,&bufc);CHKERRQ(ierr);
+      ierr  = PetscMalloc2(nrow,&bufr,ncol,&bufc);CHKERRQ(ierr);
       irowm = bufr; icolm = bufc;
     }
     ierr = ISLocalToGlobalMappingApply(mat->rmap->mapping,nrow,irow,irowm);CHKERRQ(ierr);
@@ -2109,7 +2108,7 @@ PetscErrorCode  MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt ir
       if ((nrow+ncol) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
         irowm = buf; icolm = buf + nrow;
       } else {
-        ierr  = PetscMalloc2(nrow,PetscInt,&bufr,ncol,PetscInt,&bufc);CHKERRQ(ierr);
+        ierr  = PetscMalloc2(nrow,&bufr,ncol,&bufc);CHKERRQ(ierr);
         irowm = bufr; icolm = bufc;
       }
       ierr = ISLocalToGlobalMappingApply(mat->rmap->bmapping,nrow,irow,irowm);CHKERRQ(ierr);
@@ -2121,7 +2120,7 @@ PetscErrorCode  MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt ir
       if (nrow*bs+ncol*cbs <=(PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
         irowm = buf; icolm = buf + nrow;
       } else {
-        ierr  = PetscMalloc2(nrow*bs,PetscInt,&bufr,ncol*cbs,PetscInt,&bufc);CHKERRQ(ierr);
+        ierr  = PetscMalloc2(nrow*bs,&bufr,ncol*cbs,&bufc);CHKERRQ(ierr);
         irowm = bufr; icolm = bufc;
       }
       for (i=0; i<nrow; i++) {
@@ -2952,12 +2951,7 @@ PetscErrorCode  MatLUFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *info)
   ierr = PetscLogEventBegin(MAT_LUFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
   ierr = (fact->ops->lufactornumeric)(fact,mat,info);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_LUFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
-
-  if (fact->viewonassembly) {
-    ierr = PetscViewerPushFormat(fact->viewonassembly,fact->viewformatonassembly);CHKERRQ(ierr);
-    ierr = MatView(fact,fact->viewonassembly);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(fact->viewonassembly);CHKERRQ(ierr);
-  }
+  ierr = MatViewFromOptions(fact,NULL,"-mat_factor_view");CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3127,12 +3121,7 @@ PetscErrorCode  MatCholeskyFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *i
   ierr = PetscLogEventBegin(MAT_CholeskyFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
   ierr = (fact->ops->choleskyfactornumeric)(fact,mat,info);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_CholeskyFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
-
-  if (fact->viewonassembly) {
-    ierr = PetscViewerPushFormat(fact->viewonassembly,fact->viewformatonassembly);CHKERRQ(ierr);
-    ierr = MatView(fact,fact->viewonassembly);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(fact->viewonassembly);CHKERRQ(ierr);
-  }
+  ierr = MatViewFromOptions(fact,NULL,"-mat_factor_view");CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -4912,49 +4901,6 @@ PetscErrorCode  MatAssembled(Mat mat,PetscBool  *assembled)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatViewFromOptions"
-/*
-  MatViewFromOptions - Processes command line options to determine if/how a matrix is to be viewed. Called from higher level packages.
-
-  Collective on Vec
-
-  Input Parameters:
-+ mat   - the matrix
-. prefix - prefix to use for viewing, or NULL to use prefix of 'mat'
-- optionname - option to activate viewing
-
-  Level: intermediate
-
-.keywords: Mat, view, options, database
-.seealso: MatViewFromOptions()
-*/
-PetscErrorCode MatViewFromOptions(Mat mat,const char prefix[],const char optionname[])
-{
-  PetscErrorCode    ierr;
-  PetscViewer       viewer;
-  PetscBool         flg;
-  static PetscBool  incall = PETSC_FALSE;
-  PetscViewerFormat format;
-
-  PetscFunctionBegin;
-  if (incall) PetscFunctionReturn(0);
-  incall = PETSC_TRUE;
-  if (prefix) {
-    ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)mat),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
-  } else {
-    ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
-  }
-  if (flg) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = MatView(mat,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
-  incall = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd"
 /*@
    MatAssemblyEnd - Completes assembling the matrix.  This routine should
@@ -5040,18 +4986,14 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
   }
 #endif
   if (inassm == 1 && type != MAT_FLUSH_ASSEMBLY) {
-    if (mat->viewonassembly) {
-      ierr = PetscViewerPushFormat(mat->viewonassembly,mat->viewformatonassembly);CHKERRQ(ierr);
-      ierr = MatView(mat,mat->viewonassembly);CHKERRQ(ierr);
-      ierr = PetscViewerPopFormat(mat->viewonassembly);CHKERRQ(ierr);
-    }
+    ierr = MatViewFromOptions(mat,NULL,"-mat_view");CHKERRQ(ierr);
 
     if (mat->checksymmetryonassembly) {
       ierr = MatIsSymmetric(mat,mat->checksymmetrytol,&flg);CHKERRQ(ierr);
       if (flg) {
-        ierr = PetscPrintf(PetscObjectComm((PetscObject)mat),"Matrix is symmetric (tolerance %G)\n",mat->checksymmetrytol);CHKERRQ(ierr);
+        ierr = PetscPrintf(PetscObjectComm((PetscObject)mat),"Matrix is symmetric (tolerance %g)\n",(double)mat->checksymmetrytol);CHKERRQ(ierr);
       } else {
-        ierr = PetscPrintf(PetscObjectComm((PetscObject)mat),"Matrix is not symmetric (tolerance %G)\n",mat->checksymmetrytol);CHKERRQ(ierr);
+        ierr = PetscPrintf(PetscObjectComm((PetscObject)mat),"Matrix is not symmetric (tolerance %g)\n",(double)mat->checksymmetrytol);CHKERRQ(ierr);
       }
     }
     if (mat->nullsp && mat->checknullspaceonassembly) {
@@ -5100,8 +5042,7 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
 
    When (re)assembling a matrix, we can restrict the input for
    efficiency/debugging purposes.  These options include
-+    MAT_NEW_NONZERO_LOCATIONS - additional insertions will be
-        allowed if they generate a new nonzero
++    MAT_NEW_NONZERO_LOCATIONS - additional insertions will be allowed if they generate a new nonzero (slow)
 .    MAT_NEW_DIAGONALS - new diagonals will be allowed (for block diagonal format only)
 .    MAT_IGNORE_OFF_PROC_ENTRIES - drops off-processor entries
 .    MAT_NEW_NONZERO_LOCATION_ERR - generates an error for new matrix entry
@@ -5126,19 +5067,19 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
    the entire array is allocated, no entries are ever ignored.
    Set after the first MatAssemblyEnd()
 
-   MAT_NEW_NONZERO_LOCATION_ERR indicates that any add or insertion
+   MAT_NEW_NONZERO_LOCATION_ERR set to PETSC_TRUE indicates that any add or insertion
    that would generate a new entry in the nonzero structure instead produces
    an error. (Currently supported for AIJ and BAIJ formats only.)
    This is a useful flag when using SAME_NONZERO_PATTERN in calling
    KSPSetOperators() to ensure that the nonzero pattern truely does
    remain unchanged. Set after the first MatAssemblyEnd()
 
-   MAT_NEW_NONZERO_ALLOCATION_ERR indicates that any add or insertion
+   MAT_NEW_NONZERO_ALLOCATION_ERR set to PETSC_TRUE indicates that any add or insertion
    that would generate a new entry that has not been preallocated will
    instead produce an error. (Currently supported for AIJ and BAIJ formats
    only.) This is a useful flag when debugging matrix memory preallocation.
 
-   MAT_IGNORE_OFF_PROC_ENTRIES indicates entries destined for
+   MAT_IGNORE_OFF_PROC_ENTRIES set to PETSC_TRUE indicates entries destined for
    other processors should be dropped, rather than stashed.
    This is useful if you know that the "owning" processor is also
    always generating the correct matrix entries, so that PETSc need
@@ -5340,11 +5281,7 @@ PetscErrorCode  MatZeroRowsColumns(Mat mat,PetscInt numRows,const PetscInt rows[
   MatCheckPreallocated(mat,1);
 
   ierr = (*mat->ops->zerorowscolumns)(mat,numRows,rows,diag,x,b);CHKERRQ(ierr);
-  if (mat->viewonassembly) {
-    ierr = PetscViewerPushFormat(mat->viewonassembly,mat->viewformatonassembly);CHKERRQ(ierr);
-    ierr = MatView(mat,mat->viewonassembly);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(mat->viewonassembly);CHKERRQ(ierr);
-  }
+  ierr = MatViewFromOptions(mat,NULL,"-mat_view");CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
@@ -5475,11 +5412,7 @@ PetscErrorCode  MatZeroRows(Mat mat,PetscInt numRows,const PetscInt rows[],Petsc
   MatCheckPreallocated(mat,1);
 
   ierr = (*mat->ops->zerorows)(mat,numRows,rows,diag,x,b);CHKERRQ(ierr);
-  if (mat->viewonassembly) {
-    ierr = PetscViewerPushFormat(mat->viewonassembly,mat->viewformatonassembly);CHKERRQ(ierr);
-    ierr = MatView(mat,mat->viewonassembly);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(mat->viewonassembly);CHKERRQ(ierr);
-  }
+  ierr = MatViewFromOptions(mat,NULL,"-mat_view");CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
@@ -5607,7 +5540,7 @@ $    idxm(MatStencil_c,1) = c
    For periodic boundary conditions use negative indices for values to the left (below 0; that are to be
    obtained by wrapping values from right edge). For values to the right of the last entry using that index plus one
    etc to obtain values that obtained by wrapping the values from the left edge. This does not work for anything but the
-   DMDA_BOUNDARY_PERIODIC boundary type.
+   DM_BOUNDARY_PERIODIC boundary type.
 
    For indices that don't mean anything for your case (like the k index when working in 2d) or the c index when you have
    a single value per point) you can skip filling those indices.
@@ -5633,7 +5566,7 @@ PetscErrorCode  MatZeroRowsStencil(Mat mat,PetscInt numRows,const MatStencil row
   PetscValidType(mat,1);
   if (numRows) PetscValidIntPointer(rows,3);
 
-  ierr = PetscMalloc(numRows*sizeof(PetscInt), &jdxm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numRows, &jdxm);CHKERRQ(ierr);
   for (i = 0; i < numRows; ++i) {
     /* Skip unused dimensions (they are ordered k, j, i, c) */
     for (j = 0; j < 3-sdim; ++j) dxm++;
@@ -5709,7 +5642,7 @@ $    idxm(MatStencil_c,1) = c
    For periodic boundary conditions use negative indices for values to the left (below 0; that are to be
    obtained by wrapping values from right edge). For values to the right of the last entry using that index plus one
    etc to obtain values that obtained by wrapping the values from the left edge. This does not work for anything but the
-   DMDA_BOUNDARY_PERIODIC boundary type.
+   DM_BOUNDARY_PERIODIC boundary type.
 
    For indices that don't mean anything for your case (like the k index when working in 2d) or the c index when you have
    a single value per point) you can skip filling those indices.
@@ -5735,7 +5668,7 @@ PetscErrorCode  MatZeroRowsColumnsStencil(Mat mat,PetscInt numRows,const MatSten
   PetscValidType(mat,1);
   if (numRows) PetscValidIntPointer(rows,3);
 
-  ierr = PetscMalloc(numRows*sizeof(PetscInt), &jdxm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numRows, &jdxm);CHKERRQ(ierr);
   for (i = 0; i < numRows; ++i) {
     /* Skip unused dimensions (they are ordered k, j, i, c) */
     for (j = 0; j < 3-sdim; ++j) dxm++;
@@ -6330,7 +6263,7 @@ PetscErrorCode  MatILUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFac
   PetscValidPointer(info,4);
   PetscValidPointer(fact,5);
   if (info->levels < 0) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Levels of fill negative %D",(PetscInt)info->levels);
-  if (info->fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %G",info->fill);
+  if (info->fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %g",(double)info->fill);
   if (!(fact)->ops->ilufactorsymbolic) {
     const MatSolverPackage spackage;
     ierr = MatFactorGetSolverPackage(fact,&spackage);CHKERRQ(ierr);
@@ -6394,7 +6327,7 @@ PetscErrorCode  MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInf
   PetscValidPointer(fact,4);
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (info->levels < 0) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Levels negative %D",(PetscInt) info->levels);
-  if (info->fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %G",info->fill);
+  if (info->fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %g",(double)info->fill);
   if (!(fact)->ops->iccfactorsymbolic) {
     const MatSolverPackage spackage;
     ierr = MatFactorGetSolverPackage(fact,&spackage);CHKERRQ(ierr);
@@ -8394,7 +8327,7 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   if (P->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
   if (P->rmap->N!=A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->rmap->N,A->cmap->N);
-  if (fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
+  if (fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%g must be >= 1.0",(double)fill);
 
   if (scall == MAT_REUSE_MATRIX) {
     PetscValidPointer(*C,5);
@@ -8422,7 +8355,7 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   }
 
   if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) fill = 2.0;
-  if (fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
+  if (fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%g must be >= 1.0",(double)fill);
 
   fA = A->ops->ptap;
   fP = P->ops->ptap;
@@ -8552,7 +8485,7 @@ PetscErrorCode  MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscValidType(A,1);
   if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  if (fill <1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
+  if (fill <1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%g must be >= 1.0",(double)fill);
   PetscValidHeaderSpecific(P,MAT_CLASSID,2);
   PetscValidType(P,2);
   MatCheckPreallocated(P,2);
@@ -8613,7 +8546,7 @@ PetscErrorCode  MatRARt(Mat A,Mat R,MatReuse scall,PetscReal fill,Mat *C)
   if (R->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   PetscValidPointer(C,3);
   if (R->cmap->N!=A->rmap->N) SETERRQ2(PetscObjectComm((PetscObject)R),PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",R->cmap->N,A->rmap->N);
-  if (fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
+  if (fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%g must be >= 1.0",(double)fill);
   MatCheckPreallocated(A,1);
 
   if (!A->ops->rart) {
@@ -8716,7 +8649,7 @@ PetscErrorCode  MatRARtSymbolic(Mat A,Mat R,PetscReal fill,Mat *C)
   PetscValidType(A,1);
   if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  if (fill <1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
+  if (fill <1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%g must be >= 1.0",(double)fill);
   PetscValidHeaderSpecific(R,MAT_CLASSID,2);
   PetscValidType(R,2);
   MatCheckPreallocated(R,2);
@@ -8800,7 +8733,7 @@ PetscErrorCode  MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
     PetscFunctionReturn(0);
   }
   if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) fill = 2.0;
-  if (fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
+  if (fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%g must be >= 1.0",(double)fill);
 
   fA = A->ops->matmult;
   fB = B->ops->matmult;
@@ -8881,7 +8814,7 @@ PetscErrorCode  MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C)
 
   if (B->rmap->N!=A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->rmap->N,A->cmap->N);
   if (fill == PETSC_DEFAULT) fill = 2.0;
-  if (fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%G must be > 1.0",fill);
+  if (fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%g must be > 1.0",(double)fill);
   MatCheckPreallocated(A,1);
 
   Asymbolic = A->ops->matmultsymbolic;
@@ -8990,7 +8923,7 @@ PetscErrorCode  MatMatTransposeMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Ma
   PetscValidPointer(C,3);
   if (B->cmap->N!=A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, AN %D != BN %D",A->cmap->N,B->cmap->N);
   if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) fill = 2.0;
-  if (fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%G must be > 1.0",fill);
+  if (fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%g must be > 1.0",(double)fill);
   MatCheckPreallocated(A,1);
 
   fA = A->ops->mattransposemult;
@@ -9063,7 +8996,7 @@ PetscErrorCode  MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Ma
   PetscValidPointer(C,3);
   if (B->rmap->N!=A->rmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->rmap->N,A->rmap->N);
   if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) fill = 2.0;
-  if (fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%G must be > 1.0",fill);
+  if (fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%g must be > 1.0",(double)fill);
   MatCheckPreallocated(A,1);
 
   fA = A->ops->transposematmult;
@@ -9158,7 +9091,7 @@ PetscErrorCode  MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Ma
     PetscFunctionReturn(0);
   }
   if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) fill = 2.0;
-  if (fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
+  if (fill < 1.0) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Expected fill=%g must be >= 1.0",(double)fill);
 
   fA = A->ops->matmatmult;
   fB = B->ops->matmatmult;
@@ -9408,6 +9341,40 @@ PetscErrorCode  MatFindZeroDiagonals(Mat mat,IS *is)
 
   if (!mat->ops->findzerodiagonals) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"This matrix type does not have a find zero diagonals defined");
   ierr = (*mat->ops->findzerodiagonals)(mat,is);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFindOffBlockDiagonalEntries"
+/*@
+   MatFindOffBlockDiagonalEntries - Finds all the rows of a matrix that have entries outside of the main diagonal block (defined by the matrix block size)
+
+   Collective on Mat
+
+   Input Parameter:
+.  mat - the matrix
+
+   Output Parameter:
+.  is - contains the list of rows with off block diagonal entries
+
+   Level: developer
+
+   Concepts: matrix-vector product
+
+.seealso: MatMultTranspose(), MatMultAdd(), MatMultTransposeAdd()
+@*/
+PetscErrorCode  MatFindOffBlockDiagonalEntries(Mat mat,IS *is)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+
+  if (!mat->ops->findoffblockdiagonalentries) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"This matrix type does not have a find off block diagonal entries defined");
+  ierr = (*mat->ops->findoffblockdiagonalentries)(mat,is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

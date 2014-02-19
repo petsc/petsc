@@ -13,6 +13,85 @@
 #include "viennacl/linalg/norm_inf.hpp"
 #include "viennacl/ocl/backend.hpp"
 
+
+#undef __FUNCT__
+#define __FUNCT__ "VecViennaCLGetArrayReadWrite"
+PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayReadWrite(Vec v, ViennaCLVector **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *a   = 0;
+  ierr = VecViennaCLCopyToGPU(v);CHKERRQ(ierr);
+  *a   = ((Vec_ViennaCL*)v->spptr)->GPUarray;
+  ViennaCLWaitForGPU();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecViennaCLRestoreArrayReadWrite"
+PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayReadWrite(Vec v, ViennaCLVector **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  v->valid_GPU_array = PETSC_VIENNACL_GPU;
+
+  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecViennaCLGetArrayRead"
+PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayRead(Vec v, const ViennaCLVector **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *a   = 0;
+  ierr = VecViennaCLCopyToGPU(v);CHKERRQ(ierr);
+  *a   = ((Vec_ViennaCL*)v->spptr)->GPUarray;
+  ViennaCLWaitForGPU();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecViennaCLRestoreArrayRead"
+PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayRead(Vec v, const ViennaCLVector **a)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecViennaCLGetArrayWrite"
+PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayWrite(Vec v, ViennaCLVector **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *a   = 0;
+  ierr = VecViennaCLAllocateCheck(v);CHKERRQ(ierr);
+  *a   = ((Vec_ViennaCL*)v->spptr)->GPUarray;
+  ViennaCLWaitForGPU();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecViennaCLRestoreArrayWrite"
+PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayWrite(Vec v, ViennaCLVector **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  v->valid_GPU_array = PETSC_VIENNACL_GPU;
+
+  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectSetFromOptions_ViennaCL"
 PETSC_EXTERN PetscErrorCode PetscObjectSetFromOptions_ViennaCL(PetscObject obj)
@@ -70,7 +149,7 @@ PetscErrorCode VecViennaCLAllocateCheckHost(Vec v)
   s    = (Vec_Seq*)v->data;
   ierr = VecViennaCLAllocateCheck(v);CHKERRQ(ierr);
   if (s->array == 0) {
-    ierr               = PetscMalloc(n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
+    ierr               = PetscMalloc1(n,&array);CHKERRQ(ierr);
     ierr               = PetscLogObjectMemory((PetscObject)v,n*sizeof(PetscScalar));CHKERRQ(ierr);
     s->array           = array;
     s->array_allocated = array;

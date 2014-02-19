@@ -12,8 +12,8 @@ Runtime options include:\n\
     Run with for example: -pc_type mg -pc_mg_galerkin -T .01 -da_grid_x 65 -da_grid_y 65 -pc_mg_levels 4 -ksp_type fgmres -snes_atol 1.e-14 -mat_no_inode
  */
 
-#include "petscsnes.h"
-#include "petscdmda.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
 
 typedef struct {
   PetscReal   dt,T; /* Time step and end time */
@@ -54,7 +54,7 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = GetParams(&user);CHKERRQ(ierr);
   /* Create a 2D DA with dof = 2 */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&user.da);CHKERRQ(ierr);
   /* Set Element type (triangular) */
   ierr = DMDASetElementType(user.da,DMDA_ELEMENT_P1);CHKERRQ(ierr);
 
@@ -222,9 +222,9 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
 
   for (j=ys; j < ys+ym; j++) {
     for (i=xs; i < xs+xm;i++) {
-      l[j][i][0] = -SNES_VI_INF;
+      l[j][i][0] = -PETSC_INFINITY;
       l[j][i][1] = -1.0;
-      u[j][i][0] = SNES_VI_INF;
+      u[j][i][0] = PETSC_INFINITY;
       u[j][i][1] = 1.0;
     }
   }

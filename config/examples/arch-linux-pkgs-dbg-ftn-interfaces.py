@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 configure_options = [
+  '--with-cc=clang',
+  '--with-cxx=clang++',
+  '--with-fc=gfortran',
   '--with-debugging=1',
   '--with-fortran-interfaces=1',
   '--download-mpich=1',
@@ -17,6 +20,7 @@ configure_options = [
   '--download-scalapack=1',
   '--download-mumps=1',
   '--download-elemental=1',
+  '--with-cxx-dialect=C++11',
   '--download-spai=1',
   '--download-chaco=1'
   ]

@@ -38,14 +38,14 @@ int main(int argc,char **argv)
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = PetscMalloc((nsrc_points-1)*(ntarget_points-1)*sizeof(PetscReal),&R);CHKERRQ(ierr);
+  ierr = PetscMalloc1((nsrc_points-1)*(ntarget_points-1),&R);CHKERRQ(ierr);
   for (i=0; i<ndegrees; i++) {
     ierr = PetscDTReconstructPoly(degrees[i],nsrc_points-1,src_points,ntarget_points-1,target_points,R);CHKERRQ(ierr);
     for (j=0; j<(ntarget_points-1)*(nsrc_points-1); j++) { /* Truncate to zero for nicer output */
       if (PetscAbs(R[j]) < 10*PETSC_MACHINE_EPSILON) R[j] = 0;
     }
     for (j=0; j<ntarget_points-1; j++) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Degree %D target interval (%G,%G)\n",degrees[i],target_points[j],target_points[j+1]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Degree %D target interval (%g,%g)\n",degrees[i],(double)target_points[j],(double)target_points[j+1]);CHKERRQ(ierr);
       ierr = PetscRealView(nsrc_points-1,R+j*(nsrc_points-1),PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
   }

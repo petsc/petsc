@@ -1,4 +1,5 @@
 #include <petscsnes.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <../src/snes/impls/vi/viimpl.h>
 
@@ -61,7 +62,7 @@ int main(int argc, char **argv)
      which derives from an elliptic PDE on two dimensional domain.  From
      the distributed array, Create the vectors.
   */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-50,-50,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-50,-50,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
   ierr = DMDAGetIerr(user.da,PETSC_IGNORE,&user.nx,&user.ny,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   PetscPrintf(PETSC_COMM_WORLD,"\n---- Journal Bearing Problem -----\n");
@@ -126,7 +127,7 @@ int main(int argc, char **argv)
 
 static PetscReal p(PetscReal xi, PetscReal ecc)
 {
-  PetscReal t=1.0+ecc*cos(xi);
+  PetscReal t=1.0+ecc*PetscCosReal(xi);
   return(t*t*t);
 }
 
@@ -157,7 +158,7 @@ PetscErrorCode ComputeB(AppCtx *user)
 
   /* Compute the linear term in the objective function */
   for (i=xs; i<xs+xm; i++) {
-    temp=sin((i+1)*hx);
+    temp=PetscSinReal((i+1)*hx);
     for (j=ys; j<ys+ym; j++) b[j][i] = -ehxhy*temp;
   }
   /* Restore vectors */

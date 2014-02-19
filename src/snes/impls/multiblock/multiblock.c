@@ -88,7 +88,7 @@ static PetscErrorCode SNESMultiblockSetFieldsRuntime_Private(SNES snes)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(mb->bs * sizeof(PetscInt), &ifields);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mb->bs, &ifields);CHKERRQ(ierr);
   for (i = 0;; ++i) {
     ierr    = PetscSNPrintf(name, sizeof(name), "%D", i);CHKERRQ(ierr);
     ierr    = PetscSNPrintf(optionname, sizeof(optionname), "-snes_multiblock_%D_fields", i);CHKERRQ(ierr);
@@ -237,7 +237,7 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
         if (blocks->nfields > 1) {
           PetscInt *ii, j, k, nfields = blocks->nfields, *fields = blocks->fields;
 
-          ierr = PetscMalloc(nfields*nslots*sizeof(PetscInt), &ii);CHKERRQ(ierr);
+          ierr = PetscMalloc1(nfields*nslots, &ii);CHKERRQ(ierr);
           for (j = 0; j < nslots; ++j) {
             for (k = 0; k < nfields; ++k) {
               ii[nfields*j + k] = rstart + bs*j + fields[k];
@@ -258,7 +258,7 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
   /* Create matrices */
   ilink = jac->head;
   if (!jac->pmat) {
-    ierr = PetscMalloc(nsplit*sizeof(Mat),&jac->pmat);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nsplit,&jac->pmat);CHKERRQ(ierr);
     for (i=0; i<nsplit; i++) {
       ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ilink->is,MAT_INITIAL_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
       ilink = ilink->next;
@@ -272,7 +272,7 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
   if (jac->realdiagonal) {
     ilink = jac->head;
     if (!jac->mat) {
-      ierr = PetscMalloc(nsplit*sizeof(Mat),&jac->mat);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nsplit,&jac->mat);CHKERRQ(ierr);
       for (i=0; i<nsplit; i++) {
         ierr  = MatGetSubMatrix(pc->mat,ilink->is,ilink->is,MAT_INITIAL_MATRIX,&jac->mat[i]);CHKERRQ(ierr);
         ilink = ilink->next;
@@ -291,7 +291,7 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
     /* extract the rows of the matrix associated with each field: used for efficient computation of residual inside algorithm */
     ilink = jac->head;
     if (!jac->Afield) {
-      ierr = PetscMalloc(nsplit*sizeof(Mat),&jac->Afield);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nsplit,&jac->Afield);CHKERRQ(ierr);
       for (i=0; i<nsplit; i++) {
         ierr  = MatGetSubMatrix(pc->mat,ilink->is,NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
         ilink = ilink->next;
@@ -324,7 +324,7 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
       ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
-      ierr  = MatSchurComplementUpdate(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->pmat[1],pc->flag);CHKERRQ(ierr);
+      ierr  = MatSchurComplementUpdateSubMatrices(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->pmat[1],pc->flag);CHKERRQ(ierr);
       ierr  = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),pc->flag);CHKERRQ(ierr);
 
     } else {
@@ -364,7 +364,7 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
       /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
       ierr = KSPSetFromOptions(jac->kspschur);CHKERRQ(ierr);
 
-      ierr     = PetscMalloc2(2,Vec,&jac->x,2,Vec,&jac->y);CHKERRQ(ierr);
+      ierr     = PetscMalloc2(2,&jac->x,2,&jac->y);CHKERRQ(ierr);
       ierr     = MatGetVecs(jac->pmat[0],&jac->x[0],&jac->y[0]);CHKERRQ(ierr);
       ierr     = MatGetVecs(jac->pmat[1],&jac->x[1],&jac->y[1]);CHKERRQ(ierr);
       ilink    = jac->head;
@@ -631,18 +631,18 @@ PetscErrorCode SNESMultiblockSetFields_Default(SNES snes, const char name[], Pet
     if (fields[i] >= mb->bs) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field %D requested but only %D exist", fields[i], mb->bs);
     if (fields[i] < 0)       SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative field %D requested", fields[i]);
   }
-  ierr = PetscNew(struct _BlockDesc, &newblock);CHKERRQ(ierr);
+  ierr = PetscNew(&newblock);CHKERRQ(ierr);
   if (name) {
     ierr = PetscStrallocpy(name, &newblock->name);CHKERRQ(ierr);
   } else {
     PetscInt len = floor(log10(mb->numBlocks))+1;
 
-    ierr = PetscMalloc((len+1)*sizeof(char), &newblock->name);CHKERRQ(ierr);
+    ierr = PetscMalloc1((len+1), &newblock->name);CHKERRQ(ierr);
     ierr = PetscSNPrintf(newblock->name, len, "%s", mb->numBlocks);CHKERRQ(ierr);
   }
   newblock->nfields = n;
 
-  ierr = PetscMalloc(n*sizeof(PetscInt), &newblock->fields);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &newblock->fields);CHKERRQ(ierr);
   ierr = PetscMemcpy(newblock->fields, fields, n*sizeof(PetscInt));CHKERRQ(ierr);
 
   newblock->next = NULL;
@@ -682,13 +682,13 @@ PetscErrorCode SNESMultiblockSetIS_Default(SNES snes, const char name[], IS is)
     ierr = PetscInfo1(snes, "Ignoring new block \"%s\" because the blocks have already been defined\n", name);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscNew(struct _BlockDesc, &newblock);CHKERRQ(ierr);
+  ierr = PetscNew(&newblock);CHKERRQ(ierr);
   if (name) {
     ierr = PetscStrallocpy(name, &newblock->name);CHKERRQ(ierr);
   } else {
     PetscInt len = floor(log10(mb->numBlocks))+1;
 
-    ierr = PetscMalloc((len+1)*sizeof(char), &newblock->name);CHKERRQ(ierr);
+    ierr = PetscMalloc1((len+1), &newblock->name);CHKERRQ(ierr);
     ierr = PetscSNPrintf(newblock->name, len, "%s", mb->numBlocks);CHKERRQ(ierr);
   }
   newblock->is = is;
@@ -741,7 +741,7 @@ PetscErrorCode SNESMultiblockGetSubSNES_Default(SNES snes, PetscInt *n, SNES **s
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(mb->numBlocks * sizeof(SNES), subsnes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mb->numBlocks, subsnes);CHKERRQ(ierr);
   while (blocks) {
     (*subsnes)[cnt++] = blocks->snes;
     blocks            = blocks->next;
@@ -971,7 +971,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Multiblock(SNES snes)
 
   snes->usesksp = PETSC_FALSE;
 
-  ierr          = PetscNewLog(snes, SNES_Multiblock, &mb);CHKERRQ(ierr);
+  ierr          = PetscNewLog(snes,&mb);CHKERRQ(ierr);
   snes->data    = (void*) mb;
   mb->defined   = PETSC_FALSE;
   mb->numBlocks = 0;

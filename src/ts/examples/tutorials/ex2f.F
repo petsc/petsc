@@ -80,6 +80,7 @@
       PetscErrorCode ierr
       PetscInt  time_steps_max,i1,steps
       PetscReal dt,time_total_max,ftime,norm
+      PetscReal zero
 
 !  Note: Any user-defined Fortran routines (such as RHSFunction)
 !  MUST be declared as external.
@@ -121,7 +122,7 @@
 !  Set up the ghost point communication pattern.  There are m total
 !  grid values spread equally among all the processors.
       i1 = 1
-      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,m,i1,i1,    &
+      call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,i1,i1,      &
      &     PETSC_NULL_INTEGER,da,ierr)
 
 !  Extract global and local vectors from DMDA; then duplicate for remaining
@@ -174,7 +175,8 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       dt = h/two_d0
-      call TSSetInitialTimeStep(ts,0.d0,dt,ierr)
+      zero = 0.0
+      call TSSetInitialTimeStep(ts,zero,dt,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Customize timestepping solver:

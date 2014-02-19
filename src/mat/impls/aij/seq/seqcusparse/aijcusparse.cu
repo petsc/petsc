@@ -3,13 +3,13 @@
   matrix storage format using the CUSPARSE library,
 */
 
-#include "petscconf.h"
-#include "../src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
+#include <petscconf.h>
+#include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
-#include "../src/vec/vec/impls/dvecimpl.h"
-#include "petsc-private/vecimpl.h"
+#include <../src/vec/vec/impls/dvecimpl.h>
+#include <petsc-private/vecimpl.h>
 #undef VecType
-#include "cusparsematimpl.h"
+#include <../src/mat/impls/aij/seq/seqcusparse/cusparsematimpl.h>
 
 const char *const MatCUSPARSEStorageFormats[] = {"CSR","ELL","HYB","MatCUSPARSEStorageFormat","MAT_CUSPARSE_",0};
 
@@ -1229,8 +1229,8 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
       } else {
         /* Forcing compressed row on the GPU */
         int k=0;
-        ierr = PetscMalloc((cusparsestruct->nonzerorow+1)*sizeof(PetscInt), &ii);CHKERRQ(ierr);
-        ierr = PetscMalloc((cusparsestruct->nonzerorow)*sizeof(PetscInt), &ridx);CHKERRQ(ierr);
+        ierr = PetscMalloc1((cusparsestruct->nonzerorow+1), &ii);CHKERRQ(ierr);
+        ierr = PetscMalloc1((cusparsestruct->nonzerorow), &ridx);CHKERRQ(ierr);
         ii[0]=0;
         for (int j = 0; j<m; j++) {
           if ((a->i[j+1]-a->i[j])>0) {

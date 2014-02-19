@@ -28,7 +28,7 @@ struct _PCBDDCGraph {
 };
 typedef struct _PCBDDCGraph *PCBDDCGraph;
 
-/* Structure for deluxe scaling */ 
+/* Structure for deluxe scaling */
 struct _PCBDDCDeluxeScaling {
   /* vertex scaling */
   PetscInt      n_simple;
@@ -45,7 +45,7 @@ struct _PCBDDCDeluxeScaling {
   VecScatter*   par_scctx_p;
   Vec*          par_vec;
   KSP*          par_ksp;
-  PetscSubcomm* par_subcomm;       
+  PetscSubcomm* par_subcomm;
   /* work vectors for local Schur complement */
   Vec           work1_D;
   Vec           work2_D;
@@ -65,7 +65,7 @@ struct _NullSpaceCorrection_ctx {
   Vec work_full_1;
   Vec work_full_2;
 };
-typedef struct _NullSpaceCorrection_ctx *NullSpaceCorrection_ctx; 
+typedef struct _NullSpaceCorrection_ctx *NullSpaceCorrection_ctx;
 
 /* feti-dp mat */
 struct _FETIDPMat_ctx {
@@ -78,7 +78,7 @@ struct _FETIDPMat_ctx {
   VecScatter l2g_lambda;
   PC         pc;
 };
-typedef struct _FETIDPMat_ctx *FETIDPMat_ctx; 
+typedef struct _FETIDPMat_ctx *FETIDPMat_ctx;
 
 /* feti-dp dirichlet preconditioner */
 struct _FETIDPPC_ctx {
@@ -87,6 +87,6 @@ struct _FETIDPPC_ctx {
   VecScatter l2g_lambda;
   PC         pc;
 };
-typedef struct _FETIDPPC_ctx *FETIDPPC_ctx; 
+typedef struct _FETIDPPC_ctx *FETIDPPC_ctx;
 
 #endif

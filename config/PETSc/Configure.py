@@ -28,8 +28,6 @@ class Configure(config.base.Configure):
       build_type = 'legacy build'
     desc.append(' Configure stage complete. Now build PETSc libraries with (%s):' % build_type)
     desc.append('   make PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' all')
-    desc.append(' or (experimental with python):')
-    desc.append('   PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' ./config/builder.py')
     desc.append('xxx=========================================================================xxx')
     return '\n'.join(desc)+'\n'
 
@@ -46,7 +44,7 @@ class Configure(config.base.Configure):
     config.base.Configure.setupDependencies(self, framework)
     self.setCompilers  = framework.require('config.setCompilers',       self)
     self.arch          = framework.require('PETSc.utilities.arch',      self.setCompilers)
-    self.petscdir      = framework.require('PETSc.utilities.petscdir',  self.setCompilers)
+    self.petscdir      = framework.require('PETSc.utilities.petscdir',  self.arch)
     self.installdir    = framework.require('PETSc.utilities.installDir',self)
     self.languages     = framework.require('PETSc.utilities.languages', self.setCompilers)
     self.debugging     = framework.require('PETSc.utilities.debugging', self.setCompilers)
@@ -97,7 +95,7 @@ class Configure(config.base.Configure):
     self.mpi.headerPrefix        = self.headerPrefix
     headersC = map(lambda name: name+'.h', ['setjmp','dos', 'endian', 'fcntl', 'float', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
                                             'unistd', 'sys/sysinfo', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
-                                            'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib','memory',
+                                            'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
                                             'WindowsX', 'cxxabi','float','ieeefp','stdint','sched','pthread','mathimf'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname',
@@ -203,6 +201,12 @@ prepend-path PATH %s
     self.setCompilers.pushLanguage('C')
     self.addMakeMacro('CC_FLAGS',self.setCompilers.getCompilerFlags())
     self.setCompilers.popLanguage()
+
+    # And sometimes we need a C++ compiler even when PETSc is built with C
+    if hasattr(self.compilers, 'CXX'):
+      self.setCompilers.pushLanguage('Cxx')
+      self.addMakeMacro('CXX_FLAGS',self.setCompilers.getCompilerFlags())
+      self.setCompilers.popLanguage()
 
     # C preprocessor values
     self.addMakeMacro('CPP_FLAGS',self.setCompilers.CPPFLAGS+self.CHUD.CPPFLAGS)
@@ -351,6 +355,7 @@ prepend-path PATH %s
       self.addMakeMacro('PETSC_LIB_BASIC','-lpetsc')
       self.addMakeMacro('PETSC_KSP_LIB_BASIC','-lpetsc')
       self.addMakeMacro('PETSC_TS_LIB_BASIC','-lpetsc')
+      self.addMakeMacro('PETSC_TAO_LIB_BASIC','-lpetsc')
       self.addDefine('USE_SINGLE_LIBRARY', '1')
       if self.sharedlibraries.useShared:
         self.addMakeMacro('PETSC_SYS_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
@@ -360,6 +365,7 @@ prepend-path PATH %s
         self.addMakeMacro('PETSC_KSP_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_SNES_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_TS_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
+        self.addMakeMacro('PETSC_TAO_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_CHARACTERISTIC_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_CONTRIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
@@ -371,6 +377,7 @@ prepend-path PATH %s
         self.addMakeMacro('PETSC_KSP_LIB','${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_SNES_LIB','${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_TS_LIB','${PETSC_WITH_EXTERNAL_LIB}')
+        self.addMakeMacro('PETSC_TAO_LIB','${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_CHARACTERISTIC_LIB','${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_LIB','${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_CONTRIB','${PETSC_WITH_EXTERNAL_LIB}')
@@ -641,15 +648,6 @@ prepend-path PATH %s
       self.addDefine('Prefetch(a,b,c)', ' ')
     self.popLanguage()
 
-  def configureFeatureTestMacros(self):
-    '''Checks if certain feature test macros are support'''
-    if self.checkCompile('#define _POSIX_C_SOURCE 200112L\n#include <sysctl.h>',''):
-       self.addDefine('_POSIX_C_SOURCE_200112L', '1')
-    if self.checkCompile('#define _BSD_SOURCE\n#include<stdlib.h>',''):
-       self.addDefine('_BSD_SOURCE', '1')
-    if self.checkCompile('#define _GNU_SOURCE\n#include <sched.h>','cpu_set_t mset;\nCPU_ZERO(&mset);'):
-       self.addDefine('_GNU_SOURCE', '1')
-
   def configureAtoll(self):
     '''Checks if atoll exists'''
     if self.checkLink('#define _POSIX_C_SOURCE 200112L\n#include <stdlib.h>','long v = atoll("25")') or self.checkLink ('#include <stdlib.h>','long v = atoll("25")'):
@@ -821,10 +819,13 @@ prepend-path PATH %s
       self.addDefine('DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('REPLACE_DIR_SEPARATOR','\'/\'')
       self.addDefine('CANNOT_START_DEBUGGER',1)
+      (petscdir,error,status) = self.executeShellCommand('cygpath -w '+self.petscdir.dir)
+      self.addDefine('DIR','"'+petscdir.replace('\\','\\\\')+'"')
     else:
       self.addDefine('PATH_SEPARATOR','\':\'')
       self.addDefine('REPLACE_DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('DIR_SEPARATOR','\'/\'')
+      self.addDefine('DIR', '"'+self.petscdir.dir+'"')
 
     return
 
@@ -966,7 +967,6 @@ prepend-path PATH %s
     self.executeTest(self.configureInstall)
     self.executeTest(self.configureGCOV)
     self.executeTest(self.configureFortranFlush)
-    self.executeTest(self.configureFeatureTestMacros)
     self.executeTest(self.configureAtoll)
     # dummy rules, always needed except for remote builds
     self.addMakeRule('remote','')

@@ -1,6 +1,7 @@
 
 static char help[] = "Tests DMDALocalToGlocal() for dof > 1\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__
@@ -16,7 +17,7 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,P,m,n,p,2,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,P,m,n,p,2,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
 

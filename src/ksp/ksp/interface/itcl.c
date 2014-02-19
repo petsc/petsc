@@ -484,7 +484,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     if (flg) {
       KSPDynTolCtx *scale   = NULL;
       PetscReal    defaultv = 1.0;
-      ierr        = PetscMalloc(1*sizeof(KSPDynTolCtx),&scale);CHKERRQ(ierr);
+      ierr        = PetscMalloc1(1,&scale);CHKERRQ(ierr);
       scale->bnrm = -1.0;
       scale->coef = defaultv;
       ierr        = PetscOptionsReal("-sub_ksp_dynamic_tolerance_param","Parameter of dynamic tolerance for inner PCKSP","KSPMonitorDynamicToleranceParam",defaultv,&(scale->coef),&flg);CHKERRQ(ierr);
@@ -614,9 +614,6 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (ksp->ops->setfromoptions) {
     ierr = (*ksp->ops->setfromoptions)(ksp);CHKERRQ(ierr);
   }
-  /* actually check in setup this is just here so goes into help message */
-  ierr = PetscOptionsName("-ksp_view","View linear solver parameters","KSPView",&flg);CHKERRQ(ierr);
-
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)ksp);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);

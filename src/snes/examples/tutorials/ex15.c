@@ -46,6 +46,7 @@ F*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
 
@@ -164,9 +165,9 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,
                       1,1,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,
                       1,1,NULL,NULL,&dastar);CHKERRQ(ierr);
 
 
@@ -333,7 +334,7 @@ static PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
       } else {
         if (user->initial == -1) {
           if (user->lambda != 0) {
-            x[j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
+            x[j][i] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
           } else {
             /* The solution above is an exact solution for lambda=0, this avoids "accidentally" starting
              * with an exact solution. */
@@ -351,9 +352,9 @@ static PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
           x[j][i] = (1 - xx*xx) * (1-yy*yy) * xx * yy;
         } else {
           if (user->lambda != 0) {
-            x[j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
+            x[j][i] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
           } else {
-            x[j][i] = 0.5*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
+            x[j][i] = 0.5*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
           }
         }
       }
@@ -727,7 +728,7 @@ PetscErrorCode PreCheckFunction(SNESLineSearch linesearch,Vec X,Vec Y,PetscBool 
   ierr = VecNorm(Y,NORM_2,&ynorm);CHKERRQ(ierr);
   ierr = VecNorm(Ylast,NORM_2,&ylastnorm);CHKERRQ(ierr);
   /* Compute the angle between the vectors Y and Ylast, clip to keep inside the domain of acos() */
-  theta         = acos((double)PetscClipInterval(PetscAbsScalar(dot) / (ynorm * ylastnorm),-1.0,1.0));
+  theta         = PetscAcosReal((PetscReal)PetscClipInterval(PetscAbsScalar(dot) / (ynorm * ylastnorm),-1.0,1.0));
   angle_radians = precheck->angle * PETSC_PI / 180.;
   if (PetscAbsReal(theta) < angle_radians || PetscAbsReal(theta - PETSC_PI) < angle_radians) {
     /* Modify the step Y */
@@ -738,13 +739,13 @@ PetscErrorCode PreCheckFunction(SNESLineSearch linesearch,Vec X,Vec Y,PetscBool 
     ierr  = VecCopy(Y,Ylast);CHKERRQ(ierr);
     ierr  = VecScale(Y,alpha);CHKERRQ(ierr);
     if (precheck->monitor) {
-      ierr = PetscViewerASCIIPrintf(precheck->monitor,"Angle %E degrees less than threshold %G, corrected step by alpha=%G\n",theta*180./PETSC_PI,precheck->angle,alpha);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(precheck->monitor,"Angle %E degrees less than threshold %g, corrected step by alpha=%g\n",(double)(theta*180./PETSC_PI),(double)precheck->angle,(double)alpha);CHKERRQ(ierr);
     }
   } else {
     ierr     = VecCopy(Y,Ylast);CHKERRQ(ierr);
     *changed = PETSC_FALSE;
     if (precheck->monitor) {
-      ierr = PetscViewerASCIIPrintf(precheck->monitor,"Angle %E degrees exceeds threshold %G, no correction applied\n",theta*180./PETSC_PI,precheck->angle);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(precheck->monitor,"Angle %E degrees exceeds threshold %g, no correction applied\n",(double)(theta*180./PETSC_PI),(double)precheck->angle);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

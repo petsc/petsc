@@ -5,7 +5,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Plex"
-PetscErrorCode  DMSetFromOptions_Plex(DM dm)
+PetscErrorCode DMSetFromOptions_Plex(DM dm)
 {
   DM_Plex        *mesh = (DM_Plex*) dm->data;
   PetscErrorCode ierr;
@@ -172,19 +172,36 @@ PetscErrorCode DMPlexCreateDoublet(MPI_Comm comm, PetscInt dim, PetscBool simple
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateSquareBoundary"
-/*
- Simple square boundary:
+/*@
+  DMPlexCreateSquareBoundary - Creates a 1D mesh the is the boundary of a square lattice.
 
- 18--5-17--4--16
-  |     |     |
-  6    10     3
-  |     |     |
- 19-11-20--9--15
-  |     |     |
-  7     8     2
-  |     |     |
- 12--0-13--1--14
-*/
+  Collective on MPI_Comm
+
+  Input Parameters:
++ comm  - The communicator for the DM object
+. lower - The lower left corner coordinates
+. upper - The upper right corner coordinates
+- edges - The number of cells in each direction
+
+  Output Parameter:
+. dm  - The DM object
+
+  Note: Here is the numbering returned for 2 cells in each direction:
+$ 18--5-17--4--16
+$  |     |     |
+$  6    10     3
+$  |     |     |
+$ 19-11-20--9--15
+$  |     |     |
+$  7     8     2
+$  |     |     |
+$ 12--0-13--1--14
+
+  Level: beginner
+
+.keywords: DM, create
+.seealso: DMPlexCreateBoxMesh(), DMPlexCreateCubeBoundary(), DMSetType(), DMCreate()
+@*/
 PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[])
 {
   PetscInt       numVertices    = (edges[0]+1)*(edges[1]+1);
@@ -269,7 +286,7 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
   ierr = DMPlexSymmetrize(dm);CHKERRQ(ierr);
   ierr = DMPlexStratify(dm);CHKERRQ(ierr);
   /* Build coordinates */
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(coordSection, numEdges, numEdges + numVertices);CHKERRQ(ierr);
   for (v = numEdges; v < numEdges+numVertices; ++v) {
     ierr = PetscSectionSetDof(coordSection, v, 2);CHKERRQ(ierr);
@@ -294,17 +311,25 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateCubeBoundary"
-/*
- Simple cubic boundary:
+/*@
+  DMPlexCreateCubeBoundary - Creates a 2D mesh the is the boundary of a cubic lattice.
 
-     2-------3
-    /|      /|
-   6-------7 |
-   | |     | |
-   | 0-----|-1
-   |/      |/
-   4-------5
-*/
+  Collective on MPI_Comm
+
+  Input Parameters:
++ comm  - The communicator for the DM object
+. lower - The lower left front corner coordinates
+. upper - The upper right back corner coordinates
+- edges - The number of cells in each direction
+
+  Output Parameter:
+. dm  - The DM object
+
+  Level: beginner
+
+.keywords: DM, create
+.seealso: DMPlexCreateBoxMesh(), DMPlexCreateSquareBoundary(), DMSetType(), DMCreate()
+@*/
 PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt faces[])
 {
   PetscInt       numVertices = (faces[0]+1)*(faces[1]+1)*(faces[2]+1);
@@ -366,7 +391,7 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
   ierr = DMPlexSymmetrize(dm);CHKERRQ(ierr);
   ierr = DMPlexStratify(dm);CHKERRQ(ierr);
   /* Build coordinates */
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(coordSection, numFaces, numFaces + numVertices);CHKERRQ(ierr);
   for (v = numFaces; v < numFaces+numVertices; ++v) {
     ierr = PetscSectionSetDof(coordSection, v, 3);CHKERRQ(ierr);
@@ -395,20 +420,39 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateSquareMesh"
-/*
- Simple square mesh:
+/*@
+  DMPlexCreateSquareMesh - Creates a 2D mesh for a square lattice.
 
- 22--8-23--9--24
-  |     |     |
- 13  2 14  3  15
-  |     |     |
- 19--6-20--7--21
-  |     |     |
- 10  0 11  1 12
-  |     |     |
- 16--4-17--5--18
-*/
-PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[])
+  Collective on MPI_Comm
+
+  Input Parameters:
++ comm  - The communicator for the DM object
+. lower - The lower left corner coordinates
+. upper - The upper right corner coordinates
+. edges - The number of cells in each direction
+. bdX   - The boundary type for the X direction
+- bdY   - The boundary type for the Y direction
+
+  Output Parameter:
+. dm  - The DM object
+
+  Note: Here is the numbering returned for 2 cells in each direction:
+$ 22--8-23--9--24
+$  |     |     |
+$ 13  2 14  3  15
+$  |     |     |
+$ 19--6-20--7--21
+$  |     |     |
+$ 10  0 11  1 12
+$  |     |     |
+$ 16--4-17--5--18
+
+  Level: beginner
+
+.keywords: DM, create
+.seealso: DMPlexCreateBoxMesh(), DMPlexCreateSquareBoundary(), DMPlexCreateCubeBoundary(), DMSetType(), DMCreate()
+@*/
+PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[], DMBoundaryType bdX, DMBoundaryType bdY)
 {
   PetscInt       markerTop      = 1;
   PetscInt       markerBottom   = 1;
@@ -430,8 +474,8 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
   {
     const PetscInt numXEdges    = !rank ? edges[0]   : 0;
     const PetscInt numYEdges    = !rank ? edges[1]   : 0;
-    const PetscInt numXVertices = !rank ? edges[0]+1 : 0;
-    const PetscInt numYVertices = !rank ? edges[1]+1 : 0;
+    const PetscInt numXVertices = !rank ? (bdX == DM_BOUNDARY_PERIODIC || bdX == DM_BOUNDARY_TWIST ? edges[0] : edges[0]+1) : 0;
+    const PetscInt numYVertices = !rank ? (bdY == DM_BOUNDARY_PERIODIC || bdY == DM_BOUNDARY_TWIST ? edges[1] : edges[1]+1) : 0;
     const PetscInt numTotXEdges = numXEdges*numYVertices;
     const PetscInt numTotYEdges = numYEdges*numXVertices;
     const PetscInt numVertices  = numXVertices*numYVertices;
@@ -442,7 +486,7 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
     const PetscInt firstYEdge   = numFaces + numVertices + numTotXEdges;
     Vec            coordinates;
     PetscSection   coordSection;
-    PetscScalar    *coords;
+    PetscScalar   *coords;
     PetscInt       coordSize;
     PetscInt       v, vx, vy;
     PetscInt       f, fx, fy, e, ex, ey;
@@ -459,12 +503,14 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
     for (fy = 0; fy < numYEdges; fy++) {
       for (fx = 0; fx < numXEdges; fx++) {
         const PetscInt face    = fy*numXEdges + fx;
-        const PetscInt edgeL   = firstYEdge + fx*numYEdges + fy;
-        const PetscInt edgeB   = firstXEdge + fy*numXEdges + fx;
-        const PetscInt ornt[4] = {0,     0,               -2,              -2};
+        const PetscInt edgeL   = firstYEdge +   fx                 *numYEdges + fy;
+        const PetscInt edgeR   = firstYEdge + ((fx+1)%numXVertices)*numYEdges + fy;
+        const PetscInt edgeB   = firstXEdge +   fy                 *numXEdges + fx;
+        const PetscInt edgeT   = firstXEdge + ((fy+1)%numYVertices)*numXEdges + fx;
+        const PetscInt ornt[4] = {0, 0, -2, -2};
         PetscInt       cone[4];
 
-        cone[0] = edgeB; cone[1] = edgeL+numYEdges; cone[2] = edgeB+numXEdges; cone[3] = edgeL;
+        cone[0] = edgeB; cone[1] = edgeR; cone[2] = edgeT; cone[3] = edgeL;
         ierr    = DMPlexSetCone(dm, face, cone);CHKERRQ(ierr);
         ierr    = DMPlexSetConeOrientation(dm, face, ornt);CHKERRQ(ierr);
       }
@@ -472,23 +518,27 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
     /* Build Y edges*/
     for (vx = 0; vx < numXVertices; vx++) {
       for (ey = 0; ey < numYEdges; ey++) {
-        const PetscInt edge   = firstYEdge  + vx*numYEdges + ey;
-        const PetscInt vertex = firstVertex + ey*numXVertices + vx;
+        const PetscInt nextv   = (bdY == DM_BOUNDARY_TWIST && ey == numYEdges-1) ? (numXVertices-vx-1) : ((ey+1)%numYVertices)*numXVertices + vx;
+        const PetscInt edge    = firstYEdge  + vx*numYEdges + ey;
+        const PetscInt vertexB = firstVertex + ey*numXVertices + vx;
+        const PetscInt vertexT = firstVertex + nextv;
         PetscInt       cone[2];
 
-        cone[0] = vertex; cone[1] = vertex+numXVertices;
-        ierr    = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
-        if (vx == numXVertices-1) {
-          ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerRight);CHKERRQ(ierr);
-          ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerRight);CHKERRQ(ierr);
-          if (ey == numYEdges-1) {
-            ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerRight);CHKERRQ(ierr);
-          }
-        } else if (vx == 0) {
-          ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerLeft);CHKERRQ(ierr);
-          ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerLeft);CHKERRQ(ierr);
-          if (ey == numYEdges-1) {
-            ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerLeft);CHKERRQ(ierr);
+        cone[0] = vertexB; cone[1] = vertexT;
+        ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
+        if ((bdX != DM_BOUNDARY_PERIODIC) && (bdX != DM_BOUNDARY_TWIST)) {
+          if (vx == numXVertices-1) {
+            ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerRight);CHKERRQ(ierr);
+            ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerRight);CHKERRQ(ierr);
+            if (ey == numYEdges-1) {
+              ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerRight);CHKERRQ(ierr);
+            }
+          } else if (vx == 0) {
+            ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerLeft);CHKERRQ(ierr);
+            ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerLeft);CHKERRQ(ierr);
+            if (ey == numYEdges-1) {
+              ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerLeft);CHKERRQ(ierr);
+            }
           }
         }
       }
@@ -496,23 +546,27 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
     /* Build X edges*/
     for (vy = 0; vy < numYVertices; vy++) {
       for (ex = 0; ex < numXEdges; ex++) {
-        const PetscInt edge   = firstXEdge  + vy*numXEdges + ex;
-        const PetscInt vertex = firstVertex + vy*numXVertices + ex;
+        const PetscInt nextv   = (bdX == DM_BOUNDARY_TWIST && ex == numXEdges-1) ? (numYVertices-vy-1)*numXVertices : vy*numXVertices + (ex+1)%numXVertices;
+        const PetscInt edge    = firstXEdge  + vy*numXEdges + ex;
+        const PetscInt vertexL = firstVertex + vy*numXVertices + ex;
+        const PetscInt vertexR = firstVertex + nextv;
         PetscInt       cone[2];
 
-        cone[0] = vertex; cone[1] = vertex+1;
-        ierr    = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
-        if (vy == numYVertices-1) {
-          ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerTop);CHKERRQ(ierr);
-          ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerTop);CHKERRQ(ierr);
-          if (ex == numXEdges-1) {
-            ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerTop);CHKERRQ(ierr);
-          }
-        } else if (vy == 0) {
-          ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerBottom);CHKERRQ(ierr);
-          ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerBottom);CHKERRQ(ierr);
-          if (ex == numXEdges-1) {
-            ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerBottom);CHKERRQ(ierr);
+        cone[0] = vertexL; cone[1] = vertexR;
+        ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
+        if ((bdY != DM_BOUNDARY_PERIODIC) && (bdY != DM_BOUNDARY_TWIST)) {
+          if (vy == numYVertices-1) {
+            ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerTop);CHKERRQ(ierr);
+            ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerTop);CHKERRQ(ierr);
+            if (ex == numXEdges-1) {
+              ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerTop);CHKERRQ(ierr);
+            }
+          } else if (vy == 0) {
+            ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerBottom);CHKERRQ(ierr);
+            ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerBottom);CHKERRQ(ierr);
+            if (ex == numXEdges-1) {
+              ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerBottom);CHKERRQ(ierr);
+            }
           }
         }
       }
@@ -520,7 +574,7 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
     ierr = DMPlexSymmetrize(dm);CHKERRQ(ierr);
     ierr = DMPlexStratify(dm);CHKERRQ(ierr);
     /* Build coordinates */
-    ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
     ierr = PetscSectionSetChart(coordSection, firstVertex, firstVertex+numVertices);CHKERRQ(ierr);
     for (v = firstVertex; v < firstVertex+numVertices; ++v) {
       ierr = PetscSectionSetDof(coordSection, v, 2);CHKERRQ(ierr);
@@ -547,7 +601,7 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateBoxMesh"
 /*@
-  DMPlexCreateBoxMesh - Creates a mesh on the tensor product of unit intervals (box).
+  DMPlexCreateBoxMesh - Creates a mesh on the tensor product of unit intervals (box) using simplices.
 
   Collective on MPI_Comm
 
@@ -562,7 +616,7 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
   Level: beginner
 
 .keywords: DM, create
-.seealso: DMSetType(), DMCreate()
+.seealso: DMPlexCreateHexBoxMesh(), DMSetType(), DMCreate()
 @*/
 PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interpolate, DM *dm)
 {
@@ -604,7 +658,28 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interp
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateHexBoxMesh"
-PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscInt cells[], DM *dm)
+/*@
+  DMPlexCreateHexBoxMesh - Creates a mesh on the tensor product of unit intervals (box) using hexahedra.
+
+  Collective on MPI_Comm
+
+  Input Parameters:
++ comm  - The communicator for the DM object
+. dim   - The spatial dimension
+. periodicX - The boundary type for the X direction
+. periodicY - The boundary type for the Y direction
+. periodicZ - The boundary type for the Z direction
+- cells - The number of cells in each direction
+
+  Output Parameter:
+. dm  - The DM object
+
+  Level: beginner
+
+.keywords: DM, create
+.seealso: DMPlexCreateBoxMesh(), DMSetType(), DMCreate()
+@*/
+PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscInt cells[], DMBoundaryType periodicX, DMBoundaryType periodicY, DMBoundaryType periodicZ, DM *dm)
 {
   PetscErrorCode ierr;
 
@@ -620,7 +695,7 @@ PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscIn
     PetscReal lower[2] = {0.0, 0.0};
     PetscReal upper[2] = {1.0, 1.0};
 
-    ierr = DMPlexCreateSquareMesh(*dm, lower, upper, cells);CHKERRQ(ierr);
+    ierr = DMPlexCreateSquareMesh(*dm, lower, upper, cells, periodicX, periodicY);CHKERRQ(ierr);
     break;
   }
 #if 0
@@ -629,7 +704,7 @@ PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscIn
     PetscReal lower[3] = {0.0, 0.0, 0.0};
     PetscReal upper[3] = {1.0, 1.0, 1.0};
 
-    ierr = DMPlexCreateCubeMesh(boundary, lower, upper, cells);CHKERRQ(ierr);
+    ierr = DMPlexCreateCubeMesh(boundary, lower, upper, cells, periodicX, periodicY, periodicZ);CHKERRQ(ierr);
     break;
   }
 #endif
@@ -746,7 +821,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr     = PetscNewLog(dm, DM_Plex, &mesh);CHKERRQ(ierr);
+  ierr     = PetscNewLog(dm,&mesh);CHKERRQ(ierr);
   dm->data = mesh;
 
   mesh->refct             = 1;
@@ -854,7 +929,7 @@ PetscErrorCode DMPlexBuildCoordinates_Private(DM dm, PetscInt spaceDim, PetscInt
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldComponents(coordSection, 0, spaceDim);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
@@ -928,7 +1003,7 @@ $        3
 
   Level: beginner
 
-.seealso: DMPlexCreate()
+.seealso: DMPlexCreateFromDAG(), DMPlexCreate()
 @*/
 PetscErrorCode DMPlexCreateFromCellList(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, PetscBool interpolate, const int cells[], PetscInt spaceDim, const double vertexCoords[], DM *dm)
 {
@@ -952,9 +1027,44 @@ PetscErrorCode DMPlexCreateFromCellList(MPI_Comm comm, PetscInt dim, PetscInt nu
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateFromDAG"
-/*
-  This takes as input the raw Hasse Diagram data
-*/
+/*@
+  DMPlexCreateFromDAG - This takes as input the adjacency-list representation of the Directed Acyclic Graph (Hasse Diagram) encoding a mesh, and produces a DM
+
+  Input Parameters:
++ dm - The empty DM object, usually from DMCreate() and DMPlexSetDimension()
+. depth - The depth of the DAG
+. numPoints - The number of points at each depth
+. coneSize - The cone size of each point
+. cones - The concatenation of the cone points for each point, the cone list must be oriented correctly for each point
+. coneOrientations - The orientation of each cone point
+- vertexCoords - An array of numVertices*dim numbers, the coordinates of each vertex
+
+  Output Parameter:
+. dm - The DM
+
+  Note: Two triangles sharing a face would have input
+$  depth = 1, numPoints = [4 2], coneSize = [3 3 0 0 0 0]
+$  cones = [2 3 4  3 5 4], coneOrientations = [0 0 0  0 0 0]
+$ vertexCoords = [-1.0 0.0  0.0 -1.0  0.0 1.0  1.0 0.0]
+$
+which would result in the DMPlex
+$
+$        4
+$      / | \
+$     /  |  \
+$    /   |   \
+$   2  0 | 1  5
+$    \   |   /
+$     \  |  /
+$      \ | /
+$        3
+$
+$ Notice that all points are numbered consecutively, unlikely DMPlexCreateFromCellList()
+
+  Level: advanced
+
+.seealso: DMPlexCreateFromCellList(), DMPlexCreate()
+@*/
 PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoints[], const PetscInt coneSize[], const PetscInt cones[], const PetscInt coneOrientations[], const PetscScalar vertexCoords[])
 {
   Vec            coordinates;
@@ -978,7 +1088,7 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
   ierr = DMPlexSymmetrize(dm);CHKERRQ(ierr);
   ierr = DMPlexStratify(dm);CHKERRQ(ierr);
   /* Build coordinates */
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldComponents(coordSection, 0, dim);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(coordSection, firstVertex, firstVertex+numPoints[0]);CHKERRQ(ierr);

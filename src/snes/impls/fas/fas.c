@@ -1,5 +1,5 @@
 /* Defines the basic SNES object */
-#include <../src/snes/impls/fas/fasimpls.h>    /*I  "petscsnesfas.h"  I*/
+#include <../src/snes/impls/fas/fasimpls.h>    /*I  "petscsnes.h"  I*/
 
 const char *const SNESFASTypes[] = {"MULTIPLICATIVE","ADDITIVE","FULL","KASKADE","SNESFASType","SNES_FAS",0};
 
@@ -68,7 +68,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES snes)
     snes->max_its   = 10000;
   }
 
-  ierr = PetscNewLog(snes, SNES_FAS, &fas);CHKERRQ(ierr);
+  ierr = PetscNewLog(snes,&fas);CHKERRQ(ierr);
 
   snes->data                  = (void*) fas;
   fas->level                  = 0;
@@ -110,7 +110,11 @@ PetscErrorCode SNESReset_FAS(SNES snes)
   ierr = MatDestroy(&fas->interpolate);CHKERRQ(ierr);
   ierr = MatDestroy(&fas->restrct);CHKERRQ(ierr);
   ierr = VecDestroy(&fas->rscale);CHKERRQ(ierr);
-  if (fas->next) ierr = SNESReset(fas->next);CHKERRQ(ierr);
+  if (fas->galerkin) {
+    ierr = VecDestroy(&fas->Xg);CHKERRQ(ierr);
+    ierr = VecDestroy(&fas->Fg);CHKERRQ(ierr);
+  }
+  if (fas->next) {ierr = SNESReset(fas->next);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -879,7 +883,6 @@ PetscErrorCode SNESFASCycle_Full(SNES snes, Vec X)
 #define __FUNCT__ "SNESFASCycle_Kaskade"
 PetscErrorCode SNESFASCycle_Kaskade(SNES snes, Vec X)
 {
-
   PetscErrorCode ierr;
   Vec            F,B;
   SNES           next;
@@ -897,9 +900,17 @@ PetscErrorCode SNESFASCycle_Kaskade(SNES snes, Vec X)
   PetscFunctionReturn(0);
 }
 
+PetscBool SNEScite = PETSC_FALSE;
+const char SNESCitation[] = "@techreport{pbmkbsxt2012,\n"
+                            "  title = {Composing Scalable Nonlinear Algebraic Solvers},\n"
+                            "  author = {Peter Brune and Mathew Knepley and Barry Smith and Xuemin Tu},\n"
+                            "  year = 2013,\n"
+                            "  type = Preprint,\n"
+                            "  number = {ANL/MCS-P2010-0112},\n"
+                            "  institution = {Argonne National Laboratory}\n}\n";
+
 #undef __FUNCT__
 #define __FUNCT__ "SNESSolve_FAS"
-
 PetscErrorCode SNESSolve_FAS(SNES snes)
 {
   PetscErrorCode ierr;
@@ -911,6 +922,7 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
   PetscBool      isFine;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   maxits       = snes->max_its;      /* maximum number of iterations */
   snes->reason = SNES_CONVERGED_ITERATING;
   X            = snes->vec_sol;

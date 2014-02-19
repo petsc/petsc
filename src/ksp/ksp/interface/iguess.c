@@ -27,7 +27,7 @@ PetscErrorCode  KSPFischerGuessCreate_Method1(KSP ksp,int maxl,KSPFischerGuess_M
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ierr = PetscMalloc(sizeof(KSPFischerGuess_Method1),&itg);CHKERRQ(ierr);
-  ierr = PetscMalloc(maxl * sizeof(PetscScalar),&itg->alpha);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxl,&itg->alpha);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)ksp,sizeof(KSPFischerGuess_Method1) + maxl*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = KSPGetVecs(ksp,maxl,&itg->xtilde,0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,maxl,itg->xtilde);CHKERRQ(ierr);
@@ -75,7 +75,7 @@ PetscErrorCode  KSPFischerGuessFormGuess_Method1(KSPFischerGuess_Method1 *itg,Ve
   if (itg->monitor) {
     ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"KSPFischerGuess alphas = ");CHKERRQ(ierr);
     for (i=0; i<itg->curl; i++) {
-      ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"%G ",PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"%g ",(double)PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
     }
     ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"\n");CHKERRQ(ierr);
   }
@@ -150,7 +150,7 @@ PetscErrorCode  KSPFischerGuessCreate_Method2(KSP ksp,int maxl,KSPFischerGuess_M
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ierr = PetscMalloc(sizeof(KSPFischerGuess_Method2),&itg);CHKERRQ(ierr);
-  ierr = PetscMalloc(maxl * sizeof(PetscScalar),&itg->alpha);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxl,&itg->alpha);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)ksp,sizeof(KSPFischerGuess_Method2) + maxl*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = KSPGetVecs(ksp,maxl,&itg->xtilde,0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,maxl,itg->xtilde);CHKERRQ(ierr);
@@ -198,7 +198,7 @@ PetscErrorCode  KSPFischerGuessFormGuess_Method2(KSPFischerGuess_Method2 *itg,Ve
   if (itg->monitor) {
     ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"KSPFischerGuess alphas = ");CHKERRQ(ierr);
     for (i=0; i<itg->curl; i++) {
-      ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"%G ",PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"%g ",(double)PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
     }
     ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"\n");CHKERRQ(ierr);
   }

@@ -35,6 +35,7 @@ static char help[] = "Demonstrates Pattern Formation with Reaction-Diffusion Equ
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 
@@ -75,7 +76,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,-65,-65,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,-65,-65,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"u");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"v");CHKERRQ(ierr);
 
@@ -237,7 +238,7 @@ PetscErrorCode InitialConditions(DM da,Vec U)
     y = j*hy;
     for (i=xs; i<xs+xm; i++) {
       x = i*hx;
-      if ((1.0 <= x) && (x <= 1.5) && (1.0 <= y) && (y <= 1.5)) u[j][i].v = .25*PetscPowScalar(PetscSinScalar(4.0*PETSC_PI*x),2.0)*PetscPowScalar(PetscSinScalar(4.0*PETSC_PI*y),2.0);
+      if ((1.0 <= x) && (x <= 1.5) && (1.0 <= y) && (y <= 1.5)) u[j][i].v = .25*PetscPowReal(PetscSinReal(4.0*PETSC_PI*x),2.0)*PetscPowReal(PetscSinReal(4.0*PETSC_PI*y),2.0);
       else u[j][i].v = 0.0;
 
       u[j][i].u = 1.0 - 2.0*u[j][i].v;

@@ -20,6 +20,7 @@
 
 static char help[] = "Solves 2D Poisson equation using multigrid.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscksp.h>
 #include <petscsys.h>
@@ -49,7 +50,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,(DM)da);
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
 
@@ -94,7 +95,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   ierr = DMDAVecGetArray(da, b, &array);CHKERRQ(ierr);
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
-      array[j][i] = -PetscCosScalar(uu*pi*((PetscReal)i+0.5)*Hx)*cos(tt*pi*((PetscReal)j+0.5)*Hy)*Hx*Hy;
+      array[j][i] = -PetscCosScalar(uu*pi*((PetscReal)i+0.5)*Hx)*PetscCosScalar(tt*pi*((PetscReal)j+0.5)*Hy)*Hx*Hy;
     }
   }
   ierr = DMDAVecRestoreArray(da, b, &array);CHKERRQ(ierr);

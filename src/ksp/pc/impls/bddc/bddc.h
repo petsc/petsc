@@ -2,7 +2,7 @@
 #define __pcbddc_h
 
 #include <../src/ksp/pc/impls/is/pcis.h>
-#include "bddcstructs.h"
+#include <../src/ksp/pc/impls/bddc/bddcstructs.h>
 
 //typedef enum {SCATTERS_BDDC,GATHERS_BDDC} CoarseCommunicationsType;
 
@@ -19,6 +19,8 @@ typedef struct {
   Mat           coarse_psi_B;
   Mat           coarse_psi_D;
   PetscInt      local_primal_size;
+  PetscInt      coarse_size;
+  PetscInt*     global_primal_indices;
   VecScatter    coarse_loc_to_glob;
   /* Local stuffs needed by BDDC application in KSP */
   Vec           vec1_P;
@@ -32,12 +34,16 @@ typedef struct {
   VecScatter    R_to_D;
   KSP           ksp_R;
   KSP           ksp_D;
-  Vec           vec4_D;
   /* Quantities defining constraining details (local) of the preconditioner */
   /* These quantities define the preconditioner itself */
+  ISLocalToGlobalMapping BtoNmap;
   PetscInt      n_constraints;
   PetscInt      n_vertices;
+  PetscInt      n_actual_vertices;
   Mat           ConstraintMatrix;
+  PetscBool     new_primal_space;
+  PetscBool     new_primal_space_local;
+  PetscInt      *primal_indices_local_idxs;
   PetscBool     use_change_of_basis;
   PetscBool     use_change_on_faces;
   Mat           ChangeOfBasisMatrix;
@@ -50,7 +56,10 @@ typedef struct {
   PetscBool     use_faces;
   PetscBool     use_edges;
   /* Some customization is possible */
+  PetscBool                  recompute_topography;
   PCBDDCGraph                mat_graph;
+  MatNullSpace               onearnullspace;
+  PetscObjectState           *onearnullvecs_state;
   MatNullSpace               NullSpace;
   IS                         user_primal_vertices;
   PetscBool                  use_nnsp_true;

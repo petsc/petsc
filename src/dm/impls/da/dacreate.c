@@ -81,17 +81,17 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
   while (refine--) {
-    if (dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
+    if (dd->bx == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
       dd->M = dd->refine_x*dd->M;
     } else {
       dd->M = 1 + dd->refine_x*(dd->M - 1);
     }
-    if (dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
+    if (dd->by == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
       dd->N = dd->refine_y*dd->N;
     } else {
       dd->N = 1 + dd->refine_y*(dd->N - 1);
     }
-    if (dd->bz == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
+    if (dd->bz == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
       dd->P = dd->refine_z*dd->P;
     } else {
       dd->P = 1 + dd->refine_z*(dd->P - 1);
@@ -142,7 +142,7 @@ PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
   PetscErrorCode   ierr;
   PetscInt         dim,m,n,p,dof,swidth;
   DMDAStencilType  stencil;
-  DMDABoundaryType bx,by,bz;
+  DMBoundaryType   bx,by,bz;
   PetscBool        coors;
   DM               dac;
   Vec              c;
@@ -222,7 +222,7 @@ PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, PetscInt fields[], IS
     if (is) {
       PetscInt *indices, cnt = 0, dof = da->w, i, j;
 
-      ierr = PetscMalloc(da->Nlocal*numFields/dof * sizeof(PetscInt), &indices);CHKERRQ(ierr);
+      ierr = PetscMalloc1(da->Nlocal*numFields/dof, &indices);CHKERRQ(ierr);
       for (i = da->base/dof; i < (da->base+da->Nlocal)/dof; ++i) {
         for (j = 0; j < numFields; ++j) {
           indices[cnt++] = dof*i + fields[j];
@@ -254,13 +254,13 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***nameli
     ierr = VecGetOwnershipRange(v,&rstart,NULL);CHKERRQ(ierr);
     ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm,&v);CHKERRQ(ierr);
-    ierr = PetscMalloc(dof*sizeof(IS),islist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(dof,islist);CHKERRQ(ierr);
     for (i=0; i<dof; i++) {
       ierr = ISCreateStride(PetscObjectComm((PetscObject)dm),n/dof,rstart+i,dof,&(*islist)[i]);CHKERRQ(ierr);
     }
   }
   if (namelist) {
-    ierr = PetscMalloc(dof*sizeof(const char*), namelist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(dof, namelist);CHKERRQ(ierr);
     if (dd->fieldname) {
       for (i=0; i<dof; i++) {
         ierr = PetscStrallocpy(dd->fieldname[i],&(*namelist)[i]);CHKERRQ(ierr);
@@ -279,7 +279,7 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***nameli
     ierr = DMDASetStencilType(da, dd->stencil_type);CHKERRQ(ierr);
     ierr = DMDASetStencilWidth(da, dd->s);CHKERRQ(ierr);
     ierr = DMSetUp(da);CHKERRQ(ierr);
-    ierr = PetscMalloc(dof*sizeof(DM),dmlist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(dof,dmlist);CHKERRQ(ierr);
     for (i=0; i<dof-1; i++) {ierr = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);}
     for (i=0; i<dof; i++) (*dmlist)[i] = da;
   }
@@ -315,7 +315,6 @@ PetscErrorCode DMClone_DA(DM dm, DM *newdm)
          The vectors can be thought of as either cell centered or vertex centered on the mesh. But some variables cannot be cell centered and others
          vertex centered.
 
-
   Level: intermediate
 
 .seealso: DMType, DMCOMPOSITE, DMDACreate(), DMCreate(), DMSetType()
@@ -331,7 +330,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
 
   PetscFunctionBegin;
   PetscValidPointer(da,1);
-  ierr     = PetscNewLog(da,DM_DA,&dd);CHKERRQ(ierr);
+  ierr     = PetscNewLog(da,&dd);CHKERRQ(ierr);
   da->data = dd;
 
   dd->dim        = -1;
@@ -373,13 +372,11 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   dd->ltol         = NULL;
   dd->ao           = NULL;
   dd->base         = -1;
-  dd->bx           = DMDA_BOUNDARY_NONE;
-  dd->by           = DMDA_BOUNDARY_NONE;
-  dd->bz           = DMDA_BOUNDARY_NONE;
+  dd->bx           = DM_BOUNDARY_NONE;
+  dd->by           = DM_BOUNDARY_NONE;
+  dd->bz           = DM_BOUNDARY_NONE;
   dd->stencil_type = DMDA_STENCIL_BOX;
   dd->interptype   = DMDA_Q1;
-  dd->idx          = NULL;
-  dd->Nl           = -1;
   dd->lx           = NULL;
   dd->ly           = NULL;
   dd->lz           = NULL;

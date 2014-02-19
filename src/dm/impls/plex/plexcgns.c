@@ -99,7 +99,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
         PetscInt off;
 
         ierr = cg_ElementDataSize(cgid, 1, z, 1, &elementDataSize);CHKERRQ(ierr);
-        ierr = PetscMalloc(elementDataSize * sizeof(cgsize_t), &elements);CHKERRQ(ierr);
+        ierr = PetscMalloc1(elementDataSize, &elements);CHKERRQ(ierr);
         ierr = cg_elements_read(cgid, 1, z, 1, elements, NULL);CHKERRQ(ierr);
         for (c_loc = start, off = 0; c_loc < end; ++c_loc, ++c) {
           switch (elements[off]) {
@@ -137,7 +137,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
       numc = end - start;
       /* This alone is reason enough to bludgeon every single CGNDS developer, this must be what they describe as the "idiocy of crowds" */
       ierr = cg_ElementDataSize(cgid, 1, z, 1, &elementDataSize);CHKERRQ(ierr);
-      ierr = PetscMalloc2(elementDataSize,cgsize_t,&elements,maxCorners,PetscInt,&cone);CHKERRQ(ierr);
+      ierr = PetscMalloc2(elementDataSize,&elements,maxCorners,&cone);CHKERRQ(ierr);
       ierr = cg_elements_read(cgid, 1, z, 1, elements, NULL);CHKERRQ(ierr);
       if (cellType == MIXED) {
         /* CGNS uses Fortran-based indexing, sieve uses C-style and numbers cell first then vertices. */
@@ -219,7 +219,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
   }
 
   /* Read coordinates */
-  ierr = DMPlexGetCoordinateSection(*dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(*dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldComponents(coordSection, 0, dim);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
@@ -239,7 +239,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
     float   *x[3];
     int      z, c, d;
 
-    ierr = PetscMalloc3(numVertices,float,&x[0],numVertices,float,&x[1],numVertices,float,&x[2]);CHKERRQ(ierr);
+    ierr = PetscMalloc3(numVertices,&x[0],numVertices,&x[1],numVertices,&x[2]);CHKERRQ(ierr);
     for (z = 1, c = 0; z <= nzones; ++z) {
       DataType_t datatype;
       cgsize_t   sizes[3]; /* Number of vertices, number of cells, number of boundary vertices */

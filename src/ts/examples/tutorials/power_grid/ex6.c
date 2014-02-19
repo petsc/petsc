@@ -9,6 +9,7 @@ static char help[] = "Time-dependent PDE in 2d for calculating joint PDF. \n";
    Steady state boundary condition found by setting p_t = 0
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 
@@ -63,7 +64,7 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = Parameter_settings(&user);CHKERRQ(ierr);
   /* Create a 2D DA with dof = 1 */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
   /* Set x and y coordinates */
   ierr = DMDASetUniformCoordinates(user.da,user.xmin,user.xmax,user.ymin,user.ymax,NULL,NULL);CHKERRQ(ierr);
 
@@ -207,7 +208,7 @@ PetscErrorCode adv2(PetscScalar **p,PetscScalar x,PetscInt i,PetscInt j,PetscInt
 
     *p2 = 0.1*s1 + 0.6*s2 + 0.3*s3;
     } else *p2 = 0.0; */
-  f   = (user->ws/(2*user->H))*(user->PM_min - user->Pmax*sin(x));
+  f   = (user->ws/(2*user->H))*(user->PM_min - user->Pmax*PetscSinScalar(x));
   *p2 = f*(p[j+1][i] - p[j-1][i])/(2*user->dy);
   PetscFunctionReturn(0);
 }
@@ -234,7 +235,7 @@ PetscErrorCode BoundaryConditions(PetscScalar **p,DMDACoor2d **coors,PetscInt i,
   if (user->bc == 0) { /* Natural boundary condition */
     f[j][i] = p[j][i];
   } else { /* Steady state boundary condition */
-    fthetac = user->ws/(2*user->H)*(user->PM_min - user->Pmax*sin(theta));
+    fthetac = user->ws/(2*user->H)*(user->PM_min - user->Pmax*PetscSinScalar(theta));
     fwc = (w*w/2.0 - user->ws*w);
     if (i == 0 && j == 0) { /* left bottom corner */
       f[j][i] = fwc*(p[j][i+1] - p[j][i])/user->dx + fthetac*p[j][i] - user->disper_coe*(p[j+1][i] - p[j][i])/user->dy;
@@ -347,7 +348,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J,Mat
           col[nc].i = i; col[nc].j = j; val[nc++] = 1.0;
         } else {
           PetscScalar fthetac,fwc;
-          fthetac = user->ws/(2*user->H)*(user->PM_min - user->Pmax*sin(xi));
+          fthetac = user->ws/(2*user->H)*(user->PM_min - user->Pmax*PetscSinScalar(xi));
           fwc     = (yi*yi/2.0 - user->ws*yi);
           if (i==0 && j==0) {
             col[nc].i = i+1; col[nc].j = j;   val[nc++] = fwc/user->dx;
@@ -389,7 +390,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J,Mat
         }
       } else {
         c1        = (yi-user->ws)/(2*user->dx);
-        c3        = (user->ws/(2.0*user->H))*(user->PM_min - user->Pmax*sin(xi))/(2*user->dy);
+        c3        = (user->ws/(2.0*user->H))*(user->PM_min - user->Pmax*PetscSinScalar(xi))/(2*user->dy);
         c5        = (PetscPowScalar((user->lambda*user->ws)/(2*user->H),2)*user->q*(1.0-PetscExpScalar(-t/user->lambda)))/(user->dy*user->dy);
         col[nc].i = i-1; col[nc].j = j;   val[nc++] = c1;
         col[nc].i = i+1; col[nc].j = j;   val[nc++] = -c1;
@@ -426,7 +427,7 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   user->ws     = 1.0;
   user->H      = 5.0;  user->Pmax   = 2.1;
   user->PM_min = 1.0;  user->lambda = 0.1;
-  user->q      = 1.0;  user->mux    = asin(user->PM_min/user->Pmax);
+  user->q      = 1.0;  user->mux    = PetscAsinScalar(user->PM_min/user->Pmax);
   user->sigmax = 0.1;
   user->sigmay = 0.1;  user->rho  = 0.0;
   user->t0     = 0.0;  user->tmax = 2.0;

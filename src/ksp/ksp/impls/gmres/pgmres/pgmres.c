@@ -116,7 +116,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
       if (ksp->reason) break;
       /* Catch error in happy breakdown and signal convergence and break from loop */
       if (hapend) {
-        if (ksp->errorifnotconverged) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"You reached the happy break down, but convergence was not indicated. Residual norm = %G",res);
+        if (ksp->errorifnotconverged) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"You reached the happy break down, but convergence was not indicated. Residual norm = %g",(double)res);
         else {
           ksp->reason = KSP_DIVERGED_BREAKDOWN;
           break;
@@ -139,7 +139,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
 
     if (it > 0) {
       PetscScalar *work;
-      if (!pgmres->orthogwork) {ierr = PetscMalloc((pgmres->max_k + 2)*sizeof(PetscScalar),&pgmres->orthogwork);CHKERRQ(ierr);}
+      if (!pgmres->orthogwork) {ierr = PetscMalloc1((pgmres->max_k + 2),&pgmres->orthogwork);CHKERRQ(ierr);}
       work = pgmres->orthogwork;
       /* Apply correction computed by the VecMDot in the last iteration to Znext. The original form is
        *
@@ -426,7 +426,7 @@ PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp,Vec ptr,Vec *result)
   }
   if (!pgmres->nrs) {
     /* allocate the work area */
-    ierr = PetscMalloc(pgmres->max_k*sizeof(PetscScalar),&pgmres->nrs);CHKERRQ(ierr);
+    ierr = PetscMalloc1(pgmres->max_k,&pgmres->nrs);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)ksp,pgmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
@@ -498,7 +498,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PGMRES(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,KSP_PGMRES,&pgmres);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,&pgmres);CHKERRQ(ierr);
 
   ksp->data                              = (void*)pgmres;
   ksp->ops->buildsolution                = KSPBuildSolution_PGMRES;

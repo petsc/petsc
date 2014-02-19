@@ -18,8 +18,8 @@ static char help[] = "Solves the Cahn-Hilliard equation u_t = (b(u)( -gamma u_xx
  */
 
 
-#include "petscsnes.h"
-#include "petscdmda.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
 
 typedef struct {
     PetscScalar u,w;
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
     
     /* Get physics and time parameters */
     ierr = GetParams(&user);CHKERRQ(ierr);
-    ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,-8,2,1,PETSC_NULL,&da);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE,-8,2,1,PETSC_NULL,&da);CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,0,"u");CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,1,"w");CHKERRQ(ierr);
     
@@ -70,7 +70,7 @@ int main(int argc, char **argv)
     
     ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
     ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
-    ierr = SNESSetFunction(snes,PETSC_NULL,FormFunction,&user);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,NULL,FormFunction,&user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
     
@@ -79,7 +79,7 @@ int main(int argc, char **argv)
     while(t<user.T) {
         ierr = VecCopy(x,user.xold);CHKERRQ(ierr);
         ierr = ComputeMobility(da,user.xold,user.b_xold);CHKERRQ(ierr);
-        ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+        ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
         ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);
         PetscInt its;
         ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
@@ -110,7 +110,7 @@ PetscErrorCode ComputeMobility(DM da,Vec X,Vec bX)
     /*
      Get local grid boundaries
      */
-    ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
     
     for (i=xs; i<xs+xm; i++) {
         bx[i].w = 0.0;
@@ -144,7 +144,7 @@ PetscErrorCode SetInitialConditions(DM da,Vec Y)
     /*
      Get local grid boundaries
      */
-    ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
     
     for (i=xs; i<xs+xm; i++) {
         x = i*hx;
@@ -206,7 +206,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ctx)
     /*
      Get local grid boundaries
      */
-    ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
     
     /*
      Compute function over the locally owned part of the grid
@@ -291,7 +291,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
     ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
     ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
     ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
-    ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
     
     
     hx = 1.0/(PetscReal)(Mx-1);
@@ -409,10 +409,10 @@ PetscErrorCode GetParams(AppCtx* user)
     user->T = 10.0*user->dt;
     user->theta = .3;
     
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-T",&user->T,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsGetScalar(PETSC_NULL,"-gamma",&user->gamma,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsGetScalar(PETSC_NULL,"-theta",&user->theta,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,"-T",&user->T,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetScalar(NULL,"-gamma",&user->gamma,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetScalar(NULL,"-theta",&user->theta,&flg);CHKERRQ(ierr);
     
     PetscFunctionReturn(0);
 }

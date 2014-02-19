@@ -328,7 +328,7 @@ static PetscErrorCode  PCCompositeAddPC_Composite(PC pc,PCType type)
   char             newprefix[8];
 
   PetscFunctionBegin;
-  ierr        = PetscNewLog(pc,struct _PC_CompositeLink,&ilink);CHKERRQ(ierr);
+  ierr        = PetscNewLog(pc,&ilink);CHKERRQ(ierr);
   ilink->next = 0;
   ierr        = PCCreate(PetscObjectComm((PetscObject)pc),&ilink->pc);CHKERRQ(ierr);
   ierr        = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilink->pc);CHKERRQ(ierr);
@@ -522,7 +522,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Composite(PC pc)
   PC_Composite   *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_Composite,&jac);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&jac);CHKERRQ(ierr);
 
   pc->ops->apply           = PCApply_Composite_Additive;
   pc->ops->applytranspose  = PCApplyTranspose_Composite_Additive;

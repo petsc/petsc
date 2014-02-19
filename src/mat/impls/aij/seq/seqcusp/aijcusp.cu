@@ -3,15 +3,15 @@
   matrix storage format.
 */
 
-#include "petscconf.h"
+#include <petscconf.h>
 PETSC_CUDA_EXTERN_C_BEGIN
-#include "../src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
-#include "petscbt.h"
-#include "../src/vec/vec/impls/dvecimpl.h"
-#include "petsc-private/vecimpl.h"
+#include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
+#include <petscbt.h>
+#include <../src/vec/vec/impls/dvecimpl.h>
+#include <petsc-private/vecimpl.h>
 PETSC_CUDA_EXTERN_C_END
 #undef VecType
-#include "../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h"
+#include <../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h>
 
 const char *const MatCUSPStorageFormats[] = {"CSR","DIA","ELL","MatCUSPStorageFormat","MAT_CUSP_",0};
 
@@ -130,7 +130,6 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
 	  delete (CUSPMATRIXDIA *) cuspstruct->mat;
 	else
 	  delete (CUSPMATRIX *) cuspstruct->mat;
-        if (cuspstruct->tempvec) delete cuspstruct->tempvec;
 
       } catch(char *ex) {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
@@ -147,8 +146,8 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
       } else {
         /* Forcing compressed row on the GPU */
         int k=0;
-        ierr = PetscMalloc((cuspstruct->nonzerorow+1)*sizeof(PetscInt), &ii);CHKERRQ(ierr);
-        ierr = PetscMalloc((cuspstruct->nonzerorow)*sizeof(PetscInt), &ridx);CHKERRQ(ierr);
+        ierr = PetscMalloc1((cuspstruct->nonzerorow+1), &ii);CHKERRQ(ierr);
+        ierr = PetscMalloc1((cuspstruct->nonzerorow), &ridx);CHKERRQ(ierr);
         ii[0]=0;
         for (int j = 0; j<m; j++) {
           if ((a->i[j+1]-a->i[j])>0) {
@@ -184,6 +183,7 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
       }
 
       /* assign the compressed row indices */
+      if (cuspstruct->indices) delete (CUSPINTARRAYGPU*)cuspstruct->indices;
       cuspstruct->indices = new CUSPINTARRAYGPU;
       cuspstruct->indices->assign(ridx,ridx+m);
 
@@ -192,6 +192,7 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
         ierr = PetscFree(ii);CHKERRQ(ierr);
         ierr = PetscFree(ridx);CHKERRQ(ierr);
       }
+      if (cuspstruct->tempvec) delete (CUSPARRAY*)cuspstruct->tempvec;
       cuspstruct->tempvec = new CUSPARRAY;
       cuspstruct->tempvec->resize(m);
     } catch(char *ex) {
@@ -246,7 +247,7 @@ PetscErrorCode MatCUSPCopyFromGPU(Mat A, CUSPMATRIX *Agpu)
             if (a->j) {ierr = PetscFree(a->j);CHKERRQ(ierr);}
             if (a->a) {ierr = PetscFree(a->a);CHKERRQ(ierr);}
           }
-          ierr = PetscMalloc3(a->nz,PetscScalar,&a->a,a->nz,PetscInt,&a->j,m+1,PetscInt,&a->i);CHKERRQ(ierr);
+          ierr = PetscMalloc3(a->nz,&a->a,a->nz,&a->j,m+1,&a->i);CHKERRQ(ierr);
           ierr = PetscLogObjectMemory((PetscObject)A, a->nz*(sizeof(PetscScalar)+sizeof(PetscInt))+(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
 
           a->singlemalloc = PETSC_TRUE;
@@ -255,7 +256,7 @@ PetscErrorCode MatCUSPCopyFromGPU(Mat A, CUSPMATRIX *Agpu)
           thrust::copy(mat->values.begin(), mat->values.end(), a->a);
           /* Setup row lengths */
           if (a->imax) {ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);}
-          ierr = PetscMalloc2(m,PetscInt,&a->imax,m,PetscInt,&a->ilen);CHKERRQ(ierr);
+          ierr = PetscMalloc2(m,&a->imax,m,&a->ilen);CHKERRQ(ierr);
           ierr = PetscLogObjectMemory((PetscObject)A, 2*m*sizeof(PetscInt));CHKERRQ(ierr);
           for (i = 0; i < m; ++i) a->imax[i] = a->ilen[i] = a->i[i+1] - a->i[i];
           /* a->diag?*/
@@ -389,8 +390,11 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
       /* use compressed row format */
       CUSPMATRIX *mat = (CUSPMATRIX*)cuspstruct->mat;
       cusp::multiply(*mat,*xarray,*cuspstruct->tempvec);
-      ierr = VecSet_SeqCUSP(yy,0.0);CHKERRQ(ierr);
-      thrust::copy(cuspstruct->tempvec->begin(),cuspstruct->tempvec->end(),thrust::make_permutation_iterator(yarray->begin(),cuspstruct->indices->begin()));
+      thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(cuspstruct->tempvec->begin(),
+                                                                    thrust::make_permutation_iterator(zarray->begin(), cuspstruct->indices->begin()))),
+                       thrust::make_zip_iterator(thrust::make_tuple(cuspstruct->tempvec->end(),
+                                                                    thrust::make_permutation_iterator(zarray->end(),cuspstruct->indices->end()))),
+                       VecCUSPPlusEquals());
     } else { 
 
       if (cuspstruct->format==MAT_CUSP_ELL) {
@@ -523,6 +527,9 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
 	delete (CUSPMATRIXDIA*)(cuspcontainer->mat);
       else
 	delete (CUSPMATRIX*)(cuspcontainer->mat);
+
+      if (cuspcontainer->indices) delete (CUSPINTARRAYGPU*)cuspcontainer->indices;
+      if (cuspcontainer->tempvec) delete (CUSPARRAY*)cuspcontainer->tempvec;
     }
     delete cuspcontainer;
     A->valid_GPU_matrix = PETSC_CUSP_UNALLOCATED;

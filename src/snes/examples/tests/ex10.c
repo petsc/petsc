@@ -52,8 +52,8 @@ int main(int argc, char **argv)
   SNES           snes;              /* nonlinear solver context */
   Mat            J;                 /* Jacobian matrix */
   PetscInt       N;                 /* Number of elements in vector */
-  PetscScalar    lb = SNES_VI_NINF; /* lower bound constant */
-  PetscScalar    ub = SNES_VI_INF;  /* upper bound constant */
+  PetscScalar    lb = PETSC_NINFINITY; /* lower bound constant */
+  PetscScalar    ub = PETSC_INFINITY;  /* upper bound constant */
   AppCtx         user;              /* user-defined work context */
 
   /* Initialize PETSc */
@@ -424,10 +424,10 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 
   bsize=mx+2; lsize=my+2; rsize=my+2; tsize=mx+2;
 
-  info = PetscMalloc(bsize*sizeof(PetscScalar), &user->bottom);CHKERRQ(info);
-  info = PetscMalloc(tsize*sizeof(PetscScalar), &user->top);CHKERRQ(info);
-  info = PetscMalloc(lsize*sizeof(PetscScalar), &user->left);CHKERRQ(info);
-  info = PetscMalloc(rsize*sizeof(PetscScalar), &user->right);CHKERRQ(info);
+  info = PetscMalloc1(bsize, &user->bottom);CHKERRQ(info);
+  info = PetscMalloc1(tsize, &user->top);CHKERRQ(info);
+  info = PetscMalloc1(lsize, &user->left);CHKERRQ(info);
+  info = PetscMalloc1(rsize, &user->right);CHKERRQ(info);
 
   hx= (r-l)/(mx+1); hy=(t-b)/(my+1);
 

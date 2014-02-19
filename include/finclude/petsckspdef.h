@@ -17,6 +17,7 @@
 #define KSPConvergedReason PetscEnum
 #define KSPNormType PetscEnum
 #define KSPGMRESCGSRefinementType PetscEnum
+#define MatSchurComplementAinvType PetscEnum
 !
 !  Various Krylov subspace methods
 !

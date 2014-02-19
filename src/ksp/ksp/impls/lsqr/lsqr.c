@@ -377,7 +377,7 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
       PetscReal rnorm;
       ierr = KSPLSQRGetStandardErrorVec(ksp,&lsqr->se);CHKERRQ(ierr);
       ierr = VecNorm(lsqr->se,NORM_2,&rnorm);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Norm of Standard Error %G, Iterations %D\n",rnorm,ksp->its);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Norm of Standard Error %g, Iterations %D\n",(double)rnorm,ksp->its);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -468,7 +468,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscNewLog(ksp,KSP_LSQR,&lsqr);CHKERRQ(ierr);
+  ierr         = PetscNewLog(ksp,&lsqr);CHKERRQ(ierr);
   lsqr->se     = NULL;
   lsqr->se_flg = PETSC_FALSE;
   lsqr->arnorm = 0.0;

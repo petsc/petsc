@@ -233,7 +233,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(NULL,"-print_history",&flg);CHKERRQ(ierr);
   if (flg) {
     for (i=0; i<its+1; i++) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %D: Linear iterations %D Function norm = %G\n",i,hist_its[i],history[i]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %D: Linear iterations %D Function norm = %g\n",i,hist_its[i],(double)history[i]);CHKERRQ(ierr);
     }
   }
 

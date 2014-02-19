@@ -59,19 +59,19 @@ int main(int argc,char **argv)
   ierr = VecSet(x,one);CHKERRQ(ierr);
 
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of entire vector %G\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of entire vector %g\n",(double)norm);CHKERRQ(ierr);
 
   ierr = VecStrideNorm(x,0,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of sub-vector %G\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of sub-vector %g\n",(double)norm);CHKERRQ(ierr);
 
   ierr = VecStrideNorm(x,1,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of sub-vector %G\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of sub-vector %g\n",(double)norm);CHKERRQ(ierr);
 
   ierr = VecStrideNorm(x,1,NORM_1,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of sub-vector %G\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of sub-vector %g\n",(double)norm);CHKERRQ(ierr);
 
   ierr = VecStrideNorm(x,1,NORM_INFINITY,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of sub-vector %G\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of sub-vector %g\n",(double)norm);CHKERRQ(ierr);
 
   /*
      Free work space.  All PETSc objects should be destroyed when they

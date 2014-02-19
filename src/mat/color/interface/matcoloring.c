@@ -209,7 +209,6 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
   } else if (!((PetscObject)mc)->type_name) {
     ierr = MatColoringSetType(mc,deft);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsName("-mat_coloring_view","Print detailed information on solver used","MatColoringView",0);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_coloring_distance","Distance of the coloring","MatColoringSetDistance",dist,&dist,&flg);CHKERRQ(ierr);
   if (flg) {ierr = MatColoringSetDistance(mc,dist);CHKERRQ(ierr);}
   ierr = PetscOptionsInt("-mat_coloring_maxcolors","Maximum colors returned at the end. 1 returns an independent set","MatColoringSetMaxColors",maxcolors,&maxcolors,&flg);CHKERRQ(ierr);
@@ -384,8 +383,8 @@ PetscErrorCode MatColoringApply(MatColoring mc,ISColoring *coloring)
     ierr = MatColoringView(mc,viewer);CHKERRQ(ierr);
     ierr = MatGetSize(mc->mat,NULL,&nc);CHKERRQ(ierr);
     ierr = ISColoringGetIS(*coloring,&ncolors,NULL);CHKERRQ(ierr);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)mc),"  Number of colors %d\n",ncolors);CHKERRQ(ierr);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)mc),"  Number of total columns %d\n",nc);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Number of colors %d\n",ncolors);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Number of total columns %d\n",nc);CHKERRQ(ierr);
     if (nc <= 1000) {ierr = ISColoringView(*coloring,viewer);CHKERRQ(ierr);}
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);

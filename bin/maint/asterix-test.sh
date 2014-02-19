@@ -4,10 +4,10 @@ set -x
 # basic gcc tests
 ./config/examples/asterix/asterix64.py
 make PETSC_ARCH=asterix64 all alltests tests_DATAFILESPATH DATAFILESPATH=/home/balay/datafiles
-./config/configure.py  CC=gcc FC=gfortran CXX=g++ PETSC_ARCH=asterix64-cxx-sieve --with-clanguage=cxx \
---with-sieve=1 --download-mpich=1 --download-boost=1 --download-chaco=1 \
+./config/configure.py  CC=gcc FC=gfortran CXX=g++ PETSC_ARCH=asterix64-cxx --with-clanguage=cxx \
+--download-mpich=1 --download-boost=1 --download-chaco=1 \
 --download-plapack=1 --download-tetgen=1 --download-triangle=1 --download-hdf5=1
-make PETSC_ARCH=asterix64-cxx-sieve all alltests tests_DATAFILESPATH DATAFILESPATH=/home/balay/datafiles
+make PETSC_ARCH=asterix64-cxx all alltests tests_DATAFILESPATH DATAFILESPATH=/home/balay/datafiles
 ./config/examples/asterix/asterix64-openmpi.py
 make PETSC_ARCH=asterix64-openmpi all alltests tests_DATAFILESPATH DATAFILESPATH=/home/balay/datafiles
 ./config/examples/asterix/asterix64.py --with-clanguage=cxx -PETSC_ARCH=asterix64-cxx-opt --with-debugging=0 --with-log=0

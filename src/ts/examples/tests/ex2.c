@@ -128,7 +128,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   ierr = VecGetSize(global,&n);CHKERRQ(ierr);
 
   /* Set the index sets */
-  ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&idx);CHKERRQ(ierr);
   for (i=0; i<n; i++) idx[i]=i;
 
   /* Create local sequential vectors */
@@ -170,7 +170,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   ierr = VecGetSize(globalin,&n);CHKERRQ(ierr);
 
   /* Set the index sets */
-  ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&idx);CHKERRQ(ierr);
   for (i=0; i<n; i++) idx[i]=i;
 
   /* Create local sequential vectors */
@@ -251,20 +251,20 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure 
 */
 PetscReal solx(PetscReal t)
 {
-  return exp((2.0 - PetscSqrtReal(2.0))*t)/2.0 - exp((2.0 - PetscSqrtReal(2.0))*t)/(2.0*PetscSqrtReal(2.0)) +
-         exp((2.0 + PetscSqrtReal(2.0))*t)/2.0 + exp((2.0 + PetscSqrtReal(2.0))*t)/(2.0*PetscSqrtReal(2.0));
+  return PetscExpReal((2.0 - PetscSqrtReal(2.0))*t)/2.0 - PetscExpReal((2.0 - PetscSqrtReal(2.0))*t)/(2.0*PetscSqrtReal(2.0)) +
+         PetscExpReal((2.0 + PetscSqrtReal(2.0))*t)/2.0 + PetscExpReal((2.0 + PetscSqrtReal(2.0))*t)/(2.0*PetscSqrtReal(2.0));
 }
 
 PetscReal soly(PetscReal t)
 {
-  return exp((2.0 - PetscSqrtReal(2.0))*t)/2.0 - exp((2.0 - PetscSqrtReal(2.0))*t)/PetscSqrtReal(2.0) +
-         exp((2.0 + PetscSqrtReal(2.0))*t)/2.0 + exp((2.0 + PetscSqrtReal(2.0))*t)/PetscSqrtReal(2.0);
+  return PetscExpReal((2.0 - PetscSqrtReal(2.0))*t)/2.0 - PetscExpReal((2.0 - PetscSqrtReal(2.0))*t)/PetscSqrtReal(2.0) +
+         PetscExpReal((2.0 + PetscSqrtReal(2.0))*t)/2.0 + PetscExpReal((2.0 + PetscSqrtReal(2.0))*t)/PetscSqrtReal(2.0);
 }
 
 PetscReal solz(PetscReal t)
 {
-  return exp((2.0 - PetscSqrtReal(2.0))*t)/2.0 - exp((2.0 - PetscSqrtReal(2.0))*t)/(2.0*PetscSqrtReal(2.0)) +
-         exp((2.0 + PetscSqrtReal(2.0))*t)/2.0 + exp((2.0 + PetscSqrtReal(2.0))*t)/(2.0*PetscSqrtReal(2.0));
+  return PetscExpReal((2.0 - PetscSqrtReal(2.0))*t)/2.0 - PetscExpReal((2.0 - PetscSqrtReal(2.0))*t)/(2.0*PetscSqrtReal(2.0)) +
+         PetscExpReal((2.0 + PetscSqrtReal(2.0))*t)/2.0 + PetscExpReal((2.0 + PetscSqrtReal(2.0))*t)/(2.0*PetscSqrtReal(2.0));
 }
 
 

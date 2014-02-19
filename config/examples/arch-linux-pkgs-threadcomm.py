@@ -2,6 +2,7 @@
 
 configure_options = [
   '--with-threadcomm=1',
+  '--with-serialize-functions=1',
   '--download-mpich=1',
   '--download-f-blas-lapack=1',
   '--download-hypre=1',
@@ -16,6 +17,7 @@ configure_options = [
   '--download-scalapack=1',
   '--download-mumps=1',
   '--download-elemental=1',
+  '--with-cxx-dialect=C++11',
   '--download-spai=1',
   '--download-chaco=1'
   ]

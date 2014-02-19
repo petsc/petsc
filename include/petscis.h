@@ -74,6 +74,7 @@ PETSC_EXTERN PetscErrorCode ISGetSize(IS,PetscInt *);
 PETSC_EXTERN PetscErrorCode ISGetLocalSize(IS,PetscInt *);
 PETSC_EXTERN PetscErrorCode ISInvertPermutation(IS,PetscInt,IS*);
 PETSC_EXTERN PetscErrorCode ISView(IS,PetscViewer);
+PETSC_STATIC_INLINE PetscErrorCode ISViewFromOptions(IS A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 PETSC_EXTERN PetscErrorCode ISEqual(IS,IS,PetscBool  *);
 PETSC_EXTERN PetscErrorCode ISSort(IS);
 PETSC_EXTERN PetscErrorCode ISSorted(IS,PetscBool  *);
@@ -143,8 +144,8 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreateIS(IS,ISLocalToGlobalMap
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF,PetscInt,ISLocalToGlobalMapping*);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingView(ISLocalToGlobalMapping,PetscViewer);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping*);
-PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping,IS,IS*);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping,PetscInt,const PetscInt[],PetscInt[]);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping,IS,IS*);
 PETSC_EXTERN PetscErrorCode ISGlobalToLocalMappingApply(ISLocalToGlobalMapping,ISGlobalToLocalMappingType,PetscInt,const PetscInt[],PetscInt*,PetscInt[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping,PetscInt*);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[]);
@@ -207,6 +208,7 @@ typedef struct _n_ISColoring* ISColoring;
 PETSC_EXTERN PetscErrorCode ISColoringCreate(MPI_Comm,PetscInt,PetscInt,const ISColoringValue[],ISColoring*);
 PETSC_EXTERN PetscErrorCode ISColoringDestroy(ISColoring*);
 PETSC_EXTERN PetscErrorCode ISColoringView(ISColoring,PetscViewer);
+PETSC_EXTERN PetscErrorCode ISColoringViewFromOptions(ISColoring,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode ISColoringGetIS(ISColoring,PetscInt*,IS*[]);
 PETSC_EXTERN PetscErrorCode ISColoringRestoreIS(ISColoring,IS*[]);
 PETSC_EXTERN PetscErrorCode ISColoringReference(ISColoring);
@@ -393,6 +395,7 @@ PETSC_EXTERN PetscErrorCode PetscSectionGetFieldOffset(PetscSection, PetscInt, P
 PETSC_EXTERN PetscErrorCode PetscSectionSetFieldOffset(PetscSection, PetscInt, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscSectionGetOffsetRange(PetscSection, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscSectionView(PetscSection, PetscViewer);
+PETSC_STATIC_INLINE PetscErrorCode PetscSectionViewFromOptions(PetscSection A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 PETSC_EXTERN PetscErrorCode PetscSectionReset(PetscSection);
 PETSC_EXTERN PetscErrorCode PetscSectionDestroy(PetscSection*);
 PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSection(PetscSection, PetscSF, PetscBool, PetscSection *);
@@ -402,6 +405,7 @@ PETSC_EXTERN PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection, IS, P
 PETSC_EXTERN PetscErrorCode PetscSectionGetPointLayout(MPI_Comm, PetscSection, PetscLayout *);
 PETSC_EXTERN PetscErrorCode PetscSectionGetValueLayout(MPI_Comm, PetscSection, PetscLayout *);
 PETSC_EXTERN PetscErrorCode PetscSectionPermute(PetscSection, IS, PetscSection *);
+PETSC_EXTERN PetscErrorCode PetscSectionGetField(PetscSection, PetscInt, PetscSection *);
 
 PETSC_EXTERN PetscErrorCode PetscSectionSetClosureIndex(PetscSection, PetscObject, PetscSection, IS);
 PETSC_EXTERN PetscErrorCode PetscSectionGetClosureIndex(PetscSection, PetscObject, PetscSection *, IS *);

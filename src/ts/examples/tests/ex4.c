@@ -193,8 +193,7 @@ int main(int argc,char **argv)
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,pcinfo,120,&viewer);CHKERRQ(ierr);
     ierr = PCView(pc,viewer);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%d Procs,%s TSType, %s Preconditioner\n",
-                       size,tsinfo,pcinfo);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"%d Procs,%s TSType, %s Preconditioner\n",size,tsinfo,pcinfo);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
@@ -214,7 +213,7 @@ PetscReal f_ini(PetscReal x,PetscReal y)
 {
   PetscReal f;
 
-  f=exp(-20.0*(pow(x-0.5,2.0)+pow(y-0.5,2.0)));
+  f=PetscExpReal(-20.0*(PetscPowRealInt(x-0.5,2)+PetscPowRealInt(y-0.5,2)));
   return f;
 }
 
@@ -280,7 +279,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   ierr = VecGetSize(global,&n);CHKERRQ(ierr);
 
   /* Set the index sets */
-  ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&idx);CHKERRQ(ierr);
   for (i=0; i<n; i++) idx[i]=i;
 
   /* Create local sequential vectors */
@@ -294,7 +293,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   ierr = VecScatterEnd(scatter,global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   ierr = VecGetArray(tmp_vec,&tmp);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"At t[%d] =%14.2e u= %14.2e at the center \n",nsteps,time,PetscRealPart(tmp[n/2]));CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"At t[%D] =%14.2e u= %14.2e at the center \n",nsteps,(double)time,(double)PetscRealPart(tmp[n/2]));CHKERRQ(ierr);
   ierr = VecRestoreArray(tmp_vec,&tmp);CHKERRQ(ierr);
 
   ierr = PetscFree(idx);CHKERRQ(ierr);
@@ -431,7 +430,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   ierr = VecGetSize(globalin,&len);CHKERRQ(ierr);
 
   /* Set the index sets */
-  ierr = PetscMalloc(len*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(len,&idx);CHKERRQ(ierr);
   for (i=0; i<len; i++) idx[i]=i;
 
   /* Create local sequential vectors */
@@ -504,6 +503,6 @@ PetscErrorCode PostStep(TS ts)
 
   PetscFunctionBeginUser;
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"  PostStep, t: %g\n",t);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"  PostStep, t: %g\n",(double)t);
   PetscFunctionReturn(0);
 }

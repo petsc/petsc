@@ -115,7 +115,7 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
       ierr = DMCreateDomainDecompositionScatters(dm,nasm->n,subdms,&nasm->iscatter,&nasm->oscatter,&nasm->gscatter);CHKERRQ(ierr);
 
       ierr = SNESGetOptionsPrefix(snes, &optionsprefix);CHKERRQ(ierr);
-      ierr = PetscMalloc(nasm->n*sizeof(SNES),&nasm->subsnes);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nasm->n,&nasm->subsnes);CHKERRQ(ierr);
       for (i=0; i<nasm->n; i++) {
         ierr = SNESCreate(PETSC_COMM_SELF,&nasm->subsnes[i]);CHKERRQ(ierr);
         ierr = SNESAppendOptionsPrefix(nasm->subsnes[i],optionsprefix);CHKERRQ(ierr);
@@ -136,20 +136,16 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
   } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Must set subproblems manually if there is no DM!");
   /* allocate the global vectors */
   if (!nasm->x) {
-    ierr = PetscMalloc(nasm->n*sizeof(Vec),&nasm->x);CHKERRQ(ierr);
-    ierr = PetscMemzero(nasm->x,nasm->n*sizeof(Vec));CHKERRQ(ierr);
+    ierr = PetscCalloc1(nasm->n,&nasm->x);CHKERRQ(ierr);
   }
   if (!nasm->xl) {
-    ierr = PetscMalloc(nasm->n*sizeof(Vec),&nasm->xl);CHKERRQ(ierr);
-    ierr = PetscMemzero(nasm->xl,nasm->n*sizeof(Vec));CHKERRQ(ierr);
+    ierr = PetscCalloc1(nasm->n,&nasm->xl);CHKERRQ(ierr);
   }
   if (!nasm->y) {
-    ierr = PetscMalloc(nasm->n*sizeof(Vec),&nasm->y);CHKERRQ(ierr);
-    ierr = PetscMemzero(nasm->y,nasm->n*sizeof(Vec));CHKERRQ(ierr);
+    ierr = PetscCalloc1(nasm->n,&nasm->y);CHKERRQ(ierr);
   }
   if (!nasm->b) {
-    ierr = PetscMalloc(nasm->n*sizeof(Vec),&nasm->b);CHKERRQ(ierr);
-    ierr = PetscMemzero(nasm->b,nasm->n*sizeof(Vec));CHKERRQ(ierr);
+    ierr = PetscCalloc1(nasm->n,&nasm->b);CHKERRQ(ierr);
   }
 
   for (i=0; i<nasm->n; i++) {
@@ -218,7 +214,7 @@ PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
   SNES_NASM      *nasm = (SNES_NASM*)snes->data;
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
-  PetscInt       i,j,N,bsz;
+  PetscInt       i,N,bsz;
   PetscBool      iascii,isstring;
   PetscViewer    sviewer;
   MPI_Comm       comm;
@@ -254,19 +250,15 @@ PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following SNES objects:\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
-      for (j=0; j<size; j++) {
-        ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
-        if (rank == j) {
-          for (i=0; i<nasm->n; i++) {
-            ierr = VecGetLocalSize(nasm->x[i],&bsz);CHKERRQ(ierr);
-            ierr = PetscViewerASCIIPrintf(sviewer,"[%d] local block number %D, size = %D\n",(int)rank,i,bsz);CHKERRQ(ierr);
-            ierr = SNESView(nasm->subsnes[i],sviewer);CHKERRQ(ierr);
-            ierr = PetscViewerASCIIPrintf(sviewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
-          }
-        }
-        ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
-        ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      for (i=0; i<nasm->n; i++) {
+        ierr = VecGetLocalSize(nasm->x[i],&bsz);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(sviewer,"[%d] local block number %D, size = %D\n",(int)rank,i,bsz);CHKERRQ(ierr);
+        ierr = SNESView(nasm->subsnes[i],sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(sviewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
       }
+      ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   } else if (isstring) {
@@ -335,26 +327,26 @@ PetscErrorCode SNESNASMSetSubdomains_NASM(SNES snes,PetscInt n,SNES subsnes[],Ve
     for (i=0; i<n; i++) {ierr = PetscObjectReference((PetscObject)gscatter[i]);CHKERRQ(ierr);}
   }
   if (oscatter) {
-    ierr = PetscMalloc(n*sizeof(IS),&nasm->oscatter);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&nasm->oscatter);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       nasm->oscatter[i] = oscatter[i];
     }
   }
   if (iscatter) {
-    ierr = PetscMalloc(n*sizeof(IS),&nasm->iscatter);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&nasm->iscatter);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       nasm->iscatter[i] = iscatter[i];
     }
   }
   if (gscatter) {
-    ierr = PetscMalloc(n*sizeof(IS),&nasm->gscatter);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&nasm->gscatter);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       nasm->gscatter[i] = gscatter[i];
     }
   }
 
   if (subsnes) {
-    ierr = PetscMalloc(n*sizeof(SNES),&nasm->subsnes);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&nasm->subsnes);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       nasm->subsnes[i] = subsnes[i];
     }
@@ -731,6 +723,7 @@ PetscErrorCode SNESSolve_NASM(SNES snes)
   SNES_NASM        *nasm = (SNES_NASM*)snes->data;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   X = snes->vec_sol;
   Y = snes->vec_sol_update;
   F = snes->vec_func;
@@ -842,7 +835,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr       = PetscNewLog(snes, SNES_NASM, &nasm);CHKERRQ(ierr);
+  ierr       = PetscNewLog(snes,&nasm);CHKERRQ(ierr);
   snes->data = (void*)nasm;
 
   nasm->n        = PETSC_DECIDE;

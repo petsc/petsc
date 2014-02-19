@@ -203,64 +203,17 @@ PetscErrorCode VecGetLocalToGlobalMappingBlock(Vec X,ISLocalToGlobalMapping *map
 PetscErrorCode  VecAssemblyBegin(Vec vec)
 {
   PetscErrorCode ierr;
-  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
   PetscValidType(vec,1);
-
-  ierr = PetscOptionsGetBool(((PetscObject)vec)->prefix,"-vec_view_stash",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)vec),&viewer);CHKERRQ(ierr);
-    ierr = VecStashView(vec,viewer);CHKERRQ(ierr);
-  }
-
+  ierr = VecStashViewFromOptions(vec,NULL,"-vec_view_stash");CHKERRQ(ierr);
   ierr = PetscLogEventBegin(VEC_AssemblyBegin,vec,0,0,0);CHKERRQ(ierr);
   if (vec->ops->assemblybegin) {
     ierr = (*vec->ops->assemblybegin)(vec);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(VEC_AssemblyBegin,vec,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecViewFromOptions"
-/*
-  VecViewFromOptions - Processes command line options to determine if/how a vector is to be viewed. Called from higher level packages.
-
-  Collective on Vec
-
-  Input Parameters:
-+ vec   - the vector
-. prefix - prefix to use for viewing, or NULL to use prefix of 'vec'
-- optionname - option to activate viewing
-
-  Level: intermediate
-
-.keywords: Vec, view, options, database
-.seealso: MatViewFromOptions()
-*/
-PetscErrorCode  VecViewFromOptions(Vec vec,const char prefix[],const char optionname[])
-{
-  PetscErrorCode    ierr;
-  PetscBool         flg;
-  PetscViewer       viewer;
-  PetscViewerFormat format;
-
-  PetscFunctionBegin;
-  if (prefix) {
-    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)vec),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
-  } else {
-    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)vec),((PetscObject)vec)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
-  }
-  if (flg) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = VecView(vec,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -300,11 +253,7 @@ PetscErrorCode  VecAssemblyEnd(Vec vec)
     ierr = (*vec->ops->assemblyend)(vec);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(VEC_AssemblyEnd,vec,0,0,0);CHKERRQ(ierr);
-  if (vec->viewonassembly) {
-    ierr = PetscViewerPushFormat(vec->viewonassembly,vec->viewformatonassembly);CHKERRQ(ierr);
-    ierr = VecView(vec,vec->viewonassembly);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(vec->viewonassembly);CHKERRQ(ierr);
-  }
+  ierr = VecViewFromOptions(vec,NULL,"-vec_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -541,7 +490,6 @@ PetscErrorCode  VecDestroy(Vec *v)
   if (--((PetscObject)(*v))->refct > 0) {*v = 0; PetscFunctionReturn(0);}
 
   ierr = PetscObjectSAWsViewOff((PetscObject)*v);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&(*v)->viewonassembly);CHKERRQ(ierr);
   /* destroy the internal part */
   if ((*v)->ops->destroy) {
     ierr = (*(*v)->ops->destroy)(*v);CHKERRQ(ierr);
@@ -936,7 +884,7 @@ PetscErrorCode VecDuplicateVecs_Default(Vec w,PetscInt m,Vec *V[])
   PetscValidHeaderSpecific(w,VEC_CLASSID,1);
   PetscValidPointer(V,3);
   if (m <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %D",m);
-  ierr = PetscMalloc(m*sizeof(Vec*),V);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,V);CHKERRQ(ierr);
   for (i=0; i<m; i++) {ierr = VecDuplicate(w,*V+i);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -1387,8 +1335,6 @@ PetscErrorCode  VecSetFromOptions(Vec vec)
   ierr = PetscObjectOptionsBegin((PetscObject)vec);CHKERRQ(ierr);
   /* Handle vector type options */
   ierr = VecSetTypeFromOptions_Private(vec);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&vec->viewonassembly);CHKERRQ(ierr);
-  ierr = PetscOptionsViewer("-vec_view","Display vector with the viewer on VecAssemblyEnd()","VecView",&vec->viewonassembly,&vec->viewformatonassembly,NULL);CHKERRQ(ierr);
 
   /* Handle specific vector options */
   if (vec->ops->setfromoptions) {
@@ -1797,6 +1743,45 @@ PetscErrorCode  VecSwap(Vec x,Vec y)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "VecStashViewFromOptions"
+/*
+  VecStashViewFromOptions - Processes command line options to determine if/how an VecStash object is to be viewed. 
+
+  Collective on VecStash
+
+  Input Parameters:
++ obj   - the VecStash object
+. prefix - prefix to use for viewing, or NULL to use prefix of 'mat'
+- optionname - option to activate viewing
+
+  Level: intermediate
+
+  Developer Note: This cannot use PetscObjectViewFromOptions() because it takes a Vec as an argument but does not use VecView
+
+*/
+PetscErrorCode VecStashViewFromOptions(Vec obj,const char prefix[],const char optionname[])
+{
+  PetscErrorCode    ierr;
+  PetscViewer       viewer;
+  PetscBool         flg;
+  static PetscBool  incall = PETSC_FALSE;
+  PetscViewerFormat format;
+
+  PetscFunctionBegin;
+  if (incall) PetscFunctionReturn(0);
+  incall = PETSC_TRUE;
+  ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+    ierr = VecStashView(obj,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+  incall = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "VecStashView"
 /*@
    VecStashView - Prints the entries in the vector stash and block stash.
@@ -1884,8 +1869,7 @@ PetscErrorCode PetscOptionsVec(const char key[],const char text[],const char man
   PetscFunctionBegin;
   ierr = VecGetOwnershipRange(v,&rstart,&rend);CHKERRQ(ierr);
   ierr = VecGetSize(v,&N);CHKERRQ(ierr);
-  ierr = PetscMalloc(N*sizeof(PetscReal),&xreal);CHKERRQ(ierr);
-  ierr = PetscMemzero(xreal,N*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscCalloc1(N,&xreal);CHKERRQ(ierr);
   ierr = PetscOptionsRealArray(key,text,man,xreal,&N,&iset);CHKERRQ(ierr);
   if (iset) {
     ierr = VecGetArray(v,&xx);CHKERRQ(ierr);

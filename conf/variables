@@ -30,8 +30,8 @@ F_SH_LIB_PATH	= ${PETSC_F_SH_LIB_PATH}
 #
 # The following variables define PETSc compile procedures
 #
-PSOURCEC  = $(SOURCEC:%=${PWD}/%)
-PSOURCECU = $(SOURCECU:%=${PWD}/%)
+PSOURCEC  = $(SOURCEC:%=`pwd`/%)
+PSOURCECU = $(SOURCECU:%=`pwd`/%)
 PETSC_COMPILE         = ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}  ${PSOURCEC}
 PETSC_COMPILE_SINGLE  = ${PCC} -o $*.o -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}
 PETSC_FCOMPILE        = ${FC} -c ${FC_FLAGS} ${FFLAGS} ${FCPPFLAGS}  ${SOURCEF}
@@ -74,7 +74,8 @@ PETSC_DM_LIB_BASIC             = -lpetscdm ${PETSC_MAT_LIB_BASIC}
 PETSC_KSP_LIB_BASIC            = -lpetscksp ${PETSC_DM_LIB_BASIC}
 PETSC_SNES_LIB_BASIC           = -lpetscsnes ${PETSC_KSP_LIB_BASIC}
 PETSC_TS_LIB_BASIC             = -lpetscts ${PETSC_SNES_LIB_BASIC}
-PETSC_LIB_BASIC                = ${PETSC_TS_LIB_BASIC}
+PETSC_TAO_LIB_BASIC            = -lpetsctao ${PETSC_SNES_LIB_BASIC}
+PETSC_LIB_BASIC                = -lpetsctao ${PETSC_TS_LIB_BASIC}
 PETSC_CONTRIB_BASIC            = -lpetsccontrib
 
 PETSC_SYS_LIB            = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_SYS_LIB_BASIC}  ${PETSC_EXTERNAL_LIB_BASIC}
@@ -84,12 +85,11 @@ PETSC_DM_LIB             = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_DM_LIB_BA
 PETSC_KSP_LIB            = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_KSP_LIB_BASIC}  ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_SNES_LIB           = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_SNES_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_TS_LIB             = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_TS_LIB_BASIC}   ${PETSC_EXTERNAL_LIB_BASIC}
+PETSC_TAO_LIB            = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_TAO_LIB_BASIC}  ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_LIB                = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_LIB_BASIC}      ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_CONTRIB            = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_CONTRIB_BASIC}
 
 PETSC_MIXED_LIB           = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR}  -lpetscsnes -lpetscvec -lpetscsys -lpetscksp_single -lpetscmat_single -lpetscvec_single  -lpetscsys_single  ${PETSC_EXTERNAL_LIB_BASIC}
-
-SIEVE_FLAGS = #-DALE_USE_DEBUGGING -DALE_HAVE_CXX_ABI -DALE_USE_LOGGING -DALE_LOGGING_USE_EVENTS -DALE_LOGGING_VERBOSE # -DALE_LOGGING_LOG_MEM
 
 #
 #  Escape codes to change the text color on xterms and terminals
@@ -102,7 +102,7 @@ PETSC_MAKE_STOP_ON_ERROR = -
 # ----------------------------------------------------------------------------------------
 #
 # Some variables used to build shared libraries
-SHLIBS   = libpetscsys libpetscmat libpetscvec libpetscdm libpetscksp libpetscsnes libpetscts
+SHLIBS   = libpetscsys libpetscmat libpetscvec libpetscdm libpetscksp libpetscsnes libpetscts libpetsctao
 #
 # The following include files set customized site, optimization, and version
 # options.

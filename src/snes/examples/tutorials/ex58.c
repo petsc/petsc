@@ -1,4 +1,5 @@
 #include <petscsnes.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 static const char help[] = "Parallel version of the minimum surface area problem in 2D using DMDA.\n\
@@ -68,7 +69,7 @@ int main(int argc, char **argv)
   PetscInitialize(&argc, &argv, (char*)0, help);
 
   /* Create distributed array to manage the 2d grid */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
 
   /* Extract global vectors from DMDA; */
   ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
@@ -472,10 +473,10 @@ PetscErrorCode FormBoundaryConditions(SNES snes,AppCtx **ouser)
 
   PetscFunctionBeginUser;
   ierr     = SNESGetDM(snes,&da);CHKERRQ(ierr);
-  ierr     = PetscNew(AppCtx,&user);CHKERRQ(ierr);
+  ierr     = PetscNew(&user);CHKERRQ(ierr);
   *ouser   = user;
   user->lb = .05;
-  user->ub = SNES_VI_INF;
+  user->ub = PETSC_INFINITY;
   ierr     = DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   /* Check if lower and upper bounds are set */
@@ -483,10 +484,10 @@ PetscErrorCode FormBoundaryConditions(SNES snes,AppCtx **ouser)
   ierr = PetscOptionsGetScalar(NULL, "-ub", &user->ub, 0);CHKERRQ(ierr);
   bsize=mx+2; lsize=my+2; rsize=my+2; tsize=mx+2;
 
-  ierr = PetscMalloc(bsize*sizeof(PetscScalar), &user->bottom);CHKERRQ(ierr);
-  ierr = PetscMalloc(tsize*sizeof(PetscScalar), &user->top);CHKERRQ(ierr);
-  ierr = PetscMalloc(lsize*sizeof(PetscScalar), &user->left);CHKERRQ(ierr);
-  ierr = PetscMalloc(rsize*sizeof(PetscScalar), &user->right);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bsize, &user->bottom);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tsize, &user->top);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lsize, &user->left);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rsize, &user->right);CHKERRQ(ierr);
 
   hx= (r-l)/(mx+1.0); hy=(t-b)/(my+1.0);
 

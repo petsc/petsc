@@ -1,5 +1,5 @@
-#include "bddc.h"
-#include "bddcprivate.h"
+#include <../src/ksp/pc/impls/bddc/bddc.h>
+#include <../src/ksp/pc/impls/bddc/bddcprivate.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCNullSpaceAssembleCoarse"
@@ -21,7 +21,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCoarse(PC pc, Mat coarse_mat, MatNullSpace
   coarse_nsp_vecs = 0;
   ierr = MatNullSpaceGetVecs(pcbddc->NullSpace,&nsp_has_cnst,&nsp_size,&nsp_vecs);CHKERRQ(ierr);
   if (coarse_mat) {
-    ierr = PetscMalloc((nsp_size+1)*sizeof(Vec),&coarse_nsp_vecs);CHKERRQ(ierr);
+    ierr = PetscMalloc1((nsp_size+1),&coarse_nsp_vecs);CHKERRQ(ierr);
     for (i=0;i<nsp_size+1;i++) {
       ierr = VecDuplicate(pcbddc->coarse_vec,&coarse_nsp_vecs[i]);CHKERRQ(ierr);
     }
@@ -230,7 +230,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc,IS local_dofs)
     ierr = ISCreateStride(PETSC_COMM_SELF,basis_size,0,1,&is_aux);CHKERRQ(ierr);
     ierr = MatLUFactor(small_mat,is_aux,is_aux,&matinfo);CHKERRQ(ierr);
     ierr = ISDestroy(&is_aux);CHKERRQ(ierr);
-    ierr = PetscMalloc(basis_size*basis_size*sizeof(PetscScalar),&array_mat);CHKERRQ(ierr);
+    ierr = PetscMalloc1(basis_size*basis_size,&array_mat);CHKERRQ(ierr);
     for (k=0;k<basis_size;k++) {
       ierr = VecSet(shell_ctx->work_small_1,zero);CHKERRQ(ierr);
       ierr = VecSetValue(shell_ctx->work_small_1,k,one,INSERT_VALUES);CHKERRQ(ierr);
@@ -249,7 +249,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc,IS local_dofs)
     ierr = MatDestroy(&inv_small_mat);CHKERRQ(ierr);
     ierr = MatDestroy(&small_mat);CHKERRQ(ierr);
     ierr = MatScale(shell_ctx->Kbasis_mat,m_one);CHKERRQ(ierr);
-  
+
     /* Rebuild local PC */
     ierr = KSPGetPC(*local_ksp,&shell_ctx->local_pc);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)shell_ctx->local_pc);CHKERRQ(ierr);
@@ -364,7 +364,7 @@ PetscErrorCode PCBDDCNullSpaceAdaptGlobal(PC pc)
   if (nsp_has_cnst) {
     new_nsp_size++;
   }
-  ierr = PetscMalloc(new_nsp_size*sizeof(Vec),&new_nsp_vecs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(new_nsp_size,&new_nsp_vecs);CHKERRQ(ierr);
   for (i=0;i<new_nsp_size;i++) {
     ierr = VecDuplicate(pcis->vec1_global,&new_nsp_vecs[i]);CHKERRQ(ierr);
   }

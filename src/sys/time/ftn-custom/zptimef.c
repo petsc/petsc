@@ -1,7 +1,7 @@
-#include "petscsys.h"
-#include "petscfix.h"
+#include <petscsys.h>
+#include <petscfix.h>
 #include <petsctime.h>
-#include "petsc-private/fortranimpl.h"
+#include <petsc-private/fortranimpl.h>
 /* ptime.c */
 /* Fortran interface file */
 

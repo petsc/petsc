@@ -40,12 +40,12 @@ PetscErrorCode ProcessOptions(AppCtx *options)
   ierr = PetscOptionsInt("-num_fields", "The number of section fields", "ex10.c", options->numFields, &options->numFields, NULL);CHKERRQ(ierr);
   if (options->numFields) {
     len  = options->numFields;
-    ierr = PetscMalloc(len * sizeof(PetscInt), &options->numComponents);CHKERRQ(ierr);
+    ierr = PetscMalloc1(len, &options->numComponents);CHKERRQ(ierr);
     ierr = PetscOptionsIntArray("-num_components", "The number of components per field", "ex10.c", options->numComponents, &len, &flg);CHKERRQ(ierr);
     if (flg && (len != options->numFields)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of components array is %d should be %d", len, options->numFields);
   }
   len  = (options->dim+1) * PetscMax(1, options->numFields);
-  ierr = PetscMalloc(len * sizeof(PetscInt), &options->numDof);CHKERRQ(ierr);
+  ierr = PetscMalloc1(len, &options->numDof);CHKERRQ(ierr);
   ierr = PetscOptionsIntArray("-num_dof", "The dof signature for the section", "ex10.c", options->numDof, &len, &flg);CHKERRQ(ierr);
   if (flg && (len != (options->dim+1) * PetscMax(1, options->numFields))) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of dof array is %d should be %d", len, (options->dim+1) * PetscMax(1, options->numFields));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -80,8 +80,8 @@ PetscErrorCode TestReordering(DM dm, AppCtx *user)
   ierr = DMPlexPermute(dm, perm, &pdm);CHKERRQ(ierr);
   ierr = DMSetFromOptions(pdm);CHKERRQ(ierr);
   ierr = ISDestroy(&perm);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(dm, MATAIJ, &A);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(pdm, MATAIJ, &pA);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(dm, &A);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(pdm, &pA);CHKERRQ(ierr);
   ierr = MatComputeBandwidth(A, 0.0, &bw);CHKERRQ(ierr);
   ierr = MatComputeBandwidth(pA, 0.0, &pbw);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);

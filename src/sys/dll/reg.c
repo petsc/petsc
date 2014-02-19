@@ -145,7 +145,7 @@ static PetscFunctionList dlallhead = 0;
    specified registry.
 
    Synopsis:
-   #include "petscsys.h"
+   #include <petscsys.h>
    PetscErrorCode PetscFunctionListAdd(PetscFunctionList flist,const char name[],void (*fptr)(void))
 
    Not Collective
@@ -177,7 +177,7 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,c
 
   PetscFunctionBegin;
   if (!*fl) {
-    ierr           = PetscNew(struct _n_PetscFunctionList,&entry);CHKERRQ(ierr);
+    ierr           = PetscNew(&entry);CHKERRQ(ierr);
     ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
     entry->routine = fnc;
     entry->next    = 0;
@@ -207,7 +207,7 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,c
       else break;
     }
     /* create new entry and add to end of list */
-    ierr           = PetscNew(struct _n_PetscFunctionList,&entry);CHKERRQ(ierr);
+    ierr           = PetscNew(&entry);CHKERRQ(ierr);
     ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
     entry->routine = fnc;
     entry->next    = 0;
@@ -287,7 +287,7 @@ PetscErrorCode  PetscFunctionListPrintAll(void)
     PetscFunctionListFind - Find function registered under given name
 
     Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
     PetscErrorCode PetscFunctionListFind(PetscFunctionList flist,const char name[],void (**fptr)(void))
 
     Input Parameters:
@@ -394,7 +394,7 @@ PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,
     list = list->next;
     count++;
   }
-  ierr  = PetscMalloc((count+1)*sizeof(char*),array);CHKERRQ(ierr);
+  ierr  = PetscMalloc1((count+1),array);CHKERRQ(ierr);
   count = 0;
   while (klist) {
     (*array)[count] = klist->name;

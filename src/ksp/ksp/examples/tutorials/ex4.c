@@ -1,5 +1,6 @@
 static char help[] = "Test MatSetValuesBatch: setting batches of elements using the GPU.\n\
 This works with SeqAIJCUSP and MPIAIJCUSP matrices.\n\n";
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscksp.h>
 
@@ -69,7 +70,7 @@ PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt **elem
   ne   = 2 * nxe * nye;
   *Ne  = ne;
   *Nl  = nl;
-  ierr = PetscMalloc2(ne*nl, PetscInt, elemRows, ne*nl*nl, PetscScalar, elemMats);CHKERRQ(ierr);
+  ierr = PetscMalloc2(ne*nl, elemRows, ne*nl*nl, elemMats);CHKERRQ(ierr);
   er   = *elemRows;
   em   = *elemMats;
   /* Proc 0        Proc 1                                               */
@@ -119,7 +120,7 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, 0, help);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &dm);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &dm);CHKERRQ(ierr);
   ierr = IntegrateCells(dm, &Ne, &Nl, &elemRows, &elemMats);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL, "-view", &doView, NULL);CHKERRQ(ierr);
   /* Construct matrix using GPU */

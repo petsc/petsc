@@ -65,7 +65,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
   ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr); /* z  <- B*r       */
   ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);             /* dp = r'*z;      */
   if (PetscAbsScalar(dp) < symmlq->haptol) {
-    ierr        = PetscInfo2(ksp,"Detected happy breakdown %G tolerance %G\n",PetscAbsScalar(dp),symmlq->haptol);CHKERRQ(ierr);
+    ierr        = PetscInfo2(ksp,"Detected happy breakdown %g tolerance %g\n",(double)PetscAbsScalar(dp),(double)symmlq->haptol);CHKERRQ(ierr);
     ksp->rnorm  = 0.0;  /* what should we really put here? */
     ksp->reason = KSP_CONVERGED_HAPPY_BREAKDOWN;  /* bugfix proposed by Lourens (lourens.vanzanen@shell.com) */
     PetscFunctionReturn(0);
@@ -132,7 +132,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
     betaold = beta;                                /* beta_k                  */
     ierr    = VecDot(R,Z,&dp);CHKERRQ(ierr);       /* dp <- r'*z;             */
     if (PetscAbsScalar(dp) < symmlq->haptol) {
-      ierr = PetscInfo2(ksp,"Detected happy breakdown %G tolerance %G\n",PetscAbsScalar(dp),symmlq->haptol);CHKERRQ(ierr);
+      ierr = PetscInfo2(ksp,"Detected happy breakdown %g tolerance %g\n",(double)PetscAbsScalar(dp),(double)symmlq->haptol);CHKERRQ(ierr);
       dp   = 0.0;
     }
 
@@ -206,7 +206,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_SYMMLQ(KSP ksp)
   PetscFunctionBegin;
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
 
-  ierr           = PetscNewLog(ksp,KSP_SYMMLQ,&symmlq);CHKERRQ(ierr);
+  ierr           = PetscNewLog(ksp,&symmlq);CHKERRQ(ierr);
   symmlq->haptol = 1.e-18;
   ksp->data      = (void*)symmlq;
 

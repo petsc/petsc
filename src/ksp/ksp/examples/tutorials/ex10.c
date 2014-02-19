@@ -34,7 +34,6 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
 #include <petscksp.h>
-#include <petsctime.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -50,7 +49,6 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       its,num_numfac,m,n,M;
   PetscReal      norm;
-  PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
   PetscBool      preload=PETSC_TRUE,isSymmetric,cknorm=PETSC_FALSE,initialguessfile = PETSC_FALSE;
   PetscMPIInt    rank;
   char           initialguessfilename[PETSC_MAX_PATH_LEN];
@@ -113,7 +111,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetString(NULL,"-rhs",file[2],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   if (flg) {   /* rhs is stored in a separate file */
-    if (file[2][0] == '0') {
+    if (file[2][0] == '0' || file[2][0] == 0) {
       PetscInt    m;
       PetscScalar one = 1.0;
       ierr = PetscInfo(0,"Using vector of ones for RHS\n");CHKERRQ(ierr);
@@ -242,15 +240,15 @@ int main(int argc,char **args)
     }
     ierr = VecView(max, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     ierr = VecMax(max, &idx, &val);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Largest max row element %G at row %d\n", val, idx);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Largest max row element %g at row %D\n", (double)val, idx);CHKERRQ(ierr);
     ierr = VecView(min, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     ierr = VecMin(min, &idx, &val);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Smallest min row element %G at row %d\n", val, idx);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Smallest min row element %g at row %D\n", (double)val, idx);CHKERRQ(ierr);
     ierr = VecMin(max, &idx, &val);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Smallest max row element %G at row %d\n", val, idx);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Smallest max row element %g at row %D\n", (double)val, idx);CHKERRQ(ierr);
     ierr = VecPointwiseDivide(max, max, min);CHKERRQ(ierr);
     ierr = VecMax(max, &idx, &val);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Largest row ratio %G at row %d\n", val, idx);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Largest row ratio %g at row %D\n", (double)val, idx);CHKERRQ(ierr);
     ierr = VecView(max, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     ierr = VecDestroy(&max);CHKERRQ(ierr);
     ierr = VecDestroy(&min);CHKERRQ(ierr);
@@ -264,11 +262,6 @@ int main(int argc,char **args)
      Conclude profiling last stage; begin profiling next stage.
   */
   PetscPreLoadStage("KSPSetUpSolve");
-
-  /*
-     We also explicitly time this stage via PetscTime()
-  */
-  ierr = PetscTime(&tsetup1);CHKERRQ(ierr);
 
   /*
      Create linear solver; set operators; set runtime options.
@@ -302,17 +295,14 @@ int main(int argc,char **args)
     */
     ierr   = KSPSetUp(ksp);CHKERRQ(ierr);
     ierr   = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
-    ierr   = PetscTime(&tsetup2);CHKERRQ(ierr);
-    tsetup = tsetup2 - tsetup1;
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                          Solve system
       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     /*
-     Solve linear system; we also explicitly time this stage.
+     Solve linear system; 
     */
-    ierr = PetscTime(&tsolve1);CHKERRQ(ierr);
     if (trans) {
       ierr = KSPSolveTranspose(ksp,b,x);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
@@ -338,12 +328,10 @@ int main(int argc,char **args)
         if (norm < 1.e-12) {
           ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm < 1.e-12\n");CHKERRQ(ierr);
         } else {
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %G\n",norm);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %g\n",(double)norm);CHKERRQ(ierr);
         }
       }
     }   /* while (num_rhs--) */
-    ierr   = PetscTime(&tsolve2);CHKERRQ(ierr);
-    tsolve = tsolve2 - tsolve1;
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
           Check error, print output, free data structures.
@@ -375,8 +363,7 @@ int main(int argc,char **args)
       ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,kspinfo,120,&viewer);CHKERRQ(ierr);
       ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
       ierr = PetscStrrchr(file[PetscPreLoadIt],'/',&matrixname);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3D %2.0e %2.1e %2.1e %2.1e %s \n",
-                         matrixname,its,norm,tsetup+tsolve,tsetup,tsolve,kspinfo);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3D %2.0e %s \n",matrixname,its,norm,kspinfo);CHKERRQ(ierr);
 
       /*
         Destroy the viewer
@@ -387,7 +374,7 @@ int main(int argc,char **args)
       if (norm < 1.e-12) {
         ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm < 1.e-12\n");CHKERRQ(ierr);
       } else {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G\n",norm);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm);CHKERRQ(ierr);
       }
     }
     ierr = PetscOptionsGetString(NULL,"-solution",file[3],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -401,7 +388,7 @@ int main(int argc,char **args)
       ierr = VecLoad(xstar,viewer);CHKERRQ(ierr);
       ierr = VecAXPY(xstar, -1.0, x);CHKERRQ(ierr);
       ierr = VecNorm(xstar, NORM_2, &norm);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "Error norm %G\n", norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "Error norm %g\n", (double)norm);CHKERRQ(ierr);
       ierr = VecDestroy(&xstar);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }

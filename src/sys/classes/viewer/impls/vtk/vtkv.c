@@ -1,10 +1,10 @@
-#include "../src/sys/classes/viewer/impls/vtk/vtkvimpl.h" /*I "petscviewer.h" I*/
+#include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h> /*I "petscviewer.h" I*/
 
 /*MC
     PetscViewerVTKWriteFunction - functional form used to provide writer to the PetscViewerVTK
 
      Synopsis:
-     #include "petscviewer.h"
+     #include <petscviewer.h>
      PetscViewerVTKWriteFunction(PetscObject object,PetscViewer viewer)
 
      Input Parameters:
@@ -166,7 +166,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer v)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(v,PetscViewer_VTK,&vtk);CHKERRQ(ierr);
+  ierr = PetscNewLog(v,&vtk);CHKERRQ(ierr);
 
   v->data         = (void*)vtk;
   v->ops->destroy = PetscViewerDestroy_VTK;

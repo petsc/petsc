@@ -20,6 +20,7 @@ static const char help[] = "Time-dependent PDE in 1d. Simplified from ex15.c for
          ./ex17 -da_grid_x 100  -ts_type gl -ts_adapt_type none -ts_max_steps 2
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 
@@ -60,7 +61,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-11,1,1,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-11,1,1,NULL,&da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA;
@@ -137,7 +138,7 @@ int main(int argc,char **argv)
   ierr = VecMin(u,NULL,&vmin);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
   ierr = TSGetTime(ts,&ftime);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"timestep %D: time %G, solution norm %G, max %G, min %G\n",nsteps,ftime,norm,vmax,vmin);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"timestep %D: time %g, solution norm %g, max %g, min %g\n",nsteps,(double)ftime,(double)norm,(double)vmax,(double)vmin);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.
@@ -291,8 +292,8 @@ PetscErrorCode FormInitialSolution(TS ts,Vec U,void *ptr)
   /* Compute function over the locally owned part of the grid */
   for (i=xs; i<xs+xm; i++) {
     x = i*hx;
-    r = PetscSqrtScalar((x-.5)*(x-.5));
-    if (r < .125) u[i] = PetscExpScalar(c*r*r*r);
+    r = PetscSqrtReal((x-.5)*(x-.5));
+    if (r < .125) u[i] = PetscExpReal(c*r*r*r);
     else          u[i] = 0.0;
   }
 

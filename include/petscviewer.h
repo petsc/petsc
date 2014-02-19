@@ -55,8 +55,10 @@ PETSC_EXTERN PetscErrorCode PetscViewerBinaryAddMPIIOOffset(PetscViewer,MPI_Offs
 #endif
 
 PETSC_EXTERN PetscErrorCode PetscViewerSocketOpen(MPI_Comm,const char[],int,PetscViewer*);
-PETSC_EXTERN PetscErrorCode PetscViewerStringOpen(MPI_Comm,char[],PetscInt,PetscViewer*);
+PETSC_EXTERN PetscErrorCode PetscViewerStringOpen(MPI_Comm,char[],size_t,PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerDrawOpen(MPI_Comm,const char[],const char[],int,int,int,int,PetscViewer*);
+#include <petscdrawtypes.h>
+PETSC_EXTERN PetscErrorCode PetscViewerDrawSetDrawType(PetscViewer,PetscDrawType);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaOpen(MPI_Comm, int, const char[], const char[], PetscViewer *);
 PETSC_EXTERN PetscErrorCode PetscViewerSiloOpen(MPI_Comm, const char[], PetscViewer *);
 PETSC_EXTERN PetscErrorCode PetscViewerMatlabOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
@@ -71,6 +73,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerRestoreSubcomm(PetscViewer,MPI_Comm,Petsc
 
 PETSC_EXTERN PetscErrorCode PetscViewerSetUp(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerView(PetscViewer,PetscViewer);
+PETSC_STATIC_INLINE PetscErrorCode PetscViewerViewFromOptions(PetscViewer A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 
 PETSC_EXTERN PetscErrorCode PetscViewerSetOptionsPrefix(PetscViewer,const char[]);
 PETSC_EXTERN PetscErrorCode PetscViewerAppendOptionsPrefix(PetscViewer,const char[]);

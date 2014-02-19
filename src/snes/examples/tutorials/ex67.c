@@ -9,6 +9,7 @@ TODO for Mantle Convection:
   - Visualize output
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
 
@@ -187,10 +188,10 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionBeginUser;
   switch (dim) {
   case 2:
-    ierr = DMDACreate2d(comm, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_STAR, -4, -4, PETSC_DECIDE, PETSC_DECIDE, 2, 1, NULL, NULL, dm);CHKERRQ(ierr);
+    ierr = DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, -4, -4, PETSC_DECIDE, PETSC_DECIDE, 2, 1, NULL, NULL, dm);CHKERRQ(ierr);
     break;
   case 3:
-    ierr = DMDACreate3d(comm, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_STAR, -4, -4, -4, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 2, 1, NULL, NULL, NULL, dm);CHKERRQ(ierr);
+    ierr = DMDACreate3d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, -4, -4, -4, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 2, 1, NULL, NULL, NULL, dm);CHKERRQ(ierr);
     break;
   default:
     SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not create mesh for dimension %d", dim);
@@ -457,8 +458,8 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
     maxQuad  = PetscMax(maxQuad, user->q[field].numQuadPoints);
   }
   for (d = 0; d < dim; ++d) jacSize *= maxQuad;
-  ierr = PetscMalloc3(dim,PetscReal,&coords,dim,PetscReal,&v0,jacSize,PetscReal,&J);CHKERRQ(ierr);
-  ierr = PetscMalloc4(numCells*cellDof,PetscScalar,&u,numCells*jacSize,PetscReal,&invJ,numCells*maxQuad,PetscReal,&detJ,numCells*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
+  ierr = PetscMalloc3(dim,&coords,dim,&v0,jacSize,&J);CHKERRQ(ierr);
+  ierr = PetscMalloc4(numCells*cellDof,&u,numCells*jacSize,&invJ,numCells*maxQuad,&detJ,numCells*cellDof,&elemVec);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *x = NULL;
     PetscInt     i;

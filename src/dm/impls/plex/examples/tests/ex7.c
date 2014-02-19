@@ -442,7 +442,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
     if (cellSimplex) {
       ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_FALSE, dm);CHKERRQ(ierr);
     } else {
-      ierr = DMPlexCreateHexBoxMesh(comm, dim, PETSC_FALSE, dm);CHKERRQ(ierr);
+      const PetscInt cells[3] = {2, 2, 2};
+
+      ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, dm);CHKERRQ(ierr);
     }
   } else {
     ierr = DMCreate(comm, dm);CHKERRQ(ierr);
@@ -483,12 +485,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, partitioner, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
+      ierr = DMViewFromOptions(distributedMesh, NULL, "-dm_view");CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
     }
   }
-  ierr     = PetscObjectSetName((PetscObject) *dm, "Interpolated Mesh");CHKERRQ(ierr);
-  ierr     = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *dm, "Interpolated Mesh");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   user->dm = *dm;
   PetscFunctionReturn(0);
 }

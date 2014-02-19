@@ -461,9 +461,12 @@ static PetscErrorCode TSSetFromOptions_EIMEX(TS ts)
 {
   TS_EIMEX       *ext = (TS_EIMEX*)ts->data;
   PetscErrorCode ierr;
-  PetscInt       tindex[2]={TSEIMEXDefault,TSEIMEXDefault};
+  PetscInt       tindex[2];
   PetscInt       np = 2, nrows=TSEIMEXDefault;
+
   PetscFunctionBegin;
+  tindex[0] = TSEIMEXDefault;
+  tindex[1] = TSEIMEXDefault;
   ierr = PetscOptionsHead("EIMEX ODE solver options");CHKERRQ(ierr);
   {
     PetscBool flg;
@@ -588,7 +591,7 @@ static PetscErrorCode TSEIMEXSetMaxRows_EIMEX(TS ts,PetscInt nrows)
   if (nrows < 0 || nrows > 100) SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Max number of rows (current value %D) should be an integer number between 1 and 100\n",nrows);
   ierr = PetscFree(ext->N);CHKERRQ(ierr);
   ext->max_rows = nrows;
-  ierr = PetscMalloc(nrows*sizeof(PetscInt),&ext->N);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrows,&ext->N);CHKERRQ(ierr);
   for(i=0;i<nrows;i++) ext->N[i]=i+1;
   PetscFunctionReturn(0);
 }
@@ -653,7 +656,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS ts)
   ts->ops->snesfunction   = SNESTSFormFunction_EIMEX;
   ts->ops->snesjacobian   = SNESTSFormJacobian_EIMEX;
 
-  ierr = PetscNewLog(ts,TS_EIMEX,&ext);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&ext);CHKERRQ(ierr);
   ts->data = (void*)ext;
 
   ext->ord_adapt = PETSC_FALSE; /* By default, no order adapativity */

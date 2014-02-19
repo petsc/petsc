@@ -36,7 +36,7 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_SELF,"After unpacking the stash:\n");CHKERRQ(ierr);
   ierr = PetscHeapView(h,NULL);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(9*sizeof(PetscInt),&values);CHKERRQ(ierr);
+  ierr = PetscMalloc1(9,&values);CHKERRQ(ierr);
   ierr = PetscHeapPop(h,&id,&val);CHKERRQ(ierr);
   cnt  = 0;
   while (id >= 0) {

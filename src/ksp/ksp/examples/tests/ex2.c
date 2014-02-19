@@ -74,7 +74,7 @@ int main(int argc,char **args)
   ierr = MatMult(C,u,r);CHKERRQ(ierr);
   ierr = VecAXPY(r,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(r,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"|| C*u - b|| = %G\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"|| C*u - b|| = %g\n",(double)norm);CHKERRQ(ierr);
 
   /* solve C^T*u = b twice */
   ierr = KSPSolveTranspose(ksp,b,u);CHKERRQ(ierr);
@@ -82,20 +82,20 @@ int main(int argc,char **args)
   ierr = MatMultTranspose(C,u,r);CHKERRQ(ierr);
   ierr = VecAXPY(r,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(r,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"|| C^T*u - b|| =  %G\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"|| C^T*u - b|| =  %g\n",(double)norm);CHKERRQ(ierr);
 
   ierr = KSPSolveTranspose(ksp,b,u);CHKERRQ(ierr);
   ierr = MatMultTranspose(C,u,r);CHKERRQ(ierr);
   ierr = VecAXPY(r,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(r,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"|| C^T*u - b|| =  %G\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"|| C^T*u - b|| =  %g\n",(double)norm);CHKERRQ(ierr);
 
   /* solve C*u = b again */
   ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
   ierr = MatMult(C,u,r);CHKERRQ(ierr);
   ierr = VecAXPY(r,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(r,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"|| C*u - b|| = %G\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"|| C*u - b|| = %g\n",(double)norm);CHKERRQ(ierr);
 
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 
-#include "../src/mat/impls/nest/matnestimpl.h" /*I   "petscmat.h"   I*/
+#include <../src/mat/impls/nest/matnestimpl.h> /*I   "petscmat.h"   I*/
 #include <petscsf.h>
 
 static PetscErrorCode MatSetUp_NestIS_Private(Mat,PetscInt,const IS[],PetscInt,const IS[]);
@@ -465,7 +465,7 @@ static PetscErrorCode MatDiagonalScale_Nest(Mat A,Vec l,Vec r)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(bA->nc*sizeof(Vec),&br);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bA->nc,&br);CHKERRQ(ierr);
   for (j=0; j<bA->nc; j++) {ierr = VecGetSubVector(r,bA->isglobal.col[j],&br[j]);CHKERRQ(ierr);}
   for (i=0; i<bA->nr; i++) {
     ierr = VecGetSubVector(l,bA->isglobal.row[i],&bl);CHKERRQ(ierr);
@@ -656,7 +656,7 @@ static PetscErrorCode MatDuplicate_Nest(Mat A,MatDuplicateOption op,Mat *B)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(nr*nc*sizeof(Mat),&b);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nr*nc,&b);CHKERRQ(ierr);
   for (i=0; i<nr; i++) {
     for (j=0; j<nc; j++) {
       if (bA->m[i][j]) {
@@ -1035,9 +1035,7 @@ PetscErrorCode MatNestSetSubMats_Nest(Mat A,PetscInt nr,const IS is_row[],PetscI
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(nr,Vec,&s->left,nc,Vec,&s->right);CHKERRQ(ierr);
-  ierr = PetscMemzero(s->left,nr*sizeof(Vec));CHKERRQ(ierr);
-  ierr = PetscMemzero(s->right,nc*sizeof(Vec));CHKERRQ(ierr);
+  ierr = PetscCalloc2(nr,&s->left,nc,&s->right);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1101,7 +1099,7 @@ static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const I
     m += mi;
   }
   if (flg) {
-    ierr = PetscMalloc(m*sizeof(*ix),&ix);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m,&ix);CHKERRQ(ierr);
     for (i=0,n=0; i<n; i++) {
       ISLocalToGlobalMapping smap = NULL;
       VecScatter             scat;
@@ -1247,8 +1245,8 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
   }
 
   /* Set up the local ISs */
-  ierr = PetscMalloc(vs->nr*sizeof(IS),&vs->islocal.row);CHKERRQ(ierr);
-  ierr = PetscMalloc(vs->nc*sizeof(IS),&vs->islocal.col);CHKERRQ(ierr);
+  ierr = PetscMalloc1(vs->nr,&vs->islocal.row);CHKERRQ(ierr);
+  ierr = PetscMalloc1(vs->nc,&vs->islocal.col);CHKERRQ(ierr);
   for (i=0,offset=0; i<vs->nr; i++) {
     IS                     isloc;
     ISLocalToGlobalMapping rmap = NULL;
@@ -1390,7 +1388,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse r
   }
 
   /* Preallocation */
-  ierr = PetscMalloc(2*m*sizeof(PetscInt),&dnnz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2*m,&dnnz);CHKERRQ(ierr);
   onnz = dnnz + m;
   for (k=0; k<m; k++) {
     dnnz[k] = 0;
@@ -1415,8 +1413,8 @@ PETSC_EXTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse r
       ierr = ISGetLocalSize(nest->isglobal.row[i],&bm);CHKERRQ(ierr);
       ierr = ISGetIndices(nest->isglobal.row[i],&bmindices);CHKERRQ(ierr);
       ierr = PetscSFCreate(PetscObjectComm((PetscObject)A), &bmsf);CHKERRQ(ierr);
-      ierr = PetscMalloc(2*bm*sizeof(PetscSFNode),&bmedges);CHKERRQ(ierr);
-      ierr = PetscMalloc(2*bm*sizeof(PetscInt),&bmdnnz);CHKERRQ(ierr);
+      ierr = PetscMalloc1(2*bm,&bmedges);CHKERRQ(ierr);
+      ierr = PetscMalloc1(2*bm,&bmdnnz);CHKERRQ(ierr);
       for (k = 0; k < 2*bm; ++k) bmdnnz[k] = 0;
       /*
        Locate the owners for all of the locally-owned global row indices for this row block.
@@ -1482,7 +1480,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse r
         const PetscInt    *brcols;
         const PetscScalar *brcoldata;
         ierr = MatGetRow(B,br,&brncols,&brcols,&brcoldata);CHKERRQ(ierr);
-        ierr = PetscMalloc(brncols*sizeof(PetscInt),&cols);CHKERRQ(ierr);
+        ierr = PetscMalloc1(brncols,&cols);CHKERRQ(ierr);
         for (k=0; k<brncols; k++) cols[k] = bNindices[brcols[k]];
         /*
          Nest blocks are required to be nonoverlapping -- otherwise nest and monolithic index layouts wouldn't match.
@@ -1522,7 +1520,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr    = PetscNewLog(A,Mat_Nest,&s);CHKERRQ(ierr);
+  ierr    = PetscNewLog(A,&s);CHKERRQ(ierr);
   A->data = (void*)s;
 
   s->nr            = -1;

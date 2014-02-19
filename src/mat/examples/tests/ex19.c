@@ -87,7 +87,7 @@ int main(int argc,char **args)
   ierr = MatMult(C,u,b);CHKERRQ(ierr);
   ierr = VecNorm(b,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > 1.e-10 || norm < -1.e-10) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error b %G should be near 0\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error b %g should be near 0\n",(double)norm);CHKERRQ(ierr);
   }
 
   /* Now test MatGetValues() */
@@ -95,9 +95,9 @@ int main(int argc,char **args)
   if (flg) {
     ierr  = MatGetOwnershipRange(C,&mystart,&myend);CHKERRQ(ierr);
     nrsub = myend - mystart; ncsub = 4;
-    ierr  = PetscMalloc(nrsub*ncsub*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
-    ierr  = PetscMalloc(nrsub*sizeof(PetscInt),&rsub);CHKERRQ(ierr);
-    ierr  = PetscMalloc(ncsub*sizeof(PetscInt),&csub);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(nrsub*ncsub,&vals);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(nrsub,&rsub);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(ncsub,&csub);CHKERRQ(ierr);
     for (i=myend-1; i>=mystart; i--) rsub[myend-i-1] = i;
     for (i=0; i<ncsub; i++) csub[i] = 2*(ncsub-i) + mystart;
     ierr = MatGetValues(C,nrsub,rsub,ncsub,csub,vals);CHKERRQ(ierr);
@@ -106,13 +106,13 @@ int main(int argc,char **args)
     for (i=0; i<nrsub; i++) {
       for (j=0; j<ncsub; j++) {
         if (PetscImaginaryPart(vals[i*ncsub+j]) != 0.0) {
-          ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%D, %D] = %G + %G i\n",rsub[i],csub[j],PetscRealPart(vals[i*ncsub+j]),PetscImaginaryPart(vals[i*ncsub+j]));CHKERRQ(ierr);
+          ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%D, %D] = %g + %g i\n",rsub[i],csub[j],(double)PetscRealPart(vals[i*ncsub+j]),(double)PetscImaginaryPart(vals[i*ncsub+j]));CHKERRQ(ierr);
         } else {
-          ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%D, %D] = %G\n",rsub[i],csub[j],PetscRealPart(vals[i*ncsub+j]));CHKERRQ(ierr);
+          ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%D, %D] = %g\n",rsub[i],csub[j],(double)PetscRealPart(vals[i*ncsub+j]));CHKERRQ(ierr);
         }
       }
     }
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
     ierr = PetscFree(rsub);CHKERRQ(ierr);
     ierr = PetscFree(csub);CHKERRQ(ierr);
     ierr = PetscFree(vals);CHKERRQ(ierr);

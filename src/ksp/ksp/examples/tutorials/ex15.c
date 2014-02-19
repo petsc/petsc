@@ -209,7 +209,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(x,none,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G iterations %D\n",norm,its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its);CHKERRQ(ierr);
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
@@ -242,7 +242,7 @@ PetscErrorCode SampleShellPCCreate(SampleShellPC **shell)
   SampleShellPC  *newctx;
   PetscErrorCode ierr;
 
-  ierr         = PetscNew(SampleShellPC,&newctx);CHKERRQ(ierr);
+  ierr         = PetscNew(&newctx);CHKERRQ(ierr);
   newctx->diag = 0;
   *shell       = newctx;
   return 0;

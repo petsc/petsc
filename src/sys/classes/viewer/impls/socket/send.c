@@ -326,7 +326,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr                   = PetscNewLog(v,PetscViewer_Socket,&vmatlab);CHKERRQ(ierr);
+  ierr                   = PetscNewLog(v,&vmatlab);CHKERRQ(ierr);
   vmatlab->port          = 0;
   v->data                = (void*)vmatlab;
   v->ops->destroy        = PetscViewerDestroy_Socket;

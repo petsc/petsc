@@ -64,7 +64,7 @@ int main(int argc,char **args)
     PetscMPIInt color,subrank,duprank,subsize;
     duprank = size-1 - rank;
     subsize = size/nsubcomm;
-    if (subsize*nsubcomm != size) SETERRQ2(comm,PETSC_ERR_SUP,"This example requires nsubcomm %D divides nproc %D",nsubcomm,size);
+    if (subsize*nsubcomm != size) SETERRQ2(comm,PETSC_ERR_SUP,"This example requires nsubcomm %D divides size %D",nsubcomm,size);
     color   = duprank/subsize;
     subrank = duprank - color*subsize;
     ierr    = PetscSubcommSetTypeGeneral(psubcomm,color,subrank);CHKERRQ(ierr);
@@ -115,7 +115,7 @@ int main(int argc,char **args)
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > 1.e-4 && !rank) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"[%D]  Number of iterations = %3D\n",rank,its);CHKERRQ(ierr);
-    printf("Error: Residual norm of each block |subb - subA*subx |= %G\n",norm);
+    printf("Error: Residual norm of each block |subb - subA*subx |= %g\n",(double)norm);
   }
   ierr = VecResetArray(subb);CHKERRQ(ierr);
   ierr = VecResetArray(subx);CHKERRQ(ierr);
@@ -125,11 +125,11 @@ int main(int argc,char **args)
   if (flg && rank == id) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] subb:\n", rank);
     ierr = VecGetArray(subb,&array);CHKERRQ(ierr);
-    for (i=0; i<m; i++) printf("%G\n",PetscRealPart(array[i]));
+    for (i=0; i<m; i++) printf("%g\n",(double)PetscRealPart(array[i]));
     ierr = VecRestoreArray(subb,&array);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] subx:\n", rank);
     ierr = VecGetArray(subx,&array);CHKERRQ(ierr);
-    for (i=0; i<m; i++) printf("%G\n",PetscRealPart(array[i]));
+    for (i=0; i<m; i++) printf("%g\n",(double)PetscRealPart(array[i]));
     ierr = VecRestoreArray(subx,&array);CHKERRQ(ierr);
   }
 

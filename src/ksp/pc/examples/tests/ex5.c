@@ -55,7 +55,7 @@ int main(int Argc,char **Args)
   ierr = PetscOptionsHasName(NULL,"-j",&flg);CHKERRQ(ierr);
   if (flg) use_jacobi = 1;
 
-  ierr = PetscMalloc(levels*sizeof(PetscInt),&N);CHKERRQ(ierr);
+  ierr = PetscMalloc1(levels,&N);CHKERRQ(ierr);
   N[0] = x_mesh;
   for (i=1; i<levels; i++) {
     N[i] = N[i-1]/2;
@@ -145,13 +145,13 @@ int main(int Argc,char **Args)
 
   ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]);CHKERRQ(ierr);
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"l_2 error %G max error %G resi %G\n",e[0],e[1],e[2]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"l_2 error %g max error %g resi %g\n",(double)e[0],(double)e[1],(double)e[2]);CHKERRQ(ierr);
 
   ierr = KSPSolve(kspmg,B[levels-1],X[levels-1]);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(kspmg,&its);CHKERRQ(ierr);
   ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]);CHKERRQ(ierr);
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"its %D l_2 error %G max error %G resi %G\n",its,e[0],e[1],e[2]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"its %D l_2 error %g max error %g resi %g\n",its,(double)e[0],(double)e[1],(double)e[2]);CHKERRQ(ierr);
 
   ierr = PetscFree(N);CHKERRQ(ierr);
   ierr = VecDestroy(&solution);CHKERRQ(ierr);

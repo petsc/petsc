@@ -54,6 +54,7 @@ T*/
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
 
@@ -99,7 +100,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
   if (use_ngs) {
@@ -197,7 +198,7 @@ PetscErrorCode FormMatrix(DM da,Mat jac)
   hxdhy = hx/hy;
   hydhx = hy/hx;
 
-  ierr = PetscMalloc(info.ym*info.xm*sizeof(MatStencil),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc1(info.ym*info.xm,&rows);CHKERRQ(ierr);
   /*
      Compute entries for the locally owned part of the Jacobian.
       - Currently, all PETSc parallel matrix formats are partitioned by
