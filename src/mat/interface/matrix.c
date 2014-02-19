@@ -2951,7 +2951,7 @@ PetscErrorCode  MatLUFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *info)
   ierr = PetscLogEventBegin(MAT_LUFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
   ierr = (fact->ops->lufactornumeric)(fact,mat,info);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_LUFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(fact,NULL,"-mat_view");CHKERRQ(ierr);
+  ierr = MatViewFromOptions(fact,NULL,"-mat_factor_view");CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3121,7 +3121,7 @@ PetscErrorCode  MatCholeskyFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *i
   ierr = PetscLogEventBegin(MAT_CholeskyFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
   ierr = (fact->ops->choleskyfactornumeric)(fact,mat,info);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_CholeskyFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(fact,NULL,"-mat_view");CHKERRQ(ierr);
+  ierr = MatViewFromOptions(fact,NULL,"-mat_factor_view");CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -5042,8 +5042,7 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
 
    When (re)assembling a matrix, we can restrict the input for
    efficiency/debugging purposes.  These options include
-+    MAT_NEW_NONZERO_LOCATIONS - additional insertions will be
-        allowed if they generate a new nonzero
++    MAT_NEW_NONZERO_LOCATIONS - additional insertions will be allowed if they generate a new nonzero (slow)
 .    MAT_NEW_DIAGONALS - new diagonals will be allowed (for block diagonal format only)
 .    MAT_IGNORE_OFF_PROC_ENTRIES - drops off-processor entries
 .    MAT_NEW_NONZERO_LOCATION_ERR - generates an error for new matrix entry
@@ -5068,19 +5067,19 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
    the entire array is allocated, no entries are ever ignored.
    Set after the first MatAssemblyEnd()
 
-   MAT_NEW_NONZERO_LOCATION_ERR indicates that any add or insertion
+   MAT_NEW_NONZERO_LOCATION_ERR set to PETSC_TRUE indicates that any add or insertion
    that would generate a new entry in the nonzero structure instead produces
    an error. (Currently supported for AIJ and BAIJ formats only.)
    This is a useful flag when using SAME_NONZERO_PATTERN in calling
    KSPSetOperators() to ensure that the nonzero pattern truely does
    remain unchanged. Set after the first MatAssemblyEnd()
 
-   MAT_NEW_NONZERO_ALLOCATION_ERR indicates that any add or insertion
+   MAT_NEW_NONZERO_ALLOCATION_ERR set to PETSC_TRUE indicates that any add or insertion
    that would generate a new entry that has not been preallocated will
    instead produce an error. (Currently supported for AIJ and BAIJ formats
    only.) This is a useful flag when debugging matrix memory preallocation.
 
-   MAT_IGNORE_OFF_PROC_ENTRIES indicates entries destined for
+   MAT_IGNORE_OFF_PROC_ENTRIES set to PETSC_TRUE indicates entries destined for
    other processors should be dropped, rather than stashed.
    This is useful if you know that the "owning" processor is also
    always generating the correct matrix entries, so that PETSc need
@@ -9342,6 +9341,40 @@ PetscErrorCode  MatFindZeroDiagonals(Mat mat,IS *is)
 
   if (!mat->ops->findzerodiagonals) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"This matrix type does not have a find zero diagonals defined");
   ierr = (*mat->ops->findzerodiagonals)(mat,is);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFindOffBlockDiagonalEntries"
+/*@
+   MatFindOffBlockDiagonalEntries - Finds all the rows of a matrix that have entries outside of the main diagonal block (defined by the matrix block size)
+
+   Collective on Mat
+
+   Input Parameter:
+.  mat - the matrix
+
+   Output Parameter:
+.  is - contains the list of rows with off block diagonal entries
+
+   Level: developer
+
+   Concepts: matrix-vector product
+
+.seealso: MatMultTranspose(), MatMultAdd(), MatMultTransposeAdd()
+@*/
+PetscErrorCode  MatFindOffBlockDiagonalEntries(Mat mat,IS *is)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+
+  if (!mat->ops->findoffblockdiagonalentries) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"This matrix type does not have a find off block diagonal entries defined");
+  ierr = (*mat->ops->findoffblockdiagonalentries)(mat,is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

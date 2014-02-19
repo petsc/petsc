@@ -188,6 +188,7 @@ struct _MatOps {
   PetscErrorCode (*aypx)(Mat,PetscScalar,Mat,MatStructure);
   PetscErrorCode (*residual)(Mat,Vec,Vec,Vec);
   PetscErrorCode (*fdcoloringsetup)(Mat,ISColoring,MatFDColoring);
+  PetscErrorCode (*findoffblockdiagonalentries)(Mat,IS*);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum

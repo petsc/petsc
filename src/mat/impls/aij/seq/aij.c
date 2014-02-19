@@ -45,6 +45,34 @@ PetscErrorCode MatGetColumnNorms_SeqAIJ(Mat A,NormType type,PetscReal *norms)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatFindOffBlockDiagonalEntries_SeqAIJ"
+PetscErrorCode MatFindOffBlockDiagonalEntries_SeqAIJ(Mat A,IS *is)
+{
+  Mat_SeqAIJ      *a  = (Mat_SeqAIJ*)A->data;
+  PetscInt        i,m=A->rmap->n,cnt = 0, bs = A->rmap->bs;
+  const PetscInt  *jj = a->j,*ii = a->i;
+  PetscInt        *rows;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  for (i=0; i<m; i++) {
+    if ((ii[i] != ii[i+1]) && ((jj[ii[i]] < bs*(i/bs)) || (jj[ii[i+1]-1] > bs*((i+bs)/bs)-1))) {
+      cnt++;
+    }
+  }
+  ierr = PetscMalloc1(cnt,&rows);CHKERRQ(ierr);
+  cnt  = 0;
+  for (i=0; i<m; i++) {
+    if ((ii[i] != ii[i+1]) && ((jj[ii[i]] < bs*(i/bs)) || (jj[ii[i+1]-1] > bs*((i+bs)/bs)-1))) {
+      rows[cnt] = i;
+      cnt++;
+    }
+  }
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,cnt,rows,PETSC_OWN_POINTER,is);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatFindZeroDiagonals_SeqAIJ_Private"
 PetscErrorCode MatFindZeroDiagonals_SeqAIJ_Private(Mat A,PetscInt *nrows,PetscInt **zrows)
 {
@@ -344,6 +372,59 @@ PetscErrorCode MatSetValuesRow_SeqAIJ(Mat A,PetscInt row,const PetscScalar v[])
   PetscFunctionBegin;
   ierr = PetscMemcpy(a->a+ai[row],v,(ai[row+1]-ai[row])*sizeof(PetscScalar));CHKERRQ(ierr);
   PetscFunctionReturn(0);
+}
+
+/*
+    MatSeqAIJSetValuesLocalFast - An optimized version of MatSetValuesLocal() for SeqAIJ matrices with several assumptions
+
+      -   a single row of values is set with each call
+      -   no row or column indices are negative or (in error) larger than the number of rows or columns
+      -   the values are always added to the matrix, not set
+      -   no new locations are introduced in the nonzero structure of the matrix
+
+     This does NOT assume the global column indices are sorted
+
+*/
+
+#include <petsc-private/isimpl.h>
+#undef __FUNCT__
+#define __FUNCT__ "MatSeqAIJSetValuesLocalFast"
+PetscErrorCode MatSeqAIJSetValuesLocalFast(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
+{
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscInt       low,high,t,row,nrow,i,col,l;
+  const PetscInt *rp,*ai = a->i,*ailen = a->ilen,*aj = a->j;
+  PetscInt       lastcol = -1;
+  MatScalar      *ap,value,*aa = a->a;
+  const PetscInt *ridx = A->rmap->mapping->indices,*cidx = A->cmap->mapping->indices;
+
+  row = ridx[im[0]];
+  rp   = aj + ai[row];
+  ap = aa + ai[row];
+  nrow = ailen[row];
+  low  = 0;
+  high = nrow;
+  for (l=0; l<n; l++) { /* loop over added columns */
+    col = cidx[in[l]];
+    value = v[l];
+
+    if (col <= lastcol) low = 0;
+    else high = nrow;
+    lastcol = col;
+    while (high-low > 5) {
+      t = (low+high)/2;
+      if (rp[t] > col) high = t;
+      else low = t;
+    }
+    for (i=low; i<high; i++) {
+      if (rp[i] == col) {
+        ap[i] += value;
+        low = i + 1;
+        break;
+      }
+    }
+  }
+  return 0;
 }
 
 #undef __FUNCT__
@@ -3254,7 +3335,8 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                  /*139*/0,
                                         0,
                                         0,
-                                        MatFDColoringSetUp_SeqXAIJ
+                                        MatFDColoringSetUp_SeqXAIJ,
+                                        MatFindOffBlockDiagonalEntries_SeqAIJ
 };
 
 #undef __FUNCT__
@@ -3324,7 +3406,7 @@ PetscErrorCode  MatStoreValues_SeqAIJ(Mat mat)
   size_t         nz = aij->i[mat->rmap->n];
 
   PetscFunctionBegin;
-  if (aij->nonew != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
+  if (!aij->nonew) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
 
   /* allocate space for values if not already there */
   if (!aij->saved_values) {
@@ -3407,7 +3489,7 @@ PetscErrorCode  MatRetrieveValues_SeqAIJ(Mat mat)
   PetscInt       nz = aij->i[mat->rmap->n];
 
   PetscFunctionBegin;
-  if (aij->nonew != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
+  if (!aij->nonew) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
   if (!aij->saved_values) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatStoreValues(A);first");
   /* copy values over */
   ierr = PetscMemcpy(aij->a,aij->saved_values,nz*sizeof(PetscScalar));CHKERRQ(ierr);

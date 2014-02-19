@@ -779,7 +779,11 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
     Mat Arhs = NULL,Brhs = NULL;
     MatStructure flg2;
     if (rhsjacobian) {
-      ierr = TSGetRHSMats_Private(ts,&Arhs,&Brhs);CHKERRQ(ierr);
+      if (ijacobian) {
+        ierr = TSGetRHSMats_Private(ts,&Arhs,&Brhs);CHKERRQ(ierr);
+      } else {
+        ierr = TSGetIJacobian(ts,&Arhs,&Brhs,NULL,NULL);CHKERRQ(ierr);
+      }
       ierr = TSComputeRHSJacobian(ts,t,U,&Arhs,&Brhs,&flg2);CHKERRQ(ierr);
     }
     if (Arhs == *A) {           /* No IJacobian, so we only have the RHS matrix */
@@ -808,7 +812,6 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
       *flg = PetscMin(*flg,flg2);
     }
   }
-
   ierr = PetscLogEventEnd(TS_JacobianEval,ts,U,*A,*B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
