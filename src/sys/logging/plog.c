@@ -1742,8 +1742,8 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogView"
-/*@
-  PetscLogViewer - Prints a summary of the logging.
+/*@C
+  PetscLogView - Prints a summary of the logging.
 
   Collective over MPI_Comm
 
