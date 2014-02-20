@@ -428,7 +428,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm, PetscLogD
 #define PetscLogStagePrint(a,flg)           0
 #define PetscLogView(viewer)                0
 #define PetscLogViewFromOptions()           0
-#define PetscLogPrintDetailed(comm,file)    0
 #define PetscLogBegin()                     0
 #define PetscLogTraceBegin(file)            0
 #define PetscLogSet(lb,le)                  0
