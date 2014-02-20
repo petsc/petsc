@@ -129,6 +129,7 @@ include "petscdm.pxi"
 include "petscdmda.pxi"
 include "petscdmplex.pxi"
 include "petscdmcomposite.pxi"
+include "petscsf.pxi"
 
 # --------------------------------------------------------------------
 
@@ -159,6 +160,7 @@ include "DM.pyx"
 include "DMDA.pyx"
 include "DMPlex.pyx"
 include "DMComposite.pyx"
+include "SF.pyx"
 
 # --------------------------------------------------------------------
 
@@ -358,6 +360,7 @@ cdef extern from *:
     PetscClassId PETSC_TS_CLASSID        "TS_CLASSID"
     PetscClassId PETSC_AO_CLASSID        "AO_CLASSID"
     PetscClassId PETSC_DM_CLASSID        "DM_CLASSID"
+    PetscClassId PETSC_SF_CLASSID        "PETSCSF_CLASSID"
 
 cdef bint registercalled = 0
 
@@ -387,6 +390,7 @@ cdef int register() except -1:
     PyPetscType_Register(PETSC_TS_CLASSID,        TS)
     PyPetscType_Register(PETSC_AO_CLASSID,        AO)
     PyPetscType_Register(PETSC_DM_CLASSID,        DM)
+    PyPetscType_Register(PETSC_SF_CLASSID,        SF)
     return 0 # and we are done, enjoy !!
 
 # --------------------------------------------------------------------

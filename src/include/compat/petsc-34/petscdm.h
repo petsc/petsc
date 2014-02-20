@@ -102,3 +102,49 @@ static PetscErrorCode DMCreateMatrix_Compat(DM dm,Mat *A)
   PetscFunctionReturn(0);
 }
 #define DMCreateMatrix DMCreateMatrix_Compat
+
+#define DMGetCoordinateSection DMPlexGetCoordinateSection
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateCohesiveSubmesh_Compat"
+static PetscErrorCode DMPlexCreateCohesiveSubmesh_Compat(DM dm, PetscBool hasLagrange, const char label[], PetscInt value, DM *subdm)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = DMPlexCreateCohesiveSubmesh(dm, hasLagrange, subdm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define DMPlexCreateCohesiveSubmesh DMPlexCreateCohesiveSubmesh_Compat
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexDistribute_Compat"
+static PetscErrorCode DMPlexDistribute_Compat(DM dm, const char partitioner[], PetscInt overlap, PetscSF *pointsf, DM *dmParallel)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = DMPlexDistribute(dm, partitioner, overlap, dmParallel);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define DMPlexDistribute DMPlexDistribute_Compat
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateGmsh_Compat"
+static PetscErrorCode DMPlexCreateGmsh_Compat(MPI_Comm comm, PetscViewer viewer, PetscBool interpolate, DM *dm)
+{
+  PetscFunctionBegin;
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  PetscFunctionReturn(PETSC_ERR_SUP);
+  PetscFunctionReturn(0);
+}
+#define DMPlexCreateGmsh DMPlexCreateGmsh_Compat
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateSquareBoundary_Compat"
+static PetscErrorCode DMPlexCreateSquareBoundary_Compat(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[])
+{
+  PetscFunctionBegin;
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  PetscFunctionReturn(PETSC_ERR_SUP);
+  PetscFunctionReturn(0);
+}
+#define DMPlexCreateSquareBoundary DMPlexCreateSquareBoundary_Compat

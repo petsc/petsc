@@ -39,6 +39,7 @@ cdef extern from * nogil:
     int DMCreateMatrix(PetscDM,PetscMat*)
 
     int DMGetCoordinateDM(PetscDM,PetscDM*)
+    int DMGetCoordinateSection(PetscDM,PetscSection*)
     int DMSetCoordinates(PetscDM,PetscVec)
     int DMGetCoordinates(PetscDM,PetscVec*)
     int DMSetCoordinatesLocal(PetscDM,PetscVec)
@@ -64,4 +65,12 @@ cdef extern from * nogil:
     int DMGetLocalToGlobalMapping(PetscDM,PetscLGMap*)
     int DMGetLocalToGlobalMappingBlock(PetscDM,PetscLGMap*)
 
+    int DMSetDefaultSection(PetscDM,PetscSection)
+    int DMGetDefaultSection(PetscDM,PetscSection*)
+    int DMSetDefaultGlobalSection(PetscDM,PetscSection)
+    int DMGetDefaultGlobalSection(PetscDM,PetscSection*)
+    int DMCreateDefaultSF(PetscDM,PetscSection,PetscSection)
+    int DMGetDefaultSF(PetscDM,PetscSF*)
+    int DMSetDefaultSF(PetscDM,PetscSF)
+    int DMGetPointSF(PetscDM,PetscSF*)
 # --------------------------------------------------------------------

@@ -139,6 +139,12 @@ cdef class DM(Object):
         PetscINCREF(cdm.obj)
         return cdm
 
+    def getCoordinateSection(self):
+        cdef Section csec = Section()
+        CHKERR( DMGetCoordinateSection(self.dm, &csec.sec) )
+        PetscINCREF(csec.obj)
+        return csec
+
     def setCoordinates(self, Vec c not None):
         CHKERR( DMSetCoordinates(self.dm, c.vec) )
 
@@ -246,6 +252,33 @@ cdef class DM(Object):
     createGlobalVector = createGlobalVec
     createLocalVector = createLocalVec
     getMatrix = createMatrix = createMat
+
+    def setDefaultSection(self, Section dsec not None):
+        CHKERR( DMSetDefaultSection(self.dm, dsec.sec) )
+
+    def getDefaultSection(self):
+        cdef Section dsec = Section()
+        CHKERR( DMGetDefaultSection(self.dm, &dsec.sec) )
+        PetscINCREF(dsec.obj)
+        return dsec
+
+    def setDefaultGlobalSection(self, Section dgsec not None):
+        CHKERR( DMSetDefaultGlobalSection(self.dm, dgsec.sec) )
+
+    def getDefaultGlobalSection(self):
+        cdef Section dgsec = Section()
+        CHKERR( DMGetDefaultGlobalSection(self.dm, &dgsec.sec) )
+        PetscINCREF(dgsec.obj)
+        return dgsec
+
+    def createDefaultSF(self, Section localsec, Section globalsec):
+        CHKERR( DMCreateDefaultSF(self.dm, localsec.sec, globalsec.sec) )
+
+    def getDefaultSF(self):
+        cdef SF dsf = SF()
+        CHKERR( DMGetDefaultSF(self.dm, &dsf.sf) )
+        PetscINCREF(dsf.obj)
+        return dsf
 
 # --------------------------------------------------------------------
 
