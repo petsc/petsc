@@ -8,12 +8,14 @@
 #   17 - requires PYTHON or wget and Unix (uses urlget) and popen()
 
 testexamples_C: ${TESTEXAMPLES_C}
+testexamples_Cxx: ${TESTEXAMPLES_CXX}
 testexamples_C_X: ${TESTEXAMPLES_C_X}
 testexamples_Fortran: ${TESTEXAMPLES_FORTRAN}
 testexamples_C_X_MPIUni: ${TESTEXAMPLES_C_X_MPIUNI}
 testexamples_C_Complex: ${TESTEXAMPLES_C_COMPLEX}
 testexamples_C_NoComplex: ${TESTEXAMPLES_C_NOCOMPLEX}
 testexamples_DATAFILESPATH: ${TESTEXAMPLES_DATAFILESPATH}
+testexamples_Cxx_DATAFILESPATH: ${TESTEXAMPLES_CXX_DATAFILESPATH}
 
 testexamples_F90_DataTypes: ${TESTEXAMPLES_F90_DATATYPES}
 testexamples_Fortran_NoComplex: ${TESTEXAMPLES_FORTRAN_NOCOMPLEX}
@@ -75,6 +77,8 @@ testexamples_PCBDDC: ${TESTEXAMPLES_PCBDDC}
 
 buildexamples_C:
 	-@${OMAKE} testexamples_C TESTEXAMPLES_C=`echo ${TESTEXAMPLES_C} | sed s/runex[0-9]*[a-z0-9_]*//g`
+buildexamples_Cxx:
+	-@${OMAKE} testexamples_Cxx TESTEXAMPLES_CXX=`echo ${TESTEXAMPLES_CXX} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_C_X:
 	-@${OMAKE} testexamples_C_X TESTEXAMPLES_C_X=`echo ${TESTEXAMPLES_C_X} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_Fortran:
@@ -87,6 +91,8 @@ buildexamples_C_NoComplex:
 	-@${OMAKE} testexamples_C_NoComplex TESTEXAMPLES_C_NOCOMPLEX=`echo ${TESTEXAMPLES_C_NOCOMPLEX} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_DATAFILESPATH:
 	-@${OMAKE} testexamples_DATAFILESPATH TESTEXAMPLES_DATAFILESPATH=`echo ${TESTEXAMPLES_DATAFILESPATH} | sed s/runex[0-9]*[a-z0-9_]*//g`
+buildexamples_Cxx_DATAFILESPATH:
+	-@${OMAKE} testexamples_Cxx_DATAFILESPATH TESTEXAMPLES_CXX_DATAFILESPATH=`echo ${TESTEXAMPLES_CXX_DATAFILESPATH} | sed s/runex[0-9]*[a-z0-9_]*//g`
 
 buildexamples_F90_DataTypes:
 	-@${OMAKE} testexamples_F90_DataTypes TESTEXAMPLES_F90_DATATYPES=`echo ${TESTEXAMPLES_F90_DATATYPES} | sed s/runex[0-9]*[a-z0-9_]*//g`
