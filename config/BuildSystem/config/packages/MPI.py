@@ -11,8 +11,8 @@ from stat import *
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.6/downloads/openmpi-1.6.4.tar.gz',
-                               'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/openmpi-1.6.4.tar.gz']
+    self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.6/downloads/openmpi-1.6.5.tar.gz',
+                               'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/openmpi-1.6.5.tar.gz']
     self.download_mpich     = ['http://www.mpich.org/static/downloads/3.1/mpich-3.1.tar.gz']
     self.download_sol       = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/mpich-master-v3.0.4-106-g3adb59c.tar.gz']
     self.download           = ['redefine']
