@@ -126,10 +126,10 @@ SAWsDisplayDirectory = function(sub,divEntry)
     SAWs.displayDirectoryRecursive(sub.directories,divEntry,0,"");   
 }
 
-//When pcoptions.html is loaded ...
-//--------------------------------
+// 1. When pcoptions.html is loaded ...
+//-------------------------------------
 HandlePCOptions = function(){
-
+    alert('2. in HandlePCOptions()...');
     preRecursionCounter = "-1"; //A matricies have string id's unlike the previous numerical recursionCounter
 
     //reset the form
@@ -149,7 +149,7 @@ HandlePCOptions = function(){
         id:      "0"
     }
 
-    matInfo[0] = {//surtai added
+    matInfo[0] = {
         posdef:  false,
         symm:    false,
         logstruc:false,
@@ -165,7 +165,10 @@ HandlePCOptions = function(){
     recursionCounterSAWs = 0;
     SAWsGetAndDisplayDirectory("","#variablesInfo");
    
+    //When "Continue" button is clicked ... 
+    //----------------------------------------
     $("#continueButton").click(function(){
+        alert("continueButton");
         //alert("recursionCounterSAWs "+recursionCounterSAWs+"; prefix="+sawsInfo[0].prefix+" "+sawsInfo[recursionCounterSAWs-1].prefix);
 
 	//matrixLevel is how many matrices deep the data is. 0 is the overall matrix,
@@ -192,7 +195,7 @@ HandlePCOptions = function(){
 
         //append to table of two columns holding A and oCmdOptions in each column (should now be changed to simply cmdOptions)
         //tooltip contains all information previously in big letter format (e.g posdef, symm, logstruc, etc)
-        var indentation=matrixLevel*30; //according to the length of currentAsk (aka matrix level), add margins of 30 pixels accordingly
+        var indentation = matrixLevel*30; //according to the length of currentAsk (aka matrix level), add margins of 30 pixels accordingly
         $("#oContainer").append("<tr id='row"+currentAsk+"'> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ currentAsk + "\"> </div></td> <td> <div id=\"oCmdOptions" + currentAsk + "\"></div> </td> </tr>");
 
         //Create drop-down lists. '&nbsp;' indicates a space
@@ -244,93 +247,76 @@ HandlePCOptions = function(){
 
 	//Tell mathJax to re compile the tex data
 	//MathJax.Hub.Queue(["Typeset",MathJax.Hub]); //unfortunately, cannot use this anymore
+        alert('endof continueButton');
     });
+    alert('exit HandlePCOptions()...');
 }
 
 
 //  This function is run when the page is first visited
 //-----------------------------------------------------
 $(document).ready(function(){
-$(function() { //needed for jqueryUI tool tip to override native javascript tooltip
-    $(document).tooltip();
-});
+    alert('0. start run page...');
+    $(function() { //needed for jqueryUI tool tip to override native javascript tooltip
+        $(document).tooltip();
+    });
 
-//When the button "Logically Block Structured" is clicked...
-//----------------------------------------------------------
-$("#logstruc").change(function(){
-    if (document.getElementById("logstruc").checked) {
-        $("#fieldsplitBlocks_text").show();
-        $("#fieldsplitBlocks").show();
-        //populatePcList("pcList-1",null,"fieldsplit");//HAD THIS ORIGINALLY
-    } else {
-        $("#fieldsplitBlocks_text").hide();
-        $("#fieldsplitBlocks").hide();
-    }
-});
+    //When the button "Logically Block Structured" is clicked...
+    //----------------------------------------------------------
+    $("#logstruc").change(function(){
+        if (document.getElementById("logstruc").checked) {
+            $("#fieldsplitBlocks_text").show();
+            $("#fieldsplitBlocks").show();
+            //populatePcList("pcList-1",null,"fieldsplit");//HAD THIS ORIGINALLY
+        } else {
+            $("#fieldsplitBlocks_text").hide();
+            $("#fieldsplitBlocks").hide();
+        }
+    });
 
-//this is ONLY for the input box in the beginning form. NOT the inputs in the A divs (those have class='fieldsplitBlocks')
-//-------------------------------------------------------------------------------------------------------------------------
-$(document).on("keyup", '.fieldsplitBlocksInput', function() {//alerts user with a tooltip when an invalid input is provided
-    if ($(this).val().match(/[^0-9]/) || $(this).val()==0 || $(this).val()==1) {//problem is that integer only bubble still displays when nothing is entered
-	$(this).attr("title","hello");//set a random title (this will be overwritten)
-	$(this).tooltip();//create a tooltip from jquery UI
-	$(this).tooltip({content: "At least 2 blocks!"});//edit displayed text
-	$(this).tooltip("open");//manually open once
-    } else {
-	$(this).removeAttr("title");//remove title attribute
-	$(this).tooltip("destroy");
-    }
-});
+    //this is ONLY for the input box in the beginning form. NOT the inputs in the A divs (those have class='fieldsplitBlocks')
+    //-------------------------------------------------------------------------------------------------------------------------
+    $(document).on("keyup", '.fieldsplitBlocksInput', function() {//alerts user with a tooltip when an invalid input is provided
+        alert('when this is called?');
+        if ($(this).val().match(/[^0-9]/) || $(this).val()==0 || $(this).val()==1) {//problem is that integer only bubble still displays when nothing is entered
+	    $(this).attr("title","hello");//set a random title (this will be overwritten)
+	    $(this).tooltip();//create a tooltip from jquery UI
+	    $(this).tooltip({content: "At least 2 blocks!"});//edit displayed text
+	    $(this).tooltip("open");//manually open once
+        } else {
+	    $(this).removeAttr("title");//remove title attribute
+	    $(this).tooltip("destroy");
+        }
+    });
 
-//Only show positive definite if symmetric
-//----------------------------------------
-$("#symm").change(function(){
-    if (document.getElementById("symm").checked) {
-        $("#posdefRow").show();
-    } else {
-        $("#posdefRow").hide();
-        $("#posdef").removeAttr("checked");
-    }
-});
+    //Only show positive definite if symmetric
+    //----------------------------------------
+    $("#symm").change(function(){
+        if (document.getElementById("symm").checked) {
+            $("#posdefRow").show();
+        } else {
+            $("#posdefRow").hide();
+            $("#posdef").removeAttr("checked");
+        }
+    });
 
-    //surtai restored functionality of buttons
-    //var treeDetailed;
+    //When "Cmd Options" button is clicked ... 
+    //----------------------------------------
     $("#solverTreeButton").click(function(){
 	$("#treeContainer").html("<div id='tree'> </div>");
 	
 	//get the options from the drop-down lists
         solverGetOptions(matInfo);
 
-	//get the number of levels for the tree for scaling purposes
-	//var matLevelForTree = matGetLevel(currentRecursionCounter) + 1;
-
-	//build the tree
-        //treeDetailed = false;
-	//buildTree(matrixInformation,matLevelForTree,treeDetailed);
-
         //show cmdOptions to the screen
         for (var i=0; i<matInfoWriteCounter; i++) {
-	    if(typeof matInfo[i]=="undefined" && matInfo[i].id!="-1")//sometimes there will be gaps so we need to make sure program doesn't crash in middle of loop
+	    if (typeof matInfo[i]=="undefined" && matInfo[i].id!="-1") 
+                //sometimes there will be gaps so we need to make sure program doesn't crash in middle of loop
 		continue;
 	    $("#oCmdOptions" + matInfo[i].id).empty();
             $("#oCmdOptions" + matInfo[i].id).append("<br><br>" + matInfo[i].string);
-
             //MathJax.Hub.Queue(["Typeset",MathJax.Hub]); //Tell mathJax to re compile the tex data    
         }
-    });
-
-    $("#solverTreeButtonDetailed").click(function(){
-	$("#treeContainer").html("<div id='tree'> </div>");
-	
-	//get the options from the drop-down lists
-        solverGetOptions(matInfo);
-
-	//get the number of levels for the tree for scaling purposes
-	//var matLevelForTree = matGetLevel(currentRecursionCounter) + 1;
-
-	//build the tree
-        //treeDetailed = true;
-	//buildTree(matrixInformation,matLevelForTree,treeDetailed);
     });
 
     $("#clearOutput").click(function(){
@@ -338,12 +324,8 @@ $("#symm").change(function(){
 	    $("#oCmdOptions"+matInfo[i].id).empty();//if matInfo has deleted A-divs, its still okay because id will be "-1" and nothing will be changed
     });
 
-    //Toggles the tree on and off
-    $('#treeToggle').click(function () {
-        $("#tree").toggle();
-    });
-
-    HandlePCOptions();//big function is called here
+    alert('1. call HandlePCOptions()...');
+    HandlePCOptions(); //big function is called here???
 });
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
