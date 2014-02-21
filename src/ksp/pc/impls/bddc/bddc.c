@@ -1709,7 +1709,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->n_constraints              = 0;
   pcbddc->primal_indices_local_idxs  = 0;
   pcbddc->recompute_topography       = PETSC_FALSE;
-  pcbddc->coarse_size                = 0;
+  pcbddc->coarse_size                = -1;
   pcbddc->new_primal_space           = PETSC_FALSE;
   pcbddc->new_primal_space_local     = PETSC_FALSE;
   pcbddc->global_primal_indices      = 0;

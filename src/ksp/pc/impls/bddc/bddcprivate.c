@@ -3397,11 +3397,13 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   PetscInt               void_procs,ncoarse_ml,ncoarse_ds,ncoarse;
   PetscMPIInt            all_procs;
   PetscBool              csin_ml,csin_ds,csin,csin_type_simple;
+  PetscBool              compute_vecs = PETSC_FALSE;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   /* Assign global numbering to coarse dofs */
-  if (pcbddc->new_primal_space) { /* a new primal space is present, so recompute global numbering */
+  if (pcbddc->new_primal_space || pcbddc->coarse_size == -1) { /* a new primal space is present or it is the first initialization, so recompute global numbering */
+    compute_vecs = PETSC_TRUE;
     PetscInt ocoarse_size;
     ocoarse_size = pcbddc->coarse_size;
     ierr = PetscFree(pcbddc->global_primal_indices);CHKERRQ(ierr);
@@ -3609,7 +3611,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   }
 
   /* create local to global scatters for coarse problem */
-  if (pcbddc->new_primal_space) {
+  if (compute_vecs) {
     PetscInt lrows;
     ierr = VecDestroy(&pcbddc->coarse_vec);CHKERRQ(ierr);
     if (coarse_mat_is) {
