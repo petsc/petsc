@@ -4,19 +4,38 @@
 //http://www.youtube.com/watch?v=iZ6MSHA4FMU (part 2)
 function buildTree(matInfo, numberOfLevels, detailed)
 {
+    //initialize tree
+    var treeData = {name:""};
+
+    treeData.contents = [];
+    treeData.contents[0]=[];
+    treeData.contents[1]=[];
+
+    treeData.contents[0].contents=[];
+    treeData.contents[1].contents=[];
+
+    treeData.contents[0].contents[0]=[];
+    treeData.contents[0].contents[1]=[];
+    treeData.contents[1].contents[0]=[];
+    treeData.contents[1].contents[1]=[];
+
     for(var i=0; i<matInfoWriteCounter; i++) {
         if(matInfo[i].id != "-1") {
             var currentID = matInfo[i].id;
-            
-
-
+            var pointer=treeData;//javascript copies by COPY of REFERENCE. so assigning a new value such as [] wont work but changing the value WILL work
+            for(var j=1; j<currentID.length; j++) {//get to the correct matrix; disregard the first zero
+                alert("j="+j+", currentID:"+currentID);
+                treeData.contents[0];
+                pointer=pointer.contents[parseInt(currentID.charAt(j))];
+            }
+            pointer.name=matInfo[i].stringshort;
         }
     }
 
 
 
 
-    if (detailed == false) {//use matInfo[].stringshort for KSP/PC options without prefix
+    /*if (detailed == false) {//use matInfo[].stringshort for KSP/PC options without prefix
     //make the tree data structure.
     //before each data is written, it is checked to see if its parent is
     //fieldsplit; if not, it doesn't write the data to the treeDAta
@@ -210,7 +229,7 @@ function buildTree(matInfo, numberOfLevels, detailed)
 	    }
 	}
     }
-    }
+    }*/
 
     //---------------------------------------------------
     //Create a container for the tree - a 'canvas'
