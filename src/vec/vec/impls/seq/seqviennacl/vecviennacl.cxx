@@ -255,6 +255,8 @@ static PetscErrorCode VecCopy_SeqViennaCL_Private(Vec xin,Vec yin)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  ierr = VecViennaCLAllocateCheckHost(xin);
+  ierr = VecViennaCLAllocateCheckHost(yin);
   if (xin != yin) {
     ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
