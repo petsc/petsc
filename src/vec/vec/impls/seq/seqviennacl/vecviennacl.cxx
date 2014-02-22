@@ -7,6 +7,8 @@
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <../src/vec/vec/impls/seq/seqviennacl/viennaclvecimpl.h>
 
+#include <vector>
+
 #include "viennacl/linalg/inner_prod.hpp"
 #include "viennacl/linalg/norm_1.hpp"
 #include "viennacl/linalg/norm_2.hpp"
@@ -514,17 +516,21 @@ PetscErrorCode VecMDot_SeqViennaCL(Vec xin,PetscInt nv,const Vec yin[],PetscScal
   PetscInt             n = xin->map->n,i;
   const ViennaCLVector *xgpu,*ygpu;
   Vec                  *yyin = (Vec*)yin;
+  std::vector<viennacl::vector_base<PetscScalar> const *> ygpu_array(nv);
 
   PetscFunctionBegin;
   if (xin->map->n > 0) {
     ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
     for (i=0; i<nv; i++) {
       ierr = VecViennaCLGetArrayRead(yyin[i],&ygpu);CHKERRQ(ierr);
-      try {
-        z[i] = viennacl::linalg::inner_prod(*xgpu,*ygpu);
-      } catch(std::exception const & ex) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
-      }
+      ygpu_array[i] = ygpu;
+    }
+
+    viennacl::vector_tuple<PetscScalar> y_tuple(ygpu_array);
+    ViennaCLVector result = viennacl::linalg::inner_prod(*xgpu, y_tuple);
+
+    for (i=0; i<nv; i++) {
+      viennacl::copy(result.begin(), result.end(), z);
       ierr = VecViennaCLRestoreArrayRead(yyin[i],&ygpu);CHKERRQ(ierr);
     }
 
