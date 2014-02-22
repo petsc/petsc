@@ -4,6 +4,18 @@
 //http://www.youtube.com/watch?v=iZ6MSHA4FMU (part 2)
 function buildTree(matInfo, numberOfLevels, detailed)
 {
+    for(var i=0; i<matInfoWriteCounter; i++) {
+        if(matInfo[i].id != "-1") {
+            var currentID = matInfo[i].id;
+            
+
+
+        }
+    }
+
+
+
+
     if (detailed == false) {//use matInfo[].stringshort for KSP/PC options without prefix
     //make the tree data structure.
     //before each data is written, it is checked to see if its parent is

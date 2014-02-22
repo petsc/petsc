@@ -27,8 +27,7 @@ $(document).on("keyup", '.fieldsplitBlocks', function() {//alerts user with a to
 */
 $(document).on('change', '.pcLists', function(){
 
-    //if(preRecursionCounter != -1)
-        //alert("preRecursionCounter is not -1"); //preRecursionCounter is always -1 in the beginning when pulling data from SAWs
+     alert("listLogic is called, preRecursionCounter is:" + preRecursionCounter); //preRecursionCounter is always -1 in the beginning when pulling data from SAWs
 
     //alert("beginning current:"+currentRecursionCounterSAWs);
 
@@ -339,6 +338,8 @@ $(document).on('change', '.pcLists', function(){
 
         matInfo[index].blocks=0;//this matrix is not fieldsplit so cannot have blocks
     }
+
+    currentRecursionCounterSAWs++;//EXPERIMENT
 
 });
 

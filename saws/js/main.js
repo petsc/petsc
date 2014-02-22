@@ -1,11 +1,8 @@
-//Make an array. Each array element (matInfo[0]. etc) will have all of the information of the questions. Each array element represents one part of the matrix. [0] will be the big array, [1] will be the second recursion, etc, etc. All the information is stored in the array and accessed via for symmetric matInfo[recursion].symm
+//Make an array. Each array element (matInfo[0]. etc) will have all of the information of the questions.
 var matInfo = [];
 var matInfoWriteCounter = 0;//next available space to write to.
 var currentAsk = "0";//start at id=0. then 00 01, then 000 001 010 011 etc if splitting two every time.
 var askedA0 = false;//a one-way flag to record if A0 was asked
-
-//Used to refer to whether the left top block should be highighted or the right bottom bloc
-var matrixPicFlag = 0;
 
 //preRecursionCounter is used to remember the previous counter;
 var preRecursionCounter = -1;
@@ -14,9 +11,6 @@ var preRecursionCounter = -1;
 var recursionCounterSAWs = 0;
 var currentRecursionCounterSAWs = 0;
 var sawsInfo = [];
-
-//Counter for creating the new divs for the tree
-var matDivCounter = 0;
 
 //Use for pcmg
 var highestMg       = 0;  //highest mg level encountered so far
@@ -29,7 +23,7 @@ var mgLevelLocation = -1; //where to put the mg level data once the highest leve
 //------------------------------------------------------------------
 SAWsGetAndDisplayDirectory = function(names,divEntry){
     //alert("1_start. GetAndDisplayDirectory: name="+name+"; divEntry="+divEntry+"; recursionCounterSAWs="+recursionCounterSAWs);
-    jQuery(divEntry).html(""); //Get the HTML contents of the first element in the set of matched elements
+    jQuery(divEntry).html(""); //clears divEntry
     SAWs.getDirectory(names,SAWsDisplayDirectory,divEntry);
     //alert("1_end. recursionCounterSAWs "+recursionCounterSAWs);
 }
@@ -40,17 +34,13 @@ SAWsDisplayDirectory = function(sub,divEntry)
 {
     globaldirectory[divEntry] = sub;
     //alert("2. DisplayDirectory: sub="+sub+"; divEntry="+divEntry);
-    if (sub.directories.SAWs_ROOT_DIRECTORY.variables.hasOwnProperty("__Block") && (sub.directories.SAWs_ROOT_DIRECTORY.variables.__Block.data[0] == "true")) {
+    if (sub.directories.SAWs_ROOT_DIRECTORY.variables.hasOwnProperty("__Block") && (sub.directories.SAWs_ROOT_DIRECTORY.variables.__Block.data[0] == "true")) {//this function is nearly always called
         //alert("3. divEntry="+divEntry);
-        //jQuery(divEntry).append("<center><input type=\"button\" value=\"Continue\" id=\"continue\"></center>")
-        //jQuery('#continue').on('click', function(){
-            //alert("click continue - sub="+sub+"; divEntry="+divEntry);
-            SAWs.updateDirectoryFromDisplay(divEntry)
-            sub.directories.SAWs_ROOT_DIRECTORY.variables.__Block.data = ["false"];
-            SAWs.postDirectory(sub);
-            jQuery(divEntry).html("");
-            window.setTimeout(SAWsGetAndDisplayDirectory,1000,null,divEntry);
-        //})
+        SAWs.updateDirectoryFromDisplay(divEntry);
+        sub.directories.SAWs_ROOT_DIRECTORY.variables.__Block.data = ["false"];
+        SAWs.postDirectory(sub);
+        jQuery(divEntry).html("");//empty divEntry
+        window.setTimeout(SAWsGetAndDisplayDirectory,500,null,divEntry);//calls SAWsGetAndDisplayDirectory(null, divEntry) after 500ms
     }
 
     if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Preconditioner (PC) options") {
@@ -59,8 +49,9 @@ SAWsDisplayDirectory = function(sub,divEntry)
         //var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables.prefix.data[0];
         var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["prefix"].data[0];//more accurate I believe
         //alert("saws prefix:"+SAWs_prefix);
-        
-        if (SAWs_prefix == "(null)") SAWs_prefix = ""; //"(null)" fails populatePcList(), don't know why???
+
+        if (SAWs_prefix == "(null)")
+            SAWs_prefix = ""; //"(null)" fails populatePcList(), don't know why???
         //create <select> "pcList-1"+SAWs_prefix+" when it is not defined ???
         //$("#pcList-1"+SAWs_prefix).remove();
 
@@ -100,7 +91,7 @@ SAWsDisplayDirectory = function(sub,divEntry)
             prefix: SAWs_prefix,
             bjacobi_blocks: SAWs_bjacobi_blocks
         }
-        
+
         // should these two lines be moved to SAWs_pcVal == 'mg' -- cause error somehow???
         if (mgLevelLocation != -1)
             sawsInfo[mgLevelLocation].mg_levels=parseInt(highestMg)+1;//need to add 1
@@ -112,7 +103,7 @@ SAWsDisplayDirectory = function(sub,divEntry)
         var SAWs_kspVal       = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-ksp_type"].data[0];
         var SAWs_alternatives = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-ksp_type"].alternatives;
         var SAWs_prefix       = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables.prefix.data[0];
-        
+
         if (SAWs_prefix == "(null)") SAWs_prefix = "";
         //$("#kspList-1"+SAWs_prefix).remove();
         if (typeof $("#kspList-1"+SAWs_prefix+"text").attr("title") == "undefined" && SAWs_prefix.indexOf("est")==-1) {//it doesn't exist already and doesn't contain 'est'
@@ -123,7 +114,7 @@ SAWsDisplayDirectory = function(sub,divEntry)
     }
 
     //alert('call SAWs.displayDirectoryRecursive...');
-    SAWs.displayDirectoryRecursive(sub.directories,divEntry,0,"");   
+    SAWs.displayDirectoryRecursive(sub.directories,divEntry,0,"");//this function is not in SAWs API ?
 }
 
 // 1. When pcoptions.html is loaded ...
@@ -163,7 +154,7 @@ HandlePCOptions = function(){
 
     // get and display SAWs options
     recursionCounterSAWs = 0;
-    SAWsGetAndDisplayDirectory("","#variablesInfo");
+    SAWsGetAndDisplayDirectory("","#variablesInfo");//this #variablesInfo variable only appears here
    
     //When "Continue" button is clicked ... 
     //----------------------------------------
@@ -302,11 +293,24 @@ $(document).ready(function(){
 
     //When "Cmd Options" button is clicked ... 
     //----------------------------------------
+    var treeDetailed;
     $("#solverTreeButton").click(function(){
 	$("#treeContainer").html("<div id='tree'> </div>");
 	
 	//get the options from the drop-down lists
         solverGetOptions(matInfo);
+
+	//get the number of levels for the tree for scaling purposes
+        var matLevelForTree=0;
+        for(var i=0; i<matInfoWriteCounter; i++)
+            if(matInfo[i].id!="-1" && matInfo[i].level>matLevelForTree)
+                matLevelForTree=matInfo[i];
+        matLevelForTree++;//appears to be 1 greater than the max
+	//var matLevelForTree = matGetLevel(currentRecursionCounter) + 1;
+
+	//build the tree
+        treeDetailed = false;//tree.js uses this variable to know what information to display
+	buildTree(matInfo,matLevelForTree,treeDetailed);
 
         //show cmdOptions to the screen
         for (var i=0; i<matInfoWriteCounter; i++) {
@@ -317,6 +321,25 @@ $(document).ready(function(){
             $("#oCmdOptions" + matInfo[i].id).append("<br><br>" + matInfo[i].string);
             //MathJax.Hub.Queue(["Typeset",MathJax.Hub]); //Tell mathJax to re compile the tex data    
         }
+    });
+
+    $("#solverTreeButtonDetailed").click(function(){
+	$("#treeContainer").html("<div id='tree'> </div>");
+	
+	//get the options from the drop-down lists
+        solverGetOptions(matInfo);
+
+	//get the number of levels for the tree for scaling purposes
+        var matLevelForTree=0;
+        for(var i=0; i<matInfoWriteCounter; i++)
+            if(matInfo[i].id!="-1" && matInfo[i].level>matLevelForTree)
+                matLevelForTree=matInfo[i];
+        matLevelForTree++;//appears to be 1 greater than the max
+	//var matLevelForTree = matGetLevel(currentRecursionCounter) + 1;
+
+	//build the tree
+        treeDetailed = true;//tree.js uses this variable
+	buildTree(matInfo,matLevelForTree,treeDetailed);
     });
 
     $("#clearOutput").click(function(){
