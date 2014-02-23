@@ -7,9 +7,10 @@ function buildTree(matInfo, numberOfLevels, detailed)
     //initialize tree
     var treeData = {name:""};
 
-    treeData.contents = [];
-    treeData.contents[0]=[];
-    treeData.contents[1]=[];
+    //cant init everything and simply empty out all the contents that weren't used using "delete" because javascipt copies object using COPY of REFERENCE
+    treeData.contents = [];//javascipt does not have copy by reference. so we have to do it this way
+    treeData.contents[0]=[];//javascript copies by COPY of reference. so assigning a new value such as [] wont work but changing the value WILL work
+    treeData.contents[1]=[];//stackoverflow explanation: http://stackoverflow.com/questions/17382427/are-there-pointers-in-javascript
 
     treeData.contents[0].contents=[];
     treeData.contents[1].contents=[];
@@ -28,12 +29,53 @@ function buildTree(matInfo, numberOfLevels, detailed)
                 treeData.contents[0];
                 pointer=pointer.contents[parseInt(currentID.charAt(j))];
             }
-            pointer.name=matInfo[i].stringshort;
+            if(!detailed)
+                pointer.name=matInfo[i].stringshort;
+            else
+                pointer.name=matInfo[i].string;
         }
     }
 
+    //FIRST SORT MATINFO
+    //to sort, first remove the -1 elements. do this by saying, if -1, then move all the elements down by 1. decrement matInfoWriteCounter
+    //after that, just perform a selection sort on the id's (e.g. 0<1 and 0<00)
 
+    function cleanMatInfo() {//remove all the -1 elements (these get generated when something is deleted)
+        for(var i=0; i<matInfoWriteCounter; i++) {
 
+            if(matInfo[i].id=="-1") {
+
+                //shift everything down
+                for(var j=i; j<matInfoWriteCounter-1; j++)
+                    matInfo[j]=matInfo[j+1];
+
+                i--;//there might be two in a row. we wouldnt want to skip over any
+
+                matInfoWriteCounter--;//decrement write counter
+                delete matInfo[matInfoWriteCounter];//garbage value doesn't have to be removed but it's easy so we'll remove it anyways
+            }
+        }
+
+    }
+
+    //selection sort. NOTE: THIS FUNCTION ASSUMES ALL GARBAGE VALUES (ID="-1") HAVE ALREADY BEEN REMOVED USING cleanMatInfo()
+    function sortMatInfo() {
+        for(var i=0; i<matInfoWriteCounter-1; i++) {//only need to go to second to last element
+            var indexOfCurrentSmallest=i;
+            for(var j=i; j<matInfoWriteCounter; j++) {
+                if(matInfo[j].id.localeCompare(matInfo[i].id) == -1)
+                    indexOfCurrentSmallest=j;
+            }
+            //swap i and indexOfCurrentSmallest
+            var temp=matInfo[i];
+            matInfo[i]=matInfo[indexOfCurrentSmallest];
+            matInfo[indexOfCurrentSmallest]=temp;
+        }
+
+    }
+
+    cleanMatInfo();//these will be used in the beginning of this function to prevent extra nodes from being generated. will work more on this later.
+    sortMatInfo();
 
     /*if (detailed == false) {//use matInfo[].stringshort for KSP/PC options without prefix
     //make the tree data structure.
