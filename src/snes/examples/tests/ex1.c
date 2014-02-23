@@ -56,7 +56,7 @@ typedef struct {
 /*
    User-defined routines
 */
-extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,MatStructure*,void*);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode FormInitialGuess(AppCtx*,Vec);
 
@@ -150,7 +150,7 @@ int main(int argc,char **argv)
       because clearly if we had a routine to compute the Jacobian we won't need
       to use finite differences.
     */
-    ierr = FormJacobian(snes,x,&J,&J,&str,&user);CHKERRQ(ierr);
+    ierr = FormJacobian(snes,x,J,J,&str,&user);CHKERRQ(ierr);
 
     /*
        Color the matrix, i.e. determine groups of columns that share no common
@@ -390,10 +390,9 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,MatStructure *flag,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;   /* user-defined applicatin context */
-  Mat            jac   = *B;             /* Jacobian matrix */
   PetscInt       i,j,row,mx,my,col[5];
   PetscErrorCode ierr;
   PetscScalar    two = 2.0,one = 1.0,lambda,v[5],sc,*x;
@@ -443,9 +442,9 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  if (jac != *J) {
-    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (jac != J) {
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
 
   /*

@@ -116,7 +116,7 @@ static PetscErrorCode TSComputeIFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xd
 
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeIJacobian_DMDA"
-static PetscErrorCode TSComputeIJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xdot,PetscReal shift,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
+static PetscErrorCode TSComputeIJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xdot,PetscReal shift,Mat A,Mat B,MatStructure *mstr,void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -137,16 +137,16 @@ static PetscErrorCode TSComputeIJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xd
     ierr = DMDAVecGetArray(dm,Xloc,&x);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(dm,Xdot,&xdot);CHKERRQ(ierr);
     CHKMEMQ;
-    ierr = (*dmdats->ijacobianlocal)(&info,ptime,x,xdot,shift,*A,*B,mstr,dmdats->ijacobianlocalctx);CHKERRQ(ierr);
+    ierr = (*dmdats->ijacobianlocal)(&info,ptime,x,xdot,shift,A,B,mstr,dmdats->ijacobianlocalctx);CHKERRQ(ierr);
     CHKMEMQ;
     ierr = DMDAVecRestoreArray(dm,Xloc,&x);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(dm,Xdot,&xdot);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dm,&Xloc);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"TSComputeIJacobian_DMDA() called without calling DMDATSSetIJacobian()");
   /* This will be redundant if the user called both, but it's too common to forget. */
-  if (*A != *B) {
-    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -208,7 +208,7 @@ static PetscErrorCode TSComputeRHSFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec 
 
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeRHSJacobian_DMDA"
-static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
+static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Mat A,Mat B,MatStructure *mstr,void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -228,15 +228,15 @@ static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Mat 
     ierr = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(dm,Xloc,&x);CHKERRQ(ierr);
     CHKMEMQ;
-    ierr = (*dmdats->rhsjacobianlocal)(&info,ptime,x,*A,*B,mstr,dmdats->rhsjacobianlocalctx);CHKERRQ(ierr);
+    ierr = (*dmdats->rhsjacobianlocal)(&info,ptime,x,A,B,mstr,dmdats->rhsjacobianlocalctx);CHKERRQ(ierr);
     CHKMEMQ;
     ierr = DMDAVecRestoreArray(dm,Xloc,&x);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dm,&Xloc);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"TSComputeRHSJacobian_DMDA() called without calling DMDATSSetRHSJacobian()");
   /* This will be redundant if the user called both, but it's too common to forget. */
-  if (*A != *B) {
-    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

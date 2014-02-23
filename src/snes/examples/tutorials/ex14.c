@@ -59,7 +59,7 @@ typedef struct {
    User-defined routines
 */
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*),FormInitialGuess(AppCtx*,Vec);
-extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,MatStructure*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -367,10 +367,9 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 .  flag - flag indicating matrix structure
 
 */
-PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,MatStructure *flag,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;  /* user-defined application context */
-  Mat            jac   = *B;              /* Jacobian matrix */
   Vec            localX;
   PetscErrorCode ierr;
   PetscInt       i,j,k,Mx,My,Mz;
@@ -463,8 +462,8 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
      is about to be done.
   */
 
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /*
      Set flag to indicate that the Jacobian matrix retains an identical

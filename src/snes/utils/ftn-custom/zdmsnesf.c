@@ -15,7 +15,7 @@ static struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "ourj"
-static PetscErrorCode ourj(SNES snes, Vec X, Mat *J, Mat *P, MatStructure *str, void *ptr)
+static PetscErrorCode ourj(SNES snes, Vec X, Mat J, Mat P, MatStructure *str, void *ptr)
 {
   PetscErrorCode ierr;
   void (PETSC_STDCALL *func)(SNES*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*),*ctx;
@@ -26,7 +26,7 @@ static PetscErrorCode ourj(SNES snes, Vec X, Mat *J, Mat *P, MatStructure *str, 
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm, &sdm);CHKERRQ(ierr);
   ierr = PetscObjectGetFortranCallback((PetscObject) sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, _cb.snesjacobian, (PetscVoidFunction *) &func, &ctx);CHKERRQ(ierr);
-  (*func)(&snes, &X, J, P, str, ctx, &ierr);CHKERRQ(ierr);
+  (*func)(&snes, &X, &J, &P, str, ctx, &ierr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

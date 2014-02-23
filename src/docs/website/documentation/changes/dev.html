@@ -155,11 +155,15 @@
       </ul>
       <h4>SNES:</h4>
       <ul>
+        <li>The matrix arguments to the user functions provided with <tt>SNESSetJacobian()</tt> and  <tt>SNESSetPicard()</tt> are now Mat not Mat*.</li>
         <li><tt>SNESSetInitialFunctionNorm()</tt> is removed as it's not necessary given that the norm is cached on the Vec.  Use only <tt>SNESSetInitialFunction()</tt>.</li>
         <li><tt>SNESSkipConverged()</tt> renamed to <tt>SNESConvergedSkip()</tt>.</li>
       </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
+      <ul>
+        <li>The matrix arguments to the user functions provided with <tt>TSSetRHSJacobian()</tt> and  <tt>TSSetIJacobian()</tt> are now Mat not Mat*.</li>
+      </ul>
       <h4>DM/DA:</h4>
       <ul>
         <li>The MatType argument is removed from DMCreateMatrix(), you can use DMSetMatType() to indicate the type you want used with a DM, defaults to MATAIJ</li>

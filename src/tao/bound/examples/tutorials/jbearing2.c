@@ -55,7 +55,7 @@ typedef struct {
 /* User-defined routines */
 static PetscReal p(PetscReal xi, PetscReal ecc);
 static PetscErrorCode FormFunctionGradient(Tao, Vec, PetscReal *,Vec,void *);
-static PetscErrorCode FormHessian(Tao,Vec,Mat *, Mat *, MatStructure *, void *);
+static PetscErrorCode FormHessian(Tao,Vec,Mat, Mat, MatStructure *, void *);
 static PetscErrorCode ComputeB(AppCtx*);
 static PetscErrorCode Monitor(Tao, void*);
 static PetscErrorCode ConvergenceTest(Tao, void*);
@@ -349,7 +349,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *p
    Notice that the objective function in this problem is quadratic (therefore a constant
    hessian).  If using a nonquadratic solver, then you might want to reconsider this function
 */
-PetscErrorCode FormHessian(Tao tao,Vec X,Mat *H, Mat *Hpre, MatStructure *flg, void *ptr)
+PetscErrorCode FormHessian(Tao tao,Vec X,Mat hes, Mat Hpre, MatStructure *flg, void *ptr)
 {
   AppCtx*        user=(AppCtx*)ptr;
   PetscErrorCode ierr;
@@ -360,7 +360,6 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat *H, Mat *Hpre, MatStructure *flg, v
   PetscReal      xi,v[5];
   PetscReal      ecc=user->ecc, trule1,trule2,trule3,trule4,trule5,trule6;
   PetscReal      vmiddle, vup, vdown, vleft, vright;
-  Mat            hes=*H;
   PetscBool      assembled;
 
   nx=user->nx;

@@ -22,7 +22,7 @@ typedef struct _TSOps *TSOps;
 
 struct _TSOps {
   PetscErrorCode (*snesfunction)(SNES,Vec,Vec,TS);
-  PetscErrorCode (*snesjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,TS);
+  PetscErrorCode (*snesjacobian)(SNES,Vec,Mat,Mat,MatStructure*,TS);
   PetscErrorCode (*setup)(TS);
   PetscErrorCode (*step)(TS);
   PetscErrorCode (*solve)(TS);

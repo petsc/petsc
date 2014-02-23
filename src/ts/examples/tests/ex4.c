@@ -31,7 +31,7 @@ typedef struct
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode Initial(Vec,void*);
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
-extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,MatStructure*,void*);
 extern PetscErrorCode PostStep(TS);
 
 #undef __FUNCT__
@@ -129,7 +129,7 @@ int main(int argc,char **argv)
         /* Fill the structure using the expensive SNESComputeJacobianDefault. Temporarily set up the TS so we can call this function */
         ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
         ierr = TSSetUp(ts);CHKERRQ(ierr);
-        ierr = SNESComputeJacobianDefault(snes,x,&J,&J,&J_structure,ts);CHKERRQ(ierr);
+        ierr = SNESComputeJacobianDefault(snes,x,J,J,&J_structure,ts);CHKERRQ(ierr);
       }
 
       /* create coloring context */
@@ -306,10 +306,9 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSJacobian"
-PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure *flag,void *ptr)
+PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat A,Mat BB,MatStructure *flag,void *ptr)
 {
   Data           *data = (Data*)ptr;
-  Mat            A     = *AA;
   PetscScalar    v[5];
   PetscInt       idx[5],i,j,row;
   PetscErrorCode ierr;

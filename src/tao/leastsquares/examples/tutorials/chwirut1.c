@@ -56,7 +56,7 @@ typedef struct {
 PetscErrorCode InitializeData(AppCtx *user);
 PetscErrorCode FormStartingPoint(Vec);
 PetscErrorCode EvaluateFunction(Tao, Vec, Vec, void *);
-PetscErrorCode EvaluateJacobian(Tao, Vec, Mat*, Mat*, MatStructure*,void *);
+PetscErrorCode EvaluateJacobian(Tao, Vec, Mat, Mat, MatStructure*,void *);
 
 
 /*--------------------------------------------------------------------*/
@@ -153,7 +153,7 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
 /* J[i][j] = df[i]/dt[j] */
 #undef __FUNCT__
 #define __FUNCT__ "EvaluateJacobian"
-PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat *J, Mat *Jpre, MatStructure*matstruct,void *ptr)
+PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, MatStructure*matstruct,void *ptr)
 {
   AppCtx         *user = (AppCtx *)ptr;
   PetscInt       i;
@@ -172,9 +172,9 @@ PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat *J, Mat *Jpre, MatStructure*
   }
 
   /* Assemble the matrix */
-  ierr = MatSetValues(*J,NOBSERVATIONS,user->idm, NPARAMETERS, user->idn,(PetscReal *)user->j,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetValues(J,NOBSERVATIONS,user->idm, NPARAMETERS, user->idn,(PetscReal *)user->j,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   PetscLogFlops(NOBSERVATIONS * 13);

@@ -31,7 +31,7 @@ PetscErrorCode GetParams(AppCtx*);
 PetscErrorCode SetVariableBounds(DM,Vec,Vec);
 PetscErrorCode SetUpMatrices(AppCtx*);
 PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
-PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,MatStructure*,void*);
 PetscErrorCode SetInitialGuess(Vec,AppCtx*);
 PetscErrorCode Update_q(TS);
 PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
@@ -242,7 +242,7 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t, Vec X,Vec Xdot,Vec F,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormIJacobian"
-PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat *J,Mat *B,MatStructure *flg,void *ctx)
+PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat J,Mat B,MatStructure *flg,void *ctx)
 {
   PetscErrorCode   ierr;
   AppCtx           *user  =(AppCtx*)ctx;
@@ -253,12 +253,12 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, M
      if the active set remains the same for several solves the preconditioner does not need to be rebuilt*/
   *flg = SAME_PRECONDITIONER;
   if (!copied) {
-    ierr   = MatCopy(user->S,*J,*flg);CHKERRQ(ierr);
-    ierr   = MatAXPY(*J,a,user->M,*flg);CHKERRQ(ierr);
+    ierr   = MatCopy(user->S,J,*flg);CHKERRQ(ierr);
+    ierr   = MatAXPY(J,a,user->M,*flg);CHKERRQ(ierr);
     copied = PETSC_TRUE;
   }
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   /*  ierr = MatView(*J,0);CHKERRQ(ierr); */
   /* SETERRQ(PETSC_COMM_WORLD,1,"Stopped here\n"); */
   PetscFunctionReturn(0);

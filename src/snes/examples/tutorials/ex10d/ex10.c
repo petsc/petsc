@@ -75,7 +75,7 @@ typedef struct {
 /*
   User-defined routines
 */
-PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,MatStructure*,void*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 PetscErrorCode FormInitialGuess(AppCtx*,Vec);
 
@@ -416,7 +416,7 @@ int main(int argc,char **argv)
     MatColoring  mc;
     MatStructure flag;
     /* Get the data structure of Jac */
-    ierr = FormJacobian(snes,x,&Jac,&Jac,&flag,&user);CHKERRQ(ierr);
+    ierr = FormJacobian(snes,x,Jac,Jac,&flag,&user);CHKERRQ(ierr);
     /* Create coloring context */
     ierr = MatColoringCreate(Jac,&mc);CHKERRQ(ierr);
     ierr = MatColoringSetType(mc,MATCOLORINGSL);CHKERRQ(ierr);
@@ -655,10 +655,9 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 .  flag - flag indicating matrix structure
 
 */
-PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,MatStructure *flag,void *ptr)
 {
   AppCtx      *user = (AppCtx*)ptr;
-  Mat         jac   = *B;
   PetscInt    i,j,Nvlocal,col[50],ierr;
   PetscScalar alpha,lambda,value[50];
   Vec         localX = user->localX;

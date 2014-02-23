@@ -199,7 +199,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
       sigma = 0.0;
 
       if (needH) {
-          ierr = TaoComputeHessian(tao, tao->solution, &tao->hessian, &tao->hessian_pre, &matflag);CHKERRQ(ierr);
+        ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre,&matflag);CHKERRQ(ierr);
         needH = 0;
       }
 
@@ -339,7 +339,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
 
     /* Compute the Hessian */
     if (needH) {
-      ierr = TaoComputeHessian(tao, tao->solution, &tao->hessian, &tao->hessian_pre, &matflag);CHKERRQ(ierr);
+      ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre,&matflag);CHKERRQ(ierr);
       needH = 0;
     }
 

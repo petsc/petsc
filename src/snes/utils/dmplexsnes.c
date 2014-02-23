@@ -338,7 +338,7 @@ PETSC_STATIC_INLINE PetscErrorCode QuadMap_Private(SNES snes, Vec Xref, Vec Xrea
 #include <petsc-private/dmimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "QuadJacobian_Private"
-PETSC_STATIC_INLINE PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat *J, Mat *M, MatStructure *flag, void *ctx)
+PETSC_STATIC_INLINE PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat J, Mat M, MatStructure *flag, void *ctx)
 {
   const PetscScalar *vertices = (const PetscScalar*) ctx;
   const PetscScalar x0        = vertices[0];
@@ -364,12 +364,12 @@ PETSC_STATIC_INLINE PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat
 
     values[0] = (x1 - x0 + f_01*y) * 0.5; values[1] = (x3 - x0 + f_01*x) * 0.5;
     values[2] = (y1 - y0 + g_01*y) * 0.5; values[3] = (y3 - y0 + g_01*x) * 0.5;
-    ierr      = MatSetValues(*J, 2, rows, 2, rows, values, INSERT_VALUES);CHKERRQ(ierr);
+    ierr      = MatSetValues(J, 2, rows, 2, rows, values, INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscLogFlops(30);CHKERRQ(ierr);
   ierr = VecRestoreArray(Xref,  &ref);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -521,7 +521,7 @@ PETSC_STATIC_INLINE PetscErrorCode HexMap_Private(SNES snes, Vec Xref, Vec Xreal
 
 #undef __FUNCT__
 #define __FUNCT__ "HexJacobian_Private"
-PETSC_STATIC_INLINE PetscErrorCode HexJacobian_Private(SNES snes, Vec Xref, Mat *J, Mat *M, MatStructure *flag, void *ctx)
+PETSC_STATIC_INLINE PetscErrorCode HexJacobian_Private(SNES snes, Vec Xref, Mat J, Mat M, MatStructure *flag, void *ctx)
 {
   const PetscScalar *vertices = (const PetscScalar*) ctx;
   const PetscScalar x0        = vertices[0];
@@ -582,12 +582,12 @@ PETSC_STATIC_INLINE PetscErrorCode HexJacobian_Private(SNES snes, Vec Xref, Mat 
     values[7] = (z3 - z0 + h_xy*x + h_yz*z + h_xyz*x*z) / 2.0;
     values[8] = (z4 - z0 + h_yz*y + h_xz*x + h_xyz*x*y) / 2.0;
 
-    ierr = MatSetValues(*J, 3, rows, 3, rows, values, INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(J, 3, rows, 3, rows, values, INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscLogFlops(152);CHKERRQ(ierr);
   ierr = VecRestoreArray(Xref,  &ref);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

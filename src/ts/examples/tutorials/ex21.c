@@ -68,7 +68,7 @@ typedef struct {
 */
 extern PetscErrorCode InitialConditions(Vec,AppCtx*);
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
-extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,MatStructure*,void*);
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode ExactSolution(PetscReal,Vec,AppCtx*);
 extern PetscErrorCode SetBounds(Vec,Vec,PetscScalar,PetscScalar,AppCtx*);
@@ -598,9 +598,8 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
    - Note that MatSetValues() uses 0-based row and column numbers
      in Fortran as well as in C.
 */
-PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat B,MatStructure *str,void *ctx)
 {
-  Mat            B        = *BB;               /* Jacobian matrix */
   AppCtx         *appctx  = (AppCtx*)ctx;    /* user-defined application context */
   Vec            local_in = appctx->u_local;   /* local ghosted input vector */
   DM             da       = appctx->da;        /* distributed array */

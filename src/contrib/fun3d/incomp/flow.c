@@ -35,7 +35,7 @@ typedef struct {                               /*============================*/
   PetscBool PreLoading;
 } AppCtx;                                      /*============================*/
 
-extern int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
+extern int  FormJacobian(SNES,Vec,Mat,Mat,MatStructure*,void*),
             FormFunction(SNES,Vec,Vec,void*),
             FormInitialGuess(SNES,GRID*),
             Update(SNES,void*),
@@ -445,7 +445,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
+int FormJacobian(SNES snes,Vec x,Mat Jac,Mat B,MatStructure *flag,void *dummy)
 /*---------------------------------------------------------------------*/
 {
   AppCtx      *user  = (AppCtx*) dummy;
@@ -472,8 +472,8 @@ int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
             grid->area,grid->xyzn,&tsCtx->cfl,
            &rank,&grid->nvertices);
   ierr  = VecRestoreArray(localX,&qnode);CHKERRQ(ierr);
-  ierr  = MatAssemblyBegin(*Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr  = MatAssemblyEnd(*Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr  = MatAssemblyBegin(Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr  = MatAssemblyEnd(Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
 #if defined(MATRIX_VIEW)
   if ((tsCtx->itstep != 0) &&(tsCtx->itstep % tsCtx->print_freq) == 0) {

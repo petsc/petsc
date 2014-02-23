@@ -53,7 +53,7 @@ F*/
 /* These functions _should_ be internal, but currently have a reverse dependency so cannot be set with
  * DMDASNESSetPicardLocal.  This hack needs to be fixed in PETSc. */
 PETSC_EXTERN PetscErrorCode SNESPicardComputeFunction(SNES,Vec,Vec,void*);
-PETSC_EXTERN PetscErrorCode SNESPicardComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PETSC_EXTERN PetscErrorCode SNESPicardComputeJacobian(SNES,Vec,Mat,Mat,MatStructure*,void*);
 
 typedef enum {JAC_BRATU,JAC_PICARD,JAC_STAR,JAC_NEWTON} JacType;
 static const char *const JacTypes[] = {"BRATU","PICARD","STAR","NEWTON","JacType","JAC_",0};

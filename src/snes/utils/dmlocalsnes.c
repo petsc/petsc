@@ -84,7 +84,7 @@ static PetscErrorCode SNESComputeFunction_DMLocal(SNES snes,Vec X,Vec F,void *ct
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESComputeJacobian_DMLocal"
-static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
+static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat A,Mat B,MatStructure *mstr,void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -99,7 +99,7 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat *A,Mat *B,
     ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
     CHKMEMQ;
-    ierr = (*dmlocalsnes->jacobianlocal)(dm,Xloc,*A,*B,mstr,dmlocalsnes->jacobianlocalctx);CHKERRQ(ierr);
+    ierr = (*dmlocalsnes->jacobianlocal)(dm,Xloc,A,B,mstr,dmlocalsnes->jacobianlocalctx);CHKERRQ(ierr);
     CHKMEMQ;
     ierr = DMRestoreLocalVector(dm,&Xloc);CHKERRQ(ierr);
   } else {
@@ -109,7 +109,7 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat *A,Mat *B,
       ISColoring coloring;
 
       ierr = DMCreateColoring(dm,dm->coloringtype,&coloring);CHKERRQ(ierr);
-      ierr = MatFDColoringCreate(*B,coloring,&fdcoloring);CHKERRQ(ierr);
+      ierr = MatFDColoringCreate(B,coloring,&fdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(&coloring);CHKERRQ(ierr);
       switch (dm->coloringtype) {
       case IS_COLORING_GLOBAL:
@@ -119,7 +119,7 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat *A,Mat *B,
       }
       ierr = PetscObjectSetOptionsPrefix((PetscObject)fdcoloring,((PetscObject)dm)->prefix);CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr);
-      ierr = MatFDColoringSetUp(*B,coloring,fdcoloring);CHKERRQ(ierr);
+      ierr = MatFDColoringSetUp(B,coloring,fdcoloring);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject)dm,"DMDASNES_FDCOLORING",(PetscObject)fdcoloring);CHKERRQ(ierr);
       ierr = PetscObjectDereference((PetscObject)fdcoloring);CHKERRQ(ierr);
 
@@ -132,12 +132,12 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat *A,Mat *B,
       ierr = PetscObjectDereference((PetscObject)dm);CHKERRQ(ierr);
     }
     *mstr = SAME_NONZERO_PATTERN;
-    ierr  = MatFDColoringApply(*B,fdcoloring,X,mstr,snes);CHKERRQ(ierr);
+    ierr  = MatFDColoringApply(B,fdcoloring,X,mstr,snes);CHKERRQ(ierr);
   }
   /* This will be redundant if the user called both, but it's too common to forget. */
-  if (*A != *B) {
-    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

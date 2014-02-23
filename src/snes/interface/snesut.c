@@ -160,7 +160,7 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
   Vec            X;
   Mat            J,dJ,dJdense;
   PetscErrorCode ierr;
-  PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+  PetscErrorCode (*func)(SNES,Vec,Mat,Mat,MatStructure*,void*);
   PetscInt       n,i;
   PetscBLASInt   nb,lwork;
   PetscReal      *eigr,*eigi;
@@ -174,7 +174,7 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
   ierr = SNESGetSolution(snes,&X);CHKERRQ(ierr);
   ierr = SNESGetJacobian(snes,&J,NULL,&func,NULL);CHKERRQ(ierr);
   ierr = MatDuplicate(J,MAT_COPY_VALUES,&dJ);CHKERRQ(ierr);
-  ierr = SNESComputeJacobian(snes,X,&dJ,&dJ,&flg);CHKERRQ(ierr);
+  ierr = SNESComputeJacobian(snes,X,dJ,dJ,&flg);CHKERRQ(ierr);
   ierr = MatAXPY(dJ,-1.0,J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /* compute the spectrum directly */

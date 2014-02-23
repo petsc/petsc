@@ -367,7 +367,7 @@ static PetscErrorCode SNESTSFormFunction_EIMEX(SNES snes,Vec X,Vec G,TS ts)
  */
 #undef __FUNCT__
 #define __FUNCT__ "SNESTSFormJacobian_EIMEX"
-static PetscErrorCode SNESTSFormJacobian_EIMEX(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *str,TS ts)
+static PetscErrorCode SNESTSFormJacobian_EIMEX(SNES snes,Vec X,Mat A,Mat B,MatStructure *str,TS ts)
 {
   TS_EIMEX        *ext = (TS_EIMEX*)ts->data;
   Vec             Ydot;

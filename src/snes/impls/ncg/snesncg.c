@@ -147,7 +147,7 @@ PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
    The exact step size for unpreconditioned linear CG is just:
    alpha = (r, r) / (p, Ap) = (f, f) / (y, Jy)
    */
-  ierr  = SNESComputeJacobian(snes, X, &snes->jacobian, &snes->jacobian_pre, &flg);CHKERRQ(ierr);
+  ierr  = SNESComputeJacobian(snes, X, snes->jacobian, snes->jacobian_pre, &flg);CHKERRQ(ierr);
   ierr  = VecDot(F, F, &alpha);CHKERRQ(ierr);
   ierr  = MatMult(snes->jacobian, Y, W);CHKERRQ(ierr);
   ierr  = VecDot(Y, W, &ptAp);CHKERRQ(ierr);

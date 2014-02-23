@@ -18,7 +18,7 @@ static char help[] = "Solves a nonlinear ODE. \n\n";
 #include <petscpc.h>
 
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
-extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,MatStructure*,void*);
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode Initial(Vec,void*);
 
@@ -214,9 +214,8 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSJacobian"
-PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat A,Mat BB,MatStructure *str,void *ctx)
 {
-  Mat            A = *AA;
   PetscScalar    v[3],*tmp;
   PetscInt       idx[3],i;
   PetscErrorCode ierr;

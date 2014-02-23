@@ -50,7 +50,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
     }
 
     /* compute both versions of Jacobian */
-    ierr = SNESComputeJacobian(snes,x,&A,&A,&flg);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes,x,A,A,&flg);CHKERRQ(ierr);
     if (!i) {
       PetscInt m,n,M,N;
       ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
@@ -61,7 +61,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
       ierr = MatSetUp(B);CHKERRQ(ierr);
     }
     ierr = SNESGetFunction(snes,NULL,NULL,&functx);CHKERRQ(ierr);
-    ierr = SNESComputeJacobianDefault(snes,x,&B,&B,&flg,functx);CHKERRQ(ierr);
+    ierr = SNESComputeJacobianDefault(snes,x,B,B,&flg,functx);CHKERRQ(ierr);
     if (neP->complete_print) {
       MPI_Comm    comm;
       PetscViewer viewer;
@@ -241,7 +241,7 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
   }
 
   /* compute both versions of Jacobian */
-  ierr = SNESComputeJacobian(snes,x,&A,&A,&flg);CHKERRQ(ierr);
+  ierr = SNESComputeJacobian(snes,x,A,A,&flg);CHKERRQ(ierr);
 
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
@@ -250,7 +250,7 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
   ierr = SNESGetFunction(snes,NULL,NULL,&functx);CHKERRQ(ierr);
-  ierr = SNESComputeJacobianDefault(snes,x,&B,&B,&flg,functx);CHKERRQ(ierr);
+  ierr = SNESComputeJacobianDefault(snes,x,B,B,&flg,functx);CHKERRQ(ierr);
 
   if (complete_print) {
     ierr = PetscViewerASCIIPrintf(viewer,"    Finite difference Jacobian\n");CHKERRQ(ierr);

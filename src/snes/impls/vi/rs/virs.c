@@ -399,7 +399,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
-    ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre,&flg);CHKERRQ(ierr);
 
 
     /* Create active and inactive index sets */

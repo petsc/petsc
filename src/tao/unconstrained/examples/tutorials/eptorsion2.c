@@ -60,8 +60,8 @@ T*/
 */
 typedef struct {
   /* parameters */
-   PetscInt           mx, my;         /* global discretization in x- and y-directions */
-   PetscReal        param;          /* nonlinearity parameter */
+   PetscInt      mx, my;         /* global discretization in x- and y-directions */
+   PetscReal     param;          /* nonlinearity parameter */
 
   /* work space */
    Vec           localX;         /* local vectors */
@@ -71,7 +71,7 @@ typedef struct {
 
 PetscErrorCode FormInitialGuess(AppCtx*, Vec);
 PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
-PetscErrorCode FormHessian(Tao,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormHessian(Tao,Vec,Mat,Mat,MatStructure*,void*);
 
 
 #undef __FUNCT__
@@ -180,10 +180,10 @@ int main(int argc, char **argv)
 */
 PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
 {
-  PetscErrorCode    ierr;
-  PetscInt   i, j, k, mx = user->mx, my = user->my;
-  PetscInt   xs, ys, xm, ym, gxm, gym, gxs, gys, xe, ye;
-  PetscReal hx = 1.0/(mx+1), hy = 1.0/(my+1), temp, val;
+  PetscErrorCode ierr;
+  PetscInt       i, j, k, mx = user->mx, my = user->my;
+  PetscInt       xs, ys, xm, ym, gxm, gym, gxs, gys, xe, ye;
+  PetscReal      hx = 1.0/(mx+1), hy = 1.0/(my+1), temp, val;
 
   PetscFunctionBegin;
   /* Get local mesh boundaries */
@@ -224,19 +224,18 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
 */
 PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f,Vec G,void *ptr){
 
-  AppCtx *user = (AppCtx *)ptr;
-  PetscErrorCode    ierr;
-  PetscInt i,j,k,ind;
-  PetscInt xe,ye,xsm,ysm,xep,yep;
-  PetscInt xs, ys, xm, ym, gxm, gym, gxs, gys;
-  PetscInt mx = user->mx, my = user->my;
-  PetscReal three = 3.0, zero = 0.0, *x, floc, cdiv3 = user->param/three;
-  PetscReal p5 = 0.5, area, val, flin, fquad;
-  PetscReal v,vb,vl,vr,vt,dvdx,dvdy;
-  PetscReal hx = 1.0/(user->mx + 1);
-  PetscReal hy = 1.0/(user->my + 1);
-  Vec    localX = user->localX;
-
+  AppCtx         *user = (AppCtx *)ptr;
+  PetscErrorCode ierr;
+  PetscInt       i,j,k,ind;
+  PetscInt       xe,ye,xsm,ysm,xep,yep;
+  PetscInt       xs, ys, xm, ym, gxm, gym, gxs, gys;
+  PetscInt       mx = user->mx, my = user->my;
+  PetscReal      three = 3.0, zero = 0.0, *x, floc, cdiv3 = user->param/three;
+  PetscReal      p5 = 0.5, area, val, flin, fquad;
+  PetscReal      v,vb,vl,vr,vt,dvdx,dvdy;
+  PetscReal      hx = 1.0/(user->mx + 1);
+  PetscReal      hy = 1.0/(user->my + 1);
+  Vec            localX = user->localX;
 
   PetscFunctionBegin;
   /* Initialize */
@@ -354,16 +353,15 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f,Vec G,void *ptr){
 
 #undef __FUNCT__
 #define __FUNCT__ "FormHessian"
-PetscErrorCode FormHessian(Tao tao, Vec X, Mat *H, Mat *Hpre, MatStructure *flag, void*ctx){
-
-  AppCtx *user= (AppCtx*) ctx;
+PetscErrorCode FormHessian(Tao tao, Vec X, Mat A, Mat Hpre, MatStructure *flag, void*ctx)
+{
+  AppCtx         *user= (AppCtx*) ctx;
   PetscErrorCode ierr;
-  PetscInt i,j,k;
-  PetscInt col[5],row;
-  PetscInt xs,xm,gxs,gxm,ys,ym,gys,gym;
-  PetscReal v[5];
-  PetscReal hx=1.0/(user->mx+1), hy=1.0/(user->my+1), hxhx=1.0/(hx*hx), hyhy=1.0/(hy*hy), area=0.5*hx*hy;
-  Mat A=*H;
+  PetscInt       i,j,k;
+  PetscInt       col[5],row;
+  PetscInt       xs,xm,gxs,gxm,ys,ym,gys,gym;
+  PetscReal      v[5];
+  PetscReal      hx=1.0/(user->mx+1), hy=1.0/(user->my+1), hxhx=1.0/(hx*hx), hyhy=1.0/(hy*hy), area=0.5*hx*hy;
 
   /* Compute the quadratic term in the objective function */
 
@@ -419,8 +417,6 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat *H, Mat *Hpre, MatStructure *flag
   ierr = MatScale(A,area);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-
   ierr = PetscLogFlops(9*xm*ym+49*xm);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }

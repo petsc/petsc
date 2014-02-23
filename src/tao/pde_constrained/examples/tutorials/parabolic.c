@@ -87,10 +87,10 @@ typedef struct {
 PetscErrorCode FormFunction(Tao, Vec, PetscReal*, void*);
 PetscErrorCode FormGradient(Tao, Vec, Vec, void*);
 PetscErrorCode FormFunctionGradient(Tao, Vec, PetscReal*, Vec, void*);
-PetscErrorCode FormJacobianState(Tao, Vec, Mat*, Mat*, Mat*, MatStructure*,void*);
-PetscErrorCode FormJacobianDesign(Tao, Vec, Mat*, void*);
+PetscErrorCode FormJacobianState(Tao, Vec, Mat, Mat, Mat, MatStructure*,void*);
+PetscErrorCode FormJacobianDesign(Tao, Vec, Mat, void*);
 PetscErrorCode FormConstraints(Tao, Vec, Vec, void*);
-PetscErrorCode FormHessian(Tao, Vec, Mat*, Mat*, MatStructure*, void*);
+PetscErrorCode FormHessian(Tao, Vec, Mat, Mat, MatStructure*, void*);
 PetscErrorCode Gather(Vec x, Vec state, VecScatter s_scat, Vec design, VecScatter d_scat);
 PetscErrorCode Scatter(Vec x, Vec state, VecScatter s_scat, Vec design, VecScatter d_scat);
 PetscErrorCode ParabolicInitialize(AppCtx *user);
@@ -364,7 +364,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *p
 /* A
 MatShell object
 */
-PetscErrorCode FormJacobianState(Tao tao, Vec X, Mat *J, Mat* JPre, Mat* JInv, MatStructure* flag, void *ptr)
+PetscErrorCode FormJacobianState(Tao tao, Vec X, Mat J, Mat JPre, Mat JInv, MatStructure* flag, void *ptr)
 {
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx*)ptr;
@@ -390,7 +390,6 @@ PetscErrorCode FormJacobianState(Tao tao, Vec X, Mat *J, Mat* JPre, Mat* JInv, M
   /* B = speye(nx^3) + ht*DSG; */
   ierr = MatScale(user->DSG,user->ht);CHKERRQ(ierr);
   ierr = MatShift(user->DSG,1.0);CHKERRQ(ierr);
-  *JInv = user->JsInv;
   PetscFunctionReturn(0);
 }
 
@@ -398,14 +397,13 @@ PetscErrorCode FormJacobianState(Tao tao, Vec X, Mat *J, Mat* JPre, Mat* JInv, M
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianDesign"
 /* B */
-PetscErrorCode FormJacobianDesign(Tao tao, Vec X, Mat *J, void *ptr)
+PetscErrorCode FormJacobianDesign(Tao tao, Vec X, Mat J, void *ptr)
 {
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx*)ptr;
 
   PetscFunctionBegin;
   ierr = Scatter(X,user->y,user->state_scatter,user->u,user->design_scatter);CHKERRQ(ierr);
-  *J = user->Jd;
   PetscFunctionReturn(0);
 }
 

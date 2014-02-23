@@ -43,11 +43,11 @@ typedef struct {
 PetscErrorCode InitializeProblem(AppCtx *);
 PetscErrorCode DestroyProblem(AppCtx *);
 PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal *,Vec,void *);
-PetscErrorCode FormHessian(Tao,Vec,Mat*,Mat*, MatStructure *,void*);
+PetscErrorCode FormHessian(Tao,Vec,Mat,Mat, MatStructure *,void*);
 PetscErrorCode FormInequalityConstraints(Tao,Vec,Vec,void*);
 PetscErrorCode FormEqualityConstraints(Tao,Vec,Vec,void*);
-PetscErrorCode FormInequalityJacobian(Tao,Vec,Mat*,Mat*, MatStructure *,void*);
-PetscErrorCode FormEqualityJacobian(Tao,Vec,Mat*,Mat*, MatStructure *,void*);
+PetscErrorCode FormInequalityJacobian(Tao,Vec,Mat,Mat, MatStructure *,void*);
+PetscErrorCode FormEqualityJacobian(Tao,Vec,Mat,Mat, MatStructure *,void*);
 
 
 
@@ -181,9 +181,8 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *c
 
 #undef __FUNCT__
 #define __FUNCT__ "FormHessian"
-PetscErrorCode FormHessian(Tao tao, Vec x, Mat *H, Mat *Hpre, MatStructure *ms, void *ctx)
+PetscErrorCode FormHessian(Tao tao, Vec x, Mat H, Mat Hpre, MatStructure *ms, void *ctx)
 {
-  AppCtx            *user = (AppCtx*)ctx;
   Vec               DE,DI;
   const PetscScalar *de, *di;
   PetscInt          zero=0,one=1;
@@ -200,11 +199,11 @@ PetscErrorCode FormHessian(Tao tao, Vec x, Mat *H, Mat *Hpre, MatStructure *ms, 
   ierr = VecRestoreArrayRead(DE,&de);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(DI,&di);CHKERRQ(ierr);
 
-  ierr = MatSetValues(*H,1,&zero,1,&zero,&val,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatSetValues(*H,1,&one,1,&one,&two,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValues(H,1,&zero,1,&zero,&val,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValues(H,1,&one,1,&one,&two,INSERT_VALUES);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(user->H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(user->H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *ms = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
@@ -245,7 +244,7 @@ PetscErrorCode FormEqualityConstraints(Tao tao, Vec X, Vec CE,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormInequalityJacobian"
-PetscErrorCode FormInequalityJacobian(Tao tao, Vec X, Mat *JI, Mat *JIpre,  MatStructure *ms, void *ctx)
+PetscErrorCode FormInequalityJacobian(Tao tao, Vec X, Mat JI, Mat JIpre,  MatStructure *ms, void *ctx)
 {
   PetscInt          rows[2];
   PetscInt          cols[2];
@@ -260,17 +259,16 @@ PetscErrorCode FormInequalityJacobian(Tao tao, Vec X, Mat *JI, Mat *JIpre,  MatS
   vals[0] = +2*x[0]; vals[1] = -1.0;
   vals[2] = -2*x[0]; vals[3] = +1.0;
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = MatSetValues(*JI,2,rows,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*JI,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*JI,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetValues(JI,2,rows,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(JI,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(JI,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "FormEqualityJacobian"
-PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat *JE, Mat *JEpre, MatStructure *ms, void *ctx)
+PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat JE, Mat JEpre, MatStructure *ms, void *ctx)
 {
   PetscInt          rows[2];
   PetscScalar       vals[2];
@@ -282,8 +280,8 @@ PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat *JE, Mat *JEpre, MatStru
   rows[0] = 0;       rows[1] = 1;
   vals[0] = 2*x[0];  vals[1] = 1.0;
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = MatSetValues(*JE,1,rows,2,rows,vals,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*JE,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*JE,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetValues(JE,1,rows,2,rows,vals,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(JE,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(JE,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

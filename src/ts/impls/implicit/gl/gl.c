@@ -1131,7 +1131,7 @@ static PetscErrorCode SNESTSFormFunction_GL(SNES snes,Vec x,Vec f,TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESTSFormJacobian_GL"
-static PetscErrorCode SNESTSFormJacobian_GL(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *str,TS ts)
+static PetscErrorCode SNESTSFormJacobian_GL(SNES snes,Vec x,Mat A,Mat B,MatStructure *str,TS ts)
 {
   TS_GL          *gl = (TS_GL*)ts->data;
   PetscErrorCode ierr;

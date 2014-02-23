@@ -171,7 +171,7 @@ static PetscErrorCode SNESTSFormFunction_Alpha(SNES snes,Vec x,Vec y,TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESTSFormJacobian_Alpha"
-static PetscErrorCode SNESTSFormJacobian_Alpha(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *str,TS ts)
+static PetscErrorCode SNESTSFormJacobian_Alpha(SNES snes,Vec x,Mat A,Mat B,MatStructure *str,TS ts)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
   PetscErrorCode ierr;

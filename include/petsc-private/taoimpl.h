@@ -12,16 +12,16 @@ struct _TaoOps {
     PetscErrorCode (*computeobjective)(Tao, Vec, PetscReal*, void*);
     PetscErrorCode (*computeobjectiveandgradient)(Tao, Vec, PetscReal*, Vec, void*);
     PetscErrorCode (*computegradient)(Tao, Vec, Vec, void*);
-    PetscErrorCode (*computehessian)(Tao, Vec, Mat*, Mat*, MatStructure*, void*);
+    PetscErrorCode (*computehessian)(Tao, Vec, Mat, Mat, MatStructure*, void*);
     PetscErrorCode (*computeseparableobjective)(Tao, Vec, Vec, void*);
     PetscErrorCode (*computeconstraints)(Tao, Vec, Vec, void*);
     PetscErrorCode (*computeinequalityconstraints)(Tao, Vec, Vec, void*);
     PetscErrorCode (*computeequalityconstraints)(Tao, Vec, Vec, void*);
-    PetscErrorCode (*computejacobian)(Tao, Vec, Mat*, Mat*, MatStructure*, void*);
-    PetscErrorCode (*computejacobianstate)(Tao, Vec, Mat*, Mat*, Mat*, MatStructure*, void*);
-    PetscErrorCode (*computejacobiandesign)(Tao, Vec, Mat*, void*);
-    PetscErrorCode (*computejacobianinequality)(Tao, Vec, Mat*, Mat*, MatStructure*, void*);
-    PetscErrorCode (*computejacobianequality)(Tao, Vec, Mat*, Mat*, MatStructure*, void*);
+    PetscErrorCode (*computejacobian)(Tao, Vec, Mat, Mat, MatStructure*, void*);
+    PetscErrorCode (*computejacobianstate)(Tao, Vec, Mat, Mat, Mat, MatStructure*, void*);
+    PetscErrorCode (*computejacobiandesign)(Tao, Vec, Mat, void*);
+    PetscErrorCode (*computejacobianinequality)(Tao, Vec, Mat, Mat, MatStructure*, void*);
+    PetscErrorCode (*computejacobianequality)(Tao, Vec, Mat, Mat, MatStructure*, void*);
     PetscErrorCode (*computebounds)(Tao, Vec, Vec, void*);
 
     PetscErrorCode (*convergencetest)(Tao,void*);

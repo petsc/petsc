@@ -1043,7 +1043,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
         /*Y[i] += Y[i] + Jac*Zstage[=Jac*GammaExplicitCorr[i,j] * Y[j]] */
         str  = SAME_NONZERO_PATTERN;
         ierr = TSGetIJacobian(ts,&J,&Jp,NULL,NULL);CHKERRQ(ierr);
-        ierr = TSComputeIJacobian(ts,ros->stage_time,ts->vec_sol,Ydot,0,&J,&Jp,&str,PETSC_FALSE);CHKERRQ(ierr);
+        ierr = TSComputeIJacobian(ts,ros->stage_time,ts->vec_sol,Ydot,0,J,Jp,&str,PETSC_FALSE);CHKERRQ(ierr);
         ierr = MatMult(J,Zstage,Zdot);CHKERRQ(ierr);
 
         ierr = VecAXPY(Y[i],-1.0,Zdot);CHKERRQ(ierr);
@@ -1338,7 +1338,7 @@ static PetscErrorCode SNESTSFormFunction_RosW(SNES snes,Vec U,Vec F,TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESTSFormJacobian_RosW"
-static PetscErrorCode SNESTSFormJacobian_RosW(SNES snes,Vec U,Mat *A,Mat *B,MatStructure *str,TS ts)
+static PetscErrorCode SNESTSFormJacobian_RosW(SNES snes,Vec U,Mat A,Mat B,MatStructure *str,TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
   Vec            Ydot,Zdot,Ystage,Zstage;

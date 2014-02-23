@@ -3669,7 +3669,7 @@ Jacobian matrix, \trl{A}, at the current iterate, \trl{x},
 as is typically done with
 \begin{tabbing}
   SNESSetJacobian(SNES snes,Mat Amat,Mat Pmat,PetscErrorCode (*FormJacobian)(SNES snes,\\
-          Vec x,Mat *A,Mat *B,MatStructure *flag,void *ctx),void *ctx);
+          Vec x,Mat A,Mat B,MatStructure *flag,void *ctx),void *ctx);
 \end{tabbing}
 The arguments of the routine \trl{
 FormJacobian()} are the current iterate, \trl{x}; the (approximate) Jacobian matrix,
@@ -4370,7 +4370,7 @@ To solve an ODE or DAE one uses:
   If using a fully implicit or semi-implict (IMEX) method one also can provide an appropriate (approximate) Jacobian matrix of $F()$.
   \begin{tabbing}
     TS\=SetIJacobian(TS ts,Mat A,Mat B,\\
-    \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*),void *jacP);
+    \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,MatStructure*,void*),void *jacP);
   \end{tabbing}
   The arguments for the function \trl{fjac()}
   are the timestep contex, current time, input state $u$, input
@@ -4394,7 +4394,7 @@ To solve an ODE or DAE one uses:
   If using a fully implicit method and the function $ G() $ is provided, one also can provide an appropriate (approximate) Jacobian matrix of $G()$.
   \begin{tabbing}
     TS\=SetRHSJacobian(TS ts,Mat A,Mat B,\\
-    \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void *jacP);
+    \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Mat,Mat,MatStructure*,void*),void *jacP);
   \end{tabbing}
   The arguments for the function \trl{fjac()}
   are the timestep contex, current time, input state $u$, matrix $A$, preconditioning matrix
@@ -4681,7 +4681,7 @@ variable \trl{fP}.
 \item Provide the (approximate) Jacobian matrix of \trl{G(u)} and a
 function to compute it at each Newton iteration. This is done with the command
 \begin{tabbing}
- TSSetRHSJacobian(\=TS ts,Mat Amat, Mat Pmat,PetscErrorCode (*f)(TS,double,Vec,Mat*,Mat*,\\
+ TSSetRHSJacobian(\=TS ts,Mat Amat, Mat Pmat,PetscErrorCode (*f)(TS,double,Vec,Mat,Mat,\\
                   \>        MatStructure*,void*),void *fP);
 \end{tabbing}
 The  arguments for the function \trl{f()} are

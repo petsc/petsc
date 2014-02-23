@@ -41,7 +41,7 @@ typedef struct {
 static PetscErrorCode MSA_BoundaryConditions(AppCtx *);
 static PetscErrorCode MSA_InitialPoint(AppCtx *, Vec);
 PetscErrorCode FormConstraints(Tao, Vec, Vec, void *);
-PetscErrorCode FormJacobian(Tao, Vec, Mat *, Mat*, MatStructure*,void *);
+PetscErrorCode FormJacobian(Tao, Vec, Mat, Mat, MatStructure*,void *);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -274,10 +274,9 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec G, void *ptr)
 .  tH    - Jacobian matrix
 
 */
-PetscErrorCode FormJacobian(Tao tao, Vec X, Mat *tH, Mat* tHPre, MatStructure* flag, void *ptr)
+PetscErrorCode FormJacobian(Tao tao, Vec X, Mat H, Mat tHPre, MatStructure* flag, void *ptr)
 {
   AppCtx         *user = (AppCtx *) ptr;
-  Mat            H = *tH;
   PetscErrorCode ierr;
   PetscInt       i,j,k,row;
   PetscInt       mx=user->mx, my=user->my;

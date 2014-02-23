@@ -127,7 +127,7 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
     time_step_save = ts->time_step;
     ts->time_step  = PETSC_MAX_REAL;
 
-    ierr = SNESComputeJacobian(snes,v,&A,&B,&structure);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes,v,A,B,&structure);CHKERRQ(ierr);
 
     ts->time_step  = time_step_save;
 

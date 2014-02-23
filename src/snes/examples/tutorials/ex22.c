@@ -45,7 +45,7 @@ typedef struct {
 } UserCtx;
 
 extern PetscErrorCode ComputeFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode ComputeJacobian_MF(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode ComputeJacobian_MF(SNES,Vec,Mat,Mat,MatStructure*,void*);
 extern PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
 
 /*
@@ -306,12 +306,12 @@ PetscErrorCode DMCreateMatrix_MF(DM packer,Mat *A)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeJacobian_MF"
-PetscErrorCode ComputeJacobian_MF(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *str,void *ctx)
+PetscErrorCode ComputeJacobian_MF(SNES snes,Vec x,Mat A,Mat B,MatStructure *str,void *ctx)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = MatMFFDSetFunction(*A,(PetscErrorCode (*)(void*,Vec,Vec))SNESComputeFunction,snes);CHKERRQ(ierr);
-  ierr = MatMFFDSetBase(*A,x,NULL);CHKERRQ(ierr);
+  ierr = MatMFFDSetFunction(A,(PetscErrorCode (*)(void*,Vec,Vec))SNESComputeFunction,snes);CHKERRQ(ierr);
+  ierr = MatMFFDSetBase(A,x,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

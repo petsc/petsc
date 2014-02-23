@@ -1356,7 +1356,7 @@ static PetscErrorCode SmallMatMultADB(PetscScalar *C,PetscInt bs,const PetscScal
 
 #undef __FUNCT__
 #define __FUNCT__ "FVIJacobian"
-static PetscErrorCode FVIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat *A,Mat *B,MatStructure *flg,void *vctx)
+static PetscErrorCode FVIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat A,Mat B,MatStructure *flg,void *vctx)
 {
   FVCtx          *ctx = (FVCtx*)vctx;
   PetscErrorCode ierr;
@@ -1377,16 +1377,16 @@ static PetscErrorCode FVIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shi
     for (j=0; j<dof; j++) ctx->speeds[j] = PetscAbs(ctx->speeds[j]);
     ierr = SmallMatMultADB(J,dof,ctx->R,ctx->speeds,ctx->Rinv);CHKERRQ(ierr);
     for (j=0; j<dof*dof; j++) J[j] = J[j]/hx + shift*(j/dof == j%dof);
-    ierr = MatSetValuesBlocked(*B,1,&i,1,&i,J,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValuesBlocked(B,1,&i,1,&i,J,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree(J);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*A != *B) {
-    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

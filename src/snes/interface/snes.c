@@ -507,7 +507,7 @@ static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,MatStructure 
   Vec            X,Xnamed = NULL;
   DM             dmsave;
   void           *ctxsave;
-  PetscErrorCode (*jac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+  PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,MatStructure*,void*);
 
   PetscFunctionBegin;
   dmsave = snes->dm;
@@ -524,7 +524,7 @@ static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,MatStructure 
   }
   /* put the previous context back */
 
-  ierr = SNESComputeJacobian(snes,X,&A,&B,mstruct);CHKERRQ(ierr);
+  ierr = SNESComputeJacobian(snes,X,A,B,mstruct);CHKERRQ(ierr);
   if (snes->dm != dmsave && jac == SNESComputeJacobianDefaultColor) {
     ierr = SNESSetJacobian(snes,NULL,NULL,jac,ctxsave);CHKERRQ(ierr);
   }
@@ -1868,7 +1868,7 @@ PETSC_EXTERN PetscErrorCode SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetPicard() to provide Picard function.");
 
   if (sdm->ops->computepjacobian) {
-    ierr = (*sdm->ops->computepjacobian)(snes,x,&snes->jacobian,&snes->jacobian_pre,&snes->matstruct,sdm->pctx);CHKERRQ(ierr);
+    ierr = (*sdm->ops->computepjacobian)(snes,x,snes->jacobian,snes->jacobian_pre,&snes->matstruct,sdm->pctx);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetPicard() to provide Picard matrix.");
   ierr = VecScale(f,-1.0);CHKERRQ(ierr);
   ierr = MatMultAdd(snes->jacobian,x,f,f);CHKERRQ(ierr);
@@ -1877,7 +1877,7 @@ PETSC_EXTERN PetscErrorCode SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESPicardComputeJacobian"
-PETSC_EXTERN PetscErrorCode SNESPicardComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+PETSC_EXTERN PetscErrorCode SNESPicardComputeJacobian(SNES snes,Vec x1,Mat J,Mat B,MatStructure *flag,void *ctx)
 {
   PetscFunctionBegin;
   /* the jacobian matrix should be pre-filled in SNESPicardComputeFunction */
@@ -1926,7 +1926,7 @@ $     Note that when an exact solver is used this corresponds to the "classic" P
 
 .seealso: SNESGetFunction(), SNESSetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESGetPicard(), SNESLineSearchPreCheckPicard()
 @*/
-PetscErrorCode  SNESSetPicard(SNES snes,Vec r,PetscErrorCode (*b)(SNES,Vec,Vec,void*),Mat Amat, Mat Pmat, PetscErrorCode (*J)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
+PetscErrorCode  SNESSetPicard(SNES snes,Vec r,PetscErrorCode (*b)(SNES,Vec,Vec,void*),Mat Amat, Mat Pmat, PetscErrorCode (*J)(SNES,Vec,Mat,Mat,MatStructure*,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -1964,7 +1964,7 @@ PetscErrorCode  SNESSetPicard(SNES snes,Vec r,PetscErrorCode (*b)(SNES,Vec,Vec,v
 
 .seealso: SNESSetPicard(), SNESGetFunction(), SNESGetJacobian(), SNESGetDM(), SNESFunction, SNESJacobianFunction
 @*/
-PetscErrorCode  SNESGetPicard(SNES snes,Vec *r,PetscErrorCode (**f)(SNES,Vec,Vec,void*),Mat *Amat, Mat *Pmat, PetscErrorCode (**J)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void **ctx)
+PetscErrorCode  SNESGetPicard(SNES snes,Vec *r,PetscErrorCode (**f)(SNES,Vec,Vec,void*),Mat *Amat, Mat *Pmat, PetscErrorCode (**J)(SNES,Vec,Mat,Mat,MatStructure*,void*),void **ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -2197,7 +2197,7 @@ PetscErrorCode  SNESComputeGS(SNES snes,Vec b,Vec x)
 
 .seealso:  SNESSetJacobian(), KSPSetOperators(), MatStructure, SNESSetLagPreconditioner(), SNESSetLagJacobian()
 @*/
-PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
+PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B,MatStructure *flg)
 {
   PetscErrorCode ierr;
   PetscBool      flag;
@@ -2224,36 +2224,36 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
   } else if (snes->lagjacobian == -1) {
     *flg = SAME_PRECONDITIONER;
     ierr = PetscInfo(snes,"Reusing Jacobian/preconditioner because lag is -1\n");CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)*A,MATMFFD,&flag);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)A,MATMFFD,&flag);CHKERRQ(ierr);
     if (flag) {
-      ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
   } else if (snes->lagjacobian > 1 && (snes->iter + snes->jac_iter) % snes->lagjacobian) {
     *flg = SAME_PRECONDITIONER;
     ierr = PetscInfo2(snes,"Reusing Jacobian/preconditioner because lag is %D and SNES iteration is %D\n",snes->lagjacobian,snes->iter);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)*A,MATMFFD,&flag);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)A,MATMFFD,&flag);CHKERRQ(ierr);
     if (flag) {
-      ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
   }
   if (snes->pc && snes->pcside == PC_LEFT) {
-      ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       PetscFunctionReturn(0);
   }
 
   *flg = DIFFERENT_NONZERO_PATTERN;
-  ierr = PetscLogEventBegin(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(SNES_JacobianEval,snes,X,A,B);CHKERRQ(ierr);
 
   PetscStackPush("SNES user Jacobian function");
   ierr = (*sdm->ops->computejacobian)(snes,X,A,B,flg,sdm->jacobianctx);CHKERRQ(ierr);
   PetscStackPop;
 
-  ierr = PetscLogEventEnd(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(SNES_JacobianEval,snes,X,A,B);CHKERRQ(ierr);
 
   if (snes->lagpreconditioner == -2) {
     ierr = PetscInfo(snes,"Rebuilding preconditioner exactly once since lag is -2\n");CHKERRQ(ierr);
@@ -2268,8 +2268,8 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
   }
 
   /* make sure user returned a correct Jacobian and preconditioner */
-  /* PetscValidHeaderSpecific(*A,MAT_CLASSID,3);
-    PetscValidHeaderSpecific(*B,MAT_CLASSID,4);   */
+  /* PetscValidHeaderSpecific(A,MAT_CLASSID,3);
+    PetscValidHeaderSpecific(B,MAT_CLASSID,4);   */
   {
     PetscBool flag = PETSC_FALSE,flag_draw = PETSC_FALSE,flag_contour = PETSC_FALSE,flag_operator = PETSC_FALSE;
     ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_compare_explicit",&flag,NULL);CHKERRQ(ierr);
@@ -2282,20 +2282,20 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
       PetscViewer  vdraw,vstdout;
       PetscBool    flg;
       if (flag_operator) {
-        ierr = MatComputeExplicitOperator(*A,&Bexp_mine);CHKERRQ(ierr);
+        ierr = MatComputeExplicitOperator(A,&Bexp_mine);CHKERRQ(ierr);
         Bexp = Bexp_mine;
       } else {
         /* See if the preconditioning matrix can be viewed and added directly */
-        ierr = PetscObjectTypeCompareAny((PetscObject)*B,&flg,MATSEQAIJ,MATMPIAIJ,MATSEQDENSE,MATMPIDENSE,MATSEQBAIJ,MATMPIBAIJ,MATSEQSBAIJ,MATMPIBAIJ,"");CHKERRQ(ierr);
-        if (flg) Bexp = *B;
+        ierr = PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQAIJ,MATMPIAIJ,MATSEQDENSE,MATMPIDENSE,MATSEQBAIJ,MATMPIBAIJ,MATSEQSBAIJ,MATMPIBAIJ,"");CHKERRQ(ierr);
+        if (flg) Bexp = B;
         else {
           /* If the "preconditioning" matrix is itself MATSHELL or some other type without direct support */
-          ierr = MatComputeExplicitOperator(*B,&Bexp_mine);CHKERRQ(ierr);
+          ierr = MatComputeExplicitOperator(B,&Bexp_mine);CHKERRQ(ierr);
           Bexp = Bexp_mine;
         }
       }
       ierr = MatConvert(Bexp,MATSAME,MAT_INITIAL_MATRIX,&FDexp);CHKERRQ(ierr);
-      ierr = SNESComputeJacobianDefault(snes,X,&FDexp,&FDexp,&mstruct,NULL);CHKERRQ(ierr);
+      ierr = SNESComputeJacobianDefault(snes,X,FDexp,FDexp,&mstruct,NULL);CHKERRQ(ierr);
       ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)snes),&vstdout);CHKERRQ(ierr);
       if (flag_draw || flag_contour) {
         ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)snes),0,"Explicit Jacobians",PETSC_DECIDE,PETSC_DECIDE,300,300,&vdraw);CHKERRQ(ierr);
@@ -2342,7 +2342,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
       void           *funcctx;
       PetscReal      norm1,norm2,normmax;
 
-      ierr = MatDuplicate(*B,MAT_DO_NOT_COPY_VALUES,&Bfd);CHKERRQ(ierr);
+      ierr = MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&Bfd);CHKERRQ(ierr);
       ierr = MatColoringCreate(Bfd,&coloring);CHKERRQ(ierr);
       ierr = MatColoringSetType(coloring,MATCOLORINGSL);CHKERRQ(ierr);
       ierr = MatColoringSetFromOptions(coloring);CHKERRQ(ierr);
@@ -2368,12 +2368,12 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
         if (flag_contour) {ierr = PetscViewerPushFormat(vdraw,PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);}
       } else vdraw = NULL;
       ierr = PetscViewerASCIIPrintf(vstdout,"Explicit preconditioning Jacobian\n");CHKERRQ(ierr);
-      if (flag_display) {ierr = MatView(*B,vstdout);CHKERRQ(ierr);}
-      if (vdraw) {ierr = MatView(*B,vdraw);CHKERRQ(ierr);}
+      if (flag_display) {ierr = MatView(B,vstdout);CHKERRQ(ierr);}
+      if (vdraw) {ierr = MatView(B,vdraw);CHKERRQ(ierr);}
       ierr = PetscViewerASCIIPrintf(vstdout,"Colored Finite difference Jacobian\n");CHKERRQ(ierr);
       if (flag_display) {ierr = MatView(Bfd,vstdout);CHKERRQ(ierr);}
       if (vdraw) {ierr = MatView(Bfd,vdraw);CHKERRQ(ierr);}
-      ierr = MatAYPX(Bfd,-1.0,*B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatAYPX(Bfd,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = MatNorm(Bfd,NORM_1,&norm1);CHKERRQ(ierr);
       ierr = MatNorm(Bfd,NORM_FROBENIUS,&norm2);CHKERRQ(ierr);
       ierr = MatNorm(Bfd,NORM_MAX,&normmax);CHKERRQ(ierr);
@@ -2388,16 +2388,16 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
 
       if (flag_threshold) {
         PetscInt bs,rstart,rend,i;
-        ierr = MatGetBlockSize(*B,&bs);CHKERRQ(ierr);
-        ierr = MatGetOwnershipRange(*B,&rstart,&rend);CHKERRQ(ierr);
+        ierr = MatGetBlockSize(B,&bs);CHKERRQ(ierr);
+        ierr = MatGetOwnershipRange(B,&rstart,&rend);CHKERRQ(ierr);
         for (i=rstart; i<rend; i++) {
           const PetscScalar *ba,*ca;
           const PetscInt    *bj,*cj;
           PetscInt          bn,cn,j,maxentrycol = -1,maxdiffcol = -1,maxrdiffcol = -1;
           PetscReal         maxentry = 0,maxdiff = 0,maxrdiff = 0;
-          ierr = MatGetRow(*B,i,&bn,&bj,&ba);CHKERRQ(ierr);
+          ierr = MatGetRow(B,i,&bn,&bj,&ba);CHKERRQ(ierr);
           ierr = MatGetRow(Bfd,i,&cn,&cj,&ca);CHKERRQ(ierr);
-          if (bn != cn) SETERRQ(((PetscObject)*A)->comm,PETSC_ERR_PLIB,"Unexpected different nonzero pattern in -snes_compare_coloring_threshold");
+          if (bn != cn) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_PLIB,"Unexpected different nonzero pattern in -snes_compare_coloring_threshold");
           for (j=0; j<bn; j++) {
             PetscReal rdiff = PetscAbsScalar(ca[j]) / (threshold_atol + threshold_rtol*PetscAbsScalar(ba[j]));
             if (PetscAbsScalar(ba[j]) > PetscAbs(maxentry)) {
@@ -2424,7 +2424,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
             }
             ierr = PetscViewerASCIIPrintf(vstdout,"\n",i,maxentry,maxdiff,maxrdiff);CHKERRQ(ierr);
           }
-          ierr = MatRestoreRow(*B,i,&bn,&bj,&ba);CHKERRQ(ierr);
+          ierr = MatRestoreRow(B,i,&bn,&bj,&ba);CHKERRQ(ierr);
           ierr = MatRestoreRow(Bfd,i,&cn,&cj,&ca);CHKERRQ(ierr);
         }
       }
@@ -2440,7 +2440,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
 
      Synopsis:
      #include <petscsnes.h>
-$     SNESJacobianFunction(SNES snes,Vec x,Mat *Amat,Mat *Pmat,int *flag,void *ctx);
+$     SNESJacobianFunction(SNES snes,Vec x,Mat Amat,Mat *Pmat,int *flag,void *ctx);
 
 +  x - input vector
 .  Amat - the matrix that defines the (approximate) Jacobian
@@ -2495,7 +2495,7 @@ M*/
 
 .seealso: KSPSetOperators(), SNESSetFunction(), MatMFFDComputeJacobian(), SNESComputeJacobianDefaultColor(), MatStructure, J, SNESSetPicard()
 @*/
-PetscErrorCode  SNESSetJacobian(SNES snes,Mat Amat,Mat Pmat,PetscErrorCode (*J)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
+PetscErrorCode  SNESSetJacobian(SNES snes,Mat Amat,Mat Pmat,PetscErrorCode (*J)(SNES,Vec,Mat,Mat,MatStructure*,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -2544,7 +2544,7 @@ PetscErrorCode  SNESSetJacobian(SNES snes,Mat Amat,Mat Pmat,PetscErrorCode (*J)(
 
 .seealso: SNESSetJacobian(), SNESComputeJacobian()
 @*/
-PetscErrorCode SNESGetJacobian(SNES snes,Mat *Amat,Mat *Pmat,PetscErrorCode (**J)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void **ctx)
+PetscErrorCode SNESGetJacobian(SNES snes,Mat *Amat,Mat *Pmat,PetscErrorCode (**J)(SNES,Vec,Mat,Mat,MatStructure*,void*),void **ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -2597,7 +2597,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
   PetscErrorCode (*func)(SNES,Vec,Vec,void*);
   Vec            f,fpc;
   void           *funcctx;
-  PetscErrorCode (*jac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+  PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,MatStructure*,void*);
   void           *jacctx,*appctx;
 
   PetscFunctionBegin;
@@ -5039,7 +5039,7 @@ PetscErrorCode  SNESSetFunctionMatlab(SNES snes,Vec r,const char *f,mxArray *ctx
 
 .seealso: SNESSetFunction(), SNESGetFunction()
 @*/
-PetscErrorCode  SNESComputeJacobian_Matlab(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flag, void *ctx)
+PetscErrorCode  SNESComputeJacobian_Matlab(SNES snes,Vec x,Mat A,Mat B,MatStructure *flag, void *ctx)
 {
   PetscErrorCode    ierr;
   SNESMatlabContext *sctx = (SNESMatlabContext*)ctx;

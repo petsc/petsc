@@ -79,7 +79,7 @@ typedef struct {
    User-defined routines
 */
 extern PetscErrorCode InitialConditions(Vec,AppCtx*);
-extern PetscErrorCode RHSMatrixHeat(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode RHSMatrixHeat(TS,PetscReal,Vec,Mat,Mat,MatStructure*,void*);
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode ExactSolution(PetscReal,Vec,AppCtx*);
 extern PetscErrorCode MyBCRoutine(TS,PetscReal,Vec,void*);
@@ -181,7 +181,7 @@ int main(int argc,char **argv)
        routine.
     */
     MatStructure A_structure;
-    ierr = RHSMatrixHeat(ts,0.0,u,&A,&A,&A_structure,&appctx);CHKERRQ(ierr);
+    ierr = RHSMatrixHeat(ts,0.0,u,A,A,&A_structure,&appctx);CHKERRQ(ierr);
     ierr = TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
     ierr = TSSetRHSJacobian(ts,A,A,TSComputeRHSJacobianConstant,&appctx);CHKERRQ(ierr);
   }
@@ -448,9 +448,9 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal crtime,Vec u,void *ctx)
    Recall that MatSetValues() uses 0-based row and column numbers
    in Fortran as well as in C.
 */
-PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat AA,Mat BB,MatStructure *str,void *ctx)
 {
-  Mat            A       = *AA;                /* Jacobian matrix */
+  Mat            A       = AA;                /* Jacobian matrix */
   AppCtx         *appctx = (AppCtx*) ctx;      /* user-defined application context */
   PetscInt       mstart  = 0;
   PetscInt       mend    = appctx->m;

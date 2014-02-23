@@ -19,9 +19,9 @@ T*/
 /*
    User-defined routines
 */
-extern PetscErrorCode FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormJacobian1(SNES,Vec,Mat,Mat,MatStructure*,void*);
 extern PetscErrorCode FormFunction1(SNES,Vec,Vec,void*);
-extern PetscErrorCode FormJacobian2(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormJacobian2(SNES,Vec,Mat,Mat,MatStructure*,void*);
 extern PetscErrorCode FormFunction2(SNES,Vec,Vec,void*);
 
 #undef __FUNCT__
@@ -198,7 +198,7 @@ PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ctx)
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
+PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat jac,Mat B,MatStructure *flag,void *dummy)
 {
   const PetscScalar *xx;
   PetscScalar       A[4];
@@ -217,7 +217,7 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
   */
   A[0]  = 2.0*xx[0] + xx[1]; A[1] = xx[0];
   A[2]  = xx[1]; A[3] = xx[0] + 2.0*xx[1];
-  ierr  = MatSetValues(*B,2,idx,2,idx,A,INSERT_VALUES);CHKERRQ(ierr);
+  ierr  = MatSetValues(B,2,idx,2,idx,A,INSERT_VALUES);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
 
   /*
@@ -228,11 +228,11 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
   /*
      Assemble matrix
   */
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*jac != *B) {
-    ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (jac != B) {
+    ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   return 0;
 }
@@ -272,7 +272,7 @@ PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian2"
-PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
+PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat jac,Mat B,MatStructure *flag,void *dummy)
 {
   const PetscScalar *xx;
   PetscScalar       A[4];
@@ -291,7 +291,7 @@ PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
   */
   A[0]  = 3.0*PetscCosScalar(3.0*xx[0]) + 1.0; A[1] = 0.0;
   A[2]  = 0.0;                     A[3] = 1.0;
-  ierr  = MatSetValues(*B,2,idx,2,idx,A,INSERT_VALUES);CHKERRQ(ierr);
+  ierr  = MatSetValues(B,2,idx,2,idx,A,INSERT_VALUES);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
 
   /*
@@ -302,11 +302,11 @@ PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
   /*
      Assemble matrix
   */
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*jac != *B) {
-    ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (jac != B) {
+    ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   return 0;
 }

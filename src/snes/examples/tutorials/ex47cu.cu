@@ -14,7 +14,7 @@ static char help[] = "Solves -Laplacian u - exp(u) = 0,  0 < x < 1 using GPU\n\n
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/zip_iterator.h>
 
-extern PetscErrorCode ComputeFunction(SNES,Vec,Vec,void*), ComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode ComputeFunction(SNES,Vec,Vec,void*), ComputeJacobian(SNES,Vec,Mat,Mat,MatStructure*,void*);
 PetscBool useCUSP = PETSC_FALSE;
 
 int main(int argc,char **argv)
@@ -147,7 +147,7 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
   return 0;
 
 }
-PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat J,Mat B,MatStructure *flag,void *ctx)
 {
   DM             da = (DM) ctx;
   PetscInt       i,Mx,xm,xs;
@@ -164,15 +164,15 @@ PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,
 
   for (i=xs; i<xs+xm; i++) {
     if (i == 0 || i == Mx-1) {
-      ierr = MatSetValue(*J,i,i,1.0/hx,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValue(J,i,i,1.0/hx,INSERT_VALUES);CHKERRQ(ierr);
     } else {
-      ierr = MatSetValue(*J,i,i-1,-1.0/hx,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValue(*J,i,i,2.0/hx - hx*PetscExpScalar(xx[i]),INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValue(*J,i,i+1,-1.0/hx,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValue(J,i,i-1,-1.0/hx,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValue(J,i,i,2.0/hx - hx*PetscExpScalar(xx[i]),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValue(J,i,i+1,-1.0/hx,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
-  ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr  = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
   ierr  = DMDAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
   ierr  = DMRestoreLocalVector(da,&xlocal);CHKERRQ(ierr);

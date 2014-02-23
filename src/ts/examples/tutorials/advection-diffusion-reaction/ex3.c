@@ -43,7 +43,7 @@ typedef struct {
    User-defined routines
 */
 extern PetscErrorCode InitialConditions(TS,Vec,AppCtx*);
-extern PetscErrorCode RHSMatrixHeat(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode RHSMatrixHeat(TS,PetscReal,Vec,Mat,Mat,MatStructure*,void*);
 extern PetscErrorCode Solution(TS,PetscReal,Vec,AppCtx*);
 
 #undef __FUNCT__
@@ -259,9 +259,9 @@ PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *appctx)
    Recall that MatSetValues() uses 0-based row and column numbers
    in Fortran as well as in C.
 */
-PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec U,Mat AA,Mat BB,MatStructure *str,void *ctx)
 {
-  Mat            A       = *AA;                /* Jacobian matrix */
+  Mat            A       = AA;                /* Jacobian matrix */
   AppCtx         *appctx = (AppCtx*)ctx;     /* user-defined application context */
   PetscInt       mstart, mend;
   PetscErrorCode ierr;

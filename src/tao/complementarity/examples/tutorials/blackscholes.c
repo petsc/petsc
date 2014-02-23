@@ -123,7 +123,7 @@ typedef struct {
 /* -------- User-defined Routines --------- */
 
 PetscErrorCode FormConstraints(Tao, Vec, Vec, void *);
-PetscErrorCode FormJacobian(Tao, Vec, Mat *, Mat*, MatStructure*, void *);
+PetscErrorCode FormJacobian(Tao, Vec, Mat, Mat, MatStructure*, void *);
 PetscErrorCode ComputeVariableBounds(Tao, Vec, Vec, void*);
 
 #undef __FUNCT__
@@ -401,10 +401,9 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec F, void *ptr)
    Output Parameters:
 .  J    - Jacobian matrix
 */
-PetscErrorCode FormJacobian(Tao tao, Vec X, Mat *tJ, Mat *tJPre, MatStructure *flag, void *ptr)
+PetscErrorCode FormJacobian(Tao tao, Vec X, Mat J, Mat tJPre, MatStructure *flag, void *ptr)
 {
   AppCtx         *user = (AppCtx *) ptr;
-  Mat            J = *tJ;
   PetscReal      *c = user->c, *d = user->d;
   PetscReal      rate = user->rate;
   PetscReal      dt = user->dt, ds = user->ds;

@@ -54,7 +54,7 @@ typedef struct {
 
 extern PetscErrorCode FormInitialGuess(SNES,Vec,void*);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,MatStructure*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -313,10 +313,9 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 /* --------------------  Evaluate Jacobian F(x) --------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat jac,Mat B,MatStructure *flg,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;
-  Mat            jac   = *J;
   PetscErrorCode ierr;
   PetscInt       i,j,mx,my,xs,ys,xm,ym;
   PetscScalar    one = 1.0,hx,hy,hxdhy,hydhx,t0,tn,ts,te,tw;

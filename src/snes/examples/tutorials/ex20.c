@@ -54,7 +54,7 @@ typedef struct {
 
 extern PetscErrorCode FormInitialGuess(SNES,Vec,void*);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,MatStructure*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -457,7 +457,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 /* --------------------  Evaluate Jacobian F(x) --------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,MatStructure *flg,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;
   PetscErrorCode ierr;
@@ -469,7 +469,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
   PetscScalar    ***x,bn,bs,be,bw,bu,bd,gn,gs,ge,gw,gu,gd;
   Vec            localX;
   MatStencil     c[7],row;
-  Mat            jac = *B;
   DM             da;
 
   PetscFunctionBeginUser;
@@ -1395,9 +1394,9 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
   }
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (jac != *J) {
-    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (jac != J) {
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);

@@ -81,16 +81,16 @@ static PetscErrorCode ourifunction(TS ts,PetscReal d,Vec x,Vec xdot,Vec f,void *
   (*(void (PETSC_STDCALL*)(TS*,PetscReal*,Vec*,Vec*,Vec*,void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_IFUNCTION]))(&ts,&d,&x,&xdot,&f,ctx,&ierr);
   return 0;
 }
-static PetscErrorCode ourrhsjacobian(TS ts,PetscReal d,Vec x,Mat *m,Mat *p,MatStructure *type,void *ctx)
+static PetscErrorCode ourrhsjacobian(TS ts,PetscReal d,Vec x,Mat m,Mat p,MatStructure *type,void *ctx)
 {
   PetscErrorCode ierr = 0;
-  (*(void (PETSC_STDCALL*)(TS*,PetscReal*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_RHSJACOBIAN]))(&ts,&d,&x,m,p,type,ctx,&ierr);
+  (*(void (PETSC_STDCALL*)(TS*,PetscReal*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_RHSJACOBIAN]))(&ts,&d,&x,&m,&p,type,ctx,&ierr);
   return 0;
 }
-static PetscErrorCode ourijacobian(TS ts,PetscReal d,Vec x,Vec xdot,PetscReal shift,Mat *m,Mat *p,MatStructure *type,void *ctx)
+static PetscErrorCode ourijacobian(TS ts,PetscReal d,Vec x,Vec xdot,PetscReal shift,Mat m,Mat p,MatStructure *type,void *ctx)
 {
   PetscErrorCode ierr = 0;
-  (*(void (PETSC_STDCALL*)(TS*,PetscReal*,Vec*,Vec*,PetscReal*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_IJACOBIAN]))(&ts,&d,&x,&xdot,&shift,m,p,type,ctx,&ierr);
+  (*(void (PETSC_STDCALL*)(TS*,PetscReal*,Vec*,Vec*,PetscReal*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[OUR_IJACOBIAN]))(&ts,&d,&x,&xdot,&shift,&m,&p,type,ctx,&ierr);
   return 0;
 }
 
@@ -185,7 +185,7 @@ PETSC_EXTERN void PETSC_STDCALL tsgetifunction_(TS *ts,Vec *r,void *func,void **
 /* ---------------------------------------------------------*/
 PETSC_EXTERN void tscomputerhsjacobianconstant_(TS *ts,PetscReal *t,Vec *X,Mat *A,Mat *B,MatStructure *flg,void *ctx,PetscErrorCode *ierr)
 {
-  *ierr = TSComputeRHSJacobianConstant(*ts,*t,*X,A,B,flg,ctx);
+  *ierr = TSComputeRHSJacobianConstant(*ts,*t,*X,*A,*B,flg,ctx);
 }
 PETSC_EXTERN void PETSC_STDCALL tssetrhsjacobian_(TS *ts,Mat *A,Mat *B,void (PETSC_STDCALL*f)(TS*,PetscReal*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*),void *fP,PetscErrorCode *ierr)
 {
@@ -202,7 +202,7 @@ PETSC_EXTERN void PETSC_STDCALL tssetrhsjacobian_(TS *ts,Mat *A,Mat *B,void (PET
 
 PETSC_EXTERN void tscomputeijacobianconstant_(TS *ts,PetscReal *t,Vec *X,Vec *Xdot,PetscReal *shift,Mat *A,Mat *B,MatStructure *flg,void *ctx,PetscErrorCode *ierr)
 {
-  *ierr = TSComputeIJacobianConstant(*ts,*t,*X,*Xdot,*shift,A,B,flg,ctx);
+  *ierr = TSComputeIJacobianConstant(*ts,*t,*X,*Xdot,*shift,*A,*B,flg,ctx);
 }
 PETSC_EXTERN void PETSC_STDCALL tssetijacobian_(TS *ts,Mat *A,Mat *B,void (PETSC_STDCALL*f)(TS*,PetscReal*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*),void *fP,PetscErrorCode *ierr)
 {

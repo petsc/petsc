@@ -39,7 +39,7 @@ typedef struct {
 extern PetscErrorCode MSA_BoundaryConditions(AppCtx*);
 extern PetscErrorCode MSA_InitialPoint(AppCtx*, Vec);
 extern PetscErrorCode FormGradient(SNES, Vec, Vec, void*);
-extern PetscErrorCode FormJacobian(SNES, Vec, Mat*, Mat*, MatStructure*,void*);
+extern PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, MatStructure*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -261,10 +261,9 @@ int FormGradient(SNES snes, Vec X, Vec G, void *ptr)
 .  tH    - Jacobian matrix
 
 */
-PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat *tHPre, MatStructure *flag, void *ptr)
+PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, MatStructure *flag, void *ptr)
 {
   AppCtx         *user = (AppCtx*) ptr;
-  Mat            H     = *tH;
   PetscErrorCode info;
   PetscInt       i,j,k,row;
   PetscInt       mx=user->mx, my=user->my;

@@ -164,7 +164,7 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
   ierr = TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU);CHKERRQ(ierr);
 
   /* Using f = .5*x'Hx + x'b + c and g=Hx + b,  compute b,c */
-  ierr = TaoComputeHessian(tao,tao->solution,&tao->hessian, &tao->hessian_pre,&structure);CHKERRQ(ierr);
+  ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre,&structure);CHKERRQ(ierr);
   ierr = TaoComputeObjectiveAndGradient(tao,tao->solution,&f,tao->gradient);CHKERRQ(ierr);
   ierr = VecCopy(tao->gradient, gpcg->B);CHKERRQ(ierr);
   ierr = MatMult(tao->hessian,tao->solution,gpcg->Work);CHKERRQ(ierr);

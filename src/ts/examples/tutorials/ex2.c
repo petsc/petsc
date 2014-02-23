@@ -66,7 +66,7 @@ typedef struct {
 */
 extern PetscErrorCode InitialConditions(Vec,AppCtx*);
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
-extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,MatStructure*,void*);
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode ExactSolution(PetscReal,Vec,AppCtx*);
 
@@ -535,7 +535,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
    - Note that MatSetValues() uses 0-based row and column numbers
      in Fortran as well as in C.
 */
-PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat BB,MatStructure *str,void *ctx)
 {
   AppCtx         *appctx  = (AppCtx*)ctx;    /* user-defined application context */
   Vec            local_in = appctx->u_local;   /* local ghosted input vector */
@@ -564,7 +564,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatSt
   /*
      Get starting and ending locally owned rows of the matrix
   */
-  ierr   = MatGetOwnershipRange(*BB,&mstarts,&mends);CHKERRQ(ierr);
+  ierr   = MatGetOwnershipRange(BB,&mstarts,&mends);CHKERRQ(ierr);
   mstart = mstarts; mend = mends;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -584,13 +584,13 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatSt
   */
   if (mstart == 0) {
     v[0] = 0.0;
-    ierr = MatSetValues(*BB,1,&mstart,1,&mstart,v,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(BB,1,&mstart,1,&mstart,v,INSERT_VALUES);CHKERRQ(ierr);
     mstart++;
   }
   if (mend == appctx->m) {
     mend--;
     v[0] = 0.0;
-    ierr = MatSetValues(*BB,1,&mend,1,&mend,v,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(BB,1,&mend,1,&mend,v,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /*
@@ -604,7 +604,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatSt
     v[0]   = sc*localptr[is];
     v[1]   = sc*(localptr[is+1] + localptr[is-1] - 4.0*localptr[is]);
     v[2]   = sc*localptr[is];
-    ierr   = MatSetValues(*BB,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
+    ierr   = MatSetValues(BB,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /*
@@ -621,11 +621,11 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatSt
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  ierr = MatAssemblyBegin(*BB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*BB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*BB != *AA) {
-    ierr = MatAssemblyBegin(*AA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*AA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(BB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(BB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (BB != AA) {
+    ierr = MatAssemblyBegin(AA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(AA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   /*
      Set flag to indicate that the Jacobian matrix retains an identical
@@ -650,7 +650,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatSt
      Set and option to indicate that we will never add a new nonzero location
      to the matrix. If we do, it will generate an error.
   */
-  ierr = MatSetOption(*BB,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(BB,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
 
   return 0;
 }

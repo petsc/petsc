@@ -31,7 +31,7 @@ typedef struct {                               /*============================*/
   PetscBool PreLoading;
 } AppCtx;                                      /*============================*/
 
-PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
+PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,MatStructure*,void*),
     FormFunction(SNES,Vec,Vec,void*),
     FormInitialGuess(SNES, GRID*),
     Monitor(SNES,PetscInt,double,void*),
@@ -431,7 +431,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 /*---------------------------------------------------------------------*/
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 
-int FormJacobian(SNES snes, Vec x, Mat *Jac, Mat *B,MatStructure *flag, void *dummy)
+int FormJacobian(SNES snes, Vec x, Mat Jac, Mat B,MatStructure *flag, void *dummy)
 /*---------------------------------------------------------------------*/
 {
   AppCtx         *user  = (AppCtx*) dummy;
@@ -462,8 +462,8 @@ int FormJacobian(SNES snes, Vec x, Mat *Jac, Mat *B,MatStructure *flag, void *du
   /*ierr = PetscFortranObjectToCObject(ijac, &jac);CHKERRQ(ierr);*/
   /*ierr = MatView(jac,VIEWER_STDOUT_SELF);CHKERRQ(ierr);*/
   ierr  = VecRestoreArray(localX,&qnode);CHKERRQ(ierr);
-  ierr  = MatAssemblyBegin(*Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr  = MatAssemblyEnd(*Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr  = MatAssemblyBegin(Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr  = MatAssemblyEnd(Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
   return 0;
 }

@@ -81,9 +81,9 @@ PetscErrorCode TaoSolve_Test(Tao tao)
     }
     for (i=0;i<3;i++) {
       /* compute both versions of Hessian */
-      ierr = TaoComputeHessian(tao,x,&A,&A,&flg);CHKERRQ(ierr);
+      ierr = TaoComputeHessian(tao,x,A,A,&flg);CHKERRQ(ierr);
       if (!i) {ierr = MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);}
-      ierr = TaoDefaultComputeHessian(tao,x,&B,&B,&flg,tao->user_hessP);CHKERRQ(ierr);
+      ierr = TaoDefaultComputeHessian(tao,x,B,B,&flg,tao->user_hessP);CHKERRQ(ierr);
       if (fd->complete_print) {
         MPI_Comm    bcomm;
         PetscViewer viewer;
