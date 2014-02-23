@@ -119,6 +119,8 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *fileMode = 0;
+  *exists = PETSC_FALSE;
 #if defined(PETSC_HAVE_STAT_NO_CONST)
   ierr = stat((char*) fname, &statbuf);
 #else

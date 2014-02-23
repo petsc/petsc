@@ -121,8 +121,9 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
     ierr = MPI_Allgatherv(ctx->points, n*ctx->dim, MPIU_REAL, globalPoints, counts, displs, MPIU_REAL, comm);CHKERRQ(ierr);
   } else {
     N = n;
-
     globalPoints = ctx->points;
+    counts = displs = NULL;
+    layout = NULL;
   }
 #if 0
   ierr = PetscMalloc3(N,&foundCells,N,&foundProcs,N,&globalProcs);CHKERRQ(ierr);
@@ -175,10 +176,8 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   ierr = VecDestroy(&pointVec);CHKERRQ(ierr);
 #endif
   if ((void*)globalPointsScalar != (void*)globalPoints) {ierr = PetscFree(globalPointsScalar);CHKERRQ(ierr);}
-  if (!redundantPoints) {
-    ierr = PetscFree3(globalPoints,counts,displs);CHKERRQ(ierr);
-    ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
-  }
+  ierr = PetscFree3(globalPoints,counts,displs);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

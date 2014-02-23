@@ -3158,6 +3158,7 @@ PetscErrorCode PetscFEIntegrateResidual_Nonaffine(PetscFE fem, PetscInt Ne, Pets
     numComponentsAux += Nc;
   }
   if (NfAux) {ierr = PetscMalloc2(numComponentsAux,&a,numComponentsAux*dim,&gradA);CHKERRQ(ierr);}
+  else a = gradA = NULL;
   for (e = 0; e < Ne; ++e) {
     const PetscInt   Nq          = quad.numPoints;
     const PetscReal *quadPoints  = quad.points;
@@ -3324,7 +3325,7 @@ PetscErrorCode PetscFEIntegrateResidual_Nonaffine(PetscFE fem, PetscInt Ne, Pets
     }
   }
   ierr = PetscFree6(f0,f1,u,gradU,x,realSpaceDer);
-  if (NfAux) {ierr = PetscFree2(a,gradA);CHKERRQ(ierr);}
+  ierr = PetscFree2(a,gradA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3359,6 +3360,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Nonaffine(PetscFE fem, PetscInt Ne, Pe
     numComponentsAux += Nc;
   }
   if (NfAux) {ierr = PetscMalloc2(numComponentsAux,&a,numComponentsAux*dim,&gradA);CHKERRQ(ierr);}
+  else a = gradA = NULL;
   for (e = 0; e < Ne; ++e) {
     const PetscInt   Nq          = quad.numPoints;
     const PetscReal *quadPoints  = quad.points;
@@ -3526,7 +3528,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Nonaffine(PetscFE fem, PetscInt Ne, Pe
     }
   }
   ierr = PetscFree6(f0,f1,u,gradU,x,realSpaceDer);
-  if (NfAux) {ierr = PetscFree2(a,gradA);CHKERRQ(ierr);}
+  ierr = PetscFree2(a,gradA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3581,6 +3583,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscInt Ne, Pets
     cellDofAux       += Nb*Nc;
   }
   if (NfAux) {ierr = PetscMalloc2(numComponentsAux,&a,numComponentsAux*dim,&gradA);CHKERRQ(ierr);}
+  else a = gradA = NULL;
   for (e = 0; e < Ne; ++e) {
     const PetscInt   Nq          = quad.numPoints;
     const PetscReal *quadPoints  = quad.points;
@@ -3752,7 +3755,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscInt Ne, Pets
   }
   ierr = PetscFree4(g0,g1,g2,g3);
   ierr = PetscFree5(u,gradU,x,realSpaceDerI,realSpaceDerJ);
-  if (NfAux) {ierr = PetscFree2(a,gradA);CHKERRQ(ierr);}
+  ierr = PetscFree2(a,gradA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
