@@ -8,13 +8,17 @@
 
 /* for everything else */
 #include "viennacl/compressed_matrix.hpp"
+#include "viennacl/compressed_compressed_matrix.hpp"
 
 
 typedef viennacl::compressed_matrix<PetscScalar>   ViennaCLAIJMatrix;
+typedef viennacl::compressed_compressed_matrix<PetscScalar>   ViennaCLCompressedAIJMatrix;
 
 
 struct Mat_SeqAIJViennaCL {
-  ViennaCLAIJMatrix      *mat;  /* pointer to the matrix on the GPU */
+  ViennaCLVector               *tempvec;
+  ViennaCLAIJMatrix            *mat;  /* pointer to the matrix on the GPU */
+  ViennaCLCompressedAIJMatrix  *compressed_mat; /* compressed CSR */
 };
 
 PETSC_INTERN PetscErrorCode MatViennaCLCopyToGPU(Mat);
