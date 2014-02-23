@@ -5,40 +5,46 @@
 function buildTree(matInfo, numberOfLevels, detailed)
 {
     //initialize tree
-    var treeData = {name:""};
+    var treeData = {};
 
-    //cant init everything and simply empty out all the contents that weren't used using "delete" because javascipt copies object using COPY of REFERENCE
-    treeData.contents = [];//javascipt does not have copy by reference. so we have to do it this way
-    treeData.contents[0]=[];//javascript copies by COPY of reference. so assigning a new value such as [] wont work but changing the value WILL work
-    treeData.contents[1]=[];//stackoverflow explanation: http://stackoverflow.com/questions/17382427/are-there-pointers-in-javascript
+    //clean up matInfo
+    cleanMatInfo();
+    sortMatInfo();
 
-    treeData.contents[0].contents=[];
-    treeData.contents[1].contents=[];
+    for(var i=0; i<matInfoWriteCounter; i++) {//first zero doesn't matter
+        var string=(detailed) ? matInfo[i].string : matInfo[i].stringshort;
+        var obj={name: string};//the new object to be placed
+        var id=matInfo[i].id;
+        var needsAllocation=false;
 
-    treeData.contents[0].contents[0]=[];
-    treeData.contents[0].contents[1]=[];
-    treeData.contents[1].contents[0]=[];
-    treeData.contents[1].contents[1]=[];
+        if(matInfo[i].id == "0")
+            treeData=obj;
 
-    for(var i=0; i<matInfoWriteCounter; i++) {
-        if(matInfo[i].id != "-1") {
-            var currentID = matInfo[i].id;
-            var pointer=treeData;//javascript copies by COPY of REFERENCE. so assigning a new value such as [] wont work but changing the value WILL work
-            for(var j=1; j<currentID.length; j++) {//get to the correct matrix; disregard the first zero
-                alert("j="+j+", currentID:"+currentID);
-                treeData.contents[0];
-                pointer=pointer.contents[parseInt(currentID.charAt(j))];
-            }
-            if(!detailed)
-                pointer.name=matInfo[i].stringshort;
-            else
-                pointer.name=matInfo[i].string;
+        if(id.charAt(id.length-1)=="0") {//get the last char
+            //need to allocate
+            needsAllocation=true;
         }
-    }
 
-    //FIRST SORT MATINFO
-    //to sort, first remove the -1 elements. do this by saying, if -1, then move all the elements down by 1. decrement matInfoWriteCounter
-    //after that, just perform a selection sort on the id's (e.g. 0<1 and 0<00)
+        if(id.length == 2) {
+            if(needsAllocation) {
+                treeData.contents=[];
+            }
+            treeData.contents[parseInt(id.charAt(1))]=obj;
+        }
+        else if(id.length == 3) {
+            if(needsAllocation) {
+                treeData.contents[parseInt(id.charAt(1))].contents=[];
+            }
+            treeData.contents[parseInt(id.charAt(1))].contents[parseInt(id.charAt(2))]=obj;
+        }
+        else if(id.length == 4) {
+            if(needsAllocation) {
+                treeData.contents[parseInt(id.charAt(1))].contents[parseInt(id.charAt(2))]=[];
+            }
+            treeData.contents[parseInt(id.charAt(1))].contents[parseInt(id.charAt(2))].contents[parseInt(id.charAt(3))]=obj;
+        }
+
+    }
 
     function cleanMatInfo() {//remove all the -1 elements (these get generated when something is deleted)
         for(var i=0; i<matInfoWriteCounter; i++) {
@@ -73,205 +79,6 @@ function buildTree(matInfo, numberOfLevels, detailed)
         }
 
     }
-
-    cleanMatInfo();//these will be used in the beginning of this function to prevent extra nodes from being generated. will work more on this later.
-    sortMatInfo();
-
-    /*if (detailed == false) {//use matInfo[].stringshort for KSP/PC options without prefix
-    //make the tree data structure.
-    //before each data is written, it is checked to see if its parent is
-    //fieldsplit; if not, it doesn't write the data to the treeDAta
-    //The high level checks are wrapped around more (because it cuts off all leaves)
-    //Matrix A, index 0
-    var treeData = {name:matInfo[0].stringshort}
-
-    if ( matInfo[0].logstruc) {
-	//make next level array
-	treeData.contents = [];
-
-	//Matrix A1, index = 1
-	if ($("#pcList" + 1).data("parentFieldSplit")) {	
-	    treeData.contents[0] = {name:matInfo[1].stringshort};
-	    if (matInfo[1].logstruc) {
-		//make next level array
-		treeData.contents[0].contents = [];
-
-		//Matrix A11, index = 3
-		if ($("#pcList" + 3).data("parentFieldSplit")) {	
-		    treeData.contents[0].contents[0] = {name:matInfo[3].stringshort};
-		    if (matInfo[3].logstruc) {
-			//make next level array
-			treeData.contents[0].contents[0].contents = [];
-			
-			//Matrix A111, index = 7
-			if ($("#pcList" + 7).data("parentFieldSplit"))
-			    treeData.contents[0].contents[0].contents[0] = {name:matInfo[7].stringshort};
-			//Matrix A112, index = 8
-			if ($("#pcList" + 8).data("parentFieldSplit"))
-			    treeData.contents[0].contents[0].contents[1] = {name:matInfo[8].stringshort};
-		    }
-		}
-
-		//Matrix A12, index = 4
-		if ($("#pcList" + 4).data("parentFieldSplit")) {	
-		    treeData.contents[0].contents[1] = {name:matInfo[4].stringshort};
-		    if (matInfo[4].logstruc) {
-			//make next level array
-			treeData.contents[0].contents[1].contents = [];
-	                
-			//Matrix A121, index = 9
-			if ($("#pcList" + 9).data("parentFieldSplit"))
-			    treeData.contents[0].contents[1].contents[0] = {name:matInfo[9].stringshort};
-
-			//Matrix A122, index = 10
-			if ($("#pcList" + 10).data("parentFieldSplit"))
-			    treeData.contents[0].contents[1].contents[1] = {name:matInfo[10].stringshort};
-		    }
-		}
-	    }
-	}
-	//Matrix A2, index = 2
-	if ($("#pcList" + 2).data("parentFieldSplit")) {
-	    treeData.contents[1] = {name:matInfo[2].stringshort};
-	    if (matInfo[2].logstruc) {
-		//make next level array
-		treeData.contents[1].contents = [];
-
-		//Matrix A21, index = 5
-		if ($("#pcList" + 5).data("parentFieldSplit")) {
-		    treeData.contents[1].contents[0] = {name:matInfo[5].stringshort};
-		    if (matInfo[5].logstruc) {
-			//make next level array
-			treeData.contents[1].contents[0].contents = [];
-
-			//Matrix A211, index = 11
-			if ($("#pcList" + 11).data("parentFieldSplit"))
-			    treeData.contents[1].contents[0].contents[0] = {name:matInfo[11].stringshort};
-
-			//Matrix A212, index = 12
-			if ($("#pcList" + 12).data("parentFieldSplit"))	
-			    treeData.contents[1].contents[0].contents[1] = {name:matInfo[12].stringshort};
-		    }
-		}
-		
-		//Matrix A22, index = 6
-		if ($("#pcList" + 6).data("parentFieldSplit")) {	
-		    treeData.contents[1].contents[1] = {name:matInfo[6].stringshort};
-		    if (matInfo[6].logstruc) {
-			//make next level array
-			treeData.contents[1].contents[1].contents = [];
-
-			//Matrix A221, index = 13
-			if ($("#pcList" + 13).data("parentFieldSplit"))
-			    treeData.contents[1].contents[1].contents[0] = {name:matInfo[13].stringshort};
-
-			//Matrix A222, index = 14
-			if ($("#pcList" + 14).data("parentFieldSplit"))
-			    treeData.contents[1].contents[1].contents[1] = {name:matInfo[14].stringshort};
-		    }
-		}
-	    }
-	}
-    }
-
-    } else { //use matInfo[].string for detailed KSP/PC options
-
-    //make the tree data structure.
-    //before each data is written, it is checked to see if its parent is
-    //fieldsplit; if not, it doesn't write the data to the treeDAta
-    //The high level checks are wrapped around more (because it cuts off all leaves)
-    //Matrix A, index 0
-    var treeData = {name:matInfo[0].string}
-
-    if ( matInfo[0].logstruc) {
-	//make next level array
-	treeData.contents = [];
-
-	//Matrix A1, index = 1
-	if ($("#pcList" + 1).data("parentFieldSplit")) {	
-	    treeData.contents[0] = {name:matInfo[1].string};
-	    if (matInfo[1].logstruc) {
-		//make next level array
-		treeData.contents[0].contents = [];
-
-		//Matrix A11, index = 3
-		if ($("#pcList" + 3).data("parentFieldSplit")) {	
-		    treeData.contents[0].contents[0] = {name:matInfo[3].string};
-		    if (matInfo[3].logstruc) {
-			//make next level array
-			treeData.contents[0].contents[0].contents = [];
-			
-			//Matrix A111, index = 7
-			if ($("#pcList" + 7).data("parentFieldSplit"))
-			    treeData.contents[0].contents[0].contents[0] = {name:matInfo[7].string};
-			//Matrix A112, index = 8
-			if ($("#pcList" + 8).data("parentFieldSplit"))
-			    treeData.contents[0].contents[0].contents[1] = {name:matInfo[8].string};
-		    }
-		}
-
-		//Matrix A12, index = 4
-		if ($("#pcList" + 4).data("parentFieldSplit")) {	
-		    treeData.contents[0].contents[1] = {name:matInfo[4].string};
-		    if (matInfo[4].logstruc) {
-			//make next level array
-			treeData.contents[0].contents[1].contents = [];
-	                
-			//Matrix A121, index = 9
-			if ($("#pcList" + 9).data("parentFieldSplit"))
-			    treeData.contents[0].contents[1].contents[0] = {name:matInfo[9].string};
-
-			//Matrix A122, index = 10
-			if ($("#pcList" + 10).data("parentFieldSplit"))
-			    treeData.contents[0].contents[1].contents[1] = {name:matInfo[10].string};
-		    }
-		}
-	    }
-	}
-	//Matrix A2, index = 2
-	if ($("#pcList" + 2).data("parentFieldSplit")) {
-	    treeData.contents[1] = {name:matInfo[2].string};
-	    if (matInfo[2].logstruc) {
-		//make next level array
-		treeData.contents[1].contents = [];
-
-		//Matrix A21, index = 5
-		if ($("#pcList" + 5).data("parentFieldSplit")) {
-		    treeData.contents[1].contents[0] = {name:matInfo[5].string};
-		    if (matInfo[5].logstruc) {
-			//make next level array
-			treeData.contents[1].contents[0].contents = [];
-
-			//Matrix A211, index = 11
-			if ($("#pcList" + 11).data("parentFieldSplit"))
-			    treeData.contents[1].contents[0].contents[0] = {name:matInfo[11].string};
-
-			//Matrix A212, index = 12
-			if ($("#pcList" + 12).data("parentFieldSplit"))	
-			    treeData.contents[1].contents[0].contents[1] = {name:matInfo[12].string};
-		    }
-		}
-		
-		//Matrix A22, index = 6
-		if ($("#pcList" + 6).data("parentFieldSplit")) {	
-		    treeData.contents[1].contents[1] = {name:matInfo[6].string};
-		    if (matInfo[6].logstruc) {
-			//make next level array
-			treeData.contents[1].contents[1].contents = [];
-
-			//Matrix A221, index = 13
-			if ($("#pcList" + 13).data("parentFieldSplit"))
-			    treeData.contents[1].contents[1].contents[0] = {name:matInfo[13].string};
-
-			//Matrix A222, index = 14
-			if ($("#pcList" + 14).data("parentFieldSplit"))
-			    treeData.contents[1].contents[1].contents[1] = {name:matInfo[14].string};
-		    }
-		}
-	    }
-	}
-    }
-    }*/
 
     //---------------------------------------------------
     //Create a container for the tree - a 'canvas'
