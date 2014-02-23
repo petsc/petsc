@@ -159,7 +159,6 @@ HandlePCOptions = function(){
     //When "Continue" button is clicked ... 
     //----------------------------------------
     $("#continueButton").click(function(){
-        alert("continueButton");
         //alert("recursionCounterSAWs "+recursionCounterSAWs+"; prefix="+sawsInfo[0].prefix+" "+sawsInfo[recursionCounterSAWs-1].prefix);
 
 	//matrixLevel is how many matrices deep the data is. 0 is the overall matrix,
@@ -238,7 +237,7 @@ HandlePCOptions = function(){
 
 	//Tell mathJax to re compile the tex data
 	//MathJax.Hub.Queue(["Typeset",MathJax.Hub]); //unfortunately, cannot use this anymore
-        alert('endof continueButton');
+        //alert('endof continueButton');
     });
     alert('exit HandlePCOptions()...');
 }
@@ -268,7 +267,7 @@ $(document).ready(function(){
     //this is ONLY for the input box in the beginning form. NOT the inputs in the A divs (those have class='fieldsplitBlocks')
     //-------------------------------------------------------------------------------------------------------------------------
     $(document).on("keyup", '.fieldsplitBlocksInput', function() {//alerts user with a tooltip when an invalid input is provided
-        alert('when this is called?');
+        //alert('when this is called?'); ???
         if ($(this).val().match(/[^0-9]/) || $(this).val()==0 || $(this).val()==1) {//problem is that integer only bubble still displays when nothing is entered
 	    $(this).attr("title","hello");//set a random title (this will be overwritten)
 	    $(this).tooltip();//create a tooltip from jquery UI
