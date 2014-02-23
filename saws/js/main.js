@@ -294,9 +294,9 @@ $(document).ready(function(){
     //When "Cmd Options" button is clicked ... 
     //----------------------------------------
     var treeDetailed;
-    $("#solverTreeButton").click(function(){
+    $("#cmdOptionsButton").click(function(){
 	$("#treeContainer").html("<div id='tree'> </div>");
-	
+
 	//get the options from the drop-down lists
         solverGetOptions(matInfo);
 
@@ -314,8 +314,7 @@ $(document).ready(function(){
 
         //show cmdOptions to the screen
         for (var i=0; i<matInfoWriteCounter; i++) {
-	    if (typeof matInfo[i]=="undefined" && matInfo[i].id!="-1") 
-                //sometimes there will be gaps so we need to make sure program doesn't crash in middle of loop
+	    if (matInfo[i].id=="-1")//possible junk value created by deletion of adiv
 		continue;
 	    $("#oCmdOptions" + matInfo[i].id).empty();
             $("#oCmdOptions" + matInfo[i].id).append("<br><br>" + matInfo[i].string);
@@ -325,7 +324,7 @@ $(document).ready(function(){
 
     $("#solverTreeButtonDetailed").click(function(){
 	$("#treeContainer").html("<div id='tree'> </div>");
-	
+
 	//get the options from the drop-down lists
         solverGetOptions(matInfo);
 
@@ -335,16 +334,27 @@ $(document).ready(function(){
             if(matInfo[i].id!="-1" && matInfo[i].level>matLevelForTree)
                 matLevelForTree=matInfo[i];
         matLevelForTree++;//appears to be 1 greater than the max
-	//var matLevelForTree = matGetLevel(currentRecursionCounter) + 1;
 
 	//build the tree
         treeDetailed = true;//tree.js uses this variable
 	buildTree(matInfo,matLevelForTree,treeDetailed);
+
+        //show cmdOptions to the screen
+        for (var i=0; i<matInfoWriteCounter; i++) {
+	    if (matInfo[i].id=="-1")//possible junk value created by deletion of adiv
+		continue;
+	    $("#oCmdOptions" + matInfo[i].id).empty();
+            $("#oCmdOptions" + matInfo[i].id).append("<br><br>" + matInfo[i].string);
+        }
     });
 
     $("#clearOutput").click(function(){
 	for(var i=0; i<matInfoWriteCounter; i++)
 	    $("#oCmdOptions"+matInfo[i].id).empty();//if matInfo has deleted A-divs, its still okay because id will be "-1" and nothing will be changed
+    });
+
+    $("#clearTree").click(function(){
+        $("#tree").remove();
     });
 
     alert('1. call HandlePCOptions()...');
