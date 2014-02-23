@@ -1,3 +1,6 @@
+#define PETSC_INFINITY   PETSC_MAX_REAL/4.0
+#define PETSC_NINFINITY -PETSC_INFINITY
+
 #define PETSCVIEWERSAWS "saws"
 
 #undef  __FUNCT__
