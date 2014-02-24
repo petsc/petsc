@@ -318,6 +318,10 @@ cdef extern from * nogil:
     int MatScaleSystem(PetscMat,PetscVec,PetscVec)
     int MatUnScaleSystem(PetscMat,PetscVec,PetscVec)
 
+    int MatDenseGetLocalMatrix(PetscMat,PetscMat*)
+    int MatDenseGetArray(PetscMat,PetscScalar*[])
+    int MatDenseRestoreArray(PetscMat,PetscScalar*[])
+
 cdef extern from "custom.h" nogil:
     int MatIsPreallocated(PetscMat,PetscBool*)
     int MatHasPreallocationAIJ(PetscMat,PetscBool*,PetscBool*,PetscBool*)

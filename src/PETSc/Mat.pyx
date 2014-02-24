@@ -1220,6 +1220,32 @@ cdef class Mat(Object):
     def matSolve(self, Mat B not None, Mat X not None):
         CHKERR( MatMatSolve(self.mat, B.mat, X.mat) )
 
+    # dense matrices
+
+    def getDenseArray(self):
+        cdef PetscInt m=0, N=0, lda=0
+        cdef PetscScalar *data = NULL
+        CHKERR( MatGetLocalSize(self.mat, &m, NULL) )
+        CHKERR( MatGetSize(self.mat, NULL, &N) )
+        lda = m # CHKERR( MatDenseGetLDA(self.mat, &ld) )
+        CHKERR( MatDenseGetArray(self.mat, &data) )
+        cdef int typenum = NPY_PETSC_SCALAR
+        cdef int itemsize = <int>sizeof(PetscScalar)
+        cdef int flags = NPY_ARRAY_FARRAY
+        cdef npy_intp dims[2], strides[2]
+        dims[0] = <npy_intp>m; strides[0] = <npy_intp>sizeof(PetscScalar);
+        dims[1] = <npy_intp>N; strides[1] = <npy_intp>(lda*sizeof(PetscScalar));
+        array = <object>PyArray_New(<PyTypeObject*>ndarray, 2, dims, typenum,
+                                    strides, data, itemsize, flags, NULL)
+        CHKERR( MatDenseRestoreArray(self.mat, &data) )
+        return array
+
+    def getDenseLocalMatrix(self):
+        cdef Mat mat = type(self)()
+        CHKERR( MatDenseGetLocalMatrix(self.mat, &mat.mat) )
+        PetscINCREF(mat.obj)
+        return mat
+
     #
 
     property sizes:
