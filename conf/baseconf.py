@@ -147,9 +147,12 @@ class PetscConfig:
         petsc_lib = flaglist(
             '-L%s %s' % (self['PETSC_LIB_DIR'], self['PETSC_LIB_BASIC']))
         petsc_lib['runtime_library_dirs'].append(self['PETSC_LIB_DIR'])
-        petsc_ext_lib = split_quoted(self['PETSC_EXTERNAL_LIB_BASIC'])
-        petsc_lib['extra_link_args'].extend(petsc_ext_lib)
-        #
+
+        # Link in extra libraries on static builds
+        if self['BUILDSHAREDLIB'] != 'yes':
+            petsc_ext_lib = split_quoted(self['PETSC_EXTERNAL_LIB_BASIC'])
+            petsc_lib['extra_link_args'].extend(petsc_ext_lib)
+
         self._configure_ext(extension, petsc_inc, preppend=True)
         self._configure_ext(extension, petsc_lib)
 
