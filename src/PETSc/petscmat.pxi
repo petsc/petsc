@@ -299,6 +299,10 @@ cdef extern from * nogil:
     int MatScaleSystem(PetscMat,PetscVec,PetscVec)
     int MatUnScaleSystem(PetscMat,PetscVec,PetscVec)
 
+    int MatDenseGetLocalMatrix(PetscMat,PetscMat*)
+    int MatDenseGetArray(PetscMat,PetscScalar*[])
+    int MatDenseRestoreArray(PetscMat,PetscScalar*[])
+
 
 cdef extern from "custom.h" nogil:
     enum: MAT_SKIP_ALLOCATION

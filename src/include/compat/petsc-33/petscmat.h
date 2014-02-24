@@ -7,3 +7,6 @@ PetscErrorCode MatGetColumnIJ_Compat(Mat mat,PetscInt shift,PetscBool symmetric,
 #define MatGetColumnIJ MatGetColumnIJ_Compat
 PetscErrorCode MatRestoreColumnIJ_Compat(Mat mat,PetscInt shift,PetscBool symmetric,PetscBool inodecompressed,PetscInt *n,const PetscInt *ia[],const PetscInt *ja[],PetscBool  *done) { return MatRestoreColumnIJ(mat,shift,symmetric,inodecompressed,n,(PetscInt**)ia,(PetscInt**)ja,done);}
 #define MatRestoreColumnIJ MatRestoreColumnIJ_Compat
+
+#define MatDenseGetArray     MatGetArray
+#define MatDenseRestoreArray MatRestoreArray

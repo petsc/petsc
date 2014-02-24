@@ -45,6 +45,10 @@ cdef extern from "petsc4py/numpy.h":
         NPY_FORTRANORDER
     ndarray PyArray_NewCopy(ndarray,NPY_ORDER)
 
+    ctypedef struct PyObject
+    ctypedef struct PyTypeObject
+    PyObject* PyArray_New(PyTypeObject*,int,npy_intp[],int,npy_intp[],void*,int,int,PyObject*)
+
 
 cdef extern from "petsc4py/numpy.h":
 
