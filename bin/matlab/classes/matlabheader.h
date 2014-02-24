@@ -130,7 +130,7 @@ int KSPSetType(KSP,const char*);
 int KSPSetDM(KSP,DM);
 int KSPGetPC(KSP,PC*);
 int KSPSetFromOptions(KSP);
-int KSPSetOperators(KSP,Mat,Mat,MatStructure);
+int KSPSetOperators(KSP,Mat,Mat);
 int KSPSolve(KSP,Vec,Vec);
 int KSPSetUp(KSP);
 int KSPGetSolution(KSP,Vec*);

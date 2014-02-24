@@ -153,7 +153,7 @@ PETSC_INTERN PetscErrorCode KSPPlotEigenContours_Private(KSP,PetscInt,const Pets
 typedef struct _p_DMKSP *DMKSP;
 typedef struct _DMKSPOps *DMKSPOps;
 struct _DMKSPOps {
-  PetscErrorCode (*computeoperators)(KSP,Mat,Mat,MatStructure*,void*);
+  PetscErrorCode (*computeoperators)(KSP,Mat,Mat,void*);
   PetscErrorCode (*computerhs)(KSP,Vec,void*);
   PetscErrorCode (*computeinitialguess)(KSP,Vec,void*);
   PetscErrorCode (*destroy)(DMKSP*);

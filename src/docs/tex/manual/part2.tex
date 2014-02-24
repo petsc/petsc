@@ -2051,7 +2051,7 @@ Before actually solving a linear system with KSP, the user must call
 the following routine to set the matrices associated with the linear
 system:
 \begin{tabbing}
-  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag);
+  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat);
 \end{tabbing}
 The argument \trl{Amat}, representing the matrix that defines the
 linear system, is a symbolic place holder for any kind of matrix.

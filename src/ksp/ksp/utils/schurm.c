@@ -264,7 +264,7 @@ PetscErrorCode  MatSchurComplementSetSubMatrices(Mat S,Mat A00,Mat Ap00,Mat A01,
 
   ierr = PetscLayoutSetUp((S)->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp((S)->cmap);CHKERRQ(ierr);
-  ierr = KSPSetOperators(Na->ksp,A00,Ap00,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(Na->ksp,A00,Ap00);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -330,7 +330,7 @@ PetscErrorCode MatSchurComplementSetKSP(Mat S, KSP ksp)
   ierr    = PetscObjectReference((PetscObject)ksp);CHKERRQ(ierr);
   ierr    = KSPDestroy(&Na->ksp);CHKERRQ(ierr);
   Na->ksp = ksp;
-  ierr    = KSPSetOperators(Na->ksp, Na->A, Na->Ap, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr    = KSPSetOperators(Na->ksp, Na->A, Na->Ap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -405,7 +405,7 @@ PetscErrorCode  MatSchurComplementUpdateSubMatrices(Mat S,Mat A00,Mat Ap00,Mat A
   Na->C  = A10;
   Na->D  = A11;
 
-  ierr = KSPSetOperators(Na->ksp,A00,Ap00,str);CHKERRQ(ierr);
+  ierr = KSPSetOperators(Na->ksp,A00,Ap00);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

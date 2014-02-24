@@ -247,7 +247,7 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
     /* Calculate the reduced direction.  (Really negative of Newton
        direction.  Therefore, rest of the code uses -d.) */
     ierr = KSPReset(tao->ksp);
-    ierr = KSPSetOperators(tao->ksp, asls->J_sub, asls->Jpre_sub,  asls->matflag);CHKERRQ(ierr);
+    ierr = KSPSetOperators(tao->ksp, asls->J_sub, asls->Jpre_sub);CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp, asls->r2, asls->dxfree);CHKERRQ(ierr);
 
     /* Add the direction in the free variables back into the real direction. */

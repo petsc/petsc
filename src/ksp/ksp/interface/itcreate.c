@@ -466,28 +466,9 @@ PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype)
    Input Parameters:
 +  ksp - the KSP context
 .  Amat - the matrix that defines the linear system
-.  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
--  flag - flag indicating information about the preconditioner matrix structure
-   during successive linear solves.  This flag is ignored the first time a
-   linear system is solved, and thus is irrelevant when solving just one linear
-   system.
+-  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
 
    Notes:
-   The flag can be used to eliminate unnecessary work in the preconditioner
-   during the repeated solution of linear systems of the same size.  The
-   available options are
-$    SAME_PRECONDITIONER -
-$      Pmat is identical during successive linear solves.
-$      This option is intended for folks who are using
-$      different Amat and Pmat matrices and want to reuse the
-$      same preconditioner matrix.  For example, this option
-$      saves work by not recomputing incomplete factorization
-$      for ILU/ICC preconditioners.
-$    SAME_NONZERO_PATTERN -
-$      Pmat has the same nonzero structure during
-$      successive linear solves.
-$    DIFFERENT_NONZERO_PATTERN -
-$      Pmat does not have the same nonzero structure.
 
     All future calls to KSPSetOperators() must use the same size matrices!
 
@@ -504,9 +485,6 @@ $      Pmat does not have the same nonzero structure.
     preconditioner will not function correctly.  Thus, use this optimization
     feature carefully!
 
-    If in doubt about whether your preconditioner matrix has changed
-    structure or not, use the flag DIFFERENT_NONZERO_PATTERN.
-
     Level: beginner
 
    Alternative usage: If the operators have NOT been set with KSP/PCSetOperators() then the operators
@@ -517,22 +495,22 @@ $      Pmat does not have the same nonzero structure.
       The user must set the sizes of the returned matrices and their type etc just
       as if the user created them with MatCreate(). For example,
 
-$         KSP/PCGetOperators(ksp/pc,&mat,NULL,NULL); is equivalent to
+$         KSP/PCGetOperators(ksp/pc,&mat,NULL); is equivalent to
 $           set size, type, etc of mat
 
 $         MatCreate(comm,&mat);
-$         KSP/PCSetOperators(ksp/pc,mat,mat,SAME_NONZERO_PATTERN);
+$         KSP/PCSetOperators(ksp/pc,mat,mat);
 $         PetscObjectDereference((PetscObject)mat);
 $           set size, type, etc of mat
 
      and
 
-$         KSP/PCGetOperators(ksp/pc,&mat,&pmat,NULL); is equivalent to
+$         KSP/PCGetOperators(ksp/pc,&mat,&pmat); is equivalent to
 $           set size, type, etc of mat and pmat
 
 $         MatCreate(comm,&mat);
 $         MatCreate(comm,&pmat);
-$         KSP/PCSetOperators(ksp/pc,mat,pmat,SAME_NONZERO_PATTERN);
+$         KSP/PCSetOperators(ksp/pc,mat,pmat);
 $         PetscObjectDereference((PetscObject)mat);
 $         PetscObjectDereference((PetscObject)pmat);
 $           set size, type, etc of mat and pmat
@@ -550,7 +528,7 @@ $           set size, type, etc of mat and pmat
 
 .seealso: KSPSolve(), KSPGetPC(), PCGetOperators(), PCSetOperators(), KSPGetOperators()
 @*/
-PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
+PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat)
 {
   MatNullSpace   nullsp;
   PetscErrorCode ierr;
@@ -562,7 +540,7 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
   if (Amat) PetscCheckSameComm(ksp,1,Amat,2);
   if (Pmat) PetscCheckSameComm(ksp,1,Pmat,3);
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-  ierr = PCSetOperators(ksp->pc,Amat,Pmat,flag);CHKERRQ(ierr);
+  ierr = PCSetOperators(ksp->pc,Amat,Pmat);CHKERRQ(ierr);
   if (ksp->setupstage == KSP_SETUP_NEWRHS) ksp->setupstage = KSP_SETUP_NEWMATRIX;  /* so that next solve call will call PCSetUp() on new matrix */
   if (ksp->guess) {
     ierr = KSPFischerGuessReset(ksp->guess);CHKERRQ(ierr);
@@ -589,11 +567,7 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
 
    Output Parameters:
 +  Amat - the matrix that defines the linear system
-.  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
--  flag - flag indicating information about the preconditioner matrix structure
-   during successive linear solves.  This flag is ignored the first time a
-   linear system is solved, and thus is irrelevant when solving just one linear
-   system.
+-  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
 
     Level: intermediate
 
@@ -603,14 +577,14 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
 
 .seealso: KSPSolve(), KSPGetPC(), PCGetOperators(), PCSetOperators(), KSPSetOperators(), KSPGetOperatorsSet()
 @*/
-PetscErrorCode  KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat,MatStructure *flag)
+PetscErrorCode  KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-  ierr = PCGetOperators(ksp->pc,Amat,Pmat,flag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,Amat,Pmat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

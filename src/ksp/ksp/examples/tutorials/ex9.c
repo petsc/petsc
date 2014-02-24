@@ -242,7 +242,7 @@ int main(int argc,char **args)
           will not function correctly.  Thus, use this optimization
           feature with caution!
     */
-    ierr = KSPSetOperators(ksp1,C1,C1,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp1,C1,C1);CHKERRQ(ierr);
 
     /*
        Use the previous solution of linear system #1 as the initial
@@ -330,7 +330,7 @@ int main(int argc,char **args)
        structure of successive preconditioner matrices by setting flag
        SAME_NONZERO_PATTERN.
     */
-    ierr = KSPSetOperators(ksp2,C2,C2,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp2,C2,C2);CHKERRQ(ierr);
 
     /*
        Solve the second linear system

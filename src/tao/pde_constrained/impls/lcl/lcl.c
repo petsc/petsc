@@ -232,7 +232,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
       ierr = MatMultTranspose(tao->jacobian_state_inv, lclP->GU, lclP->lamda);CHKERRQ(ierr);
     }
   } else {
-    ierr = KSPSetOperators(tao->ksp, tao->jacobian_state, tao->jacobian_state_pre, lclP->statematflag);CHKERRQ(ierr);
+    ierr = KSPSetOperators(tao->ksp, tao->jacobian_state, tao->jacobian_state_pre);CHKERRQ(ierr);
     if (symmetric) {
       ierr = KSPSolve(tao->ksp, lclP->GU,  lclP->lamda);CHKERRQ(ierr);
     } else {
@@ -284,7 +284,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
     if (tao->jacobian_state_inv) {
       ierr = MatMult(tao->jacobian_state_inv, tao->constraints, lclP->r);CHKERRQ(ierr);
     } else {
-      ierr = KSPSetOperators(tao->ksp, tao->jacobian_state, tao->jacobian_state_pre, lclP->statematflag);CHKERRQ(ierr);
+      ierr = KSPSetOperators(tao->ksp, tao->jacobian_state, tao->jacobian_state_pre);CHKERRQ(ierr);
       ierr = KSPSolve(tao->ksp, tao->constraints,  lclP->r);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
       tao->ksp_its += its;

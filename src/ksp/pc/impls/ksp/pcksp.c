@@ -63,7 +63,6 @@ static PetscErrorCode PCSetUp_KSP(PC pc)
   PetscErrorCode ierr;
   PC_KSP         *jac = (PC_KSP*)pc->data;
   Mat            mat;
-  PetscBool      A;
 
   PetscFunctionBegin;
   if (!jac->ksp) {ierr = PCKSPCreateKSP_KSP(pc);CHKERRQ(ierr);}
@@ -71,20 +70,7 @@ static PetscErrorCode PCSetUp_KSP(PC pc)
   if (pc->useAmat) mat = pc->mat;
   else             mat = pc->pmat;
 
-  ierr = KSPGetOperatorsSet(jac->ksp,&A,NULL);CHKERRQ(ierr);
-  if (!A) {
-    ierr = KSPSetOperators(jac->ksp,mat,pc->pmat,pc->flag);CHKERRQ(ierr);
-  } else if (pc->flag != SAME_PRECONDITIONER) {
-    Mat Amat,Bmat;
-    ierr = KSPGetOperators(jac->ksp,&Amat,&Bmat,NULL);CHKERRQ(ierr);
-    if (Amat == mat && Bmat == pc->pmat) {
-      /* The user has not replaced the matrices so we are expected to forward the update. This incorrectly diagnoses
-       * changed matrices at the top level as the user manually changing the inner matrices, but we have no way to
-       * identify that in this context. The longer term solution is to track matrix state internally.
-       */
-      ierr = KSPSetOperators(jac->ksp,mat,pc->pmat,pc->flag);CHKERRQ(ierr);
-    }
-  }
+  ierr = KSPSetOperators(jac->ksp,mat,pc->pmat);CHKERRQ(ierr);
   ierr = KSPSetUp(jac->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

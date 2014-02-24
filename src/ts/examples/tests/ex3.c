@@ -276,7 +276,7 @@ PetscErrorCode Petsc_KSPSolve(AppCtx *obj)
 
   /*create the ksp context and set the operators,that is, associate the system matrix with it*/
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,obj->Amat,obj->Amat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,obj->Amat,obj->Amat);CHKERRQ(ierr);
 
   /*get the preconditioner context, set its type and the tolerances*/
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);

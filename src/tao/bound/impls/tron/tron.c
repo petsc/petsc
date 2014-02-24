@@ -163,7 +163,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
       ierr = TaoMatGetSubMat(tao->hessian_pre, tron->Free_Local, tron->diag, tao->subset_type,&tron->Hpre_sub);CHKERRQ(ierr);
     }
     ierr = KSPReset(tao->ksp);CHKERRQ(ierr);
-    ierr = KSPSetOperators(tao->ksp, tron->H_sub, tron->Hpre_sub, tron->matflag);CHKERRQ(ierr);
+    ierr = KSPSetOperators(tao->ksp, tron->H_sub, tron->Hpre_sub);CHKERRQ(ierr);
     while (1) {
 
       /* Approximately solve the reduced linear system */

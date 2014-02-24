@@ -278,7 +278,7 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
 
     ierr = MatDiagonalSet(tao->hessian, qp->DiagAxpy, ADD_VALUES);CHKERRQ(ierr);
 
-    ierr = KSPSetOperators(tao->ksp, tao->hessian, tao->hessian_pre, matflag);CHKERRQ(ierr);
+    ierr = KSPSetOperators(tao->ksp, tao->hessian, tao->hessian_pre);CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp, qp->RHS, tao->stepdirection);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
     tao->ksp_its+=its;

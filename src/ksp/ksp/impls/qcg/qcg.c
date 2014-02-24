@@ -110,7 +110,6 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
  */
 
   KSP_QCG        *pcgP = (KSP_QCG*)ksp->data;
-  MatStructure   pflag;
   Mat            Amat,Pmat;
   Vec            W,WA,WA2,R,P,ASP,BS,X,B;
   PetscScalar    scal,beta,rntrn,step;
@@ -147,7 +146,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   /* Initialize variables */
   ierr = VecSet(W,0.0);CHKERRQ(ierr);  /* W = 0 */
   ierr = VecSet(X,0.0);CHKERRQ(ierr);  /* X = 0 */
-  ierr = PCGetOperators(pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   /* Compute:  BS = D^{-1} B */
   ierr = PCApplySymmetricLeft(pc,B,BS);CHKERRQ(ierr);

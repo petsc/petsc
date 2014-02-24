@@ -396,7 +396,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
     }
 
     /* Solve the Newton system of equations */
-    ierr = KSPSetOperators(tao->ksp,tao->hessian,tao->hessian_pre,matflag);CHKERRQ(ierr);
+    ierr = KSPSetOperators(tao->ksp,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
     if (NLS_KSP_NASH == nlsP->ksp_type || NLS_KSP_STCG == nlsP->ksp_type ||  NLS_KSP_GLTR == nlsP->ksp_type) {
 
       if (NLS_KSP_NASH == nlsP->ksp_type) {

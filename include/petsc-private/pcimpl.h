@@ -34,9 +34,12 @@ struct _p_PC {
   PETSCHEADER(struct _PCOps);
   DM               dm;
   PetscInt         setupcalled;
-  PetscObjectState nonzerostate;          /* last known nonzero state of the pmat associated with this PC */
+  PetscObjectState matstate,matnonzerostate;          /* last known nonzero state of the pmat associated with this PC */
+  PetscReal        reusepreconditioner;
+  MatStructure     flag;                              /* reset each PCSetUp() to indicate to PC implementations if nonzero structure has changed */ 
+
   PetscInt         setfromoptionscalled;
-  MatStructure     flag;
+
   Mat              mat,pmat;
   Vec              diagonalscaleright,diagonalscaleleft; /* used for time integration scaling */
   PetscBool        diagonalscale;

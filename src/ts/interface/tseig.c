@@ -131,7 +131,7 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
 
     ts->time_step  = time_step_save;
 
-    ierr = KSPSetOperators(ksp,B,B,structure);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp,B,B);CHKERRQ(ierr);
     ierr = VecGetSize(v,&n);CHKERRQ(ierr);
     if (n < 200) its = n;
     ierr = KSPSetTolerances(ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,its);CHKERRQ(ierr);

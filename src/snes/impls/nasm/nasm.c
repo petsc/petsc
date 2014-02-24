@@ -703,7 +703,9 @@ PetscErrorCode SNESNASMComputeFinalJacobian_Private(SNES snes, Vec Xfinal)
     ierr = SNESComputeFunction(subsnes,Xl,Fl);CHKERRQ(ierr);
     ierr = SNESComputeJacobian(subsnes,Xl,subsnes->jacobian,subsnes->jacobian_pre,&flg);CHKERRQ(ierr);
     if (lag > 1) subsnes->lagjacobian = lag;
-    ierr = KSPSetOperators(subsnes->ksp,subsnes->jacobian,subsnes->jacobian_pre,flg);CHKERRQ(ierr);
+    if (flg == SAME_PRECONDITIONER) {ierr = KSPSetReusePreconditioner(subsnes->ksp,PETSC_TRUE);CHKERRQ(ierr);}
+    else {ierr = KSPSetReusePreconditioner(subsnes->ksp,PETSC_FALSE);CHKERRQ(ierr);}
+    ierr = KSPSetOperators(subsnes->ksp,subsnes->jacobian,subsnes->jacobian_pre);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

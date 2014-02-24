@@ -358,7 +358,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
     }
 
     while (reason == TAO_CONTINUE_ITERATING) {
-      ierr = KSPSetOperators(tao->ksp, tao->hessian, tao->hessian_pre, matflag);CHKERRQ(ierr);
+      ierr = KSPSetOperators(tao->ksp, tao->hessian, tao->hessian_pre);CHKERRQ(ierr);
 
       /* Solve the trust region subproblem */
       if (NTR_KSP_NASH == tr->ksp_type) {

@@ -20,7 +20,7 @@ int main(int argc,char **args)
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,NULL,&mat);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = PCSetOperators(pc,mat,mat);CHKERRQ(ierr);
   ierr = PCSetUp(pc);CHKERRQ(ierr);
   ierr = MatDestroy(&mat);CHKERRQ(ierr);
   ierr = PCDestroy(&pc);CHKERRQ(ierr);

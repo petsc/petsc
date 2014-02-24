@@ -354,7 +354,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
       ierr = MatLMVMUpdate(tl->M,tao->solution, tao->gradient);CHKERRQ(ierr);
       ++bfgsUpdates;
     }
-    ierr = KSPSetOperators(tao->ksp, tao->hessian, tao->hessian_pre, matflag);CHKERRQ(ierr);
+    ierr = KSPSetOperators(tao->ksp, tao->hessian, tao->hessian_pre);CHKERRQ(ierr);
     /* Solve the Newton system of equations */
     if (NTL_KSP_NASH == tl->ksp_type) {
       ierr = KSPNASHSetRadius(tao->ksp,tl->max_radius);CHKERRQ(ierr);

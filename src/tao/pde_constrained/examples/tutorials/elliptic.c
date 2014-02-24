@@ -376,7 +376,7 @@ PetscErrorCode StateInvMatMult(Mat J_shell, Vec X, Vec Y)
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
-  ierr = KSPSetOperators(user->solver,user->JsBlock,user->DSG,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(user->solver,user->JsBlock,user->DSG);CHKERRQ(ierr);
   if (Y == user->ytrue) {
     ierr = KSPSetTolerances(user->solver,1e-8,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   } else if (user->lcl) {
@@ -1133,7 +1133,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = KSPCreate(PETSC_COMM_WORLD,&user->solver);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(user->solver);CHKERRQ(ierr);
 
-  ierr = KSPSetOperators(user->solver,user->JsBlock,user->DSG,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(user->solver,user->JsBlock,user->DSG);CHKERRQ(ierr);
   user->lcl->solve_type = LCL_FORWARD1;
   ierr = MatMult(user->JsInv,user->q,user->ytrue);CHKERRQ(ierr);
   /* First compute Av_u = Av*exp(-u) */

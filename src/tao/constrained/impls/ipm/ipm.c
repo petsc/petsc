@@ -85,7 +85,7 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
     ierr = VecScale(ipmP->bigrhs,-1.0);CHKERRQ(ierr);
 
     /* solve K * step = rhs */
-    ierr = KSPSetOperators(tao->ksp,ipmP->K,ipmP->K,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(tao->ksp,ipmP->K,ipmP->K);CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp,ipmP->bigrhs,ipmP->bigstep);CHKERRQ(ierr);
 
     ierr = IPMScatterStep(tao,ipmP->bigstep,tao->stepdirection,ipmP->ds,ipmP->dlamdae,ipmP->dlamdai);CHKERRQ(ierr);
@@ -162,7 +162,7 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
     ierr = IPMGatherRHS(tao,ipmP->bigrhs,NULL,NULL,NULL,ipmP->rhs_s);CHKERRQ(ierr);
 
     /* solve K * step = rhs */
-    ierr = KSPSetOperators(tao->ksp,ipmP->K,ipmP->K,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(tao->ksp,ipmP->K,ipmP->K);CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp,ipmP->bigrhs,ipmP->bigstep);CHKERRQ(ierr);
 
     ierr = IPMScatterStep(tao,ipmP->bigstep,tao->stepdirection,ipmP->ds,ipmP->dlamdae,ipmP->dlamdai);CHKERRQ(ierr);

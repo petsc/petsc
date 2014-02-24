@@ -178,7 +178,7 @@ int main(int argc,char **args)
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = KSPSetOperators(ksp,C,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,C,C);CHKERRQ(ierr);
 
   /*
      Set runtime options (e.g., -ksp_type <type> -pc_type <type>)
@@ -286,7 +286,7 @@ int main(int argc,char **args)
         will not function correctly.  Thus, use this optimization
         feature with caution!
   */
-  ierr = KSPSetOperators(ksp,C,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,C,C);CHKERRQ(ierr);
 
   /*
      Solve linear system

@@ -1233,7 +1233,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, Mat *fetidp_mat, P
   ierr = PCShellSetContext(newpc,fetidppc_ctx);CHKERRQ(ierr);
   ierr = PCShellSetApply(newpc,FETIDPPCApply);CHKERRQ(ierr);
   ierr = PCShellSetDestroy(newpc,PCBDDCDestroyFETIDPPC);CHKERRQ(ierr);
-  ierr = PCSetOperators(newpc,newmat,newmat,SAME_PRECONDITIONER);CHKERRQ(ierr);
+  ierr = PCSetOperators(newpc,newmat,newmat);CHKERRQ(ierr);
   ierr = PCSetUp(newpc);CHKERRQ(ierr);
   /* return pointers for objects created */
   *fetidp_mat=newmat;

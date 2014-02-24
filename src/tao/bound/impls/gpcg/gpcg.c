@@ -216,7 +216,7 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
       }
 
       ierr = KSPReset(tao->ksp);CHKERRQ(ierr);
-      ierr = KSPSetOperators(tao->ksp,gpcg->Hsub,gpcg->Hsub_pre,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(tao->ksp,gpcg->Hsub,gpcg->Hsub_pre);CHKERRQ(ierr);
 
       ierr = KSPSolve(tao->ksp,gpcg->R,gpcg->DXFree);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);

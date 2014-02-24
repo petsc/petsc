@@ -77,6 +77,7 @@ PETSC_EXTERN PetscErrorCode KSPSolve(KSP,Vec,Vec);
 PETSC_EXTERN PetscErrorCode KSPSolveTranspose(KSP,Vec,Vec);
 PETSC_EXTERN PetscErrorCode KSPReset(KSP);
 PETSC_EXTERN PetscErrorCode KSPDestroy(KSP*);
+PETSC_EXTERN PetscErrorCode KSPSetReusePreconditioner(KSP,PetscBool);
 
 PETSC_EXTERN PetscFunctionList KSPList;
 PETSC_EXTERN PetscBool         KSPRegisterAllCalled;
@@ -256,8 +257,8 @@ PETSC_EXTERN PetscErrorCode KSPGMRESMonitorKrylov(KSP,PetscInt,PetscReal,void *)
 PETSC_EXTERN PetscErrorCode KSPUnwindPreconditioner(KSP,Vec,Vec);
 PETSC_EXTERN PetscErrorCode KSPInitialResidual(KSP,Vec,Vec,Vec,Vec,Vec);
 
-PETSC_EXTERN PetscErrorCode KSPSetOperators(KSP,Mat,Mat,MatStructure);
-PETSC_EXTERN PetscErrorCode KSPGetOperators(KSP,Mat*,Mat*,MatStructure*);
+PETSC_EXTERN PetscErrorCode KSPSetOperators(KSP,Mat,Mat);
+PETSC_EXTERN PetscErrorCode KSPGetOperators(KSP,Mat*,Mat*);
 PETSC_EXTERN PetscErrorCode KSPGetOperatorsSet(KSP,PetscBool *,PetscBool *);
 PETSC_EXTERN PetscErrorCode KSPSetOptionsPrefix(KSP,const char[]);
 PETSC_EXTERN PetscErrorCode KSPAppendOptionsPrefix(KSP,const char[]);
@@ -615,10 +616,10 @@ PETSC_EXTERN PetscErrorCode KSPGetDM(KSP,DM*);
 PETSC_EXTERN PetscErrorCode KSPSetApplicationContext(KSP,void*);
 PETSC_EXTERN PetscErrorCode KSPGetApplicationContext(KSP,void*);
 PETSC_EXTERN PetscErrorCode KSPSetComputeRHS(KSP,PetscErrorCode (*func)(KSP,Vec,void*),void *);
-PETSC_EXTERN PetscErrorCode KSPSetComputeOperators(KSP,PetscErrorCode(*)(KSP,Mat,Mat,MatStructure*,void*),void*);
+PETSC_EXTERN PetscErrorCode KSPSetComputeOperators(KSP,PetscErrorCode(*)(KSP,Mat,Mat,void*),void*);
 PETSC_EXTERN PetscErrorCode KSPSetComputeInitialGuess(KSP,PetscErrorCode(*)(KSP,Vec,void*),void*);
-PETSC_EXTERN PetscErrorCode DMKSPSetComputeOperators(DM,PetscErrorCode(*)(KSP,Mat,Mat,MatStructure*,void*),void*);
-PETSC_EXTERN PetscErrorCode DMKSPGetComputeOperators(DM,PetscErrorCode(**)(KSP,Mat,Mat,MatStructure*,void*),void*);
+PETSC_EXTERN PetscErrorCode DMKSPSetComputeOperators(DM,PetscErrorCode(*)(KSP,Mat,Mat,void*),void*);
+PETSC_EXTERN PetscErrorCode DMKSPGetComputeOperators(DM,PetscErrorCode(**)(KSP,Mat,Mat,void*),void*);
 PETSC_EXTERN PetscErrorCode DMKSPSetComputeRHS(DM,PetscErrorCode(*)(KSP,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMKSPGetComputeRHS(DM,PetscErrorCode(**)(KSP,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMKSPSetComputeInitialGuess(DM,PetscErrorCode(*)(KSP,Vec,void*),void*);

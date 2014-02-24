@@ -26,7 +26,7 @@ static char help[] = "Solves 2D Poisson equation using multigrid.\n\n";
 #include <petscsys.h>
 #include <petscvec.h>
 
-extern PetscErrorCode ComputeJacobian(KSP,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode ComputeJacobian(KSP,Mat,Mat,void*);
 extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
 extern PetscErrorCode ComputeTrueSolution(DM, Vec);
 extern PetscErrorCode VecView_VTK(Vec, const char [], const char []);
@@ -116,7 +116,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeJacobian"
-PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,MatStructure *str,void *ctx)
+PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,void *ctx)
 {
   UserContext    *user = (UserContext*)ctx;
   PetscErrorCode ierr;

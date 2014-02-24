@@ -37,7 +37,7 @@ PetscErrorCode RunTest(void)
   ierr = PCSetType(pc,PCPYTHON);CHKERRQ(ierr);
   ierr = PCPythonSetType(pc,"example1.py:Jacobi");CHKERRQ(ierr);
 
-  ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 

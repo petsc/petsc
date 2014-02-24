@@ -95,9 +95,9 @@ int main(int argc,char **argv)
       /* modify A */
       ierr = MatShift(A,1.0);CHKERRQ(ierr);
       ierr = MatScale(A,2.0);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
     } else {  /* test SAME_NONZERO_PATTERN */
-      ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
     }
     ierr = KSPSolve(ksp,fine_ctx.b,fine_ctx.x);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);

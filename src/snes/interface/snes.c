@@ -499,7 +499,7 @@ static PetscErrorCode DMCoarsenHook_SNESVecSol(DM dm,DM dmc,void *ctx)
 #define __FUNCT__ "KSPComputeOperators_SNES"
 /* This may be called to rediscretize the operator on levels of linear multigrid. The DM shuffle is so the user can
  * safely call SNESGetDM() in their residual evaluation routine. */
-static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,MatStructure *mstruct,void *ctx)
+static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,void *ctx)
 {
   SNES           snes = (SNES)ctx;
   PetscErrorCode ierr;
@@ -508,6 +508,7 @@ static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,MatStructure 
   DM             dmsave;
   void           *ctxsave;
   PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,MatStructure*,void*);
+  MatStructure   mstruct;
 
   PetscFunctionBegin;
   dmsave = snes->dm;
@@ -524,7 +525,7 @@ static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,MatStructure 
   }
   /* put the previous context back */
 
-  ierr = SNESComputeJacobian(snes,X,A,B,mstruct);CHKERRQ(ierr);
+  ierr = SNESComputeJacobian(snes,X,A,B,&mstruct);CHKERRQ(ierr);
   if (snes->dm != dmsave && jac == SNESComputeJacobianDefaultColor) {
     ierr = SNESSetJacobian(snes,NULL,NULL,jac,ctxsave);CHKERRQ(ierr);
   }
@@ -659,7 +660,6 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
 {
   PetscBool      flg,pcset,persist;
   PetscInt       i,indx,lag,grids;
-  MatStructure   matflag;
   const char     *deft        = SNESNEWTONLS;
   const char     *convtests[] = {"default","skip"};
   SNESKSPEW      *kctx        = NULL;
@@ -885,8 +885,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (!snes->ksp) {ierr = SNESGetKSP(snes,&snes->ksp);CHKERRQ(ierr);}
-  ierr = KSPGetOperators(snes->ksp,NULL,NULL,&matflag);CHKERRQ(ierr);
-  ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,matflag);CHKERRQ(ierr);
+  ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(snes->ksp);CHKERRQ(ierr);
 
   if (!snes->linesearch) {

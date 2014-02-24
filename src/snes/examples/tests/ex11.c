@@ -167,7 +167,7 @@ int main(int argc, char **argv)
   ierr = PCMGGetCoarseSolve(pc,&user.ksp_coarse);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(user.ksp_coarse,"coarse_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(user.ksp_coarse);CHKERRQ(ierr);
-  ierr = KSPSetOperators(user.ksp_coarse,user.coarse.J,user.coarse.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(user.ksp_coarse,user.coarse.J,user.coarse.J);CHKERRQ(ierr);
   ierr = PCMGSetX(pc,COARSE_LEVEL,user.coarse.x);CHKERRQ(ierr);
   ierr = PCMGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRQ(ierr);
   if (user.redundant_build) {
@@ -180,7 +180,7 @@ int main(int argc, char **argv)
   ierr = PCMGGetSmoother(pc,FINE_LEVEL,&user.ksp_fine);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(user.ksp_fine,"fine_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(user.ksp_fine);CHKERRQ(ierr);
-  ierr = KSPSetOperators(user.ksp_fine,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(user.ksp_fine,user.fine.J,user.fine.J);CHKERRQ(ierr);
   ierr = PCMGSetR(pc,FINE_LEVEL,user.fine.r);CHKERRQ(ierr);
   ierr = PCMGSetResidual(pc,FINE_LEVEL,NULL,user.fine.J);CHKERRQ(ierr);
 
@@ -447,7 +447,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat B,MatStructure *flag,void 
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {
 
-    ierr = KSPSetOperators(user->ksp_fine,user->fine.J,user->fine.J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(user->ksp_fine,user->fine.J,user->fine.J);CHKERRQ(ierr);
 
     /* restrict X to coarse grid */
     ierr = MatMult(user->R,X,user->coarse.x);CHKERRQ(ierr);
@@ -464,7 +464,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat B,MatStructure *flag,void 
       /* coarse grid Jacobian computed in parallel */
       ierr = FormJacobian_Grid(user,&user->coarse,user->coarse.x,user->coarse.J,user->coarse.J);CHKERRQ(ierr);
     }
-    ierr = KSPSetOperators(user->ksp_coarse,user->coarse.J,user->coarse.J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(user->ksp_coarse,user->coarse.J,user->coarse.J);CHKERRQ(ierr);
   }
 
   return 0;

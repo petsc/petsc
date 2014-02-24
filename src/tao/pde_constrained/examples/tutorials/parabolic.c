@@ -1074,7 +1074,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   /* Solver options and tolerances */
   ierr = KSPCreate(PETSC_COMM_WORLD,&user->solver);CHKERRQ(ierr);
   ierr = KSPSetType(user->solver,KSPCG);CHKERRQ(ierr);
-  ierr = KSPSetOperators(user->solver,user->JsBlock,user->JsBlockPrec,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(user->solver,user->JsBlock,user->JsBlockPrec);CHKERRQ(ierr);
   ierr = KSPSetInitialGuessNonzero(user->solver,PETSC_FALSE);CHKERRQ(ierr);
   ierr = KSPSetTolerances(user->solver,1e-4,1e-20,1e3,500);CHKERRQ(ierr);
   ierr = KSPGetPC(user->solver,&user->prec);CHKERRQ(ierr);
