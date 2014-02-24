@@ -107,7 +107,6 @@ PETSC_EXTERN PetscErrorCode TaoGetGradientVector(Tao, Vec*);
 PETSC_EXTERN PetscErrorCode TaoSetObjectiveRoutine(Tao, PetscErrorCode(*)(Tao, Vec, PetscReal*,void*), void*);
 PETSC_EXTERN PetscErrorCode TaoSetGradientRoutine(Tao, PetscErrorCode(*)(Tao, Vec, Vec, void*), void*);
 PETSC_EXTERN PetscErrorCode TaoSetObjectiveAndGradientRoutine(Tao, PetscErrorCode(*)(Tao, Vec, PetscReal*, Vec, void*), void*);
-PETSC_EXTERN PetscErrorCode TaoSetHessianMat(Tao, Mat, Mat);
 PETSC_EXTERN PetscErrorCode TaoSetHessianRoutine(Tao,Mat,Mat, PetscErrorCode(*)(Tao,Vec, Mat*, Mat*, MatStructure*, void*), void*);
 PETSC_EXTERN PetscErrorCode TaoSetSeparableObjectiveRoutine(Tao, Vec, PetscErrorCode(*)(Tao, Vec, Vec, void*), void*);
 PETSC_EXTERN PetscErrorCode TaoSetConstraintsRoutine(Tao, Vec, PetscErrorCode(*)(Tao, Vec, Vec, void*), void*);
