@@ -404,6 +404,7 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
     /* Create quadrature */
     ierr = PetscDTGaussJacobiQuadrature(dim, qorder, -1.0, 1.0, &q);CHKERRQ(ierr);
     ierr = PetscFESetQuadrature(user->fe[f], q);CHKERRQ(ierr);
+    ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
   }
   user->fem.fe    = user->fe;
   user->fem.feAux = NULL;
@@ -426,53 +427,18 @@ PetscErrorCode DestroyElement(AppCtx *user)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupSection"
-/*
-  There is a problem here with uninterpolated meshes. The index in numDof[] is not dimension in this case,
-  but sieve depth.
-*/
 PetscErrorCode SetupSection(DM dm, AppCtx *user)
 {
-  PetscSection    section;
-  const PetscInt  numFields           = NUM_FIELDS;
-  PetscInt        dim                 = user->dim;
-  PetscInt        numBC               = 0;
-  PetscInt        bcFields[1]         = {0};
-  IS              bcPoints[1]         = {NULL};
-  PetscInt        numComp[NUM_FIELDS];
-  const PetscInt *numFieldDof[NUM_FIELDS];
-  PetscInt       *numDof;
-  PetscInt        f, d;
-  PetscErrorCode  ierr;
+  const PetscInt id = 1;
+  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscFEGetNumComponents(user->fe[0], &numComp[0]);CHKERRQ(ierr);
-  ierr = PetscFEGetNumComponents(user->fe[1], &numComp[1]);CHKERRQ(ierr);
-  ierr = PetscFEGetNumDof(user->fe[0], &numFieldDof[0]);CHKERRQ(ierr);
-  ierr = PetscFEGetNumDof(user->fe[1], &numFieldDof[1]);CHKERRQ(ierr);
-  ierr = PetscMalloc1(NUM_FIELDS*(dim+1), &numDof);CHKERRQ(ierr);
-  for (f = 0; f < NUM_FIELDS; ++f) {
-    for (d = 0; d <= dim; ++d) {
-      numDof[f*(dim+1)+d] = numFieldDof[f][d];
-    }
-  }
-  for (f = 0; f < numFields; ++f) {
-    for (d = 1; d < dim; ++d) {
-      if ((numDof[f*(dim+1)+d] > 0) && !user->interpolate) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
-    }
-  }
-  if (user->bcType == DIRICHLET) {
-    numBC = 1;
-    ierr  = DMPlexGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
-  }
-  ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
-  ierr = PetscSectionSetFieldName(section, 0, "velocity");CHKERRQ(ierr);
-  ierr = PetscSectionSetFieldName(section, 1, "pressure");CHKERRQ(ierr);
-  ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
-  if (user->bcType == DIRICHLET) {
-    ierr = ISDestroy(&bcPoints[0]);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(numDof);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) user->fe[0], "velocity");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) user->fe[1], "pressure");CHKERRQ(ierr);
+  ierr = DMSetNumFields(dm, 2);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, user->fe[0]);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 1, user->fe[1]);CHKERRQ(ierr);
+  ierr = DMPlexAddBoundary(dm, user->bcType == DIRICHLET, user->bcType == NEUMANN ? "boundary" : "marker", 0, NULL, 1, &id, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
