@@ -9568,3 +9568,32 @@ PetscErrorCode  MatTransposeColoringCreate(Mat mat,ISColoring iscoloring,MatTran
   ierr   = PetscLogEventEnd(MAT_TransposeColoringCreate,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MatGetNonzeroState"
+/*@
+      MatGetNonzeroState - Returns a 64 bit integer representing the current state of nonzeros in the matrix. If the 
+        matrix has had no new nonzero locations added to the matrix since the previous call then the value will be the 
+        same, otherwise it will be larger
+
+     Not Collective
+
+  Input Parameter:
+.    A  - the matrix
+
+  Output Parameter:
+.    state - the current state
+
+  Notes: You can only compare states from two different calls to the SAME matrix, you cannot compare calls between 
+         different matrices
+
+  Level: intermediate
+
+@*/
+PetscErrorCode MatGetNonzeroState(Mat mat,PetscObjectState *state)
+{
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  *state = mat->nonzerostate;
+  PetscFunctionReturn(0);
+}

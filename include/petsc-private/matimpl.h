@@ -189,6 +189,7 @@ struct _MatOps {
   PetscErrorCode (*residual)(Mat,Vec,Vec,Vec);
   PetscErrorCode (*fdcoloringsetup)(Mat,ISColoring,MatFDColoring);
   PetscErrorCode (*findoffblockdiagonalentries)(Mat,IS*);
+  /*144*/
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
@@ -308,7 +309,7 @@ struct _p_Mat {
   PetscBool              assembled;        /* is the matrix assembled? */
   PetscBool              was_assembled;    /* new values inserted into assembled mat */
   PetscInt               num_ass;          /* number of times matrix has been assembled */
-  PetscBool              same_nonzero;     /* matrix has same nonzero pattern as previous */
+  PetscObjectState       nonzerostate;     /* each time new nonzeros locations are introduced into the matrix this is updated */
   MatInfo                info;             /* matrix information */
   InsertMode             insertmode;       /* have values been inserted in matrix or added? */
   MatStash               stash,bstash;     /* used for assembling off-proc mat emements */
@@ -324,7 +325,7 @@ struct _p_Mat {
   PetscCUSPFlag          valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
 #endif
 #if defined(PETSC_HAVE_VIENNACL)
-  PetscViennaCLFlag          valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
+  PetscViennaCLFlag      valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
 #endif
   void                   *spptr;          /* pointer for special library like SuperLU */
   MatSolverPackage       solvertype;

@@ -252,6 +252,7 @@ PETSC_EXTERN PetscErrorCode MatPythonSetType(Mat,const char[]);
 
 PETSC_EXTERN PetscErrorCode MatSetUp(Mat);
 PETSC_EXTERN PetscErrorCode MatDestroy(Mat*);
+PETSC_EXTERN PetscErrorCode MatGetNonzeroState(Mat,PetscObjectState*);
 
 PETSC_EXTERN PetscErrorCode MatConjugate(Mat);
 PETSC_EXTERN PetscErrorCode MatRealPart(Mat);

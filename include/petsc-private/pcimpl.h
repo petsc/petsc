@@ -32,20 +32,21 @@ struct _PCOps {
 */
 struct _p_PC {
   PETSCHEADER(struct _PCOps);
-  DM             dm;
-  PetscInt       setupcalled;
-  PetscInt       setfromoptionscalled;
-  MatStructure   flag;
-  Mat            mat,pmat;
-  Vec            diagonalscaleright,diagonalscaleleft; /* used for time integration scaling */
-  PetscBool      diagonalscale;
-  PetscBool      nonzero_guess; /* used by PCKSP, PCREDUNDANT */
-  PetscBool      useAmat; /* used by several PC that including applying the operator inside the preconditioner */
-  PetscErrorCode (*modifysubmatrices)(PC,PetscInt,const IS[],const IS[],Mat[],void*); /* user provided routine */
-  void           *modifysubmatricesP; /* context for user routine */
-  void           *data;
-  PetscInt       presolvedone;  /* has PCPreSolve() already been run */
-  void           *user;             /* optional user-defined context */
+  DM               dm;
+  PetscInt         setupcalled;
+  PetscObjectState nonzerostate;          /* last known nonzero state of the pmat associated with this PC */
+  PetscInt         setfromoptionscalled;
+  MatStructure     flag;
+  Mat              mat,pmat;
+  Vec              diagonalscaleright,diagonalscaleleft; /* used for time integration scaling */
+  PetscBool        diagonalscale;
+  PetscBool        nonzero_guess; /* used by PCKSP, PCREDUNDANT */
+  PetscBool        useAmat; /* used by several PC that including applying the operator inside the preconditioner */
+  PetscErrorCode   (*modifysubmatrices)(PC,PetscInt,const IS[],const IS[],Mat[],void*); /* user provided routine */
+  void             *modifysubmatricesP; /* context for user routine */
+  void             *data;
+  PetscInt         presolvedone;  /* has PCPreSolve() already been run */
+  void             *user;             /* optional user-defined context */
 };
 
 PETSC_EXTERN PetscLogEvent PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_ApplyCoarse, PC_ApplyMultiple, PC_ApplySymmetricLeft;

@@ -1090,8 +1090,9 @@ PetscErrorCode  PCModifySubMatrices(PC pc,PetscInt nsub,const IS row[],const IS 
  @*/
 PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 {
-  PetscErrorCode ierr;
-  PetscInt       m1,n1,m2,n2;
+  PetscErrorCode   ierr;
+  PetscInt         m1,n1,m2,n2;
+  PetscObjectState nonzerostate;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -1115,6 +1116,15 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   ierr     = MatDestroy(&pc->pmat);CHKERRQ(ierr);
   pc->mat  = Amat;
   pc->pmat = Pmat;
+
+  if (Pmat) {
+    ierr = MatGetNonzeroState(Pmat,&nonzerostate);CHKERRQ(ierr);
+    if (pc->setupcalled > 0) {
+      ierr = PetscInfo2(pc,"PCSetOperators() PC nonzero state %d matrix nonzero state\n",(int)pc->nonzerostate,(int)nonzerostate);CHKERRQ(ierr);
+      if (pc->nonzerostate < nonzerostate && flag == SAME_NONZERO_PATTERN) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Pmat has changed nonzero state from %d to %d but MatStructure flag of SAME_NONZERO_PATTERN was passed",(int)pc->nonzerostate,(int)nonzerostate);
+    }
+    pc->nonzerostate = nonzerostate;
+  }
 
   if (pc->setupcalled == 2 && flag != SAME_PRECONDITIONER) {
     pc->setupcalled = 1;
