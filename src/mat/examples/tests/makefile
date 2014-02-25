@@ -1832,6 +1832,11 @@ runex141:
 	   ${DIFF} output/ex141.out ex141.tmp || printf "${PWD}\nPossible problem with ex141, diffs above\n=========================================\n"; \
 	   ${RM} -f ex141.tmp
 
+runex142:
+	-@${MPIEXEC} -n 1 ./ex142  > ex142.tmp 2>&1; \
+	   ${DIFF} output/ex142.out ex142.tmp || printf "${PWD}\nPossible problem with ex142, diffs above\n=========================================\n"; \
+	   ${RM} -f ex142.tmp
+
 runex143:
 	-@${MPIEXEC} -n 1 ./ex143  > ex143.tmp 2>&1; \
 	   ${DIFF} output/ex143.out ex143.tmp || printf "${PWD}\nPossible problem with ex143, diffs above\n=========================================\n"; \
@@ -2021,7 +2026,7 @@ TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex67f.PETSc runex67f ex67f.rm ex79f.PETSc runex
 TESTEXAMPLES_F90	       = ex16f90.PETSc runex16f90 ex16f90.rm
 TESTEXAMPLES_13		       = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex72.rm
 TESTEXAMPLES_PARMETIS	       = ex73.PETSc ex73.rm ex152.PETSc runex152 runex152_2 ex152.rm
-TESTEXAMPLES_FFTW_REAL         = ex142.PETSc ex142.rm ex144.PETSc runex144 runex144_2 ex144.rm \
+TESTEXAMPLES_FFTW_REAL         = ex142.PETSc runex142 ex142.rm ex144.PETSc runex144 runex144_2 ex144.rm \
                                  ex158.PETsc runex158 runex158_3 ex158.rm
 TESTEXAMPLES_FFTW_COMPLEX       = ex112.PETSc runex112 runex112_2 runex112_3 runex112_4 ex112.rm ex121.PETSc ex121.rm \
                                  ex143.PETSc runex143 runex143_2 ex143.rm \

@@ -1,5 +1,5 @@
 /* This program illustrates use of parallel real FFT */
-static char help[]="This program illustrates the use of parallel real 2D fft using fftw (without PETSc interface)";
+static char help[]="This program illustrates the use of parallel real 2D fft using fftw without PETSc interface";
 #include <petscmat.h>
 #include <fftw3.h>
 #include <fftw3-mpi.h>
@@ -46,8 +46,10 @@ PetscInt main(PetscInt argc,char **args)
   in2=(double*)fftw_malloc(sizeof(double)*alloc_local*2);
   out=(fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
 
-  N=2*N0*(N1/2+1);N_factor=N0*N1;
-  n=2*local_n0*(N1/2+1);n1=local_n1*N0*2;
+  N        = 2*N0*(N1/2+1);
+  N_factor = N0*N1;
+  n        = 2*local_n0*(N1/2+1); 
+  n1       = local_n1*N0*2;
 
 /*    printf("The value N is  %d from process %d\n",N,rank);  */
 /*    printf("The value n is  %d from process %d\n",n,rank);  */
@@ -124,8 +126,10 @@ PetscInt main(PetscInt argc,char **args)
     }
   }
 
-  ierr = VecGetValues(fin,local_n0*N1,indx4,x_arr);CHKERRQ(ierr);
+  ierr = PetscMalloc2(local_n0*N1,&x_arr,local_n0*N1,&y_arr);CHKERRQ(ierr); /* arr must be allocated for VecGetValues() */
+  ierr = VecGetValues(fin,local_n0*N1,indx4,(PetscScalar*)x_arr);CHKERRQ(ierr); 
   ierr = VecSetValues(ini,local_n0*N1,indx3,x_arr,INSERT_VALUES);CHKERRQ(ierr);
+
   ierr = VecAssemblyBegin(ini);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(ini);CHKERRQ(ierr);
 
@@ -133,6 +137,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecSetValues(final,local_n0*N1,indx3,y_arr,INSERT_VALUES);
   ierr = VecAssemblyBegin(final);
   ierr = VecAssemblyEnd(final);
+  ierr = PetscFree2(x_arr,y_arr);CHKERRQ(ierr);
 
 /*
     VecScatter      vecscat;
