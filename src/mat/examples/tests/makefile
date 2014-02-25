@@ -1626,7 +1626,7 @@ runex110:
 	-@${MPIEXEC} -n 3 ./ex110
 
 runex112:
-	-@${MPIEXEC} -n 1 ./ex112 > ex112_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex112 -mat_fftw_plannerflags FFTW_ESTIMATE > ex112_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex112.out ex112_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex112_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex112_1.tmp

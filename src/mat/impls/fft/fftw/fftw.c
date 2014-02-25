@@ -72,6 +72,7 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
     default:
 #if defined(PETSC_USE_COMPLEX)
       fftw->p_forward = fftw_plan_dft(ndim,dim,(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_FORWARD,fftw->p_flag);
+      /* bug: dim[3] changes from 10 to 0 '--with-64-bit-indices=1' */
 #else
       fftw->p_forward = fftw_plan_dft_r2c(ndim,dim,(double*)x_array,(fftw_complex*)y_array,fftw->p_flag);
 #endif
@@ -81,7 +82,7 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
     fftw->foutarray = y_array;
     /* Warning: if (fftw->p_flag!==FFTW_ESTIMATE) The data in the in/out arrays is overwritten!
                 planning should be done before x is initialized! See FFTW manual sec2.1 or sec4 */
-    fftw_execute(fftw->p_forward);
+    fftw_execute(fftw->p_forward); 
   } else { /* use existing plan */
     if (fftw->finarray != x_array || fftw->foutarray != y_array) { /* use existing plan on new arrays */
       fftw_execute_dft(fftw->p_forward,(fftw_complex*)x_array,(fftw_complex*)y_array);
@@ -1087,8 +1088,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
   MPI_Comm       comm;
   Mat_FFT        *fft=(Mat_FFT*)A->data;
   Mat_FFTW       *fftw;
-  PetscInt       n         =fft->n,N=fft->N,ndim=fft->ndim,*dim = fft->dim;
-  const char     *p_flags[]={"FFTW_ESTIMATE","FFTW_MEASURE","FFTW_PATIENT","FFTW_EXHAUSTIVE"};
+  PetscInt       n=fft->n,N=fft->N,ndim=fft->ndim,*dim=fft->dim;
+  const char     *plans[]={"FFTW_ESTIMATE","FFTW_MEASURE","FFTW_PATIENT","FFTW_EXHAUSTIVE"};
+  unsigned       iplans[]={FFTW_ESTIMATE,FFTW_MEASURE,FFTW_PATIENT,FFTW_EXHAUSTIVE};
   PetscBool      flg;
   PetscInt       p_flag,partial_dim=1,ctr;
   PetscMPIInt    size,rank;
@@ -1229,8 +1231,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
 
   /* get runtime options */
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"FFTW Options","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-mat_fftw_plannerflags","Planner Flags","None",p_flags,4,p_flags[0],&p_flag,&flg);CHKERRQ(ierr);
-  if (flg) fftw->p_flag = (unsigned)p_flag;
+  ierr = PetscOptionsEList("-mat_fftw_plannerflags","Planner Flags","None",plans,4,plans[0],&p_flag,&flg);CHKERRQ(ierr);
+  if (flg) {
+    fftw->p_flag = iplans[p_flag];
+  }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
