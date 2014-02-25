@@ -675,7 +675,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     ierr = MatAXPY(TM1,one,TM3,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatAXPY(TM1,one,TM4,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatConvert(TM1,MATSEQDENSE,MAT_REUSE_MATRIX,&TM1);CHKERRQ(ierr);
-    ierr = MatAXPY(TM1,m_one,coarse_sub_mat);CHKERRQ(ierr);
+    ierr = MatAXPY(TM1,m_one,coarse_sub_mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatNorm(TM1,NORM_INFINITY,&real_value);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(pcbddc->dbg_viewer,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"----------------------------------\n");CHKERRQ(ierr);
@@ -1066,7 +1066,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
   ierr = ISGetSize(pcbddc->is_R_local,&n_R);CHKERRQ(ierr);
   if (pcbddc->ksp_R) { /* already created ksp */
     PetscInt nn_R;
-    ierr = KSPGetOperators(pcbddc->ksp_R,NULL,&A_RR,NULL);CHKERRQ(ierr);
+    ierr = KSPGetOperators(pcbddc->ksp_R,NULL,&A_RR);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)A_RR);CHKERRQ(ierr);
     ierr = MatGetSize(A_RR,&nn_R,NULL);CHKERRQ(ierr);
     if (nn_R != n_R) { /* old ksp is not reusable, so reset it */
@@ -1790,7 +1790,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     /* iterator on aux_primal_minloc (ordered as read from nearnullspace: vertices, edges and then constraints) */
     PetscInt     primal_counter;
     /* working stuff for GEQRF */
-    PetscScalar  *qr_basis,*qr_tau,*qr_work,lqr_work_t;
+    PetscScalar  *qr_basis,*qr_tau = NULL,*qr_work,lqr_work_t;
     PetscBLASInt lqr_work;
     /* working stuff for UNGQR */
     PetscScalar  *gqr_work,lgqr_work_t;
@@ -3228,7 +3228,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     ierr = MatISSubassemble(coarse_mat_is,NULL,pcbddc->coarsening_ratio,&coarse_mat);CHKERRQ(ierr);
   } else {
     if (coarse_reuse) {
-      ierr = KSPGetOperators(pcbddc->coarse_ksp,&coarse_mat,NULL,NULL);CHKERRQ(ierr);
+      ierr = KSPGetOperators(pcbddc->coarse_ksp,&coarse_mat,NULL);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)coarse_mat);CHKERRQ(ierr);
       ierr = MatISGetMPIXAIJ(coarse_mat_is,MATMPIAIJ,MAT_REUSE_MATRIX,&coarse_mat);CHKERRQ(ierr);
     } else {

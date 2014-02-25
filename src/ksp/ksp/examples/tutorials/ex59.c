@@ -1050,7 +1050,7 @@ int main(int argc,char **args)
   ierr = PetscPrintf(dd.gcomm,"Error betweeen exact and computed solution : %1.2e\n",norm);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"--------------------------------------------------------------\n");CHKERRQ(ierr);
   /* assemble fetidp rhs on the space of Lagrange multipliers */
-  ierr = KSPGetOperators(KSPwithFETIDP,&F,NULL,NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperators(KSPwithFETIDP,&F,NULL);CHKERRQ(ierr);
   ierr = MatGetVecs(F,&fetidp_solution,&fetidp_rhs);CHKERRQ(ierr);
   ierr = PCBDDCMatFETIDPGetRHS(F,bddc_rhs,fetidp_rhs);CHKERRQ(ierr);
   ierr = VecSet(fetidp_solution,0.0);CHKERRQ(ierr);

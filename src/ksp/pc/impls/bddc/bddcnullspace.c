@@ -133,7 +133,6 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc,IS local_dofs)
   PC             newpc;
   NullSpaceCorrection_ctx  shell_ctx;
   Mat            local_mat,local_pmat,small_mat,inv_small_mat;
-  MatStructure   local_mat_struct;
   Vec            work1,work2;
   const Vec      *nullvecs;
   VecScatter     scatter_ctx;
@@ -159,7 +158,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc,IS local_dofs)
   } else {
     SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in %s: unknown local IS size %d. n_I=%d, n_R=%d)\n",__FUNCT__,basis_dofs,n_I,n_R);
   }
-  ierr = KSPGetOperators(*local_ksp,&local_mat,&local_pmat,&local_mat_struct);CHKERRQ(ierr);
+  ierr = KSPGetOperators(*local_ksp,&local_mat,&local_pmat);CHKERRQ(ierr);
 
   /* Get null space vecs */
   ierr = MatNullSpaceGetVecs(pcbddc->NullSpace,&nnsp_has_cnst,&nnsp_size,&nullvecs);CHKERRQ(ierr);
