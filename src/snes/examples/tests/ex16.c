@@ -37,7 +37,7 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx*);
 PetscErrorCode MSA_InitialPoint(AppCtx*, Vec);
 PetscErrorCode MSA_Plate(Vec,Vec,void*);
 PetscErrorCode FormGradient(SNES, Vec, Vec, void*);
-PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, MatStructure*,void*);
+PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -279,7 +279,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
 .  tH    - Jacobian matrix
 
 */
-PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, MatStructure *flag, void *ptr)
+PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr)
 {
   AppCtx         *user = (AppCtx*) ptr;
   PetscErrorCode ierr;
@@ -299,7 +299,6 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, MatStructure *fl
   /* Set various matrix options */
   ierr = MatAssembled(H,&assembled);CHKERRQ(ierr);
   if (assembled) {ierr = MatZeroEntries(H);CHKERRQ(ierr);}
-  *flag=SAME_NONZERO_PATTERN;
 
   /* Get local vectors */
   ierr = DMGetLocalVector(user->da,&localX);CHKERRQ(ierr);

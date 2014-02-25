@@ -68,7 +68,7 @@ typedef struct {
    User-defined routines
 */
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*),FormInitialGuess(AppCtx*,Vec);
-extern PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -401,7 +401,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
    We cannot work directly with the global numbers for the original
    uniprocessor grid!
 */
-PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,MatStructure *flag,void *ptr)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
 {
   AppCtx         *user  = (AppCtx*)ptr;   /* user-defined application context */
   Vec            localX = user->localX;   /* local vector */
@@ -483,24 +483,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,MatStructure *flag,voi
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /*
-     Set flag to indicate that the Jacobian matrix retains an identical
-     nonzero structure throughout all nonlinear iterations (although the
-     values of the entries change). Thus, we can save some work in setting
-     up the preconditioner (e.g., no need to redo symbolic factorization for
-     ILU/ICC preconditioners).
-      - If the nonzero structure of the matrix is different during
-        successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-        must be used instead.  If you are unsure whether the matrix
-        structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-      - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-        believes your assertion and does not check the structure
-        of the matrix.  If you erroneously claim that the structure
-        is the same when it actually is not, the new preconditioner
-        will not function correctly.  Thus, use this optimization
-        feature with caution!
-  */
-  *flag = SAME_NONZERO_PATTERN;
   /*
       Tell the matrix we will never add a new nonzero location to the
     matrix. If we do it will generate an error.

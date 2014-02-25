@@ -230,7 +230,7 @@ static PetscErrorCode FormJacobianLocal_KU(User user,DMDALocalInfo *info,DMDALoc
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian_All"
-static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat J,Mat B,MatStructure *mstr,void *ctx)
+static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat J,Mat B,void *ctx)
 {
   User           user = (User)ctx;
   DM             dau,dak;
@@ -297,7 +297,6 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat J,Mat B,MatStructure 
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd  (J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *mstr = DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 

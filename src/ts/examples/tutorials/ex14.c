@@ -1343,7 +1343,7 @@ static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,const Node ***x3,c
 
 #undef __FUNCT__
 #define __FUNCT__ "THIJacobian"
-static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,MatStructure *mstr,void *ctx)
+static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   THI            thi = (THI)ctx;
@@ -1406,7 +1406,6 @@ static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,M
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *mstr = SAME_NONZERO_PATTERN;
   if (thi->verbose) {ierr = THIMatrixStatistics(thi,*B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }

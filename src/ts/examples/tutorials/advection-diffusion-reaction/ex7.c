@@ -25,7 +25,7 @@ typedef struct {
 
 extern PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 extern PetscErrorCode InitialConditions(DM,Vec);
-extern PetscErrorCode IJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode IJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 
 
 #undef __FUNCT__
@@ -199,7 +199,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
 
 #undef __FUNCT__
 #define __FUNCT__ "IJacobian"
-PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat J,Mat Jpre,MatStructure *str,void *ctx)
+PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat J,Mat Jpre,void *ctx)
 {
   PetscErrorCode ierr;
   PetscInt       i,c,Mx,xs,xm,nc;

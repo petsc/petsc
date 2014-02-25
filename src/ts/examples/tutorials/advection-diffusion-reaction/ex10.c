@@ -65,7 +65,7 @@ typedef struct {
 } AppCtx;
 
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
-extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 extern PetscErrorCode InitialConditions(DM,Vec);
 extern PetscErrorCode MyMonitorSetUp(TS);
 extern PetscErrorCode GetDfill(PetscInt*,void*);
@@ -541,7 +541,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec C,Vec F,void *ptr)
 /*
     Compute the Jacobian entries based on IFuction() and insert them into the matrix
 */
-PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat A,Mat J,MatStructure *str,void *ptr)
+PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat A,Mat J,void *ptr)
 {
   AppCtx               *ctx = (AppCtx*) ptr;
   DM                   da;
@@ -917,7 +917,6 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat A,Mat J,MatStructure 
   ierr = cHeVDestroy((PetscScalar**)cHeV);CHKERRQ(ierr);
   ierr = cHeVDestroy((PetscScalar**)fHeV);CHKERRQ(ierr);
 
-  *str = SAME_NONZERO_PATTERN;
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (A != J) {

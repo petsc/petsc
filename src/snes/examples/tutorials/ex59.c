@@ -21,7 +21,7 @@ const PetscScalar sperturb = 1.1;
 /*
    User-defined routines
 */
-PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,MatStructure*,void*);
+PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 
 int main(int argc,char **argv)
@@ -151,7 +151,7 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *dummy)
   return 0;
 }
 
-PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat prejac,MatStructure *flag,void *dummy)
+PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat prejac,void *dummy)
 {
   PetscScalar    *xx,A[3],d,d2;
   PetscInt       i,n,j[3];
@@ -187,6 +187,5 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat prejac,MatStructure *fla
   ierr = MatAssemblyEnd(prejac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr  = VecRestoreArray(x,&xx);CHKERRQ(ierr);
-  *flag = SAME_NONZERO_PATTERN;
   return 0;
 }

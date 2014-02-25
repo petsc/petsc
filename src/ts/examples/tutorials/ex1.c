@@ -46,7 +46,7 @@ typedef struct {
 /*
    User-defined routines
 */
-extern PetscErrorCode  FormJacobian(TS,PetscReal,Vec,Mat,Mat,MatStructure*,void*), FormFunction(TS,PetscReal,Vec,Vec,void*), FormInitialGuess(Vec,AppCtx*);
+extern PetscErrorCode  FormJacobian(TS,PetscReal,Vec,Mat,Mat,void*), FormFunction(TS,PetscReal,Vec,Vec,void*), FormInitialGuess(Vec,AppCtx*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -277,7 +277,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
    J with a finite difference approximation, using our analytic Jacobian B for
    the preconditioner.
 */
-PetscErrorCode FormJacobian(TS ts,PetscReal t,Vec X,Mat J,Mat B,MatStructure *flag,void *ptr)
+PetscErrorCode FormJacobian(TS ts,PetscReal t,Vec X,Mat J,Mat B,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;
   PetscInt       i,j,row,mx,my,col[5];
@@ -319,7 +319,6 @@ PetscErrorCode FormJacobian(TS ts,PetscReal t,Vec X,Mat J,Mat B,MatStructure *fl
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *flag = SAME_NONZERO_PATTERN;
   return 0;
 }
 

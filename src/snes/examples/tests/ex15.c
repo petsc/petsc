@@ -25,7 +25,7 @@ typedef struct {
 /* User-defined routines */
 static PetscReal p(PetscReal xi,PetscReal ecc);
 PetscErrorCode FormGradient(SNES,Vec,Vec,void*);
-PetscErrorCode FormHessian(SNES,Vec,Mat,Mat,MatStructure*,void*);
+PetscErrorCode FormHessian(SNES,Vec,Mat,Mat,void*);
 PetscErrorCode ComputeB(AppCtx*);
 
 #undef __FUNCT__
@@ -273,7 +273,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G,void *ctx)
    Notice that the objective function in this problem is quadratic (therefore a constant
    hessian).  If using a nonquadratic solver, then you might want to reconsider this function
 */
-PetscErrorCode FormHessian(SNES snes,Vec X,Mat H, Mat Hpre, MatStructure *flg, void *ptr)
+PetscErrorCode FormHessian(SNES snes,Vec X,Mat H, Mat Hpre, void *ptr)
 {
   AppCtx         *user=(AppCtx*)ptr;
   PetscErrorCode ierr;
@@ -301,7 +301,6 @@ PetscErrorCode FormHessian(SNES snes,Vec X,Mat H, Mat Hpre, MatStructure *flg, v
 
   ierr = MatAssembled(hes,&assembled);CHKERRQ(ierr);
   if (assembled) {ierr = MatZeroEntries(hes);CHKERRQ(ierr);}
-  *flg=SAME_NONZERO_PATTERN;
 
   /* Get local vector */
   ierr = DMGetLocalVector(user->da,&localX);CHKERRQ(ierr);

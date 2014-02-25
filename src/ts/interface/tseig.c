@@ -108,7 +108,6 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
   PetscInt          n,N,nits,neig,i,its = 200;
   PetscReal         *r,*c,time_step_save;
   PetscDrawSP       drawsp = ctx->drawsp;
-  MatStructure      structure;
   Mat               A,B;
   Vec               xdot;
   SNES              snes;
@@ -127,7 +126,7 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
     time_step_save = ts->time_step;
     ts->time_step  = PETSC_MAX_REAL;
 
-    ierr = SNESComputeJacobian(snes,v,A,B,&structure);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes,v,A,B);CHKERRQ(ierr);
 
     ts->time_step  = time_step_save;
 

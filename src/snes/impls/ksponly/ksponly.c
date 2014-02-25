@@ -7,7 +7,6 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
 {
   PetscErrorCode     ierr;
   PetscInt           lits;
-  MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
   Vec                Y,X,F;
   KSPConvergedReason kspreason;
 
@@ -39,9 +38,7 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
   }
 
   /* Solve J Y = F, where J is Jacobian matrix */
-  ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre,&flg);CHKERRQ(ierr);
-  if (flg == SAME_PRECONDITIONER) {ierr = KSPSetReusePreconditioner(snes->ksp,PETSC_TRUE);CHKERRQ(ierr);}
-  else {ierr = KSPSetReusePreconditioner(snes->ksp,PETSC_FALSE);CHKERRQ(ierr);}
+  ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
   ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
   ierr = KSPSolve(snes->ksp,F,Y);CHKERRQ(ierr);
   ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);

@@ -317,7 +317,6 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   PetscReal           fnorm,xnorm,ynorm,gnorm;
   PetscBool           lssucceed,powell,periodic;
   PetscScalar         DolddotD,DolddotDold;
-  MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
   SNESConvergedReason reason;
 
   /* basically just a regular newton's method except for the application of the jacobian */
@@ -400,10 +399,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
 
   /* scale the initial update */
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
-    ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre,&flg);CHKERRQ(ierr);
-    if (flg == SAME_PRECONDITIONER) {ierr = KSPSetReusePreconditioner(snes->ksp,PETSC_TRUE);CHKERRQ(ierr);}
-    else {ierr = KSPSetReusePreconditioner(snes->ksp,PETSC_FALSE);CHKERRQ(ierr);}
-    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
   }
 
   for (i = 0, i_r = 0; i < snes->max_its; i++, i_r++) {
@@ -516,10 +512,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
         ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
       }
       if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
-        ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre,&flg);CHKERRQ(ierr);
-        if (flg == SAME_PRECONDITIONER) {ierr = KSPSetReusePreconditioner(snes->ksp,PETSC_TRUE);CHKERRQ(ierr);}
-        else {ierr = KSPSetReusePreconditioner(snes->ksp,PETSC_FALSE);CHKERRQ(ierr);}
-        ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
+        ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
       }
     }
     /* general purpose update */

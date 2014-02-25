@@ -39,7 +39,7 @@ typedef struct {
 extern PetscErrorCode MSA_BoundaryConditions(AppCtx*);
 extern PetscErrorCode MSA_InitialPoint(AppCtx*, Vec);
 extern PetscErrorCode FormGradient(SNES, Vec, Vec, void*);
-extern PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, MatStructure*,void*);
+extern PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -267,7 +267,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
 .  tH    - Jacobian matrix
 
 */
-PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, MatStructure *flag, void *ptr)
+PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr)
 {
   AppCtx         *user = (AppCtx*) ptr;
   PetscErrorCode ierr;
@@ -286,7 +286,6 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, MatStructure *fl
   /* Set various matrix options */
   ierr = MatAssembled(H,&assembled);CHKERRQ(ierr);
   if (assembled) {ierr = MatZeroEntries(H);CHKERRQ(ierr);}
-  *flag=SAME_NONZERO_PATTERN;
 
   /* Get local vector */
   ierr = DMGetLocalVector(user->da,&localX);CHKERRQ(ierr);

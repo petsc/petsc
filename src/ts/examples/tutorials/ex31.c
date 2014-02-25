@@ -43,7 +43,7 @@ List of cases and their names in the code:-
 /* Function declarations */
 PetscErrorCode (*RHSFunction) (TS,PetscReal,Vec,Vec,void*);
 PetscErrorCode (*IFunction)   (TS,PetscReal,Vec,Vec,Vec,void*);
-PetscErrorCode (*IJacobian)   (TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,MatStructure*,void*);
+PetscErrorCode (*IJacobian)   (TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "GetSize"
@@ -110,7 +110,7 @@ PetscErrorCode IFunction_Hull1972A1(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 
 #undef __FUNCT__
 #define __FUNCT__ "IJacobian_Hull1972A1"
-PetscErrorCode IJacobian_Hull1972A1(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, MatStructure *flag, void *s)
+PetscErrorCode IJacobian_Hull1972A1(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, void *s)
 {
   PetscErrorCode ierr;
   PetscScalar    *y;
@@ -164,7 +164,7 @@ PetscErrorCode IFunction_Hull1972A2(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 
 #undef __FUNCT__
 #define __FUNCT__ "IJacobian_Hull1972A2"
-PetscErrorCode IJacobian_Hull1972A2(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, MatStructure *flag, void *s)
+PetscErrorCode IJacobian_Hull1972A2(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, void *s)
 {
   PetscErrorCode ierr;
   PetscScalar    *y;
@@ -219,7 +219,7 @@ PetscErrorCode IFunction_Hull1972A3(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 
 #undef __FUNCT__
 #define __FUNCT__ "IJacobian_Hull1972A3"
-PetscErrorCode IJacobian_Hull1972A3(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, MatStructure *flag, void *s)
+PetscErrorCode IJacobian_Hull1972A3(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, void *s)
 {
   PetscErrorCode ierr;
   PetscScalar    *y;
@@ -273,7 +273,7 @@ PetscErrorCode IFunction_Hull1972A4(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 
 #undef __FUNCT__
 #define __FUNCT__ "IJacobian_Hull1972A4"
-PetscErrorCode IJacobian_Hull1972A4(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, MatStructure *flag, void *s)
+PetscErrorCode IJacobian_Hull1972A4(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, void *s)
 {
   PetscErrorCode ierr;
   PetscScalar    *y;
@@ -329,7 +329,7 @@ PetscErrorCode IFunction_Hull1972A5(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 
 #undef __FUNCT__
 #define __FUNCT__ "IJacobian_Hull1972A5"
-PetscErrorCode IJacobian_Hull1972A5(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, MatStructure *flag, void *s)
+PetscErrorCode IJacobian_Hull1972A5(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, void *s)
 {
   PetscErrorCode ierr;
   PetscScalar    *y;
@@ -386,7 +386,7 @@ PetscErrorCode IFunction_Hull1972B1(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 
 #undef __FUNCT__
 #define __FUNCT__ "IJacobian_Hull1972B1"
-PetscErrorCode IJacobian_Hull1972B1(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, MatStructure *flag, void *s)
+PetscErrorCode IJacobian_Hull1972B1(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, void *s)
 {
   PetscErrorCode ierr;
   PetscScalar    *y;
@@ -446,7 +446,7 @@ PetscErrorCode IFunction_Hull1972B2(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 
 #undef __FUNCT__
 #define __FUNCT__ "IJacobian_Hull1972B2"
-PetscErrorCode IJacobian_Hull1972B2(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, MatStructure *flag, void *s)
+PetscErrorCode IJacobian_Hull1972B2(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, void *s)
 {
   PetscErrorCode ierr;
   PetscScalar    *y;
@@ -507,7 +507,7 @@ PetscErrorCode IFunction_Hull1972B3(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 
 #undef __FUNCT__
 #define __FUNCT__ "IJacobian_Hull1972B3"
-PetscErrorCode IJacobian_Hull1972B3(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, MatStructure *flag, void *s)
+PetscErrorCode IJacobian_Hull1972B3(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, void *s)
 {
   PetscErrorCode ierr;
   PetscScalar    *y;
@@ -568,7 +568,7 @@ PetscErrorCode IFunction_Hull1972B4(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 
 #undef __FUNCT__
 #define __FUNCT__ "IJacobian_Hull1972B4"
-PetscErrorCode IJacobian_Hull1972B4(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, MatStructure *flag, void *s)
+PetscErrorCode IJacobian_Hull1972B4(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, void *s)
 {
   PetscErrorCode ierr;
   PetscScalar    *y;
@@ -637,7 +637,7 @@ PetscErrorCode IFunction_Hull1972B5(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 
 #undef __FUNCT__
 #define __FUNCT__ "IJacobian_Hull1972B5"
-PetscErrorCode IJacobian_Hull1972B5(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, MatStructure *flag, void *s)
+PetscErrorCode IJacobian_Hull1972B5(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, void *s)
 {
   PetscErrorCode ierr;
   PetscScalar    *y;
@@ -706,7 +706,7 @@ PetscErrorCode IFunction_Hull1972C1(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 
 #undef __FUNCT__
 #define __FUNCT__ "IJacobian_Hull1972C1"
-PetscErrorCode IJacobian_Hull1972C1(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, MatStructure *flag, void *s)
+PetscErrorCode IJacobian_Hull1972C1(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, void *s)
 {
   PetscErrorCode  ierr;
   PetscScalar    *y;
@@ -785,7 +785,7 @@ PetscErrorCode IFunction_Hull1972C2(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, 
 
 #undef __FUNCT__
 #define __FUNCT__ "IJacobian_Hull1972C2"
-PetscErrorCode IJacobian_Hull1972C2(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, MatStructure *flag, void *s)
+PetscErrorCode IJacobian_Hull1972C2(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, void *s)
 {
   PetscErrorCode  ierr;
   PetscScalar    *y;
@@ -864,7 +864,7 @@ PetscErrorCode IFunction_Hull1972C34(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F,
 
 #undef __FUNCT__
 #define __FUNCT__ "IJacobian_Hull1972C34"
-PetscErrorCode IJacobian_Hull1972C34(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, MatStructure *flag, void *s)
+PetscErrorCode IJacobian_Hull1972C34(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, void *s)
 {
   PetscErrorCode ierr;
   PetscScalar    *y,value[3];

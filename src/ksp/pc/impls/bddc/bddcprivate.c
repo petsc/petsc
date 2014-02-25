@@ -749,7 +749,6 @@ PetscErrorCode PCBDDCSetUpLocalMatrices(PC pc)
   PetscBool         issbaij,isbaij;
   /* manage repeated solves */
   MatReuse          reuse;
-  MatStructure      matstruct;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -757,12 +756,9 @@ PetscErrorCode PCBDDCSetUpLocalMatrices(PC pc)
     SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"BDDC Change of basis matrix has not been created");
   }
   /* get mat flags */
-  ierr = PCGetOperators(pc,NULL,NULL,&matstruct);CHKERRQ(ierr);
   reuse = MAT_INITIAL_MATRIX;
   if (pc->setupcalled) {
-    /* when matstruct is SAME_PRECONDITIONER, we shouldn't be here */
-    if (matstruct == SAME_PRECONDITIONER) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"This should not happen");
-    if (matstruct == SAME_NONZERO_PATTERN) {
+    if (pc->flag == SAME_NONZERO_PATTERN) {
       reuse = MAT_REUSE_MATRIX;
     } else {
       reuse = MAT_INITIAL_MATRIX;
@@ -996,7 +992,6 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
   PC_IS          *pcis = (PC_IS*)pc->data;
   PC             pc_temp;
   Mat            A_RR;
-  MatStructure   matstruct;
   MatReuse       reuse;
   PetscScalar    m_one = -1.0;
   PetscReal      value;
@@ -1008,7 +1003,6 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
   size_t         len;
 
   PetscFunctionBegin;
-  ierr = PCGetOperators(pc,NULL,NULL,&matstruct);CHKERRQ(ierr);
 
   /* compute prefixes */
   ierr = PetscStrcpy(dir_prefix,"");CHKERRQ(ierr);
@@ -1052,7 +1046,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
     }
     ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
   }
-  ierr = KSPSetOperators(pcbddc->ksp_D,pcis->A_II,pcis->A_II,matstruct);CHKERRQ(ierr);
+  ierr = KSPSetOperators(pcbddc->ksp_D,pcis->A_II,pcis->A_II);CHKERRQ(ierr);
   /* Allow user's customization */
   ierr = KSPSetFromOptions(pcbddc->ksp_D);CHKERRQ(ierr);
   /* umfpack interface has a bug when matrix dimension is zero. TODO solve from umfpack interface */
@@ -1088,7 +1082,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
       }
     }
     /* last check */
-    if (matstruct == DIFFERENT_NONZERO_PATTERN) {
+    if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
       ierr = MatDestroy(&A_RR);CHKERRQ(ierr);
       reuse = MAT_INITIAL_MATRIX;
     }
@@ -1121,7 +1115,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
     }
     ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
   }
-  ierr = KSPSetOperators(pcbddc->ksp_R,A_RR,A_RR,matstruct);CHKERRQ(ierr);
+  ierr = KSPSetOperators(pcbddc->ksp_R,A_RR,A_RR);CHKERRQ(ierr);
   /* Allow user's customization */
   ierr = KSPSetFromOptions(pcbddc->ksp_R);CHKERRQ(ierr);
   /* umfpack interface has a bug when matrix dimension is zero. TODO solve from umfpack interface */
@@ -3118,7 +3112,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   KSPType                coarse_ksp_type;
   PetscBool              multilevel_requested,multilevel_allowed;
   PetscBool              setsym,issym,isbddc,isnn,coarse_reuse;
-  MatStructure           matstruct;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
@@ -3268,8 +3261,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   }
 
   /* set operators */
-  ierr = PCGetOperators(pc,NULL,NULL,&matstruct);CHKERRQ(ierr);
-  ierr = KSPSetOperators(pcbddc->coarse_ksp,coarse_mat,coarse_mat,matstruct);CHKERRQ(ierr);
+  ierr = KSPSetOperators(pcbddc->coarse_ksp,coarse_mat,coarse_mat);CHKERRQ(ierr);
 
   /* additional KSP customization */
   ierr = KSPGetTolerances(pcbddc->coarse_ksp,NULL,NULL,NULL,&max_it);CHKERRQ(ierr);

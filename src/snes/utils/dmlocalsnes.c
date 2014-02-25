@@ -3,7 +3,7 @@
 
 typedef struct {
   PetscErrorCode (*residuallocal)(DM,Vec,Vec,void*);
-  PetscErrorCode (*jacobianlocal)(DM,Vec,Mat,Mat,MatStructure*,void*);
+  PetscErrorCode (*jacobianlocal)(DM,Vec,Mat,Mat,void*);
   void *residuallocalctx;
   void *jacobianlocalctx;
 } DMSNES_Local;
@@ -84,7 +84,7 @@ static PetscErrorCode SNESComputeFunction_DMLocal(SNES snes,Vec X,Vec F,void *ct
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESComputeJacobian_DMLocal"
-static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat A,Mat B,MatStructure *mstr,void *ctx)
+static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -99,7 +99,7 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat A,Mat B,Ma
     ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
     CHKMEMQ;
-    ierr = (*dmlocalsnes->jacobianlocal)(dm,Xloc,A,B,mstr,dmlocalsnes->jacobianlocalctx);CHKERRQ(ierr);
+    ierr = (*dmlocalsnes->jacobianlocal)(dm,Xloc,A,B,dmlocalsnes->jacobianlocalctx);CHKERRQ(ierr);
     CHKMEMQ;
     ierr = DMRestoreLocalVector(dm,&Xloc);CHKERRQ(ierr);
   } else {
@@ -131,8 +131,7 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat A,Mat B,Ma
        */
       ierr = PetscObjectDereference((PetscObject)dm);CHKERRQ(ierr);
     }
-    *mstr = SAME_NONZERO_PATTERN;
-    ierr  = MatFDColoringApply(B,fdcoloring,X,mstr,snes);CHKERRQ(ierr);
+    ierr  = MatFDColoringApply(B,fdcoloring,X,snes);CHKERRQ(ierr);
   }
   /* This will be redundant if the user called both, but it's too common to forget. */
   if (A != B) {
@@ -197,7 +196,7 @@ PetscErrorCode DMSNESSetFunctionLocal(DM dm,PetscErrorCode (*func)(DM,Vec,Vec,vo
 
 .seealso: DMSNESSetJacobian(), DMDASNESSetJacobian(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
 @*/
-PetscErrorCode DMSNESSetJacobianLocal(DM dm,PetscErrorCode (*func)(DM,Vec,Mat,Mat,MatStructure*,void*),void *ctx)
+PetscErrorCode DMSNESSetJacobianLocal(DM dm,PetscErrorCode (*func)(DM,Vec,Mat,Mat,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DMSNES         sdm;

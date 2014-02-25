@@ -16,7 +16,7 @@ T*/
 */
 #include <petscsnes.h>
 
-extern PetscErrorCode FormJacobian1(SNES,Vec,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode FormJacobian1(SNES,Vec,Mat,Mat,void*);
 extern PetscErrorCode FormFunction1(SNES,Vec,Vec,void*);
 
 #undef __FUNCT__
@@ -162,7 +162,7 @@ PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ctx)
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat jac,Mat B,MatStructure *flag,void *dummy)
+PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 {
   PetscScalar    *xx,A[4];
   PetscErrorCode ierr;
@@ -183,7 +183,6 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat jac,Mat B,MatStructure *flag,vo
   A[2]  = -400.0*xx[0];
   A[3]  = 200;
   ierr  = MatSetValues(B,2,idx,2,idx,A,INSERT_VALUES);CHKERRQ(ierr);
-  *flag = SAME_NONZERO_PATTERN;
 
   /*
      Restore vector

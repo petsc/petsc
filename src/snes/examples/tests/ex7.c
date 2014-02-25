@@ -4,7 +4,7 @@ static char help[] = "Solves u`` + u^{2} = f with Newton-like methods. Using\n\
 
 #include <petscsnes.h>
 
-extern PetscErrorCode   FormJacobian(SNES,Vec,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode   FormJacobian(SNES,Vec,Mat,Mat,void*);
 extern PetscErrorCode   FormFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode   OtherFunctionForDifferencing(void*,Vec,Vec);
 extern PetscErrorCode   FormInitialGuess(SNES,Vec);
@@ -152,38 +152,30 @@ PetscErrorCode  FormInitialGuess(SNES snes,Vec x)
     also EXACTLY the Jacobian. In general, it would be some lower
     order, simplified apprioximation */
 
-PetscErrorCode  FormJacobian(SNES snes,Vec x,Mat jac,Mat B,MatStructure *flag,void *dummy)
+PetscErrorCode  FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 {
   PetscScalar    *xx,A[3],d;
-  PetscInt       i,n,j[3],iter;
+  PetscInt       i,n,j[3];
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx*) dummy;
 
-  ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
+  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetSize(x,&n);CHKERRQ(ierr);
+  d    = (PetscReal)(n - 1); d = d*d;
 
-  if (iter%2 ==0) { /* Compute new preconditioner matrix */
-    ierr = PetscPrintf(PETSC_COMM_SELF,"iter=%D, computing new preconditioning matrix\n",iter+1);CHKERRQ(ierr);
-    ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
-    ierr = VecGetSize(x,&n);CHKERRQ(ierr);
-    d    = (PetscReal)(n - 1); d = d*d;
-
-    i    = 0; A[0] = 1.0;
-    ierr = MatSetValues(B,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
-    for (i=1; i<n-1; i++) {
-      j[0] = i - 1; j[1] = i;                   j[2] = i + 1;
-      A[0] = d;     A[1] = -2.0*d + 2.0*xx[i];  A[2] = d;
-      ierr = MatSetValues(B,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
-    }
-    i     = n-1; A[0] = 1.0;
-    ierr  = MatSetValues(B,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
-    ierr  = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr  = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr  = VecRestoreArray(x,&xx);CHKERRQ(ierr);
-    *flag = SAME_NONZERO_PATTERN;
-  } else { /* reuse preconditioner from last iteration */
-    ierr  = PetscPrintf(PETSC_COMM_SELF,"iter=%D, using old preconditioning matrix\n",iter+1);CHKERRQ(ierr);
-    *flag = SAME_PRECONDITIONER;
+  i    = 0; A[0] = 1.0;
+  ierr = MatSetValues(B,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
+  for (i=1; i<n-1; i++) {
+    j[0] = i - 1; j[1] = i;                   j[2] = i + 1;
+    A[0] = d;     A[1] = -2.0*d + 2.0*xx[i];  A[2] = d;
+    ierr = MatSetValues(B,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
   }
+  i     = n-1; A[0] = 1.0;
+  ierr  = MatSetValues(B,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr  = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr  = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr  = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+
   if (user->variant) {
     ierr = MatMFFDSetBase(jac,x,NULL);CHKERRQ(ierr);
   }

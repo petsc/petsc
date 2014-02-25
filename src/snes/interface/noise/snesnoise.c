@@ -229,7 +229,6 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
   Mat            Jmf;      /* matrix-free Jacobian (set as true system matrix) */
   double         h;        /* differencing parameter */
   Vec            f;
-  MatStructure   sparsity = DIFFERENT_NONZERO_PATTERN;
   PetscScalar    alpha;
   PetscReal      yy1n,yy2n,enorm;
   PetscErrorCode ierr;
@@ -242,7 +241,7 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
   ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
   /* Compute function and analytic Jacobian at x */
   ierr = SNESGetJacobian(snes,&Jmf,&J,NULL,NULL);CHKERRQ(ierr);
-  ierr = SNESComputeJacobian(snes,x,Jmf,J,&sparsity);CHKERRQ(ierr);
+  ierr = SNESComputeJacobian(snes,x,Jmf,J);CHKERRQ(ierr);
   ierr = SNESGetFunction(snes,&f,NULL,NULL);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
 

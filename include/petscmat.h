@@ -1077,7 +1077,7 @@ PETSC_EXTERN PetscErrorCode MatFDColoringSetFunction(MatFDColoring,PetscErrorCod
 PETSC_EXTERN PetscErrorCode MatFDColoringGetFunction(MatFDColoring,PetscErrorCode (**)(void),void**);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetParameters(MatFDColoring,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetFromOptions(MatFDColoring);
-PETSC_EXTERN PetscErrorCode MatFDColoringApply(Mat,MatFDColoring,Vec,MatStructure*,void *);
+PETSC_EXTERN PetscErrorCode MatFDColoringApply(Mat,MatFDColoring,Vec,void *);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetF(MatFDColoring,Vec);
 PETSC_EXTERN PetscErrorCode MatFDColoringGetPerturbedColumns(MatFDColoring,PetscInt*,PetscInt*[]);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetUp(Mat,ISColoring,MatFDColoring);

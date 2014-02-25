@@ -107,7 +107,7 @@ struct _MatOps {
   PetscErrorCode (*placeholder_73)(Mat,void*);
   /*74*/
   PetscErrorCode (*setvaluesadifor)(Mat,PetscInt,void*);
-  PetscErrorCode (*fdcoloringapply)(Mat,MatFDColoring,Vec,MatStructure*,void*);
+  PetscErrorCode (*fdcoloringapply)(Mat,MatFDColoring,Vec,void*);
   PetscErrorCode (*setfromoptions)(Mat);
   PetscErrorCode (*multconstrained)(Mat,Vec,Vec);
   PetscErrorCode (*multtransposeconstrained)(Mat,Vec,Vec);

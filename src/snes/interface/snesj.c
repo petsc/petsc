@@ -14,8 +14,7 @@
 
    Output Parameters:
 +  J - Jacobian matrix (not altered in this routine)
-.  B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
--  flag - flag indicating whether the matrix sparsity structure has changed
+-  B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
 
    Options Database Key:
 +  -snes_fd - Activates SNESComputeJacobianDefault()
@@ -39,7 +38,7 @@
 
 .seealso: SNESSetJacobian(), SNESComputeJacobianDefaultColor(), MatCreateSNESMF()
 @*/
-PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,MatStructure *flag,void *ctx)
+PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,void *ctx)
 {
   Vec            j1a,j2a,x2;
   PetscErrorCode ierr;
@@ -129,7 +128,6 @@ PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,MatStruc
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *flag =  DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 

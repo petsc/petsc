@@ -30,7 +30,7 @@ PetscErrorCode ComputeFunctionLinear(SNES snes, Vec x, Vec f, void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeJacobianLinear"
-PetscErrorCode ComputeJacobianLinear(SNES snes, Vec x, Mat A, Mat J, MatStructure *flag, void *ctx)
+PetscErrorCode ComputeJacobianLinear(SNES snes, Vec x, Mat A, Mat J, void *ctx)
 {
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);

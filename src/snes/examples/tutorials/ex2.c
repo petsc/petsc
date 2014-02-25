@@ -24,7 +24,7 @@ T*/
 /*
    User-defined routines
 */
-extern PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode FormInitialGuess(Vec);
 extern PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
@@ -272,10 +272,10 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
    Output Parameters:
 .  jac - Jacobian matrix
 .  B - optionally different preconditioning matrix
-.  flag - flag indicating matrix structure
+
 */
 
-PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,MatStructure *flag,void *dummy)
+PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 {
   const PetscScalar *xx;
   PetscScalar       A[3],d;

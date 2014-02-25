@@ -397,7 +397,7 @@ end subroutine FormRHSFunction
 !
 !  IJacobian - Compute IJacobian = dF/dU + shift*dF/dUdot
 !
-subroutine FormIJacobian(ts,t,X,Xdot,shift,J,Jpre,mstr,user,ierr)
+subroutine FormIJacobian(ts,t,X,Xdot,shift,J,Jpre,user,ierr)
   implicit none
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
@@ -410,7 +410,6 @@ subroutine FormIJacobian(ts,t,X,Xdot,shift,J,Jpre,mstr,user,ierr)
   PetscReal t,shift
   Vec X,Xdot
   Mat J,Jpre
-  MatStructure mstr
   PetscReal user(6)
   PetscErrorCode ierr
   integer user_a,user_k,user_s
@@ -444,7 +443,6 @@ subroutine FormIJacobian(ts,t,X,Xdot,shift,J,Jpre,mstr,user,ierr)
      call MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY,ierr)
      call MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY,ierr)
   end if
-  mstr = SAME_NONZERO_PATTERN
 end subroutine FormIJacobian
 #endif
 
@@ -511,7 +509,7 @@ end subroutine FormInitialSolution
 !
 !  IJacobian - Compute IJacobian = dF/dU + shift*dF/dUdot
 !
-subroutine FormIJacobianMF(ts,t,X,Xdot,shift,J,Jpre,mstr,user,ierr)
+subroutine FormIJacobianMF(ts,t,X,Xdot,shift,J,Jpre,user,ierr)
   use PETScShiftMod, only :  PETSC_SHIFT,MFuser
   implicit none
 #include <finclude/petscsys.h>
@@ -525,7 +523,6 @@ subroutine FormIJacobianMF(ts,t,X,Xdot,shift,J,Jpre,mstr,user,ierr)
   PetscReal t,shift
   Vec X,Xdot
   Mat J,Jpre
-  MatStructure mstr
   PetscReal user(6)
   PetscErrorCode ierr
 
@@ -533,7 +530,6 @@ subroutine FormIJacobianMF(ts,t,X,Xdot,shift,J,Jpre,mstr,user,ierr)
   PETSC_SHIFT=shift
   MFuser=user
 
-  mstr = SAME_NONZERO_PATTERN
 end subroutine FormIJacobianMF
 
 ! -------------------------------------------------------------------

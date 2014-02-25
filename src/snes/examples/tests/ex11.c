@@ -65,7 +65,7 @@ typedef struct {
 #define FINE_LEVEL   1
 
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*), FormInitialGuess1(AppCtx*,Vec);
-extern PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 extern PetscErrorCode FormInterpolation(AppCtx*);
 
 /*
@@ -429,7 +429,7 @@ PetscErrorCode FormJacobian_Coarse(AppCtx *user,GridCtx *grid,Vec X, Mat J,Mat B
 /* --------------------  Evaluate Jacobian F'(x) --------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat B,MatStructure *flag,void *ptr)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat B,void *ptr)
 {
   AppCtx         *user = (AppCtx*) ptr;
   PetscErrorCode ierr;
@@ -437,7 +437,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat B,MatStructure *flag,void 
   PC             pc;
   PetscBool      ismg;
 
-  *flag = SAME_NONZERO_PATTERN;
   ierr  = FormJacobian_Grid(user,&user->fine,X,J,B);CHKERRQ(ierr);
 
   /* create coarse grid jacobian for preconditioner */

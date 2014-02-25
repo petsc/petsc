@@ -7,8 +7,8 @@
 typedef struct {
   PetscErrorCode (*ifunctionlocal)(DMDALocalInfo*,PetscReal,void*,void*,void*,void*);
   PetscErrorCode (*rhsfunctionlocal)(DMDALocalInfo*,PetscReal,void*,void*,void*);
-  PetscErrorCode (*ijacobianlocal)(DMDALocalInfo*,PetscReal,void*,void*,PetscReal,Mat,Mat,MatStructure*,void*);
-  PetscErrorCode (*rhsjacobianlocal)(DMDALocalInfo*,PetscReal,void*,Mat,Mat,MatStructure*,void*);
+  PetscErrorCode (*ijacobianlocal)(DMDALocalInfo*,PetscReal,void*,void*,PetscReal,Mat,Mat,void*);
+  PetscErrorCode (*rhsjacobianlocal)(DMDALocalInfo*,PetscReal,void*,Mat,Mat,void*);
   void       *ifunctionlocalctx;
   void       *ijacobianlocalctx;
   void       *rhsfunctionlocalctx;
@@ -116,7 +116,7 @@ static PetscErrorCode TSComputeIFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xd
 
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeIJacobian_DMDA"
-static PetscErrorCode TSComputeIJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xdot,PetscReal shift,Mat A,Mat B,MatStructure *mstr,void *ctx)
+static PetscErrorCode TSComputeIJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xdot,PetscReal shift,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -137,7 +137,7 @@ static PetscErrorCode TSComputeIJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xd
     ierr = DMDAVecGetArray(dm,Xloc,&x);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(dm,Xdot,&xdot);CHKERRQ(ierr);
     CHKMEMQ;
-    ierr = (*dmdats->ijacobianlocal)(&info,ptime,x,xdot,shift,A,B,mstr,dmdats->ijacobianlocalctx);CHKERRQ(ierr);
+    ierr = (*dmdats->ijacobianlocal)(&info,ptime,x,xdot,shift,A,B,dmdats->ijacobianlocalctx);CHKERRQ(ierr);
     CHKMEMQ;
     ierr = DMDAVecRestoreArray(dm,Xloc,&x);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(dm,Xdot,&xdot);CHKERRQ(ierr);
@@ -208,7 +208,7 @@ static PetscErrorCode TSComputeRHSFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec 
 
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeRHSJacobian_DMDA"
-static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Mat A,Mat B,MatStructure *mstr,void *ctx)
+static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -228,7 +228,7 @@ static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Mat 
     ierr = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(dm,Xloc,&x);CHKERRQ(ierr);
     CHKMEMQ;
-    ierr = (*dmdats->rhsjacobianlocal)(&info,ptime,x,A,B,mstr,dmdats->rhsjacobianlocalctx);CHKERRQ(ierr);
+    ierr = (*dmdats->rhsjacobianlocal)(&info,ptime,x,A,B,dmdats->rhsjacobianlocalctx);CHKERRQ(ierr);
     CHKMEMQ;
     ierr = DMDAVecRestoreArray(dm,Xloc,&x);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dm,&Xloc);CHKERRQ(ierr);

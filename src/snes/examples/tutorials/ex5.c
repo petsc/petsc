@@ -66,7 +66,7 @@ typedef struct {
 */
 extern PetscErrorCode FormInitialGuess(DM,AppCtx*,Vec);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
-extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,Mat,MatStructure*,AppCtx*);
+extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,Mat,AppCtx*);
 extern PetscErrorCode FormObjectiveLocal(DMDALocalInfo*,PetscScalar**,PetscReal*,AppCtx*);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 extern PetscErrorCode FormFunctionMatlab(SNES,Vec,Vec,void*);
@@ -354,7 +354,7 @@ PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info,PetscScalar **x,PetscReal 
 /*
    FormJacobianLocal - Evaluates Jacobian matrix on local process patch
 */
-PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jacpre,Mat jac,MatStructure *flg,AppCtx *user)
+PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jacpre,Mat jac,AppCtx *user)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k;

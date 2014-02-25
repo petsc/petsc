@@ -338,7 +338,7 @@ PETSC_STATIC_INLINE PetscErrorCode QuadMap_Private(SNES snes, Vec Xref, Vec Xrea
 #include <petsc-private/dmimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "QuadJacobian_Private"
-PETSC_STATIC_INLINE PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat J, Mat M, MatStructure *flag, void *ctx)
+PETSC_STATIC_INLINE PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat J, Mat M, void *ctx)
 {
   const PetscScalar *vertices = (const PetscScalar*) ctx;
   const PetscScalar x0        = vertices[0];
@@ -521,7 +521,7 @@ PETSC_STATIC_INLINE PetscErrorCode HexMap_Private(SNES snes, Vec Xref, Vec Xreal
 
 #undef __FUNCT__
 #define __FUNCT__ "HexJacobian_Private"
-PETSC_STATIC_INLINE PetscErrorCode HexJacobian_Private(SNES snes, Vec Xref, Mat J, Mat M, MatStructure *flag, void *ctx)
+PETSC_STATIC_INLINE PetscErrorCode HexJacobian_Private(SNES snes, Vec Xref, Mat J, Mat M, void *ctx)
 {
   const PetscScalar *vertices = (const PetscScalar*) ctx;
   const PetscScalar x0        = vertices[0];

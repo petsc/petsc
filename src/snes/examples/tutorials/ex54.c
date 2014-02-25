@@ -30,7 +30,7 @@ PetscErrorCode GetParams(AppCtx*);
 PetscErrorCode SetVariableBounds(DM,Vec,Vec);
 PetscErrorCode SetUpMatrices(AppCtx*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,MatStructure*,void*);
+PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 PetscErrorCode SetInitialGuess(Vec,AppCtx*);
 PetscErrorCode Update_q(Vec,Vec,Mat,AppCtx*);
 PetscLogEvent event_update_q;
@@ -187,7 +187,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat B,MatStructure *flg,void *ctx)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
 {
   PetscErrorCode   ierr;
   AppCtx           *user  =(AppCtx*)ctx;
@@ -196,7 +196,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat B,MatStructure *flg,void *
   PetscFunctionBeginUser;
   /* for active set method the matrix does not get changed, so do not need to copy each time,
      if the active set remains the same for several solves the preconditioner does not need to be rebuilt*/
-  *flg = SAME_PRECONDITIONER;
   if (!copied) {
     ierr   = MatCopy(user->M,J,*flg);CHKERRQ(ierr);
     copied = PETSC_TRUE;

@@ -1356,7 +1356,7 @@ static PetscErrorCode SmallMatMultADB(PetscScalar *C,PetscInt bs,const PetscScal
 
 #undef __FUNCT__
 #define __FUNCT__ "FVIJacobian"
-static PetscErrorCode FVIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat A,Mat B,MatStructure *flg,void *vctx)
+static PetscErrorCode FVIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat A,Mat B,void *vctx)
 {
   FVCtx          *ctx = (FVCtx*)vctx;
   PetscErrorCode ierr;

@@ -117,7 +117,7 @@ static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, 
 /* IJacobian - Compute IJacobian = dF/dU + a dF/dUdot */
 #undef __FUNCT__
 #define __FUNCT__ "FormIJacobian"
-PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat J, Mat Jpre, MatStructure *str, void *ctx)
+PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat J, Mat Jpre, void *ctx)
 {
   User           user = (User) ctx;
   DM             dm, cdm;

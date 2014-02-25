@@ -53,7 +53,7 @@ Evolve the Cahn-Hillard equations: logarithmic +  double obstacle (never shrinks
 #include <petscts.h>
 #include <petscdraw.h>
 
-extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec),MyMonitor(TS,PetscInt,PetscReal,Vec,void*),MyDestroy(void**),FormJacobian(TS,PetscReal,Vec,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec),MyMonitor(TS,PetscInt,PetscReal,Vec,void*),MyDestroy(void**),FormJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 typedef struct {PetscBool cahnhillard;PetscBool degenerate;PetscReal kappa;PetscInt energy;PetscReal tol;PetscReal theta,theta_c;PetscInt truncation;PetscBool netforce; PetscDrawViewPorts *ports;} UserCtx;
 
 #undef __FUNCT__
@@ -339,7 +339,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
    FormJacobian - Evaluates nonlinear function's Jacobian
 
 */
-PetscErrorCode FormJacobian(TS ts,PetscReal ftime,Vec X,Mat A,Mat B,MatStructure *str,void *ptr)
+PetscErrorCode FormJacobian(TS ts,PetscReal ftime,Vec X,Mat A,Mat B,void *ptr)
 {
   DM             da;
   PetscErrorCode ierr;

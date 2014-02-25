@@ -2,7 +2,7 @@ static char help[] = "Pseudotransient continuation to solve a many-variable syst
 
 #include <petscts.h>
 
-static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,MatStructure*,void*);
+static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 static PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 static PetscErrorCode MonitorObjective(TS,PetscInt,PetscReal,Vec,void*);
 
@@ -209,7 +209,7 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat J,Mat B,MatStructure *flag,void *ictx)
+static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat J,Mat B,void *ictx)
 {
   const PetscScalar *x;
   PetscErrorCode    ierr;

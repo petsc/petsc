@@ -803,23 +803,18 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   PetscErrorCode   ierr;
   PC_BDDC*         pcbddc = (PC_BDDC*)pc->data;
   MatNullSpace     nearnullspace;
-  MatStructure     flag;
   PetscBool        computeis,computetopography,computesolvers;
   PetscBool        new_nearnullspace_provided;
 
   PetscFunctionBegin;
   /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other future nonoverlapping preconditioners */
-  /* PCIS does not support MatStructure flags different from SAME_PRECONDITIONER */
   /* For BDDC we need to define a local "Neumann" problem different to that defined in PCISSetup
      Also, BDDC directly build the Dirichlet problem */
 
   /* split work */
   if (pc->setupcalled) {
     computeis = PETSC_FALSE;
-    ierr = PCGetOperators(pc,NULL,NULL,&flag);CHKERRQ(ierr);
-    if (flag == SAME_PRECONDITIONER) {
-      PetscFunctionReturn(0);
-    } else if (flag == SAME_NONZERO_PATTERN) {
+    if (pc->flag == SAME_NONZERO_PATTERN) {
       computetopography = PETSC_FALSE;
       computesolvers = PETSC_TRUE;
     } else { /* DIFFERENT_NONZERO_PATTERN */

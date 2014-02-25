@@ -1051,44 +1051,14 @@ PetscErrorCode  PCModifySubMatrices(PC pc,PetscInt nsub,const IS row[],const IS 
    Input Parameters:
 +  pc - the preconditioner context
 .  Amat - the matrix that defines the linear system
-.  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
--  flag - flag indicating information about the preconditioner matrix structure
-   during successive linear solves.  This flag is ignored the first time a
-   linear system is solved, and thus is irrelevant when solving just one linear
-   system.
+-  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
 
    Notes:
-   The flag can be used to eliminate unnecessary work in the preconditioner
-   during the repeated solution of linear systems of the same size.  The
-   available options are
-+    SAME_PRECONDITIONER -
-       Pmat is identical during successive linear solves.
-       This option is intended for folks who are using
-       different Amat and Pmat matrices and wish to reuse the
-       same preconditioner matrix.  For example, this option
-       saves work by not recomputing incomplete factorization
-       for ILU/ICC preconditioners.
-.     SAME_NONZERO_PATTERN -
-       Pmat has the same nonzero structure during
-       successive linear solves.
--     DIFFERENT_NONZERO_PATTERN -
-       Pmat does not have the same nonzero structure.
-
     Passing a NULL for Amat or Pmat removes the matrix that is currently used.
 
     If you wish to replace either Amat or Pmat but leave the other one untouched then
     first call KSPGetOperators() to get the one you wish to keep, call PetscObjectReference()
     on it and then pass it back in in your call to KSPSetOperators().
-
-   Caution:
-   If you specify SAME_NONZERO_PATTERN, PETSc believes your assertion
-   and does not check the structure of the matrix.  If you erroneously
-   claim that the structure is the same when it actually is not, the new
-   preconditioner will not function correctly.  Thus, use this optimization
-   feature carefully!
-
-   If in doubt about whether your preconditioner matrix has changed
-   structure or not, use the flag DIFFERENT_NONZERO_PATTERN.
 
    More Notes about Repeated Solution of Linear Systems:
    PETSc does NOT reset the matrix entries of either Amat or Pmat

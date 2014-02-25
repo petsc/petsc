@@ -39,7 +39,7 @@
           MatMFFDSetHHistory(), MatMFFDSetFunctionError(), MatCreateMFFD(), SNESSetJacobian()
 
 @*/
-PetscErrorCode  MatMFFDComputeJacobian(SNES snes,Vec x,Mat jac,Mat B,MatStructure *flag,void *dummy)
+PetscErrorCode  MatMFFDComputeJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 {
   PetscErrorCode ierr;
 

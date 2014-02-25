@@ -40,7 +40,7 @@ T*/
    whether they define __FUNCT__ in application codes; this macro merely
    provides the added traceback detail of the application routine names.
 */
-PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,MatStructure*,void*);
+PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 PetscErrorCode FormInitialGuess(Vec);
 PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
@@ -428,7 +428,7 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,MatStructure *flag,void *ctx)
+PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *ctx)
 {
   ApplicationCtx *user = (ApplicationCtx*) ctx;
   PetscScalar    *xx,d,A[3];
@@ -492,7 +492,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,MatStructure *flag,voi
   ierr = DMDAVecRestoreArray(da,x,&xx);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */

@@ -371,7 +371,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 
 .seealso:  TSSetRHSJacobian(), KSPSetOperators()
 @*/
-PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B,MatStructure *flg)
+PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
 {
   PetscErrorCode ierr;
   PetscObjectState Ustate;
@@ -391,7 +391,6 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B,MatStru
   ierr = DMTSGetIJacobian(dm,&ijacobianfunc,NULL);CHKERRQ(ierr);
   ierr = PetscObjectStateGet((PetscObject)U,&Ustate);CHKERRQ(ierr);
   if (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->rhsjacobian.X == U && ts->rhsjacobian.Xstate == Ustate))) {
-    *flg = ts->rhsjacobian.mstructure;
     PetscFunctionReturn(0);
   }
 
@@ -410,9 +409,8 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B,MatStru
 
   if (rhsjacobianfunc) {
     ierr = PetscLogEventBegin(TS_JacobianEval,ts,U,A,B);CHKERRQ(ierr);
-    *flg = DIFFERENT_NONZERO_PATTERN;
     PetscStackPush("TS user Jacobian function");
-    ierr = (*rhsjacobianfunc)(ts,t,U,A,B,flg,ctx);CHKERRQ(ierr);
+    ierr = (*rhsjacobianfunc)(ts,t,U,A,B,ctx);CHKERRQ(ierr);
     PetscStackPop;
     ierr = PetscLogEventEnd(TS_JacobianEval,ts,U,A,B);CHKERRQ(ierr);
     /* make sure user returned a correct Jacobian and preconditioner */
@@ -421,12 +419,10 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B,MatStru
   } else {
     ierr = MatZeroEntries(A);CHKERRQ(ierr);
     if (A != B) {ierr = MatZeroEntries(B);CHKERRQ(ierr);}
-    *flg = SAME_NONZERO_PATTERN;
   }
   ts->rhsjacobian.time       = t;
   ts->rhsjacobian.X          = U;
   ierr                       = PetscObjectStateGet((PetscObject)U,&ts->rhsjacobian.Xstate);CHKERRQ(ierr);
-  ts->rhsjacobian.mstructure = *flg;
   PetscFunctionReturn(0);
 }
 
@@ -730,7 +726,7 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec Y,PetscBo
 
 .seealso:  TSSetIJacobian()
 @*/
-PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shift,Mat A,Mat B,MatStructure *flg,PetscBool imex)
+PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shift,Mat A,Mat B,PetscBool imex)
 {
   PetscErrorCode ierr;
   TSIJacobian    ijacobian;
@@ -746,7 +742,6 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
   PetscValidHeaderSpecific(A,MAT_CLASSID,6);
   PetscValidPointer(B,7);
   PetscValidHeaderSpecific(B,MAT_CLASSID,7);
-  PetscValidPointer(flg,8);
 
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSGetIJacobian(dm,&ijacobian,&ctx);CHKERRQ(ierr);
@@ -754,12 +749,10 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
 
   if (!rhsjacobian && !ijacobian) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must call TSSetRHSJacobian() and / or TSSetIJacobian()");
 
-  *flg = SAME_NONZERO_PATTERN;  /* In case we're solving a linear problem in which case it wouldn't get initialized below. */
   ierr = PetscLogEventBegin(TS_JacobianEval,ts,U,A,B);CHKERRQ(ierr);
   if (ijacobian) {
-    *flg = DIFFERENT_NONZERO_PATTERN;
     PetscStackPush("TS user implicit Jacobian");
-    ierr = (*ijacobian)(ts,t,U,Udot,shift,A,B,flg,ctx);CHKERRQ(ierr);
+    ierr = (*ijacobian)(ts,t,U,Udot,shift,A,B,ctx);CHKERRQ(ierr);
     PetscStackPop;
     /* make sure user returned a correct Jacobian and preconditioner */
     PetscValidHeaderSpecific(A,MAT_CLASSID,4);
@@ -773,18 +766,16 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
         ierr = MatZeroEntries(B);CHKERRQ(ierr);
         ierr = MatShift(B,shift);CHKERRQ(ierr);
       }
-      *flg = SAME_PRECONDITIONER;
     }
   } else {
     Mat Arhs = NULL,Brhs = NULL;
-    MatStructure flg2;
     if (rhsjacobian) {
       if (ijacobian) {
         ierr = TSGetRHSMats_Private(ts,&Arhs,&Brhs);CHKERRQ(ierr);
       } else {
         ierr = TSGetIJacobian(ts,&Arhs,&Brhs,NULL,NULL);CHKERRQ(ierr);
       }
-      ierr = TSComputeRHSJacobian(ts,t,U,Arhs,Brhs,&flg2);CHKERRQ(ierr);
+      ierr = TSComputeRHSJacobian(ts,t,U,Arhs,Brhs);CHKERRQ(ierr);
     }
     if (Arhs == A) {           /* No IJacobian, so we only have the RHS matrix */
       ts->rhsjacobian.scale = -1;
@@ -809,7 +800,6 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
       if (A != B) {
         ierr = MatAXPY(B,-1,Brhs,axpy);CHKERRQ(ierr);
       }
-      *flg = PetscMin(*flg,flg2);
     }
   }
   ierr = PetscLogEventEnd(TS_JacobianEval,ts,U,A,B);CHKERRQ(ierr);
@@ -1787,7 +1777,7 @@ PetscErrorCode  TSSetUp(TS ts)
   PetscErrorCode ierr;
   DM             dm;
   PetscErrorCode (*func)(SNES,Vec,Vec,void*);
-  PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,MatStructure*,void*);
+  PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,void*);
   TSIJacobian    ijac;
   TSRHSJacobian  rhsjac;
 
@@ -1995,7 +1985,7 @@ PetscErrorCode  TSGetSNES(TS ts,SNES *snes)
 PetscErrorCode TSSetSNES(TS ts,SNES snes)
 {
   PetscErrorCode ierr;
-  PetscErrorCode (*func)(SNES,Vec,Mat,Mat,MatStructure*,void*);
+  PetscErrorCode (*func)(SNES,Vec,Mat,Mat,void*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -3536,7 +3526,7 @@ PetscErrorCode  SNESTSFormFunction(SNES snes,Vec U,Vec F,void *ctx)
 
 .seealso: SNESSetJacobian()
 @*/
-PetscErrorCode  SNESTSFormJacobian(SNES snes,Vec U,Mat A,Mat B,MatStructure *flag,void *ctx)
+PetscErrorCode  SNESTSFormJacobian(SNES snes,Vec U,Mat A,Mat B,void *ctx)
 {
   TS             ts = (TS)ctx;
   PetscErrorCode ierr;
@@ -3548,9 +3538,8 @@ PetscErrorCode  SNESTSFormJacobian(SNES snes,Vec U,Mat A,Mat B,MatStructure *fla
   PetscValidHeaderSpecific(A,MAT_CLASSID,3);
   PetscValidPointer(B,4);
   PetscValidHeaderSpecific(B,MAT_CLASSID,4);
-  PetscValidPointer(flag,5);
   PetscValidHeaderSpecific(ts,TS_CLASSID,6);
-  ierr = (ts->ops->snesjacobian)(snes,U,A,B,flag,ts);CHKERRQ(ierr);
+  ierr = (ts->ops->snesjacobian)(snes,U,A,B,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3582,11 +3571,10 @@ PetscErrorCode TSComputeRHSFunctionLinear(TS ts,PetscReal t,Vec U,Vec F,void *ct
 {
   PetscErrorCode ierr;
   Mat            Arhs,Brhs;
-  MatStructure   flg2;
 
   PetscFunctionBegin;
   ierr = TSGetRHSMats_Private(ts,&Arhs,&Brhs);CHKERRQ(ierr);
-  ierr = TSComputeRHSJacobian(ts,t,U,Arhs,Brhs,&flg2);CHKERRQ(ierr);
+  ierr = TSComputeRHSJacobian(ts,t,U,Arhs,Brhs);CHKERRQ(ierr);
   ierr = MatMult(Arhs,U,F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3616,10 +3604,9 @@ PetscErrorCode TSComputeRHSFunctionLinear(TS ts,PetscReal t,Vec U,Vec F,void *ct
 
 .seealso: TSSetRHSFunction(), TSSetRHSJacobian(), TSComputeRHSFunctionLinear()
 @*/
-PetscErrorCode TSComputeRHSJacobianConstant(TS ts,PetscReal t,Vec U,Mat A,Mat B,MatStructure *flg,void *ctx)
+PetscErrorCode TSComputeRHSJacobianConstant(TS ts,PetscReal t,Vec U,Mat A,Mat B,void *ctx)
 {
   PetscFunctionBegin;
-  *flg = SAME_PRECONDITIONER;
   PetscFunctionReturn(0);
 }
 
@@ -3654,11 +3641,10 @@ PetscErrorCode TSComputeIFunctionLinear(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,v
 {
   PetscErrorCode ierr;
   Mat            A,B;
-  MatStructure   flg2;
 
   PetscFunctionBegin;
   ierr = TSGetIJacobian(ts,&A,&B,NULL,NULL);CHKERRQ(ierr);
-  ierr = TSComputeIJacobian(ts,t,U,Udot,1.0,A,B,&flg2,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = TSComputeIJacobian(ts,t,U,Udot,1.0,A,B,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatMult(A,Udot,F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3703,14 +3689,13 @@ $    shift*M + J
 
 .seealso: TSSetIFunction(), TSSetIJacobian(), TSComputeIFunctionLinear()
 @*/
-PetscErrorCode TSComputeIJacobianConstant(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shift,Mat A,Mat B,MatStructure *flg,void *ctx)
+PetscErrorCode TSComputeIJacobianConstant(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shift,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatScale(A, shift / ts->ijacobian.shift);CHKERRQ(ierr);
   ts->ijacobian.shift = shift;
-  *flg = SAME_PRECONDITIONER;
   PetscFunctionReturn(0);
 }
 
