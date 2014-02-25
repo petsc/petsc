@@ -506,7 +506,7 @@ int main(int argc,char ** argv)
   if (size > 1) {
     DM distcircuitdm;
     /* Circuit partitioning and distribution of data */
-    ierr = DMCircuitDistribute(circuitdm,&distcircuitdm);CHKERRQ(ierr);
+    ierr = DMCircuitDistribute(circuitdm,"chaco",0,&distcircuitdm);CHKERRQ(ierr);
     ierr = DMDestroy(&circuitdm);CHKERRQ(ierr);
     circuitdm = distcircuitdm;
   }

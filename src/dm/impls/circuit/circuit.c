@@ -545,7 +545,9 @@ PetscErrorCode DMCircuitGetComponentDataArray(DM dm,DMCircuitComponentGenericDat
   Collective
 
   Input Parameter:
-. oldDM - the original DMCircuit object
++ oldDM - the original DMCircuit object
+. partitioner - The partitioning package, or NULL for the default
+- overlap - The overlap of partitions, 0 is the default
 
   Output Parameter:
 . distDM - the distributed DMCircuit object
@@ -559,11 +561,10 @@ PetscErrorCode DMCircuitGetComponentDataArray(DM dm,DMCircuitComponentGenericDat
 
 .seealso: DMCircuitCreate
 @*/
-PetscErrorCode DMCircuitDistribute(DM oldDM,DM *distDM)
+PetscErrorCode DMCircuitDistribute(DM oldDM, const char partitioner[], PetscInt overlap,DM *distDM)
 {
   PetscErrorCode ierr;
   DM_Circuit     *oldDMcircuit = (DM_Circuit*)oldDM->data;
-  const char*    partitioner="chaco";
   PetscSF        pointsf;
   DM             newDM;
   DM_Circuit     *newDMcircuit;
@@ -573,7 +574,7 @@ PetscErrorCode DMCircuitDistribute(DM oldDM,DM *distDM)
   newDMcircuit = (DM_Circuit*)newDM->data;
   newDMcircuit->dataheadersize = sizeof(struct _p_DMCircuitComponentHeader)/sizeof(DMCircuitComponentGenericDataType);
   /* Distribute plex dm and dof section */
-  ierr = DMPlexDistribute(oldDMcircuit->plex,partitioner,0,&pointsf,&newDMcircuit->plex);CHKERRQ(ierr);
+  ierr = DMPlexDistribute(oldDMcircuit->plex,partitioner,overlap,&pointsf,&newDMcircuit->plex);CHKERRQ(ierr);
   /* Distribute dof section */
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)oldDM),&newDMcircuit->DofSection);CHKERRQ(ierr);
   ierr = PetscSFDistributeSection(pointsf,oldDMcircuit->DofSection,NULL,newDMcircuit->DofSection);CHKERRQ(ierr);

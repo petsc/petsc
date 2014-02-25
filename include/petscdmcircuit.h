@@ -28,7 +28,7 @@ PETSC_EXTERN PetscErrorCode DMCircuitGetVariableGlobalOffset(DM, PetscInt, Petsc
 PETSC_EXTERN PetscErrorCode DMCircuitAddNumVariables(DM, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMCircuitSetNumVariables(DM, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMCircuitGetComponentDataArray(DM, DMCircuitComponentGenericDataType**);
-PETSC_EXTERN PetscErrorCode DMCircuitDistribute(DM, DM*);
+PETSC_EXTERN PetscErrorCode DMCircuitDistribute(DM, const char[], PetscInt,DM*);
 PETSC_EXTERN PetscErrorCode DMCircuitGetSupportingEdges(DM, PetscInt, PetscInt*, const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode DMCircuitGetConnectedNodes(DM, PetscInt, const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode DMCircuitIsGhostVertex(DM, PetscInt, PetscBool*);
