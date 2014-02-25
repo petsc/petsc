@@ -777,7 +777,7 @@ PetscErrorCode CharacteristicSiftDown(Characteristic c, Queue queue, PetscInt ro
 /* [center, left, top-left, top, top-right, right, bottom-right, bottom, bottom-left] */
 PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
 {
-  DMDABoundaryType bx, by;
+  DMBoundaryType   bx, by;
   PetscBool        IPeriodic = PETSC_FALSE, JPeriodic = PETSC_FALSE;
   MPI_Comm         comm;
   PetscMPIInt      rank;
@@ -789,8 +789,8 @@ PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da, 0, 0, 0, 0, &PI,&PJ, 0, 0, 0, &bx, &by,0, 0);CHKERRQ(ierr);
 
-  if (bx == DMDA_BOUNDARY_PERIODIC) IPeriodic = PETSC_TRUE;
-  if (by == DMDA_BOUNDARY_PERIODIC) JPeriodic = PETSC_TRUE;
+  if (bx == DM_BOUNDARY_PERIODIC) IPeriodic = PETSC_TRUE;
+  if (by == DM_BOUNDARY_PERIODIC) JPeriodic = PETSC_TRUE;
 
   neighbors[0] = rank;
   rank = 0;

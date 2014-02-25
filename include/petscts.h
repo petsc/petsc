@@ -99,6 +99,7 @@ typedef enum {
   TS_DIVERGED_STEP_REJECTED   = -2
 } TSConvergedReason;
 PETSC_EXTERN const char *const*TSConvergedReasons;
+
 /*MC
    TS_CONVERGED_ITERATING - this only occurs if TSGetConvergedReason() is called during the TSSolve()
 
@@ -116,12 +117,13 @@ M*/
 M*/
 
 /*MC
-   TS_CONVERGED_ITS - the maximum number of iterations was reached prior to the final time
+   TS_CONVERGED_ITS - the maximum number of iterations (time-steps) was reached prior to the final time
 
    Level: beginner
 
 .seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetDuration()
 M*/
+
 /*MC
    TS_CONVERGED_USER - user requested termination
 
@@ -135,7 +137,9 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSGetSNES(), SNESGetConvergedReason()
+   Notes: See TSSetMaxSNESFailures() for how to allow more nonlinear solver failures.
+
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSGetSNES(), SNESGetConvergedReason(), TSSetMaxSNESFailures()
 M*/
 
 /*MC
@@ -143,7 +147,9 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt()
+   Notes: See TSSetMaxStepRejections() for how to allow more step rejections.
+
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetMaxStepRejections()
 M*/
 
 /*E
@@ -238,7 +244,7 @@ PETSC_EXTERN PetscErrorCode TSRHSJacobianSetReuse(TS,PetscBool);
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSSolutionFunction)(TS,PetscReal,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSSetSolutionFunction(TS,TSSolutionFunction,void*);
-PETSC_EXTERN PetscErrorCode TSSetForcingFunction(TS,PetscErrorCode (*TSForcingFunction)(TS,PetscReal,Vec,void*),void*);
+PETSC_EXTERN PetscErrorCode TSSetForcingFunction(TS,PetscErrorCode (*)(TS,PetscReal,Vec,void*),void*);
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSIFunction)(TS,PetscReal,Vec,Vec,Vec,void*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSIJacobian)(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
@@ -301,8 +307,8 @@ PETSC_EXTERN PetscErrorCode DMTSSetIJacobian(DM,TSIJacobian,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetIJacobian(DM,TSIJacobian*,void**);
 PETSC_EXTERN PetscErrorCode DMTSSetSolutionFunction(DM,TSSolutionFunction,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetSolutionFunction(DM,TSSolutionFunction*,void**);
-PETSC_EXTERN PetscErrorCode DMTSSetForcingFunction(DM,PetscErrorCode (*TSForcingFunction)(TS,PetscReal,Vec,void*),void*);
-PETSC_EXTERN PetscErrorCode DMTSGetForcingFunction(DM,PetscErrorCode (**TSForcingFunction)(TS,PetscReal,Vec,void*),void**);
+PETSC_EXTERN PetscErrorCode DMTSSetForcingFunction(DM,PetscErrorCode (*)(TS,PetscReal,Vec,void*),void*);
+PETSC_EXTERN PetscErrorCode DMTSGetForcingFunction(DM,PetscErrorCode (**)(TS,PetscReal,Vec,void*),void**);
 
 PETSC_EXTERN PetscErrorCode DMTSSetIFunctionSerialize(DM,PetscErrorCode (*)(void*,PetscViewer),PetscErrorCode (*)(void**,PetscViewer));
 PETSC_EXTERN PetscErrorCode DMTSSetIJacobianSerialize(DM,PetscErrorCode (*)(void*,PetscViewer),PetscErrorCode (*)(void**,PetscViewer));

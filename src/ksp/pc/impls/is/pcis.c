@@ -1,5 +1,5 @@
 
-#include "../src/ksp/pc/impls/is/pcis.h" /*I "petscpc.h" I*/
+#include <../src/ksp/pc/impls/is/pcis.h> /*I "petscpc.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCISSetUseStiffnessScaling_IS"

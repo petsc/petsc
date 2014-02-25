@@ -779,7 +779,11 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
     Mat Arhs = NULL,Brhs = NULL;
     MatStructure flg2;
     if (rhsjacobian) {
-      ierr = TSGetRHSMats_Private(ts,&Arhs,&Brhs);CHKERRQ(ierr);
+      if (ijacobian) {
+        ierr = TSGetRHSMats_Private(ts,&Arhs,&Brhs);CHKERRQ(ierr);
+      } else {
+        ierr = TSGetIJacobian(ts,&Arhs,&Brhs,NULL,NULL);CHKERRQ(ierr);
+      }
       ierr = TSComputeRHSJacobian(ts,t,U,&Arhs,&Brhs,&flg2);CHKERRQ(ierr);
     }
     if (Arhs == *A) {           /* No IJacobian, so we only have the RHS matrix */
@@ -808,7 +812,6 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
       *flg = PetscMin(*flg,flg2);
     }
   }
-
   ierr = PetscLogEventEnd(TS_JacobianEval,ts,U,*A,*B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1380,7 +1383,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ts,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  maximum steps=%D\n",ts->max_steps);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  maximum time=%G\n",ts->max_time);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  maximum time=%g\n",(double)ts->max_time);CHKERRQ(ierr);
     if (ts->problem_type == TS_NONLINEAR) {
       ierr = PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solver iterations=%D\n",ts->snes_its);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solve failures=%D\n",ts->num_snes_failures);CHKERRQ(ierr);
@@ -2580,7 +2583,7 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec U)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
-  if (t < ts->ptime - ts->time_step_prev || t > ts->ptime) SETERRQ3(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Requested time %G not in last time steps [%G,%G]",t,ts->ptime-ts->time_step_prev,ts->ptime);
+  if (t < ts->ptime - ts->time_step_prev || t > ts->ptime) SETERRQ3(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Requested time %g not in last time steps [%g,%g]",t,(double)(ts->ptime-ts->time_step_prev),(double)ts->ptime);
   if (!ts->ops->interpolate) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"%s does not provide interpolation",((PetscObject)ts)->type_name);
   ierr = (*ts->ops->interpolate)(ts,t,U);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2611,11 +2614,20 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec U)
 @*/
 PetscErrorCode  TSStep(TS ts)
 {
-  PetscReal      ptime_prev;
-  PetscErrorCode ierr;
+  PetscReal        ptime_prev;
+  PetscErrorCode   ierr;
+  static PetscBool cite = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+  ierr = PetscCitationsRegister("@techreport{tspaper,\n"
+                                "  title       = {{PETSc/TS}: A Modern Scalable {DAE/ODE} Solver Library},\n"
+                                "  author      = {Shrirang Abhyankar and Jed Brown and Emil Constantinescu and Debojyoti Ghosh and Barry F. Smith},\n"
+                                "  type        = {Preprint},\n"
+                                "  number      = {ANL/MCS-P5061-0114},\n"
+                                "  institution = {Argonne National Laboratory},\n"
+                                "  year        = {2014}\n}\n",&cite);
+
   ierr = TSSetUp(ts);CHKERRQ(ierr);
 
   ts->reason = TS_CONVERGED_ITERATING;
@@ -4412,7 +4424,7 @@ PetscErrorCode TSGetCFLTime(TS ts,PetscReal *cfltime)
 
    Notes:
    If this routine is not called then the lower and upper bounds are set to
-   SNES_VI_NINF and SNES_VI_INF respectively during SNESSetUp().
+   PETSC_NINFINITY and PETSC_INFINITY respectively during SNESSetUp().
 
    Level: advanced
 

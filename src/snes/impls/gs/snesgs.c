@@ -35,15 +35,15 @@ PetscErrorCode  SNESGSSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,Pe
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
 
   if (abstol != PETSC_DEFAULT) {
-    if (abstol < 0.0) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Absolute tolerance %G must be non-negative",abstol);
+    if (abstol < 0.0) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Absolute tolerance %g must be non-negative",(double)abstol);
     gs->abstol = abstol;
   }
   if (rtol != PETSC_DEFAULT) {
-    if (rtol < 0.0 || 1.0 <= rtol) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Relative tolerance %G must be non-negative and less than 1.0",rtol);
+    if (rtol < 0.0 || 1.0 <= rtol) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Relative tolerance %g must be non-negative and less than 1.0",(double)rtol);
     gs->rtol = rtol;
   }
   if (stol != PETSC_DEFAULT) {
-    if (stol < 0.0) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Step tolerance %G must be non-negative",stol);
+    if (stol < 0.0) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Step tolerance %g must be non-negative",(double)stol);
     gs->stol = stol;
   }
   if (maxit != PETSC_DEFAULT) {
@@ -246,6 +246,7 @@ PetscErrorCode SNESSolve_GS(SNES snes)
   SNESNormSchedule normschedule;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   X = snes->vec_sol;
   F = snes->vec_func;
   B = snes->vec_rhs;

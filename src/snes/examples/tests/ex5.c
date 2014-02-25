@@ -46,6 +46,7 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
 
@@ -99,7 +100,7 @@ int main(int argc,char **argv)
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   ierr = PetscOptionsGetReal(NULL,"-kappa",&user.param2,NULL);CHKERRQ(ierr);
   if (user.param2 >= bratu_kappa_max || user.param2 < bratu_kappa_min) SETERRQ(PETSC_COMM_SELF,1,"Kappa is out of range");
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Solving the Bratu problem with lambda=%G, kappa=%G\n",user.param,user.param2);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Solving the Bratu problem with lambda=%g, kappa=%g\n",(double)user.param,(double)user.param2);CHKERRQ(ierr);
 
   N = user.mx*user.my;
 
@@ -121,7 +122,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,"-Nx",&Nx,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-Ny",&Ny,NULL);CHKERRQ(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE)) SETERRQ(PETSC_COMM_SELF,1,"Incompatible number of processors:  Nx * Ny != size");
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,user.da);CHKERRQ(ierr);
   /*
      Visualize the distribution of the array across the processors

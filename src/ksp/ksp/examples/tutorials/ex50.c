@@ -20,6 +20,7 @@
 
 static char help[] = "Solves 2D Poisson equation using multigrid.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscksp.h>
 #include <petscsys.h>
@@ -49,7 +50,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,(DM)da);
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
 

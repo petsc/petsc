@@ -791,8 +791,9 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
       }
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
-  } else if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) PetscFunctionReturn(0);
-  else {
+  } else if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+    /* No info */
+  } else {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)xin,viewer);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       if (format == PETSC_VIEWER_ASCII_INDEX) {
@@ -822,7 +823,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
 PetscErrorCode VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
 {
   PetscErrorCode    ierr;
-  PetscInt          i,c,bs = xin->map->bs,n = xin->map->n/bs;
+  PetscInt          i,c,bs = PetscAbs(xin->map->bs),n = xin->map->n/bs;
   PetscDraw         win;
   PetscReal         *xx;
   PetscDrawLG       lg;
@@ -943,9 +944,9 @@ PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
   if (file) {
     if (((PetscObject)xin)->prefix) {
-      ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-%s_vecload_block_size %D\n",((PetscObject)xin)->prefix,xin->map->bs);CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-%s_vecload_block_size %D\n",((PetscObject)xin)->prefix,PetscAbs(xin->map->bs));CHKERRQ(ierr);
     } else {
-      ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-vecload_block_size %D\n",xin->map->bs);CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-vecload_block_size %D\n",PetscAbs(xin->map->bs));CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -1085,13 +1086,14 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
 PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const PetscScalar yin[],InsertMode m)
 {
   PetscScalar    *xx,*y = (PetscScalar*)yin;
-  PetscInt       i,bs = xin->map->bs,start,j;
+  PetscInt       i,bs,start,j;
   PetscErrorCode ierr;
 
   /*
        For optimization could treat bs = 2, 3, 4, 5 as special cases with loop unrolling
   */
   PetscFunctionBegin;
+  ierr = VecGetBlockSize(xin,&bs);CHKERRQ(ierr);
   ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
   if (m == INSERT_VALUES) {
     for (i=0; i<ni; i++) {

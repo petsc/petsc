@@ -133,7 +133,7 @@ extern FILE *petsc_history;
     or a file when the option -info <file> is specified.
 
    Synopsis:
-       #include "petscsys.h"
+       #include <petscsys.h>
        PetscErrorCode PetscInfo(void *vobj, const char message[])
        PetscErrorCode PetscInfo1(void *vobj, const char formatmessage[],arg1)
        PetscErrorCode PetscInfo2(void *vobj, const char formatmessage[],arg1,arg2)

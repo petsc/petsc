@@ -146,7 +146,7 @@
 
 !     just get size
       call DMDACreate2d(PETSC_COMM_WORLD, &
-           DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, &
+           DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, &
            DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE, &
            ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,daphi,ierr)
       call DMDAGetInfo(daphi,PETSC_NULL_INTEGER,solver%mx,solver%my,   &

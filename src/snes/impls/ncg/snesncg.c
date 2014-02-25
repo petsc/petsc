@@ -274,6 +274,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   SNESConvergedReason reason;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   snes->reason = SNES_CONVERGED_ITERATING;
 
   maxits = snes->max_its;            /* maximum number of iterations */
@@ -293,7 +294,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   /* compute the initial function and preconditioned update dX */
 
   if (snes->pc && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
-    ierr = SNESApplyPC(snes,X,NULL,NULL,dX);CHKERRQ(ierr);
+    ierr = SNESApplyPC(snes,X,NULL,dX);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
     if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
@@ -321,7 +322,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   }
   if (snes->pc) {
     if (snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
-      ierr = SNESApplyPC(snes,X,F,&fnorm,dX);CHKERRQ(ierr);
+      ierr = SNESApplyPC(snes,X,F,dX);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
       if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
         snes->reason = SNES_DIVERGED_INNER;
@@ -391,7 +392,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
     }
     if (snes->pc) {
       if (snes->functype == SNES_FUNCTION_PRECONDITIONED) {
-        ierr = SNESApplyPC(snes,X,NULL,NULL,dX);CHKERRQ(ierr);
+        ierr = SNESApplyPC(snes,X,NULL,dX);CHKERRQ(ierr);
         ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
         if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
           snes->reason = SNES_DIVERGED_INNER;
@@ -399,7 +400,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
         }
         ierr = VecCopy(dX,F);CHKERRQ(ierr);
       } else {
-        ierr = SNESApplyPC(snes,X,F,&fnorm,dX);CHKERRQ(ierr);
+        ierr = SNESApplyPC(snes,X,F,dX);CHKERRQ(ierr);
         ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
         if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
           snes->reason = SNES_DIVERGED_INNER;

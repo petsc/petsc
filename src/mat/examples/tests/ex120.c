@@ -195,7 +195,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscOptionsHasName(NULL, "-eig_view", &flg);CHKERRQ(ierr);
   if (flg) {
     printf(" %d evals: \n",nevs);
-    for (i=0; i<nevs; i++) printf("%d  %G\n",i+il,evals[i]);
+    for (i=0; i<nevs; i++) printf("%d  %g\n",i+il,(double)evals[i]);
   }
 
   /* Check residuals and orthogonality */
@@ -273,12 +273,12 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
 #if defined(DEBUG_CkEigenSolutions)
         if (rdot > tols[1]) {
           ierr = VecNorm(evec[i],NORM_INFINITY,&norm);
-          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%d,%d)|: %G, norm: %G\n",i,j,dot,norm);
+          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%d,%d)|: %g, norm: %d\n",i,j,(double)dot,(double)norm);
         }
 #endif
       }
     }
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j^T*x_i) - delta_ji|: %G\n",dot_max);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j^T*x_i) - delta_ji|: %g\n",(double)dot_max);
 
   case 1:
     norm_max = 0.0;
@@ -297,7 +297,7 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
       }
 #endif
     }
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %G\n", norm_max);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %g\n", (double)norm_max);
     break;
   default:
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%d is not supported \n",cklvl);

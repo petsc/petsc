@@ -294,6 +294,7 @@ alldoc1: chk_loc deletemanualpages chk_concepts_dir
 	-@cat ${PETSC_DIR}/src/docs/mpi.www.index >> ${LOC}/docs/manualpages/htmlmap
 	-cd src/docs/tex/manual; ${OMAKE} manual.pdf LOC=${LOC}
 	-cd src/docs/tex/manual; ${OMAKE} developers.pdf LOC=${LOC}
+	-cd src/docs/tao_tex/manual; ${OMAKE} manual.pdf
 	-${OMAKE} ACTION=manualpages tree_basic LOC=${LOC}
 	-${PYTHON} bin/maint/wwwindex.py ${PETSC_DIR} ${LOC}
 	-${OMAKE} ACTION=manexamples tree_basic LOC=${LOC}

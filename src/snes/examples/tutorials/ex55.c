@@ -19,8 +19,8 @@ Runtime options include:\n\
 
  */
 
-#include "petscsnes.h"
-#include "petscdmda.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
 
 typedef struct {
   PetscReal   dt,T; /* Time step and end time */
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = GetParams(&user);CHKERRQ(ierr);
   /* Create a 2D DA with dof = 2 */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,NULL,NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,NULL,NULL,&user.da);CHKERRQ(ierr);
   /* Set Element type (triangular) */
   ierr = DMDASetElementType(user.da,DMDA_ELEMENT_P1);CHKERRQ(ierr);
 
@@ -382,11 +382,11 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
       l[j][i][0] = 0.0;
       l[j][i][1] = 0.0;
       l[j][i][2] = 0.0;
-      l[j][i][3] = -SNES_VI_INF;
+      l[j][i][3] = -PETSC_INFINITY;
       u[j][i][0] = 1.0;
       u[j][i][1] = 1.0;
       u[j][i][2] = 1.0;
-      u[j][i][3] = SNES_VI_INF;
+      u[j][i][3] = PETSC_INFINITY;
     }
   }
   ierr = DMDAVecRestoreArrayDOF(da,xl,&l);CHKERRQ(ierr);
@@ -449,7 +449,7 @@ PetscErrorCode SetUpMatrices(AppCtx *user)
   /* ierr = MatCreate(PETSC_COMM_WORLD,&user->M_0);CHKERRQ(ierr);*/
   ierr = DMDAGetInfo(user->da,NULL,&Mda,&Nda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
   hx   = 1.0/(Mda-1);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,Mda,Nda,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,Mda,Nda,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da,&user->M_0);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);

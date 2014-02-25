@@ -81,8 +81,8 @@ static PetscClassId THI_CLASSID;
 
 typedef enum {QUAD_GAUSS,QUAD_LOBATTO} QuadratureType;
 static const char      *QuadratureTypes[] = {"gauss","lobatto","QuadratureType","QUAD_",0};
-static const PetscReal HexQWeights[8]     = {1,1,1,1,1,1,1,1};
-static const PetscReal HexQNodes[]        = {-0.57735026918962573, 0.57735026918962573};
+PETSC_UNUSED static const PetscReal HexQWeights[8]     = {1,1,1,1,1,1,1,1};
+PETSC_UNUSED static const PetscReal HexQNodes[]        = {-0.57735026918962573, 0.57735026918962573};
 #define G 0.57735026918962573
 #define H (0.5*(1.+G))
 #define L (0.5*(1.-G))
@@ -254,8 +254,6 @@ struct _n_Units {
   PetscReal year;
 };
 
-typedef PetscErrorCode (*DMDASNESJacobianLocal)(DMDALocalInfo*,void*,Mat,Mat,MatStructure*,void*);
-typedef PetscErrorCode (*DMDASNESFunctionLocal)(DMDALocalInfo*,void*,void*,void*);
 static PetscErrorCode THIJacobianLocal_3D_Full(DMDALocalInfo*,Node***,Mat,Mat,MatStructure*,THI);
 static PetscErrorCode THIJacobianLocal_3D_Tridiagonal(DMDALocalInfo*,Node***,Mat,THI);
 static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo*,Node**,Mat,THI);
@@ -545,10 +543,10 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
     thi->rhog = rho * grav;
     if (thi->verbose) {
       ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Units: meter %8.2g  second %8.2g  kg %8.2g  Pa %8.2g\n",(double)units->meter,(double)units->second,(double)units->kilogram,(double)units->Pascal);CHKERRQ(ierr);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Domain (%6.2g,%6.2g,%6.2g), pressure %8.2g, driving stress %8.2g\n",(double)thi->Lx,(double)thi->Ly,(double)thi->Lz,(double)rho*grav*1e3*units->meter,(double)driving);CHKERRQ(ierr);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Large velocity 1km/a %8.2g, velocity gradient %8.2g, eta %8.2g, stress %8.2g, ratio %8.2g\n",(double)u,(double)gradu,(double)eta,(double)2*eta*gradu,(double)2*eta*gradu/driving);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Domain (%6.2g,%6.2g,%6.2g), pressure %8.2g, driving stress %8.2g\n",(double)thi->Lx,(double)thi->Ly,(double)thi->Lz,(double)(rho*grav*1e3*units->meter),(double)driving);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Large velocity 1km/a %8.2g, velocity gradient %8.2g, eta %8.2g, stress %8.2g, ratio %8.2g\n",(double)u,(double)gradu,(double)eta,(double)(2*eta*gradu),(double)(2*eta*gradu/driving));CHKERRQ(ierr);
       THIViscosity(thi,0.5*PetscSqr(1e-3*gradu),&eta,&deta);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Small velocity 1m/a  %8.2g, velocity gradient %8.2g, eta %8.2g, stress %8.2g, ratio %8.2g\n",(double)1e-3*u,(double)1e-3*gradu,(double)eta,(double)2*eta*1e-3*gradu,(double)2*eta*1e-3*gradu/driving);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Small velocity 1m/a  %8.2g, velocity gradient %8.2g, eta %8.2g, stress %8.2g, ratio %8.2g\n",(double)(1e-3*u),(double)(1e-3*gradu),(double)eta,(double)(2*eta*1e-3*gradu),(double)(2*eta*1e-3*gradu/driving));CHKERRQ(ierr);
     }
   }
 
@@ -596,22 +594,22 @@ static PetscErrorCode THISetUpDM(THI thi,DM dm)
   ierr  = DMGetRefineLevel(dm,&refinelevel);CHKERRQ(ierr);
   ierr  = DMGetCoarsenLevel(dm,&coarsenlevel);CHKERRQ(ierr);
   level = refinelevel - coarsenlevel;
-  ierr  = DMDACreate2d(PetscObjectComm((PetscObject)thi),DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,st,My,Mx,my,mx,sizeof(PrmNode)/sizeof(PetscScalar),s,0,0,&da2prm);CHKERRQ(ierr);
+  ierr  = DMDACreate2d(PetscObjectComm((PetscObject)thi),DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,st,My,Mx,my,mx,sizeof(PrmNode)/sizeof(PetscScalar),s,0,0,&da2prm);CHKERRQ(ierr);
   ierr  = DMCreateLocalVector(da2prm,&X);CHKERRQ(ierr);
   {
     PetscReal Lx = thi->Lx / thi->units->meter,Ly = thi->Ly / thi->units->meter,Lz = thi->Lz / thi->units->meter;
     if (dim == 2) {
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Level %D domain size (m) %8.2g x %8.2g, num elements %D x %D (%D), size (m) %g x %g\n",level,(double)Lx,(double)Ly,Mx,My,Mx*My,(double)Lx/Mx,(double)Ly/My);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Level %D domain size (m) %8.2g x %8.2g, num elements %D x %D (%D), size (m) %g x %g\n",level,(double)Lx,(double)Ly,Mx,My,Mx*My,(double)(Lx/Mx),(double)(Ly/My));CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Level %D domain size (m) %8.2g x %8.2g x %8.2g, num elements %D x %D x %D (%D), size (m) %g x %g x %g\n",level,(double)Lx,(double)Ly,(double)Lz,Mx,My,Mz,Mx*My*Mz,(double)Lx/Mx,(double)Ly/My,(double)1000./(Mz-1));CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)thi),"Level %D domain size (m) %8.2g x %8.2g x %8.2g, num elements %D x %D x %D (%D), size (m) %g x %g x %g\n",level,(double)Lx,(double)Ly,(double)Lz,Mx,My,Mz,Mx*My*Mz,(double)(Lx/Mx),(double)(Ly/My),(double)(1000./(Mz-1)));CHKERRQ(ierr);
     }
   }
   ierr = THIInitializePrm(thi,da2prm,X);CHKERRQ(ierr);
   if (thi->tridiagonal) {       /* Reset coarse Jacobian evaluation */
-    ierr = DMDASNESSetJacobianLocal(dm,(DMDASNESJacobianLocal)THIJacobianLocal_3D_Full,thi);CHKERRQ(ierr);
+    ierr = DMDASNESSetJacobianLocal(dm,(DMDASNESJacobian)THIJacobianLocal_3D_Full,thi);CHKERRQ(ierr);
   }
   if (thi->coarse2d) {
-    ierr = DMDASNESSetJacobianLocal(dm,(DMDASNESJacobianLocal)THIJacobianLocal_2D,thi);CHKERRQ(ierr);
+    ierr = DMDASNESSetJacobianLocal(dm,(DMDASNESJacobian)THIJacobianLocal_2D,thi);CHKERRQ(ierr);
   }
   ierr = PetscObjectCompose((PetscObject)dm,"DMDA2Prm",(PetscObject)da2prm);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)dm,"DMDA2Prm_Vec",(PetscObject)X);CHKERRQ(ierr);
@@ -1312,7 +1310,7 @@ static PetscErrorCode DMRefineHierarchy_THI(DM dac0,PetscInt nlevels,DM hierarch
   if (dim != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"This function can only refine 2D DMDAs");
 
   /* Creates a 3D DMDA with the same map-plane layout as the 2D one, with contiguous columns */
-  ierr = DMDACreate3d(PetscObjectComm((PetscObject)dac),DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,st,thi->zlevels,N,M,1,n,m,dof,s,NULL,NULL,NULL,&daf);CHKERRQ(ierr);
+  ierr = DMDACreate3d(PetscObjectComm((PetscObject)dac),DM_BOUNDARY_NONE,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,st,thi->zlevels,N,M,1,n,m,dof,s,NULL,NULL,NULL,&daf);CHKERRQ(ierr);
 
   daf->ops->creatematrix        = dac->ops->creatematrix;
   daf->ops->createinterpolation = dac->ops->createinterpolation;
@@ -1475,7 +1473,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM da,Vec X,const char filena
       ierr = PetscViewerASCIIPrintf(viewer,"      <PointData>\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"        <DataArray type=\"Float32\" Name=\"velocity\" NumberOfComponents=\"3\" format=\"ascii\">\n");CHKERRQ(ierr);
       for (i=0; i<nn; i+=dof) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%f %f %f\n",(double)PetscRealPart(ptr[i])*units->year/units->meter,(double)PetscRealPart(ptr[i+1])*units->year/units->meter,0.0);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%f %f %f\n",(double)(PetscRealPart(ptr[i])*units->year/units->meter),(double)(PetscRealPart(ptr[i+1])*units->year/units->meter),0.0);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer,"        </DataArray>\n");CHKERRQ(ierr);
 
@@ -1529,14 +1527,14 @@ int main(int argc,char *argv[])
     }
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     if (thi->coarse2d) {
-      ierr = DMDACreate2d(comm,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,-N,-M,PETSC_DETERMINE,PETSC_DETERMINE,sizeof(Node)/sizeof(PetscScalar),1,0,0,&da);CHKERRQ(ierr);
+      ierr = DMDACreate2d(comm,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,-N,-M,PETSC_DETERMINE,PETSC_DETERMINE,sizeof(Node)/sizeof(PetscScalar),1,0,0,&da);CHKERRQ(ierr);
 
       da->ops->refinehierarchy     = DMRefineHierarchy_THI;
       da->ops->createinterpolation = DMCreateInterpolation_DA_THI;
 
       ierr = PetscObjectCompose((PetscObject)da,"THI",(PetscObject)thi);CHKERRQ(ierr);
     } else {
-      ierr = DMDACreate3d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC, DMDA_STENCIL_BOX,-P,-N,-M,1,PETSC_DETERMINE,PETSC_DETERMINE,sizeof(Node)/sizeof(PetscScalar),1,0,0,0,&da);CHKERRQ(ierr);
+      ierr = DMDACreate3d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC, DMDA_STENCIL_BOX,-P,-N,-M,1,PETSC_DETERMINE,PETSC_DETERMINE,sizeof(Node)/sizeof(PetscScalar),1,0,0,0,&da);CHKERRQ(ierr);
     }
     ierr = DMDASetFieldName(da,0,"x-velocity");CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,1,"y-velocity");CHKERRQ(ierr);
@@ -1551,11 +1549,11 @@ int main(int argc,char *argv[])
     if (rlevel - clevel > 0) {ierr = DMSetMatType(da,thi->mattype);CHKERRQ(ierr);}
   }
 
-  ierr = DMDASNESSetFunctionLocal(da,ADD_VALUES,(DMDASNESFunctionLocal)THIFunctionLocal,thi);CHKERRQ(ierr);
+  ierr = DMDASNESSetFunctionLocal(da,ADD_VALUES,(DMDASNESFunction)THIFunctionLocal,thi);CHKERRQ(ierr);
   if (thi->tridiagonal) {
-    ierr = DMDASNESSetJacobianLocal(da,(DMDASNESJacobianLocal)THIJacobianLocal_3D_Tridiagonal,thi);CHKERRQ(ierr);
+    ierr = DMDASNESSetJacobianLocal(da,(DMDASNESJacobian)THIJacobianLocal_3D_Tridiagonal,thi);CHKERRQ(ierr);
   } else {
-    ierr = DMDASNESSetJacobianLocal(da,(DMDASNESJacobianLocal)THIJacobianLocal_3D_Full,thi);CHKERRQ(ierr);
+    ierr = DMDASNESSetJacobianLocal(da,(DMDASNESJacobian)THIJacobianLocal_3D_Full,thi);CHKERRQ(ierr);
   }
   ierr = DMCoarsenHookAdd(da,DMCoarsenHook_THI,NULL,thi);CHKERRQ(ierr);
   ierr = DMRefineHookAdd(da,DMRefineHook_THI,NULL,thi);CHKERRQ(ierr);

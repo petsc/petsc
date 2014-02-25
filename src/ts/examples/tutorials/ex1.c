@@ -167,7 +167,7 @@ int main(int argc,char **argv)
   */
   ierr = TSGetTimeStepNumber(ts,&its);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of pseudo timesteps = %d final time %4.2e\n",(int)its,ftime);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of pseudo timesteps = %D final time %4.2e\n",its,(double)ftime);CHKERRQ(ierr);
 
   /*
      Free the data structures constructed above

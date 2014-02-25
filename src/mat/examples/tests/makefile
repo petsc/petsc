@@ -5,7 +5,7 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR		 = src/mat/examples/tests/
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
-                ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
+                ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c \
                 ex19.c ex20.c ex21.c ex22.c ex24.c ex25.c ex27.c ex28.c ex29.c \
                 ex30.c ex31.c ex32.c ex33.c ex34.c ex35.c ex37.c ex38.c \
                 ex40.c ex41.c ex42.c ex43.c ex44.c ex45.c ex47.c ex48.c \
@@ -98,6 +98,10 @@ ex16f90: ex16f90.o chkopts
 ex17: ex17.o chkopts
 	-${CLINKER} -o ex17 ex17.o ${PETSC_MAT_LIB}
 	${RM} ex17.o
+
+ex18: ex18.o chkopts
+	-${CLINKER} -o ex18 ex18.o ${PETSC_MAT_LIB}
+	${RM} ex18.o
 
 ex19: ex19.o chkopts
 	-${CLINKER} -o ex19 ex19.o ${PETSC_MAT_LIB}
@@ -922,6 +926,81 @@ runex17:
 	   if (${DIFF} output/ex17_1.out ex17_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex17_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex17_1.tmp
+runex18:
+	-@${MPIEXEC}  -n 1 ./ex18 > ex18_0.tmp 2>&1;   \
+	   if (${DIFF} output/ex18_0.out ex18_0.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex18_0, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex18_0.tmp
+runex18_1:
+	-@${MPIEXEC}  -n 2 ./ex18 > ex18_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex18_1.out ex18_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex18_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex18_1.tmp
+runex18_2:
+	-@${MPIEXEC}  -n 7 ./ex18 > ex18_2.tmp 2>&1;   \
+	   if (${DIFF} output/ex18_2.out ex18_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex18_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex18_2.tmp
+runex18_3:
+	-@${MPIEXEC}  -n 1 ./ex18 -mat_type baij > ex18_3.tmp 2>&1;   \
+	   if (${DIFF} output/ex18_3.out ex18_3.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex18_3, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex18_3.tmp
+runex18_4:
+	-@${MPIEXEC}  -n 2 ./ex18 -mat_type baij > ex18_4.tmp 2>&1;   \
+	   if (${DIFF} output/ex18_4.out ex18_4.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex18_4, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex18_4.tmp
+runex18_5:
+	-@${MPIEXEC}  -n 7 ./ex18 -mat_type baij > ex18_5.tmp 2>&1;   \
+	   if (${DIFF} output/ex18_5.out ex18_5.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex18_5, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex18_5.tmp
+runex18_6:
+	-@${MPIEXEC}  -n 1 ./ex18 -bs 2 -mat_type baij > ex18_6.tmp 2>&1;   \
+	   if (${DIFF} output/ex18_6.out ex18_6.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex18_6, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex18_6.tmp
+runex18_7:
+	-@${MPIEXEC}  -n 2 ./ex18 -bs 2 -mat_type baij > ex18_7.tmp 2>&1;   \
+	   if (${DIFF} output/ex18_7.out ex18_7.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex18_7, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex18_7.tmp
+runex18_8:
+	-@${MPIEXEC}  -n 7 ./ex18 -bs 2 -mat_type baij > ex18_8.tmp 2>&1;   \
+	   if (${DIFF} output/ex18_8.out ex18_8.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex18_8, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex18_8.tmp
+runex18_9:
+	-@${MPIEXEC}  -n 1 ./ex18 -bs 2 -nonlocal_bc > ex18_9.tmp 2>&1;   \
+	   if (${DIFF} output/ex18_9.out ex18_9.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex18_9, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex18_9.tmp
+runex18_10:
+	-@${MPIEXEC}  -n 2 ./ex18 -bs 2 -nonlocal_bc > ex18_10.tmp 2>&1;   \
+	   if (${DIFF} output/ex18_10.out ex18_10.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex18_10, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex18_10.tmp
+runex18_11:
+	-@${MPIEXEC}  -n 7 ./ex18 -bs 2 -nonlocal_bc > ex18_11.tmp 2>&1;   \
+	   if (${DIFF} output/ex18_11.out ex18_11.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex18_11, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex18_11.tmp
+runex18_12:
+	-@${MPIEXEC}  -n 1 ./ex18 -bs 2 -nonlocal_bc -mat_type baij > ex18_12.tmp 2>&1;   \
+	   if (${DIFF} output/ex18_12.out ex18_12.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex18_12, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex18_12.tmp
+runex18_13:
+	-@${MPIEXEC}  -n 2 ./ex18 -bs 2 -nonlocal_bc -mat_type baij > ex18_13.tmp 2>&1;   \
+	   if (${DIFF} output/ex18_13.out ex18_13.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex18_13, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex18_13.tmp
+runex18_14:
+	-@${MPIEXEC}  -n 7 ./ex18 -bs 2 -nonlocal_bc -mat_type baij > ex18_14.tmp 2>&1;   \
+	   if (${DIFF} output/ex18_14.out ex18_14.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex18_14, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex18_14.tmp
 runex19:
 	-@${MPIEXEC}  -n 4 ./ex19 > ex19_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
@@ -1882,7 +1961,9 @@ runex164:
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PETSc ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm ex10.PETSc \
                                  runex10 ex10.rm ex11.PETSc runex11 runex11_2 runex11_3 runex11_4 ex11.rm ex14.PETSc \
-                                 runex14 ex14.rm ex15.PETSc runex15 ex15.rm ex19.PETSc ex19.rm ex20.PETSc runex20 \
+                                 runex14 ex14.rm ex15.PETSc runex15 ex15.rm \
+                                 ex18.PETSc runex18 runex18_1 runex18_2 runex18_3 runex18_4 runex18_5 runex18_6 runex18_7 runex18_8 runex18_9 runex18_10 runex18_11 runex18_12 runex18_13 runex18_14 ex18.rm \
+                                 ex19.PETSc ex19.rm ex20.PETSc runex20 \
                                  ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm ex16.PETSc runex16 ex16.rm \
                                  ex29.PETSc runex29 ex29.rm \
                                  ex45.PETSc ex45.rm ex55.PETSc runex55 runex55_2 ex55.rm ex59.PETSc runex59 runex59_2 runex59_3 \

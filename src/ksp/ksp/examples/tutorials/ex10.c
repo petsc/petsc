@@ -111,7 +111,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetString(NULL,"-rhs",file[2],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   if (flg) {   /* rhs is stored in a separate file */
-    if (file[2][0] == '0') {
+    if (file[2][0] == '0' || file[2][0] == 0) {
       PetscInt    m;
       PetscScalar one = 1.0;
       ierr = PetscInfo(0,"Using vector of ones for RHS\n");CHKERRQ(ierr);
@@ -240,15 +240,15 @@ int main(int argc,char **args)
     }
     ierr = VecView(max, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     ierr = VecMax(max, &idx, &val);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Largest max row element %G at row %d\n", val, idx);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Largest max row element %g at row %D\n", (double)val, idx);CHKERRQ(ierr);
     ierr = VecView(min, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     ierr = VecMin(min, &idx, &val);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Smallest min row element %G at row %d\n", val, idx);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Smallest min row element %g at row %D\n", (double)val, idx);CHKERRQ(ierr);
     ierr = VecMin(max, &idx, &val);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Smallest max row element %G at row %d\n", val, idx);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Smallest max row element %g at row %D\n", (double)val, idx);CHKERRQ(ierr);
     ierr = VecPointwiseDivide(max, max, min);CHKERRQ(ierr);
     ierr = VecMax(max, &idx, &val);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Largest row ratio %G at row %d\n", val, idx);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Largest row ratio %g at row %D\n", (double)val, idx);CHKERRQ(ierr);
     ierr = VecView(max, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     ierr = VecDestroy(&max);CHKERRQ(ierr);
     ierr = VecDestroy(&min);CHKERRQ(ierr);
@@ -328,7 +328,7 @@ int main(int argc,char **args)
         if (norm < 1.e-12) {
           ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm < 1.e-12\n");CHKERRQ(ierr);
         } else {
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %G\n",norm);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %g\n",(double)norm);CHKERRQ(ierr);
         }
       }
     }   /* while (num_rhs--) */
@@ -374,7 +374,7 @@ int main(int argc,char **args)
       if (norm < 1.e-12) {
         ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm < 1.e-12\n");CHKERRQ(ierr);
       } else {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G\n",norm);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm);CHKERRQ(ierr);
       }
     }
     ierr = PetscOptionsGetString(NULL,"-solution",file[3],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -388,7 +388,7 @@ int main(int argc,char **args)
       ierr = VecLoad(xstar,viewer);CHKERRQ(ierr);
       ierr = VecAXPY(xstar, -1.0, x);CHKERRQ(ierr);
       ierr = VecNorm(xstar, NORM_2, &norm);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "Error norm %G\n", norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "Error norm %g\n", (double)norm);CHKERRQ(ierr);
       ierr = VecDestroy(&xstar);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }

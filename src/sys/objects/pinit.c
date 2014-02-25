@@ -448,7 +448,7 @@ PetscErrorCode PetscCitationsInitialize()
 
   PetscFunctionBegin;
   ierr = PetscSegBufferCreate(1,10000,&PetscCitationsList);CHKERRQ(ierr);
-  ierr = PetscCitationsRegister("@TechReport{petsc-user-ref,\n  Author = {Satish Balay and Jed Brown and and Kris Buschelman and Victor Eijkhout\n            and William D.  Gropp and Dinesh Kaushik and Matthew G. Knepley\n            and Lois Curfman McInnes and Barry F. Smith and Hong Zhang},\n  Title = {{PETS}c Users Manual},\n  Number = {ANL-95/11 - Revision 3.4},\n  Institution = {Argonne National Laboratory},\n  Year = {2013}\n}\n",NULL);CHKERRQ(ierr);
+  ierr = PetscCitationsRegister("@TechReport{petsc-user-ref,\n  Author = {Satish Balay and Mark F. Adams and Jed Brown and Peter Brune\n            and Kris Buschelman and Victor Eijkhout and William D. Gropp\n            and Dinesh Kaushik and Matthew G. Knepley\n            and Lois Curfman McInnes and Karl Rupp and Barry F. Smith\n            and Hong Zhang},\n  Title = {{PETS}c Users Manual},\n  Number = {ANL-95/11 - Revision 3.4},\n  Institution = {Argonne National Laboratory},\n  Year = {2013}\n}\n",NULL);CHKERRQ(ierr);
   ierr = PetscCitationsRegister("@InProceedings{petsc-efficient,\n  Author = {Satish Balay and William D. Gropp and Lois Curfman McInnes and Barry F. Smith},\n  Title = {Efficient Management of Parallelism in Object Oriented Numerical Software Libraries},\n  Booktitle = {Modern Software Tools in Scientific Computing},\n  Editor = {E. Arge and A. M. Bruaset and H. P. Langtangen},\n  Pages = {163--202},\n  Publisher = {Birkh{\\\"{a}}user Press},\n  Year = {1997}\n}\n",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -700,7 +700,6 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
         hangs without running in the debugger).  See PetscLogTraceBegin().
 .  -log_summary [filename] - Prints summary of flop and timing information to screen. If the filename is specified the
         summary is written to the file.  See PetscLogView().
-.  -log_summary_python [filename] - Prints data on of flop and timing usage to a file or screen. See PetscLogPrintSViewPython().
 .  -log_all [filename] - Logs extensive profiling information  See PetscLogDump().
 .  -log [filename] - Logs basic profiline information  See PetscLogDump().
 -  -log_mpe [filename] - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
@@ -1078,6 +1077,7 @@ PetscErrorCode  PetscFinalize(void)
 #endif
   mname[0] = 0;
 
+  ierr = PetscLogViewFromOptions();CHKERRQ(ierr);  
   ierr = PetscOptionsGetString(NULL,"-log_summary",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   if (flg1) {
     PetscViewer viewer;
@@ -1090,28 +1090,6 @@ PetscErrorCode  PetscFinalize(void)
       ierr   = PetscLogView(viewer);CHKERRQ(ierr);
     }
   }
-
-  mname[0] = 0;
-
-  ierr = PetscOptionsGetString(NULL,"-log_summary_python",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    PetscViewer viewer;
-    if (mname[0]) {
-      ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,mname,&viewer);CHKERRQ(ierr);
-      ierr = PetscLogViewPython(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    } else {
-      viewer = PETSC_VIEWER_STDOUT_WORLD;
-      ierr   = PetscLogViewPython(viewer);CHKERRQ(ierr);
-    }
-  }
-
-  ierr = PetscOptionsGetString(NULL,"-log_detailed",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    if (mname[0])  {ierr = PetscLogPrintDetailed(PETSC_COMM_WORLD,mname);CHKERRQ(ierr);}
-    else           {ierr = PetscLogPrintDetailed(PETSC_COMM_WORLD,0);CHKERRQ(ierr);}
-  }
-
   mname[0] = 0;
 
   ierr = PetscOptionsGetString(NULL,"-log_all",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);

@@ -3,6 +3,7 @@ static char help[] = "Solves -Laplacian u - exp(u) = 0,  0 < x < 1 using GPU\n\n
    Same as ex47.c except it also uses the GPU to evaluate the function
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
 #include <petsccusp.h>
@@ -33,7 +34,7 @@ int main(int argc,char **argv)
     if (tmp) useCUSP = PETSC_TRUE;
   }
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-8,1,1,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-8,1,1,NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&x); VecDuplicate(x,&f);CHKERRQ(ierr);
   ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da,&J);CHKERRQ(ierr);

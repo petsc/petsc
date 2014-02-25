@@ -56,6 +56,7 @@ Input parameters include:\n\
      petscksp.h   - linear solvers        petscsnes.h - nonlinear solvers
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 #include <petscdraw.h>
@@ -131,7 +132,7 @@ int main(int argc,char **argv)
      total grid values spread equally among all the processors.
   */
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,m,1,1,NULL,&appctx.da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,1,1,NULL,&appctx.da);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DMDA; we use these to store the
@@ -254,8 +255,8 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      View timestepping solver info
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Total timesteps %D, Final time %G\n",steps,ftime);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Avg. error (2 norm) = %G Avg. error (max norm) = %G\n",appctx.norm_2/steps,appctx.norm_max/steps);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Total timesteps %D, Final time %g\n",steps,(double)ftime);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Avg. error (2 norm) = %g Avg. error (max norm) = %g\n",(double)(appctx.norm_2/steps),(double)(appctx.norm_max/steps));CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -441,8 +442,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
      PetscPrintf() causes only the first processor in this
      communicator to print the timestep information.
   */
-  ierr = PetscPrintf(appctx->comm,"Timestep %D: time = %G 2-norm error = %G max norm error = %G\n",
-                     step,time,norm_2,norm_max);CHKERRQ(ierr);
+  ierr = PetscPrintf(appctx->comm,"Timestep %D: time = %g 2-norm error = %g max norm error = %g\n",step,(double)time,(double)norm_2,(double)norm_max);CHKERRQ(ierr);
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;
 

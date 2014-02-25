@@ -571,7 +571,6 @@ PetscErrorCode  PetscDrawLGView(PetscDrawLG lg,PetscViewer viewer)
     Collective over PetscDrawLG
 
     Options Database:
-.
 
     Level: intermediate
 

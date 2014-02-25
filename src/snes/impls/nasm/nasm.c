@@ -723,6 +723,7 @@ PetscErrorCode SNESSolve_NASM(SNES snes)
   SNES_NASM        *nasm = (SNES_NASM*)snes->data;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   X = snes->vec_sol;
   Y = snes->vec_sol_update;
   F = snes->vec_func;

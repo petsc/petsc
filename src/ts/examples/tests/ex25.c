@@ -21,6 +21,7 @@ static const char help[] = "Call PetscInitialize multiple times.\n";
    v(0,t) = v(1,t) = 3
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 
@@ -74,7 +75,7 @@ int Brusselator(int argc,char **argv,PetscInt cycle)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-11,2,2,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-11,2,2,NULL,&da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA;
@@ -143,7 +144,7 @@ int Brusselator(int argc,char **argv,PetscInt cycle)
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
   ierr = VecMin(X,NULL,&xmin);CHKERRQ(ierr);
   ierr = VecMax(X,NULL,&xmax);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %G after % 3D steps. Range [%6.4f,%6.4f]\n",TSConvergedReasons[reason],ftime,steps,(double)xmin,(double)xmax);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after % 3D steps. Range [%6.4f,%6.4f]\n",TSConvergedReasons[reason],(double)ftime,steps,(double)xmin,(double)xmax);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.

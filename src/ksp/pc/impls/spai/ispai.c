@@ -19,7 +19,7 @@
 */
 
 #include <petsc-private/pcimpl.h>        /*I "petscpc.h" I*/
-#include "petscspai.h"
+#include <../src/ksp/pc/impls/spai/petscspai.h>
 
 /*
     These are the SPAI include files
@@ -156,7 +156,7 @@ static PetscErrorCode PCView_SPAI(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"    SPAI preconditioner\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    epsilon %G\n",   ispai->epsilon);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    epsilon %g\n",   (double)ispai->epsilon);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    nbsteps %d\n",   ispai->nbsteps);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    max %d\n",       ispai->max);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    maxnew %d\n",    ispai->maxnew);CHKERRQ(ierr);

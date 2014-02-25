@@ -1,8 +1,8 @@
-#include "petscconf.h"
+#include <petscconf.h>
 PETSC_CUDA_EXTERN_C_BEGIN
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
 PETSC_CUDA_EXTERN_C_END
-#include "mpicuspmatimpl.h"
+#include <../src/mat/impls/aij/mpi/mpicusp/mpicuspmatimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJCUSP"
@@ -52,19 +52,21 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSP(Mat B,PetscInt d_nz,const P
 PetscErrorCode  MatGetVecs_MPIAIJCUSP(Mat mat,Vec *right,Vec *left)
 {
   PetscErrorCode ierr;
+  PetscInt rbs,cbs;
 
   PetscFunctionBegin;
+  ierr = MatGetBlockSizes(mat,&rbs,&cbs);CHKERRQ(ierr);
   if (right) {
     ierr = VecCreate(PetscObjectComm((PetscObject)mat),right);CHKERRQ(ierr);
     ierr = VecSetSizes(*right,mat->cmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(*right,mat->rmap->bs);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(*right,cbs);CHKERRQ(ierr);
     ierr = VecSetType(*right,VECCUSP);CHKERRQ(ierr);
     ierr = VecSetLayout(*right,mat->cmap);CHKERRQ(ierr);
   }
   if (left) {
     ierr = VecCreate(PetscObjectComm((PetscObject)mat),left);CHKERRQ(ierr);
     ierr = VecSetSizes(*left,mat->rmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(*left,mat->rmap->bs);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(*left,rbs);CHKERRQ(ierr);
     ierr = VecSetType(*left,VECCUSP);CHKERRQ(ierr);
     ierr = VecSetLayout(*left,mat->rmap);CHKERRQ(ierr);
   }

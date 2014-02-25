@@ -6,19 +6,20 @@
 #undef __FUNCT__
 #define __FUNCT__ "SNESApplyPC"
 /*@
-   SNESApplyPC - Calls the function that has been set with SNESSetFunction().
+   SNESApplyPC - Calls SNESSolve() on preconditioner for the SNES
 
    Collective on SNES
 
    Input Parameters:
 +  snes - the SNES context
--  x - input vector
+.  x - input vector
+-  f - optional; the function evaluation on x
 
    Output Parameter:
 .  y - function vector, as set by SNESSetFunction()
 
    Notes:
-   SNESComputeFunction() should be called on X before SNESApplyPC() is called, as it is
+   SNESComputeFunction() should be called on x before SNESApplyPC() is called, as it is
    with SNESComuteJacobian().
 
    Level: developer
@@ -27,7 +28,7 @@
 
 .seealso: SNESGetPC(),SNESSetPC(),SNESComputeFunction()
 @*/
-PetscErrorCode  SNESApplyPC(SNES snes,Vec x,Vec f,PetscReal *fnorm,Vec y)
+PetscErrorCode  SNESApplyPC(SNES snes,Vec x,Vec f,Vec y)
 {
   PetscErrorCode ierr;
 
@@ -47,10 +48,8 @@ PetscErrorCode  SNESApplyPC(SNES snes,Vec x,Vec f,PetscReal *fnorm,Vec y)
     ierr = SNESSolve(snes->pc,snes->vec_rhs,y);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,x,y,0);CHKERRQ(ierr);
     ierr = VecAYPX(y,-1.0,x);CHKERRQ(ierr);
-    ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -63,7 +62,7 @@ PetscErrorCode SNESComputeFunctionDefaultPC(SNES snes,Vec X,Vec F) {
 
   PetscFunctionBegin;
   if (snes->pc) {
-    ierr = SNESApplyPC(snes,X,NULL,NULL,F);CHKERRQ(ierr);
+    ierr = SNESApplyPC(snes,X,NULL,F);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
     if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
       ierr = SNESSetFunctionDomainError(snes);CHKERRQ(ierr);
@@ -122,13 +121,8 @@ PetscErrorCode SNESGetPCFunction(SNES snes,Vec F,PetscReal *fnorm)
       if (XPC) {
         ierr = SNESComputeFunction(snes->pc,XPC,F);CHKERRQ(ierr);
         if (fnorm) {ierr = VecNorm(F,NORM_2,fnorm);CHKERRQ(ierr);}
-      } else {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Preconditioner has no solution");
-      }
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Preconditioner has no solution");
     }
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No preconditioner set");
-  }
-
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No preconditioner set");
   PetscFunctionReturn(0);
 }

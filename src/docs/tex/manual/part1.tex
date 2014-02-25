@@ -317,7 +317,7 @@ parts of this example.
 The C/C++ include files for PETSc should be used via statements such as
 \begin{tabbing}
 {\footnotesize
-   \#include "petscksp.h"
+   \#include <petscksp.h>
 }
 \end{tabbing}
 where \trl{petscksp.h} is the include file for the linear solver library.
@@ -687,17 +687,19 @@ When citing PETSc in a publication please cite the following:
 \begin{tabbing}
 
 @Mi\=sc\{petsc-web-page,\\
-   \>Author = \= "Satish Balay and Jed Brown and Kris Buschelman and Victor Eijkhout \\
-\> \> and William~D. Gropp and Dinesh Kaushik and Matthew~G. Knepley and \\
-\> \> Lois Curfman McInnes and Barry~F. Smith and Hong Zhang",\\
+   \>Author = \= "Satish Balay and Mark~F. Adams and Jed Brown and Peter Brune \\
+\> \> and Kris Buschelman and Victor Eijkhout and William~D. Gropp \\
+\> \> and Dinesh Kaushik and Matthew~G. Knepley and Lois Curfman McInnes \\
+\> \> and Karl Rupp and Barry~F. Smith and Hong Zhang",\\
    \>Title  = "{PETS}c {W}eb page",\\
    \>Note   = "http://www.mcs.anl.gov/petsc",\\
    \>Year   = "2013"\}\\
 
 @TechReport\{petsc-user-ref,\\
-   \>Author      = "Satish Balay and Jed Brown and Kris Buschelman and Victor Eijkhout \\
-\> \> and William~D. Gropp and Dinesh Kaushik and Matthew~G. Knepley and \\
-\> \> Lois Curfman McInnes and Barry~F. Smith and Hong Zhang",\\
+   \>Author = \= "Satish Balay and Mark~F. Adams and Jed Brown and Peter Brune \\
+\> \> and Kris Buschelman and Victor Eijkhout and William~D. Gropp \\
+\> \> and Dinesh Kaushik and Matthew~G. Knepley and Lois Curfman McInnes \\
+\> \> and Karl Rupp and Barry~F. Smith and Hong Zhang",\\
    \>Title       = "PETSc Users Manual",\\
    \>Number      = "ANL-95/11 - Revision 3.4",\\
    \>Institution = "Argonne National Laboratory",\\
