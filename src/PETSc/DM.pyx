@@ -280,6 +280,12 @@ cdef class DM(Object):
         PetscINCREF(dsf.obj)
         return dsf
 
+    def setShellGlobalVector(self, Vec gv not None):
+        CHKERR( DMShellSetGlobalVector(self.dm, gv.vec) )
+
+    def setShellLocalVector(self, Vec lv not None):
+        CHKERR( DMShellSetLocalVector(self.dm, lv.vec) )
+
 # --------------------------------------------------------------------
 
 del DMType
