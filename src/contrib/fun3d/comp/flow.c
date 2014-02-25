@@ -31,7 +31,7 @@ typedef struct {                               /*============================*/
   PetscBool PreLoading;
 } AppCtx;                                      /*============================*/
 
-PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,MatStructure*,void*),
+PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*),
     FormFunction(SNES,Vec,Vec,void*),
     FormInitialGuess(SNES, GRID*),
     Monitor(SNES,PetscInt,double,void*),
@@ -431,13 +431,12 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 /*---------------------------------------------------------------------*/
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 
-int FormJacobian(SNES snes, Vec x, Mat Jac, Mat B,MatStructure *flag, void *dummy)
+int FormJacobian(SNES snes, Vec x, Mat Jac, Mat jac,void *dummy)
 /*---------------------------------------------------------------------*/
 {
   AppCtx         *user  = (AppCtx*) dummy;
   GRID           *grid  = user->grid;
   TstepCtx       *tsCtx = user->tsCtx;
-  Mat            jac    = *B;
   Vec            localX = grid->qnodeLoc;
   PetscScalar    *qnode;
   PetscErrorCode ierr;
@@ -464,7 +463,6 @@ int FormJacobian(SNES snes, Vec x, Mat Jac, Mat B,MatStructure *flag, void *dumm
   ierr  = VecRestoreArray(localX,&qnode);CHKERRQ(ierr);
   ierr  = MatAssemblyBegin(Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr  = MatAssemblyEnd(Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  *flag = SAME_NONZERO_PATTERN;
   return 0;
 }
 
@@ -738,7 +736,7 @@ int GetLocalOrdering(GRID *grid)
   PetscInt         nsnodeLoc, nvnodeLoc, nfnodeLoc;
   PetscInt         nnbound, nvbound, nfbound;
   PetscInt         bs = 5;
-  PetscInt         fdes;
+  PetscInt         fdes = 0;
   off_t       currentPos  = 0, newPos = 0;
   PetscInt         grid_param  = 13;
   PetscInt         cross_edges = 0;
@@ -948,7 +946,7 @@ int GetLocalOrdering(GRID *grid)
   if (!flg) {
     ierr = PetscSortIntWithPermutation(nedgeLoc,tmp,eperm);CHKERRQ(ierr);
   }
-  ierr = PetscMallocValidate(__LINE__,__FUNCT__,__FILE__,0);CHKERRQ(ierr);
+  ierr = PetscMallocValidate(__LINE__,__FUNCT__,__FILE__);CHKERRQ(ierr);
   k = 0;
   for (i = 0; i < nedgeLoc; i++) {
 #if defined(INTERLACING)

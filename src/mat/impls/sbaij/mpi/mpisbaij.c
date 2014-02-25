@@ -595,7 +595,7 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   baij->rowvalues = 0;
   {
     PetscObjectState state = baij->A->nonzerostate + baij->B->nonzerostate;
-    ierr = MPI_Allreduce(&state,&mat->nonzerostate,1,MPIU_INT64,MPIU_SUM,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&state,&mat->nonzerostate,1,MPIU_INT64,MPI_SUM,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

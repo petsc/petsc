@@ -339,7 +339,6 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
   PetscErrorCode     ierr;
   PetscInt           maxits,i,lits;
   PetscBool          lssucceed;
-  MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal          fnorm,gnorm,xnorm=0,ynorm;
   Vec                Y,X,F;
   KSPConvergedReason kspreason;
@@ -495,7 +494,6 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     ierr = ISEqual(vi->IS_inact_prev,IS_inact,&isequal);CHKERRQ(ierr);
     if (!isequal) {
       ierr = SNESVIResetPCandKSP(snes,jac_inact_inact,prejac_inact_inact);CHKERRQ(ierr);
-      flg  = DIFFERENT_NONZERO_PATTERN;
     }
 
     /*      ierr = ISView(IS_inact,0);CHKERRQ(ierr); */

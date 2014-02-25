@@ -724,7 +724,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
 
   {
     PetscObjectState state = aij->A->nonzerostate + aij->B->nonzerostate;
-    ierr = MPI_Allreduce(&state,&mat->nonzerostate,1,MPIU_INT64,MPIU_SUM,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&state,&mat->nonzerostate,1,MPIU_INT64,MPI_SUM,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -815,7 +815,7 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
   ierr = PetscFree(lrows);CHKERRQ(ierr);
   {
     PetscObjectState state = mat->A->nonzerostate + mat->B->nonzerostate;
-    ierr = MPI_Allreduce(&state,&A->nonzerostate,1,MPIU_INT64,MPIU_SUM,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&state,&A->nonzerostate,1,MPIU_INT64,MPI_SUM,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
