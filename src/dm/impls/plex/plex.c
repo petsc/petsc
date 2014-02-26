@@ -2323,8 +2323,13 @@ PetscErrorCode DMPlexOrient(DM dm)
         ierr = DMPlexGetConeSize(dm, support[0], &coneSize);CHKERRQ(ierr);
         ierr = DMPlexGetConeOrientation(dm, support[0], &ornt);CHKERRQ(ierr);
         for (c = 0; c < coneSize; ++c) if (cone[c] == face) break;
-        if (PetscBTLookup(flippedCells, support[0]-cStart)) rornt[face] = ornt[c] < 0 ? -1 :  1;
-        else                                                rornt[face] = ornt[c] < 0 ?  1 : -1;
+        if (dim == 1) {
+          /* Use cone position instead, shifted to -1 or 1 */
+          rornt[face] = c*2-1;
+        } else {
+          if (PetscBTLookup(flippedCells, support[0]-cStart)) rornt[face] = ornt[c] < 0 ? -1 :  1;
+          else                                                rornt[face] = ornt[c] < 0 ?  1 : -1;
+        }
       }
       /* Mark each edge with match or nomatch */
       ierr = PetscSFBcastBegin(sf, MPI_INT, rornt, lornt);CHKERRQ(ierr);
