@@ -38,11 +38,6 @@ F*/
 #include <petscdmplex.h>
 #include <petscsf.h>
 #include <petscblaslapack.h>
-#if defined(PETSC_HAVE_EXODUSII)
-#include <exodusII.h>
-#else
-#error This example requires ExodusII support. Reconfigure using --download-exodusii
-#endif
 
 #define DIM 2                   /* Geometric dimension */
 #define ALEN(a) (sizeof(a)/sizeof((a)[0]))
@@ -2186,8 +2181,6 @@ int main(int argc, char **argv)
   DM                dm, dmDist;
   PetscReal         ftime,cfl,dt;
   PetscInt          dim, overlap, nsteps;
-  int               CPU_word_size = 0, IO_word_size = 0, exoid;
-  float             version;
   TS                ts;
   TSConvergedReason reason;
   Vec               X;
@@ -2260,12 +2253,7 @@ int main(int argc, char **argv)
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  if (!rank) {
-    exoid = ex_open(filename, EX_READ, &CPU_word_size, &IO_word_size, &version);
-    if (exoid <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ex_open(\"%s\",...) did not return a valid file ID",filename);
-  } else exoid = -1;                 /* Not used */
-  ierr = DMPlexCreateExodus(comm, exoid, PETSC_TRUE, &dm);CHKERRQ(ierr);
-  if (!rank) {ierr = ex_close(exoid);CHKERRQ(ierr);}
+  ierr = DMPlexCreateExodusFromFile(comm, filename, PETSC_TRUE, &dm);CHKERRQ(ierr);
   /* Distribute mesh */
   ierr = DMPlexDistribute(dm, "chaco", overlap, NULL, &dmDist);CHKERRQ(ierr);
   if (dmDist) {
