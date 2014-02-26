@@ -1947,6 +1947,27 @@ PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt *rto,PetscInt *rfrom)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "VecScatterGetTypes_Private"
+/*
+ VecScatterGetTypes_Private - Returns the scatter types.
+
+ scatter - The scatter.
+ from    - Upon exit this contains the type of the from scatter.
+ to      - Upon exit this contains the type of the to scatter.
+*/
+PetscErrorCode VecScatterGetTypes_Private(VecScatter scatter,VecScatterType *from,VecScatterType *to)
+{
+  VecScatter_Common* fromdata = (VecScatter_Common*)scatter->fromdata;
+  VecScatter_Common* todata   = (VecScatter_Common*)scatter->todata;
+
+  PetscFunctionBegin;
+  *from = fromdata->type;
+  *to = todata->type;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "VecScatterIsSequential_Private"
 /*
   VecScatterIsSequential_Private - Returns true if the scatter is sequential.
@@ -1955,7 +1976,7 @@ PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt *rto,PetscInt *rfrom)
   flag    - Upon exit flag is true if the scatter is of type VecScatter_Seq_General 
             or VecScatter_Seq_Stride; otherwise flag is false.
 */
-PetscErrorCode  VecScatterIsSequential_Private(VecScatter_Common *scatter,PetscBool *flag)
+PetscErrorCode VecScatterIsSequential_Private(VecScatter_Common *scatter,PetscBool *flag)
 {
   VecScatterType scatterType = scatter->type;
 
