@@ -420,6 +420,15 @@ mergegcov:
 # usage make allrcslabel NEW_RCS_LABEL=v_2_0_28
 allrcslabel:
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} NEW_RCS_LABEL=${NEW_RCS_LABEL} ACTION=rcslabel  alltree
+
+########################
+#
+# Create the include dependency graph (requires graphviz to be available)
+#
+includegraph:
+	-@${PETSC_DIR}/src/contrib/style/include-graph.sh includegraph.pdf
+	-@echo Include dependency graph written to includegraph.pdf
+
 #
 # -------------------------------------------------------------------------------
 #
