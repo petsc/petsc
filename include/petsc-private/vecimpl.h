@@ -264,6 +264,7 @@ typedef struct {
 } VecScatter_MPI_General;
 
 
+PETSC_INTERN PetscErrorCode VecScatterGetTypes_Private(VecScatter,VecScatterType*,VecScatterType*);
 PETSC_INTERN PetscErrorCode VecScatterIsSequential_Private(VecScatter_Common*,PetscBool*);
 
 typedef struct _VecScatterOps *VecScatterOps;
