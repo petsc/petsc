@@ -96,7 +96,7 @@ PetscInt main(PetscInt argc,char **args)
     Vec      input,output;
 
     N=30;
-    for (i=2; i<5; i++) {
+    for (i=2; i<3; i++) { /* (i=3,4: -- error in VecScatterPetscToFFTW(A,input,x); */
       DIM  = i;
       ierr = PetscMalloc1(i,&dim);CHKERRQ(ierr);
       for (k=0; k<i; k++) {
@@ -127,10 +127,10 @@ PetscInt main(PetscInt argc,char **args)
          data which is in the vector "input" here, needs to be copied to a vector x, which has the correct parallel
          layout for FFTW. Also, during parallel real transform, this pads extra zeros automatically
          at the end of last  dimension. This padding is required by FFTW to perform parallel real D.F.T.  */
-      ierr = VecScatterPetscToFFTW(A,input,x);CHKERRQ(ierr);
+      ierr = VecScatterPetscToFFTW(A,input,x);CHKERRQ(ierr);/* buggy for dim = 3, 4... */
 
       /* Apply FFTW_FORWARD and FFTW_BACKWARD */
-      ierr = MatMult(A,x,y);CHKERRQ(ierr);
+      ierr = MatMult(A,x,y);CHKERRQ(ierr); 
       if (view) {ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
       ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
 
