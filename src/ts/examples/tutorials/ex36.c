@@ -46,8 +46,7 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec F,void *ctx
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetArray(Ydot,&ydot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  /*printf("%g\n",(2* PetscSinReal(200*PETSC_PI*t))/5.);*/
-  /*printf("%g\n",t);*/
+
   f[0]=((2.* PetscSinReal(200.*PETSC_PI*t))/5. - y[0] + (-ydot[0] + ydot[1])/1000.)/1000.;
   f[1]=0.0006666666666666666 + (1. -  PetscExpReal((500.*(y[1] - y[2]))/13.))/1.e8 - y[1]/4500. + ydot[0]/1.e6 - ydot[1]/1.e6;
   f[2]=(-1. +  PetscExpReal((500.*(y[1] - y[2]))/13.))/1.e6 - y[2]/9000. - ydot[2]/500000.;
@@ -117,9 +116,8 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       n = 5;
-  PetscScalar    *y,t;
-  int i;
-
+  PetscScalar    *y;
+ 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -127,11 +125,6 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
-  gfilepointer_data=fopen("amplifier_dae_implicit_out.bin", "wb");
-  if (gfilepointer_data == NULL) {
-    perror("Failed to open file \"amplifier_dae_implicit_out.bin\"");
-    return -1;
-  }
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -178,23 +171,7 @@ int main(int argc,char **argv)
      Do Time stepping
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,Y);CHKERRQ(ierr);
-
   
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      IO for testing
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-
-  for(i=0;i<n;i++){
-    printf("Y[%d]=%g\n",i,y[i]);
-  }
-
-  ierr = TSGetTime(ts,&t); CHKERRQ(ierr);
-  fwrite(&t,sizeof(t),1,gfilepointer_data);
-  fwrite(y,sizeof(y[0]),n,gfilepointer_data);
-  ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

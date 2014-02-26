@@ -3308,6 +3308,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   }
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ts->vec_sol,NULL,"-ts_view_solution");CHKERRQ(ierr);
   ierr = PetscObjectSAWsBlock((PetscObject)ts);CHKERRQ(ierr);
   if (ts->adjoint_solve) {
     ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
