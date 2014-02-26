@@ -118,7 +118,7 @@ int main(int argc,char **argv)
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,-21,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,(DM)da);CHKERRQ(ierr);
 
-  ierr = SNESSetGS(snes,NonlinearGS,&user);CHKERRQ(ierr);
+  ierr = SNESSetNGS(snes,NonlinearGS,&user);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
@@ -846,8 +846,8 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X,Vec B,void *ptr)
   PetscReal      fnorm0,fnorm,ynorm,xnorm;
 
   PetscFunctionBegin;
-  ierr    = SNESGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
-  ierr    = SNESGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
+  ierr    = SNESNGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
+  ierr    = SNESNGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
 
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&Xl);CHKERRQ(ierr);

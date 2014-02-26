@@ -108,7 +108,7 @@ int main(int argc,char **argv)
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-  ierr = SNESSetGS(snes, NonlinearGS, NULL);CHKERRQ(ierr);
+  ierr = SNESSetNGS(snes, NonlinearGS, NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
@@ -502,8 +502,8 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
 
   PetscFunctionBeginUser;
   tot_its = 0;
-  ierr    = SNESGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
-  ierr    = SNESGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
+  ierr    = SNESNGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
+  ierr    = SNESNGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
   ierr    = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr    = DMGetApplicationContext(da,(void**)&user);CHKERRQ(ierr);
 

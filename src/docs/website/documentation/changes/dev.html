@@ -157,6 +157,7 @@
       <ul>
         <li><tt>SNESSetInitialFunctionNorm()</tt> is removed as it's not necessary given that the norm is cached on the Vec.  Use only <tt>SNESSetInitialFunction()</tt>.</li>
         <li><tt>SNESSkipConverged()</tt> renamed to <tt>SNESConvergedSkip()</tt>.</li>
+        <li><tt>GS</tt> and _gs used for nonlinear Gauss-Sidel changed to <tt>NGS</tt> and _ngs to match all the other nonlinear solver names.</li>
       </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>

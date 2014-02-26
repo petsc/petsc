@@ -219,7 +219,7 @@ int main(int argc,char **argv)
      Customize nonlinear solver; set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = SNESSetGS(snes,NonlinearGS,&user);CHKERRQ(ierr);
+  ierr = SNESSetNGS(snes,NonlinearGS,&user);CHKERRQ(ierr);
   ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
   /* Set up the precheck context if requested */
   if (use_precheck == 1) {      /* Use the precheck routines in this file */
@@ -811,8 +811,8 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
   hydhx  = hy/hx;
 
   tot_its = 0;
-  ierr    = SNESGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
-  ierr    = SNESGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
+  ierr    = SNESNGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
+  ierr    = SNESNGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
   ierr    = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   if (B) {
     ierr = DMGetLocalVector(da,&localB);CHKERRQ(ierr);

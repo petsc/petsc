@@ -37,7 +37,7 @@ typedef const char* SNESType;
 #define SNESNGMRES       "ngmres"
 #define SNESQN           "qn"
 #define SNESSHELL        "shell"
-#define SNESGS           "gs"
+#define SNESNGS          "ngs"
 #define SNESNCG          "ncg"
 #define SNESFAS          "fas"
 #define SNESMS           "ms"
@@ -445,16 +445,16 @@ PETSC_EXTERN const char *const*const SNESFunctionTypes;
 PETSC_EXTERN PetscErrorCode SNESSetFunctionType(SNES,SNESFunctionType);
 PETSC_EXTERN PetscErrorCode SNESGetFunctionType(SNES,SNESFunctionType*);
 
-PETSC_EXTERN PetscErrorCode SNESSetGS(SNES,PetscErrorCode (*SNESGSFunction)(SNES,Vec,Vec,void*),void*);
-PETSC_EXTERN PetscErrorCode SNESGetGS(SNES,PetscErrorCode (**SNESGSFunction)(SNES,Vec,Vec,void*),void**);
-PETSC_EXTERN PetscErrorCode SNESSetUseGS(SNES,PetscBool);
-PETSC_EXTERN PetscErrorCode SNESGetUseGS(SNES,PetscBool *);
-PETSC_EXTERN PetscErrorCode SNESComputeGS(SNES,Vec,Vec);
+PETSC_EXTERN PetscErrorCode SNESSetNGS(SNES,PetscErrorCode (*)(SNES,Vec,Vec,void*),void*);
+PETSC_EXTERN PetscErrorCode SNESGetNGS(SNES,PetscErrorCode (**)(SNES,Vec,Vec,void*),void**);
+PETSC_EXTERN PetscErrorCode SNESSetUseNGS(SNES,PetscBool);
+PETSC_EXTERN PetscErrorCode SNESGetUseNGS(SNES,PetscBool *);
+PETSC_EXTERN PetscErrorCode SNESComputeNGS(SNES,Vec,Vec);
 
-PETSC_EXTERN PetscErrorCode SNESGSSetSweeps(SNES,PetscInt);
-PETSC_EXTERN PetscErrorCode SNESGSGetSweeps(SNES,PetscInt *);
-PETSC_EXTERN PetscErrorCode SNESGSSetTolerances(SNES,PetscReal,PetscReal,PetscReal,PetscInt);
-PETSC_EXTERN PetscErrorCode SNESGSGetTolerances(SNES,PetscReal*,PetscReal*,PetscReal*,PetscInt*);
+PETSC_EXTERN PetscErrorCode SNESNGSSetSweeps(SNES,PetscInt);
+PETSC_EXTERN PetscErrorCode SNESNGSGetSweeps(SNES,PetscInt *);
+PETSC_EXTERN PetscErrorCode SNESNGSSetTolerances(SNES,PetscReal,PetscReal,PetscReal,PetscInt);
+PETSC_EXTERN PetscErrorCode SNESNGSGetTolerances(SNES,PetscReal*,PetscReal*,PetscReal*,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode SNESUpdateCheckJacobian(SNES,PetscInt);
 
@@ -597,13 +597,13 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*
 
 PETSC_EXTERN PetscErrorCode SNESSetDM(SNES,DM);
 PETSC_EXTERN PetscErrorCode SNESGetDM(SNES,DM*);
-PETSC_EXTERN PetscErrorCode SNESSetPC(SNES,SNES);
-PETSC_EXTERN PetscErrorCode SNESGetPC(SNES,SNES*);
-PETSC_EXTERN PetscErrorCode SNESApplyPC(SNES,Vec,Vec,Vec);
-PETSC_EXTERN PetscErrorCode SNESGetPCFunction(SNES,Vec,PetscReal*);
-PETSC_EXTERN PetscErrorCode SNESComputeFunctionDefaultPC(SNES,Vec,Vec);
-PETSC_EXTERN PetscErrorCode SNESSetPCSide(SNES,PCSide);
-PETSC_EXTERN PetscErrorCode SNESGetPCSide(SNES,PCSide*);
+PETSC_EXTERN PetscErrorCode SNESSetNPC(SNES,SNES);
+PETSC_EXTERN PetscErrorCode SNESGetNPC(SNES,SNES*);
+PETSC_EXTERN PetscErrorCode SNESApplyNPC(SNES,Vec,Vec,Vec);
+PETSC_EXTERN PetscErrorCode SNESGetNPCFunction(SNES,Vec,PetscReal*);
+PETSC_EXTERN PetscErrorCode SNESComputeFunctionDefaultNPC(SNES,Vec,Vec);
+PETSC_EXTERN PetscErrorCode SNESSetNPCSide(SNES,PCSide);
+PETSC_EXTERN PetscErrorCode SNESGetNPCSide(SNES,PCSide*);
 PETSC_EXTERN PetscErrorCode SNESSetLineSearch(SNES,SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESGetLineSearch(SNES,SNESLineSearch*);
 PETSC_EXTERN PetscErrorCode SNESRestrictHookAdd(SNES,PetscErrorCode (*)(SNES,SNES,void*),void*);
@@ -615,8 +615,8 @@ PETSC_DEPRECATED("Use SNESSetLineSearch()") PETSC_STATIC_INLINE PetscErrorCode S
 PETSC_EXTERN PetscErrorCode SNESSetUpMatrices(SNES);
 PETSC_EXTERN PetscErrorCode DMSNESSetFunction(DM,PetscErrorCode(*)(SNES,Vec,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMSNESGetFunction(DM,PetscErrorCode(**)(SNES,Vec,Vec,void*),void**);
-PETSC_EXTERN PetscErrorCode DMSNESSetGS(DM,PetscErrorCode(*)(SNES,Vec,Vec,void*),void*);
-PETSC_EXTERN PetscErrorCode DMSNESGetGS(DM,PetscErrorCode(**)(SNES,Vec,Vec,void*),void**);
+PETSC_EXTERN PetscErrorCode DMSNESSetNGS(DM,PetscErrorCode(*)(SNES,Vec,Vec,void*),void*);
+PETSC_EXTERN PetscErrorCode DMSNESGetNGS(DM,PetscErrorCode(**)(SNES,Vec,Vec,void*),void**);
 PETSC_EXTERN PetscErrorCode DMSNESSetJacobian(DM,PetscErrorCode(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void*);
 PETSC_EXTERN PetscErrorCode DMSNESGetJacobian(DM,PetscErrorCode(**)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void**);
 PETSC_EXTERN PetscErrorCode DMSNESSetPicard(DM,PetscErrorCode(*)(SNES,Vec,Vec,void*),PetscErrorCode(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void*);

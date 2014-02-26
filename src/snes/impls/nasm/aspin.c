@@ -22,7 +22,7 @@ PetscErrorCode MatMultASPIN(Mat m,Vec X,Vec Y)
   PetscFunctionBegin;
   ierr = MatShellGetContext(m,&ctx);CHKERRQ(ierr);
   snes = (SNES)ctx;
-  ierr = SNESGetPC(snes,&npc);CHKERRQ(ierr);
+  ierr = SNESGetNPC(snes,&npc);CHKERRQ(ierr);
   ierr = SNESGetFunction(npc,&W,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)npc,SNESNASM,&match);CHKERRQ(ierr);
   if (!match) {
@@ -75,7 +75,7 @@ PetscErrorCode MatMultASPIN(Mat m,Vec X,Vec Y)
 
    Level: intermediate
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNASM, SNESGetPC(), SNESGetPCSide()
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNASM, SNESGetNPC(), SNESGetNPCSide()
 
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES snes)
@@ -93,9 +93,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES snes)
   PetscFunctionBegin;
   /* set up the solver */
   ierr = SNESSetType(snes,SNESNEWTONLS);CHKERRQ(ierr);
-  ierr = SNESSetPCSide(snes,PC_LEFT);CHKERRQ(ierr);
+  ierr = SNESSetNPCSide(snes,PC_LEFT);CHKERRQ(ierr);
   ierr = SNESSetFunctionType(snes,SNES_FUNCTION_PRECONDITIONED);CHKERRQ(ierr);
-  ierr = SNESGetPC(snes,&npc);CHKERRQ(ierr);
+  ierr = SNESGetNPC(snes,&npc);CHKERRQ(ierr);
   ierr = SNESSetType(npc,SNESNASM);CHKERRQ(ierr);
   ierr = SNESNASMSetComputeFinalJacobian(npc,PETSC_TRUE);CHKERRQ(ierr);
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
