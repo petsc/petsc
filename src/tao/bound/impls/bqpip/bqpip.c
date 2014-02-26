@@ -191,7 +191,6 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
   PetscReal          dstep,pstep,step=0;
   PetscReal          gap[4];
   TaoConvergedReason reason;
-  MatStructure       matflag;
 
   PetscFunctionBegin;
   qp->dobj           = 0.0;
@@ -213,7 +212,7 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
   ierr = VecPointwiseMin(qp->XU,qp->XU,tao->XU);CHKERRQ(ierr);
 
   ierr = TaoComputeObjectiveAndGradient(tao,tao->solution,&qp->c,qp->C0);CHKERRQ(ierr);
-  ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre,&matflag);CHKERRQ(ierr);
+  ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
   ierr = MatMult(tao->hessian, tao->solution, qp->Work);CHKERRQ(ierr);
   ierr = VecDot(tao->solution, qp->Work, &d1);CHKERRQ(ierr);
   ierr = VecAXPY(qp->C0, -1.0, qp->Work);CHKERRQ(ierr);

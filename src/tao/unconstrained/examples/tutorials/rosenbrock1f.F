@@ -224,7 +224,7 @@
 !  Note: Providing the Hessian may not be necessary.  Only some solvers
 !  require this matrix.
 
-      subroutine FormHessian(tao,X,H,PrecH,flag,dummy,ierr)
+      subroutine FormHessian(tao,X,H,PrecH,dummy,ierr)
       implicit none
 
 #include "rosenbrock1f.h"
@@ -233,7 +233,6 @@
       Tao        tao
       Vec              X
       Mat              H, PrecH
-      MatStructure     flag
       PetscErrorCode   ierr
       PetscInt         dummy
 
@@ -301,8 +300,6 @@
 !     is the same when it actually is not, the new preconditioner
 !     will not function correctly.  Thus, use this optimization
 !     feature with caution!
-
-      flag = SAME_NONZERO_PATTERN
 
       return
       end

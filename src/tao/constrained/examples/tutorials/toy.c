@@ -43,11 +43,11 @@ typedef struct {
 PetscErrorCode InitializeProblem(AppCtx *);
 PetscErrorCode DestroyProblem(AppCtx *);
 PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal *,Vec,void *);
-PetscErrorCode FormHessian(Tao,Vec,Mat,Mat, MatStructure *,void*);
+PetscErrorCode FormHessian(Tao,Vec,Mat,Mat, void*);
 PetscErrorCode FormInequalityConstraints(Tao,Vec,Vec,void*);
 PetscErrorCode FormEqualityConstraints(Tao,Vec,Vec,void*);
-PetscErrorCode FormInequalityJacobian(Tao,Vec,Mat,Mat, MatStructure *,void*);
-PetscErrorCode FormEqualityJacobian(Tao,Vec,Mat,Mat, MatStructure *,void*);
+PetscErrorCode FormInequalityJacobian(Tao,Vec,Mat,Mat, void*);
+PetscErrorCode FormEqualityJacobian(Tao,Vec,Mat,Mat, void*);
 
 
 
@@ -181,7 +181,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *c
 
 #undef __FUNCT__
 #define __FUNCT__ "FormHessian"
-PetscErrorCode FormHessian(Tao tao, Vec x, Mat H, Mat Hpre, MatStructure *ms, void *ctx)
+PetscErrorCode FormHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx)
 {
   Vec               DE,DI;
   const PetscScalar *de, *di;
@@ -204,7 +204,6 @@ PetscErrorCode FormHessian(Tao tao, Vec x, Mat H, Mat Hpre, MatStructure *ms, vo
 
   ierr = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  *ms = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -244,7 +243,7 @@ PetscErrorCode FormEqualityConstraints(Tao tao, Vec X, Vec CE,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormInequalityJacobian"
-PetscErrorCode FormInequalityJacobian(Tao tao, Vec X, Mat JI, Mat JIpre,  MatStructure *ms, void *ctx)
+PetscErrorCode FormInequalityJacobian(Tao tao, Vec X, Mat JI, Mat JIpre,  void *ctx)
 {
   PetscInt          rows[2];
   PetscInt          cols[2];
@@ -268,7 +267,7 @@ PetscErrorCode FormInequalityJacobian(Tao tao, Vec X, Mat JI, Mat JIpre,  MatStr
 
 #undef __FUNCT__
 #define __FUNCT__ "FormEqualityJacobian"
-PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat JE, Mat JEpre, MatStructure *ms, void *ctx)
+PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat JE, Mat JEpre, void *ctx)
 {
   PetscInt          rows[2];
   PetscScalar       vals[2];

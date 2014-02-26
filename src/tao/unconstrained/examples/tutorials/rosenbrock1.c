@@ -33,7 +33,7 @@ typedef struct {
 
 /* -------------- User-defined routines ---------- */
 PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
-PetscErrorCode FormHessian(Tao,Vec,Mat,Mat,MatStructure*,void*);
+PetscErrorCode FormHessian(Tao,Vec,Mat,Mat,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -164,7 +164,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f, Vec G,void *ptr)
    Note:  Providing the Hessian may not be necessary.  Only some solvers
    require this matrix.
 */
-PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, MatStructure *flag,void *ptr)
+PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;
   PetscErrorCode ierr;
@@ -193,8 +193,6 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, MatStructure *flag,voi
   /* Assemble matrix */
   ierr = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  *flag=SAME_NONZERO_PATTERN;
-
   ierr = PetscLogFlops(nn*9);CHKERRQ(ierr);
   return 0;
 }

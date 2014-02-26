@@ -239,14 +239,13 @@
       end subroutine FormFunctionGradient
 
 
-      subroutine FormHessian(tao,X,H,Hpre,flag,dummy,ierr)
+      subroutine FormHessian(tao,X,H,Hpre,dummy,ierr)
       implicit none
 #include "toyf.h"
 
       Tao        tao
       Vec              X
       Mat              H, Hpre
-      MatStructure     flag
       PetscErrorCode   ierr
       PetscInt         dummy
 
@@ -339,14 +338,13 @@
       end subroutine FormEqualityConstraints
 
 
-      subroutine FormInequalityJacobian(tao,X,JI,JIpre,flag,dummy,ierr)
+      subroutine FormInequalityJacobian(tao,X,JI,JIpre,dummy,ierr)
       implicit none
 #include "toyf.h"
 
       Tao       tao
       Vec             X
       Mat             JI,JIpre
-      MatStructure    flag
       PetscInt        dummy
       PetscErrorCode  ierr
 
@@ -377,14 +375,13 @@
       ierr = 0
       end subroutine FormInequalityJacobian
 
-      subroutine FormEqualityJacobian(tao,X,JE,JEpre,flag,dummy,ierr)
+      subroutine FormEqualityJacobian(tao,X,JE,JEpre,dummy,ierr)
       implicit none
 #include "toyf.h"
 
       Tao       tao
       Vec             X
       Mat             JE,JEpre
-      MatStructure    flag
       PetscInt        dummy
       PetscErrorCode  ierr
 

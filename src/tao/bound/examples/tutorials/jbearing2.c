@@ -55,7 +55,7 @@ typedef struct {
 /* User-defined routines */
 static PetscReal p(PetscReal xi, PetscReal ecc);
 static PetscErrorCode FormFunctionGradient(Tao, Vec, PetscReal *,Vec,void *);
-static PetscErrorCode FormHessian(Tao,Vec,Mat, Mat, MatStructure *, void *);
+static PetscErrorCode FormHessian(Tao,Vec,Mat, Mat, void *);
 static PetscErrorCode ComputeB(AppCtx*);
 static PetscErrorCode Monitor(Tao, void*);
 static PetscErrorCode ConvergenceTest(Tao, void*);
@@ -349,7 +349,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *p
    Notice that the objective function in this problem is quadratic (therefore a constant
    hessian).  If using a nonquadratic solver, then you might want to reconsider this function
 */
-PetscErrorCode FormHessian(Tao tao,Vec X,Mat hes, Mat Hpre, MatStructure *flg, void *ptr)
+PetscErrorCode FormHessian(Tao tao,Vec X,Mat hes, Mat Hpre, void *ptr)
 {
   AppCtx*        user=(AppCtx*)ptr;
   PetscErrorCode ierr;
@@ -370,7 +370,6 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat hes, Mat Hpre, MatStructure *flg, v
   hxhx=one/(hx*hx);
   hyhy=one/(hy*hy);
 
-  *flg=SAME_NONZERO_PATTERN;
   /*
     Get local grid boundaries
   */

@@ -76,7 +76,6 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
   PC                 pc;
   KSPConvergedReason ksp_reason;
   TaoConvergedReason reason;
-  MatStructure       matflag;
   PetscReal          fmin, ftrial, prered, actred, kappa, sigma, beta;
   PetscReal          tau, tau_1, tau_2, tau_max, tau_min, max_radius;
   PetscReal          f, gnorm;
@@ -199,7 +198,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
       sigma = 0.0;
 
       if (needH) {
-        ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre,&matflag);CHKERRQ(ierr);
+        ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
         needH = 0;
       }
 
@@ -339,7 +338,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
 
     /* Compute the Hessian */
     if (needH) {
-      ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre,&matflag);CHKERRQ(ierr);
+      ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
       needH = 0;
     }
 

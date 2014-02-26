@@ -304,7 +304,7 @@ One can set the Hessian evaluation routine by calling the \sindex{Hessian}
 \begin{verbatim}
    TaoSetHessianRoutine(Tao,Mat H, Mat Hpre,
                      PetscErrorCode (*)(Tao,Vec,Mat,Mat,
-                     MatStructure*,void*), void *);
+                     void*), void *);
 \end{verbatim}
 routine. 
 The first argument is the TAO Solver object. The second and third arguments
@@ -622,7 +622,7 @@ with TAO by using the
 \begin{verbatim}
    TaoSetJacobianStateRoutine(Tao,Mat,Mat,Mat,
                      PetscErrorCode (*)(Tao,Vec,Mat,Mat,
-                     MatStructure*,void*), void*);
+                     void*), void*);
    TaoSetJacobianDesignRoutine(Tao,Mat,
                      PetscErrorCode (*)(Tao,Vec,Mat*,void*), 
                      void*);
@@ -678,7 +678,7 @@ This function can be registered with TAO by using the function
 \begin{verbatim}
    TaoSetJacobianRoutine(Tao,Mat J, Mat Jpre,
                      PetscErrorCode (*)(Tao,Vec,Mat,Mat,
-                     MatStructure*,void*), void *);
+                     void*), void *);
 \end{verbatim}
 The first argument is the TAO solver object, the second and third arguments
 are the Mat object where the Jacobian will be stored and the Mat object
@@ -750,7 +750,7 @@ This routine should be specified to TAO by using the
 \begin{verbatim}
    TaoSetJacobianRoutine(Tao,Mat J, Mat Jpre,
                      PetscErrorCode (*)(Tao,Vec,Mat,Mat, 
-                     MatStructure*,void*), void*);
+                     void*), void*);
 \end{verbatim}
 \noindent
 command.

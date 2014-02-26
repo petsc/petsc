@@ -85,7 +85,6 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
 
   PetscReal                    delta;
   PetscReal                    norm_d = 0.0;
-  MatStructure                 matflag;
   PetscErrorCode               ierr;
   PetscInt                     stepType;
   PetscInt                     iter = 0,its;
@@ -207,7 +206,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
       sigma = 0.0;
 
       if (needH) {
-        ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre,&matflag);CHKERRQ(ierr);
+        ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
         needH = 0;
       }
 
@@ -337,7 +336,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
 
     /* Compute the Hessian */
     if (needH) {
-      ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre,&matflag);CHKERRQ(ierr);
+      ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
       needH = 0;
     }
 

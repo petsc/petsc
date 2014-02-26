@@ -123,7 +123,7 @@ Chapter~\ref{chapter:tao_solver}.
         PetscErrorCode (*FormFGradient)(Tao,Vec,PetscReal*,Vec,void*), 
         void *user);
    TaoSetHessianRoutine(Tao tao, Mat H, Mat Hpre,
-        PetscErrorCode (*FormHessian)(Tao,Vec,Mat,Mat,MatStructure*,
+        PetscErrorCode (*FormHessian)(Tao,Vec,Mat,Mat,
         void*), void *user);
    TaoSolve(Tao tao);
    TaoDestroy(Tao tao);

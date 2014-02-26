@@ -94,7 +94,7 @@ static PetscErrorCode Tao_ASLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscRe
   ierr = VecFischer(X,tao->constraints,tao->XL,tao->XU,asls->ff);CHKERRQ(ierr);
   ierr = VecNorm(asls->ff,NORM_2,&asls->merit);CHKERRQ(ierr);
   *fcn = 0.5*asls->merit*asls->merit;
-  ierr = TaoComputeJacobian(tao,tao->solution,tao->jacobian,tao->jacobian_pre,&asls->matflag);CHKERRQ(ierr);
+  ierr = TaoComputeJacobian(tao,tao->solution,tao->jacobian,tao->jacobian_pre);CHKERRQ(ierr);
 
   ierr = D_Fischer(tao->jacobian, tao->solution, tao->constraints,tao->XL, tao->XU, asls->t1, asls->t2,asls->da, asls->db);CHKERRQ(ierr);
   ierr = VecPointwiseMult(asls->t1, asls->ff, asls->db);CHKERRQ(ierr);

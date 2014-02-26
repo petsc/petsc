@@ -56,11 +56,11 @@ typedef struct {
 PetscErrorCode InitializeProblem(AppCtx*);
 PetscErrorCode DestroyProblem(AppCtx *);
 PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal *,Vec,void *);
-PetscErrorCode FormHessian(Tao,Vec,Mat,Mat, MatStructure *,void*);
+PetscErrorCode FormHessian(Tao,Vec,Mat,Mat, void*);
 PetscErrorCode FormInequalityConstraints(Tao,Vec,Vec,void*);
 PetscErrorCode FormEqualityConstraints(Tao,Vec,Vec,void*);
-PetscErrorCode FormInequalityJacobian(Tao,Vec,Mat,Mat, MatStructure *,void*);
-PetscErrorCode FormEqualityJacobian(Tao,Vec,Mat,Mat, MatStructure *,void*);
+PetscErrorCode FormInequalityJacobian(Tao,Vec,Mat,Mat, void*);
+PetscErrorCode FormEqualityJacobian(Tao,Vec,Mat,Mat, void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -267,10 +267,9 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec x, PetscReal *f, Vec g, void *c
 
 #undef __FUNCT__
 #define __FUNCT__ "FormHessian"
-PetscErrorCode FormHessian(Tao tao, Vec x, Mat H, Mat Hpre, MatStructure *ms, void *ctx)
+PetscErrorCode FormHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx)
 {
   PetscFunctionBegin;
-  *ms = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -301,18 +300,16 @@ PetscErrorCode FormEqualityConstraints(Tao tao, Vec x, Vec ce,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormInequalityJacobian"
-PetscErrorCode FormInequalityJacobian(Tao tao, Vec x, Mat JI, Mat JIpre,  MatStructure *ms, void *ctx)
+PetscErrorCode FormInequalityJacobian(Tao tao, Vec x, Mat JI, Mat JIpre,  void *ctx)
 {
   PetscFunctionBegin;
-  *ms = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "FormEqualityJacobian"
-PetscErrorCode FormEqualityJacobian(Tao tao, Vec x, Mat JE, Mat JEpre, MatStructure *ms, void *ctx)
+PetscErrorCode FormEqualityJacobian(Tao tao, Vec x, Mat JE, Mat JEpre, void *ctx)
 {
   PetscFunctionBegin;
-  *ms = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }

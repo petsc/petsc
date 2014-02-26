@@ -757,14 +757,14 @@ PetscErrorCode IPMEvaluate(Tao tao)
 
   PetscFunctionBegin;
   ierr = TaoComputeObjectiveAndGradient(tao,tao->solution,&ipmP->kkt_f,tao->gradient);CHKERRQ(ierr);
-  ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre,&ipmP->Hflag);CHKERRQ(ierr);
+  ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
   if (ipmP->me > 0) {
     ierr = TaoComputeEqualityConstraints(tao,tao->solution,tao->constraints_equality);
-    ierr = TaoComputeJacobianEquality(tao,tao->solution,tao->jacobian_equality,tao->jacobian_equality_pre,&ipmP->Aiflag);CHKERRQ(ierr);
+    ierr = TaoComputeJacobianEquality(tao,tao->solution,tao->jacobian_equality,tao->jacobian_equality_pre);CHKERRQ(ierr);
   }
   if (ipmP->mi > 0) {
     ierr = TaoComputeInequalityConstraints(tao,tao->solution,tao->constraints_inequality);
-    ierr = TaoComputeJacobianInequality(tao,tao->solution,tao->jacobian_inequality,tao->jacobian_inequality_pre,&ipmP->Aeflag);CHKERRQ(ierr);
+    ierr = TaoComputeJacobianInequality(tao,tao->solution,tao->jacobian_inequality,tao->jacobian_inequality_pre);CHKERRQ(ierr);
   }
   if (ipmP->nb > 0) {
     /* Ai' =   jac_ineq | I (w/lb) | -I (w/ub)  */

@@ -95,10 +95,10 @@ typedef struct {
 PetscErrorCode FormFunction(Tao, Vec, PetscReal*, void*);
 PetscErrorCode FormGradient(Tao, Vec, Vec, void*);
 PetscErrorCode FormFunctionGradient(Tao, Vec, PetscReal*, Vec, void*);
-PetscErrorCode FormJacobianState(Tao, Vec, Mat, Mat, Mat, MatStructure*,void*);
+PetscErrorCode FormJacobianState(Tao, Vec, Mat, Mat, Mat, void*);
 PetscErrorCode FormJacobianDesign(Tao, Vec, Mat,void*);
 PetscErrorCode FormConstraints(Tao, Vec, Vec, void*);
-PetscErrorCode FormHessian(Tao, Vec, Mat, Mat, MatStructure*, void*);
+PetscErrorCode FormHessian(Tao, Vec, Mat, Mat, void*);
 PetscErrorCode Gather(Vec, Vec, VecScatter, Vec, VecScatter);
 PetscErrorCode Scatter(Vec, Vec, VecScatter, Vec, VecScatter);
 PetscErrorCode EllipticInitialize(AppCtx*);
@@ -285,7 +285,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *p
 /* A
 MatShell object
 */
-PetscErrorCode FormJacobianState(Tao tao, Vec X, Mat J, Mat JPre, Mat JInv, MatStructure* flag, void *ptr)
+PetscErrorCode FormJacobianState(Tao tao, Vec X, Mat J, Mat JPre, Mat JInv, void *ptr)
 {
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx*)ptr;
@@ -307,7 +307,6 @@ PetscErrorCode FormJacobianState(Tao tao, Vec X, Mat J, Mat JPre, Mat JInv, MatS
     ierr = MatDiagonalScale(user->Divwork,NULL,user->Swork);CHKERRQ(ierr);
     ierr = MatMatMultNumeric(user->Divwork,user->Grad,user->DSG);CHKERRQ(ierr);
   }
-  *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */

@@ -16,13 +16,12 @@
          Hessian evaluation routine (may be NULL)
 
    Calling sequence of hess:
-$    hess (Tao tao,Vec x,Mat H,Mat Hpre,MatStructure *flag,void *ctx);
+$    hess (Tao tao,Vec x,Mat H,Mat Hpre,void *ctx);
 
 +  tao - the Tao  context
 .  x - input vector
 .  H - Hessian matrix
 .  Hpre - preconditioner matrix, usually the same as H
-.  flag - flag indicating information about the preconditioner matrix
    structure (see below)
 -  ctx - [optional] user-defined Hessian context
 
@@ -58,7 +57,7 @@ $      Hpre does not have the same nonzero structure.
    Level: beginner
 
 @*/
-PetscErrorCode TaoSetHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat , MatStructure *, void*), void *ctx)
+PetscErrorCode TaoSetHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void*), void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -121,22 +120,20 @@ PetscErrorCode TaoSetHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*f
 .seealso:  TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetHessian()
 
 @*/
-PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre, MatStructure *flg)
+PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(X, VEC_CLASSID,2);
-  PetscValidPointer(flg,5);
   PetscCheckSameComm(tao,1,X,2);
 
   if (!tao->ops->computehessian) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetHessian() first");
-  *flg = DIFFERENT_NONZERO_PATTERN;
   ++tao->nhess;
   ierr = PetscLogEventBegin(Tao_HessianEval,tao,X,H,Hpre);CHKERRQ(ierr);
   PetscStackPush("Tao user Hessian function");
-  ierr = (*tao->ops->computehessian)(tao,X,H,Hpre,flg,tao->user_hessP);CHKERRQ(ierr);
+  ierr = (*tao->ops->computehessian)(tao,X,H,Hpre,tao->user_hessP);CHKERRQ(ierr);
   PetscStackPop;
   ierr = PetscLogEventEnd(Tao_HessianEval,tao,X,H,Hpre);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -156,8 +153,7 @@ PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre, MatStructure *
 
    Output Parameters:
 +  H - Jacobian matrix
-.  Hpre - Preconditioning matrix
--  flag - flag indicating matrix structure (SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN, or SAME_PRECONDITIONER)
+-  Hpre - Preconditioning matrix
 
    Notes:
    Most users should not need to explicitly call this routine, as it
@@ -172,22 +168,20 @@ PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre, MatStructure *
 .seealso:  TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetJacobian()
 
 @*/
-PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat J, Mat Jpre, MatStructure *flg)
+PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(X, VEC_CLASSID,2);
-  PetscValidPointer(flg,5);
   PetscCheckSameComm(tao,1,X,2);
 
   if (!tao->ops->computejacobian) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobian() first");
-  *flg = DIFFERENT_NONZERO_PATTERN;
   ++tao->njac;
   ierr = PetscLogEventBegin(Tao_JacobianEval,tao,X,J,Jpre);CHKERRQ(ierr);
   PetscStackPush("Tao user Jacobian function");
-  ierr = (*tao->ops->computejacobian)(tao,X,J,Jpre,flg,tao->user_jacP);CHKERRQ(ierr);
+  ierr = (*tao->ops->computejacobian)(tao,X,J,Jpre,tao->user_jacP);CHKERRQ(ierr);
   PetscStackPop;
   ierr = PetscLogEventEnd(Tao_JacobianEval,tao,X,J,Jpre);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -207,8 +201,7 @@ PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat J, Mat Jpre, MatStructure 
 
    Output Parameters:
 +  H - Jacobian matrix
-.  Hpre - Preconditioning matrix
--  flag - flag indicating matrix structure (SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN, or SAME_PRECONDITIONER)
+-  Hpre - Preconditioning matrix
 
    Notes:
    Most users should not need to explicitly call this routine, as it
@@ -223,22 +216,20 @@ PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat J, Mat Jpre, MatStructure 
 .seealso:  TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetJacobianStateRoutine(), TaoComputeJacobianDesign(), TaoSetStateDesignIS()
 
 @*/
-PetscErrorCode TaoComputeJacobianState(Tao tao, Vec X, Mat J, Mat Jpre, Mat Jinv, MatStructure *flg)
+PetscErrorCode TaoComputeJacobianState(Tao tao, Vec X, Mat J, Mat Jpre, Mat Jinv)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(X, VEC_CLASSID,2);
-  PetscValidPointer(flg,5);
   PetscCheckSameComm(tao,1,X,2);
 
   if (!tao->ops->computejacobianstate) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobianState() first");
-  *flg = DIFFERENT_NONZERO_PATTERN;
   ++tao->njac_state;
   ierr = PetscLogEventBegin(Tao_JacobianEval,tao,X,J,Jpre);CHKERRQ(ierr);
   PetscStackPush("Tao user Jacobian(state) function");
-  ierr = (*tao->ops->computejacobianstate)(tao,X,J,Jpre,Jinv,flg,tao->user_jac_stateP);CHKERRQ(ierr);
+  ierr = (*tao->ops->computejacobianstate)(tao,X,J,Jpre,Jinv,tao->user_jac_stateP);CHKERRQ(ierr);
   PetscStackPop;
   ierr = PetscLogEventEnd(Tao_JacobianEval,tao,X,J,Jpre);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -307,7 +298,7 @@ PetscErrorCode TaoComputeJacobianDesign(Tao tao, Vec X, Mat J)
          Jacobian evaluation routine (may be NULL)
 
    Calling sequence of jac:
-$    jac (Tao tao,Vec x,Mat *J,Mat *Jpre,MatStructure *flag,void *ctx);
+$    jac (Tao tao,Vec x,Mat *J,Mat *Jpre,void *ctx);
 
 +  tao - the Tao  context
 .  x - input vector
@@ -354,7 +345,7 @@ $      Jpre does not have the same nonzero structure.
    Level: intermediate
 
 @*/
-PetscErrorCode TaoSetJacobianRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, MatStructure *, void*), void *ctx)
+PetscErrorCode TaoSetJacobianRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void*), void *ctx)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -405,7 +396,7 @@ PetscErrorCode TaoSetJacobianRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*
          Jacobian evaluation routine (may be NULL)
 
    Calling sequence of jac:
-$    jac (Tao tao,Vec x,Mat *J,Mat *Jpre,MatStructure *flag,void *ctx);
+$    jac (Tao tao,Vec x,Mat *J,Mat *Jpre,void *ctx);
 
 +  tao - the Tao  context
 .  x - input vector
@@ -457,7 +448,7 @@ $      Jpre does not have the same nonzero structure.
    Level: intermediate
 .seealse: TaoComputeJacobianState(), TaoSetJacobianDesignRoutine(), TaoSetStateDesignIS()
 @*/
-PetscErrorCode TaoSetJacobianStateRoutine(Tao tao, Mat J, Mat Jpre, Mat Jinv, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, Mat, MatStructure *, void*), void *ctx)
+PetscErrorCode TaoSetJacobianStateRoutine(Tao tao, Mat J, Mat Jpre, Mat Jinv, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, Mat,void*), void *ctx)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -616,22 +607,20 @@ PetscErrorCode TaoSetStateDesignIS(Tao tao, IS s_is, IS d_is)
 .seealso:  TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetJacobianStateRoutine(), TaoComputeJacobianDesign(), TaoSetStateDesignIS()
 
 @*/
-PetscErrorCode TaoComputeJacobianEquality(Tao tao, Vec X, Mat J, Mat Jpre, MatStructure *flg)
+PetscErrorCode TaoComputeJacobianEquality(Tao tao, Vec X, Mat J, Mat Jpre)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(X, VEC_CLASSID,2);
-  PetscValidPointer(flg,5);
   PetscCheckSameComm(tao,1,X,2);
 
   if (!tao->ops->computejacobianequality) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobianEquality() first");
-  *flg = DIFFERENT_NONZERO_PATTERN;
   ++tao->njac_equality;
   ierr = PetscLogEventBegin(Tao_JacobianEval,tao,X,J,Jpre);CHKERRQ(ierr);
   PetscStackPush("Tao user Jacobian(equality) function");
-  ierr = (*tao->ops->computejacobianequality)(tao,X,J,Jpre,flg,tao->user_jac_equalityP);CHKERRQ(ierr);
+  ierr = (*tao->ops->computejacobianequality)(tao,X,J,Jpre,tao->user_jac_equalityP);CHKERRQ(ierr);
   PetscStackPop;
   ierr = PetscLogEventEnd(Tao_JacobianEval,tao,X,J,Jpre);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -663,22 +652,20 @@ PetscErrorCode TaoComputeJacobianEquality(Tao tao, Vec X, Mat J, Mat Jpre, MatSt
 .seealso:  TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetJacobianStateRoutine(), TaoComputeJacobianDesign(), TaoSetStateDesignIS()
 
 @*/
-PetscErrorCode TaoComputeJacobianInequality(Tao tao, Vec X, Mat J, Mat Jpre, MatStructure *flg)
+PetscErrorCode TaoComputeJacobianInequality(Tao tao, Vec X, Mat J, Mat Jpre)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(X, VEC_CLASSID,2);
-  PetscValidPointer(flg,5);
   PetscCheckSameComm(tao,1,X,2);
 
   if (!tao->ops->computejacobianinequality) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobianInequality() first");
-  *flg = DIFFERENT_NONZERO_PATTERN;
   ++tao->njac_inequality;
   ierr = PetscLogEventBegin(Tao_JacobianEval,tao,X,J,Jpre);CHKERRQ(ierr);
   PetscStackPush("Tao user Jacobian(inequality) function");
-  ierr = (*tao->ops->computejacobianinequality)(tao,X,J,Jpre,flg,tao->user_jac_inequalityP);CHKERRQ(ierr);
+  ierr = (*tao->ops->computejacobianinequality)(tao,X,J,Jpre,tao->user_jac_inequalityP);CHKERRQ(ierr);
   PetscStackPop;
   ierr = PetscLogEventEnd(Tao_JacobianEval,tao,X,J,Jpre);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -702,7 +689,7 @@ PetscErrorCode TaoComputeJacobianInequality(Tao tao, Vec X, Mat J, Mat Jpre, Mat
          Jacobian evaluation routine (may be NULL)
 
    Calling sequence of jac:
-$    jac (Tao tao,Vec x,Mat *J,Mat *Jpre,MatStructure *flag,void *ctx);
+$    jac (Tao tao,Vec x,Mat *J,Mat *Jpre,void *ctx);
 
 +  tao - the Tao  context
 .  x - input vector
@@ -752,7 +739,7 @@ $      Jpre does not have the same nonzero structure.
    Level: intermediate
 .seealse: TaoComputeJacobianEquality(), TaoSetJacobianDesignRoutine(), TaoSetEqualityDesignIS()
 @*/
-PetscErrorCode TaoSetJacobianEqualityRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, MatStructure *, void*), void *ctx)
+PetscErrorCode TaoSetJacobianEqualityRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat,void*), void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -803,7 +790,7 @@ PetscErrorCode TaoSetJacobianEqualityRoutine(Tao tao, Mat J, Mat Jpre, PetscErro
          Jacobian evaluation routine (may be NULL)
 
    Calling sequence of jac:
-$    jac (Tao tao,Vec x,Mat *J,Mat *Jpre,MatStructure *flag,void *ctx);
+$    jac (Tao tao,Vec x,Mat *J,Mat *Jpre,void *ctx);
 
 +  tao - the Tao  context
 .  x - input vector
@@ -854,7 +841,7 @@ $      Jpre does not have the same nonzero structure.
    Level: intermediate
 .seealse: TaoComputeJacobianInequality(), TaoSetJacobianDesignRoutine(), TaoSetInequalityDesignIS()
 @*/
-PetscErrorCode TaoSetJacobianInequalityRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, MatStructure *, void*), void *ctx)
+PetscErrorCode TaoSetJacobianInequalityRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat,void*), void *ctx)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

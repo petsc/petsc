@@ -42,7 +42,7 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx*);
 static PetscErrorCode MSA_InitialPoint(AppCtx*,Vec);
 static PetscErrorCode QuadraticH(AppCtx*,Vec,Mat);
 PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
-PetscErrorCode FormHessian(Tao,Vec,Mat,Mat,MatStructure *,void*);
+PetscErrorCode FormHessian(Tao,Vec,Mat,Mat,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -309,18 +309,13 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *fcn,Vec G,void *use
 .  flg  - flag indicating matrix structure
 
 */
-PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, MatStructure *flg, void *ptr)
+PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
 {
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx *) ptr;
 
   /* Evaluate the Hessian entries*/
   ierr = QuadraticH(user,X,H);CHKERRQ(ierr);
-
-  /* Indicate that this matrix has the same sparsity pattern during
-     successive iterations; setting this flag can save significant work
-     in computing the preconditioner for some methods. */
-  *flg=SAME_NONZERO_PATTERN;
   return 0;
 }
 

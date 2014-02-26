@@ -82,10 +82,10 @@ typedef struct {
 PetscErrorCode FormFunction(Tao, Vec, PetscReal*, void*);
 PetscErrorCode FormGradient(Tao, Vec, Vec, void*);
 PetscErrorCode FormFunctionGradient(Tao, Vec, PetscReal*, Vec, void*);
-PetscErrorCode FormJacobianState(Tao, Vec, Mat, Mat, Mat, MatStructure*,void*);
+PetscErrorCode FormJacobianState(Tao, Vec, Mat, Mat, Mat, void*);
 PetscErrorCode FormJacobianDesign(Tao, Vec, Mat,void*);
 PetscErrorCode FormConstraints(Tao, Vec, Vec, void*);
-PetscErrorCode FormHessian(Tao, Vec, Mat, Mat, MatStructure*, void*);
+PetscErrorCode FormHessian(Tao, Vec, Mat, Mat, void*);
 PetscErrorCode Gather(Vec x, Vec state, VecScatter s_scat, Vec design, VecScatter d_scat);
 PetscErrorCode Scatter(Vec x, Vec state, VecScatter s_scat, Vec design, VecScatter d_scat);
 PetscErrorCode HyperbolicInitialize(AppCtx *user);
@@ -343,7 +343,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *p
 /* A
 MatShell object
 */
-PetscErrorCode FormJacobianState(Tao tao, Vec X, Mat J, Mat JPre, Mat JInv, MatStructure* flag, void *ptr)
+PetscErrorCode FormJacobianState(Tao tao, Vec X, Mat J, Mat JPre, Mat JInv, void *ptr)
 {
   PetscErrorCode ierr;
   PetscInt       i;
