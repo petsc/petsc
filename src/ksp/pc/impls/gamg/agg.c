@@ -1295,7 +1295,7 @@ PetscErrorCode PCGAMGOptprol_AGG(PC pc,const Mat Amat,Mat *a_P)
       ierr = KSPSetFromOptions(eksp);CHKERRQ(ierr);
 
       ierr = KSPSetInitialGuessNonzero(eksp, PETSC_FALSE);CHKERRQ(ierr);
-      ierr = KSPSetOperators(eksp, Amat, Amat, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(eksp, Amat, Amat);CHKERRQ(ierr);
       ierr = KSPSetComputeSingularValues(eksp,PETSC_TRUE);CHKERRQ(ierr);
 
       ierr = KSPGetPC(eksp, &epc);CHKERRQ(ierr);

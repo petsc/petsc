@@ -7,7 +7,7 @@ typedef struct {
 
 /* -------------- User-defined routines ---------- */
 PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
-PetscErrorCode FormHessian(Tao,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormHessian(Tao,Vec,Mat,Mat,void*);
 
 int main(int argc,char **argv)
 {

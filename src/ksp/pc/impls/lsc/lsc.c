@@ -65,7 +65,7 @@ static PetscErrorCode PCSetUp_LSC(PC pc)
     ierr = MatGetDiagonal(Ap,lsc->scale);CHKERRQ(ierr); /* Should be the mass matrix, but we don't have plumbing for that yet */
     ierr = VecReciprocal(lsc->scale);CHKERRQ(ierr);
   }
-  ierr = KSPSetOperators(lsc->kspL,L,Lp,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(lsc->kspL,L,Lp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

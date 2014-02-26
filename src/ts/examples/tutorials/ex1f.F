@@ -311,7 +311,7 @@
 !
 !  --------------------  Evaluate Jacobian of F(x) --------------------
 !
-      subroutine FormJacobian(ts,ctime,X,JJ,B,flag,user,ierr)
+      subroutine FormJacobian(ts,ctime,X,JJ,B,user,ierr)
       implicit none
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
@@ -321,7 +321,6 @@
       TS               ts
       Vec              X
       Mat              JJ,B
-      MatStructure     flag
       PetscReal user(3),ctime
       PetscErrorCode   ierr
       Mat              jac
@@ -379,7 +378,6 @@
       call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
       call VecRestoreArray(X,xx,xidx,ierr)
-      flag = SAME_NONZERO_PATTERN
       return
       end
 

@@ -431,9 +431,9 @@ countfortranfunctions:
 	sed "s/_$$//" | sort > /tmp/countfortranfunctions
 
 countcfunctions:
-	-@grep extern ${PETSC_DIR}/include/*.h  | grep "(" | tr -s ' ' | \
+	-@grep PETSC_EXTERN ${PETSC_DIR}/include/*.h  | grep "(" | tr -s ' ' | \
 	cut -d'(' -f1 | cut -d' ' -f3 | grep -v "\*" | tr -s '\012' |  \
-	tr 'A-Z' 'a-z' |  sort > /tmp/countcfunctions
+	tr 'A-Z' 'a-z' |  sort | uniq > /tmp/countcfunctions
 
 difffortranfunctions: countfortranfunctions countcfunctions
 	-@echo -------------- Functions missing in the fortran interface ---------------------

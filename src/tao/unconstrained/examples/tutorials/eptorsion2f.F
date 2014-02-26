@@ -412,13 +412,12 @@
 
 
 
-      subroutine ComputeHessian(tao, X, H, Hpre, flag, dummy, ierr)
+      subroutine ComputeHessian(tao, X, H, Hpre, dummy, ierr)
       implicit none
 #include "eptorsion2f.h"
       Tao       tao
       Vec             X
       Mat             H,Hpre
-      MatStructure    flag
       PetscErrorCode  ierr
       PetscInt        dummy
 

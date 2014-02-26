@@ -111,7 +111,7 @@ PetscErrorCode StokesSetupPC(Stokes *s, KSP ksp)
   if (s->userKSP) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
     ierr = PCFieldSplitGetSubKSP(pc, &n, &subksp);CHKERRQ(ierr);
-    ierr = KSPSetOperators(subksp[1], s->myS, s->myS, SAME_PRECONDITIONER);CHKERRQ(ierr);
+    ierr = KSPSetOperators(subksp[1], s->myS, s->myS);CHKERRQ(ierr);
     ierr = PetscFree(subksp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

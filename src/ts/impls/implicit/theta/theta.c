@@ -289,7 +289,7 @@ static PetscErrorCode SNESTSFormFunction_Theta(SNES snes,Vec x,Vec y,TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESTSFormJacobian_Theta"
-static PetscErrorCode SNESTSFormJacobian_Theta(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *str,TS ts)
+static PetscErrorCode SNESTSFormJacobian_Theta(SNES snes,Vec x,Mat A,Mat B,TS ts)
 {
   TS_Theta       *th = (TS_Theta*)ts->data;
   PetscErrorCode ierr;
@@ -305,7 +305,7 @@ static PetscErrorCode SNESTSFormJacobian_Theta(SNES snes,Vec x,Mat *A,Mat *B,Mat
 
   dmsave = ts->dm;
   ts->dm = dm;
-  ierr   = TSComputeIJacobian(ts,th->stage_time,x,Xdot,shift,A,B,str,PETSC_FALSE);CHKERRQ(ierr);
+  ierr   = TSComputeIJacobian(ts,th->stage_time,x,Xdot,shift,A,B,PETSC_FALSE);CHKERRQ(ierr);
   ts->dm = dmsave;
   ierr   = TSThetaRestoreX0AndXdot(ts,dm,NULL,&Xdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);

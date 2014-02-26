@@ -21,7 +21,7 @@ typedef struct {
 
 static PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
 static PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
-static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void *ctx);
+static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void *ctx);
 static PetscErrorCode FormInitialSolution(TS,Vec,void*);
 
 #undef __FUNCT__
@@ -161,7 +161,7 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
 
 #undef __FUNCT__
 #define __FUNCT__ "FormIJacobian"
-static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U, Vec Udot, PetscReal a, Mat *J,Mat *Jpre,MatStructure *flag,void *ctx)
+static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U, Vec Udot, PetscReal a, Mat J,Mat Jpre,void *ctx)
 {
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx *)ctx;
@@ -174,17 +174,16 @@ static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U, Vec Udot, PetscReal
   for(i=0; i < user->mx; i++) {
     v = a - 1. + 3.*x[i]*x[i];
     col = i;
-    ierr = MatSetValues(*J,1,&i,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(J,1,&i,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
 
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*J != *Jpre) {
-    ierr = MatAssemblyBegin(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (J != Jpre) {
+    ierr = MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *flag = SAME_NONZERO_PATTERN;
-  /*  MatView(*J,PETSC_VIEWER_STDOUT_WORLD);*/
+  /*  MatView(J,PETSC_VIEWER_STDOUT_WORLD);*/
   PetscFunctionReturn(0);
 }
 

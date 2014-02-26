@@ -256,7 +256,7 @@ int main(int argc,char **args)
   }
 
   /* finish KSP/PC setup */
-  ierr = KSPSetOperators(ksp, Amat, Amat, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp, Amat, Amat);CHKERRQ(ierr);
   if (use_nearnullspace) {
     MatNullSpace matnull;
     Vec          vec_coords;
@@ -308,7 +308,7 @@ int main(int argc,char **args)
     ierr = MaybeLogStagePush(stage[2]);CHKERRQ(ierr);
     /* PC setup basically */
     ierr = MatScale(Amat, 100000.0);CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp, Amat, Amat, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp, Amat, Amat);CHKERRQ(ierr);
     ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 
     ierr = MaybeLogStagePop();CHKERRQ(ierr);
@@ -321,7 +321,7 @@ int main(int argc,char **args)
 
     /* 3rd solve */
     ierr = MatScale(Amat, 100000.0);CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp, Amat, Amat, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp, Amat, Amat);CHKERRQ(ierr);
     ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 
     ierr = MaybeLogStagePop();CHKERRQ(ierr);

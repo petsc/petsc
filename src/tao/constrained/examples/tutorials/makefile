@@ -16,11 +16,6 @@ DIRS		 =
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
-
-istest: istest.o chkopts
-	-${CLINKER} -o istest istest.o ${PETSC_TAO_LIB}
-	${RM} istest.o
 
 maros: maros.o chkopts
 	-${CLINKER} -o maros maros.o ${PETSC_TAO_LIB}
@@ -34,9 +29,9 @@ toyf: toyf.o chkopts
 	-${CLINKER} -o toyf toyf.o ${PETSC_TAO_LIB}
 	${RM} toyf.o
 
-polygon1: polygon1.o chkopts
-	-${CLINKER} -o polygon1 polygon1.o ${PETSC_TAO_LIB}
-	${RM} polygon1.o
 
+TESTEXAMPLES_C             =  maros.PETSc maros.rm toy.PETSc toy.rm
+TEXTEXAMPLES_FORTRAN       = toyf.PETSc toyf.rm 
 
+include ${PETSC_DIR}/conf/test
 

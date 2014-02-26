@@ -214,6 +214,11 @@ typedef Petsc64bitInt PetscInt;
 typedef int PetscInt;
 #define MPIU_INT MPI_INT
 #endif
+#if defined(PETSC_HAVE_MPI_INT64_T)
+#  define MPIU_INT64 MPI_INT64_T
+#else
+#  define MPIU_INT64 MPI_LONG_LONG_INT
+#endif
 
 
 /*MC

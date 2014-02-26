@@ -412,7 +412,7 @@ static PetscErrorCode RDIFunction_FD(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
 
 #undef __FUNCT__
 #define __FUNCT__ "RDIJacobian_FD"
-static PetscErrorCode RDIJacobian_FD(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
+static PetscErrorCode RDIJacobian_FD(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   RD             rd = (RD)ctx;
@@ -427,7 +427,7 @@ static PetscErrorCode RDIJacobian_FD(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
   ierr = RDGetLocalArrays(rd,ts,X,Xdot,&Theta,&dt,&X0loc,&x0,&Xloc,&x,&Xloc_t,&xdot);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
   hx   = rd->L / (info.mx-1);
-  ierr = MatZeroEntries(*B);CHKERRQ(ierr);
+  ierr = MatZeroEntries(B);CHKERRQ(ierr);
 
   for (i=info.xs; i<info.xs+info.xm; i++) {
     PetscInt                  col[3];
@@ -508,16 +508,15 @@ static PetscErrorCode RDIJacobian_FD(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
     col[0] = i-1;
     col[1] = i;
     col[2] = i+1<info.mx ? i+1 : -1;
-    ierr   = MatSetValuesBlocked(*B,1,&i,3,col,&K[0][0],INSERT_VALUES);CHKERRQ(ierr);
+    ierr   = MatSetValuesBlocked(B,1,&i,3,col,&K[0][0],INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = RDRestoreLocalArrays(rd,&X0loc,&x0,&Xloc,&x,&Xloc_t,&xdot);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*A != *B) {
-    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *mstr = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -684,7 +683,7 @@ static PetscErrorCode RDIFunction_FE(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
 
 #undef __FUNCT__
 #define __FUNCT__ "RDIJacobian_FE"
-static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
+static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   RD             rd = (RD)ctx;
@@ -701,7 +700,7 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
   ierr = DMDAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
   hx   = rd->L / (info.mx-1);
   ierr = RDGetQuadrature(rd,hx,&nq,weight,interp,deriv);CHKERRQ(ierr);
-  ierr = MatZeroEntries(*B);CHKERRQ(ierr);
+  ierr = MatZeroEntries(B);CHKERRQ(ierr);
   for (i=info.xs; i<PetscMin(info.xs+info.xm,info.mx-1); i++) {
     PetscInt rc[2];
 
@@ -727,7 +726,7 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
         }
       }
     }
-    ierr = MatSetValuesBlocked(*B,2,rc,2,rc,&K[0][0],ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValuesBlocked(B,2,rc,2,rc,&K[0][0],ADD_VALUES);CHKERRQ(ierr);
   }
   if (info.xs == 0) {
     switch (rd->leftbc) {
@@ -743,7 +742,7 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
       RDDiffusionCoefficient(rd,PETSC_TRUE,&n,&nx,&D_R,0,0);
       RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D_R_bc,0,0);
       ratio = PetscRealPart(D_R/D_R_bc);
-      ierr  = MatSetValue(*B,0,0,ratio*0.5,ADD_VALUES);CHKERRQ(ierr);
+      ierr  = MatSetValue(B,0,0,ratio*0.5,ADD_VALUES);CHKERRQ(ierr);
     } break;
     case BC_NEUMANN:
       /* homogeneous Neumann is the natural condition */
@@ -753,13 +752,12 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
   }
 
   ierr = RDRestoreLocalArrays(rd,&X0loc,&x0,&Xloc,&x,&Xloc_t,&xdot);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*A != *B) {
-    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *mstr = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 

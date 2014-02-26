@@ -499,11 +499,11 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
       rp[i] = col;
       ap[i] = value;
       low   = i + 1;
+      A->nonzerostate++;
 noinsert:;
     }
     ailen[row] = nrow;
   }
-  A->same_nonzero = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -1035,11 +1035,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   a->rmax             = rmax;
 
   ierr = MatCheckCompressedRow(A,a->nonzerorowcnt,&a->compressedrow,a->i,m,ratio);CHKERRQ(ierr);
-
-  A->same_nonzero = PETSC_TRUE;
-
   ierr = MatAssemblyEnd_SeqAIJ_Inode(A,mode);CHKERRQ(ierr);
-
   ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1978,7 +1974,6 @@ PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
         a->a[a->diag[rows[i]]] = diag;
       }
     }
-    A->same_nonzero = PETSC_TRUE;
   } else {
     if (diag != 0.0) {
       for (i=0; i<N; i++) {
@@ -1997,7 +1992,7 @@ PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
         a->ilen[rows[i]] = 0;
       }
     }
-    A->same_nonzero = PETSC_FALSE;
+    A->nonzerostate++;
   }
   ierr = MatAssemblyEnd_SeqAIJ(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2049,7 +2044,6 @@ PetscErrorCode MatZeroRowsColumns_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],
       a->a[a->diag[rows[i]]] = diag;
     }
   }
-  A->same_nonzero = PETSC_TRUE;
   ierr = MatAssemblyEnd_SeqAIJ(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -4078,7 +4072,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
   b->keepnonzeropattern = PETSC_FALSE;
   b->xtoy               = 0;
   b->XtoY               = 0;
-  B->same_nonzero       = PETSC_FALSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqAIJGetArray_C",MatSeqAIJGetArray_SeqAIJ);CHKERRQ(ierr);
@@ -4228,7 +4221,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C,Mat A,MatDuplicateOption cpvalu
     c->compressedrow.i      = NULL;
     c->compressedrow.rindex = NULL;
   }
-  C->same_nonzero = A->same_nonzero;
+  C->nonzerostate = A->nonzerostate;
 
   ierr = MatDuplicate_SeqAIJ_Inode(A,cpvalues,&C);CHKERRQ(ierr);
   ierr = PetscFunctionListDuplicate(((PetscObject)A)->qlist,&((PetscObject)C)->qlist);CHKERRQ(ierr);
@@ -4684,12 +4677,12 @@ PETSC_EXTERN void PETSC_STDCALL matsetvaluesseqaij_(Mat *AA,PetscInt *mm,const P
       }
       rp[i] = col;
       ap[i] = value;
+      A->nonzerostate++;
 noinsert:;
       low = i + 1;
     }
     ailen[row] = nrow;
   }
-  A->same_nonzero = PETSC_FALSE;
   PetscFunctionReturnVoid();
 }
 

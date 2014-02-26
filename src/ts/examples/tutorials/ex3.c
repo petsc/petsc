@@ -75,7 +75,7 @@ typedef struct {
    User-defined routines
 */
 extern PetscErrorCode InitialConditions(Vec,AppCtx*);
-extern PetscErrorCode RHSMatrixHeat(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode RHSMatrixHeat(TS,PetscReal,Vec,Mat,Mat,void*);
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode ExactSolution(PetscReal,Vec,AppCtx*);
 
@@ -176,8 +176,7 @@ int main(int argc,char **argv)
        as a matrix only once, and then sets the special Jacobian evaluation
        routine TSComputeRHSJacobianConstant() which will NOT recompute the Jacobian.
     */
-    MatStructure A_structure;
-    ierr = RHSMatrixHeat(ts,0.0,u,&A,&A,&A_structure,&appctx);CHKERRQ(ierr);
+    ierr = RHSMatrixHeat(ts,0.0,u,A,A,&appctx);CHKERRQ(ierr);
     ierr = TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
     ierr = TSSetRHSJacobian(ts,A,A,TSComputeRHSJacobianConstant,&appctx);CHKERRQ(ierr);
   }
@@ -442,9 +441,9 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
    Recall that MatSetValues() uses 0-based row and column numbers
    in Fortran as well as in C.
 */
-PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat AA,Mat BB,void *ctx)
 {
-  Mat            A       = *AA;                /* Jacobian matrix */
+  Mat            A       = AA;                /* Jacobian matrix */
   AppCtx         *appctx = (AppCtx*)ctx;     /* user-defined application context */
   PetscInt       mstart  = 0;
   PetscInt       mend    = appctx->m;
@@ -489,25 +488,6 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructur
   */
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  /*
-     Set flag to indicate that the Jacobian matrix retains an identical
-     nonzero structure throughout all timestepping iterations (although the
-     values of the entries change). Thus, we can save some work in setting
-     up the preconditioner (e.g., no need to redo symbolic factorization for
-     ILU/ICC preconditioners).
-      - If the nonzero structure of the matrix is different during
-        successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-        must be used instead.  If you are unsure whether the matrix
-        structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-      - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-        believes your assertion and does not check the structure
-        of the matrix.  If you erroneously claim that the structure
-        is the same when it actually is not, the new preconditioner
-        will not function correctly.  Thus, use this optimization
-        feature with caution!
-  */
-  *str = SAME_NONZERO_PATTERN;
 
   /*
      Set and option to indicate that we will never add a new nonzero location

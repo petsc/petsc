@@ -2051,7 +2051,7 @@ Before actually solving a linear system with KSP, the user must call
 the following routine to set the matrices associated with the linear
 system:
 \begin{tabbing}
-  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag);
+  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat);
 \end{tabbing}
 The argument \trl{Amat}, representing the matrix that defines the
 linear system, is a symbolic place holder for any kind of matrix.
@@ -2066,22 +2066,6 @@ the matrix that defines the linear system, \trl{Amat}; however,
 occasionally these matrices differ (for instance, \sindex{preconditioning}
 when a preconditioning matrix is obtained from a lower order method than
 that employed to form the linear system matrix).
-The argument \trl{flag} can be used to eliminate unnecessary work when
-repeatedly solving linear systems of the same size with the same
-preconditioning method; when solving just one linear system, this flag is
-ignored.  The user can set \trl{flag} as follows:
-\begin{itemize}
-\item \trl{SAME_NONZERO_PATTERN} - the preconditioning matrix has the
-    same \findex{SAME_NONZERO_PATTERN} nonzero structure during successive
-    linear solves,
-\item \trl{DIFFERENT_NONZERO_PATTERN} - the preconditioning matrix does
-     not have the same nonzero structure during successive linear solves,
-   \findex{DIFFERENT_NONZERO_PATTERN}
-\item \trl{SAME_PRECONDITIONER} - the preconditioner matrix is identical
-   to that of the previous linear solve. \findex{SAME_PRECONDITIONER}
-\end{itemize}
-If the structure of a matrix is not known a priori, one should use
-the flag \trl{DIFFERENT_NONZERO_PATTERN}.
 
 Much of the power of KSP can be accessed through the single routine
 \begin{tabbing}
@@ -3669,7 +3653,7 @@ Jacobian matrix, \trl{A}, at the current iterate, \trl{x},
 as is typically done with
 \begin{tabbing}
   SNESSetJacobian(SNES snes,Mat Amat,Mat Pmat,PetscErrorCode (*FormJacobian)(SNES snes,\\
-          Vec x,Mat *A,Mat *B,MatStructure *flag,void *ctx),void *ctx);
+          Vec x,Mat A,Mat B,MatStructure *flag,void *ctx),void *ctx);
 \end{tabbing}
 The arguments of the routine \trl{
 FormJacobian()} are the current iterate, \trl{x}; the (approximate) Jacobian matrix,
@@ -3723,21 +3707,6 @@ Upon subsequent calls to the
 entries to zero by calling MatZeroEntries().  See
 Section~\ref{sec_othermat} for details on the reuse of the matrix
 context.
-
-If the preconditioning matrix retains identical nonzero structure
-during successive nonlinear iterations, setting the parameter, \trl{flag},
-in the \trl{FormJacobian()} routine to be \trl{SAME_NONZERO_PATTERN}
-\findex{SAME_NONZERO_PATTERN} and reusing the matrix context can save
-considerable overhead.  For example, when one is using a parallel
-preconditioner such as incomplete factorization in solving the
-linearized Newton systems for such problems, matrix colorings and
-communication patterns can be determined a single time and then reused
-repeatedly throughout the solution process.  In addition, if using
-different matrices for the actual Jacobian and the preconditioner, the
-user can hold the preconditioner matrix fixed for multiple iterations
-by setting \trl{flag} to \trl{SAME_PRECONDITIONER}.  See the
-discussion of KSPSetOperators() in Section~\ref{sec_usingsles} for
-details.
 
 The directory \trl{${PETSC_DIR}/src/snes/examples/tutorials} provides
 a variety of examples.
@@ -4370,7 +4339,7 @@ To solve an ODE or DAE one uses:
   If using a fully implicit or semi-implict (IMEX) method one also can provide an appropriate (approximate) Jacobian matrix of $F()$.
   \begin{tabbing}
     TS\=SetIJacobian(TS ts,Mat A,Mat B,\\
-    \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*),void *jacP);
+    \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,MatStructure*,void*),void *jacP);
   \end{tabbing}
   The arguments for the function \trl{fjac()}
   are the timestep contex, current time, input state $u$, input
@@ -4394,7 +4363,7 @@ To solve an ODE or DAE one uses:
   If using a fully implicit method and the function $ G() $ is provided, one also can provide an appropriate (approximate) Jacobian matrix of $G()$.
   \begin{tabbing}
     TS\=SetRHSJacobian(TS ts,Mat A,Mat B,\\
-    \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void *jacP);
+    \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Mat,Mat,MatStructure*,void*),void *jacP);
   \end{tabbing}
   The arguments for the function \trl{fjac()}
   are the timestep contex, current time, input state $u$, matrix $A$, preconditioning matrix
@@ -4681,7 +4650,7 @@ variable \trl{fP}.
 \item Provide the (approximate) Jacobian matrix of \trl{G(u)} and a
 function to compute it at each Newton iteration. This is done with the command
 \begin{tabbing}
- TSSetRHSJacobian(\=TS ts,Mat Amat, Mat Pmat,PetscErrorCode (*f)(TS,double,Vec,Mat*,Mat*,\\
+ TSSetRHSJacobian(\=TS ts,Mat Amat, Mat Pmat,PetscErrorCode (*f)(TS,double,Vec,Mat,Mat,\\
                   \>        MatStructure*,void*),void *fP);
 \end{tabbing}
 The  arguments for the function \trl{f()} are

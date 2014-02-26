@@ -1040,6 +1040,7 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
         }
         rp[i]                      = bcol;
         ap[bs2*i + bs*cidx + ridx] = value;
+        A->nonzerostate++;
 noinsert1:;
         low = i;
       }
@@ -1311,7 +1312,6 @@ PetscErrorCode MatZeroRowsColumns_SeqSBAIJ(Mat A,PetscInt is_n,const PetscInt is
     ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
     vecs = PETSC_TRUE;
   }
-  A->same_nonzero = PETSC_TRUE;
 
   /* zero the columns */
   ierr = PetscCalloc1(A->rmap->n,&zeroed);CHKERRQ(ierr);

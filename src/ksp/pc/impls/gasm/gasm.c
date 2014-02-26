@@ -480,7 +480,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
      Loop over submatrices putting them into local ksps
   */
   for (i=0; i<osm->n; i++) {
-    ierr = KSPSetOperators(osm->ksp[i],osm->pmat[i],osm->pmat[i],pc->flag);CHKERRQ(ierr);
+    ierr = KSPSetOperators(osm->ksp[i],osm->pmat[i],osm->pmat[i]);CHKERRQ(ierr);
     if (!pc->setupcalled) {
       ierr = KSPSetFromOptions(osm->ksp[i]);CHKERRQ(ierr);
     }

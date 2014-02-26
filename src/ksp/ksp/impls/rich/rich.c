@@ -27,7 +27,6 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i,maxit;
-  MatStructure   pflag;
   PetscReal      rnorm = 0.0,abr;
   PetscScalar    scale,rdot;
   Vec            x,b,r,z,w = NULL,y = NULL;
@@ -42,7 +41,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
 
   ksp->its = 0;
 
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
   x    = ksp->vec_sol;
   b    = ksp->vec_rhs;
   ierr = VecGetSize(x,&xs);CHKERRQ(ierr);

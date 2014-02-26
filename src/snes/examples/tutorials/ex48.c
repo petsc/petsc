@@ -254,7 +254,7 @@ struct _n_Units {
   PetscReal year;
 };
 
-static PetscErrorCode THIJacobianLocal_3D_Full(DMDALocalInfo*,Node***,Mat,Mat,MatStructure*,THI);
+static PetscErrorCode THIJacobianLocal_3D_Full(DMDALocalInfo*,Node***,Mat,Mat,THI);
 static PetscErrorCode THIJacobianLocal_3D_Tridiagonal(DMDALocalInfo*,Node***,Mat,THI);
 static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo*,Node**,Mat,THI);
 
@@ -1265,13 +1265,12 @@ static PetscErrorCode THIJacobianLocal_3D(DMDALocalInfo *info,Node ***x,Mat B,TH
 
 #undef __FUNCT__
 #define __FUNCT__ "THIJacobianLocal_3D_Full"
-static PetscErrorCode THIJacobianLocal_3D_Full(DMDALocalInfo *info,Node ***x,Mat A,Mat B,MatStructure *mstr,THI thi)
+static PetscErrorCode THIJacobianLocal_3D_Full(DMDALocalInfo *info,Node ***x,Mat A,Mat B,THI thi)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr  = THIJacobianLocal_3D(info,x,B,thi,THIASSEMBLY_FULL);CHKERRQ(ierr);
-  *mstr = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 

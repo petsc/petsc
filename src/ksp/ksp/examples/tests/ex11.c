@@ -133,7 +133,7 @@ PetscErrorCode port_lsd_bfbt(void)
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp_A);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(ksp_A,"fc_");CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp_A,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp_A,A,A);CHKERRQ(ierr);
 
   ierr = KSPGetPC(ksp_A,&pc_A);CHKERRQ(ierr);
   ierr = PCSetType(pc_A,PCFIELDSPLIT);CHKERRQ(ierr);

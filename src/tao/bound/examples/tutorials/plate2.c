@@ -55,10 +55,10 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx*);
 static PetscErrorCode MSA_InitialPoint(AppCtx*,Vec);
 static PetscErrorCode MSA_Plate(Vec,Vec,void*);
 PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
-PetscErrorCode FormHessian(Tao,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormHessian(Tao,Vec,Mat,Mat,void*);
 
 /* For testing matrix free submatrices */
-PetscErrorCode MatrixFreeHessian(Tao,Vec,Mat*, Mat*,MatStructure*,void*);
+PetscErrorCode MatrixFreeHessian(Tao,Vec,Mat, Mat,void*);
 PetscErrorCode MyMatMult(Mat,Vec,Vec);
 
 #undef __FUNCT__
@@ -421,7 +421,6 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G,void *
    Output Parameters:
 .  A    - Hessian matrix
 .  B    - optionally different preconditioning matrix
-.  flag - flag indicating matrix structure
 
    Notes:
    Due to mesh point reordering with DMs, we must always work
@@ -448,11 +447,10 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G,void *
    Option (A) seems cleaner/easier in many cases, and is the procedure
    used in this example.
 */
-PetscErrorCode FormHessian(Tao tao,Vec X,Mat *Hptr, Mat *Hpc, MatStructure *flag, void *ptr)
+PetscErrorCode FormHessian(Tao tao,Vec X,Mat Hptr, Mat Hessian, void *ptr)
 {
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx *) ptr;
-  Mat            Hessian = *Hpc;
   PetscInt       i,j,k,row;
   PetscInt       mx=user->mx, my=user->my;
   PetscInt       xs,xm,gxs,gxm,ys,ym,gys,gym,col[7];
@@ -899,12 +897,12 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
 /* For testing matrix free submatrices */
 #undef __FUNCT__
 #define __FUNCT__ "MatrixFreeHessian"
-PetscErrorCode MatrixFreeHessian(Tao tao, Vec x, Mat *H, Mat *Hpre, MatStructure *flg, void *ptr)
+PetscErrorCode MatrixFreeHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ptr)
 {
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx*)ptr;
   PetscFunctionBegin;
-  ierr = FormHessian(tao,x,&user->H,&user->H,flg,ptr);CHKERRQ(ierr);
+  ierr = FormHessian(tao,x,user->H,user->H,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__

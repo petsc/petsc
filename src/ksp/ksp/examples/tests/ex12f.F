@@ -60,7 +60,7 @@
 
 ! Solve system
       call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
-      call KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN,ierr)
+      call KSPSetOperators(ksp,A,A,ierr)
       call KSPSetFromOptions(ksp,ierr)
       call KSPSolve(ksp,b,x,ierr)
 

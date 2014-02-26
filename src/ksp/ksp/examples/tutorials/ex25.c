@@ -19,7 +19,7 @@ static char help[] = "Solves 1D variable coefficient Laplacian using multigrid.\
 #include <petscdmda.h>
 #include <petscksp.h>
 
-static PetscErrorCode ComputeMatrix(KSP,Mat,Mat,MatStructure*,void*);
+static PetscErrorCode ComputeMatrix(KSP,Mat,Mat,void*);
 static PetscErrorCode ComputeRHS(KSP,Vec,void*);
 
 typedef struct {
@@ -55,7 +55,7 @@ int main(int argc,char **argv)
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,NULL,NULL);CHKERRQ(ierr);
 
-  ierr = KSPGetOperators(ksp,&A,NULL,NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp,&A,NULL);CHKERRQ(ierr);
   ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&b2);CHKERRQ(ierr);
@@ -96,7 +96,7 @@ static PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
-static PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,MatStructure *str,void *ctx)
+static PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
 {
   AppCtx         *user = (AppCtx*)ctx;
   PetscErrorCode ierr;

@@ -1047,7 +1047,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
     ierr = DMDABCApplySymmetricCompression(elas_da,A,f,&is,&AA,&ff);CHKERRQ(ierr);
     ierr = VecDuplicate(ff,&XX);CHKERRQ(ierr);
 
-    ierr = KSPSetOperators(ksp_E,AA,AA,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp_E,AA,AA);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(ksp_E);CHKERRQ(ierr);
 
     ierr = KSPSolve(ksp_E,ff,XX);CHKERRQ(ierr);
@@ -1067,7 +1067,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   } else {
     ierr = DMDABCApplyCompression(elas_da,A,f);CHKERRQ(ierr);
 
-    ierr = KSPSetOperators(ksp_E,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp_E,A,A);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(ksp_E);CHKERRQ(ierr);
 
     ierr = KSPSolve(ksp_E,f,X);CHKERRQ(ierr);

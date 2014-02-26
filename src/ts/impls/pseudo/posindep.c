@@ -286,14 +286,14 @@ static PetscErrorCode SNESTSFormFunction_Pseudo(SNES snes,Vec X,Vec Y,TS ts)
 
        J = I/dt - J_{Frhs}   where J_{Frhs} is the given Jacobian of Frhs.
 */
-static PetscErrorCode SNESTSFormJacobian_Pseudo(SNES snes,Vec X,Mat *AA,Mat *BB,MatStructure *str,TS ts)
+static PetscErrorCode SNESTSFormJacobian_Pseudo(SNES snes,Vec X,Mat AA,Mat BB,TS ts)
 {
   Vec            Xdot;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = TSPseudoGetXdot(ts,X,&Xdot);CHKERRQ(ierr);
-  ierr = TSComputeIJacobian(ts,ts->ptime+ts->time_step,X,Xdot,1./ts->time_step,AA,BB,str,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = TSComputeIJacobian(ts,ts->ptime+ts->time_step,X,Xdot,1./ts->time_step,AA,BB,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -280,10 +280,10 @@ int main(int argc,char **args)
     if (lsqr) {
       Mat BtB;
       ierr = MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,4,&BtB);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,A,BtB,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,A,BtB);CHKERRQ(ierr);
       ierr = MatDestroy(&BtB);CHKERRQ(ierr);
     } else {
-      ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
     }
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 

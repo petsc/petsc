@@ -382,7 +382,6 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   PetscReal      rnorm = 0.0;
   Vec            sol_orig,b,p[3],r;
   Mat            Amat,Pmat;
-  MatStructure   pflag;
   PetscBool      diagonalscale,hybrid=cheb->hybrid;
   PetscBool      purification=cheb->purification;
 
@@ -393,7 +392,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   if (cheb->kspest && !cheb->estimate_current) {
     PetscReal max,min;
     Vec       X,B;
-    
+
     if (hybrid && purification) {
       X = ksp->vec_sol;
     } else {
@@ -409,7 +408,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     ierr = KSPSolve(cheb->kspest,B,X);CHKERRQ(ierr);
     if (hybrid) {
       cheb->its = 0; /* initialize Chebyshev iteration associated to kspest */
-      ierr      = KSPSetInitialGuessNonzero(cheb->kspest,PETSC_TRUE);CHKERRQ(ierr); 
+      ierr      = KSPSetInitialGuessNonzero(cheb->kspest,PETSC_TRUE);CHKERRQ(ierr);
     } else if (ksp->guess_zero) {
       ierr = VecZeroEntries(X);CHKERRQ(ierr);
     }
@@ -422,7 +421,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   }
 
   ksp->its = 0;
-  ierr     = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr     = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
   maxit    = ksp->max_it;
 
   /* These three point to the three active solutions, we

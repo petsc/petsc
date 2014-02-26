@@ -20,7 +20,6 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i = 0;
-  MatStructure   pflag;
   PetscReal      dp;
   PetscScalar    ai, bi;
   PetscScalar    apq,btop, bbot;
@@ -38,7 +37,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
   Q   = ksp->work[5];
 
   /* R is the true residual norm, RT is the preconditioned residual norm */
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr);     /*   R <- A*X           */
     ierr = VecAYPX(R,-1.0,B);CHKERRQ(ierr);            /*   R <- B-R == B-A*X  */

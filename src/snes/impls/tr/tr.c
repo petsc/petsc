@@ -89,7 +89,6 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   Vec                 X,F,Y,G,Ytmp;
   PetscErrorCode      ierr;
   PetscInt            maxits,i,lits;
-  MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal           rho,fnorm,gnorm,gpnorm,xnorm=0,delta,nrm,ynorm,norm1;
   PetscScalar         cnorm;
   KSP                 ksp;
@@ -156,8 +155,8 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
     }
 
     /* Solve J Y = F, where J is Jacobian matrix */
-    ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
-    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
+    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
     ierr = KSPSolve(snes->ksp,F,Ytmp);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
 

@@ -25,8 +25,6 @@ typedef struct {
   Vec rpi; /*           Ai*x - yi - bi */
   Vec complementarity; /* yi.*lamdai */
   PetscScalar phi;
-  MatStructure Hflag; /*flag for nonzero change in hessian */
-  MatStructure Aiflag,Aeflag;
   Mat L; /* diag(lamdai) */
   Mat Y; /* diag(yi) */
   Mat Ai;  /* JacI (lb)
