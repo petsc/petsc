@@ -188,15 +188,15 @@ PETSC_EXTERN PetscFunctionList MatPartitioningList;
 PETSC_EXTERN PetscFunctionList MatCoarsenList;
 
 /*E
-    MatStructure - Indicates if the matrix has the same nonzero structure
+    MatStructure - Indicates if two matrices have the same nonzero structure
 
     Level: beginner
 
    Any additions/changes here MUST also be made in include/finclude/petscmat.h
 
-.seealso: MatCopy(), KSPSetOperators(), PCSetOperators()
+.seealso: MatCopy(), MatAXPY()
 E*/
-typedef enum {DIFFERENT_NONZERO_PATTERN,SUBSET_NONZERO_PATTERN,SAME_NONZERO_PATTERN,SAME_PRECONDITIONER} MatStructure;
+typedef enum {DIFFERENT_NONZERO_PATTERN,SUBSET_NONZERO_PATTERN,SAME_NONZERO_PATTERN} MatStructure;
 
 PETSC_EXTERN PetscErrorCode MatCreateSeqDense(MPI_Comm,PetscInt,PetscInt,PetscScalar[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateDense(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar[],Mat*);

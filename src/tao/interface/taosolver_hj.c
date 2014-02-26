@@ -22,37 +22,7 @@ $    hess (Tao tao,Vec x,Mat H,Mat Hpre,void *ctx);
 .  x - input vector
 .  H - Hessian matrix
 .  Hpre - preconditioner matrix, usually the same as H
-   structure (see below)
 -  ctx - [optional] user-defined Hessian context
-
-
-   Notes:
-
-   The flag can be used to eliminate unnecessary work in the preconditioner
-   during the repeated solution of linear systems of the same size.  The
-   available options are
-$    SAME_PRECONDITIONER -
-$      Hpre is identical during successive linear solves.
-$      This option is intended for folks who are using
-$      different Amat and Pmat matrices and want to reuse the
-$      same preconditioner matrix.  For example, this option
-$      saves work by not recomputing incomplete factorization
-$      for ILU/ICC preconditioners.
-$    SAME_NONZERO_PATTERN -
-$      Hpre has the same nonzero structure during
-$      successive linear solves.
-$    DIFFERENT_NONZERO_PATTERN -
-$      Hpre does not have the same nonzero structure.
-
-   Caution:
-   If you specify SAME_NONZERO_PATTERN, the software believes your assertion
-   and does not check the structure of the matrix.  If you erroneously
-   claim that the structure is the same when it actually is not, the new
-   preconditioner will not function correctly.  Thus, use this optimization
-   feature carefully!
-
-   If in doubt about whether your preconditioner matrix has changed
-   structure or not, use the flag DIFFERENT_NONZERO_PATTERN.
 
    Level: beginner
 
@@ -104,8 +74,7 @@ PetscErrorCode TaoSetHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*f
 
    Output Parameters:
 +  H - Hessian matrix
-.  Hpre - Preconditioning matrix
--  flag - flag indicating matrix structure (SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN, or SAME_PRECONDITIONER)
+-  Hpre - Preconditioning matrix
 
    Notes:
    Most users should not need to explicitly call this routine, as it
@@ -304,43 +273,7 @@ $    jac (Tao tao,Vec x,Mat *J,Mat *Jpre,void *ctx);
 .  x - input vector
 .  J - Jacobian matrix
 .  Jpre - preconditioner matrix, usually the same as J
-.  flag - flag indicating information about the preconditioner matrix
-   structure (see below)
 -  ctx - [optional] user-defined Jacobian context
-
-   Notes:
-
-   The function jac() takes Mat * as the matrix arguments rather than Mat.
-   This allows the Jacobian evaluation routine to replace A and/or B with a
-   completely new new matrix structure (not just different matrix elements)
-   when appropriate, for instance, if the nonzero structure is changing
-   throughout the global iterations.
-
-   The flag can be used to eliminate unnecessary work in the preconditioner
-   during the repeated solution of linear systems of the same size.  The
-   available options are
-$    SAME_PRECONDITIONER -
-$      Jpre is identical during successive linear solves.
-$      This option is intended for folks who are using
-$      different Amat and Pmat matrices and want to reuse the
-$      same preconditioner matrix.  For example, this option
-$      saves work by not recomputing incomplete factorization
-$      for ILU/ICC preconditioners.
-$    SAME_NONZERO_PATTERN -
-$      Jpre has the same nonzero structure during
-$      successive linear solves.
-$    DIFFERENT_NONZERO_PATTERN -
-$      Jpre does not have the same nonzero structure.
-
-   Caution:
-   If you specify SAME_NONZERO_PATTERN, the software believes your assertion
-   and does not check the structure of the matrix.  If you erroneously
-   claim that the structure is the same when it actually is not, the new
-   preconditioner will not function correctly.  Thus, use this optimization
-   feature carefully!
-
-   If in doubt about whether your preconditioner matrix has changed
-   structure or not, use the flag DIFFERENT_NONZERO_PATTERN.
 
    Level: intermediate
 
@@ -403,47 +336,7 @@ $    jac (Tao tao,Vec x,Mat *J,Mat *Jpre,void *ctx);
 .  J - Jacobian matrix
 .  Jpre - preconditioner matrix, usually the same as J
 .  Jinv - inverse of J
-.  flag - flag indicating information about the preconditioner matrix
-   structure (see below)
 -  ctx - [optional] user-defined Jacobian context
-
-
-   Notes:
-   Because of the structure of the jacobian matrix,
-   It may be more efficient for a pde-constrained application to provide
-   its own Jinv matrix.
-
-   The function jac() takes Mat * as the matrix arguments rather than Mat.
-   This allows the Jacobian evaluation routine to replace A and/or B with a
-   completely new new maitrix structure (not just different matrix elements)
-   when appropriate, for instance, if the nonzero structure is changing
-   throughout the global iterations.
-
-   The flag can be used to eliminate unnecessary work in the preconditioner
-   during the repeated solution of linear systems of the same size.  The
-   available options are
-$    SAME_PRECONDITIONER -
-$      Jpre is identical during successive linear solves.
-$      This option is intended for folks who are using
-$      different Amat and Pmat matrices and want to reuse the
-$      same preconditioner matrix.  For example, this option
-$      saves work by not recomputing incomplete factorization
-$      for ILU/ICC preconditioners.
-$    SAME_NONZERO_PATTERN -
-$      Jpre has the same nonzero structure during
-$      successive linear solves.
-$    DIFFERENT_NONZERO_PATTERN -
-$      Jpre does not have the same nonzero structure.
-
-   Caution:
-   If you specify SAME_NONZERO_PATTERN, the software believes your assertion
-   and does not check the structure of the matrix.  If you erroneously
-   claim that the structure is the same when it actually is not, the new
-   preconditioner will not function correctly.  Thus, use this optimization
-   feature carefully!
-
-   If in doubt about whether your preconditioner matrix has changed
-   structure or not, use the flag DIFFERENT_NONZERO_PATTERN.
 
    Level: intermediate
 .seealse: TaoComputeJacobianState(), TaoSetJacobianDesignRoutine(), TaoSetStateDesignIS()
@@ -595,8 +488,7 @@ PetscErrorCode TaoSetStateDesignIS(Tao tao, IS s_is, IS d_is)
 
    Output Parameters:
 +  H - Jacobian matrix
-.  Hpre - Preconditioning matrix
--  flag - flag indicating matrix structure (SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN, or SAME_PRECONDITIONER)
+-  Hpre - Preconditioning matrix
 
    Notes:
    Most users should not need to explicitly call this routine, as it
@@ -640,8 +532,7 @@ PetscErrorCode TaoComputeJacobianEquality(Tao tao, Vec X, Mat J, Mat Jpre)
 
    Output Parameters:
 +  H - Jacobian matrix
-.  Hpre - Preconditioning matrix
--  flag - flag indicating matrix structure (SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN, or SAME_PRECONDITIONER)
+-  Hpre - Preconditioning matrix
 
    Notes:
    Most users should not need to explicitly call this routine, as it
@@ -695,46 +586,7 @@ $    jac (Tao tao,Vec x,Mat *J,Mat *Jpre,void *ctx);
 .  x - input vector
 .  J - Jacobian matrix
 .  Jpre - preconditioner matrix, usually the same as J
-.  flag - flag indicating information about the preconditioner matrix
-   structure (see below)
 -  ctx - [optional] user-defined Jacobian context
-
-   Notes:
-   Because of the structure of the jacobian matrix,
-   It may be more efficient for a pde-constrained application to provide
-   its own Jinv matrix.
-
-   The function jac() takes Mat * as the matrix arguments rather than Mat.
-   This allows the Jacobian evaluation routine to replace A and/or B with a
-   completely new new maitrix structure (not just different matrix elements)
-   when appropriate, for instance, if the nonzero structure is changing
-   throughout the global iterations.
-
-   The flag can be used to eliminate unnecessary work in the preconditioner
-   during the repeated solution of linear systems of the same size.  The
-   available options are
-$    SAME_PRECONDITIONER -
-$      Jpre is identical during successive linear solves.
-$      This option is intended for folks who are using
-$      different Amat and Pmat matrices and want to reuse the
-$      same preconditioner matrix.  For example, this option
-$      saves work by not recomputing incomplete factorization
-$      for ILU/ICC preconditioners.
-$    SAME_NONZERO_PATTERN -
-$      Jpre has the same nonzero structure during
-$      successive linear solves.
-$    DIFFERENT_NONZERO_PATTERN -
-$      Jpre does not have the same nonzero structure.
-
-   Caution:
-   If you specify SAME_NONZERO_PATTERN, the software believes your assertion
-   and does not check the structure of the matrix.  If you erroneously
-   claim that the structure is the same when it actually is not, the new
-   preconditioner will not function correctly.  Thus, use this optimization
-   feature carefully!
-
-   If in doubt about whether your preconditioner matrix has changed
-   structure or not, use the flag DIFFERENT_NONZERO_PATTERN.
 
    Level: intermediate
 .seealse: TaoComputeJacobianEquality(), TaoSetJacobianDesignRoutine(), TaoSetEqualityDesignIS()
@@ -796,47 +648,7 @@ $    jac (Tao tao,Vec x,Mat *J,Mat *Jpre,void *ctx);
 .  x - input vector
 .  J - Jacobian matrix
 .  Jpre - preconditioner matrix, usually the same as J
-.  flag - flag indicating information about the preconditioner matrix
-   structure (see below)
 -  ctx - [optional] user-defined Jacobian context
-
-
-   Notes:
-   Because of the structure of the jacobian matrix,
-   It may be more efficient for a pde-constrained application to provide
-   its own Jinv matrix.
-
-   The function jac() takes Mat * as the matrix arguments rather than Mat.
-   This allows the Jacobian evaluation routine to replace A and/or B with a
-   completely new new maitrix structure (not just different matrix elements)
-   when appropriate, for instance, if the nonzero structure is changing
-   throughout the global iterations.
-
-   The flag can be used to eliminate unnecessary work in the preconditioner
-   during the repeated solution of linear systems of the same size.  The
-   available options are
-$    SAME_PRECONDITIONER -
-$      Jpre is identical during successive linear solves.
-$      This option is intended for folks who are using
-$      different Amat and Pmat matrices and want to reuse the
-$      same preconditioner matrix.  For example, this option
-$      saves work by not recomputing incomplete factorization
-$      for ILU/ICC preconditioners.
-$    SAME_NONZERO_PATTERN -
-$      Jpre has the same nonzero structure during
-$      successive linear solves.
-$    DIFFERENT_NONZERO_PATTERN -
-$      Jpre does not have the same nonzero structure.
-
-   Caution:
-   If you specify SAME_NONZERO_PATTERN, the software believes your assertion
-   and does not check the structure of the matrix.  If you erroneously
-   claim that the structure is the same when it actually is not, the new
-   preconditioner will not function correctly.  Thus, use this optimization
-   feature carefully!
-
-   If in doubt about whether your preconditioner matrix has changed
-   structure or not, use the flag DIFFERENT_NONZERO_PATTERN.
 
    Level: intermediate
 .seealse: TaoComputeJacobianInequality(), TaoSetJacobianDesignRoutine(), TaoSetInequalityDesignIS()

@@ -641,7 +641,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
-      ierr  = MatSchurComplementUpdateSubMatrices(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1],pc->flag);CHKERRQ(ierr);
+      ierr  = MatSchurComplementUpdateSubMatrices(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1]);CHKERRQ(ierr);
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELFP) {
 	ierr = MatDestroy(&jac->schurp);CHKERRQ(ierr);
 	ierr = MatSchurComplementGetPmat(jac->schur,MAT_INITIAL_MATRIX,&jac->schurp);CHKERRQ(ierr);

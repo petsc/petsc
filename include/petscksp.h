@@ -601,7 +601,7 @@ PETSC_EXTERN PetscErrorCode MatCreateSchurComplement(Mat,Mat,Mat,Mat,Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatSchurComplementGetKSP(Mat,KSP*);
 PETSC_EXTERN PetscErrorCode MatSchurComplementSetKSP(Mat,KSP);
 PETSC_EXTERN PetscErrorCode MatSchurComplementSetSubMatrices(Mat,Mat,Mat,Mat,Mat,Mat);
-PETSC_EXTERN PetscErrorCode MatSchurComplementUpdateSubMatrices(Mat,Mat,Mat,Mat,Mat,Mat,MatStructure);
+PETSC_EXTERN PetscErrorCode MatSchurComplementUpdateSubMatrices(Mat,Mat,Mat,Mat,Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatSchurComplementGetSubMatrices(Mat,Mat*,Mat*,Mat*,Mat*,Mat*);
 PETSC_EXTERN PetscErrorCode MatSchurComplementSetAinvType(Mat,MatSchurComplementAinvType);
 PETSC_EXTERN PetscErrorCode MatSchurComplementGetAinvType(Mat,MatSchurComplementAinvType*);

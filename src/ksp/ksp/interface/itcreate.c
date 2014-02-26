@@ -478,13 +478,6 @@ PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype)
     first call KSPGetOperators() to get the one you wish to keep, call PetscObjectReference()
     on it and then pass it back in in your call to KSPSetOperators().
 
-    Caution:
-    If you specify SAME_NONZERO_PATTERN, PETSc believes your assertion
-    and does not check the structure of the matrix.  If you erroneously
-    claim that the structure is the same when it actually is not, the new
-    preconditioner will not function correctly.  Thus, use this optimization
-    feature carefully!
-
     Level: beginner
 
    Alternative usage: If the operators have NOT been set with KSP/PCSetOperators() then the operators
