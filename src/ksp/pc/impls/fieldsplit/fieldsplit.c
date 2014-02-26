@@ -1088,6 +1088,7 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetBlockSize_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSchurPrecondition_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSchurPre_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurFactType_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1512,7 +1513,7 @@ $             This is only a good preconditioner when diag(A00) is a good precon
 
     Level: intermediate
 
-.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetFields(), PCFieldSplitSchurPreType, PCLSC
+.seealso: PCFieldSplitGetSchurPre(), PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetFields(), PCFieldSplitSchurPreType, PCLSC
 
 @*/
 PetscErrorCode  PCFieldSplitSchurPrecondition(PC pc,PCFieldSplitSchurPreType ptype,Mat pre)
@@ -1522,6 +1523,36 @@ PetscErrorCode  PCFieldSplitSchurPrecondition(PC pc,PCFieldSplitSchurPreType pty
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscTryMethod(pc,"PCFieldSplitSchurPrecondition_C",(PC,PCFieldSplitSchurPreType,Mat),(pc,ptype,pre));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFieldSplitGetSchurPre"
+/*@
+    PCFieldSplitGetSchurPre - For Schur complement fieldsplit, determine how the Schur complement will be
+    preconditioned.  See PCFieldSplitSchurPrecondition() for details.
+
+    Logically Collective on PC
+
+    Input Parameters:
+.   pc      - the preconditioner context
+
+    Output Parameters:
++   ptype   - which matrix to use for preconditioning the Schur complement: PC_FIELDSPLIT_SCHUR_PRE_A11, PC_FIELDSPLIT_SCHUR_PRE_SELF, PC_FIELDSPLIT_PRE_USER
+-   userpre - matrix to use for preconditioning (with PC_FIELDSPLIT_PRE_USER), or NULL
+
+    Level: intermediate
+
+.seealso: PCFieldSplitSchurPrecondition(), PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetFields(), PCFieldSplitSchurPreType, PCLSC
+
+@*/
+PetscErrorCode PCFieldSplitGetSchurPre(PC pc,PCFieldSplitSchurPreType *ptype,Mat *pre)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCFieldSplitGetSchurPre_C",(PC,PCFieldSplitSchurPreType*,Mat*),(pc,ptype,pre));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1613,6 +1644,18 @@ static PetscErrorCode  PCFieldSplitSchurPrecondition_FieldSplit(PC pc,PCFieldSpl
     jac->schur_user = pre;
     ierr            = PetscObjectReference((PetscObject)jac->schur_user);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFieldSplitGetSchurPre_FieldSplit"
+static PetscErrorCode  PCFieldSplitGetSchurPre_FieldSplit(PC pc,PCFieldSplitSchurPreType *ptype,Mat *pre)
+{
+  PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
+
+  PetscFunctionBegin;
+  *ptype = jac->schurpre;
+  *pre   = jac->schur_user;
   PetscFunctionReturn(0);
 }
 
@@ -1727,6 +1770,7 @@ static PetscErrorCode  PCFieldSplitSetType_FieldSplit(PC pc,PCCompositeType type
 
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSubKSP_C",PCFieldSplitGetSubKSP_FieldSplit_Schur);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSchurPrecondition_C",PCFieldSplitSchurPrecondition_FieldSplit);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSchurPre_C",PCFieldSplitGetSchurPre_FieldSplit);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurFactType_C",PCFieldSplitSetSchurFactType_FieldSplit);CHKERRQ(ierr);
 
   } else {
@@ -1735,6 +1779,7 @@ static PetscErrorCode  PCFieldSplitSetType_FieldSplit(PC pc,PCCompositeType type
 
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSubKSP_C",PCFieldSplitGetSubKSP_FieldSplit);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSchurPrecondition_C",0);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSchurPre_C",0);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurFactType_C",0);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

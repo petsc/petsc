@@ -376,6 +376,7 @@ typedef enum {
 PETSC_EXTERN const char *const PCFieldSplitSchurFactTypes[];
 
 PETSC_EXTERN PetscErrorCode PCFieldSplitSchurPrecondition(PC,PCFieldSplitSchurPreType,Mat);
+PETSC_EXTERN PetscErrorCode PCFieldSplitGetSchurPre(PC,PCFieldSplitSchurPreType*,Mat*);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetSchurFactType(PC,PCFieldSplitSchurFactType);
 PETSC_EXTERN PetscErrorCode PCFieldSplitGetSchurBlocks(PC,Mat*,Mat*,Mat*,Mat*);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSchurGetS(PC,Mat *S);
