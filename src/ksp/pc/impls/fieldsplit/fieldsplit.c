@@ -1087,7 +1087,7 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetIS_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetBlockSize_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSchurPrecondition_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurPre_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSchurPre_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurFactType_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1132,7 +1132,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
     ierr = PetscOptionsGetEnum(((PetscObject)pc)->prefix,"-pc_fieldsplit_schur_factorization_type",PCFieldSplitSchurFactTypes,(PetscEnum*)&jac->schurfactorization,&flg);CHKERRQ(ierr);
     if (flg) {ierr = PetscInfo(pc,"Deprecated use of -pc_fieldsplit_schur_factorization_type\n");CHKERRQ(ierr);}
     ierr = PetscOptionsEnum("-pc_fieldsplit_schur_fact_type","Which off-diagonal parts of the block factorization to use","PCFieldSplitSetSchurFactType",PCFieldSplitSchurFactTypes,(PetscEnum)jac->schurfactorization,(PetscEnum*)&jac->schurfactorization,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsEnum("-pc_fieldsplit_schur_precondition","How to build preconditioner for Schur complement","PCFieldSplitSchurPrecondition",PCFieldSplitSchurPreTypes,(PetscEnum)jac->schurpre,(PetscEnum*)&jac->schurpre,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-pc_fieldsplit_schur_precondition","How to build preconditioner for Schur complement","PCFieldSplitSetSchurPre",PCFieldSplitSchurPreTypes,(PetscEnum)jac->schurpre,(PetscEnum*)&jac->schurpre,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1476,9 +1476,9 @@ PetscErrorCode  PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitSchurPrecondition"
+#define __FUNCT__ "PCFieldSplitSetSchurPre"
 /*@
-    PCFieldSplitSchurPrecondition -  Indicates if the Schur complement is preconditioned by a preconditioner constructed by the
+    PCFieldSplitSetSchurPre -  Indicates if the Schur complement is preconditioned by a preconditioner constructed by the
       A11 matrix. Otherwise no preconditioner is used.
 
     Collective on PC
@@ -1508,29 +1508,27 @@ $             This is only a good preconditioner when diag(A00) is a good precon
     with the additional option -fieldsplit_1_pc_type none. Usually for saddle point problems one would use a ptype of self and
     -fieldsplit_1_pc_type lsc which uses the least squares commutator to compute a preconditioner for the Schur complement.
 
-    Developer Notes: This is a terrible name, which gives no good indication of what the function does.
-                     Among other things, it should have 'Set' in the name, since it sets the type of matrix to use.
-
     Level: intermediate
 
 .seealso: PCFieldSplitGetSchurPre(), PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetFields(), PCFieldSplitSchurPreType, PCLSC
 
 @*/
-PetscErrorCode  PCFieldSplitSchurPrecondition(PC pc,PCFieldSplitSchurPreType ptype,Mat pre)
+PetscErrorCode PCFieldSplitSetSchurPre(PC pc,PCFieldSplitSchurPreType ptype,Mat pre)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCFieldSplitSchurPrecondition_C",(PC,PCFieldSplitSchurPreType,Mat),(pc,ptype,pre));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCFieldSplitSetSchurPre_C",(PC,PCFieldSplitSchurPreType,Mat),(pc,ptype,pre));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+PetscErrorCode PCFieldSplitSchurPrecondition(PC pc,PCFieldSplitSchurPreType ptype,Mat pre) {return PCFieldSplitSetSchurPre(pc,ptype,pre);} /* Deprecated name */
 
 #undef __FUNCT__
 #define __FUNCT__ "PCFieldSplitGetSchurPre"
 /*@
     PCFieldSplitGetSchurPre - For Schur complement fieldsplit, determine how the Schur complement will be
-    preconditioned.  See PCFieldSplitSchurPrecondition() for details.
+    preconditioned.  See PCFieldSplitSetSchurPre() for details.
 
     Logically Collective on PC
 
@@ -1543,7 +1541,7 @@ PetscErrorCode  PCFieldSplitSchurPrecondition(PC pc,PCFieldSplitSchurPreType pty
 
     Level: intermediate
 
-.seealso: PCFieldSplitSchurPrecondition(), PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetFields(), PCFieldSplitSchurPreType, PCLSC
+.seealso: PCFieldSplitSetSchurPre(), PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetFields(), PCFieldSplitSchurPreType, PCLSC
 
 @*/
 PetscErrorCode PCFieldSplitGetSchurPre(PC pc,PCFieldSplitSchurPreType *ptype,Mat *pre)
@@ -1574,7 +1572,7 @@ PetscErrorCode PCFieldSplitGetSchurPre(PC pc,PCFieldSplitSchurPreType *ptype,Mat
 
     Level: advanced
 
-.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSchurPreType, PCFieldSplitSchurPrecondition(), MatSchurComplement, PCFieldSplitSchurRestoreS()
+.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSchurPreType, PCFieldSplitSetSchurPre(), MatSchurComplement, PCFieldSplitSchurRestoreS()
 
 @*/
 PetscErrorCode  PCFieldSplitSchurGetS(PC pc,Mat *S)
@@ -1608,7 +1606,7 @@ PetscErrorCode  PCFieldSplitSchurGetS(PC pc,Mat *S)
 
     Level: advanced
 
-.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSchurPreType, PCFieldSplitSchurPrecondition(), MatSchurComplement, PCFieldSplitSchurGetS()
+.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSchurPreType, PCFieldSplitSetSchurPre(), MatSchurComplement, PCFieldSplitSchurGetS()
 
 @*/
 PetscErrorCode  PCFieldSplitSchurRestoreS(PC pc,Mat *S)
@@ -1631,8 +1629,8 @@ PetscErrorCode  PCFieldSplitSchurRestoreS(PC pc,Mat *S)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitSchurPrecondition_FieldSplit"
-static PetscErrorCode  PCFieldSplitSchurPrecondition_FieldSplit(PC pc,PCFieldSplitSchurPreType ptype,Mat pre)
+#define __FUNCT__ "PCFieldSplitSetSchurPre_FieldSplit"
+static PetscErrorCode  PCFieldSplitSetSchurPre_FieldSplit(PC pc,PCFieldSplitSchurPreType ptype,Mat pre)
 {
   PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode ierr;
@@ -1769,7 +1767,7 @@ static PetscErrorCode  PCFieldSplitSetType_FieldSplit(PC pc,PCCompositeType type
     pc->ops->view  = PCView_FieldSplit_Schur;
 
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSubKSP_C",PCFieldSplitGetSubKSP_FieldSplit_Schur);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSchurPrecondition_C",PCFieldSplitSchurPrecondition_FieldSplit);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurPre_C",PCFieldSplitSetSchurPre_FieldSplit);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSchurPre_C",PCFieldSplitGetSchurPre_FieldSplit);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurFactType_C",PCFieldSplitSetSchurFactType_FieldSplit);CHKERRQ(ierr);
 
@@ -1778,7 +1776,7 @@ static PetscErrorCode  PCFieldSplitSetType_FieldSplit(PC pc,PCCompositeType type
     pc->ops->view  = PCView_FieldSplit;
 
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSubKSP_C",PCFieldSplitGetSubKSP_FieldSplit);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSchurPrecondition_C",0);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurPre_C",0);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitGetSchurPre_C",0);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetSchurFactType_C",0);CHKERRQ(ierr);
   }
@@ -1976,7 +1974,7 @@ $              S = A11 - A10 ksp(A00) A01
      which is usually dense and not stored explicitly.  The action of ksp(S) is computed using the KSP solver with prefix -fieldsplit_splitname_ (where splitname was given
      in providing the SECOND split or 1 if not give). For PCFieldSplitGetKSP() when field number is 0,
      it returns the KSP associated with -fieldsplit_0_ while field number 1 gives -fieldsplit_1_ KSP. By default
-     A11 is used to construct a preconditioner for S, use PCFieldSplitSchurPrecondition() to turn on or off this
+     A11 is used to construct a preconditioner for S, use PCFieldSplitSetSchurPre() to turn on or off this
      option. You can use the preconditioner PCLSC to precondition the Schur complement with -fieldsplit_1_pc_type lsc.
      When option -fieldsplit_schur_precondition selfp is given, an approximation to S is assembled --
      Sp = A11 - A10 inv(diag(A00)) A01, which has type AIJ and can be used with a variety of preconditioners
@@ -2006,7 +2004,7 @@ $              (  0   S  )
    Concepts: physics based preconditioners, block preconditioners
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, Block_Preconditioners, PCLSC,
-           PCFieldSplitGetSubKSP(), PCFieldSplitSetFields(), PCFieldSplitSetType(), PCFieldSplitSetIS(), PCFieldSplitSchurPrecondition()
+           PCFieldSplitGetSubKSP(), PCFieldSplitSetFields(), PCFieldSplitSetType(), PCFieldSplitSetIS(), PCFieldSplitSetSchurPre()
 M*/
 
 #undef __FUNCT__

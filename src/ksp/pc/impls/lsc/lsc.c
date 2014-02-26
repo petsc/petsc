@@ -216,7 +216,7 @@ static PetscErrorCode PCView_LSC(PC pc,PetscViewer viewer)
    Concepts: physics based preconditioners, block preconditioners
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, Block_Preconditioners, PCFIELDSPLIT,
-           PCFieldSplitGetSubKSP(), PCFieldSplitSetFields(), PCFieldSplitSetType(), PCFieldSplitSetIS(), PCFieldSplitSchurPrecondition(),
+           PCFieldSplitGetSubKSP(), PCFieldSplitSetFields(), PCFieldSplitSetType(), PCFieldSplitSetIS(), PCFieldSplitSetSchurPre(),
            MatCreateSchurComplement()
 M*/
 
