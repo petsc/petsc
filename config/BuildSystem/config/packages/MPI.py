@@ -347,7 +347,7 @@ class Configure(config.package.Package):
       if config.setCompilers.Configure.isCygwin() and not config.setCompilers.Configure.isGNU(self.setCompilers.CC):
         raise RuntimeError('Sorry, cannot download-install MPICH on Windows. Sugest installing windows version of MPICH manually')
       self.liblist      = [[]]
-      if config.setCompilers.Configure.isSolaris():
+      if config.setCompilers.Configure.isSolaris() or self.framework.argDB['with-gcov']:
         self.download         = self.download_mpich_sol
       else:
         self.download         = self.download_mpich
