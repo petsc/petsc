@@ -6,7 +6,6 @@
 #include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
 /* Logging support */
-PetscClassId  ADDA_CLASSID;
 PetscLogEvent DMDA_LocalADFunction;
 
 #undef __FUNCT__

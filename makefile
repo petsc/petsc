@@ -417,9 +417,10 @@ gcov:
 mergegcov:
 	-@${PETSC_DIR}/bin/maint/gcov.py -merge_gcov ${LOC} *.tar.gz
 
-# usage make allrcslabel NEW_RCS_LABEL=v_2_0_28
-allrcslabel:
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} NEW_RCS_LABEL=${NEW_RCS_LABEL} ACTION=rcslabel  alltree
+#
+findvisibleprivatefunctions:
+	-@nm -o ${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc.a | cut -f 2,3 -d ":" -- | egrep ' (B|D|C|T) ' | sort | egrep -i -v '_(XXT|XYT|Xi|TetGen|Vec|Mat|Petsc|KSP|PC|SNES|DM|TS|PF|IS|AO|Characteristic|ClassPerf|EventPerfLog|EventRegLog|spbas_|f90array|mpifcmb|SPARSEPACK|MPIU_|MINPACK|admf_|TAO|TV_)'
+
 #
 # -------------------------------------------------------------------------------
 #
