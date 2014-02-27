@@ -48,7 +48,7 @@ const int NQPTS1D=2;
 const int NQPTS=NQPTS1D*NQPTS1D;
 const int VPERE=4;
 
-extern PetscErrorCode ComputeMatrix_MOAB(KSP,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode ComputeMatrix_MOAB(KSP,Mat,Mat,void*);
 extern PetscErrorCode ComputeRHS_MOAB(KSP,Vec,void*);
 
 extern PetscErrorCode Compute_Quad4_Basis ( PetscScalar coords[3*4], int n, PetscScalar pts[], PetscScalar *phi, PetscScalar *dphidx, PetscScalar *dphidy );
@@ -261,7 +261,7 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix_MOAB"
-PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,MatStructure *str,void *ctx)
+PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
 {
   UserContext       *user = (UserContext*)ctx;
   DM                dm;

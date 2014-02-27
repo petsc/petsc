@@ -108,7 +108,8 @@ static PetscErrorCode FormRHSFunction(TS,PetscReal,Vec,Vec,void*);
 static PetscErrorCode FormIFunctionGhosted(TS,PetscReal,Vec,Vec,Vec,void*);
 static PetscErrorCode FormIFunctionGlobalBlocked(TS,PetscReal,Vec,Vec,Vec,void*);
 static PetscErrorCode FormIFunctionMOAB(TS,PetscReal,Vec,Vec,Vec,void*);
-static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
+//static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
+static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 
 /****************
  *              *
@@ -207,7 +208,7 @@ int main(int argc,char **argv)
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %G after %D steps\n",TSConvergedReasons[reason],ftime,steps);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],ftime,steps);CHKERRQ(ierr);
 
   if (user->io) {
     /* Print the numerical solution to screen and then dump to file */
@@ -279,7 +280,7 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 */
 #undef __FUNCT__
 #define __FUNCT__ "FormIJacobian"
-PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J,Mat *Jpre,MatStructure *str,void *ptr)
+PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,Mat Jpre,void *ptr)
 {
   UserCtx             user = (UserCtx)ptr;
   PetscErrorCode      ierr;
@@ -300,7 +301,7 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J
   ierr = DMMoabGetLocalElements(dm, &elocal);CHKERRQ(ierr);
 
   /* zero out the discrete operator */
-  ierr = MatZeroEntries(*Jpre);CHKERRQ(ierr);
+  ierr = MatZeroEntries(Jpre);CHKERRQ(ierr);
 
   /* compute local element sizes - structured grid */
   hx = 1.0/user->n;
@@ -332,28 +333,27 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J
     if (elem_on_boundary) {
       if (idl == 0) {
         // Left Boundary conditions...
-        ierr = MatSetValuesBlocked(*Jpre,1,&idl,1,&idl,&bcvals[0][0],ADD_VALUES);CHKERRQ(ierr);
-        ierr = MatSetValuesBlocked(*Jpre,1,&idr,2,rcols,&e_vals[0][0][0],ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesBlocked(Jpre,1,&idl,1,&idl,&bcvals[0][0],ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesBlocked(Jpre,1,&idr,2,rcols,&e_vals[0][0][0],ADD_VALUES);CHKERRQ(ierr);
       }
       else {
         // Right Boundary conditions...
-        ierr = MatSetValuesBlocked(*Jpre,1,&idr,1,&idr,&bcvals[0][0],ADD_VALUES);CHKERRQ(ierr);
-        ierr = MatSetValuesBlocked(*Jpre,1,&idl,2,lcols,&e_vals[0][0][0],ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesBlocked(Jpre,1,&idr,1,&idr,&bcvals[0][0],ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesBlocked(Jpre,1,&idl,2,lcols,&e_vals[0][0][0],ADD_VALUES);CHKERRQ(ierr);
       }
     }
     else {
-      ierr = MatSetValuesBlocked(*Jpre,1,&idr,2,rcols,&e_vals[0][0][0],ADD_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValuesBlocked(*Jpre,1,&idl,2,lcols,&e_vals[0][0][0],ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesBlocked(Jpre,1,&idr,2,rcols,&e_vals[0][0][0],ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesBlocked(Jpre,1,&idl,2,lcols,&e_vals[0][0][0],ADD_VALUES);CHKERRQ(ierr);
     }
   }
 
-  ierr = MatAssemblyBegin(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*J != *Jpre) {
-    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (J != Jpre) {
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *str=SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 

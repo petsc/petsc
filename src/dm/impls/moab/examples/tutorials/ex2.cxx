@@ -81,7 +81,7 @@ typedef struct {
 } AppCtx;
 
 extern PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec C,Vec F,void *ptr);
-extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 extern PetscErrorCode InitialConditions(DM,Vec);
 extern PetscErrorCode InitializeVariableSystem(DM);
 extern PetscErrorCode MyMonitorSetUp(TS);
@@ -601,7 +601,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec C,Vec F,void *ptr)
 /*
     Compute the Jacobian entries based on IFuction() and insert them into the matrix
 */
-PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructure *str,void *ptr)
+PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat A,Mat J,void *ptr)
 {
   AppCtx               *ctx = (AppCtx*) ptr;
   DM                   dm;
@@ -621,7 +621,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
   PetscFunctionBeginUser;
   ierr = cHeVCreate((PetscScalar***)&cHeV);CHKERRQ(ierr);
   ierr = cHeVCreate((PetscScalar***)&fHeV);CHKERRQ(ierr);
-  ierr = MatZeroEntries(*J);CHKERRQ(ierr);
+  ierr = MatZeroEntries(J);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm,&localC);CHKERRQ(ierr);
   ierr = DMMoabGetSize(dm,&Mx,PETSC_IGNORE);CHKERRQ(ierr);
@@ -707,7 +707,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         val[1] = -2.0*ctx->HeDiffusion[He]*sx;
         val[2] = ctx->HeDiffusion[He]*sx;
         PetscPrintf(PETSC_COMM_WORLD,"[1] Setting row %D: Col = [%D, %D, %D]\n", row[0],col[0],col[1],col[2]);
-        ierr = MatSetValuesLocal(*J,1,row,3,col,val,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(J,1,row,3,col,val,ADD_VALUES);CHKERRQ(ierr);
 #else
         left = &f[idl].He[He] - rowstart; right = &f[idr].He[He] - rowstart;
         lcols[0] = &c[idl].He[He] - colstart; lcols[1] = &c[idr].He[He] - colstart;
@@ -715,8 +715,8 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         lvals[0] = ctx->HeDiffusion[He]*sx; lvals[1] = -ctx->HeDiffusion[He]*sx;
         rvals[0] = lvals[1]; rvals[1] = lvals[0];
         PetscPrintf(PETSC_COMM_WORLD,"\t [1] row [%D %D]: Left Cols = [%D, %D]  Right Cols = [%D, %D]\n", left,right,lcols[0],lcols[1],rcols[0],rcols[1]);
-        ierr = MatSetValuesLocal(*J,1,&left,2,lcols,lvals,ADD_VALUES);CHKERRQ(ierr);
-        ierr = MatSetValuesLocal(*J,1,&right,2,rcols,rvals,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(J,1,&left,2,lcols,lvals,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(J,1,&right,2,rcols,rvals,ADD_VALUES);CHKERRQ(ierr);
 #endif
       }
 
@@ -730,7 +730,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
       val[1] = -2.0*ctx->VDiffusion[1]*sx;
       val[2] = ctx->VDiffusion[1]*sx;
       PetscPrintf(PETSC_COMM_WORLD,"[2] Setting row %D: Col = [%D, %D, %D]\n", row[0],col[0],col[1],col[2]);
-      ierr = MatSetValuesLocal(*J,1,row,3,col,val,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(J,1,row,3,col,val,ADD_VALUES);CHKERRQ(ierr);
 #else
       left = &f[idl].V[1] - rowstart; right = &f[idr].V[1] - rowstart;
       lcols[0] = &c[idl].V[1] - colstart; lcols[1] = &c[idr].V[1] - colstart;
@@ -738,7 +738,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
       lvals[0] = ctx->VDiffusion[1]*sx; lvals[1] = -ctx->VDiffusion[1]*sx;
       rvals[0] = lvals[1]; rvals[1] = lvals[0];
       PetscPrintf(PETSC_COMM_WORLD,"\t [2] row [%D %D]: Left Cols = [%D, %D]  Right Cols = [%D, %D]\n", left,right,lcols[0],lcols[1],rcols[0],rcols[1]);
-      ierr = MatSetValuesLocal(*J,1,&left,2,lcols,lvals,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(J,1,&left,2,lcols,lvals,ADD_VALUES);CHKERRQ(ierr);
       //ierr = MatSetValuesLocal(*J,1,&right,2,rcols,rvals,ADD_VALUES);CHKERRQ(ierr);
 #endif
 
@@ -751,7 +751,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
       val[1] = -2.0*ctx->IDiffusion[1]*sx;
       val[2] = ctx->IDiffusion[1]*sx;
       PetscPrintf(PETSC_COMM_WORLD,"[3] Setting row %D: Col = [%D, %D, %D]\n", row[0],col[0],col[1],col[2]);
-      ierr = MatSetValuesLocal(*J,1,row,3,col,val,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(J,1,row,3,col,val,ADD_VALUES);CHKERRQ(ierr);
 #else
       left = &f[idl].I[1] - rowstart; right = &f[idr].I[1] - rowstart;
       lcols[0] = &c[idl].I[1] - colstart; lcols[1] = &c[idr].I[1] - colstart;
@@ -759,8 +759,8 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
       lvals[0] = ctx->IDiffusion[1]*sx; lvals[1] = -ctx->IDiffusion[1]*sx;
       rvals[0] = lvals[1]; rvals[1] = lvals[0];
       PetscPrintf(PETSC_COMM_WORLD,"\t [3] row [%D %D]: Left Cols = [%D, %D]  Right Cols = [%D, %D]\n", left,right,lcols[0],lcols[1],rcols[0],rcols[1]);
-      ierr = MatSetValuesLocal(*J,1,&left,2,lcols,lvals,ADD_VALUES);CHKERRQ(ierr);
-      //ierr = MatSetValuesLocal(*J,1,&right,2,rcols,rvals,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(J,1,&left,2,lcols,lvals,ADD_VALUES);CHKERRQ(ierr);
+      //ierr = MatSetValuesLocal(J,1,&right,2,rcols,rvals,ADD_VALUES);CHKERRQ(ierr);
 #endif
 
       /* Mixed He - V clusters are immobile  */
@@ -780,7 +780,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         val[0] = ctx->dissociationScale;
         val[1] = ctx->dissociationScale;
         val[2] = -ctx->dissociationScale;
-        ierr = MatSetValuesLocal(*J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
       }
       
       /*   V[V] ->  V[V-1] + V[1] */
@@ -792,7 +792,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         val[0] = ctx->dissociationScale;
         val[1] = ctx->dissociationScale;
         val[2] = -ctx->dissociationScale;
-        ierr = MatSetValuesLocal(*J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
       }
       
       /*   I[I] ->  I[I-1] + I[1] */
@@ -804,7 +804,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         val[0] = ctx->dissociationScale;
         val[1] = ctx->dissociationScale;
         val[2] = -ctx->dissociationScale;
-        ierr = MatSetValuesLocal(*J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
       }
       
       /*   He[He]-V[1] ->  He[He] + V[1]  */
@@ -816,7 +816,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         val[0] = 1000*ctx->dissociationScale;
         val[1] = 1000*ctx->dissociationScale;
         val[2] = -1000*ctx->dissociationScale;
-        ierr = MatSetValuesLocal(*J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
       }
       
 
@@ -829,7 +829,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         val[0] = 1000*ctx->dissociationScale;
         val[1] = 1000*ctx->dissociationScale;
         val[2] = -1000*ctx->dissociationScale;
-        ierr = MatSetValuesLocal(*J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
       }
       
       /*   He[He]-V[V] ->  He[He-1]-V[V] + He[1]  */
@@ -842,7 +842,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
           val[0] = 1000*ctx->dissociationScale;
           val[1] = 1000*ctx->dissociationScale;
           val[2] = -1000*ctx->dissociationScale;
-          ierr = MatSetValuesLocal(*J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValuesLocal(J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
         }
       }
       
@@ -856,7 +856,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
           val[0] = 1000*ctx->dissociationScale;
           val[1] = 1000*ctx->dissociationScale;
           val[2] = -1000*ctx->dissociationScale;
-          ierr = MatSetValuesLocal(*J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValuesLocal(J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
         }
       }
       
@@ -870,18 +870,18 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
           val[0] = 1000*ctx->dissociationScale;
           val[1] = 1000*ctx->dissociationScale;
           val[2] = -1000*ctx->dissociationScale;
-          ierr = MatSetValuesLocal(*J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValuesLocal(J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
         }
       }
     }
-    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatSetOption(*J,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = MatStoreValues(*J);CHKERRQ(ierr);
-    MatSetFromOptions(*J);
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = MatStoreValues(J);CHKERRQ(ierr);
+    MatSetFromOptions(J);
     initialized = PETSC_TRUE;
   } else {
-    ierr = MatRetrieveValues(*J);CHKERRQ(ierr);
+    ierr = MatRetrieveValues(J);CHKERRQ(ierr);
   }
 
 
@@ -924,7 +924,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         val[3] = -ctx->reactionScale*c[xi].He[he];
         val[4] = -ctx->reactionScale*c[xi].He[He-he];
         val[5] = -ctx->reactionScale*c[xi].He[he];
-        ierr = MatSetValuesLocal(*J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
       }
     }
 
@@ -942,7 +942,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         val[3] = -ctx->reactionScale*c[xi].V[v];
         val[4] = -ctx->reactionScale*c[xi].V[V-v];
         val[5] = -ctx->reactionScale*c[xi].V[v];
-        ierr = MatSetValuesLocal(*J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
       }
     }
 
@@ -960,7 +960,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         val[3] = -ctx->reactionScale*c[xi].I[i];
         val[4] = -ctx->reactionScale*c[xi].I[I-i];
         val[5] = -ctx->reactionScale*c[xi].I[i];
-        ierr = MatSetValuesLocal(*J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
       }
     }
 
@@ -976,7 +976,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
     val[3] = -1000*ctx->reactionScale*c[xi].He[1];
     val[4] = -1000*ctx->reactionScale*c[xi].V[1];
     val[5] = -1000*ctx->reactionScale*c[xi].He[1];
-    ierr = MatSetValuesLocal(*J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValuesLocal(J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
 
     /*  He[He]-V[V] + He[he] -> He[He+he]-V[V]  */
    for (V=1; V<MHeV+1; V++) {
@@ -993,7 +993,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
           val[3] = -ctx->reactionScale*c[xi].He[he];
           val[4] = -ctx->reactionScale*cHeV[V][He];
           val[5] = -ctx->reactionScale*c[xi].He[he];
-          ierr = MatSetValuesLocal(*J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValuesLocal(J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
         }
       }
     }
@@ -1013,7 +1013,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         val[3] = -ctx->reactionScale*c[xi].V[1];
         val[4] = -ctx->reactionScale*cHeV[V][He];
         val[5] = -ctx->reactionScale*c[xi].V[1];
-        ierr = MatSetValuesLocal(*J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
      }
     }
 
@@ -1035,7 +1035,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         val[3] = -ctx->reactionScale*c[xi].V[V];
         val[4] = -ctx->reactionScale*c[xi].I[I];
         val[5] = -ctx->reactionScale*c[xi].V[V];
-        ierr = MatSetValuesLocal(*J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
       }
       for (I=V+1; I<NI+1; I++) {
         row[0] = &f[xi].I[I-V] - rowstart;
@@ -1049,7 +1049,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         val[3] = -ctx->reactionScale*c[xi].V[V];
         val[4] = -ctx->reactionScale*c[xi].I[I];
         val[5] = -ctx->reactionScale*c[xi].V[V];
-        ierr = MatSetValuesLocal(*J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
       }
     }
   }
@@ -1065,12 +1065,11 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
   ierr = cHeVDestroy((PetscScalar**)cHeV);CHKERRQ(ierr);
   ierr = cHeVDestroy((PetscScalar**)fHeV);CHKERRQ(ierr);
 
-  *str = SAME_NONZERO_PATTERN;
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*A != *J) {
-    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != J) {
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1424,14 +1423,14 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   ierr = PetscNew(&ctx);CHKERRQ(ierr);
 
   /* create the replica 1-D DMDA object */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_MIRROR,-8,DOF,1,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC,-8,DOF,1,NULL,&da);CHKERRQ(ierr);
 
   /* setup visualization for He */
   ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)da),NULL,"",PETSC_DECIDE,PETSC_DECIDE,600,400,&ctx->Heviewer);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(da,&lx,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,NHe,PETSC_DETERMINE,1,1,1,lx,NULL,&ctx->Heda);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,NHe,PETSC_DETERMINE,1,1,1,lx,NULL,&ctx->Heda);CHKERRQ(ierr);
   ierr = DMDASetFieldName(ctx->Heda,0,"He");CHKERRQ(ierr);
   ierr = DMDASetCoordinateName(ctx->Heda,0,"X coordinate direction");CHKERRQ(ierr);
   ierr = PetscSNPrintf(ycoor,32,"%D ... Cluster size ... 1",NHe);CHKERRQ(ierr);
@@ -1456,7 +1455,7 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(da,&lx,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,NV,PETSC_DETERMINE,1,1,1,lx,NULL,&ctx->Vda);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,NV,PETSC_DETERMINE,1,1,1,lx,NULL,&ctx->Vda);CHKERRQ(ierr);
   ierr = DMDASetFieldName(ctx->Vda,0,"V");CHKERRQ(ierr);
   ierr = DMDASetCoordinateName(ctx->Vda,0,"X coordinate direction");CHKERRQ(ierr);
   ierr = PetscSNPrintf(ycoor,32,"%D ... Cluster size ... 1",NV);CHKERRQ(ierr);
@@ -1481,7 +1480,7 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(da,&lx,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,NHeV[1],PETSC_DETERMINE,1,1,1,lx,NULL,&ctx->HeVda);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,NHeV[1],PETSC_DETERMINE,1,1,1,lx,NULL,&ctx->HeVda);CHKERRQ(ierr);
   ierr = DMDASetFieldName(ctx->HeVda,0,"HeV[1][]");CHKERRQ(ierr);
   ierr = DMDASetCoordinateName(ctx->HeVda,0,"X coordinate direction");CHKERRQ(ierr);
   ierr = PetscSNPrintf(ycoor,32,"%D ... Cluster size ... 1",NHeV[1]);CHKERRQ(ierr);
