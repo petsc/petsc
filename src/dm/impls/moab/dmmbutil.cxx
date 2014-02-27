@@ -53,8 +53,8 @@ static void DMMoab_SetStructuredCoords_Private(PetscInt i, PetscInt j, PetscInt 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMMoab_SetElementConnectivity_Private"
-static void DMMoab_SetElementConnectivity_Private(PetscInt dim, moab::EntityType etype, PetscInt offset, PetscInt nele, PetscInt i, PetscInt j, PetscInt k, PetscInt vfirst, moab::EntityHandle *connectivity)
+#define __FUNCT__ "DMMoab_SetTensorElementConnectivity_Private"
+static void DMMoab_SetTensorElementConnectivity_Private(PetscInt dim, moab::EntityType etype, PetscInt offset, PetscInt nele, PetscInt i, PetscInt j, PetscInt k, PetscInt vfirst, moab::EntityHandle *connectivity)
 {
   std::vector<int>    subent_conn(pow(2,dim));  /* only linear edge, quad, hex supported now */
 
@@ -86,6 +86,100 @@ static void DMMoab_SetElementConnectivity_Private(PetscInt dim, moab::EntityType
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMMoab_SetSimplexElementConnectivity_Private"
+static void DMMoab_SetSimplexElementConnectivity_Private(PetscInt dim, PetscInt subelem, moab::EntityType etype, PetscInt offset, PetscInt nele, PetscInt i, PetscInt j, PetscInt k, PetscInt vfirst, moab::EntityHandle *connectivity)
+{
+  std::vector<int>    subent_conn(pow(2,dim));  /* only linear edge, quad, hex supported now */
+
+  moab::CN::SubEntityVertexIndices(etype, dim, 0, subent_conn.data());
+
+  switch(dim) {
+    case 1:
+      connectivity[offset+subent_conn[0]] = vfirst+i;
+      connectivity[offset+subent_conn[1]] = vfirst+(i+1);
+      break;
+    case 2:
+      if (subelem) { /* 1 2 3 of a QUAD */
+        connectivity[offset+subent_conn[0]] = vfirst+i+j*(nele+1);
+        connectivity[offset+subent_conn[1]] = vfirst+(i+1)+j*(nele+1);
+        connectivity[offset+subent_conn[2]] = vfirst+(i+1)+(j+1)*(nele+1);
+      }
+      else {        /* 3 4 1 of a QUAD */
+        connectivity[offset+subent_conn[0]] = vfirst+(i+1)+(j+1)*(nele+1);
+        connectivity[offset+subent_conn[1]] = vfirst+i+(j+1)*(nele+1);
+        connectivity[offset+subent_conn[2]] = vfirst+i+j*(nele+1);
+      }
+      break;
+    case 3:
+    default:
+      switch(subelem) {
+        case 0: /* 0 1 2 5 of a HEX */
+          connectivity[offset+subent_conn[0]] = vfirst+i+(nele+1)*(j+(nele+1)*k);
+          connectivity[offset+subent_conn[1]] = vfirst+(i+1)+(nele+1)*(j+(nele+1)*k);
+          connectivity[offset+subent_conn[2]] = vfirst+(i+1)+(nele+1)*((j+1)+(nele+1)*k);
+          connectivity[offset+subent_conn[3]] = vfirst+(i+1)+(nele+1)*(j+(nele+1)*(k+1));
+          break;
+        case 1: /* 0 2 7 5 of a HEX */
+          connectivity[offset+subent_conn[0]] = vfirst+i+(nele+1)*(j+(nele+1)*k);
+          connectivity[offset+subent_conn[1]] = vfirst+(i+1)+(nele+1)*((j+1)+(nele+1)*k);
+          connectivity[offset+subent_conn[2]] = vfirst+i+(nele+1)*((j+1)+(nele+1)*(k+1));
+          connectivity[offset+subent_conn[3]] = vfirst+(i+1)+(nele+1)*(j+(nele+1)*(k+1));
+          break;
+        case 2: /* 0 2 3 7 of a HEX */
+          connectivity[offset+subent_conn[0]] = vfirst+i+(nele+1)*(j+(nele+1)*k);
+          connectivity[offset+subent_conn[1]] = vfirst+(i+1)+(nele+1)*((j+1)+(nele+1)*k);
+          connectivity[offset+subent_conn[2]] = vfirst+i+(nele+1)*((j+1)+(nele+1)*k);
+          connectivity[offset+subent_conn[3]] = vfirst+i+(nele+1)*((j+1)+(nele+1)*(k+1));
+          break;
+        case 3: /* 0 5 7 4 of a HEX */
+          connectivity[offset+subent_conn[0]] = vfirst+i+(nele+1)*(j+(nele+1)*k);
+          connectivity[offset+subent_conn[1]] = vfirst+(i+1)+(nele+1)*(j+(nele+1)*(k+1));
+          connectivity[offset+subent_conn[2]] = vfirst+i+(nele+1)*((j+1)+(nele+1)*(k+1));
+          connectivity[offset+subent_conn[3]] = vfirst+i+(nele+1)*(j+(nele+1)*(k+1));
+          break;
+        case 4: /* 2 7 5 6 of a HEX */
+          connectivity[offset+subent_conn[0]] = vfirst+(i+1)+(nele+1)*((j+1)+(nele+1)*k);
+          connectivity[offset+subent_conn[1]] = vfirst+i+(nele+1)*((j+1)+(nele+1)*(k+1));
+          connectivity[offset+subent_conn[2]] = vfirst+(i+1)+(nele+1)*(j+(nele+1)*(k+1));
+          connectivity[offset+subent_conn[3]] = vfirst+(i+1)+(nele+1)*((j+1)+(nele+1)*(k+1));
+          break;
+      }
+      break;
+  }
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoab_SetElementConnectivity_Private"
+static void DMMoab_SetElementConnectivity_Private(PetscBool useSimplex, PetscInt dim, moab::EntityType etype, PetscInt *ecount, PetscInt vpere, PetscInt nele, PetscInt i, PetscInt j, PetscInt k, PetscInt vfirst, moab::EntityHandle *connectivity)
+{
+  PetscInt m,subelem;
+  if (useSimplex) {
+    switch (dim) {
+      case 1:
+        subelem=1;
+        DMMoab_SetSimplexElementConnectivity_Private(dim, 0, etype, (*ecount)*vpere, nele, i, j, k, vfirst, connectivity);
+        break;
+      case 2:
+        subelem=2;
+        for (m=0; m<subelem; m++)
+          DMMoab_SetSimplexElementConnectivity_Private(dim, m, etype, (*ecount+m)*vpere, nele, i, j, k, vfirst, connectivity);
+        break;
+      case 3:
+        subelem=5;
+        for (m=0; m<subelem; m++)
+          DMMoab_SetSimplexElementConnectivity_Private(dim, m, etype, (*ecount+m)*vpere, nele, i, j, k, vfirst, connectivity);
+        break;
+    }
+  }
+  else {
+    subelem=1;
+    DMMoab_SetTensorElementConnectivity_Private(dim, etype, (*ecount)*vpere, nele, i, j, k, vfirst, connectivity);
+  }
+  *ecount+=subelem;
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "DMMoabCreateBoxMesh"
 /*@
   DMMoabCreateBoxMesh - Creates a mesh on the tensor product (box) of intervals with user specified bounds.
@@ -107,7 +201,7 @@ static void DMMoab_SetElementConnectivity_Private(PetscInt dim, moab::EntityType
 .keywords: DM, create
 .seealso: DMSetType(), DMCreate(), DMMoabLoadFromFile()
 @*/
-PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, const PetscReal* bounds, PetscInt nele, PetscInt user_nghost, DM *dm)
+PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSimplex, const PetscReal* bounds, PetscInt nele, PetscInt user_nghost, DM *dm)
 {
   PetscErrorCode  ierr;
   moab::ErrorCode merr;
@@ -181,20 +275,36 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, const PetscReal*
     etype = moab::MBEDGE;
     break;
    case 2:
-    vpere = 4;
-    locnele = (ise[1]-ise[0])*(ise[3]-ise[2]);
     locnpts = (ise[1]-ise[0]+1)*(ise[3]-ise[2]+1);
-    ghnele = (nghost > 0 ? (ise[2] > 0 ? nele : 0) + (ise[3] < nele ? nele : 0) : 0);
     ghnpts = (nghost > 0 ? (ise[2] > 0 ? npts : 0) + (ise[3] < nele ? npts : 0) : 0);
-    etype = moab::MBQUAD;
+    if (useSimplex) {
+      vpere = 3;
+      locnele = 2*(ise[1]-ise[0])*(ise[3]-ise[2]);
+      ghnele = 2*(nghost > 0 ? (ise[2] > 0 ? nele : 0) + (ise[3] < nele ? nele : 0) : 0);
+      etype = moab::MBTRI;
+    }
+    else {
+      vpere = 4;
+      locnele = (ise[1]-ise[0])*(ise[3]-ise[2]);
+      ghnele = (nghost > 0 ? (ise[2] > 0 ? nele : 0) + (ise[3] < nele ? nele : 0) : 0);
+      etype = moab::MBQUAD;
+    }
     break;
    case 3:
-    vpere = 8;
-    locnele = (ise[1]-ise[0])*(ise[3]-ise[2])*(ise[5]-ise[4]);
     locnpts = (ise[1]-ise[0]+1)*(ise[3]-ise[2]+1)*(ise[5]-ise[4]+1);
-    ghnele = (nghost > 0 ? (ise[4] > 0 ? nele*nele : 0) + (ise[5] < nele ? nele*nele : 0) : 0);
     ghnpts = (nghost > 0 ? (ise[4] > 0 ? npts*npts : 0) + (ise[5] < nele ? npts*npts : 0) : 0);
-    etype = moab::MBHEX;
+    if (useSimplex) {
+      vpere = 4;
+      locnele = 5*(ise[1]-ise[0])*(ise[3]-ise[2])*(ise[5]-ise[4]);
+      ghnele = 5*(nghost > 0 ? (ise[4] > 0 ? nele*nele : 0) + (ise[5] < nele ? nele*nele : 0) : 0);
+      etype = moab::MBTET;
+    }
+    else {
+      vpere = 8;
+      locnele = (ise[1]-ise[0])*(ise[3]-ise[2])*(ise[5]-ise[4]);
+      ghnele = (nghost > 0 ? (ise[4] > 0 ? nele*nele : 0) + (ise[5] < nele ? nele*nele : 0) : 0);
+      etype = moab::MBHEX;
+    }
     break;
   }
 
@@ -277,7 +387,6 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, const PetscReal*
   merr = readMeshIface->get_element_connect (locnele+ghnele,vpere,etype,1,efirst,connectivity);MBERRNM(merr);
 
   /* offset appropriately so that only local ID and not global ID numbers are set for connectivity array */
-//  PetscPrintf(PETSC_COMM_SELF, "[%D] first local handle %D\n", rank, vfirst);
   vfirst-=vgid[0]-1;
 
    /* 3. Loop over elements in 3 nested loops over i, j, k; for each (i,j,k):
@@ -288,8 +397,8 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, const PetscReal*
   if (ise[2*dim-2] >= nghost) {
     for (k = (dim==3?ise[4]-nghost:ise[4]); k < (dim==3?ise[4]:std::max(ise[5],1)); k++) {
       for (j = (dim==2?ise[2]-nghost:ise[2]); j < (dim==2?ise[2]:std::max(ise[3],1)); j++) {
-        for (i = (dim>1?ise[0]:ise[0]-nghost); i < (dim>1?std::max(ise[1],1):ise[0]); i++, ecount++) {
-          DMMoab_SetElementConnectivity_Private(dim, etype, ecount*vpere, nele, i, j, k, vfirst, connectivity);
+        for (i = (dim>1?ise[0]:ise[0]-nghost); i < (dim>1?std::max(ise[1],1):ise[0]); i++) {
+          DMMoab_SetElementConnectivity_Private(useSimplex, dim, etype, &ecount, vpere, nele, i, j, k, vfirst, connectivity);
         }
       }
     }
@@ -298,8 +407,8 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, const PetscReal*
   /* create owned elements requested by user */
   for (k = ise[4]; k < std::max(ise[5],1); k++) {
     for (j = ise[2]; j < std::max(ise[3],1); j++) {
-      for (i = ise[0]; i < std::max(ise[1],1); i++,ecount++) {
-        DMMoab_SetElementConnectivity_Private(dim, etype, ecount*vpere, nele, i, j, k, vfirst, connectivity);
+      for (i = ise[0]; i < std::max(ise[1],1); i++) {
+        DMMoab_SetElementConnectivity_Private(useSimplex, dim, etype, &ecount, vpere, nele, i, j, k, vfirst, connectivity);
       }
     }
   }
@@ -308,8 +417,8 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, const PetscReal*
   if (ise[2*dim-1] <= nele-nghost) {
     for (k = (dim==3?ise[5]:ise[4]); k < (dim==3?ise[5]+nghost:std::max(ise[5],1)); k++) {
       for (j = (dim==2?ise[3]:ise[2]); j < (dim==2?ise[3]+nghost:std::max(ise[3],1)); j++) {
-        for (i = (dim>1?ise[0]:ise[1]); i < (dim>1?std::max(ise[1],1):ise[1]+nghost); i++, ecount++) {
-          DMMoab_SetElementConnectivity_Private(dim, etype, ecount*vpere, nele, i, j, k, vfirst, connectivity);
+        for (i = (dim>1?ise[0]:ise[1]); i < (dim>1?std::max(ise[1],1):ise[1]+nghost); i++) {
+          DMMoab_SetElementConnectivity_Private(useSimplex, dim, etype, &ecount, vpere, nele, i, j, k, vfirst, connectivity);
         }
       }
     }
