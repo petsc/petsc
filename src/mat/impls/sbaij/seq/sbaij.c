@@ -376,17 +376,17 @@ static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
           for (l=0; l<bs; l++) {
 #if defined(PETSC_USE_COMPLEX)
             if (PetscImaginaryPart(a->a[bs2*k + l*bs + j]) > 0.0 && PetscRealPart(a->a[bs2*k + l*bs + j]) != 0.0) {
-              ierr = PetscViewerASCIIPrintf(viewer," (%D, %G + %G i) ",bs*a->j[k]+l,
-                                            PetscRealPart(a->a[bs2*k + l*bs + j]),PetscImaginaryPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
+              ierr = PetscViewerASCIIPrintf(viewer," (%D, %g + %g i) ",bs*a->j[k]+l,
+                                            (double)PetscRealPart(a->a[bs2*k + l*bs + j]),(double)PetscImaginaryPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
             } else if (PetscImaginaryPart(a->a[bs2*k + l*bs + j]) < 0.0 && PetscRealPart(a->a[bs2*k + l*bs + j]) != 0.0) {
-              ierr = PetscViewerASCIIPrintf(viewer," (%D, %G - %G i) ",bs*a->j[k]+l,
-                                            PetscRealPart(a->a[bs2*k + l*bs + j]),-PetscImaginaryPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
+              ierr = PetscViewerASCIIPrintf(viewer," (%D, %g - %g i) ",bs*a->j[k]+l,
+                                            (double)PetscRealPart(a->a[bs2*k + l*bs + j]),-(double)PetscImaginaryPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
             } else if (PetscRealPart(a->a[bs2*k + l*bs + j]) != 0.0) {
-              ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",bs*a->j[k]+l,PetscRealPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
+              ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",bs*a->j[k]+l,(double)PetscRealPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
             }
 #else
             if (a->a[bs2*k + l*bs + j] != 0.0) {
-              ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",bs*a->j[k]+l,a->a[bs2*k + l*bs + j]);CHKERRQ(ierr);
+              ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",bs*a->j[k]+l,(double)a->a[bs2*k + l*bs + j]);CHKERRQ(ierr);
             }
 #endif
           }
@@ -409,27 +409,27 @@ static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
         /* diagonal entry */
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginaryPart(a->a[diag[i]]) > 0.0) {
-          ierr = PetscViewerASCIIPrintf(viewer," (%D, %G + %G i) ",a->j[diag[i]],PetscRealPart(1.0/a->a[diag[i]]),PetscImaginaryPart(1.0/a->a[diag[i]]));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," (%D, %g + %g i) ",a->j[diag[i]],(double)PetscRealPart(1.0/a->a[diag[i]]),(double)PetscImaginaryPart(1.0/a->a[diag[i]]));CHKERRQ(ierr);
         } else if (PetscImaginaryPart(a->a[diag[i]]) < 0.0) {
-          ierr = PetscViewerASCIIPrintf(viewer," (%D, %G - %G i) ",a->j[diag[i]],PetscRealPart(1.0/a->a[diag[i]]),-PetscImaginaryPart(1.0/a->a[diag[i]]));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," (%D, %g - %g i) ",a->j[diag[i]],(double)PetscRealPart(1.0/a->a[diag[i]]),-(double)PetscImaginaryPart(1.0/a->a[diag[i]]));CHKERRQ(ierr);
         } else {
-          ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",a->j[diag[i]],PetscRealPart(1.0/a->a[diag[i]]));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",a->j[diag[i]],(double)PetscRealPart(1.0/a->a[diag[i]]));CHKERRQ(ierr);
         }
 #else
-        ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",a->j[diag[i]],1.0/a->a[diag[i]]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",a->j[diag[i]],(double)(1.0/a->a[diag[i]]));CHKERRQ(ierr);
 #endif
         /* off-diagonal entries */
         for (k=a->i[i]; k<a->i[i+1]-1; k++) {
 #if defined(PETSC_USE_COMPLEX)
           if (PetscImaginaryPart(a->a[k]) > 0.0) {
-            ierr = PetscViewerASCIIPrintf(viewer," (%D, %G + %G i) ",bs*a->j[k],PetscRealPart(a->a[k]),PetscImaginaryPart(a->a[k]));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer," (%D, %g + %g i) ",bs*a->j[k],(double)PetscRealPart(a->a[k]),(double)PetscImaginaryPart(a->a[k]));CHKERRQ(ierr);
           } else if (PetscImaginaryPart(a->a[k]) < 0.0) {
-            ierr = PetscViewerASCIIPrintf(viewer," (%D, %G - %G i) ",bs*a->j[k],PetscRealPart(a->a[k]),-PetscImaginaryPart(a->a[k]));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer," (%D, %g - %g i) ",bs*a->j[k],(double)PetscRealPart(a->a[k]),-(double)PetscImaginaryPart(a->a[k]));CHKERRQ(ierr);
           } else {
-            ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",bs*a->j[k],PetscRealPart(a->a[k]));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",bs*a->j[k],(double)PetscRealPart(a->a[k]));CHKERRQ(ierr);
           }
 #else
-          ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",a->j[k],a->a[k]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",a->j[k],(double)a->a[k]);CHKERRQ(ierr);
 #endif
         }
         ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
@@ -443,16 +443,16 @@ static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
             for (l=0; l<bs; l++) {            /* for column */
 #if defined(PETSC_USE_COMPLEX)
               if (PetscImaginaryPart(a->a[bs2*k + l*bs + j]) > 0.0) {
-                ierr = PetscViewerASCIIPrintf(viewer," (%D, %G + %G i) ",bs*a->j[k]+l,
-                                              PetscRealPart(a->a[bs2*k + l*bs + j]),PetscImaginaryPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
+                ierr = PetscViewerASCIIPrintf(viewer," (%D, %g + %g i) ",bs*a->j[k]+l,
+                                              (double)PetscRealPart(a->a[bs2*k + l*bs + j]),(double)PetscImaginaryPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
               } else if (PetscImaginaryPart(a->a[bs2*k + l*bs + j]) < 0.0) {
-                ierr = PetscViewerASCIIPrintf(viewer," (%D, %G - %G i) ",bs*a->j[k]+l,
-                                              PetscRealPart(a->a[bs2*k + l*bs + j]),-PetscImaginaryPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
+                ierr = PetscViewerASCIIPrintf(viewer," (%D, %g - %g i) ",bs*a->j[k]+l,
+                                              (double)PetscRealPart(a->a[bs2*k + l*bs + j]),-(double)PetscImaginaryPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
               } else {
-                ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",bs*a->j[k]+l,PetscRealPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
+                ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",bs*a->j[k]+l,(double)PetscRealPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
               }
 #else
-              ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",bs*a->j[k]+l,a->a[bs2*k + l*bs + j]);CHKERRQ(ierr);
+              ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",bs*a->j[k]+l,(double)a->a[bs2*k + l*bs + j]);CHKERRQ(ierr);
 #endif
             }
           }
@@ -1040,6 +1040,7 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
         }
         rp[i]                      = bcol;
         ap[bs2*i + bs*cidx + ridx] = value;
+        A->nonzerostate++;
 noinsert1:;
         low = i;
       }
@@ -1174,7 +1175,7 @@ PetscErrorCode MatSetUp_SeqSBAIJ(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr =  MatSeqSBAIJSetPreallocation_SeqSBAIJ(A,A->rmap->bs,PETSC_DEFAULT,0);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(A,A->rmap->bs,PETSC_DEFAULT,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1228,7 +1229,7 @@ PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
         j++;
       }
     }
-    ierr = PetscInfo3(Y,"ratio of nnz_s(X)/nnz_s(Y): %D/%D = %G\n",bs2*x->nz,bs2*y->nz,(PetscReal)(bs2*x->nz)/(bs2*y->nz));CHKERRQ(ierr);
+    ierr = PetscInfo3(Y,"ratio of nnz_s(X)/nnz_s(Y): %D/%D = %g\n",bs2*x->nz,bs2*y->nz,(double)((PetscReal)(bs2*x->nz)/(PetscReal)(bs2*y->nz)));CHKERRQ(ierr);
   } else {
     ierr = MatGetRowUpperTriangular(X);CHKERRQ(ierr);
     ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
@@ -1311,7 +1312,6 @@ PetscErrorCode MatZeroRowsColumns_SeqSBAIJ(Mat A,PetscInt is_n,const PetscInt is
     ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
     vecs = PETSC_TRUE;
   }
-  A->same_nonzero = PETSC_TRUE;
 
   /* zero the columns */
   ierr = PetscCalloc1(A->rmap->n,&zeroed);CHKERRQ(ierr);
@@ -1568,8 +1568,7 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,PetscInt 
   if (nz >= 0 || nnz) realalloc = PETSC_TRUE;
   B->preallocated = PETSC_TRUE;
 
-  ierr = PetscLayoutSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(B,PetscAbs(bs));CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
   ierr = PetscLayoutGetBlockSize(B->rmap,&bs);CHKERRQ(ierr);

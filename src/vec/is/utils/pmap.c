@@ -142,16 +142,15 @@ PetscErrorCode  PetscLayoutSetUp(PetscLayout map)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (map->bs <= 0) map->bs = 1;
   if ((map->n >= 0) && (map->N >= 0) && (map->range)) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_size(map->comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(map->comm, &rank);CHKERRQ(ierr);
-  if (map->n > 0) map->n = map->n/map->bs;
-  if (map->N > 0) map->N = map->N/map->bs;
+  if (map->n > 0) map->n = map->n/PetscAbs(map->bs);
+  if (map->N > 0) map->N = map->N/PetscAbs(map->bs);
   ierr = PetscSplitOwnership(map->comm,&map->n,&map->N);CHKERRQ(ierr);
-  map->n = map->n*map->bs;
-  map->N = map->N*map->bs;
+  map->n = map->n*PetscAbs(map->bs);
+  map->N = map->N*PetscAbs(map->bs);
   if (!map->range) {
     ierr = PetscMalloc1((size+1), &map->range);CHKERRQ(ierr);
   }
@@ -461,6 +460,7 @@ PetscErrorCode  PetscLayoutGetSize(PetscLayout map,PetscInt *n)
 PetscErrorCode  PetscLayoutSetBlockSize(PetscLayout map,PetscInt bs)
 {
   PetscFunctionBegin;
+  if (bs < 0) PetscFunctionReturn(0);
   if (map->n > 0 && map->n % bs) SETERRQ2(map->comm,PETSC_ERR_ARG_INCOMP,"Local size %D not compatible with block size %D",map->n,bs);
   if (map->bs > 0 && map->bs != bs) SETERRQ2(map->comm,PETSC_ERR_ARG_INCOMP,"Cannot change block size %D to %D",map->bs,bs);
   map->bs = bs;
@@ -495,7 +495,7 @@ PetscErrorCode  PetscLayoutSetBlockSize(PetscLayout map,PetscInt bs)
 PetscErrorCode  PetscLayoutGetBlockSize(PetscLayout map,PetscInt *bs)
 {
   PetscFunctionBegin;
-  *bs = map->bs;
+  *bs = PetscAbs(map->bs);
   PetscFunctionReturn(0);
 }
 

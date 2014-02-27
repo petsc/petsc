@@ -110,7 +110,6 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
  */
 
   KSP_QCG        *pcgP = (KSP_QCG*)ksp->data;
-  MatStructure   pflag;
   Mat            Amat,Pmat;
   Vec            W,WA,WA2,R,P,ASP,BS,X,B;
   PetscScalar    scal,beta,rntrn,step;
@@ -147,7 +146,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   /* Initialize variables */
   ierr = VecSet(W,0.0);CHKERRQ(ierr);  /* W = 0 */
   ierr = VecSet(X,0.0);CHKERRQ(ierr);  /* X = 0 */
-  ierr = PCGetOperators(pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   /* Compute:  BS = D^{-1} B */
   ierr = PCApplySymmetricLeft(pc,B,BS);CHKERRQ(ierr);
@@ -207,9 +206,9 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
       pcgP->ltsnrm = pcgP->delta;                       /* convergence in direction of */
       ksp->reason  = KSP_CONVERGED_CG_NEG_CURVE;  /* negative curvature */
       if (!i) {
-        ierr = PetscInfo1(ksp,"negative curvature: delta=%G\n",pcgP->delta);CHKERRQ(ierr);
+        ierr = PetscInfo1(ksp,"negative curvature: delta=%g\n",(double)pcgP->delta);CHKERRQ(ierr);
       } else {
-        ierr = PetscInfo3(ksp,"negative curvature: step1=%G, step2=%G, delta=%G\n",step1,step2,pcgP->delta);CHKERRQ(ierr);
+        ierr = PetscInfo3(ksp,"negative curvature: step1=%g, step2=%g, delta=%g\n",(double)step1,(double)step2,(double)pcgP->delta);CHKERRQ(ierr);
       }
 
     } else {
@@ -236,9 +235,9 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
         pcgP->ltsnrm = pcgP->delta;
         ksp->reason  = KSP_CONVERGED_CG_CONSTRAINED; /* convergence along constrained step */
         if (!i) {
-          ierr = PetscInfo1(ksp,"constrained step: delta=%G\n",pcgP->delta);CHKERRQ(ierr);
+          ierr = PetscInfo1(ksp,"constrained step: delta=%g\n",(double)pcgP->delta);CHKERRQ(ierr);
         } else {
-          ierr = PetscInfo3(ksp,"constrained step: step1=%G, step2=%G, delta=%G\n",step1,step2,pcgP->delta);CHKERRQ(ierr);
+          ierr = PetscInfo3(ksp,"constrained step: step1=%g, step2=%g, delta=%g\n",(double)step1,(double)step2,(double)pcgP->delta);CHKERRQ(ierr);
         }
 
       } else {
@@ -254,7 +253,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
         ierr = KSPMonitor(ksp,i+1,rnrm);CHKERRQ(ierr);
         ierr = (*ksp->converged)(ksp,i+1,rnrm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
         if (ksp->reason) {                 /* convergence for */
-          ierr = PetscInfo3(ksp,"truncated step: step=%G, rnrm=%G, delta=%G\n",PetscRealPart(step),rnrm,pcgP->delta);CHKERRQ(ierr);
+          ierr = PetscInfo3(ksp,"truncated step: step=%g, rnrm=%g, delta=%g\n",(double)PetscRealPart(step),(double)rnrm,(double)pcgP->delta);CHKERRQ(ierr);
         }
       }
     }

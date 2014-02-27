@@ -122,8 +122,8 @@ PetscErrorCode  MatFDColoringView(MatFDColoring c,PetscViewer viewer)
     ierr = MatFDColoringView_Draw(c,viewer);CHKERRQ(ierr);
   } else if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)c,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Error tolerance=%G\n",c->error_rel);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Umin=%G\n",c->umin);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Error tolerance=%g\n",(double)c->error_rel);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Umin=%g\n",(double)c->umin);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Number of colors=%D\n",c->ncolors);CHKERRQ(ierr);
 
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
@@ -580,7 +580,7 @@ PetscErrorCode  MatFDColoringGetPerturbedColumns(MatFDColoring coloring,PetscInt
 
 .keywords: coloring, Jacobian, finite differences
 @*/
-PetscErrorCode  MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
+PetscErrorCode  MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,void *sctx)
 {
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
@@ -606,7 +606,7 @@ PetscErrorCode  MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStruct
   }
 
   ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
-  ierr = (*J->ops->fdcoloringapply)(J,coloring,x1,flag,sctx);CHKERRQ(ierr);
+  ierr = (*J->ops->fdcoloringapply)(J,coloring,x1,sctx);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

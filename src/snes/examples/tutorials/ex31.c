@@ -1152,7 +1152,7 @@ int main(int argc, char **argv)
   ierr = DMSetNullSpaceConstructor(user.dm, 1, CreateNullSpaces);CHKERRQ(ierr);
 
   ierr = DMSNESSetFunctionLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))DMPlexComputeResidualFEM,&user);CHKERRQ(ierr);
-  ierr = DMSNESSetJacobianLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure*,void*))DMPlexComputeJacobianFEM,&user);CHKERRQ(ierr);
+  ierr = DMSNESSetJacobianLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,void*))DMPlexComputeJacobianFEM,&user);CHKERRQ(ierr);
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
@@ -1219,7 +1219,6 @@ int main(int argc, char **argv)
     /* Check Jacobian */
     {
       Vec          b;
-      MatStructure flag;
       MatNullSpace nullSpace2;
       PetscBool    isNull;
 
@@ -1228,7 +1227,7 @@ int main(int argc, char **argv)
       if (!isNull) SETERRQ(comm, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
       ierr = MatNullSpaceDestroy(&nullSpace2);CHKERRQ(ierr);
 
-      ierr = SNESComputeJacobian(snes, u, &A, &A, &flag);CHKERRQ(ierr);
+      ierr = SNESComputeJacobian(snes, u, &A, &A);CHKERRQ(ierr);
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
       ierr = VecSet(r, 0.0);CHKERRQ(ierr);
       ierr = SNESComputeFunction(snes, r, b);CHKERRQ(ierr);

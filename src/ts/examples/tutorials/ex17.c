@@ -20,6 +20,7 @@ static const char help[] = "Time-dependent PDE in 1d. Simplified from ex15.c for
          ./ex17 -da_grid_x 100  -ts_type gl -ts_adapt_type none -ts_max_steps 2
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 
@@ -36,7 +37,7 @@ typedef struct {
 } AppCtx;
 
 static PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
-static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
+static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 static PetscErrorCode FormInitialSolution(TS,Vec,void*);
 
 #undef __FUNCT__
@@ -60,7 +61,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-11,1,1,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-11,1,1,NULL,&da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA;
@@ -137,7 +138,7 @@ int main(int argc,char **argv)
   ierr = VecMin(u,NULL,&vmin);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
   ierr = TSGetTime(ts,&ftime);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"timestep %D: time %G, solution norm %G, max %G, min %G\n",nsteps,ftime,norm,vmax,vmin);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"timestep %D: time %g, solution norm %g, max %g, min %g\n",nsteps,(double)ftime,(double)norm,(double)vmax,(double)vmin);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.
@@ -213,7 +214,7 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,v
 */
 #undef __FUNCT__
 #define __FUNCT__ "FormIJacobian"
-PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat *Jpre,MatStructure *str,void *ctx)
+PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat J,Mat Jpre,void *ctx)
 {
   PetscErrorCode ierr;
   PetscInt       i,rstart,rend,Mx;
@@ -226,7 +227,7 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J
 
   PetscFunctionBeginUser;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(*Jpre,&rstart,&rend);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(Jpre,&rstart,&rend);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
   hx = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
@@ -246,18 +247,18 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J
       col[nc].i = i;   vals[nc++] = 2.0*sx + a;
       col[nc].i = i+1; vals[nc++] = -1.0*sx;
     }
-    ierr = MatSetValuesStencil(*Jpre,1,&row,nc,col,vals,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValuesStencil(Jpre,1,&row,nc,col,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
 
-  ierr = MatAssemblyBegin(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*J != *Jpre) {
-    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (J != Jpre) {
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   if (user->viewJacobian) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Jpre:\n");CHKERRQ(ierr);
-    ierr = MatView(*Jpre,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = MatView(Jpre,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

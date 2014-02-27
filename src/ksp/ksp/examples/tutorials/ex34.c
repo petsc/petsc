@@ -22,10 +22,11 @@ This uses multigrid to solve the linear system
 
 static char help[] = "Solves 3D Laplacian using multigrid.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscksp.h>
 
-extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,void*);
 extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
 
 #undef __FUNCT__
@@ -46,7 +47,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,12,12,12,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,12,12,12,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);
   ierr = DMDASetInterpolationType(da, DMDA_Q0);CHKERRQ(ierr);
 
   ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
@@ -57,13 +58,13 @@ int main(int argc,char **argv)
   ierr = KSPSolve(ksp,NULL,NULL);CHKERRQ(ierr);
   ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
-  ierr = KSPGetOperators(ksp,NULL,&J,NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp,NULL,&J);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&r);CHKERRQ(ierr);
 
   ierr = MatMult(J,x,r);CHKERRQ(ierr);
   ierr = VecAXPY(r,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(r,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(da, 0, &mx, &my, &mz, 0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   Hx   = 1.0 / (PetscReal)(mx);
@@ -87,11 +88,11 @@ int main(int argc,char **argv)
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
 
   ierr = VecNorm(x,NORM_INFINITY,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Error norm %g\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Error norm %g\n",(double)norm);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_1,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Error norm %g\n",norm/((PetscReal)(mx)*(PetscReal)(my)*(PetscReal)(mz)));CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Error norm %g\n",(double)(norm/((PetscReal)(mx)*(PetscReal)(my)*(PetscReal)(mz))));CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Error norm %g\n",norm/((PetscReal)(mx)*(PetscReal)(my)*(PetscReal)(mz)));CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Error norm %g\n",(double)(norm/((PetscReal)(mx)*(PetscReal)(my)*(PetscReal)(mz))));CHKERRQ(ierr);
 
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
@@ -146,7 +147,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
-PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac,MatStructure *str, void *ctx)
+PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac, void *ctx)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs,num, numi, numj, numk;

@@ -31,6 +31,7 @@ static const char help[] = "1D periodic Finite Volume solver in slope-limiter fo
   "The problem size should be set with -da_grid_x M\n\n";
 
 #include <petscts.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdraw.h>
 
@@ -40,7 +41,7 @@ PETSC_STATIC_INLINE PetscReal Sgn(PetscReal a) { return (a<0) ? -1 : 1; }
 PETSC_STATIC_INLINE PetscReal Abs(PetscReal a) { return (a<0) ? 0 : a; }
 PETSC_STATIC_INLINE PetscReal Sqr(PetscReal a) { return a*a; }
 PETSC_STATIC_INLINE PetscReal MaxAbs(PetscReal a,PetscReal b) { return (PetscAbs(a) > PetscAbs(b)) ? a : b; }
-PETSC_STATIC_INLINE PetscReal MinAbs(PetscReal a,PetscReal b) { return (PetscAbs(a) < PetscAbs(b)) ? a : b; }
+PETSC_UNUSED PETSC_STATIC_INLINE PetscReal MinAbs(PetscReal a,PetscReal b) { return (PetscAbs(a) < PetscAbs(b)) ? a : b; }
 PETSC_STATIC_INLINE PetscReal MinMod2(PetscReal a,PetscReal b) { return (a*b<0) ? 0 : Sgn(a)*PetscMin(PetscAbs(a),PetscAbs(b)); }
 PETSC_STATIC_INLINE PetscReal MaxMod2(PetscReal a,PetscReal b) { return (a*b<0) ? 0 : Sgn(a)*PetscMax(PetscAbs(a),PetscAbs(b)); }
 PETSC_STATIC_INLINE PetscReal MinMod3(PetscReal a,PetscReal b,PetscReal c) {return (a*b<0 || a*c<0) ? 0 : Sgn(a)*PetscMin(PetscAbs(a),PetscMin(PetscAbs(b),PetscAbs(c))); }
@@ -679,7 +680,7 @@ typedef struct {
   PetscReal z;                  /* impedence: z = sqrt(rho*bulk) */
 } AcousticsCtx;
 
-PETSC_STATIC_INLINE void AcousticsFlux(AcousticsCtx *ctx,const PetscScalar *u,PetscScalar *f)
+PETSC_UNUSED PETSC_STATIC_INLINE void AcousticsFlux(AcousticsCtx *ctx,const PetscScalar *u,PetscScalar *f)
 {
   f[0] = ctx->c*ctx->z*u[1];
   f[1] = ctx->c/ctx->z*u[0];
@@ -1328,8 +1329,8 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
     ierr = TSGetTime(ts,&tnow);CHKERRQ(ierr);
     if (dt > 0.5/ctx->cfl_idt) {
       if (1) {
-        ierr = PetscPrintf(ctx->comm,"Stability constraint exceeded at t=%g, dt %g > %g\n",(double)tnow,(double)dt,(double)0.5/ctx->cfl_idt);CHKERRQ(ierr);
-      } else SETERRQ2(PETSC_COMM_SELF,1,"Stability constraint exceeded, %g > %g",(double)dt,(double)ctx->cfl/ctx->cfl_idt);
+        ierr = PetscPrintf(ctx->comm,"Stability constraint exceeded at t=%g, dt %g > %g\n",(double)tnow,(double)dt,(double)(0.5/ctx->cfl_idt));CHKERRQ(ierr);
+      } else SETERRQ2(PETSC_COMM_SELF,1,"Stability constraint exceeded, %g > %g",(double)dt,(double)(ctx->cfl/ctx->cfl_idt));
     }
   }
   PetscFunctionReturn(0);
@@ -1355,7 +1356,7 @@ static PetscErrorCode SmallMatMultADB(PetscScalar *C,PetscInt bs,const PetscScal
 
 #undef __FUNCT__
 #define __FUNCT__ "FVIJacobian"
-static PetscErrorCode FVIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat *A,Mat *B,MatStructure *flg,void *vctx)
+static PetscErrorCode FVIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat A,Mat B,void *vctx)
 {
   FVCtx          *ctx = (FVCtx*)vctx;
   PetscErrorCode ierr;
@@ -1376,16 +1377,16 @@ static PetscErrorCode FVIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shi
     for (j=0; j<dof; j++) ctx->speeds[j] = PetscAbs(ctx->speeds[j]);
     ierr = SmallMatMultADB(J,dof,ctx->R,ctx->speeds,ctx->Rinv);CHKERRQ(ierr);
     for (j=0; j<dof*dof; j++) J[j] = J[j]/hx + shift*(j/dof == j%dof);
-    ierr = MatSetValuesBlocked(*B,1,&i,1,&i,J,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValuesBlocked(B,1,&i,1,&i,J,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree(J);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*A != *B) {
-    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1452,7 +1453,7 @@ static PetscErrorCode SolutionStatsView(DM da,Vec X,PetscViewer viewer)
     ierr = VecMin(X,&imin,&xmin);CHKERRQ(ierr);
     ierr = VecMax(X,&imax,&xmax);CHKERRQ(ierr);
     ierr = VecSum(X,&sum);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Solution range [%8.5f,%8.5f] with extrema at %D and %D, mean %8.5f, ||x||_TV %8.5f\n",(double)xmin,(double)xmax,imin,imax,(double)sum/Mx,(double)tvgsum/Mx);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Solution range [%8.5f,%8.5f] with extrema at %D and %D, mean %8.5f, ||x||_TV %8.5f\n",(double)xmin,(double)xmax,imin,imax,(double)(sum/Mx),(double)(tvgsum/Mx));CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,1,"Viewer type not supported");
   PetscFunctionReturn(0);
 }
@@ -1558,7 +1559,7 @@ int main(int argc,char *argv[])
   }
 
   /* Create a DMDA to manage the parallel grid */
-  ierr = DMDACreate1d(comm,DMDA_BOUNDARY_PERIODIC,-50,ctx.physics.dof,2,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(comm,DM_BOUNDARY_PERIODIC,-50,ctx.physics.dof,2,NULL,&da);CHKERRQ(ierr);
   /* Inform the DMDA of the field names provided by the physics. */
   /* The names will be shown in the title bars when run with -ts_monitor_draw_solution */
   for (i=0; i<ctx.physics.dof; i++) {

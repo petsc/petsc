@@ -322,7 +322,7 @@
 !     will have the same nonzero pattern here, we indicate this so the
 !     linear solvers can take advantage of this.
 !
-      call KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN,ierr)
+      call KSPSetOperators(ksp,A,A,ierr)
 
 !
 !     Set linear solver defaults for this problem (optional).

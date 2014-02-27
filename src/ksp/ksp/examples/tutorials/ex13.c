@@ -118,7 +118,7 @@ int main(int argc,char **args)
     enorm = 0.0;
     for (i=0; i<N; i++) enorm += PetscRealPart(PetscConj(solution[i]-userx[i])*(solution[i]-userx[i]));
     enorm *= PetscRealPart(hx*hy);
-    ierr   = PetscPrintf(PETSC_COMM_WORLD,"m %D n %D error norm %G\n",m,n,enorm);CHKERRQ(ierr);
+    ierr   = PetscPrintf(PETSC_COMM_WORLD,"m %D n %D error norm %g\n",m,n,(double)enorm);CHKERRQ(ierr);
   }
 
   /*
@@ -247,7 +247,7 @@ PetscErrorCode UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar 
      will have the same nonzero pattern here, we indicate this so the
      linear solvers can take advantage of this.
   */
-  ierr = KSPSetOperators(userctx->ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(userctx->ksp,A,A);CHKERRQ(ierr);
 
   /*
      Set linear solver defaults for this problem (optional).

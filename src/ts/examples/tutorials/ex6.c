@@ -79,7 +79,7 @@ typedef struct {
    User-defined routines
 */
 extern PetscErrorCode InitialConditions(Vec,AppCtx*);
-extern PetscErrorCode RHSMatrixHeat(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode RHSMatrixHeat(TS,PetscReal,Vec,Mat,Mat,void*);
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode ExactSolution(PetscReal,Vec,AppCtx*);
 extern PetscErrorCode MyBCRoutine(TS,PetscReal,Vec,void*);
@@ -180,8 +180,7 @@ int main(int argc,char **argv)
        as a matrix only once, and then sets a null matrix evaluation
        routine.
     */
-    MatStructure A_structure;
-    ierr = RHSMatrixHeat(ts,0.0,u,&A,&A,&A_structure,&appctx);CHKERRQ(ierr);
+    ierr = RHSMatrixHeat(ts,0.0,u,A,A,&appctx);CHKERRQ(ierr);
     ierr = TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
     ierr = TSSetRHSJacobian(ts,A,A,TSComputeRHSJacobianConstant,&appctx);CHKERRQ(ierr);
   }
@@ -227,7 +226,7 @@ int main(int argc,char **argv)
      View timestepping solver info
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"avg. error (2 norm) = %G, avg. error (max norm) = %G\n",appctx.norm_2/steps,appctx.norm_max/steps);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"avg. error (2 norm) = %g, avg. error (max norm) = %g\n",(double)(appctx.norm_2/steps),(double)(appctx.norm_max/steps));CHKERRQ(ierr);
   ierr = TSView(ts,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -399,7 +398,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal crtime,Vec u,void *ctx)
 
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
   if (norm_2 > 1.e-2) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Timestep %D: step size = %G, time = %G, 2-norm error = %G, max norm error = %G\n",step,dt,crtime,norm_2,norm_max);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Timestep %D: step size = %g, time = %g, 2-norm error = %g, max norm error = %g\n",step,(double)dt,(double)crtime,(double)norm_2,(double)norm_max);CHKERRQ(ierr);
   }
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;
@@ -448,9 +447,9 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal crtime,Vec u,void *ctx)
    Recall that MatSetValues() uses 0-based row and column numbers
    in Fortran as well as in C.
 */
-PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat AA,Mat BB,void *ctx)
 {
-  Mat            A       = *AA;                /* Jacobian matrix */
+  Mat            A       = AA;                /* Jacobian matrix */
   AppCtx         *appctx = (AppCtx*) ctx;      /* user-defined application context */
   PetscInt       mstart  = 0;
   PetscInt       mend    = appctx->m;
@@ -497,25 +496,6 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructur
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /*
-     Set flag to indicate that the Jacobian matrix retains an identical
-     nonzero structure throughout all timestepping iterations (although the
-     values of the entries change). Thus, we can save some work in setting
-     up the preconditioner (e.g., no need to redo symbolic factorization for
-     ILU/ICC preconditioners).
-      - If the nonzero structure of the matrix is different during
-        successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-        must be used instead.  If you are unsure whether the matrix
-        structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-      - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-        believes your assertion and does not check the structure
-        of the matrix.  If you erroneously claim that the structure
-        is the same when it actually is not, the new preconditioner
-        will not function correctly.  Thus, use this optimization
-        feature with caution!
-  */
-  *str = SAME_NONZERO_PATTERN;
-
-  /*
      Set and option to indicate that we will never add a new nonzero location
      to the matrix. If we do, it will generate an error.
   */
@@ -544,7 +524,7 @@ PetscErrorCode MyBCRoutine(TS ts,PetscReal t,Vec f,void *ctx)
   fa[0]   = 0.0;
   fa[m-1] = 1.0;
   ierr    = VecRestoreArray(f,&fa);CHKERRQ(ierr);
-  ierr    = PetscPrintf(PETSC_COMM_SELF,"t=%G\n",t);CHKERRQ(ierr);
+  ierr    = PetscPrintf(PETSC_COMM_SELF,"t=%g\n",(double)t);CHKERRQ(ierr);
 
   return 0;
 }

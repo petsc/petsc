@@ -60,7 +60,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(NULL, "-eig_view", &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscPrintf(PETSC_COMM_SELF," %d evals: \n",nevs);CHKERRQ(ierr);
-    for (i=0; i<nevs; i++) {ierr = PetscPrintf(PETSC_COMM_SELF,"%d  %G\n",i,evals[i]);CHKERRQ(ierr);}
+    for (i=0; i<nevs; i++) {ierr = PetscPrintf(PETSC_COMM_SELF,"%D  %g\n",i,(double)evals[i]);CHKERRQ(ierr);}
   }
 
   /* Check residuals and orthogonality */
@@ -158,12 +158,12 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
 #if defined(DEBUG_CkEigenSolutions)
         if (dot > tols[1]) {
           ierr = VecNorm(evec[i],NORM_INFINITY,&norm);CHKERRQ(ierr);
-          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%d,%d)|: %G, norm: %G\n",i,j,dot,norm);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%d,%d)|: %g, norm: %d\n",i,j,(double)dot,(double)norm);CHKERRQ(ierr);
         }
 #endif
       }
     }
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j^T*x_i) - delta_ji|: %G\n",dot_max);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j^T*x_i) - delta_ji|: %g\n",(double)dot_max);CHKERRQ(ierr);
 
   case 1:
     norm_max = 0.0;
@@ -181,7 +181,7 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
       }
 #endif
     }
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %G\n", norm_max);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %g\n", (double)norm_max);CHKERRQ(ierr);
     break;
   default:
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%d is not supported \n",cklvl);CHKERRQ(ierr);

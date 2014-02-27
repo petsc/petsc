@@ -128,7 +128,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   for (i=0; i<Nsurf; i++) {
     tmp = 0.0;
     for (j=0; j<26; j++) tmp += xsurf[i+j*Nsurf];
-    if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xsurf interpolation at i %D value %G",i,PetscAbsScalar(tmp));
+    if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xsurf interpolation at i %D value %g",i,(double)PetscAbsScalar(tmp));
   }
 #endif
   ierr = MatDenseRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
@@ -204,7 +204,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,0,&x);CHKERRQ(ierr);
     ierr = MatDenseGetArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,0,&b);CHKERRQ(ierr);
-    ierr = KSPSetOperators(exotic->ksp,Aii,Aii,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(exotic->ksp,Aii,Aii);CHKERRQ(ierr);
     for (i=0; i<26; i++) {
       ierr = VecPlaceArray(x,xint+i*Nint);CHKERRQ(ierr);
       ierr = VecPlaceArray(b,xint_tmp+i*Nint);CHKERRQ(ierr);
@@ -225,7 +225,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
     tmp = 0.0;
     for (j=0; j<26; j++) tmp += xint[i+j*Nint];
 
-    if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xint interpolation at i %D value %G",i,PetscAbsScalar(tmp));
+    if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xint interpolation at i %D value %g",i,(double)PetscAbsScalar(tmp));
   }
   ierr = MatDenseRestoreArray(Xint,&xint);CHKERRQ(ierr);
   /* ierr =MatView(Xint,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
@@ -303,7 +303,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
     ierr = MatMult(*P,x,y);CHKERRQ(ierr);
     ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
     for (i=0; i<Ng; i++) {
-      if (PetscAbsScalar(yy[i]-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong p interpolation at i %D value %G",i,PetscAbsScalar(yy[i]));
+      if (PetscAbsScalar(yy[i]-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong p interpolation at i %D value %g",i,(double)PetscAbsScalar(yy[i]));
     }
     ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
     ierr = VecDestroy(x);CHKERRQ(ierr);
@@ -409,7 +409,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
     tmp = 0.0;
     for (j=0; j<6; j++) tmp += xsurf[i+j*Nsurf];
 
-    if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xsurf interpolation at i %D value %G",i,PetscAbsScalar(tmp));
+    if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xsurf interpolation at i %D value %g",i,(double)PetscAbsScalar(tmp));
   }
 #endif
   ierr = MatDenseRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
@@ -487,7 +487,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,0,&x);CHKERRQ(ierr);
     ierr = MatDenseGetArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,0,&b);CHKERRQ(ierr);
-    ierr = KSPSetOperators(exotic->ksp,Aii,Aii,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(exotic->ksp,Aii,Aii);CHKERRQ(ierr);
     for (i=0; i<6; i++) {
       ierr = VecPlaceArray(x,xint+i*Nint);CHKERRQ(ierr);
       ierr = VecPlaceArray(b,xint_tmp+i*Nint);CHKERRQ(ierr);
@@ -508,7 +508,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
     tmp = 0.0;
     for (j=0; j<6; j++) tmp += xint[i+j*Nint];
 
-    if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xint interpolation at i %D value %G",i,PetscAbsScalar(tmp));
+    if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xint interpolation at i %D value %g",i,(double)PetscAbsScalar(tmp));
   }
   ierr = MatDenseRestoreArray(Xint,&xint);CHKERRQ(ierr);
   /* ierr =MatView(Xint,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
@@ -582,7 +582,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
     ierr = MatMult(*P,x,y);CHKERRQ(ierr);
     ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
     for (i=0; i<Ng; i++) {
-      if (PetscAbsScalar(yy[i]-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong p interpolation at i %D value %G",i,PetscAbsScalar(yy[i]));
+      if (PetscAbsScalar(yy[i]-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong p interpolation at i %D value %g",i,(double)PetscAbsScalar(yy[i]));
     }
     ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
     ierr = VecDestroy(x);CHKERRQ(ierr);
@@ -667,7 +667,7 @@ PetscErrorCode PCSetUp_Exotic(PC pc)
 
   PetscFunctionBegin;
   if (!pc->dm) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Need to call PCSetDM() before using this PC");
-  ierr = PCGetOperators(pc,NULL,&A,NULL);CHKERRQ(ierr);
+  ierr = PCGetOperators(pc,NULL,&A);CHKERRQ(ierr);
   if (ex->type == PC_EXOTIC_FACE) {
     ierr = DMDAGetFaceInterpolation(pc->dm,ex,A,reuse,&ex->P);CHKERRQ(ierr);
   } else if (ex->type == PC_EXOTIC_WIREBASKET) {

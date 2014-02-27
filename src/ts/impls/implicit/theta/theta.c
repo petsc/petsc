@@ -3,7 +3,7 @@
 */
 #define PETSC_DESIRE_COMPLEX
 #include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
-#include <petscsnesfas.h>
+#include <petscsnes.h>
 #include <petscdm.h>
 
 typedef struct {
@@ -289,7 +289,7 @@ static PetscErrorCode SNESTSFormFunction_Theta(SNES snes,Vec x,Vec y,TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESTSFormJacobian_Theta"
-static PetscErrorCode SNESTSFormJacobian_Theta(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *str,TS ts)
+static PetscErrorCode SNESTSFormJacobian_Theta(SNES snes,Vec x,Mat A,Mat B,TS ts)
 {
   TS_Theta       *th = (TS_Theta*)ts->data;
   PetscErrorCode ierr;
@@ -305,7 +305,7 @@ static PetscErrorCode SNESTSFormJacobian_Theta(SNES snes,Vec x,Mat *A,Mat *B,Mat
 
   dmsave = ts->dm;
   ts->dm = dm;
-  ierr   = TSComputeIJacobian(ts,th->stage_time,x,Xdot,shift,A,B,str,PETSC_FALSE);CHKERRQ(ierr);
+  ierr   = TSComputeIJacobian(ts,th->stage_time,x,Xdot,shift,A,B,PETSC_FALSE);CHKERRQ(ierr);
   ts->dm = dmsave;
   ierr   = TSThetaRestoreX0AndXdot(ts,dm,NULL,&Xdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -374,7 +374,7 @@ static PetscErrorCode TSView_Theta(TS ts,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Theta=%G\n",th->Theta);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Theta=%g\n",(double)th->Theta);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Extrapolation=%s\n",th->extrapolate ? "yes" : "no");CHKERRQ(ierr);
   }
   ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
@@ -399,7 +399,7 @@ PetscErrorCode  TSThetaSetTheta_Theta(TS ts,PetscReal theta)
   TS_Theta *th = (TS_Theta*)ts->data;
 
   PetscFunctionBegin;
-  if (theta <= 0 || 1 < theta) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Theta %G not in range (0,1]",theta);
+  if (theta <= 0 || 1 < theta) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Theta %g not in range (0,1]",(double)theta);
   th->Theta = theta;
   PetscFunctionReturn(0);
 }

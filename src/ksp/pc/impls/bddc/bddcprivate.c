@@ -1,5 +1,5 @@
-#include "bddc.h"
-#include "bddcprivate.h"
+#include <../src/ksp/pc/impls/bddc/bddc.h>
+#include <../src/ksp/pc/impls/bddc/bddcprivate.h>
 #include <petscblaslapack.h>
 
 #undef __FUNCT__
@@ -675,7 +675,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     ierr = MatAXPY(TM1,one,TM3,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatAXPY(TM1,one,TM4,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatConvert(TM1,MATSEQDENSE,MAT_REUSE_MATRIX,&TM1);CHKERRQ(ierr);
-    ierr = MatAXPY(TM1,m_one,coarse_sub_mat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatAXPY(TM1,m_one,coarse_sub_mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatNorm(TM1,NORM_INFINITY,&real_value);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(pcbddc->dbg_viewer,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"----------------------------------\n");CHKERRQ(ierr);
@@ -749,7 +749,6 @@ PetscErrorCode PCBDDCSetUpLocalMatrices(PC pc)
   PetscBool         issbaij,isbaij;
   /* manage repeated solves */
   MatReuse          reuse;
-  MatStructure      matstruct;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -757,12 +756,9 @@ PetscErrorCode PCBDDCSetUpLocalMatrices(PC pc)
     SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"BDDC Change of basis matrix has not been created");
   }
   /* get mat flags */
-  ierr = PCGetOperators(pc,NULL,NULL,&matstruct);CHKERRQ(ierr);
   reuse = MAT_INITIAL_MATRIX;
   if (pc->setupcalled) {
-    /* when matstruct is SAME_PRECONDITIONER, we shouldn't be here */
-    if (matstruct == SAME_PRECONDITIONER) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"This should not happen");
-    if (matstruct == SAME_NONZERO_PATTERN) {
+    if (pc->flag == SAME_NONZERO_PATTERN) {
       reuse = MAT_REUSE_MATRIX;
     } else {
       reuse = MAT_INITIAL_MATRIX;
@@ -996,7 +992,6 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
   PC_IS          *pcis = (PC_IS*)pc->data;
   PC             pc_temp;
   Mat            A_RR;
-  MatStructure   matstruct;
   MatReuse       reuse;
   PetscScalar    m_one = -1.0;
   PetscReal      value;
@@ -1008,7 +1003,6 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
   size_t         len;
 
   PetscFunctionBegin;
-  ierr = PCGetOperators(pc,NULL,NULL,&matstruct);CHKERRQ(ierr);
 
   /* compute prefixes */
   ierr = PetscStrcpy(dir_prefix,"");CHKERRQ(ierr);
@@ -1052,7 +1046,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
     }
     ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
   }
-  ierr = KSPSetOperators(pcbddc->ksp_D,pcis->A_II,pcis->A_II,matstruct);CHKERRQ(ierr);
+  ierr = KSPSetOperators(pcbddc->ksp_D,pcis->A_II,pcis->A_II);CHKERRQ(ierr);
   /* Allow user's customization */
   ierr = KSPSetFromOptions(pcbddc->ksp_D);CHKERRQ(ierr);
   /* umfpack interface has a bug when matrix dimension is zero. TODO solve from umfpack interface */
@@ -1072,7 +1066,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
   ierr = ISGetSize(pcbddc->is_R_local,&n_R);CHKERRQ(ierr);
   if (pcbddc->ksp_R) { /* already created ksp */
     PetscInt nn_R;
-    ierr = KSPGetOperators(pcbddc->ksp_R,NULL,&A_RR,NULL);CHKERRQ(ierr);
+    ierr = KSPGetOperators(pcbddc->ksp_R,NULL,&A_RR);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)A_RR);CHKERRQ(ierr);
     ierr = MatGetSize(A_RR,&nn_R,NULL);CHKERRQ(ierr);
     if (nn_R != n_R) { /* old ksp is not reusable, so reset it */
@@ -1088,7 +1082,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
       }
     }
     /* last check */
-    if (matstruct == DIFFERENT_NONZERO_PATTERN) {
+    if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
       ierr = MatDestroy(&A_RR);CHKERRQ(ierr);
       reuse = MAT_INITIAL_MATRIX;
     }
@@ -1121,7 +1115,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
     }
     ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
   }
-  ierr = KSPSetOperators(pcbddc->ksp_R,A_RR,A_RR,matstruct);CHKERRQ(ierr);
+  ierr = KSPSetOperators(pcbddc->ksp_R,A_RR,A_RR);CHKERRQ(ierr);
   /* Allow user's customization */
   ierr = KSPSetFromOptions(pcbddc->ksp_R);CHKERRQ(ierr);
   /* umfpack interface has a bug when matrix dimension is zero. TODO solve from umfpack interface */
@@ -1796,7 +1790,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     /* iterator on aux_primal_minloc (ordered as read from nearnullspace: vertices, edges and then constraints) */
     PetscInt     primal_counter;
     /* working stuff for GEQRF */
-    PetscScalar  *qr_basis,*qr_tau,*qr_work,lqr_work_t;
+    PetscScalar  *qr_basis,*qr_tau = NULL,*qr_work,lqr_work_t;
     PetscBLASInt lqr_work;
     /* working stuff for UNGQR */
     PetscScalar  *gqr_work,lgqr_work_t;
@@ -3118,7 +3112,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   KSPType                coarse_ksp_type;
   PetscBool              multilevel_requested,multilevel_allowed;
   PetscBool              setsym,issym,isbddc,isnn,coarse_reuse;
-  MatStructure           matstruct;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
@@ -3235,7 +3228,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     ierr = MatISSubassemble(coarse_mat_is,NULL,pcbddc->coarsening_ratio,&coarse_mat);CHKERRQ(ierr);
   } else {
     if (coarse_reuse) {
-      ierr = KSPGetOperators(pcbddc->coarse_ksp,&coarse_mat,NULL,NULL);CHKERRQ(ierr);
+      ierr = KSPGetOperators(pcbddc->coarse_ksp,&coarse_mat,NULL);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)coarse_mat);CHKERRQ(ierr);
       ierr = MatISGetMPIXAIJ(coarse_mat_is,MATMPIAIJ,MAT_REUSE_MATRIX,&coarse_mat);CHKERRQ(ierr);
     } else {
@@ -3268,8 +3261,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   }
 
   /* set operators */
-  ierr = PCGetOperators(pc,NULL,NULL,&matstruct);CHKERRQ(ierr);
-  ierr = KSPSetOperators(pcbddc->coarse_ksp,coarse_mat,coarse_mat,matstruct);CHKERRQ(ierr);
+  ierr = KSPSetOperators(pcbddc->coarse_ksp,coarse_mat,coarse_mat);CHKERRQ(ierr);
 
   /* additional KSP customization */
   ierr = KSPGetTolerances(pcbddc->coarse_ksp,NULL,NULL,NULL,&max_it);CHKERRQ(ierr);
@@ -3315,7 +3307,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 
     /* Create ksp object suitable for estimation of extreme eigenvalues */
     ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&check_ksp);CHKERRQ(ierr);
-    ierr = KSPSetOperators(check_ksp,coarse_mat,coarse_mat,SAME_PRECONDITIONER);CHKERRQ(ierr);
+    ierr = KSPSetOperators(check_ksp,coarse_mat,coarse_mat);CHKERRQ(ierr);
     ierr = KSPSetTolerances(check_ksp,1.e-12,1.e-12,PETSC_DEFAULT,pcbddc->coarse_size);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)pcbddc->coarse_ksp,KSPPREONLY,&ispreonly);CHKERRQ(ierr);
     if (ispreonly) {

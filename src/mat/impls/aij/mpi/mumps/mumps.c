@@ -139,12 +139,14 @@ PetscErrorCode MatConvertToTriples_seqaij_seqaij(Mat A,int shift,MatReuse reuse,
 PetscErrorCode MatConvertToTriples_seqbaij_seqaij(Mat A,int shift,MatReuse reuse,int *nnz,int **r, int **c, PetscScalar **v)
 {
   Mat_SeqBAIJ    *aa=(Mat_SeqBAIJ*)A->data;
-  const PetscInt *ai,*aj,*ajj,bs=A->rmap->bs,bs2=aa->bs2,M=A->rmap->N/bs;
-  PetscInt       nz,idx=0,rnz,i,j,k,m;
+  const PetscInt *ai,*aj,*ajj,bs2 = aa->bs2;
+  PetscInt       bs,M,nz,idx=0,rnz,i,j,k,m;
   PetscErrorCode ierr;
   PetscInt       *row,*col;
 
   PetscFunctionBegin;
+  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
+  M = A->rmap->N/bs;
   *v = aa->a;
   if (reuse == MAT_INITIAL_MATRIX) {
     ai   = aa->i; aj = aa->j;
@@ -381,14 +383,15 @@ PetscErrorCode MatConvertToTriples_mpibaij_mpiaij(Mat A,int shift,MatReuse reuse
   Mat_SeqBAIJ       *bb     = (Mat_SeqBAIJ*)(mat->B)->data;
   const PetscInt    *ai     = aa->i, *bi = bb->i, *aj = aa->j, *bj = bb->j,*ajj, *bjj;
   const PetscInt    *garray = mat->garray,mbs=mat->mbs,rstart=A->rmap->rstart;
-  const PetscInt    bs      = A->rmap->bs,bs2=mat->bs2;
+  const PetscInt    bs2=mat->bs2;
   PetscErrorCode    ierr;
-  PetscInt          nz,i,j,k,n,jj,irow,countA,countB,idx;
+  PetscInt          bs,nz,i,j,k,n,jj,irow,countA,countB,idx;
   PetscInt          *row,*col;
   const PetscScalar *av=aa->a, *bv=bb->a,*v1,*v2;
   PetscScalar       *val;
 
   PetscFunctionBegin;
+  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
     nz   = bs2*(aa->nz + bb->nz);
     *nnz = nz;

@@ -1,4 +1,5 @@
 #include <petscsnes.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <../src/snes/impls/vi/viimpl.h>
 
@@ -24,7 +25,7 @@ typedef struct {
 /* User-defined routines */
 static PetscReal p(PetscReal xi,PetscReal ecc);
 PetscErrorCode FormGradient(SNES,Vec,Vec,void*);
-PetscErrorCode FormHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormHessian(SNES,Vec,Mat,Mat,void*);
 PetscErrorCode ComputeB(AppCtx*);
 
 #undef __FUNCT__
@@ -61,7 +62,7 @@ int main(int argc, char **argv)
      which derives from an elliptic PDE on two dimensional domain.  From
      the distributed array, Create the vectors.
   */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-50,-50,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-50,-50,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
   ierr = DMDAGetIerr(user.da,PETSC_IGNORE,&user.nx,&user.ny,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   PetscPrintf(PETSC_COMM_WORLD,"\n---- Journal Bearing Problem -----\n");
@@ -272,7 +273,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G,void *ctx)
    Notice that the objective function in this problem is quadratic (therefore a constant
    hessian).  If using a nonquadratic solver, then you might want to reconsider this function
 */
-PetscErrorCode FormHessian(SNES snes,Vec X,Mat *H, Mat *Hpre, MatStructure *flg, void *ptr)
+PetscErrorCode FormHessian(SNES snes,Vec X,Mat H, Mat Hpre, void *ptr)
 {
   AppCtx         *user=(AppCtx*)ptr;
   PetscErrorCode ierr;
@@ -284,7 +285,7 @@ PetscErrorCode FormHessian(SNES snes,Vec X,Mat *H, Mat *Hpre, MatStructure *flg,
   PetscReal      xi,v[5];
   PetscReal      ecc=user->ecc, trule1,trule2,trule3,trule4,trule5,trule6;
   PetscReal      vmiddle, vup, vdown, vleft, vright;
-  Mat            hes=*H;
+  Mat            hes=H;
   PetscBool      assembled;
   PetscReal      **x;
   Vec            localX;
@@ -300,7 +301,6 @@ PetscErrorCode FormHessian(SNES snes,Vec X,Mat *H, Mat *Hpre, MatStructure *flg,
 
   ierr = MatAssembled(hes,&assembled);CHKERRQ(ierr);
   if (assembled) {ierr = MatZeroEntries(hes);CHKERRQ(ierr);}
-  *flg=SAME_NONZERO_PATTERN;
 
   /* Get local vector */
   ierr = DMGetLocalVector(user->da,&localX);CHKERRQ(ierr);

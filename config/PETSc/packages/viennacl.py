@@ -4,8 +4,8 @@ import os
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download        = ['http://downloads.sourceforge.net/project/viennacl/1.4.x/ViennaCL-1.4.1.tar.gz']
-    self.downloadfilename = str('ViennaCL-1.4.1')
+    self.download        = ['http://downloads.sourceforge.net/project/viennacl/1.5.x/ViennaCL-1.5.1.tar.gz']
+    self.downloadfilename = str('ViennaCL-1.5.1')
     self.includes        = ['viennacl/forwards.h']
     self.cxx             = 1
     self.worksonWindows  = 1

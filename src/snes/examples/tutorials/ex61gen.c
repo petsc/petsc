@@ -2,8 +2,8 @@ static char help[] = "Generates random numbers for radioactive events for ex61.c
 
 
 
-#include "petscsys.h"
-#include "petscvec.h"
+#include <petscsys.h>
+#include <petscvec.h>
 
 
 #undef __FUNCT__

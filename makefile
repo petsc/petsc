@@ -294,6 +294,7 @@ alldoc1: chk_loc deletemanualpages chk_concepts_dir
 	-@cat ${PETSC_DIR}/src/docs/mpi.www.index >> ${LOC}/docs/manualpages/htmlmap
 	-cd src/docs/tex/manual; ${OMAKE} manual.pdf LOC=${LOC}
 	-cd src/docs/tex/manual; ${OMAKE} developers.pdf LOC=${LOC}
+	-cd src/docs/tao_tex/manual; ${OMAKE} manual.pdf
 	-${OMAKE} ACTION=manualpages tree_basic LOC=${LOC}
 	-${PYTHON} bin/maint/wwwindex.py ${PETSC_DIR} ${LOC}
 	-${OMAKE} ACTION=manexamples tree_basic LOC=${LOC}
@@ -430,9 +431,9 @@ countfortranfunctions:
 	sed "s/_$$//" | sort > /tmp/countfortranfunctions
 
 countcfunctions:
-	-@grep extern ${PETSC_DIR}/include/*.h  | grep "(" | tr -s ' ' | \
+	-@grep PETSC_EXTERN ${PETSC_DIR}/include/*.h  | grep "(" | tr -s ' ' | \
 	cut -d'(' -f1 | cut -d' ' -f3 | grep -v "\*" | tr -s '\012' |  \
-	tr 'A-Z' 'a-z' |  sort > /tmp/countcfunctions
+	tr 'A-Z' 'a-z' |  sort | uniq > /tmp/countcfunctions
 
 difffortranfunctions: countfortranfunctions countcfunctions
 	-@echo -------------- Functions missing in the fortran interface ---------------------

@@ -4,7 +4,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM);
-PETSC_EXTERN PetscErrorCode DMCreate_ADDA(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM);
@@ -38,7 +37,6 @@ PetscErrorCode  DMRegisterAll()
   ierr = DMRegister(DMCOMPOSITE,  DMCreate_Composite);CHKERRQ(ierr);
   ierr = DMRegister(DMSLICED,     DMCreate_Sliced);CHKERRQ(ierr);
   ierr = DMRegister(DMSHELL,      DMCreate_Shell);CHKERRQ(ierr);
-  ierr = DMRegister(DMADDA,       DMCreate_ADDA);CHKERRQ(ierr);
   ierr = DMRegister(DMREDUNDANT,  DMCreate_Redundant);CHKERRQ(ierr);
   ierr = DMRegister(DMPLEX,       DMCreate_Plex);CHKERRQ(ierr);
   ierr = DMRegister(DMPATCH,      DMCreate_Patch);CHKERRQ(ierr);

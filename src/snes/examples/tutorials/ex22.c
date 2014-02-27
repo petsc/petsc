@@ -1,6 +1,7 @@
 
 static const char help[] = "Solves PDE optimization problem using full-space method, interlaces state and adjoint variables.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdmredundant.h>
 #include <petscdmcomposite.h>
@@ -44,7 +45,7 @@ typedef struct {
 } UserCtx;
 
 extern PetscErrorCode ComputeFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode ComputeJacobian_MF(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode ComputeJacobian_MF(SNES,Vec,Mat,Mat,void*);
 extern PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
 
 /*
@@ -95,7 +96,7 @@ int main(int argc,char **argv)
   ierr = DMRedundantCreate(PETSC_COMM_WORLD,0,1,&red);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(red,"red_");CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,red);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-5,2,1,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-5,2,1,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(red,"da_");CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,(DM)da);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(packer,&user);CHKERRQ(ierr);
@@ -279,7 +280,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
   ierr = DMCompositeGetAccess(packer,Uexact,&dw,&u_lambda);CHKERRQ(ierr);
   ierr = VecStrideNorm(u_lambda,0,NORM_2,&norm);CHKERRQ(ierr);
   norm = norm/PetscSqrtReal((PetscReal)N-1.);
-  if (dw) ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G Error at x = 0 %G\n",norm,PetscRealPart(dw[0]));CHKERRQ(ierr);
+  if (dw) ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Error at x = 0 %g\n",(double)norm,(double)PetscRealPart(dw[0]));CHKERRQ(ierr);
   ierr = VecView(u_lambda,user->fu_lambda_viewer);
   ierr = DMCompositeRestoreAccess(packer,Uexact,&dw,&u_lambda);CHKERRQ(ierr);
   ierr = VecDestroy(&Uexact);CHKERRQ(ierr);
@@ -305,12 +306,12 @@ PetscErrorCode DMCreateMatrix_MF(DM packer,Mat *A)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeJacobian_MF"
-PetscErrorCode ComputeJacobian_MF(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *str,void *ctx)
+PetscErrorCode ComputeJacobian_MF(SNES snes,Vec x,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = MatMFFDSetFunction(*A,(PetscErrorCode (*)(void*,Vec,Vec))SNESComputeFunction,snes);CHKERRQ(ierr);
-  ierr = MatMFFDSetBase(*A,x,NULL);CHKERRQ(ierr);
+  ierr = MatMFFDSetFunction(A,(PetscErrorCode (*)(void*,Vec,Vec))SNESComputeFunction,snes);CHKERRQ(ierr);
+  ierr = MatMFFDSetBase(A,x,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

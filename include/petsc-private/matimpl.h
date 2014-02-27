@@ -107,7 +107,7 @@ struct _MatOps {
   PetscErrorCode (*placeholder_73)(Mat,void*);
   /*74*/
   PetscErrorCode (*setvaluesadifor)(Mat,PetscInt,void*);
-  PetscErrorCode (*fdcoloringapply)(Mat,MatFDColoring,Vec,MatStructure*,void*);
+  PetscErrorCode (*fdcoloringapply)(Mat,MatFDColoring,Vec,void*);
   PetscErrorCode (*setfromoptions)(Mat);
   PetscErrorCode (*multconstrained)(Mat,Vec,Vec);
   PetscErrorCode (*multtransposeconstrained)(Mat,Vec,Vec);
@@ -188,6 +188,8 @@ struct _MatOps {
   PetscErrorCode (*aypx)(Mat,PetscScalar,Mat,MatStructure);
   PetscErrorCode (*residual)(Mat,Vec,Vec,Vec);
   PetscErrorCode (*fdcoloringsetup)(Mat,ISColoring,MatFDColoring);
+  PetscErrorCode (*findoffblockdiagonalentries)(Mat,IS*);
+  /*144*/
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
@@ -307,7 +309,7 @@ struct _p_Mat {
   PetscBool              assembled;        /* is the matrix assembled? */
   PetscBool              was_assembled;    /* new values inserted into assembled mat */
   PetscInt               num_ass;          /* number of times matrix has been assembled */
-  PetscBool              same_nonzero;     /* matrix has same nonzero pattern as previous */
+  PetscObjectState       nonzerostate;     /* each time new nonzeros locations are introduced into the matrix this is updated */
   MatInfo                info;             /* matrix information */
   InsertMode             insertmode;       /* have values been inserted in matrix or added? */
   MatStash               stash,bstash;     /* used for assembling off-proc mat emements */
@@ -323,7 +325,7 @@ struct _p_Mat {
   PetscCUSPFlag          valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
 #endif
 #if defined(PETSC_HAVE_VIENNACL)
-  PetscViennaCLFlag          valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
+  PetscViennaCLFlag      valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
 #endif
   void                   *spptr;          /* pointer for special library like SuperLU */
   MatSolverPackage       solvertype;
@@ -613,7 +615,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat mat,const MatFactorInf
     if (flg) {
       ierr = MatView(mat,PETSC_VIEWER_BINARY_(PetscObjectComm((PetscObject)mat)));CHKERRQ(ierr);
     }
-    SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G",row,PetscAbsScalar(sctx->pv),_zero);
+    SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);
   }
   PetscFunctionReturn(0);
 }

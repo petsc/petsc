@@ -4,6 +4,12 @@ FFLAGS   =
 SOURCEC  =
 SOURCEF  =
 SOURCEH  =
+TAODOCS  = tex/manual/manual.tex \
+	   tex/manual/part1.tex tex/manual/part2.tex tex/manual/intro.tex \
+	   tex/manual/abstract.tex tex/manual/acknowl.tex tex/manual/manual_tex.tex \
+	   tex/tao.bib tex/tao-patches.html tex/tao-benchmarks.html \
+	   tex/tao-components.html tex/tao-patches*
+
 DOCS     = manualpages/sec/header_* tex/manual/manual.tex \
 	   tex/manual/part1.tex tex/manual/part2.tex tex/manual/intro.tex \
 	   tex/manual/abstract.tex tex/manual/acknowl.tex tex/petsc.bib website/index.html \
@@ -19,7 +25,7 @@ DOCS     = manualpages/sec/header_* tex/manual/manual.tex \
            website/documentation/installation.html website/documentation/linearsolvertable.html \
            website/documentation/referencing.html\
            website/documentation/exercises/index.html website/documentation/exercises/*/index.html \
-           website/documentation/changes/*.html
+           website/documentation/changes/*.html ${TAODOCS}
 LIBBASE  =
 LINCLUDE = ${SOURCEH}
 DIRS     =

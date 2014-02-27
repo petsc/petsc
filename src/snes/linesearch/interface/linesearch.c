@@ -19,11 +19,15 @@ PetscLogEvent SNESLineSearch_Apply;
    Output Parameters:
 .  outlinesearch - the new linesearch context
 
-   Level: beginner
+   Level: developer
+
+   Notes:
+   The preferred calling sequence for users is to use SNESGetLineSearch() to acquire the SNESLineSearch instance
+   already associated with the SNES.  This function is for developer use.
 
 .keywords: LineSearch, create, context
 
-.seealso: LineSearchDestroy()
+.seealso: LineSearchDestroy(), SNESGetLineSearch()
 @*/
 
 PetscErrorCode SNESLineSearchCreate(MPI_Comm comm, SNESLineSearch *outlinesearch)
@@ -183,7 +187,7 @@ PetscErrorCode  SNESLineSearchSetFunction(SNESLineSearch linesearch, PetscErrorC
     SNESLineSearchPreCheckFunction - functional form passed to check before line search is called
 
      Synopsis:
-     #include "petscsnes.h"
+     #include <petscsnes.h>
      SNESLineSearchPreCheckFunction(SNESLineSearch snes,Vec x,Vec y, PetscBool *changed);
 
        Input Parameters:
@@ -257,7 +261,7 @@ PetscErrorCode  SNESLineSearchGetPreCheck(SNESLineSearch linesearch, PetscErrorC
     SNESLineSearchPostheckFunction - functional form that is called after line search is complete
 
      Synopsis:
-     #include "petscsnes.h"
+     #include <petscsnes.h>
      SNESLineSearchPostheckFunction(SNESLineSearch linesearch,Vec x,Vec y,  Vec w, *changed_y, PetscBool *changed_w);
 
      Input Parameters:
@@ -463,7 +467,7 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch,Vec X,Vec 
   ierr = VecNorm(Y,NORM_2,&ynorm);CHKERRQ(ierr);
   ierr = VecNorm(Ylast,NORM_2,&ylastnorm);CHKERRQ(ierr);
   /* Compute the angle between the vectors Y and Ylast, clip to keep inside the domain of acos() */
-  theta         = acos((double)PetscClipInterval(PetscAbsScalar(dot) / (ynorm * ylastnorm),-1.0,1.0));
+  theta         = PetscAcosReal((PetscReal)PetscClipInterval(PetscAbsScalar(dot) / (ynorm * ylastnorm),-1.0,1.0));
   angle_radians = angle * PETSC_PI / 180.;
   if (PetscAbsReal(theta) < angle_radians || PetscAbsReal(theta - PETSC_PI) < angle_radians) {
     /* Modify the step Y */

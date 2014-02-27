@@ -442,7 +442,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
     if (cellSimplex) {
       ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_FALSE, dm);CHKERRQ(ierr);
     } else {
-      ierr = DMPlexCreateHexBoxMesh(comm, dim, PETSC_FALSE, dm);CHKERRQ(ierr);
+      const PetscInt cells[3] = {2, 2, 2};
+
+      ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, dm);CHKERRQ(ierr);
     }
   } else {
     ierr = DMCreate(comm, dm);CHKERRQ(ierr);

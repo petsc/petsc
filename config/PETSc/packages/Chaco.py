@@ -15,6 +15,11 @@ class Configure(PETSc.package.NewPackage):
     self.downloadonWindows = 1
     return
 
+  def setupDependencies(self, framework):
+    PETSc.package.NewPackage.setupDependencies(self, framework)
+    self.dfunctions = framework.require('config.functions',self)
+    return
+
   def Install(self):
     import os
     self.framework.log.write('chacoDir = '+self.packageDir+' installDir '+self.installDir+'\n')
@@ -36,4 +41,9 @@ class Configure(PETSc.package.NewPackage):
         raise RuntimeError('Error running make on CHACO: '+str(e))
       self.postInstall(output+err, mkfile)
     return self.installDir
+
+  def configureLibrary(self):
+    PETSc.package.NewPackage.configureLibrary(self)
+    if self.dfunctions.check('ddot_',self.lib):
+      raise RuntimeError('You cannot use Chaco package from Sandia as it contains an incorrect ddot() routine that conflicts with BLAS\nUse --download-chaco')
 

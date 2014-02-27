@@ -349,6 +349,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
   }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -711,7 +712,7 @@ int main(int argc, char **argv)
   }
 
   ierr = DMSNESSetFunctionLocal(dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*)) DMPlexComputeResidualFEM, &user);CHKERRQ(ierr);
-  ierr = DMSNESSetJacobianLocal(dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure*,void*)) DMPlexComputeJacobianFEM, &user);CHKERRQ(ierr);
+  ierr = DMSNESSetJacobianLocal(dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,void*)) DMPlexComputeJacobianFEM, &user);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes, A, J, NULL, NULL);CHKERRQ(ierr);
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
@@ -773,9 +774,8 @@ int main(int argc, char **argv)
     /* Check Jacobian */
     {
       Vec          b;
-      MatStructure flag;
 
-      ierr = SNESComputeJacobian(snes, u, &A, &A, &flag);CHKERRQ(ierr);
+      ierr = SNESComputeJacobian(snes, u, &A, &A);CHKERRQ(ierr);
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
       ierr = VecSet(r, 0.0);CHKERRQ(ierr);
       ierr = SNESComputeFunction(snes, r, b);CHKERRQ(ierr);

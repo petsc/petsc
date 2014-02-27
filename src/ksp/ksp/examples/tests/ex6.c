@@ -76,7 +76,7 @@ int main(int argc,char **args)
   PetscLogStageRegister("mystage 1",&stage1);
   PetscLogStagePush(stage1);
   ierr   = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr   = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr   = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
   ierr   = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr   = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr   = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
@@ -104,7 +104,7 @@ int main(int argc,char **args)
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   } else {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %G\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %g\n",(double)norm);CHKERRQ(ierr);
   }
 
   /* Cleanup */

@@ -14,8 +14,7 @@
 
    Output Parameters:
 +  J - Jacobian matrix (not altered in this routine)
-.  B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
--  flag - flag indicating whether the matrix sparsity structure has changed
+-  B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
 
    Options Database Key:
 +  -snes_fd - Activates SNESComputeJacobianDefault()
@@ -39,7 +38,7 @@
 
 .seealso: SNESSetJacobian(), SNESComputeJacobianDefaultColor(), MatCreateSNESMF()
 @*/
-PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,void *ctx)
 {
   Vec            j1a,j2a,x2;
   PetscErrorCode ierr;
@@ -60,9 +59,9 @@ PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat *J,Mat *B,MatStr
 
   ierr = PetscObjectGetComm((PetscObject)x1,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MatAssembled(*B,&assembled);CHKERRQ(ierr);
+  ierr = MatAssembled(B,&assembled);CHKERRQ(ierr);
   if (assembled) {
-    ierr = MatZeroEntries(*B);CHKERRQ(ierr);
+    ierr = MatZeroEntries(B);CHKERRQ(ierr);
   }
   if (!snes->nvwork) {
     snes->nvwork = 3;
@@ -118,18 +117,17 @@ PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat *J,Mat *B,MatStr
     ierr = VecGetArray(j2a,&y);CHKERRQ(ierr);
     for (j=start; j<end; j++) {
       if (PetscAbsScalar(y[j-start]) > amax || j == i) {
-        ierr = MatSetValues(*B,1,&j,1,&i,y+j-start,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues(B,1,&j,1,&i,y+j-start,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
     ierr = VecRestoreArray(j2a,&y);CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*B != *J) {
-    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (B != J) {
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *flag =  DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 

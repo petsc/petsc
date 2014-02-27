@@ -63,7 +63,6 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   PetscReal      beta,alpha,rnorm;
   Vec            X,B,V,V1,U,U1,TMP,W,W2,SE,Z = NULL;
   Mat            Amat,Pmat;
-  MatStructure   pflag;
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
   PetscBool      diagonalscale,nopreconditioner;
 
@@ -71,7 +70,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCNONE,&nopreconditioner);CHKERRQ(ierr);
 
   /*  nopreconditioner =PETSC_FALSE; */
@@ -292,7 +291,7 @@ PetscErrorCode  KSPLSQRGetArnorm(KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm,
       PC  pc;
       Mat Amat;
       ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-      ierr = PCGetOperators(pc,&Amat,NULL,NULL);CHKERRQ(ierr);
+      ierr = PCGetOperators(pc,&Amat,NULL);CHKERRQ(ierr);
       ierr = MatNorm(Amat,NORM_FROBENIUS,&lsqr->anorm);CHKERRQ(ierr);
     }
     *anorm = lsqr->anorm;
@@ -377,7 +376,7 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
       PetscReal rnorm;
       ierr = KSPLSQRGetStandardErrorVec(ksp,&lsqr->se);CHKERRQ(ierr);
       ierr = VecNorm(lsqr->se,NORM_2,&rnorm);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Norm of Standard Error %G, Iterations %D\n",rnorm,ksp->its);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Norm of Standard Error %g, Iterations %D\n",(double)rnorm,ksp->its);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

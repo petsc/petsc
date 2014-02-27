@@ -4,7 +4,7 @@ ALL: lib
 
 CFLAGS    =
 FFLAGS    =
-SOURCEC   = aijviennacl.cxx
+SOURCECXX = aijviennacl.cxx
 SOURCEF   =
 SOURCEH   = viennaclmatimpl.h
 LIBBASE   = libpetscmat

@@ -55,6 +55,7 @@ T*/
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscksp.h>
 
@@ -75,7 +76,7 @@ typedef struct {
    User-defined routines
 */
 extern PetscErrorCode ComputeFunction(AppCtx*,Vec,Vec),FormInitialGuess(AppCtx*,Vec);
-extern PetscErrorCode ComputeJacobian(AppCtx*,Vec,Mat,MatStructure*);
+extern PetscErrorCode ComputeJacobian(AppCtx*,Vec,Mat);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -139,7 +140,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,"-Nx",&Nx,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-Ny",&Ny,NULL);CHKERRQ(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE)) SETERRQ(PETSC_COMM_WORLD,1,"Incompatible number of processors:  Nx * Ny != size");
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DMDA; then duplicate for remaining
@@ -191,7 +192,7 @@ int main(int argc,char **argv)
   ierr = ComputeFunction(&user,X,F);CHKERRQ(ierr);   /* Compute F(X)    */
   ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);     /* fnorm = || F || */
   ttol = fnorm*rtol;
-  if (!no_output) PetscPrintf(comm,"Initial function norm = %G\n",fnorm);
+  if (!no_output) PetscPrintf(comm,"Initial function norm = %g\n",(double)fnorm);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system with a user-defined method
@@ -215,7 +216,7 @@ int main(int argc,char **argv)
         Compute the Jacobian matrix.  See the comments in this routine for
         important information about setting the flag mat_flag.
      */
-    ierr = ComputeJacobian(&user,X,J,&mat_flag);CHKERRQ(ierr);
+    ierr = ComputeJacobian(&user,X,J);CHKERRQ(ierr);
 
     /*
         Solve J Y = F, where J is the Jacobian matrix.
@@ -236,7 +237,7 @@ int main(int argc,char **argv)
     ierr = VecCopy(Y,X);CHKERRQ(ierr);                   /* X <- Y          */
     ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);       /* xnorm = || X || */
     if (!no_output) {
-      ierr = PetscPrintf(comm,"   linear solve iterations = %D, xnorm=%G, ynorm=%G\n",lin_its,xnorm,ynorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"   linear solve iterations = %D, xnorm=%g, ynorm=%g\n",lin_its,(double)xnorm,(double)ynorm);CHKERRQ(ierr);
     }
 
     /*
@@ -245,7 +246,7 @@ int main(int argc,char **argv)
     ierr = ComputeFunction(&user,X,F);CHKERRQ(ierr);     /* Compute F(X)    */
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);       /* fnorm = || F || */
     if (!no_output) {
-      ierr = PetscPrintf(comm,"Iteration %D, function norm = %G\n",i+1,fnorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"Iteration %D, function norm = %g\n",i+1,(double)fnorm);CHKERRQ(ierr);
     }
 
     /*
@@ -253,13 +254,13 @@ int main(int argc,char **argv)
      */
     if (fnorm <= ttol) {
       if (!no_output) {
-        ierr = PetscPrintf(comm,"Converged due to function norm %G < %G (relative tolerance)\n",fnorm,ttol);CHKERRQ(ierr);
+        ierr = PetscPrintf(comm,"Converged due to function norm %g < %g (relative tolerance)\n",(double)fnorm,(double)ttol);CHKERRQ(ierr);
       }
       break;
     }
     if (ynorm < xtol*(xnorm)) {
       if (!no_output) {
-        ierr = PetscPrintf(comm,"Converged due to small update length: %G < %G * %G\n",ynorm,xtol,xnorm);CHKERRQ(ierr);
+        ierr = PetscPrintf(comm,"Converged due to small update length: %g < %g * %g\n",(double)ynorm,(double)xtol,(double)xnorm);CHKERRQ(ierr);
       }
       break;
     }
@@ -454,7 +455,7 @@ PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
    We cannot work directly with the global numbers for the original
    uniprocessor grid!
 */
-PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
+PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac)
 {
   PetscErrorCode ierr;
   Vec            localX = user->localX;   /* local vector */
@@ -535,23 +536,5 @@ PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /*
-     Set flag to indicate that the Jacobian matrix retains an identical
-     nonzero structure throughout all nonlinear iterations (although the
-     values of the entries change). Thus, we can save some work in setting
-     up the preconditioner (e.g., no need to redo symbolic factorization for
-     ILU/ICC preconditioners).
-      - If the nonzero structure of the matrix is different during
-        successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-        must be used instead.  If you are unsure whether the matrix
-        structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-      - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-        believes your assertion and does not check the structure
-        of the matrix.  If you erroneously claim that the structure
-        is the same when it actually is not, the new preconditioner
-        will not function correctly.  Thus, use this optimization
-        feature with caution!
-  */
-  *flag = SAME_NONZERO_PATTERN;
   return 0;
 }

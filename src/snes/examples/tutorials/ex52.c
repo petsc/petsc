@@ -418,7 +418,7 @@ int main(int argc, char **argv)
   ierr = SetupMaterial(dm, dmAux, &user);CHKERRQ(ierr);
 
   ierr = DMSNESSetFunctionLocal(dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))DMPlexComputeResidualFEM,&user);CHKERRQ(ierr);
-  ierr = DMSNESSetJacobianLocal(dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure*,void*))DMPlexComputeJacobianFEM,&user);CHKERRQ(ierr);
+  ierr = DMSNESSetJacobianLocal(dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,void*))DMPlexComputeJacobianFEM,&user);CHKERRQ(ierr);
   if (user.computeFunction) {
     Vec X, F;
 
@@ -432,12 +432,11 @@ int main(int argc, char **argv)
   if (user.computeJacobian) {
     Vec          X;
     Mat          J;
-    MatStructure flag;
 
     ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr);
     ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
-    ierr = SNESComputeJacobian(snes, X, &J, &J, &flag);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes, X, &J, &J);CHKERRQ(ierr);
     ierr = MatDestroy(&J);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &X);CHKERRQ(ierr);
   }

@@ -57,9 +57,10 @@ static PetscErrorCode MatSetValuesBlockedLocal_LocalRef_Scalar(Mat A,PetscInt nr
 {
   Mat_LocalRef   *lr = (Mat_LocalRef*)A->data;
   PetscErrorCode ierr;
-  PetscInt       bs = A->rmap->bs,buf[4096],*irowm,*icolm;
+  PetscInt       bs,buf[4096],*irowm,*icolm;
 
   PetscFunctionBegin;
+  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
   IndexSpaceGet(buf,nrow*bs,ncol*bs,irowm,icolm);
   BlockIndicesExpand(nrow,irow,bs,irowm);
   BlockIndicesExpand(ncol,icol,bs,icolm);

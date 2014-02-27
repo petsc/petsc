@@ -1,7 +1,7 @@
 /*
  GAMG geometric-algebric multigrid PC - Mark Adams 2011
  */
-#include "petsc-private/matimpl.h"
+#include <petsc-private/matimpl.h>
 #include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
 #include <petsc-private/kspimpl.h>
 #include <../src/ksp/pc/impls/bjacobi/bjacobi.h> /* Hack to access same_local_solves */
@@ -504,9 +504,9 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
      if (!pc->setupcalled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCSetUp() has not been called yet");
       if (pc_gamg->Nlevels > 1) {
         /* currently only handle case where mat and pmat are the same on coarser levels */
-        ierr = KSPGetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,&dA,&dB,NULL);CHKERRQ(ierr);
+        ierr = KSPGetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,&dA,&dB);CHKERRQ(ierr);
         /* (re)set to get dirty flag */
-        ierr = KSPSetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,dA,dB,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+        ierr = KSPSetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,dA,dB);CHKERRQ(ierr);
 
         for (level=pc_gamg->Nlevels-2; level>=0; level--) {
           /* the first time through the matrix structure has changed from repartitioning */
@@ -516,10 +516,10 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 
             mglevels[level]->A = B;
           } else {
-            ierr = KSPGetOperators(mglevels[level]->smoothd,NULL,&B,NULL);CHKERRQ(ierr);
+            ierr = KSPGetOperators(mglevels[level]->smoothd,NULL,&B);CHKERRQ(ierr);
             ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
           }
-          ierr = KSPSetOperators(mglevels[level]->smoothd,B,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+          ierr = KSPSetOperators(mglevels[level]->smoothd,B,B);CHKERRQ(ierr);
           dB   = B;
         }
       }
@@ -686,11 +686,11 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
          lidx<fine_level;
          lidx++, level--) {
       ierr = PCMGSetInterpolation(pc, lidx+1, Parr[level]);CHKERRQ(ierr);
-      ierr = KSPSetOperators(mglevels[lidx]->smoothd, Aarr[level], Aarr[level], SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(mglevels[lidx]->smoothd, Aarr[level], Aarr[level]);CHKERRQ(ierr);
       ierr = MatDestroy(&Parr[level]);CHKERRQ(ierr);
       ierr = MatDestroy(&Aarr[level]);CHKERRQ(ierr);
     }
-    ierr = KSPSetOperators(mglevels[fine_level]->smoothd, Aarr[0], Aarr[0], SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(mglevels[fine_level]->smoothd, Aarr[0], Aarr[0]);CHKERRQ(ierr);
 
     ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
   } else if (pc_gamg->Nlevels > 1) { /* don't setup MG if one level */
@@ -706,7 +706,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 
       ierr = KSPSetNormType(smoother, KSP_NORM_NONE);CHKERRQ(ierr);
       /* set ops */
-      ierr = KSPSetOperators(smoother, Aarr[level], Aarr[level], SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(smoother, Aarr[level], Aarr[level]);CHKERRQ(ierr);
       ierr = PCMGSetInterpolation(pc, lidx, Parr[level+1]);CHKERRQ(ierr);
 
       /* set defaults */
@@ -749,7 +749,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       KSP smoother,*k2; PC subpc,pc2; PetscInt ii,first;
       Mat Lmat = Aarr[(level=pc_gamg->Nlevels-1)]; lidx = 0;
       ierr = PCMGGetSmoother(pc, lidx, &smoother);CHKERRQ(ierr);
-      ierr = KSPSetOperators(smoother, Lmat, Lmat, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(smoother, Lmat, Lmat);CHKERRQ(ierr);
       ierr = KSPSetNormType(smoother, KSP_NORM_NONE);CHKERRQ(ierr);
       ierr = KSPGetPC(smoother, &subpc);CHKERRQ(ierr);
       ierr = PCSetType(subpc, PCBJACOBI);CHKERRQ(ierr);
@@ -829,7 +829,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
           ierr = KSPSetFromOptions(eksp);CHKERRQ(ierr);
 
           ierr = KSPSetInitialGuessNonzero(eksp, PETSC_FALSE);CHKERRQ(ierr);
-          ierr = KSPSetOperators(eksp, Lmat, Lmat, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+          ierr = KSPSetOperators(eksp, Lmat, Lmat);CHKERRQ(ierr);
           ierr = KSPSetComputeSingularValues(eksp,PETSC_TRUE);CHKERRQ(ierr);
 
           /* set PC type to be same as smoother */
@@ -884,7 +884,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     KSP smoother;
     if (pc_gamg->verbose) PetscPrintf(comm,"\t[%d]%s one level solver used (system is seen as DD). Using default solver.\n",rank,__FUNCT__);
     ierr = PCMGGetSmoother(pc, 0, &smoother);CHKERRQ(ierr);
-    ierr = KSPSetOperators(smoother, Aarr[0], Aarr[0], SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(smoother, Aarr[0], Aarr[0]);CHKERRQ(ierr);
     ierr = KSPSetType(smoother, KSPPREONLY);CHKERRQ(ierr);
     ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
   }

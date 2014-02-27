@@ -53,6 +53,7 @@ static const char help[] = "Steady-state 2D subduction flow, pressure and temper
   ------------------------------------------------------------------------F*/
 
 #include <petscsnes.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #define VISC_CONST   0
@@ -91,7 +92,7 @@ typedef struct { /* physical and miscelaneous parameters */
 } Parameter;
 
 typedef struct { /* grid parameters */
-  DMDABoundaryType bx,by;
+  DMBoundaryType   bx,by;
   DMDAStencilType  stencil;
   PetscInt         corner,ni,nj,jlid,jfault,inose;
   PetscInt         dof,stencil_width,mglevels;
@@ -254,7 +255,7 @@ PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
 
     /* continuation method on viscosity cutoff */
     for (param->continuation=0.0;; param->continuation+=cont_incr) {
-      if (!q) PetscPrintf(PETSC_COMM_WORLD," Continuation parameter = %G\n", param->continuation);
+      if (!q) PetscPrintf(PETSC_COMM_WORLD," Continuation parameter = %g\n", (double)param->continuation);
 
       /* solve the non-linear system */
       ierr   = VecCopy(user->Xguess,user->x);CHKERRQ(ierr);
@@ -813,7 +814,6 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
 {
   PetscErrorCode ierr, ierr_out=0;
   PetscReal      SEC_PER_YR                    = 3600.00*24.00*365.2500;
-  PetscReal      PI                            = 3.14159265358979323846;
   PetscReal      alpha_g_on_cp_units_inverse_km=4.0e-5*9.8;
 
   /* domain geometry */
@@ -829,21 +829,21 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   ierr = PetscOptionsGetReal(NULL,"-lid_depth",&(param->lid_depth),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-fault_depth",&(param->fault_depth),NULL);CHKERRQ(ierr);
 
-  param->slab_dip = param->slab_dip*PI/180.0;                    /* radians */
+  param->slab_dip = param->slab_dip*PETSC_PI/180.0;                    /* radians */
 
   /* grid information */
   ierr     = PetscOptionsGetInt(NULL, "-jfault",&(grid->jfault),NULL);CHKERRQ(ierr);
   grid->ni = 82;
   ierr     = PetscOptionsGetInt(NULL, "-ni",&(grid->ni),NULL);CHKERRQ(ierr);
 
-  grid->dx            = param->width/((double)(grid->ni-2));               /* km */
+  grid->dx            = param->width/((PetscReal)(grid->ni-2));               /* km */
   grid->dz            = grid->dx*tan(param->slab_dip);                     /* km */
   grid->nj            = (PetscInt)(param->depth/grid->dz + 3.0);         /* gridpoints*/
   param->depth        = grid->dz*(grid->nj-2);                             /* km */
   grid->inose         = 0;                                          /* gridpoints*/
   ierr                = PetscOptionsGetInt(NULL,"-inose",&(grid->inose),NULL);CHKERRQ(ierr);
-  grid->bx            = DMDA_BOUNDARY_NONE;
-  grid->by            = DMDA_BOUNDARY_NONE;
+  grid->bx            = DM_BOUNDARY_NONE;
+  grid->by            = DM_BOUNDARY_NONE;
   grid->stencil       = DMDA_STENCIL_BOX;
   grid->dof           = 4;
   grid->stencil_width = 2;
@@ -953,7 +953,6 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
 {
   PetscErrorCode ierr, ierr_out=0;
   char           date[30];
-  PetscReal      PI = 3.14159265358979323846;
 
   ierr = PetscGetDate(date,30);CHKERRQ(ierr);
 
@@ -962,14 +961,14 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
     /* PetscPrintf(PETSC_COMM_WORLD,"                   %s\n",&(date[0]));*/
 
     PetscPrintf(PETSC_COMM_WORLD,"Domain: \n");
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Width = %G km,         Depth = %G km\n",param->width,param->depth);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Slab dip = %G degrees,  Slab velocity = %G cm/yr\n",param->slab_dip*180.0/PI,param->slab_velocity);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Width = %g km,         Depth = %g km\n",(double)param->width,(double)param->depth);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Slab dip = %g degrees,  Slab velocity = %g cm/yr\n",(double)(param->slab_dip*180.0/PETSC_PI),(double)param->slab_velocity);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Lid depth = %5.2f km,   Fault depth = %5.2f km\n",param->lid_depth*param->L,param->fault_depth*param->L);CHKERRQ(ierr);
 
     PetscPrintf(PETSC_COMM_WORLD,"\nGrid: \n");
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  [ni,nj] = %D, %D       [dx,dz] = %G, %G km\n",grid->ni,grid->nj,grid->dx*param->L,grid->dz*param->L);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  [ni,nj] = %D, %D       [dx,dz] = %g, %g km\n",grid->ni,grid->nj,(double)grid->dx*param->L,(double)(grid->dz*param->L));CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  jlid = %3D              jfault = %3D \n",grid->jlid,grid->jfault);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Pe = %G\n",param->peclet);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Pe = %g\n",(double)param->peclet);CHKERRQ(ierr);
 
     PetscPrintf(PETSC_COMM_WORLD,"\nRheology:");
     if (param->ivisc==VISC_CONST) {
@@ -979,13 +978,13 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
       }
     } else if (param->ivisc==VISC_DIFN) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"                 Diffusion Creep (T-Dependent Newtonian) \n");CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %G--%G Pa-sec \n",param->eta0,param->visc_cutoff*param->eta0);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %g--%g Pa-sec \n",(double)param->eta0,(double)(param->visc_cutoff*param->eta0));CHKERRQ(ierr);
     } else if (param->ivisc==VISC_DISL) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"                 Dislocation Creep (T-Dependent Non-Newtonian) \n");CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %G--%G Pa-sec \n",param->eta0,param->visc_cutoff*param->eta0);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %g--%g Pa-sec \n",(double)param->eta0,(double)(param->visc_cutoff*param->eta0));CHKERRQ(ierr);
     } else if (param->ivisc==VISC_FULL) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"                 Full Rheology \n");CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %G--%G Pa-sec \n",param->eta0,param->visc_cutoff*param->eta0);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %g--%g Pa-sec \n",(double)param->eta0,(double)(param->visc_cutoff*param->eta0));CHKERRQ(ierr);
     } else {
       ierr     = PetscPrintf(PETSC_COMM_WORLD,"                 Invalid! \n");CHKERRQ(ierr);
       ierr_out = 1;

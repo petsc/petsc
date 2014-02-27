@@ -10,6 +10,7 @@
 
 static char help[] = "Solves 3D Laplacian using wirebasket based multigrid.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscksp.h>
 
@@ -36,7 +37,7 @@ int main(int argc,char **argv)
 
   ierr = DMDACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
   ierr = DMDASetDim(da,3);CHKERRQ(ierr);
-  ierr = DMDASetBoundaryType(da,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(da,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE);CHKERRQ(ierr);
   ierr = DMDASetStencilType(da,DMDA_STENCIL_STAR);CHKERRQ(ierr);
   ierr = DMDASetSizes(da,M,M,M);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
@@ -77,7 +78,7 @@ int main(int argc,char **argv)
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetDM(pc,(DM)da);CHKERRQ(ierr);
 

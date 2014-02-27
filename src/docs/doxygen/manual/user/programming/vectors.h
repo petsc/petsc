@@ -512,10 +512,11 @@ Instead of specifying the process layout, one may use
 PETSC_DECIDE for `m` and `n`
 so that %PETSc will determine the partition using MPI. The type of
 periodicity of the array is specified by `xperiod` and `yperiod`, which can be
-DMDA_BOUNDARY_NONE (no periodicity),
-DMDA_BOUNDARY_PERIODIC (periodic in that direction),
-DMDA_BOUNDARY_GHOSTED,
-or DMDA_BOUNDARY_MIRROR. The argument `dof`
+DM_BOUNDARY_NONE (no periodicity),
+DM_BOUNDARY_PERIODIC (periodic in that direction),
+DM_BOUNDARY_TWIST (periodic in that direction, but identified in reverse order),
+DM_BOUNDARY_GHOSTED,
+or DM_BOUNDARY_MIRROR. The argument `dof`
 indicates the number of degrees of freedom at each array point,
 and `s` is the stencil width (i.e., the width of the ghost point region).
 The optional arrays `lx` and `ly` may contain the number of nodes

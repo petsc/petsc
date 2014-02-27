@@ -45,7 +45,7 @@ static PetscErrorCode Compare2(Vec *X,const char *test)
   if (norm < 1.e-12 && verbose < 1) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"%30s: norm difference < 1e-12\n",test);CHKERRQ(ierr);
   } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%30s: norm difference %G\n",test,norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"%30s: norm difference %g\n",test,(double)norm);CHKERRQ(ierr);
   }
   if (verbose > 1) {
     ierr = VecView(X[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

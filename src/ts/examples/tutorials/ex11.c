@@ -509,7 +509,7 @@ static PetscErrorCode PhysicsSolution_SW(Model mod,PetscReal time,const PetscRea
   PetscReal dx[2],r,sigma;
 
   PetscFunctionBeginUser;
-  if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %G",time);
+  if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
   dx[0] = x[0] - 1.5;
   dx[1] = x[1] - 1.0;
   r     = Norm2(dx);
@@ -695,7 +695,7 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const Petsc
   PetscInt i;
 
   PetscFunctionBeginUser;
-  if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %G",time);
+  if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
   u[0]     = 1.0;
   u[DIM+1] = 1.0+PetscAbsReal(x[0]);
   for (i=1; i<DIM+1; i++) u[i] = 0.0;
@@ -2323,7 +2323,7 @@ int main(int argc, char **argv)
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %G after %D steps\n",TSConvergedReasons[reason],ftime,nsteps);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,nsteps);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = VecDestroy(&user->cellgeom);CHKERRQ(ierr);

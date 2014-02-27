@@ -99,6 +99,7 @@ typedef enum {
   TS_DIVERGED_STEP_REJECTED   = -2
 } TSConvergedReason;
 PETSC_EXTERN const char *const*TSConvergedReasons;
+
 /*MC
    TS_CONVERGED_ITERATING - this only occurs if TSGetConvergedReason() is called during the TSSolve()
 
@@ -116,12 +117,13 @@ M*/
 M*/
 
 /*MC
-   TS_CONVERGED_ITS - the maximum number of iterations was reached prior to the final time
+   TS_CONVERGED_ITS - the maximum number of iterations (time-steps) was reached prior to the final time
 
    Level: beginner
 
 .seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetDuration()
 M*/
+
 /*MC
    TS_CONVERGED_USER - user requested termination
 
@@ -135,7 +137,9 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSGetSNES(), SNESGetConvergedReason()
+   Notes: See TSSetMaxSNESFailures() for how to allow more nonlinear solver failures.
+
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSGetSNES(), SNESGetConvergedReason(), TSSetMaxSNESFailures()
 M*/
 
 /*MC
@@ -143,7 +147,9 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt()
+   Notes: See TSSetMaxStepRejections() for how to allow more step rejections.
+
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetMaxStepRejections()
 M*/
 
 /*E
@@ -229,7 +235,7 @@ PETSC_EXTERN PetscErrorCode TSGetTimeStepNumber(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSSetTimeStep(TS,PetscReal);
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSFunction)(TS,PetscReal,Vec,Vec,void*);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSJacobian)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSJacobian)(TS,PetscReal,Vec,Mat,Mat,void*);
 PETSC_EXTERN PetscErrorCode TSSetRHSFunction(TS,Vec,TSRHSFunction,void*);
 PETSC_EXTERN PetscErrorCode TSGetRHSFunction(TS,Vec*,TSRHSFunction*,void**);
 PETSC_EXTERN PetscErrorCode TSSetRHSJacobian(TS,Mat,Mat,TSRHSJacobian,void*);
@@ -238,19 +244,19 @@ PETSC_EXTERN PetscErrorCode TSRHSJacobianSetReuse(TS,PetscBool);
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSSolutionFunction)(TS,PetscReal,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSSetSolutionFunction(TS,TSSolutionFunction,void*);
-PETSC_EXTERN PetscErrorCode TSSetForcingFunction(TS,PetscErrorCode (*TSForcingFunction)(TS,PetscReal,Vec,void*),void*);
+PETSC_EXTERN PetscErrorCode TSSetForcingFunction(TS,PetscErrorCode (*)(TS,PetscReal,Vec,void*),void*);
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSIFunction)(TS,PetscReal,Vec,Vec,Vec,void*);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSIJacobian)(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSIJacobian)(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 PETSC_EXTERN PetscErrorCode TSSetIFunction(TS,Vec,TSIFunction,void*);
 PETSC_EXTERN PetscErrorCode TSGetIFunction(TS,Vec*,TSIFunction*,void**);
 PETSC_EXTERN PetscErrorCode TSSetIJacobian(TS,Mat,Mat,TSIJacobian,void*);
 PETSC_EXTERN PetscErrorCode TSGetIJacobian(TS,Mat*,Mat*,TSIJacobian*,void**);
 
 PETSC_EXTERN PetscErrorCode TSComputeRHSFunctionLinear(TS,PetscReal,Vec,Vec,void*);
-PETSC_EXTERN PetscErrorCode TSComputeRHSJacobianConstant(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+PETSC_EXTERN PetscErrorCode TSComputeRHSJacobianConstant(TS,PetscReal,Vec,Mat,Mat,void*);
 PETSC_EXTERN PetscErrorCode TSComputeIFunctionLinear(TS,PetscReal,Vec,Vec,Vec,void*);
-PETSC_EXTERN PetscErrorCode TSComputeIJacobianConstant(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
+PETSC_EXTERN PetscErrorCode TSComputeIJacobianConstant(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 PETSC_EXTERN PetscErrorCode TSComputeSolutionFunction(TS,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSComputeForcingFunction(TS,PetscReal,Vec);
 
@@ -284,9 +290,9 @@ PETSC_EXTERN PetscErrorCode TSPseudoIncrementDtFromInitialDt(TS);
 PETSC_EXTERN PetscErrorCode TSPythonSetType(TS,const char[]);
 
 PETSC_EXTERN PetscErrorCode TSComputeRHSFunction(TS,PetscReal,Vec,Vec);
-PETSC_EXTERN PetscErrorCode TSComputeRHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*);
+PETSC_EXTERN PetscErrorCode TSComputeRHSJacobian(TS,PetscReal,Vec,Mat,Mat);
 PETSC_EXTERN PetscErrorCode TSComputeIFunction(TS,PetscReal,Vec,Vec,Vec,PetscBool);
-PETSC_EXTERN PetscErrorCode TSComputeIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,PetscBool);
+PETSC_EXTERN PetscErrorCode TSComputeIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,PetscBool);
 PETSC_EXTERN PetscErrorCode TSComputeLinearStability(TS,PetscReal,PetscReal,PetscReal*,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode TSVISetVariableBounds(TS,Vec,Vec);
@@ -301,21 +307,21 @@ PETSC_EXTERN PetscErrorCode DMTSSetIJacobian(DM,TSIJacobian,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetIJacobian(DM,TSIJacobian*,void**);
 PETSC_EXTERN PetscErrorCode DMTSSetSolutionFunction(DM,TSSolutionFunction,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetSolutionFunction(DM,TSSolutionFunction*,void**);
-PETSC_EXTERN PetscErrorCode DMTSSetForcingFunction(DM,PetscErrorCode (*TSForcingFunction)(TS,PetscReal,Vec,void*),void*);
-PETSC_EXTERN PetscErrorCode DMTSGetForcingFunction(DM,PetscErrorCode (**TSForcingFunction)(TS,PetscReal,Vec,void*),void**);
+PETSC_EXTERN PetscErrorCode DMTSSetForcingFunction(DM,PetscErrorCode (*)(TS,PetscReal,Vec,void*),void*);
+PETSC_EXTERN PetscErrorCode DMTSGetForcingFunction(DM,PetscErrorCode (**)(TS,PetscReal,Vec,void*),void**);
 
 PETSC_EXTERN PetscErrorCode DMTSSetIFunctionSerialize(DM,PetscErrorCode (*)(void*,PetscViewer),PetscErrorCode (*)(void**,PetscViewer));
 PETSC_EXTERN PetscErrorCode DMTSSetIJacobianSerialize(DM,PetscErrorCode (*)(void*,PetscViewer),PetscErrorCode (*)(void**,PetscViewer));
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSRHSFunctionLocal)(DMDALocalInfo*,PetscReal,void*,void*,void*);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSRHSJacobianLocal)(DMDALocalInfo*,PetscReal,void*,Mat,Mat,MatStructure*,void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSRHSJacobianLocal)(DMDALocalInfo*,PetscReal,void*,Mat,Mat,void*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSIFunctionLocal)(DMDALocalInfo*,PetscReal,void*,void*,void*,void*);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSIJacobianLocal)(DMDALocalInfo*,PetscReal,void*,void*,PetscReal,Mat,Mat,MatStructure*,void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSIJacobianLocal)(DMDALocalInfo*,PetscReal,void*,void*,PetscReal,Mat,Mat,void*);
 
 PETSC_EXTERN PetscErrorCode DMDATSSetRHSFunctionLocal(DM,InsertMode,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,void*),void *);
-PETSC_EXTERN PetscErrorCode DMDATSSetRHSJacobianLocal(DM,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,Mat,Mat,MatStructure*,void*),void *);
+PETSC_EXTERN PetscErrorCode DMDATSSetRHSJacobianLocal(DM,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,Mat,Mat,void*),void *);
 PETSC_EXTERN PetscErrorCode DMDATSSetIFunctionLocal(DM,InsertMode,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,void*,void*),void *);
-PETSC_EXTERN PetscErrorCode DMDATSSetIJacobianLocal(DM,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,PetscReal,Mat,Mat,MatStructure*,void*),void *);
+PETSC_EXTERN PetscErrorCode DMDATSSetIJacobianLocal(DM,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,PetscReal,Mat,Mat,void*),void *);
 
 typedef struct _n_TSMonitorLGCtx*  TSMonitorLGCtx;
 typedef struct {
@@ -630,6 +636,6 @@ PETSC_EXTERN PetscErrorCode TSSetDM(TS,DM);
 PETSC_EXTERN PetscErrorCode TSGetDM(TS,DM*);
 
 PETSC_EXTERN PetscErrorCode SNESTSFormFunction(SNES,Vec,Vec,void*);
-PETSC_EXTERN PetscErrorCode SNESTSFormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PETSC_EXTERN PetscErrorCode SNESTSFormJacobian(SNES,Vec,Mat,Mat,void*);
 
 #endif

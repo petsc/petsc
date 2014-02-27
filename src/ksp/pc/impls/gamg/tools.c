@@ -1,7 +1,7 @@
 /*
  GAMG geometric-algebric multigrid PC - Mark Adams 2011
  */
-#include "petsc-private/matimpl.h"
+#include <petsc-private/matimpl.h>
 #include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
 #include <petsc-private/kspimpl.h>
 
@@ -267,7 +267,7 @@ PetscErrorCode PCGAMGGetDataWithGhosts(const Mat Gmat,const PetscInt data_sz,con
  *  GAMGTableCreate
  */
 /* avoid overflow */
-#define GAMG_HASH(key) ((7*key)%a_tab->size)
+#define GAMG_HASH(key) ((((PetscInt)7)*key)%a_tab->size)
 #undef __FUNCT__
 #define __FUNCT__ "GAMGTableCreate"
 PetscErrorCode GAMGTableCreate(PetscInt a_size, GAMGHashTable *a_tab)

@@ -184,7 +184,7 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
       if (!ksp->reason) {
-        if (ksp->errorifnotconverged) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"You reached the happy break down, but convergence was not indicated. Residual norm = %G",res);
+        if (ksp->errorifnotconverged) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"You reached the happy break down, but convergence was not indicated. Residual norm = %g",(double)res);
         else {
           ksp->reason = KSP_DIVERGED_BREAKDOWN;
           break;
@@ -332,7 +332,7 @@ static PetscErrorCode KSPGMRESBuildSoln(PetscScalar *nrs,Vec vs,Vec vdest,KSP ks
   } else {
     ksp->reason = KSP_DIVERGED_BREAKDOWN;
 
-    ierr = PetscInfo2(ksp,"Likely your matrix or preconditioner is singular. HH(it,it) is identically zero; it = %D GRS(it) = %G",it,PetscAbsScalar(*GRS(it)));CHKERRQ(ierr);
+    ierr = PetscInfo2(ksp,"Likely your matrix or preconditioner is singular. HH(it,it) is identically zero; it = %D GRS(it) = %g",it,(double)PetscAbsScalar(*GRS(it)));CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   for (ii=1; ii<=it; ii++) {
@@ -507,7 +507,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
   }
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: restart=%D, using %s\n",gmres->max_k,cstr);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: happy breakdown tolerance %G\n",gmres->haptol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: happy breakdown tolerance %g\n",(double)gmres->haptol);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,"%s restart %D",cstr,gmres->max_k);CHKERRQ(ierr);
   }

@@ -75,7 +75,7 @@ PetscErrorCode  KSPFischerGuessFormGuess_Method1(KSPFischerGuess_Method1 *itg,Ve
   if (itg->monitor) {
     ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"KSPFischerGuess alphas = ");CHKERRQ(ierr);
     for (i=0; i<itg->curl; i++) {
-      ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"%G ",PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"%g ",(double)PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
     }
     ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"\n");CHKERRQ(ierr);
   }
@@ -198,7 +198,7 @@ PetscErrorCode  KSPFischerGuessFormGuess_Method2(KSPFischerGuess_Method2 *itg,Ve
   if (itg->monitor) {
     ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"KSPFischerGuess alphas = ");CHKERRQ(ierr);
     for (i=0; i<itg->curl; i++) {
-      ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"%G ",PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"%g ",(double)PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
     }
     ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"\n");CHKERRQ(ierr);
   }
@@ -291,7 +291,7 @@ PetscErrorCode  KSPFischerGuessCreate(KSP ksp,PetscInt method,PetscInt maxl,KSPF
   (*itg)->ksp    = ksp;
   (*itg)->refcnt = 1;
 
-  ierr = KSPGetOperators(ksp,&(*itg)->mat,NULL,NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp,&(*itg)->mat,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -368,7 +368,7 @@ PetscErrorCode  KSPFischerGuessReset(KSPFischerGuess itg)
 
   PetscFunctionBegin;
   itg->curl = 0;
-  ierr      = KSPGetOperators(itg->ksp,&itg->mat,NULL,NULL);CHKERRQ(ierr);
+  ierr      = KSPGetOperators(itg->ksp,&itg->mat,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -99,7 +99,7 @@ int main(int argc,char **args)
       ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
       if (norm2 > 1.e-14) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%G\n",norm2);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%g\n",(double)norm2);CHKERRQ(ierr);
       }
     }
   }
@@ -110,7 +110,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
   if (lf == -1 && norm2 > 1.e-14) {
-    PetscPrintf(PETSC_COMM_SELF, " reordered SEQAIJ:   Cholesky/ICC levels %d, residual %g\n",lf,norm2);CHKERRQ(ierr);
+    PetscPrintf(PETSC_COMM_SELF, " reordered SEQAIJ:   Cholesky/ICC levels %D, residual %g\n",lf,(double)norm2);CHKERRQ(ierr);
   }
 
   /* Free data structures */

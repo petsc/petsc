@@ -374,7 +374,7 @@ PetscErrorCode  KSPMonitorRange(KSP ksp,PetscInt it,PetscReal rnorm,void *dummy)
 
   rel  = (prev - rnorm)/prev;
   prev = rnorm;
-  ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e \n",it,(double)rnorm,(double)100.0*perc,(double)rel,(double)rel/perc);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e \n",it,(double)rnorm,(double)(100.0*perc),(double)rel,(double)(rel/perc));CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -427,7 +427,7 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp,PetscInt its,PetscReal fnorm,v
   }
   ierr       = KSPGetTolerances(ksp, &outer_rtol, &outer_abstol, &outer_dtol, &outer_maxits);CHKERRQ(ierr);
   inner_rtol = PetscMin(scale->coef * scale->bnrm * outer_rtol / fnorm, 0.999);
-  /*ierr = PetscPrintf(PETSC_COMM_WORLD, "        Inner rtol = %G\n", inner_rtol);CHKERRQ(ierr);*/
+  /*ierr = PetscPrintf(PETSC_COMM_WORLD, "        Inner rtol = %g\n", (double)inner_rtol);CHKERRQ(ierr);*/
 
   /* if pc is ksp */
   ierr = PCKSPGetKSP(pc, &kspinner);CHKERRQ(ierr);
@@ -487,7 +487,7 @@ PetscErrorCode  KSPMonitorDefaultShort(KSP ksp,PetscInt its,PetscReal fnorm,void
   }
 
   if (fnorm > 1.e-9) {
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %G \n",its,fnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %g \n",its,(double)fnorm);CHKERRQ(ierr);
   } else if (fnorm > 1.e-11) {
     ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %5.3e \n",its,(double)fnorm);CHKERRQ(ierr);
   } else {
@@ -875,12 +875,11 @@ PetscErrorCode KSPBuildSolutionDefault(KSP ksp,Vec v,Vec *V)
 PetscErrorCode KSPBuildResidualDefault(KSP ksp,Vec t,Vec v,Vec *V)
 {
   PetscErrorCode ierr;
-  MatStructure   pflag;
   Mat            Amat,Pmat;
 
   PetscFunctionBegin;
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
   ierr = KSPBuildSolution(ksp,t,NULL);CHKERRQ(ierr);
   ierr = KSP_MatMult(ksp,Amat,t,v);CHKERRQ(ierr);
   ierr = VecAYPX(v,-1.0,ksp->vec_rhs);CHKERRQ(ierr);
@@ -925,7 +924,7 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
       } else {
         Mat mat;
         if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-        ierr = PCGetOperators(ksp->pc,&mat,NULL,NULL);CHKERRQ(ierr);
+        ierr = PCGetOperators(ksp->pc,&mat,NULL);CHKERRQ(ierr);
         ierr = MatGetVecs(mat,&vecr,NULL);CHKERRQ(ierr);
       }
     }
@@ -947,7 +946,7 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
       } else {
         Mat mat;
         if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-        ierr = PCGetOperators(ksp->pc,&mat,NULL,NULL);CHKERRQ(ierr);
+        ierr = PCGetOperators(ksp->pc,&mat,NULL);CHKERRQ(ierr);
         ierr = MatGetVecs(mat,NULL,&vecl);CHKERRQ(ierr);
       }
     }
