@@ -114,7 +114,7 @@ int main(int argc,char **argv)
   }
 
   ctx.nelements      = 10;
-  ierr = PetscOptionsGetInt(NULL,"-n",&ctx.nelements,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&ctx.nelements,NULL);CHKERRQ(ierr);
 
   ctx.HeDiffusion[1]    = 1000*2.95e-4; /* From Tibo's notes times 1,000 */
   ctx.HeDiffusion[2]    = 1000*3.24e-4;

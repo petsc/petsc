@@ -58,7 +58,7 @@ PetscErrorCode Initialize_AppContext(UserCtx *puser)
   PetscFunctionBegin;
   ierr = PetscNew(&user);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Advection-reaction options","");
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Advection-reaction options","");
   {
     user->nvars  = 2;
     user->A      = 1;
@@ -72,17 +72,17 @@ PetscErrorCode Initialize_AppContext(UserCtx *puser)
     user->ntsteps = 10000;
     user->ftype = 0;
     user->io = PETSC_FALSE;
-    ierr = PetscOptionsReal("-A","Reaction rate","",user->A,&user->A,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-B","Reaction rate","",user->B,&user->B,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-alpha","Diffusion coefficient","",user->alpha,&user->alpha,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-uleft","Dirichlet boundary condition","",user->leftbc.u,&user->leftbc.u,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-uright","Dirichlet boundary condition","",user->rightbc.u,&user->rightbc.u,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-vleft","Dirichlet boundary condition","",user->leftbc.v,&user->leftbc.v,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-vright","Dirichlet boundary condition","",user->rightbc.v,&user->rightbc.v,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-n","Number of 1-D elements","",user->n,&user->n,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-ndt","Number of time steps","",user->ntsteps,&user->ntsteps,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-ftype","Type of function evaluation model for FEM assembly","",user->ftype,&user->ftype,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-io","Write the mesh and solution output to a file.","",user->io,&user->io,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-A","Reaction rate","",user->A,&user->A,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-B","Reaction rate","",user->B,&user->B,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-alpha","Diffusion coefficient","",user->alpha,&user->alpha,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-uleft","Dirichlet boundary condition","",user->leftbc.u,&user->leftbc.u,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-uright","Dirichlet boundary condition","",user->rightbc.u,&user->rightbc.u,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-vleft","Dirichlet boundary condition","",user->leftbc.v,&user->leftbc.v,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-vright","Dirichlet boundary condition","",user->rightbc.v,&user->rightbc.v,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-n","Number of 1-D elements","",user->n,&user->n,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ndt","Number of time steps","",user->ntsteps,&user->ntsteps,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ftype","Type of function evaluation model for FEM assembly","",user->ftype,&user->ftype,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-io","Write the mesh and solution output to a file.","",user->io,&user->io,NULL);CHKERRQ(ierr);
     user->npts   = user->n+1;
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -99,7 +99,7 @@ PetscErrorCode Destroy_AppContext(UserCtx *user)
 
   PetscFunctionBegin;
   ierr = PetscFree(*user);CHKERRQ(ierr);
-  user = PETSC_NULL;
+  user = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -159,13 +159,13 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,PETSC_NULL,FormRHSFunction,user);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,NULL,FormRHSFunction,user);CHKERRQ(ierr);
   if (user->ftype == 1) {
-    ierr = TSSetIFunction(ts,PETSC_NULL,FormIFunctionGlobalBlocked,user);CHKERRQ(ierr);
+    ierr = TSSetIFunction(ts,NULL,FormIFunctionGlobalBlocked,user);CHKERRQ(ierr);
   } else if(user->ftype == 2) {
-    ierr = TSSetIFunction(ts,PETSC_NULL,FormIFunctionGhosted,user);CHKERRQ(ierr);
+    ierr = TSSetIFunction(ts,NULL,FormIFunctionGhosted,user);CHKERRQ(ierr);
   } else {
-    ierr = TSSetIFunction(ts,PETSC_NULL,FormIFunctionMOAB,user);CHKERRQ(ierr);
+    ierr = TSSetIFunction(ts,NULL,FormIFunctionMOAB,user);CHKERRQ(ierr);
   }
   ierr = DMCreateMatrix(dm,&J);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,J,J,FormIJacobian,user);CHKERRQ(ierr);
