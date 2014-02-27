@@ -154,22 +154,10 @@ static void DMMoab_SetElementConnectivity_Private(PetscBool useSimplex, PetscInt
 {
   PetscInt m,subelem;
   if (useSimplex) {
-    switch (dim) {
-      case 1:
-        subelem=1;
-        DMMoab_SetSimplexElementConnectivity_Private(dim, 0, etype, (*ecount)*vpere, nele, i, j, k, vfirst, connectivity);
-        break;
-      case 2:
-        subelem=2;
-        for (m=0; m<subelem; m++)
-          DMMoab_SetSimplexElementConnectivity_Private(dim, m, etype, (*ecount+m)*vpere, nele, i, j, k, vfirst, connectivity);
-        break;
-      case 3:
-        subelem=5;
-        for (m=0; m<subelem; m++)
-          DMMoab_SetSimplexElementConnectivity_Private(dim, m, etype, (*ecount+m)*vpere, nele, i, j, k, vfirst, connectivity);
-        break;
-    }
+    subelem=(dim==1 ? 1 : (dim==2 ? 2 : 5));
+    for (m=0; m<subelem; m++)
+      DMMoab_SetSimplexElementConnectivity_Private(dim, m, etype, (*ecount+m)*vpere, nele, i, j, k, vfirst, connectivity);
+
   }
   else {
     subelem=1;
