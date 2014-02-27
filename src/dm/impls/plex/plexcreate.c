@@ -312,8 +312,7 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
 @*/
 PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt faces[])
 {
-  PetscInt       vertices[3] = {faces[0]+1, faces[1]+1, faces[2]+1};
-  PetscInt       numVertices = vertices[0]*vertices[1]*vertices[2];
+  PetscInt       vertices[3], numVertices;
   PetscInt       numFaces    = 2*faces[0]*faces[1] + 2*faces[1]*faces[2] + 2*faces[0]*faces[2];
   Vec            coordinates;
   PetscSection   coordSection;
@@ -327,6 +326,8 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
   PetscFunctionBegin;
   if ((faces[0] < 1) || (faces[1] < 1) || (faces[2] < 1)) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Must have at least 1 face per side");
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
+  vertices[0] = faces[0]+1; vertices[1] = faces[1]+1; vertices[2] = faces[2]+1;
+  numVertices = vertices[0]*vertices[1]*vertices[2];
   if (!rank) {
     PetscInt f;
 
