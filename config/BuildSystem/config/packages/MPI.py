@@ -347,7 +347,7 @@ class Configure(config.package.Package):
       if config.setCompilers.Configure.isCygwin() and not config.setCompilers.Configure.isGNU(self.setCompilers.CC):
         raise RuntimeError('Sorry, cannot download-install MPICH on Windows. Sugest installing windows version of MPICH manually')
       self.liblist      = [[]]
-      if config.setCompilers.Configure.isSolaris() or self.framework.argDB['with-gcov']:
+      if config.setCompilers.Configure.isSolaris():
         self.download         = self.download_mpich_sol
       else:
         self.download         = self.download_mpich
@@ -532,6 +532,10 @@ class Configure(config.package.Package):
       args.append('--with-mpe')
     else:
       args.append('--without-mpe')
+
+    if self.framework.argDB['with-gcov']:
+      args.append('--enable-coverage')
+
     args.append('--with-pm='+self.argDB['download-mpich-pm'])
     # make MPICH behave properly for valgrind
     args.append('--enable-g=meminit')
