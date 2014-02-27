@@ -8,7 +8,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/impls/moab/examples/tests/
-EXAMPLESC       = ex1.cxx ex2.c
+EXAMPLESC       = ex1.cxx ex2.cxx
 EXAMPLESF       =
 MANSEC          = DM
 
