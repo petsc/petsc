@@ -99,7 +99,6 @@ PetscErrorCode Destroy_AppContext(UserCtx *user)
 
   PetscFunctionBegin;
   ierr = PetscFree(*user);CHKERRQ(ierr);
-  user = NULL;
   PetscFunctionReturn(0);
 }
 
