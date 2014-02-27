@@ -144,7 +144,7 @@ int main(int argc,char **argv)
   ierr = Initialize_AppContext(&user);CHKERRQ(ierr);
 
   /* Fill in the user defined work context: */
-  ierr = DMMoabCreateBoxMesh(PETSC_COMM_WORLD, 1, bounds, user->n, 1, &dm);CHKERRQ(ierr);
+  ierr = DMMoabCreateBoxMesh(PETSC_COMM_WORLD, 1, PETSC_FALSE, bounds, user->n, 1, &dm);CHKERRQ(ierr);
   ierr = DMMoabSetBlockSize(dm, user->nvars);CHKERRQ(ierr);
   ierr = DMMoabSetFieldNames(dm, user->nvars, fields);CHKERRQ(ierr);
   ierr = DMSetMatType(dm,MATBAIJ);CHKERRQ(ierr);

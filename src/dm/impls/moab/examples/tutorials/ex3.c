@@ -108,7 +108,7 @@ int main(int argc,char **argv)
     ierr = DMMoabLoadFromFile(PETSC_COMM_WORLD, user.dim, user.filename, (np==1 ? "" : ""), &dm);CHKERRQ(ierr);
   }
   else {
-    ierr = DMMoabCreateBoxMesh(PETSC_COMM_WORLD, user.dim, NULL, user.n, 1, &dm);CHKERRQ(ierr);
+    ierr = DMMoabCreateBoxMesh(PETSC_COMM_WORLD, user.dim, PETSC_FALSE, NULL, user.n, 1, &dm);CHKERRQ(ierr);
   }
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMMoabSetFieldNames(dm, 1, fields);CHKERRQ(ierr);

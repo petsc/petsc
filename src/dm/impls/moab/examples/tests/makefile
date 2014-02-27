@@ -32,7 +32,7 @@ runex1:
 	   ${RM} -f ex1_1.tmp
 
 runex2:
-	-@${MPIEXEC} -n 1 ./ex2 -debug -fields v1,v2,v3 -out ex2.h5m > ex2_1.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex2 -debug -fields v1,v2,v3 > ex2_1.tmp 2>&1;\
 	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true ;  \
 	   else echo ${PWD} ; echo "Possible problem with with runex2, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex2_1.tmp

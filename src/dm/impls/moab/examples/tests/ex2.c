@@ -9,6 +9,7 @@ typedef struct {
   /* Domain and mesh definition */
   PetscInt      dim;                            /* The topological mesh dimension */
   PetscInt      nele;                           /* Elements in each dimension */
+  PetscBool     simplex;                        /* Use simplex elements */
   char          input_file[PETSC_MAX_PATH_LEN];   /* Import mesh from file */
   char          output_file[PETSC_MAX_PATH_LEN];   /* Output mesh file name */
   PetscBool     write_output;                        /* Write output mesh and data to file */
@@ -28,12 +29,14 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->dim               = 2;
   options->nele              = 5;
   options->nfields           = 256;
+  options->simplex           = PETSC_FALSE;
   options->write_output      = PETSC_FALSE;
   options->input_file[0]     = '\0';
   ierr = PetscStrcpy(options->output_file,"ex2.h5m");CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMMOAB");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-debug", "Enable debug messages", "ex2.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-simplex", "Create simplices instead of tensor product elements", "ex2.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex2.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-n", "The number of elements in each dimension", "ex2.c", options->nele, &options->nele, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-meshfile", "The input mesh file", "ex2.c", options->input_file, options->input_file, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
@@ -68,8 +71,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (user->debug) PetscPrintf(comm, "Loading mesh from file: %s and creating a DM object.\n",user->input_file);
     ierr = DMMoabLoadFromFile(comm, user->dim, user->input_file, "", dm);CHKERRQ(ierr);
   } else {
-    if (user->debug) PetscPrintf(comm, "Creating a %D-dimensional structured mesh of %Dx%Dx%D in memory and creating a DM object.\n",user->dim,user->nele,user->nele,user->nele);
-    ierr = DMMoabCreateBoxMesh(comm, user->dim, NULL, user->nele, 1, dm);CHKERRQ(ierr);
+    if (user->debug) {
+      PetscPrintf(comm, "Creating a %D-dimensional structured mesh of %Dx%Dx%D in memory and creating a DM object.\n",user->dim,user->nele,user->nele,user->nele);
+      PetscPrintf(comm, "Using simplex ? %D\n", user->simplex);
+    }
+    ierr = DMMoabCreateBoxMesh(comm, user->dim, user->simplex, NULL, user->nele, 1, dm);CHKERRQ(ierr);
   }
 
   if (user->debug) {
