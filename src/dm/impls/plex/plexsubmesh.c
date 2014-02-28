@@ -707,18 +707,22 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
       const PetscInt  oldp   = unsplitPoints[dep][p];
       const PetscInt  newp   = DMPlexShiftPoint_Internal(oldp, depth, depthMax, depthEnd, depthShift) /*oldp + depthOffset[dep]*/;
       const PetscInt *support;
-      PetscInt        coneSize, supportSize, qf, qn, qp, e;
+      PetscInt        coneSize, supportSize, qf, qn, qp, e, s;
 
       ierr = DMPlexGetConeSize(dm, oldp, &coneSize);CHKERRQ(ierr);
       ierr = DMPlexGetSupportSize(dm, oldp, &supportSize);CHKERRQ(ierr);
+      ierr = DMPlexGetSupport(dm, oldp, &support);CHKERRQ(ierr);
       if (dep == 0) {
         const PetscInt hybedge = p + pMaxNew[dep+1] + numSplitPoints[dep+1] + numSplitPoints[dep];
 
-        /* Unsplit vertex: Edges into original vertex, split edge, and new cohesive edge twice */
-        ierr = DMPlexSetSupportSize(sdm, newp, supportSize+3);CHKERRQ(ierr);
+        /* Unsplit vertex: Edges into original vertex, split edges, and new cohesive edge twice */
+        for (s = 0, qf = 0; s < supportSize; ++s, ++qf) {
+          ierr = PetscFindInt(support[s], numSplitPoints[dep+1], splitPoints[dep+1], &e);CHKERRQ(ierr);
+          if (e >= 0) ++qf;
+        }
+        ierr = DMPlexSetSupportSize(sdm, newp, qf+2);CHKERRQ(ierr);
         /* Add hybrid edge */
         ierr = DMPlexSetConeSize(sdm, hybedge, 2);CHKERRQ(ierr);
-        ierr = DMPlexGetSupport(dm, oldp, &support);CHKERRQ(ierr);
         for (e = 0, qf = 0; e < supportSize; ++e) {
           PetscInt val;
 
@@ -730,7 +734,6 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
       } else if (dep == dim-2) {
         const PetscInt hybface = p + pMaxNew[dep+1] + numSplitPoints[dep+1] + numSplitPoints[dep];
 
-        ierr = DMPlexGetSupport(dm, oldp, &support);CHKERRQ(ierr);
         for (e = 0, qn = 0, qp = 0, qf = 0; e < supportSize; ++e) {
           PetscInt val;
 
