@@ -2629,6 +2629,10 @@ PETSC_STATIC_INLINE PetscErrorCode PetscCitationsRegister(const char cit[],Petsc
 }
 
 PETSC_EXTERN PetscErrorCode PetscURLShorten(const char[],char[],size_t);
+PETSC_EXTERN PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm,char[],char[],size_t);
+PETSC_EXTERN PetscErrorCode PetscGoogleDriveUpload(MPI_Comm,const char[],const char []);
+PETSC_EXTERN PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm,const char[],char[],size_t);
+
 
 
 /* Reset __FUNCT__ in case the user does not define it themselves */
