@@ -30,13 +30,12 @@ PetscErrorCode Ue(PetscScalar t,PetscScalar *U)
   PetscFunctionReturn(0);
   }*/
 
-
 #undef __FUNCT__
-#define __FUNCT__ "IFunctionImplicit"
+#define __FUNCT__ "IFunctionSemiExplicit"
 /*
      Defines the DAE passed to the time solver
 */
-static PetscErrorCode IFunctionImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec F,void *ctx)
+static PetscErrorCode IFunctionSemiExplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
   PetscScalar    *y,*ydot,*f;
@@ -47,12 +46,12 @@ static PetscErrorCode IFunctionImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec F,v
   ierr = VecGetArray(Ydot,&ydot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
-  f[0]= PetscSinReal(200*PETSC_PI*t)/2500. - y[0]/1000. - ydot[0]/1.e6 + ydot[1]/1.e6;
-  f[1]=0.0006666766666666667 -  PetscExpReal((500*(y[1] - y[2]))/13.)/1.e8 - y[1]/4500. + ydot[0]/1.e6 - ydot[1]/1.e6;
-  f[2]=-1.e-6 +  PetscExpReal((500*(y[1] - y[2]))/13.)/1.e6 - y[2]/9000. - ydot[2]/500000.;
-  f[3]=0.0006676566666666666 - (99* PetscExpReal((500*(y[1] - y[2]))/13.))/1.e8 - y[3]/9000. - (3*ydot[3])/1.e6 + (3*ydot[4])/1.e6;
-  f[4]=-y[4]/9000. + (3*ydot[3])/1.e6 - (3*ydot[4])/1.e6;
- 
+  f[0]=-400* PetscSinReal(200*PETSC_PI*t) + 1000*y[3] + ydot[0];
+  f[1]=0.5 - 1/(2.* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.)) + (500*y[1])/9. + ydot[1];
+  f[2]=-222.5522222222222 + 33/(100.* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.)) + (1000*y[4])/27. + ydot[2];
+  f[3]=0.0006666766666666667 - 1/(1.e8* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.)) +  PetscSinReal(200*PETSC_PI*t)/2500. + y[0]/4500. - (11*y[3])/9000.;
+  f[4]=0.0006676566666666666 - 99/(1.e8* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.)) + y[2]/9000. - y[4]/4500.;
+
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(Ydot,&ydot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
@@ -60,11 +59,11 @@ static PetscErrorCode IFunctionImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec F,v
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "IJacobianImplicit"
+#define __FUNCT__ "IJacobianSemiExplicit"
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
 */
-static PetscErrorCode IJacobianImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx)
+static PetscErrorCode IJacobianSemiExplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx)
 {
   PetscErrorCode ierr;
   PetscInt       rowcol[] = {0,1,2,3,4};
@@ -76,21 +75,25 @@ static PetscErrorCode IJacobianImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,PetscRe
   ierr    = VecGetArrayRead(Ydot,&ydot);CHKERRQ(ierr);
 
   PetscMemzero(J,sizeof(J));
-
-  J[0][0]=-0.001 - a/1.e6;
-  J[0][1]=a/1.e6;
-  J[1][0]=a/1.e6;
-  J[1][1]=-0.00022222222222222223 - a/1.e6 -  PetscExpReal((500*(y[1] - y[2]))/13.)/2.6e6;
-  J[1][2]= PetscExpReal((500*(y[1] - y[2]))/13.)/2.6e6;
-  J[2][1]= PetscExpReal((500*(y[1] - y[2]))/13.)/26000.;
-  J[2][2]=-0.00011111111111111112 - a/500000. -  PetscExpReal((500*(y[1] - y[2]))/13.)/26000.;
-  J[3][1]=(-99* PetscExpReal((500*(y[1] - y[2]))/13.))/2.6e6;
-  J[3][2]=(99* PetscExpReal((500*(y[1] - y[2]))/13.))/2.6e6;
-  J[3][3]=-0.00011111111111111112 - (3*a)/1.e6;
-  J[3][4]=(3*a)/1.e6;
-  J[4][3]=(3*a)/1.e6;
-  J[4][4]=-0.00011111111111111112 - (3*a)/1.e6;
-
+ 
+  J[0][0]=a;
+  J[0][3]=1000;
+  J[1][0]=250/(13.* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.));
+  J[1][1]=55.55555555555556 + a + 250/(13.* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.));
+  J[1][3]=-250/(13.* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.));
+  J[2][0]=-165/(13.* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.));
+  J[2][1]=-165/(13.* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.));
+  J[2][2]=a;
+  J[2][3]=165/(13.* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.));
+  J[2][4]=37.03703703703704;
+  J[3][0]=0.00022222222222222223 + 1/(2.6e6* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.));
+  J[3][1]=1/(2.6e6* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.));
+  J[3][3]=-0.0012222222222222222 - 1/(2.6e6* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.));
+  J[4][0]=99/(2.6e6* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.));
+  J[4][1]=99/(2.6e6* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.));
+  J[4][2]=0.00011111111111111112;
+  J[4][3]=-99/(2.6e6* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.));
+  J[4][4]=-0.00022222222222222223;
 
   ierr    = MatSetValues(*B,5,rowcol,5,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   
@@ -137,11 +140,11 @@ int main(int argc,char **argv)
   ierr = MatGetVecs(A,&Y,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-  y[0] = 0.0;
-  y[1] = 3.0;
-  y[2] = y[1];
-  y[3] = 6.0;
-  y[4] = 0.0;
+  y[0] = -3.0;
+  y[1] =  3.0;
+  y[2] =  6.0;
+  y[3] =  0.0;
+  y[4] =  6.0;
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -153,8 +156,8 @@ int main(int argc,char **argv)
   ierr = TSSetEquationType(ts,TS_EQ_DAE_IMPLICIT_INDEX1);CHKERRQ(ierr);
   ierr = TSARKIMEXSetFullyImplicit(ts,PETSC_TRUE);CHKERRQ(ierr);
   /*ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);*/
-  ierr = TSSetIFunction(ts,PETSC_NULL,(TSIFunction) IFunctionImplicit,PETSC_NULL);CHKERRQ(ierr);
-  ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobianImplicit,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,PETSC_NULL,(TSIFunction) IFunctionSemiExplicit,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobianSemiExplicit,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions

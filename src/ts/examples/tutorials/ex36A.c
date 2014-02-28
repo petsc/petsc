@@ -47,12 +47,13 @@ static PetscErrorCode IFunctionImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec F,v
   ierr = VecGetArray(Ydot,&ydot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
-  f[0]= PetscSinReal(200*PETSC_PI*t)/2500. - y[0]/1000. - ydot[0]/1.e6 + ydot[1]/1.e6;
+  f[0]= PetscSinReal(200*PETSC_PI*y[5])/2500. - y[0]/1000. - ydot[0]/1.e6 + ydot[1]/1.e6;
   f[1]=0.0006666766666666667 -  PetscExpReal((500*(y[1] - y[2]))/13.)/1.e8 - y[1]/4500. + ydot[0]/1.e6 - ydot[1]/1.e6;
   f[2]=-1.e-6 +  PetscExpReal((500*(y[1] - y[2]))/13.)/1.e6 - y[2]/9000. - ydot[2]/500000.;
   f[3]=0.0006676566666666666 - (99* PetscExpReal((500*(y[1] - y[2]))/13.))/1.e8 - y[3]/9000. - (3*ydot[3])/1.e6 + (3*ydot[4])/1.e6;
   f[4]=-y[4]/9000. + (3*ydot[3])/1.e6 - (3*ydot[4])/1.e6;
- 
+  f[5]=-1 + ydot[5];
+
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(Ydot,&ydot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
@@ -67,9 +68,9 @@ static PetscErrorCode IFunctionImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec F,v
 static PetscErrorCode IJacobianImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx)
 {
   PetscErrorCode ierr;
-  PetscInt       rowcol[] = {0,1,2,3,4};
+  PetscInt       rowcol[] = {0,1,2,3,4,5};
   const PetscScalar    *y,*ydot;
-  PetscScalar    J[5][5];
+  PetscScalar    J[6][6];
 
   PetscFunctionBegin;
   ierr    = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
@@ -79,6 +80,7 @@ static PetscErrorCode IJacobianImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,PetscRe
 
   J[0][0]=-0.001 - a/1.e6;
   J[0][1]=a/1.e6;
+  J[0][5]=(2*PETSC_PI* PetscCosReal(200*PETSC_PI*y[5]))/25.;
   J[1][0]=a/1.e6;
   J[1][1]=-0.00022222222222222223 - a/1.e6 -  PetscExpReal((500*(y[1] - y[2]))/13.)/2.6e6;
   J[1][2]= PetscExpReal((500*(y[1] - y[2]))/13.)/2.6e6;
@@ -90,9 +92,9 @@ static PetscErrorCode IJacobianImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,PetscRe
   J[3][4]=(3*a)/1.e6;
   J[4][3]=(3*a)/1.e6;
   J[4][4]=-0.00011111111111111112 - (3*a)/1.e6;
+  J[5][5]=a;
 
-
-  ierr    = MatSetValues(*B,5,rowcol,5,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr    = MatSetValues(*B,6,rowcol,6,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   
   ierr    = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
   ierr    = VecRestoreArrayRead(Ydot,&ydot);CHKERRQ(ierr);
@@ -116,7 +118,7 @@ int main(int argc,char **argv)
   Mat            A;             /* Jacobian matrix */
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscInt       n = 5;
+  PetscInt       n = 6;
   PetscScalar    *y;
  
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -142,6 +144,7 @@ int main(int argc,char **argv)
   y[2] = y[1];
   y[3] = 6.0;
   y[4] = 0.0;
+  y[5] = 0.0;
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
