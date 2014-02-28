@@ -2628,6 +2628,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscCitationsRegister(const char cit[],Petsc
   PetscFunctionReturn(0);
 }
 
+PETSC_EXTERN PetscErrorCode PetscURLShorten(const char[],char[],size_t);
+
 
 /* Reset __FUNCT__ in case the user does not define it themselves */
 #undef __FUNCT__
