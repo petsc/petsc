@@ -1455,10 +1455,10 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, PetscBool flip,
       ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       for (cl = 0; cl < closureSize*2; cl += 2) {
         ierr = DMLabelGetValue(label, closure[cl], &valA);CHKERRQ(ierr);
-        if (valA < 0) { /* Mark as unsplit */
+        if (valA == -1) { /* Mark as unsplit */
           ierr = DMLabelGetValue(depthLabel, closure[cl], &dep);CHKERRQ(ierr);
           ierr = DMLabelSetValue(label, closure[cl], shift2+dep);CHKERRQ(ierr);
-        } else if (valA >= shift) {
+        } else if (((valA >= shift) && (valA < shift2)) || ((valA <= -shift) && (valA > -shift2))) {
           ierr = DMLabelGetValue(depthLabel, closure[cl], &dep);CHKERRQ(ierr);
           ierr = DMLabelClearValue(label, closure[cl], valA);CHKERRQ(ierr);
           ierr = DMLabelSetValue(label, closure[cl], dep);CHKERRQ(ierr);
