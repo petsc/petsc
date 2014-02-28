@@ -5,9 +5,9 @@ ALL: lib
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  =
-SOURCEC	  = client.c
+SOURCEC	  = client.c google.c
 SOURCEF	  =
-SOURCEH	  =
+SOURCEH	  = ../../../include/petscwebclient.h
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  = examples
