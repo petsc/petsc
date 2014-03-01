@@ -6114,12 +6114,17 @@ PetscErrorCode DMPlexCheckSymmetry(DM dm)
     ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
     for (c = 0; c < coneSize; ++c) {
+      PetscBool dup = PETSC_FALSE;
+      PetscInt  d;
+      for (d = c-1; d >= 0; --d) {
+        if (cone[c] == cone[d]) {dup = PETSC_TRUE; break;}
+      }
       ierr = DMPlexGetSupportSize(dm, cone[c], &supportSize);CHKERRQ(ierr);
       ierr = DMPlexGetSupport(dm, cone[c], &support);CHKERRQ(ierr);
       for (s = 0; s < supportSize; ++s) {
         if (support[s] == p) break;
       }
-      if (s >= supportSize) {
+      if ((s >= supportSize) || (dup && (support[s+1] != p))) {
         ierr = PetscPrintf(PETSC_COMM_SELF, "p: %d cone: ", p);
         for (s = 0; s < coneSize; ++s) {
           ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", cone[s]);
@@ -6130,7 +6135,11 @@ PetscErrorCode DMPlexCheckSymmetry(DM dm)
           ierr = PetscPrintf(PETSC_COMM_SELF, "%d, ", support[s]);
         }
         ierr = PetscPrintf(PETSC_COMM_SELF, "\n");
-        SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %d not found in support of cone point %d", p, cone[c]);
+        if (dup) {
+          SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %d not repeatedly found in support of repeated cone point %d", p, cone[c]);
+        } else {
+          SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %d not found in support of cone point %d", p, cone[c]);
+        }
       }
     }
     ierr = DMPlexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
