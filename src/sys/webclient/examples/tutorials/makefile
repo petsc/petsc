@@ -15,7 +15,7 @@ include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
 
 urlshorten: urlshorten.o  chkopts
-	${CLINKER} -o urlshorten2 urlshorten.o ${PETSC_SYS_LIB}
+	${CLINKER} -o urlshorten urlshorten.o ${PETSC_SYS_LIB}
 	${RM} -f urlshorten.o
 
 googledriverefreshtoken: googledriverefreshtoken.o  chkopts
