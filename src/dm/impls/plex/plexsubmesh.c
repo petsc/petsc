@@ -707,7 +707,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
       const PetscInt  oldp   = unsplitPoints[dep][p];
       const PetscInt  newp   = DMPlexShiftPoint_Internal(oldp, depth, depthMax, depthEnd, depthShift) /*oldp + depthOffset[dep]*/;
       const PetscInt *support;
-      PetscInt        coneSize, supportSize, qf, qn, qp, e, s;
+      PetscInt        coneSize, supportSize, qf, e, s;
 
       ierr = DMPlexGetConeSize(dm, oldp, &coneSize);CHKERRQ(ierr);
       ierr = DMPlexGetSupportSize(dm, oldp, &supportSize);CHKERRQ(ierr);
@@ -728,26 +728,28 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
 
           ierr = DMLabelGetValue(label, support[e], &val);CHKERRQ(ierr);
           /* Split and unsplit edges produce hybrid faces */
-          if ((val == 1) || (val ==  (shift2 + 1))) ++qf;
+          if (val == 1) ++qf;
+          if (val == (shift2 + 1)) ++qf;
         }
         ierr = DMPlexSetSupportSize(sdm, hybedge, qf);CHKERRQ(ierr);
       } else if (dep == dim-2) {
         const PetscInt hybface = p + pMaxNew[dep+1] + numSplitPoints[dep+1] + numSplitPoints[dep];
+        PetscInt       val;
 
-        for (e = 0, qn = 0, qp = 0, qf = 0; e < supportSize; ++e) {
-          PetscInt val;
-
+        for (e = 0, qf = 0; e < supportSize; ++e) {
           ierr = DMLabelGetValue(label, support[e], &val);CHKERRQ(ierr);
-          if (val == dim-1) ++qf;
-          if ((val == dim-1) || (val ==  (shift + dim-1))) ++qn;
-          if ((val == dim-1) || (val == -(shift + dim-1))) ++qp;
+          if (val == dim-1) qf += 2;
+          else              ++qf;
         }
         /* Unsplit edge: Faces into original edge, split face, and cohesive face twice */
-        ierr = DMPlexSetSupportSize(sdm, newp, supportSize+3);CHKERRQ(ierr);
+        ierr = DMPlexSetSupportSize(sdm, newp, qf+2);CHKERRQ(ierr);
         /* Add hybrid face */
+        for (e = 0, qf = 0; e < supportSize; ++e) {
+          ierr = DMLabelGetValue(label, support[e], &val);CHKERRQ(ierr);
+          if (val == dim-1) ++qf;
+        }
         ierr = DMPlexSetConeSize(sdm, hybface, 4);CHKERRQ(ierr);
-        /* TODO: Here we should check for neighboring faults for which this is unsplit */
-        ierr = DMPlexSetSupportSize(sdm, hybface, 1);CHKERRQ(ierr);
+        ierr = DMPlexSetSupportSize(sdm, hybface, qf);CHKERRQ(ierr);
       }
     }
   }
@@ -1005,7 +1007,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
         const PetscInt hybface = p + pMaxNew[dep+1] + numSplitPoints[dep+1] + numSplitPoints[dep];
         PetscInt       hybcell = -1;
 
-        /* Unsplit edge: Faces into original edge, split face, and cohesive face twice */
+        /* Unsplit edge: Faces into original edge, split face, and hybrid face twice */
         for (f = 0, qf = 0; f < supportSize; ++f) {
           PetscInt val, face;
 
@@ -1022,6 +1024,8 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
         }
         supportNew[qf++] = hybface;
         supportNew[qf++] = hybface;
+        ierr = DMPlexGetSupportSize(sdm, newp, &supportSizeNew);CHKERRQ(ierr);
+        if (qf != supportSizeNew) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Support size for unsplit edge %d is %d != %d\n", newp, qf, supportSizeNew);
         ierr = DMPlexSetSupport(sdm, newp, supportNew);CHKERRQ(ierr);
         /* Add hybrid face */
         coneNew[0] = newp;
@@ -1033,7 +1037,17 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
         if (v < 0) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Vertex %d is not an unsplit vertex", cone[1]);
         coneNew[3] = v + pMaxNew[dep] + numSplitPoints[dep] + numSplitPoints[dep-1];
         ierr = DMPlexSetCone(sdm, hybface, coneNew);CHKERRQ(ierr);
-        supportNew[0] = hybcell;
+        for (f = 0, qf = 0; f < supportSize; ++f) {
+          PetscInt val, face;
+
+          ierr = DMLabelGetValue(label, support[f], &val);CHKERRQ(ierr);
+          if (val == dim-1) {
+            ierr = PetscFindInt(support[f], numSplitPoints[dep+1], splitPoints[dep+1], &face);CHKERRQ(ierr);
+            supportNew[qf++] = face + pMaxNew[dep+2] + numSplitPoints[dep+2];
+          }
+        }
+        ierr = DMPlexGetSupportSize(sdm, hybface, &supportSizeNew);CHKERRQ(ierr);
+        if (qf != supportSizeNew) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Support size for hybrid face %d is %d != %d\n", hybface, qf, supportSizeNew);
         ierr = DMPlexSetSupport(sdm, hybface, supportNew);CHKERRQ(ierr);
       }
     }
