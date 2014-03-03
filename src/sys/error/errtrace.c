@@ -199,6 +199,7 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
     if (p == PETSC_ERROR_INITIAL) {
       PetscErrorPrintfHilight();
       (*PetscErrorPrintf)("--------------------- Error Message --------------------------------------------------------------\n");
+      PetscErrorPrintfNormal();
       if (n == PETSC_ERR_MEM) {
         (*PetscErrorPrintf)("Out of memory. This could be due to allocating\n");
         (*PetscErrorPrintf)("too large an object or bleeding by not properly\n");
@@ -220,7 +221,6 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
         if (text) (*PetscErrorPrintf)("%s\n",text);
       }
       if (mess) (*PetscErrorPrintf)("%s\n",mess);
-      PetscErrorPrintfNormal();
       (*PetscErrorPrintf)("See http://http://www.mcs.anl.gov/petsc/documentation/faq.html for trouble shooting.\n");
       (*PetscErrorPrintf)("%s\n",version);
       if (PetscErrorPrintfInitializeCalled) (*PetscErrorPrintf)("%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
