@@ -88,23 +88,8 @@ PetscErrorCode PetscSSLDestroyContext(SSL_CTX *ctx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscHTTPSRequest"
-/*
-     PetscHTTPSRequest - Send a request to an HTTPS server
-
-   Input Parameters:
-+   type - either "POST" or "GET"
-.   url -  URL of request host/path
-.   header - additional header information, may be NULL
-.   ctype - data type of body, for example application/json
-.   body - data to send to server
-.   ssl - obtained with PetscHTTPSConnect()
--   buffsize - size of buffer
-
-   Output Parameter:
-.   buff - everything returned from server
- */
-PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char header[],const char ctype[],const char body[],SSL *ssl,char buff[],size_t buffsize)
+#define __FUNCT__ "PetscHTTPBuildRequest"
+PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],const char header[],const char ctype[],const char body[],char **outrequest)
 {
   char           *request=0;
   char           contentlength[40],contenttype[80],*path,*host;
@@ -157,13 +142,46 @@ PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char h
   ierr = PetscStrlen(request,&request_len);CHKERRQ(ierr);
   ierr = PetscInfo1(NULL,"HTTPS request follows: \n%s\n",request);CHKERRQ(ierr);
 
+  *outrequest = request;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscHTTPSRequest"
+/*
+     PetscHTTPSRequest - Send a request to an HTTPS server
+
+   Input Parameters:
++   type - either "POST" or "GET"
+.   url -  URL of request host/path
+.   header - additional header information, may be NULL
+.   ctype - data type of body, for example application/json
+.   body - data to send to server
+.   ssl - obtained with PetscHTTPSConnect()
+-   buffsize - size of buffer
+
+   Output Parameter:
+.   buff - everything returned from server
+ */
+PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char header[],const char ctype[],const char body[],SSL *ssl,char buff[],size_t buffsize)
+{
+  char           *request;
+  int            r;
+  size_t         request_len,len;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscHTTPBuildRequest(type,url,header,ctype,body,&request);CHKERRQ(ierr);
+  ierr = PetscStrlen(request,&request_len);CHKERRQ(ierr);
+
   r = SSL_write(ssl,request,request_len);
   switch (SSL_get_error(ssl,r)){
     case SSL_ERROR_NONE:
       if (request_len != r) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Incomplete write to SSL socket");
       break;
-      default:
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"SSL socket write problem");
+    default:
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"SSL socket write problem");
   }
 
   /* Now read the server's response, assuming  that it's terminated by a close */
@@ -187,6 +205,42 @@ PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char h
   ierr = PetscFree(request);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscHTTPRequest"
+/*
+     PetscHTTPRequest - Send a request to an HTTP server
+
+   Input Parameters:
++   type - either "POST" or "GET"
+.   url -  URL of request host/path
+.   header - additional header information, may be NULL
+.   ctype - data type of body, for example application/json
+.   body - data to send to server
+.   sock - obtained with PetscOpenSocket()
+-   buffsize - size of buffer
+
+   Output Parameter:
+.   buff - everything returned from server
+ */
+PetscErrorCode PetscHTTPRequest(const char type[],const char url[],const char header[],const char ctype[],const char body[],int sock,char buff[],size_t buffsize)
+{
+  char           *request;
+  size_t         request_len;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscHTTPBuildRequest(type,url,header,ctype,body,&request);CHKERRQ(ierr);
+  ierr = PetscStrlen(request,&request_len);CHKERRQ(ierr);
+
+  ierr = PetscBinaryWrite(sock,request,request_len,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscFree(request);CHKERRQ(ierr);
+  PetscBinaryRead(sock,buff,buffsize,PETSC_CHAR);
+  buff[buffsize-1] = 0;
+  ierr = PetscInfo1(NULL,"HTTP result follows: \n%s\n",buff);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscHTTPSConnect"

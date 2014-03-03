@@ -5,7 +5,7 @@ ALL: lib
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  =
-SOURCEC	  = client.c google.c box.c
+SOURCEC	  = client.c google.c box.c textbelt.c
 SOURCEF	  =
 SOURCEH	  = ../../../include/petscwebclient.h
 MANSEC	  = Sys
