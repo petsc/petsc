@@ -12,11 +12,11 @@ static PetscErrorCode SNESNGSDestroy_Private(ISColoring coloring)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESComputeGSDefaultSecant"
-PETSC_EXTERN PetscErrorCode SNESComputeGSDefaultSecant(SNES snes,Vec X,Vec B,void *ctx)
+#define __FUNCT__ "SNESComputeNGSDefaultSecant"
+PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes,Vec X,Vec B,void *ctx)
 {
   PetscErrorCode ierr;
-  SNES_GS        *gs = (SNES_GS*)snes->data;
+  SNES_NGS       *gs = (SNES_NGS*)snes->data;
   PetscInt       i,j,k,ncolors;
   DM             dm;
   PetscBool      flg;
@@ -45,10 +45,10 @@ PETSC_EXTERN PetscErrorCode SNESComputeGSDefaultSecant(SNES snes,Vec X,Vec B,voi
   G = snes->work[1];
   F = snes->work[2];
   ierr = VecGetOwnershipRange(X,&s,NULL);CHKERRQ(ierr);
-  ierr = SNESGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
+  ierr = SNESNGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = SNESGetFunction(snes,NULL,&func,&fctx);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject)snes,"SNESGSColoring",(PetscObject*)&colorcontainer);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)snes,"SNESNGSColoring",(PetscObject*)&colorcontainer);CHKERRQ(ierr);
   if (!colorcontainer) {
     /* create the coloring */
     ierr = DMHasColoring(dm,&flg);CHKERRQ(ierr);
@@ -65,7 +65,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeGSDefaultSecant(SNES snes,Vec X,Vec B,voi
     ierr = PetscContainerCreate(PetscObjectComm((PetscObject)snes),&colorcontainer);CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(colorcontainer,(void *)coloring);CHKERRQ(ierr);
     ierr = PetscContainerSetUserDestroy(colorcontainer,(PetscErrorCode (*)(void *))SNESNGSDestroy_Private);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)snes,"SNESGSColoring",(PetscObject)colorcontainer);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)snes,"SNESNGSColoring",(PetscObject)colorcontainer);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&colorcontainer);CHKERRQ(ierr);
   } else {
     ierr = PetscContainerGetPointer(colorcontainer,(void **)&coloring);CHKERRQ(ierr);
@@ -76,9 +76,9 @@ PETSC_EXTERN PetscErrorCode SNESComputeGSDefaultSecant(SNES snes,Vec X,Vec B,voi
     /* assume that the function is already computed */
     ierr = VecCopy(snes->vec_func,F);CHKERRQ(ierr);
   } else {
-    ierr = PetscLogEventBegin(SNES_GSFuncEval,snes,X,B,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(SNES_NGSFuncEval,snes,X,B,0);CHKERRQ(ierr);
     ierr = (*func)(snes,X,F,fctx);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(SNES_GSFuncEval,snes,X,B,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(SNES_NGSFuncEval,snes,X,B,0);CHKERRQ(ierr);
     if (B) {ierr = VecAXPY(F,-1.0,B);CHKERRQ(ierr);}
   }
   ierr = VecGetArray(X,&xa);CHKERRQ(ierr);
@@ -92,9 +92,9 @@ PETSC_EXTERN PetscErrorCode SNESComputeGSDefaultSecant(SNES snes,Vec X,Vec B,voi
     for (j=0;j<size;j++) {
       wa[idx[j]-s] += h;
     }
-    ierr = PetscLogEventBegin(SNES_GSFuncEval,snes,X,B,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(SNES_NGSFuncEval,snes,X,B,0);CHKERRQ(ierr);
     ierr = (*func)(snes,W,G,fctx);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(SNES_GSFuncEval,snes,X,B,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(SNES_NGSFuncEval,snes,X,B,0);CHKERRQ(ierr);
     if (B) {ierr = VecAXPY(G,-1.0,B);CHKERRQ(ierr);}
     for (k=0;k<its;k++) {
       dxt = 0.;
@@ -126,9 +126,9 @@ PETSC_EXTERN PetscErrorCode SNESComputeGSDefaultSecant(SNES snes,Vec X,Vec B,voi
         if (alldone) break;
       }
       if (i < ncolors-1 || k < its-1) {
-        ierr = PetscLogEventBegin(SNES_GSFuncEval,snes,X,B,0);CHKERRQ(ierr);
+        ierr = PetscLogEventBegin(SNES_NGSFuncEval,snes,X,B,0);CHKERRQ(ierr);
         ierr = (*func)(snes,X,F,fctx);CHKERRQ(ierr);
-        ierr = PetscLogEventEnd(SNES_GSFuncEval,snes,X,B,0);CHKERRQ(ierr);
+        ierr = PetscLogEventEnd(SNES_NGSFuncEval,snes,X,B,0);CHKERRQ(ierr);
         if (B) {ierr = VecAXPY(F,-1.0,B);CHKERRQ(ierr);}
       }
       if (k<its-1) {

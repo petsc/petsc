@@ -12,8 +12,8 @@ typedef struct {
   PetscReal stol;       /* step tolerance of the inner pointblock solver */
   PetscReal h;          /* differencing for secant variants */
   PetscBool secant_mat; /* use the Jacobian to get the coloring for the secant */
-} SNES_GS;
+} SNES_NGS;
 
-PETSC_EXTERN PetscErrorCode SNESComputeGSDefaultSecant(SNES,Vec,Vec,void *);
+PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES,Vec,Vec,void *);
 
 #endif
