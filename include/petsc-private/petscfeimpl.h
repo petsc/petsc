@@ -65,6 +65,7 @@ struct _PetscFEOps {
   PetscErrorCode (*view)(PetscFE,PetscViewer);
   PetscErrorCode (*destroy)(PetscFE);
   PetscErrorCode (*getdimension)(PetscFE,PetscInt*);
+  PetscErrorCode (*gettabulation)(PetscFE,PetscInt,const PetscReal*,PetscReal*,PetscReal*,PetscReal*);
   /* Element integration */
   PetscErrorCode (*integrateresidual)(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[],
                                       PetscInt, PetscFE[], const PetscScalar[],
@@ -99,6 +100,7 @@ struct _p_PetscFE {
   PetscInt        numComponents; /* The number of field components */
   PetscQuadrature quadrature;    /* Suitable quadrature on K */
   PetscInt       *numDof;        /* The number of dof on mesh points of each depth */
+  PetscReal      *invV;          /* Change of basis matrix, from prime to nodal basis set */
   PetscReal      *B, *D, *H;     /* Tabulation of basis and derivatives at quadrature points */
   PetscInt        blockSize, numBlocks;  /* Blocks are processed concurrently */
   PetscInt        batchSize, numBatches; /* A batch is made up of blocks, Batches are processed in serial */
