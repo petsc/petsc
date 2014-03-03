@@ -393,6 +393,7 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
     ierr = PetscFESetBasisSpace(fem, P);CHKERRQ(ierr);
     ierr = PetscFESetDualSpace(fem, Q);CHKERRQ(ierr);
     ierr = PetscFESetNumComponents(fem, f ? 1 : dim);CHKERRQ(ierr);
+    ierr = PetscFESetUp(fem);CHKERRQ(ierr);
 
     ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
     ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);

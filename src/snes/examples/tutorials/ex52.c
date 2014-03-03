@@ -253,11 +253,13 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
   ierr = PetscFESetBasisSpace(fem, P);CHKERRQ(ierr);
   ierr = PetscFESetDualSpace(fem, Q);CHKERRQ(ierr);
   ierr = PetscFESetNumComponents(fem, 1);CHKERRQ(ierr);
+  ierr = PetscFESetUp(fem);CHKERRQ(ierr);
   ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
   ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
   /* Create quadrature */
   ierr = PetscDTGaussJacobiQuadrature(dim, order, -1.0, 1.0, &q);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(fem, q);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
   user->fe[0] = fem;
   user->fem.fe = user->fe;
   PetscFunctionReturn(0);
