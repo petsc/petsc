@@ -5507,28 +5507,28 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   PetscDualSpace   Q, Qref;
   DM               K, Kref;
   PetscQuadrature  q, qref;
-  const PetscReal *points,    *weights;
-  PetscReal       *pointsRef, *weightsRef, *jac;
-  PetscInt         dim, order, numComp, numCells, npoints, npointsRef, c, p, d, e;
+  PetscInt         dim, order, numComp;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetType((PetscObject) fe, &typename);CHKERRQ(ierr);
   ierr = PetscFEGetBasisSpace(fe, &P);CHKERRQ(ierr);
   ierr = PetscFEGetDualSpace(fe, &Q);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetDM(Q, &K);CHKERRQ(ierr);
   /* Create space */
   ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) fe), &Pref);CHKERRQ(ierr);
-  ierr = PetscSpacePolynomialGetNumVariables(P,   &dim);CHKERRQ(ierr);
+  ierr = PetscObjectGetType((PetscObject) P, &typename);CHKERRQ(ierr);
+  ierr = PetscSpaceSetType(Pref, typename);CHKERRQ(ierr);
+  ierr = PetscSpacePolynomialGetNumVariables(P, &dim);CHKERRQ(ierr);
   ierr = PetscSpacePolynomialSetNumVariables(Pref, dim);CHKERRQ(ierr);
   ierr = PetscSpaceGetOrder(P,   &order);CHKERRQ(ierr);
   ierr = PetscSpaceSetOrder(Pref, order);CHKERRQ(ierr);
   ierr = PetscSpaceSetUp(Pref);CHKERRQ(ierr);
   /* Create dual space */
   ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) fe), &Qref);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
+  ierr = PetscObjectGetType((PetscObject) Q, &typename);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetType(Qref, typename);CHKERRQ(ierr);
   ierr = DMRefine(K, PetscObjectComm((PetscObject) fe), &Kref);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(Kref, 0, NULL, &numCells);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetDM(Qref, Kref);CHKERRQ(ierr);
   ierr = DMDestroy(&Kref);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetOrder(Q,   &order);CHKERRQ(ierr);
@@ -5536,32 +5536,16 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   ierr = PetscDualSpaceSetUp(Qref);CHKERRQ(ierr);
   /* Create element */
   ierr = PetscFECreate(PetscObjectComm((PetscObject) fe), feRef);CHKERRQ(ierr);
-  ierr = PetscFESetType(*feRef, typename);CHKERRQ(ierr);
+  ierr = PetscFESetType(*feRef, PETSCFECOMPOSITE);CHKERRQ(ierr);
   ierr = PetscFESetBasisSpace(*feRef, Pref);CHKERRQ(ierr);
   ierr = PetscFESetDualSpace(*feRef, Qref);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(fe,    &numComp);CHKERRQ(ierr);
   ierr = PetscFESetNumComponents(*feRef, numComp);CHKERRQ(ierr);
+  ierr = PetscFESetUp(*feRef);CHKERRQ(ierr);
   ierr = PetscSpaceDestroy(&Pref);CHKERRQ(ierr);
   ierr = PetscDualSpaceDestroy(&Qref);CHKERRQ(ierr);
   /* Create quadrature */
-  ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &qref);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(q, &dim, &npoints, &points, &weights);CHKERRQ(ierr);
-  ierr = PetscMalloc1(npointsRef*dim,&pointsRef);CHKERRQ(ierr);
-  ierr = PetscMalloc1(npointsRef,&weightsRef);CHKERRQ(ierr);
-  npointsRef = npoints*numCells;
-  for (c = 0; c < numCells; ++c) {
-    for (p = 0; p < npoints; ++p) {
-      for (d = 0; d < dim; ++d) {
-        pointsRef[(c*npoints + p)*dim+d] = 0.0;
-        for (e = 0; e < dim; ++e) {
-          /* TODO: Get subelement jacobians from CellRefiner */
-          pointsRef[(c*npoints + p)*dim+d] += jac[(c*dim + d)*dim+e]*points[p*dim+e];
-        }
-      }
-      weightsRef[c*npoints+p] = weights[p]/numCells;
-    }
-  }
-  ierr = PetscQuadratureSetData(qref, dim, npointsRef, pointsRef, weightsRef);CHKERRQ(ierr);
+  ierr = PetscFECompositeExpandQuadrature(*feRef, q, &qref);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(*feRef, qref);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&qref);CHKERRQ(ierr);
   PetscFunctionReturn(0);
