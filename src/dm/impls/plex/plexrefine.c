@@ -26,6 +26,63 @@ PETSC_STATIC_INLINE PetscErrorCode GetDepthEnd_Private(PetscInt depth, PetscInt 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CellRefinerGetAffineTransforms_Internal"
+/* Gets the affine map from the original cell to each subcell */
+PetscErrorCode CellRefinerGetAffineTransforms_Internal(CellRefiner refiner, PetscInt *numSubcells, PetscReal *v0[], PetscReal *jac[], PetscReal *invjac[])
+{
+  PetscReal     *v = NULL, *j = NULL, *invj = NULL, detJ;
+  PetscInt       dim, s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  switch (refiner) {
+  case 0: break;
+  case 1:
+    dim  = 2;
+    if (numSubcells) *numSubcells = 4;
+    if (v0) {
+      ierr = PetscMalloc3(4*dim,&v,4*dim*dim,&j,4*dim*dim,&invj);CHKERRQ(ierr);
+      /* A */
+      v[0+0] = -1.0; v[0+1] = -1.0;
+      j[0+0] =  0.5; j[0+1] =  0.0;
+      j[0+2] =  0.0; j[0+3] =  0.5;
+      /* B */
+      v[2+0] =  0.0; v[2+1] = -1.0;
+      j[4+0] =  0.5; j[4+1] =  0.0;
+      j[4+2] =  0.0; j[4+3] =  0.5;
+      /* C */
+      v[4+0] = -1.0; v[4+1] =  0.0;
+      j[8+0] =  0.5; j[8+1] =  0.0;
+      j[8+2] =  0.0; j[8+3] =  0.5;
+      /* D */
+      v[6+0]  =  0.0; v[6+1]  = -1.0;
+      j[12+0] =  0.0; j[12+1] = -0.5;
+      j[12+2] =  0.5; j[12+3] =  0.5;
+      for (s = 0; s < 4; ++s) {
+        DMPlex_Det2D_Internal(&detJ, &j[s*dim*dim]);
+        DMPlex_Invert2D_Internal(&invj[s*dim*dim], &j[s*dim*dim], detJ);
+      }
+    }
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
+  }
+  if (v0) {*v0 = v; *jac = j; *invjac = invj;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CellRefinerRestoreAffineTransforms_Internal"
+PetscErrorCode CellRefinerRestoreAffineTransforms_Internal(CellRefiner refiner, PetscInt *numSubcells, PetscReal *v0[], PetscReal *jac[], PetscReal *invjac[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree3(*v0,*jac,*invjac);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CellRefinerGetSizes"
 static PetscErrorCode CellRefinerGetSizes(CellRefiner refiner, DM dm, PetscInt depthSize[])
 {

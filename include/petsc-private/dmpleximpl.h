@@ -101,5 +101,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGetRawFaces_Internal(DM,PetscInt,PetscInt,cons
 PETSC_EXTERN PetscErrorCode DMPlexRestoreFaces_Internal(DM,PetscInt,PetscInt,PetscInt*,PetscInt*,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode DMPlexRefineUniform_Internal(DM,CellRefiner,DM*);
 PETSC_EXTERN PetscErrorCode DMPlexGetCellRefiner_Internal(DM,CellRefiner*);
+PETSC_EXTERN PetscErrorCode CellRefinerGetAffineTransforms_Internal(CellRefiner, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[]);
+PETSC_EXTERN PetscErrorCode CellRefinerRestoreAffineTransforms_Internal(CellRefiner, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[]);
 
 #endif /* _PLEXIMPL_H */
