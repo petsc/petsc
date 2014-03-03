@@ -626,14 +626,18 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
 #define __FUNCT__ "SetupSection"
 PetscErrorCode SetupSection(DM dm, AppCtx *user)
 {
-  const PetscInt id = 1;
+  DM             cdm = dm;
+  const PetscInt id  = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscObjectSetName((PetscObject) user->fe[0], "potential");CHKERRQ(ierr);
-  ierr = DMSetNumFields(dm, 1);CHKERRQ(ierr);
-  ierr = DMSetField(dm, 0, user->fe[0]);CHKERRQ(ierr);
-  ierr = DMPlexAddBoundary(dm, user->bcType == DIRICHLET, user->bcType == NEUMANN ? "boundary" : "marker", 0, NULL, 1, &id, user);CHKERRQ(ierr);
+  while (cdm) {
+    ierr = DMSetNumFields(cdm, 1);CHKERRQ(ierr);
+    ierr = DMSetField(cdm, 0, user->fe[0]);CHKERRQ(ierr);
+    ierr = DMPlexAddBoundary(cdm, user->bcType == DIRICHLET, user->bcType == NEUMANN ? "boundary" : "marker", 0, NULL, 1, &id, user);CHKERRQ(ierr);
+    ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -698,6 +702,7 @@ int main(int argc, char **argv)
   ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
   ierr = SNESSetDM(snes, dm);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(dm, &user);CHKERRQ(ierr);
 
   ierr = DMClone(dm, &dmAux);CHKERRQ(ierr);
   ierr = DMPlexCopyCoordinates(dm, dmAux);CHKERRQ(ierr);
