@@ -438,7 +438,7 @@ int main(int argc, char **argv)
     ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr);
     ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
-    ierr = SNESComputeJacobian(snes, X, &J, &J);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes, X, J, J);CHKERRQ(ierr);
     ierr = MatDestroy(&J);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &X);CHKERRQ(ierr);
   }

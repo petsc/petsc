@@ -738,7 +738,7 @@ int main(int argc, char **argv)
       Vec          b;
       PetscBool    isNull;
 
-      ierr = SNESComputeJacobian(snes, u, &A, &A);CHKERRQ(ierr);
+      ierr = SNESComputeJacobian(snes, u, A, A);CHKERRQ(ierr);
       ierr = MatNullSpaceTest(nullSpace, J, &isNull);CHKERRQ(ierr);
       if (!isNull) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);

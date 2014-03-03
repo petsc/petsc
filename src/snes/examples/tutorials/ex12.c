@@ -819,7 +819,7 @@ int main(int argc, char **argv)
     {
       Vec          b;
 
-      ierr = SNESComputeJacobian(snes, u, &A, &A);CHKERRQ(ierr);
+      ierr = SNESComputeJacobian(snes, u, A, A);CHKERRQ(ierr);
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
       ierr = VecSet(r, 0.0);CHKERRQ(ierr);
       ierr = SNESComputeFunction(snes, r, b);CHKERRQ(ierr);
