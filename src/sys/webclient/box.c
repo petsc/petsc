@@ -178,11 +178,15 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm,const char refresh_token[],char acc
       PetscBool set;
       ierr = PetscMalloc1(512,&refreshtoken);CHKERRQ(ierr);
       ierr = PetscOptionsGetString(NULL,"-box_refresh_token",refreshtoken,512,&set);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SAWS)
       if (!set) {
-        ierr = PetscBoxAuthorize(comm,access_token,refreshtoken,512*sizeof(char));CHKERRQ(ierr);
+        ierr = PetscBoxAuthorize(comm,access_token,new_refresh_token,512*sizeof(char));CHKERRQ(ierr);
         ierr = PetscFree(refreshtoken);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }
+#else
+      if (!set) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Must provide refresh token with -box_refresh_token XXX");
+#endif
     }
     ierr = PetscSSLInitializeContext(&ctx);CHKERRQ(ierr);
     ierr = PetscHTTPSConnect("www.box.com",443,ctx,&sock,&ssl);CHKERRQ(ierr);
