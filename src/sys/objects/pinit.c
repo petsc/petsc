@@ -626,8 +626,8 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
     ierr = PetscGetVersion(version,sizeof(version));CHKERRQ(ierr);
     ierr = PetscSNPrintf(intro,introlen,"<body>\n"
                                     "<center><h2> <a href=\"http://www.mcs.anl.gov/petsc\">PETSc</a> Application Web server powered by <a href=\"https://bitbucket.org/saws/saws\">SAWs</a> </h2></center>\n"
-                                    "<center>This is the default PETSc application dashboard, from it you can access any published PETSc objects or logging data</center><br><center>%s configured at %s with %s</center><br>\n"
-                         "%s",version,petscconfigureruntime,petscconfigureoptions,appline);
+                                    "<center>This is the default PETSc application dashboard, from it you can access any published PETSc objects or logging data</center><br><center>%s configured with %s</center><br>\n"
+                                    "%s",version,petscconfigureoptions,appline);
     PetscStackCallSAWs(SAWs_Push_Body,("index.html",0,intro));
     ierr = PetscFree(intro);CHKERRQ(ierr);
     ierr = PetscFree(appline);CHKERRQ(ierr);
