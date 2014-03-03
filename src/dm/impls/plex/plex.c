@@ -6403,12 +6403,13 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
 {
   PetscSection   section;
   IS            *bcPoints;
-  PetscInt      *bcFields, *numComp, *numDofTot;
-  PetscInt       dim, numBd, numBC = 0, numFields, bd, bc, f;
+  PetscInt      *bcFields, *numComp, *numDof;
+  PetscInt       depth, dim, numBd, numBC = 0, numFields, bd, bc, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Handle boundary conditions */
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
   for (bd = 0; bd < numBd; ++bd) {
@@ -6441,18 +6442,24 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
   }
   /* Handle discretization */
   ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
-  ierr = PetscMalloc2(numFields,&numComp,numFields*(dim+1),&numDofTot);CHKERRQ(ierr);
+  ierr = PetscMalloc2(numFields,&numComp,numFields*(dim+1),&numDof);CHKERRQ(ierr);
   for (f = 0; f < numFields; ++f) {
     PetscFE         fe;
-    const PetscInt *numDof;
+    const PetscInt *numFieldDof;
     PetscInt        d;
 
     ierr = DMGetField(dm, f, (PetscObject *) &fe);CHKERRQ(ierr);
     ierr = PetscFEGetNumComponents(fe, &numComp[f]);CHKERRQ(ierr);
-    ierr = PetscFEGetNumDof(fe, &numDof);CHKERRQ(ierr);
-    for (d = 0; d < dim+1; ++d) numDofTot[f*(dim+1)+d] = numDof[d];
+    ierr = PetscFEGetNumDof(fe, &numFieldDof);CHKERRQ(ierr);
+    for (d = 0; d < dim+1; ++d) numDof[f*(dim+1)+d] = numFieldDof[d];
   }
-  ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDofTot, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
+  for (f = 0; f < numFields; ++f) {
+    PetscInt d;
+    for (d = 1; d < dim; ++d) {
+      if ((numDof[f*(dim+1)+d] > 0) && (depth < dim)) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
+    }
+  }
+  ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
   for (f = 0; f < numFields; ++f) {
     PetscFE     fe;
     const char *name;
@@ -6465,27 +6472,7 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   for (bc = 0; bc < numBC; ++bc) {ierr = ISDestroy(&bcPoints[bc]);CHKERRQ(ierr);}
   ierr = PetscFree2(bcFields,bcPoints);CHKERRQ(ierr);
-  ierr = PetscFree2(numComp,numDofTot);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInjection_Plex"
-/* Pointwise restriction:
-     Give up on anything beyond P_0 and P_1 for now
-*/
-PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, VecScatter *ctx)
-{
-  PetscFunctionBegin;
-  SETERRQ(PetscObjectComm((PetscObject) dmCoarse), PETSC_ERR_SUP, "Working as fast as I can");
-  /*
-  Loop over coarse vertices
-    Lookup associated fine vertex
-      map coarse dofs to fine dofs
-  Loop over coarse cells
-    Lookup associated fine cells
-      map coarse dofs to fine dofs
-  */
+  ierr = PetscFree2(numComp,numDof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
