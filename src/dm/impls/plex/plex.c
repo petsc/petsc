@@ -5658,7 +5658,7 @@ PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexPrintMatSetValues"
-PetscErrorCode DMPlexPrintMatSetValues(PetscViewer viewer, Mat A, PetscInt point, PetscInt numIndices, const PetscInt indices[], const PetscScalar values[])
+PetscErrorCode DMPlexPrintMatSetValues(PetscViewer viewer, Mat A, PetscInt point, PetscInt numRIndices, const PetscInt rindices[], PetscInt numCIndices, const PetscInt cindices[], const PetscScalar values[])
 {
   PetscMPIInt    rank;
   PetscInt       i, j;
@@ -5667,16 +5667,16 @@ PetscErrorCode DMPlexPrintMatSetValues(PetscViewer viewer, Mat A, PetscInt point
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "[%D]mat for sieve point %D\n", rank, point);CHKERRQ(ierr);
-  for (i = 0; i < numIndices; i++) {
-    ierr = PetscViewerASCIIPrintf(viewer, "[%D]mat indices[%D] = %D\n", rank, i, indices[i]);CHKERRQ(ierr);
-  }
-  for (i = 0; i < numIndices; i++) {
+  for (i = 0; i < numRIndices; i++) {ierr = PetscViewerASCIIPrintf(viewer, "[%D]mat row indices[%D] = %D\n", rank, i, rindices[i]);CHKERRQ(ierr);}
+  for (i = 0; i < numCIndices; i++) {ierr = PetscViewerASCIIPrintf(viewer, "[%D]mat col indices[%D] = %D\n", rank, i, cindices[i]);CHKERRQ(ierr);}
+  numCIndices = numCIndices ? numCIndices : numRIndices;
+  for (i = 0; i < numRIndices; i++) {
     ierr = PetscViewerASCIIPrintf(viewer, "[%D]", rank);CHKERRQ(ierr);
-    for (j = 0; j < numIndices; j++) {
+    for (j = 0; j < numCIndices; j++) {
 #if defined(PETSC_USE_COMPLEX)
-      ierr = PetscViewerASCIIPrintf(viewer, " (%g,%g)", (double)PetscRealPart(values[i*numIndices+j]), (double)PetscImaginaryPart(values[i*numIndices+j]));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, " (%g,%g)", (double)PetscRealPart(values[i*numIndices+j]), (double)PetscImaginaryPart(values[i*numCIndices+j]));CHKERRQ(ierr);
 #else
-      ierr = PetscViewerASCIIPrintf(viewer, " %g", (double)values[i*numIndices+j]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, " %g", (double)values[i*numCIndices+j]);CHKERRQ(ierr);
 #endif
     }
     ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
@@ -5884,7 +5884,7 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
       indicesPoint_private(section, points[p], globalOff < 0 ? -(globalOff+1) : globalOff, &off, PETSC_FALSE, o, indices);
     }
   }
-  if (mesh->printSetValues) {ierr = DMPlexPrintMatSetValues(PETSC_VIEWER_STDOUT_SELF, A, point, numIndices, indices, values);CHKERRQ(ierr);}
+  if (mesh->printSetValues) {ierr = DMPlexPrintMatSetValues(PETSC_VIEWER_STDOUT_SELF, A, point, numIndices, indices, 0, NULL, values);CHKERRQ(ierr);}
   ierr = MatSetValues(A, numIndices, indices, numIndices, indices, values, mode);
   if (ierr) {
     PetscMPIInt    rank;
@@ -5892,7 +5892,7 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
 
     ierr2 = MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank);CHKERRQ(ierr2);
     ierr2 = (*PetscErrorPrintf)("[%D]ERROR in DMPlexMatSetClosure\n", rank);CHKERRQ(ierr2);
-    ierr2 = DMPlexPrintMatSetValues(PETSC_VIEWER_STDERR_SELF, A, point, numIndices, indices, values);CHKERRQ(ierr2);
+    ierr2 = DMPlexPrintMatSetValues(PETSC_VIEWER_STDERR_SELF, A, point, numIndices, indices, 0, NULL, values);CHKERRQ(ierr2);
     ierr2 = DMRestoreWorkArray(dm, numIndices, PETSC_INT, &indices);CHKERRQ(ierr2);
     CHKERRQ(ierr);
   }
