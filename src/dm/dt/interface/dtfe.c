@@ -40,6 +40,17 @@ We will have three objects:
 #include <petscdmplex.h>
 #include <petscblaslapack.h>
 
+PetscBool FEcite = PETSC_FALSE;
+const char FECitation[] = "@article{kirby2004,\n"
+                          "  title   = {Algorithm 839: FIAT, a New Paradigm for Computing Finite Element Basis Functions},\n"
+                          "  journal = {ACM Transactions on Mathematical Software},\n"
+                          "  author  = {Robert C. Kirby},\n"
+                          "  volume  = {30},\n"
+                          "  number  = {4},\n"
+                          "  pages   = {502--516},\n"
+                          "  doi     = {10.1145/1039813.1039820},\n"
+                          "  year    = {2004}\n}\n";
+
 PetscClassId PETSCSPACE_CLASSID = 0;
 
 PetscFunctionList PetscSpaceList              = NULL;
@@ -363,7 +374,8 @@ PetscErrorCode PetscSpaceCreate(MPI_Comm comm, PetscSpace *sp)
 
   PetscFunctionBegin;
   PetscValidPointer(sp, 2);
-  *sp = NULL;
+  ierr = PetscCitationsRegister(FECitation,&FEcite);CHKERRQ(ierr);
+  *sp  = NULL;
   ierr = PetscFEInitializePackage();CHKERRQ(ierr);
 
   ierr = PetscHeaderCreate(s, _p_PetscSpace, struct _PetscSpaceOps, PETSCSPACE_CLASSID, "PetscSpace", "Linear Space", "PetscSpace", comm, PetscSpaceDestroy, PetscSpaceView);CHKERRQ(ierr);
@@ -1310,7 +1322,8 @@ PetscErrorCode PetscDualSpaceCreate(MPI_Comm comm, PetscDualSpace *sp)
 
   PetscFunctionBegin;
   PetscValidPointer(sp, 2);
-  *sp = NULL;
+  ierr = PetscCitationsRegister(FECitation,&FEcite);CHKERRQ(ierr);
+  *sp  = NULL;
   ierr = PetscFEInitializePackage();CHKERRQ(ierr);
 
   ierr = PetscHeaderCreate(s, _p_PetscDualSpace, struct _PetscDualSpaceOps, PETSCDUALSPACE_CLASSID, "PetscDualSpace", "Dual Space", "PetscDualSpace", comm, PetscDualSpaceDestroy, PetscDualSpaceView);CHKERRQ(ierr);
@@ -2102,6 +2115,7 @@ PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
 
   PetscFunctionBegin;
   PetscValidPointer(fem, 2);
+  ierr = PetscCitationsRegister(FECitation,&FEcite);CHKERRQ(ierr);
   *fem = NULL;
   ierr = PetscFEInitializePackage();CHKERRQ(ierr);
 
