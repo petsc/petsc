@@ -1582,6 +1582,30 @@ PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscCellGeome
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceGetDimension_SingleCell_Lagrange"
+PetscErrorCode PetscDualSpaceGetDimension_SingleCell_Lagrange(PetscDualSpace sp, PetscInt *dim)
+{
+  PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
+  PetscInt            deg = sp->order;
+  PetscReal           D   = 1.0;
+  PetscInt            n, i;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetDimension(sp->dm, &n);CHKERRQ(ierr);
+  if (lag->simplex) {
+    for (i = 1; i <= n; ++i) {
+      D *= ((PetscReal) (deg+i))/i;
+    }
+    *dim = (PetscInt) (D + 0.5);
+  } else {
+    *dim = 1;
+    for (i = 0; i < n; ++i) *dim *= (deg+1);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceSetUp_Lagrange"
 PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
 {
@@ -1592,7 +1616,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   Vec                 coordinates;
   PetscReal          *qpoints, *qweights;
   PetscInt           *closure = NULL, closureSize, c;
-  PetscInt            depth, dim, pdim, *pStart, *pEnd, coneSize, d, n, f = 0;
+  PetscInt            depth, dim, pdimMax, *pStart, *pEnd, cell, coneSize, d, n, f = 0;
   PetscBool           simplex;
   PetscErrorCode      ierr;
 
@@ -1612,8 +1636,9 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   else if (coneSize == 1 << dim) simplex = PETSC_FALSE;
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support simplices and tensor product cells");
   lag->simplex = simplex;
-  ierr = PetscDualSpaceGetDimension(sp, &pdim);CHKERRQ(ierr);
-  ierr = PetscMalloc1(pdim, &sp->functional);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetDimension_SingleCell_Lagrange(sp, &pdimMax);CHKERRQ(ierr);
+  pdimMax *= (pEnd[dim] - pStart[dim]);
+  ierr = PetscMalloc1(pdimMax, &sp->functional);CHKERRQ(ierr);
   if (!dim) {
     ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
     ierr = PetscMalloc1(1, &qpoints);CHKERRQ(ierr);
@@ -1624,91 +1649,101 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
     ++f;
     lag->numDof[0] = 1;
   } else {
-    ierr = DMPlexGetTransitiveClosure(dm, pStart[depth], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-    for (c = 0; c < closureSize*2; c += 2) {
-      const PetscInt p = closure[c];
+    PetscBT seen;
 
-      if ((p >= pStart[0]) && (p < pEnd[0])) {
-        /* Vertices */
-        const PetscScalar *coords;
-        PetscInt           dof, off, d;
+    ierr = PetscBTCreate(pEnd[dim-1], &seen);CHKERRQ(ierr);
+    ierr = PetscBTMemzero(pEnd[dim-1], seen);CHKERRQ(ierr);
+    for (cell = pStart[depth]; cell < pEnd[depth]; ++cell) {
+      ierr = DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      for (c = 0; c < closureSize*2; c += 2) {
+        const PetscInt p = closure[c];
 
-        if (order < 1) continue;
-        ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
-        ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
-        ierr = PetscMalloc1(1, &qweights);CHKERRQ(ierr);
-        ierr = PetscQuadratureSetData(sp->functional[f], dim, 1, qpoints, qweights);CHKERRQ(ierr);
-        ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
-        ierr = PetscSectionGetDof(csection, p, &dof);CHKERRQ(ierr);
-        ierr = PetscSectionGetOffset(csection, p, &off);CHKERRQ(ierr);
-        if (dof != dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of coordinates %d does not match spatial dimension %d", dof, dim);
-        for (d = 0; d < dof; ++d) {qpoints[d] = PetscRealPart(coords[off+d]);}
-        qweights[0] = 1.0;
-        ++f;
-        ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
-        lag->numDof[0] = 1;
-      } else if ((p >= pStart[1]) && (p < pEnd[1])) {
-        /* Edges */
-        PetscScalar *coords;
-        PetscInt     num = order-1, k;
+        if (PetscBTLookup(seen, p)) continue;
+        ierr = PetscBTSet(seen, p);CHKERRQ(ierr);
+        if ((p >= pStart[0]) && (p < pEnd[0])) {
+          /* Vertices */
+          const PetscScalar *coords;
+          PetscInt           dof, off, d;
 
-        if (order < 2) continue;
-        coords = NULL;
-        ierr = DMPlexVecGetClosure(dm, csection, coordinates, p, &n, &coords);CHKERRQ(ierr);
-        if (n != dim*2) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %d has %d coordinate values instead of %d", p, n, dim*2);
-        for (k = 1; k <= num; ++k) {
+          if (order < 1) continue;
           ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
           ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
           ierr = PetscMalloc1(1, &qweights);CHKERRQ(ierr);
           ierr = PetscQuadratureSetData(sp->functional[f], dim, 1, qpoints, qweights);CHKERRQ(ierr);
-          for (d = 0; d < dim; ++d) {qpoints[d] = k*PetscRealPart(coords[1*dim+d] - coords[0*dim+d])/order + PetscRealPart(coords[0*dim+d]);}
+          ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
+          ierr = PetscSectionGetDof(csection, p, &dof);CHKERRQ(ierr);
+          ierr = PetscSectionGetOffset(csection, p, &off);CHKERRQ(ierr);
+          if (dof != dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of coordinates %d does not match spatial dimension %d", dof, dim);
+          for (d = 0; d < dof; ++d) {qpoints[d] = PetscRealPart(coords[off+d]);}
           qweights[0] = 1.0;
           ++f;
-        }
-        ierr = DMPlexVecRestoreClosure(dm, csection, coordinates, p, &n, &coords);CHKERRQ(ierr);
-        lag->numDof[1] = num;
-      } else if ((p >= pStart[depth-1]) && (p < pEnd[depth-1])) {
-        /* Faces */
+          ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
+          lag->numDof[0] = 1;
+        } else if ((p >= pStart[1]) && (p < pEnd[1])) {
+          /* Edges */
+          PetscScalar *coords;
+          PetscInt     num = order-1, k;
 
-        if ( simplex && (order < 3)) continue;
-        if (!simplex && (order < 2)) continue;
-        lag->numDof[depth-1] = 0;
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to implement faces");
-      } else if ((p >= pStart[depth]) && (p < pEnd[depth])) {
-        /* Cells */
-        PetscScalar *coords = NULL;
-        PetscInt     csize, v, d;
-
-        if ( simplex && (order > 0) && (order < 3)) continue;
-        if (!simplex && (order > 0) && (order < 2)) continue;
-        lag->numDof[depth] = 0;
-        if (order > 0) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to implement cells");}
-
-        ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
-        ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
-        ierr = PetscMalloc1(1, &qweights);CHKERRQ(ierr);
-        ierr = PetscQuadratureSetData(sp->functional[f], dim, 1, qpoints, qweights);CHKERRQ(ierr);
-        ierr = DMPlexVecGetClosure(dm, csection, coordinates, p, &csize, &coords);CHKERRQ(ierr);
-        if (csize%dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Coordinate size %d is not divisible by spatial dimension %d", csize, dim);
-        for (d = 0; d < dim; ++d) {
-          const PetscInt numVertices = csize/dim;
-
-          qpoints[d] = 0.0;
-          for (v = 0; v < numVertices; ++v) {
-            qpoints[d] += PetscRealPart(coords[v*dim+d]);
+          if (order < 2) continue;
+          coords = NULL;
+          ierr = DMPlexVecGetClosure(dm, csection, coordinates, p, &n, &coords);CHKERRQ(ierr);
+          if (n != dim*2) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %d has %d coordinate values instead of %d", p, n, dim*2);
+          for (k = 1; k <= num; ++k) {
+            ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
+            ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
+            ierr = PetscMalloc1(1, &qweights);CHKERRQ(ierr);
+            ierr = PetscQuadratureSetData(sp->functional[f], dim, 1, qpoints, qweights);CHKERRQ(ierr);
+            for (d = 0; d < dim; ++d) {qpoints[d] = k*PetscRealPart(coords[1*dim+d] - coords[0*dim+d])/order + PetscRealPart(coords[0*dim+d]);}
+            qweights[0] = 1.0;
+            ++f;
           }
-          qpoints[d] /= numVertices;
+          ierr = DMPlexVecRestoreClosure(dm, csection, coordinates, p, &n, &coords);CHKERRQ(ierr);
+          lag->numDof[1] = num;
+        } else if ((p >= pStart[depth-1]) && (p < pEnd[depth-1])) {
+          /* Faces */
+
+          if ( simplex && (order < 3)) continue;
+          if (!simplex && (order < 2)) continue;
+          lag->numDof[depth-1] = 0;
+          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to implement faces");
+        } else if ((p >= pStart[depth]) && (p < pEnd[depth])) {
+          /* Cells */
+          PetscScalar *coords = NULL;
+          PetscInt     csize, v, d;
+
+          if ( simplex && (order > 0) && (order < 3)) continue;
+          if (!simplex && (order > 0) && (order < 2)) continue;
+          lag->numDof[depth] = 0;
+          if (order > 0) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to implement cells");}
+
+          ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
+          ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
+          ierr = PetscMalloc1(1, &qweights);CHKERRQ(ierr);
+          ierr = PetscQuadratureSetData(sp->functional[f], dim, 1, qpoints, qweights);CHKERRQ(ierr);
+          ierr = DMPlexVecGetClosure(dm, csection, coordinates, p, &csize, &coords);CHKERRQ(ierr);
+          if (csize%dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Coordinate size %d is not divisible by spatial dimension %d", csize, dim);
+          for (d = 0; d < dim; ++d) {
+            const PetscInt numVertices = csize/dim;
+
+            qpoints[d] = 0.0;
+            for (v = 0; v < numVertices; ++v) {
+              qpoints[d] += PetscRealPart(coords[v*dim+d]);
+            }
+            qpoints[d] /= numVertices;
+          }
+          ierr = DMPlexVecRestoreClosure(dm, csection, coordinates, p, &csize, &coords);CHKERRQ(ierr);
+          qweights[0] = 1.0;
+          ++f;
+          lag->numDof[depth] = 1;
         }
-        ierr = DMPlexVecRestoreClosure(dm, csection, coordinates, p, &csize, &coords);CHKERRQ(ierr);
-        qweights[0] = 1.0;
-        ++f;
-        lag->numDof[depth] = 1;
       }
+      ierr = DMPlexRestoreTransitiveClosure(dm, pStart[depth], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
-    ierr = DMPlexRestoreTransitiveClosure(dm, pStart[depth], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    ierr = PetscBTDestroy(&seen);CHKERRQ(ierr);
   }
+  if (pEnd[dim] == 1 && f != pdimMax) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of dual basis vectors %d not equal to dimension %d", f, pdimMax);
   ierr = PetscFree2(pStart,pEnd);CHKERRQ(ierr);
-  if (f != pdim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of dual basis vectors %d not equal to dimension %d", f, pdim);
+  if (f > pdimMax) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of dual basis vectors %d is greater than dimension %d", f, pdimMax);
   PetscFunctionReturn(0);
 }
 
@@ -1729,23 +1764,24 @@ PetscErrorCode PetscDualSpaceDestroy_Lagrange(PetscDualSpace sp)
 #define __FUNCT__ "PetscDualSpaceGetDimension_Lagrange"
 PetscErrorCode PetscDualSpaceGetDimension_Lagrange(PetscDualSpace sp, PetscInt *dim)
 {
-  PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
-  PetscInt            deg = sp->order;
-  PetscReal           D   = 1.0;
-  PetscInt            n, i;
-  PetscErrorCode      ierr;
+  DM              K;
+  const PetscInt *numDof;
+  PetscInt        spatialDim, Nc, size = 0, d;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetDimension(sp->dm, &n);CHKERRQ(ierr);
-  if (lag->simplex) {
-    for (i = 1; i <= n; ++i) {
-      D *= ((PetscReal) (deg+i))/i;
-    }
-    *dim = (PetscInt) (D + 0.5);
-  } else {
-    *dim = 1;
-    for (i = 0; i < n; ++i) *dim *= (deg+1);
+  ierr = PetscDualSpaceGetDM(sp, &K);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetNumDof(sp, &numDof);CHKERRQ(ierr);
+  ierr = DMPlexGetDimension(K, &spatialDim);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(K, 0, NULL, &Nc);CHKERRQ(ierr);
+  if (Nc == 1) {ierr = PetscDualSpaceGetDimension_SingleCell_Lagrange(sp, dim);CHKERRQ(ierr); PetscFunctionReturn(0);}
+  for (d = 0; d <= spatialDim; ++d) {
+    PetscInt pStart, pEnd;
+
+    ierr = DMPlexGetDepthStratum(K, d, &pStart, &pEnd);CHKERRQ(ierr);
+    size += (pEnd-pStart)*numDof[d];
   }
+  *dim = size;
   PetscFunctionReturn(0);
 }
 
