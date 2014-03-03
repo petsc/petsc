@@ -2193,19 +2193,6 @@ PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscFEGetDimension"
-PetscErrorCode PetscFEGetDimension(PetscFE fem, PetscInt *dim)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscValidPointer(dim, 2);
-  ierr = PetscSpaceGetDimension(fem->basisSpace, dim);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PetscFEGetSpatialDimension"
 PetscErrorCode PetscFEGetSpatialDimension(PetscFE fem, PetscInt *dim)
 {
@@ -2465,6 +2452,17 @@ PetscErrorCode PetscFEGetTabulation(PetscFE fem, PetscInt npoints, const PetscRe
     ierr = DMRestoreWorkArray(dm, pdim, PETSC_INT, &pivots);CHKERRQ(ierr);
     ierr = DMRestoreWorkArray(dm, pdim, PETSC_REAL, &work);CHKERRQ(ierr);
   }
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEGetDimension_Basic"
+PetscErrorCode PetscFEGetDimension_Basic(PetscFE fem, PetscInt *dim)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscDualSpaceGetDimension(fem->dualSpace, dim);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
   for (p = 0; p < npoints; ++p) {
     if (B) {
       /* Multiply by V^{-1} (pdim x pdim) */
@@ -3307,6 +3305,7 @@ PetscErrorCode PetscFEInitialize_Basic(PetscFE fem)
   fem->ops->setup                   = NULL;
   fem->ops->view                    = NULL;
   fem->ops->destroy                 = PetscFEDestroy_Basic;
+  fem->ops->getdimension            = PetscFEGetDimension_Basic;
   fem->ops->integrateresidual       = PetscFEIntegrateResidual_Basic;
   fem->ops->integratebdresidual     = PetscFEIntegrateBdResidual_Basic;
   fem->ops->integratejacobianaction = NULL/* PetscFEIntegrateJacobianAction_Basic */;
@@ -3987,6 +3986,7 @@ PetscErrorCode PetscFEInitialize_Nonaffine(PetscFE fem)
   fem->ops->setup                   = NULL;
   fem->ops->view                    = NULL;
   fem->ops->destroy                 = PetscFEDestroy_Nonaffine;
+  fem->ops->getdimension            = PetscFEGetDimension_Basic;
   fem->ops->integrateresidual       = PetscFEIntegrateResidual_Nonaffine;
   fem->ops->integratebdresidual     = PetscFEIntegrateBdResidual_Nonaffine;
   fem->ops->integratejacobianaction = NULL/* PetscFEIntegrateJacobianAction_Nonaffine */;
@@ -4781,6 +4781,7 @@ PetscErrorCode PetscFEInitialize_OpenCL(PetscFE fem)
   fem->ops->setup                   = NULL;
   fem->ops->view                    = NULL;
   fem->ops->destroy                 = PetscFEDestroy_OpenCL;
+  fem->ops->getdimension            = PetscFEGetDimension_Basic;
   fem->ops->integrateresidual       = PetscFEIntegrateResidual_OpenCL;
   fem->ops->integratebdresidual     = NULL/* PetscFEIntegrateBdResidual_OpenCL */;
   fem->ops->integratejacobianaction = NULL/* PetscFEIntegrateJacobianAction_OpenCL */;
@@ -4862,6 +4863,34 @@ PetscErrorCode PetscFEOpenCLGetRealType(PetscFE fem, PetscDataType *realType)
 
 #endif /* PETSC_HAVE_OPENCL */
 
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEGetDimension"
+/*@
+  PetscFEGetDimension - Get the dimension of the finite element space on a cell
+
+  Not collective
+
+  Input Parameter:
+. fe - The PetscFE
+
+  Output Parameter:
+. dim - The dimension
+
+  Level: intermediate
+
+.seealso: PetscFECreate(), PetscSpaceGetDimension(), PetscDualSpaceGetDimension()
+@*/
+PetscErrorCode PetscFEGetDimension(PetscFE fem, PetscInt *dim)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  PetscValidPointer(dim, 2);
+  if (fem->ops->getdimension) {ierr = (*fem->ops->getdimension)(fem, dim);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
 /*
 Purpose: Compute element vector for chunk of elements
 

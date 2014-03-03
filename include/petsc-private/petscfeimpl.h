@@ -64,6 +64,7 @@ struct _PetscFEOps {
   PetscErrorCode (*setup)(PetscFE);
   PetscErrorCode (*view)(PetscFE,PetscViewer);
   PetscErrorCode (*destroy)(PetscFE);
+  PetscErrorCode (*getdimension)(PetscFE,PetscInt*);
   /* Element integration */
   PetscErrorCode (*integrateresidual)(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[],
                                       PetscInt, PetscFE[], const PetscScalar[],
