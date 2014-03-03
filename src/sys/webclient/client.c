@@ -94,7 +94,7 @@ PetscErrorCode PetscSSLDestroyContext(SSL_CTX *ctx)
 
    Input Parameters:
 +   type - either "POST" or "GET"
-.   url - complete URL of request including https://
+.   url -  URL of request host/path
 .   header - additional header information, may be NULL
 .   ctype - data type of body, for example application/json
 .   body - data to send to server
@@ -107,22 +107,28 @@ PetscErrorCode PetscSSLDestroyContext(SSL_CTX *ctx)
 PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char header[],const char ctype[],const char body[],SSL *ssl,char buff[],size_t buffsize)
 {
   char           *request=0;
-  char           contentlength[40],contenttype[80];
+  char           contentlength[40],contenttype[80],*path,*host;
   int            r;
-  size_t         request_len,len,headlen,bodylen,contentlen,urllen,typelen,contenttypelen = 0;
+  size_t         request_len,len,headlen,bodylen,contentlen,pathlen,hostlen,typelen,contenttypelen = 0;
   PetscErrorCode ierr;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscStrbeginswith(url,"https://",&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"URL must begin with https://");
+  ierr = PetscStrallocpy(url,&host);CHKERRQ(ierr);
+  ierr = PetscStrchr(host,'/',&path);CHKERRQ(ierr);
+  if (!path) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"url must contain / it is %s",url);
+  *path = NULL;
+  ierr = PetscStrlen(host,&hostlen);CHKERRQ(ierr);
+
+  ierr = PetscStrchr(url,'/',&path);CHKERRQ(ierr);
+  ierr = PetscStrlen(path,&pathlen);CHKERRQ(ierr);
+
   if (header) {
     ierr = PetscStrendswith(header,"\r\n",&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"header must end with \\r\\n");
   }
 
   ierr = PetscStrlen(type,&typelen);CHKERRQ(ierr);
-  ierr = PetscStrlen(url,&urllen);CHKERRQ(ierr);
   if (ctype) {
     ierr = PetscSNPrintf(contenttype,80,"Content-Type: %s\r\n",ctype);CHKERRQ(ierr);
     ierr = PetscStrlen(contenttype,&contenttypelen);CHKERRQ(ierr);
@@ -133,12 +139,15 @@ PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char h
   ierr = PetscStrlen(contentlength,&contentlen);CHKERRQ(ierr);
 
   /* Now construct our HTTP request */
-  request_len = typelen + 1 + urllen + 35 + headlen + contenttypelen + contentlen + bodylen + 1;
+  request_len = typelen + 1 + pathlen + hostlen + 100 + headlen + contenttypelen + contentlen + bodylen + 1;
   ierr = PetscMalloc1(request_len,&request);CHKERRQ(ierr);
   ierr = PetscStrcpy(request,type);CHKERRQ(ierr);
   ierr = PetscStrcat(request," ");CHKERRQ(ierr);
-  ierr = PetscStrcat(request,url);CHKERRQ(ierr);
-  ierr = PetscStrcat(request," HTTP/1.1\r\nUser-Agent:PETScClient\r\n");CHKERRQ(ierr);
+  ierr = PetscStrcat(request,path);CHKERRQ(ierr);
+  ierr = PetscStrcat(request," HTTP/1.1\r\nHost: ");CHKERRQ(ierr);
+  ierr = PetscStrcat(request,host);CHKERRQ(ierr);
+  ierr = PetscFree(host);CHKERRQ(ierr);
+  ierr = PetscStrcat(request,"\r\nUser-Agent:PETScClient\r\n");CHKERRQ(ierr);
   ierr = PetscStrcat(request,header);CHKERRQ(ierr);
   if (ctype) {
     ierr = PetscStrcat(request,contenttype);CHKERRQ(ierr);

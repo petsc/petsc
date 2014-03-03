@@ -69,7 +69,7 @@ PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm,const char refresh_token[],
     if (!refresh_token) {ierr = PetscFree(refreshtoken);CHKERRQ(ierr);}
     ierr = PetscStrcat(body,"&grant_type=refresh_token");CHKERRQ(ierr);
 
-    ierr = PetscHTTPSRequest("POST","https://accounts.google.com/o/oauth2/token",NULL,"application/x-www-form-urlencoded",body,ssl,buff,sizeof(buff));CHKERRQ(ierr);
+    ierr = PetscHTTPSRequest("POST","accounts.google.com/o/oauth2/token",NULL,"application/x-www-form-urlencoded",body,ssl,buff,sizeof(buff));CHKERRQ(ierr);
     ierr = PetscSSLDestroyContext(ctx);CHKERRQ(ierr);
     close(sock);
 
@@ -169,7 +169,7 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm,const char access_token[],co
                             "--foo_bar_baz\r\n");
     ierr = PetscSSLInitializeContext(&ctx);CHKERRQ(ierr);
     ierr = PetscHTTPSConnect("www.googleapis.com",443,ctx,&sock,&ssl);CHKERRQ(ierr);
-    ierr = PetscHTTPSRequest("POST","https://www.googleapis.com/upload/drive/v2/files/",head,"multipart/related; boundary=\"foo_bar_baz\"",body,ssl,buff,sizeof(buff));CHKERRQ(ierr);
+    ierr = PetscHTTPSRequest("POST","www.googleapis.com/upload/drive/v2/files/",head,"multipart/related; boundary=\"foo_bar_baz\"",body,ssl,buff,sizeof(buff));CHKERRQ(ierr);
     ierr = PetscFree(body);CHKERRQ(ierr);
     ierr = PetscSSLDestroyContext(ctx);CHKERRQ(ierr);
     close(sock);
@@ -241,7 +241,7 @@ PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm comm,char access_token[],char 
     ierr = PetscStrcat(body,"&redirect_uri=urn:ietf:wg:oauth:2.0:oob&");CHKERRQ(ierr);
     ierr = PetscStrcat(body,"grant_type=authorization_code");CHKERRQ(ierr);
 
-    ierr = PetscHTTPSRequest("POST","https://accounts.google.com/o/oauth2/token",NULL,"application/x-www-form-urlencoded",body,ssl,buff,sizeof(buff));CHKERRQ(ierr);
+    ierr = PetscHTTPSRequest("POST","accounts.google.com/o/oauth2/token",NULL,"application/x-www-form-urlencoded",body,ssl,buff,sizeof(buff));CHKERRQ(ierr);
     ierr = PetscSSLDestroyContext(ctx);CHKERRQ(ierr);
     close(sock);
 
@@ -296,7 +296,7 @@ PetscErrorCode PetscURLShorten(const char url[],char shorturl[],size_t lenshortu
   ierr = PetscSSLInitializeContext(&ctx);CHKERRQ(ierr);
   ierr = PetscHTTPSConnect("www.googleapis.com",443,ctx,&sock,&ssl);CHKERRQ(ierr);
   ierr = PetscSNPrintf(body,512,"{\"longUrl\": \"%s\"}",url);CHKERRQ(ierr);
-  ierr = PetscHTTPSRequest("POST","https://www.googleapis.com/urlshortener/v1/url",NULL,"application/json",body,ssl,buff,sizeof(buff));CHKERRQ(ierr);
+  ierr = PetscHTTPSRequest("POST","www.googleapis.com/urlshortener/v1/url",NULL,"application/json",body,ssl,buff,sizeof(buff));CHKERRQ(ierr);
   ierr = PetscSSLDestroyContext(ctx);CHKERRQ(ierr);
   close(sock);
   ierr = PetscStrstr(buff,"\"id\": \"",&sub1);CHKERRQ(ierr);

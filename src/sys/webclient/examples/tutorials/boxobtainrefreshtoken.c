@@ -2,9 +2,6 @@
 /*
      Obtains a refresh token that you can use in the future to access Box from PETSc code
 
-     Note: this does not work, see PetscBoxAuthorize()
-     Guard the refresh token like a password.
-
      You can run PETSc programs with -box_refresh_token XXXX where XXX is the refresh token to access your Box
 
 */

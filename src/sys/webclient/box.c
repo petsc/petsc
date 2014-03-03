@@ -73,9 +73,6 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
    You can run src/sys/webclient/examples/tutorials/obtainrefreshtoken to get a refresh token and then in the future pass it to
    PETSc programs with -box_refresh_token XXX
 
-   Developer Notes: For some reason I cannot get this to work! Box always replies with Bad Request and no details. Using Curl works
-   if one is fast enough.  Perhaps the problem is the need to urlencode the message?
-
 .seealso: PetscBoxRefresh(), PetscBoxUpload(), PetscURLShorten()
 
 @*/
@@ -114,7 +111,7 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm,char access_token[],char refresh_
     ierr = PetscStrcat(body,PETSC_BOX_CLIENT_ST);CHKERRQ(ierr);
     ierr = PetscStrcat(body,"&grant_type=authorization_code");CHKERRQ(ierr);
 
-    ierr = PetscHTTPSRequest("POST","https://www.box.com/api/oauth2/token",NULL,"application/x-www-form-urlencoded",body,ssl,buff,sizeof(buff));CHKERRQ(ierr);
+    ierr = PetscHTTPSRequest("POST","www.box.com/api/oauth2/token",NULL,"application/x-www-form-urlencoded",body,ssl,buff,sizeof(buff));CHKERRQ(ierr);
     ierr = PetscSSLDestroyContext(ctx);CHKERRQ(ierr);
     close(sock);
 
@@ -136,7 +133,7 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm,char access_token[],char refresh_
     ierr = PetscStrncpy(refresh_token,refresh,tokensize);CHKERRQ(ierr);
 
     ierr = PetscPrintf(comm,"Here is your Box refresh token, save it in a save place, in the future you can run PETSc\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"programs with the option -box_refresh_token %d\n",refresh);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"programs with the option -box_refresh_token %s\n",refresh);CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"to access Box Drive automatically\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -159,8 +156,6 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm,char access_token[],char refresh_
 +   access_token - token that can be passed to PetscBoxUpload()
 -   new_refresh_token - the old refresh token is no longer valid, not this is different than Google where the same refresh_token is used forever
 
-   Note: This doesn't work I cannot figure out why.
-
 .seealso: PetscURLShorten(), PetscBoxAuthorize(), PetscBoxUpload()
 
 @*/
@@ -172,7 +167,7 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm,const char refresh_token[],char acc
   PetscErrorCode ierr;
   char           buff[8*1024],body[1024],*access,*ctmp;
   PetscMPIInt    rank;
-  char           *refreshtoken = (char*)refresh_token;
+  char           *refreshtoken = (char*)refresh_token,*refresh;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -198,18 +193,29 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm,const char refresh_token[],char acc
     if (!refresh_token) {ierr = PetscFree(refreshtoken);CHKERRQ(ierr);}
     ierr = PetscStrcat(body,"&grant_type=refresh_token");CHKERRQ(ierr);
 
-    ierr = PetscHTTPSRequest("POST","https://www.box.com/api/oauth2/token",NULL,"application/x-www-form-urlencoded",body,ssl,buff,sizeof(buff));CHKERRQ(ierr);
+    ierr = PetscHTTPSRequest("POST","www.box.com/api/oauth2/token",NULL,"application/x-www-form-urlencoded",body,ssl,buff,sizeof(buff));CHKERRQ(ierr);
     ierr = PetscSSLDestroyContext(ctx);CHKERRQ(ierr);
     close(sock);
 
-    ierr   = PetscStrstr(buff,"\"access_token\" : \"",&access);CHKERRQ(ierr);
+    ierr   = PetscStrstr(buff,"\"access_token\":\"",&access);CHKERRQ(ierr);
     if (!access) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Did not receive access token from Box");
-    access += 18;
+    access += 16;
     ierr   = PetscStrchr(access,'\"',&ctmp);CHKERRQ(ierr);
     if (!ctmp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Access token from Box is misformed");
     *ctmp  = 0;
     ierr   = PetscStrncpy(access_token,access,tokensize);CHKERRQ(ierr);
     *ctmp  = '\"';
+
+    ierr   = PetscStrstr(buff,"\"refresh_token\":\"",&refresh);CHKERRQ(ierr);
+    if (!refresh) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Did not receive refresh token from Box");
+    refresh += 17;
+    ierr   = PetscStrchr(refresh,'\"',&ctmp);CHKERRQ(ierr);
+    if (!ctmp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Refresh token from Box is misformed");
+    *ctmp  = 0;
+    ierr = PetscStrncpy(new_refresh_token,refresh,tokensize);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"Here is your new Box refresh token, save it in a save place, in the future you can run PETSc\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"programs with the option -box_refresh_token %s\n",refresh);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"to access Box Drive automatically\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -220,6 +226,8 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm,const char refresh_token[],char acc
 #define __FUNCT__ "PetscBoxUpload"
 /*@C
      PetscBoxUpload - Loads a file to the Box Drive
+
+     This routine has not yet been written; it is just copied from Google Drive
 
      Not collective, only the first process in the MPI_Comm uploads the file
 
@@ -298,7 +306,7 @@ PetscErrorCode PetscBoxUpload(MPI_Comm comm,const char access_token[],const char
                             "--foo_bar_baz\r\n");
     ierr = PetscSSLInitializeContext(&ctx);CHKERRQ(ierr);
     ierr = PetscHTTPSConnect("www.boxapis.com",443,ctx,&sock,&ssl);CHKERRQ(ierr);
-    ierr = PetscHTTPSRequest("POST","https://www.boxapis.com/upload/drive/v2/files/",head,"multipart/related; boundary=\"foo_bar_baz\"",body,ssl,buff,sizeof(buff));CHKERRQ(ierr);
+    ierr = PetscHTTPSRequest("POST","www.boxapis.com/upload/drive/v2/files/",head,"multipart/related; boundary=\"foo_bar_baz\"",body,ssl,buff,sizeof(buff));CHKERRQ(ierr);
     ierr = PetscFree(body);CHKERRQ(ierr);
     ierr = PetscSSLDestroyContext(ctx);CHKERRQ(ierr);
     close(sock);
