@@ -101,7 +101,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
         ierr = cg_ElementDataSize(cgid, 1, z, 1, &elementDataSize);CHKERRQ(ierr);
         ierr = PetscMalloc1(elementDataSize, &elements);CHKERRQ(ierr);
         ierr = cg_elements_read(cgid, 1, z, 1, elements, NULL);CHKERRQ(ierr);
-        for (c_loc = start, off = 0; c_loc < end; ++c_loc, ++c) {
+        for (c_loc = start, off = 0; c_loc <= end; ++c_loc, ++c) {
           switch (elements[off]) {
           case TRI_3:   numCorners = 3;break;
           case QUAD_4:  numCorners = 4;break;
@@ -121,7 +121,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
         case HEXA_8:  numCorners = 8;break;
         default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int) cellType);
         }
-        for (c_loc = start; c_loc < end; ++c_loc, ++c) {
+        for (c_loc = start; c_loc <= end; ++c_loc, ++c) {
           ierr = DMPlexSetConeSize(*dm, c, numCorners);CHKERRQ(ierr);
         }
       }
@@ -141,7 +141,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
       ierr = cg_elements_read(cgid, 1, z, 1, elements, NULL);CHKERRQ(ierr);
       if (cellType == MIXED) {
         /* CGNS uses Fortran-based indexing, sieve uses C-style and numbers cell first then vertices. */
-        for (c_loc = 0, v = 0; c_loc < numc; ++c_loc, ++c) {
+        for (c_loc = 0, v = 0; c_loc <= numc; ++c_loc, ++c) {
           switch (elements[v]) {
           case TRI_3:   numCorners = 3;break;
           case QUAD_4:  numCorners = 4;break;
@@ -154,13 +154,13 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
             cone[v_loc] = elements[v]+numCells-1;
           }
           /* Tetrahedra are inverted */
-          if (cellType == TETRA_4) {
+          if (elements[v] == TETRA_4) {
             PetscInt tmp = cone[0];
             cone[0] = cone[1];
             cone[1] = tmp;
           }
           /* Hexahedra are inverted */
-          if (cellType == HEXA_8) {
+          if (elements[v] == HEXA_8) {
             PetscInt tmp = cone[1];
             cone[1] = cone[3];
             cone[3] = tmp;
@@ -178,7 +178,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
         }
 
         /* CGNS uses Fortran-based indexing, sieve uses C-style and numbers cell first then vertices. */
-        for (c_loc = 0, v = 0; c_loc < numc; ++c_loc, ++c) {
+        for (c_loc = 0, v = 0; c_loc <= numc; ++c_loc, ++c) {
           for (v_loc = 0; v_loc < numCorners; ++v_loc, ++v) {
             cone[v_loc] = elements[v]+numCells-1;
           }
@@ -237,10 +237,10 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
   if (!rank) {
     PetscInt off = 0;
     float   *x[3];
-    int      z, c, d;
+    int      z, d;
 
     ierr = PetscMalloc3(numVertices,&x[0],numVertices,&x[1],numVertices,&x[2]);CHKERRQ(ierr);
-    for (z = 1, c = 0; z <= nzones; ++z) {
+    for (z = 1; z <= nzones; ++z) {
       DataType_t datatype;
       cgsize_t   sizes[3]; /* Number of vertices, number of cells, number of boundary vertices */
       cgsize_t   range_min[3] = {1, 1, 1};
@@ -255,7 +255,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
       ierr = cg_ncoords(cgid, 1, z, &ncoords);CHKERRQ(ierr);
       if (ncoords != dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CGNS file must have a coordinate array for each dimension, not %d\n",ncoords);
       for (d = 0; d < dim; ++d) {
-        ierr = cg_coord_info(cgid, 1, z, 1, &datatype, buffer);CHKERRQ(ierr);
+        ierr = cg_coord_info(cgid, 1, z, 1+d, &datatype, buffer);CHKERRQ(ierr);
         ierr = cg_coord_read(cgid, 1, z, buffer, RealSingle, range_min, range_max, x[d]);CHKERRQ(ierr);
       }
       if (dim > 0) {

@@ -978,7 +978,7 @@
             Thrust has been included in CUDA since the 4.0 release - so a separate install is not needed.
           </li>
 
-          <li>Currently using CUDA-4.1 or CUDA-4.2 with Cusp-v0.3.1</li>
+          <li>Currently using CUDA-4.1 or CUDA-4.2 with Cusp-v0.3.1 or CUDA-5 with Cusp-v0.4.0.</li>
 
           <li>
             On Linux - make sure you have  compatible <a href="http://developer.nvidia.com/cuda-downloads"> NVidia driver</a>
@@ -994,6 +994,32 @@
 
         <a href="#" target="_top">Return to Installation Instructions</a>
       </div> <!-- #cuda -->
+
+      <hr>
+
+      <div>
+        <h3><a name="cuda">Installing PETSc to use GPUs and accelerators via OpenCL (NVIDIA, AMD, Intel MIC)</a></h3>
+
+        <ul>
+          <li>
+            Requires <a href="http://viennacl.sourceforge.net/">ViennaCL</a> and the OpenCL shared library, which is shipped in the vendor graphics driver.
+            Make sure the OpenCL headers are available on your system by e.g. downloading them from the <a href="https://www.khronos.org/opencl/">Khronos Group</a> directly.
+            Package managers on Linux provide these headers through a package named 'opencl-headers' or similar.
+          </li>
+
+          <li>
+            Always make sure you have the latest GPU driver installed. There are several known issues with older driver versions.
+          </li>
+
+          <li>check <code>config/examples/arch-viennacl.py</code> for example usage.</li>
+        </ul>
+
+        <p>
+          OpenCL/ViennaCL builds of PETSc currently work on Apple OSX, Linux, and Microsoft Windows. OpenCL is less a burden on the build system than CUDA, so installation is often easier and works with any host compiler.
+        </p>
+
+        <a href="#" target="_top">Return to Installation Instructions</a>
+      </div> <!-- #opencl -->
 
       <hr>
 
