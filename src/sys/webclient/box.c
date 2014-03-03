@@ -11,21 +11,22 @@
 #define PETSC_BOX_CLIENT_ID  "sse42nygt4zqgrdwi0luv79q1u1f0xza"
 #define PETSC_BOX_CLIENT_ST  "A0Dy4KgOYLB2JIYZqpbze4EzjeIiX5k4"
 
+#if defined(PETSC_HAVE_SAWS)
 #include <mongoose.h>
 
 static volatile char *result = NULL;
 
-/*this is the main handler call. It switched based on what uri is in the request*/
 static int PetscBoxWebServer_Private(struct mg_connection *conn)
 {
   const struct mg_request_info *request_info = mg_get_request_info(conn);
-  printf("Hi %s\n",request_info->uri);
-  printf("Hi %s\n",request_info->query_string);
   result = (char*) request_info->query_string;
-return 0;
+  return 1;  /* Mongoose will now not handle the request */
 }
 
-
+/*
+    Box can only return an authorization code to a Webserver, hence we need to start one up and wait for
+    the authorization code to arrive from Box
+*/
 static PetscErrorCode PetscBoxStartWebServer_Private(void)
 {
   PetscErrorCode      ierr;
@@ -41,7 +42,6 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
   options[3] = "/Users/barrysmith/Src/saws/saws.pem";
   options[4] = NULL;
 
-
   /* Prepare callbacks structure. We have only one callback, the rest are NULL. */
   ierr = PetscMemzero(&callbacks, sizeof(callbacks));CHKERRQ(ierr);
   callbacks.begin_request = PetscBoxWebServer_Private;
@@ -50,7 +50,6 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
   while (!result) {};
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscBoxAuthorize"
@@ -70,8 +69,10 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
 
    Notes: This call requires stdout and stdin access from process 0 on the MPI communicator
 
-   You can run src/sys/webclient/examples/tutorials/obtainrefreshtoken to get a refresh token and then in the future pass it to
+   You can run src/sys/webclient/examples/tutorials/boxobtainrefreshtoken to get a refresh token and then in the future pass it to
    PETSc programs with -box_refresh_token XXX
+
+   This requires PETSc be installed using --with-saws or --download-saws
 
 .seealso: PetscBoxRefresh(), PetscBoxUpload(), PetscURLShorten()
 
@@ -138,6 +139,7 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm,char access_token[],char refresh_
   }
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscBoxRefresh"
