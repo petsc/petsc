@@ -84,8 +84,6 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   PetscReal                    delta;
   PetscReal                    norm_d = 0.0, e_min;
 
-  MatStructure                 matflag;
-
   PetscInt                     stepType;
   PetscInt                     iter = 0;
   PetscInt                     bfgsUpdates = 0;
@@ -233,7 +231,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
         sigma = 0.0;
 
         if (needH) {
-          ierr = TaoComputeHessian(tao, tao->solution, &tao->hessian, &tao->hessian_pre, &matflag);CHKERRQ(ierr);
+          ierr = TaoComputeHessian(tao, tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
           needH = 0;
         }
 
@@ -362,7 +360,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
 
     /* Compute the Hessian */
     if (needH) {
-      ierr = TaoComputeHessian(tao, tao->solution, &tao->hessian, &tao->hessian_pre, &matflag);CHKERRQ(ierr);
+      ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
       needH = 0;
     }
 
@@ -396,7 +394,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
     }
 
     /* Solve the Newton system of equations */
-    ierr = KSPSetOperators(tao->ksp,tao->hessian,tao->hessian_pre,matflag);CHKERRQ(ierr);
+    ierr = KSPSetOperators(tao->ksp,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
     if (NLS_KSP_NASH == nlsP->ksp_type || NLS_KSP_STCG == nlsP->ksp_type ||  NLS_KSP_GLTR == nlsP->ksp_type) {
 
       if (NLS_KSP_NASH == nlsP->ksp_type) {

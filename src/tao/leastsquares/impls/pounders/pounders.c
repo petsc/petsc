@@ -2,10 +2,9 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "pounders_h"
-static PetscErrorCode pounders_h(Tao subtao, Vec v, Mat *H, Mat *Hpre, MatStructure *flag, void *ctx)
+static PetscErrorCode pounders_h(Tao subtao, Vec v, Mat H, Mat Hpre, void *ctx)
 {
   PetscFunctionBegin;
-  *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -542,10 +541,23 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   PetscReal          one=1.0,zero=0.0,ratio;
   PetscBLASInt       blasm,blasn,blasnpmax,blasn2;
   PetscErrorCode     ierr;
+  static PetscBool   set = PETSC_FALSE;
 
   /* n = # of parameters
      m = dimension (components) of function  */
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister("@article{UNEDF0,\n"
+                                "title = {Nuclear energy density optimization},\n"
+                                "author = {Kortelainen, M.  and Lesinski, T.  and Mor\'e, J.  and Nazarewicz, W.\n"
+                                "          and Sarich, J.  and Schunck, N.  and Stoitsov, M. V. and Wild, S. },\n"
+                                "journal = {Phys. Rev. C},\n"
+                                "volume = {82},\n"
+                                "number = {2},\n"
+                                "pages = {024313},\n"
+                                "numpages = {18},\n"
+                                "year = {2010},\n"
+                                "month = {Aug},\n"
+                                "doi = {10.1103/PhysRevC.82.024313}\n}\n",&set);
   if (tao->XL && tao->XU) {
     /* Check x0 <= XU */
     PetscReal val;

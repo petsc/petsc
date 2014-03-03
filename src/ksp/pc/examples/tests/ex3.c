@@ -51,14 +51,14 @@ int main(int argc,char **args)
   ierr = PCCreate(PETSC_COMM_WORLD,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
-  ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = PCSetOperators(pc,mat,mat);CHKERRQ(ierr);
   ierr = PCSetUp(pc);CHKERRQ(ierr);
 
   /* Create KSP context and set up data structures */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPRICHARDSON);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = PCSetOperators(pc,mat,mat);CHKERRQ(ierr);
   ierr = KSPSetPC(ksp,pc);CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 

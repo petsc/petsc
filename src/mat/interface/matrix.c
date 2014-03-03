@@ -1946,6 +1946,36 @@ PetscErrorCode  MatGetLocalToGlobalMappingBlock(Mat A,ISLocalToGlobalMapping *rm
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatGetLayouts"
+/*@
+   MatGetLayouts - Gets the PetscLayout objects for rows and columns
+
+   Not Collective
+
+   Input Parameters:
+.  A - the matrix
+
+   Output Parameters:
++ rmap - row layout
+- cmap - column layout
+
+   Level: advanced
+
+.seealso:  MatGetVecs(), MatGetLocalToGlobalMapping()
+@*/
+PetscErrorCode  MatGetLayouts(Mat A,PetscLayout *rmap,PetscLayout *cmap)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  if (rmap) PetscValidPointer(rmap,2);
+  if (cmap) PetscValidPointer(cmap,3);
+  if (rmap) *rmap = A->rmap;
+  if (cmap) *cmap = A->cmap;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatSetValuesLocal"
 /*@
    MatSetValuesLocal - Inserts or adds values into certain locations of a matrix,
@@ -6428,6 +6458,7 @@ PetscErrorCode  MatGetSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS ic
   ierr = (*mat->ops->getsubmatrices)(mat,n,irow,icol,scall,submat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
+    (*submat)[i]->factortype = MAT_FACTOR_NONE;  /* in case in place factorization was previously done on submatrix */
     if (mat->symmetric || mat->structurally_symmetric || mat->hermitian) {
       ierr = ISEqual(irow[i],icol[i],&eq);CHKERRQ(ierr);
       if (eq) {
@@ -9601,5 +9632,33 @@ PetscErrorCode  MatTransposeColoringCreate(Mat mat,ISColoring iscoloring,MatTran
 
   *color = c;
   ierr   = PetscLogEventEnd(MAT_TransposeColoringCreate,mat,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatGetNonzeroState"
+/*@
+      MatGetNonzeroState - Returns a 64 bit integer representing the current state of nonzeros in the matrix. If the 
+        matrix has had no new nonzero locations added to the matrix since the previous call then the value will be the 
+        same, otherwise it will be larger
+
+     Not Collective
+
+  Input Parameter:
+.    A  - the matrix
+
+  Output Parameter:
+.    state - the current state
+
+  Notes: You can only compare states from two different calls to the SAME matrix, you cannot compare calls between 
+         different matrices
+
+  Level: intermediate
+
+@*/
+PetscErrorCode MatGetNonzeroState(Mat mat,PetscObjectState *state)
+{
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  *state = mat->nonzerostate;
   PetscFunctionReturn(0);
 }

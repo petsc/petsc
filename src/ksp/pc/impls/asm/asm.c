@@ -383,7 +383,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
      Loop over subdomains putting them into local ksp
   */
   for (i=0; i<osm->n_local_true; i++) {
-    ierr = KSPSetOperators(osm->ksp[i],osm->pmat[i],osm->pmat[i],pc->flag);CHKERRQ(ierr);
+    ierr = KSPSetOperators(osm->ksp[i],osm->pmat[i],osm->pmat[i]);CHKERRQ(ierr);
     if (!pc->setupcalled) {
       ierr = KSPSetFromOptions(osm->ksp[i]);CHKERRQ(ierr);
     }

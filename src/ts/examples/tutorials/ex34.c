@@ -117,7 +117,7 @@ static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, 
 /* IJacobian - Compute IJacobian = dF/dU + a dF/dUdot */
 #undef __FUNCT__
 #define __FUNCT__ "FormIJacobian"
-PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat *J, Mat *Jpre, MatStructure *str, void *ctx)
+PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat J, Mat Jpre, void *ctx)
 {
   User           user = (User) ctx;
   DM             dm, cdm;
@@ -145,7 +145,7 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, M
                                          {{0,a*hx+dxx0,0},{0,dxxR,0}},
                                          {{0,0,     a*hx},{0,0,   0}}};
 
-      ierr = MatSetValuesBlocked(*Jpre, 1, &row, 2, col, &vals[0][0][0], INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesBlocked(Jpre, 1, &row, 2, col, &vals[0][0][0], INSERT_VALUES);CHKERRQ(ierr);
     } else if (i == info.mx-1) {
       const PetscScalar hx            = x[i+1] - x[i];
       const PetscInt    row           = i, col[] = {i-1,i};
@@ -154,7 +154,7 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, M
                                          {{0,dxxL,0},{0,a*hx+dxx0,0}},
                                          {{0,0,   0},{0,0,     a*hx}}};
 
-      ierr = MatSetValuesBlocked(*Jpre, 1, &row, 2, col, &vals[0][0][0], INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesBlocked(Jpre, 1, &row, 2, col, &vals[0][0][0], INSERT_VALUES);CHKERRQ(ierr);
     } else {
       const PetscScalar hx            = x[i+1] - x[i];
       const PetscInt    row           = i, col[] = {i-1,i,i+1};
@@ -163,17 +163,17 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, M
                                          {{0,dxxL,0},{0,a*hx+dxx0,0},{0,dxxR,0}},
                                          {{0,0,   0},{0,0,     a*hx},{0,0,   0}}};
 
-      ierr = MatSetValuesBlocked(*Jpre, 1, &row, 3, col, &vals[0][0][0], INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesBlocked(Jpre, 1, &row, 3, col, &vals[0][0][0], INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = DMDAVecRestoreArray(dm,  U,    &u);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(dm,  Udot, &udot);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(cdm, C,    &x);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*Jpre, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*Jpre, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*J != *Jpre) {
-    ierr = MatAssemblyBegin(*J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(Jpre, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Jpre, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (J != Jpre) {
+    ierr = MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -73,7 +73,7 @@ typedef PetscScalar CoordField[3];
 typedef PetscScalar JacField[9];
 
 PetscErrorCode FormFunctionLocal(DMDALocalInfo*,Field***,Field***,void*);
-PetscErrorCode FormJacobianLocal(DMDALocalInfo *,Field ***,Mat,Mat,MatStructure *,void *);
+PetscErrorCode FormJacobianLocal(DMDALocalInfo *,Field ***,Mat,Mat,void *);
 PetscErrorCode DisplayLine(SNES,Vec);
 PetscErrorCode FormElements();
 
@@ -630,7 +630,7 @@ void ApplyBCsElement(PetscInt mx,PetscInt my, PetscInt mz, PetscInt i, PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianLocal"
-PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat jac,MatStructure *flg,void *ptr)
+PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat jac,void *ptr)
 {
   /* values for each basis function at each quadrature point */
   AppCtx      *user = (AppCtx*)ptr;

@@ -478,7 +478,6 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
   PetscErrorCode    ierr;
   PC_FieldSplitLink ilink;
   PetscInt          i,nsplit;
-  MatStructure      flag = pc->flag;
   PetscBool         sorted, sorted_col;
 
   PetscFunctionBegin;
@@ -642,18 +641,18 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
-      ierr  = MatSchurComplementUpdateSubMatrices(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1],pc->flag);CHKERRQ(ierr);
+      ierr  = MatSchurComplementUpdateSubMatrices(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1]);CHKERRQ(ierr);
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELFP) {
 	ierr = MatDestroy(&jac->schurp);CHKERRQ(ierr);
 	ierr = MatSchurComplementGetPmat(jac->schur,MAT_INITIAL_MATRIX,&jac->schurp);CHKERRQ(ierr);
       }
       if (kspA != kspInner) {
-        ierr = KSPSetOperators(kspA,jac->mat[0],jac->pmat[0],pc->flag);CHKERRQ(ierr);
+        ierr = KSPSetOperators(kspA,jac->mat[0],jac->pmat[0]);CHKERRQ(ierr);
       }
       if (kspUpper != kspA) {
-        ierr = KSPSetOperators(kspUpper,jac->mat[0],jac->pmat[0],pc->flag);CHKERRQ(ierr);
+        ierr = KSPSetOperators(kspUpper,jac->mat[0],jac->pmat[0]);CHKERRQ(ierr);
       }
-      ierr = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),pc->flag);CHKERRQ(ierr);
+      ierr = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac));CHKERRQ(ierr);
     } else {
       const char   *Dprefix;
       char         schurprefix[256], schurmatprefix[256];
@@ -710,7 +709,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         ierr = KSPSetType(jac->head->ksp,KSPGMRES);CHKERRQ(ierr);
         ierr = MatSchurComplementSetKSP(jac->schur,jac->head->ksp);CHKERRQ(ierr);
       }
-      ierr = KSPSetOperators(jac->head->ksp,jac->mat[0],jac->pmat[0],flag);CHKERRQ(ierr);
+      ierr = KSPSetOperators(jac->head->ksp,jac->mat[0],jac->pmat[0]);CHKERRQ(ierr);
       ierr = KSPSetFromOptions(jac->head->ksp);CHKERRQ(ierr);
       ierr = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
 
@@ -726,7 +725,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         ierr = KSPSetDM(jac->kspupper, dmInner);CHKERRQ(ierr);
         ierr = KSPSetDMActive(jac->kspupper, PETSC_FALSE);CHKERRQ(ierr);
         ierr = KSPSetFromOptions(jac->kspupper);CHKERRQ(ierr);
-        ierr = KSPSetOperators(jac->kspupper,jac->mat[0],jac->pmat[0],flag);CHKERRQ(ierr);
+        ierr = KSPSetOperators(jac->kspupper,jac->mat[0],jac->pmat[0]);CHKERRQ(ierr);
         ierr = VecDuplicate(jac->head->x, &jac->head->z);CHKERRQ(ierr);
       } else {
         jac->kspupper = jac->head->ksp;
@@ -747,7 +746,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       } else if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_FULL) {
         ierr = MatSchurComplementComputeExplicitOperator(jac->schur, &jac->schur_user);CHKERRQ(ierr);
       }
-      ierr = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac));CHKERRQ(ierr);
       ierr = KSPGetOptionsPrefix(jac->head->next->ksp, &Dprefix);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(jac->kspschur,         Dprefix);CHKERRQ(ierr);
       /* propogate DM */
@@ -778,7 +777,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     i     = 0;
     ilink = jac->head;
     while (ilink) {
-      ierr = KSPSetOperators(ilink->ksp,jac->mat[i],jac->pmat[i],flag);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ilink->ksp,jac->mat[i],jac->pmat[i]);CHKERRQ(ierr);
       /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
       if (!jac->suboptionsset) {ierr = KSPSetFromOptions(ilink->ksp);CHKERRQ(ierr);}
       i++;

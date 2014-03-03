@@ -24,7 +24,7 @@ int main(int argc,char **args)
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPGetOperators(ksp,&A,NULL,NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp,&A,NULL);CHKERRQ(ierr);
 
   ierr = MatSetSizes(A,m,m,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);

@@ -699,6 +699,7 @@ class Configure(config.base.Configure):
     for flag in ['-D', '-WF,-D']:
       if self.setCompilers.checkCompilerFlag(flag+'Testing', body = '#define dummy \n           dummy\n#ifndef Testing\n       fooey\n#endif'):
         self.FortranDefineCompilerOption = flag
+        self.framework.addMakeMacro('FC_DEFINE_FLAG',self.FortranDefineCompilerOption)
         self.setCompilers.popLanguage()
         self.logPrint('Fortran uses '+flag+' for defining macro', 3, 'compilers')
         return

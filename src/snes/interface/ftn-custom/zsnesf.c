@@ -92,9 +92,9 @@ static PetscErrorCode ourdestroy(void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "oursnesjacobian"
-static PetscErrorCode oursnesjacobian(SNES snes,Vec x,Mat *m,Mat *p,MatStructure *type,void *ctx)
+static PetscErrorCode oursnesjacobian(SNES snes,Vec x,Mat m,Mat p,void *ctx)
 {
-  PetscObjectUseFortranCallback(snes,_cb.jacobian,(SNES*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*),(&snes,&x,m,p,type,_ctx,&ierr));
+  PetscObjectUseFortranCallback(snes,_cb.jacobian,(SNES*,Vec*,Mat*,Mat*,void*,PetscErrorCode*),(&snes,&x,&m,&p,_ctx,&ierr));
   return 0;
 }
 
@@ -129,21 +129,21 @@ static PetscErrorCode ourmondestroy(void **ctx)
 
   functions, hence no STDCALL
 */
-PETSC_EXTERN void matmffdcomputejacobian_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure *type,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void matmffdcomputejacobian_(SNES *snes,Vec *x,Mat *m,Mat *p,void *ctx,PetscErrorCode *ierr)
 {
-  *ierr = MatMFFDComputeJacobian(*snes,*x,m,p,type,ctx);
+  *ierr = MatMFFDComputeJacobian(*snes,*x,*m,*p,ctx);
 }
-PETSC_EXTERN void snescomputejacobiandefault_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure *type,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void snescomputejacobiandefault_(SNES *snes,Vec *x,Mat *m,Mat *p,void *ctx,PetscErrorCode *ierr)
 {
-  *ierr = SNESComputeJacobianDefault(*snes,*x,m,p,type,ctx);
+  *ierr = SNESComputeJacobianDefault(*snes,*x,*m,*p,ctx);
 }
-PETSC_EXTERN void  snescomputejacobiandefaultcolor_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure *type,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void  snescomputejacobiandefaultcolor_(SNES *snes,Vec *x,Mat *m,Mat *p,void *ctx,PetscErrorCode *ierr)
 {
-  *ierr = SNESComputeJacobianDefaultColor(*snes,*x,m,p,type,*(MatFDColoring*)ctx);
+  *ierr = SNESComputeJacobianDefaultColor(*snes,*x,*m,*p,*(MatFDColoring*)ctx);
 }
 
 PETSC_EXTERN void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,
-                                    void (PETSC_STDCALL *func)(SNES*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*),
+                                    void (PETSC_STDCALL *func)(SNES*,Vec*,Mat*,Mat*,void*,PetscErrorCode*),
                                     void *ctx,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(ctx);

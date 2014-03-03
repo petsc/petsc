@@ -317,7 +317,7 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
   /* When the DM is supplying the matrix then it will not exist until here */
   for (i=0; i<levels; i++) {
     if (!mglevels[i]->A) {
-      ierr = KSPGetOperators(mglevels[i]->smoothu,&mglevels[i]->A,NULL,NULL);CHKERRQ(ierr);
+      ierr = KSPGetOperators(mglevels[i]->smoothu,&mglevels[i]->A,NULL);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)mglevels[i]->A);CHKERRQ(ierr);
     }
   }
@@ -538,7 +538,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
   PC             cpc;
   PetscBool      preonly,lu,redundant,cholesky,svd,dump = PETSC_FALSE,opsset,use_amat;
   Mat            dA,dB;
-  MatStructure   uflag;
   Vec            tvec;
   DM             *dms;
   PetscViewer    viewer = 0;
@@ -565,7 +564,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   ierr = KSPGetOperatorsSet(mglevels[n-1]->smoothd,NULL,&opsset);CHKERRQ(ierr);
   if (opsset) {
     Mat mmat;
-    ierr = KSPGetOperators(mglevels[n-1]->smoothd,NULL,&mmat,NULL);CHKERRQ(ierr);
+    ierr = KSPGetOperators(mglevels[n-1]->smoothd,NULL,&mmat);CHKERRQ(ierr);
     if (mmat == pc->pmat) opsset = PETSC_FALSE;
   }
 
@@ -573,11 +572,11 @@ PetscErrorCode PCSetUp_MG(PC pc)
     ierr = PCGetUseAmat(pc,&use_amat);CHKERRQ(ierr);
     if(use_amat){
       ierr = PetscInfo(pc,"Using outer operators to define finest grid operator \n  because PCMGGetSmoother(pc,nlevels-1,&ksp);KSPSetOperators(ksp,...); was not called.\n");CHKERRQ(ierr);
-      ierr = KSPSetOperators(mglevels[n-1]->smoothd,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
+      ierr = KSPSetOperators(mglevels[n-1]->smoothd,pc->mat,pc->pmat);CHKERRQ(ierr);
     }
     else {
       ierr = PetscInfo(pc,"Using matrix (pmat) operators to define finest grid operator \n  because PCMGGetSmoother(pc,nlevels-1,&ksp);KSPSetOperators(ksp,...); was not called.\n");CHKERRQ(ierr);
-      ierr = KSPSetOperators(mglevels[n-1]->smoothd,pc->pmat,pc->pmat,pc->flag);CHKERRQ(ierr);
+      ierr = KSPSetOperators(mglevels[n-1]->smoothd,pc->pmat,pc->pmat);CHKERRQ(ierr);
     }
   }
 
@@ -622,7 +621,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   if (mg->galerkin == 1) {
     Mat B;
     /* currently only handle case where mat and pmat are the same on coarser levels */
-    ierr = KSPGetOperators(mglevels[n-1]->smoothd,&dA,&dB,&uflag);CHKERRQ(ierr);
+    ierr = KSPGetOperators(mglevels[n-1]->smoothd,&dA,&dB);CHKERRQ(ierr);
     if (!pc->setupcalled) {
       for (i=n-2; i>-1; i--) {
         if (mglevels[i+1]->interpolate == mglevels[i+1]->restrct || !mglevels[i+1]->restrct) {
@@ -630,20 +629,20 @@ PetscErrorCode PCSetUp_MG(PC pc)
         } else {
           ierr = MatMatMatMult(mglevels[i+1]->restrct,dB,mglevels[i+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
         }
-        ierr = KSPSetOperators(mglevels[i]->smoothd,B,B,uflag);CHKERRQ(ierr);
+        ierr = KSPSetOperators(mglevels[i]->smoothd,B,B);CHKERRQ(ierr);
         if (i != n-2) {ierr = PetscObjectDereference((PetscObject)dB);CHKERRQ(ierr);}
         dB = B;
       }
       if (n > 1) {ierr = PetscObjectDereference((PetscObject)dB);CHKERRQ(ierr);}
     } else {
       for (i=n-2; i>-1; i--) {
-        ierr = KSPGetOperators(mglevels[i]->smoothd,NULL,&B,NULL);CHKERRQ(ierr);
+        ierr = KSPGetOperators(mglevels[i]->smoothd,NULL,&B);CHKERRQ(ierr);
         if (mglevels[i+1]->interpolate == mglevels[i+1]->restrct || !mglevels[i+1]->restrct) {
           ierr = MatPtAP(dB,mglevels[i+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
         } else {
           ierr = MatMatMatMult(mglevels[i+1]->restrct,dB,mglevels[i+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
         }
-        ierr = KSPSetOperators(mglevels[i]->smoothd,B,B,uflag);CHKERRQ(ierr);
+        ierr = KSPSetOperators(mglevels[i]->smoothd,B,B);CHKERRQ(ierr);
         dB   = B;
       }
     }
@@ -739,20 +738,19 @@ PetscErrorCode PCSetUp_MG(PC pc)
     if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventEnd(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
     if (!mglevels[i]->residual) {
       Mat mat;
-      ierr = KSPGetOperators(mglevels[i]->smoothd,NULL,&mat,NULL);CHKERRQ(ierr);
+      ierr = KSPGetOperators(mglevels[i]->smoothd,NULL,&mat);CHKERRQ(ierr);
       ierr = PCMGSetResidual(pc,i,PCMGResidualDefault,mat);CHKERRQ(ierr);
     }
   }
   for (i=1; i<n; i++) {
     if (mglevels[i]->smoothu && mglevels[i]->smoothu != mglevels[i]->smoothd) {
       Mat          downmat,downpmat;
-      MatStructure matflag;
 
       /* check if operators have been set for up, if not use down operators to set them */
       ierr = KSPGetOperatorsSet(mglevels[i]->smoothu,&opsset,NULL);CHKERRQ(ierr);
       if (!opsset) {
-        ierr = KSPGetOperators(mglevels[i]->smoothd,&downmat,&downpmat,&matflag);CHKERRQ(ierr);
-        ierr = KSPSetOperators(mglevels[i]->smoothu,downmat,downpmat,matflag);CHKERRQ(ierr);
+        ierr = KSPGetOperators(mglevels[i]->smoothd,&downmat,&downpmat);CHKERRQ(ierr);
+        ierr = KSPSetOperators(mglevels[i]->smoothu,downmat,downpmat);CHKERRQ(ierr);
       }
 
       ierr = KSPSetInitialGuessNonzero(mglevels[i]->smoothu,PETSC_TRUE);CHKERRQ(ierr);

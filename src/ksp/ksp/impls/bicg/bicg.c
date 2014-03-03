@@ -26,7 +26,6 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
   PetscReal      dp;
   Vec            X,B,Zl,Zr,Rl,Rr,Pl,Pr;
   Mat            Amat,Pmat;
-  MatStructure   pflag;
 
   PetscFunctionBegin;
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
@@ -41,7 +40,7 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
   Zr = ksp->work[4];
   Pr = ksp->work[5];
 
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,Rr);CHKERRQ(ierr);      /*   r <- b - Ax       */

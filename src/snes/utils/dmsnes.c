@@ -56,7 +56,7 @@ PetscErrorCode DMSNESView(DMSNES kdm,PetscViewer viewer)
       PetscErrorCode (*func)(SNES,Vec,Vec,void*);
     } funcstruct;
     struct {
-      PetscErrorCode (*jac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+      PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,void*);
     } jacstruct;
     funcstruct.func = kdm->ops->computefunction;
     jacstruct.jac   = kdm->ops->computejacobian;
@@ -542,7 +542,7 @@ PetscErrorCode DMSNESGetNGS(DM dm,PetscErrorCode (**f)(SNES,Vec,Vec,void*),void 
 
 .seealso: DMSNESSetContext(), SNESSetFunction(), DMSNESGetJacobian(), SNESSetJacobian(), SNESJacobianFunction
 @*/
-PetscErrorCode DMSNESSetJacobian(DM dm,PetscErrorCode (*J)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
+PetscErrorCode DMSNESSetJacobian(DM dm,PetscErrorCode (*J)(SNES,Vec,Mat,Mat,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DMSNES         sdm;
@@ -580,7 +580,7 @@ PetscErrorCode DMSNESSetJacobian(DM dm,PetscErrorCode (*J)(SNES,Vec,Mat*,Mat*,Ma
 
 .seealso: DMSNESSetContext(), SNESSetFunction(), DMSNESSetJacobian(), SNESJacobianFunction
 @*/
-PetscErrorCode DMSNESGetJacobian(DM dm,PetscErrorCode (**J)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void **ctx)
+PetscErrorCode DMSNESGetJacobian(DM dm,PetscErrorCode (**J)(SNES,Vec,Mat,Mat,void*),void **ctx)
 {
   PetscErrorCode ierr;
   DMSNES         sdm;
@@ -610,7 +610,7 @@ PetscErrorCode DMSNESGetJacobian(DM dm,PetscErrorCode (**J)(SNES,Vec,Mat*,Mat*,M
 
 .seealso: SNESSetPicard(), DMSNESSetFunction(), DMSNESSetJacobian()
 @*/
-PetscErrorCode DMSNESSetPicard(DM dm,PetscErrorCode (*b)(SNES,Vec,Vec,void*),PetscErrorCode (*J)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
+PetscErrorCode DMSNESSetPicard(DM dm,PetscErrorCode (*b)(SNES,Vec,Vec,void*),PetscErrorCode (*J)(SNES,Vec,Mat,Mat,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DMSNES         sdm;
@@ -643,7 +643,7 @@ PetscErrorCode DMSNESSetPicard(DM dm,PetscErrorCode (*b)(SNES,Vec,Vec,void*),Pet
 
 .seealso: DMSNESSetContext(), SNESSetFunction(), DMSNESSetJacobian()
 @*/
-PetscErrorCode DMSNESGetPicard(DM dm,PetscErrorCode (**b)(SNES,Vec,Vec,void*),PetscErrorCode (**J)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void **ctx)
+PetscErrorCode DMSNESGetPicard(DM dm,PetscErrorCode (**b)(SNES,Vec,Vec,void*),PetscErrorCode (**J)(SNES,Vec,Mat,Mat,void*),void **ctx)
 {
   PetscErrorCode ierr;
   DMSNES         sdm;

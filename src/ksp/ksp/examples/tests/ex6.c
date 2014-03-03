@@ -76,7 +76,7 @@ int main(int argc,char **args)
   PetscLogStageRegister("mystage 1",&stage1);
   PetscLogStagePush(stage1);
   ierr   = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr   = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr   = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
   ierr   = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr   = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr   = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);

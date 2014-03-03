@@ -453,6 +453,7 @@ getautoconfargs:
           grep -v "tentative definition of size" | \
           grep -v "Extra instructions" | \
           grep -v "Unused external reference" | \
+          grep -v "Warning: attribute unused is unsupported and will be skipped" | \
           grep -v "f90 continuing despite warning messages" | \
           grep -v "symbol if the" | \
           grep -v "ignoring symbol version info" | \

@@ -264,7 +264,7 @@ PetscErrorCode  MatSchurComplementSetSubMatrices(Mat S,Mat A00,Mat Ap00,Mat A01,
 
   ierr = PetscLayoutSetUp((S)->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp((S)->cmap);CHKERRQ(ierr);
-  ierr = KSPSetOperators(Na->ksp,A00,Ap00,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(Na->ksp,A00,Ap00);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -330,7 +330,7 @@ PetscErrorCode MatSchurComplementSetKSP(Mat S, KSP ksp)
   ierr    = PetscObjectReference((PetscObject)ksp);CHKERRQ(ierr);
   ierr    = KSPDestroy(&Na->ksp);CHKERRQ(ierr);
   Na->ksp = ksp;
-  ierr    = KSPSetOperators(Na->ksp, Na->A, Na->Ap, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr    = KSPSetOperators(Na->ksp, Na->A, Na->Ap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -344,9 +344,7 @@ PetscErrorCode MatSchurComplementSetKSP(Mat S, KSP ksp)
    Input Parameters:
 +   S                - matrix obtained with MatCreateSchurComplement() (or equivalent) and implementing the action of A11 - A10 ksp(A00,Ap00) A01
 .   A00,A01,A10,A11  - the four parts of A = [A00 A01; A10 A11] (A11 is optional)
-.   Ap00             - preconditioning matrix for use in ksp(A00,Ap00) to approximate the action of A^{-1}.
--   str              - either SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER
-
+-   Ap00             - preconditioning matrix for use in ksp(A00,Ap00) to approximate the action of A^{-1}.
 
    Level: intermediate
 
@@ -360,7 +358,7 @@ PetscErrorCode MatSchurComplementSetKSP(Mat S, KSP ksp)
 .seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatCreateSchurComplement()
 
 @*/
-PetscErrorCode  MatSchurComplementUpdateSubMatrices(Mat S,Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A11,MatStructure str)
+PetscErrorCode  MatSchurComplementUpdateSubMatrices(Mat S,Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A11)
 {
   PetscErrorCode      ierr;
   Mat_SchurComplement *Na = (Mat_SchurComplement*)S->data;
@@ -405,7 +403,7 @@ PetscErrorCode  MatSchurComplementUpdateSubMatrices(Mat S,Mat A00,Mat Ap00,Mat A
   Na->C  = A10;
   Na->D  = A11;
 
-  ierr = KSPSetOperators(Na->ksp,A00,Ap00,str);CHKERRQ(ierr);
+  ierr = KSPSetOperators(Na->ksp,A00,Ap00);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -572,7 +570,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
       ierr = MatCreateSchurComplement(A,A,B,C,D,newmat);CHKERRQ(ierr);
       break;
     case MAT_REUSE_MATRIX:
-      ierr = MatSchurComplementUpdateSubMatrices(*newmat,A,A,B,C,D,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatSchurComplementUpdateSubMatrices(*newmat,A,A,B,C,D);CHKERRQ(ierr);
       break;
     default:
       SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Unrecognized value of mreuse");

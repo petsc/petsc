@@ -1037,7 +1037,7 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
   ierr = KSPSetType(kspnew,((PetscObject)snesksp)->type_name);CHKERRQ(ierr);
   ierr = KSPGetPC(kspnew,&pcnew);CHKERRQ(ierr);
   ierr = PCSetType(kspnew->pc,((PetscObject)snesksp->pc)->type_name);CHKERRQ(ierr);
-  ierr = PCSetOperators(kspnew->pc,Amat,Pmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = PCSetOperators(kspnew->pc,Amat,Pmat);CHKERRQ(ierr);
   ierr = PCFactorGetMatSolverPackage(snesksp->pc,&stype);CHKERRQ(ierr);
   ierr = PCFactorSetMatSolverPackage(kspnew->pc,stype);CHKERRQ(ierr);
   ierr = KSPDestroy(&snesksp);CHKERRQ(ierr);

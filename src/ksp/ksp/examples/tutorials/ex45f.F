@@ -64,7 +64,7 @@
        call VecSet(b,h,ierr)
        end subroutine
 
-       subroutine ComputeMatrix(ksp,A,B,str,dummy,ierr)
+       subroutine ComputeMatrix(ksp,A,B,dummy,ierr)
        implicit none
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
@@ -72,7 +72,6 @@
        PetscErrorCode  ierr
        KSP ksp
        Mat A,B
-       MatStructure str
        integer dummy(*)
        DM dm
 

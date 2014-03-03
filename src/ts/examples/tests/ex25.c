@@ -39,7 +39,7 @@ struct _User {
 
 static PetscErrorCode FormRHSFunction(TS,PetscReal,Vec,Vec,void*);
 static PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
-static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
+static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 static PetscErrorCode FormInitialSolution(TS,Vec,void*);
 static int Brusselator(int,char**,PetscInt);
 
@@ -252,7 +252,7 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 */
 #undef __FUNCT__
 #define __FUNCT__ "FormIJacobian"
-PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J,Mat *Jpre,MatStructure *str,void *ptr)
+PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,Mat Jpre,void *ptr)
 {
   User           user = (User)ptr;
   PetscErrorCode ierr;
@@ -276,13 +276,13 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J
     if (i == 0 || i == info.mx-1) {
       const PetscInt    row        = i,col = i;
       const PetscScalar vals[2][2] = {{hx,0},{0,hx}};
-      ierr = MatSetValuesBlocked(*Jpre,1,&row,1,&col,&vals[0][0],INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesBlocked(Jpre,1,&row,1,&col,&vals[0][0],INSERT_VALUES);CHKERRQ(ierr);
     } else {
       const PetscInt    row           = i,col[] = {i-1,i,i+1};
       const PetscScalar dxxL          = -user->alpha/hx,dxx0 = 2.*user->alpha/hx,dxxR = -user->alpha/hx;
       const PetscScalar vals[2][3][2] = {{{dxxL,0},{a *hx+dxx0,0},{dxxR,0}},
                                          {{0,dxxL},{0,a*hx+dxx0},{0,dxxR}}};
-      ierr = MatSetValuesBlocked(*Jpre,1,&row,3,col,&vals[0][0][0],INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesBlocked(Jpre,1,&row,3,col,&vals[0][0][0],INSERT_VALUES);CHKERRQ(ierr);
     }
   }
 
@@ -290,11 +290,11 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J
   ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,Xdot,&xdot);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*J != *Jpre) {
-    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (J != Jpre) {
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

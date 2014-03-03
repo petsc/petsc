@@ -534,7 +534,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
 
 .seealso: FormFunctionLocal()
 */
-PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, MatStructure *str,AppCtx *user)
+PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, AppCtx *user)
 {
   PetscErrorCode ierr;
 
@@ -542,7 +542,6 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, MatStructure *
   ierr = PetscLogEventBegin(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(JacP, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(JacP, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  *str = SAME_NONZERO_PATTERN;
   ierr = PetscLogEventEnd(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -576,7 +575,7 @@ int main(int argc, char **argv)
   A    = J;
 
   ierr = DMSNESSetFunctionLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))FormFunctionLocal,&user);CHKERRQ(ierr);
-  ierr = DMSNESSetJacobianLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure*,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
+  ierr = DMSNESSetJacobianLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 

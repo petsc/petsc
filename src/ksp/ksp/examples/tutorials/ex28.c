@@ -7,7 +7,7 @@ static char help[] = "Solves 1D wave equation using multigrid.\n\n";
 #include <petscksp.h>
 
 
-extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,void*);
 extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
 extern PetscErrorCode ComputeInitialSolution(DM,Vec);
 
@@ -91,7 +91,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
-PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,MatStructure *str,void *ctx)
+PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
 {
   PetscErrorCode ierr;
   PetscInt       i,mx,xm,xs;

@@ -34,7 +34,7 @@
       call VecDuplicate(x,y,ierr)
       call VecSet(x,one,ierr)
 
-      call KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN,ierr)
+      call KSPSetOperators(ksp,A,A,ierr)
       call KSPSetFromOptions(ksp,ierr)
 
       call KSPSolve(ksp,x,y,ierr)

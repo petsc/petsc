@@ -64,7 +64,7 @@ PetscErrorCode  KSPComputeExplicitOperator(KSP ksp,Mat *mat)
   }
   ierr = MatSetOption(*mat,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-  ierr = PCGetOperators(ksp->pc,&A,NULL,NULL);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&A,NULL);CHKERRQ(ierr);
 
   for (i=0; i<M; i++) {
 
