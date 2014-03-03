@@ -6357,6 +6357,7 @@ PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpola
 {
   PetscSection   gsc, gsf;
   PetscInt       m, n;
+  void          *ctx;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -6375,7 +6376,6 @@ PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpola
   *scaling = NULL;
   ierr = DMGetDefaultGlobalSection(dmFine, &gsf);CHKERRQ(ierr);
   ierr = PetscSectionGetConstrainedStorageSize(gsf, &m);CHKERRQ(ierr);
-  /* TODO: The coarse DM needs to have the section defined */
   ierr = DMGetDefaultGlobalSection(dmCoarse, &gsc);CHKERRQ(ierr);
   ierr = PetscSectionGetConstrainedStorageSize(gsc, &n);CHKERRQ(ierr);
   /* We need to preallocate properly */
@@ -6385,8 +6385,29 @@ PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpola
   ierr = MatSetUp(*interpolation);CHKERRQ(ierr);
   ierr = MatSetFromOptions(*interpolation);CHKERRQ(ierr);
   ierr = MatSetOption(*interpolation, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dmFine, &ctx);CHKERRQ(ierr);
+  ierr = DMPlexComputeInterpolatorFEM(dmCoarse, dmFine, *interpolation, ctx);CHKERRQ(ierr);
+  ierr = MatView(*interpolation, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
-  ierr = DMPlexComputeInterpolatorFEM(dmCoarse, dmFine, *interpolation, NULL);CHKERRQ(ierr);
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateInjection_Plex"
+/* Pointwise restriction:
+     Give up on anything beyond P_0 and P_1 for now
+*/
+PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, VecScatter *ctx)
+{
+  PetscFunctionBegin;
+  SETERRQ(PetscObjectComm((PetscObject) dmCoarse), PETSC_ERR_SUP, "Working as fast as I can");
+  /*
+  Loop over coarse vertices
+    Lookup associated fine vertex
+      map coarse dofs to fine dofs
+  Loop over coarse cells
+    Lookup associated fine cells
+      map coarse dofs to fine dofs
+  */
   PetscFunctionReturn(0);
 }
 
