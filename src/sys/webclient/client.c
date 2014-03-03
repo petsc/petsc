@@ -34,7 +34,6 @@ $    cat newkey.pem newcert.pem > sslclient.pem
 */
 PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx)
 {
-    SSL_METHOD     *meth;
     SSL_CTX        *ctx;
 #if defined(PETSC_USE_SSL_CERTIFICATE)
     char           keyfile[PETSC_MAX_PATH_LEN];
@@ -52,8 +51,7 @@ PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx)
     /* Set up a SIGPIPE handler */
     signal(SIGPIPE,sigpipe_handle);
 
-    meth = SSLv23_method();
-    ctx  = SSL_CTX_new(meth);
+    ctx  = SSL_CTX_new(SSLv23_method());
 
 #if defined(PETSC_USE_SSL_CERTIFICATE)
     /* Locate keyfile */
@@ -175,10 +173,10 @@ PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char h
   ierr = PetscHTTPBuildRequest(type,url,header,ctype,body,&request);CHKERRQ(ierr);
   ierr = PetscStrlen(request,&request_len);CHKERRQ(ierr);
 
-  r = SSL_write(ssl,request,request_len);
+  r = SSL_write(ssl,request,(int)request_len);
   switch (SSL_get_error(ssl,r)){
     case SSL_ERROR_NONE:
-      if (request_len != r) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Incomplete write to SSL socket");
+      if (request_len != (size_t)r) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Incomplete write to SSL socket");
       break;
     default:
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"SSL socket write problem");
