@@ -27,7 +27,7 @@ $(document).on("keyup", '.fieldsplitBlocks', function() {//alerts user with a to
 */
 $(document).on('change', '.pcLists', function(){
 
-     alert("listLogic is called, preRecursionCounter is:" + preRecursionCounter); //preRecursionCounter is always -1 in the beginning when pulling data from SAWs
+    alert("listLogic is called, preRecursionCounter is:" + preRecursionCounter); //preRecursionCounter is always -1 in the beginning when pulling data from SAWs
 
     //alert("beginning current:"+currentRecursionCounterSAWs);
 
@@ -48,6 +48,27 @@ $(document).on('change', '.pcLists', function(){
 
     if (parent == "-1") return; //endtag for o-1 and other oparent are not consistent yet???
 
+    var newDiv=generateDivName(this.id,parent,"mg");//remove the divs that could have been generated
+    $("#"+newDiv).remove();
+    newDiv=generateDivName(this.id,parent,"redundant");
+    $("#"+newDiv).remove();
+    newDiv = generateDivName(this.id,parent,"bjacobi");
+    $("#"+newDiv).remove();
+    newDiv = generateDivName(this.id,parent,"asm");
+    $("#"+newDiv).remove();
+    newDiv = generateDivName(this.id,parent,"ksp");
+    $("#"+newDiv).remove();
+    newDiv = generateDivName(this.id,parent,"fieldsplit");
+    $("#"+newDiv).remove();
+
+    // for the whole thing, remove all A-divs
+    var index=getMatIndex(parent);
+    if($(this).attr("id").indexOf('_')==-1 && matInfo[index].logstruc) //if top level pclist AND the A matrix is logically structured...needs removal
+        removeChildren(parent);//recursive function that removes all children of a particular A div
+
+    matInfo[index].blocks=0;//either X->fieldsplit or fieldsplit->X. case 1: does nothing. case 2: removed divs as is necessary
+
+
     if (pcValue == "mg") {
         //------------------------------------------------------
 	var newDiv = generateDivName(this.id,parent,"mg");
@@ -55,7 +76,7 @@ $(document).on('change', '.pcLists', function(){
         var myendtag;
         var mgLevels;
 
-	$("#"+this.id).after("<div id=\""+newDiv+"\" style='margin-left:50px;'></div>");
+	$("#"+this.id).after("<div id=\""+newDiv+"\" style='margin-left:30px;'></div>");
         myendtag = endtag+"0";
 	$("#"+newDiv).append("<b>MG Type &nbsp;&nbsp;</b><select class=\"mgList\" id=\"mgList" + parent +myendtag+"\"></select>");
         populateMgList("mgList"+parent+myendtag);
@@ -71,8 +92,8 @@ $(document).on('change', '.pcLists', function(){
         // Coarse Grid Solver (Level 0)
         myendtag = endtag+"0";
 	$("#"+newDiv).append("<br><br><b>Coarse Grid Solver (Level 0)  </b>");
-        $("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList" + parent+myendtag +"\"></select>");
-	$("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent+myendtag +"\"></select>");
+        $("#"+newDiv).append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList" + parent+myendtag +"\"></select>");
+	$("#"+newDiv).append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent+myendtag +"\"></select>");
 
         var prefix = "";
         if (preRecursionCounter == -1) 
@@ -102,8 +123,8 @@ $(document).on('change', '.pcLists', function(){
         if (mgLevels > 1) {
             for (var level=1; level<mgLevels; level++) { 
                 myendtag = endtag+level;
-                $("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id=\"text_kspList"+parent+myendtag+"\">KSP Level "+level+" &nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+ parent+myendtag +"\"></select>");
-	        $("#"+newDiv).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id=\"text_pcList"+parent+myendtag+"\">PC Level "+level+" &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList"+ parent+myendtag+"\"></select>");
+                $("#"+newDiv).append("<br><b id=\"text_kspList"+parent+myendtag+"\">KSP Level "+level+" &nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+ parent+myendtag +"\"></select>");
+	        $("#"+newDiv).append("<br><b id=\"text_pcList"+parent+myendtag+"\">PC Level "+level+" &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList"+ parent+myendtag+"\"></select>");
                 prefix = "";
                 if (preRecursionCounter == -1)
                     prefix = sawsInfo[currentRecursionCounterSAWs].prefix;
@@ -124,19 +145,16 @@ $(document).on('change', '.pcLists', function(){
 	            $("#pcList"+parent+myendtag).find("option[value='sor']").attr("selected","selected");
                 }
             }
-        } 
+        }
 
-    } else { //if not mg, remove the options that mg might have added
-	var newDiv=generateDivName(this.id,parent,"mg");
-	$("#"+newDiv).remove();
     }
 
-    if (pcValue == "redundant") {
+    else if (pcValue == "redundant") {
         //------------------------------------------------------
 	var newDiv=generateDivName(this.id,parent,"redundant");
 	var endtag=newDiv.substring(newDiv.lastIndexOf('_'), newDiv.length);
 	
-	$("#"+this.id).after("<div id=\""+newDiv+"\" style='margin-left:50px;'></div>");
+	$("#"+this.id).after("<div id=\""+newDiv+"\" style='margin-left:30px;'></div>");
 	//text input box
         var myendtag = endtag+"0"; // enable different ksp/pc for each redundant number
 	$("#"+newDiv).append("<b>Redundant number   </b><input type='text' id='redundantNumber"+parent+myendtag+"\' value='np' maxlength='4' class='processorInput'>");
@@ -153,17 +171,14 @@ $(document).on('change', '.pcLists', function(){
         } else {
 	    $("#pcList"+parent+myendtag).find("option[value='lu']").attr("selected","selected");
         }
-    } else { //remove dropdown lists associated with redundant
-	var newDiv=generateDivName(this.id,parent,"redundant");
-	$("#"+newDiv).remove();
     }
 
-    if (pcValue == "bjacobi") {
+    else if (pcValue == "bjacobi") {
         //------------------------------------------------------
 	var newDiv = generateDivName(this.id,parent,"bjacobi");
 	var endtag = newDiv.substring(newDiv.lastIndexOf('_'), newDiv.length);
         //alert("bjacobi: newDiv="+newDiv);
-	$("#"+this.id).after("<div id=\""+newDiv+"\" style='margin-left:50px;'></div>");
+	$("#"+this.id).after("<div id=\""+newDiv+"\" style='margin-left:30px;'></div>");
       
 	//text input box
         var myendtag = endtag+"0"; // enable different ksp/pc for each redundant number
@@ -205,16 +220,12 @@ $(document).on('change', '.pcLists', function(){
             alert("parentDiv_str "+ parentDiv_str +" = pcValue, Hierarchical Krylov Method - display an image of the sovler!");
         }
     }
-    else {//not bjacobi - why generate, then remove???(this is because if someone JUST switched from bjacobi to something else, then bjacobi would be removed)
-	var newDiv = generateDivName(this.id,parent,"bjacobi");
-	$("#"+newDiv).remove();
-    }
 
-    if (pcValue == "asm") {
+    else if (pcValue == "asm") {
         //------------------------------------------------------
 	var newDiv=generateDivName(this.id,parent,"asm");
 	var endtag=newDiv.substring(newDiv.lastIndexOf('_'), newDiv.length);
-	$("#"+this.id).after("<div id=\""+newDiv+"\" style='margin-left:50px;'></div>");
+	$("#"+this.id).after("<div id=\""+newDiv+"\" style='margin-left:30px;'></div>");
 
 	//text input box
         var myendtag = endtag+"0"; // enable different ksp/pc for each redundant number
@@ -233,16 +244,13 @@ $(document).on('change', '.pcLists', function(){
         } else {
 	    $("#pcList"+parent+myendtag).find("option[value='ilu']").attr("selected","selected");
         }
-    } else {//not asm
-	var newDiv = generateDivName(this.id,parent,"asm");
-	$("#"+newDiv).remove();
     }
 
-    if (pcValue == "ksp") {
+    else if (pcValue == "ksp") {
         //------------------------------------------------------
 	var newDiv = generateDivName(this.id,parent,"ksp");
 	var endtag = newDiv.substring(newDiv.lastIndexOf('_'), newDiv.length);
-	$("#"+this.id).after("<div id=\""+newDiv+"\" style='margin-left:50px;'></div>");
+	$("#"+this.id).after("<div id=\""+newDiv+"\" style='margin-left:30px;'></div>");
 
 	//text input box
         var myendtag = endtag+"0";
@@ -274,12 +282,9 @@ $(document).on('change', '.pcLists', function(){
         if (parentDiv_str == pcValue) {
             alert('parentDiv_str '+ parentDiv_str +' = pcValue, Neste Krylov Method - display an image of the sovler!');
         }
-    } else {//not ksp
-	var newDiv = generateDivName(this.id,parent,"ksp");
-	$("#"+newDiv).remove();
     }
 
-    if (pcValue == "fieldsplit") {
+    else if (pcValue == "fieldsplit") {//just changed to fieldsplit so set up defaults (2 children)
         //------------------------------------------------------
         var index=getMatIndex(parent);
         if (!matInfo[index].logstruc) {//todo: CAN ONLY SET FIELDSPLIT IF IMMEDIATE PARENT IS A-DIV ?
@@ -289,7 +294,7 @@ $(document).on('change', '.pcLists', function(){
 
         var newDiv = generateDivName(this.id,parent,"fieldsplit");//this div contains the two fieldsplit dropdown menus
 	var endtag = newDiv.substring(newDiv.lastIndexOf('_'), newDiv.length);
-	$("#"+this.id).after("<div id=\""+newDiv+"\" style='margin-left:"+50+"px;'></div>");
+	$("#"+this.id).after("<div id=\""+newDiv+"\" style='margin-left:"+30+"px;'></div>");
         myendtag = endtag+"0";
 	$("#"+newDiv).append("<b>Fieldsplit Type &nbsp;&nbsp;</b><select class=\"fieldsplitList\" id=\"fieldsplitList" + parent +myendtag+"\"></select>");
         $("#"+newDiv).append("<br><b>Fieldsplit Blocks </b><input type='text' id='fieldsplitBlocks"+parent+myendtag+"\' value='2' maxlength='2' class='fieldsplitBlocks'>");//notice that the class is now fieldsplitBlocks instead of fieldsplitBlocksInput
@@ -315,32 +320,16 @@ $(document).on('change', '.pcLists', function(){
 
             matInfoWriteCounter++;
 
-            $("#A" + newChild).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id='matrixText"+newChild+"'>A" + newChild + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
-            $("#A" + newChild).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + newChild +"\"></select>");
-	    $("#A" + newChild).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + newChild +"\"></select>");
+            $("#A" + newChild).append("<br><b id='matrixText"+newChild+"'>A" + newChild + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
+            $("#A" + newChild).append("<br><b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + newChild +"\"></select>");
+	    $("#A" + newChild).append("<br><b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + newChild +"\"></select>");
             populateKspList("kspList"+newChild,null,"null");
             populatePcList("pcList"+newChild,null,"null");
             $("#pcList"+newChild).trigger("change");//make sure necessary options are added on
         }
-
-        //the function that reacts to change in fieldsplit blocks adds and removes A divs as necessary
-    }
-    else { //not fieldsplit
-
-	var newDiv = generateDivName(this.id,parent,"fieldsplit");
-	$("#"+newDiv).remove();
-
-        // for the whole thing, remove A divs as necessary since not fieldsplit
-        var index=getMatIndex(parent);
-        if($(this).attr("id").indexOf('_')==-1 && matInfo[index].logstruc) {//if top level pclist AND the A matrix is logically structured...needs removal
-            removeChildren(parent);//recursive function that removes all children of a particular A div
-        }
-
-        matInfo[index].blocks=0;//this matrix is not fieldsplit so cannot have blocks
     }
 
     currentRecursionCounterSAWs++;//EXPERIMENT
-
 });
 
 //input: id of A matrix
@@ -421,9 +410,9 @@ $(document).on('change', '.fieldsplitBlocks', function() {
             $("#row"+lastBlock).after("<tr id='row"+parent+i+"'> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ parent+i + "\"> </div></td> <td> <div id=\"oCmdOptions" + parent+i + "\"></div> </td> </tr>");
 
             //Create drop-down lists. '&nbsp;' indicates a space
-            $("#A" + parent+i).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id='matrixText"+parent+i+"'>A" + parent+i + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
-	    $("#A" + parent+i).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + parent+i +"\"></select>");
-	    $("#A" + parent+i).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent+i +"\"></select>");
+            $("#A" + parent+i).append("<br><b id='matrixText"+parent+i+"'>A" + parent+i + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
+	    $("#A" + parent+i).append("<br><b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + parent+i +"\"></select>");
+	    $("#A" + parent+i).append("<br><b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent+i +"\"></select>");
             populateKspList("kspList"+parent+i,null,"null");
             populatePcList("pcList"+parent+i,null,"null");
             $("#pcList"+parent+i).trigger("change");
@@ -514,8 +503,8 @@ $(document).on('change', '.mgLevels', function()
 	    else
 		myendtag = endtag+'abcdefghijklmnopqrstuvwxyz'.charAt(level-10);//add the correct char
 
-	    $("#text_smoothing"+recursionCounter+endtag).after("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id=\"text_pcList"+recursionCounter+myendtag+"\">PC Level "+level+" &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList"+ recursionCounter+myendtag+"\"></select>");
-            $("#text_smoothing"+recursionCounter+endtag).after("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id=\"text_kspList"+recursionCounter+myendtag+"\">KSP Level "+level+" &nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+ recursionCounter+myendtag +"\"></select>");
+	    $("#text_smoothing"+recursionCounter+endtag).after("<br><b id=\"text_pcList"+recursionCounter+myendtag+"\">PC Level "+level+" &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList"+ recursionCounter+myendtag+"\"></select>");
+            $("#text_smoothing"+recursionCounter+endtag).after("<br><b id=\"text_kspList"+recursionCounter+myendtag+"\">KSP Level "+level+" &nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+ recursionCounter+myendtag +"\"></select>");
 
             populateKspList("kspList"+recursionCounter+myendtag,null,"null");
 	    populatePcList("pcList"+recursionCounter+myendtag,null,"null");

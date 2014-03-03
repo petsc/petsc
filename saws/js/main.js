@@ -189,21 +189,21 @@ HandlePCOptions = function(){
         $("#oContainer").append("<tr id='row"+currentAsk+"'> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ currentAsk + "\"> </div></td> <td> <div id=\"oCmdOptions" + currentAsk + "\"></div> </td> </tr>");
 
         //Create drop-down lists. '&nbsp;' indicates a space
-        $("#A" + currentAsk).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id='matrixText"+currentAsk+"'>A" + currentAsk + " (Symm:"+matInfo[matInfoWriteCounter-1].symm+" Posdef:"+matInfo[matInfoWriteCounter-1].posdef+" Logstruc:"+matInfo[matInfoWriteCounter-1].logstruc +")</b>");
-	$("#A" + currentAsk).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + currentAsk +"\"></select>");
-	$("#A" + currentAsk).append("<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + currentAsk +"\"></select>");
+        $("#A" + currentAsk).append("<br><b id='matrixText"+currentAsk+"'>A" + currentAsk + " (Symm:"+matInfo[matInfoWriteCounter-1].symm+" Posdef:"+matInfo[matInfoWriteCounter-1].posdef+" Logstruc:"+matInfo[matInfoWriteCounter-1].logstruc +")</b>");
+	$("#A" + currentAsk).append("<br><b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + currentAsk +"\"></select>");
+	$("#A" + currentAsk).append("<br><b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + currentAsk +"\"></select>");
 
         if(matInfo[matInfoWriteCounter-1].logstruc) {//if fieldsplit, need to add the fieldsplit type and fieldsplit blocks
             var newDiv = generateDivName("",currentAsk,"fieldsplit");//this div contains the two fieldsplit dropdown menus. as long as first param doesn't contain "_", it will generate assuming it is directly under an A-div which it is
 	    var endtag = newDiv.substring(newDiv.lastIndexOf('_'), newDiv.length);
-	    $("#A"+currentAsk).append("<div id=\""+newDiv+"\" style='margin-left:"+50+"px;'></div>");//append to the A-div that we just added to the table
+	    $("#A"+currentAsk).append("<div id=\""+newDiv+"\" style='margin-left:"+30+"px;'></div>");//append to the A-div that we just added to the table
             var myendtag = endtag+"0";
 	    $("#"+newDiv).append("<b>Fieldsplit Type &nbsp;&nbsp;</b><select class=\"fieldsplitList\" id=\"fieldsplitList" + currentAsk +myendtag+"\"></select>");
             $("#"+newDiv).append("<br><b>Fieldsplit Blocks </b><input type='text' id='fieldsplitBlocks"+currentAsk+myendtag+"\' value='2' maxlength='2' class='fieldsplitBlocks'>");//note that class is fieldsplitBlocks NOT fieldsplitBlocksInput
             populateFieldsplitList("fieldsplitList"+currentAsk+myendtag);
         }
 
-	//store the recursion counter in the div as a data() - for solverTree and referenced occasionally in listLogic.js although there are other ways to do this
+	//store the recursion counter in the div as a data() - referenced occasionally in listLogic.js although there are other ways to do this
 	//$("#kspList" + currentAsk).data("listRecursionCounter", currentAsk);  HAD THIS BEFORE. WILL ADDRESS THIS LATER
 	//$("#pcList" + currentAsk).data("listRecursionCounter", currentAsk);
         //set parentFieldSplit:true as default - ugly???
