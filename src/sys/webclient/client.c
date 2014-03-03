@@ -5,7 +5,7 @@ static BIO *bio_err = NULL;
 
 #define PASSWORD "password"
 
-#if defined(PETSC_USE_CERTIFICATE)
+#if defined(PETSC_USE_SSL_CERTIFICATE)
 static int password_cb(char *buf,int num, int rwflag,void *userdata)
 {
   if (num < strlen(PASSWORD)+1) return(0);
@@ -23,7 +23,7 @@ static void sigpipe_handle(int x)
 /*
     PetscSSLInitializeContext - Set up an SSL context suitable for initiating HTTPS requests.
 
-    If built with PETSC_USE_CERTIFICATE requires the user have created a self-signed certificate with
+    If built with PETSC_USE_SSL_CERTIFICATE requires the user have created a self-signed certificate with
 
 $    ./CA.pl  -newcert  (using the passphrase of password)
 $    cat newkey.pem newcert.pem > sslclient.pem
@@ -36,7 +36,7 @@ PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx)
 {
     SSL_METHOD     *meth;
     SSL_CTX        *ctx;
-#if defined(PETSC_USE_CERTIFICATE)
+#if defined(PETSC_USE_SSL_CERTIFICATE)
     char           keyfile[PETSC_MAX_PATH_LEN];
     PetscBool      exists;
     PetscErrorCode ierr;
@@ -55,7 +55,7 @@ PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx)
     meth = SSLv23_method();
     ctx  = SSL_CTX_new(meth);
 
-#if defined(PETSC_USE_CERTIFICATE)
+#if defined(PETSC_USE_SSL_CERTIFICATE)
     /* Locate keyfile */
     ierr = PetscStrcpy(keyfile,"sslclient.pem");CHKERRQ(ierr);
     ierr = PetscTestFile(keyfile,'r',&exists);CHKERRQ(ierr);

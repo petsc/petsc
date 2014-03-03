@@ -4,7 +4,7 @@ ALL: lib
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  =
-EXAMPLESC = googledriveupload.c urlshorten.c googledriverefreshtoken.c
+EXAMPLESC = googledriveupload.c urlshorten.c googleobtainrefreshtoken.c
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  =
@@ -18,12 +18,19 @@ urlshorten: urlshorten.o  chkopts
 	${CLINKER} -o urlshorten urlshorten.o ${PETSC_SYS_LIB}
 	${RM} -f urlshorten.o
 
-googledriverefreshtoken: googledriverefreshtoken.o  chkopts
-	${CLINKER} -o googledriverefreshtoken googledriverefreshtoken.o ${PETSC_SYS_LIB}
-	${RM} -f googledriverefreshtoken.o
+googleobtainrefreshtoken: googleobtainrefreshtoken.o  chkopts
+	${CLINKER} -o googleobtainrefreshtoken googleobtainrefreshtoken.o ${PETSC_SYS_LIB}
+	${RM} -f googleobtainrefreshtoken.o
+
+boxobtainrefreshtoken: boxobtainrefreshtoken.o  chkopts
+	${CLINKER} -o boxobtainrefreshtoken boxobtainrefreshtoken.o ${PETSC_SYS_LIB}
+	${RM} -f boxobtainrefreshtoken.o
 
 googledriveupload: googledriveupload.o  chkopts
 	${CLINKER} -o googledriveupload googledriveupload.o ${PETSC_SYS_LIB}
 	${RM} -f googledriveupload.o
 
+boxupload: boxupload.o  chkopts
+	${CLINKER} -o boxupload boxupload.o ${PETSC_SYS_LIB}
+	${RM} -f boxupload.o
 

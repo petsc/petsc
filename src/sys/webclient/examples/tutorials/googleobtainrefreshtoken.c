@@ -4,7 +4,7 @@
 
      Guard the refresh token like a password.
 
-     You can run PETSc programs with -refresh_token XXXX where XXX is the refresh token to access your Google Drive
+     You can run PETSc programs with -google_refresh_token XXXX where XXX is the refresh token to access your Google Drive
 
 */
 
