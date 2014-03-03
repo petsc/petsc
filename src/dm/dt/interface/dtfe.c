@@ -426,6 +426,23 @@ PetscErrorCode PetscSpaceSetOrder(PetscSpace sp, PetscInt order)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSpaceEvaluate"
+/*@C
+  PetscSpaceEvaluate - Evaluate the basis functions and their derivatives (jet) at each point
+
+  Input Parameters:
++ sp      - The PetscSpace
+. npoints - The number of evaluation points
+- points  - The point coordinates
+
+  Output Parameters:
++ B - The function evaluations in a npoints x nfuncs array
+. D - The derivative evaluations in a npoints x nfuncs x dim array
+- H - The second derivative evaluations in a npoints x nfuncs x dim x dim array
+
+  Level: advanced
+
+.seealso: PetscFEGetTabulation(), PetscFEGetDefaultTabulation(), PetscSpaceCreate()
+@*/
 PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
 {
   PetscErrorCode ierr;
@@ -467,9 +484,9 @@ PetscErrorCode PetscSpacePolynomialView_Ascii(PetscSpace sp, PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-    ierr = PetscViewerASCIIPrintf(viewer, "Polynomial space in %d variables of order %d", poly->numVariables, sp->order);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Polynomial space in %d variables of order %d\n", poly->numVariables, sp->order);CHKERRQ(ierr);
   } else {
-    ierr = PetscViewerASCIIPrintf(viewer, "Polynomial space in %d variables of order %d", poly->numVariables, sp->order);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Polynomial space in %d variables of order %d\n", poly->numVariables, sp->order);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
