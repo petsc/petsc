@@ -8,7 +8,7 @@ OBJDIR := $(PETSC_ARCH)/obj
 MODDIR := $(PETSC_ARCH)/include
 LIBDIR := $(abspath $(PETSC_ARCH)/lib)
 
-pkgs := sys vec mat dm ksp snes ts
+pkgs := sys vec mat dm ksp snes ts tao
 
 libpetsc_shared := $(LIBDIR)/libpetsc.$(SL_LINKER_SUFFIX)
 libpetsc_static := $(LIBDIR)/libpetsc.$(AR_LIB_SUFFIX)
@@ -57,7 +57,7 @@ else
 endif
 
 PETSC_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(C_DEPFLAGS)
-PETSC_COMPILE.cxx = $(call quiet,CXX) -c $(PCC_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(CXX_DEPFLAGS)
+PETSC_COMPILE.cxx = $(call quiet,CXX) -c $(CXX_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(CXX_DEPFLAGS)
 PETSC_COMPILE.cu = $(call quiet,CUDAC) -c $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
 PETSC_GENDEPS.cu = $(call quiet,CUDAC,.dep) --generate-dependencies $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
 PETSC_COMPILE.F = $(call quiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS)
@@ -106,6 +106,8 @@ $(LIBDIR)/libpetscsnes.$(SL_LINKER_SUFFIX) : obj    := $(call concatlang,snes)
 $(LIBDIR)/libpetscsnes.$(SL_LINKER_SUFFIX) : libdep := $(call libpkg,ksp dm mat vec sys)
 $(LIBDIR)/libpetscts.$(SL_LINKER_SUFFIX)   : obj    := $(call concatlang,ts)
 $(LIBDIR)/libpetscts.$(SL_LINKER_SUFFIX)   : libdep := $(call libpkg,snes ksp dm mat vec sys)
+$(LIBDIR)/libpetsctao.$(SL_LINKER_SUFFIX)  : obj    := $(call concatlang,tao)
+$(LIBDIR)/libpetsctao.$(SL_LINKER_SUFFIX)  : libdep := $(call libpkg,snes ksp dm mat vec sys)
 $(LIBDIR)/libpetscsys.$(AR_LIB_SUFFIX)  : $(call concatlang,sys)
 $(LIBDIR)/libpetscvec.$(AR_LIB_SUFFIX)  : $(call concatlang,vec)
 $(LIBDIR)/libpetscmat.$(AR_LIB_SUFFIX)  : $(call concatlang,mat)
@@ -113,6 +115,7 @@ $(LIBDIR)/libpetscdm.$(AR_LIB_SUFFIX)   : $(call concatlang,dm)
 $(LIBDIR)/libpetscksp.$(AR_LIB_SUFFIX)  : $(call concatlang,ksp)
 $(LIBDIR)/libpetscsnes.$(AR_LIB_SUFFIX) : $(call concatlang,snes)
 $(LIBDIR)/libpetscts.$(AR_LIB_SUFFIX)   : $(call concatlang,ts)
+$(LIBDIR)/libpetsctao.$(AR_LIB_SUFFIX)  : $(call concatlang,tao)
 
 # The package libraries technically depend on each other (not just in an order-only way), but only
 # ABI changes like new or removed symbols requires relinking the dependent libraries.  ABI should

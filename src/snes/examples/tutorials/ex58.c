@@ -53,7 +53,7 @@ extern PetscErrorCode FormBoundaryConditions(SNES,AppCtx**);
 extern PetscErrorCode DestroyBoundaryConditions(AppCtx**);
 extern PetscErrorCode ComputeInitialGuess(SNES, Vec,void*);
 extern PetscErrorCode FormGradient(SNES, Vec, Vec, void*);
-extern PetscErrorCode FormJacobian(SNES, Vec, Mat*, Mat*, MatStructure*,void*);
+extern PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, void*);
 extern PetscErrorCode FormBounds(SNES,Vec,Vec);
 
 #undef __FUNCT__
@@ -278,10 +278,9 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
 .  tH    - Jacobian matrix
 
 */
-PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat *tHPre, MatStructure *flag, void *ptr)
+PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr)
 {
   AppCtx         *user;
-  Mat            H = *tH;
   PetscErrorCode ierr;
   PetscInt       i,j,k;
   PetscInt       mx, my;
@@ -304,7 +303,6 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat *tHPre, MatStructure 
 /* Set various matrix options */
   ierr = MatAssembled(H,&assembled);CHKERRQ(ierr);
   if (assembled) {ierr = MatZeroEntries(H);CHKERRQ(ierr);}
-  *flag=SAME_NONZERO_PATTERN;
 
   /* Get local vector */
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
@@ -476,7 +474,7 @@ PetscErrorCode FormBoundaryConditions(SNES snes,AppCtx **ouser)
   ierr     = PetscNew(&user);CHKERRQ(ierr);
   *ouser   = user;
   user->lb = .05;
-  user->ub = SNES_VI_INF;
+  user->ub = PETSC_INFINITY;
   ierr     = DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   /* Check if lower and upper bounds are set */

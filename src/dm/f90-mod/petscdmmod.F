@@ -41,7 +41,3 @@
 #include <finclude/petscdmcomposite.h90>
         end module
 
-        module petscdmadda
-        use petscdm
-#include <finclude/petscdmadda.h90>
-        end module

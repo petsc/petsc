@@ -4,7 +4,7 @@
 #include <petscmat.h>       /*I      "petscmat.h"          I*/
 #include <petscdmplex.h> /*I      "petscdmplex.h"    I*/
 #include <petscbt.h>
-#include "petsc-private/dmimpl.h"
+#include <petsc-private/dmimpl.h>
 #include <../src/sys/utils/hash.h>
 
 PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate, DMPLEX_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM;

@@ -2,10 +2,9 @@ static char help[] = "Tests coarsening with DM.\n";
 
 
 
-#include "petscsys.h"
-#include "petscvec.h"
-#include <petscdm.h>
-#include "petscdmda.h"
+#include <petscsys.h>
+#include <petscvec.h>
+#include <petscdmda.h>
 
 
 #undef __FUNCT__

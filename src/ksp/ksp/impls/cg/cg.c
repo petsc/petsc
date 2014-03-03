@@ -99,7 +99,6 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
   Vec            X,B,Z,R,P,S,W;
   KSP_CG         *cg;
   Mat            Amat,Pmat;
-  MatStructure   pflag;
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
@@ -125,7 +124,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
 #define VecXDot(x,y,a) (((cg->type) == (KSP_CG_HERMITIAN)) ? VecDot(x,y,a) : VecTDot(x,y,a))
 
   if (eigs) {e = cg->e; d = cg->d; e[0] = 0.0; }
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   ksp->its = 0;
   if (!ksp->guess_zero) {

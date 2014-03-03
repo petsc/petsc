@@ -4,7 +4,7 @@
 
 #if !defined(__PetscLog_H)
 #define __PetscLog_H
-#include "petscsys.h"
+#include <petscsys.h>
 
 /*MC
     PetscLogEvent - id used to identify PETSc or user events which timed portions (blocks of executable)
@@ -428,7 +428,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm, PetscLogD
 #define PetscLogStagePrint(a,flg)           0
 #define PetscLogView(viewer)                0
 #define PetscLogViewFromOptions()           0
-#define PetscLogPrintDetailed(comm,file)    0
 #define PetscLogBegin()                     0
 #define PetscLogTraceBegin(file)            0
 #define PetscLogSet(lb,le)                  0

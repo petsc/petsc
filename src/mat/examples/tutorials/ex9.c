@@ -70,7 +70,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(y,-1.0,z);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&rnorm);CHKERRQ(ierr);
   if (rnorm > 1.e-10) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with composite add %g\n",(double)nrnorm);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with composite add %g\n",(double)rnorm);
   }
 
   ierr = MatCreateComposite(PETSC_COMM_WORLD,3,A,&B);CHKERRQ(ierr);
@@ -80,7 +80,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(y,-1.0,z);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&rnorm);CHKERRQ(ierr);
   if (rnorm > 1.e-10) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with composite add after merge %g\n",(double)nrnorm);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with composite add after merge %g\n",(double)rnorm);
   }
 
   ierr = VecSet(x,1.0);CHKERRQ(ierr);
@@ -95,7 +95,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(y,-1.0,z);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&rnorm);CHKERRQ(ierr);
   if (rnorm > 1.e-10) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with composite multiplicative %g\n",(double)nrnorm);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with composite multiplicative %g\n",(double)rnorm);
   }
 
   ierr = MatCreateComposite(PETSC_COMM_WORLD,3,A,&B);CHKERRQ(ierr);
@@ -106,7 +106,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(y,-1.0,z);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&rnorm);CHKERRQ(ierr);
   if (rnorm > 1.e-10) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with composite multiplicative after merge %g\n",(double)nrnorm);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with composite multiplicative after merge %g\n",(double)rnorm);
   }
 
   /*

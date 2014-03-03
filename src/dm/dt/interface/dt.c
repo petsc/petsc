@@ -105,9 +105,9 @@ PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
   for (q = 0; q < quad->numPoints; ++q) {
     for (d = 0; d < quad->dim; ++d) {
       if (d) ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "%g\n", quad->points[q*quad->dim+d]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "%g\n", (double)quad->points[q*quad->dim+d]);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer, ") %g\n", quad->weights[q]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, ") %g\n", (double)quad->weights[q]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -216,7 +216,6 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
     x[i] = 0;                   /* diagonal is 0 */
     if (i) w[i-1] = 0.5 / PetscSqrtReal(1 - 1./PetscSqr(2*i));
   }
-  ierr = PetscRealView(npoints-1,w,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = PetscMalloc2(npoints*npoints,&Z,PetscMax(1,2*npoints-2),&work);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(npoints,&N);CHKERRQ(ierr);
   LDZ  = N;
@@ -335,9 +334,9 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
 
   a1      = PetscPowReal(2.0, a+b+1);
 #if defined(PETSC_HAVE_TGAMMA)
-  a2      = tgamma(a + npoints + 1);
-  a3      = tgamma(b + npoints + 1);
-  a4      = tgamma(a + b + npoints + 1);
+  a2      = PetscTGamma(a + npoints + 1);
+  a3      = PetscTGamma(b + npoints + 1);
+  a4      = PetscTGamma(a + b + npoints + 1);
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"tgamma() - math routine is unavailable.");
 #endif
@@ -360,7 +359,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
       ierr = PetscDTComputeJacobiDerivative(a, b, npoints, r, &fp);CHKERRQ(ierr);
       delta = f / (fp - f * s);
       r     = r - delta;
-      if (fabs(delta) < eps) break;
+      if (PetscAbs(delta) < eps) break;
     }
     x[k] = r;
     ierr = PetscDTComputeJacobiDerivative(a, b, npoints, x[k], &dP);CHKERRQ(ierr);
@@ -462,8 +461,8 @@ PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt order, PetscR
 static PetscErrorCode PetscDTPseudoInverseQR(PetscInt m,PetscInt mstride,PetscInt n,PetscReal *A_in,PetscReal *Ainv_out,PetscScalar *tau,PetscInt worksize,PetscScalar *work)
 {
   PetscErrorCode ierr;
-  PetscBLASInt M,N,K,lda,ldb,ldwork,info;
-  PetscScalar *A,*Ainv,*R,*Q,Alpha;
+  PetscBLASInt   M,N,K,lda,ldb,ldwork,info;
+  PetscScalar    *A,*Ainv,*R,*Q,Alpha;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
@@ -485,7 +484,7 @@ static PetscErrorCode PetscDTPseudoInverseQR(PetscInt m,PetscInt mstride,PetscIn
   ierr = PetscBLASIntCast(mstride,&lda);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(worksize,&ldwork);CHKERRQ(ierr);
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-  LAPACKgeqrf_(&M,&N,A,&lda,tau,work,&ldwork,&info);
+  PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&M,&N,A,&lda,tau,work,&ldwork,&info));
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGEQRF error");
   R = A; /* Upper triangular part of A now contains R, the rest contains the elementary reflectors */
@@ -494,13 +493,13 @@ static PetscErrorCode PetscDTPseudoInverseQR(PetscInt m,PetscInt mstride,PetscIn
   Q = Ainv;
   ierr = PetscMemcpy(Q,A,mstride*n*sizeof(PetscScalar));CHKERRQ(ierr);
   K = N;                        /* full rank */
-  LAPACKungqr_(&M,&N,&K,Q,&lda,tau,work,&ldwork,&info);
+  PetscStackCallBLAS("LAPACKungqr",LAPACKungqr_(&M,&N,&K,Q,&lda,tau,work,&ldwork,&info));
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR/xUNGQR error");
 
   /* Compute A^{-T} = (R^{-1} Q^T)^T = Q R^{-T} */
   Alpha = 1.0;
   ldb = lda;
-  BLAStrsm_("Right","Upper","ConjugateTranspose","NotUnitTriangular",&M,&N,&Alpha,R,&lda,Q,&ldb);
+  PetscStackCallBLAS("BLAStrsm",BLAStrsm_("Right","Upper","ConjugateTranspose","NotUnitTriangular",&M,&N,&Alpha,R,&lda,Q,&ldb));
   /* Ainv is Q, overwritten with inverse */
 
 #if defined(PETSC_USE_COMPLEX)
@@ -519,8 +518,8 @@ static PetscErrorCode PetscDTPseudoInverseQR(PetscInt m,PetscInt mstride,PetscIn
 static PetscErrorCode PetscDTLegendreIntegrate(PetscInt ninterval,const PetscReal *x,PetscInt ndegree,const PetscInt *degrees,PetscBool Transpose,PetscReal *B)
 {
   PetscErrorCode ierr;
-  PetscReal *Bv;
-  PetscInt i,j;
+  PetscReal      *Bv;
+  PetscInt       i,j;
 
   PetscFunctionBegin;
   ierr = PetscMalloc1((ninterval+1)*ndegree,&Bv);CHKERRQ(ierr);
@@ -561,9 +560,9 @@ static PetscErrorCode PetscDTLegendreIntegrate(PetscInt ninterval,const PetscRea
 PetscErrorCode PetscDTReconstructPoly(PetscInt degree,PetscInt nsource,const PetscReal *sourcex,PetscInt ntarget,const PetscReal *targetx,PetscReal *R)
 {
   PetscErrorCode ierr;
-  PetscInt i,j,k,*bdegrees,worksize;
-  PetscReal xmin,xmax,center,hscale,*sourcey,*targety,*Bsource,*Bsinv,*Btarget;
-  PetscScalar *tau,*work;
+  PetscInt       i,j,k,*bdegrees,worksize;
+  PetscReal      xmin,xmax,center,hscale,*sourcey,*targety,*Bsource,*Bsinv,*Btarget;
+  PetscScalar    *tau,*work;
 
   PetscFunctionBegin;
   PetscValidRealPointer(sourcex,3);

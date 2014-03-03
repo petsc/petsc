@@ -37,7 +37,7 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx*);
 PetscErrorCode MSA_InitialPoint(AppCtx*, Vec);
 PetscErrorCode MSA_Plate(Vec,Vec,void*);
 PetscErrorCode FormGradient(SNES, Vec, Vec, void*);
-PetscErrorCode FormJacobian(SNES, Vec, Mat*, Mat*, MatStructure*,void*);
+PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -279,10 +279,9 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
 .  tH    - Jacobian matrix
 
 */
-PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat *tHPre, MatStructure *flag, void *ptr)
+PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr)
 {
   AppCtx         *user = (AppCtx*) ptr;
-  Mat            H     = *tH;
   PetscErrorCode ierr;
   PetscInt       i,j,k;
   PetscInt       mx=user->mx, my=user->my;
@@ -300,7 +299,6 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat *tHPre, MatStructure 
   /* Set various matrix options */
   ierr = MatAssembled(H,&assembled);CHKERRQ(ierr);
   if (assembled) {ierr = MatZeroEntries(H);CHKERRQ(ierr);}
-  *flag=SAME_NONZERO_PATTERN;
 
   /* Get local vectors */
   ierr = DMGetLocalVector(user->da,&localX);CHKERRQ(ierr);
@@ -652,7 +650,7 @@ PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx)
   PetscInt       mx=user->mx, my=user->my, bmy, bmx;
   PetscScalar    t1,t2,t3;
   PetscScalar    **xl;
-  PetscScalar    lb=-SNES_VI_INF, ub=SNES_VI_INF;
+  PetscScalar    lb=-PETSC_INFINITY, ub=PETSC_INFINITY;
   PetscBool      cylinder;
 
   user->bmy = PetscMax(0,user->bmy);user->bmy = PetscMin(my,user->bmy);

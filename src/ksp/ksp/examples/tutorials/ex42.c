@@ -9,9 +9,8 @@ all boundaries are free-slip, i.e. zero normal flow and zero tangential stress \
 
 /* Contributed by Dave May */
 
-#include "petscksp.h"
-#include <petscdm.h>
-#include "petscdmda.h"
+#include <petscksp.h>
+#include <petscdmda.h>
 
 #define PROFILE_TIMING
 #define ASSEMBLE_LOWER_TRIANGULAR
@@ -1982,7 +1981,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   /* SOLVE */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp_S);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(ksp_S,"stokes_"); /* stokes */ CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp_S,A,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp_S,A,B);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp_S);CHKERRQ(ierr);
 
   {

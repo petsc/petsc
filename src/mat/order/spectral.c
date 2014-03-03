@@ -152,6 +152,8 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type,
 #endif
     if (lierr) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine %d", (int) lierr);
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
+    ierr = MatDenseRestoreArray(LD,&a);CHKERRQ(ierr);
+    ierr = MatDestroy(&LD);CHKERRQ(ierr);
     /* Check lowest eigenvalue and eigenvector */
     ierr = PetscMalloc1(n, &perm);CHKERRQ(ierr);
     for (i = 0; i < n; ++i) perm[i] = i;
@@ -176,6 +178,9 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type,
     ierr = ISCreateGeneral(PETSC_COMM_SELF, n, perm, PETSC_OWN_POINTER, row);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject) *row);CHKERRQ(ierr);
     *col = *row;
+
+    ierr = PetscFree4(realpart,imagpart,eigvec,work);CHKERRQ(ierr);
+    ierr = MatDestroy(&L);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -12,12 +12,12 @@ MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex5s.c ex7.c \
                 ex10.c ex12.c ex14.c ex15.c ex18.c ex19.c ex20.c ex21.c ex22.c \
                 ex25.c ex28.c ex30.c ex31.c ex33.c \
-                ex35.c ex42.c ex43.c ex46.c ex48.c \
+                ex35.c ex42.c ex46.c ex48.c \
                 ex52.c ex53.c ex54.c ex55.c ex58.c ex59.c ex60.c \
                 ex61.c ex61gen.c ex61view.c ex62.c ex63.c ex633d_db.c ex64.c ex65.c ex70.c \
                 ex47cu.cu ex52_integrateElement_coef.cu ex52_integrateElement.cu ex52_integrateElementOpenCL.c
 EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5f90t.F ex5fs.F ex40f90.F90
-EXAMPLESCH	 = ex43-44.h
+EXAMPLESCH	 = 
 EXAMPLESFH       = ex5f.h
 EXAMPLESMATLAB   = ex5m.m  ex61genm.m ex61m.m
 DIRS		 = ex10d
@@ -1110,7 +1110,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2  rune
                                  runex19_6 runex19_fieldsplit_2 runex19_fieldsplit_3 runex19_fieldsplit_4 \
                                  runex19_composite_fieldsplit runex19_composite_fieldsplit_bjacobi runex19_composite_fieldsplit_bjacobi_2\
                                  runex19_7 runex19_8 runex19_9 \
-                                 runex19_10 runex19_14 runex19_14_ds runex19_fas runex19_bjacobi ex19.rm \
+                                 runex19_10 runex19_14 runex19_14_ds runex19_fas runex19_bjacobi runex19_composite_gs_newton ex19.rm \
                                  ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm \
                                  ex25.PETSc runex25 runex25_2 ex25.rm \
                                  ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm \

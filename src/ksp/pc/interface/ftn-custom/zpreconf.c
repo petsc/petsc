@@ -23,12 +23,11 @@ PETSC_EXTERN void PETSC_STDCALL pcview_(PC *pc,PetscViewer *viewer, PetscErrorCo
   *ierr = PCView(*pc,v);
 }
 
-PETSC_EXTERN void PETSC_STDCALL pcgetoperators_(PC *pc,Mat *mat,Mat *pmat,MatStructure *flag,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL pcgetoperators_(PC *pc,Mat *mat,Mat *pmat,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(mat);
   CHKFORTRANNULLOBJECT(pmat);
-  CHKFORTRANNULLINTEGER(flag);
-  *ierr = PCGetOperators(*pc,mat,pmat,flag);
+  *ierr = PCGetOperators(*pc,mat,pmat);
 }
 
 PETSC_EXTERN void PETSC_STDCALL pcsetoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))

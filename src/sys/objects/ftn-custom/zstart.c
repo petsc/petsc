@@ -14,7 +14,7 @@
 #define PETSC_DESIRE_COMPLEX
 #include <petsc-private/fortranimpl.h>
 
-#if defined(PETSC_HAVE_CUSP)
+#if defined(PETSC_HAVE_CUDA)
 #include <cublas.h>
 #endif
 #include <petscthreadcomm.h>

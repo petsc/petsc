@@ -114,15 +114,15 @@
       parameter (MAT_DO_NOT_COPY_VALUES=0,MAT_COPY_VALUES=1)
       parameter (MAT_SHARE_NONZERO_PATTERN=2)
 !
-!  Flags for PCSetOperators()
+!  Flags for MatCopy, MatAXPY
 !
       PetscEnum DIFFERENT_NONZERO_PATTERN
       PetscEnum SUBSET_NONZERO_PATTERN
       PetscEnum SAME_NONZERO_PATTERN
-      PetscEnum SAME_PRECONDITIONER
 
       parameter (DIFFERENT_NONZERO_PATTERN = 0,SUBSET_NONZERO_PATTERN=1)
-      parameter (SAME_NONZERO_PATTERN = 2,SAME_PRECONDITIONER = 3)
+      parameter (SAME_NONZERO_PATTERN = 2)
+
 #if !(PETSC_USE_FORTRAN_DATATYPES_)
 #include "finclude/petscmatinfosize.h"
 #endif

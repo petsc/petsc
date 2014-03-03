@@ -1,7 +1,7 @@
 #define PETSCMAT_DLL
 
-#include "../src/mat/impls/sbaij/seq/sbaij.h"
-#include "../src/mat/impls/sbaij/seq/sbstream/sbstream.h"
+#include <../src/mat/impls/sbaij/seq/sbaij.h>
+#include <../src/mat/impls/sbaij/seq/sbstream/sbstream.h>
 
 extern PetscErrorCode  MatAssemblyEnd_SeqSBAIJ(Mat,MatAssemblyType);
 

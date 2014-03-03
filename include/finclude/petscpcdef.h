@@ -58,7 +58,6 @@
 #define PCGALERKIN 'galerkin'
 #define PCEXOTIC 'exotic'
 #define PCSUPPORTGRAPH 'supportgraph'
-#define PCASA 'asa'
 #define PCCP 'cp'
 #define PCBFBT 'bfbt'
 #define PCLSC 'lsc'

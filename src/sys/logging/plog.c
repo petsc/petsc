@@ -927,7 +927,7 @@ PetscErrorCode  PetscLogEventDeactivateClass(PetscClassId classid)
    PetscLogEventBegin - Logs the beginning of a user event.
 
    Synopsis:
-   #include "petsclog.h"
+   #include <petsclog.h>
    PetscErrorCode PetscLogEventBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 
    Not Collective
@@ -972,7 +972,7 @@ M*/
    PetscLogEventEnd - Log the end of a user event.
 
    Synopsis:
-   #include "petsclog.h"
+   #include <petsclog.h>
    PetscErrorCode PetscLogEventEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 
    Not Collective
@@ -1017,7 +1017,7 @@ M*/
    PetscLogEventBarrierBegin - Logs the time in a barrier before an event.
 
    Synopsis:
-   #include "petsclog.h"
+   #include <petsclog.h>
    PetscErrorCode PetscLogEventBarrierBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4,MPI_Comm comm)
 
    Not Collective
@@ -1055,7 +1055,7 @@ M*/
    PetscLogEventBarrierEnd - Logs the time in a barrier before an event.
 
    Synopsis:
-   #include "petsclog.h"
+   #include <petsclog.h>
    PetscErrorCode PetscLogEventBarrierEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4,MPI_Comm comm)
 
    Logically Collective on MPI_Comm
@@ -1754,7 +1754,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogView"
 /*@C
-  PetscLogViewer - Prints a summary of the logging.
+  PetscLogView - Prints a summary of the logging.
 
   Collective over MPI_Comm
 
@@ -1901,7 +1901,7 @@ PetscErrorCode  PetscLogObjectState(PetscObject obj, const char format[], ...)
    PetscLogFlops - Adds floating point operations to the global counter.
 
    Synopsis:
-   #include "petsclog.h"
+   #include <petsclog.h>
    PetscErrorCode PetscLogFlops(PetscLogDouble f)
 
    Not Collective
@@ -1943,7 +1943,7 @@ M*/
     to get accurate timings
 
    Synopsis:
-   #include "petsclog.h"
+   #include <petsclog.h>
    void PetscPreLoadBegin(PetscBool  flag,char *name);
 
    Not Collective
@@ -1989,7 +1989,7 @@ M*/
     to get accurate timings
 
    Synopsis:
-   #include "petsclog.h"
+   #include <petsclog.h>
    void PetscPreLoadEnd(void);
 
    Not Collective
@@ -2016,7 +2016,7 @@ M*/
     to get accurate timings
 
    Synopsis:
-   #include "petsclog.h"
+   #include <petsclog.h>
    void PetscPreLoadStage(char *name);
 
    Not Collective

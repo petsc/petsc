@@ -5,7 +5,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC	 = clique.cxx
+SOURCECXX= clique.cxx
 SOURCEF	 =
 SOURCEH	 = matcliqueimpl.h
 LIBBASE	 = libpetscmat

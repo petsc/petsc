@@ -81,8 +81,8 @@ static PetscClassId THI_CLASSID;
 
 typedef enum {QUAD_GAUSS,QUAD_LOBATTO} QuadratureType;
 static const char      *QuadratureTypes[] = {"gauss","lobatto","QuadratureType","QUAD_",0};
-static const PetscReal HexQWeights[8]     = {1,1,1,1,1,1,1,1};
-static const PetscReal HexQNodes[]        = {-0.57735026918962573, 0.57735026918962573};
+PETSC_UNUSED static const PetscReal HexQWeights[8]     = {1,1,1,1,1,1,1,1};
+PETSC_UNUSED static const PetscReal HexQNodes[]        = {-0.57735026918962573, 0.57735026918962573};
 #define G 0.57735026918962573
 #define H (0.5*(1.+G))
 #define L (0.5*(1.-G))
@@ -254,7 +254,7 @@ struct _n_Units {
   PetscReal year;
 };
 
-static PetscErrorCode THIJacobianLocal_3D_Full(DMDALocalInfo*,Node***,Mat,Mat,MatStructure*,THI);
+static PetscErrorCode THIJacobianLocal_3D_Full(DMDALocalInfo*,Node***,Mat,Mat,THI);
 static PetscErrorCode THIJacobianLocal_3D_Tridiagonal(DMDALocalInfo*,Node***,Mat,THI);
 static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo*,Node**,Mat,THI);
 
@@ -1265,13 +1265,12 @@ static PetscErrorCode THIJacobianLocal_3D(DMDALocalInfo *info,Node ***x,Mat B,TH
 
 #undef __FUNCT__
 #define __FUNCT__ "THIJacobianLocal_3D_Full"
-static PetscErrorCode THIJacobianLocal_3D_Full(DMDALocalInfo *info,Node ***x,Mat A,Mat B,MatStructure *mstr,THI thi)
+static PetscErrorCode THIJacobianLocal_3D_Full(DMDALocalInfo *info,Node ***x,Mat A,Mat B,THI thi)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr  = THIJacobianLocal_3D(info,x,B,thi,THIASSEMBLY_FULL);CHKERRQ(ierr);
-  *mstr = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 

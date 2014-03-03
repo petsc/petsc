@@ -1,7 +1,7 @@
 #define PETSCMAT_DLL
 
-#include "../src/mat/impls/baij/seq/baij.h"
-#include "../src/mat/impls/baij/seq/bstream/bstream.h"
+#include <../src/mat/impls/baij/seq/baij.h>
+#include <../src/mat/impls/baij/seq/bstream/bstream.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqBSTRM"

@@ -61,7 +61,7 @@ typedef struct {
 extern PetscErrorCode CreateStructures(DM,UserContext*);
 extern PetscErrorCode DestroyStructures(DM,UserContext*);
 extern PetscErrorCode ComputePredictor(DM,UserContext*);
-extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,void*);
 extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
 extern PetscErrorCode ComputeCorrector(DM,Vec,Vec);
 
@@ -433,7 +433,7 @@ PetscErrorCode TaylorGalerkinStepIIMomentum(DM da, UserContext *user)
   ierr = VecScale(rhs_u,user->dt);CHKERRQ(ierr);
   ierr = VecScale(rhs_v,user->dt);CHKERRQ(ierr);
 
-  ierr = KSPSetOperators(ksp, mat, mat, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp, mat, mat);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, rhs_u, user->sol_np1.rho_u);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, rhs_v, user->sol_np1.rho_v);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
@@ -588,7 +588,7 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DM da, UserContext *user)
   ierr = VecScale(rhs_m, user->dt);CHKERRQ(ierr);
   ierr = VecScale(rhs_e, user->dt);CHKERRQ(ierr);
 
-  ierr = KSPSetOperators(ksp, mat, mat, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp, mat, mat);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, rhs_m, user->sol_np1.rho);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, rhs_e, user->sol_np1.rho_e);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
@@ -719,7 +719,7 @@ no matter what the shape of the triangle. The Laplacian stiffness matrix is
 
 where A is the area of the triangle, and (x_i, y_i) is its i'th vertex.
 */
-PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, MatStructure *flag,void *ctx)
+PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
 {
   UserContext *user = (UserContext*)ctx;
   /* not being used!

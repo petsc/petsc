@@ -64,7 +64,6 @@ typedef const char* PCType;
 #define PCML              "ml"
 #define PCGALERKIN        "galerkin"
 #define PCEXOTIC          "exotic"
-#define PCASA             "asa"
 #define PCCP              "cp"
 #define PCBFBT            "bfbt"
 #define PCLSC             "lsc"
@@ -79,6 +78,7 @@ typedef const char* PCType;
 #define PCBICGSTABCUSP    "bicgstabcusp"
 #define PCAINVCUSP        "ainvcusp"
 #define PCBDDC            "bddc"
+#define PCKACZMARZ        "kaczmarz"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId PC_CLASSID;
@@ -106,6 +106,7 @@ PETSC_EXTERN PetscErrorCode PCApplyBAorAB(PC,PCSide,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCApplyTranspose(PC,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCApplyTransposeExists(PC,PetscBool *);
 PETSC_EXTERN PetscErrorCode PCApplyBAorABTranspose(PC,PCSide,Vec,Vec,Vec);
+PETSC_EXTERN PetscErrorCode PCSetReusePreconditioner(PC,PetscBool);
 
 #define PC_FILE_CLASSID 1211222
 
@@ -144,8 +145,8 @@ PETSC_EXTERN PetscErrorCode PCFactorGetMatrix(PC,Mat*);
 PETSC_EXTERN PetscErrorCode PCSetModifySubMatrices(PC,PetscErrorCode(*)(PC,PetscInt,const IS[],const IS[],Mat[],void*),void*);
 PETSC_EXTERN PetscErrorCode PCModifySubMatrices(PC,PetscInt,const IS[],const IS[],Mat[],void*);
 
-PETSC_EXTERN PetscErrorCode PCSetOperators(PC,Mat,Mat,MatStructure);
-PETSC_EXTERN PetscErrorCode PCGetOperators(PC,Mat*,Mat*,MatStructure*);
+PETSC_EXTERN PetscErrorCode PCSetOperators(PC,Mat,Mat);
+PETSC_EXTERN PetscErrorCode PCGetOperators(PC,Mat*,Mat*);
 PETSC_EXTERN PetscErrorCode PCGetOperatorsSet(PC,PetscBool *,PetscBool *);
 
 PETSC_EXTERN PetscErrorCode PCView(PC,PetscViewer);

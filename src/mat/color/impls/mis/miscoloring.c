@@ -131,11 +131,13 @@ PetscErrorCode MISGreatestWeight_Private(MatColoring mc,PetscReal *wtsin,PetscRe
   PetscReal      *ewts,*wtsrow=mis->wtsrow,*wtscol=mis->wtscol;
   PetscSF        etoc=mis->etoc,etor=mis->etor;
   PetscErrorCode ierr;
+  MPI_Datatype   rtype;
 
   PetscFunctionBegin;
   nentries=0;
   ierr = PetscSFGetGraph(etor,&nrows,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(etoc,&ncols,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscDataTypeToMPIDataType(PETSC_REAL,&rtype);CHKERRQ(ierr);
   for (i=0;i<ncols;i++) {
     wtscol[i] = wtsin[i];
   }
@@ -161,8 +163,8 @@ PetscErrorCode MISGreatestWeight_Private(MatColoring mc,PetscReal *wtsin,PetscRe
       }
       if (idx != nentries) SETERRQ2(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"Bad number of entries %d vs %d",idx,nentries);
       ierr = PetscLogEventBegin(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
-      ierr = PetscSFReduceBegin(etoc,MPI_DOUBLE,ewts,wtscol,MPI_MAX);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(etoc,MPI_DOUBLE,ewts,wtscol,MPI_MAX);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(etoc,rtype,ewts,wtscol,MPI_MAX);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(etoc,rtype,ewts,wtscol,MPI_MAX);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
     } else {
       /* first step takes the column weights to the row weights */
@@ -183,8 +185,8 @@ PetscErrorCode MISGreatestWeight_Private(MatColoring mc,PetscReal *wtsin,PetscRe
       }
       if (idx != nentries) SETERRQ2(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"Bad number of entries %d vs %d",idx,nentries);
       ierr = PetscLogEventBegin(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
-      ierr = PetscSFReduceBegin(etor,MPI_DOUBLE,ewts,wtsrow,MPI_MAX);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(etor,MPI_DOUBLE,ewts,wtsrow,MPI_MAX);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(etor,rtype,ewts,wtsrow,MPI_MAX);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(etor,rtype,ewts,wtsrow,MPI_MAX);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
     }
   }
@@ -216,9 +218,11 @@ PetscErrorCode MISSpreadState_Private(MatColoring mc,PetscInt *statein,PetscInt 
   PetscInt       *estate;
   PetscInt       *staterow=mis->staterow,*statecol=mis->statecol;
   PetscSF        etoc=mis->etoc,etor=mis->etor;
+  MPI_Datatype   itype;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscDataTypeToMPIDataType(PETSC_INT,&itype);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(etoc,&ncols,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(etor,&nrows,NULL,NULL,NULL);CHKERRQ(ierr);
   for (i=0;i<ncols;i++) {
@@ -245,8 +249,8 @@ PetscErrorCode MISSpreadState_Private(MatColoring mc,PetscInt *statein,PetscInt 
       }
       if (idx != nentries) SETERRQ2(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"Bad number of entries %d vs %d",idx,nentries);
       ierr = PetscLogEventBegin(Mat_Coloring_Comm,etoc,0,0,0);CHKERRQ(ierr);
-      ierr = PetscSFReduceBegin(etoc,MPIU_INT,estate,statecol,MPIU_MAX);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(etoc,MPIU_INT,estate,statecol,MPIU_MAX);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(etoc,itype,estate,statecol,MPIU_MAX);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(etoc,itype,estate,statecol,MPIU_MAX);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(Mat_Coloring_Comm,etoc,0,0,0);CHKERRQ(ierr);
     } else {
       ierr = PetscLogEventBegin(Mat_Coloring_Comm,etoc,0,0,0);CHKERRQ(ierr);
@@ -268,8 +272,8 @@ PetscErrorCode MISSpreadState_Private(MatColoring mc,PetscInt *statein,PetscInt 
       }
       if (idx != nentries) SETERRQ2(PetscObjectComm((PetscObject)mc),PETSC_ERR_NOT_CONVERGED,"Bad number of entries %d vs %d",idx,nentries);
       ierr = PetscLogEventBegin(Mat_Coloring_Comm,etor,0,0,0);CHKERRQ(ierr);
-      ierr = PetscSFReduceBegin(etor,MPIU_INT,estate,staterow,MPI_MAX);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(etor,MPIU_INT,estate,staterow,MPI_MAX);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(etor,itype,estate,staterow,MPI_MAX);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(etor,itype,estate,staterow,MPI_MAX);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(Mat_Coloring_Comm,etor,0,0,0);CHKERRQ(ierr);
     }
   }

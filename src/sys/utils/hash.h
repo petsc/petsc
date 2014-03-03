@@ -35,7 +35,7 @@
 /*
   An example:
 
-#include "khash.h"
+#include <khash.h>
 KHASH_MAP_INIT_INT(32, char)
 int main()
 {

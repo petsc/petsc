@@ -14,9 +14,8 @@ Runtime options include:\n\
 
  */
 
-#include "petscsnes.h"
-#include <petscdm.h>
-#include "petscdmda.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
 
 typedef struct {
   PetscReal   dt,T; /* Time step and end time */
@@ -42,7 +41,7 @@ PetscErrorCode SetVariableBounds(DM,Vec,Vec);
 PetscErrorCode SetUpMatrices(AppCtx*);
 PetscErrorCode UpdateMatrices(AppCtx*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 PetscErrorCode SetInitialGuess(Vec,AppCtx*);
 PetscErrorCode Update_q(AppCtx*);
 PetscErrorCode Update_u(Vec,AppCtx*);
@@ -601,16 +600,15 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ctx)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   AppCtx         *user=(AppCtx*)ctx;
 
   PetscFunctionBeginUser;
-  *flg = SAME_NONZERO_PATTERN;
-  ierr = MatCopy(user->M,*J,*flg);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatCopy(user->M,J,*flg);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -632,14 +630,14 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
   for (k = zs; k < zs + zm; k++) {
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i < xs+xm; i++) {
-        l[k][j][i][0] = -SNES_VI_INF;
+        l[k][j][i][0] = -PETSC_INFINITY;
         l[k][j][i][1] = 0.0;
-        l[k][j][i][2] = -SNES_VI_INF;
+        l[k][j][i][2] = -PETSC_INFINITY;
         l[k][j][i][3] = 0.0;
         l[k][j][i][4] = 0.0;
-        u[k][j][i][0] = SNES_VI_INF;
+        u[k][j][i][0] = PETSC_INFINITY;
         u[k][j][i][1] = 1.0;
-        u[k][j][i][2] = SNES_VI_INF;
+        u[k][j][i][2] = PETSC_INFINITY;
         u[k][j][i][3] = 1.0;
         u[k][j][i][4] = 1.0;
       }

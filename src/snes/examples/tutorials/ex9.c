@@ -49,7 +49,7 @@ typedef struct {
 extern PetscErrorCode FormPsiAndInitialGuess(DM,Vec,PetscBool);
 extern PetscErrorCode FormBounds(SNES,Vec,Vec);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,ObsCtx*);
-extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,Mat,MatStructure*,ObsCtx*);
+extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,Mat,ObsCtx*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -100,7 +100,7 @@ int main(int argc,char **argv)
 
   ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user);CHKERRQ(ierr);
   if (!fdflg) {
-    ierr = DMDASNESSetJacobianLocal(da,(PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,MatStructure*,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
+    ierr = DMDASNESSetJacobianLocal(da,(PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
   }
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
@@ -157,7 +157,7 @@ PetscErrorCode FormPsiAndInitialGuess(DM da,Vec U0,PetscBool feasible)
   DMDACoor2d     **coords;
   PetscReal      **psi, **u0, **uexact;
   PetscReal      x, y, r;
-  PetscReal      afree = 0.69797, A = 0.68026, B = 0.47152, pi = 3.1415926;
+  PetscReal      afree = 0.69797, A = 0.68026, B = 0.47152;
 
   PetscFunctionBeginUser;
   ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
@@ -185,7 +185,7 @@ PetscErrorCode FormPsiAndInitialGuess(DM da,Vec U0,PetscBool feasible)
 
       if (feasible) {
         if (i == 0 || j == 0 || i == Mx-1 || j == My-1) u0[j][i] = uexact[j][i];
-        else u0[j][i] = uexact[j][i] + PetscCosReal(pi * x / 4) * PetscCosReal(pi * y / 4); /* initial guess is admissible: it is above the obstacle */
+        else u0[j][i] = uexact[j][i] + PetscCosReal(PETSC_PI*x/4.0)*PetscCosReal(PETSC_PI*y/4.0); /* initial guess is admissible: it is above the obstacle */
       } else u0[j][i] = 0.;
     }
   }
@@ -209,7 +209,7 @@ PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu)
   PetscFunctionBeginUser;
   ierr = SNESGetApplicationContext(snes,&user);CHKERRQ(ierr);
   ierr = VecCopy(user->psi,Xl);CHKERRQ(ierr);  /* u >= psi */
-  ierr = VecSet(Xu,SNES_VI_INF);CHKERRQ(ierr);
+  ierr = VecSet(Xu,PETSC_INFINITY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -250,7 +250,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianLocal"
 /* FormJacobianLocal - Evaluates Jacobian matrix on local process patch */
-PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat A,Mat jac, MatStructure *str,ObsCtx *user)
+PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat A,Mat jac, ObsCtx *user)
 {
   PetscErrorCode ierr;
   PetscInt       i,j;
@@ -287,7 +287,6 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat A,Mat j
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *str = SAME_NONZERO_PATTERN;
   /* Tell the matrix we will never add a new nonzero location to the
      matrix. If we do, it will generate an error. */
   ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);

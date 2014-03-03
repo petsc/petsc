@@ -33,7 +33,7 @@ PetscErrorCode KSPSolve_GCR_cycle(KSP ksp)
   PetscFunctionBegin;
   restart = ctx->restart;
   ierr    = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
-  ierr    = KSPGetOperators(ksp, &A, &B, 0);CHKERRQ(ierr);
+  ierr    = KSPGetOperators(ksp, &A, &B);CHKERRQ(ierr);
 
   x = ksp->vec_sol;
   r = ctx->R;
@@ -96,7 +96,7 @@ PetscErrorCode KSPSolve_GCR(KSP ksp)
   PetscReal      norm_r;
 
   PetscFunctionBegin;
-  ierr = KSPGetOperators(ksp, &A, &B, NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp, &A, &B);CHKERRQ(ierr);
   x    = ksp->vec_sol;
   b    = ksp->vec_rhs;
   r    = ctx->R;
@@ -154,7 +154,7 @@ PetscErrorCode KSPSetUp_GCR(KSP ksp)
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
-  ierr = KSPGetOperators(ksp, &A, 0, 0);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp, &A, NULL);CHKERRQ(ierr);
   ierr = MatGetVecs(A, &ctx->R, NULL);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ctx->R, ctx->restart, &ctx->VV);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ctx->R, ctx->restart, &ctx->SS);CHKERRQ(ierr);

@@ -57,7 +57,7 @@ int main(int argc,char **args)
 
   /* Create KSP context; set operators and options; solve linear system */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
 
   /* Insure that preconditioner has same null space as matrix */
   /* currently does not do anything */

@@ -63,7 +63,7 @@ T*/
 */
 extern PetscErrorCode FormMatrix(DM,Mat);
 extern PetscErrorCode MyComputeFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode MyComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode MyComputeJacobian(SNES,Vec,Mat,Mat,void*);
 extern PetscErrorCode NonlinearGS(SNES,Vec);
 
 #undef __FUNCT__
@@ -169,15 +169,14 @@ PetscErrorCode MyComputeFunction(SNES snes,Vec x,Vec F,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "MyComputeJacobian"
-PetscErrorCode MyComputeJacobian(SNES snes,Vec x,Mat *J,Mat *Jp,MatStructure *str,void *ctx)
+PetscErrorCode MyComputeJacobian(SNES snes,Vec x,Mat J,Mat Jp,void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
 
   PetscFunctionBeginUser;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = FormMatrix(dm,*Jp);CHKERRQ(ierr);
-  *str = SAME_NONZERO_PATTERN;
+  ierr = FormMatrix(dm,Jp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

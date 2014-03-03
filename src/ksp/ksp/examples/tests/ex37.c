@@ -102,7 +102,7 @@ int main(int argc,char **args)
 
   /* Create linear solvers associated with subA */
   ierr = KSPCreate(subcomm,&subksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(subksp,subA,subA,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(subksp,subA,subA);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(subksp);CHKERRQ(ierr);
 
   /* Solve sub systems */

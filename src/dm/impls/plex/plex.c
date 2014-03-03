@@ -4025,7 +4025,7 @@ PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
 #endif
 
 #if defined(PETSC_HAVE_CTETGEN)
-#include "ctetgen.h"
+#include <ctetgen.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGenerate_CTetgen"

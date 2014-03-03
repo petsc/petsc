@@ -72,10 +72,10 @@ PetscErrorCode PetscIsInfOrNanReal(PetscReal a)
 }
 #elif defined(PETSC_HAVE__FINITE) && defined(PETSC_HAVE__ISNAN)
 #if defined(PETSC_HAVE_FLOAT_H)
-#include "float.h"  /* Microsoft Windows defines _finite() in float.h */
+#include <float.h>  /* Microsoft Windows defines _finite() in float.h */
 #endif
 #if defined(PETSC_HAVE_IEEEFP_H)
-#include "ieeefp.h"  /* Solaris prototypes these here */
+#include <ieeefp.h>  /* Solaris prototypes these here */
 #endif
 PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a)
 {
