@@ -177,6 +177,9 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
   ierr = PetscFESetDualSpace(fem, Q);CHKERRQ(ierr);
   ierr = PetscFESetNumComponents(fem, user->numComponents);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(fem, q);CHKERRQ(ierr);
+  ierr = PetscFESetFromOptions(fem);CHKERRQ(ierr);
+  ierr = PetscFESetUp(fem);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
   ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
   ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
   ierr = PetscFEGetDimension(fem, &numBasisFunc);CHKERRQ(ierr);
@@ -190,38 +193,23 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
 #define __FUNCT__ "SetupSection"
 PetscErrorCode SetupSection(DM dm, AppCtx *user)
 {
-  PetscSection    section;
-  const PetscInt  numFields   = 1;
-  PetscInt        dim         = user->dim;
-  PetscInt        numBC       = 0;
-  PetscInt        bcFields[1] = {0};
-  IS              bcPoints[1] = {NULL};
-  const PetscInt *numFieldDof[1];
-  PetscInt        numComp[1];
-  PetscInt       *numDof;
-  PetscInt        f, d;
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFEGetNumComponents(user->fe, &numComp[0]);CHKERRQ(ierr);
-  ierr = PetscFEGetNumDof(user->fe, &numFieldDof[0]);CHKERRQ(ierr);
-  ierr = PetscMalloc1(1*(dim+1), &numDof);CHKERRQ(ierr);
-  for (d = 0; d <= dim; ++d) {
-    numDof[0*(dim+1)+d] = numFieldDof[0][d];
-  }
-  for (f = 0; f < numFields; ++f) {
-    for (d = 1; d < dim; ++d) {
-      if ((numDof[f*(dim+1)+d] > 0) && !user->interpolate) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
-    }
-  }
   if (user->simplex) {
-    ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
+    ierr = DMSetNumFields(dm, 1);CHKERRQ(ierr);
+    ierr = DMSetField(dm, 0, user->fe);CHKERRQ(ierr);
   } else {
-    ierr = DMDACreateSection(dm, numComp, numDof, NULL, &section);CHKERRQ(ierr);
+    PetscSection    section;
+    const PetscInt *numDof;
+    PetscInt        numComp;
+
+    ierr = PetscFEGetNumComponents(user->fe, &numComp);CHKERRQ(ierr);
+    ierr = PetscFEGetNumDof(user->fe, &numDof);CHKERRQ(ierr);
+    ierr = DMDACreateSection(dm, &numComp, numDof, NULL, &section);CHKERRQ(ierr);
+    ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   }
-  ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
-  ierr = PetscFree(numDof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
