@@ -51,28 +51,6 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
   PetscFunctionReturn(0);
 }
 
-#include <ctype.h>
-
-char to_hex(char code) {
-  static char hex[] = "0123456789abcdef";
-  return hex[code & 15];
-}
-
-/* Returns a url-encoded version of str */
-char *url_encode(char *str) {
-  char *pstr = str, *buf = malloc(strlen(str) * 3 + 1), *pbuf = buf;
-  while (*pstr) {
-    if (isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~') 
-      *pbuf++ = *pstr;
-    else if (*pstr == ' ') 
-      *pbuf++ = '+';
-    else 
-      *pbuf++ = '%', *pbuf++ = to_hex(*pstr >> 4), *pbuf++ = to_hex(*pstr & 15);
-    pstr++;
-  }
-  *pbuf = '\0';
-  return buf;
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscBoxAuthorize"
