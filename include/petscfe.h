@@ -96,6 +96,7 @@ typedef const char *PetscFEType;
 #define PETSCFEBASIC     "basic"
 #define PETSCFENONAFFINE "nonaffine"
 #define PETSCFEOPENCL    "opencl"
+#define PETSCFECOMPOSITE "composite"
 
 PETSC_EXTERN PetscFunctionList PetscFEList;
 PETSC_EXTERN PetscBool         PetscFERegisterAllCalled;

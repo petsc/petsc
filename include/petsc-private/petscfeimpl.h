@@ -133,4 +133,12 @@ typedef struct {
 } PetscFE_OpenCL;
 #endif
 
+typedef struct {
+  PetscInt   cellRefiner;    /* The cell refiner defining the cell division */
+  PetscInt   numSubelements; /* The number of subelements */
+  PetscReal *v0;             /* The affine transformation for each subelement */
+  PetscReal *jac, *invjac;
+  PetscInt  *embedding;      /* Map from subelements dofs to element dofs */
+} PetscFE_Composite;
+
 #endif

@@ -106,6 +106,8 @@ PetscErrorCode PetscDualSpaceRegisterAll()
 }
 
 PETSC_EXTERN PetscErrorCode PetscFECreate_Basic(PetscFE);
+PETSC_EXTERN PetscErrorCode PetscFECreate_Nonaffine(PetscFE);
+PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE);
 #ifdef PETSC_HAVE_OPENCL
 PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE);
 #endif
@@ -132,7 +134,9 @@ PetscErrorCode PetscFERegisterAll()
   PetscFunctionBegin;
   PetscFERegisterAllCalled = PETSC_TRUE;
 
-  ierr = PetscFERegister(PETSCFEBASIC,  PetscFECreate_Basic);CHKERRQ(ierr);
+  ierr = PetscFERegister(PETSCFEBASIC,     PetscFECreate_Basic);CHKERRQ(ierr);
+  ierr = PetscFERegister(PETSCFENONAFFINE, PetscFECreate_Nonaffine);CHKERRQ(ierr);
+  ierr = PetscFERegister(PETSCFECOMPOSITE, PetscFECreate_Composite);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_OPENCL
   ierr = PetscFERegister(PETSCFEOPENCL, PetscFECreate_OpenCL);CHKERRQ(ierr);
 #endif

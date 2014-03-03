@@ -36,6 +36,7 @@ We will have three objects:
 */
 #include <petsc-private/petscfeimpl.h> /*I "petscfe.h" I*/
 #include <petsc-private/dtimpl.h>
+#include <petsc-private/dmpleximpl.h>
 #include <petscdmshell.h>
 #include <petscdmplex.h>
 #include <petscblaslapack.h>
@@ -4872,6 +4873,293 @@ PetscErrorCode PetscFEOpenCLGetRealType(PetscFE fem, PetscDataType *realType)
 
 #endif /* PETSC_HAVE_OPENCL */
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEDestroy_Composite"
+PetscErrorCode PetscFEDestroy_Composite(PetscFE fem)
+{
+  PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = CellRefinerRestoreAffineTransforms_Internal(cmp->cellRefiner, &cmp->numSubelements, &cmp->v0, &cmp->jac, &cmp->invjac);CHKERRQ(ierr);
+  ierr = PetscFree(cmp->embedding);CHKERRQ(ierr);
+  ierr = PetscFree(cmp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFESetUp_Composite"
+PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
+{
+  PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
+  DM                 K;
+  PetscReal         *work, *subpoint;
+  PetscBLASInt      *pivots;
+#ifndef PETSC_USE_COMPLEX
+  PetscBLASInt       n, info;
+#endif
+  PetscInt           dim, pdim, spdim, j, s;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  /* Get affine mapping from reference cell to each subcell */
+  ierr = PetscDualSpaceGetDM(fem->dualSpace, &K);CHKERRQ(ierr);
+  ierr = DMPlexGetDimension(K, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetCellRefiner_Internal(K, &cmp->cellRefiner);CHKERRQ(ierr);
+  ierr = CellRefinerGetAffineTransforms_Internal(cmp->cellRefiner, &cmp->numSubelements, &cmp->v0, &cmp->jac, &cmp->invjac);CHKERRQ(ierr);
+  /* Determine dof embedding into subelements */
+  ierr = PetscDualSpaceGetDimension(fem->dualSpace, &pdim);CHKERRQ(ierr);
+  ierr = PetscSpaceGetDimension(fem->basisSpace, &spdim);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cmp->numSubelements*spdim,&cmp->embedding);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(K, dim, PETSC_REAL, &subpoint);CHKERRQ(ierr);
+  for (s = 0; s < cmp->numSubelements; ++s) {
+    PetscInt sd = 0;
+
+    for (j = 0; j < pdim; ++j) {
+      PetscBool       inside = PETSC_TRUE;
+      PetscReal       sum    = 0.0;
+      PetscQuadrature f;
+      PetscInt        d, e;
+
+      ierr = PetscDualSpaceGetFunctional(fem->dualSpace, j, &f);
+      /* Apply transform to first point, and check that point is inside subcell */
+      for (d = 0; d < dim; ++d) {
+        subpoint[d] = -1.0;
+        for (e = 0; e < dim; ++e) {
+          subpoint[d] += cmp->invjac[(s*dim + d)*dim+e]*(f->points[e] - cmp->v0[s*dim+e]);
+        }
+        if (subpoint[d] < -1.0) {inside = PETSC_FALSE; break;}
+        sum += subpoint[d];
+      }
+      if (inside && (sum <= 0.0)) {cmp->embedding[s*spdim+sd++] = j;}
+    }
+    if (sd != spdim) SETERRQ3(PetscObjectComm((PetscObject) fem), PETSC_ERR_PLIB, "Subelement %d has %d dual basis vectors != %d", s, sd, spdim);
+  }
+  ierr = DMRestoreWorkArray(K, dim, PETSC_REAL, &subpoint);CHKERRQ(ierr);
+  /* Construct the change of basis from prime basis to nodal basis for each subelement */
+  ierr = PetscMalloc1(cmp->numSubelements*spdim*spdim,&fem->invV);CHKERRQ(ierr);
+  ierr = PetscMalloc2(spdim,&pivots,spdim,&work);CHKERRQ(ierr);
+  for (s = 0; s < cmp->numSubelements; ++s) {
+    for (j = 0; j < spdim; ++j) {
+      PetscReal      *Bf;
+      PetscQuadrature f;
+      PetscInt        q, k;
+
+      ierr = PetscDualSpaceGetFunctional(fem->dualSpace, cmp->embedding[s*spdim+j], &f);
+      ierr = PetscMalloc1(f->numPoints*spdim,&Bf);CHKERRQ(ierr);
+      ierr = PetscSpaceEvaluate(fem->basisSpace, f->numPoints, f->points, Bf, NULL, NULL);CHKERRQ(ierr);
+      for (k = 0; k < spdim; ++k) {
+        /* n_j \cdot \phi_k */
+        fem->invV[(s*spdim + j)*spdim+k] = 0.0;
+        for (q = 0; q < f->numPoints; ++q) {
+          fem->invV[(s*spdim + j)*spdim+k] += Bf[q*spdim+k]*f->weights[q];
+        }
+      }
+      ierr = PetscFree(Bf);CHKERRQ(ierr);
+    }
+#ifndef PETSC_USE_COMPLEX
+    n = spdim;
+    PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&n, &n, &fem->invV[s*spdim*spdim], &n, pivots, &info));
+    PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&n, &fem->invV[s*spdim*spdim], &n, pivots, work, &n, &info));
+#endif
+  }
+  ierr = PetscFree2(pivots,work);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEGetTabulation_Composite"
+PetscErrorCode PetscFEGetTabulation_Composite(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscReal *B, PetscReal *D, PetscReal *H)
+{
+  PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
+  DM                 dm;
+  PetscInt           pdim;  /* Dimension of FE space P */
+  PetscInt           spdim; /* Dimension of subelement FE space P */
+  PetscInt           dim;   /* Spatial dimension */
+  PetscInt           comp;  /* Field components */
+  PetscInt          *subpoints;
+  PetscReal         *tmpB, *tmpD, *tmpH, *subpoint;
+  PetscInt           p, s, d, e, j, k;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscDualSpaceGetDM(fem->dualSpace, &dm);CHKERRQ(ierr);
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = PetscSpaceGetDimension(fem->basisSpace, &spdim);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetDimension(fem->dualSpace, &pdim);CHKERRQ(ierr);
+  ierr = PetscFEGetNumComponents(fem, &comp);CHKERRQ(ierr);
+  /* Divide points into subelements */
+  ierr = DMGetWorkArray(dm, npoints, PETSC_INT, &subpoints);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, dim, PETSC_REAL, &subpoint);CHKERRQ(ierr);
+  for (p = 0; p < npoints; ++p) {
+    for (s = 0; s < cmp->numSubelements; ++s) {
+      PetscBool inside = PETSC_TRUE;
+      PetscReal sum    = 0.0;
+
+      /* Apply transform, and check that point is inside cell */
+      for (d = 0; d < dim; ++d) {
+        subpoint[d] = -1.0;
+        for (e = 0; e < dim; ++e) {
+          subpoint[d] += cmp->invjac[(s*dim + d)*dim+e]*(points[p*dim+e] - cmp->v0[s*dim+e]);
+        }
+        if (subpoint[d] < -1.0) {inside = PETSC_FALSE; break;}
+        sum += subpoint[d];
+      }
+      if (inside && (sum <= 0.0)) {subpoints[p] = s; break;}
+    }
+    if (s >= cmp->numSubelements) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %d was not found in any subelement", p);
+  }
+  ierr = DMRestoreWorkArray(dm, dim, PETSC_REAL, &subpoint);CHKERRQ(ierr);
+  /* Evaluate the prime basis functions at all points */
+  if (B) {ierr = DMGetWorkArray(dm, npoints*spdim, PETSC_REAL, &tmpB);CHKERRQ(ierr);}
+  if (D) {ierr = DMGetWorkArray(dm, npoints*spdim*dim, PETSC_REAL, &tmpD);CHKERRQ(ierr);}
+  if (H) {ierr = DMGetWorkArray(dm, npoints*spdim*dim*dim, PETSC_REAL, &tmpH);CHKERRQ(ierr);}
+  ierr = PetscSpaceEvaluate(fem->basisSpace, npoints, points, B ? tmpB : NULL, D ? tmpD : NULL, H ? tmpH : NULL);CHKERRQ(ierr);
+  /* Translate to the nodal basis */
+  if (B) {ierr = PetscMemzero(B, npoints*pdim*comp * sizeof(PetscReal));CHKERRQ(ierr);}
+  if (D) {ierr = PetscMemzero(D, npoints*pdim*comp*dim * sizeof(PetscReal));CHKERRQ(ierr);}
+  if (H) {ierr = PetscMemzero(H, npoints*pdim*comp*dim*dim * sizeof(PetscReal));CHKERRQ(ierr);}
+  for (p = 0; p < npoints; ++p) {
+    const PetscInt s = subpoints[p];
+
+    if (B) {
+      /* Multiply by V^{-1} (spdim x spdim) */
+      for (j = 0; j < spdim; ++j) {
+        const PetscInt i = (p*pdim + cmp->embedding[s*spdim+j])*comp;
+        PetscInt       c;
+
+        B[i] = 0.0;
+        for (k = 0; k < spdim; ++k) {
+          B[i] += fem->invV[(s*spdim + k)*spdim+j] * tmpB[p*spdim + k];
+        }
+        for (c = 1; c < comp; ++c) {
+          B[i+c] = B[i];
+        }
+      }
+    }
+    if (D) {
+      /* Multiply by V^{-1} (spdim x spdim) */
+      for (j = 0; j < spdim; ++j) {
+        for (d = 0; d < dim; ++d) {
+          const PetscInt i = ((p*pdim + cmp->embedding[s*spdim+j])*comp + 0)*dim + d;
+          PetscInt       c;
+
+          D[i] = 0.0;
+          for (k = 0; k < spdim; ++k) {
+            D[i] += fem->invV[(s*spdim + k)*spdim+j] * tmpD[(p*spdim + k)*dim + d];
+          }
+          for (c = 1; c < comp; ++c) {
+            D[((p*pdim + cmp->embedding[s*spdim+j])*comp + c)*dim + d] = D[i];
+          }
+        }
+      }
+    }
+    if (H) {
+      /* Multiply by V^{-1} (pdim x pdim) */
+      for (j = 0; j < spdim; ++j) {
+        for (d = 0; d < dim*dim; ++d) {
+          const PetscInt i = ((p*pdim + cmp->embedding[s*spdim+j])*comp + 0)*dim*dim + d;
+          PetscInt       c;
+
+          H[i] = 0.0;
+          for (k = 0; k < spdim; ++k) {
+            H[i] += fem->invV[(s*spdim + k)*spdim+j] * tmpH[(p*spdim + k)*dim*dim + d];
+          }
+          for (c = 1; c < comp; ++c) {
+            H[((p*pdim + cmp->embedding[s*spdim+j])*comp + c)*dim*dim + d] = H[i];
+          }
+        }
+      }
+    }
+  }
+  ierr = DMRestoreWorkArray(dm, npoints, PETSC_INT, &subpoints);CHKERRQ(ierr);
+  if (B) {ierr = DMRestoreWorkArray(dm, npoints*spdim, PETSC_REAL, &tmpB);CHKERRQ(ierr);}
+  if (D) {ierr = DMRestoreWorkArray(dm, npoints*spdim*dim, PETSC_REAL, &tmpD);CHKERRQ(ierr);}
+  if (H) {ierr = DMRestoreWorkArray(dm, npoints*spdim*dim*dim, PETSC_REAL, &tmpH);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEInitialize_Composite"
+PetscErrorCode PetscFEInitialize_Composite(PetscFE fem)
+{
+  PetscFunctionBegin;
+  fem->ops->setfromoptions          = NULL;
+  fem->ops->setup                   = PetscFESetUp_Composite;
+  fem->ops->view                    = NULL;
+  fem->ops->destroy                 = PetscFEDestroy_Composite;
+  fem->ops->getdimension            = PetscFEGetDimension_Basic;
+  fem->ops->gettabulation           = PetscFEGetTabulation_Composite;
+  fem->ops->integrateresidual       = PetscFEIntegrateResidual_Basic;
+  fem->ops->integratebdresidual     = PetscFEIntegrateBdResidual_Basic;
+  fem->ops->integratejacobianaction = NULL/*PetscFEIntegrateJacobianAction_Basic*/;
+  fem->ops->integratejacobian       = PetscFEIntegrateJacobian_Basic;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  PETSCFECOMPOSITE = "composite" - A PetscFE object that represents a composite element
+
+  Level: intermediate
+
+.seealso: PetscFEType, PetscFECreate(), PetscFESetType()
+M*/
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFECreate_Composite"
+PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
+{
+  PetscFE_Composite *cmp;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  ierr      = PetscNewLog(fem, &cmp);CHKERRQ(ierr);
+  fem->data = cmp;
+
+  cmp->cellRefiner    = 0;
+  cmp->numSubelements = -1;
+  cmp->v0             = NULL;
+  cmp->jac            = NULL;
+
+  ierr = PetscFEInitialize_Composite(fem);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFECompositeExpandQuadrature"
+PetscErrorCode PetscFECompositeExpandQuadrature(PetscFE fem, PetscQuadrature q, PetscQuadrature *qref)
+{
+  PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
+  const PetscReal   *points,    *weights;
+  PetscReal         *pointsRef, *weightsRef;
+  PetscInt           dim, npoints, npointsRef, c, p, d, e;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 2);
+  PetscValidPointer(qref, 3);
+  ierr = PetscQuadratureCreate(PETSC_COMM_SELF, qref);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(q, &dim, &npoints, &points, &weights);CHKERRQ(ierr);
+  npointsRef = npoints*cmp->numSubelements;
+  ierr = PetscMalloc1(npointsRef*dim,&pointsRef);CHKERRQ(ierr);
+  ierr = PetscMalloc1(npointsRef,&weightsRef);CHKERRQ(ierr);
+  for (c = 0; c < cmp->numSubelements; ++c) {
+    for (p = 0; p < npoints; ++p) {
+      for (d = 0; d < dim; ++d) {
+        pointsRef[(c*npoints + p)*dim+d] = cmp->v0[c*dim+d];
+        for (e = 0; e < dim; ++e) {
+          pointsRef[(c*npoints + p)*dim+d] += cmp->jac[(c*dim + d)*dim+e]*(points[p*dim+e] + 1.0);
+        }
+      }
+      /* Could also use detJ here */
+      weightsRef[c*npoints+p] = weights[p]/cmp->numSubelements;
+    }
+  }
+  ierr = PetscQuadratureSetData(*qref, dim, npointsRef, pointsRef, weightsRef);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEGetDimension"
@@ -4900,6 +5188,7 @@ PetscErrorCode PetscFEGetDimension(PetscFE fem, PetscInt *dim)
   if (fem->ops->getdimension) {ierr = (*fem->ops->getdimension)(fem, dim);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
+
 /*
 Purpose: Compute element vector for chunk of elements
 
