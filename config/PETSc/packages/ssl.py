@@ -16,10 +16,12 @@ class Configure(PETSc.package.NewPackage):
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('ssl', '-with-ssl-certificate=<bool>',nargs.ArgBool(None, 0, 'Require certificate with SSL'))
+    PETSc.package.NewPackage.setupHelp(self, help)
+    help.addArgument('SSL', '-with-ssl-certificate=<bool>',nargs.ArgBool(None, 0, 'Require certificate with SSL'))
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
+    self.deps = []
     return
 
   def getSearchDirectories(self):
@@ -27,7 +29,7 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def consistencyChecks(self):
-    PETSc.package.NewPackage.consistencyChecks(self)
-    if self.framework.argDB['with-'+self.package]:
-      if self.framework.argDB['with-ssl-certificate']:
-         self.addDefine('USE_SSL_CERTIFICATE','1')
+   PETSc.package.NewPackage.consistencyChecks(self)
+   if self.framework.argDB['with-'+self.package]:
+     if self.framework.argDB['with-ssl-certificate']:
+       self.addDefine('USE_SSL_CERTIFICATE','1')
