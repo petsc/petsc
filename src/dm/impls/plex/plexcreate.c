@@ -767,48 +767,14 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMSetFromOptions_Plex"
-PetscErrorCode  DMSetFromOptions_Plex(DM dm)
+#define __FUNCT__ "DMSetFromOptions_NonRefinement_Plex"
+PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(DM dm)
 {
-  DM_Plex       *mesh   = (DM_Plex*) dm->data;
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
   DMBoundary     b;
-  PetscInt       refine = 0, r;
-  PetscBool      isHierarchy;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscOptionsHead("DMPlex Options");CHKERRQ(ierr);
-  /* Handle DMPlex refinement */
-  ierr = PetscOptionsInt("-dm_refine", "The number of uniform refinements", "DMCreate", refine, &refine, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dm_refine_hierarchy", "The number of uniform refinements", "DMCreate", refine, &refine, &isHierarchy);CHKERRQ(ierr);
-  ierr = DMPlexSetRefinementUniform(dm, refine ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
-  if (refine && isHierarchy) {
-    DM *dms;
-
-    ierr = PetscMalloc1(refine,&dms);CHKERRQ(ierr);
-    ierr = DMRefineHierarchy(dm, refine, dms);CHKERRQ(ierr);
-    /* Total hack since we do not pass in a pointer */
-    ierr = DMPlexSwap_Static(dm, dms[refine-1]);CHKERRQ(ierr);
-    if (refine == 1) {
-      ierr = DMPlexSetCoarseDM(dm, dms[0]);CHKERRQ(ierr);
-    } else {
-      ierr = DMPlexSetCoarseDM(dm, dms[refine-2]);CHKERRQ(ierr);
-      ierr = DMPlexSetCoarseDM(dms[0], dms[refine-1]);CHKERRQ(ierr);
-    }
-    /* Free DMs */
-    for (r = 0; r < refine; ++r) {ierr = DMDestroy(&dms[r]);CHKERRQ(ierr);}
-    ierr = PetscFree(dms);CHKERRQ(ierr);
-  } else {
-    for (r = 0; r < refine; ++r) {
-      DM refinedMesh;
-
-      ierr = DMRefine(dm, PetscObjectComm((PetscObject) dm), &refinedMesh);CHKERRQ(ierr);
-      /* Total hack since we do not pass in a pointer */
-      ierr = DMPlexReplace_Static(dm, refinedMesh);CHKERRQ(ierr);
-      ierr = DMDestroy(&refinedMesh);CHKERRQ(ierr);
-    }
-  }
   /* Handle boundary conditions */
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject) dm), NULL, "Boundary condition options", "");CHKERRQ(ierr);
   for (b = mesh->boundary; b; b = b->next) {
@@ -840,6 +806,55 @@ PetscErrorCode  DMSetFromOptions_Plex(DM dm)
   ierr = PetscOptionsBool("-dm_plex_print_set_values", "Output all set values info", "DMView", PETSC_FALSE, &mesh->printSetValues, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dm_plex_print_fem", "Debug output level all fem computations", "DMView", 0, &mesh->printFEM, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-dm_plex_print_tol", "Tolerance for FEM output", "DMView", PETSC_FALSE, &mesh->printTol, NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetFromOptions_Plex"
+PetscErrorCode  DMSetFromOptions_Plex(DM dm)
+{
+  PetscInt       refine = 0, r;
+  PetscBool      isHierarchy;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscOptionsHead("DMPlex Options");CHKERRQ(ierr);
+  /* Handle DMPlex refinement */
+  ierr = PetscOptionsInt("-dm_refine", "The number of uniform refinements", "DMCreate", refine, &refine, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dm_refine_hierarchy", "The number of uniform refinements", "DMCreate", refine, &refine, &isHierarchy);CHKERRQ(ierr);
+  ierr = DMPlexSetRefinementUniform(dm, refine ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
+  if (refine && isHierarchy) {
+    DM *dms;
+
+    ierr = PetscMalloc1(refine,&dms);CHKERRQ(ierr);
+    ierr = DMRefineHierarchy(dm, refine, dms);CHKERRQ(ierr);
+    /* Total hack since we do not pass in a pointer */
+    ierr = DMPlexSwap_Static(dm, dms[refine-1]);CHKERRQ(ierr);
+    if (refine == 1) {
+      ierr = DMPlexSetCoarseDM(dm, dms[0]);CHKERRQ(ierr);
+    } else {
+      ierr = DMPlexSetCoarseDM(dm, dms[refine-2]);CHKERRQ(ierr);
+      ierr = DMPlexSetCoarseDM(dms[0], dms[refine-1]);CHKERRQ(ierr);
+    }
+    /* Free DMs */
+    for (r = 0; r < refine; ++r) {
+      ierr = DMSetFromOptions_NonRefinement_Plex(dm);CHKERRQ(ierr);
+      ierr = DMDestroy(&dms[r]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(dms);CHKERRQ(ierr);
+  } else {
+    for (r = 0; r < refine; ++r) {
+      DM refinedMesh;
+
+      ierr = DMSetFromOptions_NonRefinement_Plex(dm);CHKERRQ(ierr);
+      ierr = DMRefine(dm, PetscObjectComm((PetscObject) dm), &refinedMesh);CHKERRQ(ierr);
+      /* Total hack since we do not pass in a pointer */
+      ierr = DMPlexReplace_Static(dm, refinedMesh);CHKERRQ(ierr);
+      ierr = DMDestroy(&refinedMesh);CHKERRQ(ierr);
+    }
+  }
+  ierr = DMSetFromOptions_NonRefinement_Plex(dm);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
