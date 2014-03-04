@@ -5915,7 +5915,7 @@ PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSe
   PetscInt       *findices, *cindices;
   PetscInt        foffsets[32], coffsets[32];
   CellRefiner     cellRefiner;
-  PetscInt        numFields, numSubcells, numFPoints, numCPoints, numFIndices, numCIndices, dof, off, globalOff, pStart, pEnd, p, q, r, f;
+  PetscInt        numFields, numSubcells, maxFPoints, numFPoints, numCPoints, numFIndices, numCIndices, dof, off, globalOff, pStart, pEnd, p, q, r, s, f;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -5936,6 +5936,7 @@ PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSe
   ierr = PetscMemzero(coffsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
   /* Column indices */
   ierr = DMPlexGetTransitiveClosure(dmc, point, PETSC_TRUE, &numCPoints, &cpoints);CHKERRQ(ierr);
+  maxFPoints = numCPoints;
   /* Compress out points not in the section */
   /*   TODO: Squeeze out points with 0 dof as well */
   ierr = PetscSectionGetChart(csection, &pStart, &pEnd);CHKERRQ(ierr);
@@ -5951,6 +5952,7 @@ PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSe
     PetscInt fdof;
 
     ierr = PetscSectionGetDof(csection, cpoints[p], &dof);CHKERRQ(ierr);
+    if (!dof) continue;
     for (f = 0; f < numFields; ++f) {
       ierr           = PetscSectionGetFieldDof(csection, cpoints[p], f, &fdof);CHKERRQ(ierr);
       coffsets[f+1] += fdof;
@@ -5961,7 +5963,7 @@ PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSe
   /* Row indices */
   ierr = DMPlexGetCellRefiner_Internal(dmc, &cellRefiner);CHKERRQ(ierr);
   ierr = CellRefinerGetAffineTransforms_Internal(cellRefiner, &numSubcells, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dmf, numCPoints*2*4, PETSC_INT, &ftotpoints);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dmf, maxFPoints*numSubcells, PETSC_INT, &ftotpoints);CHKERRQ(ierr);
   for (r = 0, q = 0; r < numSubcells; ++r) {
     /* TODO Map from coarse to fine cells */
     ierr = DMPlexGetTransitiveClosure(dmf, point*numSubcells + r, PETSC_TRUE, &numFPoints, &fpoints);CHKERRQ(ierr);
@@ -5969,6 +5971,10 @@ PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSe
     ierr = PetscSectionGetChart(fsection, &pStart, &pEnd);CHKERRQ(ierr);
     for (p = 0; p < numFPoints*2; p += 2) {
       if ((fpoints[p] >= pStart) && (fpoints[p] < pEnd)) {
+        ierr = PetscSectionGetDof(fsection, fpoints[p], &dof);CHKERRQ(ierr);
+        if (!dof) continue;
+        for (s = 0; s < q; ++s) if (fpoints[p] == ftotpoints[s*2]) break;
+        if (s < q) continue;
         ftotpoints[q*2]   = fpoints[p];
         ftotpoints[q*2+1] = fpoints[p+1];
         ++q;
@@ -5981,6 +5987,7 @@ PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSe
     PetscInt fdof;
 
     ierr = PetscSectionGetDof(fsection, ftotpoints[p], &dof);CHKERRQ(ierr);
+    if (!dof) continue;
     for (f = 0; f < numFields; ++f) {
       ierr           = PetscSectionGetFieldDof(fsection, ftotpoints[p], f, &fdof);CHKERRQ(ierr);
       foffsets[f+1] += fdof;
@@ -6480,9 +6487,9 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscBool isSimplex, PetscInt cellHeight)
 /* Pointwise interpolation
      Just code FEM for now
      u^f = I u^c
-     sum_k u^f_k phi^f_k = I sum_l u^c_l phi^c_l
-     u^f_i = sum_l int psi^f_i I phi^c_l u^c_l
-     I_{ij} = int psi^f_i phi^c_j
+     sum_k u^f_k phi^f_k = I sum_j u^c_j phi^c_j
+     u^f_i = sum_j psi^f_i I phi^c_j u^c_j
+     I_{ij} = psi^f_i phi^c_j
 */
 PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling)
 {
@@ -6524,9 +6531,6 @@ PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpola
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateInjection_Plex"
-/* Pointwise restriction:
-     Give up on anything beyond P_0 and P_1 for now
-*/
 PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, VecScatter *ctx)
 {
   PetscFunctionBegin;
