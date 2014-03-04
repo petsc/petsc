@@ -994,27 +994,6 @@ static void g0_identity_3d_static(const PetscScalar u[], const PetscScalar gradU
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexComputeInterpolatorFEMBroken"
-/*@
-  DMPlexComputeInterpolatorFEMBroken - Form the local portion of the interpolation matrix I from the coarse DM to the uniformly refined DM.
-
-  Input Parameters:
-+ dmf  - The fine mesh
-. dmc  - The coarse mesh
-- user - The user context
-
-  Output Parameter:
-. I  - The interpolation matrix
-
-  Note:
-  The first member of the user context must be an FEMContext.
-
-  We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
-  like a GPU, or vectorize on a multicore machine.
-
-  Level: developer
-
-.seealso: DMPlexComputeJacobianFEM()
-@*/
 PetscErrorCode DMPlexComputeInterpolatorFEMBroken(DM dmc, DM dmf, Mat I, void *user)
 {
   DM_Plex          *mesh  = (DM_Plex *) dmc->data;
