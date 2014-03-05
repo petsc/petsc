@@ -19,7 +19,7 @@ int main(int argc,char **args)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
-  PetscInt       N0=50,N1=20,N=N0*N1;
+  PetscInt       N0=50,N1=20,N=N0*N1,DIM;
   PetscRandom    rdm;
   PetscScalar    a;
   PetscReal      enorm;
@@ -49,8 +49,11 @@ int main(int argc,char **args)
     fftw_plan    fplan,bplan;
     fftw_complex *data_in,*data_out,*data_out2;
     ptrdiff_t    alloc_local,local_n0,local_0_start;
-
-    if (!rank) printf("Use FFTW without PETSc-FFTW interface\n");
+    
+    DIM = 2;
+    if (!rank) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Use FFTW without PETSc-FFTW interface, DIM %D\n",DIM);CHKERRQ(ierr);
+    }
     fftw_mpi_init();
     N           = N0*N1;
     alloc_local = fftw_mpi_local_size_2d(N0,N1,PETSC_COMM_WORLD,&local_n0,&local_0_start);
@@ -83,7 +86,7 @@ int main(int argc,char **args)
     if (view) {ierr = VecView(z, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
     ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
     ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
-    if (enorm > 1.e-11) {
+    if (enorm > 1.e-11 && !rank) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %g\n",(double)enorm);CHKERRQ(ierr);
     }
 
@@ -97,7 +100,7 @@ int main(int argc,char **args)
   } else {
     /* Use PETSc-FFTW interface                  */
     /*-------------------------------------------*/
-    PetscInt i,*dim,k,DIM;
+    PetscInt i,*dim,k;
     Mat      A;
 
     N=1;

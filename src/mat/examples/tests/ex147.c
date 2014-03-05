@@ -1,5 +1,5 @@
 /* This program illustrates use of parallel real FFT */
-static char help[]="This program illustrates the use of parallel real fftw (without PETSc interface)";
+static char help[]="This program illustrates the use of parallel real multi-dimensional fftw (without PETSc interface)";
 #include <petscmat.h>
 #include <fftw3.h>
 #include <fftw3-mpi.h>
@@ -23,6 +23,9 @@ PetscInt main(PetscInt argc,char **args)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers. Your current scalar type is complex");
+#endif
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
 
