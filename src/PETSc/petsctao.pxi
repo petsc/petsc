@@ -94,8 +94,8 @@ cdef extern from * nogil:
     int TaoComputeConstraints(PetscTAO,PetscVec,PetscVec)
     int TaoComputeDualVariables(PetscTAO,PetscVec,PetscVec)
     int TaoComputeVariableBounds(PetscTAO)
-    int TaoComputeHessian (PetscTAO,PetscVec,PetscMat*,PetscMat*,PetscMatStructure*)
-    int TaoComputeJacobian(PetscTAO,PetscVec,PetscMat*,PetscMat*,PetscMatStructure*)
+    int TaoComputeHessian (PetscTAO,PetscVec,PetscMat,PetscMat)
+    int TaoComputeJacobian(PetscTAO,PetscVec,PetscMat,PetscMat)
 
     int TaoSetInitialVector(PetscTAO,PetscVec)
     int TaoSetConstraintsVec(PetscTAO,PetscVec)
@@ -118,15 +118,15 @@ cdef extern from * nogil:
     ctypedef int TaoVarBounds(PetscTAO,PetscVec,PetscVec,void*) except PETSC_ERR_PYTHON
     ctypedef int TaoConstraints(PetscTAO,PetscVec,PetscVec,void*) except PETSC_ERR_PYTHON
     ctypedef int TaoHessian(PetscTAO,PetscVec,
-                            PetscMat*,PetscMat*,PetscMatStructure*,
+                            PetscMat,PetscMat,
                             void*) except PETSC_ERR_PYTHON
     ctypedef int TaoJacobian(PetscTAO,PetscVec,
-                             PetscMat*,PetscMat*,PetscMatStructure*,
+                             PetscMat,PetscMat,
                              void*) except PETSC_ERR_PYTHON
     ctypedef int TaoJacobianState(PetscTAO,PetscVec,
-                                  PetscMat*,PetscMat*,PetscMat*,PetscMatStructure*,
+                                  PetscMat,PetscMat,PetscMat,
                                   void*) except PETSC_ERR_PYTHON
-    ctypedef int TaoJacobianDesign(PetscTAO,PetscVec,PetscMat*,
+    ctypedef int TaoJacobianDesign(PetscTAO,PetscVec,PetscMat,
                                    void*) except PETSC_ERR_PYTHON
 
     int TaoSetObjectiveRoutine(PetscTAO,TaoObjective*,void*)
@@ -224,72 +224,54 @@ cdef int TAO_VarBounds(PetscTAO _tao,
 
 cdef int TAO_Hessian(PetscTAO _tao,
                      PetscVec  _x,
-                     PetscMat  *_H,
-                     PetscMat  *_P,
-                     PetscMatStructure* _s,
+                     PetscMat  _H,
+                     PetscMat  _P,
                      void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
-    cdef Mat H   = ref_Mat(_H[0])
-    cdef Mat P   = ref_Mat(_P[0])
+    cdef Mat H   = ref_Mat(_H)
+    cdef Mat P   = ref_Mat(_P)
     (hessian, args, kargs) = tao.get_attr("__hessian__")
-    retv = hessian(tao, x, H, P, *args, **kargs)
-    _s[0] = matstructure(retv)
-    cdef PetscMat Htmp = NULL, Ptmp = NULL
-    Htmp = _H[0]; _H[0] = H.mat; H.mat = Htmp
-    Ptmp = _P[0]; _P[0] = P.mat; P.mat = Ptmp
+    hessian(tao, x, H, P, *args, **kargs)
     return 0
 
 cdef int TAO_Jacobian(PetscTAO _tao,
                       PetscVec  _x,
-                      PetscMat  *_J,
-                      PetscMat  *_P,
-                      PetscMatStructure* _s,
+                      PetscMat  _J,
+                      PetscMat  _P,
                       void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
-    cdef Mat J   = ref_Mat(_J[0])
-    cdef Mat P   = ref_Mat(_P[0])
+    cdef Mat J   = ref_Mat(_J)
+    cdef Mat P   = ref_Mat(_P)
     (jacobian, args, kargs) = tao.get_attr("__jacobian__")
-    retv = jacobian(tao, x, J, P, *args, **kargs)
-    _s[0] = matstructure(retv)
-    cdef PetscMat Jtmp = NULL, Ptmp = NULL
-    Jtmp = _J[0]; _J[0] = J.mat; J.mat = Jtmp
-    Ptmp = _P[0]; _P[0] = P.mat; P.mat = Ptmp
+    jacobian(tao, x, J, P, *args, **kargs)
     return 0
 
 cdef int TAO_JacobianState(PetscTAO _tao,
                            PetscVec  _x,
-                           PetscMat  *_J,
-                           PetscMat  *_P,
-                           PetscMat  *_I,
-                           PetscMatStructure* _s,
+                           PetscMat  _J,
+                           PetscMat  _P,
+                           PetscMat  _I,
                            void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
-    cdef Mat J   = ref_Mat(_J[0])
-    cdef Mat P   = ref_Mat(_P[0])
-    cdef Mat I   = ref_Mat(_I[0])
+    cdef Mat J   = ref_Mat(_J)
+    cdef Mat P   = ref_Mat(_P)
+    cdef Mat I   = ref_Mat(_I)
     (jacobian, args, kargs) = tao.get_attr("__jacobian_state__")
-    retv = jacobian(tao, x, J, P, I, *args, **kargs)
-    _s[0] = matstructure(retv)
-    cdef PetscMat Jtmp = NULL, Ptmp = NULL, Itmp = NULL
-    Jtmp = _J[0]; _J[0] = J.mat; J.mat = Jtmp
-    Ptmp = _P[0]; _P[0] = P.mat; P.mat = Ptmp
-    Itmp = _I[0]; _I[0] = I.mat; I.mat = Itmp
+    jacobian(tao, x, J, P, I, *args, **kargs)
     return 0
 
 cdef int TAO_JacobianDesign(PetscTAO _tao,
                             PetscVec  _x,
-                            PetscMat  *_J,
+                            PetscMat  _J,
                             void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef TAO tao = ref_TAO(_tao)
     cdef Vec x   = ref_Vec(_x)
-    cdef Mat J   = ref_Mat(_J[0])
+    cdef Mat J   = ref_Mat(_J)
     (jacobian, args, kargs) = tao.get_attr("__jacobian_design__")
-    retv = jacobian(tao, x, J, *args, **kargs)
-    cdef PetscMat Jtmp = NULL
-    Jtmp = _J[0]; _J[0] = J.mat; J.mat = Jtmp
+    jacobian(tao, x, J, *args, **kargs)
     return 0
 
 cdef int TAO_Converged(PetscTAO _tao,

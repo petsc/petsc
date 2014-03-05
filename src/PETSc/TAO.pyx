@@ -328,20 +328,16 @@ cdef class TAO(Object):
     def computeHessian(self, Vec x not None, Mat H not None, Mat P=None):
         """
         """
-        cdef PetscMat *hmat = &H.mat, *pmat = &H.mat
-        if P is not None: pmat = &P.mat
-        cdef PetscMatStructure flag = MAT_DIFFERENT_NONZERO_PATTERN
-        CHKERR( TaoComputeHessian(self.tao, x.vec, hmat, pmat, &flag) )
-        return flag
+        cdef PetscMat hmat = H.mat, pmat = H.mat
+        if P is not None: pmat = P.mat
+        CHKERR( TaoComputeHessian(self.tao, x.vec, hmat, pmat) )
 
     def computeJacobian(self, Vec x not None, Mat J not None, Mat P=None):
         """
         """
-        cdef PetscMat *jmat = &J.mat, *pmat = &J.mat
-        if P is not None: pmat = &P.mat
-        cdef PetscMatStructure flag = MAT_DIFFERENT_NONZERO_PATTERN
-        CHKERR( TaoComputeJacobian(self.tao, x.vec, jmat, pmat, &flag) )
-        return flag
+        cdef PetscMat jmat = J.mat, pmat = J.mat
+        if P is not None: pmat = P.mat
+        CHKERR( TaoComputeJacobian(self.tao, x.vec, jmat, pmat) )
 
     # --------------
 
