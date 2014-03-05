@@ -1211,13 +1211,15 @@ PetscErrorCode DMPlexComputeInterpolatorFEM(DM dmc, DM dmf, Mat I, void *user)
       offsetJ += cpdim;
     }
     offsetI += fpdim*Nc;
+    ierr = PetscFree(points);CHKERRQ(ierr);
   }
   if (mesh->printFEM > 1) {ierr = DMPrintCellMatrix(0, name, rCellDof, cCellDof, elemMat);CHKERRQ(ierr);}
   for (c = cStart; c < cEnd; ++c) {
     ierr = DMPlexMatSetClosureRefined(dmf, fsection, fglobalSection, dmc, csection, cglobalSection, I, c, elemMat, INSERT_VALUES);CHKERRQ(ierr);
   }
-  ierr = PetscFree(elemMat);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {ierr = PetscFEDestroy(&feRef[f]);CHKERRQ(ierr);}
   ierr = PetscFree(feRef);CHKERRQ(ierr);
+  ierr = PetscFree(elemMat);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(I, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(I, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (mesh->printFEM) {
