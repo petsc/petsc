@@ -6,6 +6,11 @@ DETERMINE = PETSC_DETERMINE
 
 # --------------------------------------------------------------------
 
+INFINITY  = PETSC_INFINITY
+NINFINITY = PETSC_NINFINITY
+
+# --------------------------------------------------------------------
+
 class InsertMode(object):
     # native
     NOT_SET_VALUES = PETSC_NOT_SET_VALUES

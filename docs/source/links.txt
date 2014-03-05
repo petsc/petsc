@@ -20,8 +20,6 @@
 
 .. _slepc4py:     http://bitbucket.org/slepc/slepc4py
 
-.. _tao4py:       http://bitbucket.org/dalcinl/tao4py
-
 .. _CIMEC:        http://www.cimec.org.ar
 
 .. _GRyCAP:       http://www.grycap.upv.es

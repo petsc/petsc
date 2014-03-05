@@ -124,6 +124,7 @@ include "petscpc.pxi"
 include "petscksp.pxi"
 include "petscsnes.pxi"
 include "petscts.pxi"
+include "petsctao.pxi"
 include "petscao.pxi"
 include "petscdm.pxi"
 include "petscdmda.pxi"
@@ -155,6 +156,7 @@ include "PC.pyx"
 include "KSP.pyx"
 include "SNES.pyx"
 include "TS.pyx"
+include "TAO.pyx"
 include "AO.pyx"
 include "DM.pyx"
 include "DMDA.pyx"
@@ -358,6 +360,7 @@ cdef extern from *:
     PetscClassId PETSC_KSP_CLASSID       "KSP_CLASSID"
     PetscClassId PETSC_SNES_CLASSID      "SNES_CLASSID"
     PetscClassId PETSC_TS_CLASSID        "TS_CLASSID"
+    PetscClassId PETSC_TAO_CLASSID       "TAO_CLASSID"
     PetscClassId PETSC_AO_CLASSID        "AO_CLASSID"
     PetscClassId PETSC_DM_CLASSID        "DM_CLASSID"
     PetscClassId PETSC_SF_CLASSID        "PETSCSF_CLASSID"
@@ -388,6 +391,7 @@ cdef int register() except -1:
     PyPetscType_Register(PETSC_KSP_CLASSID,       KSP)
     PyPetscType_Register(PETSC_SNES_CLASSID,      SNES)
     PyPetscType_Register(PETSC_TS_CLASSID,        TS)
+    PyPetscType_Register(PETSC_TAO_CLASSID,       TAO)
     PyPetscType_Register(PETSC_AO_CLASSID,        AO)
     PyPetscType_Register(PETSC_DM_CLASSID,        DM)
     PyPetscType_Register(PETSC_SF_CLASSID,        SF)

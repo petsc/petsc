@@ -34,6 +34,7 @@ static PetscErrorCode PetscInitializePackageAll(void)
   ierr = KSPInitializePackage();CHKERRQ(ierr);
   ierr = SNESInitializePackage();CHKERRQ(ierr);
   ierr = TSInitializePackage();CHKERRQ(ierr);
+  ierr = TaoInitializePackage();CHKERRQ(ierr);
   ierr = AOInitializePackage();CHKERRQ(ierr);
   ierr = DMInitializePackage();CHKERRQ(ierr);
   ierr = PetscSFInitializePackage();CHKERRQ(ierr);

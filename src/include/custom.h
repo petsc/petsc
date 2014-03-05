@@ -10,6 +10,7 @@
 #include "petsc-private/pcimpl.h"
 #include "petsc-private/snesimpl.h"
 #include "petsc-private/tsimpl.h"
+#include "petsc-private/taoimpl.h"
 #include "petsc-private/sfimpl.h"
 
 /* ---------------------------------------------------------------- */

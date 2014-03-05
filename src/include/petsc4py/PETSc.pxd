@@ -50,6 +50,9 @@ cdef extern from "petsc.h":
     struct _p_TS
     ctypedef _p_TS* PetscTS "TS"
 
+    struct _p_TAO "_p_Tao"
+    ctypedef _p_TAO* PetscTAO "Tao"
+
     struct _p_AO
     ctypedef _p_AO* PetscAO "AO"
 
@@ -161,6 +164,12 @@ ctypedef public api class TS(Object) [
     object PyPetscTSObject,
     ]:
     cdef PetscTS ts
+
+ctypedef public api class TAO(Object) [
+    type   PyPetscTAO_Type,
+    object PyPetscTAOObject,
+    ]:
+    cdef PetscTAO tao
 
 ctypedef public api class AO(Object) [
     type   PyPetscAO_Type,
