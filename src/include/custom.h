@@ -375,7 +375,7 @@ SNESSetConvergedReason(SNES snes, SNESConvergedReason reason)
 static PetscErrorCode
 SNESGetUseMFFD(SNES snes,PetscBool *flag)
 {
-  PetscErrorCode (*jac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*) = PETSC_NULL;
+  PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,void*) = PETSC_NULL;
   Mat            J = PETSC_NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -474,7 +474,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobianDefaultColor(SNES snes,Vec x,Mat 
 static PetscErrorCode
 SNESGetUseFDColoring(SNES snes,PetscBool *flag)
 {
-  PetscErrorCode (*jac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*) = PETSC_NULL;
+  PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,void*) = PETSC_NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -494,7 +494,7 @@ SNESSetUseFDColoring(SNES snes,PetscBool flag)
   PetscErrorCode (*fun)(SNES,Vec,Vec,void*) = PETSC_NULL;
   void*          funP = PETSC_NULL;
   Mat            A = PETSC_NULL,B = PETSC_NULL;
-  PetscErrorCode (*jac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*) = PETSC_NULL;
+  PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,void*) = PETSC_NULL;
   void*          jacP = PETSC_NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;

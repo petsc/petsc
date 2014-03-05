@@ -11,7 +11,7 @@ class SNESType(object):
     NGMRES       = S_(SNESNGMRES)
     QN           = S_(SNESQN)
     SHELL        = S_(SNESSHELL)
-    GS           = S_(SNESGS)
+    NGS          = S_(SNESNGS)
     NCG          = S_(SNESNCG)
     FAS          = S_(SNESFAS)
     MS           = S_(SNESMS)
@@ -218,11 +218,9 @@ cdef class SNES(Object):
         CHKERR( SNESComputeFunction(self.snes, x.vec, f.vec) )
 
     def computeJacobian(self, Vec x not None, Mat J not None, Mat P=None):
-        cdef PetscMat *jmat = &J.mat, *pmat = &J.mat
-        if P is not None: pmat = &P.mat
-        cdef PetscMatStructure flag = MAT_DIFFERENT_NONZERO_PATTERN
-        CHKERR( SNESComputeJacobian(self.snes, x.vec, jmat, pmat, &flag) )
-        return flag
+        cdef PetscMat jmat = J.mat, pmat = J.mat
+        if P is not None: pmat = P.mat
+        CHKERR( SNESComputeJacobian(self.snes, x.vec, jmat, pmat) )
 
     def computeObjective(self, Vec x not None):
         cdef PetscReal o = 0

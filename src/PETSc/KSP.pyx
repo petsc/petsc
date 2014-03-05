@@ -156,21 +156,19 @@ cdef class KSP(Object):
 
     # --- operators and preconditioner ---
 
-    def setOperators(self, Mat A=None, Mat P=None, structure=None):
+    def setOperators(self, Mat A=None, Mat P=None):
         cdef PetscMat amat=NULL
         if A is not None: amat = A.mat
         cdef PetscMat pmat=amat
         if P is not None: pmat = P.mat
-        cdef PetscMatStructure flag = matstructure(structure)
-        CHKERR( KSPSetOperators(self.ksp, amat, pmat, flag) )
+        CHKERR( KSPSetOperators(self.ksp, amat, pmat) )
 
     def getOperators(self):
         cdef Mat A = Mat(), P = Mat()
-        cdef PetscMatStructure flag = MAT_DIFFERENT_NONZERO_PATTERN
-        CHKERR( KSPGetOperators(self.ksp, &A.mat, &P.mat, &flag) )
+        CHKERR( KSPGetOperators(self.ksp, &A.mat, &P.mat) )
         PetscINCREF(A.obj)
         PetscINCREF(P.obj)
-        return (A, P, flag)
+        return (A, P)
 
     def setNullSpace(self, NullSpace nsp not None):
         CHKERR( KSPSetNullSpace(self.ksp, nsp.nsp) )

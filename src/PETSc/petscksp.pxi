@@ -116,8 +116,8 @@ cdef extern from * nogil:
     int KSPGetComputeSingularValues(PetscKSP,PetscBool*)
     int KSPSetComputeSingularValues(PetscKSP,PetscBool)
 
-    int KSPSetOperators(PetscKSP,PetscMat,PetscMat,PetscMatStructure)
-    int KSPGetOperators(PetscKSP,PetscMat*,PetscMat*,PetscMatStructure*)
+    int KSPSetOperators(PetscKSP,PetscMat,PetscMat)
+    int KSPGetOperators(PetscKSP,PetscMat*,PetscMat*)
     int KSPGetOperatorsSet(PetscKSP,PetscBool*,PetscBool*)
 
     int KSPSetNullSpace(PetscKSP,PetscNullSpace)

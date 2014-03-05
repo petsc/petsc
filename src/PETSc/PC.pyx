@@ -145,21 +145,19 @@ cdef class PC(Object):
     def setFromOptions(self):
         CHKERR( PCSetFromOptions(self.pc) )
 
-    def setOperators(self, Mat A=None, Mat P=None, structure=None):
+    def setOperators(self, Mat A=None, Mat P=None):
         cdef PetscMat amat=NULL
         if A is not None: amat = A.mat
         cdef PetscMat pmat=amat
         if P is not None: pmat = P.mat
-        cdef PetscMatStructure flag = matstructure(structure)
-        CHKERR( PCSetOperators(self.pc, amat, pmat, flag) )
+        CHKERR( PCSetOperators(self.pc, amat, pmat) )
 
     def getOperators(self):
         cdef Mat A = Mat(), P = Mat()
-        cdef PetscMatStructure flag = MAT_DIFFERENT_NONZERO_PATTERN
-        CHKERR( PCGetOperators(self.pc, &A.mat, &P.mat, &flag) )
+        CHKERR( PCGetOperators(self.pc, &A.mat, &P.mat) )
         PetscINCREF(A.obj)
         PetscINCREF(P.obj)
-        return (A, P, flag)
+        return (A, P)
 
     def setUp(self):
         CHKERR( PCSetUp(self.pc) )

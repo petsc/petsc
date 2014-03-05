@@ -42,7 +42,7 @@ class MyKSP(object):
 class MyRichardson(MyKSP):
 
     def solve(self, ksp, b, x):
-        A, B, flag = ksp.getOperators()
+        A, B = ksp.getOperators()
         P = ksp.getPC()
         r, z = self.work
         #
@@ -65,7 +65,7 @@ class MyCG(MyKSP):
         self.work += [d, q]
 
     def solve(self, ksp, b, x):
-        A, B, flag = ksp.getOperators()
+        A, B = ksp.getOperators()
         P = ksp.getPC()
         r, z, d, q = self.work
         #

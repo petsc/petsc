@@ -170,21 +170,15 @@ cdef class TS(Object):
 
     def computeRHSJacobian(self, t, Vec x not None, Mat J not None, Mat P=None):
         cdef PetscReal time = asReal(t)
-        cdef PetscMat *jmat = &J.mat, *pmat = &J.mat
-        if P is not None: pmat = &P.mat
-        cdef PetscMatStructure flag = MAT_DIFFERENT_NONZERO_PATTERN
-        CHKERR( TSComputeRHSJacobian(self.ts, time, x.vec,
-                                     jmat, pmat, &flag) )
-        return flag
+        cdef PetscMat jmat = J.mat, pmat = J.mat
+        if P is not None: pmat = P.mat
+        CHKERR( TSComputeRHSJacobian(self.ts, time, x.vec, jmat, pmat) )
 
     def computeRHSJacobianConstant(self, t, Vec x not None, Mat J not None, Mat P=None):
         cdef PetscReal time = asReal(t)
-        cdef PetscMat *jmat = &J.mat, *pmat = &J.mat
-        if P is not None: pmat = &P.mat
-        cdef PetscMatStructure flag = MAT_DIFFERENT_NONZERO_PATTERN
-        CHKERR( TSComputeRHSJacobianConstant(self.ts, time, x.vec,
-                                             jmat, pmat, &flag, NULL) )
-        return flag
+        cdef PetscMat jmat = J.mat, pmat = J.mat
+        if P is not None: pmat = P.mat
+        CHKERR( TSComputeRHSJacobianConstant(self.ts, time, x.vec, jmat, pmat, NULL) )
 
     def getRHSFunction(self):
         cdef Vec f = Vec()
@@ -243,12 +237,10 @@ cdef class TS(Object):
         cdef PetscReal rval1 = asReal(t)
         cdef PetscReal rval2 = asReal(a)
         cdef PetscBool bval  = imex
-        cdef PetscMat *jmat = &J.mat, *pmat = &J.mat
-        if P is not None: pmat = &P.mat
-        cdef PetscMatStructure flag = MAT_DIFFERENT_NONZERO_PATTERN
+        cdef PetscMat jmat = J.mat, pmat = J.mat
+        if P is not None: pmat = P.mat
         CHKERR( TSComputeIJacobian(self.ts, rval1, x.vec, xdot.vec, rval2,
-                                   jmat, pmat, &flag, bval) )
-        return flag
+                                   jmat, pmat, bval) )
 
     def getIFunction(self):
         cdef Vec f = Vec()

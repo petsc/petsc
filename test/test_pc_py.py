@@ -30,7 +30,7 @@ class MyPCNone(BaseMyPC):
 
 class MyPCJacobi(BaseMyPC):
     def setup(self, pc):
-        A, P, ms = pc.getOperators()
+        A, P = pc.getOperators()
         self.diag = P.getDiagonal()
         self.diag.reciprocal()
     def reset(self, pc):
@@ -151,8 +151,8 @@ class TestPCPYTHON(unittest.TestCase):
         A.shift(10)
         x, y = A.createVecs()
         x.setRandom()
-        self.pc.setOperators(A, A, True)
-        assert (A,A) == self.pc.getOperators()[:2]
+        self.pc.setOperators(A, A)
+        assert (A,A) == self.pc.getOperators()
         return A, x, y
 
     def _getCtx(self):

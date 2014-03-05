@@ -102,8 +102,8 @@ cdef extern from * nogil:
     int PCGetDM(PetscPC,PetscDM*)
     int PCSetDM(PetscPC,PetscDM)
 
-    int PCSetOperators(PetscPC,PetscMat,PetscMat,PetscMatStructure)
-    int PCGetOperators(PetscPC,PetscMat*,PetscMat*,PetscMatStructure*)
+    int PCSetOperators(PetscPC,PetscMat,PetscMat)
+    int PCGetOperators(PetscPC,PetscMat*,PetscMat*)
     int PCGetOperatorsSet(PetscPC,PetscBool*,PetscBool*)
 
     int PCComputeExplicitOperator(PetscPC,PetscMat*)

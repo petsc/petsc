@@ -20,7 +20,6 @@ class Jacobian:
         P[1,1] = (x[0] + 2.0*x[1]).item()
         P.assemble()
         if J != P: J.assemble()
-        return PETSc.Mat.Structure.SAME_NONZERO_PATTERN
 
 # --------------------------------------------------------------------
 

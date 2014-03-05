@@ -433,7 +433,6 @@ cdef extern from * nogil:
     ctypedef enum MatStructure:
         SAME_NONZERO_PATTERN
         DIFFERENT_NONZERO_PATTERN
-        SAME_PRECONDITIONER
         SUBSET_NONZERO_PATTERN
     ctypedef enum MatReuse:
         MAT_IGNORE_MATRIX
@@ -1346,7 +1345,7 @@ cdef extern from * nogil:
     PetscErrorCode KSPCreate(MPI_Comm,PetscKSP*)
     PetscErrorCode KSPSetSupportedNorm(PetscKSP,KSPNormType,PCSide,PetscInt)
     PetscErrorCode KSPSolve(PetscKSP,PetscVec,PetscVec)
-    PetscErrorCode KSPSetOperators(PetscKSP,PetscMat,PetscMat,MatStructure)
+    PetscErrorCode KSPSetOperators(PetscKSP,PetscMat,PetscMat)
 cdef extern from * nogil:
     PetscErrorCode KSPGetRhs(PetscKSP,PetscVec*)
     PetscErrorCode KSPGetSolution(PetscKSP,PetscVec*)
@@ -1693,10 +1692,10 @@ cdef extern from * nogil:
     PetscErrorCode SNESGetFunction(PetscSNES,PetscVec*,SNESFunction*,void*)
     PetscErrorCode SNESSetFunction(PetscSNES,PetscVec,SNESFunction,void*)
     int SNESComputeFunction(PetscSNES,PetscVec,PetscVec)
-    ctypedef PetscErrorCode (*SNESJacobian)(PetscSNES,PetscVec,PetscMat*,PetscMat*,MatStructure*,void*)
+    ctypedef PetscErrorCode (*SNESJacobian)(PetscSNES,PetscVec,PetscMat,PetscMat,void*)
     PetscErrorCode SNESGetJacobian(PetscSNES,PetscMat*,PetscMat*,SNESJacobian*,void*)
     PetscErrorCode SNESSetJacobian(PetscSNES,PetscMat,PetscMat,SNESJacobian,void*)
-    int SNESComputeJacobian(PetscSNES,PetscVec,PetscMat*,PetscMat*,MatStructure*)
+    int SNESComputeJacobian(PetscSNES,PetscVec,PetscMat,PetscMat)
     SNESJacobian MatMFFDComputeJacobian
     PetscErrorCode SNESGetKSP(PetscSNES,PetscKSP*)
 cdef extern from * nogil:
@@ -1961,11 +1960,10 @@ cdef PetscErrorCode SNESStep_Python_default(
     except IERR with gil:
     FunctionBegin(b"SNESStep_Python_default")
     cdef PetscMat J = NULL, P = NULL
-    cdef MatStructure mstr = DIFFERENT_NONZERO_PATTERN
     cdef PetscInt lits = 0
     CHKERR( SNESGetJacobian(snes,&J,&P,NULL,NULL)   )
-    CHKERR( SNESComputeJacobian(snes,X,&J,&P,&mstr) )
-    CHKERR( KSPSetOperators(snes.ksp,J,P,mstr)      )
+    CHKERR( SNESComputeJacobian(snes,X,J,P)         )
+    CHKERR( KSPSetOperators(snes.ksp,J,P)           )
     CHKERR( KSPSolve(snes.ksp,F,Y)                  )
     CHKERR( KSPGetIterationNumber(snes.ksp,&lits)   )
     snes.linear_its += lits
@@ -1997,13 +1995,13 @@ cdef extern from * nogil:
       PetscErrorCode (*step)(PetscTS) except IERR
       PetscErrorCode (*solve)(PetscTS) except IERR
       PetscErrorCode (*snesfunction)(PetscSNES,PetscVec,PetscVec,PetscTS) except IERR
-      PetscErrorCode (*snesjacobian)(PetscSNES,PetscVec,PetscMat*,PetscMat*,MatStructure*,PetscTS) except IERR
+      PetscErrorCode (*snesjacobian)(PetscSNES,PetscVec,PetscMat,PetscMat,PetscTS) except IERR
     ctypedef _TSOps *TSOps
     struct _TSUserOps:
       PetscErrorCode (*rhsfunction)(PetscTS,PetscReal,PetscVec,PetscVec,void*) except IERR
       PetscErrorCode (*ifunction)  (PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,void*) except IERR
-      PetscErrorCode (*rhsjacobian)(PetscTS,PetscReal,PetscVec,PetscMat*,PetscMat*,MatStructure*,void*) except IERR
-      PetscErrorCode (*ijacobian)  (PetscTS,PetscReal,PetscVec,PetscVec,PetscReal,PetscMat*,PetscMat*,MatStructure*,void*) except IERR
+      PetscErrorCode (*rhsjacobian)(PetscTS,PetscReal,PetscVec,PetscMat,PetscMat,void*) except IERR
+      PetscErrorCode (*ijacobian)  (PetscTS,PetscReal,PetscVec,PetscVec,PetscReal,PetscMat,PetscMat,void*) except IERR
     ctypedef _TSUserOps *TSUserOps
     struct _p_TS:
         void *data
@@ -2031,9 +2029,9 @@ cdef extern from * nogil:
     PetscErrorCode TSPostStep(PetscTS)
     PetscErrorCode TSMonitor(PetscTS,PetscInt,PetscReal,PetscVec)
     PetscErrorCode TSComputeIFunction(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,PetscBool)
-    PetscErrorCode TSComputeIJacobian(PetscTS,PetscReal,PetscVec,PetscVec,PetscReal,PetscMat*,PetscMat*,MatStructure*,PetscBool)
+    PetscErrorCode TSComputeIJacobian(PetscTS,PetscReal,PetscVec,PetscVec,PetscReal,PetscMat,PetscMat,PetscBool)
     PetscErrorCode SNESTSFormFunction(PetscSNES,PetscVec,PetscVec,void*)
-    PetscErrorCode SNESTSFormJacobian(PetscSNES,PetscVec,PetscMat*,PetscMat*,MatStructure*,void*)
+    PetscErrorCode SNESTSFormJacobian(PetscSNES,PetscVec,PetscMat,PetscMat,void*)
 
 #@cython.internal
 cdef class _PyTS(_PyObj): pass
@@ -2235,19 +2233,16 @@ cdef PetscErrorCode SNESTSFormFunction_Python(
 cdef PetscErrorCode SNESTSFormJacobian_Python(
     PetscSNES snes,
     PetscVec  x,
-    PetscMat  *A,PetscMat *B,MatStructure *s,
+    PetscMat  A,
+    PetscMat  B,
     PetscTS   ts,
     ) \
     except IERR with gil:
     #
     cdef formSNESJacobian = PyTS(ts).formSNESJacobian
     if formSNESJacobian is not None:
-        args = (SNES_(snes),Vec_(x),Mat_(A[0]),Mat_(B[0]),TS_(ts))
-        mstr = formSNESJacobian(*args)
-        if   mstr is None:  s[0] = DIFFERENT_NONZERO_PATTERN
-        elif mstr is False: s[0] = DIFFERENT_NONZERO_PATTERN
-        elif mstr is True:  s[0] = SAME_NONZERO_PATTERN
-        else:               s[0] = <MatStructure>mstr
+        args = (SNES_(snes),Vec_(x),Mat_(A),Mat_(B),TS_(ts))
+        formSNESJacobian(*args)
         return FunctionEnd()
     #
     cdef PetscVec dx = NULL
@@ -2260,7 +2255,7 @@ cdef PetscErrorCode SNESTSFormJacobian_Python(
     cdef PetscReal a = 1.0/ts.time_step
     CHKERR( VecCopy(ts.vec_sol,dx)                )
     CHKERR( VecAXPBY(dx,+a,-a,x)                  )
-    CHKERR( TSComputeIJacobian(ts,t,x,dx,a,A,B,s,PETSC_FALSE) )
+    CHKERR( TSComputeIJacobian(ts,t,x,dx,a,A,B,PETSC_FALSE) )
     return FunctionEnd()
 
 cdef PetscErrorCode TSSolveStep_Python(

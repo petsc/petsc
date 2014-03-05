@@ -56,9 +56,8 @@ cdef extern from * nogil:
     ctypedef int (*PetscTSJacobianFunction)(PetscTS,
                                             PetscReal,
                                             PetscVec,
-                                            PetscMat*,
-                                            PetscMat*,
-                                            PetscMatStructure*,
+                                            PetscMat,
+                                            PetscMat,
                                             void*) except PETSC_ERR_PYTHON
 
     ctypedef int (*PetscTSIFunctionFunction)(PetscTS,
@@ -72,9 +71,8 @@ cdef extern from * nogil:
                                              PetscVec,
                                              PetscVec,
                                              PetscReal,
-                                             PetscMat*,
-                                             PetscMat*,
-                                             PetscMatStructure*,
+                                             PetscMat,
+                                             PetscMat,
                                              void*) except PETSC_ERR_PYTHON
 
     ctypedef int (*PetscTSMonitorFunction)(PetscTS,
@@ -123,10 +121,10 @@ cdef extern from * nogil:
 
     int TSComputeRHSFunction(PetscTS,PetscReal,PetscVec,PetscVec)
     int TSComputeRHSFunctionLinear(PetscTS,PetscReal,PetscVec,PetscVec,void*)
-    int TSComputeRHSJacobian(PetscTS,PetscReal,PetscVec,PetscMat*,PetscMat*,PetscMatStructure*)
-    int TSComputeRHSJacobianConstant(PetscTS,PetscReal,PetscVec,PetscMat*,PetscMat*,PetscMatStructure*,void*)
+    int TSComputeRHSJacobian(PetscTS,PetscReal,PetscVec,PetscMat,PetscMat)
+    int TSComputeRHSJacobianConstant(PetscTS,PetscReal,PetscVec,PetscMat,PetscMat,void*)
     int TSComputeIFunction(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,PetscBool)
-    int TSComputeIJacobian(PetscTS,PetscReal,PetscVec,PetscVec,PetscReal,PetscMat*,PetscMat*,PetscMatStructure*,PetscBool)
+    int TSComputeIJacobian(PetscTS,PetscReal,PetscVec,PetscVec,PetscReal,PetscMat,PetscMat,PetscBool)
 
     int TSSetTime(PetscTS,PetscReal)
     int TSGetTime(PetscTS,PetscReal*)
@@ -207,21 +205,16 @@ cdef int TS_RHSJacobian(
     PetscTS   ts,
     PetscReal t,
     PetscVec  x,
-    PetscMat* J,
-    PetscMat* P,
-    PetscMatStructure* s,
+    PetscMat  J,
+    PetscMat  P,
     void*     ctx,
     ) except PETSC_ERR_PYTHON with gil:
-    cdef TS   Ts   = ref_TS(ts)
-    cdef Vec  Xvec = ref_Vec(x)
-    cdef Mat  Jmat = ref_Mat(J[0])
-    cdef Mat  Pmat = ref_Mat(P[0])
+    cdef TS  Ts   = ref_TS(ts)
+    cdef Vec Xvec = ref_Vec(x)
+    cdef Mat Jmat = ref_Mat(J)
+    cdef Mat Pmat = ref_Mat(P)
     (jacobian, args, kargs) = Ts.get_attr('__rhsjacobian__')
-    retv = jacobian(Ts, toReal(t), Xvec, Jmat, Pmat, *args, **kargs)
-    s[0] = matstructure(retv)
-    cdef PetscMat Jtmp = NULL, Ptmp = NULL
-    Jtmp = J[0]; J[0] = Jmat.mat; Jmat.mat = Jtmp
-    Ptmp = P[0]; P[0] = Pmat.mat; Pmat.mat = Ptmp
+    jacobian(Ts, toReal(t), Xvec, Jmat, Pmat, *args, **kargs)
     return 0
 
 # -----------------------------------------------------------------------------
@@ -248,23 +241,17 @@ cdef int TS_IJacobian(
     PetscVec  x,
     PetscVec  xdot,
     PetscReal a,
-    PetscMat* J,
-    PetscMat* P,
-    PetscMatStructure* s,
+    PetscMat  J,
+    PetscMat  P,
     void*     ctx,
     ) except PETSC_ERR_PYTHON with gil:
     cdef TS   Ts    = ref_TS(ts)
     cdef Vec  Xvec  = ref_Vec(x)
     cdef Vec  XDvec = ref_Vec(xdot)
-    cdef Mat  Jmat  = ref_Mat(J[0])
-    cdef Mat  Pmat  = ref_Mat(P[0])
+    cdef Mat  Jmat  = ref_Mat(J)
+    cdef Mat  Pmat  = ref_Mat(P)
     (jacobian, args, kargs) = Ts.get_attr('__ijacobian__')
-    retv = jacobian(Ts, toReal(t), Xvec, XDvec, toReal(a),
-                    Jmat, Pmat, *args, **kargs)
-    s[0] = matstructure(retv)
-    cdef PetscMat Jtmp = NULL, Ptmp = NULL
-    Jtmp = J[0]; J[0] = Jmat.mat; Jmat.mat = Jtmp
-    Ptmp = P[0]; P[0] = Pmat.mat; Pmat.mat = Ptmp
+    jacobian(Ts, toReal(t), Xvec, XDvec, toReal(a), Jmat, Pmat, *args, **kargs)
     return 0
 
 # -----------------------------------------------------------------------------

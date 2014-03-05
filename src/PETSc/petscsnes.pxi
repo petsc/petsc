@@ -12,7 +12,7 @@ cdef extern from * nogil:
     PetscSNESType SNESNGMRES
     PetscSNESType SNESQN
     PetscSNESType SNESSHELL
-    PetscSNESType SNESGS
+    PetscSNESType SNESNGS
     PetscSNESType SNESNCG
     PetscSNESType SNESFAS
     PetscSNESType SNESMS
@@ -63,9 +63,8 @@ cdef extern from * nogil:
 
     ctypedef int (*PetscSNESJacobianFunction)(PetscSNES,
                                               PetscVec,
-                                              PetscMat*,
-                                              PetscMat*,
-                                              PetscMatStructure*,
+                                              PetscMat,
+                                              PetscMat,
                                               void*) except PETSC_ERR_PYTHON
 
     ctypedef int (*PetscSNESObjectiveFunction)(PetscSNES,
@@ -117,7 +116,7 @@ cdef extern from * nogil:
     int SNESGetObjective(PetscSNES,PetscSNESObjectiveFunction*,void**)
 
     int SNESComputeFunction(PetscSNES,PetscVec,PetscVec)
-    int SNESComputeJacobian(PetscSNES,PetscVec,PetscMat*,PetscMat*,PetscMatStructure*)
+    int SNESComputeJacobian(PetscSNES,PetscVec,PetscMat,PetscMat)
     int SNESComputeObjective(PetscSNES,PetscVec,PetscReal*)
 
     int SNESSetNormSchedule(PetscSNES,PetscSNESNormSchedule)
@@ -239,21 +238,16 @@ cdef int SNES_Update(
 cdef int SNES_Jacobian(
     PetscSNES snes,
     PetscVec  x,
-    PetscMat* J,
-    PetscMat* P,
-    PetscMatStructure* s,
+    PetscMat  J,
+    PetscMat  P,
     void*     ctx,
     ) except PETSC_ERR_PYTHON with gil:
     cdef SNES Snes = ref_SNES(snes)
     cdef Vec  Xvec = ref_Vec(x)
-    cdef Mat  Jmat = ref_Mat(J[0])
-    cdef Mat  Pmat = ref_Mat(P[0])
+    cdef Mat  Jmat = ref_Mat(J)
+    cdef Mat  Pmat = ref_Mat(P)
     (jacobian, args, kargs) = Snes.get_attr('__jacobian__')
-    retv = jacobian(Snes, Xvec, Jmat, Pmat, *args, **kargs)
-    s[0] = matstructure(retv)
-    cdef PetscMat Jtmp = NULL, Ptmp = NULL
-    Jtmp = J[0]; J[0] = Jmat.mat; Jmat.mat = Jtmp
-    Ptmp = P[0]; P[0] = Pmat.mat; Pmat.mat = Ptmp
+    jacobian(Snes, Xvec, Jmat, Pmat, *args, **kargs)
     return 0
 
 # -----------------------------------------------------------------------------
