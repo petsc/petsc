@@ -6511,11 +6511,13 @@ PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpola
 
    Can extend PetscFEIntegrateJacobian_Basic() to do a specialized cell loop
   */
-  *scaling = NULL;
   ierr = DMGetDefaultGlobalSection(dmFine, &gsf);CHKERRQ(ierr);
   ierr = PetscSectionGetConstrainedStorageSize(gsf, &m);CHKERRQ(ierr);
   ierr = DMGetDefaultGlobalSection(dmCoarse, &gsc);CHKERRQ(ierr);
   ierr = PetscSectionGetConstrainedStorageSize(gsc, &n);CHKERRQ(ierr);
+  /* FAS fails without a scaling vector */
+  ierr = DMCreateGlobalVector(dmCoarse, scaling);CHKERRQ(ierr);
+  ierr = VecSet(*scaling, 1.0);CHKERRQ(ierr);
   /* We need to preallocate properly */
   ierr = MatCreate(PetscObjectComm((PetscObject) dmCoarse), interpolation);CHKERRQ(ierr);
   ierr = MatSetSizes(*interpolation, m, n, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
