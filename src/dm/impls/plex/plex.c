@@ -3501,7 +3501,10 @@ PetscErrorCode InitOutput_Triangle(struct triangulateio *outputCtx)
 PetscErrorCode FiniOutput_Triangle(struct triangulateio *outputCtx)
 {
   PetscFunctionBegin;
+  free(outputCtx->pointlist);
   free(outputCtx->pointmarkerlist);
+  free(outputCtx->segmentlist);
+  free(outputCtx->segmentmarkerlist);
   free(outputCtx->edgelist);
   free(outputCtx->edgemarkerlist);
   free(outputCtx->trianglelist);
