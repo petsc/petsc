@@ -6641,6 +6641,58 @@ PetscErrorCode DMPlexRefineUniform_Internal(DM dm, CellRefiner cellRefiner, DM *
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateCoarsePointIS"
+/*@
+  DMPlexCreateCoarsePointIS - Creates an IS covering the coarse DM chart with the fine points as data
+
+  Input Parameter:
+. dm - The coarse DM
+
+  Output Parameter:
+. fpointIS - The IS of all the fine points which exist in the original coarse mesh
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexSetRefinementUniform(), DMPlexCreateSubpointIS()
+@*/
+PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
+{
+  CellRefiner    cellRefiner;
+  PetscInt      *depthSize, *fpoints;
+  PetscInt       cStartNew = 0, vStartNew = 0, fStartNew = 0, eStartNew = 0;
+  PetscInt       depth, pStart, pEnd, p, vStart, vEnd, v;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetCellRefiner_Internal(dm, &cellRefiner);CHKERRQ(ierr);
+  ierr = PetscMalloc1((depth+1), &depthSize);CHKERRQ(ierr);
+  ierr = CellRefinerGetSizes(cellRefiner, dm, depthSize);CHKERRQ(ierr);
+  if (cellRefiner) {ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, &fStartNew, &eStartNew, &vStartNew);CHKERRQ(ierr);}
+  ierr = PetscMalloc1(pEnd-pStart,&fpoints);CHKERRQ(ierr);
+  for (p = 0; p < pEnd-pStart; ++p) fpoints[p] = -1;
+  switch (cellRefiner) {
+  case 1: /* Simplicial 2D */
+  case 3: /* Hybrid simplicial 2D */
+  case 2: /* Hex 2D */
+  case 4: /* Hybrid Hex 2D */
+  case 5: /* Simplicial 3D */
+  case 7: /* Hybrid Simplicial 3D */
+  case 6: /* Hex 3D */
+  case 8: /* Hybrid Hex 3D */
+    for (v = vStart; v < vEnd; ++v) fpoints[v-pStart] = vStartNew + (v - vStart);
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", cellRefiner);
+  }
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, pEnd-pStart, fpoints, PETSC_OWN_POINTER, fpointIS);CHKERRQ(ierr);
+  ierr = PetscFree(depthSize);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexSetRefinementUniform"
 PetscErrorCode DMPlexSetRefinementUniform(DM dm, PetscBool refinementUniform)
 {
