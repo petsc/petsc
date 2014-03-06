@@ -1,8 +1,8 @@
 
-static char help[] = "Transistor amplifier.\n";
+static char help[] = "Transistor amplifier (autonomous).\n";
 
 /*F
-  M y=f(t,y)
+  M y'=f(y)
 
   Useful options: -ts_monitor_lg_solution -ts_monitor_lg_timestep -lg_indicate_data_points 0
 F*/

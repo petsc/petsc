@@ -1,9 +1,9 @@
 
-static char help[] = "Transistor amplifier.\n";
+static char help[] = "Transistor amplifier (semi-explicit).\n";
 
 /*F
-  M y=f(t,y)
-
+  [I 0] [y] = f(t,y,z)
+  [0 0] [z] = g(t,y,z)
   Useful options: -ts_monitor_lg_solution -ts_monitor_lg_timestep -lg_indicate_data_points 0
 F*/
 
