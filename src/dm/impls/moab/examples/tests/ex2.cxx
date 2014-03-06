@@ -10,6 +10,7 @@ typedef struct {
   PetscInt      dim;                            /* The topological mesh dimension */
   PetscInt      nele;                           /* Elements in each dimension */
   PetscBool     simplex;                        /* Use simplex elements */
+  PetscBool     interlace;
   char          input_file[PETSC_MAX_PATH_LEN];   /* Import mesh from file */
   char          output_file[PETSC_MAX_PATH_LEN];   /* Output mesh file name */
   PetscBool     write_output;                        /* Write output mesh and data to file */
@@ -31,11 +32,13 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->nfields           = 256;
   options->simplex           = PETSC_FALSE;
   options->write_output      = PETSC_FALSE;
+  options->interlace         = PETSC_FALSE;
   options->input_file[0]     = '\0';
   ierr = PetscStrcpy(options->output_file,"ex2.h5m");CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMMOAB");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-debug", "Enable debug messages", "ex2.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-interlace", "Use interlaced arrangement for the field data", "ex2.c", options->interlace, &options->interlace, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Create simplices instead of tensor product elements", "ex2.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex2.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-n", "The number of elements in each dimension", "ex2.c", options->nele, &options->nele, NULL);CHKERRQ(ierr);
@@ -70,7 +73,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   if (len) {
     if (user->debug) PetscPrintf(comm, "Loading mesh from file: %s and creating a DM object.\n",user->input_file);
     ierr = DMMoabLoadFromFile(comm, user->dim, user->input_file, "", dm);CHKERRQ(ierr);
-  } else {
+  }
+  else {
     if (user->debug) {
       PetscPrintf(comm, "Creating a %D-dimensional structured mesh of %Dx%Dx%D in memory and creating a DM object.\n",user->dim,user->nele,user->nele,user->nele);
       PetscPrintf(comm, "Using simplex ? %D\n", user->simplex);
@@ -84,9 +88,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       PetscPrintf(comm, "\t Field{0} = %s.\n",user->fieldnames[i]);
   }
   ierr     = DMMoabSetFieldNames(*dm, user->nfields, (const char**)user->fieldnames);CHKERRQ(ierr);
-  ierr     = DMSetUp(*dm);CHKERRQ(ierr);
   ierr     = PetscObjectSetName((PetscObject) *dm, "Structured Mesh");CHKERRQ(ierr);
-  ierr     = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr     = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   user->dm = *dm;
   PetscFunctionReturn(0);
@@ -99,6 +101,7 @@ int main(int argc, char **argv)
   AppCtx         user;                 /* user-defined work context */
   PetscRandom    rctx;
   Vec            solution;
+  Mat            system;
   MPI_Comm       comm;
   PetscErrorCode ierr;
 
@@ -107,11 +110,23 @@ int main(int argc, char **argv)
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
   ierr = CreateMesh(comm, &user, &user.dm);CHKERRQ(ierr);
 
+  /* set block size */
+  ierr = DMMoabSetBlockSize(user.dm, (user.interlace?user.nfields:1));CHKERRQ(ierr);
+  ierr = DMSetMatType(user.dm,MATAIJ/*MATBAIJ*/);CHKERRQ(ierr);
+
+  ierr = DMSetFromOptions(user.dm);CHKERRQ(ierr);
+
+  /* SetUp the data structures for DMMOAB */
+  ierr = DMSetUp(user.dm);CHKERRQ(ierr);
+
   if (user.debug) PetscPrintf(comm, "Creating a global vector defined on DM and setting random data.\n");
   ierr = DMCreateGlobalVector(user.dm, &solution);CHKERRQ(ierr);
   ierr = PetscRandomCreate(comm,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetType(rctx,PETSCRAND48);CHKERRQ(ierr);
   ierr = VecSetRandom(solution,rctx);CHKERRQ(ierr);
+
+  /* test if matrix allocation for the prescribed matrix type is done correctly */
+  ierr = DMCreateMatrix(user.dm,&system);CHKERRQ(ierr);
 
   if (user.write_output) {
     ierr = DMMoabSetGlobalFieldVector(user.dm, solution);CHKERRQ(ierr);
