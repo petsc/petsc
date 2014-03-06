@@ -6384,7 +6384,6 @@ PetscErrorCode  TSGetStages(TS ts,PetscInt *ns, Vec **Y)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeIJacobianDefaultColor"
 /*@C
@@ -6468,5 +6467,91 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts,PetscReal t,Vec U,Vec Udot,P
     ierr = MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "TSDuplicate"
+/*@C
+  TSDuplicate - This function duplicates a timestepper. 
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. comm - The communicator
+
+  Input Parameter:
+. tsin    - The input TS
+
+  Output Parameter:
+. tsout   - The output TS (duplicate)
+
+  Level: beginner
+
+.keywords: TS, duplicate
+.seealso: TSCreate(), TSSetType(), TSSetUp(), TSDestroy(), TSSetProblemType()
+@*/
+PetscErrorCode  TSDuplicate(MPI_Comm comm, TS tsin, TS *tsout)
+{
+  TS             t;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(tsin,1);
+  *tsout = NULL;
+  /* ierr = TSInitializePackage();CHKERRQ(ierr); */
+
+  ierr = PetscHeaderCreate(t, _p_TS, struct _TSOps, TS_CLASSID, "TS", "Time stepping", "TS", comm, TSDestroy, TSView);CHKERRQ(ierr);
+
+  /* General TS description */
+  t->numbermonitors    = 0;
+  t->setupcalled       = 0;
+  t->ksp_its           = 0;
+  t->snes_its          = 0;
+  t->nwork             = 0;
+  t->rhsjacobian.time  = -1e20;
+  t->rhsjacobian.scale = 1.;
+  t->ijacobian.shift   = 1.;
+
+  SNES snes;
+  DM   dm;
+  ierr = TSGetSNES(tsin,&snes); CHKERRQ(ierr);
+  ierr = TSSetSNES(t,snes);     CHKERRQ(ierr);
+  ierr = TSGetDM(tsin,&dm);     CHKERRQ(ierr);
+  ierr = TSSetDM(t,dm);         CHKERRQ(ierr);
+
+  t->adapt=tsin->adapt;
+  PetscObjectReference((PetscObject)t->adapt);
+
+  t->problem_type      = tsin->problem_type;
+  t->ptime             = tsin->ptime;
+  t->time_step         = tsin->time_step;
+  t->time_step_orig    = tsin->time_step_orig;
+  t->max_time          = tsin->max_time;
+  t->steps             = tsin->steps;
+  t->max_steps         = tsin->max_steps;
+  t->equation_type     = tsin->equation_type;
+  t->atol              = tsin->atol;
+  t->rtol              = tsin->rtol;
+  t->max_snes_failures = tsin->max_snes_failures;
+  t->max_reject        = tsin->max_reject;
+  t->errorifstepfailed = tsin->errorifstepfailed;
+
+  TSType type;
+  ierr = TSGetType(tsin,&type); CHKERRQ(ierr);
+  ierr = TSSetType(t,type);     CHKERRQ(ierr);
+
+  t->vec_sol           = NULL;
+  t->data              = NULL;
+  t->user              = NULL;
+  t->work              = NULL;
+
+  t->cfltime          = tsin->cfltime;
+  t->cfltime_local    = tsin->cfltime_local;
+  t->exact_final_time = tsin->exact_final_time;
+
+  ierr = PetscMemcpy(t->ops,tsin->ops,sizeof(struct _TSOps));CHKERRQ(ierr);
+
+  *tsout = t;
   PetscFunctionReturn(0);
 }
