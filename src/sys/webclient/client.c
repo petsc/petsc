@@ -91,8 +91,7 @@ PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],const ch
 {
   char           *request=0;
   char           contentlength[40],contenttype[80],*path,*host;
-  int            r;
-  size_t         request_len,len,headlen,bodylen,contentlen,pathlen,hostlen,typelen,contenttypelen = 0;
+  size_t         request_len,headlen,bodylen,contentlen,pathlen,hostlen,typelen,contenttypelen = 0;
   PetscErrorCode ierr;
   PetscBool      flg;
 
@@ -100,7 +99,6 @@ PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],const ch
   ierr = PetscStrallocpy(url,&host);CHKERRQ(ierr);
   ierr = PetscStrchr(host,'/',&path);CHKERRQ(ierr);
   if (!path) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"url must contain / it is %s",url);
-  *path = NULL;
   ierr = PetscStrlen(host,&hostlen);CHKERRQ(ierr);
 
   ierr = PetscStrchr(url,'/',&path);CHKERRQ(ierr);

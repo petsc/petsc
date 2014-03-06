@@ -43,7 +43,7 @@ PetscErrorCode PetscTextBelt(MPI_Comm comm,const char number[],const char messag
     ierr = PetscStrcat(body,"message=");CHKERRQ(ierr);
     ierr = PetscStrcat(body,message);CHKERRQ(ierr);
     ierr = PetscStrlen(body,&blen);CHKERRQ(ierr);
-    for (i=0; i<blen; i++) {
+    for (i=0; i<(int)blen; i++) {
       if (body[i] == ' ') body[i] = '+';
     }
     ierr = PetscOpenSocket("textbelt.com",80,&sock);CHKERRQ(ierr);
