@@ -2433,7 +2433,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B)
 
      Synopsis:
      #include <petscsnes.h>
-$     SNESJacobianFunction(SNES snes,Vec x,Mat Amat,Mat *Pmat,void *ctx);
+$     SNESJacobianFunction(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx);
 
 +  x - input vector
 .  Amat - the matrix that defines the (approximate) Jacobian
