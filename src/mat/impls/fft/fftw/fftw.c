@@ -42,14 +42,10 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
   Mat_FFT        *fft  = (Mat_FFT*)A->data;
   Mat_FFTW       *fftw = (Mat_FFTW*)fft->data;
   PetscScalar    *x_array,*y_array;
-  PetscInt       ndim = fft->ndim,*dim = fft->dim,i;
-  //int            *dim_32,i;
   fftw_iodim     *iodims;
+  PetscInt       ndim = fft->ndim,*dim = fft->dim,i;
 
   PetscFunctionBegin;
-  //ierr = PetscMalloc(ndim*sizeof(int),&dim_32);CHKERRQ(ierr);
-  //for (i=0; i<ndim; i++) dim_32[i] = (int)dim[i];
-
   ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   if (!fftw->p_forward) { /* create a plan, then excute it */
@@ -71,18 +67,13 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
     case 3:
 #if defined(PETSC_USE_COMPLEX)
       fftw->p_forward = fftw_plan_dft_3d(dim[0],dim[1],dim[2],(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_FORWARD,fftw->p_flag);
-      //fftw->p_forward = fftw_plan_dft_3d(dim[0],dim[1],dim[2],(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_FORWARD,FFTW_MEASURE);
 #else
       fftw->p_forward = fftw_plan_dft_r2c_3d(dim[0],dim[1],dim[2],(double*)x_array,(fftw_complex*)y_array,fftw->p_flag);
 #endif
       break;
     default:
 #if defined(PETSC_USE_COMPLEX)
-      //fftw->p_forward = fftw_plan_dft((int)ndim,(int*)dim_32,(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_FORWARD,fftw->p_flag);
-      /* bug: dim[3] changes from 10 to 0 '--with-64-bit-indices=1' */
-
       iodims = (fftw_iodim*)fftw->iodims;
-      //ierr = PetscMalloc(ndim*sizeof(fftw_iodim),&iodims);CHKERRQ(ierr);
       if (ndim) {
         iodims[ndim-1].n = dim[ndim-1];
         iodims[ndim-1].is = iodims[ndim-1].os = 1;
@@ -91,9 +82,7 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
           iodims[i].is = iodims[i].os = iodims[i+1].is * iodims[i+1].n;
         }
       }
-      
       fftw->p_forward = fftw_plan_guru_dft((int)ndim,iodims,0,NULL,(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_FORWARD,fftw->p_flag);
-       
 #else
       fftw->p_forward = fftw_plan_dft_r2c(ndim,dim,(double*)x_array,(fftw_complex*)y_array,fftw->p_flag);
 #endif
@@ -113,7 +102,6 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
   }
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
-  //ierr = PetscFree(dim_32);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -136,12 +124,8 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
   PetscScalar    *x_array,*y_array;
   PetscInt       ndim=fft->ndim,*dim=fft->dim;
   fftw_iodim     *iodims=(fftw_iodim*)fftw->iodims;
-  //int            *dim_32,i; /* for 64-bit */
-
+ 
   PetscFunctionBegin;
-  //ierr = PetscMalloc(ndim*sizeof(int),&dim_32);
-  //for (i=0; i<ndim; i++) dim_32[i] = (int)dim[i];
-
   ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   if (!fftw->p_backward) { /* create a plan, then excute it */
@@ -163,14 +147,12 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
     case 3:
 #if defined(PETSC_USE_COMPLEX)
       fftw->p_backward = fftw_plan_dft_3d(dim[0],dim[1],dim[2],(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_BACKWARD,fftw->p_flag);
-      //fftw->p_backward = fftw_plan_dft_3d(dim[0],dim[1],dim[2],(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_BACKWARD,FFTW_MEASURE);
 #else
       fftw->p_backward= fftw_plan_dft_c2r_3d(dim[0],dim[1],dim[2],(fftw_complex*)x_array,(double*)y_array,fftw->p_flag);
 #endif
       break;
     default:
 #if defined(PETSC_USE_COMPLEX)
-      //fftw->p_backward = fftw_plan_dft((int)ndim,dim,(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_BACKWARD,fftw->p_flag);
       fftw->p_backward = fftw_plan_guru_dft((int)ndim,iodims,0,NULL,(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_BACKWARD,fftw->p_flag);
 #else
       fftw->p_backward= fftw_plan_dft_c2r(ndim,dim,(fftw_complex*)x_array,(double*)y_array,fftw->p_flag);
@@ -189,7 +171,6 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
   }
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
-  //ierr = PetscFree(dim_32);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -313,7 +294,6 @@ PetscErrorCode MatMultTranspose_MPIFFTW(Mat A,Vec x,Vec y)
     default:
 #if defined(PETSC_USE_COMPLEX)
       fftw->p_backward = fftw_mpi_plan_dft(fftw->ndim_fftw,fftw->dim_fftw,(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_BACKWARD,fftw->p_flag);
-      fftw->p_backward = fftw_mpi_plan_dft(fftw->ndim_fftw,fftw->dim_fftw,(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_BACKWARD,fftw->p_flag);
 #else
       fftw->p_backward = fftw_mpi_plan_dft_c2r(fftw->ndim_fftw,fftw->dim_fftw,(fftw_complex*)x_array,(double*)y_array,comm,FFTW_ESTIMATE);
 #endif
@@ -345,11 +325,11 @@ PetscErrorCode MatDestroy_FFTW(Mat A)
   PetscFunctionBegin;
   fftw_destroy_plan(fftw->p_forward);
   fftw_destroy_plan(fftw->p_backward);
-  ierr = PetscFree(fftw->dim_fftw);CHKERRQ(ierr);
   if (fftw->iodims) {
     /* ierr = PetscFree(fftw->iodims);CHKERRQ(ierr); */
     free(fftw->iodims);
   }
+  ierr = PetscFree(fftw->dim_fftw);CHKERRQ(ierr);
   ierr = PetscFree(fft->data);CHKERRQ(ierr);
   fftw_mpi_cleanup();
   PetscFunctionReturn(0);
@@ -676,7 +656,6 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
   PetscInt       low;
   PetscMPIInt    rank,size;
   PetscInt       vsize,vsize1;
-  //ptrdiff_t      alloc_local,local_n0,local_0_start;
   ptrdiff_t      local_n0,local_0_start;
   ptrdiff_t      local_n1,local_1_start;
   VecScatter     vecscat;
