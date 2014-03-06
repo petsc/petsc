@@ -43,6 +43,8 @@ typedef struct {
   moab::Range             *bndyvtx,*bndyfaces,*bndyelems; /* Boundary entities: skin vertices, skin faces and elements on the outer skin */
   moab::EntityHandle      fileset;                        /* The Global set to which all local entities belong */
 
+  PetscInt               *dfill, *ofill;
+
   /* store the mapping information */
   ISLocalToGlobalMapping  ltog_map;
   VecScatter              ltog_sendrecv;

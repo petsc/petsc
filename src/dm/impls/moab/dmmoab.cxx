@@ -8,9 +8,9 @@
 /*MC
   DMMOAB = "moab" - A DM object that encapsulates an unstructured mesh described by the MOAB mesh database.
                     Direct access to the MOAB Interface and other mesh manipulation related objects are available
-                    through public API. Ability to create global and local representation of Vecs containing all 
-                    unknowns in the interior and shared boundary via a transparent tag-data wrapper is provided 
-                    along with utility functions to traverse the mesh and assemble a discrete system via 
+                    through public API. Ability to create global and local representation of Vecs containing all
+                    unknowns in the interior and shared boundary via a transparent tag-data wrapper is provided
+                    along with utility functions to traverse the mesh and assemble a discrete system via
                     field-based/blocked Vec(Get/Set) methods. Input from and output to different formats are
                     available.
 
@@ -610,7 +610,7 @@ PetscErrorCode DMMoabGetOffset(DM dm,PetscInt *offset)
   Collective on MPI_Comm
 
   Input Parameter:
-. dm - The DMMoab object 
+. dm - The DMMoab object
 
   Output Parameter:
 . dim - The dimension of DM
@@ -636,7 +636,7 @@ PetscErrorCode DMMoabGetDimension(DM dm,PetscInt *dim)
   Collective on MPI_Comm
 
   Input Parameter:
-. dm - The DMMoab object 
+. dm - The DMMoab object
 . ehandle - The element entity handle
 
   Output Parameter:
@@ -853,6 +853,8 @@ PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm)
   ierr = PetscFree(dmmoab->gidmap);CHKERRQ(ierr);
   ierr = PetscFree(dmmoab->llmap);CHKERRQ(ierr);
   ierr = PetscFree(dmmoab->lgmap);CHKERRQ(ierr);
+  ierr = PetscFree(dmmoab->dfill);CHKERRQ(ierr);
+  ierr = PetscFree(dmmoab->ofill);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&dmmoab->ltog_sendrecv);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&dmmoab->ltog_map);CHKERRQ(ierr);
   ierr = PetscFree(dm->data);CHKERRQ(ierr);
@@ -898,7 +900,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   /* Get the local and shared vertices and cache it */
   if (dmmoab->mbiface == PETSC_NULL || dmmoab->pcomm == PETSC_NULL) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ORDER, "Set the MOAB Interface and ParallelComm objects before calling SetUp.");
- 
+
   /* Get the entities recursively in the current part of the mesh, if user did not set the local vertices explicitly */
   if (dmmoab->vlocal->empty())
   {
@@ -1064,7 +1066,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
 
   /* skin the boundary and store nodes */
   {
-    /* get the skin vertices of boundary faces for the current partition and then filter 
+    /* get the skin vertices of boundary faces for the current partition and then filter
        the local, boundary faces, vertices and elements alone via PSTATUS flags;
        this should not give us any ghosted boundary, but if user needs such a functionality
        it would be easy to add it based on the find_skin query below */
