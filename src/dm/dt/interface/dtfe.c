@@ -5505,7 +5505,7 @@ PetscErrorCode PetscFEIntegrateJacobian(PetscFE fem, PetscInt Ne, PetscInt Nf, P
 @*/
 PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
 {
-  PetscSpaceType   typename;
+  PetscSpaceType   tname;
   PetscSpace       P, Pref;
   PetscDualSpace   Q, Qref;
   DM               K, Kref;
@@ -5520,8 +5520,8 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   ierr = PetscDualSpaceGetDM(Q, &K);CHKERRQ(ierr);
   /* Create space */
   ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) fe), &Pref);CHKERRQ(ierr);
-  ierr = PetscObjectGetType((PetscObject) P, &typename);CHKERRQ(ierr);
-  ierr = PetscSpaceSetType(Pref, typename);CHKERRQ(ierr);
+  ierr = PetscObjectGetType((PetscObject) P, &tname);CHKERRQ(ierr);
+  ierr = PetscSpaceSetType(Pref, tname);CHKERRQ(ierr);
   ierr = PetscSpacePolynomialGetNumVariables(P, &dim);CHKERRQ(ierr);
   ierr = PetscSpacePolynomialSetNumVariables(Pref, dim);CHKERRQ(ierr);
   ierr = PetscSpaceGetOrder(P,   &order);CHKERRQ(ierr);
@@ -5529,8 +5529,8 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   ierr = PetscSpaceSetUp(Pref);CHKERRQ(ierr);
   /* Create dual space */
   ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) fe), &Qref);CHKERRQ(ierr);
-  ierr = PetscObjectGetType((PetscObject) Q, &typename);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetType(Qref, typename);CHKERRQ(ierr);
+  ierr = PetscObjectGetType((PetscObject) Q, &tname);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetType(Qref, tname);CHKERRQ(ierr);
   ierr = DMRefine(K, PetscObjectComm((PetscObject) fe), &Kref);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetDM(Qref, Kref);CHKERRQ(ierr);
   ierr = DMDestroy(&Kref);CHKERRQ(ierr);
