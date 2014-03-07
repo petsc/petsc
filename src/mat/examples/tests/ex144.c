@@ -14,7 +14,7 @@ PetscInt main(PetscInt argc,char **args)
   double          *in1,*in2;
   ptrdiff_t       alloc_local,local_n0,local_0_start;
   ptrdiff_t       local_n1,local_1_start;
-  PetscInt        i,j,n1;
+  PetscInt        i,j;
   PetscInt        size,rank,n,N,N_factor,NM;
   PetscScalar     one=2.0,zero=0.5;
   PetscScalar     two=4.0,three=8.0,four=16.0;
@@ -49,7 +49,6 @@ PetscInt main(PetscInt argc,char **args)
   N        = 2*N0*(N1/2+1);
   N_factor = N0*N1;
   n        = 2*local_n0*(N1/2+1); 
-  n1       = local_n1*N0*2;
 
 /*    printf("The value N is  %d from process %d\n",N,rank);  */
 /*    printf("The value n is  %d from process %d\n",n,rank);  */

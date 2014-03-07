@@ -713,7 +713,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
       ierr = ISDestroy(&list1);CHKERRQ(ierr);
       ierr = ISDestroy(&list2);CHKERRQ(ierr);
 #else
-      alloc_local =  fftw_mpi_local_size_2d_transposed(dim[0],dim[1]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
+      fftw_mpi_local_size_2d_transposed(dim[0],dim[1]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
 
       N1   = 2*dim[0]*(dim[1]/2+1); n1 = 2*local_n0*(dim[1]/2+1);
       ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1],&indx1);CHKERRQ(ierr);
@@ -1048,7 +1048,7 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
 
       (fftw->dim_fftw)[fftw->ndim_fftw-1] = temp/2 + 1;
 
-      alloc_local = fftw_mpi_local_size_transposed(fftw->ndim_fftw,fftw->dim_fftw,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
+      fftw_mpi_local_size_transposed(fftw->ndim_fftw,fftw->dim_fftw,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
 
       N1 = 2*N*(PetscInt)((fftw->dim_fftw)[fftw->ndim_fftw-1])/((PetscInt) temp);
 
@@ -1172,7 +1172,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
       n    = (PetscInt)local_n0*dim[1];
       ierr = MatSetSizes(A,n,n,N,N);CHKERRQ(ierr);
 #else
-      alloc_local = fftw_mpi_local_size_2d_transposed(dim[0],dim[1]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
+      fftw_mpi_local_size_2d_transposed(dim[0],dim[1]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
 
       n    = 2*(PetscInt)local_n0*(dim[1]/2+1);
       ierr = MatSetSizes(A,n,n,2*dim[0]*(dim[1]/2+1),2*dim[0]*(dim[1]/2+1));
@@ -1185,7 +1185,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
       n    = (PetscInt)local_n0*dim[1]*dim[2];
       ierr = MatSetSizes(A,n,n,N,N);CHKERRQ(ierr);
 #else
-      alloc_local = fftw_mpi_local_size_3d_transposed(dim[0],dim[1],dim[2]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
+      fftw_mpi_local_size_3d_transposed(dim[0],dim[1],dim[2]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
 
       n   = 2*(PetscInt)local_n0*dim[1]*(dim[2]/2+1);
       ierr = MatSetSizes(A,n,n,2*dim[0]*dim[1]*(dim[2]/2+1),2*dim[0]*dim[1]*(dim[2]/2+1));
@@ -1202,7 +1202,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
 
       pdim[ndim-1] = temp/2 + 1;
 
-      alloc_local = fftw_mpi_local_size_transposed(ndim,pdim,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
+      fftw_mpi_local_size_transposed(ndim,pdim,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
 
       n  = 2*(PetscInt)local_n0*partial_dim*pdim[ndim-1]/temp;
       N1 = 2*N*(PetscInt)pdim[ndim-1]/((PetscInt) temp);
