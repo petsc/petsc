@@ -791,6 +791,20 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
             hasUnsplit   = PETSC_TRUE;
           } else {
             coneNew[2+q] = v + pMaxNew[dep-1];
+            if (dep > 1) {
+              const PetscInt *econe;
+              PetscInt        econeSize, r, vs, vu;
+
+              ierr = DMPlexGetConeSize(dm, cone[q], &econeSize);CHKERRQ(ierr);
+              ierr = DMPlexGetCone(dm, cone[q], &econe);CHKERRQ(ierr);
+              for (r = 0; r < econeSize; ++r) {
+                ierr = PetscFindInt(econe[r], numSplitPoints[dep-2],   splitPoints[dep-2],   &vs);CHKERRQ(ierr);
+                ierr = PetscFindInt(econe[r], numUnsplitPoints[dep-2], unsplitPoints[dep-2], &vu);CHKERRQ(ierr);
+                if (vs >= 0) continue;
+                if (vu < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not locate point %d in split or unsplit points of depth %d", econe[r], dep-2);
+                hasUnsplit   = PETSC_TRUE;
+              }
+            }
           }
         }
         ierr = DMPlexSetCone(sdm, splitp, &coneNew[2]);CHKERRQ(ierr);
