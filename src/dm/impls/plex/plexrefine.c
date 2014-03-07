@@ -6116,6 +6116,28 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
   if (m != numLeavesNew) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of leaf point %d should be %d", m, numLeavesNew);
   ierr = ISRestoreIndices(processRanks, &neighbors);CHKERRQ(ierr);
   ierr = ISDestroy(&processRanks);CHKERRQ(ierr);
+  {
+    PetscSFNode *rp, *rtmp;
+    PetscInt    *lp, *idx, *ltmp, i;
+
+    /* SF needs sorted leaves to correct calculate Gather */
+    ierr = PetscMalloc1(numLeavesNew,&idx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numLeavesNew, &lp);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numLeavesNew, &rp);CHKERRQ(ierr);
+    for (i = 0; i < numLeavesNew; ++i) idx[i] = i;
+    ierr = PetscSortIntWithPermutation(numLeavesNew, localPointsNew, idx);CHKERRQ(ierr);
+    for (i = 0; i < numLeavesNew; ++i) {
+      lp[i] = localPointsNew[idx[i]];
+      rp[i] = remotePointsNew[idx[i]];
+    }
+    ltmp            = localPointsNew;
+    localPointsNew  = lp;
+    rtmp            = remotePointsNew;
+    remotePointsNew = rp;
+    ierr = PetscFree(idx);CHKERRQ(ierr);
+    ierr = PetscFree(ltmp);CHKERRQ(ierr);
+    ierr = PetscFree(rtmp);CHKERRQ(ierr);
+  }
   ierr = PetscSFSetGraph(sfNew, pEndNew-pStartNew, numLeavesNew, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscFree5(rdepthSize,rvStartNew,reStartNew,rfStartNew,rcStartNew);CHKERRQ(ierr);
   ierr = PetscFree7(depthSizeOld,rdepthSizeOld,rdepthMaxOld,rvStart,reStart,rfStart,rcStart);CHKERRQ(ierr);
