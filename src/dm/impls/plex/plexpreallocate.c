@@ -161,6 +161,15 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   ierr = PetscMalloc2(maxClosureSize,&tmpClosure,maxAdjSize,&tmpAdj);CHKERRQ(ierr);
 
   /*
+   section        - maps points to (# dofs, local dofs)
+   sectionGlobal  - maps points to (# dofs, global dofs)
+   leafSectionAdj - maps unowned local dofs to # adj dofs
+   rootSectionAdj - maps   owned local dofs to # adj dofs
+   adj            - adj global dofs indexed by leafSectionAdj
+   rootAdj        - adj global dofs indexed by rootSectionAdj
+   sf    - describes shared points across procs
+   sfDof - describes shared dofs across procs
+   sfAdj - describes shared adjacent dofs across procs
    ** The bootstrapping process involves six rounds with similar structure of visiting neighbors of each point.
     1. Visit unowned points on interface, count adjacencies placing in leafSectionAdj
        Reduce those counts to rootSectionAdj (now redundantly counting some interface points)
