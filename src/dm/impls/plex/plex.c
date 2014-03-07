@@ -2281,7 +2281,156 @@ PetscErrorCode DMPlexOrient(DM dm)
     ierr = PetscBTSet(seenCells, support[0]-cStart);CHKERRQ(ierr);
     ierr = PetscBTSet(seenCells, support[1]-cStart);CHKERRQ(ierr);
   }
+  /* Now all subdomains are oriented, but we need a consistent parallel orientation */
+  {
+    /* Find a representative face (edge) separating pairs of procs */
+    PetscSF            sf;
+    const PetscInt    *lpoints;
+    const PetscSFNode *rpoints;
+    PetscInt          *neighbors, *nranks;
+    PetscInt           numLeaves, numRoots, numNeighbors = 0, l, n;
 
+    ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+    ierr = PetscSFGetGraph(sf, &numRoots, &numLeaves, &lpoints, &rpoints);CHKERRQ(ierr);
+    if (numLeaves >= 0) {
+      const PetscInt *cone, *ornt, *support;
+      PetscInt        coneSize, supportSize;
+      int            *rornt, *lornt; /* PetscSF cannot handle smaller than int */
+      PetscBool      *match, flipped = PETSC_FALSE;
+
+      ierr = PetscMalloc1(numLeaves,&neighbors);CHKERRQ(ierr);
+      /* I know this is p^2 time in general, but for bounded degree its alright */
+      for (l = 0; l < numLeaves; ++l) {
+        const PetscInt face = lpoints[l];
+        if ((face >= fStart) && (face < fEnd)) {
+          const PetscInt rank = rpoints[l].rank;
+          for (n = 0; n < numNeighbors; ++n) if (rank == rpoints[neighbors[n]].rank) break;
+          if (n >= numNeighbors) {
+            PetscInt supportSize;
+            ierr = DMPlexGetSupportSize(dm, face, &supportSize);CHKERRQ(ierr);
+            if (supportSize != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Boundary faces should see one cell, not %d", supportSize);
+            neighbors[numNeighbors++] = l;
+          }
+        }
+      }
+      ierr = PetscCalloc4(numNeighbors,&match,numNeighbors,&nranks,numRoots,&rornt,numRoots,&lornt);CHKERRQ(ierr);
+      for (face = fStart; face < fEnd; ++face) {
+        ierr = DMPlexGetSupportSize(dm, face, &supportSize);CHKERRQ(ierr);
+        if (supportSize != 1) continue;
+        ierr = DMPlexGetSupport(dm, face, &support);CHKERRQ(ierr);
+
+        ierr = DMPlexGetCone(dm, support[0], &cone);CHKERRQ(ierr);
+        ierr = DMPlexGetConeSize(dm, support[0], &coneSize);CHKERRQ(ierr);
+        ierr = DMPlexGetConeOrientation(dm, support[0], &ornt);CHKERRQ(ierr);
+        for (c = 0; c < coneSize; ++c) if (cone[c] == face) break;
+        if (dim == 1) {
+          /* Use cone position instead, shifted to -1 or 1 */
+          rornt[face] = c*2-1;
+        } else {
+          if (PetscBTLookup(flippedCells, support[0]-cStart)) rornt[face] = ornt[c] < 0 ? -1 :  1;
+          else                                                rornt[face] = ornt[c] < 0 ?  1 : -1;
+        }
+      }
+      /* Mark each edge with match or nomatch */
+      ierr = PetscSFBcastBegin(sf, MPI_INT, rornt, lornt);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sf, MPI_INT, rornt, lornt);CHKERRQ(ierr);
+      for (n = 0; n < numNeighbors; ++n) {
+        const PetscInt face = lpoints[neighbors[n]];
+
+        if (rornt[face]*lornt[face] < 0) match[n] = PETSC_TRUE;
+        else                             match[n] = PETSC_FALSE;
+        nranks[n] = rpoints[neighbors[n]].rank;
+      }
+      /* Collect the graph on 0 */
+      {
+        MPI_Comm     comm = PetscObjectComm((PetscObject) sf);
+        PetscBT      seenProcs, flippedProcs;
+        PetscInt    *procFIFO, pTop, pBottom;
+        PetscInt    *adj = NULL;
+        PetscBool   *val = NULL;
+        PetscMPIInt *recvcounts = NULL, *displs = NULL, p;
+        PetscMPIInt  N = numNeighbors, numProcs = 0, rank;
+        PetscInt     debug = 0;
+
+        ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+        if (!rank) {ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);}
+        ierr = PetscCalloc2(numProcs,&recvcounts,numProcs+1,&displs);CHKERRQ(ierr);
+        ierr = MPI_Gather(&N, 1, MPI_INT, recvcounts, 1, MPI_INT, 0, comm);CHKERRQ(ierr);
+        for (p = 0; p < numProcs; ++p) {
+          displs[p+1] = displs[p] + recvcounts[p];
+        }
+        if (!rank) {ierr = PetscMalloc2(displs[numProcs],&adj,displs[numProcs],&val);CHKERRQ(ierr);}
+        ierr = MPI_Gatherv(nranks, numNeighbors, MPIU_INT, adj, recvcounts, displs, MPIU_INT, 0, comm);CHKERRQ(ierr);
+        ierr = MPI_Gatherv(match, numNeighbors, MPIU_BOOL, val, recvcounts, displs, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
+        if (debug) {
+          for (p = 0; p < numProcs; ++p) {
+            ierr = PetscPrintf(comm, "Proc %d:\n", p);
+            for (n = 0; n < recvcounts[p]; ++n) {
+              ierr = PetscPrintf(comm, "  edge %d (%d):\n", adj[displs[p]+n], val[displs[p]+n]);
+            }
+          }
+        }
+        ierr = PetscBTCreate(numProcs, &seenProcs);CHKERRQ(ierr);
+        ierr = PetscBTMemzero(numProcs, seenProcs);CHKERRQ(ierr);
+        ierr = PetscBTCreate(numProcs, &flippedProcs);CHKERRQ(ierr);
+        ierr = PetscBTMemzero(numProcs, flippedProcs);CHKERRQ(ierr);
+        ierr = PetscMalloc1(numProcs,&procFIFO);CHKERRQ(ierr);
+        pTop = pBottom = 0;
+        for (p = 0; p < numProcs; ++p) {
+          if (PetscBTLookup(seenProcs, p)) continue;
+          /* Initialize FIFO with next proc */
+          procFIFO[pBottom++] = p;
+          ierr = PetscBTSet(seenProcs, p);CHKERRQ(ierr);
+          /* Consider each proc in FIFO */
+          while (pTop < pBottom) {
+            PetscInt proc, nproc, seen, flippedA, flippedB, mismatch;
+
+            proc     = procFIFO[pTop++];
+            flippedA = PetscBTLookup(flippedProcs, proc) ? 1 : 0;
+            /* Loop over neighboring procs */
+            for (n = 0; n < recvcounts[proc]; ++n) {
+              nproc    = adj[displs[proc]+n];
+              mismatch = val[displs[proc]+n] ? 0 : 1;
+              seen     = PetscBTLookup(seenProcs, nproc);
+              flippedB = PetscBTLookup(flippedProcs, nproc) ? 1 : 0;
+
+              if (mismatch ^ (flippedA ^ flippedB)) {
+                if (seen) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Previously seen procs %d and %d do not match: Fault mesh is non-orientable", proc, nproc);
+                if (!flippedB) {
+                  ierr = PetscBTSet(flippedProcs, nproc);CHKERRQ(ierr);
+              } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent mesh orientation: Fault mesh is non-orientable");
+              } else if (mismatch && flippedA && flippedB) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Attempt to flip already flipped cell: Fault mesh is non-orientable");
+              if (!seen) {
+                procFIFO[pBottom++] = nproc;
+                ierr = PetscBTSet(seenProcs, nproc);CHKERRQ(ierr);
+              }
+            }
+          }
+        }
+        ierr = PetscFree(procFIFO);CHKERRQ(ierr);
+
+        ierr = PetscFree2(recvcounts,displs);CHKERRQ(ierr);
+        ierr = PetscFree2(adj,val);CHKERRQ(ierr);
+        {
+          PetscBool *flips;
+
+          ierr = PetscMalloc1(numProcs,&flips);CHKERRQ(ierr);
+          for (p = 0; p < numProcs; ++p) {
+            flips[p] = PetscBTLookup(flippedProcs, p) ? PETSC_TRUE : PETSC_FALSE;
+            if (debug && flips[p]) {ierr = PetscPrintf(comm, "Flipping Proc %d:\n", p);}
+          }
+          ierr = MPI_Scatter(flips, 1, MPIU_BOOL, &flipped, 1, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
+          ierr = PetscFree(flips);CHKERRQ(ierr);
+        }
+        ierr = PetscBTDestroy(&seenProcs);CHKERRQ(ierr);
+        ierr = PetscBTDestroy(&flippedProcs);CHKERRQ(ierr);
+      }
+      ierr = PetscFree4(match,nranks,rornt,lornt);CHKERRQ(ierr);
+      ierr = PetscFree(neighbors);CHKERRQ(ierr);
+      if (flipped) {for (c = cStart; c < cEnd; ++c) {ierr = PetscBTNegate(flippedCells, c-cStart);CHKERRQ(ierr);}}
+    }
+  }
+  /* Reverse flipped cells in the mesh */
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, NULL);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, maxConeSize, PETSC_INT, &revcone);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, maxConeSize, PETSC_INT, &revconeO);CHKERRQ(ierr);
