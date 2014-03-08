@@ -99,7 +99,8 @@ PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],const ch
   ierr = PetscStrallocpy(url,&host);CHKERRQ(ierr);
   ierr = PetscStrchr(host,'/',&path);CHKERRQ(ierr);
   if (!path) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"url must contain / it is %s",url);
-  ierr = PetscStrlen(host,&hostlen);CHKERRQ(ierr);
+  *path = 0;
+  ierr  = PetscStrlen(host,&hostlen);CHKERRQ(ierr);
 
   ierr = PetscStrchr(url,'/',&path);CHKERRQ(ierr);
   ierr = PetscStrlen(path,&pathlen);CHKERRQ(ierr);

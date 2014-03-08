@@ -197,7 +197,7 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm,const char access_token[],co
 
    Notes: This call requires stdout and stdin access from process 0 on the MPI communicator
 
-   You can run src/sys/webclient/examples/tutorials/obtainrefreshtoken to get a refresh token and then in the future pass it to
+   You can run src/sys/webclient/examples/tutorials/googleobtainrefreshtoken to get a refresh token and then in the future pass it to
    PETSc programs with -google_refresh_token XXX
 
 .seealso: PetscGoogleDriveRefresh(), PetscGoogleDriveUpload(), PetscURLShorten()
@@ -263,7 +263,7 @@ PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm comm,char access_token[],char 
     ierr = PetscStrncpy(refresh_token,refresh,tokensize);CHKERRQ(ierr);
 
     ierr = PetscPrintf(comm,"Here is your Google refresh token, save it in a save place, in the future you can run PETSc\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"programs with the option -google_refresh_token %d\n",refresh);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"programs with the option -google_refresh_token %s\n",refresh);CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"to access Google Drive automatically\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
