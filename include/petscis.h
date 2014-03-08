@@ -5,7 +5,6 @@
 #if !defined(__PETSCIS_H)
 #define __PETSCIS_H
 #include <petscsys.h>
-#include <petscviewertypes.h>
 #include <petscsftypes.h>
 
 #define IS_FILE_CLASSID 1211218

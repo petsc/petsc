@@ -218,9 +218,9 @@ PETSC_STATIC_INLINE PetscReal fischsnorm(PetscReal a, PetscReal b, PetscReal c)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "D_Fischer"
+#define __FUNCT__ "MatDFischer"
 /*@
-   D_Fischer - Calculates an element of the B-subdifferential of the
+   MatDFischer - Calculates an element of the B-subdifferential of the
    Fischer-Burmeister function for complementarity problems.
 
    Collective on jac
@@ -242,7 +242,7 @@ PETSC_STATIC_INLINE PetscReal fischsnorm(PetscReal a, PetscReal b, PetscReal c)
 
 .seealso: VecFischer()
 @*/
-PetscErrorCode D_Fischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec T2, Vec Da, Vec Db)
+PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec T2, Vec Da, Vec Db)
 {
   PetscErrorCode  ierr;
   PetscInt        i,nn;
@@ -365,9 +365,9 @@ PetscErrorCode D_Fischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec T2
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "D_SFischer"
+#define __FUNCT__ "MatDSFischer"
 /*@
-   D_SFischer - Calculates an element of the B-subdifferential of the
+   MatDSFischer - Calculates an element of the B-subdifferential of the
    smoothed Fischer-Burmeister function for complementarity problems.
 
    Collective on jac
@@ -389,9 +389,9 @@ PetscErrorCode D_Fischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec T2
 
    Level: developer
 
-.seealso D_Fischer()
+.seealso MatDFischer()
 @*/
-PetscErrorCode D_SFischer(Mat jac, Vec X, Vec Con,Vec XL, Vec XU, PetscReal mu,Vec T1, Vec T2,Vec Da, Vec Db, Vec Dm)
+PetscErrorCode MatDSFischer(Mat jac, Vec X, Vec Con,Vec XL, Vec XU, PetscReal mu,Vec T1, Vec T2,Vec Da, Vec Db, Vec Dm)
 {
   PetscErrorCode  ierr;
   PetscInt        i,nn;
@@ -402,7 +402,7 @@ PetscErrorCode D_SFischer(Mat jac, Vec X, Vec Con,Vec XL, Vec XU, PetscReal mu,V
   PetscFunctionBegin;
   if (PetscAbsReal(mu) <= PETSC_MACHINE_EPSILON) {
     ierr = VecZeroEntries(Dm);CHKERRQ(ierr);
-    ierr = D_Fischer(jac, X, Con, XL, XU, T1, T2, Da, Db);CHKERRQ(ierr);
+    ierr = MatDFischer(jac, X, Con, XL, XU, T1, T2, Da, Db);CHKERRQ(ierr);
   } else {
     ierr = VecGetLocalSize(X,&nn);CHKERRQ(ierr);
     ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);

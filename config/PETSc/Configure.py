@@ -392,7 +392,6 @@ prepend-path PATH %s
   def dumpConfigInfo(self):
     import time
     fd = file(os.path.join(self.arch.arch,'include','petscconfiginfo.h'),'w')
-    fd.write('static const char *petscconfigureruntime = "'+time.ctime(time.time())+'";\n')
     fd.write('static const char *petscconfigureoptions = "'+self.framework.getOptionsString(['configModules', 'optionsModule']).replace('\"','\\"')+'";\n')
     fd.close()
     return

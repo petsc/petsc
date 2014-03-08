@@ -176,7 +176,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   ierr = VecDestroy(&pointVec);CHKERRQ(ierr);
 #endif
   if ((void*)globalPointsScalar != (void*)globalPoints) {ierr = PetscFree(globalPointsScalar);CHKERRQ(ierr);}
-  ierr = PetscFree3(globalPoints,counts,displs);CHKERRQ(ierr);
+  if (!redundantPoints) {ierr = PetscFree3(globalPoints,counts,displs);CHKERRQ(ierr);}
   ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

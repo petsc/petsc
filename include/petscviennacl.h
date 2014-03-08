@@ -4,8 +4,6 @@
 
 #define VIENNACL_WITH_OPENCL
 
-#include <petscsys.h>
-#include <petscmath.h>
 #include <petscvec.h>
 #include <viennacl/vector.hpp>
 

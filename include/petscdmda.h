@@ -2,8 +2,6 @@
 #define __PETSCDMDA_H
 
 #include <petscdm.h>
-#include <petscdt.h>
-#include <petscfetypes.h>
 #include <petscdmdatypes.h>
 #include <petscpf.h>
 #include <petscao.h>
