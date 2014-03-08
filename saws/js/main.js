@@ -3,29 +3,26 @@ var matInfo = [];
 var matInfoWriteCounter = 0;//next available space to write to.
 var currentAsk = "0";//start at id=0. then 00 01, then 000 001 010 011 etc if splitting two every time.
 var askedA0 = false;//a one-way flag to record if A0 was asked
+var finishedAsking = false;//whether input form has finished (when has finished, stop pulling default options from sawsInfo)
 
-//preRecursionCounter is used to remember the previous counter;
-var preRecursionCounter = -1;
-
-//counter of SAWs recursions for '-pc_type'
-var recursionCounterSAWs = 0;
-var currentRecursionCounterSAWs = 0;
+//variables used to collect saws information
 var sawsInfo = [];
+var sawsInfoWriteCounter = 0;//next available space to write to for fieldsplits (new A divs)
+var sawsDataWriteCounter = 0;//next available space to write to for ksp/pc options
+var currentFieldsplitWord = "";//temperature, omega, etc
 
 //Use for pcmg
 var highestMg       = 0;  //highest mg level encountered so far
-var mgLevelLocation = -1; //where to put the mg level data once the highest level is determined. -1 means not yet recorded
+var mgLevelLocation = -1; //where to put the mg level data once the highest level is determined. -1 means not yet recorded (NEED TO REMOVE)
 
 //Call the "Tex" function which populates an array with TeX to be used instead of images
 //var texMatrices = tex(maxMatricies) //unfortunately, cannot use anymore
 
-//GetAndDisplayDirectory: modified from PETSc.getAndDisplayDirectory 
+//GetAndDisplayDirectory: modified from PETSc.getAndDisplayDirectory
 //------------------------------------------------------------------
 SAWsGetAndDisplayDirectory = function(names,divEntry){
-    //alert("1_start. GetAndDisplayDirectory: name="+name+"; divEntry="+divEntry+"; recursionCounterSAWs="+recursionCounterSAWs);
     jQuery(divEntry).html(""); //clears divEntry
     SAWs.getDirectory(names,SAWsDisplayDirectory,divEntry);
-    //alert("1_end. recursionCounterSAWs "+recursionCounterSAWs);
 }
 
 //DisplayDirectory: modified from PETSc.displayDirectory
@@ -35,7 +32,6 @@ SAWsDisplayDirectory = function(sub,divEntry)
     globaldirectory[divEntry] = sub;
     //alert("2. DisplayDirectory: sub="+sub+"; divEntry="+divEntry);
     if (sub.directories.SAWs_ROOT_DIRECTORY.variables.hasOwnProperty("__Block") && (sub.directories.SAWs_ROOT_DIRECTORY.variables.__Block.data[0] == "true")) {//this function is nearly always called
-        //alert("3. divEntry="+divEntry);
         SAWs.updateDirectoryFromDisplay(divEntry);
         sub.directories.SAWs_ROOT_DIRECTORY.variables.__Block.data = ["false"];
         SAWs.postDirectory(sub);
@@ -46,24 +42,75 @@ SAWsDisplayDirectory = function(sub,divEntry)
     if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Preconditioner (PC) options") {
         var SAWs_pcVal = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].data[0];
         var SAWs_alternatives = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].alternatives;
-        //var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables.prefix.data[0];
-        var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["prefix"].data[0];//more accurate I believe
+        var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["prefix"].data[0];
+
         //alert("saws prefix:"+SAWs_prefix);
 
-        if (SAWs_prefix == "(null)")
+        if (SAWs_prefix == "(null)")//null on first pc I believe (because first pc has no prefix)
             SAWs_prefix = ""; //"(null)" fails populatePcList(), don't know why???
-        //create <select> "pcList-1"+SAWs_prefix+" when it is not defined ???
-        //$("#pcList-1"+SAWs_prefix).remove();
 
         if (typeof $("#pcList-1"+SAWs_prefix+"text").attr("title") == "undefined" && SAWs_prefix.indexOf("est")==-1) {//it doesn't exist already and doesn't contain 'est'
             $("#o-1").append("<br><b style='margin-left:20px;' title=\"Preconditioner\" id=\"pcList-1"+SAWs_prefix+"text\">-"+SAWs_prefix+"pc_type &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList-1"+SAWs_prefix+"\"></select>");
             populatePcList("pcList-1"+SAWs_prefix,SAWs_alternatives,SAWs_pcVal);
+
+            //parse through prefix...
+
+            //first determine what fieldsplit level we are working with, then determine what endtag we are working with
+
+            /*var fieldsplit="0";
+            while(SAWs_prefix.indexOf("fieldsplit_")!=-1) {
+                //find index of next keyword (pc, ksp, sub, smoothing, coarse)
+
+            }*/
+
+            //new spot in sawsInfo if needed, etc WILL ADDRESS ALL OF THIS LATER. FOR NOW, ONLY WORKS WITH NO FIELDSPLITS
+            //var index=getSawsIndex(sawsCurrentFieldsplit);
+
+            var index=0;//hard code for now
+            sawsInfo[index].id="0";//hard code for now
+            var endtag="";
+            while(SAWs_prefix.indexOf("_")!=2 && SAWs_prefix!="") {//where the pc_type underscore is
+                var indexFirstUnderscore=SAWs_prefix.indexOf("_");
+                var chunk=SAWs_prefix.substring(0,indexFirstUnderscore);//dont include the underscore
+                SAWs_prefix=SAWs_prefix.substring(indexFirstUnderscore+1, SAWs_prefix.length);//dont include the underscore
+                if(chunk=="ksp" || chunk=="sub" || chunk=="mg_coarse")
+                    endtag+="0";
+                else if(chunk=="mg_smoothing")
+                    endtag+="1";//actually should add a variable amount
+                //alert("prefix"+SAWs_prefix+"end");
+            }
+
+            if(typeof sawsInfo[index] == undefined)
+                sawsInfo[index]=new Object();
+            if(sawsInfo[index].data == undefined)//allocate new mem if needed
+                sawsInfo[index].data=new Array();
+            //search if it has already been created
+            if(getSawsDataIndex(index,endtag) == -1) {//doesn't already exist so allocate new memory
+                sawsInfo[index].data[sawsDataWriteCounter]=new Object();
+                sawsInfo[index].data[sawsDataWriteCounter].endtag=endtag;
+                sawsDataWriteCounter++;
+            }
+            var index2=getSawsDataIndex(index,endtag);
+            sawsInfo[index].data[index2].pc=SAWs_pcVal;
+
+            if (SAWs_pcVal == 'bjacobi') {//some extra data for bjacobi
+                //saws does bjacobi_blocks differently than we do. we put bjacoi_blocks as a different endtag than bjacobi dropdown (lower level) but saws puts them on the same level so we need to add a "0" to the endtag
+                endtag=endtag+"0";
+                if(getSawsDataIndex(index,endtag)==-1) {//need to allocate new memory
+                    sawsInfo[index].data[sawsDataWriteCounter]=new Object();
+                    sawsInfo[index].data[sawsDataWriteCounter].endtag=endtag;
+                    sawsDataWriteCounter++;
+                }
+                sawsInfo[index].data[getSawsDataIndex(index,endtag)].bjacobi_blocks = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_bjacobi_blocks"].data[0];
+            }
+
         }
+
         //alert("Preconditioner (PC) options, SAWs_pcVal "+SAWs_pcVal+", SAWs_prefix "+SAWs_prefix);
 
         // SAWs_pcVal == 'mg'
         //-----------------------------------------------
-        if (SAWs_pcVal == 'mg' && mgLevelLocation == -1)
+        /*if (SAWs_pcVal == 'mg' && mgLevelLocation == -1)
             mgLevelLocation=recursionCounterSAWs;
 
         var SAWs_mgLevels="";
@@ -75,45 +122,65 @@ SAWsDisplayDirectory = function(sub,divEntry)
 
             if (SAWs_mgLevels > highestMg)
                 highestMg=SAWs_mgLevels;
-        }
+        }*/
 
-        // SAWs_pcVal == 'bjacobi'
-        //-----------------------------------------------
-        var SAWs_bjacobi_blocks="";
-        if (SAWs_pcVal == 'bjacobi') {
-            SAWs_bjacobi_blocks = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_bjacobi_blocks"].data[0];
-            //else if(SAWs_prefix == "sub_")...
-            //alert("SAWs_bjacobi_blocks "+SAWs_bjacobi_blocks);
-            //set SAWs_bjacobi_blocks to #bjacobiBlocks-1_0.processorInput ???
-        }
-
-        sawsInfo[recursionCounterSAWs] = {
-            prefix: SAWs_prefix,
-            bjacobi_blocks: SAWs_bjacobi_blocks
-        }
-
-        // should these two lines be moved to SAWs_pcVal == 'mg' -- cause error somehow???
+        /*// should these two lines be moved to SAWs_pcVal == 'mg' -- cause error somehow???
         if (mgLevelLocation != -1)
-            sawsInfo[mgLevelLocation].mg_levels=parseInt(highestMg)+1;//need to add 1
-
-        recursionCounterSAWs++;
-        //alert("pc: recursionCounterSAWs "+recursionCounterSAWs);
+            sawsInfo[mgLevelLocation].mg_levels=parseInt(highestMg)+1;//need to add 1*/
 
     } else if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Krylov Method (KSP) options") {
         var SAWs_kspVal       = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-ksp_type"].data[0];
         var SAWs_alternatives = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-ksp_type"].alternatives;
         var SAWs_prefix       = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables.prefix.data[0];
 
-        if (SAWs_prefix == "(null)") SAWs_prefix = "";
-        //$("#kspList-1"+SAWs_prefix).remove();
+        if (SAWs_prefix == "(null)")
+            SAWs_prefix = "";
+
         if (typeof $("#kspList-1"+SAWs_prefix+"text").attr("title") == "undefined" && SAWs_prefix.indexOf("est")==-1) {//it doesn't exist already and doesn't contain 'est'
             $("#o-1").append("<br><b style='margin-left:20px;' title=\"Krylov method\" id=\"kspList-1"+SAWs_prefix+"text\">-"+SAWs_prefix+"ksp_type &nbsp;</b><select class=\"kspLists\" id=\"kspList-1"+SAWs_prefix+"\"></select>");//giving an html element a title creates a tooltip
             populateKspList("kspList-1"+SAWs_prefix,SAWs_alternatives,SAWs_kspVal);
+
+            //parse through prefix...
+            //first determine what fieldsplit level we are working with, then determine what endtag we are working with
+
+            /*var fieldsplit="0";
+            while(SAWs_prefix.indexOf("fieldsplit_")!=-1) {
+                //find index of next keyword (pc, ksp, sub, smoothing, coarse)
+
+            }*/
+
+            //new spot in sawsInfo if needed, etc WILL ADDRESS ALL OF THIS LATER. FOR NOW, ONLY WORKS WITH NO FIELDSPLITS
+            //var index=getSawsIndex(sawsCurrentFieldsplit);
+
+            var index=0;//hard code for now
+            sawsInfo[index].id="0";//hard code for now
+            var endtag="";
+            while(SAWs_prefix.indexOf("_")!=2 && SAWs_prefix!="") {//where the pc_type underscore is
+                var indexFirstUnderscore=SAWs_prefix.indexOf("_");
+                var chunk=SAWs_prefix.substring(0,indexFirstUnderscore);//dont include the underscore
+                SAWs_prefix=SAWs_prefix.substring(indexFirstUnderscore+1, SAWs_prefix.length);//dont include the underscore
+                if(chunk=="ksp" || chunk=="sub" || chunk=="mg_coarse")
+                    endtag+="0";
+                else if(chunk=="mg_smoothing")
+                    endtag+="1";//actually should add a variable amount
+                //alert("prefix"+SAWs_prefix+"end");
+            }
+
+            if(typeof sawsInfo[index] == undefined)
+                sawsInfo[index]=new Object();
+            if(sawsInfo[index].data == undefined)//allocate new mem if needed
+                sawsInfo[index].data=new Array();
+            //search if it has already been created
+            if(getSawsDataIndex(index,endtag) == -1) {//doesn't already exist so allocate new memory
+                sawsInfo[index].data[sawsDataWriteCounter]=new Object();
+                sawsInfo[index].data[sawsDataWriteCounter].endtag=endtag;
+                sawsDataWriteCounter++;
+            }
+            var index2=getSawsDataIndex(index,endtag);
+            sawsInfo[index].data[index2].ksp=SAWs_kspVal;
         }
-        //alert("populateKspList is done, SAWs_kspVal "+SAWs_kspVal+", SAWs_prefix "+SAWs_prefix);
     }
 
-    //alert('call SAWs.displayDirectoryRecursive...');
     SAWs.displayDirectoryRecursive(sub.directories,divEntry,0,"");//this function is not in SAWs API ?
 }
 
@@ -121,7 +188,6 @@ SAWsDisplayDirectory = function(sub,divEntry)
 //-------------------------------------
 HandlePCOptions = function(){
     alert('2. in HandlePCOptions()...');
-    preRecursionCounter = "-1"; //A matricies have string id's unlike the previous numerical recursionCounter
 
     //reset the form
     formSet(currentAsk);
@@ -149,17 +215,20 @@ HandlePCOptions = function(){
         id:      "0"
     }
 
+    sawsInfo[0] = {
+        id: "0"
+    }
+    sawsInfoWriteCounter++;
+
     //create div 'o-1' for displaying SAWs options
     $("#divPc").append("<div id=\"o-1\"> </div>");
 
     // get and display SAWs options
-    recursionCounterSAWs = 0;
     SAWsGetAndDisplayDirectory("","#variablesInfo");//this #variablesInfo variable only appears here
-   
-    //When "Continue" button is clicked ... 
+
+    //When "Continue" button is clicked ...
     //----------------------------------------
     $("#continueButton").click(function(){
-        //alert("recursionCounterSAWs "+recursionCounterSAWs+"; prefix="+sawsInfo[0].prefix+" "+sawsInfo[recursionCounterSAWs-1].prefix);
 
 	//matrixLevel is how many matrices deep the data is. 0 is the overall matrix,
         var matrixLevel = currentAsk.length-1;//minus one because A0 is length 1 but level 0
@@ -203,23 +272,18 @@ HandlePCOptions = function(){
             populateFieldsplitList("fieldsplitList"+currentAsk+myendtag);
         }
 
-	//store the recursion counter in the div as a data() - referenced occasionally in listLogic.js although there are other ways to do this
-	//$("#kspList" + currentAsk).data("listRecursionCounter", currentAsk);  HAD THIS BEFORE. WILL ADDRESS THIS LATER
-	//$("#pcList" + currentAsk).data("listRecursionCounter", currentAsk);
-        //set parentFieldSplit:true as default - ugly???
-	//$("#pcList" + currentAsk).data("parentFieldSplit",true);
-
 	//populate the kspList and pclist with default options
-        if (currentAsk == "0") { //use SAWs options
-            var SAWs_kspVal = $("#kspList-1").val();
+        if (getSawsIndex(currentAsk) != -1) { //use SAWs options if they exist for this matrix
+            var sawsIndex=getSawsIndex(currentAsk);
+
+            var SAWs_kspVal = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,"")].ksp;//want the ksp where endtag=""
             //SAWs_alternatives ???
             populateKspList("kspList"+currentAsk,null,SAWs_kspVal);
 
-            var SAWs_pcVal = $("#pcList-1").val(); //Get pctype from the drop-down pcList-1
+            var SAWs_pcVal = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,"")].pc;//want the pc where endtag=""
             //SAWs_alternatives ???
 	    populatePcList("pcList"+currentAsk,null,SAWs_pcVal);
-            currentRecursionCounterSAWs = 1;
-        } else {
+        } else {//else, use default values
             populateKspList("kspList"+currentAsk,null,"null");
             populatePcList("pcList"+currentAsk,null,"null");
         }
@@ -227,8 +291,6 @@ HandlePCOptions = function(){
         //manually trigger pclist once because additional options, e.g., detailed info may need to be added
         if($("#pcList"+currentAsk).val()!="fieldsplit")//but DON'T trigger change on fieldsplit because that would append the required A divs twice
 	    $("#pcList"+currentAsk).trigger("change");
-
-        preRecursionCounter = currentAsk; //save the current counter
 
         currentAsk = matTreeGetNextNode(currentAsk);
         //alert("new current ask:"+currentAsk);
@@ -305,7 +367,6 @@ $(document).ready(function(){
             if(matInfo[i].id!="-1" && matInfo[i].level>matLevelForTree)
                 matLevelForTree=matInfo[i];
         matLevelForTree++;//appears to be 1 greater than the max
-	//var matLevelForTree = matGetLevel(currentRecursionCounter) + 1;
 
 	//build the tree
         treeDetailed = false;//tree.js uses this variable to know what information to display
@@ -372,8 +433,9 @@ $(document).ready(function(){
 */
 function formSet(current)//-1 input for current means that program has finished
 {
-    if (current=="-1") {
+    if (current=="-1") {//finished asking
         $("#questions").hide();
+        finishedAsking=true;
         return;
     }
 
@@ -418,7 +480,7 @@ function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matInfo)
 
     if (pcListID.indexOf("_") == -1) {//dealing with original pcList in the oDiv (not generated for suboptions)
 	endtag = "_"; // o-th solver level
-    } else {	
+    } else {
         var loc = pcListID.indexOf("_");
         endtag = pcListID.substring(loc); // endtag of input pcListID, eg. _, _0, _00, _10
     }
@@ -482,7 +544,7 @@ function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matInfo)
         }
         return "";
         break;
-    
+
     case "redundant" :
         endtag += "0"; // move to next solver level
 	var redundantNumber = $("#redundantNumber" + recursionCounter + endtag).val();
@@ -659,4 +721,29 @@ function getMatIndex(id)
             return i;//return index where information is located.
     }
     return -1;//invalid id.
+}
+
+/*
+  getSawsIndex -
+  input:
+    desired id in string format. (for example, "01001")
+  output:
+    index in sawsInfo where information on that id is located
+*/
+function getSawsIndex(id)
+{
+    for(var i=0; i<sawsInfoWriteCounter; i++) {
+        if(sawsInfo[i].id == id)
+            return i;//return index where information is located
+    }
+    return -1;//invalid id;
+}
+
+function getSawsDataIndex(id, endtag)//id is the adiv we are working with. endtag is the id of the data we are looking for
+{
+    for(var i=0; i<sawsDataWriteCounter; i++) {
+        if(sawsInfo[id].data[i].endtag == endtag)
+            return i;//return index where information is located
+    }
+    return -1;//invalid id;
 }
