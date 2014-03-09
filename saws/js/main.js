@@ -44,8 +44,6 @@ SAWsDisplayDirectory = function(sub,divEntry)
         var SAWs_alternatives = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].alternatives;
         var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["prefix"].data[0];
 
-        //alert("saws prefix:"+SAWs_prefix);
-
         if (SAWs_prefix == "(null)")//null on first pc I believe (because first pc has no prefix)
             SAWs_prefix = ""; //"(null)" fails populatePcList(), don't know why???
 
@@ -69,15 +67,29 @@ SAWsDisplayDirectory = function(sub,divEntry)
             var index=0;//hard code for now
             sawsInfo[index].id="0";//hard code for now
             var endtag="";
-            while(SAWs_prefix.indexOf("_")!=2 && SAWs_prefix!="") {//where the pc_type underscore is
+            while(SAWs_prefix!="") {//parse the entire prefix
                 var indexFirstUnderscore=SAWs_prefix.indexOf("_");
                 var chunk=SAWs_prefix.substring(0,indexFirstUnderscore);//dont include the underscore
+
+                if(chunk=="mg") {//mg_
+                    indexFirstUnderscore=SAWs_prefix.indexOf("_",3); //this will actually be the index of the second underscore now since mg prefix has underscore in itself
+                    chunk=SAWs_prefix.substring(0,indexFirstUnderscore);//updated chunk
+                }
+
+                if(chunk=="mg_levels") {//need to include yet another underscore
+                    indexFirstUnderscore=SAWs_prefix.indexOf("_",10); //this will actually be the index of the second underscore now since mg prefix has underscore in itself
+                    chunk=SAWs_prefix.substring(0,indexFirstUnderscore);//updated chunk
+                }
+
                 SAWs_prefix=SAWs_prefix.substring(indexFirstUnderscore+1, SAWs_prefix.length);//dont include the underscore
-                if(chunk=="ksp" || chunk=="sub" || chunk=="mg_coarse")
+                if(chunk=="ksp" || chunk=="sub" || chunk=="mg_coarse" || chunk=="redundant")
                     endtag+="0";
-                else if(chunk=="mg_smoothing")
+                else if(chunk=="mg_levels_1")
                     endtag+="1";//actually should add a variable amount
-                //alert("prefix"+SAWs_prefix+"end");
+                else if(chunk=="mg_levels_2")
+                    endtag+="2";
+                else if(chunk=="mg_levels_3")
+                    endtag+="3";
             }
 
             if(typeof sawsInfo[index] == undefined)
@@ -108,25 +120,7 @@ SAWsDisplayDirectory = function(sub,divEntry)
 
         //alert("Preconditioner (PC) options, SAWs_pcVal "+SAWs_pcVal+", SAWs_prefix "+SAWs_prefix);
 
-        // SAWs_pcVal == 'mg'
-        //-----------------------------------------------
-        /*if (SAWs_pcVal == 'mg' && mgLevelLocation == -1)
-            mgLevelLocation=recursionCounterSAWs;
-
-        var SAWs_mgLevels="";
-        if (SAWs_prefix.indexOf("levels") != -1) {
-            SAWs_mgLevels=SAWs_prefix.substring(10,12);//position 10 and 11. mg levels might be 2 digits long (e.g. greater than 9)
-
-            if (SAWs_mgLevels.indexOf('_')>0)
-                SAWs_mgLevels=SAWs_mgLevels.charAt(0);//mg levels is only 1 digit long. remove the extra '_'
-
-            if (SAWs_mgLevels > highestMg)
-                highestMg=SAWs_mgLevels;
-        }*/
-
-        /*// should these two lines be moved to SAWs_pcVal == 'mg' -- cause error somehow???
-        if (mgLevelLocation != -1)
-            sawsInfo[mgLevelLocation].mg_levels=parseInt(highestMg)+1;//need to add 1*/
+        // SAWs_pcVal == 'mg' NEED TO GET MG LEVELS SOMEHOW
 
     } else if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Krylov Method (KSP) options") {
         var SAWs_kspVal       = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-ksp_type"].data[0];
@@ -155,15 +149,30 @@ SAWsDisplayDirectory = function(sub,divEntry)
             var index=0;//hard code for now
             sawsInfo[index].id="0";//hard code for now
             var endtag="";
-            while(SAWs_prefix.indexOf("_")!=2 && SAWs_prefix!="") {//where the pc_type underscore is
+
+            while(SAWs_prefix!="") {//parse the entire prefix
                 var indexFirstUnderscore=SAWs_prefix.indexOf("_");
                 var chunk=SAWs_prefix.substring(0,indexFirstUnderscore);//dont include the underscore
+
+                if(chunk=="mg") {//mg_
+                    indexFirstUnderscore=SAWs_prefix.indexOf("_",3); //this will actually be the index of the second underscore now since mg prefix has underscore in itself
+                    chunk=SAWs_prefix.substring(0,indexFirstUnderscore);//updated chunk
+                }
+
+                if(chunk=="mg_levels") {//need to include yet another underscore
+                    indexFirstUnderscore=SAWs_prefix.indexOf("_",10); //this will actually be the index of the second underscore now since mg prefix has underscore in itself
+                    chunk=SAWs_prefix.substring(0,indexFirstUnderscore);//updated chunk
+                }
+
                 SAWs_prefix=SAWs_prefix.substring(indexFirstUnderscore+1, SAWs_prefix.length);//dont include the underscore
-                if(chunk=="ksp" || chunk=="sub" || chunk=="mg_coarse")
+                if(chunk=="ksp" || chunk=="sub" || chunk=="mg_coarse" || chunk=="redundant")
                     endtag+="0";
-                else if(chunk=="mg_smoothing")
+                else if(chunk=="mg_levels_1")
                     endtag+="1";//actually should add a variable amount
-                //alert("prefix"+SAWs_prefix+"end");
+                else if(chunk=="mg_levels_2")
+                    endtag+="2";
+                else if(chunk=="mg_levels_3")
+                    endtag+="3";
             }
 
             if(typeof sawsInfo[index] == undefined)
