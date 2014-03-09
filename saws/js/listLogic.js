@@ -78,10 +78,6 @@ $(document).on('change', '.pcLists', function(){
         // mglevels determines how many ksp/pc at this solve level
         $("#"+newDiv).append("<br><b>MG Levels </b><input type='text' id=\'mglevels"+parent+myendtag+"\' maxlength='4' class='mgLevels'>");
         mgLevels = 2; //default
-        /*if (true1) {
-            mgLevels=sawsInfo[true2].mg_levels;//NEED TO FIND A WAY TO PULL MGLEVEL FROM SAWS
-        }*/
-        $("#mglevels"+parent+myendtag).val(mgLevels); // set default mgLevels -- when reset mglevels to 4, gives order 3, 2, 1 below???
 
         // Coarse Grid Solver (Level 0)
         myendtag = endtag+"0";
@@ -94,6 +90,7 @@ $(document).on('change', '.pcLists', function(){
         if (sawsIndex!=-1 && getSawsDataIndex(sawsIndex,endtagEdit)!=-1) { //use SAWs options if they exist
             var SAWs_kspVal = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,endtagEdit)].ksp;
             var SAWs_pcVal = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,endtagEdit)].pc;
+            mgLevels=sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,endtagEdit)].mg_levels;//pull mg_levels from saws when dealing with coarse
             //alternative???
             populateKspList("kspList"+parent+myendtag,null,SAWs_kspVal);
             populatePcList("pcList"+parent+myendtag,null,SAWs_pcVal);
@@ -110,6 +107,8 @@ $(document).on('change', '.pcLists', function(){
 	    //redundant has to have extra dropdown menus so manually trigger
 	    $("#pcList"+parent+myendtag).trigger("change");
         }
+
+        $("#mglevels"+parent+myendtag).val(mgLevels); // set default mgLevels -- when reset mglevels to 4, gives order 3, 2, 1 below???
 
         // Smoothing (Level>0)
         $("#"+newDiv).append("<br><br><b id=\"text_smoothing"+parent+endtag+"\">Smoothing   </b>")

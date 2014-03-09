@@ -3,7 +3,7 @@ var matInfo = [];
 var matInfoWriteCounter = 0;//next available space to write to.
 var currentAsk = "0";//start at id=0. then 00 01, then 000 001 010 011 etc if splitting two every time.
 var askedA0 = false;//a one-way flag to record if A0 was asked
-var finishedAsking = false;//whether input form has finished (when has finished, stop pulling default options from sawsInfo)
+var finishedAsking = false;//whether input form has finished (when finished, stop pulling default options from sawsInfo?)
 
 //variables used to collect saws information
 var sawsInfo = [];
@@ -12,8 +12,7 @@ var sawsDataWriteCounter = 0;//next available space to write to for ksp/pc optio
 var currentFieldsplitWord = "";//temperature, omega, etc
 
 //Use for pcmg
-var highestMg       = 0;  //highest mg level encountered so far
-var mgLevelLocation = -1; //where to put the mg level data once the highest level is determined. -1 means not yet recorded (NEED TO REMOVE)
+var mgLevelLocation = ""; //where to put the mg level data once the highest level is determined. put in same level as coarse. this location keeps on getting overwritten every time mg_levels_n is encountered
 
 //Call the "Tex" function which populates an array with TeX to be used instead of images
 //var texMatrices = tex(maxMatricies) //unfortunately, cannot use anymore
@@ -77,11 +76,15 @@ SAWsDisplayDirectory = function(sub,divEntry)
                 }
 
                 if(chunk=="mg_levels") {//need to include yet another underscore
-                    indexFirstUnderscore=SAWs_prefix.indexOf("_",10); //this will actually be the index of the second underscore now since mg prefix has underscore in itself
+                    indexFirstUnderscore=SAWs_prefix.indexOf("_",10); //this will actually be the index of the third underscore
                     chunk=SAWs_prefix.substring(0,indexFirstUnderscore);//updated chunk
                 }
 
                 SAWs_prefix=SAWs_prefix.substring(indexFirstUnderscore+1, SAWs_prefix.length);//dont include the underscore
+
+                if(chunk=="mg_coarse" && SAWs_prefix=="")//new mg coarse
+                    mgLevelLocation=endtag+"0";
+
                 if(chunk=="ksp" || chunk=="sub" || chunk=="mg_coarse" || chunk=="redundant")
                     endtag+="0";
                 else if(chunk=="mg_levels_1")
@@ -90,6 +93,13 @@ SAWsDisplayDirectory = function(sub,divEntry)
                     endtag+="2";
                 else if(chunk=="mg_levels_3")
                     endtag+="3";
+
+                if(chunk=="mg_levels_1" && SAWs_prefix=="")//new mg levels. it's okay to assume memory was already allocated b/c levels is after coarse
+                    sawsInfo[index].data[getSawsDataIndex(index, mgLevelLocation)].mg_levels=2;
+                if(chunk=="mg_levels_2" && SAWs_prefix=="")
+                    sawsInfo[index].data[getSawsDataIndex(index, mgLevelLocation)].mg_levels=3;
+                if(chunk=="mg_levels_3" && SAWs_prefix=="")
+                    sawsInfo[index].data[getSawsDataIndex(index, mgLevelLocation)].mg_levels=4;
             }
 
             if(typeof sawsInfo[index] == undefined)
@@ -117,8 +127,6 @@ SAWsDisplayDirectory = function(sub,divEntry)
             }
 
         }
-
-        //alert("Preconditioner (PC) options, SAWs_pcVal "+SAWs_pcVal+", SAWs_prefix "+SAWs_prefix);
 
         // SAWs_pcVal == 'mg' NEED TO GET MG LEVELS SOMEHOW
 
@@ -160,7 +168,7 @@ SAWsDisplayDirectory = function(sub,divEntry)
                 }
 
                 if(chunk=="mg_levels") {//need to include yet another underscore
-                    indexFirstUnderscore=SAWs_prefix.indexOf("_",10); //this will actually be the index of the second underscore now since mg prefix has underscore in itself
+                    indexFirstUnderscore=SAWs_prefix.indexOf("_",10); //this will actually be the index of the third underscore
                     chunk=SAWs_prefix.substring(0,indexFirstUnderscore);//updated chunk
                 }
 
