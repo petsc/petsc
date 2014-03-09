@@ -179,6 +179,10 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm,const char access_token[],co
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_UNISTD_H)
+#include <unistd.h>
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscGoogleDriveAuthorize"
 /*@C
@@ -214,17 +218,18 @@ PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm comm,char access_token[],char 
   size_t         len;
 
   PetscFunctionBegin;
-  ierr = PetscPrintf(comm,"Cut and paste the following into your browser:\n\n"
-                          "https://accounts.google.com/o/oauth2/auth?"
-                          "scope=https%%3A%%2F%%2Fwww.googleapis.com%%2Fauth%%2Fdrive.file&"
-                          "redirect_uri=urn:ietf:wg:oauth:2.0:oob&"
-                          "response_type=code&"
-                          "client_id="
-                          PETSC_GOOGLE_CLIENT_ID
-                          "\n\n");CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"Paste the result here:");CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
+    if (!isatty(fileno(PETSC_STDOUT))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Requires users input/output");
+    ierr = PetscPrintf(comm,"Cut and paste the following into your browser:\n\n"
+                            "https://accounts.google.com/o/oauth2/auth?"
+                            "scope=https%%3A%%2F%%2Fwww.googleapis.com%%2Fauth%%2Fdrive.file&"
+                            "redirect_uri=urn:ietf:wg:oauth:2.0:oob&"
+                            "response_type=code&"
+                            "client_id="
+                            PETSC_GOOGLE_CLIENT_ID
+                            "\n\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"Paste the result here:");CHKERRQ(ierr);
     ptr  = fgets(buff, 1024, stdin);
     if (!ptr) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from stdin: %d", errno);
     ierr = PetscStrlen(buff,&len);CHKERRQ(ierr);

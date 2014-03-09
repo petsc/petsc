@@ -34,12 +34,25 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
   const char          *options[optionsLen];
   struct mg_callbacks callbacks;
   struct mg_context   *ctx;
+  char                keyfile[PETSC_MAX_PATH_LEN];
+  PetscBool           exists;
 
   PetscFunctionBegin;
   options[0] = "listening_ports";
   options[1] = "8081s";
+
+  ierr = PetscStrcpy(keyfile,"sslclient.pem");CHKERRQ(ierr);
+  ierr = PetscTestFile(keyfile,'r',&exists);CHKERRQ(ierr);
+  if (!exists) {
+    ierr = PetscGetHomeDirectory(keyfile,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+    ierr = PetscStrcat(keyfile,"/");CHKERRQ(ierr);
+    ierr = PetscStrcat(keyfile,"sslclient.pem");CHKERRQ(ierr);
+    ierr = PetscTestFile(keyfile,'r',&exists);CHKERRQ(ierr);
+    if (!exists) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate sslclient.pem file in current directory or home directory");
+  }
+
   options[2] = "ssl_certificate";
-  options[3] = "/Users/barrysmith/Src/saws/saws.pem";
+  options[3] = keyfile;
   options[4] = NULL;
 
   /* Prepare callbacks structure. We have only one callback, the rest are NULL. */
@@ -50,6 +63,10 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
   while (!result) {};
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_HAVE_UNISTD_H)
+#include <unistd.h>
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscBoxAuthorize"
@@ -74,6 +91,14 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
 
    This requires PETSc be installed using --with-saws or --download-saws
 
+   Requires the user have created a self-signed ssl certificate with
+
+$    saws/CA.pl  -newcert  (using the passphrase of password)
+$    cat newkey.pem newcert.pem > sslclient.pem
+
+    and put the resulting file in either the current directory (with the application) or in the home directory. This seems kind of
+    silly but it was all I could figure out.
+
 .seealso: PetscBoxRefresh(), PetscBoxUpload(), PetscURLShorten()
 
 @*/
@@ -90,6 +115,7 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm,char access_token[],char refresh_
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
+    if (!isatty(fileno(PETSC_STDOUT))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Requires users input/output");
     ierr = PetscPrintf(comm,"Cut and paste the following into your browser:\n\n"
                             "https://www.box.com/api/oauth2/authorize?"
                             "response_type=code&"
@@ -117,6 +143,7 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm,char access_token[],char refresh_
     close(sock);
 
     ierr   = PetscStrstr(buff,"\"access_token\" : \"",&access);CHKERRQ(ierr);
+    if (!access) {ierr   = PetscStrstr(buff,"\"access_token\":\"",&access);CHKERRQ(ierr);}
     if (!access) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Did not receive access token from Box");
     access += 18;
     ierr   = PetscStrchr(access,'\"',&ctmp);CHKERRQ(ierr);
@@ -126,6 +153,7 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm,char access_token[],char refresh_
     *ctmp  = '\"';
 
     ierr   = PetscStrstr(buff,"\"refresh_token\" : \"",&refresh);CHKERRQ(ierr);
+    if (!refresh) {ierr   = PetscStrstr(buff,"\"refresh_token\":\"",&refresh);CHKERRQ(ierr);}
     if (!refresh) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Did not receive refresh token from Box");
     refresh += 19;
     ierr   = PetscStrchr(refresh,'\"',&ctmp);CHKERRQ(ierr);

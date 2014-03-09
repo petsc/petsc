@@ -38,3 +38,11 @@ boxupload: boxupload.o  chkopts
 	${CLINKER} -o boxupload boxupload.o ${PETSC_SYS_LIB}
 	${RM} -f boxupload.o
 
+globusobtaintransfers: globusobtaintransfers.o  chkopts
+	${CLINKER} -o globusobtaintransfers globusobtaintransfers.o ${PETSC_SYS_LIB}
+	${RM} -f globusobtaintransfers.o
+
+globusupload: globusupload.o  chkopts
+	${CLINKER} -o globusupload globusupload.o ${PETSC_SYS_LIB}
+	${RM} -f globusupload.o
+

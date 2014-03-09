@@ -25,7 +25,7 @@ static void sigpipe_handle(int x)
 
     If built with PETSC_USE_SSL_CERTIFICATE requires the user have created a self-signed certificate with
 
-$    ./CA.pl  -newcert  (using the passphrase of password)
+$    saws/CA.pl  -newcert  (using the passphrase of password)
 $    cat newkey.pem newcert.pem > sslclient.pem
 
     and put the resulting file in either the current directory (with the application) or in the home directory. This seems kind of
@@ -238,7 +238,6 @@ PetscErrorCode PetscHTTPRequest(const char type[],const char url[],const char he
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscHTTPSConnect"
 PetscErrorCode PetscHTTPSConnect(const char host[],int port,SSL_CTX *ctx,int *sock,SSL **ssl)
@@ -258,3 +257,47 @@ PetscErrorCode PetscHTTPSConnect(const char host[],int port,SSL_CTX *ctx,int *so
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscPullJSONValue"
+/*
+     Given a JSON response containing the substring with "key" : "value"  where there may or not be spaces around the : returns the value.
+*/
+PetscErrorCode PetscPullJSONValue(const char buff[],const char key[],char value[],size_t valuelen,PetscBool *found)
+{
+  PetscErrorCode ierr;
+  char           *v,*w;
+  char           work[256];
+  size_t         len;
+
+  PetscFunctionBegin;
+  ierr = PetscStrcpy(work,"\"");CHKERRQ(ierr);
+  ierr = PetscStrncat(work,key,250);CHKERRQ(ierr);
+  ierr = PetscStrcat(work,"\":");CHKERRQ(ierr);
+  ierr = PetscStrstr(buff,work,&v);CHKERRQ(ierr);
+  ierr = PetscStrlen(work,&len);CHKERRQ(ierr);
+  if (v) {
+    v += len;
+  } else {
+    work[len++-1] = 0;
+    ierr = PetscStrcat(work," :");CHKERRQ(ierr);
+    ierr = PetscStrstr(buff,work,&v);CHKERRQ(ierr);
+    if (!v) {
+      *found = PETSC_FALSE;
+      PetscFunctionReturn(0);
+    }
+    v += len;
+  }
+  ierr = PetscStrchr(v,'\"',&v);CHKERRQ(ierr);
+  if (!v) {
+    *found = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscStrchr(v+1,'\"',&w);CHKERRQ(ierr);
+  if (!w) {
+    *found = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
+  *found = PETSC_TRUE;
+  ierr = PetscStrncpy(value,v+1,PetscMin(w-v,valuelen));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
