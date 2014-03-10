@@ -1,5 +1,6 @@
 #include <../src/ksp/pc/impls/gamg/gamg.h>        /*I "petscpc.h" I*/
 #include <petsc-private/kspimpl.h>
+#include <petscsf.h>
 
 PetscFunctionList PCGAMGClassicalProlongatorList    = NULL;
 PetscBool         PCGAMGClassicalPackageInitialized = PETSC_FALSE;
@@ -48,50 +49,6 @@ static PetscErrorCode PCGAMGClassicalSetType_GAMG(PC pc, PCGAMGClassicalType typ
 
   PetscFunctionBegin;
   ierr = PetscStrcpy(cls->prolongtype,type);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGClassicalCreateGhostVector_Private"
-PetscErrorCode PCGAMGClassicalCreateGhostVector_Private(Mat G,Vec *gvec,PetscInt **global)
-{
-  Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)G->data;
-  PetscErrorCode ierr;
-  PetscBool      isMPIAIJ;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)G, MATMPIAIJ, &isMPIAIJ); CHKERRQ(ierr);
-  if (isMPIAIJ) {
-    if (gvec)ierr = VecDuplicate(aij->lvec,gvec);CHKERRQ(ierr);
-    if (global)*global = aij->garray;
-  } else {
-    /* no off-processor nodes */
-    if (gvec)*gvec = NULL;
-    if (global)*global = NULL;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGClassicalGraphSplitting_Private"
-/*
- Split the relevant graph into diagonal and off-diagonal parts in local numbering; for now this
- a roundabout private interface to the mats' internal diag and offdiag mats.
- */
-PetscErrorCode PCGAMGClassicalGraphSplitting_Private(Mat G,Mat *Gd, Mat *Go)
-{
-  Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)G->data;
-  PetscErrorCode ierr;
-  PetscBool      isMPIAIJ;
-  PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)G, MATMPIAIJ, &isMPIAIJ ); CHKERRQ(ierr);
-  if (isMPIAIJ) {
-    *Gd = aij->A;
-    *Go = aij->B;
-  } else {
-    *Gd = G;
-    *Go = NULL;
-  }
   PetscFunctionReturn(0);
 }
 
@@ -219,46 +176,14 @@ PetscErrorCode PCGAMGCoarsen_Classical(PC pc,Mat *G,PetscCoarsenData **agg_lists
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCGAMGClassicalGhost_Private"
-/*
- Find all ghost nodes that are coarse and output the fine/coarse splitting for those as well
-
- Input:
- G - graph;
- gvec - Global Vector
- avec - Local part of the scattered vec
- bvec - Global part of the scattered vec
-
- Output:
- findx - indirection t
-
- */
-PetscErrorCode PCGAMGClassicalGhost_Private(Mat G,Vec v,Vec gv)
-{
-  PetscErrorCode ierr;
-  Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)G->data;
-  PetscBool      isMPIAIJ;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)G, MATMPIAIJ, &isMPIAIJ ); CHKERRQ(ierr);
-  if (isMPIAIJ) {
-    ierr = VecScatterBegin(aij->Mvctx,v,gv,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(aij->Mvctx,v,gv,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PCGAMGProlongator_Classical_Direct"
 PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, const Mat A, const Mat G, PetscCoarsenData *agg_lists,Mat *P)
 {
   PetscErrorCode    ierr;
-  MPI_Comm          comm;
   PetscReal         *Amax_pos,*Amax_neg;
-  Mat               lA,gA;                     /* on and off diagonal matrices */
+  Mat               lA,gA=NULL;                /* on and off diagonal matrices */
   PetscInt          fn;                        /* fine local blocked sizes */
   PetscInt          cn;                        /* coarse local blocked sizes */
-  PetscInt          gn;                        /* size of the off-diagonal fine vector */
   PetscInt          fs,fe;                     /* fine (row) ownership range*/
   PetscInt          cs,ce;                     /* coarse (column) ownership range */
   PetscInt          i,j;                       /* indices! */
@@ -269,12 +194,8 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, const Mat A, const Mat 
   const PetscScalar *rval;
   const PetscInt    *rcol;
   PetscScalar       g_pos,g_neg,a_pos,a_neg,diag,invdiag,alpha,beta;
-  Vec               F;   /* vec of coarse size */
   Vec               C;   /* vec of fine size */
-  Vec               gF;  /* vec of off-diagonal fine size */
   MatType           mtype;
-  PetscInt          c_indx;
-  PetscScalar       c_scalar;
   PetscInt          ncols,col;
   PetscInt          row_f,row_c;
   PetscInt          cmax=0,idx;
@@ -282,16 +203,33 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, const Mat A, const Mat 
   PetscInt          *pcols;
   PC_MG             *mg          = (PC_MG*)pc->data;
   PC_GAMG           *gamg        = (PC_GAMG*)mg->innerctx;
+  PetscLayout       clayout;
+  PetscSF           sf;
+  Vec               lvec;
+  PetscInt          *colmap,noff;
+  PetscBool         isMPIAIJ,isSEQAIJ;
+  Mat_MPIAIJ        *mpiaij;
 
   PetscFunctionBegin;
-  comm = ((PetscObject)pc)->comm;
-  ierr = MatGetOwnershipRange(A,&fs,&fe); CHKERRQ(ierr);
-  fn = (fe - fs);
-
-  ierr = MatGetVecs(A,&F,NULL);CHKERRQ(ierr);
-
-  /* get the number of local unknowns and the indices of the local unknowns */
-
+  ierr = MatGetOwnershipRange(A,&fs,&fe);CHKERRQ(ierr);
+  fn = fe-fs;
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&isMPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isSEQAIJ);CHKERRQ(ierr);
+  if (!isMPIAIJ && !isSEQAIJ) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Classical AMG requires MPIAIJ matrix");
+  if (isMPIAIJ) {
+    mpiaij = (Mat_MPIAIJ*)A->data;
+    lA = mpiaij->A;
+    gA = mpiaij->B;
+    lvec = mpiaij->lvec;
+    ierr = VecGetSize(lvec,&noff);CHKERRQ(ierr);
+    colmap = mpiaij->garray;
+    ierr = MatGetLayouts(A,NULL,&clayout);CHKERRQ(ierr);
+    ierr = PetscSFCreate(PetscObjectComm((PetscObject)A),&sf);CHKERRQ(ierr);
+    ierr = PetscSFSetGraphLayout(sf,clayout,noff,NULL,PETSC_COPY_VALUES,colmap);CHKERRQ(ierr);
+    ierr = PetscMalloc1(noff,&gcid);CHKERRQ(ierr);
+  } else {
+    lA = A;
+  }
   ierr = PetscMalloc1(fn,&lsparse);CHKERRQ(ierr);
   ierr = PetscMalloc1(fn,&gsparse);CHKERRQ(ierr);
   ierr = PetscMalloc1(fn,&lcid);CHKERRQ(ierr);
@@ -310,10 +248,9 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, const Mat A, const Mat 
   }
 
    /* create the coarse vector */
-  ierr = VecCreateMPI(comm,cn,PETSC_DECIDE,&C);CHKERRQ(ierr);
+  ierr = VecCreateMPI(PetscObjectComm((PetscObject)A),cn,PETSC_DECIDE,&C);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(C,&cs,&ce);CHKERRQ(ierr);
 
-  /* construct a global vector indicating the global indices of the coarse unknowns */
   cn = 0;
   for (i=0;i<fn;i++) {
     ierr = PetscCDEmptyAt(agg_lists,i,&iscoarse); CHKERRQ(ierr);
@@ -323,13 +260,12 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, const Mat A, const Mat 
     } else {
       lcid[i] = -1;
     }
-    *((PetscInt *)&c_scalar) = lcid[i];
-    c_indx = fs+i;
-    ierr = VecSetValues(F,1,&c_indx,&c_scalar,INSERT_VALUES);CHKERRQ(ierr);
   }
 
-  ierr = VecAssemblyBegin(F);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(F);CHKERRQ(ierr);
+  if (gA) {
+    ierr = PetscSFBcastBegin(sf,MPIU_INT,lcid,gcid);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf,MPIU_INT,lcid,gcid);CHKERRQ(ierr);
+  }
 
   /* determine the biggest off-diagonal entries in each row */
   for (i=fs;i<fe;i++) {
@@ -345,25 +281,6 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, const Mat A, const Mat 
   }
   ierr = PetscMalloc1(cmax,&pcols);CHKERRQ(ierr);
   ierr = PetscMalloc1(cmax,&pvals);CHKERRQ(ierr);
-
-  /* split the operator into two */
-  ierr = PCGAMGClassicalGraphSplitting_Private(A,&lA,&gA);CHKERRQ(ierr);
-
-  /* scatter to the ghost vector */
-  ierr = PCGAMGClassicalCreateGhostVector_Private(A,&gF,NULL);CHKERRQ(ierr);
-  ierr = PCGAMGClassicalGhost_Private(A,F,gF);CHKERRQ(ierr);
-
-  if (gA) {
-    ierr = VecGetSize(gF,&gn);CHKERRQ(ierr);
-    ierr = PetscMalloc1(gn,&gcid);CHKERRQ(ierr);
-    for (i=0;i<gn;i++) {
-      ierr = VecGetValues(gF,1,&i,&c_scalar);CHKERRQ(ierr);
-      gcid[i] = *((PetscInt *)&c_scalar);
-    }
-  }
-
-  ierr = VecDestroy(&F);CHKERRQ(ierr);
-  ierr = VecDestroy(&gF);CHKERRQ(ierr);
   ierr = VecDestroy(&C);CHKERRQ(ierr);
 
   /* count the on and off processor sparsity patterns for the prolongator */
@@ -398,7 +315,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, const Mat A, const Mat 
   }
 
   /* preallocate and create the prolongator */
-  ierr = MatCreate(comm,P); CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),P); CHKERRQ(ierr);
   ierr = MatGetType(G,&mtype);CHKERRQ(ierr);
   ierr = MatSetType(*P,mtype);CHKERRQ(ierr);
 
@@ -539,7 +456,10 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, const Mat A, const Mat 
   ierr = PetscFree(Amax_pos);CHKERRQ(ierr);
   ierr = PetscFree(Amax_neg);CHKERRQ(ierr);
   ierr = PetscFree(lcid);CHKERRQ(ierr);
-  if (gA) {ierr = PetscFree(gcid);CHKERRQ(ierr);}
+  if (gA) {
+    ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+    ierr = PetscFree(gcid);CHKERRQ(ierr);
+  }
 
   PetscFunctionReturn(0);
 }
@@ -704,6 +624,8 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, const Mat A, const Ma
   /* increase the overlap by two to get neighbors of neighbors */
   ierr = MatIncreaseOverlap(A,1,&lis,2);CHKERRQ(ierr);
   ierr = ISSort(lis);CHKERRQ(ierr);
+  /* create a communication structure for the overlapped portion and transmit coarse indices */
+
   /* get the local part of A */
   ierr = MatGetSubMatrices(A,1,&lis,&lis,MAT_INITIAL_MATRIX,&lA);CHKERRQ(ierr);
   /* build the scatter out of it */
