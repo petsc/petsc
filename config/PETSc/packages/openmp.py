@@ -37,6 +37,7 @@ class Configure(PETSc.package.NewPackage):
                  ]:
       if self.setCompilers.checkCompilerFlag(flag):
         ompflag = flag
+        self.found = 1
         break
     self.setCompilers.addCompilerFlag(ompflag)
     self.setCompilers.popLanguage()
