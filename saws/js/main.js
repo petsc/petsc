@@ -488,7 +488,7 @@ function formSet(current)//-1 input for current means that program has finished
     matInfo.string
     matInfo.stringshort
 */
-function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matInfo) 
+function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matInfo)
 {
     var pcSelectedValue=$("#"+pcListID).val();
     var info      = "";
@@ -523,14 +523,14 @@ function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matInfo)
         //is a composite pc so there will be a div in the next position
         var generatedDiv="";
         generatedDiv = $("#"+pcListID).next().get(0).id; //this will be a div
-        //alert("generatedDiv "+generatedDiv+"; children().length="+$("#"+generatedDiv).children().length);
-        level = mgLevels-1;
+        //level = mgLevels-1;
+        level = 0;
         for (var i=0; i<$("#"+generatedDiv).children().length; i++) { //loop over all pcLists under this Div
 	    var childID = $("#"+generatedDiv).children().get(i).id;
 	    if ($("#"+childID).is(".pcLists")) {//has more pc lists that need to be taken care of recursively
                 info      = "";
                 infoshort = "";
-                if (level) {
+                if (level != 0) {
 		    if(level<10)//still using numbers
 			myendtag = endtag+level;
 		    else
@@ -556,7 +556,7 @@ function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matInfo)
                 matInfo[index].stringshort += infoshort;
 
                 pcGetDetailedInfo(childID,myprefix,recursionCounter,matInfo);
-                level--;
+                level++;
 	    }
         }
         return "";
@@ -610,6 +610,7 @@ function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matInfo)
     }
 
     if  (info.length == 0) return ""; //is not a composite pc. no extra info needs to be added
+
     var index=getMatIndex(recursionCounter);
     matInfo[index].string      += info;
     matInfo[index].stringshort += infoshort;
@@ -617,7 +618,7 @@ function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matInfo)
     //is a composite pc so there will be a div in the next position
     var generatedDiv="";
     generatedDiv = $("#"+pcListID).next().get(0).id; //this will be a div, eg. mg0_, bjacobi1_
-    //alert("generatedDiv "+generatedDiv);
+
     for (var i=0; i<$("#"+generatedDiv).children().length; i++) { //loop over all pcLists under this Div
 	var childID = $("#"+generatedDiv).children().get(i).id;
 	if ($("#"+childID).is(".pcLists")) {//has more pc lists that need to be taken care of recursively
