@@ -41,9 +41,10 @@ PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm,const char refresh_token[],
   SSL            *ssl;
   int            sock;
   PetscErrorCode ierr;
-  char           buff[8*1024],body[1024],*access,*ctmp;
+  char           buff[8*1024],body[1024];
   PetscMPIInt    rank;
   char           *refreshtoken = (char*)refresh_token;
+  PetscBool      found;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -73,14 +74,8 @@ PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm,const char refresh_token[],
     ierr = PetscSSLDestroyContext(ctx);CHKERRQ(ierr);
     close(sock);
 
-    ierr   = PetscStrstr(buff,"\"access_token\" : \"",&access);CHKERRQ(ierr);
-    if (!access) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Did not receive access token from Google");
-    access += 18;
-    ierr   = PetscStrchr(access,'\"',&ctmp);CHKERRQ(ierr);
-    if (!ctmp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Access token from Google is misformed");
-    *ctmp  = 0;
-    ierr   = PetscStrncpy(access_token,access,tokensize);CHKERRQ(ierr);
-    *ctmp  = '\"';
+    ierr   = PetscPullJSONValue(buff,"access_token",access_token,tokensize,&found);CHKERRQ(ierr);
+    if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Google drive did not return access_token");
   }
   PetscFunctionReturn(0);
 }
@@ -148,16 +143,16 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm,const char access_token[],co
     len = 1024 + sb.st_size;
     ierr = PetscMalloc1(len,&body);CHKERRQ(ierr);
     ierr = PetscStrcpy(body,"--foo_bar_baz\r\n"
-                         "Content-Type: application/json\r\n\r\n"
-                         "{"
-                         "\"title\": \"");
-    ierr = PetscStrcat(body,filename);
-    ierr = PetscStrcat(body,"\","
-                         "\"mimeType\": \"text.html\","
-                         "\"description\": \" a file\""
-                         "}\r\n\r\n"
-                         "--foo_bar_baz\r\n"
-                         "Content-Type: text/html\r\n\r\n");
+                            "Content-Type: application/json\r\n\r\n"
+                            "{");CHKERRQ(ierr);
+    ierr = PetscPushJSONValue(body,"title",filename,len);CHKERRQ(ierr);
+    ierr = PetscStrcat(body,",");CHKERRQ(ierr);
+    ierr = PetscPushJSONValue(body,"mimeType","text.html",len);CHKERRQ(ierr);
+    ierr = PetscStrcat(body,",");CHKERRQ(ierr);
+    ierr = PetscPushJSONValue(body,"description","a file",len);CHKERRQ(ierr);
+    ierr = PetscStrcat(body,"}\r\n\r\n"
+                            "--foo_bar_baz\r\n"
+                            "Content-Type: text/html\r\n\r\n");
     ierr = PetscStrlen(body,&blen);CHKERRQ(ierr);
     fd = fopen (filename, "r");
     if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file: %s",filename);
@@ -213,9 +208,10 @@ PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm comm,char access_token[],char 
   SSL            *ssl;
   int            sock;
   PetscErrorCode ierr;
-  char           buff[8*1024],*ptr,body[1024],*access,*refresh,*ctmp;
+  char           buff[8*1024],*ptr,body[1024];
   PetscMPIInt    rank;
   size_t         len;
+  PetscBool      found;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -250,25 +246,13 @@ PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm comm,char access_token[],char 
     ierr = PetscSSLDestroyContext(ctx);CHKERRQ(ierr);
     close(sock);
 
-    ierr   = PetscStrstr(buff,"\"access_token\" : \"",&access);CHKERRQ(ierr);
-    if (!access) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Did not receive access token from Google");
-    access += 18;
-    ierr   = PetscStrchr(access,'\"',&ctmp);CHKERRQ(ierr);
-    if (!ctmp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Access token from Google is misformed");
-    *ctmp  = 0;
-    ierr   = PetscStrncpy(access_token,access,tokensize);CHKERRQ(ierr);
-    *ctmp  = '\"';
-
-    ierr   = PetscStrstr(buff,"\"refresh_token\" : \"",&refresh);CHKERRQ(ierr);
-    if (!refresh) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Did not receive refresh token from Google");
-    refresh += 19;
-    ierr   = PetscStrchr(refresh,'\"',&ctmp);CHKERRQ(ierr);
-    if (!ctmp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Refresh token from Google is misformed");
-    *ctmp  = 0;
-    ierr = PetscStrncpy(refresh_token,refresh,tokensize);CHKERRQ(ierr);
+    ierr   = PetscPullJSONValue(buff,"access_token",access_token,tokensize,&found);CHKERRQ(ierr);
+    if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Google drive did not return access_token");
+    ierr   = PetscPullJSONValue(buff,"refresh_token",refresh_token,tokensize,&found);CHKERRQ(ierr);
+    if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Google drive did not return refresh_token");
 
     ierr = PetscPrintf(comm,"Here is your Google refresh token, save it in a save place, in the future you can run PETSc\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"programs with the option -google_refresh_token %s\n",refresh);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"programs with the option -google_refresh_token %s\n",refresh_token);CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"to access Google Drive automatically\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -295,23 +279,21 @@ PetscErrorCode PetscURLShorten(const char url[],char shorturl[],size_t lenshortu
   SSL            *ssl;
   int            sock;
   PetscErrorCode ierr;
-  char           buff[1024],body[512],*sub1,*sub2;
+  char           buff[1024],body[512];
+  PetscBool      found;
 
   PetscFunctionBegin;
   ierr = PetscSSLInitializeContext(&ctx);CHKERRQ(ierr);
   ierr = PetscHTTPSConnect("www.googleapis.com",443,ctx,&sock,&ssl);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(body,512,"{\"longUrl\": \"%s\"}",url);CHKERRQ(ierr);
+  ierr = PetscStrcpy(body,"{");CHKERRQ(ierr);
+  ierr = PetscPushJSONValue(body,"longUrl",url,sizeof(body)-2);CHKERRQ(ierr);
+  ierr = PetscStrcat(body,"}");CHKERRQ(ierr);
   ierr = PetscHTTPSRequest("POST","www.googleapis.com/urlshortener/v1/url",NULL,"application/json",body,ssl,buff,sizeof(buff));CHKERRQ(ierr);
   ierr = PetscSSLDestroyContext(ctx);CHKERRQ(ierr);
   close(sock);
-  ierr = PetscStrstr(buff,"\"id\": \"",&sub1);CHKERRQ(ierr);
-  if (sub1) {
-    sub1 += 7;
-    ierr = PetscStrstr(sub1,"\"",&sub2);CHKERRQ(ierr);
-    if (!sub2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Google did not shorten URL");
-    sub2[0] = 0;
-    ierr = PetscStrncpy(shorturl,sub1,lenshorturl);CHKERRQ(ierr);
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Google did not shorten URL");
+
+  ierr   = PetscPullJSONValue(buff,"id",shorturl,lenshorturl,&found);CHKERRQ(ierr);
+  if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Google drive did not return short URL");
   PetscFunctionReturn(0);
 }
 
