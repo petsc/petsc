@@ -622,6 +622,11 @@ runex16_2:
            -npc_snes_type fas -npc_fas_levels_snes_type ncg -npc_fas_levels_snes_max_it 3 -npc_snes_monitor_short \
 	   > ex16_2.tmp 2>&1; ${DIFF} output/ex16_2.out ex16_2.tmp || printf "${PWD}\nPossible problem with with ex16_2, diffs above\n=========================================\n"; \
            ${RM} -f ex16_2.tmp
+runex16_3:
+	-@${MPIEXEC} ./ex16 -da_refine 1 -da_overlap 3 -da_local_subdomains 4 -snes_type aspin -rad 10.0 -young 10. -ploading 0.0 -loading -0.5 -snes_monitor_short -ksp_monitor_short \
+        -npc_sub_snes_rtol 1e-1 -ksp_rtol 1e-3 \
+	> ex16_3.tmp 2>&1; ${DIFF} output/ex16_3.out ex16_3.tmp || printf "${PWD}\nPossible problem with with ex16_3, diffs above\n=========================================\n"; \
+        ${RM} -f ex16_3.tmp
 runex19:
 	-@${MPIEXEC} -n 2 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -ksp_type fgmres -pc_mg_type full > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
@@ -1103,7 +1108,9 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2  rune
                                  runex5_5_nasm runex5_5_newton_asm_dmda runex5_5_newton_gasm_dmda \
                                  runex5_6 ex5.rm ex7.PETSc runex7 ex7.rm\
                                  ex14.PETSc runex14 runex14_2 runex14_3 ex14.rm \
-                                 ex15.PETSc runex15 runex15_3 runex15_lag_jac runex15_lag_pc ex15.rm ex18.PETSc runex18 ex18.rm \
+                                 ex15.PETSc runex15 runex15_3 runex15_lag_jac runex15_lag_pc ex15.rm \
+                                 ex16.PETSc runex16_3 ex16.rm \
+                                 ex18.PETSc runex18 ex18.rm \
                                  ex19.PETSc runex19 runex19_2 runex19_bcols1 runex19_2_bcols1 runex19_fdcoloring_wp runex19_fdcoloring_ds \
                                  runex19_fdcoloring_wp_bcols1 runex19_fdcoloring_ds_bcols1 \
                                  runex19_fdcoloring_wp_baij runex19_fdcoloring_ds_baij runex19_5 \
