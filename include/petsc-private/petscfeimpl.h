@@ -64,6 +64,8 @@ struct _PetscFEOps {
   PetscErrorCode (*setup)(PetscFE);
   PetscErrorCode (*view)(PetscFE,PetscViewer);
   PetscErrorCode (*destroy)(PetscFE);
+  PetscErrorCode (*getdimension)(PetscFE,PetscInt*);
+  PetscErrorCode (*gettabulation)(PetscFE,PetscInt,const PetscReal*,PetscReal*,PetscReal*,PetscReal*);
   /* Element integration */
   PetscErrorCode (*integrateresidual)(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[],
                                       PetscInt, PetscFE[], const PetscScalar[],
@@ -98,6 +100,7 @@ struct _p_PetscFE {
   PetscInt        numComponents; /* The number of field components */
   PetscQuadrature quadrature;    /* Suitable quadrature on K */
   PetscInt       *numDof;        /* The number of dof on mesh points of each depth */
+  PetscReal      *invV;          /* Change of basis matrix, from prime to nodal basis set */
   PetscReal      *B, *D, *H;     /* Tabulation of basis and derivatives at quadrature points */
   PetscInt        blockSize, numBlocks;  /* Blocks are processed concurrently */
   PetscInt        batchSize, numBatches; /* A batch is made up of blocks, Batches are processed in serial */
@@ -129,5 +132,13 @@ typedef struct {
   PetscInt         op; /* ANDY: Stand-in for real equation code generation */
 } PetscFE_OpenCL;
 #endif
+
+typedef struct {
+  PetscInt   cellRefiner;    /* The cell refiner defining the cell division */
+  PetscInt   numSubelements; /* The number of subelements */
+  PetscReal *v0;             /* The affine transformation for each subelement */
+  PetscReal *jac, *invjac;
+  PetscInt  *embedding;      /* Map from subelements dofs to element dofs */
+} PetscFE_Composite;
 
 #endif

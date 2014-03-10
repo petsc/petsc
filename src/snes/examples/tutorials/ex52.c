@@ -253,11 +253,13 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
   ierr = PetscFESetBasisSpace(fem, P);CHKERRQ(ierr);
   ierr = PetscFESetDualSpace(fem, Q);CHKERRQ(ierr);
   ierr = PetscFESetNumComponents(fem, 1);CHKERRQ(ierr);
+  ierr = PetscFESetUp(fem);CHKERRQ(ierr);
   ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
   ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
   /* Create quadrature */
   ierr = PetscDTGaussJacobiQuadrature(dim, order, -1.0, 1.0, &q);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(fem, q);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
   user->fe[0] = fem;
   user->fem.fe = user->fe;
   PetscFunctionReturn(0);
@@ -436,7 +438,7 @@ int main(int argc, char **argv)
     ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr);
     ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
-    ierr = SNESComputeJacobian(snes, X, &J, &J);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes, X, J, J);CHKERRQ(ierr);
     ierr = MatDestroy(&J);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &X);CHKERRQ(ierr);
   }

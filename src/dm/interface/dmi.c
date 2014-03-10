@@ -152,17 +152,17 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, PetscInt
       if (nF != dm->numFields) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "The number of DM fields %d does not match the number of Section fields %d", dm->numFields, nF);
       ierr = DMSetNumFields(*subdm, numFields);CHKERRQ(ierr);
       for (f = 0; f < numFields; ++f) {
-        ierr = PetscObjectListDuplicate(dm->fields[fields[f]]->olist, &(*subdm)->fields[f]->olist);CHKERRQ(ierr);
+        ierr = PetscObjectListDuplicate(((PetscObject) dm->fields[fields[f]])->olist, &((PetscObject) (*subdm)->fields[f])->olist);CHKERRQ(ierr);
       }
       if (numFields == 1) {
         MatNullSpace space;
         Mat          pmat;
 
-        ierr = PetscObjectQuery((*subdm)->fields[0], "nullspace", (PetscObject*) &space);CHKERRQ(ierr);
+        ierr = PetscObjectQuery((PetscObject) (*subdm)->fields[0], "nullspace", (PetscObject*) &space);CHKERRQ(ierr);
         if (space) {ierr = PetscObjectCompose((PetscObject) *is, "nullspace", (PetscObject) space);CHKERRQ(ierr);}
-        ierr = PetscObjectQuery((*subdm)->fields[0], "nearnullspace", (PetscObject*) &space);CHKERRQ(ierr);
+        ierr = PetscObjectQuery((PetscObject) (*subdm)->fields[0], "nearnullspace", (PetscObject*) &space);CHKERRQ(ierr);
         if (space) {ierr = PetscObjectCompose((PetscObject) *is, "nearnullspace", (PetscObject) space);CHKERRQ(ierr);}
-        ierr = PetscObjectQuery((*subdm)->fields[0], "pmat", (PetscObject*) &pmat);CHKERRQ(ierr);
+        ierr = PetscObjectQuery((PetscObject) (*subdm)->fields[0], "pmat", (PetscObject*) &pmat);CHKERRQ(ierr);
         if (pmat) {ierr = PetscObjectCompose((PetscObject) *is, "pmat", (PetscObject) pmat);CHKERRQ(ierr);}
       }
     }

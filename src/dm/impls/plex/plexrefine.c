@@ -26,6 +26,63 @@ PETSC_STATIC_INLINE PetscErrorCode GetDepthEnd_Private(PetscInt depth, PetscInt 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CellRefinerGetAffineTransforms_Internal"
+/* Gets the affine map from the original cell to each subcell */
+PetscErrorCode CellRefinerGetAffineTransforms_Internal(CellRefiner refiner, PetscInt *numSubcells, PetscReal *v0[], PetscReal *jac[], PetscReal *invjac[])
+{
+  PetscReal     *v = NULL, *j = NULL, *invj = NULL, detJ;
+  PetscInt       dim, s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  switch (refiner) {
+  case 0: break;
+  case 1:
+    dim  = 2;
+    if (numSubcells) *numSubcells = 4;
+    if (v0) {
+      ierr = PetscMalloc3(4*dim,&v,4*dim*dim,&j,4*dim*dim,&invj);CHKERRQ(ierr);
+      /* A */
+      v[0+0] = -1.0; v[0+1] = -1.0;
+      j[0+0] =  0.5; j[0+1] =  0.0;
+      j[0+2] =  0.0; j[0+3] =  0.5;
+      /* B */
+      v[2+0] =  0.0; v[2+1] = -1.0;
+      j[4+0] =  0.5; j[4+1] =  0.0;
+      j[4+2] =  0.0; j[4+3] =  0.5;
+      /* C */
+      v[4+0] = -1.0; v[4+1] =  0.0;
+      j[8+0] =  0.5; j[8+1] =  0.0;
+      j[8+2] =  0.0; j[8+3] =  0.5;
+      /* D */
+      v[6+0]  =  0.0; v[6+1]  = -1.0;
+      j[12+0] =  0.0; j[12+1] = -0.5;
+      j[12+2] =  0.5; j[12+3] =  0.5;
+      for (s = 0; s < 4; ++s) {
+        DMPlex_Det2D_Internal(&detJ, &j[s*dim*dim]);
+        DMPlex_Invert2D_Internal(&invj[s*dim*dim], &j[s*dim*dim], detJ);
+      }
+    }
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
+  }
+  if (v0) {*v0 = v; *jac = j; *invjac = invj;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CellRefinerRestoreAffineTransforms_Internal"
+PetscErrorCode CellRefinerRestoreAffineTransforms_Internal(CellRefiner refiner, PetscInt *numSubcells, PetscReal *v0[], PetscReal *jac[], PetscReal *invjac[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree3(*v0,*jac,*invjac);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CellRefinerGetSizes"
 static PetscErrorCode CellRefinerGetSizes(CellRefiner refiner, DM dm, PetscInt depthSize[])
 {
@@ -6602,6 +6659,58 @@ PetscErrorCode DMPlexRefineUniform_Internal(DM dm, CellRefiner cellRefiner, DM *
   ierr = PetscFree(depthSize);CHKERRQ(ierr);
 
   *dmRefined = rdm;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateCoarsePointIS"
+/*@
+  DMPlexCreateCoarsePointIS - Creates an IS covering the coarse DM chart with the fine points as data
+
+  Input Parameter:
+. dm - The coarse DM
+
+  Output Parameter:
+. fpointIS - The IS of all the fine points which exist in the original coarse mesh
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexSetRefinementUniform(), DMPlexCreateSubpointIS()
+@*/
+PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
+{
+  CellRefiner    cellRefiner;
+  PetscInt      *depthSize, *fpoints;
+  PetscInt       cStartNew = 0, vStartNew = 0, fStartNew = 0, eStartNew = 0;
+  PetscInt       depth, pStart, pEnd, p, vStart, vEnd, v;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetCellRefiner_Internal(dm, &cellRefiner);CHKERRQ(ierr);
+  ierr = PetscMalloc1((depth+1), &depthSize);CHKERRQ(ierr);
+  ierr = CellRefinerGetSizes(cellRefiner, dm, depthSize);CHKERRQ(ierr);
+  if (cellRefiner) {ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, &fStartNew, &eStartNew, &vStartNew);CHKERRQ(ierr);}
+  ierr = PetscMalloc1(pEnd-pStart,&fpoints);CHKERRQ(ierr);
+  for (p = 0; p < pEnd-pStart; ++p) fpoints[p] = -1;
+  switch (cellRefiner) {
+  case 1: /* Simplicial 2D */
+  case 3: /* Hybrid simplicial 2D */
+  case 2: /* Hex 2D */
+  case 4: /* Hybrid Hex 2D */
+  case 5: /* Simplicial 3D */
+  case 7: /* Hybrid Simplicial 3D */
+  case 6: /* Hex 3D */
+  case 8: /* Hybrid Hex 3D */
+    for (v = vStart; v < vEnd; ++v) fpoints[v-pStart] = vStartNew + (v - vStart);
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", cellRefiner);
+  }
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, pEnd-pStart, fpoints, PETSC_OWN_POINTER, fpointIS);CHKERRQ(ierr);
+  ierr = PetscFree(depthSize);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
