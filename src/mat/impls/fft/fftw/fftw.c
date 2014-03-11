@@ -11,7 +11,11 @@ EXTERN_C_END
 
 typedef struct {
   ptrdiff_t   ndim_fftw,*dim_fftw;
-  fftw_iodim  *iodims;
+#if defined(PETSC_USE_64BIT_INDICES)
+  fftw_iodim64 *iodims;
+#else
+  fftw_iodim   *iodims;
+#endif
   PetscInt    partial_dim;
   fftw_plan   p_forward,p_backward;
   unsigned    p_flag; /* planner flags, FFTW_ESTIMATE,FFTW_MEASURE, FFTW_PATIENT, FFTW_EXHAUSTIVE */
@@ -42,7 +46,11 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
   Mat_FFT        *fft  = (Mat_FFT*)A->data;
   Mat_FFTW       *fftw = (Mat_FFTW*)fft->data;
   PetscScalar    *x_array,*y_array;
+#if defined(PETSC_USE_64BIT_INDICES)
+  fftw_iodim64   *iodims;
+#else
   fftw_iodim     *iodims;
+#endif
   PetscInt       ndim = fft->ndim,*dim = fft->dim,i;
 
   PetscFunctionBegin;
@@ -73,16 +81,29 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
       break;
     default:
 #if defined(PETSC_USE_COMPLEX)
-      iodims = (fftw_iodim*)fftw->iodims;
+      iodims = fftw->iodims;
+#if defined(PETSC_USE_64BIT_INDICES)
       if (ndim) {
-        iodims[ndim-1].n = dim[ndim-1];
+        iodims[ndim-1].n = (ptrdiff_t)dim[ndim-1];
         iodims[ndim-1].is = iodims[ndim-1].os = 1;
         for (i=ndim-2; i>=0; --i) {
-          iodims[i].n = dim[i];
+          iodims[i].n = (ptrdiff_t)dim[i];
           iodims[i].is = iodims[i].os = iodims[i+1].is * iodims[i+1].n;
         }
       }
-      fftw->p_forward = fftw_plan_guru_dft((int)ndim,iodims,0,NULL,(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_FORWARD,fftw->p_flag);
+      fftw->p_forward = fftw_plan_guru64_dft((int)ndim,(fftw_iodim64*)iodims,0,NULL,(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_FORWARD,fftw->p_flag);
+#else
+      if (ndim) {
+        iodims[ndim-1].n = (int)dim[ndim-1];
+        iodims[ndim-1].is = iodims[ndim-1].os = 1;
+        for (i=ndim-2; i>=0; --i) {
+          iodims[i].n = (int)dim[i];
+          iodims[i].is = iodims[i].os = iodims[i+1].is * iodims[i+1].n;
+        }
+      }
+      fftw->p_forward = fftw_plan_guru_dft((int)ndim,(fftw_iodim*)iodims,0,NULL,(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_FORWARD,fftw->p_flag);
+#endif
+
 #else
       fftw->p_forward = fftw_plan_dft_r2c(ndim,dim,(double*)x_array,(fftw_complex*)y_array,fftw->p_flag);
 #endif
@@ -123,7 +144,11 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
   Mat_FFTW       *fftw = (Mat_FFTW*)fft->data;
   PetscScalar    *x_array,*y_array;
   PetscInt       ndim=fft->ndim,*dim=fft->dim;
-  fftw_iodim     *iodims=(fftw_iodim*)fftw->iodims;
+#if defined(PETSC_USE_64BIT_INDICES)
+  fftw_iodim64   *iodims=fftw->iodims;
+#else
+  fftw_iodim     *iodims=fftw->iodims;
+#endif
  
   PetscFunctionBegin;
   ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
@@ -153,7 +178,11 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
       break;
     default:
 #if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_64BIT_INDICES)
+      fftw->p_backward = fftw_plan_guru64_dft((int)ndim,(fftw_iodim64*)iodims,0,NULL,(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_BACKWARD,fftw->p_flag);
+#else
       fftw->p_backward = fftw_plan_guru_dft((int)ndim,iodims,0,NULL,(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_BACKWARD,fftw->p_flag);
+#endif
 #else
       fftw->p_backward= fftw_plan_dft_c2r(ndim,dim,(fftw_complex*)x_array,(double*)y_array,fftw->p_flag);
 #endif
@@ -326,7 +355,6 @@ PetscErrorCode MatDestroy_FFTW(Mat A)
   fftw_destroy_plan(fftw->p_forward);
   fftw_destroy_plan(fftw->p_backward);
   if (fftw->iodims) {
-    /* ierr = PetscFree(fftw->iodims);CHKERRQ(ierr); */
     free(fftw->iodims);
   }
   ierr = PetscFree(fftw->dim_fftw);CHKERRQ(ierr);
@@ -1224,9 +1252,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
 
   ierr = PetscMalloc1(ndim, &(fftw->dim_fftw));CHKERRQ(ierr);
   if (size == 1) {
-    /* ierr = PetscMalloc(ndim, &(fftw->iodims));CHKERRQ(ierr);  error! */
-    /* ierr = PetscMalloc(ndim*sizeof(fftw_iodim),&(fftw->iodims));CHKERRQ(ierr); -not sure if this is ok */
+#if defined(PETSC_USE_64BIT_INDICES)
+    fftw->iodims = (fftw_iodim64 *) malloc(sizeof(fftw_iodim64) * ndim);
+#else
     fftw->iodims = (fftw_iodim *) malloc(sizeof(fftw_iodim) * ndim);
+#endif
   }
 
   for (ctr=0;ctr<ndim;ctr++) (fftw->dim_fftw)[ctr]=dim[ctr];
