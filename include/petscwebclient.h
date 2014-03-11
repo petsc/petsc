@@ -4,6 +4,8 @@
 #if !defined(__PETSCWEBCLIENT_H)
 #define __PETSCWEBCLIENT_H
 
+/*  complex number I conflicts with SSL include files */
+#define PETSC_SKIP_COMPLEX
 #include <petscsys.h>
 
 #include <errno.h>
