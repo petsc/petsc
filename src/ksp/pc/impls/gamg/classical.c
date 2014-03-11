@@ -180,34 +180,21 @@ PetscErrorCode PCGAMGCoarsen_Classical(PC pc,Mat *G,PetscCoarsenData **agg_lists
 PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, const Mat A, const Mat G, PetscCoarsenData *agg_lists,Mat *P)
 {
   PetscErrorCode    ierr;
-  PetscReal         *Amax_pos,*Amax_neg;
-  Mat               lA,gA=NULL;                /* on and off diagonal matrices */
-  PetscInt          fn;                        /* fine local blocked sizes */
-  PetscInt          cn;                        /* coarse local blocked sizes */
-  PetscInt          fs,fe;                     /* fine (row) ownership range*/
-  PetscInt          cs,ce;                     /* coarse (column) ownership range */
-  PetscInt          i,j;                       /* indices! */
-  PetscBool         iscoarse;                  /* flag for determining if a node is coarse */
-  PetscInt          *lcid,*gcid;               /* on and off-processor coarse unknown IDs */
-  PetscInt          *lsparse,*gsparse;         /* on and off-processor sparsity patterns for prolongator */
-  PetscScalar       pij;
-  const PetscScalar *rval;
-  const PetscInt    *rcol;
-  PetscScalar       g_pos,g_neg,a_pos,a_neg,diag,invdiag,alpha,beta;
-  Vec               C;   /* vec of fine size */
-  MatType           mtype;
-  PetscInt          ncols,col;
-  PetscInt          row_f,row_c;
-  PetscInt          cmax=0,idx;
-  PetscScalar       *pvals;
-  PetscInt          *pcols;
   PC_MG             *mg          = (PC_MG*)pc->data;
   PC_GAMG           *gamg        = (PC_GAMG*)mg->innerctx;
+  PetscBool         iscoarse,isMPIAIJ,isSEQAIJ;
+  PetscInt          fn,cn,fs,fe,cs,ce,i,j,ncols,col,row_f,row_c,cmax=0,idx,noff;
+  PetscInt          *lcid,*gcid,*lsparse,*gsparse,*colmap,*pcols;
+  const PetscInt    *rcol;
+  PetscReal         *Amax_pos,*Amax_neg;
+  PetscScalar       g_pos,g_neg,a_pos,a_neg,diag,invdiag,alpha,beta,pij;
+  PetscScalar       *pvals;
+  const PetscScalar *rval;
+  Mat               lA,gA=NULL;
+  MatType           mtype;
+  Vec               C,lvec;
   PetscLayout       clayout;
   PetscSF           sf;
-  Vec               lvec;
-  PetscInt          *colmap,noff;
-  PetscBool         isMPIAIJ,isSEQAIJ;
   Mat_MPIAIJ        *mpiaij;
 
   PetscFunctionBegin;
@@ -592,28 +579,20 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, const Mat A, const Ma
 {
   PetscErrorCode    ierr;
   Mat               lA,*lAs;
-  Vec               cv;
-  PetscInt          *gcid,*lcid;
-  IS                lis;
-  PetscInt          fs,fe,cs,ce,nl,i,j,k,li,lni,ci;
-  PetscInt          fn,cn,cid;
-  PetscBool         iscoarse;
-  const PetscScalar *vcol;
-  const PetscInt    *icol;
-  const PetscInt    *gidx;
-  PetscInt          ncols;
-  PetscInt          *lsparse,*gsparse;
   MatType           mtype;
-  PetscInt          maxcols;
+  Vec               cv;
+  PetscInt          *gcid,*lcid,*lsparse,*gsparse,*picol;
+  PetscInt          fs,fe,cs,ce,nl,i,j,k,li,lni,ci,ncols,maxcols,fn,cn,cid,size;
+  const PetscInt    *lidx,*icol,*gidx;
+  PetscBool         iscoarse;
+  PetscScalar       vi,pentry,pjentry;
+  PetscScalar       *pcontrib,*pvcol;
+  const PetscScalar *vcol;
   PetscReal         diag,jdiag,jwttotal;
-  PetscScalar       *pvcol,vi;
-  PetscInt          *picol;
   PetscInt          pncols;
-  PetscScalar       *pcontrib,pentry,pjentry;
   PetscSF           sf;
-  PetscInt          size;
-  const PetscInt    *lidx;
   PetscLayout       clayout;
+  IS                lis;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
