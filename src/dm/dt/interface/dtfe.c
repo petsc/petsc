@@ -1715,7 +1715,8 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
           if ( simplex && (order > 0) && (order < 3)) continue;
           if (!simplex && (order > 0) && (order < 2)) continue;
           lag->numDof[depth] = 0;
-          if (order > 0) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to implement cells");}
+          if ( simplex && (order > 3)) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to implement cells");}
+          if (!simplex && (order > 2)) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to implement cells");}
 
           ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
           ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
