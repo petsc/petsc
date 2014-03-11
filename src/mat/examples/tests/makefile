@@ -1981,7 +1981,6 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex133.PETSc ex133.rm ex134.PETSc runex134 ex134.rm ex135.PETSc runex135 ex135.rm ex136.PETSc ex136.rm \
                                  ex137.PETSc runex137 ex137.rm \
                                  ex139.PETSc runex139 ex139.rm ex141.PETSc runex141 ex141.rm \
-                                 ex151.PETSc runex151 runex151_2 runex151_2b runex151_3 runex151_3b ex151.rm \
                                  ex159.PETSc runex159 runex159_nest ex159.rm \
                                  ex160.PETSc runex160 ex160.rm  ex161.PETSc runex161 runex161_2 runex161_3 runex161_4 runex161_5 ex161.rm \
                                  ex164.PETSc runex164 ex164.rm
@@ -2006,7 +2005,8 @@ TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm e
                                  ex15.PETSc runex15 ex15.rm ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 ex21.rm ex35.PETSc \
                                  runex35 ex35.rm  ex48.PETSc runex48 ex48.rm ex71.PETSc ex71.rm \
                                  ex95.PETSc  ex95.rm ex101.PETSc runex101 ex101.rm
-TESTEXAMPLES_C_NOCOMPLEX       = ex32.PETSc ex32.rm  ex50.PETSc ex50.rm
+TESTEXAMPLES_C_NOCOMPLEX       = ex32.PETSc ex32.rm  ex50.PETSc ex50.rm \
+                                 ex151.PETSc runex151 runex151_2 runex151_2b runex151_3 runex151_3b ex151.rm
 TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 ex40.rm ex41.PETSc runex41 ex41.rm ex42.PETSc runex42 \
                                  ex42.rm  ex41.PETSc ex41.rm ex47.PETSc ex47.rm ex53.PETSc runex53 ex53.rm \
                                  ex94.PETSc runex94_matmatmult runex94_matmatmult_2 runex94_scalable0 runex94_scalable1 \
