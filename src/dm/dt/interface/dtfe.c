@@ -5610,10 +5610,12 @@ PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt numComp, Petsc
   ierr = PetscFESetBasisSpace(*fem, P);CHKERRQ(ierr);
   ierr = PetscFESetDualSpace(*fem, Q);CHKERRQ(ierr);
   ierr = PetscFESetNumComponents(*fem, numComp);CHKERRQ(ierr);
+  ierr = PetscFESetUp(*fem);CHKERRQ(ierr);
   ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
   ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
   /* Create quadrature (with specified order if given) */
-  ierr = PetscDTGaussJacobiQuadrature(dim, qorder > 0 ? qorder : order, -1.0, 1.0, &q);CHKERRQ(ierr);
+  ierr = PetscDTGaussJacobiQuadrature(dim, PetscMax(qorder > 0 ? qorder : order, 1), -1.0, 1.0, &q);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(*fem, q);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
