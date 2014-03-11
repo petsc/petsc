@@ -47,13 +47,13 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  {'numProcs': 1, 'args': '-dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -porder 1'},
                                                                  {'numProcs': 1, 'args': '-dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -porder 2'},
                                                                  # 6-8 2D P_2 on a triangle
-                                                                 {'numProcs': 1, 'args': '-interpolate 1 -petscspace_order 2 -num_comp 2 -qorder 2'},
-                                                                 {'numProcs': 1, 'args': '-interpolate 1 -petscspace_order 2 -num_comp 2 -qorder 2 -porder 1'},
-                                                                 {'numProcs': 1, 'args': '-interpolate 1 -petscspace_order 2 -num_comp 2 -qorder 2 -porder 2'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 2 -num_comp 2 -qorder 2'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 2 -num_comp 2 -qorder 2 -porder 1'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 2 -num_comp 2 -qorder 2 -porder 2'},
                                                                  # 9-11 3D P_2 on a tetrahedron
-                                                                 {'numProcs': 1, 'args': '-dim 3 -interpolate 1 -petscspace_order 2 -num_comp 3 -qorder 2'},
-                                                                 {'numProcs': 1, 'args': '-dim 3 -interpolate 1 -petscspace_order 2 -num_comp 3 -qorder 2 -porder 1'},
-                                                                 {'numProcs': 1, 'args': '-dim 3 -interpolate 1 -petscspace_order 2 -num_comp 3 -qorder 2 -porder 2'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -petscspace_order 2 -num_comp 3 -qorder 2'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -porder 1'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -porder 2'},
                                                                  # 12-14 2D P_1 on a quadrilaterial
                                                                  {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -num_comp 2 -qorder 1', 'requires': 'Broken'},
                                                                  {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -num_comp 2 -qorder 1 -porder 1', 'requires': 'Broken'},

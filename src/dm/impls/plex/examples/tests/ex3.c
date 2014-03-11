@@ -74,7 +74,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->debug           = 0;
   options->dim             = 2;
   options->simplex         = PETSC_TRUE;
-  options->interpolate     = PETSC_FALSE;
+  options->interpolate     = PETSC_TRUE;
   options->refinementLimit = 0.0;
   options->qorder          = 0;
   options->numComponents   = 1;
