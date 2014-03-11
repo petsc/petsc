@@ -1193,21 +1193,27 @@ PetscErrorCode DMPlexComputeInterpolatorFEM(DM dmc, DM dmf, Mat I, void *user)
     for (fieldJ = 0, offsetJ = 0; fieldJ < Nf; ++fieldJ) {
       PetscSpace P;
       PetscReal *B;
-      PetscInt   cpdim, j;
+      PetscInt   NcJ, cpdim, j;
 
+      /* For now, fields only interpolate themselves */
+      if (fieldI != fieldJ) {offsetJ += cpdim; continue;}
       /* Evaluate basis at points */
       ierr = PetscFEGetBasisSpace(fe[fieldJ], &P);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe[fieldJ], &NcJ);CHKERRQ(ierr);
+      if (Nc != NcJ) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in fine space field %d does not match coarse field %d", Nc, NcJ);
       ierr = PetscFEGetDimension(fe[fieldJ], &cpdim);CHKERRQ(ierr);
       ierr = PetscFEGetTabulation(fe[fieldJ], npoints, points, &B, NULL, NULL);CHKERRQ(ierr);
       for (i = 0, k = 0; i < fpdim; ++i) {
         ierr = PetscDualSpaceGetFunctional(Qref, i, &f);CHKERRQ(ierr);
         ierr = PetscQuadratureGetData(f, NULL, &Np, NULL, &qweights);CHKERRQ(ierr);
         for (p = 0; p < Np; ++p, ++k) {
-          for (j = 0; j < cpdim; ++j) elemMat[(offsetI + i)*cCellDof + offsetJ+j] += B[k*cpdim+j]*qweights[p];
+          for (j = 0; j < cpdim; ++j) {
+            for (c = 0; c < Nc; ++c) elemMat[(offsetI + i*Nc + c)*cCellDof + offsetJ + j*NcJ + c] += B[k*cpdim*NcJ+j*Nc+c]*qweights[p];
+          }
         }
       }
       ierr = PetscFERestoreTabulation(fe[fieldJ], npoints, points, &B, NULL, NULL);CHKERRQ(ierr);CHKERRQ(ierr);
-      offsetJ += cpdim;
+      offsetJ += cpdim*NcJ;
     }
     offsetI += fpdim*Nc;
     ierr = PetscFree(points);CHKERRQ(ierr);
