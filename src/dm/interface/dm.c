@@ -3248,6 +3248,7 @@ PetscErrorCode DMSetField(DM dm, PetscInt f, PetscObject field)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (!dm->fields) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONGSTATE, "Fields have not been setup in this DM. Call DMSetNumFields()");
   if ((f < 0) || (f >= dm->numFields)) SETERRQ3(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Field %d should be in [%d,%d)", f, 0, dm->numFields);
+  if (dm->fields[f] == field) PetscFunctionReturn(0);
   ierr = PetscObjectDestroy((PetscObject *) &dm->fields[f]);CHKERRQ(ierr);
   dm->fields[f] = (PetscFE) field;
   ierr = PetscObjectReference((PetscObject) dm->fields[f]);CHKERRQ(ierr);
