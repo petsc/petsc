@@ -12,7 +12,7 @@ static PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool u
 
   PetscFunctionBegin;
   ierr = DMPlexGetTransitiveClosure(dm, p, useClosure, &starSize, (PetscInt**) &star);CHKERRQ(ierr);
-  for (s = 2; s < starSize*2; s += 2) {
+  for (s = 0; s < starSize*2; s += 2) {
     const PetscInt *closure = NULL;
     PetscInt        closureSize, c, q;
 
