@@ -1120,7 +1120,7 @@ PetscErrorCode DMPlexComputeInterpolatorFEMBroken(DM dmc, DM dmf, Mat I, void *u
 - user - The user context
 
   Output Parameter:
-. I  - The interpolation matrix
+. In  - The interpolation matrix
 
   Note:
   The first member of the user context must be an FEMContext.
@@ -1132,7 +1132,7 @@ PetscErrorCode DMPlexComputeInterpolatorFEMBroken(DM dmc, DM dmf, Mat I, void *u
 
 .seealso: DMPlexComputeJacobianFEM()
 @*/
-PetscErrorCode DMPlexComputeInterpolatorFEM(DM dmc, DM dmf, Mat I, void *user)
+PetscErrorCode DMPlexComputeInterpolatorFEM(DM dmc, DM dmf, Mat In, void *user)
 {
   DM_Plex          *mesh  = (DM_Plex *) dmc->data;
   PetscFEM         *fem   = (PetscFEM *) user;
@@ -1168,7 +1168,7 @@ PetscErrorCode DMPlexComputeInterpolatorFEM(DM dmc, DM dmf, Mat I, void *user)
     rCellDof += rNb*Nc;
     cCellDof += cNb*Nc;
   }
-  ierr = MatZeroEntries(I);CHKERRQ(ierr);
+  ierr = MatZeroEntries(In);CHKERRQ(ierr);
   ierr = PetscMalloc1(rCellDof*cCellDof,&elemMat);CHKERRQ(ierr);
   ierr = PetscMemzero(elemMat, rCellDof*cCellDof * sizeof(PetscScalar));CHKERRQ(ierr);
   for (fieldI = 0, offsetI = 0; fieldI < Nf; ++fieldI) {
@@ -1197,38 +1197,44 @@ PetscErrorCode DMPlexComputeInterpolatorFEM(DM dmc, DM dmf, Mat I, void *user)
     for (fieldJ = 0, offsetJ = 0; fieldJ < Nf; ++fieldJ) {
       PetscSpace P;
       PetscReal *B;
-      PetscInt   cpdim, j;
+      PetscInt   NcJ, cpdim, j;
 
+      /* For now, fields only interpolate themselves */
+      if (fieldI != fieldJ) {offsetJ += cpdim; continue;}
       /* Evaluate basis at points */
       ierr = PetscFEGetBasisSpace(fe[fieldJ], &P);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe[fieldJ], &NcJ);CHKERRQ(ierr);
+      if (Nc != NcJ) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in fine space field %d does not match coarse field %d", Nc, NcJ);
       ierr = PetscFEGetDimension(fe[fieldJ], &cpdim);CHKERRQ(ierr);
       ierr = PetscFEGetTabulation(fe[fieldJ], npoints, points, &B, NULL, NULL);CHKERRQ(ierr);
       for (i = 0, k = 0; i < fpdim; ++i) {
         ierr = PetscDualSpaceGetFunctional(Qref, i, &f);CHKERRQ(ierr);
         ierr = PetscQuadratureGetData(f, NULL, &Np, NULL, &qweights);CHKERRQ(ierr);
         for (p = 0; p < Np; ++p, ++k) {
-          for (j = 0; j < cpdim; ++j) elemMat[(offsetI + i)*cCellDof + offsetJ+j] += B[k*cpdim+j]*qweights[p];
+          for (j = 0; j < cpdim; ++j) {
+            for (c = 0; c < Nc; ++c) elemMat[(offsetI + i*Nc + c)*cCellDof + offsetJ + j*NcJ + c] += B[k*cpdim*NcJ+j*Nc+c]*qweights[p];
+          }
         }
       }
       ierr = PetscFERestoreTabulation(fe[fieldJ], npoints, points, &B, NULL, NULL);CHKERRQ(ierr);CHKERRQ(ierr);
-      offsetJ += cpdim;
+      offsetJ += cpdim*NcJ;
     }
     offsetI += fpdim*Nc;
     ierr = PetscFree(points);CHKERRQ(ierr);
   }
   if (mesh->printFEM > 1) {ierr = DMPrintCellMatrix(0, name, rCellDof, cCellDof, elemMat);CHKERRQ(ierr);}
   for (c = cStart; c < cEnd; ++c) {
-    ierr = DMPlexMatSetClosureRefined(dmf, fsection, fglobalSection, dmc, csection, cglobalSection, I, c, elemMat, INSERT_VALUES);CHKERRQ(ierr);
+    ierr = DMPlexMatSetClosureRefined(dmf, fsection, fglobalSection, dmc, csection, cglobalSection, In, c, elemMat, INSERT_VALUES);CHKERRQ(ierr);
   }
   for (f = 0; f < Nf; ++f) {ierr = PetscFEDestroy(&feRef[f]);CHKERRQ(ierr);}
   ierr = PetscFree(feRef);CHKERRQ(ierr);
   ierr = PetscFree(elemMat);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(I, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(I, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(In, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(In, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (mesh->printFEM) {
     ierr = PetscPrintf(PETSC_COMM_WORLD, "%s:\n", name);CHKERRQ(ierr);
-    ierr = MatChop(I, 1.0e-10);CHKERRQ(ierr);
-    ierr = MatView(I, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = MatChop(In, 1.0e-10);CHKERRQ(ierr);
+    ierr = MatView(In, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 #if 0
   ierr = PetscLogEventEnd(DMPLEX_InterpolatorFEM,dmc,dmf,0,0);CHKERRQ(ierr);

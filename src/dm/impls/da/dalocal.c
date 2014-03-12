@@ -416,7 +416,7 @@ PetscErrorCode DMDARestoreCone(DM dm, PetscInt p, PetscInt *cone[])
 
   We interpret the default DMDA partition as a cell partition, and the data assignment as a cell assignment.
 @*/
-PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numDof[], PetscInt numFaceDof[], PetscSection *s)
+PetscErrorCode DMDACreateSection(DM dm, const PetscInt numComp[], const PetscInt numDof[], const PetscInt numFaceDof[], PetscSection *s)
 {
   DM_DA            *da  = (DM_DA*) dm->data;
   PetscSection      section;
