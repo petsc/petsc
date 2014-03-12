@@ -247,6 +247,83 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDTGaussTensorQuadrature"
+/*@
+  PetscDTGaussTensorQuadrature - creates a tensor-product Gauss quadrature
+
+  Not Collective
+
+  Input Arguments:
++ dim     - The spatial dimension
+. npoints - number of points in one dimension
+. a       - left end of interval (often-1)
+- b       - right end of interval (often +1)
+
+  Output Argument:
+. q - A PetscQuadrature object
+
+  Level: intermediate
+
+.seealso: PetscDTGaussQuadrature(), PetscDTLegendreEval()
+@*/
+PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt npoints, PetscReal a, PetscReal b, PetscQuadrature *q)
+{
+  PetscInt       totpoints = dim > 1 ? dim > 2 ? npoints*PetscSqr(npoints) : PetscSqr(npoints) : npoints, i, j, k;
+  PetscReal     *x, *w, *xw, *ww;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc1(totpoints*dim,&x);CHKERRQ(ierr);
+  ierr = PetscMalloc1(totpoints,&w);CHKERRQ(ierr);
+  /* Set up the Golub-Welsch system */
+  switch (dim) {
+  case 0:
+    ierr = PetscFree(x);CHKERRQ(ierr);
+    ierr = PetscFree(w);CHKERRQ(ierr);
+    ierr = PetscMalloc1(1, &x);CHKERRQ(ierr);
+    ierr = PetscMalloc1(1, &w);CHKERRQ(ierr);
+    x[0] = 0.0;
+    w[0] = 1.0;
+    break;
+  case 1:
+    ierr = PetscDTGaussQuadrature(npoints, a, b, x, w);CHKERRQ(ierr);
+    break;
+  case 2:
+    ierr = PetscMalloc2(npoints,&xw,npoints,&ww);CHKERRQ(ierr);
+    ierr = PetscDTGaussQuadrature(npoints, a, b, xw, ww);CHKERRQ(ierr);
+    for (i = 0; i < npoints; ++i) {
+      for (j = 0; j < npoints; ++j) {
+        x[(i*npoints+j)*dim+0] = xw[i];
+        x[(i*npoints+j)*dim+1] = xw[j];
+        w[i*npoints+j]         = ww[i] * ww[j];
+      }
+    }
+    ierr = PetscFree2(xw,ww);CHKERRQ(ierr);
+    break;
+  case 3:
+    ierr = PetscMalloc2(npoints,&xw,npoints,&ww);CHKERRQ(ierr);
+    ierr = PetscDTGaussQuadrature(npoints, a, b, xw, ww);CHKERRQ(ierr);
+    for (i = 0; i < npoints; ++i) {
+      for (j = 0; j < npoints; ++j) {
+        for (k = 0; k < npoints; ++k) {
+          x[((i*npoints+j)*npoints+k)*dim+0] = xw[i];
+          x[((i*npoints+j)*npoints+k)*dim+1] = xw[j];
+          x[((i*npoints+j)*npoints+k)*dim+2] = xw[k];
+          w[(i*npoints+j)*npoints+k]         = ww[i] * ww[j] * ww[k];
+        }
+      }
+    }
+    ierr = PetscFree2(xw,ww);CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct quadrature rule for dimension %d", dim);
+  }
+  ierr = PetscQuadratureCreate(PETSC_COMM_SELF, q);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetData(*q, dim, totpoints, x, w);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDTFactorial_Internal"
 /* Evaluates the nth jacobi polynomial with weight parameters a,b at a point x.
    Recurrence relations implemented from the pseudocode given in Karniadakis and Sherwin, Appendix B */
@@ -387,12 +464,12 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
   Not Collective
 
   Input Arguments:
-+ dim - The simplex dimension
-. order - The quadrature order
-. a - left end of interval (often-1)
-- b - right end of interval (often +1)
++ dim   - The simplex dimension
+. order - The number of points in one dimension
+. a     - left end of interval (often-1)
+- b     - right end of interval (often +1)
 
-  Output Arguments:
+  Output Argument:
 . q - A PetscQuadrature object
 
   Level: intermediate
@@ -401,7 +478,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
   Karniadakis and Sherwin.
   FIAT
 
-.seealso: PetscDTGaussQuadrature()
+.seealso: PetscDTGaussTensorQuadrature(), PetscDTGaussQuadrature()
 @*/
 PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt order, PetscReal a, PetscReal b, PetscQuadrature *q)
 {
