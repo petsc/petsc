@@ -697,6 +697,15 @@ class Configure(config.base.Configure):
           yield 'mpCC_r'
           yield 'mpCC'
         self.usedMPICompilers = 0
+      #attempt to match c++ compiler with c compiler
+      if self.CC.find('win32fe cl') >= 0:
+        yield 'win32fe cl'
+      elif self.CC.find('win32fe icl') >= 0:
+        yield 'win32fe icl'
+      elif self.CC == 'clang':
+        yield 'clang++'
+      elif self.CC == 'icc':
+        yield 'icpc'
       vendor = self.vendor
       if (not vendor) and self.framework.argDB['with-gnu-compilers']:
         yield 'g++'
@@ -842,6 +851,14 @@ class Configure(config.base.Configure):
           yield 'mpf90'
           yield 'mpf77'
         self.usedMPICompilers = 0
+      #attempt to match fortran compiler with c compiler
+      if self.CC.find('win32fe cl') >= 0:
+        yield 'win32fe f90'
+        yield 'win32fe ifc'
+      elif self.CC.find('win32fe icl') >= 0:
+        yield 'win32fe ifc'
+      elif self.CC == 'icc':
+        yield 'ifort'
       vendor = self.vendor
       if (not vendor) and self.framework.argDB['with-gnu-compilers']:
         yield 'gfortran'
