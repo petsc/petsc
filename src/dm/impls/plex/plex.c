@@ -6117,7 +6117,7 @@ PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSe
   /* Row indices */
   ierr = DMPlexGetCellRefiner_Internal(dmc, &cellRefiner);CHKERRQ(ierr);
   ierr = CellRefinerGetAffineTransforms_Internal(cellRefiner, &numSubcells, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dmf, maxFPoints*numSubcells, PETSC_INT, &ftotpoints);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dmf, maxFPoints*2*numSubcells, PETSC_INT, &ftotpoints);CHKERRQ(ierr);
   for (r = 0, q = 0; r < numSubcells; ++r) {
     /* TODO Map from coarse to fine cells */
     ierr = DMPlexGetTransitiveClosure(dmf, point*numSubcells + r, PETSC_TRUE, &numFPoints, &fpoints);CHKERRQ(ierr);
@@ -6678,9 +6678,6 @@ PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpola
   ierr = PetscSectionGetConstrainedStorageSize(gsf, &m);CHKERRQ(ierr);
   ierr = DMGetDefaultGlobalSection(dmCoarse, &gsc);CHKERRQ(ierr);
   ierr = PetscSectionGetConstrainedStorageSize(gsc, &n);CHKERRQ(ierr);
-  /* FAS fails without a scaling vector */
-  ierr = DMCreateGlobalVector(dmCoarse, scaling);CHKERRQ(ierr);
-  ierr = VecSet(*scaling, 1.0);CHKERRQ(ierr);
   /* We need to preallocate properly */
   ierr = MatCreate(PetscObjectComm((PetscObject) dmCoarse), interpolation);CHKERRQ(ierr);
   ierr = MatSetSizes(*interpolation, m, n, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
@@ -6690,6 +6687,8 @@ PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpola
   ierr = MatSetOption(*interpolation, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dmFine, &ctx);CHKERRQ(ierr);
   ierr = DMPlexComputeInterpolatorFEM(dmCoarse, dmFine, *interpolation, ctx);CHKERRQ(ierr);
+  /* Use naive scaling */
+  ierr = DMCreateInterpolationScale(dmCoarse, dmFine, *interpolation, scaling);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
