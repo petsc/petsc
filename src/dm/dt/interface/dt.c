@@ -13,6 +13,16 @@
 #include <petscdmplex.h>
 #include <petscdmshell.h>
 
+static PetscBool GaussCite       = PETSC_FALSE;
+const char       GaussCitation[] = "@article{GolubWelsch1969,\n"
+                                   "  author  = {Golub and Welsch},\n"
+                                   "  title   = {Calculation of Quadrature Rules},\n"
+                                   "  journal = {Math. Comp.},\n"
+                                   "  volume  = {23},\n"
+                                   "  number  = {106},\n"
+                                   "  pages   = {221--230},\n"
+                                   "  year    = {1969}\n}\n";
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscQuadratureCreate"
 PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
@@ -211,6 +221,7 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
   PetscBLASInt   N,LDZ,info;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(GaussCitation, &GaussCite);CHKERRQ(ierr);
   /* Set up the Golub-Welsch system */
   for (i=0; i<npoints; i++) {
     x[i] = 0;                   /* diagonal is 0 */
