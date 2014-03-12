@@ -141,56 +141,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SetupElement"
-PetscErrorCode SetupElement(DM dm, AppCtx *user)
-{
-  PetscFE         fem;
-  DM              K;
-  PetscSpace      P;
-  PetscDualSpace  Q;
-  PetscReal      *B, *D;
-  PetscQuadrature q;
-  const PetscInt  dim   = user->dim;
-  PetscInt        order, numBasisFunc, numBasisComp;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  /* Create space */
-  ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) dm), &P);CHKERRQ(ierr);
-  ierr = PetscSpaceSetFromOptions(P);CHKERRQ(ierr);
-  ierr = PetscSpacePolynomialSetNumVariables(P, dim);CHKERRQ(ierr);
-  ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
-  ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
-  /* Create dual space */
-  ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) dm), &Q);CHKERRQ(ierr);
-  ierr = PetscDualSpaceCreateReferenceCell(Q, dim, user->simplex, &K);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
-  ierr = DMDestroy(&K);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetOrder(Q, order);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetFromOptions(Q);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
-  /* Create quadrature */
-  ierr = PetscDTGaussJacobiQuadrature(dim, PetscMax(user->qorder, order), -1.0, 1.0, &q);CHKERRQ(ierr);
-  /* Create element */
-  ierr = PetscFECreate(PetscObjectComm((PetscObject) dm), &fem);CHKERRQ(ierr);
-  ierr = PetscFESetBasisSpace(fem, P);CHKERRQ(ierr);
-  ierr = PetscFESetDualSpace(fem, Q);CHKERRQ(ierr);
-  ierr = PetscFESetNumComponents(fem, user->numComponents);CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(fem, q);CHKERRQ(ierr);
-  ierr = PetscFESetFromOptions(fem);CHKERRQ(ierr);
-  ierr = PetscFESetUp(fem);CHKERRQ(ierr);
-  ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
-  ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
-  ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
-  ierr = PetscFEGetDimension(fem, &numBasisFunc);CHKERRQ(ierr);
-  ierr = PetscFEGetNumComponents(fem, &numBasisComp);CHKERRQ(ierr);
-  ierr = PetscFEGetDefaultTabulation(fem, &B, &D, NULL);CHKERRQ(ierr);
-  user->fe = fem;
-  user->fem.fe = &user->fe;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "SetupSection"
 PetscErrorCode SetupSection(DM dm, AppCtx *user)
 {
@@ -385,7 +335,8 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = SetupElement(dm, &user);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, user.dim, user.numComponents, user.simplex, NULL, user.qorder, &user.fe);CHKERRQ(ierr);
+  user.fem.fe = &user.fe;
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
   ierr = CheckFunctions(dm, user.porder, u, &user);CHKERRQ(ierr);
