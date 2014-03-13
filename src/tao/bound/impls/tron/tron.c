@@ -105,6 +105,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
   TAO_TRON                     *tron = (TAO_TRON *)tao->data;
   PetscErrorCode               ierr;
   PetscInt                     iter=0,its;
+  PetscBool                    is_stcg,is_nash,is_gltr;
   TaoConvergedReason           reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchConvergedReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                    prered,actred,delta,f,f_new,rhok,gdx,xdiff,stepsize;
@@ -164,10 +165,20 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
     }
     ierr = KSPReset(tao->ksp);CHKERRQ(ierr);
     ierr = KSPSetOperators(tao->ksp, tron->H_sub, tron->Hpre_sub);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)(tao->ksp),KSPSTCG,&is_stcg);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)(tao->ksp),KSPNASH,&is_nash);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)(tao->ksp),KSPGLTR,&is_gltr);CHKERRQ(ierr);
     while (1) {
 
       /* Approximately solve the reduced linear system */
-      ierr = KSPSTCGSetRadius(tao->ksp,delta);CHKERRQ(ierr);
+      if (is_stcg) {
+        ierr = KSPSTCGSetRadius(tao->ksp,delta);CHKERRQ(ierr);
+      } else if (is_nash) {
+        ierr = KSPNASHSetRadius(tao->ksp,delta);CHKERRQ(ierr);
+      } else if (is_gltr) {
+        ierr = KSPGLTRSetRadius(tao->ksp,delta);CHKERRQ(ierr);
+      }
+
       ierr = KSPSolve(tao->ksp, tron->R, tron->DXFree);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
       tao->ksp_its+=its;
