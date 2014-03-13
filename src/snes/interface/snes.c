@@ -3553,8 +3553,8 @@ PetscErrorCode  SNESSetConvergenceHistory(SNES snes,PetscReal a[],PetscInt its[]
   if (its) PetscValidIntPointer(its,3);
   if (!a) {
     if (na == PETSC_DECIDE || na == PETSC_DEFAULT) na = 1000;
-    ierr = PetscMalloc1(na,&a);CHKERRQ(ierr);
-    ierr = PetscMalloc1(na,&its);CHKERRQ(ierr);
+    ierr = PetscCalloc1(na,&a);CHKERRQ(ierr);
+    ierr = PetscCalloc1(na,&its);CHKERRQ(ierr);
 
     snes->conv_malloc = PETSC_TRUE;
   }
