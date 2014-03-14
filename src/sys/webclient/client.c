@@ -327,7 +327,7 @@ PetscErrorCode PetscPullJSONValue(const char buff[],const char key[],char value[
     PetscFunctionReturn(0);
   }
   *found = PETSC_TRUE;
-  ierr = PetscStrncpy(value,v+1,PetscMin(w-v,valuelen));CHKERRQ(ierr);
+  ierr = PetscStrncpy(value,v+1,PetscMin((size_t)(w-v),valuelen));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

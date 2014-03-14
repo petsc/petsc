@@ -44,7 +44,7 @@ PETSC_UNUSED static PetscErrorCode base64_decode(const unsigned char *data,unsig
 {
   static char    decoding_table[257];
   static int     decode_table_built = 0;
-  int            i,j;
+  size_t         i,j;
   PetscErrorCode ierr;
   size_t         input_length,output_length;
 
