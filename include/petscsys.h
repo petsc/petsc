@@ -1572,9 +1572,7 @@ PETSC_EXTERN PetscErrorCode PetscRealView(PetscInt,const PetscReal[],PetscViewer
 PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt,const PetscScalar[],PetscViewer);
 
 #include <stddef.h>
-#if defined(PETSC_HAVE_MEMORY_H)
-#include <memory.h>
-#endif
+#include <string.h>             /* for memcpy, memset */
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
