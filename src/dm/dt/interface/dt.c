@@ -229,7 +229,7 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
     x[i]           = (a+b)/2 - y*(b-a)/2;
     x[npoints-i-1] = (a+b)/2 + y*(b-a)/2;
 
-    w[i] = w[npoints-1-i] = (b-a)*PetscSqr(0.5*PetscAbsScalar(Z[i*npoints] + Z[(npoints-i-1)*npoints]));
+    w[i] = w[npoints-1-i] = 0.5*(b-a)*(PetscSqr(PetscAbsScalar(Z[i*npoints])) + PetscSqr(PetscAbsScalar(Z[(npoints-i-1)*npoints])));
   }
   ierr = PetscFree2(Z,work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
