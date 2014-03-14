@@ -906,6 +906,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X,Vec B,void *ptr)
                   pf[m] -= b[k][j][i][m];
                 }
               TensorVector(pjinv,pf,py);
+              xnorm=0.;
               for (m=0;m<3;m++) {
                 x[k][j][i][m] -= py[m];
                 xnorm += PetscRealPart(x[k][j][i][m]*x[k][j][i][m]);
