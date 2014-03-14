@@ -5610,7 +5610,7 @@ PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt numComp, Petsc
   ierr = PetscObjectSetOptionsPrefix((PetscObject) P, prefix);CHKERRQ(ierr);
   ierr = PetscSpaceSetFromOptions(P);CHKERRQ(ierr);
   ierr = PetscSpacePolynomialSetNumVariables(P, dim);CHKERRQ(ierr);
-  ierr = PetscSpacePolynomialSetTensor(P, !isSimplex);CHKERRQ(ierr);
+  ierr = PetscSpacePolynomialSetTensor(P, !isSimplex ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
   ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
   /* Create dual space */
