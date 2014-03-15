@@ -7523,7 +7523,7 @@ Before using the Krylov context, one must set the matrix-vector multiplication r
 the preconditioner with the
 commands
 \begin{tabbing}
-  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag);\\
+  PCSetOperators(PC pc,Mat Amat,Mat Pmat);\\
   KSPSetPC(KSP ksp,PC pc);
 \end{tabbing}
 In addition, the KSP solver must be initialized with
@@ -7582,7 +7582,7 @@ The routine
 sets the preconditioner method to be used.
 The routine
 \begin{tabbing}
-  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag);\\
+  PCSetOperators(PC pc,Mat Amat,Mat Pmat);\\
 \end{tabbing}
 set the matrices that are to be used with
 the preconditioner.
@@ -7600,7 +7600,7 @@ and are given, respectively, by
   PCApplyTranspose(PC pc,Vec x,Vec y);
 \end{tabbing}
 In particular, for a preconditioner matrix, \trl{B}, that has
-been set via PCSetOperators(pc,Amat,Pmat,flag),
+been set via PCSetOperators(pc,Amat,Pmat),
 the routine PCApply(pc,x,y) computes $y = B^{-1} x$
 by solving the linear system $By = x$ with the specified preconditioner
 method.

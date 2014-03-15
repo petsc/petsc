@@ -56,7 +56,7 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
 
   PetscFunctionBegin;
   /* Get preconditioner matrix from PETSc and setup pARMS structs */
-  ierr = PCGetOperators(pc,NULL,&pmat,NULL);CHKERRQ(ierr);
+  ierr = PCGetOperators(pc,NULL,&pmat);CHKERRQ(ierr);
   MPI_Comm_size(PetscObjectComm((PetscObject)pmat),&npro);
   MPI_Comm_rank(PetscObjectComm((PetscObject)pmat),&rank);
 

@@ -103,7 +103,6 @@ int main(int argc,char **argv)
   PetscInt     max_functions  = 50;   /* maximum number of function evaluations */
   PetscInt     lin_its;               /* number of linear solver iterations for each step */
   PetscInt     i;                     /* nonlinear solve iteration number */
-  MatStructure mat_flag;              /* flag indicating structure of preconditioner matrix */
   PetscBool    no_output = PETSC_FALSE;             /* flag indicating whether to surpress output */
 
   PetscInitialize(&argc,&argv,(char*)0,help);
@@ -213,8 +212,7 @@ int main(int argc,char **argv)
   for (i=0; i<max_nonlin_its; i++) {
 
     /*
-        Compute the Jacobian matrix.  See the comments in this routine for
-        important information about setting the flag mat_flag.
+        Compute the Jacobian matrix.  
      */
     ierr = ComputeJacobian(&user,X,J);CHKERRQ(ierr);
 
@@ -225,7 +223,7 @@ int main(int argc,char **argv)
             matrix.
           - Then solve the Newton system.
      */
-    ierr = KSPSetOperators(ksp,J,J,mat_flag);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp,J,J);CHKERRQ(ierr);
     ierr = KSPSolve(ksp,F,Y);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&lin_its);CHKERRQ(ierr);
 

@@ -183,7 +183,7 @@ static PetscErrorCode PCView_LSC(PC pc,PetscViewer viewer)
    usually more efficient anyway).  In the case of incompressible flow, A10 A10 is a Laplacian, call it L.  The current
    interface is to hang L and a preconditioning matrix Lp on the preconditioning matrix.
 
-   If you had called KSPSetOperators(ksp,S,Sp,flg), S should have type MATSCHURCOMPLEMENT and Sp can be any type you
+   If you had called KSPSetOperators(ksp,S,Sp), S should have type MATSCHURCOMPLEMENT and Sp can be any type you
    like (PCLSC doesn't use it directly) but should have matrices composed with it, under the names "LSC_L" and "LSC_Lp".
    For example, you might have setup code like this
 

@@ -118,7 +118,7 @@ int PCCreate(MPI_Comm,PC *);
 int PCSetType(PC,const char*);
 int PCSetDM(PC,DM);
 int PCSetFromOptions(PC);
-int PCSetOperators(PC,Mat,Mat,MatStructure);
+int PCSetOperators(PC,Mat,Mat);
 int PCSetUp(PC);
 int PCView(PC,PetscViewer);
 int PCFieldSplitSetIS(PC,const char*,IS);
