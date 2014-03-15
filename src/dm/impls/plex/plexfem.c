@@ -286,7 +286,7 @@ PetscErrorCode DMPlexProjectFunction(DM dm, PetscFE fe[], void (**funcs)(const P
 
   Level: developer
 
-.seealso: DMPlexProjectFunction()
+.seealso: DMPlexProjectFunction(), DMPlexComputeL2GradientDiff()
 @*/
 PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscFE fe[], void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
 {
@@ -480,7 +480,7 @@ PetscErrorCode DMPlexComputeL2GradientDiff(DM dm, PetscFE fe[], void (**funcs)(c
     if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  elem %d diff %g\n", c, elemDiff);CHKERRQ(ierr);}
     localDiff += elemDiff;
   }
-    ierr  = PetscFree7(funcVal,coords,realSpaceDer,v0,J,invJ,interpolantVec);CHKERRQ(ierr);
+  ierr  = PetscFree7(funcVal,coords,realSpaceDer,v0,J,invJ,interpolantVec);CHKERRQ(ierr);
   ierr  = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
   ierr  = MPI_Allreduce(&localDiff, diff, 1, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   *diff = PetscSqrtReal(*diff);
