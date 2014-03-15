@@ -128,7 +128,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   } else {
     switch (user->dim) {
     case 2:
-      ierr = DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, dm);CHKERRQ(ierr);
+      ierr = DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, -2, -2, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, dm);CHKERRQ(ierr);
       ierr = DMDASetVertexCoordinates(*dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
       break;
     default:
@@ -215,17 +215,18 @@ PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
     ierr = DMPlexComputeL2GradientDiff(dm, &user->fe, exactFuncDers, exactCtxs, u, n, &errorDer);CHKERRQ(ierr);
   } else if (isDA) {
     ierr = DMDAComputeL2Diff(dm, &user->fe, exactFuncs, exactCtxs, u, &error);CHKERRQ(ierr);
+    ierr = DMDAComputeL2GradientDiff(dm, &user->fe, exactFuncDers, exactCtxs, u, n, &errorDer);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "No FEM L_2 difference routine for this type of DM");
   /* Report result */
   if (error > tol) {
-    ierr = PetscPrintf(comm, "Tests FAIL for order %d at tolerance %g error %g\n", order, tol, error);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Function tests FAIL for order %d at tolerance %g error %g\n", order, tol, error);CHKERRQ(ierr);
   } else {
-    ierr = PetscPrintf(comm, "Tests pass for order %d at tolerance %g\n", order, tol);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Function tests pass for order %d at tolerance %g\n", order, tol);CHKERRQ(ierr);
   }
   if (errorDer > tol) {
-    ierr = PetscPrintf(comm, "Tests FAIL for order %d derivatives at tolerance %g error %g\n", order, tol, errorDer);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Function tests FAIL for order %d derivatives at tolerance %g error %g\n", order, tol, errorDer);CHKERRQ(ierr);
   } else {
-    ierr = PetscPrintf(comm, "Tests pass for order %d derivatives at tolerance %g\n", order, tol);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Function tests pass for order %d derivatives at tolerance %g\n", order, tol);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -303,17 +304,18 @@ PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscInt order
     ierr = DMPlexComputeL2GradientDiff(fdm, &user->fe, exactFuncDers, exactCtxs, fu, n, &errorDer);CHKERRQ(ierr);
   } else if (isDA) {
     ierr = DMDAComputeL2Diff(fdm, &user->fe, exactFuncs, exactCtxs, fu, &error);CHKERRQ(ierr);
+    ierr = DMDAComputeL2GradientDiff(dm, &user->fe, exactFuncDers, exactCtxs, fu, n, &errorDer);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "No FEM L_2 difference routine for this type of DM");
   /* Report result */
   if (error > tol) {
-    ierr = PetscPrintf(comm, "Tests FAIL for order %d at tolerance %g error %g\n", order, tol, error);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Interpolation tests FAIL for order %d at tolerance %g error %g\n", order, tol, error);CHKERRQ(ierr);
   } else {
-    ierr = PetscPrintf(comm, "Tests pass for order %d at tolerance %g\n", order, tol);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Interpolation tests pass for order %d at tolerance %g\n", order, tol);CHKERRQ(ierr);
   }
   if (errorDer > tol) {
-    ierr = PetscPrintf(comm, "Tests FAIL for order %d derivatives at tolerance %g error %g\n", order, tol, errorDer);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Interpolation tests FAIL for order %d derivatives at tolerance %g error %g\n", order, tol, errorDer);CHKERRQ(ierr);
   } else {
-    ierr = PetscPrintf(comm, "Tests pass for order %d derivatives at tolerance %g\n", order, tol);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Interpolation tests pass for order %d derivatives at tolerance %g\n", order, tol);CHKERRQ(ierr);
   }
   ierr = DMRestoreGlobalVector(idm, &iu);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(fdm, &fu);CHKERRQ(ierr);

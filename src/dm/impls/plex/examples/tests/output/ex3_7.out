@@ -1,6 +1,6 @@
-Tests pass for order 1 at tolerance 1e-10
-Tests pass for order 1 derivatives at tolerance 1e-10
-Tests pass for order 1 at tolerance 1e-10
-Tests pass for order 1 derivatives at tolerance 1e-10
-Tests FAIL for order 1 at tolerance 1e-10 error 0.0342745
-Tests FAIL for order 1 derivatives at tolerance 1e-10 error 0.94395
+Function tests pass for order 1 at tolerance 1e-10
+Function tests pass for order 1 derivatives at tolerance 1e-10
+Interpolation tests pass for order 1 at tolerance 1e-10
+Interpolation tests pass for order 1 derivatives at tolerance 1e-10
+Interpolation tests FAIL for order 1 at tolerance 1e-10 error 0.0342745
+Interpolation tests FAIL for order 1 derivatives at tolerance 1e-10 error 0.94395
