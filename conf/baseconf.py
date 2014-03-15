@@ -206,6 +206,14 @@ class PetscConfig:
             linker_so    = PLD_SHARED,
             )
         compiler.shared_lib_extension = so_ext
+        #
+        if sys.platform == 'darwin':
+            for attr in ('preprocessor',
+                         'compiler', 'compiler_cxx', 'compiler_so',
+                         'linker_so', 'linker_exe'):
+                compiler_cmd = getattr(compiler, attr, [])
+                while '-mno-fused-madd' in compiler_cmd:
+                    compiler_cmd.remove('-mno-fused-madd')
 
     def log_info(self):
         log.info('PETSC_DIR:   %s' % self['PETSC_DIR']  )
@@ -480,7 +488,7 @@ class build_ext(_build_ext):
             try: fh.write(config_data)
             finally: fh.close()
         execute(write_file, (config_file, config_data),
-                msg='writing %s' % config_file, 
+                msg='writing %s' % config_file,
                 verbose=self.verbose, dry_run=self.dry_run)
 
     def get_config_data(self, arch_list):
@@ -692,7 +700,7 @@ def makefile(fileobj, dct=None):
                             done[name] = value
                         del notdone[name]
             else:
-                # bogus variable reference; 
+                # bogus variable reference;
                 # just drop it since we can't deal
                 del notdone[name]
     # save the results in the global dictionary
