@@ -708,11 +708,11 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
   }
   if (D) {
     /* D (npoints x pdim x dim) */
-    i = 0;
-    for (o = 0; o <= sp->order; ++o) {
+    if (poly->tensor) {
+      i = 0;
       ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
       while (ind[0] >= 0) {
-        ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
+        ierr = TensorPoint_Internal(dim, sp->order+1, ind, tup);CHKERRQ(ierr);
         for (p = 0; p < npoints; ++p) {
           for (der = 0; der < dim; ++der) {
             D[(p*pdim + i)*dim + der] = 1.0;
@@ -726,6 +726,27 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
           }
         }
         ++i;
+      }
+    } else {
+      i = 0;
+      for (o = 0; o <= sp->order; ++o) {
+        ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
+        while (ind[0] >= 0) {
+          ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
+          for (p = 0; p < npoints; ++p) {
+            for (der = 0; der < dim; ++der) {
+              D[(p*pdim + i)*dim + der] = 1.0;
+              for (d = 0; d < dim; ++d) {
+                if (d == der) {
+                  D[(p*pdim + i)*dim + der] *= LD[(tup[d]*dim + d)*npoints + p];
+                } else {
+                  D[(p*pdim + i)*dim + der] *= LB[(tup[d]*dim + d)*npoints + p];
+                }
+              }
+            }
+          }
+          ++i;
+        }
       }
     }
   }
