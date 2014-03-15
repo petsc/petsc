@@ -373,11 +373,13 @@ PetscErrorCode DMDAGetClosureScalar(DM dm, PetscSection section, PetscInt p, Pet
       */
       PetscInt c  = p - cStart, cx = c % (nVx-1), cy = c / (nVx-1);
       PetscInt v  = cy*nVx + cx +  vStart;
-      PetscInt xf = cy*nxF + cx + xfStart;
+      PetscInt xf = cx*nxF + cy + xfStart;
       PetscInt yf = c + yfStart;
       PetscInt points[9];
 
-      points[0] = p; points[1] = yf; points[2] = xf+1; points[3] = yf+nyF; points[4] = xf+0; points[5] = v+0; points[6] = v+1; points[7] = v+nVx+1; points[8] = v+nVx+0;
+      points[0] = p;
+      points[1] = yf;  points[2] = xf+nxF; points[3] = yf+nyF;  points[4] = xf;
+      points[5] = v+0; points[6] = v+1;    points[7] = v+nVx+1; points[8] = v+nVx+0;
       ierr = FillClosureArray_Static(dm, section, 9, points, vArray, csize, values);CHKERRQ(ierr);
     } else {
       /* 6 faces, 8 vertices
@@ -530,12 +532,15 @@ PetscErrorCode DMDASetClosureScalar(DM dm, PetscSection section, PetscInt p,Pets
            |     |
            5--1--6
       */
-      PetscInt c = p - cStart, l = c/nCx;
+      PetscInt c = p - cStart, cx = c % (nVx-1), cy = c / (nVx-1);
+      PetscInt v  = cy*nVx + cx +  vStart;
+      PetscInt xf = cx*nxF + cy + xfStart;
+      PetscInt yf = c + yfStart;
       PetscInt points[9];
 
       points[0] = p;
-      points[1] = yfStart+c+0;  points[2] = xfStart+l+c+1; points[3] = yfStart+nyF+c+0;  points[4] = xfStart+l+c+0;
-      points[5] = vStart+l+c+0; points[6] = vStart+l+c+1;  points[7] = vStart+nVx+l+c+1; points[8] = vStart+nVx+l+c+0;
+      points[1] = yf;  points[2] = xf+nxF; points[3] = yf+nyF;  points[4] = xf;
+      points[5] = v+0; points[6] = v+1;    points[7] = v+nVx+1; points[8] = v+nVx+0;
       ierr      = FillClosureVec_Private(dm, section, 9, points, vArray, values, mode);CHKERRQ(ierr);
     } else {
       /* 6 faces, 8 vertices
