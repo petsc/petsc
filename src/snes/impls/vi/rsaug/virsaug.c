@@ -780,7 +780,6 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
   PetscErrorCode     ierr;
   PetscInt           maxits,i,lits;
   PetscBool          lssucceed;
-  MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal          gnorm,xnorm=0,ynorm;
   Vec                Y,X,F,G,W;
   KSPConvergedReason kspreason;
@@ -846,14 +845,14 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
 
     /* Solve J Y = Phi, where J is the semismooth jacobian */
     /* Get the nonlinear function jacobian */
-    ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre);CHKERRQ(ierr);
     /* Get the diagonal shift and row scaling vectors */
     ierr = SNESVIRSAUGComputeBsubdifferentialVectors(snes,X,F,snes->jacobian,vi->Da,vi->Db);CHKERRQ(ierr);
     /* Compute the semismooth jacobian */
     ierr = SNESVIRSAUGComputeJacobian(snes->jacobian,snes->jacobian_pre,vi->Da,vi->Db);CHKERRQ(ierr);
     /* Compute the merit function gradient */
     ierr = SNESVIRSAUGComputeMeritFunctionGradient(snes->jacobian,vi->phi,vi->dpsi);CHKERRQ(ierr);
-    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
+    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
     ierr = KSPSolve(snes->ksp,vi->phi,Y);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
 
@@ -1094,7 +1093,6 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
   PetscErrorCode     ierr;
   PetscInt           maxits,i,lits;
   PetscBool          lssucceed;
-  MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal          fnorm,gnorm,xnorm=0,ynorm;
   Vec                Y,X,F,G,W;
   KSPConvergedReason kspreason;
@@ -1154,7 +1152,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
-    ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre);CHKERRQ(ierr);
 
 
     /* Create active and inactive index sets */
@@ -1250,7 +1248,6 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     ierr = ISEqual(vi->IS_inact_prev,IS_inact,&isequal);CHKERRQ(ierr);
     if (!isequal) {
       ierr = SNESVIResetPCandKSP(snes,jac_inact_inact,prejac_inact_inact);CHKERRQ(ierr);
-      flg  = DIFFERENT_NONZERO_PATTERN;
     }
 
     /*      ierr = ISView(IS_inact,0);CHKERRQ(ierr); */
@@ -1259,7 +1256,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
 
 
 
-    ierr = KSPSetOperators(snes->ksp,jac_inact_inact,prejac_inact_inact,flg);CHKERRQ(ierr);
+    ierr = KSPSetOperators(snes->ksp,jac_inact_inact,prejac_inact_inact);CHKERRQ(ierr);
     ierr = KSPSetUp(snes->ksp);CHKERRQ(ierr);
     {
       PC        pc;
@@ -1471,7 +1468,6 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
   PetscErrorCode     ierr;
   PetscInt           maxits,i,lits;
   PetscBool          lssucceed;
-  MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal          fnorm,gnorm,xnorm=0,ynorm;
   Vec                Y,X,F,G,W;
   KSPConvergedReason kspreason;
@@ -1533,7 +1529,7 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
-    ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre);CHKERRQ(ierr);
 
     /* Create active and inactive index sets */
     ierr = SNESVICreateIndexSets_RSAUG(snes,X,F,&IS_act,&IS_inact);CHKERRQ(ierr);
@@ -1642,7 +1638,7 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
     if (!isequal) {
       ierr = SNESVIResetPCandKSP(snes,J_aug,Jpre_aug);CHKERRQ(ierr);
     }
-    ierr = KSPSetOperators(snes->ksp,J_aug,Jpre_aug,flg);CHKERRQ(ierr);
+    ierr = KSPSetOperators(snes->ksp,J_aug,Jpre_aug);CHKERRQ(ierr);
     ierr = KSPSetUp(snes->ksp);CHKERRQ(ierr);
     /*  {
       PC        pc;

@@ -680,7 +680,7 @@ int main(int argc, char **argv)
   ierr = StokesSetupVectors(&s);CHKERRQ(ierr);
 
   ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp, s.A, s.A, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp, s.A, s.A);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = StokesSetupPC(&s, ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, s.b, s.x);CHKERRQ(ierr);
