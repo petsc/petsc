@@ -14,8 +14,8 @@ static char encoding_table[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
 
 static PetscErrorCode base64_encode(const unsigned char *data,unsigned char *encoded_data,size_t len)
 {
-  static int     mod_table[] = {0, 2, 1};
-  int            i,j;
+  static size_t  mod_table[] = {0, 2, 1};
+  size_t         i,j;
   size_t         input_length,output_length;
   PetscErrorCode ierr;
 
