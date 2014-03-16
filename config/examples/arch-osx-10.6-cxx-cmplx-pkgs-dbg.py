@@ -8,7 +8,7 @@ configure_options = [
   '--with-clanguage=cxx',
   '--with-scalar-type=complex',
 
-  #'-download-f-blas-lapack=1',
+  #'-download-fblaslapack=1',
   '--download-mpich=1',
   '--download-cmake=1',
   '--download-metis=1',

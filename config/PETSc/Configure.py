@@ -83,6 +83,8 @@ class Configure(config.base.Configure):
     # Force blaslapack to depend on scalarType so precision is set before BlasLapack is built
     framework.require('PETSc.utilities.scalarTypes', self.f2cblaslapack)
     self.f2cblaslapack.precisionProvider = self.scalartypes
+    framework.require('PETSc.utilities.scalarTypes', self.fblaslapack)
+    self.fblaslapack.precisionProvider = self.scalartypes
     framework.require('PETSc.utilities.scalarTypes', self.blaslapack)
     self.blaslapack.precisionProvider = self.scalartypes
 

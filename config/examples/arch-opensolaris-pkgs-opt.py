@@ -8,14 +8,14 @@ configure_options = [
   #'--with-mpi-dir=/export/home/petsc/soft/mpich2-1.2.1p1',
   '--with-c2html=0',
 
-  #'-download-f-blas-lapack=1',
+  #'-download-fblaslapack=1',
   '--download-cmake=1',
   '--download-metis=1',
   '--download-parmetis=1',
   '--download-triangle=1',
   '--download-superlu=1',
   '--download-superlu_dist=1',
-  '--download-f-blas-lapack=1', # -lsunperf is insufficient for scalapack
+  '--download-fblaslapack=1', # -lsunperf is insufficient for scalapack
   '--download-scalapack=1',
   '--download-mumps=1',
   #'--download-elemental=1', breaks with solaris compilers

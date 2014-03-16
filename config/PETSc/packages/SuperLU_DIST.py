@@ -11,7 +11,7 @@ class Configure(PETSc.package.NewPackage):
     self.liblist    = [['libsuperlu_dist_3.3.a']]
     self.requires32bitint = 0
     self.complex          = 1
-    # SuperLU_Dist does not work with --download-f-blas-lapack with Compaqf90 compiler on windows.
+    # SuperLU_Dist does not work with --download-fblaslapack with Compaqf90 compiler on windows.
     # However it should work with intel ifort.
     self.worksonWindows   = 1
     self.downloadonWindows= 1
@@ -56,7 +56,7 @@ class Configure(PETSc.package.NewPackage):
       g.write(' -D_LONGINT')
     g.write('\n')
     # not sure what this is for
-    g.write('NOOPTS       = '+self.blasLapack.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.blasLapack.getPrecisionFlag(self.setCompilers.getCompilerFlags())+' '+self.blasLapack.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n')
+    g.write('NOOPTS       = '+self.blasLapack.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.blasLapack.getPointerSizeFlag(self.setCompilers.getCompilerFlags())+' '+self.blasLapack.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n')
     g.close()
 
     if self.installNeeded('make.inc'):
