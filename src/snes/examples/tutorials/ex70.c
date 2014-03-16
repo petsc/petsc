@@ -106,7 +106,7 @@ PetscErrorCode StokesSetupPC(Stokes *s, KSP ksp)
   ierr = PCFieldSplitSetIS(pc, "0", s->isg[0]);CHKERRQ(ierr);
   ierr = PCFieldSplitSetIS(pc, "1", s->isg[1]);CHKERRQ(ierr);
   if (s->userPC) {
-    ierr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, s->myS);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetSchurPre(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, s->myS);CHKERRQ(ierr);
   }
   if (s->userKSP) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
