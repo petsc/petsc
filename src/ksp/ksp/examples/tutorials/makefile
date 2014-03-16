@@ -1064,8 +1064,8 @@ runex55_NC:
         ${RM} -f ex55.tmp
 
 runex56:
-	-@${MPIEXEC} -n 8 ./ex56 -ne 9 -alpha 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -two_solves -ksp_monitor_short > ex56.tmp 2>&1;	\
-         ${DIFF} output/ex56_0.out ex56.tmp || printf "${PWD}\nPossible problem with with ex56, diffs above\n=========================================\n"; \
+	-@${MPIEXEC} -n 8 ./ex56 -ne 9 -alpha 1.e-3 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -two_solves -ksp_monitor_short -use_mat_nearnullspace > ex56.tmp 2>&1;	\
+         ${DIFF} output/ex56_0.out ex56.tmp || printf "${PWD}\nPossible problem with with ex56, diffs above \n=========================================\n"; \
          ${RM} -f ex56.tmp
 
 runex56_ml:
