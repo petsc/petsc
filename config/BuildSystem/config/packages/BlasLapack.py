@@ -37,18 +37,6 @@ class Configure(config.package.Package):
     help.addArgument('BLAS/LAPACK', '-known-64-bit-blas-indices=<bool>', nargs.ArgBool(None, 0, 'Indicate if using 64 bit integer BLAS'))
     return
 
-  def getDefaultPrecision(self):
-    '''The precision of the library'''
-    if hasattr(self, 'precisionProvider'):
-      if hasattr(self.precisionProvider, 'precision'):
-        return self.precisionProvider.precision
-    return self._defaultPrecision
-  def setDefaultPrecision(self, defaultPrecision):
-    '''The precision of the library'''
-    self._defaultPrecision = defaultPrecision
-    return
-  defaultPrecision = property(getDefaultPrecision, setDefaultPrecision, doc = 'The precision of the library')
-
   def getPrefix(self):
     if self.defaultPrecision == 'single': return 's'
     if self.defaultPrecision == 'double': return 'd'
@@ -155,7 +143,7 @@ class Configure(config.package.Package):
       f2cLibs = [os.path.join(libDir,'libf2cblas.a')]
       if self.libraries.math:
         f2cLibs = f2cLibs+self.libraries.math
-      yield ('f2cblaslapack', f2cLibs, os.path.join(libDir,'libf2clapack.a'), 0)
+      yield ('f2cblaslapack', f2cLibs, 'libf2clapack.a', 0)
       raise RuntimeError('--download-f2cblaslapack libraries cannot be used')
     if self.fblaslapack.found:
       self.f2c = 0
