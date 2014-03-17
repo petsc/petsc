@@ -1,6 +1,7 @@
 #include <petsc-private/matimpl.h>      /*I "petscmat.h"  I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
+#include <petscsf.h>
 
 typedef struct {
   PetscReal dummy;
@@ -180,11 +181,10 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
   PetscBool       isMPIAIJ,isSEQAIJ;
   ISColoringValue pcol;
   const PetscInt  *cidx;
-  Vec             wvec,owvec;
-  VecScatter      oscatter;
-  PetscScalar     *war,*owar;
-  ISColoringValue *ocolors;
+  PetscInt        *lcolors,*ocolors;
   PetscReal       *owts=NULL;
+  PetscSF         sf;
+  PetscLayout     layout;
 
   PetscFunctionBegin;
   ierr = MatGetSize(m,&n_global,NULL);CHKERRQ(ierr);
@@ -206,19 +206,8 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
   } else {
     SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_WRONG,"Matrix must be AIJ for greedy coloring");
   }
-  /* create the vectors and communication structures if necessary */
-  ierr = MatGetVecs(m,&wvec,NULL);CHKERRQ(ierr);
-  owvec=NULL;
-  oscatter=NULL;
   if (mo) {
-    owvec=aij->lvec;
-    oscatter=aij->Mvctx;
-  }
-  for(i=0;i<n;i++) {
-    colors[i]=IS_COLORING_MAX;
-  }
-  if (owvec) {
-    ierr = VecGetSize(owvec,&no);CHKERRQ(ierr);
+    ierr = VecGetSize(aij->lvec,&no);CHKERRQ(ierr);
     ierr = PetscMalloc2(no,&ocolors,no,&owts);CHKERRQ(ierr);
     for(i=0;i<no;i++) {
       ocolors[i]=IS_COLORING_MAX;
@@ -228,38 +217,32 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
   maxcolors=IS_COLORING_MAX;
   if (mc->maxcolors) maxcolors=mc->maxcolors;
   ierr = PetscMalloc1(masksize,&mask);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&lcolors);CHKERRQ(ierr);
+  for(i=0;i<n;i++) {
+    lcolors[i]=IS_COLORING_MAX;
+  }
   for (i=0;i<masksize;i++) {
     mask[i]=-1;
   }
   if (mo) {
     /* transfer neighbor weights */
-    ierr = VecGetArray(wvec,&war);CHKERRQ(ierr);
-    for (i=0;i<n;i++) {
-      war[i]=wts[i];
-    }
-    ierr = VecRestoreArray(wvec,&war);CHKERRQ(ierr);
-    ierr = PetscLogEventBegin(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
-    ierr = VecScatterBegin(oscatter,wvec,owvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(oscatter,wvec,owvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
-    ierr = VecGetArray(owvec,&owar);CHKERRQ(ierr);
-    for (i=0;i<no;i++) {
-      owts[i]=PetscRealPart(owar[i]);
-    }
-    ierr = VecRestoreArray(owvec,&owar);CHKERRQ(ierr);
+    ierr = PetscSFCreate(PetscObjectComm((PetscObject)m),&sf);CHKERRQ(ierr);
+    ierr = MatGetLayouts(m,&layout,NULL);CHKERRQ(ierr);
+    ierr = PetscSFSetGraphLayout(sf,layout,no,NULL,PETSC_COPY_VALUES,aij->garray);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sf,MPIU_REAL,wts,owts);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf,MPIU_REAL,wts,owts);CHKERRQ(ierr);
   }
-
   while (nd_global < n_global) {
     nd=n;
     /* assign lowest possible color to each local vertex */
     ierr = PetscLogEventBegin(Mat_Coloring_Local,mc,0,0,0);CHKERRQ(ierr);
     for (i=0;i<n;i++) {
       idx=n-lperm[i]-1;
-      if (colors[idx] == IS_COLORING_MAX) {
+      if (lcolors[idx] == IS_COLORING_MAX) {
         ierr = MatGetRow(md,idx,&ncols,&cidx,NULL);CHKERRQ(ierr);
         for (j=0;j<ncols;j++) {
-          if (colors[cidx[j]] != IS_COLORING_MAX) {
-            ccol=colors[cidx[j]];
+          if (lcolors[cidx[j]] != IS_COLORING_MAX) {
+            ccol=lcolors[cidx[j]];
             if (ccol>=masksize) {
               PetscInt *newmask;
               ierr = PetscMalloc1(masksize*2,&newmask);CHKERRQ(ierr);
@@ -307,35 +290,22 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
         }
         pcol=j;
         if (pcol>maxcolors)pcol=maxcolors;
-        colors[idx]=pcol;
+        lcolors[idx]=pcol;
       }
     }
     ierr = PetscLogEventEnd(Mat_Coloring_Local,mc,0,0,0);CHKERRQ(ierr);
     if (mo) {
       /* transfer neighbor colors */
-      ierr = VecGetArray(wvec,&war);CHKERRQ(ierr);
-      for (i=0;i<n;i++) {
-        war[i] = colors[i];
-      }
-      ierr = VecRestoreArray(wvec,&war);CHKERRQ(ierr);
-
       ierr = PetscLogEventBegin(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
-      ierr = VecScatterBegin(oscatter,wvec,owvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(oscatter,wvec,owvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = PetscLogEventEnd(Mat_Coloring_Comm,mc,0,0,0);CHKERRQ(ierr);
-      ierr = VecGetArray(owvec,&owar);CHKERRQ(ierr);
-      for (i=0;i<no;i++) {
-        ocolors[i]=(ISColoringValue)PetscRealPart(owar[i]);
-      }
-      ierr = VecRestoreArray(owvec,&owar);CHKERRQ(ierr);
-
+      ierr = PetscSFBcastBegin(sf,MPIU_INT,lcolors,ocolors);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sf,MPIU_INT,lcolors,ocolors);CHKERRQ(ierr);
       /* check for conflicts -- this is merely checking if any adjacent off-processor rows have the same color and marking the ones that are lower weight locally for changing */
       for (i=0;i<n;i++) {
         ierr = MatGetRow(mo,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
         for (j=0;j<ncols;j++) {
           /* in the case of conflicts, the highest weight one stays and the others go */
-          if ((ocolors[cidx[j]] == colors[i]) && (owts[cidx[j]] > wts[i])) {
-            colors[i]=IS_COLORING_MAX;
+          if ((ocolors[cidx[j]] == lcolors[i]) && (owts[cidx[j]] > wts[i])) {
+            lcolors[i]=IS_COLORING_MAX;
             nd--;
           }
         }
@@ -345,11 +315,14 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
     }
     ierr = MPI_Allreduce(&nd,&nd_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
   }
+  for (i=0;i<n;i++) {
+    colors[i] = (ISColoringValue)lcolors[i];
+  }
   ierr = PetscFree(mask);CHKERRQ(ierr);
+  ierr = PetscFree(lcolors);CHKERRQ(ierr);
   if (mo) {
     ierr = PetscFree2(ocolors,owts);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(&wvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
