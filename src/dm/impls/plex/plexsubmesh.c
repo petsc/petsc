@@ -527,6 +527,7 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
   DMLabel        label;
   const char    *name = labelName ? labelName : "Face Sets";
   PetscInt       dim;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -537,6 +538,10 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
   ierr = DMSetType(gdm, DMPLEX);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexSetDimension(gdm, dim);CHKERRQ(ierr);
+  ierr = DMPlexGetAdjacencyUseCone(dm, &flag);CHKERRQ(ierr);
+  ierr = DMPlexSetAdjacencyUseCone(gdm, flag);CHKERRQ(ierr);
+  ierr = DMPlexGetAdjacencyUseClosure(dm, &flag);CHKERRQ(ierr);
+  ierr = DMPlexSetAdjacencyUseClosure(gdm, flag);CHKERRQ(ierr);
   ierr = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
   if (!label) {
     /* Get label for boundary faces */
