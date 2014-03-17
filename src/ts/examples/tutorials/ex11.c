@@ -1299,19 +1299,20 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
   minradius = PETSC_MAX_REAL;
   for (f = fStart; f < fEnd; ++f) {
     FaceGeom *fg;
-    PetscInt  ghost;
+    PetscReal area;
+    PetscInt  ghost, d;
 
     ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);
     if (ghost >= 0) continue;
     ierr = DMPlexPointLocalRef(dmFace, f, fgeom, &fg);CHKERRQ(ierr);
-    ierr = DMPlexComputeCellGeometryFVM(dm, f, NULL, fg->centroid, fg->normal);CHKERRQ(ierr);
+    ierr = DMPlexComputeCellGeometryFVM(dm, f, &area, fg->centroid, fg->normal);CHKERRQ(ierr);
+    for (d = 0; d < dim; ++d) fg->normal[d] *= area;
     /* Flip face orientation if necessary to match ordering in support, and Update minimum radius */
     {
       CellGeom       *cL, *cR;
       const PetscInt *cells;
       PetscReal      *lcentroid, *rcentroid;
       PetscScalar     v[3];
-      PetscInt        d;
 
       ierr = DMPlexGetSupport(dm, f, &cells);CHKERRQ(ierr);
       ierr = DMPlexPointLocalRead(dmCell, cells[0], cgeom, &cL);CHKERRQ(ierr);
