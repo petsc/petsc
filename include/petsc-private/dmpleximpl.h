@@ -75,8 +75,9 @@ typedef struct {
   IS                   globalVertexNumbers;
   IS                   globalCellNumbers;
 
-  /* Preallocation */
-  PetscInt             preallocCenterDim; /* Dimension of the points which connect adjacent points for preallocation */
+  /* Adjacency */
+  PetscBool            useCone;           /* Use cone() first when defining adjacency */
+  PetscBool            useClosure;        /* Use the transitive closure when defining adjacency */
 
   /* Output */
   PetscInt             vtkCellHeight;            /* The height of cells for output, default is 0 */
@@ -96,6 +97,7 @@ PETSC_EXTERN PetscErrorCode DMPlexVTKGetCellType(DM,PetscInt,PetscInt,PetscInt*)
 PETSC_EXTERN PetscErrorCode VecView_Plex_Local(Vec,PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_Plex(Vec,PetscViewer);
 
+PETSC_EXTERN PetscErrorCode DMPlexGetAdjacency_Internal(DM,PetscInt,PetscBool,PetscBool,PetscInt*,PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMPlexGetFaces_Internal(DM,PetscInt,PetscInt,PetscInt*,PetscInt*,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode DMPlexGetRawFaces_Internal(DM,PetscInt,PetscInt,const PetscInt[], PetscInt*,PetscInt*,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode DMPlexRestoreFaces_Internal(DM,PetscInt,PetscInt,PetscInt*,PetscInt*,const PetscInt*[]);

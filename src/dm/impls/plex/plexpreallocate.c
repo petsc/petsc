@@ -3,92 +3,6 @@
 #include <petscsf.h>
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexGetAdjacency_Internal"
-static PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useClosure, const PetscInt *tmpClosure, PetscInt *adjSize, PetscInt adj[])
-{
-  const PetscInt *star  = tmpClosure;
-  PetscInt        numAdj = 0, maxAdjSize = *adjSize, starSize, s;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  ierr = DMPlexGetTransitiveClosure(dm, p, useClosure, &starSize, (PetscInt**) &star);CHKERRQ(ierr);
-  for (s = 2; s < starSize*2; s += 2) {
-    const PetscInt *closure = NULL;
-    PetscInt        closureSize, c, q;
-
-    ierr = DMPlexGetTransitiveClosure(dm, star[s], (PetscBool)!useClosure, &closureSize, (PetscInt**) &closure);CHKERRQ(ierr);
-    for (c = 0; c < closureSize*2; c += 2) {
-      for (q = 0; q < numAdj || (adj[numAdj++] = closure[c],0); ++q) {
-        if (closure[c] == adj[q]) break;
-      }
-      if (numAdj > maxAdjSize) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
-    }
-    ierr = DMPlexRestoreTransitiveClosure(dm, star[s], (PetscBool)!useClosure, &closureSize, (PetscInt**) &closure);CHKERRQ(ierr);
-  }
-  *adjSize = numAdj;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetPreallocationCenterDimension"
-/*@
-  DMPlexSetPreallocationCenterDimension - Determine the topology used to determine adjacency
-
-  Input Parameters:
-+ dm - The DM object
-- preallocCenterDim - The dimension of points which connect adjacent entries
-
-  Level: developer
-
-  Notes:
-$     FEM:   Two points p and q are adjacent if q \in closure(star(p)), preallocCenterDim = dim
-$     FVM:   Two points p and q are adjacent if q \in star(cone(p)),    preallocCenterDim = dim-1
-$     FVM++: Two points p and q are adjacent if q \in star(closure(p)), preallocCenterDim = 0
-
-.seealso: DMCreateMatrix(), DMPlexPreallocateOperator(), DMPlexGetPreallocationCenterDimension()
-@*/
-PetscErrorCode DMPlexSetPreallocationCenterDimension(DM dm, PetscInt preallocCenterDim)
-{
-  DM_Plex *mesh = (DM_Plex*) dm->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  mesh->preallocCenterDim = preallocCenterDim;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetPreallocationCenterDimension"
-/*@
-  DMPlexGetPreallocationCenterDimension - Return the topology used to determine adjacency
-
-  Input Parameter:
-. dm - The DM object
-
-  Output Parameter:
-. preallocCenterDim - The dimension of points which connect adjacent entries
-
-  Level: developer
-
-  Notes:
-$     FEM:   Two points p and q are adjacent if q \in closure(star(p)), preallocCenterDim = dim
-$     FVM:   Two points p and q are adjacent if q \in star(cone(p)),    preallocCenterDim = dim-1
-$     FVM++: Two points p and q are adjacent if q \in star(closure(p)), preallocCenterDim = 0
-
-.seealso: DMCreateMatrix(), DMPlexPreallocateOperator(), DMPlexSetPreallocationCenterDimension()
-@*/
-PetscErrorCode DMPlexGetPreallocationCenterDimension(DM dm, PetscInt *preallocCenterDim)
-{
-  DM_Plex *mesh = (DM_Plex*) dm->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(preallocCenterDim, 2);
-  *preallocCenterDim = mesh->preallocCenterDim;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DMPlexPreallocateOperator"
 PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection section, PetscSection sectionGlobal, PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[], Mat A, PetscBool fillMatrix)
 {
@@ -100,15 +14,23 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   const PetscInt    *leaves;
   const PetscSFNode *remotes;
   PetscInt           dim, pStart, pEnd, numDof, globalOffStart, globalOffEnd, numCols;
-  PetscInt          *tmpClosure, *tmpAdj, *adj, *rootAdj, *cols, *remoteOffsets;
-  PetscInt           depth, centerDim, maxConeSize, maxSupportSize, maxClosureSize, maxAdjSize, adjSize;
+  PetscInt          *tmpAdj = NULL, *adj, *rootAdj, *cols, *remoteOffsets;
+  PetscInt           adjSize;
   PetscLayout        rLayout;
   PetscInt           locRows, rStart, rEnd, r;
   PetscMPIInt        size;
-  PetscBool          useClosure, doCommLocal, doComm, debug = PETSC_FALSE, isSymBlock, isSymSeqBlock, isSymMPIBlock;
+  PetscBool          doCommLocal, doComm, debug = PETSC_FALSE, isSymBlock, isSymSeqBlock, isSymMPIBlock;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 3);
+  PetscValidHeaderSpecific(sectionGlobal, PETSC_SECTION_CLASSID, 4);
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 9);
+  PetscValidPointer(dnz,5);
+  PetscValidPointer(onz,6);
+  PetscValidPointer(dnzu,7);
+  PetscValidPointer(onzu,8);
   ierr = PetscLogEventBegin(DMPLEX_Preallocate,dm,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL, "-dm_view_preallocation", &debug, NULL);CHKERRQ(ierr);
@@ -134,16 +56,6 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
     ierr = PetscSFView(sfDof, NULL);CHKERRQ(ierr);
   }
   /* Create section for dof adjacency (dof ==> # adj dof) */
-  /*   FEM:   Two points p and q are adjacent if q \in closure(star(p)), preallocCenterDim = dim   */
-  /*   FVM:   Two points p and q are adjacent if q \in star(cone(p)),    preallocCenterDim = dim-1 */
-  /*   FVM++: Two points p and q are adjacent if q \in star(closure(p)), preallocCenterDim = 0     */
-  ierr = DMPlexGetPreallocationCenterDimension(dm, &centerDim);CHKERRQ(ierr);
-  if (centerDim == dim) {
-    useClosure = PETSC_FALSE;
-  } else if (centerDim == 0) {
-    useClosure = PETSC_TRUE;
-  } else SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Do not support preallocation with center points of dimension %d", centerDim);
-
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(section, &numDof);CHKERRQ(ierr);
   ierr = PetscSectionCreate(comm, &leafSectionAdj);CHKERRQ(ierr);
@@ -152,13 +64,6 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   ierr = PetscSectionSetChart(rootSectionAdj, 0, numDof);CHKERRQ(ierr);
   /*   Fill in the ghost dofs on the interface */
   ierr = PetscSFGetGraph(sf, NULL, &nleaves, &leaves, &remotes);CHKERRQ(ierr);
-  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
-
-  maxClosureSize = 2*PetscMax(PetscPowInt(maxConeSize,depth+1),PetscPowInt(maxSupportSize,depth+1));
-  maxAdjSize     = PetscPowInt(maxConeSize,depth+1) * PetscPowInt(maxSupportSize,depth+1) + 1;
-
-  ierr = PetscMalloc2(maxClosureSize,&tmpClosure,maxAdjSize,&tmpAdj);CHKERRQ(ierr);
 
   /*
    section        - maps points to (# dofs, local dofs)
@@ -188,12 +93,12 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
 
   for (l = 0; l < nleaves; ++l) {
     PetscInt dof, off, d, q;
-    PetscInt p = leaves[l], numAdj = maxAdjSize;
+    PetscInt p = leaves[l], numAdj = PETSC_DETERMINE;
 
     if ((p < pStart) || (p >= pEnd)) continue;
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
-    ierr = DMPlexGetAdjacency_Internal(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
+    ierr = DMPlexGetAdjacency(dm, p, &numAdj, &tmpAdj);CHKERRQ(ierr);
     for (q = 0; q < numAdj; ++q) {
       const PetscInt padj = tmpAdj[q];
       PetscInt ndof, ncdof;
@@ -222,14 +127,14 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   }
   /* Add in local adjacency sizes for owned dofs on interface (roots) */
   for (p = pStart; p < pEnd; ++p) {
-    PetscInt numAdj = maxAdjSize, adof, dof, off, d, q;
+    PetscInt numAdj = PETSC_DETERMINE, adof, dof, off, d, q;
 
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
     if (!dof) continue;
     ierr = PetscSectionGetDof(rootSectionAdj, off, &adof);CHKERRQ(ierr);
     if (adof <= 0) continue;
-    ierr = DMPlexGetAdjacency_Internal(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
+    ierr = DMPlexGetAdjacency(dm, p, &numAdj, &tmpAdj);CHKERRQ(ierr);
     for (q = 0; q < numAdj; ++q) {
       const PetscInt padj = tmpAdj[q];
       PetscInt ndof, ncdof;
@@ -261,12 +166,12 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   ierr = PetscCalloc1(adjSize, &adj);CHKERRQ(ierr);
   for (l = 0; l < nleaves; ++l) {
     PetscInt dof, off, d, q;
-    PetscInt p = leaves[l], numAdj = maxAdjSize;
+    PetscInt p = leaves[l], numAdj = PETSC_DETERMINE;
 
     if ((p < pStart) || (p >= pEnd)) continue;
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
-    ierr = DMPlexGetAdjacency_Internal(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
+    ierr = DMPlexGetAdjacency(dm, p, &numAdj, &tmpAdj);CHKERRQ(ierr);
     for (d = off; d < off+dof; ++d) {
       PetscInt aoff, i = 0;
 
@@ -314,14 +219,14 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   }
   /* Add in local adjacency indices for owned dofs on interface (roots) */
   for (p = pStart; p < pEnd; ++p) {
-    PetscInt numAdj = maxAdjSize, adof, dof, off, d, q;
+    PetscInt numAdj = PETSC_DETERMINE, adof, dof, off, d, q;
 
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
     if (!dof) continue;
     ierr = PetscSectionGetDof(rootSectionAdj, off, &adof);CHKERRQ(ierr);
     if (adof <= 0) continue;
-    ierr = DMPlexGetAdjacency_Internal(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
+    ierr = DMPlexGetAdjacency(dm, p, &numAdj, &tmpAdj);CHKERRQ(ierr);
     for (d = off; d < off+dof; ++d) {
       PetscInt adof, aoff, i;
 
@@ -385,7 +290,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   ierr = PetscSectionCreate(comm, &sectionAdj);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(sectionAdj, globalOffStart, globalOffEnd);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
-    PetscInt  numAdj = maxAdjSize, dof, cdof, off, goff, d, q;
+    PetscInt  numAdj = PETSC_DETERMINE, dof, cdof, off, goff, d, q;
     PetscBool found  = PETSC_TRUE;
 
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
@@ -408,7 +313,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
     if (found) continue;
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
-    ierr = DMPlexGetAdjacency_Internal(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
+    ierr = DMPlexGetAdjacency(dm, p, &numAdj, &tmpAdj);CHKERRQ(ierr);
     for (q = 0; q < numAdj; ++q) {
       const PetscInt padj = tmpAdj[q];
       PetscInt ndof, ncdof, noff;
@@ -431,7 +336,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   ierr = PetscSectionGetStorageSize(sectionAdj, &numCols);CHKERRQ(ierr);
   ierr = PetscMalloc1(numCols, &cols);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
-    PetscInt  numAdj = maxAdjSize, dof, cdof, off, goff, d, q;
+    PetscInt  numAdj = PETSC_DETERMINE, dof, cdof, off, goff, d, q;
     PetscBool found  = PETSC_TRUE;
 
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
@@ -456,7 +361,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
       }
     }
     if (found) continue;
-    ierr = DMPlexGetAdjacency_Internal(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
+    ierr = DMPlexGetAdjacency(dm, p, &numAdj, &tmpAdj);CHKERRQ(ierr);
     for (d = goff; d < goff+dof-cdof; ++d) {
       PetscInt adof, aoff, i = 0;
 
@@ -483,7 +388,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   ierr = PetscSectionDestroy(&leafSectionAdj);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&rootSectionAdj);CHKERRQ(ierr);
   ierr = PetscFree(rootAdj);CHKERRQ(ierr);
-  ierr = PetscFree2(tmpClosure, tmpAdj);CHKERRQ(ierr);
+  ierr = PetscFree(tmpAdj);CHKERRQ(ierr);
   /* Debugging */
   if (debug) {
     IS tmp;
