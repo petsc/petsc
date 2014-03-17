@@ -381,8 +381,8 @@ static PetscErrorCode PhysicsCreate_Advect(Model mod,Physics phys)
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Advect;
   phys->riemann = PhysicsRiemann_Advect;
-  ierr = PetscNew(&phys->data);CHKERRQ(ierr);
-  advect = (Physics_Advect*)phys->data;
+  ierr = PetscNew(&advect);CHKERRQ(ierr);
+  phys->data = advect;
   ierr = PetscOptionsHead("Advect options");CHKERRQ(ierr);
   {
     PetscInt two = 2,dof = 1;
@@ -549,8 +549,8 @@ static PetscErrorCode PhysicsCreate_SW(Model mod,Physics phys)
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_SW;
   phys->riemann = PhysicsRiemann_SW;
-  ierr          = PetscNew(&phys->data);CHKERRQ(ierr);
-  sw            = (Physics_SW*)phys->data;
+  ierr          = PetscNew(&sw);CHKERRQ(ierr);
+  phys->data    = sw;
   ierr          = PetscOptionsHead("SW options");CHKERRQ(ierr);
   {
     sw->gravity = 1.0;
@@ -731,8 +731,8 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys)
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Euler;
   phys->riemann = PhysicsRiemann_Euler_Rusanov;
-  ierr = PetscNew(&phys->data);CHKERRQ(ierr);
-  eu   = (Physics_Euler*)phys->data;
+  ierr = PetscNew(&eu);CHKERRQ(ierr);
+  phys->data    = eu;
   ierr = PetscOptionsHead("Euler options");CHKERRQ(ierr);
   {
     eu->pars[0] = 3.0;
@@ -2127,7 +2127,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
 
     ftablealloc = fcount * 100;
     ftableused  = 0;
-    ierr        = PetscMalloc(ftablealloc,&ftable);CHKERRQ(ierr);
+    ierr        = PetscMalloc1(ftablealloc,&ftable);CHKERRQ(ierr);
     for (i=0; i<mod->numMonitored; i++) {
       size_t         countused;
       char           buffer[256],*p;
@@ -2159,7 +2159,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     }
     ierr = PetscFree4(fmin,fmax,fintegral,ftmp);CHKERRQ(ierr);
 
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)ts),"% 3D  time %8.4G  |x| %8.4G  %s\n",stepnum,time,xnorm,ftable ? ftable : "");CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)ts),"% 3D  time %8.4g  |x| %8.4g  %s\n",stepnum,(double)time,(double)xnorm,ftable ? ftable : "");CHKERRQ(ierr);
     ierr = PetscFree(ftable);CHKERRQ(ierr);
   }
   if (user->vtkInterval < 1) PetscFunctionReturn(0);
