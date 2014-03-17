@@ -1851,7 +1851,7 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   ierr = ISRestoreIndices(selected, &indices);CHKERRQ(ierr);
   ierr = ISDestroy(&selected);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(embedSF, NULL, &nleaves, &ilocal, NULL);CHKERRQ(ierr);
-  if (ilocal) {
+  if (nleaves && ilocal) {
     for (i = 0; i < nleaves; ++i) {
       lpStart = PetscMin(lpStart, ilocal[i]);
       lpEnd   = PetscMax(lpEnd,   ilocal[i]);
