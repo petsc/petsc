@@ -2,6 +2,7 @@
 static char help[] = "Tests MatSetValuesBlockedStencil() in 3d.\n\n";
 
 #include <petscmat.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__
@@ -32,7 +33,7 @@ int main(int argc,char **argv)
   if (flg) stencil_type =  DMDA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,stencil_type,M,N,P,m,n,p,w,s,
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,stencil_type,M,N,P,m,n,p,w,s,
                       0,0,0,&da);CHKERRQ(ierr);
 
   ierr = DMSetMatType(da,MATMPIBAIJ);CHKERRQ(ierr);

@@ -186,7 +186,7 @@ c     Compute tangent
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
 
-      call KSPSetOperators(ksp,Amat,Amat,DIFFERENT_NONZERO_PATTERN,ierr)
+      call KSPSetOperators(ksp,Amat,Amat,ierr)
 
 !  Set runtime options, e.g.,
 !      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>

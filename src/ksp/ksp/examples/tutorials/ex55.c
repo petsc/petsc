@@ -212,7 +212,7 @@ int main(int argc,char **args)
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
     /* finish KSP/PC setup */
-    ierr = KSPSetOperators(ksp, Amat, Amat, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp, Amat, Amat);CHKERRQ(ierr);
     if (use_coords) {
       ierr = PCSetCoordinates(pc, 2, m/2, coords);CHKERRQ(ierr);
     }

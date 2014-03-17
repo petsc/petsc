@@ -129,7 +129,7 @@ static PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
   PC             pc;
   PetscInt       m;
   PetscScalar    *Rshift, *Ishift;
-  PetscBool      flg;
+
 
   PetscFunctionBegin;
   /* Perform one cycle of classical GMRES (with the Arnoldi process) to get the Hessenberg matrix
@@ -137,8 +137,8 @@ static PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
    linear system have been set in this ksp */
   ierr = KSPCreate(PetscObjectComm((PetscObject)ksp), &kspgmres);CHKERRQ(ierr);
   if (!ksp->pc) { ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr); }
-  ierr = PCGetOperators(ksp->pc, &Amat, &Pmat, &flag);CHKERRQ(ierr);
-  ierr = KSPSetOperators(kspgmres, Amat, Pmat, flag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc, &Amat, &Pmat);CHKERRQ(ierr);
+  ierr = KSPSetOperators(kspgmres, Amat, Pmat);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(kspgmres);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL, "-ksp_view", &flg);CHKERRQ(ierr);
   if (flag) { ierr = PetscOptionsClearValue("-ksp_view");CHKERRQ(ierr); }

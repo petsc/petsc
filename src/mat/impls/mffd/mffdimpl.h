@@ -52,6 +52,7 @@ struct _p_MatMFFD {    /* context for default matrix-free SNES */
 
   PetscScalar vscale,vshift;                   /* diagonal scale and shift by scalars */
   Vec         dlscale,drscale,dshift;                   /* diagonal scale and shift by vectors */
+  void        *ctx;   /* this is used by MatCreateSNESMF() to store the SNES object */
 };
 
 PETSC_EXTERN PetscFunctionList MatMFFDList;

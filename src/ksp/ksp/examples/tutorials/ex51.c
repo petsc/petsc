@@ -199,7 +199,7 @@ int main(int argc,char **args)
 
   /* Solve linear system */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
   ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
@@ -445,7 +445,7 @@ and weights of the Gauss-Lobatto-Legendre n-point quadrature formula.
     xm   = 0.5*(x2+x1);
     xl   = 0.5*(x2-x1);
     for (j=1; j<=(m-1); j++) { /* Loop over the desired roots. */
-      z=-1.0*cos((PETSC_PI*(j+0.25)/(n))-(3.0/(8.0*n*PETSC_PI))*(1.0/(j+0.25)));
+      z=-1.0*PetscCosReal((PETSC_PI*(j+0.25)/(n))-(3.0/(8.0*n*PETSC_PI))*(1.0/(j+0.25)));
       /* Starting with the above approximation to the ith root, we enter */
       /* the main loop of refinement by Newton's method.                 */
       do {

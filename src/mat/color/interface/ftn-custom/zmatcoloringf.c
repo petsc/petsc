@@ -1,6 +1,6 @@
-#include "petscsys.h"
-#include "petscfix.h"
-#include "petsc-private/fortranimpl.h"
+#include <petscsys.h>
+#include <petscfix.h>
+#include <petsc-private/fortranimpl.h>
 /* matcoloring.c */
 /* Fortran interface file */
 
@@ -22,7 +22,7 @@ extern "C" {
 #define PetscRmPointer(a)
 #endif
 
-#include "petscmat.h"
+#include <petscmat.h>
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define matcoloringcreate_  MATCOLORINGCREATE
 #define matcoloringsettype_ MATCOLORINGSETTYPE

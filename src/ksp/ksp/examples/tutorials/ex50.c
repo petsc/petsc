@@ -20,12 +20,13 @@
 
 static char help[] = "Solves 2D Poisson equation using multigrid.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscksp.h>
 #include <petscsys.h>
 #include <petscvec.h>
 
-extern PetscErrorCode ComputeJacobian(KSP,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode ComputeJacobian(KSP,Mat,Mat,void*);
 extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
 extern PetscErrorCode ComputeTrueSolution(DM, Vec);
 extern PetscErrorCode VecView_VTK(Vec, const char [], const char []);
@@ -49,7 +50,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,(DM)da);
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
 
@@ -115,7 +116,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeJacobian"
-PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,MatStructure *str,void *ctx)
+PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,void *ctx)
 {
   UserContext    *user = (UserContext*)ctx;
   PetscErrorCode ierr;

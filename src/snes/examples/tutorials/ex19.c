@@ -68,6 +68,7 @@ T*/
 #import <PETSc/petscdmda.h>
 #else
 #include <petscsnes.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #endif
 
@@ -110,9 +111,9 @@ int main(int argc,char **argv)
       Create distributed array object to manage parallel grid and vectors
       for principal unknowns (x) and governing residuals (f)
   */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,(DM)da);CHKERRQ(ierr);
-  ierr = SNESSetGS(snes, NonlinearGS, (void*)&user);CHKERRQ(ierr);
+  ierr = SNESSetNGS(snes, NonlinearGS, (void*)&user);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
@@ -403,8 +404,8 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   prandtl = user->prandtl;
   lid     = user->lidvelocity;
   tot_its = 0;
-  ierr    = SNESGSGetTolerances(snes,&rtol,&atol,&stol,&max_its);CHKERRQ(ierr);
-  ierr    = SNESGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
+  ierr    = SNESNGSGetTolerances(snes,&rtol,&atol,&stol,&max_its);CHKERRQ(ierr);
+  ierr    = SNESNGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
   ierr    = SNESGetDM(snes,(DM*)&da);CHKERRQ(ierr);
   ierr    = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   if (B) {

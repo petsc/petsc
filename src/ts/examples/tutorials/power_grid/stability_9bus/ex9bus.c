@@ -39,6 +39,7 @@ in current balance form using rectangular coordiantes.\n\n";
      petscksp.h   - linear solvers
 */
 #include <petscts.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdmcomposite.h>
 
@@ -484,7 +485,7 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
     ierr = MatRestoreRow(user->Ybus,2*i,&ncols,NULL,NULL);CHKERRQ(ierr);
   }
 
-  ierr = MatSeqAIJSetPreallocation(J,NULL,d_nnz);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(J,0,d_nnz);CHKERRQ(ierr);
 
   ierr = PetscFree(d_nnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -496,7 +497,7 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
 */
 #undef __FUNCT__
 #define __FUNCT__ "ResidualJacobian"
-PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flag,void *ctx)
+PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat J,Mat B,MatStructure *flag,void *ctx)
 {
   PetscErrorCode ierr;
   Userctx        *user=(Userctx*)ctx;
@@ -508,14 +509,13 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flag
   PetscScalar    Efd,RF,VR; /* Exciter variables */
   PetscScalar    Id,Iq;  /* Generator dq axis currents */
   PetscScalar    Vd,Vq;
-  Mat            J=*A;
   PetscScalar    val[10];
   PetscInt       row[2],col[10];
   PetscInt       net_start=user->neqs_gen;
 
   PetscFunctionBegin;
   *flag = SAME_NONZERO_PATTERN;
-  ierr  = MatZeroEntries(*A);CHKERRQ(ierr);
+  ierr  = MatZeroEntries(B);CHKERRQ(ierr);
   ierr  = DMCompositeGetLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
   ierr  = DMCompositeScatter(user->dmpgrid,X,Xgen,Xnet);CHKERRQ(ierr);
 
@@ -737,15 +737,15 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flag
 */
 #undef __FUNCT__
 #define __FUNCT__ "AlgJacobian"
-PetscErrorCode AlgJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg,void *ctx)
+PetscErrorCode AlgJacobian(SNES snes,Vec X,Mat A,Mat B,MatStructure *flg,void *ctx)
 {
   PetscErrorCode ierr;
   Userctx        *user=(Userctx*)ctx;
 
   PetscFunctionBegin;
   ierr = ResidualJacobian(snes,X,A,B,flg,ctx);CHKERRQ(ierr);
-  ierr = MatSetOption(*A,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatZeroRowsIS(*A,user->is_diff,1.0,NULL,NULL);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatZeroRowsIS(A,user->is_diff,1.0,NULL,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -756,7 +756,7 @@ PetscErrorCode AlgJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg,void 
 
 #undef __FUNCT__
 #define __FUNCT__ "IJacobian"
-PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,Userctx *user)
+PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,MatStructure *flag,Userctx *user)
 {
   PetscErrorCode ierr;
   SNES           snes;
@@ -770,22 +770,22 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat
   ierr = ResidualJacobian(snes,X,A,B,flag,user);CHKERRQ(ierr);
   for (i=0;i < ngen;i++) {
     row = 9*i;
-    ierr = MatSetValues(*A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
     row  = 9*i+1;
-    ierr = MatSetValues(*A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
     row  = 9*i+2;
-    ierr = MatSetValues(*A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
     row  = 9*i+3;
-    ierr = MatSetValues(*A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
     row  = 9*i+6;
-    ierr = MatSetValues(*A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
     row  = 9*i+7;
-    ierr = MatSetValues(*A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
     row  = 9*i+8;
-    ierr = MatSetValues(*A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -857,9 +857,9 @@ int main(int argc,char **argv)
   ierr = PetscViewerDestroy(&Ybusview);CHKERRQ(ierr);
 
   /* Create DMs for generator and network subsystems */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,user.neqs_gen,1,1,NULL,&user.dmgen);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,user.neqs_gen,1,1,NULL,&user.dmgen);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(user.dmgen,"dmgen_");CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,user.neqs_net,1,1,NULL,&user.dmnet);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,user.neqs_net,1,1,NULL,&user.dmnet);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(user.dmnet,"dmnet_");CHKERRQ(ierr);
   /* Create a composite DM packer and add the two DMs */
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&user.dmpgrid);CHKERRQ(ierr);
@@ -897,7 +897,7 @@ int main(int argc,char **argv)
   Vec          Xdot;
   MatStructure flg;
   ierr = VecDuplicate(X,&Xdot);CHKERRQ(ierr);
-  ierr = IJacobian(ts,0.0,X,Xdot,0.0,&J,&J,&flg,&user);CHKERRQ(ierr);
+  ierr = IJacobian(ts,0.0,X,Xdot,0.0,J,J,&flg,&user);CHKERRQ(ierr);
   ierr = VecDestroy(&Xdot);CHKERRQ(ierr);
 
   /* Save initial solution */

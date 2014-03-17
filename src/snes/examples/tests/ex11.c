@@ -33,6 +33,7 @@ options are:\n\
 */
 
 #include <petscsnes.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 /* User-defined application contexts */
@@ -64,7 +65,7 @@ typedef struct {
 #define FINE_LEVEL   1
 
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*), FormInitialGuess1(AppCtx*,Vec);
-extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 extern PetscErrorCode FormInterpolation(AppCtx*);
 
 /*
@@ -113,7 +114,7 @@ int main(int argc, char **argv)
   ierr = PetscOptionsGetInt(NULL,"-Ny",&Ny,NULL);CHKERRQ(ierr);
 
   /* Set up distributed array for fine grid */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,
                       user.fine.my,Nx,Ny,1,1,NULL,NULL,&user.fine.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.fine.da,&user.fine.x);CHKERRQ(ierr);
   ierr = VecDuplicate(user.fine.x,&user.fine.r);CHKERRQ(ierr);
@@ -124,7 +125,7 @@ int main(int argc, char **argv)
   ierr = MatCreateAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,NULL,3,NULL,&user.fine.J);CHKERRQ(ierr);
 
   /* Set up distributed array for coarse grid */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
                       user.coarse.my,Nx,Ny,1,1,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.coarse.da,&user.coarse.x);CHKERRQ(ierr);
   ierr = VecDuplicate(user.coarse.x,&user.coarse.b);CHKERRQ(ierr);
@@ -166,7 +167,7 @@ int main(int argc, char **argv)
   ierr = PCMGGetCoarseSolve(pc,&user.ksp_coarse);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(user.ksp_coarse,"coarse_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(user.ksp_coarse);CHKERRQ(ierr);
-  ierr = KSPSetOperators(user.ksp_coarse,user.coarse.J,user.coarse.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(user.ksp_coarse,user.coarse.J,user.coarse.J);CHKERRQ(ierr);
   ierr = PCMGSetX(pc,COARSE_LEVEL,user.coarse.x);CHKERRQ(ierr);
   ierr = PCMGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRQ(ierr);
   if (user.redundant_build) {
@@ -179,7 +180,7 @@ int main(int argc, char **argv)
   ierr = PCMGGetSmoother(pc,FINE_LEVEL,&user.ksp_fine);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(user.ksp_fine,"fine_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(user.ksp_fine);CHKERRQ(ierr);
-  ierr = KSPSetOperators(user.ksp_fine,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(user.ksp_fine,user.fine.J,user.fine.J);CHKERRQ(ierr);
   ierr = PCMGSetR(pc,FINE_LEVEL,user.fine.r);CHKERRQ(ierr);
   ierr = PCMGSetResidual(pc,FINE_LEVEL,NULL,user.fine.J);CHKERRQ(ierr);
 
@@ -322,9 +323,9 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian_Grid"
-PetscErrorCode FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
+PetscErrorCode FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat J,Mat B)
 {
-  Mat            jac = *J;
+  Mat            jac = J;
   PetscErrorCode ierr;
   PetscInt       i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym, col[5], nloc, grow;
   const PetscInt *ltog;
@@ -384,9 +385,9 @@ PetscErrorCode FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B
 */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian_Coarse"
-PetscErrorCode FormJacobian_Coarse(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
+PetscErrorCode FormJacobian_Coarse(AppCtx *user,GridCtx *grid,Vec X, Mat J,Mat B)
 {
-  Mat            jac = *J;
+  Mat            jac = J;
   PetscErrorCode ierr;
   PetscInt       i, j, row, mx, my, col[5];
   PetscScalar    two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x, value;
@@ -428,7 +429,7 @@ PetscErrorCode FormJacobian_Coarse(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat 
 /* --------------------  Evaluate Jacobian F'(x) --------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat B,void *ptr)
 {
   AppCtx         *user = (AppCtx*) ptr;
   PetscErrorCode ierr;
@@ -436,7 +437,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   PC             pc;
   PetscBool      ismg;
 
-  *flag = SAME_NONZERO_PATTERN;
   ierr  = FormJacobian_Grid(user,&user->fine,X,J,B);CHKERRQ(ierr);
 
   /* create coarse grid jacobian for preconditioner */
@@ -446,7 +446,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {
 
-    ierr = KSPSetOperators(user->ksp_fine,user->fine.J,user->fine.J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(user->ksp_fine,user->fine.J,user->fine.J);CHKERRQ(ierr);
 
     /* restrict X to coarse grid */
     ierr = MatMult(user->R,X,user->coarse.x);CHKERRQ(ierr);
@@ -457,13 +457,13 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
       /* get copy of coarse X onto each processor */
       ierr = VecScatterBegin(user->tolocalall,user->coarse.x,user->localall,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(user->tolocalall,user->coarse.x,user->localall,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = FormJacobian_Coarse(user,&user->coarse,user->localall,&user->coarse.J,&user->coarse.J);CHKERRQ(ierr);
+      ierr = FormJacobian_Coarse(user,&user->coarse,user->localall,user->coarse.J,user->coarse.J);CHKERRQ(ierr);
 
     } else {
       /* coarse grid Jacobian computed in parallel */
-      ierr = FormJacobian_Grid(user,&user->coarse,user->coarse.x,&user->coarse.J,&user->coarse.J);CHKERRQ(ierr);
+      ierr = FormJacobian_Grid(user,&user->coarse,user->coarse.x,user->coarse.J,user->coarse.J);CHKERRQ(ierr);
     }
-    ierr = KSPSetOperators(user->ksp_coarse,user->coarse.J,user->coarse.J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(user->ksp_coarse,user->coarse.J,user->coarse.J);CHKERRQ(ierr);
   }
 
   return 0;

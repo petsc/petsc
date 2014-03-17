@@ -39,7 +39,7 @@ int main(int argc,char **argv)
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
 
   /* Build the vectors */
-  ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
   ierr = VecSetSizes(B,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&X);CHKERRQ(ierr);
@@ -50,7 +50,7 @@ int main(int argc,char **argv)
 
   /* Build the KSP */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
   ierr = KSPSetTolerances(ksp,1.0e-12,PETSC_DEFAULT,PETSC_DEFAULT,100);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);

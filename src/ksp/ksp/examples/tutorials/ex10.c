@@ -111,7 +111,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetString(NULL,"-rhs",file[2],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   if (flg) {   /* rhs is stored in a separate file */
-    if (file[2][0] == '0') {
+    if (file[2][0] == '0' || file[2][0] == 0) {
       PetscInt    m;
       PetscScalar one = 1.0;
       ierr = PetscInfo(0,"Using vector of ones for RHS\n");CHKERRQ(ierr);
@@ -280,10 +280,10 @@ int main(int argc,char **args)
     if (lsqr) {
       Mat BtB;
       ierr = MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,4,&BtB);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,A,BtB,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,A,BtB);CHKERRQ(ierr);
       ierr = MatDestroy(&BtB);CHKERRQ(ierr);
     } else {
-      ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
     }
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 

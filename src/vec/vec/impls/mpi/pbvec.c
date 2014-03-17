@@ -72,7 +72,7 @@ static PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
   /* save local representation of the parallel vector (and scatter) if it exists */
   if (w->localrep) {
     ierr = VecGetArray(*v,&array);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,win->map->bs,win->map->n+w->nghost,array,&vw->localrep);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,PetscAbs(win->map->bs),win->map->n+w->nghost,array,&vw->localrep);CHKERRQ(ierr);
     ierr = PetscMemcpy(vw->localrep->ops,w->localrep->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
     ierr = VecRestoreArray(*v,&array);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)*v,(PetscObject)vw->localrep);CHKERRQ(ierr);
@@ -90,7 +90,7 @@ static PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
   ierr = PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*v))->olist);CHKERRQ(ierr);
   ierr = PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*v))->qlist);CHKERRQ(ierr);
 
-  (*v)->map->bs   = win->map->bs;
+  (*v)->map->bs   = PetscAbs(win->map->bs);
   (*v)->bstash.bs = win->bstash.bs;
   PetscFunctionReturn(0);
 }
@@ -209,7 +209,7 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool alloc,PetscInt nghost,const
      VecSetValuesBlocked is called.
   */
   ierr = VecStashCreate_Private(PetscObjectComm((PetscObject)v),1,&v->stash);CHKERRQ(ierr);
-  ierr = VecStashCreate_Private(PetscObjectComm((PetscObject)v),v->map->bs,&v->bstash);CHKERRQ(ierr);
+  ierr = VecStashCreate_Private(PetscObjectComm((PetscObject)v),PetscAbs(v->map->bs),&v->bstash);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscMatlabEnginePut_C",VecMatlabEnginePut_Default);CHKERRQ(ierr);

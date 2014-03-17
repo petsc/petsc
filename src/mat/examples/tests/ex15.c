@@ -14,7 +14,7 @@ int main(int argc,char **args)
   PetscScalar    v;
   IS             perm,iperm;
   Vec            x,u,b,y;
-  PetscReal      norm,tol=1.e-14;
+  PetscReal      norm,tol=PETSC_SMALL;
   MatFactorInfo  info;
   PetscMPIInt    size;
 

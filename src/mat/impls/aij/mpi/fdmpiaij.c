@@ -4,7 +4,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringApply_BAIJ"
-PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
+PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,void *sctx)
 {
   PetscErrorCode (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void*))coloring->f;
   PetscErrorCode ierr;
@@ -157,7 +157,7 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringApply_AIJ"
-PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
+PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void *sctx)
 {
   PetscErrorCode (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void*))coloring->f;
   PetscErrorCode ierr;

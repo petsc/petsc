@@ -649,10 +649,10 @@ PetscErrorCode PCSetUp_ML(PC pc)
         if (level > 0) {
           ierr = PCMGSetResidual(pc,level,PCMGResidualDefault,gridctx[level].A);CHKERRQ(ierr);
         }
-        ierr = KSPSetOperators(gridctx[level].ksp,gridctx[level].A,gridctx[level].A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+        ierr = KSPSetOperators(gridctx[level].ksp,gridctx[level].A,gridctx[level].A);CHKERRQ(ierr);
       }
       ierr = PCMGSetResidual(pc,fine_level,PCMGResidualDefault,gridctx[fine_level].A);CHKERRQ(ierr);
-      ierr = KSPSetOperators(gridctx[fine_level].ksp,gridctx[level].A,gridctx[fine_level].A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(gridctx[fine_level].ksp,gridctx[level].A,gridctx[fine_level].A);CHKERRQ(ierr);
 
       ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
       PetscFunctionReturn(0);
@@ -950,10 +950,10 @@ PetscErrorCode PCSetUp_ML(PC pc)
     if (level > 0) {
       ierr = PCMGSetResidual(pc,level,PCMGResidualDefault,gridctx[level].A);CHKERRQ(ierr);
     }
-    ierr = KSPSetOperators(gridctx[level].ksp,gridctx[level].A,gridctx[level].A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(gridctx[level].ksp,gridctx[level].A,gridctx[level].A);CHKERRQ(ierr);
   }
   ierr = PCMGSetResidual(pc,fine_level,PCMGResidualDefault,gridctx[fine_level].A);CHKERRQ(ierr);
-  ierr = KSPSetOperators(gridctx[fine_level].ksp,gridctx[level].A,gridctx[fine_level].A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(gridctx[fine_level].ksp,gridctx[level].A,gridctx[fine_level].A);CHKERRQ(ierr);
 
   /* put coordinate info in levels */
   if (pc_ml->dim) {
@@ -1147,13 +1147,13 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
        and the restriction/interpolation operators wrapped as PETSc shell matrices.
 
    Options Database Key:
-   Multigrid options(inherited)
+   Multigrid options(inherited):
 +  -pc_mg_cycles <1>: 1 for V cycle, 2 for W-cycle (MGSetCycles)
 .  -pc_mg_smoothup <1>: Number of post-smoothing steps (MGSetNumberSmoothUp)
 .  -pc_mg_smoothdown <1>: Number of pre-smoothing steps (MGSetNumberSmoothDown)
-   -pc_mg_type <multiplicative>: (one of) additive multiplicative full kascade
+-  -pc_mg_type <multiplicative>: (one of) additive multiplicative full kascade
    ML options:
-.  -pc_ml_PrintLevel <0>: Print level (ML_Set_PrintLevel)
++  -pc_ml_PrintLevel <0>: Print level (ML_Set_PrintLevel)
 .  -pc_ml_maxNlevels <10>: Maximum number of levels (None)
 .  -pc_ml_maxCoarseSize <1>: Maximum coarsest mesh size (ML_Aggregate_Set_MaxCoarseSize)
 .  -pc_ml_CoarsenScheme <Uncoupled>: (one of) Uncoupled Coupled MIS METIS

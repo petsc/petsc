@@ -61,7 +61,7 @@ PETSC_EXTERN void (*PETSC_NULL_FUNCTION_Fortran)(void);
     while((n > 0) && (a[n-1] == ' ')) n--; \
     *ierr = PetscMalloc((n+1)*sizeof(char),&b); \
     if (*ierr) return; \
-    *ierr = PetscStrncpy(b,a,n); \
+    *ierr = PetscStrncpy(b,a,n+1); \
     if (*ierr) return; \
     b[n] = 0; \
   } \

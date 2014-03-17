@@ -44,6 +44,8 @@
 #else
 #define PetscInt integer4
 #endif
+#define Petsc64bitInt integer8
+#define PetscObjectState Petsc64bitInt
 
 #if (PETSC_SIZEOF_INT == 4)
 #define PetscFortranInt integer4

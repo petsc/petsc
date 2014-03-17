@@ -1,5 +1,6 @@
 static const char help[] = "Test DMDAGetOwnershipRanges()\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__
@@ -16,10 +17,10 @@ int main(int argc,char *argv[])
   ierr = PetscOptionsGetInt(0,"-dim",&dim,0);CHKERRQ(ierr);
   switch (dim) {
   case 2:
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR, -3,-5,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, -3,-5,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da);CHKERRQ(ierr);
     break;
   case 3:
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR, -3,-5,-7,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR, -3,-5,-7,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
     break;
   default: SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No support for %D dimensions",dim);
   }

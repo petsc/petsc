@@ -42,6 +42,7 @@ timestepping.  Runtime options include:\n\
    structures to manage the parallel grid.
 */
 #include <petscts.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdraw.h>
 
@@ -65,7 +66,7 @@ typedef struct {
 */
 extern PetscErrorCode InitialConditions(Vec,AppCtx*);
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
-extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode ExactSolution(PetscReal,Vec,AppCtx*);
 
@@ -109,7 +110,7 @@ int main(int argc,char **argv)
      and to set up the ghost point communication pattern.  There are M
      total grid values spread equally among all the processors.
   */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,appctx.m,1,1,NULL,&appctx.da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,appctx.m,1,1,NULL,&appctx.da);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DMDA; we use these to store the
@@ -534,7 +535,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
    - Note that MatSetValues() uses 0-based row and column numbers
      in Fortran as well as in C.
 */
-PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat BB,void *ctx)
 {
   AppCtx         *appctx  = (AppCtx*)ctx;    /* user-defined application context */
   Vec            local_in = appctx->u_local;   /* local ghosted input vector */
@@ -563,7 +564,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatSt
   /*
      Get starting and ending locally owned rows of the matrix
   */
-  ierr   = MatGetOwnershipRange(*BB,&mstarts,&mends);CHKERRQ(ierr);
+  ierr   = MatGetOwnershipRange(BB,&mstarts,&mends);CHKERRQ(ierr);
   mstart = mstarts; mend = mends;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -583,13 +584,13 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatSt
   */
   if (mstart == 0) {
     v[0] = 0.0;
-    ierr = MatSetValues(*BB,1,&mstart,1,&mstart,v,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(BB,1,&mstart,1,&mstart,v,INSERT_VALUES);CHKERRQ(ierr);
     mstart++;
   }
   if (mend == appctx->m) {
     mend--;
     v[0] = 0.0;
-    ierr = MatSetValues(*BB,1,&mend,1,&mend,v,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(BB,1,&mend,1,&mend,v,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /*
@@ -603,7 +604,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatSt
     v[0]   = sc*localptr[is];
     v[1]   = sc*(localptr[is+1] + localptr[is-1] - 4.0*localptr[is]);
     v[2]   = sc*localptr[is];
-    ierr   = MatSetValues(*BB,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
+    ierr   = MatSetValues(BB,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /*
@@ -620,36 +621,18 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatSt
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  ierr = MatAssemblyBegin(*BB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*BB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*BB != *AA) {
-    ierr = MatAssemblyBegin(*AA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*AA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(BB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(BB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (BB != AA) {
+    ierr = MatAssemblyBegin(AA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(AA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  /*
-     Set flag to indicate that the Jacobian matrix retains an identical
-     nonzero structure throughout all timestepping iterations (although the
-     values of the entries change). Thus, we can save some work in setting
-     up the preconditioner (e.g., no need to redo symbolic factorization for
-     ILU/ICC preconditioners).
-      - If the nonzero structure of the matrix is different during
-        successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-        must be used instead.  If you are unsure whether the matrix
-        structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-      - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-        believes your assertion and does not check the structure
-        of the matrix.  If you erroneously claim that the structure
-        is the same when it actually is not, the new preconditioner
-        will not function correctly.  Thus, use this optimization
-        feature with caution!
-  */
-  *str = SAME_NONZERO_PATTERN;
 
   /*
      Set and option to indicate that we will never add a new nonzero location
      to the matrix. If we do, it will generate an error.
   */
-  ierr = MatSetOption(*BB,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(BB,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
 
   return 0;
 }

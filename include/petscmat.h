@@ -188,15 +188,15 @@ PETSC_EXTERN PetscFunctionList MatPartitioningList;
 PETSC_EXTERN PetscFunctionList MatCoarsenList;
 
 /*E
-    MatStructure - Indicates if the matrix has the same nonzero structure
+    MatStructure - Indicates if two matrices have the same nonzero structure
 
     Level: beginner
 
    Any additions/changes here MUST also be made in include/finclude/petscmat.h
 
-.seealso: MatCopy(), KSPSetOperators(), PCSetOperators()
+.seealso: MatCopy(), MatAXPY()
 E*/
-typedef enum {DIFFERENT_NONZERO_PATTERN,SUBSET_NONZERO_PATTERN,SAME_NONZERO_PATTERN,SAME_PRECONDITIONER} MatStructure;
+typedef enum {DIFFERENT_NONZERO_PATTERN,SUBSET_NONZERO_PATTERN,SAME_NONZERO_PATTERN} MatStructure;
 
 PETSC_EXTERN PetscErrorCode MatCreateSeqDense(MPI_Comm,PetscInt,PetscInt,PetscScalar[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateDense(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar[],Mat*);
@@ -252,6 +252,7 @@ PETSC_EXTERN PetscErrorCode MatPythonSetType(Mat,const char[]);
 
 PETSC_EXTERN PetscErrorCode MatSetUp(Mat);
 PETSC_EXTERN PetscErrorCode MatDestroy(Mat*);
+PETSC_EXTERN PetscErrorCode MatGetNonzeroState(Mat,PetscObjectState*);
 
 PETSC_EXTERN PetscErrorCode MatConjugate(Mat);
 PETSC_EXTERN PetscErrorCode MatRealPart(Mat);
@@ -356,12 +357,14 @@ PETSC_EXTERN PetscErrorCode MatRestoreColumn(Mat,PetscInt,PetscInt *,const Petsc
 PETSC_EXTERN PetscErrorCode MatGetColumnVector(Mat,Vec,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSeqAIJGetArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatSeqAIJRestoreArray(Mat,PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode MatSeqAIJSetValuesLocalFast(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 PETSC_EXTERN PetscErrorCode MatDenseGetArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatDenseRestoreArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatGetBlockSize(Mat,PetscInt *);
 PETSC_EXTERN PetscErrorCode MatSetBlockSize(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatGetBlockSizes(Mat,PetscInt *,PetscInt *);
 PETSC_EXTERN PetscErrorCode MatSetBlockSizes(Mat,PetscInt,PetscInt);
+PETSC_EXTERN PetscErrorCode MatSetBlockSizesFromMats(Mat,Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatSetNThreads(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatGetNThreads(Mat,PetscInt*);
 
@@ -536,6 +539,7 @@ PETSC_EXTERN PetscErrorCode MatSetLocalToGlobalMapping(Mat,ISLocalToGlobalMappin
 PETSC_EXTERN PetscErrorCode MatSetLocalToGlobalMappingBlock(Mat,ISLocalToGlobalMapping,ISLocalToGlobalMapping);
 PETSC_EXTERN PetscErrorCode MatGetLocalToGlobalMapping(Mat,ISLocalToGlobalMapping*,ISLocalToGlobalMapping*);
 PETSC_EXTERN PetscErrorCode MatGetLocalToGlobalMappingBlock(Mat,ISLocalToGlobalMapping*,ISLocalToGlobalMapping*);
+PETSC_EXTERN PetscErrorCode MatGetLayouts(Mat,PetscLayout*,PetscLayout*);
 PETSC_EXTERN PetscErrorCode MatZeroRowsLocal(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatZeroRowsLocalIS(Mat,IS,PetscScalar,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatZeroRowsColumnsLocal(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
@@ -553,6 +557,7 @@ PETSC_EXTERN PetscErrorCode MatGetVecs(Mat,Vec*,Vec*);
 PETSC_EXTERN PetscErrorCode MatGetRedundantMatrix(Mat,PetscInt,MPI_Comm,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetMultiProcBlock(Mat,MPI_Comm,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatFindZeroDiagonals(Mat,IS*);
+PETSC_EXTERN PetscErrorCode MatFindOffBlockDiagonalEntries(Mat,IS*);
 
 /*MC
    MatSetValue - Set a single entry into a matrix.
@@ -585,7 +590,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,
        row in a matrix providing the data that one can use to correctly preallocate the matrix.
 
    Synopsis:
-   #include "petscmat.h"
+   #include <petscmat.h>
    PetscErrorCode MatPreallocateInitialize(MPI_Comm comm, PetscInt nrows, PetscInt ncols, PetscInt *dnz, PetscInt *onz)
 
    Collective on MPI_Comm
@@ -598,7 +603,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,
    Output Parameters:
 +  dnz - the array that will be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
-
 
    Level: intermediate
 
@@ -629,7 +633,7 @@ M*/
        inserted using a local number of the rows and columns
 
    Synopsis:
-   #include "petscmat.h"
+   #include <petscmat.h>
    PetscErrorCode MatPreallocateSetLocal(ISLocalToGlobalMappping map,PetscInt nrows, PetscInt *rows,PetscInt ncols, PetscInt *cols,PetscInt *dnz, PetscInt *onz)
 
    Not Collective
@@ -643,7 +647,6 @@ M*/
 .  cols - the columns indicated
 .  dnz - the array that will be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
-
 
    Level: intermediate
 
@@ -672,7 +675,7 @@ M*/
        inserted using a local number of the rows and columns
 
    Synopsis:
-   #include "petscmat.h"
+   #include <petscmat.h>
    PetscErrorCode MatPreallocateSymmetricSetLocal(ISLocalToGlobalMappping map,PetscInt nrows, PetscInt *rows,PetscInt ncols, PetscInt *cols,PetscInt *dnz, PetscInt *onz)
 
    Not Collective
@@ -685,7 +688,6 @@ M*/
 .  cols - the columns indicated
 .  dnz - the array that will be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
-
 
    Level: intermediate
 
@@ -714,7 +716,7 @@ M*/
        inserted using a local number of the rows and columns
 
    Synopsis:
-   #include "petscmat.h"
+   #include <petscmat.h>
    PetscErrorCode MatPreallocateSet(PetscInt nrows, PetscInt *rows,PetscInt ncols, PetscInt *cols,PetscInt *dnz, PetscInt *onz)
 
    Not Collective
@@ -727,7 +729,6 @@ M*/
    Output Parameters:
 +  dnz - the array that will be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
-
 
    Level: intermediate
 
@@ -758,7 +759,7 @@ M*/
        inserted using a local number of the rows and columns
 
    Synopsis:
-   #include "petscmat.h"
+   #include <petscmat.h>
    PetscErrorCode MatPreallocateSymmetricSet(PetscInt nrows, PetscInt *rows,PetscInt ncols, PetscInt *cols,PetscInt *dnz, PetscInt *onz)
 
    Not Collective
@@ -770,7 +771,6 @@ M*/
 .  cols - the columns indicated
 .  dnz - the array that will be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
-
 
    Level: intermediate
 
@@ -798,7 +798,7 @@ M*/
    MatPreallocateLocation -  An alternative to MatPreallocationSet() that puts the nonzero locations into the matrix if it exists
 
    Synopsis:
-   #include "petscmat.h"
+   #include <petscmat.h>
    PetscErrorCode MatPreallocateLocations(Mat A,PetscInt row,PetscInt ncols,PetscInt *cols,PetscInt *dnz,PetscInt *onz)
 
    Not Collective
@@ -810,7 +810,6 @@ M*/
 .  cols - columns with nonzeros
 .  dnz - the array that will be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
-
 
    Level: intermediate
 
@@ -834,7 +833,7 @@ M*/
        row in a matrix providing the data that one can use to correctly preallocate the matrix.
 
    Synopsis:
-   #include "petscmat.h"
+   #include <petscmat.h>
    PetscErrorCode MatPreallocateFinalize(PetscInt *dnz, PetscInt *onz)
 
    Collective on MPI_Comm
@@ -842,7 +841,6 @@ M*/
    Input Parameters:
 +  dnz - the array that was be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
-
 
    Level: intermediate
 
@@ -859,8 +857,6 @@ M*/
           MatPreallocateSymmetricSetLocal()
 M*/
 #define MatPreallocateFinalize(dnz,onz) 0;_4_ierr = PetscFree2(dnz,onz);CHKERRQ(_4_ierr);}
-
-
 
 /* Routines unique to particular data structures */
 PETSC_EXTERN PetscErrorCode MatShellGetContext(Mat,void *);
@@ -1084,7 +1080,7 @@ PETSC_EXTERN PetscErrorCode MatFDColoringSetFunction(MatFDColoring,PetscErrorCod
 PETSC_EXTERN PetscErrorCode MatFDColoringGetFunction(MatFDColoring,PetscErrorCode (**)(void),void**);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetParameters(MatFDColoring,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetFromOptions(MatFDColoring);
-PETSC_EXTERN PetscErrorCode MatFDColoringApply(Mat,MatFDColoring,Vec,MatStructure*,void *);
+PETSC_EXTERN PetscErrorCode MatFDColoringApply(Mat,MatFDColoring,Vec,void *);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetF(MatFDColoring,Vec);
 PETSC_EXTERN PetscErrorCode MatFDColoringGetPerturbedColumns(MatFDColoring,PetscInt*,PetscInt*[]);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetUp(Mat,ISColoring,MatFDColoring);

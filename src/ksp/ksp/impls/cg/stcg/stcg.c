@@ -97,7 +97,6 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 #else
   KSP_STCG       *cg = (KSP_STCG*)ksp->data;
   PetscErrorCode ierr;
-  MatStructure   pflag;
   Mat            Qmat, Mmat;
   Vec            r, z, p, d;
   PC             pc;
@@ -127,7 +126,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   d  = ksp->vec_sol;
   pc = ksp->pc;
 
-  ierr = PCGetOperators(pc, &Qmat, &Mmat, &pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(pc, &Qmat, &Mmat);CHKERRQ(ierr);
 
   ierr       = VecGetSize(d, &max_cg_its);CHKERRQ(ierr);
   max_cg_its = PetscMin(max_cg_its, ksp->max_it);
@@ -157,7 +156,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_DIVERGED_NANORINF;
-    ierr        = PetscInfo1(ksp, "KSPSolve_STCG: bad right-hand side: rr=%g\n", rr);CHKERRQ(ierr);
+    ierr        = PetscInfo1(ksp, "KSPSolve_STCG: bad right-hand side: rr=%g\n", (double)rr);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -176,7 +175,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_DIVERGED_NANORINF;
-    ierr        = PetscInfo1(ksp, "KSPSolve_STCG: bad preconditioner: rz=%g\n", rz);CHKERRQ(ierr);
+    ierr        = PetscInfo1(ksp, "KSPSolve_STCG: bad preconditioner: rz=%g\n", (double)rz);CHKERRQ(ierr);
 
     if (cg->radius != 0) {
       if (r2 >= rr) {
@@ -211,7 +210,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-    ierr        = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz);CHKERRQ(ierr);
+    ierr        = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", (double)rz);CHKERRQ(ierr);
 
     if (cg->radius != 0.0) {
       if (r2 >= rr) {
@@ -289,7 +288,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_DIVERGED_NANORINF;
-    ierr        = PetscInfo1(ksp, "KSPSolve_STCG: bad matrix: kappa=%g\n", kappa);CHKERRQ(ierr);
+    ierr        = PetscInfo1(ksp, "KSPSolve_STCG: bad matrix: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
 
     if (cg->radius) {
       if (r2 >= rr) {
@@ -343,7 +342,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
-    ierr        = PetscInfo1(ksp, "KSPSolve_STCG: negative curvature: kappa=%g\n", kappa);CHKERRQ(ierr);
+    ierr        = PetscInfo1(ksp, "KSPSolve_STCG: negative curvature: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
 
     if (cg->radius != 0.0 && norm_p > 0.0) {
       /***********************************************************************/
@@ -418,7 +417,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       /***********************************************************************/
 
       ksp->reason = KSP_CONVERGED_CG_CONSTRAINED;
-      ierr        = PetscInfo1(ksp, "KSPSolve_STCG: constrained step: radius=%g\n", cg->radius);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPSolve_STCG: constrained step: radius=%g\n", (double)cg->radius);CHKERRQ(ierr);
 
       if (norm_p > 0.0) {
         /*********************************************************************/
@@ -480,7 +479,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       /***********************************************************************/
 
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-      ierr        = PetscInfo1(ksp, "KSPSolve_STCG: cg indefinite preconditioner: rz=%g\n", rz);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPSolve_STCG: cg indefinite preconditioner: rz=%g\n", (double)rz);CHKERRQ(ierr);
       break;
     }
 
@@ -517,7 +516,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       /* The method has converged.                                           */
       /***********************************************************************/
 
-      ierr = PetscInfo2(ksp, "KSPSolve_STCG: truncated step: rnorm=%g, radius=%g\n", norm_r, cg->radius);CHKERRQ(ierr);
+      ierr = PetscInfo2(ksp, "KSPSolve_STCG: truncated step: rnorm=%g, radius=%g\n", (double)norm_r, (double)cg->radius);CHKERRQ(ierr);
       break;
     }
 
@@ -526,13 +525,13 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     /*************************************************************************/
 
     beta = rz / rzm1;
-    if (fabs(beta) <= 0.0) {
+    if (PetscAbs(beta) <= 0.0) {
       /***********************************************************************/
       /* Conjugate gradients has broken down.                                */
       /***********************************************************************/
 
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      ierr        = PetscInfo1(ksp, "KSPSolve_STCG: breakdown: beta=%g\n", beta);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPSolve_STCG: breakdown: beta=%g\n", (double)beta);CHKERRQ(ierr);
       break;
     }
 
@@ -542,7 +541,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
     if (ksp->its >= max_cg_its) {
       ksp->reason = KSP_DIVERGED_ITS;
-      ierr        = PetscInfo1(ksp, "KSPSolve_STCG: iterlim: its=%d\n", ksp->its);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPSolve_STCG: iterlim: its=%D\n", ksp->its);CHKERRQ(ierr);
       break;
     }
 
@@ -584,7 +583,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       /***********************************************************************/
 
       ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
-      ierr        = PetscInfo1(ksp, "KSPSolve_STCG: negative curvature: kappa=%g\n", kappa);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPSolve_STCG: negative curvature: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
 
       if (cg->radius != 0.0 && norm_p > 0.0) {
         /*********************************************************************/

@@ -64,9 +64,9 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
 
   PetscFunctionBegin;
   if (pc->setupcalled) {
-    ierr = KSPGetOperators(red->ksp,NULL,&tmat,NULL);CHKERRQ(ierr);
+    ierr = KSPGetOperators(red->ksp,NULL,&tmat);CHKERRQ(ierr);
     ierr = MatGetSubMatrix(pc->pmat,red->is,red->is,MAT_REUSE_MATRIX,&tmat);CHKERRQ(ierr);
-    ierr = KSPSetOperators(red->ksp,tmat,tmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(red->ksp,tmat,tmat);CHKERRQ(ierr);
   } else {
     PetscInt NN;
 
@@ -201,7 +201,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr = VecScatterCreate(tvec,red->is,red->b,NULL,&red->scatter);CHKERRQ(ierr);
     ierr = VecDestroy(&tvec);CHKERRQ(ierr);
     ierr = MatGetSubMatrix(pc->pmat,red->is,red->is,MAT_INITIAL_MATRIX,&tmat);CHKERRQ(ierr);
-    ierr = KSPSetOperators(red->ksp,tmat,tmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(red->ksp,tmat,tmat);CHKERRQ(ierr);
     ierr = MatDestroy(&tmat);CHKERRQ(ierr);
   }
 

@@ -9,6 +9,7 @@ static char help[] = "Time-dependent PDE in 2d for calculating joint PDF. \n";
    Steady state boundary condition found by setting p_t = 0
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 
@@ -44,7 +45,7 @@ typedef struct {
 PetscErrorCode Parameter_settings(AppCtx*);
 PetscErrorCode ini_bou(Vec,AppCtx*);
 PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*);
-PetscErrorCode IJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode IJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 PetscErrorCode PostStep(TS);
 
 #undef __FUNCT__
@@ -63,7 +64,7 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = Parameter_settings(&user);CHKERRQ(ierr);
   /* Create a 2D DA with dof = 1 */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
   /* Set x and y coordinates */
   ierr = DMDASetUniformCoordinates(user.da,user.xmin,user.xmax,user.ymin,user.ymax,NULL,NULL);CHKERRQ(ierr);
 
@@ -316,7 +317,7 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "IJacobian"
-PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J,Mat *Jpre,MatStructure *flg,void *ctx)
+PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,Mat Jpre,void *ctx)
 {
   PetscErrorCode ierr;
   AppCtx         *user=(AppCtx*)ctx;
@@ -330,7 +331,6 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J,Mat
   PetscScalar    c1,c3,c5;
 
   PetscFunctionBeginUser;
-  *flg = SAME_NONZERO_PATTERN;
   ierr = DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
   ierr = DMGetCoordinateDM(user->da,&cda);CHKERRQ(ierr);
   ierr = DMDAGetCorners(cda,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
@@ -397,16 +397,16 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J,Mat
         col[nc].i = i;   col[nc].j = j+1; val[nc++] = -c3 + c5;
         col[nc].i = i;   col[nc].j = j;   val[nc++] = -2*c5 -a;
       }
-      ierr = MatSetValuesStencil(*Jpre,1,&row,nc,col,val,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesStencil(Jpre,1,&row,nc,col,val,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = DMDAVecRestoreArray(cda,gc,&coors);CHKERRQ(ierr);
 
-  ierr =  MatAssemblyBegin(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*J != *Jpre) {
-    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr =  MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (J != Jpre) {
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -426,7 +426,7 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   user->ws     = 1.0;
   user->H      = 5.0;  user->Pmax   = 2.1;
   user->PM_min = 1.0;  user->lambda = 0.1;
-  user->q      = 1.0;  user->mux    = asin(user->PM_min/user->Pmax);
+  user->q      = 1.0;  user->mux    = PetscAsinScalar(user->PM_min/user->Pmax);
   user->sigmax = 0.1;
   user->sigmay = 0.1;  user->rho  = 0.0;
   user->t0     = 0.0;  user->tmax = 2.0;

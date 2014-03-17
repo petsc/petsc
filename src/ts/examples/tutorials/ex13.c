@@ -12,6 +12,7 @@ static char help[] = "Time-dependent PDE in 2d. Simplified from ex7.c for illust
     mpiexec -n 2 ./ex13 -ts_type sundials -ts_monitor 
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 
@@ -23,7 +24,7 @@ typedef struct {
 } AppCtx;
 
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
-extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 extern PetscErrorCode FormInitialSolution(DM,Vec,void*);
 
 #undef __FUNCT__
@@ -43,7 +44,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-8,-8,PETSC_DECIDE,PETSC_DECIDE,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-8,-8,PETSC_DECIDE,PETSC_DECIDE,
                       1,1,NULL,NULL,&da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -191,7 +192,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
    Jpre - optionally different preconditioning matrix
    str - flag indicating matrix structure
 */
-PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat *J,Mat *Jpre,MatStructure *str,void *ctx)
+PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat J,Mat Jpre,void *ctx)
 {
   PetscErrorCode ierr;
   DM             da;
@@ -219,14 +220,14 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat *J,Mat *Jpre,MatStructure
         col[nc].i = i;   col[nc].j = j+1; val[nc++] = sy;
         col[nc].i = i;   col[nc].j = j;   val[nc++] = -2*sx - 2*sy;
       }
-      ierr = MatSetValuesStencil(*Jpre,1,&row,nc,col,val,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesStencil(Jpre,1,&row,nc,col,val,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
-  ierr = MatAssemblyBegin(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*J != *Jpre) {
-    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (J != Jpre) {
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

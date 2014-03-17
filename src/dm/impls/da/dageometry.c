@@ -687,13 +687,14 @@ PetscErrorCode DMDAComputeCellGeometry_2D(DM dm, const PetscScalar vertices[], c
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAComputeCellGeometry"
-PetscErrorCode DMDAComputeCellGeometry(DM dm, PetscInt cell, PetscQuadrature *quad, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal detJ[])
+PetscErrorCode DMDAComputeCellGeometry(DM dm, PetscInt cell, PetscQuadrature quad, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal detJ[])
 {
-  DM                 cdm;
-  Vec                coordinates;
-  PetscScalar       *vertices = NULL;
-  PetscInt           csize, dim, d, q;
-  PetscErrorCode     ierr;
+  DM               cdm;
+  Vec              coordinates;
+  const PetscReal *quadPoints;
+  PetscScalar     *vertices = NULL;
+  PetscInt         numQuadPoints, csize, dim, d, q;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -704,8 +705,9 @@ PetscErrorCode DMDAComputeCellGeometry(DM dm, PetscInt cell, PetscQuadrature *qu
   for (d = 0; d < dim; ++d) v0[d] = PetscRealPart(vertices[d]);
   switch (dim) {
   case 2:
-    for (q = 0; q < quad->numPoints; ++q) {
-      ierr = DMDAComputeCellGeometry_2D(dm, vertices, &quad->points[q*dim], J, invJ, detJ);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(quad, NULL, &numQuadPoints, &quadPoints, NULL);CHKERRQ(ierr);
+    for (q = 0; q < numQuadPoints; ++q) {
+      ierr = DMDAComputeCellGeometry_2D(dm, vertices, &quadPoints[q*dim], J, invJ, detJ);CHKERRQ(ierr);
     }
     break;
   default:

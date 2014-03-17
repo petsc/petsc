@@ -60,14 +60,14 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
   PetscInt               i_c,i_start_c,i_start_ghost_c,cols[2],dof;
   PetscScalar            v[2],x;
   Mat                    mat;
-  DMDABoundaryType       bx;
+  DMBoundaryType         bx;
   ISLocalToGlobalMapping ltog_f,ltog_c;
 
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&bx,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
-  if (bx == DMDA_BOUNDARY_PERIODIC) {
+  if (bx == DM_BOUNDARY_PERIODIC) {
     ratio = mx/Mx;
     if (ratio*Mx != mx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
@@ -194,12 +194,12 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
   PetscInt               i_c,i_start_c,i_start_ghost_c,cols[2],dof;
   PetscScalar            v[2],x;
   Mat                    mat;
-  DMDABoundaryType       bx;
+  DMBoundaryType         bx;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&bx,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
-  if (bx == DMDA_BOUNDARY_PERIODIC) {
+  if (bx == DM_BOUNDARY_PERIODIC) {
     ratio = mx/Mx;
     if (ratio*Mx != mx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
@@ -273,19 +273,19 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
   PetscMPIInt            size_c,size_f,rank_f;
   PetscScalar            v[4],x,y;
   Mat                    mat;
-  DMDABoundaryType       bx,by;
+  DMBoundaryType         bx,by;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&bx,&by,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
-  if (bx == DMDA_BOUNDARY_PERIODIC) {
+  if (bx == DM_BOUNDARY_PERIODIC) {
     ratioi = mx/Mx;
     if (ratioi*Mx != mx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
     ratioi = (mx-1)/(Mx-1);
     if (ratioi*(Mx-1) != mx-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
   }
-  if (by == DMDA_BOUNDARY_PERIODIC) {
+  if (by == DM_BOUNDARY_PERIODIC) {
     ratioj = my/My;
     if (ratioj*My != my) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
   } else {
@@ -499,13 +499,13 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
   PetscMPIInt            size_c,size_f,rank_f;
   PetscScalar            v[4];
   Mat                    mat;
-  DMDABoundaryType       bx,by;
+  DMBoundaryType         bx,by;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&bx,&by,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
-  if (bx == DMDA_BOUNDARY_PERIODIC) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in x");
-  if (by == DMDA_BOUNDARY_PERIODIC) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in y");
+  if (bx == DM_BOUNDARY_PERIODIC) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in x");
+  if (by == DM_BOUNDARY_PERIODIC) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in y");
   ratioi = mx/Mx;
   ratioj = my/My;
   if (ratioi*Mx != mx) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in x");
@@ -616,14 +616,14 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
   PetscMPIInt            size_c,size_f,rank_f;
   PetscScalar            v[8];
   Mat                    mat;
-  DMDABoundaryType       bx,by,bz;
+  DMBoundaryType         bx,by,bz;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&bx,&by,&bz,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,&my,&mz,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
-  if (bx == DMDA_BOUNDARY_PERIODIC) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in x");
-  if (by == DMDA_BOUNDARY_PERIODIC) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in y");
-  if (bz == DMDA_BOUNDARY_PERIODIC) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in z");
+  if (bx == DM_BOUNDARY_PERIODIC) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in x");
+  if (by == DM_BOUNDARY_PERIODIC) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in y");
+  if (bz == DM_BOUNDARY_PERIODIC) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in z");
   ratioi = mx/Mx;
   ratioj = my/My;
   ratiol = mz/Mz;
@@ -743,14 +743,14 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   PetscInt               l_start_ghost_c,p_ghost_c,l_c,*dnz,*onz;
   PetscScalar            v[8],x,y,z;
   Mat                    mat;
-  DMDABoundaryType       bx,by,bz;
+  DMBoundaryType         bx,by,bz;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&bx,&by,&bz,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,&my,&mz,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
   if (mx == Mx) {
     ratioi = 1;
-  } else if (bx == DMDA_BOUNDARY_PERIODIC) {
+  } else if (bx == DM_BOUNDARY_PERIODIC) {
     ratioi = mx/Mx;
     if (ratioi*Mx != mx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
@@ -759,7 +759,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   }
   if (my == My) {
     ratioj = 1;
-  } else if (by == DMDA_BOUNDARY_PERIODIC) {
+  } else if (by == DM_BOUNDARY_PERIODIC) {
     ratioj = my/My;
     if (ratioj*My != my) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
   } else {
@@ -768,7 +768,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   }
   if (mz == Mz) {
     ratiok = 1;
-  } else if (bz == DMDA_BOUNDARY_PERIODIC) {
+  } else if (bz == DM_BOUNDARY_PERIODIC) {
     ratiok = mz/Mz;
     if (ratiok*Mz != mz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mz/Mz  must be integer: mz %D Mz %D",mz,Mz);
   } else {
@@ -1014,7 +1014,7 @@ PetscErrorCode  DMCreateInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
 {
   PetscErrorCode   ierr;
   PetscInt         dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
-  DMDABoundaryType bxc,byc,bzc,bxf,byf,bzf;
+  DMBoundaryType   bxc,byc,bzc,bxf,byf,bzf;
   DMDAStencilType  stc,stf;
   DM_DA            *ddc = (DM_DA*)dac->data;
 
@@ -1070,14 +1070,14 @@ PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
   PetscInt               row,i_start_ghost,mx,m_c,nc,ratioi;
   PetscInt               i_start_c,i_start_ghost_c;
   PetscInt               *cols;
-  DMDABoundaryType       bx;
+  DMBoundaryType         bx;
   Vec                    vecf,vecc;
   IS                     isf;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&bx,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
-  if (bx == DMDA_BOUNDARY_PERIODIC) {
+  if (bx == DM_BOUNDARY_PERIODIC) {
     ratioi = mx/Mx;
     if (ratioi*Mx != mx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
@@ -1131,21 +1131,21 @@ PetscErrorCode DMCreateInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
   PetscInt               row,i_start_ghost,j_start_ghost,mx,m_c,my,nc,ratioi,ratioj;
   PetscInt               i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
   PetscInt               *cols;
-  DMDABoundaryType       bx,by;
+  DMBoundaryType         bx,by;
   Vec                    vecf,vecc;
   IS                     isf;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&bx,&by,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
-  if (bx == DMDA_BOUNDARY_PERIODIC) {
+  if (bx == DM_BOUNDARY_PERIODIC) {
     ratioi = mx/Mx;
     if (ratioi*Mx != mx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
     ratioi = (mx-1)/(Mx-1);
     if (ratioi*(Mx-1) != mx-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
   }
-  if (by == DMDA_BOUNDARY_PERIODIC) {
+  if (by == DM_BOUNDARY_PERIODIC) {
     ratioj = my/My;
     if (ratioj*My != my) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
   } else {
@@ -1206,7 +1206,7 @@ PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
   const PetscInt         *idx_c,*idx_f;
   ISLocalToGlobalMapping ltog_f,ltog_c;
   PetscInt               *cols;
-  DMDABoundaryType       bx,by,bz;
+  DMBoundaryType         bx,by,bz;
   Vec                    vecf,vecc;
   IS                     isf;
 
@@ -1214,21 +1214,21 @@ PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
   ierr = DMDAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&bx,&by,&bz,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,&my,&mz,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
 
-  if (bx == DMDA_BOUNDARY_PERIODIC) {
+  if (bx == DM_BOUNDARY_PERIODIC) {
     ratioi = mx/Mx;
     if (ratioi*Mx != mx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
   } else {
     ratioi = (mx-1)/(Mx-1);
     if (ratioi*(Mx-1) != mx-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
   }
-  if (by == DMDA_BOUNDARY_PERIODIC) {
+  if (by == DM_BOUNDARY_PERIODIC) {
     ratioj = my/My;
     if (ratioj*My != my) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: my/My  must be integer: my %D My %D",my,My);
   } else {
     ratioj = (my-1)/(My-1);
     if (ratioj*(My-1) != my-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %D My %D",my,My);
   }
-  if (bz == DMDA_BOUNDARY_PERIODIC) {
+  if (bz == DM_BOUNDARY_PERIODIC) {
     ratiok = mz/Mz;
     if (ratiok*Mz != mz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mz/Mz  must be integer: mz %D My %D",mz,Mz);
   } else {
@@ -1282,10 +1282,10 @@ PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
 #define __FUNCT__ "DMCreateInjection_DA"
 PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,VecScatter *inject)
 {
-  PetscErrorCode   ierr;
-  PetscInt         dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
-  DMDABoundaryType bxc,byc,bzc,bxf,byf,bzf;
-  DMDAStencilType  stc,stf;
+  PetscErrorCode  ierr;
+  PetscInt        dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
+  DMBoundaryType  bxc,byc,bzc,bxf,byf,bzf;
+  DMDAStencilType stc,stf;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dac,DM_CLASSID,1);
@@ -1320,7 +1320,7 @@ PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
   PetscErrorCode   ierr;
   PetscInt         dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc;
   PetscInt         dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
-  DMDABoundaryType bxc,byc,bzc,bxf,byf,bzf;
+  DMBoundaryType   bxc,byc,bzc,bxf,byf,bzf;
   DMDAStencilType  stc,stf;
   PetscInt         i,j,l;
   PetscInt         i_start,j_start,l_start, m_f,n_f,p_f;

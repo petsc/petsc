@@ -6,8 +6,6 @@
 
 #include <petsc-private/dmdaimpl.h>     /*I  "petscdmda.h"   I*/
 
-const char *const DMDABoundaryTypes[] = {"NONE","GHOSTED","PERIODIC","DMDA_BOUNDARY_",0};
-
 #include <petscdraw.h>
 #undef __FUNCT__
 #define __FUNCT__ "DMView_DA_1d"
@@ -112,7 +110,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   const PetscInt   s     = dd->s;
   const PetscInt   sDist = s*dof;  /* absolute stencil distance */
   const PetscInt   *lx   = dd->lx;
-  DMDABoundaryType bx    = dd->bx;
+  DMBoundaryType   bx    = dd->bx;
   MPI_Comm         comm;
   Vec              local, global;
   VecScatter       ltog, gtol;
@@ -174,7 +172,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
    check if the scatter requires more than one process neighbor or wraps around
    the domain more than once
   */
-  if ((x < s) & ((M > 1) | (bx == DMDA_BOUNDARY_PERIODIC))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
+  if ((x < s) & ((M > 1) | (bx == DM_BOUNDARY_PERIODIC))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
 
   /* From now on x,xs,xe,Xs,Xe are the exact location in the array */
   x  *= dof;
@@ -199,7 +197,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
     IXe = M*dof;
   }
 
-  if (bx == DMDA_BOUNDARY_PERIODIC || bx == DMDA_BOUNDARY_MIRROR) {
+  if (bx == DM_BOUNDARY_PERIODIC || bx == DM_BOUNDARY_MIRROR) {
     Xs  = xs - sDist;
     Xe  = xe + sDist;
     IXs = xs - sDist;
@@ -232,7 +230,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   for (i=0; i<IXs-Xs; i++) idx[i] = -1; /* prepend with -1s if needed for ghosted case*/
 
   nn = IXs-Xs;
-  if (bx == DMDA_BOUNDARY_PERIODIC) { /* Handle all cases with periodic first */
+  if (bx == DM_BOUNDARY_PERIODIC) { /* Handle all cases with periodic first */
     for (i=0; i<sDist; i++) {  /* Left ghost points */
       if ((xs-sDist+i)>=0) idx[nn++] = xs-sDist+i;
       else                 idx[nn++] = M*dof+(xs-sDist+i);
@@ -244,7 +242,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
       if ((xe+i)<M*dof) idx [nn++] =  xe+i;
       else              idx [nn++] = (xe+i) - M*dof;
     }
-  } else if (bx == DMDA_BOUNDARY_MIRROR) { /* Handle all cases with periodic first */
+  } else if (bx == DM_BOUNDARY_MIRROR) { /* Handle all cases with periodic first */
     for (i=0; i<(sDist)/dof; i++) {  /* Left ghost points */
       for (j=0; j<dof; j++) {
         if ((xs-sDist+i*dof + j)>=0) idx[nn++] = xs-sDist+i*dof +j;
@@ -319,7 +317,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
    Input Parameters:
 +  comm - MPI communicator
 .  bx - type of ghost cells at the boundary the array should have, if any. Use
-          DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_GHOSTED, or DMDA_BOUNDARY_PERIODIC.
+          DM_BOUNDARY_NONE, DM_BOUNDARY_GHOSTED, or DM_BOUNDARY_PERIODIC.
 .  M - global dimension of the array (use -M to indicate that it may be set to a different value
             from the command line with -da_grid_x <M>)
 .  dof - number of degrees of freedom per node
@@ -350,7 +348,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
           DMDAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DMDACreateNaturalVector(), DMLoad(), DMDAGetOwnershipRanges()
 
 @*/
-PetscErrorCode  DMDACreate1d(MPI_Comm comm, DMDABoundaryType bx, PetscInt M, PetscInt dof, PetscInt s, const PetscInt lx[], DM *da)
+PetscErrorCode  DMDACreate1d(MPI_Comm comm, DMBoundaryType bx, PetscInt M, PetscInt dof, PetscInt s, const PetscInt lx[], DM *da)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -361,7 +359,7 @@ PetscErrorCode  DMDACreate1d(MPI_Comm comm, DMDABoundaryType bx, PetscInt M, Pet
   ierr = DMDASetSizes(*da, M, 1, 1);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(*da, size, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = DMDASetBoundaryType(*da, bx, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(*da, bx, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE);CHKERRQ(ierr);
   ierr = DMDASetDof(*da, dof);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(*da, s);CHKERRQ(ierr);
   ierr = DMDASetOwnershipRanges(*da, lx, NULL, NULL);CHKERRQ(ierr);

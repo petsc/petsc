@@ -81,6 +81,7 @@ PetscErrorCode  MatRetrieveValues_MPISBAIJ(Mat mat)
     if (N>=_i) { ierr = PetscMemzero(ap+bs2*_i,bs2*sizeof(MatScalar));CHKERRQ(ierr); }  \
     rp[_i]                      = bcol;  \
     ap[bs2*_i + bs*cidx + ridx] = value;  \
+    A->nonzerostate++;\
 a_noinsert:; \
     ailen[brow] = nrow; \
   }
@@ -119,6 +120,7 @@ a_noinsert:; \
     if (N>=_i) { ierr = PetscMemzero(ap+bs2*_i,bs2*sizeof(MatScalar));CHKERRQ(ierr);}  \
     rp[_i]                      = bcol;  \
     ap[bs2*_i + bs*cidx + ridx] = value;  \
+    B->nonzerostate++;\
 b_noinsert:; \
     bilen[brow] = nrow; \
   }
@@ -591,6 +593,10 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   ierr = PetscFree2(baij->rowvalues,baij->rowindices);CHKERRQ(ierr);
 
   baij->rowvalues = 0;
+  {
+    PetscObjectState state = baij->A->nonzerostate + baij->B->nonzerostate;
+    ierr = MPI_Allreduce(&state,&mat->nonzerostate,1,MPIU_INT64,MPI_SUM,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1582,8 +1588,7 @@ PetscErrorCode  MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,PetscInt bs,PetscInt 
   PetscInt       i,mbs,Mbs;
 
   PetscFunctionBegin;
-  ierr = PetscLayoutSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(B,PetscAbs(bs));CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
   ierr = PetscLayoutGetBlockSize(B->rmap,&bs);CHKERRQ(ierr);

@@ -131,7 +131,7 @@ PetscErrorCode DMPatchCreateGrid(MPI_Comm comm, PetscInt dim, MatStencil patchSi
   ierr = DMSetType(da, DMDA);
   ierr = DMDASetDim(da, dim);CHKERRQ(ierr);
   ierr = DMDASetSizes(da, gridSize.i, gridSize.j, gridSize.k);CHKERRQ(ierr);
-  ierr = DMDASetBoundaryType(da, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(da, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE);CHKERRQ(ierr);
   ierr = DMDASetDof(da, dof);CHKERRQ(ierr);
   ierr = DMDASetStencilType(da, DMDA_STENCIL_BOX);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(da, width);CHKERRQ(ierr);

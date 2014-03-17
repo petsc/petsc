@@ -155,30 +155,30 @@ PetscErrorCode SNESView_NGMRES(SNES snes,PetscViewer viewer)
 #define __FUNCT__ "SNESSolve_NGMRES"
 PetscErrorCode SNESSolve_NGMRES(SNES snes)
 {
-
-  SNES_NGMRES *ngmres = (SNES_NGMRES*) snes->data;
+  SNES_NGMRES         *ngmres = (SNES_NGMRES*) snes->data;
   /* present solution, residual, and preconditioned residual */
-  Vec X,F,B,D,Y;
+  Vec                 X,F,B,D,Y;
 
   /* candidate linear combination answers */
-  Vec XA,FA,XM,FM;
+  Vec                 XA,FA,XM,FM;
 
   /* coefficients and RHS to the minimization problem */
-  PetscReal fnorm,fMnorm,fAnorm;
-  PetscReal xnorm,xMnorm,xAnorm;
-  PetscReal ynorm,yMnorm,yAnorm;
-  PetscInt  k,k_restart,l,ivec,restart_count = 0;
+  PetscReal           fnorm,fMnorm,fAnorm;
+  PetscReal           xnorm,xMnorm,xAnorm;
+  PetscReal           ynorm,yMnorm,yAnorm;
+  PetscInt            k,k_restart,l,ivec,restart_count = 0;
 
   /* solution selection data */
-  PetscBool selectRestart;
-  PetscReal dnorm,dminnorm = 0.0;
-  PetscReal fminnorm;
+  PetscBool           selectRestart;
+  PetscReal           dnorm,dminnorm = 0.0;
+  PetscReal           fminnorm;
 
   SNESConvergedReason reason;
   PetscBool           lssucceed;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   /* variable initialization */
   snes->reason = SNES_CONVERGED_ITERATING;
   X            = snes->vec_sol;
@@ -201,7 +201,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   /* initialization */
 
   if (snes->pc && snes->pcside == PC_LEFT) {
-    ierr = SNESApplyPC(snes,X,NULL,NULL,F);CHKERRQ(ierr);
+    ierr = SNESApplyNPC(snes,X,NULL,F);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
     if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
@@ -252,7 +252,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
       }
-      ierr = SNESGetPCFunction(snes,FM,&fMnorm);CHKERRQ(ierr);
+      ierr = SNESGetNPCFunction(snes,FM,&fMnorm);CHKERRQ(ierr);
     } else {
       /* no preconditioner -- just take gradient descent with line search */
       ierr = VecCopy(F,Y);CHKERRQ(ierr);

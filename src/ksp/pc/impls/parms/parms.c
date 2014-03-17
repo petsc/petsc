@@ -5,7 +5,7 @@
    Requires pARMS 3.2 or later.
 */
 
-#include "petsc-private/pcimpl.h"          /*I "petscpc.h" I*/
+#include <petsc-private/pcimpl.h>          /*I "petscpc.h" I*/
 
 #if defined(PETSC_USE_COMPLEX)
 #define DBL_CMPLX
@@ -19,7 +19,7 @@
 #include "parms_sys.h"
 #undef FLOAT
 #define FLOAT PetscScalar
-#include "parms.h"
+#include <parms.h>
 
 /*
    Private context (data structure) for the  preconditioner.
@@ -56,7 +56,7 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
 
   PetscFunctionBegin;
   /* Get preconditioner matrix from PETSc and setup pARMS structs */
-  ierr = PCGetOperators(pc,NULL,&pmat,NULL);CHKERRQ(ierr);
+  ierr = PCGetOperators(pc,NULL,&pmat);CHKERRQ(ierr);
   MPI_Comm_size(PetscObjectComm((PetscObject)pmat),&npro);
   MPI_Comm_rank(PetscObjectComm((PetscObject)pmat),&rank);
 

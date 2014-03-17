@@ -878,9 +878,16 @@ PetscErrorCode  MatMFFDGetH(Mat mat,PetscScalar *h)
    Logically Collective on Mat
 
    Input Parameters:
-+  mat - the matrix free matrix created via MatCreateSNESMF()
++  mat - the matrix free matrix created via MatCreateSNESMF() or MatCreateMFFD()
 .  func - the function to use
 -  funcctx - optional function context passed to function
+
+   Calling Sequence of func:
+$     func (void *funcctx, Vec x, Vec f)
+
++  funcctx - user provided context
+.  x - input vector
+-  f - computed output function
 
    Level: advanced
 

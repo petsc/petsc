@@ -291,7 +291,7 @@ PetscErrorCode  KSPFischerGuessCreate(KSP ksp,PetscInt method,PetscInt maxl,KSPF
   (*itg)->ksp    = ksp;
   (*itg)->refcnt = 1;
 
-  ierr = KSPGetOperators(ksp,&(*itg)->mat,NULL,NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp,&(*itg)->mat,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -368,7 +368,7 @@ PetscErrorCode  KSPFischerGuessReset(KSPFischerGuess itg)
 
   PetscFunctionBegin;
   itg->curl = 0;
-  ierr      = KSPGetOperators(itg->ksp,&itg->mat,NULL,NULL);CHKERRQ(ierr);
+  ierr      = KSPGetOperators(itg->ksp,&itg->mat,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

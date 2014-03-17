@@ -9,8 +9,8 @@ all boundaries are free-slip, i.e. zero normal flow and zero tangential stress \
 
 /* Contributed by Dave May */
 
-#include "petscksp.h"
-#include "petscdmda.h"
+#include <petscksp.h>
+#include <petscdmda.h>
 
 #define PROFILE_TIMING
 #define ASSEMBLE_LOWER_TRIANGULAR
@@ -833,7 +833,6 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,CellProperties cell_pr
   GaussPointCoefficients *props;
   PetscScalar            *prop_eta;
   PetscInt               n,M,N,P;
-  PetscLogDouble         t0,t1;
   PetscErrorCode         ierr;
 
   PetscFunctionBeginUser;
@@ -1148,7 +1147,7 @@ static PetscErrorCode DMDACreateManufacturedSolution(PetscInt mx,PetscInt my,Pet
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,
                       mx+1,my+1,mz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,4,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"anlytic_Vx");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"anlytic_Vy");CHKERRQ(ierr);
@@ -1391,7 +1390,6 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
   PetscScalar    *_L_FIELD;
   PetscInt       memory_offset;
   PetscScalar    *buffer;
-  PetscLogDouble t0,t1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -1692,7 +1690,7 @@ PetscErrorCode KSPMonitorStokesBlocks(KSP ksp,PetscInt n,PetscReal rnorm,void *d
   Mat            A;
 
   PetscFunctionBeginUser;
-  ierr = KSPGetOperators(ksp,&A,0,0);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp,&A,NULL);CHKERRQ(ierr);
   ierr = MatGetVecs(A,&w,&v);CHKERRQ(ierr);
 
   ierr = KSPBuildResidual(ksp,v,w,&Br);CHKERRQ(ierr);
@@ -1784,7 +1782,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   p_dof         = P_DOFS; /* p - pressure */
   dof           = u_dof+p_dof;
   stencil_width = 1;
-  ierr          = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,
+  ierr          = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,
                                mx+1,my+1,mz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,NULL,&da_Stokes);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da_Stokes,0,"Vx");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da_Stokes,1,"Vy");CHKERRQ(ierr);
@@ -1981,7 +1979,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   /* SOLVE */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp_S);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(ksp_S,"stokes_"); /* stokes */ CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp_S,A,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp_S,A,B);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp_S);CHKERRQ(ierr);
 
   {

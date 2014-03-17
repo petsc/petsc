@@ -230,7 +230,7 @@ PetscErrorCode DMCopyDMKSP(DM dmsrc,DM dmdest)
 
 .seealso: DMKSPSetContext(), DMKSPGetComputeOperators(), KSPSetOperators()
 @*/
-PetscErrorCode DMKSPSetComputeOperators(DM dm,PetscErrorCode (*func)(KSP,Mat,Mat,MatStructure*,void*),void *ctx)
+PetscErrorCode DMKSPSetComputeOperators(DM dm,PetscErrorCode (*func)(KSP,Mat,Mat,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DMKSP          kdm;
@@ -261,7 +261,7 @@ PetscErrorCode DMKSPSetComputeOperators(DM dm,PetscErrorCode (*func)(KSP,Mat,Mat
 
 .seealso: DMKSPSetContext(), KSPSetComputeOperators(), DMKSPSetComputeOperators()
 @*/
-PetscErrorCode DMKSPGetComputeOperators(DM dm,PetscErrorCode (**func)(KSP,Mat,Mat,MatStructure*,void*),void *ctx)
+PetscErrorCode DMKSPGetComputeOperators(DM dm,PetscErrorCode (**func)(KSP,Mat,Mat,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DMKSP          kdm;

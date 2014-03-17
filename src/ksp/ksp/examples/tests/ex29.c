@@ -26,6 +26,7 @@ static char help[] ="Tests ML interface. Modified from ~src/ksp/ksp/examples/tes
 */
 
 #include <petscksp.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 /* User-defined application contexts */
@@ -69,7 +70,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,"-Nx",&Nx,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-Ny",&Ny,NULL);CHKERRQ(ierr);
 
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,fine_ctx.mx,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,fine_ctx.mx,
                       fine_ctx.my,Nx,Ny,1,1,NULL,NULL,&fine_ctx.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(fine_ctx.da,&fine_ctx.x);CHKERRQ(ierr);
   ierr = VecDuplicate(fine_ctx.x,&fine_ctx.b);CHKERRQ(ierr);
@@ -88,15 +89,15 @@ int main(int argc,char **argv)
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr); /* calls PCSetFromOptions_MG/ML */
 
   for (i=0; i<3; i++) {
-    if (i<2) { /* test DIFFERENT_NONZERO_PATTERN */
+    if (i<2) { 
       /* set values for rhs vector */
       ierr = VecSet(fine_ctx.b,i+1.0);CHKERRQ(ierr);
       /* modify A */
       ierr = MatShift(A,1.0);CHKERRQ(ierr);
       ierr = MatScale(A,2.0);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
     } else {  /* test SAME_NONZERO_PATTERN */
-      ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
     }
     ierr = KSPSolve(ksp,fine_ctx.b,fine_ctx.x);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);

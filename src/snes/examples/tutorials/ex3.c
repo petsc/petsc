@@ -26,6 +26,7 @@ T*/
      petscksp.h   - linear solvers
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
 
@@ -39,7 +40,7 @@ T*/
    whether they define __FUNCT__ in application codes; this macro merely
    provides the added traceback detail of the application routine names.
 */
-PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 PetscErrorCode FormInitialGuess(Vec);
 PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
@@ -119,7 +120,7 @@ int main(int argc,char **argv)
   /*
      Create distributed array (DMDA) to manage parallel grid and vectors
   */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,N,1,1,NULL,&ctx.da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,N,1,1,NULL,&ctx.da);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DMDA; then duplicate for remaining
@@ -427,7 +428,7 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *ctx)
+PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *ctx)
 {
   ApplicationCtx *user = (ApplicationCtx*) ctx;
   PetscScalar    *xx,d,A[3];
@@ -456,13 +457,13 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,v
   if (xs == 0) {  /* left boundary */
     i = 0; A[0] = 1.0;
 
-    ierr = MatSetValues(*jac,1,&i,1,&i,A,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(jac,1,&i,1,&i,A,INSERT_VALUES);CHKERRQ(ierr);
     xs++;xm--;
   }
   if (xs+xm == M) { /* right boundary */
     i    = M-1;
     A[0] = 1.0;
-    ierr = MatSetValues(*jac,1,&i,1,&i,A,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(jac,1,&i,1,&i,A,INSERT_VALUES);CHKERRQ(ierr);
     xm--;
   }
 
@@ -475,7 +476,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,v
   for (i=xs; i<xs+xm; i++) {
     j[0] = i - 1; j[1] = i; j[2] = i + 1;
     A[0] = A[2] = d; A[1] = -2.0*d + 2.0*xx[i];
-    ierr = MatSetValues(*jac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(jac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /*
@@ -487,11 +488,10 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,v
      Also, restore vector.
   */
 
-  ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,x,&xx);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */

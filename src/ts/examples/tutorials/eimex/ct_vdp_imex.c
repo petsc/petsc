@@ -40,7 +40,7 @@ struct _User {
 
 static PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
 static PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*);
-static PetscErrorCode IJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
+static PetscErrorCode IJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -176,7 +176,7 @@ int main(int argc, char **argv)
 static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
   PetscErrorCode ierr;
-  PetscScalar *x,*f;
+  PetscScalar    *x,*f;
 
   PetscFunctionBegin;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
@@ -209,13 +209,13 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr
 
 #undef __FUNCT__
 #define __FUNCT__ "IJacobian"
-static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ptr)
+static PetscErrorCode IJacobian(TS  ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ptr)
 {
   PetscErrorCode ierr;
-  User user = (User)ptr;
-  PetscReal mu = user->mu;
-  PetscInt rowcol[] = {0,1};
-  PetscScalar *x,J[2][2];
+  User           user = (User)ptr;
+  PetscReal      mu = user->mu;
+  PetscInt       rowcol[] = {0,1};
+  PetscScalar    *x,J[2][2];
 
   PetscFunctionBegin;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
@@ -223,15 +223,14 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
   J[0][1] = 0;
   J[1][0] = (2.*x[0]*x[1]+1.)/mu;
   J[1][1] = a - (1. - x[0]*x[0])/mu;
-  ierr = MatSetValues(*B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*A != *B) {
-    ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }

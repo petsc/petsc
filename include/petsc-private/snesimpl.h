@@ -23,7 +23,7 @@ struct _SNESOps {
   PetscErrorCode (*userdestroy)(void**);
   PetscErrorCode (*computevariablebounds)(SNES,Vec,Vec);        /* user provided routine to set box constrained variable bounds */
   PetscErrorCode (*computepfunction)(SNES,Vec,Vec,void*);
-  PetscErrorCode (*computepjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+  PetscErrorCode (*computepjacobian)(SNES,Vec,Mat,Mat,void*);
   PetscErrorCode (*load)(SNES,PetscViewer);
 };
 
@@ -157,14 +157,14 @@ typedef struct _p_DMSNES *DMSNES;
 typedef struct _DMSNESOps *DMSNESOps;
 struct _DMSNESOps {
   PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*);
-  PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+  PetscErrorCode (*computejacobian)(SNES,Vec,Mat,Mat,void*);
 
   /* objective */
   PetscErrorCode (*computeobjective)(SNES,Vec,PetscReal*,void*);
 
   /* Picard iteration functions */
   PetscErrorCode (*computepfunction)(SNES,Vec,Vec,void*);
-  PetscErrorCode (*computepjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+  PetscErrorCode (*computepjacobian)(SNES,Vec,Mat,Mat,void*);
 
   /* User-defined smoother */
   PetscErrorCode (*computegs)(SNES,Vec,Vec,void*);
@@ -245,6 +245,9 @@ PETSC_INTERN PetscErrorCode SNESConvergedDefault_VI(SNES,PetscInt,PetscReal,Pets
 
 PetscErrorCode SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
-PETSC_EXTERN PetscLogEvent SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval, SNES_GSEval, SNES_GSFuncEval, SNES_NPCSolve;
+PETSC_EXTERN PetscLogEvent SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval, SNES_NGSEval, SNES_NGSFuncEval, SNES_NPCSolve;
+
+extern PetscBool SNEScite;
+extern const char SNESCitation[];
 
 #endif

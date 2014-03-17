@@ -38,8 +38,8 @@ Movie version
 
  */
 
-#include "petscsnes.h"
-#include "petscdmda.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
 
 typedef struct {
   PetscReal   dt,T; /* Time step and end time */
@@ -73,7 +73,7 @@ PetscErrorCode SetVariableBounds(DM,Vec,Vec);
 PetscErrorCode SetUpMatrices(AppCtx*);
 PetscErrorCode UpdateMatrices(AppCtx*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 PetscErrorCode SetInitialGuess(Vec,AppCtx*);
 PetscErrorCode Update_q(AppCtx*);
 PetscErrorCode Update_u(Vec,AppCtx*);
@@ -108,10 +108,10 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = GetParams(&user);CHKERRQ(ierr);
   /* Create a 1D DA with dof = 5; the whole thing */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,PETSC_DECIDE,PETSC_DECIDE, 5, 1,NULL,NULL,&user.da1);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,PETSC_DECIDE,PETSC_DECIDE, 5, 1,NULL,NULL,&user.da1);CHKERRQ(ierr);
 
   /* Create a 1D DA with dof = 1; for individual componentes */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,PETSC_DECIDE,PETSC_DECIDE, 1, 1,NULL,NULL,&user.da2);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,PETSC_DECIDE,PETSC_DECIDE, 1, 1,NULL,NULL,&user.da2);CHKERRQ(ierr);
 
 
   /* Set Element type (triangular) */
@@ -715,16 +715,15 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ctx)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   AppCtx         *user=(AppCtx*)ctx;
 
   PetscFunctionBeginUser;
-  *flg = SAME_NONZERO_PATTERN;
-  ierr = MatCopy(user->M,*J,*flg);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatCopy(user->M,J,*flg);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -745,14 +744,14 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
 
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i < xs+xm; i++) {
-      l[j][i][0] = -SNES_VI_INF;
+      l[j][i][0] = -PETSC_INFINITY;
       l[j][i][1] = 0.0;
-      l[j][i][2] = -SNES_VI_INF;
+      l[j][i][2] = -PETSC_INFINITY;
       l[j][i][3] = 0.0;
       l[j][i][4] = 0.0;
-      u[j][i][0] = SNES_VI_INF;
+      u[j][i][0] = PETSC_INFINITY;
       u[j][i][1] = 1.0;
-      u[j][i][2] = SNES_VI_INF;
+      u[j][i][2] = PETSC_INFINITY;
       u[j][i][3] = 1.0;
       u[j][i][4] = 1.0;
     }

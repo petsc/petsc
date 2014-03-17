@@ -15,6 +15,7 @@ struct _DMOps {
   PetscErrorCode (*clone)(DM,DM*);
   PetscErrorCode (*setfromoptions)(DM);
   PetscErrorCode (*setup)(DM);
+  PetscErrorCode (*createdefaultsection)(DM);
   PetscErrorCode (*createglobalvector)(DM,Vec*);
   PetscErrorCode (*createlocalvector)(DM,Vec*);
   PetscErrorCode (*getlocaltoglobalmapping)(DM);
@@ -142,7 +143,7 @@ struct _p_DM {
   NullSpaceFunc           nullspaceConstructors[10];
   /* Fields are represented by objects */
   PetscInt                numFields;
-  PetscObject             *fields;
+  PetscFE                *fields;
 
   PetscObject             dmksp,dmsnes,dmts;
 };

@@ -47,7 +47,7 @@
       call PCSetType(pc,'python',ierr)
       call PCPythonSetType(pc,'example1.py:Jacobi',ierr)
 
-      call KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN,ierr)
+      call KSPSetOperators(ksp,A,A,ierr)
       call KSPSetFromOptions(ksp,ierr)
       call KSPSolve(ksp,b,x,ierr)
 

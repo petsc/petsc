@@ -231,6 +231,7 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt dnnz[],c
 
   PetscFunctionBegin;
   ierr = MatSetBlockSize(A,bs);CHKERRQ(ierr);
+  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(A,bs,0,dnnz);CHKERRQ(ierr);

@@ -63,6 +63,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscpc.h>
 #include <finclude/petscksp.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 
       MPI_Comm comm
@@ -129,7 +130,7 @@
       Ny = PETSC_DECIDE
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
-      call DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,      &
+      call DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,         &
      &     DMDA_STENCIL_STAR,mx,my,Nx,Ny,one,one,                        &
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
 
@@ -228,7 +229,7 @@
 !      matrix.
 !    - Then solve the Newton system.
 
-         call KSPSetOperators(ksp,J,B,SAME_NONZERO_PATTERN,ierr)
+         call KSPSetOperators(ksp,J,B,ierr)
          call KSPSolve(ksp,F,Y,ierr)
 
 !  Compute updated iterate
@@ -308,6 +309,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscpc.h>
 #include <finclude/petscksp.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
       PetscErrorCode    ierr
       PetscOffset      idx
@@ -394,6 +396,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscpc.h>
 #include <finclude/petscksp.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 
       Vec              X,F,localX,localF
@@ -502,6 +505,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscpc.h>
 #include <finclude/petscksp.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 
       Vec         X

@@ -448,7 +448,7 @@ PetscErrorCode PetscCitationsInitialize()
 
   PetscFunctionBegin;
   ierr = PetscSegBufferCreate(1,10000,&PetscCitationsList);CHKERRQ(ierr);
-  ierr = PetscCitationsRegister("@TechReport{petsc-user-ref,\n  Author = {Satish Balay and Jed Brown and and Kris Buschelman and Victor Eijkhout\n            and William D.  Gropp and Dinesh Kaushik and Matthew G. Knepley\n            and Lois Curfman McInnes and Barry F. Smith and Hong Zhang},\n  Title = {{PETS}c Users Manual},\n  Number = {ANL-95/11 - Revision 3.4},\n  Institution = {Argonne National Laboratory},\n  Year = {2013}\n}\n",NULL);CHKERRQ(ierr);
+  ierr = PetscCitationsRegister("@TechReport{petsc-user-ref,\n  Author = {Satish Balay and Mark F. Adams and Jed Brown and Peter Brune\n            and Kris Buschelman and Victor Eijkhout and William D. Gropp\n            and Dinesh Kaushik and Matthew G. Knepley\n            and Lois Curfman McInnes and Karl Rupp and Barry F. Smith\n            and Hong Zhang},\n  Title = {{PETS}c Users Manual},\n  Number = {ANL-95/11 - Revision 3.4},\n  Institution = {Argonne National Laboratory},\n  Year = {2013}\n}\n",NULL);CHKERRQ(ierr);
   ierr = PetscCitationsRegister("@InProceedings{petsc-efficient,\n  Author = {Satish Balay and William D. Gropp and Lois Curfman McInnes and Barry F. Smith},\n  Title = {Efficient Management of Parallelism in Object Oriented Numerical Software Libraries},\n  Booktitle = {Modern Software Tools in Scientific Computing},\n  Editor = {E. Arge and A. M. Bruaset and H. P. Langtangen},\n  Pages = {163--202},\n  Publisher = {Birkh{\\\"{a}}user Press},\n  Year = {1997}\n}\n",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -626,8 +626,8 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
     ierr = PetscGetVersion(version,sizeof(version));CHKERRQ(ierr);
     ierr = PetscSNPrintf(intro,introlen,"<body>\n"
                                     "<center><h2> <a href=\"http://www.mcs.anl.gov/petsc\">PETSc</a> Application Web server powered by <a href=\"https://bitbucket.org/saws/saws\">SAWs</a> </h2></center>\n"
-                                    "<center>This is the default PETSc application dashboard, from it you can access any published PETSc objects or logging data</center><br><center>%s configured at %s with %s</center><br>\n"
-                         "%s",version,petscconfigureruntime,petscconfigureoptions,appline);
+                                    "<center>This is the default PETSc application dashboard, from it you can access any published PETSc objects or logging data</center><br><center>%s configured with %s</center><br>\n"
+                                    "%s",version,petscconfigureoptions,appline);
     PetscStackCallSAWs(SAWs_Push_Body,("index.html",0,intro));
     ierr = PetscFree(intro);CHKERRQ(ierr);
     ierr = PetscFree(appline);CHKERRQ(ierr);

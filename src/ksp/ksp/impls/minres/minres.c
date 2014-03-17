@@ -30,7 +30,6 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
   PetscReal      np;
   Vec            X,B,R,Z,U,V,W,UOLD,VOLD,WOLD,WOOLD;
   Mat            Amat,Pmat;
-  MatStructure   pflag;
   KSP_MINRES     *minres = (KSP_MINRES*)ksp->data;
   PetscBool      diagonalscale;
 
@@ -50,7 +49,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
   WOLD  = ksp->work[7];
   WOOLD = ksp->work[8];
 
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   ksp->its = 0;
 
@@ -201,7 +200,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
   PetscFunctionBegin;
   ierr           = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr           = PetscNewLog(ksp,&minres);CHKERRQ(ierr);
-  minres->haptol = 1.e-18;
+  minres->haptol = 1.e-50;
   ksp->data      = (void*)minres;
 
   /*

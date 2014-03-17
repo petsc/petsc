@@ -9,7 +9,7 @@ typedef struct {
 /*
    User-defined routines
 */
-extern PetscErrorCode FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormJacobian1(SNES,Vec,Mat,Mat,void*);
 extern PetscErrorCode FormFunction1(SNES,Vec,Vec,void*);
 
 #undef __FUNCT__
@@ -95,13 +95,13 @@ PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ctx)
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *ctx)
+PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat jac,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx*)ctx;
-  ierr = MatCopy(user->M,*jac,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);
-  ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);
+  ierr = MatCopy(user->M,jac,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);
+  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);
 
   return 0;
 }

@@ -40,6 +40,7 @@ T*/
 */
 
 #include <petscsnes.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 /* User-defined application context */
@@ -53,7 +54,7 @@ typedef struct {
 
 extern PetscErrorCode FormInitialGuess(SNES,Vec,void*);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -87,7 +88,7 @@ int main(int argc,char **argv)
   /*
       Set the DMDA (grid structure) for the grids.
   */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-5,-5,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-5,-5,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,(DM)da);CHKERRQ(ierr);
 
@@ -105,7 +106,7 @@ int main(int argc,char **argv)
   litspit = ((PetscReal)lits)/((PetscReal)its);
   ierr    = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
   ierr    = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %D\n",lits);CHKERRQ(ierr);
-  ierr    = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / SNES = %e\n",litspit);CHKERRQ(ierr);
+  ierr    = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / SNES = %e\n",(double)litspit);CHKERRQ(ierr);
 
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
@@ -312,10 +313,9 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 /* --------------------  Evaluate Jacobian F(x) --------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat jac,Mat B,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;
-  Mat            jac   = *J;
   PetscErrorCode ierr;
   PetscInt       i,j,mx,my,xs,ys,xm,ym;
   PetscScalar    one = 1.0,hx,hy,hxdhy,hydhx,t0,tn,ts,te,tw;
@@ -329,7 +329,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
   PetscFunctionBeginUser;
   ierr  = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr  = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
-  *flg  = SAME_NONZERO_PATTERN;
   ierr  = DMDAGetInfo(da,NULL,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   hx    = one/(PetscReal)(mx-1);  hy     = one/(PetscReal)(my-1);
   hxdhy = hx/hy;               hydhx  = hy/hx;

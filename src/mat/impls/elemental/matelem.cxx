@@ -193,8 +193,8 @@ static PetscErrorCode MatMult_Elemental(Mat A,Vec X,Vec Y)
   ierr = VecGetArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
   { /* Scoping so that constructor is called before pointer is returned */
-    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> xe(A->cmap->N,1,0,x,A->cmap->n,*a->grid);
-    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> ye(A->rmap->N,1,0,y,A->rmap->n,*a->grid);
+    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> xe(A->cmap->N,1,0,0,x,A->cmap->n,*a->grid);
+    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> ye(A->rmap->N,1,0,0,y,A->rmap->n,*a->grid);
     elem::Gemv(elem::NORMAL,one,*a->emat,xe,zero,ye);
   }
   ierr = VecRestoreArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
@@ -216,8 +216,8 @@ static PetscErrorCode MatMultTranspose_Elemental(Mat A,Vec X,Vec Y)
   ierr = VecGetArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
   { /* Scoping so that constructor is called before pointer is returned */
-    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> xe(A->rmap->N,1,0,x,A->rmap->n,*a->grid);
-    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> ye(A->cmap->N,1,0,y,A->cmap->n,*a->grid);
+    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> xe(A->rmap->N,1,0,0,x,A->rmap->n,*a->grid);
+    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> ye(A->cmap->N,1,0,0,y,A->cmap->n,*a->grid);
     elem::Gemv(elem::TRANSPOSE,one,*a->emat,xe,zero,ye);
   }
   ierr = VecRestoreArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
@@ -240,8 +240,8 @@ static PetscErrorCode MatMultAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
   ierr = VecGetArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
   ierr = VecGetArray(Z,(PetscScalar **)&z);CHKERRQ(ierr);
   { /* Scoping so that constructor is called before pointer is returned */
-    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> xe(A->cmap->N,1,0,x,A->cmap->n,*a->grid);
-    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> ze(A->rmap->N,1,0,z,A->rmap->n,*a->grid);
+    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> xe(A->cmap->N,1,0,0,x,A->cmap->n,*a->grid);
+    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> ze(A->rmap->N,1,0,0,z,A->rmap->n,*a->grid);
     elem::Gemv(elem::NORMAL,one,*a->emat,xe,one,ze);
   }
   ierr = VecRestoreArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
@@ -264,8 +264,8 @@ static PetscErrorCode MatMultTransposeAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
   ierr = VecGetArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
   ierr = VecGetArray(Z,(PetscScalar **)&z);CHKERRQ(ierr);
   { /* Scoping so that constructor is called before pointer is returned */
-    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> xe(A->rmap->N,1,0,x,A->rmap->n,*a->grid);
-    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> ze(A->cmap->N,1,0,z,A->cmap->n,*a->grid);
+    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> xe(A->rmap->N,1,0,0,x,A->rmap->n,*a->grid);
+    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> ze(A->cmap->N,1,0,0,z,A->cmap->n,*a->grid);
     elem::Gemv(elem::TRANSPOSE,one,*a->emat,xe,one,ze);
   }
   ierr = VecRestoreArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
@@ -420,13 +420,13 @@ static PetscErrorCode MatDiagonalScale_Elemental(Mat X,Vec L,Vec R)
   PetscFunctionBegin;
   if (R) {
     ierr = VecGetArrayRead(R,(const PetscScalar **)&d);CHKERRQ(ierr);
-    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> de(X->cmap->N,1,0,d,X->cmap->n,*x->grid);
+    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> de(X->cmap->N,1,0,0,d,X->cmap->n,*x->grid);
     elem::DiagonalScale(elem::RIGHT,elem::NORMAL,de,*x->emat);
     ierr = VecRestoreArrayRead(R,(const PetscScalar **)&d);CHKERRQ(ierr);
   }
   if (L) {
     ierr = VecGetArrayRead(L,(const PetscScalar **)&d);CHKERRQ(ierr);
-    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> de(X->rmap->N,1,0,d,X->rmap->n,*x->grid);
+    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> de(X->rmap->N,1,0,0,d,X->rmap->n,*x->grid);
     elem::DiagonalScale(elem::LEFT,elem::NORMAL,de,*x->emat);
     ierr = VecRestoreArrayRead(L,(const PetscScalar **)&d);CHKERRQ(ierr);
   }
@@ -564,7 +564,7 @@ static PetscErrorCode MatSolve_Elemental(Mat A,Vec B,Vec X)
   PetscFunctionBegin;
   ierr = VecCopy(B,X);CHKERRQ(ierr);
   ierr = VecGetArray(X,(PetscScalar **)&x);CHKERRQ(ierr);
-  elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> xe(A->rmap->N,1,0,x,A->rmap->n,*a->grid);
+  elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> xe(A->rmap->N,1,0,0,x,A->rmap->n,*a->grid);
   elem::DistMatrix<PetscElemScalar,elem::MC,elem::MR> xer = xe;
   switch (A->factortype) {
   case MAT_FACTOR_LU:
@@ -888,7 +888,7 @@ PetscErrorCode MatSetUp_Elemental(Mat A)
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
-  a->emat->ResizeTo(A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+  a->emat->Resize(A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   elem::Zero(*a->emat);
 
   ierr = MPI_Comm_size(A->rmap->comm,&rsize);CHKERRQ(ierr);

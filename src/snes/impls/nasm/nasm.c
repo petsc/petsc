@@ -667,12 +667,12 @@ PetscErrorCode SNESNASMComputeFinalJacobian_Private(SNES snes, Vec Xfinal)
   Vec            Xlloc,Xl,Fl,F;
   VecScatter     oscat,gscat;
   DM             dm,subdm;
-  MatStructure   flg = DIFFERENT_NONZERO_PATTERN;
+
   PetscFunctionBegin;
   if (nasm->fjtype == 2) X = nasm->xinit;
   F = snes->vec_func;
   if (snes->normschedule == SNES_NORM_NONE) {ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);}
-  ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
+  ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   if (nasm->eventrestrictinterp) {ierr = PetscLogEventBegin(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
   if (nasm->fjtype != 1) {
@@ -701,9 +701,8 @@ PetscErrorCode SNESNASMComputeFinalJacobian_Private(SNES snes, Vec Xfinal)
     if (subsnes->lagjacobian == -1)    subsnes->lagjacobian = -2;
     else if (subsnes->lagjacobian > 1) lag = subsnes->lagjacobian;
     ierr = SNESComputeFunction(subsnes,Xl,Fl);CHKERRQ(ierr);
-    ierr = SNESComputeJacobian(subsnes,Xl,&subsnes->jacobian,&subsnes->jacobian_pre,&flg);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(subsnes,Xl,subsnes->jacobian,subsnes->jacobian_pre);CHKERRQ(ierr);
     if (lag > 1) subsnes->lagjacobian = lag;
-    ierr = KSPSetOperators(subsnes->ksp,subsnes->jacobian,subsnes->jacobian_pre,flg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -723,6 +722,7 @@ PetscErrorCode SNESSolve_NASM(SNES snes)
   SNES_NASM        *nasm = (SNES_NASM*)snes->data;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   X = snes->vec_sol;
   Y = snes->vec_sol_update;
   F = snes->vec_func;

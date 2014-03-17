@@ -93,7 +93,7 @@ static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes,Vec X,Vec B,Ve
       }
     }
   } else if (snes->normschedule == SNES_NORM_ALWAYS) {
-    SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
     if (snes->domainerror) {
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
       PetscFunctionReturn(0);
@@ -374,7 +374,6 @@ static PetscErrorCode SNESReset_Composite(SNES snes)
   ierr = PetscFree(jac->beta);CHKERRQ(ierr);
   ierr = PetscFree(jac->work);CHKERRQ(ierr);
   ierr = PetscFree(jac->rwork);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

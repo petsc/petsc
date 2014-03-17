@@ -126,7 +126,7 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
 */
-PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,AppCtx *ctx)
+PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat B,AppCtx *ctx)
 {
   PetscErrorCode ierr;
   PetscInt       rowcol[] = {0,1,2};
@@ -138,17 +138,16 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *A,Mat
   J[0][0] = a + ctx->k*u[1];   J[0][1] = ctx->k*u[0];       J[0][2] = 0.0;
   J[1][0] = ctx->k*u[1];       J[1][1] = a + ctx->k*u[0];   J[1][2] = 0.0;
   J[2][0] = -ctx->k*u[1];      J[2][1] = -ctx->k*u[0];      J[2][2] = a;
-  ierr    = MatSetValues(*B,3,rowcol,3,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr    = MatSetValues(B,3,rowcol,3,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr    = VecRestoreArray(U,&u);CHKERRQ(ierr);
   ierr    = VecRestoreArray(Udot,&udot);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*A != *B) {
-    ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 

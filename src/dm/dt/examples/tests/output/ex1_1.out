@@ -24,10 +24,9 @@ degree 2 at            1: B=           1  D=           3  D2=           3
 degree 3 at            1: B=           1  D=           6  D2=          15
 degree 4 at            1: B=           1  D=          10  D2=          45
 degree 5 at            1: B=           1  D=          15  D2=         105
- 0:   5.7735e-01   5.1640e-01   5.0709e-01   5.0395e-01
 Quadrature weights
  0:   1.7770e-01   3.5897e-01   4.2667e-01   3.5897e-01   1.7770e-01
-Moment error: zeroth=3.33067e-16, first=1.38778e-16, second=-5.55112e-17
+Moment error: zeroth=-0, first=-0, second=-0
 Gauss points
 degree 1 at      -0.4296: B=     -0.4296  D=           1  D2=           0
 degree 2 at      -0.4296: B=     -0.2231  D=      -1.289  D2=           3

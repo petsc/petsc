@@ -44,6 +44,7 @@ use compatible domain decomposition relative to the 3D DMDAs.
 */
 
 #include <petscts.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdmcomposite.h>
 #include <ctype.h>              /* toupper() */
@@ -1342,7 +1343,7 @@ static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,const Node ***x3,c
 
 #undef __FUNCT__
 #define __FUNCT__ "THIJacobian"
-static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
+static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   THI            thi = (THI)ctx;
@@ -1364,13 +1365,13 @@ static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,M
   ierr = THIFixGhosts(thi,da3,da2,X3,X2);CHKERRQ(ierr);
   ierr = DMCompositeScatter(pack,Xdot,NULL,Xdot2);CHKERRQ(ierr);
 
-  ierr = MatZeroEntries(*B);CHKERRQ(ierr);
+  ierr = MatZeroEntries(B);CHKERRQ(ierr);
 
   ierr = DMCompositeGetLocalISs(pack,&isloc);CHKERRQ(ierr);
-  ierr = MatGetLocalSubMatrix(*B,isloc[0],isloc[0],&B11);CHKERRQ(ierr);
-  ierr = MatGetLocalSubMatrix(*B,isloc[0],isloc[1],&B12);CHKERRQ(ierr);
-  ierr = MatGetLocalSubMatrix(*B,isloc[1],isloc[0],&B21);CHKERRQ(ierr);
-  ierr = MatGetLocalSubMatrix(*B,isloc[1],isloc[1],&B22);CHKERRQ(ierr);
+  ierr = MatGetLocalSubMatrix(B,isloc[0],isloc[0],&B11);CHKERRQ(ierr);
+  ierr = MatGetLocalSubMatrix(B,isloc[0],isloc[1],&B12);CHKERRQ(ierr);
+  ierr = MatGetLocalSubMatrix(B,isloc[1],isloc[0],&B21);CHKERRQ(ierr);
+  ierr = MatGetLocalSubMatrix(B,isloc[1],isloc[1],&B22);CHKERRQ(ierr);
 
   ierr = DMDAVecGetArray(da3,X3,&x3);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da2,X2,&x2);CHKERRQ(ierr);
@@ -1388,10 +1389,10 @@ static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,M
   ierr = DMDAVecRestoreArray(da2,X2,&x2);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da2,Xdot2,&xdot2);CHKERRQ(ierr);
 
-  ierr = MatRestoreLocalSubMatrix(*B,isloc[0],isloc[0],&B11);CHKERRQ(ierr);
-  ierr = MatRestoreLocalSubMatrix(*B,isloc[0],isloc[1],&B12);CHKERRQ(ierr);
-  ierr = MatRestoreLocalSubMatrix(*B,isloc[1],isloc[0],&B21);CHKERRQ(ierr);
-  ierr = MatRestoreLocalSubMatrix(*B,isloc[1],isloc[1],&B22);CHKERRQ(ierr);
+  ierr = MatRestoreLocalSubMatrix(B,isloc[0],isloc[0],&B11);CHKERRQ(ierr);
+  ierr = MatRestoreLocalSubMatrix(B,isloc[0],isloc[1],&B12);CHKERRQ(ierr);
+  ierr = MatRestoreLocalSubMatrix(B,isloc[1],isloc[0],&B21);CHKERRQ(ierr);
+  ierr = MatRestoreLocalSubMatrix(B,isloc[1],isloc[1],&B22);CHKERRQ(ierr);
   ierr = ISDestroy(&isloc[0]);CHKERRQ(ierr);
   ierr = ISDestroy(&isloc[1]);CHKERRQ(ierr);
   ierr = PetscFree(isloc);CHKERRQ(ierr);
@@ -1399,13 +1400,12 @@ static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,M
   ierr = DMCompositeRestoreLocalVectors(pack,&X3,&X2);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(pack,0,&Xdot2);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*A != *B) {
-    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *mstr = SAME_NONZERO_PATTERN;
   if (thi->verbose) {ierr = THIMatrixStatistics(thi,*B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -1594,7 +1594,7 @@ static PetscErrorCode THICreateDM3d(THI thi,DM *dm3d)
     ierr = PetscOptionsInt("-P","Number of elements in z-direction on coarse level","",P,&P,NULL);CHKERRQ(ierr);
   }
   ierr  = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr  = DMDACreate3d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,P,N,M,1,PETSC_DETERMINE,PETSC_DETERMINE,sizeof(Node)/sizeof(PetscScalar),1,0,0,0,&da);CHKERRQ(ierr);
+  ierr  = DMDACreate3d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,P,N,M,1,PETSC_DETERMINE,PETSC_DETERMINE,sizeof(Node)/sizeof(PetscScalar),1,0,0,0,&da);CHKERRQ(ierr);
   ierr  = DMDASetFieldName(da,0,"x-velocity");CHKERRQ(ierr);
   ierr  = DMDASetFieldName(da,1,"y-velocity");CHKERRQ(ierr);
   *dm3d = da;
@@ -1624,7 +1624,7 @@ int main(int argc,char *argv[])
     PetscInt        Mx,My,mx,my,s;
     DMDAStencilType st;
     ierr = DMDAGetInfo(da3,0, 0,&My,&Mx, 0,&my,&mx, 0,&s,0,0,0,&st);CHKERRQ(ierr);
-    ierr = DMDACreate2d(PetscObjectComm((PetscObject)thi),DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,st,My,Mx,my,mx,sizeof(PrmNode)/sizeof(PetscScalar),s,0,0,&da2);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PetscObjectComm((PetscObject)thi),DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,st,My,Mx,my,mx,sizeof(PrmNode)/sizeof(PetscScalar),s,0,0,&da2);CHKERRQ(ierr);
   }
 
   ierr = PetscObjectSetName((PetscObject)da3,"3D_Velocity");CHKERRQ(ierr);

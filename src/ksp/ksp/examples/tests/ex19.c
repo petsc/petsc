@@ -21,6 +21,7 @@ static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
 */
 
 #include <petscksp.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 /* User-defined application contexts */
@@ -82,7 +83,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,"-Ny",&Ny,NULL);CHKERRQ(ierr);
 
   /* Set up distributed array for fine grid */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,
                       user.fine.my,Nx,Ny,1,1,NULL,NULL,&user.fine.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.fine.da,&user.fine.x);CHKERRQ(ierr);
   ierr = VecDuplicate(user.fine.x,&user.fine.r);CHKERRQ(ierr);
@@ -93,7 +94,7 @@ int main(int argc,char **argv)
   ierr = MatCreateAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,NULL,3,NULL,&user.fine.J);CHKERRQ(ierr);
 
   /* Set up distributed array for coarse grid */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
                       user.coarse.my,Nx,Ny,1,1,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.coarse.da,&user.coarse.x);CHKERRQ(ierr);
   ierr = VecDuplicate(user.coarse.x,&user.coarse.b);CHKERRQ(ierr);
@@ -118,7 +119,7 @@ int main(int argc,char **argv)
   ierr = PCMGGetCoarseSolve(pc,&user.ksp_coarse);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(user.ksp_coarse,"coarse_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(user.ksp_coarse);CHKERRQ(ierr);
-  ierr = KSPSetOperators(user.ksp_coarse,user.coarse.J,user.coarse.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(user.ksp_coarse,user.coarse.J,user.coarse.J);CHKERRQ(ierr);
   ierr = PCMGSetX(pc,COARSE_LEVEL,user.coarse.x);CHKERRQ(ierr);
   ierr = PCMGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRQ(ierr);
 
@@ -126,7 +127,7 @@ int main(int argc,char **argv)
   ierr = PCMGGetSmoother(pc,FINE_LEVEL,&ksp_fine);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(ksp_fine,"fine_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp_fine);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp_fine,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp_fine,user.fine.J,user.fine.J);CHKERRQ(ierr);
   ierr = PCMGSetR(pc,FINE_LEVEL,user.fine.r);CHKERRQ(ierr);
 
   /* Create interpolation between the levels */
@@ -134,7 +135,7 @@ int main(int argc,char **argv)
   ierr = PCMGSetInterpolation(pc,FINE_LEVEL,user.Ii);CHKERRQ(ierr);
   ierr = PCMGSetRestriction(pc,FINE_LEVEL,user.Ii);CHKERRQ(ierr);
 
-  ierr = KSPSetOperators(ksp,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,user.fine.J,user.fine.J);CHKERRQ(ierr);
 
   ierr = VecSet(user.fine.b,one);CHKERRQ(ierr);
   {

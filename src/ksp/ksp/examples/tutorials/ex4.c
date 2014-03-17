@@ -1,5 +1,6 @@
 static char help[] = "Test MatSetValuesBatch: setting batches of elements using the GPU.\n\
 This works with SeqAIJCUSP and MPIAIJCUSP matrices.\n\n";
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscksp.h>
 
@@ -119,7 +120,7 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, 0, help);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &dm);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &dm);CHKERRQ(ierr);
   ierr = IntegrateCells(dm, &Ne, &Nl, &elemRows, &elemMats);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL, "-view", &doView, NULL);CHKERRQ(ierr);
   /* Construct matrix using GPU */
@@ -169,7 +170,7 @@ int main(int argc, char **argv)
     ierr = MatGetVecs(A, &x, &b);CHKERRQ(ierr);
     ierr = VecSetRandom(b, NULL);CHKERRQ(ierr);
     ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp, A, A, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp, A, A);CHKERRQ(ierr);
     ierr = MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, NULL, &nullsp);CHKERRQ(ierr);
     ierr = KSPSetNullSpace(ksp, nullsp);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);

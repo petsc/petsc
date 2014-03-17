@@ -74,6 +74,7 @@
 
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 #include <finclude/petscis.h>
 #include <finclude/petscmat.h>
@@ -162,6 +163,7 @@
 !
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 #include <finclude/petscis.h>
 #include <finclude/petscmat.h>
@@ -232,7 +234,7 @@
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
       call DMDACreate2d(PETSC_COMM_WORLD,                               &
-     &     DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,                      &
+     &     DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,                          &
      &     DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,          &
      &     ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
       call DMDAGetInfo(da,PETSC_NULL_INTEGER,user%mx,user%my,           &
@@ -372,6 +374,7 @@
 #include <finclude/petscvec.h90>
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 #include <finclude/petscis.h>
 #include <finclude/petscmat.h>
@@ -439,6 +442,7 @@
 
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 #include <finclude/petscis.h>
 #include <finclude/petscmat.h>
@@ -589,12 +593,13 @@
 !  Option (A) seems cleaner/easier in many cases, and is the procedure
 !  used in this example.
 !
-      subroutine FormJacobian(snes,X,jac,jac_prec,flag,user,ierr)
+      subroutine FormJacobian(snes,X,jac,jac_prec,user,ierr)
       use f90module
       implicit none
 
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 #include <finclude/petscis.h>
 #include <finclude/petscmat.h>
@@ -608,7 +613,6 @@
       SNES         snes
       Vec          X
       Mat          jac,jac_prec
-      MatStructure flag
       type(userctx)  user
       PetscErrorCode ierr
       DM             da
@@ -649,24 +653,6 @@
       if (jac .ne. jac_prec) then
         call MatAssemblyEnd(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
       endif
-
-!  Set flag to indicate that the Jacobian matrix retains an identical
-!  nonzero structure throughout all nonlinear iterations (although the
-!  values of the entries change). Thus, we can save some work in setting
-!  up the preconditioner (e.g., no need to redo symbolic factorization for
-!  ILU/ICC preconditioners).
-!   - If the nonzero structure of the matrix is different during
-!     successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-!     must be used instead.  If you are unsure whether the matrix
-!     structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-!   - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-!     believes your assertion and does not check the structure
-!     of the matrix.  If you erroneously claim that the structure
-!     is the same when it actually is not, the new preconditioner
-!     will not function correctly.  Thus, use this optimization
-!     feature with caution!
-
-      flag = SAME_NONZERO_PATTERN
 
 !  Tell the matrix we will never add a new nonzero location to the
 !  matrix. If we do it will generate an error.
@@ -722,6 +708,7 @@
 
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 #include <finclude/petscis.h>
 #include <finclude/petscmat.h>

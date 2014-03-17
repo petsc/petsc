@@ -31,6 +31,7 @@ Options: \n\
 /* Contributed by Dave May */
 
 #include <petscksp.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 /* A Maple-generated exact solution created by Mirko Velic (mirko.velic@sci.monash.edu.au) */
@@ -975,7 +976,7 @@ static PetscErrorCode DMDACreateSolCx(PetscReal eta0,PetscReal eta1,PetscReal xc
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,
                       mx+1,my+1,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"anlytic_Vx");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"anlytic_Vy");CHKERRQ(ierr);
@@ -1182,7 +1183,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   p_dof         = P_DOFS; /* p - pressure */
   dof           = u_dof+p_dof;
   stencil_width = 1;
-  ierr          = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,
+  ierr          = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,
                                mx+1,my+1,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,&da_Stokes);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da_Stokes,0,"Vx");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da_Stokes,1,"Vy");CHKERRQ(ierr);
@@ -1202,7 +1203,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
 
   prop_dof           = (int)(sizeof(GaussPointCoefficients)/sizeof(PetscScalar)); /* gauss point setup */
   prop_stencil_width = 0;
-  ierr               = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,
+  ierr               = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,
                                     mx,my,cpu_x,cpu_y,prop_dof,prop_stencil_width,lx,ly,&da_prop);CHKERRQ(ierr);
   ierr = PetscFree(lx);CHKERRQ(ierr);
   ierr = PetscFree(ly);CHKERRQ(ierr);
@@ -1452,7 +1453,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   /* SOLVE */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp_S);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(ksp_S,"stokes_");CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp_S,A,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp_S,A,B);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp_S,da_Stokes);CHKERRQ(ierr);
   ierr = KSPSetDMActive(ksp_S,PETSC_FALSE);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp_S);CHKERRQ(ierr);
@@ -1488,23 +1489,6 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   ierr = DMDAViewGnuplot2d(da_Stokes,X,"Velocity solution for Stokes eqn.","X");CHKERRQ(ierr);
 
   ierr = KSPGetIterationNumber(ksp_S,&its);CHKERRQ(ierr);
-
-  /*
-  {
-  Vec x;
-  PetscInt L;
-  VecDuplicate(f,&x);
-  MatMult(A,X, x);
-  VecAXPY(x, -1.0, f);
-  VecNorm(x, NORM_2, &nrm);
-  PetscPrintf(PETSC_COMM_WORLD, "Its. %1.4d, norm |AX-f| = %1.5e \n", its, nrm);
-  VecDestroy(&x);
-
-  VecNorm(X, NORM_2, &nrm);
-  VecGetSize(X, &L);
-  PetscPrintf(PETSC_COMM_WORLD, "           norm |X|/sqrt{N} = %1.5e \n", nrm/sqrt((PetscScalar)L));
-  }
-  */
 
   if (coefficient_structure == 0) {
     PetscReal opts_eta0,opts_eta1,opts_xc;

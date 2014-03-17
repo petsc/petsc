@@ -27,10 +27,12 @@
 !     petscpc.h     - preconditioners
 !     petscsnes.h   - SNES interface
 !  In addition, we need the following for use of distributed arrays
+!     petscdm.h       - boundary specification for DM
 !     petscdmda.h     - distributed arrays (DMDAs)
 
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 #include <finclude/petscis.h>
 #include <finclude/petscmat.h>

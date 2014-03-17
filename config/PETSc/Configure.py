@@ -195,12 +195,23 @@ prepend-path PATH %s
   def Dump(self):
     ''' Actually put the values into the configuration files '''
     # eventually everything between -- should be gone
+    if self.mpi.usingMPIUni:
+      #
+      # Remove any MPI/MPICH include files that may have been put here by previous runs of ./configure
+      self.executeShellCommand('rm -rf  '+os.path.join(self.petscdir.dir,self.arch.arch,'include','mpi*')+' '+os.path.join(self.petscdir.dir,self.arch.arch,'include','opa*'))
+
 #-----------------------------------------------------------------------------------------------------
 
     # Sometimes we need C compiler, even if built with C++
     self.setCompilers.pushLanguage('C')
     self.addMakeMacro('CC_FLAGS',self.setCompilers.getCompilerFlags())
     self.setCompilers.popLanguage()
+
+    # And sometimes we need a C++ compiler even when PETSc is built with C
+    if hasattr(self.compilers, 'CXX'):
+      self.setCompilers.pushLanguage('Cxx')
+      self.addMakeMacro('CXX_FLAGS',self.setCompilers.getCompilerFlags())
+      self.setCompilers.popLanguage()
 
     # C preprocessor values
     self.addMakeMacro('CPP_FLAGS',self.setCompilers.CPPFLAGS+self.CHUD.CPPFLAGS)
@@ -349,6 +360,7 @@ prepend-path PATH %s
       self.addMakeMacro('PETSC_LIB_BASIC','-lpetsc')
       self.addMakeMacro('PETSC_KSP_LIB_BASIC','-lpetsc')
       self.addMakeMacro('PETSC_TS_LIB_BASIC','-lpetsc')
+      self.addMakeMacro('PETSC_TAO_LIB_BASIC','-lpetsc')
       self.addDefine('USE_SINGLE_LIBRARY', '1')
       if self.sharedlibraries.useShared:
         self.addMakeMacro('PETSC_SYS_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
@@ -358,6 +370,7 @@ prepend-path PATH %s
         self.addMakeMacro('PETSC_KSP_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_SNES_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_TS_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
+        self.addMakeMacro('PETSC_TAO_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_CHARACTERISTIC_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_CONTRIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
@@ -369,6 +382,7 @@ prepend-path PATH %s
         self.addMakeMacro('PETSC_KSP_LIB','${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_SNES_LIB','${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_TS_LIB','${PETSC_WITH_EXTERNAL_LIB}')
+        self.addMakeMacro('PETSC_TAO_LIB','${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_CHARACTERISTIC_LIB','${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_LIB','${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_CONTRIB','${PETSC_WITH_EXTERNAL_LIB}')
@@ -383,7 +397,6 @@ prepend-path PATH %s
   def dumpConfigInfo(self):
     import time
     fd = file(os.path.join(self.arch.arch,'include','petscconfiginfo.h'),'w')
-    fd.write('static const char *petscconfigureruntime = "'+time.ctime(time.time())+'";\n')
     fd.write('static const char *petscconfigureoptions = "'+self.framework.getOptionsString(['configModules', 'optionsModule']).replace('\"','\\"')+'";\n')
     fd.close()
     return

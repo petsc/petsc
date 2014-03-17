@@ -24,7 +24,6 @@ int main(int argc,char **argv)
   PetscSF        sf;
   PetscBool      test_bcast,test_reduce,test_degree,test_fetchandop,test_gather,test_scatter,test_embed,test_invert;
   MPI_Op         mop;
-  char           defstring[256] = "sum";
   char           opstring[256];
   PetscBool      strflg;
 
@@ -38,7 +37,8 @@ int main(int argc,char **argv)
   test_reduce     = PETSC_FALSE;
   ierr            = PetscOptionsBool("-test_reduce","Test reduction","",test_reduce,&test_reduce,NULL);CHKERRQ(ierr);
   mop             = MPI_SUM;
-  ierr            = PetscOptionsString("-test_op","Designate which MPI_Op to use","",defstring,opstring,256,NULL);CHKERRQ(ierr);
+  ierr            = PetscStrcpy(opstring,"sum");CHKERRQ(ierr);
+  ierr            = PetscOptionsString("-test_op","Designate which MPI_Op to use","",opstring,opstring,256,NULL);CHKERRQ(ierr);
   ierr = PetscStrcmp("sum",opstring,&strflg);CHKERRQ(ierr);
   if (strflg) {
     mop = MPIU_SUM;

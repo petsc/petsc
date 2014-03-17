@@ -47,6 +47,7 @@ T*/
   ------------------------------------------------------------------------F*/
 
 #include <petscsnes.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #define QP0 0.2113248654051871
@@ -72,7 +73,7 @@ typedef PetscScalar CoordField[3];
 typedef PetscScalar JacField[9];
 
 PetscErrorCode FormFunctionLocal(DMDALocalInfo*,Field***,Field***,void*);
-PetscErrorCode FormJacobianLocal(DMDALocalInfo *,Field ***,Mat,Mat,MatStructure *,void *);
+PetscErrorCode FormJacobianLocal(DMDALocalInfo *,Field ***,Mat,Mat,void *);
 PetscErrorCode DisplayLine(SNES,Vec);
 PetscErrorCode FormElements();
 
@@ -114,10 +115,10 @@ int main(int argc,char **argv)
   ierr = FormElements();CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-21,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,-21,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,(DM)da);CHKERRQ(ierr);
 
-  ierr = SNESSetGS(snes,NonlinearGS,&user);CHKERRQ(ierr);
+  ierr = SNESSetNGS(snes,NonlinearGS,&user);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
@@ -629,7 +630,7 @@ void ApplyBCsElement(PetscInt mx,PetscInt my, PetscInt mz, PetscInt i, PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianLocal"
-PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat jac,MatStructure *flg,void *ptr)
+PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat jac,void *ptr)
 {
   /* values for each basis function at each quadrature point */
   AppCtx      *user = (AppCtx*)ptr;
@@ -845,8 +846,8 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X,Vec B,void *ptr)
   PetscReal      fnorm0,fnorm,ynorm,xnorm;
 
   PetscFunctionBegin;
-  ierr    = SNESGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
-  ierr    = SNESGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
+  ierr    = SNESNGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
+  ierr    = SNESNGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
 
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&Xl);CHKERRQ(ierr);

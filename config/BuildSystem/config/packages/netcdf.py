@@ -6,7 +6,7 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.__init__(self, framework)
     self.downloadpath    = 'http://www.unidata.ucar.edu/downloads/netcdf/ftp/'
     self.downloadext     = 'tar.gz'
-    self.downloadversion = '4.2.1.1'
+    self.downloadversion = '4.3.1.1'
     self.functions       = ['nccreate']
     self.includes        = ['netcdf.h']
     self.liblist         = [['libnetcdf.a']]

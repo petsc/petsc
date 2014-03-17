@@ -293,11 +293,11 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
   SNES_MS        *ms = (SNES_MS*)snes->data;
   Vec            X   = snes->vec_sol,F = snes->vec_func;
   PetscReal      fnorm;
-  MatStructure   mstruct;
   PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   snes->reason = SNES_CONVERGED_ITERATING;
   ierr         = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter   = 0;
@@ -312,8 +312,7 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
   } else snes->vec_func_init_set = PETSC_FALSE;
 
   if (snes->jacobian) {         /* This method does not require a Jacobian, but it is usually preconditioned by PBJacobi */
-    ierr = SNESComputeJacobian(snes,snes->vec_sol,&snes->jacobian,&snes->jacobian_pre,&mstruct);CHKERRQ(ierr);
-    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,mstruct);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes,snes->vec_sol,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
   }
   if (ms->norms) {
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
