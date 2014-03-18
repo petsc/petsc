@@ -3970,6 +3970,9 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat,MatFactorType,Mat*);
 #if defined(PETSC_HAVE_SUITESPARSE)
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat,MatFactorType,Mat*);
 #endif
+#if defined(PETSC_HAVE_SUITESPARSE)
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat,MatFactorType,Mat*);
+#endif
 #if defined(PETSC_HAVE_LUSOL)
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat,MatFactorType,Mat*);
 #endif
@@ -4102,6 +4105,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
 #endif
 #if defined(PETSC_HAVE_SUITESPARSE)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_cholmod_C",MatGetFactor_seqaij_cholmod);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_SUITESPARSE)
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_klu_C",MatGetFactor_seqaij_klu);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_LUSOL)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_lusol_C",MatGetFactor_seqaij_lusol);CHKERRQ(ierr);
