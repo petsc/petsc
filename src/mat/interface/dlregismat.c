@@ -205,6 +205,7 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatColoringLocal",MAT_COLORING_CLASSID,&Mat_Coloring_Local);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatColoringIS",MAT_COLORING_CLASSID,&Mat_Coloring_ISCreate);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatColoringSetUp",MAT_COLORING_CLASSID,&Mat_Coloring_SetUp);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatColoringWeights",MAT_COLORING_CLASSID,&Mat_Coloring_Weights);CHKERRQ(ierr);
 
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(MAT_SetValues, PETSC_FALSE);CHKERRQ(ierr);

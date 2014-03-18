@@ -141,6 +141,7 @@ PetscErrorCode GreedyCreateWeights_Private(MatColoring mc,PetscReal **wts,PetscI
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(Mat_Coloring_Weights,mc,0,0,0);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(G,&s,&e);CHKERRQ(ierr);
   n=e-s;
   ierr = PetscMalloc1(n,perm);CHKERRQ(ierr);
@@ -150,11 +151,12 @@ PetscErrorCode GreedyCreateWeights_Private(MatColoring mc,PetscReal **wts,PetscI
   ierr = GreedyDiscoverDegrees_Private(mc,wts);CHKERRQ(ierr);
   for (i=s;i<e;i++) {
     ierr = PetscRandomGetValueReal(rand,&r);CHKERRQ(ierr);
-    (*wts)[i-s] += PetscAbsReal(r);
+    (*wts)[i-s] = PetscAbsReal(r);
     (*perm)[i-s] = i-s;
   }
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   ierr = PetscSortRealWithPermutation(n,*wts,*perm);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(Mat_Coloring_Weights,mc,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
