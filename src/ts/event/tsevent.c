@@ -59,7 +59,7 @@ PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,Pets
   PetscInt       i;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _p_TSEvent,&event);CHKERRQ(ierr);
+  ierr = PetscNew(&event);CHKERRQ(ierr);
   ierr = PetscMalloc(nevents*sizeof(PetscScalar),&event->fvalue);CHKERRQ(ierr);
   ierr = PetscMalloc(nevents*sizeof(PetscScalar),&event->fvalue_prev);CHKERRQ(ierr);
   ierr = PetscMalloc(nevents*sizeof(PetscInt),&event->direction);CHKERRQ(ierr);

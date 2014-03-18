@@ -2607,7 +2607,6 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec U)
 @*/
 PetscErrorCode  TSStep(TS ts)
 {
-  PetscReal        ptime_prev;
   PetscErrorCode   ierr;
   static PetscBool cite = PETSC_FALSE;
 
