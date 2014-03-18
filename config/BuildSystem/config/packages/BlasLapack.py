@@ -20,6 +20,7 @@ class Configure(config.package.Package):
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.libraries     = framework.require('config.libraries', None)
+    self.compilers     = framework.require('config.compilers', None)
     self.compilerFlags = framework.require('config.compilerFlags', self)
     self.setCompilers  = framework.require('config.setCompilers', self)
     self.f2cblaslapack = framework.require('config.packages.f2cblaslapack', self)
@@ -427,7 +428,12 @@ class Configure(config.package.Package):
     self.executeTest(self.checkMissing)
     self.executeTest(self.checklsame)
     if self.framework.argDB['with-shared-libraries']:
-      if not self.setCompilers.checkIntoShared('dgeev_',self.lapackLibrary+self.getOtherLibs()):
+      symbol = 'dgeev'
+      if self.f2c:
+        if self.mangling == 'underscore': symbol = 'dgeev_'
+      elif hasattr(self.compilers, 'FC'):
+        symbol = map(self.compilers.mangleFortranFunction, symbol)
+      if not self.setCompilers.checkIntoShared(symbol,self.lapackLibrary+self.getOtherLibs()):
         raise RuntimeError('The BLAS/LAPACK libraries '+self.libraries.toStringNoDupes(self.lapackLibrary+self.getOtherLibs())+'\ncannot used with a shared library\nEither run ./configure with --with-shared-libraries=0 or use a different BLAS/LAPACK library');
     return
 
