@@ -118,7 +118,7 @@ PetscErrorCode MatConvertToTriples_seqaij_seqaij(Mat A,int shift,MatReuse reuse,
     ai   = aa->i;
     aj   = aa->j;
     *nnz = nz;
-    ierr = PetscMalloc(2*nz*sizeof(PetscInt), &row);CHKERRQ(ierr);
+    ierr = PetscMalloc1(2*nz, &row);CHKERRQ(ierr);
     col  = row + nz;
 
     nz = 0;
@@ -139,18 +139,20 @@ PetscErrorCode MatConvertToTriples_seqaij_seqaij(Mat A,int shift,MatReuse reuse,
 PetscErrorCode MatConvertToTriples_seqbaij_seqaij(Mat A,int shift,MatReuse reuse,int *nnz,int **r, int **c, PetscScalar **v)
 {
   Mat_SeqBAIJ    *aa=(Mat_SeqBAIJ*)A->data;
-  const PetscInt *ai,*aj,*ajj,bs=A->rmap->bs,bs2=aa->bs2,M=A->rmap->N/bs;
-  PetscInt       nz,idx=0,rnz,i,j,k,m;
+  const PetscInt *ai,*aj,*ajj,bs2 = aa->bs2;
+  PetscInt       bs,M,nz,idx=0,rnz,i,j,k,m;
   PetscErrorCode ierr;
   PetscInt       *row,*col;
 
   PetscFunctionBegin;
+  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
+  M = A->rmap->N/bs;
   *v = aa->a;
   if (reuse == MAT_INITIAL_MATRIX) {
     ai   = aa->i; aj = aa->j;
     nz   = bs2*aa->nz;
     *nnz = nz;
-    ierr = PetscMalloc(2*nz*sizeof(PetscInt), &row);CHKERRQ(ierr);
+    ierr = PetscMalloc1(2*nz, &row);CHKERRQ(ierr);
     col  = row + nz;
 
     for (i=0; i<M; i++) {
@@ -188,7 +190,7 @@ PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A,int shift,MatReuse re
     aj   = aa->j;
     *v   = aa->a;
     *nnz = nz;
-    ierr = PetscMalloc(2*nz*sizeof(PetscInt), &row);CHKERRQ(ierr);
+    ierr = PetscMalloc1(2*nz, &row);CHKERRQ(ierr);
     col  = row + nz;
 
     nz = 0;
@@ -381,14 +383,15 @@ PetscErrorCode MatConvertToTriples_mpibaij_mpiaij(Mat A,int shift,MatReuse reuse
   Mat_SeqBAIJ       *bb     = (Mat_SeqBAIJ*)(mat->B)->data;
   const PetscInt    *ai     = aa->i, *bi = bb->i, *aj = aa->j, *bj = bb->j,*ajj, *bjj;
   const PetscInt    *garray = mat->garray,mbs=mat->mbs,rstart=A->rmap->rstart;
-  const PetscInt    bs      = A->rmap->bs,bs2=mat->bs2;
+  const PetscInt    bs2=mat->bs2;
   PetscErrorCode    ierr;
-  PetscInt          nz,i,j,k,n,jj,irow,countA,countB,idx;
+  PetscInt          bs,nz,i,j,k,n,jj,irow,countA,countB,idx;
   PetscInt          *row,*col;
   const PetscScalar *av=aa->a, *bv=bb->a,*v1,*v2;
   PetscScalar       *val;
 
   PetscFunctionBegin;
+  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
     nz   = bs2*(aa->nz + bb->nz);
     *nnz = nz;
@@ -755,7 +758,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
 
       lsol_loc = mumps->id.INFO(23); /* length of sol_loc */
 
-      ierr = PetscMalloc2(lsol_loc,PetscScalar,&sol_loc,lsol_loc,PetscInt,&mumps->id.isol_loc);CHKERRQ(ierr);
+      ierr = PetscMalloc2(lsol_loc,&sol_loc,lsol_loc,&mumps->id.isol_loc);CHKERRQ(ierr);
 
       mumps->id.lsol_loc = lsol_loc;
 #if defined(PETSC_USE_COMPLEX)
@@ -923,7 +926,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
           const PetscInt *idx;
           PetscInt       i,*perm_in;
 
-          ierr = PetscMalloc(M*sizeof(PetscInt),&perm_in);CHKERRQ(ierr);
+          ierr = PetscMalloc1(M,&perm_in);CHKERRQ(ierr);
           ierr = ISGetIndices(r,&idx);CHKERRQ(ierr);
 
           mumps->id.perm_in = perm_in;
@@ -1423,7 +1426,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat
     ierr = MatMPIAIJSetPreallocation(B,0,NULL,0,NULL);CHKERRQ(ierr);
   }
 
-  ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&mumps);CHKERRQ(ierr);
 
   B->ops->view    = MatView_MUMPS;
   B->ops->getinfo = MatGetInfo_MUMPS;
@@ -1475,7 +1478,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,M
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&mumps);CHKERRQ(ierr);
   if (isSeqSBAIJ) {
     ierr = MatSeqSBAIJSetPreallocation(B,1,0,NULL);CHKERRQ(ierr);
 
@@ -1529,7 +1532,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Ma
     ierr = MatMPIBAIJSetPreallocation(B,A->rmap->bs,0,NULL,0,NULL);CHKERRQ(ierr);
   }
 
-  ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&mumps);CHKERRQ(ierr);
   if (ftype == MAT_FACTOR_LU) {
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_BAIJMUMPS;
     B->factortype            = MAT_FACTOR_LU;

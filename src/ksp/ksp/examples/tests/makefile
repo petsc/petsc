@@ -7,7 +7,7 @@ LOCDIR    = src/ksp/ksp/examples/tests/
 EXAMPLESC       = ex1.c ex3.c ex4.c ex6.c ex7.c ex10.c ex11.c ex14.c \
                 ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c \
                 ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c \
-                ex33.c ex34.c ex35.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
+                ex33.c ex35.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
                 ex43.c ex44.c
 EXAMPLESCH      =
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F
@@ -174,61 +174,61 @@ ex44: ex44.o chkopts
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex1_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex1_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1_1.tmp
 runex1_2:
 	-@${MPIEXEC} -n 2 ./ex1 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_2.tmp 2>&1;	 \
 	   if (${DIFF} output/ex1_2.out ex1_2.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex1_2, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex1_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1_2.tmp
 runex1_3:
 	-@${MPIEXEC} -n 1 ./ex1 -pc_type sor -pc_sor_symmetric -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always >\
 	   ex1_3.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_3.out ex1_3.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex1_3, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex1_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1_3.tmp
 runex1_5:
 	-@${MPIEXEC} -n 1 ./ex1 -pc_type eisenstat -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always >\
 	   ex1_5.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_5.out ex1_5.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex1_5, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex1_5, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1_5.tmp
 runex3:
 	-@${MPIEXEC} -n 1 ./ex3 -pc_type jacobi -ksp_monitor_short -m 5 -ksp_gmres_cgs_refinement_type refine_always > ex3_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex3_1.out ex3_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex3_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex3_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex3_1.tmp
 runex3_2:
 	-@${MPIEXEC} -n 2 ./ex3 -pc_type jacobi -ksp_monitor_short -m 5 -ksp_gmres_cgs_refinement_type refine_always > ex3_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex3_2.out ex3_2.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex3_2, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex3_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex3_2.tmp
 runex4:
 	-@${MPIEXEC} -n 1 ./ex4 -ksp_monitor_short -m 5 -pc_type jacobi -ksp_gmres_cgs_refinement_type refine_always > ex4_1.tmp 2>&1;\
 	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex4_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex4_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex4_1.tmp
 runex4_3:
 	-@${MPIEXEC} -n 1 ./ex4 -pc_type sor -pc_sor_symmetric -ksp_monitor_short -m 5 -ksp_gmres_cgs_refinement_type refine_always >\
 	   ex4_3.tmp 2>&1;   \
 	   if (${DIFF} output/ex4_3.out ex4_3.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex4_3, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex4_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex4_3.tmp
 runex4_5:
 	-@${MPIEXEC} -n 1 ./ex4 -pc_type eisenstat -ksp_monitor_short -m 5	-ksp_gmres_cgs_refinement_type refine_always >\
 	   ex4_5.tmp 2>&1;   \
 	   if (${DIFF} output/ex4_5.out ex4_5.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex4_5, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex4_5, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex4_5.tmp
 runex5:
 	-@${MPIEXEC} -n 2 ./ex5 -ksp_monitor_short -nokspview -ksp_gmres_cgs_refinement_type refine_always > ex5_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex5_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex5_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_1.tmp
 runex5f:
 	-@${MPIEXEC} -n 1 ./ex5f -ksp_monitor_short > ex5f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5f_1.out ex5f_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex5f_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex5f_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5f_1.tmp
 #
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
@@ -236,7 +236,7 @@ runex6:
 	-@${MPIEXEC} -n 1 ./ex6 -ksp_type preonly  -pc_type lu -options_left no \
 	   -f ${DATAFILESPATH}/matrices/arco1 > ex6_1.tmp 2>&1; \
 	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex6_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex6_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex6_1.tmp
 runex6_2:
 	-@${MPIEXEC} -n 1 ./ex6 -sub_pc_type ilu -options_left no \
@@ -245,7 +245,7 @@ runex6_2:
 	   -pc_bjacobi_blocks 8 -sub_pc_factor_in_place -ksp_monitor_short \
 	   > ex6_2.tmp 2>&1; \
 	   if (${DIFF} output/ex6_2.out ex6_2.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex6_2, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex6_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex6_2.tmp
 
 runex6_7:
@@ -253,29 +253,29 @@ runex6_7:
 	   -f ${DATAFILESPATH}/matrices/small \
 	   -matload_block_size 6  -ksp_monitor_short  > ex6_7.tmp 2>&1; \
 	   if (${DIFF} output/ex6_7.out ex6_7.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex6_7, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex6_7, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex6_7.tmp
 runex7:
 	-@${MPIEXEC} -n 2 ./ex7 -ksp_gmres_cgs_refinement_type refine_always -pc_type jacobi -ksp_monitor_short > ex7_1.tmp 2>&1; \
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex7_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex7_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7_1.tmp
 runex8:
 	-@${MPIEXEC} -n 1 ./ex8 -ksp_gmres_cgs_refinement_type refine_always -pc_type jacobi -ksp_monitor_short > ex8_1.tmp 2>&1; \
 	   if (${DIFF} output/ex8_1.out ex8_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex8_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex8_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex8_1.tmp
 runex8_2:
 	-@${MPIEXEC} -n 2 ./ex8 -ksp_gmres_cgs_refinement_type refine_always -pc_type jacobi -ksp_monitor_short \
 	   -ksp_rtol .000001 > ex8_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex8_2.out ex8_2.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex8_2, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex8_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex8_2.tmp
 
 runex10:
 	-@${MPIEXEC} -n 1 ./ex10 -matconvert_type seqaij -ksp_monitor_short >ex10_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex10_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex10_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_1.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex11:
@@ -302,7 +302,7 @@ runex11:
 		-fc_fieldsplit_pressure_lsc_ksp_converged_reason \
 		-fc_fieldsplit_pressure_lsc_pc_type icc \
                  > ex11_1.tmp 2>&1; \
-	   ${DIFF} output/ex11_1.out ex11_1.tmp || echo ${PWD} "\nPossible problem with with ex11_1, diffs above \n=========================================";\
+	   ${DIFF} output/ex11_1.out ex11_1.tmp || printf "${PWD}\nPossible problem with with ex11_1, diffs above\n=========================================\n";\
 	   ${RM} -f ex11_1.tmp
 
 runex11_2:
@@ -332,31 +332,31 @@ runex11_2:
                 -fc_fieldsplit_pressure_lsc_pc_type bjacobi \
                 -fc_fieldsplit_pressure_lsc_sub_pc_type icc \
                  > ex11_2.tmp 2>&1; \
-	   ${DIFF} output/ex11_2.out ex11_2.tmp || echo ${PWD} "\nPossible problem with with ex11_2, diffs above \n=========================================";\
+	   ${DIFF} output/ex11_2.out ex11_2.tmp || printf "${PWD}\nPossible problem with with ex11_2, diffs above\n=========================================\n";\
 	   ${RM} -f ex11_2.tmp
 
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex12f:
 	-@${MPIEXEC} -n 1 ./ex12f  -f ${DATAFILESPATH}/matrices/arco1 -options_left no > ex12f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex12f_1.out ex12f_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex12f_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex12f_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex12f_1.tmp
 runex13:
 	-@${MPIEXEC} -n 2  ./ex13 -ksp_gmres_cgs_refinement_type refine_always -ksp_monitor_short > ex13_1.tmp 2>&1; \
 	   if (${DIFF} output/ex13_1.out ex13_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex13_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex13_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex13_1.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex16f:
 	-@${MPIEXEC} -n 1 ./ex16f   -f ${DATAFILESPATH}/matrices/arco1 -options_left no> ex16f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex16f_1.out ex16f_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex16f_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex16f_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex16f_1.tmp
 runex17:
 	-@${MPIEXEC} -n 1 ./ex17 -ksp_gmres_cgs_refinement_type refine_always -n 6 -ksp_monitor_short -p 5 -norandom -ksp_type gmres \
 	   -pc_type jacobi -ksp_max_it 15 > ex17_1.tmp 2>&1; \
 	   if (${DIFF} output/ex17_1.out ex17_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex17_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex17_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex17_1.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex18:
@@ -365,202 +365,202 @@ runex19:
 	-@${MPIEXEC} -n 1 ./ex19 -ksp_gmres_cgs_refinement_type refine_always -pc_type jacobi -ksp_monitor_short \
 	-ksp_type gmres  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex19_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex19_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_1.tmp
 runex19_2:
 	-@${MPIEXEC} -n 3 ./ex19 -ksp_monitor_short > ex19_2.tmp 2>&1; \
 	if (${DIFF} output/ex19_2.out ex19_2.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex19_2, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex19_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_2.tmp
 runex20:
 	-@${MPIEXEC} -n 1 ./ex20 -ksp_gmres_cgs_refinement_type refine_always -pc_type jacobi -mat_view -ksp_monitor_short -ksp_atol 1.0e-13 > ex20_1.tmp 2>&1; \
 	   if (${DIFF} output/ex20_1.out ex20_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex20_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex20_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex20_1.tmp
 
 runex21:
 	-@${MPIEXEC} -n 1 ./ex21 > ex21_1.tmp 2>&1; \
 	   if (${DIFF} output/ex21_1.out ex21_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex21_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex21_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex21_1.tmp
 
 runex21_2:
 	-@${MPIEXEC} -n 2 ./ex21 > ex21_2.tmp 2>&1; \
 	   if (${DIFF} output/ex21_2.out ex21_2.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex21_2, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex21_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex21_2.tmp
 
 
 runex21_3:
 	-@${MPIEXEC} -n 3 ./ex21 > ex21_3.tmp 2>&1; \
 	   if (${DIFF} output/ex21_3.out ex21_3.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex21_3, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex21_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex21_3.tmp
 
 runex22:
 	-@${MPIEXEC} -n 1 ./ex22  > ex22_1.tmp 2>&1; \
-	   ${DIFF} output/ex22_1.out ex22_1.tmp || echo ${PWD} "\nPossible problem with with ex22, diffs above \n========================================="; \
+	   ${DIFF} output/ex22_1.out ex22_1.tmp || printf "${PWD}\nPossible problem with with ex22, diffs above\n=========================================\n"; \
 	   ${RM} -f ex22_1.tmp
 runex22_2:
 	-@${MPIEXEC} -n 2 ./ex22  > ex22_2.tmp 2>&1; \
-	   ${DIFF} output/ex22_2.out ex22_2.tmp || echo ${PWD} "\nPossible problem with with ex22_2, diffs above \n========================================="; \
+	   ${DIFF} output/ex22_2.out ex22_2.tmp || printf "${PWD}\nPossible problem with with ex22_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex22_2.tmp
 runex22_3:
 	-@${MPIEXEC} -n 2 ./ex22 -ksp_monitor_short -ksp_type bicg > ex22_3.tmp 2>&1; \
-	   ${DIFF} output/ex22_3.out ex22_3.tmp || echo ${PWD} "\nPossible problem with with ex22_3, diffs above \n========================================="; \
+	   ${DIFF} output/ex22_3.out ex22_3.tmp || printf "${PWD}\nPossible problem with with ex22_3, diffs above\n=========================================\n"; \
 	   ${RM} -f ex22_3.tmp
 
 runex24:
 	-@${MPIEXEC} -n 1 ./ex24 -pc_type icc -mat_type seqsbaij -mat_ignore_lower_triangular > ex24_1.tmp 2>&1; \
            if (${DIFF} output/ex24_1.out ex24_1.tmp) then true; \
-           else echo ${PWD} ; echo "Possible problem with with ex24_1, diffs above \n========================================="; fi; \
+           else printf "${PWD}\nPossible problem with with ex24_1, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex24_1.tmp
 runex24_2:
 	-@${MPIEXEC} -n 1 ./ex24 -pc_type icc -pc_factor_levels 2  -mat_type seqsbaij -mat_ignore_lower_triangular > ex24_2.tmp 2>&1; \
            if (${DIFF} output/ex24_2.out ex24_2.tmp) then true; \
-           else echo ${PWD} ; echo "Possible problem with with ex24_2, diffs above \n========================================="; fi; \
+           else printf "${PWD}\nPossible problem with with ex24_2, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex24_2.tmp
 runex24_3:
 	-@${MPIEXEC} -n 2 ./ex24 -pc_type bjacobi -sub_pc_type icc  -mat_type mpisbaij -mat_ignore_lower_triangular > ex24_3.tmp 2>&1; \
            if (${DIFF} output/ex24_3.out ex24_3.tmp) then true; \
-           else echo ${PWD} ; echo "Possible problem with with ex24_3, diffs above \n========================================="; fi; \
+           else printf "${PWD}\nPossible problem with with ex24_3, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex24_3.tmp
 runex24_4:
 	-@${MPIEXEC} -n 2 ./ex24 -pc_type bjacobi -sub_pc_type icc -sub_pc_factor_levels 1 -mat_type mpisbaij -mat_ignore_lower_triangular > ex24_4.tmp 2>&1; \
            if (${DIFF} output/ex24_4.out ex24_4.tmp) then true; \
-           else echo ${PWD} ; echo "Possible problem with with ex24_4, diffs above \n========================================="; fi; \
+           else printf "${PWD}\nPossible problem with with ex24_4, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex24_4.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex25:
 	-@${MPIEXEC} -n 1 ./ex25 -fload ${DATAFILESPATH}/matrices/indefinite/afiro > ex25_1.tmp 2>&1; \
            if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
-           else echo ${PWD} ; echo "Possible problem with with ex25_1, diffs above \n========================================="; fi; \
+           else printf "${PWD}\nPossible problem with with ex25_1, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex25_1.tmp
 runex25_2:
 	-@${MPIEXEC} -n 1 ./ex25 -fload ${DATAFILESPATH}/matrices/indefinite/afiro \
 		-pc_type jacobi -pc_jacobi_rowmax > ex25_2.tmp 2>&1; \
            if (${DIFF} output/ex25_2.out ex25_2.tmp) then true; \
-           else echo ${PWD} ; echo "Possible problem with with ex25_2, diffs above \n========================================="; fi; \
+           else printf "${PWD}\nPossible problem with with ex25_2, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex25_2.tmp
 runex26:
 	-@${MPIEXEC} -n 1 ./ex26 -ksp_monitor_short > ex26_1.tmp 2>&1; \
 	if (${DIFF} output/ex26_1.out ex26_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex26_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex26_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex26_1.tmp
 runex26_2:
 	-@${MPIEXEC} -n 3 ./ex26 -ksp_monitor_short > ex26_2.tmp 2>&1; \
 	if (${DIFF} output/ex26_2.out ex26_2.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex26_2, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex26_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex26_2.tmp
 
 runex26_ml:
 	-@${MPIEXEC} -n 1 ./ex26 -ksp_monitor_short -pc_type ml -mat_no_inode > ex26_1.tmp 2>&1; \
 	if (${DIFF} output/ex26_ml_1.out ex26_1.tmp) then true; \
-           else echo ${PWD} ; echo "Possible problem with with ex26_ml_1, diffs above \n========================================="; fi; \
+           else printf "${PWD}\nPossible problem with with ex26_ml_1, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex26_1.tmp
 runex26_ml_2:
 	-@${MPIEXEC} -n 3 ./ex26 -ksp_monitor_short -pc_type ml -mat_no_inode > ex26_2.tmp 2>&1; \
 	if (${DIFF} output/ex26_ml_2.out ex26_2.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex26_ml_2, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex26_ml_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex26_2.tmp
 runex26_ml_3:
 	-@${MPIEXEC} -n 1 ./ex26 -ksp_monitor_short -pc_type ml -mat_no_inode -pc_mg_type ADDITIVE > ex26_2.tmp 2>&1; \
 	if (${DIFF} output/ex26_ml_3.out ex26_2.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex26_ml_3, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex26_ml_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex26_2.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex27:
 	-@${MPIEXEC} -n 1 ./ex27 -f ${DATAFILESPATH}/matrices/small > ex27.tmp 2>&1; \
 	if (${DIFF} output/ex27.out ex27.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex27, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex27, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex27.tmp
 runex28:
 	-@${MPIEXEC} -n 3 ./ex28 > ex28.tmp 2>&1; \
 	if (${DIFF} output/ex28.out ex28.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex28, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex28, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex28.tmp
 runex28_2:
 	-@${MPIEXEC} -n 3 ./ex28 -procedural -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type bjacobi > ex28.tmp 2>&1; \
 	if (${DIFF} output/ex28_2.out ex28.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex28_2, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex28_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex28.tmp
 runex28_3:
 	-@${MPIEXEC} -n 5 ./ex28 -procedural -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type bjacobi > ex28.tmp 2>&1; \
 	if (${DIFF} output/ex28.out ex28.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex28_3, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex28_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex28.tmp
 runex29:
 	-@${MPIEXEC} -n 1 ./ex29 -ksp_monitor_short -mat_no_inode > ex29.tmp 2>&1; \
 	if (${DIFF} output/ex29.out ex29.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex29, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex29, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex29.tmp
 runex29_2:
 	-@${MPIEXEC} -n 3 ./ex29 -ksp_monitor_short > ex29_2.tmp 2>&1; \
 	if (${DIFF} output/ex29_2.out ex29_2.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex29_2, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex29_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex29_2.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex30:
 	-@${MPIEXEC} -n 1 ./ex30 -f ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type ilu -pc_factor_mat_ordering_type natural -num_numfac 2 -pc_factor_reuse_fill > ex30.tmp 2>&1; \
 	if (${DIFF} output/ex30.out ex30.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex30, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex30, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex30.tmp
 runex30_2:
 	-@${MPIEXEC} -n 1 ./ex30 -f ${DATAFILESPATH}/matrices/arco1 -mat_type baij -matload_block_size 3 -ksp_type preonly -pc_type ilu -pc_factor_mat_ordering_type natural -num_numfac 2 > ex30.tmp 2>&1; \
 	if (${DIFF} output/ex30_2.out ex30.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex30_2, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex30_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex30.tmp
 
 runex30_shift: # test lu with shift
 	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_type NONZERO -pc_factor_shift_amount 1.e-5 > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftnz.out ex30.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex30_shiftnz, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex30_shiftnz, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex30.tmp
 	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_type POSITIVE_DEFINITE > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftpd.out ex30.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex30_shiftpd, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex30_shiftpd, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex30.tmp
 
 runex30_shift_cholesky_aij: # test cholesky with shift
 	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type NONZERO -pc_factor_shift_amount 1.e-5 > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftnz.out ex30.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex30_shiftnz_cholesky_aij, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex30_shiftnz_cholesky_aij, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex30.tmp
 	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type POSITIVE_DEFINITE > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftpd_2.out ex30.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex30_shiftpd_cholesky_aij, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex30_shiftpd_cholesky_aij, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex30.tmp
 
 runex30_shift_cholesky_sbaij: # test cholesky with shift
 	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type NONZERO -pc_factor_shift_amount 1.e-5 -mat_type sbaij > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftnz.out ex30.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex30_shiftnz_cholesky_sbaij, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex30_shiftnz_cholesky_sbaij, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex30.tmp
 	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type POSITIVE_DEFINITE -mat_type sbaij > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftpd_2.out ex30.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex30_shiftpd_cholesky_sbaij, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex30_shiftpd_cholesky_sbaij, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex30.tmp
 
 runex30_shift_in_blocks_aij: # sensitive to machine, thus not submitted to the nightly tests
 	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type lu -pc_factor_shift_type INBLOCKS > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftinblocks.out ex30.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex30_shiftinblocks_lu, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex30_shiftinblocks_lu, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex30.tmp
 	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type INBLOCKS > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftinblocks.out ex30.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex30_shiftinblocks_cholesky, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex30_shiftinblocks_cholesky, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex30.tmp
 
 runex30_shift_in_blocks_sbaij: # sensitive to machine, thus not submitted to the nightly tests
 	-@${MPIEXEC} -n 1 ./ex30 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -4.0 -ksp_type preonly -pc_type cholesky -pc_factor_shift_type INBLOCKS -mat_type sbaij > ex30.tmp 2>&1; \
 	   if (${DIFF} output/ex30_shiftinblocks.out ex30.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex30_shift_in_blocks_sbaij, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex30_shift_in_blocks_sbaij, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex30.tmp
 
 runex31:
 	-@${MPIEXEC} -n 3 ./ex31 -f ${DATAFILESPATH}/matrices/small -partition > ex31.tmp 2>&1; \
 	if (${DIFF} output/ex31.out ex31.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex31, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex31, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex31.tmp
 
 runex32_testset1:
@@ -575,7 +575,7 @@ runex32_testset1:
 		    	echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
 		    	sed -n '/\['$${count}']_start/,/\['$${count}']_end/p' output/ex32_1.out > ex32.tmp2 2>&1;  \
 		    	if (${DIFF} ex32.tmp ex32.tmp2) then true;  \
-		    	    else echo ${PWD} ; echo "Possible problem with with ./ex32 -ksp_monitor_short -dof $$i -pc_type ilu -pc_factor_mat_ordering_type $$ordering -mat_type aij $$simtype -pc_factor_levels $$flevels"; fi;   \
+		    	    else printf "${PWD}\nPossible problem with with ./ex32 -ksp_monitor_short -dof $$i -pc_type ilu -pc_factor_mat_ordering_type $$ordering -mat_type aij $$simtype -pc_factor_levels $$flevels"; fi;   \
 			    ${RM} -f ex32.tmp; ${RM} -f ex32.tmp2; \
 	    	    done; \
 		done; \
@@ -594,7 +594,7 @@ runex32_testset2:
 		    	    echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
 		    	    sed -n '/\['$${count}']_start/,/\['$${count}']_end/p' output/ex32_2.out > ex32.tmp2 2>&1;  \
 		    	if (${DIFF} ex32.tmp ex32.tmp2) then true;  \
-		    	    else echo ${PWD} ; echo "Possible problem with with ./ex32 -ksp_monitor_short -dof $$i -pc_type ilu -pc_factor_mat_ordering_type $$ordering -mat_type baij $$simtype -pc_factor_levels $$flevels"; fi;   \
+		    	    else printf "${PWD}\nPossible problem with with ./ex32 -ksp_monitor_short -dof $$i -pc_type ilu -pc_factor_mat_ordering_type $$ordering -mat_type baij $$simtype -pc_factor_levels $$flevels"; fi;   \
 			${RM} -f ex32.tmp; ${RM} -f ex32.tmp2; \
 	    	    done; \
 		done; \
@@ -612,7 +612,7 @@ runex32_testset3:
 		    echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
 		    sed -n '/\['$${count}']_start/,/\['$${count}']_end/p' output/ex32_3.out > ex32.tmp2 2>&1;  \
 		    if (${DIFF} ex32.tmp ex32.tmp2) then true;  \
-		    	else echo ${PWD} ; echo "Possible problem with with ./ex32 -ksp_monitor_short -dof $$i -pc_type lu -pc_factor_mat_ordering_type $$ordering -mat_type aij $$simtype "; fi;   \
+		    	else printf "${PWD}\nPossible problem with with ./ex32 -ksp_monitor_short -dof $$i -pc_type lu -pc_factor_mat_ordering_type $$ordering -mat_type aij $$simtype "; fi;   \
 		    ${RM} -f ex32.tmp; ${RM} -f ex32.tmp2; \
 		done; \
 	    done; \
@@ -629,7 +629,7 @@ runex32_testset4:
 		    echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
 		    sed -n '/\['$${count}']_start/,/\['$${count}']_end/p' output/ex32_4.out > ex32.tmp2 2>&1;  \
 		    if (${DIFF} ex32.tmp ex32.tmp2) then true;  \
-		    	else echo ${PWD} ; echo "Possible problem with with ./ex32 -ksp_monitor_short -dof $$i -pc_type lu -pc_factor_mat_ordering_type $$ordering -mat_type baij $$simtype "; fi;   \
+		    	else printf "${PWD}\nPossible problem with with ./ex32 -ksp_monitor_short -dof $$i -pc_type lu -pc_factor_mat_ordering_type $$ordering -mat_type baij $$simtype "; fi;   \
 		    ${RM} -f ex32.tmp; ${RM} -f ex32.tmp2; \
 		done; \
 	    done; \
@@ -645,7 +645,7 @@ runex32_testset5:
 		echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
 		sed -n '/\['$${count}']_start/,/\['$${count}']_end/p' output/ex32_5.out > ex32.tmp2 2>&1;  \
 		if (${DIFF} ex32.tmp ex32.tmp2) then true;  \
-		    	else echo ${PWD} ; echo "Possible problem with with ./ex32 -ksp_monitor_short -dof 1 -pc_type icc -ksp_type cg -pc_factor_mat_ordering_type $$ordering -mat_type aij -pc_factor_levels $$flevels"; fi;   \
+		    	else printf "${PWD}\nPossible problem with with ./ex32 -ksp_monitor_short -dof 1 -pc_type icc -ksp_type cg -pc_factor_mat_ordering_type $$ordering -mat_type aij -pc_factor_levels $$flevels"; fi;   \
 		${RM} -f ex32.tmp; ${RM} -f ex32.tmp2; \
 	   done; \
 	done; \
@@ -658,7 +658,7 @@ runex32_testset5:
 	    echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
 	    sed -n '/\['$${count}']_start/,/\['$${count}']_end/p' output/ex32_5.out > ex32.tmp2 2>&1;  \
 	    if (${DIFF} ex32.tmp ex32.tmp2) then true;  \
-	    else echo ${PWD} ; echo "Possible problem with with ./ex32 -ksp_monitor_short -dof 1 -pc_type cholesky -ksp_type cg -pc_factor_mat_ordering_type $$ordering -mat_type aij "; fi;   \
+	    else printf "${PWD}\nPossible problem with with ./ex32 -ksp_monitor_short -dof 1 -pc_type cholesky -ksp_type cg -pc_factor_mat_ordering_type $$ordering -mat_type aij "; fi;   \
 	    ${RM} -f ex32.tmp; ${RM} -f ex32.tmp2; \
 	done; \
 
@@ -670,121 +670,115 @@ runex32_testset5:
 	echo "[$${count}]_end" >> ex32.tmp 2>&1;  \
 	sed -n '/\['$${count}']_start/,/\['$${count}']_end/p' output/ex32_5.out > ex32.tmp2 2>&1;  \
 	if (${DIFF} ex32.tmp ex32.tmp2) then true;  \
-	else echo ${PWD} ; echo "Possible problem with with ./ex32 -ksp_monitor_short -dof 1 -pc_type icc -test_sbaij1"; fi;   \
+	else printf "${PWD}\nPossible problem with with ./ex32 -ksp_monitor_short -dof 1 -pc_type icc -test_sbaij1"; fi;   \
 	${RM} -f ex32.tmp; ${RM} -f ex32.tmp2
 
 runex32_aij_sbaij_icc:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -test_sbaij1 -mat_ignore_lower_triangular -pc_type icc > ex32_aij_sbaij_icc.out 2>&1;
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -mat_type aij -pc_type icc -pc_factor_mat_ordering_type natural > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_aij_sbaij_icc.out ex32.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex32_aij_sbaij_icc, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex32_aij_sbaij_icc, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_aij_sbaij_icc.out
 
 runex32_aij_sbaij_icc_lev1:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -test_sbaij1 -ksp_type cg -pc_type icc -pc_factor_levels 1 > ex32_aij_sbaij_icc.out 2>&1;
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -mat_type aij -ksp_type cg -pc_type icc -pc_factor_mat_ordering_type natural -pc_factor_levels 1 > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_aij_sbaij_icc.out ex32.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex32_aij_sbaij_icc_lev1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex32_aij_sbaij_icc_lev1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_aij_sbaij_icc.out
 
 runex32_aij_sbaij_icc_lev10:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -test_sbaij1 -ksp_type cg -pc_type icc -pc_factor_levels 10 > ex32_aij_sbaij_icc.out 2>&1;
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -mat_type aij -ksp_type cg -pc_type icc -pc_factor_mat_ordering_type natural -pc_factor_levels 10 > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_aij_sbaij_icc.out ex32.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex32_aij_sbaij_icc_lev10, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex32_aij_sbaij_icc_lev10, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_aij_sbaij_icc.out
 
 runex32_aij_sbaij_cholesky:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -test_sbaij1 -pc_type cholesky > ex32_aij_sbaij_icc.out 2>&1;
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -dof 1 -mat_type aij -pc_type cholesky -pc_factor_mat_ordering_type natural > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_aij_sbaij_icc.out ex32.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex32_aij_sbaij_icc_lev1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex32_aij_sbaij_icc_lev1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_aij_sbaij_icc.out
 
 runex32_inode2:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 2 > ex32_inode.out 2>&1;
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 2 -mat_no_inode > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_inode.out ex32.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex32_inode2, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex32_inode2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode.out
 runex32_inode2_nd:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 2 -pc_factor_mat_ordering_type nd > ex32_inode.out 2>&1;
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 2 -pc_factor_mat_ordering_type nd -mat_no_inode > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_inode.out ex32.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex32_inode2_nd, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex32_inode2_nd, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode.out
 
 runex32_inode3:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 3 > ex32_inode.out 2>&1;
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 3 -mat_no_inode > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_inode.out ex32.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex32_inode3, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex32_inode3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode.out
 runex32_inode3_nd:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 3 -pc_factor_mat_ordering_type nd > ex32_inode.out 2>&1;
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 3 -pc_factor_mat_ordering_type nd -mat_no_inode > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_inode.out ex32.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex32_inode3_nd, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex32_inode3_nd, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode.out
 
 runex32_inode4:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 4 > ex32_inode.out 2>&1;
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 4 -mat_no_inode > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_inode.out ex32.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex32_inode4, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex32_inode4, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode.out
 runex32_inode4_nd:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 4 -pc_factor_mat_ordering_type nd > ex32_inode.out 2>&1;
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 4 -pc_factor_mat_ordering_type nd -mat_no_inode > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_inode.out ex32.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex32_inode4_nd, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex32_inode4_nd, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode.out
 
 runex32_inode5:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 5 > ex32_inode.out 2>&1;
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 5 -mat_no_inode > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_inode.out ex32.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex32_inode5, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex32_inode5, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode.out
 runex32_inode5_nd:
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 5 -pc_factor_mat_ordering_type nd > ex32_inode.out 2>&1;
 	-@${MPIEXEC} -n 1 ./ex32 -ksp_monitor_short -mat_type aij -dof 5 -pc_factor_mat_ordering_type nd -mat_no_inode > ex32.tmp 2>&1; \
 	if (${DIFF} ex32_inode.out ex32.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex32_inode5_nd, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex32_inode5_nd, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex32.tmp; ${RM} -f ex32_inode.out
 
 runex33:
 	-@${MPIEXEC} -n 1 ./ex33 -sigma 2.0 > ex33.tmp 2>&1; \
 	if (${DIFF} output/ex33.out ex33.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex33, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex33, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex33.tmp
 runex33_mumps:
 	-@${MPIEXEC} -n 1 ./ex33 -sigma 2.0 -pc_factor_mat_solver_package mumps -mat_mumps_icntl_13 1 > ex33.tmp 2>&1; \
 	if (${DIFF} output/ex33.out ex33.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex33_mumps, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex33_mumps, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex33.tmp
 runex33_mumps_2:
 	-@${MPIEXEC} -n 3 ./ex33 -sigma 2.0 -pc_factor_mat_solver_package mumps -mat_mumps_icntl_13 1 > ex33.tmp 2>&1; \
 	if (${DIFF} output/ex33.out ex33.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex33_mumps_2, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex33_mumps_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex33.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
-runex34:
-	-@${MPIEXEC} -n 2 ./ex34 -f  ${DATAFILESPATH}/matrices/small -nodesize 2 > ex34.tmp 2>&1; \
-	if (${DIFF} output/ex34_1.out ex34.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex34, diffs above \n========================================="; fi; \
-	   ${RM} -f ex34.tmp
-
 runex35_1:
 	-@${MPIEXEC} -n 1 ./ex35 -dof 1 -mat_view -check_final_residual> ex35.tmp 2>&1;\
 	if (${DIFF} output/ex35_1.out ex35.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex35_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex35_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex35.tmp
 
 runex35_2:
 	-@${MPIEXEC} -n 1 ./ex35 -dof 1 -mat_view -test_sbaij -pc_type icc -check_final_residual> ex35.tmp 2>&1;\
 	if (${DIFF} output/ex35_2.out ex35.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex35_2, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex35_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex35.tmp
 
 runex35_inode:
@@ -793,135 +787,135 @@ runex35_inode:
 	${MPIEXEC} -n 1 ./ex35 -dof 4 -check_final_residual>> ex35.tmp 2>&1;\
 	${MPIEXEC} -n 1 ./ex35 -dof 5 -check_final_residual>> ex35.tmp 2>&1;\
 	if (${DIFF} output/ex35_3.out ex35.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex35_inode, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex35_inode, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex35.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex37:
 	-@${MPIEXEC} -n 1 ./ex37 -f ${DATAFILESPATH}/matrices/small -nsubcomm 1 > ex37.tmp 2>&1;\
 	if (${DIFF} output/ex37.out ex37.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex37, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex37, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex37.tmp
 runex37_2:
 	-@${MPIEXEC} -n 4 ./ex37 -f ${DATAFILESPATH}/matrices/small -nsubcomm 2 > ex37.tmp 2>&1;\
 	if (${DIFF} output/ex37.out ex37.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex37_2, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex37_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex37.tmp
 runex37_MUMPS:
 	-@${MPIEXEC} -n 4 ./ex37 -f ${DATAFILESPATH}/matrices/small -nsubcomm 2 -pc_factor_mat_solver_package mumps -pc_type lu > ex37.tmp 2>&1;\
 	if (${DIFF} output/ex37.out ex37.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex37_MUMPS, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex37_MUMPS, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex37.tmp
 runex37_3:
 	-@${MPIEXEC} -n 4 ./ex37 -f ${DATAFILESPATH}/matrices/small -nsubcomm 2 -subcomm_type 0 > ex37.tmp 2>&1;\
 	if (${DIFF} output/ex37.out ex37.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex37_4, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex37_4, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex37.tmp
 runex37_4:
 	-@${MPIEXEC} -n 4 ./ex37 -f ${DATAFILESPATH}/matrices/small -nsubcomm 2 -subcomm_type 1 > ex37.tmp 2>&1;\
 	if (${DIFF} output/ex37.out ex37.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex37_4, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex37_4, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex37.tmp
 runex37_5:
 	-@${MPIEXEC} -n 4 ./ex37 -f ${DATAFILESPATH}/matrices/small -nsubcomm 2 -subcomm_type 2 > ex37.tmp 2>&1;\
 	if (${DIFF} output/ex37.out ex37.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex37_5, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex37_5, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex37.tmp
 
 runex38:
 	-@${MPIEXEC} -n 8 ./ex38 -ksp_type fbcgs -ksp_rtol 1.e-6 -sub_ksp_type bcgs -sub_ksp_rtol 1.e-3 -pc_type bjacobi -ksp_converged_reason -n1 64 -n2 64 > ex38.tmp 2>&1;\
 	if (${DIFF} output/ex38.out ex38.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex38_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex38_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex38.tmp
 
 runex39:
 	-@${MPIEXEC} -n 8 ./ex39 -ksp_type fbcgs -ksp_rtol 1.e-6 -sub_ksp_type bcgs -sub_ksp_rtol 1.e-3 -pc_type bjacobi -ksp_converged_reason -n1 32 -n2 32 -n3 32 > ex39.tmp 2>&1;\
 	if (${DIFF} output/ex39.out ex39.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex39_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex39_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex39.tmp
 runex39_2:
 	-@${MPIEXEC} -n 8 ./ex39 -ksp_type fbcgsr -ksp_rtol 1.e-6 -sub_ksp_type bcgs -sub_ksp_rtol 1.e-3 -pc_type bjacobi -ksp_converged_reason -n1 32 -n2 32 -n3 32 > ex39.tmp 2>&1;\
 	if (${DIFF} output/ex39.out ex39.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex39_2, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex39_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex39.tmp
 runex39_cheby_hybrid:
 	-@${MPIEXEC} -n 3 ./ex39 -beta -0.6 -ksp_type chebyshev -ksp_monitor_short -est_ksp_monitor_short -ksp_chebyshev_hybrid -ksp_chebyshev_hybrid_eststeps 5 -ksp_chebyshev_hybrid_chebysteps 6 -ksp_chebyshev_hybrid_purification > ex39.tmp 2>&1;\
 	if (${DIFF} output/ex39_cheby_hybrid.out ex39.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex39_cheby_hybrid, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex39_cheby_hybrid, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex39.tmp
 runex39_fgmres_cheby_hybrid:
 	-@${MPIEXEC} -n 3 ./ex39 -beta -0.6 -ksp_type fgmres -pc_type ksp -ksp_ksp_type chebyshev -ksp_monitor_short -ksp_ksp_max_it 3 -ksp_ksp_chebyshev_hybrid -ksp_ksp_chebyshev_hybrid_chebysteps 2 -ksp_ksp_chebyshev_hybrid_eststeps 2 -ksp_ksp_norm_type none > ex39.tmp 2>&1;\
 	if (${DIFF} output/ex39_fgmres_cheby_hybrid.out ex39.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex39_fgmres_cheby_hybrid, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex39_fgmres_cheby_hybrid, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex39.tmp
 
 runex40:
 	-@${MPIEXEC} -n 6 ./ex40 -pc_type none  > ex40.tmp 2>&1;\
 	if (${DIFF} output/ex40.out ex40.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex40_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex40_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex40.tmp
 runex40_2:
 	-@${MPIEXEC} -n 6 ./ex40 -pc_type lu -pc_factor_mat_solver_package elemental > ex40.tmp 2>&1;\
 	if (${DIFF} output/ex40_2.out ex40.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex40_2, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex40_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex40.tmp
 
 runex42:
 	-@${MPIEXEC} -n 1 ./ex42 -ksp_type minres -pc_type none -ksp_converged_reason > ex42.tmp 2>&1;\
 	if (${DIFF} output/ex42.out ex42.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex42_1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex42_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex42.tmp
 runex42_2:
 	-@${MPIEXEC} -n 3 ./ex42 -ksp_type minres -pc_type none -ksp_converged_reason > ex42.tmp 2>&1;\
 	if (${DIFF} output/ex42_2.out ex42.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex42_2, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex42_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex42.tmp
 
 runex43:
 	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse -mat_cusparse_storage_format ell -vec_type seqcusp -pc_type ilu > ex43.tmp 2>&1;\
 	if (${DIFF} output/ex43.out ex43.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex43, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex43, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex43.tmp
 
 runex43_2:
 	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type seqaijcusparse -mat_cusparse_storage_format hyb -vec_type seqcusp -ksp_type cg -pc_type icc > ex43_2.tmp 2>&1;\
 	if (${DIFF} output/ex43_2.out ex43_2.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex43_2, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex43_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex43_2.tmp
 
 runex43_3:
 	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse -mat_cusparse_storage_format csr -vec_type seqcusp -ksp_type bicg -pc_type ilu > ex43_3.tmp 2>&1;\
 	if (${DIFF} output/ex43_3.out ex43_3.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex43_3, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex43_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex43_3.tmp
 
 runex43_4:
 	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse -mat_cusparse_storage_format csr -vec_type seqcusp -ksp_type bicg -pc_type ilu -pc_factor_mat_ordering_type nd > ex43_4.tmp 2>&1;\
 	if (${DIFF} output/ex43_4.out ex43_4.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex43_4, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex43_4, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex43_4.tmp
 
 runex43_5:
 	-@${MPIEXEC} -n 2 ./ex43 -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type mpiaijcusparse -mat_cusparse_mult_diag_storage_format hyb -pc_type none -vec_type mpicusp > ex43_5.tmp 2>&1;\
 	if (${DIFF} output/ex43_5.out ex43_5.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex43_5, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex43_5, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex43_5.tmp
 
 runex43_6:
 	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type seqaijcusp -pc_type none -vec_type seqcusp > ex43_6.tmp 2>&1;\
 	if (${DIFF} output/ex43_6.out ex43_6.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex43_6, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex43_6, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex43_6.tmp
 
 runex43_7:
 	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type seqaijcusp -mat_cusp_mult_storage_format ell -pc_type none -vec_type seqcusp > ex43_7.tmp 2>&1;\
 	if (${DIFF} output/ex43_7.out ex43_7.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex43_7, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex43_7, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex43_7.tmp
 
 runex43_8:
 	-@${MPIEXEC} -n 2 ./ex43 -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type mpiaijcusp -pc_type none -vec_type mpicusp > ex43_8.tmp 2>&1;\
 	if (${DIFF} output/ex43_8.out ex43_8.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex43_8, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with with ex43_8, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex43_8.tmp
 
 
@@ -940,16 +934,16 @@ runex44:
 	  for bs in $$bss; do \
 	    ${MPIEXEC} -n 1 ./ex44 ${EX44RICH} -mat_type $$mt -mat_block_size $$bs > ex44.tmp 2>&1;\
 	    if (${DIFF} output/ex44_aij_zero.out ex44.tmp) then true; \
-	       else echo ${PWD} ; echo "Possible problem with with ex44 -mat_type $$mt -mat_block_size $$bs, diffs above \n========================================="; fi; \
+	       else printf "${PWD}\nPossible problem with with ex44 -mat_type $$mt -mat_block_size $$bs, diffs above\n=========================================\n"; fi; \
 	    ${MPIEXEC} -n 1 ./ex44 ${EX44RICHNONZ} -mat_type $$mt -mat_block_size $$bs > ex44.tmp 2>&1;\
 	    if (${DIFF} output/ex44_aij_nonz.out ex44.tmp) then true; \
-	       else echo ${PWD} ; echo "Possible problem with with ex44 -mat_type $$mt -mat_block_size $$bs -ksp_initial_guess_nonzero, diffs above \n========================================="; fi; \
+	       else printf "${PWD}\nPossible problem with with ex44 -mat_type $$mt -mat_block_size $$bs -ksp_initial_guess_nonzero, diffs above\n=========================================\n"; fi; \
 		  ${RM} ex44.tmp; \
 	  done \
 	done
 
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_3 \
-                                 runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc runex19 runex19_2 ex19.rm \
+                                 runex4_5 ex4.rm ex7.PETSc ex7.rm ex14.PETSc ex14.rm ex19.PETSc runex19 runex19_2 ex19.rm \
                                  ex22.PETSc runex22 runex22_2 ex22.rm \
                                  ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm \
                                  ex26.PETSc runex26 runex26_2 ex26.rm ex27.PETSc ex27.rm \
@@ -973,7 +967,7 @@ TESTEXAMPLES_DATAFILESPATH     = ex6.PETSc runex6 runex6_2 ex6.rm ex11.PETSc run
                                  ex25.PETSc runex25 runex25_2 ex25.rm ex27.PETSc runex27 ex25.rm \
                                  ex30.PETSc runex30 runex30_2 runex30_shift runex30_shift_cholesky_aij runex30_shift_cholesky_sbaij ex30.rm \
                                  ex31.PETSc runex31 ex31.rm \
-                                 ex34.PETSc runex34 ex34.rm ex37.PETSc runex37 runex37_2 runex37_3 runex37_4 runex37_5 ex37.rm \
+                                 ex37.PETSc runex37 runex37_2 runex37_3 runex37_4 runex37_5 ex37.rm \
                                  ex12f.PETSc runex12f ex12f.rm ex16f.PETSc runex16f ex16f.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX =
 TESTEXAMPLES_13		       = ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex5f.PETSc ex5f.rm

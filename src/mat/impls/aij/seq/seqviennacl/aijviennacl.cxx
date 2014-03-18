@@ -5,13 +5,13 @@
   matrix storage format.
 */
 
-#include "petscconf.h"
-#include "../src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
-#include "petscbt.h"
-#include "../src/vec/vec/impls/dvecimpl.h"
-#include "petsc-private/vecimpl.h"
+#include <petscconf.h>
+#include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
+#include <petscbt.h>
+#include <../src/vec/vec/impls/dvecimpl.h>
+#include <petsc-private/vecimpl.h>
 
-#include "../src/mat/impls/aij/seq/seqviennacl/viennaclmatimpl.h"
+#include <../src/mat/impls/aij/seq/seqviennacl/viennaclmatimpl.h>
 
 
 #include <algorithm>
@@ -27,7 +27,6 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
 
   Mat_SeqAIJViennaCL *viennaclstruct = (Mat_SeqAIJViennaCL*)A->spptr;
   Mat_SeqAIJ         *a              = (Mat_SeqAIJ*)A->data;
-  PetscInt           *ii;
   PetscErrorCode     ierr;
 
 
@@ -37,17 +36,28 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
       ierr = PetscLogEventBegin(MAT_ViennaCLCopyToGPU,A,0,0,0);CHKERRQ(ierr);
 
       try {
-        viennaclstruct->mat = new ViennaCLAIJMatrix();
+        ierr = PetscObjectSetFromOptions_ViennaCL((PetscObject)A);CHKERRQ(ierr); /* Allows to set device type before allocating any objects */
         if (a->compressedrow.use) {
-          ii = a->compressedrow.i;
+          if (!viennaclstruct->compressed_mat) viennaclstruct->compressed_mat = new ViennaCLCompressedAIJMatrix();
 
-          viennaclstruct->mat->set(ii, a->j, a->a, A->rmap->n, A->cmap->n, a->nz);
+          // Since PetscInt is different from cl_uint, we have to convert:
+          viennacl::backend::mem_handle dummy;
 
-          // TODO: Either convert to full CSR (inefficient), or hold row indices in temporary vector (requires additional bookkeeping for matrix-vector multiplications)
-          //       Cannot be reasonably supported in ViennaCL 1.4.x (custom kernels required), hence postponing until there is support for compressed CSR
+          viennacl::backend::typesafe_host_array<unsigned int> row_buffer; row_buffer.raw_resize(dummy, a->compressedrow.nrows+1);
+          for (PetscInt i=0; i<=a->compressedrow.nrows; ++i)
+            row_buffer.set(i, (a->compressedrow.i)[i]);
 
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: Compressed CSR (only nonzero rows) not yet supported");
+          viennacl::backend::typesafe_host_array<unsigned int> row_indices; row_indices.raw_resize(dummy, a->compressedrow.nrows);
+          for (PetscInt i=0; i<a->compressedrow.nrows; ++i)
+            row_indices.set(i, (a->compressedrow.rindex)[i]);
+
+          viennacl::backend::typesafe_host_array<unsigned int> col_buffer; col_buffer.raw_resize(dummy, a->nz);
+          for (PetscInt i=0; i<a->nz; ++i)
+            col_buffer.set(i, (a->j)[i]);
+
+          viennaclstruct->compressed_mat->set(row_buffer.get(), row_indices.get(), col_buffer.get(), a->a, A->rmap->n, A->cmap->n, a->compressedrow.nrows, a->nz);
         } else {
+          if (!viennaclstruct->mat) viennaclstruct->mat = new ViennaCLAIJMatrix();
 
           // Since PetscInt is in general different from cl_uint, we have to convert:
           viennacl::backend::mem_handle dummy;
@@ -65,6 +75,18 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
         ViennaCLWaitForGPU();
       } catch(std::exception const & ex) {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
+      }
+
+      // Create temporary vector for v += A*x:
+      if (viennaclstruct->tempvec) {
+        if (viennaclstruct->tempvec->size() != static_cast<std::size_t>(a->nz)) {
+          delete (ViennaCLVector*)viennaclstruct->tempvec;
+          viennaclstruct->tempvec = new ViennaCLVector(a->nz);
+        } else {
+          viennaclstruct->tempvec->clear();
+        }
+      } else {
+        viennaclstruct->tempvec = new ViennaCLVector(a->nz);
       }
 
       A->valid_GPU_matrix = PETSC_VIENNACL_BOTH;
@@ -102,14 +124,14 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
           if (a->j) {ierr = PetscFree(a->j);CHKERRQ(ierr);}
           if (a->a) {ierr = PetscFree(a->a);CHKERRQ(ierr);}
         }
-        ierr = PetscMalloc3(a->nz,PetscScalar,&a->a,a->nz,PetscInt,&a->j,m+1,PetscInt,&a->i);CHKERRQ(ierr);
+        ierr = PetscMalloc3(a->nz,&a->a,a->nz,&a->j,m+1,&a->i);CHKERRQ(ierr);
         ierr = PetscLogObjectMemory((PetscObject)A, a->nz*(sizeof(PetscScalar)+sizeof(PetscInt))+(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
 
         a->singlemalloc = PETSC_TRUE;
 
         /* Setup row lengths */
         if (a->imax) {ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);}
-        ierr = PetscMalloc2(m,PetscInt,&a->imax,m,PetscInt,&a->ilen);CHKERRQ(ierr);
+        ierr = PetscMalloc2(m,&a->imax,m,&a->ilen);CHKERRQ(ierr);
         ierr = PetscLogObjectMemory((PetscObject)A, 2*m*sizeof(PetscInt));CHKERRQ(ierr);
 
         /* Copy data back from GPU */
@@ -155,19 +177,21 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
 PetscErrorCode MatGetVecs_SeqAIJViennaCL(Mat mat, Vec *right, Vec *left)
 {
   PetscErrorCode ierr;
+  PetscInt rbs,cbs;
 
   PetscFunctionBegin;
+  ierr = MatGetBlockSizes(mat,&rbs,&cbs);CHKERRQ(ierr);
   if (right) {
     ierr = VecCreate(PetscObjectComm((PetscObject)mat),right);CHKERRQ(ierr);
     ierr = VecSetSizes(*right,mat->cmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(*right,mat->rmap->bs);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(*right,cbs);CHKERRQ(ierr);
     ierr = VecSetType(*right,VECSEQVIENNACL);CHKERRQ(ierr);
     ierr = PetscLayoutReference(mat->cmap,&(*right)->map);CHKERRQ(ierr);
   }
   if (left) {
     ierr = VecCreate(PetscObjectComm((PetscObject)mat),left);CHKERRQ(ierr);
     ierr = VecSetSizes(*left,mat->rmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(*left,mat->rmap->bs);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(*left,rbs);CHKERRQ(ierr);
     ierr = VecSetType(*left,VECSEQVIENNACL);CHKERRQ(ierr);
     ierr = PetscLayoutReference(mat->rmap,&(*left)->map);CHKERRQ(ierr);
   }
@@ -221,15 +245,18 @@ PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A,Vec xx,Vec yy,Vec zz)
       ierr = VecViennaCLGetArrayWrite(zz,&zgpu);CHKERRQ(ierr);
 
       if (a->compressedrow.use) {
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: Compressed CSR (only nonzero rows) not yet supported");
+        ViennaCLVector temp = viennacl::linalg::prod(*viennaclstruct->compressed_mat, *xgpu);
+        *zgpu = *ygpu + temp;
+        ViennaCLWaitForGPU();
       } else {
         if (zz == xx || zz == yy) { //temporary required
           ViennaCLVector temp = viennacl::linalg::prod(*viennaclstruct->mat, *xgpu);
-          *zgpu = *ygpu + temp;
+          *zgpu = *ygpu;
+          *zgpu += temp;
           ViennaCLWaitForGPU();
         } else {
-          *zgpu = viennacl::linalg::prod(*viennaclstruct->mat, *xgpu);
-          *zgpu += *ygpu;
+          *viennaclstruct->tempvec = viennacl::linalg::prod(*viennaclstruct->mat, *xgpu);
+          *zgpu = *ygpu + *viennaclstruct->tempvec;
           ViennaCLWaitForGPU();
         }
       }
@@ -330,7 +357,9 @@ PetscErrorCode MatDestroy_SeqAIJViennaCL(Mat A)
 
   PetscFunctionBegin;
   try {
-    if (A->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) delete (ViennaCLAIJMatrix*)(viennaclcontainer->mat);
+    if (!viennaclcontainer->tempvec)        delete viennaclcontainer->tempvec;
+    if (!viennaclcontainer->mat)            delete viennaclcontainer->mat;
+    if (!viennaclcontainer->compressed_mat) delete viennaclcontainer->compressed_mat;
     delete viennaclcontainer;
     A->valid_GPU_matrix = PETSC_VIENNACL_UNALLOCATED;
   } catch(std::exception const & ex) {
@@ -358,13 +387,14 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJViennaCL(Mat B)
   B->ops->multadd = MatMultAdd_SeqAIJViennaCL;
   B->spptr        = new Mat_SeqAIJViennaCL();
 
-  ((Mat_SeqAIJViennaCL*)B->spptr)->mat = 0;
+  ((Mat_SeqAIJViennaCL*)B->spptr)->tempvec        = NULL;
+  ((Mat_SeqAIJViennaCL*)B->spptr)->mat            = NULL;
+  ((Mat_SeqAIJViennaCL*)B->spptr)->compressed_mat = NULL;
 
   B->ops->assemblyend    = MatAssemblyEnd_SeqAIJViennaCL;
   B->ops->destroy        = MatDestroy_SeqAIJViennaCL;
   B->ops->getvecs        = MatGetVecs_SeqAIJViennaCL;
 
-  ierr = MatSetFromOptions_SeqViennaCL(B);CHKERRQ(ierr); /* Allows to set device type before allocating any objects */
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJVIENNACL);CHKERRQ(ierr);
 
   B->valid_GPU_matrix = PETSC_VIENNACL_UNALLOCATED;

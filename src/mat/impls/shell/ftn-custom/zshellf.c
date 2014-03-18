@@ -149,7 +149,7 @@ PETSC_EXTERN void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,
     *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction)ourshift);
     ((PetscObject)*mat)->fortran_func_pointers[10] = (PetscVoidFunction)f;
   } else {
-    PetscError(comm,__LINE__,"MatShellSetOperation_Fortran",__FILE__,__SDIR__,PETSC_ERR_ARG_WRONG,PETSC_ERROR_INITIAL,
+    PetscError(comm,__LINE__,"MatShellSetOperation_Fortran",__FILE__,PETSC_ERR_ARG_WRONG,PETSC_ERROR_INITIAL,
                "Cannot set that matrix operation");
     *ierr = 1;
   }

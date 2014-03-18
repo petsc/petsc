@@ -30,7 +30,10 @@ typedef float PetscReal;
 #define PetscLogReal(a)     log(a)
 #define PetscSinReal(a)     sin(a)
 #define PetscCosReal(a)     cos(a)
+#define PetscAsinReal(a)    asin(a)
+#define PetscAcosReal(a)    acos(a)
 #define PetscPowReal(a,b)   pow(a,b)
+#define PetscTGamma(a)      tgammaf(a)
 #elif defined(PETSC_USE_REAL_DOUBLE)
 #define MPIU_REAL   MPI_DOUBLE
 typedef double PetscReal;
@@ -39,7 +42,10 @@ typedef double PetscReal;
 #define PetscLogReal(a)     log(a)
 #define PetscSinReal(a)     sin(a)
 #define PetscCosReal(a)     cos(a)
+#define PetscAsinReal(a)    asin(a)
+#define PetscAcosReal(a)    acos(a)
 #define PetscPowReal(a,b)   pow(a,b)
+#define PetscTGamma(a)      tgamma(a)
 #elif defined(PETSC_USE_REAL___FLOAT128)
 #if defined(__cplusplus)
 extern "C" {
@@ -56,13 +62,16 @@ typedef __float128 PetscReal;
 #define PetscLogReal(a)     logq(a)
 #define PetscSinReal(a)     sinq(a)
 #define PetscCosReal(a)     cosq(a)
+#define PetscAsinReal(a)    asinq(a)
+#define PetscAcosReal(a)    acosq(a)
 #define PetscPowReal(a,b)   powq(a,b)
+#define PetscTGamma(a)      tgammaq(a)
 #endif /* PETSC_USE_REAL_* */
 
 /*
     Complex number definitions
  */
-#if defined(PETSC_CLANGUAGE_CXX) && defined(PETSC_HAVE_CXX_COMPLEX)
+#if defined(PETSC_CLANGUAGE_CXX) && defined(PETSC_HAVE_CXX_COMPLEX) && !defined(PETSC_USE_REAL___FLOAT128)
 #if defined(PETSC_USE_COMPLEX) || defined(PETSC_DESIRE_COMPLEX)
 #define PETSC_HAVE_COMPLEX 1
 /* C++ support of complex number */
@@ -84,6 +93,8 @@ typedef __float128 PetscReal;
 #define PetscLogComplex(a)           complexlib::log(a)
 #define PetscSinComplex(a)           complexlib::sin(a)
 #define PetscCosComplex(a)           complexlib::cos(a)
+#define PetscAsinComplex(a)          complexlib::asin(a)
+#define PetscAcosComplex(a)          complexlib::acos(a)
 
 #if defined(PETSC_USE_REAL_SINGLE)
 typedef complexlib::complex<float> PetscComplex;
@@ -92,7 +103,7 @@ typedef complexlib::complex<double> PetscComplex;
 #elif defined(PETSC_USE_REAL___FLOAT128)
 typedef complexlib::complex<__float128> PetscComplex; /* Notstandard and not expected to work, use __complex128 */
 #endif  /* PETSC_USE_REAL_ */
-#endif  /* PETSC_USE_COMPLEX && PETSC_DESIRE_COMPLEX */
+#endif  /* PETSC_USE_COMPLEX || PETSC_DESIRE_COMPLEX */
 
 #elif defined(PETSC_CLANGUAGE_C) && defined(PETSC_HAVE_C99_COMPLEX)
 /* Use C99 _Complex for the type. Do not include complex.h by default to define "complex" because of symbol conflicts in Hypre. */
@@ -114,6 +125,8 @@ typedef float _Complex PetscComplex;
 #define PetscLogComplex(a)           clogf(a)
 #define PetscSinComplex(a)           csinf(a)
 #define PetscCosComplex(a)           ccosf(a)
+#define PetscAsinComplex(a)          casinf(a)
+#define PetscAcosComplex(a)          cacosf(a)
 
 #elif defined(PETSC_USE_REAL_DOUBLE)
 typedef double _Complex PetscComplex;
@@ -128,6 +141,8 @@ typedef double _Complex PetscComplex;
 #define PetscLogComplex(a)           clog(a)
 #define PetscSinComplex(a)           csin(a)
 #define PetscCosComplex(a)           ccos(a)
+#define PetscAsinComplex(a)          casin(a)
+#define PetscAcosComplex(a)          cacos(a)
 
 #elif defined(PETSC_USE_REAL___FLOAT128)
 typedef __complex128 PetscComplex;
@@ -143,6 +158,8 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128 PetscAttrMPITypeTag(__complex128);
 #define PetscLogComplex(a)           clogq(a)
 #define PetscSinComplex(a)           csinq(a)
 #define PetscCosComplex(a)           ccosq(a)
+#define PetscAsinComplex(a)          casinq(a)
+#define PetscAcosComplex(a)          cacosq(a)
 #endif /* PETSC_USE_REAL_* */
 #elif defined(PETSC_USE_COMPLEX)
 #error "PETSc was configured --with-scalar-type=complex, but a language-appropriate complex library is not available"
@@ -191,6 +208,8 @@ typedef PetscComplex PetscScalar;
 #define PetscLogScalar(a)     PetscLogComplex(a)
 #define PetscSinScalar(a)     PetscSinComplex(a)
 #define PetscCosScalar(a)     PetscCosComplex(a)
+#define PetscAsinScalar(a)    PetscAsinComplex(a)
+#define PetscAcosScalar(a)    PetscAcosComplex(a)
 
 #define MPIU_SCALAR MPIU_COMPLEX
 
@@ -212,6 +231,8 @@ PETSC_STATIC_INLINE PetscReal PetscAbsScalar(PetscScalar a) {return a < 0.0 ? -a
 #define PetscLogScalar(a)     log(a)
 #define PetscSinScalar(a)     sin(a)
 #define PetscCosScalar(a)     cos(a)
+#define PetscAsinScalar(a)    asin(a)
+#define PetscAcosScalar(a)    acos(a)
 #else /* PETSC_USE_REAL___FLOAT128 */
 #define PetscSqrtScalar(a)    sqrtq(a)
 #define PetscPowScalar(a,b)   powq(a,b)
@@ -219,6 +240,8 @@ PETSC_STATIC_INLINE PetscReal PetscAbsScalar(PetscScalar a) {return a < 0.0 ? -a
 #define PetscLogScalar(a)     logq(a)
 #define PetscSinScalar(a)     sinq(a)
 #define PetscCosScalar(a)     cosq(a)
+#define PetscAsinScalar(a)    asinq(a)
+#define PetscAcosScalar(a)    acosq(a)
 #endif /* PETSC_USE_REAL___FLOAT128 */
 
 #endif /* PETSC_USE_COMPLEX */
@@ -243,7 +266,7 @@ PETSC_EXTERN PetscComplex PETSC_i;
    PetscMin - Returns minimum of two numbers
 
    Synopsis:
-   #include "petscmath.h"
+   #include <petscmath.h>
    type PetscMin(type v1,type v2)
 
    Not Collective
@@ -252,11 +275,9 @@ PETSC_EXTERN PetscComplex PETSC_i;
 +  v1 - first value to find minimum of
 -  v2 - second value to find minimum of
 
-
    Notes: type can be integer or floating point value
 
    Level: beginner
-
 
 .seealso: PetscMin(), PetscClipInterval(), PetscAbsInt(), PetscAbsReal(), PetscSqr()
 
@@ -267,7 +288,7 @@ M*/
    PetscMax - Returns maxium of two numbers
 
    Synopsis:
-   #include "petscmath.h"
+   #include <petscmath.h>
    type max PetscMax(type v1,type v2)
 
    Not Collective
@@ -289,7 +310,7 @@ M*/
    PetscClipInterval - Returns a number clipped to be within an interval
 
    Synopsis:
-   #include "petscmath.h"
+   #include <petscmath.h>
    type clip PetscClipInterval(type x,type a,type b)
 
    Not Collective
@@ -312,7 +333,7 @@ M*/
    PetscAbsInt - Returns the absolute value of an integer
 
    Synopsis:
-   #include "petscmath.h"
+   #include <petscmath.h>
    int abs PetscAbsInt(int v1)
 
    Not Collective
@@ -331,7 +352,7 @@ M*/
    PetscAbsReal - Returns the absolute value of an real number
 
    Synopsis:
-   #include "petscmath.h"
+   #include <petscmath.h>
    Real abs PetscAbsReal(PetscReal v1)
 
    Not Collective
@@ -351,7 +372,7 @@ M*/
    PetscSqr - Returns the square of a number
 
    Synopsis:
-   #include "petscmath.h"
+   #include <petscmath.h>
    type sqr PetscSqr(type v1)
 
    Not Collective
@@ -408,8 +429,13 @@ M*/
 #  define PETSC_SMALL                   1.e-20
 #endif
 
+#define PETSC_INFINITY                PETSC_MAX_REAL/4.0
+#define PETSC_NINFINITY              -PETSC_INFINITY
+
 PETSC_EXTERN PetscErrorCode PetscIsInfOrNanScalar(PetscScalar);
 PETSC_EXTERN PetscErrorCode PetscIsInfOrNanReal(PetscReal);
+PETSC_EXTERN PetscBool PetscIsNormalScalar(PetscScalar);
+PETSC_EXTERN PetscBool PetscIsNormalReal(PetscReal);
 
 /* ----------------------------------------------------------------------------*/
 #define PassiveReal   PetscReal
@@ -432,7 +458,8 @@ PETSC_EXTERN MPI_Datatype MPIU_2INT PetscAttrMPITypeTagLayoutCompatible(struct p
 #define MPIU_2INT MPI_2INT
 #endif
 
-PETSC_STATIC_INLINE PetscInt PetscPowInt(PetscInt base,PetscInt power) {
+PETSC_STATIC_INLINE PetscInt PetscPowInt(PetscInt base,PetscInt power) 
+{
   PetscInt result = 1;
   while (power) {
     if (power & 1) result *= base;
@@ -441,8 +468,14 @@ PETSC_STATIC_INLINE PetscInt PetscPowInt(PetscInt base,PetscInt power) {
   }
   return result;
 }
-PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power) {
+
+PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power) 
+{
   PetscReal result = 1;
+  if (power < 0) {
+    power = -power;
+    if (base != 0.0) base  = 1./base;
+  }
   while (power) {
     if (power & 1) result *= base;
     power >>= 1;
@@ -451,4 +484,24 @@ PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power) {
   return result;
 }
 
+PETSC_STATIC_INLINE PetscScalar PetscPowScalarInt(PetscScalar base,PetscInt power) 
+{
+  PetscScalar result = 1;
+  if (power < 0) {
+    power = -power;
+    if (base != 0.0) base  = 1./base;
+  }
+  while (power) {
+    if (power & 1) result *= base;
+    power >>= 1;
+    base *= base;
+  }
+  return result;
+}
+
+PETSC_STATIC_INLINE PetscScalar PetscPowScalarReal(PetscScalar base,PetscReal power)
+{
+  PetscScalar cpower = power;
+  return PetscPowScalar(base,cpower);
+}
 #endif

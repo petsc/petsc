@@ -40,6 +40,18 @@
 #  define PETSC_FUNCTION_NAME PETSC_FUNCTION_NAME_C
 #endif
 
+#if defined(__cplusplus)
+#  define PETSC_RESTRICT PETSC_CXX_RESTRICT
+#else
+#  define PETSC_RESTRICT PETSC_C_RESTRICT
+#endif
+
+#if defined(__cplusplus)
+#  define PETSC_STATIC_INLINE PETSC_CXX_STATIC_INLINE
+#else
+#  define PETSC_STATIC_INLINE PETSC_C_STATIC_INLINE
+#endif
+
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES) /* For Win32 shared libraries */
 #  define PETSC_DLLEXPORT __declspec(dllexport)
 #  define PETSC_DLLIMPORT __declspec(dllimport)
@@ -118,7 +130,7 @@
 #endif
 
 /*MC
-    PetscErrorCode - datatype used for return error code from all PETSc functions
+    PetscErrorCode - datatype used for return error code from almost all PETSc functions
 
     Level: beginner
 
@@ -129,11 +141,14 @@ typedef int PetscErrorCode;
 /*MC
 
     PetscClassId - A unique id used to identify each PETSc class.
-         (internal integer in the data structure used for error
-         checking). These are all computed by an offset from the lowest
-         one, PETSC_SMALLEST_CLASSID.
 
-    Level: advanced
+    Notes: Use PetscClassIdRegister() to obtain a new value for a new class being created. Usually
+         XXXInitializePackage() calls it for each class it defines.
+
+    Developer Notes: Internal integer stored in the _p_PetscObject data structure.
+         These are all computed by an offset from the lowest one, PETSC_SMALLEST_CLASSID.
+
+    Level: developer
 
 .seealso: PetscClassIdRegister(), PetscLogEventRegister(), PetscHeaderCreate()
 M*/
@@ -166,6 +181,10 @@ M*/
 typedef enum { ENUM_DUMMY } PetscEnum;
 PETSC_EXTERN MPI_Datatype MPIU_ENUM PetscAttrMPITypeTag(PetscEnum);
 
+#if defined(PETSC_HAVE_STDINT_H)
+#include <stdint.h>
+#endif
+
 /*MC
     PetscInt - PETSc type that represents integer - used primarily to
       represent size of arrays and indexing into arrays. Its size can be configured with the option
@@ -175,7 +194,9 @@ PETSC_EXTERN MPI_Datatype MPIU_ENUM PetscAttrMPITypeTag(PetscEnum);
 
 .seealso: PetscScalar, PetscBLASInt, PetscMPIInt
 M*/
-#if (PETSC_SIZEOF_LONG_LONG == 8)
+#if defined(PETSC_HAVE_STDINT_H)
+typedef int64_t Petsc64bitInt;
+#elif (PETSC_SIZEOF_LONG_LONG == 8)
 typedef long long Petsc64bitInt;
 #elif defined(PETSC_HAVE___INT64)
 typedef __int64 Petsc64bitInt;
@@ -184,10 +205,19 @@ typedef unknown64bit Petsc64bitInt
 #endif
 #if defined(PETSC_USE_64BIT_INDICES)
 typedef Petsc64bitInt PetscInt;
-#define MPIU_INT MPI_LONG_LONG_INT
+#  if defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
+#    define MPIU_INT MPI_INT64_T
+#  else
+#    define MPIU_INT MPI_LONG_LONG_INT
+#  endif
 #else
 typedef int PetscInt;
 #define MPIU_INT MPI_INT
+#endif
+#if defined(PETSC_HAVE_MPI_INT64_T)
+#  define MPIU_INT64 MPI_INT64_T
+#else
+#  define MPIU_INT64 MPI_LONG_LONG_INT
 #endif
 
 
@@ -265,7 +295,7 @@ PETSC_EXTERN FILE* PETSC_STDERR;
     PetscUnlikely - hints the compiler that the given condition is usually FALSE
 
     Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
     PetscBool  PetscUnlikely(PetscBool  cond)
 
     Not Collective
@@ -285,7 +315,7 @@ M*/
     PetscLikely - hints the compiler that the given condition is usually TRUE
 
     Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
     PetscBool  PetscUnlikely(PetscBool  cond)
 
     Not Collective
@@ -309,11 +339,6 @@ M*/
 #endif
 
 /*
-    Defines some elementary mathematics functions and constants.
-*/
-#include <petscmath.h>
-
-/*
     Declare extern C stuff after including external header files
 */
 
@@ -334,6 +359,11 @@ E*/
 typedef enum { PETSC_FALSE,PETSC_TRUE } PetscBool;
 PETSC_EXTERN const char *const PetscBools[];
 PETSC_EXTERN MPI_Datatype MPIU_BOOL PetscAttrMPITypeTag(PetscBool);
+
+/*
+    Defines some elementary mathematics functions and constants.
+*/
+#include <petscmath.h>
 
 /*E
     PetscCopyMode  - Determines how an array passed to certain functions is copied or retained
@@ -434,7 +464,7 @@ M*/
 
    Level: beginner
 
-   Fortran Notes: You need to use PETSC_DEFAULT_INTEGER or PETSC_DEFAULT_DOUBLE_PRECISION.
+   Fortran Notes: You need to use PETSC_DEFAULT_INTEGER or PETSC_DEFAULT_REAL.
 
 .seealso: PETSC_DECIDE, PETSC_IGNORE, PETSC_DETERMINE
 
@@ -481,7 +511,7 @@ PETSC_EXTERN PetscErrorCode PetscCommDestroy(MPI_Comm*);
    PetscMalloc - Allocates memory
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscMalloc(size_t m,void **result)
 
    Not Collective
@@ -494,23 +524,23 @@ PETSC_EXTERN PetscErrorCode PetscCommDestroy(MPI_Comm*);
 
    Level: beginner
 
-   Notes: Memory is always allocated at least double aligned
+   Notes:
+   Memory is always allocated at least double aligned
 
-          If you request memory of zero size it will allocate no space and assign the pointer to 0; PetscFree() will
-          properly handle not freeing the null pointer.
+   It is safe to allocate size 0 and pass the resulting pointer (which may or may not be NULL) to PetscFree().
 
 .seealso: PetscFree(), PetscNew()
 
   Concepts: memory allocation
 
 M*/
-#define PetscMalloc(a,b)  ((a != 0) ? (*PetscTrMalloc)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,(void**)(b)) : (*(b) = 0,0) )
+#define PetscMalloc(a,b)  ((*PetscTrMalloc)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,(void**)(b)))
 
 /*MC
    PetscAddrAlign - Rounds up an address to PETSC_MEMALIGN alignment
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    void *PetscAddrAlign(void *addr)
 
    Not Collective
@@ -527,19 +557,65 @@ M*/
 #define PetscAddrAlign(a) (void*)((((PETSC_UINTPTR_T)(a))+(PETSC_MEMALIGN-1)) & ~(PETSC_MEMALIGN-1))
 
 /*MC
-   PetscMalloc2 - Allocates 2 chunks of  memory both aligned to PETSC_MEMALIGN
+   PetscMalloc1 - Allocates an array of memory aligned to PETSC_MEMALIGN
 
    Synopsis:
-    #include "petscsys.h"
-   PetscErrorCode PetscMalloc2(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2)
+    #include <petscsys.h>
+   PetscErrorCode PetscMalloc1(size_t m1,type **r1)
+
+   Not Collective
+
+   Input Parameter:
+.  m1 - number of elements to allocate in 1st chunk  (may be zero)
+
+   Output Parameter:
+.  r1 - memory allocated in first chunk
+
+   Level: developer
+
+.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscCalloc1(), PetscMalloc2()
+
+  Concepts: memory allocation
+
+M*/
+#define PetscMalloc1(m1,r1) ((m1) ? PetscMalloc((m1)*sizeof(**(r1)),r1) : (*(r1) = 0,0))
+
+/*MC
+   PetscCalloc1 - Allocates a cleared (zeroed) array of memory aligned to PETSC_MEMALIGN
+
+   Synopsis:
+    #include <petscsys.h>
+   PetscErrorCode PetscCalloc1(size_t m1,type **r1)
+
+   Not Collective
+
+   Input Parameter:
+.  m1 - number of elements to allocate in 1st chunk  (may be zero)
+
+   Output Parameter:
+.  r1 - memory allocated in first chunk
+
+   Level: developer
+
+.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc1(), PetscCalloc2()
+
+  Concepts: memory allocation
+
+M*/
+#define PetscCalloc1(m1,r1) (PetscMalloc1((m1),r1) || PetscMemzero(*(r1),(m1)*sizeof(**(r1))))
+
+/*MC
+   PetscMalloc2 - Allocates 2 arrays of memory both aligned to PETSC_MEMALIGN
+
+   Synopsis:
+    #include <petscsys.h>
+   PetscErrorCode PetscMalloc2(size_t m1,type **r1,size_t m2,type **r2)
 
    Not Collective
 
    Input Parameter:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
-.  t1 - type of first memory elements
-.  m2 - number of elements to allocate in 2nd chunk  (may be zero)
--  t2 - type of second memory elements
+-  m2 - number of elements to allocate in 2nd chunk  (may be zero)
 
    Output Parameter:
 +  r1 - memory allocated in first chunk
@@ -547,33 +623,57 @@ M*/
 
    Level: developer
 
-.seealso: PetscFree(), PetscNew(), PetscMalloc()
+.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc1(), PetscCalloc2()
 
   Concepts: memory allocation
 
 M*/
 #if defined(PETSC_USE_DEBUG)
-#define PetscMalloc2(m1,t1,r1,m2,t2,r2) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2))
+#define PetscMalloc2(m1,r1,m2,r2) (PetscMalloc((m1)*sizeof(**(r1)),r1) || PetscMalloc((m2)*sizeof(**(r2)),r2))
 #else
-#define PetscMalloc2(m1,t1,r1,m2,t2,r2) ((*(r2) = 0,PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(PETSC_MEMALIGN-1),r1)) || (*(r2) = (t2*)PetscAddrAlign(*(r1)+m1),0))
+#define PetscMalloc2(m1,r1,m2,r2) ((((m1)+(m2)) ? (*(r2) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(PETSC_MEMALIGN-1),r1)) : 0) \
+                                   || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),0) \
+                                   || (!(m1) ? (*(r1) = 0,0) : 0) || (!(m2) ? (*(r2) = 0,0) : 0))
 #endif
 
 /*MC
-   PetscMalloc3 - Allocates 3 chunks of  memory  all aligned to PETSC_MEMALIGN
+   PetscCalloc2 - Allocates 2 cleared (zeroed) arrays of memory both aligned to PETSC_MEMALIGN
 
    Synopsis:
-    #include "petscsys.h"
-   PetscErrorCode PetscMalloc3(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3)
+    #include <petscsys.h>
+   PetscErrorCode PetscCalloc2(size_t m1,type **r1,size_t m2,type **r2)
 
    Not Collective
 
    Input Parameter:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
-.  t1 - type of first memory elements
+-  m2 - number of elements to allocate in 2nd chunk  (may be zero)
+
+   Output Parameter:
++  r1 - memory allocated in first chunk
+-  r2 - memory allocated in second chunk
+
+   Level: developer
+
+.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscCalloc1(), PetscMalloc2()
+
+  Concepts: memory allocation
+M*/
+#define PetscCalloc2(m1,r1,m2,r2) (PetscMalloc2((m1),(r1),(m2),(r2)) || PetscMemzero(*(r1),(m1)*sizeof(**(r1))) || PetscMemzero(*(r2),(m2)*sizeof(**(r2))))
+
+/*MC
+   PetscMalloc3 - Allocates 3 arrays of memory, all aligned to PETSC_MEMALIGN
+
+   Synopsis:
+    #include <petscsys.h>
+   PetscErrorCode PetscMalloc3(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3)
+
+   Not Collective
+
+   Input Parameter:
++  m1 - number of elements to allocate in 1st chunk  (may be zero)
 .  m2 - number of elements to allocate in 2nd chunk  (may be zero)
-.  t2 - type of second memory elements
-.  m3 - number of elements to allocate in 3rd chunk  (may be zero)
--  t3 - type of third memory elements
+-  m3 - number of elements to allocate in 3rd chunk  (may be zero)
 
    Output Parameter:
 +  r1 - memory allocated in first chunk
@@ -582,36 +682,62 @@ M*/
 
    Level: developer
 
-.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree3()
+.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscCalloc3(), PetscFree3()
 
   Concepts: memory allocation
 
 M*/
 #if defined(PETSC_USE_DEBUG)
-#define PetscMalloc3(m1,t1,r1,m2,t2,r2,m3,t3,r3) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3))
+#define PetscMalloc3(m1,r1,m2,r2,m3,r3) (PetscMalloc((m1)*sizeof(**(r1)),r1) || PetscMalloc((m2)*sizeof(**(r2)),r2) || PetscMalloc((m3)*sizeof(**(r3)),r3))
 #else
-#define PetscMalloc3(m1,t1,r1,m2,t2,r2,m3,t3,r3) ((*(r2) = 0,*(r3) = 0,PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+2*(PETSC_MEMALIGN-1),r1)) \
-                                                  || (*(r2) = (t2*)PetscAddrAlign(*(r1)+m1),*(r3) = (t3*)PetscAddrAlign(*(r2)+m2),0))
+#define PetscMalloc3(m1,r1,m2,r2,m3,r3) ((((m1)+(m2)+(m3)) ? (*(r2) = 0,*(r3) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+2*(PETSC_MEMALIGN-1),r1)) : 0) \
+                                         || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),*(void**)(r3) = PetscAddrAlign(*(r2)+(m2)),0) \
+                                         || (!(m1) ? (*(r1) = 0,0) : 0) || (!(m2) ? (*(r2) = 0,0) : 0) || (!(m3) ? (*(r3) = 0,0) : 0))
 #endif
 
 /*MC
-   PetscMalloc4 - Allocates 4 chunks of  memory  all aligned to PETSC_MEMALIGN
+   PetscCalloc3 - Allocates 3 cleared (zeroed) arrays of memory, all aligned to PETSC_MEMALIGN
 
    Synopsis:
-    #include "petscsys.h"
-   PetscErrorCode PetscMalloc4(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4)
+    #include <petscsys.h>
+   PetscErrorCode PetscCalloc3(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3)
 
    Not Collective
 
    Input Parameter:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
-.  t1 - type of first memory elements
 .  m2 - number of elements to allocate in 2nd chunk  (may be zero)
-.  t2 - type of second memory elements
+-  m3 - number of elements to allocate in 3rd chunk  (may be zero)
+
+   Output Parameter:
++  r1 - memory allocated in first chunk
+.  r2 - memory allocated in second chunk
+-  r3 - memory allocated in third chunk
+
+   Level: developer
+
+.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscCalloc2(), PetscMalloc3(), PetscFree3()
+
+  Concepts: memory allocation
+M*/
+#define PetscCalloc3(m1,r1,m2,r2,m3,r3)                                 \
+  (PetscMalloc3((m1),(r1),(m2),(r2),(m3),(r3))                          \
+   || PetscMemzero(*(r1),(m1)*sizeof(**(r1))) || PetscMemzero(*(r2),(m2)*sizeof(**(r2))) || PetscMemzero(*(r3),(m3)*sizeof(**(r3))))
+
+/*MC
+   PetscMalloc4 - Allocates 4 arrays of memory, all aligned to PETSC_MEMALIGN
+
+   Synopsis:
+    #include <petscsys.h>
+   PetscErrorCode PetscMalloc4(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4)
+
+   Not Collective
+
+   Input Parameter:
++  m1 - number of elements to allocate in 1st chunk  (may be zero)
+.  m2 - number of elements to allocate in 2nd chunk  (may be zero)
 .  m3 - number of elements to allocate in 3rd chunk  (may be zero)
-.  t3 - type of third memory elements
-.  m4 - number of elements to allocate in 4th chunk  (may be zero)
--  t4 - type of fourth memory elements
+-  m4 - number of elements to allocate in 4th chunk  (may be zero)
 
    Output Parameter:
 +  r1 - memory allocated in first chunk
@@ -621,39 +747,68 @@ M*/
 
    Level: developer
 
-.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree3(), PetscFree4()
+.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscCalloc4(), PetscFree4()
 
   Concepts: memory allocation
 
 M*/
 #if defined(PETSC_USE_DEBUG)
-#define PetscMalloc4(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3) || PetscMalloc((m4)*sizeof(t4),r4))
+#define PetscMalloc4(m1,r1,m2,r2,m3,r3,m4,r4) (PetscMalloc((m1)*sizeof(**(r1)),r1) || PetscMalloc((m2)*sizeof(**(r2)),r2) || PetscMalloc((m3)*sizeof(**(r3)),r3) || PetscMalloc((m4)*sizeof(**(r4)),r4))
 #else
-#define PetscMalloc4(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4)               \
-  ((*(r2) = 0, *(r3) = 0, *(r4) = 0,PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4)+3*(PETSC_MEMALIGN-1),r1)) \
-   || (*(r2) = (t2*)PetscAddrAlign(*(r1)+m1),*(r3) = (t3*)PetscAddrAlign(*(r2)+m2),*(r4) = (t4*)PetscAddrAlign(*(r3)+m3),0))
+#define PetscMalloc4(m1,r1,m2,r2,m3,r3,m4,r4)                           \
+  ((((m1)+(m2)+(m3)+(m4)) ? (*(r2) = 0, *(r3) = 0, *(r4) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+(m4)*sizeof(**(r4))+3*(PETSC_MEMALIGN-1),r1)) : 0) \
+   || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),*(void**)(r3) = PetscAddrAlign(*(r2)+(m2)),*(void**)(r4) = PetscAddrAlign(*(r3)+(m3)),0) \
+   || (!(m1) ? (*(r1) = 0,0) : 0) || (!(m2) ? (*(r2) = 0,0) : 0) || (!(m3) ? (*(r3) = 0,0) : 0) || (!(m4) ? (*(r4) = 0,0) : 0))
 #endif
 
 /*MC
-   PetscMalloc5 - Allocates 5 chunks of  memory all aligned to PETSC_MEMALIGN
+   PetscCalloc4 - Allocates 4 cleared (zeroed) arrays of memory, all aligned to PETSC_MEMALIGN
 
    Synopsis:
-    #include "petscsys.h"
-   PetscErrorCode PetscMalloc5(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4,size_t m5,type t5,void **r5)
+    #include <petscsys.h>
+   PetscErrorCode PetscCalloc4(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4)
 
    Not Collective
 
    Input Parameter:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
-.  t1 - type of first memory elements
 .  m2 - number of elements to allocate in 2nd chunk  (may be zero)
-.  t2 - type of second memory elements
 .  m3 - number of elements to allocate in 3rd chunk  (may be zero)
-.  t3 - type of third memory elements
+-  m4 - number of elements to allocate in 4th chunk  (may be zero)
+
+   Output Parameter:
++  r1 - memory allocated in first chunk
+.  r2 - memory allocated in second chunk
+.  r3 - memory allocated in third chunk
+-  r4 - memory allocated in fourth chunk
+
+   Level: developer
+
+.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscCalloc4(), PetscFree4()
+
+  Concepts: memory allocation
+
+M*/
+#define PetscCalloc4(m1,r1,m2,r2,m3,r3,m4,r4)                           \
+  (PetscMalloc4(m1,r1,m2,r2,m3,r3,m4,r4)                                \
+   || PetscMemzero(*(r1),(m1)*sizeof(**(r1))) || PetscMemzero(*(r2),(m2)*sizeof(**(r2))) || PetscMemzero(*(r3),(m3)*sizeof(**(r3))) \
+   || PetscMemzero(*(r4),(m4)*sizeof(**(r4))))
+
+/*MC
+   PetscMalloc5 - Allocates 5 arrays of memory, all aligned to PETSC_MEMALIGN
+
+   Synopsis:
+    #include <petscsys.h>
+   PetscErrorCode PetscMalloc5(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4,size_t m5,type **r5)
+
+   Not Collective
+
+   Input Parameter:
++  m1 - number of elements to allocate in 1st chunk  (may be zero)
+.  m2 - number of elements to allocate in 2nd chunk  (may be zero)
+.  m3 - number of elements to allocate in 3rd chunk  (may be zero)
 .  m4 - number of elements to allocate in 4th chunk  (may be zero)
-.  t4 - type of fourth memory elements
-.  m5 - number of elements to allocate in 5th chunk  (may be zero)
--  t5 - type of fifth memory elements
+-  m5 - number of elements to allocate in 5th chunk  (may be zero)
 
    Output Parameter:
 +  r1 - memory allocated in first chunk
@@ -664,42 +819,71 @@ M*/
 
    Level: developer
 
-.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree3(), PetscFree4(), PetscFree5()
+.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscCalloc5(), PetscFree5()
 
   Concepts: memory allocation
 
 M*/
 #if defined(PETSC_USE_DEBUG)
-#define PetscMalloc5(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3) || PetscMalloc((m4)*sizeof(t4),r4) || PetscMalloc((m5)*sizeof(t5),r5))
+#define PetscMalloc5(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5) (PetscMalloc((m1)*sizeof(**(r1)),r1) || PetscMalloc((m2)*sizeof(**(r2)),r2) || PetscMalloc((m3)*sizeof(**(r3)),r3) || PetscMalloc((m4)*sizeof(**(r4)),r4) || PetscMalloc((m5)*sizeof(**(r5)),r5))
 #else
-#define PetscMalloc5(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5)      \
-  ((*(r2) = 0, *(r3) = 0, *(r4) = 0,*(r5) = 0,PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4)+(m5)*sizeof(t5)+4*(PETSC_MEMALIGN-1),r1)) \
-   || (*(r2) = (t2*)PetscAddrAlign(*(r1)+m1),*(r3) = (t3*)PetscAddrAlign(*(r2)+m2),*(r4) = (t4*)PetscAddrAlign(*(r3)+m3),*(r5) = (t5*)PetscAddrAlign(*(r4)+m4),0))
+#define PetscMalloc5(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5)      \
+  ((((m1)+(m2)+(m3)+(m4)+(m5)) ? (*(r2) = 0, *(r3) = 0, *(r4) = 0,*(r5) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+(m4)*sizeof(**(r4))+(m5)*sizeof(**(r5))+4*(PETSC_MEMALIGN-1),r1)) : 0) \
+   || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),*(void**)(r3) = PetscAddrAlign(*(r2)+(m2)),*(void**)(r4) = PetscAddrAlign(*(r3)+(m3)),*(void**)(r5) = PetscAddrAlign(*(r4)+(m4)),0) \
+   || (!(m1) ? (*(r1) = 0,0) : 0) || (!(m2) ? (*(r2) = 0,0) : 0) || (!(m3) ? (*(r3) = 0,0) : 0) || (!(m4) ? (*(r4) = 0,0) : 0) || (!(m5) ? (*(r5) = 0,0) : 0))
 #endif
 
-
 /*MC
-   PetscMalloc6 - Allocates 6 chunks of  memory all aligned to PETSC_MEMALIGN
+   PetscCalloc5 - Allocates 5 cleared (zeroed) arrays of memory, all aligned to PETSC_MEMALIGN
 
    Synopsis:
-    #include "petscsys.h"
-   PetscErrorCode PetscMalloc6(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4,size_t m5,type t5,void **r5,size_t m6,type t6,void **r6)
+    #include <petscsys.h>
+   PetscErrorCode PetscCalloc5(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4,size_t m5,type **r5)
 
    Not Collective
 
    Input Parameter:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
-.  t1 - type of first memory elements
 .  m2 - number of elements to allocate in 2nd chunk  (may be zero)
-.  t2 - type of second memory elements
 .  m3 - number of elements to allocate in 3rd chunk  (may be zero)
-.  t3 - type of third memory elements
 .  m4 - number of elements to allocate in 4th chunk  (may be zero)
-.  t4 - type of fourth memory elements
+-  m5 - number of elements to allocate in 5th chunk  (may be zero)
+
+   Output Parameter:
++  r1 - memory allocated in first chunk
+.  r2 - memory allocated in second chunk
+.  r3 - memory allocated in third chunk
+.  r4 - memory allocated in fourth chunk
+-  r5 - memory allocated in fifth chunk
+
+   Level: developer
+
+.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc5(), PetscFree5()
+
+  Concepts: memory allocation
+
+M*/
+#define PetscCalloc5(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5)                     \
+  (PetscMalloc5(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5)                          \
+   || PetscMemzero(*(r1),(m1)*sizeof(**(r1))) || PetscMemzero(*(r2),(m2)*sizeof(**(r2))) || PetscMemzero(*(r3),(m3)*sizeof(**(r3))) \
+   || PetscMemzero(*(r4),(m4)*sizeof(**(r4))) || PetscMemzero(*(r5),(m5)*sizeof(**(r5))))
+
+/*MC
+   PetscMalloc6 - Allocates 6 arrays of memory, all aligned to PETSC_MEMALIGN
+
+   Synopsis:
+    #include <petscsys.h>
+   PetscErrorCode PetscMalloc6(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4,size_t m5,type **r5,size_t m6,type **r6)
+
+   Not Collective
+
+   Input Parameter:
++  m1 - number of elements to allocate in 1st chunk  (may be zero)
+.  m2 - number of elements to allocate in 2nd chunk  (may be zero)
+.  m3 - number of elements to allocate in 3rd chunk  (may be zero)
+.  m4 - number of elements to allocate in 4th chunk  (may be zero)
 .  m5 - number of elements to allocate in 5th chunk  (may be zero)
-.  t5 - type of fifth memory elements
-.  m6 - number of elements to allocate in 6th chunk  (may be zero)
--  t6 - type of sixth memory elements
+-  m6 - number of elements to allocate in 6th chunk  (may be zero)
 
    Output Parameter:
 +  r1 - memory allocated in first chunk
@@ -711,43 +895,73 @@ M*/
 
    Level: developer
 
-.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree3(), PetscFree4(), PetscFree5(), PetscFree6()
+.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscCalloc6(), PetscFree3(), PetscFree4(), PetscFree5(), PetscFree6()
 
   Concepts: memory allocation
 
 M*/
 #if defined(PETSC_USE_DEBUG)
-#define PetscMalloc6(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5,m6,t6,r6) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3) || PetscMalloc((m4)*sizeof(t4),r4) || PetscMalloc((m5)*sizeof(t5),r5) || PetscMalloc((m6)*sizeof(t6),r6))
+#define PetscMalloc6(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6) (PetscMalloc((m1)*sizeof(**(r1)),r1) || PetscMalloc((m2)*sizeof(**(r2)),r2) || PetscMalloc((m3)*sizeof(**(r3)),r3) || PetscMalloc((m4)*sizeof(**(r4)),r4) || PetscMalloc((m5)*sizeof(**(r5)),r5) || PetscMalloc((m6)*sizeof(**(r6)),r6))
 #else
-#define PetscMalloc6(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5,m6,t6,r6) \
-  ((*(r2) = 0, *(r3) = 0, *(r4) = 0,*(r5) = 0,*(r6) = 0,PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4)+(m5)*sizeof(t5)+(m6)*sizeof(t6)+5*(PETSC_MEMALIGN-1),r1)) \
-   || (*(r2) = (t2*)PetscAddrAlign(*(r1)+m1),*(r3) = (t3*)PetscAddrAlign(*(r2)+m2),*(r4) = (t4*)PetscAddrAlign(*(r3)+m3),*(r5) = (t5*)PetscAddrAlign(*(r4)+m4),*(r6) = (t6*)PetscAddrAlign(*(r5)+m5),0))
+#define PetscMalloc6(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6) \
+  ((((m1)+(m2)+(m3)+(m4)+(m5)+(m6)) ? (*(r2) = 0, *(r3) = 0, *(r4) = 0,*(r5) = 0,*(r6) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+(m4)*sizeof(**(r4))+(m5)*sizeof(**(r5))+(m6)*sizeof(**(r6))+5*(PETSC_MEMALIGN-1),r1)) : 0) \
+   || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),*(void**)(r3) = PetscAddrAlign(*(r2)+(m2)),*(void**)(r4) = PetscAddrAlign(*(r3)+(m3)),*(void**)(r5) = PetscAddrAlign(*(r4)+(m4)),*(void**)(r6) = PetscAddrAlign(*(r5)+(m5)),0) \
+   || (!(m1) ? (*(r1) = 0,0) : 0) || (!(m2) ? (*(r2) = 0,0) : 0) || (!(m3) ? (*(r3) = 0,0) : 0) || (!(m4) ? (*(r4) = 0,0) : 0) || (!(m5) ? (*(r5) = 0,0) : 0) || (!(m6) ? (*(r6) = 0,0) : 0))
 #endif
 
 /*MC
-   PetscMalloc7 - Allocates 7 chunks of  memory all aligned to PETSC_MEMALIGN
+   PetscCalloc6 - Allocates 6 cleared (zeroed) arrays of memory, all aligned to PETSC_MEMALIGN
 
    Synopsis:
-    #include "petscsys.h"
-   PetscErrorCode PetscMalloc7(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4,size_t m5,type t5,void **r5,size_t m6,type t6,void **r6,size_t m7,type t7,void **r7)
+    #include <petscsys.h>
+   PetscErrorCode PetscCalloc6(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4,size_t m5,type **r5,size_t m6,type **r6)
 
    Not Collective
 
    Input Parameter:
 +  m1 - number of elements to allocate in 1st chunk  (may be zero)
-.  t1 - type of first memory elements
 .  m2 - number of elements to allocate in 2nd chunk  (may be zero)
-.  t2 - type of second memory elements
 .  m3 - number of elements to allocate in 3rd chunk  (may be zero)
-.  t3 - type of third memory elements
 .  m4 - number of elements to allocate in 4th chunk  (may be zero)
-.  t4 - type of fourth memory elements
 .  m5 - number of elements to allocate in 5th chunk  (may be zero)
-.  t5 - type of fifth memory elements
+-  m6 - number of elements to allocate in 6th chunk  (may be zero)
+
+   Output Parameter:
++  r1 - memory allocated in first chunk
+.  r2 - memory allocated in second chunk
+.  r3 - memory allocated in third chunk
+.  r4 - memory allocated in fourth chunk
+.  r5 - memory allocated in fifth chunk
+-  r6 - memory allocated in sixth chunk
+
+   Level: developer
+
+.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscMalloc6(), PetscFree6()
+
+  Concepts: memory allocation
+M*/
+#define PetscCalloc6(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6)               \
+  (PetscMalloc6(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6)                    \
+   || PetscMemzero(*(r1),(m1)*sizeof(**(r1))) || PetscMemzero(*(r2),(m2)*sizeof(**(r2))) || PetscMemzero(*(r3),(m3)*sizeof(**(r3))) \
+   || PetscMemzero(*(r4),(m4)*sizeof(**(r4))) || PetscMemzero(*(r5),(m5)*sizeof(**(r5))) || PetscMemzero(*(r6),(m6)*sizeof(**(r6))))
+
+/*MC
+   PetscMalloc7 - Allocates 7 arrays of memory, all aligned to PETSC_MEMALIGN
+
+   Synopsis:
+    #include <petscsys.h>
+   PetscErrorCode PetscMalloc7(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4,size_t m5,type **r5,size_t m6,type **r6,size_t m7,type **r7)
+
+   Not Collective
+
+   Input Parameter:
++  m1 - number of elements to allocate in 1st chunk  (may be zero)
+.  m2 - number of elements to allocate in 2nd chunk  (may be zero)
+.  m3 - number of elements to allocate in 3rd chunk  (may be zero)
+.  m4 - number of elements to allocate in 4th chunk  (may be zero)
+.  m5 - number of elements to allocate in 5th chunk  (may be zero)
 .  m6 - number of elements to allocate in 6th chunk  (may be zero)
-.  t6 - type of sixth memory elements
-.  m7 - number of elements to allocate in 7th chunk  (may be zero)
--  t7 - type of sixth memory elements
+-  m7 - number of elements to allocate in 7th chunk  (may be zero)
 
    Output Parameter:
 +  r1 - memory allocated in first chunk
@@ -760,33 +974,70 @@ M*/
 
    Level: developer
 
-.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree3(), PetscFree4(), PetscFree5(), PetscFree6(), PetscFree7()
+.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscCalloc7(), PetscFree7()
 
   Concepts: memory allocation
 
 M*/
 #if defined(PETSC_USE_DEBUG)
-#define PetscMalloc7(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5,m6,t6,r6,m7,t7,r7) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3) || PetscMalloc((m4)*sizeof(t4),r4) || PetscMalloc((m5)*sizeof(t5),r5) || PetscMalloc((m6)*sizeof(t6),r6) || PetscMalloc((m7)*sizeof(t7),r7))
+#define PetscMalloc7(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6,m7,r7) (PetscMalloc((m1)*sizeof(**(r1)),r1) || PetscMalloc((m2)*sizeof(**(r2)),r2) || PetscMalloc((m3)*sizeof(**(r3)),r3) || PetscMalloc((m4)*sizeof(**(r4)),r4) || PetscMalloc((m5)*sizeof(**(r5)),r5) || PetscMalloc((m6)*sizeof(**(r6)),r6) || PetscMalloc((m7)*sizeof(**(r7)),r7))
 #else
-#define PetscMalloc7(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5,m6,t6,r6,m7,t7,r7) \
-  ((*(r2) = 0, *(r3) = 0, *(r4) = 0,*(r5) = 0,*(r6) = 0,*(r7) = 0,PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4)+(m5)*sizeof(t5)+(m6)*sizeof(t6)+(m7)*sizeof(t7)+6*(PETSC_MEMALIGN-1),r1)) \
-   || (*(r2) = (t2*)PetscAddrAlign(*(r1)+m1),*(r3) = (t3*)PetscAddrAlign(*(r2)+m2),*(r4) = (t4*)PetscAddrAlign(*(r3)+m3),*(r5) = (t5*)PetscAddrAlign(*(r4)+m4),*(r6) = (t6*)PetscAddrAlign(*(r5)+m5),*(r7) = (t7*)PetscAddrAlign(*(r6)+m6),0))
+#define PetscMalloc7(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6,m7,r7) \
+  ((((m1)+(m2)+(m3)+(m4)+(m5)+(m6)+(m7)) ? (*(r2) = 0, *(r3) = 0, *(r4) = 0,*(r5) = 0,*(r6) = 0,*(r7) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+(m4)*sizeof(**(r4))+(m5)*sizeof(**(r5))+(m6)*sizeof(**(r6))+(m7)*sizeof(**(r7))+6*(PETSC_MEMALIGN-1),r1)) : 0) \
+   || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),*(void**)(r3) = PetscAddrAlign(*(r2)+(m2)),*(void**)(r4) = PetscAddrAlign(*(r3)+(m3)),*(void**)(r5) = PetscAddrAlign(*(r4)+(m4)),*(void**)(r6) = PetscAddrAlign(*(r5)+(m5)),*(void**)(r7) = PetscAddrAlign(*(r6)+(m6)),0) \
+   || (!(m1) ? (*(r1) = 0,0) : 0) || (!(m2) ? (*(r2) = 0,0) : 0) || (!(m3) ? (*(r3) = 0,0) : 0) || (!(m4) ? (*(r4) = 0,0) : 0) || (!(m5) ? (*(r5) = 0,0) : 0) || (!(m6) ? (*(r6) = 0,0) : 0) || (!(m7) ? (*(r7) = 0,0) : 0))
 #endif
+
+/*MC
+   PetscCalloc7 - Allocates 7 cleared (zeroed) arrays of memory, all aligned to PETSC_MEMALIGN
+
+   Synopsis:
+    #include <petscsys.h>
+   PetscErrorCode PetscCalloc7(size_t m1,type **r1,size_t m2,type **r2,size_t m3,type **r3,size_t m4,type **r4,size_t m5,type **r5,size_t m6,type **r6,size_t m7,type **r7)
+
+   Not Collective
+
+   Input Parameter:
++  m1 - number of elements to allocate in 1st chunk  (may be zero)
+.  m2 - number of elements to allocate in 2nd chunk  (may be zero)
+.  m3 - number of elements to allocate in 3rd chunk  (may be zero)
+.  m4 - number of elements to allocate in 4th chunk  (may be zero)
+.  m5 - number of elements to allocate in 5th chunk  (may be zero)
+.  m6 - number of elements to allocate in 6th chunk  (may be zero)
+-  m7 - number of elements to allocate in 7th chunk  (may be zero)
+
+   Output Parameter:
++  r1 - memory allocated in first chunk
+.  r2 - memory allocated in second chunk
+.  r3 - memory allocated in third chunk
+.  r4 - memory allocated in fourth chunk
+.  r5 - memory allocated in fifth chunk
+.  r6 - memory allocated in sixth chunk
+-  r7 - memory allocated in seventh chunk
+
+   Level: developer
+
+.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscMalloc7(), PetscFree7()
+
+  Concepts: memory allocation
+M*/
+#define PetscCalloc7(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6,m7,r7)         \
+  (PetscMalloc7(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6,m7,r7)              \
+   || PetscMemzero(*(r1),(m1)*sizeof(**(r1))) || PetscMemzero(*(r2),(m2)*sizeof(**(r2))) || PetscMemzero(*(r3),(m3)*sizeof(**(r3))) \
+   || PetscMemzero(*(r4),(m4)*sizeof(**(r4))) || PetscMemzero(*(r5),(m5)*sizeof(**(r5))) || PetscMemzero(*(r6),(m6)*sizeof(**(r6))) \
+   || PetscMemzero(*(r7),(m7)*sizeof(**(r7))))
 
 /*MC
    PetscNew - Allocates memory of a particular type, zeros the memory! Aligned to PETSC_MEMALIGN
 
    Synopsis:
-    #include "petscsys.h"
-   PetscErrorCode PetscNew(struct type,((type *))result)
+    #include <petscsys.h>
+   PetscErrorCode PetscNew(type **result)
 
    Not Collective
 
-   Input Parameter:
-.  type - structure name of space to be allocated. Memory of size sizeof(type) is allocated
-
    Output Parameter:
-.  result - memory allocated
+.  result - memory allocated, sized to match pointer type
 
    Level: beginner
 
@@ -795,24 +1046,23 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscNew(A,b)      (PetscMalloc(sizeof(A),(b)) || PetscMemzero(*(b),sizeof(A)))
+#define PetscNew(b)      PetscCalloc1(1,(b))
 
 /*MC
-   PetscNewLog - Allocates memory of a particular type, zeros the memory! Aligned to PETSC_MEMALIGN. Associates the memory allocated
+   PetscNewLog - Allocates memory of a type matching pointer, zeros the memory! Aligned to PETSC_MEMALIGN. Associates the memory allocated
          with the given object using PetscLogObjectMemory().
 
    Synopsis:
-    #include "petscsys.h"
-   PetscErrorCode PetscNewLog(PetscObject obj,struct type,((type *))result)
+    #include <petscsys.h>
+   PetscErrorCode PetscNewLog(PetscObject obj,type **result)
 
    Not Collective
 
    Input Parameter:
-+  obj - object memory is logged to
--  type - structure name of space to be allocated. Memory of size sizeof(type) is allocated
+.  obj - object memory is logged to
 
    Output Parameter:
-.  result - memory allocated
+.  result - memory allocated, sized to match pointer type
 
    Level: developer
 
@@ -821,13 +1071,13 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscNewLog(o,A,b) (PetscNew(A,b) || ((o) ? PetscLogObjectMemory((PetscObject)o,sizeof(A)) : 0))
+#define PetscNewLog(o,b) (PetscNew((b)) || ((o) ? PetscLogObjectMemory((PetscObject)o,sizeof(**(b))) : 0))
 
 /*MC
    PetscFree - Frees memory
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscFree(void *memory)
 
    Not Collective
@@ -837,20 +1087,22 @@ M*/
 
    Level: beginner
 
-   Notes: Memory must have been obtained with PetscNew() or PetscMalloc()
+   Notes:
+   Memory must have been obtained with PetscNew() or PetscMalloc().
+   It is safe to call PetscFree() on a NULL pointer.
 
 .seealso: PetscNew(), PetscMalloc(), PetscFreeVoid()
 
   Concepts: memory allocation
 
 M*/
-#define PetscFree(a)   ((a) && ((*PetscTrFree)((void*)(a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__) || ((a) = 0,0)))
+#define PetscFree(a)   ((*PetscTrFree)((void*)(a),__LINE__,PETSC_FUNCTION_NAME,__FILE__) || ((a) = 0,0))
 
 /*MC
    PetscFreeVoid - Frees memory
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    void PetscFreeVoid(void *memory)
 
    Not Collective
@@ -867,14 +1119,14 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscFreeVoid(a) ((*PetscTrFree)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__),(a) = 0)
+#define PetscFreeVoid(a) ((*PetscTrFree)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__),(a) = 0)
 
 
 /*MC
    PetscFree2 - Frees 2 chunks of memory obtained with PetscMalloc2()
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscFree2(void *memory1,void *memory2)
 
    Not Collective
@@ -895,14 +1147,14 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscFree2(m1,m2)   (PetscFree(m2) || PetscFree(m1))
 #else
-#define PetscFree2(m1,m2)   ((m2)=0, PetscFree(m1))
+#define PetscFree2(m1,m2)   ((m1) ? ((m2)=0,PetscFree(m1)) : ((m1)=0,PetscFree(m2)))
 #endif
 
 /*MC
    PetscFree3 - Frees 3 chunks of memory obtained with PetscMalloc3()
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscFree3(void *memory1,void *memory2,void *memory3)
 
    Not Collective
@@ -924,14 +1176,14 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscFree3(m1,m2,m3)   (PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
-#define PetscFree3(m1,m2,m3)   ((m3)=0,(m2)=0,PetscFree(m1))
+#define PetscFree3(m1,m2,m3)   ((m1) ? ((m3)=0,(m2)=0,PetscFree(m1)) : ((m2) ? ((m3)=0,(m1)=0,PetscFree(m2)) : ((m2)=0,(m1)=0,PetscFree(m3))))
 #endif
 
 /*MC
    PetscFree4 - Frees 4 chunks of memory obtained with PetscMalloc4()
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscFree4(void *m1,void *m2,void *m3,void *m4)
 
    Not Collective
@@ -954,14 +1206,14 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscFree4(m1,m2,m3,m4)   (PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
-#define PetscFree4(m1,m2,m3,m4)   ((m4)=0,(m3)=0,(m2)=0,PetscFree(m1))
+#define PetscFree4(m1,m2,m3,m4)   ((m1) ? ((m4)=0,(m3)=0,(m2)=0,PetscFree(m1)) : ((m2) ? ((m4)=0,(m3)=0,(m1)=0,PetscFree(m2)) : ((m3) ? ((m4)=0,(m2)=0,(m1)=0,PetscFree(m3)) : ((m3)=0,(m2)=0,(m1)=0,PetscFree(m4)))))
 #endif
 
 /*MC
    PetscFree5 - Frees 5 chunks of memory obtained with PetscMalloc5()
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscFree5(void *m1,void *m2,void *m3,void *m4,void *m5)
 
    Not Collective
@@ -985,7 +1237,8 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscFree5(m1,m2,m3,m4,m5)   (PetscFree(m5) || PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
-#define PetscFree5(m1,m2,m3,m4,m5)   ((m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1))
+#define PetscFree5(m1,m2,m3,m4,m5)   ((m1) ? ((m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1)) : ((m2) ? ((m5)=0,(m4)=0,(m3)=0,(m1)=0,PetscFree(m2)) : ((m3) ? ((m5)=0,(m4)=0,(m2)=0,(m1)=0,PetscFree(m3)) : \
+                                     ((m4) ? ((m5)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m4)) : ((m4)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m5))))))
 #endif
 
 
@@ -993,7 +1246,7 @@ M*/
    PetscFree6 - Frees 6 chunks of memory obtained with PetscMalloc6()
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscFree6(void *m1,void *m2,void *m3,void *m4,void *m5,void *m6)
 
    Not Collective
@@ -1019,14 +1272,16 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscFree6(m1,m2,m3,m4,m5,m6)   (PetscFree(m6) || PetscFree(m5) || PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
-#define PetscFree6(m1,m2,m3,m4,m5,m6)   ((m6)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1))
+#define PetscFree6(m1,m2,m3,m4,m5,m6)   ((m1) ? ((m6)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1)) : ((m2) ? ((m6)=0,(m5)=0,(m4)=0,(m3)=0,(m1)=0,PetscFree(m2)) : \
+                                        ((m3) ? ((m6)=0,(m5)=0,(m4)=0,(m2)=0,(m1)=0,PetscFree(m3)) : ((m4) ? ((m6)=0,(m5)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m4)) : \
+                                        ((m5) ? ((m6)=0,(m4)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m5)) : ((m5)=0,(m4)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m6)))))))
 #endif
 
 /*MC
    PetscFree7 - Frees 7 chunks of memory obtained with PetscMalloc7()
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
    PetscErrorCode PetscFree7(void *m1,void *m2,void *m3,void *m4,void *m5,void *m6,void *m7)
 
    Not Collective
@@ -1054,12 +1309,15 @@ M*/
 #if defined(PETSC_USE_DEBUG)
 #define PetscFree7(m1,m2,m3,m4,m5,m6,m7)   (PetscFree(m7) || PetscFree(m6) || PetscFree(m5) || PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
-#define PetscFree7(m1,m2,m3,m4,m5,m6,m7)   ((m7)=0,(m6)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1))
+#define PetscFree7(m1,m2,m3,m4,m5,m6,m7)   ((m1) ? ((m7)=0,(m6)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1)) : ((m2) ? ((m7)=0,(m6)=0,(m5)=0,(m4)=0,(m3)=0,(m1)=0,PetscFree(m2)) : \
+                                           ((m3) ? ((m7)=0,(m6)=0,(m5)=0,(m4)=0,(m2)=0,(m1)=0,PetscFree(m3)) : ((m4) ? ((m7)=0,(m6)=0,(m5)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m4)) : \
+                                           ((m5) ? ((m7)=0,(m6)=0,(m4)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m5)) : ((m6) ? ((m7)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m6)) : \
+                                                   ((m6)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,(m1)=0,PetscFree(m7))))))))
 #endif
 
-PETSC_EXTERN PetscErrorCode (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**);
-PETSC_EXTERN PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[],const char[]);
-PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t,int,const char[],const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[],const char[]));
+PETSC_EXTERN PetscErrorCode (*PetscTrMalloc)(size_t,int,const char[],const char[],void**);
+PETSC_EXTERN PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[]);
+PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t,int,const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[]));
 PETSC_EXTERN PetscErrorCode PetscMallocClear(void);
 
 /*
@@ -1079,7 +1337,7 @@ PETSC_EXTERN PetscErrorCode PetscMallocGetCurrentUsage(PetscLogDouble *);
 PETSC_EXTERN PetscErrorCode PetscMallocGetMaximumUsage(PetscLogDouble *);
 PETSC_EXTERN PetscErrorCode PetscMallocDebug(PetscBool);
 PETSC_EXTERN PetscErrorCode PetscMallocGetDebug(PetscBool*);
-PETSC_EXTERN PetscErrorCode PetscMallocValidate(int,const char[],const char[],const char[]);
+PETSC_EXTERN PetscErrorCode PetscMallocValidate(int,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscMallocSetDumpLog(void);
 PETSC_EXTERN PetscErrorCode PetscMallocSetDumpLogThreshold(PetscLogDouble);
 PETSC_EXTERN PetscErrorCode PetscMallocGetDumpLog(PetscBool*);
@@ -1207,6 +1465,30 @@ PETSC_EXTERN PetscErrorCode MPIULong_Recv(void*,PetscInt,MPI_Datatype,PetscMPIIn
 S*/
 typedef struct _p_PetscObject* PetscObject;
 
+/*MC
+    PetscObjectId - unique integer Id for a PetscObject
+
+    Level: developer
+
+    Notes: Unlike pointer values, object ids are never reused.
+
+.seealso: PetscObjectState, PetscObjectGetId()
+M*/
+typedef Petsc64bitInt PetscObjectId;
+
+/*MC
+    PetscObjectState - integer state for a PetscObject
+
+    Level: developer
+
+    Notes:
+    Object state is always-increasing and (for objects that track state) can be used to determine if an object has
+    changed since the last time you interacted with it.  It is 64-bit so that it will not overflow for a very long time.
+
+.seealso: PetscObjectId, PetscObjectStateGet(), PetscObjectStateIncrease(), PetscObjectStateSet()
+M*/
+typedef Petsc64bitInt PetscObjectState;
+
 /*S
      PetscFunctionList - Linked list of functions, possibly stored in dynamic libraries, accessed
       by string name
@@ -1274,15 +1556,6 @@ PETSC_EXTERN PetscErrorCode PetscFreeArguments(char **);
 PETSC_EXTERN PetscErrorCode PetscEnd(void);
 PETSC_EXTERN PetscErrorCode PetscSysInitializePackage(void);
 
-PETSC_EXTERN MPI_Comm PETSC_COMM_LOCAL_WORLD;
-PETSC_EXTERN PetscErrorCode PetscHMPIMerge(PetscMPIInt,PetscErrorCode (*)(void*),void*);
-PETSC_EXTERN PetscErrorCode PetscHMPISpawn(PetscMPIInt);
-PETSC_EXTERN PetscErrorCode PetscHMPIFinalize(void);
-PETSC_EXTERN PetscErrorCode PetscHMPIRun(MPI_Comm,PetscErrorCode (*)(MPI_Comm,void *),void*);
-PETSC_EXTERN PetscErrorCode PetscHMPIRunCtx(MPI_Comm,PetscErrorCode (*)(MPI_Comm,void*,void *),void*);
-PETSC_EXTERN PetscErrorCode PetscHMPIFree(MPI_Comm,void*);
-PETSC_EXTERN PetscErrorCode PetscHMPIMalloc(MPI_Comm,size_t,void**);
-
 PETSC_EXTERN PetscErrorCode PetscPythonInitialize(const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscPythonFinalize(void);
 PETSC_EXTERN PetscErrorCode PetscPythonPrintError(void);
@@ -1343,33 +1616,36 @@ PETSC_EXTERN PetscErrorCode PetscObjectGetOptionsPrefix(PetscObject,const char*[
 PETSC_EXTERN PetscErrorCode PetscObjectChangeTypeName(PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectRegisterDestroy(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectRegisterDestroyAll(void);
+PETSC_EXTERN PetscErrorCode PetscObjectViewFromOptions(PetscObject,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectName(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectTypeCompare(PetscObject,const char[],PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscObjectTypeCompareAny(PetscObject,PetscBool*,const char[],...);
 PETSC_EXTERN PetscErrorCode PetscRegisterFinalize(PetscErrorCode (*)(void));
 PETSC_EXTERN PetscErrorCode PetscRegisterFinalizeAll(void);
 
-#if defined(PETSC_HAVE_AMS)
-PETSC_EXTERN PetscErrorCode PetscObjectAMSViewOff(PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectAMSSetBlock(PetscObject,PetscBool);
-PETSC_EXTERN PetscErrorCode PetscObjectAMSBlock(PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectAMSGrantAccess(PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectAMSTakeAccess(PetscObject);
-PETSC_EXTERN void           PetscStackAMSGrantAccess(void);
-PETSC_EXTERN void           PetscStackAMSTakeAccess(void);
-PETSC_EXTERN PetscErrorCode PetscStackViewAMS(void);
-PETSC_EXTERN PetscErrorCode PetscStackAMSViewOff(void);
+#if defined(PETSC_HAVE_SAWS)
+PETSC_EXTERN PetscErrorCode PetscSAWsBlock(void);
+PETSC_EXTERN PetscErrorCode PetscObjectSAWsViewOff(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectSAWsSetBlock(PetscObject,PetscBool);
+PETSC_EXTERN PetscErrorCode PetscObjectSAWsBlock(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectSAWsGrantAccess(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectSAWsTakeAccess(PetscObject);
+PETSC_EXTERN void           PetscStackSAWsGrantAccess(void);
+PETSC_EXTERN void           PetscStackSAWsTakeAccess(void);
+PETSC_EXTERN PetscErrorCode PetscStackViewSAWs(void);
+PETSC_EXTERN PetscErrorCode PetscStackSAWsViewOff(void);
 
 #else
-#define PetscObjectAMSViewOff(obj)             0
-#define PetscObjectAMSSetBlock(obj,flg)        0
-#define PetscObjectAMSBlock(obj)               0
-#define PetscObjectAMSGrantAccess(obj)         0
-#define PetscObjectAMSTakeAccess(obj)          0
-#define PetscStackViewAMS()                    0
-#define PetscStackAMSViewOff()                 0
-#define PetscStackAMSTakeAccess()
-#define PetscStackAMSGrantAccess()
+#define PetscSAWsBlock()                        0
+#define PetscObjectSAWsViewOff(obj)             0
+#define PetscObjectSAWsSetBlock(obj,flg)        0
+#define PetscObjectSAWsBlock(obj)               0
+#define PetscObjectSAWsGrantAccess(obj)         0
+#define PetscObjectSAWsTakeAccess(obj)          0
+#define PetscStackViewSAWs()                    0
+#define PetscStackSAWsViewOff()                 0
+#define PetscStackSAWsTakeAccess()
+#define PetscStackSAWsGrantAccess()
 
 #endif
 
@@ -1423,8 +1699,6 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListGet(PetscFunctionList,const char **
 
    Level: advanced
 
-   --with-shared-libraries --with-dynamic-loading must be used with ./configure to use dynamic libraries
-
 .seealso:  PetscDLLibraryOpen()
 S*/
 typedef struct _n_PetscDLLibrary *PetscDLLibrary;
@@ -1469,7 +1743,7 @@ $     PetscBool  flag = PetscNot(a)
     PetscHelpPrintf - Prints help messages.
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
      PetscErrorCode (*PetscHelpPrintf)(const char format[],...);
 
     Not Collective
@@ -1524,11 +1798,12 @@ PETSC_EXTERN PetscErrorCode PetscHelpPrintfDefault(MPI_Comm,const char [],...);
 #if defined(PETSC_HAVE_POPEN)
 PETSC_EXTERN PetscErrorCode PetscPOpen(MPI_Comm,const char[],const char[],const char[],FILE **);
 PETSC_EXTERN PetscErrorCode PetscPClose(MPI_Comm,FILE*,int*);
+PETSC_EXTERN PetscErrorCode PetscPOpenSetMachine(const char[]);
 #endif
 
 PETSC_EXTERN PetscErrorCode PetscSynchronizedPrintf(MPI_Comm,const char[],...);
 PETSC_EXTERN PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm,FILE*,const char[],...);
-PETSC_EXTERN PetscErrorCode PetscSynchronizedFlush(MPI_Comm);
+PETSC_EXTERN PetscErrorCode PetscSynchronizedFlush(MPI_Comm,FILE*);
 PETSC_EXTERN PetscErrorCode PetscSynchronizedFGets(MPI_Comm,FILE*,size_t,char[]);
 PETSC_EXTERN PetscErrorCode PetscStartMatlab(MPI_Comm,const char[],const char[],FILE**);
 PETSC_EXTERN PetscErrorCode PetscStartJava(MPI_Comm,const char[],const char[],FILE**);
@@ -1561,18 +1836,13 @@ PETSC_EXTERN PetscErrorCode PetscRealView(PetscInt,const PetscReal[],PetscViewer
 PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt,const PetscScalar[],PetscViewer);
 
 #include <stddef.h>
-#if defined(PETSC_HAVE_MEMORY_H)
-#include <memory.h>
-#endif
+#include <string.h>             /* for memcpy, memset */
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 
 #if defined(PETSC_HAVE_XMMINTRIN_H) && !defined(__CUDACC__)
 #include <xmmintrin.h>
-#endif
-#if defined(PETSC_HAVE_STDINT_H)
-#include <stdint.h>
 #endif
 
 #undef __FUNCT__
@@ -1710,7 +1980,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscMemzero(void *a,size_t n)
    PetscPrefetchBlock - Prefetches a block of memory
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
     void PetscPrefetchBlock(const anytype *a,size_t n,int rw,int t)
 
    Not Collective
@@ -1981,11 +2251,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
 #  define PETSC_MAX_PATH_LEN     4096
 #endif
 
-/* Special support for C++ */
-#if defined(PETSC_CLANGUAGE_CXX) && defined(__cplusplus)
-#include <petscsys.hh>
-#endif
-
 /*MC
 
     UsingFortran - Fortran can be used with PETSc in four distinct approaches
@@ -2135,7 +2400,7 @@ PETSC_EXTERN PetscErrorCode PetscRandomRegister(const char[],PetscErrorCode (*)(
 PETSC_EXTERN PetscErrorCode PetscRandomSetType(PetscRandom, PetscRandomType);
 PETSC_EXTERN PetscErrorCode PetscRandomSetFromOptions(PetscRandom);
 PETSC_EXTERN PetscErrorCode PetscRandomGetType(PetscRandom, PetscRandomType*);
- PETSC_EXTERN PetscErrorCode PetscRandomViewFromOptions(PetscRandom,const char[],const char[]);
+PETSC_STATIC_INLINE PetscErrorCode PetscRandomViewFromOptions(PetscRandom A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 PETSC_EXTERN PetscErrorCode PetscRandomView(PetscRandom,PetscViewer);
 
 PETSC_EXTERN PetscErrorCode PetscRandomCreate(MPI_Comm,PetscRandom*);
@@ -2342,6 +2607,8 @@ extern PetscSegBuffer PetscCitationsList;
      Input Parameters:
 +      cite - the bibtex item, formated to displayed on multiple lines nicely
 -      set - a boolean variable initially set to PETSC_FALSE; this is used to insure only a single registration of the citation
+
+   Level: intermediate
 
      Options Database:
 .     -citations [filenmae]   - print out the bibtex entries for the given computation

@@ -127,13 +127,13 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
   Y      = snes->vec_sol_update; /* \tilde X */
   F      = snes->vec_func;       /* residual vector */
 
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter = 0;
   snes->norm = 0.;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
 
   if (snes->pc && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
-    ierr = SNESApplyPC(snes,X,NULL,NULL,F);CHKERRQ(ierr);
+    ierr = SNESApplyNPC(snes,X,NULL,F);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
     if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
@@ -156,7 +156,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     }
   }
   if (snes->pc && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
-      ierr = SNESApplyPC(snes,X,F,&fnorm,Y);CHKERRQ(ierr);
+      ierr = SNESApplyNPC(snes,X,F,Y);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
       if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
         snes->reason = SNES_DIVERGED_INNER;
@@ -166,14 +166,12 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     ierr = VecCopy(F,Y);CHKERRQ(ierr);
   }
 
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   ierr       = SNESLogConvergenceHistory(snes,fnorm,0);CHKERRQ(ierr);
   ierr       = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
 
-  /* set parameter for default relative tolerance convergence test */
-  snes->ttol = fnorm*snes->rtol;
   /* test convergence */
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
@@ -211,10 +209,10 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     }
 
     /* Monitor convergence */
-    ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
     snes->iter = i;
     snes->norm = fnorm;
-    ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
     ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence */
@@ -228,11 +226,11 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
 
     if (snes->pc) {
       if (snes->functype == SNES_FUNCTION_PRECONDITIONED) {
-        ierr = SNESApplyPC(snes,X,NULL,NULL,Y);CHKERRQ(ierr);
+        ierr = SNESApplyNPC(snes,X,NULL,Y);CHKERRQ(ierr);
         ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
         ierr = VecCopy(Y,F);CHKERRQ(ierr);
       } else {
-        ierr = SNESApplyPC(snes,X,F,&fnorm,Y);CHKERRQ(ierr);
+        ierr = SNESApplyNPC(snes,X,F,Y);CHKERRQ(ierr);
       }
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
       if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
@@ -261,7 +259,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
 
   Notes: If no inner nonlinear preconditioner is provided then solves F(x) - b = 0 using x^{n+1} = x^{n} - lambda
             (F(x^n) - b) where lambda is obtained either SNESLineSearchSetDamping(), -snes_damping or a line search.  If
-            an inner nonlinear preconditioner is provided (either with -npc_snes_type or SNESSetPC()) then the inner
+            an inner nonlinear preconditioner is provided (either with -npc_snes_type or SNESSetNPC()) then the inner
             solver is called an initial solution x^n and the nonlinear Richardson uses x^{n+1} = x^{n} + lambda d^{n}
             where d^{n} = \hat{x}^{n} - x^{n} where \hat{x}^{n} is the solution returned from the inner solver.
 
@@ -292,7 +290,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes)
 
   snes->pcside = PC_LEFT;
 
-  ierr       = PetscNewLog(snes, SNES_NRichardson, &neP);CHKERRQ(ierr);
+  ierr       = PetscNewLog(snes,&neP);CHKERRQ(ierr);
   snes->data = (void*) neP;
 
   if (!snes->tolerancesset) {

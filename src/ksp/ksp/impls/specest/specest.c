@@ -64,7 +64,7 @@ static PetscErrorCode  KSPSolve_SpecEst(KSP ksp)
     ierr = KSPComputeExtremeSingularValues(spec->kspest,&spec->max,&spec->min);CHKERRQ(ierr);
 
     ierr = KSPGetIterationNumber(spec->kspest,&its);CHKERRQ(ierr);
-    ierr = PetscMalloc2(its,PetscReal,&real,its,PetscReal,&imag);CHKERRQ(ierr);
+    ierr = PetscMalloc2(its,&real,its,&imag);CHKERRQ(ierr);
     ierr = KSPComputeEigenvalues(spec->kspest,its,real,imag,&neig);CHKERRQ(ierr);
     for (i=0; i<neig; i++) {
       /* We would really like to compute w (nominally 1/radius) to minimize |1-wB|.  Empirically it
@@ -77,7 +77,7 @@ static PetscErrorCode  KSPSolve_SpecEst(KSP ksp)
 
     ierr = KSPChebyshevSetEigenvalues(spec->kspcheap,spec->max*spec->maxfactor,spec->min*spec->minfactor);CHKERRQ(ierr);
     ierr = KSPRichardsonSetScale(spec->kspcheap,spec->richfactor/spec->radius);CHKERRQ(ierr);
-    ierr = PetscInfo3(ksp,"Estimated singular value min=%G max=%G, spectral radius=%G",spec->min,spec->max,spec->radius);CHKERRQ(ierr);
+    ierr = PetscInfo3(ksp,"Estimated singular value min=%g max=%g, spectral radius=%g",(double)spec->min,(double)spec->max,(double)spec->radius);CHKERRQ(ierr);
 
     spec->current = PETSC_TRUE;
   }
@@ -95,8 +95,8 @@ static PetscErrorCode KSPView_SpecEst(KSP ksp,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  SpecEst: last singular value estimate min=%G max=%G rad=%G\n",spec->min,spec->max,spec->radius);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Using scaling factors min=%G max=%G rich=%G\n",spec->minfactor,spec->maxfactor,spec->richfactor);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  SpecEst: last singular value estimate min=%g max=%g rad=%g\n",(double)spec->min,(double)spec->max,(double)spec->radius);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Using scaling factors min=%g max=%g rich=%g\n",(double)spec->minfactor,(double)spec->maxfactor,(double)spec->richfactor);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Sub KSP used for estimating spectrum:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = KSPView(spec->kspest,viewer);CHKERRQ(ierr);
@@ -200,7 +200,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_SpecEst(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
 
-  ierr = PetscNewLog(ksp,KSP_SpecEst,&spec);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,&spec);CHKERRQ(ierr);
 
   ksp->data                = (void*)spec;
   ksp->ops->setup          = KSPSetUp_SpecEst;
@@ -227,7 +227,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_SpecEst(KSP ksp)
   ierr = KSPSetTolerances(spec->kspest,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,5);CHKERRQ(ierr);
 
   /* Make the "cheap" preconditioner cheap by default */
-  ierr = KSPSetConvergenceTest(spec->kspcheap,KSPSkipConverged,0,0);CHKERRQ(ierr);
+  ierr = KSPSetConvergenceTest(spec->kspcheap,KSPConvergedSkip,0,0);CHKERRQ(ierr);
   ierr = KSPSetNormType(spec->kspcheap,KSP_NORM_NONE);CHKERRQ(ierr);
   ierr = KSPSetTolerances(spec->kspcheap,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,5);CHKERRQ(ierr);
   PetscFunctionReturn(0);

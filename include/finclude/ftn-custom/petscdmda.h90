@@ -12,6 +12,13 @@
           PetscErrorCode ierr
           DM_HIDE   v
         End Subroutine
+        Subroutine DMDARestoreGlobalIndicesF90(v,n,array,ierr)
+          USE_DM_HIDE
+          PetscInt, pointer :: array(:)
+          PetscInt  n
+          PetscErrorCode ierr
+          DM_HIDE   v
+        End Subroutine
       End Interface
 
 
@@ -22,7 +29,7 @@
         PetscInt ::       xm,ym,zm
         PetscInt ::       gxs,gys,gzs
         PetscInt ::       gxm,gym,gzm
-        DMDABoundaryType :: pt
+        DMBoundaryType :: pt
         DMDAStencilType  :: st
         DM_HIDE ::        da
       end type DMDALocalInfof90

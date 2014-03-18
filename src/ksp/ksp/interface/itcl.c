@@ -304,8 +304,8 @@ PetscErrorCode  KSPGetOptionsPrefix(KSP ksp,const char *prefix[])
 .   -ksp_atol abstol - absolute tolerance used in default convergence test, i.e. if residual
                 norm is less than this then convergence is declared
 .   -ksp_divtol tol - if residual norm increases by this factor than divergence is declared
-.   -ksp_converged_use_initial_residual_norm - see KSPDefaultConvergedSetUIRNorm()
-.   -ksp_converged_use_min_initial_residual_norm - see KSPDefaultConvergedSetUMIRNorm()
+.   -ksp_converged_use_initial_residual_norm - see KSPConvergedDefaultSetUIRNorm()
+.   -ksp_converged_use_min_initial_residual_norm - see KSPConvergedDefaultSetUMIRNorm()
 .   -ksp_norm_type - none - skip norms used in convergence tests (useful only when not using
 $                       convergence test (say you always want to run with 5 iterations) to
 $                       save on communication overhead
@@ -358,7 +358,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
 
   if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll();CHKERRQ(ierr);}
   ierr = PetscObjectOptionsBegin((PetscObject)ksp);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-ksp_type","Krylov method","KSPSetType",KSPList,(char*)(((PetscObject)ksp)->type_name ? ((PetscObject)ksp)->type_name : KSPGMRES),type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-ksp_type","Krylov method","KSPSetType",KSPList,(char*)(((PetscObject)ksp)->type_name ? ((PetscObject)ksp)->type_name : KSPGMRES),type,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = KSPSetType(ksp,type);CHKERRQ(ierr);
   }
@@ -375,11 +375,11 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   ierr = PetscOptionsReal("-ksp_divtol","Residual norm increase cause divergence","KSPSetTolerances",ksp->divtol,&ksp->divtol,NULL);CHKERRQ(ierr);
 
   flag = PETSC_FALSE;
-  ierr = PetscOptionsBool("-ksp_converged_use_initial_residual_norm","Use initial residual residual norm for computing relative convergence","KSPDefaultConvergedSetUIRNorm",flag,&flag,NULL);CHKERRQ(ierr);
-  if (flag) {ierr = KSPDefaultConvergedSetUIRNorm(ksp);CHKERRQ(ierr);}
+  ierr = PetscOptionsBool("-ksp_converged_use_initial_residual_norm","Use initial residual residual norm for computing relative convergence","KSPConvergedDefaultSetUIRNorm",flag,&flag,NULL);CHKERRQ(ierr);
+  if (flag) {ierr = KSPConvergedDefaultSetUIRNorm(ksp);CHKERRQ(ierr);}
   flag = PETSC_FALSE;
-  ierr = PetscOptionsBool("-ksp_converged_use_min_initial_residual_norm","Use minimum of initial residual norm and b for computing relative convergence","KSPDefaultConvergedSetUMIRNorm",flag,&flag,NULL);CHKERRQ(ierr);
-  if (flag) {ierr = KSPDefaultConvergedSetUMIRNorm(ksp);CHKERRQ(ierr);}
+  ierr = PetscOptionsBool("-ksp_converged_use_min_initial_residual_norm","Use minimum of initial residual norm and b for computing relative convergence","KSPConvergedDefaultSetUMIRNorm",flag,&flag,NULL);CHKERRQ(ierr);
+  if (flag) {ierr = KSPConvergedDefaultSetUMIRNorm(ksp);CHKERRQ(ierr);}
   ierr = KSPGetInitialGuessNonzero(ksp,&flag);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_initial_guess_nonzero","Use the contents of the solution vector for initial guess","KSPSetInitialNonzero",flag,&flag,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -399,10 +399,10 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (flg) {
     switch (indx) {
     case 0:
-      ierr = KSPDefaultConvergedCreate(&ctx);CHKERRQ(ierr);
-      ierr = KSPSetConvergenceTest(ksp,KSPDefaultConverged,ctx,KSPDefaultConvergedDestroy);CHKERRQ(ierr);
+      ierr = KSPConvergedDefaultCreate(&ctx);CHKERRQ(ierr);
+      ierr = KSPSetConvergenceTest(ksp,KSPConvergedDefault,ctx,KSPConvergedDefaultDestroy);CHKERRQ(ierr);
       break;
-    case 1: ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,NULL,NULL);CHKERRQ(ierr);    break;
+    case 1: ierr = KSPSetConvergenceTest(ksp,KSPConvergedSkip,NULL,NULL);CHKERRQ(ierr);    break;
     }
   }
 
@@ -484,7 +484,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     if (flg) {
       KSPDynTolCtx *scale   = NULL;
       PetscReal    defaultv = 1.0;
-      ierr        = PetscMalloc(1*sizeof(KSPDynTolCtx),&scale);CHKERRQ(ierr);
+      ierr        = PetscMalloc1(1,&scale);CHKERRQ(ierr);
       scale->bnrm = -1.0;
       scale->coef = defaultv;
       ierr        = PetscOptionsReal("-sub_ksp_dynamic_tolerance_param","Parameter of dynamic tolerance for inner PCKSP","KSPMonitorDynamicToleranceParam",defaultv,&(scale->coef),&flg);CHKERRQ(ierr);
@@ -571,16 +571,16 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     ierr = KSPMonitorSet(ksp,KSPMonitorLGRange,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
 
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   /*
     Publish convergence information using AMS
   */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-ksp_monitor_ams","Publish KSP progress using AMS","KSPMonitorSet",flg,&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_monitor_saws","Publish KSP progress using SAWs","KSPMonitorSet",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     void *ctx;
-    ierr = KSPMonitorAMSCreate(ksp,NULL,&ctx);CHKERRQ(ierr);
-    ierr = KSPMonitorSet(ksp,KSPMonitorAMS,ctx,KSPMonitorAMSDestroy);CHKERRQ(ierr);
+    ierr = KSPMonitorSAWsCreate(ksp,&ctx);CHKERRQ(ierr);
+    ierr = KSPMonitorSet(ksp,KSPMonitorSAWs,ctx,KSPMonitorSAWsDestroy);CHKERRQ(ierr);
     ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr);
   }
 #endif
@@ -600,13 +600,13 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   ierr = PetscOptionsBool("-ksp_plot_eigenvalues","Scatter plot extreme eigenvalues","KSPSetComputeSingularValues",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) { ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr); }
 
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   {
   PetscBool set;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-ksp_ams_block","Block for AMS memory snooper at end of KSPSolve","PetscObjectAMSBlock",((PetscObject)ksp)->amspublishblock,&flg,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_saws_block","Block for SAWs at end of KSPSolve","PetscObjectSAWsBlock",((PetscObject)ksp)->amspublishblock,&flg,&set);CHKERRQ(ierr);
   if (set) {
-    ierr = PetscObjectAMSSetBlock((PetscObject)ksp,flg);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsSetBlock((PetscObject)ksp,flg);CHKERRQ(ierr);
   }
   }
 #endif
@@ -614,9 +614,6 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (ksp->ops->setfromoptions) {
     ierr = (*ksp->ops->setfromoptions)(ksp);CHKERRQ(ierr);
   }
-  /* actually check in setup this is just here so goes into help message */
-  ierr = PetscOptionsName("-ksp_view","View linear solver parameters","KSPView",&flg);CHKERRQ(ierr);
-
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)ksp);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);

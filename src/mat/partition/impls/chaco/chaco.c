@@ -116,7 +116,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
   eigtol        = chaco->eigtol;          /* tolerance on eigenvectors */
   seed          = 123636512;              /* for random graph mutations */
 
-  ierr = PetscMalloc((mat->rmap->N)*sizeof(short),&assignment);CHKERRQ(ierr);
+  ierr = PetscMalloc1((mat->rmap->N),&assignment);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(int)*start[nvtxs],&adjacency);CHKERRQ(ierr);
   for (i=0; i<start[nvtxs]; i++) adjacency[i] = (adj->j)[i] + 1; /* 1-based indexing */
 
@@ -126,7 +126,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
   if (pipe(fd_pipe)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Could not open pipe");
   close(1);
   dup2(fd_pipe[1],1);
-  ierr = PetscMalloc(SIZE_LOG*sizeof(char),&mesg_log);CHKERRQ(ierr);
+  ierr = PetscMalloc1(SIZE_LOG,&mesg_log);CHKERRQ(ierr);
 #endif
 
   /* library call */
@@ -152,7 +152,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
 #endif
   if (ierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Chaco failed");
 
-  ierr = PetscMalloc((mat->rmap->N)*sizeof(PetscInt),&parttab);CHKERRQ(ierr);
+  ierr = PetscMalloc1((mat->rmap->N),&parttab);CHKERRQ(ierr);
   for (i=0; i<nvtxs; i++) parttab[i] = assignment[i];
 
   /* creation of the index set */
@@ -757,7 +757,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Chaco(MatPartitioning part)
   MatPartitioning_Chaco *chaco;
 
   PetscFunctionBegin;
-  ierr       = PetscNewLog(part,MatPartitioning_Chaco,&chaco);CHKERRQ(ierr);
+  ierr       = PetscNewLog(part,&chaco);CHKERRQ(ierr);
   part->data = (void*)chaco;
 
   chaco->global_method = MP_CHACO_MULTILEVEL;

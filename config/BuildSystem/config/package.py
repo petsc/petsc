@@ -33,6 +33,7 @@ class Package(config.base.Configure):
     self.gitcommit        = None # Git commit to use for downloads (used in preference to tarball downloads)
     self.giturls          = []   # list of Git repository URLs to be used for downloads
     self.download         = []   # list of URLs where repository or tarballs may be found
+    self.downloadURLSetByUser = False # user overrode package file by providing download location
     self.deps             = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
     self.defaultLanguage  = 'C'  # The language in which to run tests
     self.liblist          = [[]] # list of libraries we wish to check for (override with your own generateLibList())
@@ -51,7 +52,6 @@ class Package(config.base.Configure):
     self.includedir       = 'include' # location of includes in the package directory tree
     self.license          = None # optional license text
     self.excludedDirs     = []   # list of directory names that could be false positives, SuperLU_DIST when looking for SuperLU
-    self.archIndependent  = 0    # 1 means the install directory does not incorporate the ARCH name
     self.downloadonWindows   = 0  # 1 means the --download-package works on Microsoft Windows
     self.worksonWindows      = 0  # 1 means that package can be used on Microsof Windows
     # Outside coupling
@@ -160,9 +160,11 @@ class Package(config.base.Configure):
 
   def getExternalPackagesDir(self):
     '''The directory for downloaded packages'''
-    if not self.framework.externalPackagesDir is None:
-      packages = os.path.abspath('externalpackages')
-      return self.framework.externalPackagesDir
+    if hasattr(self, 'externalPackagesDirProvider'):
+      if hasattr(self.externalPackagesDirProvider, 'dir'):
+        return self.externalPackagesDirProvider.dir
+    elif not self.framework.externalPackagesDir is None:
+      return os.path.abspath('externalpackages')
     return self._externalPackagesDir
   def setExternalPackagesDir(self, externalPackagesDir):
     '''The directory for downloaded packages'''
@@ -175,8 +177,7 @@ class Package(config.base.Configure):
     return []
 
   def getInstallDir(self):
-    if not self.arch:  raise RuntimeError('Why the hell is self.arch not defined for this package -- '+self.package+'\n')
-    self.installDir = os.path.join(self.defaultInstallDir, self.arch)
+    self.installDir = self.defaultInstallDir
     self.confDir    = os.path.join(self.installDir, 'conf')
     self.includeDir = os.path.join(self.installDir, 'include')
     self.libDir     = os.path.join(self.installDir, 'lib')
@@ -329,6 +330,7 @@ class Package(config.base.Configure):
     downloadPackageVal = self.framework.argDB['download-'+self.downloadname.lower()]
     if requireDownload and isinstance(downloadPackageVal, str):
       self.download = [downloadPackageVal]
+      self.downloadURLSetByUser = True
       downloadPackage = 1
     elif downloadPackageVal == 1 and requireDownload:
       downloadPackage = 1
@@ -393,9 +395,6 @@ class Package(config.base.Configure):
         raise RuntimeError('Unable to download '+self.downloadname)
       self.downLoad()
       return self.getDir(retry = 0)
-    if not self.archIndependent:
-      if not os.path.isdir(os.path.join(packages, Dir, self.arch)):
-        os.mkdir(os.path.join(packages, Dir, self.arch))
     return os.path.join(packages, Dir)
 
   def gitPreReqCheck(self):
@@ -421,8 +420,9 @@ class Package(config.base.Configure):
         download_urls.append(url.replace('http://','ftp://'))
     # now attempt to download each url until any one succeeds.
     err =''
-    if hasattr(self.sourceControl, 'git') and self.gitcommit and self.gitPreReqCheck():
+    if not self.downloadURLSetByUser and hasattr(self.sourceControl, 'git') and self.gitcommit and self.gitPreReqCheck():
       for giturl in self.giturls: # First try to fetch using Git
+        self.logPrintBox('Trying to download '+giturl+' for '+self.PACKAGE)
         try:
           gitrepo = os.path.join(self.externalPackagesDir, self.downloadname)
           self.executeShellCommand([self.sourceControl.git, 'clone', giturl, gitrepo])
@@ -433,6 +433,7 @@ class Package(config.base.Configure):
           self.logPrint('ERROR: '+str(e))
           err += str(e)
     for url in download_urls:
+      self.logPrintBox('Trying to download '+url+' for '+self.PACKAGE)
       try:
         retriever.genericRetrieve(url, self.externalPackagesDir, self.downloadname)
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.name+' into '+self.getDir(0))
@@ -549,10 +550,10 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' without Fortran, make sure you do NOT have --with-fc=0')
       if self.noMPIUni and self.mpi.usingMPIUni:
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
-      if not self.worksonWindows and self.setCompilers.isCygwin():
-        raise RuntimeError('External package '+self.name+' does not work on Microsoft Windows')
-      if self.download and self.framework.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and self.setCompilers.isCygwin():
-        raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' on Microsoft Windows')
+      if not self.worksonWindows and (self.setCompilers.CC.find('win32fe') >= 0):
+        raise RuntimeError('External package '+self.name+' does not work with Microsoft compilers')
+      if self.download and self.framework.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and (self.setCompilers.CC.find('win32fe') >= 0):
+        raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' with Microsoft compilers')
     if not self.download and self.framework.argDB.has_key('download-'+self.downloadname.lower()) and self.framework.argDB['download-'+self.downloadname.lower()]:
       raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower())
     return

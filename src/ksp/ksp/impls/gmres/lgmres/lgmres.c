@@ -51,12 +51,12 @@ PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
   ierr    = KSPSetUp_GMRES(ksp);CHKERRQ(ierr);
 
   /* need array of pointers to augvecs*/
-  ierr = PetscMalloc((2 * aug_dim + AUG_OFFSET)*sizeof(void*),&lgmres->augvecs);CHKERRQ(ierr);
+  ierr = PetscMalloc1((2 * aug_dim + AUG_OFFSET),&lgmres->augvecs);CHKERRQ(ierr);
 
   lgmres->aug_vecs_allocated = 2 *aug_dim + AUG_OFFSET;
 
-  ierr = PetscMalloc((2* aug_dim + AUG_OFFSET)*sizeof(void*),&lgmres->augvecs_user_work);CHKERRQ(ierr);
-  ierr = PetscMalloc(aug_dim*sizeof(PetscInt),&lgmres->aug_order);CHKERRQ(ierr);
+  ierr = PetscMalloc1((2* aug_dim + AUG_OFFSET),&lgmres->augvecs_user_work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(aug_dim,&lgmres->aug_order);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)ksp,(aug_dim)*(4*sizeof(void*) + sizeof(PetscInt)) + AUG_OFFSET*2*sizeof(void*));CHKERRQ(ierr);
 
   /*  for now we will preallocate the augvecs - because aug_dim << restart
@@ -65,7 +65,7 @@ PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
   lgmres->augwork_alloc    =  2* aug_dim + AUG_OFFSET;
 
   ierr = KSPGetVecs(ksp,lgmres->aug_vv_allocated,&lgmres->augvecs_user_work[0],0,NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc((max_k+1)*sizeof(PetscScalar),&lgmres->hwork);CHKERRQ(ierr);
+  ierr = PetscMalloc1((max_k+1),&lgmres->hwork);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,lgmres->aug_vv_allocated,lgmres->augvecs_user_work[0]);CHKERRQ(ierr);
   for (k=0; k<lgmres->aug_vv_allocated; k++) {
     lgmres->augvecs[k] = lgmres->augvecs_user_work[0][k];
@@ -219,7 +219,7 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount,KSP ksp)
       tmp  = 1.0/tt;
       ierr = VecScale(VEC_VV(loc_it+1),tmp);CHKERRQ(ierr); /* scale new direction by its norm */
     } else {
-      ierr   = PetscInfo2(ksp,"Detected happy breakdown, current hapbnd = %G tt = %G\n",hapbnd,tt);CHKERRQ(ierr);
+      ierr   = PetscInfo2(ksp,"Detected happy breakdown, current hapbnd = %g tt = %g\n",(double)hapbnd,(double)tt);CHKERRQ(ierr);
       hapend = PETSC_TRUE;
     }
 
@@ -231,17 +231,17 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount,KSP ksp)
     loc_it++;
     lgmres->it = (loc_it-1);   /* Add this here in case it has converged */
 
-    ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = res;
-    ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
 
     ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
 
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
       if (!ksp->reason) {
-        if (ksp->errorifnotconverged) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"You reached the happy break down, but convergence was not indicated. Residual norm = %G",res);
+        if (ksp->errorifnotconverged) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"You reached the happy break down, but convergence was not indicated. Residual norm = %g",(double)res);
         else {
           ksp->reason = KSP_DIVERGED_BREAKDOWN;
           break;
@@ -354,13 +354,13 @@ PetscErrorCode KSPSolve_LGMRES(KSP ksp)
   PetscFunctionBegin;
   if (ksp->calc_sings && !lgmres->Rsvd) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
 
-  ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
 
   ksp->its        = 0;
   lgmres->aug_ct  = 0;
   lgmres->matvecs = 0;
 
-  ierr = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
 
   /* initialize */
   itcount     = 0;
@@ -463,7 +463,7 @@ static PetscErrorCode KSPLGMRESBuildSoln(PetscScalar *nrs,Vec vguess,Vec vdest,K
 
   /* solve the upper triangular system - GRS is the right side and HH is
      the upper triangular matrix  - put soln in nrs */
-  if (*HH(it,it) == 0.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"HH(it,it) is identically zero; it = %D GRS(it) = %G",it,PetscAbsScalar(*GRS(it)));
+  if (*HH(it,it) == 0.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"HH(it,it) is identically zero; it = %D GRS(it) = %g",it,(double)PetscAbsScalar(*GRS(it)));
   if (*HH(it,it) != 0.0) {
     nrs[it] = *GRS(it) / *HH(it,it);
   } else {
@@ -676,7 +676,7 @@ PetscErrorCode KSPBuildSolution_LGMRES(KSP ksp,Vec ptr,Vec *result)
   }
   if (!lgmres->nrs) {
     /* allocate the work area */
-    ierr = PetscMalloc(lgmres->max_k*sizeof(PetscScalar),&lgmres->nrs);CHKERRQ(ierr);
+    ierr = PetscMalloc1(lgmres->max_k,&lgmres->nrs);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)ksp,lgmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
@@ -804,7 +804,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LGMRES(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,KSP_LGMRES,&lgmres);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,&lgmres);CHKERRQ(ierr);
 
   ksp->data               = (void*)lgmres;
   ksp->ops->buildsolution = KSPBuildSolution_LGMRES;

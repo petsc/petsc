@@ -93,7 +93,7 @@ static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes,Vec X,Vec B,Ve
       }
     }
   } else if (snes->normschedule == SNES_NORM_ALWAYS) {
-    SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
     if (snes->domainerror) {
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
       PetscFunctionReturn(0);
@@ -337,10 +337,10 @@ static PetscErrorCode SNESSetUp_Composite(SNES snes)
     jac->ldb   = jac->nsnes;
     jac->n     = jac->nsnes;
 
-    ierr = PetscMalloc(jac->n*jac->n*sizeof(PetscScalar),&jac->h);CHKERRQ(ierr);
-    ierr = PetscMalloc(jac->n*sizeof(PetscScalar),&jac->beta);CHKERRQ(ierr);
-    ierr = PetscMalloc(jac->n*sizeof(PetscScalar),&jac->s);CHKERRQ(ierr);
-    ierr = PetscMalloc(jac->n*sizeof(PetscScalar),&jac->g);CHKERRQ(ierr);
+    ierr = PetscMalloc1(jac->n*jac->n,&jac->h);CHKERRQ(ierr);
+    ierr = PetscMalloc1(jac->n,&jac->beta);CHKERRQ(ierr);
+    ierr = PetscMalloc1(jac->n,&jac->s);CHKERRQ(ierr);
+    ierr = PetscMalloc1(jac->n,&jac->g);CHKERRQ(ierr);
     jac->lwork = 12*jac->n;
 #if PETSC_USE_COMPLEX
     ierr = PetscMalloc(sizeof(PetscReal)*jac->lwork,&jac->rwork);CHKERRQ(ierr);
@@ -374,7 +374,6 @@ static PetscErrorCode SNESReset_Composite(SNES snes)
   ierr = PetscFree(jac->beta);CHKERRQ(ierr);
   ierr = PetscFree(jac->work);CHKERRQ(ierr);
   ierr = PetscFree(jac->rwork);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -497,7 +496,7 @@ static PetscErrorCode  SNESCompositeAddSNES_Composite(SNES snes,SNESType type)
   DM               dm;
 
   PetscFunctionBegin;
-  ierr        = PetscNewLog(snes,struct _SNES_CompositeLink,&ilink);CHKERRQ(ierr);
+  ierr        = PetscNewLog(snes,&ilink);CHKERRQ(ierr);
   ilink->next = 0;
   ierr        = SNESCreate(PetscObjectComm((PetscObject)snes),&ilink->snes);CHKERRQ(ierr);
   ierr        = PetscLogObjectParent((PetscObject)snes,(PetscObject)ilink->snes);CHKERRQ(ierr);
@@ -699,10 +698,10 @@ PetscErrorCode SNESSolve_Composite(SNES snes)
   F = snes->vec_func;
   B = snes->vec_rhs;
 
-  ierr         = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr         = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter   = 0;
   snes->norm   = 0.;
-  ierr         = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr         = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->reason = SNES_CONVERGED_ITERATING;
   ierr         = SNESGetNormSchedule(snes, &normtype);CHKERRQ(ierr);
   if (normtype == SNES_NORM_ALWAYS || normtype == SNES_NORM_INITIAL_ONLY || normtype == SNES_NORM_INITIAL_FINAL_ONLY) {
@@ -719,22 +718,18 @@ PetscErrorCode SNESSolve_Composite(SNES snes)
       snes->reason = SNES_DIVERGED_FNORM_NAN;
       PetscFunctionReturn(0);
     }
-
-    ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
     snes->iter = 0;
     snes->norm = fnorm;
-    ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
     ierr       = SNESMonitor(snes,0,snes->norm);CHKERRQ(ierr);
-
-    /* set parameter for default relative tolerance convergence test */
-    snes->ttol = fnorm*snes->rtol;
 
     /* test convergence */
     ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) PetscFunctionReturn(0);
   } else {
-    ierr = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
     ierr = SNESMonitor(snes,0,snes->norm);CHKERRQ(ierr);
   }
@@ -769,10 +764,10 @@ PetscErrorCode SNESSolve_Composite(SNES snes)
       }
     }
     /* Monitor convergence */
-    ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
     snes->iter = i+1;
     snes->norm = fnorm;
-    ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
     ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence */
@@ -817,7 +812,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Composite(SNES snes)
   SNES_Composite   *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(snes,SNES_Composite,&jac);CHKERRQ(ierr);
+  ierr = PetscNewLog(snes,&jac);CHKERRQ(ierr);
 
   snes->ops->solve           = SNESSolve_Composite;
   snes->ops->setup           = SNESSetUp_Composite;

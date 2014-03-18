@@ -97,7 +97,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     if (red->useparallelmat) {
       /* grab the parallel matrix and put it into processors of a subcomminicator */
       ierr = MatGetRedundantMatrix(pc->pmat,red->psubcomm->n,subcomm,MAT_INITIAL_MATRIX,&red->pmats);CHKERRQ(ierr);
-      ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats);CHKERRQ(ierr);
        
       /* get working vectors xsub and ysub */
       ierr = MatGetVecs(red->pmats,&red->xsub,&red->ysub);CHKERRQ(ierr);
@@ -119,7 +119,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
         ierr = VecGetSize(x,&M);CHKERRQ(ierr);
         ierr = VecGetOwnershipRange(x,&mstart,&mend);CHKERRQ(ierr);
         mlocal = mend - mstart;
-        ierr = PetscMalloc2(red->psubcomm->n*mlocal,PetscInt,&idx1,red->psubcomm->n*mlocal,PetscInt,&idx2);CHKERRQ(ierr);
+        ierr = PetscMalloc2(red->psubcomm->n*mlocal,&idx1,red->psubcomm->n*mlocal,&idx2);CHKERRQ(ierr);
         j    = 0;
         for (k=0; k<red->psubcomm->n; k++) {
           for (i=mstart; i<mend; i++) {
@@ -143,7 +143,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
         ierr = VecDestroy(&x);CHKERRQ(ierr);
       }
     } else { /* !red->useparallelmat */
-      ierr = KSPSetOperators(red->ksp,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
+      ierr = KSPSetOperators(red->ksp,pc->mat,pc->pmat);CHKERRQ(ierr);
     }
   } else { /* pc->setupcalled */
     if (red->useparallelmat) {
@@ -158,9 +158,9 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
         reuse = MAT_REUSE_MATRIX;
       }
       ierr = MatGetRedundantMatrix(pc->pmat,red->psubcomm->n,red->psubcomm->comm,reuse,&red->pmats);CHKERRQ(ierr);
-      ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats,pc->flag);CHKERRQ(ierr);
+      ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats);CHKERRQ(ierr);
     } else { /* !red->useparallelmat */
-      ierr = KSPSetOperators(red->ksp,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
+      ierr = KSPSetOperators(red->ksp,pc->mat,pc->pmat);CHKERRQ(ierr);
     }
   }
 
@@ -481,7 +481,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Redundant(PC pc)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_Redundant,&red);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&red);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
 
   red->nsubcomm       = size;

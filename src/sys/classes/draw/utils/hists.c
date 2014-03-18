@@ -77,14 +77,14 @@ PetscErrorCode  PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist)
   h->numBins     = bins;
   h->maxBins     = bins;
 
-  ierr = PetscMalloc(h->maxBins * sizeof(PetscReal), &h->bins);CHKERRQ(ierr);
+  ierr = PetscMalloc1(h->maxBins, &h->bins);CHKERRQ(ierr);
 
   h->numValues   = 0;
   h->maxValues   = CHUNKSIZE;
   h->calcStats   = PETSC_FALSE;
   h->integerBins = PETSC_FALSE;
 
-  ierr = PetscMalloc(h->maxValues * sizeof(PetscReal), &h->values);CHKERRQ(ierr);
+  ierr = PetscMalloc1(h->maxValues, &h->values);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)h, (h->maxBins + h->maxValues)*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isnull);CHKERRQ(ierr);
 
@@ -120,7 +120,7 @@ PetscErrorCode  PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins)
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID,1);
   if (hist->maxBins < bins) {
     ierr = PetscFree(hist->bins);CHKERRQ(ierr);
-    ierr = PetscMalloc(bins * sizeof(PetscReal), &hist->bins);CHKERRQ(ierr);
+    ierr = PetscMalloc1(bins, &hist->bins);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)hist, (bins - hist->maxBins) * sizeof(PetscReal));CHKERRQ(ierr);
 
     hist->maxBins = bins;
@@ -212,7 +212,7 @@ PetscErrorCode  PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
     PetscReal      *tmp;
     PetscErrorCode ierr;
 
-    ierr = PetscMalloc((hist->maxValues+CHUNKSIZE) * sizeof(PetscReal), &tmp);CHKERRQ(ierr);
+    ierr = PetscMalloc1((hist->maxValues+CHUNKSIZE), &tmp);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)hist, CHUNKSIZE * sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscMemcpy(tmp, hist->values, hist->maxValues * sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscFree(hist->values);CHKERRQ(ierr);
@@ -480,7 +480,7 @@ PetscErrorCode  PetscDrawHGView(PetscDrawHG hist,PetscViewer viewer)
     mean /= numValues;
     if (numValues > 1) var = (var - numValues*mean*mean) / (numValues-1);
     else var = 0.0;
-    ierr = PetscViewerASCIIPrintf(viewer, "Mean: %G  Var: %G\n", (double)mean, (double)var);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Mean: %g  Var: %g\n", (double)mean, (double)var);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Total: %D\n", numValues);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

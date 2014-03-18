@@ -11,9 +11,10 @@ from stat import *
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.6/downloads/openmpi-1.6.4.tar.gz',
-                               'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/openmpi-1.6.4.tar.gz']
-    self.download_mpich     = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/mpich-master-v3.0.4-106-g3adb59c.tar.gz']
+    self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.6/downloads/openmpi-1.6.5.tar.gz',
+                               'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/openmpi-1.6.5.tar.gz']
+    self.download_mpich     = ['http://www.mpich.org/static/downloads/3.1/mpich-3.1.tar.gz']
+    self.download_mpich_sol = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/mpich-master-v3.0.4-106-g3adb59c.tar.gz']
     self.download           = ['redefine']
     self.functions          = ['MPI_Init', 'MPI_Comm_create']
     self.includes           = ['mpi.h']
@@ -249,7 +250,7 @@ class Configure(config.package.Package):
     oldLibs  = self.compilers.LIBS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
     self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
-    mpitypes = [('MPI_LONG_DOUBLE', 'long-double')]
+    mpitypes = [('MPI_LONG_DOUBLE', 'long-double'), ('MPI_INT64_T', 'int64_t')]
     if self.getDefaultLanguage() == 'C': mpitypes.extend([('MPI_C_DOUBLE_COMPLEX', 'c-double-complex')])
     for datatype, name in mpitypes:
       includes = '#ifdef PETSC_HAVE_STDLIB_H\n  #include <stdlib.h>\n#endif\n#include <mpi.h>\n'
@@ -289,6 +290,7 @@ class Configure(config.package.Package):
   def alternateConfigureLibrary(self):
     '''Setup MPIUNI, our uniprocessor version of MPI'''
     self.addDefine('HAVE_MPIUNI', 1)
+    self.addMakeMacro('MPI_IS_MPIUNI', 1)
     #
     #  Even though MPI-Uni is not an external package (it is in PETSc source) we need to stick the
     #  include path for its mpi.h and mpif.h so that external packages that are built with PETSc to
@@ -345,7 +347,10 @@ class Configure(config.package.Package):
       if config.setCompilers.Configure.isCygwin() and not config.setCompilers.Configure.isGNU(self.setCompilers.CC):
         raise RuntimeError('Sorry, cannot download-install MPICH on Windows. Sugest installing windows version of MPICH manually')
       self.liblist      = [[]]
-      self.download         = self.download_mpich
+      if config.setCompilers.Configure.isSolaris() or self.framework.argDB['with-gcov']:
+        self.download         = self.download_mpich_sol
+      else:
+        self.download         = self.download_mpich
       self.downloadname     = 'mpich'
       self.downloadfilename = 'mpich'
       return config.package.Package.checkDownload(self, requireDownload)
@@ -373,8 +378,7 @@ class Configure(config.package.Package):
     openmpiDir = self.getDir()
 
     # Get the OPENMPI directories
-    installDir = os.path.join(self.defaultInstallDir,self.arch)
-    confDir = os.path.join(self.defaultInstallDir,self.arch,'conf')
+    installDir = self.installDir
     args = ['--prefix='+installDir,'--with-rsh=ssh']
     args.append('MAKE='+self.make.make)
     # Configure and Build OPENMPI
@@ -469,8 +473,7 @@ class Configure(config.package.Package):
 
   def InstallMPICH(self):
     mpichDir = self.getDir()
-    installDir = os.path.join(self.defaultInstallDir,self.arch)
-    confDir = os.path.join(self.defaultInstallDir,self.arch,'conf')
+    installDir = self.installDir
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
 
@@ -763,8 +766,11 @@ class Configure(config.package.Package):
       self.addDefine('HAVE_MPI_WIN_CREATE',1)
       self.addDefine('HAVE_MPI_REPLACE',1) # MPI_REPLACE is strictly for use with the one-sided function MPI_Accumulate
     funcs = '''MPI_Comm_spawn MPI_Type_get_envelope MPI_Type_get_extent MPI_Type_dup MPI_Init_thread
-      MPIX_Iallreduce MPI_Iallreduce MPI_Ibarrier MPI_Finalized MPI_Exscan'''.split()
-    for f in funcs:
+      MPI_Iallreduce MPI_Ibarrier MPI_Finalized MPI_Exscan'''.split()
+    found, missing = self.libraries.checkClassify(self.dlib, funcs)
+    for f in found:
+      self.addDefine('HAVE_' + f.upper(),1)
+    for f in ['MPIX_Iallreduce']: # Unlikely to be found
       if self.libraries.check(self.dlib, f):
         self.addDefine('HAVE_' + f.upper(),1)
 

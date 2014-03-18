@@ -19,14 +19,14 @@
 */
 static PetscErrorCode VecGhostStateSync_Private(Vec g,Vec l)
 {
-  PetscErrorCode ierr;
-  PetscInt       gstate,lstate;
+  PetscErrorCode   ierr;
+  PetscObjectState gstate,lstate;
 
   PetscFunctionBegin;
-  ierr = PetscObjectStateQuery((PetscObject)g,&gstate);CHKERRQ(ierr);
-  ierr = PetscObjectStateQuery((PetscObject)l,&lstate);CHKERRQ(ierr);
-  ierr = PetscObjectSetState((PetscObject)g,PetscMax(gstate,lstate));CHKERRQ(ierr);
-  ierr = PetscObjectSetState((PetscObject)l,PetscMax(gstate,lstate));CHKERRQ(ierr);
+  ierr = PetscObjectStateGet((PetscObject)g,&gstate);CHKERRQ(ierr);
+  ierr = PetscObjectStateGet((PetscObject)l,&lstate);CHKERRQ(ierr);
+  ierr = PetscObjectStateSet((PetscObject)g,PetscMax(gstate,lstate));CHKERRQ(ierr);
+  ierr = PetscObjectStateSet((PetscObject)l,PetscMax(gstate,lstate));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 
-static char help[] = "Pattern Formation with Reaction-Diffusion Equations.\n";
+static char help[] = "Demonstrates Pattern Formation with Reaction-Diffusion Equations.\n";
 
 /*
      Page 21, Pattern Formation with Reaction-Diffusion Equations
@@ -19,6 +19,9 @@ static char help[] = "Pattern Formation with Reaction-Diffusion Equations.\n";
       Helpful runtime linear solver options:
            -pc_type mg -pc_mg_galerkin -da_refine 1 -snes_monitor -ksp_monitor -ts_view  (note that these Jacobians are so well-conditioned multigrid may not be the best solver)
 
+      Point your browser to localhost:8080 to monitor the simulation
+           ./ex5  -ts_view_pre saws  -stack_view saws -draw_save -draw_save_single_file -x_virtual -ts_monitor_draw_solution -saws_root .
+
 */
 
 /*
@@ -32,6 +35,7 @@ static char help[] = "Pattern Formation with Reaction-Diffusion Equations.\n";
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 
@@ -47,7 +51,7 @@ typedef struct {
    User-defined routines
 */
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*),InitialConditions(DM,Vec);
-extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -72,7 +76,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,-65,-65,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,-65,-65,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"u");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"v");CHKERRQ(ierr);
 
@@ -234,7 +238,7 @@ PetscErrorCode InitialConditions(DM da,Vec U)
     y = j*hy;
     for (i=xs; i<xs+xm; i++) {
       x = i*hx;
-      if ((1.0 <= x) && (x <= 1.5) && (1.0 <= y) && (y <= 1.5)) u[j][i].v = .25*PetscPowScalar(PetscSinScalar(4.0*PETSC_PI*x),2.0)*PetscPowScalar(PetscSinScalar(4.0*PETSC_PI*y),2.0);
+      if ((1.0 <= x) && (x <= 1.5) && (1.0 <= y) && (y <= 1.5)) u[j][i].v = .25*PetscPowReal(PetscSinReal(4.0*PETSC_PI*x),2.0)*PetscPowReal(PetscSinReal(4.0*PETSC_PI*y),2.0);
       else u[j][i].v = 0.0;
 
       u[j][i].u = 1.0 - 2.0*u[j][i].v;
@@ -250,9 +254,8 @@ PetscErrorCode InitialConditions(DM da,Vec U)
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSJacobian"
-PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat BB,void *ctx)
 {
-  Mat            A       = *AA;                /* Jacobian matrix */
   AppCtx         *appctx = (AppCtx*)ctx;     /* user-defined application context */
   DM             da;
   PetscErrorCode ierr;
@@ -352,7 +355,6 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructure 
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  *str = SAME_NONZERO_PATTERN;
   ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

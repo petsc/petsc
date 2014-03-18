@@ -1,6 +1,6 @@
 
 /*
-   Provides an interface to the UMFPACKv5.1 sparse solver
+   Provides an interface to the UMFPACK sparse solver available through SuiteSparse version 4.2.1
 
    When build with PETSC_USE_64BIT_INDICES this will use UF_Long as the
    integer type in UMFPACK, otherwise it will use int. This means
@@ -130,8 +130,8 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
   /* ----------------------------------*/
 
   if (!lu->Wi) {  /* first time, allocate working space for wsolve */
-    ierr = PetscMalloc(A->rmap->n*sizeof(PetscInt),&lu->Wi);CHKERRQ(ierr);
-    ierr = PetscMalloc(5*A->rmap->n*sizeof(PetscScalar),&lu->W);CHKERRQ(ierr);
+    ierr = PetscMalloc1(A->rmap->n,&lu->Wi);CHKERRQ(ierr);
+    ierr = PetscMalloc1(5*A->rmap->n,&lu->W);CHKERRQ(ierr);
   }
 
   ierr = VecGetArray(b,&ba);
@@ -234,7 +234,7 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const Ma
   PetscFunctionBegin;
   if (lu->PetscMatOrdering) {
     ierr = ISGetIndices(r,&ra);CHKERRQ(ierr);
-    ierr = PetscMalloc(m*sizeof(PetscInt),&lu->perm_c);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m,&lu->perm_c);CHKERRQ(ierr);
     /* we cannot simply memcpy on 64 bit archs */
     for (i = 0; i < m; i++) lu->perm_c[i] = ra[i];
     ierr = ISRestoreIndices(r,&ra);CHKERRQ(ierr);
@@ -394,7 +394,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
   ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
-  ierr = PetscNewLog(B,Mat_UMFPACK,&lu);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&lu);CHKERRQ(ierr);
 
   B->spptr                 = lu;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_UMFPACK;

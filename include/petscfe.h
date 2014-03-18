@@ -20,6 +20,7 @@ PETSC_EXTERN PetscClassId PETSCSPACE_CLASSID;
 J*/
 typedef const char *PetscSpaceType;
 #define PETSCSPACEPOLYNOMIAL "poly"
+#define PETSCSPACEDG         "dg"
 
 PETSC_EXTERN PetscFunctionList PetscSpaceList;
 PETSC_EXTERN PetscBool         PetscSpaceRegisterAllCalled;
@@ -36,9 +37,15 @@ PETSC_EXTERN PetscErrorCode PetscSpaceRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscSpaceGetDimension(PetscSpace, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscSpaceSetOrder(PetscSpace, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscSpaceGetOrder(PetscSpace, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscSpaceEvaluate(PetscSpace, PetscInt, const PetscReal[], PetscReal[], PetscReal[], PetscReal[]);
 
 PETSC_EXTERN PetscErrorCode PetscSpacePolynomialSetNumVariables(PetscSpace, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscSpacePolynomialGetNumVariables(PetscSpace, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscSpacePolynomialSetSymmetric(PetscSpace, PetscBool);
+PETSC_EXTERN PetscErrorCode PetscSpacePolynomialGetSymmetric(PetscSpace, PetscBool *);
+
+PETSC_EXTERN PetscErrorCode PetscSpaceDGSetQuadrature(PetscSpace, PetscQuadrature);
+PETSC_EXTERN PetscErrorCode PetscSpaceDGGetQuadrature(PetscSpace, PetscQuadrature *);
 
 PETSC_EXTERN PetscClassId PETSCDUALSPACE_CLASSID;
 
@@ -72,7 +79,7 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceGetDM(PetscDualSpace, DM *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetFunctional(PetscDualSpace, PetscInt, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace, PetscInt, PetscBool, DM *);
 
-PETSC_EXTERN PetscErrorCode PetscDualSpaceApply(PetscDualSpace, PetscInt, PetscCellGeometry, PetscInt, void (*)(const PetscReal [], PetscScalar *), PetscScalar *);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceApply(PetscDualSpace, PetscInt, PetscCellGeometry, PetscInt, void (*)(const PetscReal [], PetscScalar *, void *), void *, PetscScalar *);
 
 PETSC_EXTERN PetscClassId PETSCFE_CLASSID;
 
@@ -86,8 +93,10 @@ PETSC_EXTERN PetscClassId PETSCFE_CLASSID;
 .seealso: PetscFESetType(), PetscFE
 J*/
 typedef const char *PetscFEType;
-#define PETSCFEBASIC  "basic"
-#define PETSCFEOPENCL "opencl"
+#define PETSCFEBASIC     "basic"
+#define PETSCFENONAFFINE "nonaffine"
+#define PETSCFEOPENCL    "opencl"
+#define PETSCFECOMPOSITE "composite"
 
 PETSC_EXTERN PetscFunctionList PetscFEList;
 PETSC_EXTERN PetscBool         PetscFERegisterAllCalled;
@@ -100,6 +109,7 @@ PETSC_EXTERN PetscErrorCode PetscFESetFromOptions(PetscFE);
 PETSC_EXTERN PetscErrorCode PetscFERegister(const char [], PetscErrorCode (*)(PetscFE));
 PETSC_EXTERN PetscErrorCode PetscFERegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscFERegisterDestroy(void);
+PETSC_EXTERN PetscErrorCode PetscFECreateDefault(DM, PetscInt, PetscInt, PetscBool, const char [], PetscInt, PetscFE *);
 
 PETSC_EXTERN PetscErrorCode PetscFEGetDimension(PetscFE, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscFEGetSpatialDimension(PetscFE, PetscInt *);
@@ -117,6 +127,7 @@ PETSC_EXTERN PetscErrorCode PetscFEGetNumDof(PetscFE, const PetscInt **);
 PETSC_EXTERN PetscErrorCode PetscFEGetDefaultTabulation(PetscFE, PetscReal **, PetscReal **, PetscReal **);
 PETSC_EXTERN PetscErrorCode PetscFEGetTabulation(PetscFE, PetscInt, const PetscReal[], PetscReal **, PetscReal **, PetscReal **);
 PETSC_EXTERN PetscErrorCode PetscFERestoreTabulation(PetscFE, PetscInt, const PetscReal[], PetscReal **, PetscReal **, PetscReal **);
+PETSC_EXTERN PetscErrorCode PetscFERefine(PetscFE, PetscFE *);
 
 PETSC_EXTERN PetscErrorCode PetscFEIntegrateResidual(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[],
                                                      PetscInt, PetscFE[], const PetscScalar[],
@@ -155,7 +166,8 @@ typedef struct {
   void (**g1Funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_1 functions for each field pair */
   void (**g2Funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_2 functions for each field pair */
   void (**g3Funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_3 functions for each field pair */
-  void (**bcFuncs)(const PetscReal[], PetscScalar *); /* The boundary condition function for each field component */
+  void (**bcFuncs)(const PetscReal[], PetscScalar *, void *); /* The boundary condition function for each field component */
+  void **bcCtxs; /* Contexts for each boundary condition function, or null if all contexts are null */
   PetscFE         *feBd;
   void (**f0BdFuncs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]); /* The f_0 functions for each field */
   void (**f1BdFuncs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]); /* The f_1 functions for each field */

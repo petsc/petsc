@@ -12,8 +12,8 @@ Runtime options include:\n\
     Run with for example: -pc_type mg -pc_mg_galerkin -T .01 -da_grid_x 65 -da_grid_y 65 -pc_mg_levels 4 -ksp_type fgmres -snes_atol 1.e-14 -mat_no_inode
  */
 
-#include "petscsnes.h"
-#include "petscdmda.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
 
 typedef struct {
   PetscReal   dt,T; /* Time step and end time */
@@ -30,7 +30,7 @@ PetscErrorCode GetParams(AppCtx*);
 PetscErrorCode SetVariableBounds(DM,Vec,Vec);
 PetscErrorCode SetUpMatrices(AppCtx*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 PetscErrorCode SetInitialGuess(Vec,AppCtx*);
 PetscErrorCode Update_q(Vec,Vec,Mat,AppCtx*);
 PetscLogEvent event_update_q;
@@ -54,7 +54,7 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = GetParams(&user);CHKERRQ(ierr);
   /* Create a 2D DA with dof = 2 */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&user.da);CHKERRQ(ierr);
   /* Set Element type (triangular) */
   ierr = DMDASetElementType(user.da,DMDA_ELEMENT_P1);CHKERRQ(ierr);
 
@@ -187,7 +187,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ctx)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
 {
   PetscErrorCode   ierr;
   AppCtx           *user  =(AppCtx*)ctx;
@@ -196,13 +196,12 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
   PetscFunctionBeginUser;
   /* for active set method the matrix does not get changed, so do not need to copy each time,
      if the active set remains the same for several solves the preconditioner does not need to be rebuilt*/
-  *flg = SAME_PRECONDITIONER;
   if (!copied) {
-    ierr   = MatCopy(user->M,*J,*flg);CHKERRQ(ierr);
+    ierr   = MatCopy(user->M,J,*flg);CHKERRQ(ierr);
     copied = PETSC_TRUE;
   }
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -222,9 +221,9 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
 
   for (j=ys; j < ys+ym; j++) {
     for (i=xs; i < xs+xm;i++) {
-      l[j][i][0] = -SNES_VI_INF;
+      l[j][i][0] = -PETSC_INFINITY;
       l[j][i][1] = -1.0;
-      u[j][i][0] = SNES_VI_INF;
+      u[j][i][0] = PETSC_INFINITY;
       u[j][i][1] = 1.0;
     }
   }

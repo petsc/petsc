@@ -224,25 +224,8 @@ int main(int argc,char **args)
     /*
        Set operators. Here the matrix that defines the linear system
        also serves as the preconditioning matrix.
-        - The flag SAME_NONZERO_PATTERN indicates that the
-          preconditioning matrix has identical nonzero structure
-          as during the last linear solve (although the values of
-          the entries have changed). Thus, we can save some
-          work in setting up the preconditioner (e.g., no need to
-          redo symbolic factorization for ILU/ICC preconditioners).
-        - If the nonzero structure of the matrix is different during
-          the second linear solve, then the flag DIFFERENT_NONZERO_PATTERN
-          must be used instead.  If you are unsure whether the
-          matrix structure has changed or not, use the flag
-          DIFFERENT_NONZERO_PATTERN.
-        - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-          believes your assertion and does not check the structure
-          of the matrix.  If you erroneously claim that the structure
-          is the same when it actually is not, the new preconditioner
-          will not function correctly.  Thus, use this optimization
-          feature with caution!
     */
-    ierr = KSPSetOperators(ksp1,C1,C1,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp1,C1,C1);CHKERRQ(ierr);
 
     /*
        Use the previous solution of linear system #1 as the initial
@@ -330,7 +313,7 @@ int main(int argc,char **args)
        structure of successive preconditioner matrices by setting flag
        SAME_NONZERO_PATTERN.
     */
-    ierr = KSPSetOperators(ksp2,C2,C2,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp2,C2,C2);CHKERRQ(ierr);
 
     /*
        Solve the second linear system
@@ -407,7 +390,7 @@ PetscErrorCode CheckError(Vec u,Vec x,Vec b,PetscInt its,PetscReal tol,PetscLogE
   ierr = VecAXPY(b,none,u);CHKERRQ(ierr);
   ierr = VecNorm(b,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G, Iterations %D\n",norm,its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(CHECK_ERROR,u,x,b,0);CHKERRQ(ierr);
   return 0;

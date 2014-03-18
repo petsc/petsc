@@ -1,5 +1,5 @@
 
-#include "../src/vec/vec/impls/nest/vecnestimpl.h"   /*I  "petscvec.h"   I*/
+#include <../src/vec/vec/impls/nest/vecnestimpl.h>   /*I  "petscvec.h"   I*/
 
 /* check all blocks are filled */
 #undef __FUNCT__
@@ -702,7 +702,7 @@ static PetscErrorCode VecGetArray_Nest(Vec X,PetscScalar **x)
   PetscFunctionBegin;
   ierr = VecGetOwnershipRange(X,&rstart,&rend);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&m);CHKERRQ(ierr);
-  ierr = PetscMalloc(m*sizeof(PetscScalar),x);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,x);CHKERRQ(ierr);
   for (i=0; i<bx->nb; i++) {
     Vec               subvec = bx->v[i];
     IS                isy    = bx->is[i];
@@ -1165,14 +1165,14 @@ static PetscErrorCode VecSetUp_Nest_Private(Vec V,PetscInt nb,Vec x[])
   if (ctx->nb < 0) SETERRQ(PetscObjectComm((PetscObject)V),PETSC_ERR_ARG_WRONG,"Cannot create VECNEST with < 0 blocks.");
 
   /* Create space */
-  ierr = PetscMalloc(ctx->nb*sizeof(Vec),&ctx->v);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ctx->nb,&ctx->v);CHKERRQ(ierr);
   for (i=0; i<ctx->nb; i++) {
     ctx->v[i] = x[i];
     ierr = PetscObjectReference((PetscObject)x[i]);CHKERRQ(ierr);
     /* Do not allocate memory for internal sub blocks */
   }
 
-  ierr = PetscMalloc(ctx->nb*sizeof(IS),&ctx->is);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ctx->nb,&ctx->is);CHKERRQ(ierr);
 
   ctx->setup_called = PETSC_TRUE;
   PetscFunctionReturn(0);

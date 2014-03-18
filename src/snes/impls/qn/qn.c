@@ -2,19 +2,16 @@
 
 #define H(i,j)  qn->dXdFmat[i*qn->m + j]
 
-const char *const SNESQNScaleTypes[] =        {"NONE","SHANNO","LINESEARCH","JACOBIAN","SNESQNScaleType","SNES_QN_SCALING_",0};
-const char *const SNESQNRestartTypes[] =      {"NONE","POWELL","PERIODIC","SNESQNRestartType","SNES_QN_RESTART_",0};
-const char *const SNESQNTypes[] =             {"LBFGS","BROYDEN","BADBROYDEN","SNESQNType","SNES_QN_RESTART_",0};
-
-typedef enum {SNES_QN_LBFGS      = 0,
-              SNES_QN_BROYDEN    = 1,
-              SNES_QN_BADBROYDEN = 2
-             } SNESQNType;
+const char *const SNESQNScaleTypes[] =        {"DEFAULT","NONE","SHANNO","LINESEARCH","JACOBIAN","SNESQNScaleType","SNES_QN_SCALING_",0};
+const char *const SNESQNRestartTypes[] =      {"DEFAULT","NONE","POWELL","PERIODIC","SNESQNRestartType","SNES_QN_RESTART_",0};
+const char *const SNESQNTypes[] =             {"LBFGS","BROYDEN","BADBROYDEN","SNESQNType","SNES_QN_",0};
 
 typedef struct {
   Vec               *U;                   /* Stored past states (vary from method to method) */
   Vec               *V;                   /* Stored past states (vary from method to method) */
   PetscInt          m;                    /* The number of kept previous steps */
+  PetscReal         *lambda;              /* The line search history of the method */
+  PetscReal         *norm;                /* norms of the steps */
   PetscScalar       *alpha, *beta;
   PetscScalar       *dXtdF, *dFtdX, *YtdX;
   PetscBool         singlereduction;      /* Aggregated reduction implementation */
@@ -30,21 +27,33 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESQNApply_Broyden"
-PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold, Vec D, Vec Dold)
+PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec D)
 {
   PetscErrorCode     ierr;
   SNES_QN            *qn = (SNES_QN*)snes->data;
   Vec                W   = snes->work[3];
   Vec                *U  = qn->U;
-  Vec                *V  = qn->V;
   KSPConvergedReason kspreason;
-  PetscInt           k,i,lits;
   PetscInt           m = qn->m;
+  PetscInt           k,i,j,lits,l = m;
+  PetscReal          unorm,a,b;
+  PetscReal          *lambda=qn->lambda;
   PetscScalar        gdot;
-  PetscInt           l = m;
+  PetscReal          udot;
 
   PetscFunctionBegin;
   if (it < m) l = it;
+  if (it > 0) {
+    k = (it-1)%l;
+    ierr = SNESLineSearchGetLambda(snes->linesearch,&lambda[k]);CHKERRQ(ierr);
+    ierr = VecCopy(Xold,U[k]);CHKERRQ(ierr);
+    ierr = VecAXPY(U[k],-1.0,X);CHKERRQ(ierr);
+    if (qn->monitor) {
+      ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(qn->monitor, "scaling vector %d of %d by lambda: %14.12e \n",k,l,lambda[k]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
+    }
+  }
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = KSPSolve(snes->ksp,D,W);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
@@ -64,38 +73,47 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold, V
   }
 
   /* inward recursion starting at the first update and working forward */
-  if (it > 1) {
-    for (i = 0; i < l-1; i++) {
-      k    = (it+i-l)%l;
-      ierr = VecDot(U[k],Y,&gdot);CHKERRQ(ierr);
-      ierr = VecAXPY(Y,gdot,V[k]);CHKERRQ(ierr);
-      if (qn->monitor) {
-        ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(qn->monitor, "it: %d k: %d gdot: %14.12e\n", it, k, PetscRealPart(gdot));CHKERRQ(ierr);
-        ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
-      }
-    }
-  }
-  if (it < m) l = it;
+  for (i = 0; i < l-1; i++) {
+    j = (it+i-l)%l;
+    k = (it+i-l+1)%l;
+    ierr = VecNorm(U[j],NORM_2,&unorm);CHKERRQ(ierr);
+    ierr = VecDot(U[j],Y,&gdot);CHKERRQ(ierr);
+    unorm *= unorm;
+    udot = PetscRealPart(gdot);
+    a = (lambda[j]/lambda[k]);
+    b = -(1.-lambda[j]);
+    a *= udot/unorm;
+    b *= udot/unorm;
+    ierr = VecAXPBYPCZ(Y,a,b,1.,U[k],U[j]);CHKERRQ(ierr);
 
-  /* set W to be the last step, post-linesearch */
-  ierr = VecCopy(Xold,W);CHKERRQ(ierr);
-  ierr = VecAXPY(W,-1.0,X);CHKERRQ(ierr);
-
-  if (l > 0) {
-    k    = (it-1)%l;
-    ierr = VecCopy(W,U[k]);CHKERRQ(ierr);
-    ierr = VecAXPY(W,-1.0,Y);CHKERRQ(ierr);
-    ierr = VecDot(U[k],W,&gdot);CHKERRQ(ierr);
-    ierr = VecCopy(Y,V[k]);CHKERRQ(ierr);
-    ierr = VecScale(V[k],1.0/gdot);CHKERRQ(ierr);
-    ierr = VecDot(U[k],Y,&gdot);CHKERRQ(ierr);
-    ierr = VecAXPY(Y,gdot,V[k]);CHKERRQ(ierr);
     if (qn->monitor) {
       ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(qn->monitor, "update: %d k: %d gdot: %14.12e\n", it, k, PetscRealPart(gdot));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(qn->monitor, "using vector %d and %d, gdot: %14.12e\n",k,j,PetscRealPart(gdot));CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
     }
+  }
+  if (l > 0) {
+    k = (it-1)%l;
+    ierr = VecDot(U[k],Y,&gdot);CHKERRQ(ierr);
+    ierr = VecNorm(U[k],NORM_2,&unorm);CHKERRQ(ierr);
+    unorm *= unorm;
+    udot = PetscRealPart(gdot);
+    a = unorm/(unorm-lambda[k]*udot);
+    b = -(1.-lambda[k])*udot/(unorm-lambda[k]*udot);
+    if (qn->monitor) {
+      ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(qn->monitor, "using vector %d: a: %14.12e b: %14.12e \n",k,a,b);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
+    }
+    ierr = VecAXPBY(Y,b,a,U[k]);CHKERRQ(ierr);
+  }
+  l = m;
+  if (it+1<m)l=it+1;
+  k = it%l;
+  if (qn->monitor) {
+    ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(qn->monitor, "setting vector %d of %d\n",k,l);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -112,9 +130,9 @@ PetscErrorCode SNESQNApply_BadBroyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold
 
   /* ksp thing for jacobian scaling */
   KSPConvergedReason kspreason;
-  PetscInt           k, i, lits;
+  PetscInt           h,k,j,i,lits;
   PetscInt           m = qn->m;
-  PetscScalar        gdot;
+  PetscScalar        gdot,udot;
   PetscInt           l = m;
 
   PetscFunctionBegin;
@@ -122,32 +140,11 @@ PetscErrorCode SNESQNApply_BadBroyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold
   ierr = VecCopy(D,Y);CHKERRQ(ierr);
   if (l > 0) {
     k    = (it-1)%l;
+    ierr = SNESLineSearchGetLambda(snes->linesearch,&qn->lambda[k]);CHKERRQ(ierr);
     ierr = VecCopy(Dold,U[k]);CHKERRQ(ierr);
     ierr = VecAXPY(U[k],-1.0,D);CHKERRQ(ierr);
-    ierr = VecDot(U[k],U[k],&gdot);CHKERRQ(ierr);
-    ierr = VecCopy(D,T[k]);CHKERRQ(ierr);
-    ierr = VecScale(T[k],1.0/gdot);CHKERRQ(ierr);
-    ierr = VecDot(U[k],Y,&gdot);CHKERRQ(ierr);
-    ierr = VecAXPY(Y,gdot,T[k]);CHKERRQ(ierr);
-    if (qn->monitor) {
-      ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(qn->monitor, "update: %d k: %d gdot: %14.12e\n", it, k, PetscRealPart(gdot));CHKERRQ(ierr);
-      ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
-    }
-  }
-
-  /* inward recursion starting at the first update and working forward */
-  if (it > 1) {
-    for (i = 0; i < l-1; i++) {
-      k    = (it+i-l)%l;
-      ierr = VecDot(U[k],Y,&gdot);CHKERRQ(ierr);
-      ierr = VecAXPY(Y,gdot,T[k]);CHKERRQ(ierr);
-      if (qn->monitor) {
-        ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(qn->monitor, "it: %d k: %d gdot: %14.12e\n", it, k, PetscRealPart(gdot));CHKERRQ(ierr);
-        ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
-      }
-    }
+    ierr = VecCopy(Xold,T[k]);CHKERRQ(ierr);
+    ierr = VecAXPY(T[k],-1.0,X);CHKERRQ(ierr);
   }
 
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
@@ -165,6 +162,26 @@ PetscErrorCode SNESQNApply_BadBroyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold
     ierr              = VecCopy(W,Y);CHKERRQ(ierr);
   } else {
     ierr = VecScale(Y,qn->scaling);CHKERRQ(ierr);
+  }
+
+  /* inward recursion starting at the first update and working forward */
+  if (l > 0) {
+    for (i = 0; i < l-1; i++) {
+      j    = (it+i-l)%l;
+      k    = (it+i-l+1)%l;
+      h    = (it-1)%l;
+      ierr = VecDotBegin(U[j],U[h],&gdot);CHKERRQ(ierr);
+      ierr = VecDotBegin(U[j],U[j],&udot);CHKERRQ(ierr);
+      ierr = VecDotEnd(U[j],U[h],&gdot);CHKERRQ(ierr);
+      ierr = VecDotEnd(U[j],U[j],&udot);CHKERRQ(ierr);
+      ierr = VecAXPY(Y,PetscRealPart(gdot)/PetscRealPart(udot),T[k]);CHKERRQ(ierr);
+      ierr = VecAXPY(Y,-(1.-qn->lambda[k])*PetscRealPart(gdot)/PetscRealPart(udot),T[j]);CHKERRQ(ierr);
+      if (qn->monitor) {
+        ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(qn->monitor, "it: %d k: %d gdot: %14.12e\n", it, k, PetscRealPart(gdot));CHKERRQ(ierr);
+        ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
+      }
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -201,18 +218,12 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
     ierr = VecCopy(X, dX[k]);CHKERRQ(ierr);
     ierr = VecAXPY(dX[k], -1.0, Xold);CHKERRQ(ierr);
     if (qn->singlereduction) {
-      PetscScalar dFtdF;
       ierr = VecMDotBegin(dF[k],l,dX,dXtdF);CHKERRQ(ierr);
       ierr = VecMDotBegin(dX[k],l,dF,dFtdX);CHKERRQ(ierr);
       ierr = VecMDotBegin(Y,l,dX,YtdX);CHKERRQ(ierr);
-      if (qn->scale_type == SNES_QN_SCALE_SHANNO) {ierr = VecDotBegin(dF[k],dF[k],&dFtdF);CHKERRQ(ierr);}
       ierr = VecMDotEnd(dF[k],l,dX,dXtdF);CHKERRQ(ierr);
       ierr = VecMDotEnd(dX[k],l,dF,dFtdX);CHKERRQ(ierr);
       ierr = VecMDotEnd(Y,l,dX,YtdX);CHKERRQ(ierr);
-      if (qn->scale_type == SNES_QN_SCALE_SHANNO) {
-        ierr = VecDotEnd(dF[k],dF[k],&dFtdF);CHKERRQ(ierr);
-        qn->scaling = PetscRealPart(dXtdF[k]) / PetscRealPart(dFtdF);
-      }
       for (j = 0; j < l; j++) {
         H(k, j) = dFtdX[j];
         H(j, k) = dXtdF[j];
@@ -221,11 +232,6 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
       for (j = 0; j < l; j++) dXtdF[j] = H(j, j);
     } else {
       ierr = VecDot(dX[k], dF[k], &dXtdF[k]);CHKERRQ(ierr);
-      if (qn->scale_type == SNES_QN_SCALE_SHANNO) {
-        PetscReal dFtdF;
-        ierr        = VecDotRealPart(dF[k],dF[k],&dFtdF);CHKERRQ(ierr);
-        qn->scaling = PetscRealPart(dXtdF[k])/dFtdF;
-      }
     }
     if (qn->scale_type == SNES_QN_SCALE_LINESEARCH) {
       ierr = SNESLineSearchGetLambda(snes->linesearch,&qn->scaling);CHKERRQ(ierr);
@@ -305,21 +311,21 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   PetscErrorCode      ierr;
   SNES_QN             *qn = (SNES_QN*) snes->data;
   Vec                 X,Xold;
-  Vec                 F;
+  Vec                 F,W;
   Vec                 Y,D,Dold;
   PetscInt            i, i_r;
   PetscReal           fnorm,xnorm,ynorm,gnorm;
   PetscBool           lssucceed,powell,periodic;
   PetscScalar         DolddotD,DolddotDold;
-  MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
   SNESConvergedReason reason;
 
   /* basically just a regular newton's method except for the application of the jacobian */
 
   PetscFunctionBegin;
-  F = snes->vec_func;                   /* residual vector */
-  Y = snes->vec_sol_update;             /* search direction generated by J^-1D*/
-
+  ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
+  F    = snes->vec_func;                /* residual vector */
+  Y    = snes->vec_sol_update;          /* search direction generated by J^-1D*/
+  W    = snes->work[3];
   X    = snes->vec_sol;                 /* solution vector */
   Xold = snes->work[0];
 
@@ -329,13 +335,13 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
 
   snes->reason = SNES_CONVERGED_ITERATING;
 
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter = 0;
   snes->norm = 0.;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
 
   if (snes->pc && snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
-    ierr = SNESApplyPC(snes,X,NULL,NULL,F);CHKERRQ(ierr);
+    ierr = SNESApplyNPC(snes,X,NULL,F);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
     if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
@@ -358,7 +364,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     }
   }
   if (snes->pc && snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
-      ierr = SNESApplyPC(snes,X,F,&fnorm,D);CHKERRQ(ierr);
+      ierr = SNESApplyNPC(snes,X,F,D);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
       if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
         snes->reason = SNES_DIVERGED_INNER;
@@ -368,14 +374,12 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     ierr = VecCopy(F,D);CHKERRQ(ierr);
   }
 
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   ierr       = SNESLogConvergenceHistory(snes,fnorm,0);CHKERRQ(ierr);
   ierr       = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
 
-  /* set parameter for default relative tolerance convergence test */
-  snes->ttol = fnorm*snes->rtol;
   /* test convergence */
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
@@ -389,23 +393,34 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
       snes->reason = SNES_DIVERGED_INNER;
       PetscFunctionReturn(0);
     }
-    ierr = SNESGetPCFunction(snes,F,&fnorm);CHKERRQ(ierr);
+    ierr = SNESGetNPCFunction(snes,F,&fnorm);CHKERRQ(ierr);
     ierr = VecCopy(F,D);CHKERRQ(ierr);
   }
 
   /* scale the initial update */
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
-    ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
-    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
   }
 
   for (i = 0, i_r = 0; i < snes->max_its; i++, i_r++) {
+    if (qn->scale_type == SNES_QN_SCALE_SHANNO && i_r > 0) {
+      PetscScalar ff,xf;
+      ierr = VecCopy(Dold,Y);CHKERRQ(ierr);
+      ierr = VecCopy(Xold,W);CHKERRQ(ierr);
+      ierr = VecAXPY(Y,-1.0,D);CHKERRQ(ierr);
+      ierr = VecAXPY(W,-1.0,X);CHKERRQ(ierr);
+      ierr = VecDotBegin(Y,Y,&ff);CHKERRQ(ierr);
+      ierr = VecDotBegin(W,Y,&xf);CHKERRQ(ierr);
+      ierr = VecDotEnd(Y,Y,&ff);CHKERRQ(ierr);
+      ierr = VecDotEnd(W,Y,&xf);CHKERRQ(ierr);
+      qn->scaling = PetscRealPart(xf)/PetscRealPart(ff);
+    }
     switch (qn->type) {
     case SNES_QN_BADBROYDEN:
       ierr = SNESQNApply_BadBroyden(snes,i_r,Y,X,Xold,D,Dold);CHKERRQ(ierr);
       break;
     case SNES_QN_BROYDEN:
-      ierr = SNESQNApply_Broyden(snes,i_r,Y,X,Xold,D,Dold);CHKERRQ(ierr);
+      ierr = SNESQNApply_Broyden(snes,i_r,Y,X,Xold,D);CHKERRQ(ierr);
       break;
     case SNES_QN_LBFGS:
       SNESQNApply_LBFGS(snes,i_r,Y,X,Xold,D,Dold);CHKERRQ(ierr);
@@ -445,7 +460,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
       }
-      ierr = SNESGetPCFunction(snes,F,&fnorm);CHKERRQ(ierr);
+      ierr = SNESGetNPCFunction(snes,F,&fnorm);CHKERRQ(ierr);
     }
 
     ierr = SNESSetIterationNumber(snes, i+1);CHKERRQ(ierr);
@@ -457,7 +472,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) PetscFunctionReturn(0);
     if (snes->pc && snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
-      ierr = SNESApplyPC(snes,X,F,&fnorm,D);CHKERRQ(ierr);
+      ierr = SNESApplyNPC(snes,X,F,D);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
       if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
         snes->reason = SNES_DIVERGED_INNER;
@@ -466,14 +481,18 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     } else {
       ierr = VecCopy(F, D);CHKERRQ(ierr);
     }
-
     powell = PETSC_FALSE;
     if (qn->restart_type == SNES_QN_RESTART_POWELL) {
       /* check restart by Powell's Criterion: |F^T H_0 Fold| > 0.2 * |Fold^T H_0 Fold| */
-      ierr = VecDotBegin(Dold, Dold, &DolddotDold);CHKERRQ(ierr);
-      ierr = VecDotBegin(Dold, D, &DolddotD);CHKERRQ(ierr);
-      ierr = VecDotEnd(Dold, Dold, &DolddotDold);CHKERRQ(ierr);
-      ierr = VecDotEnd(Dold, D, &DolddotD);CHKERRQ(ierr);
+      if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
+        ierr = MatMult(snes->jacobian_pre,Dold,W);CHKERRQ(ierr);
+      } else {
+        ierr = VecCopy(Dold,W);CHKERRQ(ierr);
+      }
+      ierr = VecDotBegin(W, Dold, &DolddotDold);CHKERRQ(ierr);
+      ierr = VecDotBegin(W, D, &DolddotD);CHKERRQ(ierr);
+      ierr = VecDotEnd(W, Dold, &DolddotDold);CHKERRQ(ierr);
+      ierr = VecDotEnd(W, D, &DolddotD);CHKERRQ(ierr);
       if (PetscAbs(PetscRealPart(DolddotD)) > qn->powell_gamma*PetscAbs(PetscRealPart(DolddotDold))) powell = PETSC_TRUE;
     }
     periodic = PETSC_FALSE;
@@ -493,8 +512,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
         ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
       }
       if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
-        ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
-        ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
+        ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
       }
     }
     /* general purpose update */
@@ -518,25 +536,33 @@ static PetscErrorCode SNESSetUp_QN(SNES snes)
 
   PetscFunctionBegin;
   ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->U);CHKERRQ(ierr);
-  ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->V);CHKERRQ(ierr);
-  ierr = PetscMalloc3(qn->m, PetscScalar, &qn->alpha,
-                      qn->m, PetscScalar, &qn->beta,
-                      qn->m, PetscScalar, &qn->dXtdF);CHKERRQ(ierr);
+  if (qn->type != SNES_QN_BROYDEN) ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->V);CHKERRQ(ierr);
+  ierr = PetscMalloc4(qn->m,&qn->alpha,qn->m,&qn->beta,qn->m,&qn->dXtdF,qn->m,&qn->lambda);CHKERRQ(ierr);
 
   if (qn->singlereduction) {
-    ierr = PetscMalloc3(qn->m*qn->m, PetscScalar, &qn->dXdFmat,
-                        qn->m, PetscScalar, &qn->dFtdX,
-                        qn->m, PetscScalar, &qn->YtdX);CHKERRQ(ierr);
+    ierr = PetscMalloc3(qn->m*qn->m,&qn->dXdFmat,qn->m,&qn->dFtdX,qn->m,&qn->YtdX);CHKERRQ(ierr);
   }
   ierr = SNESSetWorkVecs(snes,4);CHKERRQ(ierr);
+  /* set method defaults */
+  if (qn->scale_type == SNES_QN_SCALE_DEFAULT) {
+    if (qn->type == SNES_QN_BADBROYDEN) {
+      qn->scale_type = SNES_QN_SCALE_NONE;
+    } else {
+      qn->scale_type = SNES_QN_SCALE_SHANNO;
+    }
+  }
+  if (qn->restart_type == SNES_QN_RESTART_DEFAULT) {
+    if (qn->type == SNES_QN_LBFGS) {
+      qn->restart_type = SNES_QN_RESTART_POWELL;
+    } else {
+      qn->restart_type = SNES_QN_RESTART_PERIODIC;
+    }
+  }
 
-  /* set up the line search */
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
   }
-
   if (snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_DEFAULT) {snes->functype = SNES_FUNCTION_UNPRECONDITIONED;}
-
   PetscFunctionReturn(0);
 }
 
@@ -559,7 +585,7 @@ static PetscErrorCode SNESReset_QN(SNES snes)
     if (qn->singlereduction) {
       ierr = PetscFree3(qn->dXdFmat, qn->dFtdX, qn->YtdX);CHKERRQ(ierr);
     }
-    ierr = PetscFree3(qn->alpha, qn->beta, qn->dXtdF);CHKERRQ(ierr);
+    ierr = PetscFree4(qn->alpha,qn->beta,qn->dXtdF,qn->lambda);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -588,6 +614,7 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
   SNESLineSearch    linesearch;
   SNESQNRestartType rtype = qn->restart_type;
   SNESQNScaleType   stype = qn->scale_type;
+  SNESQNType        qtype = qn->type;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES QN options");CHKERRQ(ierr);
@@ -603,11 +630,18 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
   if (flg) ierr = SNESQNSetRestartType(snes,rtype);CHKERRQ(ierr);
 
   ierr = PetscOptionsEnum("-snes_qn_type","Quasi-Newton update type","",SNESQNTypes,
-                          (PetscEnum)qn->type,(PetscEnum*)&qn->type,NULL);CHKERRQ(ierr);
+                          (PetscEnum)qtype,(PetscEnum*)&qtype,&flg);CHKERRQ(ierr);
+  if (flg) {ierr = SNESQNSetType(snes,qtype);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (!snes->linesearch) {
     ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHCP);CHKERRQ(ierr);
+    if (qn->type == SNES_QN_LBFGS) {
+      ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHCP);CHKERRQ(ierr);
+    } else if (qn->type == SNES_QN_BROYDEN) {
+      ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBASIC);CHKERRQ(ierr);
+    } else {
+      ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHL2);CHKERRQ(ierr);
+    }
   }
   if (monflg) {
     qn->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
@@ -615,6 +649,25 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "SNESView_QN"
+static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer)
+{
+  SNES_QN        *qn    = (SNES_QN*)snes->data;
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  QN type is %s, restart type is %s, scale type is %s\n",SNESQNTypes[qn->type],SNESQNRestartTypes[qn->restart_type],SNESQNScaleTypes[qn->scale_type]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Stored subspace size: %d\n", qn->m);CHKERRQ(ierr);
+    if (qn->singlereduction) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Using the single reduction variant.\n");CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESQNSetRestartType"
@@ -710,6 +763,51 @@ PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "SNESQNSetType"
+/*@
+    SNESQNSetType - Sets the quasi-Newton variant to be used in SNESQN.
+
+    Logically Collective on SNES
+
+    Input Parameters:
++   snes - the iterative context
+-   qtype - variant type
+
+    Options Database:
+.   -snes_qn_scale_type<lbfgs,broyden,badbroyden>
+
+    Level: beginner
+
+    SNESQNTypes:
++   SNES_QN_LBFGS - LBFGS variant
+.   SNES_QN_BROYDEN - Broyden variant
+-   SNES_QN_BADBROYDEN - Bad Broyden variant
+
+.keywords: SNES, SNESQN, type, set
+@*/
+
+PetscErrorCode SNESQNSetType(SNES snes, SNESQNType qtype)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  ierr = PetscTryMethod(snes,"SNESQNSetType_C",(SNES,SNESQNType),(snes,qtype));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESQNSetType_QN"
+PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
+{
+  SNES_QN *qn = (SNES_QN*)snes->data;
+
+  PetscFunctionBegin;
+  qn->type = qtype;
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------- */
 /*MC
       SNESQN - Limited-Memory Quasi-Newton methods for the solution of nonlinear systems.
@@ -733,11 +831,13 @@ PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype)
 
       References:
 
-      L-Broyden Methods: a generalization of the L-BFGS method to the limited memory Broyden family, M. B. Reed,
-      International Journal of Computer Mathematics, vol. 86, 2009.
+      Kelley, C.T., Iterative Methods for Linear and Nonlinear Equations, Chapter 8, SIAM, 1995.
 
-      Experiments with Quasi-Newton Methods in Solving Stiff ODE Systems, Peter N. Brown, Alan C. Hindmarsh, Homer F. Walker
-      SIAM J. Sci. Stat. Comput. Vol 6(2), April 1985.
+      R. Byrd, J. Nocedal, R. Schnabel, Representations of Quasi-Newton Matrices and their use in Limited Memory Methods,
+      Technical Report, Northwestern University, June 1992.
+
+      Peter N. Brown, Alan C. Hindmarsh, Homer F. Walker, Experiments with Quasi-Newton Methods in Solving Stiff ODE
+      Systems, SIAM J. Sci. Stat. Comput. Vol 6(2), April 1985.
 
 
       Level: beginner
@@ -757,7 +857,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES snes)
   snes->ops->solve          = SNESSolve_QN;
   snes->ops->destroy        = SNESDestroy_QN;
   snes->ops->setfromoptions = SNESSetFromOptions_QN;
-  snes->ops->view           = 0;
+  snes->ops->view           = SNESView_QN;
   snes->ops->reset          = SNESReset_QN;
 
   snes->pcside = PC_LEFT;
@@ -770,7 +870,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES snes)
     snes->max_its   = 10000;
   }
 
-  ierr                = PetscNewLog(snes,SNES_QN,&qn);CHKERRQ(ierr);
+  ierr                = PetscNewLog(snes,&qn);CHKERRQ(ierr);
   snes->data          = (void*) qn;
   qn->m               = 10;
   qn->scaling         = 1.0;
@@ -782,11 +882,12 @@ PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES snes)
   qn->monitor         = NULL;
   qn->singlereduction = PETSC_TRUE;
   qn->powell_gamma    = 0.9999;
-  qn->scale_type      = SNES_QN_SCALE_SHANNO;
-  qn->restart_type    = SNES_QN_RESTART_POWELL;
+  qn->scale_type      = SNES_QN_SCALE_DEFAULT;
+  qn->restart_type    = SNES_QN_RESTART_DEFAULT;
   qn->type            = SNES_QN_LBFGS;
 
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESQNSetScaleType_C",SNESQNSetScaleType_QN);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESQNSetRestartType_C",SNESQNSetRestartType_QN);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESQNSetType_C",SNESQNSetType_QN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

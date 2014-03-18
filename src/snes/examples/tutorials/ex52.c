@@ -35,15 +35,15 @@ typedef struct {
   void (*g1Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g1[]);
   void (*g2Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g2[]);
   void (*g3Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g3[]);
-  void (**exactFuncs)(const PetscReal x[], PetscScalar *u);
+  void (**exactFuncs)(const PetscReal x[], PetscScalar *u, void *ctx);
 } AppCtx;
 
-void quadratic_2d(const PetscReal x[], PetscScalar u[])
+void quadratic_2d(const PetscReal x[], PetscScalar u[], void *ctx)
 {
   u[0] = x[0]*x[0] + x[1]*x[1];
 };
 
-void quadratic_2d_elas(const PetscReal x[], PetscScalar u[])
+void quadratic_2d_elas(const PetscReal x[], PetscScalar u[], void *ctx)
 {
   u[0] = x[0]*x[0] + x[1]*x[1];
   u[1] = x[0]*x[0] + x[1]*x[1];
@@ -211,6 +211,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       }
     }
   }
+  ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
 
@@ -252,11 +253,13 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
   ierr = PetscFESetBasisSpace(fem, P);CHKERRQ(ierr);
   ierr = PetscFESetDualSpace(fem, Q);CHKERRQ(ierr);
   ierr = PetscFESetNumComponents(fem, 1);CHKERRQ(ierr);
+  ierr = PetscFESetUp(fem);CHKERRQ(ierr);
   ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
   ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
   /* Create quadrature */
   ierr = PetscDTGaussJacobiQuadrature(dim, order, -1.0, 1.0, &q);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(fem, q);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
   user->fe[0] = fem;
   user->fem.fe = user->fe;
   PetscFunctionReturn(0);
@@ -350,9 +353,10 @@ PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetLocalVector(dmAux, &epsilon);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(dmAux, &epsilon);CHKERRQ(ierr);
   ierr = VecSet(epsilon, 1.0);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) epsilon);CHKERRQ(ierr);
+  ierr = VecDestroy(&epsilon);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -380,7 +384,7 @@ int main(int argc, char **argv)
   ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
   ierr = SetupMaterialElement(dmAux, &user);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(user.fe[0], &numComp);CHKERRQ(ierr);
-  ierr = PetscMalloc(numComp * sizeof(void (*)(const PetscReal[], PetscScalar *)), &user.exactFuncs);CHKERRQ(ierr);
+  ierr = PetscMalloc(numComp * sizeof(void (*)(const PetscReal[], PetscScalar *, void *)), &user.exactFuncs);CHKERRQ(ierr);
   switch (user.op) {
   case LAPLACIAN:
     user.f0Funcs[0]    = f0_lap;
@@ -409,19 +413,20 @@ int main(int argc, char **argv)
   user.fem.g1Funcs = user.g1Funcs;
   user.fem.g2Funcs = user.g2Funcs;
   user.fem.g3Funcs = user.g3Funcs;
-  user.fem.bcFuncs = (void (**)(const PetscReal[], PetscScalar *)) user.exactFuncs;
+  user.fem.bcFuncs = user.exactFuncs;
+  user.fem.bcCtxs  = NULL;
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
   ierr = SetupSection(dmAux, &user);CHKERRQ(ierr);
   ierr = SetupMaterial(dm, dmAux, &user);CHKERRQ(ierr);
 
-  ierr = DMSNESSetFunctionLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))DMPlexComputeResidualFEM,&user);CHKERRQ(ierr);
-  ierr = DMSNESSetJacobianLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure*,void*))DMPlexComputeJacobianFEM,&user);CHKERRQ(ierr);
+  ierr = DMSNESSetFunctionLocal(dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))DMPlexComputeResidualFEM,&user);CHKERRQ(ierr);
+  ierr = DMSNESSetJacobianLocal(dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,void*))DMPlexComputeJacobianFEM,&user);CHKERRQ(ierr);
   if (user.computeFunction) {
     Vec X, F;
 
     ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(dm, &F);CHKERRQ(ierr);
-    ierr = DMPlexProjectFunction(dm, numComp, user.exactFuncs, INSERT_VALUES, X);CHKERRQ(ierr);
+    ierr = DMPlexProjectFunction(dm, user.fe, user.exactFuncs, NULL, INSERT_VALUES, X);CHKERRQ(ierr);
     ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &F);CHKERRQ(ierr);
@@ -429,32 +434,19 @@ int main(int argc, char **argv)
   if (user.computeJacobian) {
     Vec          X;
     Mat          J;
-    MatStructure flag;
 
     ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr);
     ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
-    if (user.batch) {
-      ierr = DMSNESSetJacobianLocal(dm, (PetscErrorCode (*)(DM, Vec, Mat, Mat, MatStructure*, void*))FormJacobianLocalBatch, &user);CHKERRQ(ierr);
-    } else {
-      switch (user.op) {
-      case LAPLACIAN:
-        ierr = DMSNESSetJacobianLocal(dm, (PetscErrorCode (*)(DM, Vec, Mat, Mat, MatStructure*, void*))FormJacobianLocalLaplacian, &user);CHKERRQ(ierr);break;
-      case ELASTICITY:
-        ierr = DMSNESSetJacobianLocal(dm, (PetscErrorCode (*)(DM, Vec, Mat, Mat, MatStructure*, void*))FormJacobianLocalElasticity, &user);CHKERRQ(ierr);break;
-      default:
-        SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid PDE operator %d", user.op);
-      }
-    }
-    ierr = SNESComputeJacobian(snes, X, &J, &J, &flag);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes, X, J, J);CHKERRQ(ierr);
     ierr = MatDestroy(&J);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &X);CHKERRQ(ierr);
   }
   ierr = PetscFree(user.exactFuncs);CHKERRQ(ierr);
   ierr = DestroyElement(&user);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

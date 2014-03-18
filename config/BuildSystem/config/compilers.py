@@ -20,6 +20,7 @@ class Configure(config.base.Configure):
     self.cxxlibs = []
     self.cRestrict = ' '
     self.cxxRestrict = ' '
+    self.cxxdialect = ''
     self.f90Guess = None
     return
 
@@ -36,6 +37,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-fortranlib-autodetect=<bool>',     nargs.ArgBool(None, 1, 'Autodetect Fortran compiler libraries'))
     help.addArgument('Compilers', '-with-cxxlib-autodetect=<bool>',         nargs.ArgBool(None, 1, 'Autodetect C++ compiler libraries'))
     help.addArgument('Compilers', '-with-dependencies=<bool>',              nargs.ArgBool(None, 1, 'Compile with -MMD or equivalent flag if possible'))
+    help.addArgument('Compilers', '-with-cxx-dialect=<dialect>',            nargs.Arg(None, '', 'Dialect under which to compile C++ sources (e.g., C++11)'))
 
     return
 
@@ -107,7 +109,7 @@ class Configure(config.base.Configure):
     self.cStaticInlineKeyword = 'static'
     self.pushLanguage('C')
     for kw in ['static inline', 'static __inline']:
-      if self.checkCompile(kw+' int foo(int a) {return a;}','int i = foo(1);'):
+      if self.checkCompile(kw+' int foo(int a) {return a;}','foo(1);'):
         self.cStaticInlineKeyword = kw
         self.logPrint('Set C StaticInline keyword to '+self.cStaticInlineKeyword , 4, 'compilers')
         break
@@ -121,7 +123,7 @@ class Configure(config.base.Configure):
     self.cxxStaticInlineKeyword = 'static'
     self.pushLanguage('C++')
     for kw in ['static inline', 'static __inline']:
-      if self.checkCompile(kw+' int foo(int a) {return a;}','int i = foo(1);'):
+      if self.checkCompile(kw+' int foo(int a) {return a;}','foo(1);'):
         self.cxxStaticInlineKeyword = kw
         self.logPrint('Set Cxx StaticInline keyword to '+self.cxxStaticInlineKeyword , 4, 'compilers')
         break
@@ -365,6 +367,42 @@ class Configure(config.base.Configure):
       self.addDefine('HAVE_CXX_NAMESPACE', 1)
     else:
       self.logPrint('C++ does not have namespaces', 4, 'compilers')
+    return
+
+  def checkCxx11(self):
+    """Determine the option needed to support the C++11 dialect
+
+    We auto-detect C++11 if the compiler supports it without options,
+    otherwise we require with-cxx-dialect=C++11 to try adding flags to
+    support it.
+    """
+    # Test borrowed from Jack Poulson (Elemental)
+    includes = '#include <random>'
+    body = """
+          std::random_device rd;
+          std::mt19937 mt(rd());
+          std::normal_distribution<double> dist(0,1);
+          const double x = dist(mt);
+          """
+    self.setCompilers.pushLanguage('Cxx')
+    cxxdialect = self.framework.argDB.get('with-cxx-dialect','').upper().replace('X','+')
+    flags_to_try = ['']
+    if cxxdialect == 'C++11':
+      flags_to_try += ['-std=c++11','-std=c++0x']
+    for flag in flags_to_try:
+      if self.setCompilers.checkCompilerFlag(flag, includes, body):
+        self.setCompilers.CXXCPPFLAGS += ' ' + flag
+        self.cxxdialect = 'C++11'
+        break
+    if cxxdialect == 'C++11':
+      if self.cxxdialect != 'C++11':
+        raise RuntimeError('Could not determine compiler flag for with-cxx-dialect=%s, use CXXFLAGS' % (self.framework.argDB['with-cxx-dialect']))
+    elif cxxdialect in ['C++98', 'C++03', '']:
+      self.cxxdialect = cxxdialect
+      pass                    # The user can set CXXFLAGS if they want to be strict
+    else:
+      raise RuntimeError('Unknown C++ dialect: with-cxx-dialect=%s' % (self.framework.argDB['with-cxx-dialect']))
+    self.setCompilers.popLanguage()
     return
 
   def checkCxxLibraries(self):
@@ -661,6 +699,7 @@ class Configure(config.base.Configure):
     for flag in ['-D', '-WF,-D']:
       if self.setCompilers.checkCompilerFlag(flag+'Testing', body = '#define dummy \n           dummy\n#ifndef Testing\n       fooey\n#endif'):
         self.FortranDefineCompilerOption = flag
+        self.framework.addMakeMacro('FC_DEFINE_FLAG',self.FortranDefineCompilerOption)
         self.setCompilers.popLanguage()
         self.logPrint('Fortran uses '+flag+' for defining macro', 3, 'compilers')
         return
@@ -1344,6 +1383,7 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkCxxStaticInline)
       if self.framework.argDB['with-cxxlib-autodetect']:
         self.executeTest(self.checkCxxLibraries)
+      self.executeTest(self.checkCxx11)
     else:
       self.isGCXX = 0
     if hasattr(self.setCompilers, 'FC'):

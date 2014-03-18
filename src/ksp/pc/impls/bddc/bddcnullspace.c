@@ -1,5 +1,5 @@
-#include "bddc.h"
-#include "bddcprivate.h"
+#include <../src/ksp/pc/impls/bddc/bddc.h>
+#include <../src/ksp/pc/impls/bddc/bddcprivate.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCNullSpaceAssembleCoarse"
@@ -21,7 +21,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCoarse(PC pc, Mat coarse_mat, MatNullSpace
   coarse_nsp_vecs = 0;
   ierr = MatNullSpaceGetVecs(pcbddc->NullSpace,&nsp_has_cnst,&nsp_size,&nsp_vecs);CHKERRQ(ierr);
   if (coarse_mat) {
-    ierr = PetscMalloc((nsp_size+1)*sizeof(Vec),&coarse_nsp_vecs);CHKERRQ(ierr);
+    ierr = PetscMalloc1((nsp_size+1),&coarse_nsp_vecs);CHKERRQ(ierr);
     for (i=0;i<nsp_size+1;i++) {
       ierr = VecDuplicate(pcbddc->coarse_vec,&coarse_nsp_vecs[i]);CHKERRQ(ierr);
     }
@@ -133,7 +133,6 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc,IS local_dofs)
   PC             newpc;
   NullSpaceCorrection_ctx  shell_ctx;
   Mat            local_mat,local_pmat,small_mat,inv_small_mat;
-  MatStructure   local_mat_struct;
   Vec            work1,work2;
   const Vec      *nullvecs;
   VecScatter     scatter_ctx;
@@ -159,7 +158,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc,IS local_dofs)
   } else {
     SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in %s: unknown local IS size %d. n_I=%d, n_R=%d)\n",__FUNCT__,basis_dofs,n_I,n_R);
   }
-  ierr = KSPGetOperators(*local_ksp,&local_mat,&local_pmat,&local_mat_struct);CHKERRQ(ierr);
+  ierr = KSPGetOperators(*local_ksp,&local_mat,&local_pmat);CHKERRQ(ierr);
 
   /* Get null space vecs */
   ierr = MatNullSpaceGetVecs(pcbddc->NullSpace,&nnsp_has_cnst,&nnsp_size,&nullvecs);CHKERRQ(ierr);
@@ -230,7 +229,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc,IS local_dofs)
     ierr = ISCreateStride(PETSC_COMM_SELF,basis_size,0,1,&is_aux);CHKERRQ(ierr);
     ierr = MatLUFactor(small_mat,is_aux,is_aux,&matinfo);CHKERRQ(ierr);
     ierr = ISDestroy(&is_aux);CHKERRQ(ierr);
-    ierr = PetscMalloc(basis_size*basis_size*sizeof(PetscScalar),&array_mat);CHKERRQ(ierr);
+    ierr = PetscMalloc1(basis_size*basis_size,&array_mat);CHKERRQ(ierr);
     for (k=0;k<basis_size;k++) {
       ierr = VecSet(shell_ctx->work_small_1,zero);CHKERRQ(ierr);
       ierr = VecSetValue(shell_ctx->work_small_1,k,one,INSERT_VALUES);CHKERRQ(ierr);
@@ -249,12 +248,12 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc,IS local_dofs)
     ierr = MatDestroy(&inv_small_mat);CHKERRQ(ierr);
     ierr = MatDestroy(&small_mat);CHKERRQ(ierr);
     ierr = MatScale(shell_ctx->Kbasis_mat,m_one);CHKERRQ(ierr);
-  
+
     /* Rebuild local PC */
     ierr = KSPGetPC(*local_ksp,&shell_ctx->local_pc);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)shell_ctx->local_pc);CHKERRQ(ierr);
     ierr = PCCreate(PETSC_COMM_SELF,&newpc);CHKERRQ(ierr);
-    ierr = PCSetOperators(newpc,local_mat,local_mat,SAME_PRECONDITIONER);CHKERRQ(ierr);
+    ierr = PCSetOperators(newpc,local_mat,local_mat);CHKERRQ(ierr);
     ierr = PCSetType(newpc,PCSHELL);CHKERRQ(ierr);
     ierr = PCShellSetContext(newpc,shell_ctx);CHKERRQ(ierr);
     ierr = PCShellSetApply(newpc,PCBDDCApplyNullSpaceCorrectionPC);CHKERRQ(ierr);
@@ -305,7 +304,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc,IS local_dofs)
 
     /* Create ksp object suitable for extreme eigenvalues' estimation */
     ierr = KSPCreate(PETSC_COMM_SELF,&check_ksp);CHKERRQ(ierr);
-    ierr = KSPSetOperators(check_ksp,local_mat,local_mat,SAME_PRECONDITIONER);CHKERRQ(ierr);
+    ierr = KSPSetOperators(check_ksp,local_mat,local_mat);CHKERRQ(ierr);
     ierr = KSPSetTolerances(check_ksp,1.e-8,1.e-8,PETSC_DEFAULT,basis_dofs);CHKERRQ(ierr);
     ierr = KSPSetComputeSingularValues(check_ksp,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatIsSymmetricKnown(pc->pmat,&setsym,&issym);CHKERRQ(ierr);
@@ -353,7 +352,7 @@ PetscErrorCode PCBDDCNullSpaceAdaptGlobal(PC pc)
   PetscFunctionBegin;
   /* create KSP for change of basis */
   ierr = KSPCreate(PETSC_COMM_SELF,&inv_change);CHKERRQ(ierr);
-  ierr = KSPSetOperators(inv_change,pcbddc->ChangeOfBasisMatrix,pcbddc->ChangeOfBasisMatrix,SAME_PRECONDITIONER);CHKERRQ(ierr);
+  ierr = KSPSetOperators(inv_change,pcbddc->ChangeOfBasisMatrix,pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
   ierr = KSPSetType(inv_change,KSPPREONLY);CHKERRQ(ierr);
   ierr = KSPGetPC(inv_change,&pc_change);CHKERRQ(ierr);
   ierr = PCSetType(pc_change,PCLU);CHKERRQ(ierr);
@@ -364,7 +363,7 @@ PetscErrorCode PCBDDCNullSpaceAdaptGlobal(PC pc)
   if (nsp_has_cnst) {
     new_nsp_size++;
   }
-  ierr = PetscMalloc(new_nsp_size*sizeof(Vec),&new_nsp_vecs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(new_nsp_size,&new_nsp_vecs);CHKERRQ(ierr);
   for (i=0;i<new_nsp_size;i++) {
     ierr = VecDuplicate(pcis->vec1_global,&new_nsp_vecs[i]);CHKERRQ(ierr);
   }

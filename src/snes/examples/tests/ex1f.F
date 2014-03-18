@@ -76,6 +76,7 @@
 !     draw        - drawing context
 !
       SNES               snes
+      MatColoring        mc
       Vec                x,r
       PetscDraw               draw
       Mat                J
@@ -86,7 +87,6 @@
       PetscReal   lambda_max,lambda_min,lambda
       MatFDColoring      fdcoloring
       ISColoring         iscoloring
-      MatStructure       str
 
       PetscScalar        lx_v(0:1)
       PetscOffset        lx_i
@@ -185,13 +185,16 @@
 !      because clearly if we had a routine to compute the Jacobian we won't need
 !      to use finite differences.
 !
-        call FormJacobian(snes,x,J,J,str,0,ierr)
+        call FormJacobian(snes,x,J,J,0,ierr)
 !
 !       Color the matrix, i.e. determine groups of columns that share no common
 !      rows. These columns in the Jacobian can all be computed simulataneously.
 !
-        call MatGetColoring(J,MATCOLORINGNATURAL,iscoloring,ierr)
-
+        call MatColoringCreate(J,mc,ierr)
+        call MatColoringSetType(mc,MATCOLORINGNATURAL,ierr)
+        call MatColoringSetFromOptions(mc,ierr)
+        call MatColoringApply(mc,iscoloring,ierr)
+        call MatColoringDestroy(mc,ierr)
 !
 !       Create the data structure that SNESComputeJacobianDefaultColor() uses
 !       to compute the actual Jacobians via finite differences.
@@ -200,6 +203,7 @@
         call MatFDColoringSetFunction(fdcoloring,FormFunction,                &
      &                                PETSC_NULL_OBJECT,ierr)
         call MatFDColoringSetFromOptions(fdcoloring,ierr)
+        call MatFDColoringSetUp(J,iscoloring,fdcoloring,ierr)
 !
 !        Tell SNES to use the routine SNESComputeJacobianDefaultColor()
 !      to compute Jacobians.
@@ -260,8 +264,8 @@
       call PetscDrawSetFromOptions(draw,ierr)
 
       call VecGetArray(x,lx_v,lx_i,ierr)
-      call PetscDrawTensorContour(draw,mx,my,PETSC_NULL_DOUBLE,              &
-     &     PETSC_NULL_DOUBLE,lx_v(lx_i+1),ierr)
+      call PetscDrawTensorContour(draw,mx,my,PETSC_NULL_REAL,              &
+     &     PETSC_NULL_REAL,lx_v(lx_i+1),ierr)
       call VecRestoreArray(x,lx_v,lx_i,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -547,7 +551,7 @@
 !  This routine merely accesses the local vector data via
 !  VecGetArray() and VecRestoreArray().
 !
-      subroutine FormJacobian(snes,X,jac,jac_prec,flag,dummy,ierr)
+      subroutine FormJacobian(snes,X,jac,jac_prec,dummy,ierr)
       implicit none
 
 #include <finclude/petscsys.h>
@@ -560,7 +564,6 @@
       SNES          snes
       Vec           X
       Mat           jac,jac_prec
-      MatStructure  flag
       PetscErrorCode      ierr
       integer dummy
 
@@ -590,23 +593,6 @@
       call MatAssemblyBegin(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
 
-!  Set flag to indicate that the Jacobian matrix retains an identical
-!  nonzero structure throughout all nonlinear iterations (although the
-!  values of the entries change). Thus, we can save some work in setting
-!  up the preconditioner (e.g., no need to redo symbolic factorization for
-!  ILU/ICC preconditioners).
-!   - If the nonzero structure of the matrix is different during
-!     successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-!     must be used instead.  If you are unsure whether the matrix
-!     structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-!   - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-!     believes your assertion and does not check the structure
-!     of the matrix.  If you erroneously claim that the structure
-!     is the same when it actually is not, the new preconditioner
-!     will not function correctly.  Thus, use this optimization
-!     feature with caution!
-
-      flag = SAME_NONZERO_PATTERN
 
       return
       end

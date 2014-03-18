@@ -170,9 +170,10 @@ def pkgsources(pkg, mistakes):
       return os.path.join(root,filename)
     sourcecu = makevars.get('SOURCECU','').split()
     sourcec = makevars.get('SOURCEC','').split()
+    sourcecxx = makevars.get('SOURCECXX','').split()
     sourcef = makevars.get('SOURCEF','').split()
-    mistakes.compareSourceLists(root,sourcec+sourcef+sourcecu, files) # Diagnostic output about unused source files
-    sources[repr(sorted(conditions))].extend(relpath(f) for f in sourcec + sourcef + sourcecu)
+    mistakes.compareSourceLists(root,sourcec+sourcecxx+sourcef+sourcecu, files) # Diagnostic output about unused source files
+    sources[repr(sorted(conditions))].extend(relpath(f) for f in sourcec + sourcecxx + sourcef + sourcecu)
     allconditions[root] = conditions
   return sources
 
@@ -203,7 +204,6 @@ endif ()
 
 include_directories ("${PETSc_SOURCE_DIR}/include" "${PETSc_BINARY_DIR}/include")
 
-add_definitions (-D__INSDIR__= ) # CMake always uses the absolute path
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PETSc_BINARY_DIR}/lib" CACHE PATH "Output directory for PETSc archives")
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PETSc_BINARY_DIR}/lib" CACHE PATH "Output directory for PETSc libraries")
 set (CMAKE_Fortran_MODULE_DIRECTORY "${PETSc_BINARY_DIR}/include" CACHE PATH "Output directory for fortran *.mod files")
@@ -256,7 +256,8 @@ def main(petscdir, log=StdoutLogger(), verbose=False):
                ('dm'             , 'mat vec sys'),
                ('ksp'            , 'dm mat vec sys'),
                ('snes'           , 'ksp dm mat vec sys'),
-               ('ts'             , 'snes ksp dm mat vec sys')]
+               ('ts'             , 'snes ksp dm mat vec sys'),
+               ('tao'            , 'snes ksp dm mat vec sys')]
     for pkg,deps in pkglist:
       writePackage(f,pkg,deps.split(),mistakes)
     f.write ('''

@@ -35,14 +35,14 @@ static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
     ierr = VecDuplicate(jac->work1,&jac->work2);CHKERRQ(ierr);
   }
   if (pc->useAmat) mat = pc->mat;
-  ierr = PCApply(next->pc,x,y);CHKERRQ(ierr);
+  ierr = PCApply(next->pc,x,y);CHKERRQ(ierr);                      /* y <- B x */
   while (next->next) {
     next = next->next;
-    ierr = MatMult(mat,y,jac->work1);CHKERRQ(ierr);
-    ierr = VecWAXPY(jac->work2,-1.0,jac->work1,x);CHKERRQ(ierr);
+    ierr = MatMult(mat,y,jac->work1);CHKERRQ(ierr);                /* work1 <- A y */
+    ierr = VecWAXPY(jac->work2,-1.0,jac->work1,x);CHKERRQ(ierr);   /* work2 <- x - work1 */
     ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */
-    ierr = PCApply(next->pc,jac->work2,jac->work1);CHKERRQ(ierr);
-    ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
+    ierr = PCApply(next->pc,jac->work2,jac->work1);CHKERRQ(ierr);  /* work1 <- C work2 */
+    ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);                /* y <- y + work1 = B x + C (x - A B x) = (B + C (1 - A B)) x */
   }
   if (jac->type == PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE) {
     while (next->previous) {
@@ -174,7 +174,7 @@ static PetscErrorCode PCSetUp_Composite(PC pc)
     ierr = MatGetVecs(pc->pmat,&jac->work1,0);CHKERRQ(ierr);
   }
   while (next) {
-    ierr = PCSetOperators(next->pc,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
+    ierr = PCSetOperators(next->pc,pc->mat,pc->pmat);CHKERRQ(ierr);
     next = next->next;
   }
   PetscFunctionReturn(0);
@@ -328,7 +328,7 @@ static PetscErrorCode  PCCompositeAddPC_Composite(PC pc,PCType type)
   char             newprefix[8];
 
   PetscFunctionBegin;
-  ierr        = PetscNewLog(pc,struct _PC_CompositeLink,&ilink);CHKERRQ(ierr);
+  ierr        = PetscNewLog(pc,&ilink);CHKERRQ(ierr);
   ilink->next = 0;
   ierr        = PCCreate(PetscObjectComm((PetscObject)pc),&ilink->pc);CHKERRQ(ierr);
   ierr        = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilink->pc);CHKERRQ(ierr);
@@ -522,7 +522,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Composite(PC pc)
   PC_Composite   *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_Composite,&jac);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&jac);CHKERRQ(ierr);
 
   pc->ops->apply           = PCApply_Composite_Additive;
   pc->ops->applytranspose  = PCApplyTranspose_Composite_Additive;

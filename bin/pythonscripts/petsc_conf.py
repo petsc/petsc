@@ -31,7 +31,7 @@ def get_conf():
     petscconfinclude = os.path.join(petscdir, 'include', 'petscconf.h')
 
     try:
-        fid = file(petscvariables, 'r')
+        fid = open(petscvariables, 'r')
     except IOError:
         warnings.warn('Nonexistent or invalid PETSc installation, using defaults')
         return None, None, None
@@ -43,7 +43,7 @@ def get_conf():
         fid.close()
 
     try:
-        fid = file(petscconfinclude, 'r')
+        fid = open(petscconfinclude, 'r')
     except IOError:
         warnings.warn('Nonexistent or invalid PETSc installation, using defaults')
         return None, None, None

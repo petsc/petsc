@@ -24,6 +24,7 @@ Evolve the Cahn-Hillard equations:
 
 
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 #include <petscdraw.h>
@@ -76,7 +77,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_PERIODIC, -10,2,2,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, -10,2,2,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"Biharmonic heat equation: w = -kappa*u_xx");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"Biharmonic heat equation: u");CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&Mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -119,14 +120,15 @@ int main(int argc,char **argv)
   ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
   ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
   ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+  ierr = MatFDColoringSetUp(J,iscoloring,matfdcoloring);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,matfdcoloring);CHKERRQ(ierr);
 
   {
     ierr = VecDuplicate(x,&ul);CHKERRQ(ierr);
     ierr = VecDuplicate(x,&uh);CHKERRQ(ierr);
-    ierr = VecStrideSet(ul,0,SNES_VI_NINF);CHKERRQ(ierr);
+    ierr = VecStrideSet(ul,0,PETSC_NINFINITY);CHKERRQ(ierr);
     ierr = VecStrideSet(ul,1,-1.0);CHKERRQ(ierr);
-    ierr = VecStrideSet(uh,0,SNES_VI_INF);CHKERRQ(ierr);
+    ierr = VecStrideSet(uh,0,PETSC_INFINITY);CHKERRQ(ierr);
     ierr = VecStrideSet(uh,1,1.0);CHKERRQ(ierr);
     ierr = TSVISetVariableBounds(ts,ul,uh);CHKERRQ(ierr);
   }

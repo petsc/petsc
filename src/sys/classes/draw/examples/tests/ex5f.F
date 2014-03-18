@@ -50,7 +50,7 @@
         call PetscDrawLGAddPoint(lg,xd,yd,ierr)
  10   continue
 
-      call PetscDrawLGIndicateDataPoints(lg,ierr)
+      call PetscDrawLGIndicateDataPoints(lg,PETSC_TRUE,ierr)
       call PetscDrawLGDraw(lg,ierr)
       call PetscDrawFlush(draw,ierr)
 

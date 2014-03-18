@@ -483,7 +483,7 @@ PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt spatial_dim, Petsc
 
   PetscFunctionBegin;
   ierr = initializeOpenCL(&ocl_env);CHKERRQ(ierr);
-  ierr = PetscMalloc(8192 * sizeof(char), &program_buffer);CHKERRQ(ierr);
+  ierr = PetscMalloc1(8192, &program_buffer);CHKERRQ(ierr);
   ierr = generateOpenCLSource(&program_buffer, 8192, dim, N_bl, pde_op);CHKERRQ(ierr);
   ocl_source_length = strlen(program_buffer);
   ocl_prog = clCreateProgramWithSource(ocl_env.ctx_id, 1, (const char**)&program_buffer, &ocl_source_length, &ierr2);CHKERRQ(ierr2);

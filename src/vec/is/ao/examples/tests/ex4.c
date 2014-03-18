@@ -15,7 +15,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = PetscMalloc(4*sizeof(PetscInt),&localvert);CHKERRQ(ierr);
+  ierr = PetscMalloc1(4,&localvert);CHKERRQ(ierr);
 
   if (!rank) {
     nlocal       = 4;

@@ -83,7 +83,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
   redm     = party->redm ? "lam" : ""; /* matching method */
   redo     = party->redo ? "w3" : "";  /* matching optimization method */
 
-  ierr = PetscMalloc((mat->rmap->N)*sizeof(int),&part_party);CHKERRQ(ierr);
+  ierr = PetscMalloc1((mat->rmap->N),&part_party);CHKERRQ(ierr);
 
   /* redirect output to buffer */
 #if defined(PETSC_HAVE_UNISTD_H)
@@ -91,7 +91,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
   if (pipe(fd_pipe)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Could not open pipe");
   close(1);
   dup2(fd_pipe[1],1);
-  ierr = PetscMalloc(SIZE_LOG*sizeof(char),&mesg_log);CHKERRQ(ierr);
+  ierr = PetscMalloc1(SIZE_LOG,&mesg_log);CHKERRQ(ierr);
 #endif
 
   /* library call */
@@ -119,7 +119,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
 #endif
   if (ierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Party failed");
 
-  ierr = PetscMalloc((mat->rmap->N)*sizeof(PetscInt),&parttab);CHKERRQ(ierr);
+  ierr = PetscMalloc1((mat->rmap->N),&parttab);CHKERRQ(ierr);
   for (i=0; i<mat->rmap->N; i++) parttab[i] = part_party[i];
 
   /* creation of the index set */
@@ -440,7 +440,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Party(MatPartitioning part)
   MatPartitioning_Party *party;
 
   PetscFunctionBegin;
-  ierr       = PetscNewLog(part,MatPartitioning_Party,&party);CHKERRQ(ierr);
+  ierr       = PetscNewLog(part,&party);CHKERRQ(ierr);
   part->data = (void*)party;
 
   ierr = PetscStrcpy(party->global,"gcf,gbf");CHKERRQ(ierr);

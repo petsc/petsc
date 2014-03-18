@@ -35,11 +35,11 @@ PetscErrorCode  DMLocalToLocalCreate_DA(DM da)
   ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)dd->ltol);CHKERRQ(ierr);
   if (dd->dim == 1) {
     left = dd->xs - dd->Xs;
-    ierr = PetscMalloc((dd->xe-dd->xs)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+    ierr = PetscMalloc1((dd->xe-dd->xs),&idx);CHKERRQ(ierr);
     for (j=0; j<dd->xe-dd->xs; j++) idx[j] = left + j;
   } else if (dd->dim == 2) {
     left  = dd->xs - dd->Xs; down  = dd->ys - dd->Ys; up    = down + dd->ye-dd->ys;
-    ierr  = PetscMalloc((dd->xe-dd->xs)*(up - down)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+    ierr  = PetscMalloc1((dd->xe-dd->xs)*(up - down),&idx);CHKERRQ(ierr);
     count = 0;
     for (i=down; i<up; i++) {
       for (j=0; j<dd->xe-dd->xs; j++) {
@@ -51,7 +51,7 @@ PetscErrorCode  DMLocalToLocalCreate_DA(DM da)
     bottom = dd->ys - dd->Ys; top = bottom + dd->ye-dd->ys;
     down   = dd->zs - dd->Zs; up  = down + dd->ze-dd->zs;
     count  = (dd->xe-dd->xs)*(top-bottom)*(up-down);
-    ierr   = PetscMalloc(count*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+    ierr   = PetscMalloc1(count,&idx);CHKERRQ(ierr);
     count  = 0;
     for (i=down; i<up; i++) {
       for (j=bottom; j<top; j++) {

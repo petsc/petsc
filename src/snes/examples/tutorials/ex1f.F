@@ -59,7 +59,7 @@
       PetscInt its,i2,i20
       PetscMPIInt size,rank
       PetscScalar   pfive
-      double precision   tol
+      PetscReal   tol
       PetscBool   setls
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
@@ -138,8 +138,8 @@
       call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,PCNONE,ierr)
       tol = 1.e-4
-      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,     &
-     &                      PETSC_DEFAULT_DOUBLE_PRECISION,i20,ierr)
+      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,                  &
+     &                      PETSC_DEFAULT_REAL,i20,ierr)
 
 !  Set SNES/KSP/KSP/PC runtime options, e.g.,
 !      -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>
@@ -258,7 +258,7 @@
 !  B - optionally different preconditioning matrix
 !  flag - flag indicating matrix structure
 !
-      subroutine FormJacobian(snes,X,jac,B,flag,dummy,ierr)
+      subroutine FormJacobian(snes,X,jac,B,dummy,ierr)
       implicit none
 
 #include <finclude/petscsys.h>
@@ -270,7 +270,6 @@
       SNES         snes
       Vec          X
       Mat          jac,B
-      MatStructure flag
       PetscScalar  A(4)
       PetscErrorCode ierr
       PetscInt idx(2),i2
@@ -299,7 +298,6 @@
       A(3) = lx_a(2)
       A(4) = lx_a(1) + 2.0*lx_a(2)
       call MatSetValues(jac,i2,idx,i2,idx,A,INSERT_VALUES,ierr)
-      flag = SAME_NONZERO_PATTERN
 
 !  Restore vector
 

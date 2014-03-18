@@ -1,10 +1,10 @@
 
-#requirespackage   'PETSC_HAVE_UMFPACK'
+#requirespackage   'PETSC_HAVE_SUITESPARSE'
 #requiresprecision double
 
 ALL: lib
 
-CFLAGS   = ${UMFPACK_INCLUDE}
+CFLAGS   = ${SUITESPARSE_INCLUDE}
 FFLAGS   =
 SOURCEC  = umfpack.c
 SOURCEF  =

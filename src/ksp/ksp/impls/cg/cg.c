@@ -70,7 +70,7 @@ PetscErrorCode KSPSetUp_CG(KSP ksp)
   */
   if (ksp->calc_sings) {
     /* get space to store tridiagonal matrix for Lanczos */
-    ierr = PetscMalloc4(maxit+1,PetscScalar,&cgP->e,maxit+1,PetscScalar,&cgP->d,maxit+1,PetscReal,&cgP->ee,maxit+1,PetscReal,&cgP->dd);CHKERRQ(ierr);
+    ierr = PetscMalloc4(maxit+1,&cgP->e,maxit+1,&cgP->d,maxit+1,&cgP->ee,maxit+1,&cgP->dd);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)ksp,2*(maxit+1)*(sizeof(PetscScalar)+sizeof(PetscReal)));CHKERRQ(ierr);
 
     ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
@@ -99,7 +99,6 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
   Vec            X,B,Z,R,P,S,W;
   KSP_CG         *cg;
   Mat            Amat,Pmat;
-  MatStructure   pflag;
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
@@ -125,7 +124,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
 #define VecXDot(x,y,a) (((cg->type) == (KSP_CG_HERMITIAN)) ? VecDot(x,y,a) : VecTDot(x,y,a))
 
   if (eigs) {e = cg->e; d = cg->d; e[0] = 0.0; }
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   ksp->its = 0;
   if (!ksp->guess_zero) {
@@ -444,7 +443,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp)
   KSP_CG         *cg;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,KSP_CG,&cg);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,&cg);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
   cg->type = KSP_CG_SYMMETRIC;
 #else

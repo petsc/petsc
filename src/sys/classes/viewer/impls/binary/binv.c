@@ -41,7 +41,7 @@ PetscErrorCode PetscViewerGetSingleton_Binary(PetscViewer viewer,PetscViewer *ou
     ierr    = PetscViewerSetType(*outviewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
     obinary = (PetscViewer_Binary*)(*outviewer)->data;
     ierr    = PetscMemcpy(obinary,vbinary,sizeof(PetscViewer_Binary));CHKERRQ(ierr);
-  } else *outviewer = 0;
+  } SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Cannot get singleton viewer for binary files or sockets");
   PetscFunctionReturn(0);
 }
 
@@ -851,7 +851,7 @@ PetscErrorCode  PetscViewerBinaryWriteStringArray(PetscViewer viewer,char **data
   /* count number of strings */
   while (data[n++]) ;
   n--;
-  ierr     = PetscMalloc((n+1)*sizeof(PetscInt),&sizes);CHKERRQ(ierr);
+  ierr     = PetscMalloc1((n+1),&sizes);CHKERRQ(ierr);
   sizes[0] = n;
   for (i=0; i<n; i++) {
     size_t tmp;
@@ -894,10 +894,10 @@ PetscErrorCode  PetscViewerBinaryReadStringArray(PetscViewer viewer,char ***data
 
   /* count number of strings */
   ierr = PetscViewerBinaryRead(viewer,&n,1,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscInt),&sizes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&sizes);CHKERRQ(ierr);
   ierr = PetscViewerBinaryRead(viewer,sizes,n,PETSC_INT);CHKERRQ(ierr);
   for (i=0; i<n; i++) N += sizes[i];
-  ierr = PetscMalloc((n+1)*sizeof(char*) + N*sizeof(char),data);CHKERRQ(ierr);
+  ierr = PetscMalloc1((n+1)*sizeof(char*) + N,data);CHKERRQ(ierr);
   (*data)[0] = (char*)((*data) + n + 1);
   for (i=1; i<n; i++) (*data)[i] = (*data)[i-1] + sizes[i-1];
   ierr = PetscViewerBinaryRead(viewer,(*data)[0],N,PETSC_CHAR);CHKERRQ(ierr);
@@ -1244,7 +1244,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
 #endif
 
   PetscFunctionBegin;
-  ierr                     = PetscNewLog(v,PetscViewer_Binary,&vbinary);CHKERRQ(ierr);
+  ierr                     = PetscNewLog(v,&vbinary);CHKERRQ(ierr);
   v->data                  = (void*)vbinary;
   v->ops->destroy          = PetscViewerDestroy_Binary;
   v->ops->view             = PetscViewerView_Binary;
@@ -1326,28 +1326,28 @@ PetscViewer  PETSC_VIEWER_BINARY_(MPI_Comm comm)
   MPI_Comm       ncomm;
 
   PetscFunctionBegin;
-  ierr = PetscCommDuplicate(comm,&ncomm,NULL);if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
+  ierr = PetscCommDuplicate(comm,&ncomm,NULL);if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   if (Petsc_Viewer_Binary_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Binary_keyval,0);
-    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   }
   ierr = MPI_Attr_get(ncomm,Petsc_Viewer_Binary_keyval,(void**)&viewer,(int*)&flg);
-  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
+  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   if (!flg) { /* PetscViewer not yet created */
     ierr = PetscOptionsGetenv(ncomm,"PETSC_VIEWER_BINARY_FILENAME",fname,PETSC_MAX_PATH_LEN,&flg);
-    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
     if (!flg) {
       ierr = PetscStrcpy(fname,"binaryoutput");
-      if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
+      if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
     }
     ierr = PetscViewerBinaryOpen(ncomm,fname,FILE_MODE_WRITE,&viewer);
-    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
-    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
     ierr = MPI_Attr_put(ncomm,Petsc_Viewer_Binary_keyval,(void*)viewer);
-    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   }
   ierr = PetscCommDestroy(&ncomm);
-  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
+  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   PetscFunctionReturn(viewer);
 }

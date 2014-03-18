@@ -2,7 +2,7 @@
 #if !defined(__pcbddc_private_h)
 #define __pcbddc_private_h
 
-#include "bddcstructs.h"
+#include <../src/ksp/pc/impls/bddc/bddcstructs.h>
 
 /* main functions */
 PetscErrorCode PCBDDCAnalyzeInterface(PC);
@@ -41,7 +41,7 @@ PetscErrorCode PCBDDCNullSpaceAdaptGlobal(PC);
 PetscErrorCode PCBDDCNullSpaceAssembleCoarse(PC,Mat,MatNullSpace*);
 
 /* utils */
-PetscErrorCode PCBDDCCreateWorkVectors(PC);
+PetscErrorCode PCBDDCSetUpLocalWorkVectors(PC);
 PetscErrorCode PCBDDCSetUpSolvers(PC);
 PetscErrorCode PCBDDCSetUpLocalScatters(PC);
 PetscErrorCode PCBDDCSetUpLocalMatrices(PC);

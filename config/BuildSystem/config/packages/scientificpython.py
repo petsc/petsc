@@ -5,7 +5,6 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ScientificPythonSimple.tar.gz']
-    self.archIndependent   = 1
     self.worksonWindows    = 1
     self.downloadonWindows = 1
     self.liblist           = [['Derivatives.py']]

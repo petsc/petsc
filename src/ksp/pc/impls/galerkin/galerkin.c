@@ -269,7 +269,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Galerkin(PC pc)
   PC_Galerkin    *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_Galerkin,&jac);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&jac);CHKERRQ(ierr);
 
   pc->ops->apply           = PCApply_Galerkin;
   pc->ops->setup           = PCSetUp_Galerkin;

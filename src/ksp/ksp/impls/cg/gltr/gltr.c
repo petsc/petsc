@@ -151,7 +151,6 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   PetscBLASInt *e_iblk, *e_splt, *e_iwrk;
 
   PetscErrorCode ierr;
-  MatStructure   pflag;
   Mat            Qmat, Mmat;
   Vec            r, z, p, d;
   PC             pc;
@@ -192,7 +191,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   d  = ksp->vec_sol;
   pc = ksp->pc;
 
-  ierr = PCGetOperators(pc, &Qmat, &Mmat, &pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(pc, &Qmat, &Mmat);CHKERRQ(ierr);
 
   ierr            = VecGetSize(d, &max_cg_its);CHKERRQ(ierr);
   max_cg_its      = PetscMin(max_cg_its, ksp->max_it);
@@ -229,7 +228,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_DIVERGED_NANORINF;
-    ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: bad right-hand side: rr=%g\n", rr);CHKERRQ(ierr);
+    ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: bad right-hand side: rr=%g\n", (double)rr);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -248,7 +247,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_DIVERGED_NANORINF;
-    ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: bad preconditioner: rz=%g\n", rz);CHKERRQ(ierr);
+    ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: bad preconditioner: rz=%g\n", (double)rz);CHKERRQ(ierr);
 
     if (cg->radius) {
       if (r2 >= rr) {
@@ -283,7 +282,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-    ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: indefinite preconditioner: rz=%g\n", rz);CHKERRQ(ierr);
+    ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: indefinite preconditioner: rz=%g\n", (double)rz);CHKERRQ(ierr);
 
     if (cg->radius) {
       if (r2 >= rr) {
@@ -363,7 +362,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_DIVERGED_NANORINF;
-    ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: bad matrix: kappa=%g\n", kappa);CHKERRQ(ierr);
+    ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: bad matrix: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
 
     if (cg->radius) {
       if (r2 >= rr) {
@@ -426,7 +425,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_DIVERGED_BREAKDOWN;
-    ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: breakdown: kappa=%g\n", kappa);CHKERRQ(ierr);
+    ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: breakdown: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
 
     if (cg->radius && norm_p > 0.0) {
       /***********************************************************************/
@@ -504,7 +503,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       /***********************************************************************/
 
       ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
-      ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: negative curvature: kappa=%g\n", kappa);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: negative curvature: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
 
       if (cg->radius && norm_p > 0.0) {
         /*********************************************************************/
@@ -542,7 +541,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       /***********************************************************************/
 
       ksp->reason = KSP_CONVERGED_CG_CONSTRAINED;
-      ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: constrained step: radius=%g\n", cg->radius);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: constrained step: radius=%g\n", (double)cg->radius);CHKERRQ(ierr);
 
       if (norm_p > 0.0) {
         /*********************************************************************/
@@ -604,7 +603,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       /***********************************************************************/
 
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-      ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: cg indefinite preconditioner: rz=%g\n", rz);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: cg indefinite preconditioner: rz=%g\n", (double)rz);CHKERRQ(ierr);
       break;
     }
 
@@ -643,7 +642,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       /* The method has converged.                                           */
       /***********************************************************************/
 
-      ierr = PetscInfo2(ksp, "KSPSolve_GLTR: cg truncated step: rnorm=%g, radius=%g\n", norm_r, cg->radius);CHKERRQ(ierr);
+      ierr = PetscInfo2(ksp, "KSPSolve_GLTR: cg truncated step: rnorm=%g, radius=%g\n", (double)norm_r, (double)cg->radius);CHKERRQ(ierr);
       break;
     }
 
@@ -658,7 +657,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       /***********************************************************************/
 
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: breakdown: beta=%g\n", beta);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: breakdown: beta=%g\n", (double)beta);CHKERRQ(ierr);
       break;
     }
 
@@ -668,7 +667,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 
     if (ksp->its >= max_cg_its) {
       ksp->reason = KSP_DIVERGED_ITS;
-      ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: iterlim: its=%d\n", ksp->its);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: iterlim: its=%D\n", ksp->its);CHKERRQ(ierr);
       break;
     }
 
@@ -720,7 +719,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       /***********************************************************************/
 
       ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
-      ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: cg breakdown: kappa=%g\n", kappa);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: cg breakdown: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
 
       if (cg->radius && norm_p > 0.0) {
         /*********************************************************************/
@@ -779,7 +778,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 
     if (fabs(kappa) <= 0.0) {
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: lanczos breakdown: kappa=%g\n", kappa);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: lanczos breakdown: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
       break;
     }
 
@@ -805,7 +804,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       /***********************************************************************/
 
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-      ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: lanczos indefinite preconditioner: rz=%g\n", rz);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: lanczos indefinite preconditioner: rz=%g\n", (double)rz);CHKERRQ(ierr);
       break;
     }
 
@@ -849,7 +848,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       /***********************************************************************/
 
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: breakdown: beta=%g\n", beta);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: breakdown: beta=%g\n",(double) beta);CHKERRQ(ierr);
       break;
     }
 
@@ -903,7 +902,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     }
 
     cg->alloced = PetscMin(cg->alloced, t_size);
-    ierr        = PetscMalloc2(10*cg->alloced,PetscReal, &cg->rwork,5*cg->alloced,PetscBLASInt, &cg->iwork);CHKERRQ(ierr);
+    ierr        = PetscMalloc2(10*cg->alloced, &cg->rwork,5*cg->alloced, &cg->iwork);CHKERRQ(ierr);
   }
 
   /***************************************************************************/
@@ -1338,12 +1337,7 @@ PetscErrorCode KSPSetUp_GLTR(KSP ksp)
 
   ierr = KSPSetWorkVecs(ksp, 3);CHKERRQ(ierr);
 
-  ierr = PetscMalloc5(max_its,PetscReal,&cg->diag,max_its,PetscReal,&cg->offd,max_its,PetscReal,&cg->alpha,max_its,PetscReal,&cg->beta,max_its,PetscReal,&cg->norm_r);CHKERRQ(ierr);
-  ierr = PetscMemzero(cg->diag, max_its*sizeof(PetscReal));CHKERRQ(ierr);
-  ierr = PetscMemzero(cg->offd, max_its*sizeof(PetscReal));CHKERRQ(ierr);
-  ierr = PetscMemzero(cg->alpha, max_its*sizeof(PetscReal));CHKERRQ(ierr);
-  ierr = PetscMemzero(cg->beta, max_its*sizeof(PetscReal));CHKERRQ(ierr);
-  ierr = PetscMemzero(cg->norm_r, max_its*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscCalloc5(max_its,&cg->diag,max_its,&cg->offd,max_its,&cg->alpha,max_its,&cg->beta,max_its,&cg->norm_r);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)ksp, 5*max_its*sizeof(PetscReal));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1509,7 +1503,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp)
   KSP_GLTR       *cg;
 
   PetscFunctionBegin;
-  ierr       = PetscNewLog(ksp, KSP_GLTR, &cg);CHKERRQ(ierr);
+  ierr       = PetscNewLog(ksp,&cg);CHKERRQ(ierr);
   cg->radius = 0.0;
   cg->dtype  = GLTR_UNPRECONDITIONED_DIRECTION;
 

@@ -22,6 +22,7 @@
    20 KSP Residual norm 1.69638e-07 
    21 KSP Residual norm 7.01741e-08 
    22 KSP Residual norm 2.02305e-08 
+  Linear solve converged due to CONVERGED_RTOL iterations 22
   1 SNES Function norm 2.02305e-08 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
@@ -72,7 +73,7 @@ SNES Object: 1 MPI processes
                 total number of mallocs used during MatSetValues calls =0
                   using I-node routines: found 456 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Mat Object:         1 MPI processes
+        Mat Object:        (fieldsplit_velocity_)         1 MPI processes
           type: seqaij
           rows=962, cols=962
           total: nonzeros=19908, allocated nonzeros=19908
@@ -89,7 +90,7 @@ SNES Object: 1 MPI processes
       PC Object:      (fieldsplit_pressure_)       1 MPI processes
         type: jacobi
         linear system matrix = precond matrix:
-        Mat Object:         1 MPI processes
+        Mat Object:        (fieldsplit_pressure_)         1 MPI processes
           type: seqaij
           rows=145, cols=145
           total: nonzeros=945, allocated nonzeros=945

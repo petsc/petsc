@@ -129,7 +129,7 @@ typedef struct {
   PetscBool  initialrtol;    /* default relative residual decrease is computing from initial residual, not rhs */
   PetscBool  mininitialrtol; /* default relative residual decrease is computing from min of initial residual and rhs */
   Vec        work;
-} KSPDefaultConvergedCtx;
+} KSPConvergedDefaultCtx;
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPLogResidualHistory"
@@ -138,11 +138,11 @@ PETSC_STATIC_INLINE PetscErrorCode KSPLogResidualHistory(KSP ksp,PetscReal norm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   if (ksp->res_hist && ksp->res_hist_max > ksp->res_hist_len) {
     ksp->res_hist[ksp->res_hist_len++] = norm;
   }
-  ierr = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -153,7 +153,7 @@ PETSC_INTERN PetscErrorCode KSPPlotEigenContours_Private(KSP,PetscInt,const Pets
 typedef struct _p_DMKSP *DMKSP;
 typedef struct _DMKSPOps *DMKSPOps;
 struct _DMKSPOps {
-  PetscErrorCode (*computeoperators)(KSP,Mat,Mat,MatStructure*,void*);
+  PetscErrorCode (*computeoperators)(KSP,Mat,Mat,void*);
   PetscErrorCode (*computerhs)(KSP,Vec,void*);
   PetscErrorCode (*computeinitialguess)(KSP,Vec,void*);
   PetscErrorCode (*destroy)(DMKSP*);
@@ -279,6 +279,6 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyBAorABTranspose(KSP ksp,Vec x,Vec 
 
 PETSC_EXTERN PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 
-PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatSchurComplementAinvType,MatReuse,Mat*);
 
 #endif

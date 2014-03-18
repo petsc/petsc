@@ -97,7 +97,7 @@ PetscErrorCode  MatGetColumnVector(Mat A,Vec yy,PetscInt col)
 .seealso: MatGetColumns()
 
 @*/
-PetscErrorCode MatGetColumnNorms(Mat A,NormType type,PetscReal *norms)
+PetscErrorCode MatGetColumnNorms(Mat A,NormType type,PetscReal norms[])
 {
   PetscErrorCode ierr;
 

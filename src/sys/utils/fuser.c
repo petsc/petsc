@@ -3,24 +3,9 @@
       Code for manipulating files.
 */
 #include <petscsys.h>
-#if defined(PETSC_HAVE_PWD_H)
-#include <pwd.h>
-#endif
-#include <ctype.h>
-#include <sys/stat.h>
-#if defined(PETSC_HAVE_SYS_UTSNAME_H)
-#include <sys/utsname.h>
-#endif
 #if defined(PETSC_HAVE_WINDOWS_H)
 #include <windows.h>
 #endif
-#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
-#include <sys/systeminfo.h>
-#endif
-#if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-
 
 #if defined(PETSC_HAVE_GET_USER_NAME)
 #undef __FUNCT__
@@ -32,7 +17,7 @@ PetscErrorCode  PetscGetUserName(char name[],size_t nlen)
   PetscFunctionReturn(0);
 }
 
-#elif defined(PETSC_HAVE_PWD_H)
+#else
 #undef __FUNCT__
 #define __FUNCT__ "PetscGetUserName"
 /*@C
@@ -54,29 +39,13 @@ PetscErrorCode  PetscGetUserName(char name[],size_t nlen)
 @*/
 PetscErrorCode  PetscGetUserName(char name[],size_t nlen)
 {
-  struct passwd  *pw=0;
+  const char     *user;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_GETPWUID)
-  pw = getpwuid(getuid());
+  user = getenv("USER");
+  if (!user) user = "Unknown";
+  ierr = PetscStrncpy(name,user,nlen);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 #endif
-  if (!pw) {ierr = PetscStrncpy(name,"Unknown",nlen);CHKERRQ(ierr);}
-  else     {ierr = PetscStrncpy(name,pw->pw_name,nlen);CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
-}
-
-#else
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetUserName"
-PetscErrorCode  PetscGetUserName(char *name,size_t nlen)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscStrncpy(name,"Unknown",nlen);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif /* !PETSC_HAVE_PWD_H */
-

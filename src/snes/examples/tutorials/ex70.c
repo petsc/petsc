@@ -106,12 +106,12 @@ PetscErrorCode StokesSetupPC(Stokes *s, KSP ksp)
   ierr = PCFieldSplitSetIS(pc, "0", s->isg[0]);CHKERRQ(ierr);
   ierr = PCFieldSplitSetIS(pc, "1", s->isg[1]);CHKERRQ(ierr);
   if (s->userPC) {
-    ierr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, s->myS);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetSchurPre(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, s->myS);CHKERRQ(ierr);
   }
   if (s->userKSP) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
     ierr = PCFieldSplitGetSubKSP(pc, &n, &subksp);CHKERRQ(ierr);
-    ierr = KSPSetOperators(subksp[1], s->myS, s->myS, SAME_PRECONDITIONER);CHKERRQ(ierr);
+    ierr = KSPSetOperators(subksp[1], s->myS, s->myS);CHKERRQ(ierr);
     ierr = PetscFree(subksp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -614,18 +614,18 @@ PetscErrorCode StokesCalcResidual(Stokes *s)
   /* residual velocity */
   ierr = VecGetSubVector(s->b, s->isg[0], &b0);CHKERRQ(ierr);
   ierr = VecNorm(b0, NORM_2, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," residual u = %G\n",val);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," residual u = %g\n",(double)val);CHKERRQ(ierr);
   ierr = VecRestoreSubVector(s->b, s->isg[0], &b0);CHKERRQ(ierr);
 
   /* residual pressure */
   ierr = VecGetSubVector(s->b, s->isg[1], &b1);CHKERRQ(ierr);
   ierr = VecNorm(b1, NORM_2, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," residual p = %G\n",val);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," residual p = %g\n",(double)val);CHKERRQ(ierr);
   ierr = VecRestoreSubVector(s->b, s->isg[1], &b1);CHKERRQ(ierr);
 
   /* total residual */
   ierr = VecNorm(s->b, NORM_2, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," residual [u,p] = %G\n", val);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," residual [u,p] = %g\n", (double)val);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -643,18 +643,18 @@ PetscErrorCode StokesCalcError(Stokes *s)
   /* error in velocity */
   ierr = VecGetSubVector(s->y, s->isg[0], &y0);CHKERRQ(ierr);
   ierr = VecNorm(y0, NORM_2, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," discretization error u = %G\n",val/scale);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," discretization error u = %g\n",(double)(val/scale));CHKERRQ(ierr);
   ierr = VecRestoreSubVector(s->y, s->isg[0], &y0);CHKERRQ(ierr);
 
   /* error in pressure */
   ierr = VecGetSubVector(s->y, s->isg[1], &y1);CHKERRQ(ierr);
   ierr = VecNorm(y1, NORM_2, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," discretization error p = %G\n",val/scale);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," discretization error p = %g\n",(double)(val/scale));CHKERRQ(ierr);
   ierr = VecRestoreSubVector(s->y, s->isg[1], &y1);CHKERRQ(ierr);
 
   /* total error */
   ierr = VecNorm(s->y, NORM_2, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," discretization error [u,p] = %G\n", val/scale);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," discretization error [u,p] = %g\n", (double)(val/scale));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -680,7 +680,7 @@ int main(int argc, char **argv)
   ierr = StokesSetupVectors(&s);CHKERRQ(ierr);
 
   ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp, s.A, s.A, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp, s.A, s.A);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = StokesSetupPC(&s, ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, s.b, s.x);CHKERRQ(ierr);

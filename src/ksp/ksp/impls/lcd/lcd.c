@@ -41,7 +41,6 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
   Vec            X,B,R,Z;
   KSP_LCD        *lcd;
   Mat            Amat,Pmat;
-  MatStructure   pflag;
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
@@ -56,7 +55,7 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
   max_k = lcd->restart;
   mone  = -1;
 
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   ksp->its = 0;
   if (!ksp->guess_zero) {
@@ -240,7 +239,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LCD(KSP ksp)
   KSP_LCD        *lcd;
 
   PetscFunctionBegin;
-  ierr         = PetscNewLog(ksp,KSP_LCD,&lcd);CHKERRQ(ierr);
+  ierr         = PetscNewLog(ksp,&lcd);CHKERRQ(ierr);
   ksp->data    = (void*)lcd;
   ierr         = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   lcd->restart = 30;

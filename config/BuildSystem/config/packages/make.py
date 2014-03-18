@@ -12,7 +12,8 @@ class Configure(config.package.Package):
     self.downloadonWindows = 1
     self.useddirectly      = 0
 
-    self.flags             = ''
+    self.printdirflag      = ''
+    self.noprintdirflag    = ''
     self.haveGNUMake       = 0
     return
 
@@ -103,15 +104,18 @@ class Configure(config.package.Package):
 
     # Setup make flags
     if self.haveGNUMake:
-      self.flags += ' --no-print-directory'
-      self.addMakeMacro('PETSC_BUILD_USING_GNUMAKE',1)
+      self.printdirflag = ' --print-directory'
+      self.noprintdirflag = ' --no-print-directory'
+      self.addMakeMacro('MAKE_IS_GNUMAKE',1)
 
     # Check to see if make allows rules which look inside archives
     if self.haveGNUMake:
       self.addMakeRule('libc','${LIBNAME}(${OBJSC})')
+      self.addMakeRule('libcxx','${LIBNAME}(${OBJSCXX})')
       self.addMakeRule('libcu','${LIBNAME}(${OBJSCU})')
     else:
       self.addMakeRule('libc','${OBJSC}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC}')
+      self.addMakeRule('libcxx','${OBJSCXX}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSCXX}')
       self.addMakeRule('libcu','${OBJSCU}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSCU}')
     self.addMakeRule('libf','${OBJSF}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}')
     return
@@ -158,5 +162,6 @@ class Configure(config.package.Package):
       self.executeTest(self.configureMake)
     self.executeTest(self.configureCheckGNUMake)
     self.executeTest(self.configureMakeNP)
-    self.addMakeMacro('OMAKE ', self.make+' '+self.flags)
+    self.addMakeMacro('OMAKE_PRINTDIR ', self.make+' '+self.printdirflag)
+    self.addMakeMacro('OMAKE', self.make+' '+self.noprintdirflag)
     return

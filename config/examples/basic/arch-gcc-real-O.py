@@ -9,7 +9,6 @@ if __name__ == '__main__':
     '--download-mpich=1',
     '--with-cc=gcc',
     '--with-clanguage=c',
-    '--with-dynamic-loading=1',
     '--with-shared-libraries=1',
     '--with-python=1',
     '--with-debugging=0',
