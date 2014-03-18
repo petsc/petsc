@@ -432,7 +432,7 @@ class Configure(config.package.Package):
       if self.f2c:
         if self.mangling == 'underscore': symbol = 'dgeev_'
       elif hasattr(self.compilers, 'FC'):
-        symbol = map(self.compilers.mangleFortranFunction, symbol)
+        symbol = self.compilers.mangleFortranFunction(symbol)
       if not self.setCompilers.checkIntoShared(symbol,self.lapackLibrary+self.getOtherLibs()):
         raise RuntimeError('The BLAS/LAPACK libraries '+self.libraries.toStringNoDupes(self.lapackLibrary+self.getOtherLibs())+'\ncannot used with a shared library\nEither run ./configure with --with-shared-libraries=0 or use a different BLAS/LAPACK library');
     return
