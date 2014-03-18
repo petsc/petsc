@@ -188,7 +188,7 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, PetscFE fe[], void (**funcs)(co
   PetscSection    section;
   PetscScalar    *values;
   PetscReal      *v0, *J, detJ;
-  PetscInt        numFields, numComp, dim, spDim, totDim = 0, numValues, cStart, cEnd, c, f, d, v;
+  PetscInt        numFields, numComp, dim, spDim, totDim = 0, numValues, cStart, cEnd, c, f, d, v, comp;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -219,7 +219,11 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, PetscFE fe[], void (**funcs)(co
       ierr = PetscFEGetNumComponents(fe[f], &numComp);CHKERRQ(ierr);
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
       for (d = 0; d < spDim; ++d) {
-        ierr = PetscDualSpaceApply(sp[f], d, geom, numComp, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
+        if (funcs[f]) {
+          ierr = PetscDualSpaceApply(sp[f], d, geom, numComp, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
+        } else {
+          for (comp = 0; comp < numComp; ++comp) values[v+comp] = 0.0;
+        }
         v += numComp;
       }
     }
@@ -282,7 +286,7 @@ PetscErrorCode DMPlexProjectFunction(DM dm, PetscFE fe[], void (**funcs)(const P
 
   Level: developer
 
-.seealso: DMPlexProjectFunction()
+.seealso: DMPlexProjectFunction(), DMPlexComputeL2GradientDiff()
 @*/
 PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscFE fe[], void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
 {
@@ -476,7 +480,7 @@ PetscErrorCode DMPlexComputeL2GradientDiff(DM dm, PetscFE fe[], void (**funcs)(c
     if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  elem %d diff %g\n", c, elemDiff);CHKERRQ(ierr);}
     localDiff += elemDiff;
   }
-    ierr  = PetscFree7(funcVal,coords,realSpaceDer,v0,J,invJ,interpolantVec);CHKERRQ(ierr);
+  ierr  = PetscFree7(funcVal,coords,realSpaceDer,v0,J,invJ,interpolantVec);CHKERRQ(ierr);
   ierr  = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
   ierr  = MPI_Allreduce(&localDiff, diff, 1, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   *diff = PetscSqrtReal(*diff);
@@ -1191,28 +1195,27 @@ PetscErrorCode DMPlexComputeInterpolatorFEM(DM dmc, DM dmf, Mat In, void *user)
     }
 
     for (fieldJ = 0, offsetJ = 0; fieldJ < Nf; ++fieldJ) {
-      PetscSpace P;
       PetscReal *B;
       PetscInt   NcJ, cpdim, j;
 
-      /* For now, fields only interpolate themselves */
-      if (fieldI != fieldJ) {offsetJ += cpdim; continue;}
       /* Evaluate basis at points */
-      ierr = PetscFEGetBasisSpace(fe[fieldJ], &P);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(fe[fieldJ], &NcJ);CHKERRQ(ierr);
       if (Nc != NcJ) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in fine space field %d does not match coarse field %d", Nc, NcJ);
       ierr = PetscFEGetDimension(fe[fieldJ], &cpdim);CHKERRQ(ierr);
-      ierr = PetscFEGetTabulation(fe[fieldJ], npoints, points, &B, NULL, NULL);CHKERRQ(ierr);
-      for (i = 0, k = 0; i < fpdim; ++i) {
-        ierr = PetscDualSpaceGetFunctional(Qref, i, &f);CHKERRQ(ierr);
-        ierr = PetscQuadratureGetData(f, NULL, &Np, NULL, &qweights);CHKERRQ(ierr);
-        for (p = 0; p < Np; ++p, ++k) {
-          for (j = 0; j < cpdim; ++j) {
-            for (c = 0; c < Nc; ++c) elemMat[(offsetI + i*Nc + c)*cCellDof + offsetJ + j*NcJ + c] += B[k*cpdim*NcJ+j*Nc+c]*qweights[p];
+      /* For now, fields only interpolate themselves */
+      if (fieldI == fieldJ) {
+        ierr = PetscFEGetTabulation(fe[fieldJ], npoints, points, &B, NULL, NULL);CHKERRQ(ierr);
+        for (i = 0, k = 0; i < fpdim; ++i) {
+          ierr = PetscDualSpaceGetFunctional(Qref, i, &f);CHKERRQ(ierr);
+          ierr = PetscQuadratureGetData(f, NULL, &Np, NULL, &qweights);CHKERRQ(ierr);
+          for (p = 0; p < Np; ++p, ++k) {
+            for (j = 0; j < cpdim; ++j) {
+              for (c = 0; c < Nc; ++c) elemMat[(offsetI + i*Nc + c)*cCellDof + offsetJ + j*NcJ + c] += B[k*cpdim*NcJ+j*Nc+c]*qweights[p];
+            }
           }
         }
+        ierr = PetscFERestoreTabulation(fe[fieldJ], npoints, points, &B, NULL, NULL);CHKERRQ(ierr);CHKERRQ(ierr);
       }
-      ierr = PetscFERestoreTabulation(fe[fieldJ], npoints, points, &B, NULL, NULL);CHKERRQ(ierr);CHKERRQ(ierr);
       offsetJ += cpdim*NcJ;
     }
     offsetI += fpdim*Nc;

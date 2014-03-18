@@ -1320,7 +1320,7 @@ PetscErrorCode DMDAProjectFunction(DM dm, PetscFE fe[], void (**funcs)(const Pet
 
   Level: developer
 
-.seealso: DMDAProjectFunction()
+.seealso: DMDAProjectFunction(), DMDAComputeL2GradientDiff()
 @*/
 PetscErrorCode DMDAComputeL2Diff(DM dm, PetscFE fe[], void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
 {
@@ -1401,6 +1401,120 @@ PetscErrorCode DMDAComputeL2Diff(DM dm, PetscFE fe[], void (**funcs)(const Petsc
     localDiff += elemDiff;
   }
   ierr  = PetscFree5(funcVal,coords,v0,J,invJ);CHKERRQ(ierr);
+  ierr  = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
+  ierr  = MPI_Allreduce(&localDiff, diff, 1, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  *diff = PetscSqrtReal(*diff);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAComputeL2GradientDiff"
+/*@C
+  DMDAComputeL2GradientDiff - This function computes the L_2 difference between the gradient of a function u and an FEM interpolant solution grad u_h.
+
+  Input Parameters:
++ dm    - The DM
+. fe    - The PetscFE object for each field
+. funcs - The gradient functions to evaluate for each field component
+. ctxs  - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
+. X     - The coefficient vector u_h
+- n     - The vector to project along
+
+  Output Parameter:
+. diff - The diff ||(grad u - grad u_h) . n||_2
+
+  Level: developer
+
+.seealso: DMDAProjectFunction(), DMPlexComputeL2Diff()
+@*/
+PetscErrorCode DMDAComputeL2GradientDiff(DM dm, PetscFE fe[], void (**funcs)(const PetscReal [], const PetscReal [], PetscScalar *, void *), void **ctxs, Vec X, const PetscReal n[], PetscReal *diff)
+{
+  const PetscInt  debug = 0;
+  PetscSection    section;
+  PetscQuadrature quad;
+  Vec             localX;
+  PetscScalar    *funcVal, *interpolantVec;
+  PetscReal      *coords, *realSpaceDer, *v0, *J, *invJ, detJ;
+  PetscReal       localDiff = 0.0;
+  PetscInt        dim, numFields, numComponents = 0, cStart, cEnd, c, field, fieldOffset, comp;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMDAGetInfo(dm, &dim,0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  for (field = 0; field < numFields; ++field) {
+    PetscInt Nc;
+
+    ierr = PetscFEGetNumComponents(fe[field], &Nc);CHKERRQ(ierr);
+    numComponents += Nc;
+  }
+  /* There are no BC values in DAs right now: ierr = DMDAProjectFunctionLocal(dm, fe, funcs, INSERT_BC_VALUES, localX);CHKERRQ(ierr); */
+  ierr = PetscMalloc7(numComponents,&funcVal,dim,&coords,dim,&realSpaceDer,dim,&v0,dim*dim,&J,dim*dim,&invJ,dim,&interpolantVec);CHKERRQ(ierr);
+  ierr = DMDAGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = PetscFEGetQuadrature(fe[0], &quad);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    PetscScalar *x = NULL;
+    PetscReal    elemDiff = 0.0;
+
+    ierr = DMDAComputeCellGeometry(dm, c, quad, v0, J, invJ, &detJ);CHKERRQ(ierr);
+    if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
+    ierr = DMDAVecGetClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
+
+    for (field = 0, comp = 0, fieldOffset = 0; field < numFields; ++field) {
+      void * const ctx = ctxs ? ctxs[field] : NULL;
+      const PetscReal *quadPoints, *quadWeights;
+      PetscReal       *basisDer;
+      PetscInt         Nq, Nb, Nc, q, d, e, fc, f, g;
+
+      ierr = PetscQuadratureGetData(quad, NULL, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+      ierr = PetscFEGetDimension(fe[field], &Nb);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe[field], &Nc);CHKERRQ(ierr);
+      ierr = PetscFEGetDefaultTabulation(fe[field], NULL, &basisDer, NULL);CHKERRQ(ierr);
+      if (debug) {
+        char title[1024];
+        ierr = PetscSNPrintf(title, 1023, "Solution for Field %d", field);CHKERRQ(ierr);
+        ierr = DMPrintCellVector(c, title, Nb*Nc, &x[fieldOffset]);CHKERRQ(ierr);
+      }
+      for (q = 0; q < Nq; ++q) {
+        for (d = 0; d < dim; d++) {
+          coords[d] = v0[d];
+          for (e = 0; e < dim; e++) {
+            coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
+          }
+        }
+        (*funcs[field])(coords, n, funcVal, ctx);
+        for (fc = 0; fc < Nc; ++fc) {
+          PetscScalar interpolant = 0.0;
+
+          for (d = 0; d < dim; ++d) interpolantVec[d] = 0.0;
+          for (f = 0; f < Nb; ++f) {
+            const PetscInt fidx = f*Nc+fc;
+
+            for (d = 0; d < dim; ++d) {
+              realSpaceDer[d] = 0.0;
+              for (g = 0; g < dim; ++g) {
+                realSpaceDer[d] += invJ[g*dim+d]*basisDer[(q*Nb*Nc+fidx)*dim+g];
+              }
+              interpolantVec[d] += x[fieldOffset+fidx]*realSpaceDer[d];
+            }
+          }
+          for (d = 0; d < dim; ++d) interpolant += interpolantVec[d]*n[d];
+          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %d fieldDer %d diff %g\n", c, field, PetscSqr(PetscRealPart(interpolant - funcVal[fc]))*quadWeights[q]*detJ);CHKERRQ(ierr);}
+          elemDiff += PetscSqr(PetscRealPart(interpolant - funcVal[fc]))*quadWeights[q]*detJ;
+        }
+      }
+      comp        += Nc;
+      fieldOffset += Nb*Nc;
+    }
+    ierr = DMDAVecRestoreClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
+    if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  elem %d diff %g\n", c, elemDiff);CHKERRQ(ierr);}
+    localDiff += elemDiff;
+  }
+  ierr  = PetscFree7(funcVal,coords,realSpaceDer,v0,J,invJ,interpolantVec);CHKERRQ(ierr);
   ierr  = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
   ierr  = MPI_Allreduce(&localDiff, diff, 1, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   *diff = PetscSqrtReal(*diff);

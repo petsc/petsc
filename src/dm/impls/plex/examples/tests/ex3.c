@@ -128,7 +128,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   } else {
     switch (user->dim) {
     case 2:
-      ierr = DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, dm);CHKERRQ(ierr);
+      ierr = DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, -2, -2, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, dm);CHKERRQ(ierr);
       ierr = DMDASetVertexCoordinates(*dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
       break;
     default:
@@ -137,56 +137,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = PetscObjectSetName((PetscObject) *dm, "Hexahedral Mesh");CHKERRQ(ierr);
   }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "SetupElement"
-PetscErrorCode SetupElement(DM dm, AppCtx *user)
-{
-  PetscFE         fem;
-  DM              K;
-  PetscSpace      P;
-  PetscDualSpace  Q;
-  PetscReal      *B, *D;
-  PetscQuadrature q;
-  const PetscInt  dim   = user->dim;
-  PetscInt        order, numBasisFunc, numBasisComp;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  /* Create space */
-  ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) dm), &P);CHKERRQ(ierr);
-  ierr = PetscSpaceSetFromOptions(P);CHKERRQ(ierr);
-  ierr = PetscSpacePolynomialSetNumVariables(P, dim);CHKERRQ(ierr);
-  ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
-  ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
-  /* Create dual space */
-  ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) dm), &Q);CHKERRQ(ierr);
-  ierr = PetscDualSpaceCreateReferenceCell(Q, dim, user->simplex, &K);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
-  ierr = DMDestroy(&K);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetOrder(Q, order);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetFromOptions(Q);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
-  /* Create quadrature */
-  ierr = PetscDTGaussJacobiQuadrature(dim, PetscMax(user->qorder, order), -1.0, 1.0, &q);CHKERRQ(ierr);
-  /* Create element */
-  ierr = PetscFECreate(PetscObjectComm((PetscObject) dm), &fem);CHKERRQ(ierr);
-  ierr = PetscFESetBasisSpace(fem, P);CHKERRQ(ierr);
-  ierr = PetscFESetDualSpace(fem, Q);CHKERRQ(ierr);
-  ierr = PetscFESetNumComponents(fem, user->numComponents);CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(fem, q);CHKERRQ(ierr);
-  ierr = PetscFESetFromOptions(fem);CHKERRQ(ierr);
-  ierr = PetscFESetUp(fem);CHKERRQ(ierr);
-  ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
-  ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
-  ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
-  ierr = PetscFEGetDimension(fem, &numBasisFunc);CHKERRQ(ierr);
-  ierr = PetscFEGetNumComponents(fem, &numBasisComp);CHKERRQ(ierr);
-  ierr = PetscFEGetDefaultTabulation(fem, &B, &D, NULL);CHKERRQ(ierr);
-  user->fe = fem;
-  user->fem.fe = &user->fe;
   PetscFunctionReturn(0);
 }
 
@@ -265,17 +215,18 @@ PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
     ierr = DMPlexComputeL2GradientDiff(dm, &user->fe, exactFuncDers, exactCtxs, u, n, &errorDer);CHKERRQ(ierr);
   } else if (isDA) {
     ierr = DMDAComputeL2Diff(dm, &user->fe, exactFuncs, exactCtxs, u, &error);CHKERRQ(ierr);
+    ierr = DMDAComputeL2GradientDiff(dm, &user->fe, exactFuncDers, exactCtxs, u, n, &errorDer);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "No FEM L_2 difference routine for this type of DM");
   /* Report result */
   if (error > tol) {
-    ierr = PetscPrintf(comm, "Tests FAIL for order %d at tolerance %g error %g\n", order, tol, error);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Function tests FAIL for order %d at tolerance %g error %g\n", order, tol, error);CHKERRQ(ierr);
   } else {
-    ierr = PetscPrintf(comm, "Tests pass for order %d at tolerance %g\n", order, tol);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Function tests pass for order %d at tolerance %g\n", order, tol);CHKERRQ(ierr);
   }
   if (errorDer > tol) {
-    ierr = PetscPrintf(comm, "Tests FAIL for order %d derivatives at tolerance %g error %g\n", order, tol, errorDer);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Function tests FAIL for order %d derivatives at tolerance %g error %g\n", order, tol, errorDer);CHKERRQ(ierr);
   } else {
-    ierr = PetscPrintf(comm, "Tests pass for order %d derivatives at tolerance %g\n", order, tol);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Function tests pass for order %d derivatives at tolerance %g\n", order, tol);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -353,17 +304,18 @@ PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscInt order
     ierr = DMPlexComputeL2GradientDiff(fdm, &user->fe, exactFuncDers, exactCtxs, fu, n, &errorDer);CHKERRQ(ierr);
   } else if (isDA) {
     ierr = DMDAComputeL2Diff(fdm, &user->fe, exactFuncs, exactCtxs, fu, &error);CHKERRQ(ierr);
+    ierr = DMDAComputeL2GradientDiff(dm, &user->fe, exactFuncDers, exactCtxs, fu, n, &errorDer);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "No FEM L_2 difference routine for this type of DM");
   /* Report result */
   if (error > tol) {
-    ierr = PetscPrintf(comm, "Tests FAIL for order %d at tolerance %g error %g\n", order, tol, error);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Interpolation tests FAIL for order %d at tolerance %g error %g\n", order, tol, error);CHKERRQ(ierr);
   } else {
-    ierr = PetscPrintf(comm, "Tests pass for order %d at tolerance %g\n", order, tol);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Interpolation tests pass for order %d at tolerance %g\n", order, tol);CHKERRQ(ierr);
   }
   if (errorDer > tol) {
-    ierr = PetscPrintf(comm, "Tests FAIL for order %d derivatives at tolerance %g error %g\n", order, tol, errorDer);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Interpolation tests FAIL for order %d derivatives at tolerance %g error %g\n", order, tol, errorDer);CHKERRQ(ierr);
   } else {
-    ierr = PetscPrintf(comm, "Tests pass for order %d derivatives at tolerance %g\n", order, tol);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Interpolation tests pass for order %d derivatives at tolerance %g\n", order, tol);CHKERRQ(ierr);
   }
   ierr = DMRestoreGlobalVector(idm, &iu);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(fdm, &fu);CHKERRQ(ierr);
@@ -385,7 +337,8 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = SetupElement(dm, &user);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, user.dim, user.numComponents, user.simplex, NULL, user.qorder, &user.fe);CHKERRQ(ierr);
+  user.fem.fe = &user.fe;
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
   ierr = CheckFunctions(dm, user.porder, u, &user);CHKERRQ(ierr);

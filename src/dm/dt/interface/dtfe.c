@@ -708,11 +708,11 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
   }
   if (D) {
     /* D (npoints x pdim x dim) */
-    i = 0;
-    for (o = 0; o <= sp->order; ++o) {
+    if (poly->tensor) {
+      i = 0;
       ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
       while (ind[0] >= 0) {
-        ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
+        ierr = TensorPoint_Internal(dim, sp->order+1, ind, tup);CHKERRQ(ierr);
         for (p = 0; p < npoints; ++p) {
           for (der = 0; der < dim; ++der) {
             D[(p*pdim + i)*dim + der] = 1.0;
@@ -726,6 +726,27 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
           }
         }
         ++i;
+      }
+    } else {
+      i = 0;
+      for (o = 0; o <= sp->order; ++o) {
+        ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
+        while (ind[0] >= 0) {
+          ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
+          for (p = 0; p < npoints; ++p) {
+            for (der = 0; der < dim; ++der) {
+              D[(p*pdim + i)*dim + der] = 1.0;
+              for (d = 0; d < dim; ++d) {
+                if (d == der) {
+                  D[(p*pdim + i)*dim + der] *= LD[(tup[d]*dim + d)*npoints + p];
+                } else {
+                  D[(p*pdim + i)*dim + der] *= LB[(tup[d]*dim + d)*npoints + p];
+                }
+              }
+            }
+          }
+          ++i;
+        }
       }
     }
   }
@@ -1547,6 +1568,24 @@ PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceApply"
+/*@C
+  PetscDualSpaceApply - Apply a functional from the dual space basis to an input function
+
+  Input Parameters:
++ sp      - The PetscDualSpace object
+. f       - The basis functional index
+. geom    - A context with geometric information for this cell, we use v0 (the initial vertex) and J (the Jacobian)
+. numComp - The number of components for the function
+. func    - The input function
+- ctx     - A context for the function
+
+  Output Parameter:
+. value   - numComp output values
+
+  Level: developer
+
+.seealso: PetscDualSpaceCreate()
+@*/
 PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscCellGeometry geom, PetscInt numComp, void (*func)(const PetscReal [], PetscScalar *, void *), void *ctx, PetscScalar *value)
 {
   DM               dm;
@@ -1715,7 +1754,8 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
           if ( simplex && (order > 0) && (order < 3)) continue;
           if (!simplex && (order > 0) && (order < 2)) continue;
           lag->numDof[depth] = 0;
-          if (order > 0) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to implement cells");}
+          if ( simplex && (order > 3)) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to implement cells");}
+          if (!simplex && (order > 2)) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to implement cells");}
 
           ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
           ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
@@ -5485,7 +5525,6 @@ PetscErrorCode PetscFEIntegrateJacobian(PetscFE fem, PetscInt Ne, PetscInt Nf, P
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscFERefine"
 /*@C
@@ -5551,5 +5590,73 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   ierr = PetscFECompositeExpandQuadrature(*feRef, q, &qref);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(*feRef, qref);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&qref);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFECreateDefault"
+/*@
+  PetscFECreateDefault - Create a PetscFE for basic FEM computation
+
+  Collective on DM
+
+  Input Parameters:
++ dm        - The underlying DM for the domain
+. dim       - The spatial dimension
+. numComp   - The number of components
+. isSimplex - Flag for simplex reference cell, otherwise its a tensor product
+. prefix    - The options prefix, or NULL
+- qorder    - The quadrature order
+
+  Output Parameter:
+. fem - The PetscFE object
+
+  Level: beginner
+
+.keywords: PetscFE, finite element
+.seealso: PetscFECreate(), PetscSpaceCreate(), PetscDualSpaceCreate()
+@*/
+PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt numComp, PetscBool isSimplex, const char prefix[], PetscInt qorder, PetscFE *fem)
+{
+  PetscQuadrature q;
+  DM              K;
+  PetscSpace      P;
+  PetscDualSpace  Q;
+  PetscInt        order;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  /* Create space */
+  ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) dm), &P);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) P, prefix);CHKERRQ(ierr);
+  ierr = PetscSpaceSetFromOptions(P);CHKERRQ(ierr);
+  ierr = PetscSpacePolynomialSetNumVariables(P, dim);CHKERRQ(ierr);
+  ierr = PetscSpacePolynomialSetTensor(P, !isSimplex ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
+  ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
+  /* Create dual space */
+  ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) dm), &Q);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) Q, prefix);CHKERRQ(ierr);
+  ierr = PetscDualSpaceCreateReferenceCell(Q, dim, isSimplex, &K);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
+  ierr = DMDestroy(&K);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetOrder(Q, order);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetFromOptions(Q);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
+  /* Create element */
+  ierr = PetscFECreate(PetscObjectComm((PetscObject) dm), fem);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) *fem, prefix);CHKERRQ(ierr);
+  ierr = PetscFESetFromOptions(*fem);CHKERRQ(ierr);
+  ierr = PetscFESetBasisSpace(*fem, P);CHKERRQ(ierr);
+  ierr = PetscFESetDualSpace(*fem, Q);CHKERRQ(ierr);
+  ierr = PetscFESetNumComponents(*fem, numComp);CHKERRQ(ierr);
+  ierr = PetscFESetUp(*fem);CHKERRQ(ierr);
+  ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
+  ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
+  /* Create quadrature (with specified order if given) */
+  if (isSimplex) {ierr = PetscDTGaussJacobiQuadrature(dim, PetscMax(qorder > 0 ? qorder : order, 1), -1.0, 1.0, &q);CHKERRQ(ierr);}
+  else           {ierr = PetscDTGaussTensorQuadrature(dim, PetscMax(qorder > 0 ? qorder : order, 1), -1.0, 1.0, &q);CHKERRQ(ierr);}
+  ierr = PetscFESetQuadrature(*fem, q);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

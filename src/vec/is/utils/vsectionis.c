@@ -921,6 +921,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
     }
   }
   ierr = PetscFree2(neg,recv);CHKERRQ(ierr);
+  ierr = PetscSectionViewFromOptions(*gsection,NULL,"-section_global_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
