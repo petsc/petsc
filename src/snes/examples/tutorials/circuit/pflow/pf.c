@@ -177,7 +177,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-PetscErrorCode FormJacobian(SNES snes,Vec X, Mat *J,Mat *Jpre,MatStructure *flg,void *appctx)
+PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
 {
   PetscErrorCode ierr;
   DM            circuitdm;
@@ -192,8 +192,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat *J,Mat *Jpre,MatStructure *flg,
   PetscScalar   values[8];
 
   PetscFunctionBegin;
-  *flg = SAME_NONZERO_PATTERN;
-  ierr = MatZeroEntries(*J);CHKERRQ(ierr);
+  ierr = MatZeroEntries(J);CHKERRQ(ierr);
 
   ierr = SNESGetDM(snes,&circuitdm);CHKERRQ(ierr);
   ierr = DMGetLocalVector(circuitdm,&localX);CHKERRQ(ierr);
@@ -229,7 +228,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat *J,Mat *Jpre,MatStructure *flg,
 	    row[0] = goffset; row[1] = goffset+1;
 	    col[0] = goffset; col[1] = goffset+1; col[2] = goffset; col[3] = goffset+1;
 	    values[0] = 1.0; values[1] = 0.0; values[2] = 0.0; values[3] = 1.0;
-	    ierr = MatSetValues(*J,2,row,2,col,values,ADD_VALUES);CHKERRQ(ierr);
+	    ierr = MatSetValues(J,2,row,2,col,values,ADD_VALUES);CHKERRQ(ierr);
 	    break;
 	  }
 	  
@@ -241,7 +240,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat *J,Mat *Jpre,MatStructure *flg,
 	  values[0] = 2*Vm*bus->gl/Sbase;
 	  values[1] = values[2] = 0.0;
 	  values[3] = -2*Vm*bus->bl/Sbase;
-	  ierr = MatSetValues(*J,2,row,2,col,values,ADD_VALUES);CHKERRQ(ierr);
+	  ierr = MatSetValues(J,2,row,2,col,values,ADD_VALUES);CHKERRQ(ierr);
 	}
 
 	PetscInt nconnedges;
@@ -301,7 +300,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat *J,Mat *Jpre,MatStructure *flg,
 	    values[2] =  Vmf*Vmt*(Gft*sin(thetaft) + Bft*-cos(thetaft)); /* df_dthetat */
 	    values[3] =  Vmf*(Gft*cos(thetaft) + Bft*sin(thetaft)); /* df_dVmt */
 	    
-	    ierr = MatSetValues(*J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
+	    ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
 	    
 	    if (busf->ide != PV_BUS) {
 	      row[0] = goffsetfrom+1;
@@ -312,7 +311,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat *J,Mat *Jpre,MatStructure *flg,
 	      values[2] =  Vmf*Vmt*(-Bft*sin(thetaft) + Gft*-cos(thetaft));
 	      values[3] =  Vmf*(-Bft*cos(thetaft) + Gft*sin(thetaft));
 	      
-	      ierr = MatSetValues(*J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
+	      ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
 	    }
 	  } else {
 	    row[0] = goffsetto;
@@ -323,7 +322,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat *J,Mat *Jpre,MatStructure *flg,
 	    values[2] =  Vmt*Vmf*(Gtf*sin(thetatf) + Btf*-cos(thetatf)); /* df_dthetaf */
 	    values[3] =  Vmt*(Gtf*cos(thetatf) + Btf*sin(thetatf)); /* df_dVmf */
 	    
-	    ierr = MatSetValues(*J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
+	    ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
 	    
 	    if (bust->ide != PV_BUS) {
 	      row[0] = goffsetto+1;
@@ -334,14 +333,14 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat *J,Mat *Jpre,MatStructure *flg,
 	      values[2] =  Vmt*Vmf*(-Btf*sin(thetatf) + Gtf*-cos(thetatf));
 	      values[3] =  Vmt*(-Btf*cos(thetatf) + Gtf*sin(thetatf));
 	      
-	      ierr = MatSetValues(*J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
+	      ierr = MatSetValues(J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
 	    }
 	  }
 	}
 	if (!ghostvtex && bus->ide == PV_BUS) {
 	  row[0] = goffset+1; col[0] = goffset+1;
 	  values[0]  = 1.0;
-	  ierr = MatSetValues(*J,1,row,1,col,values,ADD_VALUES);CHKERRQ(ierr);
+	  ierr = MatSetValues(J,1,row,1,col,values,ADD_VALUES);CHKERRQ(ierr);
 	}
       }
     }
@@ -349,8 +348,8 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat *J,Mat *Jpre,MatStructure *flg,
   ierr = VecRestoreArrayRead(localX,&xarr);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(circuitdm,&localX);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
