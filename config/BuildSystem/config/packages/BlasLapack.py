@@ -19,7 +19,9 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
+    self.libraries     = framework.require('config.libraries', None)
     self.compilerFlags = framework.require('config.compilerFlags', self)
+    self.setCompilers  = framework.require('config.setCompilers', self)
     self.f2cblaslapack = framework.require('config.packages.f2cblaslapack', self)
     self.fblaslapack   = framework.require('config.packages.fblaslapack', self)
     return
@@ -143,7 +145,7 @@ class Configure(config.package.Package):
       f2cLibs = [os.path.join(libDir,'libf2cblas.a')]
       if self.libraries.math:
         f2cLibs = f2cLibs+self.libraries.math
-      yield ('f2cblaslapack', f2cLibs, 'libf2clapack.a', 0)
+      yield ('f2cblaslapack', f2cLibs, os.path.join(libDir,'libf2clapack.a'), 0)
       raise RuntimeError('--download-f2cblaslapack libraries cannot be used')
     if self.fblaslapack.found:
       self.f2c = 0
@@ -424,5 +426,8 @@ class Configure(config.package.Package):
     self.executeTest(self.checkPESSL)
     self.executeTest(self.checkMissing)
     self.executeTest(self.checklsame)
+    if self.framework.argDB['with-shared-libraries']:
+      if not self.setCompilers.checkIntoShared('dgeev_',self.lapackLibrary+self.getOtherLibs()):
+        raise RuntimeError('The BLAS/LAPACK libraries '+self.libraries.toStringNoDupes(self.lapackLibrary+self.getOtherLibs())+'\ncannot used with a shared library\nEither run ./configure with --with-shared-libraries=0 or use a different BLAS/LAPACK library');
     return
 
