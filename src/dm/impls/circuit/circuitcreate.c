@@ -109,7 +109,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Circuit(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr     = PetscNewLog(dm, &circuit);CHKERRQ(ierr);
+  ierr     = PetscNewLog(dm,&circuit);CHKERRQ(ierr);
   dm->data = circuit;
 
   circuit->refct          = 1;
