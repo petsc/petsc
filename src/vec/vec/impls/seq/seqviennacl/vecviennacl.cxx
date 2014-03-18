@@ -7,11 +7,131 @@
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <../src/vec/vec/impls/seq/seqviennacl/viennaclvecimpl.h>
 
+#include <vector>
+
 #include "viennacl/linalg/inner_prod.hpp"
 #include "viennacl/linalg/norm_1.hpp"
 #include "viennacl/linalg/norm_2.hpp"
 #include "viennacl/linalg/norm_inf.hpp"
 #include "viennacl/ocl/backend.hpp"
+
+
+#undef __FUNCT__
+#define __FUNCT__ "VecViennaCLGetArrayReadWrite"
+PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayReadWrite(Vec v, ViennaCLVector **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *a   = 0;
+  ierr = VecViennaCLCopyToGPU(v);CHKERRQ(ierr);
+  *a   = ((Vec_ViennaCL*)v->spptr)->GPUarray;
+  ViennaCLWaitForGPU();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecViennaCLRestoreArrayReadWrite"
+PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayReadWrite(Vec v, ViennaCLVector **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  v->valid_GPU_array = PETSC_VIENNACL_GPU;
+
+  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecViennaCLGetArrayRead"
+PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayRead(Vec v, const ViennaCLVector **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *a   = 0;
+  ierr = VecViennaCLCopyToGPU(v);CHKERRQ(ierr);
+  *a   = ((Vec_ViennaCL*)v->spptr)->GPUarray;
+  ViennaCLWaitForGPU();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecViennaCLRestoreArrayRead"
+PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayRead(Vec v, const ViennaCLVector **a)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecViennaCLGetArrayWrite"
+PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayWrite(Vec v, ViennaCLVector **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *a   = 0;
+  ierr = VecViennaCLAllocateCheck(v);CHKERRQ(ierr);
+  *a   = ((Vec_ViennaCL*)v->spptr)->GPUarray;
+  ViennaCLWaitForGPU();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecViennaCLRestoreArrayWrite"
+PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayWrite(Vec v, ViennaCLVector **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  v->valid_GPU_array = PETSC_VIENNACL_GPU;
+
+  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectSetFromOptions_ViennaCL"
+PETSC_EXTERN PetscErrorCode PetscObjectSetFromOptions_ViennaCL(PetscObject obj)
+{
+  PetscErrorCode       ierr;
+  PetscBool            flg;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectOptionsBegin(obj);
+
+  ierr = PetscOptionsHasName(NULL,"-viennacl_device_cpu",&flg);CHKERRQ(ierr);
+  if (flg) {
+    try {
+      viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_CPU);
+    } catch (std::exception const & ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
+    }
+  }
+  ierr = PetscOptionsHasName(NULL,"-viennacl_device_gpu",&flg);CHKERRQ(ierr);
+  if (flg) {
+    try {
+      viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_GPU);
+    } catch (std::exception const & ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
+    }
+  }
+  ierr = PetscOptionsHasName(NULL,"-viennacl_device_accelerator",&flg);CHKERRQ(ierr);
+  if (flg) {
+    try {
+      viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_ACCELERATOR);
+    } catch (std::exception const & ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
+    }
+  }
+
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "VecViennaCLAllocateCheckHost"
@@ -31,8 +151,8 @@ PetscErrorCode VecViennaCLAllocateCheckHost(Vec v)
   s    = (Vec_Seq*)v->data;
   ierr = VecViennaCLAllocateCheck(v);CHKERRQ(ierr);
   if (s->array == 0) {
-    ierr               = PetscMalloc(n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
-    ierr               = PetscLogObjectMemory(v,n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr               = PetscMalloc1(n,&array);CHKERRQ(ierr);
+    ierr               = PetscLogObjectMemory((PetscObject)v,n*sizeof(PetscScalar));CHKERRQ(ierr);
     s->array           = array;
     s->array_allocated = array;
   }
@@ -58,6 +178,7 @@ PetscErrorCode VecViennaCLAllocateCheck(Vec v)
   // First allocate memory on the GPU if needed
   if (!v->spptr) {
     try {
+      ierr = PetscObjectSetFromOptions_ViennaCL((PetscObject)v);CHKERRQ(ierr);
       v->spptr                            = new Vec_ViennaCL;
       ((Vec_ViennaCL*)v->spptr)->GPUarray = new ViennaCLVector((PetscBLASInt)v->map->n);
 
@@ -134,6 +255,8 @@ static PetscErrorCode VecCopy_SeqViennaCL_Private(Vec xin,Vec yin)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  ierr = VecViennaCLAllocateCheckHost(xin);
+  ierr = VecViennaCLAllocateCheckHost(yin);
   if (xin != yin) {
     ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
@@ -167,7 +290,7 @@ static PetscErrorCode VecDestroy_SeqViennaCL_Private(Vec v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectAMSViewOff(v);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsViewOff(v);CHKERRQ(ierr);
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)v,"Length=%D",v->map->n);
 #endif
@@ -210,19 +333,21 @@ PetscErrorCode VecAYPX_SeqViennaCL(Vec yin, PetscScalar alpha, Vec xin)
   PetscErrorCode        ierr;
 
   PetscFunctionBegin;
-  if (alpha != 0.0 && xin->map->n > 0) {
-    ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
-    ierr = VecViennaCLGetArrayReadWrite(yin,&ygpu);CHKERRQ(ierr);
-    try {
+  ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
+  ierr = VecViennaCLGetArrayReadWrite(yin,&ygpu);CHKERRQ(ierr);
+  try {
+    if (alpha != 0.0 && xin->map->n > 0) {
       *ygpu = *xgpu + alpha * *ygpu;
-      ViennaCLWaitForGPU();
-    } catch(std::exception const & ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
+      ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
+    } else {
+      *ygpu = *xgpu;
     }
-    ierr = VecViennaCLRestoreArrayRead(xin,&xgpu);CHKERRQ(ierr);
-    ierr = VecViennaCLRestoreArrayReadWrite(yin,&ygpu);CHKERRQ(ierr);
-    ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
+    ViennaCLWaitForGPU();
+  } catch(std::exception const & ex) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
   }
+  ierr = VecViennaCLRestoreArrayRead(xin,&xgpu);CHKERRQ(ierr);
+  ierr = VecViennaCLRestoreArrayReadWrite(yin,&ygpu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -395,17 +520,21 @@ PetscErrorCode VecMDot_SeqViennaCL(Vec xin,PetscInt nv,const Vec yin[],PetscScal
   PetscInt             n = xin->map->n,i;
   const ViennaCLVector *xgpu,*ygpu;
   Vec                  *yyin = (Vec*)yin;
+  std::vector<viennacl::vector_base<PetscScalar> const *> ygpu_array(nv);
 
   PetscFunctionBegin;
   if (xin->map->n > 0) {
     ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
     for (i=0; i<nv; i++) {
       ierr = VecViennaCLGetArrayRead(yyin[i],&ygpu);CHKERRQ(ierr);
-      try {
-        z[i] = viennacl::linalg::inner_prod(*xgpu,*ygpu);
-      } catch(std::exception const & ex) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
-      }
+      ygpu_array[i] = ygpu;
+    }
+
+    viennacl::vector_tuple<PetscScalar> y_tuple(ygpu_array);
+    ViennaCLVector result = viennacl::linalg::inner_prod(*xgpu, y_tuple);
+
+    for (i=0; i<nv; i++) {
+      viennacl::copy(result.begin(), result.end(), z);
       ierr = VecViennaCLRestoreArrayRead(yyin[i],&ygpu);CHKERRQ(ierr);
     }
 
@@ -961,7 +1090,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
   V->ops->destroy         = VecDestroy_SeqViennaCL;
   V->ops->duplicate       = VecDuplicate_SeqViennaCL;
 
-  ierr = VecSetFromOptions_SeqViennaCL(V);CHKERRQ(ierr); /* Allows to set device type before allocating any objects */
   ierr = VecViennaCLAllocateCheck(V);CHKERRQ(ierr);
   V->valid_GPU_array      = PETSC_VIENNACL_GPU;
   ierr = VecSet(V,0.0);CHKERRQ(ierr);

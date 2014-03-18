@@ -213,9 +213,9 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
   PetscFunctionBegin;
   if (A->rmap->n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Supported only for square matrices and square storage");
 
-  ierr     = MatInvertBlockDiagonal(A,&jac->diag);CHKERRQ(ierr);
-  jac->bs  = A->rmap->bs;
-  jac->mbs = A->rmap->n/A->rmap->bs;
+  ierr = MatInvertBlockDiagonal(A,&jac->diag);CHKERRQ(ierr);
+  ierr = MatGetBlockSize(A,&jac->bs);CHKERRQ(ierr);
+  jac->mbs = A->rmap->n/jac->bs;
   switch (jac->bs) {
   case 1:
     pc->ops->apply = PCApply_PBJacobi_1;
@@ -299,7 +299,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_PBJacobi(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr     = PetscNewLog(pc,PC_PBJacobi,&jac);CHKERRQ(ierr);
+  ierr     = PetscNewLog(pc,&jac);CHKERRQ(ierr);
   pc->data = (void*)jac;
 
   /*

@@ -1,6 +1,6 @@
 
 /*
-   Provides an interface to the CHOLMOD 1.7.1 sparse solver
+   Provides an interface to the CHOLMOD sparse solver available through SuiteSparse version 4.2.1
 
    When build with PETSC_USE_64BIT_INDICES this will use UF_Long as the
    integer type in UMFPACK, otherwise it will use int. This means
@@ -407,7 +407,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A,MatFactorType ft
   ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(B,1,0,NULL);CHKERRQ(ierr);
-  ierr = PetscNewLog(B,Mat_CHOLMOD,&chol);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&chol);CHKERRQ(ierr);
 
   chol->Wrap    = MatWrapCholmod_seqsbaij;
   chol->Destroy = MatDestroy_SeqSBAIJ;

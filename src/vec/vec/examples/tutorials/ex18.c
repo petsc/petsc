@@ -26,14 +26,14 @@ PetscScalar func(PetscScalar a)
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    rank,nproc;
+  PetscMPIInt    rank,size;
   PetscInt       rstart,rend,i,k,N,numPoints=1000000;
   PetscScalar    dummy,result=0,h=1.0/numPoints,*xarray;
   Vec            x,xend;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   /*
      Create a parallel vector.
@@ -51,7 +51,8 @@ int main(int argc,char **argv)
   if (!rank) {
     i    = 0;
     ierr = VecSetValues(xend,1,&i,&result,INSERT_VALUES);CHKERRQ(ierr);
-  } else if (rank == nproc) {
+  }
+  if (rank == size-1) {
     i    = N-1;
     ierr = VecSetValues(xend,1,&i,&result,INSERT_VALUES);CHKERRQ(ierr);
   }
@@ -94,7 +95,7 @@ int main(int argc,char **argv)
   /*
       Return the value of the integral.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"ln(2) is %G\n",result);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"ln(2) is %g\n",(double)result);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&xend);CHKERRQ(ierr);
 

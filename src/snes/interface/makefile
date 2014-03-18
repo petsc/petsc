@@ -3,12 +3,12 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = snes.c snesj.c snesregi.c snesut.c snesj2.c dlregissnes.c snesob.c
+SOURCEC  = snes.c snesj.c snesregi.c snesut.c snesj2.c dlregissnes.c snesob.c snespc.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
-DIRS     = noise
+DIRS     = noise saws
 LOCDIR   = src/snes/interface/
 
 include ${PETSC_DIR}/conf/variables

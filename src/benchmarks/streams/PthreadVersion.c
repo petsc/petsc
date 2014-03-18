@@ -423,11 +423,11 @@ void tuned_STREAM_Initialize(double scalar)
   PetscBool S;
   nWorkThreads = PetscMaxThreads + PetscMainThreadShareWork;
   PetscThreadsInitialize(PetscMaxThreads);
-  PetscMalloc(nWorkThreads*sizeof(PetscInt),&ThreadAffinities);
+  PetscMalloc1(nWorkThreads,&ThreadAffinities);
   PetscMemcpy(ThreadAffinities,PetscThreadsCoreAffinities,nWorkThreads*sizeof(PetscInt));
 
-  PetscMalloc(nWorkThreads*sizeof(Kernel_Data),&kerneldatap);
-  PetscMalloc(nWorkThreads*sizeof(Kernel_Data*),&pdata);
+  PetscMalloc1(nWorkThreads,&kerneldatap);
+  PetscMalloc1(nWorkThreads,&pdata);
   Q = N/nWorkThreads;
   R = N - Q*nWorkThreads;
   for (i=0; i<nWorkThreads; i++) {

@@ -63,7 +63,7 @@ echo "  }" >> $dotfilename
 #
 
 # Set labels
-for f in `ls include/*.{h,hh}`
+for f in `ls include/*.h`
 do
   f2=${f#include/}
   f3=${f2/%.hh/2}
@@ -73,7 +73,7 @@ done
 # Set connections
 echo "  " >> $dotfilename
 echo "  //Connections to petsc-private:" >> $dotfilename
-for f in `ls include/*.{h,hh}`
+for f in `ls include/*.h`
 do
   f2=${f#include/}
   f3=${f2/%.hh/2}

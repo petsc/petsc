@@ -134,7 +134,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   PetscBool          isnull,useports = PETSC_FALSE;
   MPI_Comm           comm;
   Vec                xlocal,xcoor,xcoorl;
-  DMDABoundaryType   bx,by;
+  DMBoundaryType     bx,by;
   DMDAStencilType    st;
   ZoomCtx            zctx;
   PetscDrawViewPorts *ports = NULL;
@@ -166,12 +166,12 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   */
   ierr = PetscObjectQuery((PetscObject)da,"GraphicsGhosted",(PetscObject*)&xlocal);CHKERRQ(ierr);
   if (!xlocal) {
-    if (bx !=  DMDA_BOUNDARY_NONE || by !=  DMDA_BOUNDARY_NONE || s != 1 || st != DMDA_STENCIL_BOX) {
+    if (bx !=  DM_BOUNDARY_NONE || by !=  DM_BOUNDARY_NONE || s != 1 || st != DMDA_STENCIL_BOX) {
       /*
          if original da is not of stencil width one, or periodic or not a box stencil then
          create a special DMDA to handle one level of ghost points for graphics
       */
-      ierr = DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,w,1,lx,ly,&dac);CHKERRQ(ierr);
+      ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,w,1,lx,ly,&dac);CHKERRQ(ierr);
       ierr = PetscInfo(da,"Creating auxilary DMDA for managing graphics ghost points\n");CHKERRQ(ierr);
     } else {
       /* otherwise we can use the da we already have */
@@ -191,7 +191,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsGhosted",(PetscObject)xlocal);CHKERRQ(ierr);
     ierr = PetscObjectDereference((PetscObject)xlocal);CHKERRQ(ierr);
   } else {
-    if (bx !=  DMDA_BOUNDARY_NONE || by !=  DMDA_BOUNDARY_NONE || s != 1 || st != DMDA_STENCIL_BOX) {
+    if (bx !=  DM_BOUNDARY_NONE || by !=  DM_BOUNDARY_NONE || s != 1 || st != DMDA_STENCIL_BOX) {
       ierr = VecGetDM(xlocal, &dac);CHKERRQ(ierr);
     } else {
       dac = da;
@@ -221,7 +221,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr     = VecStrideMax(xcoor,1,NULL,&ymax);CHKERRQ(ierr);
   coors[0] = xmin - .05*(xmax- xmin); coors[2] = xmax + .05*(xmax - xmin);
   coors[1] = ymin - .05*(ymax- ymin); coors[3] = ymax + .05*(ymax - ymin);
-  ierr     = PetscInfo4(da,"Preparing DMDA 2d contour plot coordinates %G %G %G %G\n",coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
+  ierr     = PetscInfo4(da,"Preparing DMDA 2d contour plot coordinates %g %g %g %g\n",(double)coors[0],(double)coors[1],(double)coors[2],(double)coors[3]);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetRealArray(NULL,"-draw_coordinates",coors,&ncoors,NULL);CHKERRQ(ierr);
 
@@ -231,7 +231,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = PetscObjectQuery((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject*)&xcoorl);CHKERRQ(ierr);
   if (!xcoorl) {
     /* create DMDA to get local version of graphics */
-    ierr = DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,2,1,lx,ly,&dag);CHKERRQ(ierr);
+    ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,2,1,lx,ly,&dag);CHKERRQ(ierr);
     ierr = PetscInfo(dag,"Creating auxilary DMDA for managing graphics coordinates ghost points\n");CHKERRQ(ierr);
     ierr = DMCreateLocalVector(dag,&xcoorl);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject)xcoorl);CHKERRQ(ierr);
@@ -300,7 +300,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
       }
     }
     ierr = PetscDrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
-    ierr = PetscInfo2(da,"DMDA 2d contour plot min %G max %G\n",zctx.min,zctx.max);CHKERRQ(ierr);
+    ierr = PetscInfo2(da,"DMDA 2d contour plot min %g max %g\n",(double)zctx.min,(double)zctx.max);CHKERRQ(ierr);
 
     ierr = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
     if (popup) {ierr = PetscDrawScalePopup(popup,zctx.min,zctx.max);CHKERRQ(ierr);}
@@ -317,6 +317,109 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_HDF5)
+#undef __FUNCT__
+#define __FUNCT__ "VecGetHDF5ChunkSize"
+static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt timestep, hsize_t *chunkDims)
+{
+  PetscMPIInt comm_size;
+  PetscErrorCode ierr;
+  hsize_t chunk_size, target_size, dim;
+  hsize_t vec_size = sizeof(PetscScalar)*da->M*da->N*da->P*da->w;
+  hsize_t avg_local_vec_size,KiB = 1024,MiB = KiB*KiB,GiB = MiB*KiB,min_size = MiB;
+  hsize_t max_chunks = 64*KiB;                                              /* HDF5 internal limitation */
+  hsize_t max_chunk_size = 4*GiB;                                           /* HDF5 internal limitation */
+  PetscInt zslices=da->p, yslices=da->n, xslices=da->m;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin), &comm_size);CHKERRQ(ierr);
+  avg_local_vec_size = (hsize_t) ceil(vec_size*1.0/comm_size);      /* we will attempt to use this as the chunk size */
+
+  target_size = (hsize_t) ceil(PetscMin(vec_size,
+                                        PetscMin(max_chunk_size,
+                                                 PetscMax(avg_local_vec_size,
+                                                          PetscMax(ceil(vec_size*1.0/max_chunks),
+                                                                   min_size)))));
+  chunk_size = (hsize_t) PetscMax(1,chunkDims[0])*PetscMax(1,chunkDims[1])*PetscMax(1,chunkDims[2])*PetscMax(1,chunkDims[3])*PetscMax(1,chunkDims[4])*PetscMax(1,chunkDims[5])*sizeof(PetscScalar);
+
+  /*
+   if size/rank > max_chunk_size, we need radical measures: even going down to
+   avg_local_vec_size is not enough, so we simply use chunk size of 4 GiB no matter
+   what, composed in the most efficient way possible.
+   N.B. this minimises the number of chunks, which may or may not be the optimal
+   solution. In a BG, for example, the optimal solution is probably to make # chunks = #
+   IO nodes involved, but this author has no access to a BG to figure out how to
+   reliably find the right number. And even then it may or may not be enough.
+   */
+  if (avg_local_vec_size > max_chunk_size) {
+    /* check if we can just split local z-axis: is that enough? */
+    zslices = (PetscInt)ceil(vec_size*1.0/(da->p*max_chunk_size))*zslices;
+    if (zslices > da->P) {
+      /* lattice is too large in xy-directions, splitting z only is not enough */
+      zslices = da->P;
+      yslices= (PetscInt)ceil(vec_size*1.0/(zslices*da->n*max_chunk_size))*yslices;
+      if (yslices > da->N) {
+	/* lattice is too large in x-direction, splitting along z, y is not enough */
+	yslices = da->N;
+	xslices= (PetscInt)ceil(vec_size*1.0/(zslices*yslices*da->m*max_chunk_size))*xslices;
+      }
+    }
+    dim = 0;
+    if (timestep >= 0) {
+      ++dim;
+    }
+    /* prefer to split z-axis, even down to planar slices */
+    if (da->dim == 3) {
+      chunkDims[dim++] = (hsize_t) da->P/zslices;
+      chunkDims[dim++] = (hsize_t) da->N/yslices;
+      chunkDims[dim++] = (hsize_t) da->M/xslices;
+    } else {
+      /* This is a 2D world exceeding 4GiB in size; yes, I've seen them, even used myself */
+      chunkDims[dim++] = (hsize_t) da->N/yslices;
+      chunkDims[dim++] = (hsize_t) da->M/xslices;
+    }
+    chunk_size = (hsize_t) PetscMax(1,chunkDims[0])*PetscMax(1,chunkDims[1])*PetscMax(1,chunkDims[2])*PetscMax(1,chunkDims[3])*PetscMax(1,chunkDims[4])*PetscMax(1,chunkDims[5])*sizeof(double);
+  } else {
+    if (target_size < chunk_size) {
+      /* only change the defaults if target_size < chunk_size */
+      dim = 0;
+      if (timestep >= 0) {
+	++dim;
+      }
+      /* prefer to split z-axis, even down to planar slices */
+      if (da->dim == 3) {
+	/* try splitting the z-axis to core-size bits, i.e. divide chunk size by # comm_size in z-direction */
+	if (target_size >= chunk_size/da->p) {
+	  /* just make chunks the size of <local_z>x<whole_world_y>x<whole_world_x>x<dof> */
+	  chunkDims[dim] = (hsize_t) ceil(da->P*1.0/da->p);
+	} else {
+	  /* oops, just splitting the z-axis is NOT ENOUGH, need to split more; let's be
+           radical and let everyone write all they've got */
+	  chunkDims[dim++] = (hsize_t) ceil(da->P*1.0/da->p);
+	  chunkDims[dim++] = (hsize_t) ceil(da->N*1.0/da->n);
+	  chunkDims[dim++] = (hsize_t) ceil(da->M*1.0/da->m);
+	}
+      } else {
+	/* This is a 2D world exceeding 4GiB in size; yes, I've seen them, even used myself */
+	if (target_size >= chunk_size/da->n) {
+	  /* just make chunks the size of <local_z>x<whole_world_y>x<whole_world_x>x<dof> */
+	  chunkDims[dim] = (hsize_t) ceil(da->N*1.0/da->n);
+	} else {
+	  /* oops, just splitting the z-axis is NOT ENOUGH, need to split more; let's be
+	   radical and let everyone write all they've got */
+	  chunkDims[dim++] = (hsize_t) ceil(da->N*1.0/da->n);
+	  chunkDims[dim++] = (hsize_t) ceil(da->M*1.0/da->m);
+	}
+
+      }
+      chunk_size = (hsize_t) PetscMax(1,chunkDims[0])*PetscMax(1,chunkDims[1])*PetscMax(1,chunkDims[2])*PetscMax(1,chunkDims[3])*PetscMax(1,chunkDims[4])*PetscMax(1,chunkDims[5])*sizeof(double);
+    } else {
+      /* precomputed chunks are fine, we don't need to do anything */
+    }
+  }
+  PetscFunctionReturn(0);
+}
+#endif
 
 #if defined(PETSC_HAVE_HDF5)
 #undef __FUNCT__
@@ -335,7 +438,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   hid_t          scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
   herr_t         status;
   hsize_t        dim;
-  hsize_t        maxDims[6], dims[6], chunkDims[6], count[6], offset[6];
+  hsize_t        maxDims[6]={0}, dims[6]={0}, chunkDims[6]={0}, count[6]={0}, offset[6]={0}; /* we depend on these being sane later on  */
   PetscInt       timestep;
   PetscScalar    *x;
   const char     *vecname;
@@ -395,6 +498,9 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   chunkDims[dim] = dims[dim];
   ++dim;
 #endif
+
+  ierr = VecGetHDF5ChunkSize(da, xin, timestep, chunkDims); CHKERRQ(ierr);
+
   filespace = H5Screate_simple(dim, dims, maxDims);
   if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 
@@ -520,7 +626,7 @@ static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool 
   gsizes[0]  = dof;
   ierr       = PetscMPIIntCast(dd->M,gsizes+1);CHKERRQ(ierr);
   ierr       = PetscMPIIntCast(dd->N,gsizes+2);CHKERRQ(ierr);
-  ierr       = PetscMPIIntCast(dd->P,gsizes+1);CHKERRQ(ierr);
+  ierr       = PetscMPIIntCast(dd->P,gsizes+3);CHKERRQ(ierr);
   lsizes[0]  = dof;
   ierr       = PetscMPIIntCast((dd->xe-dd->xs)/dof,lsizes+1);CHKERRQ(ierr);
   ierr       = PetscMPIIntCast(dd->ye-dd->ys,lsizes+2);CHKERRQ(ierr);
@@ -629,31 +735,32 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
       MPI_Comm    comm;
       FILE        *info;
       const char  *fieldname;
+      char        fieldbuf[256];
       PetscInt    dim,ni,nj,nk,pi,pj,pk,dof,n;
-      PetscBool   flg;
 
       /* set the viewer format back into the viewer */
       ierr = PetscViewerSetFormat(viewer,format);CHKERRQ(ierr);
       ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
       ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
       ierr = DMDAGetInfo(da,&dim,&ni,&nj,&nk,&pi,&pj,&pk,&dof,0,0,0,0,0);CHKERRQ(ierr);
-      ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinary for MATLAB format ---%\n");CHKERRQ(ierr);
-      ierr = PetscFPrintf(comm,info,"%%$$ tmp = PetscBinaryRead(fd); \n");CHKERRQ(ierr);
-      if (dim == 1) { ierr = PetscFPrintf(comm,info,"%%$$ tmp = reshape(tmp,%d,%d);\n",dof,ni);CHKERRQ(ierr); }
-      if (dim == 2) { ierr = PetscFPrintf(comm,info,"%%$$ tmp = reshape(tmp,%d,%d,%d);\n",dof,ni,nj);CHKERRQ(ierr); }
-      if (dim == 3) { ierr = PetscFPrintf(comm,info,"%%$$ tmp = reshape(tmp,%d,%d,%d,%d);\n",dof,ni,nj,nk);CHKERRQ(ierr); }
+      ierr = PetscFPrintf(comm,info,"#--- begin code written by PetscViewerBinary for MATLAB format ---#\n");CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"#$$ tmp = PetscBinaryRead(fd); \n");CHKERRQ(ierr);
+      if (dim == 1) { ierr = PetscFPrintf(comm,info,"#$$ tmp = reshape(tmp,%d,%d);\n",dof,ni);CHKERRQ(ierr); }
+      if (dim == 2) { ierr = PetscFPrintf(comm,info,"#$$ tmp = reshape(tmp,%d,%d,%d);\n",dof,ni,nj);CHKERRQ(ierr); }
+      if (dim == 3) { ierr = PetscFPrintf(comm,info,"#$$ tmp = reshape(tmp,%d,%d,%d,%d);\n",dof,ni,nj,nk);CHKERRQ(ierr); }
 
       for (n=0; n<dof; n++) {
         ierr = DMDAGetFieldName(da,n,&fieldname);CHKERRQ(ierr);
-        ierr = PetscStrcmp(fieldname,"",&flg);CHKERRQ(ierr);
-        if (!flg) {
-          if (dim == 1) { ierr = PetscFPrintf(comm,info,"%%$$ Set.%s.%s = squeeze(tmp(%d,:))';\n",name,fieldname,n+1);CHKERRQ(ierr); }
-          if (dim == 2) { ierr = PetscFPrintf(comm,info,"%%$$ Set.%s.%s = squeeze(tmp(%d,:,:))';\n",name,fieldname,n+1);CHKERRQ(ierr); }
-          if (dim == 3) { ierr = PetscFPrintf(comm,info,"%%$$ Set.%s.%s = permute(squeeze(tmp(%d,:,:,:)),[2 1 3]);\n",name,fieldname,n+1);CHKERRQ(ierr);}
+        if (!fieldname || !fieldname[0]) {
+          ierr = PetscSNPrintf(fieldbuf,sizeof fieldbuf,"field%D",n);CHKERRQ(ierr);
+          fieldname = fieldbuf;
         }
+        if (dim == 1) { ierr = PetscFPrintf(comm,info,"#$$ Set.%s.%s = squeeze(tmp(%d,:))';\n",name,fieldname,n+1);CHKERRQ(ierr); }
+        if (dim == 2) { ierr = PetscFPrintf(comm,info,"#$$ Set.%s.%s = squeeze(tmp(%d,:,:))';\n",name,fieldname,n+1);CHKERRQ(ierr); }
+        if (dim == 3) { ierr = PetscFPrintf(comm,info,"#$$ Set.%s.%s = permute(squeeze(tmp(%d,:,:,:)),[2 1 3]);\n",name,fieldname,n+1);CHKERRQ(ierr);}
       }
-      ierr = PetscFPrintf(comm,info,"%%$$ clear tmp; \n");CHKERRQ(ierr);
-      ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscViewerBinary for MATLAB format ---%\n\n");CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"#$$ clear tmp; \n");CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"#--- end code written by PetscViewerBinary for MATLAB format ---#\n\n");CHKERRQ(ierr);
     }
 
     ierr = VecDestroy(&natural);CHKERRQ(ierr);

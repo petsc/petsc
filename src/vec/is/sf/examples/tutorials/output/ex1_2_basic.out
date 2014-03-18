@@ -1,4 +1,4 @@
-Star Forest Object: 4 MPI processes
+PetscSF Object: 4 MPI processes
   type: basic
     sort=rank-order
   [0] Number of roots=3, leaves=2, remote ranks=2

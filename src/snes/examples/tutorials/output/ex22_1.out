@@ -51,7 +51,7 @@ SNES Object: 2 MPI processes
       PC Object:      (mg_coarse_)       2 MPI processes
         type: none
         linear system matrix = precond matrix:
-        Matrix Object:         2 MPI processes
+        Mat Object:         2 MPI processes
           type: mffd
           rows=21, cols=21
             Matrix-free approximation:
@@ -71,7 +71,7 @@ SNES Object: 2 MPI processes
       PC Object:      (mg_levels_1_)       2 MPI processes
         type: none
         linear system matrix = precond matrix:
-        Matrix Object:         2 MPI processes
+        Mat Object:         2 MPI processes
           type: mffd
           rows=39, cols=39
             Matrix-free approximation:
@@ -92,7 +92,7 @@ SNES Object: 2 MPI processes
       PC Object:      (mg_levels_2_)       2 MPI processes
         type: none
         linear system matrix = precond matrix:
-        Matrix Object:         2 MPI processes
+        Mat Object:         2 MPI processes
           type: mffd
           rows=75, cols=75
             Matrix-free approximation:
@@ -113,7 +113,7 @@ SNES Object: 2 MPI processes
       PC Object:      (mg_levels_3_)       2 MPI processes
         type: none
         linear system matrix = precond matrix:
-        Matrix Object:         2 MPI processes
+        Mat Object:         2 MPI processes
           type: mffd
           rows=147, cols=147
             Matrix-free approximation:
@@ -134,7 +134,7 @@ SNES Object: 2 MPI processes
       PC Object:      (mg_levels_4_)       2 MPI processes
         type: none
         linear system matrix = precond matrix:
-        Matrix Object:         2 MPI processes
+        Mat Object:         2 MPI processes
           type: mffd
           rows=291, cols=291
             Matrix-free approximation:
@@ -143,7 +143,7 @@ SNES Object: 2 MPI processes
                   Does not compute normU
     Up solver (post-smoother) same as down solver (pre-smoother)
     linear system matrix = precond matrix:
-    Matrix Object:     2 MPI processes
+    Mat Object:     2 MPI processes
       type: mffd
       rows=291, cols=291
         Matrix-free approximation:

@@ -191,7 +191,7 @@ PetscErrorCode  MatMFFDResetHHistory_MFFD(Mat J)
    Then, your solver can be chosen with the procedural interface via
 $     MatMFFDSetType(mfctx,"my_h")
    or at runtime via the option
-$     -snes_mf_type my_h
+$     -mat_mffd_type my_h
 
 .keywords: MatMFFD, register
 
@@ -271,7 +271,7 @@ PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"Matrix-free approximation:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"err=%G (relative error in function evaluation)\n",ctx->error_rel);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"err=%g (relative error in function evaluation)\n",(double)ctx->error_rel);CHKERRQ(ierr);
     if (!((PetscObject)ctx)->type_name) {
       ierr = PetscViewerASCIIPrintf(viewer,"The compute h routine has not yet been set\n");CHKERRQ(ierr);
     } else {
@@ -370,7 +370,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   /* keep a record of the current differencing parameter h */
   ctx->currenth = h;
 #if defined(PETSC_USE_COMPLEX)
-  ierr = PetscInfo2(mat,"Current differencing parameter: %G + %G i\n",PetscRealPart(h),PetscImaginaryPart(h));CHKERRQ(ierr);
+  ierr = PetscInfo2(mat,"Current differencing parameter: %g + %g i\n",(double)PetscRealPart(h),(double)PetscImaginaryPart(h));CHKERRQ(ierr);
 #else
   ierr = PetscInfo1(mat,"Current differencing parameter: %15.12e\n",h);CHKERRQ(ierr);
 #endif
@@ -619,7 +619,7 @@ PetscErrorCode  MatSetFromOptions_MFFD(Mat mat)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidHeaderSpecific(mfctx,MATMFFD_CLASSID,1);
   ierr = PetscObjectOptionsBegin((PetscObject)mfctx);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-mat_mffd_type","Matrix free type","MatMFFDSetType",MatMFFDList,((PetscObject)mfctx)->type_name,ftype,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-mat_mffd_type","Matrix free type","MatMFFDSetType",MatMFFDList,((PetscObject)mfctx)->type_name,ftype,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatMFFDSetType(mat,ftype);CHKERRQ(ierr);
   }
@@ -690,9 +690,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatMFFDInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(mfctx,_p_MatMFFD,struct _MFOps,MATMFFD_CLASSID,"MatMFFD","Matrix-free Finite Differencing","Mat",PetscObjectComm((PetscObject)A),MatDestroy_MFFD,MatView_MFFD);CHKERRQ(ierr);
 
@@ -804,6 +802,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
      umin = minimum iterate parameter
 .ve
 
+   You can call SNESSetJacobian() with MatMFFDComputeJacobian() if you are using matrix and not a different
+   preconditioner matrix
+
    The user can set the error_rel via MatMFFDSetFunctionError() and
    umin via MatMFFDDSSetUmin(); see the <A href="../../docs/manual.pdf#nameddest=ch_snes">SNES chapter of the users manual</A> for details.
 
@@ -877,9 +878,16 @@ PetscErrorCode  MatMFFDGetH(Mat mat,PetscScalar *h)
    Logically Collective on Mat
 
    Input Parameters:
-+  mat - the matrix free matrix created via MatCreateSNESMF()
++  mat - the matrix free matrix created via MatCreateSNESMF() or MatCreateMFFD()
 .  func - the function to use
 -  funcctx - optional function context passed to function
+
+   Calling Sequence of func:
+$     func (void *funcctx, Vec x, Vec f)
+
++  funcctx - user provided context
+.  x - input vector
+-  f - computed output function
 
    Level: advanced
 
@@ -1259,7 +1267,7 @@ PetscErrorCode  MatMFFDCheckPositivity(void *dummy,Vec U,Vec a,PetscScalar *h)
   ierr = VecRestoreArray(a,&a_vec);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&minval,&val,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
   if (val <= PetscAbsScalar(*h)) {
-    ierr = PetscInfo2(U,"Scaling back h from %G to %G\n",PetscRealPart(*h),.99*val);CHKERRQ(ierr);
+    ierr = PetscInfo2(U,"Scaling back h from %g to %g\n",(double)PetscRealPart(*h),(double)(.99*val));CHKERRQ(ierr);
     if (PetscRealPart(*h) > 0.0) *h =  0.99*val;
     else                         *h = -0.99*val;
   }

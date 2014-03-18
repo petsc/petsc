@@ -50,7 +50,7 @@
 !     temp A block stuff 
         PetscInt mx,my
         PetscMPIInt rank
-        double precision lambda
+        PetscReal lambda
 !     Mats
         type(Mat) Amat,AmatLin,Bmat,CMat,Dmat
         type(IS)  isPhi,isLambda
@@ -113,7 +113,7 @@
       PetscInt         its,N1,N2,i,j,row,low,high,lamlow,lamhigh
       PetscBool        flg
       PetscInt         ione,nfour,itwo,nloc,nloclam
-      double precision lambda_max,lambda_min
+      PetscReal lambda_max,lambda_min
       type(petsc_kkt_solver)  solver
       PetscScalar      bval,cval,one
 
@@ -146,7 +146,7 @@
 
 !     just get size
       call DMDACreate2d(PETSC_COMM_WORLD, &
-           DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, &
+           DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, &
            DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE, &
            ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,daphi,ierr)
       call DMDAGetInfo(daphi,PETSC_NULL_INTEGER,solver%mx,solver%my,   &
@@ -490,7 +490,7 @@
 !  jac_prec - optionally different preconditioning matrix (not used here)
 !  flag     - flag indicating matrix structure
 !
-      subroutine FormJacobian(dummy,X,jac,jac_prec,flag,solver,ierr)
+      subroutine FormJacobian(dummy,X,jac,jac_prec,solver,ierr)
 #include <finclude/petscsnesdef.h>
       use petscsnes
       use petsc_kkt_solver_module
@@ -499,7 +499,6 @@
       type(SNES)     dummy
       type(Vec)      X
       type(Mat)      jac,jac_prec
-      MatStructure   flag
       type(petsc_kkt_solver)  solver
       PetscErrorCode ierr
 
@@ -527,11 +526,6 @@
          call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
          call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
       end if
-
-!     Set flag to indicate that the Jacobian matrix retains an identical
-!     nonzero structure throughout all nonlinear iterations 
-      
-      flag = SAME_NONZERO_PATTERN
 
 !     Tell the matrix we will never add a new nonzero location to the
 !     matrix. If we do it will generate an error.

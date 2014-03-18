@@ -85,12 +85,13 @@ PetscErrorCode  PetscObjectListAdd(PetscObjectList *fl,const char name[],PetscOb
     while (nlist) {
       ierr = PetscStrcmp(name,nlist->name,&match);CHKERRQ(ierr);
       if (match) {  /* found it already in the list */
-        if (!nlist->skipdereference) {
-          ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
-        }
+        /* Remove it first to prevent circular derefs */
         if (prev) prev->next = nlist->next;
         else if (nlist->next) *fl = nlist->next;
         else *fl = 0;
+        if (!nlist->skipdereference) {
+          ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
+        }
         ierr = PetscFree(nlist);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }
@@ -116,7 +117,7 @@ PetscErrorCode  PetscObjectListAdd(PetscObjectList *fl,const char name[],PetscOb
   }
 
   /* add it to list, because it was not already there */
-  ierr        = PetscNew(struct _n_PetscObjectList,&olist);CHKERRQ(ierr);
+  ierr        = PetscNew(&olist);CHKERRQ(ierr);
   olist->next = 0;
   olist->obj  = obj;
 

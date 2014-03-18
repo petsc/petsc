@@ -98,7 +98,7 @@ static PetscErrorCode MatMFFDCompute_DS(MatMFFD ctx,Vec U,Vec a,PetscScalar *h,P
   } else {
     *h = ctx->currenth;
   }
-  if (*h != *h) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Differencing parameter is not a number sum = %G dot = %G norm = %G",sum,PetscRealPart(dot),nrm);
+  if (*h != *h) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Differencing parameter is not a number sum = %g dot = %g norm = %g",(double)sum,(double)PetscRealPart(dot),(double)nrm);
   ctx->count++;
   PetscFunctionReturn(0);
 }
@@ -129,7 +129,7 @@ static PetscErrorCode MatMFFDView_DS(MatMFFD ctx,PetscViewer viewer)
   */
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"    umin=%G (minimum iterate parameter)\n",hctx->umin);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    umin=%g (minimum iterate parameter)\n",(double)hctx->umin);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -260,7 +260,7 @@ PETSC_EXTERN PetscErrorCode MatCreateMFFD_DS(MatMFFD ctx)
 
   PetscFunctionBegin;
   /* allocate my own private data structure */
-  ierr      = PetscNewLog(ctx,MatMFFD_DS,&hctx);CHKERRQ(ierr);
+  ierr      = PetscNewLog(ctx,&hctx);CHKERRQ(ierr);
   ctx->hctx = (void*)hctx;
   /* set a default for my parameter */
   hctx->umin = 1.e-6;

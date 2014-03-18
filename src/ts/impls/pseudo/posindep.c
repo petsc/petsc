@@ -161,6 +161,7 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
     ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
     ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
+    ierr = TSPostStage(ts,ts->ptime+ts->time_step,0,&(pseudo->update));CHKERRQ(ierr);
     ts->snes_its += its; ts->ksp_its += lits;
     ierr = PetscInfo3(ts,"step=%D, nonlinear solve iterations=%D, linear solve iterations=%D\n",ts->steps,its,lits);CHKERRQ(ierr);
     pseudo->fnorm = -1;         /* The current norm is no longer valid, monitor must recompute it. */
@@ -285,14 +286,14 @@ static PetscErrorCode SNESTSFormFunction_Pseudo(SNES snes,Vec X,Vec Y,TS ts)
 
        J = I/dt - J_{Frhs}   where J_{Frhs} is the given Jacobian of Frhs.
 */
-static PetscErrorCode SNESTSFormJacobian_Pseudo(SNES snes,Vec X,Mat *AA,Mat *BB,MatStructure *str,TS ts)
+static PetscErrorCode SNESTSFormJacobian_Pseudo(SNES snes,Vec X,Mat AA,Mat BB,TS ts)
 {
   Vec            Xdot;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = TSPseudoGetXdot(ts,X,&Xdot);CHKERRQ(ierr);
-  ierr = TSComputeIJacobian(ts,ts->ptime+ts->time_step,X,Xdot,1./ts->time_step,AA,BB,str,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = TSComputeIJacobian(ts,ts->ptime+ts->time_step,X,Xdot,1./ts->time_step,AA,BB,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -330,7 +331,7 @@ PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,
     ierr = VecNorm(pseudo->func,NORM_2,&pseudo->fnorm);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"TS %D dt %G time %G fnorm %G\n",step,ts->time_step,ptime,pseudo->fnorm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"TS %D dt %g time %g fnorm %g\n",step,(double)ts->time_step,(double)ptime,(double)pseudo->fnorm);CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -687,7 +688,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts)
   ierr = SNESGetType(snes,&stype);CHKERRQ(ierr);
   if (!stype) {ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);}
 
-  ierr = PetscNewLog(ts,TS_Pseudo,&pseudo);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&pseudo);CHKERRQ(ierr);
   ts->data = (void*)pseudo;
 
   pseudo->dt_increment                 = 1.1;

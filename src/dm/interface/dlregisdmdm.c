@@ -1,9 +1,6 @@
 
 #include <petsc-private/dmdaimpl.h>
 #include <petsc-private/dmpleximpl.h>
-#if defined(PETSC_HAVE_SIEVE)
-#include <petsc-private/meshimpl.h>
-#endif
 
 static PetscBool DMPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
@@ -25,9 +22,6 @@ PetscErrorCode  DMFinalizePackage(void)
   ierr = PetscFunctionListDestroy(&DMList);CHKERRQ(ierr);
   DMPackageInitialized = PETSC_FALSE;
   DMRegisterAllCalled  = PETSC_FALSE;
-#if defined(PETSC_HAVE_SIEVE)
-  ierr = DMMeshFinalize();CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -60,10 +54,6 @@ PetscErrorCode  DMInitializePackage(void)
 
   /* Register Classes */
   ierr = PetscClassIdRegister("Distributed Mesh",&DM_CLASSID);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SIEVE)
-  ierr = PetscClassIdRegister("SectionReal",&SECTIONREAL_CLASSID);CHKERRQ(ierr);
-  ierr = PetscClassIdRegister("SectionInt",&SECTIONINT_CLASSID);CHKERRQ(ierr);
-#endif
 
 #if defined(PETSC_HAVE_HYPRE)
   ierr = MatRegister(MATHYPRESTRUCT, MatCreate_HYPREStruct);CHKERRQ(ierr);
@@ -78,19 +68,18 @@ PetscErrorCode  DMInitializePackage(void)
 
   ierr = PetscLogEventRegister("DMDALocalADFunc",        DM_CLASSID,&DMDA_LocalADFunction);CHKERRQ(ierr);
 
-  ierr = PetscLogEventRegister("DMPlexDistribute",    DM_CLASSID,&DMPLEX_Distribute);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexStratify",      DM_CLASSID,&DMPLEX_Stratify);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SIEVE)
-  ierr = PetscLogEventRegister("DMMeshView",             DM_CLASSID,&DMMesh_View);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMMeshGetGlobalScatter", DM_CLASSID,&DMMesh_GetGlobalScatter);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMMeshRestrictVector",   DM_CLASSID,&DMMesh_restrictVector);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMMeshAssembleVector",   DM_CLASSID,&DMMesh_assembleVector);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMMeshAssemVecComplete", DM_CLASSID,&DMMesh_assembleVectorComplete);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMMeshAssembleMatrix",   DM_CLASSID,&DMMesh_assembleMatrix);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMMeshUpdateOperator",   DM_CLASSID,&DMMesh_updateOperator);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SectionRealView",        SECTIONREAL_CLASSID,&SectionReal_View);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SectionIntView",         SECTIONINT_CLASSID,&SectionInt_View);CHKERRQ(ierr);
-#endif
+  ierr = PetscLogEventRegister("DMPlexInterpolate",      DM_CLASSID,&DMPLEX_Interpolate);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexPartition",        DM_CLASSID,&DMPLEX_Partition);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexDistribute",       DM_CLASSID,&DMPLEX_Distribute);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexDistribCones",     DM_CLASSID,&DMPLEX_DistributeCones);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexDistribLabels",    DM_CLASSID,&DMPLEX_DistributeLabels);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexDistribSF",        DM_CLASSID,&DMPLEX_DistributeSF);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexDistribField",     DM_CLASSID,&DMPLEX_DistributeField);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexDistribData",      DM_CLASSID,&DMPLEX_DistributeData);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexStratify",         DM_CLASSID,&DMPLEX_Stratify);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexPreallocate",      DM_CLASSID,&DMPLEX_Preallocate);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexResidualFEM",      DM_CLASSID,&DMPLEX_ResidualFEM);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexJacobianFEM",      DM_CLASSID,&DMPLEX_JacobianFEM);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
@@ -98,16 +87,6 @@ PetscErrorCode  DMInitializePackage(void)
     if (className) {
       ierr = PetscInfoDeactivateClass(DM_CLASSID);CHKERRQ(ierr);
     }
-#if defined(PETSC_HAVE_SIEVE)
-    ierr = PetscStrstr(logList, "sectionreal", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(SECTIONREAL_CLASSID);CHKERRQ(ierr);
-    }
-    ierr = PetscStrstr(logList, "sectionint", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(SECTIONINT_CLASSID);CHKERRQ(ierr);
-    }
-#endif
   }
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
@@ -116,24 +95,93 @@ PetscErrorCode  DMInitializePackage(void)
     if (className) {
       ierr = PetscLogEventDeactivateClass(DM_CLASSID);CHKERRQ(ierr);
     }
-#if defined(PETSC_HAVE_SIEVE)
-    ierr = PetscStrstr(logList, "sectionreal", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(SECTIONREAL_CLASSID);CHKERRQ(ierr);
-    }
-    ierr = PetscStrstr(logList, "sectionint", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(SECTIONINT_CLASSID);CHKERRQ(ierr);
-    }
-#endif
   }
   ierr = PetscRegisterFinalize(DMFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#include <petscfe.h>
 
+static PetscBool PetscFEPackageInitialized = PETSC_FALSE;
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEFinalizePackage"
+/*@C
+  PetscFEFinalizePackage - This function finalizes everything in the PetscFE package. It is called
+  from PetscFinalize().
 
+  Level: developer
 
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+.keywords: PetscFE, initialize, package
+.seealso: PetscInitialize()
+@*/
+PetscErrorCode PetscFEFinalizePackage(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&PetscSpaceList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&PetscDualSpaceList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&PetscFEList);CHKERRQ(ierr);
+  PetscFEPackageInitialized       = PETSC_FALSE;
+  PetscSpaceRegisterAllCalled     = PETSC_FALSE;
+  PetscDualSpaceRegisterAllCalled = PETSC_FALSE;
+  PetscFERegisterAllCalled        = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEInitializePackage"
+/*@C
+  PetscFEInitializePackage - This function initializes everything in the FE package. It is called
+  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PetscSpaceCreate()
+  when using static libraries.
+
+  Level: developer
+
+.keywords: PetscFE, initialize, package
+.seealso: PetscInitialize()
+@*/
+PetscErrorCode PetscFEInitializePackage(void)
+{
+  char           logList[256];
+  char          *className;
+  PetscBool      opt;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (PetscFEPackageInitialized) PetscFunctionReturn(0);
+  PetscFEPackageInitialized = PETSC_TRUE;
+
+  /* Register Classes */
+  ierr = PetscClassIdRegister("Linear Space", &PETSCSPACE_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Dual Space",   &PETSCDUALSPACE_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("FE Space",     &PETSCFE_CLASSID);CHKERRQ(ierr);
+
+  /* Register Constructors */
+  ierr = PetscSpaceRegisterAll();CHKERRQ(ierr);
+  ierr = PetscDualSpaceRegisterAll();CHKERRQ(ierr);
+  ierr = PetscFERegisterAll();CHKERRQ(ierr);
+  /* Register Events */
+  /* Process info exclusions */
+  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "fe", &className);CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscInfoDeactivateClass(PETSCFE_CLASSID);CHKERRQ(ierr);
+    }
+  }
+  /* Process summary exclusions */
+  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "da", &className);CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscLogEventDeactivateClass(DM_CLASSID);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscRegisterFinalize(PetscFEFinalizePackage);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
 #undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_petscdm"
 /*
@@ -150,7 +198,8 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscdm(void)
   PetscFunctionBegin;
   ierr = AOInitializePackage();CHKERRQ(ierr);
   ierr = DMInitializePackage();CHKERRQ(ierr);
+  ierr = PetscFEInitializePackage();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#endif /* PETSC_USE_DYNAMIC_LIBRARIES */
+#endif /* PETSC_HAVE_DYNAMIC_LIBRARIES */

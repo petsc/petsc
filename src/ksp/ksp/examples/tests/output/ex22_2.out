@@ -1,9 +1,9 @@
 test_solve 
 x1 
-Vector Object: 2 MPI processes
+Vec Object: 2 MPI processes
   type: mpi
   length=3
-Vector Object: 2 MPI processes
+Vec Object: 2 MPI processes
   type: mpi
 Process [0]
 0.655738
@@ -11,10 +11,10 @@ Process [0]
 Process [1]
 0.491803
 x2 
-Vector Object: 2 MPI processes
+Vec Object: 2 MPI processes
   type: mpi
   length=2
-Vector Object: 2 MPI processes
+Vec Object: 2 MPI processes
   type: mpi
 Process [0]
 -0.147541
@@ -22,10 +22,10 @@ Process [1]
 0.311475
 test_solve_matgetvecs 
 x1 
-Vector Object: 2 MPI processes
+Vec Object: 2 MPI processes
   type: mpi
   length=3
-Vector Object: 2 MPI processes
+Vec Object: 2 MPI processes
   type: mpi
 Process [0]
 0.655738
@@ -33,10 +33,10 @@ Process [0]
 Process [1]
 0.491803
 x2 
-Vector Object: 2 MPI processes
+Vec Object: 2 MPI processes
   type: mpi
   length=2
-Vector Object: 2 MPI processes
+Vec Object: 2 MPI processes
   type: mpi
 Process [0]
 -0.147541

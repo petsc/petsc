@@ -146,3 +146,45 @@ PetscErrorCode  PetscDataTypeGetSize(PetscDataType ptype,size_t *size)
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDataTypeFromString"
+/*@
+     PetscDataTypeFromString - Gets the enum value of a PETSc datatype represented as a string
+
+   Not collective
+
+    Input Parameter:
+.     name - the PETSc datatype name (for example, DOUBLE or real or Scalar)
+
+    Output Parameter:
++    ptype - the enum value
+-    found - the string matches one of the data types
+
+    Level: advanced
+
+.seealso: PetscDataType, PetscDataTypeToMPIDataType(), PetscDataTypeGetSize()
+@*/
+PetscErrorCode  PetscDataTypeFromString(const char*name, PetscDataType *ptype,PetscBool *found)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscEnumFind(PetscDataTypes,name,(PetscEnum*)ptype,found);CHKERRQ(ierr);
+  if (!*found) {
+    char formatted[16];
+
+    ierr = PetscStrncpy(formatted,name,16);CHKERRQ(ierr);
+    ierr = PetscStrtolower(formatted);CHKERRQ(ierr);
+    ierr = PetscStrcmp(formatted,"scalar",found);CHKERRQ(ierr);
+    if (*found) {
+      *ptype = PETSC_SCALAR;
+    } else {
+      ierr = PetscStrcmp(formatted,"real",found);CHKERRQ(ierr);
+      if (*found) {
+        *ptype = PETSC_REAL;
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}

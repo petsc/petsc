@@ -2,6 +2,7 @@
 static char help[] = "Tests DMCreateColoring() in 3d.\n\n";
 
 #include <petscmat.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__
@@ -37,30 +38,33 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetBool(NULL,"-distribute",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     if (m == PETSC_DECIDE) SETERRQ(PETSC_COMM_WORLD,1,"Must set -m option with -distribute option");
-    ierr = PetscMalloc(m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m,&lx);CHKERRQ(ierr);
     for (i=0; i<m-1; i++) lx[i] = 4;
     lx[m-1] = M - 4*(m-1);
 
     if (n == PETSC_DECIDE) SETERRQ(PETSC_COMM_WORLD,1,"Must set -n option with -distribute option");
-    ierr = PetscMalloc(n*sizeof(PetscInt),&ly);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&ly);CHKERRQ(ierr);
     for (i=0; i<n-1; i++) ly[i] = 2;
     ly[n-1] = N - 2*(n-1);
 
     if (p == PETSC_DECIDE) SETERRQ(PETSC_COMM_WORLD,1,"Must set -p option with -distribute option");
-    ierr = PetscMalloc(p*sizeof(PetscInt),&lz);CHKERRQ(ierr);
+    ierr = PetscMalloc1(p,&lz);CHKERRQ(ierr);
     for (i=0; i<p-1; i++) lz[i] = 2;
     lz[p-1] = P - 2*(p-1);
   }
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,stencil_type,M,N,P,m,n,p,w,s,lx,ly,lz,&da);CHKERRQ(ierr);
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,stencil_type,M,N,P,m,n,p,w,s,lx,ly,lz,&da);CHKERRQ(ierr);
   ierr = PetscFree(lx);CHKERRQ(ierr);
   ierr = PetscFree(ly);CHKERRQ(ierr);
   ierr = PetscFree(lz);CHKERRQ(ierr);
 
-  ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,MATMPIAIJ,&coloring);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,MATMPIAIJ,&mat);CHKERRQ(ierr);
+  ierr = DMSetMatType(da,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,&coloring);CHKERRQ(ierr);
+  ierr = DMSetMatType(da,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,&mat);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(mat,coloring,&fdcoloring);CHKERRQ(ierr);
+  ierr = MatFDColoringSetUp(mat,coloring,fdcoloring);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(da,&dvec);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&lvec);CHKERRQ(ierr);

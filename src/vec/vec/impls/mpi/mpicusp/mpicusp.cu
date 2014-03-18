@@ -99,7 +99,7 @@ PetscErrorCode VecMDot_MPICUSP(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 
   PetscFunctionBegin;
   if (nv > 128) {
-    ierr = PetscMalloc(nv*sizeof(PetscScalar),&work);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nv,&work);CHKERRQ(ierr);
   }
   ierr = VecMDot_SeqCUSP(xin,nv,y,work);CHKERRQ(ierr);
   ierr = MPI_Allreduce(work,z,nv,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
@@ -143,7 +143,7 @@ PetscErrorCode VecDuplicate_MPICUSP(Vec win,Vec *v)
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,win->map->n+w->nghost,array,&vw->localrep);CHKERRQ(ierr);
     ierr = PetscMemcpy(vw->localrep->ops,w->localrep->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
     ierr = VecRestoreArray(*v,&array);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(*v,vw->localrep);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)*v,(PetscObject)vw->localrep);CHKERRQ(ierr);
     vw->localupdate = w->localupdate;
     if (vw->localupdate) {
       ierr = PetscObjectReference((PetscObject)vw->localupdate);CHKERRQ(ierr);
@@ -159,7 +159,7 @@ PetscErrorCode VecDuplicate_MPICUSP(Vec win,Vec *v)
 
   ierr = PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*v))->olist);CHKERRQ(ierr);
   ierr = PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*v))->qlist);CHKERRQ(ierr);
-  (*v)->map->bs   = win->map->bs;
+  (*v)->map->bs   = PetscAbs(win->map->bs);
   (*v)->bstash.bs = win->bstash.bs;
   PetscFunctionReturn(0);
 }

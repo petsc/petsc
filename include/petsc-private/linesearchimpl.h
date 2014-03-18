@@ -17,6 +17,7 @@ struct _LineSearchOps {
   PetscErrorCode (*reset)(SNESLineSearch);
   PetscErrorCode (*destroy)(SNESLineSearch);
   PetscErrorCode (*setup)(SNESLineSearch);
+  PetscErrorCode (*snesfunc)(SNES,Vec,Vec);
 };
 
 struct _p_LineSearch {

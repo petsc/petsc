@@ -17,14 +17,11 @@
 
         module petscdef
         use petscdmdadef
-        use petscdmmeshdef
         use petsctsdef
         end module
 
         module petsc
         use petscdmda
-        use petscdmadda
         use petscdmcomposite
-        use petscdmmesh
         use petscts
         end module

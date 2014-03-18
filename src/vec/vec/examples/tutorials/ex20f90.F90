@@ -47,10 +47,10 @@
       Vec, pointer :: z(:)
 #endif
       PetscReal norm,v,v1,v2
-      integer         n,ithree
-      integer   ierr
-      integer      rank
-      logical       flg
+      PetscInt  n,ithree
+      PetscErrorCode ierr
+      PetscMPIInt  rank
+      PetscBool       flg
       PetscScalar      one,two,three
       PetscScalar      dots(3),dot
 

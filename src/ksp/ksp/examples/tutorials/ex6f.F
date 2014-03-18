@@ -216,7 +216,8 @@
 ! Set operators, keeping the identical preconditioner matrix for
 ! all linear solves.  This approach is often effective when the
 ! linear systems do not change very much between successive steps.
-      call KSPSetOperators(ksp,A,A2,SAME_PRECONDITIONER,ierr)
+      call KSPSetReusePreconditioner(ksp,PETSC_TRUE,ierr)
+      call KSPSetOperators(ksp,A,A2,ierr)
 
 ! Solve linear system
       call KSPSolve(ksp,b,x,ierr)

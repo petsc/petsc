@@ -555,10 +555,11 @@ Instead of specifying the process layout, one may use
 PETSC\_DECIDE for \trl{m} and \trl{n}
 so that PETSc will determine the partition using MPI. The type of
 periodicity of the array is specified by \trl{xperiod} and \trl{yperiod}, which can be
-DMDA\_BOUNDARY\_NONE \findex{DMDA_BOUNDARY_NONE} (no periodicity),
-DMDA\_BOUNDARY\_PERIODIC \findex{DMDA_BOUNDARY_PERIODIC} (periodic in that direction),
-DMDA\_BOUNDARY\_GHOSTED \findex{DMDA_BOUNDARY_GHOSTED},
-or DMDA\_BOUNDARY\_MIRROR.\findex{DMDA_BOUNDARY_MIRROR}  The argument \trl{dof}
+DMDA\_BOUNDARY\_NONE \findex{DM_BOUNDARY_NONE} (no periodicity),
+DMDA\_BOUNDARY\_PERIODIC \findex{DM_BOUNDARY_PERIODIC} (periodic in that direction),
+DMDA\_BOUNDARY\_TWIST \findex{DM_BOUNDARY_TWIST} (periodic in that direction, but identified in reverse order),
+DMDA\_BOUNDARY\_GHOSTED \findex{DM_BOUNDARY_GHOSTED},
+or DMDA\_BOUNDARY\_MIRROR.\findex{DM_BOUNDARY_MIRROR}  The argument \trl{dof}
 indicates the number of degrees of freedom at each array point,
 and \trl{s} is the stencil width (i.e., the width of the ghost point region).
 The optional arrays \trl{lx} and \trl{ly} may contain the number of nodes
@@ -774,7 +775,8 @@ the global node number of each local node
 including the ghost nodes. This number may be determined by using the
 command
 \begin{tabbing}
-  DMDAGetGlobalIndices(DM da,int *n,int *idx[]);
+  DMDAGetGlobalIndices(DM da,int *n,const int *idx[]);
+  DMDARestoreGlobalIndices(DM da,int *n,const int *idx[]);
 \end{tabbing}
 The output argument \trl{n} contains the number of
 local nodes, including ghost nodes, while \trl{idx} contains a list of length
@@ -2049,7 +2051,7 @@ Before actually solving a linear system with KSP, the user must call
 the following routine to set the matrices associated with the linear
 system:
 \begin{tabbing}
-  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag);
+  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat);
 \end{tabbing}
 The argument \trl{Amat}, representing the matrix that defines the
 linear system, is a symbolic place holder for any kind of matrix.
@@ -2064,22 +2066,6 @@ the matrix that defines the linear system, \trl{Amat}; however,
 occasionally these matrices differ (for instance, \sindex{preconditioning}
 when a preconditioning matrix is obtained from a lower order method than
 that employed to form the linear system matrix).
-The argument \trl{flag} can be used to eliminate unnecessary work when
-repeatedly solving linear systems of the same size with the same
-preconditioning method; when solving just one linear system, this flag is
-ignored.  The user can set \trl{flag} as follows:
-\begin{itemize}
-\item \trl{SAME_NONZERO_PATTERN} - the preconditioning matrix has the
-    same \findex{SAME_NONZERO_PATTERN} nonzero structure during successive
-    linear solves,
-\item \trl{DIFFERENT_NONZERO_PATTERN} - the preconditioning matrix does
-     not have the same nonzero structure during successive linear solves,
-   \findex{DIFFERENT_NONZERO_PATTERN}
-\item \trl{SAME_PRECONDITIONER} - the preconditioner matrix is identical
-   to that of the previous linear solve. \findex{SAME_PRECONDITIONER}
-\end{itemize}
-If the structure of a matrix is not known a priori, one should use
-the flag \trl{DIFFERENT_NONZERO_PATTERN}.
 
 Much of the power of KSP can be accessed through the single routine
 \begin{tabbing}
@@ -2342,7 +2328,7 @@ be used. \sindex{Bi-conjugate gradient}
 \subsection{Convergence Tests}
 \label{section_convergencetests}
 
-The default convergence test, KSPDefaultConverged(), is
+The default convergence test, KSPConvergedDefault(), is
 based on the $l_2$-norm of the residual. Convergence
 (or divergence) is decided by three quantities:
 the decrease of the residual norm relative to the norm of the right hand side, \trl{rtol}, the absolute
@@ -3667,7 +3653,7 @@ Jacobian matrix, \trl{A}, at the current iterate, \trl{x},
 as is typically done with
 \begin{tabbing}
   SNESSetJacobian(SNES snes,Mat Amat,Mat Pmat,PetscErrorCode (*FormJacobian)(SNES snes,\\
-          Vec x,Mat *A,Mat *B,MatStructure *flag,void *ctx),void *ctx);
+          Vec x,Mat A,Mat B,MatStructure *flag,void *ctx),void *ctx);
 \end{tabbing}
 The arguments of the routine \trl{
 FormJacobian()} are the current iterate, \trl{x}; the (approximate) Jacobian matrix,
@@ -3721,21 +3707,6 @@ Upon subsequent calls to the
 entries to zero by calling MatZeroEntries().  See
 Section~\ref{sec_othermat} for details on the reuse of the matrix
 context.
-
-If the preconditioning matrix retains identical nonzero structure
-during successive nonlinear iterations, setting the parameter, \trl{flag},
-in the \trl{FormJacobian()} routine to be \trl{SAME_NONZERO_PATTERN}
-\findex{SAME_NONZERO_PATTERN} and reusing the matrix context can save
-considerable overhead.  For example, when one is using a parallel
-preconditioner such as incomplete factorization in solving the
-linearized Newton systems for such problems, matrix colorings and
-communication patterns can be determined a single time and then reused
-repeatedly throughout the solution process.  In addition, if using
-different matrices for the actual Jacobian and the preconditioner, the
-user can hold the preconditioner matrix fixed for multiple iterations
-by setting \trl{flag} to \trl{SAME_PRECONDITIONER}.  See the
-discussion of KSPSetOperators() in Section~\ref{sec_usingsles} for
-details.
 
 The directory \trl{${PETSC_DIR}/src/snes/examples/tutorials} provides
 a variety of examples.
@@ -4319,7 +4290,7 @@ $ u(x,t) \doteq \sum_i \xi_i(t) \phi_i(x)$ yielding the  semi-discrete equation
 \]
 Now applying the backward Euler method results in
 \[
-        ( B - dt^n A  ) u^{n+1} = A u^n,
+        ( B - dt^n A  ) u^{n+1} = B u^n,
 \]
 in which
 \[
@@ -4368,7 +4339,7 @@ To solve an ODE or DAE one uses:
   If using a fully implicit or semi-implict (IMEX) method one also can provide an appropriate (approximate) Jacobian matrix of $F()$.
   \begin{tabbing}
     TS\=SetIJacobian(TS ts,Mat A,Mat B,\\
-    \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*),void *jacP);
+    \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,MatStructure*,void*),void *jacP);
   \end{tabbing}
   The arguments for the function \trl{fjac()}
   are the timestep contex, current time, input state $u$, input
@@ -4392,7 +4363,7 @@ To solve an ODE or DAE one uses:
   If using a fully implicit method and the function $ G() $ is provided, one also can provide an appropriate (approximate) Jacobian matrix of $G()$.
   \begin{tabbing}
     TS\=SetRHSJacobian(TS ts,Mat A,Mat B,\\
-    \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void *jacP);
+    \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Mat,Mat,MatStructure*,void*),void *jacP);
   \end{tabbing}
   The arguments for the function \trl{fjac()}
   are the timestep contex, current time, input state $u$, matrix $A$, preconditioning matrix
@@ -4505,33 +4476,15 @@ $ \dot{u} + \tilde{F}(t,u) $) but
 the Jacobians need not be provided.\footnote{PETSc will automatically translate the function provided to the appropriate form.}
 
 The Explicit Runge-Kutta timestepper with variable timesteps is an \sindex{Runge-Kutta}
-implementation of standard Runge-Kutta using Dormand-Prince \sindex{Dorman-Prince}
-5(4). It is easy to change this table if needed. Since the time-stepper is using variable timesteps, the
-``TSSetInitialTimeStep()'' function is not used.
-
-Setting the tolerance with
-\begin{tabbing}
-TSRKSetTolerance(TS ts,double tolerance)
-\end{tabbing}
-or \trl{-ts_rk_tol} \findex{-ts_rk_tol}
-defines the global tolerance, for the whole time
-period. The tolerance for each timestep is calculated relatively to
-the size of the timestep.
-
-The error in each timestep is calculated using the two solutions given
-from Dormand-Prince 5(4). The local error is calculated from the
-2-norm from the difference of the two solutions.
-
-Other timestep features:
-\begin{itemize}
-  \item The next timestep can be maximum 5 times the present timestep
-  \item The smallest timestep can be 1e-14 (to avoid machine precision
-  errors)
-\end{itemize}
-
-More details about the solver and code examples can be found at
-\trl{http://www.parallab.uib.no/projects/molecul/matrix/}.
-
+implementation of the standard Runge-Kutta with an embedded method. The error in each
+timestep is calculated using the solutions from the Runge-Kutta method and its embedded 
+method (the 2-norm of the difference is used). The default method is the \sindex{Bogacki-Shampine}
+$3$rd-order Bogacki-Shampine method with a $2$nd-order embedded method (TSRK3BS). 
+Other available methods are the \sindex{Fehlberg} $5$th-order Fehlberg RK scheme with a $4$th-order embedded 
+method (TSRK5F), and the \sindex{Dormand-Prince} $5$th-order Dormand-Prince RK scheme with a $4$th-order embedded method 
+(TSRK5DP). Variable timesteps cannot be used with RK schemes that do not have an embedded 
+method (TSRK1 - $1$st-order, $1$-stage forward Euler, TSRK2A - $2$nd-order, $2$-stage RK scheme, 
+TSRK3 - $3$rd-order, $3$-stage RK scheme, TSRK4 - $4$-th order, $4$-stage RK scheme).
 
 \subsection{Special Cases}
 
@@ -4697,7 +4650,7 @@ variable \trl{fP}.
 \item Provide the (approximate) Jacobian matrix of \trl{G(u)} and a
 function to compute it at each Newton iteration. This is done with the command
 \begin{tabbing}
- TSSetRHSJacobian(\=TS ts,Mat Amat, Mat Pmat,PetscErrorCode (*f)(TS,double,Vec,Mat*,Mat*,\\
+ TSSetRHSJacobian(\=TS ts,Mat Amat, Mat Pmat,PetscErrorCode (*f)(TS,double,Vec,Mat,Mat,\\
                   \>        MatStructure*,void*),void *fP);
 \end{tabbing}
 The  arguments for the function \trl{f()} are
@@ -5672,7 +5625,7 @@ The basic steps involved in logging a
 user-defined portion of code, called an {\em event}, are shown in the
 code fragment below:
 \begin{tabbing}
-    \#include "petsclog.h"\\
+    \#include <petsclog.h>\\
     int USER\_EVENT;\\
     PetscLogEventRegister("User event name",0,\&USER\_EVENT);\\
     PetscLogEventBegin(USER\_EVENT,0,0,0,0);\\
@@ -6562,7 +6515,7 @@ possibly user-defined routines as well) with
 \end{tabbing}
 Likewise, all memory allocations should be checked with
 \begin{tabbing}
-  ierr = PetscMalloc(n*sizeof(double),\&ptr);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,\&ptr);CHKERRQ(ierr);
 \end{tabbing}
 If this procedure is followed throughout all of the user's libraries
 and codes, any error will by default generate a clean traceback of
@@ -6858,7 +6811,7 @@ To use PETSc from MS Visual Studio - one would have to compile a PETSc example w
 
 \subsection{Mac OSX}
 
-Follow the instructions in systems/Apple/OSX/bin/makeframework to build the PETSc framework.
+Follow the instructions in systems/Apple/OSX/bin/makeall to build the PETSc framework and documentation suitable for use in Xcode.
 
 You can then use the PETSc framework in \$\{PETSC\_DIR\}/arch-osx/PETSc.framework in the usual manner for Apple framworks, see the examples in systems/Apple/OSX/examples.  When working in xcode things like function name completion should work for all PETSc functions as well as MPI functions. You must also link against the Apple Accelerate.framework.
 
@@ -7570,7 +7523,7 @@ Before using the Krylov context, one must set the matrix-vector multiplication r
 the preconditioner with the
 commands
 \begin{tabbing}
-  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag);\\
+  PCSetOperators(PC pc,Mat Amat,Mat Pmat);\\
   KSPSetPC(KSP ksp,PC pc);
 \end{tabbing}
 In addition, the KSP solver must be initialized with
@@ -7629,7 +7582,7 @@ The routine
 sets the preconditioner method to be used.
 The routine
 \begin{tabbing}
-  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag);\\
+  PCSetOperators(PC pc,Mat Amat,Mat Pmat);\\
 \end{tabbing}
 set the matrices that are to be used with
 the preconditioner.
@@ -7647,7 +7600,7 @@ and are given, respectively, by
   PCApplyTranspose(PC pc,Vec x,Vec y);
 \end{tabbing}
 In particular, for a preconditioner matrix, \trl{B}, that has
-been set via PCSetOperators(pc,Amat,Pmat,flag),
+been set via PCSetOperators(pc,Amat,Pmat),
 the routine PCApply(pc,x,y) computes $y = B^{-1} x$
 by solving the linear system $By = x$ with the specified preconditioner
 method.
@@ -7863,8 +7816,8 @@ Now a PETSc local vector can be created manually using this layout,
 however it is usually easier to use the DM directly, which also provides global vectors,
 \begin{tabbing}
   DMSetDefaultSection(dm, s);\\
-  DMGetLocalVector(s, \&localVec);\\
-  DMGetGlobalVector(s, \&globalVec);
+  DMGetLocalVector(dm, \&localVec);\\
+  DMGetGlobalVector(dm, \&globalVec);
 \end{tabbing}
 
 \subsection{Partitioning and Ordering}

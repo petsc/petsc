@@ -41,19 +41,3 @@
 #include <finclude/petscdmcomposite.h90>
         end module
 
-        module petscdmadda
-        use petscdm
-#include <finclude/petscdmadda.h90>
-        end module
-
-        module petscdmmeshdef
-        use petscdmdef
-#include <finclude/petscdmmesh.h>
-#include <finclude/ftn-custom/petscdmmeshdef.h90>
-        end module
-
-        module petscdmmesh
-        use petscdmmeshdef
-        use petscdm
-#include <finclude/petscdmmesh.h90>
-        end module

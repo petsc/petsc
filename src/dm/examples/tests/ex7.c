@@ -1,5 +1,5 @@
 
-static char help[] = "Tests DMDALocalToLocalxxx().\n\n";
+static char help[] = "Tests DMLocalToLocalxxx() for DMDA.\n\n";
 
 #include <petscdmda.h>
 
@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscInt         M=8,dof=1,stencil_width=1,i,start,end,P=5,N = 6,m=PETSC_DECIDE,n=PETSC_DECIDE,p=PETSC_DECIDE,pt = 0,st = 0;
   PetscErrorCode   ierr;
   PetscBool        flg = PETSC_FALSE,flg2,flg3;
-  DMDABoundaryType periodic;
+  DMBoundaryType   periodic;
   DMDAStencilType  stencil_type;
   DM               da;
   Vec              local,global,local_copy;
@@ -29,14 +29,14 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,"-stencil_width",&stencil_width,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-periodic",&pt,NULL);CHKERRQ(ierr);
 
-  periodic = (DMDABoundaryType) pt;
+  periodic = (DMBoundaryType) pt;
 
   ierr = PetscOptionsGetInt(NULL,"-stencil_type",&st,NULL);CHKERRQ(ierr);
 
   stencil_type = (DMDAStencilType) st;
 
-  ierr = PetscOptionsHasName(NULL,"-2d",&flg2);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-3d",&flg3);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-grid2d",&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-grid3d",&flg3);CHKERRQ(ierr);
   if (flg2) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD,periodic,periodic,stencil_type,M,N,m,n,dof,stencil_width,
                         NULL,NULL,&da);CHKERRQ(ierr);
@@ -69,8 +69,8 @@ int main(int argc,char **argv)
   ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
 
-  ierr = DMDALocalToLocalBegin(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
-  ierr = DMDALocalToLocalEnd(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
+  ierr = DMLocalToLocalBegin(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
+  ierr = DMLocalToLocalEnd(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
 
 
   ierr = PetscOptionsGetBool(NULL,"-save",&flg,NULL);CHKERRQ(ierr);
@@ -88,7 +88,7 @@ int main(int argc,char **argv)
   ierr = VecAXPY(local_copy,-1.0,local);CHKERRQ(ierr);
   ierr = VecNorm(local_copy,NORM_MAX,&work);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&work,&norm,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %G should be zero\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %g should be zero\n",(double)norm);CHKERRQ(ierr);
 
   ierr = VecDestroy(&local_copy);CHKERRQ(ierr);
   ierr = VecDestroy(&local);CHKERRQ(ierr);

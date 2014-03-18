@@ -57,14 +57,13 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
       ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
     }
     if (!objective) {
-      ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
+      ierr = (*linesearch->ops->snesfunc)(snes, W, F);CHKERRQ(ierr);
       if (linesearch->ops->vinorm) {
         fnrm_mid = gnorm;
         ierr     = (*linesearch->ops->vinorm)(snes, F, W, &fnrm_mid);CHKERRQ(ierr);
       } else {
-        ierr = VecNorm(F, NORM_2, &fnrm_mid);CHKERRQ(ierr);
+        ierr = VecNorm(F,NORM_2,&fnrm_mid);CHKERRQ(ierr);
       }
-      fnrm_mid = fnrm_mid*fnrm_mid;
 
       /* compute the norm at lambda */
       ierr = VecCopy(X, W);CHKERRQ(ierr);
@@ -72,13 +71,14 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
       if (linesearch->ops->viproject) {
         ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
       }
-      ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
+      ierr = (*linesearch->ops->snesfunc)(snes, W, F);CHKERRQ(ierr);
       if (linesearch->ops->vinorm) {
         fnrm = gnorm;
         ierr = (*linesearch->ops->vinorm)(snes, F, W, &fnrm);CHKERRQ(ierr);
       } else {
-        ierr = VecNorm(F, NORM_2, &fnrm);CHKERRQ(ierr);
+        ierr = VecNorm(F,NORM_2,&fnrm);CHKERRQ(ierr);
       }
+      fnrm_mid = fnrm_mid*fnrm_mid;
       fnrm = fnrm*fnrm;
     } else {
       /* compute the objective at the midpoint */
@@ -163,7 +163,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
   } else {
     ierr = VecCopy(W, X);CHKERRQ(ierr);
   }
-  ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+  ierr = (*linesearch->ops->snesfunc)(snes,X,F);CHKERRQ(ierr);
   ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
   if (domainerror) {
     ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);

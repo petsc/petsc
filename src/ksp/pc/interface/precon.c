@@ -116,8 +116,8 @@ PetscErrorCode  PCDestroy(PC *pc)
 
   ierr = PCReset(*pc);CHKERRQ(ierr);
 
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSViewOff((PetscObject)*pc);CHKERRQ(ierr);
+  /* if memory was published with SAWs then destroy it */
+  ierr = PetscObjectSAWsViewOff((PetscObject)*pc);CHKERRQ(ierr);
   if ((*pc)->ops->destroy) {ierr = (*(*pc)->ops->destroy)((*pc));CHKERRQ(ierr);}
   ierr = DMDestroy(&(*pc)->dm);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(pc);CHKERRQ(ierr);
@@ -379,9 +379,7 @@ PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
   PetscFunctionBegin;
   PetscValidPointer(newpc,1);
   *newpc = 0;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PCInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(pc,_p_PC,struct _PCOps,PC_CLASSID,"PC","Preconditioner","PC",comm,PCDestroy,PCView);CHKERRQ(ierr);
 
@@ -841,8 +839,7 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
 
 /*
       a setupcall of 0 indicates never setup,
-                     1 needs to be resetup,
-                     2 does not need any changes.
+                     1 indicates has been previously setup
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp"
@@ -862,23 +859,39 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
 @*/
 PetscErrorCode  PCSetUp(PC pc)
 {
-  PetscErrorCode ierr;
-  const char     *def;
+  PetscErrorCode   ierr;
+  const char       *def;
+  PetscObjectState matstate;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (!pc->mat) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Matrix must be set first");
 
-  if (pc->setupcalled > 1) {
-    ierr = PetscInfo(pc,"Setting PC with identical preconditioner\n");CHKERRQ(ierr);
+  if (pc->setupcalled && pc->reusepreconditioner) {
+    ierr = PetscInfo(pc,"Leaving PC with identical preconditioner since reuse preconditioner is set\n");CHKERRQ(ierr);
     PetscFunctionReturn(0);
-  } else if (!pc->setupcalled) {
-    ierr = PetscInfo(pc,"Setting up new PC\n");CHKERRQ(ierr);
-  } else if (pc->flag == SAME_NONZERO_PATTERN) {
-    ierr = PetscInfo(pc,"Setting up PC with same nonzero pattern\n");CHKERRQ(ierr);
-  } else {
-    ierr = PetscInfo(pc,"Setting up PC with different nonzero pattern\n");CHKERRQ(ierr);
   }
+
+  ierr = PetscObjectStateGet((PetscObject)pc->pmat,&matstate);CHKERRQ(ierr);
+  if (!pc->setupcalled) {
+    ierr            = PetscInfo(pc,"Setting up PC for first time");CHKERRQ(ierr);
+    pc->flag        = DIFFERENT_NONZERO_PATTERN;
+  } else if (matstate == pc->matstate) {
+    ierr = PetscInfo(pc,"Leaving PC with identical preconditioner since operator is unchanged\n");CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  } else {
+    PetscObjectState matnonzerostate;
+    ierr = MatGetNonzeroState(pc->pmat,&matnonzerostate);CHKERRQ(ierr);
+    if (matnonzerostate > pc->matnonzerostate) {
+       ierr = PetscInfo(pc,"Setting up PC with different nonzero pattern\n");CHKERRQ(ierr);
+       pc->flag            = DIFFERENT_NONZERO_PATTERN;
+       pc->matnonzerostate = matnonzerostate;
+    } else {
+      ierr = PetscInfo(pc,"Setting up PC with same nonzero pattern\n");CHKERRQ(ierr);
+      pc->flag            = SAME_NONZERO_PATTERN;
+    }
+  }
+  pc->matstate = matstate;
 
   if (!((PetscObject)pc)->type_name) {
     ierr = PCGetDefaultType_Private(pc,&def);CHKERRQ(ierr);
@@ -889,9 +902,8 @@ PetscErrorCode  PCSetUp(PC pc)
   if (pc->ops->setup) {
     ierr = (*pc->ops->setup)(pc);CHKERRQ(ierr);
   }
-  pc->setupcalled = 2;
-
   ierr = PetscLogEventEnd(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
+  pc->setupcalled = 1;
   PetscFunctionReturn(0);
 }
 
@@ -1039,44 +1051,14 @@ PetscErrorCode  PCModifySubMatrices(PC pc,PetscInt nsub,const IS row[],const IS 
    Input Parameters:
 +  pc - the preconditioner context
 .  Amat - the matrix that defines the linear system
-.  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
--  flag - flag indicating information about the preconditioner matrix structure
-   during successive linear solves.  This flag is ignored the first time a
-   linear system is solved, and thus is irrelevant when solving just one linear
-   system.
+-  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
 
    Notes:
-   The flag can be used to eliminate unnecessary work in the preconditioner
-   during the repeated solution of linear systems of the same size.  The
-   available options are
-+    SAME_PRECONDITIONER -
-       Pmat is identical during successive linear solves.
-       This option is intended for folks who are using
-       different Amat and Pmat matrices and wish to reuse the
-       same preconditioner matrix.  For example, this option
-       saves work by not recomputing incomplete factorization
-       for ILU/ICC preconditioners.
-.     SAME_NONZERO_PATTERN -
-       Pmat has the same nonzero structure during
-       successive linear solves.
--     DIFFERENT_NONZERO_PATTERN -
-       Pmat does not have the same nonzero structure.
-
     Passing a NULL for Amat or Pmat removes the matrix that is currently used.
 
     If you wish to replace either Amat or Pmat but leave the other one untouched then
     first call KSPGetOperators() to get the one you wish to keep, call PetscObjectReference()
     on it and then pass it back in in your call to KSPSetOperators().
-
-   Caution:
-   If you specify SAME_NONZERO_PATTERN, PETSc believes your assertion
-   and does not check the structure of the matrix.  If you erroneously
-   claim that the structure is the same when it actually is not, the new
-   preconditioner will not function correctly.  Thus, use this optimization
-   feature carefully!
-
-   If in doubt about whether your preconditioner matrix has changed
-   structure or not, use the flag DIFFERENT_NONZERO_PATTERN.
 
    More Notes about Repeated Solution of Linear Systems:
    PETSc does NOT reset the matrix entries of either Amat or Pmat
@@ -1090,10 +1072,10 @@ PetscErrorCode  PCModifySubMatrices(PC pc,PetscInt nsub,const IS row[],const IS 
 
 .seealso: PCGetOperators(), MatZeroEntries()
  @*/
-PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
+PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat)
 {
-  PetscErrorCode ierr;
-  PetscInt       m1,n1,m2,n2;
+  PetscErrorCode   ierr;
+  PetscInt         m1,n1,m2,n2;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -1110,6 +1092,12 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
     if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot change local size of Pmat after use old sizes %D %D new sizes %D %D",m2,n2,m1,n1);
   }
 
+  if (Pmat != pc->pmat) {
+    /* changing the operator that defines the preconditioner thus reneed to clear current states so new preconditioner is built */
+    pc->matnonzerostate = -1;
+    pc->matstate        = -1;
+  }
+
   /* reference first in case the matrices are the same */
   if (Amat) {ierr = PetscObjectReference((PetscObject)Amat);CHKERRQ(ierr);}
   ierr = MatDestroy(&pc->mat);CHKERRQ(ierr);
@@ -1117,11 +1105,27 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   ierr     = MatDestroy(&pc->pmat);CHKERRQ(ierr);
   pc->mat  = Amat;
   pc->pmat = Pmat;
+  PetscFunctionReturn(0);
+}
 
-  if (pc->setupcalled == 2 && flag != SAME_PRECONDITIONER) {
-    pc->setupcalled = 1;
-  }
-  pc->flag = flag;
+#undef __FUNCT__
+#define __FUNCT__ "PCSetReusePreconditioner"
+/*@
+   PCSetReusePreconditioner - reuse the current preconditioner even if the operator in the preconditioner has changed.
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  flag - PETSC_TRUE do not compute a new preconditioner, PETSC_FALSE do compute a new preconditioner
+
+.seealso: PCGetOperators(), MatZeroEntries()
+ @*/
+PetscErrorCode  PCSetReusePreconditioner(PC pc,PetscBool flag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  pc->reusepreconditioner = flag;
   PetscFunctionReturn(0);
 }
 
@@ -1138,9 +1142,7 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 
    Output Parameters:
 +  Amat - the matrix defining the linear system
-.  Pmat - the matrix from which the preconditioner is constructed, usually the same as Amat.
--  flag - flag indicating information about the preconditioner
-          matrix structure.  See PCSetOperators() for details.
+-  Pmat - the matrix from which the preconditioner is constructed, usually the same as Amat.
 
    Level: intermediate
 
@@ -1154,22 +1156,22 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
       The user must set the sizes of the returned matrices and their type etc just
       as if the user created them with MatCreate(). For example,
 
-$         KSP/PCGetOperators(ksp/pc,&Amat,NULL,NULL); is equivalent to
+$         KSP/PCGetOperators(ksp/pc,&Amat,NULL); is equivalent to
 $           set size, type, etc of Amat
 
 $         MatCreate(comm,&mat);
-$         KSP/PCSetOperators(ksp/pc,Amat,Amat,SAME_NONZERO_PATTERN);
+$         KSP/PCSetOperators(ksp/pc,Amat,Amat);
 $         PetscObjectDereference((PetscObject)mat);
 $           set size, type, etc of Amat
 
      and
 
-$         KSP/PCGetOperators(ksp/pc,&Amat,&Pmat,NULL); is equivalent to
+$         KSP/PCGetOperators(ksp/pc,&Amat,&Pmat); is equivalent to
 $           set size, type, etc of Amat and Pmat
 
 $         MatCreate(comm,&Amat);
 $         MatCreate(comm,&Pmat);
-$         KSP/PCSetOperators(ksp/pc,Amat,Pmat,SAME_NONZERO_PATTERN);
+$         KSP/PCSetOperators(ksp/pc,Amat,Pmat);
 $         PetscObjectDereference((PetscObject)Amat);
 $         PetscObjectDereference((PetscObject)Pmat);
 $           set size, type, etc of Amat and Pmat
@@ -1188,7 +1190,7 @@ $           set size, type, etc of Amat and Pmat
 
 .seealso: PCSetOperators(), KSPGetOperators(), KSPSetOperators(), PCGetOperatorsSet()
 @*/
-PetscErrorCode  PCGetOperators(PC pc,Mat *Amat,Mat *Pmat,MatStructure *flag)
+PetscErrorCode  PCGetOperators(PC pc,Mat *Amat,Mat *Pmat)
 {
   PetscErrorCode ierr;
 
@@ -1224,7 +1226,6 @@ PetscErrorCode  PCGetOperators(PC pc,Mat *Amat,Mat *Pmat,MatStructure *flag)
     }
     *Pmat = pc->pmat;
   }
-  if (flag) *flag = pc->flag;
   PetscFunctionReturn(0);
 }
 
@@ -1540,8 +1541,8 @@ PetscErrorCode  PCLoad(PC newdm, PetscViewer viewer)
 }
 
 #include <petscdraw.h>
-#if defined(PETSC_HAVE_AMS)
-#include <petscviewerams.h>
+#if defined(PETSC_HAVE_SAWS)
+#include <petscviewersaws.h>
 #endif
 #undef __FUNCT__
 #define __FUNCT__ "PCView"
@@ -1577,7 +1578,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscBool         iascii,isstring,isbinary,isdraw;
   PetscViewerFormat format;
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   PetscBool         isams;
 #endif
 
@@ -1593,13 +1594,13 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERAMS,&isams);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SAWS)
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
 #endif
 
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)pc,viewer,"PC Object");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)pc,viewer);CHKERRQ(ierr);
     if (!pc->setupcalled) {
       ierr = PetscViewerASCIIPrintf(viewer,"  PC has not been set up so information may be incomplete\n");CHKERRQ(ierr);
     }
@@ -1669,10 +1670,14 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
       ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);
     }
     ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   } else if (isams) {
-    if (((PetscObject)pc)->amsmem == -1) {
-      ierr = PetscObjectViewAMS((PetscObject)pc,viewer);CHKERRQ(ierr);
+    PetscMPIInt rank;
+
+    ierr = PetscObjectName((PetscObject)pc);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    if (!((PetscObject)pc)->amsmem && !rank) {
+      ierr = PetscObjectViewSAWs((PetscObject)pc,viewer);CHKERRQ(ierr);
     }
     if (pc->mat) {ierr = MatView(pc->mat,viewer);CHKERRQ(ierr);}
     if (pc->pmat && pc->pmat != pc->mat) {ierr = MatView(pc->pmat,viewer);CHKERRQ(ierr);}
@@ -1700,7 +1705,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
    Notes:
     This is a weird function. Since PC's are linear operators on the right hand side they
     CANNOT use an initial guess. This function is for the "pass-through" preconditioners
-    PCKSP, PCREDUNDANT and PCHMPI and causes the inner KSP object to use the nonzero
+    PCKSP and PCREDUNDANT  and causes the inner KSP object to use the nonzero
     initial guess. Not currently working for PCREDUNDANT, that has to be rewritten to use KSP.
 
 
@@ -1805,7 +1810,7 @@ PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
   ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);
   ierr = VecGetSize(in,&M);CHKERRQ(ierr);
   ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
-  ierr = PetscMalloc((m+1)*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc1((m+1),&rows);CHKERRQ(ierr);
   for (i=0; i<m; i++) rows[i] = start + i;
 
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);

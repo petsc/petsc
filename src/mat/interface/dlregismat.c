@@ -11,9 +11,10 @@ const char       *MatOptions[] = {"ROW_ORIENTED","NEW_NONZERO_LOCATIONS",
                                   "KEEP_NONZERO_PATTERN","IGNORE_ZERO_ENTRIES","USE_INODES",
                                   "HERMITIAN",
                                   "SYMMETRY_ETERNAL",
-                                  "CHECK_COMPRESSED_ROW",
+                                  "DUMMY",
                                   "IGNORE_LOWER_TRIANGULAR","ERROR_LOWER_TRIANGULAR","GETROW_UPPERTRIANGULAR","SPD","NO_OFF_PROC_ENTRIES","NO_OFF_PROC_ZERO_ROWS","MatOption","MAT_",0};
 const char *const MatFactorShiftTypes[] = {"NONE","NONZERO","POSITIVE_DEFINITE","INBLOCKS","MatFactorShiftType","PC_FACTOR_",0};
+const char *const MatFactorShiftTypesDetail[] = {NULL,"diagonal shift to prevent zero pivot","Manteuffel shift","diagonal shift on blocks to prevent zero pivot"};
 const char *const MPPTScotchStrategyTypes[] = {"QUALITY","SPEED","BALANCE","SAFETY","SCALABILITY","MPPTScotchStrategyType","MP_PTSCOTCH_",0};
 const char *const MPChacoGlobalTypes[] = {"","MULTILEVEL","SPECTRAL","","LINEAR","RANDOM","SCATTERED","MPChacoGlobalType","MP_CHACO_",0};
 const char *const MPChacoLocalTypes[] = {"","KERNIGHAN","NONE","MPChacoLocalType","MP_CHACO_",0};
@@ -88,6 +89,7 @@ PetscErrorCode  MatInitializePackage(void)
   /* Register Classes */
   ierr = PetscClassIdRegister("Matrix",&MAT_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Matrix FD Coloring",&MAT_FDCOLORING_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Matrix Coloring",&MAT_COLORING_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Matrix MatTranspose Coloring",&MAT_TRANSPOSECOLORING_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Matrix Partitioning",&MAT_PARTITIONING_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Matrix Coarsen",&MAT_COARSEN_CLASSID);CHKERRQ(ierr);
@@ -126,6 +128,7 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatCopy",          MAT_CLASSID,&MAT_Copy);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatConvert",       MAT_CLASSID,&MAT_Convert);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatScale",         MAT_CLASSID,&MAT_Scale);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatResidual",      MAT_CLASSID,&MAT_Residual);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatAssemblyBegin", MAT_CLASSID,&MAT_AssemblyBegin);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatAssemblyEnd",   MAT_CLASSID,&MAT_AssemblyEnd);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatSetValues",     MAT_CLASSID,&MAT_SetValues);CHKERRQ(ierr);
@@ -133,7 +136,6 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatGetRow",        MAT_CLASSID,&MAT_GetRow);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetRowIJ",      MAT_CLASSID,&MAT_GetRowIJ);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetSubMatrice", MAT_CLASSID,&MAT_GetSubMatrices);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatGetColoring",   MAT_CLASSID,&MAT_GetColoring);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetOrdering",   MAT_CLASSID,&MAT_GetOrdering);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatIncreaseOvrlp", MAT_CLASSID,&MAT_IncreaseOverlap);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatPartitioning",  MAT_PARTITIONING_CLASSID,&MAT_Partitioning);CHKERRQ(ierr);
@@ -143,6 +145,7 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatView",          MAT_CLASSID,&MAT_View);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatAXPY",          MAT_CLASSID,&MAT_AXPY);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatFDColorCreate", MAT_FDCOLORING_CLASSID,&MAT_FDColoringCreate);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatFDColorSetUp",  MAT_FDCOLORING_CLASSID,&MAT_FDColoringSetUp);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatFDColorApply",  MAT_FDCOLORING_CLASSID,&MAT_FDColoringApply);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatFDColorFunc",   MAT_FDCOLORING_CLASSID,&MAT_FDColoringFunction);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatTranspose",     MAT_CLASSID,&MAT_Transpose);CHKERRQ(ierr);
@@ -197,6 +200,12 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatSetValBatch3",MAT_CLASSID,&MAT_SetValuesBatchIII);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatSetValBatch4",MAT_CLASSID,&MAT_SetValuesBatchIV);CHKERRQ(ierr);
 
+  ierr = PetscLogEventRegister("MatColoringApply",MAT_COLORING_CLASSID,&Mat_Coloring_Apply);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatColoringComm",MAT_COLORING_CLASSID,&Mat_Coloring_Comm);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatColoringLocal",MAT_COLORING_CLASSID,&Mat_Coloring_Local);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatColoringIS",MAT_COLORING_CLASSID,&Mat_Coloring_ISCreate);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatColoringSetUp",MAT_COLORING_CLASSID,&Mat_Coloring_SetUp);CHKERRQ(ierr);
+
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(MAT_SetValues, PETSC_FALSE);CHKERRQ(ierr);
   /* Process info exclusions */
@@ -219,7 +228,7 @@ PetscErrorCode  MatInitializePackage(void)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
 #undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_petscmat"
 /*
@@ -238,4 +247,4 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscmat(void)
 }
 
 
-#endif /* PETSC_USE_DYNAMIC_LIBRARIES */
+#endif /* PETSC_HAVE_DYNAMIC_LIBRARIES */

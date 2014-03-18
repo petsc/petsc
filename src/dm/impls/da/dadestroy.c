@@ -6,7 +6,6 @@
 #include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
 /* Logging support */
-PetscClassId  ADDA_CLASSID;
 PetscLogEvent DMDA_LocalADFunction;
 
 #undef __FUNCT__
@@ -76,7 +75,6 @@ PetscErrorCode  DMDestroy_DA(DM da)
   ierr = VecScatterDestroy(&dd->gton);CHKERRQ(ierr);
   ierr = AODestroy(&dd->ao);CHKERRQ(ierr);
 
-  ierr = PetscFree(dd->idx);CHKERRQ(ierr);
   ierr = PetscFree(dd->lx);CHKERRQ(ierr);
   ierr = PetscFree(dd->ly);CHKERRQ(ierr);
   ierr = PetscFree(dd->lz);CHKERRQ(ierr);

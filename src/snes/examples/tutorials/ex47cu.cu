@@ -3,6 +3,7 @@ static char help[] = "Solves -Laplacian u - exp(u) = 0,  0 < x < 1 using GPU\n\n
    Same as ex47.c except it also uses the GPU to evaluate the function
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
 #include <petsccusp.h>
@@ -13,7 +14,7 @@ static char help[] = "Solves -Laplacian u - exp(u) = 0,  0 < x < 1 using GPU\n\n
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/zip_iterator.h>
 
-extern PetscErrorCode ComputeFunction(SNES,Vec,Vec,void*), ComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode ComputeFunction(SNES,Vec,Vec,void*), ComputeJacobian(SNES,Vec,Mat,Mat,void*);
 PetscBool useCUSP = PETSC_FALSE;
 
 int main(int argc,char **argv)
@@ -33,9 +34,10 @@ int main(int argc,char **argv)
     if (tmp) useCUSP = PETSC_TRUE;
   }
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-8,1,1,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-8,1,1,NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&x); VecDuplicate(x,&f);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,&J);CHKERRQ(ierr);
 
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetFunction(snes,f,ComputeFunction,da);CHKERRQ(ierr);
@@ -145,7 +147,7 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
   return 0;
 
 }
-PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat J,Mat B,void *ctx)
 {
   DM             da = (DM) ctx;
   PetscInt       i,Mx,xm,xs;
@@ -162,16 +164,15 @@ PetscErrorCode ComputeJacobian(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,
 
   for (i=xs; i<xs+xm; i++) {
     if (i == 0 || i == Mx-1) {
-      ierr = MatSetValue(*J,i,i,1.0/hx,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValue(J,i,i,1.0/hx,INSERT_VALUES);CHKERRQ(ierr);
     } else {
-      ierr = MatSetValue(*J,i,i-1,-1.0/hx,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValue(*J,i,i,2.0/hx - hx*PetscExpScalar(xx[i]),INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValue(*J,i,i+1,-1.0/hx,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValue(J,i,i-1,-1.0/hx,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValue(J,i,i,2.0/hx - hx*PetscExpScalar(xx[i]),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValue(J,i,i+1,-1.0/hx,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
-  ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr  = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  *flag = SAME_NONZERO_PATTERN;
+  ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr  = DMDAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
   ierr  = DMRestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
   return 0;

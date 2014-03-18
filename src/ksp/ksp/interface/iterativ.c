@@ -374,7 +374,7 @@ PetscErrorCode  KSPMonitorRange(KSP ksp,PetscInt it,PetscReal rnorm,void *dummy)
 
   rel  = (prev - rnorm)/prev;
   prev = rnorm;
-  ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e \n",it,(double)rnorm,(double)100.0*perc,(double)rel,(double)rel/perc);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e \n",it,(double)rnorm,(double)(100.0*perc),(double)rel,(double)(rel/perc));CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -427,7 +427,7 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp,PetscInt its,PetscReal fnorm,v
   }
   ierr       = KSPGetTolerances(ksp, &outer_rtol, &outer_abstol, &outer_dtol, &outer_maxits);CHKERRQ(ierr);
   inner_rtol = PetscMin(scale->coef * scale->bnrm * outer_rtol / fnorm, 0.999);
-  /*ierr = PetscPrintf(PETSC_COMM_WORLD, "        Inner rtol = %G\n", inner_rtol);CHKERRQ(ierr);*/
+  /*ierr = PetscPrintf(PETSC_COMM_WORLD, "        Inner rtol = %g\n", (double)inner_rtol);CHKERRQ(ierr);*/
 
   /* if pc is ksp */
   ierr = PCKSPGetKSP(pc, &kspinner);CHKERRQ(ierr);
@@ -487,7 +487,7 @@ PetscErrorCode  KSPMonitorDefaultShort(KSP ksp,PetscInt its,PetscReal fnorm,void
   }
 
   if (fnorm > 1.e-9) {
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %G \n",its,fnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %g \n",its,(double)fnorm);CHKERRQ(ierr);
   } else if (fnorm > 1.e-11) {
     ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %5.3e \n",its,(double)fnorm);CHKERRQ(ierr);
   } else {
@@ -498,9 +498,9 @@ PetscErrorCode  KSPMonitorDefaultShort(KSP ksp,PetscInt its,PetscReal fnorm,void
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPSkipConverged"
+#define __FUNCT__ "KSPConvergedSkip"
 /*@C
-   KSPSkipConverged - Convergence test that do not return as converged
+   KSPConvergedSkip - Convergence test that do not return as converged
    until the maximum number of iterations is reached.
 
    Collective on KSP
@@ -527,7 +527,7 @@ PetscErrorCode  KSPMonitorDefaultShort(KSP ksp,PetscInt its,PetscReal fnorm,void
 
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSetNormType()
 @*/
-PetscErrorCode  KSPSkipConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
+PetscErrorCode  KSPConvergedSkip(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -539,9 +539,9 @@ PetscErrorCode  KSPSkipConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConverged
 
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPDefaultConvergedCreate"
+#define __FUNCT__ "KSPConvergedDefaultCreate"
 /*@C
-   KSPDefaultConvergedCreate - Creates and initializes the space used by the KSPDefaultConverged() function context
+   KSPConvergedDefaultCreate - Creates and initializes the space used by the KSPConvergedDefault() function context
 
    Collective on KSP
 
@@ -552,24 +552,24 @@ PetscErrorCode  KSPSkipConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConverged
 
 .keywords: KSP, default, convergence, residual
 
-.seealso: KSPDefaultConverged(), KSPDefaultConvergedDestroy(), KSPSetConvergenceTest(), KSPSetTolerances(),
-          KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(), KSPDefaultConvergedSetUIRNorm(), KSPDefaultConvergedSetUMIRNorm()
+.seealso: KSPConvergedDefault(), KSPConvergedDefaultDestroy(), KSPSetConvergenceTest(), KSPSetTolerances(),
+          KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(), KSPConvergedDefaultSetUIRNorm(), KSPConvergedDefaultSetUMIRNorm()
 @*/
-PetscErrorCode  KSPDefaultConvergedCreate(void **ctx)
+PetscErrorCode  KSPConvergedDefaultCreate(void **ctx)
 {
   PetscErrorCode         ierr;
-  KSPDefaultConvergedCtx *cctx;
+  KSPConvergedDefaultCtx *cctx;
 
   PetscFunctionBegin;
-  ierr = PetscNew(KSPDefaultConvergedCtx,&cctx);CHKERRQ(ierr);
+  ierr = PetscNew(&cctx);CHKERRQ(ierr);
   *ctx = cctx;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPDefaultConvergedSetUIRNorm"
+#define __FUNCT__ "KSPConvergedDefaultSetUIRNorm"
 /*@
-   KSPDefaultConvergedSetUIRNorm - makes the default convergence test use || B*(b - A*(initial guess))||
+   KSPConvergedDefaultSetUIRNorm - makes the default convergence test use || B*(b - A*(initial guess))||
       instead of || B*b ||. In the case of right preconditioner or if KSPSetNormType(ksp,KSP_NORM_UNPRECONDIITONED)
       is used there is no B in the above formula. UIRNorm is short for Use Initial Residual Norm.
 
@@ -587,7 +587,7 @@ PetscErrorCode  KSPDefaultConvergedCreate(void **ctx)
    The precise values of reason are macros such as KSP_CONVERGED_RTOL, which
    are defined in petscksp.h.
 
-   If the convergence test is not KSPDefaultConverged() then this is ignored.
+   If the convergence test is not KSPConvergedDefault() then this is ignored.
 
    If right preconditioning is being used then B does not appear in the above formula.
 
@@ -596,24 +596,24 @@ PetscErrorCode  KSPDefaultConvergedCreate(void **ctx)
 
 .keywords: KSP, default, convergence, residual
 
-.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(), KSPDefaultConvergedSetUMIRNorm()
+.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(), KSPConvergedDefaultSetUMIRNorm()
 @*/
-PetscErrorCode  KSPDefaultConvergedSetUIRNorm(KSP ksp)
+PetscErrorCode  KSPConvergedDefaultSetUIRNorm(KSP ksp)
 {
-  KSPDefaultConvergedCtx *ctx = (KSPDefaultConvergedCtx*) ksp->cnvP;
+  KSPConvergedDefaultCtx *ctx = (KSPConvergedDefaultCtx*) ksp->cnvP;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (ksp->converged != KSPDefaultConverged) PetscFunctionReturn(0);
-  if (ctx->mininitialrtol) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Cannot use KSPDefaultConvergedSetUIRNorm() and KSPDefaultConvergedSetUMIRNorm() together");
+  if (ksp->converged != KSPConvergedDefault) PetscFunctionReturn(0);
+  if (ctx->mininitialrtol) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Cannot use KSPConvergedDefaultSetUIRNorm() and KSPConvergedDefaultSetUMIRNorm() together");
   ctx->initialrtol = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPDefaultConvergedSetUMIRNorm"
+#define __FUNCT__ "KSPConvergedDefaultSetUMIRNorm"
 /*@
-   KSPDefaultConvergedSetUMIRNorm - makes the default convergence test use min(|| B*(b - A*(initial guess))||,|| B*b ||)
+   KSPConvergedDefaultSetUMIRNorm - makes the default convergence test use min(|| B*(b - A*(initial guess))||,|| B*b ||)
       In the case of right preconditioner or if KSPSetNormType(ksp,KSP_NORM_UNPRECONDIITONED)
       is used there is no B in the above formula. UMIRNorm is short for Use Minimum Initial Residual Norm.
 
@@ -634,24 +634,24 @@ PetscErrorCode  KSPDefaultConvergedSetUIRNorm(KSP ksp)
 
 .keywords: KSP, default, convergence, residual
 
-.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(), KSPDefaultConvergedSetUIRNorm()
+.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(), KSPConvergedDefaultSetUIRNorm()
 @*/
-PetscErrorCode  KSPDefaultConvergedSetUMIRNorm(KSP ksp)
+PetscErrorCode  KSPConvergedDefaultSetUMIRNorm(KSP ksp)
 {
-  KSPDefaultConvergedCtx *ctx = (KSPDefaultConvergedCtx*) ksp->cnvP;
+  KSPConvergedDefaultCtx *ctx = (KSPConvergedDefaultCtx*) ksp->cnvP;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (ksp->converged != KSPDefaultConverged) PetscFunctionReturn(0);
-  if (ctx->initialrtol) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Cannot use KSPDefaultConvergedSetUIRNorm() and KSPDefaultConvergedSetUMIRNorm() together");
+  if (ksp->converged != KSPConvergedDefault) PetscFunctionReturn(0);
+  if (ctx->initialrtol) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Cannot use KSPConvergedDefaultSetUIRNorm() and KSPConvergedDefaultSetUMIRNorm() together");
   ctx->mininitialrtol = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPDefaultConverged"
+#define __FUNCT__ "KSPConvergedDefault"
 /*@C
-   KSPDefaultConverged - Determines convergence of
+   KSPConvergedDefault - Determines convergence of
    the iterative solvers (default code).
 
    Collective on KSP
@@ -660,7 +660,7 @@ PetscErrorCode  KSPDefaultConvergedSetUMIRNorm(KSP ksp)
 +  ksp   - iterative context
 .  n     - iteration number
 .  rnorm - 2-norm residual value (may be estimated)
--  ctx - convergence context which must be created by KSPDefaultConvergedCreate()
+-  ctx - convergence context which must be created by KSPConvergedDefaultCreate()
 
    reason is set to:
 +   positive - if the iteration has converged;
@@ -668,7 +668,7 @@ PetscErrorCode  KSPDefaultConvergedSetUMIRNorm(KSP ksp)
 -   0 - otherwise.
 
    Notes:
-   KSPDefaultConverged() reaches convergence when
+   KSPConvergedDefault() reaches convergence when
 $      rnorm < MAX (rtol * rnorm_0, abstol);
    Divergence is detected if
 $      rnorm > dtol * rnorm_0,
@@ -678,7 +678,7 @@ $      rnorm > dtol * rnorm_0,
 .     abstol = absolute tolerance.
 .     dtol = divergence tolerance,
 -     rnorm_0 is the two norm of the right hand side. When initial guess is non-zero you
-          can call KSPDefaultConvergedSetUIRNorm() to use the norm of (b - A*(initial guess))
+          can call KSPConvergedDefaultSetUIRNorm() to use the norm of (b - A*(initial guess))
           as the starting point for relative norm convergence testing.
 
    Use KSPSetTolerances() to alter the defaults for rtol, abstol, dtol.
@@ -690,13 +690,13 @@ $      rnorm > dtol * rnorm_0,
 
 .keywords: KSP, default, convergence, residual
 
-.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(),
-          KSPDefaultConvergedSetUIRNorm(), KSPDefaultConvergedSetUMIRNorm(), KSPDefaultConvergedCreate(), KSPDefaultConvergedDestroy()
+.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(),
+          KSPConvergedDefaultSetUIRNorm(), KSPConvergedDefaultSetUMIRNorm(), KSPConvergedDefaultCreate(), KSPConvergedDefaultDestroy()
 @*/
-PetscErrorCode  KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
+PetscErrorCode  KSPConvergedDefault(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
 {
   PetscErrorCode         ierr;
-  KSPDefaultConvergedCtx *cctx = (KSPDefaultConvergedCtx*) ctx;
+  KSPConvergedDefaultCtx *cctx = (KSPConvergedDefaultCtx*) ctx;
   KSPNormType            normtype;
 
   PetscFunctionBegin;
@@ -705,9 +705,9 @@ PetscErrorCode  KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
   *reason = KSP_CONVERGED_ITERATING;
 
   ierr = KSPGetNormType(ksp,&normtype);CHKERRQ(ierr);
-  if (normtype == KSP_NORM_NONE) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Use KSPSkipConverged() with KSPNormType of KSP_NORM_NONE");
+  if (normtype == KSP_NORM_NONE) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Use KSPConvergedSkip() with KSPNormType of KSP_NORM_NONE");
 
-  if (!cctx) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_NULL,"Convergence context must have been created with KSPDefaultConvergedCreate()");
+  if (!cctx) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_NULL,"Convergence context must have been created with KSPConvergedDefaultCreate()");
   if (!n) {
     /* if user gives initial guess need to compute norm of b */
     if (!ksp->guess_zero && !cctx->initialrtol) {
@@ -769,9 +769,9 @@ PetscErrorCode  KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPDefaultConvergedDestroy"
+#define __FUNCT__ "KSPConvergedDefaultDestroy"
 /*@C
-   KSPDefaultConvergedDestroy - Frees the space used by the KSPDefaultConverged() function context
+   KSPConvergedDefaultDestroy - Frees the space used by the KSPConvergedDefault() function context
 
    Collective on KSP
 
@@ -782,13 +782,13 @@ PetscErrorCode  KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
 
 .keywords: KSP, default, convergence, residual
 
-.seealso: KSPDefaultConverged(), KSPDefaultConvergedCreate(), KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(),
-          KSPConvergedReason, KSPGetConvergedReason(), KSPDefaultConvergedSetUIRNorm(), KSPDefaultConvergedSetUMIRNorm()
+.seealso: KSPConvergedDefault(), KSPConvergedDefaultCreate(), KSPSetConvergenceTest(), KSPSetTolerances(), KSPConvergedSkip(),
+          KSPConvergedReason, KSPGetConvergedReason(), KSPConvergedDefaultSetUIRNorm(), KSPConvergedDefaultSetUMIRNorm()
 @*/
-PetscErrorCode  KSPDefaultConvergedDestroy(void *ctx)
+PetscErrorCode  KSPConvergedDefaultDestroy(void *ctx)
 {
   PetscErrorCode         ierr;
-  KSPDefaultConvergedCtx *cctx = (KSPDefaultConvergedCtx*) ctx;
+  KSPConvergedDefaultCtx *cctx = (KSPConvergedDefaultCtx*) ctx;
 
   PetscFunctionBegin;
   ierr = VecDestroy(&cctx->work);CHKERRQ(ierr);
@@ -875,12 +875,11 @@ PetscErrorCode KSPBuildSolutionDefault(KSP ksp,Vec v,Vec *V)
 PetscErrorCode KSPBuildResidualDefault(KSP ksp,Vec t,Vec v,Vec *V)
 {
   PetscErrorCode ierr;
-  MatStructure   pflag;
   Mat            Amat,Pmat;
 
   PetscFunctionBegin;
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
   ierr = KSPBuildSolution(ksp,t,NULL);CHKERRQ(ierr);
   ierr = KSP_MatMult(ksp,Amat,t,v);CHKERRQ(ierr);
   ierr = VecAYPX(v,-1.0,ksp->vec_rhs);CHKERRQ(ierr);
@@ -925,7 +924,7 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
       } else {
         Mat mat;
         if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-        ierr = PCGetOperators(ksp->pc,&mat,NULL,NULL);CHKERRQ(ierr);
+        ierr = PCGetOperators(ksp->pc,&mat,NULL);CHKERRQ(ierr);
         ierr = MatGetVecs(mat,&vecr,NULL);CHKERRQ(ierr);
       }
     }
@@ -947,7 +946,7 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
       } else {
         Mat mat;
         if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-        ierr = PCGetOperators(ksp->pc,&mat,NULL,NULL);CHKERRQ(ierr);
+        ierr = PCGetOperators(ksp->pc,&mat,NULL);CHKERRQ(ierr);
         ierr = MatGetVecs(mat,NULL,&vecl);CHKERRQ(ierr);
       }
     }
@@ -1025,7 +1024,7 @@ PetscErrorCode KSPDestroyDefault(KSP ksp)
    Possible values for reason:
 +  KSP_CONVERGED_RTOL (residual 2-norm decreased by a factor of rtol, from 2-norm of right hand side)
 .  KSP_CONVERGED_ATOL (residual 2-norm less than abstol)
-.  KSP_CONVERGED_ITS (used by the preonly preconditioner that always uses ONE iteration, or when the KSPSkipConverged() convergence
+.  KSP_CONVERGED_ITS (used by the preonly preconditioner that always uses ONE iteration, or when the KSPConvergedSkip() convergence
            test routine is set.
 .  KSP_CONVERGED_CG_NEG_CURVE
 .  KSP_CONVERGED_CG_CONSTRAINED
@@ -1047,7 +1046,7 @@ PetscErrorCode KSPDestroyDefault(KSP ksp)
 
 .keywords: KSP, nonlinear, set, convergence, test
 
-.seealso: KSPSetConvergenceTest(), KSPDefaultConverged(), KSPSetTolerances(), KSPConvergedReason
+.seealso: KSPSetConvergenceTest(), KSPConvergedDefault(), KSPSetTolerances(), KSPConvergedReason
 @*/
 PetscErrorCode  KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
 {
@@ -1070,10 +1069,13 @@ PetscErrorCode  KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
 +  ksp - the preconditioner context
 -  dm - the dm
 
+   Notes: If this is used then the KSP will attempt to use the DM to create the matrix and use the routine
+          set with DMKSPSetComputeOperators(). Use KSPSetDMActive(ksp,PETSC_FALSE) to instead use the matrix
+          you've provided with KSPSetOperators().
+
    Level: intermediate
 
-
-.seealso: KSPGetDM(), KSPSetDM(), KSPGetDM()
+.seealso: KSPGetDM(), KSPSetDMActive(), KSPSetComputeOperators(), KSPSetComputeRHS(), KSPSetComputeInitialGuess(), DMKSPSetComputeOperators(), DMKSPSetComputeRHS(), DMKSPSetComputeInitialGuess()
 @*/
 PetscErrorCode  KSPSetDM(KSP ksp,DM dm)
 {
@@ -1111,12 +1113,12 @@ PetscErrorCode  KSPSetDM(KSP ksp,DM dm)
 +  ksp - the preconditioner context
 -  flg - use the DM
 
+   Notes:
+   By default KSPSetDM() sets the DM as active, call KSPSetDMActive(ksp,PETSC_FALSE); after KSPSetDM(ksp,dm) to not have the KSP object use the DM to generate the matrices.
+
    Level: intermediate
 
-   Notes:
-   By default KSPSetDM() sets the DM as active, call KSPSetDMActive(dm,PETSC_FALSE); after KSPSetDM(dm) to not have the KSP object use the DM to generate the matrices
-
-.seealso: KSPGetDM(), KSPSetDM(), KSPGetDM()
+.seealso: KSPGetDM(), KSPSetDM(), SNESSetDM(), KSPSetComputeOperators(), KSPSetComputeRHS(), KSPSetComputeInitialGuess()
 @*/
 PetscErrorCode  KSPSetDMActive(KSP ksp,PetscBool flg)
 {
@@ -1143,7 +1145,7 @@ PetscErrorCode  KSPSetDMActive(KSP ksp,PetscBool flg)
    Level: intermediate
 
 
-.seealso: KSPSetDM(), KSPSetDM(), KSPGetDM()
+.seealso: KSPSetDM(), KSPSetDMActive()
 @*/
 PetscErrorCode  KSPGetDM(KSP ksp,DM *dm)
 {

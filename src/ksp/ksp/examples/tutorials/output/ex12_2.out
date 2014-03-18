@@ -1,4 +1,4 @@
-Matrix Object:
+Mat Object:
   type: mpiaij
   rows=110, cols=110
   total: nonzeros=434, allocated nonzeros=434
@@ -50,12 +50,12 @@ PC Object:
          out-of-place factorization
          matrix ordering: natural
   linear system matrix = precond matrix:
-Matrix Object:
+Mat Object:
   type: seqaij
   rows=30, cols=30
   total: nonzeros=111, allocated nonzeros=111
   linear system matrix = precond matrix:
-Matrix Object:
+Mat Object:
   type: mpiaij
   rows=110, cols=110
   total: nonzeros=434, allocated nonzeros=434

@@ -104,9 +104,11 @@ void (*signal())();
     return
 
   def checkC99Complex(self):
-    '''Check for complex numbers in in C99 std'''
+    '''Check for complex numbers in in C99 std
+       Note that since PETSc source code uses _Complex we test specifically for that, not complex'''
     includes = '#include <complex.h>\n'
-    body     = 'double complex x;\n x = I;\n'
+    body     = 'double _Complex x;\n x = I;\n'
+    if not self.checkCompile(includes, body): return    # checkLink can succeed even if checkCompile fails
     if self.checkLink(includes, body):
       self.addDefine('HAVE_C99_COMPLEX', 1)
       self.c99_complex = 1

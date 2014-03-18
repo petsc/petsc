@@ -8,7 +8,6 @@ class Configure(config.package.Package):
     self.includedir      = ['','include']
     self.forceLanguage   = 'CUDA'
     self.cxx             = 0
-    self.archIndependent = 1
     self.worksonWindows  = 1
     return
 

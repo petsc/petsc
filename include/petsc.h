@@ -11,9 +11,7 @@
 #include <petscdraw.h>
 
 #include <petscdmda.h>
-#include <petscdmadda.h>
 #include <petscdmcomposite.h>
-#include <petscdmmesh.h>
 #include <petscdmpatch.h>
 #include <petscdmplex.h>
 #include <petscdmredundant.h>
@@ -24,6 +22,6 @@
 
 #include <petsccharacteristic.h>
 
-#include <petscsnesfas.h>
 
 #include <petscts.h>
+#include <petsctao.h>

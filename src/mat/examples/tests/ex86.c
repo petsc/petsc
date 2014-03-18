@@ -37,6 +37,7 @@ int main(int argc,char **argv)
 
   /* Concatenate seqaij matrices into a single mpiaij matrix */
   ierr = MatCreateMPIAIJConcatenateSeqAIJ(PETSC_COMM_WORLD,seqaijmat,PETSC_DECIDE,MAT_INITIAL_MATRIX,&mpiaijmat);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJConcatenateSeqAIJ(PETSC_COMM_WORLD,seqaijmat,PETSC_DECIDE,MAT_REUSE_MATRIX,&mpiaijmat);CHKERRQ(ierr);
 
   ierr = MatDestroy(&seqaijmat);CHKERRQ(ierr);
   ierr = MatDestroy(&mpiaijmat);CHKERRQ(ierr);

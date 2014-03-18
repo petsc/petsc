@@ -53,10 +53,10 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 
   ierr = (*ksp->converged)(ksp, 0, zeta0, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) {
-    ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->its   = 0;
     ksp->rnorm = zeta0;
-    ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -135,12 +135,12 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       /* NEW: check for early exit */
       ierr = (*ksp->converged)(ksp, k+j, nrm0, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
       if (ksp->reason) {
-        ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+        ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
 
         ksp->its   = k+j;
         ksp->rnorm = nrm0;
 
-        ierr = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+        ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
         if (ksp->reason < 0) PetscFunctionReturn(0);
       }
     }
@@ -551,9 +551,9 @@ PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
 
   PetscFunctionBegin;
   ierr = KSPSetWorkVecs(ksp, 6+2*ell);CHKERRQ(ierr);
-  ierr = PetscMalloc5(ldMZ,PetscScalar,&AY0c,ldMZ,PetscScalar,&AYlc,ldMZ,PetscScalar,&AYtc,ldMZ*ldMZ,PetscScalar,&MZa,ldMZ*ldMZ,PetscScalar,&MZb);CHKERRQ(ierr);
+  ierr = PetscMalloc5(ldMZ,&AY0c,ldMZ,&AYlc,ldMZ,&AYtc,ldMZ*ldMZ,&MZa,ldMZ*ldMZ,&MZb);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(5*ell,&bcgsl->lwork);CHKERRQ(ierr);
-  ierr = PetscMalloc5(bcgsl->lwork,PetscScalar,&bcgsl->work,ell,PetscReal,&bcgsl->s,ell*ell,PetscScalar,&bcgsl->u,ell*ell,PetscScalar,&bcgsl->v,5*ell,PetscReal,&bcgsl->realwork);CHKERRQ(ierr);
+  ierr = PetscMalloc5(bcgsl->lwork,&bcgsl->work,ell,&bcgsl->s,ell*ell,&bcgsl->u,ell*ell,&bcgsl->v,5*ell,&bcgsl->realwork);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -625,7 +625,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_BCGSL(KSP ksp)
 
   PetscFunctionBegin;
   /* allocate BiCGStab(L) context */
-  ierr      = PetscNewLog(ksp, KSP_BCGSL, &bcgsl);CHKERRQ(ierr);
+  ierr      = PetscNewLog(ksp,&bcgsl);CHKERRQ(ierr);
   ksp->data = (void*)bcgsl;
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);

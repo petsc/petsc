@@ -107,7 +107,6 @@ PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
   if (!rank) {
     char        arch[10];
     int         err;
-    PetscViewer viewer;
 
     ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
     ierr = PetscGetDate(date,64);CHKERRQ(ierr);
@@ -128,9 +127,6 @@ PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"%s %s\n",version,date);CHKERRQ(ierr);
     ierr = PetscGetProgramName(pname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"%s on a %s, %d proc. with options:\n",pname,arch,size);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIOpenWithFILE(PETSC_COMM_WORLD,*fd,&viewer);CHKERRQ(ierr);
-    ierr = PetscOptionsView(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
 
     err = fflush(*fd);
@@ -265,6 +261,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flg4 = PETSC_FALSE,flag;
   PetscErrorCode ierr;
   PetscReal      si,logthreshold;
+  PetscInt       intensity;
   int            i;
   PetscMPIInt    rank;
   char           version[256];
@@ -386,6 +383,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-fp_trap",&flg1,NULL);CHKERRQ(ierr);
   if (flg1) {ierr = PetscSetFPTrap(PETSC_FP_TRAP_ON);CHKERRQ(ierr);}
+  ierr = PetscOptionsGetInt(NULL,"-check_pointer_intensity",&intensity,&flag);CHKERRQ(ierr);
+  if (flag) {ierr = PetscCheckPointerSetIntensity(intensity);CHKERRQ(ierr);}
 
   /*
       Setup debugger information
@@ -430,7 +429,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       }
     }
     /* check if this processor node should be in debugger */
-    ierr  = PetscMalloc(size*sizeof(PetscInt),&nodes);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(size,&nodes);CHKERRQ(ierr);
     lsize = size;
     ierr  = PetscOptionsGetIntArray(NULL,"-debugger_nodes",nodes,&lsize,&flag);CHKERRQ(ierr);
     if (flag) {
@@ -476,7 +475,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     if (mname[0]) {
       ierr = PetscOpenHistoryFile(mname,&petsc_history);CHKERRQ(ierr);
     } else {
-      ierr = PetscOpenHistoryFile(0,&petsc_history);CHKERRQ(ierr);
+      ierr = PetscOpenHistoryFile(NULL,&petsc_history);CHKERRQ(ierr);
     }
   }
 #if defined(PETSC_HAVE_MPE)
@@ -490,7 +489,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetBool(NULL,"-log_all",&flg1,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-log",&flg2,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,"-log_summary",&flg3);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-log_summary_python",&flg4);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-log_view",&flg4);CHKERRQ(ierr);
   if (flg1)                      { ierr = PetscLogAllBegin();CHKERRQ(ierr); }
   else if (flg2 || flg3 || flg4) { ierr = PetscLogBegin();CHKERRQ(ierr);}
 
@@ -509,7 +508,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   }
 #endif
 
-  ierr = PetscOptionsGetBool(NULL,"-options_gui",&PetscOptionsPublish,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-saws_options",&PetscOptionsPublish,NULL);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscOptionsHasName(NULL,"-cuda_show_devices",&flg1);CHKERRQ(ierr);
@@ -517,10 +516,14 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     struct cudaDeviceProp prop;
     int                   devCount;
     int                   device;
-
-    ierr = cudaGetDeviceCount(&devCount);CHKERRQ(ierr);
+    cudaError_t           err = cudaSuccess;
+    err = cudaGetDeviceCount(&devCount);
+    if (err != cudaSuccess)
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceCount %s",cudaGetErrorString(err));
     for (device = 0; device < devCount; ++device) {
-      ierr = cudaGetDeviceProperties(&prop, device);CHKERRQ(ierr);
+      err = cudaGetDeviceProperties(&prop, device);
+      if (err != cudaSuccess)
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceProperties %s",cudaGetErrorString(err));
       ierr = PetscPrintf(PETSC_COMM_WORLD, "CUDA device %d: %s\n", device, prop.name);CHKERRQ(ierr);
     }
   }
@@ -529,17 +532,50 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     if (size>1) {
       int devCount, device, rank;
-      ierr   = cudaGetDeviceCount(&devCount);CHKERRQ(ierr);
-      ierr   = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-      device = rank % devCount;
-      ierr   = cudaSetDevice(device);CHKERRQ(ierr);
+      cudaError_t err = cudaSuccess;
+
+      /* check to see if we force multiple ranks to hit the same GPU */
+      ierr = PetscOptionsGetInt(NULL,"-cuda_set_device", &device, &flg1);CHKERRQ(ierr);
+      if (flg1) {
+        ierr = cudaSetDevice(device);CHKERRQ(ierr);
+        if (err != cudaSuccess)
+          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDevice %s",cudaGetErrorString(err));
+      } else {
+        /* we're not using the same GPU on multiple MPI threads. So try to allocated different
+         GPUs to different threads */
+
+        /* First get the device count */
+        err   = cudaGetDeviceCount(&devCount);CHKERRQ(ierr);
+        if (err != cudaSuccess)
+          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaGetDeviceCount %s",cudaGetErrorString(err));
+
+        /* next determine the rank and then set the device via a mod */
+        ierr   = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+        device = rank % devCount;
+        err   = cudaSetDevice(device);
+        if (err != cudaSuccess)
+          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDevice %s",cudaGetErrorString(err));
+      }
+
+      /* set the device flags so that it can map host memory ... do NOT throw exception on err!=cudaSuccess
+       multiple devices may try to set the flags on the same device. So long as one of them succeeds, things
+       are ok. */
+      err = cudaSetDeviceFlags(cudaDeviceMapHost);
+
     } else {
       int device;
+      cudaError_t err = cudaSuccess;
+
       /* the code below works for serial GPU simulations */
       ierr = PetscOptionsGetInt(NULL,"-cuda_set_device", &device, &flg1);CHKERRQ(ierr);
       if (flg1) {
         ierr = cudaSetDevice(device);CHKERRQ(ierr);
       }
+
+      /* set the device flags so that it can map host memory ... here, we error check. */
+      err = cudaSetDeviceFlags(cudaDeviceMapHost);
+      if (err != cudaSuccess)
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"error in cudaSetDevice %s",cudaGetErrorString(err));
     }
   }
 #endif
@@ -565,7 +601,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = (*PetscHelpPrintf)(comm," -debugger_pause [m] : delay (in seconds) to attach debugger\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -stop_for_debugger : prints message on how to attach debugger manually\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"                      waits the delay for you to attach\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -display display: Location where graphics and debuggers are displayed\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -display display: Location where X window graphics and debuggers are displayed\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -no_signal_handler: do not trap error signals\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -mpi_return_on_error: MPI returns error code, rather than abort on internal error\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -fp_trap: stop on floating point exceptions\n");CHKERRQ(ierr);
@@ -599,11 +635,13 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = (*PetscHelpPrintf)(comm,"-----------------------------------------------\n");CHKERRQ(ierr);
   }
 
-#if defined(PETSC_HAVE_SERVER)
-  flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-server",&flg1,NULL);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_POPEN)
+  {
+  char machine[128];
+  ierr = PetscOptionsGetString(NULL,"-popen_machine",machine,128,&flg1);CHKERRQ(ierr);
   if (flg1) {
-    ierr = PetscPOpen(PETSC_COMM_WORLD,NULL,"${PETSC_DIR}/${PETSC_ARCH}/bin/petscwebserver","r",NULL);CHKERRQ(ierr);
+    ierr = PetscPOpenSetMachine(machine);CHKERRQ(ierr);
+  }
   }
 #endif
 
@@ -618,19 +656,18 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = PetscInfoDeactivateClass(0);CHKERRQ(ierr);
   }
 
-#if defined(PETSC_HAVE_CUSP)
+#if defined(PETSC_HAVE_CUSP) || defined(PETSC_HAVE_VIENNACL)
   ierr = PetscOptionsHasName(NULL,"-log_summary",&flg3);CHKERRQ(ierr);
-  if (flg3) flg1 = PETSC_TRUE;
-  else flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-cusp_synchronize",&flg1,NULL);CHKERRQ(ierr);
-  if (flg1) PetscCUSPSynchronize = PETSC_TRUE;
+  if (!flg3) {
+  ierr = PetscOptionsHasName(NULL,"-log_view",&flg3);CHKERRQ(ierr);
+  }
 #endif
-#if defined(PETSC_HAVE_VIENNACL)
-  ierr = PetscOptionsHasName(NULL,"-log_summary",&flg3);CHKERRQ(ierr);
-  if (flg3) flg1 = PETSC_TRUE;
-  else flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-viennacl_synchronize",&flg1,NULL);CHKERRQ(ierr);
-  if (flg1) PetscViennaCLSynchronize = PETSC_TRUE;
+#if defined(PETSC_HAVE_CUSP)
+  ierr = PetscOptionsGetBool(NULL,"-cusp_synchronize",&flg3,NULL);CHKERRQ(ierr);
+  PetscCUSPSynchronize = flg3;
+#elif defined(PETSC_HAVE_VIENNACL)
+  ierr = PetscOptionsGetBool(NULL,"-viennacl_synchronize",&flg3,NULL);CHKERRQ(ierr);
+  PetscViennaCLSynchronize = flg3;
 #endif
   PetscFunctionReturn(0);
 }

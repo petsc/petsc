@@ -3,12 +3,15 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download   = ['https://elemental.googlecode.com/files/elemental-0.79-p1.tgz',
-                       'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/elemental-0.79-p1.tgz']
+    self.gitcommit  = '68215f197c0bddde4cb9c44e4e4b368d3af52983'
+    self.giturls    = ['https://github.com/elemental/Elemental']
+    self.download   = ['http://libelemental.org/pub/releases/elemental-0.83.tgz',
+                       'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/elemental-0.83.tgz']
     self.liblist    = [['libelemental.a','libpmrrr.a']]
     self.includes   = ['elemental.hpp']
     self.cxx              = 1
-    self.requires32bitint = 1
+    self.requirescxx11    = 1
+    self.requires32bitint = 0
     self.complex          = 1
     self.worksonWindows   = 0
     self.downloadonWindows= 0
@@ -31,6 +34,7 @@ class Configure(PETSc.package.NewPackage):
     args = ['-DCMAKE_INSTALL_PREFIX='+self.installDir]
     args.append('-DCMAKE_VERBOSE_MAKEFILE=1')
     args.append('-DMATH_LIBS:STRING="'+self.libraries.toString(self.blasLapack.dlib)+'"')
+    args.append('-DUSE_QT5=OFF') # otherwise we would need Qt5 include paths to compile
 
     self.framework.pushLanguage('C')
     args.append('-DMPI_C_COMPILER="'+self.framework.getCompiler()+'"')
@@ -40,6 +44,8 @@ class Configure(PETSc.package.NewPackage):
     args.append('-DCMAKE_RANLIB='+ranlib)
     cflags = self.setCompilers.getCompilerFlags()
     args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
+    if self.framework.argDB['with-64-bit-indices']:
+      args.append('-DUSE_64BIT_INTS=ON')
     self.framework.popLanguage()
 
     self.framework.pushLanguage('Cxx')
@@ -48,14 +54,14 @@ class Configure(PETSc.package.NewPackage):
       raise RuntimeError('Sorry, Elemental does not compile with Oracle/Solaris/Sun compilers')
     args.append('-DMPI_CXX_COMPILER="'+self.framework.getCompiler()+'"')
     args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
-    cxxflags = self.setCompilers.getCompilerFlags()
+    cxxflags = self.framework.getCompilerFlags()
     args.append('-DCMAKE_CXX_FLAGS:STRING="'+cxxflags+'"')
     self.framework.popLanguage()
 
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
       args.append('-DCMAKE_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
-      fcflags = self.setCompilers.getCompilerFlags()
+      fcflags = self.framework.getCompilerFlags()
       args.append('-DCMAKE_Fortran_FLAGS:STRING="'+fcflags+'"')
       self.framework.popLanguage()
 
@@ -76,7 +82,7 @@ class Configure(PETSc.package.NewPackage):
       if os.path.isdir(folder):
         import shutil
         shutil.rmtree(folder)
-        os.mkdir(folder)
+      os.mkdir(folder)
       try:
         self.logPrintBox('Configuring Elemental; this may take several minutes')
         output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+folder+' && '+self.cmake.cmake+' .. '+args, timeout=900, log = self.framework.log)

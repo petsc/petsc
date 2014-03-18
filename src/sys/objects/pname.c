@@ -39,22 +39,21 @@ PetscErrorCode  PetscObjectSetName(PetscObject obj,const char name[])
 
    Input Parameters:
 +     obj - the PETSc object
-.     viewer - ASCII viewer where the information is printed
--     string - for example "Matrix Object"
+-     viewer - ASCII viewer where the information is printed
 
    Level: developer
 
 .seealso: PetscObjectSetName(), PetscObjectName()
 
 @*/
-PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer viewer,const char string[])
+PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   MPI_Comm       comm;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = PetscViewerASCIIPrintf(viewer,"%s:",string);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%s Object:",obj->class_name);CHKERRQ(ierr);
   if (obj->name) {
     ierr = PetscViewerASCIIPrintf(viewer,"%s",obj->name);CHKERRQ(ierr);
   }
@@ -89,7 +88,7 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
    Concepts: object name^setting default
 
    Notes: This is used in a small number of places when an object NEEDS a name, for example when it is saved to MATLAB with that variable name.
-          Use PetscObjectSetName() to set the name of an object to what you want. The AMS viewer requires that no two published objects
+          Use PetscObjectSetName() to set the name of an object to what you want. The SAWs viewer requires that no two published objects
           share the same name.
 
    Developer Note: this needs to generate the exact same string on all ranks that share the object. The current algorithm may not always work.

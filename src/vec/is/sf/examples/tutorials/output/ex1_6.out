@@ -1,4 +1,4 @@
-Star Forest Object: 4 MPI processes
+PetscSF Object: 4 MPI processes
   type: window
     synchronization=FENCE sort=rank-order
   [0] Number of roots=3, leaves=2, remote ranks=2
@@ -41,7 +41,7 @@ Star Forest Object: 4 MPI processes
   [3] 2: 1 edges
   [3]    0 <- 1
 ## Embedded PetscSF
-Star Forest Object: 4 MPI processes
+PetscSF Object: 4 MPI processes
   type: window
     synchronization=FENCE sort=rank-order
   [0] Number of roots=3, leaves=1, remote ranks=1

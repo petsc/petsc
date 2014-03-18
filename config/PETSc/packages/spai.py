@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/spai_3.0-mar-06.tar.gz']
+    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/spai-3.0-p1.tar.gz']
     self.functions = ['bspai']
     self.includes  = ['spai.h']
     self.liblist   = [['libspai.a']]
@@ -24,7 +24,7 @@ class Configure(PETSc.package.NewPackage):
     elif self.blasLapack.mangling == 'caps': FTNOPT = ''
     else:                                          FTNOPT = '-DSP2'
 
-    args = 'CC = '+self.framework.getCompiler()+'\nCFLAGS = -DMPI '+FTNOPT+' '+self.framework.getCompilerFlags()+' '+self.headers.toString(self.mpi.include)+'\n'
+    args = 'CC = '+self.framework.getCompiler()+'\nCFLAGS = -DSPAI_USE_MPI '+FTNOPT+' '+self.framework.getCompilerFlags()+' '+self.headers.toString(self.mpi.include)+'\n'
     args = args+'AR         = '+self.setCompilers.AR+'\n'
     args = args+'ARFLAGS    = '+self.setCompilers.AR_FLAGS+'\n'
 

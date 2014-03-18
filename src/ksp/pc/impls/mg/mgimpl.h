@@ -56,7 +56,9 @@ PETSC_INTERN PetscErrorCode PCSetUp_MG(PC);
 PETSC_INTERN PetscErrorCode PCDestroy_MG(PC);
 PETSC_INTERN PetscErrorCode PCSetFromOptions_MG(PC);
 PETSC_INTERN PetscErrorCode PCView_MG(PC,PetscViewer);
-PETSC_INTERN PetscErrorCode PCMGResidual_Default(Mat,Vec,Vec,Vec);
+PETSC_DEPRECATED("Use PCMGResidualDefault()") PETSC_STATIC_INLINE PetscErrorCode PCMGResidual_Default(Mat A,Vec b,Vec x,Vec r) {
+  return PCMGResidualDefault(A,b,x,r);
+}
 
 #endif
 

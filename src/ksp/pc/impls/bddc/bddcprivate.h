@@ -2,7 +2,7 @@
 #if !defined(__pcbddc_private_h)
 #define __pcbddc_private_h
 
-#include "bddcstructs.h"
+#include <../src/ksp/pc/impls/bddc/bddcstructs.h>
 
 /* main functions */
 PetscErrorCode PCBDDCAnalyzeInterface(PC);
@@ -38,15 +38,26 @@ PetscErrorCode PCBDDCScalingExtension(PC,Vec,Vec);
 /* nullspace stuffs */
 PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC,IS);
 PetscErrorCode PCBDDCNullSpaceAdaptGlobal(PC);
-PetscErrorCode PCBDDCNullSpaceAssembleCoarse(PC,MatNullSpace*);
+PetscErrorCode PCBDDCNullSpaceAssembleCoarse(PC,Mat,MatNullSpace*);
 
 /* utils */
+PetscErrorCode PCBDDCSetUpLocalWorkVectors(PC);
+PetscErrorCode PCBDDCSetUpSolvers(PC);
+PetscErrorCode PCBDDCSetUpLocalScatters(PC);
+PetscErrorCode PCBDDCSetUpLocalMatrices(PC);
+PetscErrorCode PCBDDCSetUpLocalSolvers(PC);
+PetscErrorCode PCBDDCSetUpCorrection(PC,PetscScalar**);
+PetscErrorCode PCBDDCSetUpCoarseSolver(PC,PetscScalar*);
 PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm,ISLocalToGlobalMapping,PetscInt,PetscInt[],PetscInt[],PetscInt*,PetscInt*[]);
-PetscErrorCode PCBDDCGetPrimalVerticesLocalIdx(PC,PetscInt*,PetscInt*[]);
-PetscErrorCode PCBDDCGetPrimalConstraintsLocalIdx(PC,PetscInt*,PetscInt*[]);
+PetscErrorCode PCBDDCComputePrimalNumbering(PC,PetscInt*,PetscInt**);
+PetscErrorCode PCBDDCGetPrimalVerticesLocalIdx(PC,PetscInt*,PetscInt**);
+PetscErrorCode PCBDDCGetPrimalConstraintsLocalIdx(PC,PetscInt*,PetscInt**);
 PetscErrorCode PCBDDCScatterCoarseDataBegin(PC,Vec,Vec,InsertMode,ScatterMode);
 PetscErrorCode PCBDDCScatterCoarseDataEnd(PC,Vec,Vec,InsertMode,ScatterMode);
 PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC);
+PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt,Vec[]);
+PetscErrorCode PCBDDCSetUseExactDirichlet(PC,PetscBool);
+PetscErrorCode PCBDDCSetLevel(PC,PetscInt);
 
 /* feti-dp */
 PetscErrorCode PCBDDCCreateFETIDPMatContext(PC,FETIDPMat_ctx*);

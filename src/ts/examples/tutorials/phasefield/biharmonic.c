@@ -48,11 +48,12 @@ Evolve the Cahn-Hillard equations: logarithmic +  double obstacle (never shrinks
 
 
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 #include <petscdraw.h>
 
-extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec),MyMonitor(TS,PetscInt,PetscReal,Vec,void*),MyDestroy(void**),FormJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec),MyMonitor(TS,PetscInt,PetscReal,Vec,void*),MyDestroy(void**),FormJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 typedef struct {PetscBool cahnhillard;PetscBool degenerate;PetscReal kappa;PetscInt energy;PetscReal tol;PetscReal theta,theta_c;PetscInt truncation;PetscBool netforce; PetscDrawViewPorts *ports;} UserCtx;
 
 #undef __FUNCT__
@@ -101,7 +102,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_PERIODIC, -10,1,2,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, -10,1,2,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"Biharmonic heat equation: u");CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&Mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   dt   = 1.0/(10.*ctx.kappa*Mx*Mx*Mx*Mx);
@@ -120,7 +121,8 @@ int main(int argc,char **argv)
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,NULL,FormFunction,&ctx);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,&J);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ts,J,J,FormJacobian,&ctx);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,maxsteps,.02);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_INTERPOLATE);CHKERRQ(ierr);
@@ -140,11 +142,12 @@ int main(int argc,char **argv)
 #if defined(f00)
   {
     SNES snes;
-    ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
+    ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+     ierr = MatFDColoringSetUp(J,iscoloring,matfdcoloring);CHKERRQ(ierr);
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,matfdcoloring);CHKERRQ(ierr);
   }
@@ -336,7 +339,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
    FormJacobian - Evaluates nonlinear function's Jacobian
 
 */
-PetscErrorCode FormJacobian(TS ts,PetscReal ftime,Vec X,Mat *A,Mat *B,MatStructure *str,void *ptr)
+PetscErrorCode FormJacobian(TS ts,PetscReal ftime,Vec X,Mat A,Mat B,void *ptr)
 {
   DM             da;
   PetscErrorCode ierr;
@@ -391,7 +394,7 @@ PetscErrorCode FormJacobian(TS ts,PetscReal ftime,Vec X,Mat *A,Mat *B,MatStructu
       cols[3].i = i + 1; vals[3] =  4.0*ctx->kappa*sx*sx;
       cols[4].i = i + 2; vals[4] = -ctx->kappa*sx*sx;
     }
-    ierr = MatSetValuesStencil(*B,1,&row,5,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValuesStencil(B,1,&row,5,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
 
     if (ctx->cahnhillard) {
       switch (ctx->energy) {
@@ -415,11 +418,11 @@ PetscErrorCode FormJacobian(TS ts,PetscReal ftime,Vec X,Mat *A,Mat *B,MatStructu
   */
   ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*A != *B) {
-    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

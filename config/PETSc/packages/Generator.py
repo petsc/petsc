@@ -34,6 +34,10 @@ class Configure(PETSc.package.NewPackage):
         sys.path.insert(0, dir)
         import Cxx
         import CxxHelper
+        self.found = 1
+        if not hasattr(self.framework, 'packages'):
+          self.framework.packages = []
+        self.framework.packages.append(self)
         return
       except ImportError, e:
         self.framework.logPrint('ERROR: Could not import Generator: '+str(e))

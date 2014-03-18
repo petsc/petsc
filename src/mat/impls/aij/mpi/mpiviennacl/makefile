@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = mpiaijviennacl.cxx
+SOURCECXX= mpiaijviennacl.cxx
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscmat

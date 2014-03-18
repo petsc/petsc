@@ -125,7 +125,6 @@ class Configure(PETSc.package.NewPackage):
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)
-    self.make            = framework.require('config.programs', self)
     self.deps            = []
     return
 
@@ -147,7 +146,7 @@ class Configure(PETSc.package.NewPackage):
     g.write('CP               = '+self.programs.cp+'\n')
     g.write('RM               = '+self.programs.RM+'\n')
     g.write('MKDIR            = '+self.programs.mkdir+'\n')
-    g.write('OMAKE            = '+self.make.make+' '+self.make.flags+'\n')
+    g.write('OMAKE            = '+self.make.make+' '+self.make.noprintdirflag+'\n')
 
     g.write('CLINKER          = '+self.setCompilers.getLinker()+'\n')
     g.write('AR               = '+self.setCompilers.AR+'\n')

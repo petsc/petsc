@@ -247,7 +247,7 @@ sparse matrix <9, 9> with 41 entries
 [0] MatAssemblyEnd_SeqAIJ(): Matrix size: 9 X 9; storage space: 0 unneeded,41 used
 [0] MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0
 [0] MatAssemblyEnd_SeqAIJ(): Maximum nonzeros in any row is 7
-Matrix Object: 1 MPI processes
+Mat Object: 1 MPI processes
   type: seqaijcusp
 row 0: (0, 1)  (1, -0.5)  (3, -0.5) 
 row 1: (0, -0.5)  (1, 2)  (2, -0.5)  (3, 0)  (4, -1) 
@@ -265,7 +265,7 @@ row 8: (5, -0.5)  (7, -0.5)  (8, 1)
 [0] MatAssemblyEnd_SeqAIJ(): Matrix size: 9 X 9; storage space: 0 unneeded,49 used
 [0] MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0
 [0] MatAssemblyEnd_SeqAIJ(): Maximum nonzeros in any row is 9
-Matrix Object: 1 MPI processes
+Mat Object: 1 MPI processes
   type: seqaij
 row 0: (0, 1)  (1, -0.5)  (3, -0.5)  (4, 0) 
 row 1: (0, -0.5)  (1, 2)  (2, -0.5)  (3, 0)  (4, -1)  (5, 0) 

@@ -3,20 +3,6 @@
       Code for manipulating files.
 */
 #include <petscsys.h>
-#if defined(PETSC_HAVE_PWD_H)
-#include <pwd.h>
-#endif
-#include <ctype.h>
-#include <sys/stat.h>
-#if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-#if defined(PETSC_HAVE_SYS_UTSNAME_H)
-#include <sys/utsname.h>
-#endif
-#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
-#include <sys/systeminfo.h>
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscGetHomeDirectory"
@@ -43,18 +29,10 @@
 PetscErrorCode  PetscGetHomeDirectory(char dir[],size_t maxlen)
 {
   PetscErrorCode ierr;
-  char           *d1 = 0;
-#if defined(PETSC_HAVE_GETPWUID)
-  struct passwd *pw = 0;
-#endif
+  const char     *d1;
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_GETPWUID)
-  pw = getpwuid(getuid());
-  if (pw) d1 = pw->pw_dir;
-#else
   d1 = getenv("HOME");
-#endif
   if (d1) {
     ierr = PetscStrncpy(dir,d1,maxlen);CHKERRQ(ierr);
   } else if (maxlen > 0) dir[0] = 0;

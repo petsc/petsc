@@ -107,6 +107,17 @@ PetscErrorCode  PCFactorSetMatOrderingType_Factor(PC pc,MatOrderingType ordering
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCFactorGetLevels_Factor"
+PetscErrorCode  PCFactorGetLevels_Factor(PC pc,PetscInt *levels)
+{
+  PC_Factor      *ilu = (PC_Factor*)pc->data;
+
+  PetscFunctionBegin;
+  *levels = ilu->info.levels;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetLevels_Factor"
 PetscErrorCode  PCFactorSetLevels_Factor(PC pc,PetscInt levels)
 {
@@ -198,7 +209,7 @@ PetscErrorCode  PCFactorSetColumnPivot_Factor(PC pc,PetscReal dtcol)
   PC_Factor *dir = (PC_Factor*)pc->data;
 
   PetscFunctionBegin;
-  if (dtcol < 0.0 || dtcol > 1.0) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Column pivot tolerance is %G must be between 0 and 1",dtcol);
+  if (dtcol < 0.0 || dtcol > 1.0) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Column pivot tolerance is %g must be between 0 and 1",(double)dtcol);
   dir->info.dtcol = dtcol;
   PetscFunctionReturn(0);
 }
@@ -250,7 +261,7 @@ PetscErrorCode  PCSetFromOptions_Factor(PC pc)
   }
 
   ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-pc_factor_mat_ordering_type","Reordering to reduce nonzeros in factored matrix","PCFactorSetMatOrderingType",ordlist,((PC_Factor*)factor)->ordering,tname,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-pc_factor_mat_ordering_type","Reordering to reduce nonzeros in factored matrix","PCFactorSetMatOrderingType",ordlist,((PC_Factor*)factor)->ordering,tname,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCFactorSetMatOrderingType(pc,tname);CHKERRQ(ierr);
   }
@@ -277,9 +288,9 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
   if (iascii) {
     if (factor->factortype == MAT_FACTOR_ILU || factor->factortype == MAT_FACTOR_ICC) {
       if (factor->info.dt > 0) {
-        ierr = PetscViewerASCIIPrintf(viewer,"  drop tolerance %G\n",factor->info.dt);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  drop tolerance %g\n",(double)factor->info.dt);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"  max nonzeros per row %D\n",factor->info.dtcount);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  column permutation tolerance %G\n",(PetscInt)factor->info.dtcol);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  column permutation tolerance %g\n",(double)factor->info.dtcol);CHKERRQ(ierr);
       } else if (factor->info.levels == 1) {
         ierr = PetscViewerASCIIPrintf(viewer,"  %D level of fill\n",(PetscInt)factor->info.levels);CHKERRQ(ierr);
       } else {
@@ -287,15 +298,9 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
       }
     }
 
-    ierr = PetscViewerASCIIPrintf(viewer,"  tolerance for zero pivot %G\n",factor->info.zeropivot);CHKERRQ(ierr);
-    if (factor->info.shifttype==(PetscReal)MAT_SHIFT_POSITIVE_DEFINITE) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  using Manteuffel shift\n");CHKERRQ(ierr);
-    }
-    if (factor->info.shifttype==(PetscReal)MAT_SHIFT_NONZERO) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  using diagonal shift to prevent zero pivot\n");CHKERRQ(ierr);
-    }
-    if (factor->info.shifttype==(PetscReal)MAT_SHIFT_INBLOCKS) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  using diagonal shift on blocks to prevent zero pivot\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  tolerance for zero pivot %g\n",(double)factor->info.zeropivot);CHKERRQ(ierr);
+    if (MatFactorShiftTypesDetail[(int)factor->info.shifttype]) { /* Only print when using a nontrivial shift */
+      ierr = PetscViewerASCIIPrintf(viewer,"  using %s [%s]\n",MatFactorShiftTypesDetail[(int)factor->info.shifttype],MatFactorShiftTypes[(int)factor->info.shifttype]);CHKERRQ(ierr);
     }
 
     ierr = PetscViewerASCIIPrintf(viewer,"  matrix ordering: %s\n",factor->ordering);CHKERRQ(ierr);
@@ -303,7 +308,7 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
     if (factor->fact) {
       MatInfo info;
       ierr = MatGetInfo(factor->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  factor fill ratio given %G, needed %G\n",info.fill_ratio_given,info.fill_ratio_needed);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  factor fill ratio given %g, needed %g\n",(double)info.fill_ratio_given,(double)info.fill_ratio_needed);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"    Factored matrix follows:\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);

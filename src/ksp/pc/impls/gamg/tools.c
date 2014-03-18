@@ -1,7 +1,7 @@
 /*
  GAMG geometric-algebric multigrid PC - Mark Adams 2011
  */
-#include "petsc-private/matimpl.h"
+#include <petsc-private/matimpl.h>
 #include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
 #include <petsc-private/kspimpl.h>
 
@@ -41,8 +41,8 @@ PetscErrorCode PCGAMGCreateGraph(const Mat Amat, Mat *a_Gmat)
     const PetscInt    *idx;
     PetscInt          *d_nnz, *o_nnz;
     /* count nnz, there is sparcity in here so this might not be enough */
-    ierr = PetscMalloc(nloc*sizeof(PetscInt), &d_nnz);CHKERRQ(ierr);
-    ierr = PetscMalloc(nloc*sizeof(PetscInt), &o_nnz);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nloc, &d_nnz);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nloc, &o_nnz);CHKERRQ(ierr);
     for (Ii = Istart, jj = 0; Ii < Iend; Ii += bs, jj++) {
       d_nnz[jj] = 0;
       for (kk=0; kk<bs; kk++) {
@@ -135,8 +135,8 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
   }
 
   /* filter - dup zeros out matrix */
-  ierr = PetscMalloc(nloc*sizeof(PetscInt), &d_nnz);CHKERRQ(ierr);
-  ierr = PetscMalloc(nloc*sizeof(PetscInt), &o_nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nloc, &d_nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nloc, &o_nnz);CHKERRQ(ierr);
   for (Ii = Istart, jj = 0; Ii < Iend; Ii++, jj++) {
     ierr      = MatGetRow(Gmat,Ii,&ncols,NULL,NULL);CHKERRQ(ierr);
     d_nnz[jj] = ncols;
@@ -237,7 +237,7 @@ PetscErrorCode PCGAMGGetDataWithGhosts(const Mat Gmat,const PetscInt data_sz,con
   *a_stride = nnodes;
   ierr      = MatGetVecs(Gmat, &tmp_crds, 0);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(data_sz*nnodes*sizeof(PetscReal), &datas);CHKERRQ(ierr);
+  ierr = PetscMalloc1(data_sz*nnodes, &datas);CHKERRQ(ierr);
   for (dir=0; dir<data_sz; dir++) {
     /* set local, and global */
     for (kk=0; kk<nloc; kk++) {
@@ -267,7 +267,7 @@ PetscErrorCode PCGAMGGetDataWithGhosts(const Mat Gmat,const PetscInt data_sz,con
  *  GAMGTableCreate
  */
 /* avoid overflow */
-#define GAMG_HASH(key) ((7*key)%a_tab->size)
+#define GAMG_HASH(key) ((((PetscInt)7)*key)%a_tab->size)
 #undef __FUNCT__
 #define __FUNCT__ "GAMGTableCreate"
 PetscErrorCode GAMGTableCreate(PetscInt a_size, GAMGHashTable *a_tab)
@@ -278,8 +278,8 @@ PetscErrorCode GAMGTableCreate(PetscInt a_size, GAMGHashTable *a_tab)
   PetscFunctionBegin;
   a_tab->size = a_size;
 
-  ierr = PetscMalloc(a_size*sizeof(PetscInt), &a_tab->table);CHKERRQ(ierr);
-  ierr = PetscMalloc(a_size*sizeof(PetscInt), &a_tab->data);CHKERRQ(ierr);
+  ierr = PetscMalloc1(a_size, &a_tab->table);CHKERRQ(ierr);
+  ierr = PetscMalloc1(a_size, &a_tab->data);CHKERRQ(ierr);
   for (kk=0; kk<a_size; kk++) a_tab->table[kk] = -1;
   PetscFunctionReturn(0);
 }
@@ -326,8 +326,8 @@ PetscErrorCode GAMGTableAdd(GAMGHashTable *a_tab, PetscInt a_key, PetscInt a_dat
 
     a_tab->size = new_size;
 
-    ierr = PetscMalloc(a_tab->size*sizeof(PetscInt), &a_tab->table);CHKERRQ(ierr);
-    ierr = PetscMalloc(a_tab->size*sizeof(PetscInt), &a_tab->data);CHKERRQ(ierr);
+    ierr = PetscMalloc1(a_tab->size, &a_tab->table);CHKERRQ(ierr);
+    ierr = PetscMalloc1(a_tab->size, &a_tab->data);CHKERRQ(ierr);
 
     for (kk=0;kk<a_tab->size;kk++) a_tab->table[kk] = -1;
     for (kk=0;kk<oldsize;kk++) {

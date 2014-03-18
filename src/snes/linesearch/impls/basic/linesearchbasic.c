@@ -37,7 +37,7 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
     }
   }
   if (linesearch->norms || snes->iter < snes->max_its-1) {
-    ierr = SNESComputeFunction(snes,W,F);CHKERRQ(ierr);
+    ierr = (*linesearch->ops->snesfunc)(snes,W,F);CHKERRQ(ierr);
     ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
     if (domainerror) {
       ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);

@@ -5,7 +5,7 @@
  * References : [1] Bai, Zhaojun and  Hu, D. and Reichel, L. A Newton basis GMRES implementation. IMA J. Numer. Anal. 14 (1994), no. 4, 563-581.
  *
  */
-#include "agmresimpl.h"
+#include <agmresimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPAGMRESLejafmaxarray"
@@ -60,10 +60,10 @@ PetscErrorCode KSPAGMRESLejaOrdering(PetscScalar *re, PetscScalar *im, PetscScal
   PetscScalar    *n_cmpl,temp;
   PetscErrorCode ierr;
   PetscInt       i, pos, j;
-  ierr = PetscMalloc(m*sizeof(PetscScalar), &n_cmpl);CHKERRQ(ierr);
-  ierr = PetscMalloc(m*sizeof(PetscInt), &spos);CHKERRQ(ierr);
 
   PetscFunctionBegin;
+  ierr = PetscMalloc1(m, &n_cmpl);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m, &spos);CHKERRQ(ierr);
   /* Check the proper order of complex conjugate pairs */
   j = 0;
   while (j  < m) {
@@ -78,7 +78,7 @@ PetscErrorCode KSPAGMRESLejaOrdering(PetscScalar *re, PetscScalar *im, PetscScal
   }
 
   for (i = 0; i < m; i++) n_cmpl[i] = PetscSqrtReal(re[i]*re[i]+im[i]*im[i]);
-  KSPAGMRESLejafmaxarray(n_cmpl, 0, m, &pos);
+  ierr = KSPAGMRESLejafmaxarray(n_cmpl, 0, m, &pos);CHKERRQ(ierr);
   j = 0;
   if (im[pos] >= 0.0) {
     rre[0] = re[pos];
@@ -93,7 +93,7 @@ PetscErrorCode KSPAGMRESLejaOrdering(PetscScalar *re, PetscScalar *im, PetscScal
       spos[j] = pos + 1;
       j++;
     }
-    KSPAGMRESLejaCfpdMax(re, im, spos, j, m, &pos);
+    ierr = KSPAGMRESLejaCfpdMax(re, im, spos, j, m, &pos);CHKERRQ(ierr);
     if (im[pos] < 0) pos--;
 
     if ((im[pos] >= 0) && (j < m)) {

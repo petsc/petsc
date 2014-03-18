@@ -1,13 +1,13 @@
-#include "petscconf.h"
+#include <petscconf.h>
 PETSC_CUDA_EXTERN_C_BEGIN
-#include "../src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
-#include "../src/mat/impls/aij/mpi/mpiaij.h"
-#include "petscbt.h"
-#include "../src/vec/vec/impls/dvecimpl.h"
-#include "petsc-private/vecimpl.h"
+#include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
+#include <petscbt.h>
+#include <../src/vec/vec/impls/dvecimpl.h>
+#include <petsc-private/vecimpl.h>
 PETSC_CUDA_EXTERN_C_END
 #undef VecType
-#include "../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h"
+#include <../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h>
 
 #include <thrust/reduce.h>
 #include <thrust/inner_product.h>
@@ -265,9 +265,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   ierr = PetscLogEventBegin(MAT_SetValuesBatchI,0,0,0,0);CHKERRQ(ierr);
   PetscMPIInt *procSendSizes, *procRecvSizes;
 
-  ierr = PetscMalloc2(numProcs, PetscMPIInt, &procSendSizes, numProcs, PetscMPIInt, &procRecvSizes);CHKERRQ(ierr);
-  ierr = PetscMemzero(procSendSizes, numProcs * sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(procRecvSizes, numProcs * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc2(numProcs, &procSendSizes, numProcs, &procRecvSizes);CHKERRQ(ierr);
 
   numNonlocalRows = 0;
   for (size_t i = 0; i < N; ++i) {
@@ -334,9 +332,9 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   PetscInt    *sendCols, *recvCols;
   PetscScalar *sendVals, *recvVals;
 
-  ierr = PetscMalloc2(numProcs, PetscMPIInt, &procSendDispls, numProcs, PetscMPIInt, &procRecvDispls);CHKERRQ(ierr);
-  ierr = PetscMalloc3(numSendEntries, PetscInt, &sendRows, numSendEntries, PetscInt, &sendCols, numSendEntries, PetscScalar, &sendVals);CHKERRQ(ierr);
-  ierr = PetscMalloc3(numRecvEntries, PetscInt, &recvRows, numRecvEntries, PetscInt, &recvCols, numRecvEntries, PetscScalar, &recvVals);CHKERRQ(ierr);
+  ierr = PetscMalloc2(numProcs, &procSendDispls, numProcs, &procRecvDispls);CHKERRQ(ierr);
+  ierr = PetscMalloc3(numSendEntries, &sendRows, numSendEntries, &sendCols, numSendEntries, &sendVals);CHKERRQ(ierr);
+  ierr = PetscMalloc3(numRecvEntries, &recvRows, numRecvEntries, &recvCols, numRecvEntries, &recvVals);CHKERRQ(ierr);
 
   procSendDispls[0] = procRecvDispls[0] = 0;
   for (PetscInt p = 1; p < numProcs; ++p) {
@@ -502,7 +500,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
 
     // Create the column map
     ierr = PetscFree(j->garray);CHKERRQ(ierr);
-    ierr = PetscMalloc(Nc * sizeof(PetscInt), &j->garray);CHKERRQ(ierr);
+    ierr = PetscMalloc1(Nc, &j->garray);CHKERRQ(ierr);
     PetscInt c = 0;
     for (IndexHostArray::iterator c_iter = colmap.begin(); c_iter != colmap.end(); ++c_iter, ++c) {
       j->garray[c] = *c_iter;

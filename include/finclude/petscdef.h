@@ -11,7 +11,7 @@
 #include "finclude/petscmatdef.h"
 #include "finclude/petscdmdef.h"
 #include "finclude/petscdmdadef.h"
-#include "finclude/petscdmmeshdef.h"
+#include "finclude/petscdmplexdef.h"
 #include "finclude/petscpcdef.h"
 #include "finclude/petsckspdef.h"
 #include "finclude/petscsnesdef.h"

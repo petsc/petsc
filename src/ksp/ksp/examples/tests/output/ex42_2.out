@@ -1,17 +1,17 @@
-Linear solve did not converge due to DIVERGED_INDEFINITE_MAT iterations 11
-Vector Object: 3 MPI processes
+Linear solve converged due to CONVERGED_RTOL iterations 10
+Vec Object: 3 MPI processes
   type: mpi
 Process [0]
 1
-0.5
-0.333333
-0.25
+1
+1
+1
 Process [1]
-0.2
-0.166667
-0.142857
-0.125
+1
+1
+1
+1
 Process [2]
-0.111111
-0.1
-2.92897
+1
+1
+0

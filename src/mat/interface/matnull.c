@@ -86,7 +86,7 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
 {
   PetscErrorCode    ierr;
   const PetscScalar *x;
-  PetscScalar       *v[6],dots[3];
+  PetscScalar       *v[6],dots[5];
   Vec               vec[6];
   PetscInt          n,N,dim,nmodes,i,j;
 
@@ -144,7 +144,7 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
     for (i=0; i<nmodes; i++) {ierr = VecRestoreArray(vec[i],&v[i]);CHKERRQ(ierr);}
     ierr = VecRestoreArrayRead(coords,&x);CHKERRQ(ierr);
     for (i=dim; i<nmodes; i++) {
-      /* Orthonormalize vec[i] against vec[0:dim] */
+      /* Orthonormalize vec[i] against vec[0:i-1] */
       ierr = VecMDot(vec[i],i,vec,dots);CHKERRQ(ierr);
       for (j=0; j<i; j++) dots[j] *= -1.;
       ierr = VecMAXPY(vec[i],i,dots,vec);CHKERRQ(ierr);
@@ -190,7 +190,7 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp,PetscViewer viewer)
     PetscViewerFormat format;
     PetscInt          i;
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sp,viewer,"MatNullSpace Object");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sp,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Contains %D vector%s%s\n",sp->n,sp->n==1 ? "" : "s",sp->has_cnst ? " and the constant" : "");CHKERRQ(ierr);
     if (sp->remove) {ierr = PetscViewerASCIIPrintf(viewer,"Has user-provided removal function\n");CHKERRQ(ierr);}
@@ -251,9 +251,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
   PetscValidPointer(SP,5);
 
   *SP = NULL;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_CLASSID,"MatNullSpace","Null space","Mat",comm,MatNullSpaceDestroy,MatNullSpaceView);CHKERRQ(ierr);
 
@@ -265,9 +263,9 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
   sp->rmctx    = 0;
 
   if (n) {
-    ierr = PetscMalloc(n*sizeof(Vec),&sp->vecs);CHKERRQ(ierr);
-    ierr = PetscMalloc(n*sizeof(PetscScalar),&sp->alpha);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(sp,n*(sizeof(Vec)+sizeof(PetscScalar)));CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&sp->vecs);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&sp->alpha);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)sp,n*(sizeof(Vec)+sizeof(PetscScalar)));CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       ierr        = PetscObjectReference((PetscObject)vecs[i]);CHKERRQ(ierr);
       sp->vecs[i] = vecs[i];
@@ -421,7 +419,7 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
       } else {
         ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"Constants are unlikely null vector ");CHKERRQ(ierr);
       }
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"|| A * 1/N || = %G\n",nrm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"|| A * 1/N || = %g\n",(double)nrm);CHKERRQ(ierr);
     }
     if (!consistent && flg1) {ierr = VecView(r,viewer);CHKERRQ(ierr);}
     if (!consistent && flg2) {ierr = VecView(r,viewer);CHKERRQ(ierr);}
@@ -439,7 +437,7 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
         ierr       = PetscPrintf(PetscObjectComm((PetscObject)sp),"Null vector %D unlikely null vector ",j);CHKERRQ(ierr);
         consistent = PETSC_FALSE;
       }
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"|| A * v[%D] || = %G\n",j,nrm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"|| A * v[%D] || = %g\n",j,(double)nrm);CHKERRQ(ierr);
     }
     if (!consistent && flg1) {ierr = VecView(l,viewer);CHKERRQ(ierr);}
     if (!consistent && flg2) {ierr = VecView(l,viewer);CHKERRQ(ierr);}

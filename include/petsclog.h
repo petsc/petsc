@@ -4,7 +4,7 @@
 
 #if !defined(__PetscLog_H)
 #define __PetscLog_H
-#include "petscsys.h"
+#include <petscsys.h>
 
 /*MC
     PetscLogEvent - id used to identify PETSc or user events which timed portions (blocks of executable)
@@ -172,6 +172,9 @@ PETSC_EXTERN PetscErrorCode PetscLogGetStageLog(PetscStageLog*);
 PETSC_EXTERN PetscErrorCode PetscStageLogGetCurrent(PetscStageLog,int*);
 PETSC_EXTERN PetscErrorCode PetscStageLogGetEventPerfLog(PetscStageLog,int,PetscEventPerfLog*);
 
+PETSC_EXTERN PetscErrorCode PetscLogObjectParent(PetscObject,PetscObject);
+PETSC_EXTERN PetscErrorCode PetscLogObjectMemory(PetscObject,PetscLogDouble);
+
 
 #if defined(PETSC_USE_LOG)  /* --- Logging is turned on --------------------------------*/
 PETSC_EXTERN PetscStageLog petsc_stageLog;
@@ -217,13 +220,9 @@ PETSC_EXTERN PetscErrorCode (*PetscLogPLE)(PetscLogEvent,int,PetscObject,PetscOb
 PETSC_EXTERN PetscErrorCode (*PetscLogPHC)(PetscObject);
 PETSC_EXTERN PetscErrorCode (*PetscLogPHD)(PetscObject);
 
-#define PetscLogObjectParent(p,c) \
-  (c && p && (((PetscObject)(c))->parent = (PetscObject)(p),((PetscObject)(c))->parentid = ((PetscObject)p)->id,0))
-
-#define PetscLogObjectParents(p,n,d)  0;{int _i; for (_i=0; _i<n; _i++) {ierr = PetscLogObjectParent(p,(d)[_i]);CHKERRQ(ierr);}}
+#define PetscLogObjectParents(p,n,d)  0;{int _i; for (_i=0; _i<n; _i++) {ierr = PetscLogObjectParent((PetscObject)p,(PetscObject)(d)[_i]);CHKERRQ(ierr);}}
 #define PetscLogObjectCreate(h)      ((PetscLogPHC) ? (*PetscLogPHC)((PetscObject)h) : 0)
 #define PetscLogObjectDestroy(h)     ((PetscLogPHD) ? (*PetscLogPHD)((PetscObject)h) : 0)
-#define PetscLogObjectMemory(p,m)    (((PetscObject)(p))->mem += (m),0)
 /* Initialization functions */
 PETSC_EXTERN PetscErrorCode PetscLogBegin(void);
 PETSC_EXTERN PetscErrorCode PetscLogAllBegin(void);
@@ -237,8 +236,7 @@ PETSC_EXTERN PetscErrorCode PetscLogSet(PetscErrorCode (*)(int, int, PetscObject
 PETSC_EXTERN PetscErrorCode PetscLogObjectState(PetscObject, const char[], ...);
 /* Output functions */
 PETSC_EXTERN PetscErrorCode PetscLogView(PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscLogViewPython(PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscLogPrintDetailed(MPI_Comm, const char[]);
+PETSC_EXTERN PetscErrorCode PetscLogViewFromOptions(void);
 PETSC_EXTERN PetscErrorCode PetscLogDump(const char[]);
 
 PETSC_EXTERN PetscErrorCode PetscGetFlops(PetscLogDouble *);
@@ -420,19 +418,16 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm, PetscLogD
 #define PetscLogEventEnd(e,o1,o2,o3,o4)     0
 #define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) 0
 #define PetscLogEventBarrierEnd(e,o1,o2,o3,o4,cm)   0
-#define PetscLogObjectParent(p,c)           0
 #define PetscLogObjectParents(p,n,c)        0
 #define PetscLogObjectCreate(h)             0
 #define PetscLogObjectDestroy(h)            0
-#define PetscLogObjectMemory(p,m)           0
 #define PetscLogDestroy()                   0
 #define PetscLogStagePush(a)                0
 #define PetscLogStagePop()                  0
 #define PetscLogStageRegister(a,b)          0
 #define PetscLogStagePrint(a,flg)           0
 #define PetscLogView(viewer)                0
-#define PetscLogViewPython(viewer)          0
-#define PetscLogPrintDetailed(comm,file)    0
+#define PetscLogViewFromOptions()           0
 #define PetscLogBegin()                     0
 #define PetscLogTraceBegin(file)            0
 #define PetscLogSet(lb,le)                  0
@@ -461,11 +456,6 @@ PETSC_EXTERN PetscErrorCode PetscIntStackPush(PetscIntStack, int);
 PETSC_EXTERN PetscErrorCode PetscIntStackPop(PetscIntStack, int *);
 PETSC_EXTERN PetscErrorCode PetscIntStackTop(PetscIntStack, int *);
 PETSC_EXTERN PetscErrorCode PetscIntStackEmpty(PetscIntStack, PetscBool  *);
-
-/* Special support for C++ */
-#if defined(PETSC_CLANGUAGE_CXX) && defined(__cplusplus)
-#include <petsclog.hh>
-#endif
 
 #define PetscPreLoadBegin(flag,name) \
 do {\

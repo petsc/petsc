@@ -1,5 +1,5 @@
 Local function
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 1
@@ -66,7 +66,7 @@ Vector Object: 1 MPI processes
 -1.75
 1
 Initial guess
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 -0.5
 0.5
@@ -110,7 +110,7 @@ Vector Object: 1 MPI processes
 1
 L_2 Error: 0.358978
 Residual:
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0
@@ -177,7 +177,7 @@ Vector Object: 1 MPI processes
 -1.05208
 0.0208333
 Initial Residual
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0.0104167
 0
@@ -221,7 +221,7 @@ Vector Object: 1 MPI processes
 0.0208333
 L_2 Residual: 2.89726
 Jacobian:
-Matrix Object: 1 MPI processes
+Mat Object: 1 MPI processes
   type: seqaij
 row 0: (0, 0)  (4, 0)  (8, 0.0416667)  (9, 0)  (10, -0.0104167)  (11, 0)  (12, -0.0208333)  (13, 0.0208333)  (14, -0.0104167)  (15, 0)  (24, 0.0208333)  (25, 0.0416667)  (26, 0.0104167)  (27, 0)  (28, 0.0208333)  (29, 0)  (30, 0.0104167)  (31, 0) 
 row 1: (1, 0)  (5, 0)  (8, -0.0416667)  (9, 0)  (10, -0.0104167)  (11, 0)  (16, 0.0208333)  (17, 0.0208333)  (18, -0.0104167)  (19, 0)  (28, -0.0208333)  (29, 0)  (30, 0.0104167)  (31, 0)  (36, -0.0208333)  (37, 0.0416667)  (38, 0.0104167)  (39, 0) 
@@ -264,7 +264,7 @@ row 37: (1, -0.0416667)  (2, 0.0208333)  (8, 0)  (9, 0.0833333)  (10, 0)  (11, -
 row 38: (1, -0.0104167)  (2, -0.0104167)  (8, 0)  (9, 0)  (10, 0.0833333)  (11, -0.0520833)  (16, 0)  (17, 0)  (18, -0.333333)  (19, -0.0416667)  (24, 0)  (25, 0)  (26, 0.0833333)  (27, -0.0208333)  (28, 0)  (29, 0)  (30, -0.166667)  (31, 0)  (32, 0)  (33, 0)  (34, -0.416667)  (35, -0.0520833)  (36, 0)  (37, 0)  (38, 1.41667)  (39, -0.0625) 
 row 39: (1, 0)  (2, 0)  (8, -0.0416667)  (9, -0.0208333)  (10, -0.0520833)  (11, 0)  (16, 0.0416667)  (17, 0.0208333)  (18, -0.0416667)  (19, 0)  (24, -0.0416667)  (25, 0)  (26, 0.0208333)  (27, 0)  (28, -0.0208333)  (29, -0.0416667)  (30, 0.03125)  (31, 0)  (32, -0.0416667)  (33, 0.0625)  (34, -0.0208333)  (35, 0)  (36, 0.0416667)  (37, 0)  (38, 0.0625)  (39, 0) 
 Residual:
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0
@@ -331,7 +331,7 @@ Vector Object: 1 MPI processes
 1.11458
 0.0833333
 Au - b = Au + F(0)
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0.0104167
 -3.46945e-18

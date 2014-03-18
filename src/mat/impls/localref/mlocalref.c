@@ -10,7 +10,7 @@ typedef struct {
 /* These need to be macros because they use sizeof */
 #define IndexSpaceGet(buf,nrow,ncol,irowm,icolm) do {                   \
     if (nrow + ncol > (PetscInt)(sizeof(buf)/sizeof(buf[0]))) {         \
-      ierr = PetscMalloc2(nrow,PetscInt,&irowm,ncol,PetscInt,&icolm);CHKERRQ(ierr); \
+      ierr = PetscMalloc2(nrow,&irowm,ncol,&icolm);CHKERRQ(ierr); \
     } else {                                                            \
       irowm = &buf[0];                                                  \
       icolm = &buf[nrow];                                               \
@@ -57,9 +57,10 @@ static PetscErrorCode MatSetValuesBlockedLocal_LocalRef_Scalar(Mat A,PetscInt nr
 {
   Mat_LocalRef   *lr = (Mat_LocalRef*)A->data;
   PetscErrorCode ierr;
-  PetscInt       bs = A->rmap->bs,buf[4096],*irowm,*icolm;
+  PetscInt       bs,buf[4096],*irowm,*icolm;
 
   PetscFunctionBegin;
+  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
   IndexSpaceGet(buf,nrow*bs,ncol*bs,irowm,icolm);
   BlockIndicesExpand(nrow,irow,bs,irowm);
   BlockIndicesExpand(ncol,icol,bs,icolm);
@@ -102,7 +103,7 @@ static PetscErrorCode ISL2GCompose(IS is,ISLocalToGlobalMapping ltog,ISLocalToGl
   PetscValidPointer(cltog,3);
   ierr = ISGetLocalSize(is,&m);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&idx);CHKERRQ(ierr);
-  ierr = PetscMalloc(m*sizeof(PetscInt),&idxm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&idxm);CHKERRQ(ierr);
   if (ltog) {
     ierr = ISLocalToGlobalMappingApply(ltog,m,idx,idxm);CHKERRQ(ierr);
   } else {
@@ -127,7 +128,7 @@ static PetscErrorCode ISL2GComposeBlock(IS is,ISLocalToGlobalMapping ltog,ISLoca
   PetscValidPointer(cltog,3);
   ierr = ISBlockGetLocalSize(is,&m);CHKERRQ(ierr);
   ierr = ISBlockGetIndices(is,&idx);CHKERRQ(ierr);
-  ierr = PetscMalloc(m*sizeof(PetscInt),&idxm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&idxm);CHKERRQ(ierr);
   if (ltog) {
     ierr = ISLocalToGlobalMappingApply(ltog,m,idx,idxm);CHKERRQ(ierr);
   } else {
@@ -200,7 +201,7 @@ PetscErrorCode  MatCreateLocalRef(Mat A,IS isrow,IS iscol,Mat *newmat)
 
   B->ops->destroy = MatDestroy_LocalRef;
 
-  ierr    = PetscNewLog(B,Mat_LocalRef,&lr);CHKERRQ(ierr);
+  ierr    = PetscNewLog(B,&lr);CHKERRQ(ierr);
   B->data = (void*)lr;
 
   ierr = PetscObjectTypeCompare((PetscObject)A,MATLOCALREF,&islr);CHKERRQ(ierr);

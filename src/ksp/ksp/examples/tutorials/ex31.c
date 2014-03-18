@@ -33,6 +33,7 @@ This uses multigrid to solve the linear system
 
 static char help[] = "Solves 2D compressible Euler using multigrid.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscksp.h>
 
@@ -60,7 +61,7 @@ typedef struct {
 extern PetscErrorCode CreateStructures(DM,UserContext*);
 extern PetscErrorCode DestroyStructures(DM,UserContext*);
 extern PetscErrorCode ComputePredictor(DM,UserContext*);
-extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,void*);
 extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
 extern PetscErrorCode ComputeCorrector(DM,Vec,Vec);
 
@@ -77,7 +78,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da, &user);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp, da);CHKERRQ(ierr);
 
@@ -193,8 +194,8 @@ PetscErrorCode CalculateElementVelocity(DM da, UserContext *user)
   ierr = DMDAGetElements(da, &ne, &nc, &necon);CHKERRQ(ierr);
   ierr = VecGetArray(user->sol_n.u, &u_n);CHKERRQ(ierr);
   ierr = VecGetArray(user->sol_n.v, &v_n);CHKERRQ(ierr);
-  ierr = PetscMalloc(ne*sizeof(PetscScalar),&u_phi);CHKERRQ(ierr);
-  ierr = PetscMalloc(ne*sizeof(PetscScalar),&v_phi);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ne,&u_phi);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ne,&v_phi);CHKERRQ(ierr);
   for (e = 0; e < ne; e++) {
     u_phi[e] = 0.0;
     v_phi[e] = 0.0;
@@ -348,7 +349,8 @@ PetscErrorCode TaylorGalerkinStepIIMomentum(DM da, UserContext *user)
 
   PetscFunctionBeginUser;
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da, MATAIJ, &mat);CHKERRQ(ierr);
+  ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da, &mat);CHKERRQ(ierr);
   ierr = MatSetOption(mat,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_u);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_v);CHKERRQ(ierr);
@@ -431,7 +433,7 @@ PetscErrorCode TaylorGalerkinStepIIMomentum(DM da, UserContext *user)
   ierr = VecScale(rhs_u,user->dt);CHKERRQ(ierr);
   ierr = VecScale(rhs_v,user->dt);CHKERRQ(ierr);
 
-  ierr = KSPSetOperators(ksp, mat, mat, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp, mat, mat);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, rhs_u, user->sol_np1.rho_u);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, rhs_v, user->sol_np1.rho_v);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
@@ -478,7 +480,8 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DM da, UserContext *user)
 
   PetscFunctionBeginUser;
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da, MATAIJ, &mat);CHKERRQ(ierr);
+  ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da, &mat);CHKERRQ(ierr);
   ierr = MatSetOption(mat,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_m);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &rhs_e);CHKERRQ(ierr);
@@ -585,7 +588,7 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DM da, UserContext *user)
   ierr = VecScale(rhs_m, user->dt);CHKERRQ(ierr);
   ierr = VecScale(rhs_e, user->dt);CHKERRQ(ierr);
 
-  ierr = KSPSetOperators(ksp, mat, mat, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp, mat, mat);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, rhs_m, user->sol_np1.rho);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, rhs_e, user->sol_np1.rho_e);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
@@ -716,7 +719,7 @@ no matter what the shape of the triangle. The Laplacian stiffness matrix is
 
 where A is the area of the triangle, and (x_i, y_i) is its i'th vertex.
 */
-PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, MatStructure *flag,void *ctx)
+PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
 {
   UserContext *user = (UserContext*)ctx;
   /* not being used!

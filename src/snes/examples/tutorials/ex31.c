@@ -92,12 +92,12 @@ typedef struct {
   void (*g1Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g1[]); /* g1_uu(x,y,z), g1_up(x,y,z), g1_pu(x,y,z), and g1_pp(x,y,z) */
   void (*g2Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g2[]); /* g2_uu(x,y,z), g2_up(x,y,z), g2_pu(x,y,z), and g2_pp(x,y,z) */
   void (*g3Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g3[]); /* g3_uu(x,y,z), g3_up(x,y,z), g3_pu(x,y,z), and g3_pp(x,y,z) */
-  void (*exactFuncs[NUM_BASIS_COMPONENTS_TOTAL])(const PetscReal x[], PetscScalar *u); /* The exact solution function u(x,y,z), v(x,y,z), p(x,y,z), and T(x,y,z) */
+  void (*exactFuncs[NUM_BASIS_COMPONENTS_TOTAL])(const PetscReal x[], PetscScalar *u, void *ctx); /* The exact solution function u(x,y,z), v(x,y,z), p(x,y,z), and T(x,y,z) */
   BCType      bcType;              /* The type of boundary conditions */
   ForcingType forcingType;         /* The type of rhs */
 } AppCtx;
 
-void zero(const PetscReal coords[], PetscScalar *u)
+void zero(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
   *u = 0.0;
 }
@@ -120,22 +120,22 @@ void zero(const PetscReal coords[], PetscScalar *u)
     \nabla \cdot u           = 2x - 2x                    = 0
     -\Delta T + q_T          = 0
 */
-void quadratic_u_2d(const PetscReal x[], PetscScalar *u)
+void quadratic_u_2d(const PetscReal x[], PetscScalar *u, void *ctx)
 {
   *u = x[0]*x[0] + x[1]*x[1];
 };
 
-void quadratic_v_2d(const PetscReal x[], PetscScalar *v)
+void quadratic_v_2d(const PetscReal x[], PetscScalar *v, void *ctx)
 {
   *v = 2.0*x[0]*x[0] - 2.0*x[0]*x[1];
 };
 
-void linear_p_2d(const PetscReal x[], PetscScalar *p)
+void linear_p_2d(const PetscReal x[], PetscScalar *p, void *ctx)
 {
   *p = x[0] + x[1] - 1.0;
 };
 
-void linear_T_2d(const PetscReal x[], PetscScalar *T)
+void linear_T_2d(const PetscReal x[], PetscScalar *T, void *ctx)
 {
   *T = x[0] + x[1];
 };
@@ -159,12 +159,12 @@ void linear_T_2d(const PetscReal x[], PetscScalar *T)
     \nabla \cdot u           = (4x-2) (1-2y) - (4y-2) (1-2x)         = 0
     -\Delta T + q_T          = 0
 */
-void cubic_u_2d(const PetscReal x[], PetscScalar *u)
+void cubic_u_2d(const PetscReal x[], PetscScalar *u, void *ctx)
 {
   *u = 2.0*x[0]*(x[0]-1.0)*(1.0 - 2.0*x[1]);
 };
 
-void cubic_v_2d(const PetscReal x[], PetscScalar *v)
+void cubic_v_2d(const PetscReal x[], PetscScalar *v, void *ctx)
 {
   *v = -2.0*x[1]*(x[1]-1.0)*(1.0 - 2.0*x[0]);
 };
@@ -210,12 +210,12 @@ void cubic_v_2d(const PetscReal x[], PetscScalar *v)
     \nabla \cdot u           = 6 x(1-x) y(1-y) -6 (1-2y) x(1-x) = 0
     -\Delta T + q_T          = 0
 */
-void quintic_u_2d(const PetscReal x[], PetscScalar *u)
+void quintic_u_2d(const PetscReal x[], PetscScalar *u, void *ctx)
 {
   *u = (3.0*x[0]*x[0] - 2.0*x[0]*x[0]*x[0] + 1.0)*x[1]*(1.0-x[1]);
 };
 
-void quintic_v_2d(const PetscReal x[], PetscScalar *v)
+void quintic_v_2d(const PetscReal x[], PetscScalar *v, void *ctx)
 {
   *v = -(3.0*x[1]*x[1] - 2.0*x[1]*x[1]*x[1] + 1.0)*x[0]*(1.0-x[0]);
 };
@@ -359,22 +359,22 @@ void g3_TT(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[]
     -\Delta u + \nabla p + f = <-4, -4, -4> + <1, 1, 1> + <3, 3, 3> = 0
     \nabla \cdot u           = 2x + 2y - 2(x + y)                   = 0
 */
-void quadratic_u_3d(const PetscReal x[], PetscScalar *u)
+void quadratic_u_3d(const PetscReal x[], PetscScalar *u, void *ctx)
 {
   *u = x[0]*x[0] + x[1]*x[1];
 };
 
-void quadratic_v_3d(const PetscReal x[], PetscScalar *v)
+void quadratic_v_3d(const PetscReal x[], PetscScalar *v, void *ctx)
 {
   *v = x[1]*x[1] + x[2]*x[2];
 };
 
-void quadratic_w_3d(const PetscReal x[], PetscScalar *w)
+void quadratic_w_3d(const PetscReal x[], PetscScalar *w, void *ctx)
 {
   *w = x[0]*x[0] + x[1]*x[1] - 2.0*(x[0] + x[1])*x[2];
 };
 
-void linear_p_3d(const PetscReal x[], PetscScalar *p)
+void linear_p_3d(const PetscReal x[], PetscScalar *p, void *ctx)
 {
   *p = x[0] + x[1] + x[2] - 1.5;
 };
@@ -495,7 +495,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = refinedMesh;
     }
     /* Distribute mesh over processes */
-    ierr = DMPlexDistribute(*dm, partitioner, 0, &distributedMesh);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, partitioner, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
@@ -550,9 +550,9 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
   */
   *numBoundaries = 5;
 
-  ierr = PetscMalloc(*numBoundaries * sizeof(PetscInt), numBoundaryConstraints);CHKERRQ(ierr);
-  ierr = PetscMalloc(*numBoundaries * sizeof(IS), boundaryPoints);CHKERRQ(ierr);
-  ierr = PetscMalloc(*numBoundaries * sizeof(IS), constraintIndices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(*numBoundaries, numBoundaryConstraints);CHKERRQ(ierr);
+  ierr = PetscMalloc1(*numBoundaries, boundaryPoints);CHKERRQ(ierr);
+  ierr = PetscMalloc1(*numBoundaries, constraintIndices);CHKERRQ(ierr);
 
   /* Set number of constraints for each boundary */
   (*numBoundaryConstraints)[corner] = 2;
@@ -561,24 +561,24 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
   (*numBoundaryConstraints)[top]    = 1;
   (*numBoundaryConstraints)[left]   = 1;
   /* Set local constraint indices for each boundary */
-  ierr   = PetscMalloc((*numBoundaryConstraints)[corner] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  ierr   = PetscMalloc1((*numBoundaryConstraints)[corner], &idx);CHKERRQ(ierr);
   idx[0] = 0; idx[1] = 1;
   ierr   = ISCreateGeneral(comm, (*numBoundaryConstraints)[corner], idx, PETSC_OWN_POINTER, &(*constraintIndices)[corner]);CHKERRQ(ierr);
-  ierr   = PetscMalloc((*numBoundaryConstraints)[bottom] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  ierr   = PetscMalloc1((*numBoundaryConstraints)[bottom], &idx);CHKERRQ(ierr);
   idx[0] = 1;
   ierr   = ISCreateGeneral(comm, (*numBoundaryConstraints)[bottom], idx, PETSC_OWN_POINTER, &(*constraintIndices)[bottom]);CHKERRQ(ierr);
-  ierr   = PetscMalloc((*numBoundaryConstraints)[right] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  ierr   = PetscMalloc1((*numBoundaryConstraints)[right], &idx);CHKERRQ(ierr);
   idx[0] = 0;
   ierr   = ISCreateGeneral(comm, (*numBoundaryConstraints)[right], idx, PETSC_OWN_POINTER, &(*constraintIndices)[right]);CHKERRQ(ierr);
-  ierr   = PetscMalloc((*numBoundaryConstraints)[top] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  ierr   = PetscMalloc1((*numBoundaryConstraints)[top], &idx);CHKERRQ(ierr);
   idx[0] = 1;
   ierr   = ISCreateGeneral(comm, (*numBoundaryConstraints)[top], idx, PETSC_OWN_POINTER, &(*constraintIndices)[top]);CHKERRQ(ierr);
-  ierr   = PetscMalloc((*numBoundaryConstraints)[left] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  ierr   = PetscMalloc1((*numBoundaryConstraints)[left], &idx);CHKERRQ(ierr);
   idx[0] = 0;
   ierr   = ISCreateGeneral(comm, (*numBoundaryConstraints)[left], idx, PETSC_OWN_POINTER, &(*constraintIndices)[left]);CHKERRQ(ierr);
 
   /* Count points on each boundary */
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = DMPlexGetStratumIS(dm, "marker", 1, &bcPoints);CHKERRQ(ierr);
@@ -622,7 +622,7 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
   }
   /* Set points on each boundary */
   for (bd = 0; bd < 5; ++bd) {
-    ierr = PetscMalloc(numBoundaryPoints[bd] * sizeof(PetscInt), &bdPoints[bd]);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numBoundaryPoints[bd], &bdPoints[bd]);CHKERRQ(ierr);
     numBoundaryPoints[bd] = 0;
   }
   for (p = 0; p < numPoints; ++p) {
@@ -1127,7 +1127,8 @@ int main(int argc, char **argv)
   ierr = PetscObjectSetName((PetscObject) u, "solution");CHKERRQ(ierr);
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
 
-  ierr = DMCreateMatrix(user.dm, MATAIJ, &J);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.dm,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.dm, &J);CHKERRQ(ierr);
   if (user.jacobianMF) {
     PetscInt M, m, N, n;
 
@@ -1151,7 +1152,7 @@ int main(int argc, char **argv)
   ierr = DMSetNullSpaceConstructor(user.dm, 1, CreateNullSpaces);CHKERRQ(ierr);
 
   ierr = DMSNESSetFunctionLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))DMPlexComputeResidualFEM,&user);CHKERRQ(ierr);
-  ierr = DMSNESSetJacobianLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure*,void*))DMPlexComputeJacobianFEM,&user);CHKERRQ(ierr);
+  ierr = DMSNESSetJacobianLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,void*))DMPlexComputeJacobianFEM,&user);CHKERRQ(ierr);
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
@@ -1165,7 +1166,7 @@ int main(int argc, char **argv)
     ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(user.dm, &crd_vec);CHKERRQ(ierr);
     ierr = VecGetLocalSize(crd_vec,&mlocal);CHKERRQ(ierr);
-    ierr = PetscMalloc(SPATIAL_DIM_0*mlocal*sizeof(*coords),&coords);CHKERRQ(ierr);
+    ierr = PetscMalloc1(SPATIAL_DIM_0*mlocal,&coords);CHKERRQ(ierr);
     ierr = VecGetArrayRead(crd_vec,&v);CHKERRQ(ierr);
     for (k=j=0; j<mlocal; j++) {
       for (i=0; i<SPATIAL_DIM_0; i++,k++) {
@@ -1177,14 +1178,14 @@ int main(int argc, char **argv)
     ierr = PetscFree(coords);CHKERRQ(ierr);
   }
 
-  ierr = DMPlexProjectFunction(user.dm, numComponents, user.exactFuncs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = DMPlexProjectFunction(user.dm, numComponents, user.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   if (user.showInitial) {ierr = DMVecViewLocal(user.dm, u, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
   if (user.runType == RUN_FULL) {
-    PetscScalar (*initialGuess[numComponents])(const PetscReal x[]);
+    PetscScalar (*initialGuess[numComponents])(const PetscReal x[], PetscScalar *u, void *ctx);
     PetscInt c;
 
     for (c = 0; c < numComponents; ++c) initialGuess[c] = zero;
-    ierr = DMPlexProjectFunction(user.dm, numComponents, initialGuess, INSERT_VALUES, u);CHKERRQ(ierr);
+    ierr = DMPlexProjectFunction(user.dm, numComponents, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
     if (user.showInitial) {ierr = DMVecViewLocal(user.dm, u, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
     if (user.debug) {
       ierr = PetscPrintf(comm, "Initial guess\n");CHKERRQ(ierr);
@@ -1193,7 +1194,7 @@ int main(int argc, char **argv)
     ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
-    ierr = DMPlexComputeL2Diff(user.dm, user.q, user.exactFuncs, u, &error);CHKERRQ(ierr);
+    ierr = DMPlexComputeL2Diff(user.dm, user.q, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "L_2 Error: %.3g\n", error);CHKERRQ(ierr);
     if (user.showSolution) {
       ierr = PetscPrintf(comm, "Solution\n");CHKERRQ(ierr);
@@ -1206,7 +1207,7 @@ int main(int argc, char **argv)
     /* Check discretization error */
     ierr = PetscPrintf(comm, "Initial guess\n");CHKERRQ(ierr);
     ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = DMPlexComputeL2Diff(user.dm, user.q, user.exactFuncs, u, &error);CHKERRQ(ierr);
+    ierr = DMPlexComputeL2Diff(user.dm, user.q, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "L_2 Error: %g\n", error);CHKERRQ(ierr);
     /* Check residual */
     ierr = SNESComputeFunction(snes, u, r);CHKERRQ(ierr);
@@ -1218,7 +1219,6 @@ int main(int argc, char **argv)
     /* Check Jacobian */
     {
       Vec          b;
-      MatStructure flag;
       MatNullSpace nullSpace2;
       PetscBool    isNull;
 
@@ -1227,7 +1227,7 @@ int main(int argc, char **argv)
       if (!isNull) SETERRQ(comm, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
       ierr = MatNullSpaceDestroy(&nullSpace2);CHKERRQ(ierr);
 
-      ierr = SNESComputeJacobian(snes, u, &A, &A, &flag);CHKERRQ(ierr);
+      ierr = SNESComputeJacobian(snes, u, A, A);CHKERRQ(ierr);
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
       ierr = VecSet(r, 0.0);CHKERRQ(ierr);
       ierr = SNESComputeFunction(snes, r, b);CHKERRQ(ierr);
@@ -1243,30 +1243,23 @@ int main(int argc, char **argv)
   }
 
   if (user.runType == RUN_FULL) {
-    PetscContainer c;
-    PetscSection   section;
-    Vec            sol;
-    PetscViewer    viewer;
-    const char     *name;
+    PetscViewer viewer;
+    Vec         uLocal;
+    const char *name;
 
     ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, "ex31_sol.vtk");CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-    ierr = DMGetLocalVector(user.dm, &sol);CHKERRQ(ierr);
+
+    ierr = DMGetLocalVector(user.dm, &uLocal);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) u, &name);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) sol, name);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalBegin(user.dm, u, INSERT_VALUES, sol);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd(user.dm, u, INSERT_VALUES, sol);CHKERRQ(ierr);
-    ierr = DMGetDefaultSection(user.dm, &section);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject) user.dm);CHKERRQ(ierr); /* Needed because viewer destroys the DM */
-    ierr = PetscViewerVTKAddField(viewer, (PetscObject) user.dm, DMPlexVTKWriteAll, PETSC_VTK_POINT_FIELD, (PetscObject) sol);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject) sol);CHKERRQ(ierr); /* Needed because viewer destroys the Vec */
-    ierr = PetscContainerCreate(comm, &c);CHKERRQ(ierr);
-    ierr = PetscContainerSetPointer(c, section);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) sol, "section", (PetscObject) c);CHKERRQ(ierr);
-    ierr = PetscContainerDestroy(&c);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(user.dm, &sol);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) uLocal, name);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(user.dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(user.dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
+    ierr = VecView(uLocal, viewer);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(user.dm, &uLocal);CHKERRQ(ierr);
+
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 

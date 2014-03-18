@@ -99,6 +99,15 @@ PETSC_STATIC_INLINE PetscErrorCode PetscBTSet(PetscBT array,PetscInt index)
   return 0;
 }
 
+PETSC_STATIC_INLINE PetscErrorCode PetscBTNegate(PetscBT array,PetscInt index)
+{
+  const PetscInt BT_idx  = (index)/PETSC_BITS_PER_BYTE;
+  const char     BT_mask = (char)1 << ((index)%PETSC_BITS_PER_BYTE);
+
+  array[BT_idx] ^= BT_mask;
+  return 0;
+}
+
 PETSC_STATIC_INLINE char PetscBTLookupClear(PetscBT array,PetscInt index)
 {
   char      BT_mask,BT_c;

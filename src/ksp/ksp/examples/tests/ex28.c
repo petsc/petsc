@@ -1,5 +1,5 @@
 
-static char help[] = "Test procedural KSPSetFromOptions() or at runtime.\n\n";
+static char help[] = "Test procedural KSPSetFromOptions() or at runtime; Test PCREDUNDANT.\n\n";
 
 /*T
    Concepts: KSP^basic parallel example;
@@ -11,14 +11,14 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec            x, b, u;      /* approx solution, RHS, exact solution */
-  Mat            A;            /* linear system matrix */
+  Vec            x, b, u;     /* approx solution, RHS, exact solution */
+  Mat            A;           /* linear system matrix */
   KSP            ksp;         /* linear solver context */
-  PC             pc;           /* preconditioner context */
-  PetscReal      norm;         /* norm of solution error */
+  PC             pc;          /* preconditioner context */
+  PetscReal      norm;        /* norm of solution error */
   PetscErrorCode ierr;
   PetscInt       i,n = 10,col[3],its,rstart,rend,nlocal;
-  PetscScalar    neg_one        = -1.0,one = 1.0,value[3];
+  PetscScalar    neg_one = -1.0,one = 1.0,value[3];
   PetscBool      TEST_PROCEDURAL=PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char*)0,help);
@@ -53,6 +53,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,nlocal,nlocal,n,n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
   /* Assemble matrix */
   if (!rstart) {
     rstart = 1;
@@ -71,8 +72,6 @@ int main(int argc,char **args)
     col[0] = i-1; col[1] = i; col[2] = i+1;
     ierr   = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
   }
-
-  /* Assemble the matrix */
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -84,7 +83,7 @@ int main(int argc,char **args)
                 Create the linear solver and set various options
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
 
   /*
      Set linear solver defaults for this problem (optional).
@@ -96,27 +95,46 @@ int main(int argc,char **args)
        KSPSetFromOptions();
   */
   if (TEST_PROCEDURAL) {
-    PetscMPIInt size;
+    /* Example of runtime options: '-pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type bjacobi' */
+    PetscMPIInt size,rank,subsize;
+    Mat         A_redundant;
+    KSP         innerksp;
+    PC          innerpc;
+    MPI_Comm    subcomm;
+
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     ierr = PCSetType(pc,PCREDUNDANT);CHKERRQ(ierr);
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     if (size < 3) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Num of processes %d must greater than 2",size);
     ierr = PCRedundantSetNumber(pc,size-2);CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+
+    /* Get subcommunicator and redundant matrix */
+    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+    ierr = PCRedundantGetKSP(pc,&innerksp);CHKERRQ(ierr);
+    ierr = KSPGetPC(innerksp,&innerpc);CHKERRQ(ierr);
+    ierr = PCGetOperators(innerpc,NULL,&A_redundant);CHKERRQ(ierr);
+    ierr = PetscObjectGetComm((PetscObject)A_redundant,&subcomm);CHKERRQ(ierr); 
+    ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
+    if (subsize==1 && !rank) {
+      printf("A_redundant:\n");
+      ierr = MatView(A_redundant,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    }
   } else {
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   }
+  
   /*  Solve linear system */
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-
-  if (TEST_PROCEDURAL) { /* View solver info; */
-    ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
 
   /* Check the error */
   ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G, Iterations %D\n",norm,its);CHKERRQ(ierr);
+  if (norm > 1.e-14) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+  }
 
   /* Free work space. */
   ierr = VecDestroy(&x);CHKERRQ(ierr); ierr = VecDestroy(&u);CHKERRQ(ierr);

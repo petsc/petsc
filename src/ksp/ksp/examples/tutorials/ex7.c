@@ -101,7 +101,7 @@ int main(int argc,char **args)
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
 
   /*
      Set default preconditioner for this program to be block Jacobi.
@@ -126,7 +126,7 @@ int main(int argc,char **args)
 
       Note: The default decomposition is 1 block per processor.
   */
-  ierr = PetscMalloc(m*sizeof(PetscInt),&blks);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&blks);CHKERRQ(ierr);
   for (i=0; i<m; i++) blks[i] = n;
   ierr = PCBJacobiSetTotalBlocks(pc,m,blks);CHKERRQ(ierr);
   ierr = PetscFree(blks);CHKERRQ(ierr);
@@ -226,7 +226,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(x,none,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G iterations %D\n",norm,its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its);CHKERRQ(ierr);
 
   /*
      Free work space.  All PETSc objects should be destroyed when they

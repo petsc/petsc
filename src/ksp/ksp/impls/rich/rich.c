@@ -27,7 +27,6 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i,maxit;
-  MatStructure   pflag;
   PetscReal      rnorm = 0.0,abr;
   PetscScalar    scale,rdot;
   Vec            x,b,r,z,w = NULL,y = NULL;
@@ -42,7 +41,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
 
   ksp->its = 0;
 
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
   x    = ksp->vec_sol;
   b    = ksp->vec_rhs;
   ierr = VecGetSize(x,&xs);CHKERRQ(ierr);
@@ -103,7 +102,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
       ierr  = KSP_PCApplyBAorAB(ksp,z,y,w);CHKERRQ(ierr); /* y = BAz = BABr */
       ierr  = VecDotNorm2(z,y,&rdot,&abr);CHKERRQ(ierr);   /*   rdot = (Br)^T(BABR); abr = (BABr)^T (BABr) */
       scale = rdot/abr;
-      ierr  = PetscInfo1(ksp,"Self-scale factor %G\n",PetscRealPart(scale));CHKERRQ(ierr);
+      ierr  = PetscInfo1(ksp,"Self-scale factor %g\n",(double)PetscRealPart(scale));CHKERRQ(ierr);
       ierr  = VecAXPY(x,scale,z);CHKERRQ(ierr);   /*   x  <- x + scale z */
       ierr  = VecAXPY(r,-scale,w);CHKERRQ(ierr);  /*  r <- r - scale*Az */
       ierr  = VecAXPY(z,-scale,y);CHKERRQ(ierr);  /*  z <- z - scale*y */
@@ -179,7 +178,7 @@ PetscErrorCode KSPView_Richardson(KSP ksp,PetscViewer viewer)
     if (richardsonP->selfscale) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Richardson: using self-scale best computed damping factor\n");CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Richardson: damping factor=%G\n",richardsonP->scale);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Richardson: damping factor=%g\n",(double)richardsonP->scale);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -284,7 +283,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Richardson(KSP ksp)
   KSP_Richardson *richardsonP;
 
   PetscFunctionBegin;
-  ierr      = PetscNewLog(ksp,KSP_Richardson,&richardsonP);CHKERRQ(ierr);
+  ierr      = PetscNewLog(ksp,&richardsonP);CHKERRQ(ierr);
   ksp->data = (void*)richardsonP;
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);

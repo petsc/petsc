@@ -8,7 +8,7 @@ SOURCEC  = itcl.c itfunc.c iguess.c itcreate.c iterativ.c itres.c itregis.c \
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscksp
-DIRS     = ams
+DIRS     = saws
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/interface/
 

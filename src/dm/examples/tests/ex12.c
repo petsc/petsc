@@ -6,6 +6,7 @@
 
 static char help[] = "Solves the one dimensional heat equation.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__
@@ -26,7 +27,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,"-time",&time_steps,NULL);CHKERRQ(ierr);
 
   /* Set up the array */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,M,w,s,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,M,w,s,NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -50,7 +51,7 @@ int main(int argc,char **argv)
   for (i=1; i<localsize-1; i++) {
     j = (i-1) + mybase;
 
-    localptr[i] = sin((PETSC_PI*j*6)/((PetscReal)M) + 1.2 * sin((PETSC_PI*j*2)/((PetscReal)M))) * 4+4;
+    localptr[i] = PetscSinReal((PETSC_PI*j*6)/((PetscReal)M) + 1.2 * PetscSinReal((PETSC_PI*j*2)/((PetscReal)M))) * 4+4;
   }
 
   ierr = VecRestoreArray (copy,&copyptr);CHKERRQ(ierr);

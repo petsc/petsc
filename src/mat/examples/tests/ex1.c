@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   Mat            mat,F,RHS,SOLU;
   MatInfo        info;
   PetscErrorCode ierr;
-  PetscInt       m     = 10,n = 10,i,j,rstart,rend,nrhs=2;
+  PetscInt       m = 10,n = 10,i,j,rstart,rend,nrhs=2;
   PetscScalar    value = 1.0;
   Vec            x,y,b,ytmp;
   PetscReal      norm,tol=1.e-15;
@@ -79,7 +79,7 @@ int main(int argc,char **argv)
   value = -1.0; ierr = VecAXPY(y,value,x);CHKERRQ(ierr);
   ierr  = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for Cholesky %G\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for Cholesky %g\n",(double)norm);CHKERRQ(ierr);
   }
 
   /* out-place Cholesky */
@@ -90,7 +90,7 @@ int main(int argc,char **argv)
   value = -1.0; ierr = VecAXPY(y,value,x);CHKERRQ(ierr);
   ierr  = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for Cholesky %G\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for Cholesky %g\n",(double)norm);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&F);CHKERRQ(ierr);
 
@@ -108,7 +108,7 @@ int main(int argc,char **argv)
   value = -1.0; ierr = VecAXPY(y,value,x);CHKERRQ(ierr);
   ierr  = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %G\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %g\n",(double)norm);CHKERRQ(ierr);
   }
   ierr = MatMatSolve(F,RHS,SOLU);CHKERRQ(ierr);
   ierr = MatDenseGetArray(SOLU,&solu_array);CHKERRQ(ierr);
@@ -121,7 +121,7 @@ int main(int argc,char **argv)
     ierr = VecAXPY(ytmp,-1.0,b);CHKERRQ(ierr); /* ytmp = mat*SOLU[:,j] - RHS[:,j] */
     ierr = VecNorm(ytmp,NORM_2,&norm);CHKERRQ(ierr);
     if (norm > tol) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: Norm of residual for LU %G\n",norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: Norm of residual for LU %g\n",(double)norm);CHKERRQ(ierr);
     }
 
     ierr = VecResetArray(b);CHKERRQ(ierr);
@@ -140,7 +140,7 @@ int main(int argc,char **argv)
   value = -1.0; ierr = VecAXPY(y,value,x);CHKERRQ(ierr);
   ierr  = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %G\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %g\n",(double)norm);CHKERRQ(ierr);
   }
 
   /* free space */

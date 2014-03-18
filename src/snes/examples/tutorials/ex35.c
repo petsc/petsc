@@ -54,6 +54,7 @@ T*/
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
 
@@ -62,7 +63,7 @@ T*/
 */
 extern PetscErrorCode FormMatrix(DM,Mat);
 extern PetscErrorCode MyComputeFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode MyComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode MyComputeJacobian(SNES,Vec,Mat,Mat,void*);
 extern PetscErrorCode NonlinearGS(SNES,Vec);
 
 #undef __FUNCT__
@@ -91,7 +92,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetBool(NULL,"-use_ngs",&use_ngs,0);CHKERRQ(ierr);
 
   if (use_ngs) {
-    ierr = SNESGetPC(snes,&psnes);CHKERRQ(ierr);
+    ierr = SNESGetNPC(snes,&psnes);CHKERRQ(ierr);
     ierr = SNESSetType(psnes,SNESSHELL);CHKERRQ(ierr);
     ierr = SNESShellSetSolve(psnes,NonlinearGS);CHKERRQ(ierr);
   }
@@ -99,7 +100,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
   if (use_ngs) {
@@ -155,7 +156,8 @@ PetscErrorCode MyComputeFunction(SNES snes,Vec x,Vec F,void *ctx)
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dm,&J);CHKERRQ(ierr);
   if (!J) {
-    ierr = DMCreateMatrix(dm,MATAIJ,&J);CHKERRQ(ierr);
+    ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dm,&J);CHKERRQ(ierr);
     ierr = MatSetDM(J, NULL);CHKERRQ(ierr);
     ierr = FormMatrix(dm,J);CHKERRQ(ierr);
     ierr = DMSetApplicationContext(dm,J);CHKERRQ(ierr);
@@ -167,15 +169,14 @@ PetscErrorCode MyComputeFunction(SNES snes,Vec x,Vec F,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "MyComputeJacobian"
-PetscErrorCode MyComputeJacobian(SNES snes,Vec x,Mat *J,Mat *Jp,MatStructure *str,void *ctx)
+PetscErrorCode MyComputeJacobian(SNES snes,Vec x,Mat J,Mat Jp,void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
 
   PetscFunctionBeginUser;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = FormMatrix(dm,*Jp);CHKERRQ(ierr);
-  *str = SAME_NONZERO_PATTERN;
+  ierr = FormMatrix(dm,Jp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -196,7 +197,7 @@ PetscErrorCode FormMatrix(DM da,Mat jac)
   hxdhy = hx/hy;
   hydhx = hy/hx;
 
-  ierr = PetscMalloc(info.ym*info.xm*sizeof(MatStencil),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc1(info.ym*info.xm,&rows);CHKERRQ(ierr);
   /*
      Compute entries for the locally owned part of the Jacobian.
       - Currently, all PETSc parallel matrix formats are partitioned by

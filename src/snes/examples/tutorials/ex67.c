@@ -9,6 +9,7 @@ TODO for Mantle Convection:
   - Visualize output
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
 
@@ -187,10 +188,10 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionBeginUser;
   switch (dim) {
   case 2:
-    ierr = DMDACreate2d(comm, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_STAR, -4, -4, PETSC_DECIDE, PETSC_DECIDE, 2, 1, NULL, NULL, dm);CHKERRQ(ierr);
+    ierr = DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, -4, -4, PETSC_DECIDE, PETSC_DECIDE, 2, 1, NULL, NULL, dm);CHKERRQ(ierr);
     break;
   case 3:
-    ierr = DMDACreate3d(comm, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_STAR, -4, -4, -4, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 2, 1, NULL, NULL, NULL, dm);CHKERRQ(ierr);
+    ierr = DMDACreate3d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, -4, -4, -4, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 2, 1, NULL, NULL, NULL, dm);CHKERRQ(ierr);
     break;
   default:
     SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not create mesh for dimension %d", dim);
@@ -457,10 +458,10 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
     maxQuad  = PetscMax(maxQuad, user->q[field].numQuadPoints);
   }
   for (d = 0; d < dim; ++d) jacSize *= maxQuad;
-  ierr = PetscMalloc3(dim,PetscReal,&coords,dim,PetscReal,&v0,jacSize,PetscReal,&J);CHKERRQ(ierr);
-  ierr = PetscMalloc4(numCells*cellDof,PetscScalar,&u,numCells*jacSize,PetscReal,&invJ,numCells*maxQuad,PetscReal,&detJ,numCells*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
+  ierr = PetscMalloc3(dim,&coords,dim,&v0,jacSize,&J);CHKERRQ(ierr);
+  ierr = PetscMalloc4(numCells*cellDof,&u,numCells*jacSize,&invJ,numCells*maxQuad,&detJ,numCells*cellDof,&elemVec);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *x;
+    PetscScalar *x = NULL;
     PetscInt     i;
 
     ierr = DMDAComputeCellGeometry(dm, c, &user->q[0], v0, J, &invJ[c*jacSize], &detJ[c]);CHKERRQ(ierr);
@@ -533,7 +534,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
 
 .seealso: FormFunctionLocal()
 */
-PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, MatStructure *str,AppCtx *user)
+PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, AppCtx *user)
 {
   PetscErrorCode ierr;
 
@@ -541,7 +542,6 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, MatStructure *
   ierr = PetscLogEventBegin(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(JacP, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(JacP, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  *str = SAME_NONZERO_PATTERN;
   ierr = PetscLogEventEnd(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -570,11 +570,12 @@ int main(int argc, char **argv)
   ierr = DMCreateGlobalVector(user.dm, &u);CHKERRQ(ierr);
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
 
-  ierr = DMCreateMatrix(user.dm, MATAIJ, &J);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.dm,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.dm, &J);CHKERRQ(ierr);
   A    = J;
 
   ierr = DMSNESSetFunctionLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))FormFunctionLocal,&user);CHKERRQ(ierr);
-  ierr = DMSNESSetJacobianLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure*,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
+  ierr = DMSNESSetJacobianLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 

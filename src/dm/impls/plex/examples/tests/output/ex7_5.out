@@ -128,7 +128,7 @@ Process 1:
   (   2) dim  3 offset   3 1 0 0
   (   3) dim  3 offset   6 0 0.5 0
   (   4) dim  3 offset   9 0 0 0.5
-Star Forest Object: 2 MPI processes
+PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order
   [0] Number of roots=15, leaves=7, remote ranks=1
@@ -280,7 +280,7 @@ Process 1:
   (   2) dim  3 offset   3 1 0 0
   (   3) dim  3 offset   6 0 0.5 0
   (   4) dim  3 offset   9 0 0 0.5
-Star Forest Object: 2 MPI processes
+PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order
   [0] Number of roots=15, leaves=7, remote ranks=1

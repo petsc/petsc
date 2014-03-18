@@ -111,7 +111,7 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
   if (err_ind >= 0) (*PetscErrorPrintf)("*** %s occurred at pc=%X ***\n",error_codes[err_ind].name,SIGPC(scp));
   else              (*PetscErrorPrintf)("*** floating point error 0x%x occurred at pc=%X ***\n",code,SIGPC(scp));
 
-  ierr = PetscError(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
+  ierr = PetscError(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided function","Unknown file",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
   PetscFunctionReturn(0);
 }
@@ -208,7 +208,7 @@ void PetscDefaultFPTrap(int sig,siginfo_t *scp,ucontext_t *uap)
   if (err_ind >= 0) (*PetscErrorPrintf)("*** %s occurred at pc=%X ***\n",error_codes[err_ind].name,SIGPC(scp));
   else              (*PetscErrorPrintf)("*** floating point error 0x%x occurred at pc=%X ***\n",code,SIGPC(scp));
 
-  ierr = PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
+  ierr = PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 
@@ -254,7 +254,7 @@ void PetscDefaultFPTrap(unsigned exception[],int val[])
   if (err_ind >= 0) (*PetscErrorPrintf)("*** %s occurred ***\n",error_codes[err_ind].name);
   else              (*PetscErrorPrintf)("*** floating point error 0x%x occurred ***\n",code);
 
-  PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
+  PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 
@@ -316,7 +316,7 @@ void PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp)
   if (err_ind >= 0) (*PetscErrorPrintf)("*** %s occurred ***\n",error_codes[err_ind].name);
   else              (*PetscErrorPrintf)("*** floating point error 0x%x occurred ***\n",flt_context.trap);
 
-  ierr = PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
+  ierr = PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 
@@ -411,7 +411,7 @@ void PetscDefaultFPTrap(int sig)
   (*PetscErrorPrintf)("configure using --with-debugging=yes, recompile, link, and run \n");
   (*PetscErrorPrintf)("with -start_in_debugger to get more information on the crash.\n");
 #endif
-  PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_INITIAL,"trapped floating point error");
+  PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file",PETSC_ERR_FP,PETSC_ERROR_INITIAL,"trapped floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 
@@ -449,7 +449,7 @@ void PetscDefaultFPTrap(int sig)
 {
   PetscFunctionBegin;
   (*PetscErrorPrintf)("*** floating point error occurred ***\n");
-  PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
+  PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 

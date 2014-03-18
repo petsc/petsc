@@ -8,17 +8,18 @@
       PetscErrorCode ierr
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-      call DMDACreate1d(MPI_COMM_WORLD,DMDA_BOUNDARY_NONE,8,1,1,        &
+      call DMDACreate1d(MPI_COMM_WORLD,DM_BOUNDARY_NONE,8,1,1,        &
      &  PETSC_NULL_INTEGER,da,ierr)
       call DMCreateGlobalVector(da,x,ierr)
       call VecDuplicate(x,f,ierr)
-      call DMCreateMatrix(da,MATAIJ,J,ierr)
+      call DMSetMatType(da,MATAIJ,ierr)
+      call DMCreateMatrix(da,J,ierr)
 
       call ComputeRHS(da,f,ierr)
       call ComputeMatrix(da,J,ierr)
 
       call KSPCreate(MPI_COMM_WORLD,ksp,ierr)
-      call KSPSetOperators(ksp,J,J,SAME_NONZERO_PATTERN,ierr)
+      call KSPSetOperators(ksp,J,J,ierr)
       call KSPSetFromOptions(ksp,ierr)
       call KSPSolve(ksp,f,x,ierr)
 

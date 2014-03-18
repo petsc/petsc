@@ -120,7 +120,7 @@ int main(int argc,char **args)
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = KSPSetOperators(ksp,A,A,SAME_PRECONDITIONER);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
 
   /*
     Set runtime options, e.g.,
@@ -172,7 +172,7 @@ int main(int argc,char **args)
        Print convergence information.  PetscPrintf() produces a single
        print statement from all processes that share a communicator.
     */
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G System %D: iterations %D\n",norm,k,its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g System %D: iterations %D\n",(double)norm,k,its);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

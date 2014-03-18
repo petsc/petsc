@@ -178,7 +178,7 @@ int main(int argc,char **args)
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = KSPSetOperators(ksp,C,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,C,C);CHKERRQ(ierr);
 
   /*
      Set runtime options (e.g., -ksp_type <type> -pc_type <type>)
@@ -202,7 +202,7 @@ int main(int argc,char **args)
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   if (norm > 1.e-13) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G, Iterations %D\n",norm,its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
   }
 
   /* -------------- Stage 1: Solve Second System ---------------------- */
@@ -268,25 +268,8 @@ int main(int argc,char **args)
   /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
-      - The flag SAME_NONZERO_PATTERN indicates that the
-        preconditioning matrix has identical nonzero structure
-        as during the last linear solve (although the values of
-        the entries have changed). Thus, we can save some
-        work in setting up the preconditioner (e.g., no need to
-        redo symbolic factorization for ILU/ICC preconditioners).
-      - If the nonzero structure of the matrix is different during
-        the second linear solve, then the flag DIFFERENT_NONZERO_PATTERN
-        must be used instead.  If you are unsure whether the
-        matrix structure has changed or not, use the flag
-        DIFFERENT_NONZERO_PATTERN.
-      - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-        believes your assertion and does not check the structure
-        of the matrix.  If you erroneously claim that the structure
-        is the same when it actually is not, the new preconditioner
-        will not function correctly.  Thus, use this optimization
-        feature with caution!
   */
-  ierr = KSPSetOperators(ksp,C,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,C,C);CHKERRQ(ierr);
 
   /*
      Solve linear system
@@ -301,7 +284,7 @@ int main(int argc,char **args)
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   if (norm > 1.e-4) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G, Iterations %D\n",norm,its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
   }
 
   /*

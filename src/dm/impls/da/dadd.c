@@ -110,7 +110,7 @@ PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *i
         xm = me - ms;
         ym = ne - ns;
         zm = pe - ps;
-        base = ms*ym*zm + ns*M + ps*M*N;
+        base = ms*ym*zm + ns*M*zm + ps*M*N;
         /* compute the local coordinates on owning processor */
         si = ii - ms;
         sj = jj - ns;
@@ -147,7 +147,7 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, PetscInt *nlocal, DM **sdm)
   ierr = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
   ierr = DMDAGetOverlap(dm,&xol,&yol,&zol);CHKERRQ(ierr);
   ierr = DMDAGetNumLocalSubDomains(dm,&size);CHKERRQ(ierr);
-  ierr = PetscMalloc(size*sizeof(DM),&da);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&da);CHKERRQ(ierr);
 
   if (nlocal) *nlocal = size;
 
@@ -217,24 +217,24 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, PetscInt *nlocal, DM **sdm)
         ierr = DMDASetStencilType(da[idx],info.st);CHKERRQ(ierr);
         ierr = DMDASetStencilWidth(da[idx],info.sw);CHKERRQ(ierr);
 
-        if (info.bx == DMDA_BOUNDARY_PERIODIC || (xs != 0)) {
+        if (info.bx == DM_BOUNDARY_PERIODIC || (xs != 0)) {
           xsize += xol;
           xo    -= xol;
         }
-        if (info.by == DMDA_BOUNDARY_PERIODIC || (ys != 0)) {
+        if (info.by == DM_BOUNDARY_PERIODIC || (ys != 0)) {
           ysize += yol;
           yo    -= yol;
         }
-        if (info.bz == DMDA_BOUNDARY_PERIODIC || (zs != 0)) {
+        if (info.bz == DM_BOUNDARY_PERIODIC || (zs != 0)) {
           zsize += zol;
           zo    -= zol;
         }
 
-        if (info.bx == DMDA_BOUNDARY_PERIODIC || (xs+xm != info.mx)) xsize += xol;
-        if (info.by == DMDA_BOUNDARY_PERIODIC || (ys+ym != info.my)) ysize += yol;
-        if (info.bz == DMDA_BOUNDARY_PERIODIC || (zs+zm != info.mz)) zsize += zol;
+        if (info.bx == DM_BOUNDARY_PERIODIC || (xs+xm != info.mx)) xsize += xol;
+        if (info.by == DM_BOUNDARY_PERIODIC || (ys+ym != info.my)) ysize += yol;
+        if (info.bz == DM_BOUNDARY_PERIODIC || (zs+zm != info.mz)) zsize += zol;
 
-        if (info.bx != DMDA_BOUNDARY_PERIODIC) {
+        if (info.bx != DM_BOUNDARY_PERIODIC) {
           if (xo < 0) {
             xsize += xo;
             xo = 0;
@@ -243,7 +243,7 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, PetscInt *nlocal, DM **sdm)
             xsize -= xo+xsize - info.mx;
           }
         }
-        if (info.by != DMDA_BOUNDARY_PERIODIC) {
+        if (info.by != DM_BOUNDARY_PERIODIC) {
           if (yo < 0) {
             ysize += yo;
             yo = 0;
@@ -252,7 +252,7 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, PetscInt *nlocal, DM **sdm)
             ysize -= yo+ysize - info.my;
           }
         }
-        if (info.bz != DMDA_BOUNDARY_PERIODIC) {
+        if (info.bz != DM_BOUNDARY_PERIODIC) {
           if (zo < 0) {
             zsize += zo;
             zo = 0;
@@ -264,7 +264,7 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, PetscInt *nlocal, DM **sdm)
 
         ierr = DMDASetSizes(da[idx], xsize, ysize, zsize);CHKERRQ(ierr);
         ierr = DMDASetNumProcs(da[idx], 1, 1, 1);CHKERRQ(ierr);
-        ierr = DMDASetBoundaryType(da[idx], DMDA_BOUNDARY_GHOSTED, DMDA_BOUNDARY_GHOSTED, DMDA_BOUNDARY_GHOSTED);CHKERRQ(ierr);
+        ierr = DMDASetBoundaryType(da[idx], DM_BOUNDARY_GHOSTED, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_GHOSTED);CHKERRQ(ierr);
 
         /* set up as a block instead */
         ierr = DMSetUp(da[idx]);CHKERRQ(ierr);
@@ -307,9 +307,9 @@ PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM dm,PetscInt nsubdms,DM 
   PetscFunctionBegin;
 
   /* allocate the arrays of scatters */
-  if (iscat) {ierr = PetscMalloc(nsubdms*sizeof(VecScatter*),iscat);CHKERRQ(ierr);}
-  if (oscat) {ierr = PetscMalloc(nsubdms*sizeof(VecScatter*),oscat);CHKERRQ(ierr);}
-  if (lscat) {ierr = PetscMalloc(nsubdms*sizeof(VecScatter*),lscat);CHKERRQ(ierr);}
+  if (iscat) {ierr = PetscMalloc1(nsubdms,iscat);CHKERRQ(ierr);}
+  if (oscat) {ierr = PetscMalloc1(nsubdms,oscat);CHKERRQ(ierr);}
+  if (lscat) {ierr = PetscMalloc1(nsubdms,lscat);CHKERRQ(ierr);}
 
   ierr  = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
   for (i = 0; i < nsubdms; i++) {
@@ -383,8 +383,8 @@ PetscErrorCode DMDASubDomainIS_Private(DM dm,PetscInt n,DM *subdm,IS **iis,IS **
 
   PetscFunctionBegin;
   ierr = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
-  if (iis) {ierr = PetscMalloc(n*sizeof(IS*),iis);CHKERRQ(ierr);}
-  if (ois) {ierr = PetscMalloc(n*sizeof(IS*),ois);CHKERRQ(ierr);}
+  if (iis) {ierr = PetscMalloc1(n,iis);CHKERRQ(ierr);}
+  if (ois) {ierr = PetscMalloc1(n,ois);CHKERRQ(ierr);}
 
   for (i = 0;i < n; i++) {
     ierr = DMDAGetLocalInfo(subdm[i],&subinfo);CHKERRQ(ierr);
@@ -424,7 +424,7 @@ PetscErrorCode DMCreateDomainDecomposition_DA(DM dm,PetscInt *len,char ***names,
   PetscFunctionBegin;
   ierr = DMDASubDomainDA_Private(dm,&n,&sdm);CHKERRQ(ierr);
   if (names) {
-    ierr = PetscMalloc(n*sizeof(char*),names);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,names);CHKERRQ(ierr);
     for (i=0;i<n;i++) (*names)[i] = 0;
   }
   ierr = DMDASubDomainIS_Private(dm,n,sdm,iis,ois);CHKERRQ(ierr);

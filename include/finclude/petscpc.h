@@ -114,7 +114,7 @@
       PetscEnum PC_EXOTIC_WIREBASKET
       parameter (PC_EXOTIC_FACE=0,PC_EXOTIC_WIREBASKET=1)
 
-      external  PCMGRESIDUAL_DEFAULT
+      external  PCMGRESIDUALDEFAULT
 !
 !  End of Fortran include file for the PC package in PETSc
 

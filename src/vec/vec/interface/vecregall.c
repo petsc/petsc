@@ -14,11 +14,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_MPIViennaCL(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_ViennaCL(Vec);
 #endif
-#if 0
-#if defined(PETSC_HAVE_SIEVE)
-PETSC_EXTERN PetscErrorCode VecCreate_Sieve(Vec);
-#endif
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "VecRegisterAll"
@@ -49,14 +44,9 @@ PetscErrorCode  VecRegisterAll(void)
   ierr = VecRegister(VECCUSP,       VecCreate_CUSP);CHKERRQ(ierr);
 #endif
 #if defined PETSC_HAVE_VIENNACL
-  ierr = VecRegister(VECSEQVIENNACL,  VecCreate_SeqViennaCL);CHKERRQ(ierr);
-  ierr = VecRegister(VECMPIVIENNACL,  VecCreate_MPIViennaCL);CHKERRQ(ierr);
-  ierr = VecRegister(VECVIENNACL,     VecCreate_ViennaCL);CHKERRQ(ierr);
-#endif
-#if 0
-#if defined(PETSC_HAVE_SIEVE)
-  ierr = VecRegister(VECSIEVE,      VecCreate_Sieve);CHKERRQ(ierr);
-#endif
+  ierr = VecRegister(VECSEQVIENNACL,    VecCreate_SeqViennaCL);CHKERRQ(ierr);
+  ierr = VecRegister(VECMPIVIENNACL,    VecCreate_MPIViennaCL);CHKERRQ(ierr);
+  ierr = VecRegister(VECVIENNACL,       VecCreate_ViennaCL);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

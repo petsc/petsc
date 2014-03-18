@@ -1,5 +1,5 @@
 Local function
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0
@@ -61,7 +61,7 @@ Vector Object: 1 MPI processes
 1.0625
 -0.375
 Initial guess
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 -1
 -0.5
@@ -92,7 +92,7 @@ Vector Object: 1 MPI processes
 -0.25
 L_2 Error: 4.53215e-13
 Residual:
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0
@@ -154,7 +154,7 @@ Vector Object: 1 MPI processes
 0
 0
 Initial Residual
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 -9.5122e-14
 -6.20129e-14
@@ -185,7 +185,7 @@ Vector Object: 1 MPI processes
 1.35997e-12
 L_2 Residual: 1.3123e-11
 Jacobian:
-Matrix Object: 1 MPI processes
+Mat Object: 1 MPI processes
   type: seqaij
 row 0: (0, 0)  (1, 0)  (3, 0)  (11, 0.0833333)  (12, 0.0833333) 
 row 1: (0, 0)  (1, 0)  (2, 0)  (3, 0)  (4, 6.03982e-15)  (5, 1.21102e-14)  (6, 0)  (11, -0.0833333)  (12, 0.0833333)  (13, -5.58754e-15)  (14, 0.0833333)  (17, 0.0833333)  (18, 0.166667)  (21, 0.0833333)  (22, 0.0833333) 
@@ -215,7 +215,7 @@ row 24: (4, 0)  (5, 1.94894e-12)  (6, -0.0833333)  (7, -0.0833333)  (9, 0.083333
 row 25: (4, -1.33333)  (5, 0)  (6, -0.0833333)  (7, 0.0833333)  (8, -0.0833333)  (9, 0.0833333)  (15, -1.33333)  (16, 0)  (19, -6.78901e-14)  (20, 0)  (23, -1.33333)  (24, 0)  (25, 5.33333)  (26, 0) 
 row 26: (4, 0)  (5, -1.33333)  (6, -0.166667)  (7, 3.46945e-18)  (8, 2.34857e-13)  (9, 0.166667)  (15, 0)  (16, -1.33333)  (19, 0)  (20, -6.78901e-14)  (23, 0)  (24, -1.33333)  (25, 0)  (26, 5.33333) 
 Residual:
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0
@@ -277,7 +277,7 @@ Vector Object: 1 MPI processes
 0
 0
 Au - b = Au + F(0)
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 -9.51201e-14
 -6.20337e-14

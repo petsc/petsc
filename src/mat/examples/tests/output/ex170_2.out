@@ -1,0 +1,10 @@
+Components: 2 Iterations: 2
+Vector Object: 2 MPI processes
+  type: mpi
+Process [0]
+1
+1
+4
+Process [1]
+4
+4

@@ -11,7 +11,7 @@
 
 /* Do not use PetscStackPush/PetscStackPop because  */
 #define PetscStackCallBLAS(name,routine) do {                   \
-    PetscStackPushNoCheck(name,PETSC_FALSE);                    \
+    PetscStackPushNoCheck(name,PETSC_FALSE,PETSC_TRUE);         \
     routine;                                                    \
     PetscStackPop;                                              \
   } while(0)
@@ -29,6 +29,7 @@
 #endif
 
 PETSC_EXTERN void LAPACKgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
+PETSC_EXTERN void LAPACKgetri_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 PETSC_EXTERN void LAPACKungqr_(PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 PETSC_EXTERN void LAPACKgeqrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 PETSC_EXTERN PetscReal BLASnrm2_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);

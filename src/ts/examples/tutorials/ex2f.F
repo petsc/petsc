@@ -80,6 +80,7 @@
       PetscErrorCode ierr
       PetscInt  time_steps_max,i1,steps
       PetscReal dt,time_total_max,ftime,norm
+      PetscReal zero
 
 !  Note: Any user-defined Fortran routines (such as RHSFunction)
 !  MUST be declared as external.
@@ -121,7 +122,7 @@
 !  Set up the ghost point communication pattern.  There are m total
 !  grid values spread equally among all the processors.
       i1 = 1
-      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,m,i1,i1,    &
+      call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,i1,i1,      &
      &     PETSC_NULL_INTEGER,da,ierr)
 
 !  Extract global and local vectors from DMDA; then duplicate for remaining
@@ -174,7 +175,8 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       dt = h/two_d0
-      call TSSetInitialTimeStep(ts,0.d0,dt,ierr)
+      zero = 0.0
+      call TSSetInitialTimeStep(ts,zero,dt,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Customize timestepping solver:
@@ -561,7 +563,7 @@
 !   - Note that MatSetValues() uses 0-based row and column numbers
 !     in Fortran as well as in C.
 
-      subroutine RHSJacobian(ts,t,global_in,A,B,str,dummy)
+      subroutine RHSJacobian(ts,t,global_in,A,B,dummy)
       implicit none
 #include "ex2f.h"
 
@@ -570,7 +572,6 @@
       PetscReal t
       Vec              global_in
       Mat              A,B
-      MatStructure     str
       integer          dummy
 
 !  Local variables:
@@ -658,23 +659,6 @@
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
-!  Set flag to indicate that the Jacobian matrix retains an identical
-!  nonzero structure throughout all timestepping iterations (although the
-!  values of the entries change). Thus, we can save some work in setting
-!  up the preconditioner (e.g., no need to redo symbolic factorization for
-!  ILU/ICC preconditioners).
-!   - If the nonzero structure of the matrix is different during
-!     successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-!     must be used instead.  If you are unsure whether the matrix
-!     structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-!   - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-!     believes your assertion and does not check the structure
-!     of the matrix.  If you erroneously claim that the structure
-!     is the same when it actually is not, the new preconditioner
-!     will not function correctly.  Thus, use this optimization
-!     feature with caution!
-
-      str = SAME_NONZERO_PATTERN
 
 !  Set and option to indicate that we will never add a new nonzero location
 !  to the matrix. If we do, it will generate an error.

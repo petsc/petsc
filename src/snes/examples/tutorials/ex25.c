@@ -28,6 +28,7 @@ T*/
 */
 
 #include <petscsnes.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,void*);
@@ -47,7 +48,7 @@ int main(int argc,char **argv)
   /*
       Set the DMDA (grid structure) for the grids.
   */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-5,-5,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-5,-5,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,NULL);CHKERRQ(ierr);
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
@@ -61,7 +62,7 @@ int main(int argc,char **argv)
   litspit = ((PetscReal)lits)/((PetscReal)its);
   ierr    = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
   ierr    = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %D\n",lits);CHKERRQ(ierr);
-  ierr    = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / SNES = %e\n",litspit);CHKERRQ(ierr);
+  ierr    = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / SNES = %e\n",(double)litspit);CHKERRQ(ierr);
 
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFinalize();

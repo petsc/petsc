@@ -15,7 +15,6 @@ if __name__ == '__main__':
     '--with-thrust=1',
     '--with-cusp=1',
     '--with-cusp-dir=/sandbox/soft/cusp-v0.3.1',
-    '--download-txpetscgpu=1',
     '--with-debugging=0',
     'COPTFLAGS=-O3',
     'CXXOPTFLAGS=-O3',

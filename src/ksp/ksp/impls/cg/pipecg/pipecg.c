@@ -36,7 +36,6 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
   PetscReal      dp    = 0.0;
   Vec            X,B,Z,P,W,Q,U,M,N,R,S;
   Mat            Amat,Pmat;
-  MatStructure   pflag;
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
@@ -55,7 +54,7 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
   R = ksp->work[7];
   S = ksp->work[8];
 
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   ksp->its = 0;
   if (!ksp->guess_zero) {
@@ -180,8 +179,7 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
 
    See also KSPPIPECR, where the reduction is only overlapped with the matrix-vector product.
 
-   Level:
-   beginner
+   Level: beginner
 
    Notes:
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.

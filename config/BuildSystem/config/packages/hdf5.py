@@ -10,7 +10,7 @@ class Configure(config.package.Package):
     self.includes  = ['hdf5.h']
     self.liblist   = [['libhdf5_hl.a', 'libhdf5.a']]
     self.needsMath = 1
-    self.needsCompression = 1
+    self.needsCompression = 0
     self.complex   = 1
     self.worksonWindows = 1
     return
@@ -19,6 +19,17 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self, framework)
     self.deps = [self.mpi]
     return
+
+  def generateLibList(self, framework):
+    '''First try library list without compression libraries (zlib) then try with'''
+    list = []
+    for l in self.liblist:
+      list.append(l)
+    if self.libraries.compression:
+      for l in self.liblist:
+        list.append(l + self.libraries.compression)
+    self.liblist = list
+    return config.package.Package.generateLibList(self,framework)
 
   def Install(self):
     import os
@@ -56,14 +67,13 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running configure on HDF5: '+str(e))
       try:
         self.logPrintBox('Compiling HDF5; this may take several minutes')
-        output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean && make && make install', timeout=2500, log = self.framework.log)
+        output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.make.make+' clean && '+self.make.make_jnp+' && '+self.make.make+' install', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on HDF5: '+str(e))
       self.postInstall(output1+err1+output2+err2,'hdf5')
     return self.installDir
 
   def configureLibrary(self):
-    self.extraLib = self.libraries.compression
     if hasattr(self.compilers, 'FC'):
       # PETSc does not need the Fortran interface, but some users will call the Fortran interface
       # and expect our standard linking to be sufficient.  Thus we try to link the Fortran

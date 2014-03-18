@@ -64,9 +64,6 @@ typedef const char* PCType;
 #define PCML              "ml"
 #define PCGALERKIN        "galerkin"
 #define PCEXOTIC          "exotic"
-#define PCHMPI            "hmpi"
-#define PCSUPPORTGRAPH    "supportgraph"
-#define PCASA             "asa"
 #define PCCP              "cp"
 #define PCBFBT            "bfbt"
 #define PCLSC             "lsc"
@@ -81,6 +78,7 @@ typedef const char* PCType;
 #define PCBICGSTABCUSP    "bicgstabcusp"
 #define PCAINVCUSP        "ainvcusp"
 #define PCBDDC            "bddc"
+#define PCKACZMARZ        "kaczmarz"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId PC_CLASSID;
@@ -108,6 +106,7 @@ PETSC_EXTERN PetscErrorCode PCApplyBAorAB(PC,PCSide,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCApplyTranspose(PC,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCApplyTransposeExists(PC,PetscBool *);
 PETSC_EXTERN PetscErrorCode PCApplyBAorABTranspose(PC,PCSide,Vec,Vec,Vec);
+PETSC_EXTERN PetscErrorCode PCSetReusePreconditioner(PC,PetscBool);
 
 #define PC_FILE_CLASSID 1211222
 
@@ -146,12 +145,13 @@ PETSC_EXTERN PetscErrorCode PCFactorGetMatrix(PC,Mat*);
 PETSC_EXTERN PetscErrorCode PCSetModifySubMatrices(PC,PetscErrorCode(*)(PC,PetscInt,const IS[],const IS[],Mat[],void*),void*);
 PETSC_EXTERN PetscErrorCode PCModifySubMatrices(PC,PetscInt,const IS[],const IS[],Mat[],void*);
 
-PETSC_EXTERN PetscErrorCode PCSetOperators(PC,Mat,Mat,MatStructure);
-PETSC_EXTERN PetscErrorCode PCGetOperators(PC,Mat*,Mat*,MatStructure*);
+PETSC_EXTERN PetscErrorCode PCSetOperators(PC,Mat,Mat);
+PETSC_EXTERN PetscErrorCode PCGetOperators(PC,Mat*,Mat*);
 PETSC_EXTERN PetscErrorCode PCGetOperatorsSet(PC,PetscBool *,PetscBool *);
 
 PETSC_EXTERN PetscErrorCode PCView(PC,PetscViewer);
 PETSC_EXTERN PetscErrorCode PCLoad(PC,PetscViewer);
+PETSC_STATIC_INLINE PetscErrorCode PCViewFromOptions(PC A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 
 PETSC_EXTERN PetscErrorCode PCSetOptionsPrefix(PC,const char[]);
 PETSC_EXTERN PetscErrorCode PCAppendOptionsPrefix(PC,const char[]);
@@ -215,6 +215,7 @@ PETSC_EXTERN PetscErrorCode PCFactorSetUseInPlace(PC);
 PETSC_EXTERN PetscErrorCode PCFactorSetAllowDiagonalFill(PC);
 PETSC_EXTERN PetscErrorCode PCFactorSetPivotInBlocks(PC,PetscBool );
 
+PETSC_EXTERN PetscErrorCode PCFactorGetLevels(PC,PetscInt*);
 PETSC_EXTERN PetscErrorCode PCFactorSetLevels(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCFactorSetDropTolerance(PC,PetscReal,PetscReal,PetscInt);
 
@@ -355,9 +356,9 @@ PETSC_EXTERN PetscErrorCode PCFieldSplitGetDMSplits(PC,PetscBool*);
 
     Level: intermediate
 
-.seealso: PCFieldSplitSchurPrecondition()
+.seealso: PCFieldSplitSetSchurPre()
 E*/
-typedef enum {PC_FIELDSPLIT_SCHUR_PRE_SELF,PC_FIELDSPLIT_SCHUR_PRE_A11,PC_FIELDSPLIT_SCHUR_PRE_USER} PCFieldSplitSchurPreType;
+typedef enum {PC_FIELDSPLIT_SCHUR_PRE_SELF,PC_FIELDSPLIT_SCHUR_PRE_SELFP,PC_FIELDSPLIT_SCHUR_PRE_A11,PC_FIELDSPLIT_SCHUR_PRE_USER,PC_FIELDSPLIT_SCHUR_PRE_FULL} PCFieldSplitSchurPreType;
 PETSC_EXTERN const char *const PCFieldSplitSchurPreTypes[];
 
 /*E
@@ -375,9 +376,13 @@ typedef enum {
 } PCFieldSplitSchurFactType;
 PETSC_EXTERN const char *const PCFieldSplitSchurFactTypes[];
 
-PETSC_EXTERN PetscErrorCode PCFieldSplitSchurPrecondition(PC,PCFieldSplitSchurPreType,Mat);
+PETSC_EXTERN PETSC_DEPRECATED("Use PCFieldSplitSetSchurPre") PetscErrorCode PCFieldSplitSchurPrecondition(PC,PCFieldSplitSchurPreType,Mat);
+PETSC_EXTERN PetscErrorCode PCFieldSplitSetSchurPre(PC,PCFieldSplitSchurPreType,Mat);
+PETSC_EXTERN PetscErrorCode PCFieldSplitGetSchurPre(PC,PCFieldSplitSchurPreType*,Mat*);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetSchurFactType(PC,PCFieldSplitSchurFactType);
 PETSC_EXTERN PetscErrorCode PCFieldSplitGetSchurBlocks(PC,Mat*,Mat*,Mat*,Mat*);
+PETSC_EXTERN PetscErrorCode PCFieldSplitSchurGetS(PC,Mat *S);
+PETSC_EXTERN PetscErrorCode PCFieldSplitSchurRestoreS(PC,Mat *S);
 
 PETSC_EXTERN PetscErrorCode PCGalerkinSetRestriction(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCGalerkinSetInterpolation(PC,Mat);
@@ -427,9 +432,17 @@ PETSC_EXTERN PetscErrorCode PCPARMSSetSolveRestart(PC pc,PetscInt restart);
 PETSC_EXTERN PetscErrorCode PCPARMSSetNonsymPerm(PC pc,PetscBool nonsym);
 PETSC_EXTERN PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2);
 
+/*E
+    PCGAMGType - type of generalized algebraic multigrid (PCGAMG) method
+
+    Level: intermediate
+
+.seealso: PCMG, PCSetType(), PCGAMGSetThreshold(), PCGAMGSetThreshold(), PCGAMGSetReuseProl()
+E*/
 typedef const char *PCGAMGType;
 #define PCGAMGAGG         "agg"
 #define PCGAMGGEO         "geo"
+#define PCGAMGCLASSICAL   "classical"
 PETSC_EXTERN PetscErrorCode PCGAMGSetProcEqLim(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetRepartitioning(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetUseASMAggs(PC,PetscBool);
@@ -445,18 +458,20 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetReuseProl(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PCGAMGInitializePackage(void);
 
+typedef const char *PCGAMGClassicalType;
+#define PCGAMGCLASSICALDIRECT   "direct"
+#define PCGAMGCLASSICALSTANDARD "standard"
+PETSC_EXTERN PetscErrorCode PCGAMGClassicalSetType(PC,PCGAMGClassicalType);
+
 #if defined(PETSC_HAVE_PCBDDC)
-/* Enum defining how to treat the coarse problem */
-typedef enum {SEQUENTIAL_BDDC,REPLICATED_BDDC,PARALLEL_BDDC,MULTILEVEL_BDDC} CoarseProblemType;
 PETSC_EXTERN PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCSetCoarseningRatio(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCBDDCSetMaxLevels(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCBDDCSetLevels(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCBDDCSetNullSpace(PC,MatNullSpace);
 PETSC_EXTERN PetscErrorCode PCBDDCSetDirichletBoundaries(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCGetDirichletBoundaries(PC,IS*);
 PETSC_EXTERN PetscErrorCode PCBDDCSetNeumannBoundaries(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCGetNeumannBoundaries(PC,IS*);
-PETSC_EXTERN PetscErrorCode PCBDDCSetCoarseProblemType(PC,CoarseProblemType);
 PETSC_EXTERN PetscErrorCode PCBDDCSetDofsSplitting(PC,PetscInt,IS[]);
 PETSC_EXTERN PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC,PetscInt,const PetscInt[],const PetscInt[],PetscCopyMode);
 PETSC_EXTERN PetscErrorCode PCBDDCCreateFETIDPOperators(PC,Mat*,PC*);
@@ -533,6 +548,7 @@ PETSC_EXTERN PetscErrorCode PCMGGetInterpolation(PC,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode PCMGSetRScale(PC,PetscInt,Vec);
 PETSC_EXTERN PetscErrorCode PCMGGetRScale(PC,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode PCMGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
+PETSC_EXTERN PetscErrorCode PCMGResidualDefault(Mat,Vec,Vec,Vec);
 
 /*E
     PCExoticType - Face based or wirebasket based coarse grid space

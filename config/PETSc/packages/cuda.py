@@ -57,6 +57,7 @@ class Configure(PETSc.package.NewPackage):
   def getSearchDirectories(self):
     import os
     yield ''
+    yield os.path.join('/Developer','NVIDIA','CUDA-5.5')
     yield os.path.join('/usr','local','cuda')
     self.libdir           = os.path.join('lib','Win32')
     self.altlibdir        = os.path.join('lib','x64')

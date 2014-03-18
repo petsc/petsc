@@ -28,14 +28,14 @@ PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscViewer view
         PetscScalar v = array[i];
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginaryPart(v) > 0.0) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %G + %G i", PetscRealPart(v), PetscImaginaryPart(v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %g + %g i", (double)PetscRealPart(v), (double)PetscImaginaryPart(v));CHKERRQ(ierr);
         } else if (PetscImaginaryPart(v) < 0.0) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %G - %G i", PetscRealPart(v),-PetscImaginaryPart(v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %g - %g i", (double)PetscRealPart(v),(double)(-PetscImaginaryPart(v)));CHKERRQ(ierr);
         } else {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %G", PetscRealPart(v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)PetscRealPart(v));CHKERRQ(ierr);
         }
 #else
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %G", v);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)v);CHKERRQ(ierr);
 #endif
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, " constrained");CHKERRQ(ierr);
@@ -49,14 +49,14 @@ PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscViewer view
         PetscScalar v = array[i];
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginaryPart(v) > 0.0) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %G + %G i", PetscRealPart(v), PetscImaginaryPart(v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %g + %g i", (double)PetscRealPart(v), (double)PetscImaginaryPart(v));CHKERRQ(ierr);
         } else if (PetscImaginaryPart(v) < 0.0) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %G - %G i", PetscRealPart(v),-PetscImaginaryPart(v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer," %g - %g i", (double)PetscRealPart(v),(double)(-PetscImaginaryPart(v)));CHKERRQ(ierr);
         } else {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %G", PetscRealPart(v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)PetscRealPart(v));CHKERRQ(ierr);
         }
 #else
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %G", v);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)v);CHKERRQ(ierr);
 #endif
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, "\n");CHKERRQ(ierr);
@@ -129,7 +129,10 @@ PetscErrorCode VecGetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
 
   Level: developer
 
-  Note: This is similar to MatSetValuesStencil()
+  Note: This is similar to MatSetValuesStencil(). The Fortran binding is
+$
+$   VecSetValuesSectionF90(vec, section, point, values, mode, ierr)
+$
 
 .seealso: PetscSection, PetscSectionCreate()
 @*/
@@ -145,7 +148,7 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr  = PetscSectionGetConstraintDof(s, p, &cDim);CHKERRQ(ierr);
+  ierr  = PetscSectionGetConstraintDof(s, point, &cDim);CHKERRQ(ierr);
   ierr  = VecGetArray(v, &baseArray);CHKERRQ(ierr);
   array = &baseArray[s->atlasOff[p]];
   if (!cDim && doInterior) {

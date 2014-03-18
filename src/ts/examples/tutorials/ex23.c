@@ -11,8 +11,8 @@ Runtime options include:\n\
     Run with for example: -pc_type mg -pc_mg_galerkin -T .01 -da_grid_x 65 -da_grid_y 65 -pc_mg_levels 4 -ksp_type fgmres -snes_atol 1.e-14 -mat_no_inode
  */
 
-#include "petscts.h"
-#include "petscdmda.h"
+#include <petscts.h>
+#include <petscdmda.h>
 
 typedef struct {
   PetscReal   dt,T; /* Time step and end time */
@@ -31,7 +31,7 @@ PetscErrorCode GetParams(AppCtx*);
 PetscErrorCode SetVariableBounds(DM,Vec,Vec);
 PetscErrorCode SetUpMatrices(AppCtx*);
 PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
-PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 PetscErrorCode SetInitialGuess(Vec,AppCtx*);
 PetscErrorCode Update_q(TS);
 PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
@@ -52,7 +52,7 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = GetParams(&user);CHKERRQ(ierr);
   /* Create a 2D DA with dof = 2 */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&user.da);CHKERRQ(ierr);
   /* Set Element type (triangular) */
   ierr = DMDASetElementType(user.da,DMDA_ELEMENT_P1);CHKERRQ(ierr);
 
@@ -69,9 +69,10 @@ int main(int argc, char **argv)
   }
 
   /* Get mass,stiffness, and jacobian matrix structure from the da */
-  ierr = DMCreateMatrix(user.da,MATAIJ,&user.M);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(user.da,MATAIJ,&user.S);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da,&user.M);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da,&user.S);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da,&J);CHKERRQ(ierr);
   /* Form the mass,stiffness matrices and matrix M_0 */
   ierr = SetUpMatrices(&user);CHKERRQ(ierr);
 
@@ -241,7 +242,7 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t, Vec X,Vec Xdot,Vec F,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormIJacobian"
-PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat *J,Mat *B,MatStructure *flg,void *ctx)
+PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat J,Mat B,void *ctx)
 {
   PetscErrorCode   ierr;
   AppCtx           *user  =(AppCtx*)ctx;
@@ -250,14 +251,13 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, M
   PetscFunctionBeginUser;
   /* for active set method the matrix does not get changed, so do not need to copy each time,
      if the active set remains the same for several solves the preconditioner does not need to be rebuilt*/
-  *flg = SAME_PRECONDITIONER;
   if (!copied) {
-    ierr   = MatCopy(user->S,*J,*flg);CHKERRQ(ierr);
-    ierr   = MatAXPY(*J,a,user->M,*flg);CHKERRQ(ierr);
+    ierr   = MatCopy(user->S,J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr   = MatAXPY(J,a,user->M,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     copied = PETSC_TRUE;
   }
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   /*  ierr = MatView(*J,0);CHKERRQ(ierr); */
   /* SETERRQ(PETSC_COMM_WORLD,1,"Stopped here\n"); */
   PetscFunctionReturn(0);
@@ -280,9 +280,9 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
 
   for (j=ys; j < ys+ym; j++) {
     for (i=xs; i < xs+xm; i++) {
-      l[j][i][0] = -SNES_VI_INF;
+      l[j][i][0] = -PETSC_INFINITY;
       l[j][i][1] = -1.0;
-      u[j][i][0] = SNES_VI_INF;
+      u[j][i][0] = PETSC_INFINITY;
       u[j][i][1] = 1.0;
     }
   }

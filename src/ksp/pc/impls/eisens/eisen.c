@@ -68,7 +68,7 @@ static PetscErrorCode PCPreSolve_Eisenstat(PC pc,KSP ksp,Vec b,Vec x)
 
   if (!eis->b[pc->presolvedone-1]) {
     ierr = VecDuplicate(b,&eis->b[pc->presolvedone-1]);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(pc,eis->b[pc->presolvedone-1]);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)eis->b[pc->presolvedone-1]);CHKERRQ(ierr);
   }
 
   /* if nonzero initial guess, modify x */
@@ -161,7 +161,7 @@ static PetscErrorCode PCView_Eisenstat(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Eisenstat: omega = %G\n",eis->omega);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Eisenstat: omega = %g\n",(double)eis->omega);CHKERRQ(ierr);
     if (eis->usediag) {
       ierr = PetscViewerASCIIPrintf(viewer,"Eisenstat: Using diagonal scaling (default)\n");CHKERRQ(ierr);
     } else {
@@ -188,13 +188,13 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc)
     ierr = MatSetType(eis->shell,MATSHELL);CHKERRQ(ierr);
     ierr = MatSetUp(eis->shell);CHKERRQ(ierr);
     ierr = MatShellSetContext(eis->shell,(void*)pc);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(pc,eis->shell);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)eis->shell);CHKERRQ(ierr);
     ierr = MatShellSetOperation(eis->shell,MATOP_MULT,(void (*)(void))PCMult_Eisenstat);CHKERRQ(ierr);
   }
   if (!eis->usediag) PetscFunctionReturn(0);
   if (!pc->setupcalled) {
     ierr = MatGetVecs(pc->pmat,&eis->diag,0);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(pc,eis->diag);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)eis->diag);CHKERRQ(ierr);
   }
   ierr = MatGetDiagonal(pc->pmat,eis->diag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -334,7 +334,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Eisenstat(PC pc)
   PC_Eisenstat   *eis;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_Eisenstat,&eis);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&eis);CHKERRQ(ierr);
 
   pc->ops->apply           = PCApply_Eisenstat;
   pc->ops->presolve        = PCPreSolve_Eisenstat;

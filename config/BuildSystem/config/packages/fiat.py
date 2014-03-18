@@ -5,7 +5,6 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download = ['http://launchpad.net/fiat/0.x/0.9.9/+download/fiat-0.9.9.tar.gz'] # 'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fiat-dev.tar.gz'
-    self.archIndependent   = 1
     self.worksonWindows    = 1
     self.downloadonWindows = 1
     self.liblist           = [['Lagrange.py']]
@@ -52,6 +51,9 @@ class Configure(config.package.Package):
         import FIAT.lagrange
         import FIAT.quadrature
         self.found = 1
+        if not hasattr(self.framework, 'packages'):
+          self.framework.packages = []
+        self.framework.packages.append(self)
         return
       except ImportError, e:
         self.framework.logPrint('ERROR: Could not import FIAT: '+str(e))

@@ -558,6 +558,7 @@ static struct _MatOps MatOps_Values = {0,
                                        0,
                                        0,
                                /*139*/ 0,
+                                       0,
                                        0
 };
 
@@ -579,7 +580,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
   PetscFunctionBegin;
   ierr = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
 
-  ierr    = PetscNewLog(A,Mat_Shell,&b);CHKERRQ(ierr);
+  ierr    = PetscNewLog(A,&b);CHKERRQ(ierr);
   A->data = (void*)b;
 
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);

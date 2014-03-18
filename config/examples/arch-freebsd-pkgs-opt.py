@@ -14,11 +14,11 @@ configure_options = [
   '--download-superlu_dist=1',
   '--download-scalapack=1',
   '--download-mumps=1',
-  '--download-elemental=1',
+  # no with-cxx-dialect=C++11 support '--download-elemental=1',
   #'--download-hdf5',
   '--download-sundials=1',
   '--download-hypre=1',
-  '--download-umfpack=1',
+  #'--download-suitesparse=1', requires gnumake
   '--download-chaco=1',
   '--download-spai=1',
   ]

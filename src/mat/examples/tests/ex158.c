@@ -78,7 +78,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
     ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
     if (enorm > 1.e-11) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %G\n",enorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %g\n",(double)enorm);CHKERRQ(ierr);
     }
 
     /* Free spaces */
@@ -98,7 +98,7 @@ PetscInt main(PetscInt argc,char **args)
     N=30;
     for (i=2; i<5; i++) {
       DIM  = i;
-      ierr = PetscMalloc(i*sizeof(PetscInt),&dim);CHKERRQ(ierr);
+      ierr = PetscMalloc1(i,&dim);CHKERRQ(ierr);
       for (k=0; k<i; k++) {
         dim[k]=30;
       }

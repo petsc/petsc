@@ -63,7 +63,6 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   PetscReal      beta,alpha,rnorm;
   Vec            X,B,V,V1,U,U1,TMP,W,W2,SE,Z = NULL;
   Mat            Amat,Pmat;
-  MatStructure   pflag;
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
   PetscBool      diagonalscale,nopreconditioner;
 
@@ -71,7 +70,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCNONE,&nopreconditioner);CHKERRQ(ierr);
 
   /*  nopreconditioner =PETSC_FALSE; */
@@ -113,10 +112,10 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 
   /* Test for nothing to do */
   ierr       = VecNorm(U,NORM_2,&rnorm);CHKERRQ(ierr);
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = rnorm;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
   ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
   ierr = KSPMonitor(ksp,0,rnorm);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -204,10 +203,10 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     lsqr->arnorm = alpha*PetscAbsScalar(tau);
     rnorm        = PetscRealPart(phibar);
 
-    ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = rnorm;
-    ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
     ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,i+1,rnorm);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -292,7 +291,7 @@ PetscErrorCode  KSPLSQRGetArnorm(KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm,
       PC  pc;
       Mat Amat;
       ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-      ierr = PCGetOperators(pc,&Amat,NULL,NULL);CHKERRQ(ierr);
+      ierr = PCGetOperators(pc,&Amat,NULL);CHKERRQ(ierr);
       ierr = MatNorm(Amat,NORM_FROBENIUS,&lsqr->anorm);CHKERRQ(ierr);
     }
     *anorm = lsqr->anorm;
@@ -377,7 +376,7 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
       PetscReal rnorm;
       ierr = KSPLSQRGetStandardErrorVec(ksp,&lsqr->se);CHKERRQ(ierr);
       ierr = VecNorm(lsqr->se,NORM_2,&rnorm);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Norm of Standard Error %G, Iterations %D\n",rnorm,ksp->its);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Norm of Standard Error %g, Iterations %D\n",(double)rnorm,ksp->its);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -386,7 +385,7 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
 #undef __FUNCT__
 #define __FUNCT__ "KSPLSQRDefaultConverged"
 /*@C
-   KSPLSQRDefaultConverged - Determines convergence of the LSQR Krylov method. This calls KSPDefaultConverged() and if that does not determine convergence then checks
+   KSPLSQRDefaultConverged - Determines convergence of the LSQR Krylov method. This calls KSPConvergedDefault() and if that does not determine convergence then checks
       convergence for the least squares problem.
 
    Collective on KSP
@@ -395,7 +394,7 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
 +  ksp   - iterative context
 .  n     - iteration number
 .  rnorm - 2-norm residual value (may be estimated)
--  ctx - convergence context which must be created by KSPDefaultConvergedCreate()
+-  ctx - convergence context which must be created by KSPConvergedDefaultCreate()
 
    reason is set to:
 +   positive - if the iteration has converged;
@@ -409,8 +408,8 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
 
 .keywords: KSP, default, convergence, residual
 
-.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(),
-          KSPDefaultConvergedSetUIRNorm(), KSPDefaultConvergedSetUMIRNorm(), KSPDefaultConvergedCreate(), KSPDefaultConvergedDestroy(), KSPDefaultConverged()
+.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPConvergedSkip(), KSPConvergedReason, KSPGetConvergedReason(),
+          KSPConvergedDefaultSetUIRNorm(), KSPConvergedDefaultSetUMIRNorm(), KSPConvergedDefaultCreate(), KSPConvergedDefaultDestroy(), KSPConvergedDefault()
 @*/
 PetscErrorCode  KSPLSQRDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
 {
@@ -418,7 +417,7 @@ PetscErrorCode  KSPLSQRDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
 
   PetscFunctionBegin;
-  ierr = KSPDefaultConverged(ksp,n,rnorm,reason,ctx);CHKERRQ(ierr);
+  ierr = KSPConvergedDefault(ksp,n,rnorm,reason,ctx);CHKERRQ(ierr);
   if (!n || *reason) PetscFunctionReturn(0);
   if (lsqr->arnorm/lsqr->rhs_norm < ksp->rtol) *reason = KSP_CONVERGED_RTOL_NORMAL;
   if (lsqr->arnorm < ksp->abstol) *reason = KSP_CONVERGED_ATOL_NORMAL;
@@ -441,7 +440,7 @@ PetscErrorCode  KSPLSQRDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
      This varient, when applied with no preconditioning is identical to the original algorithm in exact arithematic; however, in practice, with no preconditioning
      due to inexact arithematic, it can converge differently. Hence when no preconditioner is used (PCType PCNONE) it automatically reverts to the original algorithm.
 
-     With the PETSc built-in preconditioners, such as ICC, one should call KSPSetOperators(ksp,A,A'*A,...) since the preconditioner needs to work
+     With the PETSc built-in preconditioners, such as ICC, one should call KSPSetOperators(ksp,A,A'*A)) since the preconditioner needs to work
      for the normal equations A'*A.
 
      Supports only left preconditioning.
@@ -468,7 +467,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscNewLog(ksp,KSP_LSQR,&lsqr);CHKERRQ(ierr);
+  ierr         = PetscNewLog(ksp,&lsqr);CHKERRQ(ierr);
   lsqr->se     = NULL;
   lsqr->se_flg = PETSC_FALSE;
   lsqr->arnorm = 0.0;
