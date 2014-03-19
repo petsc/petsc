@@ -360,6 +360,72 @@ PetscErrorCode  PetscViewerHDF5GetTimestep(PetscViewer viewer, PetscInt *timeste
   PetscFunctionReturn(0);
 }
 
+
+/*
+  The variable Petsc_Viewer_HDF5_keyval is used to indicate an MPI attribute that
+  is attached to a communicator, in this case the attribute is a PetscViewer.
+*/
+static int Petsc_Viewer_HDF5_keyval = MPI_KEYVAL_INVALID;
+
+#undef __FUNCT__
+#define __FUNCT__ "PETSC_VIEWER_HDF5_"
+/*@C
+  PETSC_VIEWER_HDF5_ - Creates an HDF5 PetscViewer shared by all processors in a communicator.
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. comm - the MPI communicator to share the HDF5 PetscViewer
+
+  Level: intermediate
+
+  Options Database Keys:
+. -viewer_hdf5_filename <name>
+
+  Environmental variables:
+. PETSC_VIEWER_HDF5_FILENAME
+
+  Notes:
+  Unlike almost all other PETSc routines, PETSC_VIEWER_HDF5_ does not return
+  an error code.  The HDF5 PetscViewer is usually used in the form
+$       XXXView(XXX object, PETSC_VIEWER_HDF5_(comm));
+
+.seealso: PetscViewerHDF5Open(), PetscViewerCreate(), PetscViewerDestroy()
+@*/
+PetscViewer PETSC_VIEWER_HDF5_(MPI_Comm comm)
+{
+  PetscErrorCode ierr;
+  PetscBool      flg;
+  PetscViewer    viewer;
+  char           fname[PETSC_MAX_PATH_LEN];
+  MPI_Comm       ncomm;
+
+  PetscFunctionBegin;
+  ierr = PetscCommDuplicate(comm,&ncomm,NULL);if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_HDF5_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
+  if (Petsc_Viewer_HDF5_keyval == MPI_KEYVAL_INVALID) {
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_HDF5_keyval,0);
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_HDF5_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
+  }
+  ierr = MPI_Attr_get(ncomm,Petsc_Viewer_HDF5_keyval,(void**)&viewer,(int*)&flg);
+  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_HDF5_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
+  if (!flg) { /* PetscViewer not yet created */
+    ierr = PetscOptionsGetenv(ncomm,"PETSC_VIEWER_HDF5_FILENAME",fname,PETSC_MAX_PATH_LEN,&flg);
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_HDF5_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
+    if (!flg) {
+      ierr = PetscStrcpy(fname,"output.h5");
+      if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_HDF5_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
+    }
+    ierr = PetscViewerHDF5Open(ncomm,fname,FILE_MODE_WRITE,&viewer);
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_HDF5_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
+    ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_HDF5_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
+    ierr = MPI_Attr_put(ncomm,Petsc_Viewer_HDF5_keyval,(void*)viewer);
+    if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_HDF5_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
+  }
+  ierr = PetscCommDestroy(&ncomm);
+  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_HDF5_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
+  PetscFunctionReturn(viewer);
+}
 #if defined(oldhdf4stuff)
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5WriteSDS"
