@@ -15,13 +15,41 @@ PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
 {
   DM             dm;
-  PetscBool      isvtk;
+  PetscBool      isvtk, ishdf5;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
   if (!dm) SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK, &isvtk);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,  &isvtk);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  /* Insert boundary conditions */
+  if (isvtk || ishdf5) {
+    void  (**funcs)(const PetscReal x[], PetscScalar *u, void *ctx);
+    PetscFE *fe;
+    PetscInt numFields, f, numBd, b;
+
+    ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
+    ierr = PetscMalloc2(numFields,&fe,numFields,&funcs);CHKERRQ(ierr);
+    for (f = 0; f < numFields; ++f) {
+      ierr = DMGetField(dm, f, (PetscObject *) &fe[f]);CHKERRQ(ierr);
+    }
+    /* TODO: Could attempt to do multiple BCs */
+    ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
+    for (b = 0; b < numBd; ++b) {
+      const PetscInt *ids;
+      PetscInt        numids, field;
+      PetscBool       isEssential;
+      void          (*func)();
+      void           *ctx;
+
+      /* TODO: We need to set only the part indicated by the ids */
+      ierr = DMPlexGetBoundary(dm, b, &isEssential, NULL, &field, &func, &numids, &ids, &ctx);CHKERRQ(ierr);
+      for (f = 0; f < numFields; ++f) funcs[f] = (field == f ? /*((*)(const PetscReal[], PetscScalar *, void *))*/ func : NULL);
+      ierr = DMPlexProjectFunctionLocal(dm, fe, funcs, ctx, INSERT_BC_VALUES, v);CHKERRQ(ierr);
+    }
+    ierr = PetscFree2(fe,funcs);CHKERRQ(ierr);
+  }
   if (isvtk) {
     PetscViewerVTKFieldType ft = PETSC_VTK_POINT_FIELD;
     PetscSection            section;
@@ -78,14 +106,15 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
 PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
 {
   DM             dm;
-  PetscBool      isvtk;
+  PetscBool      isvtk, ishdf5;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
   if (!dm) SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK, &isvtk);CHKERRQ(ierr);
-  if (isvtk) {
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,  &isvtk);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  if (isvtk || ishdf5) {
     Vec         locv;
     const char *name;
 
