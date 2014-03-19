@@ -244,7 +244,7 @@ newall:
 	-@cd src/ts;   @${PYTHON} ${PETSC_DIR}/config/builder.py
 
 streams:
-	cd src/benchmarks/streams; ${OMAKE} test
+	cd src/benchmarks/streams; ${OMAKE} streams
 # ------------------------------------------------------------------
 #
 # All remaining actions are intended for PETSc developers only.
