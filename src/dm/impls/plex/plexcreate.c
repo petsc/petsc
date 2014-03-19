@@ -312,20 +312,22 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
 @*/
 PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt faces[])
 {
-  PetscInt       numVertices = (faces[0]+1)*(faces[1]+1)*(faces[2]+1);
-  PetscInt       numFaces    = 6;
+  PetscInt       vertices[3], numVertices;
+  PetscInt       numFaces    = 2*faces[0]*faces[1] + 2*faces[1]*faces[2] + 2*faces[0]*faces[2];
   Vec            coordinates;
   PetscSection   coordSection;
   PetscScalar    *coords;
   PetscInt       coordSize;
   PetscMPIInt    rank;
   PetscInt       v, vx, vy, vz;
+  PetscInt       voffset, iface=0, cone[4];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if ((faces[0] < 1) || (faces[1] < 1) || (faces[2] < 1)) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Must have at least 1 face per side");
-  if ((faces[0] > 1) || (faces[1] > 1) || (faces[2] > 1)) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Currently can't handle more than 1 face per side");
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
+  vertices[0] = faces[0]+1; vertices[1] = faces[1]+1; vertices[2] = faces[2]+1;
+  numVertices = vertices[0]*vertices[1]*vertices[2];
   if (!rank) {
     PetscInt f;
 
@@ -337,35 +339,68 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
     for (v = 0; v < numFaces+numVertices; ++v) {
       ierr = DMPlexSetLabelValue(dm, "marker", v, 1);CHKERRQ(ierr);
     }
-    { /* Side 0 (Front) */
-      PetscInt cone[4];
-      cone[0] = numFaces+4; cone[1] = numFaces+5; cone[2] = numFaces+7; cone[3] = numFaces+6;
-      ierr    = DMPlexSetCone(dm, 0, cone);CHKERRQ(ierr);
+
+    /* Side 0 (Top) */
+    for (vy = 0; vy < faces[1]; vy++) {
+      for (vx = 0; vx < faces[0]; vx++) {
+        voffset = numFaces + vertices[0]*vertices[1]*(vertices[2]-1) + vy*vertices[0] + vx;
+        cone[0] = voffset; cone[1] = voffset+1; cone[2] = voffset+vertices[0]+1; cone[3] = voffset+vertices[0];
+        ierr    = DMPlexSetCone(dm, iface, cone);CHKERRQ(ierr);
+        iface++;
+      }
     }
-    { /* Side 1 (Back) */
-      PetscInt cone[4];
-      cone[0] = numFaces+1; cone[1] = numFaces+0; cone[2] = numFaces+2; cone[3] = numFaces+3;
-      ierr    = DMPlexSetCone(dm, 1, cone);CHKERRQ(ierr);
+
+    /* Side 1 (Bottom) */
+    for (vy = 0; vy < faces[1]; vy++) {
+      for (vx = 0; vx < faces[0]; vx++) {
+        voffset = numFaces + vy*(faces[0]+1) + vx;
+        cone[0] = voffset+1; cone[1] = voffset; cone[2] = voffset+vertices[0]; cone[3] = voffset+vertices[0]+1;
+        ierr    = DMPlexSetCone(dm, iface, cone);CHKERRQ(ierr);
+        iface++;
+      }
     }
-    { /* Side 2 (Bottom) */
-      PetscInt cone[4];
-      cone[0] = numFaces+0; cone[1] = numFaces+1; cone[2] = numFaces+5; cone[3] = numFaces+4;
-      ierr    = DMPlexSetCone(dm, 2, cone);CHKERRQ(ierr);
+
+    /* Side 2 (Front) */
+    for (vz = 0; vz < faces[2]; vz++) {
+      for (vx = 0; vx < faces[0]; vx++) {
+        voffset = numFaces + vz*vertices[0]*vertices[1] + vx;
+        cone[0] = voffset; cone[1] = voffset+1; cone[2] = voffset+vertices[0]*vertices[1]+1; cone[3] = voffset+vertices[0]*vertices[1];
+        ierr    = DMPlexSetCone(dm, iface, cone);CHKERRQ(ierr);
+        iface++;
+      }
     }
-    { /* Side 3 (Top) */
-      PetscInt cone[4];
-      cone[0] = numFaces+6; cone[1] = numFaces+7; cone[2] = numFaces+3; cone[3] = numFaces+2;
-      ierr    = DMPlexSetCone(dm, 3, cone);CHKERRQ(ierr);
+
+    /* Side 3 (Back) */
+    for (vz = 0; vz < faces[2]; vz++) {
+      for (vx = 0; vx < faces[0]; vx++) {
+        voffset = numFaces + vz*vertices[0]*vertices[1] + vertices[0]*(vertices[1]-1) + vx;
+        cone[0] = voffset+vertices[0]*vertices[1]; cone[1] = voffset+vertices[0]*vertices[1]+1;
+        cone[2] = voffset+1; cone[3] = voffset;
+        ierr    = DMPlexSetCone(dm, iface, cone);CHKERRQ(ierr);
+        iface++;
+      }
     }
-    { /* Side 4 (Left) */
-      PetscInt cone[4];
-      cone[0] = numFaces+0; cone[1] = numFaces+4; cone[2] = numFaces+6; cone[3] = numFaces+2;
-      ierr    = DMPlexSetCone(dm, 4, cone);CHKERRQ(ierr);
+
+    /* Side 4 (Left) */
+    for (vz = 0; vz < faces[2]; vz++) {
+      for (vy = 0; vy < faces[1]; vy++) {
+        voffset = numFaces + vz*vertices[0]*vertices[1] + vy*vertices[0];
+        cone[0] = voffset; cone[1] = voffset+vertices[0]*vertices[1];
+        cone[2] = voffset+vertices[0]*vertices[1]+vertices[0]; cone[3] = voffset+vertices[0];
+        ierr    = DMPlexSetCone(dm, iface, cone);CHKERRQ(ierr);
+        iface++;
+      }
     }
-    { /* Side 5 (Right) */
-      PetscInt cone[4];
-      cone[0] = numFaces+5; cone[1] = numFaces+1; cone[2] = numFaces+3; cone[3] = numFaces+7;
-      ierr    = DMPlexSetCone(dm, 5, cone);CHKERRQ(ierr);
+
+    /* Side 5 (Right) */
+    for (vz = 0; vz < faces[2]; vz++) {
+      for (vy = 0; vy < faces[1]; vy++) {
+        voffset = numFaces + vz*vertices[0]*vertices[1] + vy*vertices[0] + vx;
+        cone[0] = voffset+vertices[0]*vertices[1]; cone[1] = voffset;
+        cone[2] = voffset+vertices[0]; cone[3] = voffset+vertices[0]*vertices[1]+vertices[0];
+        ierr    = DMPlexSetCone(dm, iface, cone);CHKERRQ(ierr);
+        iface++;
+      }
     }
   }
   ierr = DMPlexSymmetrize(dm);CHKERRQ(ierr);
