@@ -37,11 +37,15 @@ PthreadVersion: PthreadVersion.o  chkopts
 
 streams:  MPIVersion
 	@if [ "${NPMAX}foo" = "foo" ]; then echo "---------"; echo " Run with make streams NPMAX=<integer number of cores to use>"; exit 1 ; fi
-	-@printf "" > output
+	-@printf "" > scaling.log
 	-@for (( i=1; i<=${NPMAX}; i++ )) do \
-	  ${MPIEXEC} -n $${i} ./MPIVersion | tee -a output; \
+	  ${MPIEXEC} -n $${i} ./MPIVersion | tee -a scaling.log; \
         done
 	-@echo "------------------------------------------------"
+	-@./process.py createfile
 	-@./process.py
+	-@printf "Estimation of possible speedup of MPI programs based on Streams benchmark.\n" | tee -a scaling.log
+	-@printf "See graph in the file scaling.png\n" | tee -a scaling.log
+
 
 
