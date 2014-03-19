@@ -175,7 +175,7 @@ def processDir(arg,dirname,names):
     if name == 'finclude':
       rmnames.append(name)
   for rmname in rmnames:
-    names.remove(rmname)
+    if rmname in names: names.remove(rmname)
   return
 
 
