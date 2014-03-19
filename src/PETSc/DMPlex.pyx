@@ -435,6 +435,16 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexGetLabel(self.dm, cval, &clbl) )
         CHKERR( DMPlexMarkBoundaryFaces(self.dm, clbl) )
 
+    def setAdjacencyUseCone(self, useCone=True):
+        cdef PetscBool flag = PETSC_FALSE
+        if useCone: flag = PETSC_TRUE
+        CHKERR( DMPlexSetAdjacencyUseCone(self.dm, flag) )
+
+    def setAdjacencyUseClosure(self, useClosure=True):
+        cdef PetscBool flag = PETSC_FALSE
+        if useClosure: flag = PETSC_TRUE
+        CHKERR( DMPlexSetAdjacencyUseClosure(self.dm, flag) )
+
     def distribute(self, partitioner=None, overlap=0):
         cdef PetscDM pardm = NULL
         cdef PetscSF sf = NULL
