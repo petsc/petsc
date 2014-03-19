@@ -34,15 +34,22 @@ def process():
   try:
     import matplotlib
   except:
-    print "Unable to plot speedup"
+    print "Unable to open matplotlib to plot speedup"
     return
 
   try:
     import matplotlib.pyplot as plt
+  except:
+    print "Unable to open matplotlib to plot speedup"
+    return
 
+  try:
     plt.title('Perfect and Streams Speedup')
     plt.plot(hosts.keys(),hosts.keys(),'b-o',hosts.keys(),speedups.values(),'r-o')
     plt.show()
+  except:
+    print "Unable to display matplotlib to plot speedup"
+    return
 
 #
 #
