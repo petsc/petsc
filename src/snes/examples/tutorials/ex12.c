@@ -635,7 +635,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   while (cdm) {
     ierr = DMSetNumFields(cdm, 1);CHKERRQ(ierr);
     ierr = DMSetField(cdm, 0, user->fe[0]);CHKERRQ(ierr);
-    ierr = DMPlexAddBoundary(cdm, user->bcType == DIRICHLET, user->bcType == NEUMANN ? "boundary" : "marker", 0, NULL, 1, &id, user);CHKERRQ(ierr);
+    ierr = DMPlexAddBoundary(cdm, user->bcType == DIRICHLET, user->bcType == NEUMANN ? "boundary" : "marker", 0, user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
     ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -833,6 +833,7 @@ int main(int argc, char **argv)
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Linear L_2 Residual: %g\n", res);CHKERRQ(ierr);
     }
   }
+  ierr = VecViewFromOptions(u, NULL, "-vec_view");CHKERRQ(ierr);
 
   if (user.bcType == NEUMANN) {
     ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
