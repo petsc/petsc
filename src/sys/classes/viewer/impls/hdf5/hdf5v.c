@@ -361,6 +361,126 @@ PetscErrorCode  PetscViewerHDF5GetTimestep(PetscViewer viewer, PetscInt *timeste
 }
 
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDataTypeToHDF5DataType"
+/*@C
+  PetscDataTypeToHDF5DataType - Converts the PETSc name of a datatype to its HDF5 name.
+
+  Not collective
+
+  Input Parameter:
+. ptype - the PETSc datatype name (for example PETSC_DOUBLE)
+
+  Output Parameter:
+. mtype - the MPI datatype (for example MPI_DOUBLE, ...)
+
+  Level: advanced
+
+.seealso: PetscDataType, PetscHDF5DataTypeToPetscDataType()
+@*/
+PetscErrorCode PetscDataTypeToHDF5DataType(PetscDataType ptype, hid_t *htype)
+{
+  PetscFunctionBegin;
+  if (ptype == PETSC_INT)
+#if defined(PETSC_USE_64BIT_INDICES)
+                                       *htype = H5T_NATIVE_LLONG;
+#else
+                                       *htype = H5T_NATIVE_INT;
+#endif
+  else if (ptype == PETSC_DOUBLE)      *htype = H5T_NATIVE_DOUBLE;
+  else if (ptype == PETSC_LONG)        *htype = H5T_NATIVE_LONG;
+  else if (ptype == PETSC_SHORT)       *htype = H5T_NATIVE_SHORT;
+  else if (ptype == PETSC_ENUM)        *htype = H5T_NATIVE_DOUBLE;
+  else if (ptype == PETSC_BOOL)        *htype = H5T_NATIVE_DOUBLE;
+  else if (ptype == PETSC_FLOAT)       *htype = H5T_NATIVE_FLOAT;
+  else if (ptype == PETSC_CHAR)        *htype = H5T_NATIVE_CHAR;
+  else if (ptype == PETSC_BIT_LOGICAL) *htype = H5T_NATIVE_UCHAR;
+  else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported PETSc datatype");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscHDF5DataTypeToPetscDataType"
+/*@C
+  PetscHDF5DataTypeToPetscDataType - Finds the PETSc name of a datatype from its HDF5 name
+
+  Not collective
+
+  Input Parameter:
+. htype - the HDF5 datatype (for example H5T_NATIVE_DOUBLE, ...)
+
+  Output Parameter:
+. ptype - the PETSc datatype name (for example PETSC_DOUBLE)
+
+  Level: advanced
+
+.seealso: PetscDataType, PetscHDF5DataTypeToPetscDataType()
+@*/
+PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t htype, PetscDataType *ptype)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_USE_64BIT_INDICES)
+  if      (htype == H5T_NATIVE_INT)    *ptype = PETSC_LONG;
+  else if (htype == H5T_NATIVE_LLONG)  *ptype = PETSC_INT;
+#else
+  if      (htype == H5T_NATIVE_INT)    *ptype = PETSC_INT;
+#endif
+  else if (htype == H5T_NATIVE_DOUBLE) *ptype = PETSC_DOUBLE;
+  else if (htype == H5T_NATIVE_LONG)   *ptype = PETSC_LONG;
+  else if (htype == H5T_NATIVE_SHORT)  *ptype = PETSC_SHORT;
+  else if (htype == H5T_NATIVE_FLOAT)  *ptype = PETSC_FLOAT;
+  else if (htype == H5T_NATIVE_CHAR)   *ptype = PETSC_CHAR;
+  else if (htype == H5T_NATIVE_UCHAR)  *ptype = PETSC_CHAR;
+  else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported HDF5 datatype");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5WriteAttribute"
+/*@
+ PetscViewerHDF5WriteAttribute - Write a scalar attribute
+
+  Input Parameters:
++ viewer - The HDF5 viewer
+. parent - The parent name
+. name   - The attribute name
+. datatype - The attribute type
+- value    - The attribute value
+
+  Level: advanced
+
+.seealso: PetscViewerHDF5Open()
+@*/
+PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char parent[], const char name[], PetscDataType datatype, const void *value)
+{
+  hid_t          h5, dataspace, dataset, attribute, dtype, status;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(parent, 2);
+  PetscValidPointer(name, 3);
+  PetscValidPointer(value, 4);
+  ierr = PetscDataTypeToHDF5DataType(datatype, &dtype);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
+  dataspace = H5Screate(H5S_SCALAR);
+  if (dataspace < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not create dataspace for attribute %s of %s", name, parent);
+#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
+  dataset = H5Dopen2(h5, parent, H5P_DEFAULT);
+  if (dataset < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not open parent dataset for attribute %s of %s", name, parent);
+  attribute = H5Acreate2(dataset, name, dtype, dataspace, H5P_DEFAULT, H5P_DEFAULT);
+#else
+  dataset = H5Dopen(h5, parent);
+  if (dataset < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not open parent dataset for attribute %s of %s", name, parent);
+  attribute = H5Acreate(dataset, name, dtype, dataspace, H5P_DEFAULT);
+#endif
+  if (attribute < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not create attribute %s of %s", name, parent);
+  status = H5Awrite(attribute, dtype, value);CHKERRQ(status);
+  status = H5Aclose(attribute);CHKERRQ(status);
+  status = H5Dclose(dataset);CHKERRQ(status);
+  status = H5Sclose(dataspace);CHKERRQ(status);
+  PetscFunctionReturn(0);
+}
+
 /*
   The variable Petsc_Viewer_HDF5_keyval is used to indicate an MPI attribute that
   is attached to a communicator, in this case the attribute is a PetscViewer.
@@ -426,6 +546,7 @@ PetscViewer PETSC_VIEWER_HDF5_(MPI_Comm comm)
   if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_HDF5_",__FILE__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   PetscFunctionReturn(viewer);
 }
+
 #if defined(oldhdf4stuff)
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5WriteSDS"
