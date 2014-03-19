@@ -115,6 +115,7 @@ J*/
 #define MATSOLVERSBSTRM       "sbstrm"
 #define MATSOLVERELEMENTAL    "elemental"
 #define MATSOLVERCLIQUE       "clique"
+#define MATSOLVERKLU          "klu"
 
 /*E
     MatFactorType - indicates what type of factorization is requested
@@ -188,15 +189,15 @@ PETSC_EXTERN PetscFunctionList MatPartitioningList;
 PETSC_EXTERN PetscFunctionList MatCoarsenList;
 
 /*E
-    MatStructure - Indicates if the matrix has the same nonzero structure
+    MatStructure - Indicates if two matrices have the same nonzero structure
 
     Level: beginner
 
    Any additions/changes here MUST also be made in include/finclude/petscmat.h
 
-.seealso: MatCopy(), KSPSetOperators(), PCSetOperators()
+.seealso: MatCopy(), MatAXPY()
 E*/
-typedef enum {DIFFERENT_NONZERO_PATTERN,SUBSET_NONZERO_PATTERN,SAME_NONZERO_PATTERN,SAME_PRECONDITIONER} MatStructure;
+typedef enum {DIFFERENT_NONZERO_PATTERN,SUBSET_NONZERO_PATTERN,SAME_NONZERO_PATTERN} MatStructure;
 
 PETSC_EXTERN PetscErrorCode MatCreateSeqDense(MPI_Comm,PetscInt,PetscInt,PetscScalar[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateDense(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar[],Mat*);
@@ -252,6 +253,7 @@ PETSC_EXTERN PetscErrorCode MatPythonSetType(Mat,const char[]);
 
 PETSC_EXTERN PetscErrorCode MatSetUp(Mat);
 PETSC_EXTERN PetscErrorCode MatDestroy(Mat*);
+PETSC_EXTERN PetscErrorCode MatGetNonzeroState(Mat,PetscObjectState*);
 
 PETSC_EXTERN PetscErrorCode MatConjugate(Mat);
 PETSC_EXTERN PetscErrorCode MatRealPart(Mat);
@@ -538,6 +540,7 @@ PETSC_EXTERN PetscErrorCode MatSetLocalToGlobalMapping(Mat,ISLocalToGlobalMappin
 PETSC_EXTERN PetscErrorCode MatSetLocalToGlobalMappingBlock(Mat,ISLocalToGlobalMapping,ISLocalToGlobalMapping);
 PETSC_EXTERN PetscErrorCode MatGetLocalToGlobalMapping(Mat,ISLocalToGlobalMapping*,ISLocalToGlobalMapping*);
 PETSC_EXTERN PetscErrorCode MatGetLocalToGlobalMappingBlock(Mat,ISLocalToGlobalMapping*,ISLocalToGlobalMapping*);
+PETSC_EXTERN PetscErrorCode MatGetLayouts(Mat,PetscLayout*,PetscLayout*);
 PETSC_EXTERN PetscErrorCode MatZeroRowsLocal(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatZeroRowsLocalIS(Mat,IS,PetscScalar,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatZeroRowsColumnsLocal(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
@@ -1077,7 +1080,7 @@ PETSC_EXTERN PetscErrorCode MatFDColoringSetFunction(MatFDColoring,PetscErrorCod
 PETSC_EXTERN PetscErrorCode MatFDColoringGetFunction(MatFDColoring,PetscErrorCode (**)(void),void**);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetParameters(MatFDColoring,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetFromOptions(MatFDColoring);
-PETSC_EXTERN PetscErrorCode MatFDColoringApply(Mat,MatFDColoring,Vec,MatStructure*,void *);
+PETSC_EXTERN PetscErrorCode MatFDColoringApply(Mat,MatFDColoring,Vec,void *);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetF(MatFDColoring,Vec);
 PETSC_EXTERN PetscErrorCode MatFDColoringGetPerturbedColumns(MatFDColoring,PetscInt*,PetscInt*[]);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetUp(Mat,ISColoring,MatFDColoring);

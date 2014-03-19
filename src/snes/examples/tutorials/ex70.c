@@ -106,12 +106,12 @@ PetscErrorCode StokesSetupPC(Stokes *s, KSP ksp)
   ierr = PCFieldSplitSetIS(pc, "0", s->isg[0]);CHKERRQ(ierr);
   ierr = PCFieldSplitSetIS(pc, "1", s->isg[1]);CHKERRQ(ierr);
   if (s->userPC) {
-    ierr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, s->myS);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetSchurPre(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, s->myS);CHKERRQ(ierr);
   }
   if (s->userKSP) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
     ierr = PCFieldSplitGetSubKSP(pc, &n, &subksp);CHKERRQ(ierr);
-    ierr = KSPSetOperators(subksp[1], s->myS, s->myS, SAME_PRECONDITIONER);CHKERRQ(ierr);
+    ierr = KSPSetOperators(subksp[1], s->myS, s->myS);CHKERRQ(ierr);
     ierr = PetscFree(subksp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -680,7 +680,7 @@ int main(int argc, char **argv)
   ierr = StokesSetupVectors(&s);CHKERRQ(ierr);
 
   ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp, s.A, s.A, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp, s.A, s.A);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = StokesSetupPC(&s, ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, s.b, s.x);CHKERRQ(ierr);

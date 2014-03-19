@@ -322,7 +322,7 @@
 !
 !  IJacobian - Compute IJacobian = dF/dU + shift*dF/dUdot
 !
-      subroutine FormIJacobian(ts,t,X,Xdot,shift,J,Jpre,mstr,user,ierr)
+      subroutine FormIJacobian(ts,t,X,Xdot,shift,J,Jpre,user,ierr)
       implicit none
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
@@ -335,7 +335,6 @@
       PetscReal t,shift
       Vec X,Xdot
       Mat J,Jpre
-      MatStructure mstr
       PetscReal user(6)
       PetscErrorCode ierr
       integer user_a,user_k,user_s
@@ -369,7 +368,6 @@
          call MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY,ierr)
          call MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY,ierr)
       end if
-      mstr = SAME_NONZERO_PATTERN
       end subroutine
 
       subroutine FormInitialSolutionLocal(mx,xs,xe,gxs,gxe,x,a,k,s,ierr)

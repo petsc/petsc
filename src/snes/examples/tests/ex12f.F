@@ -227,7 +227,7 @@
 
 ! --------------------  Evaluate Jacobian --------------------
 
-      subroutine FormJacobian(snes,x,jac,B,flag,ctx,ierr)
+      subroutine FormJacobian(snes,x,jac,B,ctx,ierr)
       implicit none
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
@@ -239,7 +239,6 @@
       Vec              x
       Mat              jac,B
       PetscFortranAddr ctx(*)
-      PetscBool        flag
       PetscInt  ii,istart,iend
       PetscInt  i,j,n,end,start,i1
       PetscErrorCode ierr

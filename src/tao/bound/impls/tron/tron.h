@@ -42,7 +42,6 @@ typedef struct {
   Vec diag;
   Mat H_sub;
   Mat Hpre_sub;
-  MatStructure matflag;
 
   IS Free_Local;  /* Indices of local variables equal to lower bound */
   VecScatter scatter;

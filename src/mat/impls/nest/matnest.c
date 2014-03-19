@@ -1559,7 +1559,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
   A->ops->shift                 = MatShift_Nest;
 
   A->spptr        = 0;
-  A->same_nonzero = PETSC_FALSE;
   A->assembled    = PETSC_FALSE;
 
   /* expose Nest api's */

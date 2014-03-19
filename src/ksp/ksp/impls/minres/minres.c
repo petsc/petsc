@@ -30,7 +30,6 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
   PetscReal      np;
   Vec            X,B,R,Z,U,V,W,UOLD,VOLD,WOLD,WOOLD;
   Mat            Amat,Pmat;
-  MatStructure   pflag;
   KSP_MINRES     *minres = (KSP_MINRES*)ksp->data;
   PetscBool      diagonalscale;
 
@@ -50,7 +49,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
   WOLD  = ksp->work[7];
   WOOLD = ksp->work[8];
 
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   ksp->its = 0;
 

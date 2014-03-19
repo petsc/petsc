@@ -91,21 +91,27 @@ runex4_sundials:
 	   else printf "${PWD}\nPossible problem with with ex4_sundials, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex4.tmp
 
+runex5:
+	-@${MPIEXEC} -n 1 ./ex5 -ts_max_steps 10 -ts_monitor   > ex5_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex5_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5_1.tmp
+
 runex7:
-	-@${MPIEXEC} -n 1 ./ex7 -max_steps 5   > ex7_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex7 -ts_max_steps 5 -ts_monitor  > ex7_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex7_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7_1.tmp
 
 runex7_2:
-	-@${MPIEXEC} -n 1 ./ex7 -max_steps 5  -snes_mf_operator > ex7_2.tmp 2>&1;	  \
-	   if (${DIFF} output/ex7_2.out ex7_2.tmp) then true; \
+	-@${MPIEXEC} -n 1 ./ex7 -ts_max_steps 5 -ts_monitor -snes_mf_operator > ex7_2.tmp 2>&1;	  \
+	   if (${DIFF} output/ex7_1.out ex7_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex7_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7_2.tmp
 
 runex7_3:
-	-@${MPIEXEC} -n 1 ./ex7 -max_steps 5  -snes_mf > ex7_3.tmp 2>&1;	  \
-	   if (${DIFF} output/ex7_3.out ex7_3.tmp) then true; \
+	-@${MPIEXEC} -n 1 ./ex7 -ts_max_steps 5 -ts_monitor  -snes_mf > ex7_3.tmp 2>&1;	  \
+	   if (${DIFF} output/ex7_1.out ex7_3.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex7_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7_3.tmp
 
@@ -140,7 +146,7 @@ runex10_4:
 
 
 TESTEXAMPLES_C		  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm \
-                            ex4.PETSc ex4.rm ex5.PETSc ex5.rm
+                            ex4.PETSc ex4.rm ex5.PETSc runex5 ex5.rm
 TESTEXAMPLES_C_X	  =
 TESTEXAMPLES_FORTRAN	  =
 TESTEXAMPLES_C_X_MPIUNI   =

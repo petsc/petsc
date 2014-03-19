@@ -36,7 +36,7 @@ static char help[] = "Solves 2D inhomogeneous Laplacian using multigrid.\n\n";
 #include <petscdmda.h>
 #include <petscksp.h>
 
-extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,void*);
 extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
 
 typedef enum {DIRICHLET, NEUMANN} BCType;
@@ -128,7 +128,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
-PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac,MatStructure *str, void *ctx)
+PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac, void *ctx)
 {
   UserContext    *user = (UserContext*)ctx;
   PetscErrorCode ierr;

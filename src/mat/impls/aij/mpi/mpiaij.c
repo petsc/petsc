@@ -76,7 +76,7 @@ PetscErrorCode MatFindNonzeroRows_MPIAIJ(Mat M,IS *keptrows)
     cnt++;
 ok1:;
   }
-  ierr = MPI_Allreduce(&cnt,&n0rows,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)M));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&cnt,&n0rows,1,MPIU_INT,MPIU_SUM,PetscObjectComm((PetscObject)M));CHKERRQ(ierr);
   if (!n0rows) PetscFunctionReturn(0);
   ierr = PetscMalloc1((M->rmap->n-cnt),&rows);CHKERRQ(ierr);
   cnt  = 0;
@@ -402,6 +402,7 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
       } \
       rp1[_i] = col;  \
       ap1[_i] = value;  \
+      A->nonzerostate++;\
       a_noinsert: ; \
       ailen[row] = nrow1; \
 }
@@ -437,6 +438,7 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
     }                                                     \
     rp2[_i] = col;                                        \
     ap2[_i] = value;                                      \
+    B->nonzerostate++;                                    \
     b_noinsert: ;                                         \
     bilen[row] = nrow2;                                   \
   }
@@ -716,6 +718,11 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
 
   ierr = VecDestroy(&aij->diag);CHKERRQ(ierr);
   if (a->inode.size) mat->ops->multdiagonalblock = MatMultDiagonalBlock_MPIAIJ;
+
+  {
+    PetscObjectState state = aij->A->nonzerostate + aij->B->nonzerostate;
+    ierr = MPI_Allreduce(&state,&mat->nonzerostate,1,MPIU_INT64,MPI_SUM,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -803,6 +810,10 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
     ierr = MatZeroRows(mat->A, len, lrows, 0.0, NULL, NULL);CHKERRQ(ierr);
   }
   ierr = PetscFree(lrows);CHKERRQ(ierr);
+  {
+    PetscObjectState state = mat->A->nonzerostate + mat->B->nonzerostate;
+    ierr = MPI_Allreduce(&state,&A->nonzerostate,1,MPIU_INT64,MPI_SUM,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

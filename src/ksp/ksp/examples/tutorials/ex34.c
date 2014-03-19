@@ -26,7 +26,7 @@ static char help[] = "Solves 3D Laplacian using multigrid.\n\n";
 #include <petscdmda.h>
 #include <petscksp.h>
 
-extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,void*);
 extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
 
 #undef __FUNCT__
@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   ierr = KSPSolve(ksp,NULL,NULL);CHKERRQ(ierr);
   ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
-  ierr = KSPGetOperators(ksp,NULL,&J,NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp,NULL,&J);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&r);CHKERRQ(ierr);
 
   ierr = MatMult(J,x,r);CHKERRQ(ierr);
@@ -147,7 +147,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
-PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac,MatStructure *str, void *ctx)
+PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac, void *ctx)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs,num, numi, numj, numk;

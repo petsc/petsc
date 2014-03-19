@@ -23,7 +23,6 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,booleantype
   Mat            J,P;
   Vec            yy  = cvode->w1,yydot = cvode->ydot;
   PetscReal      gm  = (PetscReal)_gamma;
-  MatStructure   str = DIFFERENT_NONZERO_PATTERN;
   PetscScalar    *y_data;
 
   PetscFunctionBegin;
@@ -32,12 +31,12 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,booleantype
   ierr   = VecPlaceArray(yy,y_data);CHKERRQ(ierr);
   ierr   = VecZeroEntries(yydot);CHKERRQ(ierr); /* The Jacobian is independent of Ydot for ODE which is all that CVode works for */
   /* compute the shifted Jacobian   (1/gm)*I + Jrest */
-  ierr     = TSComputeIJacobian(ts,ts->ptime,yy,yydot,1/gm,&J,&P,&str,PETSC_FALSE);CHKERRQ(ierr);
+  ierr     = TSComputeIJacobian(ts,ts->ptime,yy,yydot,1/gm,J,P,PETSC_FALSE);CHKERRQ(ierr);
   ierr     = VecResetArray(yy);CHKERRQ(ierr);
   ierr     = MatScale(P,gm);CHKERRQ(ierr); /* turn into I-gm*Jrest, J is not used by Sundials  */
   *jcurPtr = TRUE;
   ierr     = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
-  ierr     = PCSetOperators(pc,J,P,str);CHKERRQ(ierr);
+  ierr     = PCSetOperators(pc,J,P);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

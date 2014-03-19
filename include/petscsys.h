@@ -214,6 +214,11 @@ typedef Petsc64bitInt PetscInt;
 typedef int PetscInt;
 #define MPIU_INT MPI_INT
 #endif
+#if defined(PETSC_HAVE_MPI_INT64_T)
+#  define MPIU_INT64 MPI_INT64_T
+#else
+#  define MPIU_INT64 MPI_LONG_LONG_INT
+#endif
 
 
 /*MC
@@ -573,7 +578,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscMalloc1(m1,r1) PetscMalloc((m1)*sizeof(**(r1)),r1)
+#define PetscMalloc1(m1,r1) ((m1) ? PetscMalloc((m1)*sizeof(**(r1)),r1) : (*(r1) = 0,0))
 
 /*MC
    PetscCalloc1 - Allocates a cleared (zeroed) array of memory aligned to PETSC_MEMALIGN

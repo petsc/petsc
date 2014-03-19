@@ -64,7 +64,7 @@ static PetscErrorCode TaoSolve_SSFLS(Tao tao)
 
     /* Calculate direction.  (Really negative of newton direction.  Therefore,
        rest of the code uses -d.) */
-    ierr = KSPSetOperators(tao->ksp,tao->jacobian,tao->jacobian_pre,ssls->matflag);CHKERRQ(ierr);
+    ierr = KSPSetOperators(tao->ksp,tao->jacobian,tao->jacobian_pre);CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp,ssls->ff,tao->stepdirection);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
     tao->ksp_its+=kspits;

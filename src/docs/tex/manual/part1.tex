@@ -419,7 +419,7 @@ After creating the matrix and vectors that define a linear system,
 with the following sequence of commands:
 \begin{tabbing}
   KSPCreate(MPI\_Comm comm,KSP *ksp); \\
-  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag);\\
+  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat);\\
   KSPSetFromOptions(KSP ksp);\\
   KSPSolve(KSP ksp,Vec b,Vec x);\\
   KSPDestroy(KSP ksp);

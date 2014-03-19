@@ -19,7 +19,7 @@
       call ComputeMatrix(da,J,ierr)
 
       call KSPCreate(MPI_COMM_WORLD,ksp,ierr)
-      call KSPSetOperators(ksp,J,J,SAME_NONZERO_PATTERN,ierr)
+      call KSPSetOperators(ksp,J,J,ierr)
       call KSPSetFromOptions(ksp,ierr)
       call KSPSolve(ksp,f,x,ierr)
 

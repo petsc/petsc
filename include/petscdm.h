@@ -5,6 +5,7 @@
 #define __PETSCDM_H
 #include <petscmat.h>
 #include <petscdmtypes.h>
+#include <petscfetypes.h>
 
 PETSC_EXTERN PetscErrorCode DMInitializePackage(void);
 
@@ -28,6 +29,7 @@ typedef const char* DMType;
 #define DMREDUNDANT "redundant"
 #define DMPATCH     "patch"
 #define DMMOAB      "moab"
+#define DMCIRCUIT   "circuit"
 
 PETSC_EXTERN const char *const DMBoundaryTypes[];
 PETSC_EXTERN PetscFunctionList DMList;
@@ -151,6 +153,7 @@ PETSC_EXTERN PetscErrorCode DMSetPointSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMGetNumFields(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMSetNumFields(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetField(DM, PetscInt, PetscObject *);
+PETSC_EXTERN PetscErrorCode DMSetField(DM, PetscInt, PetscObject);
 
 typedef enum {PETSC_UNIT_LENGTH, PETSC_UNIT_MASS, PETSC_UNIT_TIME, PETSC_UNIT_CURRENT, PETSC_UNIT_TEMPERATURE, PETSC_UNIT_AMOUNT, PETSC_UNIT_LUMINOSITY, NUM_PETSC_UNITS} PetscUnit;
 

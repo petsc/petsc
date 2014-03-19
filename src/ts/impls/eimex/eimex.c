@@ -367,7 +367,7 @@ static PetscErrorCode SNESTSFormFunction_EIMEX(SNES snes,Vec X,Vec G,TS ts)
  */
 #undef __FUNCT__
 #define __FUNCT__ "SNESTSFormJacobian_EIMEX"
-static PetscErrorCode SNESTSFormJacobian_EIMEX(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *str,TS ts)
+static PetscErrorCode SNESTSFormJacobian_EIMEX(SNES snes,Vec X,Mat A,Mat B,TS ts)
 {
   TS_EIMEX        *ext = (TS_EIMEX*)ts->data;
   Vec             Ydot;
@@ -380,7 +380,7 @@ static PetscErrorCode SNESTSFormJacobian_EIMEX(SNES snes,Vec X,Mat *A,Mat *B,Mat
   /* ext->Ydot have already been computed in SNESTSFormFunction_EIMEX (SNES guarantees this) */
   dmsave = ts->dm;
   ts->dm = dm;
-  ierr = TSComputeIJacobian(ts,ts->ptime,X,Ydot,ext->shift,A,B,str,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = TSComputeIJacobian(ts,ts->ptime,X,Ydot,ext->shift,A,B,PETSC_TRUE);CHKERRQ(ierr);
   ts->dm = dmsave;
   ierr = TSEIMEXRestoreVecs(ts,dm,NULL,&Ydot,NULL,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);

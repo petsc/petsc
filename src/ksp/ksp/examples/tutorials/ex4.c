@@ -170,7 +170,7 @@ int main(int argc, char **argv)
     ierr = MatGetVecs(A, &x, &b);CHKERRQ(ierr);
     ierr = VecSetRandom(b, NULL);CHKERRQ(ierr);
     ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp, A, A, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp, A, A);CHKERRQ(ierr);
     ierr = MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, NULL, &nullsp);CHKERRQ(ierr);
     ierr = KSPSetNullSpace(ksp, nullsp);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);

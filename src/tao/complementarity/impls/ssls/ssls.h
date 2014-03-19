@@ -87,7 +87,6 @@ typedef struct {
   PetscReal g_mucon; /* gradient of merit function with respect to mu */
 
   Mat J_sub, Jpre_sub; /* subset of jacobian */
-  MatStructure matflag;
   Vec f;        /* constraint function */
 
   IS fixed;

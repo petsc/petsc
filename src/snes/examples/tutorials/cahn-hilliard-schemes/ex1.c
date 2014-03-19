@@ -33,7 +33,7 @@ typedef struct{
 
 PetscErrorCode ComputeMobility(DM,Vec,Vec);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,MatStructure*,void*);
 PetscErrorCode SetInitialConditions(DM,Vec);
 PetscErrorCode GetParams(AppCtx*);
 
@@ -273,7 +273,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ctx)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat B,MatStructure *flg,void *ctx)
 {
     PetscErrorCode ierr;
     DM             da;
@@ -330,14 +330,14 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
         stencil_boundary[2].i = 0; stencil_boundary[2].c = 1; entries_boundary[2] = - hx/2.0;
         stencil_boundary[3].i = 1; stencil_boundary[3].c = 1; entries_boundary[3] = 0.0;
         rowstencil.i = 0; rowstencil.c = 0;
-        ierr = MatSetValuesStencil(*B,1,&rowstencil,4,stencil_boundary,entries_boundary,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesStencil(B,1,&rowstencil,4,stencil_boundary,entries_boundary,INSERT_VALUES);CHKERRQ(ierr);
         
         entries_boundary[0] = hx/(2.0*dt) + theta/hx;
         entries_boundary[1] = - theta/hx;
         entries_boundary[2] = (b_xold[0].u + b_xold[1].u)/(2.0*hx);
         entries_boundary[3] = - (b_xold[0].u + b_xold[1].u)/(2.0*hx);
         rowstencil.c = 1;
-        ierr = MatSetValuesStencil(*B,1,&rowstencil,4,stencil_boundary,entries_boundary,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesStencil(B,1,&rowstencil,4,stencil_boundary,entries_boundary,INSERT_VALUES);CHKERRQ(ierr);
         
         xs++;
         xm--;
@@ -349,14 +349,14 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
         stencil_boundary[2].i = Mx-2; stencil_boundary[2].c = 1; entries_boundary[2] = 0.0;
         stencil_boundary[3].i = Mx-1; stencil_boundary[3].c = 1; entries_boundary[3] = - hx/2.0;
         rowstencil.i = Mx-1; rowstencil.c = 0;
-        ierr = MatSetValuesStencil(*B,1,&rowstencil,4,stencil_boundary,entries_boundary,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesStencil(B,1,&rowstencil,4,stencil_boundary,entries_boundary,INSERT_VALUES);CHKERRQ(ierr);
         
         entries_boundary[0] = - theta/hx;
         entries_boundary[1] = hx/(2.0*dt) + theta/hx;
         entries_boundary[2] = - (b_xold[Mx-2].u + b_xold[Mx-1].u)/(2.0*hx);
         entries_boundary[3] = (b_xold[Mx-2].u + b_xold[Mx-1].u)/(2.0*hx);
         rowstencil.c = 1;
-        ierr = MatSetValuesStencil(*B,1,&rowstencil,4,stencil_boundary,entries_boundary,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesStencil(B,1,&rowstencil,4,stencil_boundary,entries_boundary,INSERT_VALUES);CHKERRQ(ierr);
         
         xm--;
     }
@@ -369,7 +369,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
         stencil[4].i = i; stencil[4].c = 1; entries[4] = - hx;
         stencil[5].i = i+1; stencil[5].c = 1; entries[5] = 0.0;
         rowstencil.i = i; rowstencil.c = 0;
-        ierr = MatSetValuesStencil(*B,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesStencil(B,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
         
         entries[0] = - theta/hx;
         entries[1] = hx/dt + theta*2.0/hx;
@@ -378,14 +378,14 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
         entries[4] = (b_xold[i-1].u + 2.0*b_xold[i].u + b_xold[i+1].u)/(2.0*hx);
         entries[5] = - (b_xold[i+1].u + b_xold[i].u)/(2.0*hx);
         rowstencil.c = 1;
-        ierr = MatSetValuesStencil(*B,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesStencil(B,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
     }
     
-    ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    if (*J != *B){
-        ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-        ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    if (J != B){
+        ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+        ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     }
     ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(da,user->b_xold,&b_xold);CHKERRQ(ierr); 

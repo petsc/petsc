@@ -18,7 +18,6 @@ PetscErrorCode TaoSolve_Test(Tao tao)
   Vec            x = tao->solution,g1,g2;
   PetscErrorCode ierr;
   PetscInt       i;
-  MatStructure   flg;
   PetscReal      nrm,gnorm,hcnorm,fdnorm;
   MPI_Comm       comm;
   Tao_Test        *fd = (Tao_Test*)tao->data;
@@ -81,9 +80,9 @@ PetscErrorCode TaoSolve_Test(Tao tao)
     }
     for (i=0;i<3;i++) {
       /* compute both versions of Hessian */
-      ierr = TaoComputeHessian(tao,x,&A,&A,&flg);CHKERRQ(ierr);
+      ierr = TaoComputeHessian(tao,x,A,A);CHKERRQ(ierr);
       if (!i) {ierr = MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);}
-      ierr = TaoDefaultComputeHessian(tao,x,&B,&B,&flg,tao->user_hessP);CHKERRQ(ierr);
+      ierr = TaoDefaultComputeHessian(tao,x,B,B,tao->user_hessP);CHKERRQ(ierr);
       if (fd->complete_print) {
         MPI_Comm    bcomm;
         PetscViewer viewer;

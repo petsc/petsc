@@ -5,8 +5,8 @@
 
 PetscErrorCode VecFischer(Vec, Vec, Vec, Vec, Vec);
 PetscErrorCode VecSFischer(Vec, Vec, Vec, Vec, PetscReal, Vec);
-PetscErrorCode D_Fischer(Mat, Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec);
-PetscErrorCode D_SFischer(Mat, Vec, Vec, Vec, Vec, PetscReal, Vec, Vec, Vec, Vec, Vec);
+PetscErrorCode MatDFischer(Mat, Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec);
+PetscErrorCode MatDSFischer(Mat, Vec, Vec, Vec, Vec, PetscReal, Vec, Vec, Vec, Vec, Vec);
 
 
 /*E
@@ -75,7 +75,6 @@ typedef enum {/* converged */
 
 PETSC_EXTERN const char **TaoConvergedReasons;
 
-#include <petsctaolinesearch.h>
 
 PETSC_EXTERN PetscErrorCode TaoInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TaoFinalizePackage(void);
@@ -107,16 +106,16 @@ PETSC_EXTERN PetscErrorCode TaoGetGradientVector(Tao, Vec*);
 PETSC_EXTERN PetscErrorCode TaoSetObjectiveRoutine(Tao, PetscErrorCode(*)(Tao, Vec, PetscReal*,void*), void*);
 PETSC_EXTERN PetscErrorCode TaoSetGradientRoutine(Tao, PetscErrorCode(*)(Tao, Vec, Vec, void*), void*);
 PETSC_EXTERN PetscErrorCode TaoSetObjectiveAndGradientRoutine(Tao, PetscErrorCode(*)(Tao, Vec, PetscReal*, Vec, void*), void*);
-PETSC_EXTERN PetscErrorCode TaoSetHessianRoutine(Tao,Mat,Mat, PetscErrorCode(*)(Tao,Vec, Mat*, Mat*, MatStructure*, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoSetHessianRoutine(Tao,Mat,Mat,PetscErrorCode(*)(Tao,Vec, Mat, Mat, void*), void*);
 PETSC_EXTERN PetscErrorCode TaoSetSeparableObjectiveRoutine(Tao, Vec, PetscErrorCode(*)(Tao, Vec, Vec, void*), void*);
 PETSC_EXTERN PetscErrorCode TaoSetConstraintsRoutine(Tao, Vec, PetscErrorCode(*)(Tao, Vec, Vec, void*), void*);
 PETSC_EXTERN PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao, Vec, PetscErrorCode(*)(Tao, Vec, Vec, void*), void*);
 PETSC_EXTERN PetscErrorCode TaoSetEqualityConstraintsRoutine(Tao, Vec, PetscErrorCode(*)(Tao, Vec, Vec, void*), void*);
-PETSC_EXTERN PetscErrorCode TaoSetJacobianRoutine(Tao,Mat,Mat, PetscErrorCode(*)(Tao,Vec, Mat*, Mat*, MatStructure*, void*), void*);
-PETSC_EXTERN PetscErrorCode TaoSetJacobianStateRoutine(Tao,Mat,Mat,Mat, PetscErrorCode(*)(Tao,Vec, Mat*, Mat*, Mat*, MatStructure*, void*), void*);
-PETSC_EXTERN PetscErrorCode TaoSetJacobianDesignRoutine(Tao,Mat,PetscErrorCode(*)(Tao,Vec, Mat*, void*), void*);
-PETSC_EXTERN PetscErrorCode TaoSetJacobianInequalityRoutine(Tao,Mat,Mat,PetscErrorCode(*)(Tao,Vec, Mat*, Mat*, MatStructure*, void*), void*);
-PETSC_EXTERN PetscErrorCode TaoSetJacobianEqualityRoutine(Tao,Mat,Mat,PetscErrorCode(*)(Tao,Vec, Mat*, Mat*, MatStructure*, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoSetJacobianRoutine(Tao,Mat,Mat, PetscErrorCode(*)(Tao,Vec, Mat, Mat, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoSetJacobianStateRoutine(Tao,Mat,Mat,Mat, PetscErrorCode(*)(Tao,Vec, Mat, Mat, Mat, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoSetJacobianDesignRoutine(Tao,Mat,PetscErrorCode(*)(Tao,Vec, Mat, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoSetJacobianInequalityRoutine(Tao,Mat,Mat,PetscErrorCode(*)(Tao,Vec, Mat, Mat, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoSetJacobianEqualityRoutine(Tao,Mat,Mat,PetscErrorCode(*)(Tao,Vec, Mat, Mat, void*), void*);
 
 PETSC_EXTERN PetscErrorCode TaoSetStateDesignIS(Tao, IS, IS);
 
@@ -132,16 +131,15 @@ PETSC_EXTERN PetscErrorCode TaoIsObjectiveDefined(Tao,PetscBool*);
 PETSC_EXTERN PetscErrorCode TaoIsGradientDefined(Tao,PetscBool*);
 PETSC_EXTERN PetscErrorCode TaoIsObjectiveAndGradientDefined(Tao,PetscBool*);
 
-PETSC_EXTERN PetscErrorCode TaoComputeHessian(Tao, Vec, Mat*, Mat*, MatStructure*);
-PETSC_EXTERN PetscErrorCode TaoComputeJacobian(Tao, Vec, Mat*, Mat*, MatStructure*);
-PETSC_EXTERN PetscErrorCode TaoComputeJacobianState(Tao, Vec, Mat*, Mat*, Mat*, MatStructure*);
-PETSC_EXTERN PetscErrorCode TaoComputeJacobianEquality(Tao, Vec, Mat*, Mat*, MatStructure*);
-PETSC_EXTERN PetscErrorCode TaoComputeJacobianInequality(Tao, Vec, Mat*, Mat*, MatStructure*);
-PETSC_EXTERN PetscErrorCode TaoComputeJacobianDesign(Tao, Vec, Mat*);
+PETSC_EXTERN PetscErrorCode TaoComputeHessian(Tao, Vec, Mat, Mat);
+PETSC_EXTERN PetscErrorCode TaoComputeJacobian(Tao, Vec, Mat, Mat);
+PETSC_EXTERN PetscErrorCode TaoComputeJacobianState(Tao, Vec, Mat, Mat, Mat);
+PETSC_EXTERN PetscErrorCode TaoComputeJacobianEquality(Tao, Vec, Mat, Mat);
+PETSC_EXTERN PetscErrorCode TaoComputeJacobianInequality(Tao, Vec, Mat, Mat);
+PETSC_EXTERN PetscErrorCode TaoComputeJacobianDesign(Tao, Vec, Mat);
 
-PETSC_EXTERN PetscErrorCode TaoDefaultComputeHessian(Tao, Vec, Mat*, Mat*, MatStructure*, void*);
-
-PETSC_EXTERN PetscErrorCode TaoDefaultComputeHessianColor(Tao, Vec, Mat*, Mat*, MatStructure*, void*);
+PETSC_EXTERN PetscErrorCode TaoDefaultComputeHessian(Tao, Vec, Mat, Mat, void*);
+PETSC_EXTERN PetscErrorCode TaoDefaultComputeHessianColor(Tao, Vec, Mat, Mat, void*);
 PETSC_EXTERN PetscErrorCode TaoComputeDualVariables(Tao, Vec, Vec);
 PETSC_EXTERN PetscErrorCode TaoComputeDualVariables(Tao, Vec, Vec);
 PETSC_EXTERN PetscErrorCode TaoSetVariableBounds(Tao, Vec, Vec);
@@ -171,6 +169,9 @@ PETSC_EXTERN PetscErrorCode TaoGetOptionsPrefix(Tao, const char *p[]);
 PETSC_EXTERN PetscErrorCode TaoResetStatistics(Tao);
 
 PETSC_EXTERN PetscErrorCode TaoGetKSP(Tao, KSP*);
+
+#include <petsctaolinesearch.h>
+PETSC_EXTERN PetscErrorCode TaoLineSearchUseTaoRoutines(TaoLineSearch, Tao);
 PETSC_EXTERN PetscErrorCode TaoGetLineSearch(Tao, TaoLineSearch*);
 
 PETSC_EXTERN PetscErrorCode TaoSetHistory(Tao,PetscReal*,PetscReal*,PetscReal*,PetscInt,PetscBool);
@@ -195,5 +196,46 @@ PETSC_EXTERN PetscErrorCode TaoSetConvergenceTest(Tao, PetscErrorCode (*)(Tao, v
 PETSC_EXTERN PetscErrorCode TaoSQPCONSetStateDesignIS(Tao, IS, IS);
 PETSC_EXTERN PetscErrorCode TaoLCLSetStateDesignIS(Tao, IS, IS);
 PETSC_EXTERN PetscErrorCode TaoMonitor(Tao, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, TaoConvergedReason*);
+
+typedef struct _p_TaoDM* TaoDM;
+PETSC_EXTERN PetscClassId TAODM_CLASSID;
+
+PETSC_EXTERN PetscErrorCode TaoDMSetMatType(TaoDM *, const MatType);
+PETSC_EXTERN PetscErrorCode TaoDMCreate(MPI_Comm, PetscInt, void*, TaoDM**);
+PETSC_EXTERN PetscErrorCode TaoDMSetSolverType(TaoDM*, const TaoType);
+PETSC_EXTERN PetscErrorCode TaoDMSetOptionsPrefix(TaoDM *, const char []);
+PETSC_EXTERN PetscErrorCode TaoDMDestroy(TaoDM*);
+PETSC_EXTERN PetscErrorCode TaoDMDestroyLevel(TaoDM);
+PETSC_EXTERN PetscErrorCode TaoDMSetFromOptions(TaoDM*);
+PETSC_EXTERN PetscErrorCode TaoDMSetTolerances(TaoDM*,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode TaoDMSetUp(TaoDM*);
+PETSC_EXTERN PetscErrorCode TaoDMSolve(TaoDM*);
+PETSC_EXTERN PetscErrorCode TaoDMView(TaoDM*, PetscViewer);
+PETSC_EXTERN PetscErrorCode TaoDMSetDM(TaoDM *, DM);
+PETSC_EXTERN PetscErrorCode TaoDMGetDM(TaoDM , DM*);
+PETSC_EXTERN PetscErrorCode TaoDMSetContext(TaoDM , void*);
+PETSC_EXTERN PetscErrorCode TaoDMGetContext(TaoDM , void**);
+
+PETSC_EXTERN PetscErrorCode TaoDMSetPreLevelMonitor(TaoDM*,PetscErrorCode(*)(TaoDM, PetscInt, void*),void*);
+PETSC_EXTERN PetscErrorCode TaoDMSetPostLevelMonitor(TaoDM*,PetscErrorCode(*)(TaoDM, PetscInt, void*),void*);
+PETSC_EXTERN PetscErrorCode TaoDMSetInitialGuessRoutine(TaoDM*,PetscErrorCode(*)(TaoDM,Vec));
+PETSC_EXTERN PetscErrorCode TaoDMSetVariableBoundsRoutine(TaoDM*,PetscErrorCode(*)(TaoDM,Vec, Vec));
+PETSC_EXTERN PetscErrorCode TaoDMSetObjectiveAndGradientRoutine(TaoDM*,PetscErrorCode(*)(Tao, Vec, PetscReal*, Vec, void*));
+PETSC_EXTERN PetscErrorCode TaoDMSetObjectiveRoutine(TaoDM*,PetscErrorCode(*)(Tao, Vec, PetscReal*, void*));
+PETSC_EXTERN PetscErrorCode TaoDMSetGradientRoutine(TaoDM*,PetscErrorCode(*)(Tao, Vec, Vec, void*));
+PETSC_EXTERN PetscErrorCode TaoDMSetHessianRoutine(TaoDM*,PetscErrorCode(*)(Tao, Vec, Mat*, Mat*, MatStructure*,void*));
+
+#include <petscdmda.h>
+
+PETSC_EXTERN PetscErrorCode TaoDMSetLocalObjectiveRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscReal**,PetscReal*,void*));
+PETSC_EXTERN PetscErrorCode TaoDMSetLocalGradientRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscReal**,PetscReal**,void*));
+PETSC_EXTERN PetscErrorCode TaoDMSetLocalObjectiveAndGradientRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscReal**,PetscReal*,PetscReal**,void*));
+PETSC_EXTERN PetscErrorCode TaoDMSetLocalHessianRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscReal**,Mat,void*));
+
+PETSC_EXTERN PetscErrorCode TaoDMFormFunctionLocal(Tao, Vec, PetscReal *, void*);
+PETSC_EXTERN PetscErrorCode TaoDMFormGradientLocal(Tao, Vec, Vec, void*);
+PETSC_EXTERN PetscErrorCode TaoDMFormFunctionGradientLocal(Tao, Vec, PetscReal *, Vec, void*);
+PETSC_EXTERN PetscErrorCode TaoDMFormHessianLocal(Tao, Vec, Mat*, Mat*, MatStructure*,void*);
+PETSC_EXTERN PetscErrorCode TaoDMFormBounds(Tao, Vec, Vec, void*);
 
 #endif

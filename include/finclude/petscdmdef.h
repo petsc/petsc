@@ -12,10 +12,11 @@
 #define DMBoundaryType PetscEnum
 
 #if !defined(PETSC_USE_FORTRAN_DATATYPES)
-#define DM             PetscFortranAddr
-#define PetscFE        PetscFortranAddr
-#define PetscSpace     PetscFortranAddr
-#define PetscDualSpace PetscFortranAddr
+#define DM              PetscFortranAddr
+#define PetscQuadrature PetscFortranAddr
+#define PetscFE         PetscFortranAddr
+#define PetscSpace      PetscFortranAddr
+#define PetscDualSpace  PetscFortranAddr
 #endif
 
 #endif

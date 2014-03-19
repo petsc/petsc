@@ -98,11 +98,17 @@ PetscErrorCode PetscStackSAWsViewOff(void)
 PetscErrorCode PetscStackCreate(void)
 {
   PetscStack *petscstack_in;
+  PetscInt   i;
+
   if (PetscStackActive()) return 0;
 
   petscstack_in              = (PetscStack*)malloc(sizeof(PetscStack));
   petscstack_in->currentsize = 0;
   petscstack_in->hotdepth    = 0;
+  for (i=0; i<PETSCSTACKSIZE; i++) {
+    petscstack_in->function[i] = 0;
+    petscstack_in->file[i]     = 0;
+  }
   PetscThreadLocalSetValue((PetscThreadKey*)&petscstack,petscstack_in);
 
 #if defined(PETSC_HAVE_SAWS)

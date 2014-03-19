@@ -22,7 +22,7 @@ static char help[] = "Solves 3D Laplacian using multigrid.\n\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 
-extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,MatStructure*,void*);
+extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,void*);
 extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
 extern PetscErrorCode ComputeInitialGuess(KSP,Vec,void*);
 
@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&r);CHKERRQ(ierr);
-  ierr = KSPGetOperators(ksp,&A,NULL,NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp,&A,NULL);CHKERRQ(ierr);
 
   ierr = MatMult(A,x,r);CHKERRQ(ierr);
   ierr = VecAXPY(r,-1.0,b);CHKERRQ(ierr);
@@ -112,7 +112,7 @@ PetscErrorCode ComputeInitialGuess(KSP ksp,Vec b,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
-PetscErrorCode ComputeMatrix(KSP ksp,Mat jac,Mat B,MatStructure *stflg,void *ctx)
+PetscErrorCode ComputeMatrix(KSP ksp,Mat jac,Mat B,void *ctx)
 {
   DM             da;
   PetscErrorCode ierr;
@@ -149,6 +149,5 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat jac,Mat B,MatStructure *stflg,void *ctx
   }
   ierr   = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr   = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  *stflg = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }

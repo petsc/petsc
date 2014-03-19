@@ -1,6 +1,6 @@
 ALL: lib
 
-DIRS     = da sliced composite redundant plex shell patch moab
+DIRS     = da sliced composite redundant plex shell patch moab circuit
 LOCDIR   = src/dm/impls/
 MANSEC   = DM
 

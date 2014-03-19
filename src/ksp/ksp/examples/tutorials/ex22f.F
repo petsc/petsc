@@ -89,7 +89,7 @@
       end
 
 
-      subroutine ComputeMatrix(ksp,JJ,jac,str,ctx,ierr)
+      subroutine ComputeMatrix(ksp,JJ,jac,ctx,ierr)
       implicit none
 
 #include <finclude/petscsys.h>
@@ -108,7 +108,6 @@
       PetscScalar  HxHydHz,HyHzdHx
       PetscScalar  HxHzdHy
       MatStencil   row(4),col(4,7)
-      MatStructure str
       PetscInt     ctx
       i1 = 1
       i7 = 7
