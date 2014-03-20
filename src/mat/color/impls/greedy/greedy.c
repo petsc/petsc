@@ -145,10 +145,11 @@ PetscErrorCode GreedyCreateWeights_Private(MatColoring mc,PetscReal **wts,PetscI
   ierr = MatGetOwnershipRange(G,&s,&e);CHKERRQ(ierr);
   n=e-s;
   ierr = PetscMalloc1(n,perm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,wts);CHKERRQ(ierr);
   /* each weight should be the degree plus a random perturbation */
   ierr = PetscRandomCreate(PetscObjectComm((PetscObject)mc),&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
-  ierr = GreedyDiscoverDegrees_Private(mc,wts);CHKERRQ(ierr);
+  /* ierr = GreedyDiscoverDegrees_Private(mc,wts);CHKERRQ(ierr); */
   for (i=s;i<e;i++) {
     ierr = PetscRandomGetValueReal(rand,&r);CHKERRQ(ierr);
     (*wts)[i-s] = PetscAbsReal(r);
@@ -180,6 +181,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
   Mat             m=mc->mat;
   Mat_MPIAIJ      *aij = (Mat_MPIAIJ*)m->data;
   Mat             md=NULL,mo=NULL;
+  const PetscInt  *md_i,*mo_i,*md_j,*mo_j;
   PetscBool       isMPIAIJ,isSEQAIJ;
   ISColoringValue pcol;
   const PetscInt  *cidx;
@@ -198,13 +200,29 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
   ierr = PetscObjectTypeCompare((PetscObject)m, MATMPIAIJ, &isMPIAIJ); CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)m, MATSEQAIJ, &isSEQAIJ); CHKERRQ(ierr);
   if (isMPIAIJ) {
+    /* get the CSR data for on and off diagonal portions of m */
+    Mat_SeqAIJ *dseq;
+    Mat_SeqAIJ *oseq;
     md=aij->A;
+    dseq = (Mat_SeqAIJ*)md->data;
     mo=aij->B;
+    oseq = (Mat_SeqAIJ*)mo->data;
+    md_i = dseq->i;
+    md_j = dseq->j;
+    mo_i = oseq->i;
+    mo_j = oseq->j;
   } else if (isSEQAIJ) {
+    /* get the CSR data for m */
+    Mat_SeqAIJ *dseq;
     /* no off-processor nodes */
     md=m;
+    dseq = (Mat_SeqAIJ*)md->data;
     mo=NULL;
     no=0;
+    md_i = dseq->i;
+    md_j = dseq->j;
+    mo_i = NULL;
+    mo_j = NULL;
   } else {
     SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_WRONG,"Matrix must be AIJ for greedy coloring");
   }
@@ -241,7 +259,8 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
     for (i=0;i<n;i++) {
       idx=n-lperm[i]-1;
       if (lcolors[idx] == IS_COLORING_MAX) {
-        ierr = MatGetRow(md,idx,&ncols,&cidx,NULL);CHKERRQ(ierr);
+        ncols = md_i[idx+1]-md_i[idx];
+        cidx = &(md_j[md_i[idx]]);
         for (j=0;j<ncols;j++) {
           if (lcolors[cidx[j]] != IS_COLORING_MAX) {
             ccol=lcolors[cidx[j]];
@@ -261,9 +280,9 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
             mask[ccol]=idx;
           }
         }
-        ierr = MatRestoreRow(md,idx,&ncols,&cidx,NULL);CHKERRQ(ierr);
         if (mo) {
-          ierr = MatGetRow(mo,idx,&ncols,&cidx,NULL);CHKERRQ(ierr);
+          ncols = mo_i[idx+1]-mo_i[idx];
+          cidx = &(mo_j[mo_i[idx]]);
           for (j=0;j<ncols;j++) {
             if (ocolors[cidx[j]] != IS_COLORING_MAX) {
               ccol=ocolors[cidx[j]];
@@ -283,7 +302,6 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
               mask[ccol]=idx;
             }
           }
-          ierr = MatRestoreRow(mo,idx,&ncols,&cidx,NULL);CHKERRQ(ierr);
         }
         for (j=0;j<masksize;j++) {
           if (mask[j]!=idx) {
@@ -303,7 +321,8 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
       ierr = PetscSFBcastEnd(sf,MPIU_INT,lcolors,ocolors);CHKERRQ(ierr);
       /* check for conflicts -- this is merely checking if any adjacent off-processor rows have the same color and marking the ones that are lower weight locally for changing */
       for (i=0;i<n;i++) {
-        ierr = MatGetRow(mo,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
+        ncols = mo_i[i+1]-mo_i[i];
+        cidx = &(mo_j[mo_i[i]]);
         for (j=0;j<ncols;j++) {
           /* in the case of conflicts, the highest weight one stays and the others go */
           if ((ocolors[cidx[j]] == lcolors[i]) && (owts[cidx[j]] > wts[i])) {
@@ -311,7 +330,6 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
             nd--;
           }
         }
-        ierr = MatRestoreRow(mo,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
       }
       nd_global=0;
     }
@@ -324,6 +342,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
   ierr = PetscFree(lcolors);CHKERRQ(ierr);
   if (mo) {
     ierr = PetscFree2(ocolors,owts);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -339,7 +358,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
   Mat             m=mc->mat;
   Mat_MPIAIJ      *aij = (Mat_MPIAIJ*)m->data;
   Mat             md=NULL,mo=NULL;
-  /* Mat             mtd=NULL,mto=NULL; */
+  const PetscInt  *md_i,*mo_i,*md_j,*mo_j;
   PetscBool       isMPIAIJ,isSEQAIJ;
   PetscInt        pcol,*dcolors,*ocolors;
   ISColoringValue *badidx;
@@ -358,11 +377,25 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
   ierr = PetscObjectTypeCompare((PetscObject)m, MATMPIAIJ, &isMPIAIJ); CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)m, MATSEQAIJ, &isSEQAIJ); CHKERRQ(ierr);
   if (isMPIAIJ) {
+    Mat_SeqAIJ *dseq;
+    Mat_SeqAIJ *oseq;
     md=aij->A;
+    dseq = (Mat_SeqAIJ*)md->data;
     mo=aij->B;
+    oseq = (Mat_SeqAIJ*)mo->data;
+    md_i = dseq->i;
+    md_j = dseq->j;
+    mo_i = oseq->i;
+    mo_j = oseq->j;
   } else if (isSEQAIJ) {
+    Mat_SeqAIJ *dseq;
     /* no off-processor nodes */
     md=m;
+    dseq = (Mat_SeqAIJ*)md->data;
+    md_i = dseq->i;
+    md_j = dseq->j;
+    mo_i = NULL;
+    mo_j = NULL;
   } else {
     SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_WRONG,"Matrix must be AIJ for greedy coloring");
   }
@@ -431,7 +464,8 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
         }
         /* diagonal distance-one rows */
         nd1cols=0;
-        ierr = MatGetRow(md,idx,&ncols,&cidx,NULL);CHKERRQ(ierr);
+        ncols = md_i[idx+1]-md_i[idx];
+        cidx = &(md_j[md_i[idx]]);
         for (j=0;j<ncols;j++) {
           d1cols[nd1cols] = cidx[j];
           nd1cols++;
@@ -453,10 +487,10 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
             mask[ccol]=idx;
           }
         }
-        ierr = MatRestoreRow(md,idx,&ncols,&cidx,NULL);CHKERRQ(ierr);
         /* off-diagonal distance-one rows */
         if (mo) {
-          ierr = MatGetRow(mo,idx,&ncols,&cidx,NULL);CHKERRQ(ierr);
+          ncols = mo_i[idx+1]-mo_i[idx];
+          cidx = &(mo_j[mo_i[idx]]);
           for (j=0;j<ncols;j++) {
             ccol=dcolors[cidx[j]];
             if (ccol != IS_COLORING_MAX) {
@@ -476,11 +510,11 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
               mask[ccol]=idx;
             }
           }
-          ierr = MatRestoreRow(mo,idx,&ncols,&cidx,NULL);CHKERRQ(ierr);
         }
         /* diagonal distance-two rows */
         for (j=0;j<nd1cols;j++) {
-          ierr = MatGetRow (md,d1cols[j],&ncols,&cidx,NULL);CHKERRQ(ierr);
+          ncols = md_i[d1cols[j]+1]-md_i[d1cols[j]];
+          cidx = &(md_j[md_i[d1cols[j]]]);
           for (l=0;l<ncols;l++) {
             ccol=dcolors[cidx[l]];
             if (ccol != IS_COLORING_MAX) {
@@ -500,12 +534,12 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
               mask[ccol]=idx;
             }
           }
-          ierr = MatRestoreRow(md,d1cols[j],&ncols,&cidx,NULL);CHKERRQ(ierr);
         }
         /* off-diagonal distance-two rows */
         if (mo) {
           for (j=0;j<nd1cols;j++) {
-            ierr = MatGetRow (mo,d1cols[j],&ncols,&cidx,NULL);CHKERRQ(ierr);
+            ncols = mo_i[d1cols[j]+1]-mo_i[d1cols[j]];
+            cidx = &(mo_j[mo_i[d1cols[j]]]);
             for (l=0;l<ncols;l++) {
               ccol=ocolors[cidx[l]];
               if (ccol != IS_COLORING_MAX) {
@@ -525,7 +559,6 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
                 mask[ccol]=idx;
               }
             }
-            ierr = MatRestoreRow(mo,d1cols[j],&ncols,&cidx,NULL);CHKERRQ(ierr);
           }
         }
         /* assign this one the lowest color possible by seeing if there's a gap in the sequence of sorted neighbor colors */
@@ -557,7 +590,8 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
         oconf[i]=PETSC_FALSE;
       }
       for (i=0;i<n;i++) {
-        ierr = MatGetRow(mo,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
+        ncols = mo_i[i+1]-mo_i[i];
+        cidx = &(mo_j[mo_i[i]]);
         if (ncols > 0) {
           /* fill in the mask */
           for (j=0;j<mcol_global+1;j++) {
@@ -573,9 +607,9 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
               }
             }
           }
-          ierr = MatRestoreRow(mo,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
           /* fill in the on-diagonal part of the mask */
-          ierr = MatGetRow(md,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
+          ncols = md_i[i+1]-md_i[i];
+          cidx = &(md_j[md_i[i]]);
           for (j=0;j<ncols;j++) {
             ccol=dcolors[cidx[j]];
             if (ccol < IS_COLORING_MAX) {
@@ -584,9 +618,9 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
               }
             }
           }
-          ierr = MatRestoreRow(md,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
           /* go back through and set up on and off-diagonal conflict vectors */
-          ierr = MatGetRow(md,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
+          ncols = md_i[i+1]-md_i[i];
+          cidx = &(md_j[md_i[i]]);
           for (j=0;j<ncols;j++) {
             ccol=dcolors[cidx[j]];
             if (ccol < IS_COLORING_MAX) {
@@ -595,8 +629,8 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
               }
             }
           }
-          ierr = MatRestoreRow(md,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
-          ierr = MatGetRow(mo,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
+          ncols = mo_i[i+1]-mo_i[i];
+          cidx = &(mo_j[mo_i[i]]);
           for (j=0;j<ncols;j++) {
             ccol=ocolors[cidx[j]];
             if (ccol < IS_COLORING_MAX) {
@@ -605,9 +639,6 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
               }
             }
           }
-          ierr = MatRestoreRow(mo,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
-        } else {
-          ierr = MatRestoreRow(mo,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
         }
       }
       nd_global=0;
