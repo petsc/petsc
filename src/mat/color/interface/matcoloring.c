@@ -83,7 +83,7 @@ PetscErrorCode MatColoringCreate(Mat m,MatColoring *mcptr)
   ierr = PetscObjectReference((PetscObject)m);CHKERRQ(ierr);
   mc->mat       = m;
   mc->dist      = 2; /* default to Jacobian computation case */
-  mc->maxcolors = 0; /* no maximum */
+  mc->maxcolors = IS_COLORING_MAX;
   *mcptr        = mc;
   mc->valid     = PETSC_FALSE;
   PetscFunctionReturn(0);

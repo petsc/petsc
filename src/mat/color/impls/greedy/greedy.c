@@ -226,20 +226,19 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
   } else {
     SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_WRONG,"Matrix must be AIJ for greedy coloring");
   }
+  ierr = MatColoringGetMaxColors(mc,&maxcolors);CHKERRQ(ierr);
   if (mo) {
     ierr = VecGetSize(aij->lvec,&no);CHKERRQ(ierr);
     ierr = PetscMalloc2(no,&ocolors,no,&owts);CHKERRQ(ierr);
     for(i=0;i<no;i++) {
-      ocolors[i]=IS_COLORING_MAX;
+      ocolors[i]=maxcolors;
     }
   }
 
-  maxcolors=IS_COLORING_MAX;
-  if (mc->maxcolors) maxcolors=mc->maxcolors;
   ierr = PetscMalloc1(masksize,&mask);CHKERRQ(ierr);
   ierr = PetscMalloc1(n,&lcolors);CHKERRQ(ierr);
   for(i=0;i<n;i++) {
-    lcolors[i]=IS_COLORING_MAX;
+    lcolors[i]=maxcolors;
   }
   for (i=0;i<masksize;i++) {
     mask[i]=-1;
@@ -258,11 +257,11 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
     ierr = PetscLogEventBegin(Mat_Coloring_Local,mc,0,0,0);CHKERRQ(ierr);
     for (i=0;i<n;i++) {
       idx=n-lperm[i]-1;
-      if (lcolors[idx] == IS_COLORING_MAX) {
+      if (lcolors[idx] == maxcolors) {
         ncols = md_i[idx+1]-md_i[idx];
         cidx = &(md_j[md_i[idx]]);
         for (j=0;j<ncols;j++) {
-          if (lcolors[cidx[j]] != IS_COLORING_MAX) {
+          if (lcolors[cidx[j]] != maxcolors) {
             ccol=lcolors[cidx[j]];
             if (ccol>=masksize) {
               PetscInt *newmask;
@@ -284,7 +283,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
           ncols = mo_i[idx+1]-mo_i[idx];
           cidx = &(mo_j[mo_i[idx]]);
           for (j=0;j<ncols;j++) {
-            if (ocolors[cidx[j]] != IS_COLORING_MAX) {
+            if (ocolors[cidx[j]] != maxcolors) {
               ccol=ocolors[cidx[j]];
               if (ccol>=masksize) {
                 PetscInt *newmask;
@@ -325,8 +324,8 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
         cidx = &(mo_j[mo_i[i]]);
         for (j=0;j<ncols;j++) {
           /* in the case of conflicts, the highest weight one stays and the others go */
-          if ((ocolors[cidx[j]] == lcolors[i]) && (owts[cidx[j]] > wts[i])) {
-            lcolors[i]=IS_COLORING_MAX;
+          if ((ocolors[cidx[j]] == lcolors[i]) && (owts[cidx[j]] > wts[i]) && lcolors[i] < maxcolors) {
+            lcolors[i]=maxcolors;
             nd--;
           }
         }
@@ -407,8 +406,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
     ierr = MatGetLayouts(m,&layout,NULL);CHKERRQ(ierr);
     ierr = PetscSFSetGraphLayout(sf,layout,no,NULL,PETSC_COPY_VALUES,aij->garray);CHKERRQ(ierr);
   }
-  maxcolors=IS_COLORING_MAX;
-  if (mc->maxcolors) maxcolors=mc->maxcolors;
+  ierr = MatColoringGetMaxColors(mc,&maxcolors);CHKERRQ(ierr);
   masksize=n;
   nbad=0;
   badsize=n;
@@ -419,7 +417,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
     mask[i]=-1;
   }
   for (i=0;i<n;i++) {
-    dcolors[i]=IS_COLORING_MAX;
+    dcolors[i]=maxcolors;
     bad[i]=-1;
   }
   for (i=0;i<badsize;i++) {
@@ -430,7 +428,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
     ierr = PetscSFBcastBegin(sf,MPIU_REAL,wts,owts);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sf,MPIU_REAL,wts,owts);CHKERRQ(ierr);
     for (i=0;i<no;i++) {
-      ocolors[i]=IS_COLORING_MAX;
+      ocolors[i]=maxcolors;
     }
   }
   mcol=0;
@@ -441,7 +439,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
     ierr = PetscLogEventBegin(Mat_Coloring_Local,mc,0,0,0);CHKERRQ(ierr);
     for (i=0;i<n;i++) {
       idx=n-lperm[i]-1;
-      if (dcolors[idx] == IS_COLORING_MAX) {
+      if (dcolors[idx] == maxcolors) {
         /* entries in bad */
         cbad=bad[idx];
         while (cbad>=0) {
@@ -470,7 +468,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
           d1cols[nd1cols] = cidx[j];
           nd1cols++;
           ccol=dcolors[cidx[j]];
-          if (ccol != IS_COLORING_MAX) {
+          if (ccol != maxcolors) {
             if (ccol>=masksize) {
               PetscInt *newmask;
               ierr = PetscMalloc1(masksize*2,&newmask);CHKERRQ(ierr);
@@ -493,7 +491,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
           cidx = &(mo_j[mo_i[idx]]);
           for (j=0;j<ncols;j++) {
             ccol=dcolors[cidx[j]];
-            if (ccol != IS_COLORING_MAX) {
+            if (ccol != maxcolors) {
               if (ccol>=masksize) {
                 PetscInt *newmask;
                 ierr = PetscMalloc1(masksize*2,&newmask);CHKERRQ(ierr);
@@ -517,7 +515,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
           cidx = &(md_j[md_i[d1cols[j]]]);
           for (l=0;l<ncols;l++) {
             ccol=dcolors[cidx[l]];
-            if (ccol != IS_COLORING_MAX) {
+            if (ccol != maxcolors) {
               if (ccol>=masksize) {
                 PetscInt *newmask;
                 ierr = PetscMalloc1(masksize*2,&newmask);CHKERRQ(ierr);
@@ -542,7 +540,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
             cidx = &(mo_j[mo_i[d1cols[j]]]);
             for (l=0;l<ncols;l++) {
               ccol=ocolors[cidx[l]];
-              if (ccol != IS_COLORING_MAX) {
+              if (ccol != maxcolors) {
                 if (ccol>=masksize) {
                   PetscInt *newmask;
                   ierr = PetscMalloc1(masksize*2,&newmask);CHKERRQ(ierr);
@@ -601,7 +599,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
           /* fill in the off-diagonal part of the mask */
           for (j=0;j<ncols;j++) {
             ccol=ocolors[cidx[j]];
-            if (ccol < IS_COLORING_MAX) {
+            if (ccol < maxcolors) {
               if (colorweights[ccol] < owts[cidx[j]]) {
                 colorweights[ccol] = owts[cidx[j]];
               }
@@ -612,7 +610,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
           cidx = &(md_j[md_i[i]]);
           for (j=0;j<ncols;j++) {
             ccol=dcolors[cidx[j]];
-            if (ccol < IS_COLORING_MAX) {
+            if (ccol < maxcolors) {
               if (colorweights[ccol] < wts[cidx[j]]) {
                 colorweights[ccol] = wts[cidx[j]];
               }
@@ -623,7 +621,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
           cidx = &(md_j[md_i[i]]);
           for (j=0;j<ncols;j++) {
             ccol=dcolors[cidx[j]];
-            if (ccol < IS_COLORING_MAX) {
+            if (ccol < maxcolors) {
               if (colorweights[ccol] > wts[cidx[j]]) {
                 conf[cidx[j]]=PETSC_TRUE;
               }
@@ -633,7 +631,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
           cidx = &(mo_j[mo_i[i]]);
           for (j=0;j<ncols;j++) {
             ccol=ocolors[cidx[j]];
-            if (ccol < IS_COLORING_MAX) {
+            if (ccol < maxcolors) {
               if (colorweights[ccol] > owts[cidx[j]]) {
                 oconf[cidx[j]]=PETSC_TRUE;
               }
@@ -671,7 +669,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
             badnext=newbadnext;
             badsize*=2;
           }
-          dcolors[i] = IS_COLORING_MAX;
+          dcolors[i] = maxcolors;
           nd--;
         }
       }
