@@ -77,14 +77,14 @@ class Configure(config.base.Configure):
         packageObj                    = framework.require('config.packages.'+package, self)
         packageObj.archProvider       = self.arch
         packageObj.languageProvider   = self.languages
+        packageObj.precisionProvider  = self.scalartypes
         packageObj.installDirProvider = self.installdir
         packageObj.externalPackagesDirProvider = self.externalpackagesdir
         setattr(self, package.lower(), packageObj)
     # Force blaslapack to depend on scalarType so precision is set before BlasLapack is built
     framework.require('PETSc.utilities.scalarTypes', self.f2cblaslapack)
-    self.f2cblaslapack.precisionProvider = self.scalartypes
+    framework.require('PETSc.utilities.scalarTypes', self.fblaslapack)
     framework.require('PETSc.utilities.scalarTypes', self.blaslapack)
-    self.blaslapack.precisionProvider = self.scalartypes
 
     self.compilers.headerPrefix  = self.headerPrefix
     self.types.headerPrefix      = self.headerPrefix

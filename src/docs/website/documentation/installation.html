@@ -76,7 +76,7 @@
 
       Invoke the following commands from the top level PETSc directory: <br>
       <ul class="code">
-        <li>./configure --with-cc=gcc --with-fc=gfortran --download-f-blas-lapack --download-mpich</li>
+        <li>./configure --with-cc=gcc --with-fc=gfortran --download-fblaslapack --download-mpich</li>
         <li>make all test</li>
       </ul>
 
@@ -130,7 +130,7 @@
             installed <code>./configure</code> will download &amp; install BLAS,
             LAPACK, MPICH if they are not already installed on the system):
             <ul>
-              <li>./configure --with-cc=gcc --with-fc=gfortran --download-f-blas-lapack --download-mpich</li>
+              <li>./configure --with-cc=gcc --with-fc=gfortran --download-fblaslapack --download-mpich</li>
             </ul>
           </li>
 
@@ -167,7 +167,7 @@
             (add the option <code>--with-fortran-kernels=generic</code> to get
             possibly faster complex number performance on some systems):
             <ul>
-              <li>./configure --with-cc=gcc --with-fc=gfortran --with-cxx=g++ --download-f-blas-lapack --download-mpich --with-scalar-type=complex --with-clanguage=cxx</li>
+              <li>./configure --with-cc=gcc --with-fc=gfortran --with-cxx=g++ --download-fblaslapack --download-mpich --with-scalar-type=complex --with-clanguage=cxx</li>
             </ul>
           </li>
 
@@ -362,7 +362,7 @@
             <span class="def">--download-PACKAGENAME</span>: Download specified
             package and install it. Then configure PETSc to use this package.
             <ul>
-              <li>--download-f-blas-lapack --download-mpich</li>
+              <li>--download-fblaslapack --download-mpich</li>
               <li>--download-scalapack --download-mumps</li>
             </ul>
           </li>
@@ -514,7 +514,7 @@
           <li>
             One can use the following options to let configure download/install blas/lapack automatically.
             <ul>
-              <li>--download-f-blas-lapack [when fortran compiler is present]</li>
+              <li>--download-fblaslapack [when fortran compiler is present]</li>
               <li>--download-f2cblaslapack [when configuring without a fortran compiler - i.e --with-fc=0]</li>
             </ul>
           </li>
@@ -545,7 +545,7 @@
             Sadly, IBM's ESSL does not have all the routines of BLAS and LAPACK
             that some packages, such as SuperLU expect; in particular slamch,
             dlamch and xerbla. In this case instead of using ESSL we suggest
-            <code>--download-f-blas-lapack</code>. If you really want to use ESSL,
+            <code>--download-fblaslapack</code>. If you really want to use ESSL,
             see <a href="http://www.pdc.kth.se/resources/computers/bluegene/LAPACK-CBLAS/LAPACK-CBLAS-build">http://www.pdc.kth.se/resources/computers/bluegene/LAPACK-CBLAS/LAPACK-CBLAS-build</a>.
           </li>
         </ul>
@@ -734,7 +734,7 @@
         </p>
 
         <ul>
-          <li><code>./configure --with-cc='win32fe cl' --with-fc='win32fe ifort' --with-cxx='win32fe cl' --download-f-blas-lapack</code></li>
+          <li><code>./configure --with-cc='win32fe cl' --with-fc='win32fe ifort' --with-cxx='win32fe cl' --download-fblaslapack</code></li>
         </ul>
 
         <p>If fortran usage is not required, use:</p>
@@ -748,7 +748,7 @@
         <p>Using Microsoft C/C++ 6.0 &amp; Compaq Fortran 6.0 with MPICH2 configure command to use:</p>
 
         <ul>
-          <li><code>./configure --with-cc='win32fe cl' --with-fc='win32fe f90' --download-f-blas-lapack</code></li>
+          <li><code>./configure --with-cc='win32fe cl' --with-fc='win32fe f90' --download-fblaslapack</code></li>
         </ul>
 
         <p>

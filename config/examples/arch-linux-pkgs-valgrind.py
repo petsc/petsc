@@ -2,7 +2,7 @@
 
 configure_options = [
   '--download-mpich=1',
-  '--download-f-blas-lapack=1',
+  '--download-fblaslapack=1',
   '--download-hypre=1',
   '--download-cmake=1',
   '--download-metis=1',

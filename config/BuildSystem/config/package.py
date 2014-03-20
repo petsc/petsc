@@ -114,6 +114,38 @@ class Package(config.base.Configure):
     self.downloadfilename = self.downloadname;
     return
 
+  def getDefaultPrecision(self):
+    '''The precision of the library'''
+    if hasattr(self, 'precisionProvider'):
+      if hasattr(self.precisionProvider, 'precision'):
+        return self.precisionProvider.precision
+    return self._defaultPrecision
+  def setDefaultPrecision(self, defaultPrecision):
+    '''The precision of the library'''
+    self._defaultPrecision = defaultPrecision
+    return
+  defaultPrecision = property(getDefaultPrecision, setDefaultPrecision, doc = 'The precision of the library')
+
+  def checkNoOptFlag(self):
+    flag = '-O0'
+    if self.setCompilers.checkCompilerFlag(flag): return flag
+    return ''
+
+  def getSharedFlag(self,cflags):
+    for flag in ['-PIC', '-fPIC', '-KPIC', '-qpic']:
+      if cflags.find(flag) >=0: return flag
+    return ''
+
+  def getPointerSizeFlag(self,cflags):
+    for flag in ['-m32', '-m64', '-xarch=v9','-q64']:
+      if cflags.find(flag) >=0: return flag
+    return ''
+
+  def getWindowsNonOptFlags(self,cflags):
+    for flag in ['-MT','-MTd','-MD','-MDd','-threads']:
+      if cflags.find(flag) >=0: return flag
+    return ''
+
   def getDefaultLanguage(self):
     '''The language in which to run tests'''
     if hasattr(self, 'forceLanguage'):

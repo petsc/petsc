@@ -4,7 +4,7 @@ configure_options = [
   'CC=gcc',
   'FC=pgf90',
   '--download-mpich=1',
-  '--download-f-blas-lapack=1'
+  '--download-fblaslapack=1'
   ]
 
 if __name__ == '__main__':
