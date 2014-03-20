@@ -102,20 +102,24 @@ int main(int argc,char **args)
   double       scalar, t, times[4][NTIMES],irate[4],rate[4];
   int          rank,size,resultlen;
   char         hostname[MPI_MAX_PROCESSOR_NAME];
+  MPI_Status   status;
 
   MPI_Init(&argc,&args);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
   if (!rank) printf("Number of MPI processes %d\n",size);
 
-  for (j=0; j<size; j++) {
-    if (rank == j) {
-      MPI_Get_processor_name(hostname,&resultlen);
-      printf("Process %d %s\n",rank,hostname);
-      fflush(stdout);
+  MPI_Get_processor_name(hostname,&resultlen);
+  if (!rank) {
+    printf("Process %d %s\n",rank,hostname);
+    for (j=1; j<size; j++) {
+      MPI_Recv(hostname,MPI_MAX_PROCESSOR_NAME,MPI_CHAR,j,0,MPI_COMM_WORLD,&status);
+      printf("Process %d %s\n",j,hostname);
     }
-    MPI_Barrier(MPI_COMM_WORLD);
-  }
+ } else {
+   MPI_Send(hostname,MPI_MAX_PROCESSOR_NAME,MPI_CHAR,0,0,MPI_COMM_WORLD);
+ }
+ MPI_Barrier(MPI_COMM_WORLD);
 
   /* --- SETUP --- determine precision and check timing --- */
 

@@ -135,6 +135,7 @@ build: chk_makej
 check: test
 test:
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} test_build 2>&1 | tee ./${PETSC_ARCH}/conf/test.log
+	-@if [ "${PETSC_WITH_BATCH}" == "" ]; then printf ${PETSC_TEXT_HILIGHT}"Now run make streams NPMAX=<number of expect MPI processes you intend to use>\nto evaluate the computer systems you plan use\n"${PETSC_TEXT_NORMAL};fi
 testx:
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testx_build 2>&1 | tee ./${PETSC_ARCH}/conf/testx.log
 test_build:

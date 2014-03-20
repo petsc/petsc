@@ -65,7 +65,7 @@
       <ul>
         <li><a href="#petsc-mailing-list">How can I subscribe to the PETSc mailing lists?</a></li>
         <li><a href="#book">Any useful books on numerical computing?</a></li>
-        <li><a href="#computers">What kind of parallel computers or clusters are needed to use PETSc?</a></li>
+        <li><a href="#computers">What kind of parallel computers or clusters are needed to use PETSc? Or why do I get little speedup?</a></li>
         <li><a href="#license">What kind of license is PETSc released under?</a></li>
         <li><a href="#why-c">Why is PETSc programmed in C, instead of Fortran or C++?</a> </li>
         <li><a href="#logging-overhead">Does all the PETSc error checking and logging reduce PETSc's efficiency?</a></li>
@@ -188,7 +188,7 @@
 
       <a href="http://ebooks.cambridge.org/ebook.jsf?bid=CBO9780511617973">Writing Scientific Software: A Guide to Good Style</a>
 
-      <h3><a name="computers">What kind of parallel computers or clusters are needed to use PETSc?</a></h3>
+      <h3><a name="computers">What kind of parallel computers or clusters are needed to use PETSc? Or why do I get little speedup?</a></h3>
 
       PETSc can be used with any kind of parallel system that supports MPI
       <b>BUT</b> for any decent performance one needs
@@ -199,34 +199,62 @@
           simply cannot provide the needed performance.
         </li>
         <li>
-          <b>high per-CPU memory performance</b>. Each CPU (core in multi-core
-          systems) needs to have its <b>own</b> memory bandwith of roughly 2 or
+          <b>high per-CPU MEMORY performance</b>. Each CPU (core in multi-core
+          systems) needs to have its <b>own</b> memory bandwith of at least 2 or
           more gigabytes/second. For example, standard dual processor "PC's" will
           <b>not</b> provide better performance when the second processor is
           used, that is, you will not see speed-up when you using the second
           processor. This is because the speed of sparse matrix computations is
           almost totally determined by the speed of the memory, not the speed of
-          the CPU.  Smart process to core/socket binding may help you. For
-          example, consider using fewer processes than cores and binding
-          processes to separate sockets so that each process uses a different
-          memory bus:
+          the CPU.
+        </li>
+     </ul>
 
-          <dl>
+
+    To obtain good performance it is important that you know your
+    machine, how many nodes, how many memory sockets per node and how
+    many cores per memory socket and how much memory bandwidth you
+    obtain per core, memory socket, and node. If you do not know this
+    and can run MPI programs with mpiexec (that is, you don't have
+    batch system) in ${PETSC_DIR} run </p>
+
+   make streams NPMAX=maximum number of mpi processes you plan to use</p>
+
+   then it will provide a summary of the bandwidth received with different number of MPI processes and potential speedups. If you have a batch system
+     <ul>
+      <li> cd src/benchmarks/steams</li>
+      <li> make MPIVersion</li>
+      <li> submit MPIVersion to the batch system a number of times with 1, 2, 3, etc MPI processes collecting all of the output from the runs into the single file scaling.log.</li>
+      <li> copy scaling.log into the src/benchmarks/steams directory</li>
+      <li> ./process.py createfile ; process.py </li>
+     </ul>
+
+
+           Even if you have enough memory bandwidth if the OS switches
+          processes between cores performance can degrade. Smart
+          process to core/socket binding (this just means locking a
+          process to a particular core or memory socket) may help
+          you. For example, consider using fewer processes than cores
+          and binding processes to separate sockets so that each
+          process uses a different memory bus:
+
+      <ul>
+      <li>
             <dt><a href="http://wiki.mcs.anl.gov/mpich2/index.php/Using_the_Hydra_Process_Manager#Process-core_Binding">MPICH2 binding with the Hydra process manager</a></dt>
             <dd><code>mpiexec.hydra -n 4 --binding cpu:sockets</code></dd>
-
+      </li>
+      <li>
             <dt><a href="http://www.open-mpi.org/doc/v1.5/man1/mpiexec.1.php#sect8">Open MPI binding</a></dt>
             <dd><code>mpiexec -n 4 --bysocket --bind-to-socket --report-bindings</code></dd>
-          </dl>
-
-          Other tools to manage affinity include
-          <dl>
+      </li>
+      <li>
             <dt><tt>taskset</tt>, part of the <tt>util-linux</tt> package</dt>
             <dd>
               <tt>Usage: taskset [options] [mask | cpu-list] [pid|cmd [args...]]</tt>, type <tt>man taskset</tt> for details.
               Make sure to set affinity for your program, not for the <tt>mpiexec</tt> program.
             </dd>
-
+      </li>
+      <li>
             <dt><tt>numactl</tt></dt>
             <dd>In addition to task affinity, this tool also allows changing the default memory affinity policy.
               On Linux, the default policy is to attempt to find memory on the same memory bus that serves the core that a thread is running on at whatever time the memory is faulted (<em>not</em> when <tt>malloc()</tt> is called).
@@ -237,26 +265,20 @@
               With Open MPI, you can use knowledge of the NUMA hierarchy and core numbering on your machine to calculate the correct NUMA node or processor number given the environment variable <tt>OMPI_COMM_WORLD_LOCAL_RANK</tt>.
               In most cases, it is easier to make <tt>mpiexec</tt> or a resource manager set affinities.
             </dd>
-          </dl>
-        </li>
+      </li>
+     </ul>
+        </p>
 
-        <li>
+
           The software <a href="http://open-mx.org">http://open-mx.org</a>
           provides faster speed for ethernet systems, we have not tried it but it
           claims it can dramatically reduce latency and increase bandwidth on
           Linux system. You must first install this software and then install
           MPICH or Open MPI to use it.
-        </li>
+        </p>
 
-        <li>
-          In ${PETSC_DIR} run make streams and when requested enter the number of
-          cores your system has. The more the achieved memory bandwidth increases
-          the more performance you can expect across your multiple cores. If the
-          bandwidth does not increase significently then you cannot expect to get
-          any improvement in parallel performance.
-        </li>
 
-      </ul>
+
 
       <h3><a name="license">What kind of license is PETSc released under?</a></h3>
 
