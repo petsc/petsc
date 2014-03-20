@@ -22,6 +22,7 @@ configure_options = [
   '--download-elemental=1',
   '--with-cxx-dialect=C++11',
   '--download-spai=1',
+  '--download-parms=1',
   '--download-chaco=1'
   ]
 
