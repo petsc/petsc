@@ -29,8 +29,8 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   PetscSection   coordSection;
   Vec            coordinates;
   PetscScalar   *coords, *coordsIn = NULL;
-  PetscInt       dim = 0, tdim = 0, coordSize, c, v, d, numCorners, cellNum;
-  int            numVertices = 0, numCells = 0, trueNumCells = 0, numFacets = 0, cone[8], snum;
+  PetscInt       dim = 0, tdim = 0, coordSize, c, v, d, cellNum, numCorners, numTags;
+  int            numVertices = 0, numCells = 0, trueNumCells = 0, numFacets = 0, cone[8], tags[2], snum;
   long           fpos = 0;
   PetscMPIInt    num_proc, rank;
   char           line[PETSC_MAX_PATH_LEN];
@@ -87,7 +87,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
        to get the correct numCells and decide the topological dimension of the mesh */
     trueNumCells = 0;
     for (c = 0; c < numCells; ++c) {
-      ierr = DMPlexCreateGmsh_ReadElement(fd, &dim, &cellNum, &numCorners, cone);CHKERRQ(ierr);
+      ierr = DMPlexCreateGmsh_ReadElement(fd, &dim, &cellNum, &numCorners, cone, &numTags, tags);CHKERRQ(ierr);
       if (dim > tdim) {
         tdim = dim;
         trueNumCells = 0;
@@ -100,7 +100,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   if (!rank) {
     ierr = fseek(fd, fpos, SEEK_SET);CHKERRQ(ierr);
     for (c = 0; c < numCells; ++c) {
-      ierr = DMPlexCreateGmsh_ReadElement(fd, &dim, &cellNum, &numCorners, cone);CHKERRQ(ierr);
+      ierr = DMPlexCreateGmsh_ReadElement(fd, &dim, &cellNum, &numCorners, cone, &numTags, tags);CHKERRQ(ierr);
       if (dim == tdim) {
         ierr = DMPlexSetConeSize(*dm, c-numFacets, numCorners);CHKERRQ(ierr);
       }
@@ -112,7 +112,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     ierr = fseek(fd, fpos, SEEK_SET);CHKERRQ(ierr);
     PetscInt pcone[8], corner;
     for (c = 0; c < numCells; ++c) {
-      ierr = DMPlexCreateGmsh_ReadElement(fd, &dim, &cellNum, &numCorners, cone);CHKERRQ(ierr);
+      ierr = DMPlexCreateGmsh_ReadElement(fd, &dim, &cellNum, &numCorners, cone, &numTags, tags);CHKERRQ(ierr);
       if (dim == tdim) {
         for (corner = 0; corner < numCorners; ++corner) pcone[corner] = cone[corner] + trueNumCells-1;
         ierr = DMPlexSetCone(*dm, c-numFacets, pcone);CHKERRQ(ierr);
@@ -134,6 +134,30 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = idm;
   }
+
+  if (!rank) {
+    ierr = fseek(fd, fpos, SEEK_SET);CHKERRQ(ierr);
+    /* Apply boundary IDs by finding the relevant facets with vertex joins */
+    PetscInt pcone[8], corner, vStart, vEnd;
+    ierr = DMPlexGetDepthStratum(*dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+    for (c = 0; c < numCells; ++c) {
+      ierr = DMPlexCreateGmsh_ReadElement(fd, &dim, &cellNum, &numCorners, cone, &numTags, tags);CHKERRQ(ierr);
+      if (dim == tdim-1) {
+        PetscInt joinSize;
+        const PetscInt *join;
+        for (corner = 0; corner < numCorners; ++corner) pcone[corner] = cone[corner] + vStart - 1;
+        ierr = DMPlexGetFullJoin(*dm, numCorners, pcone, &joinSize, &join);CHKERRQ(ierr);
+        if (joinSize != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not determine Plex facet for element %d", cellNum);
+        ierr = DMPlexSetLabelValue(*dm, "Face Sets", join[0], tags[0]);CHKERRQ(ierr);
+        ierr = DMPlexRestoreJoin(*dm, numCorners, pcone, &joinSize, &join);CHKERRQ(ierr);
+      }
+      if (cellNum != c+1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell number %d should be %d", cellNum, c+1);
+    }
+    fgets(line, PETSC_MAX_PATH_LEN, fd);
+    ierr = PetscStrncmp(line, "$EndElements\n", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
+    if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
+  }
+
   /* Read coordinates */
   ierr = DMGetCoordinateSection(*dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
@@ -166,14 +190,14 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateGmsh_ReadElement"
-PetscErrorCode DMPlexCreateGmsh_ReadElement(FILE *fd, PetscInt *dim, PetscInt *cellNum, PetscInt *numCorners, int cone[])
+PetscErrorCode DMPlexCreateGmsh_ReadElement(FILE *fd, PetscInt *dim, PetscInt *cellNum, PetscInt *numCorners, int cone[], PetscInt *numTags, int tags[])
 {
   PetscInt t;
-  int      snum, cellType, numTags, tag;
+  int      snum, cellType;
 
   PetscFunctionBegin;
-  snum = fscanf(fd, "%d %d %d", cellNum, &cellType, &numTags);CHKERRQ(snum != 3);
-  if (numTags) for (t = 0; t < numTags; ++t) {snum = fscanf(fd, "%d", &tag);CHKERRQ(snum != 1);}
+  snum = fscanf(fd, "%d %d %d", cellNum, &cellType, numTags);CHKERRQ(snum != 3);
+  if (numTags) for (t = 0; t < *numTags; ++t) {snum = fscanf(fd, "%d", &tags[t]);CHKERRQ(snum != 1);}
   switch (cellType) {
   case 1: /* 2-node line */
     *dim = 1;
