@@ -35,7 +35,7 @@ PthreadVersion: PthreadVersion.o  chkopts
 	-@${CLINKER} -o PthreadVersion PthreadVersion.o ${PETSC_LIB}
 	@${RM} -f PthreadVersion.o
 
-streams:  MPIVersion
+stream:  MPIVersion
 	@if [ "${NPMAX}foo" = "foo" ]; then echo "---------"; echo " Run with make streams NPMAX=<integer number of MPI processes to use>"; exit 1 ; fi
 	-@printf "" > scaling.log
 	-@for (( i=1; i<=${NPMAX}; i++ )) do \
@@ -43,7 +43,8 @@ streams:  MPIVersion
         done
 	-@echo "------------------------------------------------"
 	-@./process.py createfile
-	-@./process.py
 
+streams: stream
+	-@./process.py
 
 

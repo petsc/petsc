@@ -246,6 +246,9 @@ newall:
 
 streams:
 	cd src/benchmarks/streams; ${OMAKE} streams
+
+stream:
+	cd src/benchmarks/streams; ${OMAKE} stream
 # ------------------------------------------------------------------
 #
 # All remaining actions are intended for PETSc developers only.
@@ -307,7 +310,7 @@ alldoc1: chk_loc deletemanualpages chk_concepts_dir
 # Builds .html versions of the source
 # html overwrites some stuff created by update-docs - hence this is done later.
 alldoc2: chk_loc
-	-${OMAKE} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
+	-${OMAKE} ACTION=html PETSC_DIR=${PETSC_DIR} alltee LOC=${LOC}
 	-${PYTHON} bin/maint/update-docs.py ${PETSC_DIR} ${LOC}
 #
 # Builds HTML versions of Matlab scripts
