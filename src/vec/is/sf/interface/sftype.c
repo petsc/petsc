@@ -69,3 +69,36 @@ PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype a,MPI_Datatype b,PetscBool *ma
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MPIPetsc_Type_compare_contig"
+/* Check whether a was created via MPI_Type_contiguous from b
+ *
+ */
+PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype a,MPI_Datatype b,PetscInt *n)
+{
+  PetscErrorCode ierr;
+  MPI_Datatype   atype,btype;
+  PetscMPIInt    aintcount,aaddrcount,atypecount,acombiner;
+
+  PetscFunctionBegin;
+  ierr = MPIPetsc_Type_unwrap(a,&atype);CHKERRQ(ierr);
+  ierr = MPIPetsc_Type_unwrap(b,&btype);CHKERRQ(ierr);
+  *n = PETSC_FALSE;
+  if (atype == btype) {
+    *n = 1;
+    PetscFunctionReturn(0);
+  }
+  ierr = MPI_Type_get_envelope(atype,&aintcount,&aaddrcount,&atypecount,&acombiner);CHKERRQ(ierr);
+  if (acombiner == MPI_COMBINER_CONTIGUOUS && aintcount >= 1) {
+    PetscMPIInt  *aints;
+    MPI_Aint     *aaddrs;
+    MPI_Datatype *atypes;
+    ierr = PetscMalloc3(aintcount,&aints,aaddrcount,&aaddrs,atypecount,&atypes);CHKERRQ(ierr);
+    ierr = MPI_Type_get_contents(atype,aintcount,aaddrcount,atypecount,aints,aaddrs,atypes);CHKERRQ(ierr);
+    if (atypes[0] == btype) *n = aints[0];
+    ierr = PetscFree3(aints,aaddrs,atypes);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  PetscFunctionReturn(0);
+}
