@@ -843,7 +843,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X,Vec B,void *ptr)
   Field          ***x,***b;
   PetscInt       sweeps,its;
   PetscReal      atol,rtol,stol;
-  PetscReal      fnorm0,fnorm,ynorm,xnorm;
+  PetscReal      fnorm0 = 0.0,fnorm,ynorm,xnorm = 0.0;
 
   PetscFunctionBegin;
   ierr    = SNESNGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
