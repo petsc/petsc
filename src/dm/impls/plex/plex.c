@@ -26,11 +26,12 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
   /* Insert boundary conditions */
   if (isvtk || ishdf5) {
     void  (**funcs)(const PetscReal x[], PetscScalar *u, void *ctx);
+    void   **ctxs;
     PetscFE *fe;
     PetscInt numFields, f, numBd, b;
 
     ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
-    ierr = PetscMalloc2(numFields,&fe,numFields,&funcs);CHKERRQ(ierr);
+    ierr = PetscMalloc3(numFields,&fe,numFields,&funcs,numFields,&ctxs);CHKERRQ(ierr);
     for (f = 0; f < numFields; ++f) {
       ierr = DMGetField(dm, f, (PetscObject *) &fe[f]);CHKERRQ(ierr);
     }
@@ -45,10 +46,13 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
 
       /* TODO: We need to set only the part indicated by the ids */
       ierr = DMPlexGetBoundary(dm, b, &isEssential, NULL, &field, &func, &numids, &ids, &ctx);CHKERRQ(ierr);
-      for (f = 0; f < numFields; ++f) funcs[f] = (field == f ? /*((*)(const PetscReal[], PetscScalar *, void *))*/ func : NULL);
+      for (f = 0; f < numFields; ++f) {
+        funcs[f] = field == f ? (void (*)(const PetscReal[], PetscScalar *, void *)) func : NULL;
+        ctxs[f]  = field == f ? ctx : NULL;
+      }
       ierr = DMPlexProjectFunctionLocal(dm, fe, funcs, ctx, INSERT_BC_VALUES, v);CHKERRQ(ierr);
     }
-    ierr = PetscFree2(fe,funcs);CHKERRQ(ierr);
+    ierr = PetscFree3(fe,funcs,ctxs);CHKERRQ(ierr);
   }
   if (isvtk) {
     PetscViewerVTKFieldType ft = PETSC_VTK_POINT_FIELD;
