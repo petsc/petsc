@@ -224,6 +224,7 @@ PETSC_EXTERN PetscErrorCode DMPlexProjectFunctionLocal(DM, PetscFE[], void (**)(
 PETSC_EXTERN PetscErrorCode DMPlexComputeL2Diff(DM, PetscFE[], void (**)(const PetscReal [], PetscScalar *, void *), void **, Vec, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeL2GradientDiff(DM, PetscFE[], void (**)(const PetscReal [], const PetscReal [], PetscScalar *, void *), void **, Vec, const PetscReal [], PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeResidualFEM(DM, Vec, Vec, void *);
+PETSC_EXTERN PetscErrorCode DMPlexComputeIFunctionFEM(DM, Vec, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeJacobianActionFEM(DM, Mat, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeJacobianFEM(DM, Vec, Mat, Mat,void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeInterpolatorFEM(DM, DM, Mat, void *);
