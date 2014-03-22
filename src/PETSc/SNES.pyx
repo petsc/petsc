@@ -130,6 +130,17 @@ cdef class SNES(Object):
     def setDM(self, DM dm not None):
         CHKERR( SNESSetDM(self.snes, dm.dm) )
 
+    # --- nonlinear preconditioner ---
+
+    def getNPC(self):
+        cdef SNES snes = SNES()
+        CHKERR( SNESGetNPC(self.snes, &snes.snes) )
+        PetscINCREF(snes.obj)
+        return snes
+
+    def setNPC(self, SNES snes not None):
+        CHKERR( SNESSetNPC(self.snes, snes.snes) )
+
     # --- user Function/Jacobian routines ---
 
     def setInitialGuess(self, initialguess, args=None, kargs=None):
