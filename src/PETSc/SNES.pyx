@@ -587,6 +587,14 @@ cdef class SNES(Object):
         def __set__(self, value):
             self.setDM(value)
 
+    # --- nonlinear preconditioner ---
+
+    property npc:
+        def __get__(self):
+            return self.getNPC()
+        def __set__(self, value):
+            self.setNPC(value)
+
     # --- vectors ---
 
     property vec_sol:
