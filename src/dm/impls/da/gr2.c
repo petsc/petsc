@@ -626,7 +626,7 @@ static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool 
   gsizes[0]  = dof;
   ierr       = PetscMPIIntCast(dd->M,gsizes+1);CHKERRQ(ierr);
   ierr       = PetscMPIIntCast(dd->N,gsizes+2);CHKERRQ(ierr);
-  ierr       = PetscMPIIntCast(dd->P,gsizes+1);CHKERRQ(ierr);
+  ierr       = PetscMPIIntCast(dd->P,gsizes+3);CHKERRQ(ierr);
   lsizes[0]  = dof;
   ierr       = PetscMPIIntCast((dd->xe-dd->xs)/dof,lsizes+1);CHKERRQ(ierr);
   ierr       = PetscMPIIntCast(dd->ye-dd->ys,lsizes+2);CHKERRQ(ierr);

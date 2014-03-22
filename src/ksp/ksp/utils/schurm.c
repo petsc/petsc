@@ -1,7 +1,7 @@
 
 #include <petsc-private/matimpl.h>
 #include <petscksp.h>                 /*I "petscksp.h" I*/
-const char *const MatSchurComplementAinvTypes[] = {"SELF","LUMP","MatSchurComplementAinvType","MAT_SCHUR_COMPLEMENT_AINV_",0};
+const char *const MatSchurComplementAinvTypes[] = {"DIAG","LUMP","MatSchurComplementAinvType","MAT_SCHUR_COMPLEMENT_AINV_",0};
 
 typedef struct {
   Mat                        A,Ap,B,C,D;
@@ -786,9 +786,9 @@ PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,Mat
     Vec         diag;
 
     ierr = MatGetVecs(A00,&diag,NULL);CHKERRQ(ierr);
-    if (ainvtype == MAT_SCHUR_COMPLEMENT_AINV_DIAG) {
+    if (ainvtype == MAT_SCHUR_COMPLEMENT_AINV_LUMP) {
       ierr = MatGetRowSum(A00,diag);CHKERRQ(ierr);
-    } else if (ainvtype == MAT_SCHUR_COMPLEMENT_AINV_LUMP) {
+    } else if (ainvtype == MAT_SCHUR_COMPLEMENT_AINV_DIAG) {
       ierr = MatGetDiagonal(A00,diag);CHKERRQ(ierr);
     } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown MatSchurComplementAinvType: %D", ainvtype);
     ierr = VecReciprocal(diag);CHKERRQ(ierr);

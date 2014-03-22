@@ -688,11 +688,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   if (ts->equation_type >= TS_EQ_IMPLICIT && tab->explicit_first_stage) {
     PetscReal valid_time;
     PetscBool isvalid;
-    ierr = PetscObjectComposedDataGetReal((PetscObject)ts->vec_sol,
-                                          explicit_stage_time_id,
-                                          valid_time,
-                                          isvalid);
-    CHKERRQ(ierr);
+    ierr = PetscObjectComposedDataGetReal((PetscObject)ts->vec_sol,explicit_stage_time_id,valid_time,isvalid);CHKERRQ(ierr);
     if (!isvalid || valid_time != ts->ptime) {
       TS        ts_start;
       SNES      snes_start;
@@ -774,7 +770,6 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
           ierr        = VecCopy(i>0 ? Y[i-1] : ts->vec_sol,Y[i]);CHKERRQ(ierr);
         }
         ierr          = SNESSolve(snes,W,Y[i]);CHKERRQ(ierr);
-        ierr          = (ts->ops->snesfunction)(snes,Y[i],W,ts);CHKERRQ(ierr);
         ierr          = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
         ierr          = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
         ts->snes_its += its; ts->ksp_its += lits;

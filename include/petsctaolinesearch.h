@@ -52,7 +52,6 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchGetNumberFunctionEvaluations(TaoLineSea
 PETSC_EXTERN PetscErrorCode TaoLineSearchGetType(TaoLineSearch, const TaoLineSearchType *);
 PETSC_EXTERN PetscErrorCode TaoLineSearchSetType(TaoLineSearch, const TaoLineSearchType);
 
-PETSC_EXTERN PetscErrorCode TaoLineSearchUseTaoRoutines(TaoLineSearch, Tao);
 PETSC_EXTERN PetscErrorCode TaoLineSearchIsUsingTaoRoutines(TaoLineSearch, PetscBool *);
 PETSC_EXTERN PetscErrorCode TaoLineSearchSetObjectiveAndGTSRoutine(TaoLineSearch, PetscErrorCode(*)(TaoLineSearch, Vec, Vec, PetscReal*, PetscReal*, void*), void*);
 PETSC_EXTERN PetscErrorCode TaoLineSearchSetObjectiveRoutine(TaoLineSearch, PetscErrorCode(*)(TaoLineSearch, Vec, PetscReal*,void*), void*);

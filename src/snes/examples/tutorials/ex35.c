@@ -92,7 +92,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetBool(NULL,"-use_ngs",&use_ngs,0);CHKERRQ(ierr);
 
   if (use_ngs) {
-    ierr = SNESGetPC(snes,&psnes);CHKERRQ(ierr);
+    ierr = SNESGetNPC(snes,&psnes);CHKERRQ(ierr);
     ierr = SNESSetType(psnes,SNESSHELL);CHKERRQ(ierr);
     ierr = SNESShellSetSolve(psnes,NonlinearGS);CHKERRQ(ierr);
   }

@@ -61,26 +61,26 @@ typedef struct {
   IS        isg[2];  /* index sets of split "0" and "1" */
 } Stokes;
 
-PetscErrorCode StokesSetupMatBlock00(Stokes *s);  /* setup the block Q */
-PetscErrorCode StokesSetupMatBlock01(Stokes *s);  /* setup the block G */
-PetscErrorCode StokesSetupMatBlock10(Stokes *s);  /* setup the block D (equal to the transpose of G) */
-PetscErrorCode StokesSetupMatBlock11(Stokes *s);  /* setup the block C (equal to zero) */
+PetscErrorCode StokesSetupMatBlock00(Stokes*);  /* setup the block Q */
+PetscErrorCode StokesSetupMatBlock01(Stokes*);  /* setup the block G */
+PetscErrorCode StokesSetupMatBlock10(Stokes*);  /* setup the block D (equal to the transpose of G) */
+PetscErrorCode StokesSetupMatBlock11(Stokes*);  /* setup the block C (equal to zero) */
 
-PetscErrorCode StokesGetPosition(Stokes *s, PetscInt row, PetscInt *i, PetscInt *j); /* row number j*nx+i corresponds to position (i,j) in grid */
+PetscErrorCode StokesGetPosition(Stokes*, PetscInt, PetscInt*, PetscInt*); /* row number j*nx+i corresponds to position (i,j) in grid */
 
-PetscErrorCode StokesStencilLaplacian(Stokes *s, PetscInt i, PetscInt j, PetscInt *size, PetscInt *cols, PetscScalar *vals);  /* stencil of the Laplacian operator */
-PetscErrorCode StokesStencilGradientX(Stokes *s, PetscInt i, PetscInt j, PetscInt *size, PetscInt *cols, PetscScalar *vals);  /* stencil of the Gradient operator (x-component) */
-PetscErrorCode StokesStencilGradientY(Stokes *s, PetscInt i, PetscInt j, PetscInt *size, PetscInt *cols, PetscScalar *vals);  /* stencil of the Gradient operator (y-component) */
+PetscErrorCode StokesStencilLaplacian(Stokes*, PetscInt, PetscInt, PetscInt*, PetscInt*, PetscScalar*);  /* stencil of the Laplacian operator */
+PetscErrorCode StokesStencilGradientX(Stokes*, PetscInt, PetscInt, PetscInt*, PetscInt*, PetscScalar*);  /* stencil of the Gradient operator (x-component) */
+PetscErrorCode StokesStencilGradientY(Stokes*, PetscInt, PetscInt, PetscInt*, PetscInt*, PetscScalar*);  /* stencil of the Gradient operator (y-component) */
 
-PetscErrorCode StokesRhs(Stokes *s);                                               /* rhs vector */
-PetscErrorCode StokesRhsMomX(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val);   /* right hand side of velocity (x-component) */
-PetscErrorCode StokesRhsMomY(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val);   /* right hand side of velocity (y-component) */
-PetscErrorCode StokesRhsMass(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val);   /* right hand side of pressure */
+PetscErrorCode StokesRhs(Stokes*);                                               /* rhs vector */
+PetscErrorCode StokesRhsMomX(Stokes*, PetscInt, PetscInt, PetscScalar*);   /* right hand side of velocity (x-component) */
+PetscErrorCode StokesRhsMomY(Stokes*, PetscInt, PetscInt, PetscScalar*);   /* right hand side of velocity (y-component) */
+PetscErrorCode StokesRhsMass(Stokes*, PetscInt, PetscInt, PetscScalar*);   /* right hand side of pressure */
 
-PetscErrorCode StokesSetupApproxSchur(Stokes *s);  /* approximation of the Schur complement */
+PetscErrorCode StokesSetupApproxSchur(Stokes*);  /* approximation of the Schur complement */
 
-PetscErrorCode StokesExactSolution(Stokes *s); /* exact solution vector */
-PetscErrorCode StokesWriteSolution(Stokes *s); /* write solution to file */
+PetscErrorCode StokesExactSolution(Stokes*); /* exact solution vector */
+PetscErrorCode StokesWriteSolution(Stokes*); /* write solution to file */
 
 /* exact solution for the velocity (x-component, y-component is zero) */
 PetscScalar StokesExactVelocityX(const PetscScalar y)
@@ -106,7 +106,7 @@ PetscErrorCode StokesSetupPC(Stokes *s, KSP ksp)
   ierr = PCFieldSplitSetIS(pc, "0", s->isg[0]);CHKERRQ(ierr);
   ierr = PCFieldSplitSetIS(pc, "1", s->isg[1]);CHKERRQ(ierr);
   if (s->userPC) {
-    ierr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, s->myS);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetSchurPre(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, s->myS);CHKERRQ(ierr);
   }
   if (s->userKSP) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
@@ -680,7 +680,7 @@ int main(int argc, char **argv)
   ierr = StokesSetupVectors(&s);CHKERRQ(ierr);
 
   ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp, s.A, s.A, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp, s.A, s.A);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = StokesSetupPC(&s, ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, s.b, s.x);CHKERRQ(ierr);

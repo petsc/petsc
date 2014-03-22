@@ -7,7 +7,7 @@ PetscFunctionList SNESList              = NULL;
 
 /* Logging support */
 PetscClassId  SNES_CLASSID, DMSNES_CLASSID;
-PetscLogEvent SNES_Solve, SNES_FunctionEval, SNES_JacobianEval, SNES_GSEval, SNES_GSFuncEval, SNES_NPCSolve;
+PetscLogEvent SNES_Solve, SNES_FunctionEval, SNES_JacobianEval, SNES_NGSEval, SNES_NGSFuncEval, SNES_NPCSolve;
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetErrorIfNotConverged"
@@ -844,9 +844,9 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   ierr = PetscOptionsInt("-snes_mf_version","Matrix-Free routines version 1 or 2","None",snes->mf_version,&snes->mf_version,0);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = SNESGetPCSide(snes,&pcside);CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-snes_npc_side","SNES nonlinear preconditioner side","SNESSetPCSide",PCSides,(PetscEnum)pcside,(PetscEnum*)&pcside,&flg);CHKERRQ(ierr);
-  if (flg) {ierr = SNESSetPCSide(snes,pcside);CHKERRQ(ierr);}
+  ierr = SNESGetNPCSide(snes,&pcside);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-snes_npc_side","SNES nonlinear preconditioner side","SNESSetNPCSide",PCSides,(PetscEnum)pcside,(PetscEnum*)&pcside,&flg);CHKERRQ(ierr);
+  if (flg) {ierr = SNESSetNPCSide(snes,pcside);CHKERRQ(ierr);}
 
 #if defined(PETSC_HAVE_SAWS)
   /*
@@ -892,11 +892,11 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   }
   ierr = SNESLineSearchSetFromOptions(snes->linesearch);CHKERRQ(ierr);
 
-  /* if someone has set the SNES PC type, create it. */
+  /* if someone has set the SNES NPC type, create it. */
   ierr = SNESGetOptionsPrefix(snes, &optionsprefix);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(optionsprefix, "-npc_snes_type", &pcset);CHKERRQ(ierr);
   if (pcset && (!snes->pc)) {
-    ierr = SNESGetPC(snes, &snes->pc);CHKERRQ(ierr);
+    ierr = SNESGetNPC(snes, &snes->pc);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1388,7 +1388,7 @@ PetscErrorCode  SNESGetLinearSolveIterations(SNES snes,PetscInt *lits)
 
 .keywords: SNES, nonlinear, set, reset, number, linear, iterations
 
-.seealso:  SNESGetNumberFunctionEvals(), SNESGetNumberLinearSolveIterations(), SNESGetPC()
+.seealso:  SNESGetNumberFunctionEvals(), SNESGetNumberLinearSolveIterations(), SNESGetNPC()
 @*/
 PetscErrorCode  SNESSetCountersReset(SNES snes,PetscBool reset)
 {
@@ -1690,7 +1690,7 @@ PetscErrorCode  SNESSetInitialFunction(SNES snes, Vec f)
    Only certain SNES methods support certain SNESNormSchedules.  Most require evaluation
    of the nonlinear function and the taking of its norm at every iteration to
    even ensure convergence at all.  However, methods such as custom Gauss-Seidel methods
-   (SNESGS) and the like do not require the norm of the function to be computed, and therfore
+   (SNESNGS) and the like do not require the norm of the function to be computed, and therfore
    may either be monitored for convergence or not.  As these are often used as nonlinear
    preconditioners, monitoring the norm of their error is not a useful enterprise within
    their solution.
@@ -1753,7 +1753,7 @@ PetscErrorCode  SNESGetNormSchedule(SNES snes, SNESNormSchedule *normschedule)
    Only certain SNES methods support certain SNESNormSchedules.  Most require evaluation
    of the nonlinear function and the taking of its norm at every iteration to
    even ensure convergence at all.  However, methods such as custom Gauss-Seidel methods
-   (SNESGS) and the like do not require the norm of the function to be computed, and therfore
+   (SNESNGS) and the like do not require the norm of the function to be computed, and therfore
    may either be monitored for convergence or not.  As these are often used as nonlinear
    preconditioners, monitoring the norm of their error is not a useful enterprise within
    their solution.
@@ -1800,11 +1800,11 @@ PetscErrorCode  SNESGetFunctionType(SNES snes, SNESFunctionType *type)
 }
 
 /*MC
-    SNESGSFunction - function used to convey a Gauss-Seidel sweep on the nonlinear function
+    SNESNGSFunction - function used to convey a Gauss-Seidel sweep on the nonlinear function
 
      Synopsis:
      #include <petscsnes.h>
-$    SNESGSFunction(SNES snes,Vec x,Vec b,void *ctx);
+$    SNESNGSFunction(SNES snes,Vec x,Vec b,void *ctx);
 
 +  X   - solution vector
 .  B   - RHS vector
@@ -1812,32 +1812,32 @@ $    SNESGSFunction(SNES snes,Vec x,Vec b,void *ctx);
 
    Level: intermediate
 
-.seealso:   SNESSetGS(), SNESGetGS()
+.seealso:   SNESSetNGS(), SNESGetNGS()
 M*/
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESSetGS"
+#define __FUNCT__ "SNESSetNGS"
 /*@C
-   SNESSetGS - Sets the user nonlinear Gauss-Seidel routine for
+   SNESSetNGS - Sets the user nonlinear Gauss-Seidel routine for
    use with composed nonlinear solvers.
 
    Input Parameters:
 +  snes   - the SNES context
-.  SNESGSFunction - function evaluation routine
+.  f - function evaluation routine to apply Gauss-Seidel see SNESNGSFunction
 -  ctx    - [optional] user-defined context for private data for the
             smoother evaluation routine (may be NULL)
 
    Notes:
-   The GS routines are used by the composed nonlinear solver to generate
+   The NGS routines are used by the composed nonlinear solver to generate
     a problem appropriate update to the solution, particularly FAS.
 
    Level: intermediate
 
 .keywords: SNES, nonlinear, set, Gauss-Seidel
 
-.seealso: SNESGetFunction(), SNESComputeGS()
+.seealso: SNESGetFunction(), SNESComputeNGS()
 @*/
-PetscErrorCode SNESSetGS(SNES snes,PetscErrorCode (*SNESGSFunction)(SNES,Vec,Vec,void*),void *ctx)
+PetscErrorCode SNESSetNGS(SNES snes,PetscErrorCode (*f)(SNES,Vec,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -1845,7 +1845,7 @@ PetscErrorCode SNESSetGS(SNES snes,PetscErrorCode (*SNESGSFunction)(SNES,Vec,Vec
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMSNESSetGS(dm,SNESGSFunction,ctx);CHKERRQ(ierr);
+  ierr = DMSNESSetNGS(dm,f,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2098,9 +2098,9 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESComputeGS"
+#define __FUNCT__ "SNESComputeNGS"
 /*@
-   SNESComputeGS - Calls the Gauss-Seidel function that has been set with  SNESSetGS().
+   SNESComputeNGS - Calls the Gauss-Seidel function that has been set with  SNESSetNGS().
 
    Collective on SNES
 
@@ -2113,7 +2113,7 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
 .  x - new solution vector
 
    Notes:
-   SNESComputeGS() is typically used within composed nonlinear solver
+   SNESComputeNGS() is typically used within composed nonlinear solver
    implementations, so most users would not generally call this routine
    themselves.
 
@@ -2121,9 +2121,9 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
 
 .keywords: SNES, nonlinear, compute, function
 
-.seealso: SNESSetGS(), SNESComputeFunction()
+.seealso: SNESSetNGS(), SNESComputeFunction()
 @*/
-PetscErrorCode  SNESComputeGS(SNES snes,Vec b,Vec x)
+PetscErrorCode  SNESComputeNGS(SNES snes,Vec b,Vec x)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -2136,15 +2136,15 @@ PetscErrorCode  SNESComputeGS(SNES snes,Vec b,Vec x)
   PetscCheckSameComm(snes,1,x,2);
   if (b) PetscCheckSameComm(snes,1,b,3);
   if (b) {ierr = VecValidValues(b,2,PETSC_TRUE);CHKERRQ(ierr);}
-  ierr = PetscLogEventBegin(SNES_GSEval,snes,x,b,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(SNES_NGSEval,snes,x,b,0);CHKERRQ(ierr);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (sdm->ops->computegs) {
-    PetscStackPush("SNES user GS");
+    PetscStackPush("SNES user NGS");
     ierr = (*sdm->ops->computegs)(snes,x,b,sdm->gsctx);CHKERRQ(ierr);
     PetscStackPop;
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetGS() before SNESComputeGS(), likely called from SNESSolve().");
-  ierr = PetscLogEventEnd(SNES_GSEval,snes,x,b,0);CHKERRQ(ierr);
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetNGS() before SNESComputeNGS(), likely called from SNESSolve().");
+  ierr = PetscLogEventEnd(SNES_NGSEval,snes,x,b,0);CHKERRQ(ierr);
   ierr = VecValidValues(x,3,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2433,7 +2433,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B)
 
      Synopsis:
      #include <petscsnes.h>
-$     SNESJacobianFunction(SNES snes,Vec x,Mat Amat,Mat *Pmat,void *ctx);
+$     SNESJacobianFunction(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx);
 
 +  x - input vector
 .  Amat - the matrix that defines the (approximate) Jacobian
@@ -2670,7 +2670,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
   if (snes->pc && (snes->pcside == PC_LEFT)) {
     if (snes->functype == SNES_FUNCTION_PRECONDITIONED) {
       ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
-      ierr = SNESLineSearchSetFunction(linesearch,SNESComputeFunctionDefaultPC);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetFunction(linesearch,SNESComputeFunctionDefaultNPC);CHKERRQ(ierr);
     }
   }
 
@@ -2990,9 +2990,9 @@ PetscErrorCode  SNESGetLagJacobian(SNES snes,PetscInt *lag)
 
    Level: developer
 
-.keywords: SNES, nonlinear, lag, NPC
+.keywords: SNES, nonlinear, lag
 
-.seealso: SNESSetLagPreconditionerPersists(), SNESSetLagJacobian(), SNESGetLagJacobian(), SNESGetPC()
+.seealso: SNESSetLagPreconditionerPersists(), SNESSetLagJacobian(), SNESGetLagJacobian(), SNESGetNPC()
 
 @*/
 PetscErrorCode  SNESSetLagJacobianPersists(SNES snes,PetscBool flg)
@@ -3024,9 +3024,9 @@ PetscErrorCode  SNESSetLagJacobianPersists(SNES snes,PetscBool flg)
 
    Level: developer
 
-.keywords: SNES, nonlinear, lag, NPC
+.keywords: SNES, nonlinear, lag
 
-.seealso: SNESSetLagJacobianPersists(), SNESSetLagJacobian(), SNESGetLagJacobian(), SNESGetPC()
+.seealso: SNESSetLagJacobianPersists(), SNESSetLagJacobian(), SNESGetLagJacobian(), SNESGetNPC()
 
 @*/
 PetscErrorCode  SNESSetLagPreconditionerPersists(SNES snes,PetscBool flg)
@@ -3553,8 +3553,8 @@ PetscErrorCode  SNESSetConvergenceHistory(SNES snes,PetscReal a[],PetscInt its[]
   if (its) PetscValidIntPointer(its,3);
   if (!a) {
     if (na == PETSC_DECIDE || na == PETSC_DEFAULT) na = 1000;
-    ierr = PetscMalloc1(na,&a);CHKERRQ(ierr);
-    ierr = PetscMalloc1(na,&its);CHKERRQ(ierr);
+    ierr = PetscCalloc1(na,&a);CHKERRQ(ierr);
+    ierr = PetscCalloc1(na,&its);CHKERRQ(ierr);
 
     snes->conv_malloc = PETSC_TRUE;
   }
@@ -4052,25 +4052,25 @@ PetscErrorCode  SNESGetFunction(SNES snes,Vec *r,PetscErrorCode (**f)(SNES,Vec,V
 }
 
 /*@C
-   SNESGetGS - Returns the GS function and context.
+   SNESGetNGS - Returns the NGS function and context.
 
    Input Parameter:
 .  snes - the SNES context
 
    Output Parameter:
-+  SNESGSFunction - the function (or NULL)
++  f - the function (or NULL) see SNESNGSFunction for details
 -  ctx    - the function context (or NULL)
 
    Level: advanced
 
 .keywords: SNES, nonlinear, get, function
 
-.seealso: SNESSetGS(), SNESGetFunction()
+.seealso: SNESSetNGS(), SNESGetFunction()
 @*/
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESGetGS"
-PetscErrorCode SNESGetGS (SNES snes, PetscErrorCode (**SNESGSFunction)(SNES, Vec, Vec, void*), void ** ctx)
+#define __FUNCT__ "SNESGetNGS"
+PetscErrorCode SNESGetNGS (SNES snes, PetscErrorCode (**f)(SNES, Vec, Vec, void*), void ** ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -4078,7 +4078,7 @@ PetscErrorCode SNESGetGS (SNES snes, PetscErrorCode (**SNESGSFunction)(SNES, Vec
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMSNESGetGS(dm,SNESGSFunction,ctx);CHKERRQ(ierr);
+  ierr = DMSNESGetNGS(dm,f,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4635,7 +4635,7 @@ PetscErrorCode  SNESSetDM(SNES snes,DM dm)
   ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);
   if (snes->pc) {
     ierr = SNESSetDM(snes->pc, snes->dm);CHKERRQ(ierr);
-    ierr = SNESSetPCSide(snes,snes->pcside);CHKERRQ(ierr);
+    ierr = SNESSetNPCSide(snes,snes->pcside);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -4672,9 +4672,9 @@ PetscErrorCode  SNESGetDM(SNES snes,DM *dm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESSetPC"
+#define __FUNCT__ "SNESSetNPC"
 /*@
-  SNESSetPC - Sets the nonlinear preconditioner to be used.
+  SNESSetNPC - Sets the nonlinear preconditioner to be used.
 
   Collective on SNES
 
@@ -4683,15 +4683,15 @@ PetscErrorCode  SNESGetDM(SNES snes,DM *dm)
 - pc   - the preconditioner object
 
   Notes:
-  Use SNESGetPC() to retrieve the preconditioner context (for example,
+  Use SNESGetNPC() to retrieve the preconditioner context (for example,
   to configure it using the API).
 
   Level: developer
 
 .keywords: SNES, set, precondition
-.seealso: SNESGetPC()
+.seealso: SNESGetNPC()
 @*/
-PetscErrorCode SNESSetPC(SNES snes, SNES pc)
+PetscErrorCode SNESSetNPC(SNES snes, SNES pc)
 {
   PetscErrorCode ierr;
 
@@ -4707,9 +4707,9 @@ PetscErrorCode SNESSetPC(SNES snes, SNES pc)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESGetPC"
+#define __FUNCT__ "SNESGetNPC"
 /*@
-  SNESGetPC - Returns a pointer to the nonlinear preconditioning context set with SNESSetPC().
+  SNESGetNPC - Creates a nonlinear preconditioning solver (SNES) to be used to precondition the nonlinear solver.
 
   Not Collective
 
@@ -4719,12 +4719,14 @@ PetscErrorCode SNESSetPC(SNES snes, SNES pc)
   Output Parameter:
 . pc - preconditioner context
 
+  Notes: If a SNES was previously set with SNESSetNPC() then that SNES is returned.
+
   Level: developer
 
 .keywords: SNES, get, preconditioner
-.seealso: SNESSetPC()
+.seealso: SNESSetNPC()
 @*/
-PetscErrorCode SNESGetPC(SNES snes, SNES *pc)
+PetscErrorCode SNESGetNPC(SNES snes, SNES *pc)
 {
   PetscErrorCode ierr;
   const char     *optionsprefix;
@@ -4746,9 +4748,9 @@ PetscErrorCode SNESGetPC(SNES snes, SNES *pc)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESSetPCSide"
+#define __FUNCT__ "SNESSetNPCSide"
 /*@
-    SNESSetPCSide - Sets the preconditioning side.
+    SNESSetNPCSide - Sets the preconditioning side.
 
     Logically Collective on SNES
 
@@ -4769,9 +4771,9 @@ PetscErrorCode SNESGetPC(SNES snes, SNES *pc)
 
 .keywords: SNES, set, right, left, side, preconditioner, flag
 
-.seealso: SNESGetPCSide(), KSPSetPCSide()
+.seealso: SNESGetNPCSide(), KSPSetPCSide()
 @*/
-PetscErrorCode  SNESSetPCSide(SNES snes,PCSide side)
+PetscErrorCode  SNESSetNPCSide(SNES snes,PCSide side)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -4781,9 +4783,9 @@ PetscErrorCode  SNESSetPCSide(SNES snes,PCSide side)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESGetPCSide"
+#define __FUNCT__ "SNESGetNPCSide"
 /*@
-    SNESGetPCSide - Gets the preconditioning side.
+    SNESGetNPCSide - Gets the preconditioning side.
 
     Not Collective
 
@@ -4801,9 +4803,9 @@ PetscErrorCode  SNESSetPCSide(SNES snes,PCSide side)
 
 .keywords: SNES, get, right, left, side, preconditioner, flag
 
-.seealso: SNESSetPCSide(), KSPGetPCSide()
+.seealso: SNESSetNPCSide(), KSPGetPCSide()
 @*/
-PetscErrorCode  SNESGetPCSide(SNES snes,PCSide *side)
+PetscErrorCode  SNESGetNPCSide(SNES snes,PCSide *side)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);

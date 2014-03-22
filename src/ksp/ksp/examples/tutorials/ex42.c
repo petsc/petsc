@@ -833,7 +833,6 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,CellProperties cell_pr
   GaussPointCoefficients *props;
   PetscScalar            *prop_eta;
   PetscInt               n,M,N,P;
-  PetscLogDouble         t0,t1;
   PetscErrorCode         ierr;
 
   PetscFunctionBeginUser;
@@ -1391,7 +1390,6 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
   PetscScalar    *_L_FIELD;
   PetscInt       memory_offset;
   PetscScalar    *buffer;
-  PetscLogDouble t0,t1;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -1692,7 +1690,7 @@ PetscErrorCode KSPMonitorStokesBlocks(KSP ksp,PetscInt n,PetscReal rnorm,void *d
   Mat            A;
 
   PetscFunctionBeginUser;
-  ierr = KSPGetOperators(ksp,&A,0,0);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp,&A,NULL);CHKERRQ(ierr);
   ierr = MatGetVecs(A,&w,&v);CHKERRQ(ierr);
 
   ierr = KSPBuildResidual(ksp,v,w,&Br);CHKERRQ(ierr);

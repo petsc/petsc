@@ -1,8 +1,6 @@
 #if !defined(__PETSCCUSP_H)
 #define __PETSCCUSP_H
 
-#include <petscsys.h>
-#include <petscmath.h>
 #include <petscvec.h>
 #include <cusp/array1d.h>
 

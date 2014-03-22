@@ -5,7 +5,7 @@ classdef PetscKSP < PetscObject
 %   Creation:
 %     ksp = PetscKSP;
 %       ksp.SetType('gmres');
-%       ksp.SetOperators(A,A,PetscMat.SAME_NONZERO_PATTERN);
+%       ksp.SetOperators(A,A);
 %       ksp.SetFromOptions;
 %
   methods
@@ -43,12 +43,11 @@ classdef PetscKSP < PetscObject
       end
       err = calllib('libpetsc', 'KSPSolve', obj.pobj,b,x);PetscCHKERRQ(err);
     end
-    function err = SetOperators(obj,A,B,pattern)
+    function err = SetOperators(obj,A,B)
       if (nargin == 2) 
         B = A;
-        pattern = PetscMat.SAME_NONZERO_PATTERN;
       end
-      err = calllib('libpetsc', 'KSPSetOperators', obj.pobj,A.pobj,B.pobj,pattern);PetscCHKERRQ(err);
+      err = calllib('libpetsc', 'KSPSetOperators', obj.pobj,A.pobj,B.pobj);PetscCHKERRQ(err);
     end
     function [x,err] = GetSolution(obj)
       [err,pid] = calllib('libpetsc', 'KSPGetSolution', obj.pobj,0);PetscCHKERRQ(err);

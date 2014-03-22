@@ -96,6 +96,7 @@
 
       <h4>General:</h4>
       <ul>
+        <li>--download-f-blas-lapack is now --download-fblaslapack.</li>
         <li>PETSc built with --with-precision=__float128 will now by default read in binary files that have all 128 bits stored in the file, to read in files with 64 bit double 
             use the option -binary_read_double</li>
         <li>PETSc options of complex numbers must be passed as [+/-][realnumber][+/-]realnumberi with no spaces, you can no longer pass the real and complex part with a comma between them</li>
@@ -147,6 +148,7 @@
       <ul>
         <li>The documented, but semi-private function <tt>PCMGResidual_Default()</tt> is now public and named <tt>PCMGResidualDefault()</tt>.</li>
         <li>PCGAMG default smoother changed from PCJACOBI to PCSOR.</li>
+        <li><tt>PCFieldSplitSchurPrecondition()</tt> deprecated (replaced in Fortran) in favor of <tt>PCFieldSplitSetSchurPre()</tt>.</li>
       </ul>
       <h4>KSP:</h4>
       <ul>
@@ -160,6 +162,7 @@
         <li>The <tt>MatStructure</tt> argument to the user functions provided with <tt>SNESSetJacobian()</tt> and  <tt>SNESSetPicard()</tt> are gone.</li>
         <li><tt>SNESSetInitialFunctionNorm()</tt> is removed as it's not necessary given that the norm is cached on the Vec.  Use only <tt>SNESSetInitialFunction()</tt>.</li>
         <li><tt>SNESSkipConverged()</tt> renamed to <tt>SNESConvergedSkip()</tt>.</li>
+        <li><tt>GS</tt> and _gs used for nonlinear Gauss-Sidel changed to <tt>NGS</tt> and _ngs to match all the other nonlinear solver names.</li>
       </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>

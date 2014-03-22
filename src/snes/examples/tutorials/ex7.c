@@ -294,7 +294,7 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
 #define __FUNCT__ "constantResidual"
 PetscErrorCode constantResidual(PetscReal lambda, PetscBool isLower, int i, int j, PetscReal hx, PetscReal hy, Field r[])
 {
-  Field       rLocal[3] = {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}};
+  Field       rLocal[3] = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
   PetscScalar phi[3]    = {0.0, 0.0, 0.0};
   PetscReal   xI = i*hx, yI = j*hy, hxhy = hx*hy;
   Field       res;
@@ -335,7 +335,7 @@ PetscErrorCode constantResidual(PetscReal lambda, PetscBool isLower, int i, int 
 #define __FUNCT__ "nonlinearResidual"
 PetscErrorCode nonlinearResidual(PetscReal lambda, Field u[], Field r[])
 {
-  Field       rLocal[3] = {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}};
+  Field       rLocal[3] = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
   PetscScalar phi[3]    = {0.0, 0.0, 0.0};
   Field       res;
   PetscInt    q;

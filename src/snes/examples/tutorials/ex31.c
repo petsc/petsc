@@ -1227,7 +1227,7 @@ int main(int argc, char **argv)
       if (!isNull) SETERRQ(comm, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
       ierr = MatNullSpaceDestroy(&nullSpace2);CHKERRQ(ierr);
 
-      ierr = SNESComputeJacobian(snes, u, &A, &A);CHKERRQ(ierr);
+      ierr = SNESComputeJacobian(snes, u, A, A);CHKERRQ(ierr);
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
       ierr = VecSet(r, 0.0);CHKERRQ(ierr);
       ierr = SNESComputeFunction(snes, r, b);CHKERRQ(ierr);

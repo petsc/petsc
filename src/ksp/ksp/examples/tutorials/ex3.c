@@ -64,7 +64,7 @@ int main(int argc,char **args)
   ierr  = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
   ierr  = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr  = MatSeqAIJSetPreallocation(A,9,NULL);CHKERRQ(ierr);
-  ierr  = MatMPIAIJSetPreallocation(A,9,NULL,5,NULL);CHKERRQ(ierr); /* More than necessary */
+  ierr  = MatMPIAIJSetPreallocation(A,9,NULL,8,NULL);CHKERRQ(ierr);
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
   end   = start + M/size + ((M%size) > rank);
 

@@ -38,11 +38,6 @@ F*/
 #include <petscdmplex.h>
 #include <petscsf.h>
 #include <petscblaslapack.h>
-#if defined(PETSC_HAVE_EXODUSII)
-#include <exodusII.h>
-#else
-#error This example requires ExodusII support. Reconfigure using --download-exodusii
-#endif
 
 #define DIM 2                   /* Geometric dimension */
 #define ALEN(a) (sizeof(a)/sizeof((a)[0]))
@@ -381,8 +376,8 @@ static PetscErrorCode PhysicsCreate_Advect(Model mod,Physics phys)
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Advect;
   phys->riemann = PhysicsRiemann_Advect;
-  ierr = PetscNew(&phys->data);CHKERRQ(ierr);
-  advect = (Physics_Advect*)phys->data;
+  ierr = PetscNew(&advect);CHKERRQ(ierr);
+  phys->data = advect;
   ierr = PetscOptionsHead("Advect options");CHKERRQ(ierr);
   {
     PetscInt two = 2,dof = 1;
@@ -549,8 +544,8 @@ static PetscErrorCode PhysicsCreate_SW(Model mod,Physics phys)
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_SW;
   phys->riemann = PhysicsRiemann_SW;
-  ierr          = PetscNew(&phys->data);CHKERRQ(ierr);
-  sw            = (Physics_SW*)phys->data;
+  ierr          = PetscNew(&sw);CHKERRQ(ierr);
+  phys->data    = sw;
   ierr          = PetscOptionsHead("SW options");CHKERRQ(ierr);
   {
     sw->gravity = 1.0;
@@ -731,8 +726,8 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys)
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Euler;
   phys->riemann = PhysicsRiemann_Euler_Rusanov;
-  ierr = PetscNew(&phys->data);CHKERRQ(ierr);
-  eu   = (Physics_Euler*)phys->data;
+  ierr = PetscNew(&eu);CHKERRQ(ierr);
+  phys->data    = eu;
   ierr = PetscOptionsHead("Euler options");CHKERRQ(ierr);
   {
     eu->pars[0] = 3.0;
@@ -1299,19 +1294,20 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
   minradius = PETSC_MAX_REAL;
   for (f = fStart; f < fEnd; ++f) {
     FaceGeom *fg;
-    PetscInt  ghost;
+    PetscReal area;
+    PetscInt  ghost, d;
 
     ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);
     if (ghost >= 0) continue;
     ierr = DMPlexPointLocalRef(dmFace, f, fgeom, &fg);CHKERRQ(ierr);
-    ierr = DMPlexComputeCellGeometryFVM(dm, f, NULL, fg->centroid, fg->normal);CHKERRQ(ierr);
+    ierr = DMPlexComputeCellGeometryFVM(dm, f, &area, fg->centroid, fg->normal);CHKERRQ(ierr);
+    for (d = 0; d < dim; ++d) fg->normal[d] *= area;
     /* Flip face orientation if necessary to match ordering in support, and Update minimum radius */
     {
       CellGeom       *cL, *cR;
       const PetscInt *cells;
       PetscReal      *lcentroid, *rcentroid;
       PetscScalar     v[3];
-      PetscInt        d;
 
       ierr = DMPlexGetSupport(dm, f, &cells);CHKERRQ(ierr);
       ierr = DMPlexPointLocalRead(dmCell, cells[0], cgeom, &cL);CHKERRQ(ierr);
@@ -2127,7 +2123,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
 
     ftablealloc = fcount * 100;
     ftableused  = 0;
-    ierr        = PetscMalloc(ftablealloc,&ftable);CHKERRQ(ierr);
+    ierr        = PetscMalloc1(ftablealloc,&ftable);CHKERRQ(ierr);
     for (i=0; i<mod->numMonitored; i++) {
       size_t         countused;
       char           buffer[256],*p;
@@ -2159,7 +2155,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     }
     ierr = PetscFree4(fmin,fmax,fintegral,ftmp);CHKERRQ(ierr);
 
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)ts),"% 3D  time %8.4G  |x| %8.4G  %s\n",stepnum,time,xnorm,ftable ? ftable : "");CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)ts),"% 3D  time %8.4g  |x| %8.4g  %s\n",stepnum,(double)time,(double)xnorm,ftable ? ftable : "");CHKERRQ(ierr);
     ierr = PetscFree(ftable);CHKERRQ(ierr);
   }
   if (user->vtkInterval < 1) PetscFunctionReturn(0);
@@ -2186,8 +2182,6 @@ int main(int argc, char **argv)
   DM                dm, dmDist;
   PetscReal         ftime,cfl,dt;
   PetscInt          dim, overlap, nsteps;
-  int               CPU_word_size = 0, IO_word_size = 0, exoid;
-  float             version;
   TS                ts;
   TSConvergedReason reason;
   Vec               X;
@@ -2260,13 +2254,10 @@ int main(int argc, char **argv)
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  if (!rank) {
-    exoid = ex_open(filename, EX_READ, &CPU_word_size, &IO_word_size, &version);
-    if (exoid <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ex_open(\"%s\",...) did not return a valid file ID",filename);
-  } else exoid = -1;                 /* Not used */
-  ierr = DMPlexCreateExodus(comm, exoid, PETSC_TRUE, &dm);CHKERRQ(ierr);
-  if (!rank) {ierr = ex_close(exoid);CHKERRQ(ierr);}
+  ierr = DMPlexCreateExodusFromFile(comm, filename, PETSC_TRUE, &dm);CHKERRQ(ierr);
   /* Distribute mesh */
+  ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMPlexSetAdjacencyUseClosure(dm, PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMPlexDistribute(dm, "chaco", overlap, NULL, &dmDist);CHKERRQ(ierr);
   if (dmDist) {
     ierr = DMDestroy(&dm);CHKERRQ(ierr);
@@ -2286,7 +2277,6 @@ int main(int argc, char **argv)
   ierr = ConstructGeometry(dm, &user->facegeom, &user->cellgeom, user);CHKERRQ(ierr);
   if (0) {ierr = VecView(user->cellgeom, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexSetPreallocationCenterDimension(dm, 0);CHKERRQ(ierr);
 
   /* Set up DM with section describing local vector and configure local vector. */
   ierr = SetUpLocalSpace(dm, user);CHKERRQ(ierr);

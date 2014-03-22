@@ -1,10 +1,10 @@
 
-#requirespackage   'PETSC_HAVE_CHOLMOD'
+#requirespackage   'PETSC_HAVE_SUITESPARSE'
 #requiresprecision double
 
 ALL: lib
 
-CFLAGS   = ${CHOLMOD_INCLUDE}
+CFLAGS   = ${SUITESPARSE_INCLUDE}
 FFLAGS   =
 SOURCEC  = aijcholmod.c
 SOURCEF  =

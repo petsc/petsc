@@ -1946,6 +1946,36 @@ PetscErrorCode  MatGetLocalToGlobalMappingBlock(Mat A,ISLocalToGlobalMapping *rm
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatGetLayouts"
+/*@
+   MatGetLayouts - Gets the PetscLayout objects for rows and columns
+
+   Not Collective
+
+   Input Parameters:
+.  A - the matrix
+
+   Output Parameters:
++ rmap - row layout
+- cmap - column layout
+
+   Level: advanced
+
+.seealso:  MatGetVecs(), MatGetLocalToGlobalMapping()
+@*/
+PetscErrorCode  MatGetLayouts(Mat A,PetscLayout *rmap,PetscLayout *cmap)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  if (rmap) PetscValidPointer(rmap,2);
+  if (cmap) PetscValidPointer(cmap,3);
+  if (rmap) *rmap = A->rmap;
+  if (cmap) *cmap = A->cmap;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatSetValuesLocal"
 /*@
    MatSetValuesLocal - Inserts or adds values into certain locations of a matrix,
@@ -5043,7 +5073,7 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
    data structure.
 
    When (re)assembling a matrix, we can restrict the input for
-   efficiency/debugging purposes.  These options include
+   efficiency/debugging purposes.  These options include:
 +    MAT_NEW_NONZERO_LOCATIONS - additional insertions will be allowed if they generate a new nonzero (slow)
 .    MAT_NEW_DIAGONALS - new diagonals will be allowed (for block diagonal format only)
 .    MAT_IGNORE_OFF_PROC_ENTRIES - drops off-processor entries

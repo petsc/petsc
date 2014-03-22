@@ -20,8 +20,8 @@ Sorted = ["PetscBarrier",
          "MatAssemblyBegin",
          "MatAssemblyEnd",
 
-         "SNESGSEval",
-         "SNESGSFuncEval",
+         "SNESNGSEval",
+         "SNESNGSFuncEval",
          "SNESLineSearch",
          "SNESNPCSolve",
 

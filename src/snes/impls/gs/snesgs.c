@@ -1,9 +1,9 @@
 #include <../src/snes/impls/gs/gsimpl.h>      /*I "petscsnes.h"  I*/
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESGSSetTolerances"
+#define __FUNCT__ "SNESNGSSetTolerances"
 /*@
-   SNESGSSetTolerances - Sets various parameters used in convergence tests.
+   SNESNGSSetTolerances - Sets various parameters used in convergence tests.
 
    Logically Collective on SNES
 
@@ -16,9 +16,9 @@
 
 
    Options Database Keys:
-+    -snes_gs_atol <abstol> - Sets abstol
-.    -snes_gs_rtol <rtol> - Sets rtol
-.    -snes_gs_stol <stol> - Sets stol
++    -snes_ngs_atol <abstol> - Sets abstol
+.    -snes_ngs_rtol <rtol> - Sets rtol
+.    -snes_ngs_stol <stol> - Sets stol
 -    -snes_max_it <maxit> - Sets maxit
 
    Level: intermediate
@@ -27,9 +27,9 @@
 
 .seealso: SNESSetTrustRegionTolerance()
 @*/
-PetscErrorCode  SNESGSSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,PetscReal stol,PetscInt maxit)
+PetscErrorCode  SNESNGSSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,PetscReal stol,PetscInt maxit)
 {
-  SNES_GS *gs = (SNES_GS*)snes->data;
+  SNES_NGS *gs = (SNES_NGS*)snes->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -54,9 +54,9 @@ PetscErrorCode  SNESGSSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,Pe
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESGSGetTolerances"
+#define __FUNCT__ "SNESNGSGetTolerances"
 /*@
-   SNESGSGetTolerances - Gets various parameters used in convergence tests.
+   SNESNGSGetTolerances - Gets various parameters used in convergence tests.
 
    Not Collective
 
@@ -77,9 +77,9 @@ PetscErrorCode  SNESGSSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,Pe
 
 .seealso: SNESSetTolerances()
 @*/
-PetscErrorCode  SNESGSGetTolerances(SNES snes,PetscReal *atol,PetscReal *rtol,PetscReal *stol,PetscInt *maxit)
+PetscErrorCode  SNESNGSGetTolerances(SNES snes,PetscReal *atol,PetscReal *rtol,PetscReal *stol,PetscInt *maxit)
 {
-  SNES_GS *gs = (SNES_GS*)snes->data;
+  SNES_NGS *gs = (SNES_NGS*)snes->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -91,9 +91,9 @@ PetscErrorCode  SNESGSGetTolerances(SNES snes,PetscReal *atol,PetscReal *rtol,Pe
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESGSSetSweeps"
+#define __FUNCT__ "SNESNGSSetSweeps"
 /*@
-   SNESGSSetSweeps - Sets the number of sweeps of GS to use.
+   SNESNGSSetSweeps - Sets the number of sweeps of GS to use.
 
    Input Parameters:
 +  snes   - the SNES context
@@ -103,12 +103,12 @@ PetscErrorCode  SNESGSGetTolerances(SNES snes,PetscReal *atol,PetscReal *rtol,Pe
 
 .keywords: SNES, nonlinear, set, Gauss-Siedel
 
-.seealso: SNESSetGS(), SNESGetGS(), SNESSetPC(), SNESGSGetSweeps()
+.seealso: SNESSetNGS(), SNESGetNGS(), SNESSetPC(), SNESNGSGetSweeps()
 @*/
 
-PetscErrorCode SNESGSSetSweeps(SNES snes, PetscInt sweeps)
+PetscErrorCode SNESNGSSetSweeps(SNES snes, PetscInt sweeps)
 {
-  SNES_GS *gs = (SNES_GS*)snes->data;
+  SNES_NGS *gs = (SNES_NGS*)snes->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -117,9 +117,9 @@ PetscErrorCode SNESGSSetSweeps(SNES snes, PetscInt sweeps)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESGSGetSweeps"
+#define __FUNCT__ "SNESNGSGetSweeps"
 /*@
-   SNESGSGetSweeps - Gets the number of sweeps GS will use.
+   SNESNGSGetSweeps - Gets the number of sweeps GS will use.
 
    Input Parameters:
 .  snes   - the SNES context
@@ -131,11 +131,11 @@ PetscErrorCode SNESGSSetSweeps(SNES snes, PetscInt sweeps)
 
 .keywords: SNES, nonlinear, set, Gauss-Siedel
 
-.seealso: SNESSetGS(), SNESGetGS(), SNESSetPC(), SNESGSSetSweeps()
+.seealso: SNESSetNGS(), SNESGetNGS(), SNESSetPC(), SNESNGSSetSweeps()
 @*/
-PetscErrorCode SNESGSGetSweeps(SNES snes, PetscInt * sweeps)
+PetscErrorCode SNESNGSGetSweeps(SNES snes, PetscInt * sweeps)
 {
-  SNES_GS *gs = (SNES_GS*)snes->data;
+  SNES_NGS *gs = (SNES_NGS*)snes->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -145,8 +145,8 @@ PetscErrorCode SNESGSGetSweeps(SNES snes, PetscInt * sweeps)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESDefaultApplyGS"
-PetscErrorCode SNESDefaultApplyGS(SNES snes,Vec X,Vec F,void *ctx)
+#define __FUNCT__ "SNESDefaultApplyNGS"
+PetscErrorCode SNESDefaultApplyNGS(SNES snes,Vec X,Vec F,void *ctx)
 {
   PetscFunctionBegin;
   /* see if there's a coloring on the DM */
@@ -154,45 +154,45 @@ PetscErrorCode SNESDefaultApplyGS(SNES snes,Vec X,Vec F,void *ctx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESReset_GS"
-PetscErrorCode SNESReset_GS(SNES snes)
+#define __FUNCT__ "SNESReset_NGS"
+PetscErrorCode SNESReset_NGS(SNES snes)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESDestroy_GS"
-PetscErrorCode SNESDestroy_GS(SNES snes)
+#define __FUNCT__ "SNESDestroy_NGS"
+PetscErrorCode SNESDestroy_NGS(SNES snes)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SNESReset_GS(snes);CHKERRQ(ierr);
+  ierr = SNESReset_NGS(snes);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESSetUp_GS"
-PetscErrorCode SNESSetUp_GS(SNES snes)
+#define __FUNCT__ "SNESSetUp_NGS"
+PetscErrorCode SNESSetUp_NGS(SNES snes)
 {
   PetscErrorCode ierr;
   PetscErrorCode (*f)(SNES,Vec,Vec,void*);
 
   PetscFunctionBegin;
-  ierr = SNESGetGS(snes,&f,NULL);CHKERRQ(ierr);
+  ierr = SNESGetNGS(snes,&f,NULL);CHKERRQ(ierr);
   if (!f) {
-    ierr = SNESSetGS(snes,SNESComputeGSDefaultSecant,NULL);CHKERRQ(ierr);
+    ierr = SNESSetNGS(snes,SNESComputeNGSDefaultSecant,NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESSetFromOptions_GS"
-PetscErrorCode SNESSetFromOptions_GS(SNES snes)
+#define __FUNCT__ "SNESSetFromOptions_NGS"
+PetscErrorCode SNESSetFromOptions_NGS(SNES snes)
 {
-  SNES_GS        *gs = (SNES_GS*)snes->data;
+  SNES_NGS       *gs = (SNES_NGS*)snes->data;
   PetscErrorCode ierr;
   PetscInt       sweeps,max_its=PETSC_DEFAULT;
   PetscReal      rtol=PETSC_DEFAULT,atol=PETSC_DEFAULT,stol=PETSC_DEFAULT;
@@ -201,41 +201,41 @@ PetscErrorCode SNESSetFromOptions_GS(SNES snes)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES GS options");CHKERRQ(ierr);
   /* GS Options */
-  ierr = PetscOptionsInt("-snes_gs_sweeps","Number of sweeps of GS to apply","SNESComputeGS",gs->sweeps,&sweeps,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-snes_ngs_sweeps","Number of sweeps of GS to apply","SNESComputeGS",gs->sweeps,&sweeps,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = SNESGSSetSweeps(snes,sweeps);CHKERRQ(ierr);
+    ierr = SNESNGSSetSweeps(snes,sweeps);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsReal("-snes_gs_atol","Number of sweeps of GS to apply","SNESComputeGS",gs->abstol,&atol,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_gs_rtol","Number of sweeps of GS to apply","SNESComputeGS",gs->rtol,&rtol,&flg1);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_gs_stol","Number of sweeps of GS to apply","SNESComputeGS",gs->stol,&stol,&flg2);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-snes_gs_max_it","Number of sweeps of GS to apply","SNESComputeGS",gs->max_its,&max_its,&flg3);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_ngs_atol","Number of sweeps of GS to apply","SNESComputeGS",gs->abstol,&atol,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_ngs_rtol","Number of sweeps of GS to apply","SNESComputeGS",gs->rtol,&rtol,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_ngs_stol","Number of sweeps of GS to apply","SNESComputeGS",gs->stol,&stol,&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-snes_ngs_max_it","Number of sweeps of GS to apply","SNESComputeGS",gs->max_its,&max_its,&flg3);CHKERRQ(ierr);
   if (flg || flg1 || flg2 || flg3) {
-    ierr = SNESGSSetTolerances(snes,atol,rtol,stol,max_its);CHKERRQ(ierr);
+    ierr = SNESNGSSetTolerances(snes,atol,rtol,stol,max_its);CHKERRQ(ierr);
   }
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-snes_gs_secant","Use pointwise secant local Jacobian approximation","",flg,&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_ngs_secant","Use pointwise secant local Jacobian approximation","",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    ierr = SNESSetGS(snes,SNESComputeGSDefaultSecant,NULL);CHKERRQ(ierr);
+    ierr = SNESSetNGS(snes,SNESComputeNGSDefaultSecant,NULL);CHKERRQ(ierr);
     ierr = PetscInfo(snes,"Setting default finite difference coloring Jacobian matrix\n");CHKERRQ(ierr);
   }
-  ierr = PetscOptionsReal("-snes_gs_secant_h","Differencing parameter for secant search","",gs->h,&gs->h,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_gs_secant_mat_coloring","Use the Jacobian coloring for the secant GS","",gs->secant_mat,&gs->secant_mat,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_ngs_secant_h","Differencing parameter for secant search","",gs->h,&gs->h,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_ngs_secant_mat_coloring","Use the Jacobian coloring for the secant GS","",gs->secant_mat,&gs->secant_mat,&flg);CHKERRQ(ierr);
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESView_GS"
-PetscErrorCode SNESView_GS(SNES snes, PetscViewer viewer)
+#define __FUNCT__ "SNESView_NGS"
+PetscErrorCode SNESView_NGS(SNES snes, PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESSolve_GS"
-PetscErrorCode SNESSolve_GS(SNES snes)
+#define __FUNCT__ "SNESSolve_NGS"
+PetscErrorCode SNESSolve_NGS(SNES snes)
 {
   Vec              F;
   Vec              X;
@@ -295,7 +295,7 @@ PetscErrorCode SNESSolve_GS(SNES snes)
   }
 
   for (i = 0; i < snes->max_its; i++) {
-    ierr = SNESComputeGS(snes, B, X);CHKERRQ(ierr);
+    ierr = SNESComputeNGS(snes, B, X);CHKERRQ(ierr);
     /* only compute norms if requested or about to exit due to maximum iterations */
     if (normschedule == SNES_NORM_ALWAYS || ((i == snes->max_its - 1) && (normschedule == SNES_NORM_INITIAL_FINAL_ONLY || normschedule == SNES_NORM_FINAL_ONLY))) {
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
@@ -334,7 +334,7 @@ PetscErrorCode SNESSolve_GS(SNES snes)
 }
 
 /*MC
-  SNESGS - Just calls the user-provided solution routine provided with SNESSetGS()
+  SNESNGS - Just calls the user-provided solution routine provided with SNESSetNGS()
 
    Level: advanced
 
@@ -342,23 +342,23 @@ PetscErrorCode SNESSolve_GS(SNES snes)
   the Gauss-Seidel smoother is inherited through composition.  If a solver has been created with SNESGetPC(), it will have
   its parent's Gauss-Seidel routine associated with it.
 
-.seealso: SNESCreate(), SNES, SNESSetType(), SNESSetGS(), SNESType (for list of available types)
+.seealso: SNESCreate(), SNES, SNESSetType(), SNESSetNGS(), SNESType (for list of available types)
 M*/
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESCreate_GS"
-PETSC_EXTERN PetscErrorCode SNESCreate_GS(SNES snes)
+#define __FUNCT__ "SNESCreate_NGS"
+PETSC_EXTERN PetscErrorCode SNESCreate_NGS(SNES snes)
 {
-  SNES_GS        *gs;
+  SNES_NGS        *gs;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  snes->ops->destroy        = SNESDestroy_GS;
-  snes->ops->setup          = SNESSetUp_GS;
-  snes->ops->setfromoptions = SNESSetFromOptions_GS;
-  snes->ops->view           = SNESView_GS;
-  snes->ops->solve          = SNESSolve_GS;
-  snes->ops->reset          = SNESReset_GS;
+  snes->ops->destroy        = SNESDestroy_NGS;
+  snes->ops->setup          = SNESSetUp_NGS;
+  snes->ops->setfromoptions = SNESSetFromOptions_NGS;
+  snes->ops->view           = SNESView_NGS;
+  snes->ops->solve          = SNESSolve_NGS;
+  snes->ops->reset          = SNESReset_NGS;
 
   snes->usesksp = PETSC_FALSE;
   snes->usespc  = PETSC_FALSE;

@@ -458,7 +458,8 @@ PETSC_EXTERN MPI_Datatype MPIU_2INT PetscAttrMPITypeTagLayoutCompatible(struct p
 #define MPIU_2INT MPI_2INT
 #endif
 
-PETSC_STATIC_INLINE PetscInt PetscPowInt(PetscInt base,PetscInt power) {
+PETSC_STATIC_INLINE PetscInt PetscPowInt(PetscInt base,PetscInt power) 
+{
   PetscInt result = 1;
   while (power) {
     if (power & 1) result *= base;
@@ -467,7 +468,9 @@ PETSC_STATIC_INLINE PetscInt PetscPowInt(PetscInt base,PetscInt power) {
   }
   return result;
 }
-PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power) {
+
+PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power) 
+{
   PetscReal result = 1;
   if (power < 0) {
     power = -power;
@@ -481,7 +484,8 @@ PETSC_STATIC_INLINE PetscReal PetscPowRealInt(PetscReal base,PetscInt power) {
   return result;
 }
 
-PETSC_STATIC_INLINE PetscScalar PetscPowScalarInt(PetscScalar base,PetscInt power) {
+PETSC_STATIC_INLINE PetscScalar PetscPowScalarInt(PetscScalar base,PetscInt power) 
+{
   PetscScalar result = 1;
   if (power < 0) {
     power = -power;
@@ -495,4 +499,9 @@ PETSC_STATIC_INLINE PetscScalar PetscPowScalarInt(PetscScalar base,PetscInt powe
   return result;
 }
 
+PETSC_STATIC_INLINE PetscScalar PetscPowScalarReal(PetscScalar base,PetscReal power)
+{
+  PetscScalar cpower = power;
+  return PetscPowScalar(base,cpower);
+}
 #endif

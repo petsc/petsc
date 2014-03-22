@@ -288,8 +288,7 @@
       PC jacobi,sor
       Vec work
 
-      call PCGetOperators(pc,PETSC_NULL_OBJECT,pmat,PETSC_NULL_INTEGER,  &
-     &                     ierr)
+      call PCGetOperators(pc,PETSC_NULL_OBJECT,pmat,ierr)
       call PCCreate(PETSC_COMM_WORLD,jacobi,ierr)
       call PCSetType(jacobi,PCJACOBI,ierr)
       call PCSetOperators(jacobi,pmat,pmat,ierr)

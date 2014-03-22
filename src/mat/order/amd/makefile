@@ -1,9 +1,9 @@
 
-#requirespackage   'PETSC_HAVE_UMFPACK'
+#requirespackage   'PETSC_HAVE_SUITESPARSE'
 
 ALL: lib
 
-CFLAGS   = ${UMFPACK_INCLUDE}
+CFLAGS   = ${SUITESPARSE_INCLUDE}
 FFLAGS   =
 SOURCEC  = amd.c
 SOURCEF  =
