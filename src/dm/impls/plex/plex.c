@@ -50,7 +50,7 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
         funcs[f] = field == f ? (void (*)(const PetscReal[], PetscScalar *, void *)) func : NULL;
         ctxs[f]  = field == f ? ctx : NULL;
       }
-      ierr = DMPlexProjectFunctionLocal(dm, fe, funcs, ctx, INSERT_BC_VALUES, v);CHKERRQ(ierr);
+      ierr = DMPlexProjectFunctionLocal(dm, fe, funcs, ctxs, INSERT_BC_VALUES, v);CHKERRQ(ierr);
     }
     ierr = PetscFree3(fe,funcs,ctxs);CHKERRQ(ierr);
   }
