@@ -1,9 +1,6 @@
 static char help[] = "Tests for cell geometry\n\n";
 
 #include <petscdmplex.h>
-#if defined(PETSC_HAVE_EXODUSII)
-#include <exodusII.h>
-#endif
 
 typedef enum {RUN_REFERENCE, RUN_FILE} RunType;
 
@@ -22,23 +19,12 @@ typedef struct {
 #define __FUNCT__ "ReadMesh"
 PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *dm)
 {
-  int            CPU_word_size = 0, IO_word_size = 0, exoid = -1;
-  float          version;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_EXODUSII)
-  if (!rank) {
-    exoid = ex_open(filename, EX_READ, &CPU_word_size, &IO_word_size, &version);
-    if (exoid <= 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "ex_open(\"%s\",...) did not return a valid file ID", filename);
-  }
-  ierr = DMPlexCreateExodus(comm, exoid, PETSC_FALSE, dm);CHKERRQ(ierr);
-  if (!rank) {ierr = ex_close(exoid);CHKERRQ(ierr);}
-#else
-  SETERRQ(comm, PETSC_ERR_SUP, "Loading meshes requires ExodusII support. Reconfigure using --download-exodusii");
-#endif
+  ierr = DMPlexCreateExodusFromFile(comm, filename, PETSC_FALSE, dm);CHKERRQ(ierr);
   if (user->interpolate) {
     DM interpolatedMesh = NULL;
 

@@ -11,7 +11,7 @@ class Configure(PETSc.package.NewPackage):
     self.complex      = 1
     # SuperLU has NO support for 64 bit integers, use SuperLU_Dist if you need that
     self.excludedDirs = ['SuperLU_DIST']
-    # SuperLU does not work with --download-f-blas-lapack with Compaqf90 compiler on windows.
+    # SuperLU does not work with --download-fblaslapack with Compaqf90 compiler on windows.
     # However it should work with intel ifort.
     self.worksonWindows   = 1
     self.downloadonWindows= 1
@@ -54,7 +54,7 @@ class Configure(PETSc.package.NewPackage):
     g.write('\n')
 
     g.write('MATLAB       =\n')
-    g.write('NOOPTS       = '+self.blasLapack.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.blasLapack.getPrecisionFlag(self.setCompilers.getCompilerFlags())+' '+self.blasLapack.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n')
+    g.write('NOOPTS       = '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPointerSizeFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n')
     g.close()
     if self.installNeeded('make.inc'):
       try:

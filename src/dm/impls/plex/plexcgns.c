@@ -7,9 +7,55 @@
 #endif
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateCGNSFromFile"
+/*@C
+  DMPlexCreateCGNS - Create a DMPlex mesh from a CGNS file.
+
+  Collective on comm
+
+  Input Parameters:
++ comm  - The MPI communicator
+. filename - The name of the CGNS file
+- interpolate - Create faces and edges in the mesh
+
+  Output Parameter:
+. dm  - The DM object representing the mesh
+
+  Note: http://www.grc.nasa.gov/WWW/cgns/CGNS_docs_current/index.html
+
+  Level: beginner
+
+.keywords: mesh,CGNS
+.seealso: DMPlexCreate(), DMPlexCreateCGNS(), DMPlexCreateExodus()
+@*/
+PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
+{
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+#if defined(PETSC_HAVE_CGNS)
+  int cgid = -1;
+#endif
+
+  PetscFunctionBegin;
+  PetscValidCharPointer(filename, 2);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CGNS)
+  if (!rank) {
+    ierr = cg_open(filename, CG_MODE_READ, &cgid);CHKERRQ(ierr);
+    if (cgid <= 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "cg_open(\"%s\",...) did not return a valid file ID", filename);
+  }
+  ierr = DMPlexCreateCGNS(comm, cgid, interpolate, dm);CHKERRQ(ierr);
+  if (!rank) {ierr = cg_close(cgid);CHKERRQ(ierr);}
+#else
+  SETERRQ(comm, PETSC_ERR_SUP, "Loading meshes requires CGNS support. Reconfigure using --with-cgns-dir");
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateCGNS"
 /*@
-  DMPlexCreateCGNS - Create a DMPlex mesh from a CGNS file.
+  DMPlexCreateCGNS - Create a DMPlex mesh from a CGNS file ID.
 
   Collective on comm
 

@@ -4,9 +4,6 @@ domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\n\n";
 
 #include <petscdmplex.h>
 #include <petscsnes.h>
-#if defined(PETSC_HAVE_EXODUSII)
-#include <exodusII.h>
-#endif
 
 #define NUM_FIELDS 1
 PetscInt spatialDim = 0;
@@ -343,21 +340,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexGetLabel(*dm, "marker", &label);CHKERRQ(ierr);
     if (label) {ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);}
   } else {
-#if defined(PETSC_HAVE_EXODUSII)
-    int        CPU_word_size = 0, IO_word_size = 0, exoid;
-    float       version;
     PetscMPIInt rank;
 
     ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-    if (!rank) {
-      exoid = ex_open(filename, EX_READ, &CPU_word_size, &IO_word_size, &version);
-      if (exoid <= 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "ex_open(\"%s\",...) did not return a valid file ID", filename);
-    } else exoid = -1;                 /* Not used */
-    ierr = DMPlexCreateExodus(comm, exoid, interpolate, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateExodusFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
     ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
-    if (!rank) {ierr = ex_close(exoid);CHKERRQ(ierr);}
     /* Must have boundary marker for Dirichlet conditions */
-#endif
   }
   {
     DM refinedMesh     = NULL;

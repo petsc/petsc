@@ -12,38 +12,6 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self, framework)
     return
 
-  def getDefaultPrecision(self):
-    '''The precision of the library'''
-    if hasattr(self, 'precisionProvider'):
-      if hasattr(self.precisionProvider, 'precision'):
-        return self.precisionProvider.precision
-    return self._defaultPrecision
-  def setDefaultPrecision(self, defaultPrecision):
-    '''The precision of the library'''
-    self._defaultPrecision = defaultPrecision
-    return
-  defaultPrecision = property(getDefaultPrecision, setDefaultPrecision, doc = 'The precision of the library')
-
-  def checkNoOptFlag(self):
-    flag = '-O0'
-    if self.setCompilers.checkCompilerFlag(flag): return flag
-    return ''
-
-  def getSharedFlag(self,cflags):
-    for flag in ['-PIC', '-fPIC', '-KPIC', '-qpic']:
-      if cflags.find(flag) >=0: return flag
-    return ''
-
-  def getPrecisionFlag(self,cflags):
-    for flag in ['-m32', '-m64', '-xarch=v9','-q64']:
-      if cflags.find(flag) >=0: return flag
-    return ''
-
-  def getWindowsNonOptFlags(self,cflags):
-    for flag in ['-MT','-MTd','-MD','-MDd','-threads']:
-      if cflags.find(flag) >=0: return flag
-    return ''
-
   def Install(self):
     import os
 
@@ -68,7 +36,7 @@ class Configure(config.package.Package):
       if line.startswith('CNOOPT'):
         self.setCompilers.pushLanguage('C')
         noopt = self.checkNoOptFlag()
-        line = 'CNOOPT = '+noopt+ ' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPrecisionFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n'
+        line = 'CNOOPT = '+noopt+ ' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPointerSizeFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n'
         self.setCompilers.popLanguage()
       if line.startswith('AR  '):
         line = 'AR      = '+self.setCompilers.AR+'\n'
@@ -91,7 +59,7 @@ class Configure(config.package.Package):
     if not self.installNeeded('tmpmakefile'): return self.installDir
 
     try:
-      self.logPrintBox('Compiling BLASLAPACK; this may take several minutes')
+      self.logPrintBox('Compiling F2CBLASLAPACK; this may take several minutes')
       output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && make -f tmpmakefile '+make_target, timeout=2500, log = self.framework.log)
     except RuntimeError, e:
       raise RuntimeError('Error running make on '+blasDir+': '+str(e))
