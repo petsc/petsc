@@ -42,9 +42,9 @@ stream:  MPIVersion
 	  ${MPIEXEC} -n $${i} ./MPIVersion | tee -a scaling.log; \
         done
 	-@echo "------------------------------------------------"
-	-@./process.py createfile
+	-@${PYTHON} process.py createfile
 
 streams: stream
-	-@./process.py
+	-@${PYTHON} process.py
 
 
