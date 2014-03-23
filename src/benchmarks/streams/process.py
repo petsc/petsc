@@ -83,7 +83,7 @@ def process(fileoutput = 1):
     ax1.set_ylim([min(hosts.keys()),ymax])
     ax1.set_xlabel('Number of MPI processes')
     ax1.set_ylabel('Memory Bandwidth Speedup')
-    ax1.plot(hosts.keys(),hosts.keys(),'b-o',hosts.keys(),speedups.values(),'r-o')
+    ax1.plot(hosts.keys(),hosts.keys(),'b',hosts.keys(),speedups.values(),'r-o')
     ax2.set_autoscaley_on(False)
     ax2.set_xlim([min(hosts.keys()),max(hosts.keys())])
     ax2.set_ylim([min(triads.values())/1000.,min(triads.values())*ymax/1000.])
