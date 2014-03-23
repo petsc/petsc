@@ -656,6 +656,24 @@ static PetscErrorCode MatZeroEntries_Nest(Mat A)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatCopy_Nest"
+static PetscErrorCode MatCopy_Nest(Mat A,Mat B,MatStructure str)
+{
+  Mat_Nest       *bA = (Mat_Nest*)A->data,*bB = (Mat_Nest*)B->data;
+  PetscInt       i,j,nr = bA->nr,nc = bA->nc;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (nr != bB->nr || nc != bB->nc) SETERRQ4(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Cannot copy a Mat_Nest of block size (%D,%D) to a Mat_Nest of block size (%D,%D)",bB->nr,bB->nc,nr,nc);
+  for (i=0; i<nr; i++) {
+    for (j=0; j<nc; j++) {
+      ierr = MatCopy(bA->m[i][j],bB->m[i][j],str);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_Nest"
 static PetscErrorCode MatDuplicate_Nest(Mat A,MatDuplicateOption op,Mat *B)
 {
@@ -1546,6 +1564,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
   A->ops->assemblybegin         = MatAssemblyBegin_Nest;
   A->ops->assemblyend           = MatAssemblyEnd_Nest;
   A->ops->zeroentries           = MatZeroEntries_Nest;
+  A->ops->copy                  = MatCopy_Nest;
   A->ops->duplicate             = MatDuplicate_Nest;
   A->ops->getsubmatrix          = MatGetSubMatrix_Nest;
   A->ops->destroy               = MatDestroy_Nest;
