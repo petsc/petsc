@@ -74,21 +74,30 @@ def process(fileoutput = 1):
     plt.title('MPI Perfect and Streams Speedup')
     ax2 = ax1.twinx()
     ax1.set_autoscaley_on(False)
+
+    # make sure that actual bandwidth values (as opposed to perfect speedup) takes
+    # at least a third of the y axis
+    ymax = min(max(hosts.keys()), 3*max(triads.values())/min(triads.values()) - 2)
+
     ax1.set_xlim([min(hosts.keys()),max(hosts.keys())])
-    ax1.set_ylim([min(hosts.keys()),max(hosts.keys())])
+    ax1.set_ylim([min(hosts.keys()),ymax])
     ax1.set_xlabel('Number of MPI processes')
     ax1.set_ylabel('Memory Bandwidth Speedup')
     ax1.plot(hosts.keys(),hosts.keys(),'b-o',hosts.keys(),speedups.values(),'r-o')
     ax2.set_autoscaley_on(False)
     ax2.set_xlim([min(hosts.keys()),max(hosts.keys())])
-    ax2.set_ylim([min(triads.values())/1000.,min(triads.values())*max(hosts.keys())/1000.])
+    ax2.set_ylim([min(triads.values())/1000.,min(triads.values())*ymax/1000.])
     ax2.set_ylabel("Achieved Bandwidth. Gigabytes per Second")
 
     plt.show()
     if fileoutput: plt.savefig('scaling.png')
     if fileoutput: print "See graph in the file src/benchmarks/streams/scaling.png"
     if fileoutput: ff.write("See graph in the file src/benchmarks/streams/scaling.png\n")
-  except:
+  except Exception, e:
+    import traceback
+
+    print traceback.print_tb(sys.exc_info()[2])
+    print str(e)
     if fileoutput: print "Unable to plot speedup to a file"
     else: print "Unable to display speedup plot"
     return
