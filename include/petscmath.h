@@ -72,7 +72,7 @@ typedef __float128 PetscReal;
     Complex number definitions
  */
 #if defined(PETSC_CLANGUAGE_CXX) && defined(PETSC_HAVE_CXX_COMPLEX) && !defined(PETSC_USE_REAL___FLOAT128)
-#if defined(PETSC_USE_COMPLEX) || defined(PETSC_DESIRE_COMPLEX)
+#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX)) || defined(PETSC_DESIRE_COMPLEX)
 #define PETSC_HAVE_COMPLEX 1
 /* C++ support of complex number */
 #if defined(PETSC_HAVE_CUSP)
@@ -108,7 +108,7 @@ typedef complexlib::complex<__float128> PetscComplex; /* Notstandard and not exp
 #elif defined(PETSC_CLANGUAGE_C) && defined(PETSC_HAVE_C99_COMPLEX)
 /* Use C99 _Complex for the type. Do not include complex.h by default to define "complex" because of symbol conflicts in Hypre. */
 /* Compilation units that can safely use complex should define PETSC_DESIRE_COMPLEX before including any headers */
-#if defined(PETSC_USE_COMPLEX) || defined(PETSC_DESIRE_COMPLEX)
+#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX)) || defined(PETSC_DESIRE_COMPLEX)
 #define PETSC_HAVE_COMPLEX 1
 #include <complex.h>
 
@@ -161,7 +161,7 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128 PetscAttrMPITypeTag(__complex128);
 #define PetscAsinComplex(a)          casinq(a)
 #define PetscAcosComplex(a)          cacosq(a)
 #endif /* PETSC_USE_REAL_* */
-#elif defined(PETSC_USE_COMPLEX)
+#elif (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX))
 #error "PETSc was configured --with-scalar-type=complex, but a language-appropriate complex library is not available"
 #endif /* PETSC_USE_COMPLEX || PETSC_DESIRE_COMPLEX */
 #endif /* (PETSC_CLANGUAGE_CXX && PETSC_HAVE_CXX_COMPLEX) else-if (PETSC_CLANGUAGE_C && PETSC_HAVE_C99_COMPLEX) */
@@ -196,7 +196,7 @@ PETSC_EXTERN MPI_Datatype MPIU_C_COMPLEX PetscAttrMPITypeTagLayoutCompatible(pet
 #  endif /* PETSC_USE_REAL_* */
 #endif
 
-#if defined(PETSC_USE_COMPLEX)
+#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX))
 typedef PetscComplex PetscScalar;
 #define PetscRealPart(a)      PetscRealPartComplex(a)
 #define PetscImaginaryPart(a) PetscImaginaryPartComplex(a)
