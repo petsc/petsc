@@ -94,10 +94,6 @@ def process(fileoutput = 1):
     if fileoutput: print "See graph in the file src/benchmarks/streams/scaling.png"
     if fileoutput: ff.write("See graph in the file src/benchmarks/streams/scaling.png\n")
   except Exception, e:
-    import traceback
-
-    print traceback.print_tb(sys.exc_info()[2])
-    print str(e)
     if fileoutput: print "Unable to plot speedup to a file"
     else: print "Unable to display speedup plot"
     return
