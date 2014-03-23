@@ -135,6 +135,7 @@ build: chk_makej
 check: test
 test:
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} test_build 2>&1 | tee ./${PETSC_ARCH}/conf/test.log
+	-@if [ "${PETSC_WITH_BATCH}" == "" ]; then printf ${PETSC_TEXT_HILIGHT}"Now run make streams NPMAX=<number of expect MPI processes you intend to use>\nto evaluate the computer systems you plan use\n"${PETSC_TEXT_NORMAL};fi
 testx:
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testx_build 2>&1 | tee ./${PETSC_ARCH}/conf/testx.log
 test_build:
@@ -244,7 +245,10 @@ newall:
 	-@cd src/ts;   @${PYTHON} ${PETSC_DIR}/config/builder.py
 
 streams:
-	cd src/benchmarks/streams; ${OMAKE} test
+	cd src/benchmarks/streams; ${OMAKE} streams
+
+stream:
+	cd src/benchmarks/streams; ${OMAKE} stream
 # ------------------------------------------------------------------
 #
 # All remaining actions are intended for PETSc developers only.
@@ -306,7 +310,7 @@ alldoc1: chk_loc deletemanualpages chk_concepts_dir
 # Builds .html versions of the source
 # html overwrites some stuff created by update-docs - hence this is done later.
 alldoc2: chk_loc
-	-${OMAKE} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
+	-${OMAKE} ACTION=html PETSC_DIR=${PETSC_DIR} alltee LOC=${LOC}
 	-${PYTHON} bin/maint/update-docs.py ${PETSC_DIR} ${LOC}
 #
 # Builds HTML versions of Matlab scripts
