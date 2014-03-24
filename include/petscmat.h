@@ -1048,6 +1048,7 @@ typedef const  char*           MatColoringType;
 #define MATCOLORINGGREEDY  "greedy"
 
 PETSC_EXTERN PetscErrorCode MatColoringCreate(Mat,MatColoring*);
+PETSC_EXTERN PetscErrorCode MatColoringGetDegrees(Mat,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatColoringDestroy(MatColoring*);
 PETSC_EXTERN PetscErrorCode MatColoringView(MatColoring,PetscViewer);
 PETSC_EXTERN PetscErrorCode MatColoringSetType(MatColoring,MatColoringType);
