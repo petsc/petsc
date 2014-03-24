@@ -619,6 +619,8 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
   }
+  user->fem.bcFuncs = user->exactFuncs;
+  user->fem.bcCtxs  = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -710,8 +712,6 @@ int main(int argc, char **argv)
   ierr = SetupBdElement(dm, &user);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(user.fe[0], &numComponents);CHKERRQ(ierr);
   ierr = PetscMalloc(NUM_FIELDS * sizeof(void (*)(const PetscReal[], PetscScalar *, void *)), &user.exactFuncs);CHKERRQ(ierr);
-  user.fem.bcFuncs = user.exactFuncs;
-  user.fem.bcCtxs = NULL;
   ierr = SetupExactSolution(dm, &user);CHKERRQ(ierr);
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
   ierr = SetupMaterialElement(dmAux, &user);CHKERRQ(ierr);
