@@ -91,7 +91,9 @@ cdef extern from * nogil:
     int DMPlexCreateBoxMesh(MPI_Comm,PetscInt,PetscBool,PetscDM*)
     #int DMPlexCreateHexBoxMesh(MPI_Comm,PetscInt,const_PetscInt[],PetscDM*)
     int DMPlexCreateCGNS(MPI_Comm,PetscInt,PetscBool,PetscDM*)
+    int DMPlexCreateCGNSFromFile(MPI_Comm,const_char[],PetscBool,PetscDM*)
     int DMPlexCreateExodus(MPI_Comm,PetscInt,PetscBool,PetscDM*)
+    int DMPlexCreateExodusFromFile(MPI_Comm,const_char[],PetscBool,PetscDM*)
     int DMPlexCreateGmsh(MPI_Comm,PetscViewer,PetscBool,PetscDM*)
 
     #int DMPlexCreateConeSection(PetscDM,PetscSection *)
@@ -100,6 +102,8 @@ cdef extern from * nogil:
     #int DMPlexCheckSkeleton(PetscDM,PetscBool,PetscInt)
     #int DMPlexCheckFaces(PetscDM,PetscBool,PetscInt)
 
+    int DMPlexSetAdjacencyUseCone(PetscDM,PetscBool)
+    int DMPlexSetAdjacencyUseClosure(PetscDM,PetscBool)
     #int DMPlexCreateNeighborCSR(PetscDM,PetscInt,PetscInt *,PetscInt **,PetscInt **)
     #int DMPlexCreatePartition(PetscDM,const_char[],PetscInt,PetscBool,PetscSection *,PetscIS*,PetscSection *,PetscIS*)
     #int DMPlexCreatePartitionClosure(PetscDM,PetscSection,PetscIS,PetscSection *,PetscIS*)

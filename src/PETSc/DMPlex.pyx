@@ -59,6 +59,28 @@ cdef class DMPlex(DM):
         PetscCLEAR(self.obj); self.dm = newdm
         return self
 
+    def createCGNSFromFile(self, filename, interpolate=True, comm=None):
+        cdef DMPlex    dm = <DMPlex>type(self)()
+        cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscBool interp = interpolate
+        cdef PetscDM   newdm = NULL
+        cdef const_char *cfile = NULL
+        filename = str2bytes(filename, &cfile)
+        CHKERR( DMPlexCreateCGNSFromFile(ccomm, cfile, interp, &newdm) )
+        PetscCLEAR(self.obj); self.dm = newdm
+        return self
+
+    def createExodusFromFile(self, filename, interpolate=True, comm=None):
+        cdef DMPlex    dm = <DMPlex>type(self)()
+        cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscBool interp = interpolate
+        cdef PetscDM   newdm = NULL
+        cdef const_char *cfile = NULL
+        filename = str2bytes(filename, &cfile)
+        CHKERR( DMPlexCreateExodusFromFile(ccomm, cfile, interp, &newdm) )
+        PetscCLEAR(self.obj); self.dm = newdm
+        return self
+
     def createExodus(self, exoid, interpolate=True, comm=None):
         cdef DMPlex    dm = <DMPlex>type(self)()
         cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
@@ -434,6 +456,16 @@ cdef class DMPlex(DM):
         cdef PetscDMLabel clbl = NULL
         CHKERR( DMPlexGetLabel(self.dm, cval, &clbl) )
         CHKERR( DMPlexMarkBoundaryFaces(self.dm, clbl) )
+
+    def setAdjacencyUseCone(self, useCone=True):
+        cdef PetscBool flag = PETSC_FALSE
+        if useCone: flag = PETSC_TRUE
+        CHKERR( DMPlexSetAdjacencyUseCone(self.dm, flag) )
+
+    def setAdjacencyUseClosure(self, useClosure=True):
+        cdef PetscBool flag = PETSC_FALSE
+        if useClosure: flag = PETSC_TRUE
+        CHKERR( DMPlexSetAdjacencyUseClosure(self.dm, flag) )
 
     def distribute(self, partitioner=None, overlap=0):
         cdef PetscDM pardm = NULL
