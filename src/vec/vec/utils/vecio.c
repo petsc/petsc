@@ -227,7 +227,11 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   if (rdim != dim) {
     if (rdim == dim+1 && bs == -1) bs = dims[bsInd];
     else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected",rdim,dim);
-  } else if (bs >= 1 && bs != (PetscInt) dims[bsInd]) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Block size %d specified for vector does not match blocksize in file %d",bs,dims[bsInd]);
+  } else if (bs >= 1 && bs != (PetscInt) dims[bsInd]) {
+    ierr = VecSetBlockSize(xin, dims[bsInd]);CHKERRQ(ierr);
+    if (ierr) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Block size %d specified for vector does not match blocksize in file %d",bs,dims[bsInd]);
+    bs = dims[bsInd];
+  }
 
   /* Set Vec sizes,blocksize,and type if not already set */
   if ((xin)->map->n < 0 && (xin)->map->N < 0) {
