@@ -481,6 +481,53 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5ReadAttribute"
+/*@
+ PetscViewerHDF5ReadAttribute - Read a scalar attribute
+
+  Input Parameters:
++ viewer - The HDF5 viewer
+. parent - The parent name
+. name   - The attribute name
+- datatype - The attribute type
+
+  Output Parameter:
+. value    - The attribute value
+
+  Level: advanced
+
+.seealso: PetscViewerHDF5Open()
+@*/
+PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char parent[], const char name[], PetscDataType datatype, void *value)
+{
+  hid_t          h5, dataspace, dataset, attribute, dtype, status;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(parent, 2);
+  PetscValidPointer(name, 3);
+  PetscValidPointer(value, 4);
+  ierr = PetscDataTypeToHDF5DataType(datatype, &dtype);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
+  dataspace = H5Screate(H5S_SCALAR);
+  if (dataspace < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not create dataspace for attribute %s of %s", name, parent);
+#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
+  dataset = H5Dopen2(h5, parent, H5P_DEFAULT);
+  if (dataset < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not open parent dataset for attribute %s of %s", name, parent);
+#else
+  dataset = H5Dopen(h5, parent);
+  if (dataset < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not open parent dataset for attribute %s of %s", name, parent);
+#endif
+  attribute = H5Aopen_name(dataset, name);
+  if (attribute < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not create attribute %s of %s", name, parent);
+  status = H5Aread(attribute, dtype, value);CHKERRQ(status);
+  status = H5Aclose(attribute);CHKERRQ(status);
+  status = H5Dclose(dataset);CHKERRQ(status);
+  status = H5Sclose(dataspace);CHKERRQ(status);
+  PetscFunctionReturn(0);
+}
+
 /*
   The variable Petsc_Viewer_HDF5_keyval is used to indicate an MPI attribute that
   is attached to a communicator, in this case the attribute is a PetscViewer.

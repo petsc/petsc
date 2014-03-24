@@ -30,6 +30,7 @@ PETSC_EXTERN PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t,PetscDataType
 
 #endif  /* defined(PETSC_HAVE_HDF5) */
 
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer,const char[],const char[],PetscDataType,void*);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer,const char[],const char[],PetscDataType,const void*);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5WriteSDS(PetscViewer,float *,int,int *,int);
 
