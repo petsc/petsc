@@ -534,7 +534,7 @@ $(document).on('change', '.mgLevels', function()
     // Smoothing (Level>0)
     mgLevels = $("#mglevels" + recursionCounter + myendtag).val();
     if (mgLevels > 1) {
-        for (var level=1; level<mgLevels; level++) { // must input text_smoothing in reverse order, i.e., PC, KSP, ..., PC, KSP - don't know why???
+        for (var level=mgLevels-1; level>=1; level--) {
 
 	    if (level<10)//still using numbers
 		myendtag = endtag+level;

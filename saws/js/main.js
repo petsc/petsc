@@ -87,19 +87,11 @@ SAWsDisplayDirectory = function(sub,divEntry)
 
                 if(chunk=="ksp" || chunk=="sub" || chunk=="mg_coarse" || chunk=="redundant")
                     endtag+="0";
-                else if(chunk=="mg_levels_1")
-                    endtag+="1";//actually should add a variable amount
-                else if(chunk=="mg_levels_2")
-                    endtag+="2";
-                else if(chunk=="mg_levels_3")
-                    endtag+="3";
+                else if(chunk.substring(0,10)=="mg_levels_")
+                    endtag+=chunk.substring(10,11);//can only be 1 character long for now
 
-                if(chunk=="mg_levels_1" && SAWs_prefix=="")//new mg levels. it's okay to assume memory was already allocated b/c levels is after coarse
-                    sawsInfo[index].data[getSawsDataIndex(index, mgLevelLocation)].mg_levels=2;
-                if(chunk=="mg_levels_2" && SAWs_prefix=="")
-                    sawsInfo[index].data[getSawsDataIndex(index, mgLevelLocation)].mg_levels=3;
-                if(chunk=="mg_levels_3" && SAWs_prefix=="")
-                    sawsInfo[index].data[getSawsDataIndex(index, mgLevelLocation)].mg_levels=4;
+                if(chunk.substring(0,10)=="mg_levels_" && SAWs_prefix=="")//new mg levels. it's okay to assume memory was already allocated b/c levels is after coarse
+                    sawsInfo[index].data[getSawsDataIndex(index, mgLevelLocation)].mg_levels=parseInt(chunk.substring(10,11))+1;
             }
 
             if(typeof sawsInfo[index] == undefined)
@@ -127,8 +119,6 @@ SAWsDisplayDirectory = function(sub,divEntry)
             }
 
         }
-
-        // SAWs_pcVal == 'mg' NEED TO GET MG LEVELS SOMEHOW
 
     } else if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Krylov Method (KSP) options") {
         var SAWs_kspVal       = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-ksp_type"].data[0];
@@ -175,12 +165,8 @@ SAWsDisplayDirectory = function(sub,divEntry)
                 SAWs_prefix=SAWs_prefix.substring(indexFirstUnderscore+1, SAWs_prefix.length);//dont include the underscore
                 if(chunk=="ksp" || chunk=="sub" || chunk=="mg_coarse" || chunk=="redundant")
                     endtag+="0";
-                else if(chunk=="mg_levels_1")
-                    endtag+="1";//actually should add a variable amount
-                else if(chunk=="mg_levels_2")
-                    endtag+="2";
-                else if(chunk=="mg_levels_3")
-                    endtag+="3";
+                else if(chunk.substring(0,10)=="mg_levels_")
+                    endtag+=chunk.substring(10,11);//can only be 1 character long for now
             }
 
             if(typeof sawsInfo[index] == undefined)
