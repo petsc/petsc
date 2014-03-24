@@ -3638,17 +3638,24 @@ PetscErrorCode DMLocatePoints(DM dm, Vec v, IS *cells)
 #define __FUNCT__ "DMGetOutputDM"
 PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
 {
+  PetscSection   section;
+  PetscBool      hasConstraints;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(odm,2);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = PetscSectionHasConstraints(section, &hasConstraints);CHKERRQ(ierr);
+  if (!hasConstraints) {
+    *odm = dm;
+    PetscFunctionReturn(0);
+  }
   if (!dm->dmBC) {
-    PetscSection section, newSection, gsection;
+    PetscSection newSection, gsection;
     PetscSF      sf;
 
     ierr = DMClone(dm, &dm->dmBC);CHKERRQ(ierr);
-    ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
     ierr = PetscSectionClone(section, &newSection);CHKERRQ(ierr);
     ierr = DMSetDefaultSection(dm->dmBC, newSection);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&newSection);CHKERRQ(ierr);
