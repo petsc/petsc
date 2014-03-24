@@ -204,7 +204,7 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
   ierr = DMPlexSymmetrize(*dm);CHKERRQ(ierr);
   ierr = DMPlexStratify(*dm);CHKERRQ(ierr);
   if (interpolate) {
-    DM idm;
+    DM idm = NULL;
 
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
     /* Maintain zone label */

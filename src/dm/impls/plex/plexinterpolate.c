@@ -312,8 +312,9 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
 
   Collective on DM
 
-  Input Parameter:
-. dm - The DMPlex object with only cells and vertices
+  Input Parameters:
++ dm - The DMPlex object with only cells and vertices
+- dmInt - If NULL a new DM is created, otherwise the interpolated DM is put into the given DM
 
   Output Parameter:
 . dmInt - The complete DMPlex object
@@ -339,7 +340,8 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
   }
   for (d = 1; d < dim; ++d) {
     /* Create interpolated mesh */
-    ierr = DMCreate(PetscObjectComm((PetscObject)dm), &idm);CHKERRQ(ierr);
+    if ((d == dim-1) && *dmInt) {idm  = *dmInt;}
+    else                        {ierr = DMCreate(PetscObjectComm((PetscObject)dm), &idm);CHKERRQ(ierr);}
     ierr = DMSetType(idm, DMPLEX);CHKERRQ(ierr);
     ierr = DMPlexSetDimension(idm, dim);CHKERRQ(ierr);
     if (depth > 0) {ierr = DMPlexInterpolateFaces_Internal(odm, 1, idm);CHKERRQ(ierr);}

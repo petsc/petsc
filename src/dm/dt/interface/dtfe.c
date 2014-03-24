@@ -1560,6 +1560,7 @@ PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim
   default:
     SETERRQ1(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_WRONG, "Cannot create reference cell for dimension %d", dim);
   }
+  *refdm = NULL;
   ierr = DMPlexInterpolate(rdm, refdm);CHKERRQ(ierr);
   ierr = DMPlexCopyCoordinates(rdm, *refdm);CHKERRQ(ierr);
   ierr = DMDestroy(&rdm);CHKERRQ(ierr);

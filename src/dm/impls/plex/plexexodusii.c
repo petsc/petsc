@@ -118,7 +118,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   ierr = DMPlexSymmetrize(*dm);CHKERRQ(ierr);
   ierr = DMPlexStratify(*dm);CHKERRQ(ierr);
   if (interpolate) {
-    DM idm;
+    DM idm = NULL;
 
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
     /* Maintain Cell Sets label */

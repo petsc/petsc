@@ -117,7 +117,7 @@ PetscErrorCode DMPlexCreateDoublet(MPI_Comm comm, PetscInt dim, PetscBool simple
     *newdm = rdm;
   }
   if (interpolate) {
-    DM idm;
+    DM idm = NULL;
     const char *name;
 
     ierr = DMPlexInterpolate(*newdm, &idm);CHKERRQ(ierr);
@@ -1150,7 +1150,7 @@ PetscErrorCode DMPlexCreateFromCellList(MPI_Comm comm, PetscInt dim, PetscInt nu
   ierr = DMPlexSetDimension(*dm, dim);CHKERRQ(ierr);
   ierr = DMPlexBuildFromCellList_Private(*dm, numCells, numVertices, numCorners, cells);CHKERRQ(ierr);
   if (interpolate) {
-    DM idm;
+    DM idm = NULL;
 
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);

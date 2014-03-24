@@ -226,7 +226,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
 
     ierr = DMPlexCreateFromDAG(dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
     if (interpolate) {
-      DM idm;
+      DM idm = NULL;
 
       ierr = DMPlexInterpolate(dm, &idm);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) idm, "triangle");CHKERRQ(ierr);
@@ -492,7 +492,7 @@ PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool
 
     ierr = DMPlexCreateFromDAG(dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
     if (interpolate) {
-      DM idm;
+      DM idm = NULL;
 
       ierr = DMPlexInterpolate(dm, &idm);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) idm, "quadrilateral");CHKERRQ(ierr);
@@ -743,7 +743,7 @@ PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool t
 
     ierr = DMPlexCreateFromDAG(dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
     if (interpolate) {
-      DM idm;
+      DM idm = NULL;
 
       ierr = DMPlexInterpolate(dm, &idm);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) idm, "tetrahedron");CHKERRQ(ierr);
@@ -887,7 +887,7 @@ PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, PetscBool tr
 
     ierr = DMPlexCreateFromDAG(dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
     if (interpolate) {
-      DM idm;
+      DM idm = NULL;
 
       ierr = DMPlexInterpolate(dm, &idm);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) idm, "hexahedron");CHKERRQ(ierr);
