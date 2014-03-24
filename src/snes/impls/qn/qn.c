@@ -682,7 +682,7 @@ static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer)
 
     Options Database:
 +   -snes_qn_restart_type<powell,periodic,none> - set the restart type
--   -snes_qn_restart[10] - sets the number of iterations before restart for periodic
+-   -snes_qn_m - sets the number of stored updates and the restart period for periodic
 
     Level: intermediate
 
@@ -690,9 +690,6 @@ static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer)
 +   SNES_QN_RESTART_NONE - never restart
 .   SNES_QN_RESTART_POWELL - restart based upon descent criteria
 -   SNES_QN_RESTART_PERIODIC - restart after a fixed number of iterations
-
-    Notes:
-    The default line search used is the L2 line search and it requires two additional function evaluations.
 
 .keywords: SNES, SNESQN, restart, type, set SNESLineSearch
 @*/
