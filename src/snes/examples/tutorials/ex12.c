@@ -652,7 +652,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   ierr = PetscObjectSetName((PetscObject) user->fe[0], "potential");CHKERRQ(ierr);
   while (cdm) {
     ierr = DMSetNumFields(cdm, 1);CHKERRQ(ierr);
-    ierr = DMSetField(cdm, 0, user->fe[0]);CHKERRQ(ierr);
+    ierr = DMSetField(cdm, 0, (PetscObject) user->fe[0]);CHKERRQ(ierr);
     ierr = DMPlexAddBoundary(cdm, user->bcType == DIRICHLET, user->bcType == NEUMANN ? "boundary" : "marker", 0, user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
     ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
