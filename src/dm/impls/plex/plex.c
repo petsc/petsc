@@ -63,7 +63,24 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
     ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr); /* viewer drops reference */
     ierr = PetscObjectReference((PetscObject) v);CHKERRQ(ierr);  /* viewer drops reference */
     ierr = PetscViewerVTKAddField(viewer, (PetscObject) dm, DMPlexVTKWriteAll, ft, (PetscObject) v);CHKERRQ(ierr);
+  } else if (ishdf5) {
+    DM          dmBC;
+    Vec         gv;
+    const char *name;
 
+    ierr = DMGetOutputDM(dm, &dmBC);CHKERRQ(ierr);
+    ierr = DMGetGlobalVector(dmBC, &gv);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) v, &name);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) gv, name);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalBegin(dmBC, v, INSERT_VALUES, gv);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalEnd(dmBC, v, INSERT_VALUES, gv);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5PushGroup(viewer, "/fields");CHKERRQ(ierr);
+    /* TODO ierr = PetscViewerHDF5SetTimestep(viewer, istep);CHKERRQ(ierr); */
+    ierr = PetscObjectTypeCompare((PetscObject) gv, VECSEQ, &isseq);CHKERRQ(ierr);
+    if (isseq) {ierr = VecView_Seq(gv, viewer);CHKERRQ(ierr);}
+    else       {ierr = VecView_MPI(gv, viewer);CHKERRQ(ierr);}
+    ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(dmBC, &gv);CHKERRQ(ierr);
   } else {
     if (isseq) {ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);}
     else       {ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);}
