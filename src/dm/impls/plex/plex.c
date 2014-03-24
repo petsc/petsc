@@ -15,7 +15,7 @@ PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
 {
   DM             dm;
-  PetscBool      isvtk, ishdf5;
+  PetscBool      isvtk, ishdf5, isseq;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -23,37 +23,8 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
   if (!dm) SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,  &isvtk);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
-  /* Insert boundary conditions */
-  if (isvtk || ishdf5) {
-    void  (**funcs)(const PetscReal x[], PetscScalar *u, void *ctx);
-    void   **ctxs;
-    PetscFE *fe;
-    PetscInt numFields, f, numBd, b;
-
-    ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
-    ierr = PetscMalloc3(numFields,&fe,numFields,&funcs,numFields,&ctxs);CHKERRQ(ierr);
-    for (f = 0; f < numFields; ++f) {
-      ierr = DMGetField(dm, f, (PetscObject *) &fe[f]);CHKERRQ(ierr);
-    }
-    /* TODO: Could attempt to do multiple BCs */
-    ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
-    for (b = 0; b < numBd; ++b) {
-      const PetscInt *ids;
-      PetscInt        numids, field;
-      PetscBool       isEssential;
-      void          (*func)();
-      void           *ctx;
-
-      /* TODO: We need to set only the part indicated by the ids */
-      ierr = DMPlexGetBoundary(dm, b, &isEssential, NULL, &field, &func, &numids, &ids, &ctx);CHKERRQ(ierr);
-      for (f = 0; f < numFields; ++f) {
-        funcs[f] = field == f ? (void (*)(const PetscReal[], PetscScalar *, void *)) func : NULL;
-        ctxs[f]  = field == f ? ctx : NULL;
-      }
-      ierr = DMPlexProjectFunctionLocal(dm, fe, funcs, ctxs, INSERT_BC_VALUES, v);CHKERRQ(ierr);
-    }
-    ierr = PetscFree3(fe,funcs,ctxs);CHKERRQ(ierr);
-  }
+  ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
+  if (isvtk || ishdf5) {ierr = DMPlexInsertBoundaryValues(dm, v);CHKERRQ(ierr);}
   if (isvtk) {
     PetscViewerVTKFieldType ft = PETSC_VTK_POINT_FIELD;
     PetscSection            section;
@@ -92,15 +63,10 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
     ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr); /* viewer drops reference */
     ierr = PetscObjectReference((PetscObject) v);CHKERRQ(ierr);  /* viewer drops reference */
     ierr = PetscViewerVTKAddField(viewer, (PetscObject) dm, DMPlexVTKWriteAll, ft, (PetscObject) v);CHKERRQ(ierr);
-  } else {
-    PetscBool isseq;
 
-    ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
-    if (isseq) {
-      ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);
-    } else {
-      ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);
-    }
+  } else {
+    if (isseq) {ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);}
+    else       {ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
@@ -110,7 +76,7 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
 PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
 {
   DM             dm;
-  PetscBool      isvtk, ishdf5;
+  PetscBool      isvtk, ishdf5, isseq;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -118,6 +84,7 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
   if (!dm) SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,  &isvtk);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
   if (isvtk || ishdf5) {
     Vec         locv;
     const char *name;
@@ -130,14 +97,8 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
     ierr = VecView_Plex_Local(locv, viewer);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dm, &locv);CHKERRQ(ierr);
   } else {
-    PetscBool isseq;
-
-    ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
-    if (isseq) {
-      ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);
-    } else {
-      ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);
-    }
+    if (isseq) {ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);}
+    else       {ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
