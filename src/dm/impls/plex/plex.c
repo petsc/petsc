@@ -9,6 +9,7 @@ PetscLogEvent DMPLEX_Interpolate, DMPLEX_Partition, DMPLEX_Distribute, DMPLEX_Di
 
 PETSC_EXTERN PetscErrorCode VecView_Seq(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
+PETSC_EXTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
 
 #undef __FUNCT__
 #define __FUNCT__ "VecView_Plex_Local"
@@ -116,6 +117,71 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
   } else {
     if (isseq) {ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);}
     else       {ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);}
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecLoad_Plex_Local"
+PetscErrorCode VecLoad_Plex_Local(Vec v, PetscViewer viewer)
+{
+  DM             dm;
+  PetscBool      ishdf5;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
+  if (!dm) SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  if (ishdf5) {
+    DM          dmBC;
+    Vec         gv;
+    const char *name;
+
+    ierr = DMGetOutputDM(dm, &dmBC);CHKERRQ(ierr);
+    ierr = DMGetGlobalVector(dmBC, &gv);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) v, &name);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) gv, name);CHKERRQ(ierr);
+    ierr = VecLoad_Default(gv, viewer);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(dmBC, gv, INSERT_VALUES, v);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(dmBC, gv, INSERT_VALUES, v);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(dmBC, &gv);CHKERRQ(ierr);
+  } else {
+    ierr = VecLoad_Default(v, viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecLoad_Plex"
+PetscErrorCode VecLoad_Plex(Vec v, PetscViewer viewer)
+{
+  DM             dm;
+  PetscBool      ishdf5;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
+  if (!dm) SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  if (ishdf5) {
+    Vec         locv;
+    const char *name;
+
+    ierr = DMGetLocalVector(dm, &locv);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) v, &name);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) locv, name);CHKERRQ(ierr);
+    if (ishdf5) {
+      ierr = PetscViewerHDF5PushGroup(viewer, "/fields");CHKERRQ(ierr);
+      /* TODO ierr = PetscViewerHDF5SetTimestep(viewer, istep);CHKERRQ(ierr); */
+    }
+    ierr = VecLoad_Plex_Local(locv, viewer);CHKERRQ(ierr);
+    if (ishdf5) {ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);}
+    ierr = DMLocalToGlobalBegin(dm, locv, INSERT_VALUES, v);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalEnd(dm, locv, INSERT_VALUES, v);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(dm, &locv);CHKERRQ(ierr);
+  } else {
+    ierr = VecLoad_Default(v, viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -496,6 +562,109 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
   } else if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
     ierr = DMPlexView_HDF5(dm, viewer);CHKERRQ(ierr);
+#else
+    SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+#endif
+  }
+  PetscFunctionReturn(0);
+}
+
+#if defined(PETSC_HAVE_HDF5)
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexLoad_HDF5"
+/* The first version will read everything onto proc 0, letting the user distribute
+   The next will create a naive partition, and then rebalance after reading
+*/
+PetscErrorCode DMPlexLoad_HDF5(DM dm, PetscViewer viewer)
+{
+  PetscSection    coordSection;
+  Vec             coordinates;
+  Vec             cellVec;
+  PetscScalar    *cells;
+  PetscReal       lengthScale;
+  PetscInt       *cone;
+  PetscInt        dim, spatialDim, numVertices, v, numCorners, numCells, cell, c;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  /* Read geometry */
+  ierr = PetscViewerHDF5PushGroup(viewer, "/geometry");CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject) dm), &coordinates);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) coordinates, "vertices");CHKERRQ(ierr);
+  ierr = VecLoad(coordinates, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = DMPlexGetScale(dm, PETSC_UNIT_LENGTH, &lengthScale);CHKERRQ(ierr);
+  ierr = VecScale(coordinates, 1.0/lengthScale);CHKERRQ(ierr);
+  ierr = VecGetSize(coordinates, &numVertices);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(coordinates, &spatialDim);CHKERRQ(ierr);
+  numVertices /= spatialDim;
+  /* Read toplogy */
+  ierr = PetscViewerHDF5ReadAttribute(viewer, "/topology/cells", "cell_dim", PETSC_INT, (void *) &dim);CHKERRQ(ierr);
+  ierr = DMPlexSetDimension(dm, dim);CHKERRQ(ierr);
+  /*   TODO Check for coneSize vector rather than this attribute */
+  ierr = PetscViewerHDF5ReadAttribute(viewer, "/topology/cells", "cell_corners", PETSC_INT, (void *) &numCorners);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "/topology");CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject) dm), &cellVec);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(cellVec, numCorners);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) cellVec, "cells");CHKERRQ(ierr);
+  ierr = VecLoad(cellVec, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = VecGetSize(cellVec, &numCells);CHKERRQ(ierr);
+  numCells /= numCorners;
+  /* Create Plex */
+  ierr = DMPlexSetChart(dm, 0, numCells+numVertices);CHKERRQ(ierr);
+  for (cell = 0; cell < numCells; ++cell) {ierr = DMPlexSetConeSize(dm, cell, numCorners);CHKERRQ(ierr);}
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numCorners,&cone);CHKERRQ(ierr);
+  ierr = VecGetArray(cellVec, &cells);CHKERRQ(ierr);
+  for (cell = 0; cell < numCells; ++cell) {
+    for (c = 0; c < numCorners; ++c) {cone[c] = numCells + cells[cell*numCorners+c];}
+    ierr = DMPlexSetCone(dm, cell, cone);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(cellVec, &cells);CHKERRQ(ierr);
+  ierr = PetscFree(cone);CHKERRQ(ierr);
+  ierr = VecDestroy(&cellVec);CHKERRQ(ierr);
+  ierr = DMPlexSymmetrize(dm);CHKERRQ(ierr);
+  ierr = DMPlexStratify(dm);CHKERRQ(ierr);
+  /* Create coordinates */
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(coordSection, 0, spatialDim);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(coordSection, numCells, numCells+numVertices);CHKERRQ(ierr);
+  for (v = numCells; v < numCells+numVertices; ++v) {
+    ierr = PetscSectionSetDof(coordSection, v, spatialDim);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldDof(coordSection, v, 0, spatialDim);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
+  ierr = DMSetCoordinates(dm, coordinates);CHKERRQ(ierr);
+  ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
+  /* TODO Labels*/
+  PetscFunctionReturn(0);
+}
+#endif
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLoad_Plex"
+PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer)
+{
+  PetscBool      isbinary, ishdf5;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERBINARY, &isbinary);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5,   &ishdf5);CHKERRQ(ierr);
+  if (isbinary) {SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Do not yet support binary viewers");}
+  else if (ishdf5) {
+    DM odm;
+#if defined(PETSC_HAVE_HDF5)
+    ierr = DMCreate(PetscObjectComm((PetscObject) dm), &odm);CHKERRQ(ierr);
+    ierr = DMSetType(odm, DMPLEX);CHKERRQ(ierr);
+    ierr = DMPlexLoad_HDF5(odm, viewer);CHKERRQ(ierr);
+    ierr = DMPlexInterpolate(odm, &dm);CHKERRQ(ierr);
+    ierr = DMPlexCopyCoordinates(odm, dm);CHKERRQ(ierr);
+    ierr = DMDestroy(&odm);CHKERRQ(ierr);
 #else
     SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif

@@ -710,6 +710,7 @@ extern PetscErrorCode DMClone_Plex(DM dm, DM *newdm);
 extern PetscErrorCode DMSetUp_Plex(DM dm);
 extern PetscErrorCode DMDestroy_Plex(DM dm);
 extern PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer);
+extern PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer);
 extern PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm);
 extern PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS);
 
@@ -871,7 +872,8 @@ static PetscErrorCode DMCreateGlobalVector_Plex(DM dm,Vec *vec)
   PetscFunctionBegin;
   ierr = DMCreateGlobalVector_Section_Private(dm,vec);CHKERRQ(ierr);
   /* ierr = VecSetOperation(*vec, VECOP_DUPLICATE, (void(*)(void)) VecDuplicate_MPI_DM);CHKERRQ(ierr); */
-  ierr = VecSetOperation(*vec, VECOP_VIEW, (void (*)(void))VecView_Plex);CHKERRQ(ierr);
+  ierr = VecSetOperation(*vec, VECOP_VIEW, (void (*)(void)) VecView_Plex);CHKERRQ(ierr);
+  ierr = VecSetOperation(*vec, VECOP_LOAD, (void (*)(void)) VecLoad_Plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -883,7 +885,8 @@ static PetscErrorCode DMCreateLocalVector_Plex(DM dm,Vec *vec)
 
   PetscFunctionBegin;
   ierr = DMCreateLocalVector_Section_Private(dm,vec);CHKERRQ(ierr);
-  ierr = VecSetOperation(*vec, VECOP_VIEW, (void(*)(void)) VecView_Plex_Local);CHKERRQ(ierr);
+  ierr = VecSetOperation(*vec, VECOP_VIEW, (void (*)(void)) VecView_Plex_Local);CHKERRQ(ierr);
+  ierr = VecSetOperation(*vec, VECOP_LOAD, (void (*)(void)) VecLoad_Plex_Local);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -893,6 +896,7 @@ PetscErrorCode DMInitialize_Plex(DM dm)
 {
   PetscFunctionBegin;
   dm->ops->view                            = DMView_Plex;
+  dm->ops->load                            = DMLoad_Plex;
   dm->ops->setfromoptions                  = DMSetFromOptions_Plex;
   dm->ops->clone                           = DMClone_Plex;
   dm->ops->setup                           = DMSetUp_Plex;
