@@ -20,6 +20,7 @@ class BaseTestPlex(object):
                                                       comm=self.COMM)
 
     def tearDown(self):
+        self.plex.destroy()
         self.plex = None
 
     def testTopology(self):
@@ -121,30 +122,8 @@ class TestPlex_1D(BaseTestPlex, unittest.TestCase):
 class TestPlex_2D(BaseTestPlex_2D, unittest.TestCase):
     pass
 
-class TestPlex_2D_Box(BaseTestPlex_2D, unittest.TestCase):
-    def setUp(self):
-        self.plex = PETSc.DMPlex().createBoxMesh(self.DIM)
-
-class TestPlex_2D_Boundary(BaseTestPlex_2D, unittest.TestCase):
-    def setUp(self):
-        boundary = PETSc.DMPlex().create(self.COMM)
-        boundary.createSquareBoundary([0., 0.], [1., 1.], [2, 2])
-        boundary.setDimension(self.DIM-1)
-        self.plex = PETSc.DMPlex().generate(boundary)
-
 class TestPlex_3D(BaseTestPlex_3D, unittest.TestCase):
     pass
-
-class TestPlex_3D_Box(BaseTestPlex_3D, unittest.TestCase):
-    def setUp(self):
-        self.plex = PETSc.DMPlex().createBoxMesh(self.DIM)
-
-class TestPlex_3D_Boundary(BaseTestPlex_3D, unittest.TestCase):
-    def setUp(self):
-        boundary = PETSc.DMPlex().create(self.COMM)
-        boundary.createCubeBoundary([0., 0., 0.], [1., 1., 1.], [1, 1, 1])
-        boundary.setDimension(self.DIM-1)
-        self.plex = PETSc.DMPlex().generate(boundary)
 
 class TestPlex_2D_P3(BaseTestPlex_2D, unittest.TestCase):
     DOFS = [1, 2, 1]
@@ -154,6 +133,34 @@ class TestPlex_3D_P3(BaseTestPlex_3D, unittest.TestCase):
 
 class TestPlex_3D_P4(BaseTestPlex_3D, unittest.TestCase):
     DOFS = [1, 3, 3, 1]
+
+import sys
+try:
+    PETSc.DMPlex().createBoxMesh(1, comm=PETSc.COMM_SELF).destroy()
+except PETSc.Error:
+    pass
+else:
+    class TestPlex_2D_Box(BaseTestPlex_2D, unittest.TestCase):
+        def setUp(self):
+            self.plex = PETSc.DMPlex().createBoxMesh(self.DIM)
+
+    class TestPlex_2D_Boundary(BaseTestPlex_2D, unittest.TestCase):
+        def setUp(self):
+            boundary = PETSc.DMPlex().create(self.COMM)
+            boundary.createSquareBoundary([0., 0.], [1., 1.], [2, 2])
+            boundary.setDimension(self.DIM-1)
+            self.plex = PETSc.DMPlex().generate(boundary)
+
+    class TestPlex_3D_Box(BaseTestPlex_3D, unittest.TestCase):
+        def setUp(self):
+            self.plex = PETSc.DMPlex().createBoxMesh(self.DIM)
+
+    class TestPlex_3D_Boundary(BaseTestPlex_3D, unittest.TestCase):
+        def setUp(self):
+            boundary = PETSc.DMPlex().create(self.COMM)
+            boundary.createCubeBoundary([0., 0., 0.], [1., 1., 1.], [1, 1, 1])
+            boundary.setDimension(self.DIM-1)
+            self.plex = PETSc.DMPlex().generate(boundary)
 
 # --------------------------------------------------------------------
 
