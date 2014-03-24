@@ -75,12 +75,9 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
     ierr = PetscObjectSetName((PetscObject) gv, name);CHKERRQ(ierr);
     ierr = DMLocalToGlobalBegin(dmBC, v, INSERT_VALUES, gv);CHKERRQ(ierr);
     ierr = DMLocalToGlobalEnd(dmBC, v, INSERT_VALUES, gv);CHKERRQ(ierr);
-    ierr = PetscViewerHDF5PushGroup(viewer, "/fields");CHKERRQ(ierr);
-    /* TODO ierr = PetscViewerHDF5SetTimestep(viewer, istep);CHKERRQ(ierr); */
     ierr = PetscObjectTypeCompare((PetscObject) gv, VECSEQ, &isseq);CHKERRQ(ierr);
     if (isseq) {ierr = VecView_Seq(gv, viewer);CHKERRQ(ierr);}
     else       {ierr = VecView_MPI(gv, viewer);CHKERRQ(ierr);}
-    ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dmBC, &gv);CHKERRQ(ierr);
   } else {
     if (isseq) {ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);}
@@ -112,7 +109,12 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
     ierr = PetscObjectSetName((PetscObject) locv, name);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(dm, v, INSERT_VALUES, locv);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dm, v, INSERT_VALUES, locv);CHKERRQ(ierr);
+    if (ishdf5) {
+      ierr = PetscViewerHDF5PushGroup(viewer, "/fields");CHKERRQ(ierr);
+      /* TODO ierr = PetscViewerHDF5SetTimestep(viewer, istep);CHKERRQ(ierr); */
+    }
     ierr = VecView_Plex_Local(locv, viewer);CHKERRQ(ierr);
+    if (ishdf5) {ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);}
     ierr = DMRestoreLocalVector(dm, &locv);CHKERRQ(ierr);
   } else {
     if (isseq) {ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);}
@@ -452,11 +454,12 @@ PetscErrorCode DMPlexView_HDF5(DM dm, PetscViewer viewer)
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetScale(dm, PETSC_UNIT_LENGTH, &lengthScale);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  ierr = DMGetCoordinates(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = VecDuplicate(coordinates, &newcoords);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) newcoords, "vertices");CHKERRQ(ierr);
   ierr = VecCopy(coordinates, newcoords);CHKERRQ(ierr);
   ierr = VecScale(newcoords, lengthScale);CHKERRQ(ierr);
+  /* Use the local version to bypass the default group setting */
   ierr = PetscViewerHDF5PushGroup(viewer, "/geometry");CHKERRQ(ierr);
   ierr = VecView(newcoords, viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
