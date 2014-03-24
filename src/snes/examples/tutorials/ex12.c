@@ -736,6 +736,7 @@ int main(int argc, char **argv)
   ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) u, "potential");CHKERRQ(ierr);
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
 
   ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr);
