@@ -205,7 +205,10 @@ cdef int SNES_InitialGuess(
     ) except PETSC_ERR_PYTHON with gil:
     cdef SNES Snes = ref_SNES(snes)
     cdef Vec  Xvec = ref_Vec(x)
-    (initialguess, args, kargs) = Snes.get_attr('__initialguess__')
+    cdef object context = Snes.get_attr('__initialguess__')
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple # sanity check
+    (initialguess, args, kargs) = context
     initialguess(Snes, Xvec, *args, **kargs)
     return 0
 
@@ -220,7 +223,10 @@ cdef int SNES_Function(
     cdef SNES Snes = ref_SNES(snes)
     cdef Vec  Xvec = ref_Vec(x)
     cdef Vec  Fvec = ref_Vec(f)
-    (function, args, kargs) = Snes.get_attr('__function__')
+    cdef object context = Snes.get_attr('__function__')
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple # sanity check
+    (function, args, kargs) = context
     function(Snes, Xvec, Fvec, *args, **kargs)
     return 0
 
@@ -231,7 +237,9 @@ cdef int SNES_Update(
     PetscInt  its,
     ) except PETSC_ERR_PYTHON with gil:
     cdef SNES Snes = ref_SNES(snes)
-    (update, args, kargs) = Snes.get_attr('__update__')
+    cdef object context = Snes.get_attr('__update__')
+    assert context is not None and type(context) is tuple # sanity check
+    (update, args, kargs) = context
     update(Snes, toInt(its), *args, **kargs)
     return 0
 
@@ -248,7 +256,10 @@ cdef int SNES_Jacobian(
     cdef Vec  Xvec = ref_Vec(x)
     cdef Mat  Jmat = ref_Mat(J)
     cdef Mat  Pmat = ref_Mat(P)
-    (jacobian, args, kargs) = Snes.get_attr('__jacobian__')
+    cdef object context = Snes.get_attr('__jacobian__')
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple # sanity check
+    (jacobian, args, kargs) = context
     jacobian(Snes, Xvec, Jmat, Pmat, *args, **kargs)
     return 0
 
@@ -262,8 +273,10 @@ cdef int SNES_Objective(
     ) except PETSC_ERR_PYTHON with gil:
     cdef SNES Snes = ref_SNES(snes)
     cdef Vec  Xvec = ref_Vec(x)
-    cdef object obj
-    (objective, args, kargs) = Snes.get_attr('__objective__')
+    cdef object context = Snes.get_attr('__objective__')
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple # sanity check
+    (objective, args, kargs) = context
     obj = objective(Snes, Xvec, *args, **kargs)
     o[0] = asReal(obj)
     return 0
@@ -284,7 +297,10 @@ cdef int SNES_Converged(
     cdef object xn = toReal(xnorm)
     cdef object gn = toReal(gnorm)
     cdef object fn = toReal(fnorm)
-    (converged, args, kargs) = Snes.get_attr('__converged__')
+    cdef object context = Snes.get_attr('__converged__')
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple # sanity check
+    (converged, args, kargs) = context
     reason = converged(Snes, it, (xn, gn, fn), *args, **kargs)
     if   reason is None:  r[0] = SNES_CONVERGED_ITERATING
     elif reason is False: r[0] = SNES_CONVERGED_ITERATING
