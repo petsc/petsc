@@ -2633,7 +2633,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = VecDuplicate(f,&fpc);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes->pc,fpc,func,funcctx);CHKERRQ(ierr);
     ierr = SNESGetJacobian(snes,NULL,NULL,&jac,&jacctx);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes->pc,NULL,NULL,jac,jacctx);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes->pc,snes->jacobian,snes->jacobian_pre,jac,jacctx);CHKERRQ(ierr);
     ierr = SNESGetApplicationContext(snes,&appctx);CHKERRQ(ierr);
     ierr = SNESSetApplicationContext(snes->pc,appctx);CHKERRQ(ierr);
     ierr = VecDestroy(&fpc);CHKERRQ(ierr);
