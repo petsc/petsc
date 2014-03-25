@@ -968,6 +968,25 @@ static PetscErrorCode TSEvaluateStep_RosW(TS ts,PetscInt order,Vec U,PetscBool *
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSRollBack_RosW"
+PetscErrorCode TSRollBack_RosW(TS ts)
+{
+  TS_RosW        *ros = (TS_RosW*)ts->data;
+  RosWTableau    tab = ros->tableau;
+  const PetscInt s    = tab->s;
+  PetscScalar    *w = ros->work;
+  PetscInt       i;
+  Vec            *Y = ros->Y;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for (i=0; i<s; i++) w[i] = -tab->bt[i];
+  ierr = VecMAXPY(ts->vec_sol,s,w,Y);CHKERRQ(ierr);
+  ros->status   = TS_STEP_INCOMPLETE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSStep_RosW"
 static PetscErrorCode TSStep_RosW(TS ts)
 {
@@ -982,14 +1001,14 @@ static PetscErrorCode TSStep_RosW(TS ts)
   SNES            snes;
   TSAdapt         adapt;
   PetscInt        i,j,its,lits,reject,next_scheme;
-  PetscReal       next_time_step;
   PetscBool       accept;
+  PetscReal       next_time_step;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  next_time_step = ts->time_step;
   accept         = PETSC_TRUE;
+  next_time_step = ts->time_step;
   ros->status    = TS_STEP_INCOMPLETE;
 
   for (reject=0; reject<ts->max_reject && !ts->reason; reject++,ts->reject++) {
@@ -1066,10 +1085,9 @@ static PetscErrorCode TSStep_RosW(TS ts)
       ros->status = TS_STEP_COMPLETE;
       break;
     } else {                    /* Roll back the current step */
-      for (i=0; i<s; i++) w[i] = -tab->bt[i];
-      ierr = VecMAXPY(ts->vec_sol,s,w,Y);CHKERRQ(ierr);
-      ts->time_step = next_time_step;
-      ros->status   = TS_STEP_INCOMPLETE;
+      ts->ptime += next_time_step; /* This will be undone in rollback */
+      ros->status = TS_STEP_INCOMPLETE;
+      ierr = TSRollBack(ts);CHKERRQ(ierr);
     }
 reject_step: continue;
   }
@@ -1701,6 +1719,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS ts)
   ts->ops->step           = TSStep_RosW;
   ts->ops->interpolate    = TSInterpolate_RosW;
   ts->ops->evaluatestep   = TSEvaluateStep_RosW;
+  ts->ops->rollback       = TSRollBack_RosW;
   ts->ops->setfromoptions = TSSetFromOptions_RosW;
   ts->ops->snesfunction   = SNESTSFormFunction_RosW;
   ts->ops->snesjacobian   = SNESTSFormJacobian_RosW;

@@ -95,6 +95,7 @@ typedef enum {
   TS_CONVERGED_TIME           = 1,
   TS_CONVERGED_ITS            = 2,
   TS_CONVERGED_USER           = 3,
+  TS_CONVERGED_EVENT          = 4,
   TS_DIVERGED_NONLINEAR_SOLVE = -1,
   TS_DIVERGED_STEP_REJECTED   = -2
 } TSConvergedReason;
@@ -126,6 +127,14 @@ M*/
 
 /*MC
    TS_CONVERGED_USER - user requested termination
+
+   Level: beginner
+
+.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TSSetDuration()
+M*/
+
+/*MC
+   TS_CONVERGED_EVENT - user requested termination on event detection
 
    Level: beginner
 
@@ -226,6 +235,7 @@ PETSC_EXTERN PetscErrorCode TSSetMaxStepRejections(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSGetSNESFailures(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSSetMaxSNESFailures(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSSetErrorIfStepFails(TS,PetscBool);
+PETSC_EXTERN PetscErrorCode TSRollBack(TS);
 
 PETSC_EXTERN PetscErrorCode TSSetInitialTimeStep(TS,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetTimeStep(TS,PetscReal*);
@@ -369,6 +379,7 @@ PETSC_EXTERN PetscErrorCode TSMonitorSPEigCtxCreate(MPI_Comm,const char[],const 
 PETSC_EXTERN PetscErrorCode TSMonitorSPEigCtxDestroy(TSMonitorSPEigCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorSPEig(TS,PetscInt,PetscReal,Vec,void *);
 
+PETSC_EXTERN PetscErrorCode TSSetEventMonitor(TS,PetscInt,PetscInt*,PetscBool*,PetscErrorCode (*)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode (*)(TS,PetscInt,PetscInt[],PetscReal,Vec,void*),void*);
 /*J
    TSSSPType - string with the name of TSSSP scheme.
 
