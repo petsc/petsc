@@ -780,9 +780,11 @@ int main(int argc, char **argv)
 
   ierr = DMPlexProjectFunction(dm, user.fe, user.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   if (user.checkpoint) {
+#if defined(PETSC_HAVE_HDF5)
     ierr = PetscViewerHDF5PushGroup(user.checkpoint, "/fields");CHKERRQ(ierr);
     ierr = VecLoad(u, user.checkpoint);CHKERRQ(ierr);
     ierr = PetscViewerHDF5PopGroup(user.checkpoint);CHKERRQ(ierr);
+#endif
   }
   ierr = PetscViewerDestroy(&user.checkpoint);CHKERRQ(ierr);
   if (user.showInitial) {

@@ -109,12 +109,16 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
     ierr = PetscObjectSetName((PetscObject) locv, name);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(dm, v, INSERT_VALUES, locv);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dm, v, INSERT_VALUES, locv);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HDF5)
     if (ishdf5) {
       ierr = PetscViewerHDF5PushGroup(viewer, "/fields");CHKERRQ(ierr);
       /* TODO ierr = PetscViewerHDF5SetTimestep(viewer, istep);CHKERRQ(ierr); */
     }
+#endif
     ierr = VecView_Plex_Local(locv, viewer);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HDF5)
     if (ishdf5) {ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);}
+#endif
     ierr = DMRestoreLocalVector(dm, &locv);CHKERRQ(ierr);
   } else {
     if (isseq) {ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);}
@@ -173,12 +177,16 @@ PetscErrorCode VecLoad_Plex(Vec v, PetscViewer viewer)
     ierr = DMGetLocalVector(dm, &locv);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) v, &name);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) locv, name);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HDF5)
     if (ishdf5) {
       ierr = PetscViewerHDF5PushGroup(viewer, "/fields");CHKERRQ(ierr);
       /* TODO ierr = PetscViewerHDF5SetTimestep(viewer, istep);CHKERRQ(ierr); */
     }
+#endif
     ierr = VecLoad_Plex_Local(locv, viewer);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HDF5)
     if (ishdf5) {ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);}
+#endif
     ierr = DMLocalToGlobalBegin(dm, locv, INSERT_VALUES, v);CHKERRQ(ierr);
     ierr = DMLocalToGlobalEnd(dm, locv, INSERT_VALUES, v);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dm, &locv);CHKERRQ(ierr);
@@ -660,8 +668,8 @@ PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5,   &ishdf5);CHKERRQ(ierr);
   if (isbinary) {SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Do not yet support binary viewers");}
   else if (ishdf5) {
-    DM odm;
 #if defined(PETSC_HAVE_HDF5)
+    DM odm;
     ierr = DMCreate(PetscObjectComm((PetscObject) dm), &odm);CHKERRQ(ierr);
     ierr = DMSetType(odm, DMPLEX);CHKERRQ(ierr);
     ierr = DMPlexLoad_HDF5(odm, viewer);CHKERRQ(ierr);
