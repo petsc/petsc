@@ -10,6 +10,7 @@ var sawsInfo = [];
 var sawsInfoWriteCounter = 0;//next available space to write to for fieldsplits (new A divs)
 var sawsDataWriteCounter = 0;//next available space to write to for ksp/pc options
 var currentFieldsplitWord = "";//temperature, omega, etc
+var currentFieldsplitNumber = -1;//the number to be put after the a-div
 
 //Use for pcmg
 var mgLevelLocation = ""; //where to put the mg level data once the highest level is determined. put in same level as coarse. this location keeps on getting overwritten every time mg_levels_n is encountered
@@ -50,21 +51,38 @@ SAWsDisplayDirectory = function(sub,divEntry)
             $("#o-1").append("<br><b style='margin-left:20px;' title=\"Preconditioner\" id=\"pcList-1"+SAWs_prefix+"text\">-"+SAWs_prefix+"pc_type &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList-1"+SAWs_prefix+"\"></select>");
             populatePcList("pcList-1"+SAWs_prefix,SAWs_alternatives,SAWs_pcVal);
 
-            //parse through prefix...
+            //parse through prefix: first determine what fieldsplit level we are working with, then determine what endtag we are working with
 
-            //first determine what fieldsplit level we are working with, then determine what endtag we are working with
+            var fieldsplit="0";
 
-            /*var fieldsplit="0";
-            while(SAWs_prefix.indexOf("fieldsplit_")!=-1) {
+            if(SAWs_prefix.indexOf("fieldsplit_")!=-1) {//still contains at least 1 fieldsplit (assume max of 1 fieldsplit for now...need more test cases)
+
+                var closest=SAWs_prefix.length;//the furthest a keyword could possibly be
                 //find index of next keyword (pc, ksp, sub, smoothing, coarse)
+                var keywords=["pc","ksp","sub","smoothing","coarse","redundant"];
+                var loc="";
+                for(var i=0; i<keywords.length; i++) {
+                    loc=SAWs_prefix.indexOf(keywords[i]);
+                    if(loc < closest && loc != -1)
+                        closest=loc;
+                }
 
-            }*/
+                var theword = SAWs_prefix.substring(11,closest-1);//omit the first and last underscore
 
-            //new spot in sawsInfo if needed, etc WILL ADDRESS ALL OF THIS LATER. FOR NOW, ONLY WORKS WITH NO FIELDSPLITS
-            //var index=getSawsIndex(sawsCurrentFieldsplit);
+                if(theword != currentFieldsplitWord) {// new fieldsplit
+                    currentFieldsplitNumber++;
+                    currentFieldsplitWord=theword;
+                    sawsInfo[sawsInfoWriteCounter]=new Object();
+                    sawsInfo[sawsInfoWriteCounter].data=new Array();
+                    sawsInfo[sawsInfoWriteCounter].id=fieldsplit + currentFieldsplitNumber.toString();
+                    sawsInfoWriteCounter++;//immediately increment
+                }
+                if(currentFieldsplitNumber != -1)
+                    fieldsplit = fieldsplit + currentFieldsplitNumber.toString();
+            }
 
-            var index=0;//hard code for now
-            sawsInfo[index].id="0";//hard code for now
+            var index=getSawsIndex(fieldsplit);
+
             var endtag="";
             while(SAWs_prefix!="") {//parse the entire prefix
                 var indexFirstUnderscore=SAWs_prefix.indexOf("_");
@@ -100,9 +118,9 @@ SAWsDisplayDirectory = function(sub,divEntry)
                 sawsInfo[index].data=new Array();
             //search if it has already been created
             if(getSawsDataIndex(index,endtag) == -1) {//doesn't already exist so allocate new memory
-                sawsInfo[index].data[sawsDataWriteCounter]=new Object();
-                sawsInfo[index].data[sawsDataWriteCounter].endtag=endtag;
-                sawsDataWriteCounter++;
+                var writeLoc=sawsInfo[index].data.length;
+                sawsInfo[index].data[writeLoc]=new Object();
+                sawsInfo[index].data[writeLoc].endtag=endtag;
             }
             var index2=getSawsDataIndex(index,endtag);
             sawsInfo[index].data[index2].pc=SAWs_pcVal;
@@ -111,16 +129,20 @@ SAWsDisplayDirectory = function(sub,divEntry)
                 //saws does bjacobi_blocks differently than we do. we put bjacoi_blocks as a different endtag than bjacobi dropdown (lower level) but saws puts them on the same level so we need to add a "0" to the endtag
                 endtag=endtag+"0";
                 if(getSawsDataIndex(index,endtag)==-1) {//need to allocate new memory
-                    sawsInfo[index].data[sawsDataWriteCounter]=new Object();
-                    sawsInfo[index].data[sawsDataWriteCounter].endtag=endtag;
-                    sawsDataWriteCounter++;
+                    var writeLoc=sawsInfo[index].data.length;
+                    sawsInfo[index].data[writeLoc]=new Object();
+                    sawsInfo[index].data[writeLoc].endtag=endtag;
                 }
                 sawsInfo[index].data[getSawsDataIndex(index,endtag)].bjacobi_blocks = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_bjacobi_blocks"].data[0];
             }
 
         }
 
-    } else if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Krylov Method (KSP) options") {
+    }
+
+    /* ---------------------------------- KSP OPTIONS --------------------------------- */
+
+    else if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Krylov Method (KSP) options") {
         var SAWs_kspVal       = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-ksp_type"].data[0];
         var SAWs_alternatives = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-ksp_type"].alternatives;
         var SAWs_prefix       = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables.prefix.data[0];
@@ -135,17 +157,36 @@ SAWsDisplayDirectory = function(sub,divEntry)
             //parse through prefix...
             //first determine what fieldsplit level we are working with, then determine what endtag we are working with
 
-            /*var fieldsplit="0";
-            while(SAWs_prefix.indexOf("fieldsplit_")!=-1) {
+            var fieldsplit="0";
+
+            if(SAWs_prefix.indexOf("fieldsplit_")!=-1) {//still contains at least 1 fieldsplit (assume max of 1 fieldsplit for now...need more test cases)
+
+                var closest=SAWs_prefix.length;//the furthest a keyword could possibly be
                 //find index of next keyword (pc, ksp, sub, smoothing, coarse)
+                var keywords=["pc","ksp","sub","smoothing","coarse","redundant"];
+                var loc="";
+                for(var i=0; i<keywords.length; i++) {
+                    loc=SAWs_prefix.indexOf(keywords[i]);
+                    if(loc < closest && loc != -1)
+                        closest=loc;
+                }
 
-            }*/
+                var theword = SAWs_prefix.substring(11,closest-1);//omit the first and last underscore
 
-            //new spot in sawsInfo if needed, etc WILL ADDRESS ALL OF THIS LATER. FOR NOW, ONLY WORKS WITH NO FIELDSPLITS
-            //var index=getSawsIndex(sawsCurrentFieldsplit);
+                if(theword != currentFieldsplitWord) {// new fieldsplit
+                    currentFieldsplitNumber++;
+                    currentFieldsplitWord=theword;
+                    sawsInfo[sawsInfoWriteCounter]=new Object();
+                    sawsInfo[sawsInfoWriteCounter].data=new Array();
+                    sawsInfo[sawsInfoWriteCounter].id=fieldsplit + currentFieldsplitNumber.toString();
+                    sawsInfoWriteCounter++;//immediately increment
+                }
+                if(currentFieldsplitNumber != -1)
+                    fieldsplit = fieldsplit + currentFieldsplitNumber.toString();
+            }
 
-            var index=0;//hard code for now
-            sawsInfo[index].id="0";//hard code for now
+            var index=getSawsIndex(fieldsplit);
+
             var endtag="";
 
             while(SAWs_prefix!="") {//parse the entire prefix
@@ -175,9 +216,9 @@ SAWsDisplayDirectory = function(sub,divEntry)
                 sawsInfo[index].data=new Array();
             //search if it has already been created
             if(getSawsDataIndex(index,endtag) == -1) {//doesn't already exist so allocate new memory
-                sawsInfo[index].data[sawsDataWriteCounter]=new Object();
-                sawsInfo[index].data[sawsDataWriteCounter].endtag=endtag;
-                sawsDataWriteCounter++;
+                var writeLoc=sawsInfo[index].data.length;
+                sawsInfo[index].data[writeLoc]=new Object();
+                sawsInfo[index].data[writeLoc].endtag=endtag;
             }
             var index2=getSawsDataIndex(index,endtag);
             sawsInfo[index].data[index2].ksp=SAWs_kspVal;
@@ -712,10 +753,10 @@ function solverGetOptions(matInfo)
 }
 
 /*
-  getMatIndex - 
-  input: 
+  getMatIndex -
+  input:
     desired id in string format. (for example, "01001")
-  output: 
+  output:
     index in matInfo where information on that id is located
 */
 function getMatIndex(id)
@@ -736,7 +777,7 @@ function getMatIndex(id)
 */
 function getSawsIndex(id)
 {
-    for(var i=0; i<sawsInfoWriteCounter; i++) {
+    for(var i=0; i<sawsInfo.length; i++) {
         if(sawsInfo[i].id == id)
             return i;//return index where information is located
     }
@@ -745,7 +786,7 @@ function getSawsIndex(id)
 
 function getSawsDataIndex(id, endtag)//id is the adiv we are working with. endtag is the id of the data we are looking for
 {
-    for(var i=0; i<sawsDataWriteCounter; i++) {
+    for(var i=0; i<sawsInfo[id].data.length; i++) {
         if(sawsInfo[id].data[i].endtag == endtag)
             return i;//return index where information is located
     }
