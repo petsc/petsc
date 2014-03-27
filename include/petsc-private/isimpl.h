@@ -31,9 +31,9 @@ struct _ISOps {
 
 struct _p_IS {
   PETSCHEADER(struct _ISOps);
+  PetscLayout  map;
   PetscBool    isperm;          /* if is a permutation */
   PetscInt     max,min;         /* range of possible values */
-  PetscInt     bs;              /* block size */
   void         *data;
   PetscBool    isidentity;
   PetscInt     *total, *nonlocal;   /* local representation of ALL indices across the comm as well as the nonlocal part. */

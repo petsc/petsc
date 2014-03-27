@@ -219,6 +219,7 @@ PetscErrorCode  ISDestroy(IS *is)
   if ((*is)->ops->destroy) {
     ierr = (*(*is)->ops->destroy)(*is);CHKERRQ(ierr);
   }
+  ierr = PetscLayoutDestroy(&(*is)->map);CHKERRQ(ierr);
   /* Destroy local representations of offproc data. */
   ierr = PetscFree((*is)->total);CHKERRQ(ierr);
   ierr = PetscFree((*is)->nonlocal);CHKERRQ(ierr);
@@ -1011,8 +1012,10 @@ PetscErrorCode  ISSetBlockSize(IS is,PetscInt bs)
 @*/
 PetscErrorCode  ISGetBlockSize(IS is,PetscInt *size)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  *size = is->bs;
+  ierr = PetscLayoutGetBlockSize(is->map, size);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
