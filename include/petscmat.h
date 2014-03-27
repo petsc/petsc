@@ -319,14 +319,11 @@ PETSC_EXTERN PetscErrorCode MatAssembled(Mat,PetscBool *);
 
 .seealso: MatSetOption()
 E*/
-typedef enum {MAT_OPTION_MIN = -8,
-              MAT_NEW_NONZERO_LOCATION_ERR = -7,
-              MAT_NO_OFF_PROC_ZERO_ROWS = -6,
-              MAT_NO_OFF_PROC_ENTRIES = -5,
-              MAT_UNUSED_NONZERO_LOCATION_ERR = -4,
-              MAT_NEW_NONZERO_ALLOCATION_ERR = -3,
-              MAT_ROW_ORIENTED = -2,
-              MAT_NEW_NONZERO_LOCATIONS = -1,
+typedef enum {MAT_OPTION_MIN = -5,
+              MAT_NEW_NONZERO_LOCATION_ERR = -4,
+              MAT_UNUSED_NONZERO_LOCATION_ERR = -3,
+              MAT_NEW_NONZERO_ALLOCATION_ERR = -2,
+              MAT_ROW_ORIENTED = -1,
               MAT_SYMMETRIC = 1,
               MAT_STRUCTURALLY_SYMMETRIC = 2,
               MAT_NEW_DIAGONALS = 3,
@@ -342,7 +339,10 @@ typedef enum {MAT_OPTION_MIN = -8,
               MAT_ERROR_LOWER_TRIANGULAR = 13,
               MAT_GETROW_UPPERTRIANGULAR = 14,
               MAT_SPD = 15,
-              MAT_OPTION_MAX = 16} MatOption;
+              MAT_NO_OFF_PROC_ZERO_ROWS = 16,
+              MAT_NO_OFF_PROC_ENTRIES = 17,
+              MAT_NEW_NONZERO_LOCATIONS = 18,
+              MAT_OPTION_MAX = 19} MatOption;
 
 PETSC_EXTERN const char *MatOptions[];
 PETSC_EXTERN PetscErrorCode MatSetOption(Mat,MatOption,PetscBool );

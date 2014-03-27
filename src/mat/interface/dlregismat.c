@@ -1,18 +1,30 @@
 
 #include <petsc-private/matimpl.h>
 
-const char       *MatOptions[] = {"ROW_ORIENTED","NEW_NONZERO_LOCATIONS",
+const char       *MatOptions[] = {"NEW_NONZERO_LOCATION_ERR",
+                                  "UNUSED_NONZERO_LOCATION_ERR",
+                                  "NEW_NONZERO_ALLOCATION_ERR",
+                                  "ROW_ORIENTED",
+                                  "NEW_NONZERO_LOCATIONS",
                                   "SYMMETRIC",
                                   "STRUCTURALLY_SYMMETRIC",
                                   "NEW_DIAGONALS",
                                   "IGNORE_OFF_PROC_ENTRIES",
-                                  "NEW_NONZERO_LOCATION_ERR",
-                                  "NEW_NONZERO_ALLOCATION_ERR","USE_HASH_TABLE",
-                                  "KEEP_NONZERO_PATTERN","IGNORE_ZERO_ENTRIES","USE_INODES",
+                                  "USE_HASH_TABLE",
+                                  "KEEP_NONZERO_PATTERN",
+                                  "IGNORE_ZERO_ENTRIES",
+                                  "USE_INODES",
                                   "HERMITIAN",
                                   "SYMMETRY_ETERNAL",
                                   "DUMMY",
-                                  "IGNORE_LOWER_TRIANGULAR","ERROR_LOWER_TRIANGULAR","GETROW_UPPERTRIANGULAR","SPD","NO_OFF_PROC_ENTRIES","NO_OFF_PROC_ZERO_ROWS","MatOption","MAT_",0};
+                                  "IGNORE_LOWER_TRIANGULAR",
+                                  "ERROR_LOWER_TRIANGULAR",
+                                  "GETROW_UPPERTRIANGULAR",
+                                  "SPD",
+                                  "NO_OFF_PROC_ZERO_ROWS",
+                                  "NO_OFF_PROC_ENTRIES",
+                                  "NEW_NONZERO_LOCATIONS",
+                                  "MatOption","MAT_",0};
 const char *const MatFactorShiftTypes[] = {"NONE","NONZERO","POSITIVE_DEFINITE","INBLOCKS","MatFactorShiftType","PC_FACTOR_",0};
 const char *const MatFactorShiftTypesDetail[] = {NULL,"diagonal shift to prevent zero pivot","Manteuffel shift","diagonal shift on blocks to prevent zero pivot"};
 const char *const MPPTScotchStrategyTypes[] = {"QUALITY","SPEED","BALANCE","SAFETY","SCALABILITY","MPPTScotchStrategyType","MP_PTSCOTCH_",0};
