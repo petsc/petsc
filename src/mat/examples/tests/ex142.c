@@ -125,7 +125,7 @@ int main(int argc,char **args)
     ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
     ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
     ierr = VecGetArray(z,&z_array);CHKERRQ(ierr);
-    for (i=0; i<3; i++) {
+    for (i=0; i<4; i++) {
       /* FFTW_FORWARD */
       fftw_execute(fplan);
       
