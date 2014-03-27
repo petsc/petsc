@@ -145,6 +145,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t *groupId)
 {
   hid_t          file_id, group;
+  htri_t         found;
   const char     *groupName = NULL;
   PetscErrorCode ierr;
 
@@ -156,7 +157,8 @@ PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t
     PetscBool root;
 
     ierr = PetscStrcmp(groupName, "/", &root);CHKERRQ(ierr);
-    if (!root && !H5Lexists(file_id, groupName, H5P_DEFAULT)) {
+    found = H5Lexists(file_id, groupName, H5P_DEFAULT);
+    if (!root && (found <= 0)) {
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
       group = H5Gcreate2(file_id, groupName, 0, H5P_DEFAULT, H5P_DEFAULT);
 #else /* deprecated HDF5 1.6 API */
