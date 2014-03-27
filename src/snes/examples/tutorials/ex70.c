@@ -208,7 +208,7 @@ PetscErrorCode StokesExactSolution(Stokes *s)
     ierr = StokesGetPosition(s, row,&i,&j);CHKERRQ(ierr);
     if (row < s->nx*s->ny) {
       val = StokesExactVelocityX(j*s->hy+s->hy/2);
-    } else if (row < 2*s->nx*s->ny) {
+    } else {
       val = 0;
     }
     ierr = VecSetValue(y0, row, val, INSERT_VALUES);CHKERRQ(ierr);
