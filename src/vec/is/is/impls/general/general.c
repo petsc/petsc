@@ -482,7 +482,9 @@ PetscErrorCode ISView_General(IS is,PetscViewer viewer)
   } else if (isbinary) {
     ierr = ISView_General_Binary(is,viewer);CHKERRQ(ierr);
   } else if (ishdf5) {
+#if defined(PETSC_HAVE_HDF5)
     ierr = ISView_General_HDF5(is,viewer);CHKERRQ(ierr);
+#endif
   }
   PetscFunctionReturn(0);
 }
