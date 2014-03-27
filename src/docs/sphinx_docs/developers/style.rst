@@ -209,11 +209,29 @@ C Formatting
 
 #. Do not leave sections of commented-out code in the source files.
 
-#. Do not use C++-style comments (``// Comment``). Use only C-style
-   comments (``/* Comment */``).
+#. Use classic block comments (``/* Comment */``) for multi-line comments and
+   for *all* comments in headers.  Single-line comments in source files (*not*
+   headers) may use the C99/C++ style (``// Comment``).  The rationale is that
+   it must be possible for users to build applications using strict ``-std=c89``
+   even though PETSc (since v3.14) uses select C99 features internally.
 
-#. All variables must be declared at the beginning of the code block
-   (C89 style), never mixed in with code.
+#. All variables must be declared at the beginning of the code block (C89
+   style), never mixed in with code.  When variables are only used in a limited
+   scope, it is encouraged to declare them in that scope.  For example::
+
+     if (cond) {
+       PetscScalar *tmp;
+
+       ierr = PetscMalloc1(10,&tmp);CHKERRQ(ierr);
+       // use tmp
+       ierr = PetscFree(tmp);CHKERRQ(ierr);
+     }
+
+   It is also permissible to use ``for`` loop declarations::
+
+     for (PetscInt i=0; i<n; i++) {
+       // loop body
+     }
 
 #. Do not include a space after a ``(`` or before a ``)``. Do not write
 
@@ -266,11 +284,40 @@ C Usage
 #. Do not use ``#ifdef`` or ``#ifndef``. Rather, use ``#if defined(...``
    or ``#if !defined(...``
 
+#. When possible, use ``PetscDefined()`` instead of preprocessor conditionals.
+   For example use::
+
+     if (PetscDefined(USE_DEBUG)) { ... }
+
+   instead of::
+
+     #if defined(PETSC_USE_DEBUG)
+       ...
+     #endif
+
+   The former usage allows syntax and type checking in all configurations of
+   PETSc, where as the latter needs to be compiled with and without debugging
+   just to confirm that it compiles.
+
 #. Never use system random number generators such as ``rand()`` in PETSc
    code or examples because these can produce different results on
    different systems thus making portability testing difficult. Instead
    use ``PetscRandom`` which produces the exact same results regardless
    of system it is used on.
+
+#. Variadic macros may be used in PETSc source files, but must work with MSVC
+   and must not be required in headers (which must be usable with strict
+   ``-std=c89``).  Most compilers have conforming implementations of the
+   C99/C++11 rules for ``__VA_ARGS__``, but MSVC's implementation is not
+   conforming and may need workarounds.  See ``PetscDefined()`` for an example
+   of how to work around MSVC's limitations to write a macro that is usable in
+   both.
+
+#. Do not use language features that are not in the intersection of C99, C++11,
+   and MSVC.  Examples of such features include designated initializers and
+   variable-length arrays.  Note that variable-length arrays (including
+   VLA-pointers) are not supported in C++ and were made optional in C11 and that
+   designated initializers are not in C++.
 
 .. _usage_of_petsc_functions_and_macros:
 

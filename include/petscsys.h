@@ -134,6 +134,46 @@ void assert_never_put_petsc_headers_inside_an_extern_c(int); void assert_never_p
 #  include <mpi.h>
 #endif
 
+/*MC
+  PetscDefined - determine whether a boolean macro is defined
+
+  Notes:
+  Typical usage is within normal code,
+
+$   if (PetscDefined(USE_DEBUG)) { ... }
+
+  but can also be used in the preprocessor,
+
+$   #if PetscDefined(USE_DEBUG)
+$     ...
+$   #else
+
+  Either way evaluates true if PETSC_USE_DEBUG is defined (merely defined or defined to 1) or undefined.  This macro
+  should not be used if its argument may be defined to a non-empty value other than 1.
+
+  Developer Notes:
+  Getting something that works in C and CPP for an arg that may or may not be defined is tricky.  Here, if we have
+  "#define PETSC_HAVE_BOOGER 1" we match on the placeholder define, insert the "0," for arg1 and generate the triplet
+  (0, 1, 0).  Then the last step cherry picks the 2nd arg (a one).  When PETSC_HAVE_BOOGER is not defined, we generate
+  a (... 1, 0) pair, and when the last step cherry picks the 2nd arg, we get a zero.
+
+  Our extra expansion via PetscDefined__take_second_expand() is needed with MSVC, which has a nonconforming
+  implementation of variadic macros.
+
+  Level: developer
+M*/
+#if !defined(PETSC_SKIP_VARIADIC_MACROS)
+#  define PetscDefined_arg_1    shift,
+#  define PetscDefined_arg_     shift,
+#  define PetscDefined__take_second_expanded(ignored, val, ...) val
+#  define PetscDefined__take_second_expand(args) PetscDefined__take_second_expanded args
+#  define PetscDefined__take_second(...) PetscDefined__take_second_expand((__VA_ARGS__))
+#  define PetscDefined___(arg1_or_junk) PetscDefined__take_second(arg1_or_junk 1, 0, at_)
+#  define PetscDefined__(value) PetscDefined___(PetscDefined_arg_ ## value)
+#  define PetscDefined_(d)      PetscDefined__(d)
+#  define PetscDefined(d)       PetscDefined_(PETSC_ ## d)
+#endif
+
 /*
    Perform various sanity checks that the correct mpi.h is being included at compile time.
    This usually happens because

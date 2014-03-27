@@ -768,7 +768,6 @@ PetscErrorCode PetscSFLinkDestroy(PetscSF sf,PetscSFLink *avail)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_USE_DEBUG)
 /* Error out on unsupported overlapped communications */
 PetscErrorCode PetscSFSetErrorOnUnsupportedOverlap(PetscSF sf,MPI_Datatype unit,const void *rootdata,const void *leafdata)
 {
@@ -778,6 +777,7 @@ PetscErrorCode PetscSFSetErrorOnUnsupportedOverlap(PetscSF sf,MPI_Datatype unit,
   PetscBool         match;
 
   PetscFunctionBegin;
+  if (!PetscDefined(USE_DEBUG)) PetscFunctionReturn(0);
   /* Look up links in use and error out if there is a match. When both rootdata and leafdata are NULL, ignore
      the potential overlapping since this process does not participate in communication. Overlapping is harmless.
   */
@@ -789,7 +789,6 @@ PetscErrorCode PetscSFSetErrorOnUnsupportedOverlap(PetscSF sf,MPI_Datatype unit,
   }
   PetscFunctionReturn(0);
 }
-#endif
 
 PetscErrorCode PetscSFLinkSetUp_Host(PetscSF sf,PetscSFLink link,MPI_Datatype unit)
 {

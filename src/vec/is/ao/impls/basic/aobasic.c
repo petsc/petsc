@@ -224,8 +224,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
   ierr = MPI_Allgatherv((void*)myapp, count, MPIU_INT, allapp, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
   ierr = PetscFree2(lens,disp);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_DEBUG)
-  {
+  if (PetscDefined(USE_DEBUG)) {
     PetscInt *sorted;
     ierr = PetscMalloc1(N,&sorted);CHKERRQ(ierr);
 
@@ -243,7 +242,6 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
 
     ierr = PetscFree(sorted);CHKERRQ(ierr);
   }
-#endif
 
   /* generate a list of application and PETSc node numbers */
   ierr = PetscCalloc2(N, &aobasic->app,N,&aobasic->petsc);CHKERRQ(ierr);
