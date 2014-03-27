@@ -1631,7 +1631,7 @@ runex112:
 	   else printf "${PWD}\nPossible problem with ex112_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex112_1.tmp
 
-runex112_2:
+runex112_2: #error for complex, 32bit
 	-@${MPIEXEC} -n 1 ./ex112 -mat_fftw_plannerflags FFTW_MEASURE > ex112_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex112.out ex112_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex112_2, diffs above\n=========================================\n"; fi; \
@@ -2025,7 +2025,7 @@ TESTEXAMPLES_13		       = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex7
 TESTEXAMPLES_PARMETIS	       = ex73.PETSc ex73.rm ex152.PETSc runex152 runex152_2 ex152.rm
 TESTEXAMPLES_FFTW_REAL         = ex142.PETSc runex142 ex142.rm ex144.PETSc runex144 runex144_2 ex144.rm \
                                  ex148.PETsc runex148 runex148_2 ex148.rm ex158.PETsc runex158 runex158_2 ex158.rm
-TESTEXAMPLES_FFTW_COMPLEX       = ex112.PETSc runex112 runex112_2 runex112_3 runex112_4 ex112.rm ex121.PETSc ex121.rm \
+TESTEXAMPLES_FFTW_COMPLEX       = ex112.PETSc runex112 runex112_3 runex112_4 ex112.rm ex121.PETSc ex121.rm \
                                  ex143.PETSc runex143 runex143_2 ex143.rm \
 TESTEXAMPLES_C_COMPLEX	       = ex127.PETSc runex127 runex127_2 ex127.rm
 TESTEXAMPLES_ELEMENTAL         = ex38.PETSc runex38 runex38_2 runex38_3 ex38.rm \

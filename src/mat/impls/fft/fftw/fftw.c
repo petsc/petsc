@@ -10,16 +10,16 @@ EXTERN_C_BEGIN
 EXTERN_C_END
 
 typedef struct {
-  ptrdiff_t   ndim_fftw,*dim_fftw;
+  ptrdiff_t    ndim_fftw,*dim_fftw;
 #if defined(PETSC_USE_64BIT_INDICES)
   fftw_iodim64 *iodims;
 #else
   fftw_iodim   *iodims;
 #endif
-  PetscInt    partial_dim;
-  fftw_plan   p_forward,p_backward;
-  unsigned    p_flag; /* planner flags, FFTW_ESTIMATE,FFTW_MEASURE, FFTW_PATIENT, FFTW_EXHAUSTIVE */
-  PetscScalar *finarray,*foutarray,*binarray,*boutarray; /* keep track of arrays becaue fftw plan should be
+  PetscInt     partial_dim;
+  fftw_plan    p_forward,p_backward;
+  unsigned     p_flag; /* planner flags, FFTW_ESTIMATE,FFTW_MEASURE, FFTW_PATIENT, FFTW_EXHAUSTIVE */
+  PetscScalar  *finarray,*foutarray,*binarray,*boutarray; /* keep track of arrays becaue fftw plan should be
                                                             executed for the arrays with which the plan was created */
 } Mat_FFTW;
 
@@ -46,12 +46,15 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
   Mat_FFT        *fft  = (Mat_FFT*)A->data;
   Mat_FFTW       *fftw = (Mat_FFTW*)fft->data;
   PetscScalar    *x_array,*y_array;
-#if defined(PETSC_USE_64BIT_INDICES)
+#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_64BIT_INDICES) 
   fftw_iodim64   *iodims;
 #else
   fftw_iodim     *iodims;
 #endif
-  PetscInt       ndim = fft->ndim,*dim = fft->dim,i;
+  PetscInt       i;
+#endif
+  PetscInt       ndim = fft->ndim,*dim = fft->dim;
 
   PetscFunctionBegin;
   ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
@@ -144,10 +147,12 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
   Mat_FFTW       *fftw = (Mat_FFTW*)fft->data;
   PetscScalar    *x_array,*y_array;
   PetscInt       ndim=fft->ndim,*dim=fft->dim;
+#if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_64BIT_INDICES)
   fftw_iodim64   *iodims=fftw->iodims;
 #else
   fftw_iodim     *iodims=fftw->iodims;
+#endif
 #endif
  
   PetscFunctionBegin;
@@ -691,7 +696,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
 #if !defined(PETSC_USE_COMPLEX)
   PetscInt       i,j,k,partial_dim;
   PetscInt       *indx1, *indx2, tempindx, tempindx1;
-  PetscInt       N1, n1,NM;
+  PetscInt       N1,n1,NM;
   ptrdiff_t      temp;
 #endif
 
@@ -926,10 +931,10 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
   VecScatter     vecscat;
   IS             list1,list2;
 #if !defined(PETSC_USE_COMPLEX)
-  PetscInt  i,j,k,partial_dim;
-  PetscInt  *indx1, *indx2, tempindx, tempindx1;
-  PetscInt  N1, n1,NM;
-  ptrdiff_t temp;
+  PetscInt       i,j,k,partial_dim;
+  PetscInt       *indx1, *indx2, tempindx, tempindx1;
+  PetscInt       N1, n1,NM;
+  ptrdiff_t      temp;
 #endif
 
   PetscFunctionBegin;
@@ -1141,10 +1146,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
   ptrdiff_t      *pdim;
   ptrdiff_t      local_n1,local_1_start;
 #if !defined(PETSC_USE_COMPLEX)
-  ptrdiff_t temp;
-  PetscInt  N1,tot_dim;
+  ptrdiff_t      temp;
+  PetscInt       N1,tot_dim;
 #else
-  PetscInt n1;
+  PetscInt       n1;
 #endif
 
   PetscFunctionBegin;

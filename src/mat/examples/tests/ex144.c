@@ -6,7 +6,7 @@ static char help[]="This program illustrates the use of parallel real 2D fft usi
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   const ptrdiff_t N0=2056,N1=2056;
   fftw_plan       bplan,fplan;
@@ -15,7 +15,8 @@ PetscInt main(PetscInt argc,char **args)
   ptrdiff_t       alloc_local,local_n0,local_0_start;
   ptrdiff_t       local_n1,local_1_start;
   PetscInt        i,j;
-  PetscInt        size,rank,n,N,N_factor,NM;
+  PetscMPIInt     size,rank;
+  int             n,N,N_factor,NM;
   PetscScalar     one=2.0,zero=0.5;
   PetscScalar     two=4.0,three=8.0,four=16.0;
   PetscScalar     a,*x_arr,*y_arr,*z_arr,enorm;

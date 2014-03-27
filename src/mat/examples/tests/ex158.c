@@ -11,7 +11,7 @@ static char help[] = "Illustrate how to use mpi FFTW and PETSc-FFTW interface \n
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
@@ -105,7 +105,9 @@ PetscInt main(PetscInt argc,char **args)
       N *= dim[i-1];
 
       /* Create FFTW object */
-      if (!rank) printf("Use PETSc-FFTW interface...%d-DIM:%d \n",DIM,N);
+      if (!rank) {
+        ierr = PetscPrintf(PETSC_COMM_SELF,"Use PETSc-FFTW interface...%d-DIM:%d \n",DIM,N);CHKERRQ(ierr);
+      }
       ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
 
       /* Create FFTW vectors that are compatible with parallel layout of A */
