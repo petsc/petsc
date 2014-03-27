@@ -74,6 +74,7 @@ PETSC_EXTERN PetscErrorCode ISGetLocalSize(IS,PetscInt *);
 PETSC_EXTERN PetscErrorCode ISInvertPermutation(IS,PetscInt,IS*);
 PETSC_EXTERN PetscErrorCode ISView(IS,PetscViewer);
 PETSC_STATIC_INLINE PetscErrorCode ISViewFromOptions(IS A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+PETSC_EXTERN PetscErrorCode ISLoad(IS,PetscViewer);
 PETSC_EXTERN PetscErrorCode ISEqual(IS,IS,PetscBool  *);
 PETSC_EXTERN PetscErrorCode ISSort(IS);
 PETSC_EXTERN PetscErrorCode ISSorted(IS,PetscBool  *);

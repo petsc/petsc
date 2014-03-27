@@ -21,6 +21,7 @@ struct _ISOps {
   PetscErrorCode (*duplicate)(IS,IS*);
   PetscErrorCode (*destroy)(IS);
   PetscErrorCode (*view)(IS,PetscViewer);
+  PetscErrorCode (*load)(IS,PetscViewer);
   PetscErrorCode (*identity)(IS,PetscBool*);
   PetscErrorCode (*copy)(IS,IS);
   PetscErrorCode (*togeneral)(IS);
@@ -40,6 +41,8 @@ struct _p_IS {
   PetscInt     local_offset;        /* offset to the local part within the total index set */
   IS           complement;          /* IS wrapping nonlocal indices. */
 };
+
+extern PetscErrorCode ISLoad_Default(IS, PetscViewer);
 
 struct _p_ISLocalToGlobalMapping{
   PETSCHEADER(int);
