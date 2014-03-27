@@ -131,7 +131,9 @@ PetscErrorCode ISLoad_Default(IS is, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HDF5)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
+#endif
   if (isbinary) {
     SETERRQ(PetscObjectComm((PetscObject) is), PETSC_ERR_SUP, "This should be implemented");
 #if defined(PETSC_HAVE_HDF5)
