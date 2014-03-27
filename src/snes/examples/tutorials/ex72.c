@@ -387,7 +387,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
     numBC = 1;
     ierr  = DMPlexGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
   }
-  ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
+  ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, NULL, &section);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldName(section, 0, "velocity");CHKERRQ(ierr);
   ierr = PetscSectionSetFieldName(section, 1, "pressure");CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);

@@ -3992,13 +3992,16 @@ PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
 . numDof    - An array of size numFields*(dim+1) which holds the number of dof for each field on a mesh piece of dimension d
 . numBC     - The number of boundary conditions
 . bcField   - An array of size numBC giving the field number for each boundry condition
-- bcPoints  - An array of size numBC giving an IS holding the sieve points to which each boundary condition applies
+. bcPoints  - An array of size numBC giving an IS holding the sieve points to which each boundary condition applies
+- perm      - Optional permutation of the chart, or NULL
 
   Output Parameter:
 . section - The PetscSection object
 
   Notes: numDof[f*(dim+1)+d] gives the number of dof for field f on sieve points of dimension d. For instance, numDof[1] is the
-  nubmer of dof for field 0 on each edge.
+  number of dof for field 0 on each edge.
+
+  The chart permutation is the same one set using PetscSectionSetPermutation()
 
   Level: developer
 
@@ -4006,15 +4009,16 @@ PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
   A Fortran 90 version is available as DMPlexCreateSectionF90()
 
 .keywords: mesh, elements
-.seealso: DMPlexCreate(), PetscSectionCreate()
+.seealso: DMPlexCreate(), PetscSectionCreate(), PetscSectionSetPermutation()
 @*/
-PetscErrorCode DMPlexCreateSection(DM dm, PetscInt dim, PetscInt numFields,const PetscInt numComp[],const PetscInt numDof[], PetscInt numBC,const PetscInt bcField[],const IS bcPoints[], PetscSection *section)
+PetscErrorCode DMPlexCreateSection(DM dm, PetscInt dim, PetscInt numFields,const PetscInt numComp[],const PetscInt numDof[], PetscInt numBC,const PetscInt bcField[],const IS bcPoints[], IS perm, PetscSection *section)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexCreateSectionInitial(dm, dim, numFields, numComp, numDof, section);CHKERRQ(ierr);
   ierr = DMPlexCreateSectionBCDof(dm, numBC, bcField, bcPoints, PETSC_DETERMINE, *section);CHKERRQ(ierr);
+  if (perm) {ierr = PetscSectionSetPermutation(*section, perm);CHKERRQ(ierr);}
   ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
   if (numBC) {ierr = DMPlexCreateSectionBCIndicesAll(dm, *section);CHKERRQ(ierr);}
   ierr = PetscSectionViewFromOptions(*section,NULL,"-section_view");CHKERRQ(ierr);
@@ -5766,7 +5770,7 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
       if ((numDof[f*(dim+1)+d] > 0) && (depth < dim)) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
     }
   }
-  ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
+  ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, NULL, &section);CHKERRQ(ierr);
   for (f = 0; f < numFields; ++f) {
     PetscFE     fe;
     const char *name;

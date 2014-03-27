@@ -656,7 +656,7 @@ PetscErrorCode SetupMaterialSection(DM dm, AppCtx *user)
   if (user->variableCoefficient != COEFF_FIELD) PetscFunctionReturn(0);
   ierr = PetscFEGetNumComponents(user->feAux[0], &numComp[0]);CHKERRQ(ierr);
   ierr = PetscFEGetNumDof(user->feAux[0], &numDof);CHKERRQ(ierr);
-  ierr = DMPlexCreateSection(dm, dim, 1, numComp, numDof, numBC, NULL, NULL, &section);CHKERRQ(ierr);
+  ierr = DMPlexCreateSection(dm, dim, 1, numComp, numDof, numBC, NULL, NULL, NULL, &section);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
