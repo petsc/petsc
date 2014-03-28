@@ -10,6 +10,7 @@ PetscLogEvent DMPLEX_Interpolate, DMPLEX_Partition, DMPLEX_Distribute, DMPLEX_Di
 PETSC_EXTERN PetscErrorCode VecView_Seq(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
+PETSC_EXTERN PetscErrorCode DMTSGetTimeStepNumber(DM,PetscInt*);
 
 #undef __FUNCT__
 #define __FUNCT__ "GetField_Static"
@@ -128,7 +129,10 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
     PetscSection sectionGlobal;
     Vec          gv;
     const char  *name;
+    PetscInt     timestep;
 
+    ierr = DMTSGetTimeStepNumber(dm, &timestep);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5SetTimestep(viewer, timestep);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
     ierr = DMGetOutputDM(dm, &dmBC);CHKERRQ(ierr);
     ierr = DMGetDefaultGlobalSection(dmBC, &sectionGlobal);CHKERRQ(ierr);
@@ -144,7 +148,6 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
       /* Output visualization representation */
       PetscInt numFields, f;
 
-      /* TODO ierr = PetscViewerHDF5SetTimestep(viewer, istep);CHKERRQ(ierr); */
       ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
       for (f = 0; f < numFields; ++f) {
         Vec         subv;
@@ -204,7 +207,6 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
 #if defined(PETSC_HAVE_HDF5)
     if (ishdf5) {
       ierr = PetscViewerHDF5PushGroup(viewer, "/fields");CHKERRQ(ierr);
-      /* TODO ierr = PetscViewerHDF5SetTimestep(viewer, istep);CHKERRQ(ierr); */
     }
 #endif
     ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_VIZ);CHKERRQ(ierr);
@@ -273,8 +275,10 @@ PetscErrorCode VecLoad_Plex(Vec v, PetscViewer viewer)
     ierr = PetscObjectSetName((PetscObject) locv, name);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HDF5)
     if (ishdf5) {
+      PetscInt timestep;
+      ierr = DMTSGetTimeStepNumber(dm, &timestep);CHKERRQ(ierr);
+      ierr = PetscViewerHDF5SetTimestep(viewer, timestep);CHKERRQ(ierr);
       ierr = PetscViewerHDF5PushGroup(viewer, "/fields");CHKERRQ(ierr);
-      /* TODO ierr = PetscViewerHDF5SetTimestep(viewer, istep);CHKERRQ(ierr); */
     }
 #endif
     ierr = VecLoad_Plex_Local(locv, viewer);CHKERRQ(ierr);
