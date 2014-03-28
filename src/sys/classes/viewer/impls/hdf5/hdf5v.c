@@ -395,6 +395,7 @@ PetscErrorCode PetscDataTypeToHDF5DataType(PetscDataType ptype, hid_t *htype)
   else if (ptype == PETSC_FLOAT)       *htype = H5T_NATIVE_FLOAT;
   else if (ptype == PETSC_CHAR)        *htype = H5T_NATIVE_CHAR;
   else if (ptype == PETSC_BIT_LOGICAL) *htype = H5T_NATIVE_UCHAR;
+  else if (ptype == PETSC_STRING)      *htype = H5Tcopy(H5T_C_S1);
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported PETSc datatype");
   PetscFunctionReturn(0);
 }
@@ -431,6 +432,7 @@ PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t htype, PetscDataType *ptyp
   else if (htype == H5T_NATIVE_FLOAT)  *ptype = PETSC_FLOAT;
   else if (htype == H5T_NATIVE_CHAR)   *ptype = PETSC_CHAR;
   else if (htype == H5T_NATIVE_UCHAR)  *ptype = PETSC_CHAR;
+  else if (htype == H5T_C_S1)          *ptype = PETSC_STRING;
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported HDF5 datatype");
   PetscFunctionReturn(0);
 }
@@ -461,6 +463,11 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
   PetscValidPointer(name, 3);
   PetscValidPointer(value, 4);
   ierr = PetscDataTypeToHDF5DataType(datatype, &dtype);CHKERRQ(ierr);
+  if (datatype == PETSC_STRING) {
+    size_t len;
+    ierr = PetscStrlen((const char *) value, &len);CHKERRQ(ierr);
+    status = H5Tset_size(dtype, len+1);CHKERRQ(status);
+  }
   ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
   dataspace = H5Screate(H5S_SCALAR);
   if (dataspace < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not create dataspace for attribute %s of %s", name, parent);
@@ -475,6 +482,7 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
 #endif
   if (attribute < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not create attribute %s of %s", name, parent);
   status = H5Awrite(attribute, dtype, value);CHKERRQ(status);
+  if (datatype == PETSC_STRING) {status = H5Tclose(dtype);CHKERRQ(status);}
   status = H5Aclose(attribute);CHKERRQ(status);
   status = H5Dclose(dataset);CHKERRQ(status);
   status = H5Sclose(dataspace);CHKERRQ(status);
