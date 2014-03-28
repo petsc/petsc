@@ -117,6 +117,7 @@ typedef enum {
   PETSC_VIEWER_VTK_VTU,
   PETSC_VIEWER_BINARY_MATLAB,
   PETSC_VIEWER_NATIVE,
+  PETSC_VIEWER_HDF5_VIZ,
   PETSC_VIEWER_NOFORMAT
   } PetscViewerFormat;
 PETSC_EXTERN const char *const PetscViewerFormats[];
