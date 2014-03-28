@@ -17,7 +17,6 @@ static PetscErrorCode GetField_Static(DM dm, PetscSection section, PetscSection 
 {
   PetscInt      *subIndices;
   PetscInt       subSize = 0, subOff = 0, p;
-  const char    *name;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -48,8 +47,6 @@ static PetscErrorCode GetField_Static(DM dm, PetscSection section, PetscSection 
   }
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), subSize, subIndices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
   ierr = VecGetSubVector(v, *is, subv);CHKERRQ(ierr);
-  ierr = PetscObjectGetName((PetscObject) v, &name);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *subv, name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -67,7 +64,7 @@ static PetscErrorCode RestoreField_Static(DM dm, PetscSection section, PetscSect
 
 #undef __FUNCT__
 #define __FUNCT__ "GetFieldType_Static"
-static PetscErrorCode GetFieldType_Static(DM dm, PetscSection section, PetscInt *sStart, PetscInt *sEnd, PetscViewerVTKFieldType *ft)
+static PetscErrorCode GetFieldType_Static(DM dm, PetscSection section, PetscInt field, PetscInt *sStart, PetscInt *sEnd, PetscViewerVTKFieldType *ft)
 {
   PetscInt       dim, pStart, pEnd, vStart, vEnd, cStart, cEnd, vdof = 0, cdof = 0;
   PetscErrorCode ierr;
@@ -78,8 +75,13 @@ static PetscErrorCode GetFieldType_Static(DM dm, PetscSection section, PetscInt 
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-  if ((vStart >= pStart) && (vStart < pEnd)) {ierr = PetscSectionGetDof(section, vStart, &vdof);CHKERRQ(ierr);}
-  if ((cStart >= pStart) && (cStart < pEnd)) {ierr = PetscSectionGetDof(section, cStart, &cdof);CHKERRQ(ierr);}
+  if (field >= 0) {
+    if ((vStart >= pStart) && (vStart < pEnd)) {ierr = PetscSectionGetFieldDof(section, vStart, field, &vdof);CHKERRQ(ierr);}
+    if ((cStart >= pStart) && (cStart < pEnd)) {ierr = PetscSectionGetFieldDof(section, cStart, field, &cdof);CHKERRQ(ierr);}
+  } else {
+    if ((vStart >= pStart) && (vStart < pEnd)) {ierr = PetscSectionGetDof(section, vStart, &vdof);CHKERRQ(ierr);}
+    if ((cStart >= pStart) && (cStart < pEnd)) {ierr = PetscSectionGetDof(section, cStart, &cdof);CHKERRQ(ierr);}
+  }
   if (vdof) {
     *sStart = vStart;
     *sEnd   = vEnd;
@@ -113,9 +115,9 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-  ierr = GetFieldType_Static(dm, section, &pStart, &pEnd, &ft);CHKERRQ(ierr);
   if (isvtk || ishdf5) {ierr = DMPlexInsertBoundaryValues(dm, v);CHKERRQ(ierr);}
   if (isvtk) {
+    ierr = GetFieldType_Static(dm, section, PETSC_DETERMINE, &pStart, &pEnd, &ft);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr); /* viewer drops reference */
     ierr = PetscObjectReference((PetscObject) v);CHKERRQ(ierr);  /* viewer drops reference */
     ierr = PetscViewerVTKAddField(viewer, (PetscObject) dm, DMPlexVTKWriteAll, ft, (PetscObject) v);CHKERRQ(ierr);
@@ -145,17 +147,19 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
       for (f = 0; f < numFields; ++f) {
         Vec         subv;
         IS          is;
-        const char *fname;
-        const char *fgroup = (ft == PETSC_VTK_POINT_VECTOR_FIELD) || (ft == PETSC_VTK_POINT_FIELD) ? "/vertex_fields" : "/cell_fields";
+        const char *fname, *fgroup;
         char        group[MAXPATHLEN];
 
+        ierr = GetFieldType_Static(dm, section, f, &pStart, &pEnd, &ft);CHKERRQ(ierr);
+        fgroup = (ft == PETSC_VTK_POINT_VECTOR_FIELD) || (ft == PETSC_VTK_POINT_FIELD) ? "/vertex_fields" : "/cell_fields";
+        ierr = PetscSectionGetFieldName(section, f, &fname);CHKERRQ(ierr);
         ierr = PetscViewerHDF5PushGroup(viewer, fgroup);CHKERRQ(ierr);
         ierr = GetField_Static(dmBC, section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
+        ierr = PetscObjectSetName((PetscObject) subv, fname);CHKERRQ(ierr);
         if (isseq) {ierr = VecView_Seq(subv, viewer);CHKERRQ(ierr);}
         else       {ierr = VecView_MPI(subv, viewer);CHKERRQ(ierr);}
         ierr = RestoreField_Static(dmBC, section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
         ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
-        ierr = PetscSectionGetFieldName(section, f, &fname);CHKERRQ(ierr);
         ierr = PetscSNPrintf(group, MAXPATHLEN, "%s/%s", fgroup, fname);CHKERRQ(ierr);
         if ((ft == PETSC_VTK_POINT_VECTOR_FIELD) || (ft == PETSC_VTK_CELL_VECTOR_FIELD)) {
           ierr = PetscViewerHDF5WriteAttribute(viewer, group, "vector_field_type", PETSC_STRING, "vector");CHKERRQ(ierr);
