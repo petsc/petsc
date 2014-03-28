@@ -108,7 +108,7 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
 #endif
 
 #else
-      fftw->p_forward = fftw_plan_dft_r2c(ndim,dim,(double*)x_array,(fftw_complex*)y_array,fftw->p_flag);
+      fftw->p_forward = fftw_plan_dft_r2c(ndim,(int*)dim,(double*)x_array,(fftw_complex*)y_array,fftw->p_flag);
 #endif
       break;
     }
@@ -189,7 +189,7 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
       fftw->p_backward = fftw_plan_guru_dft((int)ndim,iodims,0,NULL,(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_BACKWARD,fftw->p_flag);
 #endif
 #else
-      fftw->p_backward= fftw_plan_dft_c2r(ndim,dim,(fftw_complex*)x_array,(double*)y_array,fftw->p_flag);
+      fftw->p_backward= fftw_plan_dft_c2r((int)ndim,(int*)dim,(fftw_complex*)x_array,(double*)y_array,fftw->p_flag);
 #endif
       break;
     }
@@ -696,7 +696,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
 #if !defined(PETSC_USE_COMPLEX)
   PetscInt       i,j,k,partial_dim;
   PetscInt       *indx1, *indx2, tempindx, tempindx1;
-  PetscInt       N1,n1,NM;
+  PetscInt       NM;
   ptrdiff_t      temp;
 #endif
 
@@ -748,7 +748,6 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
 #else
       fftw_mpi_local_size_2d_transposed(dim[0],dim[1]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
 
-      N1   = 2*dim[0]*(dim[1]/2+1); n1 = 2*local_n0*(dim[1]/2+1);
       ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1],&indx1);CHKERRQ(ierr);
       ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1],&indx2);CHKERRQ(ierr);
 
@@ -795,8 +794,6 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
       ierr = ISDestroy(&list2);CHKERRQ(ierr);
 #else
       fftw_mpi_local_size_3d_transposed(dim[0],dim[1],dim[2]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
-
-      N1 = 2*dim[0]*dim[1]*(dim[2]/2+1); n1 = 2*local_n0*dim[1]*(dim[2]/2+1);
 
       ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1]*dim[2],&indx1);CHKERRQ(ierr);
       ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1]*dim[2],&indx2);CHKERRQ(ierr);
@@ -847,8 +844,6 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
       (fftw->dim_fftw)[fftw->ndim_fftw-1] = temp/2 + 1;
 
       fftw_mpi_local_size_transposed(fftw->ndim_fftw,fftw->dim_fftw,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
-
-      N1 = 2*N*(PetscInt)((fftw->dim_fftw)[fftw->ndim_fftw-1])/((PetscInt) temp);
 
       (fftw->dim_fftw)[fftw->ndim_fftw-1] = temp;
 
@@ -933,7 +928,7 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
 #if !defined(PETSC_USE_COMPLEX)
   PetscInt       i,j,k,partial_dim;
   PetscInt       *indx1, *indx2, tempindx, tempindx1;
-  PetscInt       N1, n1,NM;
+  PetscInt       NM;
   ptrdiff_t      temp;
 #endif
 
@@ -984,8 +979,6 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
 #else
       fftw_mpi_local_size_2d_transposed(dim[0],dim[1]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
 
-      N1 = 2*dim[0]*(dim[1]/2+1); n1 = 2*local_n0*(dim[1]/2+1);
-
       ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1],&indx1);CHKERRQ(ierr);
       ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1],&indx2);CHKERRQ(ierr);
 
@@ -1028,10 +1021,7 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
       ierr = ISDestroy(&list1);CHKERRQ(ierr);
       ierr = ISDestroy(&list2);CHKERRQ(ierr);
 #else
-
       fftw_mpi_local_size_3d_transposed(dim[0],dim[1],dim[2]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
-
-      N1 = 2*dim[0]*dim[1]*(dim[2]/2+1); n1 = 2*local_n0*dim[1]*(dim[2]/2+1);
 
       ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1]*dim[2],&indx1);CHKERRQ(ierr);
       ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1]*dim[2],&indx2);CHKERRQ(ierr);
@@ -1082,8 +1072,6 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
       (fftw->dim_fftw)[fftw->ndim_fftw-1] = temp/2 + 1;
 
       fftw_mpi_local_size_transposed(fftw->ndim_fftw,fftw->dim_fftw,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
-
-      N1 = 2*N*(PetscInt)((fftw->dim_fftw)[fftw->ndim_fftw-1])/((PetscInt) temp);
 
       (fftw->dim_fftw)[fftw->ndim_fftw-1] = temp;
 
