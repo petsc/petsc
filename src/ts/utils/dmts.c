@@ -113,6 +113,7 @@ static PetscErrorCode DMTSCreate(MPI_Comm comm,DMTS *kdm)
   ierr = TSInitializePackage();CHKERRQ(ierr);
   ierr = PetscHeaderCreate(*kdm, _p_DMTS, struct _DMTSOps, DMTS_CLASSID, "DMTS", "DMTS", "DMTS", comm, DMTSDestroy, DMTSView);CHKERRQ(ierr);
   ierr = PetscMemzero((*kdm)->ops, sizeof(struct _DMTSOps));CHKERRQ(ierr);
+  (*kdm)->steps = -1;
   PetscFunctionReturn(0);
 }
 
@@ -316,6 +317,63 @@ PetscErrorCode DMCopyDMTS(DM dmsrc,DM dmdest)
   ierr         = PetscObjectReference(dmdest->dmts);CHKERRQ(ierr);
   ierr         = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMTS,DMRestrictHook_DMTS,NULL);CHKERRQ(ierr);
   ierr         = DMSubDomainHookAdd(dmdest,DMSubDomainHook_DMTS,DMSubDomainRestrictHook_DMTS,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMTSSetTimeStepNumber"
+/*@C
+  DMTSSetTimeStepNumber - set the number of timesteps completed
+
+  Not Collective
+
+  Input Arguments:
++  dm    - DM to be used with TS
+-  steps - the number of timesteps completed
+
+  Level: advanced
+
+.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian()
+@*/
+PetscErrorCode DMTSSetTimeStepNumber(DM dm, PetscInt steps)
+{
+  DMTS           tsdm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMGetDMTSWrite(dm, &tsdm);CHKERRQ(ierr);
+  tsdm->steps = steps;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMTSGetTimeStepNumber"
+/*@C
+  DMTSGetTimeStepNumber - get the number of timesteps completed
+
+  Not Collective
+
+  Input Arguments:
+.  dm    - DM to be used with TS
+
+  Output Arguments:
+.  steps - the number of timesteps completed
+
+  Level: advanced
+
+.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian()
+@*/
+PetscErrorCode DMTSGetTimeStepNumber(DM dm, PetscInt *steps)
+{
+  DMTS           tsdm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(steps, 2);
+  ierr = DMGetDMTS(dm, &tsdm);CHKERRQ(ierr);
+  *steps = tsdm->steps;
   PetscFunctionReturn(0);
 }
 
