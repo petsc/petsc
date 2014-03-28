@@ -1,4 +1,5 @@
 #requirespackage  'PETSC_HAVE_SSL'
+#requirespackage  'PETSC_USE_SOCKET_VIEWER'
 
 ALL: lib
 

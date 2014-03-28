@@ -1,7 +1,7 @@
 
 ALL:
 
-CFLAGS	      = -fopenmp
+CFLAGS	      = 
 FFLAGS	      =
 CPPFLAGS      =
 FPPFLAGS      =
