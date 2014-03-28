@@ -95,14 +95,16 @@ PetscErrorCode ISOnComm_General(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis
 #define __FUNCT__ "ISSetBlockSize_General"
 static PetscErrorCode ISSetBlockSize_General(IS is,PetscInt bs)
 {
+#if defined(PETSC_USE_DEBUG)
   IS_General    *sub = (IS_General*)is->data;
   PetscInt       n;
+#endif
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLayoutSetBlockSize(is->map, bs);CHKERRQ(ierr);
-  ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
+  ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
   {
     PetscInt i,j;
     for (i=0; i<n; i+=bs) {
