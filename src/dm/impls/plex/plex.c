@@ -16,10 +16,11 @@ PETSC_EXTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
 static PetscErrorCode GetField_Static(DM dm, PetscSection section, PetscSection sectionGlobal, Vec v, PetscInt field, PetscInt pStart, PetscInt pEnd, IS *is, Vec *subv)
 {
   PetscInt      *subIndices;
-  PetscInt       subSize = 0, subOff = 0, p;
+  PetscInt       Nc, subSize = 0, subOff = 0, p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscSectionGetFieldComponents(section, field, &Nc);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
     PetscInt gdof, fdof = 0;
 
@@ -47,6 +48,7 @@ static PetscErrorCode GetField_Static(DM dm, PetscSection section, PetscSection 
   }
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), subSize, subIndices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
   ierr = VecGetSubVector(v, *is, subv);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(*subv, Nc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
