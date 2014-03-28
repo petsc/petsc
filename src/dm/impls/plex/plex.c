@@ -753,8 +753,8 @@ static herr_t ReadLabelHDF5_Static(hid_t g_id, const char *name, const H5L_info_
   herr_t         status;
   PetscErrorCode ierr;
 
-  ierr = DMPlexCreateLabel(dm, name);
-  ierr = DMPlexGetLabel(dm, name, &((LabelCtx *) op_data)->label);
+  ierr = DMPlexCreateLabel(dm, name); if (ierr) return (herr_t) ierr;
+  ierr = DMPlexGetLabel(dm, name, &((LabelCtx *) op_data)->label); if (ierr) return (herr_t) ierr;
   status = H5Literate_by_name(g_id, name, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, ReadLabelStratumHDF5_Static, op_data, 0);
   return status;
 }
