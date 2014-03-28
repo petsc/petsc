@@ -111,6 +111,7 @@ PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)quad,viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Quadrature on %d points\n  (", quad->numPoints);CHKERRQ(ierr);
   for (q = 0; q < quad->numPoints; ++q) {
     for (d = 0; d < quad->dim; ++d) {
