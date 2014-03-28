@@ -109,8 +109,9 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   }
   ierr = DMSetUp(*dm);CHKERRQ(ierr);
   if (!rank) {
-    ierr = fseek(fd, fpos, SEEK_SET);CHKERRQ(ierr);
     PetscInt pcone[8], corner;
+
+    ierr = fseek(fd, fpos, SEEK_SET);CHKERRQ(ierr);
     for (c = 0; c < numCells; ++c) {
       ierr = DMPlexCreateGmsh_ReadElement(fd, &dim, &cellNum, &numCorners, cone, &numTags, tags);CHKERRQ(ierr);
       if (dim == tdim) {
@@ -136,9 +137,10 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   }
 
   if (!rank) {
-    ierr = fseek(fd, fpos, SEEK_SET);CHKERRQ(ierr);
     /* Apply boundary IDs by finding the relevant facets with vertex joins */
     PetscInt pcone[8], corner, vStart, vEnd;
+
+    ierr = fseek(fd, fpos, SEEK_SET);CHKERRQ(ierr);
     ierr = DMPlexGetDepthStratum(*dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
     for (c = 0; c < numCells; ++c) {
       ierr = DMPlexCreateGmsh_ReadElement(fd, &dim, &cellNum, &numCorners, cone, &numTags, tags);CHKERRQ(ierr);
