@@ -150,6 +150,8 @@ PETSC_EXTERN PetscErrorCode DMGetPointSF(DM, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMSetPointSF(DM, PetscSF);
 
 PETSC_EXTERN PetscErrorCode DMGetOutputDM(DM, DM *);
+PETSC_EXTERN PetscErrorCode DMGetOutputSequenceNumber(DM, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMSetOutputSequenceNumber(DM, PetscInt);
 
 PETSC_EXTERN PetscErrorCode DMGetNumFields(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMSetNumFields(DM, PetscInt);

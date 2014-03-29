@@ -60,6 +60,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->numFields = 0;
   v->fields    = NULL;
   v->dmBC      = NULL;
+  v->outputSequenceNum = -1;
   ierr = DMSetVecType(v,VECSTANDARD);CHKERRQ(ierr);
   ierr = DMSetMatType(v,MATAIJ);CHKERRQ(ierr);
   *dm = v;
@@ -3638,6 +3639,19 @@ PetscErrorCode DMLocatePoints(DM dm, Vec v, IS *cells)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMGetOutputDM"
+/*@
+  DMGetOutputDM - Retrieve the DM associated with the layout for output
+
+  Input Parameter:
+. dm - The original DM
+
+  Output Parameter:
+. odm - The DM which provides the layout for output
+
+  Level: intermediate
+
+.seealso: VecView(), DMGetDefaultGlobalSection()
+@*/
 PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
 {
   PetscSection   section;
@@ -3667,5 +3681,56 @@ PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
     ierr = PetscSectionDestroy(&gsection);CHKERRQ(ierr);
   }
   *odm = dm->dmBC;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetOutputSequenceNumber"
+/*@
+  DMGetOutputSequenceNumber - Retrieve the sequence number for output
+
+  Input Parameter:
+. dm - The original DM
+
+  Output Parameter:
+. num - The output sequence number
+
+  Level: intermediate
+
+  Note: This is intended for output that should appear in sequence, for instance
+  a set of timesteps in an HDF5 file, or a set of realizations of a stochastic system.
+
+.seealso: VecView()
+@*/
+PetscErrorCode DMGetOutputSequenceNumber(DM dm, PetscInt *num)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(num,2);
+  *num = dm->outputSequenceNum;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetOutputSequenceNumber"
+/*@
+  DMSetOutputSequenceNumber - Set the sequence number for output
+
+  Input Parameters:
++ dm - The original DM
+- num - The output sequence number
+
+  Level: intermediate
+
+  Note: This is intended for output that should appear in sequence, for instance
+  a set of timesteps in an HDF5 file, or a set of realizations of a stochastic system.
+
+.seealso: VecView()
+@*/
+PetscErrorCode DMSetOutputSequenceNumber(DM dm, PetscInt num)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  dm->outputSequenceNum = num;
   PetscFunctionReturn(0);
 }
