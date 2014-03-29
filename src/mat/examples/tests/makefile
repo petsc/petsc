@@ -1498,7 +1498,7 @@ runex93_2:
 	   else printf "${PWD}\nPossible problem with ex93_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex93_1.tmp
 runex93_3:
-	-@${MPIEXEC} -n 2 ./ex93 > ex93_1.tmp 2>&1; \
+	-@${MPIEXEC} > ex93_1.tmp 2>&1; \
 	   if (${DIFF} output/ex93_2.out ex93_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex93_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex93_1.tmp
