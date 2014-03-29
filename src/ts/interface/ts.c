@@ -2631,7 +2631,7 @@ PetscErrorCode  TSStep(TS ts)
   {
     DM dm;
     ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
-    ierr = DMTSSetTimeStepNumber(dm, ts->steps);CHKERRQ(ierr);
+    ierr = DMSetOutputSequenceNumber(dm, ts->steps);CHKERRQ(ierr);
   }
 
   if (ts->reason < 0) {
