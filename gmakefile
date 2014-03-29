@@ -121,7 +121,7 @@ endef
 
 # with-single-library=0
 libpkg = $(foreach pkg, $1, $(LIBDIR)/libpetsc$(pkg).$(SL_LINKER_SUFFIX))
-define pkg_template =
+define pkg_template
   $(LIBDIR)/libpetsc$(1).$(AR_LIB_SUFFIX)  : $(call concatlang,$(1))
   $(call libname_function,$(LIBDIR)/libpetsc$(1)) : $(call concatlang,$(1))
 endef
