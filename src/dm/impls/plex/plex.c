@@ -175,6 +175,7 @@ static PetscErrorCode VecView_Plex_Local_HDF5(Vec v, PetscViewer viewer)
       const char *fname, *fgroup;
       char        group[PETSC_MAX_PATH_LEN];
       PetscInt    pStart, pEnd;
+      PetscBool   flag;
 
       ierr = GetFieldType_Static(dm, section, f, &pStart, &pEnd, &ft);CHKERRQ(ierr);
       fgroup = (ft == PETSC_VTK_POINT_VECTOR_FIELD) || (ft == PETSC_VTK_POINT_FIELD) ? "/vertex_fields" : "/cell_fields";
@@ -187,10 +188,13 @@ static PetscErrorCode VecView_Plex_Local_HDF5(Vec v, PetscViewer viewer)
       ierr = RestoreField_Static(dmBC, section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
       ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
       ierr = PetscSNPrintf(group, PETSC_MAX_PATH_LEN, "%s/%s", fgroup, fname);CHKERRQ(ierr);
-      if ((ft == PETSC_VTK_POINT_VECTOR_FIELD) || (ft == PETSC_VTK_CELL_VECTOR_FIELD)) {
-        ierr = PetscViewerHDF5WriteAttribute(viewer, group, "vector_field_type", PETSC_STRING, "vector");CHKERRQ(ierr);
-      } else {
-        ierr = PetscViewerHDF5WriteAttribute(viewer, group, "vector_field_type", PETSC_STRING, "scalar");CHKERRQ(ierr);
+      ierr = PetscViewerHDF5HasAttribute(viewer, group, "vector_field_type", &flag);CHKERRQ(ierr);
+      if (!flag) {
+        if ((ft == PETSC_VTK_POINT_VECTOR_FIELD) || (ft == PETSC_VTK_CELL_VECTOR_FIELD)) {
+          ierr = PetscViewerHDF5WriteAttribute(viewer, group, "vector_field_type", PETSC_STRING, "vector");CHKERRQ(ierr);
+        } else {
+          ierr = PetscViewerHDF5WriteAttribute(viewer, group, "vector_field_type", PETSC_STRING, "scalar");CHKERRQ(ierr);
+        }
       }
     }
   }
