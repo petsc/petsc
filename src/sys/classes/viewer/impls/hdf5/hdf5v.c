@@ -451,7 +451,7 @@ PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t htype, PetscDataType *ptyp
 
   Level: advanced
 
-.seealso: PetscViewerHDF5Open()
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5ReadAttribute(), PetscViewerHDF5HasAttribute()
 @*/
 PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char parent[], const char name[], PetscDataType datatype, const void *value)
 {
@@ -505,7 +505,7 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
 
   Level: advanced
 
-.seealso: PetscViewerHDF5Open()
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5WriteAttribute(), PetscViewerHDF5HasAttribute()
 @*/
 PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char parent[], const char name[], PetscDataType datatype, void *value)
 {
@@ -528,11 +528,54 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
   if (dataset < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not open parent dataset for attribute %s of %s", name, parent);
 #endif
   attribute = H5Aopen_name(dataset, name);
-  if (attribute < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not create attribute %s of %s", name, parent);
+  if (attribute < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not open attribute %s of %s", name, parent);
   status = H5Aread(attribute, dtype, value);CHKERRQ(status);
   status = H5Aclose(attribute);CHKERRQ(status);
   status = H5Dclose(dataset);CHKERRQ(status);
   status = H5Sclose(dataspace);CHKERRQ(status);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5HasAttribute"
+/*@
+ PetscViewerHDF5HasAttribute - Check whether a scalar attribute exists
+
+  Input Parameters:
++ viewer - The HDF5 viewer
+. parent - The parent name
+- name   - The attribute name
+
+  Output Parameter:
+. has    - Flag for attribute existence
+
+  Level: advanced
+
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5WriteAttribute(), PetscViewerHDF5ReadAttribute()
+@*/
+PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent[], const char name[], PetscBool *has)
+{
+  hid_t          h5, dataset, attribute, status;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(parent, 2);
+  PetscValidPointer(name, 3);
+  PetscValidPointer(has, 4);
+  *has = PETSC_FALSE;
+  ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
+#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
+  dataset = H5Dopen2(h5, parent, H5P_DEFAULT);
+  if (dataset < 0) PetscFunctionReturn(0);
+#else
+  dataset = H5Dopen(h5, parent);
+  if (dataset < 0) PetscFunctionReturn(0);
+#endif
+  attribute = H5Aopen_name(dataset, name);
+  if (attribute < 0) {status = H5Dclose(dataset);CHKERRQ(status); PetscFunctionReturn(0);}
+  status = H5Aclose(attribute);CHKERRQ(status);
+  status = H5Dclose(dataset);CHKERRQ(status);
+  *has = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
