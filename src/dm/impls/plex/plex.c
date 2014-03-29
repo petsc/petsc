@@ -152,7 +152,7 @@ static PetscErrorCode VecView_Plex_Local_HDF5(Vec v, PetscViewer viewer)
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = DMGetOutputSequenceNumber(dm, &seqnum);CHKERRQ(ierr);
   ierr = PetscViewerHDF5SetTimestep(viewer, seqnum);CHKERRQ(ierr);
-  ierr = DMSequenceView_HDF5(dm, "time", seqnum, 0.0, viewer);CHKERRQ(ierr);
+  ierr = DMSequenceView_HDF5(dm, "time", seqnum, (PetscScalar) seqnum, viewer);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   ierr = DMGetOutputDM(dm, &dmBC);CHKERRQ(ierr);
   ierr = DMGetDefaultGlobalSection(dmBC, &sectionGlobal);CHKERRQ(ierr);
