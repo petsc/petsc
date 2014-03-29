@@ -191,6 +191,7 @@ extern MPI_Datatype MPIU___FLOAT128;
 #endif
 extern int MPIUNI_Memcpy(void*,const void*,int);
 
+#define MPI_MAX_PROCESSOR_NAME 1024
 
 #define MPI_REQUEST_NULL     ((MPI_Request)0)
 #define MPI_GROUP_NULL       ((MPI_Group)0)

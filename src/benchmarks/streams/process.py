@@ -25,6 +25,8 @@ def process(fileoutput = 1):
       hosts[size] = fields[1:size+1]
       triads[size] = float(fields[size+5].split()[1])
 
+  if len(hosts) < 2: return
+
   ff = open('scaling.log','a')
   if fileoutput: print 'np  speedup'
   if fileoutput: ff.write('np  speedup\n')
