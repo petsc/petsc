@@ -880,7 +880,7 @@ static PetscErrorCode DMPlexLoad_HDF5(DM dm, PetscViewer viewer)
   PetscInt       *cone;
   PetscInt        dim, spatialDim, numVertices, v, numCorners, numCells, cell, c;
   hid_t           fileId, groupId;
-  hsize_t         idx;
+  hsize_t         idx = 0;
   herr_t          status;
   PetscErrorCode  ierr;
 
@@ -6350,7 +6350,9 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
       ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
     }
     ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
+    /* Only want to do this for FEM */
     ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
+    ierr = DMPlexLabelAddCells(dm, label);CHKERRQ(ierr);
     if (isEssential) {
       bcFields[bc] = field;
       ierr = DMPlexGetStratumIS(dm, bdLabel, values[0], &bcPoints[bc++]);CHKERRQ(ierr);
