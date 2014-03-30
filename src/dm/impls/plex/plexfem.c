@@ -820,6 +820,7 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
 
   Input Parameters:
 + dm - The mesh
+. time - The current time
 . X  - Local input vector
 . X_t  - Time derivative of the local input vector
 - user - The user context
@@ -837,7 +838,7 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
 
 .seealso: DMPlexComputeResidualFEM()
 @*/
-PetscErrorCode DMPlexComputeIFunctionFEM(DM dm, Vec X, Vec X_t, Vec F, void *user)
+PetscErrorCode DMPlexComputeIFunctionFEM(DM dm, PetscReal time, Vec X, Vec X_t, Vec F, void *user)
 {
   DM_Plex          *mesh  = (DM_Plex *) dm->data;
   PetscFEM         *fem   = (PetscFEM *) user;
