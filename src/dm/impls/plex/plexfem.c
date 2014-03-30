@@ -666,7 +666,7 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
     cellDofAux       += Nb*Nc;
     numComponentsAux += Nc;
   }
-  ierr = DMPlexProjectFunctionLocal(dm, fe, fem->bcFuncs, fem->bcCtxs, INSERT_BC_VALUES, X);CHKERRQ(ierr);
+  ierr = DMPlexInsertBoundaryValues(dm, X);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = PetscMalloc6(numCells*cellDof,&u,numCells*dim,&v0,numCells*dim*dim,&J,numCells*dim*dim,&invJ,numCells,&detJ,numCells*cellDof,&elemVec);CHKERRQ(ierr);
   if (dmAux) {ierr = PetscMalloc1(numCells*cellDofAux, &a);CHKERRQ(ierr);}
@@ -886,7 +886,7 @@ PetscErrorCode DMPlexComputeIFunctionFEM(DM dm, Vec X, Vec X_t, Vec F, void *use
     cellDofAux       += Nb*Nc;
     numComponentsAux += Nc;
   }
-  ierr = DMPlexProjectFunctionLocal(dm, fe, fem->bcFuncs, fem->bcCtxs, INSERT_BC_VALUES, X);CHKERRQ(ierr);
+  ierr = DMPlexInsertBoundaryValues(dm, X);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = PetscMalloc7(numCells*cellDof,&u,numCells*cellDof,&u_t,numCells*dim,&v0,numCells*dim*dim,&J,numCells*dim*dim,&invJ,numCells,&detJ,numCells*cellDof,&elemVec);CHKERRQ(ierr);
   if (dmAux) {ierr = PetscMalloc1(numCells*cellDofAux, &a);CHKERRQ(ierr);}
@@ -1235,7 +1235,7 @@ PetscErrorCode DMPlexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP,void *us
     cellDofAux       += Nb*Nc;
     numComponentsAux += Nc;
   }
-  ierr = DMPlexProjectFunctionLocal(dm, fe, fem->bcFuncs, fem->bcCtxs, INSERT_BC_VALUES, X);CHKERRQ(ierr);
+  ierr = DMPlexInsertBoundaryValues(dm, X);CHKERRQ(ierr);
   ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
   ierr = PetscMalloc6(numCells*cellDof,&u,numCells*dim,&v0,numCells*dim*dim,&J,numCells*dim*dim,&invJ,numCells,&detJ,numCells*cellDof*cellDof,&elemMat);CHKERRQ(ierr);
   if (dmAux) {ierr = PetscMalloc1(numCells*cellDofAux, &a);CHKERRQ(ierr);}
