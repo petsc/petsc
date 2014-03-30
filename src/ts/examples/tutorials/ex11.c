@@ -2034,28 +2034,6 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,PetscReal time,Vec locX,Vec F,Us
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "RHSFunction"
-static PetscErrorCode RHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *ctx)
-{
-  User           user = (User)ctx;
-  DM             dm;
-  PetscSection   section;
-  Vec            locX;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm,&locX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, locX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, locX);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-  ierr = VecZeroEntries(F);CHKERRQ(ierr);
-  //ierr = (*user->RHSFunctionLocal)(dm,time,locX,F,user);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm,&locX);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "OutputVTK"
 static PetscErrorCode OutputVTK(DM dm, const char *filename, PetscViewer *viewer)
 {
