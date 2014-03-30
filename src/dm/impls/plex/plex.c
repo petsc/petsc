@@ -217,7 +217,7 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,  &isvtk);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
-  if (isvtk || ishdf5) {ierr = DMPlexInsertBoundaryValues(dm, v);CHKERRQ(ierr);}
+  if (isvtk || ishdf5) {ierr = DMPlexInsertBoundaryValuesFEM(dm, v);CHKERRQ(ierr);}
   if (isvtk) {
     PetscSection            section;
     PetscViewerVTKFieldType ft;

@@ -220,7 +220,8 @@ typedef struct {
   void *user;
 } JacActionCtx;
 
-PETSC_EXTERN PetscErrorCode DMPlexInsertBoundaryValues(DM, Vec);
+PETSC_EXTERN PetscErrorCode DMPlexInsertBoundaryValuesFEM(DM, Vec);
+PETSC_EXTERN PetscErrorCode DMPlexInsertBoundaryValuesFVM(DM, PetscReal, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexProjectFunction(DM, PetscFE[], void (**)(const PetscReal [], PetscScalar *, void *), void **, InsertMode, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexProjectFunctionLocal(DM, PetscFE[], void (**)(const PetscReal [], PetscScalar *, void *), void **, InsertMode, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexComputeL2Diff(DM, PetscFE[], void (**)(const PetscReal [], PetscScalar *, void *), void **, Vec, PetscReal *);

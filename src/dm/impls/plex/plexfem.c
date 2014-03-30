@@ -335,10 +335,9 @@ PetscErrorCode DMPlexProjectFunction(DM dm, PetscFE fe[], void (**funcs)(const P
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexInsertBoundaryValues"
-PetscErrorCode DMPlexInsertBoundaryValues(DM dm, Vec localX)
+#define __FUNCT__ "DMPlexInsertBoundaryValuesFEM"
+PetscErrorCode DMPlexInsertBoundaryValuesFEM(DM dm, Vec localX)
 {
   void        (**funcs)(const PetscReal x[], PetscScalar *u, void *ctx);
   void         **ctxs;
@@ -373,6 +372,70 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, Vec localX)
     ierr = DMPlexProjectFunctionLabelLocal(dm, label, numids, ids, fe, funcs, ctxs, INSERT_BC_VALUES, localX);CHKERRQ(ierr);
   }
   ierr = PetscFree3(fe,funcs,ctxs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* Assuming dim == 3 */
+typedef struct {
+  PetscScalar normal[3];   /* Area-scaled normals */
+  PetscScalar centroid[3]; /* Location of centroid (quadrature point) */
+  PetscScalar grad[2][3];  /* Face contribution to gradient in left and right cell */
+} FaceGeom;
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexInsertBoundaryValuesFVM"
+PetscErrorCode DMPlexInsertBoundaryValuesFVM(DM dm, PetscReal time, Vec locX)
+{
+  DM                 dmFace;
+  Vec                faceGeometry;
+  DMLabel            label;
+  const PetscScalar *facegeom;
+  PetscScalar       *x;
+  PetscInt           numBd, b;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  /* TODO Pull this geomety calculation into the library */
+  ierr = PetscObjectQuery((PetscObject) dm, "FaceGeometry", (PetscObject *) &faceGeometry);CHKERRQ(ierr);
+  ierr = DMPlexGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
+  ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
+  ierr = VecGetDM(faceGeometry, &dmFace);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
+  ierr = VecGetArray(locX, &x);CHKERRQ(ierr);
+  for (b = 0; b < numBd; ++b) {
+    PetscErrorCode (*func)(PetscReal,const PetscReal*,const PetscReal*,const PetscScalar*,PetscScalar*,void*);
+    DMLabel          label;
+    const PetscInt  *ids;
+    PetscInt         numids, i;
+    void            *ctx;
+
+    ierr = DMPlexGetBoundary(dm, b, NULL, NULL, NULL, (void (**)()) &func, &numids, &ids, &ctx);CHKERRQ(ierr);
+    for (i = 0; i < numids; ++i) {
+      IS               faceIS;
+      const PetscInt   *faces;
+      PetscInt         numFaces, f;
+
+      ierr = DMLabelGetStratumIS(label, ids[i], &faceIS);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
+      ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
+      for (f = 0; f < numFaces; ++f) {
+        const PetscInt     face = faces[f], *cells;
+        const PetscScalar *xI;
+        PetscScalar       *xG;
+        const FaceGeom    *fg;
+
+        ierr = DMPlexPointLocalRead(dmFace, face, facegeom, &fg);CHKERRQ(ierr);
+        ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
+        ierr = DMPlexPointLocalRead(dm, cells[0], x, &xI);CHKERRQ(ierr);
+        ierr = DMPlexPointLocalRef(dm, cells[1], x, &xG);CHKERRQ(ierr);
+        ierr = (*func)(time, fg->centroid, fg->normal, xI, xG, ctx);CHKERRQ(ierr);
+      }
+      ierr = ISRestoreIndices(faceIS, &faces);CHKERRQ(ierr);
+      ierr = ISDestroy(&faceIS);CHKERRQ(ierr);
+    }
+  }
+  ierr = VecRestoreArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
+  ierr = VecRestoreArray(locX, &x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -666,7 +729,7 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
     cellDofAux       += Nb*Nc;
     numComponentsAux += Nc;
   }
-  ierr = DMPlexInsertBoundaryValues(dm, X);CHKERRQ(ierr);
+  ierr = DMPlexInsertBoundaryValuesFEM(dm, X);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = PetscMalloc6(numCells*cellDof,&u,numCells*dim,&v0,numCells*dim*dim,&J,numCells*dim*dim,&invJ,numCells,&detJ,numCells*cellDof,&elemVec);CHKERRQ(ierr);
   if (dmAux) {ierr = PetscMalloc1(numCells*cellDofAux, &a);CHKERRQ(ierr);}
@@ -887,7 +950,7 @@ PetscErrorCode DMPlexComputeIFunctionFEM(DM dm, PetscReal time, Vec X, Vec X_t, 
     cellDofAux       += Nb*Nc;
     numComponentsAux += Nc;
   }
-  ierr = DMPlexInsertBoundaryValues(dm, X);CHKERRQ(ierr);
+  ierr = DMPlexInsertBoundaryValuesFEM(dm, X);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = PetscMalloc7(numCells*cellDof,&u,numCells*cellDof,&u_t,numCells*dim,&v0,numCells*dim*dim,&J,numCells*dim*dim,&invJ,numCells,&detJ,numCells*cellDof,&elemVec);CHKERRQ(ierr);
   if (dmAux) {ierr = PetscMalloc1(numCells*cellDofAux, &a);CHKERRQ(ierr);}
@@ -1236,7 +1299,7 @@ PetscErrorCode DMPlexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP,void *us
     cellDofAux       += Nb*Nc;
     numComponentsAux += Nc;
   }
-  ierr = DMPlexInsertBoundaryValues(dm, X);CHKERRQ(ierr);
+  ierr = DMPlexInsertBoundaryValuesFEM(dm, X);CHKERRQ(ierr);
   ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
   ierr = PetscMalloc6(numCells*cellDof,&u,numCells*dim,&v0,numCells*dim*dim,&J,numCells*dim*dim,&invJ,numCells,&detJ,numCells*cellDof*cellDof,&elemMat);CHKERRQ(ierr);
   if (dmAux) {ierr = PetscMalloc1(numCells*cellDofAux, &a);CHKERRQ(ierr);}
