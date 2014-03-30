@@ -12,6 +12,40 @@ PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMTSGetTimeStepNumber(DM,PetscInt*);
 
+#undef __FUNCT__
+#define __FUNCT__ "GetFieldType_Static"
+static PetscErrorCode GetFieldType_Static(DM dm, PetscSection section, PetscInt field, PetscInt *sStart, PetscInt *sEnd, PetscViewerVTKFieldType *ft)
+{
+  PetscInt       dim, pStart, pEnd, vStart, vEnd, cStart, cEnd, vdof = 0, cdof = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *ft  = PETSC_VTK_POINT_FIELD;
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+  if (field >= 0) {
+    if ((vStart >= pStart) && (vStart < pEnd)) {ierr = PetscSectionGetFieldDof(section, vStart, field, &vdof);CHKERRQ(ierr);}
+    if ((cStart >= pStart) && (cStart < pEnd)) {ierr = PetscSectionGetFieldDof(section, cStart, field, &cdof);CHKERRQ(ierr);}
+  } else {
+    if ((vStart >= pStart) && (vStart < pEnd)) {ierr = PetscSectionGetDof(section, vStart, &vdof);CHKERRQ(ierr);}
+    if ((cStart >= pStart) && (cStart < pEnd)) {ierr = PetscSectionGetDof(section, cStart, &cdof);CHKERRQ(ierr);}
+  }
+  if (vdof) {
+    *sStart = vStart;
+    *sEnd   = vEnd;
+    if (vdof == dim) *ft = PETSC_VTK_POINT_VECTOR_FIELD;
+    else             *ft = PETSC_VTK_POINT_FIELD;
+  } else if (cdof) {
+    *sStart = cStart;
+    *sEnd   = cEnd;
+    if (cdof == dim) *ft = PETSC_VTK_CELL_VECTOR_FIELD;
+    else             *ft = PETSC_VTK_CELL_FIELD;
+  } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Could not classify input Vec for VTK");
+  PetscFunctionReturn(0);
+}
+
 #if defined(PETSC_HAVE_HDF5)
 #undef __FUNCT__
 #define __FUNCT__ "GetField_Static"
@@ -63,40 +97,6 @@ static PetscErrorCode RestoreField_Static(DM dm, PetscSection section, PetscSect
   PetscFunctionBegin;
   ierr = VecRestoreSubVector(v, *is, subv);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "GetFieldType_Static"
-static PetscErrorCode GetFieldType_Static(DM dm, PetscSection section, PetscInt field, PetscInt *sStart, PetscInt *sEnd, PetscViewerVTKFieldType *ft)
-{
-  PetscInt       dim, pStart, pEnd, vStart, vEnd, cStart, cEnd, vdof = 0, cdof = 0;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  *ft  = PETSC_VTK_POINT_FIELD;
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-  if (field >= 0) {
-    if ((vStart >= pStart) && (vStart < pEnd)) {ierr = PetscSectionGetFieldDof(section, vStart, field, &vdof);CHKERRQ(ierr);}
-    if ((cStart >= pStart) && (cStart < pEnd)) {ierr = PetscSectionGetFieldDof(section, cStart, field, &cdof);CHKERRQ(ierr);}
-  } else {
-    if ((vStart >= pStart) && (vStart < pEnd)) {ierr = PetscSectionGetDof(section, vStart, &vdof);CHKERRQ(ierr);}
-    if ((cStart >= pStart) && (cStart < pEnd)) {ierr = PetscSectionGetDof(section, cStart, &cdof);CHKERRQ(ierr);}
-  }
-  if (vdof) {
-    *sStart = vStart;
-    *sEnd   = vEnd;
-    if (vdof == dim) *ft = PETSC_VTK_POINT_VECTOR_FIELD;
-    else             *ft = PETSC_VTK_POINT_FIELD;
-  } else if (cdof) {
-    *sStart = cStart;
-    *sEnd   = cEnd;
-    if (cdof == dim) *ft = PETSC_VTK_CELL_VECTOR_FIELD;
-    else             *ft = PETSC_VTK_CELL_FIELD;
-  } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Could not classify input Vec for VTK");
   PetscFunctionReturn(0);
 }
 
