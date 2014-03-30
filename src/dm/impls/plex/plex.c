@@ -12,6 +12,7 @@ PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMTSGetTimeStepNumber(DM,PetscInt*);
 
+#if defined(PETSC_HAVE_HDF5)
 #undef __FUNCT__
 #define __FUNCT__ "GetField_Static"
 static PetscErrorCode GetField_Static(DM dm, PetscSection section, PetscSection sectionGlobal, Vec v, PetscInt field, PetscInt pStart, PetscInt pEnd, IS *is, Vec *subv)
@@ -99,7 +100,6 @@ static PetscErrorCode GetFieldType_Static(DM dm, PetscSection section, PetscInt 
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_HDF5)
 #undef __FUNCT__
 #define __FUNCT__ "DMSequenceView_HDF5"
 static PetscErrorCode DMSequenceView_HDF5(DM dm, const char *seqname, PetscInt seqnum, PetscScalar value, PetscViewer viewer)
