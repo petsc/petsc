@@ -206,7 +206,7 @@
 
       Interface
         Subroutine DMPlexCreateSection(m,dim,numFields,numComp,         &
-     &  numDof,numBC,bcField,bcPoints,section,ierr)
+     &  numDof,numBC,bcField,bcPoints,perm,section,ierr)
           USE_DMPLEX_HIDE
           PETSCSECTION_HIDE section
           PetscInt     dim, numFields, numBC
@@ -214,6 +214,7 @@
           PetscInt, pointer :: numDof(:)
           PetscInt, pointer :: bcField(:)
           IS_HIDE,  pointer :: bcPoints(:)
+          IS_HIDE perm
           PetscErrorCode ierr
           DM_HIDE m
         End Subroutine

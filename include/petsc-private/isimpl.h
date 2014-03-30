@@ -51,16 +51,10 @@ struct _p_ISLocalToGlobalMapping{
 };
 
 /* ----------------------------------------------------------------------------*/
-typedef struct _n_PetscUniformSection *PetscUniformSection;
-struct _n_PetscUniformSection {
-  MPI_Comm comm;
-  PetscInt pStart, pEnd; /* The chart: all points are contained in [pStart, pEnd) */
-  PetscInt numDof;       /* Describes layout of storage, point --> (constant # of values, (p - pStart)*constant # of values) */
-};
-
 struct _p_PetscSection {
   PETSCHEADER(int);
-  struct _n_PetscUniformSection atlasLayout;  /* Layout for the atlas */
+  PetscInt                      pStart, pEnd; /* The chart: all points are contained in [pStart, pEnd) */
+  IS                            perm;         /* A permutation of [0, pEnd-pStart) */
   PetscInt                     *atlasDof;     /* Describes layout of storage, point --> # of values */
   PetscInt                     *atlasOff;     /* Describes layout of storage, point --> offset into storage */
   PetscInt                      maxDof;       /* Maximum dof on any point */
