@@ -114,7 +114,6 @@ struct _n_Model {
 };
 
 struct _n_User {
-  PetscErrorCode (*RHSFunctionLocal)(DM,DM,DM,PetscReal,Vec,Vec,User);
   PetscReal      (*Limit)(PetscReal);
   PetscBool      reconstruct;
   PetscInt       numGhostCells, numSplitFaces;
@@ -1830,9 +1829,10 @@ static PetscErrorCode ApplyBC(DM dm, PetscReal time, Vec locX, User user)
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSFunctionLocal_Upwind"
-static PetscErrorCode RHSFunctionLocal_Upwind(DM dm,DM dmFace,DM dmCell,PetscReal time,Vec locX,Vec F,User user)
+static PetscErrorCode RHSFunctionLocal_Upwind(DM dm,PetscReal time,Vec locX,Vec F,User user)
 {
   Physics           phys = user->model->physics;
+  DM                dmFace, dmCell;
   DMLabel           ghostLabel;
   PetscErrorCode    ierr;
   const PetscScalar *facegeom, *cellgeom, *x;
@@ -1840,6 +1840,9 @@ static PetscErrorCode RHSFunctionLocal_Upwind(DM dm,DM dmFace,DM dmCell,PetscRea
   PetscInt          fStart, fEnd, face;
 
   PetscFunctionBeginUser;
+  ierr = VecGetDM(user->facegeom,&dmFace);CHKERRQ(ierr);
+  ierr = VecGetDM(user->cellgeom,&dmCell);CHKERRQ(ierr);
+  ierr = ApplyBC(dm, time, locX, user);CHKERRQ(ierr);
   ierr = VecGetArrayRead(user->facegeom,&facegeom);CHKERRQ(ierr);
   ierr = VecGetArrayRead(user->cellgeom,&cellgeom);CHKERRQ(ierr);
   ierr = VecGetArrayRead(locX,&x);CHKERRQ(ierr);
@@ -1879,8 +1882,9 @@ static PetscErrorCode RHSFunctionLocal_Upwind(DM dm,DM dmFace,DM dmCell,PetscRea
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSFunctionLocal_LS"
-static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,PetscReal time,Vec locX,Vec F,User user)
+static PetscErrorCode RHSFunctionLocal_LS(DM dm,PetscReal time,Vec locX,Vec F,User user)
 {
+  DM                dmFace, dmCell;
   DM                dmGrad = user->dmGrad;
   Model             mod    = user->model;
   Physics           phys   = mod->physics;
@@ -1892,6 +1896,9 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,PetscReal ti
   Vec               locGrad,Grad;
 
   PetscFunctionBeginUser;
+  ierr = VecGetDM(user->facegeom,&dmFace);CHKERRQ(ierr);
+  ierr = VecGetDM(user->cellgeom,&dmCell);CHKERRQ(ierr);
+  ierr = ApplyBC(dm, time, locX, user);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dmGrad,&Grad);CHKERRQ(ierr);
   ierr = VecZeroEntries(Grad);CHKERRQ(ierr);
   ierr = VecGetArrayRead(user->facegeom,&facegeom);CHKERRQ(ierr);
@@ -2031,24 +2038,19 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,PetscReal ti
 static PetscErrorCode RHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *ctx)
 {
   User           user = (User)ctx;
-  DM             dm, dmFace, dmCell;
+  DM             dm;
   PetscSection   section;
   Vec            locX;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = VecGetDM(user->facegeom,&dmFace);CHKERRQ(ierr);
-  ierr = VecGetDM(user->cellgeom,&dmCell);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm,&locX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, locX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, locX);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-
-  ierr = ApplyBC(dm, time, locX, user);CHKERRQ(ierr);
-
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
-  ierr = (*user->RHSFunctionLocal)(dm,dmFace,dmCell,time,locX,F,user);CHKERRQ(ierr);
+  //ierr = (*user->RHSFunctionLocal)(dm,time,locX,F,user);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm,&locX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2243,7 +2245,6 @@ int main(int argc, char **argv)
     ierr = PetscMalloc3(phys->dof,&user->work.flux,phys->dof,&user->work.state0,phys->dof,&user->work.state1);CHKERRQ(ierr);
     user->reconstruct = PETSC_FALSE;
     ierr = PetscOptionsBool("-ufv_reconstruct","Reconstruct gradients for a second order method (grows stencil)","",user->reconstruct,&user->reconstruct,NULL);CHKERRQ(ierr);
-    user->RHSFunctionLocal = user->reconstruct ? RHSFunctionLocal_LS : RHSFunctionLocal_Upwind;
     splitFaces = PETSC_FALSE;
     ierr = PetscOptionsBool("-ufv_split_faces","Split faces between cell sets","",splitFaces,&splitFaces,NULL);CHKERRQ(ierr);
     if (user->reconstruct) {
@@ -2304,7 +2305,7 @@ int main(int argc, char **argv)
   ierr = TSSetType(ts, TSSSP);CHKERRQ(ierr);
   ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MonitorVTK,user,NULL);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,NULL,RHSFunction,user);CHKERRQ(ierr);
+  ierr = DMTSSetRHSFunctionLocal(dm, (PetscErrorCode (*)(DM,PetscReal,Vec,Vec,void*)) (user->reconstruct ? RHSFunctionLocal_LS : RHSFunctionLocal_Upwind), user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,1000,2.0);CHKERRQ(ierr);
   dt   = cfl * user->minradius / user->model->maxspeed;
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
