@@ -57,7 +57,7 @@ typedef struct _n_User *User;
 
 typedef PetscErrorCode (*RiemannFunction)(Physics,const PetscReal*,const PetscReal*,const PetscScalar*,const PetscScalar*,PetscScalar*);
 typedef PetscErrorCode (*SolutionFunction)(Model,PetscReal,const PetscReal*,PetscScalar*,void*);
-typedef PetscErrorCode (*BoundaryFunction)(Model,PetscReal,const PetscReal*,const PetscReal*,const PetscScalar*,PetscScalar*,void*);
+typedef PetscErrorCode (*BoundaryFunction)(PetscReal,const PetscReal*,const PetscReal*,const PetscScalar*,PetscScalar*,void*);
 typedef PetscErrorCode (*FunctionalFunction)(Model,PetscReal,const PetscReal*,const PetscScalar*,PetscReal*,void*);
 typedef PetscErrorCode (*SetupFields)(Physics,PetscSection);
 static PetscErrorCode ModelBoundaryRegister(Model,const char*,BoundaryFunction,void*,PetscInt,const PetscInt*);
@@ -267,7 +267,7 @@ static const struct FieldDescription PhysicsFields_Advect[] = {{"U",1},{NULL,0}}
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsBoundary_Advect_Inflow"
-static PetscErrorCode PhysicsBoundary_Advect_Inflow(Model mod, PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
+static PetscErrorCode PhysicsBoundary_Advect_Inflow(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
 {
   Physics        phys    = (Physics)ctx;
   Physics_Advect *advect = (Physics_Advect*)phys->data;
@@ -279,7 +279,7 @@ static PetscErrorCode PhysicsBoundary_Advect_Inflow(Model mod, PetscReal time, c
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsBoundary_Advect_Outflow"
-static PetscErrorCode PhysicsBoundary_Advect_Outflow(Model mod, PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
+static PetscErrorCode PhysicsBoundary_Advect_Outflow(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
 {
   PetscFunctionBeginUser;
   xG[0] = xI[0];
@@ -463,7 +463,7 @@ static PetscErrorCode SWFlux(Physics phys,const PetscReal *n,const SWNode *x,SWN
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsBoundary_SW_Wall"
-static PetscErrorCode PhysicsBoundary_SW_Wall(Model mod, PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
+static PetscErrorCode PhysicsBoundary_SW_Wall(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
 {
   PetscFunctionBeginUser;
   xG[0] = xI[0];
@@ -647,7 +647,7 @@ static PetscErrorCode EulerFlux(Physics phys,const PetscReal *n,const EulerNode 
 /* PetscReal* => EulerNode* conversion */
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsBoundary_Euler_Wall"
-static PetscErrorCode PhysicsBoundary_Euler_Wall(Model mod, PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
+static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
 {
   PetscInt    i;
   PetscScalar xn[DIM],xt[DIM];
@@ -1815,7 +1815,7 @@ static PetscErrorCode ApplyBC(DM dm, PetscReal time, Vec locX, User user)
       ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
       ierr = DMPlexPointLocalRead(dm, cells[0], x, &xI);CHKERRQ(ierr);
       ierr = DMPlexPointLocalRef(dm, cells[1], x, &xG);CHKERRQ(ierr);
-      ierr = (*bcFunc)(mod, time, fg->centroid, fg->normal, xI, xG, bcCtx);CHKERRQ(ierr);
+      ierr = (*bcFunc)(time, fg->centroid, fg->normal, xI, xG, bcCtx);CHKERRQ(ierr);
     }
     ierr = ISRestoreIndices(faceIS, &faces);CHKERRQ(ierr);
     ierr = ISDestroy(&faceIS);CHKERRQ(ierr);
@@ -2015,7 +2015,7 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,PetscReal time,Vec locX,Vec F,Us
         BoundaryFunction bcFunc;
         void             *bcCtx;
         ierr = ModelBoundaryFind(mod,bset,&bcFunc,&bcCtx);CHKERRQ(ierr);
-        ierr = (*bcFunc)(mod,time,fg->centroid,fg->normal,fx[0],fx[1],bcCtx);CHKERRQ(ierr);
+        ierr = (*bcFunc)(time,fg->centroid,fg->normal,fx[0],fx[1],bcCtx);CHKERRQ(ierr);
       }
       ierr = (*phys->riemann)(phys, fg->centroid, fg->normal, fx[0], fx[1], flux);CHKERRQ(ierr);
       for (i=0; i<phys->dof; i++) {
