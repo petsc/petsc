@@ -205,17 +205,27 @@ static PetscErrorCode DMPlexGetAdjacency_Transitive_Internal(DM dm, PetscInt p, 
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetAdjacency_Internal"
-PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone, PetscBool useTransitiveClosure, PetscInt *adjSize, PetscInt adj[])
+PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone, PetscBool useTransitiveClosure, PetscInt *adjSize, PetscInt *adj[])
 {
+  static PetscInt asiz = 0;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginHot;
+  if (!*adj) {
+    PetscInt depth, maxConeSize, maxSupportSize;
+
+    ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+    ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
+    asiz = PetscPowInt(maxConeSize, depth+1) * PetscPowInt(maxSupportSize, depth+1) + 1;
+    ierr = PetscMalloc1(asiz,adj);CHKERRQ(ierr);
+  }
+  if (*adjSize < 0) *adjSize = asiz;
   if (useTransitiveClosure) {
-    ierr = DMPlexGetAdjacency_Transitive_Internal(dm, p, useCone, adjSize, adj);CHKERRQ(ierr);
+    ierr = DMPlexGetAdjacency_Transitive_Internal(dm, p, useCone, adjSize, *adj);CHKERRQ(ierr);
   } else if (useCone) {
-    ierr = DMPlexGetAdjacency_Cone_Internal(dm, p, adjSize, adj);CHKERRQ(ierr);
+    ierr = DMPlexGetAdjacency_Cone_Internal(dm, p, adjSize, *adj);CHKERRQ(ierr);
   } else {
-    ierr = DMPlexGetAdjacency_Support_Internal(dm, p, adjSize, adj);CHKERRQ(ierr);
+    ierr = DMPlexGetAdjacency_Support_Internal(dm, p, adjSize, *adj);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -243,24 +253,14 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
 @*/
 PetscErrorCode DMPlexGetAdjacency(DM dm, PetscInt p, PetscInt *adjSize, PetscInt *adj[])
 {
-  DM_Plex        *mesh = (DM_Plex *) dm->data;
-  static PetscInt asiz = 0;
-  PetscErrorCode  ierr;
+  DM_Plex       *mesh = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(adjSize,3);
   PetscValidPointer(adj,4);
-  if (!*adj) {
-    PetscInt depth, maxConeSize, maxSupportSize;
-
-    ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-    ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
-    asiz = PetscPowInt(maxConeSize, depth+1) * PetscPowInt(maxSupportSize, depth+1) + 1;
-    ierr = PetscMalloc1(asiz,adj);CHKERRQ(ierr);
-  }
-  if (*adjSize < 0) *adjSize = asiz;
-  ierr = DMPlexGetAdjacency_Internal(dm, p, mesh->useCone, mesh->useClosure, adjSize, *adj);CHKERRQ(ierr);
+  ierr = DMPlexGetAdjacency_Internal(dm, p, mesh->useCone, mesh->useClosure, adjSize, adj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

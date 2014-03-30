@@ -330,7 +330,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 #define __FUNCT__ "CreateSimplex_2D"
 PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
-  DM             idm;
+  DM             idm = NULL;
   PetscInt       p;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
@@ -453,7 +453,7 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM dm)
 #define __FUNCT__ "CreateQuad_2D"
 PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
-  DM             idm;
+  DM             idm = NULL;
   PetscInt       p;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
@@ -523,7 +523,7 @@ PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
 #define __FUNCT__ "CreateHex_3D"
 PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
-  DM             idm;
+  DM             idm   = NULL;
   PetscInt       depth = 3, p;
   PetscMPIInt    rank;
   PetscErrorCode ierr;

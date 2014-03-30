@@ -21,6 +21,7 @@ struct _ISOps {
   PetscErrorCode (*duplicate)(IS,IS*);
   PetscErrorCode (*destroy)(IS);
   PetscErrorCode (*view)(IS,PetscViewer);
+  PetscErrorCode (*load)(IS,PetscViewer);
   PetscErrorCode (*identity)(IS,PetscBool*);
   PetscErrorCode (*copy)(IS,IS);
   PetscErrorCode (*togeneral)(IS);
@@ -31,15 +32,17 @@ struct _ISOps {
 
 struct _p_IS {
   PETSCHEADER(struct _ISOps);
+  PetscLayout  map;
   PetscBool    isperm;          /* if is a permutation */
   PetscInt     max,min;         /* range of possible values */
-  PetscInt     bs;              /* block size */
   void         *data;
   PetscBool    isidentity;
   PetscInt     *total, *nonlocal;   /* local representation of ALL indices across the comm as well as the nonlocal part. */
   PetscInt     local_offset;        /* offset to the local part within the total index set */
   IS           complement;          /* IS wrapping nonlocal indices. */
 };
+
+extern PetscErrorCode ISLoad_Default(IS, PetscViewer);
 
 struct _p_ISLocalToGlobalMapping{
   PETSCHEADER(int);

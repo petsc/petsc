@@ -20,7 +20,8 @@ typedef struct {
   RunType       runType;           /* Whether to run tests, or solve the full problem */
   PetscBool     jacobianMF;        /* Whether to calculate the Jacobian action on the fly */
   PetscLogEvent createMeshEvent;
-  PetscBool     showInitial, showSolution;
+  PetscBool     showInitial, showSolution, restart;
+  PetscViewer   checkpoint;
   /* Domain and mesh definition */
   PetscInt      dim;               /* The topological mesh dimension */
   char          filename[2048];    /* The optional ExodusII file */
@@ -268,6 +269,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->jacobianMF          = PETSC_FALSE;
   options->showInitial         = PETSC_FALSE;
   options->showSolution        = PETSC_FALSE;
+  options->restart             = PETSC_FALSE;
+  options->checkpoint          = NULL;
 
   options->fem.f0Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->f0Funcs;
   options->fem.f1Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->f1Funcs;
@@ -309,9 +312,17 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-jacobian_mf", "Calculate the action of the Jacobian on the fly", "ex12.c", options->jacobianMF, &options->jacobianMF, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex12.c", options->showInitial, &options->showInitial, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_solution", "Output the solution for verification", "ex12.c", options->showSolution, &options->showSolution, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-restart", "Read in the mesh and solution from a file", "ex12.c", options->restart, &options->restart, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent);CHKERRQ(ierr);
+
+  if (options->restart) {
+    ierr = PetscViewerCreate(comm, &options->checkpoint);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(options->checkpoint, PETSCVIEWERHDF5);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(options->checkpoint, FILE_MODE_READ);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(options->checkpoint, options->filename);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -339,6 +350,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
     ierr = DMPlexGetLabel(*dm, "marker", &label);CHKERRQ(ierr);
     if (label) {ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);}
+  } else if (user->checkpoint) {
+    ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+    ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+    ierr = DMLoad(*dm, user->checkpoint);CHKERRQ(ierr);
+    ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
   } else {
     PetscMPIInt rank;
 
@@ -607,6 +623,8 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
   }
+  user->fem.bcFuncs = user->exactFuncs;
+  user->fem.bcCtxs  = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -622,8 +640,8 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   ierr = PetscObjectSetName((PetscObject) user->fe[0], "potential");CHKERRQ(ierr);
   while (cdm) {
     ierr = DMSetNumFields(cdm, 1);CHKERRQ(ierr);
-    ierr = DMSetField(cdm, 0, user->fe[0]);CHKERRQ(ierr);
-    ierr = DMPlexAddBoundary(cdm, user->bcType == DIRICHLET, user->bcType == NEUMANN ? "boundary" : "marker", 0, NULL, 1, &id, user);CHKERRQ(ierr);
+    ierr = DMSetField(cdm, 0, (PetscObject) user->fe[0]);CHKERRQ(ierr);
+    ierr = DMPlexAddBoundary(cdm, user->bcType == DIRICHLET, user->bcType == NEUMANN ? "boundary" : "marker", 0, user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
     ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -698,8 +716,6 @@ int main(int argc, char **argv)
   ierr = SetupBdElement(dm, &user);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(user.fe[0], &numComponents);CHKERRQ(ierr);
   ierr = PetscMalloc(NUM_FIELDS * sizeof(void (*)(const PetscReal[], PetscScalar *, void *)), &user.exactFuncs);CHKERRQ(ierr);
-  user.fem.bcFuncs = user.exactFuncs;
-  user.fem.bcCtxs = NULL;
   ierr = SetupExactSolution(dm, &user);CHKERRQ(ierr);
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
   ierr = SetupMaterialElement(dmAux, &user);CHKERRQ(ierr);
@@ -708,6 +724,7 @@ int main(int argc, char **argv)
   ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) u, "potential");CHKERRQ(ierr);
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
 
   ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr);
@@ -750,6 +767,14 @@ int main(int argc, char **argv)
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   ierr = DMPlexProjectFunction(dm, user.fe, user.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  if (user.checkpoint) {
+#if defined(PETSC_HAVE_HDF5)
+    ierr = PetscViewerHDF5PushGroup(user.checkpoint, "/fields");CHKERRQ(ierr);
+    ierr = VecLoad(u, user.checkpoint);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5PopGroup(user.checkpoint);CHKERRQ(ierr);
+#endif
+  }
+  ierr = PetscViewerDestroy(&user.checkpoint);CHKERRQ(ierr);
   if (user.showInitial) {
     Vec lv;
     ierr = DMGetLocalVector(dm, &lv);CHKERRQ(ierr);
@@ -821,6 +846,7 @@ int main(int argc, char **argv)
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Linear L_2 Residual: %g\n", res);CHKERRQ(ierr);
     }
   }
+  ierr = VecViewFromOptions(u, NULL, "-vec_view");CHKERRQ(ierr);
 
   if (user.bcType == NEUMANN) {
     ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);

@@ -107,7 +107,7 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *dm)
 */
 PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
-  DM             idm, hdm;
+  DM             idm = NULL, hdm = NULL;
   DMLabel        faultLabel, hybridLabel;
   PetscInt       p;
   PetscMPIInt    rank;
@@ -213,7 +213,7 @@ PetscErrorCode CreateTensorProduct_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
 #define __FUNCT__ "CreateTensorProductHybrid_2D"
 PetscErrorCode CreateTensorProductHybrid_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
-  DM             idm, hdm;
+  DM             idm = NULL, hdm = NULL;
   DMLabel        faultLabel, hybridLabel;
   PetscInt       p;
   PetscMPIInt    rank;
@@ -270,7 +270,7 @@ PetscErrorCode CreateTensorProductHybrid_2D(MPI_Comm comm, PetscInt testNum, DM 
 */
 PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
-  DM             idm;
+  DM             idm = NULL;
   PetscInt       depth = 3;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
@@ -360,7 +360,7 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 */
 PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
-  DM             idm, hdm;
+  DM             idm = NULL, hdm = NULL;
   DMLabel        faultLabel, hybridLabel;
   PetscInt       p;
   PetscMPIInt    rank;
@@ -433,7 +433,7 @@ PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 #define __FUNCT__ "CreateTensorProduct_3D"
 PetscErrorCode CreateTensorProduct_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
-  DM             idm;
+  DM             idm = NULL;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -485,7 +485,7 @@ PetscErrorCode CreateTensorProduct_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 #define __FUNCT__ "CreateTensorProductHybrid_3D"
 PetscErrorCode CreateTensorProductHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
-  DM             idm, hdm;
+  DM             idm = NULL, hdm = NULL;
   DMLabel        faultLabel;
   PetscInt       p;
   PetscMPIInt    rank;

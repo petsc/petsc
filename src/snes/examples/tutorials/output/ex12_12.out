@@ -18,7 +18,7 @@ Vec Object: 1 MPI processes
 2
 3
 Initial guess
-Vec Object: 1 MPI processes
+Vec Object:potential 1 MPI processes
   type: seq
 0
 1

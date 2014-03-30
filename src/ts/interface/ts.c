@@ -2607,6 +2607,7 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec U)
 @*/
 PetscErrorCode  TSStep(TS ts)
 {
+  DM               dm;
   PetscErrorCode   ierr;
   static PetscBool cite = PETSC_FALSE;
 
@@ -2620,16 +2621,19 @@ PetscErrorCode  TSStep(TS ts)
                                 "  institution = {Argonne National Laboratory},\n"
                                 "  year        = {2014}\n}\n",&cite);
 
+  ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = TSSetUp(ts);CHKERRQ(ierr);
 
   ts->reason = TS_CONVERGED_ITERATING;
   ts->ptime_prev = ts->ptime;
+  ierr = DMSetOutputSequenceNumber(dm, ts->steps);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
   ierr = (*ts->ops->step)(ts);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
 
   ts->time_step_prev = ts->ptime - ts->ptime_prev;
+  ierr = DMSetOutputSequenceNumber(dm, ts->steps);CHKERRQ(ierr);
 
   if (ts->reason < 0) {
     if (ts->errorifstepfailed) {

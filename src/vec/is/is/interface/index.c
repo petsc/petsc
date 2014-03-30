@@ -219,6 +219,7 @@ PetscErrorCode  ISDestroy(IS *is)
   if ((*is)->ops->destroy) {
     ierr = (*(*is)->ops->destroy)(*is);CHKERRQ(ierr);
   }
+  ierr = PetscLayoutDestroy(&(*is)->map);CHKERRQ(ierr);
   /* Destroy local representations of offproc data. */
   ierr = PetscFree((*is)->total);CHKERRQ(ierr);
   ierr = PetscFree((*is)->nonlocal);CHKERRQ(ierr);
@@ -759,6 +760,44 @@ PetscErrorCode  ISView(IS is,PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ISLoad"
+/*@
+  ISLoad - Loads a vector that has been stored in binary or HDF5 format with ISView().
+
+  Collective on PetscViewer
+
+  Input Parameters:
++ is - the newly loaded vector, this needs to have been created with ISCreate() or some related function before a call to ISLoad().
+- viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or HDF5 file viewer, obtained from PetscViewerHDF5Open()
+
+  Level: intermediate
+
+  Notes:
+  IF using HDF5, you must assign the IS the same name as was used in the IS
+  that was stored in the file using PetscObjectSetName(). Otherwise you will
+  get the error message: "Cannot H5DOpen2() with Vec name NAMEOFOBJECT"
+
+  Concepts: index set^loading from file
+
+.seealso: PetscViewerBinaryOpen(), ISView(), MatLoad(), VecLoad()
+@*/
+PetscErrorCode ISLoad(IS is, PetscViewer viewer)
+{
+  PetscBool      isbinary, ishdf5;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is, IS_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERBINARY, &isbinary);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  if (!isbinary && !ishdf5) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
+  if (!((PetscObject)is)->type_name) {ierr = ISSetType(is, ISGENERAL);CHKERRQ(ierr);}
+  ierr = (*is->ops->load)(is, viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ISSort"
 /*@
    ISSort - Sorts the indices of an index set.
@@ -1011,8 +1050,10 @@ PetscErrorCode  ISSetBlockSize(IS is,PetscInt bs)
 @*/
 PetscErrorCode  ISGetBlockSize(IS is,PetscInt *size)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  *size = is->bs;
+  ierr = PetscLayoutGetBlockSize(is->map, size);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

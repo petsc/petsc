@@ -439,7 +439,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   ierr = DMSetNumFields(dm, 2);CHKERRQ(ierr);
   ierr = DMSetField(dm, 0, user->fe[0]);CHKERRQ(ierr);
   ierr = DMSetField(dm, 1, user->fe[1]);CHKERRQ(ierr);
-  ierr = DMPlexAddBoundary(dm, user->bcType == DIRICHLET, user->bcType == NEUMANN ? "boundary" : "marker", 0, NULL, 1, &id, user);CHKERRQ(ierr);
+  ierr = DMPlexAddBoundary(dm, user->bcType == DIRICHLET, user->bcType == NEUMANN ? "boundary" : "marker", 0, user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -754,27 +754,7 @@ int main(int argc, char **argv)
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Linear L_2 Residual: %g\n", res);CHKERRQ(ierr);
     }
   }
-
-  if (user.runType == RUN_FULL) {
-    PetscViewer viewer;
-    Vec         uLocal;
-    const char *name;
-
-    ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, "ex62_sol.vtk");CHKERRQ(ierr);
-
-    ierr = DMGetLocalVector(dm, &uLocal);CHKERRQ(ierr);
-    ierr = PetscObjectGetName((PetscObject) u, &name);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) uLocal, name);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalBegin(dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd(dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
-    ierr = VecView(uLocal, viewer);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(dm, &uLocal);CHKERRQ(ierr);
-
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
+  ierr = VecViewFromOptions(u, NULL, "-vec_view");CHKERRQ(ierr);
 
   ierr = PetscFree(user.exactFuncs);CHKERRQ(ierr);
   ierr = DestroyElement(&user);CHKERRQ(ierr);

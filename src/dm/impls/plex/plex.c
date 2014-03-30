@@ -2,88 +2,286 @@
 #include <../src/sys/utils/hash.h>
 #include <petsc-private/isimpl.h>
 #include <petscsf.h>
+#include <petscviewerhdf5.h>
 
 /* Logging support */
 PetscLogEvent DMPLEX_Interpolate, DMPLEX_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM;
 
 PETSC_EXTERN PetscErrorCode VecView_Seq(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
+PETSC_EXTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
+PETSC_EXTERN PetscErrorCode DMTSGetTimeStepNumber(DM,PetscInt*);
+
+#undef __FUNCT__
+#define __FUNCT__ "GetField_Static"
+static PetscErrorCode GetField_Static(DM dm, PetscSection section, PetscSection sectionGlobal, Vec v, PetscInt field, PetscInt pStart, PetscInt pEnd, IS *is, Vec *subv)
+{
+  PetscInt      *subIndices;
+  PetscInt       Nc, subSize = 0, subOff = 0, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetFieldComponents(section, field, &Nc);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    PetscInt gdof, fdof = 0;
+
+    ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
+    if (gdof > 0) {ierr = PetscSectionGetFieldDof(section, p, field, &fdof);CHKERRQ(ierr);}
+    subSize += fdof;
+  }
+  ierr = PetscMalloc1(subSize, &subIndices);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    PetscInt gdof, goff;
+
+    ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
+    if (gdof > 0) {
+      PetscInt fdof, fc, f2, poff = 0;
+
+      ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
+      /* Can get rid of this loop by storing field information in the global section */
+      for (f2 = 0; f2 < field; ++f2) {
+        ierr  = PetscSectionGetFieldDof(section, p, f2, &fdof);CHKERRQ(ierr);
+        poff += fdof;
+      }
+      ierr = PetscSectionGetFieldDof(section, p, field, &fdof);CHKERRQ(ierr);
+      for (fc = 0; fc < fdof; ++fc, ++subOff) subIndices[subOff] = goff+poff+fc;
+    }
+  }
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), subSize, subIndices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
+  ierr = VecGetSubVector(v, *is, subv);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(*subv, Nc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "RestoreField_Static"
+static PetscErrorCode RestoreField_Static(DM dm, PetscSection section, PetscSection sectionGlobal, Vec v, PetscInt field, PetscInt pStart, PetscInt pEnd, IS *is, Vec *subv)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecRestoreSubVector(v, *is, subv);CHKERRQ(ierr);
+  ierr = ISDestroy(is);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "GetFieldType_Static"
+static PetscErrorCode GetFieldType_Static(DM dm, PetscSection section, PetscInt field, PetscInt *sStart, PetscInt *sEnd, PetscViewerVTKFieldType *ft)
+{
+  PetscInt       dim, pStart, pEnd, vStart, vEnd, cStart, cEnd, vdof = 0, cdof = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *ft  = PETSC_VTK_POINT_FIELD;
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+  if (field >= 0) {
+    if ((vStart >= pStart) && (vStart < pEnd)) {ierr = PetscSectionGetFieldDof(section, vStart, field, &vdof);CHKERRQ(ierr);}
+    if ((cStart >= pStart) && (cStart < pEnd)) {ierr = PetscSectionGetFieldDof(section, cStart, field, &cdof);CHKERRQ(ierr);}
+  } else {
+    if ((vStart >= pStart) && (vStart < pEnd)) {ierr = PetscSectionGetDof(section, vStart, &vdof);CHKERRQ(ierr);}
+    if ((cStart >= pStart) && (cStart < pEnd)) {ierr = PetscSectionGetDof(section, cStart, &cdof);CHKERRQ(ierr);}
+  }
+  if (vdof) {
+    *sStart = vStart;
+    *sEnd   = vEnd;
+    if (vdof == dim) *ft = PETSC_VTK_POINT_VECTOR_FIELD;
+    else             *ft = PETSC_VTK_POINT_FIELD;
+  } else if (cdof) {
+    *sStart = cStart;
+    *sEnd   = cEnd;
+    if (cdof == dim) *ft = PETSC_VTK_CELL_VECTOR_FIELD;
+    else             *ft = PETSC_VTK_CELL_FIELD;
+  } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Could not classify input Vec for VTK");
+  PetscFunctionReturn(0);
+}
+
+#if defined(PETSC_HAVE_HDF5)
+#undef __FUNCT__
+#define __FUNCT__ "DMSequenceView_HDF5"
+static PetscErrorCode DMSequenceView_HDF5(DM dm, const char *seqname, PetscInt seqnum, PetscScalar value, PetscViewer viewer)
+{
+  Vec            stamp;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) viewer), &rank);CHKERRQ(ierr);
+  ierr = VecCreateMPI(PetscObjectComm((PetscObject) viewer), rank ? 0 : 1, 1, &stamp);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(stamp, 1);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) stamp, seqname);CHKERRQ(ierr);
+  if (!rank) {
+    PetscReal timeScale;
+    PetscBool istime;
+
+    ierr = PetscStrncmp(seqname, "time", 5, &istime);CHKERRQ(ierr);
+    if (istime) {ierr = DMPlexGetScale(dm, PETSC_UNIT_TIME, &timeScale);CHKERRQ(ierr); value *= timeScale;}
+    ierr = VecSetValue(stamp, 0, value, INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = VecAssemblyBegin(stamp);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(stamp);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "/");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5SetTimestep(viewer, seqnum);CHKERRQ(ierr);
+  ierr = VecView(stamp, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = VecDestroy(&stamp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecView_Plex_Local_HDF5"
+static PetscErrorCode VecView_Plex_Local_HDF5(Vec v, PetscViewer viewer)
+{
+  DM                      dm;
+  DM                      dmBC;
+  PetscSection            section, sectionGlobal;
+  Vec                     gv;
+  const char             *name;
+  PetscViewerVTKFieldType ft;
+  PetscViewerFormat       format;
+  PetscInt                seqnum;
+  PetscBool               isseq;
+  PetscErrorCode          ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
+  ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetOutputSequenceNumber(dm, &seqnum);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5SetTimestep(viewer, seqnum);CHKERRQ(ierr);
+  ierr = DMSequenceView_HDF5(dm, "time", seqnum, (PetscScalar) seqnum, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  ierr = DMGetOutputDM(dm, &dmBC);CHKERRQ(ierr);
+  ierr = DMGetDefaultGlobalSection(dmBC, &sectionGlobal);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dmBC, &gv);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject) v, &name);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) gv, name);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(dmBC, v, INSERT_VALUES, gv);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dmBC, v, INSERT_VALUES, gv);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) gv, VECSEQ, &isseq);CHKERRQ(ierr);
+  if (isseq) {ierr = VecView_Seq(gv, viewer);CHKERRQ(ierr);}
+  else       {ierr = VecView_MPI(gv, viewer);CHKERRQ(ierr);}
+  if (format == PETSC_VIEWER_HDF5_VIZ) {
+    /* Output visualization representation */
+    PetscInt numFields, f;
+
+    ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+    for (f = 0; f < numFields; ++f) {
+      Vec         subv;
+      IS          is;
+      const char *fname, *fgroup;
+      char        group[PETSC_MAX_PATH_LEN];
+      PetscInt    pStart, pEnd;
+      PetscBool   flag;
+
+      ierr = GetFieldType_Static(dm, section, f, &pStart, &pEnd, &ft);CHKERRQ(ierr);
+      fgroup = (ft == PETSC_VTK_POINT_VECTOR_FIELD) || (ft == PETSC_VTK_POINT_FIELD) ? "/vertex_fields" : "/cell_fields";
+      ierr = PetscSectionGetFieldName(section, f, &fname);CHKERRQ(ierr);
+      ierr = PetscViewerHDF5PushGroup(viewer, fgroup);CHKERRQ(ierr);
+      ierr = GetField_Static(dmBC, section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) subv, fname);CHKERRQ(ierr);
+      if (isseq) {ierr = VecView_Seq(subv, viewer);CHKERRQ(ierr);}
+      else       {ierr = VecView_MPI(subv, viewer);CHKERRQ(ierr);}
+      ierr = RestoreField_Static(dmBC, section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
+      ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(group, PETSC_MAX_PATH_LEN, "%s/%s", fgroup, fname);CHKERRQ(ierr);
+      ierr = PetscViewerHDF5HasAttribute(viewer, group, "vector_field_type", &flag);CHKERRQ(ierr);
+      if (!flag) {
+        if ((ft == PETSC_VTK_POINT_VECTOR_FIELD) || (ft == PETSC_VTK_CELL_VECTOR_FIELD)) {
+          ierr = PetscViewerHDF5WriteAttribute(viewer, group, "vector_field_type", PETSC_STRING, "vector");CHKERRQ(ierr);
+        } else {
+          ierr = PetscViewerHDF5WriteAttribute(viewer, group, "vector_field_type", PETSC_STRING, "scalar");CHKERRQ(ierr);
+        }
+      }
+    }
+  }
+  ierr = DMRestoreGlobalVector(dmBC, &gv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "VecView_Plex_Local"
 PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
 {
   DM             dm;
-  PetscBool      isvtk;
+  PetscBool      isvtk, ishdf5, isseq;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
   if (!dm) SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK, &isvtk);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,  &isvtk);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
+  if (isvtk || ishdf5) {ierr = DMPlexInsertBoundaryValues(dm, v);CHKERRQ(ierr);}
   if (isvtk) {
-    PetscViewerVTKFieldType ft = PETSC_VTK_POINT_FIELD;
     PetscSection            section;
-    PetscInt                dim, pStart, pEnd, cStart, fStart, vStart, cdof = 0, fdof = 0, vdof = 0;
+    PetscViewerVTKFieldType ft;
+    PetscInt                pStart, pEnd;
 
-    ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
     ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-    ierr = DMPlexGetHeightStratum(dm, 0, &cStart, NULL);CHKERRQ(ierr);
-    ierr = DMPlexGetHeightStratum(dm, 1, &fStart, NULL);CHKERRQ(ierr);
-    ierr = DMPlexGetDepthStratum(dm, 0, &vStart, NULL);CHKERRQ(ierr);
-    ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-    /* Assumes that numer of dofs per point of each stratum is constant, natural for VTK */
-    if ((cStart >= pStart) && (cStart < pEnd)) {ierr = PetscSectionGetDof(section, cStart, &cdof);CHKERRQ(ierr);}
-    if ((fStart >= pStart) && (fStart < pEnd)) {ierr = PetscSectionGetDof(section, fStart, &fdof);CHKERRQ(ierr);}
-    if ((vStart >= pStart) && (vStart < pEnd)) {ierr = PetscSectionGetDof(section, vStart, &vdof);CHKERRQ(ierr);}
-    if (cdof && fdof && vdof) { /* Actually Q2 or some such, but visualize as Q1 */
-      ft = (cdof == dim) ? PETSC_VTK_POINT_VECTOR_FIELD : PETSC_VTK_POINT_FIELD;
-    } else if (cdof && vdof) {
-      SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"No support for viewing mixed space with dofs at both vertices and cells");
-    } else if (cdof) {
-      /* TODO: This assumption should be removed when there is a way of identifying whether a space is conceptually a
-       * vector or just happens to have the same number of dofs as the dimension. */
-      if (cdof == dim) {
-        ft = PETSC_VTK_CELL_VECTOR_FIELD;
-      } else {
-        ft = PETSC_VTK_CELL_FIELD;
-      }
-    } else if (vdof) {
-      if (vdof == dim) {
-        ft = PETSC_VTK_POINT_VECTOR_FIELD;
-      } else {
-        ft = PETSC_VTK_POINT_FIELD;
-      }
-    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Could not classify input Vec for VTK");
-
+    ierr = GetFieldType_Static(dm, section, PETSC_DETERMINE, &pStart, &pEnd, &ft);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr); /* viewer drops reference */
     ierr = PetscObjectReference((PetscObject) v);CHKERRQ(ierr);  /* viewer drops reference */
     ierr = PetscViewerVTKAddField(viewer, (PetscObject) dm, DMPlexVTKWriteAll, ft, (PetscObject) v);CHKERRQ(ierr);
+  } else if (ishdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    ierr = VecView_Plex_Local_HDF5(v, viewer);CHKERRQ(ierr);
+#else
+    SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+#endif
   } else {
-    PetscBool isseq;
-
-    ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
-    if (isseq) {
-      ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);
-    } else {
-      ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);
-    }
+    if (isseq) {ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);}
+    else       {ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_HAVE_HDF5)
+#undef __FUNCT__
+#define __FUNCT__ "VecView_Plex_HDF5"
+static PetscErrorCode VecView_Plex_HDF5(Vec v, PetscViewer viewer)
+{
+  DM             dm;
+  Vec            locv;
+  const char    *name;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dm, &locv);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject) v, &name);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) locv, name);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dm, v, INSERT_VALUES, locv);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dm, v, INSERT_VALUES, locv);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "/fields");CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_VIZ);CHKERRQ(ierr);
+  ierr = VecView_Plex_Local(locv, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm, &locv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "VecView_Plex"
 PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
 {
   DM             dm;
-  PetscBool      isvtk;
+  PetscBool      isvtk, ishdf5, isseq;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
   if (!dm) SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK, &isvtk);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,  &isvtk);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
   if (isvtk) {
     Vec         locv;
     const char *name;
@@ -95,15 +293,98 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
     ierr = DMGlobalToLocalEnd(dm, v, INSERT_VALUES, locv);CHKERRQ(ierr);
     ierr = VecView_Plex_Local(locv, viewer);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dm, &locv);CHKERRQ(ierr);
+  } else if (ishdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    ierr = VecView_Plex_HDF5(v, viewer);CHKERRQ(ierr);
+#else
+    SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+#endif
   } else {
-    PetscBool isseq;
+    if (isseq) {ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);}
+    else       {ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);}
+  }
+  PetscFunctionReturn(0);
+}
 
-    ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
-    if (isseq) {
-      ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);
-    } else {
-      ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);
-    }
+#undef __FUNCT__
+#define __FUNCT__ "VecLoad_Plex_Local"
+PetscErrorCode VecLoad_Plex_Local(Vec v, PetscViewer viewer)
+{
+  DM             dm;
+  PetscBool      ishdf5;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
+  if (!dm) SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  if (ishdf5) {
+    DM          dmBC;
+    Vec         gv;
+    const char *name;
+
+    ierr = DMGetOutputDM(dm, &dmBC);CHKERRQ(ierr);
+    ierr = DMGetGlobalVector(dmBC, &gv);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) v, &name);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) gv, name);CHKERRQ(ierr);
+    ierr = VecLoad_Default(gv, viewer);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(dmBC, gv, INSERT_VALUES, v);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(dmBC, gv, INSERT_VALUES, v);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(dmBC, &gv);CHKERRQ(ierr);
+  } else {
+    ierr = VecLoad_Default(v, viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#if defined(PETSC_HAVE_HDF5)
+#undef __FUNCT__
+#define __FUNCT__ "VecLoad_Plex_HDF5"
+static PetscErrorCode VecLoad_Plex_HDF5(Vec v, PetscViewer viewer)
+{
+  DM             dm;
+  Vec            locv;
+  const char    *name;
+  PetscInt       seqnum;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dm, &locv);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject) v, &name);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) locv, name);CHKERRQ(ierr);
+  ierr = DMGetOutputSequenceNumber(dm, &seqnum);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5SetTimestep(viewer, seqnum);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "/fields");CHKERRQ(ierr);
+  ierr = VecLoad_Plex_Local(locv, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(dm, locv, INSERT_VALUES, v);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dm, locv, INSERT_VALUES, v);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm, &locv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
+
+#undef __FUNCT__
+#define __FUNCT__ "VecLoad_Plex"
+PetscErrorCode VecLoad_Plex(Vec v, PetscViewer viewer)
+{
+  DM             dm;
+  PetscBool      ishdf5;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
+  if (!dm) SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  if (ishdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    ierr = VecLoad_Plex_HDF5(v, viewer);CHKERRQ(ierr);
+#else
+    SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+#endif
+  } else {
+    ierr = VecLoad_Default(v, viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -351,23 +632,347 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_HDF5)
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexView_HDF5"
+/* We only write cells and vertices. Does this screw up parallel reading? */
+static PetscErrorCode DMPlexView_HDF5(DM dm, PetscViewer viewer)
+{
+  DM              cdm;
+  Vec             coordinates, newcoords;
+  Vec             coneVec, cellVec;
+  IS              globalVertexNumbers;
+  const PetscInt *gvertex;
+  PetscScalar    *sizes, *vertices;
+  PetscReal       lengthScale;
+  const char     *label   = NULL;
+  PetscInt        labelId = 0, dim;
+  char            group[PETSC_MAX_PATH_LEN];
+  PetscInt        vStart, vEnd, v, cellHeight, cStart, cEnd, cMax, cell, conesSize = 0, numCornersLocal = 0, numCorners, numLabels, l;
+  hid_t           fileId, groupId;
+  herr_t          status;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  /* Write coordinates */
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetScale(dm, PETSC_UNIT_LENGTH, &lengthScale);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = VecDuplicate(coordinates, &newcoords);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) newcoords, "vertices");CHKERRQ(ierr);
+  ierr = VecCopy(coordinates, newcoords);CHKERRQ(ierr);
+  ierr = VecScale(newcoords, lengthScale);CHKERRQ(ierr);
+  /* Use the local version to bypass the default group setting */
+  ierr = PetscViewerHDF5PushGroup(viewer, "/geometry");CHKERRQ(ierr);
+  ierr = VecView(newcoords, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = VecDestroy(&newcoords);CHKERRQ(ierr);
+  /* Write toplogy */
+  ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cMax, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
+
+  ierr = VecCreate(PetscObjectComm((PetscObject) dm), &coneVec);CHKERRQ(ierr);
+  ierr = VecSetSizes(coneVec, cEnd-cStart, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(coneVec, 1);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(coneVec);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) coneVec, "coneSize");CHKERRQ(ierr);
+  ierr = VecGetArray(coneVec, &sizes);CHKERRQ(ierr);
+  for (cell = cStart; cell < cEnd; ++cell) {
+    PetscInt *closure = NULL;
+    PetscInt  closureSize, v, Nc = 0;
+
+    if (label) {
+      PetscInt value;
+      ierr = DMPlexGetLabelValue(dm, label, cell, &value);CHKERRQ(ierr);
+      if (value == labelId) continue;
+    }
+    ierr = DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    for (v = 0; v < closureSize*2; v += 2) {
+      if ((closure[v] >= vStart) && (closure[v] < vEnd)) ++Nc;
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    conesSize += Nc;
+    if (!numCornersLocal)           numCornersLocal = Nc;
+    else if (numCornersLocal != Nc) numCornersLocal = 1;
+  }
+  ierr = VecRestoreArray(coneVec, &sizes);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&numCornersLocal, &numCorners, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);
+  if (numCornersLocal && numCornersLocal != numCorners) numCorners = 1;
+
+  ierr = DMPlexGetVertexNumbering(dm, &globalVertexNumbers);CHKERRQ(ierr);
+  ierr = ISGetIndices(globalVertexNumbers, &gvertex);CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject) dm), &cellVec);CHKERRQ(ierr);
+  ierr = VecSetSizes(cellVec, conesSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(cellVec, numCorners);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(cellVec);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) cellVec, "cells");CHKERRQ(ierr);
+  ierr = VecGetArray(cellVec, &vertices);CHKERRQ(ierr);
+  for (cell = cStart, v = 0; cell < cEnd; ++cell) {
+    PetscInt *closure = NULL;
+    PetscInt  closureSize, Nc = 0, p;
+
+    if (label) {
+      PetscInt value;
+      ierr = DMPlexGetLabelValue(dm, label, cell, &value);CHKERRQ(ierr);
+      if (value == labelId) continue;
+    }
+    ierr = DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    for (p = 0; p < closureSize*2; p += 2) {
+      if ((closure[p] >= vStart) && (closure[p] < vEnd)) {
+        closure[Nc++] = closure[p];
+        }
+    }
+    ierr = DMPlexInvertCell(dim, Nc, closure);CHKERRQ(ierr);
+    for (p = 0; p < Nc; ++p) {
+      const PetscInt gv = gvertex[closure[p] - vStart];
+      vertices[v++] = gv < 0 ? -(gv+1) : gv;
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+  }
+  if (v != conesSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of cell vertices %d != %d", v, conesSize);
+  ierr = VecRestoreArray(cellVec, &vertices);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "/topology");CHKERRQ(ierr);
+  ierr = VecView(cellVec, viewer);CHKERRQ(ierr);
+  if (numCorners == 1) {
+    ierr = VecView(coneVec, viewer);CHKERRQ(ierr);
+  } else {
+    ierr = PetscViewerHDF5WriteAttribute(viewer, "/topology/cells", "cell_corners", PETSC_INT, (void *) &numCorners);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = VecDestroy(&cellVec);CHKERRQ(ierr);
+  ierr = VecDestroy(&coneVec);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(globalVertexNumbers, &gvertex);CHKERRQ(ierr);
+
+  ierr = PetscViewerHDF5WriteAttribute(viewer, "/topology/cells", "cell_dim", PETSC_INT, (void *) &dim);CHKERRQ(ierr);
+  /* Write Labels*/
+  ierr = PetscViewerHDF5PushGroup(viewer, "/labels");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId);CHKERRQ(ierr);
+  if (groupId != fileId) {status = H5Gclose(groupId);CHKERRQ(status);}
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = DMPlexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
+  for (l = 0; l < numLabels; ++l) {
+    DMLabel         label;
+    const char     *name;
+    IS              valueIS;
+    const PetscInt *values;
+    PetscInt        numValues, v;
+    PetscBool       isDepth;
+
+    ierr = DMPlexGetLabelName(dm, l, &name);CHKERRQ(ierr);
+    ierr = PetscStrncmp(name, "depth", 10, &isDepth);CHKERRQ(ierr);
+    if (isDepth) continue;
+    ierr = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
+    ierr = DMLabelGetNumValues(label, &numValues);CHKERRQ(ierr);
+    ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
+    ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(group, PETSC_MAX_PATH_LEN, "/labels/%s", name);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5PushGroup(viewer, group);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId);CHKERRQ(ierr);
+    if (groupId != fileId) {status = H5Gclose(groupId);CHKERRQ(status);}
+    ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+    /* TODO: Need to actually loop over the union of label values, ISAllGather() */
+    for (v = 0; v < numValues; ++v) {
+      IS   stratumIS;
+
+      ierr = PetscSNPrintf(group, PETSC_MAX_PATH_LEN, "/labels/%s/%d", name, values[v]);CHKERRQ(ierr);
+      ierr = DMLabelGetStratumIS(label, values[v], &stratumIS);CHKERRQ(ierr);
+      /* TODO: Need to globalize point names and remove unowned points */
+      ierr = PetscViewerHDF5PushGroup(viewer, group);CHKERRQ(ierr);
+      ierr = ISView(stratumIS, viewer);CHKERRQ(ierr);
+      ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+      ierr = ISDestroy(&stratumIS);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
+    ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "DMView_Plex"
 PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
 {
-  PetscBool      iascii, isbinary;
+  PetscBool      iascii, ishdf5;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERBINARY, &isbinary);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5,  &ishdf5);CHKERRQ(ierr);
   if (iascii) {
     ierr = DMPlexView_Ascii(dm, viewer);CHKERRQ(ierr);
-#if 0
-  } else if (isbinary) {
-    ierr = DMPlexView_Binary(dm, viewer);CHKERRQ(ierr);
+  } else if (ishdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    ierr = DMPlexView_HDF5(dm, viewer);CHKERRQ(ierr);
+#else
+    SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+#endif
+  }
+  PetscFunctionReturn(0);
+}
+
+#if defined(PETSC_HAVE_HDF5)
+typedef struct {
+  DM          dm;
+  PetscViewer viewer;
+  DMLabel     label;
+} LabelCtx;
+
+static herr_t ReadLabelStratumHDF5_Static(hid_t g_id, const char *name, const H5L_info_t *info, void *op_data)
+{
+  PetscViewer     viewer = ((LabelCtx *) op_data)->viewer;
+  DMLabel         label  = ((LabelCtx *) op_data)->label;
+  IS              stratumIS;
+  const PetscInt *ind;
+  PetscInt        value, N, i;
+  const char     *lname;
+  char            group[PETSC_MAX_PATH_LEN];
+  PetscErrorCode  ierr;
+
+  ierr = PetscOptionsStringToInt(name, &value);
+  ierr = ISCreate(PetscObjectComm((PetscObject) viewer), &stratumIS);
+  ierr = PetscObjectSetName((PetscObject) stratumIS, "indices");
+  ierr = DMLabelGetName(label, &lname);
+  ierr = PetscSNPrintf(group, PETSC_MAX_PATH_LEN, "/labels/%s/%s", lname, name);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, group);CHKERRQ(ierr);
+  ierr = ISLoad(stratumIS, viewer);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = ISGetSize(stratumIS, &N);
+  ierr = ISGetIndices(stratumIS, &ind);
+  for (i = 0; i < N; ++i) {ierr = DMLabelSetValue(label, ind[i], value);}
+  ierr = ISRestoreIndices(stratumIS, &ind);
+  ierr = ISDestroy(&stratumIS);
+  return 0;
+}
+
+static herr_t ReadLabelHDF5_Static(hid_t g_id, const char *name, const H5L_info_t *info, void *op_data)
+{
+  DM             dm = ((LabelCtx *) op_data)->dm;
+  hsize_t        idx;
+  herr_t         status;
+  PetscErrorCode ierr;
+
+  ierr = DMPlexCreateLabel(dm, name); if (ierr) return (herr_t) ierr;
+  ierr = DMPlexGetLabel(dm, name, &((LabelCtx *) op_data)->label); if (ierr) return (herr_t) ierr;
+  status = H5Literate_by_name(g_id, name, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, ReadLabelStratumHDF5_Static, op_data, 0);
+  return status;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexLoad_HDF5"
+/* The first version will read everything onto proc 0, letting the user distribute
+   The next will create a naive partition, and then rebalance after reading
+*/
+static PetscErrorCode DMPlexLoad_HDF5(DM dm, PetscViewer viewer)
+{
+  LabelCtx        ctx;
+  PetscSection    coordSection;
+  Vec             coordinates;
+  Vec             cellVec;
+  PetscScalar    *cells;
+  PetscReal       lengthScale;
+  PetscInt       *cone;
+  PetscInt        dim, spatialDim, numVertices, v, numCorners, numCells, cell, c;
+  hid_t           fileId, groupId;
+  hsize_t         idx;
+  herr_t          status;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  /* Read geometry */
+  ierr = PetscViewerHDF5PushGroup(viewer, "/geometry");CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject) dm), &coordinates);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) coordinates, "vertices");CHKERRQ(ierr);
+  ierr = VecLoad(coordinates, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = DMPlexGetScale(dm, PETSC_UNIT_LENGTH, &lengthScale);CHKERRQ(ierr);
+  ierr = VecScale(coordinates, 1.0/lengthScale);CHKERRQ(ierr);
+  ierr = VecGetSize(coordinates, &numVertices);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(coordinates, &spatialDim);CHKERRQ(ierr);
+  numVertices /= spatialDim;
+  /* Read toplogy */
+  ierr = PetscViewerHDF5ReadAttribute(viewer, "/topology/cells", "cell_dim", PETSC_INT, (void *) &dim);CHKERRQ(ierr);
+  ierr = DMPlexSetDimension(dm, dim);CHKERRQ(ierr);
+  /*   TODO Check for coneSize vector rather than this attribute */
+  ierr = PetscViewerHDF5ReadAttribute(viewer, "/topology/cells", "cell_corners", PETSC_INT, (void *) &numCorners);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PushGroup(viewer, "/topology");CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject) dm), &cellVec);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(cellVec, numCorners);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) cellVec, "cells");CHKERRQ(ierr);
+  ierr = VecLoad(cellVec, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = VecGetSize(cellVec, &numCells);CHKERRQ(ierr);
+  numCells /= numCorners;
+  /* Create Plex */
+  ierr = DMPlexSetChart(dm, 0, numCells+numVertices);CHKERRQ(ierr);
+  for (cell = 0; cell < numCells; ++cell) {ierr = DMPlexSetConeSize(dm, cell, numCorners);CHKERRQ(ierr);}
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numCorners,&cone);CHKERRQ(ierr);
+  ierr = VecGetArray(cellVec, &cells);CHKERRQ(ierr);
+  for (cell = 0; cell < numCells; ++cell) {
+    for (c = 0; c < numCorners; ++c) {cone[c] = numCells + cells[cell*numCorners+c];}
+    ierr = DMPlexSetCone(dm, cell, cone);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(cellVec, &cells);CHKERRQ(ierr);
+  ierr = PetscFree(cone);CHKERRQ(ierr);
+  ierr = VecDestroy(&cellVec);CHKERRQ(ierr);
+  ierr = DMPlexSymmetrize(dm);CHKERRQ(ierr);
+  ierr = DMPlexStratify(dm);CHKERRQ(ierr);
+  /* Create coordinates */
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(coordSection, 0, spatialDim);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(coordSection, numCells, numCells+numVertices);CHKERRQ(ierr);
+  for (v = numCells; v < numCells+numVertices; ++v) {
+    ierr = PetscSectionSetDof(coordSection, v, spatialDim);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldDof(coordSection, v, 0, spatialDim);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
+  ierr = DMSetCoordinates(dm, coordinates);CHKERRQ(ierr);
+  ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
+  /* Read Labels*/
+  ctx.dm     = dm;
+  ctx.viewer = viewer;
+  ierr = PetscViewerHDF5PushGroup(viewer, "/labels");CHKERRQ(ierr);
+  ierr = PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId);CHKERRQ(ierr);
+  status = H5Literate(groupId, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, ReadLabelHDF5_Static, &ctx);CHKERRQ(status);
+  status = H5Gclose(groupId);CHKERRQ(status);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLoad_Plex"
+PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer)
+{
+  PetscBool      isbinary, ishdf5;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERBINARY, &isbinary);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5,   &ishdf5);CHKERRQ(ierr);
+  if (isbinary) {SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Do not yet support binary viewers");}
+  else if (ishdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    DM odm;
+    ierr = DMCreate(PetscObjectComm((PetscObject) dm), &odm);CHKERRQ(ierr);
+    ierr = DMSetType(odm, DMPLEX);CHKERRQ(ierr);
+    ierr = DMPlexLoad_HDF5(odm, viewer);CHKERRQ(ierr);
+    ierr = DMPlexInterpolate(odm, &dm);CHKERRQ(ierr);
+    ierr = DMPlexCopyCoordinates(odm, dm);CHKERRQ(ierr);
+    ierr = DMPlexCopyLabels(odm, dm);CHKERRQ(ierr);
+    ierr = DMDestroy(&odm);CHKERRQ(ierr);
+#else
+    SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
   }
   PetscFunctionReturn(0);

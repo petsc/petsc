@@ -96,8 +96,10 @@ PETSC_EXTERN PetscErrorCode DMPlexVTKWriteAll_VTU(DM,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMPlexVTKGetCellType(DM,PetscInt,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode VecView_Plex_Local(Vec,PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_Plex(Vec,PetscViewer);
+PETSC_EXTERN PetscErrorCode VecLoad_Plex_Local(Vec,PetscViewer);
+PETSC_EXTERN PetscErrorCode VecLoad_Plex(Vec,PetscViewer);
 
-PETSC_EXTERN PetscErrorCode DMPlexGetAdjacency_Internal(DM,PetscInt,PetscBool,PetscBool,PetscInt*,PetscInt[]);
+PETSC_EXTERN PetscErrorCode DMPlexGetAdjacency_Internal(DM,PetscInt,PetscBool,PetscBool,PetscInt*,PetscInt*[]);
 PETSC_EXTERN PetscErrorCode DMPlexGetFaces_Internal(DM,PetscInt,PetscInt,PetscInt*,PetscInt*,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode DMPlexGetRawFaces_Internal(DM,PetscInt,PetscInt,const PetscInt[], PetscInt*,PetscInt*,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode DMPlexRestoreFaces_Internal(DM,PetscInt,PetscInt,PetscInt*,PetscInt*,const PetscInt*[]);
