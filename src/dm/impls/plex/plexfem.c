@@ -269,6 +269,44 @@ PetscErrorCode DMPlexProjectFunction(DM dm, PetscFE fe[], void (**funcs)(const P
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexInsertBoundaryValues"
+PetscErrorCode DMPlexInsertBoundaryValues(DM dm, Vec localX)
+{
+  void        (**funcs)(const PetscReal x[], PetscScalar *u, void *ctx);
+  void         **ctxs;
+  PetscFE       *fe;
+  PetscInt       numFields, f, numBd, b;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(localX, VEC_CLASSID, 2);
+  ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
+  ierr = PetscMalloc3(numFields,&fe,numFields,&funcs,numFields,&ctxs);CHKERRQ(ierr);
+  for (f = 0; f < numFields; ++f) {ierr = DMGetField(dm, f, (PetscObject *) &fe[f]);CHKERRQ(ierr);}
+  /* OPT: Could attempt to do multiple BCs at once */
+  ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
+  for (b = 0; b < numBd; ++b) {
+    const PetscInt *ids;
+    PetscInt        numids, field;
+    PetscBool       isEssential;
+    void          (*func)();
+    void           *ctx;
+
+    /* TODO: We need to set only the part indicated by the ids */
+    ierr = DMPlexGetBoundary(dm, b, &isEssential, NULL, &field, &func, &numids, &ids, &ctx);CHKERRQ(ierr);
+    for (f = 0; f < numFields; ++f) {
+      funcs[f] = field == f ? (void (*)(const PetscReal[], PetscScalar *, void *)) func : NULL;
+      ctxs[f]  = field == f ? ctx : NULL;
+    }
+    ierr = DMPlexProjectFunctionLocal(dm, fe, funcs, ctxs, INSERT_BC_VALUES, localX);CHKERRQ(ierr);
+  }
+  ierr = PetscFree3(fe,funcs,ctxs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexComputeL2Diff"
 /*@C

@@ -1703,6 +1703,17 @@ PetscErrorCode VecIntSetValuesSection(PetscInt *baseArray, PetscSection s, Petsc
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSectionHasConstraints"
+PetscErrorCode PetscSectionHasConstraints(PetscSection s, PetscBool *hasConstraints)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  PetscValidPointer(hasConstraints, 2);
+  *hasConstraints = s->bc ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetConstraintIndices"
 PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, const PetscInt **indices)
 {

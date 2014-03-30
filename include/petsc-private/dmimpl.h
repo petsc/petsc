@@ -144,6 +144,9 @@ struct _p_DM {
   /* Fields are represented by objects */
   PetscInt                numFields;
   PetscFE                *fields;
+  /* Output structures */
+  DM                      dmBC;                 /* The DM with boundary conditions in the global DM */
+  PetscInt                outputSequenceNum;    /* The current sequence number for output */
 
   PetscObject             dmksp,dmsnes,dmts;
 };

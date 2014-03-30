@@ -145,6 +145,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t *groupId)
 {
   hid_t          file_id, group;
+  htri_t         found;
   const char     *groupName = NULL;
   PetscErrorCode ierr;
 
@@ -156,7 +157,8 @@ PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t
     PetscBool root;
 
     ierr = PetscStrcmp(groupName, "/", &root);CHKERRQ(ierr);
-    if (!root && !H5Lexists(file_id, groupName, H5P_DEFAULT)) {
+    found = H5Lexists(file_id, groupName, H5P_DEFAULT);
+    if (!root && (found <= 0)) {
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
       group = H5Gcreate2(file_id, groupName, 0, H5P_DEFAULT, H5P_DEFAULT);
 #else /* deprecated HDF5 1.6 API */
@@ -227,7 +229,11 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   if (rdim != dim) {
     if (rdim == dim+1 && bs == -1) bs = dims[bsInd];
     else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected",rdim,dim);
-  } else if (bs >= 1 && bs != (PetscInt) dims[bsInd]) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Block size %d specified for vector does not match blocksize in file %d",bs,dims[bsInd]);
+  } else if (bs >= 1 && bs != (PetscInt) dims[bsInd]) {
+    ierr = VecSetBlockSize(xin, dims[bsInd]);CHKERRQ(ierr);
+    if (ierr) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Block size %d specified for vector does not match blocksize in file %d",bs,dims[bsInd]);
+    bs = dims[bsInd];
+  }
 
   /* Set Vec sizes,blocksize,and type if not already set */
   if ((xin)->map->n < 0 && (xin)->map->N < 0) {

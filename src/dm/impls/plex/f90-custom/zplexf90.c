@@ -23,6 +23,7 @@
 #define dmplexrestoremeet_              DMPLEXRESTOREMEET
 #define dmplexcreatesection_            DMPLEXCREATESECTION
 #define dmplexcomputecellgeometry_      DMPLEXCOMPUTECELLGEOMETRY
+#define dmplexcomputecellgeometryfvm_   DMPLEXCOMPUTECELLGEOMETRYFVM
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define dmplexgetcone_                  dmplexgetcone
 #define dmplexrestorecone_              dmplexrestorecone
@@ -44,6 +45,7 @@
 #define dmplexrestoremeet_              dmplexrestoremeet
 #define dmplexcreatesection_            dmplexcreatesection
 #define dmplexcomputecellgeometry_      dmplexcomputecellgeometry
+#define dmplexcomputecellgeometryfvm_   dmplexcomputecellgeometryfvm
 #endif
 
 /* Definitions of Fortran Wrapper routines */
@@ -237,5 +239,15 @@ PETSC_EXTERN void PETSC_STDCALL dmplexcomputecellgeometry_(DM *dm, PetscInt *cel
   *ierr = F90Array1dAccess(ptrJ,  PETSC_REAL, (void**) &J PETSC_F90_2PTR_PARAM(ptrJd));if (*ierr) return;
   *ierr = F90Array1dAccess(ptrIJ, PETSC_REAL, (void**) &invJ PETSC_F90_2PTR_PARAM(ptrIJd));if (*ierr) return;
   *ierr = DMPlexComputeCellGeometry(*dm, *cell, v0, J, invJ, detJ);
+}
+
+PETSC_EXTERN void PETSC_STDCALL dmplexcomputecellgeometryfvm_(DM *dm, PetscInt *cell, PetscReal *vol, F90Array1d *ptrCentroid, F90Array1d *ptrNormal, int *ierr PETSC_F90_2PTR_PROTO(ptrCentroidd) PETSC_F90_2PTR_PROTO(ptrNormald))
+{
+  PetscReal *centroid;
+  PetscReal *normal;
+
+  *ierr = F90Array1dAccess(ptrCentroid, PETSC_REAL, (void**) &centroid PETSC_F90_2PTR_PARAM(ptrCentroidd));if (*ierr) return;
+  *ierr = F90Array1dAccess(ptrNormal,   PETSC_REAL, (void**) &normal   PETSC_F90_2PTR_PARAM(ptrNormald));if (*ierr) return;
+  *ierr = DMPlexComputeCellGeometryFVM(*dm, *cell, vol, centroid, normal);
 }
 

@@ -219,7 +219,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm)
     *newdm = rdm;
   }
   if (user->interpolate) {
-    DM idm;
+    DM idm = NULL;
     const char *name;
 
     ierr = DMPlexInterpolate(*newdm, &idm);CHKERRQ(ierr);
