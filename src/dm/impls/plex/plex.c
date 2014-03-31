@@ -880,7 +880,7 @@ static PetscErrorCode DMPlexLoad_HDF5(DM dm, PetscViewer viewer)
   PetscInt       *cone;
   PetscInt        dim, spatialDim, numVertices, v, numCorners, numCells, cell, c;
   hid_t           fileId, groupId;
-  hsize_t         idx;
+  hsize_t         idx = 0;
   herr_t          status;
   PetscErrorCode  ierr;
 
