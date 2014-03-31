@@ -403,16 +403,16 @@ PetscErrorCode DMPlexInsertBoundaryValuesFVM(DM dm, PetscReal time, Vec locX)
   ierr = VecGetArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
   ierr = VecGetArray(locX, &x);CHKERRQ(ierr);
   for (b = 0; b < numBd; ++b) {
-    PetscErrorCode (*func)(PetscReal,const PetscReal*,const PetscReal*,const PetscScalar*,PetscScalar*,void*);
+    PetscErrorCode (*func)(PetscReal,const PetscScalar*,const PetscScalar*,const PetscScalar*,PetscScalar*,void*);
     const PetscInt  *ids;
     PetscInt         numids, i;
     void            *ctx;
 
     ierr = DMPlexGetBoundary(dm, b, NULL, NULL, NULL, (void (**)()) &func, &numids, &ids, &ctx);CHKERRQ(ierr);
     for (i = 0; i < numids; ++i) {
-      IS               faceIS;
-      const PetscInt   *faces;
-      PetscInt         numFaces, f;
+      IS              faceIS;
+      const PetscInt *faces;
+      PetscInt        numFaces, f;
 
       ierr = DMLabelGetStratumIS(label, ids[i], &faceIS);CHKERRQ(ierr);
       if (!faceIS) continue; /* No points with that id on this process */
