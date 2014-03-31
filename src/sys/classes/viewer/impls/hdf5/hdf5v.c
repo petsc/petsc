@@ -459,6 +459,7 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(parent, 2);
   PetscValidPointer(name, 3);
   PetscValidPointer(value, 4);
@@ -513,6 +514,7 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(parent, 2);
   PetscValidPointer(name, 3);
   PetscValidPointer(value, 4);
@@ -537,6 +539,32 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5HasObject"
+static PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, const char name[], H5O_type_t otype, PetscBool *has)
+{
+  hid_t          h5;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  PetscValidPointer(name, 2);
+  PetscValidPointer(has, 3);
+  ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
+  *has = PETSC_FALSE;
+  if (H5Lexists(h5, name, H5P_DEFAULT)) {
+    H5O_info_t info;
+    hid_t      obj;
+    herr_t     err;
+
+    obj = H5Oopen(h5, name, H5P_DEFAULT);if (obj < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not open object %s", name);
+    err = H5Oget_info(obj, &info);CHKERRQ(err);
+    if (otype == info.type) *has = PETSC_TRUE;
+    err = H5Oclose(obj);CHKERRQ(err);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5HasAttribute"
 /*@
  PetscViewerHDF5HasAttribute - Check whether a scalar attribute exists
@@ -555,27 +583,32 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
 @*/
 PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent[], const char name[], PetscBool *has)
 {
-  hid_t          h5, dataset, attribute, status;
+  hid_t          h5, dataset, status;
+  htri_t         hhas;
+  PetscBool      exists;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(parent, 2);
   PetscValidPointer(name, 3);
   PetscValidPointer(has, 4);
   *has = PETSC_FALSE;
   ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5HasObject(viewer, parent, H5O_TYPE_DATASET, &exists);CHKERRQ(ierr);
+  if (exists) {
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
-  dataset = H5Dopen2(h5, parent, H5P_DEFAULT);
-  if (dataset < 0) PetscFunctionReturn(0);
+    dataset = H5Dopen2(h5, parent, H5P_DEFAULT);
+    if (dataset < 0) PetscFunctionReturn(0);
 #else
-  dataset = H5Dopen(h5, parent);
-  if (dataset < 0) PetscFunctionReturn(0);
+    dataset = H5Dopen(h5, parent);
+    if (dataset < 0) PetscFunctionReturn(0);
 #endif
-  attribute = H5Aopen_name(dataset, name);
-  if (attribute < 0) {status = H5Dclose(dataset);CHKERRQ(status); PetscFunctionReturn(0);}
-  status = H5Aclose(attribute);CHKERRQ(status);
-  status = H5Dclose(dataset);CHKERRQ(status);
-  *has = PETSC_TRUE;
+    hhas = H5Aexists(dataset, name);
+    if (hhas < 0) {status = H5Dclose(dataset);CHKERRQ(status); PetscFunctionReturn(0);}
+    status = H5Dclose(dataset);CHKERRQ(status);
+    *has = hhas ? PETSC_TRUE : PETSC_FALSE;
+  }
   PetscFunctionReturn(0);
 }
 
