@@ -5339,7 +5339,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   Vec            coordinates, coordinatesNew;
   PetscScalar   *coords, *coordsNew;
   const PetscInt numVertices = depthSize ? depthSize[0] : 0;
-  PetscInt       dim, depth, coordSizeNew, cStart, cEnd, cMax, c, vStart, vStartNew, vEnd, v, eStart, eEnd, eMax, e, fStart, fEnd, fMax, f;
+  PetscInt       dim, depth, bs, coordSizeNew, cStart, cEnd, cMax, c, vStart, vStartNew, vEnd, v, eStart, eEnd, eMax, e, fStart, fEnd, fMax, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -5372,6 +5372,8 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinatesNew);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coordinatesNew, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(coordinatesNew, coordSizeNew, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(coordinates, &bs);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(coordinatesNew, bs);CHKERRQ(ierr);
   ierr = VecSetFromOptions(coordinatesNew);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(coordinatesNew, &coordsNew);CHKERRQ(ierr);
