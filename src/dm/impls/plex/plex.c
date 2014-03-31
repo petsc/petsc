@@ -6353,9 +6353,25 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     /* Only want to do this for FEM */
     ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
     ierr = DMPlexLabelAddCells(dm, label);CHKERRQ(ierr);
+    /* Filter out cells, if you actually want to constraint cells you need to do things by hand right now */
     if (isEssential) {
+      IS              tmp;
+      PetscInt       *newidx;
+      const PetscInt *idx;
+      PetscInt        cStart, cEnd, n, p, newn = 0;
+
       bcFields[bc] = field;
-      ierr = DMPlexGetStratumIS(dm, bdLabel, values[0], &bcPoints[bc++]);CHKERRQ(ierr);
+      ierr = DMPlexGetStratumIS(dm, bdLabel, values[0], &tmp);CHKERRQ(ierr);
+      ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(tmp, &n);CHKERRQ(ierr);
+      ierr = ISGetIndices(tmp, &idx);CHKERRQ(ierr);
+      for (p = 0; p < n; ++p) if ((idx[p] < cStart) || (idx[p] >= cEnd)) ++newn;
+      ierr = PetscMalloc1(newn,&newidx);CHKERRQ(ierr);
+      newn = 0;
+      for (p = 0; p < n; ++p) if ((idx[p] < cStart) || (idx[p] >= cEnd)) newidx[newn++] = idx[p];
+      ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), newn, newidx, PETSC_OWN_POINTER, &bcPoints[bc++]);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(tmp, &idx);CHKERRQ(ierr);
+      ierr = ISDestroy(&tmp);CHKERRQ(ierr);
     }
   }
   /* Handle discretization */
