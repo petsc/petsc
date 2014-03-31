@@ -395,7 +395,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesFVM(DM dm, PetscReal time, Vec locX)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  /* TODO Pull this geomety calculation into the library */
+  /* TODO Pull this geometry calculation into the library */
   ierr = PetscObjectQuery((PetscObject) dm, "FaceGeometry", (PetscObject *) &faceGeometry);CHKERRQ(ierr);
   ierr = DMPlexGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
   ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
@@ -404,7 +404,6 @@ PetscErrorCode DMPlexInsertBoundaryValuesFVM(DM dm, PetscReal time, Vec locX)
   ierr = VecGetArray(locX, &x);CHKERRQ(ierr);
   for (b = 0; b < numBd; ++b) {
     PetscErrorCode (*func)(PetscReal,const PetscReal*,const PetscReal*,const PetscScalar*,PetscScalar*,void*);
-    DMLabel          label;
     const PetscInt  *ids;
     PetscInt         numids, i;
     void            *ctx;
@@ -416,6 +415,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesFVM(DM dm, PetscReal time, Vec locX)
       PetscInt         numFaces, f;
 
       ierr = DMLabelGetStratumIS(label, ids[i], &faceIS);CHKERRQ(ierr);
+      if (!faceIS) continue; /* No points with that id on this process */
       ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
       ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
       for (f = 0; f < numFaces; ++f) {
