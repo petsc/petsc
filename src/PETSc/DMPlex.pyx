@@ -478,7 +478,7 @@ cdef class DMPlex(DM):
         self.dm = pardm
         return pointsf
 
-    def createSection(self, numFields, numComp, numDof, numBC=0, bcField=None, bcPoints=None):
+    def createSection(self, numFields, numComp, numDof, numBC=0, bcField=None, bcPoints=None, IS perm=None):
         cdef PetscInt dim = 0
         CHKERR( DMPlexGetDimension(self.dm, &dim) )
         cdef PetscInt nfield = asInt(numFields)
@@ -503,6 +503,9 @@ cdef class DMPlex(DM):
           assert bcField is None
           assert bcPoints is None
 
+        cdef PetscIS cperm = NULL
+        if perm is not None:
+            cperm = perm.iset
         cdef Section sec = Section()
-        CHKERR( DMPlexCreateSection(self.dm, dim, nfield, icomp, idof, nbc, ibcfield, cbcpoints, &sec.sec) )
+        CHKERR( DMPlexCreateSection(self.dm, dim, nfield, icomp, idof, nbc, ibcfield, cbcpoints, cperm, &sec.sec) )
         return sec

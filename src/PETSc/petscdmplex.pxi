@@ -132,4 +132,4 @@ cdef extern from * nogil:
     #int DMPlexGetNumFaceVertices(PetscDM,PetscInt,PetscInt,PetscInt *)
     #int DMPlexGetOrientedFace(PetscDM,PetscInt,PetscInt,const_PetscInt [],PetscInt,PetscInt [],PetscInt [],PetscInt [],PetscBool *)
 
-    int DMPlexCreateSection(PetscDM,PetscInt,PetscInt,const_PetscInt[],const_PetscInt[],PetscInt,const_PetscInt[],const_PetscIS[],PetscSection*)
+    int DMPlexCreateSection(PetscDM,PetscInt,PetscInt,const_PetscInt[],const_PetscInt[],PetscInt,const_PetscInt[],const_PetscIS[],PetscIS,PetscSection*)
