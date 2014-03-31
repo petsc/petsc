@@ -671,7 +671,7 @@ PetscErrorCode  PetscOptionsEnum(const char opt[],const char text[],const char m
 +  opt - option name
 .  text - short string that describes the option
 .  man - manual page with additional information on option
--  defaultv - the default (current) value, if the user does not provide a value this is returned in value
+-  defaultv - the default (current) value
 
    Output Parameter:
 +  value - the integer value to return
@@ -721,7 +721,7 @@ PetscErrorCode  PetscOptionsInt(const char opt[],const char text[],const char ma
 +  opt - option name
 .  text - short string that describes the option
 .  man - manual page with additional information on option
-.  defaultv - the default (current) value, if the user does not provide a value this is returned in value
+.  defaultv - the default (current) value
 -  len - length of the result string including null terminator
 
    Output Parameter:
@@ -773,7 +773,7 @@ PetscErrorCode  PetscOptionsString(const char opt[],const char text[],const char
 +  opt - option name
 .  text - short string that describes the option
 .  man - manual page with additional information on option
--  defaultv - the default (current) value, if the user does not provide a value this is returned in value
+-  defaultv - the default (current) value
 
    Output Parameter:
 +  value - the value to return
@@ -823,7 +823,7 @@ PetscErrorCode  PetscOptionsReal(const char opt[],const char text[],const char m
 +  opt - option name
 .  text - short string that describes the option
 .  man - manual page with additional information on option
--  defaultv - the default (current) value, if the user does not provide a value this is returned in value
+-  defaultv - the default (current) value
 
    Output Parameter:
 +  value - the value to return
@@ -917,7 +917,7 @@ PetscErrorCode  PetscOptionsName(const char opt[],const char text[],const char m
 .  text - short string that describes the option
 .  man - manual page with additional information on option
 .  list - the possible choices
-.  defaultv - the default (current) value, if the user does not provide a value this is returned in value
+.  defaultv - the default (current) value
 -  len - the length of the character array value
 
    Output Parameter:
@@ -976,7 +976,7 @@ PetscErrorCode  PetscOptionsFList(const char opt[],const char ltext[],const char
 .  man - manual page with additional information on option
 .  list - the possible choices (one of these must be selected, anything else is invalid)
 .  ntext - number of choices
--  defaultv - the default (current) value, if the user does not provide a value the index of defaultv is returned
+-  defaultv - the default (current) value
 
    Output Parameter:
 +  value - the index of the value to return
@@ -1186,8 +1186,7 @@ PetscErrorCode  PetscOptionsBoolGroupEnd(const char opt[],const char text[],cons
    Input Parameters:
 +  opt - option name
 .  text - short string that describes the option
-.  man - manual page with additional information on option
--  deflt - the default value, if the user does not set a value then this value is returned in flg
+-  man - manual page with additional information on option
 
    Output Parameter:
 .  flg - PETSC_TRUE or PETSC_FALSE
