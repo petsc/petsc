@@ -1,4 +1,5 @@
 #include <petsc-private/matimpl.h>      /*I "petscmat.h"  I*/
+#include <../src/mat/impls/aij/seq/aij.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringCreateNaturalWeights"
@@ -67,6 +68,9 @@ PetscErrorCode MatColoringGetDegrees(Mat G,PetscInt distance,PetscInt *degrees)
   PetscInt       ncols;
   PetscInt       *coltorow;
   const PetscInt *cols;
+  PetscBool      isSEQAIJ;
+  Mat_SeqAIJ     *aij;
+  PetscInt       *Gi,*Gj;
 
   PetscFunctionBegin;
   ierr = MatGetOwnershipRange(G,&s,&e);CHKERRQ(ierr);
@@ -76,7 +80,14 @@ PetscErrorCode MatColoringGetDegrees(Mat G,PetscInt distance,PetscInt *degrees)
   ierr = ISSort(ris);CHKERRQ(ierr);
   ierr = MatGetSubMatrices(G,1,&ris,&ris,MAT_INITIAL_MATRIX,&lGs);CHKERRQ(ierr);
   lG = lGs[0];
+  ierr = PetscObjectTypeCompare((PetscObject)lG,MATSEQAIJ,&isSEQAIJ);CHKERRQ(ierr);
+  if (!isSEQAIJ) {
+    SETERRQ(PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"MatColoringDegrees requires an MPI/SEQAIJ Matrix");
+  }
   ierr = MatGetSize(lG,&ln,&lm);CHKERRQ(ierr);
+  aij = (Mat_SeqAIJ*)lG->data;
+  Gi = aij->i;
+  Gj = aij->j;
   ierr = PetscMalloc4(lm,&seen,lm,&idxbuf,lm,&distbuf,lm,&coltorow);CHKERRQ(ierr);
   for (i=0;i<ln;i++) {
     seen[i]=-1;
@@ -85,7 +96,8 @@ PetscErrorCode MatColoringGetDegrees(Mat G,PetscInt distance,PetscInt *degrees)
   for (i=0;i<ln;i++) {
     if (gidx[i] >= e || gidx[i] < s) continue;
     bidx=-1;
-    ierr = MatGetRow(lG,i,&ncols,&cols,NULL);CHKERRQ(ierr);
+    ncols = Gi[i+1]-Gi[i];
+    cols = &(Gj[Gi[i]]);
     degree = 0;
     /* place the distance-one neighbors on the queue */
     for (j=0;j<ncols;j++) {
@@ -94,7 +106,6 @@ PetscErrorCode MatColoringGetDegrees(Mat G,PetscInt distance,PetscInt *degrees)
       distbuf[bidx] = 1;
       idxbuf[bidx] = cols[j];
     }
-    ierr = MatRestoreRow(lG,i,&ncols,&cols,NULL);CHKERRQ(ierr);
     while (bidx >= 0) {
       /* pop */
       idx = idxbuf[bidx];
@@ -102,7 +113,8 @@ PetscErrorCode MatColoringGetDegrees(Mat G,PetscInt distance,PetscInt *degrees)
       bidx--;
       degree++;
       if (dist < distance) {
-        ierr = MatGetRow(lG,idx,&ncols,&cols,NULL);CHKERRQ(ierr);
+        ncols = Gi[idx+1]-Gi[idx];
+        cols = &(Gj[Gi[idx]]);
         for (j=0;j<ncols;j++) {
           if (seen[cols[j]] != i) {
             bidx++;
@@ -111,7 +123,6 @@ PetscErrorCode MatColoringGetDegrees(Mat G,PetscInt distance,PetscInt *degrees)
             distbuf[bidx] = dist+1;
           }
         }
-        ierr = MatRestoreRow(lG,idx,&ncols,&cols,NULL);CHKERRQ(ierr);
       }
     }
     degrees[gidx[i]-s] = degree;
