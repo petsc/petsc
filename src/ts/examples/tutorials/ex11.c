@@ -1811,61 +1811,6 @@ PetscErrorCode SetInitialCondition(DM dm, Vec X, User user)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ApplyBC"
-static PetscErrorCode ApplyBC(DM dm, PetscReal time, Vec locX, User user)
-{
-  Model             mod   = user->model;
-  const char        *name = "Face Sets";
-  DM                dmFace;
-  IS                idIS;
-  const PetscInt    *ids;
-  PetscScalar       *x;
-  const PetscScalar *facegeom;
-  PetscInt          numFS, fs;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBeginUser;
-  ierr = VecGetDM(user->facegeom,&dmFace);CHKERRQ(ierr);
-  ierr = DMPlexGetLabelIdIS(dm, name, &idIS);CHKERRQ(ierr);
-  if (!idIS) PetscFunctionReturn(0);
-  ierr = ISGetLocalSize(idIS, &numFS);CHKERRQ(ierr);
-  ierr = ISGetIndices(idIS, &ids);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(user->facegeom, &facegeom);CHKERRQ(ierr);
-  ierr = VecGetArray(locX, &x);CHKERRQ(ierr);
-  for (fs = 0; fs < numFS; ++fs) {
-    BoundaryFunction bcFunc;
-    void             *bcCtx;
-    IS               faceIS;
-    const PetscInt   *faces;
-    PetscInt         numFaces, f;
-
-    ierr = ModelBoundaryFind(mod,ids[fs],&bcFunc,&bcCtx);CHKERRQ(ierr);
-    ierr = DMPlexGetStratumIS(dm, name, ids[fs], &faceIS);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
-    ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
-    for (f = 0; f < numFaces; ++f) {
-      const PetscInt    face = faces[f], *cells;
-      const PetscScalar *xI;
-      PetscScalar       *xG;
-      const FaceGeom    *fg;
-
-      ierr = DMPlexPointLocalRead(dmFace, face, facegeom, &fg);CHKERRQ(ierr);
-      ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
-      ierr = DMPlexPointLocalRead(dm, cells[0], x, &xI);CHKERRQ(ierr);
-      ierr = DMPlexPointLocalRef(dm, cells[1], x, &xG);CHKERRQ(ierr);
-      ierr = (*bcFunc)(time, fg->centroid, fg->normal, xI, xG, bcCtx);CHKERRQ(ierr);
-    }
-    ierr = ISRestoreIndices(faceIS, &faces);CHKERRQ(ierr);
-    ierr = ISDestroy(&faceIS);CHKERRQ(ierr);
-  }
-  ierr = VecRestoreArray(locX, &x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(user->facegeom,&facegeom);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(idIS, &ids);CHKERRQ(ierr);
-  ierr = ISDestroy(&idIS);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "RHSFunctionLocal_Upwind"
 static PetscErrorCode RHSFunctionLocal_Upwind(DM dm,PetscReal time,Vec locX,Vec F,User user)
 {
@@ -1880,7 +1825,7 @@ static PetscErrorCode RHSFunctionLocal_Upwind(DM dm,PetscReal time,Vec locX,Vec 
   PetscFunctionBeginUser;
   ierr = VecGetDM(user->facegeom,&dmFace);CHKERRQ(ierr);
   ierr = VecGetDM(user->cellgeom,&dmCell);CHKERRQ(ierr);
-  ierr = ApplyBC(dm, time, locX, user);CHKERRQ(ierr);
+  ierr = DMPlexInsertBoundaryValuesFVM(dm, time, locX);CHKERRQ(ierr);
   ierr = VecGetArrayRead(user->facegeom,&facegeom);CHKERRQ(ierr);
   ierr = VecGetArrayRead(user->cellgeom,&cellgeom);CHKERRQ(ierr);
   ierr = VecGetArrayRead(locX,&x);CHKERRQ(ierr);
@@ -1936,7 +1881,7 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,PetscReal time,Vec locX,Vec F,Us
   PetscFunctionBeginUser;
   ierr = VecGetDM(user->facegeom,&dmFace);CHKERRQ(ierr);
   ierr = VecGetDM(user->cellgeom,&dmCell);CHKERRQ(ierr);
-  ierr = ApplyBC(dm, time, locX, user);CHKERRQ(ierr);
+  ierr = DMPlexInsertBoundaryValuesFVM(dm, time, locX);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dmGrad,&Grad);CHKERRQ(ierr);
   ierr = VecZeroEntries(Grad);CHKERRQ(ierr);
   ierr = VecGetArrayRead(user->facegeom,&facegeom);CHKERRQ(ierr);
