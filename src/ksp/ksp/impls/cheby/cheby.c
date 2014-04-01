@@ -356,7 +356,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   if (cheb->kspest && !cheb->estimate_current) {
-    PetscReal max,min;
+    PetscReal max=0.0,min=0.0;
     Vec       X,B;
     X = ksp->work[0];
     if (cheb->random) {
