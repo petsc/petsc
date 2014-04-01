@@ -2,38 +2,31 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 
 #undef __FUNCT__
-#define __FUNCT__ "MatColoringCreateNaturalWeights"
-PetscErrorCode MatColoringCreateNaturalWeights(MatColoring mc,Mat G,PetscReal **weights,PetscInt **lperm)
+#define __FUNCT__ "MatColoringCreateLexicalWeights"
+PetscErrorCode MatColoringCreateLexicalWeights(MatColoring mc,PetscReal *weights)
 {
   PetscErrorCode ierr;
   PetscInt       i,s,e,n;
-  PetscRandom    rand;
-  PetscReal      r;
+  Mat            G=mc->mat;
 
   PetscFunctionBegin;
-  /* each weight should be the degree plus a random perturbation */
-  ierr = PetscRandomCreate(PetscObjectComm((PetscObject)mc),&rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(G,&s,&e);CHKERRQ(ierr);
   n=e-s;
-  ierr = PetscMalloc1(n,weights);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,lperm);CHKERRQ(ierr);
   for (i=s;i<e;i++) {
-    ierr = PetscRandomGetValueReal(rand,&r);CHKERRQ(ierr);
-    *weights[i-s] = i;
-    *lperm[i-s] = i-s;
+    weights[i-s] = i;
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringCreateRandomWeights"
-PetscErrorCode MatColoringCreateRandomWeights(MatColoring mc,Mat G,PetscReal **weights,PetscInt **lperm)
+PetscErrorCode MatColoringCreateRandomWeights(MatColoring mc,PetscReal *weights)
 {
   PetscErrorCode ierr;
   PetscInt       i,s,e,n;
   PetscRandom    rand;
   PetscReal      r;
+  Mat            G = mc->mat;
 
   PetscFunctionBegin;
   /* each weight should be the degree plus a random perturbation */
@@ -41,14 +34,10 @@ PetscErrorCode MatColoringCreateRandomWeights(MatColoring mc,Mat G,PetscReal **w
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(G,&s,&e);CHKERRQ(ierr);
   n=e-s;
-  ierr = PetscMalloc1(n,weights);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,lperm);CHKERRQ(ierr);
   for (i=s;i<e;i++) {
     ierr = PetscRandomGetValueReal(rand,&r);CHKERRQ(ierr);
-    *weights[i-s] = PetscAbsReal(r);
-    *lperm[i-s] = i-s;
+    weights[i-s] = PetscAbsReal(r);
   }
-  ierr = PetscSortRealWithPermutation(n,*weights,*lperm);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -136,13 +125,14 @@ PetscErrorCode MatColoringGetDegrees(Mat G,PetscInt distance,PetscInt *degrees)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringCreateLargestFirstWeights"
-PetscErrorCode MatColoringSetLargestFirstWeights(MatColoring mc,Mat G,PetscReal **weights,PetscInt **lperm)
+PetscErrorCode MatColoringCreateLargestFirstWeights(MatColoring mc,PetscReal *weights)
 {
   PetscErrorCode ierr;
   PetscInt       i,s,e,n,ncols;
   PetscRandom    rand;
-  PetscReal      r,swp;
+  PetscReal      r;
   PetscInt       *degrees;
+  Mat            G = mc->mat;
 
   PetscFunctionBegin;
   /* each weight should be the degree plus a random perturbation */
@@ -155,17 +145,44 @@ PetscErrorCode MatColoringSetLargestFirstWeights(MatColoring mc,Mat G,PetscReal 
   for (i=s;i<e;i++) {
     ierr = MatGetRow(G,i,&ncols,NULL,NULL);CHKERRQ(ierr);
     ierr = PetscRandomGetValueReal(rand,&r);CHKERRQ(ierr);
-    (*weights)[i-s] = ncols + PetscAbsReal(r);
-    (*lperm)[i-s] = i-s;
+    weights[i-s] = ncols + PetscAbsReal(r);
     ierr = MatRestoreRow(G,i,&ncols,NULL,NULL);CHKERRQ(ierr);
-  }
-  ierr = PetscSortRealWithPermutation(n,*weights,*lperm);CHKERRQ(ierr);
-  for (i=0;i<n/2;i++) {
-    swp = (*lperm)[i];
-    (*lperm)[i] = (*lperm)[n-i-1];
-    (*lperm)[n-i-1] = swp;
   }
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   ierr = PetscFree(degrees);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatColoringCreateWeights"
+PetscErrorCode MatColoringCreateWeights(MatColoring mc,PetscReal **weights,PetscInt **lperm)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,s,e,n;
+  PetscReal      *wts;
+
+  PetscFunctionBegin;
+  /* create weights of the specified type */
+  ierr = MatGetOwnershipRange(mc->mat,&s,&e);CHKERRQ(ierr);
+  n=e-s;
+  ierr = PetscMalloc1(n,&wts);CHKERRQ(ierr);
+  switch(mc->weight_type) {
+  case MAT_COLORING_WEIGHT_RANDOM:
+    ierr = MatColoringCreateRandomWeights(mc,wts);CHKERRQ(ierr);
+    break;
+  case MAT_COLORING_WEIGHT_LEXICAL:
+    ierr = MatColoringCreateLexicalWeights(mc,wts);CHKERRQ(ierr);
+    break;
+  case MAT_COLORING_WEIGHT_LF:
+    ierr = MatColoringCreateLargestFirstWeights(mc,wts);CHKERRQ(ierr);
+  }
+  if (lperm) {
+    ierr = PetscMalloc1(n,lperm);CHKERRQ(ierr);
+    for (i=0;i<n;i++) {
+      (*lperm)[i] = n-1-i;
+    }
+    ierr = PetscSortRealWithPermutation(n,wts,*lperm);CHKERRQ(ierr);
+  }
+  if (weights) *weights = wts;
   PetscFunctionReturn(0);
 }

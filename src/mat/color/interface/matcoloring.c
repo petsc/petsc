@@ -2,6 +2,7 @@
 
 PetscFunctionList MatColoringList              = 0;
 PetscBool         MatColoringRegisterAllCalled = PETSC_FALSE;
+const char *const MatColoringWeightTypes[] = {"RANDOM","LEXICAL","LF","MatColoringWeightType","MAT_COLORING_WEIGHT_",0};
 
 PETSC_EXTERN PetscErrorCode MatColoringTestValid(MatColoring,ISColoring);
 
@@ -194,7 +195,6 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
   char           type[256];
   PetscErrorCode ierr;
   PetscInt       dist,maxcolors;
-
   PetscFunctionBegin;
 
   PetscValidHeaderSpecific(mc,MAT_COLORING_CLASSID,1);
@@ -217,6 +217,7 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
     ierr = (*mc->ops->setfromoptions)(mc);CHKERRQ(ierr);
   }
   ierr = PetscOptionsBool("-mat_coloring_valid","Check that a valid coloring has been produced","",mc->valid,&mc->valid,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-mat_coloring_weight_type","Sets the type of vertex weighting used","MatColoringSetWeightType",MatColoringWeightTypes,(PetscEnum)mc->weight_type,(PetscEnum*)&mc->weight_type,NULL);CHKERRQ(ierr);
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)mc);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -425,6 +426,7 @@ PetscErrorCode MatColoringView(MatColoring mc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)mc,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Weight type: %s\n",MatColoringWeightTypes[mc->weight_type]);CHKERRQ(ierr);
     if (mc->maxcolors > 0) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Distance %d, Max. Colors %d\n",mc->dist,mc->maxcolors);CHKERRQ(ierr);
     } else {
@@ -432,4 +434,29 @@ PetscErrorCode MatColoringView(MatColoring mc,PetscViewer viewer)
     }
   }
   PetscFunctionReturn(0);
+}
+
+/*@
+   MatColoringSetWeightType - Set the type of weight computation used.
+
+   Logically collective on MatColoring
+
+   Input Parameters:
+-  mc - the MatColoring context
++  wt - the weight type
+
+   Level: beginner
+
+.keywords: Coloring, view
+
+.seealso: MatColoring, MatColoringWeightType
+@*/
+#undef __FUNCT__
+#define __FUNCT__ "MatColoringSetWeightType"
+PetscErrorCode MatColoringSetWeightType(MatColoring mc,MatColoringWeightType wt)
+{
+  PetscFunctionBegin;
+  mc->weight_type = wt;
+  PetscFunctionReturn(0);
+
 }

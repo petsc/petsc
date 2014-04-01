@@ -1047,6 +1047,23 @@ typedef const  char*           MatColoringType;
 #define MATCOLORINGID      "id"
 #define MATCOLORINGGREEDY  "greedy"
 
+/*E
+   MatColoringWeightType - Type of weight scheme
+
+    Not Collective
+
++   MAT_COLORING_RANDOM  - Random weights
+.   MAT_COLORING_LEXICAL - Lexical weighting based upon global numbering.
+-   MAT_COLORING_LF      - Last-first weighting.
+
+    Level: intermediate
+
+   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+
+.seealso: MatCUSPSetFormat(), MatCUSPFormatOperation
+E*/
+typedef enum {MAT_COLORING_WEIGHT_RANDOM,MAT_COLORING_WEIGHT_LEXICAL,MAT_COLORING_WEIGHT_LF} MatColoringWeightType;
+
 PETSC_EXTERN PetscErrorCode MatColoringCreate(Mat,MatColoring*);
 PETSC_EXTERN PetscErrorCode MatColoringGetDegrees(Mat,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatColoringDestroy(MatColoring*);
@@ -1062,6 +1079,8 @@ PETSC_EXTERN PetscErrorCode MatColoringRegisterAll(void);
 PETSC_EXTERN PetscErrorCode MatColoringRegister(const char[],PetscErrorCode(*)(MatColoring));
 PETSC_EXTERN PetscBool MatColoringRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode MatColoringPatch(Mat,PetscInt,PetscInt,ISColoringValue[],ISColoring*);
+PETSC_EXTERN PetscErrorCode MatColoringSetWeightType(MatColoring,MatColoringWeightType);
+PETSC_EXTERN PetscErrorCode MatColoringCreateWeights(MatColoring,PetscReal **,PetscInt **lperm);
 
 /*S
      MatFDColoring - Object for computing a sparse Jacobian via finite differences
