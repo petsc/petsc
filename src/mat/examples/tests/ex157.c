@@ -17,12 +17,12 @@ PetscInt main(PetscInt argc,char **args)
   PetscScalar    one=1,two=2,three=3;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers");
+#endif
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
 
-/* #if !defined(PETSC_USE_COMPLEX) */
-/*  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "Example for Complex DFT. Your current data type is real"); */
-/* #endif */
   ierr = PetscRandomCreate(PETSC_COMM_WORLD, &rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&input);CHKERRQ(ierr);

@@ -10,7 +10,7 @@ static char help[] = "Test sequential FFTW interface \n\n";
 #include <petscmat.h>
 #undef __FUNCT__
 #define __FUNCT__ "main"
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   typedef enum {RANDOM, CONSTANT, TANH, NUM_FUNCS} FuncType;
   const char     *funcNames[NUM_FUNCS] = {"random", "constant", "tanh"};
@@ -34,7 +34,7 @@ PetscInt main(PetscInt argc,char **args)
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uniprocessor example only!");
   ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex112");CHKERRQ(ierr);
   ierr     = PetscOptionsEList("-function", "Function type", "ex112", funcNames, NUM_FUNCS, funcNames[function], &func, NULL);CHKERRQ(ierr);
-  ierr     = PetscOptionsBool("-vec_view draw", "View the functions", "ex112", view, &view, NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsBool("-vec_view_draw", "View the functions", "ex112", view, &view, NULL);CHKERRQ(ierr);
   function = (FuncType) func;
   ierr     = PetscOptionsEnd();CHKERRQ(ierr);
 

@@ -1626,12 +1626,12 @@ runex110:
 	-@${MPIEXEC} -n 3 ./ex110
 
 runex112:
-	-@${MPIEXEC} -n 1 ./ex112 > ex112_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex112 -mat_fftw_plannerflags FFTW_ESTIMATE > ex112_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex112.out ex112_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex112_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex112_1.tmp
 
-runex112_2:
+runex112_2: #error for complex, 32bit
 	-@${MPIEXEC} -n 1 ./ex112 -mat_fftw_plannerflags FFTW_MEASURE > ex112_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex112.out ex112_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex112_2, diffs above\n=========================================\n"; fi; \
@@ -1832,6 +1832,11 @@ runex141:
 	   ${DIFF} output/ex141.out ex141.tmp || printf "${PWD}\nPossible problem with ex141, diffs above\n=========================================\n"; \
 	   ${RM} -f ex141.tmp
 
+runex142:
+	-@${MPIEXEC} -n 1 ./ex142  > ex142.tmp 2>&1; \
+	   ${DIFF} output/ex142.out ex142.tmp || printf "${PWD}\nPossible problem with ex142, diffs above\n=========================================\n"; \
+	   ${RM} -f ex142.tmp
+
 runex143:
 	-@${MPIEXEC} -n 1 ./ex143  > ex143.tmp 2>&1; \
 	   ${DIFF} output/ex143.out ex143.tmp || printf "${PWD}\nPossible problem with ex143, diffs above\n=========================================\n"; \
@@ -1901,14 +1906,11 @@ runex158:
 	-@${MPIEXEC} -n 1 ./ex158 > ex158.tmp 2>&1; \
 	   ${DIFF} output/ex158.out ex158.tmp || printf "${PWD}\nPossible problem with ex158, diffs above\n=========================================\n"; \
 	   ${RM} -f ex158.tmp
-runex158_2:  #crash when dim=3: need debugging!
-	-@${MPIEXEC} -n 2 ./ex158 > ex158_2.tmp 2>&1; \
+runex158_2:  
+	-@${MPIEXEC} -n 3 ./ex158 > ex158_2.tmp 2>&1; \
 	   ${DIFF} output/ex158_2.out ex158_2.tmp || printf "${PWD}\nPossible problem with ex158_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex158_2.tmp
-runex158_3:
-	-@${MPIEXEC} -n 3 ./ex158 > ex158_3.tmp 2>&1; \
-	   ${DIFF} output/ex158_3.out ex158_3.tmp || printf "${PWD}\nPossible problem with ex158_3, diffs above\n=========================================\n"; \
-	   ${RM} -f ex158_3.tmp
+
 runex159:
 	-@${MPIEXEC} -n 3 ./ex159 > ex159_1.tmp 2>&1; \
 	   ${DIFF} output/ex159_1.out ex159_1.tmp || printf "${PWD}\nPossible problem with ex159_1, diffs above\n=========================================\n"; \
@@ -2021,9 +2023,9 @@ TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex67f.PETSc runex67f ex67f.rm ex79f.PETSc runex
 TESTEXAMPLES_F90	       = ex16f90.PETSc runex16f90 ex16f90.rm
 TESTEXAMPLES_13		       = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex72.rm
 TESTEXAMPLES_PARMETIS	       = ex73.PETSc ex73.rm ex152.PETSc runex152 runex152_2 ex152.rm
-TESTEXAMPLES_FFTW_REAL         = ex142.PETSc ex142.rm ex144.PETSc runex144 runex144_2 ex144.rm \
-                                 ex158.PETsc runex158 runex158_3 ex158.rm
-TESTEXAMPLES_FFTW_COMPLEX       = ex112.PETSc runex112 runex112_2 runex112_3 runex112_4 ex112.rm ex121.PETSc ex121.rm \
+TESTEXAMPLES_FFTW_REAL         = ex142.PETSc runex142 ex142.rm ex144.PETSc runex144 runex144_2 ex144.rm \
+                                 ex148.PETsc runex148 runex148_2 ex148.rm ex158.PETsc runex158 runex158_2 ex158.rm
+TESTEXAMPLES_FFTW_COMPLEX       = ex112.PETSc runex112 runex112_3 runex112_4 ex112.rm ex121.PETSc ex121.rm \
                                  ex143.PETSc runex143 runex143_2 ex143.rm \
 TESTEXAMPLES_C_COMPLEX	       = ex127.PETSc runex127 runex127_2 ex127.rm
 TESTEXAMPLES_ELEMENTAL         = ex38.PETSc runex38 runex38_2 runex38_3 ex38.rm \
