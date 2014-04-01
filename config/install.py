@@ -235,6 +235,15 @@ for src, dst in copies:
 
   def copyLib(self, src, dst):
     '''Run ranlib on the destination library if it is an archive. Also run install_name_tool on dylib on Mac'''
+    # Symlinks (assumed local) are recreated at dst
+    if os.path.islink(src):
+      linkto = os.readlink(src)
+      try:
+        os.remove(dst)            # In case it already exists
+      except OSError:
+        pass
+      os.symlink(linkto, dst)
+      return
     # Do not install object files
     if not os.path.splitext(src)[1] == '.o':
       shutil.copy2(src, dst)
