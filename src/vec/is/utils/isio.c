@@ -16,7 +16,7 @@ PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)
   hsize_t         rdim, dim;
   hsize_t         dims[3], count[3], offset[3];
   herr_t          status;
-  PetscInt        n, N, bs = 1, bsInd, lenInd, low, timestep;
+  PetscInt        n, N, bs, bsInd, lenInd, low, timestep;
   const PetscInt *ind;
   const char     *isname;
   PetscErrorCode  ierr;
@@ -39,15 +39,13 @@ PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)
   dim = 0;
   if (timestep >= 0) ++dim;
   ++dim;
-  if (bs >= 1) ++dim;
+  ++dim;
   rdim = H5Sget_simple_extent_dims(filespace, dims, NULL);
   bsInd = rdim-1;
   lenInd = timestep >= 0 ? 1 : 0;
-  if (rdim != dim) {
-    if (rdim == dim+1 && bs == -1) bs = dims[bsInd];
-    else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected",rdim,dim);
-  } else if (bs >= 1 && bs != (PetscInt) dims[bsInd]) {
-    ierr = ISSetBlockSize(is, dims[bsInd]);CHKERRQ(ierr);
+  if (rdim != dim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected",rdim,dim);
+  else if (bs != (PetscInt) dims[bsInd]) {
+    ierr = ISSetBlockSize(is, dims[bsInd]);
     if (ierr) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Block size %d specified for IS does not match blocksize in file %d",bs,dims[bsInd]);
     bs = dims[bsInd];
   }
