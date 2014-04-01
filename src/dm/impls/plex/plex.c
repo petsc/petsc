@@ -819,6 +819,7 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
 
 #if defined(PETSC_HAVE_HDF5)
 typedef struct {
+  PetscMPIInt rank;
   DM          dm;
   PetscViewer viewer;
   DMLabel     label;
@@ -841,9 +842,15 @@ static herr_t ReadLabelStratumHDF5_Static(hid_t g_id, const char *name, const H5
   ierr = DMLabelGetName(label, &lname);
   ierr = PetscSNPrintf(group, PETSC_MAX_PATH_LEN, "/labels/%s/%s", lname, name);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, group);CHKERRQ(ierr);
+  {
+    /* Force serial load */
+    ierr = PetscViewerHDF5ReadSizes(viewer, "indices", NULL, &N);CHKERRQ(ierr);
+    ierr = PetscLayoutSetLocalSize(stratumIS->map, !((LabelCtx *) op_data)->rank ? N : 0);CHKERRQ(ierr);
+    ierr = PetscLayoutSetSize(stratumIS->map, N);CHKERRQ(ierr);
+  }
   ierr = ISLoad(stratumIS, viewer);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
-  ierr = ISGetSize(stratumIS, &N);
+  ierr = ISGetLocalSize(stratumIS, &N);
   ierr = ISGetIndices(stratumIS, &ind);
   for (i = 0; i < N; ++i) {ierr = DMLabelSetValue(label, ind[i], value);}
   ierr = ISRestoreIndices(stratumIS, &ind);
@@ -871,31 +878,22 @@ static herr_t ReadLabelHDF5_Static(hid_t g_id, const char *name, const H5L_info_
 */
 static PetscErrorCode DMPlexLoad_HDF5(DM dm, PetscViewer viewer)
 {
-  LabelCtx        ctx;
-  PetscSection    coordSection;
-  Vec             coordinates;
-  Vec             cellVec;
-  PetscScalar    *cells;
-  PetscReal       lengthScale;
-  PetscInt       *cone;
-  PetscInt        dim, spatialDim, numVertices, v, numCorners, numCells, cell, c;
-  hid_t           fileId, groupId;
-  hsize_t         idx = 0;
-  herr_t          status;
-  PetscErrorCode  ierr;
+  LabelCtx       ctx;
+  PetscSection   coordSection;
+  Vec            coordinates;
+  Vec            cellVec;
+  PetscScalar   *cells;
+  PetscReal      lengthScale;
+  PetscInt      *cone;
+  PetscInt       dim, spatialDim, N, numVertices, v, numCorners, numCells, cell, c;
+  hid_t          fileId, groupId;
+  hsize_t        idx = 0;
+  herr_t         status;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Read geometry */
-  ierr = PetscViewerHDF5PushGroup(viewer, "/geometry");CHKERRQ(ierr);
-  ierr = VecCreate(PetscObjectComm((PetscObject) dm), &coordinates);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) coordinates, "vertices");CHKERRQ(ierr);
-  ierr = VecLoad(coordinates, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
-  ierr = DMPlexGetScale(dm, PETSC_UNIT_LENGTH, &lengthScale);CHKERRQ(ierr);
-  ierr = VecScale(coordinates, 1.0/lengthScale);CHKERRQ(ierr);
-  ierr = VecGetSize(coordinates, &numVertices);CHKERRQ(ierr);
-  ierr = VecGetBlockSize(coordinates, &spatialDim);CHKERRQ(ierr);
-  numVertices /= spatialDim;
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
   /* Read toplogy */
   ierr = PetscViewerHDF5ReadAttribute(viewer, "/topology/cells", "cell_dim", PETSC_INT, (void *) &dim);CHKERRQ(ierr);
   ierr = DMPlexSetDimension(dm, dim);CHKERRQ(ierr);
@@ -905,10 +903,32 @@ static PetscErrorCode DMPlexLoad_HDF5(DM dm, PetscViewer viewer)
   ierr = VecCreate(PetscObjectComm((PetscObject) dm), &cellVec);CHKERRQ(ierr);
   ierr = VecSetBlockSize(cellVec, numCorners);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) cellVec, "cells");CHKERRQ(ierr);
+  {
+    /* Force serial load */
+    ierr = PetscViewerHDF5ReadSizes(viewer, "cells", NULL, &N);CHKERRQ(ierr);
+    ierr = VecSetSizes(cellVec, !rank ? N : 0, N);CHKERRQ(ierr);
+  }
   ierr = VecLoad(cellVec, viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
-  ierr = VecGetSize(cellVec, &numCells);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(cellVec, &numCells);CHKERRQ(ierr);
   numCells /= numCorners;
+  /* Read geometry */
+  ierr = PetscViewerHDF5PushGroup(viewer, "/geometry");CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject) dm), &coordinates);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) coordinates, "vertices");CHKERRQ(ierr);
+  {
+    /* Force serial load */
+    ierr = PetscViewerHDF5ReadSizes(viewer, "vertices", &spatialDim, &N);CHKERRQ(ierr);
+    ierr = VecSetSizes(coordinates, !rank ? N : 0, N);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(coordinates, spatialDim);CHKERRQ(ierr);
+  }
+  ierr = VecLoad(coordinates, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  ierr = DMPlexGetScale(dm, PETSC_UNIT_LENGTH, &lengthScale);CHKERRQ(ierr);
+  ierr = VecScale(coordinates, 1.0/lengthScale);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(coordinates, &numVertices);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(coordinates, &spatialDim);CHKERRQ(ierr);
+  numVertices /= spatialDim;
   /* Create Plex */
   ierr = DMPlexSetChart(dm, 0, numCells+numVertices);CHKERRQ(ierr);
   for (cell = 0; cell < numCells; ++cell) {ierr = DMPlexSetConeSize(dm, cell, numCorners);CHKERRQ(ierr);}
@@ -937,6 +957,7 @@ static PetscErrorCode DMPlexLoad_HDF5(DM dm, PetscViewer viewer)
   ierr = DMSetCoordinates(dm, coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
   /* Read Labels*/
+  ctx.rank   = rank;
   ctx.dm     = dm;
   ctx.viewer = viewer;
   ierr = PetscViewerHDF5PushGroup(viewer, "/labels");CHKERRQ(ierr);
