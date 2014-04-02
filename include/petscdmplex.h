@@ -101,6 +101,7 @@ PETSC_EXTERN PetscErrorCode DMPlexAddLabel(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexRemoveLabel(DM, const char [], DMLabel *);
 PETSC_EXTERN PetscErrorCode DMPlexGetCellNumbering(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexGetVertexNumbering(DM, IS *);
+PETSC_EXTERN PetscErrorCode DMPlexCreatePointNumbering(DM, IS *);
 
 PETSC_EXTERN PetscErrorCode DMPlexGetDepth(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexGetDepthLabel(DM, DMLabel *);

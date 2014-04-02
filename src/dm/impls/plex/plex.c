@@ -5880,7 +5880,7 @@ PetscErrorCode DMPlexSetVTKCellHeight(DM dm, PetscInt cellHeight)
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateNumbering_Private"
 /* We can easily have a form that takes an IS instead */
-PetscErrorCode DMPlexCreateNumbering_Private(DM dm, PetscInt pStart, PetscInt pEnd, PetscSF sf, IS *numbering)
+static PetscErrorCode DMPlexCreateNumbering_Private(DM dm, PetscInt pStart, PetscInt pEnd, PetscInt shift, PetscInt *globalSize, PetscSF sf, IS *numbering)
 {
   PetscSection   section, globalSection;
   PetscInt      *numbers, p;
@@ -5897,8 +5897,16 @@ PetscErrorCode DMPlexCreateNumbering_Private(DM dm, PetscInt pStart, PetscInt pE
   ierr = PetscMalloc1((pEnd - pStart), &numbers);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
     ierr = PetscSectionGetOffset(globalSection, p, &numbers[p-pStart]);CHKERRQ(ierr);
+    if (numbers[p-pStart] < 0) numbers[p-pStart] -= shift;
+    else                       numbers[p-pStart] += shift;
   }
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), pEnd - pStart, numbers, PETSC_OWN_POINTER, numbering);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), pEnd - pStart, numbers, PETSC_OWN_POINTER, numbering);CHKERRQ(ierr);
+  if (globalSize) {
+    PetscLayout layout;
+    ierr = PetscSectionGetPointLayout(PetscObjectComm((PetscObject) dm), globalSection, &layout);CHKERRQ(ierr);
+    ierr = PetscLayoutGetSize(layout, globalSize);CHKERRQ(ierr);
+    ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
+  }
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&globalSection);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -5919,7 +5927,7 @@ PetscErrorCode DMPlexGetCellNumbering(DM dm, IS *globalCellNumbers)
     ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
     ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
     if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
-    ierr = DMPlexCreateNumbering_Private(dm, cStart, cEnd, dm->sf, &mesh->globalCellNumbers);CHKERRQ(ierr);
+    ierr = DMPlexCreateNumbering_Private(dm, cStart, cEnd, 0, NULL, dm->sf, &mesh->globalCellNumbers);CHKERRQ(ierr);
   }
   *globalCellNumbers = mesh->globalCellNumbers;
   PetscFunctionReturn(0);
@@ -5939,9 +5947,35 @@ PetscErrorCode DMPlexGetVertexNumbering(DM dm, IS *globalVertexNumbers)
     ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
     ierr = DMPlexGetHybridBounds(dm, NULL, NULL, NULL, &vMax);CHKERRQ(ierr);
     if (vMax >= 0) vEnd = PetscMin(vEnd, vMax);
-    ierr = DMPlexCreateNumbering_Private(dm, vStart, vEnd, dm->sf, &mesh->globalVertexNumbers);CHKERRQ(ierr);
+    ierr = DMPlexCreateNumbering_Private(dm, vStart, vEnd, 0, NULL, dm->sf, &mesh->globalVertexNumbers);CHKERRQ(ierr);
   }
   *globalVertexNumbers = mesh->globalVertexNumbers;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexCreatePointNumbering"
+PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers)
+{
+  IS             nums[4];
+  PetscInt       depths[4];
+  PetscInt       depth, d, shift = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  depths[0] = depth; depths[1] = 0;
+  for (d = 2; d <= depth; ++d) depths[d] = depth-d+1;
+  for (d = 0; d <= depth; ++d) {
+    PetscInt pStart, pEnd, gsize;
+
+    ierr = DMPlexGetDepthStratum(dm, depths[d], &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = DMPlexCreateNumbering_Private(dm, pStart, pEnd, shift, &gsize, dm->sf, &nums[d]);CHKERRQ(ierr);
+    shift += gsize;
+  }
+  ierr = ISConcatenate(PetscObjectComm((PetscObject) dm), depth+1, nums, globalPointNumbers);
+  for (d = 0; d <= depth; ++d) {ierr = ISDestroy(&nums[d]);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
