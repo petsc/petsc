@@ -77,6 +77,7 @@ PETSC_STATIC_INLINE PetscErrorCode ISViewFromOptions(IS A,const char prefix[],co
 PETSC_EXTERN PetscErrorCode ISLoad(IS,PetscViewer);
 PETSC_EXTERN PetscErrorCode ISEqual(IS,IS,PetscBool  *);
 PETSC_EXTERN PetscErrorCode ISSort(IS);
+PETSC_EXTERN PetscErrorCode ISSortRemoveDups(IS);
 PETSC_EXTERN PetscErrorCode ISSorted(IS,PetscBool  *);
 PETSC_EXTERN PetscErrorCode ISDifference(IS,IS,IS*);
 PETSC_EXTERN PetscErrorCode ISSum(IS,IS,IS*);

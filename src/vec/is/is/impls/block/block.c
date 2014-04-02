@@ -167,6 +167,25 @@ PetscErrorCode ISSort_Block(IS is)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ISSortRemoveDups_Block"
+PetscErrorCode ISSortRemoveDups_Block(IS is)
+{
+  IS_Block       *sub = (IS_Block*)is->data;
+  PetscInt       bs, n, nb;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (sub->sorted) PetscFunctionReturn(0);
+  ierr = PetscLayoutGetBlockSize(is->map, &bs);CHKERRQ(ierr);
+  ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
+  nb   = n/bs;
+  ierr = PetscSortRemoveDupsInt(nb,sub->idx);CHKERRQ(ierr);
+  ierr = PetscLayoutSetLocalSize(is->map, nb*bs);CHKERRQ(ierr);
+  sub->sorted = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ISSorted_Block"
 PetscErrorCode ISSorted_Block(IS is,PetscBool  *flg)
 {
@@ -272,6 +291,7 @@ static struct _ISOps myops = { ISGetSize_Block,
                                ISRestoreIndices_Block,
                                ISInvertPermutation_Block,
                                ISSort_Block,
+                               ISSortRemoveDups_Block,
                                ISSorted_Block,
                                ISDuplicate_Block,
                                ISDestroy_Block,

@@ -812,7 +812,7 @@ PetscErrorCode ISLoad(IS is, PetscViewer viewer)
    Concepts: index sets^sorting
    Concepts: sorting^index set
 
-.seealso: ISSorted()
+.seealso: ISSortRemoveDups(), ISSorted()
 @*/
 PetscErrorCode  ISSort(IS is)
 {
@@ -821,6 +821,33 @@ PetscErrorCode  ISSort(IS is)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   ierr = (*is->ops->sort)(is);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ISSortRemoveDups"
+/*@
+  ISSortRemoveDups - Sorts the indices of an index set, removing duplicates.
+
+  Collective on IS
+
+  Input Parameters:
+. is - the index set
+
+  Level: intermediate
+
+  Concepts: index sets^sorting
+  Concepts: sorting^index set
+
+.seealso: ISSort(), ISSorted()
+@*/
+PetscErrorCode ISSortRemoveDups(IS is)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  ierr = (*is->ops->sortremovedups)(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -873,7 +900,7 @@ PetscErrorCode  ISToGeneral(IS is)
 
    Level: intermediate
 
-.seealso: ISSort()
+.seealso: ISSort(), ISSortRemoveDups()
 @*/
 PetscErrorCode  ISSorted(IS is,PetscBool  *flg)
 {

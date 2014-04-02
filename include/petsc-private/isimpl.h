@@ -17,6 +17,7 @@ struct _ISOps {
   PetscErrorCode (*restoreindices)(IS,const PetscInt*[]);
   PetscErrorCode (*invertpermutation)(IS,PetscInt,IS*);
   PetscErrorCode (*sort)(IS);
+  PetscErrorCode (*sortremovedups)(IS);
   PetscErrorCode (*sorted)(IS,PetscBool*);
   PetscErrorCode (*duplicate)(IS,IS*);
   PetscErrorCode (*destroy)(IS);
