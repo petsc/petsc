@@ -641,8 +641,8 @@ static PetscErrorCode DMPlexView_HDF5(DM dm, PetscViewer viewer)
   DM              cdm;
   Vec             coordinates, newcoords;
   Vec             coneVec, cellVec;
-  IS              globalVertexNumbers;
-  const PetscInt *gvertex;
+  IS              globalVertexNumbers, globalPointNumbers;
+  const PetscInt *gvertex, *gpoint;
   PetscScalar    *sizes, *vertices;
   PetscReal       lengthScale;
   const char     *label   = NULL;
@@ -749,6 +749,8 @@ static PetscErrorCode DMPlexView_HDF5(DM dm, PetscViewer viewer)
 
   ierr = PetscViewerHDF5WriteAttribute(viewer, "/topology/cells", "cell_dim", PETSC_INT, (void *) &dim);CHKERRQ(ierr);
   /* Write Labels*/
+  ierr = DMPlexCreatePointNumbering(dm, &globalPointNumbers);CHKERRQ(ierr);
+  ierr = ISGetIndices(globalPointNumbers, &gpoint);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "/labels");CHKERRQ(ierr);
   ierr = PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId);CHKERRQ(ierr);
   if (groupId != fileId) {status = H5Gclose(groupId);CHKERRQ(status);}
@@ -757,7 +759,7 @@ static PetscErrorCode DMPlexView_HDF5(DM dm, PetscViewer viewer)
   for (l = 0; l < numLabels; ++l) {
     DMLabel         label;
     const char     *name;
-    IS              valueIS;
+    IS              valueIS, globalValueIS;
     const PetscInt *values;
     PetscInt        numValues, v;
     PetscBool       isDepth;
@@ -766,29 +768,47 @@ static PetscErrorCode DMPlexView_HDF5(DM dm, PetscViewer viewer)
     ierr = PetscStrncmp(name, "depth", 10, &isDepth);CHKERRQ(ierr);
     if (isDepth) continue;
     ierr = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
-    ierr = DMLabelGetNumValues(label, &numValues);CHKERRQ(ierr);
-    ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
-    ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
     ierr = PetscSNPrintf(group, PETSC_MAX_PATH_LEN, "/labels/%s", name);CHKERRQ(ierr);
     ierr = PetscViewerHDF5PushGroup(viewer, group);CHKERRQ(ierr);
     ierr = PetscViewerHDF5OpenGroup(viewer, &fileId, &groupId);CHKERRQ(ierr);
     if (groupId != fileId) {status = H5Gclose(groupId);CHKERRQ(status);}
     ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
-    /* TODO: Need to actually loop over the union of label values, ISAllGather() */
+    ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
+    ierr = ISAllGather(valueIS, &globalValueIS);CHKERRQ(ierr);
+    ierr = ISSortRemoveDups(globalValueIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(globalValueIS, &numValues);CHKERRQ(ierr);
+    ierr = ISGetIndices(globalValueIS, &values);CHKERRQ(ierr);
     for (v = 0; v < numValues; ++v) {
-      IS   stratumIS;
+      IS              stratumIS, globalStratumIS;
+      const PetscInt *spoints;
+      PetscInt       *gspoints, n, gn, p;
+      const char     *iname;
 
       ierr = PetscSNPrintf(group, PETSC_MAX_PATH_LEN, "/labels/%s/%d", name, values[v]);CHKERRQ(ierr);
       ierr = DMLabelGetStratumIS(label, values[v], &stratumIS);CHKERRQ(ierr);
-      /* TODO: Need to globalize point names and remove unowned points */
+
+      ierr = ISGetLocalSize(stratumIS, &n);CHKERRQ(ierr);
+      ierr = ISGetIndices(stratumIS, &spoints);CHKERRQ(ierr);
+      for (gn = 0, p = 0; p < n; ++p) if (gpoint[spoints[p]] >= 0) ++gn;
+      ierr = PetscMalloc1(gn,&gspoints);CHKERRQ(ierr);
+      for (gn = 0, p = 0; p < n; ++p) if (gpoint[spoints[p]] >= 0) gspoints[gn++] = gpoint[spoints[p]];
+      ierr = ISRestoreIndices(stratumIS, &spoints);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), gn, gspoints, PETSC_OWN_POINTER, &globalStratumIS);CHKERRQ(ierr);
+      ierr = PetscObjectGetName((PetscObject) stratumIS, &iname);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) globalStratumIS, iname);CHKERRQ(ierr);
+
       ierr = PetscViewerHDF5PushGroup(viewer, group);CHKERRQ(ierr);
-      ierr = ISView(stratumIS, viewer);CHKERRQ(ierr);
+      ierr = ISView(globalStratumIS, viewer);CHKERRQ(ierr);
       ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+      ierr = ISDestroy(&globalStratumIS);CHKERRQ(ierr);
       ierr = ISDestroy(&stratumIS);CHKERRQ(ierr);
     }
-    ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(globalValueIS, &values);CHKERRQ(ierr);
+    ierr = ISDestroy(&globalValueIS);CHKERRQ(ierr);
     ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
   }
+  ierr = ISRestoreIndices(globalPointNumbers, &gpoint);CHKERRQ(ierr);
+  ierr = ISDestroy(&globalPointNumbers);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
