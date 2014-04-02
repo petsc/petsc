@@ -595,6 +595,8 @@ static PetscErrorCode TSGetRHSMats_Private(TS ts,Mat *Arhs,Mat *Brhs)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (Arhs) *Arhs = NULL;
+  if (Brhs) *Brhs = NULL;
   ierr = TSGetIJacobian(ts,&A,&B,NULL,NULL);CHKERRQ(ierr);
   if (Arhs) {
     if (!ts->Arhs) {
