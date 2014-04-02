@@ -582,7 +582,8 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, const Mat A, const Ma
   MatType           mtype;
   Vec               cv;
   PetscInt          *gcid,*lcid,*lsparse,*gsparse,*picol;
-  PetscInt          fs,fe,cs,ce,nl,i,j,k,li,lni,ci,ncols,maxcols,fn,cn,cid,size;
+  PetscInt          fs,fe,cs,ce,nl,i,j,k,li,lni,ci,ncols,maxcols,fn,cn,cid;
+  PetscMPIInt       size;
   const PetscInt    *lidx,*icol,*gidx;
   PetscBool         iscoarse;
   PetscScalar       vi,pentry,pjentry;
