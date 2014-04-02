@@ -42,6 +42,7 @@ typedef float PetscReal;
 #define PetscCeilReal(a)    ceil(a)
 #define PetscFloorReal(a)   floor(a)
 #define PetscFmodReal(a,b)  fmod(a,b)
+#define PetscTGamma(a)      tgammaf(a)
 #elif defined(PETSC_USE_REAL_DOUBLE)
 #define MPIU_REAL   MPI_DOUBLE
 typedef double PetscReal;
