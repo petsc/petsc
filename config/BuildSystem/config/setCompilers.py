@@ -229,12 +229,10 @@ class Configure(config.base.Configure):
   def isIBM(compiler):
     '''Returns true if the compiler is a IBM compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -flags')
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -qversion')
       output = output + error
-      #
-      # Do not know what to look for for IBM compilers
-      #
-      return 0
+      if 'IBM XL' in output:
+        return 1
     except RuntimeError:
       pass
     return 0
