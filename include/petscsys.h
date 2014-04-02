@@ -628,7 +628,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_USE_DEBUG)
+#if !defined(PETSC_USE_MALLOC_COALESCED)
 #define PetscMalloc2(m1,r1,m2,r2) (PetscMalloc((m1)*sizeof(**(r1)),r1) || PetscMalloc((m2)*sizeof(**(r2)),r2))
 #else
 #define PetscMalloc2(m1,r1,m2,r2) ((((m1)+(m2)) ? (*(r2) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(PETSC_MEMALIGN-1),r1)) : 0) \
@@ -687,7 +687,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_USE_DEBUG)
+#if !defined(PETSC_USE_MALLOC_COALESCED)
 #define PetscMalloc3(m1,r1,m2,r2,m3,r3) (PetscMalloc((m1)*sizeof(**(r1)),r1) || PetscMalloc((m2)*sizeof(**(r2)),r2) || PetscMalloc((m3)*sizeof(**(r3)),r3))
 #else
 #define PetscMalloc3(m1,r1,m2,r2,m3,r3) ((((m1)+(m2)+(m3)) ? (*(r2) = 0,*(r3) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+2*(PETSC_MEMALIGN-1),r1)) : 0) \
@@ -752,7 +752,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_USE_DEBUG)
+#if !defined(PETSC_USE_MALLOC_COALESCED)
 #define PetscMalloc4(m1,r1,m2,r2,m3,r3,m4,r4) (PetscMalloc((m1)*sizeof(**(r1)),r1) || PetscMalloc((m2)*sizeof(**(r2)),r2) || PetscMalloc((m3)*sizeof(**(r3)),r3) || PetscMalloc((m4)*sizeof(**(r4)),r4))
 #else
 #define PetscMalloc4(m1,r1,m2,r2,m3,r3,m4,r4)                           \
@@ -824,7 +824,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_USE_DEBUG)
+#if !defined(PETSC_USE_MALLOC_COALESCED)
 #define PetscMalloc5(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5) (PetscMalloc((m1)*sizeof(**(r1)),r1) || PetscMalloc((m2)*sizeof(**(r2)),r2) || PetscMalloc((m3)*sizeof(**(r3)),r3) || PetscMalloc((m4)*sizeof(**(r4)),r4) || PetscMalloc((m5)*sizeof(**(r5)),r5))
 #else
 #define PetscMalloc5(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5)      \
@@ -900,7 +900,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_USE_DEBUG)
+#if !defined(PETSC_USE_MALLOC_COALESCED)
 #define PetscMalloc6(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6) (PetscMalloc((m1)*sizeof(**(r1)),r1) || PetscMalloc((m2)*sizeof(**(r2)),r2) || PetscMalloc((m3)*sizeof(**(r3)),r3) || PetscMalloc((m4)*sizeof(**(r4)),r4) || PetscMalloc((m5)*sizeof(**(r5)),r5) || PetscMalloc((m6)*sizeof(**(r6)),r6))
 #else
 #define PetscMalloc6(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6) \
@@ -979,7 +979,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_USE_DEBUG)
+#if !defined(PETSC_USE_MALLOC_COALESCED)
 #define PetscMalloc7(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6,m7,r7) (PetscMalloc((m1)*sizeof(**(r1)),r1) || PetscMalloc((m2)*sizeof(**(r2)),r2) || PetscMalloc((m3)*sizeof(**(r3)),r3) || PetscMalloc((m4)*sizeof(**(r4)),r4) || PetscMalloc((m5)*sizeof(**(r5)),r5) || PetscMalloc((m6)*sizeof(**(r6)),r6) || PetscMalloc((m7)*sizeof(**(r7)),r7))
 #else
 #define PetscMalloc7(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6,m7,r7) \
