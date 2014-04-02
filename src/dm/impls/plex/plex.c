@@ -726,7 +726,7 @@ static PetscErrorCode DMPlexView_HDF5(DM dm, PetscViewer viewer)
         closure[Nc++] = closure[p];
         }
     }
-    ierr = DMPlexInvertCell(dim, Nc, closure);CHKERRQ(ierr);
+    ierr = DMPlexInvertCell_Internal(dim, Nc, closure);CHKERRQ(ierr);
     for (p = 0; p < Nc; ++p) {
       const PetscInt gv = gvertex[closure[p] - vStart];
       vertices[v++] = gv < 0 ? -(gv+1) : gv;
@@ -3118,6 +3118,30 @@ PetscErrorCode DMPlexOrient(DM dm)
   ierr = PetscBTDestroy(&flippedCells);CHKERRQ(ierr);
   ierr = PetscBTDestroy(&seenFaces);CHKERRQ(ierr);
   ierr = PetscFree(faceFIFO);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexInvertCell_Internal"
+PetscErrorCode DMPlexInvertCell_Internal(PetscInt dim, PetscInt numCorners, PetscInt cone[])
+{
+  int tmpc;
+
+  PetscFunctionBegin;
+  if (dim != 3) PetscFunctionReturn(0);
+  switch (numCorners) {
+  case 4:
+    tmpc    = cone[0];
+    cone[0] = cone[1];
+    cone[1] = tmpc;
+    break;
+  case 8:
+    tmpc    = cone[1];
+    cone[1] = cone[3];
+    cone[3] = tmpc;
+    break;
+  default: break;
+  }
   PetscFunctionReturn(0);
 }
 
