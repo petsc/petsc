@@ -447,7 +447,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
       ierr = PetscDTComputeJacobiDerivative(a, b, npoints, r, &fp);CHKERRQ(ierr);
       delta = f / (fp - f * s);
       r     = r - delta;
-      if (PetscAbs(delta) < eps) break;
+      if (PetscAbsReal(delta) < eps) break;
     }
     x[k] = r;
     ierr = PetscDTComputeJacobiDerivative(a, b, npoints, x[k], &dP);CHKERRQ(ierr);
