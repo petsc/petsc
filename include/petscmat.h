@@ -1062,7 +1062,7 @@ typedef const  char*           MatColoringType;
 
 .seealso: MatCUSPSetFormat(), MatCUSPFormatOperation
 E*/
-typedef enum {MAT_COLORING_WEIGHT_RANDOM,MAT_COLORING_WEIGHT_LEXICAL,MAT_COLORING_WEIGHT_LF} MatColoringWeightType;
+typedef enum {MAT_COLORING_WEIGHT_RANDOM,MAT_COLORING_WEIGHT_LEXICAL,MAT_COLORING_WEIGHT_LF,MAT_COLORING_WEIGHT_SL} MatColoringWeightType;
 
 PETSC_EXTERN PetscErrorCode MatColoringCreate(Mat,MatColoring*);
 PETSC_EXTERN PetscErrorCode MatColoringGetDegrees(Mat,PetscInt,PetscInt*);

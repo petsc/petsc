@@ -102,7 +102,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
     /* assign lowest possible color to each local vertex */
     ierr = PetscLogEventBegin(Mat_Coloring_Local,mc,0,0,0);CHKERRQ(ierr);
     for (i=0;i<n;i++) {
-      idx=n-lperm[i]-1;
+      idx=lperm[i];
       if (lcolors[idx] == maxcolors) {
         ncols = md_i[idx+1]-md_i[idx];
         cidx = &(md_j[md_i[idx]]);

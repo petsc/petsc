@@ -2,7 +2,7 @@
 
 PetscFunctionList MatColoringList              = 0;
 PetscBool         MatColoringRegisterAllCalled = PETSC_FALSE;
-const char *const MatColoringWeightTypes[] = {"RANDOM","LEXICAL","LF","MatColoringWeightType","MAT_COLORING_WEIGHT_",0};
+const char *const MatColoringWeightTypes[] = {"RANDOM","LEXICAL","LF","SL","MatColoringWeightType","MAT_COLORING_WEIGHT_",0};
 
 PETSC_EXTERN PetscErrorCode MatColoringTestValid(MatColoring,ISColoring);
 
