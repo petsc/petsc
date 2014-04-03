@@ -181,6 +181,72 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, PetscSection section, PetscSection g
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexProjectFunctionLabelLocal"
+PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscFE fe[], void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
+{
+  PetscDualSpace *sp;
+  PetscSection    section;
+  PetscScalar    *values;
+  PetscReal      *v0, *J, detJ;
+  PetscInt        numFields, numComp, dim, spDim, totDim = 0, numValues, cStart, cEnd, f, d, v, i, comp;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+  ierr = PetscMalloc3(numFields,&sp,dim,&v0,dim*dim,&J);CHKERRQ(ierr);
+  for (f = 0; f < numFields; ++f) {
+    ierr = PetscFEGetDualSpace(fe[f], &sp[f]);CHKERRQ(ierr);
+    ierr = PetscFEGetNumComponents(fe[f], &numComp);CHKERRQ(ierr);
+    ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
+    totDim += spDim*numComp;
+  }
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexVecGetClosure(dm, section, localX, cStart, &numValues, NULL);CHKERRQ(ierr);
+  if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The section cell closure size %d != dual space dimension %d", numValues, totDim);
+  ierr = DMGetWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
+  for (i = 0; i < numIds; ++i) {
+    IS              pointIS;
+    const PetscInt *points;
+    PetscInt        n, p;
+
+    ierr = DMLabelGetStratumIS(label, ids[i], &pointIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(pointIS, &n);CHKERRQ(ierr);
+    ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+    for (p = 0; p < n; ++p) {
+      const PetscInt    point = points[p];
+      PetscCellGeometry geom;
+
+      if ((point < cStart) || (point >= cEnd)) continue;
+      ierr = DMPlexComputeCellGeometry(dm, point, v0, J, NULL, &detJ);CHKERRQ(ierr);
+      geom.v0   = v0;
+      geom.J    = J;
+      geom.detJ = &detJ;
+      for (f = 0, v = 0; f < numFields; ++f) {
+        void * const ctx = ctxs ? ctxs[f] : NULL;
+        ierr = PetscFEGetNumComponents(fe[f], &numComp);CHKERRQ(ierr);
+        ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
+        for (d = 0; d < spDim; ++d) {
+          if (funcs[f]) {
+            ierr = PetscDualSpaceApply(sp[f], d, geom, numComp, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
+          } else {
+            for (comp = 0; comp < numComp; ++comp) values[v+comp] = 0.0;
+          }
+          v += numComp;
+        }
+      }
+      ierr = DMPlexVecSetClosure(dm, section, localX, point, values, mode);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
+    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+  }
+  ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
+  ierr = PetscFree3(sp,v0,J);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexProjectFunctionLocal"
 PetscErrorCode DMPlexProjectFunctionLocal(DM dm, PetscFE fe[], void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
@@ -269,10 +335,9 @@ PetscErrorCode DMPlexProjectFunction(DM dm, PetscFE fe[], void (**funcs)(const P
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexInsertBoundaryValues"
-PetscErrorCode DMPlexInsertBoundaryValues(DM dm, Vec localX)
+#define __FUNCT__ "DMPlexInsertBoundaryValuesFEM"
+PetscErrorCode DMPlexInsertBoundaryValuesFEM(DM dm, Vec localX)
 {
   void        (**funcs)(const PetscReal x[], PetscScalar *u, void *ctx);
   void         **ctxs;
@@ -289,21 +354,88 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, Vec localX)
   /* OPT: Could attempt to do multiple BCs at once */
   ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
   for (b = 0; b < numBd; ++b) {
+    DMLabel         label;
     const PetscInt *ids;
+    const char     *name;
     PetscInt        numids, field;
     PetscBool       isEssential;
     void          (*func)();
     void           *ctx;
 
     /* TODO: We need to set only the part indicated by the ids */
-    ierr = DMPlexGetBoundary(dm, b, &isEssential, NULL, &field, &func, &numids, &ids, &ctx);CHKERRQ(ierr);
+    ierr = DMPlexGetBoundary(dm, b, &isEssential, &name, &field, &func, &numids, &ids, &ctx);CHKERRQ(ierr);
+    ierr = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
     for (f = 0; f < numFields; ++f) {
       funcs[f] = field == f ? (void (*)(const PetscReal[], PetscScalar *, void *)) func : NULL;
       ctxs[f]  = field == f ? ctx : NULL;
     }
-    ierr = DMPlexProjectFunctionLocal(dm, fe, funcs, ctxs, INSERT_BC_VALUES, localX);CHKERRQ(ierr);
+    ierr = DMPlexProjectFunctionLabelLocal(dm, label, numids, ids, fe, funcs, ctxs, INSERT_BC_VALUES, localX);CHKERRQ(ierr);
   }
   ierr = PetscFree3(fe,funcs,ctxs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* Assuming dim == 3 */
+typedef struct {
+  PetscScalar normal[3];   /* Area-scaled normals */
+  PetscScalar centroid[3]; /* Location of centroid (quadrature point) */
+  PetscScalar grad[2][3];  /* Face contribution to gradient in left and right cell */
+} FaceGeom;
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexInsertBoundaryValuesFVM"
+PetscErrorCode DMPlexInsertBoundaryValuesFVM(DM dm, PetscReal time, Vec locX)
+{
+  DM                 dmFace;
+  Vec                faceGeometry;
+  DMLabel            label;
+  const PetscScalar *facegeom;
+  PetscScalar       *x;
+  PetscInt           numBd, b;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  /* TODO Pull this geometry calculation into the library */
+  ierr = PetscObjectQuery((PetscObject) dm, "FaceGeometry", (PetscObject *) &faceGeometry);CHKERRQ(ierr);
+  ierr = DMPlexGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
+  ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
+  ierr = VecGetDM(faceGeometry, &dmFace);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
+  ierr = VecGetArray(locX, &x);CHKERRQ(ierr);
+  for (b = 0; b < numBd; ++b) {
+    PetscErrorCode (*func)(PetscReal,const PetscScalar*,const PetscScalar*,const PetscScalar*,PetscScalar*,void*);
+    const PetscInt  *ids;
+    PetscInt         numids, i;
+    void            *ctx;
+
+    ierr = DMPlexGetBoundary(dm, b, NULL, NULL, NULL, (void (**)()) &func, &numids, &ids, &ctx);CHKERRQ(ierr);
+    for (i = 0; i < numids; ++i) {
+      IS              faceIS;
+      const PetscInt *faces;
+      PetscInt        numFaces, f;
+
+      ierr = DMLabelGetStratumIS(label, ids[i], &faceIS);CHKERRQ(ierr);
+      if (!faceIS) continue; /* No points with that id on this process */
+      ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
+      ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
+      for (f = 0; f < numFaces; ++f) {
+        const PetscInt     face = faces[f], *cells;
+        const PetscScalar *xI;
+        PetscScalar       *xG;
+        const FaceGeom    *fg;
+
+        ierr = DMPlexPointLocalRead(dmFace, face, facegeom, &fg);CHKERRQ(ierr);
+        ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
+        ierr = DMPlexPointLocalRead(dm, cells[0], x, &xI);CHKERRQ(ierr);
+        ierr = DMPlexPointLocalRef(dm, cells[1], x, &xG);CHKERRQ(ierr);
+        ierr = (*func)(time, fg->centroid, fg->normal, xI, xG, ctx);CHKERRQ(ierr);
+      }
+      ierr = ISRestoreIndices(faceIS, &faces);CHKERRQ(ierr);
+      ierr = ISDestroy(&faceIS);CHKERRQ(ierr);
+    }
+  }
+  ierr = VecRestoreArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
+  ierr = VecRestoreArray(locX, &x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -597,7 +729,7 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
     cellDofAux       += Nb*Nc;
     numComponentsAux += Nc;
   }
-  ierr = DMPlexProjectFunctionLocal(dm, fe, fem->bcFuncs, fem->bcCtxs, INSERT_BC_VALUES, X);CHKERRQ(ierr);
+  ierr = DMPlexInsertBoundaryValuesFEM(dm, X);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = PetscMalloc6(numCells*cellDof,&u,numCells*dim,&v0,numCells*dim*dim,&J,numCells*dim*dim,&invJ,numCells,&detJ,numCells*cellDof,&elemVec);CHKERRQ(ierr);
   if (dmAux) {ierr = PetscMalloc1(numCells*cellDofAux, &a);CHKERRQ(ierr);}
@@ -751,6 +883,7 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
 
   Input Parameters:
 + dm - The mesh
+. time - The current time
 . X  - Local input vector
 . X_t  - Time derivative of the local input vector
 - user - The user context
@@ -768,7 +901,7 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
 
 .seealso: DMPlexComputeResidualFEM()
 @*/
-PetscErrorCode DMPlexComputeIFunctionFEM(DM dm, Vec X, Vec X_t, Vec F, void *user)
+PetscErrorCode DMPlexComputeIFunctionFEM(DM dm, PetscReal time, Vec X, Vec X_t, Vec F, void *user)
 {
   DM_Plex          *mesh  = (DM_Plex *) dm->data;
   PetscFEM         *fem   = (PetscFEM *) user;
@@ -817,7 +950,7 @@ PetscErrorCode DMPlexComputeIFunctionFEM(DM dm, Vec X, Vec X_t, Vec F, void *use
     cellDofAux       += Nb*Nc;
     numComponentsAux += Nc;
   }
-  ierr = DMPlexProjectFunctionLocal(dm, fe, fem->bcFuncs, fem->bcCtxs, INSERT_BC_VALUES, X);CHKERRQ(ierr);
+  ierr = DMPlexInsertBoundaryValuesFEM(dm, X);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = PetscMalloc7(numCells*cellDof,&u,numCells*cellDof,&u_t,numCells*dim,&v0,numCells*dim*dim,&J,numCells*dim*dim,&invJ,numCells,&detJ,numCells*cellDof,&elemVec);CHKERRQ(ierr);
   if (dmAux) {ierr = PetscMalloc1(numCells*cellDofAux, &a);CHKERRQ(ierr);}
@@ -1166,7 +1299,7 @@ PetscErrorCode DMPlexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP,void *us
     cellDofAux       += Nb*Nc;
     numComponentsAux += Nc;
   }
-  ierr = DMPlexProjectFunctionLocal(dm, fe, fem->bcFuncs, fem->bcCtxs, INSERT_BC_VALUES, X);CHKERRQ(ierr);
+  ierr = DMPlexInsertBoundaryValuesFEM(dm, X);CHKERRQ(ierr);
   ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
   ierr = PetscMalloc6(numCells*cellDof,&u,numCells*dim,&v0,numCells*dim*dim,&J,numCells*dim*dim,&invJ,numCells,&detJ,numCells*cellDof*cellDof,&elemMat);CHKERRQ(ierr);
   if (dmAux) {ierr = PetscMalloc1(numCells*cellDofAux, &a);CHKERRQ(ierr);}

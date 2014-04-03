@@ -344,12 +344,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (!len) {
-    DMLabel label;
-
     ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
-    ierr = DMPlexGetLabel(*dm, "marker", &label);CHKERRQ(ierr);
-    if (label) {ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);}
   } else if (user->checkpoint) {
     ierr = DMCreate(comm, dm);CHKERRQ(ierr);
     ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
@@ -623,7 +619,7 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
   }
-  user->fem.bcFuncs = user->exactFuncs;
+  user->fem.bcFuncs = NULL;
   user->fem.bcCtxs  = NULL;
   PetscFunctionReturn(0);
 }
