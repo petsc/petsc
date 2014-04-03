@@ -1023,7 +1023,7 @@ PetscErrorCode  PetscFinalize(void)
   }
   ierr = PetscSegBufferDestroy(&PetscCitationsList);CHKERRQ(ierr);
 
-#if defined(PETSC_HAVE_SSL)
+#if defined(PETSC_HAVE_SSL) && defined(PETSC_USE_SOCKET_VIEWER)
   /* TextBelt is run for testing purposes only, please do not use this feature often */
   {
     PetscInt nmax = 2;
