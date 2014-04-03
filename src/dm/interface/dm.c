@@ -51,6 +51,8 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   ierr                    = PetscSFCreate(comm, &v->defaultSF);CHKERRQ(ierr);
   v->defaultSection       = NULL;
   v->defaultGlobalSection = NULL;
+  v->L                    = NULL;
+  v->maxCell              = NULL;
   {
     PetscInt i;
     for (i = 0; i < 10; ++i) {
@@ -109,6 +111,11 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   } else {
     ierr = DMGetCoordinates(dm, &coords);CHKERRQ(ierr);
     if (coords) {ierr = DMSetCoordinates(*newdm, coords);CHKERRQ(ierr);}
+  }
+  if (dm->maxCell) {
+    const PetscReal *maxCell, *L;
+    ierr = DMGetPeriodicity(dm,     &maxCell, &L);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(*newdm,  maxCell,  L);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -508,6 +515,8 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = DMDestroy(&(*dm)->coordinateDM);CHKERRQ(ierr);
   ierr = VecDestroy(&(*dm)->coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&(*dm)->coordinatesLocal);CHKERRQ(ierr);
+  ierr = PetscFree((*dm)->maxCell);CHKERRQ(ierr);
+  ierr = PetscFree((*dm)->L);CHKERRQ(ierr);
 
   for (f = 0; f < (*dm)->numFields; ++f) {
     ierr = PetscObjectDestroy((PetscObject *) &(*dm)->fields[f]);CHKERRQ(ierr);
@@ -3601,6 +3610,35 @@ PetscErrorCode DMSetCoordinateSection(DM dm, PetscSection section)
   PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,2);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(cdm, section);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetPeriodicity"
+PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscReal **L)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (L)       *L       = dm->L;
+  if (maxCell) *maxCell = dm->maxCell;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetPeriodicity"
+PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscReal L[])
+{
+  Vec            coordinates;
+  PetscInt       dim, d;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(coordinates, &dim);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dim,&dm->L);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dim,&dm->maxCell);CHKERRQ(ierr);
+  for (d = 0; d < dim; ++d) {dm->L[d] = L[d]; dm->maxCell[d] = maxCell[d];}
   PetscFunctionReturn(0);
 }
 
