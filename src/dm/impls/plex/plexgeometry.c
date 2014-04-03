@@ -553,7 +553,7 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
       PetscLogFlops(18.0);
     }
     if (invJ) {DMPlex_Invert3D_Internal(invJ, J, *detJ);}
-  } else if (numCoords == 8) {
+  } else if ((numCoords == 8) || (numCoords == 16)) {
     const PetscInt dim = 2;
 
     if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
