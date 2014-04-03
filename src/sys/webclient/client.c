@@ -1,5 +1,6 @@
 
 #include <petscwebclient.h>
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
 static BIO *bio_err = NULL;
 
