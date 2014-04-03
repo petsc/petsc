@@ -179,7 +179,7 @@ PetscErrorCode ISSortRemoveDups_Block(IS is)
   ierr = PetscLayoutGetBlockSize(is->map, &bs);CHKERRQ(ierr);
   ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
   nb   = n/bs;
-  ierr = PetscSortRemoveDupsInt(nb,sub->idx);CHKERRQ(ierr);
+  ierr = PetscSortRemoveDupsInt(&nb,sub->idx);CHKERRQ(ierr);
   ierr = PetscLayoutSetLocalSize(is->map, nb*bs);CHKERRQ(ierr);
   sub->sorted = PETSC_TRUE;
   PetscFunctionReturn(0);
