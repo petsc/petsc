@@ -1,3 +1,5 @@
+DM Object:Input Mesh 1 MPI processes
+  type: plex
 Mesh 'Input Mesh':
 Max sizes cone: 6 support: 4
 orientation is missing

@@ -1,3 +1,5 @@
+DM Object:Parallel Mesh 2 MPI processes
+  type: plex
 Mesh 'Parallel Mesh':
 Max sizes cone: 4 support: 3
 orientation is missing
@@ -217,6 +219,8 @@ PetscSF Object: 2 MPI processes
   [0]    13 <- 24
   [0]    14 <- 25
   [1] Roots referenced by my leaves, by rank
+DM Object:Hybrid Mesh 2 MPI processes
+  type: plex
 Mesh 'Hybrid Mesh':
 Max sizes cone: 4 support: 7
 orientation is missing
