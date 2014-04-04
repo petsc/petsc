@@ -87,6 +87,7 @@ PetscErrorCode MatColoringCreate(Mat m,MatColoring *mcptr)
   mc->maxcolors = IS_COLORING_MAX;
   *mcptr        = mc;
   mc->valid     = PETSC_FALSE;
+  mc->weight_type = MAT_COLORING_WEIGHT_RANDOM;
   mc->user_weights = NULL;
   mc->user_lperm = NULL;
   PetscFunctionReturn(0);
