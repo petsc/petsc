@@ -169,7 +169,7 @@ PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc,PetscReal *we
   const PetscInt *cols;
   PetscBool      isSEQAIJ;
   Mat_SeqAIJ     *aij;
-  PetscInt       *Gi,*Gj;
+  PetscInt       *Gi,*Gj,*rperm;
   Mat            G = mc->mat;
   PetscReal      *lweights,r;
   PetscRandom    rand;
@@ -178,7 +178,7 @@ PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc,PetscReal *we
   ierr = MatGetOwnershipRange(G,&s,&e);CHKERRQ(ierr);
   n=e-s;
   ierr = ISCreateStride(PetscObjectComm((PetscObject)G),n,s,1,&ris);CHKERRQ(ierr);
-  ierr = MatIncreaseOverlap(G,1,&ris,distance);CHKERRQ(ierr);
+  ierr = MatIncreaseOverlap(G,1,&ris,distance+1);CHKERRQ(ierr);
   ierr = ISSort(ris);CHKERRQ(ierr);
   ierr = MatGetSubMatrices(G,1,&ris,&ris,MAT_INITIAL_MATRIX,&lGs);CHKERRQ(ierr);
   lG = lGs[0];
@@ -232,7 +232,16 @@ PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc,PetscReal *we
     degrees[i] = degree;
     if (degree > maxdegree) maxdegree = degree;
   }
-  /* bucket by degree */
+  /* bucket by degree by some random permutation */
+  ierr = PetscRandomCreate(PetscObjectComm((PetscObject)mc),&rand);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ln,&rperm);CHKERRQ(ierr);
+  for (i=0;i<ln;i++) {
+      ierr = PetscRandomGetValueReal(rand,&r);CHKERRQ(ierr);
+      lweights[i] = r;
+      rperm[i]=i;
+  }
+  ierr = PetscSortRealWithPermutation(lm,lweights,rperm);CHKERRQ(ierr);
   ierr = PetscMalloc1(maxdegree+1,&degb);CHKERRQ(ierr);
   ierr = PetscMalloc2(ln,&llnext,ln,&llprev);CHKERRQ(ierr);
   for (i=0;i<maxdegree+1;i++) {
@@ -244,19 +253,21 @@ PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc,PetscReal *we
     seen[i] = -1;
   }
   for (i=0;i<ln;i++) {
-    llnext[i] = degb[degrees[i]];
-    if (degb[degrees[i]] > 0) llprev[degb[degrees[i]]] = i;
-    degb[degrees[i]] = i;
+    idx = rperm[i];
+    llnext[idx] = degb[degrees[idx]];
+    if (degb[degrees[idx]] > 0) llprev[degb[degrees[idx]]] = idx;
+    degb[degrees[idx]] = idx;
   }
+  ierr = PetscFree(rperm);CHKERRQ(ierr);
   /* remove the lowest degree one */
   i=0;
   nin=0;
   while (i != maxdegree+1) {
-    for (i=0;i<maxdegree+1; i++) {
+    for (i=1;i<maxdegree+1; i++) {
       if (degb[i] > 0) {
         cur = degb[i];
         nin++;
-        degrees[cur] = -1;
+        degrees[cur] = 0;
         degb[i] = llnext[cur];
         bidx=-1;
         ncols = Gi[cur+1]-Gi[cur];
@@ -273,11 +284,11 @@ PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc,PetscReal *we
         while (bidx >= 0) {
           /* pop */
           idx = idxbuf[bidx];
-          nxt=llnext[idx];
-          prv=llprev[idx];
           dist = distbuf[bidx];
           bidx--;
-          if (idx != cur && degrees[idx] > 0) {
+          nxt=llnext[idx];
+          prv=llprev[idx];
+          if (degrees[idx] > 0) {
             /* change up the degree of the neighbors still in the graph */
             if (lweights[idx] <= lweights[cur]) lweights[idx] = lweights[cur]+1;
             if (nxt > 0) {
@@ -289,7 +300,11 @@ PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc,PetscReal *we
               degb[degrees[idx]] = nxt;
             }
             degrees[idx]--;
-            llnext[idx] = llnext[degb[degrees[idx]]];
+            llnext[idx] = degb[degrees[idx]];
+            llprev[idx] = -1;
+            if (degb[degrees[idx]] >= 0) {
+              llprev[degb[degrees[idx]]] = idx;
+            }
             degb[degrees[idx]] = idx;
             if (dist < distance) {
               ncols = Gi[idx+1]-Gi[idx];
@@ -309,12 +324,9 @@ PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc,PetscReal *we
       }
     }
   }
-  ierr = PetscRandomCreate(PetscObjectComm((PetscObject)mc),&rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   for (i=0;i<lm;i++) {
     if (gidx[i] >= s && gidx[i] < e) {
-    ierr = PetscRandomGetValueReal(rand,&r);CHKERRQ(ierr);
-      weights[gidx[i]-s] = lweights[i] + r;
+      weights[gidx[i]-s] = lweights[i];
     }
   }
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
@@ -359,10 +371,54 @@ PetscErrorCode MatColoringCreateWeights(MatColoring mc,PetscReal **weights,Petsc
   if (lperm) {
     ierr = PetscMalloc1(n,lperm);CHKERRQ(ierr);
     for (i=0;i<n;i++) {
-      (*lperm)[i] = n-1-i;
+      (*lperm)[i] = i;
     }
     ierr = PetscSortRealWithPermutation(n,wts,*lperm);CHKERRQ(ierr);
+    for (i=0;i<n/2;i++) {
+      PetscInt swp;
+      swp = (*lperm)[i];
+      (*lperm)[i] = (*lperm)[n-1-i];
+      (*lperm)[n-1-i] = swp;
+    }
   }
   if (weights) *weights = wts;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatColoringSetWeights"
+PetscErrorCode MatColoringSetWeights(MatColoring mc,PetscReal *weights,PetscInt *lperm)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,s,e,n;
+
+  PetscFunctionBegin;
+  ierr = MatGetOwnershipRange(mc->mat,&s,&e);CHKERRQ(ierr);
+  n=e-s;
+  if (weights) {
+    ierr = PetscMalloc2(n,&mc->user_weights,n,&mc->user_lperm);CHKERRQ(ierr);
+    for (i=0;i<n;i++) {
+      mc->user_weights[i]=weights[i];
+    }
+    if (!lperm) {
+      for (i=0;i<n;i++) {
+        mc->user_lperm[i]=i;
+      }
+      ierr = PetscSortRealWithPermutation(n,mc->user_weights,mc->user_lperm);CHKERRQ(ierr);
+      for (i=0;i<n/2;i++) {
+        PetscInt swp;
+        swp = mc->user_lperm[i];
+        mc->user_lperm[i] = mc->user_lperm[n-1-i];
+        mc->user_lperm[n-1-i] = swp;
+      }
+    } else {
+      for (i=0;i<n;i++) {
+        mc->user_lperm[i]=lperm[i];
+      }
+    }
+  } else {
+    mc->user_weights = NULL;
+    mc->user_lperm = NULL;
+  }
   PetscFunctionReturn(0);
 }

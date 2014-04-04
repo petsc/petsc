@@ -1080,6 +1080,7 @@ PETSC_EXTERN PetscErrorCode MatColoringRegister(const char[],PetscErrorCode(*)(M
 PETSC_EXTERN PetscBool MatColoringRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode MatColoringPatch(Mat,PetscInt,PetscInt,ISColoringValue[],ISColoring*);
 PETSC_EXTERN PetscErrorCode MatColoringSetWeightType(MatColoring,MatColoringWeightType);
+PETSC_EXTERN PetscErrorCode MatColoringSetWeights(MatColoring,PetscReal*,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatColoringCreateWeights(MatColoring,PetscReal **,PetscInt **lperm);
 
 /*S

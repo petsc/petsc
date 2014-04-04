@@ -489,11 +489,13 @@ struct _MatColoringOps {
 struct _p_MatColoring {
   PETSCHEADER(struct _MatColoringOps);
   Mat                   mat;
-  PetscInt              dist;      /* distance of the coloring */
-  PetscInt              maxcolors; /* the maximum number of colors returned, maxcolors=1 for MIS */
-  void                  *data;     /* inner context */
-  PetscBool             valid;     /* check to see if what is produced is a valid coloring */
-  MatColoringWeightType weight_type; /* type of weight computation to be performed */
+  PetscInt              dist;             /* distance of the coloring */
+  PetscInt              maxcolors;        /* the maximum number of colors returned, maxcolors=1 for MIS */
+  void                  *data;            /* inner context */
+  PetscBool             valid;            /* check to see if what is produced is a valid coloring */
+  MatColoringWeightType weight_type;      /* type of weight computation to be performed */
+  PetscReal             *user_weights;    /* custom weights and permutation */
+  PetscInt              *user_lperm;
 };
 
 struct  _p_MatTransposeColoring{

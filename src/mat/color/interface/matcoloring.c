@@ -87,6 +87,8 @@ PetscErrorCode MatColoringCreate(Mat m,MatColoring *mcptr)
   mc->maxcolors = IS_COLORING_MAX;
   *mcptr        = mc;
   mc->valid     = PETSC_FALSE;
+  mc->user_weights = NULL;
+  mc->user_lperm = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -115,6 +117,8 @@ PetscErrorCode MatColoringDestroy(MatColoring *mc)
   if (--((PetscObject)(*mc))->refct > 0) {*mc = 0; PetscFunctionReturn(0);}
   ierr = MatDestroy(&(*mc)->mat);CHKERRQ(ierr);
   if ((*mc)->ops->destroy) {ierr = (*((*mc)->ops->destroy))(*mc);CHKERRQ(ierr);}
+  if ((*mc)->user_weights) {ierr = PetscFree((*mc)->user_weights);CHKERRQ(ierr);}
+  if ((*mc)->user_lperm) {ierr = PetscFree((*mc)->user_lperm);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(mc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

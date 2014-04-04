@@ -284,7 +284,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
     mcol_global=0;
     ierr = PetscLogEventBegin(Mat_Coloring_Local,mc,0,0,0);CHKERRQ(ierr);
     for (i=0;i<n;i++) {
-      idx=n-lperm[i]-1;
+      idx=lperm[i];
       if (dcolors[idx] == maxcolors) {
         /* entries in bad */
         cbad=bad[idx];
@@ -550,7 +550,12 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *i
   PetscFunctionBegin;
   ierr = MatGetSize(mc->mat,NULL,&ncolstotal);CHKERRQ(ierr);
   ierr = MatGetLocalSize(mc->mat,NULL,&ncols);CHKERRQ(ierr);
-  ierr = MatColoringCreateWeights(mc,&wts,&lperm);CHKERRQ(ierr);
+  if (!mc->user_weights) {
+    ierr = MatColoringCreateWeights(mc,&wts,&lperm);CHKERRQ(ierr);
+  } else {
+    wts = mc->user_weights;
+    lperm = mc->user_lperm;
+  }
   ierr = PetscMalloc1(ncols,&colors);CHKERRQ(ierr);
   if (mc->dist == 1) {
     ierr = GreedyColoringLocalDistanceOne_Private(mc,wts,lperm,colors);CHKERRQ(ierr);
@@ -568,8 +573,10 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *i
   ierr = PetscLogEventBegin(Mat_Coloring_ISCreate,mc,0,0,0);CHKERRQ(ierr);
   ierr = ISColoringCreate(PetscObjectComm((PetscObject)mc),finalcolor_global+1,ncols,colors,iscoloring);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(Mat_Coloring_ISCreate,mc,0,0,0);CHKERRQ(ierr);
-  ierr = PetscFree(wts);CHKERRQ(ierr);
-  ierr = PetscFree(lperm);CHKERRQ(ierr);
+  if (!mc->user_weights) {
+    ierr = PetscFree(wts);CHKERRQ(ierr);
+    ierr = PetscFree(lperm);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
