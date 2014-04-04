@@ -401,7 +401,6 @@ runex5_5_ngmres_nrichardson:
 	   if (${DIFF} output/ex5_5_ngmres_richardson.out ex5_5_ngmres_richardson.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with with ex5_5_ngmres_richardson, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_5_ngmres_richardson.tmp
-
 runex5_5_ncg:
 	-@${CSD_BASIC_COMMAND_LINE} -snes_type ncg -snes_ncg_type fr \
         > ex5_5_ncg.tmp 2>&1; \
@@ -882,6 +881,12 @@ runex19_composite_gs_newton: #test additive composite SNES
         -snes_type composite -snes_composite_type additiveoptimal -snes_composite_sneses ngs,newtonls -sub_0_snes_max_it 20 -sub_1_pc_type mg > ex19_composite_gs_newton.tmp 2>&1; \
 	${DIFF} output/ex19_composite_gs_newton.out ex19_composite_gs_newton.tmp || printf "${PWD}\nPossible problem with ex19_composite_gs_newton, diffs above\n=========================================\n"; \
         ${RM} -f ex19_composite_gs_newton.tmp
+
+runex19_greedy_coloring:
+	-@${MPIEXEC} -n 2 ./ex19 -da_refine 3 -snes_monitor_short \
+        -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -mat_coloring_weight_type lf -mat_coloring_view> ex19_greedy_coloring.tmp 2>&1; \
+	${DIFF} output/ex19_greedy_coloring.out ex19_greedy_coloring.tmp || printf "${PWD}\nPossible problem with ex19_greedy_coloring, diffs above\n=========================================\n"; \
+        ${RM} -f ex19_greedy_coloring.tmp
 
 runex19_draw:
 	-@${MPIEXEC} -n 1 ./ex19 -pc_type fieldsplit -snes_view draw -fieldsplit_x_velocity_pc_type mg -fieldsplit_x_velocity_pc_mg_galerkin -fieldsplit_x_velocity_pc_mg_levels 2 -da_refine 1 -fieldsplit_x_velocity_mg_coarse_pc_type svd > ex19_draw.tmp 2>&1; \
