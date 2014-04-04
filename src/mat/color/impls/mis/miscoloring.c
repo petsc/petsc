@@ -24,34 +24,6 @@ typedef struct {
 } MC_MIS;
 
 #undef __FUNCT__
-#define __FUNCT__ "MISCreateWeights_Private"
-PetscErrorCode MISCreateWeights_Private(MatColoring mc)
-{
-  MC_MIS         *mis = (MC_MIS *)mc->data;
-  PetscErrorCode ierr;
-  PetscInt       i,ncols;
-  PetscRandom    rand;
-  PetscReal      *wts = mis->wts;
-  PetscReal      r;
-  const PetscInt *coldegrees;
-  PetscSF        etoc=mis->etoc;
-
-  PetscFunctionBegin;
-  /* each weight should be the degree plus a random perturbation */
-  ierr = PetscSFGetGraph(etoc,&ncols,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscSFComputeDegreeBegin(etoc,&coldegrees);CHKERRQ(ierr);
-  ierr = PetscSFComputeDegreeEnd(etoc,&coldegrees);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PetscObjectComm((PetscObject)mc),&rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
-  for (i=0;i<ncols;i++) {
-    ierr = PetscRandomGetValueReal(rand,&r);CHKERRQ(ierr);
-    wts[i] = coldegrees[i] + PetscAbsReal(r);
-  }
-  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MISInitialize_Private"
 PetscErrorCode MISInitialize_Private(MatColoring mc)
 {
@@ -63,8 +35,7 @@ PetscErrorCode MISInitialize_Private(MatColoring mc)
   ierr = MatColoringCreateBipartiteGraph(mc,&mis->etoc,&mis->etor);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(mis->etoc,&croot,&cleaf,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(mis->etor,&rroot,&rleaf,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc7(croot,&mis->wts,
-                      croot,&mis->wtsinit,
+  ierr = PetscMalloc6(croot,&mis->wtsinit,
                       croot,&mis->wtscol,
                       rroot,&mis->wtsrow,
                       croot,&mis->wtsspread,
@@ -104,8 +75,8 @@ PetscErrorCode MISTearDown_Private(MatColoring mc)
   PetscFunctionBegin;
   ierr = PetscSFDestroy(&mis->etoc);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&mis->etor);CHKERRQ(ierr);
-  ierr = PetscFree7(mis->wts,
-                    mis->wtsinit,
+  ierr = PetscFree(mis->wts);CHKERRQ(ierr);
+  ierr = PetscFree6(mis->wtsinit,
                     mis->wtscol,
                     mis->wtsrow,
                     mis->wtsspread,
@@ -370,7 +341,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_MIS(MatColoring mc,ISColoring *isco
   ierr = MatGetLocalSize(mc->mat,NULL,&ncols);CHKERRQ(ierr);
   ierr = MISInitialize_Private(mc);CHKERRQ(ierr);
   color = mis->color;
-  ierr = MISCreateWeights_Private(mc);CHKERRQ(ierr);
+  ierr = MatColoringCreateWeights(mc,&mis->wts,NULL);CHKERRQ(ierr);
   curcolor=0;
   for (i=0;(i<mc->maxcolors || mc->maxcolors == 0) && (nadded_total < ncolstotal);i++) {
     ierr = MISCompute_Private(mc,curcolor,&nadded);CHKERRQ(ierr);

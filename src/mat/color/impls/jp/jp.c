@@ -28,35 +28,6 @@ typedef struct {
   ISColoringValue *mincolor;
 } MC_JP;
 
-
-#undef __FUNCT__
-#define __FUNCT__ "JPCreateWeights_Private"
-PetscErrorCode JPCreateWeights_Private(MatColoring mc)
-{
-  MC_JP          *jp = (MC_JP *)mc->data;
-  PetscErrorCode ierr;
-  PetscInt       i,ncols;
-  PetscRandom    rand;
-  PetscReal      *wts = jp->wts;
-  PetscReal      r;
-  const PetscInt *coldegrees;
-  PetscSF        etoc=jp->etoc;
-
-  PetscFunctionBegin;
-  /* each weight should be the degree plus a random perturbation */
-  ierr = PetscSFGetGraph(etoc,&ncols,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscSFComputeDegreeBegin(etoc,&coldegrees);CHKERRQ(ierr);
-  ierr = PetscSFComputeDegreeEnd(etoc,&coldegrees);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PetscObjectComm((PetscObject)mc),&rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
-  for (i=0;i<ncols;i++) {
-    ierr = PetscRandomGetValueReal(rand,&r);CHKERRQ(ierr);
-    wts[i] = coldegrees[i] + PetscAbsReal(r);
-  }
-  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "JPInitialize_Private"
 PetscErrorCode JPInitialize_Private(MatColoring mc)
@@ -71,8 +42,7 @@ PetscErrorCode JPInitialize_Private(MatColoring mc)
   jp->stateradix = (8*sizeof(PetscInt)-1);
   ierr = PetscSFGetGraph(jp->etoc,&croot,&cleaf,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(jp->etor,&rroot,&rleaf,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc7(croot,&jp->wts,
-                      croot,&jp->wtsinit,
+  ierr = PetscMalloc6(croot,&jp->wtsinit,
                       croot,&jp->wtscol,
                       rroot,&jp->wtsrow,
                       croot,&jp->wtsspread,
@@ -113,8 +83,8 @@ PetscErrorCode JPTearDown_Private(MatColoring mc)
   PetscFunctionBegin;
   ierr = PetscSFDestroy(&jp->etoc);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&jp->etor);CHKERRQ(ierr);
-  ierr = PetscFree7(jp->wts,
-                    jp->wtsinit,
+  ierr = PetscFree(jp->wts);CHKERRQ(ierr);
+  ierr = PetscFree6(jp->wtsinit,
                     jp->wtscol,
                     jp->wtsrow,
                     jp->wtsspread,
@@ -370,7 +340,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscol
   ierr = PetscLogEventBegin(Mat_Coloring_SetUp,mc,0,0,0);CHKERRQ(ierr);
   ierr = JPInitialize_Private(mc);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(Mat_Coloring_SetUp,mc,0,0,0);CHKERRQ(ierr);
-  ierr = JPCreateWeights_Private(mc);CHKERRQ(ierr);
+  ierr = MatColoringCreateWeights(mc,&jp->wts,NULL);CHKERRQ(ierr);
   ierr = MatGetSize(mc->mat,NULL,&ncolstotal);CHKERRQ(ierr);
   ierr = MatGetLocalSize(mc->mat,NULL,&ncols);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(jp->etor,&nr,NULL,NULL,NULL);CHKERRQ(ierr);

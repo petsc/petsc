@@ -8,160 +8,6 @@ typedef struct {
 } MC_Greedy;
 
 #undef __FUNCT__
-#define __FUNCT__ "GreedyDiscoverDegrees_Private"
-PetscErrorCode GreedyDiscoverDegrees_Private(MatColoring mc,PetscReal **degrees)
-{
-  Mat            G=mc->mat;
-  PetscInt       i,j,k,s,e,n,ncols;
-  PetscErrorCode ierr;
-  PetscReal      *dar,*odar;
-
-  PetscFunctionBegin;
-  ierr = MatGetOwnershipRange(G,&s,&e);CHKERRQ(ierr);
-  n=e-s;
-  ierr = PetscMalloc1(n,degrees);CHKERRQ(ierr);
-  if (mc->dist==1) {
-    for (i=s;i<e;i++) {
-      ierr = MatGetRow(G,i,&ncols,NULL,NULL);CHKERRQ(ierr);
-      (*degrees)[i-s] = ncols;
-      ierr = MatRestoreRow(G,i,&ncols,NULL,NULL);CHKERRQ(ierr);
-    }
-  } else if (mc->dist==2) {
-    PetscSF        sf;
-    PetscLayout    layout;
-    PetscBool      isMPIAIJ,isSEQAIJ;
-    Mat            gd,go;
-    PetscInt       nd1cols,*d1cols,*seen,*oseen,no;
-    const PetscInt *cidx;
-    ierr = PetscObjectTypeCompare((PetscObject)G,MATMPIAIJ,&isMPIAIJ); CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)G,MATSEQAIJ,&isSEQAIJ); CHKERRQ(ierr);
-    go=NULL;
-    gd=NULL;
-    ierr = PetscMalloc1(n,&seen);CHKERRQ(ierr);
-    for (i=0;i<n;i++) {
-      seen[i]=-1;
-    }
-    if (isMPIAIJ) {
-      Mat_MPIAIJ *aij = (Mat_MPIAIJ*)G->data;
-      gd=aij->A;
-      go=aij->B;
-      ierr = VecGetSize(aij->lvec,&no);CHKERRQ(ierr);
-      ierr = PetscMalloc1(no,&oseen);CHKERRQ(ierr);
-      for (i=0;i<no;i++) {
-        oseen[i]=-1;
-      }
-      ierr = PetscSFCreate(PetscObjectComm((PetscObject)G),&sf);CHKERRQ(ierr);
-      ierr = MatGetLayouts(G,&layout,NULL);CHKERRQ(ierr);
-      ierr = PetscSFSetGraphLayout(sf,layout,no,NULL,PETSC_COPY_VALUES,aij->garray);CHKERRQ(ierr);
-    } else if (isSEQAIJ) {
-      gd=G;
-    } else {
-      SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_WRONG,"Matrix must be AIJ for greedy coloring");
-    }
-    ierr = PetscMalloc1(n,&d1cols);CHKERRQ(ierr);
-    ierr = PetscMalloc1(n,&dar);CHKERRQ(ierr);
-    /* the degree is going to be the locally computed on and off-diagonal distance one and on-diagonal distance two with remotely computed off-processor distance-two */
-    for (i=0;i<n;i++) {
-      dar[i] = 0.;
-    }
-    if (go) {
-      ierr = PetscMalloc1(no,&odar);CHKERRQ(ierr);
-      for (i=0;i<no;i++) {
-        odar[i] = 0.;
-      }
-    }
-    for (i=0;i<n;i++) {
-      /* on-processor distance one */
-      ierr = MatGetRow(gd,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
-      nd1cols=ncols;
-      for (j=0;j<ncols;j++) {
-        d1cols[j]=cidx[j];
-        seen[cidx[j]]=i;
-      }
-      dar[i]+=ncols;
-      ierr = MatRestoreRow(gd,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
-      /* off-processor distance one */
-      if (go) {
-        ierr = MatGetRow(go,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
-        for (j=0;j<ncols;j++) {
-          oseen[cidx[j]]=i;
-        }
-        ierr = MatRestoreRow(go,i,&ncols,&cidx,NULL);CHKERRQ(ierr);
-      }
-      for (j=0;j<nd1cols;j++) {
-        /* on-processor distance two */
-        ierr = MatGetRow(gd,d1cols[j],&ncols,&cidx,NULL);CHKERRQ(ierr);
-        for (k=0;k<ncols;k++) {
-          if (seen[cidx[k]] != i) {
-            dar[i]+=1;
-            seen[cidx[k]]=i;
-          }
-        }
-        ierr = MatRestoreRow(gd,d1cols[j],&ncols,&cidx,NULL);CHKERRQ(ierr);
-        if (go) {
-          ierr = MatGetRow(go,d1cols[j],&ncols,&cidx,NULL);CHKERRQ(ierr);
-          for (k=0;k<ncols;k++) {
-            if (oseen[cidx[k]] != i) {
-              odar[cidx[k]]+=1;
-              dar[i]+=1;
-              oseen[cidx[k]]=i;
-            }
-          }
-          ierr = MatRestoreRow(go,d1cols[j],&ncols,&cidx,NULL);CHKERRQ(ierr);
-        }
-      }
-    }
-    if (go) {
-      ierr = PetscSFReduceBegin(sf,MPIU_REAL,odar,dar,MPIU_SUM);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(sf,MPIU_REAL,odar,dar,MPIU_SUM);CHKERRQ(ierr);
-    }
-    for (i=0;i<n;i++) {
-      (*degrees)[i]=dar[i];
-    }
-    ierr = PetscFree(dar);CHKERRQ(ierr);
-    ierr = PetscFree(d1cols);CHKERRQ(ierr);
-    ierr = PetscFree(seen);CHKERRQ(ierr);
-    if (go) {
-      ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-      ierr = PetscFree(odar);CHKERRQ(ierr);
-      ierr = PetscFree(oseen);CHKERRQ(ierr);
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "GreedyCreateWeights_Private"
-PetscErrorCode GreedyCreateWeights_Private(MatColoring mc,PetscReal **wts,PetscInt **perm)
-{
-  PetscRandom    rand;
-  PetscReal      r;
-  PetscInt       i,s,e,n;
-  Mat            G=mc->mat;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscLogEventBegin(Mat_Coloring_Weights,mc,0,0,0);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(G,&s,&e);CHKERRQ(ierr);
-  n=e-s;
-  ierr = PetscMalloc1(n,perm);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,wts);CHKERRQ(ierr);
-  /* each weight should be the degree plus a random perturbation */
-  ierr = PetscRandomCreate(PetscObjectComm((PetscObject)mc),&rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
-  /* ierr = GreedyDiscoverDegrees_Private(mc,wts);CHKERRQ(ierr); */
-  for (i=s;i<e;i++) {
-    ierr = PetscRandomGetValueReal(rand,&r);CHKERRQ(ierr);
-    (*wts)[i-s] = PetscAbsReal(r);
-    (*perm)[i-s] = i-s;
-  }
-  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
-  ierr = PetscSortRealWithPermutation(n,*wts,*perm);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(Mat_Coloring_Weights,mc,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MatColoringDestroy_Greedy"
 PetscErrorCode MatColoringDestroy_Greedy(MatColoring mc)
 {
@@ -256,7 +102,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
     /* assign lowest possible color to each local vertex */
     ierr = PetscLogEventBegin(Mat_Coloring_Local,mc,0,0,0);CHKERRQ(ierr);
     for (i=0;i<n;i++) {
-      idx=n-lperm[i]-1;
+      idx=lperm[i];
       if (lcolors[idx] == maxcolors) {
         ncols = md_i[idx+1]-md_i[idx];
         cidx = &(md_j[md_i[idx]]);
@@ -442,7 +288,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
     mcol_global=0;
     ierr = PetscLogEventBegin(Mat_Coloring_Local,mc,0,0,0);CHKERRQ(ierr);
     for (i=0;i<n;i++) {
-      idx=n-lperm[i]-1;
+      idx=lperm[i];
       if (dcolors[idx] == maxcolors) {
         /* entries in bad */
         cbad=bad[idx];
@@ -708,7 +554,12 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *i
   PetscFunctionBegin;
   ierr = MatGetSize(mc->mat,NULL,&ncolstotal);CHKERRQ(ierr);
   ierr = MatGetLocalSize(mc->mat,NULL,&ncols);CHKERRQ(ierr);
-  ierr = GreedyCreateWeights_Private(mc,&wts,&lperm);CHKERRQ(ierr);
+  if (!mc->user_weights) {
+    ierr = MatColoringCreateWeights(mc,&wts,&lperm);CHKERRQ(ierr);
+  } else {
+    wts = mc->user_weights;
+    lperm = mc->user_lperm;
+  }
   ierr = PetscMalloc1(ncols,&colors);CHKERRQ(ierr);
   if (mc->dist == 1) {
     ierr = GreedyColoringLocalDistanceOne_Private(mc,wts,lperm,colors);CHKERRQ(ierr);
@@ -726,8 +577,10 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *i
   ierr = PetscLogEventBegin(Mat_Coloring_ISCreate,mc,0,0,0);CHKERRQ(ierr);
   ierr = ISColoringCreate(PetscObjectComm((PetscObject)mc),finalcolor_global+1,ncols,colors,iscoloring);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(Mat_Coloring_ISCreate,mc,0,0,0);CHKERRQ(ierr);
-  ierr = PetscFree(wts);CHKERRQ(ierr);
-  ierr = PetscFree(lperm);CHKERRQ(ierr);
+  if (!mc->user_weights) {
+    ierr = PetscFree(wts);CHKERRQ(ierr);
+    ierr = PetscFree(lperm);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
