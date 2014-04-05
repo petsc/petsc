@@ -13,4 +13,4 @@
   1 SNES Function norm 6.765e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 Number of SNES iterations = 1
-L_2 Error: 1.30601e-11
+L_2 Error: 1.30602e-11
