@@ -2626,7 +2626,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscInt Ne, PetscInt
   const PetscInt  debug = 0;
   PetscQuadrature quad;
   PetscScalar    *f0, *f1, *u, *gradU, *a, *gradA = NULL;
-  PetscReal      *x, *realSpaceDer;
+  PetscReal      *x, *refSpaceDer;
   PetscInt        dim, Ncomp, numComponents = 0, numComponentsAux = 0, cOffset = 0, cOffsetAux = 0, eOffset = 0, e, f;
   PetscErrorCode  ierr;
 
@@ -2639,7 +2639,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscInt Ne, PetscInt
     numComponents += Nc;
   }
   ierr = PetscFEGetQuadrature(fe[field], &quad);CHKERRQ(ierr);
-  ierr = PetscMalloc6(quad->numPoints*Ncomp,&f0,quad->numPoints*dim*Ncomp,&f1,numComponents,&u,numComponents*dim,&gradU,dim,&x,dim,&realSpaceDer);
+  ierr = PetscMalloc6(quad->numPoints*Ncomp,&f0,quad->numPoints*dim*Ncomp,&f1,numComponents,&u,numComponents*dim,&gradU,dim,&x,numComponents*dim,&refSpaceDer);
   for (f = 0; f < NfAux; ++f) {
     PetscInt Nc;
     ierr = PetscFEGetNumComponents(feAux[f], &Nc);CHKERRQ(ierr);
@@ -2669,7 +2669,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscInt Ne, PetscInt
 
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
       for (d = 0; d < numComponents; ++d)       {u[d]     = 0.0;}
-      for (d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0;}
+      for (d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0; refSpaceDer[d] = 0.0;}
       for (d = 0; d < dim; ++d) {
         x[d] = v0[d];
         for (d2 = 0; d2 < dim; ++d2) {
@@ -2678,7 +2678,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscInt Ne, PetscInt
       }
       for (f = 0; f < Nf; ++f) {
         PetscReal *basis, *basisDer;
-        PetscInt   Nb, Ncomp, b, comp;
+        PetscInt   Nb, Ncomp, b, comp, d, g;
 
         ierr = PetscFEGetDimension(fe[f], &Nb);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(fe[f], &Ncomp);CHKERRQ(ierr);
@@ -2686,18 +2686,12 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscInt Ne, PetscInt
         for (b = 0; b < Nb; ++b) {
           for (comp = 0; comp < Ncomp; ++comp) {
             const PetscInt cidx = b*Ncomp+comp;
-            PetscInt       d, g;
 
             u[fOffset+comp] += coefficients[dOffset+cidx]*basis[q*Nb*Ncomp+cidx];
-            for (d = 0; d < dim; ++d) {
-              realSpaceDer[d] = 0.0;
-              for (g = 0; g < dim; ++g) {
-                realSpaceDer[d] += invJ[g*dim+d]*basisDer[(q*Nb*Ncomp+cidx)*dim+g];
-              }
-              gradU[(fOffset+comp)*dim+d] += coefficients[dOffset+cidx]*realSpaceDer[d];
-            }
+            for (d = 0; d < dim; ++d) refSpaceDer[comp*dim+d] += coefficients[dOffset+cidx]*basisDer[(q*Nb*Ncomp+cidx)*dim+d];
           }
         }
+        for (comp = 0; comp < Ncomp; ++comp) for (d = 0; d < dim; ++d) for (g = 0; g < dim; ++g) gradU[(fOffset+comp)*dim+d] += invJ[g*dim+d]*refSpaceDer[comp*dim+g];
         if (debug > 1) {
           PetscInt d;
           for (comp = 0; comp < Ncomp; ++comp) {
@@ -2714,7 +2708,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscInt Ne, PetscInt
       for (d = 0; d < dim*(numComponentsAux); ++d) {gradA[d] = 0.0;}
       for (f = 0; f < NfAux; ++f) {
         PetscReal *basis, *basisDer;
-        PetscInt   Nb, Ncomp, b, comp;
+        PetscInt   Nb, Ncomp, b, comp, d, g;
 
         ierr = PetscFEGetDimension(feAux[f], &Nb);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(feAux[f], &Ncomp);CHKERRQ(ierr);
@@ -2722,18 +2716,12 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscInt Ne, PetscInt
         for (b = 0; b < Nb; ++b) {
           for (comp = 0; comp < Ncomp; ++comp) {
             const PetscInt cidx = b*Ncomp+comp;
-            PetscInt       d, g;
 
             a[fOffsetAux+comp] += coefficientsAux[dOffsetAux+cidx]*basis[q*Nb*Ncomp+cidx];
-            for (d = 0; d < dim; ++d) {
-              realSpaceDer[d] = 0.0;
-              for (g = 0; g < dim; ++g) {
-                realSpaceDer[d] += invJ[g*dim+d]*basisDer[(q*Nb*Ncomp+cidx)*dim+g];
-              }
-              gradA[(fOffsetAux+comp)*dim+d] += coefficients[dOffsetAux+cidx]*realSpaceDer[d];
-            }
+            for (d = 0; d < dim; ++d) refSpaceDer[comp*dim+d] += coefficientsAux[dOffsetAux+cidx]*basisDer[(q*Nb*Ncomp+cidx)*dim+d];
           }
         }
+        for (comp = 0; comp < Ncomp; ++comp) for (d = 0; d < dim; ++d) for (g = 0; g < dim; ++g) gradA[(fOffsetAux+comp)*dim+d] += invJ[g*dim+d]*refSpaceDer[comp*dim+g];
         if (debug > 1) {
           PetscInt d;
           for (comp = 0; comp < Ncomp; ++comp) {
@@ -2748,12 +2736,15 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscInt Ne, PetscInt
       }
 
       f0_func(u, gradU, a, gradA, x, &f0[q*Ncomp]);
+      for (i = 0; i < Ncomp; ++i) f0[q*Ncomp+i] *= detJ*quadWeights[q];
+      f1_func(u, gradU, a, gradA, x, refSpaceDer);
       for (i = 0; i < Ncomp; ++i) {
-        f0[q*Ncomp+i] *= detJ*quadWeights[q];
-      }
-      f1_func(u, gradU, a, gradA, x, &f1[q*Ncomp*dim]);
-      for (i = 0; i < Ncomp*dim; ++i) {
-        f1[q*Ncomp*dim+i] *= detJ*quadWeights[q];
+        for (d = 0; d < dim; ++d) {
+          PetscInt g;
+          f1[(q*Ncomp + i)*dim+d] = 0.0;
+          for (g = 0; g < dim; ++g) f1[(q*Ncomp + i)*dim+d] += invJ[d*dim+g]*refSpaceDer[i*dim+g];
+          f1[(q*Ncomp + i)*dim+d] *= detJ*quadWeights[q];
+        }
       }
       if (debug > 1) {
         PetscInt c,d;
@@ -2783,16 +2774,10 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscInt Ne, PetscInt
 
             elemVec[eOffset+cidx] = 0.0;
             for (q = 0; q < Nq; ++q) {
-              PetscInt d, g;
+              PetscInt d;
 
               elemVec[eOffset+cidx] += basis[q*Nb*Ncomp+cidx]*f0[q*Ncomp+comp];
-              for (d = 0; d < dim; ++d) {
-                realSpaceDer[d] = 0.0;
-                for (g = 0; g < dim; ++g) {
-                  realSpaceDer[d] += invJ[g*dim+d]*basisDer[(q*Nb*Ncomp+cidx)*dim+g];
-                }
-                elemVec[eOffset+cidx] += realSpaceDer[d]*f1[(q*Ncomp+comp)*dim+d];
-              }
+              for (d = 0; d < dim; ++d) elemVec[eOffset+cidx] += basisDer[(q*Nb*Ncomp+cidx)*dim+d]*f1[(q*Ncomp+comp)*dim+d];
             }
           }
         }
@@ -2809,7 +2794,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscInt Ne, PetscInt
       eOffset += Nb*Ncomp;
     }
   }
-  ierr = PetscFree6(f0,f1,u,gradU,x,realSpaceDer);
+  ierr = PetscFree6(f0,f1,u,gradU,x,refSpaceDer);
   if (NfAux) {ierr = PetscFree2(a,gradA);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
