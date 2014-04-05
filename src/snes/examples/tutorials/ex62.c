@@ -408,6 +408,7 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
     ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
   }
   user->fem.fe    = user->fe;
+  user->fem.feBd  = NULL;
   user->fem.feAux = NULL;
   PetscFunctionReturn(0);
 }
