@@ -1339,6 +1339,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
       }
     }
   }
+  ierr = MPI_Allreduce(&minradius, &user->minradius, 1, MPIU_SCALAR, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   /* Compute centroids of ghost cells */
   for (c = user->cEndInterior; c < cEnd; ++c) {
     FaceGeom       *fg;
@@ -1368,24 +1369,41 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
       }
     }
   }
-  if (user->reconstruct) {
-    PetscSection sectionGrad;
-    ierr = BuildLeastSquares(dm,user->cEndInterior,dmFace,fgeom,dmCell,cgeom);CHKERRQ(ierr);
-    ierr = DMClone(dm,&user->dmGrad);CHKERRQ(ierr);
-    ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm),&sectionGrad);CHKERRQ(ierr);
-    ierr = PetscSectionSetChart(sectionGrad,cStart,cEnd);CHKERRQ(ierr);
-    for (c=cStart; c<cEnd; c++) {
-      ierr = PetscSectionSetDof(sectionGrad,c,user->model->physics->dof*DIM);CHKERRQ(ierr);
-    }
-    ierr = PetscSectionSetUp(sectionGrad);CHKERRQ(ierr);
-    ierr = DMSetDefaultSection(user->dmGrad,sectionGrad);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&sectionGrad);CHKERRQ(ierr);
-  }
   ierr = VecRestoreArray(*facegeom, &fgeom);CHKERRQ(ierr);
   ierr = VecRestoreArray(*cellgeom, &cgeom);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&minradius, &user->minradius, 1, MPIU_SCALAR, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   ierr = DMDestroy(&dmCell);CHKERRQ(ierr);
   ierr = DMDestroy(&dmFace);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ReconstructionSetUp"
+PetscErrorCode ReconstructionSetUp(DM dm, User user)
+{
+  DM             dmFace, dmCell;
+  PetscSection   sectionGrad;
+  PetscScalar   *fgeom, *cgeom;
+  PetscInt       cStart, cEnd, c;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = VecGetDM(user->facegeom, &dmFace);CHKERRQ(ierr);
+  ierr = VecGetDM(user->cellgeom, &dmCell);CHKERRQ(ierr);
+  ierr = VecGetArray(user->facegeom, &fgeom);CHKERRQ(ierr);
+  ierr = VecGetArray(user->cellgeom, &cgeom);CHKERRQ(ierr);
+  ierr = BuildLeastSquares(dm, user->cEndInterior, dmFace, fgeom, dmCell, cgeom);CHKERRQ(ierr);
+  ierr = DMClone(dm, &user->dmGrad);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &sectionGrad);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(sectionGrad, cStart, cEnd);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    ierr = PetscSectionSetDof(sectionGrad, c, user->model->physics->dof*DIM);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(sectionGrad);CHKERRQ(ierr);
+  ierr = DMSetDefaultSection(user->dmGrad, sectionGrad);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&sectionGrad);CHKERRQ(ierr);
+  ierr = VecRestoreArray(user->facegeom, &fgeom);CHKERRQ(ierr);
+  ierr = VecRestoreArray(user->cellgeom, &cgeom);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1414,6 +1432,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, const char *filename, PetscInt overlap,
     ierr = DMPlexConstructGhostCells(dm, NULL, &user->numGhostCells, &gdm);CHKERRQ(ierr);
     ierr = DMDestroy(&dm);CHKERRQ(ierr);
     dm   = gdm;
+    ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
   }
   if (splitFaces) {ierr = ConstructCellBoundary(dm, user);CHKERRQ(ierr);}
   ierr = SplitFaces(&dm, "split faces", user);CHKERRQ(ierr);
@@ -2219,6 +2238,7 @@ int main(int argc, char **argv)
     if (user->reconstruct) {
       ierr = PetscOptionsFList("-ufv_limit","Limiter to apply to reconstructed solution","",LimitList,limitname,limitname,sizeof limitname,NULL);CHKERRQ(ierr);
       ierr = PetscFunctionListFind(LimitList,limitname,&user->Limit);CHKERRQ(ierr);
+      ierr = ReconstructionSetUp(dm, user);CHKERRQ(ierr);
     }
     ierr = ModelFunctionalSetFromOptions(mod);CHKERRQ(ierr);
   }
