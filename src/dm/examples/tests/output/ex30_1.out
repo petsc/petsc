@@ -1,4 +1,4 @@
-Mat Object: 1 MPI processes
+Mat Object: 2 MPI processes
   type: mpibaij
 row 0: (0, 10)  (1, 0)  (2, 0.05)  (3, 0.5)  (8, -0.05)  (9, -0.5) 
 row 1: (0, 0)  (1, 10)  (2, 0.5)  (3, 0.05)  (8, -0.5)  (9, -0.05) 

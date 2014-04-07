@@ -600,6 +600,7 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat,PetscViewer);
 extern PetscErrorCode MatSetValues_MPIBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 #include <petscdraw.h>
 #undef __FUNCT__
@@ -609,7 +610,7 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
   Mat_MPISBAIJ      *baij = (Mat_MPISBAIJ*)mat->data;
   PetscErrorCode    ierr;
   PetscInt          bs   = mat->rmap->bs;
-  PetscMPIInt       size = baij->size,rank = baij->rank;
+  PetscMPIInt       rank = baij->rank;
   PetscBool         iascii,isdraw;
   PetscViewer       sviewer;
   PetscViewerFormat format;
@@ -649,10 +650,7 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
     ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
   }
 
-  if (size == 1) {
-    ierr = PetscObjectSetName((PetscObject)baij->A,((PetscObject)mat)->name);CHKERRQ(ierr);
-    ierr = MatView(baij->A,viewer);CHKERRQ(ierr);
-  } else {
+  {
     /* assemble the entire matrix onto first processor. */
     Mat          A;
     Mat_SeqSBAIJ *Aloc;
@@ -714,10 +712,7 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
     */
     ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
     if (!rank) {
-      ierr = PetscObjectSetName((PetscObject)((Mat_MPISBAIJ*)(A->data))->A,((PetscObject)mat)->name);CHKERRQ(ierr);
-      /* Set the type name to MATMPISBAIJ so that the correct type can be printed out by PetscObjectPrintClassNamePrefixType() in MatView_SeqSBAIJ_ASCII()*/
-      ierr = PetscStrcpy(((PetscObject)((Mat_MPISBAIJ*)(A->data))->A)->type_name,MATMPISBAIJ);CHKERRQ(ierr);
-      ierr = MatView(((Mat_MPISBAIJ*)(A->data))->A,sviewer);CHKERRQ(ierr);
+        ierr = MatView_SeqSBAIJ_ASCII(((Mat_MPISBAIJ*)(A->data))->A,sviewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
     ierr = MatDestroy(&A);CHKERRQ(ierr);

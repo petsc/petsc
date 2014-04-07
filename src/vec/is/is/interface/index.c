@@ -755,6 +755,7 @@ PetscErrorCode  ISView(IS is,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(is,1,viewer,2);
 
+  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)is,viewer);CHKERRQ(ierr);
   ierr = (*is->ops->view)(is,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

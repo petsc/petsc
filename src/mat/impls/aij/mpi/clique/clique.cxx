@@ -125,13 +125,12 @@ PetscErrorCode MatView_Clique(Mat A,PetscViewer viewer)
     } else if (format == PETSC_VIEWER_DEFAULT) { /* matrix A is factored matrix, remove this block */
       Mat Aaij;
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
-      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
       ierr = PetscPrintf(PetscObjectComm((PetscObject)viewer),"Clique matrix\n");CHKERRQ(ierr);
       ierr = MatComputeExplicitOperator(A,&Aaij);CHKERRQ(ierr);
       ierr = MatView(Aaij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = MatDestroy(&Aaij);CHKERRQ(ierr);
-    } else SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Format");
+    }
   }
   PetscFunctionReturn(0);
 }

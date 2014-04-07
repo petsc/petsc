@@ -12,9 +12,6 @@ static char help[] = "Used for Solving a linear system where the matrix has all 
 #include <petscdmda.h>
 #include <petscksp.h>
 
-extern PetscErrorCode ComputeMatrix(DM,Mat);
-extern PetscErrorCode ComputeRHS(DM,Vec);
-
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)

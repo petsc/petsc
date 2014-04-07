@@ -647,6 +647,7 @@ static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode MatView_SeqDense(Mat,PetscViewer);
 #include <petscdraw.h>
 #undef __FUNCT__
 #define __FUNCT__ "MatView_MPIDense_ASCIIorDraworSocket"
@@ -654,7 +655,7 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
 {
   Mat_MPIDense      *mdn = (Mat_MPIDense*)mat->data;
   PetscErrorCode    ierr;
-  PetscMPIInt       size = mdn->size,rank = mdn->rank;
+  PetscMPIInt       rank = mdn->rank;
   PetscViewerType   vtype;
   PetscBool         iascii,isdraw;
   PetscViewer       sviewer;
@@ -687,9 +688,7 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
     if (isnull) PetscFunctionReturn(0);
   }
 
-  if (size == 1) {
-    ierr = MatView(mdn->A,viewer);CHKERRQ(ierr);
-  } else {
+  {
     /* assemble the entire matrix onto first processor. */
     Mat         A;
     PetscInt    M = mat->rmap->N,N = mat->cmap->N,m,row,i,nz;
@@ -724,10 +723,7 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
     if (!rank) {
-      ierr = PetscObjectSetName((PetscObject)((Mat_MPIDense*)(A->data))->A,((PetscObject)mat)->name);CHKERRQ(ierr);
-      /* Set the type name to MATMPIDense so that the correct type can be printed out by PetscObjectPrintClassNamePrefixType() in MatView_SeqDense_ASCII()*/
-      ierr = PetscStrcpy(((PetscObject)((Mat_MPIDense*)(A->data))->A)->type_name,MATMPIDENSE);CHKERRQ(ierr);
-      ierr = MatView(((Mat_MPIDense*)(A->data))->A,sviewer);CHKERRQ(ierr);
+        ierr = MatView_SeqDense(((Mat_MPIDense*)(A->data))->A,sviewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);

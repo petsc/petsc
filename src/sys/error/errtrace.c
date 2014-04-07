@@ -232,7 +232,7 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
     PetscStrncmp(fun,"unknown",7,&isunknown);
     if (ismain || isunknown) {
       PetscErrorPrintfHilight();
-      (*PetscErrorPrintf)("----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------\033[0;39m\033[0;49m\n");
+      (*PetscErrorPrintf)("----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------\n");
       PetscErrorPrintfNormal();
     }
   } else {

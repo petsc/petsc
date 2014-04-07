@@ -31,7 +31,7 @@ Mat Object: 2 MPI processes
     Now the indices for all remote receives (in order by process received from)
     [1] 0 
     [1] 2 
-Mat Object: 1 MPI processes
+Mat Object: 2 MPI processes
   type: mpibaij
 row 0: (0, 2)  (1, 4)  (2, 6)  (3, 8)  (4, 10)  (5, 12)  (6, 14)  (7, 16) 
 row 1: (0, 18)  (1, 20)  (2, 22)  (3, 24)  (4, 26)  (5, 28)  (6, 30)  (7, 32) 
@@ -66,7 +66,7 @@ Mat Object: 2 MPI processes
     [1] 0 
     [1] 2 
     [1] Number receives = 0; Number from self = 0
-Mat Object: 1 MPI processes
+Mat Object: 2 MPI processes
   type: mpisbaij
 row 0: (0, 2)  (1, 4)  (2, 6)  (3, 8)  (4, 10)  (5, 12)  (6, 14)  (7, 16) 
 row 1: (0, 18)  (1, 20)  (2, 22)  (3, 24)  (4, 26)  (5, 28)  (6, 30)  (7, 32) 
@@ -109,7 +109,7 @@ Mat Object: 2 MPI processes
     Now the indices for all remote receives (in order by process received from)
     [1] 0 
     [1] 1 
-Mat Object: 1 MPI processes
+Mat Object: 2 MPI processes
   type: mpibaij
 row 0: (0, 2)  (1, 4)  (2, 6)  (3, 8) 
 row 1: (0, 10)  (1, 12)  (2, 14)  (3, 16) 
@@ -140,7 +140,7 @@ Mat Object: 2 MPI processes
     [1] 0 
     [1] 1 
     [1] Number receives = 0; Number from self = 0
-Mat Object: 1 MPI processes
+Mat Object: 2 MPI processes
   type: mpisbaij
 row 0: (0, 2)  (1, 4)  (2, 6)  (3, 8) 
 row 1: (1, 12)  (2, 14)  (3, 16) 

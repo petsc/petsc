@@ -984,7 +984,6 @@ static PetscErrorCode THISolveStatistics(THI thi,SNES snes,PetscInt coarsened,co
     ierr = PetscPrintf(comm,"Global eta range   %g to %g converged range %g to %g\n",(double)thi->eta.min,(double)thi->eta.max,(double)thi->eta.cmin,(double)thi->eta.cmax);CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"Global beta2 range %g to %g converged range %g to %g\n",(double)thi->beta2.min,(double)thi->beta2.max,(double)thi->beta2.cmin,(double)thi->beta2.cmax);CHKERRQ(ierr);
   }
-  ierr = PetscPrintf(comm,"\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
