@@ -38,7 +38,7 @@ PthreadVersion: PthreadVersion.o  chkopts
 stream:  MPIVersion
 	@if [ "${NPMAX}foo" = "foo" ]; then echo "---------"; echo " Run with make streams NPMAX=<integer number of MPI processes to use>"; exit 1 ; fi
 	-@printf "" > scaling.log
-	-@for (( i=1; i<=${NPMAX}; i++ )) do \
+	-@i=0; while [ $${i} -lt ${NPMAX} ]; do i=`expr $${i} + 1`; \
 	  ${MPIEXEC} -n $${i} ./MPIVersion | tee -a scaling.log; \
         done
 	-@echo "------------------------------------------------"
