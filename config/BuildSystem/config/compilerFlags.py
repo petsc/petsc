@@ -87,7 +87,7 @@ class Configure(config.base.Configure):
       try:
         self.rejected[language] = []
         for bopt in bopts:
-g          if not bopt == '' and self.getOptionalFlagsName(language) in self.framework.argDB:
+          if not bopt == '' and self.getOptionalFlagsName(language) in self.framework.argDB:
             # treat user supplied options as single option - as it could include options separated by spaces '-tp k8-64'
             flags = [self.framework.argDB[self.getOptionalFlagsName(language)]]
           elif bopt == '' and self.getCompilerFlagsName(language) in self.framework.argDB:
