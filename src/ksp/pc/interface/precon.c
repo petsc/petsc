@@ -861,7 +861,7 @@ PetscErrorCode  PCSetUp(PC pc)
 {
   PetscErrorCode   ierr;
   const char       *def;
-  PetscObjectState matstate;
+  PetscObjectState matstate, matnonzerostate;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -873,6 +873,7 @@ PetscErrorCode  PCSetUp(PC pc)
   }
 
   ierr = PetscObjectStateGet((PetscObject)pc->pmat,&matstate);CHKERRQ(ierr);
+  ierr = MatGetNonzeroState(pc->pmat,&matnonzerostate);CHKERRQ(ierr);
   if (!pc->setupcalled) {
     ierr            = PetscInfo(pc,"Setting up PC for first time");CHKERRQ(ierr);
     pc->flag        = DIFFERENT_NONZERO_PATTERN;
@@ -880,18 +881,16 @@ PetscErrorCode  PCSetUp(PC pc)
     ierr = PetscInfo(pc,"Leaving PC with identical preconditioner since operator is unchanged\n");CHKERRQ(ierr);
     PetscFunctionReturn(0);
   } else {
-    PetscObjectState matnonzerostate;
-    ierr = MatGetNonzeroState(pc->pmat,&matnonzerostate);CHKERRQ(ierr);
     if (matnonzerostate > pc->matnonzerostate) {
        ierr = PetscInfo(pc,"Setting up PC with different nonzero pattern\n");CHKERRQ(ierr);
        pc->flag            = DIFFERENT_NONZERO_PATTERN;
-       pc->matnonzerostate = matnonzerostate;
     } else {
       ierr = PetscInfo(pc,"Setting up PC with same nonzero pattern\n");CHKERRQ(ierr);
       pc->flag            = SAME_NONZERO_PATTERN;
     }
   }
-  pc->matstate = matstate;
+  pc->matstate        = matstate;
+  pc->matnonzerostate = matnonzerostate;
 
   if (!((PetscObject)pc)->type_name) {
     ierr = PCGetDefaultType_Private(pc,&def);CHKERRQ(ierr);
