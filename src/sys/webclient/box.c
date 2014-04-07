@@ -1,6 +1,7 @@
 
 #include <petscwebclient.h>
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma gcc diagnostic ignored "-Wdeprecated-declarations"
 
 /*
    These variables identify the code as a PETSc application to Box.

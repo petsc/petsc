@@ -1,5 +1,6 @@
 #include <petscwebclient.h>
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma gcc diagnostic ignored "-Wdeprecated-declarations"
 
 /*
     Encodes and decodes from MIME Base64
