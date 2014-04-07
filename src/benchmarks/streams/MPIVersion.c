@@ -109,6 +109,9 @@ int main(int argc,char **args)
   MPI_Comm_size(MPI_COMM_WORLD,&size);
   if (!rank) printf("Number of MPI processes %d\n",size);
 
+  for (j=0; j<MPI_MAX_PROCESSOR_NAME; j++) {
+    hostname[j] = 0;
+  }
   MPI_Get_processor_name(hostname,&resultlen);
   if (!rank) {
     printf("Process %d %s\n",rank,hostname);
