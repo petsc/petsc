@@ -170,6 +170,8 @@ generate_section()
     # Grep warnings
     filtered_warnings=`grep "[Ww]arning[: ]" $f \
         | grep -v 'unrecognized #pragma' \
+        | grep -v "warning: ‘SSL" \
+        | grep -v "warning: ‘BIO_" \
         | grep -v "warning: treating 'c' input as 'c++' when in C++ mode" \
         | grep -v 'warning: statement not reached' \
         | grep -v 'warning: loop not entered at top' \
