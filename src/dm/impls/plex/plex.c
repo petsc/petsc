@@ -4207,7 +4207,7 @@ PetscErrorCode DMPlexLocalizeCoordinate_Internal(DM dm, PetscInt dim, const Pets
   } else {
     for (d = 0; d < dim; ++d) {
       if (PetscAbsScalar(anchor[d] - in[d]) > dm->maxCell[d]) {
-        out[d] = anchor[d] > in[d] ? dm->L[d] + in[d] : in[d] - dm->L[d];
+        out[d] = PetscRealPart(anchor[d]) > PetscRealPart(in[d]) ? dm->L[d] + in[d] : in[d] - dm->L[d];
       } else {
         out[d] = in[d];
       }
@@ -4228,7 +4228,7 @@ PetscErrorCode DMPlexLocalizeAddCoordinate_Internal(DM dm, PetscInt dim, const P
   } else {
     for (d = 0; d < dim; ++d) {
       if (PetscAbsScalar(anchor[d] - in[d]) > dm->maxCell[d]) {
-        out[d] += anchor[d] > in[d] ? dm->L[d] + in[d] : in[d] - dm->L[d];
+        out[d] += PetscRealPart(anchor[d]) > PetscRealPart(in[d]) ? dm->L[d] + in[d] : in[d] - dm->L[d];
       } else {
         out[d] += in[d];
       }
