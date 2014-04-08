@@ -246,7 +246,7 @@ void InvertTensor(PetscScalar *t, PetscScalar *ti,PetscReal *dett)
     const PetscScalar F = -(a*h - b*g);
     const PetscScalar G = (b*f - c*e);
     const PetscScalar H = -(a*f - c*d);
-    const PetscScalar I = (a*e - b*d);
+    const PetscScalar II = (a*e - b*d);
     ti[0] = di*A;
     ti[1] = di*D;
     ti[2] = di*G;
@@ -255,7 +255,7 @@ void InvertTensor(PetscScalar *t, PetscScalar *ti,PetscReal *dett)
     ti[5] = di*H;
     ti[6] = di*C;
     ti[7] = di*F;
-    ti[8] = di*I;
+    ti[8] = di*II;
   }
   if (dett) *dett = det;
 }

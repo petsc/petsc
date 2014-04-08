@@ -94,10 +94,10 @@ PetscErrorCode CellPropertiesDestroy(CellProperties *C)
 
 #undef __FUNCT__
 #define __FUNCT__ "CellPropertiesGetCell"
-PetscErrorCode CellPropertiesGetCell(CellProperties C,PetscInt I,PetscInt J,PetscInt K,GaussPointCoefficients **G)
+PetscErrorCode CellPropertiesGetCell(CellProperties C,PetscInt II,PetscInt J,PetscInt K,GaussPointCoefficients **G)
 {
   PetscFunctionBeginUser;
-  *G = &C->gpc[(I-C->sex) + (J-C->sey)*C->mx + (K-C->sez)*C->mx*C->my];
+  *G = &C->gpc[(II-C->sex) + (J-C->sey)*C->mx + (K-C->sez)*C->mx*C->my];
   PetscFunctionReturn(0);
 }
 
@@ -481,32 +481,32 @@ static PetscInt ASS_MAP_wIwDI_uJuDJ(PetscInt wi,PetscInt wd,PetscInt w_NPE,Petsc
 #define __FUNCT__ "DMDASetValuesLocalStencil3D_ADD_VALUES"
 static PetscErrorCode DMDASetValuesLocalStencil3D_ADD_VALUES(StokesDOF ***fields_F,MatStencil u_eqn[],MatStencil p_eqn[],PetscScalar Fe_u[],PetscScalar Fe_p[])
 {
-  PetscInt n,I,J,K;
+  PetscInt n,II,J,K;
 
   PetscFunctionBeginUser;
   for (n = 0; n<NODES_PER_EL; n++) {
-    I = u_eqn[NSD*n].i;
+    II = u_eqn[NSD*n].i;
     J = u_eqn[NSD*n].j;
     K = u_eqn[NSD*n].k;
 
-    fields_F[K][J][I].u_dof = fields_F[K][J][I].u_dof+Fe_u[NSD*n];
+    fields_F[K][J][II].u_dof = fields_F[K][J][II].u_dof+Fe_u[NSD*n];
 
-    I = u_eqn[NSD*n+1].i;
+    II = u_eqn[NSD*n+1].i;
     J = u_eqn[NSD*n+1].j;
     K = u_eqn[NSD*n+1].k;
 
-    fields_F[K][J][I].v_dof = fields_F[K][J][I].v_dof+Fe_u[NSD*n+1];
+    fields_F[K][J][II].v_dof = fields_F[K][J][II].v_dof+Fe_u[NSD*n+1];
 
-    I = u_eqn[NSD*n+2].i;
+    II = u_eqn[NSD*n+2].i;
     J = u_eqn[NSD*n+2].j;
     K = u_eqn[NSD*n+2].k;
-    fields_F[K][J][I].w_dof = fields_F[K][J][I].w_dof+Fe_u[NSD*n+2];
+    fields_F[K][J][II].w_dof = fields_F[K][J][II].w_dof+Fe_u[NSD*n+2];
 
-    I = p_eqn[n].i;
+    II = p_eqn[n].i;
     J = p_eqn[n].j;
     K = p_eqn[n].k;
 
-    fields_F[K][J][I].p_dof = fields_F[K][J][I].p_dof+Fe_p[n];
+    fields_F[K][J][II].p_dof = fields_F[K][J][II].p_dof+Fe_p[n];
 
   }
   PetscFunctionReturn(0);
