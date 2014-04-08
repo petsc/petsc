@@ -338,7 +338,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
         x[row] = 0.0;
         continue;
       }
-      x[row] = temp1*PetscSqrtScalar(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp));
+      x[row] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp));
     }
   }
 

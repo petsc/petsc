@@ -45,18 +45,19 @@ def process(fileoutput = 1):
     for i in range(0,len(lasthosts)):
       lasthosts[i] = re.sub(r"Process [0-9]*", "", lasthosts[i])
     ulasthosts = list(set(lasthosts))
-    print "It appears you have "+str(len(ulasthosts))+" nodes"
-    ff.write("It appears you have "+str(len(ulasthosts))+" nodes\n")
+    print "It appears you have "+str(len(ulasthosts))+" node(s)"
+    ff.write("It appears you have "+str(len(ulasthosts))+" node(s)\n")
 
-    testhosts = []
-    for i in range(0,len(lasthosts)):
-      testhosts.append(ulasthosts[i % len(ulasthosts)])
-    if testhosts == lasthosts:
-      print "   distributed in a round robin order"
-      ff.write("   distributed in a round robin order\n")
-    else:
-      print "   NOT distributed in a round robin order"
-      ff.write("   NOT distributed in a round robin order\n")
+    if len(ulasthosts) < 1:
+      testhosts = []
+      for i in range(0,len(lasthosts)):
+        testhosts.append(ulasthosts[i % len(ulasthosts)])
+      if testhosts == lasthosts:
+        print "   distributed in a round robin order"
+        ff.write("   distributed in a round robin order\n")
+      else:
+        print "   NOT distributed in a round robin order"
+        ff.write("   NOT distributed in a round robin order\n")
 
   try:
     import matplotlib
