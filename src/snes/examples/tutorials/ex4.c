@@ -250,7 +250,7 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "constantResidual"
-PetscErrorCode constantResidual(PetscReal lambda, int i, int j, PetscReal hx, PetscReal hy, PetscScalar r[])
+PetscErrorCode constantResidual(PetscReal lambda, PetscInt i, PetscInt j, PetscReal hx, PetscReal hy, PetscScalar r[])
 {
   PetscScalar rLocal[4] = {0.0, 0.0, 0.0};
   PetscScalar phi[4]    = {0.0, 0.0, 0.0, 0.0};
@@ -374,7 +374,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   hxhy   = hx*hy;
 
   /* Zero the vector */
-  ierr = PetscMemzero((void*) &(f[info->xs][info->ys]), info->xm*info->ym*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemzero((void*) &(f[info->ys][info->xs]), info->xm*info->ym*sizeof(PetscScalar));CHKERRQ(ierr);
   /* Compute function over the locally owned part of the grid. For each
      vertex (i,j), we consider the element below:
 
