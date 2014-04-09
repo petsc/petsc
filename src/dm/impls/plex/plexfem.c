@@ -391,13 +391,14 @@ PetscErrorCode DMPlexInsertBoundaryValuesFVM(DM dm, PetscReal time, Vec locX)
   DMLabel            label;
   const PetscScalar *facegeom;
   PetscScalar       *x;
-  PetscInt           numBd, b;
+  PetscInt           numBd, b, fStart, fEnd;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   /* TODO Pull this geometry calculation into the library */
   ierr = PetscObjectQuery((PetscObject) dm, "FaceGeometry", (PetscObject *) &faceGeometry);CHKERRQ(ierr);
   ierr = DMPlexGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
   ierr = VecGetDM(faceGeometry, &dmFace);CHKERRQ(ierr);
   ierr = VecGetArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
@@ -424,6 +425,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesFVM(DM dm, PetscReal time, Vec locX)
         PetscScalar       *xG;
         const FaceGeom    *fg;
 
+        if ((face < fStart) || (face >= fEnd)) continue; /* Refinement adds non-faces to labels */
         ierr = DMPlexPointLocalRead(dmFace, face, facegeom, &fg);CHKERRQ(ierr);
         ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
         ierr = DMPlexPointLocalRead(dm, cells[0], x, &xI);CHKERRQ(ierr);

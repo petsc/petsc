@@ -6741,6 +6741,17 @@ PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexSetRefinementUniform"
+/*@
+  DMPlexSetRefinementUniform - Set the flag for uniform refinement
+
+  Input Parameters:
++ dm - The DM
+- refinementUniform - The flag for uniform refinement
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexGetRefinementUniform(), DMPlexGetRefinementLimit(), DMPlexSetRefinementLimit()
+@*/
 PetscErrorCode DMPlexSetRefinementUniform(DM dm, PetscBool refinementUniform)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -6753,6 +6764,19 @@ PetscErrorCode DMPlexSetRefinementUniform(DM dm, PetscBool refinementUniform)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetRefinementUniform"
+/*@
+  DMPlexGetRefinementUniform - Retrieve the flag for uniform refinement
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. refinementUniform - The flag for uniform refinement
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexSetRefinementUniform(), DMPlexGetRefinementLimit(), DMPlexSetRefinementLimit()
+@*/
 PetscErrorCode DMPlexGetRefinementUniform(DM dm, PetscBool *refinementUniform)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -6766,6 +6790,17 @@ PetscErrorCode DMPlexGetRefinementUniform(DM dm, PetscBool *refinementUniform)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexSetRefinementLimit"
+/*@
+  DMPlexSetRefinementLimit - Set the maximum cell volume for refinement
+
+  Input Parameters:
++ dm - The DM
+- refinementLimit - The maximum cell volume in the refined mesh
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexGetRefinementLimit(), DMPlexGetRefinementUniform(), DMPlexSetRefinementUniform()
+@*/
 PetscErrorCode DMPlexSetRefinementLimit(DM dm, PetscReal refinementLimit)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -6778,6 +6813,19 @@ PetscErrorCode DMPlexSetRefinementLimit(DM dm, PetscReal refinementLimit)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetRefinementLimit"
+/*@
+  DMPlexGetRefinementLimit - Retrieve the maximum cell volume for refinement
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. refinementLimit - The maximum cell volume in the refined mesh
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexSetRefinementLimit(), DMPlexGetRefinementUniform(), DMPlexSetRefinementUniform()
+@*/
 PetscErrorCode DMPlexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
