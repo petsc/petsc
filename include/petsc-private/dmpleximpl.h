@@ -98,6 +98,14 @@ PETSC_EXTERN PetscErrorCode VecView_Plex_Local(Vec,PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_Plex(Vec,PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Plex_Local(Vec,PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Plex(Vec,PetscViewer);
+PETSC_EXTERN PetscErrorCode DMPlexGetFieldType_Internal(DM, PetscSection, PetscInt, PetscInt *, PetscInt *, PetscViewerVTKFieldType *);
+#if defined(PETSC_HAVE_HDF5)
+PETSC_EXTERN PetscErrorCode VecView_Plex_Local_HDF5(Vec, PetscViewer);
+PETSC_EXTERN PetscErrorCode VecView_Plex_HDF5(Vec, PetscViewer);
+PETSC_EXTERN PetscErrorCode VecLoad_Plex_HDF5(Vec, PetscViewer);
+PETSC_EXTERN PetscErrorCode DMPlexView_HDF5(DM, PetscViewer);
+PETSC_EXTERN PetscErrorCode DMPlexLoad_HDF5(DM, PetscViewer);
+#endif
 
 PETSC_EXTERN PetscErrorCode DMPlexGetAdjacency_Internal(DM,PetscInt,PetscBool,PetscBool,PetscInt*,PetscInt*[]);
 PETSC_EXTERN PetscErrorCode DMPlexGetFaces_Internal(DM,PetscInt,PetscInt,PetscInt*,PetscInt*,const PetscInt*[]);

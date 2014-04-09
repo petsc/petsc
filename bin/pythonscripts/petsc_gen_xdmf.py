@@ -21,27 +21,27 @@ class Xdmf:
     fp.write('\n<Xdmf>\n  <Domain Name="domain">\n')
     return
 
-  def writeCells(self, fp, numCells, numCorners):
+  def writeCells(self, fp, topologyPath, numCells, numCorners):
     fp.write('''\
     <DataItem Name="cells"
 	      ItemType="Uniform"
 	      Format="HDF"
 	      NumberType="Float" Precision="8"
 	      Dimensions="%d %d">
-      &HeavyData;:/topology/cells
+      &HeavyData;:/%s/cells
     </DataItem>
-''' % (numCells, numCorners))
+''' % (numCells, numCorners, topologyPath))
     return
 
-  def writeVertices(self, fp, numVertices, spaceDim):
+  def writeVertices(self, fp, geometryPath, numVertices, spaceDim):
     fp.write('''\
     <DataItem Name="vertices"
 	      Format="HDF"
 	      Dimensions="%d %d">
-      &HeavyData;:/geometry/vertices
+      &HeavyData;:/%s/vertices
     </DataItem>
     <!-- ============================================================ -->
-''' % (numVertices, spaceDim))
+''' % (numVertices, spaceDim, geometryPath))
     return
 
   def writeTimeGridHeader(self, fp, time):
@@ -164,12 +164,12 @@ class Xdmf:
     fp.write('  </Domain>\n</Xdmf>\n')
     return
 
-  def write(self, hdfFilename, numCells, numCorners, cellDim, numVertices, spaceDim, time, vfields, cfields):
+  def write(self, hdfFilename, topologyPath, numCells, numCorners, cellDim, geometryPath, numVertices, spaceDim, time, vfields, cfields):
     useTime = not (len(time) < 2 and time[0] == -1)
     with file(self.filename, 'w') as fp:
       self.writeHeader(fp, hdfFilename)
-      self.writeCells(fp, numCells, numCorners)
-      self.writeVertices(fp, numVertices, spaceDim)
+      self.writeCells(fp, topologyPath, numCells, numCorners)
+      self.writeVertices(fp, geometryPath, numVertices, spaceDim)
       if useTime: self.writeTimeGridHeader(fp, time)
       for t in range(len(time)):
         self.writeSpaceGridHeader(fp, numCells, numCorners, cellDim, spaceDim)
@@ -185,13 +185,25 @@ def generateXdmf(hdfFilename, xdmfFilename = None):
     xdmfFilename = os.path.splitext(hdfFilename)[0] + '.xmf'
   # Read mesh
   h5          = h5py.File(hdfFilename, 'r')
-  vertices    = h5['geometry']['vertices']
+  if 'viz' in h5 and 'geometry' in h5['viz']:
+    geomPath  = 'viz/geometry'
+    geom      = h5['viz']['geometry']
+  else:
+    geomPath  = 'geometry'
+    geom      = h5['geometry']
+  if 'viz' in h5 and 'topology' in h5['viz']:
+    topoPath  = 'viz/topology'
+    topo      = h5['viz']['topology']
+  else:
+    topoPath  = 'topology'
+    topo      = h5['topology']
+  vertices    = geom['vertices']
   numVertices = vertices.shape[0]
   spaceDim    = vertices.shape[1]
-  cells       = h5['topology']['cells']
+  cells       = topo['cells']
   numCells    = cells.shape[0]
   numCorners  = cells.shape[1]
-  cellDim     = h5['topology']['cells'].attrs['cell_dim']
+  cellDim     = topo['cells'].attrs['cell_dim']
   time        = np.array(h5['time']).flatten()
   vfields     = []
   cfields     = []
@@ -199,7 +211,7 @@ def generateXdmf(hdfFilename, xdmfFilename = None):
   if 'cell_fields' in h5: cfields = h5['cell_fields'].items()
 
   # Write Xdmf
-  Xdmf(xdmfFilename).write(hdfFilename, numCells, numCorners, cellDim, numVertices, spaceDim, time, vfields, cfields)
+  Xdmf(xdmfFilename).write(hdfFilename, topoPath, numCells, numCorners, cellDim, geomPath, numVertices, spaceDim, time, vfields, cfields)
   h5.close()
   return
 
