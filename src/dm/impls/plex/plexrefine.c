@@ -5396,11 +5396,9 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
         ierr = PetscSectionGetOffset(coordSection, cone[v], &off[v]);CHKERRQ(ierr);
       }
       ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d) {
-        coordsNew[offnew+d] = 0.0;
-        for (v = 0; v < coneSize; ++v) coordsNew[offnew+d] += coords[off[v]+d];
-        coordsNew[offnew+d] /= coneSize;
-      }
+      for (d = 0; d < dim; ++d) coordsNew[offnew+d] = 0.0;
+      for (v = 0; v < coneSize; ++v) {ierr = DMPlexLocalizeAddCoordinate_Internal(dm, dim, &coords[off[0]], &coords[off[v]], &coordsNew[offnew]);CHKERRQ(ierr);}
+      for (d = 0; d < dim; ++d) coordsNew[offnew+d] /= coneSize;
       ierr = DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
     }
   case 2: /* Hex 2D */
@@ -5420,11 +5418,9 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
         ierr = PetscSectionGetOffset(coordSection, cone[v], &off[v]);CHKERRQ(ierr);
       }
       ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d) {
-        coordsNew[offnew+d] = 0.0;
-        for (v = 0; v < coneSize; ++v) coordsNew[offnew+d] += coords[off[v]+d];
-        coordsNew[offnew+d] /= coneSize;
-      }
+      for (d = 0; d < dim; ++d) coordsNew[offnew+d] = 0.0;
+      for (v = 0; v < coneSize; ++v) {ierr = DMPlexLocalizeAddCoordinate_Internal(dm, dim, &coords[off[0]], &coords[off[v]], &coordsNew[offnew]);CHKERRQ(ierr);}
+      for (d = 0; d < dim; ++d) coordsNew[offnew+d] /= coneSize;
       ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
     }
   case 1: /* Simplicial 2D */
@@ -5443,8 +5439,9 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
       ierr = PetscSectionGetOffset(coordSection, cone[0], &offA);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(coordSection, cone[1], &offB);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
+      ierr = DMPlexLocalizeCoordinate_Internal(dm, dim, &coords[offA], &coords[offB], &coordsNew[offnew]);CHKERRQ(ierr);
       for (d = 0; d < dim; ++d) {
-        coordsNew[offnew+d] = 0.5*(coords[offA+d] + coords[offB+d]);
+        coordsNew[offnew+d] = 0.5*(coords[offA+d] + coordsNew[offnew+d]);
       }
     }
     /* Old vertices have the same coordinates */
@@ -5467,6 +5464,11 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   ierr = DMSetCoordinatesLocal(rdm, coordinatesNew);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinatesNew);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&coordSectionNew);CHKERRQ(ierr);
+  if (dm->maxCell) {
+    const PetscReal *maxCell, *L;
+    ierr = DMGetPeriodicity(dm,  &maxCell, &L);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(rdm,  maxCell,  L);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -6739,6 +6741,17 @@ PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexSetRefinementUniform"
+/*@
+  DMPlexSetRefinementUniform - Set the flag for uniform refinement
+
+  Input Parameters:
++ dm - The DM
+- refinementUniform - The flag for uniform refinement
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexGetRefinementUniform(), DMPlexGetRefinementLimit(), DMPlexSetRefinementLimit()
+@*/
 PetscErrorCode DMPlexSetRefinementUniform(DM dm, PetscBool refinementUniform)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -6751,6 +6764,19 @@ PetscErrorCode DMPlexSetRefinementUniform(DM dm, PetscBool refinementUniform)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetRefinementUniform"
+/*@
+  DMPlexGetRefinementUniform - Retrieve the flag for uniform refinement
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. refinementUniform - The flag for uniform refinement
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexSetRefinementUniform(), DMPlexGetRefinementLimit(), DMPlexSetRefinementLimit()
+@*/
 PetscErrorCode DMPlexGetRefinementUniform(DM dm, PetscBool *refinementUniform)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -6764,6 +6790,17 @@ PetscErrorCode DMPlexGetRefinementUniform(DM dm, PetscBool *refinementUniform)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexSetRefinementLimit"
+/*@
+  DMPlexSetRefinementLimit - Set the maximum cell volume for refinement
+
+  Input Parameters:
++ dm - The DM
+- refinementLimit - The maximum cell volume in the refined mesh
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexGetRefinementLimit(), DMPlexGetRefinementUniform(), DMPlexSetRefinementUniform()
+@*/
 PetscErrorCode DMPlexSetRefinementLimit(DM dm, PetscReal refinementLimit)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -6776,6 +6813,19 @@ PetscErrorCode DMPlexSetRefinementLimit(DM dm, PetscReal refinementLimit)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetRefinementLimit"
+/*@
+  DMPlexGetRefinementLimit - Retrieve the maximum cell volume for refinement
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. refinementLimit - The maximum cell volume in the refined mesh
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexSetRefinementLimit(), DMPlexGetRefinementUniform(), DMPlexSetRefinementUniform()
+@*/
 PetscErrorCode DMPlexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;

@@ -307,7 +307,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexInterpolate"
-/*@
+/*@C
   DMPlexInterpolate - Take in a cell-vertex mesh and return one with all intermediate faces, edges, etc.
 
   Collective on DM
