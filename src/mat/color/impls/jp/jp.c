@@ -7,6 +7,7 @@ typedef struct {
   PetscSF    sf;
   PetscReal *dwts,*owts;
   PetscInt  *dmask,*omask,*cmask;
+  PetscBool local;
 } MC_JP;
 
 #undef __FUNCT__
@@ -17,6 +18,20 @@ PetscErrorCode MatColoringDestroy_JP(MatColoring mc)
 
   PetscFunctionBegin;
   ierr = PetscFree(mc->data);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatColoringSetFromOptions_JP"
+PetscErrorCode MatColoringSetFromOptions_JP(MatColoring mc)
+{
+  PetscErrorCode ierr;
+  MC_JP          *jp = (MC_JP*)mc->data;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead("JP options");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_coloring_jp_local","Do an initial coloring of local columns","",jp->local,&jp->local,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -404,7 +419,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscol
 {
   PetscErrorCode  ierr;
   MC_JP          *jp = (MC_JP*)mc->data;
-  PetscInt        i,nadded,nadded_total,nadded_total_old,ntotal,n;
+  PetscInt        i,nadded,nadded_total,nadded_total_old,ntotal,n,round;
   PetscInt        maxcolor_local=0,maxcolor_global,*lperm;
   PetscMPIInt     rank;
   PetscReal       *weights,*maxweights;
@@ -426,15 +441,19 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscol
   nadded_total=0;
   nadded_total_old=0;
   /* compute purely local vertices */
-  ierr = MCJPInitialLocalColor_Private(mc,lperm,color);CHKERRQ(ierr);
-  for (i=0;i<n;i++) {
-    if (color[i] < IS_COLORING_MAX) {
-      nadded++;
-      weights[i] = -1;
-      if (color[i] > maxcolor_local) maxcolor_local = color[i];
+  if (jp->local) {
+    ierr = MCJPInitialLocalColor_Private(mc,lperm,color);CHKERRQ(ierr);
+    for (i=0;i<n;i++) {
+      if (color[i] < IS_COLORING_MAX) {
+        nadded++;
+        weights[i] = -1;
+        if (color[i] > maxcolor_local) maxcolor_local = color[i];
+      }
     }
+    ierr = MPI_Allreduce(&nadded,&nadded_total,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&maxcolor_local,&maxcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
   }
-  ierr = MPI_Allreduce(&maxcolor_local,&maxcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+  round = 0;
   while (nadded_total < ntotal) {
     ierr = MCJPMinColor_Private(mc,maxcolor_global,color,mincolor);CHKERRQ(ierr);
     ierr = MCJPGreatestWeight_Private(mc,weights,maxweights);CHKERRQ(ierr);
@@ -457,6 +476,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscol
     nadded_total_old = nadded_total;
     maxcolor_global = 0;
     ierr = MPI_Allreduce(&maxcolor_local,&maxcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
+    round++;
   }
   ierr = PetscLogEventBegin(Mat_Coloring_ISCreate,mc,0,0,0);CHKERRQ(ierr);
   ierr = ISColoringCreate(PetscObjectComm((PetscObject)mc),maxcolor_global+1,n,color,iscoloring);CHKERRQ(ierr);
@@ -505,10 +525,11 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_JP(MatColoring mc)
   jp->cmask               = NULL;
   jp->dwts                = NULL;
   jp->owts                = NULL;
+  jp->local               = PETSC_TRUE;
   mc->data                = jp;
   mc->ops->apply          = MatColoringApply_JP;
   mc->ops->view           = NULL;
   mc->ops->destroy        = MatColoringDestroy_JP;
-  mc->ops->setfromoptions = NULL;
+  mc->ops->setfromoptions = MatColoringSetFromOptions_JP;
   PetscFunctionReturn(0);
 }
