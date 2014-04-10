@@ -52,7 +52,6 @@ int main(int argc,char **args)
   ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_LU,&LU);CHKERRQ(ierr);
   ierr = MatLUFactorSymbolic(LU,C,perm,iperm,&luinfo);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(LU,C,&luinfo);CHKERRQ(ierr);
-  ierr = MatView(LU,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = VecCreateSeq(PETSC_COMM_SELF,m*n,&u);CHKERRQ(ierr);
   ierr = VecSet(u,one);CHKERRQ(ierr);

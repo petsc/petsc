@@ -110,8 +110,6 @@ int main(int argc,char **argv)
   ierr = ISView(iscol,viewer);CHKERRQ(ierr);
 
   ierr = MatLUFactor(mat,isrow,iscol,NULL);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Factored matrix permuted by RCM + NonzeroDiagonal()\n");CHKERRQ(ierr);
-  ierr = MatView(mat,viewer);CHKERRQ(ierr);
 
   /* Free data structures */
   ierr = ISDestroy(&isrow);CHKERRQ(ierr);
