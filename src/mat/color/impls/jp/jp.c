@@ -233,9 +233,9 @@ PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc,PetscInt *lperm,ISCo
         }
       }
     }
-  }
-  for (i=0;i<dn;i++) {
-    seen[i]=-1;
+    for (i=0;i<dn;i++) {
+      seen[i]=-1;
+    }
   }
   /* pass two -- color it by looking at nearby vertices and building a mask */
   for (i=0;i<dn;i++) {
