@@ -158,7 +158,7 @@ PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc,PetscInt *lperm,ISCo
   Mat_MPIAIJ     *aij;
   Mat_SeqAIJ     *daij,*oaij;
   PetscInt       *di,*dj,dn;
-  PetscInt       *oi,*oj;
+  PetscInt       *oi;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(Mat_Coloring_Local,mc,0,0,0);CHKERRQ(ierr);
@@ -179,7 +179,6 @@ PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc,PetscInt *lperm,ISCo
     di = daij->i;
     dj = daij->j;
     oi = oaij->i;
-    oj = oaij->j;
     ierr = MatGetSize(oG,&dn,NULL);CHKERRQ(ierr);
   } else {
     dG = G;
