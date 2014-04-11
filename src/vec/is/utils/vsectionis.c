@@ -977,7 +977,11 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
     ierr = PetscSFBcastBegin(sf, MPIU_INT, neg, recv);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sf, MPIU_INT, neg, recv);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
-      if (recv[p] < 0) (*gsection)->atlasDof[p-pStart] = recv[p];
+      if (recv[p] < 0) {
+        (*gsection)->atlasDof[p-pStart] = recv[p];
+        ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
+        if (-(recv[p]+1) != dof) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Global dof %d for point %d is not the unconstrained %d", -(recv[p]+1), p, dof);
+      }
     }
   }
   /* Calculate new sizes, get proccess offset, and calculate point offsets */
