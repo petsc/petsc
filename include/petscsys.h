@@ -629,7 +629,7 @@ M*/
 
 M*/
 #if !defined(PETSC_USE_MALLOC_COALESCED)
-#define PetscMalloc2(m1,r1,m2,r2) (PetscMalloc1((m1)*sizeof(**(r1)),r1) || PetscMalloc1((m2)*sizeof(**(r2)),r2))
+#define PetscMalloc2(m1,r1,m2,r2) (PetscMalloc1((m1),(r1)) || PetscMalloc1((m2),(r2)))
 #else
 #define PetscMalloc2(m1,r1,m2,r2) ((((m1)+(m2)) ? (*(r2) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(PETSC_MEMALIGN-1),r1)) : 0) \
                                    || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),0) \
@@ -688,7 +688,7 @@ M*/
 
 M*/
 #if !defined(PETSC_USE_MALLOC_COALESCED)
-#define PetscMalloc3(m1,r1,m2,r2,m3,r3) (PetscMalloc1((m1)*sizeof(**(r1)),r1) || PetscMalloc1((m2)*sizeof(**(r2)),r2) || PetscMalloc1((m3)*sizeof(**(r3)),r3))
+#define PetscMalloc3(m1,r1,m2,r2,m3,r3) (PetscMalloc1((m1),(r1)) || PetscMalloc1((m2),(r2)) || PetscMalloc1((m3),(r3)))
 #else
 #define PetscMalloc3(m1,r1,m2,r2,m3,r3) ((((m1)+(m2)+(m3)) ? (*(r2) = 0,*(r3) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+2*(PETSC_MEMALIGN-1),r1)) : 0) \
                                          || (*(void**)(r2) = PetscAddrAlign(*(r1)+(m1)),*(void**)(r3) = PetscAddrAlign(*(r2)+(m2)),0) \
@@ -753,7 +753,7 @@ M*/
 
 M*/
 #if !defined(PETSC_USE_MALLOC_COALESCED)
-#define PetscMalloc4(m1,r1,m2,r2,m3,r3,m4,r4) (PetscMalloc1((m1)*sizeof(**(r1)),r1) || PetscMalloc1((m2)*sizeof(**(r2)),r2) || PetscMalloc1((m3)*sizeof(**(r3)),r3) || PetscMalloc1((m4)*sizeof(**(r4)),r4))
+#define PetscMalloc4(m1,r1,m2,r2,m3,r3,m4,r4) (PetscMalloc1((m1),(r1)) || PetscMalloc1((m2),(r2)) || PetscMalloc1((m3),(r3)) || PetscMalloc1((m4),(r4)))
 #else
 #define PetscMalloc4(m1,r1,m2,r2,m3,r3,m4,r4)                           \
   ((((m1)+(m2)+(m3)+(m4)) ? (*(r2) = 0, *(r3) = 0, *(r4) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+(m4)*sizeof(**(r4))+3*(PETSC_MEMALIGN-1),r1)) : 0) \
@@ -825,7 +825,7 @@ M*/
 
 M*/
 #if !defined(PETSC_USE_MALLOC_COALESCED)
-#define PetscMalloc5(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5) (PetscMalloc1((m1)*sizeof(**(r1)),r1) || PetscMalloc1((m2)*sizeof(**(r2)),r2) || PetscMalloc1((m3)*sizeof(**(r3)),r3) || PetscMalloc1((m4)*sizeof(**(r4)),r4) || PetscMalloc1((m5)*sizeof(**(r5)),r5))
+#define PetscMalloc5(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5) (PetscMalloc1((m1),(r1)) || PetscMalloc1((m2),(r2)) || PetscMalloc1((m3),(r3)) || PetscMalloc1((m4),(r4)) || PetscMalloc1((m5),(r5)))
 #else
 #define PetscMalloc5(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5)      \
   ((((m1)+(m2)+(m3)+(m4)+(m5)) ? (*(r2) = 0, *(r3) = 0, *(r4) = 0,*(r5) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+(m4)*sizeof(**(r4))+(m5)*sizeof(**(r5))+4*(PETSC_MEMALIGN-1),r1)) : 0) \
@@ -901,7 +901,7 @@ M*/
 
 M*/
 #if !defined(PETSC_USE_MALLOC_COALESCED)
-#define PetscMalloc6(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6) (PetscMalloc1((m1)*sizeof(**(r1)),r1) || PetscMalloc1((m2)*sizeof(**(r2)),r2) || PetscMalloc1((m3)*sizeof(**(r3)),r3) || PetscMalloc1((m4)*sizeof(**(r4)),r4) || PetscMalloc1((m5)*sizeof(**(r5)),r5) || PetscMalloc1((m6)*sizeof(**(r6)),r6))
+#define PetscMalloc6(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6) (PetscMalloc1((m1),(r1)) || PetscMalloc1((m2),(r2)) || PetscMalloc1((m3),(r3)) || PetscMalloc1((m4),(r4)) || PetscMalloc1((m5),(r5)) || PetscMalloc1((m6),(r6)))
 #else
 #define PetscMalloc6(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6) \
   ((((m1)+(m2)+(m3)+(m4)+(m5)+(m6)) ? (*(r2) = 0, *(r3) = 0, *(r4) = 0,*(r5) = 0,*(r6) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+(m4)*sizeof(**(r4))+(m5)*sizeof(**(r5))+(m6)*sizeof(**(r6))+5*(PETSC_MEMALIGN-1),r1)) : 0) \
@@ -980,7 +980,7 @@ M*/
 
 M*/
 #if !defined(PETSC_USE_MALLOC_COALESCED)
-#define PetscMalloc7(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6,m7,r7) (PetscMalloc1((m1)*sizeof(**(r1)),r1) || PetscMalloc1((m2)*sizeof(**(r2)),r2) || PetscMalloc1((m3)*sizeof(**(r3)),r3) || PetscMalloc1((m4)*sizeof(**(r4)),r4) || PetscMalloc1((m5)*sizeof(**(r5)),r5) || PetscMalloc1((m6)*sizeof(**(r6)),r6) || PetscMalloc1((m7)*sizeof(**(r7)),r7))
+#define PetscMalloc7(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6,m7,r7) (PetscMalloc1((m1),(r1)) || PetscMalloc1((m2),(r2)) || PetscMalloc1((m3),(r3)) || PetscMalloc1((m4),(r4)) || PetscMalloc1((m5),(r5)) || PetscMalloc1((m6),(r6)) || PetscMalloc1((m7),(r7)))
 #else
 #define PetscMalloc7(m1,r1,m2,r2,m3,r3,m4,r4,m5,r5,m6,r6,m7,r7) \
   ((((m1)+(m2)+(m3)+(m4)+(m5)+(m6)+(m7)) ? (*(r2) = 0, *(r3) = 0, *(r4) = 0,*(r5) = 0,*(r6) = 0,*(r7) = 0,PetscMalloc((m1)*sizeof(**(r1))+(m2)*sizeof(**(r2))+(m3)*sizeof(**(r3))+(m4)*sizeof(**(r4))+(m5)*sizeof(**(r5))+(m6)*sizeof(**(r6))+(m7)*sizeof(**(r7))+6*(PETSC_MEMALIGN-1),r1)) : 0) \
