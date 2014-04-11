@@ -53,7 +53,6 @@ PetscErrorCode MatColoringGetDegrees(Mat G,PetscInt distance,PetscInt *degrees)
   PetscInt       *idxbuf;
   PetscInt       *distbuf;
   PetscInt       ncols;
-  PetscInt       *coltorow;
   const PetscInt *cols;
   PetscBool      isSEQAIJ;
   Mat_SeqAIJ     *aij;
@@ -75,7 +74,7 @@ PetscErrorCode MatColoringGetDegrees(Mat G,PetscInt distance,PetscInt *degrees)
   aij = (Mat_SeqAIJ*)lG->data;
   Gi = aij->i;
   Gj = aij->j;
-  ierr = PetscMalloc4(lm,&seen,lm,&idxbuf,lm,&distbuf,lm,&coltorow);CHKERRQ(ierr);
+  ierr = PetscMalloc3(lm,&seen,lm,&idxbuf,lm,&distbuf);CHKERRQ(ierr);
   for (i=0;i<ln;i++) {
     seen[i]=-1;
   }
@@ -116,7 +115,7 @@ PetscErrorCode MatColoringGetDegrees(Mat G,PetscInt distance,PetscInt *degrees)
   }
   ierr = ISRestoreIndices(ris,&gidx);CHKERRQ(ierr);
   ierr = ISDestroy(&ris);CHKERRQ(ierr);
-  ierr = PetscFree4(seen,idxbuf,distbuf,coltorow);CHKERRQ(ierr);
+  ierr = PetscFree3(seen,idxbuf,distbuf);CHKERRQ(ierr);
   ierr = MatDestroyMatrices(1,&lGs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -165,7 +164,6 @@ PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc,PetscReal *we
   PetscInt       *idxbuf;
   PetscInt       *distbuf;
   PetscInt       ncols,nxt,prv,cur;
-  PetscInt       *coltorow;
   const PetscInt *cols;
   PetscBool      isSEQAIJ;
   Mat_SeqAIJ     *aij;
@@ -190,7 +188,7 @@ PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc,PetscReal *we
   aij = (Mat_SeqAIJ*)lG->data;
   Gi = aij->i;
   Gj = aij->j;
-  ierr = PetscMalloc4(lm,&seen,lm,&idxbuf,lm,&distbuf,lm,&coltorow);CHKERRQ(ierr);
+  ierr = PetscMalloc3(lm,&seen,lm,&idxbuf,lm,&distbuf);CHKERRQ(ierr);
   ierr = PetscMalloc1(lm,&degrees);CHKERRQ(ierr);
   ierr = PetscMalloc1(lm,&lweights);CHKERRQ(ierr);
   for (i=0;i<ln;i++) {
@@ -336,7 +334,7 @@ PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc,PetscReal *we
   ierr = PetscFree(lweights);CHKERRQ(ierr);
   ierr = ISRestoreIndices(ris,&gidx);CHKERRQ(ierr);
   ierr = ISDestroy(&ris);CHKERRQ(ierr);
-  ierr = PetscFree4(seen,idxbuf,distbuf,coltorow);CHKERRQ(ierr);
+  ierr = PetscFree3(seen,idxbuf,distbuf);CHKERRQ(ierr);
   ierr = MatDestroyMatrices(1,&lGs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
