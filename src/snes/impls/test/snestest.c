@@ -58,6 +58,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
       ierr = MatSetSizes(B,m,n,M,N);CHKERRQ(ierr);
       ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
       ierr = MatSetUp(B);CHKERRQ(ierr);
+      ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
     }
     ierr = SNESGetFunction(snes,NULL,NULL,&functx);CHKERRQ(ierr);
     ierr = SNESComputeJacobianDefault(snes,x,B,B,functx);CHKERRQ(ierr);
@@ -247,6 +248,7 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
   ierr = MatSetSizes(B,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = SNESGetFunction(snes,NULL,NULL,&functx);CHKERRQ(ierr);
   ierr = SNESComputeJacobianDefault(snes,x,B,B,functx);CHKERRQ(ierr);
 
