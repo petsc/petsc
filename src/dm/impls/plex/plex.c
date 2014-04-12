@@ -479,14 +479,7 @@ PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer)
   if (isbinary) {SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Do not yet support binary viewers");}
   else if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
-    DM odm;
-    ierr = DMCreate(PetscObjectComm((PetscObject) dm), &odm);CHKERRQ(ierr);
-    ierr = DMSetType(odm, DMPLEX);CHKERRQ(ierr);
-    ierr = DMPlexLoad_HDF5(odm, viewer);CHKERRQ(ierr);
-    ierr = DMPlexInterpolate(odm, &dm);CHKERRQ(ierr);
-    ierr = DMPlexCopyCoordinates(odm, dm);CHKERRQ(ierr);
-    ierr = DMPlexCopyLabels(odm, dm);CHKERRQ(ierr);
-    ierr = DMDestroy(&odm);CHKERRQ(ierr);
+    ierr = DMPlexLoad_HDF5(dm, viewer);CHKERRQ(ierr);
 #else
     SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
