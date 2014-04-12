@@ -509,6 +509,7 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   {
     PetscSection originalCoordSection, newCoordSection;
     Vec          originalCoordinates, newCoordinates;
+    PetscInt     bs;
     const char  *name;
 
     ierr = DMGetCoordinateSection(dm, &originalCoordSection);CHKERRQ(ierr);
@@ -520,6 +521,8 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
 
     ierr = DMPlexDistributeField(dm, pointSF, originalCoordSection, originalCoordinates, newCoordSection, newCoordinates);CHKERRQ(ierr);
     ierr = DMSetCoordinatesLocal(*dmParallel, newCoordinates);CHKERRQ(ierr);
+    ierr = VecGetBlockSize(originalCoordinates, &bs);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(newCoordinates, bs);CHKERRQ(ierr);
     ierr = VecDestroy(&newCoordinates);CHKERRQ(ierr);
   }
   /* Distribute labels */
