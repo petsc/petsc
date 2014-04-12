@@ -1,26 +1,8 @@
 
-#include <sys/time.h>
-/* int gettimeofday(struct timeval *tp, struct timezone *tzp); */
-
-double second()
-{
-/* struct timeval { long  tv_sec;
-                    long  tv_usec; };
-
-struct timezone { int tz_minuteswest;
-                  int tz_dsttime; }; */
-
-  struct timeval  tp;
-  struct timezone tzp;
-
-  (void)gettimeofday(&tp,&tzp);
-  return ((double) tp.tv_sec + (double) tp.tv_usec * 1.e-6);
-}
 # include <stdio.h>
 # include <math.h>
 # include <limits.h>
 # include <float.h>
-# include <sys/time.h>
 
 /*
 * Program: Stream
@@ -91,8 +73,6 @@ static double bytes[4] = {
   3 * sizeof(double) * N
 };
 
-extern double second();
-
 #include <mpi.h>
 
 int main(int argc,char **args)
@@ -109,6 +89,9 @@ int main(int argc,char **args)
   MPI_Comm_size(MPI_COMM_WORLD,&size);
   if (!rank) printf("Number of MPI processes %d\n",size);
 
+  for (j=0; j<MPI_MAX_PROCESSOR_NAME; j++) {
+    hostname[j] = 0;
+  }
   MPI_Get_processor_name(hostname,&resultlen);
   if (!rank) {
     printf("Process %d %s\n",rank,hostname);
@@ -148,9 +131,9 @@ int main(int argc,char **args)
     else ; /* printf("Your clock granularity appears to be less than one microsecond.\n");*/
   }
 
-  t = second();
+  t = MPI_Wtime();
   for (j = 0; j < N; j++) a[j] = 2.0E0 * a[j];
-  t = 1.0E6 * (second() - t);
+  t = 1.0E6 * (MPI_Wtime() - t);
 
   if (!rank) {
     /*  printf("Each test below will take on the order of %d microseconds.\n", (int) t);
@@ -167,30 +150,30 @@ int main(int argc,char **args)
   for (k=0; k<NTIMES; k++)
   {
     MPI_Barrier(MPI_COMM_WORLD);
-    times[0][k] = second();
+    times[0][k] = MPI_Wtime();
     /* should all these barriers be pulled outside of the time call? */
     MPI_Barrier(MPI_COMM_WORLD);
     for (j=0; j<N; j++) c[j] = a[j];
     MPI_Barrier(MPI_COMM_WORLD);
-    times[0][k] = second() - times[0][k];
+    times[0][k] = MPI_Wtime() - times[0][k];
 
-    times[1][k] = second();
+    times[1][k] = MPI_Wtime();
     MPI_Barrier(MPI_COMM_WORLD);
     for (j=0; j<N; j++) b[j] = scalar*c[j];
     MPI_Barrier(MPI_COMM_WORLD);
-    times[1][k] = second() - times[1][k];
+    times[1][k] = MPI_Wtime() - times[1][k];
 
-    times[2][k] = second();
+    times[2][k] = MPI_Wtime();
     MPI_Barrier(MPI_COMM_WORLD);
     for (j=0; j<N; j++) c[j] = a[j]+b[j];
     MPI_Barrier(MPI_COMM_WORLD);
-    times[2][k] = second() - times[2][k];
+    times[2][k] = MPI_Wtime() - times[2][k];
 
-    times[3][k] = second();
+    times[3][k] = MPI_Wtime();
     MPI_Barrier(MPI_COMM_WORLD);
     for (j=0; j<N; j++) a[j] = b[j]+scalar*c[j];
     MPI_Barrier(MPI_COMM_WORLD);
-    times[3][k] = second() - times[3][k];
+    times[3][k] = MPI_Wtime() - times[3][k];
   }
 
   /*   --- SUMMARY --- */
@@ -219,8 +202,8 @@ int checktick()
 /*  Collect a sequence of M unique time values from the system. */
 
   for (i = 0; i < M; i++) {
-    t1 = second();
-    while (((t2=second()) - t1) < 1.0E-6) ;
+    t1 = MPI_Wtime();
+    while (((t2=MPI_Wtime()) - t1) < 1.0E-6) ;
     timesfound[i] = t1 = t2;
   }
 

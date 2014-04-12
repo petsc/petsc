@@ -549,8 +549,8 @@ static PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, const char na
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(name, 2);
   PetscValidPointer(has, 3);
-  ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
   *has = PETSC_FALSE;
+  ierr = PetscViewerHDF5GetFileId(viewer, &h5);CHKERRQ(ierr);
   if (H5Lexists(h5, name, H5P_DEFAULT)) {
     H5O_info_t info;
     hid_t      obj;

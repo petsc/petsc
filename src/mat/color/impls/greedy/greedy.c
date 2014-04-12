@@ -430,6 +430,10 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
     for (i=0;i<no;i++) {
       ocolors[i]=maxcolors;
     }
+  } else {                      /* Appease overzealous -Wmaybe-initialized */
+    owts = NULL;
+    oconf = NULL;
+    ocolors = NULL;
   }
   mcol=0;
   while (nd_global < n_global) {

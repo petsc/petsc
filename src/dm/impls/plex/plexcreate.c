@@ -517,16 +517,18 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
     }
     ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
     /* Build faces */
-    for (fy = 0; fy < numYEdges; fy++) {
-      for (fx = 0; fx < numXEdges; fx++) {
-        const PetscInt face    = fy*numXEdges + fx;
-        const PetscInt edgeL   = firstYEdge +   fx                 *numYEdges + fy;
-        const PetscInt edgeR   = firstYEdge + ((fx+1)%numXVertices)*numYEdges + fy;
-        const PetscInt edgeB   = firstXEdge +   fy                 *numXEdges + fx;
-        const PetscInt edgeT   = firstXEdge + ((fy+1)%numYVertices)*numXEdges + fx;
-        const PetscInt ornt[4] = {0, 0, -2, -2};
-        PetscInt       cone[4];
+    for (fy = 0; fy < numYEdges; ++fy) {
+      for (fx = 0; fx < numXEdges; ++fx) {
+        PetscInt face    = fy*numXEdges + fx;
+        PetscInt edgeL   = firstYEdge +   fx                 *numYEdges + fy;
+        PetscInt edgeR   = firstYEdge + ((fx+1)%numXVertices)*numYEdges + fy;
+        PetscInt edgeB   = firstXEdge +   fy                 *numXEdges + fx;
+        PetscInt edgeT   = firstXEdge + ((fy+1)%numYVertices)*numXEdges + fx;
+        PetscInt ornt[4] = {0, 0, -2, -2};
+        PetscInt cone[4];
 
+        if (bdX == DM_BOUNDARY_TWIST && fx == numXEdges-1) {edgeR += numYEdges-1-2*fy; ornt[1] = -2;}
+        if (bdY == DM_BOUNDARY_TWIST && fy == numYEdges-1) {edgeT += numXEdges-1-2*fx; ornt[2] =  0;}
         cone[0] = edgeB; cone[1] = edgeR; cone[2] = edgeT; cone[3] = edgeL;
         ierr    = DMPlexSetCone(dm, face, cone);CHKERRQ(ierr);
         ierr    = DMPlexSetConeOrientation(dm, face, ornt);CHKERRQ(ierr);

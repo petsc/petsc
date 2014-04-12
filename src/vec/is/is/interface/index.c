@@ -62,9 +62,12 @@ PetscErrorCode  ISIdentity(IS is,PetscBool  *ident)
 @*/
 PetscErrorCode  ISSetIdentity(IS is)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   is->isidentity = PETSC_TRUE;
+  ierr = ISSetPermutation(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -260,8 +263,12 @@ PetscErrorCode  ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(isout,3);
   if (!is->isperm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a permutation, must call ISSetPermutation() on the IS first");
-  ierr = (*is->ops->invertpermutation)(is,nlocal,isout);CHKERRQ(ierr);
-  ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
+  if (is->isidentity) {
+    ierr = ISDuplicate(is,isout);CHKERRQ(ierr);
+  } else {
+    ierr = (*is->ops->invertpermutation)(is,nlocal,isout);CHKERRQ(ierr);
+    ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -755,6 +762,7 @@ PetscErrorCode  ISView(IS is,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(is,1,viewer,2);
 
+  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)is,viewer);CHKERRQ(ierr);
   ierr = (*is->ops->view)(is,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -926,10 +934,6 @@ PetscErrorCode  ISSorted(IS is,PetscBool  *flg)
    Output Parameters:
 .  isnew - the copy of the index set
 
-   Notes:
-   ISDuplicate() does not copy the index set, but rather allocates storage
-   for the new one.  Use ISCopy() to copy an index set.
-
    Level: beginner
 
    Concepts: index sets^duplicating
@@ -944,6 +948,8 @@ PetscErrorCode  ISDuplicate(IS is,IS *newIS)
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(newIS,2);
   ierr = (*is->ops->duplicate)(is,newIS);CHKERRQ(ierr);
+  (*newIS)->isidentity = is->isidentity;
+  (*newIS)->isperm     = is->isperm;
   PetscFunctionReturn(0);
 }
 

@@ -2482,6 +2482,56 @@ PetscErrorCode PetscFEDestroy_Basic(PetscFE fem)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscFEView_Basic_Ascii"
+PetscErrorCode PetscFEView_Basic_Ascii(PetscFE fe, PetscViewer viewer)
+{
+  PetscSpace        basis;
+  PetscDualSpace    dual;
+  PetscQuadrature   q;
+  PetscInt          dim, Nq;
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFEGetBasisSpace(fe, &basis);CHKERRQ(ierr);
+  ierr = PetscFEGetDualSpace(fe, &dual);CHKERRQ(ierr);
+  ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(q, &dim, &Nq, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "Basic Finite Element:\n");CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+    ierr = PetscViewerASCIIPrintf(viewer, "  dimension:       %d\n", dim);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  num quad points: %d\n", Nq);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = PetscQuadratureView(q, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  } else {
+    ierr = PetscViewerASCIIPrintf(viewer, "  dimension:       %d\n", dim);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  num quad points: %d\n", Nq);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = PetscSpaceView(basis, viewer);CHKERRQ(ierr);
+  ierr = PetscDualSpaceView(dual, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEView_Basic"
+PetscErrorCode PetscFEView_Basic(PetscFE fe, PetscViewer viewer)
+{
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fe, PETSCFE_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscFEView_Basic_Ascii(fe, viewer);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscFESetUp_Basic"
 /* Construct the change of basis from prime basis to nodal basis */
 PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
@@ -3756,7 +3806,7 @@ PetscErrorCode PetscFEInitialize_Basic(PetscFE fem)
   PetscFunctionBegin;
   fem->ops->setfromoptions          = NULL;
   fem->ops->setup                   = PetscFESetUp_Basic;
-  fem->ops->view                    = NULL;
+  fem->ops->view                    = PetscFEView_Basic;
   fem->ops->destroy                 = PetscFEDestroy_Basic;
   fem->ops->getdimension            = PetscFEGetDimension_Basic;
   fem->ops->gettabulation           = PetscFEGetTabulation_Basic;

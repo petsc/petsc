@@ -1,3 +1,5 @@
+DM Object: 1 MPI processes
+  type: plex
 DM_0x84000000_0 in 3 dimensions:
   0-cells: 12
   1-cells: 20

@@ -167,8 +167,12 @@ generate_section()
       echo "<a href=\"${f#$LOGDIR/}\">${f#$LOGDIR/}</a>" >> $OUTFILE
     fi
 
-    # Grep warnings [greps 1,2 below are for solaris builds and 3 is for Mac, 4 for cusp, 5 for CUDA]
+    # Grep warnings
     filtered_warnings=`grep "[Ww]arning[: ]" $f \
+        | grep -v 'unrecognized #pragma' \
+        | grep -v "warning: ‘SSL" \
+        | grep -v "warning: ‘BIO_" \
+        | grep -v "warning: treating 'c' input as 'c++' when in C++ mode" \
         | grep -v 'warning: statement not reached' \
         | grep -v 'warning: loop not entered at top' \
         | grep -v 'warning: no debug symbols in executable (-arch x86_64)' \

@@ -4,6 +4,7 @@ domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\n\n";
 
 #include <petscdmplex.h>
 #include <petscsnes.h>
+#include <petscviewerhdf5.h>
 
 #define NUM_FIELDS 1
 PetscInt spatialDim = 0;
@@ -344,12 +345,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (!len) {
-    DMLabel label;
-
     ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
-    ierr = DMPlexGetLabel(*dm, "marker", &label);CHKERRQ(ierr);
-    if (label) {ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);}
   } else if (user->checkpoint) {
     ierr = DMCreate(comm, dm);CHKERRQ(ierr);
     ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
@@ -405,171 +402,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SetupElement"
-PetscErrorCode SetupElement(DM dm, AppCtx *user)
-{
-  const PetscInt  dim = user->dim;
-  PetscFE         fem;
-  PetscQuadrature q;
-  DM              K;
-  PetscSpace      P;
-  PetscDualSpace  Q;
-  PetscInt        order;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  /* Create space */
-  ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) dm), &P);CHKERRQ(ierr);
-  ierr = PetscSpaceSetFromOptions(P);CHKERRQ(ierr);
-  ierr = PetscSpacePolynomialSetNumVariables(P, dim);CHKERRQ(ierr);
-  ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
-  ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
-  /* Create dual space */
-  ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) dm), &Q);CHKERRQ(ierr);
-  ierr = PetscDualSpaceCreateReferenceCell(Q, dim, PETSC_TRUE, &K);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
-  ierr = DMDestroy(&K);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetOrder(Q, order);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetFromOptions(Q);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
-  /* Create element */
-  ierr = PetscFECreate(PetscObjectComm((PetscObject) dm), &fem);CHKERRQ(ierr);
-  ierr = PetscFESetFromOptions(fem);CHKERRQ(ierr);
-  ierr = PetscFESetBasisSpace(fem, P);CHKERRQ(ierr);
-  ierr = PetscFESetDualSpace(fem, Q);CHKERRQ(ierr);
-  ierr = PetscFESetNumComponents(fem, 1);CHKERRQ(ierr);
-  ierr = PetscFESetUp(fem);CHKERRQ(ierr);
-  ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
-  ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
-  /* Create quadrature */
-  ierr = PetscDTGaussJacobiQuadrature(dim, order, -1.0, 1.0, &q);CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(fem, q);CHKERRQ(ierr);
-  ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
-  user->fe[0] = fem;
-  user->fem.fe = user->fe;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "SetupMaterialElement"
-PetscErrorCode SetupMaterialElement(DM dm, AppCtx *user)
-{
-  const PetscInt  dim = user->dim;
-  const char     *prefix = "mat_";
-  PetscFE         fem;
-  PetscQuadrature q;
-  DM              K;
-  PetscSpace      P;
-  PetscDualSpace  Q;
-  PetscInt        order, qorder;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  if (user->variableCoefficient != COEFF_FIELD) {user->fem.feAux = NULL; user->feAux[0] = NULL; PetscFunctionReturn(0);}
-  /* Create space */
-  ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) dm), &P);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) P, prefix);CHKERRQ(ierr);
-  ierr = PetscSpaceSetFromOptions(P);CHKERRQ(ierr);
-  ierr = PetscSpacePolynomialSetNumVariables(P, dim);CHKERRQ(ierr);
-  ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
-  ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
-  /* Create dual space */
-  ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) dm), &Q);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) Q, prefix);CHKERRQ(ierr);
-  ierr = PetscDualSpaceCreateReferenceCell(Q, dim, PETSC_TRUE, &K);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
-  ierr = DMDestroy(&K);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetOrder(Q, order);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetFromOptions(Q);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
-  /* Create element */
-  ierr = PetscFECreate(PetscObjectComm((PetscObject) dm), &fem);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) fem, prefix);CHKERRQ(ierr);
-  ierr = PetscFESetFromOptions(fem);CHKERRQ(ierr);
-  ierr = PetscFESetBasisSpace(fem, P);CHKERRQ(ierr);
-  ierr = PetscFESetDualSpace(fem, Q);CHKERRQ(ierr);
-  ierr = PetscFESetNumComponents(fem, 1);CHKERRQ(ierr);
-  ierr = PetscFESetUp(fem);CHKERRQ(ierr);
-  ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
-  ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
-  /* Create quadrature, must agree with solution quadrature */
-  ierr = PetscFEGetBasisSpace(user->fe[0], &P);CHKERRQ(ierr);
-  ierr = PetscSpaceGetOrder(P, &qorder);CHKERRQ(ierr);
-  ierr = PetscDTGaussJacobiQuadrature(dim, qorder, -1.0, 1.0, &q);CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(fem, q);CHKERRQ(ierr);
-  ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
-  user->feAux[0]  = fem;
-  user->fem.feAux = user->feAux;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "SetupBdElement"
-PetscErrorCode SetupBdElement(DM dm, AppCtx *user)
-{
-  const PetscInt  dim    = user->dim-1;
-  const char     *prefix = "bd_";
-  PetscFE         fem;
-  PetscQuadrature q;
-  DM              K;
-  PetscSpace      P;
-  PetscDualSpace  Q;
-  PetscInt        order;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  if (user->bcType != NEUMANN) {user->fem.feBd = NULL; user->feBd[0] = NULL; PetscFunctionReturn(0);}
-  /* Create space */
-  ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) dm), &P);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) P, prefix);CHKERRQ(ierr);
-  ierr = PetscSpaceSetFromOptions(P);CHKERRQ(ierr);
-  ierr = PetscSpacePolynomialSetNumVariables(P, dim);CHKERRQ(ierr);
-  ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
-  ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
-  /* Create dual space */
-  ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) dm), &Q);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) Q, prefix);CHKERRQ(ierr);
-  ierr = PetscDualSpaceCreateReferenceCell(Q, dim, PETSC_TRUE, &K);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
-  ierr = DMDestroy(&K);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetOrder(Q, order);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetFromOptions(Q);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
-  /* Create element */
-  ierr = PetscFECreate(PetscObjectComm((PetscObject) dm), &fem);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) fem, prefix);CHKERRQ(ierr);
-  ierr = PetscFESetFromOptions(fem);CHKERRQ(ierr);
-  ierr = PetscFESetBasisSpace(fem, P);CHKERRQ(ierr);
-  ierr = PetscFESetDualSpace(fem, Q);CHKERRQ(ierr);
-  ierr = PetscFESetNumComponents(fem, 1);CHKERRQ(ierr);
-  ierr = PetscFESetUp(fem);CHKERRQ(ierr);
-  ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
-  ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
-  /* Create quadrature */
-  ierr = PetscDTGaussJacobiQuadrature(dim, order, -1.0, 1.0, &q);CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(fem, q);CHKERRQ(ierr);
-  ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
-  user->feBd[0] = fem;
-  user->fem.feBd = user->feBd;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DestroyElement"
-PetscErrorCode DestroyElement(AppCtx *user)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = PetscFEDestroy(&user->fe[0]);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&user->feBd[0]);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&user->feAux[0]);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "SetupExactSolution"
-PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
+#define __FUNCT__ "SetupProblem"
+PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 {
   PetscFEM *fem = &user->fem;
 
@@ -623,7 +457,7 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
   }
-  user->fem.bcFuncs = user->exactFuncs;
+  user->fem.bcFuncs = NULL;
   user->fem.bcCtxs  = NULL;
   PetscFunctionReturn(0);
 }
@@ -710,15 +544,31 @@ int main(int argc, char **argv)
   ierr = SNESSetDM(snes, dm);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(dm, &user);CHKERRQ(ierr);
 
-  ierr = DMClone(dm, &dmAux);CHKERRQ(ierr);
-  ierr = DMPlexCopyCoordinates(dm, dmAux);CHKERRQ(ierr);
-  ierr = SetupElement(dm, &user);CHKERRQ(ierr);
-  ierr = SetupBdElement(dm, &user);CHKERRQ(ierr);
+  user.fem.fe = user.fe;
+  ierr = PetscFECreateDefault(dm, user.dim, 1, PETSC_TRUE, NULL, -1, &user.fe[0]);CHKERRQ(ierr);
+  if (user.bcType != NEUMANN) {
+    user.fem.feBd = NULL; user.feBd[0] = NULL;
+  } else {
+    user.fem.feBd = user.feBd;
+    ierr = PetscFECreateDefault(dm, user.dim-1, 1, PETSC_TRUE, "bd_", -1, &user.feBd[0]);CHKERRQ(ierr);
+  }
   ierr = PetscFEGetNumComponents(user.fe[0], &numComponents);CHKERRQ(ierr);
   ierr = PetscMalloc(NUM_FIELDS * sizeof(void (*)(const PetscReal[], PetscScalar *, void *)), &user.exactFuncs);CHKERRQ(ierr);
-  ierr = SetupExactSolution(dm, &user);CHKERRQ(ierr);
+  ierr = SetupProblem(dm, &user);CHKERRQ(ierr);
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
-  ierr = SetupMaterialElement(dmAux, &user);CHKERRQ(ierr);
+  /* Setup Material */
+  ierr = DMClone(dm, &dmAux);CHKERRQ(ierr);
+  ierr = DMPlexCopyCoordinates(dm, dmAux);CHKERRQ(ierr);
+  if (user.variableCoefficient != COEFF_FIELD) {
+    user.fem.feAux = NULL; user.feAux[0] = NULL;
+  } else {
+    PetscQuadrature q;
+
+    user.fem.feAux = user.feAux;
+    ierr = PetscFECreateDefault(dmAux, user.dim, 1, PETSC_TRUE, "mat_", -1, &user.feAux[0]);CHKERRQ(ierr);
+    ierr = PetscFEGetQuadrature(user.fe[0], &q);CHKERRQ(ierr);
+    ierr = PetscFESetQuadrature(user.feAux[0], q);CHKERRQ(ierr);
+  }
   ierr = SetupMaterialSection(dmAux, &user);CHKERRQ(ierr);
   ierr = SetupMaterial(dm, dmAux, &user);CHKERRQ(ierr);
   ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
@@ -855,7 +705,9 @@ int main(int argc, char **argv)
     ierr = VecDestroy(&userJ.u);CHKERRQ(ierr);
   }
   if (A != J) {ierr = MatDestroy(&A);CHKERRQ(ierr);}
-  ierr = DestroyElement(&user);CHKERRQ(ierr);
+  ierr = PetscFEDestroy(&user.fe[0]);CHKERRQ(ierr);
+  ierr = PetscFEDestroy(&user.feBd[0]);CHKERRQ(ierr);
+  ierr = PetscFEDestroy(&user.feAux[0]);CHKERRQ(ierr);
   ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);

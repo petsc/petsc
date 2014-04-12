@@ -68,6 +68,7 @@ typedef struct {
   /* Domain and mesh definition */
   PetscInt      dim;               /* The topological mesh dimension */
   PetscBool     interpolate;       /* Generate intermediate mesh elements */
+  PetscBool     simplex;           /* Use simplices or tensor product cells */
   PetscReal     refinementLimit;   /* The largest allowable cell volume */
   char          partitioner[2048]; /* The graph partitioner */
   /* GPU partitioning */
@@ -243,6 +244,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->runType         = RUN_FULL;
   options->dim             = 2;
   options->interpolate     = PETSC_FALSE;
+  options->simplex         = PETSC_TRUE;
   options->refinementLimit = 0.0;
   options->bcType          = DIRICHLET;
   options->numBatches      = 1;
@@ -270,6 +272,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex62.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   spatialDim = options->dim;
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex62.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-simplex", "Use simplices or tensor product cells", "ex62.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex62.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
   ierr = PetscOptionsString("-partitioner", "The graph partitioner", "pflotran.cxx", options->partitioner, options->partitioner, 2048, NULL);CHKERRQ(ierr);
@@ -322,11 +325,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscBool      interpolate     = user->interpolate;
   PetscReal      refinementLimit = user->refinementLimit;
   const char     *partitioner    = user->partitioner;
+  const PetscInt cells[3]        = {3, 3, 3};
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
+  if (user->simplex) {ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);}
+  else               {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
   ierr = DMPlexGetLabel(*dm, "marker", &label);CHKERRQ(ierr);
   if (label) {ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);}
   {
@@ -348,6 +353,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
   }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -444,8 +450,8 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SetupExactSolution"
-PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
+#define __FUNCT__ "SetupProblem"
+PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 {
   PetscFEM *fem = &user->fem;
 
@@ -635,7 +641,8 @@ int main(int argc, char **argv)
   JacActionCtx   userJ;                /* context for Jacobian MF action */
   PetscInt       its;                  /* iterations for convergence */
   PetscReal      error         = 0.0;  /* L_2 error in the solution */
-  PetscInt       numComponents = 0, f;
+  PetscInt       numComponents = 0, order, f;
+  PetscSpace     P;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
@@ -644,16 +651,21 @@ int main(int argc, char **argv)
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
   ierr = SNESSetDM(snes, dm);CHKERRQ(ierr);
 
-  ierr = SetupElement(dm, &user);CHKERRQ(ierr);
+  user.fem.fe    = user.fe;
+  user.fem.feBd  = NULL;
+  user.fem.feAux = NULL;
+  ierr = PetscFECreateDefault(dm, user.dim, user.dim, user.simplex, "vel_", -1, &user.fe[0]);CHKERRQ(ierr);
+  ierr = PetscFEGetBasisSpace(user.fe[0], &P);CHKERRQ(ierr);
+  ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, user.dim, 1, user.simplex, "pres_", order, &user.fe[1]);CHKERRQ(ierr);
+  //ierr = SetupElement(dm, &user);CHKERRQ(ierr);
   for (f = 0; f < NUM_FIELDS; ++f) {
     PetscInt numComp;
     ierr = PetscFEGetNumComponents(user.fe[f], &numComp);CHKERRQ(ierr);
     numComponents += numComp;
   }
   ierr = PetscMalloc(NUM_FIELDS * sizeof(void (*)(const PetscReal[], PetscScalar *, void *)), &user.exactFuncs);CHKERRQ(ierr);
-  user.fem.bcFuncs = user.exactFuncs;
-  user.fem.bcCtxs  = NULL;
-  ierr = SetupExactSolution(dm, &user);CHKERRQ(ierr);
+  ierr = SetupProblem(dm, &user);CHKERRQ(ierr);
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
   ierr = DMPlexCreateClosureIndex(dm, NULL);CHKERRQ(ierr);
 
@@ -754,7 +766,7 @@ int main(int argc, char **argv)
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Linear L_2 Residual: %g\n", res);CHKERRQ(ierr);
     }
   }
-  ierr = VecViewFromOptions(u, NULL, "-vec_view");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(u, NULL, "-sol_vec_view");CHKERRQ(ierr);
 
   ierr = PetscFree(user.exactFuncs);CHKERRQ(ierr);
   ierr = DestroyElement(&user);CHKERRQ(ierr);

@@ -405,12 +405,12 @@ runex37_2:
 
 runex37_3:
 	-@${MPIEXEC} -n 2 ./ex37 -explicit_is 0 > ex37_2.tmp 2>&1;\
-	    ${DIFF} output/ex37_2.out ex37_2.tmp || printf "${PWD}\nPossible problem with ex37_3, diffs above\n=========================================\n"; \
+	    ${DIFF} output/ex37_3.out ex37_2.tmp || printf "${PWD}\nPossible problem with ex37_3, diffs above\n=========================================\n"; \
 	    ${RM} -f ex37_2.tmp
 
 runex37_4:
 	-@${MPIEXEC} -n 2 ./ex37 -explicit_is 1 > ex37_2.tmp 2>&1;\
-	    ${DIFF} output/ex37_2.out ex37_2.tmp || printf "${PWD}\nPossible problem with ex37_4, diffs above\n=========================================\n"; \
+	    ${DIFF} output/ex37_4.out ex37_2.tmp || printf "${PWD}\nPossible problem with ex37_4, diffs above\n=========================================\n"; \
 	    ${RM} -f ex37_2.tmp
 
 runex38:

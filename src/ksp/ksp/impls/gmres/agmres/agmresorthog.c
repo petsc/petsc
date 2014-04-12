@@ -69,7 +69,7 @@ static PetscErrorCode  KSPAGMRESRoddecGivens(PetscReal * c, PetscReal * s, Petsc
       *c = 1.e0;
       *s = 0.e0;
     } else {
-      if (fabs(b) > fabs(a)) {
+      if (PetscAbsReal(b) > PetscAbsReal(a)) {
         t  = -a / b;
         *s = 1.e0 / PetscSqrtReal(1.e0 + t * t);
         *c = (*s) * t;
@@ -82,7 +82,7 @@ static PetscErrorCode  KSPAGMRESRoddecGivens(PetscReal * c, PetscReal * s, Petsc
     if (*c == 0.e0) {
       *r = 1.e0;
     } else {
-      if (fabs(*s) < fabs(*c)) {
+      if (PetscAbsReal(*s) < PetscAbsReal(*c)) {
         *r = PetscSign(*c) * (*s) / 2.e0;
       } else {
         *r = PetscSign(*s) * 2.e0 / (*c);
@@ -94,7 +94,7 @@ static PetscErrorCode  KSPAGMRESRoddecGivens(PetscReal * c, PetscReal * s, Petsc
     *c = 0.e0;
     *s = 1.e0;
   } else {
-    if (fabs(*r) < 1.e0) {
+    if (PetscAbsReal(*r) < 1.e0) {
       *s = 2.e0 * (*r);
       *c = PetscSqrtReal(1.e0 - (*s) * (*s));
     } else {
