@@ -262,7 +262,7 @@ static PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscInt coordSize,
     if (n[2] < 0.0) {
       if (coordSize > 9) {
         coords[2] = PetscRealPart(coords[3*dim+0] - coords[0*dim+0]);
-        coords[3] = PetscRealPart(coords[3*dim+0] - coords[0*dim+0]);
+        coords[3] = PetscRealPart(coords[3*dim+1] - coords[0*dim+1]);
         coords[4] = x2[0];
         coords[5] = x2[1];
         coords[6] = x1[0];
