@@ -373,12 +373,16 @@ PetscErrorCode DMPlexDistributeData(DM dm, PetscSF pointSF, PetscSection origina
 + sf - The PetscSF used for point distribution
 - parallelMesh - The distributed DMPlex object, or NULL
 
-  Note: If the mesh was not distributed, the return value is NULL
+  Note: If the mesh was not distributed, the return value is NULL.
+
+  The user can control the definition of adjacency for the mesh using DMPlexGetAdjacencyUseCone() and
+  DMPlexSetAdjacencyUseClosure(). They should choose the combination appropriate for the function
+  representation on the mesh.
 
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: DMPlexCreate(), DMPlexDistributeByFace()
+.seealso: DMPlexCreate(), DMPlexDistributeByFace(), DMPlexSetAdjacencyUseCone(), DMPlexSetAdjacencyUseClosure()
 @*/
 PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overlap, PetscSF *sf, DM *dmParallel)
 {
