@@ -418,6 +418,10 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                 {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/squaremotor-30.exo -ufv_split_faces'},
                                                                 # 3D 7
                                                                 {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/blockcylinder-50.exo -bc_inflow 100,101,200 -bc_outflow 201'}],
+                        'src/tao/examples/tutorials/ex1':      [# 2D 0-
+                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0 -potential_petscspace_order 2 -conductivity_petscspace_order 1 -multiplier_petscspace_order 1'},
+                                                                {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0 -potential_petscspace_order 2 -conductivity_petscspace_order 1 -multiplier_petscspace_order 1 -snes_monitor'}
+                                                                ],
                         }
 
 def noCheckCommand(command, status, output, error):
