@@ -6560,8 +6560,8 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     const char     *bdLabel;
     DMLabel         label;
     const PetscInt *values;
-    PetscInt        field, numValues;
-    PetscBool       isEssential, has;
+    PetscInt        bd2, field, numValues;
+    PetscBool       isEssential, has, duplicate = PETSC_FALSE;
 
     ierr = DMPlexGetBoundary(dm, bd, &isEssential, &bdLabel, &field, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
     if (numValues != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Bug me and I will fix this");
@@ -6572,9 +6572,17 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
       ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
     }
     ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
-    /* Only want to do this for FEM */
-    ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
-    ierr = DMPlexLabelAddCells(dm, label);CHKERRQ(ierr);
+    /* Only want to do this for FEM, and only once */
+    for (bd2 = 0; bd2 < bd; ++bd2) {
+      const char *bdname;
+      ierr = DMPlexGetBoundary(dm, bd2, NULL, &bdname, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+      ierr = PetscStrcmp(bdname, bdLabel, &duplicate);CHKERRQ(ierr);
+      if (duplicate) break;
+    }
+    if (!duplicate) {
+      ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
+      ierr = DMPlexLabelAddCells(dm, label);CHKERRQ(ierr);
+    }
     /* Filter out cells, if you actually want to constraint cells you need to do things by hand right now */
     if (isEssential) {
       IS              tmp;
