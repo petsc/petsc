@@ -83,19 +83,23 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 void f0_u(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f0[])
 {
-  f0[0] = 6.0*(x[0] + x[1]);
+  f0[0] = u[0] - (x[0]*x[0] + x[1]*x[1]);
 }
 void f1_u(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f1[])
 {
   PetscInt d;
-  for (d = 0; d < spatialDim; ++d) f1[d] = u[1]*gradU[d];
+  for (d = 0; d < spatialDim; ++d) f1[d] = u[1]*gradU[spatialDim*2+d];
+}
+void g0_uu(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g0[])
+{
+  g0[0] = 1.0;
 }
 void g2_ua(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g2[])
 {
   PetscInt d;
-  for (d = 0; d < spatialDim; ++d) g2[d] = gradU[d];
+  for (d = 0; d < spatialDim; ++d) g2[d] = gradU[spatialDim*2+d];
 }
-void g3_uu(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g3[])
+void g3_ul(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g3[])
 {
   PetscInt d;
   for (d = 0; d < spatialDim; ++d) g3[d*spatialDim+d] = u[1];
@@ -117,16 +121,22 @@ void g0_aa(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a
 
 void f0_l(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f0[])
 {
-  f0[0] = u[2] - (x[0] + x[1]);
+  f0[0] = 6.0*(x[0] + x[1]);
 }
 void f1_l(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f1[])
 {
   PetscInt d;
-  for (d = 0; d < spatialDim; ++d) f1[d] = 0.0;
+  for (d = 0; d < spatialDim; ++d) f1[d] = u[1]*gradU[d];
 }
-void g0_ll(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g0[])
+void g2_la(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g2[])
 {
-  g0[0] = 1.0;
+  PetscInt d;
+  for (d = 0; d < spatialDim; ++d) g2[d] = gradU[d];
+}
+void g3_lu(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g3[])
+{
+  PetscInt d;
+  for (d = 0; d < spatialDim; ++d) g3[d*spatialDim+d] = u[1];
 }
 
 /*
@@ -171,15 +181,17 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   fem->f1Funcs[0] = f1_u;
   fem->f1Funcs[1] = f1_a;
   fem->f1Funcs[2] = f1_l;
-  fem->g0Funcs[4] = g0_aa;
-  fem->g0Funcs[8] = g0_ll;
-  fem->g2Funcs[1] = g2_ua;
-  fem->g3Funcs[0] = g3_uu;
+  fem->g0Funcs[0*3+0] = g0_uu;
+  fem->g2Funcs[0*3+1] = g2_ua;
+  fem->g3Funcs[0*3+2] = g3_ul;
+  fem->g0Funcs[1*3+1] = g0_aa;
+  fem->g2Funcs[2*3+1] = g2_la;
+  fem->g3Funcs[2*3+0] = g3_lu;
   switch (user->dim) {
   case 2:
     user->exactFuncs[0] = quadratic_u_2d;
     user->exactFuncs[1] = linear_a_2d;
-    user->exactFuncs[2] = linear_a_2d;
+    user->exactFuncs[2] = zero;
     break;
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
