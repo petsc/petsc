@@ -112,7 +112,7 @@ void f0_a(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[
 void f1_a(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f1[])
 {
   PetscInt d;
-  for (d = 0; d < spatialDim; ++d) f1[d] = 0.0;
+  for (d = 0; d < spatialDim; ++d) f1[d] = u[2]*gradU[d];
 }
 void g0_aa(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g0[])
 {
