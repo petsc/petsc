@@ -146,6 +146,8 @@ static PetscErrorCode PetscScanString(MPI_Comm comm,size_t n,char str[])
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscStrdup"
 /*
     This is needed because certain strings may be freed by SAWs, hence we cannot use PetscStrallocpy()
 */
