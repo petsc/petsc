@@ -51,6 +51,8 @@ typedef struct {
   PetscBool                 reset;                  /* indicates PCReset() has been last called on this object, hack */
   PetscBool                 suboptionsset;          /* Indicates that the KSPSetFromOptions() has been called on the sub-KSPs */
   PetscBool                 dm_splits;              /* Whether to use DMCreateFieldDecomposition() whenever possible */
+  PetscBool                 diag_use_amat;          /* Whether to extract diagonal matrix blocks from Amat, rather than Pmat (weaker than -pc_use_amat) */
+  PetscBool                 offdiag_use_amat;       /* Whether to extract off-diagonal matrix blocks from Amat, rather than Pmat (weaker than -pc_use_amat) */
 } PC_FieldSplit;
 
 /*
@@ -96,6 +98,12 @@ static PetscErrorCode PCView_FieldSplit(PC pc,PetscViewer viewer)
     }
     if (pc->useAmat) {
       ierr = PetscViewerASCIIPrintf(viewer,"  using Amat (not Pmat) as operator for blocks\n");CHKERRQ(ierr);
+    }
+    if (jac->diag_use_amat) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  using Amat (not Pmat) as operator for diagonal blocks\n");CHKERRQ(ierr);
+    }
+    if (jac->offdiag_use_amat) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  using Amat (not Pmat) as operator for off-diagonal blocks\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  Solver info for each split is in the following KSP objects:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -557,7 +565,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ilink = ilink->next;
     }
   }
-  if (pc->useAmat) {
+  if (pc->useAmat || jac->diag_use_amat) {
     ilink = jac->head;
     if (!jac->mat) {
       ierr = PetscMalloc1(nsplit,&jac->mat);CHKERRQ(ierr);
@@ -577,6 +585,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
   if (jac->type != PC_COMPOSITE_ADDITIVE  && jac->type != PC_COMPOSITE_SCHUR) {
     /* extract the rows of the matrix associated with each field: used for efficient computation of residual inside algorithm */
+    /* FIXME: Can/should we reuse jac->mat whenever (pc->useAmat || jac->diag_use_amat) is true? */
     ilink = jac->head;
     if (!jac->Afield) {
       ierr = PetscMalloc1(nsplit,&jac->Afield);CHKERRQ(ierr);
@@ -610,11 +619,19 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = MatSchurComplementGetKSP(jac->schur, &kspInner);CHKERRQ(ierr);
       ilink = jac->head;
       ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
-      ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
+      if (pc->useAmat || jac->offdiag_use_amat) {
+	ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
+      } else {
+	ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
+      }
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ilink = ilink->next;
       ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
-      ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
+      if (pc->useAmat || jac->offdiag_use_amat) {
+	ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
+      } else {
+	ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
+      }
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ierr  = MatSchurComplementUpdateSubMatrices(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1],pc->flag);CHKERRQ(ierr);
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELFP) {
@@ -638,11 +655,19 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       /* extract the A01 and A10 matrices */
       ilink = jac->head;
       ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
-      ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
+      if (pc->useAmat || jac->offdiag_use_amat) {
+	ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
+      } else {
+	ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
+      }
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ilink = ilink->next;
       ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
-      ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
+      if (pc->useAmat || jac->offdiag_use_amat) {
+	ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
+      } else {
+	ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
+      }
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
 
       /* Use mat[0] (diagonal block of Amat) preconditioned by pmat[0] to define Schur complement */
@@ -1082,6 +1107,8 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
     ierr = PCFieldSplitSetBlockSize(pc,bs);CHKERRQ(ierr);
   }
 
+  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_diag_use_amat",&jac->diag_use_amat,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_off_diag_use_amat",&jac->diag_use_amat,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,NULL);CHKERRQ(ierr);
   if (stokes) {
     ierr          = PCFieldSplitSetType(pc,PC_COMPOSITE_SCHUR);CHKERRQ(ierr);
@@ -1296,6 +1323,138 @@ PetscErrorCode  PCFieldSplitSetFields(PC pc,const char splitname[],PetscInt n,co
   ierr = PetscTryMethod(pc,"PCFieldSplitSetFields_C",(PC,const char[],PetscInt,const PetscInt*,const PetscInt*),(pc,splitname,n,fields,fields_col));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFieldSplitSetDiagUseAmat"
+/*@
+    PCFieldSplitSetDiagUseAmat - set flag indicating whether to extract diagonal blocks from Amat (rather than Pmat)
+
+    Logically Collective on PC
+
+    Input Parameters:
++   pc  - the preconditioner object
+-   flg - boolean flag indicating whether or not to use Amat to extract the diagonal blocks from
+
+
+    Level: intermediate
+
+.seealso: PCFieldSplitGetDiagUseAmat(), PCFieldSplitSetOffDiagUseAmat(), PCFIELDSPLIT
+
+@*/
+PetscErrorCode  PCFieldSplitSetDiagUseAmat(PC pc,PetscBool flg)
+{
+  PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
+  PetscBool      isfs;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCFIELDSPLIT,&isfs);CHKERRQ(ierr);
+  if (!isfs) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PC not of type %s",PCFIELDSPLIT);
+  jac->diag_use_amat = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFieldSplitGetDiagUseAmat"
+/*@
+    PCFieldSplitGetDiagUseAmat - get the flag indicating whether to extract diagonal blocks from Amat (rather than Pmat)
+
+    Logically Collective on PC
+
+    Input Parameters:
+.   pc  - the preconditioner object
+
+    Output Parameters:
+.   flg - boolean flag indicating whether or not to use Amat to extract the diagonal blocks from
+
+
+    Level: intermediate
+
+.seealso: PCFieldSplitSetDiagUseAmat(), PCFieldSplitGetOffDiagUseAmat(), PCFIELDSPLIT
+
+@*/
+PetscErrorCode  PCFieldSplitGetDiagUseAmat(PC pc,PetscBool *flg)
+{
+  PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
+  PetscBool      isfs;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(flg,2);
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCFIELDSPLIT,&isfs);CHKERRQ(ierr);
+  if (!isfs) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PC not of type %s",PCFIELDSPLIT);
+  *flg = jac->diag_use_amat;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFieldSplitSetOffDiagUseAmat"
+/*@
+    PCFieldSplitSetOffDiagUseAmat - set flag indicating whether to extract off-diagonal blocks from Amat (rather than Pmat)
+
+    Logically Collective on PC
+
+    Input Parameters:
++   pc  - the preconditioner object
+-   flg - boolean flag indicating whether or not to use Amat to extract the off-diagonal blocks from
+
+
+    Level: intermediate
+
+.seealso: PCFieldSplitGetOffDiagUseAmat(), PCFieldSplitSetDiagUseAmat(), PCFIELDSPLIT
+
+@*/
+PetscErrorCode  PCFieldSplitSetOffDiagUseAmat(PC pc,PetscBool flg)
+{
+  PC_FieldSplit *jac = (PC_FieldSplit*)pc->data;
+  PetscBool      isfs;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCFIELDSPLIT,&isfs);CHKERRQ(ierr);
+  if (!isfs) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PC not of type %s",PCFIELDSPLIT);
+  jac->offdiag_use_amat = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFieldSplitGetOffDiagUseAmat"
+/*@
+    PCFieldSplitGetOffDiagUseAmat - get the flag indicating whether to extract off-diagonal blocks from Amat (rather than Pmat)
+
+    Logically Collective on PC
+
+    Input Parameters:
+.   pc  - the preconditioner object
+
+    Output Parameters:
+.   flg - boolean flag indicating whether or not to use Amat to extract the off-diagonal blocks from
+
+
+    Level: intermediate
+
+.seealso: PCFieldSplitSetOffDiagUseAmat(), PCFieldSplitGetDiagUseAmat(), PCFIELDSPLIT
+
+@*/
+PetscErrorCode  PCFieldSplitGetOffDiagUseAmat(PC pc,PetscBool *flg)
+{
+  PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
+  PetscBool      isfs;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(flg,2);
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCFIELDSPLIT,&isfs);CHKERRQ(ierr);
+  if (!isfs) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PC not of type %s",PCFIELDSPLIT);
+  *flg = jac->offdiag_use_amat;
+  PetscFunctionReturn(0);
+}
+
+
 
 #undef __FUNCT__
 #define __FUNCT__ "PCFieldSplitSetIS"
