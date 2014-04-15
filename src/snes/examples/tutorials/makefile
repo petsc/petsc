@@ -371,7 +371,6 @@ runex5_5_ngmres_nrichardson:
 	   if (${DIFF} output/ex5_5_ngmres_richardson.out ex5_5_ngmres_richardson.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with with ex5_5_ngmres_richardson, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_5_ngmres_richardson.tmp
-
 runex5_5_ncg:
 	-@${CSD_BASIC_COMMAND_LINE} -snes_type ncg -snes_ncg_type fr \
         > ex5_5_ncg.tmp 2>&1; \
@@ -853,6 +852,12 @@ runex19_composite_gs_newton: #test additive composite SNES
 	${DIFF} output/ex19_composite_gs_newton.out ex19_composite_gs_newton.tmp || printf "${PWD}\nPossible problem with ex19_composite_gs_newton, diffs above\n=========================================\n"; \
         ${RM} -f ex19_composite_gs_newton.tmp
 
+runex19_greedy_coloring:
+	-@${MPIEXEC} -n 2 ./ex19 -da_refine 3 -snes_monitor_short \
+        -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -mat_coloring_weight_type lf -mat_coloring_view> ex19_greedy_coloring.tmp 2>&1; \
+	${DIFF} output/ex19_greedy_coloring.out ex19_greedy_coloring.tmp || printf "${PWD}\nPossible problem with ex19_greedy_coloring, diffs above\n=========================================\n"; \
+        ${RM} -f ex19_greedy_coloring.tmp
+
 runex19_draw:
 	-@${MPIEXEC} -n 1 ./ex19 -pc_type fieldsplit -snes_view draw -fieldsplit_x_velocity_pc_type mg -fieldsplit_x_velocity_pc_mg_galerkin -fieldsplit_x_velocity_pc_mg_levels 2 -da_refine 1 -fieldsplit_x_velocity_mg_coarse_pc_type svd > ex19_draw.tmp 2>&1; \
           ${DIFF} output/ex19_draw.out ex19_draw.tmp || printf "${PWD}\nPossible problem with ex19_draw, diffs above\n=========================================\n"; \
@@ -1101,7 +1106,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2  rune
                                  runex19_fdcoloring_wp_baij runex19_fdcoloring_ds_baij runex19_5 \
                                  runex19_6 runex19_fieldsplit_2 runex19_fieldsplit_3 runex19_fieldsplit_4 \
                                  runex19_composite_fieldsplit runex19_composite_fieldsplit_bjacobi runex19_composite_fieldsplit_bjacobi_2\
-                                 runex19_7 runex19_8 runex19_9 \
+                                 runex19_7 runex19_8 runex19_9 runex19_greedy_coloring \
                                  runex19_10 runex19_14 runex19_14_ds runex19_fas runex19_bjacobi runex19_composite_gs_newton ex19.rm \
                                  ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm \
                                  ex25.PETSc runex25 runex25_2 ex25.rm \
