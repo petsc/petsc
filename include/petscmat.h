@@ -1040,7 +1040,6 @@ J*/
 
 typedef const  char*           MatColoringType;
 #define MATCOLORINGJP      "jp"
-#define MATCOLORINGMIS     "mis"
 #define MATCOLORINGNATURAL "natural"
 #define MATCOLORINGSL      "sl"
 #define MATCOLORINGLF      "lf"

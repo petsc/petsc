@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = natural minpack mis jp greedy
+DIRS     = natural minpack jp greedy
 LOCDIR   = src/mat/color/impls/
 
 include ${PETSC_DIR}/conf/variables
