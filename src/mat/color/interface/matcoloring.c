@@ -43,7 +43,7 @@ PetscErrorCode  MatColoringRegister(const char sname[],PetscErrorCode (*function
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringCreate"
-/*@C
+/*@
    MatColoringCreate - Creates a matrix coloring context.
 
    Collective on MatColoring
@@ -92,7 +92,7 @@ PetscErrorCode MatColoringCreate(Mat m,MatColoring *mcptr)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringDestroy"
-/*@C
+/*@
    MatColoringDestroy - Destroys the matrix coloring context
 
    Collective on MatColoring
