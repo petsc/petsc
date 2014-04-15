@@ -4,7 +4,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC	 = mpi.c
+SOURCEC	 = mpi.c mpitime.c
 SOURCEF	 =
 SOURCEH	 = ../../../include/mpiuni/mpi.h ../../../include/mpiuni/mpif.h
 SCRIPTS  = ../../../../bin/mpiexec.uni
