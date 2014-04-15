@@ -202,6 +202,7 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,c
     entry->next    = 0;
     *fl            = entry;
 
+#if defined(PETSC_USE_LOG)
     /* add this new list to list of all lists */
     if (!dlallhead) {
       dlallhead        = *fl;
@@ -211,6 +212,8 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,c
       dlallhead        = *fl;
       (*fl)->next_list = ne;
     }
+#endif
+
   } else {
     /* search list to see if it is already there */
     ne = *fl;
