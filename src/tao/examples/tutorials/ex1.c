@@ -1,5 +1,18 @@
-static char help[] = "One-Shot Multigrid for Parameter Esimation Problem for the Poisson Equation.\n\
+static char help[] = "One-Shot Multigrid for Parameter Estimation Problem for the Poisson Equation.\n\
 Using the Interior Point Method.\n\n\n";
+
+/*F
+  We are solving the parameter estimation problem for the Laplacian. We will ask to minimize a Lagrangian
+function over $y$ and $u$, given by
+\begin{align}
+  L(u, a, \lambda) = \frac{1}{2} || Qu - d ||^2 + \frac{1}{2} || L (u - u_r) ||^2 + \lambda F(u; a)
+\end{align}
+where $Q$ is a sampling operator, $L$ is a regularization operator, $F$ defines the PDE.
+
+Currently, we have perfect information, meaning $Q = I$, and then we need no regularization, $L = I$. We
+also give the exact control for the reference $u_r$.
+
+F*/
 
 #include <petsc.h>
 #include <petscfe.h>
