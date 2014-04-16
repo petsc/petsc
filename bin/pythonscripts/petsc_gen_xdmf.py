@@ -144,9 +144,10 @@ class Xdmf:
 ''' % (f[0]+'_'+ext, domain, dof, timestep, c, dof, numSteps, dof, bs, name))
     return
 
-  def writeField(self, fp, numSteps, timestep, spaceDim, name, f, domain):
-    vtype = f[1].attrs['vector_field_type']
-    if ((spaceDim == 2 and vtype in ['vector', 'tensor', 'matrix']) or (spaceDim == 2 and vtype in ['tensor', 'matrix'])):
+  def writeField(self, fp, numSteps, timestep, cellDim, spaceDim, name, f, domain):
+    ctypes = ['tensor', 'matrix']
+    if spaceDim == 2 or cellDim != spaceDim: ctypes.append['vector']
+    if f[1].attrs['vector_field_type'] in ctypes:
       self.writeFieldComponents(fp, numSteps, timestep, spaceDim, name, f, domain)
     else:
       self.writeFieldSingle(fp, numSteps, timestep, spaceDim, name, f, domain)
@@ -173,8 +174,8 @@ class Xdmf:
       if useTime: self.writeTimeGridHeader(fp, time)
       for t in range(len(time)):
         self.writeSpaceGridHeader(fp, numCells, numCorners, cellDim, spaceDim)
-        for vf in vfields: self.writeField(fp, len(time), t, spaceDim, '/vertex_fields/'+vf[0], vf, 'Node')
-        for cf in cfields: self.writeField(fp, len(time), t, spaceDim, '/cell_fields/'+cf[0], cf, 'Cell')
+        for vf in vfields: self.writeField(fp, len(time), t, cellDim, spaceDim, '/vertex_fields/'+vf[0], vf, 'Node')
+        for cf in cfields: self.writeField(fp, len(time), t, cellDim, spaceDim, '/cell_fields/'+cf[0], cf, 'Cell')
         self.writeSpaceGridFooter(fp)
       if useTime: self.writeTimeGridFooter(fp)
       self.writeFooter(fp)
