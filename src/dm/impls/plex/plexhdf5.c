@@ -68,6 +68,7 @@ static PetscErrorCode DMSequenceView_HDF5(DM dm, const char *seqname, PetscInt s
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (seqnum < 0) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) viewer), &rank);CHKERRQ(ierr);
   ierr = VecCreateMPI(PetscObjectComm((PetscObject) viewer), rank ? 0 : 1, 1, &stamp);CHKERRQ(ierr);
   ierr = VecSetBlockSize(stamp, 1);CHKERRQ(ierr);
