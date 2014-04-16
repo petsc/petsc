@@ -498,7 +498,6 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
   MatScalar *ap1,*ap2;
 
   PetscFunctionBegin;
-  if (v) PetscValidScalarPointer(v,6);
   for (i=0; i<m; i++) {
     if (im[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
@@ -522,10 +521,8 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
       high2    = nrow2;
 
       for (j=0; j<n; j++) {
-        if (v) {
-          if (roworiented) value = v[i*n+j];
-          else             value = v[i+j*m];
-        } else value = 0.0;
+        if (roworiented) value = v[i*n+j];
+        else             value = v[i+j*m];
         if (ignorezeroentries && value == 0.0 && (addv == ADD_VALUES)) continue;
         if (in[j] >= cstart && in[j] < cend) {
           col   = in[j] - cstart;

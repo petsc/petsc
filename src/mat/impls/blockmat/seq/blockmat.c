@@ -236,7 +236,6 @@ PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[],PetscI
   Mat            *ap,*aa = a->a;
 
   PetscFunctionBegin;
-  if (v) PetscValidScalarPointer(v,6);
   for (k=0; k<m; k++) { /* loop over added rows */
     row  = im[k];
     brow = row/bs;
