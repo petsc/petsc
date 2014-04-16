@@ -134,7 +134,7 @@ PETSC_EXTERN void  *PETSCNULLPOINTERADDRESS;
 /*
     Variable type where we stash PETSc object pointers in Fortran.
 */
-typedef size_t PetscFortranAddr;
+typedef PETSC_UINTPTR_T PetscFortranAddr;
 
 /*
     These are used to support the default viewers that are
