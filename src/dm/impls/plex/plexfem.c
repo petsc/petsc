@@ -188,6 +188,7 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
   PetscSection    section;
   PetscScalar    *values;
   PetscReal      *v0, *J, detJ;
+  PetscBool      *fieldActive;
   PetscInt        numFields, numComp, dim, spDim, totDim = 0, numValues, cStart, cEnd, f, d, v, i, comp;
   PetscErrorCode  ierr;
 
@@ -206,6 +207,8 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
   ierr = DMPlexVecGetClosure(dm, section, localX, cStart, &numValues, NULL);CHKERRQ(ierr);
   if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The section cell closure size %d != dual space dimension %d", numValues, totDim);
   ierr = DMGetWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, numFields, PETSC_BOOL, &fieldActive);CHKERRQ(ierr);
+  for (f = 0; f < numFields; ++f) fieldActive[f] = funcs[f] ? PETSC_TRUE : PETSC_FALSE;
   for (i = 0; i < numIds; ++i) {
     IS              pointIS;
     const PetscInt *points;
@@ -236,12 +239,13 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
           v += numComp;
         }
       }
-      ierr = DMPlexVecSetClosure(dm, section, localX, point, values, mode);CHKERRQ(ierr);
+      ierr = DMPlexVecSetFieldClosure_Internal(dm, section, localX, fieldActive, point, values, mode);CHKERRQ(ierr);
     }
     ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
     ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
   }
   ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, numFields, PETSC_BOOL, &fieldActive);CHKERRQ(ierr);
   ierr = PetscFree3(sp,v0,J);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

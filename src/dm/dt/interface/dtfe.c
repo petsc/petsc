@@ -2719,7 +2719,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscInt Ne, PetscInt
 
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
       for (d = 0; d < numComponents; ++d)       {u[d]     = 0.0;}
-      for (d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0; refSpaceDer[d] = 0.0;}
+      for (d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0;}
       for (d = 0; d < dim; ++d) {
         x[d] = v0[d];
         for (d2 = 0; d2 < dim; ++d2) {
@@ -2733,6 +2733,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscInt Ne, PetscInt
         ierr = PetscFEGetDimension(fe[f], &Nb);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(fe[f], &Ncomp);CHKERRQ(ierr);
         ierr = PetscFEGetDefaultTabulation(fe[f], &basis, &basisDer, NULL);CHKERRQ(ierr);
+        for (d = 0; d < dim*Ncomp; ++d) refSpaceDer[d] = 0.0;
         for (b = 0; b < Nb; ++b) {
           for (comp = 0; comp < Ncomp; ++comp) {
             const PetscInt cidx = b*Ncomp+comp;
@@ -2755,7 +2756,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscInt Ne, PetscInt
         dOffset += Nb*Ncomp;
       }
       for (d = 0; d < numComponentsAux; ++d)       {a[d]     = 0.0;}
-      for (d = 0; d < dim*(numComponentsAux); ++d) {gradA[d] = 0.0; refSpaceDer[d] = 0.0;}
+      for (d = 0; d < dim*(numComponentsAux); ++d) {gradA[d] = 0.0;}
       for (f = 0; f < NfAux; ++f) {
         PetscReal *basis, *basisDer;
         PetscInt   Nb, Ncomp, b, comp, d, g;
@@ -2763,6 +2764,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscInt Ne, PetscInt
         ierr = PetscFEGetDimension(feAux[f], &Nb);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(feAux[f], &Ncomp);CHKERRQ(ierr);
         ierr = PetscFEGetDefaultTabulation(feAux[f], &basis, &basisDer, NULL);CHKERRQ(ierr);
+        for (d = 0; d < dim*Ncomp; ++d) refSpaceDer[d] = 0.0;
         for (b = 0; b < Nb; ++b) {
           for (comp = 0; comp < Ncomp; ++comp) {
             const PetscInt cidx = b*Ncomp+comp;
@@ -2904,7 +2906,7 @@ PetscErrorCode PetscFEIntegrateIFunction_Basic(PetscFE fem, PetscInt Ne, PetscIn
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
       for (d = 0; d < numComponents; ++d)       {u[d]     = 0.0;}
       for (d = 0; d < numComponents; ++d)       {u_t[d]   = 0.0;}
-      for (d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0; refSpaceDer[d] = 0.0;}
+      for (d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0;}
       for (d = 0; d < dim; ++d) {
         x[d] = v0[d];
         for (d2 = 0; d2 < dim; ++d2) {
@@ -2918,6 +2920,7 @@ PetscErrorCode PetscFEIntegrateIFunction_Basic(PetscFE fem, PetscInt Ne, PetscIn
         ierr = PetscFEGetDimension(fe[f], &Nb);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(fe[f], &Ncomp);CHKERRQ(ierr);
         ierr = PetscFEGetDefaultTabulation(fe[f], &basis, &basisDer, NULL);CHKERRQ(ierr);
+        for (d = 0; d < dim*Ncomp; ++d) refSpaceDer[d] = 0.0;
         for (b = 0; b < Nb; ++b) {
           for (comp = 0; comp < Ncomp; ++comp) {
             const PetscInt cidx = b*Ncomp+comp;
@@ -2941,7 +2944,7 @@ PetscErrorCode PetscFEIntegrateIFunction_Basic(PetscFE fem, PetscInt Ne, PetscIn
         dOffset += Nb*Ncomp;
       }
       for (d = 0; d < numComponentsAux; ++d)       {a[d]     = 0.0;}
-      for (d = 0; d < dim*(numComponentsAux); ++d) {gradA[d] = 0.0; refSpaceDer[d] = 0.0;}
+      for (d = 0; d < dim*(numComponentsAux); ++d) {gradA[d] = 0.0;}
       for (f = 0; f < NfAux; ++f) {
         PetscReal *basis, *basisDer;
         PetscInt   Nb, Ncomp, b, comp, d, g;
@@ -2949,6 +2952,7 @@ PetscErrorCode PetscFEIntegrateIFunction_Basic(PetscFE fem, PetscInt Ne, PetscIn
         ierr = PetscFEGetDimension(feAux[f], &Nb);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(feAux[f], &Ncomp);CHKERRQ(ierr);
         ierr = PetscFEGetDefaultTabulation(feAux[f], &basis, &basisDer, NULL);CHKERRQ(ierr);
+        for (d = 0; d < dim*Ncomp; ++d) refSpaceDer[d] = 0.0;
         for (b = 0; b < Nb; ++b) {
           for (comp = 0; comp < Ncomp; ++comp) {
             const PetscInt cidx = b*Ncomp+comp;
@@ -3090,7 +3094,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscInt Ne, PetscI
 
       ierr = PetscFEGetNumComponents(fe[field], &Ncomp);CHKERRQ(ierr);
       for (d = 0; d < numComponents; ++d)       {u[d]     = 0.0;}
-      for (d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0; refSpaceDer[d] = 0.0;}
+      for (d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0;}
       for (d = 0; d < dim; ++d) {
         x[d] = v0[d];
         for (d2 = 0; d2 < dim-1; ++d2) {
@@ -3104,6 +3108,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscInt Ne, PetscI
         ierr = PetscFEGetDimension(fe[f], &Nb);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(fe[f], &Ncomp);CHKERRQ(ierr);
         ierr = PetscFEGetDefaultTabulation(fe[f], &basis, &basisDer, NULL);CHKERRQ(ierr);
+        for (d = 0; d < dim*Ncomp; ++d) refSpaceDer[d] = 0.0;
         for (b = 0; b < Nb; ++b) {
           for (comp = 0; comp < Ncomp; ++comp) {
             const PetscInt cidx = b*Ncomp+comp;
@@ -3125,7 +3130,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscInt Ne, PetscI
         dOffset += Nb*Ncomp;
       }
       for (d = 0; d < numComponentsAux; ++d)       {a[d]     = 0.0;}
-      for (d = 0; d < dim*(numComponentsAux); ++d) {gradA[d] = 0.0; refSpaceDer[d] = 0.0;}
+      for (d = 0; d < dim*(numComponentsAux); ++d) {gradA[d] = 0.0;}
       for (f = 0; f < NfAux; ++f) {
         PetscReal *basis, *basisDer;
         PetscInt   Nb, Ncomp, b, comp, d, g;
@@ -3133,6 +3138,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscInt Ne, PetscI
         ierr = PetscFEGetDimension(feAux[f], &Nb);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(feAux[f], &Ncomp);CHKERRQ(ierr);
         ierr = PetscFEGetDefaultTabulation(feAux[f], &basis, &basisDer, NULL);CHKERRQ(ierr);
+        for (d = 0; d < dim*Ncomp; ++d) refSpaceDer[d] = 0.0;
         for (b = 0; b < Nb; ++b) {
           for (comp = 0; comp < Ncomp; ++comp) {
             const PetscInt cidx = b*Ncomp+comp;
@@ -3275,7 +3281,7 @@ PetscErrorCode PetscFEIntegrateBdIFunction_Basic(PetscFE fem, PetscInt Ne, Petsc
       ierr = PetscFEGetNumComponents(fe[field], &Ncomp);CHKERRQ(ierr);
       for (d = 0; d < numComponents; ++d)       {u[d]     = 0.0;}
       for (d = 0; d < numComponents; ++d)       {u_t[d]   = 0.0;}
-      for (d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0; refSpaceDer[d] = 0.0;}
+      for (d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0;}
       for (d = 0; d < dim; ++d) {
         x[d] = v0[d];
         for (d2 = 0; d2 < dim-1; ++d2) {
@@ -3289,6 +3295,7 @@ PetscErrorCode PetscFEIntegrateBdIFunction_Basic(PetscFE fem, PetscInt Ne, Petsc
         ierr = PetscFEGetDimension(fe[f], &Nb);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(fe[f], &Ncomp);CHKERRQ(ierr);
         ierr = PetscFEGetDefaultTabulation(fe[f], &basis, &basisDer, NULL);CHKERRQ(ierr);
+        for (d = 0; d < dim*Ncomp; ++d) refSpaceDer[d] = 0.0;
         for (b = 0; b < Nb; ++b) {
           for (comp = 0; comp < Ncomp; ++comp) {
             const PetscInt cidx = b*Ncomp+comp;
@@ -3311,7 +3318,7 @@ PetscErrorCode PetscFEIntegrateBdIFunction_Basic(PetscFE fem, PetscInt Ne, Petsc
         dOffset += Nb*Ncomp;
       }
       for (d = 0; d < numComponentsAux; ++d)       {a[d]     = 0.0;}
-      for (d = 0; d < dim*(numComponentsAux); ++d) {gradA[d] = 0.0; refSpaceDer[d] = 0.0;}
+      for (d = 0; d < dim*(numComponentsAux); ++d) {gradA[d] = 0.0;}
       for (f = 0; f < NfAux; ++f) {
         PetscReal *basis, *basisDer;
         PetscInt   Nb, Ncomp, b, comp, d, g;
@@ -3319,6 +3326,7 @@ PetscErrorCode PetscFEIntegrateBdIFunction_Basic(PetscFE fem, PetscInt Ne, Petsc
         ierr = PetscFEGetDimension(feAux[f], &Nb);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(feAux[f], &Ncomp);CHKERRQ(ierr);
         ierr = PetscFEGetDefaultTabulation(feAux[f], &basis, &basisDer, NULL);CHKERRQ(ierr);
+        for (d = 0; d < dim*Ncomp; ++d) refSpaceDer[d] = 0.0;
         for (b = 0; b < Nb; ++b) {
           for (comp = 0; comp < Ncomp; ++comp) {
             const PetscInt cidx = b*Ncomp+comp;
@@ -3480,7 +3488,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscInt Ne, PetscInt
 
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
       for (d = 0; d < numComponents; ++d)     {u[d]     = 0.0;}
-      for (d = 0; d < dim*numComponents; ++d) {gradU[d] = 0.0; refSpaceDer[d] = 0.0;}
+      for (d = 0; d < dim*numComponents; ++d) {gradU[d] = 0.0;}
       for (d = 0; d < dim; ++d) {
         x[d] = v0[d];
         for (d2 = 0; d2 < dim; ++d2) {
@@ -3494,6 +3502,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscInt Ne, PetscInt
         ierr = PetscFEGetDimension(fe[field_q], &Nb);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(fe[field_q], &Ncomp);CHKERRQ(ierr);
         ierr = PetscFEGetDefaultTabulation(fe[field_q], &basis, &basisDer, NULL);CHKERRQ(ierr);
+        for (d = 0; d < dim*Ncomp; ++d) refSpaceDer[d] = 0.0;
         for (b = 0; b < Nb; ++b) {
           for (comp = 0; comp < Ncomp; ++comp) {
             const PetscInt cidx = b*Ncomp+comp;
@@ -3515,7 +3524,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscInt Ne, PetscInt
         dOffset += Nb*Ncomp;
       }
       for (d = 0; d < numComponentsAux; ++d)       {a[d]     = 0.0;}
-      for (d = 0; d < dim*(numComponentsAux); ++d) {gradA[d] = 0.0; refSpaceDer[d] = 0.0;}
+      for (d = 0; d < dim*(numComponentsAux); ++d) {gradA[d] = 0.0;}
       for (field_q = 0; field_q < NfAux; ++field_q) {
         PetscReal *basis, *basisDer;
         PetscInt   Nb, Ncomp, b, comp, d2;
@@ -3523,6 +3532,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscInt Ne, PetscInt
         ierr = PetscFEGetDimension(feAux[field_q], &Nb);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(feAux[field_q], &Ncomp);CHKERRQ(ierr);
         ierr = PetscFEGetDefaultTabulation(feAux[field_q], &basis, &basisDer, NULL);CHKERRQ(ierr);
+        for (d = 0; d < dim*Ncomp; ++d) refSpaceDer[d] = 0.0;
         for (b = 0; b < Nb; ++b) {
           for (comp = 0; comp < Ncomp; ++comp) {
             const PetscInt cidx = b*Ncomp+comp;
@@ -4088,7 +4098,7 @@ PetscErrorCode PetscFEIntegrateResidual_Nonaffine(PetscFE fem, PetscInt Ne, Pets
       }
       ierr = PetscFEGetNumComponents(fe[field], &Ncomp);CHKERRQ(ierr);
       for (d = 0; d < numComponents; ++d)       {u[d]     = 0.0;}
-      for (d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0; refSpaceDer[d] = 0.0;}
+      for (d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0;}
       for (d = 0; d < dim; ++d) {
         x[d] = v0[d];
         for (d2 = 0; d2 < dim; ++d2) {
@@ -4102,6 +4112,7 @@ PetscErrorCode PetscFEIntegrateResidual_Nonaffine(PetscFE fem, PetscInt Ne, Pets
         ierr = PetscFEGetDimension(fe[f], &Nb);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(fe[f], &Ncomp);CHKERRQ(ierr);
         ierr = PetscFEGetDefaultTabulation(fe[f], &basis, &basisDer, NULL);CHKERRQ(ierr);
+        for (d = 0; d < dim*Ncomp; ++d) refSpaceDer[d] = 0.0;
         for (b = 0; b < Nb; ++b) {
           for (comp = 0; comp < Ncomp; ++comp) {
             const PetscInt cidx = b*Ncomp+comp;
@@ -4124,7 +4135,7 @@ PetscErrorCode PetscFEIntegrateResidual_Nonaffine(PetscFE fem, PetscInt Ne, Pets
         dOffset += Nb*Ncomp;
       }
       for (d = 0; d < numComponentsAux; ++d)       {a[d]     = 0.0;}
-      for (d = 0; d < dim*(numComponentsAux); ++d) {gradA[d] = 0.0; refSpaceDer[d] = 0.0;}
+      for (d = 0; d < dim*(numComponentsAux); ++d) {gradA[d] = 0.0;}
       for (f = 0; f < NfAux; ++f) {
         PetscReal *basis, *basisDer;
         PetscInt   Nb, Ncomp, b, comp, g;
@@ -4132,6 +4143,7 @@ PetscErrorCode PetscFEIntegrateResidual_Nonaffine(PetscFE fem, PetscInt Ne, Pets
         ierr = PetscFEGetDimension(feAux[f], &Nb);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(feAux[f], &Ncomp);CHKERRQ(ierr);
         ierr = PetscFEGetDefaultTabulation(feAux[f], &basis, &basisDer, NULL);CHKERRQ(ierr);
+        for (d = 0; d < dim*Ncomp; ++d) refSpaceDer[d] = 0.0;
         for (b = 0; b < Nb; ++b) {
           for (comp = 0; comp < Ncomp; ++comp) {
             const PetscInt cidx = b*Ncomp+comp;
@@ -4275,7 +4287,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Nonaffine(PetscFE fem, PetscInt Ne, Pe
 
       ierr = PetscFEGetNumComponents(fe[field], &Ncomp);CHKERRQ(ierr);
       for (d = 0; d < numComponents; ++d)       {u[d]     = 0.0;}
-      for (d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0; refSpaceDer[d] = 0.0;}
+      for (d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0;}
       for (d = 0; d < dim; ++d) {
         x[d] = v0[d];
         for (d2 = 0; d2 < dim-1; ++d2) {
@@ -4289,6 +4301,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Nonaffine(PetscFE fem, PetscInt Ne, Pe
         ierr = PetscFEGetDimension(fe[f], &Nb);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(fe[f], &Ncomp);CHKERRQ(ierr);
         ierr = PetscFEGetDefaultTabulation(fe[f], &basis, &basisDer, NULL);CHKERRQ(ierr);
+        for (d = 0; d < dim*Ncomp; ++d) refSpaceDer[d] = 0.0;
         for (b = 0; b < Nb; ++b) {
           for (comp = 0; comp < Ncomp; ++comp) {
             const PetscInt cidx = b*Ncomp+comp;
@@ -4312,7 +4325,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Nonaffine(PetscFE fem, PetscInt Ne, Pe
         dOffset += Nb*Ncomp;
       }
       for (d = 0; d < numComponentsAux; ++d)       {a[d]     = 0.0;}
-      for (d = 0; d < dim*(numComponentsAux); ++d) {gradA[d] = 0.0; refSpaceDer[d] = 0.0;}
+      for (d = 0; d < dim*(numComponentsAux); ++d) {gradA[d] = 0.0;}
       for (f = 0; f < NfAux; ++f) {
         PetscReal *basis, *basisDer;
         PetscInt   Nb, Ncomp, b, comp, g;
@@ -4320,6 +4333,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Nonaffine(PetscFE fem, PetscInt Ne, Pe
         ierr = PetscFEGetDimension(feAux[f], &Nb);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(feAux[f], &Ncomp);CHKERRQ(ierr);
         ierr = PetscFEGetDefaultTabulation(feAux[f], &basis, &basisDer, NULL);CHKERRQ(ierr);
+        for (d = 0; d < dim*Ncomp; ++d) refSpaceDer[d] = 0.0;
         for (b = 0; b < Nb; ++b) {
           for (comp = 0; comp < Ncomp; ++comp) {
             const PetscInt cidx = b*Ncomp+comp;
@@ -4482,7 +4496,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscInt Ne, Pets
 
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
       for (d = 0; d < numComponents; ++d)     {u[d]     = 0.0;}
-      for (d = 0; d < dim*numComponents; ++d) {gradU[d] = 0.0; refSpaceDer[d] = 0.0;}
+      for (d = 0; d < dim*numComponents; ++d) {gradU[d] = 0.0;}
       for (d = 0; d < dim; ++d) {
         x[d] = v0[d];
         for (d2 = 0; d2 < dim; ++d2) {
@@ -4496,6 +4510,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscInt Ne, Pets
         ierr = PetscFEGetDimension(fe[field_q], &Nb);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(fe[field_q], &Ncomp);CHKERRQ(ierr);
         ierr = PetscFEGetDefaultTabulation(fe[field_q], &basis, &basisDer, NULL);CHKERRQ(ierr);
+        for (d = 0; d < dim*Ncomp; ++d) refSpaceDer[d] = 0.0;
         for (b = 0; b < Nb; ++b) {
           for (comp = 0; comp < Ncomp; ++comp) {
             const PetscInt cidx = b*Ncomp+comp;
@@ -4517,7 +4532,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscInt Ne, Pets
         dOffset += Nb*Ncomp;
       }
       for (d = 0; d < numComponentsAux; ++d)       {a[d]     = 0.0;}
-      for (d = 0; d < dim*(numComponentsAux); ++d) {gradA[d] = 0.0; refSpaceDer[d] = 0.0;}
+      for (d = 0; d < dim*(numComponentsAux); ++d) {gradA[d] = 0.0;}
       for (field_q = 0; field_q < NfAux; ++field_q) {
         PetscReal *basis, *basisDer;
         PetscInt   Nb, Ncomp, b, comp, d2;
@@ -4525,6 +4540,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscInt Ne, Pets
         ierr = PetscFEGetDimension(feAux[field_q], &Nb);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(feAux[field_q], &Ncomp);CHKERRQ(ierr);
         ierr = PetscFEGetDefaultTabulation(feAux[field_q], &basis, &basisDer, NULL);CHKERRQ(ierr);
+        for (d = 0; d < dim*Ncomp; ++d) refSpaceDer[d] = 0.0;
         for (b = 0; b < Nb; ++b) {
           for (comp = 0; comp < Ncomp; ++comp) {
             const PetscInt cidx = b*Ncomp+comp;

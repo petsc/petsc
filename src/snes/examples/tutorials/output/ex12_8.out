@@ -1,3 +1,5 @@
+DM Object:Mesh 1 MPI processes
+  type: plex
 Mesh 'Mesh':
 Max sizes cone: 3 support: 8
 orientation is missing
