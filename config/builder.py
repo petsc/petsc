@@ -39,19 +39,19 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  # Gmsh tests 12-
                                                                  {'numProcs': 1, 'args': '-filename %(meshes)s/doublet-tet.msh -interpolate 1 -dm_view'}],
                         'src/dm/impls/plex/examples/tests/ex3': [# 0-2 2D P_1 on a triangle
-                                                                 {'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1 -convergence'},
                                                                  {'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1 -porder 1'},
                                                                  {'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1 -porder 2'},
                                                                  # 3-5 3D P_1 on a tetrahedron
-                                                                 {'numProcs': 1, 'args': '-dim 3 -petscspace_order 1 -num_comp 3 -qorder 1'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -convergence'},
                                                                  {'numProcs': 1, 'args': '-dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -porder 1'},
                                                                  {'numProcs': 1, 'args': '-dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -porder 2'},
                                                                  # 6-8 2D P_2 on a triangle
-                                                                 {'numProcs': 1, 'args': '-petscspace_order 2 -num_comp 2 -qorder 2'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 2 -num_comp 2 -qorder 2 -convergence'},
                                                                  {'numProcs': 1, 'args': '-petscspace_order 2 -num_comp 2 -qorder 2 -porder 1'},
                                                                  {'numProcs': 1, 'args': '-petscspace_order 2 -num_comp 2 -qorder 2 -porder 2'},
                                                                  # 9-11 3D P_2 on a tetrahedron
-                                                                 {'numProcs': 1, 'args': '-dim 3 -petscspace_order 2 -num_comp 3 -qorder 2'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -convergence'},
                                                                  {'numProcs': 1, 'args': '-dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -porder 1'},
                                                                  {'numProcs': 1, 'args': '-dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -porder 2'},
                                                                  # 12-14 2D P_1 on a quadrilaterial
@@ -59,13 +59,13 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -petscspace_poly_tensor 0 -num_comp 2 -qorder 1 -porder 1', 'requires': 'Broken'},
                                                                  {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -petscspace_poly_tensor 0 -num_comp 2 -qorder 1 -porder 2', 'requires': 'Broken'},
                                                                  # 15-17 2D Q_1 on a quadrilaterial
-                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -num_comp 2 -qorder 1'},
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -num_comp 2 -qorder 1 -convergence'},
                                                                  {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -num_comp 2 -qorder 1 -porder 1'},
                                                                  {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -num_comp 2 -qorder 1 -porder 2'},
                                                                  # 18-20 2D Q_2 on a quadrilaterial
-                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -num_comp 2 -qorder 1'},
-                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -num_comp 2 -qorder 1 -porder 1'},
-                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -num_comp 2 -qorder 1 -porder 2'}],
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -num_comp 2 -qorder 2 -convergence'},
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -num_comp 2 -qorder 2 -porder 1'},
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -num_comp 2 -qorder 2 -porder 2'}],
                         'src/dm/impls/plex/examples/tests/ex4': [# 2D Simplex 0-3
                                                                  {'numProcs': 1, 'args': '-dim 2 -cell_hybrid 0 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 1, 'args': '-dim 2 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},

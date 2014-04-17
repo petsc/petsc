@@ -19,6 +19,7 @@ typedef struct {
   PetscFE   fe;                /* The finite element */
   /* Testing space */
   PetscInt  porder;            /* Order of polynomials to test */
+  PetscBool convergence;       /* Test for order of convergence */
 } AppCtx;
 
 static int spdim = 1;
@@ -68,12 +69,12 @@ void quadraticDer(const PetscReal coords[], const PetscReal n[], PetscScalar *u,
 void trig(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
   PetscInt d;
-  for (d = 0; d < spdim; ++d) u[d] = sin(coords[d]);
+  for (d = 0; d < spdim; ++d) u[d] = tanh(coords[d] - 0.5);
 }
 void trigDer(const PetscReal coords[], const PetscReal n[], PetscScalar *u, void *ctx)
 {
   PetscInt d;
-  for (d = 0; d < spdim; ++d) u[d] = cos(coords[d]) * n[d];
+  for (d = 0; d < spdim; ++d) u[d] = 1.0/PetscSqr(cosh(coords[d] - 0.5)) * n[d];
 }
 
 #undef __FUNCT__
@@ -91,6 +92,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->qorder          = 0;
   options->numComponents   = 1;
   options->porder          = 0;
+  options->convergence     = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Projection Test Options", "DMPlex");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex3.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
@@ -101,6 +103,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-qorder", "The quadrature order", "ex3.c", options->qorder, &options->qorder, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-num_comp", "The number of field components", "ex3.c", options->numComponents, &options->numComponents, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-porder", "The order of polynomials to test", "ex3.c", options->porder, &options->porder, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-convergence", "Check the convergence rate", "ex3.c", options->convergence, &options->convergence, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   spdim = options->dim;
@@ -375,6 +378,7 @@ static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!user->convergence) PetscFunctionReturn(0);
   ierr = PetscObjectReference((PetscObject) odm);CHKERRQ(ierr);
   ierr = ComputeError(odm, exactFuncs, exactFuncDers, exactCtxs, &errorOld, &errorDerOld, user);CHKERRQ(ierr);
   for (r = 0; r < Nr; ++r) {
@@ -383,7 +387,9 @@ static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
     ierr = SetupSection(rdm, user);CHKERRQ(ierr);
     ierr = ComputeError(rdm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user);CHKERRQ(ierr);
     p    = log2(errorOld/error);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Convergence rate at refinement %d: %.2g\n", r, p);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Function   convergence rate at refinement %d: %.2g\n", r, p);CHKERRQ(ierr);
+    p    = log2(errorDerOld/errorDer);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Derivative convergence rate at refinement %d: %.2g\n", r, p);CHKERRQ(ierr);
     ierr = DMDestroy(&odm);CHKERRQ(ierr);
     odm         = rdm;
     errorOld    = error;

@@ -4,6 +4,3 @@ Interpolation tests pass for order 1 at tolerance 1e-10
 Interpolation tests pass for order 1 derivatives at tolerance 1e-10
 Interpolation tests FAIL for order 1 at tolerance 1e-10 error 0.0606755
 Interpolation tests FAIL for order 1 derivatives at tolerance 1e-10 error 0.163724
-Convergence rate at refinement 0: 2
-Convergence rate at refinement 1: 2
-Convergence rate at refinement 2: 2
