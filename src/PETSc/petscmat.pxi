@@ -90,6 +90,7 @@ cdef extern from * nogil:
 
     ctypedef enum PetscMatOption "MatOption":
         MAT_ROW_ORIENTED
+        MAT_UNUSED_NONZERO_LOCATION_ERR
         MAT_NEW_NONZERO_LOCATIONS
         MAT_SYMMETRIC
         MAT_STRUCTURALLY_SYMMETRIC
