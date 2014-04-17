@@ -16,6 +16,7 @@ typedef struct {
   /* Element definition */
   PetscInt  qorder;            /* Order of the quadrature */
   PetscInt  numComponents;     /* Number of field components */
+  PetscBool continuous;        /* Use continuous space */
   PetscFE   fe;                /* The finite element */
   /* Testing space */
   PetscInt  porder;            /* Order of polynomials to test */
@@ -65,6 +66,20 @@ void quadraticDer(const PetscReal coords[], const PetscReal n[], PetscScalar *u,
   else if (spdim > 0) {u[0] = 2.0*coords[0]*n[0];}
 }
 
+/* u = x^3 or u = (x^3, x^2y) or u = (x^2y, y^2z, z^2x) */
+void cubic(const PetscReal coords[], PetscScalar *u, void *ctx)
+{
+  if (spdim > 2)      {u[0] = coords[0]*coords[0]*coords[1]; u[1] = coords[1]*coords[1]*coords[2]; u[2] = coords[2]*coords[2]*coords[0];}
+  else if (spdim > 1) {u[0] = coords[0]*coords[0]*coords[0]; u[1] = coords[0]*coords[0]*coords[1];}
+  else if (spdim > 0) {u[0] = coords[0]*coords[0]*coords[0];}
+}
+void cubicDer(const PetscReal coords[], const PetscReal n[], PetscScalar *u, void *ctx)
+{
+  if (spdim > 2)      {u[0] = 2.0*coords[0]*coords[1]*n[0] + coords[0]*coords[0]*n[1]; u[1] = 2.0*coords[1]*coords[2]*n[1] + coords[1]*coords[1]*n[2]; u[2] = 2.0*coords[2]*coords[0]*n[2] + coords[2]*coords[2]*n[0];}
+  else if (spdim > 1) {u[0] = 3.0*coords[0]*coords[0]*n[0]; u[1] = 2.0*coords[0]*coords[1]*n[0] + coords[0]*coords[0]*n[1];}
+  else if (spdim > 0) {u[0] = 3.0*coords[0]*coords[0]*n[0];}
+}
+
 /* u = sin(x) */
 void trig(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
@@ -91,6 +106,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->refinementLimit = 0.0;
   options->qorder          = 0;
   options->numComponents   = 1;
+  options->continuous      = PETSC_TRUE;
   options->porder          = 0;
   options->convergence     = PETSC_FALSE;
 
@@ -102,6 +118,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex3.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-qorder", "The quadrature order", "ex3.c", options->qorder, &options->qorder, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-num_comp", "The number of field components", "ex3.c", options->numComponents, &options->numComponents, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-continuous", "User a continuous element", "ex3.c", options->continuous, &options->continuous, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-porder", "The order of polynomials to test", "ex3.c", options->porder, &options->porder, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-convergence", "Check the convergence rate", "ex3.c", options->convergence, &options->convergence, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -270,6 +287,10 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
     exactFuncs[0]    = quadratic;
     exactFuncDers[0] = quadraticDer;
     break;
+  case 3:
+    exactFuncs[0]    = cubic;
+    exactFuncDers[0] = cubicDer;
+    break;
   default:
     SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for dimension %d order %d", user->dim, order);
   }
@@ -410,7 +431,7 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, user.dim, user.numComponents, user.simplex, NULL, user.qorder, &user.fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, user.dim, user.numComponents, user.simplex, user.continuous, NULL, user.qorder, &user.fe);CHKERRQ(ierr);
   user.fem.fe = &user.fe;
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
   ierr = CheckFunctions(dm, user.porder, &user);CHKERRQ(ierr);

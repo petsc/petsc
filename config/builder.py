@@ -65,7 +65,17 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  # 18-20 2D Q_2 on a quadrilaterial
                                                                  {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -num_comp 2 -qorder 2 -convergence'},
                                                                  {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -num_comp 2 -qorder 2 -porder 1'},
-                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -num_comp 2 -qorder 2 -porder 2'}],
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -num_comp 2 -qorder 2 -porder 2'},
+                                                                 # 21-24 2D P_3 on a triangle
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 3 -num_comp 2 -qorder 3 -convergence', 'requires': 'Broken'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 3 -num_comp 2 -qorder 3 -porder 1', 'requires': 'Broken'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 3 -num_comp 2 -qorder 3 -porder 2', 'requires': 'Broken'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 3 -num_comp 2 -qorder 3 -porder 3', 'requires': 'Broken'},
+                                                                 # 25-27 2D P_1disc on a triangle
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -continuous 0 -qorder 1 -convergence'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -continuous 0 -qorder 1 -porder 1'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -continuous 0 -qorder 1 -porder 2'},
+                                                                 ],
                         'src/dm/impls/plex/examples/tests/ex4': [# 2D Simplex 0-3
                                                                  {'numProcs': 1, 'args': '-dim 2 -cell_hybrid 0 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 1, 'args': '-dim 2 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
