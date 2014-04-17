@@ -864,7 +864,7 @@ PetscErrorCode  DMSetFromOptions_Plex(DM dm)
   /* Handle DMPlex refinement */
   ierr = PetscOptionsInt("-dm_refine", "The number of uniform refinements", "DMCreate", refine, &refine, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dm_refine_hierarchy", "The number of uniform refinements", "DMCreate", refine, &refine, &isHierarchy);CHKERRQ(ierr);
-  ierr = DMPlexSetRefinementUniform(dm, refine ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
+  if (refine) {ierr = DMPlexSetRefinementUniform(dm, PETSC_TRUE);CHKERRQ(ierr);}
   if (refine && isHierarchy) {
     DM *dms;
 
