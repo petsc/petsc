@@ -1624,10 +1624,9 @@ PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscCellGeome
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceGetDimension_SingleCell_Lagrange"
-PetscErrorCode PetscDualSpaceGetDimension_SingleCell_Lagrange(PetscDualSpace sp, PetscInt *dim)
+static PetscErrorCode PetscDualSpaceGetDimension_SingleCell_Lagrange(PetscDualSpace sp, PetscInt order, PetscInt *dim)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
-  PetscInt            deg = sp->order;
   PetscReal           D   = 1.0;
   PetscInt            n, i;
   PetscErrorCode      ierr;
@@ -1636,12 +1635,12 @@ PetscErrorCode PetscDualSpaceGetDimension_SingleCell_Lagrange(PetscDualSpace sp,
   ierr = DMPlexGetDimension(sp->dm, &n);CHKERRQ(ierr);
   if (lag->simplex) {
     for (i = 1; i <= n; ++i) {
-      D *= ((PetscReal) (deg+i))/i;
+      D *= ((PetscReal) (order+i))/i;
     }
     *dim = (PetscInt) (D + 0.5);
   } else {
     *dim = 1;
-    for (i = 0; i < n; ++i) *dim *= (deg+1);
+    for (i = 0; i < n; ++i) *dim *= (order+1);
   }
   PetscFunctionReturn(0);
 }
@@ -1667,9 +1666,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = PetscCalloc1(dim+1, &lag->numDof);CHKERRQ(ierr);
   ierr = PetscMalloc2(depth+1,&pStart,depth+1,&pEnd);CHKERRQ(ierr);
-  for (d = 0; d <= depth; ++d) {
-    ierr = DMPlexGetDepthStratum(dm, d, &pStart[d], &pEnd[d]);CHKERRQ(ierr);
-  }
+  for (d = 0; d <= depth; ++d) {ierr = DMPlexGetDepthStratum(dm, d, &pStart[d], &pEnd[d]);CHKERRQ(ierr);}
   ierr = DMPlexGetConeSize(dm, pStart[depth], &coneSize);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &csection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
@@ -1677,7 +1674,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   else if (coneSize == 1 << dim) simplex = PETSC_FALSE;
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support simplices and tensor product cells");
   lag->simplex = simplex;
-  ierr = PetscDualSpaceGetDimension_SingleCell_Lagrange(sp, &pdimMax);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetDimension_SingleCell_Lagrange(sp, sp->order, &pdimMax);CHKERRQ(ierr);
   pdimMax *= (pEnd[dim] - pStart[dim]);
   ierr = PetscMalloc1(pdimMax, &sp->functional);CHKERRQ(ierr);
   if (!dim) {
@@ -1816,7 +1813,7 @@ PetscErrorCode PetscDualSpaceGetDimension_Lagrange(PetscDualSpace sp, PetscInt *
   ierr = PetscDualSpaceGetNumDof(sp, &numDof);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(K, &spatialDim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(K, 0, NULL, &Nc);CHKERRQ(ierr);
-  if (Nc == 1) {ierr = PetscDualSpaceGetDimension_SingleCell_Lagrange(sp, dim);CHKERRQ(ierr); PetscFunctionReturn(0);}
+  if (Nc == 1) {ierr = PetscDualSpaceGetDimension_SingleCell_Lagrange(sp, sp->order, dim);CHKERRQ(ierr); PetscFunctionReturn(0);}
   for (d = 0; d <= spatialDim; ++d) {
     PetscInt pStart, pEnd;
 
