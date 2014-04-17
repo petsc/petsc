@@ -466,11 +466,11 @@ PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscSpace sp)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectOptionsBegin((PetscObject) sp);CHKERRQ(ierr);
+  ierr = PetscOptionsHead("PetscSpace Polynomial Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-petscspace_poly_num_variables", "The number of different variables, e.g. x and y", "PetscSpacePolynomialSetNumVariables", poly->numVariables, &poly->numVariables, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-petscspace_poly_sym", "Use only symmetric polynomials", "PetscSpacePolynomialSetSymmetric", poly->symmetric, &poly->symmetric, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-petscspace_poly_tensor", "Use the tensor product polynomials", "PetscSpacePolynomialSetTensor", poly->tensor, &poly->tensor, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -886,9 +886,9 @@ PetscErrorCode PetscSpaceSetFromOptions_DG(PetscSpace sp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectOptionsBegin((PetscObject) sp);CHKERRQ(ierr);
+  ierr = PetscOptionsHead("PetscSpace DG Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-petscspace_dg_num_variables", "The number of different variables, e.g. x and y", "PetscSpaceDGSetNumVariables", dg->numVariables, &dg->numVariables, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1652,6 +1652,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
   DM                  dm    = sp->dm;
   PetscInt            order = sp->order;
+  PetscBool           disc  = lag->continuous ? PETSC_FALSE : PETSC_TRUE;
   PetscSection        csection;
   Vec                 coordinates;
   PetscReal          *qpoints, *qweights;
@@ -1703,7 +1704,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
           const PetscScalar *coords;
           PetscInt           dof, off, d;
 
-          if (order < 1) continue;
+          if (order < 1 || disc) continue;
           ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
           ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
           ierr = PetscMalloc1(1, &qweights);CHKERRQ(ierr);
@@ -1722,7 +1723,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
           PetscScalar *coords;
           PetscInt     num = order-1, k;
 
-          if (order < 2) continue;
+          if (order < 2 || disc) continue;
           coords = NULL;
           ierr = DMPlexVecGetClosure(dm, csection, coordinates, p, &n, &coords);CHKERRQ(ierr);
           if (n != dim*2) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %d has %d coordinate values instead of %d", p, n, dim*2);
@@ -1740,6 +1741,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
         } else if ((p >= pStart[depth-1]) && (p < pEnd[depth-1])) {
           /* Faces */
 
+          if (disc) continue;
           if ( simplex && (order < 3)) continue;
           if (!simplex && (order < 2)) continue;
           lag->numDof[depth-1] = 0;
@@ -1764,6 +1766,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
 
             for (d = 0; d < dim; ++d) {dx[d] = (coords[(d+1)*dim+d] - coords[d])/(orderEff+2);}
             for (o = 0; o <= orderEff; ++o) {
+              ierr = PetscMemzero(ind, cdim*sizeof(PetscInt));CHKERRQ(ierr);
               while (ind[0] >= 0) {
                 ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
                 ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
@@ -1813,6 +1816,24 @@ PetscErrorCode PetscDualSpaceDestroy_Lagrange(PetscDualSpace sp)
   PetscFunctionBegin;
   ierr = PetscFree(lag->numDof);CHKERRQ(ierr);
   ierr = PetscFree(lag);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeGetContinuity_C", NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeSetContinuity_C", NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceSetFromOptions_Lagrange"
+PetscErrorCode PetscDualSpaceSetFromOptions_Lagrange(PetscDualSpace sp)
+{
+  PetscBool      continuous, flg;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscDualSpaceLagrangeGetContinuity(sp, &continuous);CHKERRQ(ierr);
+  ierr = PetscOptionsHead("PetscDualSpace Lagrange Options");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-petscdualspace_lagrange_continuity", "Flag for continuous element", "PetscDualSpaceLagrangeSetContinuity", continuous, &continuous, &flg);CHKERRQ(ierr);
+  if (flg) {ierr = PetscDualSpaceLagrangeSetContinuity(sp, continuous);CHKERRQ(ierr);}
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1853,11 +1874,95 @@ PetscErrorCode PetscDualSpaceGetNumDof_Lagrange(PetscDualSpace sp, const PetscIn
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceLagrangeGetContinuity_Lagrange"
+static PetscErrorCode PetscDualSpaceLagrangeGetContinuity_Lagrange(PetscDualSpace sp, PetscBool *continuous)
+{
+  PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(continuous, 2);
+  *continuous = lag->continuous;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceLagrangeSetContinuity_Lagrange"
+static PetscErrorCode PetscDualSpaceLagrangeSetContinuity_Lagrange(PetscDualSpace sp, PetscBool continuous)
+{
+  PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  lag->continuous = continuous;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceLagrangeGetContinuity"
+/*@
+  PetscDualSpaceLagrangeGetContinuity - Retrieves the flag for element continuity
+
+  Not Collective
+
+  Input Parameter:
+. sp         - the PetscDualSpace
+
+  Output Parameter:
+. continuous - flag for element continuity
+
+  Level: intermediate
+
+.keywords: PetscDualSpace, Lagrange, continuous, discontinuous
+.seealso: PetscDualSpaceLagrangeSetContinuity()
+@*/
+PetscErrorCode PetscDualSpaceLagrangeGetContinuity(PetscDualSpace sp, PetscBool *continuous)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(continuous, 2);
+  ierr = PetscTryMethod(sp, "PetscDualSpaceLagrangeGetContinuity_C", (PetscDualSpace,PetscBool*),(sp,continuous));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceLagrangeSetContinuity"
+/*@
+  PetscDualSpaceLagrangeSetContinuity - Indicate whether the element is continuous
+
+  Logically Collective on PetscDualSpace
+
+  Input Parameters:
++ sp         - the PetscDualSpace
+- continuous - flag for element continuity
+
+  Options Database:
+. -petscdualspace_lagrange_continuity <bool>
+
+  Level: intermediate
+
+.keywords: PetscDualSpace, Lagrange, continuous, discontinuous
+.seealso: PetscDualSpaceLagrangeGetContinuity()
+@*/
+PetscErrorCode PetscDualSpaceLagrangeSetContinuity(PetscDualSpace sp, PetscBool continuous)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidLogicalCollectiveBool(sp, continuous, 2);
+  ierr = PetscTryMethod(sp, "PetscDualSpaceLagrangeSetContinuity_C", (PetscDualSpace,PetscBool),(sp,continuous));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceInitialize_Lagrange"
 PetscErrorCode PetscDualSpaceInitialize_Lagrange(PetscDualSpace sp)
 {
   PetscFunctionBegin;
-  sp->ops->setfromoptions = NULL;
+  sp->ops->setfromoptions = PetscDualSpaceSetFromOptions_Lagrange;
   sp->ops->setup          = PetscDualSpaceSetUp_Lagrange;
   sp->ops->view           = NULL;
   sp->ops->destroy        = PetscDualSpaceDestroy_Lagrange;
@@ -1886,10 +1991,13 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace sp)
   ierr     = PetscNewLog(sp,&lag);CHKERRQ(ierr);
   sp->data = lag;
 
-  lag->numDof  = NULL;
-  lag->simplex = PETSC_TRUE;
+  lag->numDof     = NULL;
+  lag->simplex    = PETSC_TRUE;
+  lag->continuous = PETSC_TRUE;
 
   ierr = PetscDualSpaceInitialize_Lagrange(sp);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeGetContinuity_C", PetscDualSpaceLagrangeGetContinuity_Lagrange);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceLagrangeSetContinuity_C", PetscDualSpaceLagrangeSetContinuity_Lagrange);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6407,12 +6515,13 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   Collective on DM
 
   Input Parameters:
-+ dm        - The underlying DM for the domain
-. dim       - The spatial dimension
-. numComp   - The number of components
-. isSimplex - Flag for simplex reference cell, otherwise its a tensor product
-. prefix    - The options prefix, or NULL
-- qorder    - The quadrature order
++ dm         - The underlying DM for the domain
+. dim        - The spatial dimension
+. numComp    - The number of components
+. isSimplex  - Flag for simplex reference cell, otherwise its a tensor product
+. continuous - Flag for continuous element
+. prefix     - The options prefix, or NULL
+- qorder     - The quadrature order
 
   Output Parameter:
 . fem - The PetscFE object
@@ -6422,7 +6531,7 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
 .keywords: PetscFE, finite element
 .seealso: PetscFECreate(), PetscSpaceCreate(), PetscDualSpaceCreate()
 @*/
-PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt numComp, PetscBool isSimplex, const char prefix[], PetscInt qorder, PetscFE *fem)
+PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt numComp, PetscBool isSimplex, PetscBool continuous, const char prefix[], PetscInt qorder, PetscFE *fem)
 {
   PetscQuadrature q;
   DM              K;
@@ -6448,6 +6557,7 @@ PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt numComp, Petsc
   ierr = DMDestroy(&K);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetOrder(Q, order);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetFromOptions(Q);CHKERRQ(ierr);
+  ierr = PetscDualSpaceLagrangeSetContinuity(Q, continuous);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
   /* Create element */
   ierr = PetscFECreate(PetscObjectComm((PetscObject) dm), fem);CHKERRQ(ierr);
