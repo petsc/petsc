@@ -61,6 +61,9 @@ PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc,const PetscReal *weight
     SETERRQ(PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"MatColoringDegrees requires an MPI/SEQAIJ Matrix");
   }
   /* get the inner matrix structure */
+  oG = NULL;
+  oi = NULL;
+  oj = NULL;
   if (isMPI) {
     aij = (Mat_MPIAIJ*)G->data;
     dG = aij->A;
@@ -80,12 +83,10 @@ PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc,const PetscReal *weight
     }
   } else {
     dG = G;
-    oG = NULL;
     ierr = MatGetSize(dG,NULL,&dn);CHKERRQ(ierr);
     daij = (Mat_SeqAIJ*)dG->data;
     di = daij->i;
     dj = daij->j;
-    sf = NULL;
   }
   /* set up the distance-zero weights */
   if (!dwts) {
@@ -170,6 +171,8 @@ PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc,PetscInt *lperm,ISCo
     SETERRQ(PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"MatColoringDegrees requires an MPI/SEQAIJ Matrix");
   }
   /* get the inner matrix structure */
+  oG = NULL;
+  oi = NULL;
   if (isMPI) {
     aij = (Mat_MPIAIJ*)G->data;
     dG = aij->A;
@@ -182,7 +185,6 @@ PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc,PetscInt *lperm,ISCo
     ierr = MatGetSize(oG,&dn,NULL);CHKERRQ(ierr);
   } else {
     dG = G;
-    oG = NULL;
     ierr = MatGetSize(dG,NULL,&dn);CHKERRQ(ierr);
     daij = (Mat_SeqAIJ*)dG->data;
     di = daij->i;
@@ -315,6 +317,9 @@ PetscErrorCode MCJPMinColor_Private(MatColoring mc,ISColoringValue maxcolor,cons
     SETERRQ(PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"MatColoringDegrees requires an MPI/SEQAIJ Matrix");
   }
   /* get the inner matrix structure */
+  oG = NULL;
+  oi = NULL;
+  oj = NULL;
   if (isMPI) {
     aij = (Mat_MPIAIJ*)G->data;
     dG = aij->A;
@@ -334,12 +339,10 @@ PetscErrorCode MCJPMinColor_Private(MatColoring mc,ISColoringValue maxcolor,cons
     }
   } else {
     dG = G;
-    oG = NULL;
     ierr = MatGetSize(dG,NULL,&dn);CHKERRQ(ierr);
     daij = (Mat_SeqAIJ*)dG->data;
     di = daij->i;
     dj = daij->j;
-    sf = NULL;
   }
   for (i=0;i<dn;i++) {
     mincolors[i] = IS_COLORING_MAX;
@@ -467,7 +470,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscol
   }
   round = 0;
   while (nadded_total < ntotal) {
-    ierr = MCJPMinColor_Private(mc,maxcolor_global,color,mincolor);CHKERRQ(ierr);
+    ierr = MCJPMinColor_Private(mc,(ISColoringValue)maxcolor_global,color,mincolor);CHKERRQ(ierr);
     ierr = MCJPGreatestWeight_Private(mc,weights,maxweights);CHKERRQ(ierr);
     for (i=0;i<n;i++) {
       /* choose locally maximal vertices; weights less than zero are omitted from the graph */
