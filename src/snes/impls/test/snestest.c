@@ -33,6 +33,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
   for (i=0; i<3; i++) {
     void                     *functx;
     static const char *const loc[] = {"user-defined state","constant state -1.0","constant state 1.0"};
+    PetscInt                 m,n,M,N;
 
     if (i == 1) {
       ierr = VecSet(x,-1.0);CHKERRQ(ierr);
@@ -50,15 +51,15 @@ PetscErrorCode SNESSolve_Test(SNES snes)
 
     /* compute both versions of Jacobian */
     ierr = SNESComputeJacobian(snes,x,A,A);CHKERRQ(ierr);
-    if (!i) {
-      PetscInt m,n,M,N;
-      ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
-      ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-      ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-      ierr = MatSetSizes(B,m,n,M,N);CHKERRQ(ierr);
-      ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-      ierr = MatSetUp(B);CHKERRQ(ierr);
-    }
+
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+    ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,m,n,M,N);CHKERRQ(ierr);
+    ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
+    ierr = MatSetUp(B);CHKERRQ(ierr);
+    ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+
     ierr = SNESGetFunction(snes,NULL,NULL,&functx);CHKERRQ(ierr);
     ierr = SNESComputeJacobianDefault(snes,x,B,B,functx);CHKERRQ(ierr);
     if (neP->complete_print) {
@@ -116,9 +117,9 @@ PetscErrorCode SNESSolve_Test(SNES snes)
         ierr = VecView(f,viewer);CHKERRQ(ierr);
       }
     }
-
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+
   /*
    Abort after the first iteration due to the jacobian not being valid.
   */
@@ -247,6 +248,7 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
   ierr = MatSetSizes(B,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = SNESGetFunction(snes,NULL,NULL,&functx);CHKERRQ(ierr);
   ierr = SNESComputeJacobianDefault(snes,x,B,B,functx);CHKERRQ(ierr);
 
