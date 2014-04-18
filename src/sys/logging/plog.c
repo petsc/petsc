@@ -729,6 +729,9 @@ PetscErrorCode  PetscLogStageGetId(const char name[], PetscLogStage *stage)
   can either use an existing classid, such as MAT_CLASSID, or create
   their own as shown in the example.
 
+  If an existing event with the same name exists, its event handle is
+  returned instead of creating a new event.
+
   Level: intermediate
 
 .keywords: log, event, register
@@ -745,6 +748,8 @@ PetscErrorCode  PetscLogEventRegister(const char name[],PetscClassId classid,Pet
   PetscFunctionBegin;
   *event = PETSC_DECIDE;
   ierr   = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  ierr   = EventRegLogGetEvent(stageLog->eventLog, name, event);CHKERRQ(ierr);
+  if (*event > 0) PetscFunctionReturn(0);
   ierr   = EventRegLogRegister(stageLog->eventLog, name, classid, event);CHKERRQ(ierr);
   for (stage = 0; stage < stageLog->numStages; stage++) {
     ierr = EventPerfLogEnsureSize(stageLog->stageInfo[stage].eventLog, stageLog->eventLog->numEvents);CHKERRQ(ierr);
@@ -1100,7 +1105,7 @@ M*/
 . name  - The event name
 
   Output Parameter:
-. event - The event
+. event - The event, or -1 if no event with that name exists
 
   Level: intermediate
 

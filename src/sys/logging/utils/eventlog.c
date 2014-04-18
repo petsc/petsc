@@ -481,7 +481,7 @@ PetscErrorCode EventPerfLogDeactivateClass(PetscEventPerfLog eventLog, PetscEven
 - name     - The stage name
 
   Output Parameter:
-. event    - The event id
+. event    - The event id, or -1 if not found
 
   Level: developer
 
@@ -500,10 +500,11 @@ PetscErrorCode  EventRegLogGetEvent(PetscEventRegLog eventLog, const char name[]
   *event = -1;
   for (e = 0; e < eventLog->numEvents; e++) {
     ierr = PetscStrcasecmp(eventLog->eventInfo[e].name, name, &match);CHKERRQ(ierr);
-    if (match) break;
+    if (match) {
+      *event = e;
+      break;
+    }
   }
-  if (e == eventLog->numEvents) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "No event named %s", name);
-  *event = e;
   PetscFunctionReturn(0);
 }
 
