@@ -655,10 +655,10 @@ int main(int argc, char **argv)
   user.fem.fe    = user.fe;
   user.fem.feBd  = NULL;
   user.fem.feAux = NULL;
-  ierr = PetscFECreateDefault(dm, user.dim, user.dim, user.simplex, "vel_", -1, &user.fe[0]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, user.dim, user.dim, user.simplex, PETSC_TRUE, "vel_", -1, &user.fe[0]);CHKERRQ(ierr);
   ierr = PetscFEGetBasisSpace(user.fe[0], &P);CHKERRQ(ierr);
   ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, user.dim, 1, user.simplex, "pres_", order, &user.fe[1]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, user.dim, 1, user.simplex, PETSC_TRUE, "pres_", order, &user.fe[1]);CHKERRQ(ierr);
   //ierr = SetupElement(dm, &user);CHKERRQ(ierr);
   for (f = 0; f < NUM_FIELDS; ++f) {
     PetscInt numComp;
