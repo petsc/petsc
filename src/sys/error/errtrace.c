@@ -128,7 +128,7 @@ PetscErrorCode  PetscErrorPrintfDefault(const char format[],...)
 
 static void PetscErrorPrintfHilight(void)
 {
-#if defined(PETSC_HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H) && defined(PETSC_USE_ISATTY)
   if (PetscErrorPrintf == PetscErrorPrintfDefault) {
     if (isatty(fileno(PETSC_STDERR))) fprintf(PETSC_STDERR,"\033[1;31m");
   }
@@ -137,7 +137,7 @@ static void PetscErrorPrintfHilight(void)
 
 static void PetscErrorPrintfNormal(void)
 {
-#if defined(PETSC_HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H) && defined(PETSC_USE_ISATTY)
   if (PetscErrorPrintf == PetscErrorPrintfDefault) {
     if (isatty(fileno(PETSC_STDERR))) fprintf(PETSC_STDERR,"\033[0;39m\033[0;49m");
   }
