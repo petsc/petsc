@@ -146,6 +146,7 @@
       </ul>
       <h4>PC:</h4>
       <ul>
+        <li>PCASA has been removed, it never worked properly</li>
         <li>The documented, but semi-private function <tt>PCMGResidual_Default()</tt> is now public and named <tt>PCMGResidualDefault()</tt>.</li>
         <li>PCGAMG default smoother changed from PCJACOBI to PCSOR.</li>
         <li><tt>PCFieldSplitSchurPrecondition()</tt> deprecated (replaced in Fortran) in favor of <tt>PCFieldSplitSetSchurPre()</tt>.</li>
@@ -173,6 +174,7 @@
       </ul>
       <h4>DM/DA:</h4>
       <ul>
+        <li>DMADDA has been removed, it never worked correctly</li>
         <li>The MatType argument is removed from DMCreateMatrix(), you can use DMSetMatType() to indicate the type you want used with a DM, defaults to MATAIJ</li>
         <li><tt>DMDABoundaryType</tt> has become <tt>DMBoundaryType</tt>, and all the enumeration values have also been renamed.</li>
       </ul>
