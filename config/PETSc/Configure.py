@@ -669,6 +669,12 @@ prepend-path PATH %s
       self.addDefine('UNUSED', ' ')
     self.popLanguage()
 
+  def configureIsatty(self):
+    '''Check if the Unix C function isatty() works correctly
+       Actually just assumes it does not work correctly on batch systems'''
+    if not self.framework.argDB['with-batch']:
+      self.addDefine('USE_ISATTY',1)
+
   def configureDeprecated(self):
     '''Check if __attribute((deprecated)) is supported'''
     self.pushLanguage(self.languages.clanguage)
@@ -959,6 +965,7 @@ prepend-path PATH %s
     self.executeTest(self.configurePrefetch)
     self.executeTest(self.configureUnused)
     self.executeTest(self.configureDeprecated)
+    self.executeTest(self.configureIsatty)
     self.executeTest(self.configureExpect);
     self.executeTest(self.configureFunctionName);
     self.executeTest(self.configureIntptrt);
