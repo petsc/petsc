@@ -2,7 +2,7 @@
 
 configure_options = [
   '--with-cc=clang',
-  '--with-fc=gfortran', # homebrew
+  '--with-fc=gfortran',
   '--with-cxx=clang++',
 
   '--with-clanguage=cxx',
