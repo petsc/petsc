@@ -3743,6 +3743,7 @@ Nonlinear Additive Schwarz   & SNESNASM        & nasm        & \\
 Composite                    & SNESCOMPOSITE   & composite   & \\
 Nonlinear Gauss-Seidel       & SNESNGS         & ngs         & \\
 Anderson Mixing              & SNESANDERSON    & anderson    & \\
+Shell                        & SNESSHELL       & shell       & \\
 \hline
 \end{tabular}
 \end{center}
@@ -3750,28 +3751,43 @@ Anderson Mixing              & SNESANDERSON    & anderson    & \\
 \label{tab_snesdefaults}
 \end{table}
 
-\subsection{Line Search Techniques} \sindex{line search}
+\subsection{Line Search Newton} \sindex{line search}
 
-The method SNESNEWTONLS (\trl{-snes_type} \trl{newtonls}) provides a line
-search Newton method for solving systems of nonlinear equations.  By
-default, this technique employs cubic backtracking \cite{dennis:83}.
-An alternative line search routine can be set with the command
-\begin{tabbing}
-  SNESSetLineSearch\=(SNES snes,PetscErrorCode (*ls)(SNES,Vec,Vec,Vec,Vec,double,double*,double*),\\
-                   \>void *lsctx);
-\end{tabbing}
-Other line search methods provided by PETSc are
-SNESSearchQuadraticLine(), SNESLineSearchNo(), and SNESLineSearchNoNorms(),
-which can be set with the option \findex{-snes_ls}
-\begin{tabbing}
-  \trl{-snes_ls [cubic, quadratic, basic, basicnonorms]}
-\end{tabbing}
-The line search routines involve several parameters, which are set
-to defaults that are reasonable for many applications.  The user
-can override the defaults by using the options
-\trl{-snes_ls_alpha <alpha>}, \findex{-snes_ls_alpha}
-\trl{-snes_ls_maxstep <max>}, and \findex{-snes_ls_maxstep}
-\trl{-snes_ls_steptol <tol>}. \findex{-snes_ls_steptol}
+The method SNESNEWTONLS (\trl{-snes_type} \trl{newtonls}) provides a line search Newton method for solving systems of
+nonlinear equations.  By default, this technique employs cubic backtracking \cite{dennis:83}.  Alternative line search
+techniques are listed in Table~\ref{tab_linesearches}.
+
+\begin{table}
+\begin{center}
+\begin{tabular}{lll}
+{\bf Line Search}      &{\bf SNESLineSearchType}& {\bf Options Name} \\
+\hline
+Backtracking           & SNESLINESEARCHBT       & bt                 \\
+(damped) step          & SNESLINESEARCHBASIC    & basic              \\
+L2-norm  Minimization  & SNESLINESEARCHL2       & l2                 \\
+Critical point         & SNESLINESEARCHCP       & cp                 \\
+Shell                  & SNESLINESEARCHSHELL    & shell              \\
+\hline
+\end{tabular}
+\end{center}
+\caption{PETSc Line Search Methods}
+\label{tab_linesearches}
+\end{table}
+
+Every SNES has a line search context of type SNESLineSearch that may be retrieved using SNESGetLineSearch().  Custom
+line search types may either be defined using SNESLineSearchShell, or by creating a custom user line search type in the
+model of the preexisting ones and register it using SNESLineSearchRegister.
+
+There are several default options for the line searches.  The order of polynomial approximation may be set
+with \trl{-snes_linesearch_order}; for instance, 2 for quadratic or 3 for cubic.  \trl{-snes_linesearch_norms} may be
+used to turn off norm computation in the case where monitoring is not necessary.
+
+The default SNESLINESEARCHBT involves several parameters, which are set to defaults that are reasonable for many
+applications.  The user can override the defaults by using the options
+
+\trl{-snes_linesearch_alpha <alpha>}, \findex{-snes_linesearch_alpha}
+\trl{-snes_linesearch_maxstep <max>}, and \findex{-snes_linesearch_maxstep}
+\trl{-snes_linesearch_minlambda <tol>}. \findex{-snes_linesearch_minlambda}
 
 \subsection{Trust Region Methods}\sindex{trust region}
 
@@ -3813,7 +3829,7 @@ into a residual-minimizing new iterate.
 \subsection{Quasi-Newton Methods}
 
 Quasi-Newton methods store iterative rank-one updates to the Jacobian instead of computing it directly.  Three
-limited-memory quasi-Newton methods are provided, L-BFGS, which are described in~\ref{tab_qndefaults}.  These all are
+limited-memory quasi-Newton methods are provided, L-BFGS, which are described in Table~\ref{tab_qndefaults}.  These all are
 encapsulated under \trl{-snes_type qn} and may be changed with \trl{snes_qn_type}.  The default is L-BFGS, which
 provides symmetric updates to an approximate Jacobian.  This iteration is similar to the line search Newton methods.
 
