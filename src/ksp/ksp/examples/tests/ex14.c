@@ -69,7 +69,6 @@ typedef struct {
   PetscInt  mx,my;             /* discretization in x,y directions */
   Vec       localX,localF;    /* ghosted local vector */
   DM        da;                /* distributed array data structure */
-  PetscInt  rank;              /* processor rank */
 } AppCtx;
 
 /*
@@ -107,7 +106,6 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_rank(comm,&user.rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-no_output",&no_output,NULL);CHKERRQ(ierr);
 
   /*
