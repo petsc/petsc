@@ -43,7 +43,7 @@ class Configure(config.package.Package):
     oldFlags = self.compilers.CUDAPPFLAGS
     self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.include)
     self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.thrust.include)
-    if self.checkCompile('#include <cusp/version.h>\n#include <cusp/precond/smoothed_aggregation.h>\n', ''):
+    if self.checkCompile('#include <cusp/version.h>\n#if CUSP_VERSION >= 400\n#include <cusp/precond/aggregation/smoothed_aggregation.h>\n#else\n#include <cusp/precond/smoothed_aggregation.h>\n#endif\n', ''):
       self.addDefine('HAVE_CUSP_SMOOTHED_AGGREGATION','1')
     self.compilers.CUDAPPFLAGS = oldFlags
     self.popLanguage()
