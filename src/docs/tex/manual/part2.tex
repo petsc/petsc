@@ -3537,8 +3537,9 @@ virtually identical. In addition, the SNES software is completely
 flexible, so that the user can at runtime change any facet of the
 solution process.
 
-The general form of the $n$-dimensional Newton's method for solving
-(\ref{eq_F=0}) is
+PETSc's default method for solving the nonlinear equation is Newton's method. The general form of the $n$-dimensional
+Newton's method for solving (\ref{eq_F=0}) is
+
 \begin{equation}
      \x_{k+1} = \x_k - \J(\x_k)^{-1} \F(\x_k), \;\; k=0,1, \ldots,
 \label{eq_n1}
@@ -3730,9 +3731,19 @@ few in the sections below.
 \begin{tabular}{llll}
 {\bf Method}    &{\bf SNESType}& {\bf Options Name}    &{\bf Default Convergence Test}\\
 \hline
-Line search     & SNESNEWTONLS   & newtonls    & SNESConverged\_NEWTONLS()\\
-Trust region    & SNESNEWTONTR   & newtontr   & SNESConverged\_NEWTONTR()\\
-Test Jacobian   & SNESTEST        & test  & \\
+Line search Newton           & SNESNEWTONLS   & newtonls    & SNESConverged\_NEWTONLS()\\
+Trust region Newton          & SNESNEWTONTR   & newtontr    & SNESConverged\_NEWTONTR()\\
+Test Jacobian                & SNESTEST       & test        & \\
+\hline
+Nonlinear Richardson         & SNESRICHARDSON & nrichardson & \\
+Nonlinear Conjugate Gradient & SNESNCG        & ncg         & \\
+Nonlinear GMRES              & SNESNGMRES     & ngmres      & \\
+Quasi-Newton                 & SNESQN         & qn          & \\
+\hline
+Full Approximation Scheme    & SNESFAS        & fas         & \\
+Nonlinear Additive Schwarz   & SNESNASM       & nasm        & \\
+Composite                    & SNESCOMPOSITE  & composite   & \\
+Nonlinear Gauss-Seidel       & SNESNGS        & ngs         & \\
 \hline
 \end{tabular}
 \end{center}
