@@ -3716,9 +3716,9 @@ a variety of examples.
 \section{The Nonlinear Solvers}
 \label{sec_nlsolvers}
 
-As summarized in Table~\ref{tab_snesdefaults}, SNES includes several
-Newton-like nonlinear solvers based on line search techniques and
-trust region methods.
+As summarized in Table~\ref{tab_snesdefaults}, SNES includes several Newton-like nonlinear solvers based on line search
+techniques and trust region methods.  Also provided are several iterative nonlinear methods, as well as nonlinear
+methods involving decompositions of the problem.
 
 Each solver may have associated with it a set of options, which can be
 set with routines and options database commands provided for this
@@ -3731,19 +3731,18 @@ few in the sections below.
 \begin{tabular}{llll}
 {\bf Method}    &{\bf SNESType}& {\bf Options Name}    &{\bf Default Convergence Test}\\
 \hline
-Line search Newton           & SNESNEWTONLS   & newtonls    & SNESConverged\_NEWTONLS()\\
-Trust region Newton          & SNESNEWTONTR   & newtontr    & SNESConverged\_NEWTONTR()\\
-Test Jacobian                & SNESTEST       & test        & \\
-\hline
-Nonlinear Richardson         & SNESRICHARDSON & nrichardson & \\
-Nonlinear Conjugate Gradient & SNESNCG        & ncg         & \\
-Nonlinear GMRES              & SNESNGMRES     & ngmres      & \\
-Quasi-Newton                 & SNESQN         & qn          & \\
-\hline
-Full Approximation Scheme    & SNESFAS        & fas         & \\
-Nonlinear Additive Schwarz   & SNESNASM       & nasm        & \\
-Composite                    & SNESCOMPOSITE  & composite   & \\
-Nonlinear Gauss-Seidel       & SNESNGS        & ngs         & \\
+Line search Newton           & SNESNEWTONLS    & newtonls    & SNESConverged\_NEWTONLS()\\
+Trust region Newton          & SNESNEWTONTR    & newtontr    & SNESConverged\_NEWTONTR()\\
+Test Jacobian                & SNESTEST        & test        & \\
+Nonlinear Richardson         & SNESNRICHARDSON & nrichardson & \\
+Nonlinear Conjugate Gradient & SNESNCG         & ncg         & \\
+Nonlinear GMRES              & SNESNGMRES      & ngmres      & \\
+Quasi-Newton                 & SNESQN          & qn          & \\
+Full Approximation Scheme    & SNESFAS         & fas         & \\
+Nonlinear Additive Schwarz   & SNESNASM        & nasm        & \\
+Composite                    & SNESCOMPOSITE   & composite   & \\
+Nonlinear Gauss-Seidel       & SNESNGS         & ngs         & \\
+Anderson Mixing              & SNESANDERSON    & anderson    & \\
 \hline
 \end{tabular}
 \end{center}
@@ -3787,6 +3786,67 @@ radius, computed by
 \]
 by setting $ \Delta_0 $ via the option
 \trl{-snes_tr_delta0 <delta0>}.
+
+\subsection{Nonlinear Krylov Methods}
+
+A number of nonlinear Krylov methods are provided, including Nonlinear richardson, conjugate gradient, GMRES, and
+Anderson Mixing.  These methods are described individually below.  They are all instrumental to PETSc's nonlinear
+preconditioning.
+
+\textbf{Nonlinear Richardson.}
+The nonlinear Richardson iteration merely takes the form of a line search-damped fixed-point iteration of the form
+\begin{equation}
+     \x_{k+1} = \x_k - \lambda \F(\x_k), \;\; k=0,1, \ldots,
+\label{eq_nrich}
+\end{equation}
+\noindent where the default linesearch is SNESLINESEARCHL2.  This simple solver is mostly useful as a nonlinear smoother, or to
+provide line search stabilization to an inner method.
+
+\textbf{Nonlinear Conjugate Gradients.}
+Nonlinear CG is equivalent to linear CG, but with the steplength determined by line search (SNESLINESEARCHCP by
+default).  Four variants (Fletcher-Reed, Polak-Ribiere-Polyak,Dai-Yuan,Conjugate Descent) are implemented in PETSc.
+
+\textbf{Anderson Mixing and Nonlinear GMRES Methods.}
+Nonlinear GMRES and Anderson Mixing methods combine the last $m$ iterates, plus a new fixed-point iteration iterate,
+into a residual-minimizing new iterate.
+
+\subsection{Quasi-Newton Methods}
+
+Quasi-Newton methods store iterative rank-one updates to the Jacobian instead of computing it directly.  Three
+limited-memory quasi-Newton methods are provided, L-BFGS, which are described in~\ref{tab_qndefaults}.  These all are
+encapsulated under \trl{-snes_type qn} and may be changed with \trl{snes_qn_type}.  The default is L-BFGS, which
+provides symmetric updates to an approximate Jacobian.  This iteration is similar to the line search Newton methods.
+
+\begin{table}
+\begin{center}
+\begin{tabular}{llll}
+{\bf QN Method}    &{\bf SNESQNType}& {\bf Options Name}    &{\bf Default Line Search}\\
+\hline
+L-BFGS            & \trl{SNES_QN_LBFGS}       & lbfgs             & SNESLINESEARCHCP     \\
+``Good'' Broyden  & \trl{SNES_QN_BROYDEN}     & broyden           & SNESLINESEARCHBASIC  \\
+``Bad'' Broyden   & \trl{SNES_QN_BADBROYEN}   & badbroyden        & SNESLINESEARCHL2     \\
+\hline
+\end{tabular}
+\end{center}
+\caption{PETSc quasi-Newton solvers}
+\label{tab_qndefaults}
+\end{table}
+
+One may also control the form of the initial Jacobian approximation and the conditions for restart.
+
+\subsection{The Full Approximation Scheme}
+
+The Full Approximation Scheme is a nonlinear multigrid correction.  At each level, there is a recursive cycle control
+SNES instance, and either one or two nonlinear solvers as smoothers (up and down).  Problems set up using the SNES DMDA
+interface are automatically coarsened.
+
+\subsection{Nonlinear Additive Schwarz}
+
+Nonlinear Additive Schwarz methods take a number of local nonlinear subproblems, solves them independently in parallel,
+and combines those solutions into a new approximate solution.  SNESNASMSetSubdomains() allows for the user to create
+these local subdomains.  Problems set up using the SNES DMDA interface are automatically decomposed.
+
+SNESASPIN is a helper type that sets up a nonlinearly preconditioned Newton's method using NASM as the preconditioner.
 
 \section{General Options}
 
