@@ -549,7 +549,7 @@ PetscErrorCode RHSfunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
 {
   PetscErrorCode ierr;
   AppCtx         *obj = (AppCtx*)ctx;
-  PetscScalar    *soln_ptr,soln[num_z-2];
+  PetscScalar    *soln_ptr,soln[num_z];
   PetscInt       i,nz=obj->nz;
   PetscReal      time;
 
@@ -557,6 +557,8 @@ PetscErrorCode RHSfunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   ierr = VecGetArray(globalin,&soln_ptr);CHKERRQ(ierr);
   for (i=0; i < num_z-2; i++) soln[i] = soln_ptr[i];
   ierr = VecRestoreArray(globalin,&soln_ptr);CHKERRQ(ierr);
+  soln[num_z-1] = 0.0;
+  soln[num_z-2] = 0.0;
 
   /* clear out the matrix and rhs for ksp to keep things straight */
   ierr = VecSet(obj->ksp_rhs,(PetscScalar)0.0);CHKERRQ(ierr);
