@@ -4150,7 +4150,7 @@ or
 \end{tabbing}
 This information is used to eliminate the redundant computation of these parameters,
 therefor reducing the number of collective operations and improving the efficiency of the
-application code.
+         application code.
 
 It is also possible to monitor the differencing parameters h that are computed
 via the routines
@@ -4346,6 +4346,29 @@ Some or all of the lower bounds may be negative infinity (indicated to PETSc wit
    SNESVISetVariableBounds(SNES,Vec Lu,Vec Hu);
 \end{tabbing}
 is \findex{SNESVISetVariableBounds} used to indicate that one is solving a variational inequality. The option \trl{-snes_vi_monitor} \findex{-snes_vi_monitor} turns on extra monitoring of the active set associated with the bounds and \trl{-snes_vi_type} \findex{-snes_vi_type} allows selecting from several VI solvers, the default is prefered.
+
+\section{Nonlinear Preconditioning}
+
+Nonlinear preconditioning in PETSc involves the use of an inner SNES instance to define the step for an outer SNES
+instance.  The inner instance may be extracted using SNESGetNPC() and passed run-time options using the \trl{-npc_}
+prefix. Nonlinear preconditioning comes in two flavors: left and right.  The side may be changed
+using \trl{-snes_npc_side} or SNESSetNPCSide(). Left nonlinear preconditioning redefines the nonlinear function as the action of the
+preconditioner;
+\begin{equation}
+        F_{M}(x) = M(x,b) - x.
+\end{equation}
+\noindent Right nonlinear preconditioning redefines the nonlinear function as the function on the action of the
+nonlinear preconditioner;
+\begin{equation}
+        F(M(x,b)) = 0,
+\end{equation}
+\noindent which can be interpreted as putting the preconditioner into ``striking distance'' of the solution by outer acceleration.
+
+There are several patterns of nonlinear preconditioning that may be used with great success for particular problems.
+
+In addition, basic patterns of solver composition are available with the SNESType SNESCOMPOSITE.  This allows for two or
+more SNES instances to be combined additively or multiplicatively.  By command line, a set of SNES types may be given by
+comma separated list argument to \trl{-snes_composite_sneses}.
 
 % ---------------------------------------------------------------
 \cleardoublepage
