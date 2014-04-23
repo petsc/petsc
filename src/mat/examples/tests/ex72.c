@@ -1,31 +1,31 @@
 
 #include <petscmat.h>
 
-#if !defined(PETSC_USE_COMPLEX)
-
-static char help[] = "Reads in a Symmetric matrix in MatrixMarket format. Writes\n\
-it using the PETSc sparse format. It also adds a Vector set to random values to the\n\
-output file. Input parameters are:\n\
-  -fin <filename> : input file\n\
-  -fout <filename> : output file\n\n";
+static char help[] = "Read in a Symmetric matrix in MatrixMarket format (only the lower triangle). \n\
+  Assemble it to a PETSc sparse SBAIJ (upper triangle) matrix. \n\
+  Write it in a AIJ matrix (entire matrix) to a file. \n\
+  Input parameters are:            \n\
+    -fin <filename> : input file   \n\
+    -fout <filename> : output file \n\n";
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A;
-  Vec            b;
   char           filein[PETSC_MAX_PATH_LEN],fileout[PETSC_MAX_PATH_LEN],buf[PETSC_MAX_PATH_LEN];
-  PetscInt       i,m,n,nnz,col,row;
+  PetscInt       i,m,n,nnz;
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscScalar    val;
+  PetscScalar    *VAL,zero=0.0;
   FILE           *file;
   PetscViewer    view;
-  PetscRandom    r;
+  int            *I,*J,*rownz;
 
   PetscInitialize(&argc,&args,(char*)0,help);
-
+#if defined(PETSC_USE_COMPLEX)
+  SETERRQ(PETSC_COMM_WORLD,1,"This example does not work with complex numbers");
+#else
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,1,"Uniprocessor Example only\n");
 
@@ -39,49 +39,50 @@ int main(int argc,char **args)
 
   /* The first non-comment line has the matrix dimensions */
   sscanf(buf,"%d %d %d\n",&m,&n,&nnz);
-  printf ("m = %d, n = %d, nnz = %d\n",m,n,nnz);
+  ierr = PetscPrintf (PETSC_COMM_SELF,"m = %d, n = %d, nnz = %d\n",m,n,nnz);
 
-  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,m,n,nnz*2/m,0,&A);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-  ierr = VecSetSizes(b,PETSC_DECIDE,n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
-  ierr = VecSetRandom(b,r);CHKERRQ(ierr);
+  /* reseve memory for matrices */
+  ierr = PetscMalloc4(nnz,&I,nnz,&J,nnz,&VAL,m,&rownz);CHKERRQ(ierr);
+  for (i=0; i<m; i++) rownz[i] = 1; /* add 0.0 to diagonal entries */
 
   for (i=0; i<nnz; i++) {
-    fscanf(file,"%d %d %le\n",&row,&col,(double*)&val);
-    row  = row-1; col = col-1;
-    ierr = MatSetValues(A,1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
-    if (row != col) {
-      ierr = MatSetValues(A,1,&col,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
-    }
+    ierr = fscanf(file,"%d %d %le\n",&I[i],&J[i],(double*)&VAL[i]);
+    if (ierr == EOF) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"i=%d, reach EOF\n",i);
+    I[i]--; J[i]--;    /* adjust from 1-based to 0-based */
+    rownz[J[i]]++;
   }
   fclose(file);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Read file completes.\n");CHKERRQ(ierr);
 
+  /* Creat and asseble SBAIJ matrix */
+  ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATSBAIJ);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(A,1,0,rownz);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
+
+  /* Add zero to diagonals, in case the matrix missing diagonals */
+  for (i=0; i<m; i++){
+    ierr = MatSetValues(A,1,&i,1,&i,&zero,INSERT_VALUES);CHKERRQ(ierr);
+  }
+  for (i=0; i<nnz; i++) {
+    ierr = MatSetValues(A,1,&J[i],1,&I[i],&VAL[i],INSERT_VALUES);CHKERRQ(ierr);
+  }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Assemble SBAIJ matrix completes.\n");CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Reading matrix completes.\n");CHKERRQ(ierr);
+  /* Write out matrix in AIJ format */
   ierr = PetscOptionsGetString(NULL,"-fout",fileout,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,fileout,FILE_MODE_WRITE,&view);CHKERRQ(ierr);
   ierr = MatView(A,view);CHKERRQ(ierr);
-  ierr = VecView(b,view);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
 
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = PetscFree4(I,J,VAL,rownz);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
-
   ierr = PetscFinalize();
-  return 0;
-}
-#else
-
-int main(int argc,char **args)
-{
-  fprintf(stdout,"This example does not work for complex numbers.\n");
-  return 0;
-}
 #endif
+  return 0;
+}
+
