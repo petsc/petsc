@@ -3717,7 +3717,7 @@ a variety of examples.
 \label{sec_nlsolvers}
 
 As summarized in Table~\ref{tab_snesdefaults}, SNES includes several Newton-like nonlinear solvers based on line search
-techniques and trust region methods.  Also provided are several iterative nonlinear methods, as well as nonlinear
+techniques and trust region methods.  Also provided are several nonlinear Krylov methods, as well as nonlinear
 methods involving decompositions of the problem.
 
 Each solver may have associated with it a set of options, which can be
@@ -3741,8 +3741,8 @@ Quasi-Newton                 & SNESQN          & qn          & \\
 Full Approximation Scheme    & SNESFAS         & fas         & \\
 Nonlinear Additive Schwarz   & SNESNASM        & nasm        & \\
 Composite                    & SNESCOMPOSITE   & composite   & \\
-Nonlinear Gauss-Seidel       & SNESNGS         & ngs         & \\
-Anderson Mixing              & SNESANDERSON    & anderson    & \\
+Nonlinear Gauss-Seidel       & SNESGS          & ngs         & \\
+Anderson Mixing              & SNESAnderson    & anderson    & \\
 Shell                        & SNESSHELL       & shell       & \\
 \hline
 \end{tabular}
@@ -3774,20 +3774,42 @@ Shell                  & SNESLINESEARCHSHELL    & shell              \\
 \label{tab_linesearches}
 \end{table}
 
-Every SNES has a line search context of type SNESLineSearch that may be retrieved using SNESGetLineSearch().  Custom
-line search types may either be defined using SNESLineSearchShell, or by creating a custom user line search type in the
-model of the preexisting ones and register it using SNESLineSearchRegister.
+Every SNES has a line search context of type SNESLineSearch that may be retrieved using
+\begin{tabbing}
+SNESGetLineSearch(SNES snes,SNESLineSearch *ls);.
+\end{tabbing}
 
 There are several default options for the line searches.  The order of polynomial approximation may be set
-with \trl{-snes_linesearch_order}; for instance, 2 for quadratic or 3 for cubic.  \trl{-snes_linesearch_norms} may be
-used to turn off norm computation in the case where monitoring is not necessary.
+with \trl{-snes_linesearch_order} or
+\begin{tabbing}
+SNESLineSearchSetOrder(SNESLineSearch ls, PetscInt order);
+\end{tabbing}
+for instance, 2 for quadratic or 3 for cubic. Sometimes, it may not be necessary to monitor the progress of the
+nonlinear iteration.  In this case, \trl{-snes_linesearch_norms} or
+\begin{tabbing}
+SNESLineSearchSetNorms(SNESLineSearch ls,PetscBool norms);
+\end{tabbing}
+may be used to turn off function, step, and solution norm computation at the end of the linesearch.
 
-The default SNESLINESEARCHBT involves several parameters, which are set to defaults that are reasonable for many
-applications.  The user can override the defaults by using the options
+The default line search for the line search Newton method, SNESLINESEARCHBT involves several parameters, which are set
+to defaults that are reasonable for many applications.  The user can override the defaults by using the options
 
 \trl{-snes_linesearch_alpha <alpha>}, \findex{-snes_linesearch_alpha}
 \trl{-snes_linesearch_maxstep <max>}, and \findex{-snes_linesearch_maxstep}
 \trl{-snes_linesearch_minlambda <tol>}. \findex{-snes_linesearch_minlambda}
+
+Besides the backtracking linesearch, there are SNESLINESEARCHL2, which uses a polynomial secant minimization of
+$||F(x)||_2$, and SNESLINESEARCHCP, which minimizes $F(x) \cdot Y$ where Y is the search direction.  These are both
+potentially iterative line searches, which may be used to find a better-fitted steplength in the case where a single
+secant search is not sufficient.  The number of iterations may be set with \trl{-snes_linesearch_max_it}.  In addition,
+the convergence criteria of the iterative line searches may be set using function tolerances \trl{-snes_linesearch_rtol}
+and \trl{-snes_linesearch_atol}, and steplength tolerance \trl{snes_linesearch_ltol}.
+
+Custom line search types may either be defined using SNESLineSearchShell, or by creating a custom user line search type
+in the model of the preexisting ones and register it using
+\begin{tabbing}
+SNESLineSearchRegister(const char sname[],PetscErrorCode (*function)(SNESLineSearch));.
+\end{tabbing}
 
 \subsection{Trust Region Methods}\sindex{trust region}
 
@@ -3820,7 +3842,11 @@ provide line search stabilization to an inner method.
 
 \textbf{Nonlinear Conjugate Gradients.}
 Nonlinear CG is equivalent to linear CG, but with the steplength determined by line search (SNESLINESEARCHCP by
-default).  Four variants (Fletcher-Reed, Polak-Ribiere-Polyak,Dai-Yuan,Conjugate Descent) are implemented in PETSc.
+default).  Five variants (Fletcher-Reed, Hestenes-Steifel, Polak-Ribiere-Polyak, Dai-Yuan, and Conjugate Descent) are
+implemented in PETSc and may be chosen using
+\begin{tabbing}
+      PetscErrorCode SNESNCGSetType(SNES snes, SNESNCGType btype);.
+\end{tabbing}
 
 \textbf{Anderson Mixing and Nonlinear GMRES Methods.}
 Nonlinear GMRES and Anderson Mixing methods combine the last $m$ iterates, plus a new fixed-point iteration iterate,
@@ -3848,13 +3874,28 @@ L-BFGS            & \trl{SNES_QN_LBFGS}       & lbfgs             & SNESLINESEAR
 \label{tab_qndefaults}
 \end{table}
 
-One may also control the form of the initial Jacobian approximation and the conditions for restart.
+One may also control the form of the initial Jacobian approximation with
+\begin{tabbing}
+PetscErrorCode SNESQNSetScaleType(SNES snes, SNESQNScaleType stype);
+\end{tabbing}
+and the restart type with
+\begin{tabbing}
+PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype);.
+\end{tabbing}
 
 \subsection{The Full Approximation Scheme}
 
 The Full Approximation Scheme is a nonlinear multigrid correction.  At each level, there is a recursive cycle control
 SNES instance, and either one or two nonlinear solvers as smoothers (up and down).  Problems set up using the SNES DMDA
-interface are automatically coarsened.
+interface are automatically coarsened.  FAS differs slightly from PCMG, in that the hierarchy is constructed
+recursively.
+
+There are three SNESFAS cycle types, \trl{SNES_FAS_MULTIPLICATIVE}, \trl{SNES_FAS_ADDITIVE}, \trl{SNES_FAS_FULL},
+or \trl{SNES_FAS_KASKADE}, The type may be set with
+\begin{tabbing}
+PetscErrorCode  SNESFASSetType(SNES snes,SNESFASType fastype);
+\end{tabbing}
+
 
 \subsection{Nonlinear Additive Schwarz}
 
@@ -4350,7 +4391,11 @@ is \findex{SNESVISetVariableBounds} used to indicate that one is solving a varia
 \section{Nonlinear Preconditioning}
 
 Nonlinear preconditioning in PETSc involves the use of an inner SNES instance to define the step for an outer SNES
-instance.  The inner instance may be extracted using SNESGetNPC() and passed run-time options using the \trl{-npc_}
+instance.  The inner instance may be extracted using
+\begin{tabbing}
+SNESGetNPC(SNES snes,SNES *npc);
+\end{tabbing}
+and passed run-time options using the \trl{-npc_}
 prefix. Nonlinear preconditioning comes in two flavors: left and right.  The side may be changed
 using \trl{-snes_npc_side} or SNESSetNPCSide(). Left nonlinear preconditioning redefines the nonlinear function as the action of the
 preconditioner;
@@ -4362,13 +4407,12 @@ nonlinear preconditioner;
 \begin{equation}
         F(M(x,b)) = 0,
 \end{equation}
-\noindent which can be interpreted as putting the preconditioner into ``striking distance'' of the solution by outer acceleration.
-
-There are several patterns of nonlinear preconditioning that may be used with great success for particular problems.
+\noindent  which can be interpreted as putting the preconditioner into ``striking distance'' of the solution by outer acceleration.
 
 In addition, basic patterns of solver composition are available with the SNESType SNESCOMPOSITE.  This allows for two or
 more SNES instances to be combined additively or multiplicatively.  By command line, a set of SNES types may be given by
-comma separated list argument to \trl{-snes_composite_sneses}.
+comma separated list argument to \trl{-snes_composite_sneses}.  There are additive, additive with optimal damping, and
+multplicative variants which may be set with SNESCompositeSetType().
 
 % ---------------------------------------------------------------
 \cleardoublepage
