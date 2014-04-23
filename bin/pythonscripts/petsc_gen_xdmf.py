@@ -146,7 +146,7 @@ class Xdmf:
 
   def writeField(self, fp, numSteps, timestep, cellDim, spaceDim, name, f, domain):
     ctypes = ['tensor', 'matrix']
-    if spaceDim == 2 or cellDim != spaceDim: ctypes.append['vector']
+    if spaceDim == 2 or cellDim != spaceDim: ctypes.append('vector')
     if f[1].attrs['vector_field_type'] in ctypes:
       self.writeFieldComponents(fp, numSteps, timestep, spaceDim, name, f, domain)
     else:
