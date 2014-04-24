@@ -533,3 +533,18 @@ cdef class DMPlex(DM):
         cdef PetscReal limit
         CHKERR( DMPlexGetRefinementLimit(self.dm, &limit) )
         return toReal(limit)
+
+    def getOrdering(self, otype):
+        cdef PetscMatOrderingType cval = NULL
+        otype = str2bytes(otype, &cval)
+        cdef IS perm = IS()
+        CHKERR( DMPlexGetOrdering(self.dm, cval, &perm.iset) )
+        return perm
+
+    def permute(self, IS perm not None):
+        cdef DMPlex dm = <DMPlex>type(self)()
+        cdef PetscDM newdm = NULL
+
+        CHKERR( DMPlexPermute(self.dm, perm.iset, &newdm) )
+        dm.dm = newdm
+        return dm
