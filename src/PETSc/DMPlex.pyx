@@ -295,6 +295,12 @@ cdef class DMPlex(DM):
         name = str2bytes(name, &cname)
         CHKERR( DMPlexCreateLabel(self.dm,cname) )
 
+    def removeLabel(self,name):
+        cdef const_char *cname = NULL
+        cdef PetscDMLabel clbl = NULL
+        name = str2bytes(name, &cname)
+        CHKERR( DMPlexRemoveLabel(self.dm, cname, &clbl) )
+
     def getLabelValue(self, name, n):
         cdef PetscInt cn = asInt(n), value
         cdef const_char *cname = NULL
