@@ -124,10 +124,10 @@ cdef extern from * nogil:
     #int DMPlexLabelComplete(PetscDM,PetscDMLabel)
     #int DMPlexLabelCohesiveComplete(PetscDM,PetscDMLabel,PetscBool,PetscDM)
 
-    #int DMPlexGetRefinementLimit(PetscDM,PetscReal *)
-    #int DMPlexSetRefinementLimit(PetscDM,PetscReal)
-    #int DMPlexGetRefinementUniform(PetscDM,PetscBool *)
-    #int DMPlexSetRefinementUniform(PetscDM,PetscBool)
+    int DMPlexGetRefinementLimit(PetscDM,PetscReal *)
+    int DMPlexSetRefinementLimit(PetscDM,PetscReal)
+    int DMPlexGetRefinementUniform(PetscDM,PetscBool *)
+    int DMPlexSetRefinementUniform(PetscDM,PetscBool)
 
     #int DMPlexGetNumFaceVertices(PetscDM,PetscInt,PetscInt,PetscInt *)
     #int DMPlexGetOrientedFace(PetscDM,PetscInt,PetscInt,const_PetscInt [],PetscInt,PetscInt [],PetscInt [],PetscInt [],PetscBool *)

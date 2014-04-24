@@ -509,3 +509,21 @@ cdef class DMPlex(DM):
         cdef Section sec = Section()
         CHKERR( DMPlexCreateSection(self.dm, dim, nfield, icomp, idof, nbc, ibcfield, cbcpoints, cperm, &sec.sec) )
         return sec
+
+    def setRefinementUniform(self, refinementUniform=True):
+        cdef PetscBool uniform = refinementUniform
+        CHKERR( DMPlexSetRefinementUniform(self.dm, uniform) )
+
+    def getRefinementUniform(self):
+        cdef PetscBool uniform
+        CHKERR( DMPlexGetRefinementUniform(self.dm, &uniform) )
+        return <bint>uniform
+
+    def setRefinementLimit(self, refinementLimit):
+        cdef PetscReal limit = asReal(refinementLimit)
+        CHKERR( DMPlexSetRefinementLimit(self.dm, limit) )
+
+    def getRefinementLimit(self):
+        cdef PetscReal limit
+        CHKERR( DMPlexGetRefinementLimit(self.dm, &limit) )
+        return toReal(limit)
