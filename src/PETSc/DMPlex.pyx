@@ -481,7 +481,7 @@ cdef class DMPlex(DM):
         cdef PetscInt coverlap = asInt(overlap)
         cdef SF pointsf = SF()
         CHKERR( DMPlexDistribute(self.dm, cpart, coverlap, &pointsf.sf, &pardm) )
-        self.dm = pardm
+        PetscCLEAR(self.obj); self.dm = pardm
         return pointsf
 
     def createSection(self, numFields, numComp, numDof, numBC=0, bcField=None, bcPoints=None, IS perm=None):
