@@ -3530,12 +3530,12 @@ The SNES class includes methods for solving systems of nonlinear equations of th
 where $\F: \, \Re^n \to \Re^n$.
 Newton-like methods provide the core of the package, including
 \sindex{Newton-like methods} both line search \sindex{line search}
-and trust region \sindex{trust region} techniques, which are discussed
-further in Section~\ref{sec_nlsolvers}. Following the
-PETSc design philosophy, the interfaces to the various solvers are all
-virtually identical. In addition, the SNES software is completely
-flexible, so that the user can at runtime change any facet of the
-solution process.
+and trust region \sindex{trust region} techniques.  A suite of nonlinear Krylov
+methods and methods based upon problem decomposition are also included.  The
+solvers are discussed further in Section~\ref{sec_nlsolvers}. Following the
+PETSc design philosophy, the interfaces to the various solvers are all virtually
+identical. In addition, the SNES software is completely flexible, so that the
+user can at runtime change any facet of the solution process.
 
 PETSc's default method for solving the nonlinear equation is Newton's method. The general form of the $n$-dimensional
 Newton's method for solving (\ref{eq_F=0}) is
@@ -3728,22 +3728,22 @@ few in the sections below.
 
 \begin{table}
 \begin{center}
-\begin{tabular}{llll}
-{\bf Method}    &{\bf SNESType}& {\bf Options Name}    &{\bf Default Convergence Test}\\
+\begin{tabular}{lllll}
+{\bf Method}    &{\bf SNESType}& {\bf Options Name}          & {\bf Default Line Search} \\
 \hline
-Line search Newton           & SNESNEWTONLS    & newtonls    & SNESConverged\_NEWTONLS()\\
-Trust region Newton          & SNESNEWTONTR    & newtontr    & SNESConverged\_NEWTONTR()\\
-Test Jacobian                & SNESTEST        & test        & \\
-Nonlinear Richardson         & SNESNRICHARDSON & nrichardson & \\
-Nonlinear Conjugate Gradient & SNESNCG         & ncg         & \\
-Nonlinear GMRES              & SNESNGMRES      & ngmres      & \\
-Quasi-Newton                 & SNESQN          & qn          & \\
-Full Approximation Scheme    & SNESFAS         & fas         & \\
-Nonlinear Additive Schwarz   & SNESNASM        & nasm        & \\
-Composite                    & SNESCOMPOSITE   & composite   & \\
-Nonlinear Gauss-Seidel       & SNESGS          & ngs         & \\
-Anderson Mixing              & SNESAnderson    & anderson    & \\
-Shell                        & SNESSHELL       & shell       & \\
+Line search Newton           & SNESNEWTONLS    & newtonls    & SNESLINESEARCHBT  \\
+Trust region Newton          & SNESNEWTONTR    & newtontr    & --                \\
+Test Jacobian                & SNESTEST        & test        & --                \\
+Nonlinear Richardson         & SNESNRICHARDSON & nrichardson & SNESLINESEARCHL2  \\
+Nonlinear CG                 & SNESNCG         & ncg         & SNESLINESEARCHCP  \\
+Nonlinear GMRES              & SNESNGMRES      & ngmres      & SNESLINESEARCHL2  \\
+Quasi-Newton                 & SNESQN          & qn          & see Table~\ref{tab_qndefaults} \\
+FAS                          & SNESFAS         & fas         & --                \\
+Nonlinear ASM                & SNESNASM        & nasm        & --                \\
+Composite                    & SNESCOMPOSITE   & composite   & --                \\
+Nonlinear Gauss-Seidel       & SNESGS          & ngs         & --                \\
+Anderson Mixing              & SNESAnderson    & anderson    & --                \\
+Shell                        & SNESSHELL       & shell       & --                \\
 \hline
 \end{tabular}
 \end{center}
@@ -3915,15 +3915,13 @@ computations.
 \subsection{Convergence Tests}
 \label{sec_snesconvergence}
 
-Convergence of the nonlinear solvers can be detected in a variety of
-ways; the user can even specify a customized test, as discussed
-below. \sindex{convergence tests} The default convergence routines for
-the various nonlinear solvers within SNES are listed in
-Table~\ref{tab_snesdefaults}; see the corresponding manual pages for
-detailed descriptions.  Each of these convergence tests involves
-several parameters, which are set by default to values that should be
-reasonable for a wide range of problems.  The user can customize the
-parameters to the problem at hand by using some of the following
+Convergence of the nonlinear solvers can be detected in a variety of ways; the
+user can even specify a customized test, as discussed below. \sindex{convergence
+tests} Most of the nonlinear solvers use SNESConvergenceTestDefault(), however,
+SNESNEWTONTR uses a method-specific additional convergence test as well.  The
+ convergence tests involves several parameters, which are set by default
+to values that should be reasonable for a wide range of problems.  The user can
+customize the parameters to the problem at hand by using some of the following
 routines and options.
 
 One method of convergence testing is
