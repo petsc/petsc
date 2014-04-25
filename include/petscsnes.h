@@ -716,6 +716,8 @@ PETSC_EXTERN PetscErrorCode SNESQNSetType(SNES, SNESQNType);
 PETSC_EXTERN PetscErrorCode SNESQNSetScaleType(SNES, SNESQNScaleType);
 PETSC_EXTERN PetscErrorCode SNESQNSetRestartType(SNES, SNESQNRestartType);
 
+PETSC_EXTERN PetscErrorCode SNESNASMGetType(SNES,PCASMType*);
+PETSC_EXTERN PetscErrorCode SNESNASMSetType(SNES,PCASMType);
 PETSC_EXTERN PetscErrorCode SNESNASMGetSubdomains(SNES,PetscInt*,SNES**,VecScatter**,VecScatter**,VecScatter**);
 PETSC_EXTERN PetscErrorCode SNESNASMSetSubdomains(SNES,PetscInt,SNES*,VecScatter*,VecScatter*,VecScatter*);
 PETSC_EXTERN PetscErrorCode SNESNASMSetDamping(SNES,PetscReal);
