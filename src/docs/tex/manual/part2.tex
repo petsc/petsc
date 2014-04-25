@@ -3885,25 +3885,68 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype);.
 
 \subsection{The Full Approximation Scheme}
 
-The Full Approximation Scheme is a nonlinear multigrid correction.  At each level, there is a recursive cycle control
-SNES instance, and either one or two nonlinear solvers as smoothers (up and down).  Problems set up using the SNES DMDA
-interface are automatically coarsened.  FAS differs slightly from PCMG, in that the hierarchy is constructed
-recursively.
-
-There are three SNESFAS cycle types, \trl{SNES_FAS_MULTIPLICATIVE}, \trl{SNES_FAS_ADDITIVE}, \trl{SNES_FAS_FULL},
-or \trl{SNES_FAS_KASKADE}, The type may be set with
+The Full Approximation Scheme is a nonlinear multigrid correction.  At each
+level, there is a recursive cycle control SNES instance, and either one or two
+nonlinear solvers as smoothers (up and down).  Problems set up using the SNES
+DMDA interface are automatically coarsened.  FAS differs slightly from PCMG, in
+that the hierarchy is constructed recursively.  However, much of the interface
+is a one-to-one map.  We describe the ``get'' operations here, and it can be
+assumed that each has a corresponding ``set'' operation.  For instance, the
+number of levels in the hierarchy may be retrieved using
 \begin{tabbing}
-PetscErrorCode  SNESFASSetType(SNES snes,SNESFASType fastype);
+ PetscErrorCode SNESFASGetLevels(SNES snes, PetscInt *levels);
 \end{tabbing}
 
+There are four SNESFAS cycle
+types, \trl{SNES_FAS_MULTIPLICATIVE}, \trl{SNES_FAS_ADDITIVE}, \trl{SNES_FAS_FULL},
+or \trl{SNES_FAS_KASKADE}, The type may be set with
+\begin{tabbing}
+PetscErrorCode  SNESFASSetType(SNES snes,SNESFASType fastype);.
+\end{tabbing}
+\noindent and the cycle type, 1 for V, 2 for W, may be set with
+\begin{tabbing}
+PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles);.
+\end{tabbing}
+Much like the interface to PCMG described in Section~\ref{sec_mg}, there are
+interfaces to recover the various levels' cycles and smoothers. The level
+smoothers may be accessed with
+\begin{tabbing}
+PetscErrorCode SNESFASGetSmoother(SNES snes, PetscInt level, SNES *smooth);\\
+PetscErrorCode SNESFASGetSmootherUp(SNES snes, PetscInt level, SNES *smooth);\\
+PetscErrorCode SNESFASGetSmootherDown(SNES snes, PetscInt level, SNES *smooth);
+\end{tabbing}
+\noindent and the level cycles with
+\begin{tabbing}
+PetscErrorCode SNESFASGetCycleSNES(SNES snes,PetscInt level,SNES *lsnes);.
+\end{tabbing}
+Much like PCMG, the restriction and prolongation at a level may be acquired with
+\begin{tabbing}
+PetscErrorCode SNESFASGetInterpolation(SNES snes, PetscInt level, Mat *mat);
+PetscErrorCode SNESFASGetRestriction(SNES snes, PetscInt level, Mat *mat);.
+\end{tabbing}
+In addition, FAS requires special restriction for solution-like variables,
+called injection.  This may be set with
+\begin{tabbing}
+PetscErrorCode SNESFASGetInjection(SNES snes, PetscInt level, Mat *mat);.
+\end{tabbing}
+The coarse solve context may be acquired with
+\begin{tabbing}
+PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *smooth);
+\end{tabbing}
 
 \subsection{Nonlinear Additive Schwarz}
 
-Nonlinear Additive Schwarz methods take a number of local nonlinear subproblems, solves them independently in parallel,
-and combines those solutions into a new approximate solution.  SNESNASMSetSubdomains() allows for the user to create
-these local subdomains.  Problems set up using the SNES DMDA interface are automatically decomposed.
+Nonlinear Additive Schwarz methods (NASM) take a number of local nonlinear
+subproblems, solves them independently in parallel, and combines those solutions
+into a new approximate solution.  SNESNASMSetSubdomains() allows for the user to
+create these local subdomains.  Problems set up using the SNES DMDA interface
+are automatically decomposed.  To begin, the type of subdomain updates to the
+whole solution are limited to two types borrowed from PCASM: \trl{PC_ASM_BASIC},
+in which the overlapping updates added.  \trl{PC_ASM_RESTRICT} updates in a
+nonoverlapping fashion.
 
-SNESASPIN is a helper type that sets up a nonlinearly preconditioned Newton's method using NASM as the preconditioner.
+SNESASPIN is a helper SNES type that sets up a nonlinearly preconditioned Newton's
+method using NASM as the preconditioner.
 
 \section{General Options}
 
