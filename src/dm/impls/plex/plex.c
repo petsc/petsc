@@ -1297,6 +1297,42 @@ PetscErrorCode DMPlexSetConeSize(DM dm, PetscInt p, PetscInt size)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexAddConeSize"
+/*@
+  DMPlexAddConeSize - Add the given number of in-edges to this point in the Sieve DAG
+
+  Not collective
+
+  Input Parameters:
++ mesh - The DMPlex
+. p - The Sieve point, which must lie in the chart set with DMPlexSetChart()
+- size - The additional cone size for point p
+
+  Output Parameter:
+
+  Note:
+  This should be called after DMPlexSetChart().
+
+  Level: beginner
+
+.seealso: DMPlexCreate(), DMPlexSetConeSize(), DMPlexGetConeSize(), DMPlexSetChart()
+@*/
+PetscErrorCode DMPlexAddConeSize(DM dm, PetscInt p, PetscInt size)
+{
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PetscInt       csize;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscSectionAddDof(mesh->coneSection, p, size);CHKERRQ(ierr);
+  ierr = PetscSectionGetDof(mesh->coneSection, p, &csize);CHKERRQ(ierr);
+
+  mesh->maxConeSize = PetscMax(mesh->maxConeSize, csize);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexGetCone"
 /*@C
   DMPlexGetCone - Return the points on the in-edges for this point in the Sieve DAG
