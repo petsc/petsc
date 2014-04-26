@@ -3023,6 +3023,7 @@ PetscErrorCode DMPlexOrient(DM dm)
       /* Collect the graph on 0 */
       {
         MPI_Comm     comm = PetscObjectComm((PetscObject) sf);
+        Mat          G;
         PetscBT      seenProcs, flippedProcs;
         PetscInt    *procFIFO, pTop, pBottom;
         PetscInt    *adj = NULL;
@@ -3049,6 +3050,22 @@ PetscErrorCode DMPlexOrient(DM dm)
             }
           }
         }
+        /* Symmetrize the graph */
+        ierr = MatCreate(PETSC_COMM_SELF, &G);CHKERRQ(ierr);
+        ierr = MatSetSizes(G, numProcs, numProcs, numProcs, numProcs);CHKERRQ(ierr);
+        ierr = MatSetUp(G);CHKERRQ(ierr);
+        for (p = 0; p < numProcs; ++p) {
+          for (n = 0; n < recvcounts[p]; ++n) {
+            const PetscInt    q = adj[displs[p]+n];
+            const PetscScalar o = val[displs[p]+n];
+
+            ierr = MatSetValues(G, 1, &p, 1, &q, &o, INSERT_VALUES);CHKERRQ(ierr);
+            ierr = MatSetValues(G, 1, &q, 1, &p, &o, INSERT_VALUES);CHKERRQ(ierr);
+          }
+        }
+        ierr = MatAssemblyBegin(G, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+        ierr = MatAssemblyEnd(G, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
         ierr = PetscBTCreate(numProcs, &seenProcs);CHKERRQ(ierr);
         ierr = PetscBTMemzero(numProcs, seenProcs);CHKERRQ(ierr);
         ierr = PetscBTCreate(numProcs, &flippedProcs);CHKERRQ(ierr);
@@ -3062,14 +3079,17 @@ PetscErrorCode DMPlexOrient(DM dm)
           ierr = PetscBTSet(seenProcs, p);CHKERRQ(ierr);
           /* Consider each proc in FIFO */
           while (pTop < pBottom) {
-            PetscInt proc, nproc, seen, flippedA, flippedB, mismatch;
+            const PetscScalar *ornt;
+            const PetscInt    *neighbors;
+            PetscInt           proc, nproc, seen, flippedA, flippedB, mismatch, numNeighbors;
 
             proc     = procFIFO[pTop++];
             flippedA = PetscBTLookup(flippedProcs, proc) ? 1 : 0;
+            ierr = MatGetRow(G, proc, &numNeighbors, &neighbors, &ornt);CHKERRQ(ierr);
             /* Loop over neighboring procs */
-            for (n = 0; n < recvcounts[proc]; ++n) {
-              nproc    = adj[displs[proc]+n];
-              mismatch = val[displs[proc]+n] ? 0 : 1;
+            for (n = 0; n < numNeighbors; ++n) {
+              nproc    = neighbors[n];
+              mismatch = ornt[n] > 0.5 ? 0 : 1;
               seen     = PetscBTLookup(seenProcs, nproc);
               flippedB = PetscBTLookup(flippedProcs, nproc) ? 1 : 0;
 
@@ -3087,6 +3107,7 @@ PetscErrorCode DMPlexOrient(DM dm)
           }
         }
         ierr = PetscFree(procFIFO);CHKERRQ(ierr);
+        ierr = MatDestroy(&G);CHKERRQ(ierr);
 
         ierr = PetscFree2(recvcounts,displs);CHKERRQ(ierr);
         ierr = PetscFree2(adj,val);CHKERRQ(ierr);
