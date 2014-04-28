@@ -98,6 +98,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES snes)
   ierr = SNESSetFunctionType(snes,SNES_FUNCTION_PRECONDITIONED);CHKERRQ(ierr);
   ierr = SNESGetNPC(snes,&npc);CHKERRQ(ierr);
   ierr = SNESSetType(npc,SNESNASM);CHKERRQ(ierr);
+  ierr = SNESNASMSetType(npc,PC_ASM_BASIC);CHKERRQ(ierr);
   ierr = SNESNASMSetComputeFinalJacobian(npc,PETSC_TRUE);CHKERRQ(ierr);
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
