@@ -3845,7 +3845,7 @@ Nonlinear CG is equivalent to linear CG, but with the steplength determined by l
 default).  Five variants (Fletcher-Reed, Hestenes-Steifel, Polak-Ribiere-Polyak, Dai-Yuan, and Conjugate Descent) are
 implemented in PETSc and may be chosen using
 \begin{tabbing}
-      PetscErrorCode SNESNCGSetType(SNES snes, SNESNCGType btype);.
+SNESNCGSetType(SNES snes, SNESNCGType btype);.
 \end{tabbing}
 
 \textbf{Anderson Mixing and Nonlinear GMRES Methods.}
@@ -3876,11 +3876,11 @@ L-BFGS            & \trl{SNES_QN_LBFGS}       & lbfgs             & SNESLINESEAR
 
 One may also control the form of the initial Jacobian approximation with
 \begin{tabbing}
-PetscErrorCode SNESQNSetScaleType(SNES snes, SNESQNScaleType stype);
+SNESQNSetScaleType(SNES snes, SNESQNScaleType stype);
 \end{tabbing}
 and the restart type with
 \begin{tabbing}
-PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype);.
+SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype);.
 \end{tabbing}
 
 \subsection{The Full Approximation Scheme}
@@ -3894,44 +3894,44 @@ is a one-to-one map.  We describe the ``get'' operations here, and it can be
 assumed that each has a corresponding ``set'' operation.  For instance, the
 number of levels in the hierarchy may be retrieved using
 \begin{tabbing}
- PetscErrorCode SNESFASGetLevels(SNES snes, PetscInt *levels);
+SNESFASGetLevels(SNES snes, PetscInt *levels);
 \end{tabbing}
 
 There are four SNESFAS cycle
 types, \trl{SNES_FAS_MULTIPLICATIVE}, \trl{SNES_FAS_ADDITIVE}, \trl{SNES_FAS_FULL},
 or \trl{SNES_FAS_KASKADE}, The type may be set with
 \begin{tabbing}
-PetscErrorCode  SNESFASSetType(SNES snes,SNESFASType fastype);.
+SNESFASSetType(SNES snes,SNESFASType fastype);.
 \end{tabbing}
 \noindent and the cycle type, 1 for V, 2 for W, may be set with
 \begin{tabbing}
-PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles);.
+SNESFASSetCycles(SNES snes, PetscInt cycles);.
 \end{tabbing}
 Much like the interface to PCMG described in Section~\ref{sec_mg}, there are
 interfaces to recover the various levels' cycles and smoothers. The level
 smoothers may be accessed with
 \begin{tabbing}
-PetscErrorCode SNESFASGetSmoother(SNES snes, PetscInt level, SNES *smooth);\\
-PetscErrorCode SNESFASGetSmootherUp(SNES snes, PetscInt level, SNES *smooth);\\
-PetscErrorCode SNESFASGetSmootherDown(SNES snes, PetscInt level, SNES *smooth);
+SNESFASGetSmoother(SNES snes, PetscInt level, SNES *smooth);\\
+SNESFASGetSmootherUp(SNES snes, PetscInt level, SNES *smooth);\\
+SNESFASGetSmootherDown(SNES snes, PetscInt level, SNES *smooth);
 \end{tabbing}
 \noindent and the level cycles with
 \begin{tabbing}
-PetscErrorCode SNESFASGetCycleSNES(SNES snes,PetscInt level,SNES *lsnes);.
+SNESFASGetCycleSNES(SNES snes,PetscInt level,SNES *lsnes);.
 \end{tabbing}
 Much like PCMG, the restriction and prolongation at a level may be acquired with
 \begin{tabbing}
-PetscErrorCode SNESFASGetInterpolation(SNES snes, PetscInt level, Mat *mat);
-PetscErrorCode SNESFASGetRestriction(SNES snes, PetscInt level, Mat *mat);.
+SNESFASGetInterpolation(SNES snes, PetscInt level, Mat *mat);
+SNESFASGetRestriction(SNES snes, PetscInt level, Mat *mat);.
 \end{tabbing}
 In addition, FAS requires special restriction for solution-like variables,
 called injection.  This may be set with
 \begin{tabbing}
-PetscErrorCode SNESFASGetInjection(SNES snes, PetscInt level, Mat *mat);.
+SNESFASGetInjection(SNES snes, PetscInt level, Mat *mat);.
 \end{tabbing}
 The coarse solve context may be acquired with
 \begin{tabbing}
-PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *smooth);
+SNESFASGetCoarseSolve(SNES snes, SNES *smooth);
 \end{tabbing}
 
 \subsection{Nonlinear Additive Schwarz}
@@ -3943,7 +3943,7 @@ create these local subdomains.  Problems set up using the SNES DMDA interface
 are automatically decomposed.  To begin, the type of subdomain updates to the
 whole solution are limited to two types borrowed from PCASM: \trl{PC_ASM_BASIC},
 in which the overlapping updates added.  \trl{PC_ASM_RESTRICT} updates in a
-nonoverlapping fashion.
+nonoverlapping fashion.  This may be set with
 
 SNESASPIN is a helper SNES type that sets up a nonlinearly preconditioned Newton's
 method using NASM as the preconditioner.
