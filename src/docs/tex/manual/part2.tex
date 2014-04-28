@@ -4461,8 +4461,20 @@ nonlinear preconditioner;
 
 In addition, basic patterns of solver composition are available with the SNESType SNESCOMPOSITE.  This allows for two or
 more SNES instances to be combined additively or multiplicatively.  By command line, a set of SNES types may be given by
-comma separated list argument to \trl{-snes_composite_sneses}.  There are additive, additive with optimal damping, and
-multplicative variants which may be set with SNESCompositeSetType().
+comma separated list argument to \trl{-snes_composite_sneses}.  There are additive (\trl{SNES_COMPOSITE_ADDITIVE}),
+additive with optimal damping (\trl{SNES_COMPOSITE_ADDITIVEOPTIMAL}), and multiplicative
+(\trl{SNES_COMPOSITE_MULTIPLICATIVE}) variants which may be set with
+\begin{tabbing}
+SNESCompositeSetType(SNES,SNESCompositeType);
+\end{tabbing}
+New subsolvers may be added to the composite solver with
+\begin{tabbing}
+SNESCompositeAddSNES(SNES,SNESType);
+\end{tabbing}
+and accessed with
+\begin{tabbing}
+SNESCompositeGetSNES(SNES,PetscInt,SNES *);.
+\end{tabbing}
 
 % ---------------------------------------------------------------
 \cleardoublepage
