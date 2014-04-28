@@ -3841,7 +3841,7 @@ The nonlinear Richardson iteration merely takes the form of a line search-damped
 provide line search stabilization to an inner method.
 
 \textbf{Nonlinear Conjugate Gradients.}
-Nonlinear CG is equivalent to linear CG, but with the steplength determined by line search (SNESLINESEARCHCP by
+Nonlinear CG(NCG) is equivalent to linear CG, but with the steplength determined by line search (SNESLINESEARCHCP by
 default).  Five variants (Fletcher-Reed, Hestenes-Steifel, Polak-Ribiere-Polyak, Dai-Yuan, and Conjugate Descent) are
 implemented in PETSc and may be chosen using
 \begin{tabbing}
@@ -3938,13 +3938,17 @@ SNESFASGetCoarseSolve(SNES snes, SNES *smooth);
 
 Nonlinear Additive Schwarz methods (NASM) take a number of local nonlinear
 subproblems, solves them independently in parallel, and combines those solutions
-into a new approximate solution.  SNESNASMSetSubdomains() allows for the user to
-create these local subdomains.  Problems set up using the SNES DMDA interface
-are automatically decomposed.  To begin, the type of subdomain updates to the
-whole solution are limited to two types borrowed from PCASM: \trl{PC_ASM_BASIC},
-in which the overlapping updates added.  \trl{PC_ASM_RESTRICT} updates in a
-nonoverlapping fashion.  This may be set with
-
+into a new approximate solution.
+\begin{tabbing}
+SNESNASMSetSubdomains(SNES snes,PetscInt n,SNES subsnes[],VecScatter iscatter[],VecScatter oscatter[],VecScatter gscatter[]);
+\end{tabbing}
+ allows for the user to create these local subdomains.  Problems set up using the SNES DMDA interface are automatically
+decomposed.  To begin, the type of subdomain updates to the whole solution are limited to two types borrowed from
+PCASM: \trl{PC_ASM_BASIC}, in which the overlapping updates added.  \trl{PC_ASM_RESTRICT} updates in a nonoverlapping
+fashion.  This may be set with
+\begin{tabbing}
+        SNESNASMSetType(SNES snes,PCASMType type);.
+\end{tabbing}
 SNESASPIN is a helper SNES type that sets up a nonlinearly preconditioned Newton's
 method using NASM as the preconditioner.
 
@@ -4439,14 +4443,14 @@ SNESGetNPC(SNES snes,SNES *npc);
 and passed run-time options using the \trl{-npc_}
 prefix. Nonlinear preconditioning comes in two flavors: left and right.  The side may be changed
 using \trl{-snes_npc_side} or SNESSetNPCSide(). Left nonlinear preconditioning redefines the nonlinear function as the action of the
-preconditioner;
+nonlinear preconditioner $M$;
 \begin{equation}
-        F_{M}(x) = M(x,b) - x.
+        \F_{M}(x) = M(\x,\b) - \x.
 \end{equation}
 \noindent Right nonlinear preconditioning redefines the nonlinear function as the function on the action of the
 nonlinear preconditioner;
 \begin{equation}
-        F(M(x,b)) = 0,
+        \F(M(\x,\b)) = 0,
 \end{equation}
 \noindent  which can be interpreted as putting the preconditioner into ``striking distance'' of the solution by outer acceleration.
 
