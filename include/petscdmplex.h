@@ -159,7 +159,7 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateSubpointIS(DM, IS *);
 
 PETSC_EXTERN PetscErrorCode DMPlexMarkBoundaryFaces(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexLabelComplete(DM, DMLabel);
-PETSC_EXTERN PetscErrorCode DMPlexLabelCohesiveComplete(DM, DMLabel, PetscBool, DM);
+PETSC_EXTERN PetscErrorCode DMPlexLabelCohesiveComplete(DM, DMLabel, DMLabel, PetscBool, DM);
 PETSC_EXTERN PetscErrorCode DMPlexLabelAddCells(DM, DMLabel);
 
 /* Mesh Refinement */
