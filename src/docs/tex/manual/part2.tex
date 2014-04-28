@@ -4322,6 +4322,7 @@ A code fragment that demonstrates this process is given below.
 \begin{tabbing}
    ISColoring    iscoloring;\\
    MatFDColoring fdcoloring;\\
+   MatColoring   coloring;\\
 
    \trl{/*}\\
       This initializes the nonzero structure of the Jacobian. This is artificial\\
@@ -4334,8 +4335,11 @@ A code fragment that demonstrates this process is given below.
        Color the matrix, i.e. determine groups of columns that share no common \\
       rows. These columns in the Jacobian can all be computed simultaneously.\\
    \trl{*/}\\
-   MatGetColoring(J,MATCOLORINGSL,\&iscoloring);\\
-
+   MatColoringCreate(J,\&coloring);\\
+   MatColoringSetType(coloring,MATCOLORINGSL);\\
+   MatColoringSetFromOptions(coloring);\\
+   MatColoringApply(coloring,\&iscoloring);\\
+   MatColoringDestroy(\&coloring);\\
    \trl{/*}\\
        Create the data structure that SNESComputeJacobianDefaultColor() uses\\
        to compute the actual Jacobians via finite differences.\\
@@ -4363,24 +4367,24 @@ fairly easily obtain an estimate of the location of nonzeros in
 the matrix. This is harder in the unstructured case, and has not yet
 been implemented in general.
 
-One need not necessarily use the routine MatGetColoring() to
+One need not necessarily use a MatColoring object to
 determine a coloring.  For example, if a grid can be colored directly
 (without using the associated matrix), then that coloring can be provided
 to MatFDColoringCreate().  Note that the user must always
 preset the nonzero structure in the matrix regardless of which
 coloring routine is used.
 
-For sequential matrices PETSc provides three matrix coloring routines from the
-MINPACK package \cite{more84}: smallest-last (\trl{sl}), largest-first (\trl{lf}),
-and incidence-degree (\trl{id}).  These colorings, as well as the ``natural'' coloring
-for which each column has its own unique color, may be accessed with the command line options
+For sequential matrices PETSc provides three matrix coloring routines on from the MINPACK package \cite{more84}:
+smallest-last (\trl{sl}), largest-first (\trl{lf}), and incidence-degree (\trl{id}).  In addition, two implementations
+of parallel colorings are in PETSc, greedy (\trl{greedy}) and Jones-Plassmann (\trl{jp}). These colorings, as well as the
+``natural'' coloring for which each column has its own unique color, may be accessed with the command line options
 \begin{tabbing}
-   -mat\_coloring\_type \trl{<}sl,id,lf,natural\trl{>}
+   -mat\_coloring\_type \trl{<}sl,id,lf,natural,greedy,jp\trl{> }
 \end{tabbing}
-Alternatively, one can set a coloring type of \trl{MATCOLORINGSL}, \trl{
-MATCOLORINGID}, \trl{MATCOLORINGLF}, or \trl{MATCOLORINGNATURAL}
-when calling MatGetColoring(). \findex{-mat_coloring} \findex{MATCOLORINGSL} \findex{MATCOLORINGID}
-\findex{MATCOLORINGLF} \findex{MATCOLORINGNATURAL}
+Alternatively, one can set a coloring type of \trl{MATCOLORINGGREEDY} or \trl{MATCOLORINGJP} for parallel algorithms,
+or \trl{MATCOLORINGSL}, \trl{ MATCOLORINGID}, \trl{MATCOLORINGLF}, \trl{MATCOLORINGNATURAL} for sequential algorithms
+when calling MatColoringSetType(). \findex{-mat_coloring_type} \findex{MATCOLORINGSL} \findex{MATCOLORINGID}
+\findex{MATCOLORINGLF} \findex{MATCOLORINGNATURAL} \findex{MATCOLORINGGREEDY} \findex{MATCOLORINGJP}
 
 As for the matrix-free computation of Jacobians (see Section
 \ref{sec_nlmatrixfree}), two parameters affect the accuracy of the
@@ -4409,10 +4413,11 @@ These parameters may be set from the options database with
 \end{tabbing}
 \findex{-mat_fd_coloring_err} \findex{-mat_fd_coloring_umin}
 
-Note that although MatGetColoring() works for parallel matrices, the routine currently uses a sequential algorithm.
-Extensions may be forthcoming.
-However, if one can compute the coloring \trl{iscoloring} some other way, the routine MatFDColoringCreate() is scalable.
-An example of this for 2D distributed arrays is given below that uses the utility routine DMCreateColoring().
+Note that MatColoring type MATCOLORINGSL, MATCOLORINGLF, and MATCOLORINGID are sequential algorithms.  MATCOLORINGJP and
+MATCOLORINGGREEDY are parallel algorithms, although in practice they may create more colors than the sequential
+algorithms.  If one computes the coloring \trl{iscoloring} reasonably with a parallel algorithm or by knowledge of the
+discretization, the routine MatFDColoringCreate() is scalable.  An example of this for 2D distributed arrays is given
+below that uses the utility routine DMCreateColoring().
 
 \begin{tabbing}
    DMCreateColoring(da,IS\_COLORING\_GHOSTED,\&iscoloring);\\
