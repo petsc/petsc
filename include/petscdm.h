@@ -20,7 +20,6 @@ PETSC_EXTERN PetscClassId DM_CLASSID;
 J*/
 typedef const char* DMType;
 #define DMDA        "da"
-#define DMADDA      "adda"
 #define DMCOMPOSITE "composite"
 #define DMSLICED    "sliced"
 #define DMSHELL     "shell"

@@ -77,9 +77,9 @@ PetscErrorCode  KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscRea
        general, be less than this.
 
    Output Parameters:
-+  r - real part of computed eigenvalues
-.  c - complex part of computed eigenvalues
--  neig - number of eigenvalues computed (will be less than or equal to n)
++  r - real part of computed eigenvalues, provided by user with a dimension of at least n
+.  c - complex part of computed eigenvalues, provided by user with a dimension of at least n
+-  neig - actual number of eigenvalues computed (will be less than or equal to n)
 
    Options Database Keys:
 +  -ksp_compute_eigenvalues - Prints eigenvalues to stdout
@@ -94,7 +94,8 @@ PetscErrorCode  KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscRea
 
    KSPComputeEigenvalues() does not usually provide accurate estimates; it is
    intended only for assistance in understanding the convergence of iterative
-   methods, not for eigenanalysis.
+   methods, not for eigenanalysis. For accurate computation of eigenvalues we recommend using
+   the excellant package SLEPc.
 
    One must call KSPSetComputeEigenvalues() before calling KSPSetUp()
    in order for this routine to work correctly.
@@ -109,7 +110,7 @@ PetscErrorCode  KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscRea
 
 .seealso: KSPSetComputeSingularValues(), KSPMonitorSingularValue(), KSPComputeExtremeSingularValues()
 @*/
-PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal *r,PetscReal *c,PetscInt *neig)
+PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal c[],PetscInt *neig)
 {
   PetscErrorCode ierr;
 

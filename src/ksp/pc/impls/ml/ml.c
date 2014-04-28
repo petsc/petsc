@@ -406,7 +406,7 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
   /* create global row numbering for a ML_Operator */
   PetscStackCall("ML_build_global_numbering",ML_build_global_numbering(mlmat,&gordering,"rows"));
 
-  nz_max = PetscMax(1,mlmat->max_nz_per_row);
+  nz_max = PetscMax(1,mlmat->max_nz_per_row) + 1;
   ierr = PetscMalloc2(nz_max,&aa,nz_max,&aj);CHKERRQ(ierr);
   if (reuse) {
     A = *newmat;

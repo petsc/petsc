@@ -67,7 +67,7 @@ vectors even for the uniprocess case.
 
 We emphasize that all processes in \trl{comm} {\em must} call the
 vector creation routines, since these routines are collective over all
-processes in the communicator. If you are not familar with MPI communicators,
+processes in the communicator. If you are not familiar with MPI communicators,
 see the discussion in Section \ref{sec_writing} on page \pageref{sec_writing}.
 In addition, if a sequence of \trl{
 VecCreateXXX()} routines is used, they must be called in the same
@@ -535,7 +535,7 @@ a parallel array are shown in gray.
 
 The PETSc DMDA object manages the parallel communication required
 while working with data stored in regular arrays. The actual data
-is stored in approriately sized vector objects; the DMDA object
+is stored in appropriately sized vector objects; the DMDA object
 only contains the parallel data layout information and communication
 information, however it may be used to create vectors and matrices with the
 proper layout.
@@ -803,7 +803,7 @@ Since the global ordering that PETSc uses to manage its parallel vectors
 of a two- or three-dimensional array, the DMDA structure provides
 an application ordering AO (see Section \ref{sec_ao}) that maps
 between the natural ordering on a rectangular grid and the ordering PETSc
-uses to parallize. This ordering context can be obtained with the command
+uses to parallelize. This ordering context can be obtained with the command
 \begin{tabbing}
   DMDAGetAO(DM da,AO *ao);
 \end{tabbing}
@@ -1597,7 +1597,7 @@ To do this, we introduce the four spaces shown in Figure~\ref{fig_localspaces}.
 \begin{itemize}
 \item The monolithic global space is the space in which the Krylov and Newton solvers operate, with collective semantics across the entire block system.
 \item The split global space splits the blocks apart, but each split still has collective semantics.
-\item The split local space adds ghost points and sperates the blocks.
+\item The split local space adds ghost points and separates the blocks.
   Operations in this space can be performed with no parallel communication.
   This is often the most natural, and certainly the most powerful, space for matrix assembly code.
 \item The monolithic local space can be thought of as adding ghost points to the monolithic global space, but it is often more natural to use it simply as a concatenation of split local spaces on each process.
@@ -1670,7 +1670,7 @@ command
   MatView(Mat mat,PETSC\_VIEWER\_STDOUT\_WORLD);
 \end{tabbing}
 Other viewers can be used as well. For instance, one can draw the
-nonzero stucture of the matrix into the default X-window with the
+nonzero structure of the matrix into the default X-window with the
 command
 \begin{tabbing}
   MatView(Mat mat,PETSC\_VIEWER\_DRAW\_WORLD);
@@ -2216,10 +2216,10 @@ The values for KSPGMRESCGSRefinementType are \trl{KSP_GMRES_CGS_REFINEMENT_NONE}
 \findex{KSP_GMRES_CGS_REFINEMENT_IFNEEDED} \findex{KSP_GMRES_CGS_REFINEMENT_ALWAYS}
 
 One can also use
-modifed Gram-Schmidt,
+modified Gram-Schmidt,
 by setting the orthogonalization routine,
 KSPGMRESModifiedGramSchmidtOrthogonalization(), by using the command line option
-\trl{-ksp_gmres_modifiedgram-schmidt}. \findex{-ksp_gmres_modifiedgramschmidt}
+\trl{-ksp_gmres_modifiedgramschmidt}. \findex{-ksp_gmres_modifiedgramschmidt}
 
 For the conjugate gradient method with complex numbers, there are two
 slightly different algorithms depending on whether the matrix is
@@ -2443,7 +2443,7 @@ Unless the Krylov method converges so that the residual norm is small,
 say $ 10^{-10} $, many of the final digits printed with the \trl{-ksp_monitor}
 option are meaningless. Worse, they are different on different
 machines; due to different round-off rules used by, say, the IBM RS6000
-and the Sun Sparc. This makes testing between different machines
+and the Sun SPARC. This makes testing between different machines
 difficult. The option \trl{-ksp_monitor_short} \findex{-ksp_monitor_short}
 causes PETSc to print fewer of the digits of the residual norm
 as it gets smaller; thus on most of the machines it will always
@@ -2743,7 +2743,7 @@ eliminates the considerable overhead for dynamic memory allocation.
 The block Jacobi and overlapping additive Schwarz methods in PETSc are
 supported in parallel; however, only the uniprocess
 version of the block Gauss-Seidel method is currently in place.
-By default, the PETSc implentations of these methods
+By default, the PETSc implementations of these methods
 employ ILU(0) factorization on each individual block ( that is, the default solver on each
 subblock is PCType=PCILU, KSPType=KSPPREONLY); the user can set alternative linear solvers via the options
 \findex{-sub_ksp_type} \findex{-sub_pc_type}
@@ -2806,7 +2806,7 @@ restriction operator, but during the interpolation process ignores the off-proce
 values.
 Similarly, \trl{PC_ASM_INTERPOLATE} (or \trl{-pc_asm_type} \trl{interpolate}) uses a limited
 restriction process in conjunction with a full interpolation, while
-\trl{PC_ASM_NONE} (or \trl{-pc_asm_type} \trl{none}) ignores off-process valies
+\trl{PC_ASM_NONE} (or \trl{-pc_asm_type} \trl{none}) ignores off-process values
 for both restriction and interpolation.
 The ASM types with limited restriction or interpolation were suggested by
 Xiao-Chuan Cai and Marcus Sarkis \cite{cs97a}.  \sindex{Cai, Xiao-Chuan}  \sindex{Sarkis, Marcus}
@@ -2870,8 +2870,8 @@ to retrieve it in \trl{apply}.  The three routine arguments of
 respectively.
 
 For a preconditioner that requires some sort of ``setup'' before being used,
-that requires a new setup everytime the operator is changed, one can
-provide a ``setup'' routine that is called everytime the operator is
+that requires a new setup every time the operator is changed, one can
+provide a ``setup'' routine that is called every time the operator is
 changed (usually via KSPSetOperators()).
 \begin{tabbing}
   PCShellSetSetUp(PC pc,PetscErrorCode (*setup)(PC));
@@ -2921,7 +2921,7 @@ $ B_2$; $ y = B x $ is obtained from
   w_1  = x - A y \\
   y    = y + B_2 w_1
 \end{eqnarray*}
-Loosely, this corresponds to a Gauss-Siedel iteration, while
+Loosely, this corresponds to a Gauss-Seidel iteration, while
 additive corresponds to a Jacobi iteration.
 
 Under most circumstances the multiplicative form requires one-half the number of
@@ -2956,8 +2956,8 @@ two preconditioners: Jacobi and ILU. The option \trl{-pc_composite_type} \trl{mu
 \findex{-pc_composite_type} initiates the multiplicative version of the algorithm,
 while \trl{-pc_composite_type} \trl{additive} the additive version. Using the \trl{Amat}
 matrix is obtained with the option \trl{-pc_use_amat}.
-\findex{-pc_use_amat} One sets options for the subpreconditioners with the
-extra prefix \trl{-sub_N_} where \trl{N} is the number of the subpreconditioner.
+\findex{-pc_use_amat} One sets options for the sub-preconditioners with the
+extra prefix \trl{-sub_N_} where \trl{N} is the number of the sub-preconditioner.
 For example, \trl{-sub_0_pc_ifactor_fill} \trl{0}.
 
 
@@ -3989,7 +3989,7 @@ are \trl{-snes_atol <atol>}, \trl{-snes_rtol <rtol>}, \trl{-snes_stol <stol>},
 A related routine is SNESGetTolerances().
 
 Convergence tests for trust regions methods often use an additional
-parameter that indicates the minimium allowable trust region radius.
+parameter that indicates the minimum allowable trust region radius.
 The user can set this parameter with the option \trl{-snes_trtol <trtol>}
 \findex{-snes_trtol} or with the routine
 \begin{tabbing}
@@ -4043,7 +4043,7 @@ As the Newton method converges so that the residual norm is small,
 say $ 10^{-10} $, many of the final digits printed with the \trl{-snes_monitor}
 option are meaningless. Worse, they are different on different
 machines; due to different round-off rules used by, say, the IBM RS6000
-and the Sun Sparc. This makes testing between different machines
+and the Sun SPARC. This makes testing between different machines
 difficult. The option \trl{-snes_monitor_short} \findex{-snes_monitor_short}
 causes PETSc to print fewer of the digits of the residual norm
 as it gets smaller; thus on most of the machines it will always
@@ -4328,7 +4328,7 @@ A code fragment that demonstrates this process is given below.
 
    \trl{/*}\\
        Color the matrix, i.e. determine groups of columns that share no common \\
-      rows. These columns in the Jacobian can all be computed simulataneously.\\
+      rows. These columns in the Jacobian can all be computed simultaneously.\\
    \trl{*/}\\
    MatGetColoring(J,MATCOLORINGSL,\&iscoloring);\\
 
@@ -4427,7 +4427,7 @@ Some or all of the lower bounds may be negative infinity (indicated to PETSc wit
 \begin{tabbing}
    SNESVISetVariableBounds(SNES,Vec Lu,Vec Hu);
 \end{tabbing}
-is \findex{SNESVISetVariableBounds} used to indicate that one is solving a variational inequality. The option \trl{-snes_vi_monitor} \findex{-snes_vi_monitor} turns on extra monitoring of the active set associated with the bounds and \trl{-snes_vi_type} \findex{-snes_vi_type} allows selecting from several VI solvers, the default is prefered.
+is \findex{SNESVISetVariableBounds} used to indicate that one is solving a variational inequality. The option \trl{-snes_vi_monitor} \findex{-snes_vi_monitor} turns on extra monitoring of the active set associated with the bounds and \trl{-snes_vi_type} \findex{-snes_vi_type} allows selecting from several VI solvers, the default is preferred.
 
 \section{Nonlinear Preconditioning}
 
@@ -4520,7 +4520,7 @@ To solve an ODE or DAE one uses:
   \end{tabbing}
   The vector \trl{R} is an optional location to store the residual.
   The arguments to the function \trl{f()} are the
-  timestep contex, current time, input state $u$, input time derivative
+  timestep context, current time, input state $u$, input time derivative
   $\dot{u}$, and the (optional) user-provided context \trl{funP}. If    $F(t,u,\dot{u}) = \dot{u} $ then
   one need not call this function.
 
@@ -4530,13 +4530,13 @@ To solve an ODE or DAE one uses:
   \end{tabbing}
 
 \item Jacobian $F_u + (shift)F_{\dot{u}}$ \\
-  If using a fully implicit or semi-implict (IMEX) method one also can provide an appropriate (approximate) Jacobian matrix of $F()$.
+  If using a fully implicit or semi-implicit (IMEX) method one also can provide an appropriate (approximate) Jacobian matrix of $F()$.
   \begin{tabbing}
     TS\=SetIJacobian(TS ts,Mat A,Mat B,\\
     \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*),void *jacP);
   \end{tabbing}
   The arguments for the function \trl{fjac()}
-  are the timestep contex, current time, input state $u$, input
+  are the timestep context, current time, input state $u$, input
   derivative $\dot{u}$, $shift$, matrix $A$, preconditioning matrix
   $B$, flag describing structure of preconditioning matrix (see the
   discussion of KSPSetOperators() in Section~\ref{sec_usingsles} for
@@ -4560,7 +4560,7 @@ To solve an ODE or DAE one uses:
     \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Mat,Mat,void*),void *jacP);
   \end{tabbing}
   The arguments for the function \trl{fjac()}
-  are the timestep contex, current time, input state $u$, matrix $A$, preconditioning matrix
+  are the timestep context, current time, input state $u$, matrix $A$, preconditioning matrix
   $B$, flag describing structure of preconditioning matrix (see the
   discussion of KSPSetOperators() in Section~\ref{sec_usingsles} for
   details), and the (optional) user-provided context \trl{jacP}.
@@ -4718,7 +4718,7 @@ where {\tt YourComputeRHSJacobian()} is a function you provide that computes $A$
 \item  -ts\_monitor - prints the time and timestep at each iteration.
 \item  -ts\_adapt\_monitor - prints information about the timestep adaption calculation at each iteration.
 \item  -ts\_monitor\_lg\_timestep - plots the size of each timestep, TSMonitorLGTimeStep().
-\item  -ts\_monitor\_lg\_solution - for ODEs with only a few components (not arising from the descretization of a PDE) plots the solution as a function of time, TSMonitorLGSolution().
+\item  -ts\_monitor\_lg\_solution - for ODEs with only a few components (not arising from the discretization of a PDE) plots the solution as a function of time, TSMonitorLGSolution().
 \item  -ts\_monitor\_lg\_error - for ODEs with only a few components plots the error as a function of time, only if TSSetSolutionFunction() is provided, TSMonitorLGError().
 \item  -ts\_monitor\_draw\_solution - plots the solution at each iteration, TSMonitorDrawSolution().
 \item  -ts\_monitor\_draw\_error - plots the error at each iteration only if TSSetSolutionFunction() is provided, TSMonitorDrawSolution().
@@ -4909,7 +4909,7 @@ This chapter needs to be written.
 \chapter{Using ADIFOR with PETSc}
 
 Automatic differentiation is an incredible technique to generate code
-that computes Jacobians and other differentives directly from code
+that computes Jacobians and other derivatives directly from code
 that only evaluates the function.
 
 First one indicates the functions for which one needs Jacobians by adding
@@ -5000,7 +5000,7 @@ One creates a viewer to MATLAB via
 \begin{tabbing}
 PetscViewerSocketOpen(MPI\_Comm,char *machine,int port,PetscViewer *v);
 \end{tabbing}
-(port is usally set to \trl{PETSC_DEFAULT}, use PETSC\_NULL for the machine if the
+(port is usually set to \trl{PETSC_DEFAULT}, use PETSC\_NULL for the machine if the
 MATLAB interactive session is running on the same machine as the PETSc program)
 and then sends matrices or vectors via
 \begin{tabbing}
@@ -5135,7 +5135,7 @@ each} of the include files. One must employ
 the Fortran file suffix \trl{.F}
 rather than \trl{.f}.  This convention enables use of the CPP
 preprocessor, which allows the use of the {\em \#include} statements
-that define PETSc objects and variables. (Familarity with the CPP
+that define PETSc objects and variables. (Familiarity with the CPP
 preprocessor is not needed for writing PETSc Fortran code; one can simply
 begin by copying a PETSc Fortran example and its corresponding
 makefile.)
@@ -5494,7 +5494,7 @@ activated at runtime.  The profiling options include the following:
      without running in the debugger.
 \end{itemize}
  As discussed in Section~\ref{sec_mpelogs},
-additional profilng can be done with MPE.
+additional profiling can be done with MPE.
 
 \subsection{Interpreting {\tt -log\_summary} Output: The Basics}
 \label{sec_ploginfo}
@@ -5767,7 +5767,7 @@ suggestions about achieving good performance with PETSc codes.
 \label{sec_mpelogs}
 
 It is also possible to use the {\em Jumpshot}) package
-\cite{upshot} \sindex{Jumppshot} to visualize PETSc events.
+\cite{upshot} \sindex{Jumpshot} to visualize PETSc events.
 This package comes with the MPE software, which is part of the MPICH
 \cite{mpich-web-page} implementation of MPI.
 The option \findex{-log_mpe}
@@ -5870,7 +5870,7 @@ entire program.
 By default, the profiling produces a single set of statistics for all
 code between the PetscInitialize() and PetscFinalize()
 calls within a program.  One can independently monitor up to ten
-stages of code by switching among the various stages with the comands
+stages of code by switching among the various stages with the commands
 \begin{tabbing}
    PetscLogStagePush(PetscLogStage stage);\\
    PetscLogStagePop();
@@ -6035,7 +6035,7 @@ standard \trl{printf()} and \trl{fprintf()} statements.
 One factor that often plays a significant role in profiling a code is
 paging by the operating system.  Generally, when running a program
 only a few pages required to start it are loaded into memory rather
-than the entire executable.  When the execution procedes to code
+than the entire executable.  When the execution proceeds to code
 segments that are not in memory, a pagefault occurs, prompting the
 required pages to be loaded from the disk (a very slow process).  This
 activity distorts the results significantly. (The paging effects are
@@ -6047,7 +6047,7 @@ program, we have found an effective procedure is to run the {\bf exact same
 code} on a small dummy problem before running it on the actual problem
 of interest. We thus ensure that all code required by a solver is
 loaded into memory during solution of the small problem.  When the
-code procedes to the actual (larger) problem of interest, all required
+code proceeds to the actual (larger) problem of interest, all required
 pages have already been loaded into main memory, so that the
 performance numbers are not distorted.
 
@@ -6251,7 +6251,7 @@ We briefly describe these below.
 \item The PETSc memory allocation (which collects statistics and
 performs error checking), is employed by default for codes compiled in
 a debug-mode (configured with \trl{--with-debugging=1}).  PETSc memory
-allocation can be activated for optimixed-mode (configured with
+allocation can be activated for optimized-mode (configured with
 \trl{--with-debugging=0}) using the option \trl{-malloc}. The option
 \trl{-malloc=0} forces the use of conventional memory allocation when
 debugging is enabled.  When running timing tests, one should build
@@ -6317,7 +6317,7 @@ overcoming them.
       even calling the system clock in order to time routines is
       slow; this skews all of the flop rates and timing results. The file
       \trl{${PETSC_DIR}/src/benchmarks/PetscTime.c} contains a
-      simple test problem that will approximate the ammount of time
+      simple test problem that will approximate the amount of time
       required to get the current time in a running program. On good
       systems it will on the order of 1.e-6 seconds or less.
 \item {\bf Problem too large for good cache performance}: Certain machines
@@ -6392,7 +6392,7 @@ The remainder of this section discusses details of runtime options.
 
 Each PETSc process maintains a database of option names and values
 (stored as text strings). This database is generated with the command
-PETScInitialize(), which is listed below in its C/C++ and
+PetscInitialize(), which is listed below in its C/C++ and
 Fortran variants, respectively:
 \begin{tabbing}
   PetscInitialize(int *argc,char ***args,const char *file,const char *help);\\
@@ -6674,7 +6674,7 @@ command
 The default handler PetscSignalHandlerDefault()
 calls
 PetscError() and then terminates. In general, a signal in PETSc
-indicates a catastrophic failure.  Any error hander that the user provides
+indicates a catastrophic failure.  Any error handler that the user provides
 should try to clean up only before exiting.  By default all PETSc programs
 use the default signal handler, although the user can turn this off
 at runtime with the
@@ -6917,8 +6917,8 @@ m, petsc, stdc++, mpichxx, mpich, lapack, blas, gfortran, dl, rt,gcc_s, pthread,
 
 To make PETSc an Eclipse package
 \begin{itemize}
-\item Install the Mecurial plugin for Eclipse and then import the PETSc repository to Eclipse.
-\item elected New->Convert to C/C++ project and selected shared library. After this point you can perform searchs in the code.
+\item Install the Mercurial plugin for Eclipse and then import the PETSc repository to Eclipse.
+\item elected New->Convert to C/C++ project and selected shared library. After this point you can perform searches in the code.
 \end{itemize}
 
   A PETSc user has provided the following steps to build an Eclipse index for PETSc that can be used with their own code without compiling PETSc source into their project.
@@ -6937,7 +6937,7 @@ To make PETSc an Eclipse package
 \item Qt Creator supports automated and cross-platform \texttt{qmake} and \texttt{Cmake} build systems. What this means, is that, starting from a handful set of options, Qt Creator is able to generate makefiles that are used to compile and run your application package on Linux, Windows and Mac systems.
 \item Qt Creator makes the task of linking PETSc library to your application package easy.
 \item Qt Creator has visual debugger and supports both GNU's GDB and Microsoft's CDB (on Windows).
-\item Qt Creator (as of version 2.3) has interface to memory profiling softwares such as valgrind.
+\item Qt Creator (as of version 2.3) has interface to memory profiling software such as valgrind.
 \item Qt Creator has built-in auto-completion and function look-up. This feature of editor, makes it possible for the user to easily browse inside huge packages like PETSc and easily find relevant functions and objects.
 \item Qt Creator has inline error/warning messages. This feature of the editor greatly reduces programming bugs by informing the user of potential error/warning as the code is being written and even before the compile step.
 \item Qt Creator is an excellent environment for doing GUI programming using Qt framework. This means you can easily generate a nice GUI for you application package as well!
@@ -7007,7 +7007,7 @@ To use PETSc from MS Visual Studio - one would have to compile a PETSc example w
 
 Follow the instructions in systems/Apple/OSX/bin/makeall to build the PETSc framework and documentation suitable for use in Xcode.
 
-You can then use the PETSc framework in \$\{PETSC\_DIR\}/arch-osx/PETSc.framework in the usual manner for Apple framworks, see the examples in systems/Apple/OSX/examples.  When working in xcode things like function name completion should work for all PETSc functions as well as MPI functions. You must also link against the Apple Accelerate.framework.
+You can then use the PETSc framework in \$\{PETSC\_DIR\}/arch-osx/PETSc.framework in the usual manner for Apple frameworks, see the examples in systems/Apple/OSX/examples.  When working in xcode things like function name completion should work for all PETSc functions as well as MPI functions. You must also link against the Apple Accelerate.framework.
 
 \subsection{iPhone/iPad iOS}
 
@@ -7323,7 +7323,7 @@ ${PETSC_DIR}/${PETSC_ARCH}/conf}, discussed in Section
 Maintaining portable PETSc makefiles is very simple.
 
 The first is a ``minimum'' makefile for maintaining
-a single program that uses the PETSc libraires.
+a single program that uses the PETSc libraries.
 The most important line in this makefile is the line starting with \trl{include}:
 \begin{tabbing}
    include  \$\trl{{PETSC_DIR}/conf/variables}
@@ -7463,7 +7463,7 @@ as follows:
 \item \trl{CFLAGS, FFLAGS} User specified additional options for the C compiler and
         fortran compiler.
 \item \trl{CPPFLAGS, FPPFLAGS} User specified additional flags for the C preprocessor
-        and fortran preprocesor.
+        and fortran preprocessor.
 \item \trl{CLINKER, FLINKER} the C and Fortran linkers.
 \item \trl{RM} the remove command for deleting files.
 \end{itemize}
@@ -7828,8 +7828,8 @@ command
 
 This chapter introduces the DMPlex subclass of DM, which allows the user to handle unstructured grids using the generic
 DM interface for hierarchy and multi-physics. DMPlex was created to remedy a huge problem in all current PDE
-simulation codes, namely that the discretization was so closely tied to the data layout and solver that switiching
-discretizations in the same code was not possible. Not only does this preclude the kind of comparsion that is necessary
+simulation codes, namely that the discretization was so closely tied to the data layout and solver that switching
+discretizations in the same code was not possible. Not only does this preclude the kind of comparison that is necessary
 for scientific investigation, but it makes library development (as opposed to monolithic applications) impossible.
 
 \medskip \medskip
@@ -7967,7 +7967,7 @@ The strongest links between solvers and discretizations are,
   \item ordering of unknowns.
 \end{itemize}
 To enable modularity, we encode the operations above in simple data structures that can be understood by the linear
-algebra engine in PETSc without any reference to the mesh (toplology) or discretization (analysis).
+algebra engine in PETSc without any reference to the mesh (topology) or discretization (analysis).
 
 \subsection{Data Layout}
 
@@ -7975,7 +7975,7 @@ Data is associated to a mesh using the PetscSection object. A PetscSection can b
 PetscLayout, in the same way that a fiber bundle is a generalization of the normal Euclidean basis used in linear
 algebra. With PetscLayout, we associate a unit vector ($e_i$) with every point in the space, and just divide up points
 between processes. Using PetscSection, we can associate a set of dofs, a small space $\{e_k\}$, with every point, and
-though our points must be contiguous liek PetscLayout, they can be in any range $[\mathrm{pStart}, \mathrm{pEnd})$.
+though our points must be contiguous like PetscLayout, they can be in any range $[\mathrm{pStart}, \mathrm{pEnd})$.
 
 The sequence for setting up any PetscSection is the following:
 \begin{enumerate}
@@ -8021,7 +8021,7 @@ IS. However, the graph we are dealing with now is not the adjacency graph of the
 itself. Once the mesh is partitioned and reordered, we used the data layout from a PetscSection to automatically derive
 a problem partitioning/ordering.
 
-\section{Evaluating Residuals} \sindex{Residual Evaulation}
+\section{Evaluating Residuals} \sindex{Residual Evaluation}
 
 The evaluation of a residual, or Jacobian, for most discretizations has the following general form:
 \begin{itemize}
