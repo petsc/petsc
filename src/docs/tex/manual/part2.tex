@@ -3841,7 +3841,7 @@ The nonlinear Richardson iteration merely takes the form of a line search-damped
 provide line search stabilization to an inner method.
 
 \textbf{Nonlinear Conjugate Gradients.}
-Nonlinear CG(NCG) is equivalent to linear CG, but with the steplength determined by line search (SNESLINESEARCHCP by
+Nonlinear CG is equivalent to linear CG, but with the steplength determined by line search (SNESLINESEARCHCP by
 default).  Five variants (Fletcher-Reed, Hestenes-Steifel, Polak-Ribiere-Polyak, Dai-Yuan, and Conjugate Descent) are
 implemented in PETSc and may be chosen using
 \begin{tabbing}
@@ -4443,14 +4443,14 @@ SNESGetNPC(SNES snes,SNES *npc);
 and passed run-time options using the \trl{-npc_}
 prefix. Nonlinear preconditioning comes in two flavors: left and right.  The side may be changed
 using \trl{-snes_npc_side} or SNESSetNPCSide(). Left nonlinear preconditioning redefines the nonlinear function as the action of the
-nonlinear preconditioner $M$;
+nonlinear preconditioner $\mathbf{M}$;
 \begin{equation}
-        \F_{M}(x) = M(\x,\b) - \x.
+        \F_{M}(x) = \mathbf{M}(\x,\mathbf{b}) - \x.
 \end{equation}
 \noindent Right nonlinear preconditioning redefines the nonlinear function as the function on the action of the
 nonlinear preconditioner;
 \begin{equation}
-        \F(M(\x,\b)) = 0,
+        \F(\mathbf{M}(\x,\mathbf{b})) = \mathbf{b},
 \end{equation}
 \noindent  which can be interpreted as putting the preconditioner into ``striking distance'' of the solution by outer acceleration.
 
