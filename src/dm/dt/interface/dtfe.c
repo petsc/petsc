@@ -1635,7 +1635,7 @@ static PetscErrorCode PetscDualSpaceGetDimension_SingleCell_Lagrange(PetscDualSp
 
   PetscFunctionBegin;
   ierr = DMPlexGetDimension(sp->dm, &n);CHKERRQ(ierr);
-  if (lag->simplex) {
+  if (lag->simplex || !lag->continuous) {
     for (i = 1; i <= n; ++i) {
       D *= ((PetscReal) (order+i))/i;
     }
@@ -1751,7 +1751,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
         } else if ((p >= pStart[depth]) && (p < pEnd[depth])) {
           /* Cells */
           PetscInt     orderEff = lag->continuous && order ? (simplex ? order-3 : order-2) : order;
-          PetscReal    denom    = order ? order : (simplex ? 3 : 2);
+          PetscReal    denom    = order ? (lag->continuous ? order : (simplex ? order+3 : order+2)) : (simplex ? 3 : 2);
           PetscScalar *coords   = NULL;
           PetscReal    dx = 2.0/denom, *v0, *J, *invJ, detJ;
           PetscInt    *ind, *tup;
@@ -1765,7 +1765,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
 
           ierr = PetscCalloc5(cdim,&ind,cdim,&tup,dim,&v0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
           ierr = DMPlexComputeCellGeometry(dm, p, v0, J, invJ, &detJ);CHKERRQ(ierr);
-          if (simplex) {
+          if (simplex || !lag->continuous) {
             for (o = 0; o <= orderEff; ++o) {
               ierr = PetscMemzero(ind, cdim*sizeof(PetscInt));CHKERRQ(ierr);
               while (ind[0] >= 0) {
