@@ -16,7 +16,6 @@ typedef struct {
   /* Element definition */
   PetscInt  qorder;            /* Order of the quadrature */
   PetscInt  numComponents;     /* Number of field components */
-  PetscBool continuous;        /* Use continuous space */
   PetscFE   fe;                /* The finite element */
   /* Testing space */
   PetscInt  porder;            /* Order of polynomials to test */
@@ -106,7 +105,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->refinementLimit = 0.0;
   options->qorder          = 0;
   options->numComponents   = 1;
-  options->continuous      = PETSC_TRUE;
   options->porder          = 0;
   options->convergence     = PETSC_FALSE;
 
@@ -118,7 +116,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex3.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-qorder", "The quadrature order", "ex3.c", options->qorder, &options->qorder, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-num_comp", "The number of field components", "ex3.c", options->numComponents, &options->numComponents, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-continuous", "User a continuous element", "ex3.c", options->continuous, &options->continuous, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-porder", "The order of polynomials to test", "ex3.c", options->porder, &options->porder, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-convergence", "Check the convergence rate", "ex3.c", options->convergence, &options->convergence, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -431,7 +428,7 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, user.dim, user.numComponents, user.simplex, user.continuous, NULL, user.qorder, &user.fe);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, user.dim, user.numComponents, user.simplex, NULL, user.qorder, &user.fe);CHKERRQ(ierr);
   user.fem.fe = &user.fe;
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
   ierr = CheckFunctions(dm, user.porder, &user);CHKERRQ(ierr);
