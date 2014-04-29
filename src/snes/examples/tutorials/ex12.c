@@ -557,12 +557,12 @@ int main(int argc, char **argv)
   ierr = DMSetApplicationContext(dm, &user);CHKERRQ(ierr);
 
   user.fem.fe = user.fe;
-  ierr = PetscFECreateDefault(dm, user.dim, 1, PETSC_TRUE, PETSC_TRUE, NULL, -1, &user.fe[0]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, user.dim, 1, PETSC_TRUE, NULL, -1, &user.fe[0]);CHKERRQ(ierr);
   if (user.bcType != NEUMANN) {
     user.fem.feBd = NULL; user.feBd[0] = NULL;
   } else {
     user.fem.feBd = user.feBd;
-    ierr = PetscFECreateDefault(dm, user.dim-1, 1, PETSC_TRUE, PETSC_TRUE, "bd_", -1, &user.feBd[0]);CHKERRQ(ierr);
+    ierr = PetscFECreateDefault(dm, user.dim-1, 1, PETSC_TRUE, "bd_", -1, &user.feBd[0]);CHKERRQ(ierr);
   }
   ierr = PetscFEGetNumComponents(user.fe[0], &numComponents);CHKERRQ(ierr);
   ierr = PetscMalloc(NUM_FIELDS * sizeof(void (*)(const PetscReal[], PetscScalar *, void *)), &user.exactFuncs);CHKERRQ(ierr);
@@ -577,7 +577,7 @@ int main(int argc, char **argv)
     PetscQuadrature q;
 
     user.fem.feAux = user.feAux;
-    ierr = PetscFECreateDefault(dmAux, user.dim, 1, PETSC_TRUE, PETSC_TRUE, "mat_", -1, &user.feAux[0]);CHKERRQ(ierr);
+    ierr = PetscFECreateDefault(dmAux, user.dim, 1, PETSC_TRUE, "mat_", -1, &user.feAux[0]);CHKERRQ(ierr);
     ierr = PetscFEGetQuadrature(user.fe[0], &q);CHKERRQ(ierr);
     ierr = PetscFESetQuadrature(user.feAux[0], q);CHKERRQ(ierr);
   }
