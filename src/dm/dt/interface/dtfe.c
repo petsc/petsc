@@ -6701,7 +6701,6 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
 . dim        - The spatial dimension
 . numComp    - The number of components
 . isSimplex  - Flag for simplex reference cell, otherwise its a tensor product
-. continuous - Flag for continuous element
 . prefix     - The options prefix, or NULL
 - qorder     - The quadrature order
 
@@ -6713,7 +6712,7 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
 .keywords: PetscFE, finite element
 .seealso: PetscFECreate(), PetscSpaceCreate(), PetscDualSpaceCreate()
 @*/
-PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt numComp, PetscBool isSimplex, PetscBool continuous, const char prefix[], PetscInt qorder, PetscFE *fem)
+PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt numComp, PetscBool isSimplex, const char prefix[], PetscInt qorder, PetscFE *fem)
 {
   PetscQuadrature q;
   DM              K;
@@ -6728,7 +6727,6 @@ PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt numComp, Petsc
   ierr = PetscObjectSetOptionsPrefix((PetscObject) P, prefix);CHKERRQ(ierr);
   ierr = PetscSpaceSetFromOptions(P);CHKERRQ(ierr);
   ierr = PetscSpacePolynomialSetNumVariables(P, dim);CHKERRQ(ierr);
-  ierr = PetscSpacePolynomialSetTensor(P, !isSimplex ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
   ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
   /* Create dual space */
@@ -6739,7 +6737,6 @@ PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt numComp, Petsc
   ierr = DMDestroy(&K);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetOrder(Q, order);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetFromOptions(Q);CHKERRQ(ierr);
-  ierr = PetscDualSpaceLagrangeSetContinuity(Q, continuous);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
   /* Create element */
   ierr = PetscFECreate(PetscObjectComm((PetscObject) dm), fem);CHKERRQ(ierr);
