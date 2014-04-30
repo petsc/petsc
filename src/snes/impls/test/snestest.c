@@ -175,6 +175,11 @@ PetscErrorCode SNESSetUp_Test(SNES snes)
 
    Level: intermediate
 
+   Notes: This solver is not a solver and does not converge to a solution.  SNESTEST checks the Jacobian at three
+   points: the 0, 1, and -1 solution vectors.  After doing these three tests, it always aborts with the error message
+   "SNESTest aborts after Jacobian test".  No other behavior is to be expected.  It may be similarly used to check if a
+   SNES function is the gradient of an objective function set with SNESSetObjective().
+
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR
 
 M*/
