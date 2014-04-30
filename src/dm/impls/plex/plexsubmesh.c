@@ -2,6 +2,25 @@
 #include <petscsf.h>
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexMarkBoundaryFaces_Internal"
+PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt cellHeight, DMLabel label)
+{
+  PetscInt       fStart, fEnd, f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMPlexGetHeightStratum(dm, cellHeight+1, &fStart, &fEnd);CHKERRQ(ierr);
+  for (f = fStart; f < fEnd; ++f) {
+    PetscInt supportSize;
+
+    ierr = DMPlexGetSupportSize(dm, f, &supportSize);CHKERRQ(ierr);
+    if (supportSize == 1) {ierr = DMLabelSetValue(label, f, 1);CHKERRQ(ierr);}
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexMarkBoundaryFaces"
 /*@
   DMPlexMarkBoundaryFaces - Mark all faces on the boundary
@@ -20,20 +39,10 @@
 @*/
 PetscErrorCode DMPlexMarkBoundaryFaces(DM dm, DMLabel label)
 {
-  PetscInt       fStart, fEnd, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  for (f = fStart; f < fEnd; ++f) {
-    PetscInt supportSize;
-
-    ierr = DMPlexGetSupportSize(dm, f, &supportSize);CHKERRQ(ierr);
-    if (supportSize == 1) {
-      ierr = DMLabelSetValue(label, f, 1);CHKERRQ(ierr);
-    }
-  }
+  ierr = DMPlexMarkBoundaryFaces_Internal(dm, 1, label);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
