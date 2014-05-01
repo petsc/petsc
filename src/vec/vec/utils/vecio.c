@@ -181,6 +181,52 @@ PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5ReadSizes"
+PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], PetscInt *bs, PetscInt *N)
+{
+  hid_t          file_id, group, dset_id, filespace;
+  hsize_t        rdim, dim;
+  hsize_t        dims[4];
+  herr_t         status;
+  PetscInt       bsInd, lenInd, timestep;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerHDF5OpenGroup(viewer, &file_id, &group);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5GetTimestep(viewer, &timestep);CHKERRQ(ierr);
+#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
+  dset_id = H5Dopen2(group, name, H5P_DEFAULT);
+#else
+  dset_id = H5Dopen(group, name);
+#endif
+  if (dset_id == -1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not H5Dopen() with PetscObject named %s", name);
+  filespace = H5Dget_space(dset_id);
+  if (filespace == -1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not H5Dget_space()");
+  dim = 0;
+  if (timestep >= 0) ++dim;
+  ++dim; /* length in blocks */
+  ++dim; /* block size */
+#if defined(PETSC_USE_COMPLEX)
+  ++dim;
+#endif
+  rdim = H5Sget_simple_extent_dims(filespace, dims, NULL);
+#if defined(PETSC_USE_COMPLEX)
+  bsInd = rdim-2;
+#else
+  bsInd = rdim-1;
+#endif
+  lenInd = timestep >= 0 ? 1 : 0;
+  if (rdim != dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected", rdim, dim);
+  /* Close/release resources */
+  status = H5Sclose(filespace);CHKERRQ(status);
+  status = H5Dclose(dset_id);CHKERRQ(status);
+  if (group != file_id) {status = H5Gclose(group);CHKERRQ(status);}
+  if (bs) *bs = (PetscInt) dims[bsInd];
+  if (N)  *N  = (PetscInt) dims[lenInd]*dims[bsInd];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "VecLoad_HDF5"
 /*
      This should handle properly the cases where PetscInt is 32 or 64 and hsize_t is 32 or 64. These means properly casting with

@@ -508,6 +508,23 @@ PetscErrorCode ISSort_General(IS is)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ISSortRemoveDups_General"
+PetscErrorCode ISSortRemoveDups_General(IS is)
+{
+  IS_General     *sub = (IS_General*)is->data;
+  PetscInt       n;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (sub->sorted) PetscFunctionReturn(0);
+  ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
+  ierr = PetscSortRemoveDupsInt(&n,sub->idx);CHKERRQ(ierr);
+  ierr = PetscLayoutSetLocalSize(is->map, n);CHKERRQ(ierr);
+  sub->sorted = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ISSorted_General"
 PetscErrorCode ISSorted_General(IS is,PetscBool  *flg)
 {
@@ -532,6 +549,7 @@ static struct _ISOps myops = { ISGetSize_General,
                                ISRestoreIndices_General,
                                ISInvertPermutation_General,
                                ISSort_General,
+                               ISSortRemoveDups_General,
                                ISSorted_General,
                                ISDuplicate_General,
                                ISDestroy_General,
