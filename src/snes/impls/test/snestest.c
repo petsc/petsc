@@ -171,7 +171,7 @@ PetscErrorCode SNESSetUp_Test(SNES snes)
       SNESTEST - Test hand-coded Jacobian against finite difference Jacobian
 
    Options Database:
-.    -snes_test_display  Display difference between approximate and hand-coded Jacobian
+.    -snes_test_display - Display difference between approximate and hand-coded Jacobian
 
    Level: intermediate
 
