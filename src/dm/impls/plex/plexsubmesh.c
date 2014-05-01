@@ -1465,7 +1465,8 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
 
           if ((clp < vStart) || (clp >= vEnd)) continue;
           ierr = DMLabelGetValue(label, clp, &val);CHKERRQ(ierr);
-          if (!((val == 0) || (bval == 0))) {inHalo = PETSC_FALSE; break;}
+          ierr = DMLabelGetValue(blabel, clp, &bval);CHKERRQ(ierr);
+          if (!((val == 0) || (bval == 1))) {inHalo = PETSC_FALSE; break;}
         }
         ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
         if (inHalo) {
