@@ -185,8 +185,8 @@ PetscInt XYT_stats(xyt_ADT xyt_handle)
     PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xyt_nnz=%D\n",PCTFS_my_id,vals[1]);
     PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xyt_nnz=%g\n",PCTFS_my_id,1.0*vals[2]/PCTFS_num_nodes);
     PetscPrintf(PETSC_COMM_WORLD,"%D :: tot   xyt_nnz=%D\n",PCTFS_my_id,vals[2]);
-    PetscPrintf(PETSC_COMM_WORLD,"%D :: xyt   C(2d)  =%g\n",PCTFS_my_id,vals[2]/(pow(1.0*vals[5],1.5)));
-    PetscPrintf(PETSC_COMM_WORLD,"%D :: xyt   C(3d)  =%g\n",PCTFS_my_id,vals[2]/(pow(1.0*vals[5],1.6667)));
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: xyt   C(2d)  =%g\n",PCTFS_my_id,vals[2]/(PetscPowReal(1.0*vals[5],1.5)));
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: xyt   C(3d)  =%g\n",PCTFS_my_id,vals[2]/(PetscPowReal(1.0*vals[5],1.6667)));
     PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xyt_n  =%D\n",PCTFS_my_id,vals[3]);
     PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xyt_n  =%D\n",PCTFS_my_id,vals[4]);
     PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xyt_n  =%g\n",PCTFS_my_id,1.0*vals[5]/PCTFS_num_nodes);
@@ -412,7 +412,7 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
 
     /* check for small alpha                             */
     /* LATER use this to detect and determine null space */
-    if (fabs(alpha)<1.0e-14) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"bad alpha! %g\n",alpha);
+    if (PetscAbsScalar(alpha)<1.0e-14) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"bad alpha! %g\n",alpha);
 
     /* compute v_l = v_l/sqrt(alpha) */
     PCTFS_rvec_scale(v,1.0/alpha,n);

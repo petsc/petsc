@@ -837,16 +837,6 @@ runex39_2:
 	if (${DIFF} output/ex39.out ex39.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex39_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex39.tmp
-runex39_cheby_hybrid:
-	-@${MPIEXEC} -n 3 ./ex39 -beta -0.6 -ksp_type chebyshev -ksp_monitor_short -est_ksp_monitor_short -ksp_chebyshev_hybrid -ksp_chebyshev_hybrid_eststeps 5 -ksp_chebyshev_hybrid_chebysteps 6 -ksp_chebyshev_hybrid_purification > ex39.tmp 2>&1;\
-	if (${DIFF} output/ex39_cheby_hybrid.out ex39.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with with ex39_cheby_hybrid, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex39.tmp
-runex39_fgmres_cheby_hybrid:
-	-@${MPIEXEC} -n 3 ./ex39 -beta -0.6 -ksp_type fgmres -pc_type ksp -ksp_ksp_type chebyshev -ksp_monitor_short -ksp_ksp_max_it 3 -ksp_ksp_chebyshev_hybrid -ksp_ksp_chebyshev_hybrid_chebysteps 2 -ksp_ksp_chebyshev_hybrid_eststeps 2 -ksp_ksp_norm_type none > ex39.tmp 2>&1;\
-	if (${DIFF} output/ex39_fgmres_cheby_hybrid.out ex39.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with with ex39_fgmres_cheby_hybrid, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex39.tmp
 
 runex40:
 	-@${MPIEXEC} -n 6 ./ex40 -pc_type none  > ex40.tmp 2>&1;\
@@ -953,7 +943,7 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.P
                                  runex32_inode2 runex32_inode2_nd runex32_inode3 runex32_inode3_nd runex32_inode4 runex32_inode4_nd \
                                  runex32_inode5 runex32_inode5_nd ex32.rm \
 				 ex35.PETSc runex35_1 runex35_2 runex35_inode ex35.rm \
-                                 ex38.PETSc runex38 ex38.rm ex39.PETSc runex39 runex39_2 runex39_cheby_hybrid runex39_fgmres_cheby_hybrid ex39.rm \
+                                 ex38.PETSc runex38 ex38.rm ex39.PETSc runex39 runex39_2 ex39.rm \
                                  ex42.PETSc runex42 runex42_2 ex42.rm \
                                  ex44.PETSc runex44 ex44.rm
 TESTEXAMPLES_C_X	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm

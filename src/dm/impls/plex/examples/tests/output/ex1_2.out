@@ -1,3 +1,5 @@
+DM Object:Simplical Mesh 1 MPI processes
+  type: plex
 \documentclass[crop,multi=false]{standalone}
 \usepackage{tikz}
 \usepackage{pgflibraryshapes}

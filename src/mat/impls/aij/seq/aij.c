@@ -441,7 +441,6 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
   PetscBool      roworiented       = a->roworiented;
 
   PetscFunctionBegin;
-  if (v) PetscValidScalarPointer(v,6);
   for (k=0; k<m; k++) { /* loop over added rows */
     row = im[k];
     if (row < 0) continue;
@@ -458,14 +457,10 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
       if (in[l] >= A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[l],A->cmap->n-1);
 #endif
       col = in[l];
-      if (v) {
-        if (roworiented) {
-          value = v[l + k*n];
-        } else {
-          value = v[k + l*m];
-        }
+      if (roworiented) {
+        value = v[l + k*n];
       } else {
-        value = 0.;
+        value = v[k + l*m];
       }
       if ((value == 0.0 && ignorezeroentries) && (is == ADD_VALUES)) continue;
 
@@ -641,7 +636,6 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
     PetscFunctionReturn(0);
   } else if (format == PETSC_VIEWER_ASCII_COMMON) {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       ierr = PetscViewerASCIIPrintf(viewer,"row %D:",i);CHKERRQ(ierr);
       for (j=a->i[i]; j<a->i[i+1]; j++) {
@@ -663,7 +657,6 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
   } else if (format == PETSC_VIEWER_ASCII_SYMMODU) {
     PetscInt nzd=0,fshift=1,*sptr;
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer);CHKERRQ(ierr);
     ierr = PetscMalloc1((m+1),&sptr);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       sptr[i] = nzd+1;
@@ -733,7 +726,6 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
 #endif
 
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       jcnt = 0;
       for (j=0; j<A->cmap->n; j++) {
@@ -783,7 +775,6 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
   } else {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer);CHKERRQ(ierr);
     if (A->factortype) {
       for (i=0; i<m; i++) {
         ierr = PetscViewerASCIIPrintf(viewer,"row %D:",i);CHKERRQ(ierr);

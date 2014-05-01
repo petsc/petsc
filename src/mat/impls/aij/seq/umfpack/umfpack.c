@@ -348,7 +348,7 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_umfpack(Mat A,const MatSolverPac
   MATSOLVERUMFPACK = "umfpack" - A matrix type providing direct solvers (LU) for sequential matrices
   via the external package UMFPACK.
 
-  ./configure --download-umfpack to install PETSc to use UMFPACK
+  ./configure --download-suitesparse to install PETSc to use UMFPACK
 
   Consult UMFPACK documentation for more information about the Control parameters
   which correspond to the options database keys below.

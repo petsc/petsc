@@ -98,8 +98,8 @@ PetscErrorCode  PetscEmacsClientErrorHandler(MPI_Comm comm,int line,const char *
 $    int handler(MPI_Comm comm,int line,char *func,char *file,PetscErrorCode n,int p,char *mess,void *ctx);
 
 +  comm - communicator over which error occured
-.  func - the function where the error occured (indicated by __FUNCT__)
 .  line - the line number of the error (indicated by __LINE__)
+.  func - the function where the error occured (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  n - the generic error number (see list defined in include/petscerror.h)
 .  p - PETSC_ERROR_INITIAL if error just detected, otherwise PETSC_ERROR_REPEAT

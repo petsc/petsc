@@ -776,8 +776,9 @@ class Configure(config.package.Package):
 
     oldFlags = self.compilers.CPPFLAGS # Disgusting save and restore
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
-    if self.checkCompile('#include <mpi.h>', 'int combiner = MPI_COMBINER_DUP;'):
-      self.addDefine('HAVE_MPI_COMBINER_DUP',1)
+    for combiner in ['MPI_COMBINER_DUP', 'MPI_COMBINER_CONTIGUOUS']:
+      if self.checkCompile('#include <mpi.h>', 'int combiner = %s;' % (combiner,)):
+        self.addDefine('HAVE_' + combiner,1)
     self.compilers.CPPFLAGS = oldFlags
 
     if self.libraries.check(self.dlib, "MPIDI_CH3I_sock_set"):

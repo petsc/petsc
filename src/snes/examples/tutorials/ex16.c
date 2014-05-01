@@ -164,7 +164,7 @@ int main(int argc,char **argv)
   ierr = InitialGuess(da,&user,x);CHKERRQ(ierr);
   ierr = FormRHS(da,&user,b);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(comm,"lambda: %f mu: %f\n",user.lambda,user.mu);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"lambda: %f mu: %f\n",(double)user.lambda,(double)user.mu);CHKERRQ(ierr);
 
   /* show a cross-section of the initial state */
   if (viewline) {
@@ -246,7 +246,7 @@ void InvertTensor(PetscScalar *t, PetscScalar *ti,PetscReal *dett)
     const PetscScalar F = -(a*h - b*g);
     const PetscScalar G = (b*f - c*e);
     const PetscScalar H = -(a*f - c*d);
-    const PetscScalar I = (a*e - b*d);
+    const PetscScalar II = (a*e - b*d);
     ti[0] = di*A;
     ti[1] = di*D;
     ti[2] = di*G;
@@ -255,7 +255,7 @@ void InvertTensor(PetscScalar *t, PetscScalar *ti,PetscReal *dett)
     ti[5] = di*H;
     ti[6] = di*C;
     ti[7] = di*F;
-    ti[8] = di*I;
+    ti[8] = di*II;
   }
   if (dett) *dett = det;
 }
@@ -1057,7 +1057,7 @@ PetscErrorCode DisplayLine(SNES snes,Vec X)
     if (rank == r) {
       if (j >= ys && j < ys+ym && k >= zs && k < zs+zm) {
         for (i=xs; i<xs+xm; i++) {
-          PetscPrintf(PETSC_COMM_SELF,"%d %d %d: %f %f %f\n",i,0,0,PetscRealPart(c[k][j][i][0] + x[k][j][i][0]),PetscRealPart(c[k][j][i][1] + x[k][j][i][1]),PetscRealPart(c[k][j][i][2] + x[k][j][i][2]));
+          ierr = PetscPrintf(PETSC_COMM_SELF,"%D %d %d: %f %f %f\n",i,0,0,(double)PetscRealPart(c[k][j][i][0] + x[k][j][i][0]),(double)PetscRealPart(c[k][j][i][1] + x[k][j][i][1]),(double)PetscRealPart(c[k][j][i][2] + x[k][j][i][2]));CHKERRQ(ierr);
         }
       }
     }

@@ -421,6 +421,7 @@ PetscErrorCode  PetscDrawHGView(PetscDrawHG hist,PetscViewer viewer)
   if (!viewer){
     ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)hist),&viewer);CHKERRQ(ierr);
   }
+  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)hist,viewer);CHKERRQ(ierr);
   xmax      = hist->xmax;
   xmin      = hist->xmin;
   numValues = hist->numValues;

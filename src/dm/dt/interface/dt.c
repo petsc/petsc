@@ -111,6 +111,7 @@ PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)quad,viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Quadrature on %d points\n  (", quad->numPoints);CHKERRQ(ierr);
   for (q = 0; q < quad->numPoints; ++q) {
     for (d = 0; d < quad->dim; ++d) {
@@ -447,7 +448,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
       ierr = PetscDTComputeJacobiDerivative(a, b, npoints, r, &fp);CHKERRQ(ierr);
       delta = f / (fp - f * s);
       r     = r - delta;
-      if (PetscAbs(delta) < eps) break;
+      if (PetscAbsReal(delta) < eps) break;
     }
     x[k] = r;
     ierr = PetscDTComputeJacobiDerivative(a, b, npoints, x[k], &dP);CHKERRQ(ierr);

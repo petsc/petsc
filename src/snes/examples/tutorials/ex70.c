@@ -208,7 +208,7 @@ PetscErrorCode StokesExactSolution(Stokes *s)
     ierr = StokesGetPosition(s, row,&i,&j);CHKERRQ(ierr);
     if (row < s->nx*s->ny) {
       val = StokesExactVelocityX(j*s->hy+s->hy/2);
-    } else if (row < 2*s->nx*s->ny) {
+    } else {
       val = 0;
     }
     ierr = VecSetValue(y0, row, val, INSERT_VALUES);CHKERRQ(ierr);
@@ -631,7 +631,8 @@ PetscErrorCode StokesCalcResidual(Stokes *s)
 
 PetscErrorCode StokesCalcError(Stokes *s)
 {
-  PetscScalar    val, scale = PetscSqrtScalar(s->nx*s->ny);
+  PetscScalar    scale = PetscSqrtScalar(s->nx*s->ny);
+  PetscReal      val;
   Vec            y0, y1;
   PetscErrorCode ierr;
 

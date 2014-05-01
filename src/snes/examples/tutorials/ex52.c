@@ -339,7 +339,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   PetscFunctionBeginUser;
   ierr = PetscFEGetNumComponents(user->fe[0], &numComp[0]);CHKERRQ(ierr);
   ierr = PetscFEGetNumDof(user->fe[0], &numDof);CHKERRQ(ierr);
-  ierr = DMPlexCreateSection(dm, dim, 1, numComp, numDof, numBC, NULL, NULL, &section);CHKERRQ(ierr);
+  ierr = DMPlexCreateSection(dm, dim, 1, numComp, numDof, numBC, NULL, NULL, NULL, &section);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   PetscFunctionReturn(0);

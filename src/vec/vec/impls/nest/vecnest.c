@@ -559,11 +559,8 @@ static PetscErrorCode VecView_Nest(Vec x,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Vec Object:\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);         /* push0 */
-    ierr = PetscViewerASCIIPrintf(viewer,"type=nest, rows=%d \n",bx->nb);CHKERRQ(ierr);
-
-    ierr = PetscViewerASCIIPrintf(viewer,"VecNest  structure: \n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"VecNest, rows=%D,  structure: \n",bx->nb);CHKERRQ(ierr);
     for (i=0; i<bx->nb; i++) {
       VecType  type;
       char     name[256] = "",prefix[256] = "";
