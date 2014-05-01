@@ -42,7 +42,7 @@ PetscErrorCode DMPlexMarkBoundaryFaces(DM dm, DMLabel label)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexMarkBoundaryFaces_Internal(dm, 1, label);CHKERRQ(ierr);
+  ierr = DMPlexMarkBoundaryFaces_Internal(dm, 0, label);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
