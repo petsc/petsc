@@ -92,6 +92,7 @@ PetscErrorCode  PetscOpenSocket(const char hostname[],int portnum,int *t)
   int                s = 0;
   PetscErrorCode     ierr;
   PetscBool          flg = PETSC_TRUE;
+  static int         refcnt = 0;
 
   PetscFunctionBegin;
   if (!(hp=gethostbyname(hostname))) {
@@ -128,7 +129,8 @@ PetscErrorCode  PetscOpenSocket(const char hostname[],int portnum,int *t)
         (*PetscErrorPrintf)("SEND: socket already connected\n");
         sleep((unsigned) 1);
       } else if (errno == ECONNREFUSED) {
-        /* (*PetscErrorPrintf)("SEND: forcefully rejected\n"); */
+        refcnt++;
+        if (refcnt > 5) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SYS,"Connection refused by remote host %s port %d",hostname,portnum);
         ierr = PetscInfo(0,"Connection refused in attaching socket, trying again");CHKERRQ(ierr);
         sleep((unsigned) 1);
       } else {

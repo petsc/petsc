@@ -31,7 +31,7 @@
 6 26 13.000000
 6 27 13.100000
 *** Matrix A and vector x:
-Mat Object: 1 MPI processes
+Mat Object: 7 MPI processes
   type: mpiaij
 row 0: (0, 4)  (2, -1)  (28, -1) 
 row 1: (1, 4)  (3, -1)  (29, -1) 

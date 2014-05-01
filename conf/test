@@ -46,6 +46,7 @@ testexamples_HYPRE: ${TESTEXAMPLES_HYPRE}
 testexamples_HDF5: ${TESTEXAMPLES_HDF5}
 testexamples_CHACO: ${TESTEXAMPLES_CHACO}
 testexamples_TRIANGLE: ${TESTEXAMPLES_TRIANGLE}
+testexamples_SSL: ${TESTEXAMPLES_SSL}
 
 testexamples_BOOST: ${TESTEXAMPLES_BOOST}
 testexamples_TETGEN: ${TESTEXAMPLES_TETGEN}
@@ -195,6 +196,7 @@ TESTMODE = testexamples
 alltests:
 	-@${RM} ${PETSC_ARCH}/conf/alltests.log alltests.log
 	-@ln -s ${PETSC_ARCH}/conf/alltests.log alltests.log
+	-@if [ "${PETSC_WITH_BATCH}" == "" ]; then make PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} stream NPMAX=4 | tee ${PETSC_ARCH}/conf/alltests.log ;fi
 	-@${OMAKE} alltest PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} 2>&1 | tee ${PETSC_ARCH}/conf/alltests.log
 
 alltest:

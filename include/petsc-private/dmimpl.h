@@ -138,12 +138,16 @@ struct _p_DM {
   DM                      coordinateDM;         /* Layout for coordinates (default section) */
   Vec                     coordinates;          /* Coordinate values in global vector */
   Vec                     coordinatesLocal;     /* Coordinate values in local  vector */
+  PetscReal              *L, *maxCell;          /* Size of periodic box and max cell size for determining periodicity */
   /* Null spaces -- of course I should make this have a variable number of fields */
   /*   I now believe this might not be the right way: see below */
   NullSpaceFunc           nullspaceConstructors[10];
   /* Fields are represented by objects */
   PetscInt                numFields;
   PetscFE                *fields;
+  /* Output structures */
+  DM                      dmBC;                 /* The DM with boundary conditions in the global DM */
+  PetscInt                outputSequenceNum;    /* The current sequence number for output */
 
   PetscObject             dmksp,dmsnes,dmts;
 };

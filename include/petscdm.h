@@ -20,7 +20,6 @@ PETSC_EXTERN PetscClassId DM_CLASSID;
 J*/
 typedef const char* DMType;
 #define DMDA        "da"
-#define DMADDA      "adda"
 #define DMCOMPOSITE "composite"
 #define DMSLICED    "sliced"
 #define DMSHELL     "shell"
@@ -99,6 +98,8 @@ PETSC_EXTERN PetscErrorCode DMSetCoordinates(DM,Vec);
 PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocal(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMSetCoordinatesLocal(DM,Vec);
 PETSC_EXTERN PetscErrorCode DMLocatePoints(DM,Vec,IS*);
+PETSC_EXTERN PetscErrorCode DMGetPeriodicity(DM,const PetscReal**,const PetscReal**);
+PETSC_EXTERN PetscErrorCode DMSetPeriodicity(DM,const PetscReal[],const PetscReal[]);
 
 /* block hook interface */
 PETSC_EXTERN PetscErrorCode DMSubDomainHookAdd(DM,PetscErrorCode (*)(DM,DM,void*),PetscErrorCode (*)(DM,VecScatter,VecScatter,DM,void*),void*);
@@ -149,6 +150,10 @@ PETSC_EXTERN PetscErrorCode DMSetDefaultSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMCreateDefaultSF(DM, PetscSection, PetscSection);
 PETSC_EXTERN PetscErrorCode DMGetPointSF(DM, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMSetPointSF(DM, PetscSF);
+
+PETSC_EXTERN PetscErrorCode DMGetOutputDM(DM, DM *);
+PETSC_EXTERN PetscErrorCode DMGetOutputSequenceNumber(DM, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMSetOutputSequenceNumber(DM, PetscInt);
 
 PETSC_EXTERN PetscErrorCode DMGetNumFields(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMSetNumFields(DM, PetscInt);

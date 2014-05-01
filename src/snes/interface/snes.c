@@ -2633,7 +2633,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = VecDuplicate(f,&fpc);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes->pc,fpc,func,funcctx);CHKERRQ(ierr);
     ierr = SNESGetJacobian(snes,NULL,NULL,&jac,&jacctx);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes->pc,NULL,NULL,jac,jacctx);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes->pc,snes->jacobian,snes->jacobian_pre,jac,jacctx);CHKERRQ(ierr);
     ierr = SNESGetApplicationContext(snes,&appctx);CHKERRQ(ierr);
     ierr = SNESSetApplicationContext(snes->pc,appctx);CHKERRQ(ierr);
     ierr = VecDestroy(&fpc);CHKERRQ(ierr);
@@ -3227,7 +3227,7 @@ PetscErrorCode  SNESMonitorLGRange(SNES snes,PetscInt n,PetscReal rnorm,void *mo
   ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetTitle(draw,"Residual norm");CHKERRQ(ierr);
   x    = (PetscReal)n;
-  if (rnorm > 0.0) y = log10(rnorm);
+  if (rnorm > 0.0) y = PetscLog10Real(rnorm);
   else y = -15.0;
   ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
   if (n < 20 || !(n % 5)) {

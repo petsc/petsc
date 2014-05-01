@@ -128,7 +128,7 @@ PetscErrorCode  PetscErrorPrintfDefault(const char format[],...)
 
 static void PetscErrorPrintfHilight(void)
 {
-#if defined(PETSC_HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H) && defined(PETSC_USE_ISATTY)
   if (PetscErrorPrintf == PetscErrorPrintfDefault) {
     if (isatty(fileno(PETSC_STDERR))) fprintf(PETSC_STDERR,"\033[1;31m");
   }
@@ -137,7 +137,7 @@ static void PetscErrorPrintfHilight(void)
 
 static void PetscErrorPrintfNormal(void)
 {
-#if defined(PETSC_HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H) && defined(PETSC_USE_ISATTY)
   if (PetscErrorPrintf == PetscErrorPrintfDefault) {
     if (isatty(fileno(PETSC_STDERR))) fprintf(PETSC_STDERR,"\033[0;39m\033[0;49m");
   }
@@ -221,7 +221,7 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
         if (text) (*PetscErrorPrintf)("%s\n",text);
       }
       if (mess) (*PetscErrorPrintf)("%s\n",mess);
-      (*PetscErrorPrintf)("See http://http://www.mcs.anl.gov/petsc/documentation/faq.html for trouble shooting.\n");
+      (*PetscErrorPrintf)("See http://www.mcs.anl.gov/petsc/documentation/faq.html for trouble shooting.\n");
       (*PetscErrorPrintf)("%s\n",version);
       if (PetscErrorPrintfInitializeCalled) (*PetscErrorPrintf)("%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
       (*PetscErrorPrintf)("Configure options %s\n",petscconfigureoptions);
@@ -232,7 +232,7 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
     PetscStrncmp(fun,"unknown",7,&isunknown);
     if (ismain || isunknown) {
       PetscErrorPrintfHilight();
-      (*PetscErrorPrintf)("----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------\033[0;39m\033[0;49m\n");
+      (*PetscErrorPrintf)("----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------\n");
       PetscErrorPrintfNormal();
     }
   } else {

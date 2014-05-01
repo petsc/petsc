@@ -130,6 +130,8 @@ PetscErrorCode  ISColoringView(ISColoring iscoloring,PetscViewer viewer)
   if (iascii) {
     MPI_Comm    comm;
     PetscMPIInt rank;
+
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)iscoloring,viewer);CHKERRQ(ierr);
     ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);

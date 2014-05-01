@@ -291,6 +291,7 @@ static PetscErrorCode PetscSFFindWindow(PetscSF sf,MPI_Datatype unit,const void 
   PetscSFWinLink link;
 
   PetscFunctionBegin;
+  *win = MPI_WIN_NULL;
   for (link=w->wins; link; link=link->next) {
     if (array == link->addr) {
       *win = link->win;

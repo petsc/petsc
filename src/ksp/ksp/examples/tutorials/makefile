@@ -377,15 +377,6 @@ runex2_chebyest_2:
 	-@${MPIEXEC} -n 1 ./ex2 -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_max_it 5 -ksp_ksp_chebyshev_estimate_eigenvalues 0.9,0,0,1.1 -ksp_est_ksp_type cg -ksp_monitor_short > ex2.tmp 2>&1; \
            ${DIFF} output/ex2_chebyest_2.out ex2.tmp || printf "${PWD}\nPossible problem with with ex2_chebyest_2, diffs above\n=========================================\n"; \
            ${RM} -f ex2.tmp
-runex2_chebyest_3:
-	-@${MPIEXEC} -n 1 ./ex2 -ksp_type fgmres -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_chebyshev_estimate_eigenvalues 0.1,1.1 -ksp_ksp_max_it 1 -ksp_ksp_norm_type none -m 100 -n 100 -ksp_ksp_chebyshev_hybrid -ksp_ksp_chebyshev_hybrid_purification 0 -ksp_ksp_chebyshev_hybrid_chebysteps 10 > ex2.tmp 2>&1; \
-           ${DIFF} output/ex2_chebyest_3.out ex2.tmp || printf "${PWD}\nPossible problem with with ex2_chebyest_3, diffs above\n=========================================\n"; \
-           ${RM} -f ex2.tmp
-runex2_chebyest_4:
-	-@${MPIEXEC} -n 1 ./ex2 -ksp_type fgmres -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_chebyshev_estimate_eigenvalues 0.1,1.1 -ksp_ksp_max_it 1 -ksp_ksp_norm_type none -m 100 -n 100 -ksp_ksp_chebyshev_hybrid -ksp_ksp_chebyshev_hybrid_purification 1 -ksp_ksp_chebyshev_hybrid_chebysteps 10 > ex2.tmp 2>&1; \
-           ${DIFF} output/ex2_chebyest_4.out ex2.tmp || printf "${PWD}\nPossible problem with with ex2_chebyest_3, diffs above\n=========================================\n"; \
-           ${RM} -f ex2.tmp
-
 runex2_umfpack:
 	-@${MPIEXEC} -n 1 ./ex2 -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package umfpack > ex2_umfpack.tmp 2>&1; \
            if (${DIFF} output/ex2_umfpack.out ex2_umfpack.tmp) then true; \
@@ -1106,7 +1097,7 @@ runex59_3:
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 runex2_specest_1 runex2_specest_2 \
-                                 runex2_chebyest_1 runex2_chebyest_2 runex2_chebyest_3 runex2_chebyest_4 runex2_fbcgs runex2_fbcgs_2 ex2.rm \
+                                 runex2_chebyest_1 runex2_chebyest_2 runex2_fbcgs runex2_fbcgs_2 ex2.rm \
                                  ex7.PETSc runex7 runex7_2 ex7.rm ex4.PETSc ex4.rm ex5.PETSc runex5 runex5_2 \
                                  runex5_redundant_0 runex5_redundant_1 runex5_redundant_2 runex5_redundant_3 runex5_redundant_4 ex5.rm \
                                  ex8g.PETSc runex8g_1 runex8g_2 runex8g_3 ex8g.rm \
@@ -1117,9 +1108,10 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex31.PETSc ex31.rm ex32.PETSc runex32 ex32.rm ex34.PETSc runex34 ex34.rm ex42.PETSc ex42.rm \
                                  ex43.PETSc runex43 runex43_2 runex43_3 runex43_bjacobi runex43_bjacobi_baij ex43.rm \
                                  ex45.PETSc runex45 runex45_2 ex45.rm \
-                                 ex49.PETSc runex49 runex49_2 runex49_3 runex49_5 ex49.rm ex53.PETSc runex53 ex53.rm ex54.PETSc ex54.rm ex55.PETSc runex55_Classical ex55.rm\
+                                 ex49.PETSc runex49 runex49_2 runex49_3 runex49_5 ex49.rm ex53.PETSc runex53 ex53.rm ex55.PETSc runex55_Classical ex55.rm\
                                  ex56.PETSc runex56_nns runex56 ex56.rm \
                                  ex58.PETSc runex58 runex58_baij runex58_sbaij ex58.rm
+TESTEXAMPLES_C_NOCOMPLEX       = ex54.PETSc ex54.rm 
 TESTEXAMPLES_C_X	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm ex28.PETSc runex28 ex28.rm
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc ex6f.rm \
                                  ex14f.PETSc runex14f ex14f.rm ex15f.PETSc runex15f ex15f.rm ex22f.PETSc runex22f \

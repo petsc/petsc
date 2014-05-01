@@ -4575,28 +4575,35 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
     for (c = cMax; c < cEnd; ++c) {
       const PetscInt  newp = (cMax - cStart)*8 + (c - cMax)*4;
       const PetscInt *cone, *ornt, *fornt;
-      PetscInt        coneNew[6], orntNew[6];
+      PetscInt        coneNew[6], orntNew[6], o, of, i;
 
       ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
       ierr = DMPlexGetConeOrientation(dm, c, &ornt);CHKERRQ(ierr);
       ierr = DMPlexGetConeOrientation(dm, cone[0], &fornt);CHKERRQ(ierr);
+      o = ornt[0] < 0 ? -1 : 1;
       for (r = 0; r < 4; ++r) {
         PetscInt subfA = GetQuadSubface_Static(ornt[0], r);
         PetscInt edgeA = GetQuadEdge_Static(ornt[0], r);
-        PetscInt edgeB = (edgeA+3)%4;
+        PetscInt edgeB = GetQuadEdge_Static(ornt[0], (r+3)%4);
         if (ornt[0] != ornt[1]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent ordering for matching ends of hybrid cell %d: %d != %d", c, ornt[0], ornt[1]);
         coneNew[0]         = fStartNew + (cone[0] - fStart)*4 + subfA;
         orntNew[0]         = ornt[0];
         coneNew[1]         = fStartNew + (cone[1] - fStart)*4 + subfA;
         orntNew[1]         = ornt[0];
-        coneNew[(r+0)%4+2] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (cone[edgeA+2] - fMax)*2 + (fornt[edgeA] < 0 ? 1 : 0);
-        orntNew[(r+0)%4+2] = ornt[edgeA];
-        coneNew[(r+1)%4+2] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (fEnd          - fMax)*2 + (c - cMax)*4 + edgeA;
-        orntNew[(r+1)%4+2] = 0;
-        coneNew[(r+2)%4+2] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (fEnd          - fMax)*2 + (c - cMax)*4 + edgeB;
-        orntNew[(r+2)%4+2] = -2;
-        coneNew[(r+3)%4+2] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (cone[edgeB+2] - fMax)*2 + (fornt[edgeB] < 0 ? 0 : 1);
-        orntNew[(r+3)%4+2] = ornt[edgeB];
+        of = fornt[edgeA] < 0 ? -1 : 1;
+        i  = GetQuadEdgeInverse_Static(ornt[0], r) + 2;
+        coneNew[i] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (cone[2+edgeA] - fMax)*2 + (o*of < 0 ? 1 : 0);
+        orntNew[i] = ornt[edgeA];
+        i  = GetQuadEdgeInverse_Static(ornt[0], (r+1)%4) + 2;
+        coneNew[i] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (fEnd          - fMax)*2 + (c - cMax)*4 + edgeA;
+        orntNew[i] = 0;
+        i  = GetQuadEdgeInverse_Static(ornt[0], (r+2)%4) + 2;
+        coneNew[i] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (fEnd          - fMax)*2 + (c - cMax)*4 + edgeB;
+        orntNew[i] = -2;
+        of = fornt[edgeB] < 0 ? -1 : 1;
+        i  = GetQuadEdgeInverse_Static(ornt[0], (r+3)%4) + 2;
+        coneNew[i] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (cone[2+edgeB] - fMax)*2 + (o*of < 0 ? 0 : 1);
+        orntNew[i] = ornt[edgeB];
         ierr       = DMPlexSetCone(rdm, newp+r, coneNew);CHKERRQ(ierr);
         ierr       = DMPlexSetConeOrientation(rdm, newp+r, orntNew);CHKERRQ(ierr);
 #if 1
@@ -4665,7 +4672,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
 #endif
       }
     }
-    /* Interior faces have 4 edges and 2 cells */
+    /* Interior cell faces have 4 edges and 2 cells */
     for (c = cStart; c < cMax; ++c) {
       const PetscInt  newCells[24] = {0, 3,  2, 3,  1, 2,  0, 1,  4, 5,  5, 6,  6, 7,  4, 7,  0, 4,  3, 5,  2, 6,  1, 7};
       const PetscInt *cone, *ornt;
@@ -4936,13 +4943,16 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
 #endif
         for (s = 0; s < size; ++s) {
           const PetscInt *coneCell, *orntCell, *fornt;
+          PetscInt        o, of;
 
           ierr = DMPlexGetCone(dm, support[s], &coneCell);CHKERRQ(ierr);
           ierr = DMPlexGetConeOrientation(dm, support[s], &orntCell);CHKERRQ(ierr);
+          o = orntCell[0] < 0 ? -1 : 1;
           for (c = 2; c < 6; ++c) if (coneCell[c] == f) break;
           if (c >= 6) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not find face %d in cone of cell %d", f, support[s]);
           ierr = DMPlexGetConeOrientation(dm, coneCell[0], &fornt);CHKERRQ(ierr);
-          supportNew[s] = cStartNew + (cMax - cStart)*8 + (support[s] - cMax)*4 + (GetQuadEdgeInverse_Static(orntCell[0], c-2) + (fornt[c-2] < 0 ? 1-r : r))%4;
+          of = fornt[c-2] < 0 ? -1 : 1;
+          supportNew[s] = cStartNew + (cMax - cStart)*8 + (support[s] - cMax)*4 + (GetQuadEdgeInverse_Static(orntCell[0], c-2) + (o*of < 0 ? 1-r : r))%4;
         }
         ierr = DMPlexSetSupport(rdm, newp, supportNew);CHKERRQ(ierr);
 #if 1
@@ -4963,6 +4973,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
       ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
       ierr = DMPlexGetConeOrientation(dm, c, &ornt);CHKERRQ(ierr);
       for (r = 0; r < 4; ++r) {
+#if 0
         coneNew[0] = eStartNew + (eMax - eStart)*2 + (cone[0] - fStart)*4 + GetQuadSubface_Static(ornt[0], r);
         orntNew[0] = 0;
         coneNew[1] = eStartNew + (eMax - eStart)*2 + (cone[1] - fStart)*4 + GetQuadSubface_Static(ornt[1], r);
@@ -4971,6 +4982,16 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
         orntNew[2] = 0;
         coneNew[3] = eStartNew + (eMax - eStart)*2 + (fMax - fStart)*4 + (cMax - cStart)*6 + (eEnd - eMax) + (fEnd                                   - fMax) + (c - cMax);
         orntNew[3] = 0;
+#else
+        coneNew[0] = eStartNew + (eMax - eStart)*2 + (cone[0] - fStart)*4 + r;
+        orntNew[0] = 0;
+        coneNew[1] = eStartNew + (eMax - eStart)*2 + (cone[1] - fStart)*4 + r;
+        orntNew[1] = 0;
+        coneNew[2] = eStartNew + (eMax - eStart)*2 + (fMax - fStart)*4 + (cMax - cStart)*6 + (eEnd - eMax) + (cone[2+r] - fMax);
+        orntNew[2] = 0;
+        coneNew[3] = eStartNew + (eMax - eStart)*2 + (fMax - fStart)*4 + (cMax - cStart)*6 + (eEnd - eMax) + (fEnd      - fMax) + (c - cMax);
+        orntNew[3] = 0;
+#endif
         ierr = DMPlexSetCone(rdm, newp+r, coneNew);CHKERRQ(ierr);
         ierr = DMPlexSetConeOrientation(rdm, newp+r, orntNew);CHKERRQ(ierr);
 #if 1
@@ -5070,7 +5091,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
           if (support[s] < cMax) {
             supportRef[2+s] = fStartNew + (fMax - fStart)*4 + (support[s] - cStart)*12 + newFaces[c*4 + GetQuadEdgeInverse_Static(orntCell[c], r)];
           } else {
-            supportRef[2+s] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (fEnd - fMax)*2 + (support[s] - cMax)*4 + GetQuadEdgeInverse_Static(orntCell[c], r);
+            supportRef[2+s] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (fEnd - fMax)*2 + (support[s] - cMax)*4 + r;
           }
         }
         ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
@@ -5171,7 +5192,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
         ierr = DMPlexGetConeOrientation(dm, support[s], &cornt);CHKERRQ(ierr);
         for (c = 0; c < csize; ++c) if (ccone[c] == f) break;
         if ((c < 2) || (c >= csize)) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Hybrid face %d is not in cone of hybrid cell %d", f, support[s]);
-        supportRef[2+s] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (fEnd - fMax)*2 + (support[s] - cMax)*4 + GetQuadSubfaceInverse_Static(cornt[0], c-2);
+        supportRef[2+s] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (fEnd - fMax)*2 + (support[s] - cMax)*4 + c-2;
       }
       ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
 #if 1
@@ -5318,7 +5339,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   Vec            coordinates, coordinatesNew;
   PetscScalar   *coords, *coordsNew;
   const PetscInt numVertices = depthSize ? depthSize[0] : 0;
-  PetscInt       dim, depth, coordSizeNew, cStart, cEnd, cMax, c, vStart, vStartNew, vEnd, v, eStart, eEnd, eMax, e, fStart, fEnd, fMax, f;
+  PetscInt       dim, depth, bs, coordSizeNew, cStart, cEnd, cMax, c, vStart, vStartNew, vEnd, v, eStart, eEnd, eMax, e, fStart, fEnd, fMax, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -5351,6 +5372,8 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinatesNew);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coordinatesNew, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(coordinatesNew, coordSizeNew, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(coordinates, &bs);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(coordinatesNew, bs);CHKERRQ(ierr);
   ierr = VecSetFromOptions(coordinatesNew);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(coordinatesNew, &coordsNew);CHKERRQ(ierr);
@@ -5373,11 +5396,9 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
         ierr = PetscSectionGetOffset(coordSection, cone[v], &off[v]);CHKERRQ(ierr);
       }
       ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d) {
-        coordsNew[offnew+d] = 0.0;
-        for (v = 0; v < coneSize; ++v) coordsNew[offnew+d] += coords[off[v]+d];
-        coordsNew[offnew+d] /= coneSize;
-      }
+      for (d = 0; d < dim; ++d) coordsNew[offnew+d] = 0.0;
+      for (v = 0; v < coneSize; ++v) {ierr = DMPlexLocalizeAddCoordinate_Internal(dm, dim, &coords[off[0]], &coords[off[v]], &coordsNew[offnew]);CHKERRQ(ierr);}
+      for (d = 0; d < dim; ++d) coordsNew[offnew+d] /= coneSize;
       ierr = DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
     }
   case 2: /* Hex 2D */
@@ -5397,11 +5418,9 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
         ierr = PetscSectionGetOffset(coordSection, cone[v], &off[v]);CHKERRQ(ierr);
       }
       ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d) {
-        coordsNew[offnew+d] = 0.0;
-        for (v = 0; v < coneSize; ++v) coordsNew[offnew+d] += coords[off[v]+d];
-        coordsNew[offnew+d] /= coneSize;
-      }
+      for (d = 0; d < dim; ++d) coordsNew[offnew+d] = 0.0;
+      for (v = 0; v < coneSize; ++v) {ierr = DMPlexLocalizeAddCoordinate_Internal(dm, dim, &coords[off[0]], &coords[off[v]], &coordsNew[offnew]);CHKERRQ(ierr);}
+      for (d = 0; d < dim; ++d) coordsNew[offnew+d] /= coneSize;
       ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
     }
   case 1: /* Simplicial 2D */
@@ -5420,8 +5439,9 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
       ierr = PetscSectionGetOffset(coordSection, cone[0], &offA);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(coordSection, cone[1], &offB);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
+      ierr = DMPlexLocalizeCoordinate_Internal(dm, dim, &coords[offA], &coords[offB], &coordsNew[offnew]);CHKERRQ(ierr);
       for (d = 0; d < dim; ++d) {
-        coordsNew[offnew+d] = 0.5*(coords[offA+d] + coords[offB+d]);
+        coordsNew[offnew+d] = 0.5*(coords[offA+d] + coordsNew[offnew+d]);
       }
     }
     /* Old vertices have the same coordinates */
@@ -5444,6 +5464,11 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   ierr = DMSetCoordinatesLocal(rdm, coordinatesNew);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinatesNew);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&coordSectionNew);CHKERRQ(ierr);
+  if (dm->maxCell) {
+    const PetscReal *maxCell, *L;
+    ierr = DMGetPeriodicity(dm,  &maxCell, &L);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(rdm,  maxCell,  L);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -6716,6 +6741,17 @@ PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexSetRefinementUniform"
+/*@
+  DMPlexSetRefinementUniform - Set the flag for uniform refinement
+
+  Input Parameters:
++ dm - The DM
+- refinementUniform - The flag for uniform refinement
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexGetRefinementUniform(), DMPlexGetRefinementLimit(), DMPlexSetRefinementLimit()
+@*/
 PetscErrorCode DMPlexSetRefinementUniform(DM dm, PetscBool refinementUniform)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -6728,6 +6764,19 @@ PetscErrorCode DMPlexSetRefinementUniform(DM dm, PetscBool refinementUniform)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetRefinementUniform"
+/*@
+  DMPlexGetRefinementUniform - Retrieve the flag for uniform refinement
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. refinementUniform - The flag for uniform refinement
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexSetRefinementUniform(), DMPlexGetRefinementLimit(), DMPlexSetRefinementLimit()
+@*/
 PetscErrorCode DMPlexGetRefinementUniform(DM dm, PetscBool *refinementUniform)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -6741,6 +6790,17 @@ PetscErrorCode DMPlexGetRefinementUniform(DM dm, PetscBool *refinementUniform)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexSetRefinementLimit"
+/*@
+  DMPlexSetRefinementLimit - Set the maximum cell volume for refinement
+
+  Input Parameters:
++ dm - The DM
+- refinementLimit - The maximum cell volume in the refined mesh
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexGetRefinementLimit(), DMPlexGetRefinementUniform(), DMPlexSetRefinementUniform()
+@*/
 PetscErrorCode DMPlexSetRefinementLimit(DM dm, PetscReal refinementLimit)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -6753,6 +6813,19 @@ PetscErrorCode DMPlexSetRefinementLimit(DM dm, PetscReal refinementLimit)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetRefinementLimit"
+/*@
+  DMPlexGetRefinementLimit - Retrieve the maximum cell volume for refinement
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. refinementLimit - The maximum cell volume in the refined mesh
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexSetRefinementLimit(), DMPlexGetRefinementUniform(), DMPlexSetRefinementUniform()
+@*/
 PetscErrorCode DMPlexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;

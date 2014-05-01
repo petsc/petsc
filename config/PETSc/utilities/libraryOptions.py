@@ -53,6 +53,11 @@ class Configure(config.base.Configure):
 
     if self.debugging.debugging:
       self.addDefine('USE_DEBUG', '1')
+    elif not config.setCompilers.Configure.isIBM(self.framework.getCompiler()):
+      # IBM XLC version 12.1 (BG/Q and POWER) miscompiles PetscMalloc3()
+      # by reordering "*(void**)&ptr = x" as though ptr was not modified
+      # by this statement.
+      self.addDefine('USE_MALLOC_COALESCED',1)
 
     self.useInfo   = self.framework.argDB['with-info']
     self.addDefine('USE_INFO',   self.useInfo)

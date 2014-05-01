@@ -3,18 +3,23 @@
 
 #if defined(PETSC_HAVE_SUPERLU_DIST)
 
-#  if defined(PETSC_HAVE_FORTRAN_CAPS)
+/* SuperLU_DIST bundles f2ced mc64ad_() from HSL */
+
+/*
+   SuperLU_dist uses a common flag for both Fortran mangling and BLAS/LAPACK mangling which
+   corresponds to the PETSc BLAS/LAPACK mangling flag (we pass this flag to configure SuperLU_dist)
+*/
+#  if defined(PETSC_BLASLAPACK_CAPS)
 #    define mc64id_    MC64ID
 #    define mc64ad_    MC64AD
-#  elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#  elif !defined(PETSC_BLASLAPACK_UNDERSCORE)
 #    define mc64id_    mc64id
 #    define mc64ad_    mc64ad
 #  endif
 
-/* SuperLU_DIST bundles f2ced mc64ad_() from HSL */
-PETSC_EXTERN PetscInt mc64id_(PetscInt *icntl);
-PETSC_EXTERN PetscInt mc64ad_(const PetscInt *job, PetscInt *n, PetscInt *ne, const PetscInt *ip, const PetscInt *irn, PetscScalar *a, PetscInt *num,
-                              PetscInt *perm, PetscInt *liw, PetscInt *iw, PetscInt *ldw, PetscScalar *dw, PetscInt *icntl, PetscInt *info);
+PETSC_EXTERN PetscInt mc64id_(PetscInt*);
+PETSC_EXTERN PetscInt mc64ad_(const PetscInt*, PetscInt*, PetscInt*, const PetscInt*, const PetscInt*n, PetscScalar*, PetscInt*,
+                              PetscInt*, PetscInt*, PetscInt*, PetscInt*, PetscScalar*, PetscInt*, PetscInt*);
 #endif
 
 /*

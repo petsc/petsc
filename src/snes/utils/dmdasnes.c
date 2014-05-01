@@ -63,10 +63,6 @@ static PetscErrorCode DMDASNESGetContext(DM dm,DMSNES sdm,DMSNES_DA  **dmdasnes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESComputeFunction_DMDA"
-/*
-  This function should eventually replace:
-    DMDAComputeFunction() and DMDAComputeFunction1()
- */
 static PetscErrorCode SNESComputeFunction_DMDA(SNES snes,Vec X,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
@@ -118,10 +114,6 @@ static PetscErrorCode SNESComputeFunction_DMDA(SNES snes,Vec X,Vec F,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESComputeObjective_DMDA"
-/*
-  This function should eventually replace:
-    DMDAComputeFunction() and DMDAComputeFunction1()
- */
 static PetscErrorCode SNESComputeObjective_DMDA(SNES snes,Vec X,PetscReal *ob,void *ctx)
 {
   PetscErrorCode ierr;

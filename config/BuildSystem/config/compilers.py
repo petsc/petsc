@@ -259,6 +259,7 @@ class Configure(config.base.Configure):
         # Check for '-rpath /sharedlibpath/ or -R /sharedlibpath/'
         if arg == '-rpath' or arg == '-R':
           lib = argIter.next()
+          if lib.startswith('-'): continue # perhaps the path was striped due to quotes?
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
           if lib in ['/usr/lib','/lib','/usr/lib64','/lib64']: continue
@@ -508,6 +509,7 @@ class Configure(config.base.Configure):
         # Check for '-rpath /sharedlibpath/ or -R /sharedlibpath/'
         if arg == '-rpath' or arg == '-R':
           lib = argIter.next()
+          if lib.startswith('-'): continue # perhaps the path was striped due to quotes?
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
           if lib in ['/usr/lib','/lib','/usr/lib64','/lib64']: continue
@@ -908,6 +910,7 @@ class Configure(config.base.Configure):
         if arg == '-rpath' or arg == '-R':
           lib = argIter.next()
           if lib == '\\': lib = argIter.next()
+          if lib.startswith('-'): continue # perhaps the path was striped due to quotes?
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
           if lib in ['/usr/lib','/lib','/usr/lib64','/lib64']: continue

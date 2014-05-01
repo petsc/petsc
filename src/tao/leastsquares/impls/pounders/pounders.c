@@ -173,7 +173,7 @@ PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP)
   }
 
     /* factor M */
-  PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&blasnplus1,&blasnpmax,mfqP->M,&blasnplus1,mfqP->npmaxiwork,&info));
+  PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&blasnplus1,&blasnp,mfqP->M,&blasnplus1,mfqP->npmaxiwork,&info));
   if (info != 0) SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine getrf returned with value %d\n",info);
 
   if (np == mfqP->n+1) {
@@ -340,7 +340,7 @@ PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
         mfqP->tau[i] = mfqP->tau_tmp[i];
       }
       mfqP->nmodelpoints++;
-      blasnp = mfqP->nmodelpoints+1;
+      blasnp = mfqP->nmodelpoints;
 
       /* Copy L_save to L */
       for (i=0;i<mfqP->npmax * mfqP->n*(mfqP->n+1)/2;i++) {

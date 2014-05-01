@@ -262,7 +262,7 @@ static PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscInt coordSize,
     if (n[2] < 0.0) {
       if (coordSize > 9) {
         coords[2] = PetscRealPart(coords[3*dim+0] - coords[0*dim+0]);
-        coords[3] = PetscRealPart(coords[3*dim+0] - coords[0*dim+0]);
+        coords[3] = PetscRealPart(coords[3*dim+1] - coords[0*dim+1]);
         coords[4] = x2[0];
         coords[5] = x2[1];
         coords[6] = x1[0];
@@ -553,7 +553,7 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
       PetscLogFlops(18.0);
     }
     if (invJ) {DMPlex_Invert3D_Internal(invJ, J, *detJ);}
-  } else if (numCoords == 8) {
+  } else if ((numCoords == 8) || (numCoords == 16)) {
     const PetscInt dim = 2;
 
     if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}

@@ -168,6 +168,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
 
       /* Approximately solve the reduced linear system */
       ierr = KSPSTCGSetRadius(tao->ksp,delta);CHKERRQ(ierr);
+
       ierr = KSPSolve(tao->ksp, tron->R, tron->DXFree);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
       tao->ksp_its+=its;

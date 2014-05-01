@@ -238,8 +238,6 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
     ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,rperm);CHKERRQ(ierr);
     ierr = ISSetIdentity(*cperm);CHKERRQ(ierr);
     ierr = ISSetIdentity(*rperm);CHKERRQ(ierr);
-    ierr = ISSetPermutation(*rperm);CHKERRQ(ierr);
-    ierr = ISSetPermutation(*cperm);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -248,8 +246,6 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
     ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,rperm);CHKERRQ(ierr);
     ierr = ISSetIdentity(*cperm);CHKERRQ(ierr);
     ierr = ISSetIdentity(*rperm);CHKERRQ(ierr);
-    ierr = ISSetPermutation(*rperm);CHKERRQ(ierr);
-    ierr = ISSetPermutation(*cperm);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 

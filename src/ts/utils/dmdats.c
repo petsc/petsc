@@ -59,10 +59,6 @@ static PetscErrorCode DMDATSGetContext(DM dm,DMTS sdm,DMTS_DA **dmdats)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeIFunction_DMDA"
-/*
-  This function should eventually replace:
-    DMDAComputeFunction() and DMDAComputeFunction1()
- */
 static PetscErrorCode TSComputeIFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
@@ -153,10 +149,6 @@ static PetscErrorCode TSComputeIJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xd
 
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeRHSFunction_DMDA"
-/*
-  This function should eventually replace:
-    DMDAComputeFunction() and DMDAComputeFunction1()
- */
 static PetscErrorCode TSComputeRHSFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec F,void *ctx)
 {
   PetscErrorCode ierr;

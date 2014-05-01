@@ -223,6 +223,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     /* Check Armijo if beyond the first breakpoint */
     if (ls->bounded && (*f <= ftest2) && (ls->step >= bstepmin2)) {
       ierr = PetscInfo(ls,"Line search success: Sufficient decrease.\n");CHKERRQ(ierr);
+      ls->reason = TAOLINESEARCH_SUCCESS;
       break;
     }
 

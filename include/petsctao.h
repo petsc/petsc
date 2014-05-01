@@ -223,19 +223,6 @@ PETSC_EXTERN PetscErrorCode TaoDMSetVariableBoundsRoutine(TaoDM*,PetscErrorCode(
 PETSC_EXTERN PetscErrorCode TaoDMSetObjectiveAndGradientRoutine(TaoDM*,PetscErrorCode(*)(Tao, Vec, PetscReal*, Vec, void*));
 PETSC_EXTERN PetscErrorCode TaoDMSetObjectiveRoutine(TaoDM*,PetscErrorCode(*)(Tao, Vec, PetscReal*, void*));
 PETSC_EXTERN PetscErrorCode TaoDMSetGradientRoutine(TaoDM*,PetscErrorCode(*)(Tao, Vec, Vec, void*));
-PETSC_EXTERN PetscErrorCode TaoDMSetHessianRoutine(TaoDM*,PetscErrorCode(*)(Tao, Vec, Mat*, Mat*, MatStructure*,void*));
-
-#include <petscdmda.h>
-
-PETSC_EXTERN PetscErrorCode TaoDMSetLocalObjectiveRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscReal**,PetscReal*,void*));
-PETSC_EXTERN PetscErrorCode TaoDMSetLocalGradientRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscReal**,PetscReal**,void*));
-PETSC_EXTERN PetscErrorCode TaoDMSetLocalObjectiveAndGradientRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscReal**,PetscReal*,PetscReal**,void*));
-PETSC_EXTERN PetscErrorCode TaoDMSetLocalHessianRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscReal**,Mat,void*));
-
-PETSC_EXTERN PetscErrorCode TaoDMFormFunctionLocal(Tao, Vec, PetscReal *, void*);
-PETSC_EXTERN PetscErrorCode TaoDMFormGradientLocal(Tao, Vec, Vec, void*);
-PETSC_EXTERN PetscErrorCode TaoDMFormFunctionGradientLocal(Tao, Vec, PetscReal *, Vec, void*);
-PETSC_EXTERN PetscErrorCode TaoDMFormHessianLocal(Tao, Vec, Mat*, Mat*, MatStructure*,void*);
-PETSC_EXTERN PetscErrorCode TaoDMFormBounds(Tao, Vec, Vec, void*);
+PETSC_EXTERN PetscErrorCode TaoDMSetHessianRoutine(TaoDM*,PetscErrorCode(*)(Tao, Vec, Mat*, Mat*, void*));
 
 #endif

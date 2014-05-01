@@ -1023,6 +1023,28 @@ PetscErrorCode  PetscFinalize(void)
   }
   ierr = PetscSegBufferDestroy(&PetscCitationsList);CHKERRQ(ierr);
 
+#if defined(PETSC_HAVE_SSL) && defined(PETSC_USE_SOCKET_VIEWER)
+  /* TextBelt is run for testing purposes only, please do not use this feature often */
+  {
+    PetscInt nmax = 2;
+    char     **buffs;
+    ierr = PetscMalloc1(2,&buffs);CHKERRQ(ierr);
+    ierr = PetscOptionsGetStringArray(NULL,"-textbelt",buffs,&nmax,&flg1);CHKERRQ(ierr);
+    if (flg1) {
+      if (!nmax) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"-textbelt requires either the phone number or number,\"message\"");
+      if (nmax == 1) {
+        ierr = PetscMalloc1(128,&buffs[1]);CHKERRQ(ierr);
+        ierr = PetscGetProgramName(buffs[1],32);CHKERRQ(ierr);
+        ierr = PetscStrcat(buffs[1]," has completed");CHKERRQ(ierr);
+      }
+      ierr = PetscTextBelt(PETSC_COMM_WORLD,buffs[0],buffs[1],NULL);CHKERRQ(ierr);
+      ierr = PetscFree(buffs[0]);CHKERRQ(ierr);
+      ierr = PetscFree(buffs[1]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(buffs);CHKERRQ(ierr);
+  }
+#endif
+
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
   ierr = PetscFPTDestroy();CHKERRQ(ierr);
 #endif
@@ -1125,7 +1147,8 @@ PetscErrorCode  PetscFinalize(void)
 
   if (flg2) {
     PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerCreate(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer,PETSCVIEWERASCII);CHKERRQ(ierr);
     ierr = PetscOptionsView(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
@@ -1140,7 +1163,8 @@ PetscErrorCode  PetscFinalize(void)
   if (flg3) {
     if (!flg2) { /* have not yet printed the options */
       PetscViewer viewer;
-      ierr = PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
+      ierr = PetscViewerCreate(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(viewer,PETSCVIEWERASCII);CHKERRQ(ierr);
       ierr = PetscOptionsView(viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }

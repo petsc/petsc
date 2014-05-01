@@ -219,7 +219,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm)
     *newdm = rdm;
   }
   if (user->interpolate) {
-    DM idm;
+    DM idm = NULL;
     const char *name;
 
     ierr = DMPlexInterpolate(*newdm, &idm);CHKERRQ(ierr);
@@ -344,7 +344,7 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, AppCtx *user)
     ierr = PetscLogEventRegister("VecClosure", PETSC_OBJECT_CLASSID, &event);CHKERRQ(ierr);
   }
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
-  ierr = DMPlexCreateSection(dm, user->dim, user->numFields, user->numComponents, user->numDof, 0, NULL, NULL, &s);CHKERRQ(ierr);
+  ierr = DMPlexCreateSection(dm, user->dim, user->numFields, user->numComponents, user->numDof, 0, NULL, NULL, NULL, &s);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dm, s);CHKERRQ(ierr);
   if (useIndex) {ierr = DMPlexCreateClosureIndex(dm, s);CHKERRQ(ierr);}
   ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);

@@ -1,3 +1,5 @@
+DM Object: 12 MPI processes
+  type: da
 Processor [0] M 11 N 5 P 7 m 3 n 2 p 2 w 2 s 1
 X range of indices: 0 4, Y range of indices: 0 3, Z range of indices: 0 4
 Processor [1] M 11 N 5 P 7 m 3 n 2 p 2 w 2 s 1
