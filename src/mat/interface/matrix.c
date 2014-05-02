@@ -5104,9 +5104,6 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
    MAT_NEW_NONZERO_LOCATION_ERR set to PETSC_TRUE indicates that any add or insertion
    that would generate a new entry in the nonzero structure instead produces
    an error. (Currently supported for AIJ and BAIJ formats only.)
-   This is a useful flag when using SAME_NONZERO_PATTERN in calling
-   KSPSetOperators() to ensure that the nonzero pattern truely does
-   remain unchanged. Set after the first MatAssemblyEnd()
 
    MAT_NEW_NONZERO_ALLOCATION_ERR set to PETSC_TRUE indicates that any add or insertion
    that would generate a new entry that has not been preallocated will
