@@ -142,3 +142,32 @@ PetscErrorCode PetscFERegisterAll()
 #endif
   PetscFunctionReturn(0);
 }
+#include <petscfv.h>     /*I  "petscfv.h"  I*/
+
+PETSC_EXTERN PetscErrorCode PetscFVCreate_Upwind(PetscFV);
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVRegisterAll"
+/*@C
+  PetscFVRegisterAll - Registers all of the PetscFE components in the PetscFV package.
+
+  Not Collective
+
+  Input parameter:
+. path - The dynamic library path
+
+  Level: advanced
+
+.keywords: PetscFV, register, all
+.seealso:  PetscFVRegister(), PetscFVRegisterDestroy()
+@*/
+PetscErrorCode PetscFVRegisterAll()
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscFVRegisterAllCalled = PETSC_TRUE;
+
+  ierr = PetscFVRegister(PETSCFVUPWIND, PetscFVCreate_Upwind);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

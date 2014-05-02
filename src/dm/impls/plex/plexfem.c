@@ -1,6 +1,7 @@
 #include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 
 #include <petscfe.h>
+#include <petscfv.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetScale"
@@ -374,13 +375,6 @@ PetscErrorCode DMPlexInsertBoundaryValuesFEM(DM dm, Vec localX)
   ierr = PetscFree3(fe,funcs,ctxs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-/* Assuming dim == 3 */
-typedef struct {
-  PetscScalar normal[3];   /* Area-scaled normals */
-  PetscScalar centroid[3]; /* Location of centroid (quadrature point) */
-  PetscScalar grad[2][3];  /* Face contribution to gradient in left and right cell */
-} FaceGeom;
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexInsertBoundaryValuesFVM"
