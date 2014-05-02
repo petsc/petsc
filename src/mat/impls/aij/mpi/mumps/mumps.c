@@ -666,14 +666,13 @@ PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)F),&size);CHKERRQ(ierr);
   /* MUMPS 4.3.1 calls ScaLAPACK when ICNTL(13)=0 (default), which does not offer the possibility to compute the inertia of a dense matrix. Set ICNTL(13)=1 to skip ScaLAPACK */
   if (size > 1 && mumps->id.ICNTL(13) != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"ICNTL(13)=%d. -mat_mumps_icntl_13 must be set as 1 for correct global matrix inertia\n",mumps->id.INFOG(13));
-  if (nneg) {
-    if (!mumps->myid) {
-      *nneg = mumps->id.INFOG(12);
-    }
-    ierr = MPI_Bcast(nneg,1,MPI_INT,0,mumps->comm_mumps);CHKERRQ(ierr);
+
+  if (nneg || npos) *nneg = mumps->id.INFOG(12); 
+  if (nzero || npos) {
+    if (mumps->id.ICNTL(24) != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"-mat_mumps_icntl_24 must be set as 1 for null pivot row detection");
+    *nzero = mumps->id.INFOG(28);
   }
-  if (nzero) *nzero = 0;
-  if (npos)  *npos  = F->rmap->N - (*nneg);
+  if (npos) *npos  = F->rmap->N - (*nneg + *nzero);
   PetscFunctionReturn(0);
 }
 #endif /* !defined(PETSC_USE_COMPLEX) */
