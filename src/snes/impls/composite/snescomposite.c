@@ -86,7 +86,7 @@ static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes,Vec X,Vec B,Ve
     ierr = SNESGetFunction(next->snes,&FSub,NULL,NULL);CHKERRQ(ierr);
     ierr = VecCopy(FSub,F);CHKERRQ(ierr);
     if (fnorm) {
-      ierr = SNESGetFunctionNorm(next->snes,fnorm);CHKERRQ(ierr);
+      ierr = VecNorm(F,NORM_2,fnorm);CHKERRQ(ierr);
       if (PetscIsInfOrNanReal(*fnorm)) {
         snes->reason = SNES_DIVERGED_FNORM_NAN;
         PetscFunctionReturn(0);

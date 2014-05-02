@@ -162,6 +162,7 @@
         <li>The matrix arguments to the user functions provided with <tt>SNESSetJacobian()</tt> and  <tt>SNESSetPicard()</tt> are now Mat not Mat*.</li>
         <li>The <tt>MatStructure</tt> argument to the user functions provided with <tt>SNESSetJacobian()</tt> and  <tt>SNESSetPicard()</tt> are gone.</li>
         <li><tt>SNESSetInitialFunctionNorm()</tt> is removed as it's not necessary given that the norm is cached on the Vec.  Use only <tt>SNESSetInitialFunction()</tt>.</li>
+        <li><tt>SNESSetFunctionNorm()</tt> and <tt>SNESGetFunctionNorm()</tt> removed.  <tt>Use SNESGetFunction()</tt> and <tt>VecNorm()</tt> instead.
         <li><tt>SNESSkipConverged()</tt> renamed to <tt>SNESConvergedSkip()</tt>.</li>
         <li><tt>SNESGetPC()</tt>/<tt>SNESSetPC()</tt> renamed to <tt>SNESGetNPC()</tt>/<tt>SNESSetNPC()</tt>.</li>
         <li><tt>GS</tt> and _gs used for nonlinear Gauss-Sidel changed to <tt>NGS</tt> and _ngs to match all the other nonlinear solver names.</li>
