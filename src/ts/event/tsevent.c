@@ -193,7 +193,7 @@ PetscErrorCode TSEventMonitor(TS ts)
     PetscInt fvalue_sign,fvalueprev_sign;
     fvalue_sign = PetscSign(PetscRealPart(event->fvalue[i]));
     fvalueprev_sign = PetscSign(PetscRealPart(event->fvalue_prev[i]));
-    if (fvalue_sign != fvalueprev_sign) {
+    if (fvalueprev_sign != 0 && (fvalue_sign != fvalueprev_sign)) {
       switch (event->direction[i]) {
       case -1:
 	if (fvalue_sign < 0) {
