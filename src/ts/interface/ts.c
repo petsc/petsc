@@ -2743,9 +2743,13 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     while (!ts->reason) {
       ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
       ierr = TSStep(ts);CHKERRQ(ierr);
-      ierr = TSPostStep(ts);CHKERRQ(ierr);
       if (ts->event) {
 	ierr = TSEventMonitor(ts);CHKERRQ(ierr);
+	if (ts->event->status != TSEVENT_PROCESSING) {
+	  ierr = TSPostStep(ts);CHKERRQ(ierr);
+	}
+      } else {
+	ierr = TSPostStep(ts);CHKERRQ(ierr);
       }
     }
     if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && ts->ptime > ts->max_time) {
