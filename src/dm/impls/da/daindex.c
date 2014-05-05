@@ -45,7 +45,7 @@
         value = da_array(i_da + 1)
 .ve
 
-   See the <A href="../../docs/manual.pdf#nameddest=ch_fortran">Fortran chapter</A> of the users manual for details.
+   See Users-Manual: ch_fortran for details.
 
 .keywords: distributed array, get, global, indices, local-to-global
 
@@ -151,7 +151,7 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
         value = da_array(i_da + 1)
 .ve
 
-   See the <A href="../../docs/manual.pdf#nameddest=ch_fortran">Fortran chapter</A> of the users manual for details.
+   See Users-Manual: ch_fortran for details.
 
 .keywords: distributed array, get, global, indices, local-to-global
 

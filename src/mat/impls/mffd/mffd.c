@@ -806,7 +806,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
    preconditioner matrix
 
    The user can set the error_rel via MatMFFDSetFunctionError() and
-   umin via MatMFFDDSSetUmin(); see the <A href="../../docs/manual.pdf#nameddest=ch_snes">SNES chapter of the users manual</A> for details.
+   umin via MatMFFDDSSetUmin(); see Users-Manual: ch_snes for details.
 
    The user should call MatDestroy() when finished with the matrix-free
    matrix context.

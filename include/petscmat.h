@@ -608,7 +608,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,
    Level: intermediate
 
    Notes:
-    See the <A href="../../docs/manual.pdf#nameddest=ch_performance">Hints for Performance Improvment</A> chapter in the users manual for more details.
+    See Users-Manual: ch_performance for more details.
 
    Do not malloc or free dnz and onz, that is handled internally by these routines
 
@@ -652,7 +652,7 @@ M*/
    Level: intermediate
 
    Notes:
-    See the <A href="../../docs/manual.pdf#nameddest=ch_performance">Hints for Performance Improvment</A> chapter in the users manual for more details.
+    See Users-Manual: ch_performance for more details.
 
    Do not malloc or free dnz and onz, that is handled internally by these routines
 
@@ -693,7 +693,7 @@ M*/
    Level: intermediate
 
    Notes:
-    See the <A href="../../docs/manual.pdf#nameddest=ch_performance">Hints for Performance Improvment</A> chapter in the users manual for more details.
+    See Users-Manual: ch_performance for more details.
 
    Do not malloc or free dnz and onz that is handled internally by these routines
 
@@ -734,7 +734,7 @@ M*/
    Level: intermediate
 
    Notes:
-    See the <A href="../../docs/manual.pdf#nameddest=ch_performance">Hints for Performance Improvment</A> chapter in the users manual for more details.
+    See Users-Manual: ch_performance for more details.
 
    Do not malloc or free dnz and onz that is handled internally by these routines
 
@@ -776,7 +776,7 @@ M*/
    Level: intermediate
 
    Notes:
-    See the <A href="../../docs/manual.pdf#nameddest=ch_performance">Hints for Performance Improvment</A> chapter in the users manual for more details.
+    See Users-Manual: ch_performance for more details.
 
    Do not malloc or free dnz and onz that is handled internally by these routines
 
@@ -815,7 +815,7 @@ M*/
    Level: intermediate
 
    Notes:
-    See the <A href="../../docs/manual.pdf#nameddest=ch_performance">Hints for Performance Improvment</A> chapter in the users manual for more details.
+    See Users-Manual: ch_performance for more details.
 
    Do not malloc or free dnz and onz that is handled internally by these routines
 
@@ -846,7 +846,7 @@ M*/
    Level: intermediate
 
    Notes:
-    See the <A href="../../docs/manual.pdf#nameddest=ch_performance">Hints for Performance Improvment</A> chapter in the users manual for more details.
+    See Users-Manual: ch_performance for more details.
 
    Do not malloc or free dnz and onz that is handled internally by these routines
 
