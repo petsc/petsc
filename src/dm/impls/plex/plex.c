@@ -3056,11 +3056,12 @@ PetscErrorCode DMPlexOrient(DM dm)
         ierr = MatSetUp(G);CHKERRQ(ierr);
         for (p = 0; p < numProcs; ++p) {
           for (n = 0; n < recvcounts[p]; ++n) {
+            const PetscInt    r = proc;
             const PetscInt    q = adj[displs[p]+n];
-            const PetscScalar o = val[displs[p]+n];
+            const PetscScalar o = val[displs[p]+n] ? 1.0 : 0.0;
 
-            ierr = MatSetValues(G, 1, &p, 1, &q, &o, INSERT_VALUES);CHKERRQ(ierr);
-            ierr = MatSetValues(G, 1, &q, 1, &p, &o, INSERT_VALUES);CHKERRQ(ierr);
+            ierr = MatSetValues(G, 1, &r, 1, &q, &o, INSERT_VALUES);CHKERRQ(ierr);
+            ierr = MatSetValues(G, 1, &q, 1, &r, &o, INSERT_VALUES);CHKERRQ(ierr);
           }
         }
         ierr = MatAssemblyBegin(G, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -3089,7 +3090,7 @@ PetscErrorCode DMPlexOrient(DM dm)
             /* Loop over neighboring procs */
             for (n = 0; n < numNeighbors; ++n) {
               nproc    = neighbors[n];
-              mismatch = ornt[n] > 0.5 ? 0 : 1;
+              mismatch = PetscRealPart(ornt[n]) > 0.5 ? 0 : 1;
               seen     = PetscBTLookup(seenProcs, nproc);
               flippedB = PetscBTLookup(flippedProcs, nproc) ? 1 : 0;
 
