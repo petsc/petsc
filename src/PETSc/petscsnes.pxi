@@ -149,8 +149,6 @@ cdef extern from * nogil:
     int SNESGetConvergedReason(PetscSNES,PetscSNESConvergedReason*)
     int SNESSetIterationNumber(PetscSNES,PetscInt)
     int SNESGetIterationNumber(PetscSNES,PetscInt*)
-    int SNESSetFunctionNorm(PetscSNES,PetscScalar)
-    int SNESGetFunctionNorm(PetscSNES,PetscScalar*)
     int SNESGetLinearSolveIterations(PetscSNES,PetscInt*)
 
     int SNESGetNumberFunctionEvals(PetscSNES,PetscInt*)
