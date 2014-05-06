@@ -5339,11 +5339,10 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   Vec            coordinates, coordinatesNew;
   PetscScalar   *coords, *coordsNew;
   const PetscInt numVertices = depthSize ? depthSize[0] : 0;
-  PetscInt       dim, depth, bs, coordSizeNew, cStart, cEnd, cMax, c, vStart, vStartNew, vEnd, v, eStart, eEnd, eMax, e, fStart, fEnd, fMax, f;
+  PetscInt       spaceDim, depth, bs, coordSizeNew, cStart, cEnd, cMax, c, vStart, vStartNew, vEnd, v, eStart, eEnd, eMax, e, fStart, fEnd, fMax, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
@@ -5353,17 +5352,18 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   if (refiner) {ierr = GetDepthStart_Private(depth, depthSize, NULL, NULL, NULL, &vStartNew);CHKERRQ(ierr);}
   ierr = GetDepthStart_Private(depth, depthSize, NULL, NULL, NULL, &vStartNew);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetFieldComponents(coordSection, 0, &spaceDim);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &coordSectionNew);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(coordSectionNew, 1);CHKERRQ(ierr);
-  ierr = PetscSectionSetFieldComponents(coordSectionNew, 0, dim);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(coordSectionNew, 0, spaceDim);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(coordSectionNew, vStartNew, vStartNew+numVertices);CHKERRQ(ierr);
   if (cMax < 0) cMax = cEnd;
   if (fMax < 0) fMax = fEnd;
   if (eMax < 0) eMax = eEnd;
-  /* All vertices have the dim coordinates */
+  /* All vertices have the spaceDim coordinates */
   for (v = vStartNew; v < vStartNew+numVertices; ++v) {
-    ierr = PetscSectionSetDof(coordSectionNew, v, dim);CHKERRQ(ierr);
-    ierr = PetscSectionSetFieldDof(coordSectionNew, v, 0, dim);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(coordSectionNew, v, spaceDim);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldDof(coordSectionNew, v, 0, spaceDim);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(coordSectionNew);CHKERRQ(ierr);
   ierr = DMSetCoordinateSection(rdm, coordSectionNew);CHKERRQ(ierr);
@@ -5396,16 +5396,16 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
         ierr = PetscSectionGetOffset(coordSection, cone[v], &off[v]);CHKERRQ(ierr);
       }
       ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d) coordsNew[offnew+d] = 0.0;
-      for (v = 0; v < coneSize; ++v) {ierr = DMPlexLocalizeAddCoordinate_Internal(dm, dim, &coords[off[0]], &coords[off[v]], &coordsNew[offnew]);CHKERRQ(ierr);}
-      for (d = 0; d < dim; ++d) coordsNew[offnew+d] /= coneSize;
+      for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] = 0.0;
+      for (v = 0; v < coneSize; ++v) {ierr = DMPlexLocalizeAddCoordinate_Internal(dm, spaceDim, &coords[off[0]], &coords[off[v]], &coordsNew[offnew]);CHKERRQ(ierr);}
+      for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] /= coneSize;
       ierr = DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
     }
   case 2: /* Hex 2D */
   case 4: /* Hybrid Hex 2D */
     /* Cell vertices have the average of corner coordinates */
     for (c = cStart; c < cMax; ++c) {
-      const PetscInt newv = vStartNew + (vEnd - vStart) + (eMax - eStart) + (c - cStart) + (dim > 2 ? (fMax - fStart) : 0);
+      const PetscInt newv = vStartNew + (vEnd - vStart) + (eMax - eStart) + (c - cStart) + (spaceDim > 2 ? (fMax - fStart) : 0);
       PetscInt      *cone = NULL;
       PetscInt       closureSize, coneSize = 0, off[8], offnew, p, d;
 
@@ -5418,9 +5418,9 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
         ierr = PetscSectionGetOffset(coordSection, cone[v], &off[v]);CHKERRQ(ierr);
       }
       ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d) coordsNew[offnew+d] = 0.0;
-      for (v = 0; v < coneSize; ++v) {ierr = DMPlexLocalizeAddCoordinate_Internal(dm, dim, &coords[off[0]], &coords[off[v]], &coordsNew[offnew]);CHKERRQ(ierr);}
-      for (d = 0; d < dim; ++d) coordsNew[offnew+d] /= coneSize;
+      for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] = 0.0;
+      for (v = 0; v < coneSize; ++v) {ierr = DMPlexLocalizeAddCoordinate_Internal(dm, spaceDim, &coords[off[0]], &coords[off[v]], &coordsNew[offnew]);CHKERRQ(ierr);}
+      for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] /= coneSize;
       ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
     }
   case 1: /* Simplicial 2D */
@@ -5439,8 +5439,8 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
       ierr = PetscSectionGetOffset(coordSection, cone[0], &offA);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(coordSection, cone[1], &offB);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
-      ierr = DMPlexLocalizeCoordinate_Internal(dm, dim, &coords[offA], &coords[offB], &coordsNew[offnew]);CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d) {
+      ierr = DMPlexLocalizeCoordinate_Internal(dm, spaceDim, &coords[offA], &coords[offB], &coordsNew[offnew]);CHKERRQ(ierr);
+      for (d = 0; d < spaceDim; ++d) {
         coordsNew[offnew+d] = 0.5*(coords[offA+d] + coordsNew[offnew+d]);
       }
     }
@@ -5451,7 +5451,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
 
       ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d) {
+      for (d = 0; d < spaceDim; ++d) {
         coordsNew[offnew+d] = coords[off+d];
       }
     }
