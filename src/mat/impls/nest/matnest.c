@@ -667,7 +667,9 @@ static PetscErrorCode MatCopy_Nest(Mat A,Mat B,MatStructure str)
   if (nr != bB->nr || nc != bB->nc) SETERRQ4(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Cannot copy a Mat_Nest of block size (%D,%D) to a Mat_Nest of block size (%D,%D)",bB->nr,bB->nc,nr,nc);
   for (i=0; i<nr; i++) {
     for (j=0; j<nc; j++) {
-      ierr = MatCopy(bA->m[i][j],bB->m[i][j],str);CHKERRQ(ierr);
+      if (bA->m[i][j] && bB->m[i][j]) {
+        ierr = MatCopy(bA->m[i][j],bB->m[i][j],str);CHKERRQ(ierr);
+      } else if (bA->m[i][j] || bB->m[i][j]) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Matrix block does not exist at %D,%D",i,j);
     }
   }
   PetscFunctionReturn(0);
