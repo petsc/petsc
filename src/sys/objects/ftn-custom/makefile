@@ -6,6 +6,7 @@ FFLAGS   =
 SOURCEC  = zgcommf.c  zoptionsf.c  zpgnamef.c  zpnamef.c zprefixf.c zdestroyf.c zstart.c zstartf.c
 SOURCEF  =
 SOURCEH  =
+MANSEC   = Sys
 DIRS     =
 LIBBASE  = libpetscsys
 LOCDIR   = src/sys/objects/ftn-custom/
