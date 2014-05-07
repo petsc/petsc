@@ -550,7 +550,14 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   /* clear composed functions */
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsSetIcntl_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsGetIcntl_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsSetCntl_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsGetCntl_C",NULL);CHKERRQ(ierr);
+
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsGetINFO_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsGetINFOG_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsGetRINFO_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsGetRINFOG_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1298,6 +1305,17 @@ PetscErrorCode MatMumpsSetIcntl_MUMPS(Mat F,PetscInt icntl,PetscInt ival)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatMumpsGetIcntl_MUMPS"
+PetscErrorCode MatMumpsGetIcntl_MUMPS(Mat F,PetscInt icntl,PetscInt *ival)
+{
+  Mat_MUMPS *mumps =(Mat_MUMPS*)F->spptr;
+
+  PetscFunctionBegin;
+  *ival = mumps->id.ICNTL(icntl);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatMumpsSetIcntl"
 /*@
   MatMumpsSetIcntl - Set MUMPS parameter ICNTL()
@@ -1329,6 +1347,19 @@ PetscErrorCode MatMumpsSetIcntl(Mat F,PetscInt icntl,PetscInt ival)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatMumpsGetIcntl"
+PetscErrorCode MatMumpsGetIcntl(Mat F,PetscInt icntl,PetscInt *ival)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidLogicalCollectiveInt(F,icntl,2);
+  PetscValidIntPointer(ival,3);
+  ierr = PetscTryMethod(F,"MatMumpsGetIcntl_C",(Mat,PetscInt,PetscInt*),(F,icntl,ival));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "MatMumpsSetCntl_MUMPS"
@@ -1338,6 +1369,17 @@ PetscErrorCode MatMumpsSetCntl_MUMPS(Mat F,PetscInt icntl,PetscReal val)
 
   PetscFunctionBegin;
   mumps->id.CNTL(icntl) = val;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMumpsGetCntl_MUMPS"
+PetscErrorCode MatMumpsGetCntl_MUMPS(Mat F,PetscInt icntl,PetscReal *val)
+{
+  Mat_MUMPS *mumps =(Mat_MUMPS*)F->spptr;
+
+  PetscFunctionBegin;
+  *val = mumps->id.CNTL(icntl);
   PetscFunctionReturn(0);
 }
 
@@ -1368,8 +1410,113 @@ PetscErrorCode MatMumpsSetCntl(Mat F,PetscInt icntl,PetscReal val)
 
   PetscFunctionBegin;
   PetscValidLogicalCollectiveInt(F,icntl,2);
-  PetscValidLogicalCollectiveInt(F,val,3);
+  PetscValidLogicalCollectiveReal(F,val,3);
   ierr = PetscTryMethod(F,"MatMumpsSetCntl_C",(Mat,PetscInt,PetscReal),(F,icntl,val));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMumpsGetCntl"
+PetscErrorCode MatMumpsGetCntl(Mat F,PetscInt icntl,PetscReal *val)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidLogicalCollectiveInt(F,icntl,2);
+  PetscValidRealPointer(val,3);
+  ierr = PetscTryMethod(F,"MatMumpsGetCntl_C",(Mat,PetscInt,PetscReal*),(F,icntl,val));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMumpsGetINFO_MUMPS"
+PetscErrorCode MatMumpsGetINFO_MUMPS(Mat F,PetscInt icntl,PetscInt *info)
+{
+  Mat_MUMPS *mumps =(Mat_MUMPS*)F->spptr;
+
+  PetscFunctionBegin;
+  *info = mumps->id.INFO(icntl);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMumpsGetINFOG_MUMPS"
+PetscErrorCode MatMumpsGetINFOG_MUMPS(Mat F,PetscInt icntl,PetscInt *infog)
+{
+  Mat_MUMPS *mumps =(Mat_MUMPS*)F->spptr;
+
+  PetscFunctionBegin;
+  *infog = mumps->id.INFOG(icntl);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMumpsGetRINFO_MUMPS"
+PetscErrorCode MatMumpsGetRINFO_MUMPS(Mat F,PetscInt icntl,PetscReal *rinfo)
+{
+  Mat_MUMPS *mumps =(Mat_MUMPS*)F->spptr;
+
+  PetscFunctionBegin;
+  *rinfo = mumps->id.RINFO(icntl);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMumpsGetRINFOG_MUMPS"
+PetscErrorCode MatMumpsGetRINFOG_MUMPS(Mat F,PetscInt icntl,PetscReal *rinfog)
+{
+  Mat_MUMPS *mumps =(Mat_MUMPS*)F->spptr;
+
+  PetscFunctionBegin;
+  *rinfog = mumps->id.RINFOG(icntl); 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMumpsGetINFO"
+PetscErrorCode MatMumpsGetINFO(Mat F,PetscInt icntl,PetscInt *val)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidIntPointer(val,3);
+  ierr = PetscTryMethod(F,"MatMumpsGetINFO_C",(Mat,PetscInt,PetscInt*),(F,icntl,val));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMumpsGetINFOG"
+PetscErrorCode MatMumpsGetINFOG(Mat F,PetscInt icntl,PetscInt *val)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidIntPointer(val,3);
+  ierr = PetscTryMethod(F,"MatMumpsGetINFOG_C",(Mat,PetscInt,PetscInt*),(F,icntl,val));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMumpsGetRINFO"
+PetscErrorCode MatMumpsGetRINFO(Mat F,PetscInt icntl,PetscReal *val)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidRealPointer(val,3);
+  ierr = PetscTryMethod(F,"MatMumpsGetRINFO_C",(Mat,PetscInt,PetscReal*),(F,icntl,val));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMumpsGetRINFOG"
+PetscErrorCode MatMumpsGetRINFOG(Mat F,PetscInt icntl,PetscReal *val)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidRealPointer(val,3);
+  ierr = PetscTryMethod(F,"MatMumpsGetRINFOG_C",(Mat,PetscInt,PetscReal*),(F,icntl,val));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1438,7 +1585,14 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetIcntl_C",MatMumpsSetIcntl_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetIcntl_C",MatMumpsGetIcntl_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetCntl_C",MatMumpsSetCntl_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetCntl_C",MatMumpsGetCntl_MUMPS);CHKERRQ(ierr);
+
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetINFO_C",MatMumpsGetINFO_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetINFOG_C",MatMumpsGetINFOG_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRINFO_C",MatMumpsGetRINFO_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRINFOG_C",MatMumpsGetRINFOG_MUMPS);CHKERRQ(ierr);
   if (ftype == MAT_FACTOR_LU) {
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMUMPS;
     B->factortype            = MAT_FACTOR_LU;
@@ -1499,7 +1653,14 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,M
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetIcntl_C",MatMumpsSetIcntl);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetIcntl_C",MatMumpsGetIcntl);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetCntl_C",MatMumpsSetCntl);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetCntl_C",MatMumpsGetCntl);CHKERRQ(ierr);
+
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetINFO_C",MatMumpsGetINFO_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetINFOG_C",MatMumpsGetINFOG_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRINFO_C",MatMumpsGetRINFO_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRINFOG_C",MatMumpsGetRINFOG_MUMPS);CHKERRQ(ierr);
 
   B->factortype = MAT_FACTOR_CHOLESKY;
   if (A->spd_set && A->spd) mumps->sym = 1;
@@ -1550,7 +1711,14 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Ma
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetIcntl_C",MatMumpsSetIcntl_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetIcntl_C",MatMumpsGetIcntl_MUMPS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetCntl_C",MatMumpsSetCntl_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetCntl_C",MatMumpsGetCntl_MUMPS);CHKERRQ(ierr);
+
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetINFO_C",MatMumpsGetINFO_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetINFOG_C",MatMumpsGetINFOG_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRINFO_C",MatMumpsGetRINFO_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsGetRINFOG_C",MatMumpsGetRINFOG_MUMPS);CHKERRQ(ierr);
 
   mumps->isAIJ    = PETSC_TRUE;
   mumps->Destroy  = B->ops->destroy;

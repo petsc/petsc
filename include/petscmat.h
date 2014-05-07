@@ -1557,7 +1557,14 @@ PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutCSRMatrix(PetscViewer, Pets
 */
 #ifdef PETSC_HAVE_MUMPS
 PETSC_EXTERN PetscErrorCode MatMumpsSetIcntl(Mat,PetscInt,PetscInt);
+PETSC_EXTERN PetscErrorCode MatMumpsGetIcntl(Mat,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatMumpsSetCntl(Mat,PetscInt,PetscReal);
+PETSC_EXTERN PetscErrorCode MatMumpsGetCntl(Mat,PetscInt,PetscReal*);
+
+PETSC_EXTERN PetscErrorCode MatMumpsGetINFO(Mat,PetscInt,PetscInt*);
+PETSC_EXTERN PetscErrorCode MatMumpsGetINFOG(Mat,PetscInt,PetscInt*);
+PETSC_EXTERN PetscErrorCode MatMumpsGetRINFO(Mat,PetscInt,PetscReal*);
+PETSC_EXTERN PetscErrorCode MatMumpsGetRINFOG(Mat,PetscInt,PetscReal*);
 #endif
 
 /*
