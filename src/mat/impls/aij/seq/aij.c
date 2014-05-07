@@ -2835,6 +2835,7 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     PetscScalar alpha = a;
     PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
     ierr = MatSeqAIJInvalidateDiagonal(Y);CHKERRQ(ierr);
+    ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     if (y->xtoy && y->XtoY != X) {
       ierr = PetscFree(y->xtoy);CHKERRQ(ierr);
@@ -2846,6 +2847,7 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
       ierr    = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
     }
     for (i=0; i<x->nz; i++) y->a[y->xtoy[i]] += a*(x->a[i]);
+    ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
     ierr = PetscInfo3(Y,"ratio of nnz(X)/nnz(Y): %D/%D = %g\n",x->nz,y->nz,(double)((PetscReal)(x->nz)/(y->nz+1)));CHKERRQ(ierr);
   } else {
     Mat      B;

@@ -998,6 +998,7 @@ PetscErrorCode MatAXPY_MPIDense(Mat Y,PetscScalar alpha,Mat X,MatStructure str)
 
   PetscFunctionBegin;
   ierr = MatAXPY(A->A,alpha,B->A,str);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
