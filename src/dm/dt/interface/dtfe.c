@@ -6251,7 +6251,7 @@ $    void obj_func(const PetscScalar u[], const PetscScalar gradU[], const Petsc
 PetscErrorCode PetscFEIntegrate(PetscFE fem, PetscInt Ne, PetscInt Nf, PetscFE fe[], PetscInt field, PetscCellGeometry geom, const PetscScalar coefficients[],
                                 PetscInt NfAux, PetscFE feAux[], const PetscScalar coefficientsAux[],
                                 void (*obj_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar obj[]),
-                                PetscScalar integral[])
+                                PetscReal integral[])
 {
   PetscErrorCode ierr;
 
