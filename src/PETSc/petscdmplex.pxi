@@ -62,7 +62,7 @@ cdef extern from * nogil:
     int DMPlexHasLabel(PetscDM,const_char [],PetscBool *)
     int DMPlexGetLabel(PetscDM,const_char *,PetscDMLabel *)
     #int DMPlexAddLabel(PetscDM,PetscDMLabel)
-    #int DMPlexRemoveLabel(PetscDM,const_char [],PetscDMLabel *)
+    int DMPlexRemoveLabel(PetscDM,const_char [],PetscDMLabel *)
     int DMPlexGetCellNumbering(PetscDM,PetscIS*)
     int DMPlexGetVertexNumbering(PetscDM,PetscIS*)
 
@@ -111,8 +111,8 @@ cdef extern from * nogil:
     #int DMPlexDistributeField(PetscDM,PetscSF,PetscSection,Vec,PetscSection,Vec)
     #int DMPlexDistributeData(PetscDM,PetscSF,PetscSection,MPI_Datatype,void*,PetscSection,void**)
 
-    #int DMPlexGetOrdering(PetscDM,MatOrderingType,PetscIS*)
-    #int DMPlexPermute(PetscDM,PetscIS,PetscDM*)
+    int DMPlexGetOrdering(PetscDM,PetscMatOrderingType,PetscIS*)
+    int DMPlexPermute(PetscDM,PetscIS,PetscDM*)
 
     #int DMPlexCreateSubmesh(PetscDM,PetscDMLabel,PetscInt,PetscDM*)
     #int DMPlexCreateHybridMesh(PetscDM,PetscDMLabel,PetscDMLabel *,PetscDM*)
@@ -124,10 +124,10 @@ cdef extern from * nogil:
     #int DMPlexLabelComplete(PetscDM,PetscDMLabel)
     #int DMPlexLabelCohesiveComplete(PetscDM,PetscDMLabel,PetscBool,PetscDM)
 
-    #int DMPlexGetRefinementLimit(PetscDM,PetscReal *)
-    #int DMPlexSetRefinementLimit(PetscDM,PetscReal)
-    #int DMPlexGetRefinementUniform(PetscDM,PetscBool *)
-    #int DMPlexSetRefinementUniform(PetscDM,PetscBool)
+    int DMPlexGetRefinementLimit(PetscDM,PetscReal *)
+    int DMPlexSetRefinementLimit(PetscDM,PetscReal)
+    int DMPlexGetRefinementUniform(PetscDM,PetscBool *)
+    int DMPlexSetRefinementUniform(PetscDM,PetscBool)
 
     #int DMPlexGetNumFaceVertices(PetscDM,PetscInt,PetscInt,PetscInt *)
     #int DMPlexGetOrientedFace(PetscDM,PetscInt,PetscInt,const_PetscInt [],PetscInt,PetscInt [],PetscInt [],PetscInt [],PetscBool *)
