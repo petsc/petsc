@@ -260,9 +260,9 @@ int main(int argc,char **args)
   
   /* compute determinant */
   if (!rank) {
-    ierr = MatMumpsGetINFOG(F,34,&infog34);CHKERRQ(ierr);
-    ierr = MatMumpsGetRINFOG(F,12,&rinfo12);CHKERRQ(ierr);
-    ierr = MatMumpsGetRINFOG(F,13,&rinfo13);CHKERRQ(ierr);
+    ierr = MatMumpsGetInfog(F,34,&infog34);CHKERRQ(ierr);
+    ierr = MatMumpsGetRinfog(F,12,&rinfo12);CHKERRQ(ierr);
+    ierr = MatMumpsGetRinfog(F,13,&rinfo13);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"  Mumps row pivot threshhold = %g\n",cntl);
     ierr = PetscPrintf(PETSC_COMM_SELF,"  Mumps determinant = (%g, %g) * 2^%D \n",rinfo12,rinfo13,infog34);
   }

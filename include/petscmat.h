@@ -1561,10 +1561,10 @@ PETSC_EXTERN PetscErrorCode MatMumpsGetIcntl(Mat,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatMumpsSetCntl(Mat,PetscInt,PetscReal);
 PETSC_EXTERN PetscErrorCode MatMumpsGetCntl(Mat,PetscInt,PetscReal*);
 
-PETSC_EXTERN PetscErrorCode MatMumpsGetINFO(Mat,PetscInt,PetscInt*);
-PETSC_EXTERN PetscErrorCode MatMumpsGetINFOG(Mat,PetscInt,PetscInt*);
-PETSC_EXTERN PetscErrorCode MatMumpsGetRINFO(Mat,PetscInt,PetscReal*);
-PETSC_EXTERN PetscErrorCode MatMumpsGetRINFOG(Mat,PetscInt,PetscReal*);
+PETSC_EXTERN PetscErrorCode MatMumpsGetInfo(Mat,PetscInt,PetscInt*);
+PETSC_EXTERN PetscErrorCode MatMumpsGetInfog(Mat,PetscInt,PetscInt*);
+PETSC_EXTERN PetscErrorCode MatMumpsGetRinfo(Mat,PetscInt,PetscReal*);
+PETSC_EXTERN PetscErrorCode MatMumpsGetRinfog(Mat,PetscInt,PetscReal*);
 #endif
 
 /*
