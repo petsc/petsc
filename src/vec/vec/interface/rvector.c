@@ -1379,14 +1379,22 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
     PetscBool valid;
     ierr = PetscObjectComposedDataGetInt((PetscObject)*Y,VecGetSubVectorSavedStateId,savedstate,valid);CHKERRQ(ierr);
     ierr = PetscObjectStateGet((PetscObject)*Y,&newstate);CHKERRQ(ierr);
-    if (valid && savedstate < newstate) {
+    /* !valid means that the state has changed, no need to compare savedstate.*/
+    /* (savedstate < newstate) is equivalent to (!valid) and is here just to avoid compilation warnings.*/
+    if (!valid || (savedstate < newstate)) {
       /* We might need to copy entries back, first check whether we have no-copy view */
       PetscInt  gstart,gend,start;
       PetscBool contiguous,gcontiguous;
       ierr = VecGetOwnershipRange(X,&gstart,&gend);CHKERRQ(ierr);
       ierr = ISContiguousLocal(is,gstart,gend,&start,&contiguous);CHKERRQ(ierr);
       ierr = MPI_Allreduce(&contiguous,&gcontiguous,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
-      if (!gcontiguous) SETERRQ(PetscObjectComm((PetscObject)is),PETSC_ERR_SUP,"Unhandled case, values have been changed and need to be copied back into X");
+      if (!gcontiguous) {
+        VecScatter scatter;
+        ierr = VecScatterCreate(*Y,NULL,X,is,&scatter);CHKERRQ(ierr);
+        ierr = VecScatterBegin(scatter,*Y,X,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        ierr = VecScatterEnd(scatter,*Y,X,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
+      }
     }
     ierr = VecDestroy(Y);CHKERRQ(ierr);
   }
