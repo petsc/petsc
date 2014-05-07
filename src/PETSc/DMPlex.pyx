@@ -290,12 +290,12 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexGetVertexNumbering(self.dm,&globalVertexNumbers.iset) )
         return globalVertexNumbers
 
-    def createLabel(self,name):
+    def createLabel(self, name):
         cdef const_char *cname = NULL
         name = str2bytes(name, &cname)
         CHKERR( DMPlexCreateLabel(self.dm,cname) )
 
-    def removeLabel(self,name):
+    def removeLabel(self, name):
         cdef const_char *cname = NULL
         cdef PetscDMLabel clbl = NULL
         name = str2bytes(name, &cname)
