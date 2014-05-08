@@ -69,15 +69,7 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
       ierr = DMGetField(dm, 0, &fe);CHKERRQ(ierr);
       if (fe->classid == PETSCFE_CLASSID) fem = PETSC_TRUE;
     }
-    if (fem) {
-      ierr = DMPlexInsertBoundaryValuesFEM(dm, v);CHKERRQ(ierr);
-    } else {
-      PetscObject faceGeometry;
-
-      /* TODO Fix the time, and add FVM objects */
-      ierr = PetscObjectQuery((PetscObject) dm, "FaceGeometry", &faceGeometry);CHKERRQ(ierr);
-      if (faceGeometry) {ierr = DMPlexInsertBoundaryValuesFVM(dm, 0.0, v);CHKERRQ(ierr);}
-    }
+    if (fem) {ierr = DMPlexInsertBoundaryValuesFEM(dm, v);CHKERRQ(ierr);}
   }
   if (isvtk) {
     PetscSection            section;
