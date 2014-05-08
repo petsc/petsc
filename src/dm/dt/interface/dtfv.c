@@ -836,10 +836,11 @@ PetscErrorCode PetscFVCreate(MPI_Comm comm, PetscFV *fvm)
   ierr = PetscHeaderCreate(f, _p_PetscFV, struct _PetscFVOps, PETSCFV_CLASSID, "PetscFV", "Finite Volume", "PetscFV", comm, PetscFVDestroy, PetscFVView);CHKERRQ(ierr);
   ierr = PetscMemzero(f->ops, sizeof(struct _PetscFVOps));CHKERRQ(ierr);
 
-  f->numComponents = 1;
-  f->dim           = 0;
-  f->fluxWork      = NULL;
   ierr = PetscLimiterCreate(comm, &f->limiter);CHKERRQ(ierr);
+  f->numComponents    = 1;
+  f->dim              = 0;
+  f->computeGradients = PETSC_FALSE;
+  f->fluxWork         = NULL;
 
   *fvm = f;
   PetscFunctionReturn(0);
@@ -914,6 +915,27 @@ PetscErrorCode PetscFVGetSpatialDimension(PetscFV fvm, PetscInt *dim)
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidPointer(dim, 2);
   *dim = fvm->dim;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVSetComputeGradients"
+PetscErrorCode PetscFVSetComputeGradients(PetscFV fvm, PetscBool computeGradients)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
+  fvm->computeGradients = computeGradients;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVGetComputeGradients"
+PetscErrorCode PetscFVGetComputeGradients(PetscFV fvm, PetscBool *computeGradients)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
+  PetscValidPointer(computeGradients, 2);
+  *computeGradients = fvm->computeGradients;
   PetscFunctionReturn(0);
 }
 
