@@ -542,7 +542,7 @@ PetscBool         PetscFVRegisterAllCalled = PETSC_FALSE;
 
   Sample usage:
 .vb
-    PetscFVRegister("my_fe", MyPetscFVCreate);
+    PetscFVRegister("my_fv", MyPetscFVCreate);
 .ve
 
   Then, your PetscFV type can be chosen with the procedural interface via
@@ -621,7 +621,7 @@ PetscErrorCode PetscFVSetType(PetscFV fvm, PetscFVType name)
   Not Collective
 
   Input Parameter:
-. dm  - The PetscFV
+. fvm  - The PetscFV
 
   Output Parameter:
 . name - The PetscFV type name
