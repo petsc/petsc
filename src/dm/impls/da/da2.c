@@ -97,7 +97,7 @@ PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
     for (y=ymin; y<ymax; y++) {
       for (x=xmin; x<xmax; x++) {
         if ((base % dd->w) == 0) {
-          sprintf(node,"%d",(int)(idx[base]));
+          sprintf(node,"%d",(int)(idx[base/dd->w]));
           ierr = PetscDrawString(draw,x/dd->w,y,PETSC_DRAW_BLUE,node);CHKERRQ(ierr);
         }
         base++;
