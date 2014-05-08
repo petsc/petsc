@@ -692,7 +692,7 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
 -  -memory_info - Print memory usage at end of run
 
    Options Database Keys for Profiling:
-   See the <a href="../../docs/manual.pdf#nameddest=ch_profiling">profiling chapter of the users manual</a> for details.
+   See Users-Manual: ch_profiling for details.
 +  -info <optional filename> - Prints verbose information to the screen
 .  -info_exclude <null,vec,mat,pc,ksp,snes,ts> - Excludes some of the verbose messages
 .  -log_sync - Log the synchronization in scatters, inner products and norms
@@ -731,7 +731,7 @@ $       call PetscInitialize(file,ierr)
    Important Fortran Note:
    In Fortran, you MUST use NULL_CHARACTER to indicate a
    null character string; you CANNOT just use NULL as
-   in the C version. See the <a href="../../docs/manual.pdf">users manual</a> for details.
+   in the C version. See Users-Manual: ch_fortran for details.
 
    If your main program is C but you call Fortran code that also uses PETSc you need to call PetscInitializeFortran() soon after
    calling PetscInitialize().

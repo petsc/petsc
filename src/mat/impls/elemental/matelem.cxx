@@ -452,6 +452,7 @@ static PetscErrorCode MatAXPY_Elemental(Mat Y,PetscScalar a,Mat X,MatStructure s
 
   PetscFunctionBegin;
   elem::Axpy((PetscElemScalar)a,*x->emat,*y->emat);
+  ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

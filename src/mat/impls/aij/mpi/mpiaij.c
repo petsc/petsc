@@ -2142,6 +2142,7 @@ PetscErrorCode MatAXPY_MPIAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     y    = (Mat_SeqAIJ*)yy->B->data;
     ierr = PetscBLASIntCast(x->nz,&bnz);CHKERRQ(ierr);
     PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
+    ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
   } else if (str == SUBSET_NONZERO_PATTERN) {
     ierr = MatAXPY_SeqAIJ(yy->A,a,xx->A,str);CHKERRQ(ierr);
 
@@ -2157,6 +2158,7 @@ PetscErrorCode MatAXPY_MPIAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
       ierr    = PetscObjectReference((PetscObject)xx->B);CHKERRQ(ierr);
     }
     for (i=0; i<x->nz; i++) y->a[y->xtoy[i]] += a*(x->a[i]);
+    ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
   } else {
     Mat      B;
     PetscInt *nnz_d,*nnz_o;
@@ -3855,7 +3857,7 @@ PetscErrorCode  MatMPIAIJSetPreallocationCSR(Mat B,const PetscInt i[],const Pets
    The AIJ format (also called the Yale sparse matrix format or
    compressed row storage (CSR)), is fully compatible with standard Fortran 77
    storage.  The stored row and column indices begin with zero.
-   See the <A href="../../docs/manual.pdf#nameddest=ch_mat">Mat chapter of the users manual</A> for details.
+   See Users-Manual: ch_mat for details.
 
    The parallel matrix is partitioned such that the first m0 rows belong to
    process 0, the next m1 rows belong to process 1, the next m2 rows belong

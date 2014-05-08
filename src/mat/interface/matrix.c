@@ -787,7 +787,7 @@ PetscErrorCode  MatSetUp(Mat A)
 .  -mat_view draw - PetscDraws nonzero structure of matrix, using MatView() and PetscDrawOpenX().
 .  -display <name> - Sets display name (default is host)
 .  -draw_pause <sec> - Sets number of seconds to pause after display
-.  -mat_view socket - Sends matrix to socket, can be accessed from Matlab (see the <a href="../../docs/manual.pdf">users manual</a> for details).
+.  -mat_view socket - Sends matrix to socket, can be accessed from Matlab (see Users-Manual: ch_matlab for details)
 .  -viewer_socket_machine <machine>
 .  -viewer_socket_port <port>
 .  -mat_view binary - save matrix to file in binary format
@@ -2892,9 +2892,7 @@ $          dtcol - pivot tolerance (0 no pivot, 1 full column pivoting)
 $                   Run with the option -info to determine an optimal value to use
 
 
-   Notes:
-   See the <a href="../../docs/manual.pdf">users manual</a> for additional information about
-   choosing the fill factor for better efficiency.
+   Notes: See Users-Manual: ch_mat for additional information about choosing the fill factor for better efficiency.
 
    Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
@@ -4954,7 +4952,7 @@ PetscErrorCode  MatAssembled(Mat mat,PetscBool  *assembled)
 .  -mat_view draw - PetscDraws nonzero structure of matrix, using MatView() and PetscDrawOpenX().
 .  -display <name> - Sets display name (default is host)
 .  -draw_pause <sec> - Sets number of seconds to pause after display
-.  -mat_view socket - Sends matrix to socket, can be accessed from Matlab (See the <a href="../../docs/manual.pdf">users manual</a>)
+.  -mat_view socket - Sends matrix to socket, can be accessed from Matlab (See Users-Manual: ch_matlab )
 .  -viewer_socket_machine <machine>
 .  -viewer_socket_port <port>
 .  -mat_view binary - save matrix to file in binary format
@@ -6261,9 +6259,7 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
    Output Parameters:
 .  fact - new matrix that has been symbolically factored
 
-   Notes:
-   See the <a href="../../docs/manual.pdf">users manual</a>  for additional information about
-   choosing the fill factor for better efficiency.
+   Notes: See Users-Manual: ch_mat for additional information about choosing the fill factor for better efficiency.
 
    Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
@@ -7169,9 +7165,8 @@ PetscErrorCode  MatColoringPatch(Mat mat,PetscInt ncolors,PetscInt n,ISColoringV
 
    In-place factorization ILU(0) can also be used as a local
    solver for the blocks within the block Jacobi or additive Schwarz
-   methods (runtime option: -sub_pc_factor_in_place).  See the discussion
-   of these preconditioners in the <a href="../../docs/manual.pdf#ch_pc">PC chapter of the users manual</a> for details on setting
-   local solver options.
+   methods (runtime option: -sub_pc_factor_in_place).  See Users-Manual: ch_pc
+   for details on setting local solver options.
 
    Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.

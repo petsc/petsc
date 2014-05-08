@@ -1211,6 +1211,7 @@ PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     PetscBLASInt bnz;
     ierr = PetscBLASIntCast(x->nz*bs2,&bnz);CHKERRQ(ierr);
     PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
+    ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     if (y->xtoy && y->XtoY != X) {
       ierr = PetscFree(y->xtoy);CHKERRQ(ierr);
@@ -1227,6 +1228,7 @@ PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
         j++;
       }
     }
+    ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
     ierr = PetscInfo3(Y,"ratio of nnz_s(X)/nnz_s(Y): %D/%D = %g\n",bs2*x->nz,bs2*y->nz,(double)((PetscReal)(bs2*x->nz)/(PetscReal)(bs2*y->nz)));CHKERRQ(ierr);
   } else {
     ierr = MatGetRowUpperTriangular(X);CHKERRQ(ierr);
@@ -2021,7 +2023,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
    Notes:
    Specify the preallocated storage with either nz or nnz (not both).
    Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
-   allocation.  See the <a href="../../docs/manual.pdf#nameddest=ch_mat">Mat chapter of the users manual</a> for details.
+   allocation.  See Users-Manual: ch_mat for details.
 
    You can call MatGetInfo() to get information on how effective the preallocation was;
    for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
@@ -2120,7 +2122,7 @@ PetscErrorCode MatSeqSBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i
 
    Specify the preallocated storage with either nz or nnz (not both).
    Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
-   allocation.  See the <a href="../../docs/manual.pdf#nameddest=ch_mat">Mat chapter of the users manual</a> for details.
+   allocation.  See Users-Manual: ch_mat for details.
 
    If the nnz parameter is given then the nz parameter is ignored
 

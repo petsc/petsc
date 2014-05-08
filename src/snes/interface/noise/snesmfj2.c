@@ -194,7 +194,7 @@ $   Jorge's nifty new strategy if one specifies the option
 $          -snes_mf_jorge
 
    The user can set these parameters via MatMFFDSetFunctionError().
-   See the <A href="../../docs/manual.pdf#nameddest=ch_snes">SNES chapter of the users manual</A>.
+   See Users-Manual: ch_snes for details
 
    The user should call MatDestroy() when finished with the matrix-free
    matrix context.
