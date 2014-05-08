@@ -65,6 +65,23 @@ static PetscErrorCode DMPlexTSGetContext(DM dm, DMTS dmts, DMTS_Plex **dmplexts)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexTSGetGeometry"
+PetscErrorCode DMPlexTSGetGeometry(DM dm, Vec *facegeom, Vec *cellgeom, PetscReal *minRadius)
+{
+  DMTS           dmts;
+  DMTS_Plex     *dmplexts;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetDMTS(dm, &dmts);CHKERRQ(ierr);
+  ierr = DMPlexTSGetContext(dm, dmts, &dmplexts);CHKERRQ(ierr);
+  if (facegeom)  *facegeom  = dmplexts->facegeom;
+  if (cellgeom)  *cellgeom  = dmplexts->cellgeom;
+  if (minRadius) *minRadius = dmplexts->minradius;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexTSSetupGeometry"
 static PetscErrorCode DMPlexTSSetupGeometry(DM dm, PetscFV fvm, DMTS_Plex *dmplexts)
 {
