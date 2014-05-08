@@ -2239,7 +2239,8 @@ int main(int argc, char **argv)
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  /*if (user->reconstruct) {ierr = PetscFVSetType(fvm, PETSCFVLEASTSQUARES);CHKERRQ(ierr);}*/
+  /* TODO Replace this option with just the type set */
+  if (user->reconstruct) {ierr = PetscFVSetType(fvm, PETSCFVLEASTSQUARES);CHKERRQ(ierr);}
   ierr = PetscFVSetFromOptions(fvm);CHKERRQ(ierr);
   ierr = DMSetNumFields(dm, 1);CHKERRQ(ierr);
   ierr = DMSetField(dm, 0, (PetscObject) fvm);CHKERRQ(ierr);

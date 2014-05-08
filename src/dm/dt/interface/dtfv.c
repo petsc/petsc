@@ -1095,3 +1095,125 @@ PETSC_EXTERN PetscErrorCode PetscFVCreate_Upwind(PetscFV fvm)
   ierr = PetscFVInitialize_Upwind(fvm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVDestroy_LeastSquares"
+PetscErrorCode PetscFVDestroy_LeastSquares(PetscFV fvm)
+{
+  PetscFV_LeastSquares *b = (PetscFV_LeastSquares *) fvm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(b);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVView_LeastSquares_Ascii"
+PetscErrorCode PetscFVView_LeastSquares_Ascii(PetscFV fv, PetscViewer viewer)
+{
+  PetscInt          Nc;
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "Finite Volume with Least Squares Reconstruction:\n");CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+    ierr = PetscViewerASCIIPrintf(viewer, "  num components: %d\n", Nc);CHKERRQ(ierr);
+  } else {
+    ierr = PetscViewerASCIIPrintf(viewer, "  num components: %d\n", Nc);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVView_LeastSquares"
+PetscErrorCode PetscFVView_LeastSquares(PetscFV fv, PetscViewer viewer)
+{
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fv, PETSCFV_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscFVView_LeastSquares_Ascii(fv, viewer);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVSetUp_LeastSquares"
+PetscErrorCode PetscFVSetUp_LeastSquares(PetscFV fvm)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVIntegrateRHSFunction_LeastSquares"
+/*
+  fgeom[f]=>v0 is the centroid
+  cgeom->vol[f*2+0] contains the left  geom
+  cgeom->vol[f*2+1] contains the right geom
+*/
+PetscErrorCode PetscFVIntegrateRHSFunction_LeastSquares(PetscFV fvm, PetscInt Nfaces, PetscInt Nf, PetscFV fv[], PetscInt field, PetscCellGeometry fgeom, PetscCellGeometry cgeom,
+                                                        PetscScalar xL[], PetscScalar xR[],
+                                                        void (*riemann)(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx),
+                                                        PetscScalar fluxL[], PetscScalar fluxR[], void *ctx)
+{
+  PetscScalar   *flux = fvm->fluxWork;
+  PetscInt       dim, pdim, f, d;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFVGetSpatialDimension(fvm, &dim);CHKERRQ(ierr);
+  ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
+  for (f = 0; f < Nfaces; ++f) {
+    (*riemann)(&fgeom.v0[f*dim], &fgeom.n[f*dim], &xL[f*pdim], &xR[f*pdim], flux, ctx);
+    for (d = 0; d < pdim; ++d) {
+      fluxL[f*pdim+d] = flux[d] / cgeom.vol[f*2+0];
+      fluxR[f*pdim+d] = flux[d] / cgeom.vol[f*2+1];
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVInitialize_LeastSquares"
+PetscErrorCode PetscFVInitialize_LeastSquares(PetscFV fvm)
+{
+  PetscFunctionBegin;
+  fvm->ops->setfromoptions          = NULL;
+  fvm->ops->setup                   = PetscFVSetUp_LeastSquares;
+  fvm->ops->view                    = PetscFVView_LeastSquares;
+  fvm->ops->destroy                 = PetscFVDestroy_LeastSquares;
+  fvm->ops->integraterhsfunction    = PetscFVIntegrateRHSFunction_LeastSquares;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  PETSCFVLEASTSQUARES = "leastsquares" - A PetscFV object
+
+  Level: intermediate
+
+.seealso: PetscFVType, PetscFVCreate(), PetscFVSetType()
+M*/
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVCreate_LeastSquares"
+PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV fvm)
+{
+  PetscFV_LeastSquares *b;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
+  ierr      = PetscNewLog(fvm,&b);CHKERRQ(ierr);
+  fvm->data = b;
+
+  ierr = PetscFVSetComputeGradients(fvm, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscFVInitialize_LeastSquares(fvm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

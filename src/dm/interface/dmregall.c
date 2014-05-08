@@ -173,11 +173,12 @@ PetscErrorCode PetscLimiterRegisterAll()
 }
 
 PETSC_EXTERN PetscErrorCode PetscFVCreate_Upwind(PetscFV);
+PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV);
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFVRegisterAll"
 /*@C
-  PetscFVRegisterAll - Registers all of the PetscFE components in the PetscFV package.
+  PetscFVRegisterAll - Registers all of the PetscFV components in the PetscFV package.
 
   Not Collective
 
@@ -196,6 +197,7 @@ PetscErrorCode PetscFVRegisterAll()
   PetscFunctionBegin;
   PetscFVRegisterAllCalled = PETSC_TRUE;
 
-  ierr = PetscFVRegister(PETSCFVUPWIND, PetscFVCreate_Upwind);CHKERRQ(ierr);
+  ierr = PetscFVRegister(PETSCFVUPWIND,       PetscFVCreate_Upwind);CHKERRQ(ierr);
+  ierr = PetscFVRegister(PETSCFVLEASTSQUARES, PetscFVCreate_LeastSquares);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
