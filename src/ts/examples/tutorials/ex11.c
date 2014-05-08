@@ -2162,8 +2162,8 @@ int main(int argc, char **argv)
   Vec               X;
   PetscViewer       viewer;
   PetscMPIInt       rank;
-  PetscBool         vtkCellGeom, splitFaces;
-  PetscInt          overlap;
+  PetscBool         vtkCellGeom, splitFaces, isNew;
+  PetscInt          overlap, f;
   char              filename[PETSC_MAX_PATH_LEN] = "sevenside.exo";
   PetscErrorCode    ierr;
 
@@ -2244,8 +2244,8 @@ int main(int argc, char **argv)
   /* TODO Replace this option with just the type set */
   if (user->reconstruct) {ierr = PetscFVSetType(fvm, PETSCFVLEASTSQUARES);CHKERRQ(ierr);}
   ierr = PetscFVSetFromOptions(fvm);CHKERRQ(ierr);
-  ierr = DMSetNumFields(dm, 1);CHKERRQ(ierr);
-  ierr = DMSetField(dm, 0, (PetscObject) fvm);CHKERRQ(ierr);
+  ierr = DMSetNumFields(dm, phys->nfields);CHKERRQ(ierr);
+  for (f = 0; f < phys->nfields; ++f) {ierr = DMSetField(dm, f, (PetscObject) fvm);CHKERRQ(ierr);}
   ierr = PetscFVSetNumComponents(fvm, phys->dof);CHKERRQ(ierr);
   ierr = PetscFVSetSpatialDimension(fvm, dim);CHKERRQ(ierr);
 
@@ -2275,11 +2275,12 @@ int main(int argc, char **argv)
   ierr = TSSetType(ts, TSSSP);CHKERRQ(ierr);
   ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MonitorVTK,user,NULL);CHKERRQ(ierr);
-#if 1
-  ierr = DMTSSetRHSFunctionLocal(dm, (PetscErrorCode (*)(DM,PetscReal,Vec,Vec,void*)) (user->reconstruct ? RHSFunctionLocal_LS : RHSFunctionLocal_Upwind), user);CHKERRQ(ierr);
-#else
-  ierr = DMTSSetRHSFunctionLocal(dm, TSComputeRHSFunctionLocalDMPlex, user->model->physics);CHKERRQ(ierr);
-#endif
+  ierr = PetscOptionsHasName(NULL, "-new", &isNew);CHKERRQ(ierr);
+  if (isNew) {
+    ierr = DMPlexTSSetRHSFunctionLocal(dm, user->model->physics->riemann, user->model->physics);CHKERRQ(ierr);
+  } else {
+    ierr = DMTSSetRHSFunctionLocal(dm, (PetscErrorCode (*)(DM,PetscReal,Vec,Vec,void*)) (user->reconstruct ? RHSFunctionLocal_LS : RHSFunctionLocal_Upwind), user);CHKERRQ(ierr);
+  }
   ierr = TSSetDuration(ts,1000,2.0);CHKERRQ(ierr);
   dt   = cfl * user->minradius / user->model->maxspeed;
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
