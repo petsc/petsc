@@ -2920,8 +2920,8 @@ PetscErrorCode PetscFEIntegrate_Basic(PetscFE fem, PetscInt Ne, PetscInt Nf, Pet
 
       obj_func(u, gradU, a, gradA, x, &integrand);
       integrand *= detJ*quadWeights[q];
-      integral[field] += integrand;
-      if (debug > 1) {ierr = PetscPrintf(PETSC_COMM_SELF, "    int: %g %g\n", PetscRealPart(integrand), PetscRealPart(integral[field]));CHKERRQ(ierr);}
+      integral[field] += PetscRealPart(integrand);
+      if (debug > 1) {ierr = PetscPrintf(PETSC_COMM_SELF, "    int: %g %g\n", PetscRealPart(integrand), integral[field]);CHKERRQ(ierr);}
       if (q == Nq-1) {cOffset = dOffset; cOffsetAux = dOffsetAux;}
     }
     eOffset += cellDof;
