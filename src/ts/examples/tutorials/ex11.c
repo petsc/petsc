@@ -56,7 +56,7 @@ typedef struct _n_Model *Model;
 /* 'User' implements a discretization of a continuous model. */
 typedef struct _n_User *User;
 
-typedef PetscErrorCode (*RiemannFunction)(Physics,const PetscReal*,const PetscReal*,const PetscScalar*,const PetscScalar*,PetscScalar*);
+typedef PetscErrorCode (*RiemannFunction)(const PetscReal*,const PetscReal*,const PetscScalar*,const PetscScalar*,PetscScalar*,Physics);
 typedef PetscErrorCode (*SolutionFunction)(Model,PetscReal,const PetscReal*,PetscScalar*,void*);
 typedef PetscErrorCode (*BoundaryFunction)(PetscReal,const PetscReal*,const PetscReal*,const PetscScalar*,PetscScalar*,void*);
 typedef PetscErrorCode (*FunctionalFunction)(Model,PetscReal,const PetscReal*,const PetscScalar*,PetscReal*,void*);
@@ -2000,7 +2000,7 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,PetscReal time,Vec locX,Vec F,Us
         ierr = DMPlexPointLocalRead(dmGrad,cells[i],grad,&cgrad[i]);CHKERRQ(ierr);
         ierr = DMPlexPointGlobalRef(dm,cells[i],f,&cf[i]);CHKERRQ(ierr);
         Waxpy2(-1,cg[i]->centroid,fg->centroid,dx);
-        for (j=0; j<dof; j++) fx[i][j] = cx[i][j] + Dot2(cgrad[i],dx);
+        for (j=0; j<dof; j++) fx[i][j] = cx[i][j] + Dot2(&cgrad[i][j*DIM],dx);
       }
       ierr = DMLabelGetValue(faceLabel, face, &bset);CHKERRQ(ierr);
       if (bset != -1) {
