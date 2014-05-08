@@ -1641,18 +1641,13 @@ extern PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption,Pet
 #define __FUNCT__ "MatILUFactorSymbolic_SeqAIJ_ilu0"
 PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
-
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data,*b;
   PetscErrorCode ierr;
   const PetscInt n=A->rmap->n,*ai=a->i,*aj,*adiag=a->diag;
   PetscInt       i,j,k=0,nz,*bi,*bj,*bdiag;
-  PetscBool      missing;
   IS             isicol;
 
   PetscFunctionBegin;
-  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
-  ierr = MatMissingDiagonal(A,&missing,&i);CHKERRQ(ierr);
-  if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
   ierr = MatDuplicateNoCreate_SeqAIJ(fact,A,MAT_DO_NOT_COPY_VALUES,PETSC_FALSE);CHKERRQ(ierr);
   b    = (Mat_SeqAIJ*)(fact)->data;
@@ -1732,7 +1727,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
   PetscInt           *bi,*cols,nnz,*cols_lvl;
   PetscInt           *bdiag,prow,fm,nzbd,reallocs=0,dcount=0;
   PetscInt           i,levels,diagonal_fill;
-  PetscBool          col_identity,row_identity;
+  PetscBool          col_identity,row_identity,missing;
   PetscReal          f;
   PetscInt           nlnk,*lnk,*lnk_lvl=NULL;
   PetscBT            lnkbt;
@@ -1741,16 +1736,10 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
   PetscFreeSpaceList free_space_lvl=NULL,current_space_lvl=NULL;
 
   PetscFunctionBegin;
-  /* Uncomment the old data struct part only while testing new data structure for MatSolve() */
-  /*
-  PetscBool          olddatastruct=PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-ilu_old",&olddatastruct,NULL);CHKERRQ(ierr);
-  if (olddatastruct) {
-    ierr = MatILUFactorSymbolic_SeqAIJ_inplace(fact,A,isrow,iscol,info);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-  */
-
+  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
+  ierr = MatMissingDiagonal(A,&missing,&i);CHKERRQ(ierr);
+  if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
+  
   levels = (PetscInt)info->levels;
   ierr   = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr   = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
@@ -1763,7 +1752,6 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
     PetscFunctionReturn(0);
   }
 
-  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
