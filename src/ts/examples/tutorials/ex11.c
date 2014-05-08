@@ -61,7 +61,6 @@ typedef PetscErrorCode (*SolutionFunction)(Model,PetscReal,const PetscReal*,Pets
 typedef PetscErrorCode (*BoundaryFunction)(PetscReal,const PetscReal*,const PetscReal*,const PetscScalar*,PetscScalar*,void*);
 typedef PetscErrorCode (*FunctionalFunction)(Model,PetscReal,const PetscReal*,const PetscScalar*,PetscReal*,void*);
 typedef PetscErrorCode (*SetupFields)(Physics,PetscSection);
-static PetscErrorCode ModelBoundaryRegister(Model,const char*,BoundaryFunction,void*,PetscInt,const PetscInt*);
 static PetscErrorCode ModelSolutionSetDefault(Model,SolutionFunction,void*);
 static PetscErrorCode ModelFunctionalRegister(Model,const char*,PetscInt*,FunctionalFunction,void*);
 static PetscErrorCode OutputVTK(DM,const char*,PetscViewer*);
@@ -69,16 +68,6 @@ static PetscErrorCode OutputVTK(DM,const char*,PetscViewer*);
 struct FieldDescription {
   const char *name;
   PetscInt dof;
-};
-
-typedef struct _n_BoundaryLink *BoundaryLink;
-struct _n_BoundaryLink {
-  char             *name;
-  BoundaryFunction func;
-  void             *ctx;
-  PetscInt         numids;
-  PetscInt         *ids;
-  BoundaryLink     next;
 };
 
 typedef struct _n_FunctionalLink *FunctionalLink;
@@ -102,7 +91,6 @@ struct _n_Physics {
 struct _n_Model {
   MPI_Comm         comm;        /* Does not do collective communicaton, but some error conditions can be collective */
   Physics          physics;
-  BoundaryLink     boundary;
   FunctionalLink   functionalRegistry;
   PetscInt         maxComputed;
   PetscInt         numMonitored;
@@ -397,8 +385,6 @@ static PetscErrorCode PhysicsCreate_Advect(DM dm, Model mod,Physics phys)
   {
     const PetscInt inflowids[] = {100,200,300},outflowids[] = {101};
     /* Register "canned" boundary conditions and defaults for where to apply. */
-    ierr = ModelBoundaryRegister(mod,"inflow",PhysicsBoundary_Advect_Inflow,phys,ALEN(inflowids),inflowids);CHKERRQ(ierr);
-    ierr = ModelBoundaryRegister(mod,"outflow",PhysicsBoundary_Advect_Outflow,phys,ALEN(outflowids),outflowids);CHKERRQ(ierr);
     ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "inflow",  0, (void (*)()) PhysicsBoundary_Advect_Inflow,  ALEN(inflowids),  inflowids,  phys);CHKERRQ(ierr);
     ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "outflow", 0, (void (*)()) PhysicsBoundary_Advect_Outflow, ALEN(outflowids), outflowids, phys);CHKERRQ(ierr);
     /* Initial/transient solution with default boundary conditions */
@@ -542,7 +528,6 @@ static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys)
 
   {
     const PetscInt wallids[] = {100,101,200,300};
-    ierr = ModelBoundaryRegister(mod,"wall",PhysicsBoundary_SW_Wall,phys,ALEN(wallids),wallids);CHKERRQ(ierr);
     ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "wall", 0, (void (*)()) PhysicsBoundary_SW_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
     ierr = ModelSolutionSetDefault(mod,PhysicsSolution_SW,phys);CHKERRQ(ierr);
     ierr = ModelFunctionalRegister(mod,"Height",&sw->functional.Height,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
@@ -728,7 +713,6 @@ static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys)
   phys->maxspeed = 1.0;
   {
     const PetscInt wallids[] = {100,101,200,300};
-    ierr = ModelBoundaryRegister(mod,"wall",PhysicsBoundary_Euler_Wall,phys,ALEN(wallids),wallids);CHKERRQ(ierr);
     ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "wall", 0, (void (*)()) PhysicsBoundary_Euler_Wall, ALEN(wallids), wallids, phys);CHKERRQ(ierr);
     ierr = ModelSolutionSetDefault(mod,PhysicsSolution_Euler,phys);CHKERRQ(ierr);
     ierr = ModelFunctionalRegister(mod,"Speed",&eu->monitor.Speed,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
@@ -1146,14 +1130,14 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
     ierr = DMPlexGetSupport(dmMass, v, &faces);CHKERRQ(ierr);
     for (f = 0; f < numFaces; ++f) {
       sides[0] = faces[f];
-      ierr = DMPlexPointLocalRead(dmFace, faces[f], facegeom, &fgA);CHKERRQ(ierr);
+      ierr = DMPlexPointLocalRead(dmFace, faces[f], fgeom, &fgA);CHKERRQ(ierr);
       for (g = 0; g < numFaces; ++g) {
         const PetscInt *cells = NULL;;
         PetscReal      area   = 0.0;
         PetscInt       numCells;
 
         sides[1] = faces[g];
-        ierr = DMPlexPointLocalRead(dmFace, faces[g], facegeom, &fgB);CHKERRQ(ierr);
+        ierr = DMPlexPointLocalRead(dmFace, faces[g], fgeom, &fgB);CHKERRQ(ierr);
         ierr = DMPlexGetJoin(dmMass, 2, sides, &numCells, &cells);CHKERRQ(ierr);
         if (numCells != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid join for faces");
         ierr = DMPlexPointLocalRead(dmCell, cells[0], cgeom, &cg);CHKERRQ(ierr);
@@ -1221,6 +1205,7 @@ PetscErrorCode SetUpLocalSpace(DM dm, User user)
   PetscFunctionReturn(0);
 }
 
+#if 0
 #undef __FUNCT__
 #define __FUNCT__ "SetUpBoundaries"
 PetscErrorCode SetUpBoundaries(DM dm, User user)
@@ -1249,69 +1234,8 @@ PetscErrorCode SetUpBoundaries(DM dm, User user)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelBoundaryRegister"
-/* The ids are just defaults, can be overridden at command line. I expect to set defaults based on names in the future. */
-static PetscErrorCode ModelBoundaryRegister(Model mod,const char *name,BoundaryFunction bcFunc,void *ctx,PetscInt numids,const PetscInt *ids)
-{
-  PetscErrorCode ierr;
-  BoundaryLink   link;
-
-  PetscFunctionBeginUser;
-  ierr          = PetscNew(&link);CHKERRQ(ierr);
-  ierr          = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
-  link->numids  = numids;
-  ierr          = PetscMalloc1(numids,&link->ids);CHKERRQ(ierr);
-  ierr          = PetscMemcpy(link->ids,ids,numids*sizeof(PetscInt));CHKERRQ(ierr);
-  link->func    = bcFunc;
-  link->ctx     = ctx;
-  link->next    = mod->boundary;
-  mod->boundary = link;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "BoundaryLinkDestroy"
-static PetscErrorCode BoundaryLinkDestroy(BoundaryLink *link)
-{
-  PetscErrorCode ierr;
-  BoundaryLink   l,next;
-
-  PetscFunctionBeginUser;
-  if (!link) PetscFunctionReturn(0);
-  l     = *link;
-  *link = NULL;
-  for (; l; l=next) {
-    next = l->next;
-    ierr = PetscFree(l->ids);CHKERRQ(ierr);
-    ierr = PetscFree(l->name);CHKERRQ(ierr);
-    ierr = PetscFree(l);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "ModelBoundaryFind"
-static PetscErrorCode ModelBoundaryFind(Model mod,PetscInt id,BoundaryFunction *bcFunc,void **ctx)
-{
-  BoundaryLink link;
-  PetscInt     i;
-
-  PetscFunctionBeginUser;
-  *bcFunc = NULL;
-  for (link=mod->boundary; link; link=link->next) {
-    for (i=0; i<link->numids; i++) {
-      if (link->ids[i] == id) {
-        *bcFunc = link->func;
-        *ctx    = link->ctx;
-        PetscFunctionReturn(0);
-      }
-    }
-  }
-  SETERRQ1(mod->comm,PETSC_ERR_USER,"Boundary ID %D not associated with any registered boundary condition",id);
-  PetscFunctionReturn(0);
-}
 #undef __FUNCT__
 #define __FUNCT__ "ModelSolutionSetDefault"
 /* Behavior will be different for multi-physics or when using non-default boundary conditions */
@@ -1665,7 +1589,6 @@ int main(int argc, char **argv)
 
   /* Set up DM with section describing local vector and configure local vector. */
   ierr = SetUpLocalSpace(dm, user);CHKERRQ(ierr);
-  ierr = SetUpBoundaries(dm, user);CHKERRQ(ierr);
 
   ierr = TSCreate(comm, &ts);CHKERRQ(ierr);
   ierr = TSSetType(ts, TSSSP);CHKERRQ(ierr);
@@ -1706,7 +1629,6 @@ int main(int argc, char **argv)
 
   ierr = PetscFunctionListDestroy(&PhysicsList);CHKERRQ(ierr);
   ierr = PetscFunctionListDestroy(&LimitList);CHKERRQ(ierr);
-  ierr = BoundaryLinkDestroy(&user->model->boundary);CHKERRQ(ierr);
   ierr = FunctionalLinkDestroy(&user->model->functionalRegistry);CHKERRQ(ierr);
   ierr = PetscFree(user->model->functionalMonitored);CHKERRQ(ierr);
   ierr = PetscFree(user->model->functionalCall);CHKERRQ(ierr);
