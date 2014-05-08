@@ -498,6 +498,7 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   ierr = DMPlexShiftSizes_Internal(dm, depthShift, gdm);CHKERRQ(ierr);
   /* Step 3: Set cone/support sizes for new points */
   ierr = DMPlexGetHeightStratum(dm, 0, NULL, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexSetHybridBounds(gdm, cEnd, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   for (c = cEnd; c < cEnd + *numGhostCells; ++c) {
     ierr = DMPlexSetConeSize(gdm, c, 1);CHKERRQ(ierr);
   }

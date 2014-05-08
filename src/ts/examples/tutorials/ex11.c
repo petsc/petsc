@@ -834,7 +834,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   const PetscInt *ids;
   PetscInt       *newpoints;
   PetscInt       dim, depth, maxConeSize, maxSupportSize, numLabels;
-  PetscInt       numFS, fs, pStart, pEnd, p, vStart, vEnd, v, fStart, fEnd, newf, d, l;
+  PetscInt       numFS, fs, pStart, pEnd, p, cEndInterior, vStart, vEnd, v, fStart, fEnd, newf, d, l;
   PetscBool      hasLabel;
   PetscErrorCode ierr;
 
@@ -860,6 +860,8 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   ierr  = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   pEnd += user->numSplitFaces;
   ierr  = DMPlexSetChart(sdm, pStart, pEnd);CHKERRQ(ierr);
+  ierr  = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr  = DMPlexSetHybridBounds(sdm, cEndInterior, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   /* Set cone and support sizes */
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   for (d = 0; d <= depth; ++d) {
