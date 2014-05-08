@@ -195,9 +195,11 @@ PetscErrorCode PetscFVFinalizePackage(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&PetscLimiterList);CHKERRQ(ierr);
   ierr = PetscFunctionListDestroy(&PetscFVList);CHKERRQ(ierr);
-  PetscFVPackageInitialized = PETSC_FALSE;
-  PetscFVRegisterAllCalled  = PETSC_FALSE;
+  PetscFVPackageInitialized     = PETSC_FALSE;
+  PetscFVRegisterAllCalled      = PETSC_FALSE;
+  PetscLimiterRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -226,6 +228,7 @@ PetscErrorCode PetscFVInitializePackage(void)
 
   /* Register Classes */
   ierr = PetscClassIdRegister("FV Space", &PETSCFV_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Limiter",  &PETSCLIMITER_CLASSID);CHKERRQ(ierr);
 
   /* Register Constructors */
   ierr = PetscFVRegisterAll();CHKERRQ(ierr);
@@ -235,12 +238,16 @@ PetscErrorCode PetscFVInitializePackage(void)
   if (opt) {
     ierr = PetscStrstr(logList, "fv", &className);CHKERRQ(ierr);
     if (className) {ierr = PetscInfoDeactivateClass(PETSCFV_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrstr(logList, "limiter", &className);CHKERRQ(ierr);
+    if (className) {ierr = PetscInfoDeactivateClass(PETSCLIMITER_CLASSID);CHKERRQ(ierr);}
   }
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "fv", &className);CHKERRQ(ierr);
     if (className) {ierr = PetscLogEventDeactivateClass(PETSCFV_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrstr(logList, "limiter", &className);CHKERRQ(ierr);
+    if (className) {ierr = PetscLogEventDeactivateClass(PETSCLIMITER_CLASSID);CHKERRQ(ierr);}
   }
   ierr = PetscRegisterFinalize(PetscFVFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -264,6 +271,7 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscdm(void)
   ierr = AOInitializePackage();CHKERRQ(ierr);
   ierr = DMInitializePackage();CHKERRQ(ierr);
   ierr = PetscFEInitializePackage();CHKERRQ(ierr);
+  ierr = PetscFVInitializePackage();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

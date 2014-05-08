@@ -7,6 +7,35 @@
 #include <petscdt.h>
 #include <petscfvtypes.h>
 
+PETSC_EXTERN PetscClassId PETSCLIMITER_CLASSID;
+
+/*J
+  PetscLimiterType - String with the name of a PETSc finite volume slope limiter
+
+  Level: beginner
+
+.seealso: PetscLimiterSetType(), PetscLimiter
+J*/
+typedef const char *PetscLimiterType;
+#define PETSCLIMITERSIN       "sin"
+
+PETSC_EXTERN PetscFunctionList PetscLimiterList;
+PETSC_EXTERN PetscBool         PetscLimiterRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate(MPI_Comm, PetscLimiter *);
+PETSC_EXTERN PetscErrorCode PetscLimiterDestroy(PetscLimiter *);
+PETSC_EXTERN PetscErrorCode PetscLimiterSetType(PetscLimiter, PetscLimiterType);
+PETSC_EXTERN PetscErrorCode PetscLimiterGetType(PetscLimiter, PetscLimiterType *);
+PETSC_EXTERN PetscErrorCode PetscLimiterSetUp(PetscLimiter);
+PETSC_EXTERN PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter);
+PETSC_EXTERN PetscErrorCode PetscLimiterViewFromOptions(PetscLimiter, const char[], const char[]);
+PETSC_EXTERN PetscErrorCode PetscLimiterView(PetscLimiter, PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscLimiterRegister(const char [], PetscErrorCode (*)(PetscLimiter));
+PETSC_EXTERN PetscErrorCode PetscLimiterRegisterAll(void);
+PETSC_EXTERN PetscErrorCode PetscLimiterRegisterDestroy(void);
+
+PETSC_EXTERN PetscErrorCode PetscLimiterLimit(PetscLimiter, PetscScalar, PetscScalar *);
+
+
 PETSC_EXTERN PetscErrorCode PetscFVInitializePackage(void);
 
 PETSC_EXTERN PetscClassId PETSCFV_CLASSID;
@@ -36,6 +65,8 @@ PETSC_EXTERN PetscErrorCode PetscFVRegister(const char [], PetscErrorCode (*)(Pe
 PETSC_EXTERN PetscErrorCode PetscFVRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscFVRegisterDestroy(void);
 
+PETSC_EXTERN PetscErrorCode PetscFVSetLimiter(PetscFV, PetscLimiter);
+PETSC_EXTERN PetscErrorCode PetscFVGetLimiter(PetscFV, PetscLimiter *);
 PETSC_EXTERN PetscErrorCode PetscFVSetNumComponents(PetscFV, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscFVGetNumComponents(PetscFV, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscFVSetSpatialDimension(PetscFV, PetscInt);

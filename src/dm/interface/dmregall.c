@@ -144,6 +144,34 @@ PetscErrorCode PetscFERegisterAll()
 }
 #include <petscfv.h>     /*I  "petscfv.h"  I*/
 
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Sin(PetscLimiter);
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterRegisterAll"
+/*@C
+  PetscLimiterRegisterAll - Registers all of the PetscLimiter components in the PetscFV package.
+
+  Not Collective
+
+  Input parameter:
+. path - The dynamic library path
+
+  Level: advanced
+
+.keywords: PetscLimiter, register, all
+.seealso:  PetscLimiterRegister(), PetscLimiterRegisterDestroy()
+@*/
+PetscErrorCode PetscLimiterRegisterAll()
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscLimiterRegisterAllCalled = PETSC_TRUE;
+
+  ierr = PetscLimiterRegister(PETSCLIMITERSIN,       PetscLimiterCreate_Sin);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PETSC_EXTERN PetscErrorCode PetscFVCreate_Upwind(PetscFV);
 
 #undef __FUNCT__
