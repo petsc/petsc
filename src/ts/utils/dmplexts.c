@@ -331,7 +331,7 @@ static PetscErrorCode PseudoInverseSVD(PetscInt m,PetscInt mstride,PetscInt n,Pe
 /* Build least squares gradient reconstruction operators */
 static PetscErrorCode BuildLeastSquares(DM dm,PetscInt cEndInterior,DM dmFace,PetscScalar *fgeom,DM dmCell,PetscScalar *cgeom)
 {
-  DMLabel        ghostLabel, bdLabel;
+  DMLabel        ghostLabel;
   PetscScalar   *B,*Binv,*work,*tau,**gref;
   PetscInt       dim, c,cStart,cEnd,maxNumFaces,worksize;
   PetscBool      useSVD = PETSC_TRUE;
@@ -342,15 +342,15 @@ static PetscErrorCode BuildLeastSquares(DM dm,PetscInt cEndInterior,DM dmFace,Pe
   ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetMaxSizes(dm,&maxNumFaces,NULL);CHKERRQ(ierr);
   ierr = DMPlexGetLabel(dm, "ghost", &ghostLabel);CHKERRQ(ierr);
-  /* TODO: Get this from the BC */
-  ierr = DMPlexGetLabel(dm, "Face Sets", &bdLabel);CHKERRQ(ierr);
   ierr = PseudoInverseGetWorkRequired(maxNumFaces,&worksize);CHKERRQ(ierr);
   ierr = PetscMalloc5(maxNumFaces*dim,&B,worksize,&Binv,worksize,&work,maxNumFaces,&tau,maxNumFaces,&gref);CHKERRQ(ierr);
-  for (c=cStart; c<cEndInterior; c++) {
+  for (c = cStart; c < cEndInterior; c++) {
     const PetscInt *faces;
     PetscInt       numFaces,usedFaces,f,i,j;
     const CellGeom *cg;
-    PetscInt        ghost, boundary;
+    PetscBool       boundary;
+    PetscInt        ghost;
+
     ierr = DMPlexGetConeSize(dm,c,&numFaces);CHKERRQ(ierr);
     if (numFaces < dim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cell %D has only %D faces, not enough for gradient reconstruction",c,numFaces);
     ierr = DMPlexGetCone(dm,c,&faces);CHKERRQ(ierr);
@@ -362,8 +362,8 @@ static PetscErrorCode BuildLeastSquares(DM dm,PetscInt cEndInterior,DM dmFace,Pe
       const CellGeom *cg1;
 
       ierr = DMLabelGetValue(ghostLabel, faces[f], &ghost);CHKERRQ(ierr);
-      ierr = DMLabelGetValue(bdLabel, faces[f], &boundary);CHKERRQ(ierr);
-      if ((ghost >= 0) || (boundary >= 0)) continue;
+      ierr = DMPlexIsBoundaryPoint(dm, faces[f], &boundary);CHKERRQ(ierr);
+      if ((ghost >= 0) || boundary) continue;
       ierr  = DMPlexGetSupport(dm,faces[f],&fcells);CHKERRQ(ierr);
       side  = (c != fcells[0]); /* c is on left=0 or right=1 of face */
       ncell = fcells[!side];   /* the neighbor */
@@ -381,8 +381,8 @@ static PetscErrorCode BuildLeastSquares(DM dm,PetscInt cEndInterior,DM dmFace,Pe
     }
     for (f=0,i=0; f<numFaces; f++) {
       ierr = DMLabelGetValue(ghostLabel, faces[f], &ghost);CHKERRQ(ierr);
-      ierr = DMLabelGetValue(bdLabel, faces[f], &boundary);CHKERRQ(ierr);
-      if ((ghost >= 0) || (boundary >= 0)) continue;
+      ierr = DMPlexIsBoundaryPoint(dm, faces[f], &boundary);CHKERRQ(ierr);
+      if ((ghost >= 0) || boundary) continue;
       for (j=0; j<dim; j++) gref[i][j] = Binv[j*numFaces+i];
       i++;
     }
@@ -453,7 +453,6 @@ static PetscErrorCode DMPlexInsertBoundaryValuesFVM_Static(DM dm, PetscFV fvm, P
   Vec                faceGeometry = dmplexts->facegeom;
   Vec                cellGeometry = dmplexts->cellgeom;
   DM                 dmFace, dmCell;
-  DMLabel            label;
   const PetscScalar *facegeom, *cellgeom, *grad;
   PetscScalar       *x, *fx;
   PetscInt           numBd, b, dim, pdim, fStart, fEnd;
@@ -462,8 +461,6 @@ static PetscErrorCode DMPlexInsertBoundaryValuesFVM_Static(DM dm, PetscFV fvm, P
   PetscFunctionBegin;
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
-  /* TODO Get from BC data */
-  ierr = DMPlexGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
   if (Grad) {
@@ -477,11 +474,14 @@ static PetscErrorCode DMPlexInsertBoundaryValuesFVM_Static(DM dm, PetscFV fvm, P
   ierr = VecGetArray(locX, &x);CHKERRQ(ierr);
   for (b = 0; b < numBd; ++b) {
     PetscErrorCode (*func)(PetscReal,const PetscScalar*,const PetscScalar*,const PetscScalar*,PetscScalar*,void*);
+    DMLabel          label;
+    const char      *labelname;
     const PetscInt  *ids;
     PetscInt         numids, i;
     void            *ctx;
 
-    ierr = DMPlexGetBoundary(dm, b, NULL, NULL, NULL, (void (**)()) &func, &numids, &ids, &ctx);CHKERRQ(ierr);
+    ierr = DMPlexGetBoundary(dm, b, NULL, NULL, &labelname, NULL, (void (**)()) &func, &numids, &ids, &ctx);CHKERRQ(ierr);
+    ierr = DMPlexGetLabel(dm, labelname, &label);CHKERRQ(ierr);
     for (i = 0; i < numids; ++i) {
       IS              faceIS;
       const PetscInt *faces;
@@ -546,7 +546,7 @@ static PetscErrorCode TSComputeRHSFunction_DMPlex(TS ts, PetscReal time, Vec X, 
   Vec                cellGeometry = dmplexts->cellgeom;
   Vec                Grad = NULL, locGrad, locX;
   DM                 dmFace, dmCell;
-  DMLabel            ghostLabel, bdLabel;
+  DMLabel            ghostLabel;
   PetscCellGeometry  fgeom, cgeom;
   const PetscScalar *facegeom, *cellgeom, *x, *lgrad;
   PetscScalar       *grad, *f, *uL, *uR, *fluxL, *fluxR;
@@ -577,8 +577,6 @@ static PetscErrorCode TSComputeRHSFunction_DMPlex(TS ts, PetscReal time, Vec X, 
     ierr = VecGetArray(Grad, &grad);CHKERRQ(ierr);
   }
   ierr = DMPlexGetLabel(dm, "ghost", &ghostLabel);CHKERRQ(ierr);
-  /* TODO: Get this from the BC */
-  ierr = DMPlexGetLabel(dm, "Face Sets", &bdLabel);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = VecGetDM(faceGeometry, &dmFace);CHKERRQ(ierr);
   ierr = VecGetDM(cellGeometry, &dmCell);CHKERRQ(ierr);
@@ -591,14 +589,15 @@ static PetscErrorCode TSComputeRHSFunction_DMPlex(TS ts, PetscReal time, Vec X, 
     const FaceGeom    *fg;
     const PetscScalar *cx[2];
     PetscScalar       *cgrad[2];
-    PetscInt           ghost, boundary, c, pd, d;
+    PetscBool          boundary;
+    PetscInt           ghost, c, pd, d;
 
     ierr = DMLabelGetValue(ghostLabel, face, &ghost);CHKERRQ(ierr);
     if (ghost >= 0) continue;
     ++numFaces;
     if (!computeGradients) continue;
-    ierr = DMLabelGetValue(bdLabel, face, &boundary);CHKERRQ(ierr);
-    if (boundary >= 0) continue;
+    ierr = DMPlexIsBoundaryPoint(dm, face, &boundary);CHKERRQ(ierr);
+    if (boundary) continue;
     ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
     ierr = DMPlexPointLocalRead(dmFace, face, facegeom, &fg);CHKERRQ(ierr);
     for (c = 0; c < 2; ++c) {
@@ -637,13 +636,13 @@ static PetscErrorCode TSComputeRHSFunction_DMPlex(TS ts, PetscReal time, Vec X, 
       const PetscScalar *ncx;
       const CellGeom    *ncg;
       const PetscInt    *fcells;
-      PetscInt           face = faces[f], ncell;
+      PetscInt           face = faces[f], ncell, ghost;
       PetscScalar        v[3];
-      PetscInt           ghost, boundary;
+      PetscBool          boundary;
 
       ierr = DMLabelGetValue(ghostLabel, face, &ghost);CHKERRQ(ierr);
-      ierr = DMLabelGetValue(bdLabel, face, &boundary);CHKERRQ(ierr);
-      if ((ghost >= 0) || (boundary >= 0)) continue;
+      ierr = DMPlexIsBoundaryPoint(dm, face, &boundary);CHKERRQ(ierr);
+      if ((ghost >= 0) || boundary) continue;
       ierr  = DMPlexGetSupport(dm, face, &fcells);CHKERRQ(ierr);
       ncell = cell == fcells[0] ? fcells[1] : fcells[0];
       ierr  = DMPlexPointLocalRead(dm, ncell, x, &ncx);CHKERRQ(ierr);
