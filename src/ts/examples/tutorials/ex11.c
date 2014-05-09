@@ -44,7 +44,6 @@ F*/
 #define ALEN(a) (sizeof(a)/sizeof((a)[0]))
 
 static PetscFunctionList PhysicsList;
-static PetscFunctionList LimitList;
 
 /* Represents continuum physical equations. */
 typedef struct _n_Physics *Physics;
@@ -58,7 +57,6 @@ typedef struct _n_User *User;
 
 typedef PetscErrorCode (*RiemannFunction)(const PetscReal*,const PetscReal*,const PetscScalar*,const PetscScalar*,PetscScalar*,Physics);
 typedef PetscErrorCode (*SolutionFunction)(Model,PetscReal,const PetscReal*,PetscScalar*,void*);
-typedef PetscErrorCode (*BoundaryFunction)(PetscReal,const PetscReal*,const PetscReal*,const PetscScalar*,PetscScalar*,void*);
 typedef PetscErrorCode (*FunctionalFunction)(Model,PetscReal,const PetscReal*,const PetscScalar*,PetscReal*,void*);
 typedef PetscErrorCode (*SetupFields)(Physics,PetscSection);
 static PetscErrorCode ModelSolutionSetDefault(Model,SolutionFunction,void*);
@@ -103,17 +101,9 @@ struct _n_Model {
 };
 
 struct _n_User {
-  PetscReal      (*Limit)(PetscReal);
-  PetscBool      reconstruct;
-  PetscInt       numGhostCells, numSplitFaces;
-  PetscInt       cEndInterior; /* First boundary ghost cell */
-  PetscInt       vtkInterval;   /* For monitor */
-  Model          model;
-  struct {
-    PetscScalar *flux;
-    PetscScalar *state0;
-    PetscScalar *state1;
-  } work;
+  PetscInt numSplitFaces;
+  PetscInt vtkInterval;   /* For monitor */
+  Model    model;
 };
 
 PETSC_STATIC_INLINE PetscScalar DotDIM(const PetscScalar *x,const PetscScalar *y)
@@ -161,54 +151,6 @@ PETSC_STATIC_INLINE void NormalSplit(const PetscReal *n,const PetscScalar *x,Pet
   Scale2(Dot2(x,n)/Dot2(n,n),n,xn);
   Waxpy2(-1,xn,x,xt);
 }
-
-/* Limiters given in symmetric form following Berger, Aftosmis, and Murman 2005
- *
- * The classical flux-limited formulation is psi(r) where
- *
- * r = (u[0] - u[-1]) / (u[1] - u[0])
- *
- * The second order TVD region is bounded by
- *
- * psi_minmod(r) = min(r,1)      and        psi_superbee(r) = min(2, 2r, max(1,r))
- *
- * where all limiters are implicitly clipped to be non-negative. A more convenient slope-limited form is psi(r) =
- * phi(r)(r+1)/2 in which the reconstructed interface values are
- *
- * u(v) = u[0] + phi(r) (grad u)[0] v
- *
- * where v is the vector from centroid to quadrature point. In these variables, the usual limiters become
- *
- * phi_minmod(r) = 2 min(1/(1+r),r/(1+r))   phi_superbee(r) = 2 min(2/(1+r), 2r/(1+r), max(1,r)/(1+r))
- *
- * For a nicer symmetric formulation, rewrite in terms of
- *
- * f = (u[0] - u[-1]) / (u[1] - u[-1])
- *
- * where r(f) = f/(1-f). Not that r(1-f) = (1-f)/f = 1/r(f) so the symmetry condition
- *
- * phi(r) = phi(1/r)
- *
- * becomes
- *
- * w(f) = w(1-f).
- *
- * The limiters below implement this final form w(f). The reference methods are
- *
- * w_minmod(f) = 2 min(f,(1-f))             w_superbee(r) = 4 min((1-f), f)
- * */
-static PetscReal Limit_Zero(PetscReal f) { return 0; }
-static PetscReal Limit_None(PetscReal f) { return 1; }
-static PetscReal Limit_Minmod(PetscReal f) { return PetscMax(0,PetscMin(f,(1-f))*2); }
-static PetscReal Limit_VanLeer(PetscReal f) { return PetscMax(0,4*f*(1-f)); }
-static PetscReal Limit_VanAlbada(PetscReal f) { return PetscMax(0,2*f*(1-f) / (PetscSqr(f) + PetscSqr(1-f))); }
-static PetscReal Limit_Sin(PetscReal f)
-{
-  PetscReal fclip = PetscMax(0,PetscMin(f,1));
-  return PetscSinReal(PETSC_PI*fclip);
-}
-static PetscReal Limit_Superbee(PetscReal f) { return 2*Limit_Minmod(f); }
-static PetscReal Limit_MC(PetscReal f) { return PetscMin(1,Limit_Superbee(f)); } /* aka Barth-Jespersen */
 
 /******************* Advect ********************/
 typedef enum {ADVECT_SOL_TILTED,ADVECT_SOL_BUMP} AdvectSolType;
@@ -733,15 +675,14 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
   IS             regionIS, innerIS;
   const PetscInt *regions, *cells;
   PetscInt       numRegions, innerRegion, numCells, c;
-
-  PetscInt cStart, cEnd, fStart, fEnd;
-
+  PetscInt       cStart, cEnd, cEndInterior, fStart, fEnd;
   PetscBool      hasLabel;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
 
   ierr = DMPlexHasLabel(dm, name, &hasLabel);CHKERRQ(ierr);
   if (!hasLabel) PetscFunctionReturn(0);
@@ -775,7 +716,7 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
       ierr = DMPlexGetSupportSize(dm, face, &nC);CHKERRQ(ierr);
       if (nC != 2) continue;
       ierr = DMPlexGetSupport(dm, face, &neighbors);CHKERRQ(ierr);
-      if ((neighbors[0] >= user->cEndInterior) || (neighbors[1] >= user->cEndInterior)) continue;
+      if ((neighbors[0] >= cEndInterior) || (neighbors[1] >= cEndInterior)) continue;
       if ((neighbors[0] < cStart) || (neighbors[0] >= cEnd)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a cell", neighbors[0]);
       if ((neighbors[1] < cStart) || (neighbors[1] >= cEnd)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a cell", neighbors[1]);
       ierr = DMPlexGetLabelValue(dm, name, neighbors[0], &regionA);CHKERRQ(ierr);
@@ -814,8 +755,8 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   IS             idIS;
   const PetscInt *ids;
   PetscInt       *newpoints;
-  PetscInt       dim, depth, maxConeSize, maxSupportSize, numLabels;
-  PetscInt       numFS, fs, pStart, pEnd, p, cEndInterior, vStart, vEnd, v, fStart, fEnd, newf, d, l;
+  PetscInt       dim, depth, maxConeSize, maxSupportSize, numLabels, numGhostCells;
+  PetscInt       numFS, fs, pStart, pEnd, p, cEnd, cEndInterior, vStart, vEnd, v, fStart, fEnd, newf, d, l;
   PetscBool      hasLabel;
   PetscErrorCode ierr;
 
@@ -843,6 +784,8 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   ierr  = DMPlexSetChart(sdm, pStart, pEnd);CHKERRQ(ierr);
   ierr  = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr  = DMPlexSetHybridBounds(sdm, cEndInterior, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr  = DMPlexGetHeightStratum(dm, 0, NULL, &cEnd);CHKERRQ(ierr);
+  numGhostCells = cEnd - cEndInterior;
   /* Set cone and support sizes */
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   for (d = 0; d <= depth; ++d) {
@@ -984,18 +927,18 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
   if (numRoots >= 0) {
     ierr = PetscMalloc2(numRoots,&newLocation,pEnd-pStart,&newRemoteLocation);CHKERRQ(ierr);
-    for (l=0; l<numRoots; l++) newLocation[l] = l; /* + (l >= cEnd ? user->numGhostCells : 0); */
+    for (l=0; l<numRoots; l++) newLocation[l] = l; /* + (l >= cEnd ? numGhostCells : 0); */
     ierr = PetscSFBcastBegin(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
     ierr = PetscMalloc1(numLeaves,    &glocalPoints);CHKERRQ(ierr);
     ierr = PetscMalloc1(numLeaves, &gremotePoints);CHKERRQ(ierr);
     for (l = 0; l < numLeaves; ++l) {
-      glocalPoints[l]        = localPoints[l]; /* localPoints[l] >= cEnd ? localPoints[l] + user->numGhostCells : localPoints[l]; */
+      glocalPoints[l]        = localPoints[l]; /* localPoints[l] >= cEnd ? localPoints[l] + numGhostCells : localPoints[l]; */
       gremotePoints[l].rank  = remotePoints[l].rank;
       gremotePoints[l].index = newRemoteLocation[localPoints[l]];
     }
     ierr = PetscFree2(newLocation,newRemoteLocation);CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(gsfPoint, numRoots+user->numGhostCells, numLeaves, glocalPoints, PETSC_OWN_POINTER, gremotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(gsfPoint, numRoots+numGhostCells, numLeaves, glocalPoints, PETSC_OWN_POINTER, gremotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
   }
   ierr     = DMDestroy(dmSplit);CHKERRQ(ierr);
   *dmSplit = sdm;
@@ -1019,12 +962,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, const char *filename, PetscInt overlap,
     ierr = DMDestroy(&dm);CHKERRQ(ierr);
     dm   = dmDist;
   }
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
   {
     DM gdm;
 
-    ierr = DMPlexGetHeightStratum(dm, 0, NULL, &user->cEndInterior);CHKERRQ(ierr);
-    ierr = DMPlexConstructGhostCells(dm, NULL, &user->numGhostCells, &gdm);CHKERRQ(ierr);
+    ierr = DMPlexConstructGhostCells(dm, NULL, NULL, &gdm);CHKERRQ(ierr);
     ierr = DMDestroy(&dm);CHKERRQ(ierr);
     dm   = gdm;
     ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
@@ -1162,11 +1104,12 @@ PetscErrorCode SetUpLocalSpace(DM dm, User user)
 {
   PetscSection   stateSection;
   Physics        phys;
-  PetscInt       dof = user->model->physics->dof, *cind, d, stateSize, cStart, cEnd, c, i;
+  PetscInt       dof = user->model->physics->dof, *cind, d, stateSize, cStart, cEnd, cEndInterior, c, i;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &stateSection);CHKERRQ(ierr);
   phys = user->model->physics;
   ierr = PetscSectionSetNumFields(stateSection,phys->nfields);CHKERRQ(ierr);
@@ -1181,7 +1124,7 @@ PetscErrorCode SetUpLocalSpace(DM dm, User user)
     }
     ierr = PetscSectionSetDof(stateSection, c, dof);CHKERRQ(ierr);
   }
-  for (c = user->cEndInterior; c < cEnd; ++c) {
+  for (c = cEndInterior; c < cEnd; ++c) {
     ierr = PetscSectionSetConstraintDof(stateSection, c, dof);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(stateSection);CHKERRQ(ierr);
@@ -1195,7 +1138,7 @@ PetscErrorCode SetUpLocalSpace(DM dm, User user)
     if (val < 0) {ierr = PetscSectionSetConstraintIndices(stateSection, c, cind);CHKERRQ(ierr);}
   }
 #endif
-  for (c = user->cEndInterior; c < cEnd; ++c) {
+  for (c = cEndInterior; c < cEnd; ++c) {
     ierr = PetscSectionSetConstraintIndices(stateSection, c, cind);CHKERRQ(ierr);
   }
   ierr = PetscFree(cind);CHKERRQ(ierr);
@@ -1342,10 +1285,11 @@ PetscErrorCode SetInitialCondition(DM dm, Vec X, User user)
   Vec                cellgeom;
   const PetscScalar *cgeom;
   PetscScalar       *x;
-  PetscInt           cStart, cEnd, cEndInterior = user->cEndInterior, c;
+  PetscInt           cStart, cEnd, cEndInterior, c;
   PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
+  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = DMPlexTSGetGeometry(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
   ierr = VecGetDM(cellgeom, &dmCell);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
@@ -1387,12 +1331,14 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   PetscViewer    viewer;
   char           filename[PETSC_MAX_PATH_LEN],*ftable = NULL;
   PetscReal      xnorm;
+  PetscInt       cEndInterior;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
   ierr = VecGetDM(X,&dm);CHKERRQ(ierr);
   ierr = DMPlexTSGetGeometry(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = VecNorm(X,NORM_INFINITY,&xnorm);CHKERRQ(ierr);
   if (stepnum >= 0) {           /* No summary for final time */
     Model             mod = user->model;
@@ -1412,7 +1358,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     ierr = VecGetDM(cellgeom,&dmCell);CHKERRQ(ierr);
     ierr = VecGetArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
     ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-    for (c=cStart; c<user->cEndInterior; c++) {
+    for (c = cStart; c < cEndInterior; ++c) {
       const CellGeom    *cg;
       const PetscScalar *cx;
       ierr = DMPlexPointLocalRead(dmCell,c,cgeom,&cg);CHKERRQ(ierr);
@@ -1522,15 +1468,6 @@ int main(int argc, char **argv)
   ierr = PetscFunctionListAdd(&PhysicsList,"sw"              ,PhysicsCreate_SW);CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&PhysicsList,"euler"           ,PhysicsCreate_Euler);CHKERRQ(ierr);
 
-  /* Register limiters to be available on the command line */
-  ierr = PetscFunctionListAdd(&LimitList,"zero"              ,Limit_Zero);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&LimitList,"none"              ,Limit_None);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&LimitList,"minmod"            ,Limit_Minmod);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&LimitList,"vanleer"           ,Limit_VanLeer);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&LimitList,"vanalbada"         ,Limit_VanAlbada);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&LimitList,"sin"               ,Limit_Sin);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&LimitList,"superbee"          ,Limit_Superbee);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&LimitList,"mc"                ,Limit_MC);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm,NULL,"Unstructured Finite Volume Mesh Options","");CHKERRQ(ierr);
   {
@@ -1550,8 +1487,6 @@ int main(int argc, char **argv)
   ierr = CreateMesh(comm, filename, overlap, splitFaces, &dm, user);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
 
-  ierr = PetscFVCreate(comm, &fvm);CHKERRQ(ierr);
-
   ierr = PetscOptionsBegin(comm,NULL,"Unstructured Finite Volume Physics Options","");CHKERRQ(ierr);
   {
     PetscErrorCode (*physcreate)(DM,Model,Physics);
@@ -1568,19 +1503,12 @@ int main(int argc, char **argv)
 
     if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
     if (phys->dof <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
-    ierr = PetscMalloc3(phys->dof,&user->work.flux,phys->dof,&user->work.state0,phys->dof,&user->work.state1);CHKERRQ(ierr);
-    user->reconstruct = PETSC_FALSE;
-    ierr = PetscOptionsBool("-ufv_reconstruct","Reconstruct gradients for a second order method (grows stencil)","",user->reconstruct,&user->reconstruct,NULL);CHKERRQ(ierr);
-    if (user->reconstruct) {
-      ierr = PetscOptionsFList("-ufv_limit","Limiter to apply to reconstructed solution","",LimitList,limitname,limitname,sizeof limitname,NULL);CHKERRQ(ierr);
-      ierr = PetscFunctionListFind(LimitList,limitname,&user->Limit);CHKERRQ(ierr);
-    }
     ierr = ModelFunctionalSetFromOptions(mod);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
 
-  /* TODO Replace this option with just the type set */
-  if (user->reconstruct) {ierr = PetscFVSetType(fvm, PETSCFVLEASTSQUARES);CHKERRQ(ierr);}
+  ierr = PetscFVCreate(comm, &fvm);CHKERRQ(ierr);
   ierr = PetscFVSetFromOptions(fvm);CHKERRQ(ierr);
   ierr = DMSetNumFields(dm, phys->nfields);CHKERRQ(ierr);
   for (f = 0; f < phys->nfields; ++f) {ierr = DMSetField(dm, f, (PetscObject) fvm);CHKERRQ(ierr);}
@@ -1628,14 +1556,12 @@ int main(int argc, char **argv)
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = PetscFunctionListDestroy(&PhysicsList);CHKERRQ(ierr);
-  ierr = PetscFunctionListDestroy(&LimitList);CHKERRQ(ierr);
   ierr = FunctionalLinkDestroy(&user->model->functionalRegistry);CHKERRQ(ierr);
   ierr = PetscFree(user->model->functionalMonitored);CHKERRQ(ierr);
   ierr = PetscFree(user->model->functionalCall);CHKERRQ(ierr);
   ierr = PetscFree(user->model->physics->data);CHKERRQ(ierr);
   ierr = PetscFree(user->model->physics);CHKERRQ(ierr);
   ierr = PetscFree(user->model);CHKERRQ(ierr);
-  ierr = PetscFree3(user->work.flux,user->work.state0,user->work.state1);CHKERRQ(ierr);
   ierr = PetscFree(user);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = PetscFVDestroy(&fvm);CHKERRQ(ierr);
