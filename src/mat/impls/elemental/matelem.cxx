@@ -450,6 +450,7 @@ static PetscErrorCode MatAXPY_Elemental(Mat Y,PetscScalar a,Mat X,MatStructure s
 {
   Mat_Elemental  *x = (Mat_Elemental*)X->data;
   Mat_Elemental  *y = (Mat_Elemental*)Y->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   elem::Axpy((PetscElemScalar)a,*x->emat,*y->emat);
