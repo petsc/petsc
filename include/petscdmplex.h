@@ -71,6 +71,7 @@ PETSC_EXTERN PetscErrorCode DMLabelClearValue(DMLabel, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelGetNumValues(DMLabel, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelGetStratumBounds(DMLabel, PetscInt, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelGetValueIS(DMLabel, IS *);
+PETSC_EXTERN PetscErrorCode DMLabelStratumHasPoint(DMLabel, PetscInt, PetscInt, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMLabelGetStratumSize(DMLabel, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelGetStratumIS(DMLabel, PetscInt, IS *);
 PETSC_EXTERN PetscErrorCode DMLabelClearStratum(DMLabel, PetscInt);
@@ -214,6 +215,7 @@ typedef struct _n_Boundary *DMBoundary;
 PETSC_EXTERN PetscErrorCode DMPlexAddBoundary(DM, PetscBool, const char[], const char[], PetscInt, void (*)(), PetscInt, const PetscInt *, void *);
 PETSC_EXTERN PetscErrorCode DMPlexGetNumBoundary(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexGetBoundary(DM, PetscInt, PetscBool *, const char **, const char **, PetscInt *, void (**)(), PetscInt *, const PetscInt **, void **);
+PETSC_EXTERN PetscErrorCode DMPlexIsBoundaryPoint(DM, PetscInt, PetscBool *);
 
 typedef struct {
   DM    dm;

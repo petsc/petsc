@@ -1658,3 +1658,28 @@ PetscErrorCode DMPlexGetBoundary(DM dm, PetscInt bd, PetscBool *isEssential, con
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexIsBoundaryPoint"
+PetscErrorCode DMPlexIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
+{
+  DM_Plex       *mesh = (DM_Plex *) dm->data;
+  DMBoundary     b    = mesh->boundary;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(isBd, 3);
+  *isBd = PETSC_FALSE;
+  while (b && !(*isBd)) {
+    if (b->label) {
+      PetscInt i;
+
+      for (i = 0; i < b->numids && !(*isBd); ++i) {
+        ierr = DMLabelStratumHasPoint(b->label, b->ids[i], point, isBd);CHKERRQ(ierr);
+      }
+    }
+    b = b->next;
+  }
+  PetscFunctionReturn(0);
+}
