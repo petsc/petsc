@@ -829,7 +829,7 @@ PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(DM dm)
     if (flg) {
       DMLabel label;
 
-      ierr = DMPlexGetLabel(dm, b->name, &label);CHKERRQ(ierr);
+      ierr = DMPlexGetLabel(dm, b->labelname, &label);CHKERRQ(ierr);
       for (i = 0; i < len; ++i) {
         PetscBool has;
 

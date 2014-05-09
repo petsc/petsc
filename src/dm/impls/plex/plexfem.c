@@ -357,15 +357,15 @@ PetscErrorCode DMPlexInsertBoundaryValuesFEM(DM dm, Vec localX)
   for (b = 0; b < numBd; ++b) {
     DMLabel         label;
     const PetscInt *ids;
-    const char     *name;
+    const char     *labelname;
     PetscInt        numids, field;
     PetscBool       isEssential;
     void          (*func)();
     void           *ctx;
 
     /* TODO: We need to set only the part indicated by the ids */
-    ierr = DMPlexGetBoundary(dm, b, &isEssential, &name, &field, &func, &numids, &ids, &ctx);CHKERRQ(ierr);
-    ierr = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
+    ierr = DMPlexGetBoundary(dm, b, &isEssential, NULL, &labelname, &field, &func, &numids, &ids, &ctx);CHKERRQ(ierr);
+    ierr = DMPlexGetLabel(dm, labelname, &label);CHKERRQ(ierr);
     for (f = 0; f < numFields; ++f) {
       funcs[f] = field == f ? (void (*)(const PetscReal[], PetscScalar *, void *)) func : NULL;
       ctxs[f]  = field == f ? ctx : NULL;
@@ -805,7 +805,7 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
       PetscInt        field, numValues, numPoints, p, dep, numFaces;
       PetscBool       isEssential;
 
-      ierr = DMPlexGetBoundary(dm, bd, &isEssential, &bdLabel, &field, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
+      ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, &bdLabel, &field, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
       if (numValues != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Bug me and I will fix this");
       ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
       ierr = DMLabelGetStratumSize(label, 1, &numPoints);CHKERRQ(ierr);
@@ -1393,7 +1393,7 @@ PetscErrorCode DMPlexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP,void *us
       PetscInt        field, numValues, numPoints, p, dep, numFaces;
       PetscBool       isEssential;
 
-      ierr = DMPlexGetBoundary(dm, bd, &isEssential, &bdLabel, &field, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
+      ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, &bdLabel, &field, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
       if (numValues != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Bug me and I will fix this");
       ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
       ierr = DMLabelGetStratumSize(label, 1, &numPoints);CHKERRQ(ierr);
@@ -1625,17 +1625,23 @@ PetscErrorCode DMPlexComputeInterpolatorFEM(DM dmc, DM dmf, Mat In, void *user)
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexAddBoundary"
 /* The ids can be overridden by the command line option -bc_<boundary name> */
-PetscErrorCode DMPlexAddBoundary(DM dm, PetscBool isEssential, const char name[], PetscInt field, void (*bcFunc)(), PetscInt numids, const PetscInt *ids, void *ctx)
+PetscErrorCode DMPlexAddBoundary(DM dm, PetscBool isEssential, const char name[], const char labelname[], PetscInt field, void (*bcFunc)(), PetscInt numids, const PetscInt *ids, void *ctx)
 {
   DM_Plex       *mesh = (DM_Plex *) dm->data;
   DMBoundary     b;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = PetscNew(&b);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name, (char **) &b->name);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(labelname, (char **) &b->labelname);CHKERRQ(ierr);
   ierr = PetscMalloc1(numids, &b->ids);CHKERRQ(ierr);
   ierr = PetscMemcpy(b->ids, ids, numids*sizeof(PetscInt));CHKERRQ(ierr);
+  if (b->labelname) {
+    ierr = DMPlexGetLabel(dm, b->labelname, &b->label);CHKERRQ(ierr);
+    if (!b->label) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Label %s does not exist in this DM", b->labelname);
+  }
   b->essential   = isEssential;
   b->field       = field;
   b->func        = bcFunc;
@@ -1654,6 +1660,8 @@ PetscErrorCode DMPlexGetNumBoundary(DM dm, PetscInt *numBd)
   DMBoundary b    = mesh->boundary;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(numBd, 2);
   *numBd = 0;
   while (b) {++(*numBd); b = b->next;}
   PetscFunctionReturn(0);
@@ -1661,13 +1669,14 @@ PetscErrorCode DMPlexGetNumBoundary(DM dm, PetscInt *numBd)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetBoundary"
-PetscErrorCode DMPlexGetBoundary(DM dm, PetscInt bd, PetscBool *isEssential, const char **name, PetscInt *field, void (**func)(), PetscInt *numids, const PetscInt **ids, void **ctx)
+PetscErrorCode DMPlexGetBoundary(DM dm, PetscInt bd, PetscBool *isEssential, const char **name, const char **labelname, PetscInt *field, void (**func)(), PetscInt *numids, const PetscInt **ids, void **ctx)
 {
   DM_Plex   *mesh = (DM_Plex *) dm->data;
   DMBoundary b    = mesh->boundary;
   PetscInt   n    = 0;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   while (b) {
     if (n == bd) break;
     b = b->next;
@@ -1682,24 +1691,28 @@ PetscErrorCode DMPlexGetBoundary(DM dm, PetscInt bd, PetscBool *isEssential, con
     PetscValidPointer(name, 4);
     *name = b->name;
   }
+  if (labelname) {
+    PetscValidPointer(labelname, 5);
+    *labelname = b->labelname;
+  }
   if (field) {
-    PetscValidPointer(field, 5);
+    PetscValidPointer(field, 6);
     *field = b->field;
   }
   if (func) {
-    PetscValidPointer(func, 6);
+    PetscValidPointer(func, 7);
     *func = b->func;
   }
   if (numids) {
-    PetscValidPointer(numids, 7);
+    PetscValidPointer(numids, 8);
     *numids = b->numids;
   }
   if (ids) {
-    PetscValidPointer(ids, 8);
+    PetscValidPointer(ids, 9);
     *ids = b->ids;
   }
   if (ctx) {
-    PetscValidPointer(ctx, 9);
+    PetscValidPointer(ctx, 10);
     *ctx = b->ctx;
   }
   PetscFunctionReturn(0);
