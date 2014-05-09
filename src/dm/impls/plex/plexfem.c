@@ -377,65 +377,6 @@ PetscErrorCode DMPlexInsertBoundaryValuesFEM(DM dm, Vec localX)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexInsertBoundaryValuesFVM"
-PetscErrorCode DMPlexInsertBoundaryValuesFVM(DM dm, PetscReal time, Vec locX)
-{
-  DM                 dmFace;
-  Vec                faceGeometry;
-  DMLabel            label;
-  const PetscScalar *facegeom;
-  PetscScalar       *x;
-  PetscInt           numBd, b, fStart, fEnd;
-  PetscErrorCode     ierr;
-
-  PetscFunctionBegin;
-  /* TODO Pull this geometry calculation into the library */
-  ierr = PetscObjectQuery((PetscObject) dm, "FaceGeometry", (PetscObject *) &faceGeometry);CHKERRQ(ierr);
-  ierr = DMPlexGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
-  ierr = VecGetDM(faceGeometry, &dmFace);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
-  ierr = VecGetArray(locX, &x);CHKERRQ(ierr);
-  for (b = 0; b < numBd; ++b) {
-    PetscErrorCode (*func)(PetscReal,const PetscScalar*,const PetscScalar*,const PetscScalar*,PetscScalar*,void*);
-    const PetscInt  *ids;
-    PetscInt         numids, i;
-    void            *ctx;
-
-    ierr = DMPlexGetBoundary(dm, b, NULL, NULL, NULL, (void (**)()) &func, &numids, &ids, &ctx);CHKERRQ(ierr);
-    for (i = 0; i < numids; ++i) {
-      IS              faceIS;
-      const PetscInt *faces;
-      PetscInt        numFaces, f;
-
-      ierr = DMLabelGetStratumIS(label, ids[i], &faceIS);CHKERRQ(ierr);
-      if (!faceIS) continue; /* No points with that id on this process */
-      ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
-      ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
-      for (f = 0; f < numFaces; ++f) {
-        const PetscInt     face = faces[f], *cells;
-        const PetscScalar *xI;
-        PetscScalar       *xG;
-        const FaceGeom    *fg;
-
-        if ((face < fStart) || (face >= fEnd)) continue; /* Refinement adds non-faces to labels */
-        ierr = DMPlexPointLocalRead(dmFace, face, facegeom, &fg);CHKERRQ(ierr);
-        ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
-        ierr = DMPlexPointLocalRead(dm, cells[0], x, &xI);CHKERRQ(ierr);
-        ierr = DMPlexPointLocalRef(dm, cells[1], x, &xG);CHKERRQ(ierr);
-        ierr = (*func)(time, fg->centroid, fg->normal, xI, xG, ctx);CHKERRQ(ierr);
-      }
-      ierr = ISRestoreIndices(faceIS, &faces);CHKERRQ(ierr);
-      ierr = ISDestroy(&faceIS);CHKERRQ(ierr);
-    }
-  }
-  ierr = VecRestoreArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
-  ierr = VecRestoreArray(locX, &x);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DMPlexComputeL2Diff"
 /*@C
   DMPlexComputeL2Diff - This function computes the L_2 difference between a function u and an FEM interpolant solution u_h.
