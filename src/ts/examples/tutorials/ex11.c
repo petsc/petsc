@@ -963,16 +963,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, const char *filename, PetscInt overlap,
     dm   = dmDist;
   }
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
-  {
-    DM gdm;
-
-    ierr = DMPlexConstructGhostCells(dm, NULL, NULL, &gdm);CHKERRQ(ierr);
-    ierr = DMDestroy(&dm);CHKERRQ(ierr);
-    dm   = gdm;
-    ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
-  }
-  if (splitFaces) {ierr = ConstructCellBoundary(dm, user);CHKERRQ(ierr);}
-  ierr = SplitFaces(&dm, "split faces", user);CHKERRQ(ierr);
   *newdm = dm;
   PetscFunctionReturn(0);
 }
@@ -1506,7 +1496,18 @@ int main(int argc, char **argv)
     ierr = ModelFunctionalSetFromOptions(mod);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  {
+    DM gdm;
+
+    ierr = DMPlexConstructGhostCells(dm, NULL, NULL, &gdm);CHKERRQ(ierr);
+    ierr = DMDestroy(&dm);CHKERRQ(ierr);
+    dm   = gdm;
+    ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+  }
+  if (splitFaces) {ierr = ConstructCellBoundary(dm, user);CHKERRQ(ierr);}
+  ierr = SplitFaces(&dm, "split faces", user);CHKERRQ(ierr);
 
   ierr = PetscFVCreate(comm, &fvm);CHKERRQ(ierr);
   ierr = PetscFVSetFromOptions(fvm);CHKERRQ(ierr);

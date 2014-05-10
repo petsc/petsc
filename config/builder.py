@@ -419,7 +419,7 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                 # 3D Advection 7
                                                                 {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/blockcylinder-50.exo -bc_inflow 100,101,200 -bc_outflow 201', 'requires': 'Broken'},
                                                                 # 2D Shallow water 8
-                                                                {'numProcs': 1, 'args': ' -ufv_vtk_interval 0 -f %(meshes)s/annulus-20.exo -bc_wall 100,101 -physics sw -ufv_cfl 5 -ufv_reconstruct 1 -ufv_limit sin -ts_final_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10 -monitor height,energy'},
+                                                                {'numProcs': 1, 'args': ' -ufv_vtk_interval 0 -f %(meshes)s/annulus-20.exo -bc_wall 100,101 -physics sw -ufv_cfl 5 -petscfv_type leastsquares -petsclimiter_type sin -ts_final_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10 -monitor height,energy'},
                                                                 ],
                         }
 
