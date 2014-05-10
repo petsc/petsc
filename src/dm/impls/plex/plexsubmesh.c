@@ -1423,10 +1423,12 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
 
           ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
           for (cl = 0; cl < closureSize*2; cl += 2) {
-            const PetscInt clp = closure[cl];
+            const PetscInt clp  = closure[cl];
+            PetscInt       bval = -1;
 
             ierr = DMLabelGetValue(label, clp, &val);CHKERRQ(ierr);
-            if ((val >= 0) && (val < dim-1)) {
+            if (blabel) {ierr = DMLabelGetValue(blabel, clp, &bval);CHKERRQ(ierr);}
+            if ((val >= 0) && (val < dim-1) && (bval < 0)) {
               ierr = DMLabelSetValue(label, point, pos == PETSC_TRUE ? shift+dim-1 : -(shift+dim-1));CHKERRQ(ierr);
               break;
             }
@@ -1441,6 +1443,27 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
   if (subdm) {
     if (subpointIS) {ierr = ISRestoreIndices(subpointIS, &subpoints);CHKERRQ(ierr);}
     ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
+  }
+  /* Mark boundary points as unsplit */
+  if (blabel && dim == 3) {
+    ierr = DMLabelGetStratumIS(blabel, 1, &dimIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(dimIS, &numPoints);CHKERRQ(ierr);
+    ierr = ISGetIndices(dimIS, &points);CHKERRQ(ierr);
+    for (p = 0; p < numPoints; ++p) {
+      const PetscInt point = points[p];
+      PetscInt       val, bval;
+
+      ierr = DMLabelGetValue(blabel, point, &bval);CHKERRQ(ierr);
+      if (bval >= 0) {
+        /* Mark as unsplit */
+        ierr = DMLabelGetValue(label, point, &val);CHKERRQ(ierr);
+        if ((val < 0) || (val > dim)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %d has label value %d, should be part of the fault", point, val);
+        ierr = DMLabelClearValue(label, point, val);CHKERRQ(ierr);
+        ierr = DMLabelSetValue(label, point, shift2+val);CHKERRQ(ierr);
+      }
+    }
+    ierr = ISRestoreIndices(dimIS, &points);CHKERRQ(ierr);
+    ierr = ISDestroy(&dimIS);CHKERRQ(ierr);
   }
   /* Search for other cells/faces/edges connected to the fault by a vertex */
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
