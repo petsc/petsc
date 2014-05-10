@@ -1564,6 +1564,54 @@ PetscErrorCode DMPlexComputeInterpolatorFEM(DM dmc, DM dmf, Mat In, void *user)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "BoundaryDuplicate"
+static PetscErrorCode BoundaryDuplicate(DMBoundary bd, DMBoundary *boundary)
+{
+  DMBoundary     b = bd, b2, bold = NULL;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *boundary = NULL;
+  for (; b; b = b->next, bold = b2) {
+    ierr = PetscNew(&b2);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(b->name, (char **) &b2->name);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(b->labelname, (char **) &b2->labelname);CHKERRQ(ierr);
+    ierr = PetscMalloc1(b->numids, &b2->ids);CHKERRQ(ierr);
+    ierr = PetscMemcpy(b2->ids, b->ids, b->numids*sizeof(PetscInt));CHKERRQ(ierr);
+    b2->label     = NULL;
+    b2->essential = b->essential;
+    b2->field     = b->field;
+    b2->func      = b->func;
+    b2->numids    = b->numids;
+    b2->ctx       = b->ctx;
+    b2->next      = NULL;
+    if (!*boundary) *boundary   = b2;
+    if (bold)        bold->next = b2;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexCopyBoundary"
+PetscErrorCode DMPlexCopyBoundary(DM dm, DM dmNew)
+{
+  DM_Plex       *mesh    = (DM_Plex *) dm->data;
+  DM_Plex       *meshNew = (DM_Plex *) dmNew->data;
+  DMBoundary     b;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = BoundaryDuplicate(mesh->boundary, &meshNew->boundary);CHKERRQ(ierr);
+  for (b = meshNew->boundary; b; b = b->next) {
+    if (b->labelname) {
+      ierr = DMPlexGetLabel(dmNew, b->labelname, &b->label);CHKERRQ(ierr);
+      if (!b->label) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Label %s does not exist in this DM", b->labelname);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexAddBoundary"
 /* The ids can be overridden by the command line option -bc_<boundary name> */
 PetscErrorCode DMPlexAddBoundary(DM dm, PetscBool isEssential, const char name[], const char labelname[], PetscInt field, void (*bcFunc)(), PetscInt numids, const PetscInt *ids, void *ctx)

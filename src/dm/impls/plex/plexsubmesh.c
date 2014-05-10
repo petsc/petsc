@@ -607,6 +607,7 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
     ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
   }
   ierr = DMPlexConstructGhostCells_Internal(dm, label, numGhostCells, gdm);CHKERRQ(ierr);
+  ierr = DMPlexCopyBoundary(dm, gdm);CHKERRQ(ierr);
   *dmGhosted = gdm;
   PetscFunctionReturn(0);
 }

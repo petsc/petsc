@@ -486,7 +486,7 @@ static PetscErrorCode BoundaryDestroy(DMBoundary *boundary)
   DMBoundary     b, next;
   PetscErrorCode ierr;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   if (!boundary) PetscFunctionReturn(0);
   b = *boundary;
   *boundary = NULL;
@@ -3625,6 +3625,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
 
     ierr = DMPlexGetCellRefiner_Internal(dm, &cellRefiner);CHKERRQ(ierr);
     ierr = DMPlexRefineUniform_Internal(dm, cellRefiner, dmRefined);CHKERRQ(ierr);
+    ierr = DMPlexCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = DMPlexGetRefinementLimit(dm, &refinementLimit);CHKERRQ(ierr);
@@ -3682,6 +3683,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
   default:
     SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement in dimension %d is not supported.", dim);
   }
+  ierr = DMPlexCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
