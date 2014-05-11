@@ -946,28 +946,6 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
-PetscErrorCode CreateMesh(MPI_Comm comm, const char *filename, PetscInt overlap, PetscBool splitFaces, DM *newdm, User user)
-{
-  DM             dm, dmDist;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = DMPlexCreateExodusFromFile(comm, filename, PETSC_TRUE, &dm);CHKERRQ(ierr);
-  /* Distribute mesh */
-  ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMPlexSetAdjacencyUseClosure(dm, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = DMPlexDistribute(dm, "chaco", overlap, NULL, &dmDist);CHKERRQ(ierr);
-  if (dmDist) {
-    ierr = DMDestroy(&dm);CHKERRQ(ierr);
-    dm   = dmDist;
-  }
-  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
-  *newdm = dm;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "CreatePartitionVec"
 PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
 {
@@ -1474,7 +1452,8 @@ int main(int argc, char **argv)
     ierr = PetscOptionsBool("-ufv_vtk_cellgeom","Write cell geometry (for debugging)","",vtkCellGeom,&vtkCellGeom,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = CreateMesh(comm, filename, overlap, splitFaces, &dm, user);CHKERRQ(ierr);
+  ierr = DMPlexCreateExodusFromFile(comm, filename, PETSC_TRUE, &dm);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm,NULL,"Unstructured Finite Volume Physics Options","");CHKERRQ(ierr);
@@ -1483,6 +1462,7 @@ int main(int argc, char **argv)
     char             physname[256]  = "advect";
     char             limitname[256] = "minmod";
 
+    ierr = DMPlexCreateLabel(dm, "Face Sets");CHKERRQ(ierr);
     ierr = PetscOptionsFList("-physics","Physics module to solve","",PhysicsList,physname,physname,sizeof physname,NULL);CHKERRQ(ierr);
     ierr = PetscFunctionListFind(PhysicsList,physname,&physcreate);CHKERRQ(ierr);
     ierr = PetscMemzero(phys,sizeof(struct _n_Physics));CHKERRQ(ierr);
@@ -1496,7 +1476,17 @@ int main(int argc, char **argv)
     ierr = ModelFunctionalSetFromOptions(mod);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  {
+    DM dmDist;
 
+    ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = DMPlexSetAdjacencyUseClosure(dm, PETSC_FALSE);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(dm, "chaco", overlap, NULL, &dmDist);CHKERRQ(ierr);
+    if (dmDist) {
+      ierr = DMDestroy(&dm);CHKERRQ(ierr);
+      dm   = dmDist;
+    }
+  }
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   {
     DM gdm;
