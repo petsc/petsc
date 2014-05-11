@@ -6,6 +6,14 @@ PetscClassId PETSCLIMITER_CLASSID = 0;
 PetscFunctionList PetscLimiterList              = NULL;
 PetscBool         PetscLimiterRegisterAllCalled = PETSC_FALSE;
 
+PetscBool Limitercite = PETSC_FALSE;
+const char LimiterCitation[] = "@article{BergerAftosmisMurman2005,\n"
+                               "  title   = {Analysis of slope limiters on irregular grids},\n"
+                               "  journal = {AIAA paper},\n"
+                               "  author  = {Marsha Berger and Michael J. Aftosmis and Scott M. Murman},\n"
+                               "  volume  = {490},\n"
+                               "  year    = {2005}\n}\n";
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscLimiterRegister"
 /*@C
@@ -305,6 +313,7 @@ PetscErrorCode PetscLimiterCreate(MPI_Comm comm, PetscLimiter *lim)
 
   PetscFunctionBegin;
   PetscValidPointer(lim, 2);
+  ierr = PetscCitationsRegister(LimiterCitation,&Limitercite);CHKERRQ(ierr);
   *lim = NULL;
   ierr = PetscFVInitializePackage();CHKERRQ(ierr);
 
@@ -404,17 +413,10 @@ PetscErrorCode PetscLimiterView_Sin(PetscLimiter fv, PetscViewer viewer)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscLimiterSetUp_Sin"
-PetscErrorCode PetscLimiterSetUp_Sin(PetscLimiter fvm)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PetscLimiterLimit_Sin"
-PetscErrorCode PetscLimiterLimit_Sin(PetscLimiter lim, PetscScalar f, PetscScalar *phi)
+PetscErrorCode PetscLimiterLimit_Sin(PetscLimiter lim, PetscScalar fin, PetscScalar *phi)
 {
+  const PetscReal f = PetscRealPart(fin);
   PetscFunctionBegin;
   *phi = PetscSinReal(PETSC_PI*PetscMax(0, PetscMin(f, 1)));
   PetscFunctionReturn(0);
@@ -425,80 +427,14 @@ PetscErrorCode PetscLimiterLimit_Sin(PetscLimiter lim, PetscScalar f, PetscScala
 PetscErrorCode PetscLimiterInitialize_Sin(PetscLimiter fvm)
 {
   PetscFunctionBegin;
-  fvm->ops->setfromoptions = NULL;
-  fvm->ops->setup          = PetscLimiterSetUp_Sin;
-  fvm->ops->view           = PetscLimiterView_Sin;
-  fvm->ops->destroy        = PetscLimiterDestroy_Sin;
-  fvm->ops->limit          = PetscLimiterLimit_Sin;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterLimit_Zero"
-PetscErrorCode PetscLimiterLimit_Zero(PetscLimiter lim, PetscScalar f, PetscScalar *phi)
-{
-  PetscFunctionBegin;
-  *phi = 0.0;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterLimit_None"
-PetscErrorCode PetscLimiterLimit_None(PetscLimiter lim, PetscScalar f, PetscScalar *phi)
-{
-  PetscFunctionBegin;
-  *phi = 1.0;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterLimit_Minmod"
-PetscErrorCode PetscLimiterLimit_Minmod(PetscLimiter lim, PetscScalar f, PetscScalar *phi)
-{
-  PetscFunctionBegin;
-  *phi = 2*PetscMax(0, PetscMin(f, 1-f));
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterLimit_VanLeer"
-PetscErrorCode PetscLimiterLimit_VanLeer(PetscLimiter lim, PetscScalar f, PetscScalar *phi)
-{
-  PetscFunctionBegin;
-  *phi = PetscMax(0, 4*f*(1-f));
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterLimit_VanAlbada"
-PetscErrorCode PetscLimiterLimit_VanAlbada(PetscLimiter lim, PetscScalar f, PetscScalar *phi)
-{
-  PetscFunctionBegin;
-  *phi = PetscMax(0, 2*f*(1-f) / (PetscSqr(f) + PetscSqr(1-f)));
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterLimit_Superbee"
-PetscErrorCode PetscLimiterLimit_Superbee(PetscLimiter lim, PetscScalar f, PetscScalar *phi)
-{
-  PetscFunctionBegin;
-  *phi = 4*PetscMax(0, PetscMin(f, 1-f));
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterLimit_MC"
-/* aka Barth-Jespersen */
-PetscErrorCode PetscLimiterLimit_MC(PetscLimiter lim, PetscScalar f, PetscScalar *phi)
-{
-  PetscFunctionBegin;
-  *phi = PetscMin(1, 4*PetscMax(0, PetscMin(f, 1-f)));
+  fvm->ops->view    = PetscLimiterView_Sin;
+  fvm->ops->destroy = PetscLimiterDestroy_Sin;
+  fvm->ops->limit   = PetscLimiterLimit_Sin;
   PetscFunctionReturn(0);
 }
 
 /*MC
-  PETSCFVUPWIND = "upwind" - A PetscLimiter object
+  PETSCLIMITERSIN = "sin" - A PetscLimiter object
 
   Level: intermediate
 
@@ -518,6 +454,600 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Sin(PetscLimiter lim)
   lim->data = l;
 
   ierr = PetscLimiterInitialize_Sin(lim);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterDestroy_Zero"
+PetscErrorCode PetscLimiterDestroy_Zero(PetscLimiter fvm)
+{
+  PetscLimiter_Zero *l = (PetscLimiter_Zero *) fvm->data;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(l);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterView_Zero_Ascii"
+PetscErrorCode PetscLimiterView_Zero_Ascii(PetscLimiter fv, PetscViewer viewer)
+{
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "Zero Slope Limiter:\n");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterView_Zero"
+PetscErrorCode PetscLimiterView_Zero(PetscLimiter fv, PetscViewer viewer)
+{
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fv, PETSCFV_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscLimiterView_Zero_Ascii(fv, viewer);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterLimit_Zero"
+PetscErrorCode PetscLimiterLimit_Zero(PetscLimiter lim, PetscScalar f, PetscScalar *phi)
+{
+  PetscFunctionBegin;
+  *phi = 0.0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterInitialize_Zero"
+PetscErrorCode PetscLimiterInitialize_Zero(PetscLimiter fvm)
+{
+  PetscFunctionBegin;
+  fvm->ops->view    = PetscLimiterView_Zero;
+  fvm->ops->destroy = PetscLimiterDestroy_Zero;
+  fvm->ops->limit   = PetscLimiterLimit_Zero;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  PETSCLIMITERZERO = "zero" - A PetscLimiter object
+
+  Level: intermediate
+
+.seealso: PetscLimiterType, PetscLimiterCreate(), PetscLimiterSetType()
+M*/
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterCreate_Zero"
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Zero(PetscLimiter lim)
+{
+  PetscLimiter_Zero *l;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
+  ierr      = PetscNewLog(lim, &l);CHKERRQ(ierr);
+  lim->data = l;
+
+  ierr = PetscLimiterInitialize_Zero(lim);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterDestroy_None"
+PetscErrorCode PetscLimiterDestroy_None(PetscLimiter fvm)
+{
+  PetscLimiter_None *l = (PetscLimiter_None *) fvm->data;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(l);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterView_None_Ascii"
+PetscErrorCode PetscLimiterView_None_Ascii(PetscLimiter fv, PetscViewer viewer)
+{
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "Sin Slope Limiter:\n");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterView_None"
+PetscErrorCode PetscLimiterView_None(PetscLimiter fv, PetscViewer viewer)
+{
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fv, PETSCFV_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscLimiterView_None_Ascii(fv, viewer);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterLimit_None"
+PetscErrorCode PetscLimiterLimit_None(PetscLimiter lim, PetscScalar f, PetscScalar *phi)
+{
+  PetscFunctionBegin;
+  *phi = 1.0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterInitialize_None"
+PetscErrorCode PetscLimiterInitialize_None(PetscLimiter fvm)
+{
+  PetscFunctionBegin;
+  fvm->ops->view    = PetscLimiterView_None;
+  fvm->ops->destroy = PetscLimiterDestroy_None;
+  fvm->ops->limit   = PetscLimiterLimit_None;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  PETSCLIMITERNONE = "none" - A PetscLimiter object
+
+  Level: intermediate
+
+.seealso: PetscLimiterType, PetscLimiterCreate(), PetscLimiterSetType()
+M*/
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterCreate_None"
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_None(PetscLimiter lim)
+{
+  PetscLimiter_None *l;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
+  ierr      = PetscNewLog(lim, &l);CHKERRQ(ierr);
+  lim->data = l;
+
+  ierr = PetscLimiterInitialize_None(lim);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterDestroy_Minmod"
+PetscErrorCode PetscLimiterDestroy_Minmod(PetscLimiter fvm)
+{
+  PetscLimiter_Minmod *l = (PetscLimiter_Minmod *) fvm->data;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(l);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterView_Minmod_Ascii"
+PetscErrorCode PetscLimiterView_Minmod_Ascii(PetscLimiter fv, PetscViewer viewer)
+{
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "Minmod Slope Limiter:\n");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterView_Minmod"
+PetscErrorCode PetscLimiterView_Minmod(PetscLimiter fv, PetscViewer viewer)
+{
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fv, PETSCFV_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscLimiterView_Minmod_Ascii(fv, viewer);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterLimit_Minmod"
+PetscErrorCode PetscLimiterLimit_Minmod(PetscLimiter lim, PetscScalar fin, PetscScalar *phi)
+{
+  const PetscReal f = PetscRealPart(fin);
+  PetscFunctionBegin;
+  *phi = 2*PetscMax(0, PetscMin(f, 1-f));
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterInitialize_Minmod"
+PetscErrorCode PetscLimiterInitialize_Minmod(PetscLimiter fvm)
+{
+  PetscFunctionBegin;
+  fvm->ops->view    = PetscLimiterView_Minmod;
+  fvm->ops->destroy = PetscLimiterDestroy_Minmod;
+  fvm->ops->limit   = PetscLimiterLimit_Minmod;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  PETSCLIMITERMINMOD = "minmod" - A PetscLimiter object
+
+  Level: intermediate
+
+.seealso: PetscLimiterType, PetscLimiterCreate(), PetscLimiterSetType()
+M*/
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterCreate_Minmod"
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Minmod(PetscLimiter lim)
+{
+  PetscLimiter_Minmod *l;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
+  ierr      = PetscNewLog(lim, &l);CHKERRQ(ierr);
+  lim->data = l;
+
+  ierr = PetscLimiterInitialize_Minmod(lim);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterDestroy_VanLeer"
+PetscErrorCode PetscLimiterDestroy_VanLeer(PetscLimiter fvm)
+{
+  PetscLimiter_VanLeer *l = (PetscLimiter_VanLeer *) fvm->data;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(l);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterView_VanLeer_Ascii"
+PetscErrorCode PetscLimiterView_VanLeer_Ascii(PetscLimiter fv, PetscViewer viewer)
+{
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "Van Leer Slope Limiter:\n");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterView_VanLeer"
+PetscErrorCode PetscLimiterView_VanLeer(PetscLimiter fv, PetscViewer viewer)
+{
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fv, PETSCFV_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscLimiterView_VanLeer_Ascii(fv, viewer);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterLimit_VanLeer"
+PetscErrorCode PetscLimiterLimit_VanLeer(PetscLimiter lim, PetscScalar fin, PetscScalar *phi)
+{
+  const PetscReal f = PetscRealPart(fin);
+  PetscFunctionBegin;
+  *phi = PetscMax(0, 4*f*(1-f));
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterInitialize_VanLeer"
+PetscErrorCode PetscLimiterInitialize_VanLeer(PetscLimiter fvm)
+{
+  PetscFunctionBegin;
+  fvm->ops->view    = PetscLimiterView_VanLeer;
+  fvm->ops->destroy = PetscLimiterDestroy_VanLeer;
+  fvm->ops->limit   = PetscLimiterLimit_VanLeer;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  PETSCLIMITERVANLEER = "vanleer" - A PetscLimiter object
+
+  Level: intermediate
+
+.seealso: PetscLimiterType, PetscLimiterCreate(), PetscLimiterSetType()
+M*/
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterCreate_VanLeer"
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_VanLeer(PetscLimiter lim)
+{
+  PetscLimiter_VanLeer *l;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
+  ierr      = PetscNewLog(lim, &l);CHKERRQ(ierr);
+  lim->data = l;
+
+  ierr = PetscLimiterInitialize_VanLeer(lim);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterDestroy_VanAlbada"
+PetscErrorCode PetscLimiterDestroy_VanAlbada(PetscLimiter fvm)
+{
+  PetscLimiter_VanAlbada *l = (PetscLimiter_VanAlbada *) fvm->data;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(l);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterView_VanAlbada_Ascii"
+PetscErrorCode PetscLimiterView_VanAlbada_Ascii(PetscLimiter fv, PetscViewer viewer)
+{
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "Van Albada Slope Limiter:\n");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterView_VanAlbada"
+PetscErrorCode PetscLimiterView_VanAlbada(PetscLimiter fv, PetscViewer viewer)
+{
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fv, PETSCFV_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscLimiterView_VanAlbada_Ascii(fv, viewer);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterLimit_VanAlbada"
+PetscErrorCode PetscLimiterLimit_VanAlbada(PetscLimiter lim, PetscScalar fin, PetscScalar *phi)
+{
+  const PetscReal f = PetscRealPart(fin);
+  PetscFunctionBegin;
+  *phi = PetscMax(0, 2*f*(1-f) / (PetscSqr(f) + PetscSqr(1-f)));
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterInitialize_VanAlbada"
+PetscErrorCode PetscLimiterInitialize_VanAlbada(PetscLimiter fvm)
+{
+  PetscFunctionBegin;
+  fvm->ops->view    = PetscLimiterView_VanAlbada;
+  fvm->ops->destroy = PetscLimiterDestroy_VanAlbada;
+  fvm->ops->limit   = PetscLimiterLimit_VanAlbada;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  PETSCLIMITERVANALBADA = "vanalbada" - A PetscLimiter object
+
+  Level: intermediate
+
+.seealso: PetscLimiterType, PetscLimiterCreate(), PetscLimiterSetType()
+M*/
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterCreate_VanAlbada"
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_VanAlbada(PetscLimiter lim)
+{
+  PetscLimiter_VanAlbada *l;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
+  ierr      = PetscNewLog(lim, &l);CHKERRQ(ierr);
+  lim->data = l;
+
+  ierr = PetscLimiterInitialize_VanAlbada(lim);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterDestroy_Superbee"
+PetscErrorCode PetscLimiterDestroy_Superbee(PetscLimiter fvm)
+{
+  PetscLimiter_Superbee *l = (PetscLimiter_Superbee *) fvm->data;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(l);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterView_Superbee_Ascii"
+PetscErrorCode PetscLimiterView_Superbee_Ascii(PetscLimiter fv, PetscViewer viewer)
+{
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "Superbee Slope Limiter:\n");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterView_Superbee"
+PetscErrorCode PetscLimiterView_Superbee(PetscLimiter fv, PetscViewer viewer)
+{
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fv, PETSCFV_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscLimiterView_Superbee_Ascii(fv, viewer);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterLimit_Superbee"
+PetscErrorCode PetscLimiterLimit_Superbee(PetscLimiter lim, PetscScalar fin, PetscScalar *phi)
+{
+  const PetscReal f = PetscRealPart(fin);
+  PetscFunctionBegin;
+  *phi = 4*PetscMax(0, PetscMin(f, 1-f));
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterInitialize_Superbee"
+PetscErrorCode PetscLimiterInitialize_Superbee(PetscLimiter fvm)
+{
+  PetscFunctionBegin;
+  fvm->ops->view    = PetscLimiterView_Superbee;
+  fvm->ops->destroy = PetscLimiterDestroy_Superbee;
+  fvm->ops->limit   = PetscLimiterLimit_Superbee;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  PETSCLIMITERSUPERBEE = "superbee" - A PetscLimiter object
+
+  Level: intermediate
+
+.seealso: PetscLimiterType, PetscLimiterCreate(), PetscLimiterSetType()
+M*/
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterCreate_Superbee"
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Superbee(PetscLimiter lim)
+{
+  PetscLimiter_Superbee *l;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
+  ierr      = PetscNewLog(lim, &l);CHKERRQ(ierr);
+  lim->data = l;
+
+  ierr = PetscLimiterInitialize_Superbee(lim);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterDestroy_MC"
+PetscErrorCode PetscLimiterDestroy_MC(PetscLimiter fvm)
+{
+  PetscLimiter_MC *l = (PetscLimiter_MC *) fvm->data;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(l);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterView_MC_Ascii"
+PetscErrorCode PetscLimiterView_MC_Ascii(PetscLimiter fv, PetscViewer viewer)
+{
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "MC Slope Limiter:\n");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterView_MC"
+PetscErrorCode PetscLimiterView_MC(PetscLimiter fv, PetscViewer viewer)
+{
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fv, PETSCFV_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscLimiterView_MC_Ascii(fv, viewer);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterLimit_MC"
+/* aka Barth-Jespersen */
+PetscErrorCode PetscLimiterLimit_MC(PetscLimiter lim, PetscScalar fin, PetscScalar *phi)
+{
+  const PetscReal f = PetscRealPart(fin);
+  PetscFunctionBegin;
+  *phi = PetscMin(1, 4*PetscMax(0, PetscMin(f, 1-f)));
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterInitialize_MC"
+PetscErrorCode PetscLimiterInitialize_MC(PetscLimiter fvm)
+{
+  PetscFunctionBegin;
+  fvm->ops->view    = PetscLimiterView_MC;
+  fvm->ops->destroy = PetscLimiterDestroy_MC;
+  fvm->ops->limit   = PetscLimiterLimit_MC;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  PETSCLIMITERMC = "mc" - A PetscLimiter object
+
+  Level: intermediate
+
+.seealso: PetscLimiterType, PetscLimiterCreate(), PetscLimiterSetType()
+M*/
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterCreate_MC"
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_MC(PetscLimiter lim)
+{
+  PetscLimiter_MC *l;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
+  ierr      = PetscNewLog(lim, &l);CHKERRQ(ierr);
+  lim->data = l;
+
+  ierr = PetscLimiterInitialize_MC(lim);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

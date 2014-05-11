@@ -22,6 +22,34 @@ typedef struct {
   PetscInt dummy;
 } PetscLimiter_Sin;
 
+typedef struct {
+  PetscInt dummy;
+} PetscLimiter_Zero;
+
+typedef struct {
+  PetscInt dummy;
+} PetscLimiter_None;
+
+typedef struct {
+  PetscInt dummy;
+} PetscLimiter_Minmod;
+
+typedef struct {
+  PetscInt dummy;
+} PetscLimiter_VanLeer;
+
+typedef struct {
+  PetscInt dummy;
+} PetscLimiter_VanAlbada;
+
+typedef struct {
+  PetscInt dummy;
+} PetscLimiter_Superbee;
+
+typedef struct {
+  PetscInt dummy;
+} PetscLimiter_MC;
+
 typedef struct _PetscFVOps *PetscFVOps;
 struct _PetscFVOps {
   PetscErrorCode (*setfromoptions)(PetscFV);
