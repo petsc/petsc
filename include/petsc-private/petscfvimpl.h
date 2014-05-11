@@ -56,6 +56,7 @@ struct _PetscFVOps {
   PetscErrorCode (*setup)(PetscFV);
   PetscErrorCode (*view)(PetscFV,PetscViewer);
   PetscErrorCode (*destroy)(PetscFV);
+  PetscErrorCode (*computegradient)(PetscFV, PetscInt, const PetscScalar[], PetscScalar []);
   PetscErrorCode (*integraterhsfunction)(PetscFV, PetscInt, PetscInt, PetscFV[], PetscInt, PetscCellGeometry, PetscCellGeometry, PetscScalar[], PetscScalar[],
                                          void (*)(const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *),
                                          PetscScalar[], PetscScalar[], void *);
@@ -76,7 +77,8 @@ typedef struct {
 } PetscFV_Upwind;
 
 typedef struct {
-  PetscInt cellType;
+  PetscInt     maxFaces, workSize;
+  PetscScalar *B, *Binv, *tau, *work;
 } PetscFV_LeastSquares;
 
 #endif

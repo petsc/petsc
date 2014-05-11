@@ -2,9 +2,6 @@
 #include <petsc-private/tsimpl.h>   /*I "petscts.h" I*/
 #include <petscfv.h>
 
-/* TODO Move LS stuff to dtfv.c */
-#include <petscblaslapack.h>
-
 PETSC_STATIC_INLINE void WaxpyD(PetscInt dim, PetscScalar a, const PetscScalar *x, const PetscScalar *y, PetscScalar *w) {PetscInt d; for (d = 0; d < dim; ++d) w[d] = a*x[d] + y[d];}
 PETSC_STATIC_INLINE PetscScalar DotD(PetscInt dim, const PetscScalar *x, const PetscScalar *y) {PetscScalar sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*y[d]; return sum;}
 PETSC_STATIC_INLINE PetscReal NormD(PetscInt dim, const PetscScalar *x) {return PetscSqrtReal(PetscAbsScalar(DotD(dim,x,x)));}
@@ -214,199 +211,61 @@ static PetscErrorCode DMPlexTSSetupGeometry(DM dm, PetscFV fvm, DMTS_Plex *dmple
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PseudoInverse"
-/* Overwrites A. Can only handle full-rank problems with m>=n */
-static PetscErrorCode PseudoInverse(PetscInt m,PetscInt mstride,PetscInt n,PetscScalar *A,PetscScalar *Ainv,PetscScalar *tau,PetscInt worksize,PetscScalar *work)
-{
-  PetscBool      debug = PETSC_FALSE;
-  PetscErrorCode ierr;
-  PetscBLASInt   M,N,K,lda,ldb,ldwork,info;
-  PetscScalar    *R,*Q,*Aback,Alpha;
-
-  PetscFunctionBegin;
-  if (debug) {
-    ierr = PetscMalloc1(m*n,&Aback);CHKERRQ(ierr);
-    ierr = PetscMemcpy(Aback,A,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
-  }
-
-  ierr = PetscBLASIntCast(m,&M);CHKERRQ(ierr);
-  ierr = PetscBLASIntCast(n,&N);CHKERRQ(ierr);
-  ierr = PetscBLASIntCast(mstride,&lda);CHKERRQ(ierr);
-  ierr = PetscBLASIntCast(worksize,&ldwork);CHKERRQ(ierr);
-  ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-  LAPACKgeqrf_(&M,&N,A,&lda,tau,work,&ldwork,&info);
-  ierr = PetscFPTrapPop();CHKERRQ(ierr);
-  if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGEQRF error");
-  R = A; /* Upper triangular part of A now contains R, the rest contains the elementary reflectors */
-
-  /* Extract an explicit representation of Q */
-  Q    = Ainv;
-  ierr = PetscMemcpy(Q,A,mstride*n*sizeof(PetscScalar));CHKERRQ(ierr);
-  K    = N;                     /* full rank */
-  LAPACKungqr_(&M,&N,&K,Q,&lda,tau,work,&ldwork,&info);
-  if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR/xUNGQR error");
-
-  /* Compute A^{-T} = (R^{-1} Q^T)^T = Q R^{-T} */
-  Alpha = 1.0;
-  ldb   = lda;
-  BLAStrsm_("Right","Upper","ConjugateTranspose","NotUnitTriangular",&M,&N,&Alpha,R,&lda,Q,&ldb);
-  /* Ainv is Q, overwritten with inverse */
-
-  if (debug) {                      /* Check that pseudo-inverse worked */
-    PetscScalar Beta = 0.0;
-    PetscInt    ldc;
-    K   = N;
-    ldc = N;
-    BLASgemm_("ConjugateTranspose","Normal",&N,&K,&M,&Alpha,Ainv,&lda,Aback,&ldb,&Beta,work,&ldc);
-    ierr = PetscScalarView(n*n,work,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    ierr = PetscFree(Aback);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PseudoInverseGetWorkRequired"
-static PetscErrorCode PseudoInverseGetWorkRequired(PetscInt maxFaces, PetscInt *work)
-{
-  PetscInt m,n,nrhs,minwork;
-
-  PetscFunctionBegin;
-  m       = maxFaces;
-  n       = 3; /* spatial dimension */
-  nrhs    = maxFaces;
-  minwork = 3*PetscMin(m,n) + PetscMax(2*PetscMin(m,n), PetscMax(PetscMax(m,n), nrhs)); /* required by LAPACK */
-  *work   = 5*minwork;          /* We can afford to be extra generous */
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PseudoInverseSVD"
-/* Overwrites A. Can handle degenerate problems and m<n. */
-static PetscErrorCode PseudoInverseSVD(PetscInt m,PetscInt mstride,PetscInt n,PetscScalar *A,PetscScalar *Ainv,PetscScalar *tau,PetscInt worksize,PetscScalar *work)
-{
-  PetscBool      debug = PETSC_FALSE;
-  PetscErrorCode ierr;
-  PetscInt       i,j,maxmn;
-  PetscBLASInt   M,N,nrhs,lda,ldb,irank,ldwork,info;
-  PetscScalar    rcond,*tmpwork,*Brhs,*Aback;
-
-  PetscFunctionBegin;
-  if (debug) {
-    ierr = PetscMalloc1(m*n,&Aback);CHKERRQ(ierr);
-    ierr = PetscMemcpy(Aback,A,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
-  }
-
-  /* initialize to identity */
-  tmpwork = Ainv;
-  Brhs = work;
-  maxmn = PetscMax(m,n);
-  for (j=0; j<maxmn; j++) {
-    for (i=0; i<maxmn; i++) Brhs[i + j*maxmn] = 1.0*(i == j);
-  }
-
-  ierr  = PetscBLASIntCast(m,&M);CHKERRQ(ierr);
-  ierr  = PetscBLASIntCast(n,&N);CHKERRQ(ierr);
-  nrhs  = M;
-  ierr  = PetscBLASIntCast(mstride,&lda);CHKERRQ(ierr);
-  ierr  = PetscBLASIntCast(maxmn,&ldb);CHKERRQ(ierr);
-  ierr  = PetscBLASIntCast(worksize,&ldwork);CHKERRQ(ierr);
-  rcond = -1;
-  ierr  = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-  LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb,tau,&rcond,&irank,tmpwork,&ldwork,&info);
-  ierr = PetscFPTrapPop();CHKERRQ(ierr);
-  if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGELSS error");
-  /* The following check should be turned into a diagnostic as soon as someone wants to do this intentionally */
-  if (irank < PetscMin(M,N)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Rank deficient least squares fit, indicates an isolated cell with two colinear points");
-
-  /* Brhs shaped (M,nrhs) column-major coldim=mstride was overwritten by Ainv shaped (N,nrhs) column-major coldim=maxmn.
-   * Here we transpose to (N,nrhs) row-major rowdim=mstride. */
-  for (i=0; i<n; i++) {
-    for (j=0; j<nrhs; j++) Ainv[i*mstride+j] = Brhs[i + j*maxmn];
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "BuildLeastSquares"
-/* Build least squares gradient reconstruction operators */
-static PetscErrorCode BuildLeastSquares(DM dm,PetscInt cEndInterior,DM dmFace,PetscScalar *fgeom,DM dmCell,PetscScalar *cgeom)
+#define __FUNCT__ "BuildGradientReconstruction"
+static PetscErrorCode BuildGradientReconstruction(DM dm, PetscFV fvm, DM dmFace, PetscScalar *fgeom, DM dmCell, PetscScalar *cgeom)
 {
   DMLabel        ghostLabel;
-  PetscScalar   *B,*Binv,*work,*tau,**gref;
-  PetscInt       dim, c,cStart,cEnd,maxNumFaces,worksize;
-  PetscBool      useSVD = PETSC_TRUE;
+  PetscScalar   *dx, *grad, **gref;
+  PetscInt       dim, cStart, cEnd, c, cEndInterior, maxNumFaces;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetMaxSizes(dm,&maxNumFaces,NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetMaxSizes(dm, &maxNumFaces, NULL);CHKERRQ(ierr);
+  ierr = PetscFVLeastSquaresSetMaxFaces(fvm, maxNumFaces);CHKERRQ(ierr);
   ierr = DMPlexGetLabel(dm, "ghost", &ghostLabel);CHKERRQ(ierr);
-  ierr = PseudoInverseGetWorkRequired(maxNumFaces,&worksize);CHKERRQ(ierr);
-  ierr = PetscMalloc5(maxNumFaces*dim,&B,worksize,&Binv,worksize,&work,maxNumFaces,&tau,maxNumFaces,&gref);CHKERRQ(ierr);
+  ierr = PetscMalloc3(maxNumFaces*dim, &dx, maxNumFaces*dim, &grad, maxNumFaces, &gref);CHKERRQ(ierr);
   for (c = cStart; c < cEndInterior; c++) {
     const PetscInt *faces;
-    PetscInt       numFaces,usedFaces,f,i,j;
+    PetscInt        numFaces, usedFaces, f, d;
     const CellGeom *cg;
     PetscBool       boundary;
     PetscInt        ghost;
 
-    ierr = DMPlexGetConeSize(dm,c,&numFaces);CHKERRQ(ierr);
-    if (numFaces < dim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cell %D has only %D faces, not enough for gradient reconstruction",c,numFaces);
-    ierr = DMPlexGetCone(dm,c,&faces);CHKERRQ(ierr);
-    ierr = DMPlexPointLocalRead(dmCell,c,cgeom,&cg);CHKERRQ(ierr);
-    for (f=0,usedFaces=0; f<numFaces; f++) {
-      const PetscInt *fcells;
-      PetscInt       ncell,side;
-      FaceGeom       *fg;
+    ierr = DMPlexPointLocalRead(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
+    ierr = DMPlexGetConeSize(dm, c, &numFaces);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm, c, &faces);CHKERRQ(ierr);
+    if (numFaces < dim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cell %D has only %D faces, not enough for gradient reconstruction", c, numFaces);
+    for (f = 0, usedFaces = 0; f < numFaces; ++f) {
       const CellGeom *cg1;
+      FaceGeom       *fg;
+      const PetscInt *fcells;
+      PetscInt        ncell, side;
 
       ierr = DMLabelGetValue(ghostLabel, faces[f], &ghost);CHKERRQ(ierr);
       ierr = DMPlexIsBoundaryPoint(dm, faces[f], &boundary);CHKERRQ(ierr);
       if ((ghost >= 0) || boundary) continue;
-      ierr  = DMPlexGetSupport(dm,faces[f],&fcells);CHKERRQ(ierr);
+      ierr  = DMPlexGetSupport(dm, faces[f], &fcells);CHKERRQ(ierr);
       side  = (c != fcells[0]); /* c is on left=0 or right=1 of face */
-      ncell = fcells[!side];   /* the neighbor */
-      ierr  = DMPlexPointLocalRef(dmFace,faces[f],fgeom,&fg);CHKERRQ(ierr);
-      ierr  = DMPlexPointLocalRead(dmCell,ncell,cgeom,&cg1);CHKERRQ(ierr);
-      for (j=0; j<dim; j++) B[j*numFaces+usedFaces] = cg1->centroid[j] - cg->centroid[j];
+      ncell = fcells[!side];    /* the neighbor */
+      ierr  = DMPlexPointLocalRef(dmFace, faces[f], fgeom, &fg);CHKERRQ(ierr);
+      ierr  = DMPlexPointLocalRead(dmCell, ncell, cgeom, &cg1);CHKERRQ(ierr);
+      for (d = 0; d < dim; ++d) dx[usedFaces*dim+d] = cg1->centroid[d] - cg->centroid[d];
       gref[usedFaces++] = fg->grad[side];  /* Gradient reconstruction term will go here */
     }
-    if (!usedFaces) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Mesh contains isolated cell (no neighbors). Is it intentional?");
-    /* Overwrites B with garbage, returns Binv in row-major format */
-    if (useSVD) {
-      ierr = PseudoInverseSVD(usedFaces,numFaces,dim,B,Binv,tau,worksize,work);CHKERRQ(ierr);
-    } else {
-      ierr = PseudoInverse(usedFaces,numFaces,dim,B,Binv,tau,worksize,work);CHKERRQ(ierr);
-    }
-    for (f=0,i=0; f<numFaces; f++) {
+    if (!usedFaces) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER, "Mesh contains isolated cell (no neighbors). Is it intentional?");
+    ierr = PetscFVComputeGradient(fvm, usedFaces, dx, grad);CHKERRQ(ierr);
+    for (f = 0, usedFaces = 0; f < numFaces; ++f) {
       ierr = DMLabelGetValue(ghostLabel, faces[f], &ghost);CHKERRQ(ierr);
       ierr = DMPlexIsBoundaryPoint(dm, faces[f], &boundary);CHKERRQ(ierr);
       if ((ghost >= 0) || boundary) continue;
-      for (j=0; j<dim; j++) gref[i][j] = Binv[j*numFaces+i];
-      i++;
-    }
-
-    if (0) {
-      PetscReal grad[2] = {0,0};
-      for (f=0; f<numFaces; f++) {
-        const PetscInt *fcells;
-        const CellGeom *cg1;
-        const FaceGeom *fg;
-        ierr = DMPlexGetSupport(dm,faces[f],&fcells);CHKERRQ(ierr);
-        ierr = DMPlexPointLocalRead(dmFace,faces[f],fgeom,&fg);CHKERRQ(ierr);
-        for (i=0; i<2; i++) {
-          if (fcells[i] == c) continue;
-          ierr = DMPlexPointLocalRead(dmCell,fcells[i],cgeom,&cg1);CHKERRQ(ierr);
-          PetscScalar du = cg1->centroid[0] + 3*cg1->centroid[1] - (cg->centroid[0] + 3*cg->centroid[1]);
-          grad[0] += fg->grad[!i][0] * du;
-          grad[1] += fg->grad[!i][1] * du;
-        }
-      }
-      printf("cell[%d] grad (%g,%g)\n",c,grad[0],grad[1]);
+      for (d = 0; d < dim; ++d) gref[usedFaces][d] = grad[usedFaces*dim+d];
+      ++usedFaces;
     }
   }
-  ierr = PetscFree5(B,Binv,work,tau,gref);CHKERRQ(ierr);
+  ierr = PetscFree3(dx, grad, gref);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -431,7 +290,7 @@ static PetscErrorCode DMPlexTSSetupGradient(DM dm, PetscFV fvm, DMTS_Plex *dmple
   ierr = VecGetDM(dmplexts->cellgeom, &dmCell);CHKERRQ(ierr);
   ierr = VecGetArray(dmplexts->facegeom, &fgeom);CHKERRQ(ierr);
   ierr = VecGetArray(dmplexts->cellgeom, &cgeom);CHKERRQ(ierr);
-  ierr = BuildLeastSquares(dm, cEndInterior, dmFace, fgeom, dmCell, cgeom);CHKERRQ(ierr);
+  ierr = BuildGradientReconstruction(dm, fvm, dmFace, fgeom, dmCell, cgeom);CHKERRQ(ierr);
   ierr = VecRestoreArray(dmplexts->facegeom, &fgeom);CHKERRQ(ierr);
   ierr = VecRestoreArray(dmplexts->cellgeom, &cgeom);CHKERRQ(ierr);
   /* Create storage for gradients */
