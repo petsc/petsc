@@ -1844,7 +1844,7 @@ static PetscErrorCode PetscFVLeastSquaresDebugCell_Static(PetscFV fvm, PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFVComputeGradient_LeastSquares"
-/*@
+/*
   PetscFVComputeGradient - Compute the gradient reconstruction matrix for a given cell
 
   Input Parameters:
@@ -1855,7 +1855,7 @@ static PetscErrorCode PetscFVLeastSquaresDebugCell_Static(PetscFV fvm, PetscInt 
   Level: developer
 
 .seealso: PetscFVCreate()
-@*/
+*/
 PetscErrorCode PetscFVComputeGradient_LeastSquares(PetscFV fvm, PetscInt numFaces, const PetscScalar dx[], PetscScalar grad[])
 {
   PetscFV_LeastSquares *ls       = (PetscFV_LeastSquares *) fvm->data;
