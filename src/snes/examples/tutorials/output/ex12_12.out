@@ -4,6 +4,7 @@ Mesh in 3 dimensions:
   2-cells: 18
   3-cells: 6
 Labels:
+  boundary: 1 strata of sizes (12)
   marker: 1 strata of sizes (20)
   depth: 4 strata of sizes (8, 19, 18, 6)
 Local function:

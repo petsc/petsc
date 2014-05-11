@@ -6006,16 +6006,10 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     DMLabel         label;
     const PetscInt *values;
     PetscInt        field, numValues;
-    PetscBool       isEssential, has;
+    PetscBool       isEssential;
 
     ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, &bdLabel, &field, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
     if (numValues != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Bug me and I will fix this");
-    ierr = DMPlexHasLabel(dm, bdLabel, &has);CHKERRQ(ierr);
-    if (!has) {
-      ierr = DMPlexCreateLabel(dm, bdLabel);CHKERRQ(ierr);
-      ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
-      ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
-    }
     ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
     /* Only want to do this for FEM */
     ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
