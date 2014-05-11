@@ -444,9 +444,9 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   ierr = PetscObjectSetName((PetscObject) user->fe[0], "velocity");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) user->fe[1], "pressure");CHKERRQ(ierr);
   ierr = DMSetNumFields(dm, 2);CHKERRQ(ierr);
-  ierr = DMSetField(dm, 0, user->fe[0]);CHKERRQ(ierr);
-  ierr = DMSetField(dm, 1, user->fe[1]);CHKERRQ(ierr);
-  ierr = DMPlexAddBoundary(dm, user->bcType == DIRICHLET, user->bcType == NEUMANN ? "boundary" : "marker", 0, user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, (PetscObject) user->fe[0]);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 1, (PetscObject) user->fe[1]);CHKERRQ(ierr);
+  ierr = DMPlexAddBoundary(dm, user->bcType == DIRICHLET, "wall", user->bcType == NEUMANN ? "boundary" : "marker", 0, user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
