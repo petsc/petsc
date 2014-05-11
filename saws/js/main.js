@@ -7,8 +7,6 @@ var finishedAsking = false;//whether input form has finished (when finished, sto
 
 //variables used to collect saws information
 var sawsInfo = [];
-var sawsInfoWriteCounter = 0;//next available space to write to for fieldsplits (new A divs)
-var sawsDataWriteCounter = 0;//next available space to write to for ksp/pc options
 var currentFieldsplitWord = "";//temperature, omega, etc
 var currentFieldsplitNumber = -1;//the number to be put after the a-div
 
@@ -72,10 +70,10 @@ SAWsDisplayDirectory = function(sub,divEntry)
                 if(theword != currentFieldsplitWord) {// new fieldsplit
                     currentFieldsplitNumber++;
                     currentFieldsplitWord=theword;
-                    sawsInfo[sawsInfoWriteCounter]=new Object();
-                    sawsInfo[sawsInfoWriteCounter].data=new Array();
-                    sawsInfo[sawsInfoWriteCounter].id=fieldsplit + currentFieldsplitNumber.toString();
-                    sawsInfoWriteCounter++;//immediately increment
+                    var writeLoc = sawsInfo.length;
+                    sawsInfo[writeLoc]      = new Object();
+                    sawsInfo[writeLoc].data = new Array();
+                    sawsInfo[writeLoc].id   = fieldsplit + currentFieldsplitNumber.toString();
                 }
                 if(currentFieldsplitNumber != -1)
                     fieldsplit = fieldsplit + currentFieldsplitNumber.toString();
@@ -176,10 +174,10 @@ SAWsDisplayDirectory = function(sub,divEntry)
                 if(theword != currentFieldsplitWord) {// new fieldsplit
                     currentFieldsplitNumber++;
                     currentFieldsplitWord=theword;
-                    sawsInfo[sawsInfoWriteCounter]=new Object();
-                    sawsInfo[sawsInfoWriteCounter].data=new Array();
-                    sawsInfo[sawsInfoWriteCounter].id=fieldsplit + currentFieldsplitNumber.toString();
-                    sawsInfoWriteCounter++;//immediately increment
+                    var writeLoc = sawsInfo.length;
+                    sawsInfo[writeLoc]      = new Object();
+                    sawsInfo[writeLoc].data = new Array();
+                    sawsInfo[writeLoc].id   = fieldsplit + currentFieldsplitNumber.toString();
                 }
                 if(currentFieldsplitNumber != -1)
                     fieldsplit = fieldsplit + currentFieldsplitNumber.toString();
@@ -262,7 +260,6 @@ HandlePCOptions = function(){
     sawsInfo[0] = {
         id: "0"
     }
-    sawsInfoWriteCounter++;
 
     //create div 'o-1' for displaying SAWs options
     $("#divPc").append("<div id=\"o-1\"> </div>");
