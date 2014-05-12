@@ -1215,7 +1215,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
   Mat_SeqSBAIJ       *b;
   Mat                B;
   PetscErrorCode     ierr;
-  PetscBool          perm_identity;
+  PetscBool          perm_identity,missing;
   PetscReal          fill = info->fill;
   const PetscInt     *rip;
   PetscInt           i,mbs=a->mbs,bs=A->rmap->bs,*ai=a->i,*aj=a->j,reallocs=0,prow;
@@ -1234,6 +1234,9 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
     ierr = MatCholeskyFactorSymbolic(fact,a->sbaijMat,perm,info);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+
+  ierr = MatMissingDiagonal(A,&missing,&i);CHKERRQ(ierr);
+  if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
 
   /* check whether perm is the identity mapping */
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);

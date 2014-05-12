@@ -2830,7 +2830,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqSBAIJ       *b;
   PetscErrorCode     ierr;
-  PetscBool          perm_identity;
+  PetscBool          perm_identity,missing;
   PetscReal          fill = info->fill;
   const PetscInt     *rip,*riip;
   PetscInt           i,am=A->rmap->n,*ai=a->i,*aj=a->j,reallocs=0,prow;
@@ -2842,6 +2842,9 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
 
   PetscFunctionBegin;
   if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
+  ierr = MatMissingDiagonal(A,&missing,&i);CHKERRQ(ierr);
+  if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
+
   /* check whether perm is the identity mapping */
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
   ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr);
@@ -3000,7 +3003,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,c
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqSBAIJ       *b;
   PetscErrorCode     ierr;
-  PetscBool          perm_identity;
+  PetscBool          perm_identity,missing;
   PetscReal          fill = info->fill;
   const PetscInt     *rip,*riip;
   PetscInt           i,am=A->rmap->n,*ai=a->i,*aj=a->j,reallocs=0,prow;
@@ -3012,6 +3015,9 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,c
 
   PetscFunctionBegin;
   if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
+  ierr = MatMissingDiagonal(A,&missing,&i);CHKERRQ(ierr);
+  if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
+
   /* check whether perm is the identity mapping */
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
   ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr);
