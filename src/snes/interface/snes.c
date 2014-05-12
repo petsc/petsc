@@ -805,6 +805,13 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   ierr = PetscOptionsBool("-snes_monitor_jacupdate_spectrum","Print the change in the spectrum of the Jacobian","SNESMonitorJacUpdateSpectrum",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {ierr = SNESMonitorSet(snes,SNESMonitorJacUpdateSpectrum,0,0);CHKERRQ(ierr);}
 
+
+  ierr = PetscOptionsString("-snes_monitor_fields","Monitor norm of function per field","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)snes),monfilename,&monviewer);CHKERRQ(ierr);
+    ierr = SNESMonitorSet(snes,SNESMonitorFields,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+  }
+
   flg  = PETSC_FALSE;
   ierr = PetscOptionsBool("-snes_fd","Use finite differences (slow) to compute Jacobian","SNESComputeJacobianDefault",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
