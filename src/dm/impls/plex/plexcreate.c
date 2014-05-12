@@ -594,9 +594,12 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
     ierr = DMPlexStratify(dm);CHKERRQ(ierr);
     /* Build coordinates */
     ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+    ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldComponents(coordSection, 0, 2);CHKERRQ(ierr);
     ierr = PetscSectionSetChart(coordSection, firstVertex, firstVertex+numVertices);CHKERRQ(ierr);
     for (v = firstVertex; v < firstVertex+numVertices; ++v) {
       ierr = PetscSectionSetDof(coordSection, v, 2);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldDof(coordSection, v, 0, 2);CHKERRQ(ierr);
     }
     ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
