@@ -2425,13 +2425,13 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
   PetscBT            lnkbt;
 
   PetscFunctionBegin;
+  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
+  ierr = MatMissingDiagonal(A,&missing,&d);CHKERRQ(ierr);
+  if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
   if (bs > 1) {
     ierr = MatICCFactorSymbolic_SeqSBAIJ_inplace(fact,A,perm,info);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
-  ierr = MatMissingDiagonal(A,&missing,&d);CHKERRQ(ierr);
-  if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
 
   /* check whether perm is the identity mapping */
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
@@ -2620,8 +2620,8 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data;
   Mat_SeqSBAIJ       *b;
   PetscErrorCode     ierr;
-  PetscBool          perm_identity,free_ij = PETSC_TRUE,missing;
-  PetscInt           bs=A->rmap->bs,am=a->mbs,d;
+  PetscBool          perm_identity,free_ij = PETSC_TRUE;
+  PetscInt           bs=A->rmap->bs,am=a->mbs;
   const PetscInt     *cols,*rip,*ai=a->i,*aj=a->j;
   PetscInt           reallocs=0,i,*ui;
   PetscInt           jmin,jmax,nzk,k,j,*jl,prow,*il,nextprow;
@@ -2632,9 +2632,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
   PetscBT            lnkbt;
 
   PetscFunctionBegin;
-  ierr = MatMissingDiagonal(A,&missing,&d);CHKERRQ(ierr);
-  if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
-
   /*
    This code originally uses Modified Sparse Row (MSR) storage
    (see page 85, "Iterative Methods ..." by Saad) for the output matrix B - bad choice!

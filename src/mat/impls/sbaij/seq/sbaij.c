@@ -50,7 +50,7 @@ PetscErrorCode MatMarkDiagonal_SeqSBAIJ(Mat A)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i;
+  PetscInt       i,j;
 
   PetscFunctionBegin;
   if (!a->diag) {
@@ -58,7 +58,15 @@ PetscErrorCode MatMarkDiagonal_SeqSBAIJ(Mat A)
     ierr         = PetscLogObjectMemory((PetscObject)A,a->mbs*sizeof(PetscInt));CHKERRQ(ierr);
     a->free_diag = PETSC_TRUE;
   }
-  for (i=0; i<a->mbs; i++) a->diag[i] = a->i[i];
+  for (i=0; i<a->mbs; i++) {
+    a->diag[i] = a->i[i+1];
+    for (j=a->i[i]; j<a->i[i+1]; j++) {
+      if (a->j[j] == i) {
+        a->diag[i] = j;
+        break;
+      }
+    }
+  }
   PetscFunctionReturn(0);
 }
 
