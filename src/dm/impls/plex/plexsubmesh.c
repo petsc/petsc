@@ -1373,7 +1373,7 @@ static PetscErrorCode GetSurfaceSide_Static(DM dm, DM subdm, PetscInt numSubpoin
 PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel, PetscBool flip, DM subdm)
 {
   DMLabel         depthLabel;
-  IS              dimIS, subpointIS, facePosIS, faceNegIS;
+  IS              dimIS, subpointIS, facePosIS, faceNegIS, crossEdgeIS = NULL;
   const PetscInt *points, *subpoints;
   const PetscInt  rev   = flip ? -1 : 1;
   PetscInt        shift = 100, shift2 = 200, dim, dep, cStart, cEnd, fStart, fEnd, vStart, vEnd, numPoints, numSubpoints, p, val;
@@ -1445,7 +1445,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
     ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
   }
   /* Mark boundary points as unsplit */
-  if (blabel && dim == 3) {
+  if (blabel) {
     ierr = DMLabelGetStratumIS(blabel, 1, &dimIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(dimIS, &numPoints);CHKERRQ(ierr);
     ierr = ISGetIndices(dimIS, &points);CHKERRQ(ierr);
@@ -1455,11 +1455,27 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
 
       ierr = DMLabelGetValue(blabel, point, &bval);CHKERRQ(ierr);
       if (bval >= 0) {
+        const PetscInt *cone,    *support;
+        PetscInt        coneSize, supportSize, s, valA, valB, valE;
+
         /* Mark as unsplit */
         ierr = DMLabelGetValue(label, point, &val);CHKERRQ(ierr);
         if ((val < 0) || (val > dim)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %d has label value %d, should be part of the fault", point, val);
         ierr = DMLabelClearValue(label, point, val);CHKERRQ(ierr);
         ierr = DMLabelSetValue(label, point, shift2+val);CHKERRQ(ierr);
+        /* Check for cross-edge */
+        if (val != 0) continue;
+        ierr = DMPlexGetSupport(dm, point, &support);CHKERRQ(ierr);
+        ierr = DMPlexGetSupportSize(dm, point, &supportSize);CHKERRQ(ierr);
+        for (s = 0; s < supportSize; ++s) {
+          ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
+          ierr = DMPlexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
+          if (coneSize != 2) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Edge %D has %D vertices != 2", support[s], coneSize);
+          ierr = DMLabelGetValue(blabel, cone[0], &valA);CHKERRQ(ierr);
+          ierr = DMLabelGetValue(blabel, cone[1], &valB);CHKERRQ(ierr);
+          ierr = DMLabelGetValue(blabel, support[s], &valE);CHKERRQ(ierr);
+          if ((valE < 0) && (valA >= 0) && (valB >= 0)) {ierr = DMLabelSetValue(blabel, support[s], 2);CHKERRQ(ierr);}
+        }
       }
     }
     ierr = ISRestoreIndices(dimIS, &points);CHKERRQ(ierr);
@@ -1470,24 +1486,22 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = DMLabelGetStratumIS(label, 0, &dimIS);CHKERRQ(ierr);
+  if (blabel) {ierr = DMLabelGetStratumIS(blabel, 2, &crossEdgeIS);CHKERRQ(ierr);}
+  if (dimIS && crossEdgeIS) {
+    IS vertIS = dimIS;
+
+    ierr = ISExpand(vertIS, crossEdgeIS, &dimIS);CHKERRQ(ierr);
+    ierr = ISDestroy(&crossEdgeIS);CHKERRQ(ierr);
+    ierr = ISDestroy(&vertIS);CHKERRQ(ierr);
+  }
   if (!dimIS) PetscFunctionReturn(0);
   ierr = ISGetLocalSize(dimIS, &numPoints);CHKERRQ(ierr);
   ierr = ISGetIndices(dimIS, &points);CHKERRQ(ierr);
   for (p = 0; p < numPoints; ++p) { /* Loop over fault vertices */
     PetscInt *star = NULL;
-    PetscInt  starSize, s, bval;
+    PetscInt  starSize, s;
     PetscInt  again = 1;  /* 0: Finished 1: Keep iterating after a change 2: No change */
 
-    /* Ignore vertices marked in boundary label */
-    if (blabel) {
-      ierr = DMLabelGetValue(blabel, points[p], &bval);CHKERRQ(ierr);
-      if (bval >= 0) {
-        /* Mark as unsplit */
-        ierr = DMLabelClearValue(label, points[p], 0);CHKERRQ(ierr);
-        ierr = DMLabelSetValue(label, points[p], shift2+0);CHKERRQ(ierr);
-        continue;
-      }
-    }
     /* All points connected to the fault are inside a cell, so at the top level we will only check cells */
     ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
     while (again) {
