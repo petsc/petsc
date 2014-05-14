@@ -1035,19 +1035,19 @@ PetscErrorCode MatMissingDiagonal_SeqBAIJ(Mat A,PetscBool  *missing,PetscInt *d)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       *diag,*jj = a->j,i;
+  PetscInt       *diag,*ii = a->i,i;
 
   PetscFunctionBegin;
   ierr     = MatMarkDiagonal_SeqBAIJ(A);CHKERRQ(ierr);
   *missing = PETSC_FALSE;
-  if (A->rmap->n > 0 && !jj) {
+  if (A->rmap->n > 0 && !ii) {
     *missing = PETSC_TRUE;
     if (d) *d = 0;
     PetscInfo(A,"Matrix has no entries therefore is missing diagonal");
   } else {
     diag = a->diag;
     for (i=0; i<a->mbs; i++) {
-      if (jj[diag[i]] != i) {
+      if (diag[i] >= ii[i+1]) {
         *missing = PETSC_TRUE;
         if (d) *d = i;
         PetscInfo1(A,"Matrix is missing block diagonal number %D",i);

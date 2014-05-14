@@ -22,19 +22,19 @@ PetscErrorCode MatMissingDiagonal_SeqSBAIJ(Mat A,PetscBool  *missing,PetscInt *d
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       *diag,*jj = a->j,i;
+  PetscInt       *diag,*ii = a->i,i;
 
   PetscFunctionBegin;
   ierr     = MatMarkDiagonal_SeqSBAIJ(A);CHKERRQ(ierr);
   *missing = PETSC_FALSE;
-  if (A->rmap->n > 0 && !jj) {
+  if (A->rmap->n > 0 && !ii) {
     *missing = PETSC_TRUE;
     if (dd) *dd = 0;
     PetscInfo(A,"Matrix has no entries therefore is missing diagonal");
   } else {
     diag = a->diag;
     for (i=0; i<a->mbs; i++) {
-      if (jj[diag[i]] != i) {
+      if (diag[i] >= ii[i+1]) {
         *missing = PETSC_TRUE;
         if (dd) *dd = i;
         break;
@@ -50,7 +50,7 @@ PetscErrorCode MatMarkDiagonal_SeqSBAIJ(Mat A)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i;
+  PetscInt       i,j;
 
   PetscFunctionBegin;
   if (!a->diag) {
@@ -58,7 +58,15 @@ PetscErrorCode MatMarkDiagonal_SeqSBAIJ(Mat A)
     ierr         = PetscLogObjectMemory((PetscObject)A,a->mbs*sizeof(PetscInt));CHKERRQ(ierr);
     a->free_diag = PETSC_TRUE;
   }
-  for (i=0; i<a->mbs; i++) a->diag[i] = a->i[i];
+  for (i=0; i<a->mbs; i++) {
+    a->diag[i] = a->i[i+1];
+    for (j=a->i[i]; j<a->i[i+1]; j++) {
+      if (a->j[j] == i) {
+        a->diag[i] = j;
+        break;
+      }
+    }
+  }
   PetscFunctionReturn(0);
 }
 
