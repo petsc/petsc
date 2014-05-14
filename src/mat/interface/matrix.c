@@ -5766,7 +5766,6 @@ PetscErrorCode  MatZeroRowsColumnsStencil(Mat mat,PetscInt numRows,const MatSten
 PetscErrorCode  MatZeroRowsLocal(Mat mat,PetscInt numRows,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -5776,11 +5775,8 @@ PetscErrorCode  MatZeroRowsLocal(Mat mat,PetscInt numRows,const PetscInt rows[],
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(mat,1);
 
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
   if (mat->ops->zerorowslocal) {
     ierr = (*mat->ops->zerorowslocal)(mat,numRows,rows,diag,x,b);CHKERRQ(ierr);
-  } else if (size == 1) {
-    ierr = (*mat->ops->zerorows)(mat,numRows,rows,diag,x,b);CHKERRQ(ierr);
   } else {
     IS             is, newis;
     const PetscInt *newRows;
@@ -5902,7 +5898,8 @@ PetscErrorCode  MatZeroRowsLocalIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
 PetscErrorCode  MatZeroRowsColumnsLocal(Mat mat,PetscInt numRows,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size;
+  IS             is, newis;
+  const PetscInt *newRows;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -5912,22 +5909,14 @@ PetscErrorCode  MatZeroRowsColumnsLocal(Mat mat,PetscInt numRows,const PetscInt 
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(mat,1);
 
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = (*mat->ops->zerorowscolumns)(mat,numRows,rows,diag,x,b);CHKERRQ(ierr);
-  } else {
-    IS             is, newis;
-    const PetscInt *newRows;
-
-    if (!mat->cmap->mapping) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Need to provide local to global mapping to matrix first");
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,numRows,rows,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingApplyIS(mat->cmap->mapping,is,&newis);CHKERRQ(ierr);
-    ierr = ISGetIndices(newis,&newRows);CHKERRQ(ierr);
-    ierr = (*mat->ops->zerorowscolumns)(mat,numRows,newRows,diag,x,b);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(newis,&newRows);CHKERRQ(ierr);
-    ierr = ISDestroy(&newis);CHKERRQ(ierr);
-    ierr = ISDestroy(&is);CHKERRQ(ierr);
-  }
+  if (!mat->cmap->mapping) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Need to provide local to global mapping to matrix first");
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,numRows,rows,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApplyIS(mat->cmap->mapping,is,&newis);CHKERRQ(ierr);
+  ierr = ISGetIndices(newis,&newRows);CHKERRQ(ierr);
+  ierr = (*mat->ops->zerorowscolumns)(mat,numRows,newRows,diag,x,b);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(newis,&newRows);CHKERRQ(ierr);
+  ierr = ISDestroy(&newis);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
