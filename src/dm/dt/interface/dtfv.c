@@ -1749,8 +1749,8 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m,PetscIn
   /* Ainv is Q, overwritten with inverse */
 
   if (debug) {                      /* Check that pseudo-inverse worked */
-    PetscScalar Beta = 0.0;
-    PetscInt    ldc;
+    PetscScalar  Beta = 0.0;
+    PetscBLASInt ldc;
     K   = N;
     ldc = N;
     BLASgemm_("ConjugateTranspose","Normal",&N,&K,&M,&Alpha,Ainv,&lda,Aback,&ldb,&Beta,work,&ldc);
@@ -1766,10 +1766,11 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m,PetscIn
 static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,PetscInt mstride,PetscInt n,PetscScalar *A,PetscScalar *Ainv,PetscScalar *tau,PetscInt worksize,PetscScalar *work)
 {
   PetscBool      debug = PETSC_FALSE;
+  PetscScalar   *tmpwork, *Brhs, *Aback;
+  PetscReal      rcond;
+  PetscInt       i, j, maxmn;
+  PetscBLASInt   M, N, nrhs, lda, ldb, irank, ldwork, info;
   PetscErrorCode ierr;
-  PetscInt       i,j,maxmn;
-  PetscBLASInt   M,N,nrhs,lda,ldb,irank,ldwork,info;
-  PetscScalar    rcond,*tmpwork,*Brhs,*Aback;
 
   PetscFunctionBegin;
   if (debug) {
@@ -1793,7 +1794,11 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
   ierr  = PetscBLASIntCast(worksize,&ldwork);CHKERRQ(ierr);
   rcond = -1;
   ierr  = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-  LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb,tau,&rcond,&irank,tmpwork,&ldwork,&info);
+#if defined(PETSC_USE_COMPLEX)
+  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "I don't think this makes sense for complex numbers");
+#else
+  LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,&info);
+#endif
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGELSS error");
   /* The following check should be turned into a diagnostic as soon as someone wants to do this intentionally */
