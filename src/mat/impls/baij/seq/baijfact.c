@@ -988,7 +988,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
   Mat_SeqSBAIJ       *b;
   Mat                B;
   PetscErrorCode     ierr;
-  PetscBool          perm_identity;
+  PetscBool          perm_identity,missing;
   PetscInt           reallocs=0,i,*ai=a->i,*aj=a->j,am=a->mbs,bs=A->rmap->bs,*ui;
   const PetscInt     *rip;
   PetscInt           jmin,jmax,nzk,k,j,*jl,prow,*il,nextprow;
@@ -999,6 +999,9 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
   PetscBT            lnkbt;
 
   PetscFunctionBegin;
+  ierr = MatMissingDiagonal(A,&missing,&i);CHKERRQ(ierr);
+  if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
+
   if (bs > 1) {
     if (!a->sbaijMat) {
       ierr = MatConvert(A,MATSEQSBAIJ,MAT_INITIAL_MATRIX,&a->sbaijMat);CHKERRQ(ierr);
@@ -1014,7 +1017,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
 
   /* special case that simply copies fill pattern */
   if (!levels && perm_identity) {
-    ierr = MatMarkDiagonal_SeqBAIJ(A);CHKERRQ(ierr);
     ierr = PetscMalloc1((am+1),&ui);CHKERRQ(ierr);
     for (i=0; i<am; i++) ui[i] = ai[i+1] - a->diag[i]; /* ui: rowlengths - changes when !perm_identity */
     B    = fact;
@@ -1213,7 +1215,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
   Mat_SeqSBAIJ       *b;
   Mat                B;
   PetscErrorCode     ierr;
-  PetscBool          perm_identity;
+  PetscBool          perm_identity,missing;
   PetscReal          fill = info->fill;
   const PetscInt     *rip;
   PetscInt           i,mbs=a->mbs,bs=A->rmap->bs,*ai=a->i,*aj=a->j,reallocs=0,prow;
@@ -1232,6 +1234,9 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
     ierr = MatCholeskyFactorSymbolic(fact,a->sbaijMat,perm,info);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+
+  ierr = MatMissingDiagonal(A,&missing,&i);CHKERRQ(ierr);
+  if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
 
   /* check whether perm is the identity mapping */
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
