@@ -5722,6 +5722,9 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
   ierr = PetscSFBcastEnd(sfProcess, depthType, depthSizeOld, rdepthSizeOld);CHKERRQ(ierr);
   for (n = 0; n < numNeighbors; ++n) {
     ierr = GetDepthStart_Private(depth, &rdepthSizeOld[n*(depth+1)], &rcStart[n], &rfStart[n], &reStart[n], &rvStart[n]);CHKERRQ(ierr);
+    rdepthMaxOld[n*(depth+1)+depth]   = rdepthMaxOld[n*(depth+1)+depth]   < 0 ? rdepthSizeOld[n*(depth+1)+depth]  +rcStart[n]: rdepthMaxOld[n*(depth+1)+depth];
+    rdepthMaxOld[n*(depth+1)+depth-1] = rdepthMaxOld[n*(depth+1)+depth-1] < 0 ? rdepthSizeOld[n*(depth+1)+depth-1]+rfStart[n]: rdepthMaxOld[n*(depth+1)+depth-1];
+    rdepthMaxOld[n*(depth+1)+1]       = rdepthMaxOld[n*(depth+1)+1]       < 0 ? rdepthSizeOld[n*(depth+1)+1]      +reStart[n]: rdepthMaxOld[n*(depth+1)+1];
   }
   ierr = MPI_Type_free(&depthType);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sfProcess);CHKERRQ(ierr);
