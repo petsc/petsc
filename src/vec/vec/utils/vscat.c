@@ -896,7 +896,7 @@ extern PetscErrorCode VecScatterCreate_StoP(PetscInt,const PetscInt*,PetscInt,co
    Blocksizes we have optimized scatters for
 */
 
-#define VecScatterOptimizedBS(mbs) ((2 <= mbs && mbs <= 8) || mbs == 12)
+#define VecScatterOptimizedBS(mbs) (2 <= mbs && mbs <= 12)
 
 PetscErrorCode  VecScatterCreateEmpty(MPI_Comm comm,VecScatter *newctx)
 {
