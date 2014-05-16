@@ -309,7 +309,6 @@ static PetscErrorCode ComputeMapping(DomainData dd,ISLocalToGlobalMapping *isg2l
   DMBoundaryType         bx = DM_BOUNDARY_NONE,by = DM_BOUNDARY_NONE, bz = DM_BOUNDARY_NONE;
   DMDAStencilType        stype = DMDA_STENCIL_BOX;
   ISLocalToGlobalMapping temp_isg2lmap;
-  IS                     GlobalIS;
   PetscInt               i,j,k,ig,jg,kg,lindex,gindex,localsize;
   PetscInt               *global_indices;
 
@@ -339,9 +338,7 @@ static PetscErrorCode ComputeMapping(DomainData dd,ISLocalToGlobalMapping *isg2l
   }
   ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
   ierr = AOApplicationToPetsc(ao,dd.xm_l*dd.ym_l*dd.zm_l,global_indices);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(dd.gcomm,localsize,global_indices,PETSC_OWN_POINTER,&GlobalIS);
-  ierr = ISLocalToGlobalMappingCreateIS(GlobalIS,&temp_isg2lmap);
-  ierr = ISDestroy(&GlobalIS);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(dd.gcomm,1,localsize,global_indices,PETSC_OWN_POINTER,&temp_isg2lmap);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   *isg2lmap = temp_isg2lmap;
   PetscFunctionReturn(0);
