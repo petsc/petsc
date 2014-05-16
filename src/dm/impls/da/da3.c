@@ -1359,7 +1359,11 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
      of VecSetValuesLocal().
   */
   ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_OWN_POINTER,&ltogis);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreateIS(ltogis,&da->ltogmap);CHKERRQ(ierr);
+  {const PetscInt *indicesbs;
+    ierr = ISGetIndices(ltogis,&indicesbs);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreate(comm,1,dof*nn,indicesbs,PETSC_COPY_VALUES,&da->ltogmap);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(ltogis,&indicesbs);CHKERRQ(ierr);
+  }
   ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)da->ltogmap);CHKERRQ(ierr);
   ierr = ISDestroy(&ltogis);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingBlock(da->ltogmap,dd->w,&da->ltogmapb);CHKERRQ(ierr);

@@ -1813,8 +1813,7 @@ PetscErrorCode MatSetValuesBatch(Mat mat, PetscInt nb, PetscInt bs, PetscInt row
 
    Input Parameters:
 +  x - the matrix
-.  rmapping - row mapping created with ISLocalToGlobalMappingCreate()
-             or ISLocalToGlobalMappingCreateIS()
+.  rmapping - row mapping created with ISLocalToGlobalMappingCreate()   or ISLocalToGlobalMappingCreateIS()
 - cmapping - column mapping
 
    Level: intermediate
@@ -1854,8 +1853,7 @@ PetscErrorCode  MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping rmapping
 
    Input Parameters:
 +  x - the matrix
-. rmapping - row mapping created with ISLocalToGlobalMappingCreate() or
-             ISLocalToGlobalMappingCreateIS()
+. rmapping - row mapping created with ISLocalToGlobalMappingCreate() or  ISLocalToGlobalMappingCreateIS()
 - cmapping - column mapping
 
    Level: intermediate

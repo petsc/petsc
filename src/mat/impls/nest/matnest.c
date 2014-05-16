@@ -1174,7 +1174,7 @@ static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const I
       ierr = VecScatterDestroy(&scat);CHKERRQ(ierr);
       m   += mi;
     }
-    ierr   = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)A),m,ix,PETSC_OWN_POINTER,ltog);CHKERRQ(ierr);
+    ierr   = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)A),1,m,ix,PETSC_OWN_POINTER,ltog);CHKERRQ(ierr);
     *ltogb = NULL;
   } else {
     *ltog  = NULL;

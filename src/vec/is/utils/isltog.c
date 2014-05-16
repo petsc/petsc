@@ -116,6 +116,7 @@ PetscErrorCode  ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,PetscV
     Output Parameter:
 .   mapping - new mapping data structure
 
+    Notes: the block size of the IS determines the block size of the mapping
     Level: advanced
 
     Concepts: mapping^local to global
@@ -136,15 +137,17 @@ PetscErrorCode  ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *map
 
   ierr = PetscObjectGetComm((PetscObject)is,&comm);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)is,ISBLOCK,&isblock);CHKERRQ(ierr);
   ierr = ISGetBlockSize(is,&bs);CHKERRQ(ierr);
-  if (!isblock || bs == 1) {
-    ierr = ISLocalToGlobalMappingCreate(comm,n,indices,PETSC_COPY_VALUES,mapping);CHKERRQ(ierr);
+  /*  if (!isblock) { */
+    ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreate(comm,1,n,indices,PETSC_COPY_VALUES,mapping);CHKERRQ(ierr);
     ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
-  } else {
-    ierr = ISLocalToGlobalMappingCreate(comm,n,indices,PETSC_OWN_POINTER,mapping);CHKERRQ(ierr);
-  }
+    /*  } else {
+    ierr = ISBlockGetIndices(is,&indices);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreate(comm,bs,n,indices,PETSC_COPY_VALUES,mapping);CHKERRQ(ierr);
+    ierr = ISBlockRestoreIndices(is,&indices);CHKERRQ(ierr);
+     }*/
   PetscFunctionReturn(0);
 }
 
@@ -192,7 +195,7 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalT
   for (i=0; i<maxlocal; i++) ltog[i] = -1;
   ierr = PetscSFBcastBegin(sf,MPIU_INT,globals,ltog);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(sf,MPIU_INT,globals,ltog);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreate(comm,maxlocal,ltog,PETSC_OWN_POINTER,mapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,1,maxlocal,ltog,PETSC_OWN_POINTER,mapping);CHKERRQ(ierr);
   ierr = PetscFree(globals);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -207,20 +210,22 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalT
 
     Input Parameters:
 +   comm - MPI communicator
+.   bs - the block size
 .   n - the number of local elements
-.   indices - the global index for each local element, these do not need to be in increasing order (sorted)
+.   indices - the global index for each local element, these do not need to be in increasing order (sorted), these values should not be scaled by the blocksize bs
 -   mode - see PetscCopyMode
 
     Output Parameter:
 .   mapping - new mapping data structure
 
+    Notes: There is one integer value in indices per block and it represents the actual indices bs*idx + j, where j=0,..,bs-1
     Level: advanced
 
     Concepts: mapping^local to global
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS()
 @*/
-PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt n,const PetscInt indices[],PetscCopyMode mode,ISLocalToGlobalMapping *mapping)
+PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt bs,PetscInt n,const PetscInt indices[],PetscCopyMode mode,ISLocalToGlobalMapping *mapping)
 {
   PetscErrorCode ierr;
   PetscInt       *in;
@@ -234,7 +239,8 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt n,const PetscI
 
   ierr = PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,int,IS_LTOGM_CLASSID,"ISLocalToGlobalMapping","Local to global mapping","IS",
                            cm,ISLocalToGlobalMappingDestroy,ISLocalToGlobalMappingView);CHKERRQ(ierr);
-  (*mapping)->n = n;
+  (*mapping)->n  = n;
+  (*mapping)->bs = bs;
   /*
     Do not create the global to local mapping. This is only created if
     ISGlobalToLocalMapping() is called
@@ -285,7 +291,7 @@ PetscErrorCode  ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping inmap,PetscIn
     if (n*bs != inmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Pointwise mapping length is not divisible by block size");
     ierr = PetscMalloc1(n,&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) ii[i] = inmap->indices[bs*i]/bs;
-    ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)inmap),n,ii,PETSC_OWN_POINTER,outmap);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)inmap),1,n,ii,PETSC_OWN_POINTER,outmap);CHKERRQ(ierr);
   } else {
     ierr    = PetscObjectReference((PetscObject)inmap);CHKERRQ(ierr);
     *outmap = inmap;
@@ -326,7 +332,7 @@ PetscErrorCode  ISLocalToGlobalMappingUnBlock(ISLocalToGlobalMapping inmap,Petsc
     n    = inmap->n*bs;
     ierr = PetscMalloc1(n,&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) ii[i] = inmap->indices[i/bs]*bs + (i%bs);
-    ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)inmap),n,ii,PETSC_OWN_POINTER,outmap);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)inmap),1,n,ii,PETSC_OWN_POINTER,outmap);CHKERRQ(ierr);
   } else {
     ierr    = PetscObjectReference((PetscObject)inmap);CHKERRQ(ierr);
     *outmap = inmap;
@@ -1144,7 +1150,7 @@ PetscErrorCode ISLocalToGlobalMappingConcatenate(MPI_Comm comm,PetscInt n,const 
     ierr = ISLocalToGlobalMappingRestoreIndices(ltogs[i],&subidx);CHKERRQ(ierr);
     cnt += m;
   }
-  ierr = ISLocalToGlobalMappingCreate(comm,cnt,idx,PETSC_OWN_POINTER,ltogcat);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,1,cnt,idx,PETSC_OWN_POINTER,ltogcat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

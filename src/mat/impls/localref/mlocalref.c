@@ -109,7 +109,7 @@ static PetscErrorCode ISL2GCompose(IS is,ISLocalToGlobalMapping ltog,ISLocalToGl
   } else {
     ierr = PetscMemcpy(idxm,idx,m*sizeof(PetscInt));CHKERRQ(ierr);
   }
-  ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)is),m,idxm,PETSC_OWN_POINTER,cltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)is),1,m,idxm,PETSC_OWN_POINTER,cltog);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&idx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -134,7 +134,7 @@ static PetscErrorCode ISL2GComposeBlock(IS is,ISLocalToGlobalMapping ltog,ISLoca
   } else {
     ierr = PetscMemcpy(idxm,idx,m*sizeof(PetscInt));CHKERRQ(ierr);
   }
-  ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)is),m,idxm,PETSC_OWN_POINTER,cltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)is),1,m,idxm,PETSC_OWN_POINTER,cltog);CHKERRQ(ierr);
   ierr = ISBlockRestoreIndices(is,&idx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

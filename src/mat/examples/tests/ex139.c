@@ -66,7 +66,7 @@ int main(int argc,char *argv[])
   for (i=0; i<nlocblocks; i++) {
     idx[i] = (rstart/top_bs + i - 1 + m/top_bs) % (m/top_bs);
   }
-  ierr = ISLocalToGlobalMappingCreate(comm,nlocblocks,idx,PETSC_OWN_POINTER,&brmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,1,nlocblocks,idx,PETSC_OWN_POINTER,&brmap);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"Block ISLocalToGlobalMapping:\n");CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingView(brmap,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 

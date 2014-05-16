@@ -201,7 +201,7 @@ static PetscErrorCode DMSetUp_Redundant(DM dm)
   PetscFunctionBegin;
   ierr = PetscMalloc1(red->N,&globals);CHKERRQ(ierr);
   for (i=0; i<red->N; i++) globals[i] = i;
-  ierr         = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,red->N,globals,PETSC_OWN_POINTER,&dm->ltogmap);CHKERRQ(ierr);
+  ierr         = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,1,red->N,globals,PETSC_OWN_POINTER,&dm->ltogmap);CHKERRQ(ierr);
   ierr         = PetscObjectReference((PetscObject)dm->ltogmap);CHKERRQ(ierr);
   dm->ltogmapb = dm->ltogmap;
   PetscFunctionReturn(0);
