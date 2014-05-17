@@ -393,7 +393,7 @@ int main(int argc,char **argv)
   /*
     The following routine allows us to set the matrix values in local ordering
   */
-  ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,1,bs*nvertices,vertices,PETSC_COPY_VALUES,&isl2g);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs,nvertices,vertices,PETSC_COPY_VALUES,&isl2g);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(Jac,isl2g,isl2g);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
