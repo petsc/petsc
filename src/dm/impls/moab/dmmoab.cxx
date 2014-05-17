@@ -564,9 +564,9 @@ PetscErrorCode DMMoab_CreateVector(moab::Interface *mbiface,moab::ParallelComm *
       count++;
     }
 
-    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,1,range.size(),gindices,
+    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,vmoab->tag_size,range.size(),gindices,
                                         PETSC_COPY_VALUES,&ltog);CHKERRQ(ierr);
-    ierr = VecSetLocalToGlobalMappingBlock(*vec,ltog);CHKERRQ(ierr);
+    ierr = VecSetLocalToGlobalMapping(*vec,ltog);CHKERRQ(ierr);
 
       // Clean up:
     ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);

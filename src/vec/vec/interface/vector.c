@@ -70,7 +70,7 @@ PetscErrorCode  VecStashGetInfo(Vec vec,PetscInt *nstash,PetscInt *reallocs,Pets
    Concepts: vector^setting values with local numbering
 
 seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLocal(),
-           VecSetLocalToGlobalMappingBlock(), VecSetValuesBlockedLocal()
+           VecSetLocalToGlobalMapping(), VecSetValuesBlockedLocal()
 @*/
 PetscErrorCode  VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
 {
@@ -1337,7 +1337,7 @@ PetscErrorCode  VecSetSizes(Vec v, PetscInt n, PetscInt N)
 
    Level: advanced
 
-.seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMappingBlock(), VecGetBlockSize()
+.seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMapping(), VecGetBlockSize()
 
   Concepts: block size^vectors
 @*/
@@ -1373,7 +1373,7 @@ PetscErrorCode  VecSetBlockSize(Vec v,PetscInt bs)
 
    Level: advanced
 
-.seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMappingBlock(), VecSetBlockSize()
+.seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMapping(), VecSetBlockSize()
 
    Concepts: vector^block size
    Concepts: block^vector

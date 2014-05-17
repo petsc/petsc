@@ -259,7 +259,7 @@ PetscErrorCode  PetscLayoutReference(PetscLayout in,PetscLayout *out)
 
     If the ltog location already contains a PetscLayout it is destroyed
 
-.seealso: PetscLayoutCreate(), PetscLayoutDestroy(), PetscLayoutSetUp(), PetscLayoutDuplicate(), PetscLayoutSetLocalToGlobalMappingBlock()
+.seealso: PetscLayoutCreate(), PetscLayoutDestroy(), PetscLayoutSetUp(), PetscLayoutDuplicate()
 
 @*/
 PetscErrorCode  PetscLayoutSetISLocalToGlobalMapping(PetscLayout in,ISLocalToGlobalMapping ltog)

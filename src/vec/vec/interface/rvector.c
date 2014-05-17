@@ -1088,7 +1088,7 @@ PetscErrorCode  VecSetValuesLocal(Vec x,PetscInt ni,const PetscInt ix[],const Pe
    Concepts: vector^setting values blocked with local numbering
 
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesBlocked(),
-           VecSetLocalToGlobalMappingBlock()
+           VecSetLocalToGlobalMapping()
 @*/
 PetscErrorCode  VecSetValuesBlockedLocal(Vec x,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode iora)
 {
