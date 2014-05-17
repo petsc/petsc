@@ -45,7 +45,6 @@ PetscErrorCode  DMDestroy_Private(DM dm,PetscBool  *done)
     ierr = VecDestroy(&dm->globalin[i]);CHKERRQ(ierr);
   }
   ierr = ISLocalToGlobalMappingDestroy(&dm->ltogmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&dm->ltogmapb);CHKERRQ(ierr);
 
   *done = PETSC_TRUE;
   PetscFunctionReturn(0);

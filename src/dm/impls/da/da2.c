@@ -92,7 +92,7 @@ PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
     /* put in numbers */
 
     base = 0;
-    ierr = ISLocalToGlobalMappingGetIndices(da->ltogmapb,&idx);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetBlockIndices(da->ltogmap,&idx);CHKERRQ(ierr);
     ymin = dd->Ys; ymax = dd->Ye; xmin = dd->Xs; xmax = dd->Xe;
     for (y=ymin; y<ymax; y++) {
       for (x=xmin; x<xmax; x++) {
@@ -103,7 +103,7 @@ PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
         base++;
       }
     }
-    ierr = ISLocalToGlobalMappingRestoreIndices(da->ltogmapb,&idx);
+    ierr = ISLocalToGlobalMappingRestoreBlockIndices(da->ltogmap,&idx);
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   } else if (isbinary) {
@@ -243,7 +243,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   PetscInt         sn0 = 0,sn2 = 0,sn6 = 0,sn8 = 0;
   Vec              local,global;
   VecScatter       ltog,gtol;
-  IS               to,from,ltogis;
+  IS               to,from;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -780,15 +780,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
      Set the local to global ordering in the global vector, this allows use
      of VecSetValuesLocal().
   */
-  ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_OWN_POINTER,&ltogis);CHKERRQ(ierr);
-  {const PetscInt *indicesbs;
-    ierr = ISGetIndices(ltogis,&indicesbs);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingCreate(comm,1,dof*nn,indicesbs,PETSC_COPY_VALUES,&da->ltogmap);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(ltogis,&indicesbs);CHKERRQ(ierr);
-  }
-  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)da->ltogmap);CHKERRQ(ierr);
-  ierr = ISDestroy(&ltogis);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingBlock(da->ltogmap,dd->w,&da->ltogmapb);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,dof,nn,idx,PETSC_OWN_POINTER,&da->ltogmap);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)da->ltogmap);CHKERRQ(ierr);
 
   ierr  = PetscFree2(bases,ldims);CHKERRQ(ierr);

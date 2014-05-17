@@ -1907,16 +1907,14 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
   for (i=0; i < nvertices; i++)
     for (j=0; j < bs; j++)
       svertices[k++] = (bs*loc2pet[i] + j);
-  /*ierr = MatSetLocalToGlobalMapping(grid->A,bs*nvertices,svertices);CHKERRQ(ierr);*/
   ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,1,bs*nvertices,svertices,PETSC_COPY_VALUES,&isl2g);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(grid->A,isl2g,isl2g);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&isl2g);CHKERRQ(ierr);
 
 /* Now set the blockwise local to global mapping */
 #if defined(BLOCKING)
-  /*ierr = MatSetLocalToGlobalMappingBlocked(grid->A,nvertices,loc2pet);CHKERRQ(ierr);*/
-  ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,1,nvertices,loc2pet,PETSC_COPY_VALUES,&isl2g);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMappingBlock(grid->A,isl2g,isl2g);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs,nvertices,loc2pet,PETSC_COPY_VALUES,&isl2g);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(grid->A,isl2g,isl2g);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&isl2g);CHKERRQ(ierr);
 #endif
   ierr = PetscFree(svertices);CHKERRQ(ierr);

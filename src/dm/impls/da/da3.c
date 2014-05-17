@@ -127,7 +127,7 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
 
         /* overlay ghost numbers, useful for error checking */
         base = (dd->Xe-dd->Xs)*(dd->Ye-dd->Ys)*(k-dd->Zs);
-        ierr = ISLocalToGlobalMappingGetIndices(da->ltogmapb,&idx);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingGetBlockIndices(da->ltogmap,&idx);CHKERRQ(ierr);
         plane=k;
         /* Keep z wrap around points on the dradrawg */
         if (k<0) plane=dd->P+k;
@@ -151,7 +151,7 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
             base+=dd->w;
           }
         }
-        ierr = ISLocalToGlobalMappingRestoreIndices(da->ltogmapb,&idx);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingRestoreBlockIndices(da->ltogmap,&idx);CHKERRQ(ierr);
       }
     }
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
@@ -199,7 +199,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   PetscInt         sn17 = 0,sn18 = 0,sn19 = 0,sn20 = 0,sn21 = 0,sn23 = 0;
   Vec              local,global;
   VecScatter       ltog,gtol;
-  IS               to,from,ltogis;
+  IS               to,from;
   PetscBool        twod;
   PetscErrorCode   ierr;
 
@@ -1358,15 +1358,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
      Set the local to global ordering in the global vector, this allows use
      of VecSetValuesLocal().
   */
-  ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_OWN_POINTER,&ltogis);CHKERRQ(ierr);
-  {const PetscInt *indicesbs;
-    ierr = ISGetIndices(ltogis,&indicesbs);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingCreate(comm,1,dof*nn,indicesbs,PETSC_COPY_VALUES,&da->ltogmap);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(ltogis,&indicesbs);CHKERRQ(ierr);
-  }
-  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)da->ltogmap);CHKERRQ(ierr);
-  ierr = ISDestroy(&ltogis);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingBlock(da->ltogmap,dd->w,&da->ltogmapb);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,dof,nn,idx,PETSC_OWN_POINTER,&da->ltogmap);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)da->ltogmap);CHKERRQ(ierr);
 
   ierr  = PetscFree2(bases,ldims);CHKERRQ(ierr);

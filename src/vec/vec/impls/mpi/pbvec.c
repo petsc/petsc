@@ -618,11 +618,11 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
   ierr = PetscMalloc1((nb+nghost),&indices);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(*vv,&rstart,NULL);CHKERRQ(ierr);
 
-  for (i=0; i<nb; i++)      indices[i]    = rstart + i*bs;
+  for (i=0; i<nb; i++)      indices[i]    = rstart + i;
   for (i=0; i<nghost; i++)  indices[nb+i] = ghosts[i];
 
-  ierr = ISLocalToGlobalMappingCreate(comm,1,nb+nghost,indices,PETSC_OWN_POINTER,&ltog);CHKERRQ(ierr);
-  ierr = VecSetLocalToGlobalMappingBlock(*vv,ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,bs,nb+nghost,indices,PETSC_OWN_POINTER,&ltog);CHKERRQ(ierr);
+  ierr = VecSetLocalToGlobalMapping(*vv,ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

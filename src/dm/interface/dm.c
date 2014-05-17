@@ -44,7 +44,6 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
 
 
   v->ltogmap              = NULL;
-  v->ltogmapb             = NULL;
   v->bs                   = 1;
   v->coloringtype         = IS_COLORING_GLOBAL;
   ierr                    = PetscSFCreate(comm, &v->sf);CHKERRQ(ierr);
@@ -502,7 +501,6 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = MatFDColoringDestroy(&(*dm)->fd);CHKERRQ(ierr);
   ierr = DMClearGlobalVectors(*dm);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&(*dm)->ltogmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&(*dm)->ltogmapb);CHKERRQ(ierr);
   ierr = PetscFree((*dm)->vectype);CHKERRQ(ierr);
   ierr = PetscFree((*dm)->mattype);CHKERRQ(ierr);
 
@@ -766,49 +764,6 @@ PetscErrorCode  DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
     }
   }
   *ltog = dm->ltogmap;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMGetLocalToGlobalMappingBlock"
-/*@
-   DMGetLocalToGlobalMappingBlock - Accesses the blocked local-to-global mapping in a DM.
-
-   Collective on DM
-
-   Input Parameter:
-.  da - the distributed array that provides the mapping
-
-   Output Parameter:
-.  ltog - the block mapping
-
-   Level: intermediate
-
-   Notes:
-   This mapping can then be used by VecSetLocalToGlobalMappingBlock() or
-   MatSetLocalToGlobalMappingBlock().
-
-.seealso: DMCreateLocalVector(), DMGetLocalToGlobalMapping(), DMGetBlockSize(), VecSetBlockSize(), MatSetBlockSize()
-@*/
-PetscErrorCode  DMGetLocalToGlobalMappingBlock(DM dm,ISLocalToGlobalMapping *ltog)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(ltog,2);
-  if (!dm->ltogmapb) {
-    PetscInt bs;
-    ierr = DMGetBlockSize(dm,&bs);CHKERRQ(ierr);
-    if (bs > 1) {
-      if (!dm->ops->getlocaltoglobalmappingblock) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM can not create LocalToGlobalMappingBlock");
-      ierr = (*dm->ops->getlocaltoglobalmappingblock)(dm);CHKERRQ(ierr);
-    } else {
-      ierr = DMGetLocalToGlobalMapping(dm,&dm->ltogmapb);CHKERRQ(ierr);
-      ierr = PetscObjectReference((PetscObject)dm->ltogmapb);CHKERRQ(ierr);
-    }
-  }
-  *ltog = dm->ltogmapb;
   PetscFunctionReturn(0);
 }
 

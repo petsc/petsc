@@ -33,7 +33,7 @@ int main(int argc,char *argv[])
   Mat                    J,B;
   PetscInt               i,j,k,l,rstart,rend,m,n,top_bs,row_bs,col_bs,nlocblocks,*idx,nrowblocks,ncolblocks,*ridx,*cidx,*icol,*irow;
   PetscScalar            *vals;
-  ISLocalToGlobalMapping brmap,rmap;
+  ISLocalToGlobalMapping brmap;
   IS                     is0,is1;
   PetscBool              diag,blocked;
 
@@ -66,15 +66,12 @@ int main(int argc,char *argv[])
   for (i=0; i<nlocblocks; i++) {
     idx[i] = (rstart/top_bs + i - 1 + m/top_bs) % (m/top_bs);
   }
-  ierr = ISLocalToGlobalMappingCreate(comm,1,nlocblocks,idx,PETSC_OWN_POINTER,&brmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,top_bs,nlocblocks,idx,PETSC_OWN_POINTER,&brmap);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"Block ISLocalToGlobalMapping:\n");CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingView(brmap,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = MatSetLocalToGlobalMappingBlock(J,brmap,brmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingUnBlock(brmap,top_bs,&rmap);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(J,rmap,rmap);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(J,brmap,brmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&brmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&rmap);CHKERRQ(ierr);
 
   /* Create index sets for local submatrix */
   nrowblocks = (rend-rstart)/row_bs;

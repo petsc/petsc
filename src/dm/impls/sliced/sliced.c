@@ -19,7 +19,7 @@ PetscErrorCode  DMCreateMatrix_Sliced(DM dm, Mat *J)
 {
   PetscErrorCode         ierr;
   PetscInt               *globals,*sd_nnz,*so_nnz,rstart,bs,i;
-  ISLocalToGlobalMapping lmap,blmap;
+  ISLocalToGlobalMapping lmap;
   void                   (*aij)(void) = NULL;
   DM_Sliced              *slice = (DM_Sliced*)dm->data;
 
@@ -61,19 +61,16 @@ PetscErrorCode  DMCreateMatrix_Sliced(DM dm, Mat *J)
   }
 
   /* Set up the local to global map.  For the scalar map, we have to translate to entry-wise indexing instead of block-wise. */
-  ierr = PetscMalloc1((slice->n+slice->Nghosts)*bs,&globals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(slice->n+slice->Nghosts,&globals);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(*J,&rstart,NULL);CHKERRQ(ierr);
-  for (i=0; i<slice->n*bs; i++) globals[i] = rstart + i;
+  for (i=0; i<slice->n; i++) globals[i] = rstart/bs + i;
 
-  for (i=0; i<slice->Nghosts*bs; i++) {
-    globals[slice->n*bs+i] = slice->ghosts[i/bs]*bs + i%bs;
+  for (i=0; i<slice->Nghosts; i++) {
+    globals[slice->n+i] = slice->ghosts[i];
   }
-  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,1,(slice->n+slice->Nghosts)*bs,globals,PETSC_OWN_POINTER,&lmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingBlock(lmap,bs,&blmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,bs,slice->n+slice->Nghosts,globals,PETSC_OWN_POINTER,&lmap);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(*J,lmap,lmap);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMappingBlock(*J,blmap,blmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&lmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&blmap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
