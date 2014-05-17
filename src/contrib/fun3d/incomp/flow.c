@@ -2379,7 +2379,7 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
 int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
 /*---------------------------------------------------------------------*/
 {
-  int                    ierr,i,j,k,bs;
+  int                    ierr,i,j,bs;
   int                    nnodes,jstart,jend,nbrs_diag,nbrs_offd;
   int                    nnodesLoc,nvertices;
   int                    *val_diag,*val_offd,*svertices,*loc2pet;
@@ -2549,24 +2549,9 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
 /* Set local to global mapping for setting the matrix elements in
 * local ordering : first set row by row mapping
 */
-#if defined(INTERLACING)
-  ICALLOC(bs*nvertices,&svertices);
-  k = 0;
-  for (i=0; i < nvertices; i++)
-    for (j=0; j < bs; j++)
-      svertices[k++] = (bs*loc2pet[i] + j);
-  ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,1,bs*nvertices,svertices,PETSC_COPY_VALUES,&isl2g);
-  ierr = MatSetLocalToGlobalMapping(grid->A,isl2g,isl2g);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&isl2g);CHKERRQ(ierr);
-
-/* Now set the blockwise local to global mapping */
-#if defined(BLOCKING)
   ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs,nvertices,loc2pet,PETSC_COPY_VALUES,&isl2g);
   ierr = MatSetLocalToGlobalMapping(grid->A,isl2g,isl2g);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&isl2g);CHKERRQ(ierr);
-#endif
-  ierr = PetscFree(svertices);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 

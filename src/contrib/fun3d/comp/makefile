@@ -24,7 +24,6 @@ FLOW_OBJSF       = $(EXAMPLESF:.F=.o)
 #
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
-include $(PETSC_DIR)/conf/test
 
 flow: flow.o $(FLOW_OBJSF) chkopts
 	-$(CLINKER) -o flow flow.o $(FLOW_OBJSF) $(PETSC_SNES_LIB)
@@ -48,8 +47,6 @@ runflow64:
 
 TESTEXAMPLES_DATAFILESPATH = flow.PETSc runflow1 runflow4 flow.rm
 
-DATAFILESPATH    = /homes/kaushik/FUN3DGrids/BigSample
-
 runbm1:
 	-@echo "Using datafiles from" ${DATAFILESPATH}
 	-@${MPIEXEC} -n 1 ./flow -options_file ${DATAFILESPATH}/petsc.opt -mesh ${DATAFILESPATH}/uns3d.msh >  out.1.${HOST}
@@ -60,3 +57,5 @@ runbm2:
 
 runbm4:
 	-@${MPIEXEC} -n 4 ./flow -options_file ${DATAFILESPATH}/petsc.opt -mesh ${DATAFILESPATH}/uns3d.msh -partition ${DATAFILESPATH}/part_vec.part.4 > out.4.${HOST}
+
+include $(PETSC_DIR)/conf/test
