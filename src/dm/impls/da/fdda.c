@@ -1403,7 +1403,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIBAIJ(DM da,Mat J)
           }
         }
       }
-      ierr = MatPreallocateSetLocal(ltog,1,&slot,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
+      ierr = MatPreallocateSetLocalBlock(ltog,1,&slot,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
     }
   }
   ierr = MatSeqBAIJSetPreallocation(J,nc,0,dnz);CHKERRQ(ierr);
@@ -1502,7 +1502,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM da,Mat J)
             }
           }
         }
-        ierr = MatPreallocateSetLocal(ltog,1,&slot,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
+        ierr = MatPreallocateSetLocalBlock(ltog,1,&slot,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
       }
     }
   }
@@ -1566,8 +1566,8 @@ static PetscErrorCode L2GFilterUpperTriangular(ISLocalToGlobalMapping ltog,Petsc
   PetscInt       i,n;
 
   PetscFunctionBegin;
-  ierr = ISLocalToGlobalMappingApply(ltog,1,row,row);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApply(ltog,*cnt,col,col);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApplyBlock(ltog,1,row,row);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApplyBlock(ltog,*cnt,col,col);CHKERRQ(ierr);
   for (i=0,n=0; i<*cnt; i++) {
     if (col[i] >= *row) col[n++] = col[i];
   }
@@ -1625,7 +1625,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM da,Mat J)
         }
       }
       ierr = L2GFilterUpperTriangular(ltog,&slot,&cnt,cols);CHKERRQ(ierr);
-      ierr = MatPreallocateSymmetricSet(slot,cnt,cols,dnz,onz);CHKERRQ(ierr);
+      ierr = MatPreallocateSymmetricSetBlock(slot,cnt,cols,dnz,onz);CHKERRQ(ierr);
     }
   }
   ierr = MatSeqSBAIJSetPreallocation(J,nc,0,dnz);CHKERRQ(ierr);
@@ -1728,7 +1728,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da,Mat J)
           }
         }
         ierr = L2GFilterUpperTriangular(ltog,&slot,&cnt,cols);CHKERRQ(ierr);
-        ierr = MatPreallocateSymmetricSet(slot,cnt,cols,dnz,onz);CHKERRQ(ierr);
+        ierr = MatPreallocateSymmetricSetBlock(slot,cnt,cols,dnz,onz);CHKERRQ(ierr);
       }
     }
   }

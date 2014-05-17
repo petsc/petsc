@@ -277,12 +277,12 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   ierr = VecDestroy(&local);CHKERRQ(ierr);
   ierr = VecDestroy(&global);CHKERRQ(ierr);
 
-  dd->xs = xs; dd->xe = xe; dd->ys = 0; dd->ye = 1; dd->zs = 0; dd->ze = 1;
-  dd->Xs = Xs; dd->Xe = Xe; dd->Ys = 0; dd->Ye = 1; dd->Zs = 0; dd->Ze = 1;
+  dd->xs = dof*xs; dd->xe = dof*xe; dd->ys = 0; dd->ye = 1; dd->zs = 0; dd->ze = 1;
+  dd->Xs = dof*Xs; dd->Xe = dof*Xe; dd->Ys = 0; dd->Ye = 1; dd->Zs = 0; dd->Ze = 1;
 
   dd->gtol      = gtol;
   dd->ltog      = ltog;
-  dd->base      = xs;
+  dd->base      = dof*xs;
   da->ops->view = DMView_DA_1d;
 
   /*
