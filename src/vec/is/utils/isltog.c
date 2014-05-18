@@ -276,9 +276,12 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt bs,PetscInt n,
   if (mode == PETSC_COPY_VALUES) {
     ierr = PetscMalloc1(n,&in);CHKERRQ(ierr);
     ierr = PetscMemcpy(in,indices,n*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)*mapping,n*sizeof(PetscInt));CHKERRQ(ierr);
     (*mapping)->indices = in;
-  } else if (mode == PETSC_OWN_POINTER) (*mapping)->indices = (PetscInt*)indices;
+    ierr = PetscLogObjectMemory((PetscObject)*mapping,n*sizeof(PetscInt));CHKERRQ(ierr);
+  } else if (mode == PETSC_OWN_POINTER) {
+    (*mapping)->indices = (PetscInt*)indices;
+    ierr = PetscLogObjectMemory((PetscObject)*mapping,n*sizeof(PetscInt));CHKERRQ(ierr);
+  }
   else SETERRQ(cm,PETSC_ERR_SUP,"Cannot currently use PETSC_USE_POINTER");
   PetscFunctionReturn(0);
 }

@@ -382,6 +382,7 @@ PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,const Petsc
     ierr = PetscMemcpy(sub->idx,idx,n*sizeof(PetscInt));CHKERRQ(ierr);
   } else if (mode == PETSC_OWN_POINTER) {
     sub->idx = (PetscInt*) idx;
+    ierr = PetscLogObjectMemory((PetscObject)is,n*sizeof(PetscInt));CHKERRQ(ierr);
   } else if (mode == PETSC_USE_POINTER) {
     sub->idx = (PetscInt*) idx;
     sub->borrowed_indices = PETSC_TRUE;

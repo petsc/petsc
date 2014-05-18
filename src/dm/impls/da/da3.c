@@ -762,7 +762,6 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   }
 
   ierr = PetscMalloc1((Xe-Xs)*(Ye-Ys)*(Ze-Zs),&idx);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory((PetscObject)da,(Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(PetscInt));CHKERRQ(ierr);
 
   nn = 0;
   /* Bottom Level */
