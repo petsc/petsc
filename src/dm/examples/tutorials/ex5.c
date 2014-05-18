@@ -1,6 +1,7 @@
 
 static char help[] = "Tests DMDAGetElements() and VecView() contour plotting for 2d DMDAs.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdraw.h>
 
@@ -16,7 +17,7 @@ int main(int argc,char **argv)
   PetscViewer      viewer;
   Vec              local,global;
   PetscScalar      value;
-  DMDABoundaryType bx    = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE;
+  DMBoundaryType   bx    = DM_BOUNDARY_NONE,by = DM_BOUNDARY_NONE;
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
   PetscScalar      *lv;
 

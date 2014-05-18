@@ -98,7 +98,6 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
 #else
   KSP_NASH       *cg = (KSP_NASH*)ksp->data;
   PetscErrorCode ierr;
-  MatStructure   pflag;
   Mat            Qmat, Mmat;
   Vec            r, z, p, d;
   PC             pc;
@@ -131,7 +130,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
   d  = ksp->vec_sol;
   pc = ksp->pc;
 
-  ierr = PCGetOperators(pc, &Qmat, &Mmat, &pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(pc, &Qmat, &Mmat);CHKERRQ(ierr);
 
   ierr       = VecGetSize(d, &max_cg_its);CHKERRQ(ierr);
   max_cg_its = PetscMin(max_cg_its, ksp->max_it);
@@ -161,7 +160,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_DIVERGED_NANORINF;
-    ierr        = PetscInfo1(ksp, "KSPSolve_NASH: bad right-hand side: rr=%g\n", rr);CHKERRQ(ierr);
+    ierr        = PetscInfo1(ksp, "KSPSolve_NASH: bad right-hand side: rr=%g\n", (double)rr);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -180,7 +179,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_DIVERGED_NANORINF;
-    ierr        = PetscInfo1(ksp, "KSPSolve_NASH: bad preconditioner: rz=%g\n", rz);CHKERRQ(ierr);
+    ierr        = PetscInfo1(ksp, "KSPSolve_NASH: bad preconditioner: rz=%g\n", (double)rz);CHKERRQ(ierr);
 
     if (cg->radius) {
       if (r2 >= rr) {
@@ -215,7 +214,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-    ierr        = PetscInfo1(ksp, "KSPSolve_NASH: indefinite preconditioner: rz=%g\n", rz);CHKERRQ(ierr);
+    ierr        = PetscInfo1(ksp, "KSPSolve_NASH: indefinite preconditioner: rz=%g\n", (double)rz);CHKERRQ(ierr);
 
     if (cg->radius) {
       if (r2 >= rr) {
@@ -293,7 +292,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_DIVERGED_NANORINF;
-    ierr        = PetscInfo1(ksp, "KSPSolve_NASH: bad matrix: kappa=%g\n", kappa);CHKERRQ(ierr);
+    ierr        = PetscInfo1(ksp, "KSPSolve_NASH: bad matrix: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
 
     if (cg->radius) {
       if (r2 >= rr) {
@@ -347,7 +346,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
-    ierr        = PetscInfo1(ksp, "KSPSolve_NASH: negative curvature: kappa=%g\n", kappa);CHKERRQ(ierr);
+    ierr        = PetscInfo1(ksp, "KSPSolve_NASH: negative curvature: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
 
     if (cg->radius && norm_p > 0.0) {
       /***********************************************************************/
@@ -421,7 +420,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
       /***********************************************************************/
 
       ksp->reason = KSP_CONVERGED_CG_CONSTRAINED;
-      ierr        = PetscInfo1(ksp, "KSPSolve_NASH: constrained step: radius=%g\n", cg->radius);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPSolve_NASH: constrained step: radius=%g\n", (double)cg->radius);CHKERRQ(ierr);
 
       if (norm_p > 0.0) {
         /*********************************************************************/
@@ -483,7 +482,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
       /***********************************************************************/
 
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-      ierr        = PetscInfo1(ksp, "KSPSolve_NASH: cg indefinite preconditioner: rz=%g\n", rz);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPSolve_NASH: cg indefinite preconditioner: rz=%g\n", (double)rz);CHKERRQ(ierr);
       break;
     }
 
@@ -520,7 +519,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
       /* The method has converged.                                           */
       /***********************************************************************/
 
-      ierr = PetscInfo2(ksp, "KSPSolve_NASH: truncated step: rnorm=%g, radius=%g\n", norm_r, cg->radius);CHKERRQ(ierr);
+      ierr = PetscInfo2(ksp, "KSPSolve_NASH: truncated step: rnorm=%g, radius=%g\n", (double)norm_r, (double)cg->radius);CHKERRQ(ierr);
       break;
     }
 
@@ -529,13 +528,13 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
     /*************************************************************************/
 
     beta = rz / rzm1;
-    if (fabs(beta) <= 0.0) {
+    if (PetscAbsReal(beta) <= 0.0) {
       /***********************************************************************/
       /* Conjugate gradients has broken down.                                */
       /***********************************************************************/
 
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      ierr        = PetscInfo1(ksp, "KSPSolve_NASH: breakdown: beta=%g\n", beta);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPSolve_NASH: breakdown: beta=%g\n", (double)beta);CHKERRQ(ierr);
       break;
     }
 
@@ -545,7 +544,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
 
     if (ksp->its >= max_cg_its) {
       ksp->reason = KSP_DIVERGED_ITS;
-      ierr        = PetscInfo1(ksp, "KSPSolve_NASH: iterlim: its=%d\n", ksp->its);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPSolve_NASH: iterlim: its=%D\n", ksp->its);CHKERRQ(ierr);
       break;
     }
 
@@ -586,7 +585,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
       /***********************************************************************/
 
       ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
-      ierr        = PetscInfo1(ksp, "KSPSolve_NASH: negative curvature: kappa=%g\n", kappa);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPSolve_NASH: negative curvature: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
       break;
     }
   }
@@ -730,7 +729,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_NASH(KSP ksp)
   KSP_NASH       *cg;
 
   PetscFunctionBegin;
-  ierr       = PetscNewLog(ksp,KSP_NASH, &cg);CHKERRQ(ierr);
+  ierr       = PetscNewLog(ksp,&cg);CHKERRQ(ierr);
   cg->radius = 0.0;
   cg->dtype  = NASH_UNPRECONDITIONED_DIRECTION;
 

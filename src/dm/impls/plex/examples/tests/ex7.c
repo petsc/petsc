@@ -4,9 +4,6 @@ static char help[] = "Tests for mesh interpolation\n\n";
 */
 
 #include <petscdmplex.h>
-#if defined(PETSC_HAVE_EXODUSII)
-#include <exodusII.h>
-#endif
 
 /* List of test meshes
 
@@ -424,25 +421,15 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (len) {
-#if defined(PETSC_HAVE_EXODUSII)
-    int   CPU_word_size = 0, IO_word_size = 0, exoid = -1;
-    float version;
-
-    if (!rank) {
-      exoid = ex_open(filename, EX_READ, &CPU_word_size, &IO_word_size, &version);
-      if (exoid <= 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "ex_open(\"%s\",...) did not return a valid file ID", filename);
-    }
-    ierr = DMPlexCreateExodus(comm, exoid, PETSC_FALSE, dm);CHKERRQ(ierr);
-    if (!rank) {ierr = ex_close(exoid);CHKERRQ(ierr);}
+    ierr = DMPlexCreateExodusFromFile(comm, filename, PETSC_FALSE, dm);CHKERRQ(ierr);
     ierr = DMPlexGetDimension(*dm, &dim);CHKERRQ(ierr);
-#else
-    SETERRQ(comm, PETSC_ERR_SUP, "Loading meshes requires ExodusII support. Reconfigure using --download-exodusii");
-#endif
   } else if (useGenerator) {
     if (cellSimplex) {
       ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_FALSE, dm);CHKERRQ(ierr);
     } else {
-      ierr = DMPlexCreateHexBoxMesh(comm, dim, PETSC_FALSE, dm);CHKERRQ(ierr);
+      const PetscInt cells[3] = {2, 2, 2};
+
+      ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, dm);CHKERRQ(ierr);
     }
   } else {
     ierr = DMCreate(comm, dm);CHKERRQ(ierr);
@@ -483,12 +470,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, partitioner, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
+      ierr = DMViewFromOptions(distributedMesh, NULL, "-dm_view");CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
     }
   }
-  ierr     = PetscObjectSetName((PetscObject) *dm, "Interpolated Mesh");CHKERRQ(ierr);
-  ierr     = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *dm, "Interpolated Mesh");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   user->dm = *dm;
   PetscFunctionReturn(0);
 }

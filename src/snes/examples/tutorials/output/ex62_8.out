@@ -107,7 +107,7 @@ Process [4]
 0
 L_2 Residual: 0.051031
 Jacobian:
-Mat Object: 1 MPI processes
+Mat Object: 5 MPI processes
   type: mpiaij
 row 0: (0, 0)  (2, 0)  (7, 0)  (8, 0.0833333)  (9, -0.0833333)  (10, 0) 
 row 1: (1, 0)  (2, 0)  (3, 0)  (4, 0)  (8, -0.166667)  (9, -0.0833333)  (10, 0) 

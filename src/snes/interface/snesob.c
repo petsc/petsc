@@ -4,7 +4,7 @@
     SNESObjectiveFunction - functional form used to convey the objective function to the nonlinear solver
 
      Synopsis:
-     #include "petscsnes.h"
+     #include <petscsnes.h>
        SNESObjectiveFunction(SNES snes,Vec x,PetscReal *obj,void *ctx);
 
      Input Parameters:
@@ -16,7 +16,7 @@
 
    Level: advanced
 
-.seealso:   SNESSetFunction(), SNESGetFunction(), SNESSetObjective(), SNESGetObjective()
+.seealso:   SNESSetFunction(), SNESGetFunction(), SNESSetObjective(), SNESGetObjective(), SNESJacobianFunction, SNESFunction
 M*/
 
 
@@ -29,7 +29,7 @@ M*/
 
    Input Parameters:
 +  snes - the SNES context
-.  SNESObjectiveFunction - objective evaluation routine
+.  obj - objective evaluation routine; see SNESObjectiveFunction for details
 -  ctx - [optional] user-defined context for private data for the
          function evaluation routine (may be NULL)
 
@@ -41,7 +41,7 @@ M*/
 
 .seealso: SNESGetObjective(), SNESComputeObjective(), SNESSetFunction(), SNESSetJacobian(), SNESObjectiveFunction
 @*/
-PetscErrorCode  SNESSetObjective(SNES snes,PetscErrorCode (*SNESObjectiveFunction)(SNES,Vec,PetscReal*,void*),void *ctx)
+PetscErrorCode  SNESSetObjective(SNES snes,PetscErrorCode (*obj)(SNES,Vec,PetscReal*,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -49,7 +49,7 @@ PetscErrorCode  SNESSetObjective(SNES snes,PetscErrorCode (*SNESObjectiveFunctio
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMSNESSetObjective(dm,SNESObjectiveFunction,ctx);CHKERRQ(ierr);
+  ierr = DMSNESSetObjective(dm,obj,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -64,7 +64,7 @@ PetscErrorCode  SNESSetObjective(SNES snes,PetscErrorCode (*SNESObjectiveFunctio
 .  snes - the SNES context
 
    Output Parameter:
-+  SNESObjectiveFunction - objective evaluation routine (or NULL)
++  obj - objective evaluation routine (or NULL); see SNESObjectFunction for details
 -  ctx - the function context (or NULL)
 
    Level: advanced
@@ -73,7 +73,7 @@ PetscErrorCode  SNESSetObjective(SNES snes,PetscErrorCode (*SNESObjectiveFunctio
 
 .seealso: SNESSetObjective(), SNESGetSolution()
 @*/
-PetscErrorCode SNESGetObjective(SNES snes,PetscErrorCode (**SNESObjectiveFunction)(SNES,Vec,PetscReal*,void*),void **ctx)
+PetscErrorCode SNESGetObjective(SNES snes,PetscErrorCode (**obj)(SNES,Vec,PetscReal*,void*),void **ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -81,7 +81,7 @@ PetscErrorCode SNESGetObjective(SNES snes,PetscErrorCode (**SNESObjectiveFunctio
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMSNESGetObjective(dm,SNESObjectiveFunction,ctx);CHKERRQ(ierr);
+  ierr = DMSNESGetObjective(dm,obj,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

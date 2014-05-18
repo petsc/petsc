@@ -260,11 +260,11 @@ never
       informative.
 \item {\em No} space after a ( or before a ). No space before the CHKXXX(). That is, do not write
 \begin{tabbing}
-   ierr = PetscMalloc( 10*sizeof(int),\&a ); CHKERRQ(ierr);
+   ierr = PetscMalloc1( 10,\&a ); CHKERRQ(ierr);
 \end{tabbing}
 instead write
 \begin{tabbing}
-   ierr = PetscMalloc(10*sizeof(int),\&a);CHKERRQ(ierr);
+   ierr = PetscMalloc1(10,\&a);CHKERRQ(ierr);
 \end{tabbing}
 \item Except in code that may be called before PETSc is fully initialized, always use PetscMalloc(), PetscNew(), and PetscFree(), not \trl{malloc()} and \trl{free()}.
 \item {\em No} space after the ) in a cast, no space between the type and the * in a caste.
@@ -304,7 +304,7 @@ instead use {\em if (!rank)} or {\em if (!v)} or {\em if (flg)} or {\em if (!flg
 
 \section{Formatted Comments for Documentation and Fortran Interfaces}
 
-PETSc uses formatted comments to generate documentation and fortran interfaces.
+PETSc uses formatted comments and the Sowing packages to generate documentation (manual pages) and the fortran interfaces. Documentation for Sowing and the formating may be found at \href{http://www.cs.uiuc.edu/homes/wgropp/projects/software/sowing/doctext.pdf}{http://www.cs.uiuc.edu/homes/wgropp/projects/software/sowing/doctext.pdf}.
 
 \begin{verbatim}
 /*@     indicates a formatted comment of a function that will be used for both documentation and a Fortran interface.
@@ -314,9 +314,9 @@ PETSc uses formatted comments to generate documentation and fortran interfaces.
 /*MC    a formatted comment of a CPP macro for documentation
 \end{verbatim}
 
-Functions that take char* or function pointer arguments must have the C symbol since the Fortran interface generator cannot handle them.
+Functions that take char* or function pointer arguments must have the C symbol since the Fortran interface generator cannot handle them so the Fortran interface for them must be created manually.
 
-Directory structure of Fortran interface files: ftn-auto, ftn-custom, ftn-f90.
+The Fortran interface files go into the three directories depending on how they are created: ftn-auto, ftn-custom, ftn-f90.
 
 % -----------------------------------------------------------------------------------
 \chapter{The PETSc Kernel}
@@ -444,7 +444,7 @@ Pe\=tscErrorCode PetscPushErrorHandler(\=PetscErrorCode (*handler)(int,const cha
   \> PetscErrorCode ierr;\\
   \>EH neweh; \\
   \>PetscFunctionBegin;\\
-  \>ierr = PetscNew(struct \_EH,\&neweh);CHKERRQ(ierr);\\
+  \>ierr = PetscNew(\&neweh);CHKERRQ(ierr);\\
   \>if (eh) {neweh-$>$previous = eh;} \\
   \>else    {neweh-$>$previous = 0;}\\
   \>neweh-$>$handler = handler;\\

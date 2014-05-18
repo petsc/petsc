@@ -4,18 +4,19 @@
       subroutine GenerateErr(line,ierr)
 #include <finclude/petscsys.h>
       PetscErrorCode  ierr
-      PetscInt line
+      integer line
 
       call PetscError(PETSC_COMM_SELF,1,line,1,'Error message',ierr)
 
       return
       end
 
-      subroutine MyErrHandler(line,fun,file,n,p,mess,ctx,ierr)
+      subroutine MyErrHandler(comm,line,fun,file,n,p,mess,ctx,ierr)
 #include <finclude/petscsys.h>
       integer line,n,p
       PetscInt ctx
       PetscErrorCode ierr
+      MPI_Comm comm
       character*(*) fun,file,mess
 
       print*,'My error handler ',mess

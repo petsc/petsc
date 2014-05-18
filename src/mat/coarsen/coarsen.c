@@ -106,7 +106,6 @@ $    -mat_coarsen_view
 PetscErrorCode  MatCoarsenApply(MatCoarsen coarser)
 {
   PetscErrorCode ierr;
-  PetscBool      flag = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarser,MAT_COARSEN_CLASSID,1);
@@ -117,14 +116,6 @@ PetscErrorCode  MatCoarsenApply(MatCoarsen coarser)
   ierr = PetscLogEventBegin(MAT_Coarsen,coarser,0,0,0);CHKERRQ(ierr);
   ierr = (*coarser->ops->apply)(coarser);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Coarsen,coarser,0,0,0);CHKERRQ(ierr);
-
-  ierr = PetscOptionsGetBool(NULL,"-mat_coarsen_view",&flag,NULL);CHKERRQ(ierr);
-  if (flag) {
-    PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)coarser),&viewer);CHKERRQ(ierr);
-    ierr = MatCoarsenView(coarser,viewer);CHKERRQ(ierr);
-    /* ierr = ISView(coarser->mis,viewer);CHKERRQ(ierr); */
-  }
   PetscFunctionReturn(0);
 }
 
@@ -321,10 +312,7 @@ PetscErrorCode  MatCoarsenView(MatCoarsen agg,PetscViewer viewer)
   PetscCheckSameComm(agg,1,viewer,2);
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  if (iascii) {
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)agg,viewer);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this MatCoarsen",((PetscObject)viewer)->type_name);
-
+  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)agg,viewer);CHKERRQ(ierr);
   if (agg->ops->view) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = (*agg->ops->view)(agg,viewer);CHKERRQ(ierr);
@@ -498,6 +486,7 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
     ierr = (*coarser->ops->setfromoptions)(coarser);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = MatCoarsenViewFromOptions(coarser,NULL,"-mat_coarsen_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

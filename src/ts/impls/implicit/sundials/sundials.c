@@ -5,7 +5,7 @@
 
     Reference: sundials-2.4.0/examples/cvode/parallel/cvDiurnal_kry_p.c
 */
-#include "sundials.h"  /*I "petscts.h" I*/
+#include <../src/ts/impls/implicit/sundials/sundials.h>  /*I "petscts.h" I*/
 
 /*
       TSPrecond_Sundials - function that we provide to SUNDIALS to
@@ -23,7 +23,6 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,booleantype
   Mat            J,P;
   Vec            yy  = cvode->w1,yydot = cvode->ydot;
   PetscReal      gm  = (PetscReal)_gamma;
-  MatStructure   str = DIFFERENT_NONZERO_PATTERN;
   PetscScalar    *y_data;
 
   PetscFunctionBegin;
@@ -32,12 +31,12 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,booleantype
   ierr   = VecPlaceArray(yy,y_data);CHKERRQ(ierr);
   ierr   = VecZeroEntries(yydot);CHKERRQ(ierr); /* The Jacobian is independent of Ydot for ODE which is all that CVode works for */
   /* compute the shifted Jacobian   (1/gm)*I + Jrest */
-  ierr     = TSComputeIJacobian(ts,ts->ptime,yy,yydot,1/gm,&J,&P,&str,PETSC_FALSE);CHKERRQ(ierr);
+  ierr     = TSComputeIJacobian(ts,ts->ptime,yy,yydot,1/gm,J,P,PETSC_FALSE);CHKERRQ(ierr);
   ierr     = VecResetArray(yy);CHKERRQ(ierr);
   ierr     = MatScale(P,gm);CHKERRQ(ierr); /* turn into I-gm*Jrest, J is not used by Sundials  */
   *jcurPtr = TRUE;
   ierr     = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
-  ierr     = PCSetOperators(pc,J,P,str);CHKERRQ(ierr);
+  ierr     = PCSetOperators(pc,J,P);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -153,7 +152,7 @@ PetscErrorCode TSStep_Sundials(TS ts)
         PetscReal      tcur;
         ierr = CVodeGetNumSteps(mem,&nsteps);CHKERRQ(ierr);
         ierr = CVodeGetCurrentTime(mem,&tcur);CHKERRQ(ierr);
-        SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_TOO_MUCH_WORK. At t=%G, nsteps %D exceeds mxstep %D. Increase '-ts_max_steps <>' or modify TSSetDuration()",tcur,nsteps,ts->max_steps);
+        SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_TOO_MUCH_WORK. At t=%g, nsteps %D exceeds mxstep %D. Increase '-ts_max_steps <>' or modify TSSetDuration()",(double)tcur,nsteps,ts->max_steps);
       } break;
       case CV_TOO_MUCH_ACC:
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_TOO_MUCH_ACC");
@@ -948,7 +947,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Sundials(TS ts)
   ts->ops->interpolate    = TSInterpolate_Sundials;
   ts->ops->setfromoptions = TSSetFromOptions_Sundials;
 
-  ierr = PetscNewLog(ts,TS_Sundials,&cvode);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&cvode);CHKERRQ(ierr);
 
   ts->data           = (void*)cvode;
   cvode->cvode_type  = SUNDIALS_BDF;

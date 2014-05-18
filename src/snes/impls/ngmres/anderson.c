@@ -41,26 +41,24 @@ PetscErrorCode SNESSetFromOptions_Anderson(SNES snes)
 #define __FUNCT__ "SNESSolve_Anderson"
 PetscErrorCode SNESSolve_Anderson(SNES snes)
 {
-  SNES_NGMRES *ngmres = (SNES_NGMRES*) snes->data;
+  SNES_NGMRES         *ngmres = (SNES_NGMRES*) snes->data;
   /* present solution, residual, and preconditioned residual */
-  Vec X,F,B,D;
-
+  Vec                 X,F,B,D;
   /* candidate linear combination answers */
-  Vec XA,FA,XM,FM;
+  Vec                 XA,FA,XM,FM;
 
   /* coefficients and RHS to the minimization problem */
-  PetscReal fnorm,fMnorm,fAnorm;
-  PetscReal  xnorm,ynorm;
-  PetscReal dnorm,dminnorm=0.0,fminnorm;
-  PetscInt  restart_count=0;
-  PetscInt  k,k_restart,l,ivec;
-
-  PetscBool selectRestart;
-
+  PetscReal           fnorm,fMnorm,fAnorm;
+  PetscReal           xnorm,ynorm;
+  PetscReal           dnorm,dminnorm=0.0,fminnorm;
+  PetscInt            restart_count=0;
+  PetscInt            k,k_restart,l,ivec;
+  PetscBool           selectRestart;
   SNESConvergedReason reason;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   /* variable initialization */
   snes->reason = SNES_CONVERGED_ITERATING;
   X            = snes->vec_sol;
@@ -84,7 +82,7 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
   /* r = F(x) */
 
   if (snes->pc && snes->pcside == PC_LEFT) {
-    ierr = SNESApplyPC(snes,X,NULL,NULL,F);CHKERRQ(ierr);
+    ierr = SNESApplyNPC(snes,X,NULL,F);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
     if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
@@ -134,7 +132,7 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
       }
-      ierr = SNESGetPCFunction(snes,FM,&fMnorm);CHKERRQ(ierr);
+      ierr = SNESGetNPCFunction(snes,FM,&fMnorm);CHKERRQ(ierr);
       if (ngmres->andersonBeta != 1.0) {
         VecAXPBY(XM,(1.0 - ngmres->andersonBeta),ngmres->andersonBeta,X);CHKERRQ(ierr);
       }
@@ -241,7 +239,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes)
   snes->usesksp = PETSC_FALSE;
   snes->pcside  = PC_RIGHT;
 
-  ierr          = PetscNewLog(snes,SNES_NGMRES,&ngmres);CHKERRQ(ierr);
+  ierr          = PetscNewLog(snes,&ngmres);CHKERRQ(ierr);
   snes->data    = (void*) ngmres;
   ngmres->msize = 30;
 

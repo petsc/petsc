@@ -42,8 +42,8 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
 
   ierr = KSPSetUp_GMRES(ksp);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&fgmres->prevecs);CHKERRQ(ierr);
-  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&fgmres->prevecs_user_work);CHKERRQ(ierr);
+  ierr = PetscMalloc1((VEC_OFFSET+2+max_k),&fgmres->prevecs);CHKERRQ(ierr);
+  ierr = PetscMalloc1((VEC_OFFSET+2+max_k),&fgmres->prevecs_user_work);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)));CHKERRQ(ierr);
 
   ierr = KSPGetVecs(ksp,fgmres->vv_allocated,&fgmres->prevecs_user_work[0],0,NULL);CHKERRQ(ierr);
@@ -63,11 +63,10 @@ static PetscErrorCode KSPFGMRESResidual(KSP ksp)
 {
   KSP_FGMRES     *fgmres = (KSP_FGMRES*)(ksp->data);
   Mat            Amat,Pmat;
-  MatStructure   pflag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   /* put A*x into VEC_TEMP */
   ierr = MatMult(Amat,ksp->vec_sol,VEC_TEMP);CHKERRQ(ierr);
@@ -108,7 +107,6 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
   PetscInt       loc_it;                /* local count of # of dir. in Krylov space */
   PetscInt       max_k = fgmres->max_k; /* max # of directions Krylov space */
   Mat            Amat,Pmat;
-  MatStructure   pflag;
 
   PetscFunctionBegin;
   /* Number of pseudo iterations since last restart is the number
@@ -169,7 +167,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
        preconditioned vectors in prevec */
     ierr = KSP_PCApply(ksp,VEC_VV(loc_it),PREVEC(loc_it));CHKERRQ(ierr);
 
-    ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+    ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
     /* Multiply preconditioned vector by operator - put in VEC_VV(loc_it+1) */
     ierr = MatMult(Amat,PREVEC(loc_it),VEC_VV(1+loc_it));CHKERRQ(ierr);
 
@@ -223,7 +221,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
       if (!ksp->reason) {
-        if (ksp->errorifnotconverged) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"You reached the happy break down, but convergence was not indicated. Residual norm = %G",res_norm);
+        if (ksp->errorifnotconverged) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"You reached the happy break down, but convergence was not indicated. Residual norm = %g",(double)res_norm);
         else {
           ksp->reason = KSP_DIVERGED_BREAKDOWN;
           break;
@@ -554,7 +552,7 @@ PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
   }
   if (!fgmres->nrs) {
     /* allocate the work area */
-    ierr = PetscMalloc(fgmres->max_k*sizeof(PetscScalar),&fgmres->nrs);CHKERRQ(ierr);
+    ierr = PetscMalloc1(fgmres->max_k,&fgmres->nrs);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)ksp,fgmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
@@ -693,7 +691,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FGMRES(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,KSP_FGMRES,&fgmres);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,&fgmres);CHKERRQ(ierr);
 
   ksp->data                              = (void*)fgmres;
   ksp->ops->buildsolution                = KSPBuildSolution_FGMRES;

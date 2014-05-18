@@ -50,7 +50,7 @@ PetscErrorCode  PetscLayoutCreate(MPI_Comm comm,PetscLayout *map)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_PetscLayout,map);CHKERRQ(ierr);
+  ierr = PetscNew(map);CHKERRQ(ierr);
 
   (*map)->comm   = comm;
   (*map)->bs     = -1;
@@ -142,18 +142,17 @@ PetscErrorCode  PetscLayoutSetUp(PetscLayout map)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (map->bs <= 0) map->bs = 1;
   if ((map->n >= 0) && (map->N >= 0) && (map->range)) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_size(map->comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(map->comm, &rank);CHKERRQ(ierr);
-  if (map->n > 0) map->n = map->n/map->bs;
-  if (map->N > 0) map->N = map->N/map->bs;
+  if (map->n > 0) map->n = map->n/PetscAbs(map->bs);
+  if (map->N > 0) map->N = map->N/PetscAbs(map->bs);
   ierr = PetscSplitOwnership(map->comm,&map->n,&map->N);CHKERRQ(ierr);
-  map->n = map->n*map->bs;
-  map->N = map->N*map->bs;
+  map->n = map->n*PetscAbs(map->bs);
+  map->N = map->N*PetscAbs(map->bs);
   if (!map->range) {
-    ierr = PetscMalloc((size+1)*sizeof(PetscInt), &map->range);CHKERRQ(ierr);
+    ierr = PetscMalloc1((size+1), &map->range);CHKERRQ(ierr);
   }
   ierr = MPI_Allgather(&map->n, 1, MPIU_INT, map->range+1, 1, MPIU_INT, map->comm);CHKERRQ(ierr);
 
@@ -201,7 +200,7 @@ PetscErrorCode  PetscLayoutDuplicate(PetscLayout in,PetscLayout *out)
   ierr = PetscLayoutCreate(comm,out);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscMemcpy(*out,in,sizeof(struct _n_PetscLayout));CHKERRQ(ierr);
-  ierr = PetscMalloc((size+1)*sizeof(PetscInt),&(*out)->range);CHKERRQ(ierr);
+  ierr = PetscMalloc1((size+1),&(*out)->range);CHKERRQ(ierr);
   ierr = PetscMemcpy((*out)->range,in->range,(size+1)*sizeof(PetscInt));CHKERRQ(ierr);
 
   (*out)->refcnt = 0;
@@ -461,6 +460,7 @@ PetscErrorCode  PetscLayoutGetSize(PetscLayout map,PetscInt *n)
 PetscErrorCode  PetscLayoutSetBlockSize(PetscLayout map,PetscInt bs)
 {
   PetscFunctionBegin;
+  if (bs < 0) PetscFunctionReturn(0);
   if (map->n > 0 && map->n % bs) SETERRQ2(map->comm,PETSC_ERR_ARG_INCOMP,"Local size %D not compatible with block size %D",map->n,bs);
   if (map->bs > 0 && map->bs != bs) SETERRQ2(map->comm,PETSC_ERR_ARG_INCOMP,"Cannot change block size %D to %D",map->bs,bs);
   map->bs = bs;
@@ -495,7 +495,7 @@ PetscErrorCode  PetscLayoutSetBlockSize(PetscLayout map,PetscInt bs)
 PetscErrorCode  PetscLayoutGetBlockSize(PetscLayout map,PetscInt *bs)
 {
   PetscFunctionBegin;
-  *bs = map->bs;
+  *bs = PetscAbs(map->bs);
   PetscFunctionReturn(0);
 }
 
@@ -593,7 +593,7 @@ PetscErrorCode PetscSFSetGraphLayout(PetscSF sf,PetscLayout layout,PetscInt nlea
 
   PetscFunctionBegin;
   ierr = PetscLayoutGetLocalSize(layout,&nroots);CHKERRQ(ierr);
-  ierr = PetscMalloc(nleaves*sizeof(PetscSFNode),&remote);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
   for (i=0; i<nleaves; i++) {
     PetscInt owner = -1;
     ierr = PetscLayoutFindOwner(layout,iremote[i],&owner);CHKERRQ(ierr);

@@ -26,12 +26,13 @@ PetscFunctionList PetscViewerList = 0;
    Level: intermediate
 
    Notes: If no value is provided ascii:stdout is used
-$       ascii[:[filename][:[format][:append]]]   defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab, for example ascii::ascii_info prints just the info
-$                                     about the object to standard out - unless :append is given filename opens in write mode
-$       binary[:[filename][:[format][:append]]]   defaults to binaryoutput
-$       draw
-$       socket[:port]                  defaults to the standard output port
-$       ams[:communicatorname]         publishes object to the SAWs (Argonne Memory Snooper) 
+$       ascii[:[filename][:[format][:append]]]    defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab, 
+                                                  for example ascii::ascii_info prints just the information about the object not all details
+                                                  unless :append is given filename opens in write mode, overwriting what was already there
+$       binary[:[filename][:[format][:append]]]   defaults to the file binaryoutput
+$       draw[:drawtype}                           for example, draw:tikz  or draw:x
+$       socket[:port]                             defaults to the standard output port
+$       ams[:communicatorname]                    publishes object to the Scientific Application Webserver (SAWs)
 
    Use PetscViewerDestroy() after using the viewer, otherwise a memory leak will occur
 
@@ -63,7 +64,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
     } else {
       char       *loc0_vtype,*loc1_fname,*loc2_fmt = NULL,*loc3_fmode = NULL;
       PetscInt   cnt;
-      const char *viewers[] = {PETSCVIEWERASCII,PETSCVIEWERBINARY,PETSCVIEWERDRAW,PETSCVIEWERSOCKET,PETSCVIEWERMATLAB,PETSCVIEWERSAWS,PETSCVIEWERVTK,0};
+      const char *viewers[] = {PETSCVIEWERASCII,PETSCVIEWERBINARY,PETSCVIEWERDRAW,PETSCVIEWERSOCKET,PETSCVIEWERMATLAB,PETSCVIEWERSAWS,PETSCVIEWERVTK,PETSCVIEWERHDF5,0};
 
       ierr = PetscStrallocpy(value,&loc0_vtype);CHKERRQ(ierr);
       ierr = PetscStrchr(loc0_vtype,':',&loc1_fname);CHKERRQ(ierr);
@@ -104,6 +105,11 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
           if (!(*viewer = PETSC_VIEWER_SAWS_(comm))) CHKERRQ(PETSC_ERR_PLIB);
           break;
 #endif
+#if defined(PETSC_HAVE_HDF5)
+        case 7:
+          if (!(*viewer = PETSC_VIEWER_HDF5_(comm))) CHKERRQ(PETSC_ERR_PLIB);
+          break;
+#endif
         default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported viewer %s",loc0_vtype);
         }
         ierr = PetscObjectReference((PetscObject)*viewer);CHKERRQ(ierr);
@@ -122,6 +128,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
           }
           ierr = PetscViewerFileSetMode(*viewer,flag?fmode:FILE_MODE_WRITE);CHKERRQ(ierr);
           ierr = PetscViewerFileSetName(*viewer,loc1_fname);CHKERRQ(ierr);
+          ierr = PetscViewerDrawSetDrawType(*viewer,loc1_fname);CHKERRQ(ierr);
         }
       }
       if (loc2_fmt && *loc2_fmt) {
@@ -286,8 +293,6 @@ PetscErrorCode  PetscViewerSetFromOptions(PetscViewer viewer)
   PetscErrorCode    ierr;
   char              vtype[256];
   PetscBool         flg;
-  PetscViewer       v2;
-  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
@@ -310,12 +315,7 @@ PetscErrorCode  PetscViewerSetFromOptions(PetscViewer viewer)
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)viewer);CHKERRQ(ierr);
-  ierr = PetscOptionsViewer("-viewer_view","Display Viewer with the viewer","PetscViewerView",&v2,&format,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscViewerPushFormat(v2,format);CHKERRQ(ierr);
-    ierr = PetscViewerView(viewer,v2);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(v2);CHKERRQ(ierr);
-  }
+  ierr = PetscViewerViewFromOptions(viewer,NULL,"-viewer_view");CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

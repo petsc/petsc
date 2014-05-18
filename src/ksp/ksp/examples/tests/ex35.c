@@ -8,11 +8,9 @@ static char help[] = "Used for Solving a linear system where the matrix has all 
  Example: mpiexec -n <np> ./ex35 -dof 2 -mat_view -check_final_residual
  */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscksp.h>
-
-extern PetscErrorCode ComputeMatrix(DM,Mat);
-extern PetscErrorCode ComputeRHS(DM,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -33,7 +31,7 @@ int main(int argc,char **argv)
 
   ierr = DMDACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
   ierr = DMDASetDim(da,3);CHKERRQ(ierr);
-  ierr = DMDASetBoundaryType(da,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(da,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE);CHKERRQ(ierr);
   ierr = DMDASetStencilType(da,DMDA_STENCIL_STAR);CHKERRQ(ierr);
   ierr = DMDASetSizes(da,3,3,3);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
@@ -62,7 +60,7 @@ int main(int argc,char **argv)
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetDM(pc,(DM)da);CHKERRQ(ierr);
 

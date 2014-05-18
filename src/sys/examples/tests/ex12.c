@@ -23,7 +23,7 @@ int main(int argc,char **argv)
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(n*sizeof(PetscInt),&values);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&values);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr      = PetscRandomGetValue(rand,&value);CHKERRQ(ierr);
     values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);

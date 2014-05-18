@@ -1,5 +1,5 @@
-#include "bddc.h"
-#include "bddcprivate.h"
+#include <../src/ksp/pc/impls/bddc/bddc.h>
+#include <../src/ksp/pc/impls/bddc/bddcprivate.h>
 #include <petscblaslapack.h>
 
 #undef __FUNCT__
@@ -216,7 +216,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   for (i=0;i<pcis->n;i++) auxindices[i]=i;
 
   /* vertices in boundary numbering */
-  ierr = PetscMalloc(n_vertices*sizeof(PetscInt),&idx_V_B);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n_vertices,&idx_V_B);CHKERRQ(ierr);
   ierr = ISGlobalToLocalMappingApply(pcbddc->BtoNmap,IS_GTOLM_DROP,n_vertices,pcbddc->primal_indices_local_idxs,&i,idx_V_B);CHKERRQ(ierr);
   if (i != n_vertices) {
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in boundary numbering for BDDC vertices! %d != %d\n",n_vertices,i);
@@ -360,11 +360,11 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
 
   if (pcbddc->dbg_flag) {
     ierr = ISGetIndices(pcbddc->is_R_local,&idx_R_local);CHKERRQ(ierr);
-    ierr = PetscMalloc(2*pcbddc->local_primal_size*sizeof(*coarsefunctions_errors),&coarsefunctions_errors);CHKERRQ(ierr);
-    ierr = PetscMalloc(2*pcbddc->local_primal_size*sizeof(*constraints_errors),&constraints_errors);CHKERRQ(ierr);
+    ierr = PetscMalloc1(2*pcbddc->local_primal_size,&coarsefunctions_errors);CHKERRQ(ierr);
+    ierr = PetscMalloc1(2*pcbddc->local_primal_size,&constraints_errors);CHKERRQ(ierr);
   }
   /* Subdomain contribution (Non-overlapping) to coarse matrix  */
-  ierr = PetscMalloc((pcbddc->local_primal_size)*(pcbddc->local_primal_size)*sizeof(PetscScalar),&coarse_submat_vals);CHKERRQ(ierr);
+  ierr = PetscMalloc1((pcbddc->local_primal_size)*(pcbddc->local_primal_size),&coarse_submat_vals);CHKERRQ(ierr);
 
   /* We are now ready to evaluate coarse basis functions and subdomain contribution to coarse problem */
 
@@ -684,7 +684,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     ierr = MatAXPY(TM1,one,TM3,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatAXPY(TM1,one,TM4,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatConvert(TM1,MATSEQDENSE,MAT_REUSE_MATRIX,&TM1);CHKERRQ(ierr);
-    ierr = MatAXPY(TM1,m_one,coarse_sub_mat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatAXPY(TM1,m_one,coarse_sub_mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatNorm(TM1,NORM_INFINITY,&real_value);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(pcbddc->dbg_viewer,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"----------------------------------\n");CHKERRQ(ierr);
@@ -758,7 +758,6 @@ PetscErrorCode PCBDDCSetUpLocalMatrices(PC pc)
   PetscBool         issbaij,isseqaij;
   /* manage repeated solves */
   MatReuse          reuse;
-  MatStructure      matstruct;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -766,12 +765,9 @@ PetscErrorCode PCBDDCSetUpLocalMatrices(PC pc)
     SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"BDDC Change of basis matrix has not been created");
   }
   /* get mat flags */
-  ierr = PCGetOperators(pc,NULL,NULL,&matstruct);CHKERRQ(ierr);
   reuse = MAT_INITIAL_MATRIX;
   if (pc->setupcalled) {
-    /* when matstruct is SAME_PRECONDITIONER, we shouldn't be here */
-    if (matstruct == SAME_PRECONDITIONER) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"This should not happen");
-    if (matstruct == SAME_NONZERO_PATTERN) {
+    if (pc->flag == SAME_NONZERO_PATTERN) {
       reuse = MAT_REUSE_MATRIX;
     } else {
       reuse = MAT_INITIAL_MATRIX;
@@ -798,7 +794,7 @@ PetscErrorCode PCBDDCSetUpLocalMatrices(PC pc)
     n_D = pcis->n-n_B;
 
     /* compute nonzero structure of change of basis on all local nodes */
-    ierr = PetscMalloc(pcis->n*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
+    ierr = PetscMalloc1(pcis->n,&nnz);CHKERRQ(ierr);
     ierr = ISGetIndices(pcis->is_I_local,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     for (i=0;i<n_D;i++) nnz[is_indices[i]] = 1;
     ierr = ISRestoreIndices(pcis->is_I_local,(const PetscInt**)&is_indices);CHKERRQ(ierr);
@@ -812,7 +808,7 @@ PetscErrorCode PCBDDCSetUpLocalMatrices(PC pc)
     }
     ierr = ISRestoreIndices(pcis->is_B_local,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     /* assemble change of basis matrix on the whole set of local dofs */
-    ierr = PetscMalloc(k*sizeof(PetscInt),&temp_indices);CHKERRQ(ierr);
+    ierr = PetscMalloc1(k,&temp_indices);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_SELF,&change_mat_all);CHKERRQ(ierr);
     ierr = MatSetSizes(change_mat_all,pcis->n,pcis->n,pcis->n,pcis->n);CHKERRQ(ierr);
     ierr = MatSetType(change_mat_all,MATSEQAIJ);CHKERRQ(ierr);
@@ -912,7 +908,7 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
   }
 
   /* Dohrmann's notation: dofs splitted in R (Remaining: all dofs but the vertices) and V (Vertices) */
-  ierr = PetscMalloc((pcis->n-n_vertices)*sizeof(PetscInt),&idx_R_local);CHKERRQ(ierr);
+  ierr = PetscMalloc1((pcis->n-n_vertices),&idx_R_local);CHKERRQ(ierr);
   for (i=0, n_R=0; i<pcis->n; i++) {
     if (!PetscBTLookup(bitmask,i)) {
       idx_R_local[n_R] = i;
@@ -927,7 +923,7 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
     PetscBool is_blocked = PETSC_TRUE;
     PetscInt  *vary;
     /* Verify if the vertex indices correspond to each element in a block (code taken from sbaij2.c) */
-    ierr = PetscMalloc(pcis->n/bs*sizeof(PetscInt),&vary);CHKERRQ(ierr);
+    ierr = PetscMalloc1(pcis->n/bs,&vary);CHKERRQ(ierr);
     ierr = PetscMemzero(vary,pcis->n/bs*sizeof(PetscInt));CHKERRQ(ierr);
     for (i=0; i<n_vertices; i++) vary[pcbddc->primal_indices_local_idxs[i]/bs]++;
     for (i=0; i<n_vertices; i++) {
@@ -961,8 +957,8 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
 
   /* VecScatters pcbddc->R_to_B and (optionally) pcbddc->R_to_D */
   ierr = ISGetIndices(pcbddc->is_R_local,(const PetscInt**)&idx_R_local);CHKERRQ(ierr);
-  ierr = PetscMalloc((pcis->n_B-n_vertices)*sizeof(PetscInt),&aux_array1);CHKERRQ(ierr);
-  ierr = PetscMalloc((pcis->n_B-n_vertices)*sizeof(PetscInt),&aux_array2);CHKERRQ(ierr);
+  ierr = PetscMalloc1((pcis->n_B-n_vertices),&aux_array1);CHKERRQ(ierr);
+  ierr = PetscMalloc1((pcis->n_B-n_vertices),&aux_array2);CHKERRQ(ierr);
   ierr = ISGetIndices(pcis->is_I_local,(const PetscInt**)&is_indices);CHKERRQ(ierr);
   for (i=0; i<n_D; i++) {
     ierr = PetscBTSet(bitmask,is_indices[i]);CHKERRQ(ierr);
@@ -987,7 +983,7 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
   ierr = ISDestroy(&is_aux2);CHKERRQ(ierr);
 
   if (pcbddc->switch_static || pcbddc->dbg_flag) {
-    ierr = PetscMalloc(n_D*sizeof(PetscInt),&aux_array1);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n_D,&aux_array1);CHKERRQ(ierr);
     for (i=0, j=0; i<n_R; i++) {
       if (PetscBTLookup(bitmask,idx_R_local[i])) {
         aux_array1[j++] = i;
@@ -1011,7 +1007,6 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
   PC_IS          *pcis = (PC_IS*)pc->data;
   PC             pc_temp;
   Mat            A_RR;
-  MatStructure   matstruct;
   MatReuse       reuse;
   PetscScalar    m_one = -1.0;
   PetscReal      value;
@@ -1023,7 +1018,6 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
   size_t         len;
 
   PetscFunctionBegin;
-  ierr = PCGetOperators(pc,NULL,NULL,&matstruct);CHKERRQ(ierr);
 
   /* compute prefixes */
   ierr = PetscStrcpy(dir_prefix,"");CHKERRQ(ierr);
@@ -1070,7 +1064,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
     /* Allow user's customization */
     ierr = KSPSetFromOptions(pcbddc->ksp_D);CHKERRQ(ierr);
   }
-  ierr = KSPSetOperators(pcbddc->ksp_D,pcis->A_II,pcis->A_II,matstruct);CHKERRQ(ierr);
+  ierr = KSPSetOperators(pcbddc->ksp_D,pcis->A_II,pcis->A_II);CHKERRQ(ierr);
   /* umfpack interface has a bug when matrix dimension is zero. TODO solve from umfpack interface */
   if (!n_D) {
     ierr = KSPGetPC(pcbddc->ksp_D,&pc_temp);CHKERRQ(ierr);
@@ -1088,7 +1082,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
   ierr = ISGetSize(pcbddc->is_R_local,&n_R);CHKERRQ(ierr);
   if (pcbddc->ksp_R) { /* already created ksp */
     PetscInt nn_R;
-    ierr = KSPGetOperators(pcbddc->ksp_R,NULL,&A_RR,NULL);CHKERRQ(ierr);
+    ierr = KSPGetOperators(pcbddc->ksp_R,NULL,&A_RR);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)A_RR);CHKERRQ(ierr);
     ierr = MatGetSize(A_RR,&nn_R,NULL);CHKERRQ(ierr);
     if (nn_R != n_R) { /* old ksp is not reusable, so reset it */
@@ -1104,7 +1098,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
       }
     }
     /* last check */
-    if (matstruct == DIFFERENT_NONZERO_PATTERN) {
+    if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
       ierr = MatDestroy(&A_RR);CHKERRQ(ierr);
       reuse = MAT_INITIAL_MATRIX;
     }
@@ -1139,7 +1133,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
     /* Allow user's customization */
     ierr = KSPSetFromOptions(pcbddc->ksp_R);CHKERRQ(ierr);
   }
-  ierr = KSPSetOperators(pcbddc->ksp_R,A_RR,A_RR,matstruct);CHKERRQ(ierr);
+  ierr = KSPSetOperators(pcbddc->ksp_R,A_RR,A_RR);CHKERRQ(ierr);
   /* umfpack interface has a bug when matrix dimension is zero. TODO solve from umfpack interface */
   if (!n_R) {
     ierr = KSPGetPC(pcbddc->ksp_R,&pc_temp);CHKERRQ(ierr);
@@ -1457,7 +1451,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     /* store information for BDDC solver reuse */
     ierr = PetscObjectReference((PetscObject)nearnullsp);CHKERRQ(ierr);
     pcbddc->onearnullspace = nearnullsp;
-    ierr = PetscMalloc(nnsp_size*sizeof(PetscObjectState),&pcbddc->onearnullvecs_state);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nnsp_size,&pcbddc->onearnullvecs_state);CHKERRQ(ierr);
     for (i=0;i<nnsp_size;i++) {
       ierr = PetscObjectStateGet((PetscObject)nearnullvecs[i],&pcbddc->onearnullvecs_state[i]);CHKERRQ(ierr);
     }
@@ -1483,7 +1477,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     ierr = ISGetSize(ISForVertices,&n_vertices);CHKERRQ(ierr);
   }
   total_counts += n_vertices;
-  ierr = PetscMalloc((total_counts+1)*sizeof(PetscInt),&temp_indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1((total_counts+1),&temp_indices);CHKERRQ(ierr);
   ierr = PetscBTCreate(total_counts,&change_basis);CHKERRQ(ierr);
   total_counts = 0;
   max_size_of_constraint = 0;
@@ -1499,11 +1493,11 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   }
   total_counts *= max_constraints;
   total_counts += n_vertices;
-  ierr = PetscMalloc(total_counts*sizeof(PetscScalar),&temp_quadrature_constraint);CHKERRQ(ierr);
-  ierr = PetscMalloc(total_counts*sizeof(PetscInt),&temp_indices_to_constraint);CHKERRQ(ierr);
-  ierr = PetscMalloc(total_counts*sizeof(PetscInt),&temp_indices_to_constraint_B);CHKERRQ(ierr);
+  ierr = PetscMalloc1(total_counts,&temp_quadrature_constraint);CHKERRQ(ierr);
+  ierr = PetscMalloc1(total_counts,&temp_indices_to_constraint);CHKERRQ(ierr);
+  ierr = PetscMalloc1(total_counts,&temp_indices_to_constraint_B);CHKERRQ(ierr);
   /* get local part of global near null space vectors */
-  ierr = PetscMalloc(nnsp_size*sizeof(Vec),&localnearnullsp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nnsp_size,&localnearnullsp);CHKERRQ(ierr);
   for (k=0;k<nnsp_size;k++) {
     ierr = VecDuplicate(pcis->vec1_N,&localnearnullsp[k]);CHKERRQ(ierr);
     ierr = VecScatterBegin(matis->ctx,nearnullvecs[k],localnearnullsp[k],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1519,11 +1513,11 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     PetscScalar temp_work;
 #if defined(PETSC_MISSING_LAPACK_GESVD)
     /* Proper Orthogonal Decomposition (POD) using the snapshot method */
-    ierr = PetscMalloc(max_constraints*max_constraints*sizeof(PetscScalar),&correlation_mat);CHKERRQ(ierr);
-    ierr = PetscMalloc(max_constraints*sizeof(PetscReal),&singular_vals);CHKERRQ(ierr);
-    ierr = PetscMalloc(max_size_of_constraint*max_constraints*sizeof(PetscScalar),&temp_basis);CHKERRQ(ierr);
+    ierr = PetscMalloc1(max_constraints*max_constraints,&correlation_mat);CHKERRQ(ierr);
+    ierr = PetscMalloc1(max_constraints,&singular_vals);CHKERRQ(ierr);
+    ierr = PetscMalloc1(max_size_of_constraint*max_constraints,&temp_basis);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-    ierr = PetscMalloc(3*max_constraints*sizeof(PetscReal),&rwork);CHKERRQ(ierr);
+    ierr = PetscMalloc1(3*max_constraints,&rwork);CHKERRQ(ierr);
 #endif
     /* now we evaluate the optimal workspace using query with lwork=-1 */
     ierr = PetscBLASIntCast(max_constraints,&Blas_N);CHKERRQ(ierr);
@@ -1546,9 +1540,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       min_n = max_size_of_constraint;
       max_n = max_constraints;
     }
-    ierr = PetscMalloc(min_n*sizeof(PetscReal),&singular_vals);CHKERRQ(ierr);
+    ierr = PetscMalloc1(min_n,&singular_vals);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-    ierr = PetscMalloc(5*min_n*sizeof(PetscReal),&rwork);CHKERRQ(ierr);
+    ierr = PetscMalloc1(5*min_n,&rwork);CHKERRQ(ierr);
 #endif
     /* now we evaluate the optimal workspace using query with lwork=-1 */
     lwork = -1;
@@ -1566,7 +1560,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 #endif /* on missing GESVD */
     /* Allocate optimal workspace */
     ierr = PetscBLASIntCast((PetscInt)PetscRealPart(temp_work),&lwork);CHKERRQ(ierr);
-    ierr = PetscMalloc((PetscInt)lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
+    ierr = PetscMalloc1((PetscInt)lwork,&work);CHKERRQ(ierr);
   }
   /* Now we can loop on constraining sets */
   total_counts = 0;
@@ -1780,12 +1774,12 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   ierr = MatSetType(pcbddc->ConstraintMatrix,impMatType);CHKERRQ(ierr);
   ierr = MatSetSizes(pcbddc->ConstraintMatrix,pcbddc->local_primal_size,pcis->n,pcbddc->local_primal_size,pcis->n);CHKERRQ(ierr);
   /* array to compute a local numbering of constraints : vertices first then constraints */
-  ierr = PetscMalloc(pcbddc->local_primal_size*sizeof(PetscInt),&aux_primal_numbering);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pcbddc->local_primal_size,&aux_primal_numbering);CHKERRQ(ierr);
   /* array to select the proper local node (of minimum index with respect to global ordering) when changing the basis */
   /* note: it should not be needed since IS for faces and edges are already sorted by global ordering when analyzing the graph but... just in case */
-  ierr = PetscMalloc(pcbddc->local_primal_size*sizeof(PetscInt),&aux_primal_minloc);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pcbddc->local_primal_size,&aux_primal_minloc);CHKERRQ(ierr);
   /* auxiliary stuff for basis change */
-  ierr = PetscMalloc(max_size_of_constraint*sizeof(PetscInt),&global_indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(max_size_of_constraint,&global_indices);CHKERRQ(ierr);
   ierr = PetscBTCreate(pcis->n_B,&touched);CHKERRQ(ierr);
 
   /* find primal_dofs: subdomain corners plus dofs selected as primal after change of basis */
@@ -1845,7 +1839,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   ierr = PetscSortInt(total_primal_vertices,aux_primal_numbering);CHKERRQ(ierr);
 
   /* nonzero structure of constraint matrix */
-  ierr = PetscMalloc(pcbddc->local_primal_size*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pcbddc->local_primal_size,&nnz);CHKERRQ(ierr);
   for (i=0;i<total_primal_vertices;i++) nnz[i]=1;
   j=total_primal_vertices;
   for (i=pcbddc->n_vertices;i<pcbddc->local_primal_size;i++) {
@@ -1882,7 +1876,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     /* iterator on aux_primal_minloc (ordered as read from nearnullspace: vertices, edges and then constraints) */
     PetscInt     primal_counter;
     /* working stuff for GEQRF */
-    PetscScalar  *qr_basis,*qr_tau,*qr_work,lqr_work_t;
+    PetscScalar  *qr_basis,*qr_tau = NULL,*qr_work,lqr_work_t;
     PetscBLASInt lqr_work;
     /* working stuff for UNGQR */
     PetscScalar  *gqr_work,lgqr_work_t;
@@ -1901,7 +1895,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     ierr = MatSetType(pcbddc->ChangeOfBasisMatrix,impMatType);CHKERRQ(ierr);
     ierr = MatSetSizes(pcbddc->ChangeOfBasisMatrix,pcis->n_B,pcis->n_B,pcis->n_B,pcis->n_B);CHKERRQ(ierr);
     /* work arrays */
-    ierr = PetscMalloc(pcis->n_B*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
+    ierr = PetscMalloc1(pcis->n_B,&nnz);CHKERRQ(ierr);
     for (i=0;i<pcis->n_B;i++) nnz[i]=1;
     /* nonzeros per row */
     for (i=pcbddc->n_vertices;i<pcbddc->local_primal_size;i++) {
@@ -1951,7 +1945,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     */
     if (qr_needed) {
       /* space to store Q */
-      ierr = PetscMalloc((max_size_of_constraint)*(max_size_of_constraint)*sizeof(PetscScalar),&qr_basis);CHKERRQ(ierr);
+      ierr = PetscMalloc1((max_size_of_constraint)*(max_size_of_constraint),&qr_basis);CHKERRQ(ierr);
       /* first we issue queries for optimal work */
       ierr = PetscBLASIntCast(max_size_of_constraint,&Blas_M);CHKERRQ(ierr);
       ierr = PetscBLASIntCast(max_constraints,&Blas_N);CHKERRQ(ierr);
@@ -1960,7 +1954,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&Blas_M,&Blas_N,qr_basis,&Blas_LDA,qr_tau,&lqr_work_t,&lqr_work,&lierr));
       if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GEQRF Lapack routine %d",(int)lierr);
       ierr = PetscBLASIntCast((PetscInt)PetscRealPart(lqr_work_t),&lqr_work);CHKERRQ(ierr);
-      ierr = PetscMalloc((PetscInt)PetscRealPart(lqr_work_t)*sizeof(*qr_work),&qr_work);CHKERRQ(ierr);
+      ierr = PetscMalloc1((PetscInt)PetscRealPart(lqr_work_t),&qr_work);CHKERRQ(ierr);
       lgqr_work = -1;
       ierr = PetscBLASIntCast(max_size_of_constraint,&Blas_M);CHKERRQ(ierr);
       ierr = PetscBLASIntCast(max_size_of_constraint,&Blas_N);CHKERRQ(ierr);
@@ -1970,19 +1964,19 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       PetscStackCallBLAS("LAPACKungqr",LAPACKungqr_(&Blas_M,&Blas_N,&Blas_K,qr_basis,&Blas_LDA,qr_tau,&lgqr_work_t,&lgqr_work,&lierr));
       if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to UNGQR Lapack routine %d",(int)lierr);
       ierr = PetscBLASIntCast((PetscInt)PetscRealPart(lgqr_work_t),&lgqr_work);CHKERRQ(ierr);
-      ierr = PetscMalloc((PetscInt)PetscRealPart(lgqr_work_t)*sizeof(*gqr_work),&gqr_work);CHKERRQ(ierr);
+      ierr = PetscMalloc1((PetscInt)PetscRealPart(lgqr_work_t),&gqr_work);CHKERRQ(ierr);
       /* array to store scaling factors for reflectors */
-      ierr = PetscMalloc(max_constraints*sizeof(*qr_tau),&qr_tau);CHKERRQ(ierr);
+      ierr = PetscMalloc1(max_constraints,&qr_tau);CHKERRQ(ierr);
       /* array to store rhs and solution of triangular solver */
-      ierr = PetscMalloc(max_constraints*max_constraints*sizeof(*trs_rhs),&trs_rhs);CHKERRQ(ierr);
+      ierr = PetscMalloc1(max_constraints*max_constraints,&trs_rhs);CHKERRQ(ierr);
       /* allocating workspace for check */
       if (pcbddc->dbg_flag) {
-        ierr = PetscMalloc(max_size_of_constraint*(max_constraints+max_size_of_constraint)*sizeof(*work),&work);CHKERRQ(ierr);
+        ierr = PetscMalloc1(max_size_of_constraint*(max_constraints+max_size_of_constraint),&work);CHKERRQ(ierr);
       }
     }
     /* array to store whether a node is primal or not */
     ierr = PetscBTCreate(pcis->n_B,&is_primal);CHKERRQ(ierr);
-    ierr = PetscMalloc(total_primal_vertices*sizeof(PetscInt),&aux_primal_numbering_B);CHKERRQ(ierr);
+    ierr = PetscMalloc1(total_primal_vertices,&aux_primal_numbering_B);CHKERRQ(ierr);
     ierr = ISGlobalToLocalMappingApply(pcbddc->BtoNmap,IS_GTOLM_DROP,total_primal_vertices,aux_primal_numbering,&i,aux_primal_numbering_B);CHKERRQ(ierr);
     if (i != total_primal_vertices) {
       SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Error in boundary numbering for BDDC vertices! %d != %d\n",total_primal_vertices,i);
@@ -2177,12 +2171,12 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 
   /* get indices in local ordering for vertices and constraints */
   if (olocal_primal_size == pcbddc->local_primal_size) { /* if this is true, I need to check if a new primal space has been introduced */
-    ierr = PetscMalloc(olocal_primal_size*sizeof(PetscInt),&oprimal_indices_local_idxs);CHKERRQ(ierr);
+    ierr = PetscMalloc1(olocal_primal_size,&oprimal_indices_local_idxs);CHKERRQ(ierr);
     ierr = PetscMemcpy(oprimal_indices_local_idxs,pcbddc->primal_indices_local_idxs,olocal_primal_size*sizeof(PetscInt));CHKERRQ(ierr);
   }
   ierr = PetscFree(aux_primal_numbering);CHKERRQ(ierr);
   ierr = PetscFree(pcbddc->primal_indices_local_idxs);CHKERRQ(ierr);
-  ierr = PetscMalloc(pcbddc->local_primal_size*sizeof(PetscInt),&pcbddc->primal_indices_local_idxs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pcbddc->local_primal_size,&pcbddc->primal_indices_local_idxs);CHKERRQ(ierr);
   ierr = PCBDDCGetPrimalVerticesLocalIdx(pc,&i,&aux_primal_numbering);CHKERRQ(ierr);
   ierr = PetscMemcpy(pcbddc->primal_indices_local_idxs,aux_primal_numbering,i*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscFree(aux_primal_numbering);CHKERRQ(ierr);
@@ -2262,7 +2256,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   vertex_size = 1;
   if (pcbddc->user_provided_isfordofs) {
     if (pcbddc->n_ISForDofs) { /* need to convert from global to local and remove references to global dofs splitting */
-      ierr = PetscMalloc(pcbddc->n_ISForDofs*sizeof(IS),&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
+      ierr = PetscMalloc1(pcbddc->n_ISForDofs,&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
       for (i=0;i<pcbddc->n_ISForDofs;i++) {
         ierr = PCBDDCGlobalToLocal(pc,matis->ctx,pcbddc->ISForDofs[i],&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
         ierr = ISDestroy(&pcbddc->ISForDofs[i]);CHKERRQ(ierr);
@@ -2324,7 +2318,7 @@ PetscErrorCode  PCBDDCGetPrimalVerticesLocalIdx(PC pc, PetscInt *n_vertices, Pet
       ierr = MatRestoreRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,NULL,NULL);CHKERRQ(ierr);
     }
     if (vertices_idx) {
-      ierr = PetscMalloc(n*sizeof(PetscInt),&vertices);CHKERRQ(ierr);
+      ierr = PetscMalloc1(n,&vertices);CHKERRQ(ierr);
       n = 0;
       for (i=0;i<local_primal_size;i++) {
         ierr = MatGetRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,(const PetscInt**)&row_cmat_indices,NULL);CHKERRQ(ierr);
@@ -2368,8 +2362,8 @@ PetscErrorCode  PCBDDCGetPrimalConstraintsLocalIdx(PC pc, PetscInt *n_constraint
       ierr = MatRestoreRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,NULL,NULL);CHKERRQ(ierr);
     }
     if (constraints_idx) {
-      ierr = PetscMalloc(n*sizeof(PetscInt),&constraints_index);CHKERRQ(ierr);
-      ierr = PetscMalloc(max_size_of_constraint*sizeof(PetscInt),&row_cmat_global_indices);CHKERRQ(ierr);
+      ierr = PetscMalloc1(n,&constraints_index);CHKERRQ(ierr);
+      ierr = PetscMalloc1(max_size_of_constraint,&row_cmat_global_indices);CHKERRQ(ierr);
       ierr = PetscBTCreate(local_size,&touched);CHKERRQ(ierr);
       n = 0;
       for (i=0;i<local_primal_size;i++) {
@@ -2460,10 +2454,10 @@ PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm comm,ISLocalToGlobalMapping l2gmap
   MPI_Comm_size(comm,&size_prec_comm);
   MPI_Comm_rank(comm,&rank_prec_comm);
   j = ( !rank_prec_comm ? size_prec_comm : 0);
-  ierr = PetscMalloc(j*sizeof(*dof_sizes),&dof_sizes);CHKERRQ(ierr);
-  ierr = PetscMalloc(j*sizeof(*dof_displs),&dof_displs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(j,&dof_sizes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(j,&dof_displs);CHKERRQ(ierr);
   /* get maximum size of subset */
-  ierr = PetscMalloc(n_local_dofs*sizeof(PetscInt),&temp_global_dofs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n_local_dofs,&temp_global_dofs);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(l2gmap,n_local_dofs,local_dofs,temp_global_dofs);CHKERRQ(ierr);
   max_local = 0;
   if (n_local_dofs) {
@@ -2586,7 +2580,7 @@ PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt n, Vec vecs[])
 
   PetscFunctionBegin;
   /* this implements stabilized Gram-Schmidt */
-  ierr = PetscMalloc(n*sizeof(PetscScalar),&alphas);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&alphas);CHKERRQ(ierr);
   for (i=0;i<n;i++) {
     ierr = VecNormalize(vecs[i],NULL);CHKERRQ(ierr);
     if (i<n) { ierr = VecMDot(vecs[i],n-i-1,&vecs[i+1],&alphas[i+1]);CHKERRQ(ierr); }
@@ -2629,7 +2623,7 @@ static PetscErrorCode MatISGetMPIXAIJ(Mat mat, MatType Mtype, MatReuse reuse, Ma
   ierr = MatGetSize(matis->A,&local_rows,&local_cols);CHKERRQ(ierr);
 
   /* work */
-  ierr = PetscMalloc(local_rows*sizeof(*local_indices),&local_indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(local_rows,&local_indices);CHKERRQ(ierr);
   for (i=0;i<local_rows;i++) local_indices[i]=i;
   /* map indices of local mat to global values */
   ierr = PetscMalloc(PetscMax(local_cols,local_rows)*sizeof(*global_indices),&global_indices);CHKERRQ(ierr);
@@ -2666,7 +2660,7 @@ static PetscErrorCode MatISGetMPIXAIJ(Mat mat, MatType Mtype, MatReuse reuse, Ma
     ierr = VecSetLocalToGlobalMapping(vec_dnz,matis->mapping);CHKERRQ(ierr);
     ierr = VecDuplicate(vec_dnz,&vec_onz);CHKERRQ(ierr);
     /* All processes need to compute entire row ownership */
-    ierr = PetscMalloc(rows*sizeof(*row_ownership),&row_ownership);CHKERRQ(ierr);
+    ierr = PetscMalloc1(rows,&row_ownership);CHKERRQ(ierr);
     ierr = MatGetOwnershipRanges(new_mat,(const PetscInt**)&mat_ranges);CHKERRQ(ierr);
     for (i=0;i<nsubdomains;i++) {
       for (j=mat_ranges[i];j<mat_ranges[i+1];j++) {
@@ -2678,8 +2672,8 @@ static PetscErrorCode MatISGetMPIXAIJ(Mat mat, MatType Mtype, MatReuse reuse, Ma
        my_dnz and my_onz contains exact contribution to preallocation from each local mat
        then, they will be summed up properly. This way, preallocation is always sufficient
     */
-    ierr = PetscMalloc(local_rows*sizeof(*my_dnz),&my_dnz);CHKERRQ(ierr);
-    ierr = PetscMalloc(local_rows*sizeof(*my_onz),&my_onz);CHKERRQ(ierr);
+    ierr = PetscMalloc1(local_rows,&my_dnz);CHKERRQ(ierr);
+    ierr = PetscMalloc1(local_rows,&my_onz);CHKERRQ(ierr);
     ierr = PetscMemzero(my_dnz,local_rows*sizeof(*my_dnz));CHKERRQ(ierr);
     ierr = PetscMemzero(my_onz,local_rows*sizeof(*my_onz));CHKERRQ(ierr);
     for (i=0;i<local_rows;i++) {
@@ -2821,15 +2815,15 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt n_subdomains, Pets
   ierr = ISLocalToGlobalMappingGetInfo(matis->mapping,&n_neighs,&neighs,&n_shared,&shared);CHKERRQ(ierr);
 
   /* build local CSR graph of subdomains' connectivity */
-  ierr = PetscMalloc(2*sizeof(*xadj),&xadj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2,&xadj);CHKERRQ(ierr);
   xadj[0] = 0;
   xadj[1] = PetscMax(n_neighs-1,0);
-  ierr = PetscMalloc(xadj[1]*sizeof(*adjncy),&adjncy);CHKERRQ(ierr);
-  ierr = PetscMalloc(xadj[1]*sizeof(*adjncy_wgt),&adjncy_wgt);CHKERRQ(ierr);
+  ierr = PetscMalloc1(xadj[1],&adjncy);CHKERRQ(ierr);
+  ierr = PetscMalloc1(xadj[1],&adjncy_wgt);CHKERRQ(ierr);
 
   if (threshold) {
     PetscInt* count,min_threshold;
-    ierr = PetscMalloc(local_size*sizeof(PetscInt),&count);CHKERRQ(ierr);
+    ierr = PetscMalloc1(local_size,&count);CHKERRQ(ierr);
     ierr = PetscMemzero(count,local_size*sizeof(PetscInt));CHKERRQ(ierr);
     for (i=1;i<n_neighs;i++) {/* i=1 so I don't count myself -> faces nodes counts to 1 */
       for (j=0;j<n_shared[i];j++) {
@@ -2887,7 +2881,7 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt n_subdomains, Pets
   } else {
     PetscInt coarsening_ratio;
     ierr = MPI_Comm_size(subcomm->comm,&size);CHKERRQ(ierr);
-    ierr = PetscMalloc(size*sizeof(*oldranks),&oldranks);CHKERRQ(ierr);
+    ierr = PetscMalloc1(size,&oldranks);CHKERRQ(ierr);
     prank = rank;
     ierr = MPI_Allgather(&prank,1,MPIU_INT,oldranks,1,MPIU_INT,subcomm->comm);CHKERRQ(ierr);
     /*
@@ -3020,7 +3014,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
 
   /* compute number of receives */
   ierr = MPI_Comm_size(comm,&commsize);CHKERRQ(ierr);
-  ierr = PetscMalloc(commsize*sizeof(*iflags),&iflags);CHKERRQ(ierr);
+  ierr = PetscMalloc1(commsize,&iflags);CHKERRQ(ierr);
   ierr = PetscMemzero(iflags,commsize*sizeof(*iflags));CHKERRQ(ierr);
   ierr = ISGetIndices(is_sends_internal,&is_indices);CHKERRQ(ierr);
   for (i=0;i<n_sends;i++) iflags[is_indices[i]] = 1;
@@ -3060,9 +3054,9 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
   }
 
   /* prepare send/receive buffers */
-  ierr = PetscMalloc(commsize*sizeof(*ilengths_idxs),&ilengths_idxs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(commsize,&ilengths_idxs);CHKERRQ(ierr);
   ierr = PetscMemzero(ilengths_idxs,commsize*sizeof(*ilengths_idxs));CHKERRQ(ierr);
-  ierr = PetscMalloc(commsize*sizeof(*ilengths_vals),&ilengths_vals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(commsize,&ilengths_vals);CHKERRQ(ierr);
   ierr = PetscMemzero(ilengths_vals,commsize*sizeof(*ilengths_vals));CHKERRQ(ierr);
   if (nis) {
     ierr = PetscMalloc(commsize*sizeof(*ilengths_idxs_is),&ilengths_idxs_is);CHKERRQ(ierr);
@@ -3083,7 +3077,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
   } else {
     ierr = MatDenseGetArray(local_mat,&send_buffer_vals);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetSize(matis->mapping,&i);CHKERRQ(ierr);
-    ierr = PetscMalloc((i+2)*sizeof(PetscInt),&send_buffer_idxs);CHKERRQ(ierr);
+    ierr = PetscMalloc1((i+2),&send_buffer_idxs);CHKERRQ(ierr);
     send_buffer_idxs[0] = (PetscInt)MATDENSE_PRIVATE;
     send_buffer_idxs[1] = i;
     ierr = ISLocalToGlobalMappingGetIndices(matis->mapping,(const PetscInt**)&ptr_idxs);CHKERRQ(ierr);
@@ -3131,9 +3125,9 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
     buf_size_vals += (PetscInt)olengths_vals[i];
     if (nis) buf_size_idxs_is += (PetscInt)olengths_idxs_is[i];
   }
-  ierr = PetscMalloc(buf_size_idxs*sizeof(PetscInt),&recv_buffer_idxs);CHKERRQ(ierr);
-  ierr = PetscMalloc(buf_size_vals*sizeof(PetscScalar),&recv_buffer_vals);CHKERRQ(ierr);
-  ierr = PetscMalloc(buf_size_idxs_is*sizeof(PetscInt),&recv_buffer_idxs_is);CHKERRQ(ierr);
+  ierr = PetscMalloc1(buf_size_idxs,&recv_buffer_idxs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(buf_size_vals,&recv_buffer_vals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(buf_size_idxs_is,&recv_buffer_idxs_is);CHKERRQ(ierr);
 
   /* get new tags for clean communications */
   ierr = PetscObjectGetNewTag((PetscObject)mat,&tag_idxs);CHKERRQ(ierr);
@@ -3141,12 +3135,12 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
   ierr = PetscObjectGetNewTag((PetscObject)mat,&tag_idxs_is);CHKERRQ(ierr);
 
   /* allocate for requests */
-  ierr = PetscMalloc(n_sends*sizeof(MPI_Request),&send_req_idxs);CHKERRQ(ierr);
-  ierr = PetscMalloc(n_sends*sizeof(MPI_Request),&send_req_vals);CHKERRQ(ierr);
-  ierr = PetscMalloc(n_sends*sizeof(MPI_Request),&send_req_idxs_is);CHKERRQ(ierr);
-  ierr = PetscMalloc(n_recvs*sizeof(MPI_Request),&recv_req_idxs);CHKERRQ(ierr);
-  ierr = PetscMalloc(n_recvs*sizeof(MPI_Request),&recv_req_vals);CHKERRQ(ierr);
-  ierr = PetscMalloc(n_recvs*sizeof(MPI_Request),&recv_req_idxs_is);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n_sends,&send_req_idxs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n_sends,&send_req_vals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n_sends,&send_req_idxs_is);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n_recvs,&recv_req_idxs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n_recvs,&recv_req_vals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n_recvs,&recv_req_idxs_is);CHKERRQ(ierr);
 
   /* communications */
   ptr_idxs = recv_buffer_idxs;
@@ -3182,7 +3176,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
     buf_size_idxs += *(ptr_idxs+1); /* second element is the local size of the l2gmap */
     ptr_idxs += olengths_idxs[i];
   }
-  ierr = PetscMalloc(buf_size_idxs*sizeof(PetscInt),&l2gmap_indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(buf_size_idxs,&l2gmap_indices);CHKERRQ(ierr);
   ptr_idxs = recv_buffer_idxs;
   buf_size_idxs = 0;
   for (i=0;i<n_recvs;i++) {
@@ -3392,7 +3386,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   KSPType                coarse_ksp_type;
   PetscBool              multilevel_requested,multilevel_allowed;
   PetscBool              setsym,issym,isherm,isbddc,isnn,coarse_reuse;
-  MatStructure           matstruct;
   Mat                    t_coarse_mat_is;
   PetscInt               void_procs,ncoarse_ml,ncoarse_ds,ncoarse;
   PetscMPIInt            all_procs;

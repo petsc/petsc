@@ -73,7 +73,7 @@ PetscErrorCode DMInterpolationAddPoints(DMInterpolationInfo ctx, PetscInt n, Pet
   if (ctx->points)  SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONGSTATE, "Cannot add points multiple times yet");
   ctx->nInput = n;
 
-  ierr = PetscMalloc(n*ctx->dim * sizeof(PetscReal), &ctx->points);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n*ctx->dim, &ctx->points);CHKERRQ(ierr);
   ierr = PetscMemcpy(ctx->points, points, n*ctx->dim * sizeof(PetscReal));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -112,7 +112,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
     ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
     ierr = PetscLayoutGetSize(layout, &N);CHKERRQ(ierr);
     /* Communicate all points to all processes */
-    ierr = PetscMalloc3(N*ctx->dim,PetscReal,&globalPoints,size,PetscMPIInt,&counts,size,PetscMPIInt,&displs);CHKERRQ(ierr);
+    ierr = PetscMalloc3(N*ctx->dim,&globalPoints,size,&counts,size,&displs);CHKERRQ(ierr);
     ierr = PetscLayoutGetRanges(layout, &ranges);CHKERRQ(ierr);
     for (p = 0; p < size; ++p) {
       counts[p] = (ranges[p+1] - ranges[p])*ctx->dim;
@@ -121,21 +121,22 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
     ierr = MPI_Allgatherv(ctx->points, n*ctx->dim, MPIU_REAL, globalPoints, counts, displs, MPIU_REAL, comm);CHKERRQ(ierr);
   } else {
     N = n;
-
     globalPoints = ctx->points;
+    counts = displs = NULL;
+    layout = NULL;
   }
 #if 0
-  ierr = PetscMalloc3(N,PetscInt,&foundCells,N,PetscMPIInt,&foundProcs,N,PetscMPIInt,&globalProcs);CHKERRQ(ierr);
+  ierr = PetscMalloc3(N,&foundCells,N,&foundProcs,N,&globalProcs);CHKERRQ(ierr);
   /* foundCells[p] = m->locatePoint(&globalPoints[p*ctx->dim]); */
 #else
 #if defined(PETSC_USE_COMPLEX)
-  ierr = PetscMalloc(N*sizeof(PetscScalar),&globalPointsScalar);CHKERRQ(ierr);
+  ierr = PetscMalloc1(N,&globalPointsScalar);CHKERRQ(ierr);
   for (i=0; i<N; i++) globalPointsScalar[i] = globalPoints[i];
 #else
   globalPointsScalar = globalPoints;
 #endif
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, ctx->dim, N*ctx->dim, globalPointsScalar, &pointVec);CHKERRQ(ierr);
-  ierr = PetscMalloc2(N,PetscMPIInt,&foundProcs,N,PetscMPIInt,&globalProcs);CHKERRQ(ierr);
+  ierr = PetscMalloc2(N,&foundProcs,N,&globalProcs);CHKERRQ(ierr);
   ierr = DMLocatePoints(dm, pointVec, &cellIS);CHKERRQ(ierr);
   ierr = ISGetIndices(cellIS, &foundCells);CHKERRQ(ierr);
 #endif
@@ -151,7 +152,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
     else if (globalProcs[p] == rank) ctx->n++;
   }
   /* Create coordinates vector and array of owned cells */
-  ierr = PetscMalloc(ctx->n * sizeof(PetscInt), &ctx->cells);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ctx->n, &ctx->cells);CHKERRQ(ierr);
   ierr = VecCreate(comm, &ctx->coords);CHKERRQ(ierr);
   ierr = VecSetSizes(ctx->coords, ctx->n*ctx->dim, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(ctx->coords, ctx->dim);CHKERRQ(ierr);
@@ -175,10 +176,8 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   ierr = VecDestroy(&pointVec);CHKERRQ(ierr);
 #endif
   if ((void*)globalPointsScalar != (void*)globalPoints) {ierr = PetscFree(globalPointsScalar);CHKERRQ(ierr);}
-  if (!redundantPoints) {
-    ierr = PetscFree3(globalPoints,counts,displs);CHKERRQ(ierr);
-    ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
-  }
+  if (!redundantPoints) {ierr = PetscFree3(globalPoints,counts,displs);CHKERRQ(ierr);}
+  ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -232,7 +231,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Triangle_Private(DMInterpolatio
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc3(ctx->dim,PetscReal,&v0,ctx->dim*ctx->dim,PetscReal,&J,ctx->dim*ctx->dim,PetscReal,&invJ);CHKERRQ(ierr);
+  ierr = PetscMalloc3(ctx->dim,&v0,ctx->dim*ctx->dim,&J,ctx->dim*ctx->dim,&invJ);CHKERRQ(ierr);
   ierr = VecGetArray(ctx->coords, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
   for (p = 0; p < ctx->n; ++p) {
@@ -269,7 +268,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Tetrahedron_Private(DMInterpola
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc3(ctx->dim,PetscReal,&v0,ctx->dim*ctx->dim,PetscReal,&J,ctx->dim*ctx->dim,PetscReal,&invJ);CHKERRQ(ierr);
+  ierr = PetscMalloc3(ctx->dim,&v0,ctx->dim*ctx->dim,&J,ctx->dim*ctx->dim,&invJ);CHKERRQ(ierr);
   ierr = VecGetArray(ctx->coords, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
   for (p = 0; p < ctx->n; ++p) {
@@ -338,7 +337,7 @@ PETSC_STATIC_INLINE PetscErrorCode QuadMap_Private(SNES snes, Vec Xref, Vec Xrea
 #include <petsc-private/dmimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "QuadJacobian_Private"
-PETSC_STATIC_INLINE PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat *J, Mat *M, MatStructure *flag, void *ctx)
+PETSC_STATIC_INLINE PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat J, Mat M, void *ctx)
 {
   const PetscScalar *vertices = (const PetscScalar*) ctx;
   const PetscScalar x0        = vertices[0];
@@ -364,12 +363,12 @@ PETSC_STATIC_INLINE PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat
 
     values[0] = (x1 - x0 + f_01*y) * 0.5; values[1] = (x3 - x0 + f_01*x) * 0.5;
     values[2] = (y1 - y0 + g_01*y) * 0.5; values[3] = (y3 - y0 + g_01*x) * 0.5;
-    ierr      = MatSetValues(*J, 2, rows, 2, rows, values, INSERT_VALUES);CHKERRQ(ierr);
+    ierr      = MatSetValues(J, 2, rows, 2, rows, values, INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscLogFlops(30);CHKERRQ(ierr);
   ierr = VecRestoreArray(Xref,  &ref);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -521,7 +520,7 @@ PETSC_STATIC_INLINE PetscErrorCode HexMap_Private(SNES snes, Vec Xref, Vec Xreal
 
 #undef __FUNCT__
 #define __FUNCT__ "HexJacobian_Private"
-PETSC_STATIC_INLINE PetscErrorCode HexJacobian_Private(SNES snes, Vec Xref, Mat *J, Mat *M, MatStructure *flag, void *ctx)
+PETSC_STATIC_INLINE PetscErrorCode HexJacobian_Private(SNES snes, Vec Xref, Mat J, Mat M, void *ctx)
 {
   const PetscScalar *vertices = (const PetscScalar*) ctx;
   const PetscScalar x0        = vertices[0];
@@ -582,12 +581,12 @@ PETSC_STATIC_INLINE PetscErrorCode HexJacobian_Private(SNES snes, Vec Xref, Mat 
     values[7] = (z3 - z0 + h_xy*x + h_yz*z + h_xyz*x*z) / 2.0;
     values[8] = (z4 - z0 + h_yz*y + h_xz*x + h_xyz*x*y) / 2.0;
 
-    ierr = MatSetValues(*J, 3, rows, 3, rows, values, INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(J, 3, rows, 3, rows, values, INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscLogFlops(152);CHKERRQ(ierr);
   ierr = VecRestoreArray(Xref,  &ref);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

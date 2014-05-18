@@ -157,6 +157,7 @@ PetscErrorCode MatView_IS(Mat A,PetscViewer viewer)
   PetscViewer    sviewer;
 
   PetscFunctionBegin;
+  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
   ierr = MatView(a->A,sviewer);CHKERRQ(ierr);
   ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
@@ -277,7 +278,7 @@ PetscErrorCode MatZeroRows_IS(Mat A,PetscInt n,const PetscInt rows[],PetscScalar
   PetscFunctionBegin;
   if (x && b) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support");
   if (n) {
-    ierr = PetscMalloc(n*sizeof(PetscInt),&rows_l);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&rows_l);CHKERRQ(ierr);
     ierr = ISGlobalToLocalMappingApply(is->mapping,IS_GTOLM_DROP,n,rows,&n_l,rows_l);CHKERRQ(ierr);
   }
   ierr = MatZeroRowsLocal(A,n_l,rows_l,diag,x,b);CHKERRQ(ierr);
@@ -581,7 +582,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   Mat_IS         *b;
 
   PetscFunctionBegin;
-  ierr    = PetscNewLog(A,Mat_IS,&b);CHKERRQ(ierr);
+  ierr    = PetscNewLog(A,&b);CHKERRQ(ierr);
   A->data = (void*)b;
   ierr    = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
 

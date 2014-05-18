@@ -655,6 +655,18 @@ static PetscErrorCode DMLoad_Shell(DM dm,PetscViewer v)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMCreateSubDM_Shell"
+PetscErrorCode DMCreateSubDM_Shell(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (subdm) {ierr = DMShellCreate(PetscObjectComm((PetscObject) dm), subdm);CHKERRQ(ierr);}
+  ierr = DMCreateSubDM_Section_Private(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMCreate_Shell"
 PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
 {
@@ -662,7 +674,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
   DM_Shell       *shell;
 
   PetscFunctionBegin;
-  ierr     = PetscNewLog(dm,DM_Shell,&shell);CHKERRQ(ierr);
+  ierr     = PetscNewLog(dm,&shell);CHKERRQ(ierr);
   dm->data = shell;
 
   ierr = PetscObjectChangeTypeName((PetscObject)dm,DMSHELL);CHKERRQ(ierr);
@@ -679,6 +691,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
   dm->ops->localtoglobalend   = DMLocalToGlobalEndDefaultShell;
   dm->ops->localtolocalbegin  = DMLocalToLocalBeginDefaultShell;
   dm->ops->localtolocalend    = DMLocalToLocalEndDefaultShell;
+  dm->ops->createsubdm        = DMCreateSubDM_Shell;
   PetscFunctionReturn(0);
 }
 
@@ -707,6 +720,7 @@ PetscErrorCode  DMShellCreate(MPI_Comm comm,DM *dm)
   PetscValidPointer(dm,2);
   ierr = DMCreate(comm,dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm,DMSHELL);CHKERRQ(ierr);
+  ierr = DMSetUp(*dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

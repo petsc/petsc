@@ -63,6 +63,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscpc.h>
 #include <finclude/petscksp.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 
       MPI_Comm comm
@@ -81,8 +82,8 @@
       external mymult
 
 !     --------------- Data to define nonlinear solver --------------
-      double precision   rtol,ttol
-      double precision   fnorm,ynorm,xnorm
+      PetscReal   rtol,ttol
+      PetscReal   fnorm,ynorm,xnorm
       PetscInt            max_nonlin_its,one
       PetscInt            lin_its
       PetscInt           i,m
@@ -129,7 +130,7 @@
       Ny = PETSC_DECIDE
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
-      call DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,      &
+      call DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,         &
      &     DMDA_STENCIL_STAR,mx,my,Nx,Ny,one,one,                        &
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
 
@@ -228,7 +229,7 @@
 !      matrix.
 !    - Then solve the Newton system.
 
-         call KSPSetOperators(ksp,J,B,SAME_NONZERO_PATTERN,ierr)
+         call KSPSetOperators(ksp,J,B,ierr)
          call KSPSolve(ksp,F,Y,ierr)
 
 !  Compute updated iterate
@@ -308,6 +309,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscpc.h>
 #include <finclude/petscksp.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
       PetscErrorCode    ierr
       PetscOffset      idx
@@ -315,7 +317,7 @@
       PetscInt  i,j,row,mx
       PetscInt  my, xs,ys,xm
       PetscInt  ym,gxm,gym,gxs,gys
-      double precision one,lambda,temp1,temp,hx,hy
+      PetscReal one,lambda,temp1,temp,hx,hy
       PetscScalar      xx(1)
       DM               da
       Mat              B
@@ -394,6 +396,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscpc.h>
 #include <finclude/petscksp.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 
       Vec              X,F,localX,localF
@@ -401,8 +404,8 @@
       PetscOffset      idx,idf
       PetscErrorCode ierr
       PetscInt i,j,row,mx,my,xs,ys,xm,ym,gxs
-      double precision two,one,lambda,hx
-      double precision hy,hxdhy,hydhx,sc
+      PetscReal two,one,lambda,hx
+      PetscReal hy,hxdhy,hydhx,sc
       PetscScalar      u,uxx,uyy,xx(1),ff(1)
       DM               da
       Mat              B
@@ -502,6 +505,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscpc.h>
 #include <finclude/petscksp.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 
       Vec         X
@@ -592,6 +596,8 @@
      &                      ierr)
  20     continue
  10   continue
+
+      call DMDARestoreGlobalIndices(da,nloc,ltog,idltog,ierr)
 
 !  Assemble matrix, using the 2-step process:
 !    MatAssemblyBegin(), MatAssemblyEnd().

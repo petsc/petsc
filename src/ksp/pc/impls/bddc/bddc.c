@@ -40,8 +40,8 @@
    C. Dohrmann "An approximate BDDC preconditioner", Numerical Linear Algebra with Applications Volume 14, Issue 2, pages 149-168, March 2007
    ---------------------------------------------------------------------------------------------------------------------------------------------- */
 
-#include "bddc.h" /*I "petscpc.h" I*/  /* includes for fortran wrappers */
-#include "bddcprivate.h"
+#include <../src/ksp/pc/impls/bddc/bddc.h> /*I "petscpc.h" I*/  /* includes for fortran wrappers */
+#include <../src/ksp/pc/impls/bddc/bddcprivate.h>
 #include <petscblaslapack.h>
 
 /* -------------------------------------------------------------------------- */
@@ -660,8 +660,8 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
   /* TODO: PCBDDCGraphSetAdjacency */
   /* get CSR into graph structure */
   if (copymode == PETSC_COPY_VALUES) {
-    ierr = PetscMalloc((nvtxs+1)*sizeof(PetscInt),&mat_graph->xadj);CHKERRQ(ierr);
-    ierr = PetscMalloc(xadj[nvtxs]*sizeof(PetscInt),&mat_graph->adjncy);CHKERRQ(ierr);
+    ierr = PetscMalloc1((nvtxs+1),&mat_graph->xadj);CHKERRQ(ierr);
+    ierr = PetscMalloc1(xadj[nvtxs],&mat_graph->adjncy);CHKERRQ(ierr);
     ierr = PetscMemcpy(mat_graph->xadj,xadj,(nvtxs+1)*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemcpy(mat_graph->adjncy,adjncy,xadj[nvtxs]*sizeof(PetscInt));CHKERRQ(ierr);
   } else if (copymode == PETSC_OWN_POINTER) {
@@ -802,7 +802,7 @@ static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc,PetscInt n_is, IS ISForD
   ierr = PetscFree(pcbddc->ISForDofsLocal);CHKERRQ(ierr);
   pcbddc->n_ISForDofsLocal = 0;
   /* allocate space then set */
-  ierr = PetscMalloc(n_is*sizeof(IS),&pcbddc->ISForDofs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n_is,&pcbddc->ISForDofs);CHKERRQ(ierr);
   for (i=0;i<n_is;i++) {
     ierr = PetscObjectReference((PetscObject)ISForDofs[i]);CHKERRQ(ierr);
     pcbddc->ISForDofs[i]=ISForDofs[i];
@@ -1055,23 +1055,18 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   PetscErrorCode   ierr;
   PC_BDDC*         pcbddc = (PC_BDDC*)pc->data;
   MatNullSpace     nearnullspace;
-  MatStructure     flag;
   PetscBool        computeis,computetopography,computesolvers;
   PetscBool        new_nearnullspace_provided;
 
   PetscFunctionBegin;
   /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other future nonoverlapping preconditioners */
-  /* PCIS does not support MatStructure flags different from SAME_PRECONDITIONER */
   /* For BDDC we need to define a local "Neumann" problem different to that defined in PCISSetup
      Also, BDDC directly build the Dirichlet problem */
 
   /* split work */
   if (pc->setupcalled) {
     computeis = PETSC_FALSE;
-    ierr = PCGetOperators(pc,NULL,NULL,&flag);CHKERRQ(ierr);
-    if (flag == SAME_PRECONDITIONER) {
-      PetscFunctionReturn(0);
-    } else if (flag == SAME_NONZERO_PATTERN) {
+    if (pc->flag == SAME_NONZERO_PATTERN) {
       computetopography = PETSC_FALSE;
       computesolvers = PETSC_TRUE;
     } else { /* DIFFERENT_NONZERO_PATTERN */
@@ -1565,7 +1560,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, Mat *fetidp_mat, P
   ierr = PCShellSetApply(newpc,FETIDPPCApply);CHKERRQ(ierr);
   ierr = PCShellSetApplyTranspose(newpc,FETIDPPCApplyTranspose);CHKERRQ(ierr);
   ierr = PCShellSetDestroy(newpc,PCBDDCDestroyFETIDPPC);CHKERRQ(ierr);
-  ierr = PCSetOperators(newpc,newmat,newmat,SAME_PRECONDITIONER);CHKERRQ(ierr);
+  ierr = PCSetOperators(newpc,newmat,newmat);CHKERRQ(ierr);
   ierr = PCSetUp(newpc);CHKERRQ(ierr);
   /* return pointers for objects created */
   *fetidp_mat=newmat;
@@ -1686,7 +1681,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
 
   PetscFunctionBegin;
   /* Creates the private data structure for this preconditioner and attach it to the PC object. */
-  ierr      = PetscNewLog(pc,PC_BDDC,&pcbddc);CHKERRQ(ierr);
+  ierr      = PetscNewLog(pc,&pcbddc);CHKERRQ(ierr);
   pc->data  = (void*)pcbddc;
 
   /* create PCIS data structure */

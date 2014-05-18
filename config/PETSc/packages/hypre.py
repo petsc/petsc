@@ -18,6 +18,8 @@ class Configure(PETSc.package.NewPackage):
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
+    self.compilerFlags   = framework.require('config.compilerFlags', self)
+    self.openmp     = framework.require('PETSc.packages.openmp',self)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.deps       = [self.mpi,self.blasLapack]
     return
@@ -74,6 +76,8 @@ class Configure(PETSc.package.NewPackage):
     args.append('--with-lapack-lib-dir=')
     args.append('--with-blas=yes')
     args.append('--with-lapack=yes')
+    if self.openmp.found:
+      args.append('--with-openmp')
 
     # explicitly tell hypre BLAS/LAPACK mangling since it may not match Fortran mangling
     if self.blasLapack.mangling == 'underscore':
@@ -84,6 +88,9 @@ class Configure(PETSc.package.NewPackage):
       mang = 'no-underscores'
     args.append('--with-fmangle-blas='+mang)
     args.append('--with-fmangle-lapack='+mang)
+
+    if self.compilerFlags.debugging:
+      args.append('--with-print-errors')
 
     args.append('--without-babel')
     args.append('--without-mli')

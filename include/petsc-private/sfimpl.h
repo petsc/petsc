@@ -5,6 +5,8 @@
 #include <petsc-private/petscimpl.h>
 #include <petscviewer.h>
 
+PETSC_EXTERN PetscLogEvent PETSCSF_SetGraph, PETSCSF_BcastBegin, PETSCSF_BcastEnd, PETSCSF_ReduceBegin, PETSCSF_ReduceEnd, PETSCSF_FetchAndOpBegin, PETSCSF_FetchAndOpEnd;
+
 struct _PetscSFOps {
   PetscErrorCode (*Reset)(PetscSF);
   PetscErrorCode (*Destroy)(PetscSF);
@@ -51,5 +53,6 @@ PETSC_EXTERN PetscBool PetscSFRegisterAllCalled;
 
 PETSC_EXTERN PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype,MPI_Datatype*);
 PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype,MPI_Datatype,PetscBool*);
+PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype,MPI_Datatype,PetscInt*);
 
 #endif

@@ -49,12 +49,12 @@ int main(int argc,char **args)
     ierr = MatGetRow(C,i,&nz,&idx,&values);CHKERRQ(ierr);
     ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"[%d] get row %D: ",rank,i);CHKERRQ(ierr);
     for (j=0; j<nz; j++) {
-      ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"%D %G  ",idx[j],PetscRealPart(values[j]));CHKERRQ(ierr);
+      ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"%D %g  ",idx[j],(double)PetscRealPart(values[j]));CHKERRQ(ierr);
     }
     ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"\n");CHKERRQ(ierr);
     ierr = MatRestoreRow(C,i,&nz,&idx,&values);CHKERRQ(ierr);
   }
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);CHKERRQ(ierr);
 
   ierr = MatConvert(C,MATSAME,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);

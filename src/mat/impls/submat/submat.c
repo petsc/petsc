@@ -293,7 +293,7 @@ PetscErrorCode  MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat *newmat)
   ierr = MatSetSizes(N,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)N,MATSUBMATRIX);CHKERRQ(ierr);
 
-  ierr      = PetscNewLog(N,Mat_SubMatrix,&Na);CHKERRQ(ierr);
+  ierr      = PetscNewLog(N,&Na);CHKERRQ(ierr);
   N->data   = (void*)Na;
   ierr      = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
   ierr      = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
@@ -311,8 +311,7 @@ PetscErrorCode  MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat *newmat)
   N->ops->scale            = MatScale_SubMatrix;
   N->ops->diagonalscale    = MatDiagonalScale_SubMatrix;
 
-  ierr = PetscLayoutSetBlockSize(N->rmap,A->rmap->bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(N->cmap,A->cmap->bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSizesFromMats(N,A,A);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(N->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(N->cmap);CHKERRQ(ierr);
 

@@ -133,7 +133,6 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   PetscErrorCode      ierr;
   PetscInt            maxits,i,lits;
   PetscBool           lssucceed;
-  MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal           fnorm,gnorm,xnorm,ynorm;
   Vec                 Y,X,F,G,W;
   KSPConvergedReason  kspreason;
@@ -161,7 +160,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
 
   /* compute the preconditioned function first in the case of left preconditioning with preconditioned function */
   if (snes->pc && snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
-    ierr = SNESApplyPC(snes,X,PETSC_NULL,PETSC_NULL,F);CHKERRQ(ierr);
+    ierr = SNESApplyNPC(snes,X,NULL,F);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
     if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
@@ -216,9 +215,9 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
           snes->reason = SNES_DIVERGED_INNER;
           PetscFunctionReturn(0);
         }
-        ierr = SNESGetPCFunction(snes,F,&fnorm);CHKERRQ(ierr);
+        ierr = SNESGetNPCFunction(snes,F,&fnorm);CHKERRQ(ierr);
       } else if (snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
-        ierr = SNESApplyPC(snes,X,F,&fnorm,F);CHKERRQ(ierr);
+        ierr = SNESApplyNPC(snes,X,F,F);CHKERRQ(ierr);
         ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
         if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
           snes->reason = SNES_DIVERGED_INNER;
@@ -228,8 +227,8 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
     }
 
     /* Solve J Y = F, where J is Jacobian matrix */
-    ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
-    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
+    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
     ierr = KSPSolve(snes->ksp,F,Y);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
     if (kspreason < 0) {
@@ -442,7 +441,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES snes)
   snes->pcside  = PC_RIGHT;
   snes->usesksp = PETSC_TRUE;
   snes->usespc  = PETSC_TRUE;
-  ierr          = PetscNewLog(snes,SNES_NEWTONLS,&neP);CHKERRQ(ierr);
+  ierr          = PetscNewLog(snes,&neP);CHKERRQ(ierr);
   snes->data    = (void*)neP;
   PetscFunctionReturn(0);
 }

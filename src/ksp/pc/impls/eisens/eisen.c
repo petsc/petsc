@@ -161,7 +161,7 @@ static PetscErrorCode PCView_Eisenstat(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Eisenstat: omega = %G\n",eis->omega);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Eisenstat: omega = %g\n",(double)eis->omega);CHKERRQ(ierr);
     if (eis->usediag) {
       ierr = PetscViewerASCIIPrintf(viewer,"Eisenstat: Using diagonal scaling (default)\n");CHKERRQ(ierr);
     } else {
@@ -334,7 +334,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Eisenstat(PC pc)
   PC_Eisenstat   *eis;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_Eisenstat,&eis);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&eis);CHKERRQ(ierr);
 
   pc->ops->apply           = PCApply_Eisenstat;
   pc->ops->presolve        = PCPreSolve_Eisenstat;

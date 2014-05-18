@@ -114,6 +114,38 @@ class Package(config.base.Configure):
     self.downloadfilename = self.downloadname;
     return
 
+  def getDefaultPrecision(self):
+    '''The precision of the library'''
+    if hasattr(self, 'precisionProvider'):
+      if hasattr(self.precisionProvider, 'precision'):
+        return self.precisionProvider.precision
+    return self._defaultPrecision
+  def setDefaultPrecision(self, defaultPrecision):
+    '''The precision of the library'''
+    self._defaultPrecision = defaultPrecision
+    return
+  defaultPrecision = property(getDefaultPrecision, setDefaultPrecision, doc = 'The precision of the library')
+
+  def checkNoOptFlag(self):
+    flag = '-O0'
+    if self.setCompilers.checkCompilerFlag(flag): return flag
+    return ''
+
+  def getSharedFlag(self,cflags):
+    for flag in ['-PIC', '-fPIC', '-KPIC', '-qpic']:
+      if cflags.find(flag) >=0: return flag
+    return ''
+
+  def getPointerSizeFlag(self,cflags):
+    for flag in ['-m32', '-m64', '-xarch=v9','-q64']:
+      if cflags.find(flag) >=0: return flag
+    return ''
+
+  def getWindowsNonOptFlags(self,cflags):
+    for flag in ['-MT','-MTd','-MD','-MDd','-threads']:
+      if cflags.find(flag) >=0: return flag
+    return ''
+
   def getDefaultLanguage(self):
     '''The language in which to run tests'''
     if hasattr(self, 'forceLanguage'):
@@ -422,6 +454,7 @@ class Package(config.base.Configure):
     err =''
     if not self.downloadURLSetByUser and hasattr(self.sourceControl, 'git') and self.gitcommit and self.gitPreReqCheck():
       for giturl in self.giturls: # First try to fetch using Git
+        self.logPrintBox('Trying to download '+giturl+' for '+self.PACKAGE)
         try:
           gitrepo = os.path.join(self.externalPackagesDir, self.downloadname)
           self.executeShellCommand([self.sourceControl.git, 'clone', giturl, gitrepo])
@@ -432,6 +465,7 @@ class Package(config.base.Configure):
           self.logPrint('ERROR: '+str(e))
           err += str(e)
     for url in download_urls:
+      self.logPrintBox('Trying to download '+url+' for '+self.PACKAGE)
       try:
         retriever.genericRetrieve(url, self.externalPackagesDir, self.downloadname)
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.name+' into '+self.getDir(0))
@@ -548,9 +582,9 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' without Fortran, make sure you do NOT have --with-fc=0')
       if self.noMPIUni and self.mpi.usingMPIUni:
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
-      if not self.worksonWindows and self.setCompilers.isWindows(self.setCompilers.CC):
+      if not self.worksonWindows and (self.setCompilers.CC.find('win32fe') >= 0):
         raise RuntimeError('External package '+self.name+' does not work with Microsoft compilers')
-      if self.download and self.framework.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and self.setCompilers.isWindows(self.setCompilers.CC):
+      if self.download and self.framework.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and (self.setCompilers.CC.find('win32fe') >= 0):
         raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' with Microsoft compilers')
     if not self.download and self.framework.argDB.has_key('download-'+self.downloadname.lower()) and self.framework.argDB['download-'+self.downloadname.lower()]:
       raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower())

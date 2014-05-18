@@ -72,7 +72,7 @@ static PetscErrorCode TSStep_Alpha(TS ts)
       PetscReal t1     = ts->ptime + ts->time_step;
       PetscBool stepok = (reject==0) ? PETSC_TRUE : PETSC_FALSE;
       ierr = th->adapt(ts,t1,th->X1,th->V1,&next_time_step,&stepok,th->adaptctx);CHKERRQ(ierr);
-      ierr = PetscInfo5(ts,"Step %D (t=%G,dt=%G) %s, next dt=%G\n",ts->steps,ts->ptime,ts->time_step,stepok?"accepted":"rejected",next_time_step);CHKERRQ(ierr);
+      ierr = PetscInfo5(ts,"Step %D (t=%g,dt=%g) %s, next dt=%g\n",ts->steps,(double)ts->ptime,(double)ts->time_step,stepok?"accepted":"rejected",(double)next_time_step);CHKERRQ(ierr);
       if (stepok) break;
     }
   }
@@ -171,14 +171,14 @@ static PetscErrorCode SNESTSFormFunction_Alpha(SNES snes,Vec x,Vec y,TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESTSFormJacobian_Alpha"
-static PetscErrorCode SNESTSFormJacobian_Alpha(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *str,TS ts)
+static PetscErrorCode SNESTSFormJacobian_Alpha(SNES snes,Vec x,Mat A,Mat B,TS ts)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* A,B = Jacobian(ta,Xa,Va) */
-  ierr = TSComputeIJacobian(ts,th->stage_time,th->Xa,th->Va,th->shift,A,B,str,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = TSComputeIJacobian(ts,th->stage_time,th->Xa,th->Va,th->shift,A,B,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -243,7 +243,7 @@ static PetscErrorCode TSView_Alpha(TS ts,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Alpha_m=%G, Alpha_f=%G, Gamma=%G\n",th->Alpha_m,th->Alpha_f,th->Gamma);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Alpha_m=%g, Alpha_f=%g, Gamma=%g\n",(double)th->Alpha_m,(double)th->Alpha_f,(double)th->Gamma);CHKERRQ(ierr);
   }
   ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -258,7 +258,7 @@ PetscErrorCode  TSAlphaSetRadius_Alpha(TS ts,PetscReal radius)
   TS_Alpha *th = (TS_Alpha*)ts->data;
 
   PetscFunctionBegin;
-  if (radius < 0 || radius > 1) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Radius %G not in range [0,1]",radius);
+  if (radius < 0 || radius > 1) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Radius %g not in range [0,1]",(double)radius);
   th->Alpha_m = 0.5*(3-radius)/(1+radius);
   th->Alpha_f = 1/(1+radius);
   th->Gamma   = 0.5 + th->Alpha_m - th->Alpha_f;
@@ -341,7 +341,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha(TS ts)
   ts->ops->snesfunction   = SNESTSFormFunction_Alpha;
   ts->ops->snesjacobian   = SNESTSFormJacobian_Alpha;
 
-  ierr = PetscNewLog(ts,TS_Alpha,&th);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;
 
   th->Alpha_m = 0.5;

@@ -153,7 +153,7 @@ PETSC_INTERN PetscErrorCode KSPPlotEigenContours_Private(KSP,PetscInt,const Pets
 typedef struct _p_DMKSP *DMKSP;
 typedef struct _DMKSPOps *DMKSPOps;
 struct _DMKSPOps {
-  PetscErrorCode (*computeoperators)(KSP,Mat,Mat,MatStructure*,void*);
+  PetscErrorCode (*computeoperators)(KSP,Mat,Mat,void*);
   PetscErrorCode (*computerhs)(KSP,Vec,void*);
   PetscErrorCode (*computeinitialguess)(KSP,Vec,void*);
   PetscErrorCode (*destroy)(DMKSP*);
@@ -279,6 +279,6 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyBAorABTranspose(KSP ksp,Vec x,Vec 
 
 PETSC_EXTERN PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 
-PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatSchurComplementAinvType,MatReuse,Mat*);
 
 #endif

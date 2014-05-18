@@ -429,7 +429,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       }
     }
     /* check if this processor node should be in debugger */
-    ierr  = PetscMalloc(size*sizeof(PetscInt),&nodes);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(size,&nodes);CHKERRQ(ierr);
     lsize = size;
     ierr  = PetscOptionsGetIntArray(NULL,"-debugger_nodes",nodes,&lsize,&flag);CHKERRQ(ierr);
     if (flag) {
@@ -489,7 +489,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetBool(NULL,"-log_all",&flg1,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-log",&flg2,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,"-log_summary",&flg3);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-log_summary_python",&flg4);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-log_view",&flg4);CHKERRQ(ierr);
   if (flg1)                      { ierr = PetscLogAllBegin();CHKERRQ(ierr); }
   else if (flg2 || flg3 || flg4) { ierr = PetscLogBegin();CHKERRQ(ierr);}
 
@@ -656,19 +656,18 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = PetscInfoDeactivateClass(0);CHKERRQ(ierr);
   }
 
-#if defined(PETSC_HAVE_CUSP)
+#if defined(PETSC_HAVE_CUSP) || defined(PETSC_HAVE_VIENNACL)
   ierr = PetscOptionsHasName(NULL,"-log_summary",&flg3);CHKERRQ(ierr);
-  if (flg3) flg1 = PETSC_TRUE;
-  else flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-cusp_synchronize",&flg1,NULL);CHKERRQ(ierr);
-  if (flg1) PetscCUSPSynchronize = PETSC_TRUE;
+  if (!flg3) {
+  ierr = PetscOptionsHasName(NULL,"-log_view",&flg3);CHKERRQ(ierr);
+  }
 #endif
-#if defined(PETSC_HAVE_VIENNACL)
-  ierr = PetscOptionsHasName(NULL,"-log_summary",&flg3);CHKERRQ(ierr);
-  if (flg3) flg1 = PETSC_TRUE;
-  else flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-viennacl_synchronize",&flg1,NULL);CHKERRQ(ierr);
-  if (flg1) PetscViennaCLSynchronize = PETSC_TRUE;
+#if defined(PETSC_HAVE_CUSP)
+  ierr = PetscOptionsGetBool(NULL,"-cusp_synchronize",&flg3,NULL);CHKERRQ(ierr);
+  PetscCUSPSynchronize = flg3;
+#elif defined(PETSC_HAVE_VIENNACL)
+  ierr = PetscOptionsGetBool(NULL,"-viennacl_synchronize",&flg3,NULL);CHKERRQ(ierr);
+  PetscViennaCLSynchronize = flg3;
 #endif
   PetscFunctionReturn(0);
 }

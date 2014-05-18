@@ -56,6 +56,7 @@ Input parameters include:\n\
      petscksp.h   - linear solvers        petscsnes.h - nonlinear solvers
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 #include <petscdraw.h>
@@ -81,7 +82,7 @@ typedef struct {
    User-defined routines
 */
 extern PetscErrorCode InitialConditions(Vec,AppCtx*);
-extern PetscErrorCode RHSMatrixHeat(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode RHSMatrixHeat(TS,PetscReal,Vec,Mat,Mat,void*);
 extern PetscErrorCode RHSFunctionHeat(TS,PetscReal,Vec,Vec,void*);
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode ExactSolution(PetscReal,Vec,AppCtx*);
@@ -131,7 +132,7 @@ int main(int argc,char **argv)
      total grid values spread equally among all the processors.
   */
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,m,1,1,NULL,&appctx.da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,1,1,NULL,&appctx.da);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DMDA; we use these to store the
@@ -201,8 +202,7 @@ int main(int argc,char **argv)
        as a matrix only once, and then sets a null matrix evaluation
        routine.
     */
-    MatStructure A_structure;
-    ierr = RHSMatrixHeat(ts,0.0,u,&A,&A,&A_structure,&appctx);CHKERRQ(ierr);
+    ierr = RHSMatrixHeat(ts,0.0,u,A,A,&appctx);CHKERRQ(ierr);
     ierr = TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
     ierr = TSSetRHSJacobian(ts,A,A,TSComputeRHSJacobianConstant,&appctx);CHKERRQ(ierr);
   }
@@ -254,8 +254,8 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      View timestepping solver info
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Total timesteps %D, Final time %G\n",steps,ftime);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Avg. error (2 norm) = %G Avg. error (max norm) = %G\n",appctx.norm_2/steps,appctx.norm_max/steps);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Total timesteps %D, Final time %g\n",steps,(double)ftime);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Avg. error (2 norm) = %g Avg. error (max norm) = %g\n",(double)(appctx.norm_2/steps),(double)(appctx.norm_max/steps));CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -374,7 +374,7 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
      Simply write the solution directly into the array locations.
      Alternatively, we culd use VecSetValues() or VecSetValuesLocal().
   */
-  ex1 = exp(-36.*PETSC_PI*PETSC_PI*t); ex2 = exp(-4.*PETSC_PI*PETSC_PI*t);
+  ex1 = PetscExpReal(-36.*PETSC_PI*PETSC_PI*t); ex2 = PetscExpReal(-4.*PETSC_PI*PETSC_PI*t);
   sc1 = PETSC_PI*6.*h;                 sc2 = PETSC_PI*2.*h;
   for (i=mybase; i<myend; i++) s_localptr[i-mybase] = PetscSinScalar(sc1*(PetscReal)i)*ex1 + 3.*PetscSinScalar(sc2*(PetscReal)i)*ex2;
 
@@ -441,8 +441,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
      PetscPrintf() causes only the first processor in this
      communicator to print the timestep information.
   */
-  ierr = PetscPrintf(appctx->comm,"Timestep %D: time = %G 2-norm error = %G max norm error = %G\n",
-                     step,time,norm_2,norm_max);CHKERRQ(ierr);
+  ierr = PetscPrintf(appctx->comm,"Timestep %D: time = %g 2-norm error = %g max norm error = %g\n",step,(double)time,(double)norm_2,(double)norm_max);CHKERRQ(ierr);
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;
 
@@ -493,9 +492,9 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
    - Note that MatSetValues() uses 0-based row and column numbers
      in Fortran as well as in C.
 */
-PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat AA,Mat BB,void *ctx)
 {
-  Mat            A       = *AA;              /* Jacobian matrix */
+  Mat            A       = AA;              /* Jacobian matrix */
   AppCtx         *appctx = (AppCtx*)ctx;     /* user-defined application context */
   PetscErrorCode ierr;
   PetscInt       i,mstart,mend,idx[3];
@@ -546,25 +545,6 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructur
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /*
-     Set flag to indicate that the Jacobian matrix retains an identical
-     nonzero structure throughout all timestepping iterations (although the
-     values of the entries change). Thus, we can save some work in setting
-     up the preconditioner (e.g., no need to redo symbolic factorization for
-     ILU/ICC preconditioners).
-      - If the nonzero structure of the matrix is different during
-        successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-        must be used instead.  If you are unsure whether the matrix
-        structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-      - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-        believes your assertion and does not check the structure
-        of the matrix.  If you erroneously claim that the structure
-        is the same when it actually is not, the new preconditioner
-        will not function correctly.  Thus, use this optimization
-        feature with caution!
-  */
-  *str = SAME_NONZERO_PATTERN;
-
-  /*
      Set and option to indicate that we will never add a new nonzero location
      to the matrix. If we do, it will generate an error.
   */
@@ -579,11 +559,10 @@ PetscErrorCode RHSFunctionHeat(TS ts,PetscReal t,Vec globalin,Vec globalout,void
 {
   PetscErrorCode ierr;
   Mat            A;
-  MatStructure   A_structure;
 
   PetscFunctionBeginUser;
   ierr = TSGetRHSJacobian(ts,&A,NULL,NULL,&ctx);CHKERRQ(ierr);
-  ierr = RHSMatrixHeat(ts,t,globalin,&A,NULL,&A_structure,ctx);CHKERRQ(ierr);
+  ierr = RHSMatrixHeat(ts,t,globalin,A,NULL,ctx);CHKERRQ(ierr);
   /* ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   ierr = MatMult(A,globalin,globalout);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -21,7 +21,6 @@ static struct {
 static PetscErrorCode ourmodify(KSP ksp,PetscInt i,PetscInt i2,PetscReal d,void *ctx)
 {
   PetscObjectUseFortranCallbackSubType(ksp,_cb.modify,(KSP*,PetscInt*,PetscInt*,PetscReal*,void*,PetscErrorCode*),(&ksp,&i,&i2,&d,_ctx,&ierr));
-  return 0;
 }
 
 #undef __FUNCT__
@@ -30,7 +29,6 @@ static PetscErrorCode ourmoddestroy(void *ctx)
 {
   KSP ksp = (KSP)ctx;
   PetscObjectUseFortranCallbackSubType(ksp,_cb.destroy,(void*,PetscErrorCode*),(_ctx,&ierr));
-  return 0;
 }
 
 PETSC_EXTERN void PETSC_STDCALL kspfgmresmodifypcnochange_(KSP*,PetscInt*,PetscInt*,PetscReal*,void*,PetscErrorCode*);

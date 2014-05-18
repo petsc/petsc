@@ -86,14 +86,14 @@ static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes,Vec X,Vec B,Ve
     ierr = SNESGetFunction(next->snes,&FSub,NULL,NULL);CHKERRQ(ierr);
     ierr = VecCopy(FSub,F);CHKERRQ(ierr);
     if (fnorm) {
-      ierr = SNESGetFunctionNorm(next->snes,fnorm);CHKERRQ(ierr);
+      ierr = VecNorm(F,NORM_2,fnorm);CHKERRQ(ierr);
       if (PetscIsInfOrNanReal(*fnorm)) {
         snes->reason = SNES_DIVERGED_FNORM_NAN;
         PetscFunctionReturn(0);
       }
     }
   } else if (snes->normschedule == SNES_NORM_ALWAYS) {
-    SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
     if (snes->domainerror) {
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
       PetscFunctionReturn(0);
@@ -337,10 +337,10 @@ static PetscErrorCode SNESSetUp_Composite(SNES snes)
     jac->ldb   = jac->nsnes;
     jac->n     = jac->nsnes;
 
-    ierr = PetscMalloc(jac->n*jac->n*sizeof(PetscScalar),&jac->h);CHKERRQ(ierr);
-    ierr = PetscMalloc(jac->n*sizeof(PetscScalar),&jac->beta);CHKERRQ(ierr);
-    ierr = PetscMalloc(jac->n*sizeof(PetscScalar),&jac->s);CHKERRQ(ierr);
-    ierr = PetscMalloc(jac->n*sizeof(PetscScalar),&jac->g);CHKERRQ(ierr);
+    ierr = PetscMalloc1(jac->n*jac->n,&jac->h);CHKERRQ(ierr);
+    ierr = PetscMalloc1(jac->n,&jac->beta);CHKERRQ(ierr);
+    ierr = PetscMalloc1(jac->n,&jac->s);CHKERRQ(ierr);
+    ierr = PetscMalloc1(jac->n,&jac->g);CHKERRQ(ierr);
     jac->lwork = 12*jac->n;
 #if PETSC_USE_COMPLEX
     ierr = PetscMalloc(sizeof(PetscReal)*jac->lwork,&jac->rwork);CHKERRQ(ierr);
@@ -374,7 +374,6 @@ static PetscErrorCode SNESReset_Composite(SNES snes)
   ierr = PetscFree(jac->beta);CHKERRQ(ierr);
   ierr = PetscFree(jac->work);CHKERRQ(ierr);
   ierr = PetscFree(jac->rwork);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -497,7 +496,7 @@ static PetscErrorCode  SNESCompositeAddSNES_Composite(SNES snes,SNESType type)
   DM               dm;
 
   PetscFunctionBegin;
-  ierr        = PetscNewLog(snes,struct _SNES_CompositeLink,&ilink);CHKERRQ(ierr);
+  ierr        = PetscNewLog(snes,&ilink);CHKERRQ(ierr);
   ilink->next = 0;
   ierr        = SNESCreate(PetscObjectComm((PetscObject)snes),&ilink->snes);CHKERRQ(ierr);
   ierr        = PetscLogObjectParent((PetscObject)snes,(PetscObject)ilink->snes);CHKERRQ(ierr);
@@ -813,7 +812,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Composite(SNES snes)
   SNES_Composite   *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(snes,SNES_Composite,&jac);CHKERRQ(ierr);
+  ierr = PetscNewLog(snes,&jac);CHKERRQ(ierr);
 
   snes->ops->solve           = SNESSolve_Composite;
   snes->ops->setup           = SNESSetUp_Composite;

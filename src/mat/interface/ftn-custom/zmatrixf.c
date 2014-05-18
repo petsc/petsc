@@ -13,7 +13,7 @@
 #define matload_                         MATLOAD
 #define matview_                         MATVIEW
 #define matseqaijgetarray_               MATSEQAIJGETARRAY
-#define matseqaijrestorearray            MATSEQAIJRESTOREARRAY
+#define matseqaijrestorearray_           MATSEQAIJRESTOREARRAY
 #define matdensegetarray_                MATDENSEGETARRAY
 #define matdenserestorearray_            MATDENSERESTOREARRAY
 #define matconvert_                      MATCONVERT

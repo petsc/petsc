@@ -9,7 +9,7 @@ if __name__ == '__main__':
     '--with-clanguage=c',
     '--with-scalar-type=complex',
     '--with-shared-libraries=1',
-    '--download-f-blas-lapack=1',
+    '--download-fblaslapack=1',
     '--download-mpich=1',
     '--with-python=1',
     '--with-debugging=0',

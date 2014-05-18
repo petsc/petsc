@@ -125,13 +125,12 @@ PetscErrorCode MatView_Clique(Mat A,PetscViewer viewer)
     } else if (format == PETSC_VIEWER_DEFAULT) { /* matrix A is factored matrix, remove this block */
       Mat Aaij;
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
-      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
       ierr = PetscPrintf(PetscObjectComm((PetscObject)viewer),"Clique matrix\n");CHKERRQ(ierr);
       ierr = MatComputeExplicitOperator(A,&Aaij);CHKERRQ(ierr);
       ierr = MatView(Aaij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = MatDestroy(&Aaij);CHKERRQ(ierr);
-    } else SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Format");
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -298,7 +297,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Ma
     B->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_Clique;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
 
-  ierr = PetscNewLog(B,Mat_Clique,&cliq);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&cliq);CHKERRQ(ierr);
   B->spptr            = (void*)cliq;
   cliq::mpi::Comm cxxcomm(PetscObjectComm((PetscObject)A));
   ierr = PetscCommDuplicate(cxxcomm,&(cliq->cliq_comm),NULL);CHKERRQ(ierr);

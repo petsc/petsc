@@ -52,8 +52,8 @@ chk_c2html:
           printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ;false; fi
 
 lssrc:
-	@if [ "${SOURCEC}"foo != "foo" -o "${SOURCEH}foo" != "foo" ]; then \
-	  ls ${SOURCEC} ${SOURCEH} | cat;\
+	@if [ "${SOURCEALL}" != "" ]; then \
+	  ls ${SOURCEALL} | cat;\
 	 fi
 
 chklib_dir: chk_makej
@@ -105,9 +105,6 @@ gnumake: chk_makej
 	@echo "Building PETSc using GNU Make with ${MAKE_NP} build threads"
 	@echo "=========================================="
 	@cd ${PETSC_DIR} && ${OMAKE_PRINTDIR} -f gmakefile -j ${MAKE_NP} V=${V}
-	@if [ "${BUILDSHAREDLIB}" = "yes" -a "${DSYMUTIL}" != "true" ]; then \
-        echo "Running ${DSYMUTIL} on ${SHLIBS}";\
-        for LIBNAME in ${SHLIBS}; do ${DSYMUTIL} ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; done; fi
 	@echo "========================================="
 
 # Does nothing; needed for some rules that require actions.
@@ -123,6 +120,8 @@ lib:  ${SOURCE}
               ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libcu; fi ; \
             if [ "${SOURCEC}" != "" ] ; then \
               ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libc; fi ; \
+            if [ "${SOURCECXX}" != "" ] ; then \
+              ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libcxx; fi ; \
             if [ "${SOURCEF}" != "" ] ; then \
 		${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libf; fi ; \
             if [ "${OBJS}" != " " ] ; then \
@@ -135,7 +134,7 @@ lib:  ${SOURCE}
 #
 # Builds library - fast versiong
 
-libfast:  ${SOURCECU} ${SOURCEC} ${SOURCEF}
+libfast:  ${SOURCE}
 	-@if [ "${SPECIALFASTLIB}" = "yes" ] ; then \
 	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  specialfastlib;  \
 	else \
@@ -152,6 +151,11 @@ libfastcompile:
                     ${PETSC_COMPILE}; \
 	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSC}; \
 		    ${RM} ${OBJSC} ${OBJSC:.o=.lo}; \
+	    fi; \
+          if [ "${SOURCECXX}" != "" ]; then \
+                    ${PETSC_CXXCOMPILE}; \
+	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSCXX}; \
+		    ${RM} ${OBJSCXX} ${OBJSCXX:.o=.lo}; \
 	    fi; \
 	if [ "${SOURCEF}" != "" ]; then \
                     ${PETSC_FCOMPILE}; \
@@ -392,7 +396,7 @@ getautoconfargs:
 	  fi; \
 	fi
 
-.c.o .cpp.o .cxx.o .cc.o .C.o .ad.o:
+.c.o .ad.o:
 	@if [ "${PETSCPORTABLE}" != "" ]; then \
           ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $< ${SOURCEH};\
         fi
@@ -400,7 +404,20 @@ getautoconfargs:
         if [ $${mypwd} != $${newpwd} ]; then \
 	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chk_petscdir;\
         fi
-	${PETSC_COMPILE_SINGLE} ${PWD}/$<
+	${PETSC_COMPILE_SINGLE} `pwd`/$<
+	@if [ "${PETSCPORTABLE}" != "" ]; then \
+          ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $*.o ; \
+        fi
+
+.cpp.o .cxx.o .cc.o .C.o:
+	@if [ "${PETSCPORTABLE}" != "" ]; then \
+          ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $< ${SOURCEH};\
+        fi
+	-@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
+        if [ $${mypwd} != $${newpwd} ]; then \
+	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chk_petscdir;\
+        fi
+	${PETSC_CXXCOMPILE_SINGLE} `pwd`/$<
 	@if [ "${PETSCPORTABLE}" != "" ]; then \
           ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $*.o ; \
         fi
@@ -408,16 +425,16 @@ getautoconfargs:
 #
 #   Compiles CUDA code
 .cu.o:
-	${PETSC_CUCOMPILE_SINGLE} ${PWD}/$<
+	${PETSC_CUCOMPILE_SINGLE} `pwd`/$<
 
 .cu.a:
-	${PETSC_CUCOMPILE_SINGLE} ${PWD}/$<
+	${PETSC_CUCOMPILE_SINGLE} `pwd`/$<
 	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
 	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
 	-${RM} $*.o $*.lo
 
 .c.a .cpp.a .cc.a .C.a:
-	-${PETSC_COMPILE_SINGLE} ${PWD}/$<
+	-${PETSC_COMPILE_SINGLE} `pwd`/$<
 	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
 	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
 	-${RM} $*.o $*.lo
@@ -436,9 +453,13 @@ getautoconfargs:
           grep -v "tentative definition of size" | \
           grep -v "Extra instructions" | \
           grep -v "Unused external reference" | \
+          grep -v "Warning: attribute unused is unsupported and will be skipped" | \
           grep -v "f90 continuing despite warning messages" | \
           grep -v "symbol if the" | \
           grep -v "ignoring symbol version info" | \
+          grep -v "warning: initializer element is not computable at load time" | \
+          grep -v "warning: ISO C90 forbids mixed declarations and code" | \
+          grep -v "warning: ISO C90 does not support ‘static’ or type qualifiers in parameter array declarators" | \
           grep -v "warning, duplicate dylib" | \
           grep -v "warning: duplicate dylib" | \
           grep -v "preempts that definition" | \
@@ -460,6 +481,7 @@ getautoconfargs:
           grep -v "IPO Error: unresolved" | \
 	  grep -v "is being replaced by a real definition" | \
           grep -v "may result in errors or" | \
+          grep -v "clang: warning: treating 'c' input as 'c++' when in C++ mode, this behavior is deprecated" | \
 	  egrep -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
           printf ${PETSC_TEXT_HILIGHT}"*******************Error detected during compile or link!*******************\n";\
@@ -471,6 +493,7 @@ getautoconfargs:
 .F.PETSc .F90.PETSc:
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
 	-@grep -v EXTERNAL trashz | grep -v Wall | \
+          grep -v "warning: In-place macro substitution leaves line truncated" | \
           grep -v "Unused external reference" | \
           grep -v "D4024 : unrecognized" | \
           grep -v "WARNING: TOC overflow." | \
@@ -513,7 +536,7 @@ getautoconfargs:
 
 #--------------------------------------------------------------------------------------
 remote_sshrsync:
-	-@${RSYNC} makefile ${SOURCEC} ${SOURCEF} ${SOURCEH} ${WORKMACHINE}:${WORKSPACE}
+	-@${RSYNC} makefile ${SOURCEALL} ${WORKMACHINE}:${WORKSPACE}
 	-@echo ${SSH} ${WORKMACHINE} "cd ${WORKSPACE}; setenv PETSC_DIR ${WORKPETSCDIR} ; setenv PETSC_ARCH ${WORKPETSCARCH}; make ${EXECUTABLE}"
 	-@${SSH} ${WORKMACHINE} "cd ${WORKSPACE}; setenv PETSC_DIR ${WORKPETSCDIR} ; setenv PETSC_ARCH ${WORKPETSCARCH}; make ${EXECUTABLE}"
 	@IGNORE_THIS_ERROR
@@ -559,7 +582,7 @@ manualpages_buildcite: chk_manualpage_dir
 	  TEXTFILTER_PATH=${PETSC_DIR}/src/docs/tex/doctext; export TEXTFILTER_PATH; \
           ${DOCTEXT} -html -indexdir ../${MANSEC} \
 		-index ${LOC}/docs/manualpages/manualpages.cit \
-		-mpath ${LOC}/docs/manualpages/${MANSEC} ${SOURCEC} ${SOURCEH} ${SOURCECU};  fi
+		-mpath ${LOC}/docs/manualpages/${MANSEC} ${SOURCED};  fi
 #
 #
 manualpages:
@@ -568,8 +591,7 @@ manualpages:
 	  ${DOCTEXT} -html \
 		-mpath ${LOC}/docs/manualpages/${MANSEC} -heading PETSc \
 		-defn ${PETSC_DIR}/src/docs/tex/doctext/html.def \
-		-locdir ${LOCDIR} -mapref ${LOC}/docs/manualpages/manualpages.cit \
-		${SOURCEC} ${SOURCEH} ${SOURCECU}; \
+		-locdir ${LOCDIR} -mapref ${LOC}/docs/manualpages/manualpages.cit ${SOURCED};\
 		chmod -f g+w ${LOC}/docs/manualpages/${MANSEC}/* ; fi
 #
 #   Example usage for manual pages; adds each example that uses a function to that functions
@@ -653,8 +675,8 @@ getexlist:
 #   Rules for generating html code from C and Fortran
 #	
 checkmakefilelist:
-	-@ls makefile ${SOURCEC} ${SOURCEF} ${SOURCEH} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB} 2>/dev/null | grep -v \\.\\. |  sort | uniq > /tmp/$$USER.$$.make ;\
-	ls makefile *.c *.h *.F *.m *.h90 2>/dev/null | sort | uniq > /tmp/$$USER.$$.ls; \
+	-@ls makefile ${SOURCEALL} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB} 2>/dev/null | grep -v \\.\\. |  sort | uniq > /tmp/$$USER.$$.make ;\
+	ls makefile *.{c,cxx,cu,F,F90,h,h90,m} 2>/dev/null | sort | uniq > /tmp/$$USER.$$.ls; \
 	${DIFF} /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls; \
 	${RM}  /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls
 
@@ -664,7 +686,7 @@ html: chk_c2html
 	-@ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
           ${MKDIR} -p $${loc} ;\
-          for i in ${SOURCEC} ${SOURCEF} ${SOURCEH} ${SOURCECU} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB} *_Impl.cc *_Impl.hh *.sidl foo ; do\
+          for i in ${SOURCEALL} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB} *_Impl.cc *_Impl.hh *.sidl foo ; do\
 	    if [ -f $$i ]; then \
 	      idir=`dirname $$i`;\
 	      if [ ! -d $${loc}/$${idir} ]; then ${MKDIR} -p $${loc}/$${idir}; fi ; \
@@ -705,7 +727,7 @@ html: chk_c2html
 		 fi; \
                done; \
                echo " " >> $${loc}/index.html; \
-               for file in ${SOURCEH} ${SOURCEC} ${SOURCEF} ${SOURCECU} foo ; do \
+               for file in ${SOURCEALL} foo ; do \
 		 if [ -f $$file ]; then \
                    echo "<a href=\"$${file}.html\">$${file}</a><br>" >> $${loc}/index.html; \
 		 fi; \
@@ -718,7 +740,7 @@ html: chk_c2html
 	-@${RM} /tmp/$$USER.htmlmap
 
 cleanhtml:
-	-@${RM} makefile.html *.c.html *.F.html *.h.html *.h90.html index.html *.m.html *.c.gcov.html
+	-@${RM} {makefile,index}.html *.{c,cxx,cu,F,F90,h,h90,m}.html *.{c,cxx,cu}.gcov.html
 
 # -------------------------------------------------------------------------------
 #
@@ -735,19 +757,19 @@ cleangcov:
 countfunctions:
 	-@if [ ! -f ${INSTALL_LIB_DIR}/countfunctions ]; then \
 	  touch ${INSTALL_LIB_DIR}/countfunctions ; fi
-	@-if [ "${SOURCEC}" != "" ]; then \
-          for i in ${SOURCEC} foo; do if [ -f $$i ]; then \
+	@-if [ "${SOURCED}" != "" ]; then \
+          for i in ${SOURCED} foo; do if [ -f $$i ]; then \
            grep "define __FUNCT__" $$i | cut -f2 -d\" >> ${INSTALL_LIB_DIR}/countfunctions ; \
           fi; done ; \
         fi
 
 checkbadPetscFunctionBegin:
-	-@if [ "${SOURCEC}" != "" ] ; then \
+	-@if [ "${SOURCED}" != "" ] ; then \
 	${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  \
 	checkbadPetscFunctionBegin_private ; fi
 
 checkbadPetscFunctionBegin_private:
-	-@for filename in ${SOURCEC} ; do \
+	-@for filename in ${SOURCED} ; do \
 	a=`grep '#define __FUNCT__' $$filename | wc -l`; \
 	b=`grep 'PetscFunctionBegin' $$filename | wc -l`; \
 	if [ $$a -ne $$b ] ; then \
@@ -756,7 +778,7 @@ checkbadPetscFunctionBegin_private:
 	done
 
 checkbadFileHeader:
-	-@for filename in ${SOURCEC} makefile ${SOURCEH} ${SOURCEF} ${EXAMPLESC} ${EXAMPLESF}; do \
+	-@for filename in ${SOURCEALL} makefile ${EXAMPLESC} ${EXAMPLESF}; do \
 	a=`grep 'Id:' $$filename | wc -l`; \
 	if [ $$a -ne 1 ] ; then \
 	echo "$$filename: missing RCS file header" ; \
@@ -764,7 +786,7 @@ checkbadFileHeader:
 	done
 
 checkbadSource:
-	-@for filename in ${SOURCEC} makefile ${SOURCEH} ${SOURCEF} ${EXAMPLESC} ${EXAMPLESF}; do \
+	-@for filename in ${SOURCEALL} makefile ${EXAMPLESC} ${EXAMPLESF}; do \
        a=`grep '( ' $$filename | wc -l`; \
        if [ $$a -ge 1 ] ; then \
        echo "$$filename: extra blank after (" ; \
@@ -847,7 +869,7 @@ hgver:
 	   hg tip    --template 'BuildSystem tip    : {node|short}\n'	
 #
 sourcelist:
-	-@for i in ${SOURCEC}; do \
+	-@for i in ${SOURCEALL}; do \
 	    /bin/echo -n ${LOCDIR}$${i} " " >> ${BASE_DIR}/files; \
         done
 
@@ -900,7 +922,7 @@ shared_darwin:
         if [ "${LIBNAME}" = "libpetscksp" ]; then OTHERLIBS="${HYPRE_LIB} ${PETSC_CHARACTERISTIC_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscsnes" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscts" ]; then OTHERLIBS="${SUNDIALS_LIB} ${PETSC_SNES_LIB_BASIC}"  ; fi;\
-        if [ "${LIBNAME}" = "libslepc" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC} ${SLEPC_EXTERNAL_LIB}"  ; fi;\
+        if [ "$${LIBNAME:0:8}" = "libslepc" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC} ${SLEPC_EXTERNAL_LIB}"  ; fi;\
         if [ "${LIBNAME}" = "libtao" ]; then OTHERLIBS="${PETSC_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libtaopetsc" ]; then OTHERLIBS="-L${TAO_LIB_DIR} -ltao ${PETSC_TS_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libtaofortran" ]; then OTHERLIBS="-L${TAO_LIB_DIR} -ltaopetsc -ltao ${PETSC_TS_LIB_BASIC}"  ; fi;\
@@ -958,14 +980,14 @@ shared_nomesg: chk_makej
 #
 #  Remove trailing blanks from source code
 rmtrailingblanks:
-	@for i in ${SOURCEF} ${SOURCEC} ${SOURCEH} ${EXAMPLESC} ${EXAMPLESF}; do \
+	@for i in ${SOURCEALL} ${EXAMPLESC} ${EXAMPLESF}; do \
 	  sed -i '' s"/[ ]*$$//"g $$i; \
 	done
 
 #
 #  Remove trailing blanks from source code
 uncrustify:
-	@for i in ${SOURCEC} ${SOURCEH} ${EXAMPLESC}; do \
+	@for i in ${SOURCED} ${EXAMPLESC}; do \
 	  uncrustify -c ${PETSC_DIR}/bin/uncrustify.cfg $$i; \
 	done
 

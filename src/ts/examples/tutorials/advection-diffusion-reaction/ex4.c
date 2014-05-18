@@ -21,6 +21,7 @@ static char help[] = "Chemo-taxis Problems from Mathematical Biology.\n";
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 
@@ -70,7 +71,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,-8,2,1,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE,-8,2,1,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"rho");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"c");CHKERRQ(ierr);
 
@@ -247,7 +248,7 @@ PetscErrorCode InitialConditions(DM da,Vec U)
     x = i*hx;
     if (x < 1.0) u[i].rho = 0.0;
     else         u[i].rho = 1.0;
-    u[i].c = PetscCosScalar(.5*PETSC_PI*x);
+    u[i].c = PetscCosReal(.5*PETSC_PI*x);
   }
 
   /*

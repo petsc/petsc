@@ -101,8 +101,8 @@
 
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
-      call DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,            &
-     &     DMDA_BOUNDARY_NONE,                                          &
+      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,              &
+     &     DM_BOUNDARY_NONE,                                            &
      &     DMDA_STENCIL_STAR,i4,i4,PETSC_DECIDE,PETSC_DECIDE,i1,i1,                &
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
 
@@ -408,7 +408,7 @@
 !  Option (A) seems cleaner/easier in many cases, and is the procedure
 !  used in this example.
 !
-      subroutine FormJacobianLocal(info,x,A,jac,ctx,str,ierr)
+      subroutine FormJacobianLocal(info,x,A,jac,ctx,ierr)
       implicit none
 
 #include "ex5f.h"
@@ -416,7 +416,6 @@
 !  Input/output variables:
       PetscScalar x(gxs:gxe,gys:gye)
       Mat         A,jac
-      MatStructure str
       PetscErrorCode  ierr
       integer ctx
       DMDALocalInfo info(DMDA_LOCAL_INFO_SIZE)
@@ -487,7 +486,6 @@
          call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
          call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
       endif
-      str = SAME_NONZERO_PATTERN
       return
       end
 

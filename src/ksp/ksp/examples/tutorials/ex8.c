@@ -111,7 +111,7 @@ int main(int argc,char **args)
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
 
   /*
      Set the default preconditioner for this program to be ASM
@@ -267,7 +267,7 @@ int main(int argc,char **args)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-print_error",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %G\n", e);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %g\n",(double) e);CHKERRQ(ierr);
   }
 
   /*

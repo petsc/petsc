@@ -5,6 +5,7 @@ static char help[] = "Tests saving DMDA vectors to files.\n\n";
     ex13.c reads in the DMDA and vector written by this program.
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__
@@ -29,7 +30,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,
                       M,N,m,n,dof,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);

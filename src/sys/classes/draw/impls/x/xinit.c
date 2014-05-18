@@ -345,10 +345,10 @@ static PetscErrorCode PetscGifAdd(const char *filename)
       ierr = PetscStrcmp(filename,ogif->filename,&flg);CHKERRQ(ierr);
       if (flg) PetscFunctionReturn(0);
     }
-    ierr = PetscNew(struct _P_PetscGif,&gif);CHKERRQ(ierr);
+    ierr = PetscNew(&gif);CHKERRQ(ierr);
     ogif->next = gif;
   } else {
-    ierr = PetscNew(struct _P_PetscGif,&gif);CHKERRQ(ierr);
+    ierr = PetscNew(&gif);CHKERRQ(ierr);
     gifs = gif;
   }
   ierr = PetscStrallocpy(filename,&gif->filename);CHKERRQ(ierr);
@@ -407,7 +407,8 @@ PetscErrorCode PetscDrawSave_X(PetscDraw draw)
       gif  = gif->next;
     }
     ierr = PetscStrcat(body,"<br>\n");CHKERRQ(ierr);
-    PetscStackCallSAWs(SAWs_Set_Body,("index.html",1,body));
+    if (draw->savefilecount > 0) PetscStackCallSAWs(SAWs_Pop_Body,("index.html",1));
+    PetscStackCallSAWs(SAWs_Push_Body,("index.html",1,body));
   }
 #endif
 

@@ -1,5 +1,5 @@
 
-#include "../src/ksp/pc/impls/is/pcis.h" /*I "petscpc.h" I*/
+#include <../src/ksp/pc/impls/is/pcis.h> /*I "petscpc.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCISSetUseStiffnessScaling_IS"
@@ -156,14 +156,14 @@ PetscErrorCode  PCISSetUp(PC pc)
     PetscInt    i,j;
 
     /* Identifying interior and interface nodes, in local numbering */
-    ierr = PetscMalloc(pcis->n*sizeof(PetscInt),&array);CHKERRQ(ierr);
+    ierr = PetscMalloc1(pcis->n,&array);CHKERRQ(ierr);
     ierr = PetscMemzero(array,pcis->n*sizeof(PetscInt));CHKERRQ(ierr);
     for (i=0;i<pcis->n_neigh;i++)
       for (j=0;j<pcis->n_shared[i];j++)
           array[pcis->shared[i][j]] += 1;
 
-    ierr = PetscMalloc(pcis->n*sizeof(PetscInt),&idx_I_local);CHKERRQ(ierr);
-    ierr = PetscMalloc(pcis->n*sizeof(PetscInt),&idx_B_local);CHKERRQ(ierr);
+    ierr = PetscMalloc1(pcis->n,&idx_I_local);CHKERRQ(ierr);
+    ierr = PetscMalloc1(pcis->n,&idx_B_local);CHKERRQ(ierr);
     for (i=0, pcis->n_B=0, n_I=0; i<pcis->n; i++) {
       if (!array[i]) {
         idx_I_local[n_I] = i;
@@ -228,7 +228,7 @@ PetscErrorCode  PCISSetUp(PC pc)
   ierr = VecDuplicate(pcis->vec1_B,&pcis->vec2_B);CHKERRQ(ierr);
   ierr = VecDuplicate(pcis->vec1_B,&pcis->vec3_B);CHKERRQ(ierr);
   ierr = MatGetVecs(pc->pmat,&pcis->vec1_global,0);CHKERRQ(ierr);
-  ierr = PetscMalloc((pcis->n)*sizeof(PetscScalar),&pcis->work_N);CHKERRQ(ierr);
+  ierr = PetscMalloc1((pcis->n),&pcis->work_N);CHKERRQ(ierr);
 
   /* Creating the scatter contexts */
   ierr = VecScatterCreate(pcis->vec1_global,pcis->is_I_global,pcis->vec1_D,(IS)0,&pcis->global_to_D);CHKERRQ(ierr);
@@ -267,7 +267,7 @@ PetscErrorCode  PCISSetUp(PC pc)
     /* Dirichlet */
     ierr = KSPCreate(PETSC_COMM_SELF,&pcis->ksp_D);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)pcis->ksp_D,(PetscObject)pc,1);CHKERRQ(ierr);
-    ierr = KSPSetOperators(pcis->ksp_D,pcis->A_II,pcis->A_II,SAME_PRECONDITIONER);CHKERRQ(ierr);
+    ierr = KSPSetOperators(pcis->ksp_D,pcis->A_II,pcis->A_II);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(pcis->ksp_D,"is_localD_");CHKERRQ(ierr);
     ierr = KSPGetPC(pcis->ksp_D,&pc_ctx);CHKERRQ(ierr);
     ierr = PCSetType(pc_ctx,PCLU);CHKERRQ(ierr);
@@ -278,7 +278,7 @@ PetscErrorCode  PCISSetUp(PC pc)
     /* Neumann */
     ierr = KSPCreate(PETSC_COMM_SELF,&pcis->ksp_N);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)pcis->ksp_N,(PetscObject)pc,1);CHKERRQ(ierr);
-    ierr = KSPSetOperators(pcis->ksp_N,matis->A,matis->A,SAME_PRECONDITIONER);CHKERRQ(ierr);
+    ierr = KSPSetOperators(pcis->ksp_N,matis->A,matis->A);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(pcis->ksp_N,"is_localN_");CHKERRQ(ierr);
     ierr = KSPGetPC(pcis->ksp_N,&pc_ctx);CHKERRQ(ierr);
     ierr = PCSetType(pc_ctx,PCLU);CHKERRQ(ierr);

@@ -18,7 +18,7 @@ static char help[] = "Solves a nonlinear ODE. \n\n";
 #include <petscpc.h>
 
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
-extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode Initial(Vec,void*);
 
@@ -36,7 +36,6 @@ int main(int argc,char **argv)
   Vec            global;
   PetscReal      dt,ftime;
   TS             ts;
-  MatStructure   A_structure;
   Mat            A = 0;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
@@ -65,7 +64,7 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,3,3);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = RHSJacobian(ts,0.0,global,&A,&A,&A_structure,NULL);CHKERRQ(ierr);
+  ierr = RHSJacobian(ts,0.0,global,A,A,NULL);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,NULL);CHKERRQ(ierr);
 
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
@@ -128,7 +127,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   ierr = VecGetSize(global,&n);CHKERRQ(ierr);
 
   /* Set the index sets */
-  ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&idx);CHKERRQ(ierr);
   for (i=0; i<n; i++) idx[i]=i;
 
   /* Create local sequential vectors */
@@ -170,7 +169,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   ierr = VecGetSize(globalin,&n);CHKERRQ(ierr);
 
   /* Set the index sets */
-  ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&idx);CHKERRQ(ierr);
   for (i=0; i<n; i++) idx[i]=i;
 
   /* Create local sequential vectors */
@@ -214,14 +213,11 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSJacobian"
-PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat A,Mat BB,void *ctx)
 {
-  Mat            A = *AA;
   PetscScalar    v[3],*tmp;
   PetscInt       idx[3],i;
   PetscErrorCode ierr;
-
-  *str = SAME_NONZERO_PATTERN;
 
   idx[0]=0; idx[1]=1; idx[2]=2;
   ierr  = VecGetArray(x,&tmp);CHKERRQ(ierr);
@@ -251,20 +247,20 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure 
 */
 PetscReal solx(PetscReal t)
 {
-  return exp((2.0 - PetscSqrtReal(2.0))*t)/2.0 - exp((2.0 - PetscSqrtReal(2.0))*t)/(2.0*PetscSqrtReal(2.0)) +
-         exp((2.0 + PetscSqrtReal(2.0))*t)/2.0 + exp((2.0 + PetscSqrtReal(2.0))*t)/(2.0*PetscSqrtReal(2.0));
+  return PetscExpReal((2.0 - PetscSqrtReal(2.0))*t)/2.0 - PetscExpReal((2.0 - PetscSqrtReal(2.0))*t)/(2.0*PetscSqrtReal(2.0)) +
+         PetscExpReal((2.0 + PetscSqrtReal(2.0))*t)/2.0 + PetscExpReal((2.0 + PetscSqrtReal(2.0))*t)/(2.0*PetscSqrtReal(2.0));
 }
 
 PetscReal soly(PetscReal t)
 {
-  return exp((2.0 - PetscSqrtReal(2.0))*t)/2.0 - exp((2.0 - PetscSqrtReal(2.0))*t)/PetscSqrtReal(2.0) +
-         exp((2.0 + PetscSqrtReal(2.0))*t)/2.0 + exp((2.0 + PetscSqrtReal(2.0))*t)/PetscSqrtReal(2.0);
+  return PetscExpReal((2.0 - PetscSqrtReal(2.0))*t)/2.0 - PetscExpReal((2.0 - PetscSqrtReal(2.0))*t)/PetscSqrtReal(2.0) +
+         PetscExpReal((2.0 + PetscSqrtReal(2.0))*t)/2.0 + PetscExpReal((2.0 + PetscSqrtReal(2.0))*t)/PetscSqrtReal(2.0);
 }
 
 PetscReal solz(PetscReal t)
 {
-  return exp((2.0 - PetscSqrtReal(2.0))*t)/2.0 - exp((2.0 - PetscSqrtReal(2.0))*t)/(2.0*PetscSqrtReal(2.0)) +
-         exp((2.0 + PetscSqrtReal(2.0))*t)/2.0 + exp((2.0 + PetscSqrtReal(2.0))*t)/(2.0*PetscSqrtReal(2.0));
+  return PetscExpReal((2.0 - PetscSqrtReal(2.0))*t)/2.0 - PetscExpReal((2.0 - PetscSqrtReal(2.0))*t)/(2.0*PetscSqrtReal(2.0)) +
+         PetscExpReal((2.0 + PetscSqrtReal(2.0))*t)/2.0 + PetscExpReal((2.0 + PetscSqrtReal(2.0))*t)/(2.0*PetscSqrtReal(2.0));
 }
 
 

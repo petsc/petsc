@@ -9,22 +9,22 @@ class Configure(config.package.Package):
   '''FIX: This has not yet been converted to the package style'''
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.headerPrefix      = ''
-    self.substPrefix       = ''
     self.argDB             = framework.argDB
     self.found             = 0
     self.f2c               = 0  # indicates either the f2c BLAS/LAPACK are used (with or without Fortran compiler) or there is no Fortran compiler (and system BLAS/LAPACK is used)
-    self.fblaslapack       = 0
     self.missingRoutines   = []
     self.separateBlas      = 1
     self.defaultPrecision  = 'double'
     self.worksonWindows    = 1
-    self.downloadonWindows = 1
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
+    self.libraries     = framework.require('config.libraries', None)
+    self.compilers     = framework.require('config.compilers', None)
     self.compilerFlags = framework.require('config.compilerFlags', self)
+    self.setCompilers  = framework.require('config.setCompilers', self)
     self.f2cblaslapack = framework.require('config.packages.f2cblaslapack', self)
+    self.fblaslapack   = framework.require('config.packages.fblaslapack', self)
     return
 
 
@@ -37,21 +37,8 @@ class Configure(config.package.Package):
     help.addArgument('BLAS/LAPACK', '-with-blas-lapack-lib=<libraries: e.g. [/Users/..../liblapack.a,libblas.a,...]>',nargs.ArgLibrary(None, None, 'Indicate the library containing BLAS and LAPACK'))
     help.addArgument('BLAS/LAPACK', '-with-blas-lib=<libraries: e.g. [/Users/..../libblas.a,...]>',    nargs.ArgLibrary(None, None, 'Indicate the library(s) containing BLAS'))
     help.addArgument('BLAS/LAPACK', '-with-lapack-lib=<libraries: e.g. [/Users/..../liblapack.a,...]>',nargs.ArgLibrary(None, None, 'Indicate the library(s) containing LAPACK'))
-    help.addArgument('BLAS/LAPACK', '-download-f-blas-lapack=<no,yes,filename>',                       nargs.ArgDownload(None, 0, 'Automatically install a Fortran version of BLAS/LAPACK'))
     help.addArgument('BLAS/LAPACK', '-known-64-bit-blas-indices=<bool>', nargs.ArgBool(None, 0, 'Indicate if using 64 bit integer BLAS'))
     return
-
-  def getDefaultPrecision(self):
-    '''The precision of the library'''
-    if hasattr(self, 'precisionProvider'):
-      if hasattr(self.precisionProvider, 'precision'):
-        return self.precisionProvider.precision
-    return self._defaultPrecision
-  def setDefaultPrecision(self, defaultPrecision):
-    '''The precision of the library'''
-    self._defaultPrecision = defaultPrecision
-    return
-  defaultPrecision = property(getDefaultPrecision, setDefaultPrecision, doc = 'The precision of the library')
 
   def getPrefix(self):
     if self.defaultPrecision == 'single': return 's'
@@ -161,6 +148,11 @@ class Configure(config.package.Package):
         f2cLibs = f2cLibs+self.libraries.math
       yield ('f2cblaslapack', f2cLibs, os.path.join(libDir,'libf2clapack.a'), 0)
       raise RuntimeError('--download-f2cblaslapack libraries cannot be used')
+    if self.fblaslapack.found:
+      self.f2c = 0
+      libDir = self.fblaslapack.libDir
+      yield ('fblaslapack', os.path.join(libDir,'libfblas.a'), os.path.join(libDir,'libflapack.a'), 1)
+      raise RuntimeError('--download-fblaslapack libraries cannot be used')
     if 'with-blas-lib' in self.framework.argDB and not 'with-lapack-lib' in self.framework.argDB:
       raise RuntimeError('If you use the --with-blas-lib=<lib> you must also use --with-lapack-lib=<lib> option')
     if not 'with-blas-lib' in self.framework.argDB and 'with-lapack-lib' in self.framework.argDB:
@@ -170,23 +162,6 @@ class Configure(config.package.Package):
     if 'with-blas-lapack-lib' in self.framework.argDB and 'with-blas-lapack-dir' in self.framework.argDB:
       raise RuntimeError('You cannot set both the library containing BLAS/LAPACK with --with-blas-lapack-lib=<lib>\nand the directory to search with --with-blas-lapack-dir=<dir>')
 
-    if self.framework.argDB['download-f-blas-lapack']:
-      self.download= ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fblaslapack-3.4.2.tar.gz']
-      self.downloadname     = 'f-blas-lapack'
-      self.downloadfilename = 'fblaslapack'
-
-    if self.framework.argDB['download-f-blas-lapack'] == 1  or isinstance(self.framework.argDB['download-f-blas-lapack'], str):
-      if isinstance(self.framework.argDB['download-f-blas-lapack'], str):
-        self.download= [self.framework.argDB['download-f-blas-lapack']]
-      self.fblaslapack = 1
-
-      if not hasattr(self.compilers, 'FC'):
-        raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-f2cblaslapack=1?')
-      if self.defaultPrecision == '__float128':
-        raise RuntimeError('Cannot use --download-f-blas-lapack with precision __float128, maybe you want --download-f2cblaslapack?')
-      libdir = self.downLoadBlasLapack('f','f')
-      yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libfblas.a'), os.path.join(libdir,'libflapack.a'), 1)
-      raise RuntimeError('Could not use downloaded f-blas-lapack.')
     # Try specified BLASLAPACK library
     if 'with-blas-lapack-lib' in self.framework.argDB:
       yield ('User specified BLAS/LAPACK library', None, self.framework.argDB['with-blas-lapack-lib'], 1)
@@ -323,119 +298,7 @@ class Configure(config.package.Package):
         yield ('Microsoft Windows, em64t Intel MKL library', None, os.path.join(mkldir,'mkl_dll.lib'), 1)
         mkldir = os.path.join(mklpath, 'ia64', 'lib')
         yield ('Microsoft Windows, ia64 Intel MKL library', None, os.path.join(mkldir,'mkl_dll.lib'), 1)
-    if self.framework.argDB['download-f-blas-lapack'] == 2:
-      if not hasattr(self.compilers, 'FC'):
-        raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-f2cblaslapack=1?')
-      libdir = self.downLoadBlasLapack('f','f')
-      yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libfblas.a'), os.path.join(libdir,'libflapack.a'), 1)
     return
-
-  def Install(self):
-    return self.installDir
-
-  def getSharedFlag(self,cflags):
-    for flag in ['-PIC', '-fPIC', '-KPIC', '-qpic']:
-      if cflags.find(flag) >=0: return flag
-    return ''
-
-  def getPrecisionFlag(self,cflags):
-    for flag in ['-m32', '-m64', '-xarch=v9','-q64']:
-      if cflags.find(flag) >=0: return flag
-    return ''
-
-  def getWindowsNonOptFlags(self,cflags):
-    for flag in ['-MT','-MTd','-MD','-MDd','-threads']:
-      if cflags.find(flag) >=0: return flag
-    return ''
-
-  def checkNoOptFlag(self):
-    flags = ['-O0','-Od']
-    for flag in flags:
-      if self.setCompilers.checkCompilerFlag(flag):
-        return flag
-    return ''
-
-  def downLoadBlasLapack(self, f2c, l):
-    if f2c == 'f':
-      self.setCompilers.pushLanguage('FC')
-      if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker()):
-        raise RuntimeError('Cannot compile fortran blaslapack with NAG compiler - install blas/lapack compiled with g77 instead')
-      self.setCompilers.popLanguage()
-    self.getInstallDir()
-    libdir = self.libDir
-    confdir = self.confDir
-    blasDir = self.packageDir
-
-    g = open(os.path.join(blasDir,'tmpmakefile'),'w')
-    f = open(os.path.join(blasDir,'makefile'),'r')
-    line = f.readline()
-    while line:
-      if line.startswith('CC  '):
-        cc = self.compilers.CC
-        line = 'CC = '+cc+'\n'
-      if line.startswith('COPTFLAGS '):
-        self.setCompilers.pushLanguage('C')
-        line = 'COPTFLAGS  = '+self.setCompilers.getCompilerFlags()
-        noopt = self.checkNoOptFlag()
-        self.setCompilers.popLanguage()
-      if line.startswith('CNOOPT'):
-        self.setCompilers.pushLanguage('C')
-        line = 'CNOOPT = '+noopt+ ' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPrecisionFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())
-        self.setCompilers.popLanguage()
-      if line.startswith('FC  '):
-        fc = self.compilers.FC
-        if fc.find('f90') >= 0 or fc.find('f95') >=0:
-          import commands
-          output  = commands.getoutput(fc+' -v')
-          if output.find('IBM') >= 0:
-            fc = os.path.join(os.path.dirname(fc),'xlf')
-            self.framework.log.write('Using IBM f90 compiler, switching to xlf for compiling BLAS/LAPACK\n')
-        line = 'FC = '+fc+'\n'
-      if line.startswith('FOPTFLAGS '):
-        self.setCompilers.pushLanguage('FC')
-        line = 'FOPTFLAGS  = '+self.setCompilers.getCompilerFlags().replace('-Mfree','')+'\n'
-        noopt = self.checkNoOptFlag()
-        self.setCompilers.popLanguage()
-      if line.startswith('FNOOPT'):
-        self.setCompilers.pushLanguage('FC')
-        line = 'FNOOPT = '+noopt+' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPrecisionFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n'
-        self.setCompilers.popLanguage()
-      if line.startswith('AR  '):
-        line = 'AR      = '+self.setCompilers.AR+'\n'
-      if line.startswith('AR_FLAGS  '):
-        line = 'AR_FLAGS      = '+self.setCompilers.AR_FLAGS+'\n'
-      if line.startswith('LIB_SUFFIX '):
-        line = 'LIB_SUFFIX = '+self.setCompilers.AR_LIB_SUFFIX+'\n'
-      if line.startswith('RANLIB  '):
-        line = 'RANLIB = '+self.setCompilers.RANLIB+'\n'
-      if line.startswith('RM  '):
-        line = 'RM = '+self.programs.RM+'\n'
-
-
-      if line.startswith('include'):
-        line = '\n'
-      g.write(line)
-      line = f.readline()
-    f.close()
-    g.close()
-
-    if not self.installNeeded('tmpmakefile'):
-      return libdir
-
-    try:
-      self.logPrintBox('Compiling '+l.upper()+'BLASLAPACK; this may take several minutes')
-      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && make -f tmpmakefile', timeout=2500, log = self.framework.log)
-    except RuntimeError, e:
-      raise RuntimeError('Error running make on '+blasDir+': '+str(e))
-    try:
-      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && mv -f lib'+f2c+'blas.'+self.setCompilers.AR_LIB_SUFFIX+' lib'+f2c+'lapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=30, log = self.framework.log)
-    except RuntimeError, e:
-      raise RuntimeError('Error moving '+blasDir+' libraries: '+str(e))
-    try:
-      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && cp -f tmpmakefile '+os.path.join(self.confDir, self.name), timeout=30, log = self.framework.log)
-    except RuntimeError, e:
-      pass
-    return libdir
 
   def configureLibrary(self):
     self.functionalBlasLapack = []
@@ -470,7 +333,7 @@ class Configure(config.package.Package):
         blib = glob.glob('/usr/lib/libblas.*')
         if blib != [] and not (os.path.isfile('/usr/lib/libblas.so') or os.path.isfile('/usr/lib/libblas.a')):
           raise RuntimeError('Incomplete BLAS install; Perhaps blas package is installed - but blas-dev/blas-devel is required?')
-        if hasattr(self.compilers, 'FC') and (self.defaultPrecision != '__float128') : pkg = 'f-blas-lapack'
+        if hasattr(self.compilers, 'FC') and (self.defaultPrecision != '__float128') : pkg = 'fblaslapack'
         else: pkg = 'f2cblaslapack'
         raise RuntimeError('Could not find a functional BLAS. Run with --with-blas-lib=<lib> to indicate the library containing BLAS.\n Or --download-'+pkg+'=1 to have one automatically downloaded and installed\n')
       if not self.foundLapack:
@@ -479,7 +342,7 @@ class Configure(config.package.Package):
         llib = glob.glob('/usr/lib/liblapack.*')
         if llib != [] and not (os.path.isfile('/usr/lib/liblapack.so') or os.path.isfile('/usr/lib/liblapack.a')):
           raise RuntimeError('Incomplete LAPACK install; Perhaps lapack package is installed - but lapack-dev/lapack-devel is required?')
-        if hasattr(self.compilers, 'FC') and (self.defaultPrecision != '__float128') : pkg = 'f-blas-lapack'
+        if hasattr(self.compilers, 'FC') and (self.defaultPrecision != '__float128') : pkg = 'fblaslapack'
         else: pkg = 'f2cblaslapack'
         raise RuntimeError('Could not find a functional LAPACK. Run with --with-lapack-lib=<lib> to indicate the library containing LAPACK.\n Or --download-'+pkg+'=1 to have one automatically downloaded and installed\n')
 
@@ -564,13 +427,13 @@ class Configure(config.package.Package):
     self.executeTest(self.checkPESSL)
     self.executeTest(self.checkMissing)
     self.executeTest(self.checklsame)
+    if self.framework.argDB['with-shared-libraries']:
+      symbol = 'dgeev'
+      if self.f2c:
+        if self.mangling == 'underscore': symbol = 'dgeev_'
+      elif hasattr(self.compilers, 'FC'):
+        symbol = self.compilers.mangleFortranFunction(symbol)
+      if not self.setCompilers.checkIntoShared(symbol,self.lapackLibrary+self.getOtherLibs()):
+        raise RuntimeError('The BLAS/LAPACK libraries '+self.libraries.toStringNoDupes(self.lapackLibrary+self.getOtherLibs())+'\ncannot used with a shared library\nEither run ./configure with --with-shared-libraries=0 or use a different BLAS/LAPACK library');
     return
 
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setupLogging()
-  framework.children.append(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

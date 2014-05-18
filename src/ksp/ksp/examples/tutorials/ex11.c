@@ -55,7 +55,7 @@ int main(int argc,char **args)
 #endif
 
   a=1.0+PETSC_i;
-  printf("%G+%Gi\n",PetscRealPart(a),PetscImaginaryPart(a));
+  printf("%g+%gi\n",(double)PetscRealPart(a),(double)PetscImaginaryPart(a));
 
   ierr = PetscOptionsGetReal(NULL,"-sigma1",&sigma1,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
@@ -170,7 +170,7 @@ int main(int argc,char **args)
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
 
   /*
     Set runtime options, e.g.,
@@ -198,7 +198,7 @@ int main(int argc,char **args)
     ierr = VecGetArray(x,&xa);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"The first three entries of x are:\n");CHKERRQ(ierr);
     for (i=0; i<3; i++) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"x[%D] = %G + %G i\n",i,PetscRealPart(xa[i]),PetscImaginaryPart(xa[i]));CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"x[%D] = %g + %g i\n",i,(double)PetscRealPart(xa[i]),(double)PetscImaginaryPart(xa[i]));CHKERRQ(ierr);
     }
     ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
   }
@@ -209,7 +209,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(x,none,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G iterations %D\n",norm,its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its);CHKERRQ(ierr);
 
   /*
      Free work space.  All PETSc objects should be destroyed when they

@@ -53,6 +53,8 @@ PetscErrorCode  PetscFreeAlign(void *ptr,int line,const char func[],const char f
 {
 #if (!(defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) && !defined(PETSC_HAVE_MEMALIGN))
   int shift;
+
+  if (!ptr) PetscFunctionReturn(0);
   /*
        Previous int tells us how many ints the pointer has been shifted from
     the original address provided by the system malloc().

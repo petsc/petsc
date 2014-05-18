@@ -25,6 +25,7 @@ struct _p_PetscSpace {
 typedef struct {
   PetscInt   numVariables; /* The number of variables in the space, e.g. x and y */
   PetscBool  symmetric;    /* Use only symmetric polynomials */
+  PetscBool  tensor;       /* Flag for tensor product */
   PetscInt  *degrees;      /* Degrees of single variable which we need to compute */
 } PetscSpace_Poly;
 
@@ -53,8 +54,9 @@ struct _p_PetscDualSpace {
 };
 
 typedef struct {
-  PetscInt  cellType;
   PetscInt *numDof;
+  PetscBool simplex;
+  PetscBool continuous;
 } PetscDualSpace_Lag;
 
 typedef struct _PetscFEOps *PetscFEOps;
@@ -63,7 +65,13 @@ struct _PetscFEOps {
   PetscErrorCode (*setup)(PetscFE);
   PetscErrorCode (*view)(PetscFE,PetscViewer);
   PetscErrorCode (*destroy)(PetscFE);
+  PetscErrorCode (*getdimension)(PetscFE,PetscInt*);
+  PetscErrorCode (*gettabulation)(PetscFE,PetscInt,const PetscReal*,PetscReal*,PetscReal*,PetscReal*);
   /* Element integration */
+  PetscErrorCode (*integrate)(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[],
+                              PetscInt, PetscFE[], const PetscScalar[],
+                              void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                              PetscReal[]);
   PetscErrorCode (*integrateresidual)(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[],
                                       PetscInt, PetscFE[], const PetscScalar[],
                                       void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
@@ -87,6 +95,23 @@ struct _PetscFEOps {
                                       void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
                                       void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
                                       PetscScalar[]);
+  PetscErrorCode (*integratebdjacobian)(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[],
+                                        PetscInt, PetscFE[], const PetscScalar[],
+                                        void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
+                                        void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
+                                        void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
+                                        void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
+                                        PetscScalar[]);
+  PetscErrorCode (*integrateifunction)(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[],
+                                       PetscInt, PetscFE[], const PetscScalar[],
+                                       void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                       void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                      PetscScalar[]);
+  PetscErrorCode (*integratebdifunction)(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[],
+                                         PetscInt, PetscFE[], const PetscScalar[],
+                                         void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
+                                         void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
+                                         PetscScalar[]);
 };
 
 struct _p_PetscFE {
@@ -97,6 +122,7 @@ struct _p_PetscFE {
   PetscInt        numComponents; /* The number of field components */
   PetscQuadrature quadrature;    /* Suitable quadrature on K */
   PetscInt       *numDof;        /* The number of dof on mesh points of each depth */
+  PetscReal      *invV;          /* Change of basis matrix, from prime to nodal basis set */
   PetscReal      *B, *D, *H;     /* Tabulation of basis and derivatives at quadrature points */
   PetscInt        blockSize, numBlocks;  /* Blocks are processed concurrently */
   PetscInt        batchSize, numBatches; /* A batch is made up of blocks, Batches are processed in serial */
@@ -105,6 +131,10 @@ struct _p_PetscFE {
 typedef struct {
   PetscInt cellType;
 } PetscFE_Basic;
+
+typedef struct {
+  PetscInt dummy;
+} PetscFE_Nonaffine;
 
 #ifdef PETSC_HAVE_OPENCL
 
@@ -124,5 +154,13 @@ typedef struct {
   PetscInt         op; /* ANDY: Stand-in for real equation code generation */
 } PetscFE_OpenCL;
 #endif
+
+typedef struct {
+  PetscInt   cellRefiner;    /* The cell refiner defining the cell division */
+  PetscInt   numSubelements; /* The number of subelements */
+  PetscReal *v0;             /* The affine transformation for each subelement */
+  PetscReal *jac, *invjac;
+  PetscInt  *embedding;      /* Map from subelements dofs to element dofs */
+} PetscFE_Composite;
 
 #endif

@@ -3,7 +3,7 @@
 */
 #define PETSC_DESIRE_COMPLEX
 #include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
-#include <petscsnesfas.h>
+#include <petscsnes.h>
 #include <petscdm.h>
 
 typedef struct {
@@ -148,6 +148,19 @@ static PetscErrorCode TSEvaluateStep_Theta(TS ts,PetscInt order,Vec U,PetscBool 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSRollBack_Theta"
+static PetscErrorCode TSRollBack_Theta(TS ts)
+{
+  TS_Theta       *th = (TS_Theta*)ts->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecCopy(th->X0,ts->vec_sol);CHKERRQ(ierr);
+  th->status    = TS_STEP_INCOMPLETE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSStep_Theta"
 static PetscErrorCode TSStep_Theta(TS ts)
 {
@@ -160,11 +173,11 @@ static PetscErrorCode TSStep_Theta(TS ts)
   PetscBool           accept;
 
   PetscFunctionBegin;
+  next_time_step = ts->time_step;
   th->status = TS_STEP_INCOMPLETE;
   ierr = VecCopy(ts->vec_sol,th->X0);CHKERRQ(ierr);
   for (reject=0; reject<ts->max_reject && !ts->reason && th->status != TS_STEP_COMPLETE; reject++,ts->reject++) {
     PetscReal shift = 1./(th->Theta*ts->time_step);
-    next_time_step = ts->time_step;
     th->stage_time = ts->ptime + (th->endpoint ? 1. : th->Theta)*ts->time_step;
     ierr = TSPreStep(ts);CHKERRQ(ierr);
     ierr = TSPreStage(ts,th->stage_time);CHKERRQ(ierr);
@@ -203,9 +216,9 @@ static PetscErrorCode TSStep_Theta(TS ts)
       ts->steps++;
       th->status = TS_STEP_COMPLETE;
     } else {                    /* Roll back the current step */
-      ierr = VecCopy(th->X0,ts->vec_sol);CHKERRQ(ierr);
-      ts->time_step = next_time_step;
-      th->status    = TS_STEP_INCOMPLETE;
+      ts->ptime += next_time_step; /* This will be undone in rollback */
+      th->status = TS_STEP_INCOMPLETE;
+      ierr = TSRollBack(ts);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -289,7 +302,7 @@ static PetscErrorCode SNESTSFormFunction_Theta(SNES snes,Vec x,Vec y,TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESTSFormJacobian_Theta"
-static PetscErrorCode SNESTSFormJacobian_Theta(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *str,TS ts)
+static PetscErrorCode SNESTSFormJacobian_Theta(SNES snes,Vec x,Mat A,Mat B,TS ts)
 {
   TS_Theta       *th = (TS_Theta*)ts->data;
   PetscErrorCode ierr;
@@ -305,7 +318,7 @@ static PetscErrorCode SNESTSFormJacobian_Theta(SNES snes,Vec x,Mat *A,Mat *B,Mat
 
   dmsave = ts->dm;
   ts->dm = dm;
-  ierr   = TSComputeIJacobian(ts,th->stage_time,x,Xdot,shift,A,B,str,PETSC_FALSE);CHKERRQ(ierr);
+  ierr   = TSComputeIJacobian(ts,th->stage_time,x,Xdot,shift,A,B,PETSC_FALSE);CHKERRQ(ierr);
   ts->dm = dmsave;
   ierr   = TSThetaRestoreX0AndXdot(ts,dm,NULL,&Xdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -374,7 +387,7 @@ static PetscErrorCode TSView_Theta(TS ts,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Theta=%G\n",th->Theta);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Theta=%g\n",(double)th->Theta);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Extrapolation=%s\n",th->extrapolate ? "yes" : "no");CHKERRQ(ierr);
   }
   ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
@@ -399,7 +412,7 @@ PetscErrorCode  TSThetaSetTheta_Theta(TS ts,PetscReal theta)
   TS_Theta *th = (TS_Theta*)ts->data;
 
   PetscFunctionBegin;
-  if (theta <= 0 || 1 < theta) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Theta %G not in range (0,1]",theta);
+  if (theta <= 0 || 1 < theta) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Theta %g not in range (0,1]",(double)theta);
   th->Theta = theta;
   PetscFunctionReturn(0);
 }
@@ -509,6 +522,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
   ts->ops->step           = TSStep_Theta;
   ts->ops->interpolate    = TSInterpolate_Theta;
   ts->ops->evaluatestep   = TSEvaluateStep_Theta;
+  ts->ops->rollback       = TSRollBack_Theta;
   ts->ops->setfromoptions = TSSetFromOptions_Theta;
   ts->ops->snesfunction   = SNESTSFormFunction_Theta;
   ts->ops->snesjacobian   = SNESTSFormJacobian_Theta;
@@ -516,7 +530,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
   ts->ops->linearstability = TSComputeLinearStability_Theta;
 #endif
 
-  ierr = PetscNewLog(ts,TS_Theta,&th);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;
 
   th->extrapolate = PETSC_FALSE;

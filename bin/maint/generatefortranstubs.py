@@ -16,13 +16,17 @@ def FixFile(filename):
   data = re.subn('\nvoid ','\nPETSC_EXTERN void PETSC_STDCALL ',data)[0]
   data = re.subn('\nPetscErrorCode ','\nPETSC_EXTERN void PETSC_STDCALL ',data)[0]
   data = re.subn('Petsc([ToRm]*)Pointer\(int\)','Petsc\\1Pointer(void*)',data)[0]	
-  data = re.subn('PetscToPointer\(a\) \(a\)','PetscToPointer(a) (*(long *)(a))',data)[0]
-  data = re.subn('PetscFromPointer\(a\) \(int\)\(a\)','PetscFromPointer(a) (long)(a)',data)[0]
+  data = re.subn('PetscToPointer\(a\) \(a\)','PetscToPointer(a) (*(PetscFortranAddr *)(a))',data)[0]
+  data = re.subn('PetscFromPointer\(a\) \(int\)\(a\)','PetscFromPointer(a) (PetscFortranAddr)(a)',data)[0]
   data = re.subn('PetscToPointer\( \*\(int\*\)','PetscToPointer(',data)[0]
   data = re.subn('MPI_Comm comm','MPI_Comm *comm',data)[0]
   data = re.subn('\(MPI_Comm\)PetscToPointer\( \(comm\) \)','MPI_Comm_f2c(*(MPI_Fint*)(comm))',data)[0]
   data = re.subn('\(PetscInt\* \)PetscToPointer','',data)[0]
-  match = re.compile(r"""\b(PETSC)(_DLL|VEC_DLL|MAT_DLL|DM_DLL|KSP_DLL|SNES_DLL|TS_DLL|FORTRAN_DLL)(EXPORT)""")
+  data = re.subn('\(Tao\* \)PetscToPointer','',data)[0]
+  data = re.subn('\(TaoConvergedReason\* \)PetscToPointer','',data)[0]
+  data = re.subn('\(TaoLineSearch\* \)PetscToPointer','',data)[0]
+  data = re.subn('\(TaoLineSearchConvergedReason\* \)PetscToPointer','',data)[0]
+  match = re.compile(r"""\b(PETSC|TAO)(_DLL|VEC_DLL|MAT_DLL|DM_DLL|KSP_DLL|SNES_DLL|TS_DLL|FORTRAN_DLL)(EXPORT)""")
   data = match.sub(r'',data)
 
   ff = open(filename, 'w')
@@ -161,7 +165,10 @@ def processDir(arg,dirname,names):
     (status,output) = commands.getstatusoutput(cmd)
     if status:
       raise RuntimeError('Error running bfort\n'+cmd+'\n'+output)
-    FixDir(petscdir,outdir,verbose)
+    try:
+      FixDir(petscdir,outdir,verbose)
+    except:
+      print 'Error! with FixDir('+outdir+')'
 
   # remove from list of subdirectories all directories without source code
   rmnames=[]
@@ -169,13 +176,13 @@ def processDir(arg,dirname,names):
     if name in ['.hg','SCCS', 'output', 'BitKeeper', 'examples', 'externalpackages', 'bilinear', 'ftn-auto','fortran','bin','maint','ftn-custom','config','f90-custom','ftn-kernels']:
       rmnames.append(name)
     # skip for ./configure generated $PETSC_ARCH directories
-    if os.path.isdir(os.path.join(name,'conf')):
+    if os.path.isdir(os.path.join(dirname,name,'conf')):
       rmnames.append(name)
     # skip include/finclude directory
     if name == 'finclude':
       rmnames.append(name)
   for rmname in rmnames:
-    names.remove(rmname)
+    if rmname in names: names.remove(rmname)
   return
 
 

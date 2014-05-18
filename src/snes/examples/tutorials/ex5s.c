@@ -173,7 +173,7 @@ int main(int argc,char **argv)
 
   */
   ierr = VecGetOwnershipRange(r,&rstart,&rend);CHKERRQ(ierr);
-  ierr = PetscMalloc((rend-rstart)*sizeof(PetscInt),&colors);CHKERRQ(ierr);
+  ierr = PetscMalloc1((rend-rstart),&colors);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) colors[i - rstart] = 3*((i/user.mx) % 3) + (i % 3);
 
   ierr = ISColoringCreate(PETSC_COMM_WORLD,3*2+2,rend-rstart,colors,&iscoloring);CHKERRQ(ierr);
@@ -327,7 +327,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
         x[row] = 0.0;
         continue;
       }
-      x[row] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp));
+      x[row] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp));
     }
   }
 
@@ -407,7 +407,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
       u      = x[row];
       uxx    = (two*u - x[row-1] - x[row+1])*hydhx;
       uyy    = (two*u - x[row-mx] - x[row+mx])*hxdhy;
-      f[row] = uxx + uyy - sc*exp(u);
+      f[row] = uxx + uyy - sc*PetscExpScalar(u);
     }
   }
 

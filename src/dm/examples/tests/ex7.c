@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscInt         M=8,dof=1,stencil_width=1,i,start,end,P=5,N = 6,m=PETSC_DECIDE,n=PETSC_DECIDE,p=PETSC_DECIDE,pt = 0,st = 0;
   PetscErrorCode   ierr;
   PetscBool        flg = PETSC_FALSE,flg2,flg3;
-  DMDABoundaryType periodic;
+  DMBoundaryType   periodic;
   DMDAStencilType  stencil_type;
   DM               da;
   Vec              local,global,local_copy;
@@ -29,7 +29,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,"-stencil_width",&stencil_width,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-periodic",&pt,NULL);CHKERRQ(ierr);
 
-  periodic = (DMDABoundaryType) pt;
+  periodic = (DMBoundaryType) pt;
 
   ierr = PetscOptionsGetInt(NULL,"-stencil_type",&st,NULL);CHKERRQ(ierr);
 
@@ -88,7 +88,7 @@ int main(int argc,char **argv)
   ierr = VecAXPY(local_copy,-1.0,local);CHKERRQ(ierr);
   ierr = VecNorm(local_copy,NORM_MAX,&work);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&work,&norm,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %G should be zero\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %g should be zero\n",(double)norm);CHKERRQ(ierr);
 
   ierr = VecDestroy(&local_copy);CHKERRQ(ierr);
   ierr = VecDestroy(&local);CHKERRQ(ierr);

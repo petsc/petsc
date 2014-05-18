@@ -88,7 +88,7 @@ static int PetscOptionsCreate_Private(const char opt[],const char text[],const c
   ierr = PetscOptionsValidKey(opt,&valid);CHKERRQ(ierr);
   if (!valid) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"The option '%s' is not a valid key",opt);
 
-  ierr            = PetscNew(struct _n_PetscOptions,amsopt);CHKERRQ(ierr);
+  ierr            = PetscNew(amsopt);CHKERRQ(ierr);
   (*amsopt)->next = 0;
   (*amsopt)->set  = PETSC_FALSE;
   (*amsopt)->type = t;
@@ -147,6 +147,29 @@ static PetscErrorCode PetscScanString(MPI_Comm comm,size_t n,char str[])
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscStrdup"
+/*
+    This is needed because certain strings may be freed by SAWs, hence we cannot use PetscStrallocpy()
+*/
+static PetscErrorCode  PetscStrdup(const char s[],char *t[])
+{
+  PetscErrorCode ierr;
+  size_t         len;
+  char           *tmp = 0;
+
+  PetscFunctionBegin;
+  if (s) {
+    ierr = PetscStrlen(s,&len);CHKERRQ(ierr);
+    tmp = (char*) malloc((len+1)*sizeof(char*));
+    if (!tmp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"No memory to duplicate string");
+    ierr = PetscStrcpy(tmp,s);CHKERRQ(ierr);
+  }
+  *t = tmp;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscOptionsGetFromTextInput"
 /*
     PetscOptionsGetFromTextInput - Presents all the PETSc Options processed by the program so the user may change them at runtime
@@ -170,7 +193,6 @@ PetscErrorCode PetscOptionsGetFromTextInput()
   PetscErrorCode ierr;
   PetscOptions   next = PetscOptionsObject.next;
   char           str[512];
-  PetscInt       id;
   PetscBool      bid;
   PetscReal      ir,*valr;
   PetscInt       *vald;
@@ -271,14 +293,18 @@ PetscErrorCode PetscOptionsGetFromTextInput()
       ierr = PetscPrintf(PETSC_COMM_WORLD,"-%s%s <%d>: %s (%s) ",PetscOptionsObject.prefix ? PetscOptionsObject.prefix : "",next->option+1,*(int*)next->data,next->text,next->man);CHKERRQ(ierr);
       ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
       if (str[0]) {
-#if defined(PETSC_USE_64BIT_INDICES)
-        sscanf(str,"%lld",&id);
+#if defined(PETSC_SIZEOF_LONG_LONG)
+        long long lid;
+        sscanf(str,"%lld",&lid);
+        if (lid > PETSC_MAX_INT || lid < PETSC_MIN_INT) SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Argument: -%s%s %lld",PetscOptionsObject.prefix ? PetscOptionsObject.prefix : "",next->option+1,lid);
 #else
-        sscanf(str,"%d",&id);
+        long  lid;
+        sscanf(str,"%ld",&lid);
+        if (lid > PETSC_MAX_INT || lid < PETSC_MIN_INT) SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Argument: -%s%s %ld",PetscOptionsObject.prefix ? PetscOptionsObject.prefix : "",next->option+1,lid);
 #endif
-        next->set = PETSC_TRUE;
 
-        *((PetscInt*)next->data) = id;
+        next->set = PETSC_TRUE;
+        *((PetscInt*)next->data) = (PetscInt)lid;
       }
       break;
     case OPTION_REAL:
@@ -312,7 +338,8 @@ PetscErrorCode PetscOptionsGetFromTextInput()
       ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
       if (str[0]) {
         next->set = PETSC_TRUE;
-        next->data = (void*)strdup(str);
+        /* must use system malloc since SAWs may free this */
+        ierr = PetscStrdup(str,(char**)&next->data);CHKERRQ(ierr);
       }
       break;
     case OPTION_FLIST:
@@ -321,7 +348,8 @@ PetscErrorCode PetscOptionsGetFromTextInput()
       if (str[0]) {
         PetscOptionsObject.changedmethod = PETSC_TRUE;
         next->set = PETSC_TRUE;
-        next->data = (void*)strdup(str);
+        /* must use system malloc since SAWs may free this */
+        ierr = PetscStrdup(str,(char**)&next->data);CHKERRQ(ierr);
       }
       break;
     default:
@@ -435,7 +463,7 @@ PetscErrorCode PetscOptionsSAWsInput()
       PetscInt ntext = next->nlist;
       ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s",next->option);CHKERRQ(ierr);
       PetscStackCallSAWs(SAWs_Register,(dir,&next->data,1,SAWs_WRITE,SAWs_STRING));
-      ierr = PetscMalloc((ntext+1)*sizeof(char*),&next->edata);CHKERRQ(ierr);
+      ierr = PetscMalloc1((ntext+1),&next->edata);CHKERRQ(ierr);
       ierr = PetscMemcpy(next->edata,next->list,ntext*sizeof(char*));CHKERRQ(ierr);
       PetscStackCallSAWs(SAWs_Set_Legal_Variable_Values,(dir,ntext,next->edata));
       }
@@ -565,6 +593,7 @@ PetscErrorCode PetscOptionsEnd_Private(void)
     ierr   = PetscFree(PetscOptionsObject.next->edata);CHKERRQ(ierr);
 
     if ((PetscOptionsObject.next->type == OPTION_STRING) || (PetscOptionsObject.next->type == OPTION_FLIST) || (PetscOptionsObject.next->type == OPTION_ELIST)){
+      /* must use system free since SAWs may have allocated it */
       free(PetscOptionsObject.next->data);
     } else {
       ierr   = PetscFree(PetscOptionsObject.next->data);CHKERRQ(ierr);
@@ -644,7 +673,7 @@ PetscErrorCode  PetscOptionsEnum(const char opt[],const char text[],const char m
 +  opt - option name
 .  text - short string that describes the option
 .  man - manual page with additional information on option
--  defaultv - the default (current) value
+-  defaultv - the default (current) value, if the user does not provide a value this is returned in value
 
    Output Parameter:
 +  value - the integer value to return
@@ -694,7 +723,7 @@ PetscErrorCode  PetscOptionsInt(const char opt[],const char text[],const char ma
 +  opt - option name
 .  text - short string that describes the option
 .  man - manual page with additional information on option
-.  defaultv - the default (current) value
+.  defaultv - the default (current) value, if the user does not provide a value this is returned in value
 -  len - length of the result string including null terminator
 
    Output Parameter:
@@ -725,7 +754,8 @@ PetscErrorCode  PetscOptionsString(const char opt[],const char text[],const char
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_STRING,&amsopt);CHKERRQ(ierr);
-    amsopt->data = (void*)strdup(defaultv ? defaultv : "");
+    /* must use system malloc since SAWs may free this */
+    ierr = PetscStrdup(defaultv ? defaultv : "",(char**)&amsopt->data);CHKERRQ(ierr);
   }
   ierr = PetscOptionsGetString(PetscOptionsObject.prefix,opt,value,len,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
@@ -745,7 +775,7 @@ PetscErrorCode  PetscOptionsString(const char opt[],const char text[],const char
 +  opt - option name
 .  text - short string that describes the option
 .  man - manual page with additional information on option
--  defaultv - the default (current) value
+-  defaultv - the default (current) value, if the user does not provide a value this is returned in value
 
    Output Parameter:
 +  value - the value to return
@@ -779,7 +809,7 @@ PetscErrorCode  PetscOptionsReal(const char opt[],const char text[],const char m
   }
   ierr = PetscOptionsGetReal(PetscOptionsObject.prefix,opt,value,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%G>: %s (%s)\n",PetscOptionsObject.prefix ? PetscOptionsObject.prefix : "",opt+1,defaultv,text,ManSection(man));CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%g>: %s (%s)\n",PetscOptionsObject.prefix ? PetscOptionsObject.prefix : "",opt+1,(double)defaultv,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -795,7 +825,7 @@ PetscErrorCode  PetscOptionsReal(const char opt[],const char text[],const char m
 +  opt - option name
 .  text - short string that describes the option
 .  man - manual page with additional information on option
--  defaultv - the default (current) value
+-  defaultv - the default (current) value, if the user does not provide a value this is returned in value
 
    Output Parameter:
 +  value - the value to return
@@ -889,7 +919,7 @@ PetscErrorCode  PetscOptionsName(const char opt[],const char text[],const char m
 .  text - short string that describes the option
 .  man - manual page with additional information on option
 .  list - the possible choices
-.  defaultv - the default (current) value
+.  defaultv - the default (current) value, if the user does not provide a value this is returned in value
 -  len - the length of the character array value
 
    Output Parameter:
@@ -924,7 +954,8 @@ PetscErrorCode  PetscOptionsFList(const char opt[],const char ltext[],const char
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,ltext,man,OPTION_FLIST,&amsopt);CHKERRQ(ierr);
-    amsopt->data = (void*)strdup(defaultv ? defaultv : "");
+    /* must use system malloc since SAWs may free this */
+    ierr = PetscStrdup(defaultv ? defaultv : "",(char**)&amsopt->data);CHKERRQ(ierr);
     amsopt->flist = list;
   }
   ierr = PetscOptionsGetString(PetscOptionsObject.prefix,opt,value,len,set);CHKERRQ(ierr);
@@ -947,7 +978,7 @@ PetscErrorCode  PetscOptionsFList(const char opt[],const char ltext[],const char
 .  man - manual page with additional information on option
 .  list - the possible choices (one of these must be selected, anything else is invalid)
 .  ntext - number of choices
--  defaultv - the default (current) value
+-  defaultv - the default (current) value, if the user does not provide a value the index of defaultv is returned
 
    Output Parameter:
 +  value - the index of the value to return
@@ -977,7 +1008,8 @@ PetscErrorCode  PetscOptionsEList(const char opt[],const char ltext[],const char
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,ltext,man,OPTION_ELIST,&amsopt);CHKERRQ(ierr);
-    amsopt->data = (void*)strdup(defaultv ? defaultv : "");
+    /* must use system malloc since SAWs may free this */
+    ierr = PetscStrdup(defaultv ? defaultv : "",(char**)&amsopt->data);CHKERRQ(ierr);
     amsopt->list  = list;
     amsopt->nlist = ntext;
   }
@@ -1156,7 +1188,8 @@ PetscErrorCode  PetscOptionsBoolGroupEnd(const char opt[],const char text[],cons
    Input Parameters:
 +  opt - option name
 .  text - short string that describes the option
--  man - manual page with additional information on option
+.  man - manual page with additional information on option
+-  deflt - the default value, if the user does not set a value then this value is returned in flg
 
    Output Parameter:
 .  flg - PETSC_TRUE or PETSC_FALSE
@@ -1248,16 +1281,16 @@ PetscErrorCode  PetscOptionsRealArray(const char opt[],const char text[],const c
     PetscReal *vals;
 
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_REAL_ARRAY,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc((*n)*sizeof(PetscReal),&amsopt->data);CHKERRQ(ierr);
+    ierr = PetscMalloc1((*n),(PetscReal**)&amsopt->data);CHKERRQ(ierr);
     vals = (PetscReal*)amsopt->data;
     for (i=0; i<*n; i++) vals[i] = value[i];
     amsopt->arraylength = *n;
   }
   ierr = PetscOptionsGetRealArray(PetscOptionsObject.prefix,opt,value,n,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%G",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,value[0]);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%g",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,(double)value[0]);CHKERRQ(ierr);
     for (i=1; i<*n; i++) {
-      ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,",%G",value[i]);CHKERRQ(ierr);
+      ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,",%g",(double)value[i]);CHKERRQ(ierr);
     }
     ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,">: %s (%s)\n",text,ManSection(man));CHKERRQ(ierr);
   }
@@ -1317,7 +1350,7 @@ PetscErrorCode  PetscOptionsIntArray(const char opt[],const char text[],const ch
     PetscInt *vals;
 
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_INT_ARRAY,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc((*n)*sizeof(PetscInt),&amsopt->data);CHKERRQ(ierr);
+    ierr = PetscMalloc1((*n),(PetscInt**)&amsopt->data);CHKERRQ(ierr);
     vals = (PetscInt*)amsopt->data;
     for (i=0; i<*n; i++) vals[i] = value[i];
     amsopt->arraylength = *n;
@@ -1381,7 +1414,7 @@ PetscErrorCode  PetscOptionsStringArray(const char opt[],const char text[],const
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_STRING_ARRAY,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc((*nmax)*sizeof(char*),&amsopt->data);CHKERRQ(ierr);
+    ierr = PetscMalloc1((*nmax),(char**)&amsopt->data);CHKERRQ(ierr);
 
     amsopt->arraylength = *nmax;
   }
@@ -1439,7 +1472,7 @@ PetscErrorCode  PetscOptionsBoolArray(const char opt[],const char text[],const c
     PetscBool *vals;
 
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_BOOL_ARRAY,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc((*n)*sizeof(PetscBool),&amsopt->data);CHKERRQ(ierr);
+    ierr = PetscMalloc1((*n),(PetscBool**)&amsopt->data);CHKERRQ(ierr);
     vals = (PetscBool*)amsopt->data;
     for (i=0; i<*n; i++) vals[i] = value[i];
     amsopt->arraylength = *n;
@@ -1458,7 +1491,7 @@ PetscErrorCode  PetscOptionsBoolArray(const char opt[],const char text[],const c
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsViewer"
 /*@C
-   PetscOptionsInt - Gets a viewer appropriate for the type indicated by the user
+   PetscOptionsViewer - Gets a viewer appropriate for the type indicated by the user
 
    Logically Collective on the communicator passed in PetscOptionsBegin()
 
@@ -1476,14 +1509,8 @@ PetscErrorCode  PetscOptionsBoolArray(const char opt[],const char text[],const c
    Concepts: options database^has int
 
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
-If no value is provided ascii:stdout is used
-$       ascii[:[filename][:format]]   defaults to stdout - format can be one of info, info_detailed, or matlab, for example ascii::info prints just the info
-$                                     about the object to standard out
-$       binary[:filename]   defaults to binaryoutput
-$       draw
-$       socket[:port]    defaults to the standard output port
 
-   Use PetscRestoreViewerDestroy() after using the viewer, otherwise a memory leak will occur
+   See PetscOptionsGetVieweer() for the format of the supplied viewer and its options
 
 .seealso: PetscOptionsGetViewer(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
@@ -1501,7 +1528,8 @@ PetscErrorCode  PetscOptionsViewer(const char opt[],const char text[],const char
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_STRING,&amsopt);CHKERRQ(ierr);
-    amsopt->data = (void*)strdup("");
+    /* must use system malloc since SAWs may free this */
+    ierr = PetscStrdup("",(char**)&amsopt->data);CHKERRQ(ierr);
   }
   ierr = PetscOptionsGetViewer(PetscOptionsObject.comm,PetscOptionsObject.prefix,opt,viewer,format,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {

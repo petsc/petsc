@@ -201,7 +201,7 @@ static PetscErrorCode InitializeShader(void)
     int            maxLength;
     char           *vertexInfoLog;
     glGetShaderiv(vertexshader, GL_INFO_LOG_LENGTH, &maxLength);
-    ierr = PetscMalloc(maxLength*sizeof(char),&vertexInfoLog);CHKERRQ(ierr);
+    ierr = PetscMalloc1(maxLength,&vertexInfoLog);CHKERRQ(ierr);
     glGetShaderInfoLog(vertexshader, maxLength, &maxLength, vertexInfoLog);
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Failed to compile vertex shader %s",vertexInfoLog);
   }
@@ -222,7 +222,7 @@ static PetscErrorCode InitializeShader(void)
     int            maxLength;
     char           *fragmentInfoLog;
     glGetShaderiv(fragmentshader, GL_INFO_LOG_LENGTH, &maxLength);
-    ierr = PetscMalloc(maxLength*sizeof(char),&fragmentInfoLog);CHKERRQ(ierr);
+    ierr = PetscMalloc1(maxLength,&fragmentInfoLog);CHKERRQ(ierr);
     glGetShaderInfoLog(fragmentshader, maxLength, &maxLength, fragmentInfoLog);
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Failed to compile fragment shader %s",fragmentInfoLog);
   }
@@ -606,7 +606,7 @@ static PetscErrorCode PetscDrawStringVertical_OpenGL(PetscDraw draw,PetscReal x,
   [yourLabel setTextColor:[UIColor colorWithRed:rcolor[c]/255.0 green:gcolor[c]/255.0 blue:rcolor[c]/255.0 alpha:1.0]];
   [yourLabel setText: [[NSString alloc] initWithCString:chrs encoding:NSMacOSRomanStringEncoding]];
   [yourLabel setBackgroundColor:[UIColor clearColor]];
-  [yourLabel setTransform:CGAffineTransformTranslate(CGAffineTransformMakeRotation(-M_PI / 2),-w/2.0-yy,-h+xx)];
+  [yourLabel setTransform:CGAffineTransformTranslate(CGAffineTransformMakeRotation(-PETSC_PI / 2),-w/2.0-yy,-h+xx)];
   /* [yourLabel setFont:[UIFont fontWithName: @"Trebuchet MS" size: 14.0f]]; */
   [win->view addSubview:yourLabel];
   NSLog(@"Draw string vertical end");
@@ -1169,7 +1169,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_GLUT(PetscDraw draw)
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
 
   /* actually create and open the window */
-  ierr = PetscNew(PetscDraw_OpenGL,&win);CHKERRQ(ierr);
+  ierr = PetscNew(&win);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)draw,sizeof(PetscDraw_OpenGL));CHKERRQ(ierr);
 
   if (x < 0 || y < 0)   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative corner of window");
@@ -1287,7 +1287,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_OpenGLES(PetscDraw draw)
   NSLog(@"Beginning PetscDrawCreate_OpenGLES()");
 
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
-  ierr = PetscNew(PetscDraw_OpenGL,&win);CHKERRQ(ierr);
+  ierr = PetscNew(&win);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)draw,sizeof(PetscDraw_OpenGL));CHKERRQ(ierr);
 
   draw->data = win;

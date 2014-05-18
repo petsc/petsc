@@ -8,7 +8,7 @@
 PETSC_EXTERN PetscErrorCode KSPInitializePackage(void);
 
 /*S
-     KSP - Abstract PETSc object that manages all Krylov methods. This is the object that manages the 
+     KSP - Abstract PETSc object that manages all Krylov methods. This is the object that manages the
          linear solves in PETSc (even those such as direct solvers that do no use Krylov accelerators).
 
    Level: beginner
@@ -77,6 +77,7 @@ PETSC_EXTERN PetscErrorCode KSPSolve(KSP,Vec,Vec);
 PETSC_EXTERN PetscErrorCode KSPSolveTranspose(KSP,Vec,Vec);
 PETSC_EXTERN PetscErrorCode KSPReset(KSP);
 PETSC_EXTERN PetscErrorCode KSPDestroy(KSP*);
+PETSC_EXTERN PetscErrorCode KSPSetReusePreconditioner(KSP,PetscBool);
 
 PETSC_EXTERN PetscFunctionList KSPList;
 PETSC_EXTERN PetscBool         KSPRegisterAllCalled;
@@ -146,8 +147,8 @@ PETSC_EXTERN PetscErrorCode KSPChebyshevSetEstimateEigenvalues(KSP,PetscReal,Pet
 PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigSetRandom(KSP,PetscRandom);
 PETSC_EXTERN PetscErrorCode KSPChebyshevSetNewMatrix(KSP);
 PETSC_EXTERN PetscErrorCode KSPComputeExtremeSingularValues(KSP,PetscReal*,PetscReal*);
-PETSC_EXTERN PetscErrorCode KSPComputeEigenvalues(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt *);
-PETSC_EXTERN PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP,PetscInt,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode KSPComputeEigenvalues(KSP,PetscInt,PetscReal[],PetscReal[],PetscInt *);
+PETSC_EXTERN PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP,PetscInt,PetscReal[],PetscReal[]);
 
 PETSC_EXTERN PetscErrorCode KSPGMRESSetRestart(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGMRESGetRestart(KSP, PetscInt*);
@@ -178,7 +179,7 @@ E*/
 typedef enum {KSP_GMRES_CGS_REFINE_NEVER, KSP_GMRES_CGS_REFINE_IFNEEDED, KSP_GMRES_CGS_REFINE_ALWAYS} KSPGMRESCGSRefinementType;
 PETSC_EXTERN const char *const KSPGMRESCGSRefinementTypes[];
 /*MC
-    KSP_GMRES_CGS_REFINE_NEVER - Just do the classical (unmodified) Gram-Schmidt process
+    KSP_GMRES_CGS_REFINE_NEVER - Do the classical (unmodified) Gram-Schmidt process
 
    Level: advanced
 
@@ -256,8 +257,8 @@ PETSC_EXTERN PetscErrorCode KSPGMRESMonitorKrylov(KSP,PetscInt,PetscReal,void *)
 PETSC_EXTERN PetscErrorCode KSPUnwindPreconditioner(KSP,Vec,Vec);
 PETSC_EXTERN PetscErrorCode KSPInitialResidual(KSP,Vec,Vec,Vec,Vec,Vec);
 
-PETSC_EXTERN PetscErrorCode KSPSetOperators(KSP,Mat,Mat,MatStructure);
-PETSC_EXTERN PetscErrorCode KSPGetOperators(KSP,Mat*,Mat*,MatStructure*);
+PETSC_EXTERN PetscErrorCode KSPSetOperators(KSP,Mat,Mat);
+PETSC_EXTERN PetscErrorCode KSPGetOperators(KSP,Mat*,Mat*);
 PETSC_EXTERN PetscErrorCode KSPGetOperatorsSet(KSP,PetscBool *,PetscBool *);
 PETSC_EXTERN PetscErrorCode KSPSetOptionsPrefix(KSP,const char[]);
 PETSC_EXTERN PetscErrorCode KSPAppendOptionsPrefix(KSP,const char[]);
@@ -272,6 +273,7 @@ PETSC_EXTERN PetscErrorCode KSPGetDiagonalScaleFix(KSP,PetscBool *);
 
 PETSC_EXTERN PetscErrorCode KSPView(KSP,PetscViewer);
 PETSC_EXTERN PetscErrorCode KSPLoad(KSP,PetscViewer);
+PETSC_STATIC_INLINE PetscErrorCode KSPViewFromOptions(KSP A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 
 #define KSP_FILE_CLASSID 1211223
 
@@ -306,13 +308,13 @@ PETSC_EXTERN const char *const*const KSPNormTypes;
 
    Level: advanced
 
-    Note: Some Krylov methods need to compute a residual norm and then this option is ignored
+    Note: Some Krylov methods need to compute a residual norm (such as GMRES) and then this option is ignored
 
 .seealso: KSPNormType, KSPSetNormType(), KSP_NORM_PRECONDITIONED, KSP_NORM_UNPRECONDITIONED, KSP_NORM_NATURAL
 M*/
 
 /*MC
-    KSP_NORM_PRECONDITIONED - Compute the norm of the preconditioned residual and pass that to the
+    KSP_NORM_PRECONDITIONED - Compute the norm of the preconditioned residual B*(b - A*x), if left preconditioning, and pass that to the
        convergence test routine.
 
    Level: advanced
@@ -345,8 +347,7 @@ PETSC_EXTERN PetscErrorCode KSPSetCheckNormIteration(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP,PetscBool);
 
 /*E
-    KSPConvergedReason - reason a Krylov method was said to
-         have converged or diverged
+    KSPConvergedReason - reason a Krylov method was said to have converged or diverged
 
    Level: beginner
 
@@ -441,9 +442,7 @@ M*/
            the preconditioner is applied. Also used when the KSPConvergedSkip() convergence
            test routine is set in KSP.
 
-
    Level: beginner
-
 
 .seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
 
@@ -464,9 +463,7 @@ M*/
      KSP_DIVERGED_BREAKDOWN_BICG - A breakdown in the KSPBICG method was detected so the
           method could not continue to enlarge the Krylov space.
 
-
    Level: beginner
-
 
 .seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
 
@@ -590,13 +587,28 @@ PETSC_EXTERN PetscErrorCode KSPSetUseFischerGuess(KSP,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPSetFischerGuess(KSP,KSPFischerGuess);
 PETSC_EXTERN PetscErrorCode KSPGetFischerGuess(KSP,KSPFischerGuess*);
 
+/*E
+    MatSchurComplementAinvType - Determines how to approximate the inverse of the (0,0) block in Schur complement preconditioning matrix assembly routines
+
+    Level: intermediate
+
+.seealso: MatSchurComplementGetAinvType(), MatSchurComplementSetAinvType(), MatSchurComplementGetPmat(), MatGetSchurComplement(), MatCreateSchurComplementPmat()
+E*/
+typedef enum {MAT_SCHUR_COMPLEMENT_AINV_DIAG, MAT_SCHUR_COMPLEMENT_AINV_LUMP} MatSchurComplementAinvType;
+PETSC_EXTERN const char *const MatSchurComplementAinvTypes[];
+
 PETSC_EXTERN PetscErrorCode MatCreateSchurComplement(Mat,Mat,Mat,Mat,Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatSchurComplementGetKSP(Mat,KSP*);
 PETSC_EXTERN PetscErrorCode MatSchurComplementSetKSP(Mat,KSP);
-PETSC_EXTERN PetscErrorCode MatSchurComplementSet(Mat,Mat,Mat,Mat,Mat,Mat);
-PETSC_EXTERN PetscErrorCode MatSchurComplementUpdate(Mat,Mat,Mat,Mat,Mat,Mat,MatStructure);
-PETSC_EXTERN PetscErrorCode MatSchurComplementGetSubmatrices(Mat,Mat*,Mat*,Mat*,Mat*,Mat*);
-PETSC_EXTERN PetscErrorCode MatGetSchurComplement(Mat,IS,IS,IS,IS,MatReuse,Mat *,MatReuse,Mat *);
+PETSC_EXTERN PetscErrorCode MatSchurComplementSetSubMatrices(Mat,Mat,Mat,Mat,Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatSchurComplementUpdateSubMatrices(Mat,Mat,Mat,Mat,Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatSchurComplementGetSubMatrices(Mat,Mat*,Mat*,Mat*,Mat*,Mat*);
+PETSC_EXTERN PetscErrorCode MatSchurComplementSetAinvType(Mat,MatSchurComplementAinvType);
+PETSC_EXTERN PetscErrorCode MatSchurComplementGetAinvType(Mat,MatSchurComplementAinvType*);
+PETSC_EXTERN PetscErrorCode MatSchurComplementGetPmat(Mat,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetSchurComplement(Mat,IS,IS,IS,IS,MatReuse,Mat *,MatSchurComplementAinvType,MatReuse,Mat *);
+PETSC_EXTERN PetscErrorCode MatCreateSchurComplementPmat(Mat,Mat,Mat,Mat,MatSchurComplementAinvType,MatReuse,Mat*);
 
 PETSC_EXTERN PetscErrorCode KSPSetDM(KSP,DM);
 PETSC_EXTERN PetscErrorCode KSPSetDMActive(KSP,PetscBool );
@@ -604,10 +616,10 @@ PETSC_EXTERN PetscErrorCode KSPGetDM(KSP,DM*);
 PETSC_EXTERN PetscErrorCode KSPSetApplicationContext(KSP,void*);
 PETSC_EXTERN PetscErrorCode KSPGetApplicationContext(KSP,void*);
 PETSC_EXTERN PetscErrorCode KSPSetComputeRHS(KSP,PetscErrorCode (*func)(KSP,Vec,void*),void *);
-PETSC_EXTERN PetscErrorCode KSPSetComputeOperators(KSP,PetscErrorCode(*)(KSP,Mat,Mat,MatStructure*,void*),void*);
+PETSC_EXTERN PetscErrorCode KSPSetComputeOperators(KSP,PetscErrorCode(*)(KSP,Mat,Mat,void*),void*);
 PETSC_EXTERN PetscErrorCode KSPSetComputeInitialGuess(KSP,PetscErrorCode(*)(KSP,Vec,void*),void*);
-PETSC_EXTERN PetscErrorCode DMKSPSetComputeOperators(DM,PetscErrorCode(*)(KSP,Mat,Mat,MatStructure*,void*),void*);
-PETSC_EXTERN PetscErrorCode DMKSPGetComputeOperators(DM,PetscErrorCode(**)(KSP,Mat,Mat,MatStructure*,void*),void*);
+PETSC_EXTERN PetscErrorCode DMKSPSetComputeOperators(DM,PetscErrorCode(*)(KSP,Mat,Mat,void*),void*);
+PETSC_EXTERN PetscErrorCode DMKSPGetComputeOperators(DM,PetscErrorCode(**)(KSP,Mat,Mat,void*),void*);
 PETSC_EXTERN PetscErrorCode DMKSPSetComputeRHS(DM,PetscErrorCode(*)(KSP,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMKSPGetComputeRHS(DM,PetscErrorCode(**)(KSP,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMKSPSetComputeInitialGuess(DM,PetscErrorCode(*)(KSP,Vec,void*),void*);

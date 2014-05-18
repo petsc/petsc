@@ -165,15 +165,15 @@ int main(int argc,char **args)
   ierr = MatGetSize(sA, &i,&j); ierr = MatGetSize(A, &i2,&j2);
   i   -= i2; j -= j2;
   if (i || j) {
-    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatGetSize()\n",rank);
-    PetscSynchronizedFlush(PETSC_COMM_WORLD);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatGetSize()\n",rank);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
   }
 
   ierr = MatGetLocalSize(sA, &i,&j); ierr = MatGetLocalSize(A, &i2,&j2);
   i2  -= i; j2 -= j;
   if (i2 || j2) {
-    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatGetLocalSize()\n",rank);
-    PetscSynchronizedFlush(PETSC_COMM_WORLD);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatGetLocalSize()\n",rank);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
   }
 
   /* vectors */
@@ -217,8 +217,8 @@ int main(int argc,char **args)
   ierr = MatGetOwnershipRange(A,&i2,&j2);CHKERRQ(ierr);
   i2  -= rstart; j2 -= rend;
   if (i2 || j2) {
-    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MaGetOwnershipRange()\n",rank);
-    PetscSynchronizedFlush(PETSC_COMM_WORLD);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MaGetOwnershipRange()\n",rank);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
   }
 
   /* Test MatDiagonalScale() */
@@ -234,8 +234,8 @@ int main(int argc,char **args)
   ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
   r1  -= r2;
   if (r1<-tol || r1>tol) {
-    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatDiagonalScale() or MatGetDiagonal(), r1=%G \n",rank,r1);
-    PetscSynchronizedFlush(PETSC_COMM_WORLD);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatDiagonalScale() or MatGetDiagonal(), r1=%g \n",rank,(double)r1);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
   }
 
   ierr = MatScale(A,alpha);CHKERRQ(ierr);
@@ -255,14 +255,14 @@ int main(int argc,char **args)
   /* Test MatMult(), MatMultAdd() */
   ierr = MatMultEqual(A,sA,10,&flg);CHKERRQ(ierr);
   if (!flg) {
-    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMult() or MatScale()\n",rank);
-    PetscSynchronizedFlush(PETSC_COMM_WORLD);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMult() or MatScale()\n",rank);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
   }
 
   ierr = MatMultAddEqual(A,sA,10,&flg);CHKERRQ(ierr);
   if (!flg) {
-    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMultAdd()\n",rank);
-    PetscSynchronizedFlush(PETSC_COMM_WORLD);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMultAdd()\n",rank);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
   }
 
   /* Test MatMultTranspose(), MatMultTransposeAdd() */
@@ -274,8 +274,8 @@ int main(int argc,char **args)
     ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
     r1  -= r2;
     if (r1<-tol || r1>tol) {
-      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMult() or MatScale(), err=%G\n",rank,r1);
-      PetscSynchronizedFlush(PETSC_COMM_WORLD);
+      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMult() or MatScale(), err=%g\n",rank,(double)r1);CHKERRQ(ierr);
+      ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
     }
   }
   for (i=0; i<10; i++) {
@@ -287,8 +287,8 @@ int main(int argc,char **args)
     ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
     r1  -= r2;
     if (r1<-tol || r1>tol) {
-      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMultAdd(), err=%G \n",rank,r1);
-      PetscSynchronizedFlush(PETSC_COMM_WORLD);
+      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMultAdd(), err=%g \n",rank,(double)r1);CHKERRQ(ierr);
+      ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
     }
   }
   /* ierr = MatView(sA, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  */
@@ -298,17 +298,17 @@ int main(int argc,char **args)
   ierr = MatDuplicate(sA,MAT_COPY_VALUES,&sB);CHKERRQ(ierr);
   ierr = MatEqual(sA,sB,&flg);CHKERRQ(ierr);
   if (!flg) {
-    PetscPrintf(PETSC_COMM_WORLD," Error in MatDuplicate(), sA != sB \n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD," Error in MatDuplicate(), sA != sB \n");CHKERRQ(ierr);CHKERRQ(ierr);
   }
   ierr = MatMultEqual(sA,sB,5,&flg);CHKERRQ(ierr);
   if (!flg) {
-    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatDuplicate() or MatMult()\n",rank);
-    PetscSynchronizedFlush(PETSC_COMM_WORLD);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatDuplicate() or MatMult()\n",rank);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
   }
   ierr = MatMultAddEqual(sA,sB,5,&flg);CHKERRQ(ierr);
   if (!flg) {
-    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatDuplicate() or MatMultAdd(()\n",rank);
-    PetscSynchronizedFlush(PETSC_COMM_WORLD);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatDuplicate() or MatMultAdd(()\n",rank);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&sB);CHKERRQ(ierr);
 

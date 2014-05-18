@@ -1,6 +1,7 @@
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdraw.h>
 
@@ -30,13 +31,13 @@ int main(int argc,char **argv)
   */
   ierr = PetscOptionsGetBool(NULL,"-distribute",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscMalloc(size*sizeof(PetscInt),&localnodes);CHKERRQ(ierr);
+    ierr = PetscMalloc1(size,&localnodes);CHKERRQ(ierr);
     for (i=0; i<size-1; i++) localnodes[i] = 2;
     localnodes[size-1] = M - 2*(size-1);
   }
 
   /* Set up the array */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,M,1,1,localnodes,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,M,1,1,localnodes,&da);CHKERRQ(ierr);
   ierr = PetscFree(localnodes);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
@@ -67,7 +68,7 @@ int main(int argc,char **argv)
   localptr[localsize-1] = 0.0;
   for (i=1; i<localsize-1; i++) {
     j           = (i-1)+mybase;
-    localptr[i] = sin((PETSC_PI*j*6)/((PetscReal)M) + 1.2 * sin((PETSC_PI*j*2)/((PetscReal)M))) * 2;
+    localptr[i] = PetscSinReal((PETSC_PI*j*6)/((PetscReal)M) + 1.2 * PetscSinReal((PETSC_PI*j*2)/((PetscReal)M))) * 2;
   }
 
   ierr = VecRestoreArray(local,&localptr);CHKERRQ(ierr);

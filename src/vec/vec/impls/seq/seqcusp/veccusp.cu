@@ -30,7 +30,7 @@ PetscErrorCode VecCUSPAllocateCheckHost(Vec v)
   s    = (Vec_Seq*)v->data;
   ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
   if (s->array == 0) {
-    ierr               = PetscMalloc(n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
+    ierr               = PetscMalloc1(n,&array);CHKERRQ(ierr);
     ierr               = PetscLogObjectMemory((PetscObject)v,n*sizeof(PetscScalar));CHKERRQ(ierr);
     s->array           = array;
     s->array_allocated = array;
@@ -429,19 +429,21 @@ PetscErrorCode VecAYPX_SeqCUSP(Vec yin, PetscScalar alpha, Vec xin)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (alpha != 0.0) {
-    ierr = VecCUSPGetArrayRead(xin,&xarray);CHKERRQ(ierr);
-    ierr = VecCUSPGetArrayReadWrite(yin,&yarray);CHKERRQ(ierr);
-    try {
+  ierr = VecCUSPGetArrayRead(xin,&xarray);CHKERRQ(ierr);
+  ierr = VecCUSPGetArrayReadWrite(yin,&yarray);CHKERRQ(ierr);
+  try {
+    if (alpha != 0.0) {
       cusp::blas::aypx(*xarray,*yarray,alpha);
-      ierr = WaitForGPU();CHKERRCUSP(ierr);
-    } catch(char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
+      ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
+    } else {
+      cusp::blas::copy(*xarray,*yarray);
     }
-    ierr = VecCUSPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
-    ierr = VecCUSPRestoreArrayReadWrite(yin,&yarray);CHKERRQ(ierr);
-    ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
+    ierr = WaitForGPU();CHKERRCUSP(ierr);
+  } catch(char *ex) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   }
+  ierr = VecCUSPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
+  ierr = VecCUSPRestoreArrayReadWrite(yin,&yarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

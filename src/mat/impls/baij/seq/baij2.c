@@ -27,8 +27,8 @@ PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat A,PetscInt is_max,IS is[],PetscInt
   if (ov < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
 
   ierr = PetscBTCreate(m,&table);CHKERRQ(ierr);
-  ierr = PetscMalloc((m+1)*sizeof(PetscInt),&nidx);CHKERRQ(ierr);
-  ierr = PetscMalloc((A->rmap->N+1)*sizeof(PetscInt),&nidx2);CHKERRQ(ierr);
+  ierr = PetscMalloc1((m+1),&nidx);CHKERRQ(ierr);
+  ierr = PetscMalloc1((A->rmap->N+1),&nidx2);CHKERRQ(ierr);
 
   for (i=0; i<is_max; i++) {
     /* Initialise the two local arrays */
@@ -97,10 +97,9 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse 
   ierr = ISGetLocalSize(isrow,&nrows);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscol,&ncols);CHKERRQ(ierr);
 
-  ierr  = PetscMalloc((1+oldcols)*sizeof(PetscInt),&smap);CHKERRQ(ierr);
+  ierr  = PetscCalloc1((1+oldcols),&smap);CHKERRQ(ierr);
   ssmap = smap;
-  ierr  = PetscMalloc((1+nrows)*sizeof(PetscInt),&lens);CHKERRQ(ierr);
-  ierr  = PetscMemzero(smap,oldcols*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr  = PetscMalloc1((1+nrows),&lens);CHKERRQ(ierr);
   for (i=0; i<ncols; i++) smap[icol[i]] = i+1;
   /* determine lens of each row */
   for (i=0; i<nrows; i++) {
@@ -175,7 +174,7 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Ma
 
   /* Verify if the indices corespond to each element in a block
    and form the IS with compressed IS */
-  ierr = PetscMalloc2(a->mbs,PetscInt,&vary,a->mbs,PetscInt,&iary);CHKERRQ(ierr);
+  ierr = PetscMalloc2(a->mbs,&vary,a->mbs,&iary);CHKERRQ(ierr);
   ierr = PetscMemzero(vary,a->mbs*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<nrows; i++) vary[irow[i]/bs]++;
   count = 0;
@@ -212,7 +211,7 @@ PetscErrorCode MatGetSubMatrices_SeqBAIJ(Mat A,PetscInt n,const IS irow[],const 
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscMalloc((n+1)*sizeof(Mat),B);CHKERRQ(ierr);
+    ierr = PetscMalloc1((n+1),B);CHKERRQ(ierr);
   }
 
   for (i=0; i<n; i++) {
@@ -1605,7 +1604,7 @@ PetscErrorCode MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
 
   if (!a->mult_work) {
     k    = PetscMax(A->rmap->n,A->cmap->n);
-    ierr = PetscMalloc((k+1)*sizeof(PetscScalar),&a->mult_work);CHKERRQ(ierr);
+    ierr = PetscMalloc1((k+1),&a->mult_work);CHKERRQ(ierr);
   }
   work = a->mult_work;
   for (i=0; i<mbs; i++) {
@@ -2135,7 +2134,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 
   if (!a->mult_work) {
     k    = PetscMax(A->rmap->n,A->cmap->n);
-    ierr = PetscMalloc((k+1)*sizeof(PetscScalar),&a->mult_work);CHKERRQ(ierr);
+    ierr = PetscMalloc1((k+1),&a->mult_work);CHKERRQ(ierr);
   }
   work = a->mult_work;
   for (i=0; i<mbs; i++) {
@@ -2303,7 +2302,7 @@ PetscErrorCode MatMultHermitianTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"block size larger than 5 is not supported yet");
     if (!a->mult_work) {
       k    = PetscMax(A->rmap->n,A->cmap->n);
-      ierr = PetscMalloc((k+1)*sizeof(PetscScalar),&a->mult_work);CHKERRQ(ierr);
+      ierr = PetscMalloc1((k+1),&a->mult_work);CHKERRQ(ierr);
     }
     work = a->mult_work;
     xtmp = x;
@@ -2448,7 +2447,7 @@ PetscErrorCode MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
     if (!a->mult_work) {
       k    = PetscMax(A->rmap->n,A->cmap->n);
-      ierr = PetscMalloc((k+1)*sizeof(PetscScalar),&a->mult_work);CHKERRQ(ierr);
+      ierr = PetscMalloc1((k+1),&a->mult_work);CHKERRQ(ierr);
     }
     work = a->mult_work;
     xtmp = x;
@@ -2512,8 +2511,7 @@ PetscErrorCode MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
   } else if (type == NORM_1) { /* maximum column sum */
     PetscReal *tmp;
     PetscInt  *bcol = a->j;
-    ierr = PetscMalloc((A->cmap->n+1)*sizeof(PetscReal),&tmp);CHKERRQ(ierr);
-    ierr = PetscMemzero(tmp,A->cmap->n*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscCalloc1((A->cmap->n+1),&tmp);CHKERRQ(ierr);
     for (i=0; i<nz; i++) {
       for (j=0; j<bs; j++) {
         k1 = bs*(*bcol) + j; /* column index */

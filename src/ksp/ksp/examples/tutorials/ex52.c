@@ -22,11 +22,13 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscBool      flg,flg_ilu,flg_ch;
   PetscScalar    v;
+  PetscMPIInt    rank;
 #if defined(PETSC_USE_LOG)
   PetscLogStage stage;
 #endif
 
   PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -137,7 +139,7 @@ int main(int argc,char **args)
      Create linear solver context
   */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
 
   /*
     Example of how to use external package MUMPS
@@ -146,6 +148,7 @@ int main(int argc,char **args)
           are equivalent to these procedural calls
   */
 #if defined(PETSC_HAVE_MUMPS)
+  Mat       F;
   flg    = PETSC_FALSE;
   flg_ch = PETSC_FALSE;
   ierr   = PetscOptionsGetBool(NULL,"-use_mumps_lu",&flg,NULL);CHKERRQ(ierr);
@@ -153,7 +156,6 @@ int main(int argc,char **args)
   if (flg || flg_ch) {
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
     PC        pc;
-    Mat       F;
     PetscInt  ival,icntl;
     PetscReal val;
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -166,10 +168,18 @@ int main(int argc,char **args)
     ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);CHKERRQ(ierr);
     ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
     ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
+
+    /* sequential ordering */
     icntl = 7; ival = 2;
     ierr = MatMumpsSetIcntl(F,icntl,ival);CHKERRQ(ierr);
-    icntl = 1; val = 0.0;
+
+    /* threshhold for row pivot detection */
+    ierr = MatMumpsSetIcntl(F,24,1);CHKERRQ(ierr);
+    icntl = 3; val = 1.e-6;
     ierr = MatMumpsSetCntl(F,icntl,val);CHKERRQ(ierr);
+
+    /* compute determinant of A */
+    ierr = MatMumpsSetIcntl(F,33,1);CHKERRQ(ierr);
   }
 #endif
 
@@ -239,19 +249,33 @@ int main(int argc,char **args)
 
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
+  /* Get info from matrix factors */
+  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_MUMPS)
+  PetscInt  icntl,infog34;
+  PetscReal cntl,rinfo12,rinfo13;
+  icntl = 3;
+  ierr = MatMumpsGetCntl(F,icntl,&cntl);CHKERRQ(ierr);
+  
+  /* compute determinant */
+  if (!rank) {
+    ierr = MatMumpsGetInfog(F,34,&infog34);CHKERRQ(ierr);
+    ierr = MatMumpsGetRinfog(F,12,&rinfo12);CHKERRQ(ierr);
+    ierr = MatMumpsGetRinfog(F,13,&rinfo13);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"  Mumps row pivot threshhold = %g\n",cntl);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"  Mumps determinant = (%g, %g) * 2^%D \n",rinfo12,rinfo13,infog34);
+  }
+#endif
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Check solution and clean up
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  /*
-     Check the error
-  */
   ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
@@ -264,8 +288,7 @@ int main(int argc,char **args)
   if (norm < 1.e-12) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 iterations %D\n",norm,its);CHKERRQ(ierr);
   } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G iterations %D\n",
-                     norm,its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its);CHKERRQ(ierr);
  }
 
   /*

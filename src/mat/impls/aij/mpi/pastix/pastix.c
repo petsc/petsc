@@ -119,7 +119,7 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscBool valOnly,PetscInt *n,PetscInt **co
   if (!valOnly) {
     ierr = PetscMalloc(((*n)+1) *sizeof(PetscInt)   ,colptr);CHKERRQ(ierr);
     ierr = PetscMalloc(nnz      *sizeof(PetscInt)   ,row);CHKERRQ(ierr);
-    ierr = PetscMalloc(nnz      *sizeof(PetscScalar),values);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nnz      ,values);CHKERRQ(ierr);
 
     if (isSBAIJ || isSeqSBAIJ || isMpiSBAIJ) {
       ierr = PetscMemcpy (*colptr, rowptr, ((*n)+1)*sizeof(PetscInt));CHKERRQ(ierr);
@@ -128,7 +128,7 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscBool valOnly,PetscInt *n,PetscInt **co
       for (i = 0; i < nnz; i++) (*row)[i] += base;
       ierr = PetscMemcpy (*values, rvalues, (nnz)*sizeof(PetscScalar));CHKERRQ(ierr);
     } else {
-      ierr = PetscMalloc((*n)*sizeof(PetscInt),&colcount);CHKERRQ(ierr);
+      ierr = PetscMalloc1((*n),&colcount);CHKERRQ(ierr);
 
       for (i = 0; i < m; i++) colcount[i] = 0;
       /* Fill-in colptr */
@@ -181,7 +181,7 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscBool valOnly,PetscInt *n,PetscInt **co
 
   icntl =-1;
   check = 0;
-  ierr  = PetscOptionsInt("-mat_pastix_check","Check the matrix 0 : no, 1 : yes)","None",check,&icntl,&flg);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(((PetscObject) A)->prefix, "-mat_pastix_check", &icntl, &flg);CHKERRQ(ierr);
   if ((flg && icntl >= 0) || PetscLogPrintInfo) check =  icntl;
 
   if (check == 1) {
@@ -199,16 +199,15 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscBool valOnly,PetscInt *n,PetscInt **co
 
     icntl=-1;
     verb = API_VERBOSE_NOT;
-    ierr = PetscOptionsInt("-mat_pastix_verbose","iparm[IPARM_VERBOSE] : level of printing (0 to 2)","None",verb,&icntl,&flg);CHKERRQ(ierr);
-    if ((flg && icntl >= 0) || PetscLogPrintInfo) {
-      verb =  icntl;
-    }
+    /* "iparm[IPARM_VERBOSE] : level of printing (0 to 2)" */
+    ierr = PetscOptionsGetInt(((PetscObject) A)->prefix, "-mat_pastix_verbose", &icntl, &flg);CHKERRQ(ierr);
+    if ((flg && icntl >= 0) || PetscLogPrintInfo) verb =  icntl;
     PASTIX_CHECKMATRIX(MPI_COMM_WORLD,verb,((isSym != 0) ? API_SYM_YES : API_SYM_NO),API_YES,*n,&tmpcolptr,&tmprows,(PastixScalar**)&tmpvalues,NULL,1);
 
     ierr = PetscMemcpy(*colptr,tmpcolptr,(*n+1)*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMalloc(((*colptr)[*n]-1)*sizeof(PetscInt),row);CHKERRQ(ierr);
+    ierr = PetscMalloc1(((*colptr)[*n]-1),row);CHKERRQ(ierr);
     ierr = PetscMemcpy(*row,tmprows,((*colptr)[*n]-1)*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMalloc(((*colptr)[*n]-1)*sizeof(PetscScalar),values);CHKERRQ(ierr);
+    ierr = PetscMalloc1(((*colptr)[*n]-1),values);CHKERRQ(ierr);
     ierr = PetscMemcpy(*values,tmpvalues,((*colptr)[*n]-1)*sizeof(PetscScalar));CHKERRQ(ierr);
     free(tmpvalues);
     free(tmprows);
@@ -429,8 +428,8 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
   ierr = MatDestroyMatrices(1,&tseq);CHKERRQ(ierr);
 
   if (!lu->perm) {
-    ierr = PetscMalloc((lu->n)*sizeof(PetscInt),&(lu->perm));CHKERRQ(ierr);
-    ierr = PetscMalloc((lu->n)*sizeof(PetscInt),&(lu->invp));CHKERRQ(ierr);
+    ierr = PetscMalloc1((lu->n),&(lu->perm));CHKERRQ(ierr);
+    ierr = PetscMalloc1((lu->n),&(lu->invp));CHKERRQ(ierr);
   }
 
   if (isSym) {
@@ -634,7 +633,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_pastix(Mat A,MatFactorType ftype
 
   B->factortype = MAT_FACTOR_LU;
 
-  ierr = PetscNewLog(B,Mat_Pastix,&pastix);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&pastix);CHKERRQ(ierr);
 
   pastix->CleanUpPastix = PETSC_FALSE;
   pastix->isAIJ         = PETSC_TRUE;
@@ -672,7 +671,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_mpiaij_pastix(Mat A,MatFactorType ftype
 
   B->factortype = MAT_FACTOR_LU;
 
-  ierr = PetscNewLog(B,Mat_Pastix,&pastix);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&pastix);CHKERRQ(ierr);
 
   pastix->CleanUpPastix = PETSC_FALSE;
   pastix->isAIJ         = PETSC_TRUE;
@@ -710,7 +709,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat A,MatFactorType fty
 
   B->factortype = MAT_FACTOR_CHOLESKY;
 
-  ierr = PetscNewLog(B,Mat_Pastix,&pastix);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&pastix);CHKERRQ(ierr);
 
   pastix->CleanUpPastix = PETSC_FALSE;
   pastix->isAIJ         = PETSC_TRUE;
@@ -749,7 +748,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat A,MatFactorType fty
 
   B->factortype = MAT_FACTOR_CHOLESKY;
 
-  ierr = PetscNewLog(B,Mat_Pastix,&pastix);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,&pastix);CHKERRQ(ierr);
 
   pastix->CleanUpPastix = PETSC_FALSE;
   pastix->isAIJ         = PETSC_TRUE;

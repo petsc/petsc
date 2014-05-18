@@ -40,15 +40,15 @@ static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *parti
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)part),&size);CHKERRQ(ierr);
   if (part->n != size) SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Currently only supports one domain per processor");
-  p = (PetscInt)sqrt((double)part->n);
+  p = (PetscInt)PetscSqrtReal((PetscReal)part->n);
   if (p*p != part->n) SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Square partitioning requires \"perfect square\" number of domains");
 
   ierr = MatGetSize(part->adj,&N,NULL);CHKERRQ(ierr);
-  n    = (PetscInt)sqrt((double)N);
+  n    = (PetscInt)PetscSqrtReal((PetscReal)N);
   if (n*n != N) SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Square partitioning requires square domain");
   if (n%p != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Square partitioning requires p to divide n");
   ierr = MatGetOwnershipRange(part->adj,&rstart,&rend);CHKERRQ(ierr);
-  ierr = PetscMalloc((rend-rstart)*sizeof(PetscInt),&color);CHKERRQ(ierr);
+  ierr = PetscMalloc1((rend-rstart),&color);CHKERRQ(ierr);
   /* for (int cell=rstart; cell<rend; cell++) { color[cell-rstart] = ((cell%n) < (n/2)) + 2 * ((cell/n) < (n/2)); } */
   for (cell=rstart; cell<rend; cell++) {
     color[cell-rstart] = ((cell%n) / (n/p)) + p * ((cell/n) / (n/p));

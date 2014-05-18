@@ -20,6 +20,8 @@ Label 'subpoint_map':
 [0]: 20 (-101)
 [0]: 21 (-101)
 [0]: 22 (-101)
+DM Object:Hybrid Mesh 1 MPI processes
+  type: plex
 Mesh 'Hybrid Mesh':
 Max sizes cone: 5 support: 4
 orientation is missing
@@ -109,9 +111,9 @@ base <-- cap:
 [0]: 0 <---- 13 (0)
 [0]: 0 <---- 14 (0)
 [0]: 1 <---- 15 (0)
-[0]: 1 <---- 16 (0)
-[0]: 1 <---- 17 (0)
 [0]: 1 <---- 18 (-3)
+[0]: 1 <---- 17 (2)
+[0]: 1 <---- 16 (2)
 [0]: 2 <---- 14 (0)
 [0]: 2 <---- 18 (0)
 [0]: 2 <---- 19 (0)

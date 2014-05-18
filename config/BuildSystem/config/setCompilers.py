@@ -229,12 +229,10 @@ class Configure(config.base.Configure):
   def isIBM(compiler):
     '''Returns true if the compiler is a IBM compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -flags')
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -qversion')
       output = output + error
-      #
-      # Do not know what to look for for IBM compilers
-      #
-      return 0
+      if 'IBM XL' in output:
+        return 1
     except RuntimeError:
       pass
     return 0
@@ -697,6 +695,15 @@ class Configure(config.base.Configure):
           yield 'mpCC_r'
           yield 'mpCC'
         self.usedMPICompilers = 0
+      #attempt to match c++ compiler with c compiler
+      if self.CC.find('win32fe cl') >= 0:
+        yield 'win32fe cl'
+      elif self.CC.find('win32fe icl') >= 0:
+        yield 'win32fe icl'
+      elif self.CC == 'clang':
+        yield 'clang++'
+      elif self.CC == 'icc':
+        yield 'icpc'
       vendor = self.vendor
       if (not vendor) and self.framework.argDB['with-gnu-compilers']:
         yield 'g++'
@@ -842,6 +849,14 @@ class Configure(config.base.Configure):
           yield 'mpf90'
           yield 'mpf77'
         self.usedMPICompilers = 0
+      #attempt to match fortran compiler with c compiler
+      if self.CC.find('win32fe cl') >= 0:
+        yield 'win32fe f90'
+        yield 'win32fe ifc'
+      elif self.CC.find('win32fe icl') >= 0:
+        yield 'win32fe ifc'
+      elif self.CC == 'icc':
+        yield 'ifort'
       vendor = self.vendor
       if (not vendor) and self.framework.argDB['with-gnu-compilers']:
         yield 'gfortran'
@@ -1507,12 +1522,23 @@ if (dlclose(handle)) {
   def resetEnvCompilers(self):
     ignoreEnv = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FCFLAGS','F77','FFLAGS',
                  'F90','F90FLAGS','CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS',
-                 'LDFLAGS','LIBS','MPI_DIR','RM']
+                 'LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR']
     for envVal in ignoreEnv:
       if envVal in os.environ:
         self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring \n use ./configure '+envVal+'=$'+envVal+' if you really want to use that value ******')
         del os.environ[envVal]
     return
+
+  def checkIntoShared(self,symbol,lib):
+    '''Check that a given library can be linked into a shared library'''
+    import sys
+    if not self.checkCompile(includes = 'char *'+symbol+'(void);\n',body = 'return '+symbol+'();\n', cleanup = 0, codeBegin = 'char* testroutine(void){', codeEnd = '}'):
+      raise RunTimeError('Unable to compile test file with symbol: '+symbol)
+    oldLibs = self.LIBS
+    self.LIBS = self.libraries.toStringNoDupes(lib) + ' '+self.LIBS
+    ret = self.checkLink(includes = 'char *'+symbol+'(void);\n',body = 'return '+symbol+'();\n', cleanup = 0, codeBegin = 'char* testroutine(void){', codeEnd = '}',shared =1)
+    self.LIBS = oldLibs
+    return ret
 
   def configure(self):
     self.executeTest(self.printEnvVariables)
