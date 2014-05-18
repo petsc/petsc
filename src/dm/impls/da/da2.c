@@ -432,7 +432,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   ierr = VecGetOwnershipRange(global,&start,&end);CHKERRQ(ierr);
   ierr = ISCreateStride(comm,x*y*dof,start,1,&to);CHKERRQ(ierr);
 
-  ierr  = PetscMalloc1(x*y,&idx);CHKERRQ(ierr);
+  ierr  = PetscMalloc1((IXe-IXs)*(IYe-IYs),&idx);CHKERRQ(ierr);
   left  = xs - Xs; right = left + x;
   down  = ys - Ys; up = down + y;
   count = 0;
@@ -442,7 +442,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     }
   }
 
-  ierr = ISCreateBlock(comm,dof,count,idx,PETSC_OWN_POINTER,&from);CHKERRQ(ierr);
+  ierr = ISCreateBlock(comm,dof,count,idx,PETSC_USE_POINTER,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)ltog);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
@@ -451,9 +451,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   /* global to local must include ghost points within the domain,
      but not ghost points outside the domain that aren't periodic */
   if (stencil_type == DMDA_STENCIL_BOX) {
-    count = (IXe-IXs)*(IYe-IYs);
-    ierr  = PetscMalloc1(count,&idx);CHKERRQ(ierr);
-
     left  = IXs - Xs; right = left + (IXe-IXs);
     down  = IYs - Ys; up = down + (IYe-IYs);
     count = 0;
@@ -475,9 +472,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
             | bottom  |
             -----------
          Xs xs        xe Xe */
-    count = (ys-IYs)*x + y*(IXe-IXs) + (IYe-ye)*x;
-    ierr  = PetscMalloc1(count,&idx);CHKERRQ(ierr);
-
     left  = xs - Xs; right = left + x;
     down  = ys - Ys; up = down + y;
     count = 0;
