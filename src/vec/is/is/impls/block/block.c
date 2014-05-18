@@ -9,6 +9,7 @@
 
 typedef struct {
   PetscBool sorted;             /* are the blocks sorted? */
+  PetscBool borrowed_indices;   /* do not free indices when IS is destroyed */
   PetscInt  *idx;
 } IS_Block;
 
@@ -20,7 +21,9 @@ PetscErrorCode ISDestroy_Block(IS is)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(is_block->idx);CHKERRQ(ierr);
+  if (!is_block->borrowed_indices) {
+    ierr = PetscFree(is_block->idx);CHKERRQ(ierr);
+  }
   ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockSetIndices_C",0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockGetIndices_C",0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockRestoreIndices_C",0);CHKERRQ(ierr);
@@ -356,7 +359,11 @@ PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,const Petsc
   PetscBool      sorted = PETSC_TRUE;
 
   PetscFunctionBegin;
-  ierr = PetscFree(sub->idx);CHKERRQ(ierr);
+  if (!sub->borrowed_indices) {
+    ierr = PetscFree(sub->idx);CHKERRQ(ierr);
+  } else {
+    sub->borrowed_indices = PETSC_FALSE;
+  }
   ierr = PetscLayoutSetLocalSize(is->map, n*bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(is->map, bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(is->map);CHKERRQ(ierr);
@@ -373,8 +380,12 @@ PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,const Petsc
     ierr = PetscMalloc1(n,&sub->idx);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)is,n*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemcpy(sub->idx,idx,n*sizeof(PetscInt));CHKERRQ(ierr);
-  } else if (mode == PETSC_OWN_POINTER) sub->idx = (PetscInt*) idx;
-  else SETERRQ(PetscObjectComm((PetscObject)is),PETSC_ERR_SUP,"Only supports PETSC_COPY_VALUES and PETSC_OWN_POINTER");
+  } else if (mode == PETSC_OWN_POINTER) {
+    sub->idx = (PetscInt*) idx;
+  } else if (mode == PETSC_USE_POINTER) {
+    sub->idx = (PetscInt*) idx;
+    sub->borrowed_indices = PETSC_TRUE;
+  }
 
   sub->sorted = sorted;
   is->min     = bs*min;

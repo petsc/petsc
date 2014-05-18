@@ -203,9 +203,9 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
 
   /* allocate the base parallel and sequential vectors */
   dd->Nlocal = dof*x;
-  ierr       = VecCreateMPIWithArray(comm,dof,dd->Nlocal,PETSC_DECIDE,0,&global);CHKERRQ(ierr);
+  ierr       = VecCreateMPIWithArray(comm,dof,dd->Nlocal,PETSC_DECIDE,NULL,&global);CHKERRQ(ierr);
   dd->nlocal = dof*(Xe-Xs);
-  ierr       = VecCreateSeqWithArray(PETSC_COMM_SELF,dof,dd->nlocal,0,&local);CHKERRQ(ierr);
+  ierr       = VecCreateSeqWithArray(PETSC_COMM_SELF,dof,dd->nlocal,NULL,&local);CHKERRQ(ierr);
 
   /* Create Local to Global Vector Scatter Context */
   /* local to global inserts non-ghost point region into global */
@@ -267,10 +267,8 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
     }
   }
 
-  ierr = ISCreateBlock(comm,dof,nn-IXs+Xs,&idx[IXs-Xs],PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
+  ierr = ISCreateBlock(comm,dof,nn-IXs+Xs,&idx[IXs-Xs],PETSC_USE_POINTER,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,local,to,&gtol);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)to);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)from);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)gtol);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
