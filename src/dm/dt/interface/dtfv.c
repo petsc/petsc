@@ -1760,8 +1760,11 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m,PetscIn
 static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,PetscInt mstride,PetscInt n,PetscScalar *A,PetscScalar *Ainv,PetscScalar *tau,PetscInt worksize,PetscScalar *work)
 {
   PetscBool      debug = PETSC_FALSE;
-  PetscScalar   *tmpwork, *Brhs, *Aback;
+  PetscScalar   *Brhs, *Aback;
+#if !defined(PETSC_USE_COMPLEX)
+  PetscScalar   *tmpwork;
   PetscReal      rcond;
+#endif
   PetscInt       i, j, maxmn;
   PetscBLASInt   M, N, nrhs, lda, ldb, irank, ldwork, info;
   PetscErrorCode ierr;
