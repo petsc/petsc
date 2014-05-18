@@ -55,7 +55,7 @@ typedef struct _n_Model *Model;
 /* 'User' implements a discretization of a continuous model. */
 typedef struct _n_User *User;
 
-typedef PetscErrorCode (*RiemannFunction)(const PetscReal*,const PetscReal*,const PetscScalar*,const PetscScalar*,PetscScalar*,Physics);
+typedef PetscErrorCode (*RiemannFunction)(const PetscReal*,const PetscReal*,const PetscScalar*,const PetscScalar*,PetscScalar*,void*);
 typedef PetscErrorCode (*SolutionFunction)(Model,PetscReal,const PetscReal*,PetscScalar*,void*);
 typedef PetscErrorCode (*FunctionalFunction)(Model,PetscReal,const PetscReal*,const PetscScalar*,PetscReal*,void*);
 typedef PetscErrorCode (*SetupFields)(Physics,PetscSection);
@@ -290,7 +290,7 @@ static PetscErrorCode PhysicsCreate_Advect(DM dm, Model mod,Physics phys)
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Advect;
-  phys->riemann = PhysicsRiemann_Advect;
+  phys->riemann = (RiemannFunction) PhysicsRiemann_Advect;
   ierr = PetscNew(&advect);CHKERRQ(ierr);
   phys->data = advect;
   ierr = PetscOptionsHead("Advect options");CHKERRQ(ierr);
@@ -457,7 +457,7 @@ static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys)
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_SW;
-  phys->riemann = PhysicsRiemann_SW;
+  phys->riemann = (RiemannFunction) PhysicsRiemann_SW;
   ierr          = PetscNew(&sw);CHKERRQ(ierr);
   phys->data    = sw;
   ierr          = PetscOptionsHead("SW options");CHKERRQ(ierr);
@@ -639,7 +639,7 @@ static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys)
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Euler;
-  phys->riemann = PhysicsRiemann_Euler_Rusanov;
+  phys->riemann = (RiemannFunction) PhysicsRiemann_Euler_Rusanov;
   ierr = PetscNew(&eu);CHKERRQ(ierr);
   phys->data    = eu;
   ierr = PetscOptionsHead("Euler options");CHKERRQ(ierr);
@@ -1460,7 +1460,6 @@ int main(int argc, char **argv)
   {
     PetscErrorCode (*physcreate)(DM,Model,Physics);
     char             physname[256]  = "advect";
-    char             limitname[256] = "minmod";
 
     ierr = DMPlexCreateLabel(dm, "Face Sets");CHKERRQ(ierr);
     ierr = PetscOptionsFList("-physics","Physics module to solve","",PhysicsList,physname,physname,sizeof physname,NULL);CHKERRQ(ierr);
