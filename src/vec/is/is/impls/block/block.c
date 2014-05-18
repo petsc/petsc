@@ -227,7 +227,7 @@ PetscErrorCode ISIdentity_Block(IS is,PetscBool  *ident)
   is->isidentity = PETSC_TRUE;
   *ident         = PETSC_TRUE;
   for (i=0; i<n; i++) {
-    if (idx[i] != bs*i) {
+    if (idx[i] != i) {
       is->isidentity = PETSC_FALSE;
       *ident         = PETSC_FALSE;
       PetscFunctionReturn(0);
