@@ -377,7 +377,7 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     else      {ierr = PetscViewerASCIIPrintf(viewer, "Mesh in %D dimensions:\n", dim);CHKERRQ(ierr);}
     ierr = DMPlexGetDepth(dm, &locDepth);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&locDepth, &depth, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
-    ierr = DMPlexGetHybridBounds(dm, &pMax[depth], &pMax[depth-1], &pMax[1], &pMax[0]);CHKERRQ(ierr);
+    ierr = DMPlexGetHybridBounds(dm, &pMax[depth], depth > 0 ? &pMax[depth-1] : NULL, &pMax[1], &pMax[0]);CHKERRQ(ierr);
     ierr = PetscMalloc2(size,&sizes,size,&hybsizes);CHKERRQ(ierr);
     if (depth == 1) {
       ierr = DMPlexGetDepthStratum(dm, 0, &pStart, &pEnd);CHKERRQ(ierr);
@@ -785,6 +785,42 @@ PetscErrorCode DMPlexSetConeSize(DM dm, PetscInt p, PetscInt size)
   ierr = PetscSectionSetDof(mesh->coneSection, p, size);CHKERRQ(ierr);
 
   mesh->maxConeSize = PetscMax(mesh->maxConeSize, size);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexAddConeSize"
+/*@
+  DMPlexAddConeSize - Add the given number of in-edges to this point in the Sieve DAG
+
+  Not collective
+
+  Input Parameters:
++ mesh - The DMPlex
+. p - The Sieve point, which must lie in the chart set with DMPlexSetChart()
+- size - The additional cone size for point p
+
+  Output Parameter:
+
+  Note:
+  This should be called after DMPlexSetChart().
+
+  Level: beginner
+
+.seealso: DMPlexCreate(), DMPlexSetConeSize(), DMPlexGetConeSize(), DMPlexSetChart()
+@*/
+PetscErrorCode DMPlexAddConeSize(DM dm, PetscInt p, PetscInt size)
+{
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PetscInt       csize;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscSectionAddDof(mesh->coneSection, p, size);CHKERRQ(ierr);
+  ierr = PetscSectionGetDof(mesh->coneSection, p, &csize);CHKERRQ(ierr);
+
+  mesh->maxConeSize = PetscMax(mesh->maxConeSize, csize);
   PetscFunctionReturn(0);
 }
 
@@ -2479,6 +2515,7 @@ PetscErrorCode DMPlexOrient(DM dm)
       /* Collect the graph on 0 */
       {
         MPI_Comm     comm = PetscObjectComm((PetscObject) sf);
+        Mat          G;
         PetscBT      seenProcs, flippedProcs;
         PetscInt    *procFIFO, pTop, pBottom;
         PetscInt    *adj = NULL;
@@ -2505,6 +2542,23 @@ PetscErrorCode DMPlexOrient(DM dm)
             }
           }
         }
+        /* Symmetrize the graph */
+        ierr = MatCreate(PETSC_COMM_SELF, &G);CHKERRQ(ierr);
+        ierr = MatSetSizes(G, numProcs, numProcs, numProcs, numProcs);CHKERRQ(ierr);
+        ierr = MatSetUp(G);CHKERRQ(ierr);
+        for (p = 0; p < numProcs; ++p) {
+          for (n = 0; n < recvcounts[p]; ++n) {
+            const PetscInt    r = p;
+            const PetscInt    q = adj[displs[p]+n];
+            const PetscScalar o = val[displs[p]+n] ? 1.0 : 0.0;
+
+            ierr = MatSetValues(G, 1, &r, 1, &q, &o, INSERT_VALUES);CHKERRQ(ierr);
+            ierr = MatSetValues(G, 1, &q, 1, &r, &o, INSERT_VALUES);CHKERRQ(ierr);
+          }
+        }
+        ierr = MatAssemblyBegin(G, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+        ierr = MatAssemblyEnd(G, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
         ierr = PetscBTCreate(numProcs, &seenProcs);CHKERRQ(ierr);
         ierr = PetscBTMemzero(numProcs, seenProcs);CHKERRQ(ierr);
         ierr = PetscBTCreate(numProcs, &flippedProcs);CHKERRQ(ierr);
@@ -2518,14 +2572,17 @@ PetscErrorCode DMPlexOrient(DM dm)
           ierr = PetscBTSet(seenProcs, p);CHKERRQ(ierr);
           /* Consider each proc in FIFO */
           while (pTop < pBottom) {
-            PetscInt proc, nproc, seen, flippedA, flippedB, mismatch;
+            const PetscScalar *ornt;
+            const PetscInt    *neighbors;
+            PetscInt           proc, nproc, seen, flippedA, flippedB, mismatch, numNeighbors;
 
             proc     = procFIFO[pTop++];
             flippedA = PetscBTLookup(flippedProcs, proc) ? 1 : 0;
+            ierr = MatGetRow(G, proc, &numNeighbors, &neighbors, &ornt);CHKERRQ(ierr);
             /* Loop over neighboring procs */
-            for (n = 0; n < recvcounts[proc]; ++n) {
-              nproc    = adj[displs[proc]+n];
-              mismatch = val[displs[proc]+n] ? 0 : 1;
+            for (n = 0; n < numNeighbors; ++n) {
+              nproc    = neighbors[n];
+              mismatch = PetscRealPart(ornt[n]) > 0.5 ? 0 : 1;
               seen     = PetscBTLookup(seenProcs, nproc);
               flippedB = PetscBTLookup(flippedProcs, nproc) ? 1 : 0;
 
@@ -2543,6 +2600,7 @@ PetscErrorCode DMPlexOrient(DM dm)
           }
         }
         ierr = PetscFree(procFIFO);CHKERRQ(ierr);
+        ierr = MatDestroy(&G);CHKERRQ(ierr);
 
         ierr = PetscFree2(recvcounts,displs);CHKERRQ(ierr);
         ierr = PetscFree2(adj,val);CHKERRQ(ierr);
