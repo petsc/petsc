@@ -2298,7 +2298,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
 {
   VecScatter_MPI_General *from,*to;
   PetscMPIInt            size,rank,imdex,tag,n;
-  PetscInt               *source = NULL,*owners = NULL;
+  PetscInt               *source = NULL,*owners = NULL,nxr;
   PetscInt               *lowner = NULL,*start = NULL,lengthy,lengthx;
   PetscMPIInt            *nprocs = NULL,nrecvs;
   PetscInt               i,j,idx,nsends;
@@ -2360,7 +2360,11 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
      1) starts[i] gives the starting index in svalues for stuff going to
      the ith processor
   */
-  ierr = PetscMalloc3(nx,&svalues,nsends,&send_waits,size+1,&starts);CHKERRQ(ierr);
+  nxr = 0;
+  for (i=0; i<nx; i++) {
+    if (owner[i] != rank) nxr++;
+  }
+  ierr = PetscMalloc3(nxr,&svalues,nsends,&send_waits,size+1,&starts);CHKERRQ(ierr);
 
   starts[0]  = 0;
   for (i=1; i<size; i++) starts[i] = starts[i-1] + nprocs[i-1];
