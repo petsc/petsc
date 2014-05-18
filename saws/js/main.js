@@ -229,7 +229,7 @@ SAWsDisplayDirectory = function(sub,divEntry)
 // 1. When pcoptions.html is loaded ...
 //-------------------------------------
 HandlePCOptions = function(){
-    alert('2. in HandlePCOptions()...');
+    //alert('2. in HandlePCOptions()...');
 
     //reset the form
     formSet(currentAsk);
@@ -342,14 +342,14 @@ HandlePCOptions = function(){
 	//MathJax.Hub.Queue(["Typeset",MathJax.Hub]); //unfortunately, cannot use this anymore
         //alert('endof continueButton');
     });
-    alert('exit HandlePCOptions()...');
+    //alert('exit HandlePCOptions()...');
 }
 
 
 //  This function is run when the page is first visited
 //-----------------------------------------------------
 $(document).ready(function(){
-    alert('0. start run page...');
+    //alert('0. start run page...');
     $(function() { //needed for jqueryUI tool tip to override native javascript tooltip
         $(document).tooltip();
     });
@@ -458,7 +458,7 @@ $(document).ready(function(){
         $("#tree").remove();
     });
 
-    alert('1. call HandlePCOptions()...');
+    //alert('1. call HandlePCOptions()...');
     HandlePCOptions(); //big function is called here???
 });
 
