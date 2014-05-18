@@ -10,7 +10,7 @@ struct _PetscLimiterOps {
   PetscErrorCode (*setup)(PetscLimiter);
   PetscErrorCode (*view)(PetscLimiter,PetscViewer);
   PetscErrorCode (*destroy)(PetscLimiter);
-  PetscErrorCode (*limit)(PetscLimiter, PetscScalar, PetscScalar *);
+  PetscErrorCode (*limit)(PetscLimiter, PetscReal, PetscReal *);
 };
 
 struct _p_PetscLimiter {

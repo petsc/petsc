@@ -361,7 +361,7 @@ PetscErrorCode PetscLimiterCreate(MPI_Comm comm, PetscLimiter *lim)
  *
  * w_minmod(f) = 2 min(f,(1-f))             w_superbee(r) = 4 min((1-f), f)
  * */
-PetscErrorCode PetscLimiterLimit(PetscLimiter lim, PetscScalar flim, PetscScalar *phi)
+PetscErrorCode PetscLimiterLimit(PetscLimiter lim, PetscReal flim, PetscReal *phi)
 {
   PetscErrorCode ierr;
 
@@ -414,9 +414,8 @@ PetscErrorCode PetscLimiterView_Sin(PetscLimiter fv, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLimiterLimit_Sin"
-PetscErrorCode PetscLimiterLimit_Sin(PetscLimiter lim, PetscScalar fin, PetscScalar *phi)
+PetscErrorCode PetscLimiterLimit_Sin(PetscLimiter lim, PetscReal f, PetscReal *phi)
 {
-  const PetscReal f = PetscRealPart(fin);
   PetscFunctionBegin;
   *phi = PetscSinReal(PETSC_PI*PetscMax(0, PetscMin(f, 1)));
   PetscFunctionReturn(0);
@@ -499,7 +498,7 @@ PetscErrorCode PetscLimiterView_Zero(PetscLimiter fv, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLimiterLimit_Zero"
-PetscErrorCode PetscLimiterLimit_Zero(PetscLimiter lim, PetscScalar f, PetscScalar *phi)
+PetscErrorCode PetscLimiterLimit_Zero(PetscLimiter lim, PetscReal f, PetscReal *phi)
 {
   PetscFunctionBegin;
   *phi = 0.0;
@@ -583,7 +582,7 @@ PetscErrorCode PetscLimiterView_None(PetscLimiter fv, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLimiterLimit_None"
-PetscErrorCode PetscLimiterLimit_None(PetscLimiter lim, PetscScalar f, PetscScalar *phi)
+PetscErrorCode PetscLimiterLimit_None(PetscLimiter lim, PetscReal f, PetscReal *phi)
 {
   PetscFunctionBegin;
   *phi = 1.0;
@@ -667,9 +666,8 @@ PetscErrorCode PetscLimiterView_Minmod(PetscLimiter fv, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLimiterLimit_Minmod"
-PetscErrorCode PetscLimiterLimit_Minmod(PetscLimiter lim, PetscScalar fin, PetscScalar *phi)
+PetscErrorCode PetscLimiterLimit_Minmod(PetscLimiter lim, PetscReal f, PetscReal *phi)
 {
-  const PetscReal f = PetscRealPart(fin);
   PetscFunctionBegin;
   *phi = 2*PetscMax(0, PetscMin(f, 1-f));
   PetscFunctionReturn(0);
@@ -752,9 +750,8 @@ PetscErrorCode PetscLimiterView_VanLeer(PetscLimiter fv, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLimiterLimit_VanLeer"
-PetscErrorCode PetscLimiterLimit_VanLeer(PetscLimiter lim, PetscScalar fin, PetscScalar *phi)
+PetscErrorCode PetscLimiterLimit_VanLeer(PetscLimiter lim, PetscReal f, PetscReal *phi)
 {
-  const PetscReal f = PetscRealPart(fin);
   PetscFunctionBegin;
   *phi = PetscMax(0, 4*f*(1-f));
   PetscFunctionReturn(0);
@@ -837,9 +834,8 @@ PetscErrorCode PetscLimiterView_VanAlbada(PetscLimiter fv, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLimiterLimit_VanAlbada"
-PetscErrorCode PetscLimiterLimit_VanAlbada(PetscLimiter lim, PetscScalar fin, PetscScalar *phi)
+PetscErrorCode PetscLimiterLimit_VanAlbada(PetscLimiter lim, PetscReal f, PetscReal *phi)
 {
-  const PetscReal f = PetscRealPart(fin);
   PetscFunctionBegin;
   *phi = PetscMax(0, 2*f*(1-f) / (PetscSqr(f) + PetscSqr(1-f)));
   PetscFunctionReturn(0);
@@ -922,9 +918,8 @@ PetscErrorCode PetscLimiterView_Superbee(PetscLimiter fv, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLimiterLimit_Superbee"
-PetscErrorCode PetscLimiterLimit_Superbee(PetscLimiter lim, PetscScalar fin, PetscScalar *phi)
+PetscErrorCode PetscLimiterLimit_Superbee(PetscLimiter lim, PetscReal f, PetscReal *phi)
 {
-  const PetscReal f = PetscRealPart(fin);
   PetscFunctionBegin;
   *phi = 4*PetscMax(0, PetscMin(f, 1-f));
   PetscFunctionReturn(0);
@@ -1008,9 +1003,8 @@ PetscErrorCode PetscLimiterView_MC(PetscLimiter fv, PetscViewer viewer)
 #undef __FUNCT__
 #define __FUNCT__ "PetscLimiterLimit_MC"
 /* aka Barth-Jespersen */
-PetscErrorCode PetscLimiterLimit_MC(PetscLimiter lim, PetscScalar fin, PetscScalar *phi)
+PetscErrorCode PetscLimiterLimit_MC(PetscLimiter lim, PetscReal f, PetscReal *phi)
 {
-  const PetscReal f = PetscRealPart(fin);
   PetscFunctionBegin;
   *phi = PetscMin(1, 4*PetscMax(0, PetscMin(f, 1-f)));
   PetscFunctionReturn(0);

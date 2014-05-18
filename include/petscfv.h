@@ -33,7 +33,7 @@ PETSC_EXTERN PetscErrorCode PetscLimiterRegister(const char [], PetscErrorCode (
 PETSC_EXTERN PetscErrorCode PetscLimiterRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscLimiterRegisterDestroy(void);
 
-PETSC_EXTERN PetscErrorCode PetscLimiterLimit(PetscLimiter, PetscScalar, PetscScalar *);
+PETSC_EXTERN PetscErrorCode PetscLimiterLimit(PetscLimiter, PetscReal, PetscReal *);
 
 
 PETSC_EXTERN PetscErrorCode PetscFVInitializePackage(void);
@@ -83,14 +83,14 @@ PETSC_EXTERN PetscErrorCode PetscFVLeastSquaresSetMaxFaces(PetscFV, PetscInt);
 
 /* Assuming dim == 3 */
 typedef struct {
-  PetscScalar normal[3];   /* Area-scaled normals */
-  PetscScalar centroid[3]; /* Location of centroid (quadrature point) */
+  PetscReal   normal[3];   /* Area-scaled normals */
+  PetscReal   centroid[3]; /* Location of centroid (quadrature point) */
   PetscScalar grad[2][3];  /* Face contribution to gradient in left and right cell */
 } FaceGeom;
 
 typedef struct {
-  PetscScalar centroid[3];
-  PetscScalar volume;
+  PetscReal centroid[3];
+  PetscReal volume;
 } CellGeom;
 
 #endif

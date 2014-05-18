@@ -2,9 +2,10 @@
 #include <petsc-private/tsimpl.h>   /*I "petscts.h" I*/
 #include <petscfv.h>
 
-PETSC_STATIC_INLINE void WaxpyD(PetscInt dim, PetscScalar a, const PetscScalar *x, const PetscScalar *y, PetscScalar *w) {PetscInt d; for (d = 0; d < dim; ++d) w[d] = a*x[d] + y[d];}
-PETSC_STATIC_INLINE PetscScalar DotD(PetscInt dim, const PetscScalar *x, const PetscScalar *y) {PetscScalar sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*y[d]; return sum;}
-PETSC_STATIC_INLINE PetscReal NormD(PetscInt dim, const PetscScalar *x) {return PetscSqrtReal(PetscAbsScalar(DotD(dim,x,x)));}
+PETSC_STATIC_INLINE void WaxpyD(PetscInt dim, PetscReal a, const PetscReal *x, const PetscReal *y, PetscReal *w) {PetscInt d; for (d = 0; d < dim; ++d) w[d] = a*x[d] + y[d];}
+PETSC_STATIC_INLINE PetscReal DotD(PetscInt dim, const PetscScalar *x, const PetscReal *y) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += PetscRealPart(x[d])*y[d]; return sum;}
+PETSC_STATIC_INLINE PetscReal DotRealD(PetscInt dim, const PetscReal *x, const PetscReal *y) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*y[d]; return sum;}
+PETSC_STATIC_INLINE PetscReal NormD(PetscInt dim, const PetscReal *x) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*x[d]; return PetscSqrtReal(sum);}
 
 typedef struct {
   PetscBool setupGeom; /* Flag for geometry setup */
@@ -146,7 +147,7 @@ static PetscErrorCode DMPlexTSSetupGeometry(DM dm, PetscFV fvm, DMTS_Plex *dmple
       CellGeom       *cL, *cR;
       const PetscInt *cells;
       PetscReal      *lcentroid, *rcentroid;
-      PetscScalar     v[3];
+      PetscReal       v[3];
 
       ierr = DMPlexGetSupport(dm, f, &cells);CHKERRQ(ierr);
       ierr = DMPlexPointLocalRead(dmCell, cells[0], cgeom, &cL);CHKERRQ(ierr);
@@ -154,10 +155,10 @@ static PetscErrorCode DMPlexTSSetupGeometry(DM dm, PetscFV fvm, DMTS_Plex *dmple
       lcentroid = cells[0] >= cEndInterior ? fg->centroid : cL->centroid;
       rcentroid = cells[1] >= cEndInterior ? fg->centroid : cR->centroid;
       WaxpyD(dim, -1, lcentroid, rcentroid, v);
-      if (DotD(dim, fg->normal, v) < 0) {
+      if (DotRealD(dim, fg->normal, v) < 0) {
         for (d = 0; d < dim; ++d) fg->normal[d] = -fg->normal[d];
       }
-      if (DotD(dim, fg->normal, v) <= 0) {
+      if (DotRealD(dim, fg->normal, v) <= 0) {
         if (dim == 2) SETERRQ5(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %d could not be fixed, normal (%g,%g) v (%g,%g)", f, fg->normal[0], fg->normal[1], v[0], v[1]);
         if (dim == 3) SETERRQ7(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %d could not be fixed, normal (%g,%g,%g) v (%g,%g,%g)", f, fg->normal[0], fg->normal[1], fg->normal[2], v[0], v[1], v[2]);
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %d could not be fixed", f);
@@ -191,11 +192,11 @@ static PetscErrorCode DMPlexTSSetupGeometry(DM dm, PetscFV fvm, DMTS_Plex *dmple
       if (support[s] == c) {
         const CellGeom *ci;
         CellGeom       *cg;
-        PetscScalar     c2f[3], a;
+        PetscReal       c2f[3], a;
 
         ierr = DMPlexPointLocalRead(dmCell, support[(s+1)%2], cgeom, &ci);CHKERRQ(ierr);
         WaxpyD(dim, -1, ci->centroid, fg->centroid, c2f); /* cell to face centroid */
-        a    = DotD(dim, c2f, fg->normal)/DotD(dim, fg->normal, fg->normal);
+        a    = DotRealD(dim, c2f, fg->normal)/DotRealD(dim, fg->normal, fg->normal);
         ierr = DMPlexPointLocalRef(dmCell, support[s], cgeom, &cg);CHKERRQ(ierr);
         WaxpyD(dim, 2*a, fg->normal, ci->centroid, cg->centroid);
         cg->volume = ci->volume;
@@ -332,7 +333,7 @@ static PetscErrorCode DMPlexInsertBoundaryValuesFVM_Static(DM dm, PetscFV fvm, P
   ierr = VecGetArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
   ierr = VecGetArray(locX, &x);CHKERRQ(ierr);
   for (b = 0; b < numBd; ++b) {
-    PetscErrorCode (*func)(PetscReal,const PetscScalar*,const PetscScalar*,const PetscScalar*,PetscScalar*,void*);
+    PetscErrorCode (*func)(PetscReal,const PetscReal*,const PetscReal*,const PetscScalar*,PetscScalar*,void*);
     DMLabel          label;
     const char      *labelname;
     const PetscInt  *ids;
@@ -360,7 +361,8 @@ static PetscErrorCode DMPlexInsertBoundaryValuesFVM_Static(DM dm, PetscFV fvm, P
         if (Grad) {
           const CellGeom    *cg;
           const PetscScalar *cx, *cgrad;
-          PetscScalar       *xG, dx[3];
+          PetscScalar       *xG;
+          PetscReal          dx[3];
           PetscInt           d;
 
           ierr = DMPlexPointLocalRead(dmCell, cells[0], cellgeom, &cg);CHKERRQ(ierr);
@@ -496,7 +498,7 @@ static PetscErrorCode TSComputeRHSFunction_DMPlex(TS ts, PetscReal time, Vec X, 
       const CellGeom    *ncg;
       const PetscInt    *fcells;
       PetscInt           face = faces[f], ncell, ghost;
-      PetscScalar        v[3];
+      PetscReal          v[3];
       PetscBool          boundary;
 
       ierr = DMLabelGetValue(ghostLabel, face, &ghost);CHKERRQ(ierr);
@@ -509,7 +511,7 @@ static PetscErrorCode TSComputeRHSFunction_DMPlex(TS ts, PetscReal time, Vec X, 
       WaxpyD(dim, -1, cg->centroid, ncg->centroid, v);
       for (d = 0; d < pdim; ++d) {
         /* We use the symmetric slope limited form of Berger, Aftosmis, and Murman 2005 */
-        PetscScalar phi, flim = 0.5 * (ncx[d] - cx[d]) / DotD(dim, &cgrad[d*dim], v);
+        PetscReal phi, flim = 0.5 * PetscRealPart(ncx[d] - cx[d]) / DotD(dim, &cgrad[d*dim], v);
 
         ierr = PetscLimiterLimit(lim, flim, &phi);CHKERRQ(ierr);
         cellPhi[d] = PetscMin(cellPhi[d], phi);
@@ -548,7 +550,7 @@ static PetscErrorCode TSComputeRHSFunction_DMPlex(TS ts, PetscReal time, Vec X, 
     ierr = DMPlexPointLocalRead(dm, cells[0], x, &xL);CHKERRQ(ierr);
     ierr = DMPlexPointLocalRead(dm, cells[1], x, &xR);CHKERRQ(ierr);
     if (computeGradients) {
-      PetscScalar dxL[3], dxR[3];
+      PetscReal dxL[3], dxR[3];
 
       ierr = DMPlexPointLocalRead(dmplexts->dmGrad, cells[0], lgrad, &gL);CHKERRQ(ierr);
       ierr = DMPlexPointLocalRead(dmplexts->dmGrad, cells[1], lgrad, &gR);CHKERRQ(ierr);
