@@ -2302,7 +2302,8 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   PetscInt               *lowner = NULL,*start = NULL,lengthy,lengthx;
   PetscMPIInt            *nprocs = NULL,nrecvs;
   PetscInt               i,j,idx,nsends;
-  PetscInt               *owner = NULL,*starts = NULL,count,slen;
+  PetscMPIInt            *owner = NULL;
+  PetscInt               *starts = NULL,count,slen;
   PetscInt               *rvalues,*svalues,base,*values,nprocslocal,recvtotal,*rsvalues;
   PetscMPIInt            *onodes1,*olengths1;
   MPI_Comm               comm;
@@ -2817,7 +2818,8 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
   PetscInt       *owners = xin->map->range;
   PetscMPIInt    *nprocs = NULL;
   PetscInt       i,j,idx,nsends,*local_inidx = NULL,*local_inidy = NULL;
-  PetscInt       *owner   = NULL,*starts  = NULL,count,slen;
+  PetscMPIInt    *owner   = NULL;
+  PetscInt       *starts  = NULL,count,slen;
   PetscInt       *rvalues = NULL,*svalues = NULL,base,*values = NULL,*rsvalues,recvtotal,lastidx;
   PetscMPIInt    *onodes1,*olengths1,nrecvs;
   MPI_Comm       comm;
