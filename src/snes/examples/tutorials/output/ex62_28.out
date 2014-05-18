@@ -65,7 +65,7 @@ SNES Object: 3 MPI processes
         has attached null space
         using I-node (on process 0) routines: found 7 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 1.67e-10
+L_2 Error: 1.67e-10 [2.75e-11, 1.65e-10]
 Solution
 Vec Object: 3 MPI processes
   type: mpi

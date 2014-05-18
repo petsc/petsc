@@ -5007,6 +5007,106 @@ PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexVecSetFieldClosure_Internal"
+PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM dm, PetscSection section, Vec v, PetscBool fieldActive[], PetscInt point, const PetscScalar values[], InsertMode mode)
+{
+  PetscSection    clSection;
+  IS              clPoints;
+  PetscScalar    *array;
+  PetscInt       *points = NULL;
+  const PetscInt *clp;
+  PetscInt        numFields, numPoints, p;
+  PetscInt        offset = 0, fcomp, f;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBeginHot;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (!section) {ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);}
+  PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 2);
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 3);
+  ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+  /* Get points */
+  ierr = PetscSectionGetClosureIndex(section, (PetscObject) dm, &clSection, &clPoints);CHKERRQ(ierr);
+  if (!clPoints) {
+    PetscInt pStart, pEnd, q;
+
+    ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
+    /* Compress out points not in the section */
+    for (p = 0, q = 0; p < numPoints*2; p += 2) {
+      if ((points[p] >= pStart) && (points[p] < pEnd)) {
+        points[q*2]   = points[p];
+        points[q*2+1] = points[p+1];
+        ++q;
+      }
+    }
+    numPoints = q;
+  } else {
+    PetscInt dof, off;
+
+    ierr = PetscSectionGetDof(clSection, point, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(clSection, point, &off);CHKERRQ(ierr);
+    ierr = ISGetIndices(clPoints, &clp);CHKERRQ(ierr);
+    numPoints = dof/2;
+    points    = (PetscInt *) &clp[off];
+  }
+  /* Get array */
+  ierr = VecGetArray(v, &array);CHKERRQ(ierr);
+  /* Get values */
+  for (f = 0; f < numFields; ++f) {
+    ierr = PetscSectionGetFieldComponents(section, f, &fcomp);CHKERRQ(ierr);
+    if (!fieldActive[f]) {
+      for (p = 0; p < numPoints*2; p += 2) {
+        PetscInt fdof;
+        ierr = PetscSectionGetFieldDof(section, points[p], f, &fdof);CHKERRQ(ierr);
+        offset += fdof;
+      }
+      continue;
+    }
+    switch (mode) {
+    case INSERT_VALUES:
+      for (p = 0; p < numPoints*2; p += 2) {
+        const PetscInt point = points[p];
+        const PetscInt o     = points[p+1];
+        updatePointFields_private(section, point, o, f, fcomp, insert, PETSC_FALSE, values, &offset, array);
+      } break;
+    case INSERT_ALL_VALUES:
+      for (p = 0; p < numPoints*2; p += 2) {
+        const PetscInt point = points[p];
+        const PetscInt o     = points[p+1];
+        updatePointFields_private(section, point, o, f, fcomp, insert, PETSC_TRUE, values, &offset, array);
+        } break;
+    case INSERT_BC_VALUES:
+      for (p = 0; p < numPoints*2; p += 2) {
+        const PetscInt point = points[p];
+        const PetscInt o     = points[p+1];
+        updatePointFieldsBC_private(section, point, o, f, fcomp, insert, values, &offset, array);
+      } break;
+    case ADD_VALUES:
+      for (p = 0; p < numPoints*2; p += 2) {
+        const PetscInt point = points[p];
+        const PetscInt o     = points[p+1];
+        updatePointFields_private(section, point, o, f, fcomp, add, PETSC_FALSE, values, &offset, array);
+      } break;
+    case ADD_ALL_VALUES:
+      for (p = 0; p < numPoints*2; p += 2) {
+        const PetscInt point = points[p];
+        const PetscInt o     = points[p+1];
+        updatePointFields_private(section, point, o, f, fcomp, add, PETSC_TRUE, values, &offset, array);
+      } break;
+    default:
+      SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insert mode %D", mode);
+    }
+  }
+  /* Cleanup points */
+  if (!clPoints) {ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);}
+  else           {ierr = ISRestoreIndices(clPoints, &clp);CHKERRQ(ierr);}
+  /* Cleanup array */
+  ierr = VecRestoreArray(v, &array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexPrintMatSetValues"
 PetscErrorCode DMPlexPrintMatSetValues(PetscViewer viewer, Mat A, PetscInt point, PetscInt numRIndices, const PetscInt rindices[], PetscInt numCIndices, const PetscInt cindices[], const PetscScalar values[])
 {
@@ -5403,13 +5503,13 @@ PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSe
 
   Output Parameters:
 + cMax - The first hybrid cell
-. cMax - The first hybrid face
-. cMax - The first hybrid edge
-- cMax - The first hybrid vertex
+. fMax - The first hybrid face
+. eMax - The first hybrid edge
+- vMax - The first hybrid vertex
 
   Level: developer
 
-.seealso DMPlexCreateHybridMesh()
+.seealso DMPlexCreateHybridMesh(), DMPlexSetHybridBounds()
 @*/
 PetscErrorCode DMPlexGetHybridBounds(DM dm, PetscInt *cMax, PetscInt *fMax, PetscInt *eMax, PetscInt *vMax)
 {
@@ -5429,6 +5529,20 @@ PetscErrorCode DMPlexGetHybridBounds(DM dm, PetscInt *cMax, PetscInt *fMax, Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexSetHybridBounds"
+/*@
+  DMPlexSetHybridBounds - Set the first mesh point of each dimension which is a hybrid
+
+  Input Parameters:
+. dm   - The DMPlex object
+. cMax - The first hybrid cell
+. fMax - The first hybrid face
+. eMax - The first hybrid edge
+- vMax - The first hybrid vertex
+
+  Level: developer
+
+.seealso DMPlexCreateHybridMesh(), DMPlexGetHybridBounds()
+@*/
 PetscErrorCode DMPlexSetHybridBounds(DM dm, PetscInt cMax, PetscInt fMax, PetscInt eMax, PetscInt vMax)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
@@ -6010,8 +6124,8 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     const char     *bdLabel;
     DMLabel         label;
     const PetscInt *values;
-    PetscInt        field, numValues;
-    PetscBool       isEssential, has;
+    PetscInt        bd2, field, numValues;
+    PetscBool       isEssential, has, duplicate = PETSC_FALSE;
 
     ierr = DMPlexGetBoundary(dm, bd, &isEssential, &bdLabel, &field, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
     if (numValues != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Bug me and I will fix this");
@@ -6022,9 +6136,17 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
       ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
     }
     ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
-    /* Only want to do this for FEM */
-    ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
-    ierr = DMPlexLabelAddCells(dm, label);CHKERRQ(ierr);
+    /* Only want to do this for FEM, and only once */
+    for (bd2 = 0; bd2 < bd; ++bd2) {
+      const char *bdname;
+      ierr = DMPlexGetBoundary(dm, bd2, NULL, NULL, &bdname, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+      ierr = PetscStrcmp(bdname, bdLabel, &duplicate);CHKERRQ(ierr);
+      if (duplicate) break;
+    }
+    if (!duplicate) {
+      ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
+      ierr = DMPlexLabelAddCells(dm, label);CHKERRQ(ierr);
+    }
     /* Filter out cells, if you actually want to constraint cells you need to do things by hand right now */
     if (isEssential) {
       IS              tmp;

@@ -594,9 +594,12 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
     ierr = DMPlexStratify(dm);CHKERRQ(ierr);
     /* Build coordinates */
     ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+    ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldComponents(coordSection, 0, 2);CHKERRQ(ierr);
     ierr = PetscSectionSetChart(coordSection, firstVertex, firstVertex+numVertices);CHKERRQ(ierr);
     for (v = firstVertex; v < firstVertex+numVertices; ++v) {
       ierr = PetscSectionSetDof(coordSection, v, 2);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldDof(coordSection, v, 0, 2);CHKERRQ(ierr);
     }
     ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
@@ -864,7 +867,7 @@ PetscErrorCode  DMSetFromOptions_Plex(DM dm)
   /* Handle DMPlex refinement */
   ierr = PetscOptionsInt("-dm_refine", "The number of uniform refinements", "DMCreate", refine, &refine, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dm_refine_hierarchy", "The number of uniform refinements", "DMCreate", refine, &refine, &isHierarchy);CHKERRQ(ierr);
-  ierr = DMPlexSetRefinementUniform(dm, refine ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
+  if (refine) {ierr = DMPlexSetRefinementUniform(dm, PETSC_TRUE);CHKERRQ(ierr);}
   if (refine && isHierarchy) {
     DM *dms;
 

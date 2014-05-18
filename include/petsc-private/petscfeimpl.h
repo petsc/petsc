@@ -56,6 +56,7 @@ struct _p_PetscDualSpace {
 typedef struct {
   PetscInt *numDof;
   PetscBool simplex;
+  PetscBool continuous;
 } PetscDualSpace_Lag;
 
 typedef struct _PetscFEOps *PetscFEOps;
@@ -67,6 +68,10 @@ struct _PetscFEOps {
   PetscErrorCode (*getdimension)(PetscFE,PetscInt*);
   PetscErrorCode (*gettabulation)(PetscFE,PetscInt,const PetscReal*,PetscReal*,PetscReal*,PetscReal*);
   /* Element integration */
+  PetscErrorCode (*integrate)(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[],
+                              PetscInt, PetscFE[], const PetscScalar[],
+                              void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                              PetscReal[]);
   PetscErrorCode (*integrateresidual)(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[],
                                       PetscInt, PetscFE[], const PetscScalar[],
                                       void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),

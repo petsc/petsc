@@ -27,10 +27,10 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 3);
   PetscValidHeaderSpecific(sectionGlobal, PETSC_SECTION_CLASSID, 4);
   PetscValidHeaderSpecific(A, MAT_CLASSID, 9);
-  PetscValidPointer(dnz,5);
-  PetscValidPointer(onz,6);
-  PetscValidPointer(dnzu,7);
-  PetscValidPointer(onzu,8);
+  if (dnz)  PetscValidPointer(dnz,5);
+  if (onz)  PetscValidPointer(onz,6);
+  if (dnzu) PetscValidPointer(dnzu,7);
+  if (onzu) PetscValidPointer(onzu,8);
   ierr = PetscLogEventBegin(DMPLEX_Preallocate,dm,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL, "-dm_view_preallocation", &debug, NULL);CHKERRQ(ierr);
