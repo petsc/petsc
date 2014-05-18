@@ -733,3 +733,66 @@ PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *ctx)
   *ctx = NULL;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESMonitorFields"
+/*@C
+  SNESMonitorFields - Monitors the residual for each field separately
+
+  Collective on SNES
+
+  Input Parameters:
++ snes   - the SNES context
+. its    - iteration number
+. fgnorm - 2-norm of residual
+- dummy  - unused context
+
+  Notes:
+  This routine prints the residual norm at each iteration.
+
+  Level: intermediate
+
+.keywords: SNES, nonlinear, default, monitor, norm
+.seealso: SNESMonitorSet(), SNESMonitorDefault()
+@*/
+PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, void *dummy)
+{
+  PetscViewer        viewer = dummy ? (PetscViewer) dummy : PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject) snes));
+  Vec                res;
+  DM                 dm;
+  PetscSection       s;
+  const PetscScalar *r;
+  PetscReal         *lnorms, *norms;
+  PetscInt           numFields, f, pStart, pEnd, p;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = SNESGetFunction(snes, &res, 0, 0);CHKERRQ(ierr);
+  ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(s, &numFields);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscCalloc2(numFields, &lnorms, numFields, &norms);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(res, &r);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    for (f = 0; f < numFields; ++f) {
+      PetscInt fdof, foff, d;
+
+      ierr = PetscSectionGetFieldDof(s, p, f, &fdof);CHKERRQ(ierr);
+      ierr = PetscSectionGetFieldOffset(s, p, f, &foff);CHKERRQ(ierr);
+      for (d = 0; d < fdof; ++d) lnorms[f] += PetscRealPart(PetscSqr(r[foff+d]));
+    }
+  }
+  ierr = VecRestoreArrayRead(res, &r);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(lnorms, norms, numFields, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIAddTab(viewer, ((PetscObject) snes)->tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "%3D SNES Function norm %14.12e [", its, (double) fgnorm);CHKERRQ(ierr);
+  for (f = 0; f < numFields; ++f) {
+    if (f > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIPrintf(viewer, "%14.12e", (double) PetscSqrtReal(norms[f]));CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIPrintf(viewer, "]\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIISubtractTab(viewer, ((PetscObject) snes)->tablevel);CHKERRQ(ierr);
+  ierr = PetscFree2(lnorms, norms);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

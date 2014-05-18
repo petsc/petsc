@@ -69,15 +69,7 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
       ierr = DMGetField(dm, 0, &fe);CHKERRQ(ierr);
       if (fe->classid == PETSCFE_CLASSID) fem = PETSC_TRUE;
     }
-    if (fem) {
-      ierr = DMPlexInsertBoundaryValuesFEM(dm, v);CHKERRQ(ierr);
-    } else {
-      PetscObject faceGeometry;
-
-      /* TODO Fix the time, and add FVM objects */
-      ierr = PetscObjectQuery((PetscObject) dm, "FaceGeometry", &faceGeometry);CHKERRQ(ierr);
-      if (faceGeometry) {ierr = DMPlexInsertBoundaryValuesFVM(dm, 0.0, v);CHKERRQ(ierr);}
-    }
+    if (fem) {ierr = DMPlexInsertBoundaryValuesFEM(dm, v);CHKERRQ(ierr);}
   }
   if (isvtk) {
     PetscSection            section;
@@ -494,7 +486,7 @@ static PetscErrorCode BoundaryDestroy(DMBoundary *boundary)
   DMBoundary     b, next;
   PetscErrorCode ierr;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   if (!boundary) PetscFunctionReturn(0);
   b = *boundary;
   *boundary = NULL;
@@ -502,6 +494,7 @@ static PetscErrorCode BoundaryDestroy(DMBoundary *boundary)
     next = b->next;
     ierr = PetscFree(b->ids);CHKERRQ(ierr);
     ierr = PetscFree(b->name);CHKERRQ(ierr);
+    ierr = PetscFree(b->labelname);CHKERRQ(ierr);
     ierr = PetscFree(b);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -3690,6 +3683,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
 
     ierr = DMPlexGetCellRefiner_Internal(dm, &cellRefiner);CHKERRQ(ierr);
     ierr = DMPlexRefineUniform_Internal(dm, cellRefiner, dmRefined);CHKERRQ(ierr);
+    ierr = DMPlexCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = DMPlexGetRefinementLimit(dm, &refinementLimit);CHKERRQ(ierr);
@@ -3747,6 +3741,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
   default:
     SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement in dimension %d is not supported.", dim);
   }
+  ierr = DMPlexCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6174,7 +6169,7 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
   ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
   for (bd = 0; bd < numBd; ++bd) {
     PetscBool isEssential;
-    ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
     if (isEssential) ++numBC;
   }
   ierr = PetscMalloc2(numBC,&bcFields,numBC,&bcPoints);CHKERRQ(ierr);
@@ -6183,16 +6178,10 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     DMLabel         label;
     const PetscInt *values;
     PetscInt        bd2, field, numValues;
-    PetscBool       isEssential, has, duplicate = PETSC_FALSE;
+    PetscBool       isEssential, duplicate = PETSC_FALSE;
 
-    ierr = DMPlexGetBoundary(dm, bd, &isEssential, &bdLabel, &field, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
+    ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, &bdLabel, &field, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
     if (numValues != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Bug me and I will fix this");
-    ierr = DMPlexHasLabel(dm, bdLabel, &has);CHKERRQ(ierr);
-    if (!has) {
-      ierr = DMPlexCreateLabel(dm, bdLabel);CHKERRQ(ierr);
-      ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
-      ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
-    }
     ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
     /* Only want to do this for FEM, and only once */
     for (bd2 = 0; bd2 < bd; ++bd2) {

@@ -665,6 +665,8 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   pmesh->useCone    = mesh->useCone;
   pmesh->useClosure = mesh->useClosure;
   ierr = PetscLogEventEnd(DMPLEX_DistributeSF,dm,0,0,0);CHKERRQ(ierr);
+  /* Copy BC */
+  ierr = DMPlexCopyBoundary(dm, *dmParallel);CHKERRQ(ierr);
   /* Cleanup */
   if (sf) {*sf = pointSF;}
   else    {ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);}

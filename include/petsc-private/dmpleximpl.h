@@ -36,6 +36,8 @@ struct _n_DMLabel {
 
 struct _n_Boundary {
   const char *name;
+  const char *labelname;
+  DMLabel     label;
   PetscBool   essential;
   PetscInt    field;
   void      (*func)();

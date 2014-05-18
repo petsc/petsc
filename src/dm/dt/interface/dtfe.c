@@ -152,7 +152,7 @@ PetscErrorCode PetscSpaceSetType(PetscSpace sp, PetscSpaceType name)
   Not Collective
 
   Input Parameter:
-. dm  - The PetscSpace
+. sp  - The PetscSpace
 
   Output Parameter:
 . name - The PetscSpace type name
@@ -1133,7 +1133,7 @@ PetscErrorCode PetscDualSpaceSetType(PetscDualSpace sp, PetscDualSpaceType name)
   Not Collective
 
   Input Parameter:
-. dm  - The PetscDualSpace
+. sp  - The PetscDualSpace
 
   Output Parameter:
 . name - The PetscDualSpace type name
@@ -2108,7 +2108,7 @@ PetscErrorCode PetscFESetType(PetscFE fem, PetscFEType name)
   Not Collective
 
   Input Parameter:
-. dm  - The PetscFE
+. fem  - The PetscFE
 
   Output Parameter:
 . name - The PetscFE type name

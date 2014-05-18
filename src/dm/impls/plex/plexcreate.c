@@ -759,14 +759,18 @@ extern PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS);
 /* Replace dm with the contents of dmNew
    - Share the DM_Plex structure
    - Share the coordinates
+   - Share the SF
 */
 static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
 {
+  PetscSF        sf;
   PetscSection   coordSection;
   Vec            coords;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMGetPointSF(dmNew, &sf);CHKERRQ(ierr);
+  ierr = DMSetPointSF(dm, sf);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dmNew, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dmNew, &coords);CHKERRQ(ierr);
   ierr = DMSetCoordinateSection(dm, coordSection);CHKERRQ(ierr);
@@ -832,7 +836,7 @@ PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(DM dm)
     if (flg) {
       DMLabel label;
 
-      ierr = DMPlexGetLabel(dm, b->name, &label);CHKERRQ(ierr);
+      ierr = DMPlexGetLabel(dm, b->labelname, &label);CHKERRQ(ierr);
       for (i = 0; i < len; ++i) {
         PetscBool has;
 

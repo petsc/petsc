@@ -17,6 +17,8 @@
 #define PetscFE         PetscFortranAddr
 #define PetscSpace      PetscFortranAddr
 #define PetscDualSpace  PetscFortranAddr
+#define PetscFV         PetscFortranAddr
+#define PetscLimiter    PetscFortranAddr
 #endif
 
 #endif

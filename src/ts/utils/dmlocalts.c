@@ -110,20 +110,9 @@ static PetscErrorCode TSComputeRHSFunction_DMLocal(TS ts, PetscReal time, Vec X,
   ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, locX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, locX);CHKERRQ(ierr);
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
-#if 0
-  ierr = DMGetLocalVector(dm, &locF);CHKERRQ(ierr);
-  ierr = VecZeroEntries(locF);CHKERRQ(ierr);
-  CHKMEMQ;
-  ierr = (*dmlocalts->rhsfunctionlocal)(dm, time, locX, locF, dmlocalts->rhsfunctionlocalctx);CHKERRQ(ierr);
-  CHKMEMQ;
-  ierr = DMLocalToGlobalBegin(dm, locF, ADD_VALUES, F);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm, locF, ADD_VALUES, F);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &locF);CHKERRQ(ierr);
-#else
   CHKMEMQ;
   ierr = (*dmlocalts->rhsfunctionlocal)(dm, time, locX, F, dmlocalts->rhsfunctionlocalctx);CHKERRQ(ierr);
   CHKMEMQ;
-#endif
   ierr = DMRestoreLocalVector(dm, &locX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
