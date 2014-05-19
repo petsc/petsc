@@ -15,6 +15,28 @@
 #include <../src/mat/impls/is/matis.h>      /*I "petscmat.h" I*/
 
 #undef __FUNCT__
+#define __FUNCT__ "MatDuplicate_IS"
+PetscErrorCode MatDuplicate_IS(Mat mat,MatDuplicateOption op,Mat *newmat)
+{
+  PetscErrorCode ierr;
+  Mat_IS         *matis = (Mat_IS*)(mat->data);
+  PetscInt       bs,m,n,M,N;
+  Mat            B,localmat;
+
+  PetscFunctionBegin;
+  ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
+  ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(mat,&m,&n);CHKERRQ(ierr);
+  ierr = MatCreateIS(PetscObjectComm((PetscObject)mat),bs,m,n,M,N,matis->mapping,&B);CHKERRQ(ierr);
+  ierr = MatDuplicate(matis->A,op,&localmat);CHKERRQ(ierr);
+  ierr = MatISSetLocalMat(B,localmat);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  *newmat = B;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatIsHermitian_IS"
 PetscErrorCode MatIsHermitian_IS(Mat A,PetscReal tol,PetscBool  *flg)
 {
@@ -606,6 +628,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->setoption               = MatSetOption_IS;
   A->ops->ishermitian             = MatIsHermitian_IS;
   A->ops->issymmetric             = MatIsSymmetric_IS;
+  A->ops->duplicate               = MatDuplicate_IS;
 
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
