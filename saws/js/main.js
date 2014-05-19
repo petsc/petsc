@@ -12,13 +12,6 @@ var currentFieldsplitNumber = -1;//the number to be put after the a-div
 //Use for pcmg
 var mgLevelLocation = ""; //where to put the mg level data once the highest level is determined. put in same level as coarse. this location keeps on getting overwritten every time mg_levels_n is encountered
 
-//GetAndDisplayDirectory: modified from PETSc.getAndDisplayDirectory
-//------------------------------------------------------------------
-SAWsGetAndDisplayDirectory = function(names,divEntry){
-    jQuery(divEntry).html(""); //clears divEntry
-    SAWs.getDirectory(names,SAWsDisplayDirectory,divEntry);
-}
-
 //DisplayDirectory: modified from PETSc.displayDirectory
 //------------------------------------------------------
 SAWsDisplayDirectory = function(sub,divEntry)
@@ -421,7 +414,6 @@ $(document).ready(function(){
 		continue;
 	    $("#oCmdOptions" + matInfo[i].id).empty();
             $("#oCmdOptions" + matInfo[i].id).append("<br><br>" + matInfo[i].string);
-            //MathJax.Hub.Queue(["Typeset",MathJax.Hub]); //Tell mathJax to re compile the tex data
         }
     });
 
