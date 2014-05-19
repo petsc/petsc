@@ -1761,10 +1761,8 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
 {
   PetscBool      debug = PETSC_FALSE;
   PetscScalar   *Brhs, *Aback;
-#if !defined(PETSC_USE_COMPLEX)
   PetscScalar   *tmpwork;
   PetscReal      rcond;
-#endif
   PetscInt       i, j, maxmn;
   PetscBLASInt   M, N, nrhs, lda, ldb, irank, ldwork, info;
   PetscErrorCode ierr;
@@ -1792,6 +1790,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
   rcond = -1;
   ierr  = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
+  if (tmpwork && rcond) rcond = 0.0; /* Get rid of compiler warning */
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "I don't think this makes sense for complex numbers");
 #else
   LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,&info);
