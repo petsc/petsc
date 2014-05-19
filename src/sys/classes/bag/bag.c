@@ -969,3 +969,32 @@ PetscErrorCode PetscBagSetOptionsPrefix(PetscBag bag, const char pre[])
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscBagGetNames"
+/*@C
+  PetscBagGetNames - Get the names of all entries in the bag
+
+  Not collective
+
+  Input Parameters:
++ bag   - the bag of values
+- names - array of the correct size to hold names
+
+  Output Parameter:
+. names - array of char pointers for names
+
+  Level: intermediate
+
+.seealso: PetscBag, PetscBagGetName(), PetscBagSetName(), PetscBagCreate(), PetscBagGetData()
+          PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterBool(), PetscBagRegisterScalar(), PetscBagRegisterEnum()
+@*/
+PetscErrorCode PetscBagGetNames(PetscBag bag, const char *names[])
+{
+  PetscBagItem nitem = bag->bagitems;
+  PetscInt     n;
+
+  PetscFunctionBegin;
+  for (n = 0; nitem; ++n, nitem = nitem->next) {names[n] = nitem->name;}
+  PetscFunctionReturn(0);
+}
