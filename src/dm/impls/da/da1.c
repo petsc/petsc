@@ -113,11 +113,11 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   DMBoundaryType   bx    = dd->bx;
   MPI_Comm         comm;
   Vec              local, global;
-  VecScatter       ltog, gtol;
+  VecScatter       gtol;
   IS               to, from;
   PetscBool        flg1 = PETSC_FALSE, flg2 = PETSC_FALSE;
   PetscMPIInt      rank, size;
-  PetscInt         i,*idx,nn,left,xs,xe,x,Xs,Xe,start,end,m,IXs,IXe;
+  PetscInt         i,*idx,nn,left,xs,xe,x,Xs,Xe,start,m,IXs,IXe;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -207,15 +207,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   dd->nlocal = dof*(Xe-Xs);
   ierr       = VecCreateSeqWithArray(PETSC_COMM_SELF,dof,dd->nlocal,NULL,&local);CHKERRQ(ierr);
 
-  /* Create Local to Global Vector Scatter Context */
-  /* local to global inserts non-ghost point region into global */
-  ierr = VecGetOwnershipRange(global,&start,&end);CHKERRQ(ierr);
-  ierr = ISCreateStride(comm,dof*x,start,1,&to);CHKERRQ(ierr);
-  ierr = ISCreateStride(comm,dof*x,dof*(xs-Xs),1,&from);CHKERRQ(ierr);
-  ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)ltog);CHKERRQ(ierr);
-  ierr = ISDestroy(&from);CHKERRQ(ierr);
-  ierr = ISDestroy(&to);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(global,&start,NULL);CHKERRQ(ierr);
 
   /* Create Global to Local Vector Scatter Context */
   /* global to local must retrieve ghost points */
@@ -279,7 +271,6 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   dd->Xs = dof*Xs; dd->Xe = dof*Xe; dd->Ys = 0; dd->Ye = 1; dd->Zs = 0; dd->Ze = 1;
 
   dd->gtol      = gtol;
-  dd->ltog      = ltog;
   dd->base      = dof*xs;
   da->ops->view = DMView_DA_1d;
 

@@ -67,7 +67,6 @@ PetscErrorCode  DMDestroy_DA(DM da)
     ierr = PetscFree(dd->startin[i]);CHKERRQ(ierr);
   }
 
-  ierr = VecScatterDestroy(&dd->ltog);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&dd->gtol);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&dd->ltol);CHKERRQ(ierr);
   ierr = VecDestroy(&dd->natural);CHKERRQ(ierr);

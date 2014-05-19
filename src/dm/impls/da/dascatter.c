@@ -9,7 +9,7 @@ extern PetscErrorCode DMLocalToLocalCreate_DA(DM);
 #undef __FUNCT__
 #define __FUNCT__ "DMDAGetScatter"
 /*@C
-   DMDAGetScatter - Gets the local-to-global, local-to-global, and
+   DMDAGetScatter - Gets the global-to-local, and
    local-to-local vector scatter contexts for a distributed array.
 
    Collective on DMDA
@@ -18,8 +18,7 @@ extern PetscErrorCode DMLocalToLocalCreate_DA(DM);
 .  da - the distributed array
 
    Output Parameters:
-+  ltog - local-to-global scatter context (may be NULL)
-.  gtol - global-to-local scatter context (may be NULL)
++  gtol - global-to-local scatter context (may be NULL)
 -  ltol - local-to-local scatter context (may be NULL)
 
    Level: developer
@@ -33,14 +32,13 @@ extern PetscErrorCode DMLocalToLocalCreate_DA(DM);
 
 .seealso: DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
 @*/
-PetscErrorCode  DMDAGetScatter(DM da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol)
+PetscErrorCode  DMDAGetScatter(DM da,VecScatter *gtol,VecScatter *ltol)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (ltog) *ltog = dd->ltog;
   if (gtol) *gtol = dd->gtol;
   if (ltol) {
     if (!dd->ltol) {

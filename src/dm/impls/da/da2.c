@@ -236,13 +236,13 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   PetscInt         *ly          = dd->ly;
   MPI_Comm         comm;
   PetscMPIInt      rank,size;
-  PetscInt         xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,start,end,IXs,IXe,IYs,IYe;
+  PetscInt         xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,IXs,IXe,IYs,IYe;
   PetscInt         up,down,left,right,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
   PetscInt         xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count;
   PetscInt         s_x,s_y; /* s proportionalized to w */
   PetscInt         sn0 = 0,sn2 = 0,sn6 = 0,sn8 = 0;
   Vec              local,global;
-  VecScatter       ltog,gtol;
+  VecScatter       gtol;
   IS               to,from;
   PetscErrorCode   ierr;
 
@@ -429,9 +429,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 
   /* generate appropriate vector scatters */
   /* local to global inserts non-ghost point region into global */
-  ierr = VecGetOwnershipRange(global,&start,&end);CHKERRQ(ierr);
-  ierr = ISCreateStride(comm,x*y*dof,start,1,&to);CHKERRQ(ierr);
-
   ierr  = PetscMalloc1((IXe-IXs)*(IYe-IYs),&idx);CHKERRQ(ierr);
   left  = xs - Xs; right = left + x;
   down  = ys - Ys; up = down + y;
@@ -441,12 +438,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
       idx[count++] = i*(Xe-Xs) + j;
     }
   }
-
-  ierr = ISCreateBlock(comm,dof,count,idx,PETSC_USE_POINTER,&from);CHKERRQ(ierr);
-  ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)ltog);CHKERRQ(ierr);
-  ierr = ISDestroy(&from);CHKERRQ(ierr);
-  ierr = ISDestroy(&to);CHKERRQ(ierr);
 
   /* global to local must include ghost points within the domain,
      but not ghost points outside the domain that aren't periodic */
@@ -786,7 +777,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   ierr = VecDestroy(&global);CHKERRQ(ierr);
 
   dd->gtol      = gtol;
-  dd->ltog      = ltog;
   dd->base      = base;
   da->ops->view = DMView_DA_2d;
   dd->ltol      = NULL;

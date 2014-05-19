@@ -189,7 +189,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   MPI_Comm         comm;
   PetscMPIInt      rank,size;
   PetscInt         xs = 0,xe,ys = 0,ye,zs = 0,ze,x = 0,y = 0,z = 0;
-  PetscInt         Xs,Xe,Ys,Ye,Zs,Ze,IXs,IXe,IYs,IYe,IZs,IZe,start,end,pm;
+  PetscInt         Xs,Xe,Ys,Ye,Zs,Ze,IXs,IXe,IYs,IYe,IZs,IZe,pm;
   PetscInt         left,right,up,down,bottom,top,i,j,k,*idx,nn;
   PetscInt         n0,n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12,n14;
   PetscInt         n15,n16,n17,n18,n19,n20,n21,n22,n23,n24,n25,n26;
@@ -198,7 +198,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   PetscInt         sn8  = 0,sn9 = 0,sn11 = 0,sn15 = 0,sn24 = 0,sn25 = 0,sn26 = 0;
   PetscInt         sn17 = 0,sn18 = 0,sn19 = 0,sn20 = 0,sn21 = 0,sn23 = 0;
   Vec              local,global;
-  VecScatter       ltog,gtol;
+  VecScatter       gtol;
   IS               to,from;
   PetscBool        twod;
   PetscErrorCode   ierr;
@@ -428,9 +428,6 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 
   /* generate appropriate vector scatters */
   /* local to global inserts non-ghost point region into global */
-  ierr = VecGetOwnershipRange(global,&start,&end);CHKERRQ(ierr);
-  ierr = ISCreateStride(comm,x*y*z*dof,start,1,&to);CHKERRQ(ierr);
-
   ierr   = PetscMalloc1((IXe-IXs)*(IYe-IYs)*(IZe-IZs),&idx);CHKERRQ(ierr);
   left   = xs - Xs; right = left + x;
   bottom = ys - Ys; top = bottom + y;
@@ -443,12 +440,6 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
       }
     }
   }
-
-  ierr = ISCreateBlock(comm,dof,count,idx,PETSC_USE_POINTER,&from);CHKERRQ(ierr);
-  ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)ltog);CHKERRQ(ierr);
-  ierr = ISDestroy(&from);CHKERRQ(ierr);
-  ierr = ISDestroy(&to);CHKERRQ(ierr);
 
   /* global to local must include ghost points within the domain,
      but not ghost points outside the domain that aren't periodic */
@@ -1363,7 +1354,6 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   ierr = VecDestroy(&global);CHKERRQ(ierr);
 
   dd->gtol      = gtol;
-  dd->ltog      = ltog;
   dd->base      = base;
   da->ops->view = DMView_DA_3d;
   dd->ltol      = NULL;

@@ -68,7 +68,7 @@ PETSC_EXTERN PetscErrorCode DMDANaturalAllToGlobalCreate(DM,VecScatter*);
 PETSC_EXTERN PetscErrorCode DMDAGetGlobalIndices(DM,PetscInt*,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode DMDARestoreGlobalIndices(DM,PetscInt*,const PetscInt*[]);
 
-PETSC_EXTERN PetscErrorCode DMDAGetScatter(DM,VecScatter*,VecScatter*,VecScatter*);
+PETSC_EXTERN PetscErrorCode DMDAGetScatter(DM,VecScatter*,VecScatter*);
 PETSC_EXTERN PetscErrorCode DMDAGetNeighbors(DM,const PetscMPIInt**);
 
 PETSC_EXTERN PetscErrorCode DMDAGetAO(DM,AO*);
