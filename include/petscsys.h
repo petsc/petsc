@@ -1144,7 +1144,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_USE_MALLOC_COALESCED)
+#if !defined(PETSC_USE_MALLOC_COALESCED)
 #define PetscFree2(m1,m2)   (PetscFree(m2) || PetscFree(m1))
 #else
 #define PetscFree2(m1,m2)   ((m1) ? ((m2)=0,PetscFree(m1)) : ((m1)=0,PetscFree(m2)))
@@ -1173,7 +1173,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_USE_MALLOC_COALESCED)
+#if !defined(PETSC_USE_MALLOC_COALESCED)
 #define PetscFree3(m1,m2,m3)   (PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
 #define PetscFree3(m1,m2,m3)   ((m1) ? ((m3)=0,(m2)=0,PetscFree(m1)) : ((m2) ? ((m3)=0,(m1)=0,PetscFree(m2)) : ((m2)=0,(m1)=0,PetscFree(m3))))
@@ -1203,7 +1203,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_USE_MALLOC_COALESCED)
+#if !defined(PETSC_USE_MALLOC_COALESCED)
 #define PetscFree4(m1,m2,m3,m4)   (PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
 #define PetscFree4(m1,m2,m3,m4)   ((m1) ? ((m4)=0,(m3)=0,(m2)=0,PetscFree(m1)) : ((m2) ? ((m4)=0,(m3)=0,(m1)=0,PetscFree(m2)) : ((m3) ? ((m4)=0,(m2)=0,(m1)=0,PetscFree(m3)) : ((m3)=0,(m2)=0,(m1)=0,PetscFree(m4)))))
@@ -1234,7 +1234,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_USE_MALLOC_COALESCED)
+#if !defined(PETSC_USE_MALLOC_COALESCED)
 #define PetscFree5(m1,m2,m3,m4,m5)   (PetscFree(m5) || PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
 #define PetscFree5(m1,m2,m3,m4,m5)   ((m1) ? ((m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1)) : ((m2) ? ((m5)=0,(m4)=0,(m3)=0,(m1)=0,PetscFree(m2)) : ((m3) ? ((m5)=0,(m4)=0,(m2)=0,(m1)=0,PetscFree(m3)) : \
@@ -1269,7 +1269,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_USE_MALLOC_COALESCED)
+#if !defined(PETSC_USE_MALLOC_COALESCED)
 #define PetscFree6(m1,m2,m3,m4,m5,m6)   (PetscFree(m6) || PetscFree(m5) || PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
 #define PetscFree6(m1,m2,m3,m4,m5,m6)   ((m1) ? ((m6)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1)) : ((m2) ? ((m6)=0,(m5)=0,(m4)=0,(m3)=0,(m1)=0,PetscFree(m2)) : \
@@ -1306,7 +1306,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_USE_MALLOC_COALESCED)
+#if !defined(PETSC_USE_MALLOC_COALESCED)
 #define PetscFree7(m1,m2,m3,m4,m5,m6,m7)   (PetscFree(m7) || PetscFree(m6) || PetscFree(m5) || PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
 #define PetscFree7(m1,m2,m3,m4,m5,m6,m7)   ((m1) ? ((m7)=0,(m6)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1)) : ((m2) ? ((m7)=0,(m6)=0,(m5)=0,(m4)=0,(m3)=0,(m1)=0,PetscFree(m2)) : \
