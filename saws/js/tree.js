@@ -11,7 +11,7 @@ function buildTree(matInfo, numberOfLevels, detailed)
     cleanMatInfo();
     sortMatInfo();
 
-    for(var i=0; i<matInfoWriteCounter; i++) {//first zero doesn't matter
+    for(var i=0; i<matInfo.length; i++) {//first zero doesn't matter
         var string=(detailed) ? matInfo[i].string : matInfo[i].stringshort;
         var obj={name: string};//the new object to be placed
         var id=matInfo[i].id;
@@ -47,18 +47,17 @@ function buildTree(matInfo, numberOfLevels, detailed)
     }
 
     function cleanMatInfo() {//remove all the -1 elements (these get generated when something is deleted)
-        for(var i=0; i<matInfoWriteCounter; i++) {
+        for(var i=0; i<matInfo.length; i++) {
 
             if(matInfo[i].id=="-1") {
 
                 //shift everything down
-                for(var j=i; j<matInfoWriteCounter-1; j++)
+                for(var j=i; j<matInfo.length-1; j++)
                     matInfo[j]=matInfo[j+1];
 
                 i--;//there might be two in a row. we wouldnt want to skip over any
 
-                matInfoWriteCounter--;//decrement write counter
-                delete matInfo[matInfoWriteCounter];//garbage value doesn't have to be removed but it's easy so we'll remove it anyways
+                delete matInfo[matInfo.length-1];//remove garbage value
             }
         }
 
@@ -66,9 +65,9 @@ function buildTree(matInfo, numberOfLevels, detailed)
 
     //selection sort. NOTE: THIS FUNCTION ASSUMES ALL GARBAGE VALUES (ID="-1") HAVE ALREADY BEEN REMOVED USING cleanMatInfo()
     function sortMatInfo() {
-        for(var i=0; i<matInfoWriteCounter-1; i++) {//only need to go to second to last element
+        for(var i=0; i<matInfo.length-1; i++) {//only need to go to second to last element
             var indexOfCurrentSmallest=i;
-            for(var j=i; j<matInfoWriteCounter; j++) {
+            for(var j=i; j<matInfo.length; j++) {
                 if(matInfo[j].id.localeCompare(matInfo[i].id) == -1)
                     indexOfCurrentSmallest=j;
             }
@@ -89,7 +88,7 @@ function buildTree(matInfo, numberOfLevels, detailed)
 	.attr("height", numberOfLevels * 320)
 	.append("g")
 	.attr("transform", "translate(50,50)");
-    
+
     //Call the d3 tree layout
     //[n * 200, n * 200] for horizontal
     //[n* 550, n* 200] for vertical

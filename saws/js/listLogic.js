@@ -317,7 +317,8 @@ $(document).on('change', '.pcLists', function(){
             var indentation = 30 * (newChild.length-1);//minus one because length 1 is level 0
             $("#row"+parent).after("<tr id='row"+newChild+"'> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ newChild + "\"> </div></td> <td> <div id=\"oCmdOptions" + newChild + "\"></div> </td> </tr>");
 
-            matInfo[matInfoWriteCounter] = {//write data for the two children
+            var writeLoc = matInfo.length;
+            matInfo[writeLoc] = {//write data for the two children
                 posdef:  matInfo[index].posdef,//inherits attributes of parents
                 symm:    matInfo[index].symm,
                 logstruc:false,
@@ -325,8 +326,6 @@ $(document).on('change', '.pcLists', function(){
                 matLevel:   newChild.length-1,
                 id:       newChild
 	    }
-
-            matInfoWriteCounter++;
 
             $("#A" + newChild).append("<br><b id='matrixText"+newChild+"'>A" + newChild + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
             $("#A" + newChild).append("<br><b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + newChild +"\"></select>");
@@ -455,7 +454,8 @@ $(document).on('change', '.fieldsplitBlocks', function() {
 
             $("#pcList"+parent+i).trigger("change");
 
-            matInfo[matInfoWriteCounter] = {
+            var writeLoc = matInfo.length;
+            matInfo[writeLoc] = {
                 posdef:  matInfo[index].posdef,//inherits attributes of parents
                 symm:    matInfo[index].symm,
                 logstruc:false,//HOW SHOULD THIS BE ADDRESSED ?????????
@@ -463,8 +463,6 @@ $(document).on('change', '.fieldsplitBlocks', function() {
                 matLevel:   parent.length-1+1,
                 id:       parent+i
             }
-
-            matInfoWriteCounter++;
 
         }
         matInfo[index].blocks=val;
@@ -565,17 +563,3 @@ $(document).on('change', '.mgLevels', function()
         }
     }
 });
-
-//copied from main.js
-//input: desired id in string format. (for example, "01001")
-//output: index in matInfo where information on that id is located
-function getMatIndex(id)
-{
-    //matInfo and matInfoWriteCounter are visible here although declared in main.js
-    for(var i=0; i<matInfoWriteCounter; i++) {
-        if(matInfo[i].id == id)
-            return i;//return index where information is located.
-    }
-
-    return -1;//invalid id.
-}

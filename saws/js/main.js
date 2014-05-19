@@ -1,6 +1,5 @@
 //Make an array. Each array element (matInfo[0]. etc) will have all of the information of the questions.
 var matInfo = [];
-var matInfoWriteCounter = 0;//next available space to write to.
 var currentAsk = "0";//start at id=0. then 00 01, then 000 001 010 011 etc if splitting two every time.
 var askedA0 = false;//a one-way flag to record if A0 was asked
 var finishedAsking = false;//whether input form has finished (when finished, stop pulling default options from sawsInfo?)
@@ -12,9 +11,6 @@ var currentFieldsplitNumber = -1;//the number to be put after the a-div
 
 //Use for pcmg
 var mgLevelLocation = ""; //where to put the mg level data once the highest level is determined. put in same level as coarse. this location keeps on getting overwritten every time mg_levels_n is encountered
-
-//Call the "Tex" function which populates an array with TeX to be used instead of images
-//var texMatrices = tex(maxMatricies) //unfortunately, cannot use anymore
 
 //GetAndDisplayDirectory: modified from PETSc.getAndDisplayDirectory
 //------------------------------------------------------------------
@@ -79,7 +75,7 @@ SAWsDisplayDirectory = function(sub,divEntry)
                     fieldsplit = fieldsplit + currentFieldsplitNumber.toString();
             }
 
-            var index=getSawsIndex(fieldsplit);
+            var index = getSawsIndex(fieldsplit);
 
             var endtag="";
             while(SAWs_prefix!="") {//parse the entire prefix
@@ -110,8 +106,13 @@ SAWsDisplayDirectory = function(sub,divEntry)
                     sawsInfo[index].data[getSawsDataIndex(index, mgLevelLocation)].mg_levels=parseInt(chunk.substring(10,11))+1;
             }
 
-            if(typeof sawsInfo[index] == undefined)
+            if(sawsInfo.length == 0) //special case. manually start off first one
+                index = 0;
+
+            if(sawsInfo[index] == undefined) {
                 sawsInfo[index]=new Object();
+                sawsInfo[index].id = fieldsplit;
+            }
             if(sawsInfo[index].data == undefined)//allocate new mem if needed
                 sawsInfo[index].data=new Array();
             //search if it has already been created
@@ -208,8 +209,13 @@ SAWsDisplayDirectory = function(sub,divEntry)
                     endtag+=chunk.substring(10,11);//can only be 1 character long for now
             }
 
-            if(typeof sawsInfo[index] == undefined)
+            if(index == -1)
+                index = 0;
+
+            if(sawsInfo[index] == undefined) {
                 sawsInfo[index]=new Object();
+                sawsInfo[index].id = fieldsplit;
+            }
             if(sawsInfo[index].data == undefined)//allocate new mem if needed
                 sawsInfo[index].data=new Array();
             //search if it has already been created
@@ -248,18 +254,19 @@ HandlePCOptions = function(){
         id:      "0"
     }
 
-    matInfo[0] = {
+    /*matInfo[0] = {
         posdef:  false,
         symm:    false,
         logstruc:false,
         blocks:  0,
         matLevel:0,
         id:      "0"
-    }
+    }*/
 
-    sawsInfo[0] = {
+    /*sawsInfo[0] = {
         id: "0"
-    }
+    }*/
+    sawsInfo = [];
 
     //create div 'o-1' for displaying SAWs options
     $("#divPc").append("<div id=\"o-1\"> </div>");
@@ -281,7 +288,8 @@ HandlePCOptions = function(){
         //we don't have to worry about possibility of symmetric and not posdef because when symmetric is unchecked, it not only hides posdef but also removes the checkmark if there was one
 
 	//Write the form data to matInfo
-	matInfo[matInfoWriteCounter] = {
+        var writeLoc = matInfo.length;
+	matInfo[writeLoc] = {
             posdef:  document.getElementById("posdef").checked,
             symm:    document.getElementById("symm").checked,
             logstruc:document.getElementById("logstruc").checked,
@@ -290,20 +298,17 @@ HandlePCOptions = function(){
             id:      currentAsk
 	}
 
-        //increment write counter immediately after data is written
-        matInfoWriteCounter++;
-
         //append to table of two columns holding A and oCmdOptions in each column (should now be changed to simply cmdOptions)
         //tooltip contains all information previously in big letter format (e.g posdef, symm, logstruc, etc)
         var indentation = matrixLevel*30; //according to the length of currentAsk (aka matrix level), add margins of 30 pixels accordingly
         $("#oContainer").append("<tr id='row"+currentAsk+"'> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ currentAsk + "\"> </div></td> <td> <div id=\"oCmdOptions" + currentAsk + "\"></div> </td> </tr>");
 
         //Create drop-down lists. '&nbsp;' indicates a space
-        $("#A" + currentAsk).append("<br><b id='matrixText"+currentAsk+"'>A" + currentAsk + " (Symm:"+matInfo[matInfoWriteCounter-1].symm+" Posdef:"+matInfo[matInfoWriteCounter-1].posdef+" Logstruc:"+matInfo[matInfoWriteCounter-1].logstruc +")</b>");
+        $("#A" + currentAsk).append("<br><b id='matrixText"+currentAsk+"'>A" + currentAsk + " (Symm:"+matInfo[writeLoc].symm+" Posdef:"+matInfo[writeLoc].posdef+" Logstruc:"+matInfo[writeLoc].logstruc +")</b>");
 	$("#A" + currentAsk).append("<br><b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + currentAsk +"\"></select>");
 	$("#A" + currentAsk).append("<br><b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + currentAsk +"\"></select>");
 
-        if(matInfo[matInfoWriteCounter-1].logstruc) {//if fieldsplit, need to add the fieldsplit type and fieldsplit blocks
+        if(matInfo[writeLoc].logstruc) {//if fieldsplit, need to add the fieldsplit type and fieldsplit blocks
             var newDiv = generateDivName("",currentAsk,"fieldsplit");//this div contains the two fieldsplit dropdown menus. as long as first param doesn't contain "_", it will generate assuming it is directly under an A-div which it is
 	    var endtag = newDiv.substring(newDiv.lastIndexOf('_'), newDiv.length);
 	    $("#A"+currentAsk).append("<div id=\""+newDiv+"\" style='margin-left:"+30+"px;'></div>");//append to the A-div that we just added to the table
@@ -338,9 +343,6 @@ HandlePCOptions = function(){
 
         formSet(currentAsk); //reset the form
 
-	//Tell mathJax to re compile the tex data
-	//MathJax.Hub.Queue(["Typeset",MathJax.Hub]); //unfortunately, cannot use this anymore
-        //alert('endof continueButton');
     });
     //alert('exit HandlePCOptions()...');
 }
@@ -404,7 +406,7 @@ $(document).ready(function(){
 
 	//get the number of levels for the tree for scaling purposes
         var matLevelForTree=0;
-        for(var i=0; i<matInfoWriteCounter; i++)
+        for(var i=0; i<matInfo.length; i++)
             if(matInfo[i].id!="-1" && matInfo[i].level>matLevelForTree)
                 matLevelForTree=matInfo[i];
         matLevelForTree++;//appears to be 1 greater than the max
@@ -414,12 +416,12 @@ $(document).ready(function(){
 	buildTree(matInfo,matLevelForTree,treeDetailed);
 
         //show cmdOptions to the screen
-        for (var i=0; i<matInfoWriteCounter; i++) {
+        for (var i=0; i<matInfo.length; i++) {
 	    if (matInfo[i].id=="-1")//possible junk value created by deletion of adiv
 		continue;
 	    $("#oCmdOptions" + matInfo[i].id).empty();
             $("#oCmdOptions" + matInfo[i].id).append("<br><br>" + matInfo[i].string);
-            //MathJax.Hub.Queue(["Typeset",MathJax.Hub]); //Tell mathJax to re compile the tex data    
+            //MathJax.Hub.Queue(["Typeset",MathJax.Hub]); //Tell mathJax to re compile the tex data
         }
     });
 
@@ -431,7 +433,7 @@ $(document).ready(function(){
 
 	//get the number of levels for the tree for scaling purposes
         var matLevelForTree=0;
-        for(var i=0; i<matInfoWriteCounter; i++)
+        for(var i=0; i<matInfo.length; i++)
             if(matInfo[i].id!="-1" && matInfo[i].level>matLevelForTree)
                 matLevelForTree=matInfo[i];
         matLevelForTree++;//appears to be 1 greater than the max
@@ -441,7 +443,7 @@ $(document).ready(function(){
 	buildTree(matInfo,matLevelForTree,treeDetailed);
 
         //show cmdOptions to the screen
-        for (var i=0; i<matInfoWriteCounter; i++) {
+        for (var i=0; i<matInfo.length; i++) {
 	    if (matInfo[i].id=="-1")//possible junk value created by deletion of adiv
 		continue;
 	    $("#oCmdOptions" + matInfo[i].id).empty();
@@ -450,7 +452,7 @@ $(document).ready(function(){
     });
 
     $("#clearOutput").click(function(){
-	for(var i=0; i<matInfoWriteCounter; i++)
+	for(var i=0; i<matInfo.length; i++)
 	    $("#oCmdOptions"+matInfo[i].id).empty();//if matInfo has deleted A-divs, its still okay because id will be "-1" and nothing will be changed
     });
 
@@ -603,7 +605,7 @@ function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matInfo)
 	var bjacobiBlocks = $("#bjacobiBlocks" + recursionCounter + endtag).val();
 	var bjacobiKSP    = $("#kspList" + recursionCounter + endtag).val();
 	var bjacobiPC     = $("#pcList" + recursionCounter + endtag).val();
-        info   += "<br />"+prefix+"pc_bjacobi_blocks "+bjacobiBlocks; // option for previous solver level 
+        info   += "<br />"+prefix+"pc_bjacobi_blocks "+bjacobiBlocks; // option for previous solver level
         prefix += "sub_";
         info   += "<br />"+prefix+"ksp_type "+bjacobiKSP+"<br />"+prefix+"pc_type "+bjacobiPC;
         infoshort  += "<br /> PCbjacobi -- KSP: "+bjacobiKSP+"; PC: "+bjacobiPC;
@@ -615,7 +617,7 @@ function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matInfo)
         var asmOverlap = $("#asmOverlap" + recursionCounter + endtag).val();
 	var asmKSP     = $("#kspList" + recursionCounter + endtag).val();
 	var asmPC      = $("#pcList" + recursionCounter + endtag).val();
-	info   +=  "<br />"+prefix+"pc_asm_blocks  " + asmBlocks + " "+prefix+"pc_asm_overlap "+ asmOverlap; 
+	info   +=  "<br />"+prefix+"pc_asm_blocks  " + asmBlocks + " "+prefix+"pc_asm_overlap "+ asmOverlap;
         prefix += "sub_";
         info   += "<br />"+prefix+"ksp_type " + asmKSP +" "+prefix+"pc_type " + asmPC;
         infoshort += "<br />PCasm -- KSP: " + asmKSP +"; PC: " + asmPC;
@@ -653,14 +655,13 @@ function pcGetDetailedInfo(pcListID, prefix,recursionCounter,matInfo)
 
 /*
   matTreeGetNextNode - uses matInfo to find and return the id of the next node to ask about SKIP ANY CHILDREN FROM NON-LOG STRUC PARENT
-  input: 
+  input:
     currentAsk
-  output: 
+  output:
     id of the next node that should be asked
 */
 function matTreeGetNextNode(current)
 {
-    //important to remember that writeCounter is already pointing at an empty space at this point. this method also initializes the next object if needed.
     if (current=="0" && askedA0)
         return -1;//sort of base case. this only occurs when the tree has completely finished
 
@@ -677,10 +678,11 @@ function matTreeGetNextNode(current)
     //case 1: current node needs more child nodes
 
     if (matInfo[getMatIndex(current)].logstruc && currentBlocks!=0 && getMatIndex(possibleChild)==-1) {//CHECK TO MAKE SURE CHILDREN DON'T ALREADY EXIST
-        //alert("needs more children");
-        matInfo[matInfoWriteCounter]        = new Object();
-        matInfo[matInfoWriteCounter].symm   = matInfo[getMatIndex(current)].symm;//set defaults for the new node
-        matInfo[matInfoWriteCounter].posdef = matInfo[getMatIndex(current)].posdef;
+        //todo: ALL THIS DEFAULT SETTING SHOULD BE DONE ELSEWHERE
+        /*var writeLoc = matInfo.length;
+        matInfo[writeLoc]        = new Object();
+        matInfo[writeLoc].symm   = matInfo[getMatIndex(current)].symm;//set defaults for the new node
+        matInfo[writeLoc].posdef = matInfo[getMatIndex(current)].posdef;*/
 
         return current+"0";//move onto first child
     }
@@ -688,11 +690,11 @@ function matTreeGetNextNode(current)
     //case 2: current node's child nodes completed. move on to sister nodes if any
 
     if (current!="0" && lastDigit+1 < matInfo[getMatIndex(parentID)].blocks) {
-        //alert("needs more sister nodes");
-        matInfo[matInfoWriteCounter]        = new Object();
-        matInfo[matInfoWriteCounter].symm   = matInfo[getMatIndex(current)].symm;//set defaults for the new node
-        matInfo[matInfoWriteCounter].posdef = matInfo[getMatIndex(current)].posdef;
-        var newEnding                       = parseInt(lastDigit)+1;
+        /*var writeLoc = matInfo.length;
+        matInfo[writeLoc]        = new Object();
+        matInfo[writeLoc].symm   = matInfo[getMatIndex(current)].symm;//set defaults for the new node
+        matInfo[writeLoc].posdef = matInfo[getMatIndex(current)].posdef;*/
+        var newEnding            = parseInt(lastDigit)+1;
 
         return ""+parentID+newEnding;
     }
@@ -716,7 +718,7 @@ function solverGetOptions(matInfo)
 {
     var prefix,kspSelectedValue,pcSelectedValue,level;
 
-    for (var i = 0; i<matInfoWriteCounter; i++) {
+    for (var i = 0; i<matInfo.length; i++) {
 	if (typeof matInfo[i] != 'undefined' && matInfo[i].id!="-1") {
 	    //get the ksp and pc options at the topest solver-level
 	    kspSelectedValue = $("#kspList" + matInfo[i].id).val();
@@ -758,7 +760,7 @@ function solverGetOptions(matInfo)
 */
 function getMatIndex(id)
 {
-    for (var i=0; i<matInfoWriteCounter; i++) {
+    for (var i=0; i<matInfo.length; i++) {
         if (matInfo[i].id == id)
             return i;//return index where information is located.
     }
