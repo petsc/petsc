@@ -17,6 +17,7 @@ struct _PCBDDCGraph {
   PetscInt               *queue;
   PetscInt               *special_dof;
   PetscInt               *subset_ncc;
+  PetscInt               *subset_ref_node;
   PetscInt               *mirrors;
   PetscInt               **mirrors_set;
   PetscInt               ncc;

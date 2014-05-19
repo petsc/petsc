@@ -287,11 +287,10 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     sum_requests = 0;
     for (i=0;i<graph->n_subsets;i++) {
       j = subset_to_nodes_indices[i];
+      ierr = PetscMPIIntCast(graph->subset_ref_node[i],&tag);CHKERRQ(ierr);
       for (k=0;k<graph->count[j];k++) {
         ierr = PetscMPIIntCast(graph->neighbours_set[j][k],&neigh);CHKERRQ(ierr);
-        ierr = PetscMPIIntCast((PetscInt)(rank+1)*graph->count[j],&tag);CHKERRQ(ierr);
         ierr = MPI_Isend(&graph->subset_ncc[i],1,MPIU_INT,neigh,tag,interface_comm,&send_requests[sum_requests]);CHKERRQ(ierr);
-        ierr = PetscMPIIntCast((PetscInt)(neigh+1)*graph->count[j],&tag);CHKERRQ(ierr);
         ierr = MPI_Irecv(&recv_buffer_subset[sum_requests],1,MPIU_INT,neigh,tag,interface_comm,&recv_requests[sum_requests]);CHKERRQ(ierr);
         sum_requests++;
       }
@@ -304,7 +303,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     for (i=0;i<graph->n_subsets;i++) {
       for (j=cum_recv_counts[i];j<cum_recv_counts[i+1];j++){
         /* The first condition is natural (someone has a different number of ccs than me), the second one is just to be safe */
-        if ( graph->subset_ncc[i] != recv_buffer_subset[j] || graph->subset_ncc[i] > 1 ) {
+        if (graph->subset_ncc[i] != recv_buffer_subset[j] || graph->subset_ncc[i] > 1) {
           subset_cc_adapt[i] = PETSC_TRUE;
           break;
         }
@@ -345,11 +344,10 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
         }
         j = subset_to_nodes_indices[i];
         sizes_of_sends[i] = size_of_send;
+        ierr = PetscMPIIntCast(graph->subset_ref_node[i]+1,&tag);CHKERRQ(ierr);
         for (k=0;k<graph->count[j];k++) {
           ierr = PetscMPIIntCast(graph->neighbours_set[j][k],&neigh);CHKERRQ(ierr);
-          ierr = PetscMPIIntCast((PetscInt)(rank+1)*graph->count[j],&tag);CHKERRQ(ierr);
           ierr = MPI_Isend(&sizes_of_sends[i],1,MPIU_INT,neigh,tag,interface_comm,&send_requests[sum_requests]);CHKERRQ(ierr);
-          ierr = PetscMPIIntCast((PetscInt)(neigh+1)*graph->count[j],&tag);CHKERRQ(ierr);
           ierr = MPI_Irecv(&recv_buffer_subset[sum_requests+start_of_recv],1,MPIU_INT,neigh,tag,interface_comm,&recv_requests[sum_requests]);CHKERRQ(ierr);
           sum_requests++;
         }
@@ -371,13 +369,12 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
       if (subset_cc_adapt[i]) {
         size_of_send = sizes_of_sends[i];
         j = subset_to_nodes_indices[i];
+        ierr = PetscMPIIntCast(graph->subset_ref_node[i]+2,&tag);CHKERRQ(ierr);
         for (k=0;k<graph->count[j];k++) {
           ierr = PetscMPIIntCast(graph->neighbours_set[j][k],&neigh);CHKERRQ(ierr);
-          ierr = PetscMPIIntCast((PetscInt)(rank+1)*graph->count[j],&tag);CHKERRQ(ierr);
           ierr = PetscMPIIntCast(size_of_send,&mpi_buffer_size);CHKERRQ(ierr);
           ierr = MPI_Isend(&send_buffer[start_of_send],mpi_buffer_size,MPIU_INT,neigh,tag,interface_comm,&send_requests[sum_requests]);CHKERRQ(ierr);
           size_of_recv = recv_buffer_subset[cum_recv_counts[graph->n_subsets]+sum_requests];
-          ierr = PetscMPIIntCast((PetscInt)(neigh+1)*graph->count[j],&tag);CHKERRQ(ierr);
           ierr = PetscMPIIntCast(size_of_recv,&mpi_buffer_size);CHKERRQ(ierr);
           ierr = MPI_Irecv(&recv_buffer[start_of_recv],mpi_buffer_size,MPIU_INT,neigh,tag,interface_comm,&recv_requests[sum_requests]);CHKERRQ(ierr);
           start_of_recv += size_of_recv;
@@ -638,7 +635,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   MPI_Comm       comm;
   PetscScalar    *array,*array2;
   const PetscInt *is_indices;
-  PetscInt       n_neigh,*neigh,*n_shared,**shared;
+  PetscInt       n_neigh,*neigh,*n_shared,**shared,*queue_global;
   PetscInt       i,j,k,s,total_counts,nodes_touched,is_size;
   PetscErrorCode ierr;
   PetscBool      same_set,mirrors_found;
@@ -834,7 +831,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   }
   ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
 
-  /* mark local periodic nodes (if any) and adapt CSR graph */
+  /* mark local periodic nodes (if any) and adapt CSR graph TODO: what if CSR graph is not present? */
   if (graph->mirrors) {
     PetscInt *new_xadj,*new_adjncy;
 
@@ -945,6 +942,18 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   graph->cptr[graph->ncc] = total_counts;
   /* free memory allocated by ISLocalToGlobalMappingGetInfo */
   ierr = ISLocalToGlobalMappingRestoreInfo(graph->l2gmap,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
+  /* get a reference node (min index in global ordering) for each subset */
+  ierr = PetscMalloc1(graph->ncc,&graph->subset_ref_node);CHKERRQ(ierr);
+  ierr = PetscMalloc1(graph->cptr[graph->ncc],&queue_global);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(graph->l2gmap,graph->cptr[graph->ncc],graph->queue,queue_global);CHKERRQ(ierr);
+  for (i=0;i<graph->ncc;i++) {
+    PetscInt minval = queue_global[graph->cptr[i]];
+    for (j=graph->cptr[i]+1;j<graph->cptr[i+1];j++) {
+      minval = PetscMin(minval,queue_global[j]);
+    }
+    graph->subset_ref_node[i] = minval;
+  }
+  ierr = PetscFree(queue_global);CHKERRQ(ierr);
   /* free objects */
   ierr = VecDestroy(&local_vec);CHKERRQ(ierr);
   ierr = VecDestroy(&local_vec2);CHKERRQ(ierr);
@@ -975,6 +984,7 @@ PetscErrorCode PCBDDCGraphReset(PCBDDCGraph graph)
   PetscFunctionBegin;
   ierr = ISLocalToGlobalMappingDestroy(&graph->l2gmap);CHKERRQ(ierr);
   ierr = PetscFree(graph->subset_ncc);CHKERRQ(ierr);
+  ierr = PetscFree(graph->subset_ref_node);CHKERRQ(ierr);
   if (graph->nvtxs) {
     ierr = PetscFree(graph->neighbours_set[0]);CHKERRQ(ierr);
   }
@@ -1038,6 +1048,7 @@ PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap)
   }
   /* zeroes workspace for values of ncc */
   graph->subset_ncc = 0;
+  graph->subset_ref_node = 0;
   PetscFunctionReturn(0);
 }
 
@@ -1079,6 +1090,7 @@ PetscErrorCode PCBDDCGraphCreate(PCBDDCGraph *graph)
   new_graph->queue = 0;
   new_graph->count = 0;
   new_graph->subset_ncc = 0;
+  new_graph->subset_ref_node = 0;
   new_graph->touched = 0;
   /* zeroes pointers to csr graph of local nodes connectivity (optional data) */
   new_graph->nvtxs_csr = 0;
