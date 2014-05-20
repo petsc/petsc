@@ -178,4 +178,20 @@ function addEventHandlers() {
         $("#tree").remove();
     });
 
+    $("#doneLoading").click(function() {
+        $("#doneLoading").remove();
+        //count how many level 1 fieldsplits there are in sawsInfo
+        var counter = 0;
+        for(var i=0; i<sawsInfo.length; i++) {
+            if(sawsInfo[i].id.length == 2)
+                counter++;
+        }
+        if(counter > 0) {
+            $("#logstruc").prop("checked", "true");
+            $("#fieldsplitBlocks_text").show();
+            $("#fieldsplitBlocks").show();
+            $("#fieldsplitBlocks").val(counter);
+        }
+    });
+
 }

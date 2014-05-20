@@ -36,6 +36,9 @@ $(document).ready(function(){
     //create div 'o-1' for displaying SAWs options
     $("#divPc").append("<div id=\"o-1\"> </div>");
 
+    //create a button for user to click after saws data is done loading
+    $("#divPc").append("<input type=button value='Please click when options are done loading\nto set defaults for input form' style='margin-left:20px;' id='doneLoading'>");
+
     // get and display SAWs options
     SAWsGetAndDisplayDirectory("","#variablesInfo");//this #variablesInfo variable only appears here
 
