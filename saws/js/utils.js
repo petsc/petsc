@@ -38,3 +38,13 @@ function getSawsDataIndex(id, endtag)//id is the adiv we are working with. endta
     }
     return -1;//invalid id;
 }
+
+
+function getFieldsplitWordIndex(word) {
+
+    for(var i=0; i<fieldsplitKeywords.length; i++) {
+        if(fieldsplitKeywords[i] == word)
+            return i;//return index where word was found
+    }
+    return -1;//word does not exist in array yet
+}

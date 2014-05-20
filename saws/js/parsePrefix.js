@@ -6,7 +6,7 @@ function parsePrefixForFieldsplit(SAWs_prefix) {
 
         var closest=SAWs_prefix.length;//the furthest a keyword could possibly be
         //find index of next keyword (pc, ksp, sub, smoothing, coarse)
-        var keywords=["pc","ksp","sub","smoothing","coarse","redundant"];
+        var keywords=["pc","ksp","sub","smoothing","coarse","redundant","mg"];
         var loc="";
         for(var i=0; i<keywords.length; i++) {
             loc=SAWs_prefix.indexOf(keywords[i]);
@@ -16,16 +16,17 @@ function parsePrefixForFieldsplit(SAWs_prefix) {
 
         var theword = SAWs_prefix.substring(11,closest-1);//omit the first and last underscore
 
-        if(theword != currentFieldsplitWord) {// new fieldsplit
-            currentFieldsplitNumber++;
-            currentFieldsplitWord=theword;
+        var fieldsplitNumber = getFieldsplitWordIndex(theword);
+
+        if(fieldsplitNumber == -1) {// new fieldsplit
+            fieldsplitKeywords[fieldsplitKeywords.length] = theword;//record new keyword
+            fieldsplitNumber = fieldsplitKeywords.length - 1;
             var writeLoc = sawsInfo.length;
             sawsInfo[writeLoc]      = new Object();
             sawsInfo[writeLoc].data = new Array();
-            sawsInfo[writeLoc].id   = fieldsplit + currentFieldsplitNumber.toString();
+            sawsInfo[writeLoc].id   = fieldsplit + fieldsplitNumber.toString();
         }
-        if(currentFieldsplitNumber != -1)
-            fieldsplit = fieldsplit + currentFieldsplitNumber.toString();
+        fieldsplit = fieldsplit + fieldsplitNumber.toString();
     }
 
     return fieldsplit;

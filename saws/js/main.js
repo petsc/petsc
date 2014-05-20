@@ -6,8 +6,7 @@ var finishedAsking = false;//whether input form has finished (when finished, sto
 
 //variables used to collect saws information
 var sawsInfo = [];
-var currentFieldsplitWord = "";//temperature, omega, etc
-var currentFieldsplitNumber = -1;//the number to be put after the a-div
+var fieldsplitKeywords = [];//temperature, omega, etc (the index is the number to put after the a-div)
 
 //Use for pcmg
 var mgLevelLocation = ""; //where to put the mg level data once the highest level is determined. put in same level as coarse. this location keeps on getting overwritten every time mg_levels_n is encountered
@@ -33,8 +32,6 @@ $(document).ready(function(){
         matLevel:0,
         id:      "0"
     }
-
-    sawsInfo = [];
 
     //create div 'o-1' for displaying SAWs options
     $("#divPc").append("<div id=\"o-1\"> </div>");
