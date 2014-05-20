@@ -32,6 +32,9 @@ function getSawsIndex(id)
 
 function getSawsDataIndex(id, endtag)//id is the adiv we are working with. endtag is the id of the data we are looking for
 {
+    if(id == -1)
+        return -1;//invalid matrix id
+
     for(var i=0; i<sawsInfo[id].data.length; i++) {
         if(sawsInfo[id].data[i].endtag == endtag)
             return i;//return index where information is located

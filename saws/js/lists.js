@@ -1,5 +1,5 @@
 //populate fieldsplit list
-function populateFieldsplitList(listId) 
+function populateFieldsplitList(listId)
 {
     $("#" + listId).append("<option value=\"multiplicative\">multiplicative</option>")
     $("#" + listId).append("<option value=\"additive\">additive</option>")
@@ -9,7 +9,7 @@ function populateFieldsplitList(listId)
 }
 
 //populate mg list
-function populateMgList(listId) 
+function populateMgList(listId)
 {
     $("#" + listId).append("<option value=\"multiplicative\">multiplicative</option>")
     $("#" + listId).append("<option value=\"additive\">additive</option>")
@@ -21,15 +21,26 @@ function populateMgList(listId)
   populateKspList - populate the ksp list
   input
     listId - string
-    listVals - an array of ksptypes, e.g. listVals = ["cg","(null)"]; 
+    listVals - an array of ksptypes, e.g. listVals = ["cg","(null)"];
     defaultVal - default pctype
 */
 function populateKspList(listId,listVals,defaultVal)
 {
+    var matrix = getMatrix(listId);
+    var endtag = getEndtag(listId);
+
+    var index1 = getSawsIndex(matrix);
+    var index2 = getSawsDataIndex(index1,endtag);
+
+    if(listVals == null && index2 != -1) {//use ksp_alternatives from saws !!!
+        populateKspList(listId,sawsInfo[index1].data[index2].ksp_alternatives,sawsInfo[index1].data[index2].ksp);
+        return;
+    }
+
     var list = "#" + listId;
     $(list).empty(); //empty existing list
     //alert("enter  populateKspList...");
-    
+
     if (listVals == null) {
         //all options without parenthesis are for nonsymmetric (and, therefore, non pd) KSP list
         $(list).append("<option value=\"bcgs\">bcgs</option>");
@@ -95,6 +106,17 @@ function populateKspList(listId,listVals,defaultVal)
 */
 function populatePcList(listId,listVals,defaultVal) 
 {
+    var matrix = getMatrix(listId);
+    var endtag = getEndtag(listId);
+
+    var index1 = getSawsIndex(matrix);
+    var index2 = getSawsDataIndex(index1,endtag);
+
+    if(listVals == null && index2 != -1) {//use ksp_alternatives from saws !!!
+        populatePcList(listId,sawsInfo[index1].data[index2].pc_alternatives,sawsInfo[index1].data[index2].pc);
+        return;
+    }
+
     var list="#"+listId;
     $(list).empty(); //empty existing list
 
@@ -178,4 +200,12 @@ function getMatrix(objId)
         id = id.substring(1, id.length);//A1010 etc...so knock off the first character
     }
     return id;
+}
+
+function getEndtag(objID)
+{
+    var lastUnderscore = objID.lastIndexOf("_");
+    if(lastUnderscore == -1)
+        return "";
+    return objID.substring(lastUnderscore+1, objID.length);
 }

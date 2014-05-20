@@ -25,18 +25,16 @@ SAWsDisplayDirectory = function(sub,divEntry)
         var SAWs_alternatives = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].alternatives;
         var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["prefix"].data[0];
 
-        if (SAWs_prefix == "(null)")//null on first pc I believe (because first pc has no prefix)
-            SAWs_prefix = ""; //"(null)" fails populatePcList(), don't know why???
+        if (SAWs_prefix == "(null)")//null on first pc
+            SAWs_prefix = ""; //"(null)" fails populatePcList()
 
         if (typeof $("#pcList-1"+SAWs_prefix+"text").attr("title") == "undefined" && SAWs_prefix.indexOf("est")==-1) {//it doesn't exist already and doesn't contain 'est'
             $("#o-1").append("<br><b style='margin-left:20px;' title=\"Preconditioner\" id=\"pcList-1"+SAWs_prefix+"text\">-"+SAWs_prefix+"pc_type &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList-1"+SAWs_prefix+"\"></select>");
             populatePcList("pcList-1"+SAWs_prefix,SAWs_alternatives,SAWs_pcVal);
 
             //parse through prefix
-
             var fieldsplit = parsePrefixForFieldsplit(SAWs_prefix);
             var index = getSawsIndex(fieldsplit);
-
             var endtag = parsePrefixForEndtag(SAWs_prefix, index);
 
             if(sawsInfo.length == 0) //special case. manually start off first one
@@ -46,6 +44,7 @@ SAWsDisplayDirectory = function(sub,divEntry)
 
             var index2=getSawsDataIndex(index,endtag);
             sawsInfo[index].data[index2].pc=SAWs_pcVal;
+            sawsInfo[index].data[index2].pc_alternatives = SAWs_alternatives.slice();//deep copy of alternatives
 
             if (SAWs_pcVal == 'bjacobi') {//some extra data for bjacobi
                 //saws does bjacobi_blocks differently than we do. we put bjacoi_blocks as a different endtag than bjacobi dropdown (lower level) but saws puts them on the same level so we need to add a "0" to the endtag
@@ -77,10 +76,8 @@ SAWsDisplayDirectory = function(sub,divEntry)
             populateKspList("kspList-1"+SAWs_prefix,SAWs_alternatives,SAWs_kspVal);
 
             //parse through prefix...
-
             var fieldsplit = parsePrefixForFieldsplit(SAWs_prefix);
             var index = getSawsIndex(fieldsplit);
-
             var endtag = parsePrefixForEndtag(SAWs_prefix, index);
 
             if(index == -1)
@@ -90,6 +87,7 @@ SAWsDisplayDirectory = function(sub,divEntry)
 
             var index2=getSawsDataIndex(index,endtag);
             sawsInfo[index].data[index2].ksp=SAWs_kspVal;
+            sawsInfo[index].data[index2].ksp_alternatives = SAWs_alternatives.slice();//deep copy
         }
     }
 
